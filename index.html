@@ -4731,6 +4731,57 @@ function addLog(msg, type='') {
   resize(); init(); draw();
 })();
 
+
+// ── Expose functions to global scope for onclick handlers ──
+window.connectWallet    = connectWallet;
+window.disconnectWallet = disconnectWallet;
+window.openMarket       = openMarket;
+window.closeMarket      = closeMarket;
+window.mktTab           = mktTab;
+window.buyFromMarket    = buyFromMarket;
+window.selectEggToSell  = selectEggToSell;
+window.cancelSellEgg    = cancelSellEgg;
+window.confirmSellEgg   = confirmSellEgg;
+window.openLeaderboard  = openLeaderboard;
+window.closeLeaderboard = closeLeaderboard;
+window.ldrTab           = ldrTab;
+window.triggerSummon    = triggerSummon;
+window.feedCreature     = feedCreature;
+window.playCreature     = playCreature;
+window.toggleSleep      = toggleSleep;
+window.healCreature     = healCreature;
+window.cleanCreature    = cleanCreature;
+window.layEgg           = layEgg;
+window.clickEgg         = clickEgg;
+window.openGameSelector = openGameSelector;
+window.closeGameSelector= closeGameSelector;
+window.openCoinShop     = openCoinShop;
+window.closeCoinShop    = closeCoinShop;
+window.buyCoinPackage   = buyCoinPackage;
+window.openEggInventory = openEggInventory;
+window.closeEggInventory= closeEggInventory;
+window.burnEgg          = burnEgg;
+window.sellEgg          = sellEgg;
+window.hatchEggFromInventory = hatchEggFromInventory;
+window.confirmHatch     = confirmHatch;
+window.cancelHatch      = cancelHatch;
+window.openShop         = openShop;
+window.closeShop        = closeShop;
+window.buyShopItem      = buyShopItem;
+window.retireAvatar     = retireAvatar;
+window.openJkp          = openJkp;
+window.closeJkp         = closeJkp;
+window.jkpReset         = jkpReset;
+window.chooseJkp        = chooseJkp;
+window.startMemoria     = startMemoria;
+window.closeMemoria     = closeMemoria;
+window.memClick         = memClick;
+window.startSimon       = startSimon;
+window.closeSimon       = closeSimon;
+window.simonClick       = simonClick;
+window.startSombra      = startSombra;
+window.closeSombra      = closeSombra;
+
 // Init
 setInterval(gameTick, 1000);
 updateResourceUI();
