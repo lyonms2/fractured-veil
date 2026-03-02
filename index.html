@@ -446,12 +446,10 @@ main {
 .btn-summon:disabled:hover::before { opacity:0; }
 
 /* pity bars */
-.pity-wrap { display:flex; flex-direction:column; gap:5px; }
-.pity-row { display:flex; flex-direction:column; gap:2px; }
-.pity-lbl { display:flex; justify-content:space-between; font-family:'Cinzel',serif; font-size:7px; color:var(--muted); }
-.pity-track { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
-.pity-fill-raro    { height:100%; background:linear-gradient(90deg,var(--raro),#8ad4ff); border-radius:2px; transition:width .6s ease; }
-.pity-fill-lend    { height:100%; background:linear-gradient(90deg,var(--lendario),#ffda80); border-radius:2px; transition:width .6s ease; }
+
+
+
+
 
 /* OVERLAY animação de invocação */
 #summonOverlay {
@@ -1769,21 +1767,19 @@ main {
       <!-- SUMMON (shown when no creature) -->
       <div class="panel-card" id="summonCard">
         <div class="panel-title">◆ INVOCAR AVATAR</div>
-        <div class="summon-section">
+        <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
+          <div style="font-size:16px;margin-bottom:6px;">🦊</div>
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">CARTEIRA NECESSÁRIA</div>
+          <div style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Conecte sua MetaMask para invocar seu avatar e garantir que seu progresso seja salvo.</div>
+          <button class="btn-summon" onclick="connectWallet()" style="font-size:7px;padding:8px 14px;border-color:#5ab4e8;color:#5ab4e8;">🔌 CONECTAR METAMASK</button>
+        </div>
+        <div class="summon-section" id="summonSection" style="display:none;">
           <button class="btn-summon" id="btnSummon" onclick="triggerSummon()">
             <span id="btnSummonLabel">▶ Primeira Invocação (Gratuita)</span>
           </button>
-          <div class="pity-wrap">
-            <div class="pity-row">
-              <div class="pity-lbl"><span>PITY RARO</span><span id="pityRaroTxt">0/30</span></div>
-              <div class="pity-track"><div class="pity-fill-raro" id="pityRaroBar" style="width:0%"></div></div>
-            </div>
-            <div class="pity-row">
-              <div class="pity-lbl"><span>PITY LENDÁRIO</span><span id="pityLendTxt">0/100</span></div>
-              <div class="pity-track"><div class="pity-fill-lend" id="pityLendBar" style="width:0%"></div></div>
-            </div>
-          </div>
+
         </div>
+        </div><!-- /summonSection -->
       </div>
 
       <!-- CREATURE CARD (shown after hatch) -->
@@ -1937,8 +1933,6 @@ function gerarStats(raridade, elemento) {
 }
 
 function determinarRaridade() {
-  if(gs.semLendario >= 100) return 'Lendário';
-  if(gs.semRaro >= 30)      return 'Raro';
   const r = Math.random();
   if(r < .02) return 'Lendário';
   if(r < .20) return 'Raro';
@@ -2154,7 +2148,7 @@ let vinculo   = 0;
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
-const gs = { moedas:100, ovos:0, primeira:true, semRaro:0, semLendario:0 };
+const gs = { moedas:100, ovos:0, primeira:true };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
 const getFase = () => nivel < 3 ? 0 : nivel < 6 ? 1 : nivel < 10 ? 2 : 3;
@@ -2183,6 +2177,7 @@ const FALAS = {
 // SUMMON SYSTEM
 // ═══════════════════════════════════════════
 function triggerSummon() {
+  if(!walletAddress) { addLog('Conecte a MetaMask primeiro!','bad'); showBubble('Precisa da MetaMask! 🦊'); return; }
   const btn = document.getElementById('btnSummon');
   if(btn.disabled) return;
   btn.disabled = true;
@@ -2207,9 +2202,7 @@ function triggerSummon() {
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
   const seed = Math.abs(_h);
 
-  if(raridade==='Lendário'){ gs.semRaro=0; gs.semLendario=0; }
-  else if(raridade==='Raro'){ gs.semRaro=0; gs.semLendario++; }
-  else { gs.semRaro++; gs.semLendario++; }
+
   gs.primeira = false;
 
   avatar = { nome, elemento, raridade, descricao, stats, habs, hp, car, seed };
@@ -2340,7 +2333,6 @@ function triggerSummon() {
 
   const msg = raridade==='Lendário'?'🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!':raridade==='Raro'?'✨ Invocação Rara! Um guardião experiente surge!':'Uma entidade dimensional foi invocada!';
   addLog(msg, raridade==='Lendário'?'leg':raridade==='Raro'?'info':'good');
-  updatePityUI();
   updateResourceUI();
 }
 
@@ -2955,6 +2947,11 @@ async function connectWallet() {
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
     document.getElementById('btnMarket').style.visibility = 'visible';
+    // Reveal summon section
+    const ww = document.getElementById('walletWarning');
+    const ss = document.getElementById('summonSection');
+    if(ww) ww.style.display = 'none';
+    if(ss) ss.style.display = 'block';
     document.getElementById('btnLeader').style.display = 'inline-block';
     document.getElementById('btnLeader').style.visibility = 'visible';
 
@@ -2963,6 +2960,11 @@ async function connectWallet() {
 
     // Load saved state
     addLog('Carregando dados...', 'info');
+    // Show summon section regardless
+    const ww2 = document.getElementById('walletWarning');
+    const ss2 = document.getElementById('summonSection');
+    if(ww2) ww2.style.display = 'none';
+    if(ss2) ss2.style.display = 'block';
     const loaded = await loadFromFirebase();
     if(loaded) {
       addLog('Estado restaurado da nuvem! ☁️', 'good');
@@ -4637,11 +4639,7 @@ function updateTimer() {
 }
 function p(n){ return String(n).padStart(2,'0'); }
 
-function updatePityUI() {
-  document.getElementById('pityRaroBar').style.width = Math.min(100,(gs.semRaro/30)*100)+'%';
-  document.getElementById('pityLendBar').style.width = Math.min(100,(gs.semLendario/100)*100)+'%';
-  document.getElementById('pityRaroTxt').textContent  = `${gs.semRaro}/30`;
-  document.getElementById('pityLendTxt').textContent  = `${gs.semLendario}/100`;
+/30`;
 }
 
 function updateResourceUI() {
