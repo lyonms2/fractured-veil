@@ -1317,11 +1317,18 @@ main {
   <header>
     <div class="logo">Fractured Veil</div>
     <div class="resources">
-      <button class="btn-wallet" id="btnWallet" onclick="connectWallet()">🔌 CONECTAR</button>
-      <button class="btn-wallet" id="btnMarket" onclick="openMarket()" style="display:none;visibility:hidden;">🛒 MERCADO</button>
-      <button class="btn-wallet" id="btnLeader" onclick="openLeaderboard()" style="display:none;visibility:hidden;">🏆 RANKING</button>
-      <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas">🪙 <b id="resMonedas">500</b></div>
-      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos">🥚 <b id="resOvos">0</b></div>
+      <!-- Wallet area: pre-connect hidden, post-connect shows address + disconnect -->
+      <div id="walletArea" style="display:flex;align-items:center;gap:6px;">
+        <button class="btn-wallet" id="btnMarket" onclick="openMarket()" style="display:none;visibility:hidden;">🛒 MERCADO</button>
+        <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:#7ab87a;border:1px solid rgba(122,184,122,.3);border-radius:20px;padding:4px 10px;background:rgba(122,184,122,.06);">
+            🦊 <span id="walletShort">0x...</span>
+          </div>
+          <button class="btn-wallet" onclick="disconnectWallet()" style="border-color:#e74c3c;color:#e74c3c;font-size:6px;padding:4px 8px;">✕ SAIR</button>
+        </div>
+      </div>
+      <div class="res res-clickable disabled" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
+      <div class="res res-clickable disabled" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
     </div>
   </header>
 
@@ -2923,8 +2930,25 @@ const _origGameTick = gameTick;
 // ═══════════════════════════════════════════════════════════════════
 // WALLET + FIREBASE AUTH
 // ═══════════════════════════════════════════════════════════════════
+
+function disconnectWallet() {
+  walletAddress = null;
+  // Hide wallet info, hide market/leader buttons
+  document.getElementById('walletInfo').style.display   = 'none';
+  document.getElementById('btnMarket').style.display    = 'none';
+  document.getElementById('btnMarket').style.visibility = 'hidden';
+  // Hide summon section, show wallet warning again
+  const ww = document.getElementById('walletWarning');
+  const ss = document.getElementById('summonSection');
+  if(ww) ww.style.display = 'block';
+  if(ss) ss.style.display = 'none';
+  // Hide resource counters
+  document.getElementById('resMoedasBtn').style.display = 'none';
+  document.getElementById('resOvosBtn').style.display  = 'none';
+  addLog('Carteira desconectada.', 'info');
+}
+
 async function connectWallet() {
-  const btn = document.getElementById('btnWallet');
   if(walletAddress) {
     addLog(`Carteira: ${walletAddress}`, 'info');
     return;
@@ -2935,14 +2959,16 @@ async function connectWallet() {
     return;
   }
   try {
-    btn.textContent = '⏳ CONECTANDO...';
-    btn.disabled = true;
+
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
-    btn.textContent = '✓ ' + short;
-    btn.classList.add('connected');
-    btn.disabled = false;
+    document.getElementById('walletShort').textContent = short;
+    document.getElementById('walletInfo').style.display = 'flex';
+    // Show resource counters
+    document.getElementById('resMoedasBtn').style.display = '';
+    document.getElementById('resOvosBtn').style.display = '';
+    updateResourceUI();
 
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
@@ -2952,8 +2978,7 @@ async function connectWallet() {
     const ss = document.getElementById('summonSection');
     if(ww) ww.style.display = 'none';
     if(ss) ss.style.display = 'block';
-    document.getElementById('btnLeader').style.display = 'inline-block';
-    document.getElementById('btnLeader').style.visibility = 'visible';
+
 
     addLog(`Carteira conectada: ${short}`, 'good');
     showBubble('Carteira conectada! 🦊');
@@ -2989,8 +3014,6 @@ async function connectWallet() {
 
     if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
   } catch(e) {
-    btn.textContent = '🔌 CONECTAR';
-    btn.disabled = false;
     addLog('Conexão cancelada.', 'info');
   }
 }
@@ -4711,8 +4734,7 @@ function addLog(msg, type='') {
 // Init
 setInterval(gameTick, 1000);
 updateResourceUI();
-document.getElementById('resOvosBtn').classList.add('disabled');
-document.getElementById('resMoedasBtn').classList.add('disabled');
+
 addLog('Sistema iniciado. Invoque seu primeiro avatar!','info');
 </script>
 </body>
