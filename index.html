@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fractured Veil — Avatar</title>
 <!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, orderBy, onSnapshot, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
+<!-- Firebase compat (no ES modules — global scope) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
     authDomain: "fractured-veil.firebaseapp.com",
@@ -18,16 +18,11 @@
     messagingSenderId: "685511750728",
     appId: "1:685511750728:web:1e843bf48ea56a3a98d47d"
   };
-
-  const app  = initializeApp(firebaseConfig);
-  const db   = getFirestore(app);
-  const auth = getAuth(app);
-
-  // Expose to global scope for use in main script
-  window._fb = { db, auth, doc, setDoc, getDoc, collection, addDoc, query, where, orderBy, onSnapshot, updateDoc, deleteDoc, serverTimestamp, signInAnonymously };
-
-  // Auto sign-in anonymously on load
-  signInAnonymously(auth).then(cred => {
+  firebase.initializeApp(firebaseConfig);
+  const _fbDb   = firebase.firestore();
+  const _fbAuth = firebase.auth();
+  // Sign in anonymously on load
+  _fbAuth.signInAnonymously().then(cred => {
     window._fbUid = cred.user.uid;
   }).catch(e => console.warn('Firebase auth error:', e));
 </script>
@@ -2830,8 +2825,8 @@ let walletAddress = null;
 // ═══════════════════════════════════════════════════════════════════
 // FIREBASE HELPERS
 // ═══════════════════════════════════════════════════════════════════
-function fb() { return window._fb; }
-function fbDb() { return fb() ? fb().db : null; }
+function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
+function fbAuth() { return typeof _fbAuth !== "undefined" ? _fbAuth : null; }
 
 function getGameState() {
   // Serialize avatar safely — flatten habs (array of arrays not supported by Firestore)
@@ -2908,17 +2903,15 @@ function scheduleSave() {
 async function saveToFirebase() {
   if(!walletAddress || !fbDb()) return;
   try {
-    const { doc, setDoc } = fb();
-    await setDoc(doc(fbDb(), 'players', walletAddress), getGameState());
+    await fbDb().collection('players').doc(walletAddress).set(getGameState());
   } catch(e) { console.warn('Save error:', e); }
 }
 
 async function loadFromFirebase() {
   if(!walletAddress || !fbDb()) return false;
   try {
-    const { doc, getDoc } = fb();
-    const snap = await getDoc(doc(fbDb(), 'players', walletAddress));
-    if(!snap.exists()) return false;
+    const snap = await fbDb().collection('players').doc(walletAddress).get();
+    if(!snap.exists) return false;
     applyGameState(snap.data());
     return true;
   } catch(e) { console.warn('Load error:', e); return false; }
@@ -2970,6 +2963,10 @@ async function connectWallet() {
     document.getElementById('resOvosBtn').style.display = '';
     updateResourceUI();
 
+    // Firebase anonymous auth
+    if(typeof _fbAuth !== 'undefined') {
+      try { await _fbAuth.signInAnonymously(); } catch(e) { console.warn('Auth error:', e); }
+    }
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
     document.getElementById('btnMarket').style.visibility = 'visible';
@@ -3048,15 +3045,14 @@ function ldrTab(tab) {
 
 function loadLeaderboard(tab) {
   if(!fbDb()) return;
-  const { collection, query, orderBy, onSnapshot } = fb();
   if(ldrUnsub) ldrUnsub();
   const field = tab === 'vinculo' ? 'vinculo' : tab === 'nivel' ? 'nivel' : 'totalEggs';
-  const q = query(collection(fbDb(), 'leaderboard'), orderBy(field, 'desc'));
-  ldrUnsub = onSnapshot(q, snap => {
-    const rows = [];
-    snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
-    renderLeaderboard(rows, tab);
-  }, e => console.warn('Leaderboard error:', e));
+  ldrUnsub = fbDb().collection('leaderboard').orderBy(field, 'desc')
+    .onSnapshot(snap => {
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      renderLeaderboard(rows, tab);
+    }, e => console.warn('Leaderboard error:', e));
 }
 
 const ELEM_EMOJI = { Fogo:'🔥', Água:'💧', Terra:'🌍', Vento:'🌪️', Eletricidade:'⚡', Sombra:'🌑', Luz:'✨', Void:'🕳️', Aether:'🌀' };
@@ -3110,9 +3106,8 @@ function renderLeaderboard(rows, tab) {
 async function saveLeaderboard() {
   if(!walletAddress || !fbDb() || !avatar || !hatched) return;
   try {
-    const { doc, setDoc } = fb();
     const totalEggs = eggsInInventory.length;
-    await setDoc(doc(fbDb(), 'leaderboard', walletAddress), {
+    await fbDb().collection('leaderboard').doc(walletAddress).set({
       nome:      avatar.nome ? avatar.nome.split(',')[0] : 'Avatar',
       elemento:  avatar.elemento,
       raridade:  avatar.raridade,
@@ -3157,22 +3152,19 @@ function mktTab(tab) {
 
 function loadMarketListings() {
   if(!fbDb()) return;
-  const { collection, query, where, orderBy, onSnapshot } = fb();
   if(mktUnsub) mktUnsub();
-  const q = query(
-    collection(fbDb(), 'market'),
-    where('status', '==', 'listed'),
-    orderBy('listedAt', 'desc')
-  );
-  mktUnsub = onSnapshot(q, snap => {
-    const listings = [];
-    snap.forEach(d => listings.push({ id: d.id, ...d.data() }));
-    renderListings(listings);
-  }, e => {
-    document.getElementById('mktEmpty').style.display = 'block';
-    document.getElementById('mktListings').innerHTML  = '';
-    console.warn('Market error:', e);
-  });
+  mktUnsub = fbDb().collection('market')
+    .where('status', '==', 'listed')
+    .orderBy('listedAt', 'desc')
+    .onSnapshot(snap => {
+      const listings = [];
+      snap.forEach(d => listings.push({ id: d.id, ...d.data() }));
+      renderListings(listings);
+    }, e => {
+      document.getElementById('mktEmpty').style.display = 'block';
+      document.getElementById('mktListings').innerHTML  = '';
+      console.warn('Market error:', e);
+    });
 }
 
 const RAR_COLOR = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
@@ -3206,24 +3198,19 @@ async function buyFromMarket(listingId, price) {
   if(!walletAddress || !fbDb()) return;
   if(gs.moedas < price) { showBubble('Sem moedas! 😢'); return; }
   try {
-    const { doc, getDoc, updateDoc, serverTimestamp } = fb();
-    const ref  = doc(fbDb(), 'market', listingId);
-    const snap = await getDoc(ref);
-    if(!snap.exists() || snap.data().status !== 'listed') {
+    const ref  = fbDb().collection('market').doc(listingId);
+    const snap = await ref.get();
+    if(!snap.exists || snap.data().status !== 'listed') {
       addLog('Este ovo já foi vendido!', 'bad'); return;
     }
     const data = snap.data();
     if(Date.now() > data.expiraEm) {
-      await updateDoc(ref, { status: 'expired' });
+      await ref.update({ status: 'expired' });
       addLog('Este ovo apodreceu antes da compra.', 'bad'); return;
     }
-    // Deduct coins
     spendCoins(price);
-    // Add egg to buyer inventory
     eggsInInventory.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
-    // Mark listing sold
-    await updateDoc(ref, { status: 'sold', buyerId: walletAddress, soldAt: serverTimestamp() });
-    // TODO: credit seller coins via Cloud Function
+    await ref.update({ status: 'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
     await saveToFirebase();
     renderEggInventory();
     updateResourceUI();
@@ -3273,15 +3260,14 @@ async function confirmSellEgg() {
   const price = parseInt(document.getElementById('mktPriceInput').value);
   if(!price || price < 1) { addLog('Preço inválido.', 'bad'); return; }
   try {
-    const { collection, addDoc, serverTimestamp } = fb();
-    await addDoc(collection(fbDb(), 'market'), {
+    await fbDb().collection('market').add({
       sellerId: walletAddress,
       raridade: ovo.raridade,
       elemento: ovo.elemento,
       expiraEm: ovo.expiraEm,
       price,
       status: 'listed',
-      listedAt: serverTimestamp()
+      listedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     // Remove from local inventory
     eggsInInventory = eggsInInventory.filter(e => e.id !== mktSellEggId);
@@ -4732,55 +4718,6 @@ function addLog(msg, type='') {
 })();
 
 
-// ── Expose functions to global scope for onclick handlers ──
-window.connectWallet    = connectWallet;
-window.disconnectWallet = disconnectWallet;
-window.openMarket       = openMarket;
-window.closeMarket      = closeMarket;
-window.mktTab           = mktTab;
-window.buyFromMarket    = buyFromMarket;
-window.selectEggToSell  = selectEggToSell;
-window.cancelSellEgg    = cancelSellEgg;
-window.confirmSellEgg   = confirmSellEgg;
-window.openLeaderboard  = openLeaderboard;
-window.closeLeaderboard = closeLeaderboard;
-window.ldrTab           = ldrTab;
-window.triggerSummon    = triggerSummon;
-window.feedCreature     = feedCreature;
-window.playCreature     = playCreature;
-window.toggleSleep      = toggleSleep;
-window.healCreature     = healCreature;
-window.cleanCreature    = cleanCreature;
-window.layEgg           = layEgg;
-window.clickEgg         = clickEgg;
-window.openGameSelector = openGameSelector;
-window.closeGameSelector= closeGameSelector;
-window.openCoinShop     = openCoinShop;
-window.closeCoinShop    = closeCoinShop;
-window.buyCoinPackage   = buyCoinPackage;
-window.openEggInventory = openEggInventory;
-window.closeEggInventory= closeEggInventory;
-window.burnEgg          = burnEgg;
-window.sellEgg          = sellEgg;
-window.hatchEggFromInventory = hatchEggFromInventory;
-window.confirmHatch     = confirmHatch;
-window.cancelHatch      = cancelHatch;
-window.openShop         = openShop;
-window.closeShop        = closeShop;
-window.buyShopItem      = buyShopItem;
-window.retireAvatar     = retireAvatar;
-window.openJkp          = openJkp;
-window.closeJkp         = closeJkp;
-window.jkpReset         = jkpReset;
-window.chooseJkp        = chooseJkp;
-window.startMemoria     = startMemoria;
-window.closeMemoria     = closeMemoria;
-window.memClick         = memClick;
-window.startSimon       = startSimon;
-window.closeSimon       = closeSimon;
-window.simonClick       = simonClick;
-window.startSombra      = startSombra;
-window.closeSombra      = closeSombra;
 
 // Init
 setInterval(gameTick, 1000);
