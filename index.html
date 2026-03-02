@@ -8,7 +8,6 @@
 <!-- Firebase compat (no ES modules — global scope) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
@@ -20,11 +19,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   const _fbDb   = firebase.firestore();
-  const _fbAuth = firebase.auth();
-  // Sign in anonymously on load
-  _fbAuth.signInAnonymously().then(cred => {
-    window._fbUid = cred.user.uid;
-  }).catch(e => console.warn('Firebase auth error:', e));
+
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
@@ -2826,7 +2821,6 @@ let walletAddress = null;
 // FIREBASE HELPERS
 // ═══════════════════════════════════════════════════════════════════
 function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
-function fbAuth() { return typeof _fbAuth !== "undefined" ? _fbAuth : null; }
 
 function getGameState() {
   // Serialize avatar safely — flatten habs (array of arrays not supported by Firestore)
@@ -2963,10 +2957,6 @@ async function connectWallet() {
     document.getElementById('resOvosBtn').style.display = '';
     updateResourceUI();
 
-    // Firebase anonymous auth
-    if(typeof _fbAuth !== 'undefined') {
-      try { await _fbAuth.signInAnonymously(); } catch(e) { console.warn('Auth error:', e); }
-    }
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
     document.getElementById('btnMarket').style.visibility = 'visible';
