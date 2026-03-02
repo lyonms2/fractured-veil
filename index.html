@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#04030a">
 <title>Fractured Veil — Avatar</title>
 <!-- Firebase SDK -->
 <!-- Firebase compat (no ES modules — global scope) -->
@@ -23,6 +27,7 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
+* { -webkit-tap-highlight-color:transparent; touch-action:manipulation; box-sizing:border-box; }
 :root {
   --bg: #04030a;
   --surface: #0b0916;
@@ -52,14 +57,15 @@ body::after {
 }
 
 /* ── APP SHELL ── */
-.app { position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+.app { position:relative; z-index:2; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; }
 
 header {
-  width:100%; padding:28px 40px 0;
+  width:100%; max-width:1080px; padding:20px 32px 0;
   display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:8px;
 }
-.logo { font-family:'Cinzel',serif; font-weight:900; font-size:12px; letter-spacing:4px; color:var(--gold); opacity:.8; }
-.resources { display:flex; gap:12px; }
+.logo { font-family:'Cinzel',serif; font-weight:900; font-size:12px; letter-spacing:4px; color:var(--gold); opacity:.8; flex-shrink:0; }
+.resources { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .res-clickable {
   cursor:pointer;
   transition:all .2s ease;
@@ -86,11 +92,12 @@ header {
 /* ── MAIN GRID ── */
 main {
   flex:1; width:100%; max-width:1080px;
-  padding:20px 40px 60px;
+  padding:20px 32px 60px;
   display:grid;
   grid-template-columns:340px 1fr;
   gap:24px;
   align-items:start;
+  box-sizing:border-box;
 }
 
 /* ══════════════════════════════════════
@@ -102,6 +109,9 @@ main {
   border-radius:20px 20px 32px 32px;
   padding:20px 18px 24px;
   box-shadow: 0 0 60px rgba(61,42,110,.12);
+  width:100%; box-sizing:border-box;
+  /* stick to top on desktop */
+  position:sticky; top:20px;
 }
 
 .device-top {
@@ -121,7 +131,7 @@ main {
   background:#060610;
   border:1px solid var(--border);
   border-radius:10px;
-  height:270px;
+  height:280px;
   position:relative;
   overflow:hidden;
   margin-bottom:16px;
@@ -138,8 +148,6 @@ main {
   background:linear-gradient(135deg,rgba(127,255,178,.02) 0%,transparent 60%);
   pointer-events:none; z-index:9;
 }
-
-
 
 /* creature area */
 .creature-area {
@@ -310,7 +318,7 @@ main {
 }
 
 /* ── BUTTONS ── */
-.btns { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+.btns { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; width:100%; box-sizing:border-box; }
 .btns.has-clean { grid-template-columns:repeat(5,1fr); }
 .btn-action {
   background:#0f0d1c; border:1px solid var(--border); border-radius:8px;
@@ -331,7 +339,10 @@ main {
 /* ══════════════════════════════════════
    RIGHT PANEL
 ══════════════════════════════════════ */
-.right-panel { display:flex; flex-direction:column; gap:16px; }
+.right-panel {
+  display:flex; flex-direction:column; gap:16px;
+  min-width:0; /* prevent overflow in grid */
+}
 
 .panel-card {
   background:var(--surface); border:1px solid var(--border);
@@ -341,8 +352,6 @@ main {
   font-family:'Cinzel',serif; font-size:8px; letter-spacing:2px;
   color:var(--gold); margin-bottom:12px;
 }
-
-
 
 .id-info h2 { font-family:'Cinzel',serif; font-size:11px; color:var(--gold-light); margin-bottom:4px; line-height:1.3; }
 .id-meta { font-style:italic; font-size:13px; color:var(--muted); line-height:1.6; }
@@ -386,10 +395,8 @@ main {
 .stat-fill.critical { animation:critical-pulse 1s ease-in-out infinite; }
 @keyframes critical-pulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.5)} }
 
-
-
 /* DIÁRIO */
-.log-list { list-style:none; display:flex; flex-direction:column; gap:3px; max-height:110px; overflow-y:auto; }
+.log-list { list-style:none; display:flex; flex-direction:column; gap:3px; max-height:160px; overflow-y:auto; }
 .log-list::-webkit-scrollbar { width:2px; }
 .log-list::-webkit-scrollbar-thumb { background:var(--border); }
 
@@ -436,10 +443,6 @@ main {
 .btn-summon:disabled:hover::before { opacity:0; }
 
 /* pity bars */
-
-
-
-
 
 /* OVERLAY animação de invocação */
 #summonOverlay {
@@ -671,15 +674,122 @@ main {
   animation:stink-rise 3s ease-out infinite;
 }
 
-
-
 /* stat row for higiene */
 .fill-higiene { background:linear-gradient(90deg,#5a3a00,#a06010); }
 /* Responsive */
-@media(max-width:720px) {
-  main { grid-template-columns:1fr; padding:16px; }
-  header { padding:20px 16px 0; }
+
+/* ════════════════════════════════════════
+   TABLET  (≤ 900px)
+════════════════════════════════════════ */
+@media(max-width:900px) {
+  main {
+    grid-template-columns: 300px 1fr;
+    gap:16px;
+    padding:16px 20px 40px;
+  }
+  .screen { height:250px; }
 }
+
+/* ════════════════════════════════════════
+   MOBILE  (≤ 680px)
+════════════════════════════════════════ */
+@media(max-width:680px) {
+  /* --- layout --- */
+  header {
+    padding:14px 16px 0;
+    gap:6px;
+  }
+  .logo { font-size:10px; letter-spacing:2px; }
+  .resources { gap:5px; }
+  .res { font-size:9px; padding:3px 8px; }
+  .btn-wallet { font-size:6px; padding:4px 8px; }
+
+  main {
+    grid-template-columns: 1fr;
+    padding:12px 12px 80px; /* bottom padding for safe area */
+    gap:14px;
+  }
+
+  /* --- device --- */
+  .device {
+    position:static; /* no sticky on mobile */
+    border-radius:16px;
+    padding:14px 12px 16px;
+  }
+  .screen {
+    height:240px;
+    margin-bottom:12px;
+  }
+
+  /* --- action buttons --- */
+  .btns { gap:5px; }
+  .btn-action {
+    padding:8px 4px 6px;
+    font-size:6px;
+    min-height:52px;
+  }
+  .btn-action .icon { font-size:15px; }
+
+  /* --- status bars --- */
+  #statusCard { padding:10px 10px 8px; margin-top:6px; }
+  .stat-lbl { font-size:6px; }
+  .stat-val  { font-size:6px; }
+
+  /* --- right panel --- */
+  .right-panel { gap:12px; }
+  .panel-card  { padding:12px; }
+  .panel-title { font-size:7px; letter-spacing:2px; margin-bottom:8px; }
+  .log-list    { max-height:120px; }
+
+  /* --- mini modals become full-screen on mobile --- */
+  .mini-modal {
+    position:fixed;
+    inset:0;
+    z-index:200;
+    border-radius:0;
+    padding:20px 16px;
+    overflow-y:auto;
+  }
+
+  /* --- market / shop modals --- */
+  #marketModal,
+  #shopModal,
+  #eggInvModal,
+  #coinShopModal {
+    position:fixed;
+    inset:0;
+    max-height:100%;
+    border-radius:0;
+    overflow-y:auto;
+  }
+
+  /* --- summon overlay full screen --- */
+  #summonOverlay { position:fixed; }
+
+  /* wallet info wrap */
+  #walletInfo { gap:4px; }
+  #walletInfo > div { font-size:6px; padding:3px 8px; }
+}
+
+/* ════════════════════════════════════════
+   VERY SMALL (≤ 380px — small phones)
+════════════════════════════════════════ */
+@media(max-width:380px) {
+  .screen { height:210px; }
+  .btn-action { min-height:46px; }
+  .btns { gap:4px; }
+  main { padding:10px 10px 80px; }
+}
+
+/* ════════════════════════════════════════
+   SAFE AREA (notch / home bar)
+════════════════════════════════════════ */
+@supports(padding-bottom: env(safe-area-inset-bottom)) {
+  @media(max-width:680px) {
+    main { padding-bottom:calc(80px + env(safe-area-inset-bottom)); }
+  }
+}
+
 .hidden { display:none !important; }
 
 /* ── LEVEL UP OVERLAY ── */
@@ -1020,7 +1130,6 @@ main {
 .gs-close { font-size:7px; color:var(--muted); cursor:pointer; margin-top:6px; letter-spacing:2px; font-family:'Cinzel',serif; }
 .gs-close:hover { color:var(--gold); }
 
-
 /* ── SHARED MINI MODAL ── */
 .mini-modal {
   position:absolute; inset:0; z-index:32;
@@ -1275,7 +1384,6 @@ main {
 #marketModal::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 #marketModal::-webkit-scrollbar-thumb:hover { background:var(--gold); }
 
-
 </style>
 </head>
 <body>
@@ -1311,7 +1419,6 @@ main {
 
       <!-- SCREEN -->
       <div class="screen" id="mainScreen">
-
 
         <!-- IDLE state (before summon) -->
         <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
@@ -1592,7 +1699,6 @@ main {
             </div>
           </div>
 
-
           <!-- Level-up overlay -->
           <div id="levelUpOverlay">
             <div class="lu-burst"></div>
@@ -1678,7 +1784,7 @@ main {
         </button>
         <button class="btn-action" id="btnHeal" onclick="healCreature()" title="Custo: 60 🪙">
           <span class="icon">💊</span><span>MEDICAR</span>
-          <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">100 🪙</span>
+          <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">60 🪙</span>
         </button>
         <button class="btn-action" id="btnClean" onclick="cleanCreature()" style="display:none;border-color:#5a3a00;color:#a06010;">
           <span class="icon">🧹</span><span>LIMPAR</span>
@@ -1721,8 +1827,6 @@ main {
     <!-- RIGHT PANEL -->
     <div class="right-panel">
 
-
-
       <!-- SUMMON (shown when no creature) -->
       <div class="panel-card" id="summonCard">
         <div class="panel-title">◆ INVOCAR AVATAR</div>
@@ -1738,8 +1842,7 @@ main {
           </button>
 
         </div>
-        </div><!-- /summonSection -->
-      </div>
+      </div><!-- /summonSection -->
 
       <!-- CREATURE CARD (shown after hatch) -->
       <div class="panel-card" id="creatureCard" style="display:none">
@@ -1786,7 +1889,7 @@ main {
 
 <script>
 // ═══════════════════════════════════════════
-// SISTEMAS DO JOGO (port fiel do Next.js)
+// SISTEMAS DO JOGO
 // ═══════════════════════════════════════════
 
 const CARACTERISTICAS_ELEMENTAIS = {
@@ -1903,7 +2006,7 @@ function escolherElemento() {
   return rnd(todos);
 }
 
-// ─── SVG GENERATOR (port fiel do AvatarSVG.jsx) ───
+// ─── SVG GENERATOR ───
 const ELEM_CFG = {
   'Fogo':         { cores:['#dc2626','#ef4444','#f97316','#fb923c'], coresSec:['#7c2d12','#991b1b','#9a3412'], corBrilho:'#fbbf24', corOlho:'#ff6b00', particulas:'chamas' },
   'Água':         { cores:['#0891b2','#06b6d4','#3b82f6','#0284c7'], coresSec:['#075985','#0c4a6e','#1e40af'], corBrilho:'#67e8f9', corOlho:'#0ea5e9', particulas:'gotas' },
@@ -1917,7 +2020,7 @@ const ELEM_CFG = {
 };
 
 function gerarSVG(elemento, raridade, seed, w, h) {
-  // random determinístico (mesmo algoritmo do React)
+  // random determinístico
   let _seed = seed;
   const random = (min, max) => {
     _seed = (_seed * 9301 + 49297) % 233280;
@@ -2161,7 +2264,6 @@ function triggerSummon() {
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
   const seed = Math.abs(_h);
 
-
   gs.primeira = false;
 
   avatar = { nome, elemento, raridade, descricao, stats, habs, hp, car, seed };
@@ -2332,7 +2434,6 @@ function setupAvatar() {
 
   // Decor
 
-
   addLog(`${avatar.nome} foi invocado! Clique no ovo 5x para chocá-lo.`, 'good');
   updateAllUI();
 }
@@ -2458,7 +2559,6 @@ function canAct() {
   if(dead || !hatched || !avatar) return false;
   return true;
 }
-
 
 // ── COIN SPEND / EARN ANIMATION ──
 function showCoinAnim(amount, isSpend = true) {
@@ -2636,10 +2736,6 @@ function miniReward(xpMult, coinMult) {
   checkXP(); updateAllUI();
   return { xpGain, coinGain };
 }
-
-
-
-
 
 // ═══════════════════════════════════════════════════════════════════
 // LOJA IN-GAME
@@ -2873,8 +2969,6 @@ async function loadFromFirebase() {
 }
 
 // Auto-save on every gameTick cycle (every 60s)
-const _origGameTick = gameTick;
-
 // ═══════════════════════════════════════════════════════════════════
 // WALLET + FIREBASE AUTH
 // ═══════════════════════════════════════════════════════════════════
@@ -2927,7 +3021,6 @@ async function connectWallet() {
     if(ww) ww.style.display = 'none';
     if(ss) ss.style.display = 'block';
 
-
     addLog(`Carteira conectada: ${short}`, 'good');
     showBubble('Carteira conectada! 🦊');
 
@@ -2965,8 +3058,6 @@ async function connectWallet() {
     addLog('Conexão cancelada.', 'info');
   }
 }
-
-
 
 // ═══════════════════════════════════════════════════════════════════
 // MERCADO DE OVOS
@@ -3180,7 +3271,6 @@ function renderCoinPackages() {
 }
 
 function buyCoinPackage(id) {
-  // TODO: integrate MetaMask transaction
   // const pkg = COIN_PACKAGES.find(p => p.id === id);
   // await ethereum.request({ method: 'eth_sendTransaction', ... });
   addLog('🔌 Conecte a MetaMask para comprar moedas.', 'info');
@@ -3487,7 +3577,6 @@ const JKP_EMOJI   = { pedra:'🪨', papel:'📄', tesoura:'✂️' };
 const JKP_BEATS   = { pedra:'tesoura', papel:'pedra', tesoura:'papel' }; // key beats value
 // enemy is the avatar itself
 let jkpPlaying = false;
-let jkpEnemy   = '';
 
 function openJkp() {
   ModalManager.open('jkpModal');
@@ -3709,7 +3798,6 @@ function healCreature() {
   addLog(`Medicado! +40 saúde  (-${COST} 🪙)`,'good');
   updateAllUI();
 }
-
 
 function spawnFoodParticles() {
   const wrap = document.getElementById('creatureWrap');
@@ -4051,7 +4139,6 @@ function summonFromEgg(raridade, elemento, crackColor) {
   addLog(`🥚 Ovo ${raridade} de ${elemento} pronto para chocar!`, raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good');
 }
 
-
 function openEggInventory() {
   if(!hatched || dead) return;
   renderEggInventory();
@@ -4269,7 +4356,6 @@ function gameTick() {
     addLog('Ficou doente! Use medicar!','bad');
   }
 
-
   // ── HIGIENE E COCÔ ──
   if(!sleeping) {
     vitals.higiene = Math.max(0, vitals.higiene - (.25 * GAME_SPEED));
@@ -4324,27 +4410,6 @@ function autoSpeak() {
   else if(sick)          showBubble(rnd(FALAS.sick));
   else if(vitals.humor < 30) showBubble(rnd(FALAS.bored));
   else if(Math.random() < .3) showBubble(rnd(FALAS.happy));
-}
-
-
-
-function spawnHealParticles() {
-  const wrap = document.getElementById('creatureWrap');
-  if(!wrap) return;
-  const symbols = ['💚','✦','+','✧','❤️'];
-  for(let i=0;i<6;i++) {
-    const el = document.createElement('div');
-    el.className = 'food-particle'; // reuse same float style
-    el.textContent = symbols[i%symbols.length];
-    el.style.cssText = `
-      position:absolute;left:${30+Math.random()*40}%;bottom:40%;
-      font-size:${10+Math.random()*8}px;pointer-events:none;z-index:20;
-      animation:food-fly .9s ease-out ${i*0.08}s forwards;
-      color:#7ab87a;filter:drop-shadow(0 0 4px #3a8a3a);
-    `;
-    wrap.appendChild(el);
-    setTimeout(() => el.remove(), 1000 + i*80);
-  }
 }
 
 function playPhaseUp(faseName) {
@@ -4559,8 +4624,6 @@ function addLog(msg, type='') {
   window.addEventListener('resize',()=>{ resize(); init(); });
   resize(); init(); draw();
 })();
-
-
 
 // Init
 setInterval(gameTick, 1000);
