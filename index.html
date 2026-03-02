@@ -1297,7 +1297,7 @@ main {
     <div class="logo">Fractured Veil</div>
     <div class="resources">
       <button class="btn-wallet" id="btnWallet" onclick="connectWallet()">🔌 CONECTAR</button>
-      <button class="btn-wallet" id="btnMarket" onclick="openMarket()" style="display:none;">🛒 MERCADO</button>
+      <button class="btn-wallet" id="btnMarket" onclick="openMarket()" style="display:none;visibility:hidden;">🛒 MERCADO</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas">🪙 <b id="resMonedas">500</b></div>
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos">🥚 <b id="resOvos">0</b></div>
     </div>
@@ -2879,6 +2879,7 @@ async function connectWallet() {
 
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
+    document.getElementById('btnMarket').style.visibility = 'visible';
 
     addLog(`Carteira conectada: ${short}`, 'good');
     showBubble('Carteira conectada! 🦊');
