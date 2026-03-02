@@ -1275,28 +1275,7 @@ main {
 #marketModal::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 #marketModal::-webkit-scrollbar-thumb:hover { background:var(--gold); }
 
-/* ── LEADERBOARD ── */
-.ldr-item {
-  display:flex; align-items:center; gap:8px;
-  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-  border-radius:6px; padding:8px 10px;
-}
-.ldr-item.me { border-color:var(--gold); background:rgba(201,168,76,.05); }
-.ldr-rank { font-family:'Cinzel',serif; font-size:10px; font-weight:900; width:22px; text-align:center; flex-shrink:0; }
-.ldr-rank.gold   { color:#fbbf24; }
-.ldr-rank.silver { color:#94a3b8; }
-.ldr-rank.bronze { color:#cd7f32; }
-.ldr-rank.other  { color:var(--muted); font-size:8px; }
-.ldr-avatar { font-size:16px; flex-shrink:0; }
-.ldr-info   { flex:1; }
-.ldr-name   { font-size:8px; font-weight:700; font-family:'Cinzel',serif; color:var(--gold-light); }
-.ldr-meta   { font-size:6px; color:var(--muted); margin-top:1px; }
-.ldr-score  { font-size:9px; font-family:'Cinzel',serif; font-weight:700; color:var(--gold); text-align:right; }
-.ldr-score-lbl { font-size:5px; color:var(--muted); text-align:right; }
-#leaderModal::-webkit-scrollbar { width:3px; }
-#leaderModal::-webkit-scrollbar-track { background:transparent; }
-#leaderModal::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-#leaderModal::-webkit-scrollbar-thumb:hover { background:var(--gold); }
+
 </style>
 </head>
 <body>
@@ -1513,24 +1492,7 @@ main {
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- LEADERBOARD MODAL -->
-          <div class="mini-modal" id="leaderModal" style="padding:14px 16px;justify-content:flex-start;overflow-y:auto;max-height:80%;">
-            <button class="gs-x-btn" onclick="closeLeaderboard()">✕</button>
-            <div class="mini-title">🏆 RANKING GLOBAL</div>
-            <div class="mini-sub" id="leaderSub">Top jogadores por vínculo</div>
-            <div style="display:flex;gap:6px;margin-bottom:10px;width:100%;">
-              <button class="mini-btn" id="ldrTabVinculo"  onclick="ldrTab('vinculo')"  style="flex:1;font-size:7px;">VÍNCULO</button>
-              <button class="mini-btn" id="ldrTabNivel"    onclick="ldrTab('nivel')"    style="flex:1;font-size:7px;">NÍVEL</button>
-              <button class="mini-btn" id="ldrTabOvos"     onclick="ldrTab('ovos')"     style="flex:1;font-size:7px;">OVOS</button>
-            </div>
-            <div id="leaderList" style="display:flex;flex-direction:column;gap:5px;width:100%;"></div>
-            <div id="leaderEmpty" style="display:none;font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum jogador ainda</div>
-            <div id="leaderMyRank" style="margin-top:10px;padding:8px;border-top:1px solid var(--border);font-size:7px;color:var(--muted);text-align:center;display:none;"></div>
-          </div>
-
-          <!-- GAME SELECTOR -->
+          </div><!-- GAME SELECTOR -->
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
@@ -2423,7 +2385,6 @@ function clickEgg() {
 function hatch() {
   hatched = true;
   scheduleSave();
-  setTimeout(saveLeaderboard, 2000);
   document.getElementById('statusCard').style.display = 'block';
   poopCount = 0;
   dirtyLevel = 0;
@@ -2566,14 +2527,14 @@ function playCreature() {
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'jkpModal','gameSelector','eggInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','sombraModal','shopModal','marketModal','leaderModal'
+  'memoriaModal','simonModal','sombraModal','shopModal','marketModal'
 ];
 
 const ModalManager = {
   current: null,
 
   // Panel modals: don't block action buttons (they float over right panel)
-  PANEL_MODALS: ['eggInvModal','coinShopModal','shopModal','marketModal','leaderModal'],
+  PANEL_MODALS: ['eggInvModal','coinShopModal','shopModal','marketModal'],
 
   GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal','sombraModal'],
 
@@ -3006,109 +2967,6 @@ async function connectWallet() {
 }
 
 
-
-// ═══════════════════════════════════════════════════════════════════
-// LEADERBOARD
-// ═══════════════════════════════════════════════════════════════════
-let ldrCurrentTab = 'vinculo';
-let ldrUnsub      = null;
-
-function openLeaderboard() {
-  if(!walletAddress) { addLog('Conecte a carteira para ver o ranking.', 'bad'); return; }
-  ldrTab('vinculo');
-  ModalManager.open('leaderModal');
-}
-
-function closeLeaderboard() {
-  ModalManager.close('leaderModal');
-  if(ldrUnsub) { ldrUnsub(); ldrUnsub = null; }
-}
-
-function ldrTab(tab) {
-  ldrCurrentTab = tab;
-  ['vinculo','nivel','ovos'].forEach(t => {
-    const btn = document.getElementById('ldrTab' + t.charAt(0).toUpperCase() + t.slice(1));
-    if(btn) { btn.style.borderColor = t === tab ? 'var(--gold)' : ''; btn.style.color = t === tab ? 'var(--gold)' : ''; }
-  });
-  loadLeaderboard(tab);
-}
-
-function loadLeaderboard(tab) {
-  if(!fbDb()) return;
-  if(ldrUnsub) ldrUnsub();
-  const field = tab === 'vinculo' ? 'vinculo' : tab === 'nivel' ? 'nivel' : 'totalEggs';
-  ldrUnsub = fbDb().collection('leaderboard').orderBy(field, 'desc')
-    .onSnapshot(snap => {
-      const rows = [];
-      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
-      renderLeaderboard(rows, tab);
-    }, e => console.warn('Leaderboard error:', e));
-}
-
-const ELEM_EMOJI = { Fogo:'🔥', Água:'💧', Terra:'🌍', Vento:'🌪️', Eletricidade:'⚡', Sombra:'🌑', Luz:'✨', Void:'🕳️', Aether:'🌀' };
-
-function renderLeaderboard(rows, tab) {
-  const list  = document.getElementById('leaderList');
-  const empty = document.getElementById('leaderEmpty');
-  const myRank = document.getElementById('leaderMyRank');
-
-  if(rows.length === 0) { empty.style.display = 'block'; list.innerHTML = ''; myRank.style.display = 'none'; return; }
-  empty.style.display = 'none';
-
-  const rankColors = ['gold','silver','bronze'];
-  const rankSymbols = ['🥇','🥈','🥉'];
-  const scoreField = tab === 'vinculo' ? 'vinculo' : tab === 'nivel' ? 'nivel' : 'totalEggs';
-  const scoreLabel = tab === 'vinculo' ? 'vínculo' : tab === 'nivel' ? 'nível' : 'ovos';
-
-  const myIdx = rows.findIndex(r => r.id === walletAddress);
-
-  list.innerHTML = rows.slice(0, 20).map((r, i) => {
-    const isMe = r.id === walletAddress;
-    const rankCls = i < 3 ? rankColors[i] : 'other';
-    const rankTxt = i < 3 ? rankSymbols[i] : `#${i+1}`;
-    const elem = ELEM_EMOJI[r.elemento] || '✦';
-    const score = Math.floor(r[scoreField] || 0);
-    const short = r.id ? r.id.slice(0,6)+'...'+r.id.slice(-4) : '???';
-    return `<div class="ldr-item ${isMe ? 'me' : ''}">
-      <div class="ldr-rank ${rankCls}">${rankTxt}</div>
-      <div class="ldr-avatar">${elem}</div>
-      <div class="ldr-info">
-        <div class="ldr-name">${r.nome || 'Avatar'} ${isMe ? '(você)' : ''}</div>
-        <div class="ldr-meta">${r.raridade || 'Comum'} · Nv${r.nivel || 1} · ${short}</div>
-      </div>
-      <div>
-        <div class="ldr-score">${score.toLocaleString()}</div>
-        <div class="ldr-score-lbl">${scoreLabel}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Show my rank if outside top 20
-  if(myIdx > 19) {
-    const me = rows[myIdx];
-    myRank.style.display = 'block';
-    myRank.textContent = `Sua posição: #${myIdx+1} — ${Math.floor(me[scoreField] || 0)} ${scoreLabel}`;
-  } else {
-    myRank.style.display = 'none';
-  }
-}
-
-async function saveLeaderboard() {
-  if(!walletAddress || !fbDb() || !avatar || !hatched) return;
-  try {
-    const totalEggs = eggsInInventory.length;
-    await fbDb().collection('leaderboard').doc(walletAddress).set({
-      nome:      avatar.nome ? avatar.nome.split(',')[0] : 'Avatar',
-      elemento:  avatar.elemento,
-      raridade:  avatar.raridade,
-      nivel,
-      vinculo:   Math.floor(vinculo),
-      totalEggs,
-      totalSecs,
-      updatedAt: Date.now()
-    });
-  } catch(e) { console.warn('Leaderboard save error:', e); }
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // MERCADO DE OVOS
@@ -4512,7 +4370,6 @@ function playPhaseUp(faseName) {
 function killCreature() {
   dead = true;
   saveToFirebase(); // immediate on death
-  saveLeaderboard();
   ModalManager.closeAll();
 
   // Populate death screen
@@ -4554,7 +4411,6 @@ function checkXP() {
     document.getElementById('phaseLabel').textContent = `FASE: ${FASES[faseAfter]}`;
     addLog(`Nível ${nivel}! Seu avatar ficou mais forte!`,'leg');
     playLevelUp(nivel);
-    saveLeaderboard();
     // Phase change?
     if(faseAfter !== faseBefore) {
       setTimeout(() => playPhaseUp(FASES[faseAfter]), 600);
