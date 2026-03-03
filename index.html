@@ -49,6 +49,11 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
 }
+/* ── 10% zoom boost for desktop readability ── */
+@media(min-width:681px) {
+  html { font-size: 110%; }
+  .app { zoom: 1.10; }
+}
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 body::after {
   content:''; position:fixed; inset:0;
@@ -1279,12 +1284,17 @@ main {
   font-family:'Cinzel',serif; font-size:7px; font-weight:700; letter-spacing:1px;
   padding:4px 8px; border-radius:4px; cursor:pointer;
   border:1px solid rgba(255,255,255,.2); color:var(--muted);
-  background:rgba(255,255,255,.04); transition:all .2s;
+  background:rgba(255,255,255,.04); transition:border-color .2s, background .2s;
   white-space:nowrap;
 }
-.btn-wallet:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.08); }
+.btn-wallet:hover { border-color:rgba(255,255,255,.4); background:rgba(255,255,255,.08); }
 .btn-wallet.connected { border-color:#7ab87a; color:#7ab87a; background:rgba(122,184,122,.08); }
 .btn-wallet.connected:hover { background:rgba(122,184,122,.15); }
+/* market button — blue tint */
+#btnMarket { border-color:rgba(90,180,232,.4); color:#5ab4e8; }
+#btnMarket:hover { border-color:#5ab4e8; background:rgba(90,180,232,.1); }
+/* disconnect button — already red inline, keep subtle */
+
 
 /* ── SHOP ── */
 .shop-item {
@@ -1404,8 +1414,8 @@ main {
           <button class="btn-wallet" onclick="disconnectWallet()" style="border-color:#e74c3c;color:#e74c3c;font-size:6px;padding:4px 8px;">✕ SAIR</button>
         </div>
       </div>
-      <div class="res res-clickable disabled" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
-      <div class="res res-clickable disabled" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
+      <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
+      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
     </div>
   </header>
 
@@ -2627,7 +2637,7 @@ function playCreature() {
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'jkpModal','gameSelector','eggInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','sombraModal','shopModal','marketModal'
+  'memoriaModal','simonModal','sombraModal','shopModal','marketModal','coinShopModal'
 ];
 
 const ModalManager = {
