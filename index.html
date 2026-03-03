@@ -2917,6 +2917,7 @@ function getGameState() {
 
 function applyGameState(data) {
   if(!data) return false;
+  window.loadedLastSeen = data.lastSeen || Date.now();
   if(data.avatar) {
     avatar = {...data.avatar};
     // Restore habs: array of objects → array of arrays
@@ -2974,20 +2975,48 @@ async function loadFromFirebase() {
 // ═══════════════════════════════════════════════════════════════════
 
 function disconnectWallet() {
+  // ── Reset full game state ──
+  avatar = null;
+  hatched = false; dead = false; sick = false; sleeping = false;
+  nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
+  eggClicks = 0; eggLayCooldown = 0;
+  Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
+  Object.assign(gs, { moedas:100, ovos:0, primeira:true });
+  eggsInInventory = [];
+  dirtyLevel = 0; poopCount = 0; poopCooldown = 60;
+  xpBoostActive = false; xpBoostTimer = 0;
   walletAddress = null;
-  // Hide wallet info, hide market/leader buttons
-  document.getElementById('walletInfo').style.display   = 'none';
-  document.getElementById('btnMarket').style.display    = 'none';
-  document.getElementById('btnMarket').style.visibility = 'hidden';
-  // Hide summon section, show wallet warning again
+
+  // ── Reset screens ──
+  document.getElementById('idleScreen').style.display    = 'flex';
+  document.getElementById('eggScreen').style.display     = 'none';
+  document.getElementById('aliveScreen').style.display   = 'none';
+  document.getElementById('deadScreen').style.display    = 'none';
+  document.getElementById('statusCard').style.display    = 'none';
+  document.getElementById('actionBtns').style.opacity    = '0';
+  document.getElementById('actionBtns').style.pointerEvents = 'none';
+  document.getElementById('summonCard').style.display    = 'block';
+  document.getElementById('creatureCard').style.display  = 'none';
+  document.getElementById('poopContainer').innerHTML     = '';
+  document.getElementById('dirtLayer').className         = '';
+
+  // ── Reset header ──
+  document.getElementById('walletInfo').style.display    = 'none';
+  document.getElementById('btnMarket').style.display     = 'none';
+  document.getElementById('btnMarket').style.visibility  = 'hidden';
+  document.getElementById('resMoedasBtn').style.display  = 'none';
+  document.getElementById('resOvosBtn').style.display    = 'none';
+
+  // ── Show wallet warning in summon card ──
   const ww = document.getElementById('walletWarning');
   const ss = document.getElementById('summonSection');
   if(ww) ww.style.display = 'block';
   if(ss) ss.style.display = 'none';
-  // Hide resource counters
-  document.getElementById('resMoedasBtn').style.display = 'none';
-  document.getElementById('resOvosBtn').style.display  = 'none';
-  addLog('Carteira desconectada.', 'info');
+
+  // ── Clear save timeout ──
+  clearTimeout(_saveTimeout);
+
+  addLog('Sessão encerrada. Conecte a carteira para continuar.', 'info');
 }
 
 async function connectWallet() {
@@ -3034,16 +3063,39 @@ async function connectWallet() {
     const loaded = await loadFromFirebase();
     if(loaded) {
       addLog('Estado restaurado da nuvem! ☁️', 'good');
-      // Rebuild UI from loaded state
+
+      // ── Apply offline decay ──
+      if(hatched && !dead) {
+        const offlineSecs = Math.floor((Date.now() - (loadedLastSeen || Date.now())) / 1000);
+        const offlineCycles = Math.floor(offlineSecs / 60);
+        if(offlineCycles > 0) {
+          const _d = rarityBonus().decay;
+          vitals.fome    = Math.max(0, vitals.fome    - offlineCycles * 1.0 * _d);
+          vitals.humor   = Math.max(0, vitals.humor   - offlineCycles * 0.5 * _d);
+          vitals.energia = Math.max(0, vitals.energia - offlineCycles * 0.3 * _d);
+          vitals.higiene = Math.max(0, vitals.higiene - offlineCycles * 0.25 * _d);
+          if(vitals.fome < 20)    vitals.saude = Math.max(0, vitals.saude - offlineCycles * 0.8);
+          if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
+          if(vitals.saude <= 0) { vitals.saude = 0; }
+          const hrs = Math.floor(offlineSecs/3600);
+          const mins = Math.floor((offlineSecs%3600)/60);
+          addLog(`Ausente por ${hrs}h ${mins}min — stats atualizados.`, 'info');
+        }
+      }
+
+      // ── Rebuild screens ──
       if(hatched && avatar && !dead) {
         setupAvatar();
-        document.getElementById('eggScreen').style.display  = 'none';
-        document.getElementById('aliveScreen').style.display = 'block';
-        document.getElementById('deadScreen').style.display  = 'none';
-        document.getElementById('statusCard').style.display  = 'block';
-        document.getElementById('actionBtns').style.opacity  = '1';
+        document.getElementById('idleScreen').style.display   = 'none';
+        document.getElementById('eggScreen').style.display    = 'none';
+        document.getElementById('aliveScreen').style.display  = 'block';
+        document.getElementById('deadScreen').style.display   = 'none';
+        document.getElementById('statusCard').style.display   = 'block';
+        document.getElementById('actionBtns').style.opacity   = '1';
         document.getElementById('actionBtns').style.pointerEvents = 'all';
-        document.getElementById('idleScreen').style.display  = 'none';
+        // ── BUG 1 FIX: render avatar SVG ──
+        document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 140, 140);
+        document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
         updateAllUI();
       } else if(dead && avatar) {
         setupAvatar();
