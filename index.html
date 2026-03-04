@@ -5075,6 +5075,58 @@ async function tryAutoReconnect() { return; // auto-reconnect desativado
 }
 
 // Init
+
+// ── Window exports (needed for inline onclick handlers) ──
+window.burnEgg = typeof burnEgg !== "undefined" ? burnEgg : ()=>{};
+window.buyCoinPackage = typeof buyCoinPackage !== "undefined" ? buyCoinPackage : ()=>{};
+window.buyFromMarket = typeof buyFromMarket !== "undefined" ? buyFromMarket : ()=>{};
+window.buyItem = typeof buyItem !== "undefined" ? buyItem : ()=>{};
+window.buyShopItem = typeof buyShopItem !== "undefined" ? buyShopItem : ()=>{};
+window.cancelSellEgg = typeof cancelSellEgg !== "undefined" ? cancelSellEgg : ()=>{};
+window.cleanCreature = typeof cleanCreature !== "undefined" ? cleanCreature : ()=>{};
+window.clickEgg = typeof clickEgg !== "undefined" ? clickEgg : ()=>{};
+window.closeCoinShop = typeof closeCoinShop !== "undefined" ? closeCoinShop : ()=>{};
+window.closeEggInventory = typeof closeEggInventory !== "undefined" ? closeEggInventory : ()=>{};
+window.closeGameSelector = typeof closeGameSelector !== "undefined" ? closeGameSelector : ()=>{};
+window.closeItemInventory = typeof closeItemInventory !== "undefined" ? closeItemInventory : ()=>{};
+window.closeJkp = typeof closeJkp !== "undefined" ? closeJkp : ()=>{};
+window.closeMarket = typeof closeMarket !== "undefined" ? closeMarket : ()=>{};
+window.closeMiniModal = typeof closeMiniModal !== "undefined" ? closeMiniModal : ()=>{};
+window.closeShop = typeof closeShop !== "undefined" ? closeShop : ()=>{};
+window.confirmHatch = typeof confirmHatch !== "undefined" ? confirmHatch : ()=>{};
+window.confirmSellEgg = typeof confirmSellEgg !== "undefined" ? confirmSellEgg : ()=>{};
+window.connectWallet = typeof connectWallet !== "undefined" ? connectWallet : ()=>{};
+window.deleteItem = typeof deleteItem !== "undefined" ? deleteItem : ()=>{};
+window.disconnectWallet = typeof disconnectWallet !== "undefined" ? disconnectWallet : ()=>{};
+window.equipItem = typeof equipItem !== "undefined" ? equipItem : ()=>{};
+window.feedCreature = typeof feedCreature !== "undefined" ? feedCreature : ()=>{};
+window.hatchEggFromInventory = typeof hatchEggFromInventory !== "undefined" ? hatchEggFromInventory : ()=>{};
+window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
+window.jkpChoose = typeof jkpChoose !== "undefined" ? jkpChoose : ()=>{};
+window.jkpPlayAgain = typeof jkpPlayAgain !== "undefined" ? jkpPlayAgain : ()=>{};
+window.layEgg = typeof layEgg !== "undefined" ? layEgg : ()=>{};
+window.memFlip = typeof memFlip !== "undefined" ? memFlip : ()=>{};
+window.mktSection = typeof mktSection !== "undefined" ? mktSection : ()=>{};
+window.mktTab = typeof mktTab !== "undefined" ? mktTab : ()=>{};
+window.openCoinShop = typeof openCoinShop !== "undefined" ? openCoinShop : ()=>{};
+window.openEggInventory = typeof openEggInventory !== "undefined" ? openEggInventory : ()=>{};
+window.openItemInventory = typeof openItemInventory !== "undefined" ? openItemInventory : ()=>{};
+window.openMarket = typeof openMarket !== "undefined" ? openMarket : ()=>{};
+window.openMinigame = typeof openMinigame !== "undefined" ? openMinigame : ()=>{};
+window.petCreature = typeof petCreature !== "undefined" ? petCreature : ()=>{};
+window.playCreature = typeof playCreature !== "undefined" ? playCreature : ()=>{};
+window.selectEggToSell = typeof selectEggToSell !== "undefined" ? selectEggToSell : ()=>{};
+window.simonPlayerClick = typeof simonPlayerClick !== "undefined" ? simonPlayerClick : ()=>{};
+window.sombraTap = typeof sombraTap !== "undefined" ? sombraTap : ()=>{};
+window.startMemoria = typeof startMemoria !== "undefined" ? startMemoria : ()=>{};
+window.startSimon = typeof startSimon !== "undefined" ? startSimon : ()=>{};
+window.startSombra = typeof startSombra !== "undefined" ? startSombra : ()=>{};
+window.toggleSleep = typeof toggleSleep !== "undefined" ? toggleSleep : ()=>{};
+window.triggerSummon = typeof triggerSummon !== "undefined" ? triggerSummon : ()=>{};
+window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
+window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
+window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
+
 setInterval(gameTick, 1000);
 addLog('Conecte sua carteira para invocar seu avatar.','info');
 updateResourceUI();
