@@ -63,42 +63,36 @@ function cleanCreature() {
   if(sleeping) { showBubble('Zzz... 💤'); return; }
   if(vitals.energia < 15) { showBubble('Sem energia para se banhar! 😩'); return; }
 
-  // Energy cost
   vitals.energia = Math.max(0, vitals.energia - 15);
 
-  // Remove all poops with pop animation
+  // Pop all poops
   const container = document.getElementById('poopContainer');
   if(container) {
     [...container.children].forEach((el, i) => {
-      el.style.transition = `transform .25s ${i*0.06}s, opacity .25s ${i*0.06}s`;
+      el.style.transition = `transform .2s ${i*0.05}s, opacity .2s ${i*0.05}s`;
       el.style.transform = 'scale(0) rotate(180deg)';
       el.style.opacity = '0';
     });
-    setTimeout(() => { container.innerHTML = ''; }, 400);
+    setTimeout(() => { container.innerHTML = ''; }, 350);
   }
   poopCount = 0;
   dirtyLevel = 0;
 
-  // Stat boosts
   const higieneGain = Math.round(50 + Math.random() * 20);
   const humorGain   = 15;
   vitals.higiene = Math.min(100, vitals.higiene + higieneGain);
   vitals.humor   = Math.min(100, vitals.humor   + humorGain);
 
-  // XP + vinculo
-  const _rb = rarityBonus();
-  xp += Math.round(3 * _rb.xp); vinculo += 1;
-
-  // Bath animation + particles
   playAnim('anim-clean', false);
   spawnBathParticles();
 
-  showBubble(rnd(['Que limpinho! 🛁✨', 'Adoro banho! 💧', 'Me sinto novo! ✨', 'Cheiro bem agora! 🌸']));
+  showBubble(rnd(['Que limpinho! 🛁✨','Adoro banho! 💧','Me sinto novo! ✨','Cheiro bem agora! 🌸']));
   showFloat(`+${higieneGain} 🛁`, '#5ab4e8');
-  addLog(`Banho tomado! +${higieneGain} higiene +${humorGain} humor (-15 ⚡)`, 'good');
+  setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
+  addLog(`Banho tomado! +${higieneGain} higiene  +${humorGain} humor  (-15 ⚡)`, 'good');
 
   updateDirtyVisuals();
-  checkXP(); updateAllUI();
+  updateAllUI();
   scheduleSave();
 }
 
@@ -106,32 +100,79 @@ function spawnBathParticles() {
   const wrap = document.getElementById('creatureWrap');
   if(!wrap) return;
 
-  // Bath flash overlay
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:absolute;inset:0;background:rgba(90,180,232,.18);border-radius:12px;pointer-events:none;z-index:20;transition:opacity .4s;';
-  wrap.appendChild(flash);
-  setTimeout(() => { flash.style.opacity='0'; setTimeout(()=>flash.remove(),400); }, 300);
+  // ── Phase 0: shower curtain wipe (blue wash covers whole wrap) ──
+  const curtain = document.createElement('div');
+  curtain.className = 'bath-curtain';
+  wrap.appendChild(curtain);
+  setTimeout(() => curtain.remove(), 1000);
 
-  // Water drops + bubbles + sparkles
-  const particles = [
-    {e:'💧',x:'-35px',y:'-20px',d:'0s'},
-    {e:'💧',x:'35px', y:'-25px',d:'0.08s'},
-    {e:'🫧',x:'-20px',y:'-40px',d:'0.12s'},
-    {e:'🫧',x:'20px', y:'-35px',d:'0.05s'},
-    {e:'✨',x:'-40px',y:'-10px',d:'0.15s'},
-    {e:'✨',x:'40px', y:'-15px',d:'0.18s'},
-    {e:'💦',x:'0px',  y:'-45px',d:'0.1s'},
-    {e:'🌸',x:'-28px',y:'-30px',d:'0.22s'},
-    {e:'⭐',x:'28px', y:'-28px',d:'0.25s'},
-  ];
+  // ── Phase 1 (0-400ms): 10 water drops cascade from top ──
+  for(let i = 0; i < 10; i++) {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = 'bath-drop';
+      d.textContent = ['💧','💦'][i % 2];
+      d.style.left = `${8 + i * 8 + (Math.random()*6-3)}%`;
+      d.style.setProperty('--fall', (90 + Math.random() * 60).toFixed(0) + 'px');
+      d.style.setProperty('--dur',  (0.4 + Math.random() * 0.25).toFixed(2) + 's');
+      wrap.appendChild(d);
+      setTimeout(() => d.remove(), 800);
+    }, i * 40);
+  }
 
-  particles.forEach(p => {
-    const el = document.createElement('div');
-    el.className = 'bath-particle';
-    el.textContent = p.e;
-    el.style.cssText = `--bx:${p.x};--by:${p.y};bottom:40%;left:50%;animation-delay:${p.d}`;
-    wrap.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
+  // ── Phase 2 (200ms): 2 splash rings expand from center bottom ──
+  [200, 380].forEach((delay, i) => {
+    setTimeout(() => {
+      const ring = document.createElement('div');
+      ring.className = 'bath-ring';
+      ring.style.setProperty('--rsize', (50 + i * 20) + 'px');
+      wrap.appendChild(ring);
+      setTimeout(() => ring.remove(), 650);
+    }, delay);
+  });
+
+  // ── Phase 3 (350ms): 6 soap bubbles rise and pop ──
+  for(let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const b = document.createElement('div');
+      b.className = 'bath-bubble';
+      b.textContent = '🫧';
+      b.style.left = `${12 + i * 14}%`;
+      b.style.bottom = `${15 + Math.random() * 20}%`;
+      b.style.fontSize = `${10 + Math.random() * 8}px`;
+      b.style.setProperty('--rise', (50 + Math.random() * 40).toFixed(0) + 'px');
+      wrap.appendChild(b);
+      setTimeout(() => b.remove(), 900);
+    }, 350 + i * 70);
+  }
+
+  // ── Phase 4 (700ms): sparkle shimmer — radiate outward ──
+  const sparkles = ['✨','💫','⭐','✨','💫','✨'];
+  sparkles.forEach((e, i) => {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'bath-sparkle';
+      s.textContent = e;
+      const angle = (i / sparkles.length) * Math.PI * 2;
+      const dist  = 38 + Math.random() * 18;
+      s.style.left   = `calc(50% + ${(Math.cos(angle) * dist).toFixed(0)}px)`;
+      s.style.bottom = `calc(40% + ${(Math.sin(angle) * dist).toFixed(0)}px)`;
+      wrap.appendChild(s);
+      setTimeout(() => s.remove(), 700);
+    }, 700 + i * 55);
+  });
+
+  // ── Phase 5 (1100ms): fresh scent rises — animation complete ──
+  ['🌸','🌿','🫧','💎','🌸'].forEach((e, i) => {
+    setTimeout(() => {
+      const sc = document.createElement('div');
+      sc.className = 'bath-scent';
+      sc.textContent = e;
+      sc.style.left = `${15 + i * 17}%`;
+      sc.style.setProperty('--sway', (i % 2 === 0 ? 1 : -1) * (5 + Math.random() * 8) + 'px');
+      wrap.appendChild(sc);
+      setTimeout(() => sc.remove(), 1300);
+    }, 1100 + i * 80);
   });
 }
 
