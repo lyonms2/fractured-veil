@@ -1,0 +1,190 @@
+/* ── SCREEN ── */
+.screen {
+  background:#060610;
+  border:1px solid var(--border);
+  border-radius:10px;
+  height:280px;
+  position:relative;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+/* scanlines */
+.screen::after {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);
+  pointer-events:none; z-index:8;
+}
+/* top vignette */
+.screen::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(127,255,178,.02) 0%,transparent 60%);
+  pointer-events:none; z-index:9;
+}
+
+/* creature area */
+.creature-area {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:5;
+}
+.creature-wrap {
+  position:relative; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  width:160px; height:160px;
+}
+.creature-wrap svg { animation:idle-float 3s ease-in-out infinite; }
+@keyframes idle-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.creature-wrap.anim-eat svg { animation:eat-bounce .7s ease-in-out; }
+.creature-wrap.anim-play svg { animation:play-spin .8s ease-in-out; }
+.creature-wrap.anim-sleep svg { animation:sleep-sway 3s ease-in-out infinite; }
+
+/* ── SLEEP OVERLAY ── */
+#sleepOverlay {
+  position:absolute; inset:0; z-index:15; pointer-events:none;
+  opacity:0; transition:opacity 1s ease;
+  background:linear-gradient(180deg,rgba(0,0,10,.92) 0%,rgba(1,0,18,.8) 60%,rgba(2,0,30,.4) 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  padding-top:20px;
+}
+#sleepOverlay.active { opacity:1; pointer-events:none; }
+
+.sleep-moon {
+  font-size:24px;
+  animation:moon-glow 3s ease-in-out infinite;
+}
+@keyframes moon-glow {
+  0%,100%{opacity:.6;transform:scale(1) translateY(0)}
+  50%{opacity:1;transform:scale(1.08) translateY(-3px)}
+}
+.sleep-star {
+  position:absolute; color:#b8a8ff;
+  animation:star-twinkle 2s ease-in-out infinite;
+}
+@keyframes star-twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
+
+/* Closed eyes overlay when sleeping */
+#sleepEyes {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:17;
+  opacity:0; transition:opacity .6s ease;
+}
+#sleepEyes.show { opacity:1; }
+
+/* ZZZ bubbles - hidden by default, shown only when sleeping */
+.zzz-bubble {
+  position:absolute;
+  font-family:'Cinzel',serif; font-weight:900;
+  color:#8ad4ff; text-shadow:0 0 8px #5ab4e880;
+  pointer-events:none; z-index:16;
+  opacity:0;
+}
+.zzz-bubble.sleeping {
+  animation:zzz-float 2.8s ease-out infinite;
+}
+@keyframes zzz-float {
+  0%   { opacity:0;   transform:translate(0,0)      scale(.7); }
+  15%  { opacity:.9; }
+  85%  { opacity:.5; }
+  100% { opacity:0;   transform:translate(22px,-60px) scale(1.1); }
+}
+
+/* Dim buttons when sleeping — only sleep button stays active */
+.sleeping-mode .btn-action,
+.jkp-mode .btn-action      { opacity:.2; pointer-events:none; cursor:not-allowed; }
+.sleeping-mode #btnSleep   { opacity:1; pointer-events:all; cursor:pointer;
+  border-color:var(--raro); color:var(--raro);
+  box-shadow:0 0 12px rgba(90,180,232,.35);
+}
+/* btnPlay stays disabled when game modal is open */
+
+@keyframes sleep-sway { 0%,100%{transform:translateY(0) rotate(-3deg) scaleY(.93)} 50%{transform:translateY(5px) rotate(3deg) scaleY(.88)} }
+.creature-wrap.anim-sad svg { animation:sad-shake .5s ease-in-out; }
+.creature-wrap.anim-dead svg { animation:dead-fall 1s ease-out forwards; }
+.creature-wrap.anim-heal svg { animation:heal-pulse 1s ease-in-out; }
+@keyframes heal-pulse {
+  0%  { transform:scale(1)    brightness(1); filter:none; }
+  25% { transform:scale(1.12); filter:drop-shadow(0 0 12px #27ae60) brightness(1.3); }
+  50% { transform:scale(.97); filter:drop-shadow(0 0 6px #27ae60); }
+  75% { transform:scale(1.06); filter:drop-shadow(0 0 10px #27ae60) brightness(1.2); }
+  100%{ transform:scale(1);   filter:none; }
+}
+/* Heal cross particles */
+.heal-cross {
+  position:absolute; pointer-events:none; z-index:22;
+  font-size:16px; color:#27ae60;
+  text-shadow:0 0 8px #27ae6080;
+  animation:heal-cross-fly 1s ease-out forwards;
+}
+@keyframes heal-cross-fly {
+  0%  { opacity:0; transform:translate(var(--hx),var(--hy)) scale(.4); }
+  25% { opacity:1; transform:translate(var(--hx),calc(var(--hy) - 12px)) scale(1.1); }
+  100%{ opacity:0; transform:translate(var(--hx),calc(var(--hy) - 40px)) scale(.8); }
+}
+/* Green screen flash on heal */
+#healFlash {
+  position:absolute; inset:0; z-index:21; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, rgba(39,174,96,.22) 0%, transparent 70%);
+  opacity:0; transition:opacity .15s;
+}
+@keyframes eat-bounce {
+  0%  { transform:scale(1)   translateY(0); }
+  20% { transform:scale(1.15) translateY(-14px) rotate(-4deg); }
+  40% { transform:scale(1.1)  translateY(-8px)  rotate(4deg); }
+  60% { transform:scale(.95)  translateY(-3px)  rotate(-2deg); }
+  80% { transform:scale(1.04) translateY(0)     rotate(1deg); }
+  100%{ transform:scale(1)   translateY(0); }
+}
+/* Food particles on eat */
+.food-particle {
+  position:absolute; font-size:14px; pointer-events:none; z-index:22;
+  animation:food-rain .9s cubic-bezier(.4,0,.6,1) forwards;
+}
+@keyframes food-rain {
+  0%  { opacity:1; transform:translate(var(--fx),0) scale(1.1); }
+  60% { opacity:1; }
+  100%{ opacity:0; transform:translate(var(--fx),40px) scale(.6) rotate(var(--fr)); }
+}
+@keyframes play-spin { 0%{transform:rotate(0)} 30%{transform:translateX(18px) rotate(20deg)} 60%{transform:translateX(-10px) rotate(-10deg)} 100%{transform:rotate(0)} }
+@keyframes sleep-sway { 0%,100%{transform:translateY(0) scaleY(.92)} 50%{transform:translateY(3px) scaleY(.88)} }
+@keyframes sad-shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+@keyframes dead-fall { 0%{transform:rotate(0) opacity(1)} 100%{transform:rotate(80deg) translateX(20px); opacity:.3} }
+
+.creature-shadow {
+  position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+  width:50px; height:8px;
+  background:rgba(0,0,0,.5); border-radius:50%; filter:blur(3px);
+}
+
+/* speech bubble */
+.bubble {
+  position:absolute; top:-42px; left:50%; transform:translateX(-50%);
+  background:var(--surface); border:1px solid var(--gold);
+  border-radius:8px; padding:5px 10px;
+  font-family:'Cinzel',serif; font-size:6px; color:var(--gold);
+  white-space:nowrap; opacity:0; pointer-events:none;
+  transition:opacity .3s; z-index:20;
+}
+.bubble::after {
+  content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:var(--gold);
+}
+.bubble.show { opacity:1; }
+
+/* float text */
+.float-text {
+  position:absolute; font-family:'Cinzel',serif; font-size:9px;
+  pointer-events:none; animation:float-up 1.4s ease-out forwards; z-index:20;
+}
+@keyframes float-up { 0%{opacity:1;transform:translateY(0) translateX(-50%)} 100%{opacity:0;transform:translateY(-50px) translateX(-50%)} }
+
+/* ground */
+.ground {
+  position:absolute; bottom:0; left:0; right:0; height:22px;
+  background:var(--border); border-top:1px solid var(--border-glow); z-index:4;
+}
+
+/* phase label */
+.phase-label {
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  font-family:'Cinzel',serif; font-size:6px; letter-spacing:2px; color:var(--muted); z-index:6;
+}
