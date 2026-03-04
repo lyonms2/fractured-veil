@@ -145,13 +145,13 @@ async function connectWallet() {
                 wasSleeping = false; // woke up naturally mid-offline
               }
             } else {
-              vitals.fome    = Math.max(0, vitals.fome    - 1.0 * _d * getItemEffect('fomeDecayMult'));
-              vitals.humor   = Math.max(0, vitals.humor   - 0.5 * _d);
-              vitals.energia = Math.max(0, vitals.energia - 0.3 * _d);
-              vitals.higiene = Math.max(0, vitals.higiene - 0.25 * _d);
-              if(vitals.fome    < 20) vitals.saude = Math.max(0, vitals.saude - 0.8);
-              if(vitals.humor   < 15) vitals.saude = Math.max(0, vitals.saude - 0.4);
-              if(vitals.energia < 10) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              vitals.fome    = Math.max(0, vitals.fome    - 0.5 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.2 * _d);
+              vitals.higiene = Math.max(0, vitals.higiene - 0.12 * _d);
+              if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.13);
+              if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.04);
+              if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.04);
               if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
               if(vitals.saude <= 0)   { vitals.saude = 0; break; }
             }
