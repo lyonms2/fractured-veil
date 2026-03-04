@@ -421,7 +421,7 @@ function revealResult(playerChoice) {
     const resultEl = document.getElementById('jkpResult');
     const rewardsEl = document.getElementById('jkpRewards');
     const RESULTS = {
-      win:  { text:'VITÓRIA!', cls:'win',  humor:20, xpGain:Math.round(15*rarityBonus().xp), coinsGain:Math.round(20*rarityBonus().moedas) },
+      win:  { text:'VITÓRIA!', cls:'win',  humor:20, xpGain:Math.round(15*rarityBonus().xp), coinsGain:Math.round(25*rarityBonus().moedas) },
       lose: { text:'DERROTA',  cls:'lose', humor:5,  xpGain:Math.round(3*rarityBonus().xp),  coinsGain:Math.round(3*rarityBonus().moedas) },
       draw: { text:'EMPATE',   cls:'draw', humor:10, xpGain:Math.round(8*rarityBonus().xp),  coinsGain:Math.round(8*rarityBonus().moedas) }
     };
@@ -513,7 +513,7 @@ function wakeUp(reason) {
 function healCreature() {
   if(!canAct()) return;
   if(!sick && vitals.saude >= 100){ showBubble('Estou bem!'); return; }
-  const COST = 60;
+  const COST = 40;
   if(gs.moedas < COST) { showBubble('Sem moedas... 😢'); addLog(`Precisa de ${COST} 🪙 para medicar!`,'bad'); return; }
   if(!spendCoins(COST)) return;
   vitals.saude = Math.min(100, vitals.saude + 40);
@@ -522,7 +522,7 @@ function healCreature() {
   spawnHealParticles();
   showFloat('+40 💚','#27ae60');
   showBubble('Me sinto melhor! 💊');
-  addLog(`Medicado! +40 saúde  (-${COST} 🪙)`,'good');
+  addLog(`Medicado! +40 saúde  (-40 🪙)`,'good');
   updateAllUI(); scheduleSave();
 }
 
