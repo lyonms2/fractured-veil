@@ -1912,7 +1912,7 @@ main {
         </div>
         <div class="summon-section" id="summonSection" style="display:none;">
           <button class="btn-summon" id="btnSummon" onclick="triggerSummon()">
-            <span id="btnSummonLabel">▶ Primeira Invocação (Gratuita)</span>
+            <span id="btnSummonLabel">▶ Invocar Avatar (Gratuito)</span>
           </button>
 
         </div>
@@ -2269,7 +2269,7 @@ const GAME_SPEED = 1.0;
 const vitals = { fome:100, humor:100, energia:100, saude:100, higiene:100 };
 let poopCount = 0;
 let dirtyLevel = 0; // 0-3
-let poopCooldown  = 60;  // ~60 ciclos antes do primeiro cocô (~1h)
+let poopCooldown  = 5;   // ~5 ciclos antes do primeiro cocô (~5min)
 let eggLayCooldown = 0;
 let pendingHatchId = null; // egg id waiting for confirm  // ticks até o próximo ovo (0 = pronto)
 let eggsInInventory = [];
@@ -2319,7 +2319,7 @@ let vinculo   = 0;
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
-const gs = { moedas:100, ovos:0, primeira:true };
+const gs = { moedas:100, ovos:0 };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
 const getFase = () => nivel < 3 ? 0 : nivel < 6 ? 1 : nivel < 10 ? 2 : 3;
@@ -2353,12 +2353,8 @@ function triggerSummon() {
   if(btn.disabled) return;
   btn.disabled = true;
 
-  if(!gs.primeira) {
-    if(gs.moedas < 250 || gs.ovos < 5){ addLog('Recursos insuficientes!','bad'); btn.disabled=false; return; }
-    gs.moedas -= 250; gs.ovos -= 5;
-  }
-
-  const raridade = gs.primeira ? 'Comum' : determinarRaridade();
+  // Always free — raridade Comum unless player has eggs to hatch
+  const raridade = 'Comum';
   const elemento = escolherElemento();
   const car      = CARACTERISTICAS_ELEMENTAIS[elemento];
   const prefPool = PREFIXOS[elemento][raridade];
@@ -2372,8 +2368,6 @@ function triggerSummon() {
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
   const seed = Math.abs(_h);
-
-  gs.primeira = false;
 
   avatar = { nome, elemento, raridade, descricao, stats, habs, hp, car, seed };
 
@@ -3095,7 +3089,7 @@ function disconnectWallet() {
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   Object.assign(gs, { moedas:100, ovos:0, primeira:true });
   eggsInInventory = [];
-  dirtyLevel = 0; poopCount = 0; poopCooldown = 60;
+  dirtyLevel = 0; poopCount = 0; poopCooldown = 5;
   xpBoostActive = false; xpBoostTimer = 0;
   walletAddress = null;
 
@@ -3180,20 +3174,31 @@ async function connectWallet() {
 
       // ── Apply offline decay ──
       if(hatched && !dead) {
-        const offlineSecs = Math.floor((Date.now() - (loadedLastSeen || Date.now())) / 1000);
+        const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
         const offlineCycles = Math.floor(offlineSecs / 60);
         if(offlineCycles > 0) {
           const _d = rarityBonus().decay;
-          vitals.fome    = Math.max(0, vitals.fome    - offlineCycles * 1.0 * _d);
-          vitals.humor   = Math.max(0, vitals.humor   - offlineCycles * 0.5 * _d);
-          vitals.energia = Math.max(0, vitals.energia - offlineCycles * 0.3 * _d);
-          vitals.higiene = Math.max(0, vitals.higiene - offlineCycles * 0.25 * _d);
-          if(vitals.fome < 20)    vitals.saude = Math.max(0, vitals.saude - offlineCycles * 0.8);
+          // Simulate each cycle properly
+          for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) { // cap at 48h
+            vitals.fome    = Math.max(0, vitals.fome    - 1.0 * _d * getItemEffect('fomeDecayMult'));
+            vitals.humor   = Math.max(0, vitals.humor   - 0.5 * _d);
+            vitals.energia = Math.max(0, vitals.energia - 0.3 * _d);
+            vitals.higiene = Math.max(0, vitals.higiene - 0.25 * _d);
+            if(vitals.fome    < 20) vitals.saude = Math.max(0, vitals.saude - 0.8);
+            if(vitals.humor   < 15) vitals.saude = Math.max(0, vitals.saude - 0.4);
+            if(vitals.energia < 10) vitals.saude = Math.max(0, vitals.saude - 0.2);
+            if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
+            if(vitals.saude <= 0)   { vitals.saude = 0; break; }
+          }
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
-          if(vitals.saude <= 0) { vitals.saude = 0; }
-          const hrs = Math.floor(offlineSecs/3600);
-          const mins = Math.floor((offlineSecs%3600)/60);
+          const hrs  = Math.floor(offlineSecs / 3600);
+          const mins = Math.floor((offlineSecs % 3600) / 60);
           addLog(`Ausente por ${hrs}h ${mins}min — stats atualizados.`, 'info');
+          // Kill if health reached zero offline
+          if(vitals.saude <= 0) {
+            dead = true;
+            addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+          }
         }
       }
 
@@ -4151,20 +4156,31 @@ function burnEgg(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) return;
   const ovo = eggsInInventory[idx];
+  // Apodrecido — só descarta
   if(Date.now() > ovo.expiraEm) {
     eggsInInventory.splice(idx, 1);
     addLog('Ovo apodrecido descartado.', 'bad');
-    renderEggInventory();
+    renderEggInventory(); updateResourceUI(); scheduleSave();
     return;
   }
-  const baseReward = ovo.raridade === 'Lendário' ? 1.5 : ovo.raridade === 'Raro' ? 0.3 : 0.05;
   const bonus = rarityBonus().burnBonus;
-  const finalReward = (baseReward * (1 + bonus)).toFixed(3);
-  const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus ${avatar.raridade})` : '';
-  eggsInInventory.splice(idx, 1);
-  addLog(`🔥 Ovo ${ovo.raridade} queimado! Recompensa: ${finalReward} MATIC${bonusTxt} (requer carteira)`, 'good');
-  showFloat('🔥 Queimado!', '#e8603a');
-  renderEggInventory();
+  if(ovo.raridade === 'Comum') {
+    // Comuns não têm valor MATIC — dão moedas
+    const moedas = Math.round(20 * (1 + bonus));
+    eggsInInventory.splice(idx, 1);
+    earnCoins(moedas);
+    addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
+    showFloat(`+${moedas}🪙`, '#c9a84c');
+  } else {
+    // Raro e Lendário — MATIC
+    const baseReward = ovo.raridade === 'Lendário' ? 1.5 : 0.3;
+    const finalReward = (baseReward * (1 + bonus)).toFixed(3);
+    const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
+    eggsInInventory.splice(idx, 1);
+    addLog(`🔥 Ovo ${ovo.raridade} queimado! Recompensa: ${finalReward} MATIC${bonusTxt}`, 'good');
+    showFloat('🔥 MATIC!', '#e8603a');
+  }
+  renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
 function sellEgg(id) {
@@ -4245,7 +4261,7 @@ function summonFromEgg(raridade, elemento, crackColor) {
   eggClicks = 0; eggLayCooldown = 0; eggLayNotified = false;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   sick = false; sleeping = false; dead = false; hatched = false;
-  dirtyLevel = 0; poopCount = 0; poopCooldown = 60;
+  dirtyLevel = 0; poopCount = 0; poopCooldown = 5;
   document.getElementById('poopContainer').innerHTML = '';
 
   // Build avatar
@@ -4715,7 +4731,7 @@ function gameTick() {
   }
   // cocô: apenas uma vez a cada ~5 min (300 ticks), chance aumenta se bem alimentado
   if(!sleeping && !poopCooldown) {
-    const chance = vitals.fome > 80 ? .008 : .004;
+    const chance = vitals.fome > 80 ? .6 : .3; // high chance so poop actually appears
     if(Math.random() < chance) {
       spawnPoop();
       poopCooldown = Math.round((120 + Math.floor(Math.random() * 60)) / GAME_SPEED); // ~2-3h real
@@ -4918,8 +4934,8 @@ function updateResourceUI() {
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
   const btn = document.getElementById('btnSummon');
-  if(!gs.primeira && (gs.moedas<250||gs.ovos<5)) btn.disabled=true;
-  document.getElementById('btnSummonLabel').textContent = gs.primeira ? '▶ Primeira Invocação (Gratuita)' : '▶ Invocar Avatar (250🪙 + 5🥚)';
+  if(btn) btn.disabled = false; // summon always free
+  document.getElementById('btnSummonLabel').textContent = '▶ Invocar Avatar (Gratuito)';
 }
 
 function showBubble(txt) {
@@ -4996,6 +5012,7 @@ async function tryAutoReconnect() {
       document.getElementById('btnMarket').style.visibility = 'visible';
       document.getElementById('resMoedasBtn').style.display = '';
       document.getElementById('resOvosBtn').style.display = '';
+       document.getElementById('resItemsBtn').style.display = '';
       const ww2 = document.getElementById('walletWarning');
       const ss2 = document.getElementById('summonSection');
       if(ww2) ww2.style.display = 'none';
@@ -5008,12 +5025,22 @@ async function tryAutoReconnect() {
           const offlineCycles = Math.floor(offlineSecs / 60);
           if(offlineCycles > 0) {
             const _d = rarityBonus().decay;
-            vitals.fome    = Math.max(0, vitals.fome    - offlineCycles * 1.0 * _d);
-            vitals.humor   = Math.max(0, vitals.humor   - offlineCycles * 0.5 * _d);
-            vitals.energia = Math.max(0, vitals.energia - offlineCycles * 0.3 * _d);
-            vitals.higiene = Math.max(0, vitals.higiene - offlineCycles * 0.25 * _d);
-            if(vitals.fome < 20) vitals.saude = Math.max(0, vitals.saude - offlineCycles * 0.8);
-            if(vitals.saude <= 0) vitals.saude = 0;
+            for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
+              vitals.fome    = Math.max(0, vitals.fome    - 1.0 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.5 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.3 * _d);
+              vitals.higiene = Math.max(0, vitals.higiene - 0.25 * _d);
+              if(vitals.fome    < 20) vitals.saude = Math.max(0, vitals.saude - 0.8);
+              if(vitals.humor   < 15) vitals.saude = Math.max(0, vitals.saude - 0.4);
+              if(vitals.energia < 10) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              if(vitals.saude <= 0)   { vitals.saude = 0; break; }
+            }
+            if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
+            if(vitals.saude <= 0) {
+              dead = true;
+              addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+            }
           }
           setupAvatar();
           document.getElementById('idleScreen').style.display   = 'none';
