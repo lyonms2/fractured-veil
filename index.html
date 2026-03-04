@@ -5001,8 +5001,11 @@ function addLog(msg, type='') {
 async function tryAutoReconnect() {
   if(typeof window.ethereum === 'undefined') return;
   try {
+    // Só reconecta se MetaMask estiver desbloqueado E com conta ativa
+    // eth_accounts retorna vazio se carteira está bloqueada
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if(accounts && accounts.length > 0) {
+    const isUnlocked = await window.ethereum._metamask?.isUnlocked?.() ?? true;
+    if(accounts && accounts.length > 0 && isUnlocked) {
       // Already authorized — reconnect silently
       walletAddress = accounts[0].toLowerCase();
       const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
