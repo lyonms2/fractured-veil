@@ -79,6 +79,7 @@ function cleanCreature() {
   addLog('Ambiente limpo! Higiene restaurada.', 'good');
   updateDirtyVisuals();
   updateAllUI();
+  scheduleSave();
 }
 
 function updateDirtyVisuals() {
