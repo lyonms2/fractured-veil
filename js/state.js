@@ -27,6 +27,18 @@ const ITEM_CATALOG = {
     preco:    150,
     cor:      '#7ab87a',
     efeitos:  { fomeDecayMult: 0.98 } // multiplier on fome decay
+  },
+  'amuleto_sono': {
+    id:       'amuleto_sono',
+    nome:     'Amuleto do Sono Profundo',
+    emoji:    '🌙',
+    desc:     'Um cristal lunar que amplifica o descanso dimensional.',
+    efeito:   'Energia recupera 2× mais rápido dormindo',
+    tipo:     'Amuleto',
+    raridade: 'Comum',
+    preco:    200,
+    cor:      '#7b68ee',
+    efeitos:  { sleepEnergyMult: 2.0 } // multiplier on sleep energy recovery
   }
 };
 
