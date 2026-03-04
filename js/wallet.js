@@ -44,10 +44,10 @@ async function disconnectWallet() {
 
   // ── Reset header ──
   document.getElementById('walletInfo').style.display    = 'none';
-  document.getElementById('btnMarket').style.display     = 'none';
-  document.getElementById('btnMarket').style.visibility  = 'hidden';
+  document.getElementById('btnMarket').style.display    = 'none';
   document.getElementById('resMoedasBtn').style.display  = 'none';
   document.getElementById('resOvosBtn').style.display    = 'none';
+  document.getElementById('resItemsBtn').style.display   = 'none';
 
   // ── Show wallet warning in summon card ──
   const ww = document.getElementById('walletWarning');
@@ -107,8 +107,7 @@ async function connectWallet() {
     if(_bs) _bs.disabled = false;
 
     // Show market button
-    document.getElementById('btnMarket').style.display = 'inline-block';
-    document.getElementById('btnMarket').style.visibility = 'visible';
+    document.getElementById('btnMarket').style.display = 'flex';
     // Reveal summon section
     const ww = document.getElementById('walletWarning');
     const ss = document.getElementById('summonSection');
