@@ -135,23 +135,36 @@ async function connectWallet() {
         const offlineCycles = Math.floor(offlineSecs / 60);
         if(offlineCycles > 0) {
           const _d = rarityBonus().decay;
-          // Simulate each cycle properly
-          for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) { // cap at 48h
-            vitals.fome    = Math.max(0, vitals.fome    - 1.0 * _d * getItemEffect('fomeDecayMult'));
-            vitals.humor   = Math.max(0, vitals.humor   - 0.5 * _d);
-            vitals.energia = Math.max(0, vitals.energia - 0.3 * _d);
-            vitals.higiene = Math.max(0, vitals.higiene - 0.25 * _d);
-            if(vitals.fome    < 20) vitals.saude = Math.max(0, vitals.saude - 0.8);
-            if(vitals.humor   < 15) vitals.saude = Math.max(0, vitals.saude - 0.4);
-            if(vitals.energia < 10) vitals.saude = Math.max(0, vitals.saude - 0.2);
-            if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
-            if(vitals.saude <= 0)   { vitals.saude = 0; break; }
+          let wasSleeping = sleeping;
+          for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
+            if(wasSleeping) {
+              // Sleeping: only energia recovers, no decay on other stats
+              vitals.energia = Math.min(100, vitals.energia + 0.5 * _d);
+              if(vitals.energia >= 100) {
+                vitals.energia = 100;
+                wasSleeping = false; // woke up naturally mid-offline
+              }
+            } else {
+              vitals.fome    = Math.max(0, vitals.fome    - 1.0 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.5 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.3 * _d);
+              vitals.higiene = Math.max(0, vitals.higiene - 0.25 * _d);
+              if(vitals.fome    < 20) vitals.saude = Math.max(0, vitals.saude - 0.8);
+              if(vitals.humor   < 15) vitals.saude = Math.max(0, vitals.saude - 0.4);
+              if(vitals.energia < 10) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              if(vitals.saude <= 0)   { vitals.saude = 0; break; }
+            }
+          }
+          // Update sleep state: if woke up naturally offline, mark awake
+          if(sleeping && !wasSleeping) {
+            sleeping = false;
+            addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
           }
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
           addLog(`Ausente por ${hrs}h ${mins}min — stats atualizados.`, 'info');
-          // Kill if health reached zero offline
           if(vitals.saude <= 0) {
             dead = true;
             addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
@@ -169,10 +182,18 @@ async function connectWallet() {
         document.getElementById('statusCard').style.display   = 'block';
         document.getElementById('actionBtns').style.opacity   = '1';
         document.getElementById('actionBtns').style.pointerEvents = 'all';
-        // ── BUG 1 FIX: render avatar SVG ──
         document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 140, 140);
         document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
         updateAllUI();
+
+        // ── BUG 1: Restore sleep visual state ──
+        if(sleeping) {
+          startSleep();
+        }
+
+        // ── BUG 2: Restore equipped items orb display ──
+        updateEquippedDisplay();
+
       } else if(dead && avatar) {
         setupAvatar();
         killCreature();
