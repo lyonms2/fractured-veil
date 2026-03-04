@@ -181,3 +181,33 @@ main {
   font-size:7px; color:#332244;
   letter-spacing:1px; margin-top:4px;
 }
+
+/* ════════════════════════════════════════════
+   SCROLLBARS — tema Fractured Veil
+   Aplica a TODOS os elementos scrolláveis
+════════════════════════════════════════════ */
+
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: #3a2060 #0a0816; }
+
+/* Chrome / Safari / Edge */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+
+::-webkit-scrollbar-track {
+  background: #0a0816;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6a3090 0%, #3a2060 60%, #1a1030 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(138,80,200,.4);
+  transition: background .2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c9a84c 0%, #8a5020 60%, #4a2010 100%);
+  box-shadow: 0 0 6px rgba(201,168,76,.5);
+}
+
+::-webkit-scrollbar-corner { background: #0a0816; }
