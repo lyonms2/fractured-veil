@@ -3138,15 +3138,8 @@ async function connectWallet() {
     return;
   }
   try {
-    // Usa eth_accounts (sem popup) para ver se já há conta ativa e autorizada
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if(!accounts || accounts.length === 0) {
-      // Nenhuma conta ativa — usuário precisa abrir e desbloquear o MetaMask primeiro
-      addLog('Nenhuma conta ativa. Abra e desbloqueie sua MetaMask primeiro.', 'bad');
-      showBubble('Abra o MetaMask! 🦊');
-      return;
-    }
-    // Conta já ativa — conecta sem popup
+    // Sempre exige confirmação via popup do MetaMask
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
@@ -5007,7 +5000,8 @@ function addLog(msg, type='') {
 
 
 // ── Auto-reconnect on page load (no popup — just checks existing permission) ──
-async function tryAutoReconnect() {
+async function tryAutoReconnect() { return; // auto-reconnect desativado
+  if(false) {
   if(typeof window.ethereum === 'undefined') return;
   try {
     // eth_accounts retorna contas SÓ se o site já foi explicitamente autorizado
@@ -5082,7 +5076,7 @@ async function tryAutoReconnect() {
 
 // Init
 setInterval(gameTick, 1000);
-tryAutoReconnect();
+addLog('Conecte sua carteira para invocar seu avatar.','info');
 updateResourceUI();
 
 addLog('Sistema iniciado. Invoque seu primeiro avatar!','info');
