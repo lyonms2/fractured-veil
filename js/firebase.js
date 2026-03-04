@@ -17,14 +17,7 @@ function getGameState() {
       elemento:  avatar.elemento,
       raridade:  avatar.raridade,
       descricao: avatar.descricao,
-      seed:      avatar.seed,
-      hp:        avatar.hp,
-      stats:     avatar.stats ? {...avatar.stats} : {},
-      // Flatten habs: array of arrays → array of objects
-      habs: (avatar.habs || []).map(h => Array.isArray(h)
-        ? { nome: h[0], tipo: h[1], desc: h[2] }
-        : h
-      )
+      seed:      avatar.seed
     };
   }
   return {
@@ -49,15 +42,16 @@ function applyGameState(data) {
   if(!data) return false;
   window.loadedLastSeen = data.lastSeen || Date.now();
   if(data.avatar) {
-    avatar = {...data.avatar};
-    // Restore habs: array of objects → array of arrays
-    if(avatar.habs) {
-      avatar.habs = avatar.habs.map(h =>
-        Array.isArray(h) ? h : [h.nome || '', h.tipo || '', h.desc || '']
-      );
-    }
-    // Restore car from CARACTERISTICAS_ELEMENTAIS
-    if(avatar.elemento) avatar.car = CARACTERISTICAS_ELEMENTAIS[avatar.elemento] || null;
+    // Only restore known fields — discard legacy fields (hp, stats, habs, etc.)
+    const a = data.avatar;
+    avatar = {
+      nome:      a.nome      || '',
+      elemento:  a.elemento  || 'Fogo',
+      raridade:  a.raridade  || 'Comum',
+      descricao: a.descricao || '',
+      seed:      a.seed      || 0,
+    };
+    avatar.car = CARACTERISTICAS_ELEMENTAIS[avatar.elemento] || null;
   } else {
     avatar = null;
   }
