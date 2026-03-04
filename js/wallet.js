@@ -185,6 +185,7 @@ async function connectWallet() {
         document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 140, 140);
         document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
         updateAllUI();
+        updateResourceUI();
 
         // ── BUG 1: Restore sleep visual state ──
         if(sleeping) {
@@ -200,6 +201,7 @@ async function connectWallet() {
       }
     } else {
       addLog('Nenhum save encontrado. Comece uma nova aventura!', 'info');
+      updateResourceUI();
     }
 
     if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
