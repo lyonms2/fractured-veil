@@ -217,7 +217,7 @@ function gameTick() {
   if(tickCount % 60 !== 0) return; // 1 game cycle = 60s real time
 
   if(sleeping) {
-    vitals.energia = Math.min(100, vitals.energia + 3);
+    vitals.energia = Math.min(100, vitals.energia + (3 * getItemEffect('sleepEnergyMult')));
     vitals.humor   = Math.min(100, vitals.humor + .5);
     if(vitals.energia >= 100) { wakeUp('full'); }
   } else {
