@@ -211,20 +211,6 @@
             </div>
           </div>
 
-          <!-- SHOP MODAL -->
-          <div class="mini-modal" id="shopModal" style="padding:14px 16px;justify-content:flex-start;overflow-y:auto;">
-            <button class="gs-x-btn" onclick="closeShop()">✕</button>
-            <div class="mini-title">🛒 LOJA</div>
-            <div class="mini-sub" id="shopSub">Gaste suas moedas</div>
-            <div id="shopXpBoost" style="display:none;font-size:7px;text-align:center;margin-bottom:8px;padding:5px 8px;border:1px solid #e8a030;border-radius:4px;color:#e8a030;font-family:'Cinzel',serif;letter-spacing:1px;">
-              ✨ XP BOOST ATIVO! <span id="shopBoostTimer"></span>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px;width:100%;" id="shopItems"></div>
-            <div style="margin-top:10px;font-size:6px;color:#443355;text-align:center;">
-              Desconto por raridade aplicado automaticamente
-            </div>
-          </div>
-
           <!-- MARKET MODAL -->
           <div class="mini-modal" id="marketModal" style="padding:14px 16px;justify-content:flex-start;overflow-y:auto;max-height:80%;">
             <button class="gs-x-btn" onclick="closeMarket()">✕</button>
@@ -442,7 +428,7 @@
 
       <!-- ACTION BUTTONS -->
       <div class="btns" id="actionBtns" style="opacity:0;pointer-events:none;transition:opacity .5s;">
-        <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 20 🪙">
+        <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 10 🪙">
           <span class="icon">🍖</span><span>NUTRIR</span>
           <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">20 🪙</span>
         </button>
@@ -586,7 +572,6 @@
   <script src="js/ui.js"></script>
   <script src="js/summon.js"></script>
   <script src="js/actions.js"></script>
-  <script src="js/shop.js"></script>
   <script src="js/coinshop.js"></script>
   <script src="js/market.js"></script>
   <script src="js/eggs.js"></script>
