@@ -3138,16 +3138,15 @@ async function connectWallet() {
     return;
   }
   try {
-    // Primeiro verifica se já existe conta autorizada E desbloqueada
-    const existing = await window.ethereum.request({ method: 'eth_accounts' });
-    const isUnlocked = await window.ethereum._metamask?.isUnlocked?.();
-    if(!isUnlocked) {
-      addLog('MetaMask está bloqueada. Desbloqueie a carteira primeiro.', 'bad');
-      showBubble('Desbloqueie o MetaMask! 🔒');
+    // Usa eth_accounts (sem popup) para ver se já há conta ativa e autorizada
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if(!accounts || accounts.length === 0) {
+      // Nenhuma conta ativa — usuário precisa abrir e desbloquear o MetaMask primeiro
+      addLog('Nenhuma conta ativa. Abra e desbloqueie sua MetaMask primeiro.', 'bad');
+      showBubble('Abra o MetaMask! 🦊');
       return;
     }
-    // Agora sim solicita conexão (pode abrir popup se ainda não autorizou o site)
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    // Conta já ativa — conecta sem popup
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
