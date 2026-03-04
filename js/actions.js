@@ -44,13 +44,13 @@ function earnCoins(amount) {
 function feedCreature() {
   if(!canAct()) return;
   if(vitals.fome >= 100){ showBubble('Estou satisfeito!'); return; }
-  const COST = 20;
+  const COST = 10;
   if(gs.moedas < COST) { showBubble('Sem moedas... 😢'); addLog(`Precisa de ${COST} 🪙 para alimentar!`,'bad'); return; }
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
   const _rb = rarityBonus();
-  xp += Math.round(5 * _rb.xp * (xpBoostActive ? xpBoostMult : 1)); vinculo += 2;
+  xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
   if(_rb.moedas > 1) earnCoins(coinBonus);
   playAnim('anim-eat');
