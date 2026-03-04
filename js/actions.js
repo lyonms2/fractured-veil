@@ -58,7 +58,7 @@ function feedCreature() {
   showBubble(rnd(FALAS.happy));
   showFloat(`+${g} 🍖`,'#e74c3c');
   addLog(`Alimentado! +${g} fome  (-${COST} 🪙)`, 'good');
-  checkXP(); updateAllUI();
+  checkXP(); updateAllUI(); scheduleSave();
 }
 
 function playCreature() {
