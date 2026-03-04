@@ -21,6 +21,21 @@
 </head>
 <body>
 <canvas id="starCanvas"></canvas>
+<!-- LOGIN SCREEN — covers entire app until wallet connected -->
+<div id="loginScreen">
+  <div id="loginCard">
+    <div id="loginLogo">Fractured Veil</div>
+    <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
+    <div id="loginDesc">Conecte sua carteira MetaMask<br>para invocar seu avatar</div>
+    <button id="loginBtn" onclick="connectWallet()">
+      <span id="loginBtnIcon">🦊</span>
+      <span id="loginBtnText">CONECTAR METAMASK</span>
+    </button>
+    <div id="loginError"></div>
+    <div id="loginFooter">Rede Polygon · Fractured Veil v1.0</div>
+  </div>
+</div>
+
 
 <div class="app">
   <header>
