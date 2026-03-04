@@ -192,7 +192,29 @@ async function connectWallet() {
           startSleep();
         }
 
-        // ── BUG 2: Restore equipped items orb display ──
+        // ── Restore poop visuals ──
+        if(poopCount > 0) {
+          const container = document.getElementById('poopContainer');
+          if(container) {
+            container.innerHTML = '';
+            for(let _p = 0; _p < poopCount; _p++) {
+              const pos = POOP_POSITIONS[_p % POOP_POSITIONS.length];
+              const el = document.createElement('div');
+              el.className = 'poop';
+              el.style.left = pos.left;
+              el.style.bottom = pos.bottom;
+              el.style.zIndex = 6 + _p;
+              el.title = 'Clique para limpar';
+              el.style.transform = `scale(${(.8 + Math.random() * .4).toFixed(2)})`;
+              el.textContent = '💩';
+              el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
+              container.appendChild(el);
+            }
+          }
+        }
+        updateDirtyVisuals();
+
+        // ── Restore equipped items orb display ──
         updateEquippedDisplay();
 
       } else if(dead && avatar) {
