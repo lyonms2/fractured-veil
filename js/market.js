@@ -19,11 +19,9 @@ function closeMarket() {
 function mktTab(tab) {
   mktCurrentTab = tab;
   document.getElementById('mktBuyPanel').style.display  = tab === 'buy'  ? 'block' : 'none';
-  document.getElementById('mktSellPanel').style.display = tab === 'sell' ? 'block' : 'none';
-  document.getElementById('mktTabBuy').style.borderColor  = tab === 'buy'  ? 'var(--gold)' : '';
-  document.getElementById('mktTabBuy').style.color        = tab === 'buy'  ? 'var(--gold)' : '';
-  document.getElementById('mktTabSell').style.borderColor = tab === 'sell' ? 'var(--gold)' : '';
-  document.getElementById('mktTabSell').style.color       = tab === 'sell' ? 'var(--gold)' : '';
+  document.getElementById('mktSellPanel').style.display = tab === 'sell' ? 'flex' : 'none';
+  document.getElementById('mktTabBuy').classList.toggle('active',  tab === 'buy');
+  document.getElementById('mktTabSell').classList.toggle('active', tab === 'sell');
   if(tab === 'buy')  loadMarketListings();
   if(tab === 'sell') renderMyEggsForSale();
 }
@@ -168,10 +166,10 @@ let _mktSection = 'eggs';
 
 function mktSection(sec) {
   _mktSection = sec;
-  document.getElementById('mktEggsSection').style.display  = sec === 'eggs'  ? 'block' : 'none';
+  document.getElementById('mktEggsSection').style.display  = sec === 'eggs'  ? 'flex' : 'none';
   document.getElementById('mktItemsSection').style.display = sec === 'items' ? 'block' : 'none';
-  document.getElementById('mktSecEggs').classList.toggle('primary',  sec === 'eggs');
-  document.getElementById('mktSecItems').classList.toggle('primary', sec === 'items');
+  document.getElementById('mktSecEggs').classList.toggle('active',  sec === 'eggs');
+  document.getElementById('mktSecItems').classList.toggle('active', sec === 'items');
   if(sec === 'items') renderMarketItems();
   if(sec === 'eggs')  mktTab('buy');
 }
@@ -183,23 +181,24 @@ function renderMarketItems() {
   list.innerHTML = Object.values(ITEM_CATALOG).map(item => {
     const alreadyOwned = owned.has(item.id);
     const canAfford    = gs.moedas >= item.preco;
-    return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px;box-sizing:border-box;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-        <span style="font-size:18px;">${item.emoji}</span>
-        <div style="flex:1;">
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:${item.cor};letter-spacing:1px;">${item.nome}</div>
-          <div style="font-size:6px;color:var(--muted);margin-top:2px;">${item.tipo} · ${item.raridade}</div>
+    return `<div class="mkt-catalog-card">
+      <div class="mkt-catalog-top">
+        <span class="mkt-catalog-emoji">${item.emoji}</span>
+        <div class="mkt-catalog-info">
+          <div class="mkt-catalog-name" style="color:${item.cor}">${item.nome}</div>
+          <div class="mkt-catalog-type">${item.tipo} · ${item.raridade}</div>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);">${item.preco}🪙</div>
+        <div class="mkt-catalog-price">${item.preco} 🪙</div>
       </div>
-      <div style="font-size:6.5px;color:#887799;margin-bottom:6px;">${item.desc}</div>
-      <div style="font-size:6px;color:#5ab4e8;margin-bottom:8px;">✦ ${item.efeito}</div>
-      ${alreadyOwned
-        ? `<div style="font-size:6px;color:#7ab87a;text-align:center;padding:4px;border:1px solid rgba(122,184,122,.3);border-radius:4px;">✓ JÁ POSSUI</div>`
-        : `<button class="mini-btn primary" onclick="buyItem('${item.id}')" style="width:100%;font-size:7px;${!canAfford?'opacity:.4;cursor:not-allowed;':''}" ${!canAfford?'disabled':''}>
-             COMPRAR ${!canAfford ? '(sem moedas)' : ''}
-           </button>`
-      }
+      <div class="mkt-catalog-desc">${item.desc}</div>
+      <div class="mkt-catalog-effect">✦ ${item.efeito}</div>
+      <div class="mkt-catalog-footer">
+        ${alreadyOwned
+          ? `<div class="mkt-owned-badge">✓ JÁ POSSUI</div>`
+          : `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${!canAfford?'disabled':''}>${!canAfford ? '⚠ SEM MOEDAS' : '✦ ADQUIRIR'}</button>`
+        }
+        <div class="mkt-duration-note">⏳ 30 dias</div>
+      </div>
     </div>`;
   }).join('');
 }
