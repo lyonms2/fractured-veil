@@ -5,6 +5,7 @@ const MEM_ELEMENTS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
 let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = false;
 
 function startMemoria() {
+  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
   const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : 8;
   const cols  = pairs <= 4 ? 4 : 4;
@@ -30,6 +31,7 @@ function startMemoria() {
 }
 
 function memFlip(i) {
+  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   if(memLocked) return;
   const el = document.getElementById('mc' + i);
   if(!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
@@ -153,6 +155,7 @@ function simonFlash(idx) {
 
 function simonPlayerClick(idx) {
   if(!simonPlayerTurn) return;
+  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
   const btn = document.getElementById('sb' + idx);
   btn.classList.add('player-hit');
   setTimeout(() => btn.classList.remove('player-hit'), 200);
@@ -203,6 +206,7 @@ let sombraRounds = 0, sombraHits = 0, sombraMaxRounds = 3, sombraActive = false;
 let sombraZoneL = 0, sombraZoneW = 0;
 
 function startSombra() {
+  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('sombraModal'); return; }
   const d = miniDifficulty();
   sombraMaxRounds = d.tier === 0 ? 3 : d.tier === 1 ? 4 : 5;
   const speed = d.tier === 0 ? 18 : d.tier === 1 ? 13 : 8; // ms per frame
