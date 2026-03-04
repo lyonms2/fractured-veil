@@ -222,16 +222,16 @@ function gameTick() {
     if(vitals.energia >= 100) { wakeUp('full'); }
   } else {
     const _d = rarityBonus().decay * GAME_SPEED;
-    vitals.fome    = Math.max(0, vitals.fome    - (1   * _d * getItemEffect('fomeDecayMult')));
-    vitals.humor   = Math.max(0, vitals.humor   - (.5  * _d));
-    vitals.energia = Math.max(0, vitals.energia - (.3  * _d));
+    vitals.fome    = Math.max(0, vitals.fome    - (0.5  * _d * getItemEffect('fomeDecayMult')));
+    vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d));
+    vitals.energia = Math.max(0, vitals.energia - (0.2  * _d));
   }
 
-  if(vitals.fome < 20 && !sleeping)    vitals.saude = Math.max(0, vitals.saude - (.8 * GAME_SPEED));
-  if(vitals.humor < 15 && !sleeping)   vitals.saude = Math.max(0, vitals.saude - (.4 * GAME_SPEED));
-  if(vitals.energia < 10 && !sleeping) vitals.saude = Math.max(0, vitals.saude - (.2 * GAME_SPEED));
+  if(vitals.fome < 15 && !sleeping)    vitals.saude = Math.max(0, vitals.saude - (0.3 * GAME_SPEED));
+  if(vitals.humor < 10 && !sleeping)   vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
+  if(vitals.energia < 5  && !sleeping) vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
 
-  if(vitals.saude < 30 && !sick && Math.random() < (.04 * GAME_SPEED)) {
+  if(vitals.saude < 20 && !sick && Math.random() < (0.02 * GAME_SPEED)) {
     sick = true;
     showBubble(rnd(FALAS.sick));
     addLog('Ficou doente! Use medicar!','bad');
@@ -239,7 +239,7 @@ function gameTick() {
 
   // ── HIGIENE E COCÔ ──
   if(!sleeping) {
-    vitals.higiene = Math.max(0, vitals.higiene - (.25 * GAME_SPEED));
+    vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED));
   }
   // cocô: apenas uma vez a cada ~5 min (300 ticks), chance aumenta se bem alimentado
   if(!sleeping && !poopCooldown) {
@@ -254,9 +254,9 @@ function gameTick() {
   if(tickCount % 60 === 0 && walletAddress) scheduleSave(); // auto-save every 60s
 
   // sujeira afeta saude e humor
-  if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (.3 * GAME_SPEED));
-  if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - .2);
-  if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - (.2 * GAME_SPEED));
+  if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
+  if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
+  if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
 
   updateDirtyVisuals();
 
