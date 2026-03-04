@@ -40,20 +40,23 @@
 <div class="app">
   <header>
     <div class="logo">Fractured Veil</div>
-    <div class="resources">
-      <!-- Wallet area: pre-connect hidden, post-connect shows address + disconnect -->
-      <div id="walletArea" style="display:flex;align-items:center;gap:6px;">
-        <button class="btn-wallet" id="btnMarket" onclick="openMarket()" style="display:none;visibility:hidden;">🛒 MERCADO</button>
-        <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:#7ab87a;border:1px solid rgba(122,184,122,.3);border-radius:20px;padding:4px 10px;background:rgba(122,184,122,.06);">
-            🦊 <span id="walletShort">0x...</span>
-          </div>
-          <button class="btn-wallet" onclick="disconnectWallet()" style="border-color:#e74c3c;color:#e74c3c;font-size:6px;padding:4px 8px;">✕ SAIR</button>
-        </div>
-      </div>
+
+    <!-- CENTER: resource icons (shown after connect) -->
+    <div class="header-center">
+      <button class="res res-clickable" id="btnMarket" onclick="openMarket()" title="Mercado" style="display:none;">🛒</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
-      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
+      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
       <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
+    </div>
+
+    <!-- RIGHT: wallet info -->
+    <div class="header-right">
+      <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
+        <div class="wallet-address">
+          🦊 <span id="walletShort">0x...</span>
+        </div>
+        <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
+      </div>
     </div>
   </header>
 
