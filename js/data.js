@@ -68,6 +68,7 @@ const DESCRICOES = {
 
 // ─── HELPERS ───
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 function determinarRaridade() {
   const r = Math.random();
@@ -259,18 +260,8 @@ function gerarSVG(elemento, raridade, seed, w, h) {
 // ═══════════════════════════════════════════
 // GAME STATE
 // ═══════════════════════════════════════════
-let avatar = null;
 // ── GAME SPEED ─────────────────────────────────────────────────────
 // Multiplier for all stat decay rates. Higher = faster decay.
 // 1.0 = balanced (fome zera em ~1h40)
 // 2.0 = faster   (fome zera em ~50min)
 // 0.5 = slower   (fome zera em ~3h20)
-const GAME_SPEED = 1.0;
-
-const vitals = { fome:100, humor:100, energia:100, saude:100, higiene:100 };
-let poopCount = 0;
-let dirtyLevel = 0; // 0-3
-let poopCooldown  = 5;   // ~5 ciclos antes do primeiro cocô (~5min)
-let eggLayCooldown = 0;
-let pendingHatchId = null; // egg id waiting for confirm  // ticks até o próximo ovo (0 = pronto)
-let eggsInInventory = [];
