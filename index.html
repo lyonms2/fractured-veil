@@ -1410,6 +1410,31 @@ main {
   border-color:#7ecfff;
 }
 .btn-connect-wallet:active { transform:scale(.97); }
+
+/* ── EQUIPPED ITEM DISPLAY (orbs beside avatar) ── */
+#equippedItemsDisplay {
+  position:absolute;
+  right:-14px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:6px;
+  z-index:12; pointer-events:none;
+}
+.equipped-item-badge {
+  width:26px; height:26px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, rgba(255,255,255,.2), rgba(0,0,0,.5));
+  border:1px solid rgba(201,168,76,.5);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px;
+  box-shadow:0 0 10px rgba(201,168,76,.35), inset 0 0 6px rgba(0,0,0,.5);
+  animation:orb-pulse 3s ease-in-out infinite;
+}
+.equipped-item-badge:nth-child(2) { animation-delay:1s; }
+.equipped-item-badge:nth-child(3) { animation-delay:2s; }
+@keyframes orb-pulse {
+  0%,100% { box-shadow:0 0 10px rgba(201,168,76,.35), inset 0 0 6px rgba(0,0,0,.5); transform:scale(1); }
+  50%      { box-shadow:0 0 20px rgba(201,168,76,.7), inset 0 0 6px rgba(0,0,0,.5); transform:scale(1.08); }
+}
+/* expiry warning */
+.item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
 </style>
 </head>
 <body>
@@ -1778,6 +1803,7 @@ main {
           </div>
           <div class="creature-area">
             <div class="creature-wrap" id="creatureWrap" onclick="petCreature()">
+              <div id="equippedItemsDisplay"></div>
               <div id="creatureSVG"></div>
               <div class="creature-shadow"></div>
               <div class="bubble" id="bubble">Olá!</div>
@@ -2585,6 +2611,7 @@ function hatch() {
 
   document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 140, 140);
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
+  updateEquippedDisplay();
   // Egg inventory button: only active after hatch
   const _eggBtn = document.getElementById('resOvosBtn');
   if(_eggBtn) {
@@ -4397,7 +4424,7 @@ function buyItem(catalogId) {
     addLog('Você já possui este item.', 'info'); return;
   }
   spendCoins(item.preco);
-  const entry = { id: Date.now(), catalogId, equipped: false };
+  const entry = { id: Date.now(), catalogId, equipped: false, expiraEm: Date.now() + 2592000000 };
   itemInventory.push(entry);
   updateResourceUI();
   scheduleSave();
@@ -4447,6 +4474,7 @@ function renderItemInventory() {
         <div style="flex:1;">
           <div style="font-family:'Cinzel',serif;font-size:7.5px;color:${item.cor};">${item.nome}</div>
           <div style="font-size:6px;color:var(--muted);margin-top:1px;">✦ ${item.efeito}</div>
+          ${entry.expiraEm ? `<div class="item-expiry-warn">${Math.max(0,Math.floor((entry.expiraEm-Date.now())/86400000))}d restantes</div>` : ''}
         </div>
         ${isEquipped ? `<span style="font-size:6px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;">EQUIPADO</span>` : ''}
       </div>
@@ -4461,6 +4489,40 @@ function renderItemInventory() {
   }).join('');
 }
 
+
+// ── Render equipped items floating above avatar ──
+function updateEquippedDisplay() {
+  const el = document.getElementById('equippedItemsDisplay');
+  if(!el) return;
+
+  // Check and expire items
+  const now = Date.now();
+  let changed = false;
+  itemInventory = itemInventory.filter(i => {
+    if(i.expiraEm && now > i.expiraEm) {
+      const item = ITEM_CATALOG[i.catalogId];
+      addLog(`⏳ ${item ? item.nome : 'Item'} expirou após 30 dias.`, 'bad');
+      changed = true;
+      return false;
+    }
+    return true;
+  });
+  if(changed) { renderItemInventory(); scheduleSave(); }
+
+  const equipped = itemInventory.filter(i => i.equipped);
+  if(!hatched || dead || equipped.length === 0) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = equipped.map(entry => {
+    const item = ITEM_CATALOG[entry.catalogId];
+    if(!item) return '';
+    const daysLeft = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : 99;
+    const warn = daysLeft <= 3 ? `title="${daysLeft}d restantes!"` : `title="${item.nome} (${daysLeft}d)"`;
+    return `<span class="equipped-item-badge" ${warn}>${item.emoji}</span>`;
+  }).join('');
+}
+
 function equipItem(id) {
   const entry = itemInventory.find(i => i.id === id);
   if(!entry) return;
@@ -4471,6 +4533,7 @@ function equipItem(id) {
   addLog(`${item.emoji} ${item.nome} equipado!`, 'good');
   scheduleSave();
   renderItemInventory();
+  updateEquippedDisplay();
 }
 
 function unequipItem(id) {
@@ -4481,6 +4544,7 @@ function unequipItem(id) {
   addLog(`${item.emoji} ${item.nome} desequipado.`, 'info');
   scheduleSave();
   renderItemInventory();
+  updateEquippedDisplay();
 }
 
 function deleteItem(id) {
@@ -4492,6 +4556,7 @@ function deleteItem(id) {
   updateResourceUI();
   scheduleSave();
   renderItemInventory();
+  updateEquippedDisplay();
 }
 
 // ═══════════════════════════════════════════
@@ -4669,7 +4734,7 @@ function gameTick() {
 
   if(vitals.saude <= 0) { killCreature(); return; }
 
-  if(tickCount % (60 * 5) === 0) autoSpeak(); // fala a cada ~5 min
+  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); } // fala e verifica itens a cada ~5 min
 
   // ── POSTURA DE OVOS (apenas fase Adulto, nível 10+) ──
   if(getFase() === 3) {
