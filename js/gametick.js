@@ -65,18 +65,7 @@ function cleanCreature() {
 
   vitals.energia = Math.max(0, vitals.energia - 15);
 
-  // Pop all poops
-  const container = document.getElementById('poopContainer');
-  if(container) {
-    [...container.children].forEach((el, i) => {
-      el.style.transition = `transform .2s ${i*0.05}s, opacity .2s ${i*0.05}s`;
-      el.style.transform = 'scale(0) rotate(180deg)';
-      el.style.opacity = '0';
-    });
-    setTimeout(() => { container.innerHTML = ''; }, 350);
-  }
-  poopCount = 0;
-  dirtyLevel = 0;
+  // Banho NÃO remove cocô — clique diretamente no 💩 para limpar
 
   const higieneGain = Math.round(50 + Math.random() * 20);
   const humorGain   = 15;
@@ -179,7 +168,6 @@ function spawnBathParticles() {
 function updateDirtyVisuals() {
   const screen  = document.querySelector('.screen');
   const wrap    = document.getElementById('creatureWrap');
-  const btnCl   = document.getElementById('btnClean');
   const dirts   = document.querySelectorAll('.dirt-spot');
   const stinks  = document.querySelectorAll('.stink');
 
@@ -203,8 +191,6 @@ function updateDirtyVisuals() {
   // Screen tint
   screen.classList.toggle('dirty', dirtyLevel >= 1);
 
-  // Clean button always visible
-  if(btnCl) btnCl.style.display = 'flex';
 }
 
 function gameTick() {
