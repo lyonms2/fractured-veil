@@ -20,6 +20,7 @@ function updateAllUI() {
   document.getElementById('xpFill').style.width = xpPct+'%';
   document.getElementById('xpTxt').textContent  = `${Math.floor(xp)}/${100*nivel}`;
   document.getElementById('nivelTxt').textContent = `NÍVEL ${nivel}`;
+  updateResourceUI();
 }
 
 function updateTimer() {
