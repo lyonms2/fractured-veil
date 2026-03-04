@@ -139,7 +139,7 @@ async function connectWallet() {
           for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
             if(wasSleeping) {
               // Sleeping: only energia recovers, no decay on other stats
-              vitals.energia = Math.min(100, vitals.energia + 0.5 * _d);
+              vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
                 wasSleeping = false; // woke up naturally mid-offline
