@@ -188,3 +188,29 @@
   position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
   font-family:'Cinzel',serif; font-size:6px; letter-spacing:2px; color:var(--muted); z-index:6;
 }
+
+/* ── BATH / CLEAN ANIMATION ── */
+.bath-particle {
+  position: absolute;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 30;
+  animation: bath-fly 0.9s ease-out forwards;
+}
+@keyframes bath-fly {
+  0%   { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--bx)), calc(var(--by) - 30px)) scale(1.1); opacity: 0; }
+}
+
+/* Anim-clean: avatar bounces + rotates slightly */
+.anim-clean {
+  animation: anim-clean-bounce 0.6s ease-in-out 3 !important;
+}
+@keyframes anim-clean-bounce {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); }
+  25%  { transform: translateY(-8px) rotate(-5deg) scale(1.05); }
+  50%  { transform: translateY(0) rotate(0deg) scale(1); }
+  75%  { transform: translateY(-5px) rotate(4deg) scale(1.03); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
