@@ -1,6 +1,5 @@
 /* ── BUTTONS ── */
-.btns { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; width:100%; box-sizing:border-box; }
-.btns.has-clean { grid-template-columns:repeat(5,1fr); }
+.btns { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; width:100%; box-sizing:border-box; }
 .btn-action {
   background:#0f0d1c; border:1px solid var(--border); border-radius:8px;
   padding:9px 4px; cursor:pointer;
