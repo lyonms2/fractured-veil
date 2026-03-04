@@ -174,9 +174,37 @@ async function connectWallet() {
 
       // ── Rebuild screens ──
       if(dead && avatar) {
-        // Dead — show death screen regardless of hatched state
-        setupAvatar();
-        killCreature();
+        // Dead — hide everything, show death screen directly
+        document.getElementById('idleScreen').style.display    = 'none';
+        document.getElementById('eggScreen').style.display     = 'none';
+        document.getElementById('aliveScreen').style.display   = 'none';
+        document.getElementById('summonCard').style.display    = 'none';
+        document.getElementById('creatureCard').style.display  = 'none';
+        document.getElementById('statusCard').style.display    = 'none';
+        document.getElementById('actionBtns').style.opacity    = '0';
+        document.getElementById('actionBtns').style.pointerEvents = 'none';
+        // Populate death screen manually (killCreature saves to Firebase which we don't want on restore)
+        const _name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
+        document.getElementById('deadAvatarName').textContent = _name.toUpperCase();
+        const _h = Math.floor(totalSecs/3600), _m = Math.floor((totalSecs%3600)/60);
+        document.getElementById('deadStats').innerHTML =
+          `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
+          `Viveu ${_h > 0 ? _h+'h ' : ''}${_m}min · Vínculo: ${Math.floor(vinculo)}`;
+        const dp = document.getElementById('deadParticles');
+        if(dp) {
+          dp.innerHTML = '';
+          const souls = ['👻','✦','💀','✧','🌑'];
+          for(let i=0;i<6;i++) {
+            const s = document.createElement('div');
+            s.className = 'dead-float-soul';
+            s.textContent = souls[i%souls.length];
+            s.style.cssText = `left:${15+Math.random()*70}%;bottom:${10+Math.random()*30}%;animation-delay:${(Math.random()*3).toFixed(1)}s;animation-duration:${(3+Math.random()*2).toFixed(1)}s;`;
+            dp.appendChild(s);
+          }
+        }
+        document.getElementById('deadScreen').style.display = 'flex';
+        updateResourceUI();
+        addLog(`${_name} partiu para outra dimensão... 💀`, 'bad');
 
       } else if(hatched && avatar) {
         // Alive and hatched
