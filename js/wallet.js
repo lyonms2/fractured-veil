@@ -3,6 +3,7 @@
 
 function disconnectWallet() {
   window._fvConnected = false;
+  document.getElementById('loginScreen').style.display = 'flex';
   // ── Reset full game state ──
   avatar = null;
   hatched = false; dead = false; sick = false; sleeping = false;
@@ -54,15 +55,21 @@ async function connectWallet() {
     return;
   }
   if(typeof window.ethereum === 'undefined') {
+    const le = document.getElementById('loginError');
+    if(le) le.textContent = 'MetaMask não encontrada. Instale em metamask.io';
     addLog('MetaMask não encontrada. Instale em metamask.io', 'bad');
-    showBubble('Precisa da MetaMask! 🦊');
     return;
   }
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent='CONECTANDO...'; }
+  if(loginError) loginError.textContent = '';
   try {
     // Sempre exige confirmação via popup do MetaMask
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
+    document.getElementById('loginScreen').style.display = 'none';
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
     document.getElementById('walletShort').textContent = short;
     document.getElementById('walletInfo').style.display = 'flex';
@@ -150,5 +157,9 @@ async function connectWallet() {
     if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
   } catch(e) {
     addLog('Conexão cancelada.', 'info');
+    const _lb = document.getElementById('loginBtn');
+    const _lt = document.getElementById('loginBtnText');
+    if(_lb) _lb.disabled = false;
+    if(_lt) _lt.textContent = 'CONECTAR METAMASK';
   }
 }
