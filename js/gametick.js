@@ -59,27 +59,80 @@ function removePoop(el) {
 }
 
 function cleanCreature() {
-  // Remove all poops
+  if(!canAct()) return;
+  if(sleeping) { showBubble('Zzz... 💤'); return; }
+  if(vitals.energia < 15) { showBubble('Sem energia para se banhar! 😩'); return; }
+
+  // Energy cost
+  vitals.energia = Math.max(0, vitals.energia - 15);
+
+  // Remove all poops with pop animation
   const container = document.getElementById('poopContainer');
   if(container) {
-    [...container.children].forEach(el => {
-      el.style.transition = 'transform .2s, opacity .2s';
-      el.style.transform = 'scale(0)';
+    [...container.children].forEach((el, i) => {
+      el.style.transition = `transform .25s ${i*0.06}s, opacity .25s ${i*0.06}s`;
+      el.style.transform = 'scale(0) rotate(180deg)';
       el.style.opacity = '0';
     });
-    setTimeout(() => { container.innerHTML = ''; }, 220);
+    setTimeout(() => { container.innerHTML = ''; }, 400);
   }
   poopCount = 0;
   dirtyLevel = 0;
-  vitals.higiene = Math.min(100, vitals.higiene + 60);
-  vitals.humor   = Math.min(100, vitals.humor   + 10);
 
-  showBubble('Que limpinho! 🧹✨');
-  showFloat('+60 🧹', '#a06010');
-  addLog('Ambiente limpo! Higiene restaurada.', 'good');
+  // Stat boosts
+  const higieneGain = Math.round(50 + Math.random() * 20);
+  const humorGain   = 15;
+  vitals.higiene = Math.min(100, vitals.higiene + higieneGain);
+  vitals.humor   = Math.min(100, vitals.humor   + humorGain);
+
+  // XP + vinculo
+  const _rb = rarityBonus();
+  xp += Math.round(3 * _rb.xp); vinculo += 1;
+
+  // Bath animation + particles
+  playAnim('anim-clean', false);
+  spawnBathParticles();
+
+  showBubble(rnd(['Que limpinho! 🛁✨', 'Adoro banho! 💧', 'Me sinto novo! ✨', 'Cheiro bem agora! 🌸']));
+  showFloat(`+${higieneGain} 🛁`, '#5ab4e8');
+  addLog(`Banho tomado! +${higieneGain} higiene +${humorGain} humor (-15 ⚡)`, 'good');
+
   updateDirtyVisuals();
-  updateAllUI();
+  checkXP(); updateAllUI();
   scheduleSave();
+}
+
+function spawnBathParticles() {
+  const wrap = document.getElementById('creatureWrap');
+  if(!wrap) return;
+
+  // Bath flash overlay
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:absolute;inset:0;background:rgba(90,180,232,.18);border-radius:12px;pointer-events:none;z-index:20;transition:opacity .4s;';
+  wrap.appendChild(flash);
+  setTimeout(() => { flash.style.opacity='0'; setTimeout(()=>flash.remove(),400); }, 300);
+
+  // Water drops + bubbles + sparkles
+  const particles = [
+    {e:'💧',x:'-35px',y:'-20px',d:'0s'},
+    {e:'💧',x:'35px', y:'-25px',d:'0.08s'},
+    {e:'🫧',x:'-20px',y:'-40px',d:'0.12s'},
+    {e:'🫧',x:'20px', y:'-35px',d:'0.05s'},
+    {e:'✨',x:'-40px',y:'-10px',d:'0.15s'},
+    {e:'✨',x:'40px', y:'-15px',d:'0.18s'},
+    {e:'💦',x:'0px',  y:'-45px',d:'0.1s'},
+    {e:'🌸',x:'-28px',y:'-30px',d:'0.22s'},
+    {e:'⭐',x:'28px', y:'-28px',d:'0.25s'},
+  ];
+
+  particles.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'bath-particle';
+    el.textContent = p.e;
+    el.style.cssText = `--bx:${p.x};--by:${p.y};bottom:40%;left:50%;animation-delay:${p.d}`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  });
 }
 
 function updateDirtyVisuals() {
@@ -109,13 +162,8 @@ function updateDirtyVisuals() {
   // Screen tint
   screen.classList.toggle('dirty', dirtyLevel >= 1);
 
-  // Show/hide clean button in action bar
-  const btnsBar = document.getElementById('actionBtns');
-  if(btnCl) {
-    const show = poopCount > 0;
-    btnCl.style.display = show ? 'flex' : 'none';
-    if(btnsBar) btnsBar.classList.toggle('has-clean', show);
-  }
+  // Clean button always visible
+  if(btnCl) btnCl.style.display = 'flex';
 }
 
 function gameTick() {
