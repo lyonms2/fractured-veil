@@ -1,8 +1,19 @@
 // WALLET + FIREBASE AUTH
 // ═══════════════════════════════════════════════════════════════════
 
-function disconnectWallet() {
+async function disconnectWallet() {
   window._fvConnected = false;
+
+  // Revoga permissão do site no MetaMask — força login manual no próximo acesso
+  try {
+    if(window.ethereum) {
+      await window.ethereum.request({
+        method: 'wallet_revokePermissions',
+        params: [{ eth_accounts: {} }]
+      });
+    }
+  } catch(e) { /* ignora se não suportado */ }
+
   document.getElementById('loginScreen').style.display = 'flex';
   // ── Reset full game state ──
   avatar = null;
