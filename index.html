@@ -3081,7 +3081,7 @@ async function loadFromFirebase() {
 // ═══════════════════════════════════════════════════════════════════
 
 function disconnectWallet() {
-  localStorage.removeItem('fv_wallet_connected');
+  window._fvConnected = false;
   // ── Reset full game state ──
   avatar = null;
   hatched = false; dead = false; sick = false; sleeping = false;
@@ -3141,7 +3141,7 @@ async function connectWallet() {
 
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
-    localStorage.setItem('fv_wallet_connected', '1');
+    window._fvConnected = true;
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
     document.getElementById('walletShort').textContent = short;
     document.getElementById('walletInfo').style.display = 'flex';
@@ -5007,8 +5007,9 @@ async function tryAutoReconnect() {
     // pelo usuário nesta sessão do navegador (não persiste após fechar/reabrir)
     // Para verificar isso usamos eth_accounts — mas MetaMask persiste a permissão
     // entre sessões. A única forma confiável é checar localStorage.
-    const _autoKey = 'fv_wallet_connected';
-    if(!localStorage.getItem(_autoKey)) return; // usuário não conectou nesta sessão
+    // Só reconecta se conectou explicitamente NESTA sessão de memória
+    // window._fvConnected é uma variável em memória — some com qualquer reload/fechamento
+    if(!window._fvConnected) return;
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
     if(accounts && accounts.length > 0) {
       // Already authorized — reconnect silently
