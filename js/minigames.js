@@ -482,7 +482,7 @@ function startSleep() {
   document.getElementById('sleepLabel').textContent = 'ACORDAR';
   document.getElementById('btnSleep').classList.add('active-sleep');
   showBubble('zzz... 💤');
-  addLog('Dormindo...','info');
+  addLog('Dormindo...','info'); scheduleSave();
 }
 
 function wakeUp(reason) {
@@ -503,6 +503,7 @@ function wakeUp(reason) {
     showBubble('Acordei! 😊');
     addLog('Acordou descansado!', 'good');
   }
+  scheduleSave();
 }
 
 function healCreature() {
@@ -518,7 +519,7 @@ function healCreature() {
   showFloat('+40 💚','#27ae60');
   showBubble('Me sinto melhor! 💊');
   addLog(`Medicado! +40 saúde  (-${COST} 🪙)`,'good');
-  updateAllUI();
+  updateAllUI(); scheduleSave();
 }
 
 function spawnFoodParticles() {
