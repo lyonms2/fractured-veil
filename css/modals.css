@@ -367,3 +367,276 @@
 }
 /* expiry warning */
 .item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
+
+/* ════════════════════════════════════════════
+   MARKET MODAL
+════════════════════════════════════════════ */
+#marketModal {
+  padding: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+/* ── Header bar ── */
+.mkt-header {
+  width: 100%;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(201,168,76,.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: rgba(201,168,76,.03);
+}
+.mkt-header .mini-title { margin: 0; font-size: 10px; }
+
+/* ── Section switcher: OVOS / ITENS ── */
+.mkt-sections {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.mkt-sec-btn {
+  flex: 1;
+  padding: 9px 0;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 7.5px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  transition: all .2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.mkt-sec-btn:hover { color: #c8a8e8; }
+.mkt-sec-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: rgba(201,168,76,.05);
+}
+
+/* ── Sub-tabs: COMPRAR / VENDER ── */
+.mkt-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px 0;
+  flex-shrink: 0;
+}
+.mkt-tab-btn {
+  flex: 1;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 6px;
+  letter-spacing: 1.5px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted);
+  transition: all .2s;
+}
+.mkt-tab-btn:hover { color: var(--gold-light); border-color: rgba(201,168,76,.3); }
+.mkt-tab-btn.active {
+  color: #0d0a1a;
+  background: var(--gold);
+  border-color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── Scrollable body ── */
+.mkt-body {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding: 10px 14px 14px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Egg listing card ── */
+.mkt-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.07);
+  transition: border-color .2s;
+}
+.mkt-item:hover { border-color: rgba(201,168,76,.25); }
+.mkt-item-icon { font-size: 22px; flex-shrink: 0; }
+.mkt-item-info { flex: 1; min-width: 0; }
+.mkt-item-name {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.mkt-item-sub {
+  font-size: 6px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.mkt-item-price {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 5px;
+  text-align: right;
+}
+.mkt-buy-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 6px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid #7ab87a;
+  background: rgba(122,184,122,.12);
+  color: #7ab87a;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.mkt-buy-btn:hover { background: rgba(122,184,122,.25); }
+.mkt-buy-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  border-color: var(--muted);
+  color: var(--muted);
+  background: transparent;
+}
+
+/* ── Egg sell card ── */
+.mkt-sell-egg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.07);
+  cursor: pointer;
+  transition: all .2s;
+}
+.mkt-sell-egg:hover {
+  border-color: rgba(201,168,76,.4);
+  background: rgba(201,168,76,.05);
+  transform: translateX(2px);
+}
+.mkt-sell-egg.selected { border-color: var(--gold); background: rgba(201,168,76,.08); }
+
+/* ── Sell form ── */
+.mkt-sell-form {
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(201,168,76,.03);
+  margin-top: 4px;
+}
+.mkt-sell-form-label {
+  font-family: 'Cinzel', serif;
+  font-size: 6px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+.mkt-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.mkt-price-input {
+  flex: 1;
+  max-width: 90px;
+  background: #0d0a1a;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  padding: 5px 8px;
+  outline: none;
+}
+.mkt-price-input:focus { border-color: var(--gold); }
+.mkt-action-row { display: flex; gap: 6px; }
+.mkt-btn-confirm {
+  flex: 1; padding: 7px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 1px;
+  border: 1px solid #7ab87a; border-radius: 6px;
+  background: rgba(122,184,122,.12); color: #7ab87a; transition: all .2s;
+  font-weight: 700;
+}
+.mkt-btn-confirm:hover { background: rgba(122,184,122,.25); }
+.mkt-btn-cancel {
+  flex: 1; padding: 7px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,.1); border-radius: 6px;
+  background: transparent; color: var(--muted); transition: all .2s;
+}
+.mkt-btn-cancel:hover { border-color: #e74c3c; color: #e74c3c; }
+
+/* ── Item catalog card ── */
+.mkt-catalog-card {
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.07);
+  transition: border-color .2s;
+}
+.mkt-catalog-card:hover { border-color: rgba(201,168,76,.2); }
+.mkt-catalog-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.mkt-catalog-emoji { font-size: 22px; flex-shrink: 0; }
+.mkt-catalog-info { flex: 1; }
+.mkt-catalog-name {
+  font-family: 'Cinzel', serif;
+  font-size: 8px; font-weight: 700; letter-spacing: 1px;
+}
+.mkt-catalog-type { font-size: 6px; color: var(--muted); margin-top: 2px; }
+.mkt-catalog-price {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; color: var(--gold); font-weight: 700;
+  text-align: right; flex-shrink: 0;
+}
+.mkt-catalog-desc { font-size: 6.5px; color: #887799; margin-bottom: 5px; }
+.mkt-catalog-effect {
+  font-size: 6.5px; color: #5ab4e8;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  border-left: 2px solid #1a6080;
+  background: rgba(90,180,232,.05);
+  border-radius: 0 4px 4px 0;
+}
+.mkt-catalog-footer { display: flex; align-items: center; gap: 8px; }
+.mkt-owned-badge {
+  flex: 1; text-align: center; padding: 6px;
+  font-size: 6px; font-family: 'Cinzel', serif; letter-spacing: 1px;
+  color: #7ab87a; border: 1px solid rgba(122,184,122,.3);
+  border-radius: 6px; background: rgba(122,184,122,.05);
+}
+.mkt-duration-note { font-size: 5.5px; color: var(--muted); }
+.mkt-catalog-buy {
+  flex: 1; padding: 7px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 1px; font-weight: 700;
+  border: 1px solid var(--gold); border-radius: 6px;
+  background: rgba(201,168,76,.1); color: var(--gold); transition: all .2s;
+}
+.mkt-catalog-buy:hover { background: rgba(201,168,76,.25); }
+.mkt-catalog-buy:disabled { opacity:.35; cursor:not-allowed; }
