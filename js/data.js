@@ -1,24 +1,17 @@
-
 // ═══════════════════════════════════════════
 // SISTEMAS DO JOGO
 // ═══════════════════════════════════════════
 
 const CARACTERISTICAS_ELEMENTAIS = {
-  'Fogo':         { stat_primaria:'forca', stat_secundaria:'agilidade', stat_fraca:'resistencia', bonus:'Chamas Intensas: +15% chance de acerto crítico', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
-  'Água':         { stat_primaria:'resistencia', stat_secundaria:'foco', stat_fraca:'forca',      bonus:'Cura das Marés: Regenera 3% de vida por turno',   cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
-  'Terra':        { stat_primaria:'resistencia', stat_secundaria:'forca', stat_fraca:'agilidade', bonus:'Pele de Rocha: Reduz 20% do dano recebido',        cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
-  'Vento':        { stat_primaria:'agilidade', stat_secundaria:'foco', stat_fraca:'resistencia',  bonus:'Velocidade do Vento: +25% de esquiva',             cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
-  'Eletricidade': { stat_primaria:'foco', stat_secundaria:'agilidade', stat_fraca:'resistencia',  bonus:'Sobrecarga: 20% de chance de paralisar',           cor:'#FFD700', emoji:'⚡', decor:['⚡','🔮'] },
-  'Sombra':       { stat_primaria:'foco', stat_secundaria:'forca', stat_fraca:'agilidade',        bonus:'Abraço das Trevas: Rouba 15% do dano como vida',   cor:'#8B008B', emoji:'🌑', decor:['💀','🦇'] },
-  'Luz':          { stat_primaria:'foco', stat_secundaria:'resistencia', stat_fraca:'forca',      bonus:'Benção da Luz: +10% stats de aliados próximos',   cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] },
-  'Void':         { stat_primaria:'foco', stat_secundaria:'forca', stat_fraca:'agilidade',        bonus:'Distorção: 50% de chance de ignorar dano recebido',cor:'#9b30e8', emoji:'🕳️', decor:['🔮','💫'] },
-  'Aether':       { stat_primaria:'foco', stat_secundaria:'resistencia', stat_fraca:'forca',      bonus:'Campo Primordial: Ignora 50% das defesas inimigas',cor:'#e830c0', emoji:'🌌', decor:['🌌','💫'] }
-};
-
-const RANGES = {
-  'Comum':    { min:5,  max:10, total_min:20, total_max:35 },
-  'Raro':     { min:10, max:16, total_min:45, total_max:60 },
-  'Lendário': { min:16, max:25, total_min:70, total_max:90 }
+  'Fogo':         { bonus:'Chamas Intensas: +15% chance de acerto crítico', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
+  'Água':         {      bonus:'Cura das Marés: Regenera 3% de vida por turno',   cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
+  'Terra':        { bonus:'Pele de Rocha: Reduz 20% do dano recebido',        cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
+  'Vento':        {  bonus:'Velocidade do Vento: +25% de esquiva',             cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
+  'Eletricidade': {  bonus:'Sobrecarga: 20% de chance de paralisar',           cor:'#FFD700', emoji:'⚡', decor:['⚡','🔮'] },
+  'Sombra':       {        bonus:'Abraço das Trevas: Rouba 15% do dano como vida',   cor:'#8B008B', emoji:'🌑', decor:['💀','🦇'] },
+  'Luz':          {      bonus:'Benção da Luz: +10% stats de aliados próximos',   cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] },
+  'Void':         {        bonus:'Distorção: 50% de chance de ignorar dano recebido',cor:'#9b30e8', emoji:'🕳️', decor:['🔮','💫'] },
+  'Aether':       {      bonus:'Campo Primordial: Ignora 50% das defesas inimigas',cor:'#e830c0', emoji:'🌌', decor:['🌌','💫'] }
 };
 
 const PREFIXOS = {
@@ -73,37 +66,8 @@ const DESCRICOES = {
   }
 };
 
-const HABS_BASE = {
-  'Fogo':         [['Chama Inicial','Físico','Ataque básico de fogo'],['Faísca Ardente','Mágico','Projétil de chamas'],['Impulso Ígneo','Passivo','Dano aumenta ao atacar consecutivamente']],
-  'Água':         [["Jato D'Água",'Físico','Ataque básico de água'],['Onda Curativa','Suporte','Restaura HP próprio'],['Corrente Fria','Mágico','Desacelera o alvo']],
-  'Terra':        [['Golpe Rochoso','Físico','Ataque pesado de pedra'],['Barreira de Pedra','Passivo','Reduz dano recebido'],['Terremoto Menor','Mágico','Abala o terreno ao redor']],
-  'Vento':        [['Rajada Cortante','Físico','Corte de vento veloz'],['Passo Veloz','Passivo','Aumenta agilidade'],['Turbilhão','Mágico','Dano em área ao redor']],
-  'Eletricidade': [['Descarga','Físico','Choque elétrico direto'],['Sobrecarga','Mágico','Raio concentrado de alta voltagem'],['Pulso Elétrico','Passivo','Chance de paralisar ao atacar']],
-  'Sombra':       [['Golpe Sombrio','Físico','Ataque furtivo nas trevas'],['Dreno de Vida','Mágico','Rouba HP do alvo'],['Véu das Trevas','Passivo','Aumenta evasão']],
-  'Luz':          [['Raio de Luz','Físico','Feixe de luz pura'],['Cura Radiante','Suporte','Recupera HP de aliado'],['Bênção Divina','Passivo','Aumenta stats de aliados próximos']],
-  'Void':         [['Nulidade','Mágico','Anula defesas do alvo'],['Absorção do Vazio','Passivo','Chance de negar dano recebido'],['Colapso','Mágico','Remove buffs e causa dano']],
-  'Aether':       [['Pulso Etéreo','Mágico','Dano de energia primordial pura'],['Adaptação','Passivo','Copia o elemento do alvo temporariamente'],['Manifestação','Mágico','Transforma potencial infinito em dano']]
-};
-
 // ─── HELPERS ───
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function randInt(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
-
-function gerarStats(raridade, elemento) {
-  const range = RANGES[raridade];
-  const car   = CARACTERISTICAS_ELEMENTAIS[elemento];
-  let s, t;
-  do {
-    s = { forca:randInt(range.min,range.max), agilidade:randInt(range.min,range.max), resistencia:randInt(range.min,range.max), foco:randInt(range.min,range.max) };
-    t = s.forca+s.agilidade+s.resistencia+s.foco;
-  } while(t < range.total_min || t > range.total_max);
-  if(car){
-    s[car.stat_primaria]   = Math.floor(s[car.stat_primaria]   * 1.40);
-    s[car.stat_secundaria] = Math.floor(s[car.stat_secundaria] * 1.20);
-    s[car.stat_fraca]      = Math.floor(s[car.stat_fraca]      * 0.75);
-  }
-  return s;
-}
 
 function determinarRaridade() {
   const r = Math.random();
