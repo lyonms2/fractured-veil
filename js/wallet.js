@@ -36,6 +36,8 @@ async function disconnectWallet() {
   document.getElementById('actionBtns').style.opacity    = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
   document.getElementById('summonCard').style.display    = 'block';
+  const _bs2 = document.getElementById('btnSummon');
+  if(_bs2) _bs2.disabled = false;
   document.getElementById('creatureCard').style.display  = 'none';
   document.getElementById('poopContainer').innerHTML     = '';
   document.getElementById('dirtLayer').className         = '';
@@ -101,6 +103,8 @@ async function connectWallet() {
     document.getElementById('resOvosBtn').style.display = '';
     document.getElementById('resItemsBtn').style.display = '';
     updateResourceUI();
+    const _bs = document.getElementById('btnSummon');
+    if(_bs) _bs.disabled = false;
 
     // Show market button
     document.getElementById('btnMarket').style.display = 'inline-block';
