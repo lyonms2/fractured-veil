@@ -102,3 +102,62 @@ main {
   animation:blink 2s ease-in-out infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  position:fixed; inset:0; z-index:9999;
+  background:#04030a;
+  display:flex; align-items:center; justify-content:center;
+}
+#loginCard {
+  display:flex; flex-direction:column; align-items:center;
+  gap:12px; padding:40px 32px;
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:16px;
+  background:rgba(255,255,255,.02);
+  box-shadow:0 0 60px rgba(201,168,76,.08);
+  max-width:280px; width:90%;
+  text-align:center;
+}
+#loginLogo {
+  font-family:'Cinzel',serif;
+  font-size:22px; font-weight:700;
+  color:var(--gold);
+  letter-spacing:4px;
+  text-shadow:0 0 20px rgba(201,168,76,.4);
+}
+#loginSub {
+  font-family:'Cinzel',serif;
+  font-size:7px; letter-spacing:3px;
+  color:var(--muted);
+}
+#loginDesc {
+  font-size:11px; color:#887799;
+  line-height:1.8; margin:8px 0;
+}
+#loginBtn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px;
+  background:rgba(201,168,76,.08);
+  border:1px solid rgba(201,168,76,.4);
+  border-radius:8px;
+  color:var(--gold);
+  font-family:'Cinzel',serif;
+  font-size:11px; letter-spacing:2px;
+  cursor:pointer;
+  transition:all .25s;
+}
+#loginBtn:hover {
+  background:rgba(201,168,76,.18);
+  box-shadow:0 0 20px rgba(201,168,76,.2);
+}
+#loginBtn:active { transform:scale(.97); }
+#loginBtnIcon { font-size:16px; }
+#loginError {
+  font-size:9px; color:#e74c3c;
+  min-height:14px; letter-spacing:.5px;
+}
+#loginFooter {
+  font-size:7px; color:#332244;
+  letter-spacing:1px; margin-top:4px;
+}
