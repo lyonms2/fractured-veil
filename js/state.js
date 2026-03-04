@@ -20,7 +20,11 @@ const ITEM_CATALOG = {
 };
 
 function getEquippedItems() {
-  return itemInventory.filter(i => i.equipped).map(i => ITEM_CATALOG[i.catalogId]).filter(Boolean);
+  const now = Date.now();
+  return itemInventory
+    .filter(i => i.equipped && (!i.expiraEm || now <= i.expiraEm))
+    .map(i => ITEM_CATALOG[i.catalogId])
+    .filter(Boolean);
 }
 
 function getItemEffect(key) {
