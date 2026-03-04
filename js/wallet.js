@@ -173,7 +173,13 @@ async function connectWallet() {
       }
 
       // ── Rebuild screens ──
-      if(hatched && avatar && !dead) {
+      if(dead && avatar) {
+        // Dead — show death screen regardless of hatched state
+        setupAvatar();
+        killCreature();
+
+      } else if(hatched && avatar) {
+        // Alive and hatched
         setupAvatar();
         document.getElementById('idleScreen').style.display   = 'none';
         document.getElementById('eggScreen').style.display    = 'none';
@@ -187,12 +193,10 @@ async function connectWallet() {
         updateAllUI();
         updateResourceUI();
 
-        // ── BUG 1: Restore sleep visual state ──
-        if(sleeping) {
-          startSleep();
-        }
+        // Restore sleep visual
+        if(sleeping) startSleep();
 
-        // ── Restore poop visuals ──
+        // Restore poop visuals
         if(poopCount > 0) {
           const container = document.getElementById('poopContainer');
           if(container) {
@@ -201,11 +205,10 @@ async function connectWallet() {
               const pos = POOP_POSITIONS[_p % POOP_POSITIONS.length];
               const el = document.createElement('div');
               el.className = 'poop';
-              el.style.left = pos.left;
-              el.style.bottom = pos.bottom;
+              el.style.left = pos.left; el.style.bottom = pos.bottom;
               el.style.zIndex = 6 + _p;
               el.title = 'Clique para limpar';
-              el.style.transform = `scale(${(.8 + Math.random() * .4).toFixed(2)})`;
+              el.style.transform = `scale(${(.8 + Math.random()*.4).toFixed(2)})`;
               el.textContent = '💩';
               el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
               container.appendChild(el);
@@ -213,13 +216,18 @@ async function connectWallet() {
           }
         }
         updateDirtyVisuals();
-
-        // ── Restore equipped items orb display ──
         updateEquippedDisplay();
 
-      } else if(dead && avatar) {
+      } else if(avatar && !hatched) {
+        // Avatar exists but egg not yet hatched — restore egg screen
         setupAvatar();
-        killCreature();
+        document.getElementById('idleScreen').style.display = 'none';
+        document.getElementById('eggScreen').style.display  = 'flex';
+        document.getElementById('aliveScreen').style.display= 'none';
+        document.getElementById('deadScreen').style.display = 'none';
+        document.getElementById('summonCard').style.display = 'none';
+        document.getElementById('creatureCard').style.display = 'block';
+        updateResourceUI();
       }
     } else {
       addLog('Nenhum save encontrado. Comece uma nova aventura!', 'info');
