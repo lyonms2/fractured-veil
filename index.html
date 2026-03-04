@@ -1432,6 +1432,7 @@ main {
       </div>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Ver inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
+      <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
     </div>
   </header>
 
@@ -1542,6 +1543,15 @@ main {
           </div><!-- /jkpModal -->
 
           <!-- EGG INVENTORY MODAL -->
+          <!-- ITEM INVENTORY MODAL -->
+          <div class="mini-modal" id="itemInvModal">
+            <button class="gs-x-btn" onclick="closeItemInventory()">✕</button>
+            <div class="mini-title">🎒 INVENTÁRIO DE ITENS</div>
+            <div class="mini-sub" id="itemInvCount">0 itens · <span style="color:var(--gold)">0/3 equipados</span></div>
+            <div id="itemInvList" style="width:100%;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+              <div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum item no inventário</div>
+            </div>
+          </div>
           <div class="mini-modal" id="eggInvModal">
             <button class="gs-x-btn" onclick="closeEggInventory()">✕</button>
             <div class="mini-title">🥚 INVENTÁRIO DE OVOS</div>
@@ -1597,33 +1607,45 @@ main {
           <!-- MARKET MODAL -->
           <div class="mini-modal" id="marketModal" style="padding:14px 16px;justify-content:flex-start;overflow-y:auto;max-height:80%;">
             <button class="gs-x-btn" onclick="closeMarket()">✕</button>
-            <div class="mini-title">🛒 MERCADO DE OVOS</div>
+            <div class="mini-title">🛒 MERCADO</div>
+            <!-- Market section selector -->
             <div style="display:flex;gap:6px;margin-bottom:10px;width:100%;">
-              <button class="mini-btn" id="mktTabBuy"  onclick="mktTab('buy')"  style="flex:1;font-size:7px;">COMPRAR</button>
-              <button class="mini-btn" id="mktTabSell" onclick="mktTab('sell')" style="flex:1;font-size:7px;">VENDER</button>
+              <button class="mini-btn" id="mktSecEggs"  onclick="mktSection('eggs')"  style="flex:1;font-size:7px;">🥚 OVOS</button>
+              <button class="mini-btn" id="mktSecItems" onclick="mktSection('items')" style="flex:1;font-size:7px;">🔮 ITENS</button>
             </div>
-            <!-- BUY tab -->
-            <div id="mktBuyPanel" style="width:100%;">
-              <div id="mktListings" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-              <div id="mktEmpty" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum ovo no mercado</div>
-            </div>
-            <!-- SELL tab -->
-            <div id="mktSellPanel" style="display:none;width:100%;">
-              <div style="font-size:7px;color:var(--muted);margin-bottom:8px;">Selecione um ovo do inventário para vender:</div>
-              <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-              <div id="mktSellForm" style="display:none;margin-top:10px;width:100%;">
-                <div style="font-size:7px;color:var(--gold-light);margin-bottom:6px;" id="mktSellEggInfo"></div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                  <span style="font-size:7px;color:var(--muted);">Preço:</span>
-                  <input id="mktPriceInput" type="number" min="1" max="99999" value="100"
-                    style="width:80px;background:#0d0a1a;border:1px solid var(--border);border-radius:4px;color:var(--gold);font-family:'Cinzel',serif;font-size:8px;padding:4px 6px;outline:none;">
-                  <span style="font-size:7px;color:var(--muted);">🪙</span>
-                </div>
-                <div style="display:flex;gap:6px;">
-                  <button class="mini-btn" onclick="confirmSellEgg()" style="flex:1;font-size:7px;border-color:var(--gold);color:var(--gold);">LISTAR</button>
-                  <button class="mini-btn close" onclick="cancelSellEgg()" style="flex:1;font-size:7px;">CANCELAR</button>
+
+            <!-- EGGS SECTION -->
+            <div id="mktEggsSection" style="width:100%;">
+              <div style="display:flex;gap:6px;margin-bottom:8px;width:100%;">
+                <button class="mini-btn" id="mktTabBuy"  onclick="mktTab('buy')"  style="flex:1;font-size:6px;">COMPRAR</button>
+                <button class="mini-btn" id="mktTabSell" onclick="mktTab('sell')" style="flex:1;font-size:6px;">VENDER</button>
+              </div>
+              <div id="mktBuyPanel" style="width:100%;">
+                <div id="mktListings" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
+                <div id="mktEmpty" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum ovo no mercado</div>
+              </div>
+              <div id="mktSellPanel" style="display:none;width:100%;">
+                <div style="font-size:7px;color:var(--muted);margin-bottom:8px;">Selecione um ovo do inventário para vender:</div>
+                <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
+                <div id="mktSellForm" style="display:none;margin-top:10px;width:100%;">
+                  <div style="font-size:7px;color:var(--gold-light);margin-bottom:6px;" id="mktSellEggInfo"></div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                    <span style="font-size:7px;color:var(--muted);">Preço:</span>
+                    <input id="mktPriceInput" type="number" min="1" max="99999" value="100"
+                      style="width:80px;background:#0d0a1a;border:1px solid var(--border);border-radius:4px;color:var(--gold);font-family:'Cinzel',serif;font-size:8px;padding:4px 6px;outline:none;">
+                    <span style="font-size:7px;color:var(--muted);">🪙</span>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="mini-btn" onclick="confirmSellEgg()" style="flex:1;font-size:7px;border-color:var(--gold);color:var(--gold);">LISTAR</button>
+                    <button class="mini-btn close" onclick="cancelSellEgg()" style="flex:1;font-size:7px;">CANCELAR</button>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <!-- ITEMS SECTION -->
+            <div id="mktItemsSection" style="display:none;width:100%;">
+              <div id="mktItemsList" style="display:flex;flex-direction:column;gap:8px;width:100%;"></div>
             </div>
           </div><!-- GAME SELECTOR -->
           <div id="gameSelector">
@@ -2224,7 +2246,42 @@ let dirtyLevel = 0; // 0-3
 let poopCooldown  = 60;  // ~60 ciclos antes do primeiro cocô (~1h)
 let eggLayCooldown = 0;
 let pendingHatchId = null; // egg id waiting for confirm  // ticks até o próximo ovo (0 = pronto)
-let eggsInInventory = []; // [{raridade, elemento, expiraEm (timestamp ms)}]
+let eggsInInventory = [];
+
+// ═══════════════════════════════════════════════════════════════════
+// ITEM SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+let itemInventory   = []; // { id, catalogId, equipped }
+const MAX_EQUIPPED  = 3;
+
+const ITEM_CATALOG = {
+  'amuleto_saciedade': {
+    id:       'amuleto_saciedade',
+    nome:     'Amuleto da Saciedade',
+    emoji:    '🔮',
+    desc:     'Uma gema ancestral que suprime a fome.',
+    efeito:   'Reduz consumo de Fome em 2% por ciclo',
+    tipo:     'Amuleto',
+    raridade: 'Comum',
+    preco:    150,
+    cor:      '#7ab87a',
+    efeitos:  { fomeDecayMult: 0.98 } // multiplier on fome decay
+  }
+};
+
+function getEquippedItems() {
+  return itemInventory.filter(i => i.equipped).map(i => ITEM_CATALOG[i.catalogId]).filter(Boolean);
+}
+
+function getItemEffect(key) {
+  // Aggregate effect across all equipped items
+  let val = 1.0;
+  getEquippedItems().forEach(item => {
+    if(item.efeitos && item.efeitos[key] !== undefined) val *= item.efeitos[key];
+  });
+  return val;
+}
+ // [{raridade, elemento, expiraEm (timestamp ms)}]
 let eggLayNotified  = false; // evita notificação dupla
 let sleeping  = false;
 let sick      = false;
@@ -2652,7 +2709,7 @@ function playCreature() {
 // MODAL MANAGER — um modal de cada vez
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
-  'jkpModal','gameSelector','eggInvModal','hatchConfirmModal',
+  'jkpModal','gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','sombraModal','shopModal','marketModal','coinShopModal'
 ];
 
@@ -2660,7 +2717,7 @@ const ModalManager = {
   current: null,
 
   // Panel modals: don't block action buttons (they float over right panel)
-  PANEL_MODALS: ['eggInvModal','coinShopModal','shopModal','marketModal'],
+  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','shopModal','marketModal'],
 
   GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal','sombraModal'],
 
@@ -2931,6 +2988,7 @@ function getGameState() {
     eggLayCooldown,
     vitals:         {...vitals},
     gs:             {...gs},
+    items:          itemInventory.map(i => ({...i})),
     eggs:           eggsInInventory.map(e => ({
       id:        e.id,
       raridade:  e.raridade,
@@ -2969,6 +3027,7 @@ function applyGameState(data) {
   if(data.vitals) Object.assign(vitals, data.vitals);
   if(data.gs)     Object.assign(gs, data.gs);
   if(data.eggs)   eggsInInventory = data.eggs;
+  if(data.items)  itemInventory  = data.items;
   return true;
 }
 
@@ -3066,6 +3125,7 @@ async function connectWallet() {
     // Show resource counters
     document.getElementById('resMoedasBtn').style.display = '';
     document.getElementById('resOvosBtn').style.display = '';
+    document.getElementById('resItemsBtn').style.display = '';
     updateResourceUI();
 
     // Show market button
@@ -4268,7 +4328,7 @@ function renderEggInventory() {
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">Chocar</button>
-             <button class="egg-btn sell"  onclick="sellEgg(${ovo.id})">Vender</button>
+             <button class="egg-btn sell"  onclick="closeEggInventory();openMarket();setTimeout(()=>{mktSection('eggs');mktTab('sell');selectEggToSell(${ovo.id});},100)">Vender</button>
              <button class="egg-btn burn"  onclick="burnEgg(${ovo.id})">Queimar</button>`
         }
       </div>
@@ -4283,6 +4343,155 @@ function petCreature() {
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');
   updateAllUI();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// MARKET SECTIONS
+// ═══════════════════════════════════════════════════════════════════
+let _mktSection = 'eggs';
+
+function mktSection(sec) {
+  _mktSection = sec;
+  document.getElementById('mktEggsSection').style.display  = sec === 'eggs'  ? 'block' : 'none';
+  document.getElementById('mktItemsSection').style.display = sec === 'items' ? 'block' : 'none';
+  document.getElementById('mktSecEggs').classList.toggle('primary',  sec === 'eggs');
+  document.getElementById('mktSecItems').classList.toggle('primary', sec === 'items');
+  if(sec === 'items') renderMarketItems();
+  if(sec === 'eggs')  mktTab('buy');
+}
+
+function renderMarketItems() {
+  const list = document.getElementById('mktItemsList');
+  if(!list) return;
+  const owned = new Set(itemInventory.map(i => i.catalogId));
+  list.innerHTML = Object.values(ITEM_CATALOG).map(item => {
+    const alreadyOwned = owned.has(item.id);
+    const canAfford    = gs.moedas >= item.preco;
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px;box-sizing:border-box;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:18px;">${item.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:${item.cor};letter-spacing:1px;">${item.nome}</div>
+          <div style="font-size:6px;color:var(--muted);margin-top:2px;">${item.tipo} · ${item.raridade}</div>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);">${item.preco}🪙</div>
+      </div>
+      <div style="font-size:6.5px;color:#887799;margin-bottom:6px;">${item.desc}</div>
+      <div style="font-size:6px;color:#5ab4e8;margin-bottom:8px;">✦ ${item.efeito}</div>
+      ${alreadyOwned
+        ? `<div style="font-size:6px;color:#7ab87a;text-align:center;padding:4px;border:1px solid rgba(122,184,122,.3);border-radius:4px;">✓ JÁ POSSUI</div>`
+        : `<button class="mini-btn primary" onclick="buyItem('${item.id}')" style="width:100%;font-size:7px;${!canAfford?'opacity:.4;cursor:not-allowed;':''}" ${!canAfford?'disabled':''}>
+             COMPRAR ${!canAfford ? '(sem moedas)' : ''}
+           </button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function buyItem(catalogId) {
+  const item = ITEM_CATALOG[catalogId];
+  if(!item) return;
+  if(gs.moedas < item.preco) { showBubble('Sem moedas! 😢'); return; }
+  if(itemInventory.find(i => i.catalogId === catalogId)) {
+    addLog('Você já possui este item.', 'info'); return;
+  }
+  spendCoins(item.preco);
+  const entry = { id: Date.now(), catalogId, equipped: false };
+  itemInventory.push(entry);
+  updateResourceUI();
+  scheduleSave();
+  addLog(`${item.emoji} ${item.nome} adquirido!`, 'good');
+  showBubble(`${item.emoji} Item obtido!`);
+  renderMarketItems();
+  renderItemInventory();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ITEM INVENTORY
+// ═══════════════════════════════════════════════════════════════════
+function openItemInventory() {
+  renderItemInventory();
+  ModalManager.open('itemInvModal');
+}
+
+function closeItemInventory() {
+  ModalManager.close('itemInvModal');
+}
+
+function renderItemInventory() {
+  const list = document.getElementById('itemInvList');
+  const countEl = document.getElementById('itemInvCount');
+  if(!list) return;
+
+  const equipped = itemInventory.filter(i => i.equipped).length;
+  if(countEl) countEl.innerHTML = `${itemInventory.length} ite${itemInventory.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equipped}/${MAX_EQUIPPED} equipados</span>`;
+
+  // Update header counter
+  const resEl = document.getElementById('resItems');
+  if(resEl) resEl.textContent = itemInventory.length;
+
+  if(itemInventory.length === 0) {
+    list.innerHTML = '<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum item no inventário</div>';
+    return;
+  }
+
+  list.innerHTML = itemInventory.map(entry => {
+    const item = ITEM_CATALOG[entry.catalogId];
+    if(!item) return '';
+    const isEquipped = entry.equipped;
+    const canEquip   = !isEquipped && equipped < MAX_EQUIPPED;
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:6px;padding:8px 10px;box-sizing:border-box;${isEquipped?`box-shadow:0 0 8px ${item.cor}22;`:''}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">${item.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:7.5px;color:${item.cor};">${item.nome}</div>
+          <div style="font-size:6px;color:var(--muted);margin-top:1px;">✦ ${item.efeito}</div>
+        </div>
+        ${isEquipped ? `<span style="font-size:6px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;">EQUIPADO</span>` : ''}
+      </div>
+      <div style="display:flex;gap:5px;margin-top:7px;">
+        ${isEquipped
+          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6px;">DESEQUIPAR</button>`
+          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6px;${!canEquip?'opacity:.4;cursor:not-allowed;':''}" ${!canEquip?'disabled':''}>EQUIPAR</button>`
+        }
+        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6px;">EXCLUIR</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function equipItem(id) {
+  const entry = itemInventory.find(i => i.id === id);
+  if(!entry) return;
+  const equipped = itemInventory.filter(i => i.equipped).length;
+  if(equipped >= MAX_EQUIPPED) { addLog(`Máximo de ${MAX_EQUIPPED} itens equipados.`, 'info'); return; }
+  entry.equipped = true;
+  const item = ITEM_CATALOG[entry.catalogId];
+  addLog(`${item.emoji} ${item.nome} equipado!`, 'good');
+  scheduleSave();
+  renderItemInventory();
+}
+
+function unequipItem(id) {
+  const entry = itemInventory.find(i => i.id === id);
+  if(!entry) return;
+  entry.equipped = false;
+  const item = ITEM_CATALOG[entry.catalogId];
+  addLog(`${item.emoji} ${item.nome} desequipado.`, 'info');
+  scheduleSave();
+  renderItemInventory();
+}
+
+function deleteItem(id) {
+  const idx = itemInventory.findIndex(i => i.id === id);
+  if(idx === -1) return;
+  const item = ITEM_CATALOG[itemInventory[idx].catalogId];
+  itemInventory.splice(idx, 1);
+  addLog(`${item ? item.emoji + ' ' + item.nome : 'Item'} excluído.`, 'info');
+  updateResourceUI();
+  scheduleSave();
+  renderItemInventory();
 }
 
 // ═══════════════════════════════════════════
@@ -4420,7 +4629,7 @@ function gameTick() {
     if(vitals.energia >= 100) { wakeUp('full'); }
   } else {
     const _d = rarityBonus().decay * GAME_SPEED;
-    vitals.fome    = Math.max(0, vitals.fome    - (1   * _d));
+    vitals.fome    = Math.max(0, vitals.fome    - (1   * _d * getItemEffect('fomeDecayMult')));
     vitals.humor   = Math.max(0, vitals.humor   - (.5  * _d));
     vitals.energia = Math.max(0, vitals.energia - (.3  * _d));
   }
@@ -4641,6 +4850,8 @@ function p(n){ return String(n).padStart(2,'0'); }
 function updateResourceUI() {
   document.getElementById('resMonedas').textContent   = gs.moedas;
   document.getElementById('resOvos').textContent = eggsInInventory.length;
+  const resItems = document.getElementById('resItems');
+  if(resItems) resItems.textContent = itemInventory.length;
   const btn = document.getElementById('btnSummon');
   if(!gs.primeira && (gs.moedas<250||gs.ovos<5)) btn.disabled=true;
   document.getElementById('btnSummonLabel').textContent = gs.primeira ? '▶ Primeira Invocação (Gratuita)' : '▶ Invocar Avatar (250🪙 + 5🥚)';
