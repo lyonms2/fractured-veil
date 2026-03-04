@@ -1,9 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // LOJA IN-GAME
 // ═══════════════════════════════════════════════════════════════════
-let xpBoostActive = false;
-let xpBoostTimer  = 0; // seconds remaining
-let xpBoostMult   = 2.0;
 
 const SHOP_ITEMS = [
   {
