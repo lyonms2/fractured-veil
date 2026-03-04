@@ -38,7 +38,7 @@ function renderItemInventory() {
         <div style="flex:1;">
           <div style="font-family:'Cinzel',serif;font-size:7.5px;color:${item.cor};">${item.nome}</div>
           <div style="font-size:6px;color:var(--muted);margin-top:1px;">✦ ${item.efeito}</div>
-          ${entry.expiraEm ? `<div class="item-expiry-warn">${Math.max(0,Math.floor((entry.expiraEm-Date.now())/86400000))}d restantes</div>` : ''}
+          ${entry.expiraEm ? `<div class="item-expiry-warn" style="color:${Math.floor((entry.expiraEm-Date.now())/86400000) <= 3 ? '#e05050' : '#887799'}">${Math.max(0,Math.floor((entry.expiraEm-Date.now())/86400000))}d restantes</div>` : ''}
         </div>
         ${isEquipped ? `<span style="font-size:6px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;">EQUIPADO</span>` : ''}
       </div>
