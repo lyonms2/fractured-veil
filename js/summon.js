@@ -165,6 +165,12 @@ function setupAvatar() {
   const car = avatar.car;
   document.getElementById('idNome').textContent = avatar.nome;
   document.getElementById('idMeta').textContent = `Elemento: ${car?car.emoji:''} ${avatar.elemento}`;
+  const descEl = document.getElementById('idDesc');
+  if(descEl) {
+    descEl.textContent = avatar.descricao || '';
+    descEl.style.borderLeftColor = car ? car.cor : 'var(--border)';
+    descEl.style.color = car ? car.cor + 'cc' : '#887799';
+  }
   const badge = document.getElementById('idBadge');
   badge.textContent = avatar.raridade.toUpperCase();
   badge.className = `badge badge-${avatar.raridade}`;
