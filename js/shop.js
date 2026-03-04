@@ -4,17 +4,6 @@
 
 const SHOP_ITEMS = [
   {
-    id:'food',    icon:'🍖', name:'Ração Especial',
-    baseCost:25,  desc:'Alimentação instantânea',
-    effect:'+40 fome',
-    action: () => {
-      vitals.fome = Math.min(100, vitals.fome + 40);
-      playAnim('anim-eat'); spawnFoodParticles();
-      showBubble('Que delícia! 😋'); showFloat('+40 🍖','#e74c3c');
-      addLog('Usou Ração Especial! +40 fome','good');
-    }
-  },
-  {
     id:'remedy',  icon:'💊', name:'Elixir Cura',
     baseCost:80,  desc:'Cura doenças e restaura saúde',
     effect:'+50 saúde · cura doença',
