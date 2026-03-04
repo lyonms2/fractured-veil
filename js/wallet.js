@@ -65,8 +65,20 @@ async function connectWallet() {
   if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent='CONECTANDO...'; }
   if(loginError) loginError.textContent = '';
   try {
-    // Sempre exige confirmação via popup do MetaMask
+    // Verifica se MetaMask está bloqueada antes de prosseguir
+    const isUnlocked = await window.ethereum._metamask?.isUnlocked?.();
+    if(isUnlocked === false) {
+      // Bloqueada — força popup de desbloqueio via eth_requestAccounts
+      // Se o usuário não desbloquear, lança exceção e cai no catch
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+    }
+    // Agora busca a conta (bloqueada ou já autorizada)
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    // Verifica novamente após o popup — se ainda bloqueada, rejeita
+    const stillUnlocked = await window.ethereum._metamask?.isUnlocked?.();
+    if(stillUnlocked === false) {
+      throw new Error('Carteira ainda bloqueada');
+    }
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     document.getElementById('loginScreen').style.display = 'none';
@@ -156,7 +168,12 @@ async function connectWallet() {
 
     if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
   } catch(e) {
-    addLog('Conexão cancelada.', 'info');
+    const _msg = e.message?.includes('bloqueada') ? 'Desbloqueie o MetaMask primeiro.' 
+               : e.message?.includes('rejected') || e.code === 4001 ? 'Conexão cancelada.'
+               : 'Erro ao conectar. Tente novamente.';
+    const _le = document.getElementById('loginError');
+    if(_le) _le.textContent = _msg;
+    addLog(_msg, 'info');
     const _lb = document.getElementById('loginBtn');
     const _lt = document.getElementById('loginBtnText');
     if(_lb) _lb.disabled = false;
