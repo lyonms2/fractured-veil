@@ -14,16 +14,13 @@ function triggerSummon() {
   const prefPool = PREFIXOS[elemento][raridade];
   const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
   const descricao= rnd(DESCRICOES[raridade][elemento]);
-  const stats    = gerarStats(raridade, elemento);
-  const habs     = (HABS_BASE[elemento]||HABS_BASE['Fogo']).slice(0, raridade==='Lendário'?3:2);
-  const hp       = (stats.resistencia*20)+10 + (raridade==='Lendário'?200:raridade==='Raro'?100:0);
   // Seed fiel ao original: hash de (nome + elemento), sem raridade, para manter aparência ao evoluir
   let _h = 0;
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
   const seed = Math.abs(_h);
 
-  avatar = { nome, elemento, raridade, descricao, stats, habs, hp, car, seed };
+  avatar = { nome, elemento, raridade, descricao, car, seed };
 
   // ── CINEMATIC SUMMON OVERLAY ──
   const ov         = document.getElementById('summonOverlay');
