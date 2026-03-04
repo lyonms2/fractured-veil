@@ -94,7 +94,3 @@ const FALAS = {
   bored:  ['Entediado...','Me divirta!','Tão entediado...'],
   dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
 };
-
-let xpBoostActive = false;
-let xpBoostTimer  = 0;
-let xpBoostMult   = 2.0;
