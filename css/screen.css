@@ -190,27 +190,103 @@
 }
 
 /* ── BATH / CLEAN ANIMATION ── */
-.bath-particle {
-  position: absolute;
-  font-size: 16px;
-  pointer-events: none;
-  z-index: 30;
-  animation: bath-fly 0.9s ease-out forwards;
+
+/* Avatar during bath: wobble + brighten + shimmer */
+.anim-clean {
+  animation: bath-wobble 1.6s ease-in-out forwards !important;
 }
-@keyframes bath-fly {
-  0%   { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
-  60%  { opacity: 1; }
-  100% { transform: translate(calc(-50% + var(--bx)), calc(var(--by) - 30px)) scale(1.1); opacity: 0; }
+@keyframes bath-wobble {
+  0%   { transform: scale(1)    rotate(0deg);   filter: none; }
+  10%  { transform: scale(1.08) rotate(-10deg); filter: brightness(1.2); }
+  22%  { transform: scale(1.05) rotate(9deg);   filter: brightness(1.4) saturate(1.6); }
+  35%  { transform: scale(1.1)  rotate(-7deg);  filter: brightness(1.6) saturate(2) drop-shadow(0 0 10px #5ab4e8); }
+  50%  { transform: scale(1.06) rotate(5deg);   filter: brightness(1.8) saturate(2.2) drop-shadow(0 0 14px #a0d8f8); }
+  65%  { transform: scale(1.08) rotate(-4deg);  filter: brightness(1.5) saturate(1.8) drop-shadow(0 0 10px #5ab4e8); }
+  80%  { transform: scale(1.04) rotate(2deg);   filter: brightness(1.2); }
+  100% { transform: scale(1)    rotate(0deg);   filter: none; }
 }
 
-/* Anim-clean: avatar bounces + rotates slightly */
-.anim-clean {
-  animation: anim-clean-bounce 0.6s ease-in-out 3 !important;
+/* Shower curtain — full wrap blue wash */
+.bath-curtain {
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  pointer-events: none; z-index: 22;
+  background: linear-gradient(180deg, rgba(90,180,232,.5) 0%, rgba(40,120,200,.2) 60%, transparent 100%);
+  animation: bath-curtain-anim 1s ease-out forwards;
 }
-@keyframes anim-clean-bounce {
-  0%   { transform: translateY(0) rotate(0deg) scale(1); }
-  25%  { transform: translateY(-8px) rotate(-5deg) scale(1.05); }
-  50%  { transform: translateY(0) rotate(0deg) scale(1); }
-  75%  { transform: translateY(-5px) rotate(4deg) scale(1.03); }
-  100% { transform: translateY(0) rotate(0deg) scale(1); }
+@keyframes bath-curtain-anim {
+  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  25%  { opacity: 1; transform: scaleY(1); }
+  70%  { opacity: 0.8; }
+  100% { opacity: 0; transform: scaleY(1); }
+}
+
+/* Water drops falling */
+.bath-drop {
+  position: absolute;
+  top: 0;
+  font-size: 13px;
+  pointer-events: none; z-index: 28;
+  animation: bath-drop-fall var(--dur, 0.5s) cubic-bezier(.4,0,.8,1) forwards;
+}
+@keyframes bath-drop-fall {
+  0%   { transform: translateY(-8px) scale(0.7); opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(var(--fall, 80px)) scale(1); opacity: 0; }
+}
+
+/* Expanding splash rings */
+.bath-ring {
+  position: absolute;
+  bottom: 18%; left: 50%;
+  width: var(--rsize, 50px); height: calc(var(--rsize, 50px) * 0.35);
+  transform: translateX(-50%);
+  border: 2px solid rgba(90,180,232,.85);
+  border-radius: 50%;
+  pointer-events: none; z-index: 26;
+  animation: bath-ring-expand 0.65s ease-out forwards;
+}
+@keyframes bath-ring-expand {
+  0%   { transform: translateX(-50%) scale(0.2); opacity: 1; }
+  100% { transform: translateX(-50%) scale(3.5); opacity: 0; }
+}
+
+/* Soap bubbles rising */
+.bath-bubble {
+  position: absolute;
+  pointer-events: none; z-index: 27;
+  animation: bath-bubble-rise 0.9s ease-out forwards;
+}
+@keyframes bath-bubble-rise {
+  0%   { transform: translateY(0) scale(0.5); opacity: 0.9; }
+  40%  { opacity: 1; transform: translateY(calc(var(--rise, 40px) * -0.5)) scale(1); }
+  100% { transform: translateY(calc(var(--rise, 40px) * -1)) scale(1.3); opacity: 0; }
+}
+
+/* Sparkle shimmer radiate */
+.bath-sparkle {
+  position: absolute;
+  font-size: 13px;
+  pointer-events: none; z-index: 29;
+  animation: bath-sparkle-pop 0.7s ease-out forwards;
+}
+@keyframes bath-sparkle-pop {
+  0%   { transform: translate(-50%, 0) scale(0); opacity: 1; }
+  50%  { transform: translate(-50%, -8px) scale(1.4); opacity: 1; }
+  100% { transform: translate(-50%, -18px) scale(0.6); opacity: 0; }
+}
+
+/* Fresh scent floating up with sway */
+.bath-scent {
+  position: absolute;
+  bottom: 20%;
+  font-size: 15px;
+  pointer-events: none; z-index: 27;
+  animation: bath-scent-rise 1.3s ease-out forwards;
+}
+@keyframes bath-scent-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+  15%  { opacity: 1; }
+  50%  { transform: translateY(-30px) translateX(var(--sway, 5px)) scale(1.1); }
+  100% { transform: translateY(-70px) translateX(calc(var(--sway, 5px) * -0.5)) scale(0.7); opacity: 0; }
 }
