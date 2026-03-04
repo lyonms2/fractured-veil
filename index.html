@@ -215,48 +215,60 @@
           </div>
 
           <!-- MARKET MODAL -->
-          <div class="mini-modal" id="marketModal" style="padding:14px 16px;justify-content:flex-start;overflow-y:auto;max-height:80%;">
-            <button class="gs-x-btn" onclick="closeMarket()">✕</button>
-            <div class="mini-title">🛒 MERCADO</div>
-            <!-- Market section selector -->
-            <div style="display:flex;gap:6px;margin-bottom:10px;width:100%;">
-              <button class="mini-btn" id="mktSecEggs"  onclick="mktSection('eggs')"  style="flex:1;font-size:7px;">🥚 OVOS</button>
-              <button class="mini-btn" id="mktSecItems" onclick="mktSection('items')" style="flex:1;font-size:7px;">🔮 ITENS</button>
+          <div class="mini-modal" id="marketModal">
+
+            <!-- Header -->
+            <div class="mkt-header">
+              <div class="mini-title" style="margin:0;">🛒 MERCADO</div>
+              <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeMarket()">✕</button>
+            </div>
+
+            <!-- Section tabs: OVOS / ITENS -->
+            <div class="mkt-sections">
+              <button class="mkt-sec-btn active" id="mktSecEggs"  onclick="mktSection('eggs')">🥚 OVOS</button>
+              <button class="mkt-sec-btn"        id="mktSecItems" onclick="mktSection('items')">🔮 ITENS</button>
             </div>
 
             <!-- EGGS SECTION -->
-            <div id="mktEggsSection" style="width:100%;">
-              <div style="display:flex;gap:6px;margin-bottom:8px;width:100%;">
-                <button class="mini-btn" id="mktTabBuy"  onclick="mktTab('buy')"  style="flex:1;font-size:6px;">COMPRAR</button>
-                <button class="mini-btn" id="mktTabSell" onclick="mktTab('sell')" style="flex:1;font-size:6px;">VENDER</button>
+            <div id="mktEggsSection" style="display:flex;flex-direction:column;width:100%;flex:1;min-height:0;">
+              <!-- Buy / Sell tabs -->
+              <div class="mkt-tabs">
+                <button class="mkt-tab-btn active" id="mktTabBuy"  onclick="mktTab('buy')">⬇ COMPRAR</button>
+                <button class="mkt-tab-btn"        id="mktTabSell" onclick="mktTab('sell')">⬆ VENDER</button>
               </div>
-              <div id="mktBuyPanel" style="width:100%;">
+
+              <!-- Buy panel -->
+              <div id="mktBuyPanel" class="mkt-body">
                 <div id="mktListings" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-                <div id="mktEmpty" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum ovo no mercado</div>
+                <div id="mktEmpty" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;display:none;">Nenhum ovo no mercado</div>
               </div>
-              <div id="mktSellPanel" style="display:none;width:100%;">
-                <div style="font-size:7px;color:var(--muted);margin-bottom:8px;">Selecione um ovo do inventário para vender:</div>
-                <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-                <div id="mktSellForm" style="display:none;margin-top:10px;width:100%;">
-                  <div style="font-size:7px;color:var(--gold-light);margin-bottom:6px;" id="mktSellEggInfo"></div>
-                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                    <span style="font-size:7px;color:var(--muted);">Preço:</span>
-                    <input id="mktPriceInput" type="number" min="1" max="99999" value="100"
-                      style="width:80px;background:#0d0a1a;border:1px solid var(--border);border-radius:4px;color:var(--gold);font-family:'Cinzel',serif;font-size:8px;padding:4px 6px;outline:none;">
-                    <span style="font-size:7px;color:var(--muted);">🪙</span>
-                  </div>
-                  <div style="display:flex;gap:6px;">
-                    <button class="mini-btn" onclick="confirmSellEgg()" style="flex:1;font-size:7px;border-color:var(--gold);color:var(--gold);">LISTAR</button>
-                    <button class="mini-btn close" onclick="cancelSellEgg()" style="flex:1;font-size:7px;">CANCELAR</button>
+
+              <!-- Sell panel -->
+              <div id="mktSellPanel" style="display:none;flex-direction:column;flex:1;min-height:0;">
+                <div class="mkt-body">
+                  <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">SEUS OVOS</div>
+                  <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
+                  <div id="mktSellForm" style="display:none;" class="mkt-sell-form">
+                    <div style="font-size:8px;color:var(--gold-light);margin-bottom:8px;" id="mktSellEggInfo"></div>
+                    <label>PREÇO</label>
+                    <div class="mkt-price-row">
+                      <input id="mktPriceInput" class="mkt-price-input" type="number" min="1" max="99999" value="100">
+                      <span style="font-size:10px;">🪙</span>
+                    </div>
+                    <div class="mkt-action-row">
+                      <button class="mkt-btn-confirm" onclick="confirmSellEgg()">✓ LISTAR</button>
+                      <button class="mkt-btn-cancel"  onclick="cancelSellEgg()">CANCELAR</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- ITEMS SECTION -->
-            <div id="mktItemsSection" style="display:none;width:100%;">
-              <div id="mktItemsList" style="display:flex;flex-direction:column;gap:8px;width:100%;"></div>
+            <div id="mktItemsSection" style="display:none;flex:1;min-height:0;">
+              <div class="mkt-body" id="mktItemsList"></div>
             </div>
+
           </div><!-- GAME SELECTOR -->
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
