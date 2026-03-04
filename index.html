@@ -3081,6 +3081,7 @@ async function loadFromFirebase() {
 // ═══════════════════════════════════════════════════════════════════
 
 function disconnectWallet() {
+  localStorage.removeItem('fv_wallet_connected');
   // ── Reset full game state ──
   avatar = null;
   hatched = false; dead = false; sick = false; sleeping = false;
@@ -3140,6 +3141,7 @@ async function connectWallet() {
 
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
+    localStorage.setItem('fv_wallet_connected', '1');
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
     document.getElementById('walletShort').textContent = short;
     document.getElementById('walletInfo').style.display = 'flex';
@@ -5001,11 +5003,14 @@ function addLog(msg, type='') {
 async function tryAutoReconnect() {
   if(typeof window.ethereum === 'undefined') return;
   try {
-    // Só reconecta se MetaMask estiver desbloqueado E com conta ativa
-    // eth_accounts retorna vazio se carteira está bloqueada
+    // eth_accounts retorna contas SÓ se o site já foi explicitamente autorizado
+    // pelo usuário nesta sessão do navegador (não persiste após fechar/reabrir)
+    // Para verificar isso usamos eth_accounts — mas MetaMask persiste a permissão
+    // entre sessões. A única forma confiável é checar localStorage.
+    const _autoKey = 'fv_wallet_connected';
+    if(!localStorage.getItem(_autoKey)) return; // usuário não conectou nesta sessão
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    const isUnlocked = await window.ethereum._metamask?.isUnlocked?.() ?? true;
-    if(accounts && accounts.length > 0 && isUnlocked) {
+    if(accounts && accounts.length > 0) {
       // Already authorized — reconnect silently
       walletAddress = accounts[0].toLowerCase();
       const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
