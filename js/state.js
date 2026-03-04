@@ -1,3 +1,14 @@
+// ── Runtime state variables ──
+let avatar        = null;
+const vitals      = { fome:100, humor:100, energia:100, saude:100, higiene:100 };
+let poopCount     = 0;
+let dirtyLevel    = 0;
+let poopCooldown  = 5;
+let eggLayCooldown = 0;
+let pendingHatchId = null;
+let eggsInInventory = [];
+const GAME_SPEED  = 1.0;
+
 // ═══════════════════════════════════════════════════════════════════
 // ITEM SYSTEM
 // ═══════════════════════════════════════════════════════════════════
@@ -71,3 +82,7 @@ const FALAS = {
   bored:  ['Entediado...','Me divirta!','Tão entediado...'],
   dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
 };
+
+let xpBoostActive = false;
+let xpBoostTimer  = 0;
+let xpBoostMult   = 2.0;
