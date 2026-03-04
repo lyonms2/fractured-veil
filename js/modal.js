@@ -68,6 +68,39 @@ const ModalManager = {
 };
 
 function openGameSelector() {
+  // Update reward labels based on current rarity + level
+  const rb = rarityBonus();
+  const d  = miniDifficulty();
+  const r  = n => Math.round(n);
+
+  const jkpEl = document.getElementById('rewardJkp');
+  if(jkpEl) {
+    const xpMin = r(3*rb.xp); const xpMax = r(15*rb.xp);
+    const cMin  = r(3*rb.moedas); const cMax = r(25*rb.moedas);
+    jkpEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
+
+  const memEl = document.getElementById('rewardMemoria');
+  if(memEl) {
+    const xpMin = r(10*0.5*rb.xp); const xpMax = r(50*1.3*rb.xp);
+    const cMin  = r(25*0.5*rb.moedas); const cMax = r(80*1.3*rb.moedas);
+    memEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
+
+  const simEl = document.getElementById('rewardSimon');
+  if(simEl) {
+    const xpMin = r(10*1.3*rb.xp); const xpMax = r(50*1.3*rb.xp);
+    const cMin  = r(25*1.3*rb.moedas); const cMax = r(80*1.3*rb.moedas);
+    simEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
+
+  const somEl = document.getElementById('rewardSombra');
+  if(somEl) {
+    const xpMin = r(10*0.3*rb.xp); const xpMax = r(50*1.5*rb.xp);
+    const cMin  = r(25*0.3*rb.moedas); const cMax = r(80*1.5*rb.moedas);
+    somEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
+
   ModalManager.open('gameSelector');
 }
 
