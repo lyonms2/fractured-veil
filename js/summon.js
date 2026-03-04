@@ -20,6 +20,14 @@ function triggerSummon() {
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
   const seed = Math.abs(_h);
 
+  // Reset state for new avatar
+  dead = false; hatched = false; sick = false; sleeping = false;
+  nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
+  eggClicks = 0; eggLayCooldown = 0;
+  poopCount = 0; dirtyLevel = 0; poopCooldown = 180;
+  Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
+  document.getElementById('poopContainer').innerHTML = '';
+
   avatar = { nome, elemento, raridade, descricao, car, seed };
 
   // ── CINEMATIC SUMMON OVERLAY ──
@@ -196,6 +204,7 @@ function setupAvatar() {
 
   addLog(`${avatar.nome} foi invocado! Clique no ovo 5x para chocá-lo.`, 'good');
   updateAllUI();
+  scheduleSave();
 }
 
 // ═══════════════════════════════════════════
