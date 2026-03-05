@@ -615,11 +615,29 @@ function renderSleepEyes() {
   }
 
   se.innerHTML = svgContent;
-  // Match exact rendered size of the avatar SVG for this phase
-  const sz = getFaseSize() + 'px';
-  se.style.width  = sz;
-  se.style.height = sz;
+  positionSleepEyes();
   requestAnimationFrame(() => se.classList.add('show'));
+}
+
+function positionSleepEyes() {
+  const se   = document.getElementById('sleepEyes');
+  const wrap = document.getElementById('creatureWrap');
+  const svg  = document.getElementById('creatureSVG');
+  if(!se || !wrap || !svg) return;
+
+  const sz = getFaseSize();
+  se.setAttribute('width',  sz);
+  se.setAttribute('height', sz);
+  se.style.width  = sz + 'px';
+  se.style.height = sz + 'px';
+
+  // Position relative to creatureWrap using actual DOM rects
+  const wrapRect = wrap.getBoundingClientRect();
+  const svgRect  = svg.getBoundingClientRect();
+  se.style.position = 'absolute';
+  se.style.left     = (svgRect.left - wrapRect.left) + 'px';
+  se.style.top      = (svgRect.top  - wrapRect.top)  + 'px';
+  se.style.transform = 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════════
