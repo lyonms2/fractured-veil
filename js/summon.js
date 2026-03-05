@@ -269,7 +269,7 @@ function hatch() {
   alive.style.opacity = '0';
   alive.style.transition = 'opacity .6s ease';
 
-  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 140, 140);
+  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
   // Egg inventory button: only active after hatch
@@ -297,7 +297,6 @@ function hatch() {
     btnLayEgg.title = eggLayCooldown > 0 ? `Pronto em ~${Math.ceil(eggLayCooldown*60/3600)}h` : 'Pronto para botar!';
     if(isAdult) {
       const btnsBar = document.getElementById('actionBtns');
-      if(btnsBar) btnsBar.classList.add('has-clean');
     }
   }
   renderEggInventory();
