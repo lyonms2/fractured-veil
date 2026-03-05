@@ -24,7 +24,6 @@ async function disconnectWallet() {
   Object.assign(gs, { moedas:100, ovos:0, primeira:true });
   eggsInInventory = [];
   dirtyLevel = 0; poopCount = 0; poopCooldown = 5;
-  xpBoostActive = false; xpBoostTimer = 0;
   walletAddress = null;
 
   // ── Reset screens ──
