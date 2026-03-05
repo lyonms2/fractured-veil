@@ -615,9 +615,10 @@ function renderSleepEyes() {
   }
 
   se.innerHTML = svgContent;
-  // Scale the SVG overlay to match the creature SVG (200x200 viewBox, rendered at 140x140)
-  se.style.width  = '100%';
-  se.style.height = '100%';
+  // Match exact rendered size of the avatar SVG for this phase
+  const sz = getFaseSize() + 'px';
+  se.style.width  = sz;
+  se.style.height = sz;
   requestAnimationFrame(() => se.classList.add('show'));
 }
 
