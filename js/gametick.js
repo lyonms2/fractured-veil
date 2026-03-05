@@ -81,7 +81,6 @@ function cleanCreature() {
   addLog(`Banho tomado! +${higieneGain} higiene  +${humorGain} humor  (-15 ⚡)`, 'good');
 
   updateDirtyVisuals();
-  updateAllUI();
   scheduleSave();
 }
 
@@ -200,6 +199,8 @@ function gameTick() {
 
   if(!hatched || dead || !avatar) return;
 
+  updateAllUI(); // update bars every tick
+
   if(tickCount % 60 !== 0) return; // 1 game cycle = 60s real time
 
   if(sleeping) {
@@ -266,8 +267,6 @@ function gameTick() {
   if(tickCount % (60 * 2) === 0) { // +moedas a cada 2 min reais
     earnCoins(Math.round(1 * rarityBonus().moedas));
   }
-
-  updateAllUI();
 }
 
 function autoSpeak() {
