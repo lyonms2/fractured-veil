@@ -62,14 +62,11 @@
 }
 @keyframes star-twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
 
-/* Closed eyes overlay when sleeping */
+/* Closed eyes overlay when sleeping — posicionado via JS */
 #sleepEyes {
-  position:absolute;
-  pointer-events:none; z-index:17;
-  opacity:0; transition:opacity .6s ease;
-  /* centered over avatar — size set dynamically by JS */
-  top:50%; left:50%;
-  transform:translate(-50%, -50%);
+  position: absolute;
+  pointer-events: none; z-index: 17;
+  opacity: 0; transition: opacity .6s ease;
 }
 #sleepEyes.show { opacity:1; }
 
