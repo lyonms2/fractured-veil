@@ -234,49 +234,45 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeMarket()">✕</button>
             </div>
 
-            <!-- Section tabs fixas (OVOS / ITENS) -->
+            <!-- Section tabs fixas (não scrollam) -->
             <div class="mkt-sections">
               <button class="mkt-sec-btn active" id="mktSecEggs"  onclick="mktSection('eggs')">🥚 OVOS</button>
               <button class="mkt-sec-btn"        id="mktSecItems" onclick="mktSection('items')">🔮 ITENS</button>
             </div>
 
             <!-- EGGS SECTION -->
-            <div id="mktEggsSection" class="modal-scroll-body" style="padding:0;flex-direction:column;overflow:hidden;">
-              <!-- Sub-tabs: COMPRAR / VENDER -->
+            <div id="mktEggsSection" style="display:flex;flex-direction:column;flex:1;min-height:0;width:100%;overflow:hidden;">
+              <!-- Sub-tabs fixas -->
               <div class="mkt-tabs" style="flex-shrink:0;">
                 <button class="mkt-tab-btn active" id="mktTabBuy"  onclick="mktTab('buy')">⬇ COMPRAR</button>
                 <button class="mkt-tab-btn"        id="mktTabSell" onclick="mktTab('sell')">⬆ VENDER</button>
               </div>
-
-              <!-- Buy panel -->
-              <div id="mktBuyPanel" class="mkt-body">
+              <!-- Buy panel — scroll aqui -->
+              <div id="mktBuyPanel" class="modal-scroll-body">
                 <div id="mktListings" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
                 <div id="mktEmpty" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;display:none;">Nenhum ovo no mercado</div>
               </div>
-
-              <!-- Sell panel -->
-              <div id="mktSellPanel" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
-                <div class="mkt-body">
-                  <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">SEUS OVOS</div>
-                  <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-                  <div id="mktSellForm" style="display:none;" class="mkt-sell-form">
-                    <div style="font-size:8px;color:var(--gold-light);margin-bottom:8px;" id="mktSellEggInfo"></div>
-                    <label class="mkt-sell-form-label">PREÇO</label>
-                    <div class="mkt-price-row">
-                      <input id="mktPriceInput" class="mkt-price-input" type="number" min="1" max="99999" value="100">
-                      <span style="font-size:10px;">🪙</span>
-                    </div>
-                    <div class="mkt-action-row">
-                      <button class="mkt-btn-confirm" onclick="confirmSellEgg()">✓ LISTAR</button>
-                      <button class="mkt-btn-cancel"  onclick="cancelSellEgg()">CANCELAR</button>
-                    </div>
+              <!-- Sell panel — scroll aqui -->
+              <div id="mktSellPanel" class="modal-scroll-body" style="display:none;">
+                <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">SEUS OVOS</div>
+                <div id="mktMyEggs" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
+                <div id="mktSellForm" style="display:none;" class="mkt-sell-form">
+                  <div style="font-size:8px;color:var(--gold-light);margin-bottom:8px;" id="mktSellEggInfo"></div>
+                  <label class="mkt-sell-form-label">PREÇO</label>
+                  <div class="mkt-price-row">
+                    <input id="mktPriceInput" class="mkt-price-input" type="number" min="1" max="99999" value="100">
+                    <span style="font-size:10px;">🪙</span>
+                  </div>
+                  <div class="mkt-action-row">
+                    <button class="mkt-btn-confirm" onclick="confirmSellEgg()">✓ LISTAR</button>
+                    <button class="mkt-btn-cancel"  onclick="cancelSellEgg()">CANCELAR</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- ITEMS SECTION -->
-            <div id="mktItemsSection" style="display:none;" class="modal-scroll-body">
+            <!-- ITEMS SECTION — scroll aqui -->
+            <div id="mktItemsSection" class="modal-scroll-body" style="display:none;">
               <div id="mktItemsList" style="display:flex;flex-direction:column;gap:8px;width:100%;"></div>
             </div>
 
