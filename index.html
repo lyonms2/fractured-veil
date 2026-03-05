@@ -278,6 +278,46 @@
 
           </div>
 
+          <!-- GAME SELECTOR -->
+          <div id="gameSelector">
+            <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
+            <div class="gs-title">◆ ESCOLHA UM JOGO</div>
+            <div class="gs-grid">
+              <div class="gs-btn" onclick="openMinigame('jkp')">
+                <div class="gs-btn-icon">🪨</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">JO-KEN-PÔ</div>
+                  <div class="gs-btn-desc">Enfrente seu avatar num duelo</div>
+                  <div class="gs-btn-reward" id="rewardJkp">+3~24 XP · +3~25 🪙</div>
+                </div>
+              </div>
+              <div class="gs-btn" onclick="openMinigame('memoria')">
+                <div class="gs-btn-icon">🃏</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">MEMÓRIA ELEMENTAL</div>
+                  <div class="gs-btn-desc">Encontre todos os pares de elementos</div>
+                  <div class="gs-btn-reward" id="rewardMemoria">+5~65 XP · +12~104 🪙</div>
+                </div>
+              </div>
+              <div class="gs-btn" onclick="openMinigame('simon')">
+                <div class="gs-btn-icon">🎵</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">SIMON SAYS</div>
+                  <div class="gs-btn-desc">Repita a sequência de elementos</div>
+                  <div class="gs-btn-reward" id="rewardSimon">+13~65 XP · +32~104 🪙</div>
+                </div>
+              </div>
+              <div class="gs-btn" onclick="openMinigame('sombra')">
+                <div class="gs-btn-icon">⏱</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">CORRIDA DE SOMBRA</div>
+                  <div class="gs-btn-desc">Clique no momento certo</div>
+                  <div class="gs-btn-reward" id="rewardSombra">+3~75 XP · +7~120 🪙</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- HATCH CONFIRM MODAL -->
           <div class="mini-modal" id="hatchConfirmModal">
             <div class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
@@ -373,7 +413,6 @@
               <div class="creature-svg-wrap" id="creatureSVG"></div>
               <div class="creature-shadow"></div>
               <div class="bubble" id="bubble">Olá!</div>
-              <svg id="sleepEyes" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
               <div class="zzz-bubble" id="zzz1" style="bottom:115px;left:56%;font-size:11px;animation-delay:0s">z</div>
               <div class="zzz-bubble" id="zzz2" style="bottom:132px;left:63%;font-size:14px;animation-delay:.9s">Z</div>
               <div class="zzz-bubble" id="zzz3" style="bottom:150px;left:69%;font-size:17px;animation-delay:1.8s">Z</div>
