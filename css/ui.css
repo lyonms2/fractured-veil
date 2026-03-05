@@ -375,9 +375,9 @@
   100% { opacity: 0;   transform: translateY(-35px) rotate(6deg)  scale(1.1); }
 }
 
-/* ── Avatar sujo — filtro progressivo via CSS var ── */
+/* ── Avatar: tamanho por fase + sujo progressivo ── */
 #creatureWrap .creature-svg-wrap {
-  transition: filter 2s ease;
+  transition: filter 2s ease, width .8s cubic-bezier(.34,1.56,.64,1), height .8s cubic-bezier(.34,1.56,.64,1);
   filter:
     sepia(calc(var(--dirty,0) * 0.7))
     saturate(calc(1 - var(--dirty,0) * 0.5))
