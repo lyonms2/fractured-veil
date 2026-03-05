@@ -74,6 +74,8 @@ const gs = { moedas:100, ovos:0 };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
 const getFase = () => nivel < 3 ? 0 : nivel < 6 ? 1 : nivel < 10 ? 2 : 3;
+const FASE_SIZES = [75, 100, 120, 140]; // BEBÊ → ADULTO (px)
+const getFaseSize = () => FASE_SIZES[getFase()];
 
 // Rarity multipliers — all advantages scale from here
 function rarityBonus() {
