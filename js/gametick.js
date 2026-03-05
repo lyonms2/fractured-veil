@@ -172,10 +172,16 @@ function updateDirtyVisuals() {
 
   if(!screen || !wrap) return;
 
-  // Dirt spots on screen (appear as hygiene drops)
-  const dirtyPct = 1 - (vitals.higiene / 100);
+  // CSS variable --dirty: 0 (clean) → 1 (filthy), inverse of higiene
+  const dirtyPct = parseFloat(Math.max(0, (1 - vitals.higiene / 100)).toFixed(3));
+  screen.style.setProperty('--dirty', dirtyPct);
+  wrap.style.setProperty('--dirty', dirtyPct);
+
+  // Dirt spots: appear progressively as hygiene drops below 70
+  // 5 spots, first appears at higiene=70, all visible at higiene=20
   dirts.forEach((d, i) => {
-    d.classList.toggle('visible', i < Math.floor(dirtyPct * 5));
+    const threshold = 0.30 + i * 0.12; // 0.30, 0.42, 0.54, 0.66, 0.78
+    d.classList.toggle('visible', dirtyPct >= threshold);
   });
 
   // Stink lines (appear when 2+ poops)
