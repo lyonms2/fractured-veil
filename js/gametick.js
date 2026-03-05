@@ -175,6 +175,8 @@ function updateAvatarSize() {
   }
   wrap.style.width  = sz + 'px';
   wrap.style.height = sz + 'px';
+  // Reposition sleep eyes if currently sleeping
+  if(sleeping) positionSleepEyes();
 }
 
 function updateDirtyVisuals() {
