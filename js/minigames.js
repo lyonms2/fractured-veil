@@ -493,8 +493,8 @@ function wakeUp(reason) {
   sleeping = false;
   document.getElementById('sleepOverlay').classList.remove('active');
   // Hide closed eyes
-  const se = document.getElementById('sleepEyes');
-  if(se) { se.classList.remove('show'); se.innerHTML = ''; }
+  const grp = document.querySelector('#sleepEyesGroup');
+  if(grp) grp.remove();
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.remove('sleeping'));
   resetAnim();
   document.getElementById('actionBtns').classList.remove('sleeping-mode');
@@ -570,8 +570,13 @@ function spawnHealParticles() {
 
 function renderSleepEyes() {
   if(!avatar) return;
-  const se = document.getElementById('sleepEyes');
-  if(!se) return;
+  // Inject closed eyes directly into the avatar SVG (same coordinate space, no positioning needed)
+  const avatarSvg = document.querySelector('#creatureSVG svg');
+  if(!avatarSvg) return;
+
+  // Remove any previous sleep eyes group
+  const old = avatarSvg.querySelector('#sleepEyesGroup');
+  if(old) old.remove();
 
   // Reconstruct eye positions using same deterministic seed as gerarSVG
   let _seed = avatar.seed;
@@ -580,64 +585,59 @@ function renderSleepEyes() {
     return Math.floor((_seed / 233280) * (max - min + 1)) + min;
   };
 
-  const cfg      = ELEM_CFG[avatar.elemento] || ELEM_CFG['Fogo'];
-  // advance seed through same steps as gerarSVG to get to numOlhos/tipoOlho
+  const cfg   = ELEM_CFG[avatar.elemento] || ELEM_CFG['Fogo'];
   rnd(0, cfg.cores.length-1);       // cor1
   rnd(0, cfg.cores.length-1);       // cor2
   rnd(0, cfg.coresSec.length-1);    // corSec
-  // corBrilho and corOlho are not random
-  const mult      = avatar.raridade === 'Lendário' ? 2 : avatar.raridade === 'Raro' ? 1.5 : 1;
+  const mult     = avatar.raridade === 'Lendário' ? 2 : avatar.raridade === 'Raro' ? 1.5 : 1;
   rnd(1, avatar.raridade === 'Lendário' ? 8 : avatar.raridade === 'Raro' ? 6 : 5); // tipoCorpo
-  const numOlhos  = rnd(avatar.raridade === 'Comum' ? 1 : 2, 3);
-  rnd(1, 8); // tipoOlho — we don't need it
-  rnd(2, Math.floor(4 * mult)); // numBracos
-  rnd(0, 4);  // numChifres
-  // We now know numOlhos and eye X positions
+  const numOlhos = rnd(avatar.raridade === 'Comum' ? 1 : 2, 3);
+  rnd(1, 8);                         // tipoOlho
+  rnd(2, Math.floor(4 * mult));      // numBracos
+  rnd(0, 4);                         // numChifres
 
   const espac = numOlhos === 1 ? 0 : 60 / (numOlhos - 1);
   const eyeY  = 95;
   const tb    = avatar.raridade === 'Lendário' ? 14 : avatar.raridade === 'Raro' ? 12 : 10;
 
-  let svgContent = '';
+  const ns  = 'http://www.w3.org/2000/svg';
+  const grp = document.createElementNS(ns, 'g');
+  grp.id = 'sleepEyesGroup';
+  grp.style.opacity = '0';
+  grp.style.transition = 'opacity .6s ease';
+
   for(let i = 0; i < numOlhos; i++) {
     const x  = numOlhos === 1 ? 100 : 70 + (i * espac);
-    const hw = tb * 0.9; // half-width of closed eye line
-    // white backing ellipse to cover the open eye underneath
-    svgContent += `<ellipse cx="${x}" cy="${eyeY}" rx="${hw + 2}" ry="${tb + 3}" fill="#0a0816" opacity=".92"/>`;
-    // curved closed eye line (like ── )
-    svgContent += `<path d="M ${x - hw} ${eyeY} Q ${x} ${eyeY + hw * 0.55} ${x + hw} ${eyeY}"
-      stroke="${cfg.corOlho}" stroke-width="3" fill="none" stroke-linecap="round"
-      opacity=".95"/>`;
-    // tiny eyelash dots
-    svgContent += `<circle cx="${x - hw * 0.6}" cy="${eyeY + hw * 0.3}" r="1.5" fill="${cfg.corOlho}" opacity=".6"/>`;
-    svgContent += `<circle cx="${x}" cy="${eyeY + hw * 0.5}" r="1.5" fill="${cfg.corOlho}" opacity=".6"/>`;
-    svgContent += `<circle cx="${x + hw * 0.6}" cy="${eyeY + hw * 0.3}" r="1.5" fill="${cfg.corOlho}" opacity=".6"/>`;
+    const hw = tb * 0.9;
+
+    // backing ellipse to cover open eye
+    const ellipse = document.createElementNS(ns, 'ellipse');
+    ellipse.setAttribute('cx', x); ellipse.setAttribute('cy', eyeY);
+    ellipse.setAttribute('rx', hw + 2); ellipse.setAttribute('ry', tb + 3);
+    ellipse.setAttribute('fill', '#0a0816'); ellipse.setAttribute('opacity', '.95');
+    grp.appendChild(ellipse);
+
+    // closed eye arc
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', `M ${x-hw} ${eyeY} Q ${x} ${eyeY + hw*0.55} ${x+hw} ${eyeY}`);
+    path.setAttribute('stroke', cfg.corOlho); path.setAttribute('stroke-width', '3');
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('opacity', '.95');
+    grp.appendChild(path);
+
+    // eyelash dots
+    [[x - hw*0.6, eyeY + hw*0.3],[x, eyeY + hw*0.5],[x + hw*0.6, eyeY + hw*0.3]].forEach(([cx,cy]) => {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+      dot.setAttribute('r', '1.5'); dot.setAttribute('fill', cfg.corOlho); dot.setAttribute('opacity', '.6');
+      grp.appendChild(dot);
+    });
   }
 
-  se.innerHTML = svgContent;
-  positionSleepEyes();
-  requestAnimationFrame(() => se.classList.add('show'));
+  avatarSvg.appendChild(grp);
+  requestAnimationFrame(() => { grp.style.opacity = '1'; });
 }
 
-function positionSleepEyes() {
-  const se   = document.getElementById('sleepEyes');
-  const wrap = document.getElementById('creatureWrap');
-  const svg  = document.getElementById('creatureSVG');
-  if(!se || !wrap || !svg) return;
-
-  const sz = getFaseSize();
-  se.setAttribute('width',  sz);
-  se.setAttribute('height', sz);
-  se.style.width  = sz + 'px';
-  se.style.height = sz + 'px';
-
-  // Position relative to creatureWrap using actual DOM rects
-  const wrapRect = wrap.getBoundingClientRect();
-  const svgRect  = svg.getBoundingClientRect();
-  se.style.position = 'absolute';
-  se.style.left     = (svgRect.left - wrapRect.left) + 'px';
-  se.style.top      = (svgRect.top  - wrapRect.top)  + 'px';
-  se.style.transform = 'none';
-}
+function positionSleepEyes() { renderSleepEyes(); } // alias — called from updateAvatarSize
 
 // ═══════════════════════════════════════════════════════════════════
