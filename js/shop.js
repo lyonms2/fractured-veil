@@ -29,18 +29,6 @@ const SHOP_ITEMS = [
       addLog('Usou Kit Higiene! +60 higiene','good');
     }
   },
-  {
-    id:'xpboost', icon:'✨', name:'Impulso XP',
-    baseCost:120, desc:'Dobra o XP por 3 minutos',
-    effect:'×2 XP por 3 min',
-    action: () => {
-      xpBoostActive = true;
-      xpBoostTimer  = 180;
-      showBubble('XP em dobro! ✨'); showFloat('×2 XP','#e8a030');
-      addLog('Impulso XP ativo por 3 minutos!','leg');
-      renderShopItems();
-    }
-  },
 ];
 
 function openShop() {
