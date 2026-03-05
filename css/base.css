@@ -20,10 +20,10 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
 }
-/* ── 10% zoom boost for desktop readability ── */
+/* ── 75% zoom boost for desktop readability ── */
 @media(min-width:681px) {
-  html { font-size: 110%; }
-  .app { zoom: 1.10; }
+  html { font-size: 175%; }
+  .app { zoom: 1.75; }
 }
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 body::after {
