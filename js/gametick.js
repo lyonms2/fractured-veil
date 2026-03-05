@@ -164,6 +164,19 @@ function spawnBathParticles() {
   });
 }
 
+function updateAvatarSize() {
+  const wrap = document.getElementById('creatureSVG');
+  if(!wrap || !hatched || dead) return;
+  const sz = getFaseSize();
+  const svg = wrap.querySelector('svg');
+  if(svg) {
+    svg.setAttribute('width', sz);
+    svg.setAttribute('height', sz);
+  }
+  wrap.style.width  = sz + 'px';
+  wrap.style.height = sz + 'px';
+}
+
 function updateDirtyVisuals() {
   const screen  = document.querySelector('.screen');
   const wrap    = document.getElementById('creatureWrap');
@@ -255,7 +268,7 @@ function gameTick() {
 
   if(vitals.saude <= 0) { killCreature(); return; }
 
-  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); } // fala e verifica itens a cada ~5 min
+  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); } // fala e verifica itens a cada ~5 min
 
   // ── POSTURA DE OVOS (apenas fase Adulto, nível 10+) ──
   if(getFase() === 3) {
@@ -351,6 +364,7 @@ function checkXP() {
     // Phase change?
     if(faseAfter !== faseBefore) {
       setTimeout(() => playPhaseUp(FASES[faseAfter]), 600);
+      updateAvatarSize();
     }
   }
 }
