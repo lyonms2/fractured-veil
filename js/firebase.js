@@ -25,7 +25,7 @@ function getGameState() {
     hatched, dead, sick, sleeping,
     nivel, xp, vinculo, totalSecs,
     eggLayCooldown,
-    poopCount, dirtyLevel,
+    poopCount, dirtyLevel, poopCooldown,
     vitals:         {...vitals},
     gs:             {...gs},
     items:          itemInventory.map(i => ({...i})),
@@ -67,6 +67,7 @@ function applyGameState(data) {
   eggLayCooldown= data.eggLayCooldown ?? 0;
   poopCount     = data.poopCount    ?? 0;
   dirtyLevel    = data.dirtyLevel   ?? 0;
+  poopCooldown  = data.poopCooldown ?? 180;
   if(data.vitals) Object.assign(vitals, data.vitals);
   if(data.gs)     Object.assign(gs, data.gs);
   if(data.eggs)   eggsInInventory = data.eggs;
