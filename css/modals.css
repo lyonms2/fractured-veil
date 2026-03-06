@@ -166,35 +166,10 @@
   margin-bottom:6px; min-height:14px; letter-spacing:1px; font-family:'Cinzel',serif;
 }
 
-/* ── CORRIDA DE SOMBRA ── */
-.shadow-track {
-  width:200px; height:28px; background:#0a0816;
-  border:1px solid rgba(255,255,255,.12); border-radius:14px;
-  position:relative; overflow:hidden; margin-bottom:8px;
-}
-.shadow-zone {
-  position:absolute; top:0; bottom:0;
-  background:rgba(122,184,122,.25); border-radius:14px;
-  border:1px solid rgba(122,184,122,.4);
-}
-.shadow-runner {
-  position:absolute; top:50%; transform:translateY(-50%);
-  font-size:16px; transition:left .05s linear;
-}
-.shadow-tap-btn {
-  width:80px; height:80px; border-radius:50%;
-  border:2px solid var(--gold); background:rgba(201,168,76,.08);
-  font-size:28px; cursor:pointer; display:flex; align-items:center;
-  justify-content:center; transition:all .1s; margin:8px auto;
-  font-family:'Cinzel',serif;
-}
-.shadow-tap-btn:active { transform:scale(.92); background:rgba(201,168,76,.2); }
-.shadow-tap-btn:disabled { opacity:.4; cursor:default; }
-.shadow-info { font-size:7px; color:var(--muted); text-align:center; margin-bottom:6px; letter-spacing:1px; }
-.shadow-score-display {
-  font-size:8px; color:var(--gold); text-align:center;
-  margin-bottom:4px; font-family:'Cinzel',serif; min-height:14px;
-}
+/* ── CHEW ANIMATION ── */
+
+
+
 
 /* ── CHEW ANIMATION ── */
 
@@ -694,7 +669,6 @@
 #hatchConfirmModal,
 #memoriaModal,
 #simonModal,
-#sombraModal,
 #jkpModal {
   overflow: hidden;
 }
