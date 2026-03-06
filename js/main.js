@@ -39,10 +39,8 @@ window.petCreature = typeof petCreature !== "undefined" ? petCreature : ()=>{};
 window.playCreature = typeof playCreature !== "undefined" ? playCreature : ()=>{};
 window.selectEggToSell = typeof selectEggToSell !== "undefined" ? selectEggToSell : ()=>{};
 window.simonPlayerClick = typeof simonPlayerClick !== "undefined" ? simonPlayerClick : ()=>{};
-window.sombraTap = typeof sombraTap !== "undefined" ? sombraTap : ()=>{};
 window.startMemoria = typeof startMemoria !== "undefined" ? startMemoria : ()=>{};
 window.startSimon = typeof startSimon !== "undefined" ? startSimon : ()=>{};
-window.startSombra = typeof startSombra !== "undefined" ? startSombra : ()=>{};
 window.toggleSleep = typeof toggleSleep !== "undefined" ? toggleSleep : ()=>{};
 window.triggerSummon = typeof triggerSummon !== "undefined" ? triggerSummon : ()=>{};
 window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
@@ -50,7 +48,7 @@ window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? up
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
 
 setInterval(gameTick, 1000);
-addLog('Conecte sua carteira para invocar seu avatar.','info');
+// Login screen handles initial state
 updateResourceUI();
 
-addLog('Sistema iniciado. Invoque seu primeiro avatar!','info');
+// Login screen handles initial state
