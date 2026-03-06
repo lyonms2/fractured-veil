@@ -64,6 +64,7 @@ function feedCreature() {
 function playCreature() {
   if(!canAct()) return;
   if(sleeping) return;
-  if(vitals.energia < 20){ showBubble('Cansado demais...'); return; }
+  if(vitals.fome < 10)   { showBubble('Estou faminto! 🍖'); return; }
+  if(vitals.energia < 20){ showBubble('Cansado demais... 😴'); return; }
   openGameSelector();
 }
