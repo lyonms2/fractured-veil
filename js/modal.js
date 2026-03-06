@@ -3,16 +3,16 @@
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'jkpModal','gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','sombraModal','shopModal','marketModal','coinShopModal'
+  'memoriaModal','simonModal','marketModal','coinShopModal'
 ];
 
 const ModalManager = {
   current: null,
 
   // Panel modals: don't block action buttons (they float over right panel)
-  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','shopModal','marketModal'],
+  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
 
-  GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal','sombraModal'],
+  GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal'],
 
   open(id, onClose) {
     // Fecha o atual sem callback
@@ -94,13 +94,6 @@ function openGameSelector() {
     simEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
 
-  const somEl = document.getElementById('rewardSombra');
-  if(somEl) {
-    const xpMin = r(10*0.3*rb.xp); const xpMax = r(50*1.5*rb.xp);
-    const cMin  = r(25*0.3*rb.moedas); const cMax = r(80*1.5*rb.moedas);
-    somEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
-  }
-
   ModalManager.open('gameSelector');
 }
 
@@ -113,7 +106,6 @@ function openMinigame(type) {
   if(type === 'jkp')     { openJkp();     return; }
   if(type === 'memoria') { openMiniModal('memoriaModal'); startMemoria(); return; }
   if(type === 'simon')   { openMiniModal('simonModal');   startSimon();   return; }
-  if(type === 'sombra')  { openMiniModal('sombraModal');  startSombra();  return; }
 }
 
 function openMiniModal(id) {
