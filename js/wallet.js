@@ -160,6 +160,7 @@ async function connectWallet() {
             addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
           }
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
+          totalSecs += offlineSecs; // acumula tempo offline no cronômetro
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
           addLog(`Ausente por ${hrs}h ${mins}min — stats atualizados.`, 'info');
