@@ -685,3 +685,34 @@
   background: rgba(4,3,10,.97);
 }
 .modal-header .mini-title { margin: 0; }
+
+/* ── JOGO DA VELHA ── */
+.velha-grid {
+  display:grid; grid-template-columns:repeat(3, 52px);
+  gap:6px; margin:10px auto 10px; width:fit-content;
+}
+.velha-cell {
+  width:52px; height:52px; border-radius:8px;
+  border:1px solid rgba(255,255,255,.15); background:#0a0816;
+  font-family:'Cinzel',serif; font-size:22px; font-weight:900;
+  cursor:pointer; transition:all .15s ease;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text);
+}
+.velha-cell:not(:disabled):hover {
+  border-color:var(--gold); background:rgba(201,168,76,.08);
+  transform:scale(1.06);
+}
+.velha-cell.velha-x { color:var(--raro);  border-color:rgba(90,180,232,.3); }
+.velha-cell.velha-o { color:#e8a03a;      border-color:rgba(232,160,58,.3); }
+.velha-cell.velha-win {
+  border-color:var(--gold) !important;
+  background:rgba(201,168,76,.15) !important;
+  box-shadow:0 0 14px rgba(201,168,76,.35);
+  animation:velha-win-pulse .5s ease infinite alternate;
+}
+@keyframes velha-win-pulse {
+  from { box-shadow:0 0 8px rgba(201,168,76,.3); }
+  to   { box-shadow:0 0 20px rgba(201,168,76,.6); }
+}
+.velha-cell:disabled { cursor:default; }
