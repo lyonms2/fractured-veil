@@ -304,7 +304,15 @@
                 <div class="gs-btn-info">
                   <div class="gs-btn-name">SIMON SAYS</div>
                   <div class="gs-btn-desc">Repita a sequência de elementos</div>
-                  <div class="gs-btn-reward" id="rewardSimon">+13~65 XP · +32~104 🪙</div>
+                  <div class="gs-btn-reward" id="rewardSimon">+4~120 XP · +8~195 🪙</div>
+                </div>
+              </div>
+              <div class="gs-btn" onclick="openMinigame('velha')">
+                <div class="gs-btn-icon">✕○</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">JOGO DA VELHA</div>
+                  <div class="gs-btn-desc">Enfrente seu avatar no tabuleiro</div>
+                  <div class="gs-btn-reward" id="rewardVelha">+2~96 XP · +5~156 🪙</div>
                 </div>
               </div>
             </div>
@@ -352,6 +360,18 @@
             </div>
           </div>
 
+          <!-- JOGO DA VELHA -->
+          <div class="mini-modal" id="velhaModal">
+            <div class="mini-title">✕○ JOGO DA VELHA</div>
+            <div class="mini-sub" id="velhaInfo">Sua vez! ✕</div>
+            <div class="velha-grid" id="velhaGrid"></div>
+            <div class="mini-result-box" id="velhaResult"></div>
+            <div class="mini-reward-txt" id="velhaReward"></div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="velhaAgainBtn" onclick="startVelha()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn close" onclick="closeMiniModal('velhaModal')">FECHAR</button>
+            </div>
+          </div>
 
           <!-- Level-up overlay -->
           <div id="levelUpOverlay">
