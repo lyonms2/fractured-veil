@@ -7,8 +7,8 @@ let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = f
 function startMemoria() {
   if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
-  const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : 8;
-  const cols  = pairs <= 4 ? 4 : 4;
+  const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
+  const cols  = pairs <= 4 ? 4 : pairs <= 8 ? 4 : 5;
 
   document.getElementById('memResult').textContent  = '';
   document.getElementById('memResult').className    = 'mini-result-box';
@@ -116,7 +116,7 @@ function startSimon() {
 
 function simonNextRound() {
   const d = miniDifficulty();
-  const maxRounds = d.tier === 0 ? 4 : d.tier === 1 ? 6 : 8;
+  const maxRounds = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
   simonRound++;
 
   if(simonRound > maxRounds) { simonVictory(); return; }
@@ -129,7 +129,7 @@ function simonNextRound() {
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
   // Play sequence
-  const speed = d.tier === 0 ? 800 : d.tier === 1 ? 600 : 400;
+  const speed = d.tier === 0 ? 800 : d.tier === 1 ? 600 : d.tier === 2 ? 400 : 280;
   let delay = 500;
   simonSeq.forEach((idx, pos) => {
     setTimeout(() => {
@@ -186,7 +186,8 @@ function simonGameOver() {
   simonPlayerTurn = false;
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
   // Partial reward based on rounds completed
-  const frac = Math.max(0, simonRound - 1) / (miniDifficulty().tier === 0 ? 4 : miniDifficulty().tier === 1 ? 6 : 8);
+  const _sd = miniDifficulty(); const _sm = _sd.tier === 0 ? 4 : _sd.tier === 1 ? 6 : _sd.tier === 2 ? 8 : 10;
+  const frac = Math.max(0, simonRound - 1) / _sm;
   if(frac > 0) {
     const r = miniReward(frac * 0.8, frac * 0.8);
     document.getElementById('simonReward').textContent = frac > 0 ? `+${r.xpGain} XP  +${r.coinGain} 🪙` : '';
@@ -547,3 +548,169 @@ function renderSleepEyes() {
 function positionSleepEyes() { renderSleepEyes(); } // alias — called from updateAvatarSize
 
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// JOGO DA VELHA
+// ═══════════════════════════════════════════════════════════════════
+let velhaBoard = Array(9).fill(null); // null | 'X' | 'O'
+let velhaPlayerTurn = true;
+let velhaOver = false;
+
+const VELHA_LINES = [
+  [0,1,2],[3,4,5],[6,7,8], // linhas
+  [0,3,6],[1,4,7],[2,5,8], // colunas
+  [0,4,8],[2,4,6]           // diagonais
+];
+
+function startVelha() {
+  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('velhaModal'); return; }
+  velhaBoard = Array(9).fill(null);
+  velhaPlayerTurn = true;
+  velhaOver = false;
+
+  const d = miniDifficulty();
+  document.getElementById('velhaInfo').textContent    = `${d.label} · Sua vez! ✕`;
+  document.getElementById('velhaResult').textContent  = '';
+  document.getElementById('velhaResult').className    = 'mini-result-box';
+  document.getElementById('velhaReward').textContent  = '';
+  document.getElementById('velhaAgainBtn').style.display = 'none';
+
+  velhaRender();
+}
+
+function velhaRender() {
+  const grid = document.getElementById('velhaGrid');
+  if(!grid) return;
+  grid.innerHTML = velhaBoard.map((v, i) => {
+    const cls = v === 'X' ? 'velha-x' : v === 'O' ? 'velha-o' : '';
+    return `<button class="velha-cell ${cls}" onclick="velhaClick(${i})" ${(v || velhaOver) ? 'disabled' : ''}>${v || ''}</button>`;
+  }).join('');
+}
+
+function velhaClick(i) {
+  if(!velhaPlayerTurn || velhaOver || velhaBoard[i]) return;
+  velhaBoard[i] = 'X';
+  velhaRender();
+
+  const win = velhaCheckWin('X');
+  if(win) { velhaEnd('win', win); return; }
+  if(velhaBoard.every(c => c)) { velhaEnd('draw'); return; }
+
+  velhaPlayerTurn = false;
+  document.getElementById('velhaInfo').textContent = 'Vez do Avatar... 🤔';
+  setTimeout(velhaAiMove, 500);
+}
+
+function velhaAiMove() {
+  const d = miniDifficulty();
+  let idx;
+
+  if(d.tier >= 2) {
+    // DIFÍCIL/MESTRE — minimax perfeito
+    idx = velhaMinimax(velhaBoard, 'O').index;
+  } else if(d.tier === 1) {
+    // MÉDIO — minimax mas com 30% de erro
+    idx = Math.random() < 0.3 ? velhaRandomMove() : velhaMinimax(velhaBoard, 'O').index;
+  } else {
+    // FÁCIL — aleatório com preferência pelo centro
+    idx = velhaBoard[4] === null && Math.random() < 0.5 ? 4 : velhaRandomMove();
+  }
+
+  velhaBoard[idx] = 'O';
+  velhaRender();
+
+  const win = velhaCheckWin('O');
+  if(win) { velhaEnd('lose', win); return; }
+  if(velhaBoard.every(c => c)) { velhaEnd('draw'); return; }
+
+  velhaPlayerTurn = true;
+  const d2 = miniDifficulty();
+  document.getElementById('velhaInfo').textContent = `${d2.label} · Sua vez! ✕`;
+}
+
+function velhaRandomMove() {
+  const empty = velhaBoard.map((v,i) => v ? null : i).filter(i => i !== null);
+  return empty[Math.floor(Math.random() * empty.length)];
+}
+
+function velhaMinimax(board, player) {
+  const win = velhaCheckWinBoard(board, 'O');
+  if(win) return { score: 10 };
+  if(velhaCheckWinBoard(board, 'X')) return { score: -10 };
+  if(board.every(c => c)) return { score: 0 };
+
+  const moves = [];
+  board.forEach((v, i) => {
+    if(v) return;
+    const newBoard = [...board];
+    newBoard[i] = player;
+    const result = velhaMinimax(newBoard, player === 'O' ? 'X' : 'O');
+    moves.push({ index: i, score: result.score });
+  });
+
+  if(player === 'O') {
+    return moves.reduce((best, m) => m.score > best.score ? m : best, { score: -Infinity, index: -1 });
+  } else {
+    return moves.reduce((best, m) => m.score < best.score ? m : best, { score: Infinity, index: -1 });
+  }
+}
+
+function velhaCheckWinBoard(board, player) {
+  return VELHA_LINES.find(line => line.every(i => board[i] === player)) || null;
+}
+
+function velhaCheckWin(player) {
+  return velhaCheckWinBoard(velhaBoard, player);
+}
+
+function velhaHighlightWin(line) {
+  if(!line) return;
+  line.forEach(i => {
+    const cells = document.querySelectorAll('.velha-cell');
+    if(cells[i]) cells[i].classList.add('velha-win');
+  });
+}
+
+function velhaEnd(result, winLine) {
+  velhaOver = true;
+  velhaRender();
+  if(winLine) velhaHighlightWin(winLine);
+
+  const d = miniDifficulty();
+  const rb = rarityBonus();
+
+  let xpMult, coinMult, msg, cls;
+  if(result === 'win') {
+    // Vitória mais valiosa em dificuldades maiores
+    xpMult   = d.tier === 0 ? 1.0 : d.tier === 1 ? 1.1 : d.tier === 2 ? 1.2 : 1.3;
+    coinMult = xpMult;
+    msg = d.tier >= 2 ? '🌟 INCRÍVEL!' : '✕ VITÓRIA!';
+    cls = 'win';
+    showBubble(d.tier >= 3 ? 'Venceu o mestre! 🏆' : 'Venceu na velha! ✕');
+  } else if(result === 'lose') {
+    xpMult   = 0.1; coinMult = 0.1;
+    msg = '○ DERROTA';
+    cls = 'lose';
+    showBubble('Quase! Próxima vez... 😔');
+  } else {
+    xpMult   = 0.4; coinMult = 0.4;
+    msg = '✕○ EMPATE';
+    cls = 'draw';
+    showBubble('Empate! Bem jogado 🤝');
+  }
+
+  const xpGain   = Math.round(d.xp    * xpMult   * rb.xp);
+  const coinGain = Math.round(d.coins * coinMult  * rb.moedas);
+  xp += xpGain;
+  earnCoins(coinGain);
+  vitals.energia = Math.max(0, vitals.energia - 15);
+  vitals.fome    = Math.max(0, vitals.fome    - 5);
+  vitals.humor   = Math.min(100, vitals.humor + (result === 'win' ? 12 : result === 'draw' ? 6 : 3));
+  vinculo += 3;
+  checkXP(); updateAllUI();
+
+  document.getElementById('velhaResult').textContent = msg;
+  document.getElementById('velhaResult').className   = `mini-result-box ${cls}`;
+  document.getElementById('velhaReward').textContent = `+${xpGain} XP  +${coinGain} 🪙`;
+  document.getElementById('velhaAgainBtn').style.display = 'inline-block';
+  addLog(`Jogo da Velha: ${msg} +${xpGain}XP +${coinGain}🪙`, result === 'win' ? 'good' : 'info');
+}
