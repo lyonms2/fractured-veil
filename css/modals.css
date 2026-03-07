@@ -697,14 +697,23 @@
 .modal-header .mini-title { margin: 0; }
 
 /* ── JOGO DA VELHA ── */
+#velhaModal {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-top: 12px;
+}
+#velhaModal .mini-title   { margin-bottom: 2px; }
+#velhaModal .mini-sub     { margin-bottom: 6px; }
+#velhaModal .mini-result-box { margin-top: 6px; }
+#velhaModal .mini-btns    { margin-top: 8px; }
 .velha-grid {
-  display:grid; grid-template-columns:repeat(3, 52px);
-  gap:6px; margin:10px auto 10px; width:fit-content;
+  display:grid; grid-template-columns:repeat(3, 44px);
+  gap:5px; margin:6px auto 8px; width:fit-content;
 }
 .velha-cell {
-  width:52px; height:52px; border-radius:8px;
+  width:44px; height:44px; border-radius:8px;
   border:1px solid rgba(255,255,255,.15); background:#0a0816;
-  font-family:'Cinzel',serif; font-size:22px; font-weight:900;
+  font-family:'Cinzel',serif; font-size:20px; font-weight:900;
   cursor:pointer; transition:all .15s ease;
   display:flex; align-items:center; justify-content:center;
   color:var(--text);
