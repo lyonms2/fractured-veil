@@ -254,6 +254,7 @@ function clickEgg() {
 
 function hatch() {
   hatched = true;
+  bornAt  = bornAt || Date.now(); // set birth timestamp once
   scheduleSave();
   document.getElementById('statusCard').style.display = 'block';
   poopCount = 0;
