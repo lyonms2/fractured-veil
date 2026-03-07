@@ -326,10 +326,10 @@ function killCreature() {
   // Populate death screen
   const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
   document.getElementById('deadAvatarName').textContent = name.toUpperCase();
-  const h = Math.floor(totalSecs/3600), m = Math.floor((totalSecs%3600)/60);
+  const diasVividos = bornAt ? Math.floor((Date.now() - bornAt) / (1000*60*60*24)) + 1 : 1;
   document.getElementById('deadStats').innerHTML =
     `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
-    `Viveu ${h > 0 ? h+'h ' : ''}${m}min · Vínculo: ${Math.floor(vinculo)}`;
+    `Viveu ${diasVividos} dia${diasVividos!==1?'s':''} · Vínculo: ${Math.floor(vinculo)}`;
 
   // Spawn floating souls
   const souls = ['👻','✦','💀','✧','🌑'];
