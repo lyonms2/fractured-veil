@@ -528,7 +528,19 @@
       <div class="panel-card" id="creatureCard" style="display:none">
         <div class="panel-title">◆ AVATAR</div>
         <div style="margin-bottom:12px;">
-          <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:12px;color:var(--gold-light);margin-bottom:4px;">???</h2>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:12px;color:var(--gold-light);margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">???</h2>
+            <button id="renameBtn" onclick="startRename()" title="Renomear avatar" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--muted);padding:0 2px;line-height:1;transition:color .15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
+          </div>
+          <div id="renameForm" style="display:none;margin-bottom:4px;">
+            <input id="renameInput" type="text" maxlength="16" placeholder="Novo nome..."
+              style="width:100%;box-sizing:border-box;background:#0a0816;border:1px solid var(--gold);border-radius:4px;color:var(--gold-light);font-family:'Cinzel',serif;font-size:9px;padding:4px 8px;outline:none;letter-spacing:1px;"
+              onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();" />
+            <div style="display:flex;gap:5px;margin-top:4px;">
+              <button onclick="confirmRename()" style="flex:1;padding:3px 0;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:3px;color:var(--gold);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✓ SALVAR</button>
+              <button onclick="cancelRename()" style="flex:1;padding:3px 0;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✕ CANCELAR</button>
+            </div>
+          </div>
           <div class="id-meta" id="idMeta">Elemento: ???</div>
           <span class="badge" id="idBadge">COMUM</span>
         </div>
