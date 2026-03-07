@@ -68,25 +68,38 @@ const ModalManager = {
 };
 
 function openGameSelector() {
-  // Update reward labels based on current rarity + level
-  const rb = rarityBonus();
-  const d  = miniDifficulty();
-  const r  = n => Math.round(n);
+  const rb  = rarityBonus();
+  const d   = miniDifficulty();
+  const max = maxUnlockedTier();
+  const r   = n => Math.round(n);
 
+  // ── Difficulty pills ──
+  const pillsEl = document.getElementById('diffPills');
+  if(pillsEl) {
+    pillsEl.innerHTML = DIFF_TIERS.map((t, i) => {
+      const unlocked = i <= max;
+      const active   = t.tier === d.tier;
+      return `<button class="diff-pill ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
+        onclick="${unlocked ? 'setDifficulty('+i+')' : ''}"
+        title="${!unlocked ? 'Desbloqueie no nível '+t.minNivel : t.label}">
+        ${!unlocked ? '🔒' : t.label}
+      </button>`;
+    }).join('');
+  }
+
+  // ── Reward labels ──
   const jkpEl = document.getElementById('rewardJkp');
   if(jkpEl) {
-    const xpMin = r(3*rb.xp); const xpMax = r(15*rb.xp);
-    const cMin  = r(3*rb.moedas); const cMax = r(25*rb.moedas);
+    const xpMin = r(d.xp*0.1*rb.xp); const xpMax = r(d.xp*1.0*rb.xp);
+    const cMin  = r(d.coins*0.1*rb.moedas); const cMax = r(d.coins*1.0*rb.moedas);
     jkpEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
-
   const memEl = document.getElementById('rewardMemoria');
   if(memEl) {
-    const xpMin = r(10*0.5*rb.xp); const xpMax = r(50*1.3*rb.xp);
-    const cMin  = r(25*0.5*rb.moedas); const cMax = r(80*1.3*rb.moedas);
+    const xpMin = r(d.xp*1.0*rb.xp); const xpMax = r(d.xp*1.6*rb.xp);
+    const cMin  = r(d.coins*1.0*rb.moedas); const cMax = r(d.coins*1.6*rb.moedas);
     memEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
-
   const simEl = document.getElementById('rewardSimon');
   if(simEl) {
     const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
@@ -125,11 +138,31 @@ function closeMiniModal(id) {
 }
 
 // Difficulty based on level
+const DIFF_TIERS = [
+  { tier:0, label:'FÁCIL',   xp:8,  coins:15,  minNivel:1  },
+  { tier:1, label:'MÉDIO',   xp:20, coins:40,  minNivel:6  },
+  { tier:2, label:'DIFÍCIL', xp:45, coins:80,  minNivel:13 },
+  { tier:3, label:'MESTRE',  xp:80, coins:130, minNivel:21 },
+];
+
+function maxUnlockedTier() {
+  for(let i = DIFF_TIERS.length - 1; i >= 0; i--) {
+    if(nivel >= DIFF_TIERS[i].minNivel) return i;
+  }
+  return 0;
+}
+
 function miniDifficulty() {
-  if(nivel <= 5)  return { tier:0, label:'FÁCIL',    xp:8,  coins:15 };
-  if(nivel <= 12) return { tier:1, label:'MÉDIO',    xp:20, coins:40 };
-  if(nivel <= 20) return { tier:2, label:'DIFÍCIL',  xp:45, coins:80 };
-  return                 { tier:3, label:'MESTRE',   xp:80, coins:130 };
+  const tier = (selectedDifficulty !== null && selectedDifficulty <= maxUnlockedTier())
+    ? selectedDifficulty
+    : maxUnlockedTier();
+  return DIFF_TIERS[tier];
+}
+
+function setDifficulty(tier) {
+  if(tier > maxUnlockedTier()) return;
+  selectedDifficulty = tier;
+  openGameSelector(); // re-render com nova dificuldade selecionada
 }
 
 function miniReward(xpMult, coinMult) {
