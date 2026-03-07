@@ -22,12 +22,12 @@ const ITEM_CATALOG = {
     nome:     'Amuleto da Saciedade',
     emoji:    '🔮',
     desc:     'Uma gema ancestral que suprime a fome.',
-    efeito:   'Reduz consumo de Fome em 2% por ciclo',
+    efeito:   'Reduz consumo de Fome em 25% por ciclo',
     tipo:     'Amuleto',
     raridade: 'Comum',
     preco:    150,
     cor:      '#7ab87a',
-    efeitos:  { fomeDecayMult: 0.98 } // multiplier on fome decay
+    efeitos:  { fomeDecayMult: 0.75 } // reduz 25% do decay de fome
   },
   'amuleto_sono': {
     id:       'amuleto_sono',
@@ -64,6 +64,7 @@ let eggLayNotified  = false; // evita notificação dupla
 let sleeping  = false;
 let sick      = false;
 let dead      = false;
+let selectedDifficulty = null; // null = automático pelo nível
 let hatched   = false;
 let nivel     = 1;
 let xp        = 0;
