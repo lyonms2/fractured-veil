@@ -12,7 +12,7 @@ const ModalManager = {
   // Panel modals: don't block action buttons (they float over right panel)
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
 
-  GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal'],
+  GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal','velhaModal'],
 
   open(id, onClose) {
     // Fecha o atual sem callback
@@ -89,9 +89,15 @@ function openGameSelector() {
 
   const simEl = document.getElementById('rewardSimon');
   if(simEl) {
-    const xpMin = r(10*1.3*rb.xp); const xpMax = r(50*1.3*rb.xp);
-    const cMin  = r(25*1.3*rb.moedas); const cMax = r(80*1.3*rb.moedas);
+    const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
+    const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
     simEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
+  const velhaEl = document.getElementById('rewardVelha');
+  if(velhaEl) {
+    const xpMin = r(d.xp*0.3*rb.xp); const xpMax = r(d.xp*1.2*rb.xp);
+    const cMin  = r(d.coins*0.3*rb.moedas); const cMax = r(d.coins*1.2*rb.moedas);
+    velhaEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
 
   ModalManager.open('gameSelector');
@@ -102,6 +108,7 @@ function closeGameSelector() {
 }
 
 function openMinigame(type) {
+  if(type === 'velha') { ModalManager.close('gameSelector'); ModalManager.open('velhaModal'); startVelha(); return; }
   document.getElementById('gameSelector').classList.remove('open');
   if(type === 'jkp')     { openJkp();     return; }
   if(type === 'memoria') { openMiniModal('memoriaModal'); startMemoria(); return; }
@@ -119,9 +126,10 @@ function closeMiniModal(id) {
 
 // Difficulty based on level
 function miniDifficulty() {
-  if(nivel <= 5)  return { tier:0, label:'FÁCIL',  xp:10, coins:25 };
-  if(nivel <= 12) return { tier:1, label:'MÉDIO',  xp:25, coins:50 };
-  return                 { tier:2, label:'DIFÍCIL', xp:50, coins:80 };
+  if(nivel <= 5)  return { tier:0, label:'FÁCIL',    xp:8,  coins:15 };
+  if(nivel <= 12) return { tier:1, label:'MÉDIO',    xp:20, coins:40 };
+  if(nivel <= 20) return { tier:2, label:'DIFÍCIL',  xp:45, coins:80 };
+  return                 { tier:3, label:'MESTRE',   xp:80, coins:130 };
 }
 
 function miniReward(xpMult, coinMult) {
