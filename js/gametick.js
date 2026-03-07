@@ -258,7 +258,6 @@ function gameTick() {
     }
   }
   if(poopCooldown > 0) poopCooldown--;
-  tickXpBoost();
   if(tickCount % 60 === 0 && walletAddress) scheduleSave(); // auto-save every 60s
 
   // sujeira afeta saude e humor
