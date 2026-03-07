@@ -68,3 +68,45 @@ function playCreature() {
   if(vitals.energia < 20){ showBubble('Cansado demais... 😴'); return; }
   openGameSelector();
 }
+
+// ── RENAME AVATAR ──
+function startRename() {
+  if(!avatar || dead) return;
+  const input = document.getElementById('renameInput');
+  const currentName = avatar.nome.split(',')[0].trim();
+  input.value = currentName;
+  document.getElementById('renameForm').style.display = 'block';
+  document.getElementById('renameBtn').style.display  = 'none';
+  setTimeout(() => { input.focus(); input.select(); }, 50);
+}
+
+function cancelRename() {
+  document.getElementById('renameForm').style.display = 'none';
+  document.getElementById('renameBtn').style.display  = '';
+}
+
+function confirmRename() {
+  const input = document.getElementById('renameInput');
+  const raw   = input.value.trim();
+  if(!raw) { cancelRename(); return; }
+
+  // Sanitize — só letras, números, espaços e hífens
+  const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
+  if(!clean) { showBubble('Nome inválido! ✕'); return; }
+
+  const parts     = avatar.nome.split(',');
+  const suffix    = parts.slice(1).join(','); // raridade etc
+  avatar.nome     = clean + (suffix ? ',' + suffix : '');
+
+  // Update display
+  document.getElementById('idNome').textContent = clean;
+  cancelRename();
+
+  // Save to Firebase
+  if(walletAddress) scheduleSave();
+
+  vinculo += 5; // pequeno boost de vínculo por renomear
+  addLog(`Avatar renomeado para "${clean}" 💕`, 'good');
+  showBubble(`${clean}... Adoro esse nome! 💕`);
+  updateAllUI();
+}
