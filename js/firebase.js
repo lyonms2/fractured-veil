@@ -67,7 +67,7 @@ function applyGameState(data) {
   eggLayCooldown= data.eggLayCooldown ?? 0;
   poopCount     = data.poopCount    ?? 0;
   dirtyLevel    = data.dirtyLevel   ?? 0;
-  poopCooldown  = data.poopCooldown ?? 180;
+  poopCooldown  = data.poopCooldown ?? 0;
   if(data.vitals) Object.assign(vitals, data.vitals);
   if(data.gs)     Object.assign(gs, data.gs);
   if(data.eggs)   eggsInInventory = data.eggs;
