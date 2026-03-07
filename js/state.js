@@ -4,6 +4,7 @@ const vitals      = { fome:100, humor:100, energia:100, saude:100, higiene:100 }
 let poopCount     = 0;
 let dirtyLevel    = 0;
 let poopCooldown  = 5;
+let bornAt        = 0; // timestamp ms quando avatar chocou
 let eggLayCooldown = 0;
 let pendingHatchId = null;
 let eggsInInventory = [];
