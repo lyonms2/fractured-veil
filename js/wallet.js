@@ -134,23 +134,40 @@ async function connectWallet() {
         if(offlineCycles > 0) {
           const _d = rarityBonus().decay;
           let wasSleeping = sleeping;
+          // MODO REPOUSO: após 30min offline o avatar entra em repouso automático
+          // Repouso = como dormir, mas fome cai muito devagar e energia não recupera
+          // Garante sobrevivência de pelo menos 12h offline
+          const REPOUSO_THRESHOLD = 30; // ciclos até entrar em repouso
+
           for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
+            const emRepouso = !wasSleeping && _i >= REPOUSO_THRESHOLD;
+
             if(wasSleeping) {
-              // Sleeping: only energia recovers, no decay on other stats
+              // Dormindo manualmente: energia recupera normalmente
               vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
-                wasSleeping = false; // woke up naturally mid-offline
+                wasSleeping = false;
               }
+            } else if(emRepouso) {
+              // Modo repouso automático — avatar "descansa"
+              // Só fome e higiene caem muito lentamente, resto congelado
+              vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
+              vitals.higiene = Math.max(0, vitals.higiene - 0.03);
+              vitals.humor   = Math.max(0, vitals.humor   - 0.02);
+              // Saúde só cai se fome absolutamente zerada
+              if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
+              if(vitals.saude <= 0) { vitals.saude = 0; break; }
             } else {
-              vitals.fome    = Math.max(0, vitals.fome    - 0.5 * _d * getItemEffect('fomeDecayMult'));
-              vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
-              vitals.energia = Math.max(0, vitals.energia - 0.2 * _d);
-              vitals.higiene = Math.max(0, vitals.higiene - 0.12 * _d);
-              if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.13);
-              if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.04);
-              if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.04);
-              if(vitals.higiene < 20) vitals.saude = Math.max(0, vitals.saude - 0.2);
+              // Primeiros 30min offline — decay normal mas já mais lento que online
+              vitals.fome    = Math.max(0, vitals.fome    - 0.25 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.12 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.1  * _d);
+              vitals.higiene = Math.max(0, vitals.higiene - 0.06);
+              if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
+              if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
+              if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.03);
+              if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - 0.02);
               if(vitals.saude <= 0)   { vitals.saude = 0; break; }
             }
           }
@@ -163,7 +180,8 @@ async function connectWallet() {
           totalSecs += offlineSecs; // acumula tempo offline no cronômetro
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
-          addLog(`Ausente por ${hrs}h ${mins}min — stats atualizados.`, 'info');
+          const emRepouso = offlineCycles > 30 && !sleeping;
+          addLog(`Ausente por ${hrs}h ${mins}min — ${emRepouso ? '💤 modo repouso ativado' : 'stats atualizados'}.`, 'info');
           if(vitals.saude <= 0) {
             dead = true;
             addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
