@@ -24,11 +24,12 @@ function updateAllUI() {
 }
 
 function updateTimer() {
-  const h=Math.floor(totalSecs/3600), m=Math.floor((totalSecs%3600)/60), s=totalSecs%60;
-  const t=document.getElementById('timerTxt');
-  if(t) t.textContent=`⏱ ${p(h)}:${p(m)}:${p(s)}`;
+  const el = document.getElementById('timerTxt');
+  if(!el) return;
+  if(!hatched || !bornAt) { el.textContent = '📅 Dia 1'; return; }
+  const dias = Math.floor((Date.now() - bornAt) / (1000 * 60 * 60 * 24));
+  el.textContent = `📅 Dia ${dias + 1}`;
 }
-function p(n){ return String(n).padStart(2,'0'); }
 
 function updateResourceUI() {
   document.getElementById('resMonedas').textContent   = gs.moedas;
