@@ -288,7 +288,7 @@ function gameTick() {
 
   if(vitals.saude <= 0) { killCreature(); return; }
 
-  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); } // fala e verifica itens a cada ~5 min
+  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); syncEasterEggs(); } // fala e verifica itens a cada ~5 min
 
   // ── POSTURA DE OVOS (apenas fase Adulto, nível 10+) ──
   if(getFase() === 3) {

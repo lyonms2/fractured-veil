@@ -30,6 +30,18 @@ const ITEM_CATALOG = {
     cor:      '#7ab87a',
     efeitos:  { fomeDecayMult: 0.75 } // reduz 25% do decay de fome
   },
+  'decoracao_pascoa': {
+    id:       'decoracao_pascoa',
+    nome:     'Decoração de Páscoa',
+    emoji:    '🥚',
+    desc:     'Ovos coloridos enfeitam o cenário do seu avatar. Edição limitada de Páscoa!',
+    efeito:   'Decora o cenário com ovos de Páscoa animados',
+    tipo:     'Cenário',
+    raridade: 'Especial',
+    preco:    120,
+    cor:      '#f0a0c0',
+    efeitos:  {} // puramente cosmético
+  },
   'coroa_cristal': {
     id:       'coroa_cristal',
     nome:     'Coroa de Cristal',

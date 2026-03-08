@@ -273,6 +273,7 @@ function hatch() {
   document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
+  syncEasterEggs();
   // Egg inventory button: only active after hatch
   const _eggBtn = document.getElementById('resOvosBtn');
   if(_eggBtn) {
