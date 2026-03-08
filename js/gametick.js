@@ -89,9 +89,6 @@ function cleanCreature() {
   }
   // Modo repouso offline já trata vinculo separadamente em wallet.js
 
-  // petCooldown
-  if(petCooldown > 0) petCooldown--;
-
   updateDirtyVisuals();
   scheduleSave();
 }
@@ -233,6 +230,7 @@ function gameTick() {
   if(!hatched || dead || !avatar) return;
 
   updateAllUI(); // update bars every tick
+  if(petCooldown > 0) petCooldown--; // decrementa a cada segundo
 
   if(tickCount % 60 !== 0) return; // 1 game cycle = 60s real time
 
