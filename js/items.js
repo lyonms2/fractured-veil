@@ -15,8 +15,9 @@ function renderItemInventory() {
   const countEl = document.getElementById('itemInvCount');
   if(!list) return;
 
-  const equipped = itemInventory.filter(i => i.equipped).length;
-  if(countEl) countEl.innerHTML = `${itemInventory.length} ite${itemInventory.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equipped}/${MAX_EQUIPPED} equipados</span>`;
+  const equippedNormal = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
+  const equippedCenario = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
+  if(countEl) countEl.innerHTML = `${itemInventory.length} ite${itemInventory.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equippedNormal}/${MAX_EQUIPPED} equipados</span>`;
 
   // Update header counter
   const resEl = document.getElementById('resItems');
@@ -31,7 +32,8 @@ function renderItemInventory() {
     const item = ITEM_CATALOG[entry.catalogId];
     if(!item) return '';
     const isEquipped = entry.equipped;
-    const canEquip   = !isEquipped && equipped < MAX_EQUIPPED;
+    const isCenario  = item.tipo === 'Cenário';
+    const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
     return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:6px;padding:8px 10px;box-sizing:border-box;${isEquipped?`box-shadow:0 0 8px ${item.cor}22;`:''}">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:16px;">${item.emoji}</span>
@@ -90,8 +92,14 @@ function updateEquippedDisplay() {
 function equipItem(id) {
   const entry = itemInventory.find(i => i.id === id);
   if(!entry) return;
-  const equipped = itemInventory.filter(i => i.equipped).length;
-  if(equipped >= MAX_EQUIPPED) { addLog(`Máximo de ${MAX_EQUIPPED} itens equipados.`, 'info'); return; }
+  const isCenario = ITEM_CATALOG[entry.catalogId]?.tipo === 'Cenário';
+  if(isCenario) {
+    const cCount = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
+    if(cCount >= 1) { addLog('Já tens uma decoração de cenário equipada.', 'info'); return; }
+  } else {
+    const nCount = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
+    if(nCount >= MAX_EQUIPPED) { addLog(`Máximo de ${MAX_EQUIPPED} itens equipados.`, 'info'); return; }
+  }
   entry.equipped = true;
   const item = ITEM_CATALOG[entry.catalogId];
   addLog(`${item.emoji} ${item.nome} equipado!`, 'good');
@@ -126,50 +134,57 @@ function deleteItem(id) {
 // ═══════════════════════════════════════════
 // ── DECORAÇÃO DE PÁSCOA ──────────────────────────────────────────────
 const EASTER_EGG_POSITIONS = [
-  { left:'8%',  bottom:'12px' },
-  { left:'18%', bottom:'8px'  },
-  { left:'72%', bottom:'10px' },
-  { left:'82%', bottom:'14px' },
-  { left:'88%', bottom:'8px'  },
+  { left:'6%',  bottom:'22px' },
+  { left:'16%', bottom:'22px' },
+  { left:'26%', bottom:'22px' },
+  { left:'68%', bottom:'22px' },
+  { left:'78%', bottom:'22px' },
+  { left:'88%', bottom:'22px' },
 ];
 
-const EASTER_PATTERNS = [
-  // [corFundo, corDetalhe, padrão]
-  ['#f87171','#fff','stripes'],
-  ['#fb923c','#fff8','dots'],
-  ['#a3e635','#fff','zigzag'],
-  ['#34d399','#fff','stripes'],
-  ['#60a5fa','#fff8','dots'],
-  ['#c084fc','#fff','zigzag'],
-  ['#f472b6','#fff','stripes'],
-  ['#fbbf24','#fff','dots'],
-];
-
-function makeEasterEggSVG(pattern, idx) {
-  const [bg, detail, type] = pattern;
+function makeEasterEggSVG(idx) {
+  const palettes = [
+    { bg:'#f87171', stripe:'#fff',    gem:'#fecaca' },
+    { bg:'#fb923c', stripe:'#fff8',   gem:'#fed7aa' },
+    { bg:'#a3e635', stripe:'#fff',    gem:'#d9f99d' },
+    { bg:'#34d399', stripe:'#fff',    gem:'#a7f3d0' },
+    { bg:'#60a5fa', stripe:'#fff8',   gem:'#bfdbfe' },
+    { bg:'#c084fc', stripe:'#fff',    gem:'#e9d5ff' },
+  ];
+  const p = palettes[idx % palettes.length];
   const id = 'ee'+idx;
-  let deco = '';
-  if(type === 'stripes') {
-    deco = `<line x1="4" y1="10" x2="16" y2="10" stroke="${detail}" stroke-width="2.5" opacity=".7"/>
-            <line x1="3" y1="14" x2="17" y2="14" stroke="${detail}" stroke-width="1.5" opacity=".5"/>`;
-  } else if(type === 'dots') {
-    deco = `<circle cx="7" cy="11" r="2" fill="${detail}" opacity=".75"/>
-            <circle cx="13" cy="11" r="2" fill="${detail}" opacity=".75"/>
-            <circle cx="10" cy="15" r="2" fill="${detail}" opacity=".6"/>`;
-  } else {
-    deco = `<polyline points="4,10 7,7 10,10 13,7 16,10" stroke="${detail}" stroke-width="2" fill="none" opacity=".7"/>`;
-  }
-  return `<svg viewBox="0 0 20 24" width="20" height="24" xmlns="http://www.w3.org/2000/svg">
+  const delay = (idx * 0.35).toFixed(2);
+  const dur   = (2.2 + idx * 0.3).toFixed(1);
+  return `<svg viewBox="0 0 28 34" width="28" height="34" xmlns="http://www.w3.org/2000/svg" style="display:block;">
   <defs>
-    <radialGradient id="${id}g" cx="40%" cy="35%">
-      <stop offset="0%" stop-color="#fff" stop-opacity=".4"/>
-      <stop offset="100%" stop-color="${bg}" stop-opacity="0"/>
+    <radialGradient id="${id}g" cx="38%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+      <stop offset="100%" stop-color="${p.bg}" stop-opacity="0"/>
     </radialGradient>
+    <clipPath id="${id}c">
+      <ellipse cx="14" cy="18" rx="11" ry="14"/>
+    </clipPath>
   </defs>
-  <ellipse cx="10" cy="13" rx="8" ry="10" fill="${bg}" opacity=".95"/>
-  <ellipse cx="10" cy="13" rx="8" ry="10" fill="url(#${id}g)"/>
-  ${deco}
-  <ellipse cx="10" cy="13" rx="8" ry="10" fill="none" stroke="${detail}" stroke-width=".8" opacity=".4"/>
+  <!-- corpo do ovo -->
+  <ellipse cx="14" cy="18" rx="11" ry="14" fill="${p.bg}" opacity=".95"/>
+  <!-- listras horizontais decorativas -->
+  <g clip-path="url(#${id}c)">
+    <rect x="3" y="14" width="22" height="3.5" fill="${p.stripe}" opacity=".35"/>
+    <rect x="3" y="20" width="22" height="2.5" fill="${p.stripe}" opacity=".2"/>
+    <!-- pontinhos centrais -->
+    <circle cx="10" cy="17" r="1.8" fill="${p.gem}" opacity=".7"/>
+    <circle cx="14" cy="15" r="2.2" fill="${p.gem}" opacity=".8"/>
+    <circle cx="18" cy="17" r="1.8" fill="${p.gem}" opacity=".7"/>
+  </g>
+  <!-- brilho -->
+  <ellipse cx="14" cy="18" rx="11" ry="14" fill="url(#${id}g)"/>
+  <!-- borda sutil -->
+  <ellipse cx="14" cy="18" rx="11" ry="14" fill="none" stroke="#fff" stroke-width=".6" opacity=".3"/>
+  <!-- sombra base -->
+  <ellipse cx="14" cy="31" rx="7" ry="2" fill="#000" opacity=".18"/>
+  <!-- animação flutuante -->
+  <animateTransform attributeName="transform" type="translate"
+    values="0,0; 0,-4; 0,0" dur="${dur}s" begin="${delay}s" repeatCount="indefinite"/>
 </svg>`;
 }
 
@@ -179,12 +194,11 @@ function syncEasterEggs() {
   const active = getEquippedItems().some(i => i.id === 'decoracao_pascoa');
   if(!active) { container.innerHTML = ''; return; }
   if(container.children.length > 0) return; // já renderizado
+  container.innerHTML = ''; // limpa antes
   EASTER_EGG_POSITIONS.forEach((pos, i) => {
-    const pattern = EASTER_PATTERNS[i % EASTER_PATTERNS.length];
     const el = document.createElement('div');
-    el.className = 'easter-egg';
-    el.style.cssText = `position:absolute;left:${pos.left};bottom:${pos.bottom};z-index:5;pointer-events:none;animation:easter-float ${2.5+(i*0.4).toFixed(1)}s ease-in-out infinite;animation-delay:${(i*0.3).toFixed(1)}s;`;
-    el.innerHTML = makeEasterEggSVG(pattern, i);
+    el.style.cssText = `position:absolute;left:${pos.left};bottom:${pos.bottom};z-index:5;pointer-events:none;`;
+    el.innerHTML = makeEasterEggSVG(i);
     container.appendChild(el);
   });
 }
