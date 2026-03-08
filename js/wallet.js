@@ -263,6 +263,7 @@ async function connectWallet() {
         }
         updateDirtyVisuals();
         updateEquippedDisplay();
+        syncEasterEggs();
 
       } else if(avatar && !hatched) {
         // Avatar exists but egg not yet hatched — restore egg screen
