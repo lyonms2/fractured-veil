@@ -67,7 +67,7 @@ function applyGameState(data) {
   eggLayCooldown= data.eggLayCooldown ?? 0;
   poopCount     = data.poopCount    ?? 0;
   dirtyLevel    = data.dirtyLevel   ?? 0;
-  poopCooldown  = data.poopCooldown ?? 0;
+  poopPressure  = data.poopPressure ?? data.poopCooldown ?? 0; // fallback para saves antigos
   bornAt        = data.bornAt        ?? 0;
   petCooldown   = data.petCooldown   ?? 0;
   if(data.vitals) Object.assign(vitals, data.vitals);
