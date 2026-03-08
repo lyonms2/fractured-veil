@@ -165,16 +165,17 @@ function setDifficulty(tier) {
   openGameSelector(); // re-render com nova dificuldade selecionada
 }
 
-function miniReward(xpMult, coinMult) {
-  const d = miniDifficulty();
+function miniReward(xpMult, coinMult, vinculoGain = 3) {
+  const d  = miniDifficulty();
   const rb = rarityBonus();
-  const xpGain    = Math.round(d.xp    * xpMult   * rb.xp);
-  const coinGain  = Math.round(d.coins * coinMult  * rb.moedas);
+  const vb = getVinculoBonus();
+  const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
+  const coinGain = Math.round(d.coins * coinMult * rb.moedas);
   xp += xpGain;
   earnCoins(coinGain);
   vitals.energia = Math.max(0, vitals.energia - 15);
   vitals.fome    = Math.max(0, vitals.fome    - 5);
-  vinculo += 3;
+  vinculo += vinculoGain;
   checkXP(); updateAllUI();
   return { xpGain, coinGain };
 }
