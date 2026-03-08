@@ -410,7 +410,6 @@ function wakeUp(reason) {
     showBubble('Energia cheia! ☀️');
     addLog('Acordou com energia plena!', 'good');
   } else {
-    vinculo += 1;
     showBubble('Acordei! 😊');
     addLog('Acordou descansado!', 'good');
   }
