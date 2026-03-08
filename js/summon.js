@@ -24,7 +24,7 @@ function triggerSummon() {
   dead = false; hatched = false; sick = false; sleeping = false;
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
   eggClicks = 0; eggLayCooldown = 0;
-  poopCount = 0; dirtyLevel = 0; poopCooldown = 180;
+  poopCount = 0; dirtyLevel = 0; poopPressure = 0;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   document.getElementById('poopContainer').innerHTML = '';
 
@@ -260,7 +260,7 @@ function hatch() {
   poopCount = 0;
   dirtyLevel = 0;
   vitals.higiene = 100;
-  poopCooldown = 180;
+  poopPressure = 0;
 
   // Switch screens
   document.getElementById('eggScreen').style.display = 'none';
