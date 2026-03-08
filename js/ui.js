@@ -110,8 +110,9 @@ function updateLifeEstimate() {
   if(!el) return;
   if(!hatched || dead || sleeping) { el.textContent = sleeping ? '💤 dormindo' : '—'; el.style.color = 'var(--muted)'; return; }
 
-  // Calcular decay de saúde por ciclo (1 ciclo = 60s real)
   const _d = rarityBonus().decay * GAME_SPEED;
+
+  // Decay de saúde por ciclo quando vital está crítico — espelho exato do gametick.js
   let decayPerCycle = 0;
   if(vitals.fome    < 15) decayPerCycle += 0.3;
   if(vitals.humor   < 10) decayPerCycle += 0.1;
@@ -119,36 +120,38 @@ function updateLifeEstimate() {
   if(vitals.higiene < 15) decayPerCycle += 0.04;
   if(dirtyLevel     >= 2) decayPerCycle += 0.04;
 
-  // Projetar quanto cada vital vai demorar para atingir nível crítico
-  // e quando a saúde chega a 0 com base no decay atual
   if(decayPerCycle <= 0) {
-    // Avatar saudável — estimar com base nos vitals mais baixos
-    // Quanto tempo até o pior vital chegar ao limite crítico?
-    const cyclesUntilFomeCrit    = vitals.fome    > 15 ? (vitals.fome - 15)    / (0.5 * _d) : 0;
-    const cyclesUntilHumorCrit   = vitals.humor   > 10 ? (vitals.humor - 10)   / (0.25 * _d) : 0;
-    const cyclesUntilEnergiaCrit = vitals.energia > 5  ? (vitals.energia - 5)  / (0.2 * _d) : 0;
-    const cyclesUntilHigieneCrit = vitals.higiene > 15 ? (vitals.higiene - 15) / (0.12) : 0;
+    // Avatar saudável — estimar ciclos até cada vital atingir o limite crítico
+    // Taxas reais do gametick.js (pós-rebalanceamento)
+    const fomeDecay    = 0.8  * _d * getItemEffect('fomeDecayMult');
+    const humorDecay   = 0.5  * _d;
+    const energiaDecay = 0.6  * _d;
+    const higieneDecay = 0.12 * GAME_SPEED;
 
-    // Pior caso — o primeiro vital a ficar crítico
+    const cyclesUntilFomeCrit    = vitals.fome    > 15 ? (vitals.fome    - 15) / fomeDecay    : 0;
+    const cyclesUntilHumorCrit   = vitals.humor   > 10 ? (vitals.humor   - 10) / humorDecay   : 0;
+    const cyclesUntilEnergiaCrit = vitals.energia > 5  ? (vitals.energia - 5)  / energiaDecay : 0;
+    const cyclesUntilHigieneCrit = vitals.higiene > 15 ? (vitals.higiene - 15) / higieneDecay : 0;
+
     const minCycles = Math.min(
-      cyclesUntilFomeCrit || Infinity,
-      cyclesUntilHumorCrit || Infinity,
+      cyclesUntilFomeCrit    || Infinity,
+      cyclesUntilHumorCrit   || Infinity,
       cyclesUntilEnergiaCrit || Infinity,
       cyclesUntilHigieneCrit || Infinity
     );
 
     if(minCycles === Infinity) { el.textContent = '✅ estável'; el.style.color = '#7ab87a'; return; }
 
-    // Após esse vital ficar crítico, quantos ciclos adicionais até saúde = 0?
-    const cyclesAfter = vitals.saude / 0.3; // usando o pior decay (fome)
-    const totalSecs = Math.round((minCycles + cyclesAfter) * 60);
-    el.style.color = totalSecs < 3600 ? '#e74c3c' : totalSecs < 7200 ? '#c9a84c' : '#7ab87a';
-    el.textContent = _fmtTime(totalSecs);
+    // Após o primeiro vital crítico, quantos ciclos até saúde = 0 com decay mínimo (fome → 0.3)
+    const cyclesAfter = vitals.saude / 0.3;
+    const totalSecs   = Math.round((minCycles + cyclesAfter) * 60);
+    el.style.color    = totalSecs < 3600 ? '#e74c3c' : totalSecs < 7200 ? '#c9a84c' : '#7ab87a';
+    el.textContent    = _fmtTime(totalSecs);
   } else {
-    // Já em perigo — calcular diretamente
+    // Já em perigo — tempo direto até saúde = 0
     const cyclesLeft = vitals.saude / decayPerCycle;
     const secsLeft   = Math.round(cyclesLeft * 60);
-    el.style.color   = secsLeft < 1800 ? '#e74c3c' : secsLeft < 3600 ? '#c9a84c' : '#c9a84c';
+    el.style.color   = secsLeft < 1800 ? '#e74c3c' : '#c9a84c';
     el.textContent   = _fmtTime(secsLeft);
   }
 }
