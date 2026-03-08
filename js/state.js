@@ -21,9 +21,9 @@ const ITEM_CATALOG = {
   'amuleto_saciedade': {
     id:       'amuleto_saciedade',
     nome:     'Amuleto da Saciedade',
-    emoji:    '🔮',
-    desc:     'Uma gema ancestral que suprime a fome.',
-    efeito:   'Reduz consumo de Fome em 25% por ciclo',
+    emoji:    '🥞',
+    desc:     'Uma erva dimensional que suprime a fome e melhora a digestão.',
+    efeito:   'Reduz consumo de Fome em 25% e frequência de cocô',
     tipo:     'Amuleto',
     raridade: 'Comum',
     preco:    150,
@@ -34,8 +34,8 @@ const ITEM_CATALOG = {
     id:       'decoracao_pascoa',
     nome:     'Decoração de Páscoa',
     emoji:    '🥚',
-    desc:     'Ovos coloridos enfeitam o cenário do seu avatar. Edição limitada de Páscoa!',
-    efeito:   'Decora o cenário com ovos de Páscoa animados',
+    desc:     'Ovos coloridos enfeitam o cenário. Edição limitada de Páscoa!',
+    efeito:   'Decora o cenário com ovos animados',
     tipo:     'Cenário',
     raridade: 'Especial',
     preco:    120,
@@ -44,9 +44,9 @@ const ITEM_CATALOG = {
   },
   'coroa_cristal': {
     id:       'coroa_cristal',
-    nome:     'Coroa de Cristal',
-    emoji:    '👑',
-    desc:     'Uma coroa etérea forjada em cristal dimensional. Irradia serenidade.',
+    nome:     'Máscara da Alegria',
+    emoji:    '🎭',
+    desc:     'Uma máscara etérea que irradia serenidade e mantém o humor elevado.',
     efeito:   'Reduz decay de Humor em 40% por ciclo',
     tipo:     'Coroa',
     raridade: 'Raro',
@@ -58,7 +58,7 @@ const ITEM_CATALOG = {
     id:       'amuleto_sono',
     nome:     'Amuleto do Sono Profundo',
     emoji:    '🌙',
-    desc:     'Um cristal lunar que amplifica o descanso dimensional.',
+    desc:     'Um cristal que pulsa durante o sono, amplificando a recuperação de energia.',
     efeito:   'Energia recupera 2× mais rápido dormindo',
     tipo:     'Amuleto',
     raridade: 'Comum',
@@ -151,4 +151,3 @@ const FALAS = {
   bored:  ['Entediado...','Me divirta!','Tão entediado...'],
   dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
 };
-
