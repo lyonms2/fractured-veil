@@ -202,7 +202,7 @@ function summonFromEgg(raridade, elemento, crackColor) {
   eggClicks = 0; eggLayCooldown = 0; eggLayNotified = false;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   sick = false; sleeping = false; dead = false; hatched = false;
-  dirtyLevel = 0; poopCount = 0; poopCooldown = 5;
+  dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   document.getElementById('poopContainer').innerHTML = '';
 
   // Build avatar
