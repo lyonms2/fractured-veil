@@ -20,6 +20,15 @@ function updateAllUI() {
   document.getElementById('xpFill').style.width = xpPct+'%';
   document.getElementById('xpTxt').textContent  = `${Math.floor(xp)}/${100*nivel}`;
   document.getElementById('nivelTxt').textContent = `NÍVEL ${nivel}`;
+  // Vínculo
+  const vt = getVinculoTier();
+  const vNext = VINCULO_TIERS.find(t => t.min > vinculo);
+  const vPrev = vt.min;
+  const vPct  = vNext ? Math.min(100, ((vinculo - vPrev) / (vNext.min - vPrev)) * 100) : 100;
+  const vFill = document.getElementById('vinculoFill');
+  const vTxt  = document.getElementById('vinculoTxt');
+  if(vFill) { vFill.style.width = vPct+'%'; vFill.style.background = `linear-gradient(90deg,${vt.cor},#c870e8)`; }
+  if(vTxt)  vTxt.textContent = `${vt.label} · ${Math.floor(vinculo)}`;
   updateResourceUI();
   updateLifeEstimate();
 }
