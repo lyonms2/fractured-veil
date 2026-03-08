@@ -410,6 +410,7 @@ function wakeUp(reason) {
     showBubble('Energia cheia! ☀️');
     addLog('Acordou com energia plena!', 'good');
   } else {
+    vinculo += 1;
     showBubble('Acordei! 😊');
     addLog('Acordou descansado!', 'good');
   }
@@ -424,6 +425,7 @@ function healCreature() {
   if(!spendCoins(COST)) return;
   vitals.saude = Math.min(100, vitals.saude + 40);
   sick = false;
+  vinculo += 4;
   playAnim('anim-heal');
   spawnHealParticles();
   showFloat('+40 💚','#27ae60');
