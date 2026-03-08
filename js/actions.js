@@ -105,8 +105,6 @@ function confirmRename() {
 
   // Save to Firebase
   if(walletAddress) scheduleSave();
-
-  vinculo += 5; // pequeno boost de vínculo por renomear
   addLog(`Avatar renomeado para "${clean}" 💕`, 'good');
   showBubble(`${clean}... Adoro esse nome! 💕`);
   updateAllUI();
