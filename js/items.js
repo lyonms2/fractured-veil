@@ -135,105 +135,111 @@ function deleteItem(id) {
 
 // ═══════════════════════════════════════════
 // ── DECORAÇÃO DE PÁSCOA ──────────────────────────────────────────────
-const EASTER_EGG_POSITIONS = [
-  { left:'5%',  bottom:'22px' },
-  { left:'15%', bottom:'22px' },
-  { left:'25%', bottom:'22px' },
-  { left:'67%', bottom:'22px' },
-  { left:'77%', bottom:'22px' },
-  { left:'87%', bottom:'22px' },
-];
 
-const EASTER_PALETTES = [
-  { bg:'#f87171', stripe:'#fff',  gem:'#fecaca' },
-  { bg:'#fb923c', stripe:'#fff8', gem:'#fed7aa' },
-  { bg:'#a3e635', stripe:'#fff',  gem:'#d9f99d' },
-  { bg:'#34d399', stripe:'#fff',  gem:'#a7f3d0' },
-  { bg:'#60a5fa', stripe:'#fff8', gem:'#bfdbfe' },
-  { bg:'#c084fc', stripe:'#fff',  gem:'#e9d5ff' },
-];
+function makePascoaBorderSVG() {
+  // Borda decorativa ao redor do cenário (mainScreen)
+  // Usa SVG com viewBox proporcional ao container
+  // Ovos nos cantos, flores nas laterais, borboletas no topo
+  return `<svg viewBox="0 0 340 300" width="100%" height="100%"
+    xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute;inset:0;pointer-events:none;z-index:20;">
+    <defs>
+      <radialGradient id="eg0" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#f87171" stop-opacity="0"/></radialGradient>
+      <radialGradient id="eg1" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/></radialGradient>
+      <radialGradient id="eg2" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#a3e635" stop-opacity="0"/></radialGradient>
+      <radialGradient id="eg3" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#c084fc" stop-opacity="0"/></radialGradient>
+      <radialGradient id="eg4" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#fb923c" stop-opacity="0"/></radialGradient>
+      <radialGradient id="eg5" cx="38%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></radialGradient>
+    </defs>
 
-function makeEasterEggSVG(idx) {
-  const p   = EASTER_PALETTES[idx % EASTER_PALETTES.length];
-  const id  = 'ee'+idx;
-  const dur = (2.2 + idx * 0.3).toFixed(1);
-  const del = (idx * 0.35).toFixed(2);
-  return `<svg viewBox="0 0 28 34" width="28" height="34" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-  <defs>
-    <radialGradient id="${id}g" cx="38%" cy="30%" r="60%">
-      <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
-      <stop offset="100%" stop-color="${p.bg}" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="${id}c"><ellipse cx="14" cy="18" rx="11" ry="14"/></clipPath>
-  </defs>
-  <ellipse cx="14" cy="18" rx="11" ry="14" fill="${p.bg}" opacity=".95"/>
-  <g clip-path="url(#${id}c)">
-    <rect x="3" y="13" width="22" height="3" fill="${p.stripe}" opacity=".3"/>
-    <rect x="3" y="20" width="22" height="2" fill="${p.stripe}" opacity=".2"/>
-    <circle cx="10" cy="17" r="1.8" fill="${p.gem}" opacity=".7"/>
-    <circle cx="14" cy="15" r="2.2" fill="${p.gem}" opacity=".8"/>
-    <circle cx="18" cy="17" r="1.8" fill="${p.gem}" opacity=".7"/>
-  </g>
-  <ellipse cx="14" cy="18" rx="11" ry="14" fill="url(#${id}g)"/>
-  <ellipse cx="14" cy="18" rx="11" ry="14" fill="none" stroke="#fff" stroke-width=".6" opacity=".3"/>
-  <ellipse cx="14" cy="31" rx="7" ry="2" fill="#000" opacity=".15"/>
-  <animateTransform attributeName="transform" type="translate"
-    values="0,0; 0,-5; 0,0" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-</svg>`;
-}
+    <!-- ══ BORDA DECORATIVA ══ -->
+    <!-- linha de borda pastel suave -->
+    <rect x="4" y="4" width="332" height="292" rx="14"
+      fill="none" stroke="#f472b680" stroke-width="2.5" stroke-dasharray="6 4">
+      <animate attributeName="stroke-opacity" values=".5;.9;.5" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="7" y="7" width="326" height="286" rx="12"
+      fill="none" stroke="#a78bfa40" stroke-width="1.5"/>
 
-function makeButterflySVG(idx) {
-  const colors = ['#f472b6','#a78bfa','#34d399','#fb923c','#60a5fa'];
-  const c1 = colors[idx % colors.length];
-  const c2 = colors[(idx+2) % colors.length];
-  const dur = (3 + idx * 0.5).toFixed(1);
-  const xStart = 10 + idx * 22;
-  const del = (idx * 0.7).toFixed(1);
-  return `<svg viewBox="0 0 32 28" width="32" height="28" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-  <!-- asa esquerda superior -->
-  <ellipse cx="10" cy="10" rx="9" ry="7" fill="${c1}" opacity=".75" transform="rotate(-20 10 10)">
-    <animate attributeName="ry" values="7;4;7" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values=".75;.5;.75" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-  </ellipse>
-  <!-- asa direita superior -->
-  <ellipse cx="22" cy="10" rx="9" ry="7" fill="${c1}" opacity=".75" transform="rotate(20 22 10)">
-    <animate attributeName="ry" values="7;4;7" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values=".75;.5;.75" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-  </ellipse>
-  <!-- asa esquerda inferior -->
-  <ellipse cx="11" cy="19" rx="6" ry="5" fill="${c2}" opacity=".6" transform="rotate(15 11 19)">
-    <animate attributeName="ry" values="5;3;5" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-  </ellipse>
-  <!-- asa direita inferior -->
-  <ellipse cx="21" cy="19" rx="6" ry="5" fill="${c2}" opacity=".6" transform="rotate(-15 21 19)">
-    <animate attributeName="ry" values="5;3;5" dur="${dur}s" begin="${del}s" repeatCount="indefinite"/>
-  </ellipse>
-  <!-- corpo -->
-  <ellipse cx="16" cy="14" rx="2" ry="8" fill="#1a0a2e" opacity=".8"/>
-  <circle cx="16" cy="7" r="2" fill="#1a0a2e" opacity=".8"/>
-  <!-- antenas -->
-  <line x1="15" y1="6" x2="11" y2="2" stroke="#1a0a2e" stroke-width="1" opacity=".7"/>
-  <line x1="17" y1="6" x2="21" y2="2" stroke="#1a0a2e" stroke-width="1" opacity=".7"/>
-  <circle cx="11" cy="2" r="1.2" fill="${c1}" opacity=".8"/>
-  <circle cx="21" cy="2" r="1.2" fill="${c1}" opacity=".8"/>
-  <!-- movimento horizontal -->
-  <animateTransform attributeName="transform" type="translate"
-    values="${xStart},0; ${xStart+18},0; ${xStart},0"
-    dur="${(parseFloat(dur)*2.5).toFixed(1)}s" begin="${del}s" repeatCount="indefinite" additive="sum"/>
-</svg>`;
-}
+    <!-- ══ OVOS NOS CANTOS ══ -->
+    <!-- canto topo-esquerdo -->
+    <g transform="translate(12,8) rotate(-25)">
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="#f87171" opacity=".9"/>
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="url(#eg0)"/>
+      <rect x="-9" y="-2" width="18" height="2.5" fill="#fff" opacity=".25"/>
+      <circle cx="-3" cy="-3" r="1.5" fill="#fecaca" opacity=".7"/>
+      <circle cx="3" cy="-3" r="1.5" fill="#fecaca" opacity=".7"/>
+      <animate attributeName="transform" attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/>
+    </g>
+    <!-- canto topo-direito -->
+    <g transform="translate(328,8) rotate(25)">
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="#60a5fa" opacity=".9"/>
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="url(#eg1)"/>
+      <rect x="-9" y="-2" width="18" height="2.5" fill="#fff" opacity=".25"/>
+      <circle cx="-3" cy="-3" r="1.5" fill="#bfdbfe" opacity=".7"/>
+      <circle cx="3" cy="-3" r="1.5" fill="#bfdbfe" opacity=".7"/>
+    </g>
+    <!-- canto baixo-esquerdo -->
+    <g transform="translate(12,290) rotate(20)">
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="#a3e635" opacity=".9"/>
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="url(#eg2)"/>
+      <rect x="-9" y="-2" width="18" height="2.5" fill="#fff" opacity=".25"/>
+      <circle cx="-3" cy="-3" r="1.5" fill="#d9f99d" opacity=".7"/>
+      <circle cx="3" cy="-3" r="1.5" fill="#d9f99d" opacity=".7"/>
+    </g>
+    <!-- canto baixo-direito -->
+    <g transform="translate(328,290) rotate(-20)">
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="#c084fc" opacity=".9"/>
+      <ellipse cx="0" cy="0" rx="9" ry="11" fill="url(#eg3)"/>
+      <rect x="-9" y="-2" width="18" height="2.5" fill="#fff" opacity=".25"/>
+      <circle cx="-3" cy="-3" r="1.5" fill="#e9d5ff" opacity=".7"/>
+      <circle cx="3" cy="-3" r="1.5" fill="#e9d5ff" opacity=".7"/>
+    </g>
 
-function makeFlowerSVG(idx) {
-  const cols = ['#f472b6','#fbbf24','#a78bfa','#34d399','#f87171'];
-  const col  = cols[idx % cols.length];
-  const del  = (idx * 0.4).toFixed(1);
-  return `<svg viewBox="0 0 20 20" width="16" height="16" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-  <circle cx="10" cy="6"  r="3.5" fill="${col}" opacity=".85"><animate attributeName="opacity" values=".85;.6;.85" dur="3s" begin="${del}s" repeatCount="indefinite"/></circle>
-  <circle cx="14" cy="10" r="3.5" fill="${col}" opacity=".85"><animate attributeName="opacity" values=".85;.6;.85" dur="3s" begin="${(parseFloat(del)+0.5).toFixed(1)}s" repeatCount="indefinite"/></circle>
-  <circle cx="10" cy="14" r="3.5" fill="${col}" opacity=".85"><animate attributeName="opacity" values=".85;.6;.85" dur="3s" begin="${(parseFloat(del)+1.0).toFixed(1)}s" repeatCount="indefinite"/></circle>
-  <circle cx="6"  cy="10" r="3.5" fill="${col}" opacity=".85"><animate attributeName="opacity" values=".85;.6;.85" dur="3s" begin="${(parseFloat(del)+1.5).toFixed(1)}s" repeatCount="indefinite"/></circle>
-  <circle cx="10" cy="10" r="3.5" fill="#fff8" opacity=".9"/>
-</svg>`;
+    <!-- ══ FLORES NAS LATERAIS ══ -->
+    <!-- lateral esquerda: 3 flores -->
+    <g transform="translate(6,80)"><circle cx="0" cy="0" r="5" fill="#f472b6" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.5s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#f472b6" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.5s" begin=".6s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#f472b6" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.5s" begin="1.2s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#f472b6" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.5s" begin="1.8s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+    <g transform="translate(6,150)"><circle cx="0" cy="0" r="5" fill="#fbbf24" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3s" begin=".3s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#fbbf24" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3s" begin=".9s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#fbbf24" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#fbbf24" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3s" begin="2.1s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+    <g transform="translate(6,220)"><circle cx="0" cy="0" r="5" fill="#34d399" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2s" begin=".5s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#34d399" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#34d399" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#34d399" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2s" begin="2.0s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+    <!-- lateral direita: 3 flores -->
+    <g transform="translate(334,80)"><circle cx="0" cy="0" r="5" fill="#a78bfa" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.8s" begin=".4s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#a78bfa" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.8s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#a78bfa" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.8s" begin="1.6s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#a78bfa" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.8s" begin="2.2s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+    <g transform="translate(334,150)"><circle cx="0" cy="0" r="5" fill="#f87171" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.2s" begin=".2s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#f87171" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.2s" begin=".8s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#f87171" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.2s" begin="1.4s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#f87171" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="2.2s" begin="2.0s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+    <g transform="translate(334,220)"><circle cx="0" cy="0" r="5" fill="#fb923c" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3.2s" begin=".7s" repeatCount="indefinite"/></circle><circle cx="5" cy="4" r="5" fill="#fb923c" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3.2s" begin="1.3s" repeatCount="indefinite"/></circle><circle cx="0" cy="8" r="5" fill="#fb923c" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3.2s" begin="1.9s" repeatCount="indefinite"/></circle><circle cx="-5" cy="4" r="5" fill="#fb923c" opacity=".7"><animate attributeName="opacity" values=".7;.4;.7" dur="3.2s" begin="2.5s" repeatCount="indefinite"/></circle><circle cx="0" cy="4" r="4" fill="#fff" opacity=".85"/></g>
+
+    <!-- ══ BORBOLETAS NO TOPO ══ -->
+    <!-- borboleta 1 -->
+    <g opacity=".85">
+      <ellipse cx="100" cy="18" rx="10" ry="7" fill="#f472b6" opacity=".75" transform="rotate(-15 100 18)"><animate attributeName="ry" values="7;3;7" dur="1.8s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="118" cy="18" rx="10" ry="7" fill="#f472b6" opacity=".75" transform="rotate(15 118 18)"><animate attributeName="ry" values="7;3;7" dur="1.8s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="103" cy="23" rx="6" ry="4" fill="#fbbf24" opacity=".6"><animate attributeName="ry" values="4;2;4" dur="1.8s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="115" cy="23" rx="6" ry="4" fill="#fbbf24" opacity=".6"><animate attributeName="ry" values="4;2;4" dur="1.8s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="109" cy="20" rx="2" ry="6" fill="#1a0a2e" opacity=".8"/>
+      <animateTransform attributeName="transform" type="translate" values="0,0;25,0;0,0" dur="6s" repeatCount="indefinite" additive="sum"/>
+    </g>
+    <!-- borboleta 2 -->
+    <g opacity=".85">
+      <ellipse cx="200" cy="15" rx="9" ry="6" fill="#a78bfa" opacity=".75" transform="rotate(-15 200 15)"><animate attributeName="ry" values="6;2;6" dur="2.2s" begin=".5s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="216" cy="15" rx="9" ry="6" fill="#a78bfa" opacity=".75" transform="rotate(15 216 15)"><animate attributeName="ry" values="6;2;6" dur="2.2s" begin=".5s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="203" cy="20" rx="5" ry="3.5" fill="#c084fc" opacity=".6"><animate attributeName="ry" values="3.5;1.5;3.5" dur="2.2s" begin=".5s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="213" cy="20" rx="5" ry="3.5" fill="#c084fc" opacity=".6"><animate attributeName="ry" values="3.5;1.5;3.5" dur="2.2s" begin=".5s" repeatCount="indefinite"/></ellipse>
+      <ellipse cx="208" cy="17" rx="2" ry="5.5" fill="#1a0a2e" opacity=".8"/>
+      <animateTransform attributeName="transform" type="translate" values="0,0;-20,0;0,0" dur="7s" begin=".8s" repeatCount="indefinite" additive="sum"/>
+    </g>
+
+    <!-- ══ OVOS EXTRAS NO TOPO (meio) ══ -->
+    <g transform="translate(165,10) rotate(-10)">
+      <ellipse cx="0" cy="0" rx="8" ry="10" fill="#fb923c" opacity=".85"/>
+      <ellipse cx="0" cy="0" rx="8" ry="10" fill="url(#eg4)"/>
+      <rect x="-8" y="-2" width="16" height="2" fill="#fff" opacity=".25"/>
+      <animate attributeName="opacity" values=".85;1;.85" dur="2.5s" repeatCount="indefinite"/>
+    </g>
+    <g transform="translate(175,8) rotate(8)">
+      <ellipse cx="0" cy="0" rx="8" ry="10" fill="#34d399" opacity=".85"/>
+      <ellipse cx="0" cy="0" rx="8" ry="10" fill="url(#eg5)"/>
+      <rect x="-8" y="-2" width="16" height="2" fill="#fff" opacity=".25"/>
+      <animate attributeName="opacity" values=".85;1;.85" dur="3s" begin=".6s" repeatCount="indefinite"/>
+    </g>
+  </svg>`;
 }
 
 function syncEasterEggs() {
@@ -241,29 +247,5 @@ function syncEasterEggs() {
   if(!container) return;
   const active = getEquippedItems().some(i => i.id === 'decoracao_pascoa');
   if(!active) { container.innerHTML = ''; return; }
-  container.innerHTML = '';
-
-  // 6 ovos no chão
-  EASTER_EGG_POSITIONS.forEach((pos, i) => {
-    const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:${pos.left};bottom:${pos.bottom};z-index:5;pointer-events:none;`;
-    el.innerHTML = makeEasterEggSVG(i);
-    container.appendChild(el);
-  });
-
-  // 3 borboletas voando em alturas diferentes
-  [['-10px',0],['-30px',1],['-18px',2]].forEach(([bottom, idx]) => {
-    const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:0;bottom:${bottom};z-index:7;pointer-events:none;`;
-    el.innerHTML = makeButterflySVG(idx);
-    container.appendChild(el);
-  });
-
-  // 5 florezinhas no chão entre os ovos
-  [[35,0],[47,1],[57,2],[42,3],[52,4]].forEach(([leftPct, idx]) => {
-    const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:${leftPct}%;bottom:22px;z-index:5;pointer-events:none;`;
-    el.innerHTML = makeFlowerSVG(idx);
-    container.appendChild(el);
-  });
+  container.innerHTML = makePascoaBorderSVG();
 }
