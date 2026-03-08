@@ -23,7 +23,7 @@ async function disconnectWallet() {
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   Object.assign(gs, { moedas:100, ovos:0, primeira:true });
   eggsInInventory = [];
-  dirtyLevel = 0; poopCount = 0; poopCooldown = 5;
+  dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   walletAddress = null;
 
   // ── Reset screens ──
