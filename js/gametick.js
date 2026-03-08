@@ -375,7 +375,7 @@ function killCreature() {
 }
 
 function checkXP() {
-  const needed = 100 * nivel;
+  const needed = xpParaNivel(nivel);
   if(xp >= needed) {
     const faseBefore = getFase();
     xp -= needed; nivel++;
