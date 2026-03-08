@@ -50,6 +50,9 @@ function feedCreature() {
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
+  // Pressão intestinal — varia por quanto comeu e o quanto já tem no estômago
+  const pressaoGain = 25 + Math.round(Math.random() * 20); // +25 a +45 por refeição
+  poopPressure = Math.min(100, poopPressure + pressaoGain);
   const _rb = rarityBonus();
   xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
