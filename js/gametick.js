@@ -284,9 +284,6 @@ function gameTick() {
   }
   // Modo repouso offline já trata vinculo separadamente em wallet.js
 
-  // petCooldown
-  if(petCooldown > 0) petCooldown--;
-
   updateDirtyVisuals();
 
   if(vitals.saude <= 0) { killCreature(); return; }
