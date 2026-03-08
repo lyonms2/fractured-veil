@@ -381,11 +381,10 @@ function toggleSleep() {
 
 function startSleep() {
   sleeping = true;
-  // Close any open modal when sleeping
   ModalManager.closeAll();
   jkpPlaying = false;
   document.getElementById('sleepOverlay').classList.add('active');
-  // Show closed eyes overlay
+  document.getElementById('creatureWrap').classList.add('sleeping');
   renderSleepEyes();
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.add('sleeping'));
   playAnim('anim-sleep', true);
@@ -399,7 +398,7 @@ function startSleep() {
 function wakeUp(reason) {
   sleeping = false;
   document.getElementById('sleepOverlay').classList.remove('active');
-  // Hide closed eyes
+  document.getElementById('creatureWrap').classList.remove('sleeping');
   const grp = document.querySelector('#sleepEyesGroup');
   if(grp) grp.remove();
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.remove('sleeping'));
