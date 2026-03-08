@@ -75,7 +75,7 @@ function updateEquippedDisplay() {
   });
   if(changed) { renderItemInventory(); scheduleSave(); }
 
-  const equipped = itemInventory.filter(i => i.equipped);
+  const equipped = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário');
   if(!hatched || dead || equipped.length === 0) {
     el.innerHTML = '';
     return;
@@ -106,6 +106,7 @@ function equipItem(id) {
   scheduleSave();
   renderItemInventory();
   updateEquippedDisplay();
+  syncEasterEggs();
 }
 
 function unequipItem(id) {
@@ -117,6 +118,7 @@ function unequipItem(id) {
   scheduleSave();
   renderItemInventory();
   updateEquippedDisplay();
+  syncEasterEggs();
 }
 
 function deleteItem(id) {
@@ -193,8 +195,7 @@ function syncEasterEggs() {
   if(!container) return;
   const active = getEquippedItems().some(i => i.id === 'decoracao_pascoa');
   if(!active) { container.innerHTML = ''; return; }
-  if(container.children.length > 0) return; // já renderizado
-  container.innerHTML = ''; // limpa antes
+  container.innerHTML = ''; // limpa e re-renderiza sempre
   EASTER_EGG_POSITIONS.forEach((pos, i) => {
     const el = document.createElement('div');
     el.style.cssText = `position:absolute;left:${pos.left};bottom:${pos.bottom};z-index:5;pointer-events:none;`;
