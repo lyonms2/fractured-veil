@@ -321,10 +321,9 @@ function renderEggInventory() {
 
 function petCreature() {
   if(!canAct()) return;
-  if(petCooldown > 0) return; // silencioso — sem spam visual
+  if(petCooldown > 0) return; // cooldown silencioso
   vitals.humor = Math.min(100, vitals.humor + 3);
-  vinculo += 1;
-  petCooldown = 10; // 10 ticks = 10s
+  petCooldown = 10; // 10s cooldown
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');
   updateAllUI();
