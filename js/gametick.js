@@ -259,15 +259,11 @@ function gameTick() {
   if(!sleeping) {
     vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED));
   }
-  // cocô: apenas uma vez a cada ~5 min (300 ticks), chance aumenta se bem alimentado
-  if(!sleeping && !poopCooldown) {
-    const chance = vitals.fome > 80 ? .6 : .3; // high chance so poop actually appears
-    if(Math.random() < chance) {
-      spawnPoop();
-      poopCooldown = Math.round((120 + Math.floor(Math.random() * 60)) / GAME_SPEED); // ~2-3h real
-    }
+  // cocô: pressão acumula a cada refeição (ver actions.js), aqui só verifica o threshold
+  if(!sleeping && poopPressure >= 100) {
+    spawnPoop();
+    poopPressure = 0;
   }
-  if(poopCooldown > 0) poopCooldown--;
   if(tickCount % 60 === 0 && walletAddress) scheduleSave(); // auto-save every 60s
 
   // sujeira afeta saude e humor
