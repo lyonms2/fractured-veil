@@ -16,9 +16,10 @@ function updateAllUI() {
   setBar('barEnergia', vitals.energia);
   setBar('barSaude',   vitals.saude);
   setBar('barHigiene', vitals.higiene, null);
-  const xpPct = Math.min(100,(xp/(100*nivel))*100);
-  document.getElementById('xpFill').style.width = xpPct+'%';
-  document.getElementById('xpTxt').textContent  = `${Math.floor(xp)}/${100*nivel}`;
+  const xpNeeded = xpParaNivel(nivel);
+  const xpPctReal = Math.min(100,(xp/xpNeeded)*100);
+  document.getElementById('xpFill').style.width = xpPctReal+'%';
+  document.getElementById('xpTxt').textContent  = `${Math.floor(xp)}/${xpNeeded}`;
   document.getElementById('nivelTxt').textContent = `NÍVEL ${nivel}`;
   // Vínculo
   const vt = getVinculoTier();
