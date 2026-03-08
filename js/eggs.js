@@ -23,6 +23,13 @@ function calcEggRarity() {
   // Bônus +5% raridade superior se todos stats > 80
   const allHigh = Object.values(vitals).every(v => v > 80);
   if(allHigh && chances[2] < 95) { chances[1] = Math.max(0, chances[1]-5); chances[2] += 5; }
+  // Bônus de vínculo — aumenta chance de ovo Raro/Lendário
+  const vb = getVinculoBonus();
+  if(vb.eggRaro > 0 && chances[2] < 95) {
+    const bonus = vb.eggRaro;
+    chances[1] = Math.max(0, chances[1] - Math.floor(bonus/2));
+    chances[2] = Math.min(95, chances[2] + bonus);
+  }
 
   const roll = Math.random() * 100;
   if(roll < chances[0]) return 'Comum';
@@ -31,7 +38,8 @@ function calcEggRarity() {
 }
 
 function calcEggExpiry(raridade) {
-  const dias = raridade === 'Lendário' ? 30 : raridade === 'Raro' ? 14 : 7;
+  const base = raridade === 'Lendário' ? 30 : raridade === 'Raro' ? 14 : 7;
+  const dias  = base * getVinculoBonus().eggDura;
   return Date.now() + dias * 24 * 60 * 60 * 1000;
 }
 
@@ -313,8 +321,10 @@ function renderEggInventory() {
 
 function petCreature() {
   if(!canAct()) return;
+  if(petCooldown > 0) return; // silencioso — sem spam visual
   vitals.humor = Math.min(100, vitals.humor + 3);
-  vinculo = Math.min(100, vinculo + 1);
+  vinculo += 1;
+  petCooldown = 10; // 10 ticks = 10s
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');
   updateAllUI();
