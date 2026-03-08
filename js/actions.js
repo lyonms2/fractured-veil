@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════
 function canAct() {
   if(dead || !hatched || !avatar) return false;
+  if(sleeping) { showBubble('Shh... está dormindo 💤'); return false; }
   return true;
 }
 
