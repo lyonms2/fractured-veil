@@ -5,6 +5,7 @@ let poopCount     = 0;
 let dirtyLevel    = 0;
 let poopCooldown  = 5;
 let bornAt        = 0; // timestamp ms quando avatar chocou
+let petCooldown   = 0;
 let eggLayCooldown = 0;
 let pendingHatchId = null;
 let eggsInInventory = [];
@@ -68,7 +69,26 @@ let selectedDifficulty = null; // null = automático pelo nível
 let hatched   = false;
 let nivel     = 1;
 let xp        = 0;
-let vinculo   = 0;
+let vinculo   = 0; // acumula indefinidamente, sem cap
+
+// Tiers de vínculo
+const VINCULO_TIERS = [
+  { min:0,   label:'Distante',    cor:'#887799' },
+  { min:51,  label:'Amigo',       cor:'#7ab87a' },
+  { min:151, label:'Companheiro', cor:'#5ab4e8' },
+  { min:301, label:'Alma Gémea',  cor:'#c870e8' },
+];
+function getVinculoTier() {
+  for(let i = VINCULO_TIERS.length-1; i >= 0; i--)
+    if(vinculo >= VINCULO_TIERS[i].min) return VINCULO_TIERS[i];
+  return VINCULO_TIERS[0];
+}
+function getVinculoBonus() {
+  if(vinculo >= 301) return { xpMult:1.15, eggRaro:10, eggDura:2.0 };
+  if(vinculo >= 151) return { xpMult:1.10, eggRaro:5,  eggDura:1.0 };
+  if(vinculo >= 51)  return { xpMult:1.10, eggRaro:0,  eggDura:1.0 };
+  return               { xpMult:1.0,  eggRaro:0,  eggDura:1.0 };
+}
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
