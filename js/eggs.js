@@ -44,6 +44,7 @@ function calcEggExpiry(raridade) {
 }
 
 function layEgg() {
+  if(getFase() < 3) { showBubble('Ainda não cresci o suficiente... 🥚'); return; }
   if(!avatar || !hatched || dead) return;
   if(getFase() !== 3) { showBubble('Ainda não cresci o suficiente...'); return; }
   const EGG_COST = 50;
