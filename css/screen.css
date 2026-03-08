@@ -298,6 +298,6 @@
 
 
 /* ── DECORAÇÃO PÁSCOA ── */
-#easterEggContainer div {
-  filter: drop-shadow(0 3px 5px rgba(0,0,0,.5));
+#easterEggContainer {
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.3));
 }
