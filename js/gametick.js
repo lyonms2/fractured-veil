@@ -56,6 +56,11 @@ function removePoop(el) {
   setTimeout(() => el.remove(), 200);
   poopCount = Math.max(0, poopCount - 1);
   dirtyLevel = Math.min(3, Math.floor(poopCount / 2));
+  vinculo += 2;
+  playAnim('anim-clean', false);
+  showFloat('✨ limpinho!', '#a78bfa');
+  updateAllUI();
+  scheduleSave();
 }
 
 function cleanCreature() {
