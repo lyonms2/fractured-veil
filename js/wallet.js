@@ -151,18 +151,18 @@ async function connectWallet() {
               }
             } else if(emRepouso) {
               // Modo repouso automático — avatar "descansa"
-              // Só fome e higiene caem muito lentamente, resto congelado
               vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
               vitals.higiene = Math.max(0, vitals.higiene - 0.03);
               vitals.humor   = Math.max(0, vitals.humor   - 0.02);
+              vinculo        = Math.max(0, vinculo        - 0.01);
               // Saúde só cai se fome absolutamente zerada
               if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
               if(vitals.saude <= 0) { vitals.saude = 0; break; }
             } else {
               // Primeiros 30min offline — decay normal mas já mais lento que online
-              vitals.fome    = Math.max(0, vitals.fome    - 0.25 * _d * getItemEffect('fomeDecayMult'));
-              vitals.humor   = Math.max(0, vitals.humor   - 0.12 * _d);
-              vitals.energia = Math.max(0, vitals.energia - 0.1  * _d);
+              vitals.fome    = Math.max(0, vitals.fome    - 0.4 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
               vitals.higiene = Math.max(0, vitals.higiene - 0.06);
               if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
               if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
