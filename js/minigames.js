@@ -328,9 +328,9 @@ function revealResult(playerChoice) {
     const resultEl = document.getElementById('jkpResult');
     const rewardsEl = document.getElementById('jkpRewards');
     const RESULTS = {
-      win:  { text:'VITÓRIA!', cls:'win',  humor:20, xpGain:Math.round(15*rarityBonus().xp), coinsGain:Math.round(25*rarityBonus().moedas) },
-      lose: { text:'DERROTA',  cls:'lose', humor:5,  xpGain:Math.round(3*rarityBonus().xp),  coinsGain:Math.round(3*rarityBonus().moedas) },
-      draw: { text:'EMPATE',   cls:'draw', humor:10, xpGain:Math.round(8*rarityBonus().xp),  coinsGain:Math.round(8*rarityBonus().moedas) }
+      win:  { text:'VITÓRIA!', cls:'win',  humor:20, xpGain:Math.round(miniDifficulty().xp*1.0*rarityBonus().xp*getVinculoBonus().xpMult), coinsGain:Math.round(miniDifficulty().coins*1.0*rarityBonus().moedas) },
+      lose: { text:'DERROTA',  cls:'lose', humor:5,  xpGain:Math.round(miniDifficulty().xp*0.1*rarityBonus().xp), coinsGain:Math.round(miniDifficulty().coins*0.1*rarityBonus().moedas) },
+      draw: { text:'EMPATE',   cls:'draw', humor:10, xpGain:Math.round(miniDifficulty().xp*0.5*rarityBonus().xp*getVinculoBonus().xpMult), coinsGain:Math.round(miniDifficulty().coins*0.5*rarityBonus().moedas) }
     };
     const r = RESULTS[outcome];
     resultEl.textContent = r.text;
@@ -340,9 +340,10 @@ function revealResult(playerChoice) {
     vitals.humor   = Math.min(100, vitals.humor + r.humor);
     vitals.energia = Math.max(0, vitals.energia - 15);
     vitals.fome    = Math.max(0, vitals.fome - 5);
-    xp    += r.xpGain;
+    xp      += r.xpGain;
     vinculo += outcome === 'win' ? 5 : 1;
     earnCoins(r.coinsGain);
+    checkXP();
 
     rewardsEl.textContent = `+${r.humor} 😊  +${r.xpGain} XP  +${r.coinsGain} 🪙`;
     rewardsEl.className   = 'jkp-rewards show';
