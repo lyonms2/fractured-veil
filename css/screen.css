@@ -32,6 +32,7 @@
   display:flex; align-items:center; justify-content:center;
   width:160px; height:160px;
 }
+.creature-wrap.sleeping { cursor: not-allowed; }
 .creature-wrap svg { animation:idle-float 3s ease-in-out infinite; }
 @keyframes idle-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 .creature-wrap.anim-eat svg { animation:eat-bounce .7s ease-in-out; }
@@ -62,12 +63,7 @@
 }
 @keyframes star-twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
 
-/* Closed eyes overlay when sleeping — posicionado via JS */
-#sleepEyes {
-  position: absolute;
-  pointer-events: none; z-index: 17;
-  opacity: 0; transition: opacity .6s ease;
-}
+
 #sleepEyes.show { opacity:1; }
 
 /* ZZZ bubbles - hidden by default, shown only when sleeping */
