@@ -1,3 +1,4 @@
+
 // ═══════════════════════════════════════════
 // SISTEMAS DO JOGO
 // ═══════════════════════════════════════════
@@ -253,6 +254,42 @@ function gerarSVG(elemento, raridade, seed, w, h) {
       case 'aether': s+=`<circle cx="${px}" cy="${py}" r="${pt*1.2}" fill="${corBrilho}" opacity=".3" filter="url(#glow${sid})"><animate attributeName="r" values="${pt*1.2};${pt*1.8};${pt*1.2}" dur="3s" begin="${delay}s" repeatCount="indefinite"/></circle><path d="M ${px-pt} ${py} L ${px} ${py-pt} L ${px+pt} ${py} L ${px} ${py+pt}" fill="none" stroke="${corBrilho}" stroke-width="1" opacity=".5" filter="url(#glow${sid})"><animateTransform attributeName="transform" type="rotate" from="0 ${px} ${py}" to="360 ${px} ${py}" dur="6s" begin="${delay}s" repeatCount="indefinite"/></path>`;break;
     }
   }
+
+  // Coroa de Cristal — renderizada se item equipado
+  if(typeof getEquippedItems === 'function' && getEquippedItems().some(i => i.id === 'coroa_cristal')) {
+    const cy = 30; // topo do avatar
+    s += `
+    <g filter="url(#glow${sid})" opacity=".95">
+      <!-- base da coroa -->
+      <path d="M 72 ${cy+22} L 72 ${cy+10} L 82 ${cy+18} L 100 ${cy+4} L 118 ${cy+18} L 128 ${cy+10} L 128 ${cy+22} Z"
+        fill="#e8c870" stroke="#fff8d0" stroke-width="1.5" opacity=".95"/>
+      <!-- gradiente interno -->
+      <path d="M 74 ${cy+22} L 74 ${cy+12} L 83 ${cy+19} L 100 ${cy+6} L 117 ${cy+19} L 126 ${cy+12} L 126 ${cy+22} Z"
+        fill="url(#lg${sid})" opacity=".4"/>
+      <!-- borda inferior -->
+      <rect x="72" y="${cy+22}" width="56" height="5" rx="2" fill="#e8c870" stroke="#fff8d0" stroke-width="1" opacity=".9"/>
+      <!-- gemas: centro + laterais -->
+      <ellipse cx="100" cy="${cy+13}" rx="6" ry="7" fill="#fff" opacity=".9" filter="url(#glow${sid})">
+        <animate attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="100" cy="${cy+13}" rx="3.5" ry="4.5" fill="#c8f0ff" opacity=".8" filter="url(#glow${sid})"/>
+      <ellipse cx="82" cy="${cy+20}" rx="4" ry="4.5" fill="#fff" opacity=".85" filter="url(#glow${sid})">
+        <animate attributeName="opacity" values=".85;1;.85" dur="2.5s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="82" cy="${cy+20}" rx="2.5" ry="3" fill="#ffd0f0" opacity=".8"/>
+      <ellipse cx="118" cy="${cy+20}" rx="4" ry="4.5" fill="#fff" opacity=".85" filter="url(#glow${sid})">
+        <animate attributeName="opacity" values=".85;1;.85" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="118" cy="${cy+20}" rx="2.5" ry="3" fill="#d0e8ff" opacity=".8"/>
+      <!-- brilho flutuante -->
+      <circle cx="90" cy="${cy+8}" r="1.5" fill="#fff" opacity=".7">
+        <animate attributeName="opacity" values=".7;0;.7" dur="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="110" cy="${cy+10}" r="1.5" fill="#fff" opacity=".6">
+        <animate attributeName="opacity" values=".6;0;.6" dur="2.2s" repeatCount="indefinite"/>
+      </circle>
+    </g>`;
+  }
   s += `</g></svg>`;
   return s;
 }
@@ -265,3 +302,4 @@ function gerarSVG(elemento, raridade, seed, w, h) {
 // 1.0 = balanced (fome zera em ~1h40)
 // 2.0 = faster   (fome zera em ~50min)
 // 0.5 = slower   (fome zera em ~3h20)
+

@@ -30,6 +30,18 @@ const ITEM_CATALOG = {
     cor:      '#7ab87a',
     efeitos:  { fomeDecayMult: 0.75 } // reduz 25% do decay de fome
   },
+  'coroa_cristal': {
+    id:       'coroa_cristal',
+    nome:     'Coroa de Cristal',
+    emoji:    '👑',
+    desc:     'Uma coroa etérea forjada em cristal dimensional. Irradia serenidade.',
+    efeito:   'Reduz decay de Humor em 40% por ciclo',
+    tipo:     'Coroa',
+    raridade: 'Raro',
+    preco:    300,
+    cor:      '#e8c870',
+    efeitos:  { humorDecayMult: 0.60 } // reduz 40% do decay de humor
+  },
   'amuleto_sono': {
     id:       'amuleto_sono',
     nome:     'Amuleto do Sono Profundo',
@@ -127,3 +139,4 @@ const FALAS = {
   bored:  ['Entediado...','Me divirta!','Tão entediado...'],
   dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
 };
+
