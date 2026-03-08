@@ -95,9 +95,18 @@ let eggClicks = 0;
 const gs = { moedas:100, ovos:0 };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
-const getFase = () => nivel < 3 ? 0 : nivel < 6 ? 1 : nivel < 10 ? 2 : 3;
+// Fase muda aos níveis 5, 10, 17
+const getFase = () => nivel < 5 ? 0 : nivel < 10 ? 1 : nivel < 17 ? 2 : 3;
 const FASE_SIZES = [75, 100, 120, 140]; // BEBÊ → ADULTO (px)
 const getFaseSize = () => FASE_SIZES[getFase()];
+
+// XP necessário para subir de nível (baseado na fase actual)
+function xpParaNivel(n) {
+  if(n < 5)  return 80;  // BEBÊ
+  if(n < 10) return 150; // CRIANÇA
+  if(n < 17) return 280; // JOVEM
+  return 500;            // ADULTO
+}
 
 // Rarity multipliers — all advantages scale from here
 function rarityBonus() {
