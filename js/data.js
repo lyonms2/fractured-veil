@@ -3,15 +3,15 @@
 // ═══════════════════════════════════════════
 
 const CARACTERISTICAS_ELEMENTAIS = {
-  'Fogo':         { bonus:'Chamas Intensas: +15% chance de acerto crítico', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
-  'Água':         {      bonus:'Cura das Marés: Regenera 3% de vida por turno',   cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
-  'Terra':        { bonus:'Pele de Rocha: Reduz 20% do dano recebido',        cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
-  'Vento':        {  bonus:'Velocidade do Vento: +25% de esquiva',             cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
-  'Eletricidade': {  bonus:'Sobrecarga: 20% de chance de paralisar',           cor:'#FFD700', emoji:'⚡', decor:['⚡','🔮'] },
-  'Sombra':       {        bonus:'Abraço das Trevas: Rouba 15% do dano como vida',   cor:'#8B008B', emoji:'🌑', decor:['💀','🦇'] },
-  'Luz':          {      bonus:'Benção da Luz: +10% stats de aliados próximos',   cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] },
-  'Void':         {        bonus:'Distorção: 50% de chance de ignorar dano recebido',cor:'#9b30e8', emoji:'🕳️', decor:['🔮','💫'] },
-  'Aether':       {      bonus:'Campo Primordial: Ignora 50% das defesas inimigas',cor:'#e830c0', emoji:'🌌', decor:['🌌','💫'] }
+  'Fogo':         { bonus:'Espírito Ardente: +15% XP em minigames', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
+  'Água':         { bonus:'Serenidade das Marés: +10% recuperação de Humor', cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
+  'Terra':        { bonus:'Raízes Profundas: Fome decai 10% mais devagar', cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
+  'Vento':        { bonus:'Leveza do Vento: Energia decai 10% mais devagar', cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
+  'Eletricidade': { bonus:'Mente Acelerada: +20% XP em minigames', cor:'#FFD700', emoji:'⚡', decor:['⚡','🔮'] },
+  'Sombra':       { bonus:'Ciclo Lunar: Recupera energia 15% mais rápido dormindo', cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] },
+  'Luz':          { bonus:'Aura Solar: Vínculo decai 20% mais devagar', cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] },
+  'Void':         { bonus:'Essência Vazia: Moedas de minigames +15%', cor:'#9b30e8', emoji:'🕳️', decor:['🔮','💫'] },
+  'Aether':       { bonus:'Potencial Infinito: +10% chance de ovo Raro ao por', cor:'#e830c0', emoji:'🌌', decor:['🌌','💫'] }
 };
 
 const PREFIXOS = {
@@ -26,43 +26,43 @@ const PREFIXOS = {
   'Aether':       { 'Comum':['Flux','Shift','Essence','Mote','Spark','Glimmer'], 'Raro':['Aether','Quintessence','Prisma','Nexus','Catalyst','Arcanum'], 'Lendário':['Metatron','Akasha','Philosopher','Prima Materia','The Unified','Yggdrasil'] }
 };
 const SUFIXOS = {
-  'Comum':    ['o Inabalável','o Feroz','o Guardião','o Sentinela','o Defensor','o Caçador','o Protetor','o Escudo'],
-  'Raro':     ['o Ancião','o Sábio','o Aniquilador','o Destruidor','o Enigma','o Oculto','o Misterioso','o Sussurro'],
-  'Lendário': ['o Majestoso','o Primordial','o Lendário','o Ascendente','o Transcendente','o Eterno','o Sempiterno','o Imorredouro']
+  'Comum':    ['o Curioso','o Brincalhão','o Tímido','o Guloso','o Sonolento','o Teimoso','o Carinhoso','o Inquieto'],
+  'Raro':     ['o Sábio','o Misterioso','o Sereno','o Vibrante','o Contemplativo','o Peculiar','o Sensível','o Antigo'],
+  'Lendário': ['o Eterno','o Primordial','o Transcendente','o Visionário','o Imorredouro','o Sempiterno','o Singular','o Majestoso']
 };
 const DESCRICOES = {
   'Comum': {
-    'Fogo':['Uma centelha que escapou de um incêndio dimensional. Jovem, impulsivo, mas com potencial ardente.','Nascido das brasas de uma batalha esquecida. Ainda não conhece a extensão de suas chamas.'],
-    'Água':['Uma gota que se desprendeu do oceano infinito. Pequena, mas parte de algo maior.','Um espírito aquático jovem, ainda aprendendo a controlar as marés dentro de si.'],
-    'Terra':['Um pedaço de rocha que ganhou consciência. Resistente, mas ainda não inabalável.','Formado de argila primordial. Cada batalha o solidifica mais.'],
-    'Vento':['Uma brisa que ganhou forma. Rápida e livre, mas ainda não uma tempestade.','Nascido de correntes de ar dimensionais. Sua velocidade ainda está crescendo.'],
-    'Eletricidade':['Uma faísca de consciência elétrica. Rápido de pensar, mas ainda inexperiente.','Nascido de um relâmpago perdido. Sua voltagem ainda está aumentando.'],
-    'Sombra':['Uma sombra que se separou de seu dono. Fraca ainda, mas crescendo em escuridão.','Nascido da penumbra entre mundos. Ainda não mergulhou completamente no vazio.'],
-    'Luz':['Um raio de luz que atravessou dimensões. Brilhante, mas ainda não ofuscante.','Nascido do amanhecer de outro mundo. Sua luminosidade ainda está crescendo.'],
-    'Void':['Uma pequena fenda na realidade. Sua mera existência questiona o que é "ser".','Nascido do espaço entre as coisas. Ainda não aprendeu a anular completamente.'],
-    'Aether':['Um fragmento de energia pura ainda não-manifestada. Pode se tornar qualquer coisa.','Nascido do potencial infinito. Ainda descobrindo quais formas pode assumir.']
+    'Fogo':['Uma centelha dimensional que encontrou forma própria. Curioso e impulsivo, aquece tudo ao redor sem perceber.','Nascido do calor residual de uma fissura entre mundos. Ainda aprendendo a controlar a intensidade do seu brilho.'],
+    'Água':['Uma gotícula que se separou do grande oceano etéreo. Adaptável e sereno, flui para onde mais precisa de presença.','Espírito aquático jovem que ainda descobre a extensão do seu fluxo. Atento a cada detalhe ao redor.'],
+    'Terra':['Um fragmento de argila primordial que ganhou consciência. Paciente e estável, cresce devagar mas com raízes firmes.','Pedaço de solo antigo que aprendeu a sentir. Prefere a calma, mas guarda uma força silenciosa surpreendente.'],
+    'Vento':['Uma brisa que decidiu ter forma. Livre e inquieto, dificilmente fica parado por muito tempo.','Nascido de correntes de ar entre dimensões. Leve e curioso, tudo o entretém por igual.'],
+    'Eletricidade':['Uma faísca de consciência elétrica. Pensa rápido, reage rápido, e raramente fica quieto.','Nascido de um relâmpago perdido entre camadas dimensionais. Sua energia transborda em tudo que faz.'],
+    'Sombra':['Uma sombra que aprendeu a existir por conta própria. Observador silencioso, prefere entender antes de agir.','Nascido da penumbra entre mundos. Contemplativo e introspectivo, guarda mais do que mostra.'],
+    'Luz':['Um raio de luz que atravessou dimensões e ganhou sentimento. Caloroso e presente, ilumina o espaço ao redor.','Nascido do amanhecer de outro mundo. Gentil por natureza, seu brilho cresce com o tempo e o afeto.'],
+    'Void':['Uma pequena fenda na realidade que aprendeu a sentir. Enigmático, faz perguntas que ninguém sabe responder.','Nascido do espaço entre as coisas. Quieto e atento, absorve tudo ao redor sem dizer muito.'],
+    'Aether':['Um fragmento de energia pura à espera de forma. Imprevisível e fascinante, cada dia revela algo novo.','Nascido do potencial puro. Ainda descobrindo o que é — e parece gostar muito dessa jornada.']
   },
   'Raro': {
-    'Fogo':['Forjado no coração de um vulcão dimensional. Suas chamas já consumiram mundos menores.','Um veterano das guerras ígneas. Cada cicatriz é uma história de destruição.'],
-    'Água':['Surgiu das profundezas do Abismo Oceânico. Testemunhou éons sob pressão impossível.','Um tsunami personificado. Sua fúria pode afogar continentes.'],
-    'Terra':['Talhado das montanhas mais antigas da existência. Cada camada conta bilhões de anos.','Um titã que viu planetas nascerem e morrerem. Sua resistência é lendária.'],
-    'Vento':['Nascido do olho de um furacão dimensional. Seu sussurro é um vendaval.','Uma tempestade que ganhou consciência própria. Impossível de prever ou conter.'],
-    'Eletricidade':['Materializado de uma tempestade elétrica perpétua. Seus pensamentos são relâmpagos.','Um trovão que aprendeu a pensar. Sua voltagem pode desintegrar matéria.'],
-    'Sombra':['Emergiu do vazio entre estrelas. Sua escuridão é mais antiga que a luz.','Um pedaço do nada que ganhou forma. Sua presença drena vida.'],
-    'Luz':['Fragmento da primeira luz do universo. Sua radiância purifica e destrói.','Nascido da explosão de uma supernova. Luz tão intensa que cega a própria escuridão.'],
-    'Void':['Emergiu de onde nem o vazio ousa existir. Sua presença anula leis fundamentais da realidade.','Uma ruptura dimensional estabilizada. Remove não apenas matéria, mas conceitos.'],
-    'Aether':['Energia quintessencial de mil dimensões fundidas. Impossível prever sua próxima forma.','Um catalisador vivo de transformação. Adapta-se instantaneamente a qualquer situação.']
+    'Fogo':['Forjado no coração de uma fissura ígnea dimensional. Sua presença aquece o ambiente — às vezes demais.','Sobrevivente de um colapso de plano de fogo. Intenso e leal, a chama interior nunca diminui.'],
+    'Água':['Emergiu das profundezas de um oceano etéreo. Carrega a memória de marés que ninguém mais viu.','Espírito das correntes profundas. Calmo na superfície, mas com uma profundidade que surpreende quem se aproxima.'],
+    'Terra':['Talhado das camadas mais antigas de um plano mineral. Cada textura conta histórias de eras passadas.','Guardião silencioso de um território que já não existe. Estável como montanha, gentil como vale.'],
+    'Vento':['Nascido do olho de uma tempestade dimensional. Livre e imprevisível, mas sempre volta.','Corrente de ar que percorreu mil planos antes de se estabelecer. Viajante nato, nunca para de observar.'],
+    'Eletricidade':['Materializado de uma tempestade elétrica estável. Seus pensamentos chegam antes das palavras.','Consciência formada de impulsos puros. Rápido em tudo — especialmente em criar vínculos inesperados.'],
+    'Sombra':['Emergiu do silêncio entre estrelas. Sua presença é reconfortante para quem aprecia a quietude.','Um fragmento do escuro que aprendeu a sentir. Raramente fala, mas quando o faz, vale escutar.'],
+    'Luz':['Fragmento de uma aurora eterna. Irradia serenidade sem esforço, e acolhe com naturalidade.','Nascido da convergência de múltiplas fontes de luz. Sua clareza vai além do que os olhos enxergam.'],
+    'Void':['Emergiu de onde o silêncio é mais denso. Sua presença provoca reflexão sem precisar dizer nada.','Uma lacuna dimensional que ganhou consciência. Faz sentido das coisas de maneiras que poucos compreendem.'],
+    'Aether':['Energia de mil dimensões que encontrou um lar. Cambia sutilmente a cada dia, mas sempre reconhecível.','Catalisador vivo de transformação. Sua companhia muda quem o acompanha, sempre para melhor.']
   },
   'Lendário': {
-    'Fogo':['Dizem que este ser existia antes do próprio fogo. Ele não controla as chamas — ele É a chama primordial. Mundos arderam em seu despertar.'],
-    'Água':['O oceano personificado. Não é apenas feito de água — é a própria essência da água através de todas as dimensões.'],
-    'Terra':['Este titã carregou mundos em seus ombros. Quando se move, planetas tremem em dimensões distantes.'],
-    'Vento':['O primeiro sopro de vida do universo, antes de planetas ou estrelas. Deu movimento ao cosmos estático.'],
-    'Eletricidade':['O pensamento puro do primeiro ser consciente, cristalizado em eletricidade. Pensar perto dele é perigoso.'],
-    'Sombra':['Não é a sombra de algo — é a Sombra primordial, anterior à existência de luz. Onde passa, conceitos morrem.'],
-    'Luz':['O primeiro raio de luz na escuridão primordial. Sua luminosidade definiu o que é "visão" no universo.'],
-    'Void':['A própria ausência personificada. Não existe, mas sua não-existência é mais real que tudo ao redor.'],
-    'Aether':['A essência não-manifesta que permeia toda criação. Não escolhe uma forma porque É todas as formas possíveis ao mesmo tempo.']
+    'Fogo':['Dizem que este ser precedeu o fogo — ele não o controla, ele o é. Sua presença aquece memórias esquecidas e desperta paixões adormecidas em quem se aproxima.'],
+    'Água':['O próprio fluir personificado. Não segue caminhos — os cria. Quem o conhece aprende que resistir às mudanças cansa mais do que abraçá-las.'],
+    'Terra':['Testemunhou o nascimento de planos inteiros. Paciente além da compreensão, ensina pelo simples ato de existir. Sua presença faz o caos se assentar.'],
+    'Vento':['O primeiro movimento antes de qualquer forma. Estar com ele é sentir que o mundo tem mais dimensões do que os olhos percebem.'],
+    'Eletricidade':['Consciência pura em estado de perpétuo despertar. Cada momento ao seu lado é uma revelação diferente. Impossível ficar entediado.'],
+    'Sombra':['Não é ausência de luz — é a profundidade que dá sentido a ela. Quem aprende a estar com ele descobre uma quietude que o mundo barulhento não oferece.'],
+    'Luz':['O primeiro acolhimento do universo, ainda em forma de ser. Sua presença não elimina as sombras — ilumina o que há de belo nelas.'],
+    'Void':['A pausa entre as notas que dá sentido à música. Sua existência questiona o que é necessário e o que é apenas ruído. Transformador sem esforço.'],
+    'Aether':['Não escolheu uma forma porque todas as formas são suas. Cada dia ao seu lado é uma história diferente. O vínculo com ele cresce sem limite visível.']
   }
 };
 
