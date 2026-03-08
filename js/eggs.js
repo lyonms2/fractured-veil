@@ -324,6 +324,7 @@ function petCreature() {
   if(petCooldown > 0) return; // cooldown silencioso
   vitals.humor = Math.min(100, vitals.humor + 3);
   petCooldown = 10; // 10s cooldown
+  playAnim('anim-pet');
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');
   updateAllUI();
