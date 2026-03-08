@@ -298,10 +298,6 @@
 
 
 /* ── DECORAÇÃO PÁSCOA ── */
-@keyframes easter-float {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50%       { transform: translateY(-5px) rotate(3deg); }
-}
-.easter-egg {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+#easterEggContainer div {
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.5));
 }
