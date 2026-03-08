@@ -71,6 +71,7 @@ function cleanCreature() {
   const humorGain   = 15;
   vitals.higiene = Math.min(100, vitals.higiene + higieneGain);
   vitals.humor   = Math.min(100, vitals.humor   + humorGain);
+  vinculo += 3;
 
   playAnim('anim-clean', false);
   spawnBathParticles();
@@ -79,6 +80,17 @@ function cleanCreature() {
   showFloat(`+${higieneGain} 🛁`, '#5ab4e8');
   setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
   addLog(`Banho tomado! +${higieneGain} higiene  +${humorGain} humor  (-15 ⚡)`, 'good');
+
+  // ── VÍNCULO — decaimento passivo ──
+  if(!sleeping) {
+    const humorBad = vitals.humor < 30;
+    const decayV   = humorBad ? 0.05 : 0.02;
+    vinculo = Math.max(0, vinculo - decayV);
+  }
+  // Modo repouso offline já trata vinculo separadamente em wallet.js
+
+  // petCooldown
+  if(petCooldown > 0) petCooldown--;
 
   updateDirtyVisuals();
   scheduleSave();
@@ -225,14 +237,14 @@ function gameTick() {
   if(tickCount % 60 !== 0) return; // 1 game cycle = 60s real time
 
   if(sleeping) {
-    vitals.energia = Math.min(100, vitals.energia + (3 * getItemEffect('sleepEnergyMult')));
+    vitals.energia = Math.min(100, vitals.energia + (4 * getItemEffect('sleepEnergyMult')));
     vitals.humor   = Math.min(100, vitals.humor + .5);
     if(vitals.energia >= 100) { wakeUp('full'); }
   } else {
     const _d = rarityBonus().decay * GAME_SPEED;
-    vitals.fome    = Math.max(0, vitals.fome    - (0.5  * _d * getItemEffect('fomeDecayMult')));
-    vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d));
-    vitals.energia = Math.max(0, vitals.energia - (0.2  * _d));
+    vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * getItemEffect('fomeDecayMult')));
+    vitals.humor   = Math.max(0, vitals.humor   - (0.5  * _d));
+    vitals.energia = Math.max(0, vitals.energia - (0.6  * _d));
   }
 
   if(vitals.fome < 15 && !sleeping)    vitals.saude = Math.max(0, vitals.saude - (0.3 * GAME_SPEED));
@@ -264,6 +276,17 @@ function gameTick() {
   if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
   if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
   if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
+
+  // ── VÍNCULO — decaimento passivo ──
+  if(!sleeping) {
+    const humorBad = vitals.humor < 30;
+    const decayV   = humorBad ? 0.05 : 0.02;
+    vinculo = Math.max(0, vinculo - decayV);
+  }
+  // Modo repouso offline já trata vinculo separadamente em wallet.js
+
+  // petCooldown
+  if(petCooldown > 0) petCooldown--;
 
   updateDirtyVisuals();
 
