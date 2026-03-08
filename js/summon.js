@@ -171,7 +171,7 @@ function setupAvatar() {
 
   // Fill creature card
   const car = avatar.car;
-  document.getElementById('idNome').textContent = avatar.nome;
+  document.getElementById('idNome').textContent = avatar.nome.split(',')[0].trim();
   document.getElementById('idMeta').textContent = `Elemento: ${car?car.emoji:''} ${avatar.elemento}`;
   const descEl = document.getElementById('idDesc');
   if(descEl) {
