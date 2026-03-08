@@ -35,9 +35,10 @@
 .creature-wrap.sleeping { cursor: not-allowed; }
 .creature-wrap svg { animation:idle-float 3s ease-in-out infinite; }
 @keyframes idle-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-.creature-wrap.anim-eat svg { animation:eat-bounce .7s ease-in-out; }
-.creature-wrap.anim-play svg { animation:play-spin .8s ease-in-out; }
+.creature-wrap.anim-eat   svg { animation:eat-bounce .7s ease-in-out; }
+.creature-wrap.anim-play  svg { animation:play-spin .8s ease-in-out; }
 .creature-wrap.anim-sleep svg { animation:sleep-sway 3s ease-in-out infinite; }
+.creature-wrap.anim-pet   svg { animation:pet-squish .6s cubic-bezier(.34,1.7,.64,1); }
 
 /* ── SLEEP OVERLAY ── */
 #sleepOverlay {
@@ -129,6 +130,14 @@
   60% { transform:scale(.95)  translateY(-3px)  rotate(-2deg); }
   80% { transform:scale(1.04) translateY(0)     rotate(1deg); }
   100%{ transform:scale(1)   translateY(0); }
+}
+@keyframes pet-squish {
+  0%   { transform:scale(1)    translateY(0)     rotate(0deg); }
+  15%  { transform:scale(1.18,0.85) translateY(6px)  rotate(-3deg); }
+  35%  { transform:scale(0.88,1.15) translateY(-12px) rotate(3deg); }
+  55%  { transform:scale(1.12,0.92) translateY(-4px)  rotate(-2deg); }
+  75%  { transform:scale(0.96,1.06) translateY(-1px)  rotate(1deg); }
+  100% { transform:scale(1)    translateY(0)     rotate(0deg); }
 }
 /* Food particles on eat */
 .food-particle {
