@@ -314,7 +314,7 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   document.getElementById('actionBtns').style.pointerEvents = 'none';
 
   // Update right panel
-  updateCreatureCard();
+  fillCreatureCard();
   updateAllUI();
   renderEggInventory();
 
