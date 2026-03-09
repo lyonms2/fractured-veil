@@ -101,14 +101,13 @@ async function buyFromMarket(listingId, price) {
       });
     }
 
-    // Adiciona ovo ao slot activo do comprador
+    // Adiciona ovo ao runtime E ao slot (ambos têm de estar em sync)
+    const newEgg = { raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() };
+    eggsInInventory.push(newEgg); // runtime — renderizado imediatamente
     const activeIdx = activeSlotIdx ?? 0;
     if(avatarSlots[activeIdx]) {
       if(!avatarSlots[activeIdx].eggs) avatarSlots[activeIdx].eggs = [];
-      avatarSlots[activeIdx].eggs.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
-    } else {
-      // Fallback: inventário legacy
-      eggsInInventory.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
+      avatarSlots[activeIdx].eggs.push(newEgg); // persistente no slot
     }
 
     await ref.update({ status: 'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
