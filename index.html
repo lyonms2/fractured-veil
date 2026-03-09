@@ -38,6 +38,11 @@
 
 
 <div class="app">
+<!-- LOADING OVERLAY — cobre tudo enquanto Firebase carrega -->
+<div id="gameLoadingOverlay" style="position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:500;">
+  <div style="width:36px;height:36px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
+</div>
   <header>
     <div class="logo">Fractured Veil</div>
 
