@@ -45,6 +45,7 @@ async function disconnectWallet() {
   document.getElementById('walletInfo').style.display    = 'none';
   document.getElementById('btnMarket').style.display    = 'none';
   document.getElementById('resMoedasBtn').style.display  = 'none';
+  document.getElementById('resCristaisBtn').style.display = 'none';
   document.getElementById('resOvosBtn').style.display    = 'none';
   document.getElementById('resItemsBtn').style.display   = 'none';
 
@@ -99,6 +100,7 @@ async function connectWallet() {
     document.getElementById('walletInfo').style.display = 'flex';
     // Show resource counters
     document.getElementById('resMoedasBtn').style.display = '';
+    document.getElementById('resCristaisBtn').style.display = '';
     document.getElementById('resOvosBtn').style.display = '';
     document.getElementById('resItemsBtn').style.display = '';
     updateResourceUI();
