@@ -582,3 +582,9 @@
   30%  { opacity:1; }
   100% { opacity:0; transform:translate(var(--sx),var(--sy)) scale(1.3) rotate(180deg); }
 }
+
+/* Egg aura pulse animation */
+@keyframes eggAuraPulse {
+  0%, 100% { opacity: var(--aura-base, 0.5); transform: scale(1); }
+  50%       { opacity: var(--aura-peak, 0.9); transform: scale(1.04); }
+}
