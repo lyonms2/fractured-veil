@@ -78,20 +78,9 @@ async function connectWallet() {
   if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent='CONECTANDO...'; }
   if(loginError) loginError.textContent = '';
   try {
-    // Verifica se MetaMask está bloqueada antes de prosseguir
-    const isUnlocked = await window.ethereum._metamask?.isUnlocked?.();
-    if(isUnlocked === false) {
-      // Bloqueada — força popup de desbloqueio via eth_requestAccounts
-      // Se o usuário não desbloquear, lança exceção e cai no catch
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-    }
-    // Agora busca a conta (bloqueada ou já autorizada)
+    // Uma só chamada — eth_requestAccounts só pede popup se necessário
+    // Se já autorizado (via autoConnect), não abre popup nenhum
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    // Verifica novamente após o popup — se ainda bloqueada, rejeita
-    const stillUnlocked = await window.ethereum._metamask?.isUnlocked?.();
-    if(stillUnlocked === false) {
-      throw new Error('Carteira ainda bloqueada');
-    }
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     document.getElementById('loginScreen').style.display = 'none';
@@ -298,3 +287,26 @@ async function connectWallet() {
     if(_lt) _lt.textContent = 'CONECTAR METAMASK';
   }
 }
+
+// ═══════════════════════════════════════════
+// AUTO-CONNECT SILENCIOSO AO CARREGAR
+// ═══════════════════════════════════════════
+(async function autoConnect() {
+  if(typeof window.ethereum === 'undefined') return; // sem MetaMask — mostra login
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if(accounts.length > 0) {
+      // Sessão já autorizada — entra sem popup
+      document.getElementById('loginScreen').style.display = 'none';
+      const loginBtn  = document.getElementById('loginBtn');
+      const loginBtnT = document.getElementById('loginBtnText');
+      if(loginBtn)  loginBtn.disabled = true;
+      if(loginBtnT) loginBtnT.textContent = 'CONECTANDO...';
+      await connectWallet();
+    }
+    // Sem sessão — loginScreen fica visível, utilizador clica manualmente
+  } catch(e) {
+    // Silencioso — não mostra erro, só aguarda clique manual
+    console.warn('Auto-connect silencioso falhou:', e.message);
+  }
+})();
