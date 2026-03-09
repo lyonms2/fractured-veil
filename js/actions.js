@@ -105,7 +105,7 @@ function confirmRename() {
   avatar.nome     = clean + (suffix ? ',' + suffix : '');
 
   // Update display
-  document.getElementById('idNome').textContent = clean;
+  fillCreatureCard();
   cancelRename();
 
   // Save to Firebase
