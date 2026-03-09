@@ -116,7 +116,7 @@ function getVinculoBonus() {
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
-const gs = { moedas:100, ovos:0, cristais:0 };
+const gs = { moedas:100, ovos:0, cristais:0, extraSlots:0 };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
 // Fase muda aos níveis 5, 10, 17
