@@ -1248,19 +1248,32 @@ async function buyRareEgg() {
   const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
   const newEgg = { id: Date.now(), raridade:'Raro', elemento:elem, expiraEm };
 
-  // Insere no slot activo (novo formato) — é donde o jogo lê os ovos
+  // Lê o documento mais recente do Firebase antes de inserir o ovo
+  // (evita sobrescrever estado do jogo com playerData desactualizado)
   const activeIdx = playerData.activeSlotIdx ?? 0;
-  if(!playerData.avatarSlots) playerData.avatarSlots = [null,null,null];
-  if(!playerData.avatarSlots[activeIdx]) {
+  const freshSnap = await db.collection('players').doc(walletAddress).get();
+  const freshData = freshSnap.exists ? freshSnap.data() : null;
+  const freshSlots = freshData?.avatarSlots || playerData.avatarSlots || [];
+  const freshSlot  = freshSlots[activeIdx];
+
+  if(!freshSlot || !freshSlot.nome) {
     showToast('Não tens um avatar activo. Choca um ovo no jogo primeiro.', 'err');
-    playerData.cristais += RARE_EGG_COST; // reembolso
+    playerData.cristais += RARE_EGG_COST;
     playerData.gs.cristais = playerData.cristais;
     return;
   }
-  if(!playerData.avatarSlots[activeIdx].eggs) playerData.avatarSlots[activeIdx].eggs = [];
-  playerData.avatarSlots[activeIdx].eggs.push(newEgg);
 
-  await savePlayerData();
+  // Insere o ovo no slot fresco e guarda só os campos que mudaram
+  if(!freshSlot.eggs) freshSlot.eggs = [];
+  freshSlot.eggs.push(newEgg);
+  freshSlots[activeIdx] = freshSlot;
+
+  await db.collection('players').doc(walletAddress).update({
+    [`avatarSlots.${activeIdx}.eggs`]: freshSlot.eggs,
+    cristais: playerData.cristais,
+    'gs.cristais': playerData.cristais,
+  });
+  playerData.avatarSlots = freshSlots;
   showToast(`✅ Ovo Raro ${elem} enviado para o inventário do avatar activo!`, 'ok');
   document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} no inventário de ${playerData.avatarSlots[activeIdx].nome?.split(',')[0] || 'avatar activo'}.`;
   renderBuyEgg();
