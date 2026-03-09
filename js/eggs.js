@@ -430,7 +430,7 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
 }
 
 function openEggInventory() {
-  if(!hatched || dead) return;
+  if(dead) return; // dead avatar can't interact
   renderEggInventory();
   ModalManager.open('eggInvModal');
 }
