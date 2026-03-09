@@ -808,6 +808,8 @@ async function buyAvatar(listingId, price) {
 
     // Deduct cristais from buyer
     playerData.cristais -= price;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = playerData.cristais;
     playerData.avatarSlots[freeIdx] = {
       nome: l.nome, elemento: l.elemento, raridade: l.raridade,
       descricao: l.descricao, seed: l.seed||0,
@@ -895,6 +897,8 @@ async function confirmList() {
   try {
     // Deduct listing fee
     playerData.cristais -= LIST_COST;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = playerData.cristais;
     // Mark slot as listed
     playerData.avatarSlots[listingSlotIdx].listed = true;
     await savePlayerData();
@@ -1025,6 +1029,10 @@ async function unlockSlot() {
   if(unlocked >= MAX_SLOTS) { showToast('Já tens o máximo de slots.','err'); return; }
   playerData.cristais -= UNLOCK_SLOT_COST;
   playerData.extraSlots = (playerData.extraSlots||0) + 1;
+  // Keep gs in sync (game reads from gs.extraSlots)
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.extraSlots = playerData.extraSlots;
+  playerData.gs.cristais   = playerData.cristais;
   // Expand array if needed
   while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
   await savePlayerData();
@@ -1131,6 +1139,8 @@ function renderBuyEgg() {
 async function buyRareEgg() {
   if(!playerData || playerData.cristais < RARE_EGG_COST) return;
   playerData.cristais -= RARE_EGG_COST;
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.cristais = playerData.cristais;
 
   // Generate rare egg and add to player's egg inventory in Firestore
   const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
