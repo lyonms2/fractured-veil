@@ -255,6 +255,16 @@ function clickEgg() {
 function hatch() {
   hatched = true;
   bornAt  = bornAt || Date.now(); // set birth timestamp once
+  // Sync avatar into active slot so marketplace can see it
+  if(avatar) {
+    while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
+    avatarSlots[activeSlotIdx] = {
+      nome: avatar.nome, elemento: avatar.elemento, raridade: avatar.raridade,
+      descricao: avatar.descricao, seed: avatar.seed||0,
+      nivel: 1, xp: 0, vinculo: 0, diasVida: 0, totalOvos: 0, totalRaros: 0,
+      bornAt: bornAt, listed: false
+    };
+  }
   scheduleSave();
   document.getElementById('statusCard').style.display = 'block';
   poopCount = 0;
