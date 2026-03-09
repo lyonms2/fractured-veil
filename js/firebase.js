@@ -114,17 +114,6 @@ function applyGameState(data) {
     avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
 
-  // Merge eggs from Firebase into runtime (don't overwrite eggs added in marketplace)
-  const activeS = avatarSlots[activeSlotIdx];
-  if(activeS && activeS.eggs) {
-    const existingIds = new Set(eggsInInventory.map(e => e.id));
-    activeS.eggs.forEach(e => {
-      if(!existingIds.has(e.id)) eggsInInventory.push({...e});
-    });
-    // Keep slot eggs in sync with merged runtime
-    activeS.eggs = eggsInInventory.map(e => ({...e}));
-  }
-
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
   return true;
@@ -139,21 +128,6 @@ function scheduleSave() {
 async function saveToFirebase() {
   if(!walletAddress || !fbDb()) return;
   try {
-    // Read current eggs from Firebase to catch any added via marketplace
-    const snap = await fbDb().collection('players').doc(walletAddress).get();
-    if(snap.exists) {
-      const remote = snap.data();
-      const remoteSlot = remote?.avatarSlots?.[activeSlotIdx];
-      if(remoteSlot?.eggs) {
-        const localIds = new Set(eggsInInventory.map(e => e.id));
-        remoteSlot.eggs.forEach(e => {
-          if(!localIds.has(e.id)) {
-            eggsInInventory.push({...e});
-            localIds.add(e.id);
-          }
-        });
-      }
-    }
     await fbDb().collection('players').doc(walletAddress).set(getGameState());
   } catch(e) { console.warn('Save error:', e); }
 }
