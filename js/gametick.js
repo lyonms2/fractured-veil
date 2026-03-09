@@ -269,17 +269,7 @@ function gameTick() {
     spawnPoop();
     poopPressure = 0;
   }
-  if(tickCount % 60 === 0 && walletAddress) {
-    // Sync live stats to active slot (marketplace reads from here)
-    if(avatar && hatched && !dead && avatarSlots[activeSlotIdx]) {
-      const s = avatarSlots[activeSlotIdx];
-      s.nivel    = nivel;
-      s.xp       = Math.floor(xp);
-      s.vinculo  = Math.floor(vinculo);
-      s.diasVida = bornAt ? Math.floor((Date.now()-bornAt)/86400000) : 0;
-    }
-    scheduleSave();
-  } // auto-save every 60s
+  if(tickCount % 60 === 0 && walletAddress) scheduleSave(); // auto-save every 60s (saveRuntimeToSlot called inside getGameState)
 
   // sujeira afeta saude e humor
   if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
