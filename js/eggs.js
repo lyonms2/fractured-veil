@@ -196,11 +196,57 @@ function confirmHatch() {
   }
 
   const ovo = eggsInInventory.splice(idx, 1)[0];
+  window._cancelledEgg = {...ovo}; // backup para cancelHatch poder devolver
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
   // Hatch into the free slot — active slot stays untouched
   prepareEggScreen(ovo, targetSlot);
+}
+
+
+function cancelHatch() {
+  // Free the reserved slot
+  const pendingSlot = window._pendingEggSlot;
+  if(typeof pendingSlot === 'number') {
+    avatarSlots[pendingSlot] = null;
+    window._pendingEggSlot = null;
+  }
+
+  // Hide cancel button
+  const cancelBtn = document.getElementById('btnCancelHatch');
+  if(cancelBtn) cancelBtn.style.display = 'none';
+
+  // Reset egg click state
+  eggClicks = 0;
+  document.getElementById('eggProgress').textContent = '0 / 5';
+  document.getElementById('eggHint').textContent = 'CLIQUE PARA CHOCAR';
+  document.getElementById('eggCracks').style.opacity = '0';
+  document.querySelectorAll('#eggCracks line').forEach(l => l.style.opacity = '0');
+
+  // Restore egg to inventory
+  // (egg was already removed from eggsInInventory — re-add it)
+  if(window._cancelledEgg) {
+    eggsInInventory.push(window._cancelledEgg);
+    window._cancelledEgg = null;
+    renderEggInventory();
+  }
+
+  // Go back to active avatar screen
+  document.getElementById('eggScreen').style.display = 'none';
+  document.getElementById('actionBtns').style.opacity = '1';
+  document.getElementById('actionBtns').style.pointerEvents = 'auto';
+
+  if(hatched && !dead) {
+    document.getElementById('aliveScreen').style.display = 'block';
+  } else if(dead) {
+    document.getElementById('deadScreen').style.display = 'block';
+  } else {
+    document.getElementById('idleScreen').style.display = 'flex';
+  }
+
+  saveToFirebase();
+  addLog('Chocagem cancelada. Ovo devolvido ao inventário.', 'info');
 }
 
 function retireAvatar() {
@@ -244,15 +290,7 @@ function prepareEggScreen(ovo, targetSlot) {
 }
 
 function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
-  // Reset all state
-  xp = 0; nivel = 1; vinculo = 0; totalSecs = 0; tickCount = 0;
-  eggClicks = 0; eggLayCooldown = 0; eggLayNotified = false;
-  Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
-  sick = false; sleeping = false; dead = false; hatched = false;
-  dirtyLevel = 0; poopCount = 0; poopPressure = 0;
-  document.getElementById('poopContainer').innerHTML = '';
-
-  // Build avatar using the same pools as triggerSummon
+  // Build the new avatar data (not yet active — stored as pendingEgg in target slot)
   const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
   const prefPool  = PREFIXOS[elemento]?.[raridade] || PREFIXOS[elemento]?.['Comum'] || ['Mistix'];
   const nome      = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
@@ -261,7 +299,8 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
   const seed = Math.abs(_h);
-  // Write new avatar into target slot and switch active to it
+
+  // Reserve the target slot with pendingEgg flag — activeSlotIdx stays the same
   const tgt = (typeof targetSlot === 'number' && targetSlot >= 0) ? targetSlot : activeSlotIdx;
   while(avatarSlots.length <= tgt) avatarSlots.push(null);
   avatarSlots[tgt] = {
@@ -272,13 +311,31 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
     eggLayCooldown: 0, petCooldown: 0,
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
+    pendingEgg: true,   // flag: aguarda chocagem, não é o avatar activo
+    pendingSlot: tgt,   // slot onde vai nascer
   };
-  // Switch active slot to new avatar — player will interact with it now
-  activeSlotIdx = tgt;
-  loadRuntimeFromSlot(tgt);
-
-  // Reset UI
+  // Store target slot for hatch() to use
+  window._pendingEggSlot = tgt;
+  // Do NOT change activeSlotIdx yet — only changes when hatch() completes
   eggClicks = 0;
+
+  // Hide alive/dead screens, show egg screen on top
+  document.getElementById('aliveScreen').style.display = 'none';
+  document.getElementById('deadScreen').style.display  = 'none';
+  document.getElementById('idleScreen').style.display  = 'none';
+  document.getElementById('eggScreen').style.display   = 'flex';
+  document.getElementById('actionBtns').style.opacity      = '0';
+  document.getElementById('actionBtns').style.pointerEvents = 'none';
+
+  // Show cancel button so player can go back to active avatar
+  const cancelBtn = document.getElementById('btnCancelHatch');
+  if(cancelBtn) cancelBtn.style.display = 'flex';
+
+  // Save target slot so hatch() knows where to commit
+  window._pendingEggSlot = tgt;
+
+  saveToFirebase();
+
   const svg = document.getElementById('eggSvg');
   svg.style.transform = 'rotate(0deg) scale(1)';
   svg.style.opacity = '1';
@@ -308,12 +365,7 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   document.getElementById('eggHint').textContent = 'CLIQUE PARA CHOCAR';
   document.getElementById('eggFlash').style.opacity = '0';
 
-  // Show egg screen
-  document.getElementById('eggScreen').style.display = 'flex';
-  document.getElementById('actionBtns').style.opacity = '0';
-  document.getElementById('actionBtns').style.pointerEvents = 'none';
-
-  // Update right panel
+  // Update right panel with pending egg info
   fillCreatureCard();
   updateAllUI();
   renderEggInventory();
