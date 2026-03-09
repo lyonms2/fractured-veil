@@ -173,3 +173,50 @@ function _fmtTime(secs) {
   if(secs >= 3600)  return Math.floor(secs/3600) + 'h ' + Math.floor((secs%3600)/60) + 'min';
   return Math.floor(secs/60) + 'min';
 }
+
+// ═══════════════════════════════════════════
+// CREATURE CARD — preenche todos os campos
+// ═══════════════════════════════════════════
+function fillCreatureCard() {
+  if(!avatar) return;
+  const car   = avatar.car || CARACTERISTICAS_ELEMENTAIS[avatar.elemento] || null;
+  const parts = avatar.nome.split(',');
+  const nome  = parts[0].trim();
+  const sufixo = parts.slice(1).join(',').trim();
+
+  // Nome e sufixo separados
+  document.getElementById('idNome').textContent   = nome;
+  const sfx = document.getElementById('idSufixo');
+  if(sfx) sfx.textContent = sufixo || '';
+
+  // Elemento
+  const meta = document.getElementById('idMeta');
+  if(meta) meta.textContent = car ? `${car.emoji} ${avatar.elemento}` : avatar.elemento;
+
+  // Badge de raridade
+  const badge = document.getElementById('idBadge');
+  if(badge) {
+    badge.textContent  = avatar.raridade.toUpperCase();
+    badge.className    = `badge badge-${avatar.raridade}`;
+  }
+
+  // Descrição com cor do elemento
+  const descEl = document.getElementById('idDesc');
+  if(descEl) {
+    descEl.textContent            = avatar.descricao || '';
+    descEl.style.borderLeftColor  = car ? car.cor : 'var(--border)';
+    descEl.style.color            = car ? car.cor + 'bb' : '#887799';
+  }
+
+  // Bônus de raridade — compacto no rodapé
+  const rb    = rarityBonus();
+  const rbEl  = document.getElementById('rarityBonusTxt');
+  if(rbEl) {
+    if(avatar.raridade !== 'Comum') {
+      rbEl.textContent  = `🥚×${rb.eggs} · ⚡×${rb.xp} XP · 💚-${Math.round((1-rb.decay)*100)}% decay`;
+      rbEl.style.display = '';
+    } else {
+      rbEl.style.display = 'none';
+    }
+  }
+}
