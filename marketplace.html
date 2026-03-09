@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fractured Veil — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#04030a;--surface:#0d0b18;--surface2:#13101f;--surface3:#1a1628;
+  --border:#2a2040;--border2:#3a3060;
+  --gold:#c9a84c;--gold2:#e8c96a;
+  --purple:#7c3aed;--purple2:#9d5cf0;--purple3:#c084fc;
+  --blue:#3b82f6;--blue2:#60a5fa;
+  --green:#22c55e;--green2:#4ade80;
+  --red:#ef4444;--red2:#f87171;
+  --muted:#6b7280;--text:#e2d9f3;--text2:#a89bc0;
+  --gem:#a78bfa;--gem2:#c4b5fd;
+  --common:#7ab87a;--rare:#5ab4e8;--legendary:#e8a030;
+  --radius:12px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;}
+body{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+.mkt-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:var(--surface);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;
+}
+.mkt-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.mkt-logo-icon{font-size:22px;}
+.mkt-logo-text{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:1px;}
+.mkt-logo-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.mkt-header-right{display:flex;align-items:center;gap:8px;}
+.mkt-back{
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text2);font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;
+  cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.5px;
+}
+.mkt-back:hover{border-color:var(--purple);color:var(--text);}
+.mkt-wallet-badge{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  font-size:10px;color:var(--text2);
+}
+.mkt-wallet-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.mkt-wallet-dot.off{background:var(--red);}
+.mkt-bal{
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
+  background:linear-gradient(135deg,#1a1040,#0d0820);
+  border:1px solid var(--purple);border-radius:8px;font-size:11px;
+}
+.mkt-bal span{font-family:'Cinzel',serif;font-weight:700;color:var(--gem2);}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.mkt-body{display:flex;flex:1;overflow:hidden;}
+.mkt-sidebar{
+  width:200px;min-width:200px;background:var(--surface);
+  border-right:1px solid var(--border);padding:12px 8px;
+  display:flex;flex-direction:column;gap:4px;overflow-y:auto;
+}
+.mkt-main{flex:1;overflow-y:auto;padding:16px;}
+
+/* ── SIDEBAR NAV ── */
+.mkt-nav-section{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 8px 4px;margin-top:4px;}
+.mkt-nav-btn{
+  display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;
+  background:none;border:none;color:var(--text2);font-family:'Rajdhani',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;width:100%;text-align:left;
+  transition:all .2s;letter-spacing:.3px;
+}
+.mkt-nav-btn:hover{background:var(--surface2);color:var(--text);}
+.mkt-nav-btn.active{background:linear-gradient(135deg,#1a1040,#0d0820);color:var(--gem2);border:1px solid var(--purple);}
+.mkt-nav-btn .nav-icon{font-size:15px;width:20px;text-align:center;}
+.mkt-nav-badge{margin-left:auto;background:var(--purple);color:#fff;font-size:8px;padding:1px 5px;border-radius:10px;}
+
+/* ═══════════════════════════════════════════
+   CONNECT WALL
+═══════════════════════════════════════════ */
+#connectWall{
+  position:fixed;inset:0;background:rgba(4,3,10,.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;z-index:200;
+}
+.connect-card{
+  background:var(--surface);border:1px solid var(--border2);border-radius:16px;
+  padding:36px 40px;text-align:center;max-width:360px;
+}
+.connect-icon{font-size:48px;margin-bottom:12px;}
+.connect-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:8px;}
+.connect-sub{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:24px;}
+.btn-connect{
+  width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;border-radius:10px;color:#fff;font-family:'Cinzel',serif;
+  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;
+}
+.btn-connect:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,.4);}
+
+/* ═══════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════ */
+.mkt-section{display:none;}
+.mkt-section.active{display:block;}
+.section-title{
+  font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold);
+  margin-bottom:4px;display:flex;align-items:center;gap:8px;
+}
+.section-sub{font-size:11px;color:var(--text2);margin-bottom:16px;}
+
+/* ═══════════════════════════════════════════
+   AVATAR CARD
+═══════════════════════════════════════════ */
+.avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.av-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+}
+.av-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.av-card.listed{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.15);}
+.av-card.frozen{border-color:var(--blue);opacity:.85;}
+.av-card-badge{
+  position:absolute;top:8px;right:8px;font-size:7px;font-weight:700;
+  padding:2px 6px;border-radius:6px;letter-spacing:.5px;text-transform:uppercase;
+}
+.badge-listed{background:rgba(201,168,76,.2);color:var(--gold);border:1px solid var(--gold);}
+.badge-active{background:rgba(34,197,94,.2);color:var(--green2);border:1px solid var(--green);}
+.badge-frozen{background:rgba(59,130,246,.2);color:var(--blue2);border:1px solid var(--blue);}
+.av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:8px;}
+.av-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.av-rarity{font-size:8px;font-weight:700;text-align:center;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;}
+.av-rarity.Comum{color:var(--common);}
+.av-rarity.Raro{color:var(--rare);}
+.av-rarity.Lendário{color:var(--legendary);}
+.av-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:8px;}
+.av-stat{font-size:8px;color:var(--text2);display:flex;justify-content:space-between;}
+.av-stat b{color:var(--text);}
+.av-price{
+  text-align:center;font-family:'Cinzel',serif;font-size:13px;font-weight:700;
+  color:var(--gem2);display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.av-seller{font-size:7px;color:var(--muted);text-align:center;margin-top:3px;}
+
+/* ═══════════════════════════════════════════
+   FILTROS
+═══════════════════════════════════════════ */
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.filter-select{
+  padding:6px 10px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;
+  cursor:pointer;outline:none;
+}
+.filter-select:focus{border-color:var(--purple);}
+.filter-label{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+.search-input{
+  flex:1;min-width:140px;padding:6px 10px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:8px;color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;
+}
+.search-input:focus{border-color:var(--purple);}
+.search-input::placeholder{color:var(--muted);}
+
+/* ═══════════════════════════════════════════
+   SLOTS
+═══════════════════════════════════════════ */
+.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.slot-card{
+  background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);
+  padding:16px 12px;min-height:220px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;position:relative;transition:all .2s;
+}
+.slot-card.slot-active{border-color:var(--green);box-shadow:0 0 16px rgba(34,197,94,.2);}
+.slot-card.slot-locked{border-style:dashed;opacity:.5;}
+.slot-label{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;position:absolute;top:8px;left:10px;}
+.slot-empty-icon{font-size:32px;opacity:.3;}
+.slot-empty-txt{font-size:9px;color:var(--muted);text-align:center;}
+.btn-slot-activate{
+  padding:5px 12px;background:var(--green);border:none;border-radius:6px;
+  color:#000;font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  letter-spacing:.5px;transition:all .2s;
+}
+.btn-slot-activate:hover{background:var(--green2);}
+.btn-slot-list{
+  padding:5px 12px;background:transparent;border:1px solid var(--gold);border-radius:6px;
+  color:var(--gold);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  letter-spacing:.5px;transition:all .2s;
+}
+.btn-slot-list:hover{background:rgba(201,168,76,.15);}
+.btn-slot-unlist{
+  padding:5px 12px;background:transparent;border:1px solid var(--red);border-radius:6px;
+  color:var(--red2);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  letter-spacing:.5px;transition:all .2s;
+}
+.btn-slot-unlist:hover{background:rgba(239,68,68,.1);}
+.btn-unlock-slot{
+  width:100%;padding:10px;background:linear-gradient(135deg,#1a1040,#0d0820);
+  border:1px dashed var(--purple);border-radius:8px;color:var(--gem2);
+  font-size:10px;font-weight:600;cursor:pointer;font-family:'Rajdhani',sans-serif;
+  letter-spacing:.5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-unlock-slot:hover{background:rgba(124,58,237,.15);}
+
+/* ═══════════════════════════════════════════
+   LOJA DE CRISTAIS
+═══════════════════════════════════════════ */
+.crystal-packages{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
+.crystal-pkg{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 16px;text-align:center;transition:all .25s;cursor:pointer;
+}
+.crystal-pkg:hover{border-color:var(--purple);transform:translateY(-2px);}
+.crystal-pkg.featured{border-color:var(--gold);background:linear-gradient(135deg,#1a1040,#12081e);}
+.pkg-gem{font-size:36px;margin-bottom:8px;}
+.pkg-amount{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--gem2);margin-bottom:4px;}
+.pkg-matic{font-size:11px;color:var(--text2);margin-bottom:12px;}
+.pkg-bonus{font-size:9px;color:var(--gold);margin-bottom:12px;min-height:14px;}
+.btn-buy-pkg{
+  width:100%;padding:8px;background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;
+  font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;
+}
+.btn-buy-pkg:hover{opacity:.9;}
+
+/* TX verification */
+.tx-verify-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;max-width:500px;
+}
+.tx-verify-box h3{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:12px;}
+.tx-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.tx-step{display:flex;gap:10px;align-items:flex-start;font-size:10px;color:var(--text2);}
+.tx-step-num{
+  width:18px;height:18px;min-width:18px;border-radius:50%;
+  background:var(--purple);color:#fff;font-size:8px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.tx-input-row{display:flex;gap:8px;margin-bottom:8px;}
+.tx-hash-input{
+  flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;
+}
+.tx-hash-input:focus{border-color:var(--purple);}
+.btn-verify{
+  padding:8px 16px;background:var(--purple);border:none;border-radius:8px;
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.btn-verify:hover{background:var(--purple2);}
+.btn-verify:disabled{opacity:.5;cursor:not-allowed;}
+#txStatus{font-size:10px;min-height:16px;margin-top:4px;}
+.tx-ok{color:var(--green2);}
+.tx-err{color:var(--red2);}
+.tx-pending{color:var(--blue2);}
+.wallet-addr-display{
+  font-size:9px;color:var(--muted);word-break:break-all;
+  background:var(--surface);padding:6px 10px;border-radius:6px;
+  border:1px solid var(--border);margin-bottom:12px;
+}
+.wallet-addr-display b{color:var(--gem2);}
+
+/* ═══════════════════════════════════════════
+   OVO RARO
+═══════════════════════════════════════════ */
+.rare-egg-card{
+  background:linear-gradient(135deg,#0d1a2e,#0d0820);
+  border:1px solid var(--rare);border-radius:var(--radius);
+  padding:24px;max-width:320px;text-align:center;
+}
+.rare-egg-icon{font-size:56px;margin-bottom:12px;display:block;}
+.rare-egg-title{font-family:'Cinzel',serif;font-size:16px;color:var(--rare);margin-bottom:8px;}
+.rare-egg-desc{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
+.rare-egg-price{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gem2);
+  margin-bottom:16px;
+}
+.btn-buy-egg{
+  width:100%;padding:12px;background:linear-gradient(135deg,#0d3d6e,#1a5fa8);
+  border:1px solid var(--rare);border-radius:10px;color:#fff;
+  font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;
+  letter-spacing:1px;transition:all .2s;
+}
+.btn-buy-egg:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(90,180,232,.3);}
+.btn-buy-egg:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ═══════════════════════════════════════════
+   MODAL DE LISTAGEM
+═══════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(4,3,10,.85);
+  display:none;align-items:center;justify-content:center;z-index:300;
+}
+.overlay.open{display:flex;}
+.modal-box{
+  background:var(--surface);border:1px solid var(--border2);border-radius:16px;
+  padding:28px;width:100%;max-width:380px;
+}
+.modal-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:6px;}
+.modal-sub{font-size:10px;color:var(--text2);margin-bottom:20px;line-height:1.5;}
+.modal-field{margin-bottom:14px;}
+.modal-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+.modal-input{
+  width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;
+}
+.modal-input:focus{border-color:var(--purple);}
+.modal-row{display:flex;gap:8px;margin-top:4px;}
+.btn-modal-confirm{
+  flex:1;padding:10px;background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;
+  font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;
+}
+.btn-modal-cancel{
+  padding:10px 16px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text2);font-family:'Rajdhani',sans-serif;
+  font-size:11px;font-weight:600;cursor:pointer;
+}
+.modal-warn{font-size:9px;color:var(--gold);background:rgba(201,168,76,.08);
+  border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5;}
+
+/* ═══════════════════════════════════════════
+   AVATAR DETAIL MODAL
+═══════════════════════════════════════════ */
+#avatarDetailOverlay .modal-box{max-width:440px;}
+.detail-header{display:flex;gap:16px;align-items:center;margin-bottom:16px;}
+.detail-svg{flex-shrink:0;}
+.detail-info{flex:1;}
+.detail-name{font-family:'Cinzel',serif;font-size:14px;color:var(--text);margin-bottom:4px;}
+.detail-rarity{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.detail-rarity.Comum{color:var(--common);}
+.detail-rarity.Raro{color:var(--rare);}
+.detail-rarity.Lendário{color:var(--legendary);}
+.detail-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:12px;}
+.detail-stat{font-size:9px;color:var(--text2);display:flex;justify-content:space-between;
+  background:var(--surface2);padding:4px 8px;border-radius:4px;}
+.detail-stat b{color:var(--text);}
+.detail-bonus{font-size:9px;color:var(--gem2);background:rgba(167,139,250,.1);
+  border:1px solid rgba(167,139,250,.2);border-radius:6px;padding:7px 10px;margin-bottom:12px;}
+.detail-price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.detail-price{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:6px;}
+.btn-buy-avatar{
+  padding:10px 20px;background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;
+  font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;
+}
+.btn-buy-avatar:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,58,237,.4);}
+.btn-buy-avatar:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 18px;font-size:12px;color:var(--text);
+  transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;max-width:280px;
+}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.ok{border-color:var(--green);}
+#toast.err{border-color:var(--red);}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════ */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
+.empty-txt{font-size:11px;line-height:1.6;}
+
+/* ═══════════════════════════════════════════
+   LOADING
+═══════════════════════════════════════════ */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:11px;}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border2);
+  border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ══ CONNECT WALL ══ -->
+<div id="connectWall">
+  <div class="connect-card">
+    <div class="connect-icon">💎</div>
+    <div class="connect-title">Fractured Veil Marketplace</div>
+    <div class="connect-sub">Conecta a tua carteira MetaMask para aceder ao marketplace de avatares e à loja de Cristais.</div>
+    <button class="btn-connect" onclick="connectWallet()">🦊 Conectar MetaMask</button>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header class="mkt-header">
+  <a class="mkt-logo" href="index.html">
+    <span class="mkt-logo-icon">🌌</span>
+    <div>
+      <div class="mkt-logo-text">FRACTURED VEIL</div>
+      <div class="mkt-logo-sub">Marketplace</div>
+    </div>
+  </a>
+  <div class="mkt-header-right">
+    <div class="mkt-bal">💎 <span id="hdrCristais">0</span></div>
+    <div class="mkt-wallet-badge">
+      <div class="mkt-wallet-dot" id="walletDot"></div>
+      <span id="hdrWallet">—</span>
+    </div>
+    <a href="index.html" class="mkt-back">← Voltar ao jogo</a>
+  </div>
+</header>
+
+<!-- ══ BODY ══ -->
+<div class="mkt-body">
+
+  <!-- SIDEBAR -->
+  <nav class="mkt-sidebar">
+    <div class="mkt-nav-section">Mercado</div>
+    <button class="mkt-nav-btn active" onclick="showSection('browse')" id="nav-browse">
+      <span class="nav-icon">🛒</span> Explorar
+    </button>
+    <button class="mkt-nav-btn" onclick="showSection('sell')" id="nav-sell">
+      <span class="nav-icon">📋</span> Vender Avatar
+    </button>
+
+    <div class="mkt-nav-section">Minha Conta</div>
+    <button class="mkt-nav-btn" onclick="showSection('slots')" id="nav-slots">
+      <span class="nav-icon">🧬</span> Meus Avatares
+    </button>
+
+    <div class="mkt-nav-section">Cristais 💎</div>
+    <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
+      <span class="nav-icon">💎</span> Comprar Cristais
+    </button>
+    <button class="mkt-nav-btn" onclick="showSection('buyegg')" id="nav-buyegg">
+      <span class="nav-icon">🥚</span> Ovo Raro Garantido
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="mkt-main">
+
+    <!-- ── EXPLORAR ── -->
+    <div class="mkt-section active" id="sec-browse">
+      <div class="section-title">🛒 Avatares à Venda</div>
+      <div class="section-sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
+
+      <div class="filters-row">
+        <input class="search-input" id="filterSearch" placeholder="🔍 Procurar nome ou elemento..." oninput="applyFilters()"/>
+        <select class="filter-select" id="filterRarity" onchange="applyFilters()">
+          <option value="">Raridade: Todas</option>
+          <option value="Raro">Raro</option>
+          <option value="Lendário">Lendário</option>
+        </select>
+        <select class="filter-select" id="filterElem" onchange="applyFilters()">
+          <option value="">Elemento: Todos</option>
+          <option>Fogo</option><option>Água</option><option>Terra</option>
+          <option>Vento</option><option>Eletricidade</option><option>Sombra</option>
+          <option>Luz</option><option>Void</option><option>Aether</option>
+        </select>
+        <select class="filter-select" id="filterSort" onchange="applyFilters()">
+          <option value="recent">Mais recentes</option>
+          <option value="price_asc">Preço ↑</option>
+          <option value="price_desc">Preço ↓</option>
+          <option value="level">Nível ↓</option>
+        </select>
+      </div>
+
+      <div id="browseGrid" class="avatar-grid">
+        <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
+      </div>
+    </div>
+
+    <!-- ── VENDER ── -->
+    <div class="mkt-section" id="sec-sell">
+      <div class="section-title">📋 Listar Avatar à Venda</div>
+      <div class="section-sub">Escolhe um avatar Raro ou Lendário dos teus slots para listar. Custa 2 💎. O avatar fica congelado até ser vendido ou retirado.</div>
+      <div id="sellGrid" class="avatar-grid"></div>
+    </div>
+
+    <!-- ── MEUS AVATARES ── -->
+    <div class="mkt-section" id="sec-slots">
+      <div class="section-title">🧬 Meus Avatares</div>
+      <div class="section-sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
+      <div id="slotsGrid" class="slots-grid"></div>
+      <div id="unlockSlotRow"></div>
+    </div>
+
+    <!-- ── COMPRAR CRISTAIS ── -->
+    <div class="mkt-section" id="sec-buycrystals">
+      <div class="section-title">💎 Comprar Cristais</div>
+      <div class="section-sub">1 MATIC = 10 💎. Envia MATIC para o endereço abaixo e cola o hash da transação para confirmar.</div>
+
+      <div class="wallet-addr-display">
+        Endereço de pagamento: <b id="paymentAddr">—</b>
+      </div>
+
+      <div class="crystal-packages" id="crystalPackages"></div>
+
+      <div class="tx-verify-box">
+        <h3>✅ Confirmar Pagamento</h3>
+        <div class="tx-steps">
+          <div class="tx-step"><div class="tx-step-num">1</div><div>Envia o MATIC do pacote escolhido para o endereço acima via MetaMask ou qualquer carteira Polygon.</div></div>
+          <div class="tx-step"><div class="tx-step-num">2</div><div>Copia o hash da transação (tx hash) do explorador da Polygon.</div></div>
+          <div class="tx-step"><div class="tx-step-num">3</div><div>Cola aqui e clica em Verificar. Os Cristais são creditados automaticamente.</div></div>
+        </div>
+        <div class="tx-input-row">
+          <input class="tx-hash-input" id="txHashInput" placeholder="0x... hash da transação"/>
+          <button class="btn-verify" id="btnVerify" onclick="verifyTx()">Verificar</button>
+        </div>
+        <div id="txStatus"></div>
+      </div>
+    </div>
+
+    <!-- ── OVO RARO ── -->
+    <div class="mkt-section" id="sec-buyegg">
+      <div class="section-title">🥚 Ovo Raro Garantido</div>
+      <div class="section-sub">Recebe um ovo Raro para chocar no jogo principal. Vai directamente para o teu inventário.</div>
+      <div class="rare-egg-card">
+        <span class="rare-egg-icon">💙</span>
+        <div class="rare-egg-title">Ovo Raro Garantido</div>
+        <div class="rare-egg-desc">
+          Um ovo de raridade Rara assegurada, com elemento aleatório. Choca-o no jogo principal para obter um avatar Raro.<br><br>
+          Avatares Raros têm maior chance de botar ovos Raros e Lendários — o início do ciclo P2E.
+        </div>
+        <div class="rare-egg-price">💎 8 Cristais</div>
+        <button class="btn-buy-egg" id="btnBuyEgg" onclick="buyRareEgg()">Comprar Ovo Raro</button>
+        <div id="buyEggStatus" style="font-size:9px;color:var(--text2);margin-top:10px;"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ MODAL LISTAR ══ -->
+<div class="overlay" id="listOverlay">
+  <div class="modal-box">
+    <div class="modal-title">📋 Listar Avatar</div>
+    <div class="modal-sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado até ser vendido ou retirado.</div>
+    <div class="modal-warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
+    <div id="listAvatarPreview" style="margin-bottom:14px;"></div>
+    <div class="modal-field">
+      <div class="modal-label">Preço em 💎 Cristais</div>
+      <input class="modal-input" id="listPriceInput" type="number" min="1" placeholder="ex: 50"/>
+    </div>
+    <div class="modal-row">
+      <button class="btn-modal-cancel" onclick="closeListModal()">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmList()">Listar por 2 💎</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DETALHE AVATAR ══ -->
+<div class="overlay" id="avatarDetailOverlay">
+  <div class="modal-box" id="avatarDetailBox"></div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
+    authDomain: "fractured-veil.firebaseapp.com",
+    projectId: "fractured-veil",
+    storageBucket: "fractured-veil.firebasestorage.app",
+    messagingSenderId: "685511750728",
+    appId: "1:685511750728:web:1e843bf48ea56a3a98d47d"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<script src="js/data.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// MARKETPLACE — CORE
+// ═══════════════════════════════════════════
+
+const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
+const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
+const RARE_EGG_COST   = 8;   // 💎
+const LIST_COST       = 2;   // 💎
+const UNLOCK_SLOT_COST= 15;  // 💎
+const BASE_SLOTS      = 3;
+const MAX_SLOTS       = 5;
+const MATIC_TO_GEMS   = 10;  // 1 MATIC = 10 💎
+
+const CRYSTAL_PACKAGES = [
+  { matic:0.5,  gems:5,   label:'Punhado',   icon:'💎' },
+  { matic:1,    gems:10,  label:'Bolsa',      icon:'💎' },
+  { matic:3,    gems:30,  label:'Saco',       icon:'💎' },
+  { matic:5,    gems:50,  label:'Baú',        icon:'💎' },
+  { matic:10,   gems:100, label:'Tesouro',    icon:'💎' },
+];
+
+let walletAddress = null;
+let playerData    = null;   // dados do jogador carregados do Firestore
+let listings      = [];     // listagens do marketplace
+let listingUnsub  = null;
+let listingSlotIdx= null;   // slot a listar
+let usedTxHashes  = new Set();
+
+// ── INIT ──
+document.getElementById('paymentAddr').textContent = PAYMENT_ADDRESS;
+
+async function connectWallet() {
+  if(typeof window.ethereum === 'undefined') {
+    showToast('MetaMask não encontrada. Instala a extensão.', 'err'); return;
+  }
+  try {
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    walletAddress = accounts[0].toLowerCase();
+    document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
+    document.getElementById('walletDot').classList.remove('off');
+    document.getElementById('connectWall').style.display = 'none';
+    await loadPlayerData();
+    loadListings();
+    renderSection();
+  } catch(e) {
+    showToast('Conexão recusada.', 'err');
+  }
+}
+
+async function loadPlayerData() {
+  const snap = await db.collection('players').doc(walletAddress).get();
+  playerData = snap.exists ? snap.data() : { cristais:0, avatarSlots:[null,null,null], activeSlotIdx:0, extraSlots:0 };
+  playerData.cristais    = playerData.cristais    || 0;
+  playerData.avatarSlots = playerData.avatarSlots || [null,null,null];
+  playerData.activeSlotIdx = playerData.activeSlotIdx ?? 0;
+  playerData.extraSlots  = playerData.extraSlots  || 0;
+  playerData.usedTxHashes= playerData.usedTxHashes|| [];
+  usedTxHashes = new Set(playerData.usedTxHashes);
+  updateCristaisDisplay();
+}
+
+async function savePlayerData() {
+  if(!walletAddress) return;
+  playerData.usedTxHashes = [...usedTxHashes];
+  await db.collection('players').doc(walletAddress).set(playerData, { merge: true });
+  updateCristaisDisplay();
+}
+
+function updateCristaisDisplay() {
+  document.getElementById('hdrCristais').textContent = playerData?.cristais || 0;
+}
+
+function getUnlockedSlots() {
+  return Math.min(MAX_SLOTS, BASE_SLOTS + (playerData?.extraSlots || 0));
+}
+
+// ── NAVEGAÇÃO ──
+let currentSection = 'browse';
+function showSection(id) {
+  currentSection = id;
+  document.querySelectorAll('.mkt-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.mkt-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
+  renderSection();
+}
+function renderSection() {
+  if(currentSection === 'browse')      renderBrowse();
+  if(currentSection === 'sell')        renderSell();
+  if(currentSection === 'slots')       renderSlots();
+  if(currentSection === 'buycrystals') renderCrystals();
+  if(currentSection === 'buyegg')      renderBuyEgg();
+}
+
+// ═══════════════════════════════════════════
+// EXPLORAR
+// ═══════════════════════════════════════════
+function loadListings() {
+  if(listingUnsub) listingUnsub();
+  listingUnsub = db.collection('avatarMarket')
+    .where('status','==','listed')
+    .onSnapshot(snap => {
+      listings = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      if(currentSection === 'browse') renderBrowse();
+    });
+}
+
+function applyFilters() {
+  renderBrowse();
+}
+
+function renderBrowse() {
+  const grid  = document.getElementById('browseGrid');
+  const search= (document.getElementById('filterSearch')?.value||'').toLowerCase();
+  const rar   = document.getElementById('filterRarity')?.value||'';
+  const elem  = document.getElementById('filterElem')?.value||'';
+  const sort  = document.getElementById('filterSort')?.value||'recent';
+
+  let filtered = listings.filter(l => {
+    if(rar  && l.raridade  !== rar)  return false;
+    if(elem && l.elemento  !== elem) return false;
+    if(search && !l.nome?.toLowerCase().includes(search) && !l.elemento?.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if(sort === 'price_asc')  filtered.sort((a,b) => a.price - b.price);
+  if(sort === 'price_desc') filtered.sort((a,b) => b.price - a.price);
+  if(sort === 'level')      filtered.sort((a,b) => (b.nivel||1) - (a.nivel||1));
+  if(sort === 'recent')     filtered.sort((a,b) => (b.listedAt?.seconds||0) - (a.listedAt?.seconds||0));
+
+  if(filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌌</div><div class="empty-txt">Nenhum avatar encontrado.<br>Ajusta os filtros ou volta mais tarde.</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(l => buildListingCard(l)).join('');
+}
+
+function buildListingCard(l) {
+  const isMine = l.sellerId === walletAddress;
+  const rarCol = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
+  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 70, 70);
+  const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
+  return `<div class="av-card" onclick="openDetail('${l.id}')">
+    <div class="av-svg-wrap">${svgHtml}</div>
+    <div class="av-name">${l.nome||'Avatar'}</div>
+    <div class="av-rarity ${l.raridade}" style="color:${rarCol}">${l.raridade} · ${l.elemento}</div>
+    <div class="av-stats">
+      <div class="av-stat">Nível <b>${l.nivel||1}</b></div>
+      <div class="av-stat">Vínculo <b>${Math.floor(l.vinculo||0)}</b></div>
+      <div class="av-stat">Dias <b>${l.diasVida||0}</b></div>
+      <div class="av-stat">Ovos <b>${l.totalOvos||0}</b></div>
+    </div>
+    <div class="av-price">💎 ${l.price}</div>
+    <div class="av-seller">${isMine ? '⭐ O teu avatar' : `Por ${sellerShort}`}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// DETALHE AVATAR
+// ═══════════════════════════════════════════
+async function openDetail(listingId) {
+  const l = listings.find(x => x.id === listingId);
+  if(!l) return;
+  const isMine   = l.sellerId === walletAddress;
+  const canBuy   = !isMine && (playerData?.cristais||0) >= l.price;
+  const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
+  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90);
+  const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento]?.bonus || '';
+  const box = document.getElementById('avatarDetailBox');
+  box.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-svg">${svgHtml}</div>
+      <div class="detail-info">
+        <div class="detail-name">${l.nome||'Avatar'}</div>
+        <div class="detail-rarity ${l.raridade}">${l.raridade} · ${l.elemento}</div>
+        <div style="font-size:9px;color:var(--text2);">${l.descricao||''}</div>
+      </div>
+    </div>
+    <div class="detail-stats-grid">
+      <div class="detail-stat">Nível <b>${l.nivel||1}</b></div>
+      <div class="detail-stat">XP <b>${Math.floor(l.xp||0)}</b></div>
+      <div class="detail-stat">Vínculo <b>${Math.floor(l.vinculo||0)}</b></div>
+      <div class="detail-stat">Dias de vida <b>${l.diasVida||0}</b></div>
+      <div class="detail-stat">Ovos botados <b>${l.totalOvos||0}</b></div>
+      <div class="detail-stat">Raros/Lendários <b>${l.totalRaros||0}</b></div>
+    </div>
+    ${bonusText ? `<div class="detail-bonus">✨ ${bonusText}</div>` : ''}
+    <div class="detail-price-row">
+      <div class="detail-price">💎 ${l.price}</div>
+      ${isMine
+        ? `<button class="btn-buy-avatar" style="background:var(--red)" onclick="unlistAvatar('${l.id}')">Retirar listagem</button>`
+        : `<button class="btn-buy-avatar" ${canBuy?'':'disabled'} onclick="buyAvatar('${l.id}',${l.price})">${canBuy?'Comprar':'Cristais insuficientes'}</button>`
+      }
+    </div>
+    <div style="text-align:right;"><button class="btn-modal-cancel" onclick="closeDetail()">Fechar</button></div>
+  `;
+  document.getElementById('avatarDetailOverlay').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('avatarDetailOverlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+// COMPRAR AVATAR
+// ═══════════════════════════════════════════
+async function buyAvatar(listingId, price) {
+  if(!playerData || playerData.cristais < price) { showToast('Cristais insuficientes.','err'); return; }
+
+  // Find free slot
+  const slots = playerData.avatarSlots;
+  const freeIdx = slots.findIndex((s,i) => s === null && i < getUnlockedSlots());
+  if(freeIdx === -1) { showToast('Sem slots disponíveis. Desbloqueia mais slots.','err'); return; }
+
+  try {
+    const listRef = db.collection('avatarMarket').doc(listingId);
+    const listSnap = await listRef.get();
+    if(!listSnap.exists || listSnap.data().status !== 'listed') { showToast('Listagem já não disponível.','err'); return; }
+    const l = listSnap.data();
+
+    // Deduct cristais from buyer
+    playerData.cristais -= price;
+    playerData.avatarSlots[freeIdx] = {
+      nome: l.nome, elemento: l.elemento, raridade: l.raridade,
+      descricao: l.descricao, seed: l.seed||0,
+      nivel: l.nivel||1, xp: l.xp||0, vinculo: l.vinculo||0,
+      diasVida: l.diasVida||0, totalOvos: l.totalOvos||0, totalRaros: l.totalRaros||0,
+      bornAt: l.bornAt||Date.now(), acquiredAt: Date.now(),
+    };
+    await savePlayerData();
+
+    // Add cristais to seller
+    const sellerRef = db.collection('players').doc(l.sellerId);
+    await sellerRef.update({ cristais: firebase.firestore.FieldValue.increment(price) });
+
+    // Mark listing as sold
+    await listRef.update({ status:'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+    closeDetail();
+    showToast(`✅ ${l.nome} adquirido com sucesso!`, 'ok');
+    showSection('slots');
+  } catch(e) {
+    console.error(e);
+    showToast('Erro ao comprar avatar.','err');
+  }
+}
+
+// ═══════════════════════════════════════════
+// VENDER
+// ═══════════════════════════════════════════
+function renderSell() {
+  const grid = document.getElementById('sellGrid');
+  if(!playerData) return;
+  const slots = playerData.avatarSlots;
+  const unlocked = getUnlockedSlots();
+  const available = [];
+  for(let i=0;i<unlocked;i++){
+    const s = slots[i];
+    if(s && (s.raridade === 'Raro' || s.raridade === 'Lendário') && !s.listed) available.push({slot:i,...s});
+  }
+  if(available.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar Raro ou Lendário disponível para listar.<br>Apenas Raros e Lendários podem ser vendidos no marketplace.</div></div>`;
+    return;
+  }
+  grid.innerHTML = available.map(s => {
+    const rarCol = { Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[s.raridade];
+    return `<div class="av-card" onclick="openListModal(${s.slot})">
+      <div class="av-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
+      <div class="av-name">${s.nome}</div>
+      <div class="av-rarity ${s.raridade}">${s.raridade} · ${s.elemento}</div>
+      <div class="av-stats">
+        <div class="av-stat">Nível <b>${s.nivel||1}</b></div>
+        <div class="av-stat">Vínculo <b>${Math.floor(s.vinculo||0)}</b></div>
+      </div>
+      <div style="text-align:center;font-size:9px;color:var(--gem2);margin-top:4px;">Clique para listar</div>
+    </div>`;
+  }).join('');
+}
+
+function openListModal(slotIdx) {
+  listingSlotIdx = slotIdx;
+  const s = playerData.avatarSlots[slotIdx];
+  document.getElementById('listAvatarPreview').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);padding:10px;border-radius:8px;">
+      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50)}
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;">${s.nome}</div>
+        <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · Nv.${s.nivel||1}</div>
+      </div>
+    </div>`;
+  document.getElementById('listPriceInput').value = '';
+  document.getElementById('listOverlay').classList.add('open');
+}
+
+function closeListModal() {
+  document.getElementById('listOverlay').classList.remove('open');
+  listingSlotIdx = null;
+}
+
+async function confirmList() {
+  const price = parseInt(document.getElementById('listPriceInput').value);
+  if(!price || price < 1) { showToast('Preço inválido.','err'); return; }
+  if(playerData.cristais < LIST_COST) { showToast(`Precisas de ${LIST_COST} 💎 para listar.`,'err'); return; }
+  if(listingSlotIdx === null) return;
+
+  const s = playerData.avatarSlots[listingSlotIdx];
+  try {
+    // Deduct listing fee
+    playerData.cristais -= LIST_COST;
+    // Mark slot as listed
+    playerData.avatarSlots[listingSlotIdx].listed = true;
+    await savePlayerData();
+
+    // Create market listing
+    const diasVida = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
+    await db.collection('avatarMarket').add({
+      sellerId:   walletAddress,
+      slotIdx:    listingSlotIdx,
+      nome:       s.nome,
+      elemento:   s.elemento,
+      raridade:   s.raridade,
+      descricao:  s.descricao||'',
+      seed:       s.seed||0,
+      nivel:      s.nivel||1,
+      xp:         s.xp||0,
+      vinculo:    s.vinculo||0,
+      diasVida,
+      totalOvos:  s.totalOvos||0,
+      totalRaros: s.totalRaros||0,
+      bornAt:     s.bornAt||Date.now(),
+      price,
+      status:     'listed',
+      listedAt:   firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    closeListModal();
+    showToast(`✅ Avatar listado por ${price} 💎!`, 'ok');
+    showSection('slots');
+  } catch(e) {
+    console.error(e);
+    showToast('Erro ao listar.','err');
+  }
+}
+
+async function unlistAvatar(listingId) {
+  try {
+    const snap = await db.collection('avatarMarket').doc(listingId).get();
+    if(!snap.exists) return;
+    const l = snap.data();
+    if(l.sellerId !== walletAddress) return;
+
+    // Unfreeze slot
+    const slotIdx = l.slotIdx;
+    if(playerData.avatarSlots[slotIdx]) playerData.avatarSlots[slotIdx].listed = false;
+    await savePlayerData();
+    await db.collection('avatarMarket').doc(listingId).update({ status:'cancelled' });
+
+    closeDetail();
+    showToast('Listagem cancelada. Avatar desbloqueado.', 'ok');
+  } catch(e) {
+    showToast('Erro ao retirar listagem.','err');
+  }
+}
+
+// ═══════════════════════════════════════════
+// MEUS AVATARES / SLOTS
+// ═══════════════════════════════════════════
+function renderSlots() {
+  const grid = document.getElementById('slotsGrid');
+  const unlockRow = document.getElementById('unlockSlotRow');
+  if(!playerData) return;
+
+  const unlocked = getUnlockedSlots();
+  const slots = playerData.avatarSlots;
+  let html = '';
+
+  for(let i=0;i<unlocked;i++) {
+    const s = slots[i];
+    const isActive = i === playerData.activeSlotIdx;
+    if(!s) {
+      html += `<div class="slot-card">
+        <div class="slot-label">Slot ${i+1}</div>
+        <div class="slot-empty-icon">🌀</div>
+        <div class="slot-empty-txt">Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo principal</span></div>
+      </div>`;
+    } else {
+      const rarCol = {Comum:'var(--common)',Raro:'var(--rare)','Lendário':'var(--legendary)'}[s.raridade]||'var(--text)';
+      const isFrozen = !!s.listed;
+      html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
+        <div class="slot-label">Slot ${i+1}</div>
+        ${isActive ? '<div class="av-card-badge badge-active">Activo</div>' : ''}
+        ${isFrozen ? '<div class="av-card-badge badge-frozen">À venda</div>' : ''}
+        <div style="margin-top:12px;">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
+        <div class="av-name" style="margin-top:6px;">${s.nome}</div>
+        <div class="av-rarity ${s.raridade}" style="color:${rarCol};font-size:8px;">${s.raridade} · ${s.elemento}</div>
+        <div class="av-stats" style="width:100%;margin-bottom:6px;">
+          <div class="av-stat">Nível <b>${s.nivel||1}</b></div>
+          <div class="av-stat">Vínculo <b>${Math.floor(s.vinculo||0)}</b></div>
+        </div>
+        ${!isActive && !isFrozen ? `<button class="btn-slot-activate" onclick="activateSlot(${i})">Activar</button>` : ''}
+        ${isFrozen ? `<div style="font-size:8px;color:var(--blue2);">Congelado — listado no mercado</div>` : ''}
+      </div>`;
+    }
+  }
+
+  // Locked slots
+  for(let i=unlocked;i<MAX_SLOTS;i++) {
+    html += `<div class="slot-card slot-locked">
+      <div class="slot-label">Slot ${i+1}</div>
+      <div class="slot-empty-icon">🔒</div>
+      <div class="slot-empty-txt">Bloqueado</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Unlock button
+  if(unlocked < MAX_SLOTS) {
+    unlockRow.innerHTML = `<button class="btn-unlock-slot" onclick="unlockSlot()">
+      🔓 Desbloquear Slot ${unlocked+1} — ${UNLOCK_SLOT_COST} 💎
+    </button>`;
+  } else {
+    unlockRow.innerHTML = `<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">Slots máximos desbloqueados (${MAX_SLOTS})</div>`;
+  }
+}
+
+async function activateSlot(idx) {
+  playerData.activeSlotIdx = idx;
+  await savePlayerData();
+  showToast('Slot activo alterado!', 'ok');
+  renderSlots();
+}
+
+async function unlockSlot() {
+  if(playerData.cristais < UNLOCK_SLOT_COST) { showToast(`Precisas de ${UNLOCK_SLOT_COST} 💎.`,'err'); return; }
+  const unlocked = getUnlockedSlots();
+  if(unlocked >= MAX_SLOTS) { showToast('Já tens o máximo de slots.','err'); return; }
+  playerData.cristais -= UNLOCK_SLOT_COST;
+  playerData.extraSlots = (playerData.extraSlots||0) + 1;
+  // Expand array if needed
+  while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
+  await savePlayerData();
+  showToast(`✅ Slot ${getUnlockedSlots()} desbloqueado!`, 'ok');
+  renderSlots();
+}
+
+// ═══════════════════════════════════════════
+// COMPRAR CRISTAIS
+// ═══════════════════════════════════════════
+function renderCrystals() {
+  const container = document.getElementById('crystalPackages');
+  container.innerHTML = CRYSTAL_PACKAGES.map((pkg,i) => `
+    <div class="crystal-pkg ${i===1?'featured':''}">
+      <div class="pkg-gem">💎</div>
+      <div class="pkg-amount">${pkg.gems}</div>
+      <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text2);margin-bottom:4px;">${pkg.label}</div>
+      <div class="pkg-matic">${pkg.matic} MATIC</div>
+      <div class="pkg-bonus">${i===1?'Mais popular':''}</div>
+      <button class="btn-buy-pkg" onclick="selectPackage(${i})">Selecionar</button>
+    </div>`).join('');
+}
+
+function selectPackage(idx) {
+  const pkg = CRYSTAL_PACKAGES[idx];
+  showToast(`Envia ${pkg.matic} MATIC para o endereço exibido e cola o tx hash abaixo.`,'ok');
+  document.getElementById('txHashInput').focus();
+  document.getElementById('txHashInput').dataset.pkg = idx;
+}
+
+async function verifyTx() {
+  const hash = document.getElementById('txHashInput').value.trim();
+  const pkgIdx = parseInt(document.getElementById('txHashInput').dataset.pkg ?? '-1');
+  const status = document.getElementById('txStatus');
+
+  if(!hash || !hash.startsWith('0x')) { status.innerHTML = '<span class="tx-err">Hash inválido.</span>'; return; }
+  if(pkgIdx < 0) { status.innerHTML = '<span class="tx-err">Seleciona um pacote primeiro.</span>'; return; }
+  if(usedTxHashes.has(hash)) { status.innerHTML = '<span class="tx-err">Esta transação já foi utilizada.</span>'; return; }
+
+  const btn = document.getElementById('btnVerify');
+  btn.disabled = true;
+  status.innerHTML = '<span class="tx-pending">A verificar na Polygon...</span>';
+
+  try {
+    const url = `${POLYGONSCAN_API}?module=transaction&action=gettxreceiptstatus&txhash=${hash}&apikey=YourApiKeyToken`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(data.result?.status !== '1') {
+      status.innerHTML = '<span class="tx-err">Transação não confirmada ou inválida.</span>';
+      btn.disabled = false; return;
+    }
+
+    // Verify tx details
+    const txUrl = `${POLYGONSCAN_API}?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=YourApiKeyToken`;
+    const txRes = await fetch(txUrl);
+    const txData = await txRes.json();
+    const tx = txData.result;
+
+    if(!tx) { status.innerHTML = '<span class="tx-err">Transação não encontrada.</span>'; btn.disabled=false; return; }
+    if(tx.to?.toLowerCase() !== PAYMENT_ADDRESS.toLowerCase()) {
+      status.innerHTML = '<span class="tx-err">Transação não enviada para o endereço correcto.</span>'; btn.disabled=false; return;
+    }
+    if(tx.from?.toLowerCase() !== walletAddress) {
+      status.innerHTML = '<span class="tx-err">Transação não foi enviada pela tua carteira.</span>'; btn.disabled=false; return;
+    }
+
+    const pkg = CRYSTAL_PACKAGES[pkgIdx];
+    const expectedWei = BigInt(Math.round(pkg.matic * 1e18));
+    const actualWei   = BigInt(tx.value || '0');
+    const tolerance   = BigInt(Math.round(0.001 * 1e18)); // 0.001 MATIC tolerância
+    if(actualWei < expectedWei - tolerance) {
+      status.innerHTML = `<span class="tx-err">Valor enviado (${Number(actualWei)/1e18} MATIC) inferior ao esperado (${pkg.matic} MATIC).</span>`;
+      btn.disabled=false; return;
+    }
+
+    // All good — credit crystals
+    usedTxHashes.add(hash);
+    playerData.cristais += pkg.gems;
+    await savePlayerData();
+    status.innerHTML = `<span class="tx-ok">✅ +${pkg.gems} 💎 creditados! Saldo: ${playerData.cristais} 💎</span>`;
+    document.getElementById('txHashInput').value = '';
+    showToast(`+${pkg.gems} 💎 Cristais creditados!`, 'ok');
+  } catch(e) {
+    console.error(e);
+    status.innerHTML = '<span class="tx-err">Erro ao verificar. Tenta novamente.</span>';
+  }
+  btn.disabled = false;
+}
+
+// ═══════════════════════════════════════════
+// OVO RARO
+// ═══════════════════════════════════════════
+function renderBuyEgg() {
+  const btn = document.getElementById('btnBuyEgg');
+  if(!playerData) return;
+  btn.disabled = playerData.cristais < RARE_EGG_COST;
+  document.getElementById('buyEggStatus').textContent =
+    playerData.cristais < RARE_EGG_COST
+    ? `Precisas de ${RARE_EGG_COST} 💎 (tens ${playerData.cristais} 💎)`
+    : `Saldo disponível: ${playerData.cristais} 💎`;
+}
+
+async function buyRareEgg() {
+  if(!playerData || playerData.cristais < RARE_EGG_COST) return;
+  playerData.cristais -= RARE_EGG_COST;
+
+  // Generate rare egg and add to player's egg inventory in Firestore
+  const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
+  const elem = elementos[Math.floor(Math.random()*elementos.length)];
+  const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
+  const newEgg = { id: Date.now(), raridade:'Raro', elemento:elem, expiraEm };
+
+  // Load current eggs from player save and add the new one
+  const snap = await db.collection('players').doc(walletAddress).get();
+  const current = snap.exists ? snap.data() : {};
+  const eggs = current.eggs || [];
+  eggs.push(newEgg);
+  await db.collection('players').doc(walletAddress).update({ eggs, cristais: playerData.cristais });
+
+  await savePlayerData();
+  showToast(`✅ Ovo Raro (${elem}) adicionado ao teu inventário!`, 'ok');
+  document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} enviado para o inventário do jogo!`;
+  renderBuyEgg();
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+let _toastTimer = null;
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// Close overlays on background click
+document.getElementById('listOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeListModal(); });
+document.getElementById('avatarDetailOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
+
+// Auto-connect if already authorized
+window.addEventListener('load', async () => {
+  if(typeof window.ethereum !== 'undefined') {
+    const accounts = await ethereum.request({ method:'eth_accounts' });
+    if(accounts.length > 0) {
+      walletAddress = accounts[0].toLowerCase();
+      document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
+      document.getElementById('walletDot').classList.remove('off');
+      document.getElementById('connectWall').style.display = 'none';
+      await loadPlayerData();
+      loadListings();
+      renderSection();
+    }
+  }
+});
+</script>
+</body>
+</html>
