@@ -1177,22 +1177,27 @@ async function buyRareEgg() {
   if(!playerData.gs) playerData.gs = {};
   playerData.gs.cristais = playerData.cristais;
 
-  // Generate rare egg and add to player's egg inventory in Firestore
+  // Generate rare egg
   const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
   const elem = elementos[Math.floor(Math.random()*elementos.length)];
   const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
   const newEgg = { id: Date.now(), raridade:'Raro', elemento:elem, expiraEm };
 
-  // Load current eggs from player save and add the new one
-  const snap = await db.collection('players').doc(walletAddress).get();
-  const current = snap.exists ? snap.data() : {};
-  const eggs = current.eggs || [];
-  eggs.push(newEgg);
-  await db.collection('players').doc(walletAddress).update({ eggs, cristais: playerData.cristais });
+  // Insere no slot activo (novo formato) — é donde o jogo lê os ovos
+  const activeIdx = playerData.activeSlotIdx ?? 0;
+  if(!playerData.avatarSlots) playerData.avatarSlots = [null,null,null];
+  if(!playerData.avatarSlots[activeIdx]) {
+    showToast('Não tens um avatar activo. Choca um ovo no jogo primeiro.', 'err');
+    playerData.cristais += RARE_EGG_COST; // reembolso
+    playerData.gs.cristais = playerData.cristais;
+    return;
+  }
+  if(!playerData.avatarSlots[activeIdx].eggs) playerData.avatarSlots[activeIdx].eggs = [];
+  playerData.avatarSlots[activeIdx].eggs.push(newEgg);
 
   await savePlayerData();
-  showToast(`✅ Ovo Raro (${elem}) adicionado ao teu inventário!`, 'ok');
-  document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} enviado para o inventário do jogo!`;
+  showToast(`✅ Ovo Raro ${elem} enviado para o inventário do avatar activo!`, 'ok');
+  document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} no inventário de ${playerData.avatarSlots[activeIdx].nome?.split(',')[0] || 'avatar activo'}.`;
   renderBuyEgg();
 }
 
