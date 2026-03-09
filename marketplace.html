@@ -573,7 +573,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 </div>
 
 <!-- ══ MODAL QUEIMAR AVATAR ══ -->
-<div class="overlay" id="burnOverlay" style="display:none;">
+<div class="overlay" id="burnOverlay">
   <div class="modal-box" style="max-width:320px;text-align:center;">
     <div class="modal-title" style="color:#f87171;">🔥 Queimar Avatar</div>
     <div id="burnAvatarPreview" style="margin:12px 0;"></div>
@@ -604,7 +604,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     appId: "1:685511750728:web:1e843bf48ea56a3a98d47d"
   };
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  window.db = firebase.firestore();
+  const db = window.db;
 </script>
 <script src="js/data.js"></script>
 <script>
@@ -612,7 +613,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 // MARKETPLACE — CORE
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // ← substituir pela tua wallet
+const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
 const RARE_EGG_COST   = 8;   // 💎
 const LIST_COST       = 2;   // 💎
@@ -876,10 +877,10 @@ function renderSell() {
   const available = [];
   for(let i=0;i<unlocked;i++){
     const s = slots[i];
-    if(s && s.hatched && !s.dead && (s.raridade === 'Raro' || s.raridade === 'Lendário') && !s.listed) available.push({slot:i,...s});
+    if(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed) available.push({slot:i,...s});
   }
   if(available.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar Raro ou Lendário disponível para listar.<br>Apenas Raros e Lendários podem ser vendidos no marketplace.</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar disponível para listar.<br>Choca um ovo no jogo primeiro.</div></div>`;
     return;
   }
   grid.innerHTML = available.map(s => {
@@ -1095,18 +1096,18 @@ function burnAvatar(idx) {
       <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade} · Nível ${s.nivel||1}</div>
     </div>`;
 
-  document.getElementById('burnOverlay').style.display = 'flex';
+  document.getElementById('burnOverlay').classList.add('open');
 }
 
 function closeBurnModal() {
   _burnPendingIdx = null;
-  document.getElementById('burnOverlay').style.display = 'none';
+  document.getElementById('burnOverlay').classList.remove('open');
 }
 
 async function confirmBurnAvatar() {
   const idx = _burnPendingIdx;
   _burnPendingIdx = null;
-  document.getElementById('burnOverlay').style.display = 'none';
+  document.getElementById('burnOverlay').classList.remove('open');
   if(idx === null || idx === playerData.activeSlotIdx) return;
 
   const s = playerData.avatarSlots[idx];
