@@ -28,6 +28,9 @@ function getGameState() {
     poopCount, dirtyLevel, poopPressure, bornAt, petCooldown,
     vitals:         {...vitals},
     gs:             {...gs},
+    cristais:       gs.cristais || 0,
+    avatarSlots:    avatarSlots.map(s => s ? {...s} : null),
+    activeSlotIdx:  activeSlotIdx,
     items:          itemInventory.map(i => ({...i})),
     eggs:           eggsInInventory.map(e => ({
       id:        e.id,
@@ -72,6 +75,9 @@ function applyGameState(data) {
   petCooldown   = data.petCooldown   ?? 0;
   if(data.vitals) Object.assign(vitals, data.vitals);
   if(data.gs)     Object.assign(gs, data.gs);
+  if(data.cristais !== undefined) gs.cristais = data.cristais;
+  if(data.avatarSlots)  avatarSlots  = data.avatarSlots;
+  if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
   if(data.eggs)   eggsInInventory = data.eggs;
   if(data.items)  itemInventory  = data.items;
   return true;
