@@ -732,21 +732,29 @@ function renderBrowse() {
 
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
-  const rarCol = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
-  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 70, 70);
+  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72);
   const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
+  const parts   = (l.nome||'Avatar').split(',');
+  const nomeProp = parts[0].trim();
+  const sufixo   = parts.slice(1).join(',').trim();
+  const elemCar  = CARACTERISTICAS_ELEMENTAIS[l.elemento];
+  const elemEmoji= elemCar ? elemCar.emoji : '✦';
   return `<div class="av-card" onclick="openDetail('${l.id}')">
-    <div class="av-svg-wrap">${svgHtml}</div>
-    <div class="av-name">${l.nome||'Avatar'}</div>
-    <div class="av-rarity ${l.raridade}" style="color:${rarCol}">${l.raridade} · ${l.elemento}</div>
-    <div class="av-stats">
-      <div class="av-stat">Nível <b>${l.nivel||1}</b></div>
-      <div class="av-stat">Vínculo <b>${Math.floor(l.vinculo||0)}</b></div>
-      <div class="av-stat">Dias <b>${l.diasVida||0}</b></div>
-      <div class="av-stat">Ovos <b>${l.totalOvos||0}</b></div>
+    <div class="av-card-stripe ${l.raridade}"></div>
+    <div class="av-card-inner">
+      <div class="av-svg-wrap">${svgHtml}</div>
+      <div class="av-name">${nomeProp}</div>
+      ${sufixo ? `<div class="av-sufixo">${sufixo}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
+      <div class="av-pill ${l.raridade}">${elemEmoji} ${l.elemento} · ${l.raridade}</div>
+      <div class="av-stats">
+        <div class="av-stat"><b>${l.nivel||1}</b>Nível</div>
+        <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>Vínculo</div>
+        <div class="av-stat"><b>${l.diasVida||0}</b>Dias</div>
+        <div class="av-stat"><b>${l.totalOvos||0}</b>Ovos</div>
+      </div>
+      <div class="av-price">💎 ${l.price}</div>
+      <div class="av-seller">${isMine ? '⭐ O teu avatar' : `Por ${sellerShort}`}</div>
     </div>
-    <div class="av-price">💎 ${l.price}</div>
-    <div class="av-seller">${isMine ? '⭐ O teu avatar' : `Por ${sellerShort}`}</div>
   </div>`;
 }
 
@@ -860,15 +868,22 @@ function renderSell() {
   }
   grid.innerHTML = available.map(s => {
     const rarCol = { Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[s.raridade];
+    const _p2 = (s.nome||'Avatar').split(',');
+    const _n2 = _p2[0].trim(), _s2 = _p2.slice(1).join(',').trim();
+    const _ec2 = CARACTERISTICAS_ELEMENTAIS[s.elemento];
     return `<div class="av-card" onclick="openListModal(${s.slot})">
-      <div class="av-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
-      <div class="av-name">${s.nome}</div>
-      <div class="av-rarity ${s.raridade}">${s.raridade} · ${s.elemento}</div>
-      <div class="av-stats">
-        <div class="av-stat">Nível <b>${s.nivel||1}</b></div>
-        <div class="av-stat">Vínculo <b>${Math.floor(s.vinculo||0)}</b></div>
+      <div class="av-card-stripe ${s.raridade}"></div>
+      <div class="av-card-inner">
+        <div class="av-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,72,72)}</div>
+        <div class="av-name">${_n2}</div>
+        ${_s2 ? `<div class="av-sufixo">${_s2}</div>` : '<div class="av-sufixo"></div>'}
+        <div class="av-pill ${s.raridade}">${_ec2?_ec2.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
+        <div class="av-stats">
+          <div class="av-stat"><b>${s.nivel||1}</b>Nível</div>
+          <div class="av-stat"><b>${Math.floor(s.vinculo||0)}</b>Vínculo</div>
+        </div>
+        <div style="text-align:center;font-size:8px;color:var(--gem2);margin-top:6px;font-family:'Cinzel',serif;letter-spacing:.5px;">LISTAR →</div>
       </div>
-      <div style="text-align:center;font-size:9px;color:var(--gem2);margin-top:4px;">Clique para listar</div>
     </div>`;
   }).join('');
 }
@@ -978,25 +993,34 @@ function renderSlots() {
     if(!s) {
       html += `<div class="slot-card">
         <div class="slot-label">Slot ${i+1}</div>
-        <div class="slot-empty-icon">🌀</div>
-        <div class="slot-empty-txt">Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo principal</span></div>
+        <div class="slot-card-inner" style="justify-content:center;min-height:160px;">
+          <div class="slot-empty-icon">🌀</div>
+          <div class="slot-empty-txt">Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo</span></div>
+        </div>
       </div>`;
     } else {
-      const rarCol = {Comum:'var(--common)',Raro:'var(--rare)','Lendário':'var(--legendary)'}[s.raridade]||'var(--text)';
       const isFrozen = !!s.listed;
+      const _ps = (s.nome||'Avatar').split(',');
+      const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
+      const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
       html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
+        <div class="av-card-stripe ${s.raridade}"></div>
         <div class="slot-label">Slot ${i+1}</div>
         ${isActive ? '<div class="av-card-badge badge-active">Activo</div>' : ''}
         ${isFrozen ? '<div class="av-card-badge badge-frozen">À venda</div>' : ''}
-        <div style="margin-top:12px;">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
-        <div class="av-name" style="margin-top:6px;">${s.nome}</div>
-        <div class="av-rarity ${s.raridade}" style="color:${rarCol};font-size:8px;">${s.raridade} · ${s.elemento}</div>
-        <div class="av-stats" style="width:100%;margin-bottom:6px;">
-          <div class="av-stat">Nível <b>${s.nivel||1}</b></div>
-          <div class="av-stat">Vínculo <b>${Math.floor(s.vinculo||0)}</b></div>
+        <div class="slot-card-inner">
+          <div class="av-svg-wrap" style="margin-top:8px;">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
+          <div class="av-name">${_ns}</div>
+          ${_ss ? `<div class="av-sufixo">${_ss}</div>` : '<div class="av-sufixo"></div>'}
+          <div class="av-pill ${s.raridade}">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
+          <div class="av-stats" style="width:100%;margin-bottom:8px;">
+            <div class="av-stat"><b>${s.nivel||1}</b>Nível</div>
+            <div class="av-stat"><b>${Math.floor(s.vinculo||0)}</b>Vínculo</div>
+            <div class="av-stat"><b>${s.bornAt?Math.floor((Date.now()-s.bornAt)/86400000):0}</b>Dias</div>
+          </div>
+          ${!isActive && !isFrozen ? `<button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>` : ''}
+          ${isFrozen ? `<div style="font-size:8px;color:var(--blue2);text-align:center;">❄️ Congelado — à venda</div>` : ''}
         </div>
-        ${!isActive && !isFrozen ? `<button class="btn-slot-activate" onclick="activateSlot(${i})">Activar</button>` : ''}
-        ${isFrozen ? `<div style="font-size:8px;color:var(--blue2);">Congelado — listado no mercado</div>` : ''}
       </div>`;
     }
   }
@@ -1005,8 +1029,10 @@ function renderSlots() {
   for(let i=unlocked;i<MAX_SLOTS;i++) {
     html += `<div class="slot-card slot-locked">
       <div class="slot-label">Slot ${i+1}</div>
-      <div class="slot-empty-icon">🔒</div>
-      <div class="slot-empty-txt">Bloqueado</div>
+      <div class="slot-card-inner" style="justify-content:center;min-height:160px;">
+        <div class="slot-empty-icon">🔒</div>
+        <div class="slot-empty-txt">Bloqueado</div>
+      </div>
     </div>`;
   }
 
