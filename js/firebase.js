@@ -14,7 +14,7 @@ function getGameState() {
 
   // Serialize slots — each slot is self-contained
   const slotsSafe = avatarSlots.map(s => {
-    if(!s) return null;
+    if(!s || s.pendingEgg) return null; // pendingEgg slots are never persisted
     return {
       // Avatar identity
       nome:      s.nome      || '',
@@ -113,26 +113,6 @@ function applyGameState(data) {
   if(data.avatarSlots && !avatarSlots[activeSlotIdx]?.nome && data.avatar) {
     avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
-
-  // Cancel any slots that were mid-hatch when the player left
-  // Return the egg to the active slot's inventory
-  avatarSlots = avatarSlots.map((s, i) => {
-    if(!s || !s.pendingEgg) return s;
-    // Slot was reserved for hatching but never completed — recover the egg
-    const recoveredEgg = {
-      id: Date.now() + i,
-      raridade: s.raridade || 'Comum',
-      elemento: s.elemento || 'Fogo',
-      expiraEm: Date.now() + 14 * 24 * 60 * 60 * 1000
-    };
-    // Add egg back to active slot inventory
-    const activeS = avatarSlots[activeSlotIdx];
-    if(activeS) {
-      if(!activeS.eggs) activeS.eggs = [];
-      activeS.eggs.push(recoveredEgg);
-    }
-    return null; // free the slot
-  });
 
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
