@@ -74,34 +74,44 @@ function applyGameState(data) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
       const restored = {...s};
-      // Ensure car is attached
       if(restored.elemento) restored.car = CARACTERISTICAS_ELEMENTAIS[restored.elemento] || null;
       return restored;
     });
   }
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
 
-  // Legacy save migration — old saves had flat avatar/vitals/eggs/items
-  if(!data.avatarSlots && data.avatar) {
-    const a = data.avatar;
-    const legacySlot = {
+  // Migration helper — builds a full slot from flat legacy fields
+  function buildLegacySlot(a, d) {
+    const slot = {
       nome: a.nome||'', elemento: a.elemento||'Fogo', raridade: a.raridade||'Comum',
       descricao: a.descricao||'', seed: a.seed||0, listed: false,
-      hatched: data.hatched??false, dead: data.dead??false,
-      sick: data.sick??false, sleeping: data.sleeping??false,
-      nivel: data.nivel??1, xp: data.xp??0, vinculo: data.vinculo??0,
-      totalSecs: data.totalSecs??0, bornAt: data.bornAt??0,
-      poopCount: data.poopCount??0, dirtyLevel: data.dirtyLevel??0,
-      poopPressure: data.poopPressure ?? data.poopCooldown ?? 0,
-      eggLayCooldown: data.eggLayCooldown??0, petCooldown: data.petCooldown??0,
-      vitals: data.vitals ? {...data.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
-      eggs:  (data.eggs  || []).map(e => ({...e})),
-      items: (data.items || []).map(i => ({...i})),
+      hatched: d.hatched??false, dead: d.dead??false,
+      sick: d.sick??false, sleeping: d.sleeping??false,
+      nivel: d.nivel??1, xp: d.xp??0, vinculo: d.vinculo??0,
+      totalSecs: d.totalSecs??0, bornAt: d.bornAt??0,
+      poopCount: d.poopCount??0, dirtyLevel: d.dirtyLevel??0,
+      poopPressure: d.poopPressure ?? d.poopCooldown ?? 0,
+      eggLayCooldown: d.eggLayCooldown??0, petCooldown: d.petCooldown??0,
+      vitals: d.vitals ? {...d.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
+      eggs:  (d.eggs  || []).map(e => ({...e})),
+      items: (d.items || []).map(i => ({...i})),
       totalOvos: 0, totalRaros: 0,
     };
-    if(legacySlot.elemento) legacySlot.car = CARACTERISTICAS_ELEMENTAIS[legacySlot.elemento] || null;
-    avatarSlots[0] = legacySlot;
+    if(slot.elemento) slot.car = CARACTERISTICAS_ELEMENTAIS[slot.elemento] || null;
+    return slot;
+  }
+
+  // Case 1: no avatarSlots at all — pure legacy save
+  if(!data.avatarSlots && data.avatar) {
+    avatarSlots[0] = buildLegacySlot(data.avatar, data);
     activeSlotIdx  = 0;
+  }
+
+  // Case 2: avatarSlots exists but active slot is null/empty — partial migration
+  // This happens when the previous refactor saved avatarSlots:[null,null,null]
+  // but the real avatar data is still in the flat fields
+  if(data.avatarSlots && !avatarSlots[activeSlotIdx]?.nome && data.avatar) {
+    avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
 
   // Load active slot into runtime variables
