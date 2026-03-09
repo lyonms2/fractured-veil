@@ -110,12 +110,21 @@
                 </radialGradient>
                 <filter id="eggGlow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
               </defs>
+              <!-- outer aura ring (visible for Raro/Lendário) -->
+              <ellipse id="eggAura1" cx="50" cy="56" rx="38" ry="48" fill="none" stroke="#5ab4e8" stroke-width="1.5" opacity="0" style="transition:opacity .4s;"/>
+              <ellipse id="eggAura2" cx="50" cy="56" rx="44" ry="55" fill="none" stroke="#5ab4e8" stroke-width="0.8" opacity="0" style="transition:opacity .4s;"/>
               <!-- glow -->
-              <ellipse cx="50" cy="58" rx="34" ry="42" fill="#3d2a6e" opacity=".4" filter="url(#eggGlow)"/>
+              <ellipse id="eggGlowEl" cx="50" cy="58" rx="34" ry="42" fill="#3d2a6e" opacity=".4" filter="url(#eggGlow)"/>
               <!-- egg body -->
               <ellipse cx="50" cy="56" rx="30" ry="38" fill="url(#eggGrad)"/>
               <!-- shine -->
-              <ellipse cx="42" cy="40" rx="8" ry="13" fill="#8060c0" opacity=".22"/>
+              <ellipse id="eggShine" cx="42" cy="40" rx="8" ry="13" fill="#8060c0" opacity=".22"/>
+              <!-- rarity sparkles (Lendário only) -->
+              <g id="eggSparkles" opacity="0">
+                <circle cx="20" cy="20" r="2" fill="#e8a030"/><circle cx="80" cy="15" r="1.5" fill="#e8a030"/>
+                <circle cx="15" cy="75" r="1.5" fill="#ffd700"/><circle cx="85" cy="80" r="2" fill="#ffd700"/>
+                <circle cx="50" cy="8" r="1.5" fill="#e8a030"/>
+              </g>
               <!-- crack group - hidden until clicks -->
               <g id="eggCracks" opacity="0" style="transition:opacity .2s">
                 <line id="crack1" x1="50" y1="30" x2="44" y2="42" stroke="#c4b5fd" stroke-width="1.5" opacity="0"/>
