@@ -28,7 +28,17 @@ function triggerSummon() {
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   document.getElementById('poopContainer').innerHTML = '';
 
-  avatar = { nome, elemento, raridade, descricao, car, seed };
+  // Write new avatar directly into active slot
+  while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
+  avatarSlots[activeSlotIdx] = {
+    nome, elemento, raridade, descricao, car, seed,
+    hatched: false, dead: false, sick: false, sleeping: false,
+    nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
+    bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
+    eggLayCooldown: 0, petCooldown: 0,
+    vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
+    eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
+  };
 
   // ── CINEMATIC SUMMON OVERLAY ──
   const ov         = document.getElementById('summonOverlay');
@@ -255,15 +265,17 @@ function clickEgg() {
 function hatch() {
   hatched = true;
   bornAt  = bornAt || Date.now(); // set birth timestamp once
-  // Sync avatar into active slot so marketplace can see it
+  // avatar IS the active slot — just ensure required fields exist
   if(avatar) {
-    while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
-    avatarSlots[activeSlotIdx] = {
-      nome: avatar.nome, elemento: avatar.elemento, raridade: avatar.raridade,
-      descricao: avatar.descricao, seed: avatar.seed||0,
-      nivel: 1, xp: 0, vinculo: 0, diasVida: 0, totalOvos: 0, totalRaros: 0,
-      bornAt: bornAt, listed: false
-    };
+    avatar.hatched   = true;
+    avatar.bornAt    = bornAt;
+    avatar.nivel     = avatar.nivel   || 1;
+    avatar.xp        = avatar.xp      || 0;
+    avatar.vinculo   = avatar.vinculo  || 0;
+    avatar.totalOvos = avatar.totalOvos|| 0;
+    avatar.totalRaros= avatar.totalRaros||0;
+    avatar.listed    = false;
+    avatar.vitals    = {...vitals};
   }
   scheduleSave();
   document.getElementById('statusCard').style.display = 'block';
