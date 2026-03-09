@@ -572,6 +572,22 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   <div class="modal-box" id="avatarDetailBox"></div>
 </div>
 
+<!-- ══ MODAL QUEIMAR AVATAR ══ -->
+<div class="overlay" id="burnOverlay" style="display:none;">
+  <div class="modal-box" style="max-width:320px;text-align:center;">
+    <div class="modal-title" style="color:#f87171;">🔥 Queimar Avatar</div>
+    <div id="burnAvatarPreview" style="margin:12px 0;"></div>
+    <div class="modal-warn" style="border-color:#7f1d1d;color:#fca5a5;">
+      Esta acção é <b>permanente e irreversível</b>.<br>
+      O avatar será destruído e o slot libertado.
+    </div>
+    <div class="modal-row" style="margin-top:16px;">
+      <button class="btn-modal-cancel" onclick="closeBurnModal()">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmBurnAvatar()" style="background:#7f1d1d;border-color:#f87171;color:#fca5a5;">🔥 Confirmar Queima</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
 
@@ -1064,19 +1080,33 @@ let _burnPendingIdx = null;
 function burnAvatar(idx) {
   const s = playerData.avatarSlots?.[idx];
   if(!s || !s.nome) return;
-  const name = s.nome.split(',')[0];
   _burnPendingIdx = idx;
-  // Reuse a confirm pattern — simple native confirm for now
-  if(!confirm(`⚠️ Queimar ${name}?\n\nEsta acção é permanente e liberta o Slot ${idx+1}.\nO avatar será perdido para sempre.`)) {
-    _burnPendingIdx = null;
-    return;
-  }
-  confirmBurnAvatar();
+
+  // Build preview card
+  const _ps = (s.nome||'Avatar').split(',');
+  const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
+  const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
+  const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
+  document.getElementById('burnAvatarPreview').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60)}
+      <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${_ns}</div>
+      ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${_ss}</div>` : ''}
+      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade} · Nível ${s.nivel||1}</div>
+    </div>`;
+
+  document.getElementById('burnOverlay').style.display = 'flex';
+}
+
+function closeBurnModal() {
+  _burnPendingIdx = null;
+  document.getElementById('burnOverlay').style.display = 'none';
 }
 
 async function confirmBurnAvatar() {
   const idx = _burnPendingIdx;
   _burnPendingIdx = null;
+  document.getElementById('burnOverlay').style.display = 'none';
   if(idx === null || idx === playerData.activeSlotIdx) return;
 
   const s = playerData.avatarSlots[idx];
