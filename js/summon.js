@@ -180,35 +180,7 @@ function setupAvatar() {
   document.getElementById('deadScreen').style.display  = 'none';
 
   // Fill creature card
-  const car = avatar.car;
-  document.getElementById('idNome').textContent = avatar.nome.split(',')[0].trim();
-  document.getElementById('idMeta').textContent = `Elemento: ${car?car.emoji:''} ${avatar.elemento}`;
-  const descEl = document.getElementById('idDesc');
-  if(descEl) {
-    descEl.textContent = avatar.descricao || '';
-    descEl.style.borderLeftColor = car ? car.cor : 'var(--border)';
-    descEl.style.color = car ? car.cor + 'cc' : '#887799';
-  }
-  const badge = document.getElementById('idBadge');
-  badge.textContent = avatar.raridade.toUpperCase();
-  badge.className = `badge badge-${avatar.raridade}`;
-
-  // Rarity bonus display
-  const _rbEl = document.getElementById('rarityBonusTxt');
-  if(_rbEl) {
-    const rb = rarityBonus();
-    if(avatar.raridade !== 'Comum') {
-      _rbEl.innerHTML = [
-        `🥚 ${rb.eggs} ovo(s)/postura · ⏱ ${rb.cooldown===0.5?'12h':'18h'} cooldown`,
-        `🪙 ×${rb.moedas} moedas · ⚡ ×${rb.xp} XP por ação`,
-        `💚 stats decaem ${Math.round((1-rb.decay)*100)}% mais lento`,
-        `🔥 +${Math.round(rb.burnBonus*100)}% recompensa queima`,
-      ].join('<br>');
-      _rbEl.style.display = 'block';
-    } else {
-      _rbEl.style.display = 'none';
-    }
-  }
+  fillCreatureCard();
 
   // Decor
 
