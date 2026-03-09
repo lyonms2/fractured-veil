@@ -1,3 +1,14 @@
+function goToMarketplace(e) {
+  if(e) e.preventDefault();
+  if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
+    // Show themed warning — can't leave mid-hatch
+    showBubble('Choca o ovo primeiro! 🥚');
+    addLog('Termina a chocagem antes de ir ao Marketplace.', 'bad');
+    return;
+  }
+  window.location.href = 'marketplace.html';
+}
+
 // SISTEMA DE OVOS
 // ═══════════════════════════════════════════════════════════════════
 
