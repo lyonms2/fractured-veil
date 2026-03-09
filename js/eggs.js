@@ -154,9 +154,23 @@ function hatchEggFromInventory(id) {
     `<span style="color:${color};font-weight:700;font-family:'Cinzel',serif">${ovo.raridade.toUpperCase()} · ${ovo.elemento}</span>`;
 
   const hasLiveAvatar = hatched && !dead;
-  document.getElementById('hatchConfirmMsg').innerHTML = hasLiveAvatar
-    ? `Seu avatar atual <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> será <b style="color:#e74c3c">aposentado</b>.<br>Esta ação não pode ser desfeita.`
-    : `O ovo será transferido para a tela de chocagem.<br>Clique 5x para fazer nascer seu novo avatar.`;
+  let msg = '';
+  if(hasLiveAvatar) {
+    // Find a free slot for the new avatar
+    const unlocked = getUnlockedSlots();
+    let freeSlot = -1;
+    for(let i = 0; i < unlocked; i++) {
+      if(!avatarSlots[i] || !avatarSlots[i].nome) { freeSlot = i; break; }
+    }
+    if(freeSlot >= 0) {
+      msg = `O novo avatar nascerá no <b style="color:#7ab87a">Slot ${freeSlot+1}</b>.<br>O teu avatar activo <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> continua no Slot ${activeSlotIdx+1}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>`;
+    } else {
+      msg = `Todos os slots estão ocupados.<br><b style="color:#e74c3c">Não é possível chocar</b> sem um slot livre.<br><span style="font-size:7px;color:var(--muted);">Liberta um slot no Marketplace antes de chocar.</span>`;
+    }
+  } else {
+    msg = `O ovo nascerá no slot activo.<br>Clica 5× para fazer nascer o teu novo avatar.`;
+  }
+  document.getElementById('hatchConfirmMsg').innerHTML = msg;
 
   ModalManager.open('hatchConfirmModal');
 }
@@ -166,15 +180,27 @@ function confirmHatch() {
   const idx = eggsInInventory.findIndex(e => e.id === pendingHatchId);
   if(idx === -1) { pendingHatchId = null; return; }
 
+  // Find a free slot for the new avatar
+  const unlocked = getUnlockedSlots();
+  let targetSlot = -1;
+  for(let i = 0; i < unlocked; i++) {
+    if(!avatarSlots[i] || !avatarSlots[i].nome) { targetSlot = i; break; }
+  }
+
+  if(targetSlot === -1) {
+    addLog('Sem slots livres. Liberta um slot no Marketplace.', 'bad');
+    showBubble('Sem slots livres! 😢');
+    pendingHatchId = null;
+    ModalManager.close('hatchConfirmModal');
+    return;
+  }
+
   const ovo = eggsInInventory.splice(idx, 1)[0];
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
-  // Retire current avatar if alive
-  if(hatched && !dead) retireAvatar();
-
-  // Set up egg screen with this egg's colors
-  prepareEggScreen(ovo);
+  // Hatch into the free slot — active slot stays untouched
+  prepareEggScreen(ovo, targetSlot);
 }
 
 function retireAvatar() {
@@ -211,19 +237,13 @@ function retireAvatar() {
   });
 }
 
-function prepareEggScreen(ovo) {
+function prepareEggScreen(ovo, targetSlot) {
   const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
   const crackColor = rarColors[ovo.raridade];
-
-  // Create a synthetic avatar from the egg's properties
-  const invRaridade = ovo.raridade;
-  const invElemento = ovo.elemento;
-
-  // Summon new avatar using egg's raridade/elemento
-  summonFromEgg(invRaridade, invElemento, crackColor);
+  summonFromEgg(ovo.raridade, ovo.elemento, crackColor, targetSlot);
 }
 
-function summonFromEgg(raridade, elemento, crackColor) {
+function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   // Reset all state
   xp = 0; nivel = 1; vinculo = 0; totalSecs = 0; tickCount = 0;
   eggClicks = 0; eggLayCooldown = 0; eggLayNotified = false;
@@ -241,9 +261,10 @@ function summonFromEgg(raridade, elemento, crackColor) {
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
   const seed = Math.abs(_h);
-  // Write directly into active slot
-  while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
-  avatarSlots[activeSlotIdx] = {
+  // Write new avatar into target slot and switch active to it
+  const tgt = (typeof targetSlot === 'number' && targetSlot >= 0) ? targetSlot : activeSlotIdx;
+  while(avatarSlots.length <= tgt) avatarSlots.push(null);
+  avatarSlots[tgt] = {
     nome, elemento, raridade, descricao, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
@@ -252,6 +273,9 @@ function summonFromEgg(raridade, elemento, crackColor) {
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
   };
+  // Switch active slot to new avatar — player will interact with it now
+  activeSlotIdx = tgt;
+  loadRuntimeFromSlot(tgt);
 
   // Reset UI
   eggClicks = 0;
