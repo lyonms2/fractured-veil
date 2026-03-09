@@ -269,7 +269,6 @@ async function connectWallet() {
     const _glo2 = document.getElementById('gameLoadingOverlay');
     if(_glo2) _glo2.style.display = 'none';
 
-    if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
   } catch(e) {
     const _gloErr = document.getElementById('gameLoadingOverlay');
     if(_gloErr) _gloErr.style.display = 'none';
