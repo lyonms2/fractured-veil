@@ -1186,13 +1186,18 @@ function showToast(msg, type='ok') {
 document.getElementById('listOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeListModal(); });
 document.getElementById('avatarDetailOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
 
-// Auto-connect if already authorized — never ask twice
+// Auto-connect silencioso — tenta até 3x com delay (MetaMask pode demorar a inicializar)
 window.addEventListener('load', async () => {
   const loading = document.getElementById('loadingWall');
   const wall    = document.getElementById('connectWall');
-  try {
-    if(typeof window.ethereum !== 'undefined') {
-      // eth_accounts: silent check, no popup
+
+  async function tryAutoConnect(attemptsLeft) {
+    try {
+      if(typeof window.ethereum === 'undefined') {
+        loading.style.display = 'none';
+        wall.style.display = 'flex';
+        return;
+      }
       const accounts = await ethereum.request({ method:'eth_accounts' });
       if(accounts.length > 0) {
         walletAddress = accounts[0].toLowerCase();
@@ -1204,11 +1209,22 @@ window.addEventListener('load', async () => {
         renderSection();
         return;
       }
+      // Sem sessão ainda — retry se tiver tentativas
+      if(attemptsLeft > 0) {
+        setTimeout(() => tryAutoConnect(attemptsLeft - 1), 400);
+      } else {
+        // Desistiu — mostra botão de conectar
+        loading.style.display = 'none';
+        wall.style.display = 'flex';
+      }
+    } catch(e) {
+      console.warn('Auto-connect falhou:', e.message);
+      loading.style.display = 'none';
+      wall.style.display = 'flex';
     }
-  } catch(e) { console.warn('Auto-connect check failed:', e); }
-  // No active session — show connect screen
-  loading.style.display = 'none';
-  wall.style.display = 'flex';
+  }
+
+  tryAutoConnect(3); // tenta 4x no total (0ms, 400ms, 800ms, 1200ms)
 });
 </script>
 </body>
