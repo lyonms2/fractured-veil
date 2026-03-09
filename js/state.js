@@ -1,5 +1,4 @@
 // ── Runtime state variables ──
-let avatar        = null;
 const vitals      = { fome:100, humor:100, energia:100, saude:100, higiene:100 };
 let poopCount     = 0;
 let dirtyLevel    = 0;
@@ -166,4 +165,77 @@ function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
   // conta quantos slots foram desbloqueados (guardado em gs)
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
+}
+
+// ═══════════════════════════════════════════
+// AVATAR — FONTE ÚNICA DE VERDADE: avatarSlots
+// ═══════════════════════════════════════════
+
+// avatar é sempre lido do slot activo
+Object.defineProperty(window, 'avatar', {
+  get() { return avatarSlots[activeSlotIdx] ?? null; },
+  set(v) {
+    while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
+    avatarSlots[activeSlotIdx] = v;
+  },
+  configurable: true
+});
+
+// Estado em runtime que pertence ao slot activo
+// Usado ao trocar de slot — save e restore
+function saveRuntimeToSlot(idx) {
+  if(idx === undefined) idx = activeSlotIdx;
+  if(!avatarSlots[idx]) return;
+  Object.assign(avatarSlots[idx], {
+    nivel, xp, vinculo, totalSecs,
+    hatched, dead, sick, sleeping,
+    bornAt, poopCount, dirtyLevel, poopPressure,
+    eggLayCooldown, petCooldown,
+    vitals: {...vitals},
+    eggs:   eggsInInventory.map(e => ({...e})),
+    items:  itemInventory.map(i => ({...i})),
+  });
+}
+
+function loadRuntimeFromSlot(idx) {
+  if(idx === undefined) idx = activeSlotIdx;
+  const s = avatarSlots[idx];
+  if(!s || !s.hatched) {
+    // Empty or un-hatched slot — reset to defaults
+    nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
+    hatched = false; dead = false; sick = false; sleeping = false;
+    bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
+    eggLayCooldown = 0; petCooldown = 0;
+    Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
+    eggsInInventory = [];
+    itemInventory   = [];
+    return;
+  }
+  nivel          = s.nivel          ?? 1;
+  xp             = s.xp             ?? 0;
+  vinculo        = s.vinculo        ?? 0;
+  totalSecs      = s.totalSecs      ?? 0;
+  hatched        = s.hatched        ?? false;
+  dead           = s.dead           ?? false;
+  sick           = s.sick           ?? false;
+  sleeping       = s.sleeping       ?? false;
+  bornAt         = s.bornAt         ?? 0;
+  poopCount      = s.poopCount      ?? 0;
+  dirtyLevel     = s.dirtyLevel     ?? 0;
+  poopPressure   = s.poopPressure   ?? 0;
+  eggLayCooldown = s.eggLayCooldown ?? 0;
+  petCooldown    = s.petCooldown    ?? 0;
+  if(s.vitals) Object.assign(vitals, s.vitals);
+  eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
+  itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
+}
+
+// Troca de slot activo (chamado pelo marketplace ou UI futura)
+async function switchSlot(newIdx) {
+  if(newIdx === activeSlotIdx) return;
+  if(newIdx < 0 || newIdx >= getUnlockedSlots()) return;
+  saveRuntimeToSlot(activeSlotIdx);   // guarda estado actual no slot antigo
+  activeSlotIdx = newIdx;
+  loadRuntimeFromSlot(newIdx);        // carrega estado do novo slot
+  scheduleSave();
 }
