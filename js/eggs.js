@@ -179,6 +179,26 @@ function confirmHatch() {
 
 function retireAvatar() {
   const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
+
+  // Flush runtime into active slot before retiring
+  saveRuntimeToSlot(activeSlotIdx);
+
+  // Try to find a free slot to keep the retired avatar
+  const unlocked = getUnlockedSlots();
+  let freeSlot = -1;
+  for(let i = 0; i < unlocked; i++) {
+    if(i !== activeSlotIdx && (!avatarSlots[i] || !avatarSlots[i].nome)) { freeSlot = i; break; }
+  }
+  if(freeSlot >= 0) {
+    // Move retired avatar to free slot
+    avatarSlots[freeSlot] = {...avatarSlots[activeSlotIdx]};
+    addLog(`${name} foi aposentado para o Slot ${freeSlot+1}.`, 'info');
+  } else {
+    addLog(`${name} foi aposentado. Um novo destino aguarda...`, 'info');
+  }
+
+  // Clear the active slot for the new avatar
+  avatarSlots[activeSlotIdx] = null;
   dead = false; hatched = false;
   sleeping = false;
   document.getElementById('aliveScreen').style.display = 'none';
@@ -189,7 +209,6 @@ function retireAvatar() {
     const b = document.getElementById(id);
     if(b) b.classList.remove('disabled');
   });
-  addLog(`${name} foi aposentado. Um novo destino aguarda...`, 'info');
 }
 
 function prepareEggScreen(ovo) {
@@ -213,18 +232,26 @@ function summonFromEgg(raridade, elemento, crackColor) {
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   document.getElementById('poopContainer').innerHTML = '';
 
-  // Build avatar
-  const NOMES = {
-    'Fogo':['Pyreth','Ignarr','Flamix'],'Água':['Aquael','Tidran','Maren'],
-    'Terra':['Gaelon','Rockhar','Terrus'],'Ar':['Zephyr','Ventus','Aeron'],
-    'Sombra':['Umbrix','Darkfel','Noctis'],'Luz':['Lumiel','Solaris','Brightus'],
-    'Gelo':['Frostyn','Glacius','Cryos'],'Trovão':['Voltix','Stormur','Tharix'],
-    'Aether':['Aethon','Voidus','Nullar']
+  // Build avatar using the same pools as triggerSummon
+  const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
+  const prefPool  = PREFIXOS[elemento]?.[raridade] || PREFIXOS[elemento]?.['Comum'] || ['Mistix'];
+  const nome      = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
+  const descricao = rnd(DESCRICOES[raridade][elemento] || DESCRICOES[raridade]['Fogo']);
+  let _h = 0;
+  const _str = nome + elemento;
+  for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
+  const seed = Math.abs(_h);
+  // Write directly into active slot
+  while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
+  avatarSlots[activeSlotIdx] = {
+    nome, elemento, raridade, descricao, car, seed,
+    hatched: false, dead: false, sick: false, sleeping: false,
+    nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
+    bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
+    eggLayCooldown: 0, petCooldown: 0,
+    vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
+    eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
   };
-  const nomes = NOMES[elemento] || ['Mistix','Voidar','Phantus'];
-  const nomePrincipal = nomes[Math.floor(Math.random() * nomes.length)];
-  const seed = Math.floor(Math.random() * 10000);
-  avatar = { nome: nomePrincipal, raridade, elemento, seed, car: null };
 
   // Reset UI
   eggClicks = 0;
