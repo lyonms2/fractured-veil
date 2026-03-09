@@ -176,10 +176,14 @@ function hatchEggFromInventory(id) {
     if(freeSlot >= 0) {
       msg = `O novo avatar nascerá no <b style="color:#7ab87a">Slot ${freeSlot+1}</b>.<br>O teu avatar activo <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> continua no Slot ${activeSlotIdx+1}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>`;
     } else {
-      msg = `Todos os slots estão ocupados.<br><b style="color:#e74c3c">Não é possível chocar</b> sem um slot livre.<br><span style="font-size:7px;color:var(--muted);">Liberta um slot no Marketplace antes de chocar.</span>`;
+      msg = `Todos os slots estão ocupados.<br>Liberta um slot no Marketplace antes de chocar.`;
     }
+    const confirmBtn = document.getElementById('hatchConfirmYes');
+    if(confirmBtn) confirmBtn.style.display = freeSlot >= 0 ? '' : 'none';
   } else {
     msg = `O ovo nascerá no slot activo.<br>Clica 5× para fazer nascer o teu novo avatar.`;
+    const confirmBtn = document.getElementById('hatchConfirmYes');
+    if(confirmBtn) confirmBtn.style.display = '';
   }
   document.getElementById('hatchConfirmMsg').innerHTML = msg;
 
