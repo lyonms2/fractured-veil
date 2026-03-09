@@ -53,29 +53,11 @@ updateResourceUI();
 
 // Login screen handles initial state
 
-// Cancel pending hatch and save on page unload
+// On unload: pendingEgg slots are never saved to Firebase (getGameState skips them)
+// so the egg is automatically preserved — nothing to do except clear the in-memory slot
 window.addEventListener('beforeunload', () => {
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
-    const tgt = window._pendingEggSlot;
-    // Recover egg back to active slot before clearing
-    if(avatarSlots[tgt]?.pendingEgg) {
-      const s = avatarSlots[tgt];
-      const recoveredEgg = {
-        id: Date.now(),
-        raridade: s.raridade || 'Comum',
-        elemento: s.elemento || 'Fogo',
-        expiraEm: Date.now() + 14 * 24 * 60 * 60 * 1000
-      };
-      if(avatarSlots[activeSlotIdx]) {
-        if(!avatarSlots[activeSlotIdx].eggs) avatarSlots[activeSlotIdx].eggs = [];
-        avatarSlots[activeSlotIdx].eggs.push(recoveredEgg);
-      } else {
-        eggsInInventory.push(recoveredEgg);
-      }
-      avatarSlots[tgt] = null;
-    }
+    avatarSlots[window._pendingEggSlot] = null;
     window._pendingEggSlot = null;
-    // Force immediate save (best effort on unload)
-    saveToFirebase();
   }
 });
