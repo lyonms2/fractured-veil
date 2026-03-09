@@ -392,8 +392,14 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 </head>
 <body>
 
+<!-- ══ LOADING OVERLAY ══ -->
+<div id="loadingWall" style="position:fixed;inset:0;background:rgba(4,3,10,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:300;">
+  <div style="width:32px;height:32px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div style="font-family:'Cinzel',serif;font-size:12px;color:#6b7280;letter-spacing:1px;">A verificar carteira...</div>
+</div>
+
 <!-- ══ CONNECT WALL ══ -->
-<div id="connectWall">
+<div id="connectWall" style="display:none;">
   <div class="connect-card">
     <div class="connect-icon">💎</div>
     <div class="connect-title">Fractured Veil Marketplace</div>
@@ -1177,20 +1183,29 @@ function showToast(msg, type='ok') {
 document.getElementById('listOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeListModal(); });
 document.getElementById('avatarDetailOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
 
-// Auto-connect if already authorized
+// Auto-connect if already authorized — never ask twice
 window.addEventListener('load', async () => {
-  if(typeof window.ethereum !== 'undefined') {
-    const accounts = await ethereum.request({ method:'eth_accounts' });
-    if(accounts.length > 0) {
-      walletAddress = accounts[0].toLowerCase();
-      document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
-      document.getElementById('walletDot').classList.remove('off');
-      document.getElementById('connectWall').style.display = 'none';
-      await loadPlayerData();
-      loadListings();
-      renderSection();
+  const loading = document.getElementById('loadingWall');
+  const wall    = document.getElementById('connectWall');
+  try {
+    if(typeof window.ethereum !== 'undefined') {
+      // eth_accounts: silent check, no popup
+      const accounts = await ethereum.request({ method:'eth_accounts' });
+      if(accounts.length > 0) {
+        walletAddress = accounts[0].toLowerCase();
+        document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
+        document.getElementById('walletDot').classList.remove('off');
+        loading.style.display = 'none';
+        await loadPlayerData();
+        loadListings();
+        renderSection();
+        return;
+      }
     }
-  }
+  } catch(e) { console.warn('Auto-connect check failed:', e); }
+  // No active session — show connect screen
+  loading.style.display = 'none';
+  wall.style.display = 'flex';
 });
 </script>
 </body>
