@@ -289,6 +289,64 @@ function prepareEggScreen(ovo, targetSlot) {
   summonFromEgg(ovo.raridade, ovo.elemento, crackColor, targetSlot);
 }
 
+function applyEggVisual(raridade, crackColor) {
+  const stop1 = document.querySelector('#eggGrad stop:first-child');
+  const stop2 = document.querySelector('#eggGrad stop:nth-child(2)');
+  const stop3 = document.querySelector('#eggGrad stop:last-child');
+  const aura1 = document.getElementById('eggAura1');
+  const aura2 = document.getElementById('eggAura2');
+  const glowEl = document.getElementById('eggGlowEl');
+  const shine  = document.getElementById('eggShine');
+  const sparks = document.getElementById('eggSparkles');
+
+  if(raridade === 'Lendário') {
+    // Gold / fire
+    if(stop1) stop1.setAttribute('stop-color', '#c8860a');
+    if(stop2) stop2.setAttribute('stop-color', '#7a4400');
+    if(stop3) stop3.setAttribute('stop-color', '#1a0e00');
+    if(glowEl) { glowEl.setAttribute('fill','#8a5a00'); glowEl.setAttribute('opacity','.6'); }
+    if(shine)  shine.setAttribute('fill','#ffd700');
+    if(aura1)  { aura1.setAttribute('stroke','#e8a030'); aura1.style.opacity='0.7'; }
+    if(aura2)  { aura2.setAttribute('stroke','#ffd700'); aura2.style.opacity='0.4'; }
+    if(sparks) sparks.style.opacity='1';
+    // Pulse animation on auras
+    if(aura1) aura1.style.animation='eggAuraPulse 1.8s ease-in-out infinite';
+    if(aura2) aura2.style.animation='eggAuraPulse 1.8s ease-in-out infinite 0.4s';
+  } else if(raridade === 'Raro') {
+    // Blue / arcane
+    if(stop1) stop1.setAttribute('stop-color', '#1a6aaa');
+    if(stop2) stop2.setAttribute('stop-color', '#0d3560');
+    if(stop3) stop3.setAttribute('stop-color', '#0a0f1e');
+    if(glowEl) { glowEl.setAttribute('fill','#1a4a8a'); glowEl.setAttribute('opacity','.5'); }
+    if(shine)  shine.setAttribute('fill','#7dc8f0');
+    if(aura1)  { aura1.setAttribute('stroke','#5ab4e8'); aura1.style.opacity='0.6'; }
+    if(aura2)  { aura2.setAttribute('stroke','#a0d8f0'); aura2.style.opacity='0.3'; }
+    if(sparks) sparks.style.opacity='0';
+    if(aura1) aura1.style.animation='eggAuraPulse 2.2s ease-in-out infinite';
+    if(aura2) aura2.style.animation='eggAuraPulse 2.2s ease-in-out infinite 0.6s';
+  } else {
+    // Common — no aura
+    if(stop1) stop1.setAttribute('stop-color', '#5a3a9a');
+    if(stop2) stop2.setAttribute('stop-color', '#2d1a5e');
+    if(stop3) stop3.setAttribute('stop-color', '#0b0916');
+    if(glowEl) { glowEl.setAttribute('fill','#3d2a6e'); glowEl.setAttribute('opacity','.4'); }
+    if(shine)  shine.setAttribute('fill','#8060c0');
+    if(aura1)  aura1.style.opacity='0';
+    if(aura2)  aura2.style.opacity='0';
+    if(sparks) sparks.style.opacity='0';
+    if(aura1) aura1.style.animation='none';
+    if(aura2) aura2.style.animation='none';
+  }
+
+  // Color cracks
+  if(crackColor) {
+    document.querySelectorAll('#eggCracks line').forEach(l => {
+      l.setAttribute('stroke', crackColor);
+      l.style.opacity = '0';
+    });
+  }
+}
+
 function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   // Build the new avatar data (not yet active — stored as pendingEgg in target slot)
   const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
@@ -341,25 +399,8 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   svg.style.opacity = '1';
   svg.style.transition = '';
 
-  // Color the egg and cracks based on rarity
-  const eggGradStop1 = document.querySelector('#eggGrad stop:first-child');
-  const eggGradStop2 = document.querySelector('#eggGrad stop:last-child');
-  if(raridade === 'Raro') {
-    if(eggGradStop1) eggGradStop1.setAttribute('stop-color', '#1a4a8a');
-    if(eggGradStop2) eggGradStop2.setAttribute('stop-color', '#0a0f1e');
-  } else if(raridade === 'Lendário') {
-    if(eggGradStop1) eggGradStop1.setAttribute('stop-color', '#8a5a00');
-    if(eggGradStop2) eggGradStop2.setAttribute('stop-color', '#1a0e00');
-  } else {
-    if(eggGradStop1) eggGradStop1.setAttribute('stop-color', '#5a3a9a');
-    if(eggGradStop2) eggGradStop2.setAttribute('stop-color', '#0b0916');
-  }
+  applyEggVisual(raridade, crackColor);
 
-  // Color cracks
-  document.querySelectorAll('#eggCracks line').forEach(l => {
-    l.setAttribute('stroke', crackColor);
-    l.style.opacity = '0';
-  });
   document.getElementById('eggCracks').style.opacity = '0';
   document.getElementById('eggProgress').textContent = '0 / 5';
   document.getElementById('eggHint').textContent = 'CLIQUE PARA CHOCAR';
