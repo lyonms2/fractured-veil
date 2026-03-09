@@ -201,14 +201,15 @@ function loadRuntimeFromSlot(idx) {
   if(idx === undefined) idx = activeSlotIdx;
   const s = avatarSlots[idx];
   if(!s || !s.hatched) {
-    // Empty or un-hatched slot — reset to defaults
+    // Empty or un-hatched slot — reset to defaults but preserve eggs
     nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
     hatched = false; dead = false; sick = false; sleeping = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
     eggLayCooldown = 0; petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
-    eggsInInventory = [];
-    itemInventory   = [];
+    // Preserve eggs from slot if they exist — don't wipe them
+    eggsInInventory = s?.eggs ? s.eggs.map(e => ({...e})) : [];
+    itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
     return;
   }
   nivel          = s.nivel          ?? 1;
