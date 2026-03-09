@@ -990,12 +990,13 @@ function renderSlots() {
   for(let i=0;i<unlocked;i++) {
     const s = slots[i];
     const isActive = i === playerData.activeSlotIdx;
-    if(!s) {
+    if(!s || s.pendingEgg) {
+      // pendingEgg = slot reservado mas ovo ainda não chocado — aparece como vazio
       html += `<div class="slot-card">
         <div class="slot-label">Slot ${i+1}</div>
         <div class="slot-card-inner" style="justify-content:center;min-height:160px;">
-          <div class="slot-empty-icon">🌀</div>
-          <div class="slot-empty-txt">Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo</span></div>
+          <div class="slot-empty-icon">${s && s.pendingEgg ? '🥚' : '🌀'}</div>
+          <div class="slot-empty-txt">${s && s.pendingEgg ? 'A chocar…<br><span style="font-size:8px;color:var(--muted);">Volta ao jogo para completar</span>' : 'Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo</span>'}</div>
         </div>
       </div>`;
     } else {
@@ -1019,6 +1020,7 @@ function renderSlots() {
             <div class="av-stat"><b>${s.bornAt?Math.floor((Date.now()-s.bornAt)/86400000):0}</b>Dias</div>
           </div>
           ${!isActive && !isFrozen ? `<button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>` : ''}
+          ${!isActive && !isFrozen ? `<button class="btn-slot-burn" onclick="burnAvatar(${i})" style="margin-top:4px;width:100%;padding:5px;font-size:7px;font-family:'Cinzel',serif;background:transparent;border:1px solid #7f1d1d;color:#f87171;border-radius:4px;cursor:pointer;letter-spacing:1px;">🔥 Queimar</button>` : ''}
           ${isFrozen ? `<div style="font-size:8px;color:var(--blue2);text-align:center;">❄️ Congelado — à venda</div>` : ''}
         </div>
       </div>`;
@@ -1050,11 +1052,43 @@ function renderSlots() {
 
 async function activateSlot(idx) {
   playerData.activeSlotIdx = idx;
-  // keep gs in sync so game reads correct slot on next load
   if(!playerData.gs) playerData.gs = {};
   playerData.gs.activeSlotIdx = idx;
   await savePlayerData();
   showToast('✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.', 'ok');
+  renderSlots();
+}
+
+let _burnPendingIdx = null;
+
+function burnAvatar(idx) {
+  const s = playerData.avatarSlots?.[idx];
+  if(!s || !s.nome) return;
+  const name = s.nome.split(',')[0];
+  _burnPendingIdx = idx;
+  // Reuse a confirm pattern — simple native confirm for now
+  if(!confirm(`⚠️ Queimar ${name}?\n\nEsta acção é permanente e liberta o Slot ${idx+1}.\nO avatar será perdido para sempre.`)) {
+    _burnPendingIdx = null;
+    return;
+  }
+  confirmBurnAvatar();
+}
+
+async function confirmBurnAvatar() {
+  const idx = _burnPendingIdx;
+  _burnPendingIdx = null;
+  if(idx === null || idx === playerData.activeSlotIdx) return;
+
+  const s = playerData.avatarSlots[idx];
+  const name = s?.nome?.split(',')[0] || 'Avatar';
+
+  // Free the slot
+  playerData.avatarSlots[idx] = null;
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.avatarSlots = playerData.avatarSlots;
+
+  await savePlayerData();
+  showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();
 }
 
