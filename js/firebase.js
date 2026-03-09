@@ -29,6 +29,7 @@ function getGameState() {
     vitals:         {...vitals},
     gs:             {...gs},
     cristais:       gs.cristais || 0,
+    extraSlots:     gs.extraSlots || 0,
     avatarSlots:    avatarSlots.map(s => s ? {...s} : null),
     activeSlotIdx:  activeSlotIdx,
     items:          itemInventory.map(i => ({...i})),
@@ -75,8 +76,13 @@ function applyGameState(data) {
   petCooldown   = data.petCooldown   ?? 0;
   if(data.vitals) Object.assign(vitals, data.vitals);
   if(data.gs)     Object.assign(gs, data.gs);
-  if(data.cristais !== undefined) gs.cristais = data.cristais;
-  if(data.avatarSlots)  avatarSlots  = data.avatarSlots;
+  // cristais: prefer gs.cristais (from game save), fallback to top-level (from marketplace)
+  if(data.gs?.cristais   !== undefined) gs.cristais   = data.gs.cristais;
+  else if(data.cristais  !== undefined) gs.cristais   = data.cristais;
+  // extraSlots: same dual-source handling
+  if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
+  // slots
+  if(data.avatarSlots)                 avatarSlots   = data.avatarSlots;
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
   if(data.eggs)   eggsInInventory = data.eggs;
   if(data.items)  itemInventory  = data.items;
