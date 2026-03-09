@@ -235,9 +235,26 @@ function clickEgg() {
 }
 
 function hatch() {
+  // If hatching from inventory egg, commit to pending slot now
+  const pendingSlot = window._pendingEggSlot;
+  if(typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx) {
+    // Save current active avatar first
+    saveRuntimeToSlot(activeSlotIdx);
+    // Switch to the new avatar's slot
+    activeSlotIdx = pendingSlot;
+    loadRuntimeFromSlot(activeSlotIdx);
+    window._pendingEggSlot = null;
+  }
+
+  // Clear pendingEgg flag
+  if(avatarSlots[activeSlotIdx]) delete avatarSlots[activeSlotIdx].pendingEgg;
+
+  // Hide cancel button — hatch is complete
+  const cancelBtn = document.getElementById('btnCancelHatch');
+  if(cancelBtn) cancelBtn.style.display = 'none';
+
   hatched = true;
-  bornAt  = bornAt || Date.now(); // set birth timestamp once
-  // avatar IS the active slot — just ensure required fields exist
+  bornAt  = bornAt || Date.now();
   if(avatar) {
     avatar.hatched   = true;
     avatar.bornAt    = bornAt;
