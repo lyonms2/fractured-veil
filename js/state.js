@@ -116,7 +116,7 @@ function getVinculoBonus() {
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
-const gs = { moedas:100, ovos:0 };
+const gs = { moedas:100, ovos:0, cristais:0 };
 
 const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
 // Fase muda aos níveis 5, 10, 17
@@ -151,3 +151,19 @@ const FALAS = {
   bored:  ['Entediado...','Me divirta!','Tão entediado...'],
   dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
 };
+
+
+// ═══════════════════════════════════════════
+// SISTEMA DE SLOTS DE AVATAR
+// ═══════════════════════════════════════════
+let avatarSlots   = [null, null, null]; // máx 3 base, até 5 com compra
+let activeSlotIdx = 0;
+const BASE_SLOTS  = 3;
+const MAX_SLOTS   = 5;
+const SLOT_COST   = 15; // 💎
+
+function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
+function getUnlockedSlots() {
+  // conta quantos slots foram desbloqueados (guardado em gs)
+  return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
+}
