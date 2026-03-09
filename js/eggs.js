@@ -65,6 +65,11 @@ function layEgg() {
     const raridade = calcEggRarity();
     const expiraEm = calcEggExpiry(raridade);
     eggsInInventory.push({ raridade, elemento: avatar.elemento, expiraEm, id: Date.now() + i });
+    // Update slot egg counters for marketplace
+    if(avatarSlots[activeSlotIdx]) {
+      avatarSlots[activeSlotIdx].totalOvos = (avatarSlots[activeSlotIdx].totalOvos||0)+1;
+      if(raridade !== 'Comum') avatarSlots[activeSlotIdx].totalRaros = (avatarSlots[activeSlotIdx].totalRaros||0)+1;
+    }
   }
   const raridade = eggsInInventory[eggsInInventory.length - numEggs].raridade; // for log/bubble
 
@@ -115,13 +120,14 @@ function burnEgg(id) {
     addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
     showFloat(`+${moedas}🪙`, '#c9a84c');
   } else {
-    // Raro e Lendário — MATIC
-    const baseReward = ovo.raridade === 'Lendário' ? 1.5 : 0.3;
-    const finalReward = (baseReward * (1 + bonus)).toFixed(3);
+    // Raro e Lendário — dão 💎 Cristais ao queimar
+    const baseGems = ovo.raridade === 'Lendário' ? 20 : 6;
+    const finalGems = Math.round(baseGems * (1 + bonus));
     const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
     eggsInInventory.splice(idx, 1);
-    addLog(`🔥 Ovo ${ovo.raridade} queimado! Recompensa: ${finalReward} MATIC${bonusTxt}`, 'good');
-    showFloat('🔥 MATIC!', '#e8603a');
+    gs.cristais = (gs.cristais || 0) + finalGems;
+    addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
+    showFloat(`+${finalGems}💎`, '#a78bfa');
   }
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
