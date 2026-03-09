@@ -84,37 +84,29 @@ async function connectWallet() {
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     document.getElementById('loginScreen').style.display = 'none';
+    // Mostra loading overlay — esconde tudo até Firebase responder
+    const _glo = document.getElementById('gameLoadingOverlay');
+    if(_glo) _glo.style.display = 'flex';
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
     document.getElementById('walletShort').textContent = short;
     document.getElementById('walletInfo').style.display = 'flex';
-    // Show resource counters
+
+    const loaded = await loadFromFirebase();
+    // Agora que temos dados, mostra botões e esconde overlay
     document.getElementById('resMoedasBtn').style.display = '';
     document.getElementById('resCristaisBtn').style.display = '';
     document.getElementById('resOvosBtn').style.display = '';
     document.getElementById('resItemsBtn').style.display = '';
-    updateResourceUI();
-    const _bs = document.getElementById('btnSummon');
-    if(_bs) _bs.disabled = false;
-
-    // Show market button
     document.getElementById('btnMarket').style.display = 'flex';
-    // Reveal summon section
     const ww = document.getElementById('walletWarning');
     const ss = document.getElementById('summonSection');
     if(ww) ww.style.display = 'none';
     if(ss) ss.style.display = 'block';
-
+    const _bs = document.getElementById('btnSummon');
+    if(_bs) _bs.disabled = false;
+    updateResourceUI();
     addLog(`Carteira conectada: ${short}`, 'good');
-    showBubble('Carteira conectada! 🦊');
 
-    // Load saved state
-    addLog('Carregando dados...', 'info');
-    // Show summon section regardless
-    const ww2 = document.getElementById('walletWarning');
-    const ss2 = document.getElementById('summonSection');
-    if(ww2) ww2.style.display = 'none';
-    if(ss2) ss2.style.display = 'block';
-    const loaded = await loadFromFirebase();
     if(loaded) {
       addLog('Estado restaurado da nuvem! ☁️', 'good');
 
@@ -273,8 +265,14 @@ async function connectWallet() {
       updateResourceUI();
     }
 
+    // Esconde overlay — jogo pronto
+    const _glo2 = document.getElementById('gameLoadingOverlay');
+    if(_glo2) _glo2.style.display = 'none';
+
     if(ModalManager.isOpen('coinShopModal')) renderCoinPackages();
   } catch(e) {
+    const _gloErr = document.getElementById('gameLoadingOverlay');
+    if(_gloErr) _gloErr.style.display = 'none';
     const _msg = e.message?.includes('bloqueada') ? 'Desbloqueie o MetaMask primeiro.' 
                : e.message?.includes('rejected') || e.code === 4001 ? 'Conexão cancelada.'
                : 'Erro ao conectar. Tente novamente.';
