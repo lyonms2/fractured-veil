@@ -3,22 +3,24 @@
 
 function calcEggRarity() {
   // Probabilidade baseada na raridade do avatar + nível
+  // Só ADULTO (nível 17+) pode botar ovos — verificado em layEgg()
   const r = avatar.raridade;
   const n = nivel;
   // [chance_comum, chance_raro, chance_lendario] em %
   let chances;
   if(r === 'Comum') {
-    if(n < 15)      chances = [95, 5,  0];
-    else if(n < 20) chances = [88, 11, 1];
-    else            chances = [80, 17, 3];
+    // Free-to-play: Lendário é raridade extrema, recompensa para veteranos
+    if(n < 25)      chances = [97,   3,   0  ];
+    else if(n < 35) chances = [94,   5.5, 0.5];
+    else            chances = [90,   8,   2  ];
   } else if(r === 'Raro') {
-    if(n < 15)      chances = [55, 40, 5];
-    else if(n < 20) chances = [40, 50, 10];
-    else            chances = [25, 55, 20];
+    if(n < 25)      chances = [55,  40,   5  ];
+    else if(n < 35) chances = [40,  50,  10  ];
+    else            chances = [25,  55,  20  ];
   } else { // Lendário
-    if(n < 15)      chances = [20, 55, 25];
-    else if(n < 20) chances = [10, 50, 40];
-    else            chances = [5,  40, 55];
+    if(n < 25)      chances = [20,  55,  25  ];
+    else if(n < 35) chances = [10,  50,  40  ];
+    else            chances = [5,   40,  55  ];
   }
   // Bônus +5% raridade superior se todos stats > 80
   const allHigh = Object.values(vitals).every(v => v > 80);
