@@ -44,6 +44,8 @@ function updateTimer() {
 
 function updateResourceUI() {
   document.getElementById('resMonedas').textContent   = gs.moedas;
+  const cristaisEl = document.getElementById('resCristais');
+  if(cristaisEl) cristaisEl.textContent = gs.cristais || 0;
   document.getElementById('resOvos').textContent = eggsInInventory.length;
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
