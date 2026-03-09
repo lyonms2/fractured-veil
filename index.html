@@ -45,6 +45,7 @@
     <div class="header-center">
       <button class="res res-clickable" id="btnMarket" onclick="openMarket()" title="Mercado" style="display:none;">🛒</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
+      <a class="res res-clickable" id="resCristaisBtn" href="marketplace.html" title="Marketplace" style="display:none;text-decoration:none;color:inherit;">💎 <b id="resCristais">0</b></a>
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
       <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
     </div>
@@ -201,26 +202,25 @@
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
-                <div class="mini-title">🪙 CÂMBIO DE MOEDAS</div>
-                <div class="mini-sub" style="margin:0;">Compre moedas com MATIC</div>
+                <div class="mini-title">🪙 MOEDAS</div>
+                <div class="mini-sub" style="margin:0;">Moeda interna do jogo</div>
               </div>
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
-              <div id="coinWalletStatus" style="font-size:7px;color:#887799;text-align:center;margin-bottom:10px;line-height:1.7;">
-                🔌 Carteira não conectada<br>
-                <span style="color:#554466;">Conecte sua MetaMask para comprar moedas</span>
-              </div>
-              <div style="font-size:7px;color:var(--muted);letter-spacing:1px;font-family:'Cinzel',serif;margin-bottom:6px;">◆ PACOTES</div>
-              <div style="display:flex;flex-direction:column;gap:5px;width:100%;margin-bottom:12px;" id="coinPackages"></div>
-              <div style="font-size:7px;color:var(--muted);letter-spacing:1px;font-family:'Cinzel',serif;margin-bottom:6px;">◆ VENDER MOEDAS</div>
-              <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px;width:100%;box-sizing:border-box;">
-                <div style="font-size:7px;color:#554466;text-align:center;line-height:1.7;">
-                  Venda de moedas disponível após<br>conectar carteira MetaMask
+              <div style="text-align:center;padding:10px 0 14px;">
+                <div style="font-size:28px;margin-bottom:8px;">🪙</div>
+                <div style="font-size:8px;color:var(--text);font-weight:700;margin-bottom:6px;">Como ganhar moedas:</div>
+                <div style="font-size:7px;color:var(--muted);line-height:2;text-align:left;padding:0 8px;">
+                  🎮 Minigames — até 80 🪙 por vitória<br>
+                  🔥 Queimar ovo Comum — 20 🪙<br>
+                  📈 Nível acima — bónus por raridade<br>
                 </div>
               </div>
-              <div style="margin-top:10px;font-size:6px;color:#443355;text-align:center;line-height:1.6;">
-                70% do valor vai para o pool de recompensas<br>Rede: Polygon (MATIC)
+              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
+                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de Cristais?</div>
+                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Cristais compram ovos Raros, slots e avatares no Marketplace.</div>
+                <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
             </div>
           </div>
