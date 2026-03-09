@@ -85,7 +85,32 @@ async function buyFromMarket(listingId, price) {
       addLog('Este ovo apodreceu antes da compra.', 'bad'); return;
     }
     spendCoins(price);
-    eggsInInventory.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
+
+    // Credita moedas no vendedor via Firebase (transacção atómica)
+    const sellerRef = fbDb().collection('players').doc(data.sellerId);
+    const sellerSnap = await sellerRef.get();
+    if(sellerSnap.exists) {
+      const sellerData = sellerSnap.data();
+      // Novo formato: moedas estão em gs.moedas
+      const sellerSlotIdx = sellerData.activeSlotIdx ?? 0;
+      const sellerGs = sellerData.gs || {};
+      const sellerMoedas = sellerGs.moedas ?? sellerData.moedas ?? 0;
+      await sellerRef.update({
+        'gs.moedas': sellerMoedas + price,
+        moedas: sellerMoedas + price  // fallback para compatibilidade
+      });
+    }
+
+    // Adiciona ovo ao slot activo do comprador
+    const activeIdx = activeSlotIdx ?? 0;
+    if(avatarSlots[activeIdx]) {
+      if(!avatarSlots[activeIdx].eggs) avatarSlots[activeIdx].eggs = [];
+      avatarSlots[activeIdx].eggs.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
+    } else {
+      // Fallback: inventário legacy
+      eggsInInventory.push({ raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() });
+    }
+
     await ref.update({ status: 'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
     await saveToFirebase();
     renderEggInventory();
