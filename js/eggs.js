@@ -65,10 +65,10 @@ function layEgg() {
     const raridade = calcEggRarity();
     const expiraEm = calcEggExpiry(raridade);
     eggsInInventory.push({ raridade, elemento: avatar.elemento, expiraEm, id: Date.now() + i });
-    // Update slot egg counters for marketplace
-    if(avatarSlots[activeSlotIdx]) {
-      avatarSlots[activeSlotIdx].totalOvos = (avatarSlots[activeSlotIdx].totalOvos||0)+1;
-      if(raridade !== 'Comum') avatarSlots[activeSlotIdx].totalRaros = (avatarSlots[activeSlotIdx].totalRaros||0)+1;
+    // avatar IS the active slot — update directly
+    if(avatar) {
+      avatar.totalOvos  = (avatar.totalOvos ||0)+1;
+      if(raridade !== 'Comum') avatar.totalRaros = (avatar.totalRaros||0)+1;
     }
   }
   const raridade = eggsInInventory[eggsInInventory.length - numEggs].raridade; // for log/bubble
