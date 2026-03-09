@@ -877,10 +877,10 @@ function renderSell() {
   const available = [];
   for(let i=0;i<unlocked;i++){
     const s = slots[i];
-    if(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed) available.push({slot:i,...s});
+    if(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed && (s.raridade === 'Raro' || s.raridade === 'Lendário')) available.push({slot:i,...s});
   }
   if(available.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar disponível para listar.<br>Choca um ovo no jogo primeiro.</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar Raro ou Lendário disponível para listar.<br>Apenas Raros e Lendários podem ser vendidos no marketplace.</div></div>`;
     return;
   }
   grid.innerHTML = available.map(s => {
