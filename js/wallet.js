@@ -180,6 +180,7 @@ async function connectWallet() {
           }
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
           totalSecs += offlineSecs; // acumula tempo offline no cronômetro
+          saveRuntimeToSlot(activeSlotIdx); // flush decay into slot
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
           const emRepouso = offlineCycles > 30 && !sleeping;
