@@ -644,10 +644,10 @@ async function connectWallet() {
 async function loadPlayerData() {
   const snap = await db.collection('players').doc(walletAddress).get();
   playerData = snap.exists ? snap.data() : { cristais:0, avatarSlots:[null,null,null], activeSlotIdx:0, extraSlots:0 };
-  playerData.cristais    = playerData.cristais    || 0;
+  playerData.cristais    = playerData.gs?.cristais   ?? playerData.cristais   ?? 0;
   playerData.avatarSlots = playerData.avatarSlots || [null,null,null];
-  playerData.activeSlotIdx = playerData.activeSlotIdx ?? 0;
-  playerData.extraSlots  = playerData.extraSlots  || 0;
+  playerData.activeSlotIdx = playerData.gs?.activeSlotIdx ?? playerData.activeSlotIdx ?? 0;
+  playerData.extraSlots  = playerData.gs?.extraSlots  ?? playerData.extraSlots  ?? 0;
   playerData.usedTxHashes= playerData.usedTxHashes|| [];
   usedTxHashes = new Set(playerData.usedTxHashes);
   updateCristaisDisplay();
@@ -852,7 +852,7 @@ function renderSell() {
   const available = [];
   for(let i=0;i<unlocked;i++){
     const s = slots[i];
-    if(s && (s.raridade === 'Raro' || s.raridade === 'Lendário') && !s.listed) available.push({slot:i,...s});
+    if(s && s.hatched && !s.dead && (s.raridade === 'Raro' || s.raridade === 'Lendário') && !s.listed) available.push({slot:i,...s});
   }
   if(available.length === 0) {
     grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar Raro ou Lendário disponível para listar.<br>Apenas Raros e Lendários podem ser vendidos no marketplace.</div></div>`;
@@ -1024,8 +1024,11 @@ function renderSlots() {
 
 async function activateSlot(idx) {
   playerData.activeSlotIdx = idx;
+  // keep gs in sync so game reads correct slot on next load
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.activeSlotIdx = idx;
   await savePlayerData();
-  showToast('Slot activo alterado!', 'ok');
+  showToast('✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.', 'ok');
   renderSlots();
 }
 
