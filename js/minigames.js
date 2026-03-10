@@ -343,7 +343,6 @@ function revealResult(playerChoice) {
     xp      += r.xpGain;
     vinculo += outcome === 'win' ? 5 : 1;
     earnCoins(r.coinsGain);
-    checkXP();
 
     rewardsEl.textContent = `+${r.humor} 😊  +${r.xpGain} XP  +${r.coinsGain} 🪙`;
     rewardsEl.className   = 'jkp-rewards show';
