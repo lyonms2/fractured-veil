@@ -154,7 +154,8 @@ async function saveToFirebase() {
 
     // Eggs orphans — slot estava null quando saveRuntimeToSlot correu
     // Persiste como inboxEggs para não se perderem
-    if(window._orphanEggs && window._orphanEggs.length > 0) {
+    const hasOrphans = window._orphanEggs && window._orphanEggs.length > 0;
+    if(hasOrphans) {
       const toAdd = window._orphanEggs.filter(e => e.id);
       if(toAdd.length > 0) {
         for(const egg of toAdd) {
@@ -165,10 +166,11 @@ async function saveToFirebase() {
       }
       window._orphanEggs  = null;
       window._orphanItems = null;
-    }
-
-    // Se consumimos inboxEggs nesta sessão, limpa o campo no Firebase
-    if(window._inboxConsumed) {
+      // Não limpar inboxEggs agora — os orphans acabaram de ser escritos lá
+      // O próximo applyGameState vai consumi-los normalmente
+      window._inboxConsumed = false;
+    } else if(window._inboxConsumed) {
+      // Só limpa se não há orphans — caso contrário apagaria ovos recém-escritos
       window._inboxConsumed = false;
       await fbDb().collection('players').doc(walletAddress).update({ inboxEggs: [] });
     }
