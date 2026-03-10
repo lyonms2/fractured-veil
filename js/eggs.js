@@ -237,6 +237,12 @@ async function confirmHatch() {
   eggsInInventory.splice(idx, 1);
   window._cancelledEgg = {...ovo};
 
+  // Se o ovo vai para um slot diferente do activo, guardar o estado do slot activo
+  // ANTES de summonFromEgg resetar as variáveis globais (hatched, nivel, vitals, etc.)
+  if(targetSlot !== activeSlotIdx) {
+    saveRuntimeToSlot(activeSlotIdx);
+  }
+
   // Hatch into the free slot — active slot stays untouched
   prepareEggScreen(ovo, targetSlot);
 }
