@@ -101,13 +101,14 @@ async function buyFromMarket(listingId, price) {
       });
     }
 
-    // Adiciona ovo ao runtime E ao slot (ambos têm de estar em sync)
+    // Adiciona ao runtime imediatamente para feedback visual
     const newEgg = { raridade: data.raridade, elemento: data.elemento, expiraEm: data.expiraEm, id: Date.now() };
-    eggsInInventory.push(newEgg); // runtime — renderizado imediatamente
+    eggsInInventory.push(newEgg);
+    // Também adiciona ao slot em memória para o próximo save do gametick persistir
     const activeIdx = activeSlotIdx ?? 0;
     if(avatarSlots[activeIdx]) {
       if(!avatarSlots[activeIdx].eggs) avatarSlots[activeIdx].eggs = [];
-      avatarSlots[activeIdx].eggs.push(newEgg); // persistente no slot
+      avatarSlots[activeIdx].eggs.push(newEgg);
     }
 
     await ref.update({ status: 'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
