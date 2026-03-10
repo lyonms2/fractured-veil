@@ -292,23 +292,7 @@ function hatch() {
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
   syncEasterEggs();
-  // Egg inventory button: only active after hatch
-  const _eggBtn = document.getElementById('resOvosBtn');
-  if(_eggBtn) {
-    if(hatched && !dead) {
-      _eggBtn.classList.remove('disabled');
-    } else {
-      _eggBtn.classList.add('disabled');
-    }
-  }
-  const _coinBtn = document.getElementById('resMoedasBtn');
-  if(_coinBtn) {
-    if(hatched && !dead) {
-      _coinBtn.classList.remove('disabled');
-    } else {
-      _coinBtn.classList.add('disabled');
-    }
-  }
+  // Egg/coin button state is managed by updateAllUI() — no need to set here
   const btnLayEgg = document.getElementById('btnLayEgg');
   if(btnLayEgg) {
     const isAdult = getFase() === 3;
