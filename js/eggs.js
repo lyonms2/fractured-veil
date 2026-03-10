@@ -210,10 +210,21 @@ function confirmHatch() {
     return;
   }
 
-  const ovo = eggsInInventory.splice(idx, 1)[0];
-  window._cancelledEgg = {...ovo}; // backup para cancelHatch poder devolver
+  const ovo = eggsInInventory[idx]; // não remove ainda
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
+
+  // Guarda o ovo no inboxEggs do Firebase ANTES de o remover da memória
+  // Se o jogador recarregar durante a chocagem, o ovo é recuperado pelo applyGameState
+  if(walletAddress && fbDb()) {
+    fbDb().collection('players').doc(walletAddress).update({
+      inboxEggs: firebase.firestore.FieldValue.arrayUnion({...ovo})
+    }).catch(e => console.warn('inboxEggs backup failed:', e));
+  }
+
+  // Agora remove da memória e guarda backup para cancelHatch
+  eggsInInventory.splice(idx, 1);
+  window._cancelledEgg = {...ovo};
 
   // Hatch into the free slot — active slot stays untouched
   prepareEggScreen(ovo, targetSlot);
@@ -260,7 +271,14 @@ function cancelHatch() {
     document.getElementById('idleScreen').style.display = 'flex';
   }
 
-  saveToFirebase();
+  // Ovo voltou ao eggsInInventory — o próximo saveToFirebase persiste no slot
+  // Limpar o inboxEggs para não duplicar
+  if(walletAddress && fbDb() && window._cancelledEgg) {
+    fbDb().collection('players').doc(walletAddress).update({
+      inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
+    }).catch(e => console.warn('inboxEggs cleanup failed:', e));
+  }
+  scheduleSave();
   addLog('Chocagem cancelada. Ovo devolvido ao inventário.', 'info');
 }
 
@@ -406,8 +424,8 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
 
   // Save target slot so hatch() knows where to commit
   window._pendingEggSlot = tgt;
-
-  saveToFirebase();
+  // Não salvar aqui — pendingEgg seria filtrado e o slot ficaria null
+  // O ovo já está seguro no inboxEggs (escrito em confirmHatch)
 
   const svg = document.getElementById('eggSvg');
   svg.style.transform = 'rotate(0deg) scale(1)';
