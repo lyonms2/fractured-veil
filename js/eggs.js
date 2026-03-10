@@ -376,7 +376,7 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
     pendingEgg: true,   // flag: aguarda chocagem, não é o avatar activo
     pendingSlot: tgt,   // slot onde vai nascer
   };
-  // Store target slot for hatch() to use
+  // Store target slot for hatch() to use — only once
   window._pendingEggSlot = tgt;
   // Do NOT change activeSlotIdx yet — only changes when hatch() completes
   eggClicks = 0;
@@ -392,9 +392,6 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   // Show cancel button so player can go back to active avatar
   const cancelBtn = document.getElementById('btnCancelHatch');
   if(cancelBtn) cancelBtn.style.display = 'flex';
-
-  // Save target slot so hatch() knows where to commit
-  window._pendingEggSlot = tgt;
   // Não salvar aqui — pendingEgg seria filtrado e o slot ficaria null
   // O ovo já está seguro no inboxEggs (escrito em confirmHatch)
 
