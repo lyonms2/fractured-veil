@@ -125,14 +125,24 @@ function applyGameState(data) {
   if(data.inboxEggs && data.inboxEggs.length > 0) {
     const slot = avatarSlots[activeSlotIdx];
     if(slot) {
+      // Slot existe — merge directo
       if(!slot.eggs) slot.eggs = [];
       const existingIds = new Set(slot.eggs.map(e => e.id));
       data.inboxEggs.forEach(e => {
         if(!existingIds.has(e.id)) slot.eggs.push({...e});
       });
+      // Marca para limpar o inbox no próximo saveToFirebase
+      window._inboxConsumed = true;
+    } else {
+      // Slot null — preserva como orphanEggs para não perder
+      // NÃO marca _inboxConsumed — inbox fica no Firebase até haver slot activo
+      window._orphanEggs = (window._orphanEggs || []).concat(
+        data.inboxEggs.filter(e => {
+          const existing = window._orphanEggs || [];
+          return !existing.some(x => x.id === e.id);
+        }).map(e => ({...e}))
+      );
     }
-    // Limpa inbox — será persistido no próximo saveToFirebase
-    window._inboxConsumed = true;
   }
 
   // Load active slot into runtime variables
