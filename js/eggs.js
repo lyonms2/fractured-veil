@@ -278,7 +278,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   document.getElementById('eggScreen').style.display   = 'flex';
   document.getElementById('actionBtns').style.opacity      = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
-  document.getElementById('btnCancelHatch').style.display   = 'none'; // sem cancelar durante animação
+  const _cb = document.getElementById('btnCancelHatch'); if(_cb) _cb.style.display = 'none';
 
   // Aplicar cor do ovo conforme raridade
   const stop1 = document.querySelector('#eggGrad stop:first-child');
