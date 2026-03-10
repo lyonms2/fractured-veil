@@ -233,18 +233,139 @@ async function confirmHatch() {
     }
   }
 
-  // Só agora remove da memória
+  // Remove da memória
   eggsInInventory.splice(idx, 1);
   window._cancelledEgg = {...ovo};
 
-  // Se o ovo vai para um slot diferente do activo, guardar o estado do slot activo
-  // ANTES de summonFromEgg resetar as variáveis globais (hatched, nivel, vitals, etc.)
+  // Guardar estado do slot activo ANTES de qualquer alteração às variáveis globais
   if(targetSlot !== activeSlotIdx) {
     saveRuntimeToSlot(activeSlotIdx);
   }
 
-  // Hatch into the free slot — active slot stays untouched
-  prepareEggScreen(ovo, targetSlot);
+  // Gerar dados do novo avatar
+  const car      = CARACTERISTICAS_ELEMENTAIS[ovo.elemento] || null;
+  const prefPool = PREFIXOS[ovo.elemento]?.[ovo.raridade] || PREFIXOS[ovo.elemento]?.['Comum'] || ['Mistix'];
+  const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[ovo.raridade])}`;
+  const descricao= rnd(DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo']);
+  let _h = 0; const _str = nome + ovo.elemento;
+  for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
+  const seed = Math.abs(_h);
+
+  while(avatarSlots.length <= targetSlot) avatarSlots.push(null);
+  avatarSlots[targetSlot] = {
+    nome, elemento: ovo.elemento, raridade: ovo.raridade, descricao, car, seed,
+    hatched: false, dead: false, sick: false, sleeping: false,
+    nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
+    bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
+    eggLayCooldown: 0, petCooldown: 0,
+    vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
+    eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
+  };
+  window._pendingEggSlot = targetSlot;
+
+  // Animação do ovo a partir e chocar directamente — sem interacção do jogador
+  hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);
+}
+
+function hatchWithAnimation(raridade, elemento, targetSlot) {
+  const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
+  const crackColor = rarColors[raridade] || '#c4b5fd';
+
+  // Mostrar eggScreen brevemente para a animação
+  document.getElementById('aliveScreen').style.display = 'none';
+  document.getElementById('deadScreen').style.display  = 'none';
+  document.getElementById('idleScreen').style.display  = 'none';
+  document.getElementById('eggScreen').style.display   = 'flex';
+  document.getElementById('actionBtns').style.opacity      = '0';
+  document.getElementById('actionBtns').style.pointerEvents = 'none';
+  document.getElementById('btnCancelHatch').style.display   = 'none'; // sem cancelar durante animação
+
+  // Aplicar cor do ovo conforme raridade
+  const stop1 = document.querySelector('#eggGrad stop:first-child');
+  const stop2 = document.querySelector('#eggGrad stop:nth-child(2)');
+  const stop3 = document.querySelector('#eggGrad stop:last-child');
+  const aura1 = document.getElementById('eggAura1');
+  const aura2 = document.getElementById('eggAura2');
+  const glowEl= document.getElementById('eggGlowEl');
+  const shine = document.getElementById('eggShine');
+  const sparks= document.getElementById('eggSparkles');
+  if(raridade === 'Lendário') {
+    if(stop1) stop1.setAttribute('stop-color','#c8860a');
+    if(stop2) stop2.setAttribute('stop-color','#7a4400');
+    if(stop3) stop3.setAttribute('stop-color','#1a0e00');
+    if(glowEl){ glowEl.setAttribute('fill','#8a5a00'); glowEl.setAttribute('opacity','.6'); }
+    if(shine)  shine.setAttribute('fill','#ffd700');
+    if(aura1){ aura1.setAttribute('stroke','#e8a030'); aura1.style.opacity='0.7'; }
+    if(aura2){ aura2.setAttribute('stroke','#ffd700'); aura2.style.opacity='0.4'; }
+    if(sparks) sparks.style.opacity='1';
+  } else if(raridade === 'Raro') {
+    if(stop1) stop1.setAttribute('stop-color','#1a6aaa');
+    if(stop2) stop2.setAttribute('stop-color','#0d3560');
+    if(stop3) stop3.setAttribute('stop-color','#0a0f1e');
+    if(glowEl){ glowEl.setAttribute('fill','#1a4a8a'); glowEl.setAttribute('opacity','.5'); }
+    if(shine)  shine.setAttribute('fill','#7dc8f0');
+    if(aura1){ aura1.setAttribute('stroke','#5ab4e8'); aura1.style.opacity='0.6'; }
+    if(aura2){ aura2.setAttribute('stroke','#a0d8f0'); aura2.style.opacity='0.3'; }
+    if(sparks) sparks.style.opacity='0';
+  } else {
+    if(stop1) stop1.setAttribute('stop-color','#5a3a9a');
+    if(stop2) stop2.setAttribute('stop-color','#2d1a5e');
+    if(stop3) stop3.setAttribute('stop-color','#0b0916');
+    if(glowEl){ glowEl.setAttribute('fill','#3d2a6e'); glowEl.setAttribute('opacity','.4'); }
+    if(shine)  shine.setAttribute('fill','#8060c0');
+    if(aura1)  aura1.style.opacity='0';
+    if(aura2)  aura2.style.opacity='0';
+    if(sparks) sparks.style.opacity='0';
+  }
+  document.querySelectorAll('#eggCracks line').forEach(l => {
+    l.setAttribute('stroke', crackColor); l.style.opacity='0';
+  });
+
+  // Atualizar texto
+  document.getElementById('eggHint').textContent = 'A chocar...';
+  document.getElementById('eggProgress').textContent = '';
+
+  const svg    = document.getElementById('eggSvg');
+  const cracks = document.getElementById('eggCracks');
+  const pulse  = document.getElementById('eggPulse');
+  const flash  = document.getElementById('eggFlash');
+  pulse.setAttribute('stroke', crackColor);
+  svg.style.transform = ''; svg.style.transition = '';
+
+  // Sequência de animação automática (~1.8s total)
+  const lines = document.querySelectorAll('#eggCracks line');
+
+  setTimeout(() => { // 0ms — shake + crack 1
+    svg.style.transition = 'transform .08s ease';
+    svg.style.transform  = 'rotate(-10deg) scale(1.05)';
+    cracks.style.opacity = '1';
+    if(lines[0]) lines[0].style.opacity = '1';
+    if(lines[1]) lines[1].style.opacity = '1';
+  }, 0);
+  setTimeout(() => { svg.style.transform = 'rotate(8deg) scale(1.08)'; }, 120);
+  setTimeout(() => { // 250ms — mais rachaduras
+    svg.style.transform = 'rotate(-6deg) scale(1.06)';
+    if(lines[2]) lines[2].style.opacity = '1';
+    if(lines[3]) lines[3].style.opacity = '1';
+  }, 250);
+  setTimeout(() => { svg.style.transform = 'rotate(4deg) scale(1.1)'; }, 380);
+  setTimeout(() => { // 500ms — todas as rachaduras
+    svg.style.transform = 'rotate(0deg) scale(1.12)';
+    if(lines[4]) lines[4].style.opacity = '1';
+    pulse.style.transition = 'opacity .15s';
+    pulse.style.opacity = '0.8';
+  }, 500);
+  setTimeout(() => { pulse.style.opacity = '0'; }, 680);
+  setTimeout(() => { // 900ms — flash e choca
+    flash.style.opacity = '1';
+    svg.style.transition = 'transform .2s ease, opacity .2s ease';
+    svg.style.transform  = 'scale(1.4)';
+    svg.style.opacity    = '0';
+  }, 900);
+  setTimeout(() => { // 1200ms — concluir
+    flash.style.opacity = '0';
+    hatch(); // choca de verdade
+  }, 1200);
 }
 
 
