@@ -12,6 +12,10 @@ function getGameState() {
   // Flush current runtime state into active slot before saving
   saveRuntimeToSlot(activeSlotIdx);
 
+  // Garantir que o array cobre todos os slots desbloqueados antes de serializar
+  const _neededGet = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
+  while(avatarSlots.length < _neededGet) avatarSlots.push(null);
+
   // Serialize slots — each slot is self-contained
   const slotsSafe = avatarSlots.map(s => {
     if(!s || s.pendingEgg) return null; // pendingEgg slots are never persisted
@@ -39,7 +43,7 @@ function getGameState() {
       eggLayCooldown: s.eggLayCooldown ?? 0,
       petCooldown:    s.petCooldown    ?? 0,
       vitals:         s.vitals ? {...s.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
-      eggs:           (s.eggs  || []).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
+      eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats
       diasVida:   s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0,
@@ -123,6 +127,8 @@ function applyGameState(data) {
 
   // Consumir inboxEggs — ovos que chegaram pelo marketplace enquanto o jogo estava fechado
   if(data.inboxEggs && data.inboxEggs.length > 0) {
+    // Descartar ovos expirados antes de consumir
+    data.inboxEggs = data.inboxEggs.filter(e => Date.now() < e.expiraEm);
     const slot = avatarSlots[activeSlotIdx];
     if(slot) {
       // Slot existe — merge directo
@@ -144,6 +150,10 @@ function applyGameState(data) {
       );
     }
   }
+
+  // Garantir que o array cobre todos os slots desbloqueados restaurados
+  const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
+  while(avatarSlots.length < _neededApply) avatarSlots.push(null);
 
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
