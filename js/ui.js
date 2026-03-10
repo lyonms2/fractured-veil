@@ -33,10 +33,12 @@ function updateAllUI() {
   updateResourceUI();
   updateLifeEstimate();
 
-  // Sincronizar estado dos botões de inventário — habilitados só quando avatar vivo
+  // Sincronizar estado dos botões de inventário
+  // Ovos: habilitado se tem ovos no inventário (mesmo sem avatar chocado) OU se avatar vivo
+  // Moedas: habilitado só com avatar vivo
   const _eggBtn  = document.getElementById('resOvosBtn');
   const _coinBtn = document.getElementById('resMoedasBtn');
-  if(_eggBtn)  { hatched && !dead ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
+  if(_eggBtn)  { (eggsInInventory.length > 0 || (hatched && !dead)) ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
   if(_coinBtn) { hatched && !dead ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
 }
 
