@@ -69,6 +69,13 @@ function applyGameState(data) {
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
   else if(data.extraSlots !== undefined) gs.extraSlots = data.extraSlots;
 
+  // Se o activeSlotIdx vai mudar, flush o slot actual em memória primeiro
+  // para não sobrescrever os eggs/items do slot antigo com os do novo
+  const incomingSlotIdx = data.activeSlotIdx !== undefined ? data.activeSlotIdx : activeSlotIdx;
+  if(incomingSlotIdx !== activeSlotIdx) {
+    saveRuntimeToSlot(activeSlotIdx); // persiste eggs do slot actual antes de trocar
+  }
+
   // Restore slots
   if(data.avatarSlots) {
     avatarSlots = data.avatarSlots.map(s => {
