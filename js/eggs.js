@@ -79,14 +79,15 @@ function layEgg() {
   if(getFase() < 3) { showBubble('Ainda não cresci o suficiente... 🥚'); return; }
   if(!avatar || !hatched || dead) return;
   if(getFase() !== 3) { showBubble('Ainda não cresci o suficiente...'); return; }
-  const EGG_COST = 50;
-  if(gs.moedas < EGG_COST) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
-  spendCoins(EGG_COST);
+  // Verificar cooldown ANTES de gastar moedas
   if(eggLayCooldown > 0) {
     const horasRestantes = Math.ceil(eggLayCooldown * 60 / 3600);
     showBubble(`Preciso descansar... (~${horasRestantes}h)`);
     return;
   }
+  const EGG_COST = 50;
+  if(gs.moedas < EGG_COST) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
+  spendCoins(EGG_COST);
 
   const rb = rarityBonus();
   // Lay multiple eggs based on rarity (Comum=1, Raro=2, Lendário=3)
