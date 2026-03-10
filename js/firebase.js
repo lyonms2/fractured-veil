@@ -144,6 +144,22 @@ async function saveToFirebase() {
   try {
     const state = getGameState();
     await fbDb().collection('players').doc(walletAddress).set(state);
+
+    // Eggs orphans — slot estava null quando saveRuntimeToSlot correu
+    // Persiste como inboxEggs para não se perderem
+    if(window._orphanEggs && window._orphanEggs.length > 0) {
+      const toAdd = window._orphanEggs.filter(e => e.id);
+      if(toAdd.length > 0) {
+        for(const egg of toAdd) {
+          await fbDb().collection('players').doc(walletAddress).update({
+            inboxEggs: firebase.firestore.FieldValue.arrayUnion(egg)
+          });
+        }
+      }
+      window._orphanEggs  = null;
+      window._orphanItems = null;
+    }
+
     // Se consumimos inboxEggs nesta sessão, limpa o campo no Firebase
     if(window._inboxConsumed) {
       window._inboxConsumed = false;
