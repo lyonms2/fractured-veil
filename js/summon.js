@@ -245,19 +245,62 @@ function clickEgg() {
 }
 
 function hatch() {
-  // If hatching from inventory egg, commit to pending slot now
   const pendingSlot = window._pendingEggSlot;
-  if(typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx) {
-    // Save current active avatar first
-    saveRuntimeToSlot(activeSlotIdx);
-    // Switch to the new avatar's slot
-    activeSlotIdx = pendingSlot;
-    loadRuntimeFromSlot(activeSlotIdx);
+  const hatchingOtherSlot = typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx;
+
+  if(hatchingOtherSlot) {
+    // Chocagem num slot diferente do activo —
+    // Marcar hatched no slot pendente SEM mudar activeSlotIdx
+    const pendingAv = avatarSlots[pendingSlot];
+    if(pendingAv) {
+      delete pendingAv.pendingEgg;
+      pendingAv.hatched    = true;
+      pendingAv.bornAt     = Date.now();
+      pendingAv.nivel      = pendingAv.nivel    || 1;
+      pendingAv.xp         = pendingAv.xp       || 0;
+      pendingAv.vinculo    = pendingAv.vinculo   || 0;
+      pendingAv.totalOvos  = pendingAv.totalOvos || 0;
+      pendingAv.totalRaros = pendingAv.totalRaros|| 0;
+      pendingAv.listed     = false;
+      pendingAv.vitals     = {fome:100,humor:100,energia:100,saude:100,higiene:100};
+      pendingAv.eggs       = pendingAv.eggs  || [];
+      pendingAv.items      = pendingAv.items || [];
+    }
     window._pendingEggSlot = null;
+
+    // Limpar inboxEggs backup
+    if(walletAddress && fbDb() && window._cancelledEgg) {
+      fbDb().collection('players').doc(walletAddress).update({
+        inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
+      }).catch(e => console.warn('inboxEggs cleanup failed:', e));
+      window._cancelledEgg = null;
+    }
+
+    // Hide cancel button
+    const cancelBtn = document.getElementById('btnCancelHatch');
+    if(cancelBtn) cancelBtn.style.display = 'none';
+
+    // Voltar a mostrar o avatar activo original (não o novo)
+    document.getElementById('eggScreen').style.display  = 'none';
+    document.getElementById('actionBtns').style.opacity = '1';
+    document.getElementById('actionBtns').style.pointerEvents = 'all';
+    loadRuntimeFromSlot(activeSlotIdx); // restaura estado do avatar original
+    document.getElementById('aliveScreen').style.display = 'block';
+    document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
+    document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
+    updateEquippedDisplay();
+    syncEasterEggs();
+    renderEggInventory();
+    updateAllUI();
+    scheduleSave();
+    showBubble('Novo avatar no Slot ' + (pendingSlot+1) + '! 🐣');
+    addLog(`${pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar'} nasceu no Slot ${pendingSlot+1}! Activa-o no Marketplace.`, 'good');
+    return; // ← não continua para o fluxo normal
   }
 
-  // Clear pendingEgg flag
+  // ── Chocagem normal (slot activo) ──
   if(avatarSlots[activeSlotIdx]) delete avatarSlots[activeSlotIdx].pendingEgg;
+  window._pendingEggSlot = null;
 
   // Hide cancel button — hatch is complete
   const cancelBtn = document.getElementById('btnCancelHatch');
