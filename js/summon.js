@@ -193,7 +193,17 @@ function setupAvatar() {
 // EGG HATCH
 // ═══════════════════════════════════════════
 function clickEgg() {
-  if(!avatar || hatched) return;
+  // Se está a chocar um ovo num slot diferente do activo (pendingEggSlot),
+  // o avatar activo pode ter hatched=true — verificar o slot pendente em vez disso
+  const pendingSlot = window._pendingEggSlot;
+  const isHatchingOtherSlot = typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx;
+  if(isHatchingOtherSlot) {
+    // Slot pendente existe e é diferente do activo — só precisa de avatar existir no slot pendente
+    if(!avatarSlots[pendingSlot]) return;
+  } else {
+    // Chocagem normal: avatar activo não pode estar já chocado
+    if(!avatar || hatched) return;
+  }
   eggClicks++;
 
   const svg    = document.getElementById('eggSvg');
