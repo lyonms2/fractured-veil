@@ -202,7 +202,7 @@ function hatchEggFromInventory(id) {
   ModalManager.open('hatchConfirmModal');
 }
 
-function confirmHatch() {
+async function confirmHatch() {
   if(pendingHatchId === null) return;
   const idx = eggsInInventory.findIndex(e => e.id === pendingHatchId);
   if(idx === -1) { pendingHatchId = null; return; }
@@ -216,19 +216,24 @@ function confirmHatch() {
     return;
   }
 
-  const ovo = eggsInInventory[idx]; // não remove ainda
+  const ovo = eggsInInventory[idx];
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
-  // Guarda o ovo no inboxEggs do Firebase ANTES de o remover da memória
-  // Se o jogador recarregar durante a chocagem, o ovo é recuperado pelo applyGameState
+  // Aguardar escrita no Firebase ANTES de prosseguir
+  // Garante que o ovo está seguro mesmo que o jogador recarregue imediatamente
   if(walletAddress && fbDb()) {
-    fbDb().collection('players').doc(walletAddress).update({
-      inboxEggs: firebase.firestore.FieldValue.arrayUnion({...ovo})
-    }).catch(e => console.warn('inboxEggs backup failed:', e));
+    try {
+      await fbDb().collection('players').doc(walletAddress).update({
+        inboxEggs: firebase.firestore.FieldValue.arrayUnion({...ovo})
+      });
+    } catch(e) {
+      console.warn('inboxEggs backup failed:', e);
+      // Mesmo que falhe, continuar — o ovo ainda está em eggsInInventory por ora
+    }
   }
 
-  // Agora remove da memória e guarda backup para cancelHatch
+  // Só agora remove da memória
   eggsInInventory.splice(idx, 1);
   window._cancelledEgg = {...ovo};
 
