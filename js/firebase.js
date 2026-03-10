@@ -157,6 +157,28 @@ function applyGameState(data) {
 
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
+
+  // Se há orphanEggs (inboxEggs chegaram mas slot estava null),
+  // injectá-los imediatamente em eggsInInventory para o utilizador os ver
+  if(window._orphanEggs && window._orphanEggs.length > 0) {
+    const existingIds = new Set(eggsInInventory.map(e => e.id));
+    window._orphanEggs.forEach(e => {
+      if(!existingIds.has(e.id)) eggsInInventory.push({...e});
+    });
+    // Tentar também colocar no slot se ele existir agora
+    const slot = avatarSlots[activeSlotIdx];
+    if(slot) {
+      if(!slot.eggs) slot.eggs = [];
+      const slotIds = new Set(slot.eggs.map(e => e.id));
+      window._orphanEggs.forEach(e => {
+        if(!slotIds.has(e.id)) slot.eggs.push({...e});
+      });
+      window._orphanEggs = null;
+      window._inboxConsumed = true; // agora pode limpar o inbox no próximo save
+    }
+    // Se slot ainda null, _orphanEggs persiste para saveToFirebase o re-escrever no inbox
+  }
+
   return true;
 }
 
@@ -170,7 +192,9 @@ async function saveToFirebase() {
   if(!walletAddress || !fbDb()) return;
   try {
     const state = getGameState();
-    await fbDb().collection('players').doc(walletAddress).set(state);
+    // usar set com merge:true para não apagar campos não incluídos
+    // (ex: inboxEggs escrito pelo marketplace ou por confirmHatch)
+    await fbDb().collection('players').doc(walletAddress).set(state, { merge: true });
 
     // Eggs orphans — slot estava null quando saveRuntimeToSlot correu
     // Persiste como inboxEggs para não se perderem
