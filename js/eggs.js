@@ -255,11 +255,14 @@ function cancelHatch() {
   document.getElementById('eggCracks').style.opacity = '0';
   document.querySelectorAll('#eggCracks line').forEach(l => l.style.opacity = '0');
 
-  // Restore egg to inventory
-  // (egg was already removed from eggsInInventory — re-add it)
-  if(window._cancelledEgg) {
-    eggsInInventory.push(window._cancelledEgg);
-    window._cancelledEgg = null;
+  // Guarda referência local ANTES de limpar o global
+  // (necessário para usar no arrayRemove depois)
+  const eggToRestore = window._cancelledEgg;
+  window._cancelledEgg = null;
+
+  // Devolve ovo ao inventário
+  if(eggToRestore) {
+    eggsInInventory.push(eggToRestore);
     renderEggInventory();
   }
 
@@ -276,11 +279,10 @@ function cancelHatch() {
     document.getElementById('idleScreen').style.display = 'flex';
   }
 
-  // Ovo voltou ao eggsInInventory — o próximo saveToFirebase persiste no slot
-  // Limpar o inboxEggs para não duplicar
-  if(walletAddress && fbDb() && window._cancelledEgg) {
+  // Limpa o inboxEggs usando a referência local — ainda válida após null do global
+  if(walletAddress && fbDb() && eggToRestore) {
     fbDb().collection('players').doc(walletAddress).update({
-      inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
+      inboxEggs: firebase.firestore.FieldValue.arrayRemove(eggToRestore)
     }).catch(e => console.warn('inboxEggs cleanup failed:', e));
   }
   scheduleSave();
