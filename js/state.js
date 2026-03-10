@@ -185,7 +185,15 @@ Object.defineProperty(window, 'avatar', {
 // Usado ao trocar de slot — save e restore
 function saveRuntimeToSlot(idx) {
   if(idx === undefined) idx = activeSlotIdx;
-  if(!avatarSlots[idx]) return;
+  if(!avatarSlots[idx]) {
+    // Slot null mas pode ter eggs/items — não perder
+    // Marca para saveToFirebase persistir como inboxEggs
+    if(eggsInInventory.length > 0 || itemInventory.length > 0) {
+      window._orphanEggs  = eggsInInventory.map(e => ({...e}));
+      window._orphanItems = itemInventory.map(i => ({...i}));
+    }
+    return;
+  }
   Object.assign(avatarSlots[idx], {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
