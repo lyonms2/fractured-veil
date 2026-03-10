@@ -32,6 +32,12 @@ function updateAllUI() {
   if(vTxt)  vTxt.textContent = `${vt.label} · ${Math.floor(vinculo)}`;
   updateResourceUI();
   updateLifeEstimate();
+
+  // Sincronizar estado dos botões de inventário — habilitados só quando avatar vivo
+  const _eggBtn  = document.getElementById('resOvosBtn');
+  const _coinBtn = document.getElementById('resMoedasBtn');
+  if(_eggBtn)  { hatched && !dead ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
+  if(_coinBtn) { hatched && !dead ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
 }
 
 function updateTimer() {
