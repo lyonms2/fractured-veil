@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'jkpModal','gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','marketModal','coinShopModal'
+  'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal'
 ];
 
 const ModalManager = {
