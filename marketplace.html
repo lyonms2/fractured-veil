@@ -613,7 +613,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 // MARKETPLACE — CORE
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // ← substituir pela tua wallet
+const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
 const RARE_EGG_COST   = 8;   // 💎
 const LIST_COST       = 2;   // 💎
@@ -671,9 +671,28 @@ async function loadPlayerData() {
 }
 
 async function savePlayerData() {
+  // Uso restrito: apenas para verifyTx (usedTxHashes)
+  // Todas as outras operações usam update cirúrgico
   if(!walletAddress) return;
   playerData.usedTxHashes = [...usedTxHashes];
   await db.collection('players').doc(walletAddress).set(playerData, { merge: true });
+  updateCristaisDisplay();
+}
+
+// Lê avatarSlots frescos do Firebase, aplica mutação, guarda só avatarSlots + campos económicos
+async function updateSlots(mutateFn, extraFields = {}) {
+  const snap = await db.collection('players').doc(walletAddress).get();
+  const data = snap.exists ? snap.data() : {};
+  const slots = (data.avatarSlots || [null, null, null]).map(s => s || null);
+  mutateFn(slots, data);
+  await db.collection('players').doc(walletAddress).update({
+    avatarSlots: slots,
+    ...extraFields
+  });
+  // Actualiza playerData local para UI
+  playerData.avatarSlots = slots;
+  if(extraFields.cristais !== undefined) playerData.cristais = extraFields.cristais;
+  if(extraFields['gs.cristais'] !== undefined) { if(!playerData.gs) playerData.gs = {}; playerData.gs.cristais = extraFields['gs.cristais']; }
   updateCristaisDisplay();
 }
 
@@ -837,18 +856,36 @@ async function buyAvatar(listingId, price) {
     if(!listSnap.exists || listSnap.data().status !== 'listed') { showToast('Listagem já não disponível.','err'); return; }
     const l = listSnap.data();
 
-    // Deduct cristais from buyer
-    playerData.cristais -= price;
-    if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = playerData.cristais;
-    playerData.avatarSlots[freeIdx] = {
+    // Read fresh buyer data before writing
+    const buyerSnap = await db.collection('players').doc(walletAddress).get();
+    const buyerData = buyerSnap.data() || {};
+    const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
+    if(freshCristais < price) { showToast('Cristais insuficientes.','err'); return; }
+
+    const buyerSlots = buyerData.avatarSlots || playerData.avatarSlots;
+    const freshFreeIdx = buyerSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
+    if(freshFreeIdx === -1) { showToast('Sem slots disponíveis.','err'); return; }
+
+    const newCristais = freshCristais - price;
+    buyerSlots[freshFreeIdx] = {
       nome: l.nome, elemento: l.elemento, raridade: l.raridade,
       descricao: l.descricao, seed: l.seed||0,
       nivel: l.nivel||1, xp: l.xp||0, vinculo: l.vinculo||0,
       diasVida: l.diasVida||0, totalOvos: l.totalOvos||0, totalRaros: l.totalRaros||0,
       bornAt: l.bornAt||Date.now(), acquiredAt: Date.now(),
+      hatched: true, dead: false, vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
+      eggs: [], items: [],
     };
-    await savePlayerData();
+    await db.collection('players').doc(walletAddress).update({
+      avatarSlots:   buyerSlots,
+      cristais:      newCristais,
+      'gs.cristais': newCristais,
+    });
+    playerData.avatarSlots = buyerSlots;
+    playerData.cristais    = newCristais;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    updateCristaisDisplay();
 
     // Add cristais to seller
     const sellerRef = db.collection('players').doc(l.sellerId);
@@ -931,15 +968,30 @@ async function confirmList() {
   if(playerData.cristais < LIST_COST) { showToast(`Precisas de ${LIST_COST} 💎 para listar.`,'err'); return; }
   if(listingSlotIdx === null) return;
 
-  const s = playerData.avatarSlots[listingSlotIdx];
   try {
-    // Deduct listing fee
-    playerData.cristais -= LIST_COST;
+    // Read fresh data to avoid stale cristais or slots
+    const freshSnap = await db.collection('players').doc(walletAddress).get();
+    const freshData = freshSnap.data() || {};
+    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
+    if(freshCristais < LIST_COST) { showToast(`Precisas de ${LIST_COST} 💎 para listar.`,'err'); return; }
+
+    const freshSlots = freshData.avatarSlots || playerData.avatarSlots;
+    const s = freshSlots[listingSlotIdx];
+    if(!s) { showToast('Slot inválido.','err'); return; }
+
+    const newCristais = freshCristais - LIST_COST;
+    freshSlots[listingSlotIdx].listed = true;
+
+    await db.collection('players').doc(walletAddress).update({
+      avatarSlots:   freshSlots,
+      cristais:      newCristais,
+      'gs.cristais': newCristais,
+    });
+    playerData.avatarSlots = freshSlots;
+    playerData.cristais    = newCristais;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = playerData.cristais;
-    // Mark slot as listed
-    playerData.avatarSlots[listingSlotIdx].listed = true;
-    await savePlayerData();
+    playerData.gs.cristais = newCristais;
+    updateCristaisDisplay();
 
     // Create market listing
     const diasVida = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
@@ -979,10 +1031,11 @@ async function unlistAvatar(listingId) {
     const l = snap.data();
     if(l.sellerId !== walletAddress) return;
 
-    // Unfreeze slot
+    // Unfreeze slot — read fresh slots before marking
     const slotIdx = l.slotIdx;
-    if(playerData.avatarSlots[slotIdx]) playerData.avatarSlots[slotIdx].listed = false;
-    await savePlayerData();
+    await updateSlots(slots => {
+      if(slots[slotIdx]) slots[slotIdx].listed = false;
+    });
     await db.collection('avatarMarket').doc(listingId).update({ status:'cancelled' });
 
     closeDetail();
@@ -1068,10 +1121,13 @@ function renderSlots() {
 }
 
 async function activateSlot(idx) {
+  await db.collection('players').doc(walletAddress).update({
+    activeSlotIdx: idx,
+    'gs.activeSlotIdx': idx
+  });
   playerData.activeSlotIdx = idx;
   if(!playerData.gs) playerData.gs = {};
   playerData.gs.activeSlotIdx = idx;
-  await savePlayerData();
   showToast('✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.', 'ok');
   renderSlots();
 }
@@ -1110,32 +1166,39 @@ async function confirmBurnAvatar() {
   document.getElementById('burnOverlay').classList.remove('open');
   if(idx === null || idx === playerData.activeSlotIdx) return;
 
-  const s = playerData.avatarSlots[idx];
-  const name = s?.nome?.split(',')[0] || 'Avatar';
+  const name = playerData.avatarSlots[idx]?.nome?.split(',')[0] || 'Avatar';
 
-  // Free the slot
-  playerData.avatarSlots[idx] = null;
-  if(!playerData.gs) playerData.gs = {};
-  playerData.gs.avatarSlots = playerData.avatarSlots;
-
-  await savePlayerData();
+  await updateSlots(slots => { slots[idx] = null; });
   showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();
 }
 
 async function unlockSlot() {
-  if(playerData.cristais < UNLOCK_SLOT_COST) { showToast(`Precisas de ${UNLOCK_SLOT_COST} 💎.`,'err'); return; }
+  // Re-read cristais from Firebase to avoid stale data
+  const snap = await db.collection('players').doc(walletAddress).get();
+  const freshCristais = snap.data()?.gs?.cristais ?? snap.data()?.cristais ?? 0;
+  if(freshCristais < UNLOCK_SLOT_COST) { showToast(`Precisas de ${UNLOCK_SLOT_COST} 💎.`,'err'); return; }
   const unlocked = getUnlockedSlots();
   if(unlocked >= MAX_SLOTS) { showToast('Já tens o máximo de slots.','err'); return; }
-  playerData.cristais -= UNLOCK_SLOT_COST;
-  playerData.extraSlots = (playerData.extraSlots||0) + 1;
-  // Keep gs in sync (game reads from gs.extraSlots)
+
+  const newCristais   = freshCristais - UNLOCK_SLOT_COST;
+  const newExtraSlots = (playerData.extraSlots||0) + 1;
+
+  await db.collection('players').doc(walletAddress).update({
+    cristais:         newCristais,
+    'gs.cristais':    newCristais,
+    extraSlots:       newExtraSlots,
+    'gs.extraSlots':  newExtraSlots,
+  });
+
+  playerData.cristais   = newCristais;
+  playerData.extraSlots = newExtraSlots;
   if(!playerData.gs) playerData.gs = {};
-  playerData.gs.extraSlots = playerData.extraSlots;
-  playerData.gs.cristais   = playerData.cristais;
-  // Expand array if needed
+  playerData.gs.cristais   = newCristais;
+  playerData.gs.extraSlots = newExtraSlots;
   while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
-  await savePlayerData();
+
+  updateCristaisDisplay();
   showToast(`✅ Slot ${getUnlockedSlots()} desbloqueado!`, 'ok');
   renderSlots();
 }
@@ -1209,10 +1272,19 @@ async function verifyTx() {
       btn.disabled=false; return;
     }
 
-    // All good — credit crystals
+    // All good — credit crystals (read fresh before adding)
+    const freshVerifySnap = await db.collection('players').doc(walletAddress).get();
+    const freshVerifyCristais = freshVerifySnap.data()?.gs?.cristais ?? freshVerifySnap.data()?.cristais ?? 0;
+    const newVerifyCristais = freshVerifyCristais + pkg.gems;
     usedTxHashes.add(hash);
-    playerData.cristais += pkg.gems;
-    await savePlayerData();
+    playerData.cristais = newVerifyCristais;
+    playerData.usedTxHashes = [...usedTxHashes];
+    await db.collection('players').doc(walletAddress).update({
+      cristais:         newVerifyCristais,
+      'gs.cristais':    newVerifyCristais,
+      usedTxHashes:     [...usedTxHashes],
+    });
+    updateCristaisDisplay();
     status.innerHTML = `<span class="tx-ok">✅ +${pkg.gems} 💎 creditados! Saldo: ${playerData.cristais} 💎</span>`;
     document.getElementById('txHashInput').value = '';
     showToast(`+${pkg.gems} 💎 Cristais creditados!`, 'ok');
