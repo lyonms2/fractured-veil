@@ -266,6 +266,13 @@ function hatch() {
     avatar.listed    = false;
     avatar.vitals    = {...vitals};
   }
+  // Ovo chocou com sucesso — limpar inboxEggs (já não precisa de backup)
+  if(walletAddress && fbDb() && window._cancelledEgg) {
+    fbDb().collection('players').doc(walletAddress).update({
+      inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
+    }).catch(e => console.warn('inboxEggs cleanup failed:', e));
+    window._cancelledEgg = null;
+  }
   scheduleSave();
   document.getElementById('statusCard').style.display = 'block';
   poopCount = 0;
