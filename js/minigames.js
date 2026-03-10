@@ -713,4 +713,5 @@ function velhaEnd(result, winLine) {
   document.getElementById('velhaReward').textContent = `+${xpGain} XP  +${coinGain} 🪙`;
   document.getElementById('velhaAgainBtn').style.display = 'inline-block';
   addLog(`Jogo da Velha: ${msg} +${xpGain}XP +${coinGain}🪙`, result === 'win' ? 'good' : 'info');
+  scheduleSave();
 }
