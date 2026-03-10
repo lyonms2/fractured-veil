@@ -1309,12 +1309,21 @@ function renderBuyEgg() {
 }
 
 async function buyRareEgg() {
-  if(!playerData || playerData.cristais < RARE_EGG_COST) return;
-  playerData.cristais -= RARE_EGG_COST;
-  if(!playerData.gs) playerData.gs = {};
-  playerData.gs.cristais = playerData.cristais;
+  if(!playerData || !walletAddress) return;
 
-  // Generate rare egg
+  // Lê cristais frescos do Firebase — evita debitar valor desactualizado
+  const freshSnap = await db.collection('players').doc(walletAddress).get();
+  const freshData = freshSnap.data() || {};
+  const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
+
+  if(freshCristais < RARE_EGG_COST) {
+    showToast(`Precisas de ${RARE_EGG_COST} 💎 para comprar um Ovo Raro.`, 'err');
+    return;
+  }
+
+  const newCristais = freshCristais - RARE_EGG_COST;
+
+  // Gera ovo raro
   const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
   const elem = elementos[Math.floor(Math.random()*elementos.length)];
   const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
@@ -1324,11 +1333,18 @@ async function buyRareEgg() {
   // Nunca toca em avatarSlots directamente para evitar race conditions com o jogo
   await db.collection('players').doc(walletAddress).update({
     inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
-    cristais:      playerData.cristais,
-    'gs.cristais': playerData.cristais,
+    cristais:      newCristais,
+    'gs.cristais': newCristais,
   });
-  showToast(`✅ Ovo Raro ${elem} enviado para o inventário do avatar activo!`, 'ok');
-  document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} no inventário de ${playerData.avatarSlots[activeIdx].nome?.split(',')[0] || 'avatar activo'}.`;
+
+  // Actualiza playerData local
+  playerData.cristais = newCristais;
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.cristais = newCristais;
+  updateCristaisDisplay();
+
+  showToast(`✅ Ovo Raro ${elem} enviado para o teu inventário!`, 'ok');
+  document.getElementById('buyEggStatus').textContent = `Ovo Raro de ${elem} será entregue ao teu avatar activo quando voltares ao jogo.`;
   renderBuyEgg();
 }
 
