@@ -114,6 +114,20 @@ function applyGameState(data) {
     avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
 
+  // Consumir inboxEggs — ovos que chegaram pelo marketplace enquanto o jogo estava fechado
+  if(data.inboxEggs && data.inboxEggs.length > 0) {
+    const slot = avatarSlots[activeSlotIdx];
+    if(slot) {
+      if(!slot.eggs) slot.eggs = [];
+      const existingIds = new Set(slot.eggs.map(e => e.id));
+      data.inboxEggs.forEach(e => {
+        if(!existingIds.has(e.id)) slot.eggs.push({...e});
+      });
+    }
+    // Limpa inbox — será persistido no próximo saveToFirebase
+    window._inboxConsumed = true;
+  }
+
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
   return true;
@@ -128,7 +142,13 @@ function scheduleSave() {
 async function saveToFirebase() {
   if(!walletAddress || !fbDb()) return;
   try {
-    await fbDb().collection('players').doc(walletAddress).set(getGameState());
+    const state = getGameState();
+    await fbDb().collection('players').doc(walletAddress).set(state);
+    // Se consumimos inboxEggs nesta sessão, limpa o campo no Firebase
+    if(window._inboxConsumed) {
+      window._inboxConsumed = false;
+      await fbDb().collection('players').doc(walletAddress).update({ inboxEggs: [] });
+    }
   } catch(e) { console.warn('Save error:', e); }
 }
 
