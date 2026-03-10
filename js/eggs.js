@@ -287,40 +287,6 @@ function cancelHatch() {
   addLog('Chocagem cancelada. Ovo devolvido ao inventário.', 'info');
 }
 
-function retireAvatar() {
-  const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
-
-  // Flush runtime into active slot before retiring
-  saveRuntimeToSlot(activeSlotIdx);
-
-  // Try to find a free slot to keep the retired avatar
-  const unlocked = getUnlockedSlots();
-  let freeSlot = -1;
-  for(let i = 0; i < unlocked; i++) {
-    if(i !== activeSlotIdx && (!avatarSlots[i] || !avatarSlots[i].nome)) { freeSlot = i; break; }
-  }
-  if(freeSlot >= 0) {
-    // Move retired avatar to free slot
-    avatarSlots[freeSlot] = {...avatarSlots[activeSlotIdx]};
-    addLog(`${name} foi aposentado para o Slot ${freeSlot+1}.`, 'info');
-  } else {
-    addLog(`${name} foi aposentado. Um novo destino aguarda...`, 'info');
-  }
-
-  // Clear the active slot for the new avatar
-  avatarSlots[activeSlotIdx] = null;
-  dead = false; hatched = false;
-  sleeping = false;
-  document.getElementById('aliveScreen').style.display = 'none';
-  document.getElementById('deadScreen').style.display  = 'none';
-  document.getElementById('sleepOverlay').classList.remove('active');
-  document.getElementById('actionBtns').classList.remove('sleeping-mode');
-  ['btnFeed','btnPlay','btnSleep','btnHeal'].forEach(id => {
-    const b = document.getElementById(id);
-    if(b) b.classList.remove('disabled');
-  });
-}
-
 function prepareEggScreen(ovo, targetSlot) {
   const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
   const crackColor = rarColors[ovo.raridade];
