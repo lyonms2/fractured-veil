@@ -284,8 +284,7 @@ function hatch() {
     document.getElementById('eggScreen').style.display  = 'none';
     document.getElementById('actionBtns').style.opacity = '1';
     document.getElementById('actionBtns').style.pointerEvents = 'all';
-    saveRuntimeToSlot(activeSlotIdx); // persiste eggsInInventory actual (sem o ovo chocado) no slot
-    loadRuntimeFromSlot(activeSlotIdx); // restaura estado do avatar original
+    loadRuntimeFromSlot(activeSlotIdx); // restaura estado do avatar original (slot foi salvo antes de summonFromEgg)
     document.getElementById('aliveScreen').style.display = 'block';
     document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
     document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
