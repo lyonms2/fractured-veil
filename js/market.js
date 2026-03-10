@@ -112,7 +112,7 @@ async function buyFromMarket(listingId, price) {
     }
 
     await ref.update({ status: 'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
-    await saveToFirebase();
+    scheduleSave();
     renderEggInventory();
     updateResourceUI();
     addLog(`Comprou ovo ${data.raridade} de ${data.elemento}! 🎉`, 'good');
@@ -172,7 +172,7 @@ async function confirmSellEgg() {
     });
     // Remove from local inventory
     eggsInInventory = eggsInInventory.filter(e => e.id !== mktSellEggId);
-    await saveToFirebase();
+    scheduleSave();
     renderEggInventory();
     cancelSellEgg();
     renderMyEggsForSale();
