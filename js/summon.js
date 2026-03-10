@@ -192,57 +192,6 @@ function setupAvatar() {
 // ═══════════════════════════════════════════
 // EGG HATCH
 // ═══════════════════════════════════════════
-function clickEgg() {
-  // Se está a chocar um ovo num slot diferente do activo (pendingEggSlot),
-  // o avatar activo pode ter hatched=true — verificar o slot pendente em vez disso
-  const pendingSlot = window._pendingEggSlot;
-  const isHatchingOtherSlot = typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx;
-  if(isHatchingOtherSlot) {
-    // Slot pendente existe e é diferente do activo — só precisa de avatar existir no slot pendente
-    if(!avatarSlots[pendingSlot]) return;
-  } else {
-    // Chocagem normal: avatar activo não pode estar já chocado
-    if(!avatar || hatched) return;
-  }
-  eggClicks++;
-
-  const svg    = document.getElementById('eggSvg');
-  const cracks = document.getElementById('eggCracks');
-  const pulse  = document.getElementById('eggPulse');
-  const hints  = ['CLIQUE PARA CHOCAR','MAIS UMA VEZ...','CONTINUE!','JÁ QUASE!','UMA ÚLTIMA!'];
-
-  // Shake
-  const dir = eggClicks % 2 === 0 ? -1 : 1;
-  svg.style.transform = `rotate(${dir * (8 + eggClicks)}deg) scale(1.08)`;
-  setTimeout(() => { svg.style.transform = 'rotate(0deg) scale(1)'; }, 130);
-
-  // Pulse flash
-  pulse.style.opacity = '0.7';
-  setTimeout(() => { pulse.style.opacity = '0'; }, 200);
-
-  // Reveal cracks progressively
-  cracks.style.opacity = '1';
-  for(let i = 1; i <= eggClicks; i++) {
-    const c = document.getElementById(`crack${i}`);
-    if(c) c.style.opacity = '1';
-  }
-
-  // Update hint text
-  const hint = document.getElementById('eggHint');
-  if(hint && hints[eggClicks-1]) hint.textContent = hints[eggClicks-1];
-
-  document.getElementById('eggProgress').textContent = `${eggClicks} / 5`;
-
-  if(eggClicks >= 5) {
-    // Final flash before hatch
-    const flash = document.getElementById('eggFlash');
-    flash.style.opacity = '1';
-    svg.style.transform = 'scale(1.3) rotate(10deg)';
-    svg.style.transition = 'transform .25s ease-out, opacity .25s';
-    svg.style.opacity = '0';
-    setTimeout(() => { flash.style.opacity = '0'; hatch(); }, 350);
-  }
-}
 
 function hatch() {
   const pendingSlot = window._pendingEggSlot;
@@ -276,9 +225,6 @@ function hatch() {
       window._cancelledEgg = null;
     }
 
-    // Hide cancel button
-    const cancelBtn = document.getElementById('btnCancelHatch');
-    if(cancelBtn) cancelBtn.style.display = 'none';
 
     // Voltar a mostrar o avatar activo original (não o novo)
     document.getElementById('eggScreen').style.display  = 'none';
@@ -302,9 +248,6 @@ function hatch() {
   if(avatarSlots[activeSlotIdx]) delete avatarSlots[activeSlotIdx].pendingEgg;
   window._pendingEggSlot = null;
 
-  // Hide cancel button — hatch is complete
-  const cancelBtn = document.getElementById('btnCancelHatch');
-  if(cancelBtn) cancelBtn.style.display = 'none';
 
   hatched = true;
   bornAt  = bornAt || Date.now();
