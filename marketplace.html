@@ -613,7 +613,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 // MARKETPLACE — CORE
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // ← substituir pela tua wallet
+const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
 const RARE_EGG_COST   = 8;   // 💎
 const LIST_COST       = 2;   // 💎
@@ -1320,33 +1320,13 @@ async function buyRareEgg() {
   const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
   const newEgg = { id: Date.now(), raridade:'Raro', elemento:elem, expiraEm };
 
-  // Lê o documento mais recente do Firebase antes de inserir o ovo
-  // (evita sobrescrever estado do jogo com playerData desactualizado)
-  const activeIdx = playerData.activeSlotIdx ?? 0;
-  const freshSnap = await db.collection('players').doc(walletAddress).get();
-  const freshData = freshSnap.exists ? freshSnap.data() : null;
-  const freshSlots = freshData?.avatarSlots || playerData.avatarSlots || [];
-  const freshSlot  = freshSlots[activeIdx];
-
-  if(!freshSlot || !freshSlot.nome) {
-    showToast('Não tens um avatar activo. Choca um ovo no jogo primeiro.', 'err');
-    playerData.cristais += RARE_EGG_COST;
-    playerData.gs.cristais = playerData.cristais;
-    return;
-  }
-
-  // Insere o ovo no slot fresco e guarda só os campos que mudaram
-  if(!freshSlot.eggs) freshSlot.eggs = [];
-  freshSlot.eggs.push(newEgg);
-  freshSlots[activeIdx] = freshSlot;
-
-  // Firestore não suporta dot notation em arrays — actualizar o array completo
+  // Escreve no inboxEggs — o jogo consome e move para o slot activo no próximo load/save
+  // Nunca toca em avatarSlots directamente para evitar race conditions com o jogo
   await db.collection('players').doc(walletAddress).update({
-    avatarSlots: freshSlots,
-    cristais: playerData.cristais,
+    inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
+    cristais:      playerData.cristais,
     'gs.cristais': playerData.cristais,
   });
-  playerData.avatarSlots = freshSlots;
   showToast(`✅ Ovo Raro ${elem} enviado para o inventário do avatar activo!`, 'ok');
   document.getElementById('buyEggStatus').textContent = `Ovo Raro ${elem} no inventário de ${playerData.avatarSlots[activeIdx].nome?.split(',')[0] || 'avatar activo'}.`;
   renderBuyEgg();
