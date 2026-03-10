@@ -1268,8 +1268,9 @@ async function buyRareEgg() {
   freshSlot.eggs.push(newEgg);
   freshSlots[activeIdx] = freshSlot;
 
+  // Firestore não suporta dot notation em arrays — actualizar o array completo
   await db.collection('players').doc(walletAddress).update({
-    [`avatarSlots.${activeIdx}.eggs`]: freshSlot.eggs,
+    avatarSlots: freshSlots,
     cristais: playerData.cristais,
     'gs.cristais': playerData.cristais,
   });
