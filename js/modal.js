@@ -176,6 +176,6 @@ function miniReward(xpMult, coinMult, vinculoGain = 3) {
   vitals.energia = Math.max(0, vitals.energia - 15);
   vitals.fome    = Math.max(0, vitals.fome    - 5);
   vinculo += vinculoGain;
-  checkXP(); updateAllUI();
+  checkXP(); updateAllUI(); scheduleSave();
   return { xpGain, coinGain };
 }
