@@ -9,6 +9,25 @@ function goToMarketplace(e) {
   window.location.href = 'marketplace.html';
 }
 
+// Encontra o slot correcto para chocar um ovo:
+// 1. Se slot activo está vazio (sem avatar chocado) → usa o activo
+// 2. Senão → primeiro slot genuinamente vazio (null ou sem nome/pendingEgg)
+function findTargetSlot() {
+  const unlocked = getUnlockedSlots();
+  // Prioridade: slot activo se não tem avatar chocado
+  const activeS = avatarSlots[activeSlotIdx];
+  if(!activeS || (!activeS.hatched && !activeS.pendingEgg)) {
+    return activeSlotIdx;
+  }
+  // Procura slot vazio excluindo o activo
+  for(let i = 0; i < unlocked; i++) {
+    if(i === activeSlotIdx) continue;
+    const s = avatarSlots[i];
+    if(!s || (!s.nome && !s.pendingEgg)) return i;
+  }
+  return -1; // todos ocupados
+}
+
 // SISTEMA DE OVOS
 // ═══════════════════════════════════════════════════════════════════
 
@@ -164,25 +183,17 @@ function hatchEggFromInventory(id) {
   document.getElementById('hatchConfirmRarity').innerHTML =
     `<span style="color:${color};font-weight:700;font-family:'Cinzel',serif">${ovo.raridade.toUpperCase()} · ${ovo.elemento}</span>`;
 
-  const hasLiveAvatar = hatched && !dead;
+  const targetPreview = findTargetSlot();
+  const confirmBtn = document.getElementById('hatchConfirmYes');
   let msg = '';
-  if(hasLiveAvatar) {
-    // Find a free slot for the new avatar
-    const unlocked = getUnlockedSlots();
-    let freeSlot = -1;
-    for(let i = 0; i < unlocked; i++) {
-      if(!avatarSlots[i] || !avatarSlots[i].nome) { freeSlot = i; break; }
-    }
-    if(freeSlot >= 0) {
-      msg = `O novo avatar nascerá no <b style="color:#7ab87a">Slot ${freeSlot+1}</b>.<br>O teu avatar activo <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> continua no Slot ${activeSlotIdx+1}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>`;
-    } else {
-      msg = `Todos os slots estão ocupados.<br>Liberta um slot no Marketplace antes de chocar.`;
-    }
-    const confirmBtn = document.getElementById('hatchConfirmYes');
-    if(confirmBtn) confirmBtn.style.display = freeSlot >= 0 ? '' : 'none';
+  if(targetPreview === -1) {
+    msg = `Todos os slots estão ocupados.<br>Liberta um slot no Marketplace antes de chocar.`;
+    if(confirmBtn) confirmBtn.style.display = 'none';
+  } else if(hatched && !dead && targetPreview !== activeSlotIdx) {
+    msg = `O novo avatar nascerá no <b style="color:#7ab87a">Slot ${targetPreview+1}</b>.<br>O teu avatar activo <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> continua no Slot ${activeSlotIdx+1}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>`;
+    if(confirmBtn) confirmBtn.style.display = '';
   } else {
-    msg = `O ovo nascerá no slot activo.<br>Clica 5× para fazer nascer o teu novo avatar.`;
-    const confirmBtn = document.getElementById('hatchConfirmYes');
+    msg = `O ovo nascerá no Slot ${targetPreview+1}.<br>Clica 5× para fazer nascer o teu novo avatar.`;
     if(confirmBtn) confirmBtn.style.display = '';
   }
   document.getElementById('hatchConfirmMsg').innerHTML = msg;
@@ -195,13 +206,7 @@ function confirmHatch() {
   const idx = eggsInInventory.findIndex(e => e.id === pendingHatchId);
   if(idx === -1) { pendingHatchId = null; return; }
 
-  // Find a free slot for the new avatar
-  const unlocked = getUnlockedSlots();
-  let targetSlot = -1;
-  for(let i = 0; i < unlocked; i++) {
-    if(!avatarSlots[i] || !avatarSlots[i].nome) { targetSlot = i; break; }
-  }
-
+  const targetSlot = findTargetSlot();
   if(targetSlot === -1) {
     addLog('Sem slots livres. Liberta um slot no Marketplace.', 'bad');
     showBubble('Sem slots livres! 😢');
