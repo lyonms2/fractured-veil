@@ -191,11 +191,23 @@ async function sellEggToPool(id) {
   if(pool.cristais < preco) { addLog('Pool sem saldo suficiente.','bad'); return; }
 
   try {
-    // Actualiza pool (débito)
-    await fbDb().collection('config').doc('pool').update({
-      cristais:   firebase.firestore.FieldValue.increment(-preco),
-      saqueHoje:  firebase.firestore.FieldValue.increment(preco),
+    // Actualiza pool (débito) + log público
+    const batch = fbDb().batch();
+    batch.update(fbDb().collection('config').doc('pool'), {
+      cristais:  firebase.firestore.FieldValue.increment(-preco),
+      saqueHoje: firebase.firestore.FieldValue.increment(preco),
+      totalSaiu: firebase.firestore.FieldValue.increment(preco),
     });
+    const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
+    batch.set(logRef, {
+      tipo:   'saida',
+      motivo: `Ovo ${ovo.raridade} vendido à pool`,
+      origem: walletAddress,
+      total:  preco,
+      pool:   -preco,
+      ts:     firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
 
     // Credita cristais ao jogador
     const freshSnap = await fbDb().collection('players').doc(walletAddress).get();
