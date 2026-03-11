@@ -253,10 +253,16 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
 .slot-empty-wrap{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:28px 16px;flex:1;
+  gap:10px;padding:0 16px;flex:1;min-height:220px;
 }
-.slot-empty-icon{font-size:28px;opacity:.25;}
-.slot-empty-txt{font-size:9px;color:var(--muted);text-align:center;line-height:1.6;}
+.slot-empty-icon{font-size:36px;opacity:.18;margin-bottom:2px;}
+.slot-empty-title{font-family:'Cinzel',serif;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.slot-empty-txt{font-size:8.5px;color:var(--muted);text-align:center;line-height:1.7;opacity:.7;}
+.slot-locked-icon{font-size:28px;opacity:.15;}
+.slot-locked-cost{
+  font-family:'Cinzel',serif;font-size:8px;color:var(--gem);
+  letter-spacing:.5px;text-align:center;margin-top:2px;
+}
 .btn-slot-activate{
   padding:5px 12px;background:var(--green);border:none;border-radius:6px;
   color:#000;font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
@@ -1142,11 +1148,17 @@ function renderSlots() {
     const isActive = i === playerData.activeSlotIdx;
     if(!s || s.pendingEgg) {
       // pendingEgg = slot reservado mas ovo ainda não chocado — aparece como vazio
-      html += `<div class="slot-card">
-        <div class="slot-label">Slot ${i+1}</div>
-        <div class="slot-card-inner" style="justify-content:center;min-height:160px;">
-          <div class="slot-empty-icon">${s && s.pendingEgg ? '🥚' : '🌀'}</div>
-          <div class="slot-empty-txt">${s && s.pendingEgg ? 'A chocar…<br><span style="font-size:8px;color:var(--muted);">Volta ao jogo para completar</span>' : 'Vazio<br><span style="font-size:8px;color:var(--muted);">Choca um ovo no jogo</span>'}</div>
+      const isPending = s && s.pendingEgg;
+      html += `<div class="slot-card" style="border-style:${isPending?'solid':'dashed'};border-color:${isPending?'var(--border2)':'var(--border)'};">
+        <div class="slot-stripe" style="background:${isPending?'var(--gold)':'transparent'};"></div>
+        <div class="slot-header">
+          <div class="slot-label">Slot ${i+1}</div>
+          ${isPending ? '<div class="slot-badge" style="background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);">A chocar</div>' : ''}
+        </div>
+        <div class="slot-empty-wrap">
+          <div class="slot-empty-icon">${isPending ? '🥚' : '🌀'}</div>
+          <div class="slot-empty-title">${isPending ? 'A chocar…' : 'Vazio'}</div>
+          <div class="slot-empty-txt">${isPending ? 'Volta ao jogo<br>para completar' : 'Choca um ovo<br>no jogo'}</div>
         </div>
       </div>`;
     } else {
@@ -1186,10 +1198,14 @@ function renderSlots() {
   // Locked slots
   for(let i=unlocked;i<MAX_SLOTS;i++) {
     html += `<div class="slot-card slot-locked">
-      <div class="slot-label">Slot ${i+1}</div>
-      <div class="slot-card-inner" style="justify-content:center;min-height:160px;">
-        <div class="slot-empty-icon">🔒</div>
-        <div class="slot-empty-txt">Bloqueado</div>
+      <div class="slot-stripe" style="background:transparent;"></div>
+      <div class="slot-header">
+        <div class="slot-label">Slot ${i+1}</div>
+      </div>
+      <div class="slot-empty-wrap">
+        <div class="slot-locked-icon">🔒</div>
+        <div class="slot-empty-title">Bloqueado</div>
+        <div class="slot-locked-cost">${UNLOCK_SLOT_COST} 💎 para desbloquear</div>
       </div>
     </div>`;
   }
