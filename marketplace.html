@@ -1817,7 +1817,7 @@ async function verifyTx() {
   status.innerHTML = '<span class="tx-pending">A verificar na Polygon...</span>';
 
   try {
-    const url = `${POLYGONSCAN_API}?module=transaction&action=gettxreceiptstatus&txhash=${hash}&apikey=YourApiKeyToken`;
+    const url = `${POLYGONSCAN_API}?module=transaction&action=gettxreceiptstatus&txhash=${hash}&apikey=AIHG26MMCEIP8B2H541E22EPCNSA5JFFZ4`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -1827,7 +1827,7 @@ async function verifyTx() {
     }
 
     // Verify tx details
-    const txUrl = `${POLYGONSCAN_API}?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=YourApiKeyToken`;
+    const txUrl = `${POLYGONSCAN_API}?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=AIHG26MMCEIP8B2H541E22EPCNSA5JFFZ4`;
     const txRes = await fetch(txUrl);
     const txData = await txRes.json();
     const tx = txData.result;
