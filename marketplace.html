@@ -1035,9 +1035,18 @@ function renderPoolStatsCard() {
         <div class="pool-price-sub">preço actual de recompra</div>
       </div>
     </div>
-    <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.6;">
+    <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.8;">
       80% de cada taxa de marketplace alimenta esta pool.<br>
-      O preço de recompra sobe quando a pool está cheia e desce quando está baixa.
+      O preço de recompra sobe quando a pool está cheia e desce quando está baixa.<br>
+      <span style="color:var(--gem2);font-weight:700;">
+        ${saldo < 100
+          ? '📊 Limite actual: 1 venda/semana · Cresce com a pool'
+          : saldo < 500
+            ? '📊 Limite actual: 2 vendas/semana · Pool em crescimento'
+            : saldo < 1000
+              ? '📊 Limite actual: 3 vendas/semana · Pool saudável'
+              : '📊 Limite actual: 5 vendas/semana · Pool forte 💪'}
+      </span>
     </div>
   </div>`;
 }
