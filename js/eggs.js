@@ -183,10 +183,23 @@ async function sellEggToPool(id) {
   const limite = 100;
   if(hoje >= limite) { addLog('Limite diário da pool atingido. Volta amanhã.','bad'); return; }
 
+  // Limite de 1 venda à pool por carteira por dia
+  try {
+    const playerSnap = await fbDb().collection('players').doc(walletAddress).get();
+    const pData = playerSnap.data() || {};
+    const poolLog = pData.poolVendasLog || {};
+    const hoje_str = new Date().toISOString().slice(0,10);
+    if(poolLog.data === hoje_str && (poolLog.count || 0) >= 1) {
+      addLog('Já vendeste à pool hoje. Volta amanhã. 🌙','bad');
+      return;
+    }
+  } catch(e2) { console.warn('poolVendasLog check error:', e2); }
+
   // Preço dinâmico
   const ratio = Math.min(2, pool.cristais / 1000);
-  const base  = ovo.raridade === 'Lendário' ? 20 : 5;
-  const preco = Math.max(1, Math.round(base * ratio));
+  const base  = ovo.raridade === 'Lendário' ? 1.0 : 0.5;
+  const minPreco = ovo.raridade === 'Lendário' ? 0.25 : 0.10;
+  const preco = Math.max(minPreco, parseFloat((base * ratio).toFixed(2)));
 
   if(pool.cristais < preco) { addLog('Pool sem saldo suficiente.','bad'); return; }
 
@@ -208,6 +221,16 @@ async function sellEggToPool(id) {
       ts:     firebase.firestore.FieldValue.serverTimestamp(),
     });
     await batch.commit();
+
+    // Regista venda do dia para limite diário
+    const hoje_str2 = new Date().toISOString().slice(0,10);
+    const playerSnap2 = await fbDb().collection('players').doc(walletAddress).get();
+    const pData2 = playerSnap2.data() || {};
+    const poolLog2 = pData2.poolVendasLog || {};
+    const novoCount = poolLog2.data === hoje_str2 ? (poolLog2.count || 0) + 1 : 1;
+    await fbDb().collection('players').doc(walletAddress).update({
+      poolVendasLog: { data: hoje_str2, count: novoCount }
+    });
 
     // Credita cristais ao jogador
     const freshSnap = await fbDb().collection('players').doc(walletAddress).get();
@@ -667,6 +690,7 @@ function renderEggInventory() {
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">Chocar</button>
+             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="window.open('marketplace.html','_blank')">🛒 Vender</button>` : ''}
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎 Pool</button>` : ''}
              <button class="egg-btn burn"  onclick="burnEgg(${ovo.id})">Queimar</button>`
         }
