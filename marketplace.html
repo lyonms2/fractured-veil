@@ -904,7 +904,7 @@ async function buyAvatar(listingId, price) {
     });
 
     // Mark listing as sold
-    await listRef.update({ status:'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await listRef.delete(); // remove listagem do Firestore após venda
 
     closeDetail();
     showToast(`✅ ${l.nome} adquirido com sucesso!`, 'ok');
@@ -1048,7 +1048,7 @@ async function unlistAvatar(listingId) {
     await updateSlots(slots => {
       if(slots[slotIdx]) slots[slotIdx].listed = false;
     });
-    await db.collection('avatarMarket').doc(listingId).update({ status:'cancelled' });
+    await db.collection('avatarMarket').doc(listingId).delete(); // remove listagem do Firestore ao cancelar
 
     closeDetail();
     showToast('Listagem cancelada. Avatar desbloqueado.', 'ok');
