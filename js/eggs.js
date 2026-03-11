@@ -600,7 +600,6 @@ function renderEggInventory() {
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">Chocar</button>
-             <button class="egg-btn sell"  onclick="closeEggInventory();openMarket();setTimeout(()=>{mktSection('eggs');mktTab('sell');selectEggToSell(${ovo.id});},100)">Vender</button>
              <button class="egg-btn burn"  onclick="burnEgg(${ovo.id})">Queimar</button>`
         }
       </div>
