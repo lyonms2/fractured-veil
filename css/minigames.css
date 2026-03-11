@@ -176,6 +176,8 @@
 .egg-btn.sell:hover   { background:rgba(90,180,232,.25); }
 .egg-btn.pool   { border-color:#a78bfa; color:#c4b5fd; background:rgba(167,139,250,.12); font-weight:700; }
 .egg-btn.pool:hover   { background:rgba(167,139,250,.28); box-shadow:0 0 8px rgba(167,139,250,.3); }
+.egg-btn.market { border-color:#e8a030; color:#f0b840; background:rgba(232,160,48,.1); font-weight:700; }
+.egg-btn.market:hover { background:rgba(232,160,48,.25); box-shadow:0 0 8px rgba(232,160,48,.25); }
 .egg-empty {
   font-size:8px; color:#554466; text-align:center; padding:10px 0;
 }
