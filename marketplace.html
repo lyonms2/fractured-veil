@@ -538,6 +538,71 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .btn-buy-avatar:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
 /* ═══════════════════════════════════════════
+   OVOS BROWSE
+═══════════════════════════════════════════ */
+.egg-browse-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:12px;
+}
+.egg-mkt-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;padding:14px 12px 12px;
+  display:flex;flex-direction:column;align-items:center;
+  transition:all .25s;cursor:pointer;position:relative;
+}
+.egg-mkt-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 28px rgba(124,58,237,.18);
+}
+.egg-mkt-card.raro{border-color:rgba(90,180,232,.3);}
+.egg-mkt-card.raro:hover{border-color:var(--rare);box-shadow:0 8px 28px rgba(90,180,232,.2);}
+.egg-mkt-card.lendario{border-color:rgba(232,160,48,.3);}
+.egg-mkt-card.lendario:hover{border-color:var(--legendary);box-shadow:0 8px 28px rgba(232,160,48,.2);}
+.egg-mkt-icon{font-size:36px;margin-bottom:8px;line-height:1;}
+.egg-mkt-rarity{
+  font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:3px;
+}
+.egg-mkt-card.raro .egg-mkt-rarity{color:var(--rare);}
+.egg-mkt-card.lendario .egg-mkt-rarity{color:var(--legendary);}
+.egg-mkt-elem{font-size:10px;color:var(--text2);margin-bottom:10px;}
+.egg-mkt-seller{
+  font-size:7px;color:var(--muted);font-family:monospace;
+  margin-bottom:8px;text-align:center;
+}
+.egg-mkt-price{
+  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  color:var(--gem2);display:flex;align-items:center;gap:4px;
+  margin-bottom:10px;
+}
+.egg-mkt-expiry{
+  font-size:7px;color:var(--muted);margin-bottom:10px;
+}
+.egg-mkt-expiry.urgente{color:var(--red2);font-weight:700;}
+.btn-buy-egg-mkt{
+  width:100%;padding:7px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:.5px;transition:all .2s;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;
+}
+.btn-buy-egg-mkt:hover{filter:brightness(1.15);transform:scale(1.02);}
+.btn-buy-egg-mkt:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none;}
+.egg-mkt-own{
+  position:absolute;top:8px;right:8px;font-size:7px;font-weight:700;
+  padding:2px 6px;border-radius:6px;letter-spacing:.5px;
+  background:rgba(34,197,94,.15);color:var(--green2);border:1px solid var(--green);
+}
+/* modal de listar ovo */
+.egg-list-preview{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:14px;background:var(--surface);border-radius:10px;margin-bottom:14px;
+}
+.egg-list-preview-icon{font-size:32px;}
+.egg-list-preview-name{font-size:11px;font-weight:700;color:var(--text);}
+.egg-list-preview-sub{font-size:9px;color:var(--muted);}
+
+/* ═══════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════ */
 #toast{
@@ -628,8 +693,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
       <span class="nav-icon">💎</span> Comprar Cristais
     </button>
-    <button class="mkt-nav-btn" onclick="showSection('buyegg')" id="nav-buyegg">
-      <span class="nav-icon">🥚</span> Ovo Raro Garantido
+    <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
+      <span class="nav-icon">🥚</span> Ovos à Venda
     </button>
   </nav>
 
@@ -719,24 +784,49 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       </div>
     </div>
 
-    <!-- ── OVO RARO ── -->
-    <div class="mkt-section" id="sec-buyegg">
-      <div class="section-title">🥚 Ovo Raro Garantido</div>
-      <div class="section-sub">Recebe um ovo Raro para chocar no jogo principal. Vai directamente para o teu inventário.</div>
-      <div class="rare-egg-card">
-        <span class="rare-egg-icon">💙</span>
-        <div class="rare-egg-title">Ovo Raro Garantido</div>
-        <div class="rare-egg-desc">
-          Um ovo de raridade Rara assegurada, com elemento aleatório. Choca-o no jogo principal para obter um avatar Raro.<br><br>
-          Avatares Raros têm maior chance de botar ovos Raros e Lendários — o início do ciclo P2E.
-        </div>
-        <div class="rare-egg-price">💎 8 Cristais</div>
-        <button class="btn-buy-egg" id="btnBuyEgg" onclick="buyRareEgg()">Comprar Ovo Raro</button>
-        <div id="buyEggStatus" style="font-size:9px;color:var(--text2);margin-top:10px;"></div>
+    <!-- ── OVOS À VENDA ── -->
+    <div class="mkt-section" id="sec-eggs">
+      <div class="section-title">🥚 Ovos à Venda</div>
+      <div class="section-sub">Ovos Raros e Lendários listados por outros jogadores. Choca-os no jogo principal para obter avatares de raridade superior.</div>
+
+      <div class="filters-row">
+        <input class="search-input" id="eggFilterElem" placeholder="🔍 Filtrar por elemento..." oninput="renderEggBrowse()"/>
+        <select class="filter-select" id="eggFilterRarity" onchange="renderEggBrowse()">
+          <option value="">Raridade: Todas</option>
+          <option value="Raro">🔵 Raro</option>
+          <option value="Lendário">🌟 Lendário</option>
+        </select>
+        <select class="filter-select" id="eggFilterSort" onchange="renderEggBrowse()">
+          <option value="recent">Mais recentes</option>
+          <option value="price_asc">Preço ↑</option>
+          <option value="price_desc">Preço ↓</option>
+        </select>
+      </div>
+
+      <div id="eggBrowseGrid" class="egg-browse-grid">
+        <div class="loading"><div class="spinner"></div><div>A carregar ovos...</div></div>
       </div>
     </div>
 
   </main>
+</div>
+
+<!-- ══ MODAL LISTAR OVO ══ -->
+<div class="overlay" id="listEggOverlay">
+  <div class="modal-box">
+    <div class="modal-title">🥚 Listar Ovo à Venda</div>
+    <div class="modal-sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário e listado no marketplace.</div>
+    <div id="listEggPreview"></div>
+    <div class="modal-field">
+      <div class="modal-label">Preço em 💎 Cristais</div>
+      <input class="modal-input" id="listEggPriceInput" type="number" min="1" placeholder="ex: 5"/>
+    </div>
+    <div id="listEggStatus" style="font-size:9px;color:var(--muted);margin-bottom:10px;text-align:center;"></div>
+    <div class="modal-row">
+      <button class="btn-modal-cancel" onclick="closeListEggModal()">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmListEgg()">Listar</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ MODAL LISTAR ══ -->
@@ -805,16 +895,16 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
 const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // carteira da pool — recebe MATIC das compras de cristais
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
-const RARE_EGG_COST    = 8;   // 💎
+// RARE_EGG_COST removido — ovos só vendem entre jogadores
 const LIST_COST        = 2;   // 💎
 const UNLOCK_SLOT_COST = 15;  // 💎
 
 // ── POOL ──
 const POOL_ALVO        = 1000; // 💎 referência para preço dinâmico
-const POOL_BASE_RARO   = 5;    // 💎 preço base por ovo Raro
-const POOL_BASE_LEND   = 20;   // 💎 preço base por ovo Lendário
-const POOL_MIN_RARO    = 2;    // 💎 mínimo garantido (pool vazia)
-const POOL_MIN_LEND    = 8;    // 💎 mínimo garantido (pool vazia)
+const POOL_BASE_RARO   = 0.5;  // 💎 preço base por ovo Raro (pool no alvo)
+const POOL_BASE_LEND   = 1.0;  // 💎 preço base por ovo Lendário (pool no alvo)
+const POOL_MIN_RARO    = 0.10; // 💎 mínimo garantido (pool vazia)
+const POOL_MIN_LEND    = 0.25; // 💎 mínimo garantido (pool vazia)
 const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
@@ -1180,7 +1270,7 @@ function renderSection() {
   if(currentSection === 'pool')        renderPoolSection();
   if(currentSection === 'slots')       renderSlots();
   if(currentSection === 'buycrystals') renderCrystals();
-  if(currentSection === 'buyegg')      renderBuyEgg();
+  if(currentSection === 'eggs')        loadEggListings();
 }
 
 // ═══════════════════════════════════════════
@@ -1776,58 +1866,255 @@ async function verifyTx() {
 // ═══════════════════════════════════════════
 // OVO RARO
 // ═══════════════════════════════════════════
-function renderBuyEgg() {
-  const btn = document.getElementById('btnBuyEgg');
-  if(!playerData) return;
-  btn.disabled = playerData.cristais < RARE_EGG_COST;
-  document.getElementById('buyEggStatus').textContent =
-    playerData.cristais < RARE_EGG_COST
-    ? `Precisas de ${RARE_EGG_COST} 💎 (tens ${playerData.cristais} 💎)`
-    : `Saldo disponível: ${playerData.cristais} 💎`;
+// ═══════════════════════════════════════════
+// OVOS MARKETPLACE
+// ═══════════════════════════════════════════
+let eggListings    = [];
+let eggListingUnsub = null;
+let listingEggData  = null; // ovo a listar
+
+const EGG_LIST_FEE  = 0; // sem taxa de listagem — mais simples para ovos
+const EGG_SALE_TAX  = 0.10; // 10% da venda vai para a pool
+
+function loadEggListings() {
+  if(eggListingUnsub) eggListingUnsub();
+  eggListingUnsub = db.collection('eggMarket')
+    .where('status','==','listed')
+    .onSnapshot(snap => {
+      eggListings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentSection === 'eggs') renderEggBrowse();
+    }, err => console.warn('eggMarket snapshot error:', err));
 }
 
-async function buyRareEgg() {
-  if(!playerData || !walletAddress) return;
+function renderEggBrowse() {
+  const grid = document.getElementById('eggBrowseGrid');
+  if(!grid) return;
 
-  // Lê cristais frescos do Firebase — evita debitar valor desactualizado
-  const freshSnap = await db.collection('players').doc(walletAddress).get();
-  const freshData = freshSnap.data() || {};
-  const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
+  const elemFilter = (document.getElementById('eggFilterElem')?.value || '').toLowerCase();
+  const rarFilter  = document.getElementById('eggFilterRarity')?.value || '';
+  const sort       = document.getElementById('eggFilterSort')?.value || 'recent';
 
-  if(freshCristais < RARE_EGG_COST) {
-    showToast(`Precisas de ${RARE_EGG_COST} 💎 para comprar um Ovo Raro.`, 'err');
+  let list = eggListings.filter(e => {
+    if(rarFilter  && e.raridade !== rarFilter) return false;
+    if(elemFilter && !(e.elemento||'').toLowerCase().includes(elemFilter)) return false;
+    return true;
+  });
+
+  if(sort === 'price_asc')  list.sort((a,b) => a.price - b.price);
+  if(sort === 'price_desc') list.sort((a,b) => b.price - a.price);
+  if(sort === 'recent')     list.sort((a,b) => (b.listedAt||0) - (a.listedAt||0));
+
+  if(!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">🥚</div>
+      <div class="empty-txt">Nenhum ovo à venda de momento.<br>Avatares Raros e Lendários adultos botam ovos que podes listar aqui.</div>
+    </div>`;
     return;
   }
 
-  const taxaOvo    = Math.round(RARE_EGG_COST * TAXA_OVO);
-  const newCristais = freshCristais - RARE_EGG_COST;
+  const now = Date.now();
+  grid.innerHTML = list.map(egg => {
+    const isOwn = egg.sellerId === walletAddress;
+    const icon  = egg.raridade === 'Lendário' ? '🌟' : '🔵';
+    const cls   = egg.raridade === 'Lendário' ? 'lendario' : 'raro';
+    const seller = egg.sellerId ? egg.sellerId.slice(0,6)+'…'+egg.sellerId.slice(-4) : '—';
+    const expiryMs  = egg.expiraEm - now;
+    const expiryDias = Math.max(0, Math.ceil(expiryMs / 86400000));
+    const expiryUrgente = expiryDias <= 2;
+    const canBuy    = !isOwn && playerData && playerData.cristais >= egg.price;
 
-  // Taxa vai para a pool
-  if(taxaOvo > 0) await addToPool(taxaOvo, 'compra ovo raro loja');
+    return `<div class="egg-mkt-card ${cls}" onclick="openEggDetail('${egg.id}')">
+      ${isOwn ? '<div class="egg-mkt-own">Teu</div>' : ''}
+      <div class="egg-mkt-icon">${icon}</div>
+      <div class="egg-mkt-rarity">${egg.raridade}</div>
+      <div class="egg-mkt-elem">${egg.elemento || '—'}</div>
+      <div class="egg-mkt-seller">por ${seller}</div>
+      <div class="egg-mkt-price">${egg.price} 💎</div>
+      <div class="egg-mkt-expiry ${expiryUrgente ? 'urgente' : ''}">
+        ${expiryDias > 0 ? `Expira em ${expiryDias}d` : '⚠️ Expirado'}
+      </div>
+      ${isOwn
+        ? `<button class="btn-buy-egg-mkt" style="background:rgba(232,96,58,.2);color:var(--red2);border:1px solid rgba(232,96,58,.3);"
+             onclick="event.stopPropagation();unlistEgg('${egg.id}')">✕ Retirar</button>`
+        : `<button class="btn-buy-egg-mkt" ${!canBuy ? 'disabled' : ''}
+             onclick="event.stopPropagation();buyEggFromMarket('${egg.id}')">
+             ${!playerData || playerData.cristais < egg.price ? '💎 Sem saldo' : '💎 Comprar'}
+           </button>`
+      }
+    </div>`;
+  }).join('');
+}
 
-  // Gera ovo raro
-  const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
-  const elem = elementos[Math.floor(Math.random()*elementos.length)];
-  const expiraEm = Date.now() + 14*24*60*60*1000; // 14 dias
-  const newEgg = { id: Date.now(), raridade:'Raro', elemento:elem, expiraEm };
+function openEggDetail(id) {
+  // por agora só o botão nos cards — futuramente modal de detalhe
+}
 
-  // Escreve no inboxEggs — o jogo consome e move para o slot activo no próximo load/save
-  // Nunca toca em avatarSlots directamente para evitar race conditions com o jogo
-  await db.collection('players').doc(walletAddress).update({
-    inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
-    cristais:      newCristais,
-    'gs.cristais': newCristais,
-  });
+// ── LISTAR OVO ──
+function openListEggModal(ovoData) {
+  listingEggData = ovoData;
+  const icon = ovoData.raridade === 'Lendário' ? '🌟' : '🔵';
+  document.getElementById('listEggPreview').innerHTML = `
+    <div class="egg-list-preview">
+      <div class="egg-list-preview-icon">${icon}</div>
+      <div class="egg-list-preview-name">${ovoData.raridade} · ${ovoData.elemento}</div>
+      <div class="egg-list-preview-sub">10% da venda vai para a pool P2E</div>
+    </div>`;
+  document.getElementById('listEggPriceInput').value = '';
+  document.getElementById('listEggStatus').textContent = '';
+  document.getElementById('listEggOverlay').style.display = 'flex';
+}
 
-  // Actualiza playerData local
-  playerData.cristais = newCristais;
-  if(!playerData.gs) playerData.gs = {};
-  playerData.gs.cristais = newCristais;
-  updateCristaisDisplay();
+function closeListEggModal() {
+  document.getElementById('listEggOverlay').style.display = 'none';
+  listingEggData = null;
+}
 
-  showToast(`✅ Ovo Raro ${elem} enviado para o teu inventário!`, 'ok');
-  document.getElementById('buyEggStatus').textContent = `Ovo Raro de ${elem} será entregue ao teu avatar activo quando voltares ao jogo.`;
-  renderBuyEgg();
+async function confirmListEgg() {
+  if(!listingEggData || !walletAddress) return;
+  const price = parseInt(document.getElementById('listEggPriceInput').value);
+  if(!price || price < 1) {
+    document.getElementById('listEggStatus').textContent = 'Define um preço válido (mínimo 1 💎).';
+    return;
+  }
+
+  const statusEl = document.getElementById('listEggStatus');
+  statusEl.textContent = 'A listar...';
+
+  try {
+    // Lê inboxEggs frescos para remover o ovo correcto
+    const freshSnap = await db.collection('players').doc(walletAddress).get();
+    const freshData = freshSnap.data() || {};
+    const inboxEggs = freshData.inboxEggs || [];
+    // Encontra o ovo pelo id
+    const ovoIdx = inboxEggs.findIndex(e => e.id === listingEggData.id);
+    if(ovoIdx === -1) {
+      statusEl.textContent = 'Ovo não encontrado no inventário.';
+      return;
+    }
+    const ovoToRemove = inboxEggs[ovoIdx];
+
+    // Remove do inboxEggs e cria listagem
+    await db.collection('players').doc(walletAddress).update({
+      inboxEggs: firebase.firestore.FieldValue.arrayRemove(ovoToRemove)
+    });
+    await db.collection('eggMarket').add({
+      raridade:  listingEggData.raridade,
+      elemento:  listingEggData.elemento,
+      expiraEm:  listingEggData.expiraEm,
+      eggId:     listingEggData.id,
+      sellerId:  walletAddress,
+      price,
+      status:   'listed',
+      listedAt:  Date.now(),
+    });
+
+    closeListEggModal();
+    showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
+    // Actualiza inventário local (game vai sync no próximo load)
+    if(playerData.inboxEggs) {
+      playerData.inboxEggs = playerData.inboxEggs.filter(e => e.id !== listingEggData.id);
+    }
+  } catch(e) {
+    console.error(e);
+    statusEl.textContent = 'Erro ao listar. Tenta novamente.';
+  }
+}
+
+// ── COMPRAR OVO ──
+async function buyEggFromMarket(listingId) {
+  if(!playerData || !walletAddress) return;
+
+  try {
+    const listRef  = db.collection('eggMarket').doc(listingId);
+    const listSnap = await listRef.get();
+    if(!listSnap.exists || listSnap.data().status !== 'listed') {
+      showToast('Ovo já não disponível.', 'err'); return;
+    }
+    const egg = listSnap.data();
+
+    if(egg.sellerId === walletAddress) {
+      showToast('Não podes comprar o teu próprio ovo.', 'err'); return;
+    }
+
+    // Lê cristais frescos do comprador
+    const buyerSnap = await db.collection('players').doc(walletAddress).get();
+    const buyerData = buyerSnap.data() || {};
+    const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
+    if(freshCristais < egg.price) {
+      showToast('Cristais insuficientes.', 'err'); return;
+    }
+
+    const taxa       = Math.round(egg.price * EGG_SALE_TAX);
+    const sellerRecebe = egg.price - taxa;
+    const newCristais  = freshCristais - egg.price;
+
+    // Debita comprador + entrega ovo no inboxEggs
+    const newEgg = {
+      id:       egg.eggId || Date.now(),
+      raridade: egg.raridade,
+      elemento: egg.elemento,
+      expiraEm: egg.expiraEm,
+    };
+    await db.collection('players').doc(walletAddress).update({
+      cristais:      newCristais,
+      'gs.cristais': newCristais,
+      inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
+    });
+
+    // Credita vendedor
+    const sellerSnap = await db.collection('players').doc(egg.sellerId).get();
+    const sellerData = sellerSnap.data() || {};
+    const sellerCristais = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
+    await db.collection('players').doc(egg.sellerId).update({
+      cristais:      sellerCristais + sellerRecebe,
+      'gs.cristais': sellerCristais + sellerRecebe,
+    });
+
+    // Remove listagem
+    await listRef.delete();
+
+    // Taxa para a pool
+    if(taxa > 0) await addToPool(taxa, `venda ovo ${egg.raridade} · ${egg.elemento}`, egg.sellerId);
+
+    // Actualiza local
+    playerData.cristais = newCristais;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    updateCristaisDisplay();
+
+    showToast(`✅ Ovo ${egg.raridade} ${egg.elemento} adquirido! Vai para o teu inventário no jogo.`, 'ok');
+  } catch(e) {
+    console.error(e);
+    showToast('Erro ao comprar ovo. Tenta novamente.', 'err');
+  }
+}
+
+// ── RETIRAR OVO ──
+async function unlistEgg(listingId) {
+  try {
+    const listRef  = db.collection('eggMarket').doc(listingId);
+    const listSnap = await listRef.get();
+    if(!listSnap.exists) { showToast('Listagem não encontrada.','err'); return; }
+    const egg = listSnap.data();
+    if(egg.sellerId !== walletAddress) { showToast('Não autorizado.','err'); return; }
+
+    // Devolve ovo ao inboxEggs
+    const ovoRestaurado = {
+      id:       egg.eggId || Date.now(),
+      raridade: egg.raridade,
+      elemento: egg.elemento,
+      expiraEm: egg.expiraEm,
+    };
+    await db.collection('players').doc(walletAddress).update({
+      inboxEggs: firebase.firestore.FieldValue.arrayUnion(ovoRestaurado)
+    });
+    await listRef.delete();
+
+    showToast('Ovo retirado da venda e devolvido ao inventário.', 'ok');
+  } catch(e) {
+    console.error(e);
+    showToast('Erro ao retirar listagem.', 'err');
+  }
 }
 
 // ═══════════════════════════════════════════
