@@ -180,17 +180,30 @@ async function sellEggToPool(id) {
   if(!pool || pool.cristais <= 0) { addLog('Pool vazia de momento. Tenta mais tarde.','bad'); return; }
 
   const hoje = pool.saqueHoje || 0;
-  const limite = 100;
-  if(hoje >= limite) { addLog('Limite diário da pool atingido. Volta amanhã.','bad'); return; }
+  const limiteGlobal = 100;
+  if(hoje >= limiteGlobal) { addLog('Limite diário global da pool atingido. Volta amanhã.','bad'); return; }
 
-  // Limite de 1 venda à pool por carteira por dia
+  // Limite semanal dinâmico baseado no saldo da pool
+  function calcLimiteSemanal(saldo) {
+    if(saldo >= 1000) return 5;
+    if(saldo >= 500)  return 3;
+    if(saldo >= 100)  return 2;
+    return 1;
+  }
+  const limiteSemanal = calcLimiteSemanal(pool.cristais);
+
   try {
     const playerSnap = await fbDb().collection('players').doc(walletAddress).get();
     const pData = playerSnap.data() || {};
     const poolLog = pData.poolVendasLog || {};
-    const hoje_str = new Date().toISOString().slice(0,10);
-    if(poolLog.data === hoje_str && (poolLog.count || 0) >= 1) {
-      addLog('Já vendeste à pool hoje. Volta amanhã. 🌙','bad');
+    // Semana ISO: ano + nº da semana
+    const agora = new Date();
+    const startOfYear = new Date(agora.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((agora - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+    const semana_str = `${agora.getFullYear()}-W${weekNum}`;
+    const countSemana = poolLog.semana === semana_str ? (poolLog.count || 0) : 0;
+    if(countSemana >= limiteSemanal) {
+      addLog(`Limite semanal da pool atingido (${limiteSemanal}x). Volta na próxima semana. 🌙 A pool precisa de crescer para aumentar o limite.`,'bad');
       return;
     }
   } catch(e2) { console.warn('poolVendasLog check error:', e2); }
@@ -222,14 +235,17 @@ async function sellEggToPool(id) {
     });
     await batch.commit();
 
-    // Regista venda do dia para limite diário
-    const hoje_str2 = new Date().toISOString().slice(0,10);
+    // Regista venda da semana para limite semanal dinâmico
+    const agora2 = new Date();
+    const startOfYear2 = new Date(agora2.getFullYear(), 0, 1);
+    const weekNum2 = Math.ceil(((agora2 - startOfYear2) / 86400000 + startOfYear2.getDay() + 1) / 7);
+    const semana_str2 = `${agora2.getFullYear()}-W${weekNum2}`;
     const playerSnap2 = await fbDb().collection('players').doc(walletAddress).get();
     const pData2 = playerSnap2.data() || {};
     const poolLog2 = pData2.poolVendasLog || {};
-    const novoCount = poolLog2.data === hoje_str2 ? (poolLog2.count || 0) + 1 : 1;
+    const novoCount2 = poolLog2.semana === semana_str2 ? (poolLog2.count || 0) + 1 : 1;
     await fbDb().collection('players').doc(walletAddress).update({
-      poolVendasLog: { data: hoje_str2, count: novoCount }
+      poolVendasLog: { semana: semana_str2, count: novoCount2 }
     });
 
     // Credita cristais ao jogador
