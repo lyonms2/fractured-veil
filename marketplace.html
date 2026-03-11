@@ -813,6 +813,8 @@ const UNLOCK_SLOT_COST = 15;  // 💎
 const POOL_ALVO        = 1000; // 💎 referência para preço dinâmico
 const POOL_BASE_RARO   = 5;    // 💎 preço base por ovo Raro
 const POOL_BASE_LEND   = 20;   // 💎 preço base por ovo Lendário
+const POOL_MIN_RARO    = 2;    // 💎 mínimo garantido (pool vazia)
+const POOL_MIN_LEND    = 8;    // 💎 mínimo garantido (pool vazia)
 const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
@@ -823,10 +825,11 @@ const POOL_SPLIT       = 0.80; // 80% fica na pool para jogadores
 let poolData = null; // carregado do Firestore
 
 function calcPoolPrice(raridade) {
-  if(!poolData) return raridade === 'Lendário' ? POOL_BASE_LEND : POOL_BASE_RARO;
+  const base = raridade === 'Lendário' ? POOL_BASE_LEND : POOL_BASE_RARO;
+  const min  = raridade === 'Lendário' ? POOL_MIN_LEND  : POOL_MIN_RARO;
+  if(!poolData) return base;
   const ratio = Math.min(2, (poolData.cristais || 0) / POOL_ALVO);
-  const base   = raridade === 'Lendário' ? POOL_BASE_LEND : POOL_BASE_RARO;
-  return Math.max(1, Math.round(base * ratio));
+  return Math.max(min, parseFloat((base * ratio).toFixed(2)));
 }
 
 function poolDisponivel() {
