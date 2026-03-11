@@ -135,8 +135,8 @@ function xpParaNivel(n) {
 function rarityBonus() {
   if(!avatar) return { xp:1, moedas:1, decay:1, eggs:1, cooldown:1, burnBonus:0, shopDiscount:0 };
   switch(avatar.raridade) {
-    case 'Lendário': return { xp:1.6, moedas:1.5, decay:0.6, eggs:3, cooldown:0.5,  burnBonus:0.5,  shopDiscount:0.20 };
-    case 'Raro':     return { xp:1.3, moedas:1.2, decay:0.8, eggs:2, cooldown:0.75, burnBonus:0.25, shopDiscount:0.10 };
+    case 'Lendário': return { xp:1.6, moedas:1.5, decay:0.6, eggs:3, cooldown:1.5,  burnBonus:0.5,  shopDiscount:0.20 }; // 36h cooldown
+    case 'Raro':     return { xp:1.3, moedas:1.2, decay:0.8, eggs:2, cooldown:2.0,  burnBonus:0.25, shopDiscount:0.10 };  // 48h cooldown
     default:         return { xp:1.0, moedas:1.0, decay:1.0, eggs:1, cooldown:1.0,  burnBonus:0,    shopDiscount:0    };
   }
 }
