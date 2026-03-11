@@ -178,17 +178,85 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 /* ═══════════════════════════════════════════
    SLOTS
 ═══════════════════════════════════════════ */
-.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;}
+
 .slot-card{
-  background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);
-  padding:16px 12px;min-height:220px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:8px;position:relative;transition:all .2s;
+  background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  display:flex;flex-direction:column;align-items:stretch;
+  position:relative;overflow:hidden;transition:all .25s;
 }
-.slot-card.slot-active{border-color:var(--green);box-shadow:0 0 16px rgba(34,197,94,.2);}
-.slot-card.slot-locked{border-style:dashed;opacity:.5;}
-.slot-label{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;position:absolute;top:8px;left:10px;}
-.slot-empty-icon{font-size:32px;opacity:.3;}
-.slot-empty-txt{font-size:9px;color:var(--muted);text-align:center;}
+.slot-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.slot-card.slot-active{border-color:var(--green);box-shadow:0 0 20px rgba(34,197,94,.15);}
+.slot-card.slot-frozen{border-color:var(--gold);box-shadow:0 0 14px rgba(201,168,76,.12);}
+.slot-card.slot-locked{border-style:dashed;opacity:.4;}
+
+/* stripe de raridade no topo */
+.slot-stripe{height:3px;width:100%;flex-shrink:0;}
+.slot-stripe.Comum{background:var(--common);}
+.slot-stripe.Raro{background:linear-gradient(90deg,var(--rare),#a0d8f8);}
+.slot-stripe.Lendário{background:linear-gradient(90deg,var(--legendary),#ffd700);}
+
+.slot-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px 0;
+}
+.slot-label{font-size:8px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'Cinzel',serif;}
+.slot-badge{
+  font-size:7px;font-family:'Cinzel',serif;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;font-weight:700;
+}
+.slot-badge.active{background:rgba(34,197,94,.15);color:var(--green2);border:1px solid rgba(34,197,94,.3);}
+.slot-badge.frozen{background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid rgba(201,168,76,.3);}
+
+/* avatar SVG container — fixed square, clips overflow */
+.slot-svg-wrap{
+  width:100px;height:100px;margin:14px auto 4px;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);
+  border-radius:16px;flex-shrink:0;
+}
+.slot-svg-wrap svg{width:96px;height:96px;display:block;}
+
+.slot-body{padding:10px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+
+.slot-av-name{
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--text);
+  text-align:center;line-height:1.3;
+}
+.slot-av-sub{font-size:9px;color:var(--text2);text-align:center;font-style:italic;min-height:12px;}
+.slot-av-pill{
+  font-size:8px;font-weight:600;padding:2px 10px;border-radius:20px;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.slot-av-pill.Comum{background:rgba(122,184,122,.15);color:var(--common);border:1px solid rgba(122,184,122,.25);}
+.slot-av-pill.Raro{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.25);}
+.slot-av-pill.Lendário{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
+
+.slot-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:100%;
+  margin-top:2px;
+}
+.slot-stat{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  background:var(--surface);border-radius:6px;padding:4px 2px;
+}
+.slot-stat b{font-size:10px;font-weight:700;color:var(--text);}
+.slot-stat span{font-size:7px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+
+.slot-actions{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:4px;}
+.btn-slot-burn{
+  padding:5px 12px;background:transparent;border:1px solid rgba(239,68,68,.4);border-radius:6px;
+  color:var(--red2);font-size:8px;font-weight:700;cursor:pointer;
+  font-family:'Cinzel',serif;letter-spacing:.5px;transition:all .2s;width:100%;
+}
+.btn-slot-burn:hover{background:rgba(239,68,68,.1);border-color:var(--red);}
+
+.slot-empty-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:28px 16px;flex:1;
+}
+.slot-empty-icon{font-size:28px;opacity:.25;}
+.slot-empty-txt{font-size:9px;color:var(--muted);text-align:center;line-height:1.6;}
 .btn-slot-activate{
   padding:5px 12px;background:var(--green);border:none;border-radius:6px;
   color:#000;font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
@@ -1086,24 +1154,30 @@ function renderSlots() {
       const _ps = (s.nome||'Avatar').split(',');
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
       const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
+      const dias = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
       html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
-        <div class="av-card-stripe ${s.raridade}"></div>
-        <div class="slot-label">Slot ${i+1}</div>
-        ${isActive ? '<div class="av-card-badge badge-active">Activo</div>' : ''}
-        ${isFrozen ? '<div class="av-card-badge badge-frozen">À venda</div>' : ''}
-        <div class="slot-card-inner">
-          <div class="av-svg-wrap" style="margin-top:8px;">${gerarSVG(s.elemento,s.raridade,s.seed||0,70,70)}</div>
-          <div class="av-name">${_ns}</div>
-          ${_ss ? `<div class="av-sufixo">${_ss}</div>` : '<div class="av-sufixo"></div>'}
-          <div class="av-pill ${s.raridade}">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
-          <div class="av-stats" style="width:100%;margin-bottom:8px;">
-            <div class="av-stat"><b>${s.nivel||1}</b>Nível</div>
-            <div class="av-stat"><b>${Math.floor(s.vinculo||0)}</b>Vínculo</div>
-            <div class="av-stat"><b>${s.bornAt?Math.floor((Date.now()-s.bornAt)/86400000):0}</b>Dias</div>
+        <div class="slot-stripe ${s.raridade}"></div>
+        <div class="slot-header">
+          <div class="slot-label">Slot ${i+1}</div>
+          ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
+          ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
+        </div>
+        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96)}</div>
+        <div class="slot-body">
+          <div class="slot-av-name">${_ns}</div>
+          <div class="slot-av-sub">${_ss}</div>
+          <div class="slot-av-pill ${s.raridade}">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
+          <div class="slot-stats">
+            <div class="slot-stat"><b>${s.nivel||1}</b><span>Nível</span></div>
+            <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>Vínculo</span></div>
+            <div class="slot-stat"><b>${dias}</b><span>Dias</span></div>
           </div>
-          ${!isActive && !isFrozen ? `<button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>` : ''}
-          ${!isActive && !isFrozen ? `<button class="btn-slot-burn" onclick="burnAvatar(${i})" style="margin-top:4px;width:100%;padding:5px;font-size:7px;font-family:'Cinzel',serif;background:transparent;border:1px solid #7f1d1d;color:#f87171;border-radius:4px;cursor:pointer;letter-spacing:1px;">🔥 Queimar</button>` : ''}
-          ${isFrozen ? `<div style="font-size:8px;color:var(--blue2);text-align:center;">❄️ Congelado — à venda</div>` : ''}
+          ${!isActive && !isFrozen ? `
+          <div class="slot-actions">
+            <button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>
+            <button class="btn-slot-burn" onclick="burnAvatar(${i})">🔥 Queimar</button>
+          </div>` : ''}
+          ${isFrozen ? '<div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;">❄️ Congelado — à venda</div>' : ''}
         </div>
       </div>`;
     }
