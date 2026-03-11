@@ -230,6 +230,14 @@ function updateDirtyVisuals() {
 function gameTick() {
   tickCount++;
   if(hatched && !dead) totalSecs++;
+
+  // Auto-heal: se avatar está vivo mas bornAt ficou 0 (bug de save antigo), corrige agora
+  if(hatched && !dead && !bornAt) {
+    bornAt = Date.now();
+    if(avatar) avatar.bornAt = bornAt;
+    scheduleSave();
+  }
+
   updateTimer();
 
   if(!hatched || dead || !avatar) return;
