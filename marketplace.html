@@ -296,7 +296,72 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   letter-spacing:.5px;transition:all .2s;
 }
 .btn-slot-unlist:hover{background:rgba(239,68,68,.1);}
-/* ── POOL WIDGET ── */
+/* ── POOL SECTION ── */
+.pool-stats-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:14px;
+  padding:20px;margin-bottom:20px;
+}
+.pool-sc-title{
+  font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;
+}
+.pool-sc-balance{
+  font-family:'Cinzel',serif;font-size:32px;font-weight:700;
+  color:var(--gem2);text-align:center;margin-bottom:4px;
+  text-shadow:0 0 20px rgba(167,139,250,.4);
+}
+.pool-sc-balance-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:16px;}
+.pool-sc-bar-wrap{height:6px;background:var(--border);border-radius:3px;margin-bottom:16px;overflow:hidden;}
+.pool-sc-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+.pool-sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.pool-sc-stat{
+  background:var(--surface);border-radius:10px;padding:10px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  border:1px solid var(--border);
+}
+.pool-sc-stat span{font-size:7px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;}
+.pool-sc-stat b{font-size:13px;font-weight:700;color:var(--text);}
+.pool-prices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pool-price-card{
+  border-radius:10px;padding:12px;text-align:center;
+  border:1px solid;
+}
+.pool-price-card.raro{background:rgba(90,180,232,.06);border-color:rgba(90,180,232,.2);}
+.pool-price-card.lendario{background:rgba(232,160,48,.06);border-color:rgba(232,160,48,.2);}
+.pool-price-label{font-size:8px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.pool-price-card.raro .pool-price-label{color:var(--rare);}
+.pool-price-card.lendario .pool-price-label{color:var(--legendary);}
+.pool-price-val{font-family:'Cinzel',serif;font-size:20px;font-weight:700;}
+.pool-price-card.raro .pool-price-val{color:var(--rare);}
+.pool-price-card.lendario .pool-price-val{color:var(--legendary);}
+.pool-price-sub{font-size:8px;color:var(--muted);margin-top:2px;}
+.pool-log-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.pool-log-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;}
+.pool-log-legend{display:flex;gap:10px;}
+.pool-leg{font-size:8px;font-weight:700;letter-spacing:.5px;}
+.pool-leg.entrada{color:var(--green);}
+.pool-leg.saida{color:var(--gem);}
+.pool-log-list{display:flex;flex-direction:column;gap:4px;}
+.pool-log-row{
+  display:grid;grid-template-columns:32px 1fr auto auto;gap:8px;align-items:center;
+  background:var(--surface2);border-radius:8px;padding:8px 12px;
+  border-left:3px solid transparent;font-size:9px;
+}
+.pool-log-row.entrada{border-left-color:var(--green);}
+.pool-log-row.saida{border-left-color:var(--gem);}
+.pool-log-icon{font-size:14px;text-align:center;}
+.pool-log-info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.pool-log-motivo{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pool-log-wallet{font-size:8px;color:var(--muted);font-family:monospace;}
+.pool-log-amount{font-family:'Cinzel',serif;font-weight:700;font-size:11px;white-space:nowrap;}
+.pool-log-row.entrada .pool-log-amount{color:var(--green);}
+.pool-log-row.saida .pool-log-amount{color:var(--gem);}
+.pool-log-time{font-size:7px;color:var(--muted);white-space:nowrap;}
+
+/* ── POOL WIDGET (browse) ── */
 .pool-widget{
   background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
   padding:14px 16px;margin-bottom:20px;
@@ -554,6 +619,11 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <span class="nav-icon">🧬</span> Meus Avatares
     </button>
 
+    <div class="mkt-nav-section">Transparência</div>
+    <button class="mkt-nav-btn" onclick="showSection('pool')" id="nav-pool">
+      <span class="nav-icon">💎</span> Pool P2E
+    </button>
+
     <div class="mkt-nav-section">Cristais 💎</div>
     <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
       <span class="nav-icon">💎</span> Comprar Cristais
@@ -592,10 +662,27 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         </select>
       </div>
 
-      <div id="poolWidget"></div>
       <div id="browseGrid" class="avatar-grid">
         <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
       </div>
+    </div>
+
+    <!-- ── POOL P2E ── -->
+    <div class="mkt-section" id="sec-pool">
+      <div class="section-title">💎 Pool de Recompensas P2E</div>
+      <div class="section-sub">Saldo e histórico público da pool. 80% de cada taxa alimenta a pool; os restantes 20% cobrem manutenção do jogo.</div>
+      <div id="poolStatsCard"></div>
+      <div class="pool-log-header">
+        <div class="pool-log-title">📋 Histórico de Transacções</div>
+        <div class="pool-log-legend">
+          <span class="pool-leg entrada">▲ Entrada</span>
+          <span class="pool-leg saida">▼ Saída</span>
+        </div>
+      </div>
+      <div id="poolLogList" class="pool-log-list">
+        <div class="loading"><div class="spinner"></div><div>A carregar histórico...</div></div>
+      </div>
+      <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
     </div>
 
     <!-- ── MEUS AVATARES ── -->
@@ -716,7 +803,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 // MARKETPLACE — CORE
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
+const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // carteira da pool — recebe MATIC das compras de cristais
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
 const RARE_EGG_COST    = 8;   // 💎
 const LIST_COST        = 2;   // 💎
@@ -729,6 +816,9 @@ const POOL_BASE_LEND   = 20;   // 💎 preço base por ovo Lendário
 const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
+const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev — 20% das taxas
+const DEV_SPLIT        = 0.20; // 20% das taxas vai para manutenção
+const POOL_SPLIT       = 0.80; // 80% fica na pool para jogadores
 
 let poolData = null; // carregado do Firestore
 
@@ -769,6 +859,8 @@ async function loadPool() {
 }
 
 function renderPoolWidget() {
+  // Widget removido do browse — pool tem aba dedicada
+  renderPoolStatsCard();
   const el = document.getElementById('poolWidget');
   if(!el || !poolData) return;
   const precoRaro  = calcPoolPrice('Raro');
@@ -794,15 +886,194 @@ function renderPoolWidget() {
     </div>`;
 }
 
-async function addToPool(cristais, motivo) {
+// ═══════════════════════════════════════════
+// POOL P2E — SECÇÃO
+// ═══════════════════════════════════════════
+let poolLogs = [];
+let poolLogsLast = null;
+
+async function renderPoolSection() {
+  await loadPool();
+  renderPoolStatsCard();
+  await loadPoolLogs(true);
+}
+
+function renderPoolStatsCard() {
+  const el = document.getElementById('poolStatsCard');
+  if(!el || !poolData) return;
+  const saldo      = poolData.cristais    || 0;
+  const totalIn    = poolData.totalEntrou || 0;
+  const totalOut   = poolData.totalSaiu   || 0;
+  const saqueHoje  = poolData.saqueHoje   || 0;
+  const restante   = Math.max(0, 100 - saqueHoje);
+  const pct        = Math.min(100, Math.round(saldo / POOL_ALVO * 100));
+  const barColor   = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red2)';
+  const precoRaro  = calcPoolPrice('Raro');
+  const precoLend  = calcPoolPrice('Lendário');
+
+  el.innerHTML = `
+  <div class="pool-stats-card">
+    <div class="pool-sc-title">Estado actual da pool</div>
+    <div class="pool-sc-balance">${saldo} 💎</div>
+    <div class="pool-sc-balance-sub">${pct}% do alvo (${POOL_ALVO} 💎)</div>
+    <div class="pool-sc-bar-wrap">
+      <div class="pool-sc-bar" style="width:${pct}%;background:${barColor};"></div>
+    </div>
+    <div class="pool-sc-grid">
+      <div class="pool-sc-stat">
+        <span>Total entrou</span><b>${totalIn} 💎</b>
+      </div>
+      <div class="pool-sc-stat">
+        <span>Total saiu</span><b>${totalOut} 💎</b>
+      </div>
+      <div class="pool-sc-stat">
+        <span>Disponível hoje</span><b>${restante} 💎</b>
+      </div>
+    </div>
+    <div class="pool-prices">
+      <div class="pool-price-card raro">
+        <div class="pool-price-label">🔵 Ovo Raro</div>
+        <div class="pool-price-val">${precoRaro} 💎</div>
+        <div class="pool-price-sub">preço actual de recompra</div>
+      </div>
+      <div class="pool-price-card lendario">
+        <div class="pool-price-label">🌟 Ovo Lendário</div>
+        <div class="pool-price-val">${precoLend} 💎</div>
+        <div class="pool-price-sub">preço actual de recompra</div>
+      </div>
+    </div>
+    <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.6;">
+      80% de cada taxa de marketplace alimenta esta pool.<br>
+      O preço de recompra sobe quando a pool está cheia e desce quando está baixa.
+    </div>
+  </div>`;
+}
+
+async function loadPoolLogs(reset) {
+  const list = document.getElementById('poolLogList');
+  const moreBtn = document.getElementById('poolLogMore');
+  if(!list) return;
+
+  if(reset) { poolLogs = []; poolLogsLast = null; }
+
   try {
-    await db.collection('config').doc('pool').update({
-      cristais: firebase.firestore.FieldValue.increment(cristais)
+    let q = db.collection('config').doc('pool').collection('logs')
+      .orderBy('ts', 'desc').limit(20);
+    if(poolLogsLast) q = q.startAfter(poolLogsLast);
+
+    const snap = await q.get();
+    if(snap.empty && reset) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">Nenhuma transacção ainda.</div></div>';
+      if(moreBtn) moreBtn.innerHTML = '';
+      return;
+    }
+
+    snap.docs.forEach(d => poolLogs.push({ id: d.id, ...d.data() }));
+    if(snap.docs.length > 0) poolLogsLast = snap.docs[snap.docs.length - 1];
+
+    list.innerHTML = poolLogs.map(log => {
+      const isEntrada = log.tipo === 'entrada';
+      const ts  = log.ts?.toDate ? log.ts.toDate() : new Date();
+      const timeStr = ts.toLocaleDateString('pt-PT') + ' ' + ts.toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'});
+      const wallet = log.origem && log.origem.startsWith('0x')
+        ? log.origem.slice(0,6)+'…'+log.origem.slice(-4)
+        : (log.origem || 'sistema');
+      const icon   = isEntrada ? '▲' : '▼';
+      const sinal  = isEntrada ? '+' : '-';
+      return `<div class="pool-log-row ${log.tipo}">
+        <div class="pool-log-icon">${icon}</div>
+        <div class="pool-log-info">
+          <div class="pool-log-motivo">${log.motivo || '—'}</div>
+          <div class="pool-log-wallet">${wallet}</div>
+        </div>
+        <div class="pool-log-amount">${sinal}${Math.abs(log.pool)} 💎</div>
+        <div class="pool-log-time">${timeStr}</div>
+      </div>`;
+    }).join('');
+
+    if(moreBtn) {
+      moreBtn.innerHTML = snap.docs.length === 20
+        ? `<button class="btn-slot-activate" style="font-size:9px;padding:6px 16px;" onclick="loadPoolLogs(false)">Carregar mais</button>`
+        : '';
+    }
+  } catch(e) {
+    console.warn('loadPoolLogs error:', e);
+    list.innerHTML = '<div class="empty-state"><div class="empty-txt">Erro ao carregar histórico.</div></div>';
+  }
+}
+
+async function addToPool(totalTaxa, motivo, origem) {
+  // Split: 20% dev (manutenção), 80% pool (jogadores)
+  const devParte  = Math.round(totalTaxa * DEV_SPLIT);
+  const poolParte = totalTaxa - devParte;
+
+  try {
+    const batch = db.batch();
+
+    // Pool recebe 80%
+    if(poolParte > 0) {
+      batch.update(db.collection('config').doc('pool'), {
+        cristais:    firebase.firestore.FieldValue.increment(poolParte),
+        totalEntrou: firebase.firestore.FieldValue.increment(poolParte),
+      });
+    }
+
+    // Log público da transacção
+    const logRef = db.collection('config').doc('pool')
+      .collection('logs').doc();
+    batch.set(logRef, {
+      tipo:      'entrada',
+      motivo,
+      origem:    origem || walletAddress || 'sistema',
+      total:     totalTaxa,
+      pool:      poolParte,
+      ts:        firebase.firestore.FieldValue.serverTimestamp(),
     });
-    if(poolData) poolData.cristais = (poolData.cristais||0) + cristais;
-    console.log(`Pool +${cristais}💎 (${motivo})`);
+
+    await batch.commit();
+
+    if(poolData) {
+      poolData.cristais    = (poolData.cristais    || 0) + poolParte;
+      poolData.totalEntrou = (poolData.totalEntrou || 0) + poolParte;
+    }
+
+    // Dev recebe 20% — registo silencioso no Firestore (não aparece no histórico público)
+    if(devParte > 0) {
+      db.collection('config').doc('pool').update({
+        totalDevRecebeu: firebase.firestore.FieldValue.increment(devParte),
+      }).catch(() => {});
+    }
+
     renderPoolWidget();
   } catch(e) { console.warn('addToPool error:', e); }
+}
+
+async function sacoDaPool(cristais, destino, motivo) {
+  // Registo de saque da pool (jogador vendeu ovo)
+  try {
+    const batch = db.batch();
+    batch.update(db.collection('config').doc('pool'), {
+      cristais:    firebase.firestore.FieldValue.increment(-cristais),
+      saqueHoje:   firebase.firestore.FieldValue.increment(cristais),
+      totalSaiu:   firebase.firestore.FieldValue.increment(cristais),
+    });
+    const logRef = db.collection('config').doc('pool').collection('logs').doc();
+    batch.set(logRef, {
+      tipo:    'saida',
+      motivo,
+      origem:  destino,
+      total:   cristais,
+      pool:    -cristais,
+      ts:      firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+    if(poolData) {
+      poolData.cristais  = (poolData.cristais  || 0) - cristais;
+      poolData.saqueHoje = (poolData.saqueHoje || 0) + cristais;
+      poolData.totalSaiu = (poolData.totalSaiu || 0) + cristais;
+    }
+    renderPoolWidget();
+  } catch(e) { console.warn('sacoDaPool error:', e); }
 }
 const BASE_SLOTS      = 3;
 const MAX_SLOTS       = 5;
@@ -903,6 +1174,7 @@ function showSection(id) {
 }
 function renderSection() {
   if(currentSection === 'browse')      renderBrowse();
+  if(currentSection === 'pool')        renderPoolSection();
   if(currentSection === 'slots')       renderSlots();
   if(currentSection === 'buycrystals') renderCrystals();
   if(currentSection === 'buyegg')      renderBuyEgg();
