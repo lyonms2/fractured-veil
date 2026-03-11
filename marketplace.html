@@ -296,6 +296,28 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   letter-spacing:.5px;transition:all .2s;
 }
 .btn-slot-unlist:hover{background:rgba(239,68,68,.1);}
+/* ── POOL WIDGET ── */
+.pool-widget{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
+  padding:14px 16px;margin-bottom:20px;
+}
+.pool-title{
+  font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--gem2);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;
+}
+.pool-bar-wrap{
+  height:4px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden;
+}
+.pool-bar{height:100%;border-radius:2px;transition:width .6s ease;}
+.pool-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.pool-stat{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:var(--surface);border-radius:8px;padding:6px 4px;
+}
+.pool-stat span{font-size:7px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+.pool-stat b{font-size:10px;color:var(--text);font-weight:700;}
+.pool-empty{font-size:9px;color:var(--muted);text-align:center;margin-top:8px;font-style:italic;}
+
 .btn-unlock-slot{
   width:100%;padding:10px;background:linear-gradient(135deg,#1a1040,#0d0820);
   border:1px dashed var(--purple);border-radius:8px;color:var(--gem2);
@@ -570,6 +592,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         </select>
       </div>
 
+      <div id="poolWidget"></div>
       <div id="browseGrid" class="avatar-grid">
         <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
       </div>
@@ -695,9 +718,92 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
 const PAYMENT_ADDRESS = '0xYOUR_WALLET_ADDRESS_HERE'; // ← substituir pela tua wallet
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
-const RARE_EGG_COST   = 8;   // 💎
-const LIST_COST       = 2;   // 💎
-const UNLOCK_SLOT_COST= 15;  // 💎
+const RARE_EGG_COST    = 8;   // 💎
+const LIST_COST        = 2;   // 💎
+const UNLOCK_SLOT_COST = 15;  // 💎
+
+// ── POOL ──
+const POOL_ALVO        = 1000; // 💎 referência para preço dinâmico
+const POOL_BASE_RARO   = 5;    // 💎 preço base por ovo Raro
+const POOL_BASE_LEND   = 20;   // 💎 preço base por ovo Lendário
+const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
+const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
+const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
+
+let poolData = null; // carregado do Firestore
+
+function calcPoolPrice(raridade) {
+  if(!poolData) return raridade === 'Lendário' ? POOL_BASE_LEND : POOL_BASE_RARO;
+  const ratio = Math.min(2, (poolData.cristais || 0) / POOL_ALVO);
+  const base   = raridade === 'Lendário' ? POOL_BASE_LEND : POOL_BASE_RARO;
+  return Math.max(1, Math.round(base * ratio));
+}
+
+function poolDisponivel() {
+  if(!poolData) return false;
+  const hoje = poolData.saqueHoje || 0;
+  return poolData.cristais > 0 && hoje < POOL_LIMITE_DIA;
+}
+
+async function loadPool() {
+  try {
+    const snap = await db.collection('config').doc('pool').get();
+    if(snap.exists) {
+      poolData = snap.data();
+      // Reset diário
+      const agora = Date.now();
+      const ultimoReset = poolData.ultimoReset || 0;
+      if(agora - ultimoReset > 86400000) {
+        await db.collection('config').doc('pool').update({ saqueHoje: 0, ultimoReset: agora });
+        poolData.saqueHoje = 0;
+        poolData.ultimoReset = agora;
+      }
+    } else {
+      // Criar pool inicial se não existir
+      const inicial = { cristais: 0, saqueHoje: 0, ultimoReset: Date.now() };
+      await db.collection('config').doc('pool').set(inicial);
+      poolData = inicial;
+    }
+    renderPoolWidget();
+  } catch(e) { console.warn('loadPool error:', e); }
+}
+
+function renderPoolWidget() {
+  const el = document.getElementById('poolWidget');
+  if(!el || !poolData) return;
+  const precoRaro  = calcPoolPrice('Raro');
+  const precoLend  = calcPoolPrice('Lendário');
+  const saldo      = poolData.cristais || 0;
+  const saqueHoje  = poolData.saqueHoje || 0;
+  const restante   = Math.max(0, POOL_LIMITE_DIA - saqueHoje);
+  const pct        = Math.min(100, Math.round(saldo / POOL_ALVO * 100));
+  const barColor   = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red)';
+  el.innerHTML = `
+    <div class="pool-widget">
+      <div class="pool-title">💎 Pool de Recompensas</div>
+      <div class="pool-bar-wrap">
+        <div class="pool-bar" style="width:${pct}%;background:${barColor};"></div>
+      </div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span>Saldo</span><b>${saldo} 💎</b></div>
+        <div class="pool-stat"><span>Ovo Raro</span><b>${precoRaro} 💎</b></div>
+        <div class="pool-stat"><span>Ovo Lendário</span><b>${precoLend} 💎</b></div>
+        <div class="pool-stat"><span>Disponível hoje</span><b>${restante} 💎</b></div>
+      </div>
+      ${saldo === 0 ? '<div class="pool-empty">Pool vazia — em breve! 🌱</div>' : ''}
+    </div>`;
+}
+
+async function addToPool(cristais, motivo) {
+  try {
+    await db.collection('config').doc('pool').update({
+      cristais: firebase.firestore.FieldValue.increment(cristais)
+    });
+    if(poolData) poolData.cristais = (poolData.cristais||0) + cristais;
+    console.log(`Pool +${cristais}💎 (${motivo})`);
+    renderPoolWidget();
+  } catch(e) { console.warn('addToPool error:', e); }
+}
 const BASE_SLOTS      = 3;
 const MAX_SLOTS       = 5;
 const MATIC_TO_GEMS   = 10;  // 1 MATIC = 10 💎
@@ -732,6 +838,7 @@ async function connectWallet() {
     document.getElementById('connectWall').style.display = 'none';
     await loadPlayerData();
     loadListings();
+    await loadPool();
     renderSection();
   } catch(e) {
     showToast('Conexão recusada.', 'err');
@@ -976,17 +1083,22 @@ async function buyAvatar(listingId, price) {
     if(slotIdx !== undefined && sellerSlots[slotIdx]) {
       sellerSlots[slotIdx] = null; // remove avatar do vendedor
     }
+    const taxaAvatar  = Math.round(price * TAXA_MARKETPLACE);
+    const sellerRecebe = price - taxaAvatar;
     await sellerRef.update({
       avatarSlots:    sellerSlots,
-      cristais:       sellerCristais + price,
-      'gs.cristais':  sellerCristais + price,
+      cristais:       sellerCristais + sellerRecebe,
+      'gs.cristais':  sellerCristais + sellerRecebe,
     });
+
+    // Taxa vai para a pool
+    if(taxaAvatar > 0) await addToPool(taxaAvatar, `venda avatar ${l.nome}`);
 
     // Mark listing as sold
     await listRef.delete(); // remove listagem do Firestore após venda
 
     closeDetail();
-    showToast(`✅ ${l.nome} adquirido com sucesso!`, 'ok');
+    showToast(`✅ ${l.nome} adquirido! (taxa ${taxaAvatar}💎 → pool)`, 'ok');
     showSection('slots');
   } catch(e) {
     console.error(e);
@@ -1044,6 +1156,9 @@ async function confirmList() {
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = newCristais;
     updateCristaisDisplay();
+
+    // Taxa de listagem vai para a pool
+    await addToPool(LIST_COST, 'listagem avatar');
 
     // Create market listing
     const diasVida = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
@@ -1409,7 +1524,11 @@ async function buyRareEgg() {
     return;
   }
 
+  const taxaOvo    = Math.round(RARE_EGG_COST * TAXA_OVO);
   const newCristais = freshCristais - RARE_EGG_COST;
+
+  // Taxa vai para a pool
+  if(taxaOvo > 0) await addToPool(taxaOvo, 'compra ovo raro loja');
 
   // Gera ovo raro
   const elementos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
@@ -1472,6 +1591,7 @@ window.addEventListener('load', async () => {
         loading.style.display = 'none';
         await loadPlayerData();
         loadListings();
+        await loadPool();
         renderSection();
         return;
       }
