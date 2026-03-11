@@ -238,7 +238,7 @@ function hatch() {
     syncEasterEggs();
     renderEggInventory();
     updateAllUI();
-    scheduleSave();
+    saveToFirebase(); // imediato — evita race condition com visibilitychange ao ir ao Marketplace
     showBubble('Novo avatar no Slot ' + (pendingSlot+1) + '! 🐣');
     addLog(`${pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar'} nasceu no Slot ${pendingSlot+1}! Activa-o no Marketplace.`, 'good');
     return; // ← não continua para o fluxo normal
@@ -300,6 +300,7 @@ function hatch() {
     }
   }
   renderEggInventory();
+  saveToFirebase(); // imediato — garante que o novo avatar está no Firebase antes de qualquer visibilitychange
 
   // Reveal action buttons
   const btns = document.getElementById('actionBtns');
