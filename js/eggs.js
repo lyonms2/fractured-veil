@@ -163,8 +163,63 @@ function burnEgg(id) {
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
-function sellEgg(id) {
-  addLog('📋 Listagem no marketplace requer carteira MetaMask conectada.', 'info');
+async function sellEggToPool(id) {
+  const idx = eggsInInventory.findIndex(e => e.id === id);
+  if(idx === -1) return;
+  const ovo = eggsInInventory[idx];
+  if(ovo.raridade === 'Comum') { addLog('Ovos Comuns não são aceites pela pool.','bad'); return; }
+  if(!walletAddress || !fbDb()) { addLog('Conecta a carteira primeiro.','bad'); return; }
+
+  // Lê pool do Firestore
+  let pool;
+  try {
+    const snap = await fbDb().collection('config').doc('pool').get();
+    pool = snap.exists ? snap.data() : null;
+  } catch(e) { addLog('Erro ao aceder à pool.','bad'); return; }
+
+  if(!pool || pool.cristais <= 0) { addLog('Pool vazia de momento. Tenta mais tarde.','bad'); return; }
+
+  const hoje = pool.saqueHoje || 0;
+  const limite = 100;
+  if(hoje >= limite) { addLog('Limite diário da pool atingido. Volta amanhã.','bad'); return; }
+
+  // Preço dinâmico
+  const ratio = Math.min(2, pool.cristais / 1000);
+  const base  = ovo.raridade === 'Lendário' ? 20 : 5;
+  const preco = Math.max(1, Math.round(base * ratio));
+
+  if(pool.cristais < preco) { addLog('Pool sem saldo suficiente.','bad'); return; }
+
+  try {
+    // Actualiza pool (débito)
+    await fbDb().collection('config').doc('pool').update({
+      cristais:   firebase.firestore.FieldValue.increment(-preco),
+      saqueHoje:  firebase.firestore.FieldValue.increment(preco),
+    });
+
+    // Credita cristais ao jogador
+    const freshSnap = await fbDb().collection('players').doc(walletAddress).get();
+    const freshData = freshSnap.data() || {};
+    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
+    const novoCristais  = freshCristais + preco;
+    await fbDb().collection('players').doc(walletAddress).update({
+      cristais:      novoCristais,
+      'gs.cristais': novoCristais,
+    });
+    gs.cristais = novoCristais;
+
+    // Remove ovo do inventário
+    eggsInInventory.splice(idx, 1);
+    scheduleSave();
+    renderEggInventory();
+    updateResourceUI();
+    addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${preco} 💎!`, 'good');
+    showFloat(`+${preco}💎`, '#a78bfa');
+    showBubble(`+${preco} 💎 da pool!`);
+  } catch(e) {
+    console.error(e);
+    addLog('Erro ao vender à pool.','bad');
+  }
 }
 
 function hatchEggFromInventory(id) {
@@ -600,6 +655,7 @@ function renderEggInventory() {
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">Chocar</button>
+             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎 Pool</button>` : ''}
              <button class="egg-btn burn"  onclick="burnEgg(${ovo.id})">Queimar</button>`
         }
       </div>
