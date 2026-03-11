@@ -887,9 +887,21 @@ async function buyAvatar(listingId, price) {
     playerData.gs.cristais = newCristais;
     updateCristaisDisplay();
 
-    // Add cristais to seller
-    const sellerRef = db.collection('players').doc(l.sellerId);
-    await sellerRef.update({ cristais: firebase.firestore.FieldValue.increment(price) });
+    // Remove avatar do slot do vendedor e credita cristais
+    const sellerRef  = db.collection('players').doc(l.sellerId);
+    const sellerSnap = await sellerRef.get();
+    const sellerData = sellerSnap.data() || {};
+    const sellerCristais = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
+    const sellerSlots = sellerData.avatarSlots || [];
+    const slotIdx = l.slotIdx;
+    if(slotIdx !== undefined && sellerSlots[slotIdx]) {
+      sellerSlots[slotIdx] = null; // remove avatar do vendedor
+    }
+    await sellerRef.update({
+      avatarSlots:    sellerSlots,
+      cristais:       sellerCristais + price,
+      'gs.cristais':  sellerCristais + price,
+    });
 
     // Mark listing as sold
     await listRef.update({ status:'sold', buyerId: walletAddress, soldAt: firebase.firestore.FieldValue.serverTimestamp() });
