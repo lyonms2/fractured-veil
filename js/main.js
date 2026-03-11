@@ -25,6 +25,7 @@ window.disconnectWallet = typeof disconnectWallet !== "undefined" ? disconnectWa
 window.equipItem = typeof equipItem !== "undefined" ? equipItem : ()=>{};
 window.feedCreature = typeof feedCreature !== "undefined" ? feedCreature : ()=>{};
 window.hatchEggFromInventory = typeof hatchEggFromInventory !== "undefined" ? hatchEggFromInventory : ()=>{};
+window.sellEggToPool = typeof sellEggToPool !== "undefined" ? sellEggToPool : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
 window.jkpChoose = typeof jkpChoose !== "undefined" ? jkpChoose : ()=>{};
 window.jkpPlayAgain = typeof jkpPlayAgain !== "undefined" ? jkpPlayAgain : ()=>{};
