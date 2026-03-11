@@ -250,6 +250,21 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   font-family:'Cinzel',serif;letter-spacing:.5px;transition:all .2s;width:100%;
 }
 .btn-slot-burn:hover{background:rgba(239,68,68,.1);border-color:var(--red);}
+.btn-slot-list{
+  padding:6px 12px;border:none;border-radius:6px;width:100%;
+  font-size:8px;font-weight:700;cursor:pointer;
+  font-family:'Cinzel',serif;letter-spacing:.8px;transition:all .25s;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(168,139,250,.12));
+  border:1px solid rgba(201,168,76,.4);color:var(--gold2);
+}
+.btn-slot-list::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(168,139,250,.2));
+  opacity:0;transition:opacity .2s;
+}
+.btn-slot-list:hover::before{opacity:1;}
+.btn-slot-list:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.2);}
 
 .slot-empty-wrap{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -510,9 +525,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <button class="mkt-nav-btn active" onclick="showSection('browse')" id="nav-browse">
       <span class="nav-icon">🛒</span> Explorar
     </button>
-    <button class="mkt-nav-btn" onclick="showSection('sell')" id="nav-sell">
-      <span class="nav-icon">📋</span> Vender Avatar
-    </button>
+
 
     <div class="mkt-nav-section">Minha Conta</div>
     <button class="mkt-nav-btn" onclick="showSection('slots')" id="nav-slots">
@@ -560,13 +573,6 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div id="browseGrid" class="avatar-grid">
         <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
       </div>
-    </div>
-
-    <!-- ── VENDER ── -->
-    <div class="mkt-section" id="sec-sell">
-      <div class="section-title">📋 Listar Avatar à Venda</div>
-      <div class="section-sub">Escolhe um avatar Raro ou Lendário dos teus slots para listar. Custa 2 💎. O avatar fica congelado até ser vendido ou retirado.</div>
-      <div id="sellGrid" class="avatar-grid"></div>
     </div>
 
     <!-- ── MEUS AVATARES ── -->
@@ -790,7 +796,6 @@ function showSection(id) {
 }
 function renderSection() {
   if(currentSection === 'browse')      renderBrowse();
-  if(currentSection === 'sell')        renderSell();
   if(currentSection === 'slots')       renderSlots();
   if(currentSection === 'buycrystals') renderCrystals();
   if(currentSection === 'buyegg')      renderBuyEgg();
@@ -842,7 +847,7 @@ function renderBrowse() {
 
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
-  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72);
+  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72, "browse");
   const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
   const parts   = (l.nome||'Avatar').split(',');
   const nomeProp = parts[0].trim();
@@ -877,7 +882,7 @@ async function openDetail(listingId) {
   const isMine   = l.sellerId === walletAddress;
   const canBuy   = !isMine && (playerData?.cristais||0) >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
-  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90);
+  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, "detail");
   const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento]?.bonus || '';
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
@@ -989,51 +994,12 @@ async function buyAvatar(listingId, price) {
   }
 }
 
-// ═══════════════════════════════════════════
-// VENDER
-// ═══════════════════════════════════════════
-function renderSell() {
-  const grid = document.getElementById('sellGrid');
-  if(!playerData) return;
-  const slots = playerData.avatarSlots;
-  const unlocked = getUnlockedSlots();
-  const available = [];
-  for(let i=0;i<unlocked;i++){
-    const s = slots[i];
-    if(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed && (s.raridade === 'Raro' || s.raridade === 'Lendário')) available.push({slot:i,...s});
-  }
-  if(available.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧬</div><div class="empty-txt">Nenhum avatar Raro ou Lendário disponível para listar.<br>Apenas Raros e Lendários podem ser vendidos no marketplace.</div></div>`;
-    return;
-  }
-  grid.innerHTML = available.map(s => {
-    const rarCol = { Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[s.raridade];
-    const _p2 = (s.nome||'Avatar').split(',');
-    const _n2 = _p2[0].trim(), _s2 = _p2.slice(1).join(',').trim();
-    const _ec2 = CARACTERISTICAS_ELEMENTAIS[s.elemento];
-    return `<div class="av-card" onclick="openListModal(${s.slot})">
-      <div class="av-card-stripe ${s.raridade}"></div>
-      <div class="av-card-inner">
-        <div class="av-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,72,72)}</div>
-        <div class="av-name">${_n2}</div>
-        ${_s2 ? `<div class="av-sufixo">${_s2}</div>` : '<div class="av-sufixo"></div>'}
-        <div class="av-pill ${s.raridade}">${_ec2?_ec2.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
-        <div class="av-stats">
-          <div class="av-stat"><b>${s.nivel||1}</b>Nível</div>
-          <div class="av-stat"><b>${Math.floor(s.vinculo||0)}</b>Vínculo</div>
-        </div>
-        <div style="text-align:center;font-size:8px;color:var(--gem2);margin-top:6px;font-family:'Cinzel',serif;letter-spacing:.5px;">LISTAR →</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 function openListModal(slotIdx) {
   listingSlotIdx = slotIdx;
   const s = playerData.avatarSlots[slotIdx];
   document.getElementById('listAvatarPreview').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);padding:10px;border-radius:8px;">
-      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50)}
+      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,"listprev")}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:11px;">${s.nome}</div>
         <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · Nv.${s.nivel||1}</div>
@@ -1110,6 +1076,21 @@ async function confirmList() {
   }
 }
 
+async function unlistFromSlot(slotIdx) {
+  // Procura a listagem activa deste slot para este vendedor
+  try {
+    const snap = await db.collection('avatarMarket')
+      .where('sellerId','==',walletAddress)
+      .where('slotIdx','==',slotIdx)
+      .where('status','==','listed')
+      .limit(1).get();
+    if(snap.empty) { showToast('Listagem não encontrada.','err'); return; }
+    await unlistAvatar(snap.docs[0].id);
+  } catch(e) {
+    showToast('Erro ao retirar listagem.','err');
+  }
+}
+
 async function unlistAvatar(listingId) {
   try {
     const snap = await db.collection('avatarMarket').doc(listingId).get();
@@ -1174,7 +1155,7 @@ function renderSlots() {
           ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
           ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
         </div>
-        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96)}</div>
+        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,"slots")}</div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
           <div class="slot-av-sub">${_ss}</div>
@@ -1187,9 +1168,14 @@ function renderSlots() {
           ${!isActive && !isFrozen ? `
           <div class="slot-actions">
             <button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>
+            ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">✦ Listar à Venda</button>` : ''}
             <button class="btn-slot-burn" onclick="burnAvatar(${i})">🔥 Queimar</button>
           </div>` : ''}
-          ${isFrozen ? '<div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;">❄️ Congelado — à venda</div>' : ''}
+          ${isFrozen ? `
+          <div class="slot-actions">
+            <div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;padding:4px 0;">❄️ Listado à venda</div>
+            <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">✕ Retirar listagem</button>
+          </div>` : ''}
         </div>
       </div>`;
     }
@@ -1248,7 +1234,7 @@ function burnAvatar(idx) {
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60)}
+      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, "burn")}
       <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${_ns}</div>
       ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${_ss}</div>` : ''}
       <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade} · Nível ${s.nivel||1}</div>
