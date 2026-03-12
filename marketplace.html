@@ -1177,6 +1177,22 @@ async function sacoDaPool(cristais, destino, motivo) {
     renderPoolWidget();
   } catch(e) { console.warn('sacoDaPool error:', e); }
 }
+// Fase a partir do nível (igual ao jogo)
+function getFaseNome(nivel) {
+  const n = nivel || 1;
+  if(n < 5)  return 'BEBÊ';
+  if(n < 10) return 'CRIANÇA';
+  if(n < 17) return 'JOVEM';
+  return 'ADULTO';
+}
+function getFaseCor(nivel) {
+  const n = nivel || 1;
+  if(n < 5)  return '#a78bfa';
+  if(n < 10) return '#60d4f0';
+  if(n < 17) return '#4ade80';
+  return '#f0b840';
+}
+
 const BASE_SLOTS      = 3;
 const MAX_SLOTS       = 5;
 const MATIC_TO_GEMS   = 10;  // 1 MATIC = 10 💎
@@ -1345,7 +1361,7 @@ function buildListingCard(l) {
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>Nível</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>Vínculo</div>
-        <div class="av-stat"><b>${l.diasVida||0}</b>Dias</div>
+        <div class="av-stat" style="color:${getFaseCor(l.nivel||1)}"><b>${getFaseNome(l.nivel||1)}</b>Fase</div>
         <div class="av-stat"><b>${l.totalOvos||0}</b>Ovos</div>
       </div>
       <div class="av-price">💎 ${l.price}</div>
@@ -1379,7 +1395,7 @@ async function openDetail(listingId) {
       <div class="detail-stat">Nível <b>${l.nivel||1}</b></div>
       <div class="detail-stat">XP <b>${Math.floor(l.xp||0)}</b></div>
       <div class="detail-stat">Vínculo <b>${Math.floor(l.vinculo||0)}</b></div>
-      <div class="detail-stat">Dias de vida <b>${l.diasVida||0}</b></div>
+      <div class="detail-stat">Fase <b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b></div>
       <div class="detail-stat">Ovos botados <b>${l.totalOvos||0}</b></div>
       <div class="detail-stat">Raros/Lendários <b>${l.totalRaros||0}</b></div>
     </div>
@@ -1652,7 +1668,7 @@ function renderSlots() {
           <div class="slot-stats">
             <div class="slot-stat"><b>${s.nivel||1}</b><span>Nível</span></div>
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>Vínculo</span></div>
-            <div class="slot-stat"><b>${dias}</b><span>Dias</span></div>
+            <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>Fase</span></div>
           </div>
           ${!isActive && !isFrozen ? `
           <div class="slot-actions">
