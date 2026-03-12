@@ -1325,6 +1325,13 @@ function showSection(id) {
   document.querySelectorAll('.mkt-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   document.getElementById('nav-'+id)?.classList.add('active');
+  // Purgar SVGs das secções inactivas para evitar colisão de IDs de filtro
+  document.querySelectorAll('.mkt-section:not(.active)').forEach(sec => {
+    sec.querySelectorAll('svg').forEach(svg => {
+      svg.innerHTML = '';
+      svg.remove();
+    });
+  });
   renderSection();
 }
 function renderSection() {
@@ -1353,6 +1360,9 @@ function applyFilters() {
 }
 
 function renderBrowse() {
+  // Limpar SVGs anteriores para evitar colisão de filter IDs
+  const _bg = document.getElementById('browseGrid');
+  if(_bg) _bg.querySelectorAll('svg').forEach(s => { s.innerHTML=''; s.remove(); });
   const grid  = document.getElementById('browseGrid');
   const search= (document.getElementById('filterSearch')?.value||'').toLowerCase();
   const rar   = document.getElementById('filterRarity')?.value||'';
@@ -1658,6 +1668,9 @@ async function unlistAvatar(listingId) {
 // MEUS AVATARES / SLOTS
 // ═══════════════════════════════════════════
 function renderSlots() {
+  // Limpar SVGs anteriores para evitar colisão de filter IDs
+  const _sg = document.getElementById('slotsGrid');
+  if(_sg) _sg.querySelectorAll('svg').forEach(s => { s.innerHTML=''; s.remove(); });
   const grid = document.getElementById('slotsGrid');
   const unlockRow = document.getElementById('unlockSlotRow');
   if(!playerData) return;
