@@ -25,7 +25,7 @@ const ITEM_CATALOG = {
     efeito:   'Reduz consumo de Fome em 25% e frequência de cocô',
     tipo:     'Amuleto',
     raridade: 'Comum',
-    preco:    150,
+    preco:    800,
     cor:      '#7ab87a',
     efeitos:  { fomeDecayMult: 0.75 } // reduz 25% do decay de fome
   },
@@ -37,7 +37,7 @@ const ITEM_CATALOG = {
     efeito:   'Decora o cenário com ovos animados',
     tipo:     'Cenário',
     raridade: 'Especial',
-    preco:    120,
+    preco:    500,
     cor:      '#f0a0c0',
     efeitos:  {} // puramente cosmético
   },
@@ -49,7 +49,7 @@ const ITEM_CATALOG = {
     efeito:   'Reduz decay de Humor em 40% por ciclo',
     tipo:     'Coroa',
     raridade: 'Raro',
-    preco:    300,
+    preco:    1600,
     cor:      '#e8c870',
     efeitos:  { humorDecayMult: 0.60 } // reduz 40% do decay de humor
   },
@@ -61,7 +61,7 @@ const ITEM_CATALOG = {
     efeito:   'Energia recupera 2× mais rápido dormindo',
     tipo:     'Amuleto',
     raridade: 'Comum',
-    preco:    200,
+    preco:    1200,
     cor:      '#7b68ee',
     efeitos:  { sleepEnergyMult: 2.0 } // multiplier on sleep energy recovery
   }
