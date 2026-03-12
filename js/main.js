@@ -29,6 +29,10 @@ window.startVelha    = typeof startVelha    !== "undefined" ? startVelha    : ()
 window.startRename   = typeof startRename   !== "undefined" ? startRename   : ()=>{};
 window.cancelRename  = typeof cancelRename  !== "undefined" ? cancelRename  : ()=>{};
 window.confirmRename = typeof confirmRename !== "undefined" ? confirmRename : ()=>{};
+window.setDifficulty   = typeof setDifficulty   !== "undefined" ? setDifficulty   : ()=>{};
+window.openJkp         = typeof openJkp         !== "undefined" ? openJkp         : ()=>{};
+window.openGameSelector= typeof openGameSelector !== "undefined" ? openGameSelector : ()=>{};
+window.velhaClick      = typeof velhaClick      !== "undefined" ? velhaClick      : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
 window.jkpChoose = typeof jkpChoose !== "undefined" ? jkpChoose : ()=>{};
 window.jkpPlayAgain = typeof jkpPlayAgain !== "undefined" ? jkpPlayAgain : ()=>{};
