@@ -25,7 +25,11 @@ function renderMarketItems() {
           <div class="mkt-catalog-name" style="color:${item.cor}">${item.nome}</div>
           <div class="mkt-catalog-type">${item.tipo} · ${item.raridade}</div>
         </div>
-        <div class="mkt-catalog-price">${item.preco} 🪙</div>
+        <div class="mkt-catalog-price">${(()=>{
+          const disc = rarityBonus().shopDiscount||0;
+          const p = Math.round(item.preco*(1-disc));
+          return disc>0 ? `<span style="text-decoration:line-through;opacity:.5;font-size:7px;">${item.preco}</span> ${p}` : p;
+        })()} 🪙</div>
       </div>
       <div class="mkt-catalog-desc">${item.desc}</div>
       <div class="mkt-catalog-effect">✦ ${item.efeito}</div>
@@ -43,16 +47,19 @@ function renderMarketItems() {
 function buyItem(catalogId) {
   const item = ITEM_CATALOG[catalogId];
   if(!item) return;
-  if(gs.moedas < item.preco) { showBubble('Sem moedas! 😢'); return; }
+  const discount = rarityBonus().shopDiscount || 0;
+  const preco = Math.round(item.preco * (1 - discount));
+  if(gs.moedas < preco) { showBubble('Sem moedas! 😢'); return; }
   if(itemInventory.find(i => i.catalogId === catalogId)) {
     addLog('Você já possui este item.', 'info'); return;
   }
-  spendCoins(item.preco);
+  spendCoins(preco);
   const entry = { id: Date.now(), catalogId, equipped: false, expiraEm: Date.now() + 2592000000 };
   itemInventory.push(entry);
   updateResourceUI();
   scheduleSave();
-  addLog(`${item.emoji} ${item.nome} adquirido!`, 'good');
+  const discountTxt = discount > 0 ? ` (-${Math.round(discount*100)}% desconto)` : '';
+  addLog(`${item.emoji} ${item.nome} adquirido!${discountTxt}`, 'good');
   showBubble(`${item.emoji} Item obtido!`);
   renderMarketItems();
   renderItemInventory();
