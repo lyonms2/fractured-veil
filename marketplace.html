@@ -542,54 +542,56 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 ═══════════════════════════════════════════ */
 .egg-browse-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:12px;
 }
+/* Cards de ovo — mesmo padrão que av-card */
 .egg-mkt-card{
   background:var(--surface2);border:1px solid var(--border);
-  border-radius:14px;padding:14px 12px 12px;
-  display:flex;flex-direction:column;align-items:center;
-  transition:all .25s;cursor:pointer;position:relative;
+  border-radius:var(--radius);padding:0;cursor:pointer;
+  transition:all .25s;position:relative;overflow:hidden;
 }
-.egg-mkt-card:hover{
-  transform:translateY(-3px);
-  box-shadow:0 8px 28px rgba(124,58,237,.18);
+.egg-mkt-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.egg-mkt-card.raro{border-color:rgba(90,180,232,.25);}
+.egg-mkt-card.raro:hover{border-color:var(--rare);box-shadow:0 6px 24px rgba(90,180,232,.18);}
+.egg-mkt-card.lendario{border-color:rgba(232,160,48,.25);}
+.egg-mkt-card.lendario:hover{border-color:var(--legendary);box-shadow:0 6px 24px rgba(232,160,48,.18);}
+.egg-mkt-stripe{height:3px;width:100%;border-radius:var(--radius) var(--radius) 0 0;}
+.egg-mkt-card.raro .egg-mkt-stripe{background:linear-gradient(90deg,var(--rare),#3a80c0);}
+.egg-mkt-card.lendario .egg-mkt-stripe{background:linear-gradient(90deg,var(--legendary),#c87820);}
+.egg-mkt-inner{padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;}
+.egg-mkt-icon{font-size:34px;margin-bottom:6px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
+.egg-mkt-pill{
+  font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  padding:2px 8px;border-radius:10px;margin-bottom:6px;
 }
-.egg-mkt-card.raro{border-color:rgba(90,180,232,.3);}
-.egg-mkt-card.raro:hover{border-color:var(--rare);box-shadow:0 8px 28px rgba(90,180,232,.2);}
-.egg-mkt-card.lendario{border-color:rgba(232,160,48,.3);}
-.egg-mkt-card.lendario:hover{border-color:var(--legendary);box-shadow:0 8px 28px rgba(232,160,48,.2);}
-.egg-mkt-icon{font-size:36px;margin-bottom:8px;line-height:1;}
-.egg-mkt-rarity{
-  font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  margin-bottom:3px;
+.egg-mkt-card.raro    .egg-mkt-pill{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
+.egg-mkt-card.lendario .egg-mkt-pill{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
+.egg-mkt-elem{font-size:10px;color:var(--text2);margin-bottom:8px;font-weight:600;}
+.egg-mkt-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:3px;width:100%;margin-bottom:8px;
 }
-.egg-mkt-card.raro .egg-mkt-rarity{color:var(--rare);}
-.egg-mkt-card.lendario .egg-mkt-rarity{color:var(--legendary);}
-.egg-mkt-elem{font-size:10px;color:var(--text2);margin-bottom:10px;}
-.egg-mkt-seller{
-  font-size:7px;color:var(--muted);font-family:monospace;
-  margin-bottom:8px;text-align:center;
+.egg-mkt-stat{
+  font-size:8px;color:var(--text2);
+  display:flex;justify-content:space-between;
 }
+.egg-mkt-stat b{color:var(--text);}
 .egg-mkt-price{
-  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
   color:var(--gem2);display:flex;align-items:center;gap:4px;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
-.egg-mkt-expiry{
-  font-size:7px;color:var(--muted);margin-bottom:10px;
-}
-.egg-mkt-expiry.urgente{color:var(--red2);font-weight:700;}
+.egg-mkt-seller{font-size:7px;color:var(--muted);text-align:center;margin-bottom:8px;font-family:monospace;}
 .btn-buy-egg-mkt{
   width:100%;padding:7px;border-radius:8px;border:none;cursor:pointer;
   font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;
   letter-spacing:.5px;transition:all .2s;
   background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;
 }
-.btn-buy-egg-mkt:hover{filter:brightness(1.15);transform:scale(1.02);}
-.btn-buy-egg-mkt:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none;}
+.btn-buy-egg-mkt:hover{filter:brightness(1.15);box-shadow:0 3px 12px rgba(124,58,237,.35);}
+.btn-buy-egg-mkt:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none;}
 .egg-mkt-own{
-  position:absolute;top:8px;right:8px;font-size:7px;font-weight:700;
+  position:absolute;top:10px;right:8px;font-size:7px;font-weight:700;
   padding:2px 6px;border-radius:6px;letter-spacing:.5px;
   background:rgba(34,197,94,.15);color:var(--green2);border:1px solid var(--green);
 }
@@ -1948,24 +1950,29 @@ function renderEggBrowse() {
     const expiryUrgente = expiryDias <= 2;
     const canBuy    = !isOwn && playerData && playerData.cristais >= egg.price;
 
-    return `<div class="egg-mkt-card ${cls}" onclick="openEggDetail('${egg.id}')">
+    const elemCar  = CARACTERISTICAS_ELEMENTAIS?.[egg.elemento];
+    const elemEmoji = elemCar ? elemCar.emoji : '✦';
+    return `<div class="egg-mkt-card ${cls}">
       ${isOwn ? '<div class="egg-mkt-own">Teu</div>' : ''}
-      <div class="egg-mkt-icon">${icon}</div>
-      <div class="egg-mkt-rarity">${egg.raridade}</div>
-      <div class="egg-mkt-elem">${egg.elemento || '—'}</div>
-      <div class="egg-mkt-seller">por ${seller}</div>
-      <div class="egg-mkt-price">${egg.price} 💎</div>
-      <div class="egg-mkt-expiry ${expiryUrgente ? 'urgente' : ''}">
-        ${expiryDias > 0 ? `Expira em ${expiryDias}d` : '⚠️ Expirado'}
+      <div class="egg-mkt-stripe"></div>
+      <div class="egg-mkt-inner">
+        <div class="egg-mkt-icon">${icon}</div>
+        <div class="egg-mkt-pill">${elemEmoji} ${egg.raridade}</div>
+        <div class="egg-mkt-elem">${egg.elemento || '—'}</div>
+        <div class="egg-mkt-stats">
+          <div class="egg-mkt-stat"><span>Expira</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
+          <div class="egg-mkt-stat"><span>Vendedor</span><b>${seller}</b></div>
+        </div>
+        <div class="egg-mkt-price">💎 ${egg.price}</div>
+        ${isOwn
+          ? `<button class="btn-buy-egg-mkt" style="background:rgba(232,96,58,.15);color:var(--red2);border:1px solid rgba(232,96,58,.3);"
+               onclick="event.stopPropagation();unlistEgg('${egg.id}')">✕ Retirar listagem</button>`
+          : `<button class="btn-buy-egg-mkt" ${!canBuy ? 'disabled' : ''}
+               onclick="event.stopPropagation();buyEggFromMarket('${egg.id}')">
+               ${!playerData || playerData.cristais < egg.price ? 'Sem saldo' : '💎 Comprar'}
+             </button>`
+        }
       </div>
-      ${isOwn
-        ? `<button class="btn-buy-egg-mkt" style="background:rgba(232,96,58,.2);color:var(--red2);border:1px solid rgba(232,96,58,.3);"
-             onclick="event.stopPropagation();unlistEgg('${egg.id}')">✕ Retirar</button>`
-        : `<button class="btn-buy-egg-mkt" ${!canBuy ? 'disabled' : ''}
-             onclick="event.stopPropagation();buyEggFromMarket('${egg.id}')">
-             ${!playerData || playerData.cristais < egg.price ? '💎 Sem saldo' : '💎 Comprar'}
-           </button>`
-      }
     </div>`;
   }).join('');
 }
