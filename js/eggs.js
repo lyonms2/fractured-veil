@@ -666,6 +666,37 @@ function closeEggInventory() {
   ModalManager.close('eggInvModal');
 }
 
+
+// ── Mini SVG do ovo por raridade (roxo/azul/dourado) ──
+function eggMiniSVG(raridade, size = 36) {
+  const cfg = {
+    'Comum':   { g1:'#7a4fbb', g2:'#3d2a6e', g3:'#0b0916', shine:'#9070d0', aura:'#a78bfa', glow:'#3d2a6e' },
+    'Raro':    { g1:'#3a8fd4', g2:'#1a4a7e', g3:'#060d1a', shine:'#60c0f0', aura:'#5ab4e8', glow:'#1a3a6e' },
+    'Lendário':{ g1:'#d4943a', g2:'#7a4a10', g3:'#120800', shine:'#f0c860', aura:'#e8a030', glow:'#6a3a00' },
+  };
+  const e = cfg[raridade] || cfg['Comum'];
+  const uid = raridade.replace('á','a').replace('ê','e') + '_' + Math.random().toString(36).slice(2,6);
+  return `<svg width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="emg_${uid}" cx="38%" cy="28%" r="72%">
+        <stop offset="0%"   stop-color="${e.g1}"/>
+        <stop offset="60%"  stop-color="${e.g2}"/>
+        <stop offset="100%" stop-color="${e.g3}"/>
+      </radialGradient>
+      <filter id="egl_${uid}"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <ellipse cx="50" cy="58" rx="34" ry="42" fill="${e.glow}" opacity=".45" filter="url(#egl_${uid})"/>
+    <ellipse cx="50" cy="56" rx="38" ry="48" fill="none" stroke="${e.aura}" stroke-width="1.2" opacity=".5"/>
+    <ellipse cx="50" cy="56" rx="30" ry="38" fill="url(#emg_${uid})"/>
+    <ellipse cx="42" cy="40" rx="8"  ry="13" fill="${e.shine}" opacity=".22"/>
+    ${raridade === 'Lendário' ? `
+    <circle cx="22" cy="22" r="2"   fill="${e.aura}" opacity=".8"/>
+    <circle cx="78" cy="18" r="1.5" fill="${e.aura}" opacity=".7"/>
+    <circle cx="18" cy="76" r="1.5" fill="${e.aura}" opacity=".6"/>
+    <circle cx="82" cy="80" r="2"   fill="${e.aura}" opacity=".8"/>` : ''}
+  </svg>`;
+}
+
 function renderEggInventory() {
   const list = document.getElementById('eggInvList');
   if(!list) return;
@@ -684,31 +715,41 @@ function renderEggInventory() {
     return;
   }
 
-  const rarColor = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
-  const rarEmoji = { 'Comum':'🥚', 'Raro':'💙', 'Lendário':'🌟' };
+  const rarColor = { 'Comum':'#a78bfa', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
 
-  list.innerHTML = eggsInInventory.map(ovo => {
-    const now     = Date.now();
-    const expired = now > ovo.expiraEm;
-    const msLeft  = ovo.expiraEm - now;
+  // Ordenar: Lendário > Raro > Comum, depois por urgência (menos tempo primeiro)
+  const sorted = [...eggsInInventory].sort((a, b) => {
+    const rOrd = { 'Lendário':0, 'Raro':1, 'Comum':2 };
+    if(rOrd[a.raridade] !== rOrd[b.raridade]) return rOrd[a.raridade] - rOrd[b.raridade];
+    return a.expiraEm - b.expiraEm;
+  });
+
+  list.innerHTML = sorted.map(ovo => {
+    const now      = Date.now();
+    const expired  = now > ovo.expiraEm;
+    const msLeft   = ovo.expiraEm - now;
     const daysLeft = Math.max(0, Math.floor(msLeft / 86400000));
     const hoursLeft= Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
-    const timeStr  = expired ? '⚠️ APODRECIDO' : daysLeft > 0 ? `${daysLeft}d ${hoursLeft}h restantes` : `${hoursLeft}h restantes`;
-    const cls      = expired ? 'egg-item rotten' : 'egg-item';
+    const urgent   = !expired && msLeft < 86400000; // menos de 24h
+    const timeStr  = expired
+      ? '⚠️ APODRECIDO'
+      : daysLeft > 0 ? `${daysLeft}d ${hoursLeft}h restantes`
+      : `${hoursLeft}h restantes`;
+    const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '');
 
     return `<div class="${cls}">
-      <div class="egg-icon">${rarEmoji[ovo.raridade]}</div>
+      <div class="egg-mini-svg">${eggMiniSVG(expired ? 'Comum' : ovo.raridade, 38)}</div>
       <div class="egg-info">
         <div class="egg-name" style="color:${rarColor[ovo.raridade]}">${ovo.raridade} · ${ovo.elemento}</div>
-        <div class="egg-time">${timeStr}</div>
+        <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>
       </div>
       <div class="egg-actions">
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
-          : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">Chocar</button>
-             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="window.open('marketplace.html','_blank')">🛒 Vender</button>` : ''}
-             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎 Pool</button>` : ''}
-             <button class="egg-btn burn"  onclick="burnEgg(${ovo.id})">Queimar</button>`
+          : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 Chocar</button>
+             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="window.open('marketplace.html','_blank')">🛒</button>` : ''}
+             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎</button>` : ''}
+             <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
         }
       </div>
     </div>`;
