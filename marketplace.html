@@ -129,32 +129,67 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
 .av-card{
   background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+  padding:0;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
 }
 .av-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
 .av-card.listed{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.15);}
 .av-card.frozen{border-color:var(--blue);opacity:.85;}
+/* stripe de raridade no topo */
+.av-card-stripe{height:3px;width:100%;flex-shrink:0;}
+.av-card-stripe.Comum   {background:linear-gradient(90deg,var(--common),#5a9a5a);}
+.av-card-stripe.Raro    {background:linear-gradient(90deg,var(--rare),#3a80c0);}
+.av-card-stripe.Lendário{background:linear-gradient(90deg,var(--legendary),#c87820);}
+/* inner padding */
+.av-card-inner{padding:10px 10px 10px;display:flex;flex-direction:column;align-items:center;flex:1;}
 .av-card-badge{
-  position:absolute;top:8px;right:8px;font-size:7px;font-weight:700;
+  position:absolute;top:10px;right:8px;font-size:7px;font-weight:700;
   padding:2px 6px;border-radius:6px;letter-spacing:.5px;text-transform:uppercase;
 }
 .badge-listed{background:rgba(201,168,76,.2);color:var(--gold);border:1px solid var(--gold);}
 .badge-active{background:rgba(34,197,94,.2);color:var(--green2);border:1px solid var(--green);}
 .badge-frozen{background:rgba(59,130,246,.2);color:var(--blue2);border:1px solid var(--blue);}
-.av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:8px;}
-.av-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* SVG */
+.av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:6px;}
+/* nome principal */
+.av-name{
+  font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);
+  text-align:center;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
+}
+/* sufixo (ex: "o Sereno") */
+.av-sufixo{
+  font-size:8px;color:var(--muted);text-align:center;
+  margin-bottom:6px;font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
+}
+/* pill elemento · raridade */
+.av-pill{
+  font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  padding:2px 8px;border-radius:10px;margin-bottom:8px;white-space:nowrap;
+}
+.av-pill.Comum   {background:rgba(122,184,122,.12);color:var(--common);border:1px solid rgba(122,184,122,.25);}
+.av-pill.Raro    {background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
+.av-pill.Lendário{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
+/* stats 2x2 */
+.av-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%;margin-bottom:8px;}
+.av-stat{
+  font-size:8px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;
+  background:var(--surface);border-radius:6px;padding:3px 4px;
+}
+.av-stat b{color:var(--text);font-size:9px;font-weight:700;}
+/* preço */
+.av-price{
+  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  color:var(--gem2);display:flex;align-items:center;justify-content:center;gap:4px;
+  margin-bottom:4px;
+}
+.av-seller{font-size:7px;color:var(--muted);text-align:center;font-family:monospace;}
 .av-rarity{font-size:8px;font-weight:700;text-align:center;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;}
 .av-rarity.Comum{color:var(--common);}
 .av-rarity.Raro{color:var(--rare);}
 .av-rarity.Lendário{color:var(--legendary);}
-.av-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:8px;}
-.av-stat{font-size:8px;color:var(--text2);display:flex;justify-content:space-between;}
-.av-stat b{color:var(--text);}
-.av-price{
-  text-align:center;font-family:'Cinzel',serif;font-size:13px;font-weight:700;
-  color:var(--gem2);display:flex;align-items:center;justify-content:center;gap:4px;
-}
-.av-seller{font-size:7px;color:var(--muted);text-align:center;margin-top:3px;}
 
 /* ═══════════════════════════════════════════
    FILTROS
@@ -1363,7 +1398,7 @@ function buildListingCard(l) {
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>Nível</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>Vínculo</div>
-        <div class="av-stat" style="color:${getFaseCor(l.nivel||1)}"><b>${getFaseNome(l.nivel||1)}</b>Fase</div>
+        <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>Fase</div>
         <div class="av-stat"><b>${l.totalOvos||0}</b>Ovos</div>
       </div>
       <div class="av-price">💎 ${l.price}</div>
