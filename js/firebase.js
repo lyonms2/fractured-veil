@@ -133,10 +133,23 @@ function applyGameState(data) {
     if(slot) {
       // Slot existe — merge directo
       if(!slot.eggs) slot.eggs = [];
+      const MAX_EGGS = 10;
       const existingIds = new Set(slot.eggs.map(e => e.id));
+      const overflow = [];
       data.inboxEggs.forEach(e => {
-        if(!existingIds.has(e.id)) slot.eggs.push({...e});
+        if(existingIds.has(e.id)) return;
+        if(slot.eggs.length < MAX_EGGS) {
+          slot.eggs.push({...e});
+          existingIds.add(e.id);
+        } else {
+          overflow.push(e); // inventário cheio — guarda de volta
+        }
       });
+      if(overflow.length > 0) {
+        // Deixa os excedentes no inbox até o jogador criar espaço
+        window._inboxOverflow = overflow;
+        console.warn(`inboxEggs: ${overflow.length} ovo(s) não cabem no inventário (limite ${MAX_EGGS})`);
+      }
       // Marca para limpar o inbox no próximo saveToFirebase
       window._inboxConsumed = true;
     } else {
