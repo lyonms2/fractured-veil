@@ -249,12 +249,12 @@ function gameTick() {
 
   if(sleeping) {
     vitals.energia = Math.min(100, vitals.energia + (4 * getItemEffect('sleepEnergyMult')));
-    vitals.humor   = Math.min(100, vitals.humor + .5);
+    // humor não recupera dormindo — só brincar/minigames
     if(vitals.energia >= 100) { wakeUp('full'); }
   } else {
     const _d = rarityBonus().decay * GAME_SPEED;
     vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * getItemEffect('fomeDecayMult')));
-    vitals.humor   = Math.max(0, vitals.humor   - (0.5  * _d));
+    vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d));
     vitals.energia = Math.max(0, vitals.energia - (0.6  * _d));
   }
 
