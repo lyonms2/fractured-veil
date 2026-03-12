@@ -75,10 +75,12 @@ function updateMemInfo() {
 
 function memVictory() {
   const perfMult = memErrors === 0 ? 1.5 : memErrors <= 2 ? 1.2 : 1.0;
+  const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : 10;
+  vitals.humor = Math.min(100, vitals.humor + humorGain);
   const r = miniReward(perfMult, perfMult);
   document.getElementById('memResult').textContent = memErrors === 0 ? '🌟 PERFEITO!' : '✓ COMPLETO!';
   document.getElementById('memResult').className   = 'mini-result-box win';
-  document.getElementById('memReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+  document.getElementById('memReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
   document.getElementById('memAgainBtn').style.display = 'inline-block';
   showBubble(memErrors === 0 ? 'Memória perfeita! 🌟' : 'Conseguimos! 🃏');
 }
@@ -173,10 +175,11 @@ function simonPlayerClick(idx) {
 }
 
 function simonVictory() {
+  vitals.humor = Math.min(100, vitals.humor + 20);
   const r = miniReward(1.3, 1.3);
   document.getElementById('simonResult').textContent = '🎵 MESTRE!';
   document.getElementById('simonResult').className   = 'mini-result-box win';
-  document.getElementById('simonReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+  document.getElementById('simonReward').textContent = `+20 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   document.getElementById('simonSeqDisplay').textContent = '';
   showBubble('Mestre da memória! 🎵');
@@ -192,6 +195,7 @@ function simonGameOver() {
     const r = miniReward(frac * 0.8, frac * 0.8);
     document.getElementById('simonReward').textContent = frac > 0 ? `+${r.xpGain} XP  +${r.coinGain} 🪙` : '';
   }
+  vitals.humor = Math.min(100, vitals.humor + 5);
   document.getElementById('simonResult').textContent = '✗ ERROU!';
   document.getElementById('simonResult').className   = 'mini-result-box lose';
   document.getElementById('simonSeqDisplay').textContent = '';
@@ -217,7 +221,7 @@ function openJkp() {
   playAnim('anim-play');
   // Show avatar's own SVG as the opponent, using its name
   const enemyEmoji = document.getElementById('jkpEnemyEmoji');
-  enemyEmoji.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46);
+  enemyEmoji.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46, "mg");
   // Show first part of name as label
   const shortName = avatar.nome.split(',')[0];
   document.getElementById('jkpEnemyLabel').textContent = shortName.toUpperCase();
@@ -241,7 +245,7 @@ function jkpReset() {
   jkpPlaying = false;
   document.getElementById('jkpPlayerHand').textContent = '❓';
   document.getElementById('jkpPlayerHand').className   = 'jkp-hand';
-  const svgStr = avatar ? gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46) : '👾';
+  const svgStr = avatar ? gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46, "mg") : '👾';
   document.getElementById('jkpEnemyHand').innerHTML = `<span id="jkpEnemyEmoji">${svgStr}</span><div class="jkp-countdown" id="jkpCountdown"></div>`;
   document.getElementById('jkpEnemyHand').className    = 'jkp-hand';
   const res = document.getElementById('jkpResult');
