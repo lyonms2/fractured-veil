@@ -190,9 +190,21 @@
 
 /* phase label */
 .phase-label {
-  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
-  font-family:'Cinzel',serif; font-size:6px; letter-spacing:2px; color:var(--muted); z-index:6;
+  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  font-family:'Cinzel',serif; font-size:8px; font-weight:700;
+  letter-spacing:3px; z-index:6;
+  white-space:nowrap;
+  padding:3px 10px;
+  border-radius:20px;
+  border:1px solid;
+  backdrop-filter:blur(4px);
+  transition: color .4s, border-color .4s, background .4s, box-shadow .4s;
 }
+/* Cores por fase */
+.phase-label.fase-bebe    { color:#a78bfa; border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.08); box-shadow:0 0 10px rgba(167,139,250,.2); }
+.phase-label.fase-crianca { color:#60d4f0; border-color:rgba(96,212,240,.35);  background:rgba(96,212,240,.08);  box-shadow:0 0 10px rgba(96,212,240,.2); }
+.phase-label.fase-jovem   { color:#4ade80; border-color:rgba(74,222,128,.35);  background:rgba(74,222,128,.08);  box-shadow:0 0 10px rgba(74,222,128,.2); }
+.phase-label.fase-adulto  { color:#f0b840; border-color:rgba(240,184,64,.4);   background:rgba(240,184,64,.08);  box-shadow:0 0 14px rgba(240,184,64,.3), 0 0 4px rgba(240,184,64,.4); }
 
 /* ── BATH / CLEAN ANIMATION ── */
 
