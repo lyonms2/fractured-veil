@@ -178,9 +178,6 @@
 
 /* ── CHEW ANIMATION ── */
 
-
-
-
 /* ── CHEW ANIMATION ── */
 
 /* ── COIN SHOP ── */
@@ -297,12 +294,6 @@
 }
 .mkt-buy-btn:hover { background:rgba(201,168,76,.2); }
 .mkt-buy-btn:disabled { opacity:.4; cursor:default; pointer-events:none; }
-.mkt-sell-egg {
-  display:flex; align-items:center; gap:8px;
-  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
-  border-radius:6px; padding:7px 10px; cursor:pointer; transition:all .2s;
-}
-.mkt-sell-egg:hover { border-color:var(--gold); background:rgba(201,168,76,.06); }
 
 /* ── CONNECT WALLET BUTTON (wallet warning card) ── */
 .btn-connect-wallet {
@@ -362,7 +353,6 @@
   box-sizing: border-box;
 }
 
-
 /* ── Header bar ── */
 .mkt-header {
   width: 100%;
@@ -377,61 +367,8 @@
 .mkt-header .mini-title { margin: 0; font-size: 10px; }
 
 /* ── Section switcher: OVOS / ITENS ── */
-.mkt-sections {
-  display: flex;
-  width: 100%;
-  flex-shrink: 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-.mkt-sec-btn {
-  flex: 1;
-  padding: 9px 0;
-  cursor: pointer;
-  font-family: 'Cinzel', serif;
-  font-size: 7.5px;
-  letter-spacing: 2px;
-  font-weight: 700;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  transition: all .2s;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-}
-.mkt-sec-btn:hover { color: #c8a8e8; }
-.mkt-sec-btn.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
-  background: rgba(201,168,76,.05);
-}
 
 /* ── Sub-tabs: COMPRAR / VENDER ── */
-.mkt-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 10px 14px 0;
-  flex-shrink: 0;
-}
-.mkt-tab-btn {
-  flex: 1;
-  padding: 6px 0;
-  cursor: pointer;
-  font-family: 'Cinzel', serif;
-  font-size: 6px;
-  letter-spacing: 1.5px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 20px;
-  background: transparent;
-  color: var(--muted);
-  transition: all .2s;
-}
-.mkt-tab-btn:hover { color: var(--gold-light); border-color: rgba(201,168,76,.3); }
-.mkt-tab-btn.active {
-  color: #0d0a1a;
-  background: var(--gold);
-  border-color: var(--gold);
-  font-weight: 700;
-}
 
 /* ── Scrollable body ── */
 .mkt-body {
@@ -502,22 +439,7 @@
 }
 
 /* ── Egg sell card ── */
-.mkt-sell-egg {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(255,255,255,.02);
-  border: 1px solid rgba(255,255,255,.07);
-  cursor: pointer;
-  transition: all .2s;
-}
-.mkt-sell-egg:hover {
-  border-color: rgba(201,168,76,.4);
-  background: rgba(201,168,76,.05);
-  transform: translateX(2px);
-}
+
 .mkt-sell-egg.selected { border-color: var(--gold); background: rgba(201,168,76,.08); }
 
 /* ── Sell form ── */
