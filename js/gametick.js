@@ -238,7 +238,6 @@ function gameTick() {
     scheduleSave();
   }
 
-  updateTimer();
 
   if(!hatched || dead || !avatar) return;
 
@@ -386,7 +385,11 @@ function checkXP() {
     const faseBefore = getFase();
     xp -= needed; nivel++;
     const faseAfter = getFase();
-    document.getElementById('phaseLabel').textContent = `FASE: ${FASES[faseAfter]}`;
+    const _pl = document.getElementById('phaseLabel');
+    if(_pl) {
+      _pl.textContent = FASES[faseAfter];
+      _pl.className = 'phase-label fase-' + FASES[faseAfter].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace('ê','e').replace('ç','c');
+    }
     addLog(`Nível ${nivel}! Seu avatar ficou mais forte!`,'leg');
     playLevelUp(nivel);
     // Phase change?
