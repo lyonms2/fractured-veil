@@ -25,11 +25,14 @@ function renderMarketItems() {
           <div class="mkt-catalog-name" style="color:${item.cor}">${item.nome}</div>
           <div class="mkt-catalog-type">${item.tipo} · ${item.raridade}</div>
         </div>
-        <div class="mkt-catalog-price">${(()=>{
-          const disc = rarityBonus().shopDiscount||0;
-          const p = Math.round(item.preco*(1-disc));
-          return disc>0 ? `<span style="text-decoration:line-through;opacity:.5;font-size:7px;">${item.preco}</span> ${p}` : p;
-        })()} 🪙</div>
+        <div class="mkt-catalog-price">${
+          (function(){ 
+            var disc = rarityBonus().shopDiscount||0;
+            var p = Math.round(item.preco*(1-disc));
+            if(disc>0) return '<span style="text-decoration:line-through;opacity:.5;font-size:7px;">'+item.preco+'</span> '+p;
+            return p;
+          })()
+        } 🪙</div>
       </div>
       <div class="mkt-catalog-desc">${item.desc}</div>
       <div class="mkt-catalog-effect">✦ ${item.efeito}</div>
