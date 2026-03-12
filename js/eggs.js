@@ -89,9 +89,18 @@ function layEgg() {
   if(gs.moedas < EGG_COST) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
   spendCoins(EGG_COST);
 
+  const MAX_EGGS = 10;
+  if(eggsInInventory.length >= MAX_EGGS) {
+    showBubble(`Inventário cheio! (${MAX_EGGS} ovos máx) 🥚`);
+    addLog(`Inventário cheio — descarta ou choca um ovo primeiro.`, 'bad');
+    // Devolve as moedas gastas
+    earnCoins(EGG_COST);
+    return;
+  }
   const rb = rarityBonus();
   // Lay multiple eggs based on rarity (Comum=1, Raro=2, Lendário=3)
-  const numEggs = rb.eggs;
+  // Se o inventário ficaria acima do limite, reduz o número de ovos
+  const numEggs = Math.min(rb.eggs, MAX_EGGS - eggsInInventory.length);
   for(let i = 0; i < numEggs; i++) {
     const raridade = calcEggRarity();
     const expiraEm = calcEggExpiry(raridade);
@@ -706,9 +715,10 @@ function renderEggInventory() {
 
   // Update modal subtitle
   const countEl = document.getElementById('eggInvCount');
+  const _maxEggs = 10;
   if(countEl) countEl.textContent = eggsInInventory.length === 0
-    ? 'Nenhum ovo'
-    : `${eggsInInventory.length} ovo${eggsInInventory.length > 1 ? 's' : ''}`;
+    ? `0 / ${_maxEggs} ovos`
+    : `${eggsInInventory.length} / ${_maxEggs} ovo${eggsInInventory.length > 1 ? 's' : ''}`;
 
   if(eggsInInventory.length === 0) {
     list.innerHTML = '<div class="egg-empty">Nenhum ovo no inventário</div>';
