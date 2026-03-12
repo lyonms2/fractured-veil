@@ -25,6 +25,10 @@ window.feedCreature = typeof feedCreature !== "undefined" ? feedCreature : ()=>{
 window.hatchEggFromInventory = typeof hatchEggFromInventory !== "undefined" ? hatchEggFromInventory : ()=>{};
 window.sellEggToPool = typeof sellEggToPool !== "undefined" ? sellEggToPool : ()=>{};
 window.updatePhaseLabel = typeof updatePhaseLabel !== "undefined" ? updatePhaseLabel : ()=>{};
+window.startVelha    = typeof startVelha    !== "undefined" ? startVelha    : ()=>{};
+window.startRename   = typeof startRename   !== "undefined" ? startRename   : ()=>{};
+window.cancelRename  = typeof cancelRename  !== "undefined" ? cancelRename  : ()=>{};
+window.confirmRename = typeof confirmRename !== "undefined" ? confirmRename : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
 window.jkpChoose = typeof jkpChoose !== "undefined" ? jkpChoose : ()=>{};
 window.jkpPlayAgain = typeof jkpPlayAgain !== "undefined" ? jkpPlayAgain : ()=>{};
