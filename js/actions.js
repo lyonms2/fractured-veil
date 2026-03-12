@@ -68,8 +68,9 @@ function feedCreature() {
 }
 
 function playCreature() {
-  if(!canAct()) return;
-  if(sleeping) return;
+  if(dead)     { showBubble('...💀'); return; }
+  if(!hatched || !avatar) { showBubble('Nenhum avatar activo!'); return; }
+  if(sleeping) { showBubble('Shh... está dormindo 💤'); return; }
   if(vitals.fome < 10)   { showBubble('Estou faminto! 🍖'); return; }
   if(vitals.energia < 20){ showBubble('Cansado demais... 😴'); return; }
   openGameSelector();
