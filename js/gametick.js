@@ -253,7 +253,7 @@ function gameTick() {
   } else {
     const _d = rarityBonus().decay * GAME_SPEED;
     vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * getItemEffect('fomeDecayMult')));
-    vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d));
+    vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d * getItemEffect('humorDecayMult')));
     vitals.energia = Math.max(0, vitals.energia - (0.6  * _d));
   }
 
