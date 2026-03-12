@@ -42,13 +42,7 @@ function updateAllUI() {
   if(_coinBtn) { hatched && !dead ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
 }
 
-function updateTimer() {
-  const el = document.getElementById('timerTxt');
-  if(!el) return;
-  if(!hatched || !bornAt) { el.textContent = '📅 Dia 1'; return; }
-  const dias = Math.floor((Date.now() - bornAt) / (1000 * 60 * 60 * 24));
-  el.textContent = `📅 Dia ${dias + 1}`;
-}
+// updateTimer removido — idade não exibida
 
 function updateResourceUI() {
   document.getElementById('resMonedas').textContent   = gs.moedas;
@@ -227,4 +221,13 @@ function fillCreatureCard() {
       rbEl.style.display = 'none';
     }
   }
+}
+
+function updatePhaseLabel() {
+  const _pl = document.getElementById('phaseLabel');
+  if(!_pl) return;
+  const fase = FASES[getFase()];
+  _pl.textContent = fase;
+  const cls = { 'BEBÊ':'bebe','CRIANÇA':'crianca','JOVEM':'jovem','ADULTO':'adulto' };
+  _pl.className = 'phase-label fase-' + (cls[fase] || 'bebe');
 }
