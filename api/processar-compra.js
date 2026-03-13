@@ -47,12 +47,6 @@ function getDB() {
 const RATE             = 10;   // 10 💎 = 1 MATIC (tem de coincidir com o contrato)
 const MAX_GEMS_CREDITO = 1000; // tecto de segurança por transação
 
-// Split de distribuição dos 💎
-// 80% vai para o jogador, 20% vai para a conta dev no Firestore
-// (transparente — visível no histórico de ambas as contas)
-const PLAYER_SHARE = 0.80;
-const DEV_SHARE    = 0.20;
-const DEV_ADDR     = '0x1fcb61db743a0276b92382b9e7b92a62ca8cf030'; // owner do contrato (lowercase)
 
 // ABI mínimo — só precisamos do evento CristaisComprados
 const CONTRACT_ABI = [
