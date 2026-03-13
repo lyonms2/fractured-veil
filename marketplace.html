@@ -738,31 +738,25 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
   <!-- SIDEBAR -->
   <nav class="mkt-sidebar">
-    <div class="mkt-nav-section">Mercado</div>
-    <button class="mkt-nav-btn active" onclick="showSection('browse')" id="nav-browse">
-      <span class="nav-icon">🛒</span> Explorar
-    </button>
-
-
     <div class="mkt-nav-section">Minha Conta</div>
-    <button class="mkt-nav-btn" onclick="showSection('slots')" id="nav-slots">
+    <button class="mkt-nav-btn active" onclick="showSection('slots')" id="nav-slots">
       <span class="nav-icon">🧬</span> Meus Avatares
     </button>
 
-    <div class="mkt-nav-section">Transparência</div>
-    <button class="mkt-nav-btn" onclick="showSection('pool')" id="nav-pool">
-      <span class="nav-icon">💎</span> Pool P2E
+    <div class="mkt-nav-section">Mercado</div>
+    <button class="mkt-nav-btn" onclick="showSection('browse')" id="nav-browse">
+      <span class="nav-icon">🛒</span> Comprar Avatares
     </button>
-
-    <div class="mkt-nav-section">Cristais 💎</div>
     <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
       <span class="nav-icon">💎</span> Comprar Cristais
     </button>
-    <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
-      <span class="nav-icon">🔍</span> Transparência
-    </button>
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
-      <span class="nav-icon">🥚</span> Ovos à Venda
+      <span class="nav-icon">🥚</span> Comprar Ovos
+    </button>
+
+    <div class="mkt-nav-section">Informação</div>
+    <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
+      <span class="nav-icon">🔍</span> Pool & Transparência
     </button>
   </nav>
 
@@ -770,8 +764,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   <main class="mkt-main">
 
     <!-- ── EXPLORAR ── -->
-    <div class="mkt-section active" id="sec-browse">
-      <div class="section-title">🛒 Avatares à Venda</div>
+    <div class="mkt-section" id="sec-browse">
+      <div class="section-title">🛒 Comprar Avatares</div>
       <div class="section-sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
 
       <div class="filters-row">
@@ -800,13 +794,27 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       </div>
     </div>
 
-    <!-- ── POOL P2E ── -->
-    <div class="mkt-section" id="sec-pool">
-      <div class="section-title">💎 Pool de Recompensas P2E</div>
-      <div class="section-sub">Saldo e histórico público da pool. 100% das taxas do marketplace alimentam a pool de recompensas dos jogadores.</div>
+
+
+    <!-- ── MEUS AVATARES ── -->
+    <div class="mkt-section active" id="sec-slots">
+      <div class="section-title">🧬 Meus Avatares</div>
+      <div class="section-sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
+      <div id="slotsGrid" class="slots-grid"></div>
+      <div id="unlockSlotRow"></div>
+    </div>
+
+    <!-- ── POOL & TRANSPARÊNCIA ── -->
+    <div class="mkt-section" id="sec-transparencia">
+      <div class="section-title">🔍 Pool & Transparência</div>
+      <div class="section-sub">Estado da pool de recompensas e como funciona o dinheiro no Fractured Veil — verificável por qualquer pessoa.</div>
+
+      <!-- POOL: Estado actual -->
       <div id="poolStatsCard"></div>
-      <div class="pool-log-header">
-        <div class="pool-log-title">📋 Histórico de Transacções</div>
+
+      <!-- POOL: Histórico -->
+      <div class="pool-log-header" style="margin-top:16px;">
+        <div class="pool-log-title">📋 Histórico da Pool</div>
         <div class="pool-log-legend">
           <span class="pool-leg entrada">▲ Entrada</span>
           <span class="pool-leg saida">▼ Saída</span>
@@ -816,51 +824,43 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="loading"><div class="spinner"></div><div>A carregar histórico...</div></div>
       </div>
       <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
-    </div>
 
-    <!-- ── MEUS AVATARES ── -->
-    <div class="mkt-section" id="sec-slots">
-      <div class="section-title">🧬 Meus Avatares</div>
-      <div class="section-sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
-      <div id="slotsGrid" class="slots-grid"></div>
-      <div id="unlockSlotRow"></div>
-    </div>
-
-    <!-- ── TRANSPARÊNCIA ── -->
-    <div class="mkt-section" id="sec-transparencia">
-      <div class="section-title">🔍 Transparência do Jogo</div>
-      <div class="section-sub">Como funciona o dinheiro no Fractured Veil — explicado de forma clara e verificável por qualquer pessoa.</div>
+      <!-- DIVISOR -->
+      <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
 
       <!-- BLOCO 1: O cofre -->
       <div class="transp-block">
         <div class="transp-block-title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
           Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon —
-          um cofre automático cujas regras são públicas e <strong>não podem ser alteradas depois de instalado</strong>.
-          Ninguém, nem o criador do jogo, pode mudar as regras.<br><br>
-          Podes ver o saldo do cofre e todas as transações em tempo real no Polygonscan:
-          <br>
+          código público que ninguém pode alterar, nem o criador do jogo.<br><br>
           <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
+          <br><br>
+          <div class="transp-timelock-status" id="transpTimelockStatus">A carregar...</div>
         </div>
       </div>
 
-      <!-- BLOCO 2: Divisão do MATIC -->
+      <!-- BLOCO 2: Compra de cristais -->
       <div class="transp-block">
-        <div class="transp-block-title">💸 O que acontece quando compras 💎</div>
+        <div class="transp-block-title">💸 Quando compras 💎 Cristais</div>
         <div class="transp-block-body">
-          Quando envias MATIC para comprar Cristais, o contrato divide automaticamente e instantaneamente:
-          <div class="transp-split">
-            <div class="transp-split-item transp-split-pool">
-              <div class="transp-split-pct">80%</div>
-              <div class="transp-split-label">Fica no cofre</div>
-              <div class="transp-split-desc">Reserva para honrar todos os resgates dos jogadores</div>
-            </div>
-            <div class="transp-split-item transp-split-dev">
-              <div class="transp-split-pct">20%</div>
-              <div class="transp-split-label">Manutenção</div>
-              <div class="transp-split-desc">Cobre custos do servidor, Firebase e desenvolvimento</div>
-            </div>
+          O MATIC vai 100% para o cofre do contrato. Os 💎 são creditados no jogo pelo servidor após verificação on-chain.
+          O cofre é a reserva que garante que todos os jogadores podem sempre resgatar os seus 💎.
+          <div class="transp-taxa-row" style="margin-top:10px;">
+            <span>MATIC enviado</span><span class="transp-taxa-val">100% → Cofre</span>
           </div>
+          <div class="transp-taxa-row">
+            <span>💎 creditados ao jogador</span><span class="transp-taxa-val">1 MATIC = 10 💎</span>
+          </div>
+          <div class="transp-taxa-row">
+            <span>Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span>
+          </div>
+          <br>
+          O teu limite hoje:
+          <div class="transp-limit-bar-wrap">
+            <div class="transp-limit-bar" id="transpLimitBar"></div>
+          </div>
+          <div class="transp-limit-txt" id="transpLimitTxt">Conecta a carteira para ver o teu limite.</div>
         </div>
       </div>
 
@@ -868,46 +868,18 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title">🏪 Taxas do Marketplace</div>
         <div class="transp-block-body">
-          Todas as taxas cobradas dentro do marketplace (listagem de avatares, vendas de ovos e avatares)
-          vão <strong>100% para a Pool P2E</strong> — que paga recompensas em 💎 aos jogadores que participam
-          na economia do jogo. O criador do jogo não recebe nenhuma parte destas taxas.
-          <div class="transp-taxa-row">
-            <span>Listar avatar</span><span class="transp-taxa-val">2 💎 → 100% Pool</span>
+          Todas as taxas das transações dentro do marketplace são divididas:
+          <strong>80% vão para a Pool P2E</strong> (que paga recompensas aos jogadores)
+          e <strong>20% vão para manutenção</strong> (servidor, Firebase, desenvolvimento).
+          <div class="transp-taxa-row" style="margin-top:10px;">
+            <span>Listar avatar</span><span class="transp-taxa-val">2 💎 · 80% Pool + 20% Dev</span>
           </div>
           <div class="transp-taxa-row">
-            <span>Venda de avatar</span><span class="transp-taxa-val">10% → 100% Pool</span>
+            <span>Venda de avatar</span><span class="transp-taxa-val">10% taxa · 80% Pool + 20% Dev</span>
           </div>
           <div class="transp-taxa-row">
-            <span>Venda de ovo</span><span class="transp-taxa-val">taxa → 100% Pool</span>
+            <span>Venda de ovo</span><span class="transp-taxa-val">10% taxa · 80% Pool + 20% Dev</span>
           </div>
-        </div>
-      </div>
-
-      <!-- BLOCO 4: Estado do cofre -->
-      <div class="transp-block">
-        <div class="transp-block-title">🔒 Estado do Cofre</div>
-        <div class="transp-block-body">
-          O cofre está activo na Polygon Mainnet. Podes verificar o saldo e todas as transacções
-          em tempo real no Polygonscan — tudo é público e imutável na blockchain.
-          <br><br>
-          <div class="transp-timelock-status" id="transpTimelockStatus">
-            A carregar...
-          </div>
-        </div>
-      </div>
-
-      <!-- BLOCO 5: Limite de resgate -->
-      <div class="transp-block">
-        <div class="transp-block-title">📊 Limite de Resgate Diário</div>
-        <div class="transp-block-body">
-          Para proteger a reserva do cofre contra drenos súbitos, cada jogador pode resgatar
-          no máximo <strong>5 MATIC por dia</strong>. Este limite reinicia à meia-noite UTC.
-          <br><br>
-          O teu limite hoje:
-          <div class="transp-limit-bar-wrap">
-            <div class="transp-limit-bar" id="transpLimitBar"></div>
-          </div>
-          <div class="transp-limit-txt" id="transpLimitTxt">Conecta a carteira para ver o teu limite.</div>
         </div>
       </div>
 
@@ -936,7 +908,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
     <!-- ── OVOS À VENDA ── -->
     <div class="mkt-section" id="sec-eggs">
-      <div class="section-title">🥚 Ovos à Venda</div>
+      <div class="section-title">🥚 Comprar Ovos</div>
       <div class="section-sub">Ovos Raros e Lendários listados por outros jogadores. Choca-os no jogo principal para obter avatares de raridade superior.</div>
 
       <div class="filters-row">
@@ -1062,7 +1034,7 @@ let listingUnsub   = null;
 let listingSlotIdx = null;  // slot seleccionado para listar
 
 // ── Navegação ──
-let currentSection = 'browse';
+let currentSection = 'slots';
 
 // ═══════════════════════════════════════════
 // CARTEIRA — conectar e carregar dados
@@ -1148,11 +1120,10 @@ function showSection(id) {
 
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
-  if(currentSection === 'pool')          renderPoolSection();
   if(currentSection === 'slots')         renderSlots();
   if(currentSection === 'buycrystals')   renderCrystals();
   if(currentSection === 'eggs')          loadEggListings();
-  if(currentSection === 'transparencia') renderTransparencia();
+  if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
 }
 
 // ═══════════════════════════════════════════
