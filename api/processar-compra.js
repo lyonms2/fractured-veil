@@ -60,11 +60,12 @@ const CONTRACT_ABI = [
 ];
 
 // RPC da Polygon Mainnet — lista de fallback por ordem de prioridade
-// Se o primeiro falhar, tenta o seguinte
+// Todos verificados como gratuitos sem chave de API
 const POLYGON_RPCS = [
-  'https://rpc.ankr.com/polygon',           // Ankr — sem chave, muito estável
-  'https://polygon-bor-rpc.publicnode.com',  // PublicNode — sem chave
-  'https://1rpc.io/matic',                   // 1RPC — sem chave
+  'https://polygon-bor-rpc.publicnode.com',  // PublicNode — gratuito sem chave
+  'https://polygon.drpc.org',                // dRPC — gratuito sem chave
+  'https://polygon.meowrpc.com',             // MeowRPC — gratuito sem chave
+  'https://polygon.llamarpc.com',            // LlamaRPC — gratuito sem chave
 ];
 
 module.exports = async function handler(req, res) {
