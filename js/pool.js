@@ -222,36 +222,56 @@ async function loadPoolLogs(reset) {
 
 // ═══════════════════════════════════════════
 // ENTRADA NA POOL (taxas)
+// Split: 80% → pool P2E, 20% → conta dev (manutenção)
 // ═══════════════════════════════════════════
+const DEV_WALLET_ADDR  = '0x1fcb61db743a0276b92382b9e7b92a62ca8cf030';
+const POOL_SPLIT       = 0.80; // 80% para a pool
+const DEV_SPLIT        = 0.20; // 20% para a conta dev
+
 async function addToPool(totalTaxa, motivo, origem) {
-  // 100% das taxas vai para a Pool P2E
-  // (lucro dev vem dos 20% MATIC do Treasury — contrato FracturedVeilTreasury)
   if(totalTaxa <= 0) return;
+
+  // Calcular split — arredonda para baixo, dev leva o resto
+  const paraPool = Math.floor(totalTaxa * POOL_SPLIT);
+  const paraDev  = totalTaxa - paraPool; // garante que paraPool + paraDev = totalTaxa
 
   try {
     const batch = db.batch();
 
-    batch.update(db.collection('config').doc('pool'), {
-      cristais:    firebase.firestore.FieldValue.increment(totalTaxa),
-      totalEntrou: firebase.firestore.FieldValue.increment(totalTaxa),
-    });
+    // 80% → pool P2E
+    if(paraPool > 0) {
+      batch.update(db.collection('config').doc('pool'), {
+        cristais:    firebase.firestore.FieldValue.increment(paraPool),
+        totalEntrou: firebase.firestore.FieldValue.increment(paraPool),
+      });
 
-    const logRef = db.collection('config').doc('pool')
-      .collection('logs').doc();
-    batch.set(logRef, {
-      tipo:      'entrada',
-      motivo,
-      origem:    origem || walletAddress || 'sistema',
-      total:     totalTaxa,
-      pool:      totalTaxa,
-      ts:        firebase.firestore.FieldValue.serverTimestamp(),
-    });
+      const logRef = db.collection('config').doc('pool')
+        .collection('logs').doc();
+      batch.set(logRef, {
+        tipo:    'entrada',
+        motivo,
+        origem:  origem || walletAddress || 'sistema',
+        total:   totalTaxa,
+        pool:    paraPool,
+        dev:     paraDev,
+        ts:      firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // 20% → conta dev no Firestore
+    if(paraDev > 0) {
+      const devRef = db.collection('players').doc(DEV_WALLET_ADDR);
+      batch.set(devRef, {
+        'gs.cristais': firebase.firestore.FieldValue.increment(paraDev),
+        cristais:      firebase.firestore.FieldValue.increment(paraDev),
+      }, { merge: true });
+    }
 
     await batch.commit();
 
     if(poolData) {
-      poolData.cristais    = (poolData.cristais    || 0) + totalTaxa;
-      poolData.totalEntrou = (poolData.totalEntrou || 0) + totalTaxa;
+      poolData.cristais    = (poolData.cristais    || 0) + paraPool;
+      poolData.totalEntrou = (poolData.totalEntrou || 0) + paraPool;
     }
 
     renderPoolWidget();
