@@ -883,19 +883,13 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         </div>
       </div>
 
-      <!-- BLOCO 4: Timelock -->
+      <!-- BLOCO 4: Estado do cofre -->
       <div class="transp-block">
-        <div class="transp-block-title">⏰ Proteção Timelock — 48 horas</div>
+        <div class="transp-block-title">🔒 Estado do Cofre</div>
         <div class="transp-block-body">
-          O criador do jogo <strong>pode sacar MATIC excedente do cofre</strong> — mas apenas após
-          <strong>48 horas de aviso público</strong> na blockchain.<br><br>
-          Como funciona:
-          <div class="transp-step-list">
-            <div class="transp-step"><span class="transp-step-n">1</span>O criador anuncia o saque → o anúncio fica imediatamente visível no Polygonscan para qualquer pessoa.</div>
-            <div class="transp-step"><span class="transp-step-n">2</span>48 horas de espera obrigatória — o contrato bloqueia qualquer saque antes disso, mesmo que o criador tente.</div>
-            <div class="transp-step"><span class="transp-step-n">3</span>Se os jogadores não concordarem, têm 48h para resgatar os seus 💎 antes do saque acontecer.</div>
-          </div>
-          Estado actual do cofre:
+          O cofre está activo na Polygon Mainnet. Podes verificar o saldo e todas as transacções
+          em tempo real no Polygonscan — tudo é público e imutável na blockchain.
+          <br><br>
           <div class="transp-timelock-status" id="transpTimelockStatus">
             A carregar...
           </div>
@@ -922,26 +916,21 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <!-- ── COMPRAR CRISTAIS ── -->
     <div class="mkt-section" id="sec-buycrystals">
       <div class="section-title">💎 Comprar Cristais</div>
-      <div class="section-sub">1 MATIC = 10 💎. Envia MATIC para o endereço abaixo e cola o hash da transação para confirmar.</div>
-
-      <div class="wallet-addr-display">
-        Endereço de pagamento: <b id="paymentAddr">—</b>
-      </div>
+      <div class="section-sub">1 MATIC = 10 💎. A transação é feita directamente no teu MetaMask — sem colar hashes.</div>
 
       <div class="crystal-packages" id="crystalPackages"></div>
 
-      <div class="tx-verify-box">
-        <h3>✅ Confirmar Pagamento</h3>
-        <div class="tx-steps">
-          <div class="tx-step"><div class="tx-step-num">1</div><div>Envia o MATIC do pacote escolhido para o endereço acima via MetaMask ou qualquer carteira Polygon.</div></div>
-          <div class="tx-step"><div class="tx-step-num">2</div><div>Copia o hash da transação (tx hash) do explorador da Polygon.</div></div>
-          <div class="tx-step"><div class="tx-step-num">3</div><div>Cola aqui e clica em Verificar. Os Cristais são creditados automaticamente.</div></div>
-        </div>
+      <div id="buyStatus" style="margin-top:12px;text-align:center;min-height:24px;"></div>
+
+      <!-- RESGATAR -->
+      <div class="tx-verify-box" style="margin-top:24px;">
+        <h3>💸 Resgatar Cristais → MATIC</h3>
+        <div class="section-sub" style="margin:8px 0 16px;">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
         <div class="tx-input-row">
-          <input class="tx-hash-input" id="txHashInput" placeholder="0x... hash da transação"/>
-          <button class="btn-verify" id="btnVerify" onclick="verifyTx()">Verificar</button>
+          <input class="tx-hash-input" id="resgateGems" type="number" min="10" step="10" placeholder="Quantidade de 💎 (mín. 10)"/>
+          <button class="btn-verify" id="btnResgatar" onclick="resgatar()">Resgatar</button>
         </div>
-        <div id="txStatus"></div>
+        <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
       </div>
     </div>
 
@@ -1054,7 +1043,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 // MARKETPLACE — CORE
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // carteira da pool — recebe MATIC das compras de cristais
+const PAYMENT_ADDRESS = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // owner do contrato
 const POLYGONSCAN_API = 'https://api.polygonscan.com/api';
 // RARE_EGG_COST removido — ovos só vendem entre jogadores
 const LIST_COST        = 2;   // 💎
@@ -1359,10 +1348,8 @@ let playerData    = null;   // dados do jogador carregados do Firestore
 let listings      = [];     // listagens do marketplace
 let listingUnsub  = null;
 let listingSlotIdx= null;   // slot a listar
-let usedTxHashes  = new Set();
 
 // ── INIT ──
-document.getElementById('paymentAddr').textContent = PAYMENT_ADDRESS;
 
 async function connectWallet() {
   if(typeof window.ethereum === 'undefined') {
@@ -1390,16 +1377,11 @@ async function loadPlayerData() {
   playerData.avatarSlots = playerData.avatarSlots || [null,null,null];
   playerData.activeSlotIdx = playerData.gs?.activeSlotIdx ?? playerData.activeSlotIdx ?? 0;
   playerData.extraSlots  = playerData.gs?.extraSlots  ?? playerData.extraSlots  ?? 0;
-  playerData.usedTxHashes= playerData.usedTxHashes|| [];
-  usedTxHashes = new Set(playerData.usedTxHashes);
   updateCristaisDisplay();
 }
 
 async function savePlayerData() {
-  // Uso restrito: apenas para verifyTx (usedTxHashes)
-  // Todas as outras operações usam update cirúrgico
   if(!walletAddress) return;
-  playerData.usedTxHashes = [...usedTxHashes];
   await db.collection('players').doc(walletAddress).set(playerData, { merge: true });
   updateCristaisDisplay();
 }
@@ -2017,6 +1999,9 @@ async function renderTransparencia() {
   }
 }
 
+// ═══════════════════════════════════════════
+// COMPRA DE CRISTAIS — MetaMask directo para o contrato
+// ═══════════════════════════════════════════
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
   container.innerHTML = CRYSTAL_PACKAGES.map((pkg,i) => `
@@ -2026,82 +2011,136 @@ function renderCrystals() {
       <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text2);margin-bottom:4px;">${pkg.label}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
       <div class="pkg-bonus">${i===1?'Mais popular':''}</div>
-      <button class="btn-buy-pkg" onclick="selectPackage(${i})">Selecionar</button>
+      <button class="btn-buy-pkg" onclick="comprarCristais(${i})">Comprar</button>
     </div>`).join('');
 }
 
-function selectPackage(idx) {
-  const pkg = CRYSTAL_PACKAGES[idx];
-  showToast(`Envia ${pkg.matic} MATIC para o endereço exibido e cola o tx hash abaixo.`,'ok');
-  document.getElementById('txHashInput').focus();
-  document.getElementById('txHashInput').dataset.pkg = idx;
-}
+async function comprarCristais(idx) {
+  const pkg    = CRYSTAL_PACKAGES[idx];
+  const status = document.getElementById('buyStatus');
 
-async function verifyTx() {
-  const hash = document.getElementById('txHashInput').value.trim();
-  const pkgIdx = parseInt(document.getElementById('txHashInput').dataset.pkg ?? '-1');
-  const status = document.getElementById('txStatus');
-
-  if(!hash || !hash.startsWith('0x')) { status.innerHTML = '<span class="tx-err">Hash inválido.</span>'; return; }
-  if(pkgIdx < 0) { status.innerHTML = '<span class="tx-err">Seleciona um pacote primeiro.</span>'; return; }
-  if(usedTxHashes.has(hash)) { status.innerHTML = '<span class="tx-err">Esta transação já foi utilizada.</span>'; return; }
-
-  const btn = document.getElementById('btnVerify');
-  btn.disabled = true;
-  status.innerHTML = '<span class="tx-pending">A verificar na Polygon...</span>';
+  if(!walletAddress) {
+    status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
+    return;
+  }
 
   try {
-    const url = `${POLYGONSCAN_API}?module=transaction&action=gettxreceiptstatus&txhash=${hash}&apikey=AIHG26MMCEIP8B2H541E22EPCNSA5JFFZ4`;
-    const res = await fetch(url);
-    const data = await res.json();
+    status.innerHTML = '<span class="tx-pending">⏳ Abre o MetaMask para confirmar...</span>';
 
-    if(data.result?.status !== '1') {
-      status.innerHTML = '<span class="tx-err">Transação não confirmada ou inválida.</span>';
-      btn.disabled = false; return;
-    }
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer   = await provider.getSigner();
 
-    // Verify tx details
-    const txUrl = `${POLYGONSCAN_API}?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=AIHG26MMCEIP8B2H541E22EPCNSA5JFFZ4`;
-    const txRes = await fetch(txUrl);
-    const txData = await txRes.json();
-    const tx = txData.result;
-
-    if(!tx) { status.innerHTML = '<span class="tx-err">Transação não encontrada.</span>'; btn.disabled=false; return; }
-    if(tx.to?.toLowerCase() !== PAYMENT_ADDRESS.toLowerCase()) {
-      status.innerHTML = '<span class="tx-err">Transação não enviada para o endereço correcto.</span>'; btn.disabled=false; return;
-    }
-    if(tx.from?.toLowerCase() !== walletAddress) {
-      status.innerHTML = '<span class="tx-err">Transação não foi enviada pela tua carteira.</span>'; btn.disabled=false; return;
-    }
-
-    const pkg = CRYSTAL_PACKAGES[pkgIdx];
-    const expectedWei = BigInt(Math.round(pkg.matic * 1e18));
-    const actualWei   = BigInt(tx.value || '0');
-    const tolerance   = BigInt(Math.round(0.001 * 1e18)); // 0.001 MATIC tolerância
-    if(actualWei < expectedWei - tolerance) {
-      status.innerHTML = `<span class="tx-err">Valor enviado (${Number(actualWei)/1e18} MATIC) inferior ao esperado (${pkg.matic} MATIC).</span>`;
-      btn.disabled=false; return;
-    }
-
-    // All good — credit crystals (read fresh before adding)
-    const freshVerifySnap = await db.collection('players').doc(walletAddress).get();
-    const freshVerifyCristais = freshVerifySnap.data()?.gs?.cristais ?? freshVerifySnap.data()?.cristais ?? 0;
-    const newVerifyCristais = freshVerifyCristais + pkg.gems;
-    usedTxHashes.add(hash);
-    playerData.cristais = newVerifyCristais;
-    playerData.usedTxHashes = [...usedTxHashes];
-    await db.collection('players').doc(walletAddress).update({
-      cristais:         newVerifyCristais,
-      'gs.cristais':    newVerifyCristais,
-      usedTxHashes:     [...usedTxHashes],
+    // Enviar MATIC directamente para o contrato
+    // O contrato emite CristaisComprados → servidor credita os 💎
+    const maticWei = ethers.parseEther(pkg.matic.toString());
+    const tx = await signer.sendTransaction({
+      to:    CONTRACT_ADDRESS,
+      value: maticWei,
     });
-    updateCristaisDisplay();
-    status.innerHTML = `<span class="tx-ok">✅ +${pkg.gems} 💎 creditados! Saldo: ${playerData.cristais} 💎</span>`;
-    document.getElementById('txHashInput').value = '';
-    showToast(`+${pkg.gems} 💎 Cristais creditados!`, 'ok');
+
+    status.innerHTML = '<span class="tx-pending">⏳ Transação enviada. A aguardar confirmação...</span>';
+
+    const receipt = await tx.wait();
+
+    if(receipt.status === 1) {
+      status.innerHTML = `<span class="tx-ok">✅ Transação confirmada! Os teus 💎 serão creditados em instantes.<br><small>${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
+      showToast(`+${pkg.gems} 💎 a caminho!`, 'ok');
+      // Os 💎 são creditados pelo servidor ao detectar o evento on-chain
+      // O saldo actualiza automaticamente via listener do Firestore
+    } else {
+      status.innerHTML = '<span class="tx-err">❌ Transação falhou. Tenta novamente.</span>';
+    }
+
   } catch(e) {
-    console.error(e);
-    status.innerHTML = '<span class="tx-err">Erro ao verificar. Tenta novamente.</span>';
+    console.error('[comprarCristais]', e);
+    if(e.code === 'ACTION_REJECTED') {
+      status.innerHTML = '<span class="tx-err">Transação cancelada.</span>';
+    } else {
+      status.innerHTML = '<span class="tx-err">Erro ao enviar. Verifica o saldo de MATIC e tenta novamente.</span>';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// RESGATE DE CRISTAIS — 💎 → MATIC
+// ═══════════════════════════════════════════
+async function resgatar() {
+  const gemsInput = document.getElementById('resgateGems');
+  const status    = document.getElementById('resgateStatus');
+  const btn       = document.getElementById('btnResgatar');
+  const gems      = parseInt(gemsInput.value, 10);
+
+  if(!walletAddress) {
+    status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
+    return;
+  }
+  if(!gems || gems < 10 || gems % 10 !== 0) {
+    status.innerHTML = '<span class="tx-err">Mínimo 10 💎, em múltiplos de 10.</span>';
+    return;
+  }
+  if(gems > (playerData.cristais || 0)) {
+    status.innerHTML = `<span class="tx-err">Saldo insuficiente. Tens ${playerData.cristais || 0} 💎.</span>`;
+    return;
+  }
+
+  btn.disabled = true;
+  status.innerHTML = '<span class="tx-pending">⏳ A pedir autorização ao servidor...</span>';
+
+  try {
+    // Passo 1 — pedir assinatura ao servidor Vercel
+    const apiRes = await fetch('/api/resgatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ jogador: walletAddress, gems }),
+    });
+    const apiData = await apiRes.json();
+
+    if(!apiData.ok) {
+      status.innerHTML = `<span class="tx-err">❌ ${apiData.erro}</span>`;
+      btn.disabled = false;
+      return;
+    }
+
+    status.innerHTML = '<span class="tx-pending">⏳ Abre o MetaMask para confirmar o resgate...</span>';
+
+    // Passo 2 — chamar withdraw() no contrato com a assinatura
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer   = await provider.getSigner();
+    const abi = [
+      'function withdraw(uint256 gems, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external'
+    ];
+    const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+
+    const tx = await contrato.withdraw(
+      BigInt(apiData.gems),
+      BigInt(apiData.nonce),
+      apiData.v,
+      apiData.r,
+      apiData.s,
+    );
+
+    status.innerHTML = '<span class="tx-pending">⏳ Transação enviada. A aguardar confirmação...</span>';
+    const receipt = await tx.wait();
+
+    if(receipt.status === 1) {
+      const maticRecebido = apiData.matic;
+      playerData.cristais = (playerData.cristais || 0) - gems;
+      updateCristaisDisplay();
+      gemsInput.value = '';
+      status.innerHTML = `<span class="tx-ok">✅ Resgatado! Recebeste ${maticRecebido} MATIC na tua carteira.</span>`;
+      showToast(`💸 ${maticRecebido} MATIC enviados!`, 'ok');
+    } else {
+      // Tx falhou on-chain — o servidor já debitou os 💎, informar suporte
+      status.innerHTML = '<span class="tx-err">❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.</span>';
+    }
+
+  } catch(e) {
+    console.error('[resgatar]', e);
+    if(e.code === 'ACTION_REJECTED') {
+      status.innerHTML = '<span class="tx-err">Resgate cancelado. Os teus 💎 foram restaurados pelo servidor.</span>';
+    } else {
+      status.innerHTML = '<span class="tx-err">Erro no resgate. Tenta novamente.</span>';
+    }
   }
   btn.disabled = false;
 }
