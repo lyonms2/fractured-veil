@@ -81,7 +81,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const db     = getDB();
-    const userRef = db.collection('users').doc(jogadorAddr);
+    const userRef = db.collection('players').doc(jogadorAddr);
 
     // ── Transacção atómica ──────────────────────────────────────
     // Verifica saldo, debita e assina tudo num único bloco.
