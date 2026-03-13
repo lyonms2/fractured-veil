@@ -116,10 +116,34 @@ async function comprarCristais(idx) {
     const receipt = await tx.wait();
 
     if(receipt.status === 1) {
-      status.innerHTML = `<span class="tx-ok">✅ Transação confirmada! Os teus 💎 serão creditados em instantes.<br><small>${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
-      showToast(`+${pkg.gems} 💎 a caminho!`, 'ok');
-      // Os 💎 são creditados pelo servidor ao detectar o evento on-chain
-      // O saldo actualiza automaticamente via listener do Firestore
+      status.innerHTML = '<span class="tx-pending">⏳ A creditar os teus 💎...</span>';
+
+      // Chama o servidor para verificar o evento on-chain e creditar os 💎
+      try {
+        const apiRes  = await fetch('/api/processar-compra', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ jogador: walletAddress, txHash: tx.hash }),
+        });
+        const apiData = await apiRes.json();
+
+        if(apiData.ok) {
+          // Actualiza o saldo local imediatamente (o Firestore já foi actualizado)
+          playerData.cristais = (playerData.cristais || 0) + apiData.gems;
+          if(!playerData.gs) playerData.gs = {};
+          playerData.gs.cristais = playerData.cristais;
+          updateCristaisDisplay();
+          status.innerHTML = `<span class="tx-ok">✅ +${apiData.gems} 💎 creditados! Saldo: ${playerData.cristais} 💎</span>`;
+          showToast(`+${apiData.gems} 💎 Cristais adicionados!`, 'ok');
+        } else {
+          // Transação confirmada mas servidor rejeitou (ex: já processada)
+          status.innerHTML = `<span class="tx-err">⚠️ Transação confirmada mas não creditada: ${apiData.erro}</span>`;
+        }
+      } catch(apiErr) {
+        // Rede caiu depois da tx — os 💎 serão creditados na próxima visita
+        status.innerHTML = `<span class="tx-err">⚠️ Tx confirmada mas erro ao creditar. Volta ao marketplace — os teus 💎 serão recuperados.<br><small>Hash: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
+      }
+
     } else {
       status.innerHTML = '<span class="tx-err">❌ Transação falhou. Tenta novamente.</span>';
     }
