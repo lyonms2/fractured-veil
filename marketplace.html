@@ -430,6 +430,34 @@ body{display:flex;flex-direction:column;min-height:100vh;}
    LOJA DE CRISTAIS
 ═══════════════════════════════════════════ */
 .crystal-packages{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
+
+/* ── TRANSPARÊNCIA ── */
+.transp-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;margin-bottom:14px;}
+.transp-block-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+.transp-block-body{font-size:12px;color:var(--text2);line-height:1.7;}
+.transp-block-body strong{color:var(--text);}
+.transp-link{display:inline-block;margin-top:8px;color:var(--gem);font-size:11px;text-decoration:none;border-bottom:1px solid rgba(167,139,250,.3);padding-bottom:1px;}
+.transp-link:hover{color:var(--gem2);}
+.transp-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.transp-split-item{border-radius:10px;padding:14px;text-align:center;}
+.transp-split-pool{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);}
+.transp-split-dev{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);}
+.transp-split-pct{font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px;}
+.transp-split-label{font-size:10px;letter-spacing:1px;color:var(--text);margin-bottom:4px;}
+.transp-split-desc{font-size:10px;color:var(--muted);line-height:1.5;}
+.transp-taxa-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+.transp-taxa-row:last-child{border-bottom:none;}
+.transp-taxa-val{color:var(--gem2);font-weight:600;font-size:11px;}
+.transp-step-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+.transp-step{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text2);}
+.transp-step-n{min-width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.transp-timelock-status{margin-top:12px;padding:12px;border-radius:8px;font-size:12px;text-align:center;}
+.transp-timelock-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#4ade80;}
+.transp-timelock-warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;}
+.transp-limit-bar-wrap{background:rgba(255,255,255,.05);border-radius:20px;height:8px;margin:10px 0 6px;overflow:hidden;}
+.transp-limit-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gem),var(--gold));transition:width .4s;}
+.transp-limit-txt{font-size:11px;color:var(--muted);text-align:center;}
+
 .crystal-pkg{
   background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
   padding:20px 16px;text-align:center;transition:all .25s;cursor:pointer;
@@ -730,6 +758,9 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
       <span class="nav-icon">💎</span> Comprar Cristais
     </button>
+    <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
+      <span class="nav-icon">🔍</span> Transparência
+    </button>
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
       <span class="nav-icon">🥚</span> Ovos à Venda
     </button>
@@ -772,7 +803,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <!-- ── POOL P2E ── -->
     <div class="mkt-section" id="sec-pool">
       <div class="section-title">💎 Pool de Recompensas P2E</div>
-      <div class="section-sub">Saldo e histórico público da pool. 80% de cada taxa alimenta a pool; os restantes 20% cobrem manutenção do jogo.</div>
+      <div class="section-sub">Saldo e histórico público da pool. 100% das taxas do marketplace alimentam a pool de recompensas dos jogadores.</div>
       <div id="poolStatsCard"></div>
       <div class="pool-log-header">
         <div class="pool-log-title">📋 Histórico de Transacções</div>
@@ -793,6 +824,99 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="section-sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
       <div id="slotsGrid" class="slots-grid"></div>
       <div id="unlockSlotRow"></div>
+    </div>
+
+    <!-- ── TRANSPARÊNCIA ── -->
+    <div class="mkt-section" id="sec-transparencia">
+      <div class="section-title">🔍 Transparência do Jogo</div>
+      <div class="section-sub">Como funciona o dinheiro no Fractured Veil — explicado de forma clara e verificável por qualquer pessoa.</div>
+
+      <!-- BLOCO 1: O cofre -->
+      <div class="transp-block">
+        <div class="transp-block-title">🏦 O Cofre (Smart Contract)</div>
+        <div class="transp-block-body">
+          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon —
+          um cofre automático cujas regras são públicas e <strong>não podem ser alteradas depois de instalado</strong>.
+          Ninguém, nem o criador do jogo, pode mudar as regras.<br><br>
+          Podes ver o saldo do cofre e todas as transações em tempo real no Polygonscan:
+          <br>
+          <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
+        </div>
+      </div>
+
+      <!-- BLOCO 2: Divisão do MATIC -->
+      <div class="transp-block">
+        <div class="transp-block-title">💸 O que acontece quando compras 💎</div>
+        <div class="transp-block-body">
+          Quando envias MATIC para comprar Cristais, o contrato divide automaticamente e instantaneamente:
+          <div class="transp-split">
+            <div class="transp-split-item transp-split-pool">
+              <div class="transp-split-pct">80%</div>
+              <div class="transp-split-label">Fica no cofre</div>
+              <div class="transp-split-desc">Reserva para honrar todos os resgates dos jogadores</div>
+            </div>
+            <div class="transp-split-item transp-split-dev">
+              <div class="transp-split-pct">20%</div>
+              <div class="transp-split-label">Manutenção</div>
+              <div class="transp-split-desc">Cobre custos do servidor, Firebase e desenvolvimento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 3: Taxas do marketplace -->
+      <div class="transp-block">
+        <div class="transp-block-title">🏪 Taxas do Marketplace</div>
+        <div class="transp-block-body">
+          Todas as taxas cobradas dentro do marketplace (listagem de avatares, vendas de ovos e avatares)
+          vão <strong>100% para a Pool P2E</strong> — que paga recompensas em 💎 aos jogadores que participam
+          na economia do jogo. O criador do jogo não recebe nenhuma parte destas taxas.
+          <div class="transp-taxa-row">
+            <span>Listar avatar</span><span class="transp-taxa-val">2 💎 → 100% Pool</span>
+          </div>
+          <div class="transp-taxa-row">
+            <span>Venda de avatar</span><span class="transp-taxa-val">10% → 100% Pool</span>
+          </div>
+          <div class="transp-taxa-row">
+            <span>Venda de ovo</span><span class="transp-taxa-val">taxa → 100% Pool</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 4: Timelock -->
+      <div class="transp-block">
+        <div class="transp-block-title">⏰ Proteção Timelock — 48 horas</div>
+        <div class="transp-block-body">
+          O criador do jogo <strong>pode sacar MATIC excedente do cofre</strong> — mas apenas após
+          <strong>48 horas de aviso público</strong> na blockchain.<br><br>
+          Como funciona:
+          <div class="transp-step-list">
+            <div class="transp-step"><span class="transp-step-n">1</span>O criador anuncia o saque → o anúncio fica imediatamente visível no Polygonscan para qualquer pessoa.</div>
+            <div class="transp-step"><span class="transp-step-n">2</span>48 horas de espera obrigatória — o contrato bloqueia qualquer saque antes disso, mesmo que o criador tente.</div>
+            <div class="transp-step"><span class="transp-step-n">3</span>Se os jogadores não concordarem, têm 48h para resgatar os seus 💎 antes do saque acontecer.</div>
+          </div>
+          Estado actual do cofre:
+          <div class="transp-timelock-status" id="transpTimelockStatus">
+            A carregar...
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 5: Limite de resgate -->
+      <div class="transp-block">
+        <div class="transp-block-title">📊 Limite de Resgate Diário</div>
+        <div class="transp-block-body">
+          Para proteger a reserva do cofre contra drenos súbitos, cada jogador pode resgatar
+          no máximo <strong>5 MATIC por dia</strong>. Este limite reinicia à meia-noite UTC.
+          <br><br>
+          O teu limite hoje:
+          <div class="transp-limit-bar-wrap">
+            <div class="transp-limit-bar" id="transpLimitBar"></div>
+          </div>
+          <div class="transp-limit-txt" id="transpLimitTxt">Conecta a carteira para ver o teu limite.</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ── COMPRAR CRISTAIS ── -->
@@ -945,9 +1069,8 @@ const POOL_MIN_LEND    = 0.25; // 💎 mínimo garantido (pool vazia)
 const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
-const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev — 20% das taxas
-const DEV_SPLIT        = 0.20; // 20% das taxas vai para manutenção
-const POOL_SPLIT       = 0.80; // 80% fica na pool para jogadores
+const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev
+// Taxas do marketplace vão 100% para a Pool P2E (lucro dev vem dos 20% MATIC do Treasury)
 
 let poolData = null; // carregado do Firestore
 
@@ -1073,7 +1196,7 @@ function renderPoolStatsCard() {
       </div>
     </div>
     <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.8;">
-      80% de cada taxa de marketplace alimenta esta pool.<br>
+      100% das taxas do marketplace alimentam esta pool.<br>
       O preço de recompra sobe quando a pool está cheia e desce quando está baixa.<br>
       <span style="color:var(--gem2);font-weight:700;">
         ${saldo < 100
@@ -1142,22 +1265,18 @@ async function loadPoolLogs(reset) {
 }
 
 async function addToPool(totalTaxa, motivo, origem) {
-  // Split: 20% dev (manutenção), 80% pool (jogadores)
-  const devParte  = Math.round(totalTaxa * DEV_SPLIT);
-  const poolParte = totalTaxa - devParte;
+  // 100% das taxas vai para a Pool P2E
+  // (lucro dev vem dos 20% MATIC do Treasury — contrato FracturedVeilTreasury)
+  if(totalTaxa <= 0) return;
 
   try {
     const batch = db.batch();
 
-    // Pool recebe 80%
-    if(poolParte > 0) {
-      batch.update(db.collection('config').doc('pool'), {
-        cristais:    firebase.firestore.FieldValue.increment(poolParte),
-        totalEntrou: firebase.firestore.FieldValue.increment(poolParte),
-      });
-    }
+    batch.update(db.collection('config').doc('pool'), {
+      cristais:    firebase.firestore.FieldValue.increment(totalTaxa),
+      totalEntrou: firebase.firestore.FieldValue.increment(totalTaxa),
+    });
 
-    // Log público da transacção
     const logRef = db.collection('config').doc('pool')
       .collection('logs').doc();
     batch.set(logRef, {
@@ -1165,22 +1284,15 @@ async function addToPool(totalTaxa, motivo, origem) {
       motivo,
       origem:    origem || walletAddress || 'sistema',
       total:     totalTaxa,
-      pool:      poolParte,
+      pool:      totalTaxa,
       ts:        firebase.firestore.FieldValue.serverTimestamp(),
     });
 
     await batch.commit();
 
     if(poolData) {
-      poolData.cristais    = (poolData.cristais    || 0) + poolParte;
-      poolData.totalEntrou = (poolData.totalEntrou || 0) + poolParte;
-    }
-
-    // Dev recebe 20% — registo silencioso no Firestore (não aparece no histórico público)
-    if(devParte > 0) {
-      db.collection('config').doc('pool').update({
-        totalDevRecebeu: firebase.firestore.FieldValue.increment(devParte),
-      }).catch(() => {});
+      poolData.cristais    = (poolData.cristais    || 0) + totalTaxa;
+      poolData.totalEntrou = (poolData.totalEntrou || 0) + totalTaxa;
     }
 
     renderPoolWidget();
@@ -1335,11 +1447,12 @@ function showSection(id) {
   renderSection();
 }
 function renderSection() {
-  if(currentSection === 'browse')      renderBrowse();
-  if(currentSection === 'pool')        renderPoolSection();
-  if(currentSection === 'slots')       renderSlots();
-  if(currentSection === 'buycrystals') renderCrystals();
-  if(currentSection === 'eggs')        loadEggListings();
+  if(currentSection === 'browse')        renderBrowse();
+  if(currentSection === 'pool')          renderPoolSection();
+  if(currentSection === 'slots')         renderSlots();
+  if(currentSection === 'buycrystals')   renderCrystals();
+  if(currentSection === 'eggs')          loadEggListings();
+  if(currentSection === 'transparencia') renderTransparencia();
 }
 
 // ═══════════════════════════════════════════
@@ -1849,6 +1962,61 @@ async function unlockSlot() {
 // ═══════════════════════════════════════════
 // COMPRAR CRISTAIS
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TRANSPARÊNCIA
+// ═══════════════════════════════════════════
+const CONTRACT_ADDRESS = '0xCcA07f21a40129955db81Dc0073693a26e777d8E';
+
+async function renderTransparencia() {
+  // Link Polygonscan
+  const linkEl = document.getElementById('transpContractLink');
+  if(linkEl) {
+    linkEl.href = `https://polygonscan.com/address/${CONTRACT_ADDRESS}`;
+    linkEl.textContent = `${CONTRACT_ADDRESS.slice(0,6)}...${CONTRACT_ADDRESS.slice(-4)} — Ver no Polygonscan ↗`;
+  }
+
+  // Estado do cofre — sem timelock, cofre sempre ativo
+  const statusEl = document.getElementById('transpTimelockStatus');
+  if(statusEl) {
+    statusEl.className = 'transp-timelock-status transp-timelock-ok';
+    statusEl.innerHTML = '✅ Cofre ativo na Polygon Mainnet.';
+  }
+
+  // Limite diário do jogador — consulta on-chain
+  const barEl = document.getElementById('transpLimitBar');
+  const txtEl = document.getElementById('transpLimitTxt');
+  if(barEl && txtEl) {
+    if(!walletAddress) {
+      barEl.style.width = '0%';
+      txtEl.textContent = 'Conecta a carteira para ver o teu limite.';
+    } else {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const abi = ['function limiteHoje(address) view returns (uint256, uint256)'];
+        const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
+        const [sacadoWei, restanteWei] = await contrato.limiteHoje(walletAddress);
+        const sacado   = parseFloat(ethers.formatEther(sacadoWei));
+        const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+        const semLimite = restanteWei === MAX_UINT;
+        if(semLimite) {
+          barEl.style.width = '0%';
+          barEl.style.background = 'var(--accent)';
+          txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · Sem limite diário`;
+        } else {
+          const restante = parseFloat(ethers.formatEther(restanteWei));
+          const DAILY_MAX = 5;
+          const pct = Math.min((sacado / DAILY_MAX) * 100, 100);
+          barEl.style.width = pct + '%';
+          txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · ${restante.toFixed(2)} MATIC restantes (limite: 5 MATIC/dia)`;
+        }
+      } catch(e) {
+        barEl.style.width = '0%';
+        txtEl.textContent = 'Não foi possível verificar o limite. Conecta a carteira.';
+      }
+    }
+  }
+}
+
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
   container.innerHTML = CRYSTAL_PACKAGES.map((pkg,i) => `
