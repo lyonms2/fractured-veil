@@ -870,7 +870,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="transp-block-body">
           Todas as taxas das transações dentro do marketplace são divididas:
           <strong>80% vão para a Pool P2E</strong> (que paga recompensas aos jogadores)
-          e <strong>20% vão para manutenção</strong> (servidor, Firebase, desenvolvimento).
+          e <strong>20% vão para manutenção</strong> (servidor, base de dados e desenvolvimento).
           <div class="transp-taxa-row" style="margin-top:10px;">
             <span>Listar avatar</span><span class="transp-taxa-val">2 💎 · 80% Pool + 20% Dev</span>
           </div>
@@ -1008,7 +1008,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   };
   firebase.initializeApp(firebaseConfig);
   window.db = firebase.firestore();
-  const db = window.db;
+  var db = window.db; // var para ser global entre scripts
 </script>
 <script src="js/data.js"></script>
 <script src="js/pool.js"></script>
