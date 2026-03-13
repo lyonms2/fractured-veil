@@ -121,11 +121,11 @@ function closeGameSelector() {
 }
 
 function openMinigame(type) {
-  if(type === 'velha') { ModalManager.close('gameSelector'); ModalManager.open('velhaModal'); startVelha(); return; }
-  document.getElementById('gameSelector').classList.remove('open');
-  if(type === 'jkp')     { openJkp();     return; }
-  if(type === 'memoria') { openMiniModal('memoriaModal'); startMemoria(); return; }
-  if(type === 'simon')   { openMiniModal('simonModal');   startSimon();   return; }
+  ModalManager.close('gameSelector');
+  if(type === 'jkp')     { openJkp();                                       return; }
+  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha(); return; }
+  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
+  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon(); return; }
 }
 
 function openMiniModal(id) {
