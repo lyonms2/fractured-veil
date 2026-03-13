@@ -1,0 +1,9 @@
+{
+  "name": "fractured-veil",
+  "version": "1.0.0",
+  "description": "Fractured Veil — API serverless para resgate de cristais",
+  "dependencies": {
+    "ethers": "^6.9.0",
+    "firebase-admin": "^12.0.0"
+  }
+}
