@@ -47,13 +47,25 @@ function getDB() {
 const RATE             = 10;   // 10 💎 = 1 MATIC (tem de coincidir com o contrato)
 const MAX_GEMS_CREDITO = 1000; // tecto de segurança por transação
 
+// Split de distribuição dos 💎
+// 80% vai para o jogador, 20% vai para a conta dev no Firestore
+// (transparente — visível no histórico de ambas as contas)
+const PLAYER_SHARE = 0.80;
+const DEV_SHARE    = 0.20;
+const DEV_ADDR     = '0x1fcb61db743a0276b92382b9e7b92a62ca8cf030'; // owner do contrato (lowercase)
+
 // ABI mínimo — só precisamos do evento CristaisComprados
 const CONTRACT_ABI = [
   'event CristaisComprados(address indexed jogador, uint256 maticEnviado, uint256 gems)',
 ];
 
-// RPC público da Polygon Mainnet (sem chave — adequado para leitura pontual)
-const POLYGON_RPC = 'https://polygon-rpc.com';
+// RPC da Polygon Mainnet — lista de fallback por ordem de prioridade
+// Se o primeiro falhar, tenta o seguinte
+const POLYGON_RPCS = [
+  'https://rpc.ankr.com/polygon',           // Ankr — sem chave, muito estável
+  'https://polygon-bor-rpc.publicnode.com',  // PublicNode — sem chave
+  'https://1rpc.io/matic',                   // 1RPC — sem chave
+];
 
 module.exports = async function handler(req, res) {
   // ── Apenas POST ─────────────────────────────────────────────
@@ -91,10 +103,20 @@ module.exports = async function handler(req, res) {
     }
 
     // ── Verificar transação on-chain ────────────────────────────
-    const provider = new ethers.JsonRpcProvider(POLYGON_RPC);
-
-    // Lê o recibo (null se ainda não confirmada)
-    const recibo = await provider.getTransactionReceipt(txHash);
+    // Tenta cada RPC em sequência até um responder
+    let recibo = null;
+    for (const rpc of POLYGON_RPCS) {
+      try {
+        const provider = new ethers.JsonRpcProvider(rpc);
+        recibo = await provider.getTransactionReceipt(txHash);
+        break; // sucesso — sai do loop
+      } catch (rpcErr) {
+        console.warn(`[processar-compra] RPC ${rpc} falhou:`, rpcErr.message);
+      }
+    }
+    if (recibo === null) {
+      return res.status(503).json({ erro: 'Blockchain inacessível. Tenta novamente em instantes.' });
+    }
     if (!recibo) {
       return res.status(400).json({ erro: 'Transação ainda não confirmada na blockchain' });
     }
