@@ -1,6 +1,6 @@
 /* ── JOKENPÔ MODAL ── */
 #jkpModal {
-  position:absolute; inset:0; z-index:30;
+  position:absolute; inset:0; z-index:32;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:rgba(4,3,10,.96);
   opacity:0; pointer-events:none;
