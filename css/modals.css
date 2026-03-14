@@ -1,3 +1,7 @@
+/* ── Modais: prevenir scroll do fundo em iOS ── */
+.modal-overlay, [class*="modal"], [class*="overlay"] {
+  overscroll-behavior: contain;
+}
 .res-flash {
   animation: coin-flash .5s ease-out;
 }
