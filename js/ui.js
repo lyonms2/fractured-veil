@@ -99,18 +99,48 @@ function addLog(msg, type='') {
 // STARS BACKGROUND
 // ═══════════════════════════════════════════
 (function(){
-  const cv=document.getElementById('starCanvas');
-  const ctx=cv.getContext('2d');
-  let W,H,stars=[];
-  function resize(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; }
-  function init(){ stars=Array.from({length:160},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1,a:Math.random(),sp:.002+Math.random()*.005})); }
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    const now=Date.now()/1000;
-    stars.forEach(s=>{ const al=.2+.5*Math.abs(Math.sin(now*s.sp+s.a*100)); ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(200,190,240,${al})`; ctx.fill(); });
-    requestAnimationFrame(draw);
+  const cv = document.getElementById('starCanvas');
+  if(!cv) return;
+
+  // No mobile com pouca RAM, reduz número de estrelas
+  const isMobile = window.innerWidth <= 680;
+  const STAR_COUNT = isMobile ? 60 : 140;
+
+  const ctx = cv.getContext('2d');
+  let W, H, stars = [], rafId = null, paused = false;
+
+  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  function init() {
+    stars = Array.from({length: STAR_COUNT}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.1, a: Math.random(),
+      sp: .002 + Math.random() * .005
+    }));
   }
-  window.addEventListener('resize',()=>{ resize(); init(); });
+  function draw() {
+    if(paused) return;
+    ctx.clearRect(0, 0, W, H);
+    const now = Date.now() / 1000;
+    stars.forEach(s => {
+      const al = .2 + .5 * Math.abs(Math.sin(now * s.sp + s.a * 100));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,190,240,${al})`; ctx.fill();
+    });
+    rafId = requestAnimationFrame(draw);
+  }
+
+  // Pausar quando tab em background — poupa bateria
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden) {
+      paused = true;
+      if(rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    } else {
+      paused = false;
+      draw();
+    }
+  });
+
+  window.addEventListener('resize', () => { resize(); init(); });
   resize(); init(); draw();
 })();
 
