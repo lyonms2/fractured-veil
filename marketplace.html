@@ -701,6 +701,309 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border2);
   border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* ═══════════════════════════════════════════
+   MOBILE — max-width: 640px
+   Tudo aqui é override puro. Zero JS alterado.
+   Desktop não é afectado.
+═══════════════════════════════════════════ */
+@media (max-width:640px) {
+
+  /* ── Base ── */
+  html,body { zoom:1; font-size:14px; }
+
+  /* ── Header ── */
+  .mkt-header { padding:8px 12px; gap:6px; }
+  .mkt-logo-sub { display:none; }
+  /* Esconde o "← Voltar ao jogo" do header — fica acessível pela nav de baixo */
+  .mkt-back { display:none; }
+  /* Carteira: só mostra o dot + endereço curto, sem fundo pesado */
+  .mkt-wallet-badge { padding:5px 8px; font-size:9px; }
+  .mkt-bal { padding:5px 8px; font-size:10px; }
+
+  /* ── Layout principal ── */
+  /* Body vira coluna: conteúdo em cima, nav em baixo */
+  .mkt-body {
+    flex-direction:column;
+    overflow:visible;
+    padding-bottom:60px; /* espaço para a bottom nav não tapar o conteúdo */
+  }
+
+  /* ── Sidebar → escondida no mobile ── */
+  .mkt-sidebar { display:none; }
+
+  /* ── Main ── */
+  .mkt-main {
+    overflow-y:visible; /* scroll normal da página no mobile */
+    padding:12px;
+  }
+
+  /* ── Bottom navigation bar ── */
+  .mkt-bottom-nav {
+    display:flex !important; /* override do display:none do desktop */
+    position:fixed;
+    bottom:0; left:0; right:0;
+    height:56px;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    z-index:100;
+    /* safe area para iPhone com home indicator */
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  .mkt-bottom-nav-inner {
+    display:flex;
+    width:100%;
+    height:56px;
+  }
+  .mkt-bn-btn {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:'Rajdhani',sans-serif;
+    font-size:9px;
+    font-weight:600;
+    letter-spacing:.3px;
+    cursor:pointer;
+    transition:color .2s;
+    padding:0;
+    position:relative;
+  }
+  .mkt-bn-btn .bn-icon { font-size:18px; line-height:1; }
+  .mkt-bn-btn.active { color:var(--gem2); }
+  /* ponto indicador na tab activa */
+  .mkt-bn-btn.active::after {
+    content:'';
+    position:absolute;
+    bottom:5px;
+    width:4px; height:4px;
+    border-radius:50%;
+    background:var(--purple);
+  }
+
+  /* ── Toast: sobe para não ficar atrás da bottom nav ── */
+  #toast { bottom:68px; right:12px; left:12px; max-width:none; text-align:center; }
+
+  /* ── Secções: sem padding lateral extra ── */
+  .section-title { font-size:14px; }
+  .section-sub { font-size:10px; }
+
+  /* ── Avatar browse: 2 colunas fixas em vez de auto-fill ── */
+  .avatar-grid {
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+  }
+
+  /* ── Filtros: chips com scroll horizontal ── */
+  .filters-row {
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    gap:6px;
+    padding-bottom:4px;
+    /* esconde a scrollbar mas mantém o scroll */
+    scrollbar-width:none;
+  }
+  .filters-row::-webkit-scrollbar { display:none; }
+  /* Selects viram chips pequenos */
+  .filter-select {
+    flex-shrink:0;
+    padding:5px 8px;
+    font-size:10px;
+    white-space:nowrap;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .search-input { min-width:120px; font-size:11px; }
+
+  /* ── Slots: lista vertical em vez de grid ── */
+  .slots-grid {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  /* Cada slot-card vira uma row horizontal */
+  .slot-card {
+    flex-direction:row;
+    align-items:stretch;
+    border-radius:10px;
+    min-height:72px;
+  }
+  /* A stripe de raridade fica na esquerda (vertical) */
+  .slot-stripe {
+    width:4px;
+    height:auto;
+    flex-shrink:0;
+    border-radius:10px 0 0 10px;
+  }
+  /* Header do slot some — a info está na row */
+  .slot-header { display:none; }
+  /* SVG menor e à esquerda */
+  .slot-svg-wrap {
+    width:56px; height:56px;
+    margin:8px 6px 8px 10px;
+    flex-shrink:0;
+    border-radius:10px;
+  }
+  .slot-svg-wrap svg { width:52px; height:52px; }
+  /* Body: ocupa o resto da linha */
+  .slot-body {
+    flex:1;
+    flex-direction:row;
+    align-items:center;
+    padding:8px 10px 8px 0;
+    gap:8px;
+    flex-wrap:nowrap;
+  }
+  /* Info (nome + pill + stats) */
+  .slot-body > .slot-av-name,
+  .slot-body > .slot-av-sub,
+  .slot-body > .slot-av-pill,
+  .slot-body > .slot-stats {
+    /* agrupa-se numa coluna via wrapper abaixo */
+  }
+  /* Cria stack vertical para nome+sub+pill+stats */
+  .slot-body {
+    display:grid;
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto;
+    align-items:center;
+    padding:8px 10px 8px 0;
+    gap:4px 8px;
+  }
+  .slot-av-name {
+    grid-column:1; grid-row:1;
+    text-align:left;
+    font-size:11px;
+  }
+  .slot-av-sub {
+    grid-column:1; grid-row:2;
+    text-align:left;
+    font-size:9px;
+  }
+  .slot-av-pill {
+    grid-column:1; grid-row:3;
+    width:fit-content;
+    font-size:7px;
+  }
+  .slot-stats {
+    grid-column:1; grid-row:4;
+    display:flex;
+    gap:4px;
+    margin-top:0;
+  }
+  .slot-stat { padding:3px 6px; }
+  .slot-stat b { font-size:9px; }
+  .slot-stat span { font-size:6px; }
+  /* Acções: coluna direita, botões empilhados */
+  .slot-actions {
+    grid-column:2; grid-row:1 / span 4;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    width:auto;
+    margin-top:0;
+    align-self:center;
+  }
+  .btn-slot-activate { padding:5px 8px; font-size:8px; white-space:nowrap; }
+  .btn-slot-list     { padding:5px 8px; font-size:8px; white-space:nowrap; }
+  .btn-slot-burn     { padding:5px 8px; font-size:8px; white-space:nowrap; width:auto; }
+  /* Slots vazios: linha compacta */
+  .slot-empty-wrap {
+    min-height:56px;
+    flex-direction:row;
+    justify-content:flex-start;
+    padding:8px 12px;
+    gap:10px;
+    flex:1;
+  }
+  .slot-empty-icon { font-size:22px; margin-bottom:0; }
+  .slot-empty-title { font-size:9px; }
+  .slot-empty-txt { font-size:8px; text-align:left; }
+  .slot-locked-icon { font-size:20px; }
+
+  /* ── Cristais: lista vertical ── */
+  .crystal-packages {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .crystal-pkg {
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    text-align:left;
+    border-radius:10px;
+  }
+  .crystal-pkg.featured { border-color:var(--gold); }
+  /* Ícone: à esquerda, tamanho reduzido */
+  .pkg-gem { font-size:26px; margin-bottom:0; order:1; flex-shrink:0; }
+  /* Quantidade: logo após o ícone */
+  .pkg-amount { font-size:18px; margin-bottom:0; order:2; flex-shrink:0; line-height:1; }
+  /* Label (Punhado/Bolsa/etc): texto central, cresce para preencher */
+  .crystal-pkg > div:nth-child(3) { order:3; flex:1; font-size:10px !important; margin-bottom:0 !important; }
+  /* Preço em MATIC */
+  .pkg-matic { font-size:10px; margin-bottom:0; order:4; flex-shrink:0; color:var(--gold); font-weight:700; }
+  /* Popular badge: esconde no mobile para não aglomerar */
+  .pkg-bonus { display:none; }
+  /* Botão: à direita, tamanho de toque confortável */
+  .btn-buy-pkg {
+    width:auto;
+    padding:8px 14px;
+    flex-shrink:0;
+    white-space:nowrap;
+    order:5;
+  }
+
+  /* ── Pool stats: grid 1 col ── */
+  .pool-sc-grid { grid-template-columns:1fr 1fr; gap:6px; }
+  .pool-sc-balance { font-size:26px; }
+  .pool-prices { grid-template-columns:1fr 1fr; gap:6px; }
+  .pool-price-val { font-size:16px; }
+
+  /* ── Pool log: esconde coluna de tempo em ecrans pequenos ── */
+  .pool-log-time { display:none; }
+  .pool-log-row { grid-template-columns:24px 1fr auto; }
+
+  /* ── Modals: full-width no mobile ── */
+  .modal-overlay {
+    align-items:flex-end; /* modal sobe de baixo */
+    padding:0;
+  }
+  .modal-box {
+    max-width:none;
+    width:100%;
+    border-radius:16px 16px 0 0;
+    max-height:85vh;
+    overflow-y:auto;
+    padding:20px 16px;
+  }
+  #avatarDetailOverlay .modal-box { max-width:none; }
+
+  /* Detail header: empilha verticalmente */
+  .detail-header { flex-direction:column; align-items:center; text-align:center; }
+  .detail-stats-grid { grid-template-columns:1fr 1fr 1fr; }
+
+  /* ── Ovos: 2 colunas ── */
+  .egg-browse-grid {
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+
+  /* ── Botão unlock slot ── */
+  .btn-unlock-slot { font-size:11px; padding:12px; }
+
+  /* ── Unlock slot row: padding ── */
+  #unlockSlotRow { padding:4px 0; }
+
+} /* fim @media */
 </style>
 </head>
 <body>
@@ -1192,6 +1495,39 @@ window.addEventListener('load', async () => {
 
   tryAutoConnect(3); // tenta 4x no total (0ms, 400ms, 800ms, 1200ms)
 });
+</script>
+
+<!-- ══ BOTTOM NAV — mobile only (display:none no desktop, flex no mobile via CSS) ══ -->
+<div class="mkt-bottom-nav" style="display:none;">
+  <div class="mkt-bottom-nav-inner">
+    <button class="mkt-bn-btn active" id="mbn-slots" onclick="showSection('slots');_mbnActive(this)">
+      <span class="bn-icon">🧬</span>
+      <span>Avatares</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-browse" onclick="showSection('browse');_mbnActive(this)">
+      <span class="bn-icon">🛒</span>
+      <span>Mercado</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-eggs" onclick="showSection('eggs');_mbnActive(this)">
+      <span class="bn-icon">🥚</span>
+      <span>Ovos</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-buycrystals" onclick="showSection('buycrystals');_mbnActive(this)">
+      <span class="bn-icon">💎</span>
+      <span>Cristais</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
+      <span class="bn-icon">🔍</span>
+      <span>Pool</span>
+    </button>
+  </div>
+</div>
+<script>
+// Sincroniza o estado activo da bottom nav mobile
+function _mbnActive(btn) {
+  document.querySelectorAll('.mkt-bn-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
 </script>
 </body>
 </html>
