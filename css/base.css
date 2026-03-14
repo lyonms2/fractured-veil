@@ -18,12 +18,15 @@ body {
   color: var(--text);
   font-family: 'Crimson Pro', serif;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  overscroll-behavior-y: none; /* evita pull-to-refresh acidental em iOS */
+  -webkit-overflow-scrolling: touch; /* scroll suave em iOS */
 }
-/* ── 75% zoom boost for desktop readability ── */
+/* ── Desktop: aumentar escala para melhor leitura ── */
 @media(min-width:681px) {
   html { font-size: 175%; }
-  .app { zoom: 1.75; }
+  .app { transform-origin: top center; }
 }
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 body::after {
