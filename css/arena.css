@@ -88,20 +88,20 @@
   font-family: 'Cinzel', serif;
   font-size: 9px; letter-spacing: 2px;
   border: 1px solid var(--gold);
-  border-radius: 6px; background: transparent;
+  border-radius: 6px;
+  background: rgba(201,168,76,.08);
   color: var(--gold); cursor: pointer;
-  transition: all .2s; position: relative; overflow: hidden;
+  transition: background .2s, color .2s, box-shadow .2s;
 }
-.arena-btn-entrar::before {
-  content: ''; position: absolute; inset: 0;
-  background: var(--gold); opacity: 0; transition: opacity .2s;
+.arena-btn-entrar:hover {
+  background: var(--gold);
+  color: #0a0816;
+  box-shadow: 0 0 16px rgba(201,168,76,.35);
 }
-.arena-btn-entrar:hover::before { opacity: 1; }
-.arena-btn-entrar:hover { color: var(--bg); }
-.arena-btn-entrar span { position: relative; z-index: 1; }
 .arena-btn-entrar.disabled {
   opacity: .4; cursor: not-allowed;
   border-color: var(--border); color: var(--muted);
+  background: transparent;
 }
 
 .arena-btn-sair {
