@@ -55,7 +55,8 @@ function feedCreature() {
   const _rb = rarityBonus();
   xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
-  if(_rb.moedas > 1) earnCoins(coinBonus);
+  // Delay para a animação do bônus não sobrepor a do gasto (-10)
+  if(_rb.moedas > 1) setTimeout(() => earnCoins(coinBonus), 650);
   playAnim('anim-eat');
   spawnFoodParticles();
   showBubble(rnd(FALAS.happy));
