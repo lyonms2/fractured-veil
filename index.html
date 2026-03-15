@@ -479,41 +479,6 @@
         </button>
       </div><!-- /btns -->
 
-      <!-- STATUS -->
-      <div id="statusCard" style="display:none;padding:10px 0 4px;margin-top:6px;">
-        <div class="status-cards-grid">
-          <div class="status-card-item">
-            <div class="sci-label">🍖 FOME</div>
-            <div class="sci-val" id="valFome">100</div>
-            <div class="sci-bar"><div class="sci-fill fill-fome" id="barFome" style="width:100%"></div></div>
-          </div>
-          <div class="status-card-item">
-            <div class="sci-label">😊 HUMOR</div>
-            <div class="sci-val" id="valHumor">100</div>
-            <div class="sci-bar"><div class="sci-fill fill-humor" id="barHumor" style="width:100%"></div></div>
-          </div>
-          <div class="status-card-item">
-            <div class="sci-label">⚡ ENERGIA</div>
-            <div class="sci-val" id="valEnergia">100</div>
-            <div class="sci-bar"><div class="sci-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
-          </div>
-          <div class="status-card-item">
-            <div class="sci-label">❤️ SAÚDE</div>
-            <div class="sci-val" id="valSaude">100</div>
-            <div class="sci-bar"><div class="sci-fill fill-saude" id="barSaude" style="width:100%"></div></div>
-          </div>
-          <div class="status-card-item">
-            <div class="sci-label">🧹 HIGIENE</div>
-            <div class="sci-val" id="valHigiene">100</div>
-            <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
-          </div>
-        </div>
-        <div id="lifeEstimateRow" style="margin:6px 14px 0;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
-          <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
-        </div>
-      </div><!-- /statusCard -->
-
     </div><!-- /device -->
 
     <!-- RIGHT PANEL -->
@@ -583,6 +548,42 @@
         <div style="display:flex;justify-content:flex-end;align-items:center;">
           <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
         </div>
+
+        <!-- STATUS CARDS -->
+        <div id="statusCard" style="display:none;margin:10px -18px -12px;border-top:1px solid var(--border);">
+          <div class="status-cards-grid" style="padding:10px 14px 4px;">
+            <div class="status-card-item">
+              <div class="sci-label">🍖 FOME</div>
+              <div class="sci-val" id="valFome">100</div>
+              <div class="sci-bar"><div class="sci-fill fill-fome" id="barFome" style="width:100%"></div></div>
+            </div>
+            <div class="status-card-item">
+              <div class="sci-label">😊 HUMOR</div>
+              <div class="sci-val" id="valHumor">100</div>
+              <div class="sci-bar"><div class="sci-fill fill-humor" id="barHumor" style="width:100%"></div></div>
+            </div>
+            <div class="status-card-item">
+              <div class="sci-label">⚡ ENERGIA</div>
+              <div class="sci-val" id="valEnergia">100</div>
+              <div class="sci-bar"><div class="sci-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
+            </div>
+            <div class="status-card-item">
+              <div class="sci-label">❤️ SAÚDE</div>
+              <div class="sci-val" id="valSaude">100</div>
+              <div class="sci-bar"><div class="sci-fill fill-saude" id="barSaude" style="width:100%"></div></div>
+            </div>
+            <div class="status-card-item">
+              <div class="sci-label">🧹 HIGIENE</div>
+              <div class="sci-val" id="valHigiene">100</div>
+              <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
+            </div>
+          </div>
+          <div id="lifeEstimateRow" style="margin:0 14px;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
+            <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
+          </div>
+        </div><!-- /statusCard -->
+
       </div>
 
       <!-- DIÁRIO -->
