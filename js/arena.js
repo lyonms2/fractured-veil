@@ -367,8 +367,9 @@ async function desafiarJogador(walletOponente) {
   await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
   await rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`).set(true);
 
-  // Para o heartbeat — não precisa mais manter presença no lobby
+  // Para o heartbeat e o listener do lobby — não precisa mais
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
+  _pararLobbyListener();
 
   // Envia notificação direta ao oponente
   await rtdb().ref(`arena/notificacoes/${walletOponente}/desafios/${salaId}`).set({
@@ -919,8 +920,80 @@ function _renderDesafioPendente(sala) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// EXPORTS
+// RECONEXÃO — verifica partida pendente ao carregar a página
 // ═══════════════════════════════════════════════════════════════════
+
+async function verificarPartidaPendente() {
+  if(!rtdb() || !walletAddress) return;
+
+  try {
+    // Busca salas ativas onde este wallet é criador ou oponente
+    const [snapCriador, snapOponente] = await Promise.all([
+      rtdb().ref('arena/salas').orderByChild('criador').equalTo(walletAddress).once('value'),
+      rtdb().ref('arena/salas').orderByChild('oponente').equalTo(walletAddress).once('value'),
+    ]);
+
+    let salaAtiva = null;
+
+    // Verifica salas como criador
+    snapCriador.forEach(child => {
+      const s = child.val();
+      if(s && (s.status === 'aguardando' || s.status === 'em_jogo')) {
+        salaAtiva = s;
+      }
+    });
+
+    // Verifica salas como oponente
+    if(!salaAtiva) {
+      snapOponente.forEach(child => {
+        const s = child.val();
+        if(s && (s.status === 'aguardando' || s.status === 'em_jogo')) {
+          salaAtiva = s;
+        }
+      });
+    }
+
+    if(!salaAtiva) return;
+
+    console.log('[ARENA] Partida pendente encontrada:', salaAtiva.id, salaAtiva.status);
+
+    // Aguarda o avatar carregar (pode demorar um tick)
+    await new Promise(r => setTimeout(r, 1500));
+
+    if(salaAtiva.status === 'aguardando') {
+      const euSouCriador = salaAtiva.criador === walletAddress;
+      if(euSouCriador) {
+        // Volta para a sala de espera
+        addLog('Reconectado — aguardando oponente aceitar.', 'info');
+        showBubble('Reconectado! ⚔️');
+        _arenaPartidaId = salaAtiva.id;
+        _arenaAtiva     = true;
+        // Abre a arena e vai direto para sala de espera
+        ModalManager.open('arenaModal');
+        _renderSalaEspera(salaAtiva.id);
+      } else {
+        // É o oponente — mostra tela de aceitar
+        addLog('Você tem um desafio pendente!', 'info');
+        showBubble('Desafio pendente! ⚔️');
+        ModalManager.open('arenaModal');
+        _renderDesafioPendente(salaAtiva);
+      }
+    } else if(salaAtiva.status === 'em_jogo') {
+      // Reentra na partida
+      addLog('Reconectado à partida em andamento!', 'info');
+      showBubble('Reconectado! ⚔️');
+      _arenaPartidaId = salaAtiva.id;
+      _arenaAtiva     = true;
+      ModalManager.open('arenaModal');
+      _renderPartida(salaAtiva.id, salaAtiva);
+    }
+
+  } catch(e) {
+    console.log('[ARENA] verificarPartidaPendente erro:', e);
+  }
+}
+
+window.verificarPartidaPendente = verificarPartidaPendente;
 window.openArena                        = openArena;
 window.closeArena                       = closeArena;
 window.entrarNoLobby                    = entrarNoLobby;
