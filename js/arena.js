@@ -97,6 +97,7 @@ function openArena() {
   if(!hatched || dead || !avatar) { showBubble('Precisa de um avatar ativo!'); return; }
   if(sleeping || modoRepouso)     { showBubble('Descansando agora...'); return; }
   if(!rtdb())                     { showBubble('Arena indisponível'); return; }
+  console.log('[ARENA] openArena — avatar:', avatar?.nome, 'raridade:', avatar?.raridade, 'rtdb ok:', !!rtdb());
   ModalManager.open('arenaModal');
   _renderLobby();
 }
@@ -206,12 +207,12 @@ function arenaShowTab(tab) {
 // ═══════════════════════════════════════════════════════════════════
 
 function _iniciarLobbyListener() {
-  if(!rtdb()) return;
+  if(!rtdb()) { console.log('[ARENA] _iniciarLobbyListener: rtdb null!'); return; }
 
-  // Para listener anterior
   _pararLobbyListener();
 
   const fila = _getFila();
+  console.log('[ARENA] iniciando listener na fila:', fila, 'path: arena/lobby/'+fila);
   _arenaLobbyListRef = rtdb().ref(`arena/lobby/${fila}`);
 
   _arenaLobbyListRef.on('value', snap => {
