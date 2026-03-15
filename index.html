@@ -480,34 +480,35 @@
       </div><!-- /btns -->
 
       <!-- STATUS -->
-      <div id="statusCard" style="display:none;border-top:1px solid var(--border);padding:14px 14px 10px;margin-top:8px;">
-        <div class="panel-title" style="margin-bottom:6px;">◆ STATUS</div>
-        <div class="stat-row">
-          <span class="stat-lbl">🍖 FOME</span>
-          <div class="stat-track"><div class="stat-fill fill-fome" id="barFome" style="width:100%"></div></div>
-          <span class="stat-val" id="valFome">100</span>
+      <div id="statusCard" style="display:none;padding:10px 0 4px;margin-top:6px;">
+        <div class="status-cards-grid">
+          <div class="status-card-item">
+            <div class="sci-label">🍖 FOME</div>
+            <div class="sci-val" id="valFome">100</div>
+            <div class="sci-bar"><div class="sci-fill fill-fome" id="barFome" style="width:100%"></div></div>
+          </div>
+          <div class="status-card-item">
+            <div class="sci-label">😊 HUMOR</div>
+            <div class="sci-val" id="valHumor">100</div>
+            <div class="sci-bar"><div class="sci-fill fill-humor" id="barHumor" style="width:100%"></div></div>
+          </div>
+          <div class="status-card-item">
+            <div class="sci-label">⚡ ENERGIA</div>
+            <div class="sci-val" id="valEnergia">100</div>
+            <div class="sci-bar"><div class="sci-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
+          </div>
+          <div class="status-card-item">
+            <div class="sci-label">❤️ SAÚDE</div>
+            <div class="sci-val" id="valSaude">100</div>
+            <div class="sci-bar"><div class="sci-fill fill-saude" id="barSaude" style="width:100%"></div></div>
+          </div>
+          <div class="status-card-item">
+            <div class="sci-label">🧹 HIGIENE</div>
+            <div class="sci-val" id="valHigiene">100</div>
+            <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
+          </div>
         </div>
-        <div class="stat-row">
-          <span class="stat-lbl">😊 HUMOR</span>
-          <div class="stat-track"><div class="stat-fill fill-humor" id="barHumor" style="width:100%"></div></div>
-          <span class="stat-val" id="valHumor">100</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">⚡ ENERGIA</span>
-          <div class="stat-track"><div class="stat-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
-          <span class="stat-val" id="valEnergia">100</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">❤️ SAÚDE</span>
-          <div class="stat-track"><div class="stat-fill fill-saude" id="barSaude" style="width:100%"></div></div>
-          <span class="stat-val" id="valSaude">100</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-lbl">🧹 HIGIENE</span>
-          <div class="stat-track"><div class="stat-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
-          <span class="stat-val" id="valHigiene">100</span>
-        </div>
-        <div id="lifeEstimateRow" style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
+        <div id="lifeEstimateRow" style="margin:6px 14px 0;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
           <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
           <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
         </div>
