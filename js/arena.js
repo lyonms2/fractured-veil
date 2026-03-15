@@ -216,9 +216,13 @@ function _iniciarLobbyListener() {
 
   _arenaLobbyListRef.on('value', snap => {
     const lista = document.getElementById('arenaLobbyLista');
+    console.log('[ARENA] snap recebido, lista existe?', !!lista, 'fila:', fila);
+
     if(!lista) return;
 
     const dados = snap.val();
+    console.log('[ARENA] dados:', dados, 'meuWallet:', walletAddress);
+
     if(!dados) {
       lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';
       return;
@@ -228,11 +232,11 @@ function _iniciarLobbyListener() {
     const agora = Date.now();
 
     const avatares = Object.entries(dados).filter(([k, d]) => {
-      if(k.toLowerCase() === myKey) return false;  // não mostra a si mesmo
-      if(d.emPartida)               return false;  // já em partida
-      if(!d.ts)                     return true;   // ts ainda não resolvido
-      if(typeof d.ts !== 'number')  return true;   // ts como objeto — aceita
-      return (agora - d.ts) < ARENA_LOBBY_TTL;
+      const isMe      = k.toLowerCase() === myKey;
+      const emPartida = d.emPartida === true;
+      const tsOk      = !d.ts || typeof d.ts !== 'number' || (agora - d.ts) < ARENA_LOBBY_TTL;
+      console.log(`[ARENA] k=${k} isMe=${isMe} emPartida=${emPartida} tsOk=${tsOk}`);
+      return !isMe && !emPartida && tsOk;
     });
 
     if(!avatares.length) {
