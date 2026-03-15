@@ -10,19 +10,29 @@
   <meta name="theme-color" content="#04030a">
   <meta name="description" content="Fractured Veil — Dimensional Tamagotchi Web3. Invoca, cria e troca avatares na blockchain Polygon.">
   <meta name="format-detection" content="telephone=no">
+
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
+
+  <!-- Open Graph -->
   <meta property="og:title" content="Fractured Veil">
   <meta property="og:description" content="Dimensional Tamagotchi Web3 na Polygon">
   <meta property="og:type" content="website">
+
   <title>Fractured Veil</title>
+
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/screen.css">
   <link rel="stylesheet" href="css/ui.css">
   <link rel="stylesheet" href="css/minigames.css">
   <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/arena.css">
 </head>
 <body>
 <canvas id="starCanvas"></canvas>
@@ -50,11 +60,8 @@
     <div style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
   </div>
 
-  <!-- ══ HEADER — estilo marketplace ══ -->
   <header>
     <div class="logo">Fractured Veil</div>
-
-    <!-- CENTER: recursos -->
     <div class="header-center">
       <button class="res res-clickable" id="btnMarket" onclick="openMarket()" title="Mercado" style="display:none;">🛒</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
@@ -62,29 +69,28 @@
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
       <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
     </div>
-
-    <!-- RIGHT: wallet -->
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
-        <div class="wallet-address">🦊 <span id="walletShort">0x...</span></div>
+        <div class="wallet-address">
+          🦊 <span id="walletShort">0x...</span>
+        </div>
         <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
     </div>
   </header>
 
   <main>
-
-    <!-- ══ LEFT: DEVICE ══ -->
+    <!-- LEFT: DEVICE -->
     <div class="device">
       <div class="device-top">
         <div class="device-title">AVATAR</div>
         <div class="status-dot" id="statusDot"></div>
       </div>
 
-      <!-- SCREEN — mantida 100% intacta -->
+      <!-- SCREEN -->
       <div class="screen" id="mainScreen">
 
-        <!-- IDLE -->
+        <!-- IDLE state -->
         <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
           <svg width="90" height="90" viewBox="0 0 90 90">
             <defs>
@@ -105,7 +111,7 @@
           <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;">PORTAL DIMENSIONAL<br><span style="opacity:.5">aguardando invocação</span></div>
         </div>
 
-        <!-- EGG -->
+        <!-- EGG state -->
         <div id="eggScreen" class="egg-screen" style="display:none;">
           <div id="eggWrap" style="position:relative;width:100px;height:110px;cursor:pointer;">
             <svg id="eggSvg" width="100" height="110" viewBox="0 0 100 110" style="transition:transform .12s ease;display:block;">
@@ -142,8 +148,10 @@
           <div class="egg-progress" id="eggProgress">0 / 5</div>
         </div>
 
-        <!-- ALIVE -->
+        <!-- ALIVE state -->
         <div id="aliveScreen" style="display:none; position:absolute; inset:0;">
+
+          <!-- Jo-Ken-Pô Modal -->
           <div id="jkpModal">
             <div class="jkp-title">✦ JO-KEN-PÔ ✦</div>
             <div class="jkp-arena">
@@ -163,16 +171,23 @@
             <div class="jkp-result" id="jkpResult">—</div>
             <div class="jkp-rewards" id="jkpRewards"></div>
             <div class="jkp-choices" id="jkpChoices">
-              <button class="jkp-choice" onclick="jkpChoose('pedra')" title="Pedra">🪨<span class="jkp-choice-label">PEDRA</span></button>
-              <button class="jkp-choice" onclick="jkpChoose('papel')" title="Papel">📄<span class="jkp-choice-label">PAPEL</span></button>
-              <button class="jkp-choice" onclick="jkpChoose('tesoura')" title="Tesoura">✂️<span class="jkp-choice-label">TESOURA</span></button>
+              <button class="jkp-choice" onclick="jkpChoose('pedra')" title="Pedra">
+                🪨<span class="jkp-choice-label">PEDRA</span>
+              </button>
+              <button class="jkp-choice" onclick="jkpChoose('papel')" title="Papel">
+                📄<span class="jkp-choice-label">PAPEL</span>
+              </button>
+              <button class="jkp-choice" onclick="jkpChoose('tesoura')" title="Tesoura">
+                ✂️<span class="jkp-choice-label">TESOURA</span>
+              </button>
             </div>
             <div class="jkp-btns">
               <button class="jkp-btn jkp-btn-play" id="jkpPlayAgain" style="display:none" onclick="jkpPlayAgain()">▶ DE NOVO</button>
               <button class="jkp-btn jkp-btn-close" onclick="closeJkp()">✕ FECHAR</button>
             </div>
-          </div>
+          </div><!-- /jkpModal -->
 
+          <!-- ITEM INVENTORY MODAL -->
           <div class="mini-modal" id="itemInvModal">
             <div class="modal-header">
               <div>
@@ -188,6 +203,7 @@
             </div>
           </div>
 
+          <!-- EGG INVENTORY MODAL -->
           <div class="mini-modal" id="eggInvModal">
             <div class="modal-header">
               <div>
@@ -203,6 +219,7 @@
             </div>
           </div>
 
+          <!-- COIN SHOP MODAL -->
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
@@ -218,7 +235,7 @@
                 <div style="font-size:7px;color:var(--muted);line-height:2;text-align:left;padding:0 8px;">
                   🎮 Minigames — até 80 🪙 por vitória<br>
                   🔥 Queimar ovo Comum — 20 🪙<br>
-                  📈 Nível acima — bónus por raridade
+                  📈 Nível acima — bónus por raridade<br>
                 </div>
               </div>
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
@@ -229,6 +246,7 @@
             </div>
           </div>
 
+          <!-- MARKET MODAL -->
           <div class="mini-modal" id="marketModal">
             <div class="modal-header">
               <div class="mini-title" style="margin:0;">🔮 ITENS</div>
@@ -239,6 +257,7 @@
             </div>
           </div>
 
+          <!-- GAME SELECTOR -->
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
@@ -276,9 +295,19 @@
                   <div class="gs-btn-reward" id="rewardVelha">+2~96 XP · +5~156 🪙</div>
                 </div>
               </div>
+              <!-- ⚔️ ARENA DIMENSIONAL -->
+              <div class="gs-btn" onclick="closeGameSelector(); openArena()">
+                <div class="gs-btn-icon">⚔️</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">ARENA DIMENSIONAL</div>
+                  <div class="gs-btn-desc">Jo-Ken-Pô ao vivo contra outros jogadores</div>
+                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool semanal</div>
+                </div>
+              </div>
             </div>
           </div>
 
+          <!-- HATCH CONFIRM MODAL -->
           <div class="mini-modal" id="hatchConfirmModal">
             <div class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
             <div style="text-align:center;margin:10px 0 6px;">
@@ -292,6 +321,7 @@
             </div>
           </div>
 
+          <!-- MEMÓRIA ELEMENTAL -->
           <div class="mini-modal" id="memoriaModal">
             <div class="mini-title">🃏 MEMÓRIA ELEMENTAL</div>
             <div class="mini-sub" id="memSub">Encontre todos os pares!</div>
@@ -305,6 +335,7 @@
             </div>
           </div>
 
+          <!-- SIMON SAYS -->
           <div class="mini-modal" id="simonModal">
             <div class="mini-title">🎵 SIMON SAYS</div>
             <div class="simon-seq-display" id="simonSeqDisplay">Observe a sequência...</div>
@@ -318,6 +349,7 @@
             </div>
           </div>
 
+          <!-- JOGO DA VELHA -->
           <div class="mini-modal" id="velhaModal">
             <div class="mini-title">✕○ JOGO DA VELHA</div>
             <div class="mini-sub" id="velhaInfo">Sua vez! ✕</div>
@@ -330,20 +362,30 @@
             </div>
           </div>
 
+          <!-- ⚔️ ARENA DIMENSIONAL MODAL -->
+          <div id="arenaModal"></div>
+
+          <!-- Level-up overlay -->
           <div id="levelUpOverlay">
             <div class="lu-burst"></div>
-            <div class="lu-ring"></div><div class="lu-ring"></div><div class="lu-ring"></div>
+            <div class="lu-ring"></div>
+            <div class="lu-ring"></div>
+            <div class="lu-ring"></div>
             <div class="lu-text" id="luText">NÍVEL UP!</div>
             <div class="lu-nivel" id="luNivel">NÍVEL 2</div>
           </div>
 
+          <!-- Phase Up overlay -->
           <div id="phaseUpOverlay">
             <div class="pu-bg"></div>
-            <div class="pu-ring"></div><div class="pu-ring"></div><div class="pu-ring"></div>
+            <div class="pu-ring"></div>
+            <div class="pu-ring"></div>
+            <div class="pu-ring"></div>
             <div class="pu-text" id="puText">EVOLUÇÃO!</div>
             <div class="pu-fase" id="puFase">FASE: CRIANÇA</div>
           </div>
 
+          <!-- Sleep overlay -->
           <div id="sleepOverlay">
             <div class="sleep-moon">🌙</div>
             <div class="sleep-star" style="left:18%;top:35%;font-size:7px;animation-delay:.4s">✦</div>
@@ -392,16 +434,20 @@
           <button class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
         </div>
 
-        <!-- DEAD -->
+        <!-- DEAD state -->
         <div id="deadScreen" class="dead-screen" style="display:none">
           <div class="dead-particles" id="deadParticles"></div>
-          <div class="dead-orb"><div class="dead-runes"></div>👻</div>
+          <div class="dead-orb">
+            <div class="dead-runes"></div>
+            👻
+          </div>
           <div class="dead-title">ENTIDADE PERDIDA</div>
           <div class="dead-name" id="deadAvatarName"></div>
           <div class="dead-sub">partiu para outra dimensão...<br>sua essência persiste nos ovos.</div>
           <div class="dead-stats" id="deadStats"></div>
           <button class="dead-btn" onclick="triggerSummon()">✦ INVOCAR NOVO AVATAR</button>
         </div>
+
       </div><!-- /screen -->
 
       <!-- ACTION BUTTONS -->
@@ -431,10 +477,45 @@
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
           <span class="icon">🥚</span><span>BOTAR OVO</span>
         </button>
-      </div>
+      </div><!-- /btns -->
+
+      <!-- STATUS -->
+      <div id="statusCard" style="display:none;border-top:1px solid var(--border);padding:14px 14px 10px;margin-top:8px;">
+        <div class="panel-title" style="margin-bottom:6px;">◆ STATUS</div>
+        <div class="stat-row">
+          <span class="stat-lbl">🍖 FOME</span>
+          <div class="stat-track"><div class="stat-fill fill-fome" id="barFome" style="width:100%"></div></div>
+          <span class="stat-val" id="valFome">100</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-lbl">😊 HUMOR</span>
+          <div class="stat-track"><div class="stat-fill fill-humor" id="barHumor" style="width:100%"></div></div>
+          <span class="stat-val" id="valHumor">100</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-lbl">⚡ ENERGIA</span>
+          <div class="stat-track"><div class="stat-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
+          <span class="stat-val" id="valEnergia">100</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-lbl">❤️ SAÚDE</span>
+          <div class="stat-track"><div class="stat-fill fill-saude" id="barSaude" style="width:100%"></div></div>
+          <span class="stat-val" id="valSaude">100</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-lbl">🧹 HIGIENE</span>
+          <div class="stat-track"><div class="stat-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
+          <span class="stat-val" id="valHigiene">100</span>
+        </div>
+        <div id="lifeEstimateRow" style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
+          <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
+        </div>
+      </div><!-- /statusCard -->
+
     </div><!-- /device -->
 
-    <!-- ══ RIGHT PANEL ══ -->
+    <!-- RIGHT PANEL -->
     <div class="right-panel">
 
       <!-- SUMMON -->
@@ -453,23 +534,17 @@
         </div>
       </div>
 
-      <!-- ══ CREATURE CARD — novo estilo marketplace ══ -->
-      <div class="creature-card-mkt" id="creatureCard" style="display:none">
-        <!-- Stripe de raridade no topo (cor controlada por JS via classe) -->
-        <div class="creature-card-stripe" id="creatureCardStripe"></div>
-        <div class="creature-card-body">
-
-          <!-- Nome + rename -->
-          <div class="ccm-name-row">
+      <!-- CREATURE CARD -->
+      <div class="panel-card" id="creatureCard" style="display:none">
+        <div id="avatarNameBlock" style="margin-bottom:10px;">
+          <div style="display:flex;align-items:flex-start;gap:5px;">
             <div style="flex:1;min-width:0;">
-              <div class="ccm-badge" id="idBadge2">ATIVO · SLOT 1</div>
-              <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-light);margin:4px 0 1px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></h2>
+              <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-light);margin:0 0 1px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></h2>
               <div id="idSufixo" style="font-size:8px;color:var(--muted);font-style:italic;letter-spacing:.3px;"></div>
             </div>
             <button id="renameBtn" onclick="startRename()" title="Renomear" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px;line-height:1;flex-shrink:0;transition:color .15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
           </div>
-
-          <div id="renameForm" style="display:none;margin-bottom:8px;">
+          <div id="renameForm" style="display:none;margin-top:6px;">
             <input id="renameInput" type="text" maxlength="20" placeholder="Novo nome..."
               style="width:100%;box-sizing:border-box;background:#0a0816;border:1px solid var(--gold);border-radius:4px;color:var(--gold-light);font-family:'Cinzel',serif;font-size:9px;padding:4px 8px;outline:none;letter-spacing:1px;"
               onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();" />
@@ -478,75 +553,36 @@
               <button onclick="cancelRename()" style="flex:1;padding:3px 0;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✕ CANCELAR</button>
             </div>
           </div>
-
-          <!-- Pill elemento + raridade + nível -->
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-            <span class="badge" id="idBadge">COMUM</span>
-            <span id="idMeta" style="font-size:8px;color:var(--muted);"></span>
-            <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:8px;color:var(--gold);font-weight:700;" id="nivelTxt">NV 1</span>
-          </div>
-
-          <!-- Descrição -->
-          <div id="idDesc" style="font-size:8px;color:#887799;font-style:italic;line-height:1.7;margin-bottom:10px;padding:6px 8px;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:rgba(255,255,255,.02);"></div>
-
-          <!-- XP -->
-          <div style="margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-              <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
-              <span style="font-size:7px;color:var(--muted);" id="xpTxt">0/100</span>
-            </div>
-            <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
-          </div>
-
-          <!-- Vínculo -->
-          <div style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-              <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
-              <span style="font-size:7px;" id="vinculoTxt">Distante · 0</span>
-            </div>
-            <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
-          </div>
-
-          <div style="display:flex;justify-content:flex-end;">
-            <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
-          </div>
         </div>
 
-        <!-- STATUS BARS — dentro do creature card, grid de cards -->
-        <div id="statusCard" style="display:none;">
-          <div class="status-cards-grid">
-            <div class="status-card-item">
-              <div class="sci-label">🍖 FOME</div>
-              <div class="sci-val" id="valFome">100</div>
-              <div class="sci-bar"><div class="sci-fill fill-fome" id="barFome" style="width:100%"></div></div>
-            </div>
-            <div class="status-card-item">
-              <div class="sci-label">😊 HUMOR</div>
-              <div class="sci-val" id="valHumor">100</div>
-              <div class="sci-bar"><div class="sci-fill fill-humor" id="barHumor" style="width:100%"></div></div>
-            </div>
-            <div class="status-card-item">
-              <div class="sci-label">⚡ ENERGIA</div>
-              <div class="sci-val" id="valEnergia">100</div>
-              <div class="sci-bar"><div class="sci-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
-            </div>
-            <div class="status-card-item">
-              <div class="sci-label">❤️ SAÚDE</div>
-              <div class="sci-val" id="valSaude">100</div>
-              <div class="sci-bar"><div class="sci-fill fill-saude" id="barSaude" style="width:100%"></div></div>
-            </div>
-            <div class="status-card-item">
-              <div class="sci-label">🧹 HIGIENE</div>
-              <div class="sci-val" id="valHigiene">100</div>
-              <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
-            </div>
-          </div>
-          <div id="lifeEstimateRow" style="margin:8px 14px 10px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
-            <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
-          </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge" id="idBadge">COMUM</span>
+          <span id="idMeta" style="font-size:8px;color:var(--muted);"></span>
+          <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:8px;color:var(--gold);font-weight:700;" id="nivelTxt">NV 1</span>
         </div>
-      </div><!-- /creature-card-mkt -->
+
+        <div id="idDesc" style="font-size:8px;color:#887799;font-style:italic;line-height:1.7;margin-bottom:10px;padding:6px 8px;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:rgba(255,255,255,.02);"></div>
+
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
+            <span style="font-size:7px;color:var(--muted);" id="xpTxt">0/100</span>
+          </div>
+          <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
+            <span style="font-size:7px;" id="vinculoTxt">Distante · 0</span>
+          </div>
+          <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;align-items:center;">
+          <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
+        </div>
+      </div>
 
       <!-- DIÁRIO -->
       <div class="panel-card">
@@ -556,29 +592,7 @@
 
     </div><!-- /right-panel -->
   </main>
-
-  <!-- ══ BOTTOM NAV — mobile only, via CSS media query ══ -->
-  <nav class="bottom-nav" id="bottomNav">
-    <div class="bottom-nav-inner">
-      <button class="bn-btn active" id="bnAvatar" onclick="_bnActivate(this)" title="Avatar">
-        <span class="bn-ic">🧬</span><span>Avatar</span>
-      </button>
-      <button class="bn-btn" id="bnJogar" onclick="_bnActivate(this);playCreature()" title="Jogar">
-        <span class="bn-ic">🎮</span><span>Jogar</span>
-      </button>
-      <button class="bn-btn" id="bnOvos" onclick="_bnActivate(this);openEggInventory()" title="Ovos">
-        <span class="bn-ic">🥚</span><span>Ovos</span>
-      </button>
-      <button class="bn-btn" id="bnItens" onclick="_bnActivate(this);openItemInventory()" title="Itens">
-        <span class="bn-ic">🎒</span><span>Itens</span>
-      </button>
-      <button class="bn-btn" id="bnLoja" onclick="_bnActivate(this);goToMarketplace(event)" title="Marketplace">
-        <span class="bn-ic">🛒</span><span>Loja</span>
-      </button>
-    </div>
-  </nav>
-
-</div><!-- /app -->
+</div>
 
 <!-- SUMMON OVERLAY -->
 <div id="summonOverlay">
@@ -597,6 +611,9 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<!-- Firebase init -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
@@ -604,12 +621,15 @@
     projectId: "fractured-veil",
     storageBucket: "fractured-veil.firebasestorage.app",
     messagingSenderId: "685511750728",
-    appId: "1:685511750728:web:1e843bf48ea56a3a98d47d"
+    appId: "1:685511750728:web:1e843bf48ea56a3a98d47d",
+    databaseURL: "https://fractured-veil-default-rtdb.firebaseio.com"
   };
   firebase.initializeApp(firebaseConfig);
   const _fbDb = firebase.firestore();
+  const _rtdb = firebase.database();
 </script>
 
+<!-- Game modules (order matters) -->
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
@@ -626,11 +646,16 @@
 <script src="js/wallet.js"></script>
 <script src="js/main.js"></script>
 
+<!-- Arena (após wallet.js para ter acesso ao walletAddress) -->
+<script src="js/arena.js"></script>
 <script>
-function _bnActivate(btn) {
-  document.querySelectorAll('.bn-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+  // Hook no connectWallet para iniciar listener de desafios após login
+  const _origConnectWallet = window.connectWallet;
+  window.connectWallet = async function() {
+    await _origConnectWallet.apply(this, arguments);
+    if(walletAddress) iniciarListenerDesafiosRecebidos();
+  };
 </script>
+
 </body>
 </html>
