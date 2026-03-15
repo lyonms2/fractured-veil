@@ -391,7 +391,7 @@ async function cancelarDesafio(salaId) {
   if(!rtdb()) return;
   await rtdb().ref(`arena/salas/${salaId}`).update({ status: 'cancelada' });
   const fila = _getFila();
-  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
+  try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
   // Devolve aposta
   const a = _getAposta();
   if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
@@ -654,64 +654,59 @@ async function fazerEscolha(salaId, escolha) {
   if(st) st.textContent = '⏳ Aguardando oponente...';
   document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = true);
 
+  // Grava minha escolha
   await rtdb().ref(`arena/salas/${salaId}/jogadores/${walletAddress}`).update({
     escolha, pronto: true,
   });
 
-  // Verifica se o oponente já escolheu — se sim, o criador calcula o roundResult
+  // Verifica se o oponente já escolheu
   const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
   const s    = snap.val();
-  if(!s) return;
+  if(!s || s.roundResult) return; // roundResult já gravado por outro caminho
 
   const wallets  = Object.keys(s.jogadores);
   const criador  = wallets[0];
   const opWallet = wallets.find(w => w !== walletAddress);
   const jOp      = s.jogadores?.[opWallet];
 
-  // Só o criador grava o roundResult — mas se ambos prontos e roundResult ainda null,
-  // o criador precisa ter chamado isso. Se por algum motivo não chamou (race condition),
-  // o criador tenta de novo aqui.
-  if(criador === walletAddress && jOp?.pronto && jOp?.escolha && !s.roundResult) {
-    await _calcularEGravarRound(salaId, s, opWallet);
+  // Se o oponente já escolheu, quem escolheu por último calcula o round.
+  // Usamos uma transação para evitar que os dois calculem ao mesmo tempo.
+  if(jOp?.pronto && jOp?.escolha) {
+    // Usa transação no roundResult para garantir que só um grava
+    const roundRef = rtdb().ref(`arena/salas/${salaId}/roundResult`);
+    await roundRef.transaction(atual => {
+      if(atual !== null) return; // já foi gravado — aborta
+      // Calcula do ponto de vista do criador (posição fixa)
+      const euSouCriador  = criador === walletAddress;
+      const escolhaCriador   = euSouCriador ? escolha        : jOp.escolha;
+      const escolhaOponente  = euSouCriador ? jOp.escolha    : escolha;
+      const res = _jkpRes(escolhaCriador, escolhaOponente); // resultado do criador
+      const p   = { ...(s.placar||{}) };
+      if(res === 'vitoria')  p[criador]   = (p[criador]  ||0) + 1;
+      if(res === 'derrota')  p[opWallet]  = (p[opWallet] ||0) + 1;
+      const novaRodada = (s.rodada||1) + 1;
+      const fim = p[criador] >= 2 || p[opWallet] >= 2 || novaRodada > ARENA_MAX_RODADAS;
+      let vencedor = null;
+      if(fim) {
+        if     (p[criador]  > p[opWallet]) vencedor = criador;
+        else if(p[opWallet] > p[criador])  vencedor = opWallet;
+        else                                vencedor = 'empate';
+      }
+      return { escolhaCriador, escolhaOponente, resultado: res, placarAtualizado: p, fim, vencedor };
+    });
+
+    // Depois da transação, atualiza placar/rodada/status fora da transação
+    const snapPos = await rtdb().ref(`arena/salas/${salaId}/roundResult`).once('value');
+    const rr = snapPos.val();
+    if(rr) {
+      await rtdb().ref(`arena/salas/${salaId}`).update({
+        placar:   rr.placarAtualizado,
+        rodada:   (s.rodada||1) + 1,
+        status:   rr.fim ? 'finalizada' : 'em_jogo',
+        vencedor: rr.vencedor || null,
+      });
+    }
   }
-}
-
-// Calcula resultado e grava no RTDB para os dois verem simultaneamente
-async function _calcularEGravarRound(salaId, sala, opWallet) {
-  const jEu = sala.jogadores[walletAddress];
-  const jOp = sala.jogadores[opWallet];
-  if(!jEu?.escolha || !jOp?.escolha) return;
-
-  const res = _jkpRes(jEu.escolha, jOp.escolha);
-  const p   = { ...(sala.placar||{}) };
-  if(res === 'vitoria')  p[walletAddress] = (p[walletAddress]||0) + 1;
-  if(res === 'derrota')  p[opWallet]      = (p[opWallet]     ||0) + 1;
-
-  const novaRodada = (sala.rodada||1) + 1;
-  const fim = p[walletAddress] >= 2 || p[opWallet] >= 2 || novaRodada > ARENA_MAX_RODADAS;
-
-  let vencedor = null;
-  if(fim) {
-    if     (p[walletAddress] > p[opWallet]) vencedor = walletAddress;
-    else if(p[opWallet] > p[walletAddress]) vencedor = opWallet;
-    else                                     vencedor = 'empate';
-  }
-
-  // Grava roundResult — ambos os jogadores lêem isso no listener
-  await rtdb().ref(`arena/salas/${salaId}`).update({
-    roundResult: {
-      escolhaCriador: jEu.escolha,
-      escolhaOponente: jOp.escolha,
-      resultado: res,         // do ponto de vista do criador
-      placarAtualizado: p,
-      fim,
-      vencedor,
-    },
-    placar:   p,
-    rodada:   novaRodada,
-    status:   fim ? 'finalizada' : 'em_jogo',
-    vencedor: vencedor,
-  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -893,9 +888,9 @@ async function _renderResultado(sala, opWallet) {
 
   await _atualizarRanking(sala, opWallet, euVenci, empate);
 
-  // Libera do lobby
+  // Remove do lobby completamente — não fica com emPartida:false
   const fila = _getFila();
-  try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false); } catch(e){}
+  try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
   _arenaAtiva     = false;
   _arenaPartidaId = null;
 
@@ -1203,9 +1198,8 @@ function _renderDesafioPendente(sala) {
       salaRef.off('value');
       addLog('Desafio cancelado pelo oponente.', 'bad');
       showBubble('Desafio cancelado! 😔');
-      // Libera o lobby do oponente
       const fila = _getFila();
-      rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
+      rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove();
       _arenaAtiva     = false;
       _arenaPartidaId = null;
       _renderLobby();
