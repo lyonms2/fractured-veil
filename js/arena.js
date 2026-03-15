@@ -1094,6 +1094,19 @@ async function _limparSalasAntigas() {
 function iniciarListenerDesafiosRecebidos() {
   if(!rtdb() || !walletAddress) return;
 
+  // ── Listener de premiações semanais ──
+  rtdb().ref(`arena/notificacoes/${walletAddress}/premiacoes`)
+    .orderByChild('lida').equalTo(false)
+    .on('child_added', async snap => {
+      const p = snap.val();
+      if(!p || p.lida) return;
+      await snap.ref.update({ lida: true });
+
+      const msg = `🏆 Arena ${p.fila}: ${p.posicao}º lugar — +${p.premio} ${p.moeda}!`;
+      addLog(msg, 'leg');
+      showBubble(`${p.posicao}º lugar na Arena! ${p.moeda}`);
+    });
+
   // Escuta o nó de notificações dedicado para este wallet
   // Formato: arena/notificacoes/{wallet}/desafios/{salaId}
   const notifRef = rtdb().ref(`arena/notificacoes/${walletAddress}/desafios`);
