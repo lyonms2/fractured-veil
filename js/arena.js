@@ -397,6 +397,18 @@ async function cancelarDesafio(salaId) {
   if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
   else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
   updateResourceUI();
+  // Limpa sala e notificações após 3s
+  setTimeout(async () => {
+    try {
+      await rtdb().ref(`arena/salas/${salaId}`).remove();
+      await rtdb().ref(`arena/notificacoes`).once('value').then(snap => {
+        const todos = snap.val() || {};
+        Object.keys(todos).forEach(async wallet => {
+          await rtdb().ref(`arena/notificacoes/${wallet}/desafios/${salaId}`).remove();
+        });
+      });
+    } catch(e){}
+  }, 3000);
   _arenaAtiva    = false;
   _arenaPartidaId = null;
   _renderLobby();
@@ -482,6 +494,11 @@ async function aceitarDesafio(salaId) {
 async function recusarDesafio(salaId) {
   if(!rtdb()) return;
   await rtdb().ref(`arena/salas/${salaId}`).update({ status: 'recusada' });
+  // Limpa após 3s
+  setTimeout(async () => {
+    try { await rtdb().ref(`arena/salas/${salaId}`).remove(); } catch(e){}
+    try { await rtdb().ref(`arena/notificacoes/${walletAddress}/desafios/${salaId}`).remove(); } catch(e){}
+  }, 3000);
   addLog('Desafio recusado.', 'info');
   _renderLobby();
 }
@@ -856,6 +873,22 @@ async function _renderResultado(sala, opWallet) {
   _arenaAtiva     = false;
   _arenaPartidaId = null;
 
+  // Limpeza do RTDB — só o criador apaga sala e notificações (após 10s de delay)
+  const criadorLimpeza = Object.keys(sala.jogadores)[0];
+  if(criadorLimpeza === walletAddress) {
+    setTimeout(async () => {
+      try {
+        // Remove a sala
+        await rtdb().ref(`arena/salas/${sala.id}`).remove();
+        // Remove notificações enviadas para o oponente
+        await rtdb().ref(`arena/notificacoes/${opWallet}/desafios/${sala.id}`).remove();
+        // Remove notificações enviadas para o criador (caso existam)
+        await rtdb().ref(`arena/notificacoes/${walletAddress}/desafios/${sala.id}`).remove();
+        console.log('[ARENA] sala e notificações limpas:', sala.id);
+      } catch(e) { console.warn('[ARENA] limpeza erro:', e); }
+    }, 10000); // 10s — garante que os dois lados já viram o resultado
+  }
+
   const titulo = empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
   const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
 
@@ -1020,6 +1053,43 @@ async function _carregarRanking() {
 // ═══════════════════════════════════════════════════════════════════
 // NOTIFICAÇÃO DE DESAFIOS RECEBIDOS
 // ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// LIMPEZA DE SALAS ANTIGAS
+// ═══════════════════════════════════════════════════════════════════
+
+async function _limparSalasAntigas() {
+  if(!rtdb()) return;
+  try {
+    const snap = await rtdb().ref('arena/salas').once('value');
+    const salas = snap.val() || {};
+    const agora = Date.now();
+    const UMA_HORA = 3600000;
+
+    const promessas = [];
+    Object.entries(salas).forEach(([id, sala]) => {
+      const criadoEm = sala.criadoEm || 0;
+      const velha    = typeof criadoEm === 'number' && (agora - criadoEm) > UMA_HORA;
+      const finalizada = sala.status === 'finalizada' || sala.status === 'cancelada' || sala.status === 'recusada';
+
+      if(velha || finalizada) {
+        promessas.push(rtdb().ref(`arena/salas/${id}`).remove());
+        console.log('[ARENA] limpando sala antiga:', id, sala.status);
+      }
+    });
+
+    // Limpa notificações lidas
+    const notifSnap = await rtdb().ref(`arena/notificacoes/${walletAddress}/desafios`).once('value');
+    const notifs = notifSnap.val() || {};
+    Object.entries(notifs).forEach(([salaId, n]) => {
+      if(n.lida) {
+        promessas.push(rtdb().ref(`arena/notificacoes/${walletAddress}/desafios/${salaId}`).remove());
+      }
+    });
+
+    await Promise.all(promessas);
+  } catch(e) { console.warn('[ARENA] limpeza salas antigas erro:', e); }
+}
 
 function iniciarListenerDesafiosRecebidos() {
   if(!rtdb() || !walletAddress) return;
