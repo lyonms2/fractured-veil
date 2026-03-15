@@ -392,3 +392,79 @@
   border-radius: 8px;
   animation: arena-res-pop .3s ease;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAÇÕES DE REVELAÇÃO
+══════════════════════════════════════════════════════════════ */
+
+/* Estrelas de pontuação */
+.arena-vs-stars {
+  font-size: 14px; letter-spacing: 2px;
+  min-height: 18px; text-align: center;
+  transition: all .3s;
+}
+
+/* Badges de rodada e prêmio no header */
+.arena-rodada-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; font-weight: 700;
+  color: var(--gold); letter-spacing: 2px;
+}
+.arena-premio-badge {
+  font-size: 7px; color: var(--muted);
+  margin-top: 3px; letter-spacing: 1px;
+}
+
+/* Animação pop — revela com bounce */
+@keyframes arena-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.pop { animation: arena-pop .4s cubic-bezier(.34,1.6,.64,1) forwards; }
+
+/* Countdown no status */
+.arena-countdown {
+  font-family: 'Cinzel', serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gold) !important;
+  animation: arena-pop .3s ease;
+}
+
+/* Card do perdedor — escurece */
+.arena-vs-lado.arena-perdedor {
+  opacity: .5;
+  border-color: rgba(231,76,60,.3) !important;
+  filter: grayscale(40%);
+  transition: all .4s;
+}
+/* Card do vencedor — brilha */
+.arena-vs-lado.arena-vencedor {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 20px rgba(201,168,76,.4) !important;
+  background: rgba(201,168,76,.07) !important;
+  transition: all .4s;
+}
+/* Empate — borda neutra */
+.arena-vs-lado.arena-empate {
+  border-color: var(--raro) !important;
+  box-shadow: 0 0 12px rgba(90,180,232,.25) !important;
+  transition: all .4s;
+}
+
+/* Banner de resultado da rodada */
+.arena-round-banner {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.08);
+  margin-top: 4px;
+}
+
+/* Escolha revelada — emoji grande com pop */
+.arena-vs-escolha {
+  font-size: 22px; line-height: 1;
+  min-height: 28px; text-align: center;
+}
