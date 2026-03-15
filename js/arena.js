@@ -514,9 +514,8 @@ function _renderPartida(salaId, sala) {
   const el = document.getElementById('arenaModal');
   if(!el) return;
 
-  const wallets  = Object.keys(sala.jogadores);
   const meu      = sala.jogadores[walletAddress] || {};
-  const opWallet = wallets.find(w => w !== walletAddress);
+  const opWallet = walletAddress === sala.criador ? sala.oponente : sala.criador;
   const op       = sala.jogadores[opWallet]       || {};
   const placar   = sala.placar || {};
   const rodada   = sala.rodada || 1;
@@ -664,9 +663,8 @@ async function fazerEscolha(salaId, escolha) {
   const s    = snap.val();
   if(!s || s.roundResult) return; // roundResult já gravado por outro caminho
 
-  const wallets  = Object.keys(s.jogadores);
-  const criador  = wallets[0];
-  const opWallet = wallets.find(w => w !== walletAddress);
+  const criador  = s.criador; // campo explícito — não depende de Object.keys()
+  const opWallet = Object.keys(s.jogadores).find(w => w !== walletAddress);
   const jOp      = s.jogadores?.[opWallet];
 
   // Se o oponente já escolheu, quem escolheu por último calcula o round.
@@ -734,9 +732,8 @@ function _iniciarTimer(salaId, opWallet) {
 // ═══════════════════════════════════════════════════════════════════
 
 async function _animarRevelacao(salaId, sala, opWallet) {
-  const rr      = sala.roundResult;
-  const wallets = Object.keys(sala.jogadores);
-  const criador = wallets[0];
+  const rr           = sala.roundResult;
+  const criador      = sala.criador; // campo explícito — não depende de Object.keys()
   const euSouCriador = criador === walletAddress;
 
   // Do ponto de vista de cada jogador:
@@ -830,9 +827,7 @@ async function _animarRevelacao(salaId, sala, opWallet) {
     }
   } else {
     // Só o criador limpa as escolhas para próxima rodada
-    const wallets2  = Object.keys(sala.jogadores);
-    const criador2  = wallets2[0];
-    if(criador2 === walletAddress) {
+    if(sala.criador === walletAddress) {
       await rtdb().ref(`arena/salas/${salaId}`).update({
         roundResult: null,
         [`jogadores/${walletAddress}/escolha`]: null,
@@ -873,7 +868,7 @@ async function _renderResultado(sala, opWallet) {
   const placar   = sala.placar || {};
 
   // Distribui recompensa (só o criador)
-  const criador = Object.keys(sala.jogadores)[0];
+  const criador = sala.criador;
   if(criador === walletAddress && !sala.recompensaDistribuida) {
     await _distribuirRecompensas(sala, opWallet);
   } else if(criador !== walletAddress) {
@@ -888,15 +883,14 @@ async function _renderResultado(sala, opWallet) {
 
   await _atualizarRanking(sala, opWallet, euVenci, empate);
 
-  // Remove do lobby completamente — não fica com emPartida:false
+  // Remove do lobby completamente
   const fila = _getFila();
   try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
   _arenaAtiva     = false;
   _arenaPartidaId = null;
 
-  // Limpeza do RTDB — só o criador apaga sala e notificações (após 10s de delay)
-  const criadorLimpeza = Object.keys(sala.jogadores)[0];
-  if(criadorLimpeza === walletAddress) {
+  // Limpeza do RTDB — só o criador apaga sala e notificações (após 10s)
+  if(criador === walletAddress) {
     setTimeout(async () => {
       try {
         // Remove a sala
