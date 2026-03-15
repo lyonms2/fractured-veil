@@ -651,11 +651,14 @@
 <!-- Arena (após wallet.js para ter acesso ao walletAddress) -->
 <script src="js/arena.js"></script>
 <script>
-  // Hook no connectWallet para iniciar listener de desafios após login
+  // Hook no connectWallet para iniciar listener de desafios e verificar partida pendente após login
   const _origConnectWallet = window.connectWallet;
   window.connectWallet = async function() {
     await _origConnectWallet.apply(this, arguments);
-    if(walletAddress) iniciarListenerDesafiosRecebidos();
+    if(walletAddress) {
+      iniciarListenerDesafiosRecebidos();
+      verificarPartidaPendente();
+    }
   };
 </script>
 
