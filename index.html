@@ -423,20 +423,7 @@
           <div class="ground"></div>
         </div>
 
-          <div id="repousoOverlay">
-           
-            <!-- Estrelas de fundo com delays variados para efeito natural -->
-            <span class="repouso-star" style="top:10%;left:15%;animation-delay:0s">✦</span>
-            <span class="repouso-star" style="top:18%;left:75%;animation-delay:.8s">✧</span>
-            <span class="repouso-star" style="top:32%;left:8%;animation-delay:1.5s">✦</span>
-            <span class="repouso-star" style="top:65%;left:22%;animation-delay:.3s">✧</span>
-            <span class="repouso-star" style="top:72%;left:82%;animation-delay:1.1s">✦</span>
-            <span class="repouso-star" style="top:45%;left:90%;animation-delay:.6s">✧</span>
-            <span class="repouso-star" style="top:85%;left:55%;animation-delay:2s">✦</span>
-            <span class="repouso-star" style="top:25%;left:50%;animation-delay:1.8s">✧</span>
-           
-            <!-- Avatar do jogador flutuando (preenchido via JS em ativarModoRepouso) -->
-            <div id="repousoAvatarWrap" class="repouso-avatar"></div>
+          <div id="repousoOverlay">            
            
             <!-- ZZZ igual à tela de sono -->
             <div class="repouso-zzz">
@@ -447,11 +434,9 @@
            
             <!-- Texto -->
             <div class="repouso-label">MODO REPOUSO</div>
-            <div class="repouso-sub">segure 💤 DORMIR para retomar</div>
+            <button class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
            
           </div>
-
-
         
         <!-- DEAD state -->
         <div id="deadScreen" class="dead-screen" style="display:none">
