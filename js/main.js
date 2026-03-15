@@ -55,14 +55,15 @@ window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
 window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
 
+// ── Modo Repouso Manual ──
+window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
+window.onSleepPointerUp     = typeof onSleepPointerUp     !== "undefined" ? onSleepPointerUp     : ()=>{};
+window.ativarModoRepouso    = typeof ativarModoRepouso    !== "undefined" ? ativarModoRepouso    : ()=>{};
+window.desativarModoRepouso = typeof desativarModoRepouso !== "undefined" ? desativarModoRepouso : ()=>{};
+
 setInterval(gameTick, 1000);
-// Login screen handles initial state
 updateResourceUI();
 
-// Login screen handles initial state
-
-// On unload: pendingEgg slots are never saved to Firebase (getGameState skips them)
-// so the egg is automatically preserved — nothing to do except clear the in-memory slot
 window.addEventListener('beforeunload', () => {
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
     avatarSlots[window._pendingEggSlot] = null;
@@ -70,19 +71,23 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// Ao regressar ao jogo vindo do marketplace, re-ler Firebase
-// para detectar mudança de activeSlotIdx ou novos inboxEggs
+// ── Sync ao voltar para a aba ──
 let _lastHidden = 0;
 document.addEventListener('visibilitychange', async () => {
   if(document.visibilityState === 'hidden') {
     _lastHidden = Date.now();
     return;
   }
-  // Só re-lê se ficou escondido pelo menos 2s (evita flickers de troca de tab)
+
+  // Só re-lê se ficou escondido pelo menos 2s
   if(!walletAddress || !fbDb()) return;
   if(Date.now() - _lastHidden < 2000) return;
-  // Não re-ler durante chocagem activa
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) return;
+
+  // ── FIX: se o modo repouso manual está ativo, o jogo foi colocado
+  //    intencionalmente em segundo plano — não aplicar offline decay.
+  //    O gametick continua rodando com o decay leve do modoRepouso.
+  if(typeof modoRepouso !== 'undefined' && modoRepouso) return;
 
   try {
     const snap = await fbDb().collection('players').doc(walletAddress).get();
@@ -91,7 +96,6 @@ document.addEventListener('visibilitychange', async () => {
     const remoteSlotIdx = data.activeSlotIdx ?? activeSlotIdx;
     const hasInbox = data.inboxEggs && data.inboxEggs.length > 0;
 
-    // Só aplica se o slot activo mudou ou há inbox para consumir
     if(remoteSlotIdx !== activeSlotIdx || hasInbox) {
       applyGameState(data);
       updateAllUI();
