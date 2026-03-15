@@ -131,12 +131,12 @@ function closeMiniModal(id) {
   ModalManager.close(id);
 }
 
-// ── Dificuldades ──
+// ── Dificuldades (rebalanceado) ──
 const DIFF_TIERS = [
-  { tier:0, label:'FÁCIL',   xp:8,  coins:15,  minNivel:1  },
-  { tier:1, label:'MÉDIO',   xp:20, coins:40,  minNivel:6  },
-  { tier:2, label:'DIFÍCIL', xp:45, coins:80,  minNivel:13 },
-  { tier:3, label:'MESTRE',  xp:80, coins:130, minNivel:21 },
+  { tier:0, label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
+  { tier:1, label:'MÉDIO',   xp:28,  coins:52,  minNivel:6  },
+  { tier:2, label:'DIFÍCIL', xp:55,  coins:95,  minNivel:13 },
+  { tier:3, label:'MESTRE',  xp:90,  coins:155, minNivel:21 },
 ];
 
 function maxUnlockedTier() {
@@ -180,10 +180,10 @@ function miniReward(xpMult, coinMult, vinculoGain = 3) {
 }
 
 // ── applyGameCost ──
-// Desconta o custo padrão de jogar uma rodada: -15 energia, -5 fome.
-// Chamado UMA vez por jogo (vitória ou derrota), não por clique.
+// Desconta o custo padrão de jogar uma rodada: -10 energia, -5 fome.
+// -10 (era -15) permite ~10 jogos por ciclo de energia em vez de 6.
 function applyGameCost() {
-  vitals.energia = Math.max(0, vitals.energia - 15);
+  vitals.energia = Math.max(0, vitals.energia - 10);
   vitals.fome    = Math.max(0, vitals.fome    - 5);
   updateAllUI();
 }

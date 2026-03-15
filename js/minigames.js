@@ -5,7 +5,7 @@ const MEM_ELEMENTS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
 let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = false;
 
 function startMemoria() {
-  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
   const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
   // CORREÇÃO: grid responsivo — no Mestre (10 pares = 20 cartas) usa 4 colunas
@@ -34,7 +34,7 @@ function startMemoria() {
 }
 
 function memFlip(i) {
-  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   if(memLocked) return;
   const el = document.getElementById('mc' + i);
   if(!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
@@ -160,7 +160,7 @@ function simonFlash(idx) {
 
 function simonPlayerClick(idx) {
   if(!simonPlayerTurn) return;
-  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
   const btn = document.getElementById('sb' + idx);
   btn.classList.add('player-hit');
   setTimeout(() => btn.classList.remove('player-hit'), 200);
@@ -244,7 +244,7 @@ function closeJkp() {
 }
 
 function jkpPlayAgain() {
-  if(vitals.energia < 20) {
+  if(vitals.energia < 10) {
     showBubble('Cansado demais... 😴');
     ModalManager.closeAll();
     return;
@@ -271,7 +271,7 @@ function jkpReset() {
 
 function jkpChoose(choice) {
   if(jkpPlaying) return;
-  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); closeJkp(); return; }
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); closeJkp(); return; }
   jkpPlaying = true;
 
   const choicesEl = document.getElementById('jkpChoices');
@@ -341,8 +341,8 @@ function revealResult(playerChoice) {
               xpGain:   Math.round(d.xp    * 1.0 * rb.xp    * vb.xpMult),
               coinsGain:Math.round(d.coins * 1.0 * rb.moedas) },
       lose: { text:'DERROTA',  cls:'lose', humor:5,
-              xpGain:   Math.round(d.xp    * 0.1 * rb.xp),
-              coinsGain:Math.round(d.coins * 0.1 * rb.moedas) },
+              xpGain:   Math.round(d.xp    * 0.2 * rb.xp),
+              coinsGain:Math.round(d.coins * 0.2 * rb.moedas) },
       draw: { text:'EMPATE',   cls:'draw', humor:10,
               xpGain:   Math.round(d.xp    * 0.5 * rb.xp    * vb.xpMult),
               coinsGain:Math.round(d.coins * 0.5 * rb.moedas) }
@@ -563,7 +563,7 @@ const VELHA_LINES = [
 ];
 
 function startVelha() {
-  if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('velhaModal'); return; }
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('velhaModal'); return; }
   velhaBoard = Array(9).fill(null);
   velhaPlayerTurn = true;
   velhaOver = false;

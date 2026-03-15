@@ -73,7 +73,7 @@ function playCreature() {
   if(sleeping) { showBubble('Shh... está dormindo 💤'); return; }
   if(modoRepouso) { showBubble('Em repouso... segure 💤 para retomar'); return; }
   if(vitals.fome < 10)   { showBubble('Estou faminto! 🍖'); return; }
-  if(vitals.energia < 20){ showBubble('Cansado demais... 😴'); return; }
+  if(vitals.energia < 10){ showBubble('Cansado demais... 😴'); return; }
   openGameSelector();
 }
 

@@ -297,9 +297,9 @@ function gameTick() {
     }
   }
 
-  // Moedas passivas: +1 a cada 2 minutos
+  // Moedas passivas: +2 a cada 2 minutos (rebalanceado)
   if(tickCount % (60 * 2) === 0) {
-    earnCoins(Math.round(1 * rarityBonus().moedas));
+    earnCoins(Math.round(2 * rarityBonus().moedas));
   }
 }
 
