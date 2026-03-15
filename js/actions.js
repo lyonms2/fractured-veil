@@ -4,56 +4,29 @@
 function canAct() {
   if(dead || !hatched || !avatar) return false;
   if(sleeping) { showBubble('Shh... está dormindo 💤'); return false; }
+  if(modoRepouso) { showBubble('Em repouso... segure 💤 para retomar'); return false; }
   return true;
 }
 
 // ── COIN SPEND / EARN ANIMATION ──
-let _coinAnimQueue   = [];
-let _coinAnimRunning = false;
-
-function _runCoinAnimQueue() {
-  if(_coinAnimRunning || _coinAnimQueue.length === 0) return;
-  _coinAnimRunning = true;
-  const { amount, isSpend } = _coinAnimQueue.shift();
-
-  const btn = document.getElementById('resMoedasBtn');
-  if(btn) {
-    // Flash no botão
-    btn.classList.remove('res-flash');
-    void btn.offsetWidth;
-    btn.classList.add('res-flash');
-    setTimeout(() => btn.classList.remove('res-flash'), 500);
-
-    // position:fixed — getBoundingClientRect() já é relativo ao viewport, sem scroll
-    const rect = btn.getBoundingClientRect();
-
-    const fly = document.createElement('div');
-    fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
-    fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
-
-    // Ancora no centro horizontal do botão, topo do botão
-    fly.style.position = 'fixed';
-    fly.style.left     = (rect.left + rect.width / 2) + 'px';
-    fly.style.top      = rect.top + 'px';
-    fly.style.transform = 'translateX(-50%)';
-    // Sobrescreve a animação CSS para não conflituar com o transform de posição
-    fly.style.animation = 'coin-spend-fly .9s cubic-bezier(.2,.8,.4,1) forwards';
-
-    document.body.appendChild(fly);
-    setTimeout(() => {
-      fly.remove();
-      _coinAnimRunning = false;
-      _runCoinAnimQueue();
-    }, 960);
-  } else {
-    _coinAnimRunning = false;
-    _runCoinAnimQueue();
-  }
-}
-
 function showCoinAnim(amount, isSpend = true) {
-  _coinAnimQueue.push({ amount, isSpend });
-  if(!_coinAnimRunning) _runCoinAnimQueue();
+  const el = document.getElementById('resMonedas');
+  if(!el) return;
+  el.parentElement.classList.remove('res-flash');
+  void el.parentElement.offsetWidth;
+  el.parentElement.classList.add('res-flash');
+  setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
+
+  // Ancora o float no próprio elemento pai (position:relative)
+  // evita qualquer problema de zoom ou coordenadas do body
+  const container = el.closest('.res') || el.parentElement;
+  container.style.position = 'relative';
+  const fly = document.createElement('div');
+  fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
+  fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
+  fly.style.cssText = `position:absolute;left:50%;top:-4px;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${isSpend?'#e74c3c':'#7ab87a'};animation:coin-fly 0.9s ease-out forwards;`;
+  container.appendChild(fly);
+  setTimeout(() => fly.remove(), 950);
 }
 
 function spendCoins(amount) {
@@ -84,7 +57,8 @@ function feedCreature() {
   const _rb = rarityBonus();
   xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
-  if(_rb.moedas > 1) earnCoins(coinBonus);
+  // Delay para a animação do bônus não sobrepor a do gasto (-10)
+  if(_rb.moedas > 1) setTimeout(() => earnCoins(coinBonus), 650);
   playAnim('anim-eat');
   spawnFoodParticles();
   showBubble(rnd(FALAS.happy));
@@ -97,8 +71,9 @@ function playCreature() {
   if(dead)     { showBubble('...💀'); return; }
   if(!hatched || !avatar) { showBubble('Nenhum avatar activo!'); return; }
   if(sleeping) { showBubble('Shh... está dormindo 💤'); return; }
+  if(modoRepouso) { showBubble('Em repouso... segure 💤 para retomar'); return; }
   if(vitals.fome < 10)   { showBubble('Estou faminto! 🍖'); return; }
-  if(vitals.energia < 20){ showBubble('Cansado demais... 😴'); return; }
+  if(vitals.energia < 10){ showBubble('Cansado demais... 😴'); return; }
   openGameSelector();
 }
 
@@ -140,40 +115,101 @@ function confirmRename() {
 }
 
 // ═══════════════════════════════════════════
-// MODO REPOUSO
+// MODO REPOUSO MANUAL
+// Long press 2s no botão Dormir ativa o repouso.
+// Toque curto continua funcionando normalmente
+// (dorme se acordado, acorda se dormindo).
 // ═══════════════════════════════════════════
-function desativarModoRepouso() {
-  modoRepouso = false;
-  const overlay = document.getElementById('repousoOverlay');
-  if(overlay) overlay.classList.remove('active');
-  addLog('Modo repouso desativado. Bem-vindo de volta! 👋', 'good');
-  showBubble('Olá de novo! 💕');
-  updateAllUI();
-  scheduleSave();
-}
-
-// ═══════════════════════════════════════════
-// BOTÃO DORMIR — toque curto = dormir/acordar
-//                toque longo (800ms) = modo repouso
-// ═══════════════════════════════════════════
-let _sleepPressTimer = null;
 
 function onSleepPointerDown() {
-  _sleepPressTimer = setTimeout(() => {
-    _sleepPressTimer = null;
-    if(!hatched || !avatar || dead) return;
-    modoRepouso = true;
-    const overlay = document.getElementById('repousoOverlay');
-    if(overlay) overlay.classList.add('active');
-    addLog('Modo repouso ativado. O avatar descansará enquanto estás fora.', 'info');
-    showBubble('Modo repouso... 💤');
-  }, 800);
+  if(!hatched || !avatar || dead) return;
+  const btn = document.getElementById('btnSleep');
+
+  // Se está em repouso → long press sai do repouso
+  if(modoRepouso) {
+    _repousoTimer = setTimeout(() => {
+      _repousoTimer = null;
+      if(btn) btn.classList.remove('pressing');
+      desativarModoRepouso();
+    }, 2000);
+    if(btn) btn.classList.add('pressing');
+    return;
+  }
+
+  // Se está dormindo → não inicia timer de repouso.
+  // O toque curto vai acordar (tratado no pointerup com _sleeping flag).
+  if(sleeping) {
+    // Marca que o pointer desceu enquanto dormia, para o pointerup acordar.
+    window._sleepBtnDownWhileSleeping = true;
+    return;
+  }
+
+  // Acordado e ativo → inicia contagem para repouso
+  _repousoTimer = setTimeout(() => {
+    _repousoTimer = null;
+    if(btn) btn.classList.remove('pressing');
+    ativarModoRepouso();
+  }, 2000);
+  if(btn) btn.classList.add('pressing');
 }
 
 function onSleepPointerUp() {
-  if(_sleepPressTimer !== null) {
-    clearTimeout(_sleepPressTimer);
-    _sleepPressTimer = null;
-    toggleSleep();
+  const btn = document.getElementById('btnSleep');
+  if(btn) btn.classList.remove('pressing');
+
+  // Caso especial: botão pressionado enquanto dormia → acordar
+  if(window._sleepBtnDownWhileSleeping) {
+    window._sleepBtnDownWhileSleeping = false;
+    wakeUp('manual');
+    return;
   }
+
+  if(_repousoTimer) {
+    // Timer ainda não disparou → foi toque curto → dormir normalmente
+    clearTimeout(_repousoTimer);
+    _repousoTimer = null;
+    if(!modoRepouso) toggleSleep();
+  }
+  // Se _repousoTimer já disparou → foi long press → não faz mais nada
+}
+
+function ativarModoRepouso() {
+  if(modoRepouso || sleeping) return;
+  modoRepouso = true;
+
+  const overlay = document.getElementById('repousoOverlay');
+  const btn     = document.getElementById('btnSleep');
+
+  if(overlay) overlay.classList.add('active');
+  if(btn) {
+    btn.querySelector('.icon').textContent            = '💤';
+    document.getElementById('sleepLabel').textContent = 'REPOUSO';
+    btn.classList.add('active-repouso');
+  }
+
+  document.getElementById('actionBtns').classList.add('repouso-mode');
+  ModalManager.closeAll();
+  addLog('Modo repouso ativado. Stats desaceleram. ⏸', 'info');
+  scheduleSave();
+}
+
+function desativarModoRepouso() {
+  if(!modoRepouso) return;
+  modoRepouso = false;
+
+  const overlay = document.getElementById('repousoOverlay');
+  const btn     = document.getElementById('btnSleep');
+
+  if(overlay) overlay.classList.remove('active');
+  if(btn) {
+    btn.querySelector('.icon').textContent            = '💤';
+    document.getElementById('sleepLabel').textContent = 'DORMIR';
+    btn.classList.remove('active-repouso');
+  }
+
+  document.getElementById('actionBtns').classList.remove('repouso-mode');
+  addLog('Modo repouso desativado. Bem-vindo de volta! ✨', 'good');
+  showBubble('De volta! ✨');
+  updateAllUI();
+  scheduleSave();
 }
