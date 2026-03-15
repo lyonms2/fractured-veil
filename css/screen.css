@@ -126,12 +126,12 @@
   100%{ transform:scale(1)    translateY(0); }
 }
 @keyframes pet-squish {
-  0%   { transform:scale(1)         translateY(0)     rotate(0deg); }
-  15%  { transform:scale(1.18,.85)  translateY(6px)   rotate(-3deg); }
-  35%  { transform:scale(.88,1.15)  translateY(-12px) rotate(3deg); }
-  55%  { transform:scale(1.12,.92)  translateY(-4px)  rotate(-2deg); }
-  75%  { transform:scale(.96,1.06)  translateY(-1px)  rotate(1deg); }
-  100% { transform:scale(1)         translateY(0)     rotate(0deg); }
+  0%   { transform:scale(1)        translateY(0)     rotate(0deg); }
+  15%  { transform:scale(1.18,.85) translateY(6px)   rotate(-3deg); }
+  35%  { transform:scale(.88,1.15) translateY(-12px) rotate(3deg); }
+  55%  { transform:scale(1.12,.92) translateY(-4px)  rotate(-2deg); }
+  75%  { transform:scale(.96,1.06) translateY(-1px)  rotate(1deg); }
+  100% { transform:scale(1)        translateY(0)     rotate(0deg); }
 }
 .food-particle {
   position:absolute; font-size:14px; pointer-events:none; z-index:22;
@@ -180,9 +180,9 @@
   background:var(--border); border-top:1px solid var(--border-glow); z-index:4;
 }
 
-/* phase label */
+/* phase label — 40px acima do chão, com folga visível */
 .phase-label {
-  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
   font-family:'Cinzel',serif; font-size:8px; font-weight:700;
   letter-spacing:3px; z-index:6; white-space:nowrap;
   padding:3px 10px; border-radius:20px; border:1px solid;
@@ -273,7 +273,7 @@
 /* ══════════════════════════════════════════════════════════════
    MODO REPOUSO MANUAL
    Tela preta · ZZZ · "MODO REPOUSO" · botão Retomar
-   Tudo centralizado, sem avatar, sem estrelas.
+   Tudo centralizado.
 ══════════════════════════════════════════════════════════════ */
 
 #repousoOverlay {
@@ -293,7 +293,6 @@
   pointer-events: all;
 }
 
-/* ZZZ — três letras escalando e subindo */
 .repouso-zzz {
   display: flex;
   align-items: flex-end;
@@ -310,12 +309,11 @@
 .repouso-zzz span:nth-child(2) { font-size: 15px; animation-delay: .6s;  }
 .repouso-zzz span:nth-child(3) { font-size: 20px; animation-delay: 1.2s; }
 @keyframes zzz-rise {
-  0%       { opacity: 0;  transform: translateY(8px)  scale(.7); }
-  25%, 55% { opacity: 1;  transform: translateY(-3px) scale(1);  }
-  100%     { opacity: 0;  transform: translateY(-16px) scale(.8);}
+  0%       { opacity: 0;  transform: translateY(8px)   scale(.7); }
+  25%, 55% { opacity: 1;  transform: translateY(-3px)  scale(1);  }
+  100%     { opacity: 0;  transform: translateY(-16px) scale(.8); }
 }
 
-/* Label */
 .repouso-label {
   font-family: 'Cinzel', serif;
   font-size: 9px;
@@ -329,7 +327,6 @@
   50%       { opacity: 1;   }
 }
 
-/* Botão Retomar */
 .repouso-btn-retomar {
   padding: 8px 22px;
   background: transparent;
