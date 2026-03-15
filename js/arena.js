@@ -538,7 +538,7 @@ function _renderPartida(salaId, sala) {
 
       <div class="arena-vs-row">
         <div class="arena-vs-lado" id="vsEu">
-          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 52, 52)}</div>
+          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 38, 38)}</div>
           <div class="arena-vs-nome">${meu.nome||'Você'}</div>
           <div class="arena-vs-stars" id="starsEu">${_pv(placar[walletAddress]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaEu">❓</div>
@@ -553,7 +553,7 @@ function _renderPartida(salaId, sala) {
         </div>
 
         <div class="arena-vs-lado" id="vsOp">
-          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 52, 52)}</div>
+          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 38, 38)}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-stars" id="starsOp">${_pv(placar[opWallet]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaOp">❓</div>
@@ -608,9 +608,9 @@ function _iniciarBarraTurno(salaId, opWallet) {
 let _arenaAnimando = false;
 
 function _escutarSala(salaId, opWallet) {
-  _arenaAnimando = false;
-  const salaRef  = rtdb().ref(`arena/salas/${salaId}`);
-  let   _turnoAnterior = null;
+  _arenaAnimando    = false;
+  let _turnoAnterior = null;
+  const salaRef      = rtdb().ref(`arena/salas/${salaId}`);
 
   salaRef.on('value', snap => {
     const s = snap.val();
@@ -619,31 +619,25 @@ function _escutarSala(salaId, opWallet) {
     const euSouCriador = walletAddress === s.criador;
     const turno        = s.turno || 1;
 
-    // Turno mudou para minha vez — desbloqueia botões e inicia barra
+    // Só age quando o turno realmente mudou
     if(turno !== _turnoAnterior) {
       _turnoAnterior = turno;
-      const minhaTurno = (euSouCriador && turno === 1) || (!euSouCriador && turno === 2);
 
-      if(minhaTurno && !_arenaEscolhaFeita) {
-        // Oponente escolheu — agora é minha vez
-        const opEl = document.getElementById(euSouCriador ? 'escolhaOp' : 'escolhaEu');
-        if(opEl) opEl.textContent = '✅';
-        const st = document.getElementById('arenaStatus');
-        if(st) st.textContent = '⚔️ Escolha sua jogada!';
-        document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
-        const label = document.getElementById('arenaTurnoLabel');
-        if(label) label.textContent = 'SUA VEZ';
-        _pararTimer();
-        _iniciarBarraTurno(salaId, opWallet);
-      } else if(!minhaTurno) {
-        // Minha vez acabou — bloqueia e mostra espera
-        document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = true);
-        const bar   = document.getElementById('arenaTurnoBar');
-        const label = document.getElementById('arenaTurnoLabel');
-        if(bar)   { bar.style.width = '100%'; bar.style.background = 'rgba(255,255,255,.08)'; }
-        if(label) { label.textContent = 'AGUARDE'; label.style.color = 'var(--muted)'; }
-        const st = document.getElementById('arenaStatus');
-        if(st && _arenaEscolhaFeita) st.textContent = '⏳ Aguardando oponente...';
+      // Turno 2: criador já escolheu → vez do oponente
+      if(turno === 2) {
+        if(euSouCriador) {
+          // Sou o criador — já escolhi, aguardando oponente
+          // UI já foi atualizada em fazerEscolha, não faz nada aqui
+        } else {
+          // Sou o oponente — desbloqueia minha vez
+          const st = document.getElementById('arenaStatus');
+          if(st) st.textContent = '⚔️ Escolha sua jogada!';
+          document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
+          const label = document.getElementById('arenaTurnoLabel');
+          if(label) { label.textContent = 'SUA VEZ'; label.style.color = 'var(--gold)'; }
+          _pararTimer();
+          _iniciarBarraTurno(salaId, opWallet);
+        }
       }
     }
 
@@ -656,7 +650,7 @@ function _escutarSala(salaId, opWallet) {
       return;
     }
 
-    // finalizada sem roundResult = reconexão
+    // finalizada sem roundResult = reconexão/edge case
     if(s.status === 'finalizada' && !s.roundResult) {
       _arenaAnimando = true;
       salaRef.off('value');
@@ -676,9 +670,8 @@ async function fazerEscolha(salaId, escolha) {
   _pararTimer();
 
   document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = true);
-  const euEl = document.getElementById('escolhaEu');
-  const st   = document.getElementById('arenaStatus');
 
+  // Grava escolha no RTDB
   await rtdb().ref(`arena/salas/${salaId}/jogadores/${walletAddress}`).update({
     escolha, pronto: true,
   });
@@ -688,21 +681,43 @@ async function fazerEscolha(salaId, escolha) {
   if(!s) return;
 
   const euSouCriador = walletAddress === s.criador;
+  const st   = document.getElementById('arenaStatus');
+  const euEl = document.getElementById('escolhaEu');
+  const opEl = document.getElementById('escolhaOp');
+  const bar  = document.getElementById('arenaTurnoBar');
+  const lbl  = document.getElementById('arenaTurnoLabel');
 
   if(euSouCriador) {
-    // Turno 1 → criador escolheu → avança para turno 2
+    // ── Turno 1: criador escolheu ──
+    // Atualiza só o meu lado (escolhaEu = meu lado quando sou criador)
     if(euEl) euEl.textContent = '✅';
     if(st)   st.textContent   = '⏳ Aguardando oponente...';
+    // Para barra e mostra neutra
+    if(bar) { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.background = 'rgba(255,255,255,.08)'; }
+    if(lbl) { lbl.textContent = 'AGUARDE'; lbl.style.color = 'var(--muted)'; }
+    // Avança turno para 2
     await rtdb().ref(`arena/salas/${salaId}`).update({ turno: 2 });
+
   } else {
-    // Turno 2 → oponente escolheu → calcula resultado
-    const opEl = document.getElementById('escolhaOp');
+    // ── Turno 2: oponente escolheu ──
+    // Atualiza só o meu lado (escolhaOp = meu lado quando sou oponente)
     if(opEl) opEl.textContent = '✅';
     if(st)   st.textContent   = '⚡ Calculando resultado...';
+    if(bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
+    if(lbl)   lbl.textContent = '';
 
-    const escolhaCriador  = s.jogadores[s.criador]?.escolha;
+    // Seta animando ANTES de calcular para o listener não disparar em paralelo
+    _arenaAnimando = true;
+
+    const escolhaCriador = s.jogadores[s.criador]?.escolha;
     if(escolhaCriador) {
       await _gravarRoundResult(salaId, s, escolhaCriador, escolha, s.criador, s.oponente);
+      // Busca sala atualizada com roundResult para animar
+      const snapFinal = await rtdb().ref(`arena/salas/${salaId}`).once('value');
+      const sFinal    = snapFinal.val();
+      if(sFinal?.roundResult) {
+        _animarRevelacao(salaId, sFinal, s.criador);
+      }
     }
   }
 }
@@ -920,13 +935,13 @@ async function _renderResultado(sala, opWallet) {
 
       <div class="arena-vs-row" style="margin:12px 0;">
         <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 48, 48)}</div>
+          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 36, 36)}</div>
           <div class="arena-vs-nome">${meu.nome||'Você'}</div>
           <div class="arena-vs-pts" style="font-size:20px;">${placar[walletAddress]||0}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci&&!empate?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 48, 48)}</div>
+          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 36, 36)}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:20px;">${placar[opWallet]||0}</div>
         </div>
