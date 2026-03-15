@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/arena-reset-ranking",
+      "schedule": "0 0 * * 1"
+    }
+  ]
+}
