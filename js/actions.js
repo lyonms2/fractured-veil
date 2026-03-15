@@ -17,15 +17,15 @@ function showCoinAnim(amount, isSpend = true) {
   el.parentElement.classList.add('res-flash');
   setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
 
-  // Detecta o zoom real aplicado no html para corrigir as coordenadas do getBoundingClientRect
-  const zoomFactor = el.getBoundingClientRect().width / el.offsetWidth || 1;
-  const rect = el.getBoundingClientRect();
-  const fly  = document.createElement('div');
+  // Ancora o float no próprio elemento pai (position:relative)
+  // evita qualquer problema de zoom ou coordenadas do body
+  const container = el.closest('.res') || el.parentElement;
+  container.style.position = 'relative';
+  const fly = document.createElement('div');
   fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
   fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
-  fly.style.left  = (rect.left / zoomFactor) + 'px';
-  fly.style.top   = (rect.top  / zoomFactor) + 'px';
-  document.body.appendChild(fly);
+  fly.style.cssText = `position:absolute;left:50%;top:-4px;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${isSpend?'#e74c3c':'#7ab87a'};animation:coin-fly 0.9s ease-out forwards;`;
+  container.appendChild(fly);
   setTimeout(() => fly.remove(), 950);
 }
 
