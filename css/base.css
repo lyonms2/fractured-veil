@@ -23,11 +23,12 @@ body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }
-/* ── Desktop: +10% de zoom (175% → 192%) ── */
+
+/* ── Desktop: zoom 1.5 escala tudo parelho (letras, px, bordas, ícones) ── */
 @media(min-width:681px) {
-  html { font-size: 150%; }
-  .app { transform-origin: top center; }
+  html { zoom: 1.5; }
 }
+
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 body::after {
   content:''; position:fixed; inset:0;
