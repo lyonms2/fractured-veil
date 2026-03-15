@@ -629,10 +629,10 @@ function _pararSalaListener() {
 
 function _escutarSala(salaId, opWallet) {
   _arenaAnimando = false;
-  // Para qualquer listener de sala anterior
   _pararSalaListener();
 
-  let _turnoAnterior = null;
+  let _turnoAnterior  = null;
+  let _primeiroDisparo = true; // ignora roundResult no estado inicial
   _arenaSalaRef = rtdb().ref(`arena/salas/${salaId}`);
 
   _arenaSalaRef.on('value', snap => {
@@ -642,21 +642,27 @@ function _escutarSala(salaId, opWallet) {
     const euSouCriador = walletAddress === s.criador;
     const turno        = s.turno || 1;
 
+    // Turno mudou → atualiza UI
     if(turno !== _turnoAnterior) {
       _turnoAnterior = turno;
-      if(turno === 2) {
-        if(!euSouCriador) {
-          const st = document.getElementById('arenaStatus');
-          if(st) st.textContent = '⚔️ Escolha sua jogada!';
-          document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
-          const label = document.getElementById('arenaTurnoLabel');
-          if(label) { label.textContent = 'SUA VEZ'; label.style.color = 'var(--gold)'; }
-          _pararTimer();
-          _iniciarBarraTurno(salaId, opWallet);
-        }
+      if(turno === 2 && !euSouCriador) {
+        const st = document.getElementById('arenaStatus');
+        if(st) st.textContent = '⚔️ Escolha sua jogada!';
+        document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
+        const label = document.getElementById('arenaTurnoLabel');
+        if(label) { label.textContent = 'SUA VEZ'; label.style.color = 'var(--gold)'; }
+        _pararTimer();
+        _iniciarBarraTurno(salaId, opWallet);
       }
     }
 
+    // No primeiro disparo: processa turno mas ignora roundResult residual
+    if(_primeiroDisparo) {
+      _primeiroDisparo = false;
+      return; // não anima com dados do estado inicial
+    }
+
+    // roundResult gravado após o listener ser criado → animar
     if(s.roundResult && !_arenaAnimando) {
       _arenaAnimando = true;
       _pararSalaListener();
@@ -665,6 +671,7 @@ function _escutarSala(salaId, opWallet) {
       return;
     }
 
+    // finalizada sem roundResult = reconexão
     if(s.status === 'finalizada' && !s.roundResult) {
       _arenaAnimando = true;
       _pararSalaListener();
