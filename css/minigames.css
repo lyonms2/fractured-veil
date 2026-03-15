@@ -6,19 +6,20 @@
   opacity:0; pointer-events:none;
   transition:opacity .3s ease;
   gap:0;
+  padding:16px 12px;
 }
 #jkpModal.open { opacity:1; pointer-events:all; }
 
 .jkp-title {
   font-family:'Cinzel',serif; font-size:8px; letter-spacing:4px;
-  color:var(--muted); margin-bottom:14px;
+  color:var(--muted); margin-bottom:10px;
 }
 
 /* Arena com os dois lados */
 .jkp-arena {
   display:flex; align-items:center; justify-content:center;
   gap:12px; width:100%; padding:0 12px;
-  margin-bottom:14px;
+  margin-bottom:8px;
 }
 
 .jkp-side {
@@ -59,7 +60,7 @@
   height:22px; display:flex; align-items:center;
   opacity:0; transform:scale(.6);
   transition:all .35s cubic-bezier(.34,1.6,.64,1);
-  margin-bottom:10px;
+  margin-bottom:4px;
 }
 .jkp-result.show { opacity:1; transform:scale(1); }
 .jkp-result.win  { color:var(--comum);   text-shadow:0 0 14px rgba(122,184,122,.6); }
@@ -70,13 +71,13 @@
 .jkp-rewards {
   font-family:'Cinzel',serif; font-size:7px; color:var(--muted);
   height:16px; opacity:0; transition:opacity .3s .2s;
-  margin-bottom:14px;
+  margin-bottom:10px;
 }
 .jkp-rewards.show { opacity:1; }
 
-/* Choice buttons */
+/* Choice buttons — mais próximos da arena, mais longe dos btns */
 .jkp-choices {
-  display:flex; gap:10px; margin-bottom:12px;
+  display:flex; gap:10px; margin-bottom:20px;
 }
 .jkp-choice {
   width:52px; height:52px; border-radius:10px;
@@ -95,8 +96,13 @@
   white-space:nowrap;
 }
 
-/* Buttons row */
-.jkp-btns { display:flex; gap:8px; }
+/* Buttons row — separador visual */
+.jkp-btns {
+  display:flex; gap:8px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+  width:100%; justify-content:center;
+}
 .jkp-btn {
   padding:7px 16px; border-radius:4px; cursor:pointer;
   font-family:'Cinzel',serif; font-size:7px; letter-spacing:2px;
