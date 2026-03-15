@@ -31,13 +31,13 @@ var JKP_OPCOES    = ['pedra', 'papel', 'tesoura'];
 var JKP_VENCE     = { pedra: 'tesoura', tesoura: 'papel', papel: 'pedra' };
 
 // ── Estado ──
-let _arenaAtiva          = false;
-let _arenaPartidaId      = null;
-let _arenaLobbyRef       = null;   // ref do nó do jogador no lobby
-let _arenaLobbyListRef   = null;   // ref da fila inteira (listener)
-let _arenaHeartbeat      = null;
-let _arenaTimerInterval  = null;
-let _arenaEscolhaFeita   = false;
+var _arenaAtiva          = false;
+var _arenaPartidaId      = null;
+var _arenaLobbyRef       = null;   // ref do nó do jogador no lobby
+var _arenaLobbyListRef   = null;   // ref da fila inteira (listener)
+var _arenaHeartbeat      = null;
+var _arenaTimerInterval  = null;
+var _arenaEscolhaFeita   = false;
 
 // ── Sanitiza wallet → chave RTDB válida ──
 // O RTDB não aceita '.' '$' '#' '[' ']' '/' em chaves
