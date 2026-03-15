@@ -1319,4 +1319,5 @@ window.fazerEscolha                     = fazerEscolha;
 window.arenaShowTab                     = arenaShowTab;
 window.iniciarListenerDesafiosRecebidos = iniciarListenerDesafiosRecebidos;
 window._renderLobby                     = _renderLobby;
+window._limparSalasAntigas              = _limparSalasAntigas;
 } // end arena guard
