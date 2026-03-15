@@ -451,6 +451,15 @@ async function aceitarDesafio(salaId) {
   if(!rtdb() || !walletAddress || !avatar) return;
   if(!_podePagar()) { showBubble('Saldo insuficiente para aceitar!'); return; }
 
+  // Verifica se a sala ainda está aguardando antes de debitar
+  const snapCheck = await rtdb().ref(`arena/salas/${salaId}/status`).once('value');
+  if(snapCheck.val() !== 'aguardando') {
+    addLog('Desafio já foi cancelado ou expirou.', 'bad');
+    showBubble('Desafio não disponível!');
+    _renderLobby();
+    return;
+  }
+
   _debitarAposta();
   _arenaPartidaId = salaId;
 
@@ -498,74 +507,109 @@ function _renderPartida(salaId, sala) {
   const usaCris  = aposta.cristais > 0;
   const bruto    = usaCris ? aposta.cristais * 2 : aposta.moedas * 2;
 
+  // Indicador de pontos como corações/estrelas
+  function _pontosVis(pts) {
+    return '⭐'.repeat(pts) + '☆'.repeat(Math.max(0, 2 - pts));
+  }
+
   el.innerHTML = `
     <div class="arena-partida">
+
+      <!-- Header com rodada e prêmio -->
       <div class="arena-partida-header">
-        <div class="arena-title" style="font-size:8px;">⚔️ RODADA ${rodada}/${ARENA_MAX_RODADAS}</div>
-        <div class="arena-aposta-info" style="flex-direction:row;padding:4px 10px;gap:10px;margin-top:4px;">
-          <span>💰 ${_premioLiquido(bruto)} ${usaCris?'💎':'🪙'} em jogo</span>
-          <span style="color:var(--muted);">Sala #${salaId.slice(-6).toUpperCase()}</span>
-        </div>
+        <div class="arena-rodada-badge">RODADA ${rodada} <span style="color:var(--muted)">/ ${ARENA_MAX_RODADAS}</span></div>
+        <div class="arena-premio-badge">💰 ${_premioLiquido(bruto)} ${usaCris?'💎':'🪙'}</div>
       </div>
 
+      <!-- VS -->
       <div class="arena-vs-row">
         <div class="arena-vs-lado" id="vsEu">
           <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 52, 52)}</div>
           <div class="arena-vs-nome">${meu.nome||'Você'}</div>
-          <div class="arena-vs-pts" id="ptsEu">${placar[walletAddress]||0}</div>
+          <div class="arena-vs-stars" id="starsEu">${_pontosVis(placar[walletAddress]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaEu">❓</div>
         </div>
 
         <div class="arena-vs-centro">
           <div class="arena-vs-label">VS</div>
           <div class="arena-timer" id="arenaTimer">${ARENA_TIMER_SEG}</div>
-          <div style="font-size:6px;color:var(--muted);">seg</div>
+          <div style="font-size:6px;color:var(--muted);margin-top:2px;">seg</div>
         </div>
 
         <div class="arena-vs-lado" id="vsOp">
           <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 52, 52)}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
-          <div class="arena-vs-pts" id="ptsOp">${placar[opWallet]||0}</div>
+          <div class="arena-vs-stars" id="starsOp">${_pontosVis(placar[opWallet]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaOp">❓</div>
         </div>
       </div>
 
-      <div class="arena-partida-status" id="arenaStatus">Escolha sua jogada!</div>
+      <!-- Status / Countdown -->
+      <div class="arena-partida-status" id="arenaStatus">⚔️ Escolha sua jogada!</div>
 
+      <!-- Botões -->
       <div class="arena-escolhas" id="arenaEscolhas">
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','pedra')">🪨<span>PEDRA</span></button>
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','papel')">📄<span>PAPEL</span></button>
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','tesoura')">✂️<span>TESOURA</span></button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','pedra')">
+          🪨<span>PEDRA</span>
+        </button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','papel')">
+          📄<span>PAPEL</span>
+        </button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','tesoura')">
+          ✂️<span>TESOURA</span>
+        </button>
       </div>
 
-      <div class="arena-rodada-resultado" id="arenaRodadaRes" style="display:none;"></div>
+      <!-- Banner resultado da rodada — aparece após revelação -->
+      <div class="arena-round-banner" id="arenaRoundBanner" style="display:none;"></div>
+
     </div>
   `;
 
   _iniciarTimer(salaId, opWallet);
+  _escutarSala(salaId, opWallet);
+}
 
-  // Listener da sala — detecta quando os dois escolheram
+// ── Listener central da sala ──
+function _escutarSala(salaId, opWallet) {
   const salaRef = rtdb().ref(`arena/salas/${salaId}`);
   salaRef.on('value', snap => {
     const s = snap.val();
     if(!s) return;
 
-    // Atualiza placar
-    const pe = document.getElementById('ptsEu');
-    const po = document.getElementById('ptsOp');
-    if(pe) pe.textContent = s.placar?.[walletAddress] || 0;
-    if(po) po.textContent = s.placar?.[opWallet]      || 0;
+    // Atualiza placar em tempo real
+    const se = document.getElementById('starsEu');
+    const so = document.getElementById('starsOp');
+    function _pv(n) { return '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 2 - n)); }
+    if(se) se.textContent = _pv(s.placar?.[walletAddress]||0);
+    if(so) so.textContent = _pv(s.placar?.[opWallet]     ||0);
 
     const jEu = s.jogadores?.[walletAddress];
     const jOp = s.jogadores?.[opWallet];
 
-    if(jEu?.pronto && jOp?.pronto) {
-      salaRef.off('value');
-      _pararTimer();
-      _revelarRodada(salaId, s, opWallet);
+    // Mostra que eu já escolhi (sem revelar ao oponente)
+    if(jEu?.pronto) {
+      const euEl = document.getElementById('escolhaEu');
+      if(euEl && euEl.textContent === '❓') euEl.textContent = '✅';
+    }
+    // Mostra que oponente já escolheu
+    if(jOp?.pronto) {
+      const opEl = document.getElementById('escolhaOp');
+      if(opEl && opEl.textContent === '❓') opEl.textContent = '⏳';
+      const st = document.getElementById('arenaStatus');
+      if(st && _arenaEscolhaFeita) st.textContent = '⚡ Oponente pronto! Revelando...';
     }
 
-    if(s.status === 'finalizada') {
+    // Ambos prontos — revelar (campo roundResult gravado pelo criador)
+    if(jEu?.pronto && jOp?.pronto && s.roundResult) {
+      salaRef.off('value');
+      _pararTimer();
+      _animarRevelacao(salaId, s, opWallet);
+      return;
+    }
+
+    // Finalizada sem passar por roundResult (reconexão)
+    if(s.status === 'finalizada' && (!jEu?.pronto || !jOp?.pronto || !s.roundResult)) {
       salaRef.off('value');
       _pararTimer();
       _renderResultado(s, opWallet);
@@ -585,11 +629,64 @@ async function fazerEscolha(salaId, escolha) {
   const euEl = document.getElementById('escolhaEu');
   if(euEl) euEl.textContent = '✅';
   const st = document.getElementById('arenaStatus');
-  if(st) st.textContent = 'Aguardando oponente...';
+  if(st) st.textContent = '⏳ Aguardando oponente...';
   document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = true);
 
   await rtdb().ref(`arena/salas/${salaId}/jogadores/${walletAddress}`).update({
     escolha, pronto: true,
+  });
+
+  // Verifica se o oponente já escolheu — se sim, o criador calcula o roundResult
+  const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
+  const s    = snap.val();
+  if(!s) return;
+
+  const wallets  = Object.keys(s.jogadores);
+  const criador  = wallets[0];
+  const opWallet = wallets.find(w => w !== walletAddress);
+  const jOp      = s.jogadores?.[opWallet];
+
+  // Só o criador grava o roundResult para evitar duplicidade
+  if(criador === walletAddress && jOp?.pronto && jOp?.escolha) {
+    await _calcularEGravarRound(salaId, s, opWallet);
+  }
+}
+
+// Calcula resultado e grava no RTDB para os dois verem simultaneamente
+async function _calcularEGravarRound(salaId, sala, opWallet) {
+  const jEu = sala.jogadores[walletAddress];
+  const jOp = sala.jogadores[opWallet];
+  if(!jEu?.escolha || !jOp?.escolha) return;
+
+  const res = _jkpRes(jEu.escolha, jOp.escolha);
+  const p   = { ...(sala.placar||{}) };
+  if(res === 'vitoria')  p[walletAddress] = (p[walletAddress]||0) + 1;
+  if(res === 'derrota')  p[opWallet]      = (p[opWallet]     ||0) + 1;
+
+  const novaRodada = (sala.rodada||1) + 1;
+  const fim = p[walletAddress] >= 2 || p[opWallet] >= 2 || novaRodada > ARENA_MAX_RODADAS;
+
+  let vencedor = null;
+  if(fim) {
+    if     (p[walletAddress] > p[opWallet]) vencedor = walletAddress;
+    else if(p[opWallet] > p[walletAddress]) vencedor = opWallet;
+    else                                     vencedor = 'empate';
+  }
+
+  // Grava roundResult — ambos os jogadores lêem isso no listener
+  await rtdb().ref(`arena/salas/${salaId}`).update({
+    roundResult: {
+      escolhaCriador: jEu.escolha,
+      escolhaOponente: jOp.escolha,
+      resultado: res,         // do ponto de vista do criador
+      placarAtualizado: p,
+      fim,
+      vencedor,
+    },
+    placar:   p,
+    rodada:   novaRodada,
+    status:   fim ? 'finalizada' : 'em_jogo',
+    vencedor: vencedor,
   });
 }
 
@@ -614,69 +711,107 @@ function _iniciarTimer(salaId, opWallet) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// REVELAR RODADA
+// ANIMAÇÃO DE REVELAÇÃO — roda nos dois lados simultaneamente
 // ═══════════════════════════════════════════════════════════════════
 
-async function _revelarRodada(salaId, sala, opWallet) {
-  const jEu  = sala.jogadores[walletAddress];
-  const jOp  = sala.jogadores[opWallet];
-  const res  = _jkpRes(jEu.escolha, jOp.escolha);
+async function _animarRevelacao(salaId, sala, opWallet) {
+  const rr      = sala.roundResult;
+  const wallets = Object.keys(sala.jogadores);
+  const criador = wallets[0];
+  const euSouCriador = criador === walletAddress;
 
-  // Mostra escolhas
+  // Do ponto de vista de cada jogador:
+  // criador: resultado já está em rr.resultado
+  // oponente: inverte vitoria/derrota
+  let res;
+  if(euSouCriador) {
+    res = rr.resultado;
+  } else {
+    const inv = { vitoria:'derrota', derrota:'vitoria', empate:'empate' };
+    res = inv[rr.resultado];
+  }
+
+  // Escolhas de cada lado da tela
+  const minhaEscolha = euSouCriador ? rr.escolhaCriador  : rr.escolhaOponente;
+  const opEscolha    = euSouCriador ? rr.escolhaOponente : rr.escolhaCriador;
+
+  // Fase 1 — countdown "3 2 1"
+  const st = document.getElementById('arenaStatus');
   const eEu = document.getElementById('escolhaEu');
   const eOp = document.getElementById('escolhaOp');
-  if(eEu) eEu.textContent = JKP_EMOJIS[jEu.escolha];
-  if(eOp) eOp.textContent = JKP_EMOJIS[jOp.escolha];
 
-  // Resultado da rodada
-  const resEl = document.getElementById('arenaRodadaRes');
-  if(resEl) {
-    resEl.style.display = '';
-    const msgs = { vitoria:'✅ VOCÊ VENCEU A RODADA!', derrota:'❌ VOCÊ PERDEU A RODADA', empate:'🤝 EMPATE' };
-    const cors = { vitoria:'#7ab87a', derrota:'#e74c3c', empate:'var(--gold)' };
-    resEl.innerHTML = `<span style="color:${cors[res]};font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;">${msgs[res]}</span>`;
+  for(const n of ['3','2','1']) {
+    if(st) { st.textContent = n; st.className = 'arena-partida-status arena-countdown'; }
+    await _sleep(500);
+  }
+  if(st) { st.textContent = '⚡'; st.className = 'arena-partida-status arena-countdown'; }
+  await _sleep(300);
+
+  // Fase 2 — revela escolhas com animação pop
+  if(eEu) { eEu.textContent = JKP_EMOJIS[minhaEscolha]; eEu.classList.add('pop'); }
+  if(eOp) { eOp.textContent = JKP_EMOJIS[opEscolha];    eOp.classList.add('pop'); }
+  await _sleep(400);
+
+  // Fase 3 — destaca vencedor/perdedor nos cards
+  const vsEu = document.getElementById('vsEu');
+  const vsOp = document.getElementById('vsOp');
+  if(res === 'vitoria') {
+    vsEu?.classList.add('arena-vencedor');
+    vsOp?.classList.add('arena-perdedor');
+  } else if(res === 'derrota') {
+    vsOp?.classList.add('arena-vencedor');
+    vsEu?.classList.add('arena-perdedor');
+  } else {
+    vsEu?.classList.add('arena-empate');
+    vsOp?.classList.add('arena-empate');
   }
 
-  // Só o criador atualiza o placar
-  const criador = Object.keys(sala.jogadores)[0];
-  if(criador === walletAddress) {
-    const p = { ...(sala.placar||{}) };
-    if(res === 'vitoria')  p[walletAddress] = (p[walletAddress]||0) + 1;
-    if(res === 'derrota')  p[opWallet]      = (p[opWallet]     ||0) + 1;
-
-    const novaRodada = (sala.rodada||1) + 1;
-    const fim = p[walletAddress] >= 2 || p[opWallet] >= 2 || novaRodada > ARENA_MAX_RODADAS;
-
-    let vencedor = null;
-    if(fim) {
-      if(p[walletAddress] > p[opWallet])  vencedor = walletAddress;
-      else if(p[opWallet] > p[walletAddress]) vencedor = opWallet;
-      else vencedor = 'empate';
-    }
-
-    await rtdb().ref(`arena/salas/${salaId}`).update({
-      placar:   p,
-      rodada:   novaRodada,
-      status:   fim ? 'finalizada' : 'em_jogo',
-      vencedor: vencedor,
-    });
+  // Fase 4 — banner de resultado
+  const banner = document.getElementById('arenaRoundBanner');
+  if(banner) {
+    const cfg = {
+      vitoria: { txt:'🏆 VOCÊ VENCEU A RODADA!', cor:'#7ab87a', bg:'rgba(122,184,122,.12)' },
+      derrota: { txt:'💀 VOCÊ PERDEU A RODADA',  cor:'#e74c3c', bg:'rgba(231,76,60,.10)' },
+      empate:  { txt:'🤝 EMPATE!',               cor:'var(--gold)', bg:'rgba(201,168,76,.10)' },
+    };
+    const c = cfg[res];
+    banner.style.display = '';
+    banner.style.background = c.bg;
+    banner.innerHTML = `<span style="color:${c.cor};font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:2px;">${c.txt}</span>`;
+    banner.classList.add('pop');
   }
 
-  // Aguarda 2.5s e avança
-  setTimeout(async () => {
+  // Atualiza placar visualmente
+  function _pv(n) { return '⭐'.repeat(n) + '☆'.repeat(Math.max(0, 2-n)); }
+  const p  = rr.placarAtualizado || sala.placar || {};
+  const se = document.getElementById('starsEu');
+  const so = document.getElementById('starsOp');
+  if(se) { se.textContent = _pv(p[walletAddress]||0); se.classList.add('pop'); }
+  if(so) { so.textContent = _pv(p[opWallet]     ||0); so.classList.add('pop'); }
+
+  if(st) { st.textContent = ''; st.className = 'arena-partida-status'; }
+
+  await _sleep(2200);
+
+  // Avança
+  if(rr.fim) {
+    // Busca sala atualizada para ter o vencedor correto
     const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
-    const s = snap.val();
-    if(!s) return;
-    if(s.status === 'finalizada') {
-      _renderResultado(s, opWallet);
-    } else {
-      // Limpa escolhas e inicia nova rodada
-      await rtdb().ref(`arena/salas/${salaId}/jogadores/${walletAddress}`).update({ escolha: null, pronto: false });
-      _arenaEscolhaFeita = false;
-      _renderPartida(salaId, s);
-    }
-  }, 2500);
+    _renderResultado(snap.val(), opWallet);
+  } else {
+    // Limpa escolhas para próxima rodada
+    await rtdb().ref(`arena/salas/${salaId}`).update({
+      roundResult: null,
+      [`jogadores/${walletAddress}/escolha`]: null,
+      [`jogadores/${walletAddress}/pronto`]:  false,
+    });
+    _arenaEscolhaFeita = false;
+    const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
+    _renderPartida(salaId, snap.val());
+  }
 }
+
+function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ═══════════════════════════════════════════════════════════════════
 // RESULTADO FINAL
@@ -950,6 +1085,24 @@ function _renderDesafioPendente(sala) {
       </div>
     </div>
   `;
+
+  // Listener — detecta se o criador cancelou antes do oponente aceitar
+  const salaRef = rtdb().ref(`arena/salas/${sala.id}/status`);
+  salaRef.on('value', snap => {
+    const status = snap.val();
+    if(status === 'cancelada') {
+      salaRef.off('value');
+      addLog('Desafio cancelado pelo oponente.', 'bad');
+      showBubble('Desafio cancelado! 😔');
+      // Libera o lobby do oponente
+      const fila = _getFila();
+      rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
+      _arenaAtiva     = false;
+      _arenaPartidaId = null;
+      _renderLobby();
+    }
+    // Se virou em_jogo (aceito por outro meio / reconexão), não faz nada — aceitarDesafio cuida
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
