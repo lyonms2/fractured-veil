@@ -1,15 +1,14 @@
+// Guard: previne execução dupla se carregado duas vezes
+if(typeof window._arenaLoaded !== 'undefined') {
+  console.warn('[ARENA] arquivo carregado duas vezes — ignorando segunda carga.');
+} else {
+window._arenaLoaded = true;
+
 // ═══════════════════════════════════════════════════════════════════
 // ARENA DIMENSIONAL — Jo-Ken-Pô Multiplayer
 // ═══════════════════════════════════════════════════════════════════
 
-// Debug: detecta carregamento duplo
-if(typeof window._arenaLoaded !== 'undefined') {
-  console.error('[ARENA] ERRO: arena.js carregado DUAS VEZES! Verifique o HTML.');
-  console.trace();
-} else {
-  window._arenaLoaded = true;
-  console.log('[ARENA] arena.js carregado pela primeira vez — ok');
-}
+
 
 // ── Referência ao Realtime Database ──
 function rtdb() { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
@@ -1320,3 +1319,4 @@ window.fazerEscolha                     = fazerEscolha;
 window.arenaShowTab                     = arenaShowTab;
 window.iniciarListenerDesafiosRecebidos = iniciarListenerDesafiosRecebidos;
 window._renderLobby                     = _renderLobby;
+} // end arena guard
