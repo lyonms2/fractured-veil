@@ -2,7 +2,7 @@
 // MODAL MANAGER — um modal de cada vez
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
-  'jkpModal','gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
+  'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
   'arenaModal'
 ];
@@ -11,7 +11,7 @@ const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','jkpModal','memoriaModal','simonModal','velhaModal','arenaModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -83,12 +83,6 @@ function openGameSelector() {
   }
 
   // ── Reward labels ──
-  const jkpEl = document.getElementById('rewardJkp');
-  if(jkpEl) {
-    const xpMin = r(d.xp*0.1*rb.xp); const xpMax = r(d.xp*1.0*rb.xp);
-    const cMin  = r(d.coins*0.1*rb.moedas); const cMax = r(d.coins*1.0*rb.moedas);
-    jkpEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
-  }
   const memEl = document.getElementById('rewardMemoria');
   if(memEl) {
     const xpMin = r(d.xp*1.0*rb.xp); const xpMax = r(d.xp*1.6*rb.xp);
@@ -117,10 +111,9 @@ function closeGameSelector() {
 
 function openMinigame(type) {
   ModalManager.close('gameSelector');
-  if(type === 'jkp')     { openJkp();                                        return; }
-  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha();  return; }
-  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria();return; }
-  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();  return; }
+  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha();   return; }
+  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
+  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
 }
 
 function openMiniModal(id) {
@@ -132,7 +125,7 @@ function closeMiniModal(id) {
   ModalManager.close(id);
 }
 
-// ── Dificuldades (rebalanceado) ──
+// ── Dificuldades ──
 const DIFF_TIERS = [
   { tier:0, label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
   { tier:1, label:'MÉDIO',   xp:28,  coins:52,  minNivel:6  },
@@ -160,13 +153,6 @@ function setDifficulty(tier) {
   openGameSelector();
 }
 
-// ── miniReward ──
-// CORREÇÃO: NÃO desconta energia nem fome aqui.
-// Cada jogo é responsável por descontar seus próprios custos de stats
-// para evitar duplo desconto (ex: Jo-Ken-Pô já descontava -15 energia
-// E miniReward descontava mais -15 em Memória/Simon).
-// O desconto padrão por jogar é: -15 energia, -5 fome — aplicado
-// UMA VEZ por sessão de jogo, diretamente em cada função de vitória/derrota.
 function miniReward(xpMult, coinMult, vinculoGain = 3) {
   const d  = miniDifficulty();
   const rb = rarityBonus();
@@ -180,9 +166,6 @@ function miniReward(xpMult, coinMult, vinculoGain = 3) {
   return { xpGain, coinGain };
 }
 
-// ── applyGameCost ──
-// Desconta o custo padrão de jogar uma rodada: -10 energia, -5 fome.
-// -10 (era -15) permite ~10 jogos por ciclo de energia em vez de 6.
 function applyGameCost() {
   vitals.energia = Math.max(0, vitals.energia - 10);
   vitals.fome    = Math.max(0, vitals.fome    - 5);
