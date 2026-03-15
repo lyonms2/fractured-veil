@@ -241,3 +241,154 @@
 .arena-pool-sub {
   font-size: 6px; color: var(--muted); margin-top: 4px; letter-spacing: .5px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PARTE 2 — Partida, Timer, Resultado
+══════════════════════════════════════════════════════════════ */
+
+/* ── Sala de espera ── */
+.arena-espera {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  width: 100%; padding: 20px 0; gap: 6px;
+}
+
+/* ── Tela da partida ── */
+.arena-partida {
+  display: flex; flex-direction: column;
+  align-items: center; width: 100%; gap: 10px;
+}
+.arena-partida-header {
+  width: 100%; text-align: center; flex-shrink: 0;
+}
+
+/* ── VS row ── */
+.arena-vs-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  width: 100%; gap: 6px;
+}
+.arena-vs-lado {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  flex: 1; padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+  transition: border-color .3s, box-shadow .3s;
+}
+.arena-vs-lado.arena-vencedor {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(201,168,76,.25);
+  background: rgba(201,168,76,.05);
+}
+.arena-vs-svg { flex-shrink: 0; }
+.arena-vs-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 7px; font-weight: 700;
+  color: var(--gold-light); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 80px;
+}
+.arena-vs-pts {
+  font-family: 'Cinzel', serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--text); line-height: 1;
+}
+.arena-vs-escolha {
+  font-size: 22px; line-height: 1; min-height: 28px;
+  transition: transform .3s cubic-bezier(.34,1.6,.64,1);
+}
+
+/* ── Centro VS ── */
+.arena-vs-centro {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px; flex-shrink: 0;
+}
+.arena-vs-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; font-weight: 700;
+  color: var(--muted); letter-spacing: 2px;
+}
+
+/* ── Timer ── */
+.arena-timer {
+  font-family: 'Cinzel', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--gold); line-height: 1;
+  transition: color .3s;
+  min-width: 32px; text-align: center;
+}
+.arena-timer.urgente {
+  color: #e74c3c;
+  animation: arena-timer-pulse .5s ease-in-out infinite;
+}
+@keyframes arena-timer-pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
+
+/* ── Status da rodada ── */
+.arena-partida-status {
+  font-family: 'Cinzel', serif;
+  font-size: 7px; letter-spacing: 1px;
+  color: var(--muted); text-align: center; min-height: 14px;
+}
+
+/* ── Botões de escolha ── */
+.arena-escolhas { display: flex; gap: 8px; width: 100%; }
+.arena-escolha-btn {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  padding: 10px 4px;
+  font-family: 'Cinzel', serif; font-size: 20px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: rgba(255,255,255,.03);
+  color: var(--text); cursor: pointer; transition: all .15s;
+}
+.arena-escolha-btn span { font-size: 6px; letter-spacing: 1px; color: var(--muted); }
+.arena-escolha-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(201,168,76,.2);
+}
+.arena-escolha-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Resultado da rodada ── */
+.arena-rodada-resultado {
+  text-align: center; padding: 6px 0; min-height: 24px;
+  animation: arena-res-pop .4s cubic-bezier(.34,1.6,.64,1);
+}
+@keyframes arena-res-pop {
+  from { opacity:0; transform: scale(.7); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+/* ── Tela de resultado final ── */
+.arena-resultado {
+  display: flex; flex-direction: column;
+  align-items: center; width: 100%; gap: 8px; padding: 4px 0;
+}
+.arena-resultado-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 16px; font-weight: 700;
+  letter-spacing: 3px; text-align: center;
+  animation: arena-res-pop .5s cubic-bezier(.34,1.6,.64,1);
+}
+.arena-recompensa-card {
+  width: 100%; padding: 10px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px; text-align: center;
+}
+
+/* ── Card de desafio pendente ── */
+.arena-desafio-card {
+  width: 100%; padding: 12px;
+  background: rgba(201,168,76,.05);
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 8px;
+  animation: arena-res-pop .3s ease;
+}
