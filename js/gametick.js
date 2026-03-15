@@ -10,7 +10,7 @@ const POOP_POSITIONS = [
 ];
 
 function spawnPoop() {
-  if(poopCount >= 6) return; // max 6 poops
+  if(poopCount >= 6) return;
   const container = document.getElementById('poopContainer');
   if(!container) return;
 
@@ -21,7 +21,6 @@ function spawnPoop() {
   el.style.bottom= pos.bottom;
   el.style.zIndex = 6 + poopCount;
   el.title = 'Clique para limpar';
-  // slightly vary size per poop
   const scale = .8 + Math.random() * .4;
   el.style.transform = `scale(${scale.toFixed(2)})`;
   el.textContent = '💩';
@@ -34,9 +33,7 @@ function spawnPoop() {
 
   addLog('Seu avatar fez as necessidades! 💩', 'bad');
   showBubble('Ops... 😳');
-  // Play squat animation on avatar
   playAnim('anim-poop');
-  // Spawn rising cloud particles from avatar
   const wrap = document.getElementById('creatureWrap');
   if(wrap) {
     ['-12px','0px','12px'].forEach((px, i) => {
@@ -70,8 +67,6 @@ function cleanCreature() {
 
   vitals.energia = Math.max(0, vitals.energia - 15);
 
-  // Banho NÃO remove cocô — clique diretamente no 💩 para limpar
-
   const higieneGain = Math.round(50 + Math.random() * 20);
   const humorGain   = 15;
   vitals.higiene = Math.min(100, vitals.higiene + higieneGain);
@@ -86,13 +81,11 @@ function cleanCreature() {
   setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
   addLog(`Banho tomado! +${higieneGain} higiene  +${humorGain} humor  (-15 ⚡)`, 'good');
 
-  // ── VÍNCULO — decaimento passivo ──
   if(!sleeping) {
     const humorBad = vitals.humor < 30;
     const decayV   = humorBad ? 0.05 : 0.02;
     vinculo = Math.max(0, vinculo - decayV);
   }
-  // Modo repouso offline já trata vinculo separadamente em wallet.js
 
   updateDirtyVisuals();
   scheduleSave();
@@ -102,13 +95,11 @@ function spawnBathParticles() {
   const wrap = document.getElementById('creatureWrap');
   if(!wrap) return;
 
-  // ── Phase 0: shower curtain wipe (blue wash covers whole wrap) ──
   const curtain = document.createElement('div');
   curtain.className = 'bath-curtain';
   wrap.appendChild(curtain);
   setTimeout(() => curtain.remove(), 1000);
 
-  // ── Phase 1 (0-400ms): 10 water drops cascade from top ──
   for(let i = 0; i < 10; i++) {
     setTimeout(() => {
       const d = document.createElement('div');
@@ -122,7 +113,6 @@ function spawnBathParticles() {
     }, i * 40);
   }
 
-  // ── Phase 2 (200ms): 2 splash rings expand from center bottom ──
   [200, 380].forEach((delay, i) => {
     setTimeout(() => {
       const ring = document.createElement('div');
@@ -133,7 +123,6 @@ function spawnBathParticles() {
     }, delay);
   });
 
-  // ── Phase 3 (350ms): 6 soap bubbles rise and pop ──
   for(let i = 0; i < 6; i++) {
     setTimeout(() => {
       const b = document.createElement('div');
@@ -148,7 +137,6 @@ function spawnBathParticles() {
     }, 350 + i * 70);
   }
 
-  // ── Phase 4 (700ms): sparkle shimmer — radiate outward ──
   const sparkles = ['✨','💫','⭐','✨','💫','✨'];
   sparkles.forEach((e, i) => {
     setTimeout(() => {
@@ -164,7 +152,6 @@ function spawnBathParticles() {
     }, 700 + i * 55);
   });
 
-  // ── Phase 5 (1100ms): fresh scent rises — animation complete ──
   ['🌸','🌿','🫧','💎','🌸'].forEach((e, i) => {
     setTimeout(() => {
       const sc = document.createElement('div');
@@ -189,7 +176,6 @@ function updateAvatarSize() {
   }
   wrap.style.width  = sz + 'px';
   wrap.style.height = sz + 'px';
-  // Reposition sleep eyes if currently sleeping
   if(sleeping) positionSleepEyes();
 }
 
@@ -201,65 +187,69 @@ function updateDirtyVisuals() {
 
   if(!screen || !wrap) return;
 
-  // CSS variable --dirty: 0 (clean) → 1 (filthy), inverse of higiene
   const dirtyPct = parseFloat(Math.max(0, (1 - vitals.higiene / 100)).toFixed(3));
   screen.style.setProperty('--dirty', dirtyPct);
   wrap.style.setProperty('--dirty', dirtyPct);
 
-  // Dirt spots: appear progressively as hygiene drops below 70
-  // 5 spots, first appears at higiene=70, all visible at higiene=20
   dirts.forEach((d, i) => {
-    const threshold = 0.30 + i * 0.12; // 0.30, 0.42, 0.54, 0.66, 0.78
+    const threshold = 0.30 + i * 0.12;
     d.classList.toggle('visible', dirtyPct >= threshold);
   });
 
-  // Stink lines (appear when 2+ poops)
   stinks.forEach((st, i) => {
     st.style.opacity = dirtyLevel >= 2 ? '1' : '0';
     st.style.animationPlayState = dirtyLevel >= 2 ? 'running' : 'paused';
   });
 
-  // Creature gets dirty filter
   wrap.classList.toggle('dirty-creature', dirtyLevel >= 2);
-
-  // Screen tint
   screen.classList.toggle('dirty', dirtyLevel >= 1);
-
 }
 
 function gameTick() {
   tickCount++;
   if(hatched && !dead) totalSecs++;
 
-  // Auto-heal: se avatar está vivo mas bornAt ficou 0 (bug de save antigo), corrige agora
   if(hatched && !dead && !bornAt) {
     bornAt = Date.now();
     if(avatar) avatar.bornAt = bornAt;
     scheduleSave();
   }
 
-
   if(!hatched || dead || !avatar) return;
 
-  updateAllUI(); // update bars every tick
-  if(petCooldown > 0) petCooldown--; // decrementa a cada segundo
+  updateAllUI();
+  if(petCooldown > 0) petCooldown--;
 
-  if(tickCount % 60 !== 0) return; // 1 game cycle = 60s real time
+  if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
 
+  // ── RECUPERAÇÃO / DECAY DE ENERGIA ──
   if(sleeping) {
+    // Dormindo manualmente → recupera energia
     vitals.energia = Math.min(100, vitals.energia + (4 * getItemEffect('sleepEnergyMult')));
-    // humor não recupera dormindo — só brincar/minigames
     if(vitals.energia >= 100) { wakeUp('full'); }
+
+  } else if(modoRepouso) {
+    // Modo repouso manual → decay mínimo, energia CONGELADA
+    const _d = rarityBonus().decay;
+    vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
+    vitals.higiene = Math.max(0, vitals.higiene - 0.03);
+    vitals.humor   = Math.max(0, vitals.humor   - 0.02);
+    vinculo        = Math.max(0, vinculo        - 0.01);
+    // Saúde só cai se fome absolutamente zerada
+    if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
+
   } else {
+    // Acordado e ativo → decay normal
     const _d = rarityBonus().decay * GAME_SPEED;
     vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * getItemEffect('fomeDecayMult')));
     vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d * getItemEffect('humorDecayMult')));
     vitals.energia = Math.max(0, vitals.energia - (0.6  * _d));
   }
 
-  if(vitals.fome < 15 && !sleeping)    vitals.saude = Math.max(0, vitals.saude - (0.3 * GAME_SPEED));
-  if(vitals.humor < 10 && !sleeping)   vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
-  if(vitals.energia < 5  && !sleeping) vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
+  // Penalidades de saúde — só no modo ativo (não durante repouso/sono)
+  if(vitals.fome < 15 && !sleeping && !modoRepouso)    vitals.saude = Math.max(0, vitals.saude - (0.3 * GAME_SPEED));
+  if(vitals.humor < 10 && !sleeping && !modoRepouso)   vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
+  if(vitals.energia < 5  && !sleeping && !modoRepouso) vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
 
   if(vitals.saude < 20 && !sick && Math.random() < (0.02 * GAME_SPEED)) {
     sick = true;
@@ -268,58 +258,57 @@ function gameTick() {
   }
 
   // ── HIGIENE E COCÔ ──
-  if(!sleeping) {
+  if(!sleeping && !modoRepouso) {
     vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED));
   }
-  // cocô: pressão acumula a cada refeição (ver actions.js), aqui só verifica o threshold
-  if(!sleeping && poopPressure >= 100) {
+  if(!sleeping && !modoRepouso && poopPressure >= 100) {
     spawnPoop();
     poopPressure = 0;
   }
-  if(tickCount % 60 === 0 && walletAddress) scheduleSave(); // auto-save every 60s (saveRuntimeToSlot called inside getGameState)
 
-  // sujeira afeta saude e humor
+  if(tickCount % 60 === 0 && walletAddress) scheduleSave();
+
+  // Sujeira afeta saúde e humor
   if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
   if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
   if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
 
   // ── VÍNCULO — decaimento passivo ──
-  if(!sleeping) {
+  if(!sleeping && !modoRepouso) {
     const humorBad = vitals.humor < 30;
     const decayV   = humorBad ? 0.05 : 0.02;
     vinculo = Math.max(0, vinculo - decayV);
   }
-  // Modo repouso offline já trata vinculo separadamente em wallet.js
 
   updateDirtyVisuals();
 
   if(vitals.saude <= 0) { killCreature(); return; }
 
-  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); syncEasterEggs(); } // fala e verifica itens a cada ~5 min
+  if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); syncEasterEggs(); }
 
   // ── POSTURA DE OVOS (apenas fase Adulto, nível 10+) ──
   if(getFase() === 3) {
     if(eggLayCooldown > 0) {
       eggLayCooldown--;
     } else if(!eggLayNotified) {
-      // Avatar está pronto para botar — notifica
       eggLayNotified = true;
       showBubble('Sinto algo... 🥚');
       addLog('Seu avatar está pronto para botar um ovo!', 'leg');
     }
   }
 
-  // Moedas passivas: +1 a cada 2 minutos (120 ticks de 3s = 360 ciclos × 3s = 360s ≈ 6 min; ajustando para 40 ciclos = 120s = 2 min)
-  if(tickCount % (60 * 2) === 0) { // +moedas a cada 2 min reais
+  // Moedas passivas: +1 a cada 2 minutos
+  if(tickCount % (60 * 2) === 0) {
     earnCoins(Math.round(1 * rarityBonus().moedas));
   }
 }
 
 function autoSpeak() {
-  if(dirtyLevel >= 2)    showBubble(rnd(FALAS.dirty));
-  else if(vitals.fome < 25)   showBubble(rnd(FALAS.hungry));
+  if(modoRepouso) return; // silencioso em repouso
+  if(dirtyLevel >= 2)     showBubble(rnd(FALAS.dirty));
+  else if(vitals.fome < 25)    showBubble(rnd(FALAS.hungry));
   else if(vitals.energia < 20) showBubble(rnd(FALAS.tired));
-  else if(sick)          showBubble(rnd(FALAS.sick));
+  else if(sick)           showBubble(rnd(FALAS.sick));
   else if(vitals.humor < 30) showBubble(rnd(FALAS.bored));
   else if(Math.random() < .3) showBubble(rnd(FALAS.happy));
 }
@@ -328,7 +317,6 @@ function playPhaseUp(faseName) {
   const ov = document.getElementById('phaseUpOverlay');
   if(!ov) return;
   document.getElementById('puFase').textContent = 'FASE: ' + faseName;
-  // Restart by clone
   const clone = ov.cloneNode(true);
   ov.parentNode.replaceChild(clone, ov);
   clone.style.opacity = '1';
@@ -346,10 +334,11 @@ function playPhaseUp(faseName) {
 
 function killCreature() {
   dead = true;
-  saveToFirebase(); // immediate on death
+  // Desativa repouso ao morrer
+  if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
+  saveToFirebase();
   ModalManager.closeAll();
 
-  // Populate death screen
   const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
   document.getElementById('deadAvatarName').textContent = name.toUpperCase();
   const diasVividos = bornAt ? Math.floor((Date.now() - bornAt) / (1000*60*60*24)) + 1 : 1;
@@ -357,7 +346,6 @@ function killCreature() {
     `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
     `Viveu ${diasVividos} dia${diasVividos!==1?'s':''} · Vínculo: ${Math.floor(vinculo)}`;
 
-  // Spawn floating souls
   const souls = ['👻','✦','💀','✧','🌑'];
   const dp = document.getElementById('deadParticles');
   if(dp) {
@@ -392,7 +380,6 @@ function checkXP() {
     }
     addLog(`Nível ${nivel}! Seu avatar ficou mais forte!`,'leg');
     playLevelUp(nivel);
-    // Phase change?
     if(faseAfter !== faseBefore) {
       setTimeout(() => playPhaseUp(FASES[faseAfter]), 600);
       updateAvatarSize();
@@ -404,18 +391,15 @@ function playLevelUp(newNivel) {
   const ov = document.getElementById('levelUpOverlay');
   if(!ov) return;
 
-  // Update text
   document.getElementById('luText').textContent = 'NÍVEL UP!';
   document.getElementById('luNivel').textContent = `NÍVEL ${newNivel}`;
 
-  // Spawn star particles
   const starEmojis = ['✦','✧','★','✨','⭐'];
   const positions = [
     {sx:'-70px',sy:'-60px'},{sx:'70px',sy:'-55px'},{sx:'-80px',sy:'20px'},
     {sx:'80px',sy:'15px'},{sx:'-30px',sy:'-80px'},{sx:'30px',sy:'-75px'},
     {sx:'55px',sy:'60px'},{sx:'-55px',sy:'55px'}
   ];
-  // Remove old stars
   ov.querySelectorAll('.lu-star').forEach(s => s.remove());
   positions.forEach((pos, i) => {
     const s = document.createElement('div');
@@ -425,11 +409,9 @@ function playLevelUp(newNivel) {
     ov.appendChild(s);
   });
 
-  // Restart CSS animations by cloning node
   const clone = ov.cloneNode(true);
   ov.parentNode.replaceChild(clone, ov);
 
-  // Fade out after 1.8s
   clone.classList.add('active');
   clone.style.opacity = '1';
   setTimeout(() => {
