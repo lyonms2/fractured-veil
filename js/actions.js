@@ -16,29 +16,28 @@ function _runCoinAnimQueue() {
   _coinAnimRunning = true;
   const { amount, isSpend } = _coinAnimQueue.shift();
 
-  // Rastreia o botão de moedas no header
-  const el = document.getElementById('resMoedasBtn');
-  if(el) {
-    // Flash no contador
-    el.classList.remove('res-flash');
-    void el.offsetWidth;
-    el.classList.add('res-flash');
-    setTimeout(() => el.classList.remove('res-flash'), 500);
+  const btn = document.getElementById('resMoedasBtn');
+  if(btn) {
+    // Flash no botão
+    btn.classList.remove('res-flash');
+    void btn.offsetWidth;
+    btn.classList.add('res-flash');
+    setTimeout(() => btn.classList.remove('res-flash'), 500);
 
-    // Posição: centro do botão, compensando scroll
-    const rect   = el.getBoundingClientRect();
-    const centerX = rect.left + rect.width  / 2;
-    const topY    = rect.top  + rect.height / 2;
+    // position:fixed — getBoundingClientRect() já é relativo ao viewport, sem scroll
+    const rect = btn.getBoundingClientRect();
 
     const fly = document.createElement('div');
     fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
     fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
 
-    // Posiciona no centro do botão
-    // marginLeft negativo de metade da largura estimada do texto para centrar
-    fly.style.left       = centerX + 'px';
-    fly.style.top        = topY + 'px';
-    fly.style.marginLeft = '-30px'; // offset para centrar (largura ~60px)
+    // Ancora no centro horizontal do botão, topo do botão
+    fly.style.position = 'fixed';
+    fly.style.left     = (rect.left + rect.width / 2) + 'px';
+    fly.style.top      = rect.top + 'px';
+    fly.style.transform = 'translateX(-50%)';
+    // Sobrescreve a animação CSS para não conflituar com o transform de posição
+    fly.style.animation = 'coin-spend-fly .9s cubic-bezier(.2,.8,.4,1) forwards';
 
     document.body.appendChild(fly);
     setTimeout(() => {
@@ -79,9 +78,7 @@ function feedCreature() {
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
-  // Pressão intestinal — varia por quanto comeu e o quanto já tem no estômago
-  // Pressão escala com raridade e item (Amuleto Saciedade reduz também frequência de cocô)
-  const pressaoBase = 30 + Math.round(Math.random() * 10); // +30 a +40
+  const pressaoBase = 30 + Math.round(Math.random() * 10);
   const pressaoGain = Math.round(pressaoBase * rarityBonus().decay * getItemEffect('fomeDecayMult'));
   poopPressure = Math.min(100, poopPressure + pressaoGain);
   const _rb = rarityBonus();
@@ -126,19 +123,16 @@ function confirmRename() {
   const raw   = input.value.trim();
   if(!raw) { cancelRename(); return; }
 
-  // Sanitize — só letras, números, espaços e hífens
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
   if(!clean) { showBubble('Nome inválido! ✕'); return; }
 
-  const parts     = avatar.nome.split(',');
-  const suffix    = parts.slice(1).join(','); // raridade etc
-  avatar.nome     = clean + (suffix ? ',' + suffix : '');
+  const parts  = avatar.nome.split(',');
+  const suffix = parts.slice(1).join(',');
+  avatar.nome  = clean + (suffix ? ',' + suffix : '');
 
-  // Update display
   fillCreatureCard();
   cancelRename();
 
-  // Save to Firebase
   if(walletAddress) scheduleSave();
   addLog(`Avatar renomeado para "${clean}" 💕`, 'good');
   showBubble(`${clean}... Adoro esse nome! 💕`);
@@ -180,8 +174,6 @@ function onSleepPointerUp() {
   if(_sleepPressTimer !== null) {
     clearTimeout(_sleepPressTimer);
     _sleepPressTimer = null;
-    // Toque curto = dormir/acordar normal
     toggleSleep();
   }
-  // Se _sleepPressTimer já era null, o long press disparou — não faz nada
 }
