@@ -71,6 +71,28 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+// ── DETECTOR DE INATIVIDADE — sugere modo repouso ──
+// Dispara após 5 minutos sem interação do utilizador
+const INATIVIDADE_MS = 5 * 60 * 1000; // 5 minutos
+let _inativoTimer = null;
+
+function _resetInatividade() {
+  clearTimeout(_inativoTimer);
+  // Só monitora se avatar está vivo, acordado e fora do modo repouso
+  if(!hatched || dead || sleeping || modoRepouso) return;
+  _inativoTimer = setTimeout(() => {
+    if(!hatched || dead || sleeping || modoRepouso) return;
+    // Usa a bolinha de fala do avatar para sugerir
+    showBubble('Vai sair? Ativa o repouso! 🌙');
+    addLog('Inativo há 5min — segure 💤 DORMIR para ativar o modo repouso.', 'info');
+  }, INATIVIDADE_MS);
+}
+
+// Reinicia o timer em qualquer interação
+['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(evt => {
+  document.addEventListener(evt, _resetInatividade, { passive: true });
+});
+
 // ── Sync ao voltar para a aba ──
 let _lastHidden = 0;
 document.addEventListener('visibilitychange', async () => {
