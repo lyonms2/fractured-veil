@@ -151,41 +151,6 @@
         <!-- ALIVE state -->
         <div id="aliveScreen" style="display:none; position:absolute; inset:0;">
 
-          <!-- Jo-Ken-Pô Modal -->
-          <div id="jkpModal">
-            <div class="jkp-title">✦ JO-KEN-PÔ ✦</div>
-            <div class="jkp-arena">
-              <div class="jkp-side">
-                <div class="jkp-side-label">VOCÊ</div>
-                <div class="jkp-hand" id="jkpPlayerHand">❓</div>
-              </div>
-              <div class="jkp-vs">VS</div>
-              <div class="jkp-side">
-                <div class="jkp-side-label" id="jkpEnemyLabel">???</div>
-                <div class="jkp-hand" id="jkpEnemyHand">
-                  <span id="jkpEnemyEmoji">👾</span>
-                  <div class="jkp-countdown" id="jkpCountdown"></div>
-                </div>
-              </div>
-            </div>
-            <div class="jkp-result" id="jkpResult">—</div>
-            <div class="jkp-rewards" id="jkpRewards"></div>
-            <div class="jkp-choices" id="jkpChoices">
-              <button class="jkp-choice" onclick="jkpChoose('pedra')" title="Pedra">
-                🪨<span class="jkp-choice-label">PEDRA</span>
-              </button>
-              <button class="jkp-choice" onclick="jkpChoose('papel')" title="Papel">
-                📄<span class="jkp-choice-label">PAPEL</span>
-              </button>
-              <button class="jkp-choice" onclick="jkpChoose('tesoura')" title="Tesoura">
-                ✂️<span class="jkp-choice-label">TESOURA</span>
-              </button>
-            </div>
-            <div class="jkp-btns">
-              <button class="jkp-btn jkp-btn-play" id="jkpPlayAgain" style="display:none" onclick="jkpPlayAgain()">▶ DE NOVO</button>
-              <button class="jkp-btn jkp-btn-close" onclick="closeJkp()">✕ FECHAR</button>
-            </div>
-          </div><!-- /jkpModal -->
 
           <!-- ITEM INVENTORY MODAL -->
           <div class="mini-modal" id="itemInvModal">
@@ -263,14 +228,6 @@
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
             <div id="diffPills" class="diff-pills-row"></div>
             <div class="gs-grid">
-              <div class="gs-btn" onclick="openMinigame('jkp')">
-                <div class="gs-btn-icon">🪨</div>
-                <div class="gs-btn-info">
-                  <div class="gs-btn-name">JO-KEN-PÔ</div>
-                  <div class="gs-btn-desc">Enfrente seu avatar num duelo</div>
-                  <div class="gs-btn-reward" id="rewardJkp">+3~24 XP · +3~25 🪙</div>
-                </div>
-              </div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
                 <div class="gs-btn-icon">🃏</div>
                 <div class="gs-btn-info">
