@@ -588,11 +588,14 @@ function _renderPartida(salaId, sala) {
 }
 
 // ── Listener central da sala ──
+let _arenaAnimando = false; // flag para evitar dupla execução da animação
+
 function _escutarSala(salaId, opWallet) {
+  _arenaAnimando = false;
   const salaRef = rtdb().ref(`arena/salas/${salaId}`);
   salaRef.on('value', snap => {
     const s = snap.val();
-    if(!s) return;
+    if(!s || _arenaAnimando) return;
 
     // Atualiza placar em tempo real
     const se = document.getElementById('starsEu');
@@ -604,7 +607,7 @@ function _escutarSala(salaId, opWallet) {
     const jEu = s.jogadores?.[walletAddress];
     const jOp = s.jogadores?.[opWallet];
 
-    // Mostra que eu já escolhi (sem revelar ao oponente)
+    // Mostra que eu já escolhi
     if(jEu?.pronto) {
       const euEl = document.getElementById('escolhaEu');
       if(euEl && euEl.textContent === '❓') euEl.textContent = '✅';
@@ -612,21 +615,23 @@ function _escutarSala(salaId, opWallet) {
     // Mostra que oponente já escolheu
     if(jOp?.pronto) {
       const opEl = document.getElementById('escolhaOp');
-      if(opEl && opEl.textContent === '❓') opEl.textContent = '⏳';
+      if(opEl && opEl.textContent === '❓' || opEl?.textContent === '✅') opEl.textContent = '⏳';
       const st = document.getElementById('arenaStatus');
       if(st && _arenaEscolhaFeita) st.textContent = '⚡ Oponente pronto! Revelando...';
     }
 
-    // Ambos prontos — revelar (campo roundResult gravado pelo criador)
+    // Ambos prontos E roundResult gravado → animar
     if(jEu?.pronto && jOp?.pronto && s.roundResult) {
+      _arenaAnimando = true;
       salaRef.off('value');
       _pararTimer();
       _animarRevelacao(salaId, s, opWallet);
       return;
     }
 
-    // Finalizada sem passar por roundResult (reconexão)
-    if(s.status === 'finalizada' && (!jEu?.pronto || !jOp?.pronto || !s.roundResult)) {
+    // status finalizada sem roundResult = reconexão ou edge case
+    if(s.status === 'finalizada' && !s.roundResult) {
+      _arenaAnimando = true;
       salaRef.off('value');
       _pararTimer();
       _renderResultado(s, opWallet);
@@ -663,8 +668,10 @@ async function fazerEscolha(salaId, escolha) {
   const opWallet = wallets.find(w => w !== walletAddress);
   const jOp      = s.jogadores?.[opWallet];
 
-  // Só o criador grava o roundResult para evitar duplicidade
-  if(criador === walletAddress && jOp?.pronto && jOp?.escolha) {
+  // Só o criador grava o roundResult — mas se ambos prontos e roundResult ainda null,
+  // o criador precisa ter chamado isso. Se por algum motivo não chamou (race condition),
+  // o criador tenta de novo aqui.
+  if(criador === walletAddress && jOp?.pronto && jOp?.escolha && !s.roundResult) {
     await _calcularEGravarRound(salaId, s, opWallet);
   }
 }
@@ -810,21 +817,40 @@ async function _animarRevelacao(salaId, sala, opWallet) {
 
   await _sleep(2200);
 
-  // Avança
+  // Avança — protege contra sala já deletada ou dupla execução
   if(rr.fim) {
-    // Busca sala atualizada para ter o vencedor correto
     const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
-    _renderResultado(snap.val(), opWallet);
+    const salaAtual = snap.val();
+    if(salaAtual) {
+      _renderResultado(salaAtual, opWallet);
+    } else {
+      // Sala já foi deletada — usa os dados que já temos
+      const salaFinal = {
+        ...sala,
+        status:   'finalizada',
+        vencedor: rr.vencedor,
+        placar:   rr.placarAtualizado || sala.placar,
+      };
+      _renderResultado(salaFinal, opWallet);
+    }
   } else {
-    // Limpa escolhas para próxima rodada
-    await rtdb().ref(`arena/salas/${salaId}`).update({
-      roundResult: null,
-      [`jogadores/${walletAddress}/escolha`]: null,
-      [`jogadores/${walletAddress}/pronto`]:  false,
-    });
+    // Só o criador limpa as escolhas para próxima rodada
+    const wallets2  = Object.keys(sala.jogadores);
+    const criador2  = wallets2[0];
+    if(criador2 === walletAddress) {
+      await rtdb().ref(`arena/salas/${salaId}`).update({
+        roundResult: null,
+        [`jogadores/${walletAddress}/escolha`]: null,
+        [`jogadores/${walletAddress}/pronto`]:  false,
+        [`jogadores/${opWallet}/escolha`]:      null,
+        [`jogadores/${opWallet}/pronto`]:       false,
+      });
+    }
     _arenaEscolhaFeita = false;
     const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
-    _renderPartida(salaId, snap.val());
+    if(snap.val()) {
+      _renderPartida(salaId, snap.val());
+    }
   }
 }
 
