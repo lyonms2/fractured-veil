@@ -115,7 +115,12 @@ function renderArenaModal() {
 
     <div class="arena-header">
       <div class="arena-title">⚔️ ARENA DIMENSIONAL</div>
-      <div class="arena-sub">Jo-Ken-Pô ao vivo · Fila ${raridade.toUpperCase()}</div>
+      <div class="arena-sub">Jo-Ken-Pô ao vivo · Fila <b style="color:var(--gold)">${raridade.toUpperCase()}</b> · ${
+        raridade === 'Comum'    ? '🟢 Aposta em 🪙' :
+        raridade === 'Raro'     ? '🔵 Aposta em 💎' :
+                                  '🟡 Aposta em 💎'
+      }</div>
+      <div style="font-size:6px;color:var(--muted);margin-top:2px;">Apenas avatares ${raridade} aparecem nesta fila</div>
     </div>
 
     <div class="arena-tabs">
@@ -237,8 +242,14 @@ function iniciarLobbyListener() {
     const agora = Date.now();
 
     const avatares = Object.entries(dados)
-      .filter(([w, d]) => w !== walletAddress && !d.emPartida && (agora - (d.ts||0)) < ARENA_LOBBY_TTL)
-      .sort((a, b) => a[1].ts - b[1].ts);
+      .filter(([w, d]) => {
+        if(w === walletAddress) return false;
+        if(d.emPartida) return false;
+        // ts pode ser null se ainda não foi resolvido pelo servidor — aceita nesses casos
+        if(!d.ts || typeof d.ts !== 'number') return true;
+        return (agora - d.ts) < ARENA_LOBBY_TTL;
+      })
+      .sort((a, b) => (a[1].ts || 0) - (b[1].ts || 0));
 
     if(!avatares.length) {
       lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';
@@ -853,20 +864,26 @@ async function carregarRanking() {
 function iniciarListenerDesafiosRecebidos() {
   if(!rtdb() || !walletAddress) return;
 
+  // Escuta TODAS as salas com status 'aguardando' e filtra client-side
+  // (RTDB não suporta orderByChild em campos aninhados)
   rtdb().ref('arena/salas')
-    .orderByChild(`jogadores/${walletAddress}/wallet`)
-    .equalTo(walletAddress)
+    .orderByChild('status')
+    .equalTo('aguardando')
     .on('child_added', snap => {
       const sala = snap.val();
-      if(!sala || sala.status !== 'aguardando') return;
-      const wallets  = Object.keys(sala.jogadores);
-      const criador  = wallets[0];
-      if(criador === walletAddress) return; // ignora salas que eu criei
+      if(!sala) return;
+
+      // Verifica se este jogador é o oponente (não o criador)
+      const wallets = Object.keys(sala.jogadores || {});
+      if(wallets.length < 2) return;
+      const criador = wallets[0];
+      if(criador === walletAddress) return;         // ignoro salas que eu criei
+      if(!sala.jogadores[walletAddress]) return;    // não sou o oponente desta sala
 
       showBubble('Você foi desafiado! ⚔️');
       addLog(`Desafio recebido! Abra a Arena para aceitar.`, 'info');
 
-      // Se a arena estiver aberta, injeta o card de desafio
+      // Se a arena já estiver aberta, injeta o card
       const el = document.getElementById('arenaModal');
       if(el && el.classList.contains('open')) {
         const lista = document.getElementById('arenaLobbyLista');
