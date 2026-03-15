@@ -98,9 +98,9 @@ function confirmRename() {
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
   if(!clean) { showBubble('Nome inválido! ✕'); return; }
 
-  const parts     = avatar.nome.split(',');
-  const suffix    = parts.slice(1).join(',');
-  avatar.nome     = clean + (suffix ? ',' + suffix : '');
+  const parts  = avatar.nome.split(',');
+  const suffix = parts.slice(1).join(',');
+  avatar.nome  = clean + (suffix ? ',' + suffix : '');
 
   fillCreatureCard();
   cancelRename();
@@ -112,14 +112,17 @@ function confirmRename() {
 }
 
 // ═══════════════════════════════════════════
-// MODO REPOUSO MANUAL — long press 2s no botão Dormir
+// MODO REPOUSO MANUAL
+// Long press 2s no botão Dormir ativa o repouso.
+// Toque curto continua funcionando normalmente
+// (dorme se acordado, acorda se dormindo).
 // ═══════════════════════════════════════════
 
 function onSleepPointerDown() {
   if(!hatched || !avatar || dead) return;
   const btn = document.getElementById('btnSleep');
 
-  // Se já está em repouso → long press sai do repouso
+  // Se está em repouso → long press sai do repouso
   if(modoRepouso) {
     _repousoTimer = setTimeout(() => {
       _repousoTimer = null;
@@ -130,10 +133,15 @@ function onSleepPointerDown() {
     return;
   }
 
-  // Se está dormindo → toque curto vai acordar (tratado no pointerup)
-  if(sleeping) return;
+  // Se está dormindo → não inicia timer de repouso.
+  // O toque curto vai acordar (tratado no pointerup com _sleeping flag).
+  if(sleeping) {
+    // Marca que o pointer desceu enquanto dormia, para o pointerup acordar.
+    window._sleepBtnDownWhileSleeping = true;
+    return;
+  }
 
-  // Normal → inicia contagem para repouso
+  // Acordado e ativo → inicia contagem para repouso
   _repousoTimer = setTimeout(() => {
     _repousoTimer = null;
     if(btn) btn.classList.remove('pressing');
@@ -146,14 +154,20 @@ function onSleepPointerUp() {
   const btn = document.getElementById('btnSleep');
   if(btn) btn.classList.remove('pressing');
 
+  // Caso especial: botão pressionado enquanto dormia → acordar
+  if(window._sleepBtnDownWhileSleeping) {
+    window._sleepBtnDownWhileSleeping = false;
+    wakeUp('manual');
+    return;
+  }
+
   if(_repousoTimer) {
-    // Timer ainda não disparou → foi toque curto
+    // Timer ainda não disparou → foi toque curto → dormir normalmente
     clearTimeout(_repousoTimer);
     _repousoTimer = null;
-    // Só aciona dormir/acordar se não está em repouso
     if(!modoRepouso) toggleSleep();
   }
-  // Se timer já disparou → foi long press → não faz mais nada
+  // Se _repousoTimer já disparou → foi long press → não faz mais nada
 }
 
 function ativarModoRepouso() {
@@ -165,24 +179,14 @@ function ativarModoRepouso() {
 
   if(overlay) overlay.classList.add('active');
   if(btn) {
-    btn.querySelector('.icon').textContent            = '▶';
-    document.getElementById('sleepLabel').textContent = 'RETOMAR';
+    btn.querySelector('.icon').textContent            = '💤';
+    document.getElementById('sleepLabel').textContent = 'REPOUSO';
     btn.classList.add('active-repouso');
-  }
-
-  // Renderiza o SVG do avatar no overlay com olhos fechados
-  const avatarTarget = document.getElementById('repousoAvatarWrap');
-  if(avatarTarget && avatar) {
-    avatarTarget.innerHTML = gerarSVG(
-      avatar.elemento, avatar.raridade, avatar.seed,
-      getFaseSize(), getFaseSize()
-    );
   }
 
   document.getElementById('actionBtns').classList.add('repouso-mode');
   ModalManager.closeAll();
   addLog('Modo repouso ativado. Stats desaceleram. ⏸', 'info');
-  showBubble('Descansando... 🌙');
   scheduleSave();
 }
 
