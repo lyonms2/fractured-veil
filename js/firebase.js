@@ -9,25 +9,20 @@ let walletAddress = null;
 function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
 
 function getGameState() {
-  // Flush current runtime state into active slot before saving
   saveRuntimeToSlot(activeSlotIdx);
 
-  // Garantir que o array cobre todos os slots desbloqueados antes de serializar
   const _neededGet = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededGet) avatarSlots.push(null);
 
-  // Serialize slots — each slot is self-contained
   const slotsSafe = avatarSlots.map(s => {
-    if(!s || s.pendingEgg) return null; // pendingEgg slots are never persisted
+    if(!s || s.pendingEgg) return null;
     return {
-      // Avatar identity
       nome:      s.nome      || '',
       elemento:  s.elemento  || 'Fogo',
       raridade:  s.raridade  || 'Comum',
       descricao: s.descricao || '',
       seed:      s.seed      || 0,
       listed:    s.listed    || false,
-      // Runtime state
       hatched:        s.hatched        ?? false,
       dead:           s.dead           ?? false,
       sick:           s.sick           ?? false,
@@ -45,7 +40,6 @@ function getGameState() {
       vitals:         s.vitals ? {...s.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
       eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
       items:          (s.items || []).map(i => ({...i})),
-      // Marketplace stats
       diasVida:   s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0,
       totalOvos:  s.totalOvos  || 0,
       totalRaros: s.totalRaros || 0,
@@ -58,6 +52,7 @@ function getGameState() {
     gs:            {...gs},
     cristais:      gs.cristais   || 0,
     extraSlots:    gs.extraSlots || 0,
+    modoRepouso:   typeof modoRepouso !== 'undefined' ? !!modoRepouso : false, // ← persistir modo repouso
     lastSeen:      Date.now()
   };
 }
@@ -66,21 +61,17 @@ function applyGameState(data) {
   if(!data) return false;
   window.loadedLastSeen = data.lastSeen || Date.now();
 
-  // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
   if(data.gs?.cristais   !== undefined) gs.cristais   = data.gs.cristais;
   else if(data.cristais  !== undefined) gs.cristais   = data.cristais;
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
   else if(data.extraSlots !== undefined) gs.extraSlots = data.extraSlots;
 
-  // Se o activeSlotIdx vai mudar, flush o slot actual em memória primeiro
-  // para não sobrescrever os eggs/items do slot antigo com os do novo
   const incomingSlotIdx = data.activeSlotIdx !== undefined ? data.activeSlotIdx : activeSlotIdx;
   if(incomingSlotIdx !== activeSlotIdx) {
-    saveRuntimeToSlot(activeSlotIdx); // persiste eggs do slot actual antes de trocar
+    saveRuntimeToSlot(activeSlotIdx);
   }
 
-  // Restore slots
   if(data.avatarSlots) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
@@ -91,7 +82,6 @@ function applyGameState(data) {
   }
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
 
-  // Migration helper — builds a full slot from flat legacy fields
   function buildLegacySlot(a, d) {
     const slot = {
       nome: a.nome||'', elemento: a.elemento||'Fogo', raridade: a.raridade||'Comum',
@@ -112,26 +102,19 @@ function applyGameState(data) {
     return slot;
   }
 
-  // Case 1: no avatarSlots at all — pure legacy save
   if(!data.avatarSlots && data.avatar) {
     avatarSlots[0] = buildLegacySlot(data.avatar, data);
     activeSlotIdx  = 0;
   }
 
-  // Case 2: avatarSlots exists but active slot is null/empty — partial migration
-  // This happens when the previous refactor saved avatarSlots:[null,null,null]
-  // but the real avatar data is still in the flat fields
   if(data.avatarSlots && !avatarSlots[activeSlotIdx]?.nome && data.avatar) {
     avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
 
-  // Consumir inboxEggs — ovos que chegaram pelo marketplace enquanto o jogo estava fechado
   if(data.inboxEggs && data.inboxEggs.length > 0) {
-    // Descartar ovos expirados antes de consumir
     data.inboxEggs = data.inboxEggs.filter(e => Date.now() < e.expiraEm);
     const slot = avatarSlots[activeSlotIdx];
     if(slot) {
-      // Slot existe — merge directo
       if(!slot.eggs) slot.eggs = [];
       const MAX_EGGS = 10;
       const existingIds = new Set(slot.eggs.map(e => e.id));
@@ -142,19 +125,15 @@ function applyGameState(data) {
           slot.eggs.push({...e});
           existingIds.add(e.id);
         } else {
-          overflow.push(e); // inventário cheio — guarda de volta
+          overflow.push(e);
         }
       });
       if(overflow.length > 0) {
-        // Deixa os excedentes no inbox até o jogador criar espaço
         window._inboxOverflow = overflow;
         console.warn(`inboxEggs: ${overflow.length} ovo(s) não cabem no inventário (limite ${MAX_EGGS})`);
       }
-      // Marca para limpar o inbox no próximo saveToFirebase
       window._inboxConsumed = true;
     } else {
-      // Slot null — preserva como orphanEggs para não perder
-      // NÃO marca _inboxConsumed — inbox fica no Firebase até haver slot activo
       window._orphanEggs = (window._orphanEggs || []).concat(
         data.inboxEggs.filter(e => {
           const existing = window._orphanEggs || [];
@@ -164,21 +143,16 @@ function applyGameState(data) {
     }
   }
 
-  // Garantir que o array cobre todos os slots desbloqueados restaurados
   const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededApply) avatarSlots.push(null);
 
-  // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 
-  // Se há orphanEggs (inboxEggs chegaram mas slot estava null),
-  // injectá-los imediatamente em eggsInInventory para o utilizador os ver
   if(window._orphanEggs && window._orphanEggs.length > 0) {
     const existingIds = new Set(eggsInInventory.map(e => e.id));
     window._orphanEggs.forEach(e => {
       if(!existingIds.has(e.id)) eggsInInventory.push({...e});
     });
-    // Tentar também colocar no slot se ele existir agora
     const slot = avatarSlots[activeSlotIdx];
     if(slot) {
       if(!slot.eggs) slot.eggs = [];
@@ -187,9 +161,33 @@ function applyGameState(data) {
         if(!slotIds.has(e.id)) slot.eggs.push({...e});
       });
       window._orphanEggs = null;
-      window._inboxConsumed = true; // agora pode limpar o inbox no próximo save
+      window._inboxConsumed = true;
     }
-    // Se slot ainda null, _orphanEggs persiste para saveToFirebase o re-escrever no inbox
+  }
+
+  // ── Restaurar modo repouso ──
+  // Feito APÓS loadRuntimeFromSlot para garantir que hatched/dead já foram restaurados
+  if(data.modoRepouso && typeof modoRepouso !== 'undefined') {
+    // Só restaura se o avatar está vivo e acordado
+    if(hatched && !dead && !sleeping) {
+      modoRepouso = true;
+      // Aplica visual sem chamar ativarModoRepouso() para não gravar de novo
+      setTimeout(() => {
+        const overlay = document.getElementById('repousoOverlay');
+        const btn     = document.getElementById('btnSleep');
+        if(overlay) overlay.classList.add('active');
+        if(btn) {
+          btn.querySelector('.icon').textContent            = '💤';
+          const lbl = document.getElementById('sleepLabel');
+          if(lbl) lbl.textContent = 'REPOUSO';
+          btn.classList.add('active-repouso');
+        }
+        const ab = document.getElementById('actionBtns');
+        if(ab) ab.classList.add('repouso-mode');
+        addLog('Modo repouso restaurado. ⏸', 'info');
+        showBubble('Ainda em repouso... 🌙');
+      }, 500); // delay para o DOM estar pronto
+    }
   }
 
   return true;
@@ -205,12 +203,8 @@ async function saveToFirebase() {
   if(!walletAddress || !fbDb()) return;
   try {
     const state = getGameState();
-    // usar set com merge:true para não apagar campos não incluídos
-    // (ex: inboxEggs escrito pelo marketplace ou por confirmHatch)
     await fbDb().collection('players').doc(walletAddress).set(state, { merge: true });
 
-    // Eggs orphans — slot estava null quando saveRuntimeToSlot correu
-    // Persiste como inboxEggs para não se perderem
     const hasOrphans = window._orphanEggs && window._orphanEggs.length > 0;
     if(hasOrphans) {
       const toAdd = window._orphanEggs.filter(e => e.id);
@@ -223,11 +217,8 @@ async function saveToFirebase() {
       }
       window._orphanEggs  = null;
       window._orphanItems = null;
-      // Não limpar inboxEggs agora — os orphans acabaram de ser escritos lá
-      // O próximo applyGameState vai consumi-los normalmente
       window._inboxConsumed = false;
     } else if(window._inboxConsumed) {
-      // Só limpa se não há orphans — caso contrário apagaria ovos recém-escritos
       window._inboxConsumed = false;
       await fbDb().collection('players').doc(walletAddress).update({ inboxEggs: [] });
     }
