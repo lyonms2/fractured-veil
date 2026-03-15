@@ -290,11 +290,23 @@ function gameTick() {
   if(getFase() === 3) {
     if(eggLayCooldown > 0) {
       eggLayCooldown--;
-    } else if(!eggLayNotified) {
-      eggLayNotified = true;
-      showBubble('Sinto algo... 🥚');
-      addLog('Seu avatar está pronto para botar um ovo!', 'leg');
+      // Garante que o botão está escondido durante cooldown
+      const btn = document.getElementById('btnLayEgg');
+      if(btn) btn.style.display = 'none';
+    } else {
+      // Pronto para botar — mostra botão
+      const btn = document.getElementById('btnLayEgg');
+      if(btn) btn.style.display = '';
+      if(!eggLayNotified) {
+        eggLayNotified = true;
+        showBubble('Sinto algo... 🥚');
+        addLog('Seu avatar está pronto para botar um ovo!', 'leg');
+      }
     }
+  } else {
+    // Não é adulto — esconde o botão
+    const btn = document.getElementById('btnLayEgg');
+    if(btn) btn.style.display = 'none';
   }
 
   // Moedas passivas: +2 a cada 2 minutos (rebalanceado)
