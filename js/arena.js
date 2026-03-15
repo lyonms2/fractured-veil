@@ -773,15 +773,48 @@ async function _distribuirRecompensas(sala, opWallet) {
   const bruto    = usaCris ? aposta.cristais * 2 : aposta.moedas * 2;
   const taxa     = sala.taxaPool || 0;
   const vencedor = sala.vencedor;
-  const fila     = sala.fila;
 
   await rtdb().ref(`arena/salas/${sala.id}/recompensaDistribuida`).set(true);
 
-  // Pool
-  if(taxa > 0) {
-    const ref  = rtdb().ref(`arena/pool/${fila}`);
-    const snap = await ref.once('value');
-    await ref.set((snap.val()||0) + taxa);
+  // Taxa vai para a pool P2E do marketplace (Firestore — mesmo doc que pool.js usa)
+  if(taxa > 0 && fbDb()) {
+    try {
+      const POOL_SPLIT      = 0.80;
+      const DEV_WALLET_ADDR = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
+      const paraPool = Math.floor(taxa * POOL_SPLIT);
+      const paraDev  = taxa - paraPool;
+      const motivo   = `Arena ${sala.fila} — taxa de partida`;
+
+      const batch = fbDb().batch();
+
+      // 80% → pool P2E
+      if(paraPool > 0) {
+        batch.update(fbDb().collection('config').doc('pool'), {
+          cristais:    firebase.firestore.FieldValue.increment(paraPool),
+          totalEntrou: firebase.firestore.FieldValue.increment(paraPool),
+        });
+        const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
+        batch.set(logRef, {
+          tipo:   'entrada',
+          motivo,
+          origem: walletAddress || 'arena',
+          total:  taxa,
+          pool:   paraPool,
+          dev:    paraDev,
+          ts:     firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      // 20% → carteira dev
+      if(paraDev > 0) {
+        batch.set(fbDb().collection('players').doc(DEV_WALLET_ADDR), {
+          'gs.cristais': firebase.firestore.FieldValue.increment(paraDev),
+          cristais:      firebase.firestore.FieldValue.increment(paraDev),
+        }, { merge: true });
+      }
+
+      await batch.commit();
+    } catch(e) { console.warn('[ARENA] addToPool erro:', e); }
   }
 
   // Prêmio ao criador se ele venceu
