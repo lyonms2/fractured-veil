@@ -414,3 +414,17 @@
   .creature-wrap svg { animation:none !important; }
   #starCanvas { display:none !important; }
 }
+
+/* ── COIN FLOAT ANIMATION ── */
+@keyframes coin-fly {
+  0%   { opacity:1; transform:translateX(-50%) translateY(0)   scale(1); }
+  60%  { opacity:1; transform:translateX(-50%) translateY(-28px) scale(1.1); }
+  100% { opacity:0; transform:translateX(-50%) translateY(-50px) scale(.8); }
+}
+/* flash do contador de moedas */
+.res-flash { animation: res-flash-anim .4s ease-out; }
+@keyframes res-flash-anim {
+  0%  { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  100%{ transform: scale(1); }
+}
