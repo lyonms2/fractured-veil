@@ -224,15 +224,14 @@ function _iniciarLobbyListener() {
       return;
     }
 
-    const myKey = _wkey(walletAddress);
+    const myKey = (walletAddress||'').toLowerCase();
     const agora = Date.now();
 
     const avatares = Object.entries(dados).filter(([k, d]) => {
-      if(k === myKey)    return false;  // não mostra a si mesmo
-      if(d.emPartida)    return false;  // já em partida
-      if(!d.ts)          return true;   // ts ainda não resolvido — aceita
-      // ts pode ser objeto {".sv":"timestamp"} se não resolvido ainda
-      if(typeof d.ts !== 'number') return true;
+      if(k.toLowerCase() === myKey) return false;  // não mostra a si mesmo
+      if(d.emPartida)               return false;  // já em partida
+      if(!d.ts)                     return true;   // ts ainda não resolvido
+      if(typeof d.ts !== 'number')  return true;   // ts como objeto — aceita
       return (agora - d.ts) < ARENA_LOBBY_TTL;
     });
 
@@ -265,8 +264,7 @@ async function entrarNoLobby() {
   if(!_podePagar()) { showBubble('Saldo insuficiente!'); return; }
 
   const fila = _getFila();
-  const key  = _wkey(walletAddress);
-  _arenaLobbyRef = rtdb().ref(`arena/lobby/${fila}/${key}`);
+  _arenaLobbyRef = rtdb().ref(`arena/lobby/${fila}/${walletAddress}`);
 
   await _arenaLobbyRef.set({
     wallet:    walletAddress,
@@ -318,7 +316,7 @@ async function desafiarJogador(walletOponente) {
 
   const aposta = _getAposta();
   const fila   = _getFila();
-  const salaId = `${_wkey(walletAddress)}_${_wkey(walletOponente)}_${Date.now()}`;
+  const salaId = `sala_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
 
   const sala = {
     id:       salaId,
@@ -359,8 +357,8 @@ async function desafiarJogador(walletOponente) {
   await rtdb().ref(`arena/salas/${salaId}`).set(sala);
 
   // Marca os dois como em partida no lobby
-  await rtdb().ref(`arena/lobby/${fila}/${_wkey(walletAddress)}/emPartida`).set(true);
-  await rtdb().ref(`arena/lobby/${fila}/${_wkey(walletOponente)}/emPartida`).set(true);
+  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
+  await rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`).set(true);
 
   _debitarAposta();
   _arenaPartidaId = salaId;
@@ -373,7 +371,7 @@ async function cancelarDesafio(salaId) {
   if(!rtdb()) return;
   await rtdb().ref(`arena/salas/${salaId}`).update({ status: 'cancelada' });
   const fila = _getFila();
-  await rtdb().ref(`arena/lobby/${fila}/${_wkey(walletAddress)}/emPartida`).set(false);
+  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
   // Devolve aposta
   const a = _getAposta();
   if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
@@ -446,7 +444,7 @@ async function aceitarDesafio(salaId) {
   });
 
   const fila = _getFila();
-  await rtdb().ref(`arena/lobby/${fila}/${_wkey(walletAddress)}/emPartida`).set(true);
+  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
 
   const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
   _renderPartida(salaId, snap.val());
@@ -699,7 +697,7 @@ async function _renderResultado(sala, opWallet) {
 
   // Libera do lobby
   const fila = _getFila();
-  try { await rtdb().ref(`arena/lobby/${fila}/${_wkey(walletAddress)}/emPartida`).set(false); } catch(e){}
+  try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false); } catch(e){}
   _arenaAtiva     = false;
   _arenaPartidaId = null;
 
@@ -781,7 +779,7 @@ async function _distribuirRecompensas(sala, opWallet) {
 
 async function _atualizarRanking(sala, opWallet, euVenci, empate) {
   if(!rtdb() || !walletAddress) return;
-  const ref  = rtdb().ref(`arena/ranking/${sala.fila}/${_wkey(walletAddress)}`);
+  const ref  = rtdb().ref(`arena/ranking/${sala.fila}/${walletAddress}`);
   const snap = await ref.once('value');
   const cur  = snap.val() || { pontos:0, vitorias:0, derrotas:0, empates:0 };
   const pts  = empate ? 1 : euVenci ? ARENA_PONTOS.vitoria : ARENA_PONTOS.derrota;
@@ -812,7 +810,7 @@ async function _carregarRanking() {
   wrap.innerHTML = lista.length === 0
     ? '<div class="arena-lobby-vazio">Nenhuma partida ainda.</div>'
     : lista.map((d,i) => `
-        <div class="arena-rank-row ${_wkey(d.wallet||'') === _wkey(walletAddress) ? 'arena-rank-meu' : ''}">
+        <div class="arena-rank-row ${(d.wallet||'').toLowerCase() === (walletAddress||'').toLowerCase() ? 'arena-rank-meu' : ''}">
           <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
           <span class="arena-rank-nome">${d.nome||(d.wallet||'').slice(0,10)+'...'}</span>
           <span class="arena-rank-pts">${d.pontos||0} pts</span>
