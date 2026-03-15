@@ -10,7 +10,6 @@ window.closeCoinShop = typeof closeCoinShop !== "undefined" ? closeCoinShop : ()
 window.closeEggInventory = typeof closeEggInventory !== "undefined" ? closeEggInventory : ()=>{};
 window.closeGameSelector = typeof closeGameSelector !== "undefined" ? closeGameSelector : ()=>{};
 window.closeItemInventory = typeof closeItemInventory !== "undefined" ? closeItemInventory : ()=>{};
-window.closeJkp = typeof closeJkp !== "undefined" ? closeJkp : ()=>{};
 window.closeMarket = typeof closeMarket !== "undefined" ? closeMarket : ()=>{};
 window.closeMiniModal = typeof closeMiniModal !== "undefined" ? closeMiniModal : ()=>{};
 window.closeShop = typeof closeShop !== "undefined" ? closeShop : ()=>{};
@@ -23,19 +22,15 @@ window.disconnectWallet = typeof disconnectWallet !== "undefined" ? disconnectWa
 window.equipItem = typeof equipItem !== "undefined" ? equipItem : ()=>{};
 window.feedCreature = typeof feedCreature !== "undefined" ? feedCreature : ()=>{};
 window.hatchEggFromInventory = typeof hatchEggFromInventory !== "undefined" ? hatchEggFromInventory : ()=>{};
-window.sellEggToPool = typeof sellEggToPool !== "undefined" ? sellEggToPool : ()=>{};
 window.updatePhaseLabel = typeof updatePhaseLabel !== "undefined" ? updatePhaseLabel : ()=>{};
 window.startVelha    = typeof startVelha    !== "undefined" ? startVelha    : ()=>{};
 window.startRename   = typeof startRename   !== "undefined" ? startRename   : ()=>{};
 window.cancelRename  = typeof cancelRename  !== "undefined" ? cancelRename  : ()=>{};
 window.confirmRename = typeof confirmRename !== "undefined" ? confirmRename : ()=>{};
 window.setDifficulty   = typeof setDifficulty   !== "undefined" ? setDifficulty   : ()=>{};
-window.openJkp         = typeof openJkp         !== "undefined" ? openJkp         : ()=>{};
 window.openGameSelector= typeof openGameSelector !== "undefined" ? openGameSelector : ()=>{};
 window.velhaClick      = typeof velhaClick      !== "undefined" ? velhaClick      : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
-window.jkpChoose = typeof jkpChoose !== "undefined" ? jkpChoose : ()=>{};
-window.jkpPlayAgain = typeof jkpPlayAgain !== "undefined" ? jkpPlayAgain : ()=>{};
 window.layEgg = typeof layEgg !== "undefined" ? layEgg : ()=>{};
 window.memFlip = typeof memFlip !== "undefined" ? memFlip : ()=>{};
 window.openCoinShop = typeof openCoinShop !== "undefined" ? openCoinShop : ()=>{};
@@ -72,23 +67,19 @@ window.addEventListener('beforeunload', () => {
 });
 
 // ── DETECTOR DE INATIVIDADE — sugere modo repouso ──
-// Dispara após 5 minutos sem interação do utilizador
-const INATIVIDADE_MS = 5 * 60 * 1000; // 5 minutos
+const INATIVIDADE_MS = 5 * 60 * 1000;
 let _inativoTimer = null;
 
 function _resetInatividade() {
   clearTimeout(_inativoTimer);
-  // Só monitora se avatar está vivo, acordado e fora do modo repouso
   if(!hatched || dead || sleeping || modoRepouso) return;
   _inativoTimer = setTimeout(() => {
     if(!hatched || dead || sleeping || modoRepouso) return;
-    // Usa a bolinha de fala do avatar para sugerir
     showBubble('Vai sair? Ativa o repouso! 🌙');
     addLog('Inativo há 5min — segure 💤 DORMIR para ativar o modo repouso.', 'info');
   }, INATIVIDADE_MS);
 }
 
-// Reinicia o timer em qualquer interação
 ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(evt => {
   document.addEventListener(evt, _resetInatividade, { passive: true });
 });
@@ -101,14 +92,9 @@ document.addEventListener('visibilitychange', async () => {
     return;
   }
 
-  // Só re-lê se ficou escondido pelo menos 2s
   if(!walletAddress || !fbDb()) return;
   if(Date.now() - _lastHidden < 2000) return;
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) return;
-
-  // ── FIX: se o modo repouso manual está ativo, o jogo foi colocado
-  //    intencionalmente em segundo plano — não aplicar offline decay.
-  //    O gametick continua rodando com o decay leve do modoRepouso.
   if(typeof modoRepouso !== 'undefined' && modoRepouso) return;
 
   try {
