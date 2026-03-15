@@ -1,6 +1,10 @@
 // ═══════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════
+
+// Declaração defensiva — state.js pode ou não ter esta variável
+if(typeof _repousoTimer === 'undefined') var _repousoTimer = null;
+
 function canAct() {
   if(dead || !hatched || !avatar) return false;
   if(sleeping) { showBubble('Shh... está dormindo 💤'); return false; }
