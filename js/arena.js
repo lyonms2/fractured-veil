@@ -139,7 +139,7 @@ function renderArenaModal() {
         <span style="color:var(--muted);font-size:6px;">15% → pool do ranking</span>
       </div>
 
-      <div class="arena-lobby-actions">
+      <div class="arena-lobby-actions" id="arenaLobbyActions">
         ${arenaAtiva
           ? `<button class="arena-btn-sair" onclick="sairDoLobby()">⬅ SAIR DA FILA</button>
              <div class="arena-aguardando">
@@ -183,6 +183,11 @@ function arenaShowTab(tab) {
   document.getElementById('tabRanking').classList.toggle('active', tab === 'ranking');
 }
 
+// ── Sanitiza wallet para usar como chave no RTDB (remove caracteres inválidos) ──
+function arenaWalletKey(w) {
+  return (w || '').toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // ENTRAR / SAIR DO LOBBY
 // ═══════════════════════════════════════════════════════════════════
@@ -192,7 +197,8 @@ async function entrarNoLobby() {
   if(!arenaPodePagar()) { showBubble('Saldo insuficiente!'); return; }
 
   const fila = arenaGetFila();
-  arenaLobbyRef = rtdb().ref(`arena/lobby/${fila}/${walletAddress}`);
+  const key  = arenaWalletKey(walletAddress);
+  arenaLobbyRef = rtdb().ref(`arena/lobby/${fila}/${key}`);
 
   await arenaLobbyRef.set({
     wallet:    walletAddress,
@@ -214,39 +220,71 @@ async function entrarNoLobby() {
 
   arenaAtiva = true;
   addLog('Entrou na fila da Arena! ⚔️', 'info');
-  renderArenaModal();
+
+  // Atualiza apenas a seção de ações — sem recriar o modal inteiro
+  _renderArenaAcoes();
 }
 
 async function sairDoLobby() {
   if(arenaLobbyRef) { await arenaLobbyRef.remove(); arenaLobbyRef = null; }
   if(arenaHeartbeat){ clearInterval(arenaHeartbeat); arenaHeartbeat = null; }
+  // Para o listener do lobby
+  if(arenaLobbyListenerRef) {
+    arenaLobbyListenerRef.off('value');
+    arenaLobbyListenerRef = null;
+  }
   arenaListeners.forEach(u => { try { u(); } catch(e){} });
   arenaListeners = [];
   arenaAtiva = false;
+}
+
+// Atualiza só o bloco de ações (entrar/sair) sem destruir o listener
+function _renderArenaAcoes() {
+  const wrap = document.getElementById('arenaLobbyActions');
+  if(!wrap) return;
+  const podePagar = arenaPodePagar();
+  wrap.innerHTML = arenaAtiva
+    ? `<button class="arena-btn-sair" onclick="sairDoLobby()">⬅ SAIR DA FILA</button>
+       <div class="arena-aguardando"><div class="arena-pulse"></div>Aguardando oponente...</div>`
+    : `<button class="arena-btn-entrar ${!podePagar ? 'disabled' : ''}"
+         onclick="${podePagar ? 'entrarNoLobby()' : ''}"
+         ${!podePagar ? 'disabled' : ''}>
+         ⚔️ ENTRAR NA FILA
+       </button>
+       ${!podePagar ? `<div class="arena-sem-saldo">Saldo insuficiente (${arenaDescricaoAposta()} necessário)</div>` : ''}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // LISTENER DO LOBBY
 // ═══════════════════════════════════════════════════════════════════
 
+let arenaLobbyListenerRef = null; // ref do listener ativo — para poder fazer .off()
+
 function iniciarLobbyListener() {
   if(!rtdb()) return;
-  if(arenaLobbySnap) rtdb().ref(`arena/lobby/${arenaGetFila()}`).off('value', arenaLobbySnap);
 
-  const ref = rtdb().ref(`arena/lobby/${arenaGetFila()}`);
-  arenaLobbySnap = ref.on('value', snap => {
+  // Para listener anterior se existir
+  if(arenaLobbyListenerRef) {
+    arenaLobbyListenerRef.off('value');
+    arenaLobbyListenerRef = null;
+  }
+
+  const fila = arenaGetFila();
+  arenaLobbyListenerRef = rtdb().ref(`arena/lobby/${fila}`);
+
+  arenaLobbyListenerRef.on('value', snap => {
     const lista = document.getElementById('arenaLobbyLista');
     if(!lista) return;
 
     const dados = snap.val() || {};
     const agora = Date.now();
+    const myKey = arenaWalletKey(walletAddress);
 
     const avatares = Object.entries(dados)
-      .filter(([w, d]) => {
-        if(w === walletAddress) return false;
-        if(d.emPartida) return false;
-        // ts pode ser null se ainda não foi resolvido pelo servidor — aceita nesses casos
-        if(!d.ts || typeof d.ts !== 'number') return true;
+      .filter(([k, d]) => {
+        if(k === myKey) return false;          // não mostra a si mesmo
+        if(d.emPartida) return false;          // já em partida
+        if(!d.ts || typeof d.ts !== 'number') return true; // ts ainda não resolvido
         return (agora - d.ts) < ARENA_LOBBY_TTL;
       })
       .sort((a, b) => (a[1].ts || 0) - (b[1].ts || 0));
@@ -256,7 +294,7 @@ function iniciarLobbyListener() {
       return;
     }
 
-    lista.innerHTML = avatares.map(([wallet, d]) => `
+    lista.innerHTML = avatares.map(([key, d]) => `
       <div class="arena-lobby-card">
         <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36)}</div>
         <div class="arena-lobby-info">
@@ -264,7 +302,7 @@ function iniciarLobbyListener() {
           <div class="arena-lobby-meta">NV ${d.nivel} · ${d.raridade} · Vínculo ${d.vinculo}</div>
         </div>
         ${arenaAtiva
-          ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${wallet}')">⚔️ DESAFIAR</button>`
+          ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">⚔️ DESAFIAR</button>`
           : `<div class="arena-lobby-aguarda">Entre na fila para desafiar</div>`}
       </div>
     `).join('');
@@ -312,8 +350,10 @@ async function desafiarJogador(walletOponente) {
   };
 
   await rtdb().ref(`arena/salas/${salaId}`).set(sala);
-  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
-  await rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`).set(true);
+  const myKey = arenaWalletKey(walletAddress);
+  const opKey = arenaWalletKey(walletOponente);
+  await rtdb().ref(`arena/lobby/${fila}/${myKey}/emPartida`).set(true);
+  await rtdb().ref(`arena/lobby/${fila}/${opKey}/emPartida`).set(true);
 
   // Debita aposta imediatamente ao desafiar
   arenaDebitarAposta();
@@ -328,13 +368,15 @@ async function cancelarDesafio(salaId) {
   if(!rtdb()) return;
   await rtdb().ref(`arena/salas/${salaId}`).update({ status: 'cancelada' });
   const fila = arenaGetFila();
-  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
+  const key  = arenaWalletKey(walletAddress);
+  await rtdb().ref(`arena/lobby/${fila}/${key}/emPartida`).set(false);
   // Devolve aposta
   const a = arenaGetAposta();
   if(a.cristais > 0) gs.cristais += a.cristais;
   else               gs.moedas   += a.moedas;
   updateResourceUI();
   arenaPartidaId = null;
+  // Volta para o lobby sem recriar tudo
   renderArenaModal();
 }
 
@@ -402,7 +444,8 @@ async function aceitarDesafio(salaId) {
   });
 
   const fila = arenaGetFila();
-  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
+  const key  = arenaWalletKey(walletAddress);
+  await rtdb().ref(`arena/lobby/${fila}/${key}/emPartida`).set(true);
 
   const snap = await rtdb().ref(`arena/salas/${salaId}`).once('value');
   abrirPartida(salaId, snap.val());
@@ -679,9 +722,9 @@ async function mostrarResultadoFinal(sala, opWallet) {
 
   // Limpa lobby
   const fila = arenaGetFila();
-  await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(false);
+  const key  = arenaWalletKey(walletAddress);
+  await rtdb().ref(`arena/lobby/${fila}/${key}/emPartida`).set(false);
   arenaPartidaId = null;
-  sairDoLobby();
 
   const titulo = empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
   const corTit = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
