@@ -113,6 +113,7 @@ function openArena() {
 function closeArena() {
   _pararTimer();
   _pararLobbyListener();
+  _pararSalaListener();
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
   ModalManager.close('arenaModal');
 }
@@ -217,12 +218,12 @@ function arenaShowTab(tab) {
 // ═══════════════════════════════════════════════════════════════════
 
 function _iniciarLobbyListener() {
-  if(!rtdb()) { console.log('[ARENA] _iniciarLobbyListener: rtdb null!'); return; }
+  if(!rtdb()) return;
 
+  // Para qualquer listener anterior
   _pararLobbyListener();
 
   const fila = _getFila();
-  console.log('[ARENA] iniciando listener na fila:', fila, 'path: arena/lobby/'+fila);
   _arenaLobbyListRef = rtdb().ref(`arena/lobby/${fila}`);
 
   _arenaLobbyListRef.on('value', snap => {
@@ -616,31 +617,35 @@ function _iniciarBarraTurno(salaId, opWallet) {
 }
 
 // ── Listener central ──
-let _arenaAnimando = false;
+let _arenaAnimando  = false;
+let _arenaSalaRef   = null; // ref global para poder desligar o listener da sala
+
+function _pararSalaListener() {
+  if(_arenaSalaRef) {
+    _arenaSalaRef.off('value');
+    _arenaSalaRef = null;
+  }
+}
 
 function _escutarSala(salaId, opWallet) {
-  _arenaAnimando    = false;
-  let _turnoAnterior = null;
-  const salaRef      = rtdb().ref(`arena/salas/${salaId}`);
+  _arenaAnimando = false;
+  // Para qualquer listener de sala anterior
+  _pararSalaListener();
 
-  salaRef.on('value', snap => {
+  let _turnoAnterior = null;
+  _arenaSalaRef = rtdb().ref(`arena/salas/${salaId}`);
+
+  _arenaSalaRef.on('value', snap => {
     const s = snap.val();
     if(!s || _arenaAnimando) return;
 
     const euSouCriador = walletAddress === s.criador;
     const turno        = s.turno || 1;
 
-    // Só age quando o turno realmente mudou
     if(turno !== _turnoAnterior) {
       _turnoAnterior = turno;
-
-      // Turno 2: criador já escolheu → vez do oponente
       if(turno === 2) {
-        if(euSouCriador) {
-          // Sou o criador — já escolhi, aguardando oponente
-          // UI já foi atualizada em fazerEscolha, não faz nada aqui
-        } else {
-          // Sou o oponente — desbloqueia minha vez
+        if(!euSouCriador) {
           const st = document.getElementById('arenaStatus');
           if(st) st.textContent = '⚔️ Escolha sua jogada!';
           document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
@@ -652,19 +657,17 @@ function _escutarSala(salaId, opWallet) {
       }
     }
 
-    // roundResult gravado → revelar
     if(s.roundResult && !_arenaAnimando) {
       _arenaAnimando = true;
-      salaRef.off('value');
+      _pararSalaListener();
       _pararTimer();
       _animarRevelacao(salaId, s, opWallet);
       return;
     }
 
-    // finalizada sem roundResult = reconexão/edge case
     if(s.status === 'finalizada' && !s.roundResult) {
       _arenaAnimando = true;
-      salaRef.off('value');
+      _pararSalaListener();
       _pararTimer();
       _renderResultado(s, opWallet);
     }
