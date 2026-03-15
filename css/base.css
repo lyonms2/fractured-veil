@@ -25,7 +25,7 @@ body {
 }
 /* ── Desktop: +10% de zoom (175% → 192%) ── */
 @media(min-width:681px) {
-  html { font-size: 192%; }
+  html { font-size: 150%; }
   .app { transform-origin: top center; }
 }
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
