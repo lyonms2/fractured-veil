@@ -1,0 +1,243 @@
+/* ══════════════════════════════════════════════════════════════
+   ARENA DIMENSIONAL — CSS
+   Modal dentro da .screen, mesmo padrão dos outros minigames
+══════════════════════════════════════════════════════════════ */
+
+#arenaModal {
+  position: absolute; inset: 0; z-index: 32;
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(4,3,10,.97);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  padding: 12px 14px;
+  gap: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#arenaModal.open { opacity: 1; pointer-events: all; }
+
+/* ── Header ── */
+.arena-header {
+  text-align: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.arena-title {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 3px; color: var(--gold);
+}
+.arena-sub {
+  font-size: 6px; color: var(--muted);
+  letter-spacing: 2px; margin-top: 3px;
+}
+
+/* ── Tabs ── */
+.arena-tabs {
+  display: flex; gap: 6px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.arena-tab {
+  flex: 1; padding: 5px 0;
+  font-family: 'Cinzel', serif;
+  font-size: 7px; letter-spacing: 1px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent; color: var(--muted);
+  cursor: pointer; transition: all .15s;
+}
+.arena-tab:hover { border-color: var(--gold); color: var(--gold-light); }
+.arena-tab.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.15);
+  color: var(--gold);
+}
+
+/* ── Tab content ── */
+.arena-tab-content {
+  display: flex; flex-direction: column;
+  align-items: center; width: 100%;
+  gap: 8px;
+}
+
+/* ── Info da aposta ── */
+.arena-aposta-info {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  background: rgba(201,168,76,.05);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 7px; color: var(--muted);
+  width: 100%; text-align: center;
+}
+.arena-aposta-info b { color: var(--gold); }
+
+/* ── Botões de ação ── */
+.arena-lobby-actions {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  width: 100%;
+}
+
+.arena-btn-entrar {
+  width: 100%; padding: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 2px;
+  border: 1px solid var(--gold);
+  border-radius: 6px; background: transparent;
+  color: var(--gold); cursor: pointer;
+  transition: all .2s; position: relative; overflow: hidden;
+}
+.arena-btn-entrar::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--gold); opacity: 0; transition: opacity .2s;
+}
+.arena-btn-entrar:hover::before { opacity: 1; }
+.arena-btn-entrar:hover { color: var(--bg); }
+.arena-btn-entrar span { position: relative; z-index: 1; }
+.arena-btn-entrar.disabled {
+  opacity: .4; cursor: not-allowed;
+  border-color: var(--border); color: var(--muted);
+}
+
+.arena-btn-sair {
+  padding: 6px 18px;
+  font-family: 'Cinzel', serif;
+  font-size: 7px; letter-spacing: 1px;
+  border: 1px solid #e74c3c;
+  border-radius: 4px; background: transparent;
+  color: #e74c3c; cursor: pointer; transition: all .15s;
+}
+.arena-btn-sair:hover { background: rgba(231,76,60,.12); }
+
+.arena-sem-saldo {
+  font-size: 6px; color: #e74c3c;
+  font-family: 'Cinzel', serif; letter-spacing: .5px;
+}
+
+/* ── Aguardando ── */
+.arena-aguardando {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 7px; color: var(--raro);
+  letter-spacing: 1px;
+}
+.arena-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--raro);
+  box-shadow: 0 0 6px var(--raro);
+  animation: arena-pulse-anim 1.4s ease-in-out infinite;
+}
+@keyframes arena-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.7); }
+}
+
+/* ── Lobby lista ── */
+.arena-lobby-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 6px; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase;
+  align-self: flex-start; margin-top: 2px;
+}
+.arena-lobby-lista {
+  display: flex; flex-direction: column;
+  gap: 6px; width: 100%;
+}
+.arena-lobby-vazio {
+  font-size: 7px; color: var(--muted);
+  text-align: center; padding: 16px 0;
+  font-family: 'Cinzel', serif; letter-spacing: .5px;
+}
+
+/* ── Card de avatar no lobby ── */
+.arena-lobby-card {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  transition: border-color .2s;
+}
+.arena-lobby-card:hover { border-color: rgba(201,168,76,.3); }
+.arena-lobby-svg {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+}
+.arena-lobby-info { flex: 1; min-width: 0; }
+.arena-lobby-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 8px; font-weight: 700;
+  color: var(--gold-light);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.arena-lobby-meta {
+  font-size: 6px; color: var(--muted); margin-top: 2px;
+}
+
+.arena-btn-desafiar {
+  padding: 5px 10px; flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 7px; letter-spacing: .5px;
+  border: 1px solid var(--gold);
+  border-radius: 4px; background: rgba(201,168,76,.08);
+  color: var(--gold); cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.arena-btn-desafiar:hover { background: rgba(201,168,76,.22); }
+
+.arena-lobby-aguarda {
+  font-size: 6px; color: var(--muted);
+  font-family: 'Cinzel', serif;
+}
+
+/* ── Ranking ── */
+.arena-ranking-wrap {
+  display: flex; flex-direction: column;
+  gap: 4px; width: 100%;
+}
+.arena-rank-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 6px;
+  font-family: 'Cinzel', serif; font-size: 7px;
+}
+.arena-rank-row.arena-rank-meu {
+  border-color: rgba(201,168,76,.4);
+  background: rgba(201,168,76,.06);
+}
+.arena-rank-pos { width: 20px; text-align: center; font-size: 10px; flex-shrink: 0; }
+.arena-rank-nome { flex: 1; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arena-rank-pts { color: var(--gold); font-weight: 700; flex-shrink: 0; }
+.arena-rank-wl  { flex-shrink: 0; margin-left: 4px; }
+
+/* ── Pool semanal ── */
+.arena-pool-card {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(167,139,250,.06);
+  border: 1px solid rgba(167,139,250,.2);
+  border-radius: 8px; text-align: center;
+  width: 100%;
+}
+.arena-pool-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 7px; letter-spacing: 2px;
+  color: var(--gem); margin-bottom: 6px;
+}
+.arena-pool-valor {
+  font-family: 'Cinzel', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--gem2);
+  text-shadow: 0 0 16px rgba(196,181,253,.4);
+}
+.arena-pool-sub {
+  font-size: 6px; color: var(--muted); margin-top: 4px; letter-spacing: .5px;
+}
