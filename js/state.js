@@ -10,10 +10,6 @@ let pendingHatchId = null;
 let eggsInInventory = [];
 const GAME_SPEED  = 1.0;
 
-// ── Modo Repouso Manual ──
-let modoRepouso   = false; // ativado por long press no botão Dormir
-let _repousoTimer = null;  // timer do long press (2s)
-
 // ═══════════════════════════════════════════════════════════════════
 // ITEM SYSTEM
 // ═══════════════════════════════════════════════════════════════════
@@ -90,6 +86,7 @@ function getItemEffect(key) {
  // [{raridade, elemento, expiraEm (timestamp ms)}]
 let eggLayNotified  = false; // evita notificação dupla
 let sleeping  = false;
+let modoRepouso = false; // modo repouso offline automático
 let sick      = false;
 let dead      = false;
 let selectedDifficulty = null; // null = automático pelo nível
@@ -139,8 +136,8 @@ function xpParaNivel(n) {
 function rarityBonus() {
   if(!avatar) return { xp:1, moedas:1, decay:1, eggs:1, cooldown:1, burnBonus:0, shopDiscount:0 };
   switch(avatar.raridade) {
-    case 'Lendário': return { xp:1.6, moedas:1.5, decay:0.6, eggs:3, cooldown:1.5,  burnBonus:0.5,  shopDiscount:0.20 };
-    case 'Raro':     return { xp:1.3, moedas:1.2, decay:0.8, eggs:2, cooldown:2.0,  burnBonus:0.25, shopDiscount:0.10 };
+    case 'Lendário': return { xp:1.6, moedas:1.5, decay:0.6, eggs:3, cooldown:1.5,  burnBonus:0.5,  shopDiscount:0.20 }; // 36h cooldown
+    case 'Raro':     return { xp:1.3, moedas:1.2, decay:0.8, eggs:2, cooldown:2.0,  burnBonus:0.25, shopDiscount:0.10 };  // 48h cooldown
     default:         return { xp:1.0, moedas:1.0, decay:1.0, eggs:1, cooldown:1.0,  burnBonus:0,    shopDiscount:0    };
   }
 }
@@ -167,6 +164,7 @@ const SLOT_COST   = 15; // 💎
 
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
+  // conta quantos slots foram desbloqueados (guardado em gs)
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
 }
 
@@ -174,6 +172,7 @@ function getUnlockedSlots() {
 // AVATAR — FONTE ÚNICA DE VERDADE: avatarSlots
 // ═══════════════════════════════════════════
 
+// avatar é sempre lido do slot activo
 Object.defineProperty(window, 'avatar', {
   get() { return avatarSlots[activeSlotIdx] ?? null; },
   set(v) {
@@ -183,9 +182,13 @@ Object.defineProperty(window, 'avatar', {
   configurable: true
 });
 
+// Estado em runtime que pertence ao slot activo
+// Usado ao trocar de slot — save e restore
 function saveRuntimeToSlot(idx) {
   if(idx === undefined) idx = activeSlotIdx;
   if(!avatarSlots[idx]) {
+    // Slot null mas pode ter eggs/items — não perder
+    // Marca para saveToFirebase persistir como inboxEggs
     if(eggsInInventory.length > 0 || itemInventory.length > 0) {
       window._orphanEggs  = eggsInInventory.map(e => ({...e}));
       window._orphanItems = itemInventory.map(i => ({...i}));
@@ -195,7 +198,6 @@ function saveRuntimeToSlot(idx) {
   Object.assign(avatarSlots[idx], {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
-    modoRepouso,                        // ← persiste modo repouso
     bornAt, poopCount, dirtyLevel, poopPressure,
     eggLayCooldown, petCooldown,
     vitals: {...vitals},
@@ -208,12 +210,13 @@ function loadRuntimeFromSlot(idx) {
   if(idx === undefined) idx = activeSlotIdx;
   const s = avatarSlots[idx];
   if(!s || !s.hatched) {
+    // Empty or un-hatched slot — reset to defaults but preserve eggs
     nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
     hatched = false; dead = false; sick = false; sleeping = false;
-    modoRepouso = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
     eggLayCooldown = 0; petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
+    // Preserve eggs from slot if they exist — don't wipe them
     eggsInInventory = s?.eggs ? s.eggs.map(e => ({...e})) : [];
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
     return;
@@ -226,7 +229,6 @@ function loadRuntimeFromSlot(idx) {
   dead           = s.dead           ?? false;
   sick           = s.sick           ?? false;
   sleeping       = s.sleeping       ?? false;
-  modoRepouso    = s.modoRepouso    ?? false; // ← restaura modo repouso
   bornAt         = s.bornAt         ?? 0;
   poopCount      = s.poopCount      ?? 0;
   dirtyLevel     = s.dirtyLevel     ?? 0;
@@ -236,21 +238,14 @@ function loadRuntimeFromSlot(idx) {
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
-
-  // Restaurar overlay de repouso se estava ativo ao sair
-  if(modoRepouso && typeof ativarModoRepouso === 'function') {
-    modoRepouso = false; // reset para ativarModoRepouso() poder ligar
-    ativarModoRepouso();
-  }
 }
 
+// Troca de slot activo (chamado pelo marketplace ou UI futura)
 async function switchSlot(newIdx) {
   if(newIdx === activeSlotIdx) return;
   if(newIdx < 0 || newIdx >= getUnlockedSlots()) return;
-  // Desativar repouso ao trocar de slot
-  if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
-  saveRuntimeToSlot(activeSlotIdx);
+  saveRuntimeToSlot(activeSlotIdx);   // guarda estado actual no slot antigo
   activeSlotIdx = newIdx;
-  loadRuntimeFromSlot(newIdx);
+  loadRuntimeFromSlot(newIdx);        // carrega estado do novo slot
   scheduleSave();
 }
