@@ -64,10 +64,9 @@
 }
 @keyframes star-twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
 
-
 #sleepEyes.show { opacity:1; }
 
-/* ZZZ bubbles - hidden by default, shown only when sleeping */
+/* ZZZ bubbles */
 .zzz-bubble {
   position:absolute;
   font-family:'Cinzel',serif; font-weight:900;
@@ -75,9 +74,7 @@
   pointer-events:none; z-index:16;
   opacity:0;
 }
-.zzz-bubble.sleeping {
-  animation:zzz-float 2.8s ease-out infinite;
-}
+.zzz-bubble.sleeping { animation:zzz-float 2.8s ease-out infinite; }
 @keyframes zzz-float {
   0%   { opacity:0;   transform:translate(0,0)      scale(.7); }
   15%  { opacity:.9; }
@@ -85,27 +82,25 @@
   100% { opacity:0;   transform:translate(22px,-60px) scale(1.1); }
 }
 
-/* Dim buttons when sleeping — only sleep button stays active */
+/* Dim buttons when sleeping */
 .sleeping-mode .btn-action,
 .jkp-mode .btn-action      { opacity:.2; pointer-events:none; cursor:not-allowed; }
 .sleeping-mode #btnSleep   { opacity:1; pointer-events:all; cursor:pointer;
   border-color:var(--raro); color:var(--raro);
   box-shadow:0 0 12px rgba(90,180,232,.35);
 }
-/* btnPlay stays disabled when game modal is open */
 
 @keyframes sleep-sway { 0%,100%{transform:translateY(0) rotate(-3deg) scaleY(.93)} 50%{transform:translateY(5px) rotate(3deg) scaleY(.88)} }
-.creature-wrap.anim-sad svg { animation:sad-shake .5s ease-in-out; }
+.creature-wrap.anim-sad  svg { animation:sad-shake .5s ease-in-out; }
 .creature-wrap.anim-dead svg { animation:dead-fall 1s ease-out forwards; }
 .creature-wrap.anim-heal svg { animation:heal-pulse 1s ease-in-out; }
 @keyframes heal-pulse {
-  0%  { transform:scale(1)    brightness(1); filter:none; }
+  0%  { transform:scale(1);    filter:none; }
   25% { transform:scale(1.12); filter:drop-shadow(0 0 12px #27ae60) brightness(1.3); }
-  50% { transform:scale(.97); filter:drop-shadow(0 0 6px #27ae60); }
+  50% { transform:scale(.97);  filter:drop-shadow(0 0 6px #27ae60); }
   75% { transform:scale(1.06); filter:drop-shadow(0 0 10px #27ae60) brightness(1.2); }
-  100%{ transform:scale(1);   filter:none; }
+  100%{ transform:scale(1);    filter:none; }
 }
-/* Heal cross particles */
 .heal-cross {
   position:absolute; pointer-events:none; z-index:22;
   font-size:16px; color:#27ae60;
@@ -117,29 +112,27 @@
   25% { opacity:1; transform:translate(var(--hx),calc(var(--hy) - 12px)) scale(1.1); }
   100%{ opacity:0; transform:translate(var(--hx),calc(var(--hy) - 40px)) scale(.8); }
 }
-/* Green screen flash on heal */
 #healFlash {
   position:absolute; inset:0; z-index:21; pointer-events:none;
   background:radial-gradient(circle at 50% 50%, rgba(39,174,96,.22) 0%, transparent 70%);
   opacity:0; transition:opacity .15s;
 }
 @keyframes eat-bounce {
-  0%  { transform:scale(1)   translateY(0); }
+  0%  { transform:scale(1)    translateY(0); }
   20% { transform:scale(1.15) translateY(-14px) rotate(-4deg); }
   40% { transform:scale(1.1)  translateY(-8px)  rotate(4deg); }
   60% { transform:scale(.95)  translateY(-3px)  rotate(-2deg); }
   80% { transform:scale(1.04) translateY(0)     rotate(1deg); }
-  100%{ transform:scale(1)   translateY(0); }
+  100%{ transform:scale(1)    translateY(0); }
 }
 @keyframes pet-squish {
-  0%   { transform:scale(1)    translateY(0)     rotate(0deg); }
-  15%  { transform:scale(1.18,0.85) translateY(6px)  rotate(-3deg); }
-  35%  { transform:scale(0.88,1.15) translateY(-12px) rotate(3deg); }
-  55%  { transform:scale(1.12,0.92) translateY(-4px)  rotate(-2deg); }
-  75%  { transform:scale(0.96,1.06) translateY(-1px)  rotate(1deg); }
-  100% { transform:scale(1)    translateY(0)     rotate(0deg); }
+  0%   { transform:scale(1)        translateY(0)     rotate(0deg); }
+  15%  { transform:scale(1.18,.85) translateY(6px)   rotate(-3deg); }
+  35%  { transform:scale(.88,1.15) translateY(-12px) rotate(3deg); }
+  55%  { transform:scale(1.12,.92) translateY(-4px)  rotate(-2deg); }
+  75%  { transform:scale(.96,1.06) translateY(-1px)  rotate(1deg); }
+  100% { transform:scale(1)        translateY(0)     rotate(0deg); }
 }
-/* Food particles on eat */
 .food-particle {
   position:absolute; font-size:14px; pointer-events:none; z-index:22;
   animation:food-rain .9s cubic-bezier(.4,0,.6,1) forwards;
@@ -149,10 +142,9 @@
   60% { opacity:1; }
   100%{ opacity:0; transform:translate(var(--fx),40px) scale(.6) rotate(var(--fr)); }
 }
-@keyframes play-spin { 0%{transform:rotate(0)} 30%{transform:translateX(18px) rotate(20deg)} 60%{transform:translateX(-10px) rotate(-10deg)} 100%{transform:rotate(0)} }
-@keyframes sleep-sway { 0%,100%{transform:translateY(0) scaleY(.92)} 50%{transform:translateY(3px) scaleY(.88)} }
-@keyframes sad-shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
-@keyframes dead-fall { 0%{transform:rotate(0) opacity(1)} 100%{transform:rotate(80deg) translateX(20px); opacity:.3} }
+@keyframes play-spin  { 0%{transform:rotate(0)} 30%{transform:translateX(18px) rotate(20deg)} 60%{transform:translateX(-10px) rotate(-10deg)} 100%{transform:rotate(0)} }
+@keyframes sad-shake  { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+@keyframes dead-fall  { 0%{transform:rotate(0)} 100%{transform:rotate(80deg) translateX(20px); opacity:.3} }
 
 .creature-shadow {
   position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
@@ -188,151 +180,113 @@
   background:var(--border); border-top:1px solid var(--border-glow); z-index:4;
 }
 
-/* phase label */
+/* phase label — 40px acima do chão, com folga visível */
 .phase-label {
-  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
   font-family:'Cinzel',serif; font-size:8px; font-weight:700;
-  letter-spacing:3px; z-index:6;
-  white-space:nowrap;
-  padding:3px 10px;
-  border-radius:20px;
-  border:1px solid;
+  letter-spacing:3px; z-index:6; white-space:nowrap;
+  padding:3px 10px; border-radius:20px; border:1px solid;
   backdrop-filter:blur(4px);
   transition: color .4s, border-color .4s, background .4s, box-shadow .4s;
 }
-/* Cores por fase */
 .phase-label.fase-bebe    { color:#a78bfa; border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.08); box-shadow:0 0 10px rgba(167,139,250,.2); }
 .phase-label.fase-crianca { color:#60d4f0; border-color:rgba(96,212,240,.35);  background:rgba(96,212,240,.08);  box-shadow:0 0 10px rgba(96,212,240,.2); }
 .phase-label.fase-jovem   { color:#4ade80; border-color:rgba(74,222,128,.35);  background:rgba(74,222,128,.08);  box-shadow:0 0 10px rgba(74,222,128,.2); }
 .phase-label.fase-adulto  { color:#f0b840; border-color:rgba(240,184,64,.4);   background:rgba(240,184,64,.08);  box-shadow:0 0 14px rgba(240,184,64,.3), 0 0 4px rgba(240,184,64,.4); }
 
-/* ── BATH / CLEAN ANIMATION ── */
-
-/* Avatar during bath: wobble + brighten + shimmer */
-.anim-clean {
-  animation: bath-wobble 1.6s ease-in-out forwards !important;
-}
+/* ── BATH ── */
+.anim-clean { animation:bath-wobble 1.6s ease-in-out forwards !important; }
 @keyframes bath-wobble {
-  0%   { transform: scale(1)    rotate(0deg);   filter: none; }
-  10%  { transform: scale(1.08) rotate(-10deg); filter: brightness(1.2); }
-  22%  { transform: scale(1.05) rotate(9deg);   filter: brightness(1.4) saturate(1.6); }
-  35%  { transform: scale(1.1)  rotate(-7deg);  filter: brightness(1.6) saturate(2) drop-shadow(0 0 10px #5ab4e8); }
-  50%  { transform: scale(1.06) rotate(5deg);   filter: brightness(1.8) saturate(2.2) drop-shadow(0 0 14px #a0d8f8); }
-  65%  { transform: scale(1.08) rotate(-4deg);  filter: brightness(1.5) saturate(1.8) drop-shadow(0 0 10px #5ab4e8); }
-  80%  { transform: scale(1.04) rotate(2deg);   filter: brightness(1.2); }
-  100% { transform: scale(1)    rotate(0deg);   filter: none; }
+  0%   { transform:scale(1)    rotate(0deg);   filter:none; }
+  10%  { transform:scale(1.08) rotate(-10deg); filter:brightness(1.2); }
+  22%  { transform:scale(1.05) rotate(9deg);   filter:brightness(1.4) saturate(1.6); }
+  35%  { transform:scale(1.1)  rotate(-7deg);  filter:brightness(1.6) saturate(2) drop-shadow(0 0 10px #5ab4e8); }
+  50%  { transform:scale(1.06) rotate(5deg);   filter:brightness(1.8) saturate(2.2) drop-shadow(0 0 14px #a0d8f8); }
+  65%  { transform:scale(1.08) rotate(-4deg);  filter:brightness(1.5) saturate(1.8) drop-shadow(0 0 10px #5ab4e8); }
+  80%  { transform:scale(1.04) rotate(2deg);   filter:brightness(1.2); }
+  100% { transform:scale(1)    rotate(0deg);   filter:none; }
 }
-
-/* Shower curtain — full wrap blue wash */
 .bath-curtain {
-  position: absolute; inset: 0;
-  border-radius: 12px;
-  pointer-events: none; z-index: 22;
-  background: linear-gradient(180deg, rgba(90,180,232,.5) 0%, rgba(40,120,200,.2) 60%, transparent 100%);
-  animation: bath-curtain-anim 1s ease-out forwards;
+  position:absolute; inset:0; border-radius:12px; pointer-events:none; z-index:22;
+  background:linear-gradient(180deg,rgba(90,180,232,.5) 0%,rgba(40,120,200,.2) 60%,transparent 100%);
+  animation:bath-curtain-anim 1s ease-out forwards;
 }
 @keyframes bath-curtain-anim {
-  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
-  25%  { opacity: 1; transform: scaleY(1); }
-  70%  { opacity: 0.8; }
-  100% { opacity: 0; transform: scaleY(1); }
+  0%  { opacity:0; transform:scaleY(0); transform-origin:top; }
+  25% { opacity:1; transform:scaleY(1); }
+  70% { opacity:.8; }
+  100%{ opacity:0; transform:scaleY(1); }
 }
-
-/* Water drops falling */
 .bath-drop {
-  position: absolute;
-  top: 0;
-  font-size: 13px;
-  pointer-events: none; z-index: 28;
-  animation: bath-drop-fall var(--dur, 0.5s) cubic-bezier(.4,0,.8,1) forwards;
+  position:absolute; top:0; font-size:13px; pointer-events:none; z-index:28;
+  animation:bath-drop-fall var(--dur,.5s) cubic-bezier(.4,0,.8,1) forwards;
 }
 @keyframes bath-drop-fall {
-  0%   { transform: translateY(-8px) scale(0.7); opacity: 1; }
-  80%  { opacity: 0.8; }
-  100% { transform: translateY(var(--fall, 80px)) scale(1); opacity: 0; }
+  0%  { transform:translateY(-8px) scale(.7); opacity:1; }
+  80% { opacity:.8; }
+  100%{ transform:translateY(var(--fall,80px)) scale(1); opacity:0; }
 }
-
-/* Expanding splash rings */
 .bath-ring {
-  position: absolute;
-  bottom: 18%; left: 50%;
-  width: var(--rsize, 50px); height: calc(var(--rsize, 50px) * 0.35);
-  transform: translateX(-50%);
-  border: 2px solid rgba(90,180,232,.85);
-  border-radius: 50%;
-  pointer-events: none; z-index: 26;
-  animation: bath-ring-expand 0.65s ease-out forwards;
+  position:absolute; bottom:18%; left:50%;
+  width:var(--rsize,50px); height:calc(var(--rsize,50px) * .35);
+  transform:translateX(-50%);
+  border:2px solid rgba(90,180,232,.85); border-radius:50%;
+  pointer-events:none; z-index:26;
+  animation:bath-ring-expand .65s ease-out forwards;
 }
 @keyframes bath-ring-expand {
-  0%   { transform: translateX(-50%) scale(0.2); opacity: 1; }
-  100% { transform: translateX(-50%) scale(3.5); opacity: 0; }
+  0%  { transform:translateX(-50%) scale(.2); opacity:1; }
+  100%{ transform:translateX(-50%) scale(3.5); opacity:0; }
 }
-
-/* Soap bubbles rising */
 .bath-bubble {
-  position: absolute;
-  pointer-events: none; z-index: 27;
-  animation: bath-bubble-rise 0.9s ease-out forwards;
+  position:absolute; pointer-events:none; z-index:27;
+  animation:bath-bubble-rise .9s ease-out forwards;
 }
 @keyframes bath-bubble-rise {
-  0%   { transform: translateY(0) scale(0.5); opacity: 0.9; }
-  40%  { opacity: 1; transform: translateY(calc(var(--rise, 40px) * -0.5)) scale(1); }
-  100% { transform: translateY(calc(var(--rise, 40px) * -1)) scale(1.3); opacity: 0; }
+  0%  { transform:translateY(0) scale(.5); opacity:.9; }
+  40% { opacity:1; transform:translateY(calc(var(--rise,40px) * -.5)) scale(1); }
+  100%{ transform:translateY(calc(var(--rise,40px) * -1)) scale(1.3); opacity:0; }
 }
-
-/* Sparkle shimmer radiate */
 .bath-sparkle {
-  position: absolute;
-  font-size: 13px;
-  pointer-events: none; z-index: 29;
-  animation: bath-sparkle-pop 0.7s ease-out forwards;
+  position:absolute; font-size:13px; pointer-events:none; z-index:29;
+  animation:bath-sparkle-pop .7s ease-out forwards;
 }
 @keyframes bath-sparkle-pop {
-  0%   { transform: translate(-50%, 0) scale(0); opacity: 1; }
-  50%  { transform: translate(-50%, -8px) scale(1.4); opacity: 1; }
-  100% { transform: translate(-50%, -18px) scale(0.6); opacity: 0; }
+  0%  { transform:translate(-50%,0) scale(0); opacity:1; }
+  50% { transform:translate(-50%,-8px) scale(1.4); opacity:1; }
+  100%{ transform:translate(-50%,-18px) scale(.6); opacity:0; }
 }
-
-/* Fresh scent floating up with sway */
 .bath-scent {
-  position: absolute;
-  bottom: 20%;
-  font-size: 15px;
-  pointer-events: none; z-index: 27;
-  animation: bath-scent-rise 1.3s ease-out forwards;
+  position:absolute; bottom:20%; font-size:15px; pointer-events:none; z-index:27;
+  animation:bath-scent-rise 1.3s ease-out forwards;
 }
 @keyframes bath-scent-rise {
-  0%   { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
-  15%  { opacity: 1; }
-  50%  { transform: translateY(-30px) translateX(var(--sway, 5px)) scale(1.1); }
-  100% { transform: translateY(-70px) translateX(calc(var(--sway, 5px) * -0.5)) scale(0.7); opacity: 0; }
+  0%  { transform:translateY(0) translateX(0) scale(.6); opacity:0; }
+  15% { opacity:1; }
+  50% { transform:translateY(-30px) translateX(var(--sway,5px)) scale(1.1); }
+  100%{ transform:translateY(-70px) translateX(calc(var(--sway,5px) * -.5)) scale(.7); opacity:0; }
 }
 
 /* ── DECORAÇÃO PÁSCOA ── */
-#easterEggContainer {
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,.3));
-}
+#easterEggContainer { filter:drop-shadow(0 2px 6px rgba(0,0,0,.3)); }
 
-/* ══════════════════════════════════════════
-   MODO REPOUSO OVERLAY
-   Escondido por defeito — só aparece com .active
-   CRÍTICO: sem .active deve ter pointer-events:none
-   para não bloquear cliques nos botões e avatar
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   MODO REPOUSO MANUAL
+   Tela preta · ZZZ · "MODO REPOUSO" · botão Retomar
+   Tudo centralizado.
+══════════════════════════════════════════════════════════════ */
+
 #repousoOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 30;
-  background: rgba(4, 3, 10, 0.93);
+  position: absolute; inset: 0; z-index: 17;
+  background: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  /* ESCONDIDO por defeito */
+  gap: 12px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: opacity .5s ease;
 }
 #repousoOverlay.active {
   opacity: 1;
@@ -341,41 +295,80 @@
 
 .repouso-zzz {
   display: flex;
-  gap: 6px;
-  font-family: 'Cinzel', serif;
-  color: #8ad4ff;
-  text-shadow: 0 0 10px #5ab4e880;
+  align-items: flex-end;
+  gap: 4px;
 }
 .repouso-zzz span {
-  animation: zzz-float 2.8s ease-out infinite;
-  opacity: 0;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  color: #8ad4ff;
+  text-shadow: 0 0 10px #5ab4e8aa;
+  animation: zzz-rise 2.4s ease-in-out infinite;
 }
-.repouso-zzz span:nth-child(1) { font-size: 18px; animation-delay: 0s; }
-.repouso-zzz span:nth-child(2) { font-size: 24px; animation-delay: .7s; }
-.repouso-zzz span:nth-child(3) { font-size: 30px; animation-delay: 1.4s; }
+.repouso-zzz span:nth-child(1) { font-size: 10px; animation-delay: 0s;   }
+.repouso-zzz span:nth-child(2) { font-size: 15px; animation-delay: .6s;  }
+.repouso-zzz span:nth-child(3) { font-size: 20px; animation-delay: 1.2s; }
+@keyframes zzz-rise {
+  0%       { opacity: 0;  transform: translateY(8px)   scale(.7); }
+  25%, 55% { opacity: 1;  transform: translateY(-3px)  scale(1);  }
+  100%     { opacity: 0;  transform: translateY(-16px) scale(.8); }
+}
 
 .repouso-label {
   font-family: 'Cinzel', serif;
   font-size: 9px;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   color: #8ad4ff;
-  opacity: 0.85;
+  text-shadow: 0 0 12px rgba(138,212,255,.5);
+  animation: repouso-blink 3s ease-in-out infinite;
+}
+@keyframes repouso-blink {
+  0%, 100% { opacity: .45; }
+  50%       { opacity: 1;   }
 }
 
 .repouso-btn-retomar {
+  padding: 8px 22px;
+  background: transparent;
+  border: 1px solid rgba(138,212,255,.35);
+  border-radius: 4px;
+  color: #8ad4ff;
   font-family: 'Cinzel', serif;
   font-size: 8px;
   letter-spacing: 2px;
-  padding: 8px 20px;
-  border: 1px solid #5ab4e8;
-  border-radius: 6px;
-  background: rgba(90, 180, 232, 0.1);
-  color: #5ab4e8;
   cursor: pointer;
-  transition: all .2s;
-  margin-top: 4px;
+  transition: background .2s, border-color .2s, box-shadow .2s;
 }
 .repouso-btn-retomar:hover {
-  background: rgba(90, 180, 232, 0.22);
-  box-shadow: 0 0 12px rgba(90, 180, 232, 0.3);
+  background: rgba(138,212,255,.1);
+  border-color: #8ad4ff;
+  box-shadow: 0 0 14px rgba(138,212,255,.25);
+}
+.repouso-btn-retomar:active { transform: scale(.95); }
+
+/* Grade travada em repouso — só btnSleep ativo */
+.repouso-mode .btn-action  { opacity: .2; pointer-events: none; cursor: not-allowed; }
+.repouso-mode #btnSleep    { opacity: 1;  pointer-events: all;  cursor: pointer;
+  border-color: #8ad4ff; color: #8ad4ff;
+  box-shadow: 0 0 12px rgba(138,212,255,.3);
+}
+
+/* Barra de progresso do long press */
+#btnSleep.pressing::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #5ab4e8, #a78bfa);
+  border-radius: 0 0 8px 8px;
+  animation: press-fill 2s linear forwards;
+}
+@keyframes press-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.btn-action.active-repouso {
+  border-color: #8ad4ff !important;
+  color: #8ad4ff !important;
+  box-shadow: 0 0 12px rgba(138,212,255,.3) !important;
 }
