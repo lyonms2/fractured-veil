@@ -658,6 +658,7 @@
     if(walletAddress) {
       iniciarListenerDesafiosRecebidos();
       verificarPartidaPendente();
+      setTimeout(_limparSalasAntigas, 3000); // após 3s — deixa o jogo carregar primeiro
     }
   };
 </script>
