@@ -225,12 +225,14 @@ function _iniciarLobbyListener() {
 
   _arenaLobbyListRef.on('value', snap => {
     const lista = document.getElementById('arenaLobbyLista');
-    console.log('[ARENA] snap recebido, lista existe?', !!lista, 'fila:', fila);
 
-    if(!lista) return;
+    // Se o elemento não existe mais, o modal foi fechado — para o listener
+    if(!lista) {
+      _pararLobbyListener();
+      return;
+    }
 
     const dados = snap.val();
-    console.log('[ARENA] dados:', dados, 'meuWallet:', walletAddress);
 
     if(!dados) {
       lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';
@@ -244,7 +246,6 @@ function _iniciarLobbyListener() {
       const isMe      = k.toLowerCase() === myKey;
       const emPartida = d.emPartida === true;
       const tsOk      = !d.ts || typeof d.ts !== 'number' || (agora - d.ts) < ARENA_LOBBY_TTL;
-      console.log(`[ARENA] k=${k} isMe=${isMe} emPartida=${emPartida} tsOk=${tsOk}`);
       return !isMe && !emPartida && tsOk;
     });
 
@@ -708,24 +709,16 @@ async function fazerEscolha(salaId, escolha) {
 
   } else {
     // ── Turno 2: oponente escolheu ──
-    // Atualiza só o meu lado (escolhaOp = meu lado quando sou oponente)
     if(opEl) opEl.textContent = '✅';
     if(st)   st.textContent   = '⚡ Calculando resultado...';
     if(bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
     if(lbl)   lbl.textContent = '';
 
-    // Seta animando ANTES de calcular para o listener não disparar em paralelo
-    _arenaAnimando = true;
-
     const escolhaCriador = s.jogadores[s.criador]?.escolha;
     if(escolhaCriador) {
       await _gravarRoundResult(salaId, s, escolhaCriador, escolha, s.criador, s.oponente);
-      // Busca sala atualizada com roundResult para animar
-      const snapFinal = await rtdb().ref(`arena/salas/${salaId}`).once('value');
-      const sFinal    = snapFinal.val();
-      if(sFinal?.roundResult) {
-        _animarRevelacao(salaId, sFinal, s.criador);
-      }
+      // NÃO chama _animarRevelacao aqui — o _escutarSala de AMBOS os lados
+      // vai detectar o roundResult e chamar a animação de forma sincronizada
     }
   }
 }
@@ -1083,16 +1076,22 @@ async function _carregarRanking() {
           <span class="arena-rank-wl">${d.vitorias||0}V ${d.derrotas||0}D</span>
         </div>`).join('');
 
-  const poolSnap = await rtdb().ref(`arena/pool/${fila}`).once('value');
-  const poolVal  = poolSnap.val() || 0;
-  const aposta   = _getAposta();
-  const moeda    = aposta.cristais > 0 ? '💎' : '🪙';
-  if(pool) pool.innerHTML = `
-    <div class="arena-pool-card">
-      <div class="arena-pool-titulo">💰 POOL SEMANAL — ${fila.toUpperCase()}</div>
-      <div class="arena-pool-valor">${poolVal} ${moeda}</div>
-      <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
-    </div>`;
+  // Pool — lê do Firestore (onde as taxas são depositadas)
+  try {
+    if(fbDb()) {
+      const poolSnap = await fbDb().collection('config').doc('pool').get();
+      const poolData = poolSnap.exists ? poolSnap.data() : null;
+      const poolVal  = poolData?.cristais || 0;
+      if(pool) pool.innerHTML = `
+        <div class="arena-pool-card">
+          <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
+          <div class="arena-pool-valor">${poolVal} 💎</div>
+          <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+        </div>`;
+    }
+  } catch(e) {
+    if(pool) pool.innerHTML = '';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
