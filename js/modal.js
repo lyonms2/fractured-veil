@@ -9,13 +9,10 @@ const MODAL_IDS = [
 const ModalManager = {
   current: null,
 
-  // Panel modals: don't block action buttons (they float over right panel)
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-
-  GAME_MODALS: ['gameSelector','jkpModal','memoriaModal','simonModal','velhaModal'],
+  GAME_MODALS:  ['gameSelector','jkpModal','memoriaModal','simonModal','velhaModal'],
 
   open(id, onClose) {
-    // Fecha o atual sem callback
     if(this.current && this.current !== id) this._close(this.current);
     this.current = id;
     this._onClose = onClose || null;
@@ -23,7 +20,6 @@ const ModalManager = {
     if(!this.PANEL_MODALS.includes(id)) {
       document.getElementById('actionBtns').classList.add('jkp-mode');
     }
-    // Disable play button when any game modal opens
     if(this.GAME_MODALS.includes(id)) {
       const btn = document.getElementById('btnPlay');
       if(btn) btn.classList.add('disabled');
@@ -55,11 +51,9 @@ const ModalManager = {
   _close(id) {
     const el = document.getElementById(id);
     if(el) el.classList.remove('open');
-    // Only remove jkp-mode if closing a screen modal (not a panel modal)
     if(!this.PANEL_MODALS.includes(id) && (!this.current || this.current === id)) {
       document.getElementById('actionBtns').classList.remove('jkp-mode');
     }
-    // Re-enable play button when game modal closes
     if(this.GAME_MODALS.includes(id)) {
       const btn = document.getElementById('btnPlay');
       if(btn) btn.classList.remove('disabled');
@@ -122,10 +116,10 @@ function closeGameSelector() {
 
 function openMinigame(type) {
   ModalManager.close('gameSelector');
-  if(type === 'jkp')     { openJkp();                                       return; }
-  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha(); return; }
-  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
-  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon(); return; }
+  if(type === 'jkp')     { openJkp();                                        return; }
+  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha();  return; }
+  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria();return; }
+  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();  return; }
 }
 
 function openMiniModal(id) {
@@ -137,7 +131,7 @@ function closeMiniModal(id) {
   ModalManager.close(id);
 }
 
-// Difficulty based on level
+// ── Dificuldades ──
 const DIFF_TIERS = [
   { tier:0, label:'FÁCIL',   xp:8,  coins:15,  minNivel:1  },
   { tier:1, label:'MÉDIO',   xp:20, coins:40,  minNivel:6  },
@@ -162,20 +156,34 @@ function miniDifficulty() {
 function setDifficulty(tier) {
   if(tier > maxUnlockedTier()) return;
   selectedDifficulty = tier;
-  openGameSelector(); // re-render com nova dificuldade selecionada
+  openGameSelector();
 }
 
+// ── miniReward ──
+// CORREÇÃO: NÃO desconta energia nem fome aqui.
+// Cada jogo é responsável por descontar seus próprios custos de stats
+// para evitar duplo desconto (ex: Jo-Ken-Pô já descontava -15 energia
+// E miniReward descontava mais -15 em Memória/Simon).
+// O desconto padrão por jogar é: -15 energia, -5 fome — aplicado
+// UMA VEZ por sessão de jogo, diretamente em cada função de vitória/derrota.
 function miniReward(xpMult, coinMult, vinculoGain = 3) {
   const d  = miniDifficulty();
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
   const coinGain = Math.round(d.coins * coinMult * rb.moedas);
-  xp += xpGain;
+  xp      += xpGain;
   earnCoins(coinGain);
-  vitals.energia = Math.max(0, vitals.energia - 15);
-  vitals.fome    = Math.max(0, vitals.fome    - 5);
   vinculo += vinculoGain;
   checkXP(); updateAllUI(); scheduleSave();
   return { xpGain, coinGain };
+}
+
+// ── applyGameCost ──
+// Desconta o custo padrão de jogar uma rodada: -15 energia, -5 fome.
+// Chamado UMA vez por jogo (vitória ou derrota), não por clique.
+function applyGameCost() {
+  vitals.energia = Math.max(0, vitals.energia - 15);
+  vitals.fome    = Math.max(0, vitals.fome    - 5);
+  updateAllUI();
 }
