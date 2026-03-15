@@ -327,6 +327,8 @@ async function desafiarJogador(walletOponente) {
     id:       salaId,
     fila,
     status:   'aguardando',
+    criador:  walletAddress,
+    oponente: walletOponente,
     aposta,
     jogadores: {
       [walletAddress]: {
@@ -364,6 +366,18 @@ async function desafiarJogador(walletOponente) {
   // Marca os dois como em partida no lobby
   await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
   await rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`).set(true);
+
+  // Para o heartbeat — não precisa mais manter presença no lobby
+  if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
+
+  // Envia notificação direta ao oponente
+  await rtdb().ref(`arena/notificacoes/${walletOponente}/desafios/${salaId}`).set({
+    salaId,
+    criador: walletAddress,
+    fila,
+    lida: false,
+    ts: firebase.database.ServerValue.TIMESTAMP,
+  });
 
   _debitarAposta();
   _arenaPartidaId = salaId;
@@ -841,37 +855,67 @@ async function _carregarRanking() {
 function iniciarListenerDesafiosRecebidos() {
   if(!rtdb() || !walletAddress) return;
 
+  // Escuta o nó de notificações dedicado para este wallet
+  // Formato: arena/notificacoes/{wallet}/desafios/{salaId}
+  const notifRef = rtdb().ref(`arena/notificacoes/${walletAddress}/desafios`);
+  notifRef.on('child_added', async snap => {
+    const notif = snap.val();
+    if(!notif || notif.lida) return;
+
+    // Marca como lida imediatamente para não processar duas vezes
+    await snap.ref.update({ lida: true });
+
+    // Busca a sala
+    const salaSnap = await rtdb().ref(`arena/salas/${notif.salaId}`).once('value');
+    const sala = salaSnap.val();
+    if(!sala || sala.status !== 'aguardando') return;
+
+    showBubble('Você foi desafiado! ⚔️');
+    addLog(`Desafio recebido de ${(sala.criador||'').slice(0,8)}...! Abra a Arena para aceitar.`, 'info');
+
+    // Se a arena estiver aberta, mostra o card
+    const el = document.getElementById('arenaModal');
+    if(el && el.classList.contains('open')) {
+      _renderDesafioPendente(sala);
+    }
+  });
+
+  // Também escuta salas onde este wallet é o oponente (campo de primeiro nível)
   rtdb().ref('arena/salas')
-    .orderByChild('status').equalTo('aguardando')
+    .orderByChild('oponente')
+    .equalTo(walletAddress)
     .on('child_added', snap => {
       const sala = snap.val();
-      if(!sala) return;
-      const wallets = Object.keys(sala.jogadores || {});
-      if(wallets.length < 2) return;
-      if(wallets[0] === walletAddress) return;          // eu sou o criador
-      if(!sala.jogadores[walletAddress]) return;        // não sou o oponente
+      if(!sala || sala.status !== 'aguardando') return;
+      if(sala.criador === walletAddress) return;
 
       showBubble('Você foi desafiado! ⚔️');
-      addLog('Desafio recebido! Abra a Arena para aceitar.', 'info');
+      addLog(`Desafio recebido! Abra a Arena para aceitar.`, 'info');
 
       const el = document.getElementById('arenaModal');
       if(el && el.classList.contains('open')) {
-        const lista = document.getElementById('arenaLobbyLista');
-        if(lista) {
-          const div = document.createElement('div');
-          div.innerHTML = `
-            <div class="arena-desafio-card">
-              <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:2px;margin-bottom:6px;">⚔️ DESAFIO RECEBIDO</div>
-              <div style="font-size:7px;color:var(--text);margin-bottom:8px;">De: ${wallets[0].slice(0,10)}...</div>
-              <div style="display:flex;gap:8px;">
-                <button class="arena-btn-entrar" style="font-size:7px;padding:6px;" onclick="aceitarDesafio('${sala.id}')">✅ ACEITAR</button>
-                <button class="arena-btn-sair" onclick="recusarDesafio('${sala.id}')">✕ RECUSAR</button>
-              </div>
-            </div>`;
-          lista.prepend(div.firstChild);
-        }
+        _renderDesafioPendente(sala);
       }
     });
+}
+
+function _renderDesafioPendente(sala) {
+  const el = document.getElementById('arenaModal');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="arena-espera">
+      <div class="arena-title">⚔️ ARENA DIMENSIONAL</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">DESAFIO RECEBIDO!</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">De: ${(sala.criador||'').slice(0,10)}...</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:3px;">
+        Aposta: ${sala.aposta?.cristais > 0 ? sala.aposta.cristais+' 💎' : sala.aposta?.moedas+' 🪙'}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:8px;" onclick="aceitarDesafio('${sala.id}')">✅ ACEITAR</button>
+        <button class="arena-btn-sair" onclick="recusarDesafio('${sala.id}')">✕ RECUSAR</button>
+      </div>
+    </div>
+  `;
 }
 
 // ═══════════════════════════════════════════════════════════════════
