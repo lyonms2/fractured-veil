@@ -8,24 +8,53 @@ function canAct() {
 }
 
 // ── COIN SPEND / EARN ANIMATION ──
-function showCoinAnim(amount, isSpend = true) {
-  const el = document.getElementById('resMonedas');
-  if(!el) return;
-  // Flash the coin counter
-  el.parentElement.classList.remove('res-flash');
-  void el.parentElement.offsetWidth; // reflow
-  el.parentElement.classList.add('res-flash');
-  setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
+let _coinAnimQueue   = [];
+let _coinAnimRunning = false;
 
-  // Floating number from coin position
-  const rect = el.getBoundingClientRect();
-  const fly  = document.createElement('div');
-  fly.className = isSpend ? 'coin-spend' : 'coin-earn';
-  fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
-  fly.style.left = rect.left + 'px';
-  fly.style.top  = rect.top  + 'px';
-  document.body.appendChild(fly);
-  setTimeout(() => fly.remove(), 950);
+function _runCoinAnimQueue() {
+  if(_coinAnimRunning || _coinAnimQueue.length === 0) return;
+  _coinAnimRunning = true;
+  const { amount, isSpend } = _coinAnimQueue.shift();
+
+  // Rastreia o botão de moedas no header
+  const el = document.getElementById('resMoedasBtn');
+  if(el) {
+    // Flash no contador
+    el.classList.remove('res-flash');
+    void el.offsetWidth;
+    el.classList.add('res-flash');
+    setTimeout(() => el.classList.remove('res-flash'), 500);
+
+    // Posição: centro do botão, compensando scroll
+    const rect   = el.getBoundingClientRect();
+    const centerX = rect.left + rect.width  / 2;
+    const topY    = rect.top  + rect.height / 2;
+
+    const fly = document.createElement('div');
+    fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
+    fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
+
+    // Posiciona no centro do botão
+    // marginLeft negativo de metade da largura estimada do texto para centrar
+    fly.style.left       = centerX + 'px';
+    fly.style.top        = topY + 'px';
+    fly.style.marginLeft = '-30px'; // offset para centrar (largura ~60px)
+
+    document.body.appendChild(fly);
+    setTimeout(() => {
+      fly.remove();
+      _coinAnimRunning = false;
+      _runCoinAnimQueue();
+    }, 960);
+  } else {
+    _coinAnimRunning = false;
+    _runCoinAnimQueue();
+  }
+}
+
+function showCoinAnim(amount, isSpend = true) {
+  _coinAnimQueue.push({ amount, isSpend });
+  if(!_coinAnimRunning) _runCoinAnimQueue();
 }
 
 function spendCoins(amount) {
@@ -50,7 +79,9 @@ function feedCreature() {
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
-  const pressaoBase = 30 + Math.round(Math.random() * 10);
+  // Pressão intestinal — varia por quanto comeu e o quanto já tem no estômago
+  // Pressão escala com raridade e item (Amuleto Saciedade reduz também frequência de cocô)
+  const pressaoBase = 30 + Math.round(Math.random() * 10); // +30 a +40
   const pressaoGain = Math.round(pressaoBase * rarityBonus().decay * getItemEffect('fomeDecayMult'));
   poopPressure = Math.min(100, poopPressure + pressaoGain);
   const _rb = rarityBonus();
@@ -99,13 +130,15 @@ function confirmRename() {
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
   if(!clean) { showBubble('Nome inválido! ✕'); return; }
 
-  const parts  = avatar.nome.split(',');
-  const suffix = parts.slice(1).join(',');
-  avatar.nome  = clean + (suffix ? ',' + suffix : '');
+  const parts     = avatar.nome.split(',');
+  const suffix    = parts.slice(1).join(','); // raridade etc
+  avatar.nome     = clean + (suffix ? ',' + suffix : '');
 
+  // Update display
   fillCreatureCard();
   cancelRename();
 
+  // Save to Firebase
   if(walletAddress) scheduleSave();
   addLog(`Avatar renomeado para "${clean}" 💕`, 'good');
   showBubble(`${clean}... Adoro esse nome! 💕`);
