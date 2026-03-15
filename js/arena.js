@@ -174,6 +174,8 @@ function _renderLobby() {
     </div>
   `;
 
+  // Para listener anterior antes de criar novo
+  _pararLobbyListener();
   // Inicia listener depois do HTML existir
   _iniciarLobbyListener();
   _carregarRanking();
@@ -256,7 +258,7 @@ function _iniciarLobbyListener() {
 
     lista.innerHTML = avatares.map(([k, d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36)}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 36, 36)}</div>
         <div class="arena-lobby-info">
           <div class="arena-lobby-nome">${d.nome || '???'}</div>
           <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'} · Vínculo ${d.vinculo||0}</div>
