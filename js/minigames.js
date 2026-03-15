@@ -8,7 +8,9 @@ function startMemoria() {
   if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
   const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
-  const cols  = pairs <= 4 ? 4 : pairs <= 8 ? 4 : 5;
+  // CORREÇÃO: grid responsivo — no Mestre (10 pares = 20 cartas) usa 4 colunas
+  // para não vazar em mobile (5×38px = 190px pode ser estreito demais)
+  const cols = pairs <= 6 ? 4 : 4;
 
   document.getElementById('memResult').textContent  = '';
   document.getElementById('memResult').className    = 'mini-result-box';
@@ -16,15 +18,16 @@ function startMemoria() {
   document.getElementById('memAgainBtn').style.display = 'none';
   document.getElementById('memSub').textContent = `${d.label} · ${pairs} pares`;
 
-  // Build shuffled card set
   const elems = MEM_ELEMENTS.slice(0, pairs);
   const deck  = [...elems, ...elems].sort(() => Math.random() - .5);
   memCards = deck; memFlipped = []; memMatched = 0; memErrors = 0; memLocked = false;
 
   const grid = document.getElementById('memGrid');
-  grid.style.gridTemplateColumns = `repeat(${cols}, 38px)`;
+  // Cartas menores no Mestre para caber no modal
+  const cardSize = pairs <= 8 ? '38px' : '32px';
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${cardSize})`;
   grid.innerHTML = deck.map((e, i) =>
-    `<div class="mem-card" id="mc${i}" data-i="${i}" onclick="memFlip(${i})">?</div>`
+    `<div class="mem-card" id="mc${i}" data-i="${i}" onclick="memFlip(${i})" style="width:${cardSize};height:${cardSize};font-size:${pairs<=8?'16':'13'}px">?</div>`
   ).join('');
 
   updateMemInfo();
@@ -74,9 +77,11 @@ function updateMemInfo() {
 }
 
 function memVictory() {
-  const perfMult = memErrors === 0 ? 1.5 : memErrors <= 2 ? 1.2 : 1.0;
-  const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : 10;
+  const perfMult  = memErrors === 0 ? 1.5 : memErrors <= 2 ? 1.2 : 1.0;
+  const humorGain = memErrors === 0 ? 20  : memErrors <= 2 ? 15  : 10;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
+  // CORREÇÃO: applyGameCost chamado UMA vez aqui (vitória)
+  applyGameCost();
   const r = miniReward(perfMult, perfMult);
   document.getElementById('memResult').textContent = memErrors === 0 ? '🌟 PERFEITO!' : '✓ COMPLETO!';
   document.getElementById('memResult').className   = 'mini-result-box win';
@@ -107,7 +112,6 @@ function startSimon() {
   document.getElementById('simonReward').textContent = '';
   document.getElementById('simonAgainBtn').style.display = 'none';
 
-  // Build 8-element grid
   const grid = document.getElementById('simonGrid');
   grid.innerHTML = SIMON_ELEMS.map((e,i) =>
     `<button class="simon-btn" id="sb${i}" onclick="simonPlayerClick(${i})" disabled>${e.emoji}</button>`
@@ -130,7 +134,6 @@ function simonNextRound() {
   document.getElementById('simonSeqDisplay').textContent = 'Observe...';
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
-  // Play sequence
   const speed = d.tier === 0 ? 800 : d.tier === 1 ? 600 : d.tier === 2 ? 400 : 280;
   let delay = 500;
   simonSeq.forEach((idx, pos) => {
@@ -176,6 +179,8 @@ function simonPlayerClick(idx) {
 
 function simonVictory() {
   vitals.humor = Math.min(100, vitals.humor + 20);
+  // CORREÇÃO: applyGameCost chamado UMA vez aqui (vitória)
+  applyGameCost();
   const r = miniReward(1.3, 1.3);
   document.getElementById('simonResult').textContent = '🎵 MESTRE!';
   document.getElementById('simonResult').className   = 'mini-result-box win';
@@ -188,41 +193,47 @@ function simonVictory() {
 function simonGameOver() {
   simonPlayerTurn = false;
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
-  // Partial reward based on rounds completed
-  const _sd = miniDifficulty(); const _sm = _sd.tier === 0 ? 4 : _sd.tier === 1 ? 6 : _sd.tier === 2 ? 8 : 10;
-  const frac = Math.max(0, simonRound - 1) / _sm;
+
+  const _sd     = miniDifficulty();
+  const _sm     = _sd.tier === 0 ? 4 : _sd.tier === 1 ? 6 : _sd.tier === 2 ? 8 : 10;
+  // CORREÇÃO: frac começa de 0 quando erra na rodada 1 — não penaliza stats sem recompensa.
+  // Só aplica custo e recompensa se o jogador passou pelo menos 1 rodada completa.
+  const roundsCompleted = Math.max(0, simonRound - 1);
+  const frac = roundsCompleted / _sm;
+
   if(frac > 0) {
-    const r = miniReward(frac * 0.8, frac * 0.8);
-    document.getElementById('simonReward').textContent = frac > 0 ? `+${r.xpGain} XP  +${r.coinGain} 🪙` : '';
+    // Passou pelo menos 1 rodada — aplica custo e recompensa parcial
+    applyGameCost();
+    const r = miniReward(frac * 0.8, frac * 0.8, 1);
+    document.getElementById('simonReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+  } else {
+    // Errou logo na rodada 1 — nenhum custo, nenhuma recompensa
+    document.getElementById('simonReward').textContent = '';
   }
+
   vitals.humor = Math.min(100, vitals.humor + 5);
   document.getElementById('simonResult').textContent = '✗ ERROU!';
   document.getElementById('simonResult').className   = 'mini-result-box lose';
   document.getElementById('simonSeqDisplay').textContent = '';
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   showBubble('Quase... 😔');
+  updateAllUI();
 }
-
-// ═══════════════════════════════════════════════════════════════════
-
 
 // ═══════════════════════════════════════════
 // JO-KEN-PÔ
 // ═══════════════════════════════════════════
 const JKP_OPTIONS = ['pedra','papel','tesoura'];
 const JKP_EMOJI   = { pedra:'🪨', papel:'📄', tesoura:'✂️' };
-const JKP_BEATS   = { pedra:'tesoura', papel:'pedra', tesoura:'papel' }; // key beats value
-// enemy is the avatar itself
+const JKP_BEATS   = { pedra:'tesoura', papel:'pedra', tesoura:'papel' };
 let jkpPlaying = false;
 
 function openJkp() {
   ModalManager.open('jkpModal');
   jkpReset();
   playAnim('anim-play');
-  // Show avatar's own SVG as the opponent, using its name
   const enemyEmoji = document.getElementById('jkpEnemyEmoji');
   enemyEmoji.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46, "mg");
-  // Show first part of name as label
   const shortName = avatar.nome.split(',')[0];
   document.getElementById('jkpEnemyLabel').textContent = shortName.toUpperCase();
 }
@@ -255,7 +266,6 @@ function jkpReset() {
   document.getElementById('jkpPlayAgain').style.display = 'none';
   document.getElementById('jkpChoices').style.opacity   = '1';
   document.getElementById('jkpChoices').style.pointerEvents = 'all';
-  // Clear selected highlight from previous round
   document.querySelectorAll('.jkp-choice').forEach(b => b.classList.remove('selected','win','lose','draw'));
 }
 
@@ -264,32 +274,26 @@ function jkpChoose(choice) {
   if(vitals.energia < 20) { showBubble('Cansado demais... 😴'); closeJkp(); return; }
   jkpPlaying = true;
 
-  // Disable choices while animating
   const choicesEl = document.getElementById('jkpChoices');
   choicesEl.style.opacity = '.4';
   choicesEl.style.pointerEvents = 'none';
 
-  // Highlight selected
   choicesEl.querySelectorAll('.jkp-choice').forEach(b => {
     if(b.getAttribute('onclick').includes(choice)) b.classList.add('selected');
   });
 
-  // Show player's choice immediately
   document.getElementById('jkpPlayerHand').textContent = JKP_EMOJI[choice];
   document.getElementById('jkpPlayerHand').classList.add('reveal');
 
-  // Countdown animation: 3 → 2 → 1 → reveal
-  const cd = document.getElementById('jkpCountdown');
+  const cd        = document.getElementById('jkpCountdown');
   const enemyHand = document.getElementById('jkpEnemyHand');
   let count = 3;
 
   function tick() {
     cd.textContent = count;
     cd.className = 'jkp-countdown';
-    // Force reflow to restart animation
     void cd.offsetWidth;
     cd.classList.add('pop');
-    // Shake enemy while counting
     enemyHand.classList.add('jkp-shake');
     setTimeout(() => enemyHand.classList.remove('jkp-shake'), 500);
     count--;
@@ -306,21 +310,14 @@ function revealResult(playerChoice) {
   const enemyChoice = JKP_OPTIONS[Math.floor(Math.random() * 3)];
   const enemyHand   = document.getElementById('jkpEnemyHand');
 
-  // Clear countdown, show enemy choice
   enemyHand.innerHTML = JKP_EMOJI[enemyChoice];
   enemyHand.classList.add('reveal');
 
-  // Determine outcome
   let outcome;
-  if(playerChoice === enemyChoice) {
-    outcome = 'draw';
-  } else if(JKP_BEATS[playerChoice] === enemyChoice) {
-    outcome = 'win';
-  } else {
-    outcome = 'lose';
-  }
+  if(playerChoice === enemyChoice)          outcome = 'draw';
+  else if(JKP_BEATS[playerChoice] === enemyChoice) outcome = 'win';
+  else                                       outcome = 'lose';
 
-  // Apply visual classes with slight delay for drama
   setTimeout(() => {
     const playerHand = document.getElementById('jkpPlayerHand');
     playerHand.classList.remove('reveal');
@@ -328,22 +325,37 @@ function revealResult(playerChoice) {
     playerHand.classList.add(outcome);
     enemyHand.classList.add(outcome === 'win' ? 'lose' : outcome === 'lose' ? 'win' : 'draw');
 
-    // Result text
-    const resultEl = document.getElementById('jkpResult');
+    const resultEl  = document.getElementById('jkpResult');
     const rewardsEl = document.getElementById('jkpRewards');
+
+    // CORREÇÃO: Jo-Ken-Pô aplica custo UMA vez via applyGameCost()
+    // e não desconta energia/fome manualmente aqui.
+    // XP e moedas calculados inline (não via miniReward) para preservar
+    // o bônus de vínculo diferenciado por resultado.
+    const d  = miniDifficulty();
+    const rb = rarityBonus();
+    const vb = getVinculoBonus();
+
     const RESULTS = {
-      win:  { text:'VITÓRIA!', cls:'win',  humor:20, xpGain:Math.round(miniDifficulty().xp*1.0*rarityBonus().xp*getVinculoBonus().xpMult), coinsGain:Math.round(miniDifficulty().coins*1.0*rarityBonus().moedas) },
-      lose: { text:'DERROTA',  cls:'lose', humor:5,  xpGain:Math.round(miniDifficulty().xp*0.1*rarityBonus().xp), coinsGain:Math.round(miniDifficulty().coins*0.1*rarityBonus().moedas) },
-      draw: { text:'EMPATE',   cls:'draw', humor:10, xpGain:Math.round(miniDifficulty().xp*0.5*rarityBonus().xp*getVinculoBonus().xpMult), coinsGain:Math.round(miniDifficulty().coins*0.5*rarityBonus().moedas) }
+      win:  { text:'VITÓRIA!', cls:'win',  humor:20,
+              xpGain:   Math.round(d.xp    * 1.0 * rb.xp    * vb.xpMult),
+              coinsGain:Math.round(d.coins * 1.0 * rb.moedas) },
+      lose: { text:'DERROTA',  cls:'lose', humor:5,
+              xpGain:   Math.round(d.xp    * 0.1 * rb.xp),
+              coinsGain:Math.round(d.coins * 0.1 * rb.moedas) },
+      draw: { text:'EMPATE',   cls:'draw', humor:10,
+              xpGain:   Math.round(d.xp    * 0.5 * rb.xp    * vb.xpMult),
+              coinsGain:Math.round(d.coins * 0.5 * rb.moedas) }
     };
     const r = RESULTS[outcome];
     resultEl.textContent = r.text;
     resultEl.className   = `jkp-result show ${r.cls}`;
 
-    // Apply rewards + costs
-    vitals.humor   = Math.min(100, vitals.humor + r.humor);
-    vitals.energia = Math.max(0, vitals.energia - 15);
-    vitals.fome    = Math.max(0, vitals.fome - 5);
+    // Aplica humor
+    vitals.humor = Math.min(100, vitals.humor + r.humor);
+    // CORREÇÃO: custo único via applyGameCost (sem duplicidade)
+    applyGameCost();
+    // XP, moedas e vínculo
     xp      += r.xpGain;
     vinculo += outcome === 'win' ? 5 : 1;
     earnCoins(r.coinsGain);
@@ -351,12 +363,10 @@ function revealResult(playerChoice) {
     rewardsEl.textContent = `+${r.humor} 😊  +${r.xpGain} XP  +${r.coinsGain} 🪙`;
     rewardsEl.className   = 'jkp-rewards show';
 
-    // Bubble reaction
     if(outcome === 'win')       showBubble('Ganhei! 🥊✨');
     else if(outcome === 'lose') showBubble('Perdi... 😔');
     else                        showBubble('Empate! 🤝');
 
-    // Log
     const logMsg = outcome === 'win'
       ? `Venceu no Jo-Ken-Pô! ${JKP_EMOJI[playerChoice]} vs ${JKP_EMOJI[enemyChoice]} +${r.xpGain}XP`
       : outcome === 'lose'
@@ -365,8 +375,6 @@ function revealResult(playerChoice) {
     addLog(logMsg, outcome === 'win' ? 'good' : outcome === 'lose' ? 'bad' : 'info');
 
     checkXP(); updateAllUI();
-
-    // Show play again button
     setTimeout(() => {
       document.getElementById('jkpPlayAgain').style.display = 'inline-block';
     }, 300);
@@ -441,9 +449,7 @@ function spawnFoodParticles() {
   const wrap = document.getElementById('creatureWrap');
   if(!wrap) return;
   const foods = ['🍖','🍗','✨','⭐'];
-  const positions = [
-    {fx:'-28px'},{fx:'0px'},{fx:'28px'},{fx:'-14px'},{fx:'14px'}
-  ];
+  const positions = [{fx:'-28px'},{fx:'0px'},{fx:'28px'},{fx:'-14px'},{fx:'14px'}];
   positions.forEach((pos, i) => {
     const el = document.createElement('div');
     el.className = 'food-particle';
@@ -455,15 +461,13 @@ function spawnFoodParticles() {
 }
 
 function spawnHealParticles() {
-  const wrap = document.getElementById('creatureWrap');
+  const wrap  = document.getElementById('creatureWrap');
   const flash = document.getElementById('healFlash');
   if(!wrap) return;
-  // Screen flash
   if(flash) {
     flash.style.opacity = '1';
     setTimeout(() => { flash.style.opacity = '0'; }, 350);
   }
-  // Cross particles burst outward
   const offsets = [
     {hx:'-40px',hy:'0px'},{hx:'40px',hy:'0px'},
     {hx:'0px',hy:'-40px'},{hx:'-28px',hy:'-28px'},
@@ -481,31 +485,28 @@ function spawnHealParticles() {
 
 function renderSleepEyes() {
   if(!avatar) return;
-  // Inject closed eyes directly into the avatar SVG (same coordinate space, no positioning needed)
   const avatarSvg = document.querySelector('#creatureSVG svg');
   if(!avatarSvg) return;
 
-  // Remove any previous sleep eyes group
   const old = avatarSvg.querySelector('#sleepEyesGroup');
   if(old) old.remove();
 
-  // Reconstruct eye positions using same deterministic seed as gerarSVG
   let _seed = avatar.seed;
   const rnd = (min, max) => {
     _seed = (_seed * 9301 + 49297) % 233280;
     return Math.floor((_seed / 233280) * (max - min + 1)) + min;
   };
 
-  const cfg   = ELEM_CFG[avatar.elemento] || ELEM_CFG['Fogo'];
-  rnd(0, cfg.cores.length-1);       // cor1
-  rnd(0, cfg.cores.length-1);       // cor2
-  rnd(0, cfg.coresSec.length-1);    // corSec
+  const cfg  = ELEM_CFG[avatar.elemento] || ELEM_CFG['Fogo'];
+  rnd(0, cfg.cores.length-1);
+  rnd(0, cfg.cores.length-1);
+  rnd(0, cfg.coresSec.length-1);
   const mult     = avatar.raridade === 'Lendário' ? 2 : avatar.raridade === 'Raro' ? 1.5 : 1;
-  rnd(1, avatar.raridade === 'Lendário' ? 8 : avatar.raridade === 'Raro' ? 6 : 5); // tipoCorpo
+  rnd(1, avatar.raridade === 'Lendário' ? 8 : avatar.raridade === 'Raro' ? 6 : 5);
   const numOlhos = rnd(avatar.raridade === 'Comum' ? 1 : 2, 3);
-  rnd(1, 8);                         // tipoOlho
-  rnd(2, Math.floor(4 * mult));      // numBracos
-  rnd(0, 4);                         // numChifres
+  rnd(1, 8);
+  rnd(2, Math.floor(4 * mult));
+  rnd(0, 4);
 
   const espac = numOlhos === 1 ? 0 : 60 / (numOlhos - 1);
   const eyeY  = 95;
@@ -521,14 +522,12 @@ function renderSleepEyes() {
     const x  = numOlhos === 1 ? 100 : 70 + (i * espac);
     const hw = tb * 0.9;
 
-    // backing ellipse to cover open eye
     const ellipse = document.createElementNS(ns, 'ellipse');
     ellipse.setAttribute('cx', x); ellipse.setAttribute('cy', eyeY);
     ellipse.setAttribute('rx', hw + 2); ellipse.setAttribute('ry', tb + 3);
     ellipse.setAttribute('fill', '#0a0816'); ellipse.setAttribute('opacity', '.95');
     grp.appendChild(ellipse);
 
-    // closed eye arc
     const path = document.createElementNS(ns, 'path');
     path.setAttribute('d', `M ${x-hw} ${eyeY} Q ${x} ${eyeY + hw*0.55} ${x+hw} ${eyeY}`);
     path.setAttribute('stroke', cfg.corOlho); path.setAttribute('stroke-width', '3');
@@ -536,7 +535,6 @@ function renderSleepEyes() {
     path.setAttribute('opacity', '.95');
     grp.appendChild(path);
 
-    // eyelash dots
     [[x - hw*0.6, eyeY + hw*0.3],[x, eyeY + hw*0.5],[x + hw*0.6, eyeY + hw*0.3]].forEach(([cx,cy]) => {
       const dot = document.createElementNS(ns, 'circle');
       dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
@@ -549,20 +547,19 @@ function renderSleepEyes() {
   requestAnimationFrame(() => { grp.style.opacity = '1'; });
 }
 
-function positionSleepEyes() { renderSleepEyes(); } // alias — called from updateAvatarSize
+function positionSleepEyes() { renderSleepEyes(); }
 
-// ═══════════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════════
 // JOGO DA VELHA
 // ═══════════════════════════════════════════════════════════════════
-let velhaBoard = Array(9).fill(null); // null | 'X' | 'O'
+let velhaBoard = Array(9).fill(null);
 let velhaPlayerTurn = true;
 let velhaOver = false;
 
 const VELHA_LINES = [
-  [0,1,2],[3,4,5],[6,7,8], // linhas
-  [0,3,6],[1,4,7],[2,5,8], // colunas
-  [0,4,8],[2,4,6]           // diagonais
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
 ];
 
 function startVelha() {
@@ -609,13 +606,10 @@ function velhaAiMove() {
   let idx;
 
   if(d.tier >= 2) {
-    // DIFÍCIL/MESTRE — minimax perfeito
     idx = velhaMinimax(velhaBoard, 'O').index;
   } else if(d.tier === 1) {
-    // MÉDIO — minimax mas com 30% de erro
     idx = Math.random() < 0.3 ? velhaRandomMove() : velhaMinimax(velhaBoard, 'O').index;
   } else {
-    // FÁCIL — aleatório com preferência pelo centro
     idx = velhaBoard[4] === null && Math.random() < 0.5 ? 4 : velhaRandomMove();
   }
 
@@ -679,26 +673,23 @@ function velhaEnd(result, winLine) {
   velhaRender();
   if(winLine) velhaHighlightWin(winLine);
 
-  const d = miniDifficulty();
+  const d  = miniDifficulty();
   const rb = rarityBonus();
 
   let xpMult, coinMult, msg, cls;
   if(result === 'win') {
-    // Vitória mais valiosa em dificuldades maiores
     xpMult   = d.tier === 0 ? 1.0 : d.tier === 1 ? 1.1 : d.tier === 2 ? 1.2 : 1.3;
     coinMult = xpMult;
     msg = d.tier >= 2 ? '🌟 INCRÍVEL!' : '✕ VITÓRIA!';
     cls = 'win';
     showBubble(d.tier >= 3 ? 'Venceu o mestre! 🏆' : 'Venceu na velha! ✕');
   } else if(result === 'lose') {
-    xpMult   = 0.1; coinMult = 0.1;
-    msg = '○ DERROTA';
-    cls = 'lose';
+    xpMult = 0.1; coinMult = 0.1;
+    msg = '○ DERROTA'; cls = 'lose';
     showBubble('Quase! Próxima vez... 😔');
   } else {
-    xpMult   = 0.4; coinMult = 0.4;
-    msg = '✕○ EMPATE';
-    cls = 'draw';
+    xpMult = 0.4; coinMult = 0.4;
+    msg = '✕○ EMPATE'; cls = 'draw';
     showBubble('Empate! Bem jogado 🤝');
   }
 
@@ -706,9 +697,9 @@ function velhaEnd(result, winLine) {
   const coinGain = Math.round(d.coins * coinMult  * rb.moedas);
   xp += xpGain;
   earnCoins(coinGain);
-  vitals.energia = Math.max(0, vitals.energia - 15);
-  vitals.fome    = Math.max(0, vitals.fome    - 5);
-  vitals.humor   = Math.min(100, vitals.humor + (result === 'win' ? 12 : result === 'draw' ? 6 : 3));
+  // CORREÇÃO: custo único via applyGameCost
+  applyGameCost();
+  vitals.humor = Math.min(100, vitals.humor + (result === 'win' ? 12 : result === 'draw' ? 6 : 3));
   vinculo += 3;
   checkXP(); updateAllUI();
 
