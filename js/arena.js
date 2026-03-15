@@ -2,25 +2,34 @@
 // ARENA DIMENSIONAL — Jo-Ken-Pô Multiplayer
 // ═══════════════════════════════════════════════════════════════════
 
+// Debug: detecta carregamento duplo
+if(typeof window._arenaLoaded !== 'undefined') {
+  console.error('[ARENA] ERRO: arena.js carregado DUAS VEZES! Verifique o HTML.');
+  console.trace();
+} else {
+  window._arenaLoaded = true;
+  console.log('[ARENA] arena.js carregado pela primeira vez — ok');
+}
+
 // ── Referência ao Realtime Database ──
 function rtdb() { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
 
 // ── Constantes ──
-const ARENA_TAXA        = 0.15;
-const ARENA_TIMER_SEG   = 30;
-const ARENA_MAX_RODADAS = 3;
+var ARENA_TAXA        = 0.15;
+var ARENA_TIMER_SEG   = 30;
+var ARENA_MAX_RODADAS = 3;
 // TTL generoso — 5 minutos — para não filtrar quem acabou de entrar
-const ARENA_LOBBY_TTL   = 300000;
+var ARENA_LOBBY_TTL   = 300000;
 
-const ARENA_APOSTAS = {
+var ARENA_APOSTAS = {
   'Comum':    { moedas: 50,  cristais: 0  },
   'Raro':     { moedas: 0,   cristais: 10 },
   'Lendário': { moedas: 0,   cristais: 20 },
 };
-const ARENA_PONTOS  = { vitoria: 3, derrota: 1 };
-const JKP_EMOJIS    = { pedra: '🪨', papel: '📄', tesoura: '✂️' };
-const JKP_OPCOES    = ['pedra', 'papel', 'tesoura'];
-const JKP_VENCE     = { pedra: 'tesoura', tesoura: 'papel', papel: 'pedra' };
+var ARENA_PONTOS  = { vitoria: 3, derrota: 1 };
+var JKP_EMOJIS    = { pedra: '🪨', papel: '📄', tesoura: '✂️' };
+var JKP_OPCOES    = ['pedra', 'papel', 'tesoura'];
+var JKP_VENCE     = { pedra: 'tesoura', tesoura: 'papel', papel: 'pedra' };
 
 // ── Estado ──
 let _arenaAtiva          = false;
