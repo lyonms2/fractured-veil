@@ -163,11 +163,10 @@ function updateLifeEstimate() {
   if(dirtyLevel     >= 2) decayPerCycle += 0.04;
 
   if(decayPerCycle <= 0) {
-    const _eb = typeof getElementoBonus === 'function' ? getElementoBonus() : { fomeDecay:1, humorDecay:1, energiaDecay:1, higieneDecay:1 };
-    const fomeDecay    = 0.8  * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult');
-    const humorDecay   = 1.5  * _d * _eb.humorDecay   * getItemEffect('humorDecayMult');
-    const energiaDecay = 0.6  * _d * _eb.energiaDecay;
-    const higieneDecay = 0.12 * GAME_SPEED * _eb.higieneDecay;
+    const fomeDecay    = 0.8  * _d * getItemEffect('fomeDecayMult');
+    const humorDecay   = 0.5  * _d;
+    const energiaDecay = 0.6  * _d;
+    const higieneDecay = 0.12 * GAME_SPEED;
 
     const cyclesUntilFomeCrit    = vitals.fome    > 15 ? (vitals.fome    - 15) / fomeDecay    : 0;
     const cyclesUntilHumorCrit   = vitals.humor   > 10 ? (vitals.humor   - 10) / humorDecay   : 0;
