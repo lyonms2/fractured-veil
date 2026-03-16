@@ -205,6 +205,48 @@ function updateDirtyVisuals() {
   screen.classList.toggle('dirty', dirtyLevel >= 1);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// BÔNUS ELEMENTAIS PASSIVOS
+// Retorna multiplicadores para cada stat baseado no elemento do avatar.
+// Todos os 9 elementos têm um bônus distinto.
+// Multiplicador < 1.0 = decay mais lento (bônus positivo).
+// Multiplicador > 1.0 = recuperação mais rápida (bônus positivo).
+// ═══════════════════════════════════════════════════════════════════
+function getElementoBonus() {
+  const elem = avatar?.elemento;
+  switch(elem) {
+    case 'Fogo':
+      // Espírito Ardente — metabolismo acelerado compensado por ânimo elevado
+      return { fomeDecay: 1.10, humorDecay: 0.85, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+    case 'Água':
+      // Serenidade das Marés — humor se mantém, higiene melhor
+      return { fomeDecay: 1.0, humorDecay: 0.85, energiaDecay: 1.0, higieneDecay: 0.85, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+    case 'Terra':
+      // Raízes Profundas — fome decai mais devagar
+      return { fomeDecay: 0.85, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+    case 'Vento':
+      // Leveza do Vento — energia decai mais devagar
+      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 0.85, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+    case 'Eletricidade':
+      // Mente Acelerada — mais energia mas gasta mais humor
+      return { fomeDecay: 1.0, humorDecay: 1.10, energiaDecay: 0.90, higieneDecay: 1.0, sleepEnergy: 1.15, vinculoDecay: 1.0 };
+    case 'Sombra':
+      // Ciclo Lunar — recupera energia mais rápido dormindo, higiene estável
+      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 0.90, sleepEnergy: 1.15, vinculoDecay: 1.0 };
+    case 'Luz':
+      // Aura Solar — vínculo decai mais devagar, humor estável
+      return { fomeDecay: 1.0, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 0.80 };
+    case 'Void':
+      // Essência Vazia — precisa comer menos, mais introspectivo (humor cai menos)
+      return { fomeDecay: 0.90, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.05, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+    case 'Aether':
+      // Potencial Infinito — equilibrado com leve bônus em tudo
+      return { fomeDecay: 0.95, humorDecay: 0.95, energiaDecay: 0.95, higieneDecay: 0.95, sleepEnergy: 1.05, vinculoDecay: 0.95 };
+    default:
+      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
+  }
+}
+
 function gameTick() {
   tickCount++;
   if(hatched && !dead) totalSecs++;
@@ -222,34 +264,40 @@ function gameTick() {
 
   if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
 
+  const _d  = rarityBonus().decay;
+  const _eb = getElementoBonus(); // bônus elementais passivos
+
   // ── RECUPERAÇÃO / DECAY DE ENERGIA ──
   if(sleeping) {
-    // Dormindo manualmente → recupera energia
-    vitals.energia = Math.min(100, vitals.energia + (4 * getItemEffect('sleepEnergyMult')));
+    // Dormindo → recupera energia, fome e higiene ainda decaem (mais devagar)
+    vitals.energia = Math.min(100, vitals.energia + (4 * getItemEffect('sleepEnergyMult') * _eb.sleepEnergy));
+    vitals.fome    = Math.max(0, vitals.fome    - (0.30 * _d * _eb.fomeDecay   * getItemEffect('fomeDecayMult')));
+    vitals.higiene = Math.max(0, vitals.higiene - (0.05 * _eb.higieneDecay));
     if(vitals.energia >= 100) { wakeUp('full'); }
 
   } else if(modoRepouso) {
-    // Modo repouso manual → decay mínimo, energia CONGELADA
-    const _d = rarityBonus().decay;
-    vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
-    vitals.higiene = Math.max(0, vitals.higiene - 0.03);
-    vitals.humor   = Math.max(0, vitals.humor   - 0.02);
-    vinculo        = Math.max(0, vinculo        - 0.01);
+    // Modo repouso → decay mínimo, energia congelada
+    vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d * _eb.fomeDecay));
+    vitals.higiene = Math.max(0, vitals.higiene - (0.03 * _eb.higieneDecay));
+    vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
     // Saúde só cai se fome absolutamente zerada
     if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
+    vinculo = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
 
   } else {
-    // Acordado e ativo → decay normal
-    const _d = rarityBonus().decay * GAME_SPEED;
-    vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * getItemEffect('fomeDecayMult')));
-    vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d * getItemEffect('humorDecayMult')));
-    vitals.energia = Math.max(0, vitals.energia - (0.6  * _d));
+    // Acordado e ativo → decay normal com bônus elementais e de itens
+    vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * GAME_SPEED * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
+    vitals.humor   = Math.max(0, vitals.humor   - (1.5  * _d * GAME_SPEED * _eb.humorDecay   * getItemEffect('humorDecayMult')));
+    vitals.energia = Math.max(0, vitals.energia - (0.6  * _d * GAME_SPEED * _eb.energiaDecay));
+    vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED      * _eb.higieneDecay));
   }
 
   // Penalidades de saúde — só no modo ativo (não durante repouso/sono)
-  if(vitals.fome < 15 && !sleeping && !modoRepouso)    vitals.saude = Math.max(0, vitals.saude - (0.3 * GAME_SPEED));
-  if(vitals.humor < 10 && !sleeping && !modoRepouso)   vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
-  if(vitals.energia < 5  && !sleeping && !modoRepouso) vitals.saude = Math.max(0, vitals.saude - (0.1 * GAME_SPEED));
+  if(!sleeping && !modoRepouso) {
+    if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - (0.3  * GAME_SPEED));
+    if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - (0.1  * GAME_SPEED));
+    if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - (0.1  * GAME_SPEED));
+  }
 
   if(vitals.saude < 20 && !sick && Math.random() < (0.02 * GAME_SPEED)) {
     sick = true;
@@ -257,10 +305,7 @@ function gameTick() {
     addLog('Ficou doente! Use medicar!','bad');
   }
 
-  // ── HIGIENE E COCÔ ──
-  if(!sleeping && !modoRepouso) {
-    vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED));
-  }
+  // ── COCÔ — só no modo ativo ──
   if(!sleeping && !modoRepouso && poopPressure >= 100) {
     spawnPoop();
     poopPressure = 0;
@@ -268,16 +313,16 @@ function gameTick() {
 
   if(tickCount % 60 === 0 && walletAddress) scheduleSave();
 
-  // Sujeira afeta saúde e humor
+  // Sujeira afeta saúde e humor (todos os modos)
   if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
   if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
   if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
 
-  // ── VÍNCULO — decaimento passivo ──
+  // ── VÍNCULO — decaimento passivo (só modo ativo) ──
   if(!sleeping && !modoRepouso) {
     const humorBad = vitals.humor < 30;
     const decayV   = humorBad ? 0.05 : 0.02;
-    vinculo = Math.max(0, vinculo - decayV);
+    vinculo = Math.max(0, vinculo - (decayV * _eb.vinculoDecay));
   }
 
   updateDirtyVisuals();
@@ -286,15 +331,13 @@ function gameTick() {
 
   if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); syncEasterEggs(); }
 
-  // ── POSTURA DE OVOS (apenas fase Adulto, nível 10+) ──
+  // ── POSTURA DE OVOS (apenas fase Adulto) ──
   if(getFase() === 3) {
     if(eggLayCooldown > 0) {
       eggLayCooldown--;
-      // Garante que o botão está escondido durante cooldown
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = 'none';
     } else {
-      // Pronto para botar — mostra botão
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = '';
       if(!eggLayNotified) {
@@ -304,25 +347,24 @@ function gameTick() {
       }
     }
   } else {
-    // Não é adulto — esconde o botão
     const btn = document.getElementById('btnLayEgg');
     if(btn) btn.style.display = 'none';
   }
 
-  // Moedas passivas: +2 a cada 2 minutos (rebalanceado)
+  // Moedas passivas: +2 a cada 2 minutos
   if(tickCount % (60 * 2) === 0) {
     earnCoins(Math.round(2 * rarityBonus().moedas));
   }
 }
 
 function autoSpeak() {
-  if(modoRepouso) return; // silencioso em repouso
-  if(dirtyLevel >= 2)     showBubble(rnd(FALAS.dirty));
+  if(modoRepouso) return;
+  if(dirtyLevel >= 2)       showBubble(rnd(FALAS.dirty));
   else if(vitals.fome < 25)    showBubble(rnd(FALAS.hungry));
   else if(vitals.energia < 20) showBubble(rnd(FALAS.tired));
-  else if(sick)           showBubble(rnd(FALAS.sick));
-  else if(vitals.humor < 30) showBubble(rnd(FALAS.bored));
-  else if(Math.random() < .3) showBubble(rnd(FALAS.happy));
+  else if(sick)                showBubble(rnd(FALAS.sick));
+  else if(vitals.humor < 30)   showBubble(rnd(FALAS.bored));
+  else if(Math.random() < .3)  showBubble(rnd(FALAS.happy));
 }
 
 function playPhaseUp(faseName) {
@@ -346,7 +388,6 @@ function playPhaseUp(faseName) {
 
 function killCreature() {
   dead = true;
-  // Desativa repouso ao morrer
   if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
   saveToFirebase();
   ModalManager.closeAll();
