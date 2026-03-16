@@ -184,7 +184,7 @@ function setupAvatar() {
 
   // Decor
 
-  addLog(`${avatar.nome} foi invocado! Clique no ovo 5x para chocá-lo.`, 'good');
+  if(!avatar.bornAt) addLog(`${avatar.nome} foi invocado! Clique no ovo 5x para chocá-lo.`, 'good');
   updateAllUI();
   scheduleSave();
 }
