@@ -348,10 +348,7 @@
 
 /* Grade travada em repouso — só btnSleep ativo */
 .repouso-mode .btn-action  { opacity: .2; pointer-events: none; cursor: not-allowed; }
-.repouso-mode #btnSleep    { opacity: 1;  pointer-events: all;  cursor: pointer;
-  border-color: #8ad4ff; color: #8ad4ff;
-  box-shadow: 0 0 12px rgba(138,212,255,.3);
-}
+.repouso-mode #btnSleep    { opacity: .2; pointer-events: none; cursor: not-allowed; }
 
 /* Barra de progresso do long press */
 #btnSleep.pressing::after {
