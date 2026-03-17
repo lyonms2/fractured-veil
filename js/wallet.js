@@ -141,31 +141,27 @@ async function connectWallet() {
             desativarModoRepouso();
           }
 
-          // Threshold: após 30 ciclos offline sem dormir → modo repouso automático
-          const REPOUSO_THRESHOLD = 30;
-
+          // DEPOIS — só repouso manual ou decay normal, sem automático
           for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
-
+          
             if(wasSleeping) {
-              // ── Dormindo manualmente ──
               vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
                 wasSleeping    = false;
               }
-
-            } else if(estavEmRepouso || _i >= REPOUSO_THRESHOLD) {
-              // ── Modo repouso (manual ou automático após 30min) ──
-              // Decay mínimo — mesma lógica do gametick em modoRepouso
+          
+            } else if(estavEmRepouso) {
+              // Modo repouso manual — decay mínimo
               vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
               vitals.higiene = Math.max(0, vitals.higiene - 0.03);
               vitals.humor   = Math.max(0, vitals.humor   - 0.02);
               vinculo        = Math.max(0, vinculo        - 0.01);
               if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
               if(vitals.saude <= 0) { vitals.saude = 0; break; }
-
+          
             } else {
-              // ── Primeiros 30min offline — decay normal ──
+              // Decay normal offline
               vitals.fome    = Math.max(0, vitals.fome    - (0.4  * _d * getItemEffect('fomeDecayMult')));
               vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d));
               vitals.energia = Math.max(0, vitals.energia - (0.3  * _d));
@@ -192,14 +188,7 @@ async function connectWallet() {
           const mins = Math.floor((offlineSecs % 3600) / 60);
 
           // Monta mensagem de log descritiva
-          let modoOfflineMsg;
-          if(estavEmRepouso) {
-            modoOfflineMsg = '⏸ modo repouso ativo';
-          } else if(offlineCycles > REPOUSO_THRESHOLD) {
-            modoOfflineMsg = '💤 modo repouso automático';
-          } else {
-            modoOfflineMsg = 'stats atualizados';
-          }
+          const modoOfflineMsg = estavEmRepouso ? '⏸ em repouso' : 'stats atualizados';
           addLog(`Ausente por ${hrs}h ${mins}min — ${modoOfflineMsg}.`, 'info');
 
           if(vitals.saude <= 0) {
