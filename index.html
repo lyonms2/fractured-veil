@@ -261,6 +261,16 @@
                   <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool semanal</div>
                 </div>
               </div>
+
+              <!-- 🃏 ROUBA MONTE -->
+              <div class="gs-btn" onclick="closeGameSelector(); openRoubaMonte()">
+                <div class="gs-btn-icon">🃏</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">ROUBA MONTE</div>
+                  <div class="gs-btn-desc">Duelo de cartas ao vivo contra outros jogadores</div>
+                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Pool P2E</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -321,6 +331,9 @@
 
           <!-- ⚔️ ARENA DIMENSIONAL MODAL -->
           <div id="arenaModal"></div>
+
+          <!-- 🃏 ROUBA MONTE MODAL -->
+          <div id="roubaMontModal"></div>
 
           <!-- Level-up overlay -->
           <div id="levelUpOverlay">
@@ -618,6 +631,7 @@
       iniciarListenerDesafiosRecebidos();
       verificarPartidaPendente();
       setTimeout(_limparSalasAntigas, 3000); // após 3s — deixa o jogo carregar primeiro
+      if(typeof rmIniciarListenerNotificacoes === 'function') rmIniciarListenerNotificacoes();
     }
   };
 </script>
