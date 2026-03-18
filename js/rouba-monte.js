@@ -21,7 +21,8 @@ let _rmLobbyListRef  = null;
 let _rmHeartbeat     = null;
 let _rmSalaListener  = null;
 let _rmTimerInterval = null;
-let _rmCartaSel      = null; // índice da carta seleccionada na mão
+let _rmCartaSel      = null;
+let _rmUltimoTurno   = null;
 
 // ── Helpers ──
 function _rmRtdb()     { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
@@ -455,7 +456,8 @@ async function rmRecusarDesafio(salaId) {
 
 function _rmRenderPartida(salaId, sala) {
   _rmPararTimer();
-  _rmCartaSel = null;
+  _rmCartaSel    = null;
+  _rmUltimoTurno = sala.turno;
   const el = document.getElementById('roubaMontModal');
   if(!el || !sala) return;
 
@@ -604,8 +606,12 @@ function _rmEscutarSala(salaId, opWallet) {
       return;
     }
     if(s.status === 'em_jogo') {
-      _rmPararTimer();
-      _rmRenderPartida(salaId, s);
+      // Só re-renderiza se mudou o turno — evita loop infinito
+      if(s.turno !== _rmUltimoTurno) {
+        _rmUltimoTurno = s.turno;
+        _rmPararTimer();
+        _rmRenderPartida(salaId, s);
+      }
     }
   });
 }
