@@ -300,24 +300,23 @@ async function rmDesafiar(walletOponente) {
   const restante = _rmSerDeck(deck.slice(12));
 
   const sala = {
-    id:        salaId,
+    id: salaId,
     fila,
     status:    'aguardando',
     criador:   walletAddress,
     oponente:  walletOponente,
     aposta,
-    turno:     walletAddress, // criador começa
-    // Mãos
-    [`maos/${walletAddress}`]:    maoEu,
-    [`maos/${walletOponente}`]:   maoOp,
-    // Monte da mesa (visível para ambos)
+    turno:     walletAddress,
     montemesa: monte,
-    // Baralho restante
     baralho:   restante,
-    // Pilhas de capturadas (conta de cartas)
-    [`pilhas/${walletAddress}`]:  [],
-    [`pilhas/${walletOponente}`]: [],
-    // Info dos jogadores
+    maos: {
+      [walletAddress]:   maoEu,
+      [walletOponente]:  maoOp,
+    },
+    pilhas: {
+      [walletAddress]:   [],
+      [walletOponente]:  [],
+    },
     jogadores: {
       [walletAddress]: {
         nome:     avatar.nome.split(',')[0],
@@ -332,7 +331,7 @@ async function rmDesafiar(walletOponente) {
     criadoEm: firebase.database.ServerValue.TIMESTAMP,
     recompensaDistribuida: false,
   };
-
+  
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).set(sala);
 
   // Marca ambos como em partida
