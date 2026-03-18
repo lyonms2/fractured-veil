@@ -522,7 +522,7 @@ function _rmRenderPartida(salaId, sala) {
         <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
           ${minha_mao.map((c, i) => {
             const sel = _rmCartaSel === i;
-            return `<div onclick="rmSelecionarCarta(${i})" style="
+            return `<div data-carta="${i}" data-cor="${c.cor||'rgba(201,168,76,.25)'}" onclick="rmSelecionarCarta(${i})" style="
               width:40px;height:56px;border-radius:6px;
               background:${sel ? 'rgba(201,168,76,.12)' : '#0d0a1e'};
               border:1.5px solid ${sel ? '#f0d080' : (c.cor||'rgba(201,168,76,.25)')};
@@ -542,7 +542,7 @@ function _rmRenderPartida(salaId, sala) {
       <!-- Botão jogar -->
       ${meuTurno ? `
       <div style="display:flex;gap:6px;margin-top:4px;">
-        <button class="mini-btn primary" style="flex:1;font-size:7px;"
+        <button id="rmBtnJogar" class="mini-btn primary" style="flex:1;font-size:7px;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel === null ? 'disabled' : ''}>
           🃏 JOGAR CARTA
@@ -611,11 +611,21 @@ function _rmEscutarSala(salaId, opWallet) {
 
 function rmSelecionarCarta(idx) {
   _rmCartaSel = (_rmCartaSel === idx) ? null : idx;
-  const salaRef = _rmRtdb()?.ref(`roubaMonte/salas/${_rmSalaId}`);
-  if(salaRef) salaRef.once('value').then(snap => {
-    const s = snap.val();
-    if(s && s.turno === walletAddress) _rmRenderPartida(_rmSalaId, s);
+
+  // Actualiza visual das cartas sem ir ao RTDB
+  document.querySelectorAll('#roubaMontModal [data-carta]').forEach(el => {
+    const i   = Number(el.dataset.carta);
+    const sel = _rmCartaSel === i;
+    const cor = el.dataset.cor || 'rgba(201,168,76,.25)';
+    el.style.background = sel ? 'rgba(201,168,76,.12)' : '#0d0a1e';
+    el.style.border     = `1.5px solid ${sel ? '#f0d080' : cor}`;
+    el.style.transform  = sel ? 'translateY(-6px)' : 'none';
+    el.style.boxShadow  = sel ? '0 4px 14px rgba(201,168,76,.3)' : 'none';
   });
+
+  // Activa/desactiva o botão jogar
+  const btnJogar = document.getElementById('rmBtnJogar');
+  if(btnJogar) btnJogar.disabled = _rmCartaSel === null;
 }
 
 async function rmJogarCarta(salaId, opWallet) {
