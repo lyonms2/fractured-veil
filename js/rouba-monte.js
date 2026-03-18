@@ -562,6 +562,11 @@ function _rmRenderPartida(salaId, sala) {
 
   if(meuTurno) _rmIniciarTimer(salaId, opWallet);
   _rmEscutarSala(salaId, opWallet);
+
+  // Debug pós-render
+  const cartasDOM = document.querySelectorAll('#roubaMontModal [data-carta]');
+  const btnDOM    = document.getElementById('rmBtnJogar');
+  console.log('[RM] _rmRenderPartida — meuTurno:', meuTurno, '| cartas no DOM:', cartasDOM.length, '| btnJogar no DOM:', !!btnDOM, '| minha_mao:', minha_mao.length);
 }
 
 // ── Timer do turno ──
@@ -610,7 +615,12 @@ function _rmEscutarSala(salaId, opWallet) {
 // ═══════════════════════════════════════════════════════════════════
 
 function rmSelecionarCarta(idx) {
+  console.log('[RM] rmSelecionarCarta chamado — idx:', idx, '| _rmCartaSel antes:', _rmCartaSel);
   _rmCartaSel = (_rmCartaSel === idx) ? null : idx;
+  console.log('[RM] _rmCartaSel depois:', _rmCartaSel);
+
+  const todasCartas = document.querySelectorAll('#roubaMontModal [data-carta]');
+  console.log('[RM] cartas encontradas no DOM com [data-carta]:', todasCartas.length);
 
   // Actualiza visual das cartas sem ir ao RTDB
   document.querySelectorAll('#roubaMontModal [data-carta]').forEach(el => {
@@ -625,19 +635,23 @@ function rmSelecionarCarta(idx) {
 
   // Activa/desactiva o botão jogar
   const btnJogar = document.getElementById('rmBtnJogar');
+  console.log('[RM] btnJogar encontrado:', !!btnJogar, '| disabled:', _rmCartaSel === null);
   if(btnJogar) btnJogar.disabled = _rmCartaSel === null;
 }
 
 async function rmJogarCarta(salaId, opWallet) {
-  if(_rmCartaSel === null) return;
-  if(!_rmRtdb()) return;
+  console.log('[RM] rmJogarCarta chamado — salaId:', salaId, '| opWallet:', opWallet, '| _rmCartaSel:', _rmCartaSel);
+  if(_rmCartaSel === null) { console.warn('[RM] abortou — nenhuma carta seleccionada'); return; }
+  if(!_rmRtdb()) { console.warn('[RM] abortou — RTDB indisponível'); return; }
   _rmPararTimer();
 
   const snap = await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).once('value');
   const sala = snap.val();
-  if(!sala || sala.turno !== walletAddress) return;
+  console.log('[RM] sala carregada:', !!sala, '| turno:', sala?.turno, '| walletAddress:', walletAddress, '| é meu turno:', sala?.turno === walletAddress);
+  if(!sala || sala.turno !== walletAddress) { console.warn('[RM] abortou — não é meu turno'); return; }
 
-  const minha_mao   = _rmToArray(sala.maos?.[walletAddress]);
+  const minha_mao = _rmToArray(sala.maos?.[walletAddress]);
+  console.log('[RM] minha_mao:', minha_mao.length, 'cartas | _rmCartaSel:', _rmCartaSel);
   if(_rmCartaSel >= minha_mao.length) { _rmCartaSel = null; return; }
 
   const cartaJogada = minha_mao.splice(_rmCartaSel, 1)[0];
