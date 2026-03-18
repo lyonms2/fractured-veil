@@ -596,6 +596,7 @@ function _rmIniciarTimer(salaId, opWallet) {
 function _rmEscutarSala(salaId, opWallet) {
   _rmPararSala();
   _rmSalaListener = _rmRtdb().ref(`roubaMonte/salas/${salaId}`);
+  let _ultimoUpdateTs = 0;
   _rmSalaListener.on('value', snap => {
     const s = snap.val();
     if(!s) return;
@@ -606,9 +607,11 @@ function _rmEscutarSala(salaId, opWallet) {
       return;
     }
     if(s.status === 'em_jogo') {
-      // Só re-renderiza se mudou o turno — evita loop infinito
-      if(s.turno !== _rmUltimoTurno) {
-        _rmUltimoTurno = s.turno;
+      const updateTs = s.ultimaJogada?.ts || 0;
+      // Re-renderiza se houve uma jogada nova (timestamp diferente)
+      if(updateTs !== _ultimoUpdateTs) {
+        _ultimoUpdateTs = updateTs;
+        _rmUltimoTurno  = s.turno;
         _rmPararTimer();
         _rmRenderPartida(salaId, s);
       }
