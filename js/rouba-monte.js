@@ -378,7 +378,7 @@ function _rmRenderEspera(salaId) {
     if(!s) return;
     if(s.status === 'em_jogo') {
       salaRef.off('value');
-      _rmRenderPartida(salaId, s);
+      _rmIniciarPartida(salaId, s);
     }
     if(s.status === 'cancelada' || s.status === 'recusada') {
       salaRef.off('value');
@@ -436,7 +436,7 @@ async function rmAceitarDesafio(salaId) {
   await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}/emPartida`).set(true);
 
   const snap = await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).once('value');
-  _rmRenderPartida(salaId, snap.val());
+  _rmIniciarPartida(salaId, snap.val());
 }
 
 async function rmRecusarDesafio(salaId) {
@@ -563,12 +563,6 @@ function _rmRenderPartida(salaId, sala) {
     </div>`;
 
   if(meuTurno) _rmIniciarTimer(salaId, opWallet);
-  _rmEscutarSala(salaId, opWallet);
-
-  // Debug pós-render
-  const cartasDOM = document.querySelectorAll('#roubaMontModal [data-carta]');
-  const btnDOM    = document.getElementById('rmBtnJogar');
-  console.log('[RM] _rmRenderPartida — meuTurno:', meuTurno, '| cartas no DOM:', cartasDOM.length, '| btnJogar no DOM:', !!btnDOM, '| minha_mao:', minha_mao.length);
 }
 
 // ── Timer do turno ──
@@ -608,15 +602,22 @@ function _rmEscutarSala(salaId, opWallet) {
     }
     if(s.status === 'em_jogo') {
       const updateTs = s.ultimaJogada?.ts || 0;
-      // Re-renderiza se houve uma jogada nova (timestamp diferente)
       if(updateTs !== _ultimoUpdateTs) {
         _ultimoUpdateTs = updateTs;
-        _rmUltimoTurno  = s.turno;
         _rmPararTimer();
         _rmRenderPartida(salaId, s);
+        if(s.turno === walletAddress) _rmIniciarTimer(salaId, opWallet);
       }
     }
   });
+}
+
+// ── Inicia partida — render + listener (chamado uma única vez) ──
+function _rmIniciarPartida(salaId, sala) {
+  const opWallet = sala.criador === walletAddress ? sala.oponente : sala.criador;
+  _rmRenderPartida(salaId, sala);
+  if(sala.turno === walletAddress) _rmIniciarTimer(salaId, opWallet);
+  _rmEscutarSala(salaId, opWallet);
 }
 
 // ═══════════════════════════════════════════════════════════════════
