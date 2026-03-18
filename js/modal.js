@@ -4,14 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
-  'arenaModal'
+  'arenaModal','roubaMontModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
