@@ -689,10 +689,10 @@ function _rmEscutarSala(salaId, opWallet) {
     console.log('[RM] Listener — status:', s.status, '| turno:', s.turno,
       '| ultimaJogada.ts:', s.ultimaJogada?.ts||0, '| é meu turno:', s.turno===walletAddress);
 
-    // Detectar abandono — oponente sem presença há mais de 60s
+    // Detectar abandono — só verifica se oponente já registou presença pelo menos uma vez
     const presencaOp = s.presenca?.[opWallet] || 0;
     const agora = Date.now();
-    if(presencaOp > 0 && (agora - presencaOp) > 60000) {
+    if(presencaOp > 0 && (agora - presencaOp) > 60000 && s.status === 'em_jogo') {
       console.log('[RM] Oponente ausente há mais de 60s — declarando abandono');
       if(_abandonoTimer) clearTimeout(_abandonoTimer);
       _abandonoTimer = setTimeout(async () => {
