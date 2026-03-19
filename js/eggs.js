@@ -8,9 +8,6 @@ function goToMarketplace(e) {
   window.location.href = 'marketplace.html';
 }
 
-// Encontra o slot correcto para chocar um ovo:
-// 1. Se slot activo está vazio (sem avatar chocado) → usa o activo
-// 2. Senão → primeiro slot genuinamente vazio (null ou sem nome/pendingEgg)
 function findTargetSlot() {
   const unlocked = getUnlockedSlots();
   const activeS = avatarSlots[activeSlotIdx];
@@ -53,7 +50,6 @@ function calcEggRarity() {
     chances[1] = Math.max(0, chances[1] - Math.floor(bonus/2));
     chances[2] = Math.min(95, chances[2] + bonus);
   }
-
   const roll = Math.random() * 100;
   if(roll < chances[0]) return 'Comum';
   if(roll < chances[0] + chances[1]) return 'Raro';
@@ -98,7 +94,6 @@ function layEgg() {
     }
   }
   const raridade = eggsInInventory[eggsInInventory.length - numEggs].raridade;
-
   eggLayCooldown  = Math.round(1440 * rb.cooldown);
   scheduleSave();
   eggLayNotified  = false;
@@ -119,7 +114,6 @@ function layEgg() {
   showBubble(numEggs > 1 ? `Botei ${numEggs} ovos! 🥚` : `Botei um ovo ${raridade === 'Lendário' ? 'Lendário! 🌟' : raridade === 'Raro' ? 'Raro! 💙' : 'Comum! 🥚'}`);
   addLog(`🥚 Botou ${eggWord}! Verifique o inventário.`, rarColor);
   showFloat(`🥚 ×${numEggs}`, raridade === 'Lendário' ? '#e8a030' : raridade === 'Raro' ? '#5ab4e8' : '#7ab87a');
-
   renderEggInventory();
   updateResourceUI();
 }
@@ -308,6 +302,7 @@ async function confirmHatch() {
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
+  // Backup do ovo no Firebase antes de remover da memória
   if(walletAddress && fbDb()) {
     try {
       await fbDb().collection('players').doc(walletAddress).update({
@@ -343,12 +338,12 @@ async function confirmHatch() {
     eggLayCooldown: 0, petCooldown: 0,
     vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
-    pendingEgg: true,   // FIX: protege o slot durante a animação de chocagem
-    pendingSlot: targetSlot, // getGameState() filtra slots com pendingEgg=true → não salva como null
+    pendingEgg: true,   // protege o slot — firebase.js não salva avatarSlots enquanto pendingEgg existir
+    pendingSlot: targetSlot,
   };
   window._pendingEggSlot = targetSlot;
 
-  // Animação do ovo a partir e chocar directamente
+  console.log('[confirmHatch] slot', targetSlot, 'reservado com pendingEgg=true');
   hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);
 }
 
@@ -445,10 +440,10 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   }, 900);
   setTimeout(() => {
     flash.style.opacity = '0';
+    console.log('[hatchWithAnimation] chamando hatch()');
     hatch();
   }, 1200);
 }
-
 
 function cancelHatch() {
   const pendingSlot = window._pendingEggSlot;
@@ -619,7 +614,6 @@ function closeEggInventory() {
   ModalManager.close('eggInvModal');
 }
 
-// ── Mini SVG do ovo por raridade ──
 function eggMiniSVG(raridade, size = 36) {
   const cfg = {
     'Comum':   { g1:'#7a4fbb', g2:'#3d2a6e', g3:'#0b0916', shine:'#9070d0', aura:'#a78bfa', glow:'#3d2a6e' },
