@@ -217,7 +217,7 @@ function _rmRenderLobby() {
     </div>
 
     <!-- Aposta -->
-    <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;
                 align-items:center;gap:0;
                 padding:10px 8px;background:rgba(201,168,76,.05);
                 border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:12px;">
@@ -225,12 +225,10 @@ function _rmRenderLobby() {
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
         <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
       </div>
-      <div style="background:rgba(255,255,255,.08);height:28px;"></div>
       <div style="text-align:center;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
         <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
       </div>
-      <div style="background:rgba(255,255,255,.08);height:28px;"></div>
       <div style="text-align:center;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
         <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
@@ -1048,29 +1046,35 @@ async function rmDescartar(salaId, opWallet) {
 
 // ── Abandonar partida explicitamente ──
 function rmAbandonar(salaId) {
-  const el = document.getElementById('roubaMontModal');
-  if(!el) return;
+  // Remove overlay anterior se existir
+  const anterior = document.getElementById('rmAbandonarOverlay');
+  if(anterior) anterior.remove();
 
-  // Sobrepõe um painel de confirmação no estilo do jogo
+  const modal = document.getElementById('roubaMontModal');
+  if(!modal) return;
+
   const overlay = document.createElement('div');
   overlay.id = 'rmAbandonarOverlay';
   overlay.style.cssText = `
     position:absolute;inset:0;z-index:99;
-    background:rgba(4,3,10,.95);
+    background:rgba(4,3,10,.96);
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
-    gap:12px;padding:20px;
+    gap:12px;padding:24px;
+    border-radius:inherit;
   `;
   overlay.innerHTML = `
-    <div style="font-size:28px;">🏳️</div>
-    <div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#e74c3c;letter-spacing:2px;">ABANDONAR?</div>
-    <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.8;">
+    <div style="font-size:32px;">🏳️</div>
+    <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+                color:#e74c3c;letter-spacing:2px;text-align:center;">ABANDONAR?</div>
+    <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.9;
+                padding:0 10px;">
       O oponente ganhará a partida<br>e ficará com o prémio.
     </div>
-    <div style="display:flex;gap:8px;margin-top:6px;width:100%;">
+    <div style="display:flex;gap:8px;margin-top:8px;width:100%;">
       <button class="arena-btn-sair" style="flex:1;font-size:8px;"
         onclick="rmConfirmarAbandono('${salaId}')">
-        🏳️ CONFIRMAR ABANDONO
+        🏳️ CONFIRMAR
       </button>
       <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
         onclick="document.getElementById('rmAbandonarOverlay').remove()">
@@ -1078,8 +1082,14 @@ function rmAbandonar(salaId) {
       </button>
     </div>
   `;
-  el.style.position = 'relative';
-  el.appendChild(overlay);
+
+  // Garante position relative no modal para o absolute funcionar
+  modal.style.position = 'relative';
+  // Garante que o overflow não corta o overlay
+  const inner = modal.querySelector('div');
+  if(inner) inner.style.overflow = 'hidden';
+
+  modal.appendChild(overlay);
 }
 
 async function rmConfirmarAbandono(salaId) {
