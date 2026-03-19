@@ -510,15 +510,16 @@ function _rmIniciarPartida(salaId, sala) {
   _rmHeartbeatSala = setInterval(async () => {
     if(!_rmRtdb()||!_rmSalaId) return;
     try {
-      await _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`).set(Date.now());
+      await _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`).set('activo');
     } catch(e) {}
   }, 10000);
 
-  // Marca presença inicial
+  // Marca presença inicial e regista onDisconnect
   if(_rmRtdb()&&_rmSalaId) {
-    _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`)
-      .onDisconnect().remove();
-    _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`).set(Date.now());
+    const presRef = _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`);
+    presRef.onDisconnect().set('desconectado'); // Firebase escreve isto ao fechar/actualizar
+    presRef.set('activo');
+    console.log('[RM] Presença registada com onDisconnect para abandono automático');
   }
 
   _rmRenderPartida(salaId, sala, _rmOpWallet);
@@ -680,7 +681,6 @@ function _rmEscutarSala(salaId, opWallet) {
   console.log('[RM] _rmEscutarSala iniciado — salaId:', salaId);
   _rmSalaListener = _rmRtdb().ref(`roubaMonte/salas/${salaId}`);
   let _ultimoTs = 0;
-  let _abandonoTimer = null;
 
   _rmSalaListener.on('value', snap => {
     const s = snap.val();
@@ -689,28 +689,21 @@ function _rmEscutarSala(salaId, opWallet) {
     console.log('[RM] Listener — status:', s.status, '| turno:', s.turno,
       '| ultimaJogada.ts:', s.ultimaJogada?.ts||0, '| é meu turno:', s.turno===walletAddress);
 
-    // Detectar abandono — só verifica se oponente já registou presença pelo menos uma vez
-    const presencaOp = s.presenca?.[opWallet] || 0;
-    const agora = Date.now();
-    if(presencaOp > 0 && (agora - presencaOp) > 60000 && s.status === 'em_jogo') {
-      console.log('[RM] Oponente ausente há mais de 60s — declarando abandono');
-      if(_abandonoTimer) clearTimeout(_abandonoTimer);
-      _abandonoTimer = setTimeout(async () => {
-        const snapCheck = await _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${opWallet}`).once('value');
-        const tsAtual = snapCheck.val()||0;
-        if((Date.now() - tsAtual) > 60000) {
-          console.log('[RM] Abandono confirmado — finalizando partida');
-          await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
-            status: 'finalizada',
-            abandono: opWallet,
-            turno: null,
-          });
-        }
-      }, 5000);
+    // Detectar abandono por desconexão (refresh ou sair)
+    if(s.status==='em_jogo') {
+      const presencaOp = s.presenca?.[opWallet];
+      if(presencaOp === 'desconectado') {
+        console.log('[RM] Oponente desconectou — declarando abandono');
+        _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
+          status:   'finalizada',
+          abandono: opWallet,
+          turno:    null,
+        });
+        return;
+      }
     }
 
     if(s.status==='finalizada') {
-      if(_abandonoTimer) clearTimeout(_abandonoTimer);
       _rmPararTimer();
       _rmSalaListener.off('value');
       console.log('[RM] Partida finalizada');
@@ -906,6 +899,14 @@ async function rmDescartar(salaId, opWallet) {
 async function _rmRenderResultado(sala, opWallet) {
   _rmPararTimer();
   if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
+
+  // Cancela onDisconnect — partida terminou normalmente
+  if(_rmRtdb()&&sala.id&&walletAddress) {
+    try {
+      _rmRtdb().ref(`roubaMonte/salas/${sala.id}/presenca/${walletAddress}`).onDisconnect().cancel();
+    } catch(e) {}
+  }
+
   _rmBloquearUI(false);
   _rmSalaId   = null;
   _rmOpWallet = null;
@@ -1110,6 +1111,15 @@ function rmLimparAoDesconectar() {
   if(_rmHeartbeat)     { clearInterval(_rmHeartbeat);     _rmHeartbeat=null; }
   if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
   if(_rmLobbyRef) { try{_rmLobbyRef.remove();}catch(e){} _rmLobbyRef=null; }
+
+  // Se havia partida activa, marca presença como desconectado → oponente ganha
+  if(_rmSalaId && _rmRtdb() && walletAddress) {
+    console.log('[RM] Abandono manual — marcando presença como desconectado');
+    try {
+      _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`).set('desconectado');
+    } catch(e) {}
+  }
+
   _rmBloquearUI(false);
   _rmAtiva      = false;
   _rmSalaId     = null;
