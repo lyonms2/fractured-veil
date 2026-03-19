@@ -9,20 +9,41 @@ let walletAddress = null;
 function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
 
 function getGameState() {
+  // Flush current runtime state into active slot before saving
   saveRuntimeToSlot(activeSlotIdx);
 
+  // Garantir que o array cobre todos os slots desbloqueados antes de serializar
   const _neededGet = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededGet) avatarSlots.push(null);
 
-  const slotsSafe = avatarSlots.map(s => {
-    if(!s || s.pendingEgg) return null;
+  // FIX: se há algum slot com pendingEgg, NÃO incluir avatarSlots no save.
+  // O array de slots com um null no lugar do slot pendente apagaria o avatar
+  // que estava nesse slot antes da chocagem começar.
+  const hasPendingEgg = avatarSlots.some(s => s && s.pendingEgg);
+  if(hasPendingEgg) {
+    console.log('[getGameState] pendingEgg detectado — avatarSlots não será salvo neste ciclo');
     return {
+      // Salva só o estado económico e o lastSeen — slots ficam intactos no Firebase
+      gs:         {...gs},
+      cristais:   gs.cristais   || 0,
+      extraSlots: gs.extraSlots || 0,
+      lastSeen:   Date.now()
+      // avatarSlots deliberadamente omitido — merge:true preserva o valor actual no Firebase
+    };
+  }
+
+  // Serialize slots — each slot is self-contained
+  const slotsSafe = avatarSlots.map(s => {
+    if(!s || s.pendingEgg) return null; // pendingEgg slots are never persisted
+    return {
+      // Avatar identity
       nome:      s.nome      || '',
       elemento:  s.elemento  || 'Fogo',
       raridade:  s.raridade  || 'Comum',
       descricao: s.descricao || '',
       seed:      s.seed      || 0,
       listed:    s.listed    || false,
+      // Runtime state
       hatched:        s.hatched        ?? false,
       dead:           s.dead           ?? false,
       sick:           s.sick           ?? false,
@@ -40,6 +61,7 @@ function getGameState() {
       vitals:         s.vitals ? {...s.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
       eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
       items:          (s.items || []).map(i => ({...i})),
+      // Marketplace stats
       diasVida:   s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0,
       totalOvos:  s.totalOvos  || 0,
       totalRaros: s.totalRaros || 0,
@@ -52,7 +74,6 @@ function getGameState() {
     gs:            {...gs},
     cristais:      gs.cristais   || 0,
     extraSlots:    gs.extraSlots || 0,
-    modoRepouso:   typeof modoRepouso !== 'undefined' ? !!modoRepouso : false, // ← persistir modo repouso
     lastSeen:      Date.now()
   };
 }
@@ -61,17 +82,20 @@ function applyGameState(data) {
   if(!data) return false;
   window.loadedLastSeen = data.lastSeen || Date.now();
 
+  // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
   if(data.gs?.cristais   !== undefined) gs.cristais   = data.gs.cristais;
   else if(data.cristais  !== undefined) gs.cristais   = data.cristais;
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
   else if(data.extraSlots !== undefined) gs.extraSlots = data.extraSlots;
 
+  // Se o activeSlotIdx vai mudar, flush o slot actual em memória primeiro
   const incomingSlotIdx = data.activeSlotIdx !== undefined ? data.activeSlotIdx : activeSlotIdx;
   if(incomingSlotIdx !== activeSlotIdx) {
     saveRuntimeToSlot(activeSlotIdx);
   }
 
+  // Restore slots
   if(data.avatarSlots) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
@@ -82,6 +106,7 @@ function applyGameState(data) {
   }
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
 
+  // Migration helper — builds a full slot from flat legacy fields
   function buildLegacySlot(a, d) {
     const slot = {
       nome: a.nome||'', elemento: a.elemento||'Fogo', raridade: a.raridade||'Comum',
@@ -102,15 +127,18 @@ function applyGameState(data) {
     return slot;
   }
 
+  // Case 1: no avatarSlots at all — pure legacy save
   if(!data.avatarSlots && data.avatar) {
     avatarSlots[0] = buildLegacySlot(data.avatar, data);
     activeSlotIdx  = 0;
   }
 
+  // Case 2: avatarSlots exists but active slot is null/empty — partial migration
   if(data.avatarSlots && !avatarSlots[activeSlotIdx]?.nome && data.avatar) {
     avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
   }
 
+  // Consumir inboxEggs
   if(data.inboxEggs && data.inboxEggs.length > 0) {
     data.inboxEggs = data.inboxEggs.filter(e => Date.now() < e.expiraEm);
     const slot = avatarSlots[activeSlotIdx];
@@ -143,11 +171,14 @@ function applyGameState(data) {
     }
   }
 
+  // Garantir que o array cobre todos os slots desbloqueados restaurados
   const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededApply) avatarSlots.push(null);
 
+  // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 
+  // Inject orphanEggs
   if(window._orphanEggs && window._orphanEggs.length > 0) {
     const existingIds = new Set(eggsInInventory.map(e => e.id));
     window._orphanEggs.forEach(e => {
@@ -162,31 +193,6 @@ function applyGameState(data) {
       });
       window._orphanEggs = null;
       window._inboxConsumed = true;
-    }
-  }
-
-  // ── Restaurar modo repouso ──
-  // Feito APÓS loadRuntimeFromSlot para garantir que hatched/dead já foram restaurados
-  if(data.modoRepouso && typeof modoRepouso !== 'undefined') {
-    // Só restaura se o avatar está vivo e acordado
-    if(hatched && !dead && !sleeping) {
-      modoRepouso = true;
-      // Aplica visual sem chamar ativarModoRepouso() para não gravar de novo
-      setTimeout(() => {
-        const overlay = document.getElementById('repousoOverlay');
-        const btn     = document.getElementById('btnSleep');
-        if(overlay) overlay.classList.add('active');
-        if(btn) {
-          btn.querySelector('.icon').textContent            = '💤';
-          const lbl = document.getElementById('sleepLabel');
-          if(lbl) lbl.textContent = 'REPOUSO';
-          btn.classList.add('active-repouso');
-        }
-        const ab = document.getElementById('actionBtns');
-        if(ab) ab.classList.add('repouso-mode');
-        addLog('Modo repouso restaurado. ⏸', 'info');
-        showBubble('Ainda em repouso... 🌙');
-      }, 500); // delay para o DOM estar pronto
     }
   }
 
