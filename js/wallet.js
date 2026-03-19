@@ -18,6 +18,8 @@ async function disconnectWallet() {
   // Desativa repouso antes de resetar tudo
   if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
 
+  if(typeof rmLimparAoDesconectar === 'function') rmLimparAoDesconectar();
+
   // ── Reset full game state ──
   avatar = null;
   hatched = false; dead = false; sick = false; sleeping = false;
