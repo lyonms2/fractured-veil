@@ -11,19 +11,11 @@ async function disconnectWallet() {
         params: [{ eth_accounts: {} }]
       });
     }
-  } catch(e) { /* ignora se não suportado */ }
+  } catch(e) {}
 
   document.getElementById('loginScreen').style.display = 'flex';
-
-  // Desativa repouso antes de resetar tudo
-  if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
-
-  if(typeof rmLimparAoDesconectar === 'function') rmLimparAoDesconectar();
-
-  // ── Reset full game state ──
   avatar = null;
   hatched = false; dead = false; sick = false; sleeping = false;
-  modoRepouso = false;
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
   eggClicks = 0; eggLayCooldown = 0;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
@@ -35,7 +27,6 @@ async function disconnectWallet() {
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   walletAddress = null;
 
-  // ── Reset screens ──
   document.getElementById('idleScreen').style.display    = 'flex';
   document.getElementById('eggScreen').style.display     = 'none';
   document.getElementById('aliveScreen').style.display   = 'none';
@@ -50,11 +41,6 @@ async function disconnectWallet() {
   document.getElementById('poopContainer').innerHTML     = '';
   document.getElementById('dirtLayer').className         = '';
 
-  // Garantir que o overlay de repouso some ao desconectar
-  const _ro = document.getElementById('repousoOverlay');
-  if(_ro) _ro.classList.remove('active');
-
-  // ── Reset header ──
   document.getElementById('walletInfo').style.display    = 'none';
   document.getElementById('btnMarket').style.display    = 'none';
   document.getElementById('resMoedasBtn').style.display  = 'none';
@@ -68,7 +54,6 @@ async function disconnectWallet() {
   if(ss) ss.style.display = 'none';
 
   clearTimeout(_saveTimeout);
-
   document.getElementById('logList').innerHTML = '';
   addLog('Sessão encerrada. Conecte a carteira para continuar.', 'info');
 }
@@ -84,37 +69,31 @@ async function connectWallet() {
     addLog('MetaMask não encontrada. Instale em metamask.io', 'bad');
     return;
   }
-  const loginBtn   = document.getElementById('loginBtn');
+  const loginBtn = document.getElementById('loginBtn');
   const loginError = document.getElementById('loginError');
-  if(loginBtn) { loginBtn.disabled = true; document.getElementById('loginBtnText').textContent = 'CONECTANDO...'; }
+  if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent='CONECTANDO...'; }
   if(loginError) loginError.textContent = '';
-
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
     window._fvConnected = true;
     document.getElementById('loginScreen').style.display = 'none';
-
     const _glo = document.getElementById('gameLoadingOverlay');
     if(_glo) _glo.style.display = 'flex';
-
     const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
     document.getElementById('walletShort').textContent = short;
     document.getElementById('walletInfo').style.display = 'flex';
 
     const loaded = await loadFromFirebase();
-
-    document.getElementById('resMoedasBtn').style.display  = '';
+    document.getElementById('resMoedasBtn').style.display = '';
     document.getElementById('resCristaisBtn').style.display = '';
-    document.getElementById('resOvosBtn').style.display    = '';
-    document.getElementById('resItemsBtn').style.display   = '';
-    document.getElementById('btnMarket').style.display     = 'flex';
-
+    document.getElementById('resOvosBtn').style.display = '';
+    document.getElementById('resItemsBtn').style.display = '';
+    document.getElementById('btnMarket').style.display = 'flex';
     const ww = document.getElementById('walletWarning');
     const ss = document.getElementById('summonSection');
     if(ww) ww.style.display = 'none';
     if(ss) ss.style.display = 'block';
-
     const _bs = document.getElementById('btnSummon');
     if(_bs) _bs.disabled = false;
     updateResourceUI();
@@ -125,58 +104,58 @@ async function connectWallet() {
 
       // ── Apply offline decay ──
       if(hatched && !dead) {
-        const offlineSecs   = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
+        const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
         const offlineCycles = Math.floor(offlineSecs / 60);
-
         if(offlineCycles > 0) {
-          const _d         = rarityBonus().decay;
+          const _d = rarityBonus().decay;
+
+          // ── FIX: modo repouso manual + automático ──
+          // wasSleeping: avatar estava dormindo manualmente quando saiu
+          // sonoEsgotado: acordou durante o offline (energia chegou a 100)
+          // emRepousoAuto: modo repouso protector
+          //   → activa IMEDIATAMENTE após acordar do sono manual (sonoEsgotado)
+          //   → activa após 30 ciclos (30min) offline sem sono
+          // Antes deste fix: após acordar do sono caía em decay normal → morte
           let wasSleeping  = sleeping;
+          let sonoEsgotado = false;
+          const REPOUSO_THRESHOLD = 30; // ciclos (= 30min) até repouso auto sem sono
 
-          // ── Lê o modoRepouso salvo no slot ──
-          // applyGameState já chamou loadRuntimeFromSlot, então modoRepouso
-          // já está restaurado na variável global.
-          const estavEmRepouso = modoRepouso;
+          for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
+            // Repouso auto: logo após sono manual OU após 30min sem sono
+            const emRepousoAuto = sonoEsgotado || (!wasSleeping && _i >= REPOUSO_THRESHOLD);
 
-          // Se estava em repouso ao sair, desativa o overlay antes de calcular
-          // (o overlay será re-ativado abaixo se ainda fizer sentido)
-          if(estavEmRepouso && typeof desativarModoRepouso === 'function') {
-            desativarModoRepouso();
-          }
-
-          // DEPOIS — só repouso manual ou decay normal, sem automático
-          for(let _i = 0; _i < Math.min(offlineCycles, 2880); _i++) {
-          
             if(wasSleeping) {
+              // Sono manual — recupera energia
               vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
-                wasSleeping    = false;
+                wasSleeping  = false;
+                sonoEsgotado = true; // próximo ciclo → repouso auto
               }
-          
-            } else if(estavEmRepouso) {
-              // Modo repouso manual — decay mínimo
-              vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
+            } else if(emRepousoAuto) {
+              // Repouso automático — protege o avatar
+              // fome cai 10× mais devagar que normal, saúde só cai se fome zerada
+              vitals.fome    = Math.max(0, vitals.fome    - (0.04 * _d));
               vitals.higiene = Math.max(0, vitals.higiene - 0.03);
               vitals.humor   = Math.max(0, vitals.humor   - 0.02);
               vinculo        = Math.max(0, vinculo        - 0.01);
-              if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
+              if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.04);
               if(vitals.saude <= 0) { vitals.saude = 0; break; }
-          
             } else {
-              // Decay normal offline
-              vitals.fome    = Math.max(0, vitals.fome    - (0.4  * _d * getItemEffect('fomeDecayMult')));
-              vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d));
-              vitals.energia = Math.max(0, vitals.energia - (0.3  * _d));
+              // Primeiros 30min offline sem repouso — decay normal reduzido
+              vitals.fome    = Math.max(0, vitals.fome    - 0.4 * _d * getItemEffect('fomeDecayMult'));
+              vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
+              vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
               vitals.higiene = Math.max(0, vitals.higiene - 0.06);
               if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
               if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
               if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.03);
               if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - 0.02);
-              if(vitals.saude   <= 0) { vitals.saude = 0; break; }
+              if(vitals.saude <= 0)   { vitals.saude = 0; break; }
             }
           }
 
-          // Acordou naturalmente dormindo offline
+          // Actualiza sleeping: se acordou durante o offline, marca como acordado
           if(sleeping && !wasSleeping) {
             sleeping = false;
             addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
@@ -185,14 +164,10 @@ async function connectWallet() {
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
           totalSecs += offlineSecs;
           saveRuntimeToSlot(activeSlotIdx);
-
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
-
-          // Monta mensagem de log descritiva
-          const modoOfflineMsg = estavEmRepouso ? '⏸ em repouso' : 'stats atualizados';
-          addLog(`Ausente por ${hrs}h ${mins}min — ${modoOfflineMsg}.`, 'info');
-
+          const emRepousoLog = sonoEsgotado || (offlineCycles > REPOUSO_THRESHOLD && !sleeping);
+          addLog(`Ausente por ${hrs}h ${mins}min — ${emRepousoLog ? '💤 modo repouso activo (avatar protegido)' : 'stats atualizados'}.`, 'info');
           if(vitals.saude <= 0) {
             dead = true;
             addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
@@ -210,22 +185,20 @@ async function connectWallet() {
         document.getElementById('statusCard').style.display    = 'none';
         document.getElementById('actionBtns').style.opacity    = '0';
         document.getElementById('actionBtns').style.pointerEvents = 'none';
-
         const _name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
         document.getElementById('deadAvatarName').textContent = _name.toUpperCase();
         const _h = Math.floor(totalSecs/3600), _m = Math.floor((totalSecs%3600)/60);
         document.getElementById('deadStats').innerHTML =
           `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
           `Viveu ${_h > 0 ? _h+'h ' : ''}${_m}min · Vínculo: ${Math.floor(vinculo)}`;
-
         const dp = document.getElementById('deadParticles');
         if(dp) {
           dp.innerHTML = '';
           const souls = ['👻','✦','💀','✧','🌑'];
-          for(let i = 0; i < 6; i++) {
+          for(let i=0;i<6;i++) {
             const s = document.createElement('div');
             s.className = 'dead-float-soul';
-            s.textContent = souls[i % souls.length];
+            s.textContent = souls[i%souls.length];
             s.style.cssText = `left:${15+Math.random()*70}%;bottom:${10+Math.random()*30}%;animation-delay:${(Math.random()*3).toFixed(1)}s;animation-duration:${(3+Math.random()*2).toFixed(1)}s;`;
             dp.appendChild(s);
           }
@@ -249,20 +222,17 @@ async function connectWallet() {
         updateAllUI();
         updateResourceUI();
 
-        // Restaura sono visual
         if(sleeping) startSleep();
 
-        // Restaura cocô visual
         if(poopCount > 0) {
           const container = document.getElementById('poopContainer');
           if(container) {
             container.innerHTML = '';
             for(let _p = 0; _p < poopCount; _p++) {
               const pos = POOP_POSITIONS[_p % POOP_POSITIONS.length];
-              const el  = document.createElement('div');
-              el.className   = 'poop';
-              el.style.left  = pos.left;
-              el.style.bottom = pos.bottom;
+              const el = document.createElement('div');
+              el.className = 'poop';
+              el.style.left = pos.left; el.style.bottom = pos.bottom;
               el.style.zIndex = 6 + _p;
               el.title = 'Clique para limpar';
               el.style.transform = `scale(${(.8 + Math.random()*.4).toFixed(2)})`;
@@ -276,17 +246,13 @@ async function connectWallet() {
         updateEquippedDisplay();
         syncEasterEggs();
 
-        // ── Não restaura repouso ao reconectar ──
-        // O jogador voltou ao jogo — faz mais sentido começar ativo.
-        // O modoRepouso já foi desativado acima antes do loop de decay.
-
       } else if(avatar && !hatched) {
         setupAvatar();
-        document.getElementById('idleScreen').style.display  = 'none';
-        document.getElementById('eggScreen').style.display   = 'flex';
-        document.getElementById('aliveScreen').style.display = 'none';
-        document.getElementById('deadScreen').style.display  = 'none';
-        document.getElementById('summonCard').style.display  = 'none';
+        document.getElementById('idleScreen').style.display = 'none';
+        document.getElementById('eggScreen').style.display  = 'flex';
+        document.getElementById('aliveScreen').style.display= 'none';
+        document.getElementById('deadScreen').style.display = 'none';
+        document.getElementById('summonCard').style.display = 'none';
         document.getElementById('creatureCard').style.display = 'block';
         updateResourceUI();
       }
