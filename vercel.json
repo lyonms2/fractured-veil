@@ -3,6 +3,10 @@
     {
       "path": "/api/arena-reset-ranking",
       "schedule": "0 0 * * 1"
+    },
+    { 
+      "path": "/api/rouba-monte-reset-ranking",
+      "schedule": "0 0 * * 1" 
     }
   ]
 }
