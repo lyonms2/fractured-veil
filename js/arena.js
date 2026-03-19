@@ -1099,6 +1099,24 @@ async function _carregarRanking() {
           <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
           <div class="arena-pool-valor">${poolVal} 💎</div>
           <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+        </div>
+        <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.02);
+                    border:1px solid rgba(255,255,255,.06);border-radius:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
+                      letter-spacing:1px;margin-bottom:6px;">◆ COMO É DISTRIBUÍDO</div>
+          <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+            📊 <b style="color:var(--text);">20%</b> da pool é distribuído por semana<br>
+            💎 <b style="color:var(--text);">Lendário</b> recebe 60% do bolo · <b style="color:var(--text);">Raro</b> recebe 40%<br>
+            🪙 <b style="color:var(--text);">Comum</b> recebe moedas internas (não cristais)<br>
+            🏆 Mínimo <b style="color:var(--text);">5 pontos</b> para receber premiação<br>
+            <br>
+            <b style="color:var(--text);">Distribuição por posição:</b><br>
+            🥇 1º → 30% · 🥈 2º → 20% · 🥉 3º → 15%<br>
+            4º → 10% · 5º → 8% · 6º → 6%<br>
+            7º → 4% · 8º → 3% · 9º/10º → 2% cada<br>
+            <br>
+            <b style="color:var(--text);">Pontos:</b> Vitória +3 · Derrota +1 · Empate +1
+          </div>
         </div>`;
     }
   } catch(e) {
