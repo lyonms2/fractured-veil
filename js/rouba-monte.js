@@ -632,10 +632,10 @@ function _rmRenderPartida(salaId, sala, opWallet) {
           ${_rmCartaSel===null?'disabled':''}>
           ↩️ DESCARTAR
         </button>
-        <button class="mini-btn close" style="font-size:7px;" onclick="closeRoubaMonte()">✕</button>
+        <button class="mini-btn close" style="font-size:7px;" onclick="rmAbandonar('${salaId}')">🏳️</button>
       </div>` : `
       <div style="display:flex;justify-content:flex-end;flex-shrink:0;">
-        <button class="mini-btn close" style="font-size:7px;" onclick="closeRoubaMonte()">✕ FECHAR</button>
+        <button class="mini-btn close" style="font-size:7px;" onclick="rmAbandonar('${salaId}')">🏳️ ABANDONAR</button>
       </div>`}
 
       <!-- Timer -->
@@ -892,6 +892,35 @@ async function rmDescartar(salaId, opWallet) {
   addLog(`Rouba Monte: Descartou ${cartaDesc.label}${cartaDesc.naipe}`,'info');
 }
 
+// ── Abandonar partida explicitamente ──
+async function rmAbandonar(salaId) {
+  if(!_rmRtdb()) return;
+  console.log('[RM] rmAbandonar — salaId:', salaId);
+
+  // Confirmação simples
+  if(!confirm('Tens a certeza que queres abandonar? O oponente ganhará a partida.')) return;
+
+  _rmPararTimer();
+  if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
+
+  // Cancela onDisconnect antes de escrever manualmente
+  try {
+    _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel();
+  } catch(e) {}
+
+  // Marca como desconectado → listener do oponente detecta e finaliza
+  await _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).set('desconectado');
+
+  _rmBloquearUI(false);
+  _rmSalaId   = null;
+  _rmOpWallet = null;
+  _rmCartaSel = null;
+  _rmAtiva    = false;
+
+  addLog('Abandonaste a partida. O oponente ganhou. 🏳️', 'bad');
+  ModalManager.close('roubaMontModal');
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // RESULTADO FINAL
 // ═══════════════════════════════════════════════════════════════════
@@ -1139,6 +1168,7 @@ window.rmRecusarDesafio              = rmRecusarDesafio;
 window.rmSelecionarCarta             = rmSelecionarCarta;
 window.rmJogarCarta                  = rmJogarCarta;
 window.rmDescartar                   = rmDescartar;
+window.rmAbandonar                   = rmAbandonar;
 window.rmLimparAoDesconectar         = rmLimparAoDesconectar;
 window._rmVerificarPartidaAtiva      = _rmVerificarPartidaAtiva;
 window.rmIniciarListenerNotificacoes = rmIniciarListenerNotificacoes;
