@@ -211,55 +211,75 @@ function _rmRenderLobby() {
     <button class="gs-x-btn" onclick="closeRoubaMonte()">✕</button>
 
     <!-- Cabeçalho -->
-    <div class="arena-header" style="margin-bottom:10px;">
+    <div class="arena-header" style="margin-bottom:8px;">
       <div class="arena-title">🃏 ROUBA MONTE</div>
       <div class="arena-sub">Duelo de cartas · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
 
-    <!-- Aposta -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;
-                align-items:center;gap:0;
-                padding:10px 8px;background:rgba(201,168,76,.05);
-                border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:12px;">
-      <div style="text-align:center;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
-        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
-        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
-        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
-      </div>
+    <!-- Tabs -->
+    <div class="arena-tabs">
+      <button class="arena-tab active" id="rmTabLobby"   onclick="rmShowTab('lobby')">🏟️ LOBBY</button>
+      <button class="arena-tab"        id="rmTabRanking" onclick="rmShowTab('ranking')">🏆 RANKING</button>
     </div>
 
-    <!-- Acção -->
-    <div id="rmLobbyActions" style="margin-bottom:14px;">${_rmHtmlAcoes(podePagar)}</div>
+    <!-- TAB LOBBY -->
+    <div id="rmTabContentLobby" class="arena-tab-content">
 
-    <!-- Lista de jogadores -->
-    <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);
-                letter-spacing:2px;margin-bottom:6px;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
-    <div class="arena-lobby-lista" id="rmLobbyLista"
-      style="flex:1;overflow-y:auto;min-height:80px;max-height:120px;">
-      <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
+      <!-- Aposta -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;
+                  padding:10px 8px;background:rgba(201,168,76,.05);
+                  border:1px solid rgba(201,168,76,.2);border-radius:8px;width:100%;">
+        <div style="text-align:center;">
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
+        </div>
+      </div>
+
+      <!-- Acção -->
+      <div id="rmLobbyActions" style="width:100%;">${_rmHtmlAcoes(podePagar)}</div>
+
+      <!-- Lista de jogadores -->
+      <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);
+                  letter-spacing:2px;align-self:flex-start;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <div class="arena-lobby-lista" id="rmLobbyLista" style="width:100%;">
+        <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
+      </div>
+
+      <!-- Regras -->
+      <div style="padding:8px 10px;background:rgba(255,255,255,.02);
+                  border:1px solid rgba(255,255,255,.06);border-radius:6px;width:100%;">
+        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
+                    letter-spacing:1px;margin-bottom:6px;">◆ COMO JOGAR</div>
+        <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+          🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
+          ✅ Carta igual à mesa → captura para o teu monte<br>
+          🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
+          ↩️ Sem jogada possível → descarta uma carta para a mesa<br>
+          🏆 Quem tiver mais cartas no monte ao final vence
+        </div>
+      </div>
+
     </div>
 
-    <!-- Regras -->
-    <div style="margin-top:10px;padding:8px 10px;background:rgba(255,255,255,.02);
-                border:1px solid rgba(255,255,255,.06);border-radius:6px;flex-shrink:0;">
-      <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                  letter-spacing:1px;margin-bottom:6px;">◆ COMO JOGAR</div>
-      <div style="font-size:6.5px;color:var(--muted);line-height:2;">
-        🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
-        ✅ Carta igual à mesa → captura para o teu monte<br>
-        🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
-        ↩️ Sem jogada possível → descarta uma carta para a mesa<br>
-        🏆 Quem tiver mais cartas no monte ao final vence
+    <!-- TAB RANKING -->
+    <div id="rmTabContentRanking" class="arena-tab-content" style="display:none;">
+      <div class="arena-ranking-wrap" id="rmRankingWrap">
+        <div class="arena-lobby-vazio">Carregando...</div>
       </div>
-    </div>`;
+      <div id="rmPoolInfo"></div>
+    </div>
+  `;
+
   _rmIniciarLobbyListener();
+  _rmCarregarRanking();
 }
 
 function _rmHtmlAcoes(podePagar) {
@@ -279,6 +299,75 @@ function _rmHtmlAcoes(podePagar) {
 function _rmAtualizarAcoes() {
   const wrap = document.getElementById('rmLobbyActions');
   if(wrap) wrap.innerHTML = _rmHtmlAcoes(_rmPodePagar());
+}
+
+// ── Tabs ──
+function rmShowTab(tab) {
+  document.getElementById('rmTabContentLobby').style.display   = tab==='lobby'   ? 'flex' : 'none';
+  document.getElementById('rmTabContentRanking').style.display = tab==='ranking' ? 'flex' : 'none';
+  document.getElementById('rmTabLobby').classList.toggle('active',   tab==='lobby');
+  document.getElementById('rmTabRanking').classList.toggle('active', tab==='ranking');
+}
+
+// ── Ranking ──
+const RM_PONTOS = { vitoria: 3, derrota: 1, empate: 1 };
+
+async function _rmAtualizarRanking(salaId, euVenci, empate) {
+  if(!_rmRtdb()||!walletAddress||!avatar) return;
+  const fila = _rmRaridade();
+  const ref  = _rmRtdb().ref(`roubaMonte/ranking/${fila}/${walletAddress}`);
+  const snap = await ref.once('value');
+  const cur  = snap.val() || { pontos:0, vitorias:0, derrotas:0, empates:0 };
+  const pts  = empate ? RM_PONTOS.empate : euVenci ? RM_PONTOS.vitoria : RM_PONTOS.derrota;
+  await ref.set({
+    nome:     avatar?.nome?.split(',')[0] || cur.nome || '',
+    wallet:   walletAddress,
+    pontos:   (cur.pontos  ||0) + pts,
+    vitorias: (cur.vitorias||0) + (euVenci          ? 1 : 0),
+    derrotas: (cur.derrotas||0) + (!euVenci&&!empate ? 1 : 0),
+    empates:  (cur.empates ||0) + (empate            ? 1 : 0),
+  });
+  console.log('[RM] Ranking actualizado —', euVenci?'vitória':empate?'empate':'derrota', '+'+pts+'pts');
+}
+
+async function _rmCarregarRanking() {
+  const wrap = document.getElementById('rmRankingWrap');
+  const pool = document.getElementById('rmPoolInfo');
+  if(!wrap||!_rmRtdb()) return;
+
+  const fila = _rmRaridade();
+  const snap = await _rmRtdb().ref(`roubaMonte/ranking/${fila}`)
+    .orderByChild('pontos').limitToLast(10).once('value');
+
+  const lista = Object.entries(snap.val()||{})
+    .map(([k,d]) => d)
+    .sort((a,b) => b.pontos - a.pontos);
+
+  const medalhas = ['🥇','🥈','🥉'];
+  wrap.innerHTML = lista.length===0
+    ? '<div class="arena-lobby-vazio">Nenhuma partida ainda.</div>'
+    : lista.map((d,i) => `
+        <div class="arena-rank-row ${(d.wallet||'').toLowerCase()===(walletAddress||'').toLowerCase()?'arena-rank-meu':''}">
+          <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
+          <span class="arena-rank-nome">${d.nome||(d.wallet||'').slice(0,10)+'...'}</span>
+          <span class="arena-rank-pts">${d.pontos||0} pts</span>
+          <span class="arena-rank-wl">${d.vitorias||0}V ${d.derrotas||0}D</span>
+        </div>`).join('');
+
+  // Pool — lê do Firestore
+  try {
+    if(typeof fbDb === 'function' && fbDb()) {
+      const poolSnap = await fbDb().collection('config').doc('pool').get();
+      const poolData = poolSnap.exists ? poolSnap.data() : null;
+      const poolVal  = poolData?.cristais || 0;
+      if(pool) pool.innerHTML = `
+        <div class="arena-pool-card">
+          <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
+          <div class="arena-pool-valor">${poolVal} 💎</div>
+          <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+        </div>`;
+    }
+  } catch(e) { if(pool) pool.innerHTML = ''; }
 }
 
 function _rmIniciarLobbyListener() {
@@ -1146,6 +1235,9 @@ async function _rmRenderResultado(sala, opWallet) {
   console.log('[RM] Resultado — meuMonte:', meuMonte, '| opMonte:', opMonte,
     '| euVenci:', euVenci, '| empate:', empate);
 
+  // Actualiza ranking
+  await _rmAtualizarRanking(sala.id, euVenci, empate);
+
   const aposta  = sala.aposta;
   const usaCris = aposta.cristais>0;
   const bruto   = usaCris ? aposta.cristais*2 : aposta.moedas*2;
@@ -1362,6 +1454,7 @@ window.rmRecusarDesafio              = rmRecusarDesafio;
 window.rmSelecionarCarta             = rmSelecionarCarta;
 window.rmJogarCarta                  = rmJogarCarta;
 window.rmDescartar                   = rmDescartar;
+window.rmShowTab                     = rmShowTab;
 window.rmAbandonar                   = rmAbandonar;
 window.rmConfirmarAbandono           = rmConfirmarAbandono;
 window.rmLimparAoDesconectar         = rmLimparAoDesconectar;
