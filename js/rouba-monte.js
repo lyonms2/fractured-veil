@@ -209,29 +209,53 @@ function _rmRenderLobby() {
 
   el.innerHTML = `
     <button class="gs-x-btn" onclick="closeRoubaMonte()">✕</button>
-    <div class="arena-header">
+
+    <!-- Cabeçalho -->
+    <div class="arena-header" style="margin-bottom:8px;">
       <div class="arena-title">🃏 ROUBA MONTE</div>
       <div class="arena-sub">Duelo de cartas · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
-    <div class="arena-aposta-info">
-      <span>Aposta: <b>${_rmDescAposta()}</b></span>
-      <span>Vencedor leva: <b>${premio} ${moeda}</b></span>
-      <span style="color:var(--muted);font-size:6px;">10% → pool</span>
+
+    <!-- Aposta -->
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                padding:7px 10px;background:rgba(201,168,76,.05);
+                border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:8px;">
+      <div style="text-align:center;">
+        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">APOSTA</div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
+      </div>
+      <div style="width:1px;height:24px;background:rgba(255,255,255,.08);"></div>
+      <div style="text-align:center;">
+        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">PRÉMIO</div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
+      </div>
+      <div style="width:1px;height:24px;background:rgba(255,255,255,.08);"></div>
+      <div style="text-align:center;">
+        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">TAXA</div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--muted);">10%</div>
+      </div>
     </div>
-    <div id="rmLobbyActions" style="margin:10px 0;">${_rmHtmlAcoes(podePagar)}</div>
-    <div class="arena-lobby-titulo" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">
-      Jogadores na fila ${rar}
-    </div>
-    <div class="arena-lobby-lista" id="rmLobbyLista">
+
+    <!-- Acção -->
+    <div id="rmLobbyActions" style="margin-bottom:10px;">${_rmHtmlAcoes(podePagar)}</div>
+
+    <!-- Lista de jogadores -->
+    <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);
+                letter-spacing:2px;margin-bottom:5px;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+    <div class="arena-lobby-lista" id="rmLobbyLista" style="flex:1;overflow-y:auto;">
       <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
     </div>
-    <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:6px;">
-      <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;margin-bottom:4px;">◆ COMO JOGAR</div>
-      <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+
+    <!-- Regras -->
+    <div style="margin-top:8px;padding:7px 9px;background:rgba(255,255,255,.02);
+                border:1px solid rgba(255,255,255,.06);border-radius:6px;flex-shrink:0;">
+      <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
+                  letter-spacing:1px;margin-bottom:5px;">◆ COMO JOGAR</div>
+      <div style="font-size:6.5px;color:var(--muted);line-height:1.9;">
         🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
-        ✅ Carta igual à mesa → forma o teu monte pessoal<br>
+        ✅ Carta igual à mesa → captura para o teu monte<br>
         🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
-        ↩️ Sem jogada → descarta uma carta para a mesa<br>
+        ↩️ Sem jogada possível → descarta uma carta para a mesa<br>
         🏆 Quem tiver mais cartas no monte ao final vence
       </div>
     </div>`;
@@ -552,97 +576,123 @@ function _rmRenderPartida(salaId, sala, opWallet) {
     '| meuMonte:', meuMonte.length, '| opMonte:', opMonte.length, '| baralho:', baralhoRest);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;height:100%;gap:5px;padding:4px;overflow-y:auto;">
+    <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;overflow:hidden;">
+
+      <!-- Cabeçalho status -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">🃏 ROUBA MONTE</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
+            background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
+            border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
+            color:${meuTurno?'#7ab87a':'var(--muted)'};">
+            ${meuTurno?'⚡ SUA VEZ':'⏳ AGUARDANDO'}
+          </div>
+          <span style="font-size:6px;color:var(--muted);">🃏 ${baralhoRest} no baralho</span>
+        </div>
+      </div>
 
       <!-- Oponente -->
-      <div style="display:flex;align-items:center;justify-content:space-between;
-                  padding:5px 8px;background:rgba(255,255,255,.03);border-radius:6px;
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;
+                  background:rgba(255,255,255,.03);border-radius:6px;
                   border:1px solid rgba(255,255,255,.07);flex-shrink:0;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div>${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||0,26,26)}</div>
-          <div>
-            <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold-light);">${op_info.nome||opWallet.slice(0,10)+'...'}</div>
-            <div style="font-size:6px;color:var(--muted);">Monte: ${opMonte.length} cartas · Baralho: ${baralhoRest}</div>
+        <div style="flex-shrink:0;">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,24,24)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold-light);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${op_info.nome||opWallet.slice(0,12)+'...'}
+          </div>
+          <div style="font-size:5.5px;color:var(--muted);margin-top:1px;">
+            Monte: <b style="color:var(--text);">${opMonte.length}</b> cartas
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          ${topoOpMonte ? `
-            <div style="text-align:center;">
-              <div style="font-size:5px;color:var(--muted);margin-bottom:2px;">TOPO MONTE</div>
-              <div style="width:28px;height:38px;border-radius:4px;background:#0d0a1e;
-                          border:1.5px solid ${topoOpMonte.cor};
-                          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
-                <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${topoOpMonte.label}</span>
-                <span style="font-size:8px;color:${topoOpMonte.cor};">${topoOpMonte.naipe}</span>
-              </div>
-            </div>` : '<div style="font-size:6px;color:var(--muted);">monte vazio</div>'}
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:${meuTurno?'var(--muted)':'var(--gold)'};">
-            ${meuTurno?'aguardando':'⚔️ VEZ DELE'}
+        ${topoOpMonte ? `
+        <div style="flex-shrink:0;text-align:center;">
+          <div style="font-size:5px;color:var(--muted);margin-bottom:2px;letter-spacing:.5px;">TOPO MONTE</div>
+          <div style="width:26px;height:36px;border-radius:4px;background:#0a0816;
+                      border:1.5px solid ${topoOpMonte.cor};
+                      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+                      box-shadow:0 0 6px ${topoOpMonte.cor}44;">
+            <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${topoOpMonte.label}</span>
+            <span style="font-size:8px;color:${topoOpMonte.cor};">${topoOpMonte.naipe}</span>
           </div>
-        </div>
+        </div>` : `
+        <div style="flex-shrink:0;font-size:5.5px;color:var(--muted);text-align:center;width:30px;">
+          monte<br>vazio
+        </div>`}
       </div>
 
       <!-- Mesa central -->
       <div style="flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:3px;">
-          MESA CENTRAL (${mesa.length} cartas)
-        </div>
-        <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:44px;
-                    padding:4px;background:rgba(255,255,255,.02);border-radius:6px;
-                    border:1px dashed rgba(201,168,76,.15);">
+        <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
+                    letter-spacing:1.5px;margin-bottom:3px;">MESA CENTRAL · ${mesa.length} CARTAS</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:42px;
+                    padding:4px 5px;background:rgba(255,255,255,.02);border-radius:6px;
+                    border:1px dashed rgba(201,168,76,.12);">
           ${mesa.length===0
-            ? `<div style="font-size:7px;color:var(--muted);margin:auto;">mesa vazia</div>`
+            ? `<div style="font-size:6px;color:var(--muted);margin:auto;font-style:italic;">mesa vazia</div>`
             : mesa.map(c=>`
-              <div style="width:28px;height:38px;border-radius:4px;background:#0d0a1e;
-                          border:1px solid ${c.cor||'rgba(201,168,76,.25)'};
+              <div style="width:26px;height:36px;border-radius:3px;background:#0a0816;
+                          border:1px solid ${c.cor||'rgba(201,168,76,.2)'};
                           display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
-                <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${c.label}</span>
-                <span style="font-size:8px;color:${c.cor};">${c.naipe}</span>
+                <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#e8a030;">${c.label}</span>
+                <span style="font-size:7px;color:${c.cor};">${c.naipe}</span>
               </div>`).join('')}
         </div>
       </div>
 
       <!-- Meu monte -->
-      <div style="font-size:6px;color:var(--muted);font-family:'Cinzel',serif;flex-shrink:0;">
-        📦 MEU MONTE: ${meuMonte.length} cartas
-        ${meuMonte.length>0?`· Topo: <b style="color:var(--gold)">${meuMonte[meuMonte.length-1].label}${meuMonte[meuMonte.length-1].naipe}</b>`:''}
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 7px;
+                  background:rgba(122,184,122,.04);border:1px solid rgba(122,184,122,.12);
+                  border-radius:5px;flex-shrink:0;">
+        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">📦 MEU MONTE</span>
+        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#7ab87a;">${meuMonte.length} cartas</span>
+        ${meuMonte.length>0?`
+        <span style="font-size:5.5px;color:var(--muted);margin-left:auto;">
+          Topo: <b style="color:var(--gold);">${meuMonte[meuMonte.length-1].label}${meuMonte[meuMonte.length-1].naipe}</b>
+        </span>`:''}
       </div>
 
       <!-- Minha mão -->
-      <div style="flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:3px;">
-          MINHA MÃO (${minha_mao.length}) ${meuTurno?'— <span style="color:var(--gold)">SUA VEZ!</span>':''}
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
+                    letter-spacing:1.5px;margin-bottom:3px;flex-shrink:0;">
+          MINHA MÃO · ${minha_mao.length} CARTAS
         </div>
-        <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;flex:1;">
           ${minha_mao.map((c,i)=>_rmHtmlCarta(c,i,meuTurno,_rmCartaSel)).join('')}
-          ${minha_mao.length===0?'<div style="font-size:7px;color:var(--muted);padding:8px;">sem cartas na mão</div>':''}
+          ${minha_mao.length===0?`<div style="font-size:6px;color:var(--muted);font-style:italic;">sem cartas</div>`:''}
         </div>
       </div>
 
-      <!-- Acções -->
+      <!-- Timer -->
       ${meuTurno ? `
-      <div style="display:flex;gap:6px;margin-top:2px;flex-shrink:0;">
-        <button id="rmBtnJogar" class="mini-btn primary" style="flex:1;font-size:7px;"
+      <div style="height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;flex-shrink:0;">
+        <div id="rmTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;"></div>
+      </div>` : ''}
+
+      <!-- Acções -->
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        ${meuTurno ? `
+        <button id="rmBtnJogar" class="mini-btn primary" style="flex:1;font-size:7px;padding:6px 4px;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
-          ✅ JOGAR CARTA
+          ✅ JOGAR
         </button>
-        <button id="rmBtnDescartar" class="mini-btn" style="font-size:7px;border-color:var(--muted);color:var(--muted);"
+        <button id="rmBtnDescartar" class="mini-btn" style="flex:1;font-size:7px;padding:6px 4px;
+          border-color:var(--muted);color:var(--muted);"
           onclick="rmDescartar('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
           ↩️ DESCARTAR
-        </button>
-        <button class="mini-btn close" style="font-size:7px;" onclick="rmAbandonar('${salaId}')">🏳️</button>
-      </div>` : `
-      <div style="display:flex;justify-content:flex-end;flex-shrink:0;">
-        <button class="mini-btn close" style="font-size:7px;" onclick="rmAbandonar('${salaId}')">🏳️ ABANDONAR</button>
-      </div>`}
+        </button>` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;
+                    font-size:6px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;">
+          ⏳ vez do oponente...
+        </div>`}
+        <button class="mini-btn close" style="font-size:7px;padding:6px 8px;"
+          onclick="rmAbandonar('${salaId}')">🏳️</button>
+      </div>
 
-      <!-- Timer -->
-      ${meuTurno ? `
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;flex-shrink:0;">
-        <div id="rmTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
-      </div>` : ''}
     </div>`;
 }
 
@@ -717,11 +767,94 @@ function _rmEscutarSala(salaId, opWallet) {
         _ultimoTs = ts;
         _rmPararTimer();
         console.log('[RM] Nova jogada — re-renderizando | meu turno:', s.turno===walletAddress);
-        _rmRenderPartida(salaId, s, opWallet);
-        if(s.turno===walletAddress) _rmIniciarTimer(salaId, opWallet);
+
+        // Animação de roubo — mostra antes de re-renderizar
+        if(s.ultimaJogada?.roubou) {
+          const euRoubei = s.ultimaJogada.jogador === walletAddress;
+          _rmAnimacaoRoubo(euRoubei, s.ultimaJogada.carta, () => {
+            _rmRenderPartida(salaId, s, opWallet);
+            if(s.turno===walletAddress) _rmIniciarTimer(salaId, opWallet);
+          });
+        } else {
+          _rmRenderPartida(salaId, s, opWallet);
+          if(s.turno===walletAddress) _rmIniciarTimer(salaId, opWallet);
+        }
       }
     }
   });
+}
+
+// ── Animação de roubo do monte ──
+function _rmAnimacaoRoubo(euRoubei, carta, callback) {
+  const el = document.getElementById('roubaMontModal');
+  if(!el) { callback(); return; }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:absolute;inset:0;z-index:50;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:8px;pointer-events:none;
+    background:rgba(4,3,10,.85);
+    animation:rm-fade-in .15s ease;
+  `;
+
+  const cor    = euRoubei ? '#e74c3c' : '#a78bfa';
+  const titulo = euRoubei ? '🔥 ROUBASTE O MONTE!' : '💀 MONTE ROUBADO!';
+  const sub    = euRoubei
+    ? `${carta?.label||''}${carta?.naipe||''} bateu no topo do oponente`
+    : `Oponente roubou o teu monte`;
+
+  overlay.innerHTML = `
+    <div style="
+      font-size:32px;
+      animation:rm-bounce .4s cubic-bezier(.34,1.6,.64,1);
+    ">${euRoubei ? '🔥' : '💀'}</div>
+    <div style="
+      font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+      color:${cor};letter-spacing:2px;text-align:center;
+      text-shadow:0 0 20px ${cor}88;
+      animation:rm-bounce .5s cubic-bezier(.34,1.6,.64,1) .05s both;
+    ">${titulo}</div>
+    <div style="
+      font-size:7px;color:var(--muted);letter-spacing:.5px;text-align:center;
+      animation:rm-fade-in .3s ease .1s both;
+    ">${sub}</div>
+    ${carta ? `
+    <div style="
+      width:44px;height:60px;border-radius:6px;background:#0a0816;
+      border:2px solid ${cor};
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+      box-shadow:0 0 20px ${cor}66;
+      animation:rm-bounce .5s cubic-bezier(.34,1.6,.64,1) .1s both;
+    ">
+      <span style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:#e8a030;">${carta.label}</span>
+      <span style="font-size:14px;color:${carta.cor||cor};">${carta.naipe}</span>
+    </div>` : ''}
+  `;
+
+  // Injectar keyframes se não existirem
+  if(!document.getElementById('rm-anim-style')) {
+    const style = document.createElement('style');
+    style.id = 'rm-anim-style';
+    style.textContent = `
+      @keyframes rm-fade-in { from{opacity:0} to{opacity:1} }
+      @keyframes rm-bounce  { 0%{transform:scale(0) opacity(0)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+    `;
+    document.head.appendChild(style);
+  }
+
+  el.style.position = 'relative';
+  el.appendChild(overlay);
+
+  // Remove após 1.6s e chama callback
+  setTimeout(() => {
+    overlay.style.animation = 'rm-fade-in .2s ease reverse forwards';
+    setTimeout(() => {
+      overlay.remove();
+      callback();
+    }, 200);
+  }, 1600);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -893,22 +1026,52 @@ async function rmDescartar(salaId, opWallet) {
 }
 
 // ── Abandonar partida explicitamente ──
-async function rmAbandonar(salaId) {
-  if(!_rmRtdb()) return;
-  console.log('[RM] rmAbandonar — salaId:', salaId);
+function rmAbandonar(salaId) {
+  const el = document.getElementById('roubaMontModal');
+  if(!el) return;
 
-  // Confirmação simples
-  if(!confirm('Tens a certeza que queres abandonar? O oponente ganhará a partida.')) return;
+  // Sobrepõe um painel de confirmação no estilo do jogo
+  const overlay = document.createElement('div');
+  overlay.id = 'rmAbandonarOverlay';
+  overlay.style.cssText = `
+    position:absolute;inset:0;z-index:99;
+    background:rgba(4,3,10,.95);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:12px;padding:20px;
+  `;
+  overlay.innerHTML = `
+    <div style="font-size:28px;">🏳️</div>
+    <div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#e74c3c;letter-spacing:2px;">ABANDONAR?</div>
+    <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.8;">
+      O oponente ganhará a partida<br>e ficará com o prémio.
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;width:100%;">
+      <button class="arena-btn-sair" style="flex:1;font-size:8px;"
+        onclick="rmConfirmarAbandono('${salaId}')">
+        🏳️ CONFIRMAR ABANDONO
+      </button>
+      <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
+        onclick="document.getElementById('rmAbandonarOverlay').remove()">
+        ← CONTINUAR
+      </button>
+    </div>
+  `;
+  el.style.position = 'relative';
+  el.appendChild(overlay);
+}
+
+async function rmConfirmarAbandono(salaId) {
+  if(!_rmRtdb()) return;
+  console.log('[RM] rmConfirmarAbandono — salaId:', salaId);
 
   _rmPararTimer();
   if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
 
-  // Cancela onDisconnect antes de escrever manualmente
   try {
     _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel();
   } catch(e) {}
 
-  // Marca como desconectado → listener do oponente detecta e finaliza
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).set('desconectado');
 
   _rmBloquearUI(false);
@@ -1169,6 +1332,7 @@ window.rmSelecionarCarta             = rmSelecionarCarta;
 window.rmJogarCarta                  = rmJogarCarta;
 window.rmDescartar                   = rmDescartar;
 window.rmAbandonar                   = rmAbandonar;
+window.rmConfirmarAbandono           = rmConfirmarAbandono;
 window.rmLimparAoDesconectar         = rmLimparAoDesconectar;
 window._rmVerificarPartidaAtiva      = _rmVerificarPartidaAtiva;
 window.rmIniciarListenerNotificacoes = rmIniciarListenerNotificacoes;
