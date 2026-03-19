@@ -211,47 +211,49 @@ function _rmRenderLobby() {
     <button class="gs-x-btn" onclick="closeRoubaMonte()">✕</button>
 
     <!-- Cabeçalho -->
-    <div class="arena-header" style="margin-bottom:8px;">
+    <div class="arena-header" style="margin-bottom:10px;">
       <div class="arena-title">🃏 ROUBA MONTE</div>
       <div class="arena-sub">Duelo de cartas · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
 
     <!-- Aposta -->
-    <div style="display:flex;justify-content:space-between;align-items:center;
-                padding:7px 10px;background:rgba(201,168,76,.05);
-                border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:8px;">
+    <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;
+                align-items:center;gap:0;
+                padding:10px 8px;background:rgba(201,168,76,.05);
+                border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:12px;">
       <div style="text-align:center;">
-        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">APOSTA</div>
-        <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
       </div>
-      <div style="width:1px;height:24px;background:rgba(255,255,255,.08);"></div>
+      <div style="background:rgba(255,255,255,.08);height:28px;"></div>
       <div style="text-align:center;">
-        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">PRÉMIO</div>
-        <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
       </div>
-      <div style="width:1px;height:24px;background:rgba(255,255,255,.08);"></div>
+      <div style="background:rgba(255,255,255,.08);height:28px;"></div>
       <div style="text-align:center;">
-        <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">TAXA</div>
-        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--muted);">10%</div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
       </div>
     </div>
 
     <!-- Acção -->
-    <div id="rmLobbyActions" style="margin-bottom:10px;">${_rmHtmlAcoes(podePagar)}</div>
+    <div id="rmLobbyActions" style="margin-bottom:14px;">${_rmHtmlAcoes(podePagar)}</div>
 
     <!-- Lista de jogadores -->
     <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);
-                letter-spacing:2px;margin-bottom:5px;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
-    <div class="arena-lobby-lista" id="rmLobbyLista" style="flex:1;overflow-y:auto;">
+                letter-spacing:2px;margin-bottom:6px;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+    <div class="arena-lobby-lista" id="rmLobbyLista"
+      style="flex:1;overflow-y:auto;min-height:80px;max-height:120px;">
       <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
     </div>
 
     <!-- Regras -->
-    <div style="margin-top:8px;padding:7px 9px;background:rgba(255,255,255,.02);
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(255,255,255,.02);
                 border:1px solid rgba(255,255,255,.06);border-radius:6px;flex-shrink:0;">
       <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                  letter-spacing:1px;margin-bottom:5px;">◆ COMO JOGAR</div>
-      <div style="font-size:6.5px;color:var(--muted);line-height:1.9;">
+                  letter-spacing:1px;margin-bottom:6px;">◆ COMO JOGAR</div>
+      <div style="font-size:6.5px;color:var(--muted);line-height:2;">
         🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
         ✅ Carta igual à mesa → captura para o teu monte<br>
         🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
@@ -265,13 +267,15 @@ function _rmRenderLobby() {
 function _rmHtmlAcoes(podePagar) {
   if(_rmAtiva) return `
     <button class="arena-btn-sair" onclick="rmSairDoLobby()">⬅ SAIR DA FILA</button>
-    <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — aguardando oponente...</div>`;
+    <div class="arena-aguardando" style="margin-top:10px;">
+      <div class="arena-pulse"></div>Na fila — aguardando oponente...
+    </div>`;
   return `
     <button class="arena-btn-entrar ${!podePagar?'disabled':''}"
       onclick="${podePagar?'rmEntrarNoLobby()':''}" ${!podePagar?'disabled':''}>
       🃏 ENTRAR NA FILA
     </button>
-    ${!podePagar?`<div class="arena-sem-saldo">Saldo insuficiente (${_rmDescAposta()} necessário)</div>`:''}`;
+    ${!podePagar?`<div class="arena-sem-saldo" style="margin-top:6px;">Saldo insuficiente (${_rmDescAposta()} necessário)</div>`:''}`;
 }
 
 function _rmAtualizarAcoes() {
@@ -576,7 +580,9 @@ function _rmRenderPartida(salaId, sala, opWallet) {
     '| meuMonte:', meuMonte.length, '| opMonte:', opMonte.length, '| baralho:', baralhoRest);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;
+                overflow-y:auto;overflow-x:hidden;
+                scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.3) rgba(255,255,255,.04);">
 
       <!-- Cabeçalho status -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -588,9 +594,21 @@ function _rmRenderPartida(salaId, sala, opWallet) {
             color:${meuTurno?'#7ab87a':'var(--muted)'};">
             ${meuTurno?'⚡ SUA VEZ':'⏳ AGUARDANDO'}
           </div>
-          <span style="font-size:6px;color:var(--muted);">🃏 ${baralhoRest} no baralho</span>
+          <span style="font-size:6px;color:var(--muted);">🃏 ${baralhoRest}</span>
         </div>
       </div>
+
+      <!-- Timer — só quando é meu turno, acima do oponente -->
+      ${meuTurno ? `
+      <div style="flex-shrink:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <span style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);letter-spacing:1px;">TEMPO RESTANTE</span>
+          <span id="rmTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">30s</span>
+        </div>
+        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
+          <div id="rmTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:2px;"></div>
+        </div>
+      </div>` : ''}
 
       <!-- Oponente -->
       <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;
@@ -654,33 +672,28 @@ function _rmRenderPartida(salaId, sala, opWallet) {
       </div>
 
       <!-- Minha mão -->
-      <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+      <div style="flex-shrink:0;">
         <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
-                    letter-spacing:1.5px;margin-bottom:3px;flex-shrink:0;">
+                    letter-spacing:1.5px;margin-bottom:5px;">
           MINHA MÃO · ${minha_mao.length} CARTAS
         </div>
-        <div style="display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;flex:1;">
+        <div style="display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;">
           ${minha_mao.map((c,i)=>_rmHtmlCarta(c,i,meuTurno,_rmCartaSel)).join('')}
           ${minha_mao.length===0?`<div style="font-size:6px;color:var(--muted);font-style:italic;">sem cartas</div>`:''}
         </div>
       </div>
 
-      <!-- Timer -->
-      ${meuTurno ? `
-      <div style="height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;flex-shrink:0;">
-        <div id="rmTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;"></div>
-      </div>` : ''}
-
       <!-- Acções -->
-      <div style="display:flex;gap:5px;flex-shrink:0;">
+      <div style="display:flex;gap:5px;flex-shrink:0;margin-top:4px;">
         ${meuTurno ? `
-        <button id="rmBtnJogar" class="mini-btn primary" style="flex:1;font-size:7px;padding:6px 4px;"
+        <button id="rmBtnJogar" class="arena-btn-entrar"
+          style="flex:1;font-size:7px;padding:7px 4px;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
-          ✅ JOGAR
+          ✅ JOGAR CARTA
         </button>
-        <button id="rmBtnDescartar" class="mini-btn" style="flex:1;font-size:7px;padding:6px 4px;
-          border-color:var(--muted);color:var(--muted);"
+        <button id="rmBtnDescartar" class="arena-btn-sair"
+          style="flex:1;font-size:7px;padding:7px 4px;"
           onclick="rmDescartar('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
           ↩️ DESCARTAR
@@ -689,7 +702,8 @@ function _rmRenderPartida(salaId, sala, opWallet) {
                     font-size:6px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;">
           ⏳ vez do oponente...
         </div>`}
-        <button class="mini-btn close" style="font-size:7px;padding:6px 8px;"
+        <button class="arena-btn-sair"
+          style="font-size:7px;padding:7px 10px;border-color:rgba(255,255,255,.2);color:var(--muted);"
           onclick="rmAbandonar('${salaId}')">🏳️</button>
       </div>
 
@@ -706,12 +720,19 @@ function _rmIniciarTimer(salaId, opWallet) {
   console.log('[RM] Timer iniciado —', seg, 'segundos');
   _rmTimerInt = setInterval(() => {
     seg--;
-    const bar = document.getElementById('rmTimerBar');
+    const bar    = document.getElementById('rmTimerBar');
+    const segEl  = document.getElementById('rmTimerSeg');
     if(bar) {
       const pct = (seg/RM_TIMER_SEG)*100;
       bar.style.width = pct+'%';
       if(pct<30) bar.style.background='#e74c3c';
       else if(pct<60) bar.style.background='#e8a030';
+      else bar.style.background='#7ab87a';
+    }
+    if(segEl) {
+      segEl.textContent = seg+'s';
+      if(seg<=10) segEl.style.color='#e74c3c';
+      else if(seg<=20) segEl.style.color='#e8a030';
     }
     if(seg<=0) {
       _rmPararTimer();
