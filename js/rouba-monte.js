@@ -128,6 +128,28 @@ function openRoubaMonte() {
   if(sleeping||modoRepouso)   { showBubble('Descansando agora...'); return; }
   if(!_rmRtdb())              { showBubble('Rouba Monte indisponível'); return; }
   ModalManager.open('roubaMontModal');
+
+  // Se há partida activa → restaura em vez de mostrar lobby
+  if(_rmSalaId) {
+    console.log('[RM] openRoubaMonte — partida activa detectada, restaurando sala:', _rmSalaId);
+    _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}`).once('value').then(snap => {
+      const s = snap.val();
+      if(s && s.status === 'em_jogo') {
+        console.log('[RM] openRoubaMonte — restaurando partida em curso');
+        _rmIniciarPartida(_rmSalaId, s);
+      } else if(s && s.status === 'aguardando') {
+        console.log('[RM] openRoubaMonte — desafio ainda aguardando');
+        _rmRenderEspera(_rmSalaId);
+      } else {
+        console.log('[RM] openRoubaMonte — sala expirada ou inexistente, voltando ao lobby');
+        _rmSalaId = null;
+        _rmAtiva  = false;
+        _rmRenderLobby();
+      }
+    });
+    return;
+  }
+
   _rmRenderLobby();
 }
 
@@ -340,15 +362,41 @@ function _rmRenderEspera(salaId) {
       <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">DESAFIO ENVIADO</div>
       <div style="font-size:7px;color:var(--muted);margin-top:6px;">Aguardando oponente aceitar...</div>
       <div style="font-size:6px;color:var(--muted);margin-top:3px;">Sala #${salaId.slice(-6).toUpperCase()}</div>
+      <div id="rmDesafioTimer" style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);margin-top:8px;">⏳ 60s</div>
+      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;width:100%;margin-top:4px;">
+        <div id="rmDesafioTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
+      </div>
       <button class="arena-btn-sair" style="margin-top:18px;" onclick="rmCancelarDesafio('${salaId}')">✕ CANCELAR</button>
     </div>`;
+
+  // Timer de expiração — 60s sem resposta cancela automaticamente
+  let seg = 60;
+  const timerExp = setInterval(() => {
+    seg--;
+    const timerEl  = document.getElementById('rmDesafioTimer');
+    const timerBar = document.getElementById('rmDesafioTimerBar');
+    if(timerEl)  timerEl.textContent = `⏳ ${seg}s`;
+    if(timerBar) timerBar.style.width = (seg/60*100)+'%';
+    if(seg <= 10 && timerBar) timerBar.style.background = '#e74c3c';
+    if(seg <= 0) {
+      clearInterval(timerExp);
+      console.log('[RM] Desafio expirado — cancelando automaticamente');
+      rmCancelarDesafio(salaId);
+    }
+  }, 1000);
 
   const salaRef = _rmRtdb().ref(`roubaMonte/salas/${salaId}`);
   salaRef.on('value', snap => {
     const s = snap.val();
     if(!s) return;
-    if(s.status==='em_jogo')  { salaRef.off('value'); _rmIniciarPartida(salaId, s); }
+    if(s.status==='em_jogo') {
+      clearInterval(timerExp);
+      salaRef.off('value');
+      console.log('[RM] Oponente aceitou — iniciando partida');
+      _rmIniciarPartida(salaId, s);
+    }
     if(s.status==='cancelada'||s.status==='recusada') {
+      clearInterval(timerExp);
       salaRef.off('value');
       const a = _rmAposta();
       if(a.cristais>0) gs.cristais=(gs.cristais||0)+a.cristais;
@@ -839,6 +887,11 @@ async function _rmRenderResultado(sala, opWallet) {
       try{await _rmRtdb().ref(`roubaMonte/salas/${sala.id}`).remove();}catch(e){}
     },10000);
   }
+  // Limpa notificações de ambos os jogadores para esta sala
+  setTimeout(async()=>{
+    try{await _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}/${sala.id}`).remove();}catch(e){}
+    try{await _rmRtdb().ref(`roubaMonte/notificacoes/${opWallet}/${sala.id}`).remove();}catch(e){}
+  }, 3000);
 
   const titulo = empate?'🤝 EMPATE!':euVenci?'🏆 VITÓRIA!':'💀 DERROTA';
   const cor    = empate?'var(--gold)':euVenci?'#7ab87a':'#e74c3c';
@@ -881,6 +934,10 @@ async function _rmRenderResultado(sala, opWallet) {
 function rmIniciarListenerNotificacoes() {
   if(!_rmRtdb()||!walletAddress) return;
   console.log('[RM] rmIniciarListenerNotificacoes — wallet:', walletAddress);
+
+  // Verificar se há partida em curso ao reconectar
+  _rmVerificarPartidaAtiva();
+
   const notifRef = _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}`);
   notifRef.on('child_added', async snap => {
     const notif = snap.val();
@@ -895,6 +952,33 @@ function rmIniciarListenerNotificacoes() {
     const el = document.getElementById('roubaMontModal');
     if(el&&el.classList.contains('open')) _rmRenderDesafioPendente(sala);
   });
+}
+
+// Verifica se há partida activa para este wallet ao reconectar
+async function _rmVerificarPartidaAtiva() {
+  if(!_rmRtdb()||!walletAddress) return;
+  console.log('[RM] _rmVerificarPartidaAtiva — verificando salas activas...');
+
+  try {
+    const snap = await _rmRtdb().ref('roubaMonte/salas').orderByChild('status').equalTo('em_jogo').once('value');
+    const salas = snap.val();
+    if(!salas) { console.log('[RM] Nenhuma sala activa encontrada'); return; }
+
+    const minhas = Object.entries(salas).filter(([id, s]) =>
+      s.criador===walletAddress || s.oponente===walletAddress);
+
+    if(!minhas.length) { console.log('[RM] Nenhuma sala activa para este wallet'); return; }
+
+    const [salaId, sala] = minhas[0];
+    console.log('[RM] Partida activa encontrada após reconexão — sala:', salaId);
+    _rmSalaId = salaId;
+    _rmAtiva  = true;
+
+    showBubble('Partida em curso detectada! 🃏');
+    addLog('Partida de Rouba Monte em curso — abra o jogo para continuar.','info');
+  } catch(e) {
+    console.warn('[RM] _rmVerificarPartidaAtiva erro:', e);
+  }
 }
 
 function _rmRenderDesafioPendente(sala) {
@@ -925,6 +1009,29 @@ function _rmRenderDesafioPendente(sala) {
   });
 }
 
+// RTDB Rules necessárias para _rmVerificarPartidaAtiva:
+// "roubaMonte": {
+//   "salas": {
+//     ".indexOn": ["status", "criador", "oponente"]
+//   }
+// }
+
+// ── Exports ──
+function rmLimparAoDesconectar() {
+  console.log('[RM] rmLimparAoDesconectar — limpando estado');
+  _rmPararTimer();
+  _rmPararLobby();
+  _rmPararSala();
+  if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat=null; }
+  if(_rmLobbyRef) {
+    try{_rmLobbyRef.remove();}catch(e){}
+    _rmLobbyRef = null;
+  }
+  _rmAtiva      = false;
+  _rmSalaId     = null;
+  _rmCartaSel   = null;
+}
+
 // ── Exports ──
 window.openRoubaMonte                = openRoubaMonte;
 window.closeRoubaMonte               = closeRoubaMonte;
@@ -937,6 +1044,8 @@ window.rmRecusarDesafio              = rmRecusarDesafio;
 window.rmSelecionarCarta             = rmSelecionarCarta;
 window.rmJogarCarta                  = rmJogarCarta;
 window.rmDescartar                   = rmDescartar;
+window.rmLimparAoDesconectar         = rmLimparAoDesconectar;
+window._rmVerificarPartidaAtiva      = _rmVerificarPartidaAtiva;
 window.rmIniciarListenerNotificacoes = rmIniciarListenerNotificacoes;
 window._rmRenderLobby                = _rmRenderLobby;
 
