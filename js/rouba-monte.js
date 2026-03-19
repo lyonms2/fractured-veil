@@ -1,28 +1,27 @@
 // ═══════════════════════════════════════════════════════════════════
 // ROUBA MONTE — Duelo Multiplayer
-// Usa Firebase Realtime Database (mesmo padrão da Arena)
+// Lógica correcta: mesa central, montes pessoais, roubo do topo
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Constantes ──
-const RM_LOBBY_TTL   = 300000; // 5 min
-const RM_TIMER_SEG   = 30;     // segundos por turno
-const RM_TAXA        = 0.10;   // 10% para a pool
-const RM_APOSTAS     = {
-  'Comum':    { moedas: 40,  cristais: 0  },
-  'Raro':     { moedas: 0,   cristais: 8  },
-  'Lendário': { moedas: 0,   cristais: 15 },
+const RM_LOBBY_TTL = 300000; // 5 min
+const RM_TIMER_SEG = 30;     // segundos por turno
+const RM_TAXA      = 0.10;   // 10% para a pool
+const RM_APOSTAS   = {
+  'Comum':    { moedas: 40, cristais: 0  },
+  'Raro':     { moedas: 0,  cristais: 8  },
+  'Lendário': { moedas: 0,  cristais: 15 },
 };
 
 // ── Estado local ──
-let _rmAtiva         = false;
-let _rmSalaId        = null;
-let _rmLobbyRef      = null;
-let _rmLobbyListRef  = null;
-let _rmHeartbeat     = null;
-let _rmSalaListener  = null;
-let _rmTimerInterval = null;
-let _rmCartaSel      = null;
-let _rmUltimoTurno   = null;
+let _rmAtiva        = false;
+let _rmSalaId       = null;
+let _rmLobbyRef     = null;
+let _rmLobbyListRef = null;
+let _rmHeartbeat    = null;
+let _rmSalaListener = null;
+let _rmTimerInt     = null;
+let _rmCartaSel     = null; // índice da carta seleccionada na mão
 
 // ── Helpers ──
 function _rmRtdb()     { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
@@ -51,7 +50,7 @@ function _rmCreditarPremio(bruto, usaCris) {
   scheduleSave();
 }
 function _rmPararTimer() {
-  if(_rmTimerInterval) { clearInterval(_rmTimerInterval); _rmTimerInterval = null; }
+  if(_rmTimerInt) { clearInterval(_rmTimerInt); _rmTimerInt = null; }
 }
 function _rmPararLobby() {
   if(_rmLobbyListRef) { _rmLobbyListRef.off('value'); _rmLobbyListRef = null; }
@@ -67,7 +66,7 @@ function _rmToArray(val) {
   return Object.keys(val).sort((a,b) => Number(a)-Number(b)).map(k => val[k]);
 }
 
-// ── Baralho para Rouba Monte ──
+// ── Baralho ──
 function _rmGerarBaralho() {
   if(typeof generateDeck === 'function') {
     const deck = generateDeck().filter(c => !c.isCoringa);
@@ -85,26 +84,49 @@ function _rmGerarBaralho() {
 
 function _rmEmbaralhar(deck) {
   const d = [...deck];
-  for(let i = d.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [d[i], d[j]] = [d[j], d[i]];
+  for(let i = d.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [d[i],d[j]] = [d[j],d[i]];
   }
   return d;
 }
 
 function _rmSerCarta(c) {
-  return { id: c.id, label: c.label, naipe: c.naipe, cor: c.cor||'#e8a030', ordem: c.ordem||0 };
+  return { id:c.id, label:c.label, naipe:c.naipe, cor:c.cor||'#e8a030', ordem:c.ordem||0 };
 }
 function _rmSerDeck(deck) { return deck.map(_rmSerCarta); }
+
+// ── Render de uma carta ──
+function _rmHtmlCarta(c, idx, clicavel, sel) {
+  const s = sel === idx;
+  return `<div
+    data-carta="${idx}"
+    data-cor="${c.cor||'rgba(201,168,76,.25)'}"
+    onclick="${clicavel ? `rmSelecionarCarta(${idx})` : ''}"
+    style="
+      width:40px;height:56px;border-radius:6px;
+      background:${s?'rgba(201,168,76,.12)':'#0d0a1e'};
+      border:1.5px solid ${s?'#f0d080':(c.cor||'rgba(201,168,76,.25)')};
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+      cursor:${clicavel?'pointer':'default'};
+      transform:${s?'translateY(-6px)':'none'};
+      transition:all .15s;
+      box-shadow:${s?'0 4px 14px rgba(201,168,76,.3)':'none'};
+      flex-shrink:0;
+    ">
+    <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#e8a030;">${c.label}</span>
+    <span style="font-size:11px;color:${c.cor};">${c.naipe}</span>
+  </div>`;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // ABRIR / FECHAR
 // ═══════════════════════════════════════════════════════════════════
 
 function openRoubaMonte() {
-  if(!hatched || dead || !avatar) { showBubble('Precisa de um avatar ativo!'); return; }
-  if(sleeping || modoRepouso)     { showBubble('Descansando agora...'); return; }
-  if(!_rmRtdb())                  { showBubble('Rouba Monte indisponível'); return; }
+  if(!hatched||dead||!avatar) { showBubble('Precisa de um avatar ativo!'); return; }
+  if(sleeping||modoRepouso)   { showBubble('Descansando agora...'); return; }
+  if(!_rmRtdb())              { showBubble('Rouba Monte indisponível'); return; }
   ModalManager.open('roubaMontModal');
   _rmRenderLobby();
 }
@@ -124,67 +146,55 @@ function closeRoubaMonte() {
 function _rmRenderLobby() {
   const el = document.getElementById('roubaMontModal');
   if(!el) return;
-
   const rar       = _rmRaridade();
   const podePagar = _rmPodePagar();
   const aposta    = _rmAposta();
-  const bruto     = aposta.cristais > 0 ? aposta.cristais * 2 : aposta.moedas * 2;
-  const premio    = bruto - Math.floor(bruto * RM_TAXA);
-  const usaCris   = aposta.cristais > 0;
-  const moeda     = usaCris ? '💎' : '🪙';
+  const bruto     = aposta.cristais>0 ? aposta.cristais*2 : aposta.moedas*2;
+  const premio    = bruto - Math.floor(bruto*RM_TAXA);
+  const usaCris   = aposta.cristais>0;
+  const moeda     = usaCris?'💎':'🪙';
 
   el.innerHTML = `
     <button class="gs-x-btn" onclick="closeRoubaMonte()">✕</button>
-
     <div class="arena-header">
       <div class="arena-title">🃏 ROUBA MONTE</div>
       <div class="arena-sub">Duelo de cartas · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
-
     <div class="arena-aposta-info">
       <span>Aposta: <b>${_rmDescAposta()}</b></span>
       <span>Vencedor leva: <b>${premio} ${moeda}</b></span>
       <span style="color:var(--muted);font-size:6px;">10% → pool</span>
     </div>
-
-    <div id="rmLobbyActions" style="margin:10px 0;">
-      ${_rmHtmlAcoes(podePagar)}
-    </div>
-
+    <div id="rmLobbyActions" style="margin:10px 0;">${_rmHtmlAcoes(podePagar)}</div>
     <div class="arena-lobby-titulo" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">
       Jogadores na fila ${rar}
     </div>
     <div class="arena-lobby-lista" id="rmLobbyLista">
       <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
     </div>
-
     <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:6px;">
       <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;margin-bottom:4px;">◆ COMO JOGAR</div>
       <div style="font-size:6.5px;color:var(--muted);line-height:2;">
-        🃏 Cada jogador recebe 4 cartas · 4 cartas formam o monte<br>
-        ♻️ Jogue uma carta — mesmo valor rouba o monte inteiro<br>
-        ⚡ Trinca na mão → rouba qualquer monte<br>
-        🏆 Quem tiver mais cartas quando o baralho acabar vence
+        🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
+        ✅ Carta igual à mesa → forma o teu monte pessoal<br>
+        🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
+        ↩️ Sem jogada → descarta uma carta para a mesa<br>
+        🏆 Quem tiver mais cartas no monte ao final vence
       </div>
-    </div>
-  `;
-
+    </div>`;
   _rmIniciarLobbyListener();
 }
 
 function _rmHtmlAcoes(podePagar) {
-  if(_rmAtiva) {
-    return `
-      <button class="arena-btn-sair" onclick="rmSairDoLobby()">⬅ SAIR DA FILA</button>
-      <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — aguardando oponente...</div>`;
-  }
+  if(_rmAtiva) return `
+    <button class="arena-btn-sair" onclick="rmSairDoLobby()">⬅ SAIR DA FILA</button>
+    <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — aguardando oponente...</div>`;
   return `
-    <button class="arena-btn-entrar ${!podePagar ? 'disabled' : ''}"
-      onclick="${podePagar ? 'rmEntrarNoLobby()' : ''}"
-      ${!podePagar ? 'disabled' : ''}>
+    <button class="arena-btn-entrar ${!podePagar?'disabled':''}"
+      onclick="${podePagar?'rmEntrarNoLobby()':''}" ${!podePagar?'disabled':''}>
       🃏 ENTRAR NA FILA
     </button>
-    ${!podePagar ? `<div class="arena-sem-saldo">Saldo insuficiente (${_rmDescAposta()} necessário)</div>` : ''}`;
+    ${!podePagar?`<div class="arena-sem-saldo">Saldo insuficiente (${_rmDescAposta()} necessário)</div>`:''}`;
 }
 
 function _rmAtualizarAcoes() {
@@ -195,39 +205,23 @@ function _rmAtualizarAcoes() {
 function _rmIniciarLobbyListener() {
   if(!_rmRtdb()) return;
   _rmPararLobby();
-
   const fila = _rmRaridade();
   _rmLobbyListRef = _rmRtdb().ref(`roubaMonte/lobby/${fila}`);
-
   _rmLobbyListRef.on('value', snap => {
     const lista = document.getElementById('rmLobbyLista');
     if(!lista) return;
-
     const dados = snap.val();
-    if(!dados) {
-      lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>';
-      return;
-    }
-
+    if(!dados) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
     const myKey = (walletAddress||'').toLowerCase();
-    const agora  = Date.now();
-
-    const jogadores = Object.entries(dados).filter(([k, d]) => {
-      return k.toLowerCase() !== myKey &&
-             !d.emPartida &&
-             (!d.ts || (agora - d.ts) < RM_LOBBY_TTL);
-    });
-
-    if(!jogadores.length) {
-      lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>';
-      return;
-    }
-
-    lista.innerHTML = jogadores.map(([k, d]) => `
+    const agora = Date.now();
+    const jogadores = Object.entries(dados).filter(([k,d]) =>
+      k.toLowerCase()!==myKey && !d.emPartida && (!d.ts||(agora-d.ts)<RM_LOBBY_TTL));
+    if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
+    lista.innerHTML = jogadores.map(([k,d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36)}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento,d.raridade,d.seed,36,36)}</div>
         <div class="arena-lobby-info">
-          <div class="arena-lobby-nome">${d.nome || '???'}</div>
+          <div class="arena-lobby-nome">${d.nome||'???'}</div>
           <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'}</div>
         </div>
         ${_rmAtiva
@@ -242,43 +236,31 @@ function _rmIniciarLobbyListener() {
 // ═══════════════════════════════════════════════════════════════════
 
 async function rmEntrarNoLobby() {
-  if(!_rmRtdb() || !walletAddress || !avatar) return;
+  if(!_rmRtdb()||!walletAddress||!avatar) return;
   if(!_rmPodePagar()) { showBubble('Saldo insuficiente!'); return; }
-
   const fila = _rmRaridade();
   _rmLobbyRef = _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`);
-
   await _rmLobbyRef.set({
-    wallet:    walletAddress,
-    nome:      avatar.nome.split(',')[0],
-    raridade:  avatar.raridade,
-    elemento:  avatar.elemento,
-    nivel:     nivel  || 1,
-    seed:      avatar.seed || 0,
-    ts:        firebase.database.ServerValue.TIMESTAMP,
-    emPartida: false,
+    wallet:walletAddress, nome:avatar.nome.split(',')[0],
+    raridade:avatar.raridade, elemento:avatar.elemento,
+    nivel:nivel||1, seed:avatar.seed||0,
+    ts:firebase.database.ServerValue.TIMESTAMP, emPartida:false,
   });
-
   _rmLobbyRef.onDisconnect().remove();
-
   if(_rmHeartbeat) clearInterval(_rmHeartbeat);
   _rmHeartbeat = setInterval(() => {
-    if(_rmLobbyRef) _rmLobbyRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
+    if(_rmLobbyRef) _rmLobbyRef.update({ts:firebase.database.ServerValue.TIMESTAMP});
   }, 10000);
-
   _rmAtiva = true;
-  addLog('Entrou na fila do Rouba Monte! 🃏', 'info');
+  addLog('Entrou na fila do Rouba Monte! 🃏','info');
   _rmAtualizarAcoes();
 }
 
 async function rmSairDoLobby() {
-  if(_rmLobbyRef) {
-    try { await _rmLobbyRef.remove(); } catch(e){}
-    _rmLobbyRef = null;
-  }
-  if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat = null; }
+  if(_rmLobbyRef) { try{await _rmLobbyRef.remove();}catch(e){} _rmLobbyRef=null; }
+  if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat=null; }
   _rmAtiva = false;
-  addLog('Saiu da fila do Rouba Monte.', 'info');
+  addLog('Saiu da fila do Rouba Monte.','info');
   _rmAtualizarAcoes();
 }
 
@@ -287,70 +269,59 @@ async function rmSairDoLobby() {
 // ═══════════════════════════════════════════════════════════════════
 
 async function rmDesafiar(walletOponente) {
-  if(!_rmAtiva || !_rmRtdb()) return;
+  if(!_rmAtiva||!_rmRtdb()) return;
+  console.log('[RM] rmDesafiar — oponente:', walletOponente);
 
-  const aposta = _rmAposta();
-  const fila   = _rmRaridade();
-  const salaId = `rm_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-
+  const aposta   = _rmAposta();
+  const fila     = _rmRaridade();
+  const salaId   = `rm_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
   const deck     = _rmGerarBaralho();
+
+  // Distribuição: 4 para cada jogador, 4 para a mesa central
   const maoEu    = _rmSerDeck(deck.slice(0,  4));
   const maoOp    = _rmSerDeck(deck.slice(4,  8));
-  const monte    = _rmSerDeck(deck.slice(8, 12));
+  const mesa     = _rmSerDeck(deck.slice(8, 12));
   const restante = _rmSerDeck(deck.slice(12));
 
+  console.log('[RM] Distribuição — maoEu:', maoEu.length, '| maoOp:', maoOp.length,
+    '| mesa:', mesa.length, '| baralho:', restante.length);
+
   const sala = {
-    id:        salaId,
-    fila,
-    status:    'aguardando',
-    criador:   walletAddress,
-    oponente:  walletOponente,
+    id: salaId, fila,
+    status:   'aguardando',
+    criador:  walletAddress,
+    oponente: walletOponente,
     aposta,
-    turno:     walletAddress,
-    montemesa: monte,
-    baralho:   restante,
-    maos: {
-      [walletAddress]:  maoEu,
-      [walletOponente]: maoOp,
-    },
-    pilhas: {
-      [walletAddress]:  [],
-      [walletOponente]: [],
-    },
+    turno:    walletAddress,
+    mesa,
+    baralho:  restante,
+    maos:     { [walletAddress]: maoEu,  [walletOponente]: maoOp },
+    montes:   { [walletAddress]: [],     [walletOponente]: [] },
     jogadores: {
-      [walletAddress]: {
-        nome:     avatar.nome.split(',')[0],
-        raridade: avatar.raridade,
-        elemento: avatar.elemento,
-        seed:     avatar.seed || 0,
-      },
-      [walletOponente]: {
-        nome: null, raridade: null, elemento: null, seed: 0,
-      },
+      [walletAddress]:  { nome:avatar.nome.split(',')[0], raridade:avatar.raridade, elemento:avatar.elemento, seed:avatar.seed||0 },
+      [walletOponente]: { nome:null, raridade:null, elemento:null, seed:0 },
     },
     criadoEm: firebase.database.ServerValue.TIMESTAMP,
     recompensaDistribuida: false,
   };
 
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).set(sala);
+  console.log('[RM] Sala criada:', salaId);
 
   await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}/emPartida`).set(true);
   await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletOponente}/emPartida`).set(true);
 
-  if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat = null; }
+  if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat=null; }
   _rmPararLobby();
 
   await _rmRtdb().ref(`roubaMonte/notificacoes/${walletOponente}/${salaId}`).set({
-    salaId,
-    criador: walletAddress,
-    fila,
-    lida: false,
+    salaId, criador:walletAddress, fila, lida:false,
     ts: firebase.database.ServerValue.TIMESTAMP,
   });
 
   _rmDebitarAposta();
   _rmSalaId = salaId;
-  addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`, 'info');
+  addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`,'info');
   showBubble('Desafio enviado! 🃏');
   _rmRenderEspera(salaId);
 }
@@ -376,19 +347,15 @@ function _rmRenderEspera(salaId) {
   salaRef.on('value', snap => {
     const s = snap.val();
     if(!s) return;
-    if(s.status === 'em_jogo') {
-      salaRef.off('value');
-      _rmIniciarPartida(salaId, s);
-    }
-    if(s.status === 'cancelada' || s.status === 'recusada') {
+    if(s.status==='em_jogo')  { salaRef.off('value'); _rmIniciarPartida(salaId, s); }
+    if(s.status==='cancelada'||s.status==='recusada') {
       salaRef.off('value');
       const a = _rmAposta();
-      if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
-      else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
+      if(a.cristais>0) gs.cristais=(gs.cristais||0)+a.cristais;
+      else             gs.moedas  =(gs.moedas  ||0)+a.moedas;
       updateResourceUI();
-      _rmAtiva  = false;
-      _rmSalaId = null;
-      addLog('Desafio cancelado ou recusado.', 'bad');
+      _rmAtiva=false; _rmSalaId=null;
+      addLog('Desafio cancelado ou recusado.','bad');
       _rmRenderLobby();
     }
   });
@@ -396,15 +363,14 @@ function _rmRenderEspera(salaId) {
 
 async function rmCancelarDesafio(salaId) {
   if(!_rmRtdb()) return;
-  await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({ status: 'cancelada' });
+  await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({status:'cancelada'});
   const fila = _rmRaridade();
-  try { await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
+  try{await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`).remove();}catch(e){}
   const a = _rmAposta();
-  if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
-  else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
+  if(a.cristais>0) gs.cristais=(gs.cristais||0)+a.cristais;
+  else             gs.moedas  =(gs.moedas  ||0)+a.moedas;
   updateResourceUI();
-  _rmAtiva  = false;
-  _rmSalaId = null;
+  _rmAtiva=false; _rmSalaId=null;
   _rmRenderLobby();
 }
 
@@ -413,13 +379,10 @@ async function rmCancelarDesafio(salaId) {
 // ═══════════════════════════════════════════════════════════════════
 
 async function rmAceitarDesafio(salaId) {
-  if(!_rmRtdb() || !walletAddress || !avatar) return;
+  if(!_rmRtdb()||!walletAddress||!avatar) return;
   if(!_rmPodePagar()) { showBubble('Saldo insuficiente!'); return; }
-
   const snapCheck = await _rmRtdb().ref(`roubaMonte/salas/${salaId}/status`).once('value');
-  if(snapCheck.val() !== 'aguardando') {
-    addLog('Desafio já expirou.', 'bad'); _rmRenderLobby(); return;
-  }
+  if(snapCheck.val()!=='aguardando') { addLog('Desafio já expirou.','bad'); _rmRenderLobby(); return; }
 
   _rmDebitarAposta();
   _rmSalaId = salaId;
@@ -429,303 +392,385 @@ async function rmAceitarDesafio(salaId) {
     [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
     [`jogadores/${walletAddress}/elemento`]: avatar.elemento,
-    [`jogadores/${walletAddress}/seed`]:     avatar.seed || 0,
+    [`jogadores/${walletAddress}/seed`]:     avatar.seed||0,
   });
 
   const fila = _rmRaridade();
   await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}/emPartida`).set(true);
 
   const snap = await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).once('value');
+  console.log('[RM] rmAceitarDesafio — iniciando partida');
   _rmIniciarPartida(salaId, snap.val());
 }
 
 async function rmRecusarDesafio(salaId) {
   if(!_rmRtdb()) return;
-  await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({ status: 'recusada' });
-  setTimeout(async () => {
-    try { await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).remove(); } catch(e){}
-    try { await _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}/${salaId}`).remove(); } catch(e){}
-  }, 3000);
-  addLog('Desafio recusado.', 'info');
+  await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({status:'recusada'});
+  setTimeout(async()=>{
+    try{await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).remove();}catch(e){}
+    try{await _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}/${salaId}`).remove();}catch(e){}
+  },3000);
+  addLog('Desafio recusado.','info');
   _rmRenderLobby();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INICIAR PARTIDA — render inicial + listener (chamado uma única vez)
+// ═══════════════════════════════════════════════════════════════════
+
+function _rmIniciarPartida(salaId, sala) {
+  console.log('[RM] _rmIniciarPartida — turno inicial:', sala.turno, '| é meu turno:', sala.turno===walletAddress);
+  const opWallet = sala.criador===walletAddress ? sala.oponente : sala.criador;
+  _rmRenderPartida(salaId, sala, opWallet);
+  if(sala.turno===walletAddress) _rmIniciarTimer(salaId, opWallet);
+  _rmEscutarSala(salaId, opWallet);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // TELA DA PARTIDA
 // ═══════════════════════════════════════════════════════════════════
 
-function _rmRenderPartida(salaId, sala) {
-  _rmPararTimer();
-  _rmCartaSel    = null;
-  _rmUltimoTurno = sala.turno;
+function _rmRenderPartida(salaId, sala, opWallet) {
+  _rmCartaSel = null;
   const el = document.getElementById('roubaMontModal');
-  if(!el || !sala) return;
+  if(!el||!sala) return;
 
-  const opWallet       = walletAddress === sala.criador ? sala.oponente : sala.criador;
-  const minha_mao      = _rmToArray(sala.maos && sala.maos[walletAddress]);
-  const op_info        = (sala.jogadores && sala.jogadores[opWallet]) || {};
-  const montemesa      = _rmToArray(sala.montemesa);
-  const minhaPilha     = _rmToArray(sala.pilhas && sala.pilhas[walletAddress]);
-  const opPilha        = _rmToArray(sala.pilhas && sala.pilhas[opWallet]);
-  const meuTurno       = sala.turno === walletAddress;
-  const baralhoRestante = _rmToArray(sala.baralho).length;
+  if(!opWallet) opWallet = sala.criador===walletAddress ? sala.oponente : sala.criador;
+
+  const minha_mao  = _rmToArray(sala.maos?.[walletAddress]);
+  const op_info    = (sala.jogadores&&sala.jogadores[opWallet]) || {};
+  const mesa       = _rmToArray(sala.mesa);
+  const meuMonte   = _rmToArray(sala.montes?.[walletAddress]);
+  const opMonte    = _rmToArray(sala.montes?.[opWallet]);
+  const meuTurno   = sala.turno===walletAddress;
+  const baralhoRest= _rmToArray(sala.baralho).length;
+  const topoOpMonte= opMonte.length>0 ? opMonte[opMonte.length-1] : null;
+
+  console.log('[RM] _rmRenderPartida — meuTurno:', meuTurno,
+    '| mão:', minha_mao.length, '| mesa:', mesa.length,
+    '| meuMonte:', meuMonte.length, '| opMonte:', opMonte.length, '| baralho:', baralhoRest);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;height:100%;gap:6px;padding:4px;">
+    <div style="display:flex;flex-direction:column;height:100%;gap:5px;padding:4px;overflow-y:auto;">
 
-      <!-- Oponente info -->
+      <!-- Oponente -->
       <div style="display:flex;align-items:center;justify-content:space-between;
-                  padding:6px 8px;background:rgba(255,255,255,.03);border-radius:6px;border:1px solid rgba(255,255,255,.07);">
+                  padding:5px 8px;background:rgba(255,255,255,.03);border-radius:6px;
+                  border:1px solid rgba(255,255,255,.07);flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:6px;">
-          <div>${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 28, 28)}</div>
+          <div>${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||0,26,26)}</div>
           <div>
             <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold-light);">${op_info.nome||opWallet.slice(0,10)+'...'}</div>
-            <div style="font-size:6px;color:var(--muted);">🃏 ${opPilha.length} cap. · Baralho: ${baralhoRestante}</div>
+            <div style="font-size:6px;color:var(--muted);">Monte: ${opMonte.length} cartas · Baralho: ${baralhoRest}</div>
           </div>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:${meuTurno?'var(--muted)':'var(--gold)'};">
-          ${meuTurno ? 'aguardando' : '⚔️ VEZ DELE'}
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${topoOpMonte ? `
+            <div style="text-align:center;">
+              <div style="font-size:5px;color:var(--muted);margin-bottom:2px;">TOPO MONTE</div>
+              <div style="width:28px;height:38px;border-radius:4px;background:#0d0a1e;
+                          border:1.5px solid ${topoOpMonte.cor};
+                          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+                <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${topoOpMonte.label}</span>
+                <span style="font-size:8px;color:${topoOpMonte.cor};">${topoOpMonte.naipe}</span>
+              </div>
+            </div>` : '<div style="font-size:6px;color:var(--muted);">monte vazio</div>'}
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:${meuTurno?'var(--muted)':'var(--gold)'};">
+            ${meuTurno?'aguardando':'⚔️ VEZ DELE'}
+          </div>
         </div>
       </div>
 
-      <!-- Monte da mesa -->
-      <div>
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">
-          MONTE DA MESA (${montemesa.length})
+      <!-- Mesa central -->
+      <div style="flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:3px;">
+          MESA CENTRAL (${mesa.length} cartas)
         </div>
-        <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:52px;
+        <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:44px;
                     padding:4px;background:rgba(255,255,255,.02);border-radius:6px;
                     border:1px dashed rgba(201,168,76,.15);">
-          ${montemesa.length === 0
-            ? `<div style="font-size:8px;color:var(--muted);margin:auto;">vazio</div>`
-            : montemesa.map((c, i) => `
-              <div style="
-                width:32px;height:44px;border-radius:4px;
-                background:#0d0a1e;border:1px solid ${c.cor||'rgba(201,168,76,.25)'};
-                display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-                ${i === montemesa.length - 1 ? 'border-color:'+c.cor+';box-shadow:0 0 8px '+c.cor+'44;' : ''}
-              ">
-                <span style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#e8a030;">${c.label}</span>
-                <span style="font-size:9px;color:${c.cor};">${c.naipe}</span>
+          ${mesa.length===0
+            ? `<div style="font-size:7px;color:var(--muted);margin:auto;">mesa vazia</div>`
+            : mesa.map(c=>`
+              <div style="width:28px;height:38px;border-radius:4px;background:#0d0a1e;
+                          border:1px solid ${c.cor||'rgba(201,168,76,.25)'};
+                          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+                <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${c.label}</span>
+                <span style="font-size:8px;color:${c.cor};">${c.naipe}</span>
               </div>`).join('')}
         </div>
       </div>
 
-      <!-- Minha pilha capturada -->
-      <div style="font-size:6px;color:var(--muted);font-family:'Cinzel',serif;">
-        📦 MINHAS CAPTURADAS: ${minhaPilha.length} cartas
+      <!-- Meu monte -->
+      <div style="font-size:6px;color:var(--muted);font-family:'Cinzel',serif;flex-shrink:0;">
+        📦 MEU MONTE: ${meuMonte.length} cartas
+        ${meuMonte.length>0?`· Topo: <b style="color:var(--gold)">${meuMonte[meuMonte.length-1].label}${meuMonte[meuMonte.length-1].naipe}</b>`:''}
       </div>
 
       <!-- Minha mão -->
-      <div>
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">
-          MINHA MÃO (${minha_mao.length}) ${meuTurno ? '— <span style="color:var(--gold)">SUA VEZ!</span>' : ''}
+      <div style="flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:2px;margin-bottom:3px;">
+          MINHA MÃO (${minha_mao.length}) ${meuTurno?'— <span style="color:var(--gold)">SUA VEZ!</span>':''}
         </div>
         <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
-          ${minha_mao.map((c, i) => {
-            const sel = _rmCartaSel === i;
-            return `<div data-carta="${i}" data-cor="${c.cor||'rgba(201,168,76,.25)'}" onclick="rmSelecionarCarta(${i})" style="
-              width:40px;height:56px;border-radius:6px;
-              background:${sel ? 'rgba(201,168,76,.12)' : '#0d0a1e'};
-              border:1.5px solid ${sel ? '#f0d080' : (c.cor||'rgba(201,168,76,.25)')};
-              display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-              cursor:${meuTurno ? 'pointer' : 'default'};
-              transform:${sel ? 'translateY(-6px)' : 'none'};
-              transition:all .15s;
-              box-shadow:${sel ? '0 4px 14px rgba(201,168,76,.3)' : 'none'};
-            ">
-              <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#e8a030;">${c.label}</span>
-              <span style="font-size:11px;color:${c.cor};">${c.naipe}</span>
-            </div>`;
-          }).join('')}
+          ${minha_mao.map((c,i)=>_rmHtmlCarta(c,i,meuTurno,_rmCartaSel)).join('')}
+          ${minha_mao.length===0?'<div style="font-size:7px;color:var(--muted);padding:8px;">sem cartas na mão</div>':''}
         </div>
       </div>
 
-      <!-- Botão jogar -->
+      <!-- Acções -->
       ${meuTurno ? `
-      <div style="display:flex;gap:6px;margin-top:4px;">
+      <div style="display:flex;gap:6px;margin-top:2px;flex-shrink:0;">
         <button id="rmBtnJogar" class="mini-btn primary" style="flex:1;font-size:7px;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
-          ${_rmCartaSel === null ? 'disabled' : ''}>
-          🃏 JOGAR CARTA
+          ${_rmCartaSel===null?'disabled':''}>
+          ✅ JOGAR CARTA
+        </button>
+        <button id="rmBtnDescartar" class="mini-btn" style="font-size:7px;border-color:var(--muted);color:var(--muted);"
+          onclick="rmDescartar('${salaId}','${opWallet}')"
+          ${_rmCartaSel===null?'disabled':''}>
+          ↩️ DESCARTAR
         </button>
         <button class="mini-btn close" style="font-size:7px;" onclick="closeRoubaMonte()">✕</button>
       </div>` : `
-      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+      <div style="display:flex;justify-content:flex-end;flex-shrink:0;">
         <button class="mini-btn close" style="font-size:7px;" onclick="closeRoubaMonte()">✕ FECHAR</button>
       </div>`}
 
       <!-- Timer -->
       ${meuTurno ? `
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:2px;">
+      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;flex-shrink:0;">
         <div id="rmTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
       </div>` : ''}
     </div>`;
-
-  if(meuTurno) _rmIniciarTimer(salaId, opWallet);
 }
 
-// ── Timer do turno ──
+// ═══════════════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════════════
+
 function _rmIniciarTimer(salaId, opWallet) {
   _rmPararTimer();
   let seg = RM_TIMER_SEG;
-  _rmTimerInterval = setInterval(() => {
+  console.log('[RM] Timer iniciado —', seg, 'segundos');
+  _rmTimerInt = setInterval(() => {
     seg--;
     const bar = document.getElementById('rmTimerBar');
     if(bar) {
-      const pct = (seg / RM_TIMER_SEG) * 100;
-      bar.style.width = pct + '%';
-      if(pct < 30) bar.style.background = '#e74c3c';
-      else if(pct < 60) bar.style.background = '#e8a030';
+      const pct = (seg/RM_TIMER_SEG)*100;
+      bar.style.width = pct+'%';
+      if(pct<30) bar.style.background='#e74c3c';
+      else if(pct<60) bar.style.background='#e8a030';
     }
-    if(seg <= 0) {
+    if(seg<=0) {
       _rmPararTimer();
-      if(_rmCartaSel === null) _rmCartaSel = 0;
-      rmJogarCarta(salaId, opWallet);
+      console.log('[RM] Timer esgotado — descartando carta aleatória');
+      _rmCartaSel = 0;
+      rmDescartar(salaId, opWallet);
     }
   }, 1000);
 }
 
-// ── Listener da sala ──
+// ═══════════════════════════════════════════════════════════════════
+// LISTENER DA SALA
+// ═══════════════════════════════════════════════════════════════════
+
 function _rmEscutarSala(salaId, opWallet) {
   _rmPararSala();
+  console.log('[RM] _rmEscutarSala iniciado — salaId:', salaId);
   _rmSalaListener = _rmRtdb().ref(`roubaMonte/salas/${salaId}`);
-  let _ultimoUpdateTs = 0;
+  let _ultimoTs = 0;
   _rmSalaListener.on('value', snap => {
     const s = snap.val();
     if(!s) return;
-    if(s.status === 'finalizada') {
+    console.log('[RM] Listener — status:', s.status, '| turno:', s.turno,
+      '| ultimaJogada.ts:', s.ultimaJogada?.ts||0, '| é meu turno:', s.turno===walletAddress);
+    if(s.status==='finalizada') {
       _rmPararTimer();
       _rmSalaListener.off('value');
+      console.log('[RM] Partida finalizada');
       _rmRenderResultado(s, opWallet);
       return;
     }
-    if(s.status === 'em_jogo') {
-      const updateTs = s.ultimaJogada?.ts || 0;
-      if(updateTs !== _ultimoUpdateTs) {
-        _ultimoUpdateTs = updateTs;
+    if(s.status==='em_jogo') {
+      const ts = s.ultimaJogada?.ts||0;
+      if(ts!==_ultimoTs) {
+        _ultimoTs = ts;
         _rmPararTimer();
-        _rmRenderPartida(salaId, s);
-        if(s.turno === walletAddress) _rmIniciarTimer(salaId, opWallet);
+        console.log('[RM] Nova jogada — re-renderizando | meu turno:', s.turno===walletAddress);
+        _rmRenderPartida(salaId, s, opWallet);
+        if(s.turno===walletAddress) _rmIniciarTimer(salaId, opWallet);
       }
     }
   });
 }
 
-// ── Inicia partida — render + listener (chamado uma única vez) ──
-function _rmIniciarPartida(salaId, sala) {
-  const opWallet = sala.criador === walletAddress ? sala.oponente : sala.criador;
-  _rmRenderPartida(salaId, sala);
-  if(sala.turno === walletAddress) _rmIniciarTimer(salaId, opWallet);
-  _rmEscutarSala(salaId, opWallet);
-}
-
 // ═══════════════════════════════════════════════════════════════════
-// LÓGICA DO JOGO
+// SELECCIONAR CARTA
 // ═══════════════════════════════════════════════════════════════════
 
 function rmSelecionarCarta(idx) {
-  console.log('[RM] rmSelecionarCarta chamado — idx:', idx, '| _rmCartaSel antes:', _rmCartaSel);
-  _rmCartaSel = (_rmCartaSel === idx) ? null : idx;
-  console.log('[RM] _rmCartaSel depois:', _rmCartaSel);
+  console.log('[RM] rmSelecionarCarta — idx:', idx, '| antes:', _rmCartaSel);
+  _rmCartaSel = (_rmCartaSel===idx) ? null : idx;
+  console.log('[RM] rmSelecionarCarta — depois:', _rmCartaSel);
 
-  const todasCartas = document.querySelectorAll('#roubaMontModal [data-carta]');
-  console.log('[RM] cartas encontradas no DOM com [data-carta]:', todasCartas.length);
-
-  // Actualiza visual das cartas sem ir ao RTDB
   document.querySelectorAll('#roubaMontModal [data-carta]').forEach(el => {
     const i   = Number(el.dataset.carta);
-    const sel = _rmCartaSel === i;
-    const cor = el.dataset.cor || 'rgba(201,168,76,.25)';
-    el.style.background = sel ? 'rgba(201,168,76,.12)' : '#0d0a1e';
-    el.style.border     = `1.5px solid ${sel ? '#f0d080' : cor}`;
-    el.style.transform  = sel ? 'translateY(-6px)' : 'none';
-    el.style.boxShadow  = sel ? '0 4px 14px rgba(201,168,76,.3)' : 'none';
+    const sel = _rmCartaSel===i;
+    const cor = el.dataset.cor||'rgba(201,168,76,.25)';
+    el.style.background = sel?'rgba(201,168,76,.12)':'#0d0a1e';
+    el.style.border     = `1.5px solid ${sel?'#f0d080':cor}`;
+    el.style.transform  = sel?'translateY(-6px)':'none';
+    el.style.boxShadow  = sel?'0 4px 14px rgba(201,168,76,.3)':'none';
   });
 
-  // Activa/desactiva o botão jogar
-  const btnJogar = document.getElementById('rmBtnJogar');
-  console.log('[RM] btnJogar encontrado:', !!btnJogar, '| disabled:', _rmCartaSel === null);
-  if(btnJogar) btnJogar.disabled = _rmCartaSel === null;
+  const btn = document.getElementById('rmBtnJogar');
+  if(btn) btn.disabled = _rmCartaSel===null;
+  const btnDesc = document.getElementById('rmBtnDescartar');
+  if(btnDesc) btnDesc.disabled = _rmCartaSel===null;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// JOGAR CARTA (lógica correcta do Rouba Monte)
+// ═══════════════════════════════════════════════════════════════════
+
 async function rmJogarCarta(salaId, opWallet) {
-  console.log('[RM] rmJogarCarta chamado — salaId:', salaId, '| opWallet:', opWallet, '| _rmCartaSel:', _rmCartaSel);
-  if(_rmCartaSel === null) { console.warn('[RM] abortou — nenhuma carta seleccionada'); return; }
-  if(!_rmRtdb()) { console.warn('[RM] abortou — RTDB indisponível'); return; }
+  if(_rmCartaSel===null) { console.warn('[RM] rmJogarCarta — nenhuma carta seleccionada'); return; }
+  if(!_rmRtdb()) return;
   _rmPararTimer();
 
   const snap = await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).once('value');
   const sala = snap.val();
-  console.log('[RM] sala carregada:', !!sala, '| turno:', sala?.turno, '| walletAddress:', walletAddress, '| é meu turno:', sala?.turno === walletAddress);
-  if(!sala || sala.turno !== walletAddress) { console.warn('[RM] abortou — não é meu turno'); return; }
+  if(!sala||sala.turno!==walletAddress) { console.warn('[RM] rmJogarCarta — não é meu turno'); return; }
 
   const minha_mao = _rmToArray(sala.maos?.[walletAddress]);
-  console.log('[RM] minha_mao:', minha_mao.length, 'cartas | _rmCartaSel:', _rmCartaSel);
-  if(_rmCartaSel >= minha_mao.length) { _rmCartaSel = null; return; }
+  if(_rmCartaSel>=minha_mao.length) { _rmCartaSel=null; return; }
 
   const cartaJogada = minha_mao.splice(_rmCartaSel, 1)[0];
   _rmCartaSel = null;
 
-  let monteAtual  = _rmToArray(sala.montemesa);
-  let minhaPilha  = _rmToArray(sala.pilhas?.[walletAddress]);
-  let opPilha     = _rmToArray(sala.pilhas?.[opWallet]);
-  let baralho     = _rmToArray(sala.baralho);
-  const opMao     = _rmToArray(sala.maos?.[opWallet]);
+  let mesa     = _rmToArray(sala.mesa);
+  let meuMonte = _rmToArray(sala.montes?.[walletAddress]);
+  let opMonte  = _rmToArray(sala.montes?.[opWallet]);
+  let baralho  = _rmToArray(sala.baralho);
+  let opMao    = _rmToArray(sala.maos?.[opWallet]);
 
-  const trinca = _rmVerificarTrincaMao(minha_mao);
+  const topoOp = opMonte.length>0 ? opMonte[opMonte.length-1] : null;
 
+  console.log('[RM] rmJogarCarta — carta:', cartaJogada.label+cartaJogada.naipe,
+    '| mesa:', mesa.map(c=>c.label+c.naipe).join(','),
+    '| topoOpMonte:', topoOp ? topoOp.label+topoOp.naipe : 'vazio');
+
+  let acao   = '';
   let roubou = false;
-  let msgLog = '';
 
-  if(trinca) {
-    minhaPilha = [...minhaPilha, ...monteAtual, cartaJogada];
-    monteAtual = [];
-    msgLog = `Trinca! Roubou o monte com ${cartaJogada.label}${cartaJogada.naipe}`;
-    roubou = true;
+  // 1. Rouba o monte do oponente se a carta bate com o topo do monte dele
+  if(topoOp && topoOp.label===cartaJogada.label) {
+    console.log('[RM] ROUBOU O MONTE DO OPONENTE!');
+    meuMonte = [...meuMonte, ...opMonte, cartaJogada];
+    opMonte  = [];
+    acao     = `Roubou o monte! (${cartaJogada.label}${cartaJogada.naipe} = topo ${topoOp.label}${topoOp.naipe}) 🔥`;
+    roubou   = true;
+
+  // 2. Par com carta da mesa → forma monte pessoal
   } else {
-    const topoIdx = monteAtual.findIndex(c => c.label === cartaJogada.label);
-    if(topoIdx !== -1) {
-      minhaPilha = [...minhaPilha, ...monteAtual, cartaJogada];
-      monteAtual = [];
-      msgLog = `Roubou o monte com ${cartaJogada.label}${cartaJogada.naipe}!`;
-      roubou = true;
+    const mesaIdx = mesa.findIndex(c => c.label===cartaJogada.label);
+    if(mesaIdx!==-1) {
+      const cartaMesa = mesa.splice(mesaIdx, 1)[0];
+      meuMonte = [...meuMonte, cartaJogada, cartaMesa];
+      console.log('[RM] Par com mesa — monte agora:', meuMonte.length);
+      acao = `Par! ${cartaJogada.label}${cartaJogada.naipe} + ${cartaMesa.label}${cartaMesa.naipe} → monte (${meuMonte.length} cartas)`;
     } else {
-      monteAtual = [...monteAtual, cartaJogada];
-      msgLog = `Jogou ${cartaJogada.label}${cartaJogada.naipe} no monte`;
+      // Sem jogada — descarta para mesa automaticamente
+      mesa = [...mesa, cartaJogada];
+      console.log('[RM] Sem par — descartado para mesa');
+      acao = `Sem par — ${cartaJogada.label}${cartaJogada.naipe} descartado para a mesa`;
     }
   }
 
-  if(minha_mao.length === 0 && baralho.length > 0) {
-    minha_mao.push(baralho.shift());
+  // Recompra: se mão ficou vazia e há baralho, distribui até 4 cartas
+  if(minha_mao.length===0 && baralho.length>0) {
+    const novas = baralho.splice(0, Math.min(4, baralho.length));
+    minha_mao.push(...novas);
+    console.log('[RM] Recompra EU:', novas.length, 'cartas');
+  }
+  if(opMao.length===0 && baralho.length>0) {
+    const novas = baralho.splice(0, Math.min(4, baralho.length));
+    opMao.push(...novas);
+    console.log('[RM] Recompra OP:', novas.length, 'cartas');
   }
 
-  const fimDeJogo = minha_mao.length === 0 && opMao.length === 0 && baralho.length === 0;
+  const fimDeJogo = baralho.length===0 && minha_mao.length===0 && opMao.length===0;
+  console.log('[RM] Após jogada — mesa:', mesa.length, '| minha_mao:', minha_mao.length,
+    '| opMao:', opMao.length, '| baralho:', baralho.length, '| fimDeJogo:', fimDeJogo);
 
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
+    mesa,
     [`maos/${walletAddress}`]:   minha_mao,
-    [`pilhas/${walletAddress}`]: minhaPilha,
-    montemesa: monteAtual,
+    [`maos/${opWallet}`]:        opMao,
+    [`montes/${walletAddress}`]: meuMonte,
+    [`montes/${opWallet}`]:      opMonte,
     baralho,
     turno:  fimDeJogo ? null : opWallet,
     status: fimDeJogo ? 'finalizada' : 'em_jogo',
-    ultimaJogada: {
-      jogador: walletAddress,
-      carta:   cartaJogada,
-      roubou,
-      ts: Date.now(),
-    },
+    ultimaJogada: { jogador:walletAddress, carta:cartaJogada, acao, roubou, ts:Date.now() },
   });
 
-  addLog(`Rouba Monte: ${msgLog}`, roubou ? 'good' : 'info');
-  if(roubou) showBubble('Roubei o monte! 🃏');
+  addLog(`Rouba Monte: ${acao}`, roubou?'good':'info');
+  if(roubou) showBubble('Roubei o monte! 🔥');
 }
 
-function _rmVerificarTrincaMao(mao) {
-  if(mao.length < 3) return false;
-  const contagem = {};
-  mao.forEach(c => { contagem[c.label] = (contagem[c.label]||0) + 1; });
-  return Object.values(contagem).some(v => v >= 3);
+// ═══════════════════════════════════════════════════════════════════
+// DESCARTAR (jogada intencional sem par)
+// ═══════════════════════════════════════════════════════════════════
+
+async function rmDescartar(salaId, opWallet) {
+  if(!_rmRtdb()) return;
+  _rmPararTimer();
+
+  const snap = await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).once('value');
+  const sala = snap.val();
+  if(!sala||sala.turno!==walletAddress) { console.warn('[RM] rmDescartar — não é meu turno'); return; }
+
+  const minha_mao = _rmToArray(sala.maos?.[walletAddress]);
+  if(minha_mao.length===0) { console.warn('[RM] rmDescartar — mão vazia'); return; }
+
+  const idxDesc   = (_rmCartaSel!==null && _rmCartaSel<minha_mao.length) ? _rmCartaSel : 0;
+  const cartaDesc = minha_mao.splice(idxDesc, 1)[0];
+  _rmCartaSel = null;
+
+  let mesa    = _rmToArray(sala.mesa);
+  let baralho = _rmToArray(sala.baralho);
+  let opMao   = _rmToArray(sala.maos?.[opWallet]);
+
+  mesa = [...mesa, cartaDesc];
+  console.log('[RM] rmDescartar — descartou:', cartaDesc.label+cartaDesc.naipe, '| mesa:', mesa.length);
+
+  if(minha_mao.length===0 && baralho.length>0) {
+    const novas = baralho.splice(0, Math.min(4, baralho.length));
+    minha_mao.push(...novas);
+    console.log('[RM] Recompra após descarte:', novas.length);
+  }
+  if(opMao.length===0 && baralho.length>0) {
+    const novas = baralho.splice(0, Math.min(4, baralho.length));
+    opMao.push(...novas);
+    console.log('[RM] Recompra OP após descarte:', novas.length);
+  }
+
+  const fimDeJogo = baralho.length===0 && minha_mao.length===0 && opMao.length===0;
+  console.log('[RM] Após descarte — fimDeJogo:', fimDeJogo);
+
+  await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
+    mesa,
+    [`maos/${walletAddress}`]: minha_mao,
+    [`maos/${opWallet}`]:      opMao,
+    baralho,
+    turno:  fimDeJogo ? null : opWallet,
+    status: fimDeJogo ? 'finalizada' : 'em_jogo',
+    ultimaJogada: { jogador:walletAddress, carta:cartaDesc, acao:`Descartou ${cartaDesc.label}${cartaDesc.naipe}`, roubou:false, ts:Date.now() },
+  });
+
+  addLog(`Rouba Monte: Descartou ${cartaDesc.label}${cartaDesc.naipe}`,'info');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -737,95 +782,91 @@ async function _rmRenderResultado(sala, opWallet) {
   const el = document.getElementById('roubaMontModal');
   if(!el) return;
 
-  const minhaPilha = _rmToArray(sala.pilhas?.[walletAddress]).length;
-  const opPilha    = _rmToArray(sala.pilhas?.[opWallet]).length;
-  const euVenci    = minhaPilha > opPilha;
-  const empate     = minhaPilha === opPilha;
-  const op_info    = (sala.jogadores?.[opWallet]) || {};
+  const meuMonte = _rmToArray(sala.montes?.[walletAddress]).length;
+  const opMonte  = _rmToArray(sala.montes?.[opWallet]).length;
+  const euVenci  = meuMonte > opMonte;
+  const empate   = meuMonte === opMonte;
+  const op_info  = (sala.jogadores?.[opWallet]) || {};
+
+  console.log('[RM] Resultado — meuMonte:', meuMonte, '| opMonte:', opMonte,
+    '| euVenci:', euVenci, '| empate:', empate);
 
   const aposta  = sala.aposta;
-  const usaCris = aposta.cristais > 0;
-  const bruto   = usaCris ? aposta.cristais * 2 : aposta.moedas * 2;
-  const moeda   = usaCris ? '💎' : '🪙';
+  const usaCris = aposta.cristais>0;
+  const bruto   = usaCris ? aposta.cristais*2 : aposta.moedas*2;
+  const moeda   = usaCris?'💎':'🪙';
 
-  if(sala.criador === walletAddress && !sala.recompensaDistribuida) {
+  if(sala.criador===walletAddress && !sala.recompensaDistribuida) {
     await _rmRtdb().ref(`roubaMonte/salas/${sala.id}/recompensaDistribuida`).set(true);
     if(euVenci) _rmCreditarPremio(bruto, usaCris);
     else if(empate) {
-      if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-      else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
+      if(usaCris) gs.cristais=(gs.cristais||0)+aposta.cristais;
+      else        gs.moedas  =(gs.moedas  ||0)+aposta.moedas;
       updateResourceUI(); scheduleSave();
     }
-    const taxa = Math.floor(bruto * RM_TAXA);
-    if(taxa > 0 && typeof fbDb === 'function' && fbDb()) {
+    const taxa = Math.floor(bruto*RM_TAXA);
+    if(taxa>0 && typeof fbDb==='function' && fbDb()) {
       try {
         await fbDb().collection('config').doc('pool').update({
-          cristais:    firebase.firestore.FieldValue.increment(taxa),
+          cristais: firebase.firestore.FieldValue.increment(taxa),
           totalEntrou: firebase.firestore.FieldValue.increment(taxa),
         });
-      } catch(e) { console.warn('[RM] pool error:', e); }
+      } catch(e){ console.warn('[RM] pool error:',e); }
     }
-  } else if(sala.criador !== walletAddress) {
+  } else if(sala.criador!==walletAddress) {
     if(euVenci) _rmCreditarPremio(bruto, usaCris);
     else if(empate) {
-      if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-      else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
+      if(usaCris) gs.cristais=(gs.cristais||0)+aposta.cristais;
+      else        gs.moedas  =(gs.moedas  ||0)+aposta.moedas;
       updateResourceUI(); scheduleSave();
     }
   }
 
   const d  = miniDifficulty();
   const rb = rarityBonus();
-  const xpGain = Math.round(d.xp * (euVenci ? 2.0 : 0.5) * rb.xp);
+  const xpGain = Math.round(d.xp*(euVenci?2.0:0.5)*rb.xp);
   xp += xpGain;
-  vitals.humor = Math.min(100, vitals.humor + (euVenci ? 15 : 5));
-  vinculo += euVenci ? 6 : 2;
+  vitals.humor = Math.min(100, vitals.humor+(euVenci?15:5));
+  vinculo += euVenci?6:2;
   checkXP(); updateAllUI(); scheduleSave();
 
   const fila = _rmRaridade();
-  try { await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
-  _rmAtiva  = false;
-  _rmSalaId = null;
+  try{await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`).remove();}catch(e){}
+  _rmAtiva=false; _rmSalaId=null;
 
-  if(sala.criador === walletAddress) {
-    setTimeout(async () => {
-      try { await _rmRtdb().ref(`roubaMonte/salas/${sala.id}`).remove(); } catch(e){}
-    }, 10000);
+  if(sala.criador===walletAddress) {
+    setTimeout(async()=>{
+      try{await _rmRtdb().ref(`roubaMonte/salas/${sala.id}`).remove();}catch(e){}
+    },10000);
   }
 
-  const titulo = empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
-  const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
-
-  addLog(`Rouba Monte: ${titulo} · ${minhaPilha} vs ${opPilha} cartas`, euVenci?'good':empate?'info':'bad');
+  const titulo = empate?'🤝 EMPATE!':euVenci?'🏆 VITÓRIA!':'💀 DERROTA';
+  const cor    = empate?'var(--gold)':euVenci?'#7ab87a':'#e74c3c';
+  addLog(`Rouba Monte: ${titulo} · ${meuMonte} vs ${opMonte} cartas`,euVenci?'good':empate?'info':'bad');
 
   el.innerHTML = `
     <div class="arena-resultado">
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
-
       <div class="arena-vs-row" style="margin:12px 0;">
         <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 44, 44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44)}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${minhaPilha}</div>
+          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${meuMonte}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci&&!empate?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 44, 44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||0,44,44)}</div>
           <div class="arena-vs-nome">${op_info.nome||opWallet.slice(0,8)+'...'}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${opPilha}</div>
+          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${opMonte}</div>
         </div>
       </div>
-
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">
-               +${Math.floor(bruto - bruto*RM_TAXA)} ${moeda} · +${xpGain} XP
-             </div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">+${Math.floor(bruto-bruto*RM_TAXA)} ${moeda} · +${xpGain} XP</div>`
           : empate
             ? `<div style="color:var(--muted);font-size:7px;">Apostas devolvidas · +${xpGain} XP</div>`
             : `<div style="color:#e74c3c;font-size:7px;">Melhor sorte! · +${xpGain} XP</div>`}
       </div>
-
       <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
         <button class="arena-btn-entrar" style="font-size:7px;" onclick="_rmRenderLobby()">🃏 JOGAR DE NOVO</button>
         <button class="arena-btn-sair" onclick="closeRoubaMonte()">✕ FECHAR</button>
@@ -838,25 +879,21 @@ async function _rmRenderResultado(sala, opWallet) {
 // ═══════════════════════════════════════════════════════════════════
 
 function rmIniciarListenerNotificacoes() {
-  if(!_rmRtdb() || !walletAddress) return;
-
+  if(!_rmRtdb()||!walletAddress) return;
+  console.log('[RM] rmIniciarListenerNotificacoes — wallet:', walletAddress);
   const notifRef = _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}`);
   notifRef.on('child_added', async snap => {
     const notif = snap.val();
-    if(!notif || notif.lida) return;
-    await snap.ref.update({ lida: true });
-
+    if(!notif||notif.lida) return;
+    await snap.ref.update({lida:true});
     const salaSnap = await _rmRtdb().ref(`roubaMonte/salas/${notif.salaId}`).once('value');
     const sala = salaSnap.val();
-    if(!sala || sala.status !== 'aguardando') return;
-
+    if(!sala||sala.status!=='aguardando') return;
+    console.log('[RM] Desafio recebido — sala:', notif.salaId);
     showBubble('Desafio de Rouba Monte! 🃏');
-    addLog(`Desafio de Rouba Monte recebido de ${(sala.criador||'').slice(0,8)}...`, 'info');
-
+    addLog(`Desafio de Rouba Monte recebido de ${(sala.criador||'').slice(0,8)}...`,'info');
     const el = document.getElementById('roubaMontModal');
-    if(el && el.classList.contains('open')) {
-      _rmRenderDesafioPendente(sala);
-    }
+    if(el&&el.classList.contains('open')) _rmRenderDesafioPendente(sala);
   });
 }
 
@@ -866,14 +903,10 @@ function _rmRenderDesafioPendente(sala) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">🃏 ROUBA MONTE</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">
-        DESAFIO RECEBIDO!
-      </div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">
-        De: ${(sala.criador||'').slice(0,10)}...
-      </div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">DESAFIO RECEBIDO!</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">De: ${(sala.criador||'').slice(0,10)}...</div>
       <div style="font-size:7px;color:var(--muted);margin-top:3px;">
-        Aposta: ${sala.aposta?.cristais > 0 ? sala.aposta.cristais+' 💎' : sala.aposta?.moedas+' 🪙'}
+        Aposta: ${sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'}
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
         <button class="arena-btn-entrar" style="font-size:8px;" onclick="rmAceitarDesafio('${sala.id}')">✅ ACEITAR</button>
@@ -883,9 +916,9 @@ function _rmRenderDesafioPendente(sala) {
 
   const salaRef = _rmRtdb().ref(`roubaMonte/salas/${sala.id}/status`);
   salaRef.on('value', snap => {
-    if(snap.val() === 'cancelada') {
+    if(snap.val()==='cancelada') {
       salaRef.off('value');
-      addLog('Desafio cancelado pelo oponente.', 'bad');
+      addLog('Desafio cancelado pelo oponente.','bad');
       showBubble('Desafio cancelado! 😔');
       _rmRenderLobby();
     }
@@ -903,6 +936,7 @@ window.rmAceitarDesafio              = rmAceitarDesafio;
 window.rmRecusarDesafio              = rmRecusarDesafio;
 window.rmSelecionarCarta             = rmSelecionarCarta;
 window.rmJogarCarta                  = rmJogarCarta;
+window.rmDescartar                   = rmDescartar;
 window.rmIniciarListenerNotificacoes = rmIniciarListenerNotificacoes;
 window._rmRenderLobby                = _rmRenderLobby;
 
