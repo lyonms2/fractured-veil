@@ -34,7 +34,10 @@ function triggerSummon() {
     eggLayCooldown: 0, petCooldown: 0,
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
+    pendingEgg: true,       // protege o slot durante a chocagem automática
+    pendingSlot: activeSlotIdx,
   };
+  window._pendingEggSlot = activeSlotIdx;
 
   // ── CINEMATIC SUMMON OVERLAY ──
   const ov         = document.getElementById('summonOverlay');
@@ -141,11 +144,25 @@ function triggerSummon() {
     ovBg.style.opacity = '0';
   }, 3600);
 
+  // Quando o overlay fecha, dispara a animação de chocagem automaticamente
+  // O jogador não precisa de clicar nada — tudo acontece em sequência
   setTimeout(() => {
     ov.classList.remove('active');
     ovParts.innerHTML = '';
     btn.disabled = false;
-    setupAvatar();
+
+    // Mostra o eggScreen brevemente e inicia a animação de chocagem
+    // hatchWithAnimation() vai chamar hatch() no final (~1.2s depois)
+    document.getElementById('summonCard').style.display  = 'none';
+    document.getElementById('creatureCard').style.display = 'block';
+    document.getElementById('idleScreen').style.display   = 'none';
+    document.getElementById('deadScreen').style.display   = 'none';
+    document.getElementById('aliveScreen').style.display  = 'none';
+    fillCreatureCard();
+    updateAllUI();
+    scheduleSave();
+
+    hatchWithAnimation(raridade, elemento, activeSlotIdx);
   }, 4300);
 
   const msg = raridade==='Lendário'?'🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!':raridade==='Raro'?'✨ Invocação Rara! Um guardião experiente surge!':'Uma entidade dimensional foi invocada!';
@@ -153,17 +170,16 @@ function triggerSummon() {
   updateResourceUI();
 }
 
+// setupAvatar mantido para compatibilidade com outros fluxos que possam chamá-lo
 function setupAvatar() {
-  document.getElementById('summonCard').style.display = 'none';
+  document.getElementById('summonCard').style.display  = 'none';
   document.getElementById('creatureCard').style.display = 'block';
-  document.getElementById('idleScreen').style.display = 'none';
-  document.getElementById('eggScreen').style.display  = 'flex';
-  document.getElementById('aliveScreen').style.display = 'none';
-  document.getElementById('deadScreen').style.display  = 'none';
-
+  document.getElementById('idleScreen').style.display   = 'none';
+  document.getElementById('eggScreen').style.display    = 'flex';
+  document.getElementById('aliveScreen').style.display  = 'none';
+  document.getElementById('deadScreen').style.display   = 'none';
   fillCreatureCard();
-
-  if(!avatar.bornAt) addLog(`${avatar.nome} foi invocado! Clique no ovo 5x para chocá-lo.`, 'good');
+  if(!avatar.bornAt) addLog(`${avatar.nome} foi invocado!`, 'good');
   updateAllUI();
   scheduleSave();
 }
@@ -213,7 +229,6 @@ function hatch() {
     renderEggInventory();
     updateAllUI();
     saveToFirebase();
-    // FIX: botões do header actualizados após nascer noutro slot
     if(typeof updateHeaderButtons === 'function') updateHeaderButtons();
     showBubble('Novo avatar no Slot ' + (pendingSlot+1) + '! 🐣');
     addLog(`${pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar'} nasceu no Slot ${pendingSlot+1}! Activa-o no Marketplace.`, 'good');
@@ -274,8 +289,6 @@ function hatch() {
 
   renderEggInventory();
   saveToFirebase();
-
-  // FIX: botões do header actualizados após nascer no slot activo
   if(typeof updateHeaderButtons === 'function') updateHeaderButtons();
 
   const btns = document.getElementById('actionBtns');
