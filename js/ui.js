@@ -56,6 +56,8 @@ function updateResourceUI() {
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
   document.getElementById('btnSummonLabel').textContent = '▶ Invocar Avatar (Gratuito)';
+  // FIX: actualiza visibilidade dos botões do header após qualquer mudança de estado
+  if(typeof updateHeaderButtons === 'function' && walletAddress) updateHeaderButtons();
 }
 
 function showBubble(txt) {
@@ -201,9 +203,7 @@ function _fmtTime(secs) {
 }
 
 // ═══════════════════════════════════════════
-// CREATURE CARD — preenche todos os campos
-// Inclui atualização da stripe de raridade
-// e do badge "ATIVO · SLOT X" do novo layout
+// CREATURE CARD
 // ═══════════════════════════════════════════
 function fillCreatureCard() {
   if(!avatar) return;
@@ -243,13 +243,13 @@ function fillCreatureCard() {
     }
   }
 
-  // ── Atualiza stripe de raridade no topo do card (novo layout) ──
+  // Stripe de raridade no topo do card
   const stripe = document.getElementById('creatureCardStripe');
   if(stripe) {
     stripe.className = `creature-card-stripe stripe-${avatar.raridade}`;
   }
 
-  // ── Atualiza badge "ATIVO · SLOT X" ──
+  // Badge "ATIVO · SLOT X"
   const badge2 = document.getElementById('idBadge2');
   if(badge2) {
     badge2.textContent = `ATIVO · SLOT ${activeSlotIdx + 1}`;
