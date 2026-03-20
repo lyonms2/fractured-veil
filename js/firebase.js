@@ -48,6 +48,7 @@ function getGameState() {
       dead:           s.dead           ?? false,
       sick:           s.sick           ?? false,
       sleeping:       s.sleeping       ?? false,
+      modoRepouso:    s.modoRepouso    ?? false,
       nivel:          s.nivel          ?? 1,
       xp:             s.xp             ?? 0,
       vinculo:        s.vinculo        ?? 0,
