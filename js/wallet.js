@@ -58,6 +58,22 @@ async function disconnectWallet() {
   addLog('Sessão encerrada. Conecte a carteira para continuar.', 'info');
 }
 
+// ── Centraliza visibilidade dos botões do header ──────────────────
+// Chamada após connect, hatch e qualquer mudança de estado relevante
+function updateHeaderButtons() {
+  if(!walletAddress) return;
+  const temAvatar = hatched && !dead;
+  const temOvos   = eggsInInventory.length > 0;
+  // Marketplace e Cristais: sempre visíveis após conectar
+  document.getElementById('btnMarket').style.display      = 'flex';
+  document.getElementById('resCristaisBtn').style.display = '';
+  // Moedas e Itens: só com avatar vivo
+  document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
+  document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
+  // Ovos: com avatar vivo OU ovos no inventário
+  document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';
+}
+
 async function connectWallet() {
   if(walletAddress) {
     addLog(`Carteira: ${walletAddress}`, 'info');
@@ -85,11 +101,10 @@ async function connectWallet() {
     document.getElementById('walletInfo').style.display = 'flex';
 
     const loaded = await loadFromFirebase();
-    document.getElementById('resMoedasBtn').style.display = '';
-    document.getElementById('resCristaisBtn').style.display = '';
-    document.getElementById('resOvosBtn').style.display = '';
-    document.getElementById('resItemsBtn').style.display = '';
-    document.getElementById('btnMarket').style.display = 'flex';
+
+    // FIX: botões visíveis conforme estado real do jogo após carregar
+    updateHeaderButtons();
+
     const ww = document.getElementById('walletWarning');
     const ss = document.getElementById('summonSection');
     if(ww) ww.style.display = 'none';
@@ -109,32 +124,21 @@ async function connectWallet() {
         if(offlineCycles > 0) {
           const _d = rarityBonus().decay;
 
-          // ── FIX: modo repouso manual + automático ──
-          // wasSleeping: avatar estava dormindo manualmente quando saiu
-          // sonoEsgotado: acordou durante o offline (energia chegou a 100)
-          // emRepousoAuto: modo repouso protector
-          //   → activa IMEDIATAMENTE após acordar do sono manual (sonoEsgotado)
-          //   → activa após 30 ciclos (30min) offline sem sono
-          // Antes deste fix: após acordar do sono caía em decay normal → morte
           let wasSleeping  = sleeping;
           let sonoEsgotado = false;
-          const REPOUSO_THRESHOLD = 30; // ciclos (= 30min) até repouso auto sem sono
+          const REPOUSO_THRESHOLD = 30;
 
           for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
-            // Repouso auto: logo após sono manual OU após 30min sem sono
             const emRepousoAuto = sonoEsgotado || (!wasSleeping && _i >= REPOUSO_THRESHOLD);
 
             if(wasSleeping) {
-              // Sono manual — recupera energia
               vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
                 wasSleeping  = false;
-                sonoEsgotado = true; // próximo ciclo → repouso auto
+                sonoEsgotado = true;
               }
             } else if(emRepousoAuto) {
-              // Repouso automático — protege o avatar
-              // fome cai 10× mais devagar que normal, saúde só cai se fome zerada
               vitals.fome    = Math.max(0, vitals.fome    - (0.04 * _d));
               vitals.higiene = Math.max(0, vitals.higiene - 0.03);
               vitals.humor   = Math.max(0, vitals.humor   - 0.02);
@@ -142,7 +146,6 @@ async function connectWallet() {
               if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.04);
               if(vitals.saude <= 0) { vitals.saude = 0; break; }
             } else {
-              // Primeiros 30min offline sem repouso — decay normal reduzido
               vitals.fome    = Math.max(0, vitals.fome    - 0.4 * _d * getItemEffect('fomeDecayMult'));
               vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
               vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
@@ -155,7 +158,6 @@ async function connectWallet() {
             }
           }
 
-          // Actualiza sleeping: se acordou durante o offline, marca como acordado
           if(sleeping && !wasSleeping) {
             sleeping = false;
             addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
