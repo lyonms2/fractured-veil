@@ -225,6 +225,19 @@ async function connectWallet() {
         updateResourceUI();
 
         if(sleeping) startSleep();
+        if(modoRepouso) {
+          // Restaura o overlay visual do repouso sem disparar o scheduleSave
+          const _ov  = document.getElementById('repousoOverlay');
+          const _btn = document.getElementById('btnSleep');
+          if(_ov)  _ov.classList.add('active');
+          if(_btn) {
+            _btn.querySelector('.icon').textContent            = '💤';
+            document.getElementById('sleepLabel').textContent = 'REPOUSO';
+            _btn.classList.add('active-repouso');
+          }
+          document.getElementById('actionBtns').classList.add('repouso-mode');
+          addLog('Modo repouso activo. 💤', 'info');
+        }
 
         if(poopCount > 0) {
           const container = document.getElementById('poopContainer');
