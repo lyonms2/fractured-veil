@@ -21,21 +21,18 @@ const CRYSTAL_PACKAGES = [
 // TRANSPARÊNCIA — estado do cofre on-chain
 // ═══════════════════════════════════════════
 async function renderTransparencia() {
-  // Link Polygonscan
   const linkEl = document.getElementById('transpContractLink');
   if(linkEl) {
     linkEl.href = `https://polygonscan.com/address/${CONTRACT_ADDRESS}`;
     linkEl.textContent = `${CONTRACT_ADDRESS.slice(0,6)}...${CONTRACT_ADDRESS.slice(-4)} — Ver no Polygonscan ↗`;
   }
 
-  // Estado do cofre — sem timelock, cofre sempre ativo
   const statusEl = document.getElementById('transpTimelockStatus');
   if(statusEl) {
     statusEl.className = 'transp-timelock-status transp-timelock-ok';
     statusEl.innerHTML = '✅ Cofre ativo na Polygon Mainnet.';
   }
 
-  // Limite diário do jogador — consulta on-chain
   const barEl = document.getElementById('transpLimitBar');
   const txtEl = document.getElementById('transpLimitTxt');
   if(barEl && txtEl) {
@@ -82,13 +79,12 @@ function renderCrystals() {
       <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text2);margin-bottom:4px;">${pkg.label}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
       <div class="pkg-bonus">${i===1?'Mais popular':''}</div>
-      <button class="btn-buy-pkg" onclick="comprarCristais(${i})">Comprar</button>
+      <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">Comprar</button>
     </div>`).join('');
 }
 
 // ═══════════════════════════════════════════
 // COMPRA DE CRISTAIS — MetaMask directo para o contrato
-// O contrato emite CristaisComprados → servidor credita os 💎
 // ═══════════════════════════════════════════
 async function comprarCristais(idx) {
   const pkg    = CRYSTAL_PACKAGES[idx];
@@ -98,6 +94,10 @@ async function comprarCristais(idx) {
     status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
     return;
   }
+
+  // Desabilitar todos os botões de compra durante o processo
+  const allBtns = document.querySelectorAll('.btn-buy-pkg');
+  allBtns.forEach(b => { b.disabled = true; b.style.opacity = '.5'; });
 
   try {
     status.innerHTML = '<span class="tx-pending">⏳ Abre o MetaMask para confirmar...</span>';
@@ -118,7 +118,6 @@ async function comprarCristais(idx) {
     if(receipt.status === 1) {
       status.innerHTML = '<span class="tx-pending">⏳ A creditar os teus 💎...</span>';
 
-      // Chama o servidor para verificar o evento on-chain e creditar os 💎
       try {
         const apiRes  = await fetch('/api/processar-compra', {
           method:  'POST',
@@ -128,7 +127,6 @@ async function comprarCristais(idx) {
         const apiData = await apiRes.json();
 
         if(apiData.ok) {
-          // Actualiza o saldo local imediatamente (o Firestore já foi actualizado)
           playerData.cristais = (playerData.cristais || 0) + apiData.gems;
           if(!playerData.gs) playerData.gs = {};
           playerData.gs.cristais = playerData.cristais;
@@ -136,11 +134,9 @@ async function comprarCristais(idx) {
           status.innerHTML = `<span class="tx-ok">✅ +${apiData.gems} 💎 creditados! Saldo: ${playerData.cristais} 💎</span>`;
           showToast(`+${apiData.gems} 💎 Cristais adicionados!`, 'ok');
         } else {
-          // Transação confirmada mas servidor rejeitou (ex: já processada)
           status.innerHTML = `<span class="tx-err">⚠️ Transação confirmada mas não creditada: ${apiData.erro}</span>`;
         }
       } catch(apiErr) {
-        // Rede caiu depois da tx — os 💎 serão creditados na próxima visita
         status.innerHTML = `<span class="tx-err">⚠️ Tx confirmada mas erro ao creditar. Volta ao marketplace — os teus 💎 serão recuperados.<br><small>Hash: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
       }
 
@@ -150,18 +146,24 @@ async function comprarCristais(idx) {
 
   } catch(e) {
     console.error('[comprarCristais]', e);
-    if(e.code === 'ACTION_REJECTED') {
+    if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
       status.innerHTML = '<span class="tx-err">Transação cancelada.</span>';
+    } else if(e.code === 'INSUFFICIENT_FUNDS' || e?.message?.includes('insufficient funds')) {
+      // FIX: mensagem clara para saldo insuficiente
+      const maticNecessario = pkg.matic;
+      status.innerHTML = `<span class="tx-err">❌ Saldo insuficiente. Precisas de pelo menos <b>${maticNecessario} MATIC</b> na tua carteira Polygon para esta compra.<br><small>Podes comprar MATIC numa exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.</small></span>`;
+      showToast(`Saldo insuficiente — precisas de ${maticNecessario} MATIC`, 'err');
     } else {
       status.innerHTML = '<span class="tx-err">Erro ao enviar. Verifica o saldo de MATIC e tenta novamente.</span>';
     }
+  } finally {
+    // Re-habilitar botões sempre, mesmo que haja erro
+    allBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
   }
 }
 
 // ═══════════════════════════════════════════
 // RESGATE DE CRISTAIS — 💎 → MATIC
-// Passo 1: pede assinatura ao servidor Vercel (/api/resgatar)
-// Passo 2: chama withdraw() no contrato com a assinatura
 // ═══════════════════════════════════════════
 async function resgatar() {
   const gemsInput = document.getElementById('resgateGems');
@@ -186,7 +188,6 @@ async function resgatar() {
   status.innerHTML = '<span class="tx-pending">⏳ A pedir autorização ao servidor...</span>';
 
   try {
-    // Passo 1 — pedir assinatura ao servidor Vercel
     const apiRes = await fetch('/api/resgatar', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -202,7 +203,6 @@ async function resgatar() {
 
     status.innerHTML = '<span class="tx-pending">⏳ Abre o MetaMask para confirmar o resgate...</span>';
 
-    // Passo 2 — chamar withdraw() no contrato com a assinatura
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer   = await provider.getSigner();
     const abi = [
@@ -229,7 +229,6 @@ async function resgatar() {
       status.innerHTML = `<span class="tx-ok">✅ Resgatado! Recebeste ${maticRecebido} MATIC na tua carteira.</span>`;
       showToast(`💸 ${maticRecebido} MATIC enviados!`, 'ok');
     } else {
-      // Tx falhou on-chain — o servidor já debitou os 💎, informar suporte
       status.innerHTML = '<span class="tx-err">❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.</span>';
     }
 
