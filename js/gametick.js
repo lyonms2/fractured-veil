@@ -276,10 +276,12 @@ function gameTick() {
     if(vitals.energia >= 100) { wakeUp('full'); }
 
   } else if(modoRepouso) {
-    // Modo repouso → decay mínimo, energia congelada
+    // Modo repouso → decay mínimo, energia recupera lentamente
     vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d * _eb.fomeDecay));
     vitals.higiene = Math.max(0, vitals.higiene - (0.03 * _eb.higieneDecay));
     vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
+    // FIX: energia recupera +0.2/ciclo em repouso — sem acordar o avatar (sem wakeUp)
+    vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
     // Saúde só cai se fome absolutamente zerada
     if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
     vinculo = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
