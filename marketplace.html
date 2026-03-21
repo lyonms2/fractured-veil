@@ -31,7 +31,7 @@
   --common:#7ab87a;--rare:#5ab4e8;--legendary:#e8a030;
   --radius:12px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;zoom:1.25;}
+html,body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;zoom:1.25;}
 body{display:flex;flex-direction:column;min-height:100vh;}
 
 /* ── SCROLLBAR ── */
@@ -76,13 +76,13 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 /* ═══════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════ */
-.mkt-body{display:flex;flex:1;min-height:0;}
+.mkt-body{display:flex;flex:1;}
 .mkt-sidebar{
   width:200px;min-width:200px;background:var(--surface);
   border-right:1px solid var(--border);padding:12px 8px;
-  display:flex;flex-direction:column;gap:4px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;gap:4px;
 }
-.mkt-main{flex:1;overflow-y:auto;padding:16px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.mkt-main{flex:1;padding:16px;}
 
 /* ── SIDEBAR NAV ── */
 .mkt-nav-section{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 8px 4px;margin-top:4px;}
