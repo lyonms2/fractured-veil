@@ -49,12 +49,21 @@ window.triggerSummon = typeof triggerSummon !== "undefined" ? triggerSummon : ()
 window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
 window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
+window.gsSetTab = typeof gsSetTab !== "undefined" ? gsSetTab : ()=>{};
 
 // ── Modo Repouso Manual ──
 window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
 window.onSleepPointerUp     = typeof onSleepPointerUp     !== "undefined" ? onSleepPointerUp     : ()=>{};
 window.ativarModoRepouso    = typeof ativarModoRepouso    !== "undefined" ? ativarModoRepouso    : ()=>{};
 window.desativarModoRepouso = typeof desativarModoRepouso !== "undefined" ? desativarModoRepouso : ()=>{};
+
+// ── GAME SELECTOR TABS ──
+function gsSetTab(tab) {
+  document.getElementById('gsGridPve').style.display = tab === 'pve' ? 'grid' : 'none';
+  document.getElementById('gsGridPvp').style.display = tab === 'pvp' ? 'grid' : 'none';
+  document.getElementById('gsTabPve').classList.toggle('active', tab === 'pve');
+  document.getElementById('gsTabPvp').classList.toggle('active', tab === 'pvp');
+}
 
 setInterval(gameTick, 1000);
 updateResourceUI();
