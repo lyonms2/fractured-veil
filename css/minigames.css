@@ -75,7 +75,7 @@
 }
 .jkp-rewards.show { opacity:1; }
 
-/* Choice buttons — mais próximos da arena, mais longe dos btns */
+/* Choice buttons */
 .jkp-choices {
   display:flex; gap:10px; margin-bottom:20px;
 }
@@ -96,7 +96,7 @@
   white-space:nowrap;
 }
 
-/* Buttons row — separador visual */
+/* Buttons row */
 .jkp-btns {
   display:flex; gap:8px;
   padding-top:12px;
@@ -144,16 +144,12 @@
 }
 
 /* ── EGG INVENTORY ── */
-#eggInventory {
-  display:none;
-}
+#eggInventory { display:none; }
 .egg-inv-title {
   font-size:9px; color:var(--gold); letter-spacing:1px;
   margin-bottom:6px; font-family:'Cinzel',serif; font-weight:700;
 }
-.egg-inv-list {
-  display:flex; flex-direction:column; gap:6px;
-}
+.egg-inv-list { display:flex; flex-direction:column; gap:6px; }
 .egg-item {
   display:flex; align-items:center; gap:8px;
   background:rgba(255,255,255,.04); border-radius:8px;
@@ -161,14 +157,8 @@
   font-size:8px; color:#c8b8e8; cursor:default;
   transition: border-color .2s;
 }
-.egg-item.rotten {
-  opacity:.45; border-color:#5a2a2a; color:#886688;
-  filter: grayscale(.6);
-}
-.egg-item.urgent {
-  border-color:rgba(232,96,58,.4);
-  background:rgba(232,96,58,.05);
-}
+.egg-item.rotten { opacity:.45; border-color:#5a2a2a; color:#886688; filter: grayscale(.6); }
+.egg-item.urgent { border-color:rgba(232,96,58,.4); background:rgba(232,96,58,.05); }
 .egg-mini-svg { flex-shrink:0; display:flex; align-items:center; }
 .egg-item .egg-info { flex:1; min-width:0; }
 .egg-item .egg-name { font-weight:700; font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -190,9 +180,8 @@
 .egg-btn.pool:hover   { background:rgba(167,139,250,.28); box-shadow:0 0 8px rgba(167,139,250,.3); }
 .egg-btn.market { border-color:#e8a030; color:#f0b840; background:rgba(232,160,48,.1); font-weight:700; }
 .egg-btn.market:hover { background:rgba(232,160,48,.25); box-shadow:0 0 8px rgba(232,160,48,.25); }
-.egg-empty {
-  font-size:8px; color:#554466; text-align:center; padding:10px 0;
-}
+.egg-empty { font-size:8px; color:#554466; text-align:center; padding:10px 0; }
+
 /* egg lay animation */
 .creature-wrap.anim-layegg svg { animation:layegg-anim 1.2s ease-in-out; }
 @keyframes layegg-anim {
@@ -216,3 +205,91 @@
 }
 
 /* ── COIN SPEND ANIMATION ── */
+
+/* ══════════════════════════════════════
+   CAMPO MINADO
+══════════════════════════════════════ */
+#minaModal {
+  position:absolute; inset:0; z-index:32;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(4,3,10,.97);
+  opacity:0; pointer-events:none;
+  transition:opacity .3s ease;
+  padding:12px 8px;
+  gap:6px;
+  overflow-y:auto;
+}
+#minaModal.open { opacity:1; pointer-events:all; }
+
+.mina-info-row {
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; padding:0 4px;
+  font-family:'Cinzel',serif; font-size:7px; color:var(--muted);
+}
+
+#minaGrid {
+  display:grid;
+  gap:2px;
+  margin:4px 0;
+}
+
+/* Células base */
+.mina-cell {
+  display:flex; align-items:center; justify-content:center;
+  border-radius:3px; cursor:pointer;
+  font-family:'Cinzel',serif; font-weight:700;
+  border:none; padding:0;
+  transition:all .1s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Casa não revelada */
+.mina-hidden {
+  background: linear-gradient(135deg, #1e1535, #14102a);
+  border:1px solid #2d2050;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.mina-hidden:hover {
+  background: linear-gradient(135deg, #2d2050, #1e1535);
+  border-color: var(--border-glow);
+}
+.mina-hidden:active { transform:scale(.92); }
+
+/* Casa revelada */
+.mina-revealed {
+  background: #080614;
+  border:1px solid #0d0a1e;
+  cursor:default;
+}
+
+/* Bandeira */
+.mina-flagged {
+  background: linear-gradient(135deg, #1e1535, #14102a);
+  border:1px solid rgba(231,76,60,.4);
+  box-shadow: 0 0 6px rgba(231,76,60,.15);
+}
+
+/* Explosão */
+.mina-exploded {
+  background: radial-gradient(circle, #3d1010, #1a0808);
+  border:1px solid rgba(231,76,60,.6);
+  box-shadow: 0 0 8px rgba(231,76,60,.4);
+  animation: mina-boom .3s ease-out;
+}
+@keyframes mina-boom {
+  0%  { transform:scale(.8); }
+  50% { transform:scale(1.2); }
+  100%{ transform:scale(1); }
+}
+
+/* Números de adjacência — cores clássicas do minesweeper */
+.mina-adj-1 { color:#5ab4e8; }
+.mina-adj-2 { color:#7ab87a; }
+.mina-adj-3 { color:#e74c3c; }
+.mina-adj-4 { color:#7b68ee; }
+.mina-adj-5 { color:#e8603a; }
+.mina-adj-6 { color:#5ab4e8; }
+.mina-adj-7 { color:#c4b5fd; }
+.mina-adj-8 { color:var(--muted); }
