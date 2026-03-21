@@ -50,6 +50,9 @@ window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
 window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
 window.gsSetTab = typeof gsSetTab !== "undefined" ? gsSetTab : ()=>{};
+window.minaClick = typeof minaClick !== "undefined" ? minaClick : ()=>{};
+window.minaFlag  = typeof minaFlag  !== "undefined" ? minaFlag  : ()=>{};
+window.startMina = typeof startMina !== "undefined" ? startMina : ()=>{};
 
 // ── Modo Repouso Manual ──
 window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
