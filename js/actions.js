@@ -21,8 +21,6 @@ function showCoinAnim(amount, isSpend = true) {
   el.parentElement.classList.add('res-flash');
   setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
 
-  // Ancora o float no próprio elemento pai (position:relative)
-  // evita qualquer problema de zoom ou coordenadas do body
   const container = el.closest('.res') || el.parentElement;
   container.style.position = 'relative';
   const fly = document.createElement('div');
@@ -61,7 +59,6 @@ function feedCreature() {
   const _rb = rarityBonus();
   xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
-  // Delay para a animação do bônus não sobrepor a do gasto (-10)
   if(_rb.moedas > 1) setTimeout(() => earnCoins(coinBonus), 650);
   playAnim('anim-eat');
   spawnFoodParticles();
@@ -129,7 +126,6 @@ function onSleepPointerDown() {
   if(!hatched || !avatar || dead) return;
   const btn = document.getElementById('btnSleep');
 
-  // Se está em repouso → long press sai do repouso
   if(modoRepouso) {
     _repousoTimer = setTimeout(() => {
       _repousoTimer = null;
@@ -140,15 +136,11 @@ function onSleepPointerDown() {
     return;
   }
 
-  // Se está dormindo → não inicia timer de repouso.
-  // O toque curto vai acordar (tratado no pointerup com _sleeping flag).
   if(sleeping) {
-    // Marca que o pointer desceu enquanto dormia, para o pointerup acordar.
     window._sleepBtnDownWhileSleeping = true;
     return;
   }
 
-  // Acordado e ativo → inicia contagem para repouso
   _repousoTimer = setTimeout(() => {
     _repousoTimer = null;
     if(btn) btn.classList.remove('pressing');
@@ -161,7 +153,6 @@ function onSleepPointerUp() {
   const btn = document.getElementById('btnSleep');
   if(btn) btn.classList.remove('pressing');
 
-  // Caso especial: botão pressionado enquanto dormia → acordar
   if(window._sleepBtnDownWhileSleeping) {
     window._sleepBtnDownWhileSleeping = false;
     wakeUp('manual');
@@ -169,12 +160,10 @@ function onSleepPointerUp() {
   }
 
   if(_repousoTimer) {
-    // Timer ainda não disparou → foi toque curto → dormir normalmente
     clearTimeout(_repousoTimer);
     _repousoTimer = null;
     if(!modoRepouso) toggleSleep();
   }
-  // Se _repousoTimer já disparou → foi long press → não faz mais nada
 }
 
 function ativarModoRepouso() {
@@ -194,7 +183,8 @@ function ativarModoRepouso() {
   document.getElementById('actionBtns').classList.add('repouso-mode');
   ModalManager.closeAll();
   addLog('Modo repouso ativado. Stats desaceleram. ⏸', 'info');
-  scheduleSave();
+  // Save imediato — crítico para preservar modoRepouso se o jogador fechar o jogo rapidamente
+  saveToFirebase();
 }
 
 function desativarModoRepouso() {
@@ -215,5 +205,6 @@ function desativarModoRepouso() {
   addLog('Modo repouso desativado. Bem-vindo de volta! ✨', 'good');
   showBubble('De volta! ✨');
   updateAllUI();
-  scheduleSave();
+  // Save imediato — garante que modoRepouso=false fica persistido
+  saveToFirebase();
 }
