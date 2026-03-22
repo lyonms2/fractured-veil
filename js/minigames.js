@@ -194,8 +194,8 @@ function simonGameOver() {
   const roundsCompleted = Math.max(0, simonRound - 1);
   const frac = roundsCompleted / _sm;
 
-  if(frac > 0) {
-    applyGameCost();
+  applyGameCost();
+  if(frac > 0) {    
     const r = miniReward(frac * 0.8, frac * 0.8, 1);
     document.getElementById('simonReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
   } else {
