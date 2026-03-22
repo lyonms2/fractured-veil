@@ -289,6 +289,14 @@
                   <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Pool P2E</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="closeGameSelector(); openBatalhaNaval()">
+                <div class="gs-btn-icon">🚢</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">BATALHA NAVAL</div>
+                  <div class="gs-btn-desc">Afunda os navios do oponente</div>
+                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool P2E</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -368,6 +376,9 @@
 
           <!-- 🃏 ROUBA MONTE MODAL -->
           <div id="roubaMontModal"></div>
+
+          <!-- 🚢 BATALHA NAVAL MODAL -->
+          <div id="batalhaNavalModal"></div>
 
           <!-- Level-up overlay -->
           <div id="levelUpOverlay">
@@ -653,6 +664,7 @@
 <script src="js/cards.js"></script>
 <script src="js/rouba-monte.js"></script>
 <script src="js/mina.js"></script>
+<script src="js/batalha-naval.js"></script>
 <script src="js/main.js"></script>
 
 <!-- Arena (após wallet.js para ter acesso ao walletAddress) -->
