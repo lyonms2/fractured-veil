@@ -1,0 +1,15 @@
+/* ══════════════════════════════════════════════════════════════
+   BATALHA NAVAL — CSS
+   Modal dentro da .screen, mesmo padrão da Arena
+══════════════════════════════════════════════════════════════ */
+#batalhaNavalModal {
+  position: absolute; inset: 0; z-index: 32;
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(4,3,10,.97);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  padding: 10px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#batalhaNavalModal.open { opacity: 1; pointer-events: all; }
