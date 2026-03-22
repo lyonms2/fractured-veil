@@ -212,8 +212,8 @@ function minaGameOver() {
   const frac      = totalSafe > 0 ? minaRevealed / totalSafe : 0;
   vitals.humor = Math.min(100, vitals.humor + 5);
 
+  applyGameCost();
   if(frac > 0.1) {
-    applyGameCost();
     const r = miniReward(frac * 0.6, frac * 0.6, 1);
     document.getElementById('minaReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
   }
