@@ -211,11 +211,11 @@
 ══════════════════════════════════════ */
 #minaModal {
   position:absolute; inset:0; z-index:32;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
   background:rgba(4,3,10,.97);
   opacity:0; pointer-events:none;
   transition:opacity .3s ease;
-  padding:12px 8px;
+  padding:14px 8px 12px;
   gap:6px;
   overflow-y:auto;
 }
