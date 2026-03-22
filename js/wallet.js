@@ -59,18 +59,14 @@ async function disconnectWallet() {
 }
 
 // ── Centraliza visibilidade dos botões do header ──────────────────
-// Chamada após connect, hatch e qualquer mudança de estado relevante
 function updateHeaderButtons() {
   if(!walletAddress) return;
   const temAvatar = hatched && !dead;
   const temOvos   = eggsInInventory.length > 0;
-  // Marketplace e Cristais: sempre visíveis após conectar
   document.getElementById('btnMarket').style.display      = 'flex';
   document.getElementById('resCristaisBtn').style.display = '';
-  // Moedas e Itens: só com avatar vivo
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
   document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
-  // Ovos: com avatar vivo OU ovos no inventário
   document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';
 }
 
@@ -102,7 +98,6 @@ async function connectWallet() {
 
     const loaded = await loadFromFirebase();
 
-    // FIX: botões visíveis conforme estado real do jogo após carregar
     updateHeaderButtons();
 
     const ww = document.getElementById('walletWarning');
@@ -119,33 +114,39 @@ async function connectWallet() {
 
       // ── Apply offline decay ──
       if(hatched && !dead) {
-        const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
+        const offlineSecs   = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
         const offlineCycles = Math.floor(offlineSecs / 60);
         if(offlineCycles > 0) {
           const _d = rarityBonus().decay;
 
-          let wasSleeping  = sleeping;
-          let sonoEsgotado = false;
-          const REPOUSO_THRESHOLD = 30;
+          // Estado ao fechar — sem repouso automático
+          let wasSleeping    = sleeping;
+          let wasModoRepouso = modoRepouso;
+          let sonoEsgotado   = false;
 
           for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
-            const emRepousoAuto = sonoEsgotado || (!wasSleeping && _i >= REPOUSO_THRESHOLD);
 
             if(wasSleeping) {
+              // A dormir → recupera energia, acorda quando cheia
               vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
               if(vitals.energia >= 100) {
                 vitals.energia = 100;
                 wasSleeping  = false;
                 sonoEsgotado = true;
               }
-            } else if(emRepousoAuto) {
-              vitals.fome    = Math.max(0, vitals.fome    - (0.04 * _d));
+
+            } else if(wasModoRepouso) {
+              // Modo repouso manual → decay mínimo + recupera energia lentamente
+              vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
               vitals.higiene = Math.max(0, vitals.higiene - 0.03);
               vitals.humor   = Math.max(0, vitals.humor   - 0.02);
+              vitals.energia = Math.min(100, vitals.energia + 0.2);
               vinculo        = Math.max(0, vinculo        - 0.01);
-              if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.04);
+              if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
               if(vitals.saude <= 0) { vitals.saude = 0; break; }
+
             } else {
+              // Acordado e activo → decay normal
               vitals.fome    = Math.max(0, vitals.fome    - 0.4 * _d * getItemEffect('fomeDecayMult'));
               vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
               vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
@@ -168,8 +169,10 @@ async function connectWallet() {
           saveRuntimeToSlot(activeSlotIdx);
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
-          const emRepousoLog = sonoEsgotado || (offlineCycles > REPOUSO_THRESHOLD && !sleeping);
-          addLog(`Ausente por ${hrs}h ${mins}min — ${emRepousoLog ? '💤 modo repouso activo (avatar protegido)' : 'stats atualizados'}.`, 'info');
+          const modoLog = wasSleeping || sonoEsgotado ? '☀️ acordou enquanto ausente'
+                        : wasModoRepouso              ? '💤 modo repouso activo'
+                        :                              'stats atualizados';
+          addLog(`Ausente por ${hrs}h ${mins}min — ${modoLog}.`, 'info');
           if(vitals.saude <= 0) {
             dead = true;
             addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
@@ -226,7 +229,6 @@ async function connectWallet() {
 
         if(sleeping) startSleep();
         if(modoRepouso) {
-          // Restaura o overlay visual do repouso sem disparar o scheduleSave
           const _ov  = document.getElementById('repousoOverlay');
           const _btn = document.getElementById('btnSleep');
           if(_ov)  _ov.classList.add('active');
