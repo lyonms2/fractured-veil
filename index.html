@@ -196,20 +196,52 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
+          
+              <!-- Como ganhar moedas -->
               <div style="text-align:center;padding:10px 0 14px;">
                 <div style="font-size:28px;margin-bottom:8px;">🪙</div>
                 <div style="font-size:8px;color:var(--text);font-weight:700;margin-bottom:6px;">Como ganhar moedas:</div>
                 <div style="font-size:7px;color:var(--muted);line-height:2;text-align:left;padding:0 8px;">
-                  🎮 Minigames — até 80 🪙 por vitória<br>
+                  🎮 Minigames — até 310 🪙 por vitória<br>
                   🔥 Queimar ovo Comum — 20 🪙<br>
-                  📈 Nível acima — bónus por raridade<br>
+                  📈 Passivo — +1 🪙 a cada 2 minutos<br>
                 </div>
               </div>
-              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
-                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de Cristais?</div>
-                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Cristais compram ovos Raros, slots e avatares no Marketplace.</div>
-                <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
+          
+              <!-- Separador -->
+              <div style="border-top:1px solid rgba(255,255,255,.06);margin:0 -4px 12px;"></div>
+          
+              <!-- Câmbio moedas → cristais -->
+              <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);
+                          letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
+              <div id="cambioPanel" style="width:100%;">
+                <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">
+                  Abre a loja para ver o câmbio.
+                </div>
               </div>
+          
+              <!-- Separador -->
+              <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
+          
+              <!-- Link marketplace -->
+              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);
+                          border-radius:8px;padding:10px;text-align:center;">
+                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">
+                  💎 Precisas de mais Cristais?
+                </div>
+                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+                  Compra cristais com MATIC ou vende ovos no Marketplace.
+                </div>
+                <a href="marketplace.html"
+                  style="display:inline-block;padding:7px 16px;
+                         background:linear-gradient(135deg,#4c1d95,#7c3aed);
+                         border-radius:6px;color:#fff;font-size:8px;
+                         font-family:'Cinzel',serif;font-weight:700;
+                         text-decoration:none;letter-spacing:.5px;">
+                  Ir ao Marketplace →
+                </a>
+              </div>
+          
             </div>
           </div>
 
@@ -666,6 +698,7 @@
 <script src="js/rouba-monte.js"></script>
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
+<script src="js/cambio.js"></script>  
 <script src="js/main.js"></script>
 
 <!-- Arena (após wallet.js para ter acesso ao walletAddress) -->
