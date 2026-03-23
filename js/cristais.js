@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // CRISTAIS — Compra, resgate e transparência
-// Depende de: walletAddress (global), playerData (global),
+// Depende de: garantirCarteira() (global), playerData (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
 //             ethers (CDN carregado antes deste ficheiro)
@@ -36,7 +36,7 @@ async function renderTransparencia() {
   const barEl = document.getElementById('transpLimitBar');
   const txtEl = document.getElementById('transpLimitTxt');
   if(barEl && txtEl) {
-    if(!walletAddress) {
+    if(!) {
       barEl.style.width = '0%';
       txtEl.textContent = 'Conecta a carteira para ver o teu limite.';
     } else {
@@ -44,7 +44,7 @@ async function renderTransparencia() {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const abi = ['function limiteHoje(address) view returns (uint256, uint256)'];
         const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
-        const [sacadoWei, restanteWei] = await contrato.limiteHoje(walletAddress);
+        const [sacadoWei, restanteWei] = await contrato.limiteHoje();
         const sacado   = parseFloat(ethers.formatEther(sacadoWei));
         const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
         const semLimite = restanteWei === MAX_UINT;
@@ -90,7 +90,7 @@ async function comprarCristais(idx) {
   const pkg    = CRYSTAL_PACKAGES[idx];
   const status = document.getElementById('buyStatus');
 
-  if(!walletAddress) {
+  if(!) {
     status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
     return;
   }
@@ -122,7 +122,7 @@ async function comprarCristais(idx) {
         const apiRes  = await fetch('/api/processar-compra', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ jogador: walletAddress, txHash: tx.hash }),
+          body:    JSON.stringify({ jogador: , txHash: tx.hash }),
         });
         const apiData = await apiRes.json();
 
@@ -171,7 +171,7 @@ async function resgatar() {
   const btn       = document.getElementById('btnResgatar');
   const gems      = parseInt(gemsInput.value, 10);
 
-  if(!walletAddress) {
+  if(!garantirCarteira()) {
     status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
     return;
   }
@@ -191,7 +191,7 @@ async function resgatar() {
     const apiRes = await fetch('/api/resgatar', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ jogador: walletAddress, gems }),
+      body:    JSON.stringify({ jogador: garantirCarteira(), gems }),
     });
     const apiData = await apiRes.json();
 
