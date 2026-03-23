@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // CRISTAIS — Compra, resgate e transparência
-// Depende de: garantirCarteira() (global), playerData (global),
+// Depende de: garantirCarteira() (marketplace-auth.js),
+//             playerData (global), walletAddress (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
 //             ethers (CDN carregado antes deste ficheiro)
@@ -18,7 +19,7 @@ const CRYSTAL_PACKAGES = [
 ];
 
 // ═══════════════════════════════════════════
-// TRANSPARÊNCIA — estado do cofre on-chain
+// TRANSPARÊNCIA
 // ═══════════════════════════════════════════
 async function renderTransparencia() {
   const linkEl = document.getElementById('transpContractLink');
@@ -35,67 +36,72 @@ async function renderTransparencia() {
 
   const barEl = document.getElementById('transpLimitBar');
   const txtEl = document.getElementById('transpLimitTxt');
-  if(barEl && txtEl) {
-    if(!) {
+  if(!barEl || !txtEl) return;
+
+  // Só mostra limite se tiver carteira Ethereum vinculada
+  const carteira = playerData?.carteira;
+  if(!carteira) {
+    barEl.style.width = '0%';
+    txtEl.textContent = 'Vincula a MetaMask na secção de Cristais para ver o teu limite.';
+    return;
+  }
+
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const abi = ['function limiteHoje(address) view returns (uint256, uint256)'];
+    const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
+    const [sacadoWei, restanteWei] = await contrato.limiteHoje(carteira);
+    const sacado  = parseFloat(ethers.formatEther(sacadoWei));
+    const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+    const semLimite = restanteWei === MAX_UINT;
+    if(semLimite) {
       barEl.style.width = '0%';
-      txtEl.textContent = 'Conecta a carteira para ver o teu limite.';
+      barEl.style.background = 'var(--accent)';
+      txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · Sem limite diário`;
     } else {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const abi = ['function limiteHoje(address) view returns (uint256, uint256)'];
-        const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
-        const [sacadoWei, restanteWei] = await contrato.limiteHoje();
-        const sacado   = parseFloat(ethers.formatEther(sacadoWei));
-        const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-        const semLimite = restanteWei === MAX_UINT;
-        if(semLimite) {
-          barEl.style.width = '0%';
-          barEl.style.background = 'var(--accent)';
-          txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · Sem limite diário`;
-        } else {
-          const restante = parseFloat(ethers.formatEther(restanteWei));
-          const DAILY_MAX = 5;
-          const pct = Math.min((sacado / DAILY_MAX) * 100, 100);
-          barEl.style.width = pct + '%';
-          txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · ${restante.toFixed(2)} MATIC restantes (limite: 5 MATIC/dia)`;
-        }
-      } catch(e) {
-        barEl.style.width = '0%';
-        txtEl.textContent = 'Não foi possível verificar o limite. Conecta a carteira.';
-      }
+      const restante  = parseFloat(ethers.formatEther(restanteWei));
+      const DAILY_MAX = 5;
+      const pct       = Math.min((sacado / DAILY_MAX) * 100, 100);
+      barEl.style.width = pct + '%';
+      txtEl.textContent = `${sacado.toFixed(2)} MATIC sacados hoje · ${restante.toFixed(2)} MATIC restantes (limite: 5 MATIC/dia)`;
     }
+  } catch(e) {
+    barEl.style.width = '0%';
+    txtEl.textContent = 'Não foi possível verificar o limite.';
   }
 }
 
 // ═══════════════════════════════════════════
-// RENDER DOS PACOTES DE CRISTAIS
+// RENDER DOS PACOTES
 // ═══════════════════════════════════════════
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
-  container.innerHTML = CRYSTAL_PACKAGES.map((pkg,i) => `
-    <div class="crystal-pkg ${i===1?'featured':''}">
+  if(!container) return;
+  container.innerHTML = CRYSTAL_PACKAGES.map((pkg, i) => `
+    <div class="crystal-pkg ${i === 1 ? 'featured' : ''}">
       <div class="pkg-gem">💎</div>
       <div class="pkg-amount">${pkg.gems}</div>
       <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text2);margin-bottom:4px;">${pkg.label}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
-      <div class="pkg-bonus">${i===1?'Mais popular':''}</div>
+      <div class="pkg-bonus">${i === 1 ? 'Mais popular' : ''}</div>
       <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">Comprar</button>
     </div>`).join('');
 }
 
 // ═══════════════════════════════════════════
-// COMPRA DE CRISTAIS — MetaMask directo para o contrato
+// COMPRA DE CRISTAIS
 // ═══════════════════════════════════════════
 async function comprarCristais(idx) {
   const pkg    = CRYSTAL_PACKAGES[idx];
   const status = document.getElementById('buyStatus');
 
-  if(!) {
-    status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
+  // Garante que MetaMask está vinculada
+  const carteiraEth = await garantirCarteira();
+  if(!carteiraEth) {
+    status.innerHTML = '<span class="tx-err">Vincula a MetaMask primeiro.</span>';
     return;
   }
 
-  // Desabilitar todos os botões de compra durante o processo
   const allBtns = document.querySelectorAll('.btn-buy-pkg');
   allBtns.forEach(b => { b.disabled = true; b.style.opacity = '.5'; });
 
@@ -104,25 +110,24 @@ async function comprarCristais(idx) {
 
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer   = await provider.getSigner();
-
     const maticWei = ethers.parseEther(pkg.matic.toString());
+
     const tx = await signer.sendTransaction({
       to:    CONTRACT_ADDRESS,
       value: maticWei,
     });
 
     status.innerHTML = '<span class="tx-pending">⏳ Transação enviada. A aguardar confirmação...</span>';
-
     const receipt = await tx.wait();
 
     if(receipt.status === 1) {
       status.innerHTML = '<span class="tx-pending">⏳ A creditar os teus 💎...</span>';
-
       try {
+        // Usa o uid (walletAddress) como identificador do jogador no servidor
         const apiRes  = await fetch('/api/processar-compra', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ jogador: , txHash: tx.hash }),
+          body:    JSON.stringify({ jogador: walletAddress, carteira: carteiraEth, txHash: tx.hash }),
         });
         const apiData = await apiRes.json();
 
@@ -137,9 +142,8 @@ async function comprarCristais(idx) {
           status.innerHTML = `<span class="tx-err">⚠️ Transação confirmada mas não creditada: ${apiData.erro}</span>`;
         }
       } catch(apiErr) {
-        status.innerHTML = `<span class="tx-err">⚠️ Tx confirmada mas erro ao creditar. Volta ao marketplace — os teus 💎 serão recuperados.<br><small>Hash: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
+        status.innerHTML = `<span class="tx-err">⚠️ Tx confirmada mas erro ao creditar. Os teus 💎 serão recuperados.<br><small>Hash: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</small></span>`;
       }
-
     } else {
       status.innerHTML = '<span class="tx-err">❌ Transação falhou. Tenta novamente.</span>';
     }
@@ -149,15 +153,12 @@ async function comprarCristais(idx) {
     if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
       status.innerHTML = '<span class="tx-err">Transação cancelada.</span>';
     } else if(e.code === 'INSUFFICIENT_FUNDS' || e?.message?.includes('insufficient funds')) {
-      // FIX: mensagem clara para saldo insuficiente
-      const maticNecessario = pkg.matic;
-      status.innerHTML = `<span class="tx-err">❌ Saldo insuficiente. Precisas de pelo menos <b>${maticNecessario} MATIC</b> na tua carteira Polygon para esta compra.<br><small>Podes comprar MATIC numa exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.</small></span>`;
-      showToast(`Saldo insuficiente — precisas de ${maticNecessario} MATIC`, 'err');
+      status.innerHTML = `<span class="tx-err">❌ Saldo insuficiente. Precisas de pelo menos <b>${pkg.matic} MATIC</b> na tua carteira Polygon.<br><small>Podes comprar MATIC numa exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.</small></span>`;
+      showToast(`Saldo insuficiente — precisas de ${pkg.matic} MATIC`, 'err');
     } else {
       status.innerHTML = '<span class="tx-err">Erro ao enviar. Verifica o saldo de MATIC e tenta novamente.</span>';
     }
   } finally {
-    // Re-habilitar botões sempre, mesmo que haja erro
     allBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
   }
 }
@@ -171,10 +172,13 @@ async function resgatar() {
   const btn       = document.getElementById('btnResgatar');
   const gems      = parseInt(gemsInput.value, 10);
 
-  if(!garantirCarteira()) {
-    status.innerHTML = '<span class="tx-err">Conecta a carteira primeiro.</span>';
+  // Garante que MetaMask está vinculada
+  const carteiraEth = await garantirCarteira();
+  if(!carteiraEth) {
+    status.innerHTML = '<span class="tx-err">Vincula a MetaMask primeiro.</span>';
     return;
   }
+
   if(!gems || gems < 10 || gems % 10 !== 0) {
     status.innerHTML = '<span class="tx-err">Mínimo 10 💎, em múltiplos de 10.</span>';
     return;
@@ -188,10 +192,11 @@ async function resgatar() {
   status.innerHTML = '<span class="tx-pending">⏳ A pedir autorização ao servidor...</span>';
 
   try {
+    // Usa uid como identificador + carteira Ethereum para o contrato
     const apiRes = await fetch('/api/resgatar', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ jogador: garantirCarteira(), gems }),
+      body:    JSON.stringify({ jogador: walletAddress, carteira: carteiraEth, gems }),
     });
     const apiData = await apiRes.json();
 
@@ -203,12 +208,10 @@ async function resgatar() {
 
     status.innerHTML = '<span class="tx-pending">⏳ Abre o MetaMask para confirmar o resgate...</span>';
 
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer   = await provider.getSigner();
-    const abi = [
-      'function withdraw(uint256 gems, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external'
-    ];
-    const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+    const provider  = new ethers.BrowserProvider(window.ethereum);
+    const signer    = await provider.getSigner();
+    const abi = ['function withdraw(uint256 gems, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external'];
+    const contrato  = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
     const tx = await contrato.withdraw(
       BigInt(apiData.gems),
@@ -222,12 +225,11 @@ async function resgatar() {
     const receipt = await tx.wait();
 
     if(receipt.status === 1) {
-      const maticRecebido = apiData.matic;
       playerData.cristais = (playerData.cristais || 0) - gems;
       updateCristaisDisplay();
       gemsInput.value = '';
-      status.innerHTML = `<span class="tx-ok">✅ Resgatado! Recebeste ${maticRecebido} MATIC na tua carteira.</span>`;
-      showToast(`💸 ${maticRecebido} MATIC enviados!`, 'ok');
+      status.innerHTML = `<span class="tx-ok">✅ Resgatado! Recebeste ${apiData.matic} MATIC na tua carteira.</span>`;
+      showToast(`💸 ${apiData.matic} MATIC enviados!`, 'ok');
     } else {
       status.innerHTML = '<span class="tx-err">❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.</span>';
     }
