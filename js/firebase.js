@@ -27,6 +27,7 @@ function getGameState() {
       gs:         {...gs},
       cristais:   gs.cristais   || 0,
       extraSlots: gs.extraSlots || 0,
+      cambioLog:  window._cambioLog || null,
       lastSeen:   Date.now()
       // avatarSlots deliberadamente omitido — merge:true preserva o valor actual no Firebase
     };
@@ -75,6 +76,7 @@ function getGameState() {
     gs:            {...gs},
     cristais:      gs.cristais   || 0,
     extraSlots:    gs.extraSlots || 0,
+    cambioLog:     window._cambioLog || null,
     lastSeen:      Date.now()
   };
 }
@@ -85,6 +87,7 @@ function applyGameState(data) {
 
   // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
+  if(data.cambioLog !== undefined) window._cambioLog = data.cambioLog;
   if(data.gs?.cristais   !== undefined) gs.cristais   = data.gs.cristais;
   else if(data.cristais  !== undefined) gs.cristais   = data.cristais;
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
