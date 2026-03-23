@@ -34,186 +34,100 @@
 html,body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;zoom:1.25;}
 body{display:flex;flex-direction:column;min-height:100vh;}
 
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--surface);}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
+/* ── AUTH ── */
+.auth-tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;padding:8px 0;cursor:pointer;transition:all .2s;}
+.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.auth-tab:hover:not(.active){color:var(--text);}
+.auth-input{width:100%;box-sizing:border-box;background:#0a0816;border:1px solid #2a2040;border-radius:6px;color:#e8e0f0;font-family:'Cinzel',serif;font-size:11px;padding:10px 12px;outline:none;transition:border-color .2s;}
+.auth-input:focus{border-color:#5a3a9a;}
+.auth-btn-primary{width:100%;padding:11px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border:none;border-radius:6px;color:#fff;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:opacity .15s;}
+.auth-btn-primary:hover{opacity:.9;}
+.auth-btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.auth-btn-green{width:100%;padding:11px;background:linear-gradient(135deg,#1a4a2a,#2d7a4a);border:none;border-radius:6px;color:#fff;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;}
+.auth-btn-green:disabled{opacity:.5;cursor:not-allowed;}
+.auth-btn-link{background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:1px;margin-top:2px;transition:color .15s;}
+.auth-btn-link:hover{color:var(--gold);}
+
 /* ═══════════════════════════════════════════
    HEADER
 ═══════════════════════════════════════════ */
-.mkt-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px;background:var(--surface);
-  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;
-}
+.mkt-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
 .mkt-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-.mkt-logo-icon{font-size:22px;}
 .mkt-logo-text{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:1px;}
 .mkt-logo-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
 .mkt-header-right{display:flex;align-items:center;gap:8px;}
-.mkt-back{
-  display:flex;align-items:center;gap:5px;padding:6px 12px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  color:var(--text2);font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;
-  cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.5px;
-}
+.mkt-back{display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.5px;}
 .mkt-back:hover{border-color:var(--purple);color:var(--text);}
-.mkt-wallet-badge{
-  display:flex;align-items:center;gap:6px;padding:6px 12px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  font-size:10px;color:var(--text2);
-}
+.mkt-wallet-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:10px;color:var(--text2);}
 .mkt-wallet-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
 .mkt-wallet-dot.off{background:var(--red);}
-.mkt-bal{
-  display:flex;align-items:center;gap:5px;padding:6px 12px;
-  background:linear-gradient(135deg,#1a1040,#0d0820);
-  border:1px solid var(--purple);border-radius:8px;font-size:11px;
-}
+.mkt-bal{display:flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#1a1040,#0d0820);border:1px solid var(--purple);border-radius:8px;font-size:11px;}
 .mkt-bal span{font-family:'Cinzel',serif;font-weight:700;color:var(--gem2);}
 
 /* ═══════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════ */
 .mkt-body{display:flex;flex:1;}
-.mkt-sidebar{
-  width:200px;min-width:200px;background:var(--surface);
-  border-right:1px solid var(--border);padding:12px 8px;
-  display:flex;flex-direction:column;gap:4px;
-}
+.mkt-sidebar{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:4px;}
 .mkt-main{flex:1;padding:16px;}
 
-/* ── SIDEBAR NAV ── */
 .mkt-nav-section{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 8px 4px;margin-top:4px;}
-.mkt-nav-btn{
-  display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;
-  background:none;border:none;color:var(--text2);font-family:'Rajdhani',sans-serif;
-  font-size:12px;font-weight:600;cursor:pointer;width:100%;text-align:left;
-  transition:all .2s;letter-spacing:.3px;
-}
+.mkt-nav-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:none;border:none;color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;cursor:pointer;width:100%;text-align:left;transition:all .2s;letter-spacing:.3px;}
 .mkt-nav-btn:hover{background:var(--surface2);color:var(--text);}
 .mkt-nav-btn.active{background:linear-gradient(135deg,#1a1040,#0d0820);color:var(--gem2);border:1px solid var(--purple);}
 .mkt-nav-btn .nav-icon{font-size:15px;width:20px;text-align:center;}
-.mkt-nav-badge{margin-left:auto;background:var(--purple);color:#fff;font-size:8px;padding:1px 5px;border-radius:10px;}
 
 /* ═══════════════════════════════════════════
    CONNECT WALL
 ═══════════════════════════════════════════ */
-#connectWall{
-  position:fixed;inset:0;background:rgba(4,3,10,.95);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:20px;z-index:200;
-}
-.connect-card{
-  background:var(--surface);border:1px solid var(--border2);border-radius:16px;
-  padding:36px 40px;text-align:center;max-width:360px;
-}
+#connectWall{position:fixed;inset:0;background:rgba(4,3,10,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:200;}
+.connect-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:36px 40px;text-align:center;max-width:380px;width:100%;}
 .connect-icon{font-size:48px;margin-bottom:12px;}
-.connect-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:8px;}
-.connect-sub{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:24px;}
-.btn-connect{
-  width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple2));
-  border:none;border-radius:10px;color:#fff;font-family:'Cinzel',serif;
-  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;
-}
-.btn-connect:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,.4);}
+.connect-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:16px;}
 
 /* ═══════════════════════════════════════════
    SECTIONS
 ═══════════════════════════════════════════ */
 .mkt-section{display:none;}
 .mkt-section.active{display:block;}
-.section-title{
-  font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold);
-  margin-bottom:4px;display:flex;align-items:center;gap:8px;
-}
+.section-title{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
 .section-sub{font-size:11px;color:var(--text2);margin-bottom:16px;}
 
 /* ═══════════════════════════════════════════
    AVATAR CARD
 ═══════════════════════════════════════════ */
 .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
-.av-card{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:0;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;
-}
+.av-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:0;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;display:flex;flex-direction:column;}
 .av-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
-.av-card.listed{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.15);}
-.av-card.frozen{border-color:var(--blue);opacity:.85;}
-/* stripe de raridade no topo */
 .av-card-stripe{height:3px;width:100%;flex-shrink:0;}
-.av-card-stripe.Comum   {background:linear-gradient(90deg,var(--common),#5a9a5a);}
-.av-card-stripe.Raro    {background:linear-gradient(90deg,var(--rare),#3a80c0);}
+.av-card-stripe.Comum{background:linear-gradient(90deg,var(--common),#5a9a5a);}
+.av-card-stripe.Raro{background:linear-gradient(90deg,var(--rare),#3a80c0);}
 .av-card-stripe.Lendário{background:linear-gradient(90deg,var(--legendary),#c87820);}
-/* inner padding */
-.av-card-inner{padding:10px 10px 10px;display:flex;flex-direction:column;align-items:center;flex:1;}
-.av-card-badge{
-  position:absolute;top:10px;right:8px;font-size:7px;font-weight:700;
-  padding:2px 6px;border-radius:6px;letter-spacing:.5px;text-transform:uppercase;
-}
-.badge-listed{background:rgba(201,168,76,.2);color:var(--gold);border:1px solid var(--gold);}
-.badge-active{background:rgba(34,197,94,.2);color:var(--green2);border:1px solid var(--green);}
-.badge-frozen{background:rgba(59,130,246,.2);color:var(--blue2);border:1px solid var(--blue);}
-/* SVG */
+.av-card-inner{padding:10px;display:flex;flex-direction:column;align-items:center;flex:1;}
 .av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:6px;}
-/* nome principal */
-.av-name{
-  font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);
-  text-align:center;margin-bottom:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
-}
-/* sufixo (ex: "o Sereno") */
-.av-sufixo{
-  font-size:8px;color:var(--muted);text-align:center;
-  margin-bottom:6px;font-style:italic;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;
-}
-/* pill elemento · raridade */
-.av-pill{
-  font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  padding:2px 8px;border-radius:10px;margin-bottom:8px;white-space:nowrap;
-}
-.av-pill.Comum   {background:rgba(122,184,122,.12);color:var(--common);border:1px solid rgba(122,184,122,.25);}
-.av-pill.Raro    {background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
+.av-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+.av-sufixo{font-size:8px;color:var(--muted);text-align:center;margin-bottom:6px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+.av-pill{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:8px;white-space:nowrap;}
+.av-pill.Comum{background:rgba(122,184,122,.12);color:var(--common);border:1px solid rgba(122,184,122,.25);}
+.av-pill.Raro{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
 .av-pill.Lendário{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
-/* stats 2x2 */
 .av-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%;margin-bottom:8px;}
-.av-stat{
-  font-size:8px;color:var(--muted);
-  display:flex;flex-direction:column;align-items:center;
-  background:var(--surface);border-radius:6px;padding:3px 4px;
-}
+.av-stat{font-size:8px;color:var(--muted);display:flex;flex-direction:column;align-items:center;background:var(--surface);border-radius:6px;padding:3px 4px;}
 .av-stat b{color:var(--text);font-size:9px;font-weight:700;}
-/* preço */
-.av-price{
-  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
-  color:var(--gem2);display:flex;align-items:center;justify-content:center;gap:4px;
-  margin-bottom:4px;
-}
+.av-price{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gem2);display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px;}
 .av-seller{font-size:7px;color:var(--muted);text-align:center;font-family:monospace;}
-.av-rarity{font-size:8px;font-weight:700;text-align:center;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;}
-.av-rarity.Comum{color:var(--common);}
-.av-rarity.Raro{color:var(--rare);}
-.av-rarity.Lendário{color:var(--legendary);}
 
 /* ═══════════════════════════════════════════
    FILTROS
 ═══════════════════════════════════════════ */
 .filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
-.filter-select{
-  padding:6px 10px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;
-  cursor:pointer;outline:none;
-}
+.filter-select{padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;cursor:pointer;outline:none;}
 .filter-select:focus{border-color:var(--purple);}
-.filter-label{font-size:10px;color:var(--muted);letter-spacing:.5px;}
-.search-input{
-  flex:1;min-width:140px;padding:6px 10px;background:var(--surface2);
-  border:1px solid var(--border);border-radius:8px;color:var(--text);
-  font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;
-}
+.search-input{flex:1;min-width:140px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;}
 .search-input:focus{border-color:var(--purple);}
 .search-input::placeholder{color:var(--muted);}
 
@@ -221,153 +135,63 @@ body{display:flex;flex-direction:column;min-height:100vh;}
    SLOTS
 ═══════════════════════════════════════════ */
 .slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;}
-
-.slot-card{
-  background:var(--surface2);border:1px solid var(--border);border-radius:14px;
-  display:flex;flex-direction:column;align-items:stretch;
-  position:relative;overflow:hidden;transition:all .25s;
-}
+.slot-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;align-items:stretch;position:relative;overflow:hidden;transition:all .25s;}
 .slot-card:hover{border-color:var(--border2);transform:translateY(-2px);}
 .slot-card.slot-active{border-color:var(--green);box-shadow:0 0 20px rgba(34,197,94,.15);}
 .slot-card.slot-frozen{border-color:var(--gold);box-shadow:0 0 14px rgba(201,168,76,.12);}
 .slot-card.slot-locked{border-style:dashed;opacity:.4;}
-
-/* stripe de raridade no topo */
 .slot-stripe{height:3px;width:100%;flex-shrink:0;}
 .slot-stripe.Comum{background:var(--common);}
 .slot-stripe.Raro{background:linear-gradient(90deg,var(--rare),#a0d8f8);}
 .slot-stripe.Lendário{background:linear-gradient(90deg,var(--legendary),#ffd700);}
-
-.slot-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 12px 0;
-}
+.slot-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 0;}
 .slot-label{font-size:8px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'Cinzel',serif;}
-.slot-badge{
-  font-size:7px;font-family:'Cinzel',serif;letter-spacing:.5px;text-transform:uppercase;
-  padding:2px 7px;border-radius:20px;font-weight:700;
-}
+.slot-badge{font-size:7px;font-family:'Cinzel',serif;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;font-weight:700;}
 .slot-badge.active{background:rgba(34,197,94,.15);color:var(--green2);border:1px solid rgba(34,197,94,.3);}
 .slot-badge.frozen{background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid rgba(201,168,76,.3);}
-
-/* avatar SVG container — fixed square, clips overflow */
-.slot-svg-wrap{
-  width:100px;height:100px;margin:14px auto 4px;
-  display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);
-  border-radius:16px;flex-shrink:0;
-}
+.slot-svg-wrap{width:100px;height:100px;margin:14px auto 4px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);border-radius:16px;flex-shrink:0;}
 .slot-svg-wrap svg{width:96px;height:96px;display:block;}
-
 .slot-body{padding:10px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
-
-.slot-av-name{
-  font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--text);
-  text-align:center;line-height:1.3;
-}
+.slot-av-name{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.3;}
 .slot-av-sub{font-size:9px;color:var(--text2);text-align:center;font-style:italic;min-height:12px;}
-.slot-av-pill{
-  font-size:8px;font-weight:600;padding:2px 10px;border-radius:20px;
-  letter-spacing:.5px;text-transform:uppercase;
-}
+.slot-av-pill{font-size:8px;font-weight:600;padding:2px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;}
 .slot-av-pill.Comum{background:rgba(122,184,122,.15);color:var(--common);border:1px solid rgba(122,184,122,.25);}
 .slot-av-pill.Raro{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.25);}
 .slot-av-pill.Lendário{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
-
-.slot-stats{
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:100%;
-  margin-top:2px;
-}
-.slot-stat{
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-  background:var(--surface);border-radius:6px;padding:4px 2px;
-}
+.slot-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:100%;margin-top:2px;}
+.slot-stat{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--surface);border-radius:6px;padding:4px 2px;}
 .slot-stat b{font-size:10px;font-weight:700;color:var(--text);}
 .slot-stat span{font-size:7px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
-
 .slot-actions{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:4px;}
-.btn-slot-burn{
-  padding:5px 12px;background:transparent;border:1px solid rgba(239,68,68,.4);border-radius:6px;
-  color:var(--red2);font-size:8px;font-weight:700;cursor:pointer;
-  font-family:'Cinzel',serif;letter-spacing:.5px;transition:all .2s;width:100%;
-}
+.btn-slot-burn{padding:5px 12px;background:transparent;border:1px solid rgba(239,68,68,.4);border-radius:6px;color:var(--red2);font-size:8px;font-weight:700;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.5px;transition:all .2s;width:100%;}
 .btn-slot-burn:hover{background:rgba(239,68,68,.1);border-color:var(--red);}
-.btn-slot-list{
-  padding:6px 12px;border:none;border-radius:6px;width:100%;
-  font-size:8px;font-weight:700;cursor:pointer;
-  font-family:'Cinzel',serif;letter-spacing:.8px;transition:all .25s;
-  position:relative;overflow:hidden;
-  background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(168,139,250,.12));
-  border:1px solid rgba(201,168,76,.4);color:var(--gold2);
-}
-.btn-slot-list::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(168,139,250,.2));
-  opacity:0;transition:opacity .2s;
-}
-.btn-slot-list:hover::before{opacity:1;}
-.btn-slot-list:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.2);}
-
-.slot-empty-wrap{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;padding:0 16px;flex:1;min-height:220px;
-}
+.btn-slot-list{padding:5px 12px;background:transparent;border:1px solid var(--gold);border-radius:6px;color:var(--gold);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:all .2s;}
+.btn-slot-list:hover{background:rgba(201,168,76,.15);}
+.btn-slot-activate{padding:5px 12px;background:var(--green);border:none;border-radius:6px;color:#000;font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:all .2s;}
+.btn-slot-activate:hover{background:var(--green2);}
+.btn-slot-unlist{padding:5px 12px;background:transparent;border:1px solid var(--red);border-radius:6px;color:var(--red2);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:all .2s;}
+.slot-empty-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 16px;flex:1;min-height:220px;}
 .slot-empty-icon{font-size:36px;opacity:.18;margin-bottom:2px;}
 .slot-empty-title{font-family:'Cinzel',serif;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
 .slot-empty-txt{font-size:8.5px;color:var(--muted);text-align:center;line-height:1.7;opacity:.7;}
 .slot-locked-icon{font-size:28px;opacity:.15;}
-.slot-locked-cost{
-  font-family:'Cinzel',serif;font-size:8px;color:var(--gem);
-  letter-spacing:.5px;text-align:center;margin-top:2px;
-}
-.btn-slot-activate{
-  padding:5px 12px;background:var(--green);border:none;border-radius:6px;
-  color:#000;font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  letter-spacing:.5px;transition:all .2s;
-}
-.btn-slot-activate:hover{background:var(--green2);}
-.btn-slot-list{
-  padding:5px 12px;background:transparent;border:1px solid var(--gold);border-radius:6px;
-  color:var(--gold);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  letter-spacing:.5px;transition:all .2s;
-}
-.btn-slot-list:hover{background:rgba(201,168,76,.15);}
-.btn-slot-unlist{
-  padding:5px 12px;background:transparent;border:1px solid var(--red);border-radius:6px;
-  color:var(--red2);font-size:9px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  letter-spacing:.5px;transition:all .2s;
-}
-.btn-slot-unlist:hover{background:rgba(239,68,68,.1);}
-/* ── POOL SECTION ── */
-.pool-stats-card{
-  background:var(--surface2);border:1px solid var(--border2);border-radius:14px;
-  padding:20px;margin-bottom:20px;
-}
-.pool-sc-title{
-  font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--muted);
-  letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;
-}
-.pool-sc-balance{
-  font-family:'Cinzel',serif;font-size:32px;font-weight:700;
-  color:var(--gem2);text-align:center;margin-bottom:4px;
-  text-shadow:0 0 20px rgba(167,139,250,.4);
-}
+.slot-locked-cost{font-family:'Cinzel',serif;font-size:8px;color:var(--gem);letter-spacing:.5px;text-align:center;margin-top:2px;}
+.btn-unlock-slot{width:100%;padding:10px;background:linear-gradient(135deg,#1a1040,#0d0820);border:1px dashed var(--purple);border-radius:8px;color:var(--gem2);font-size:10px;font-weight:600;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-unlock-slot:hover{background:rgba(124,58,237,.15);}
+
+/* ── POOL ── */
+.pool-stats-card{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:20px;}
+.pool-sc-title{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.pool-sc-balance{font-family:'Cinzel',serif;font-size:32px;font-weight:700;color:var(--gem2);text-align:center;margin-bottom:4px;text-shadow:0 0 20px rgba(167,139,250,.4);}
 .pool-sc-balance-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:16px;}
 .pool-sc-bar-wrap{height:6px;background:var(--border);border-radius:3px;margin-bottom:16px;overflow:hidden;}
 .pool-sc-bar{height:100%;border-radius:3px;transition:width .8s ease;}
 .pool-sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-.pool-sc-stat{
-  background:var(--surface);border-radius:10px;padding:10px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  border:1px solid var(--border);
-}
+.pool-sc-stat{background:var(--surface);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid var(--border);}
 .pool-sc-stat span{font-size:7px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;}
 .pool-sc-stat b{font-size:13px;font-weight:700;color:var(--text);}
 .pool-prices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.pool-price-card{
-  border-radius:10px;padding:12px;text-align:center;
-  border:1px solid;
-}
+.pool-price-card{border-radius:10px;padding:12px;text-align:center;border:1px solid;}
 .pool-price-card.raro{background:rgba(90,180,232,.06);border-color:rgba(90,180,232,.2);}
 .pool-price-card.lendario{background:rgba(232,160,48,.06);border-color:rgba(232,160,48,.2);}
 .pool-price-label{font-size:8px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
@@ -377,21 +201,14 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .pool-price-card.raro .pool-price-val{color:var(--rare);}
 .pool-price-card.lendario .pool-price-val{color:var(--legendary);}
 .pool-price-sub{font-size:8px;color:var(--muted);margin-top:2px;}
-.pool-log-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:10px;
-}
+.pool-log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .pool-log-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;}
 .pool-log-legend{display:flex;gap:10px;}
 .pool-leg{font-size:8px;font-weight:700;letter-spacing:.5px;}
 .pool-leg.entrada{color:var(--green);}
 .pool-leg.saida{color:var(--gem);}
 .pool-log-list{display:flex;flex-direction:column;gap:4px;}
-.pool-log-row{
-  display:grid;grid-template-columns:32px 1fr auto auto;gap:8px;align-items:center;
-  background:var(--surface2);border-radius:8px;padding:8px 12px;
-  border-left:3px solid transparent;font-size:9px;
-}
+.pool-log-row{display:grid;grid-template-columns:32px 1fr auto auto;gap:8px;align-items:center;background:var(--surface2);border-radius:8px;padding:8px 12px;border-left:3px solid transparent;font-size:9px;}
 .pool-log-row.entrada{border-left-color:var(--green);}
 .pool-log-row.saida{border-left-color:var(--gem);}
 .pool-log-icon{font-size:14px;text-align:center;}
@@ -402,186 +219,115 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .pool-log-row.entrada .pool-log-amount{color:var(--green);}
 .pool-log-row.saida .pool-log-amount{color:var(--gem);}
 .pool-log-time{font-size:7px;color:var(--muted);white-space:nowrap;}
-
-/* ── POOL WIDGET (browse) ── */
-.pool-widget{
-  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
-  padding:14px 16px;margin-bottom:20px;
-}
-.pool-title{
-  font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--gem2);
-  letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;
-}
-.pool-bar-wrap{
-  height:4px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden;
-}
+.pool-widget{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-bottom:20px;}
+.pool-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--gem2);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.pool-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden;}
 .pool-bar{height:100%;border-radius:2px;transition:width .6s ease;}
 .pool-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.pool-stat{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  background:var(--surface);border-radius:8px;padding:6px 4px;
-}
+.pool-stat{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface);border-radius:8px;padding:6px 4px;}
 .pool-stat span{font-size:7px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
 .pool-stat b{font-size:10px;color:var(--text);font-weight:700;}
 .pool-empty{font-size:9px;color:var(--muted);text-align:center;margin-top:8px;font-style:italic;}
 
-.btn-unlock-slot{
-  width:100%;padding:10px;background:linear-gradient(135deg,#1a1040,#0d0820);
-  border:1px dashed var(--purple);border-radius:8px;color:var(--gem2);
-  font-size:10px;font-weight:600;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  letter-spacing:.5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-unlock-slot:hover{background:rgba(124,58,237,.15);}
-
 /* ═══════════════════════════════════════════
-   LOJA DE CRISTAIS
+   CRISTAIS
 ═══════════════════════════════════════════ */
 .crystal-packages{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
-
-/* ── TRANSPARÊNCIA ── */
-.transp-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;margin-bottom:14px;}
-.transp-block-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
-.transp-block-body{font-size:12px;color:var(--text2);line-height:1.7;}
-.transp-block-body strong{color:var(--text);}
-.transp-link{display:inline-block;margin-top:8px;color:var(--gem);font-size:11px;text-decoration:none;border-bottom:1px solid rgba(167,139,250,.3);padding-bottom:1px;}
-.transp-link:hover{color:var(--gem2);}
-.transp-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-.transp-split-item{border-radius:10px;padding:14px;text-align:center;}
-.transp-split-pool{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);}
-.transp-split-dev{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);}
-.transp-split-pct{font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px;}
-.transp-split-label{font-size:10px;letter-spacing:1px;color:var(--text);margin-bottom:4px;}
-.transp-split-desc{font-size:10px;color:var(--muted);line-height:1.5;}
-.transp-taxa-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
-.transp-taxa-row:last-child{border-bottom:none;}
-.transp-taxa-val{color:var(--gem2);font-weight:600;font-size:11px;}
-.transp-step-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
-.transp-step{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text2);}
-.transp-step-n{min-width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.transp-timelock-status{margin-top:12px;padding:12px;border-radius:8px;font-size:12px;text-align:center;}
-.transp-timelock-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#4ade80;}
-.transp-timelock-warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;}
-.transp-limit-bar-wrap{background:rgba(255,255,255,.05);border-radius:20px;height:8px;margin:10px 0 6px;overflow:hidden;}
-.transp-limit-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gem),var(--gold));transition:width .4s;}
-.transp-limit-txt{font-size:11px;color:var(--muted);text-align:center;}
-
-.crystal-pkg{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:20px 16px;text-align:center;transition:all .25s;cursor:pointer;
-}
+.crystal-pkg{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 16px;text-align:center;transition:all .25s;cursor:pointer;}
 .crystal-pkg:hover{border-color:var(--purple);transform:translateY(-2px);}
 .crystal-pkg.featured{border-color:var(--gold);background:linear-gradient(135deg,#1a1040,#12081e);}
 .pkg-gem{font-size:36px;margin-bottom:8px;}
 .pkg-amount{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--gem2);margin-bottom:4px;}
 .pkg-matic{font-size:11px;color:var(--text2);margin-bottom:12px;}
 .pkg-bonus{font-size:9px;color:var(--gold);margin-bottom:12px;min-height:14px;}
-.btn-buy-pkg{
-  width:100%;padding:8px;background:linear-gradient(135deg,var(--purple),var(--purple2));
-  border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;
-  font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;
-}
+.btn-buy-pkg{width:100%;padding:8px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;}
 .btn-buy-pkg:hover{opacity:.9;}
 
-/* TX verification */
-.tx-verify-box{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:20px;max-width:500px;
-}
+/* ── MetaMask CTA na secção de cristais ── */
+.metamask-cta{padding:14px 16px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:10px;margin-bottom:20px;}
+.metamask-cta-title{font-family:'Cinzel',serif;font-size:11px;color:var(--gold);margin-bottom:6px;}
+.metamask-cta-sub{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.btn-metamask{padding:8px 16px;background:linear-gradient(135deg,#f6851b,#e2761b);border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;}
+.btn-metamask:hover{opacity:.9;}
+.metamask-linked{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;margin-bottom:20px;}
+.metamask-linked-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.metamask-linked-txt{font-size:10px;color:var(--green2);}
+.metamask-linked-addr{font-size:9px;color:var(--muted);font-family:monospace;}
+
+/* TX */
+.tx-verify-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:500px;}
 .tx-verify-box h3{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:12px;}
-.tx-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.tx-step{display:flex;gap:10px;align-items:flex-start;font-size:10px;color:var(--text2);}
-.tx-step-num{
-  width:18px;height:18px;min-width:18px;border-radius:50%;
-  background:var(--purple);color:#fff;font-size:8px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;margin-top:1px;
-}
 .tx-input-row{display:flex;gap:8px;margin-bottom:8px;}
-.tx-hash-input{
-  flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;
-}
+.tx-hash-input{flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;}
 .tx-hash-input:focus{border-color:var(--purple);}
-.btn-verify{
-  padding:8px 16px;background:var(--purple);border:none;border-radius:8px;
-  color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;
-  cursor:pointer;white-space:nowrap;transition:all .2s;
-}
+.btn-verify{padding:8px 16px;background:var(--purple);border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;}
 .btn-verify:hover{background:var(--purple2);}
 .btn-verify:disabled{opacity:.5;cursor:not-allowed;}
-#txStatus{font-size:10px;min-height:16px;margin-top:4px;}
 .tx-ok{color:var(--green2);}
 .tx-err{color:var(--red2);}
 .tx-pending{color:var(--blue2);}
-.wallet-addr-display{
-  font-size:9px;color:var(--muted);word-break:break-all;
-  background:var(--surface);padding:6px 10px;border-radius:6px;
-  border:1px solid var(--border);margin-bottom:12px;
-}
-.wallet-addr-display b{color:var(--gem2);}
 
-/* ═══════════════════════════════════════════
-   OVO RARO
-═══════════════════════════════════════════ */
-.rare-egg-card{
-  background:linear-gradient(135deg,#0d1a2e,#0d0820);
-  border:1px solid var(--rare);border-radius:var(--radius);
-  padding:24px;max-width:320px;text-align:center;
-}
-.rare-egg-icon{font-size:56px;margin-bottom:12px;display:block;}
-.rare-egg-title{font-family:'Cinzel',serif;font-size:16px;color:var(--rare);margin-bottom:8px;}
-.rare-egg-desc{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
-.rare-egg-price{
-  display:inline-flex;align-items:center;gap:6px;
-  font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gem2);
-  margin-bottom:16px;
-}
-.btn-buy-egg{
-  width:100%;padding:12px;background:linear-gradient(135deg,#0d3d6e,#1a5fa8);
-  border:1px solid var(--rare);border-radius:10px;color:#fff;
-  font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;
-  letter-spacing:1px;transition:all .2s;
-}
-.btn-buy-egg:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(90,180,232,.3);}
-.btn-buy-egg:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+/* TRANSPARÊNCIA */
+.transp-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;margin-bottom:14px;}
+.transp-block-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+.transp-block-body{font-size:12px;color:var(--text2);line-height:1.7;}
+.transp-block-body strong{color:var(--text);}
+.transp-link{display:inline-block;margin-top:8px;color:var(--gem);font-size:11px;text-decoration:none;border-bottom:1px solid rgba(167,139,250,.3);padding-bottom:1px;}
+.transp-link:hover{color:var(--gem2);}
+.transp-taxa-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+.transp-taxa-row:last-child{border-bottom:none;}
+.transp-taxa-val{color:var(--gem2);font-weight:600;font-size:11px;}
+.transp-timelock-status{margin-top:12px;padding:12px;border-radius:8px;font-size:12px;text-align:center;}
+.transp-timelock-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#4ade80;}
+.transp-limit-bar-wrap{background:rgba(255,255,255,.05);border-radius:20px;height:8px;margin:10px 0 6px;overflow:hidden;}
+.transp-limit-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gem),var(--gold));transition:width .4s;}
+.transp-limit-txt{font-size:11px;color:var(--muted);text-align:center;}
 
-/* ═══════════════════════════════════════════
-   MODAL DE LISTAGEM
-═══════════════════════════════════════════ */
-.overlay{
-  position:fixed;inset:0;background:rgba(4,3,10,.85);
-  display:none;align-items:center;justify-content:center;z-index:300;
-}
+/* OVOS */
+.egg-browse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.egg-mkt-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:0;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.egg-mkt-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.egg-mkt-card.raro{border-color:rgba(90,180,232,.25);}
+.egg-mkt-card.raro:hover{border-color:var(--rare);box-shadow:0 6px 24px rgba(90,180,232,.18);}
+.egg-mkt-card.lendario{border-color:rgba(232,160,48,.25);}
+.egg-mkt-card.lendario:hover{border-color:var(--legendary);box-shadow:0 6px 24px rgba(232,160,48,.18);}
+.egg-mkt-stripe{height:3px;width:100%;border-radius:var(--radius) var(--radius) 0 0;}
+.egg-mkt-card.raro .egg-mkt-stripe{background:linear-gradient(90deg,var(--rare),#3a80c0);}
+.egg-mkt-card.lendario .egg-mkt-stripe{background:linear-gradient(90deg,var(--legendary),#c87820);}
+.egg-mkt-inner{padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;}
+.egg-mkt-icon{font-size:34px;margin-bottom:6px;line-height:1;}
+.egg-mkt-pill{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
+.egg-mkt-card.raro .egg-mkt-pill{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
+.egg-mkt-card.lendario .egg-mkt-pill{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
+.egg-mkt-elem{font-size:10px;color:var(--text2);margin-bottom:8px;font-weight:600;}
+.egg-mkt-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:100%;margin-bottom:8px;}
+.egg-mkt-stat{font-size:8px;color:var(--text2);display:flex;justify-content:space-between;}
+.egg-mkt-stat b{color:var(--text);}
+.egg-mkt-price{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:4px;margin-bottom:8px;}
+.egg-mkt-seller{font-size:7px;color:var(--muted);text-align:center;margin-bottom:8px;font-family:monospace;}
+.btn-buy-egg-mkt{width:100%;padding:7px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;transition:all .2s;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;}
+.btn-buy-egg-mkt:hover{filter:brightness(1.15);}
+.btn-buy-egg-mkt:disabled{opacity:.4;cursor:not-allowed;filter:none;}
+.egg-mkt-own{position:absolute;top:10px;right:8px;font-size:7px;font-weight:700;padding:2px 6px;border-radius:6px;letter-spacing:.5px;background:rgba(34,197,94,.15);color:var(--green2);border:1px solid var(--green);}
+.egg-list-preview{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;background:var(--surface);border-radius:10px;margin-bottom:14px;}
+.egg-list-preview-icon{font-size:32px;}
+.egg-list-preview-name{font-size:11px;font-weight:700;color:var(--text);}
+.egg-list-preview-sub{font-size:9px;color:var(--muted);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(4,3,10,.85);display:none;align-items:center;justify-content:center;z-index:300;}
 .overlay.open{display:flex;}
-.modal-box{
-  background:var(--surface);border:1px solid var(--border2);border-radius:16px;
-  padding:28px;width:100%;max-width:380px;
-}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:380px;}
 .modal-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:6px;}
 .modal-sub{font-size:10px;color:var(--text2);margin-bottom:20px;line-height:1.5;}
 .modal-field{margin-bottom:14px;}
 .modal-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
-.modal-input{
-  width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;
-}
+.modal-input{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;}
 .modal-input:focus{border-color:var(--purple);}
 .modal-row{display:flex;gap:8px;margin-top:4px;}
-.btn-modal-confirm{
-  flex:1;padding:10px;background:linear-gradient(135deg,var(--purple),var(--purple2));
-  border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;
-  font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;
-}
-.btn-modal-cancel{
-  padding:10px 16px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text2);font-family:'Rajdhani',sans-serif;
-  font-size:11px;font-weight:600;cursor:pointer;
-}
-.modal-warn{font-size:9px;color:var(--gold);background:rgba(201,168,76,.08);
-  border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5;}
-
-/* ═══════════════════════════════════════════
-   AVATAR DETAIL MODAL
-═══════════════════════════════════════════ */
+.btn-modal-confirm{flex:1;padding:10px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;}
+.btn-modal-cancel{padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;cursor:pointer;}
+.modal-warn{font-size:9px;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5;}
 #avatarDetailOverlay .modal-box{max-width:440px;}
 .detail-header{display:flex;gap:16px;align-items:center;margin-bottom:16px;}
 .detail-svg{flex-shrink:0;}
@@ -592,418 +338,97 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .detail-rarity.Raro{color:var(--rare);}
 .detail-rarity.Lendário{color:var(--legendary);}
 .detail-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:12px;}
-.detail-stat{font-size:9px;color:var(--text2);display:flex;justify-content:space-between;
-  background:var(--surface2);padding:4px 8px;border-radius:4px;}
+.detail-stat{font-size:9px;color:var(--text2);display:flex;justify-content:space-between;background:var(--surface2);padding:4px 8px;border-radius:4px;}
 .detail-stat b{color:var(--text);}
-.detail-bonus{font-size:9px;color:var(--gem2);background:rgba(167,139,250,.1);
-  border:1px solid rgba(167,139,250,.2);border-radius:6px;padding:7px 10px;margin-bottom:12px;}
+.detail-bonus{font-size:9px;color:var(--gem2);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:6px;padding:7px 10px;margin-bottom:12px;}
 .detail-price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .detail-price{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:6px;}
-.btn-buy-avatar{
-  padding:10px 20px;background:linear-gradient(135deg,var(--purple),var(--purple2));
-  border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;
-  font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;
-}
+.btn-buy-avatar{padding:10px 20px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;}
 .btn-buy-avatar:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,58,237,.4);}
 .btn-buy-avatar:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
-/* ═══════════════════════════════════════════
-   OVOS BROWSE
-═══════════════════════════════════════════ */
-.egg-browse-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:12px;
-}
-/* Cards de ovo — mesmo padrão que av-card */
-.egg-mkt-card{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:0;cursor:pointer;
-  transition:all .25s;position:relative;overflow:hidden;
-}
-.egg-mkt-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
-.egg-mkt-card.raro{border-color:rgba(90,180,232,.25);}
-.egg-mkt-card.raro:hover{border-color:var(--rare);box-shadow:0 6px 24px rgba(90,180,232,.18);}
-.egg-mkt-card.lendario{border-color:rgba(232,160,48,.25);}
-.egg-mkt-card.lendario:hover{border-color:var(--legendary);box-shadow:0 6px 24px rgba(232,160,48,.18);}
-.egg-mkt-stripe{height:3px;width:100%;border-radius:var(--radius) var(--radius) 0 0;}
-.egg-mkt-card.raro .egg-mkt-stripe{background:linear-gradient(90deg,var(--rare),#3a80c0);}
-.egg-mkt-card.lendario .egg-mkt-stripe{background:linear-gradient(90deg,var(--legendary),#c87820);}
-.egg-mkt-inner{padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;}
-.egg-mkt-icon{font-size:34px;margin-bottom:6px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
-.egg-mkt-pill{
-  font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  padding:2px 8px;border-radius:10px;margin-bottom:6px;
-}
-.egg-mkt-card.raro    .egg-mkt-pill{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
-.egg-mkt-card.lendario .egg-mkt-pill{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
-.egg-mkt-elem{font-size:10px;color:var(--text2);margin-bottom:8px;font-weight:600;}
-.egg-mkt-stats{
-  display:grid;grid-template-columns:1fr 1fr;gap:3px;width:100%;margin-bottom:8px;
-}
-.egg-mkt-stat{
-  font-size:8px;color:var(--text2);
-  display:flex;justify-content:space-between;
-}
-.egg-mkt-stat b{color:var(--text);}
-.egg-mkt-price{
-  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
-  color:var(--gem2);display:flex;align-items:center;gap:4px;
-  margin-bottom:8px;
-}
-.egg-mkt-seller{font-size:7px;color:var(--muted);text-align:center;margin-bottom:8px;font-family:monospace;}
-.btn-buy-egg-mkt{
-  width:100%;padding:7px;border-radius:8px;border:none;cursor:pointer;
-  font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;
-  letter-spacing:.5px;transition:all .2s;
-  background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;
-}
-.btn-buy-egg-mkt:hover{filter:brightness(1.15);box-shadow:0 3px 12px rgba(124,58,237,.35);}
-.btn-buy-egg-mkt:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none;}
-.egg-mkt-own{
-  position:absolute;top:10px;right:8px;font-size:7px;font-weight:700;
-  padding:2px 6px;border-radius:6px;letter-spacing:.5px;
-  background:rgba(34,197,94,.15);color:var(--green2);border:1px solid var(--green);
-}
-/* modal de listar ovo */
-.egg-list-preview{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  padding:14px;background:var(--surface);border-radius:10px;margin-bottom:14px;
-}
-.egg-list-preview-icon{font-size:32px;}
-.egg-list-preview-name{font-size:11px;font-weight:700;color:var(--text);}
-.egg-list-preview-sub{font-size:9px;color:var(--muted);}
-
-/* ═══════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════ */
-#toast{
-  position:fixed;bottom:24px;right:24px;
-  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
-  padding:12px 18px;font-size:12px;color:var(--text);
-  transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;max-width:280px;
-}
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:12px;color:var(--text);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;max-width:280px;}
 #toast.show{transform:translateY(0);opacity:1;}
 #toast.ok{border-color:var(--green);}
 #toast.err{border-color:var(--red);}
 
-/* ═══════════════════════════════════════════
-   EMPTY STATE
-═══════════════════════════════════════════ */
+/* EMPTY / LOADING */
 .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
 .empty-txt{font-size:11px;line-height:1.6;}
-
-/* ═══════════════════════════════════════════
-   LOADING
-═══════════════════════════════════════════ */
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:11px;}
-.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border2);
-  border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px;}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ═══════════════════════════════════════════
-   MOBILE — max-width: 640px
-   Tudo aqui é override puro. Zero JS alterado.
-   Desktop não é afectado.
+   MOBILE
 ═══════════════════════════════════════════ */
 @media (max-width:640px) {
-
-  /* ── Base ── */
-  html,body { zoom:1; font-size:14px; }
-
-  /* ── Header ── */
-  .mkt-header { padding:8px 12px; gap:6px; }
-  .mkt-logo-sub { display:none; }
-  /* Esconde o "← Voltar ao jogo" do header — fica acessível pela nav de baixo */
-  .mkt-back { display:none; }
-  /* Carteira: só mostra o dot + endereço curto, sem fundo pesado */
-  .mkt-wallet-badge { padding:5px 8px; font-size:9px; }
-  .mkt-bal { padding:5px 8px; font-size:10px; }
-
-  /* ── Layout principal ── */
-  /* Body vira coluna: conteúdo em cima, nav em baixo */
-  .mkt-body {
-    flex-direction:column;
-    overflow:visible;
-    padding-bottom:60px; /* espaço para a bottom nav não tapar o conteúdo */
-  }
-
-  /* ── Sidebar → escondida no mobile ── */
-  .mkt-sidebar { display:none; }
-
-  /* ── Main ── */
-  .mkt-main {
-    overflow-y:visible; /* scroll normal da página no mobile */
-    padding:12px;
-  }
-
-  /* ── Bottom navigation bar ── */
-  .mkt-bottom-nav {
-    display:flex !important; /* override do display:none do desktop */
-    position:fixed;
-    bottom:0; left:0; right:0;
-    height:56px;
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    z-index:100;
-    /* safe area para iPhone com home indicator */
-    padding-bottom:env(safe-area-inset-bottom, 0px);
-  }
-  .mkt-bottom-nav-inner {
-    display:flex;
-    width:100%;
-    height:56px;
-  }
-  .mkt-bn-btn {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:2px;
-    background:none;
-    border:none;
-    color:var(--muted);
-    font-family:'Rajdhani',sans-serif;
-    font-size:9px;
-    font-weight:600;
-    letter-spacing:.3px;
-    cursor:pointer;
-    transition:color .2s;
-    padding:0;
-    position:relative;
-  }
-  .mkt-bn-btn .bn-icon { font-size:18px; line-height:1; }
-  .mkt-bn-btn.active { color:var(--gem2); }
-  /* ponto indicador na tab activa */
-  .mkt-bn-btn.active::after {
-    content:'';
-    position:absolute;
-    bottom:5px;
-    width:4px; height:4px;
-    border-radius:50%;
-    background:var(--purple);
-  }
-
-  /* ── Toast: sobe para não ficar atrás da bottom nav ── */
-  #toast { bottom:68px; right:12px; left:12px; max-width:none; text-align:center; }
-
-  /* ── Secções: sem padding lateral extra ── */
-  .section-title { font-size:14px; }
-  .section-sub { font-size:10px; }
-
-  /* ── Avatar browse: 2 colunas fixas em vez de auto-fill ── */
-  .avatar-grid {
-    grid-template-columns:repeat(2, 1fr);
-    gap:8px;
-  }
-
-  /* ── Filtros: chips com scroll horizontal ── */
-  .filters-row {
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    gap:6px;
-    padding-bottom:4px;
-    /* esconde a scrollbar mas mantém o scroll */
-    scrollbar-width:none;
-  }
-  .filters-row::-webkit-scrollbar { display:none; }
-  /* Selects viram chips pequenos */
-  .filter-select {
-    flex-shrink:0;
-    padding:5px 8px;
-    font-size:10px;
-    white-space:nowrap;
-    appearance:none;
-    -webkit-appearance:none;
-  }
-  .search-input { min-width:120px; font-size:11px; }
-
-  /* ── Slots: lista vertical em vez de grid ── */
-  .slots-grid {
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  /* Cada slot-card vira uma row horizontal */
-  .slot-card {
-    flex-direction:row;
-    align-items:stretch;
-    border-radius:10px;
-    min-height:72px;
-  }
-  /* A stripe de raridade fica na esquerda (vertical) */
-  .slot-stripe {
-    width:4px;
-    height:auto;
-    flex-shrink:0;
-    border-radius:10px 0 0 10px;
-  }
-  /* Header do slot some — a info está na row */
-  .slot-header { display:none; }
-  /* SVG menor e à esquerda */
-  .slot-svg-wrap {
-    width:56px; height:56px;
-    margin:8px 6px 8px 10px;
-    flex-shrink:0;
-    border-radius:10px;
-  }
-  .slot-svg-wrap svg { width:52px; height:52px; }
-  /* Body: ocupa o resto da linha */
-  .slot-body {
-    flex:1;
-    flex-direction:row;
-    align-items:center;
-    padding:8px 10px 8px 0;
-    gap:8px;
-    flex-wrap:nowrap;
-  }
-  /* Info (nome + pill + stats) */
-  .slot-body > .slot-av-name,
-  .slot-body > .slot-av-sub,
-  .slot-body > .slot-av-pill,
-  .slot-body > .slot-stats {
-    /* agrupa-se numa coluna via wrapper abaixo */
-  }
-  /* Cria stack vertical para nome+sub+pill+stats */
-  .slot-body {
-    display:grid;
-    grid-template-columns:1fr auto;
-    grid-template-rows:auto;
-    align-items:center;
-    padding:8px 10px 8px 0;
-    gap:4px 8px;
-  }
-  .slot-av-name {
-    grid-column:1; grid-row:1;
-    text-align:left;
-    font-size:11px;
-  }
-  .slot-av-sub {
-    grid-column:1; grid-row:2;
-    text-align:left;
-    font-size:9px;
-  }
-  .slot-av-pill {
-    grid-column:1; grid-row:3;
-    width:fit-content;
-    font-size:7px;
-  }
-  .slot-stats {
-    grid-column:1; grid-row:4;
-    display:flex;
-    gap:4px;
-    margin-top:0;
-  }
-  .slot-stat { padding:3px 6px; }
-  .slot-stat b { font-size:9px; }
-  .slot-stat span { font-size:6px; }
-  /* Acções: coluna direita, botões empilhados */
-  .slot-actions {
-    grid-column:2; grid-row:1 / span 4;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    width:auto;
-    margin-top:0;
-    align-self:center;
-  }
-  .btn-slot-activate { padding:5px 8px; font-size:8px; white-space:nowrap; }
-  .btn-slot-list     { padding:5px 8px; font-size:8px; white-space:nowrap; }
-  .btn-slot-burn     { padding:5px 8px; font-size:8px; white-space:nowrap; width:auto; }
-  /* Slots vazios: linha compacta */
-  .slot-empty-wrap {
-    min-height:56px;
-    flex-direction:row;
-    justify-content:flex-start;
-    padding:8px 12px;
-    gap:10px;
-    flex:1;
-  }
-  .slot-empty-icon { font-size:22px; margin-bottom:0; }
-  .slot-empty-title { font-size:9px; }
-  .slot-empty-txt { font-size:8px; text-align:left; }
-  .slot-locked-icon { font-size:20px; }
-
-  /* ── Cristais: lista vertical ── */
-  .crystal-packages {
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  .crystal-pkg {
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px;
-    text-align:left;
-    border-radius:10px;
-  }
-  .crystal-pkg.featured { border-color:var(--gold); }
-  /* Ícone: à esquerda, tamanho reduzido */
-  .pkg-gem { font-size:26px; margin-bottom:0; order:1; flex-shrink:0; }
-  /* Quantidade: logo após o ícone */
-  .pkg-amount { font-size:18px; margin-bottom:0; order:2; flex-shrink:0; line-height:1; }
-  /* Label (Punhado/Bolsa/etc): texto central, cresce para preencher */
-  .crystal-pkg > div:nth-child(3) { order:3; flex:1; font-size:10px !important; margin-bottom:0 !important; }
-  /* Preço em MATIC */
-  .pkg-matic { font-size:10px; margin-bottom:0; order:4; flex-shrink:0; color:var(--gold); font-weight:700; }
-  /* Popular badge: esconde no mobile para não aglomerar */
-  .pkg-bonus { display:none; }
-  /* Botão: à direita, tamanho de toque confortável */
-  .btn-buy-pkg {
-    width:auto;
-    padding:8px 14px;
-    flex-shrink:0;
-    white-space:nowrap;
-    order:5;
-  }
-
-  /* ── Pool stats: grid 1 col ── */
-  .pool-sc-grid { grid-template-columns:1fr 1fr; gap:6px; }
-  .pool-sc-balance { font-size:26px; }
-  .pool-prices { grid-template-columns:1fr 1fr; gap:6px; }
-  .pool-price-val { font-size:16px; }
-
-  /* ── Pool log: esconde coluna de tempo em ecrans pequenos ── */
-  .pool-log-time { display:none; }
-  .pool-log-row { grid-template-columns:24px 1fr auto; }
-
-  /* ── Modals: full-width no mobile ── */
-  .modal-overlay {
-    align-items:flex-end; /* modal sobe de baixo */
-    padding:0;
-  }
-  .modal-box {
-    max-width:none;
-    width:100%;
-    border-radius:16px 16px 0 0;
-    max-height:85vh;
-    overflow-y:auto;
-    padding:20px 16px;
-  }
-  #avatarDetailOverlay .modal-box { max-width:none; }
-
-  /* Detail header: empilha verticalmente */
-  .detail-header { flex-direction:column; align-items:center; text-align:center; }
-  .detail-stats-grid { grid-template-columns:1fr 1fr 1fr; }
-
-  /* ── Ovos: 2 colunas ── */
-  .egg-browse-grid {
-    grid-template-columns:repeat(2,1fr);
-    gap:8px;
-  }
-
-  /* ── Botão unlock slot ── */
-  .btn-unlock-slot { font-size:11px; padding:12px; }
-
-  /* ── Unlock slot row: padding ── */
-  #unlockSlotRow { padding:4px 0; }
-
-} /* fim @media */
+  html,body{zoom:1;font-size:14px;}
+  .mkt-header{padding:8px 12px;gap:6px;}
+  .mkt-logo-sub{display:none;}
+  .mkt-back{display:none;}
+  .mkt-wallet-badge{padding:5px 8px;font-size:9px;}
+  .mkt-bal{padding:5px 8px;font-size:10px;}
+  .mkt-body{flex-direction:column;overflow:visible;padding-bottom:60px;}
+  .mkt-sidebar{display:none;}
+  .mkt-main{overflow-y:visible;padding:12px;}
+  .mkt-bottom-nav{display:flex !important;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--surface);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom,0px);}
+  .mkt-bottom-nav-inner{display:flex;width:100%;height:56px;}
+  .mkt-bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;letter-spacing:.3px;cursor:pointer;transition:color .2s;padding:0;position:relative;}
+  .mkt-bn-btn .bn-icon{font-size:18px;line-height:1;}
+  .mkt-bn-btn.active{color:var(--gem2);}
+  .mkt-bn-btn.active::after{content:'';position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:var(--purple);}
+  #toast{bottom:68px;right:12px;left:12px;max-width:none;text-align:center;}
+  .avatar-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .filters-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;padding-bottom:4px;scrollbar-width:none;}
+  .filters-row::-webkit-scrollbar{display:none;}
+  .filter-select{flex-shrink:0;padding:5px 8px;font-size:10px;white-space:nowrap;appearance:none;-webkit-appearance:none;}
+  .search-input{min-width:120px;font-size:11px;}
+  .slots-grid{display:flex;flex-direction:column;gap:8px;}
+  .slot-card{flex-direction:row;align-items:stretch;border-radius:10px;min-height:72px;}
+  .slot-stripe{width:4px;height:auto;flex-shrink:0;border-radius:10px 0 0 10px;}
+  .slot-header{display:none;}
+  .slot-svg-wrap{width:56px;height:56px;margin:8px 6px 8px 10px;flex-shrink:0;border-radius:10px;}
+  .slot-svg-wrap svg{width:52px;height:52px;}
+  .slot-body{flex:1;display:grid;grid-template-columns:1fr auto;align-items:center;padding:8px 10px 8px 0;gap:4px 8px;}
+  .slot-av-name{grid-column:1;grid-row:1;text-align:left;font-size:11px;}
+  .slot-av-sub{grid-column:1;grid-row:2;text-align:left;font-size:9px;}
+  .slot-av-pill{grid-column:1;grid-row:3;width:fit-content;font-size:7px;}
+  .slot-stats{grid-column:1;grid-row:4;display:flex;gap:4px;margin-top:0;}
+  .slot-stat{padding:3px 6px;}
+  .slot-stat b{font-size:9px;}
+  .slot-stat span{font-size:6px;}
+  .slot-actions{grid-column:2;grid-row:1 / span 4;display:flex;flex-direction:column;gap:4px;width:auto;margin-top:0;align-self:center;}
+  .btn-slot-activate{padding:5px 8px;font-size:8px;white-space:nowrap;}
+  .btn-slot-list{padding:5px 8px;font-size:8px;white-space:nowrap;}
+  .btn-slot-burn{padding:5px 8px;font-size:8px;white-space:nowrap;width:auto;}
+  .slot-empty-wrap{min-height:56px;flex-direction:row;justify-content:flex-start;padding:8px 12px;gap:10px;flex:1;}
+  .slot-empty-icon{font-size:22px;margin-bottom:0;}
+  .slot-empty-title{font-size:9px;}
+  .slot-empty-txt{font-size:8px;text-align:left;}
+  .crystal-packages{display:flex;flex-direction:column;gap:8px;}
+  .crystal-pkg{display:flex;flex-direction:row;align-items:center;gap:10px;padding:12px 14px;text-align:left;border-radius:10px;}
+  .pkg-gem{font-size:26px;margin-bottom:0;order:1;flex-shrink:0;}
+  .pkg-amount{font-size:18px;margin-bottom:0;order:2;flex-shrink:0;line-height:1;}
+  .crystal-pkg > div:nth-child(3){order:3;flex:1;font-size:10px !important;margin-bottom:0 !important;}
+  .pkg-matic{font-size:10px;margin-bottom:0;order:4;flex-shrink:0;color:var(--gold);font-weight:700;}
+  .pkg-bonus{display:none;}
+  .btn-buy-pkg{width:auto;padding:8px 14px;flex-shrink:0;white-space:nowrap;order:5;}
+  .pool-sc-grid{grid-template-columns:1fr 1fr;gap:6px;}
+  .pool-sc-balance{font-size:26px;}
+  .pool-prices{grid-template-columns:1fr 1fr;gap:6px;}
+  .pool-price-val{font-size:16px;}
+  .pool-log-time{display:none;}
+  .pool-log-row{grid-template-columns:24px 1fr auto;}
+  .modal-box{max-width:none;width:100%;border-radius:16px 16px 0 0;max-height:85vh;overflow-y:auto;padding:20px 16px;}
+  #avatarDetailOverlay .modal-box{max-width:none;}
+  .detail-header{flex-direction:column;align-items:center;text-align:center;}
+  .egg-browse-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .btn-unlock-slot{font-size:11px;padding:12px;}
+  #unlockSlotRow{padding:4px 0;}
+}
 </style>
 </head>
 <body>
@@ -1011,23 +436,56 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 <!-- ══ LOADING OVERLAY ══ -->
 <div id="loadingWall" style="position:fixed;inset:0;background:rgba(4,3,10,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:300;">
   <div style="width:32px;height:32px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
-  <div style="font-family:'Cinzel',serif;font-size:12px;color:#6b7280;letter-spacing:1px;">A verificar carteira...</div>
+  <div style="font-family:'Cinzel',serif;font-size:12px;color:#6b7280;letter-spacing:1px;">A carregar...</div>
 </div>
 
-<!-- ══ CONNECT WALL ══ -->
+<!-- ══ CONNECT WALL — Login por email ══ -->
 <div id="connectWall" style="display:none;">
   <div class="connect-card">
-    <div class="connect-icon">💎</div>
-    <div class="connect-title">Fractured Veil Marketplace</div>
-    <div class="connect-sub">Conecta a tua carteira MetaMask para aceder ao marketplace de avatares e à loja de Cristais.</div>
-    <button class="btn-connect" onclick="connectWallet()">🦊 Conectar MetaMask</button>
+    <div class="connect-icon">✦</div>
+    <div class="connect-title">Fractured Veil</div>
+
+    <!-- Abas -->
+    <div style="display:flex;gap:0;margin:0 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
+      <button id="mktAuthTabLogin" class="auth-tab active" onclick="mktAuthShowTab('login')">ENTRAR</button>
+      <button id="mktAuthTabReg"   class="auth-tab"        onclick="mktAuthShowTab('register')">CRIAR CONTA</button>
+    </div>
+
+    <!-- Form Login -->
+    <div id="mktAuthFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+      <input id="mktLoginEmail" type="email"    placeholder="E-mail"  class="auth-input"
+        onkeydown="if(event.key==='Enter')document.getElementById('mktLoginSenha').focus()"/>
+      <input id="mktLoginSenha" type="password" placeholder="Senha"   class="auth-input"
+        onkeydown="if(event.key==='Enter')mktLogin()"/>
+      <button id="mktLoginBtn" class="auth-btn-primary" onclick="mktLogin()">ENTRAR</button>
+      <button class="auth-btn-link" onclick="mktAuthShowReset()">Esqueci a senha</button>
+    </div>
+
+    <!-- Form Registro -->
+    <div id="mktAuthFormReg" style="display:none;flex-direction:column;gap:8px;width:100%;">
+      <input id="mktRegEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
+      <input id="mktRegSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
+      <input id="mktRegSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
+        onkeydown="if(event.key==='Enter')mktRegistrar()"/>
+      <button id="mktRegBtn" class="auth-btn-green" onclick="mktRegistrar()">CRIAR CONTA</button>
+    </div>
+
+    <!-- Form Reset -->
+    <div id="mktAuthFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
+      <div style="font-size:11px;color:var(--text2);text-align:center;line-height:1.6;">Envia um link de recuperação para o teu e-mail.</div>
+      <input id="mktResetEmail" type="email" placeholder="E-mail" class="auth-input"
+        onkeydown="if(event.key==='Enter')mktResetSenha()"/>
+      <button id="mktResetBtn" class="auth-btn-primary" onclick="mktResetSenha()">ENVIAR E-MAIL</button>
+      <button class="auth-btn-link" onclick="mktAuthShowTab('login')">← Voltar</button>
+    </div>
+
+    <div id="mktAuthError" style="font-size:10px;color:#e74c3c;text-align:center;min-height:14px;margin-top:6px;"></div>
   </div>
 </div>
 
 <!-- ══ HEADER ══ -->
 <header class="mkt-header">
   <a class="mkt-logo" href="index.html">
-
     <div>
       <div class="mkt-logo-text">FRACTURED VEIL</div>
       <div class="mkt-logo-sub">Marketplace</div>
@@ -1039,6 +497,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="mkt-wallet-dot" id="walletDot"></div>
       <span id="hdrWallet">—</span>
     </div>
+    <button class="mkt-back" onclick="mktLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red2);">✕ SAIR</button>
     <a href="index.html" class="mkt-back">← Voltar ao jogo</a>
   </div>
 </header>
@@ -1052,7 +511,6 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <button class="mkt-nav-btn active" onclick="showSection('slots')" id="nav-slots">
       <span class="nav-icon">🧬</span> Meus Avatares
     </button>
-
     <div class="mkt-nav-section">Mercado</div>
     <button class="mkt-nav-btn" onclick="showSection('browse')" id="nav-browse">
       <span class="nav-icon">🛒</span> Comprar Avatares
@@ -1063,7 +521,6 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
       <span class="nav-icon">🥚</span> Comprar Ovos
     </button>
-
     <div class="mkt-nav-section">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
       <span class="nav-icon">🔍</span> Pool & Transparência
@@ -1077,7 +534,6 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <div class="mkt-section" id="sec-browse">
       <div class="section-title">🛒 Comprar Avatares</div>
       <div class="section-sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
-
       <div class="filters-row">
         <input class="search-input" id="filterSearch" placeholder="🔍 Procurar nome ou elemento..." oninput="applyFilters()"/>
         <select class="filter-select" id="filterRarity" onchange="applyFilters()">
@@ -1098,13 +554,10 @@ body{display:flex;flex-direction:column;min-height:100vh;}
           <option value="level">Nível ↓</option>
         </select>
       </div>
-
       <div id="browseGrid" class="avatar-grid">
         <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
       </div>
     </div>
-
-
 
     <!-- ── MEUS AVATARES ── -->
     <div class="mkt-section active" id="sec-slots">
@@ -1117,12 +570,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <!-- ── POOL & TRANSPARÊNCIA ── -->
     <div class="mkt-section" id="sec-transparencia">
       <div class="section-title">🔍 Pool & Transparência</div>
-      <div class="section-sub">Estado da pool de recompensas e como funciona o dinheiro no Fractured Veil — verificável por qualquer pessoa.</div>
-
-      <!-- POOL: Estado actual -->
+      <div class="section-sub">Estado da pool de recompensas e como funciona o dinheiro no Fractured Veil.</div>
       <div id="poolStatsCard"></div>
-
-      <!-- POOL: Histórico -->
       <div class="pool-log-header" style="margin-top:16px;">
         <div class="pool-log-title">📋 Histórico da Pool</div>
         <div class="pool-log-legend">
@@ -1134,77 +583,49 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="loading"><div class="spinner"></div><div>A carregar histórico...</div></div>
       </div>
       <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
-
-      <!-- DIVISOR -->
       <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
-
-      <!-- BLOCO 1: O cofre -->
       <div class="transp-block">
         <div class="transp-block-title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
-          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon —
-          código público que ninguém pode alterar, nem o criador do jogo.<br><br>
+          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar.<br><br>
           <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
-          <br><br>
           <div class="transp-timelock-status" id="transpTimelockStatus">A carregar...</div>
         </div>
       </div>
-
-      <!-- BLOCO 2: Compra de cristais -->
       <div class="transp-block">
         <div class="transp-block-title">💸 Quando compras 💎 Cristais</div>
         <div class="transp-block-body">
-          O MATIC vai 100% para o cofre do contrato. Os 💎 são creditados no jogo pelo servidor após verificação on-chain.
-          O cofre é a reserva que garante que todos os jogadores podem sempre resgatar os seus 💎.
-          <div class="transp-taxa-row" style="margin-top:10px;">
-            <span>MATIC enviado</span><span class="transp-taxa-val">100% → Cofre</span>
-          </div>
-          <div class="transp-taxa-row">
-            <span>💎 creditados ao jogador</span><span class="transp-taxa-val">1 MATIC = 10 💎</span>
-          </div>
-          <div class="transp-taxa-row">
-            <span>Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span>
-          </div>
-          <br>
-          O teu limite hoje:
-          <div class="transp-limit-bar-wrap">
-            <div class="transp-limit-bar" id="transpLimitBar"></div>
-          </div>
-          <div class="transp-limit-txt" id="transpLimitTxt">Conecta a carteira para ver o teu limite.</div>
+          O MATIC vai 100% para o cofre do contrato. Os 💎 são creditados após verificação on-chain.
+          <div class="transp-taxa-row" style="margin-top:10px;"><span>MATIC enviado</span><span class="transp-taxa-val">100% → Cofre</span></div>
+          <div class="transp-taxa-row"><span>💎 creditados</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          <div class="transp-taxa-row"><span>Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
+          <br>O teu limite hoje:
+          <div class="transp-limit-bar-wrap"><div class="transp-limit-bar" id="transpLimitBar"></div></div>
+          <div class="transp-limit-txt" id="transpLimitTxt">Vincula a MetaMask na secção de Cristais para ver o teu limite.</div>
         </div>
       </div>
-
-      <!-- BLOCO 3: Taxas do marketplace -->
       <div class="transp-block">
         <div class="transp-block-title">🏪 Taxas do Marketplace</div>
         <div class="transp-block-body">
-          Todas as taxas das transações dentro do marketplace são divididas:
-          <strong>80% vão para a Pool P2E</strong> (que paga recompensas aos jogadores)
-          e <strong>20% vão para manutenção</strong> (servidor, base de dados e desenvolvimento).
-          <div class="transp-taxa-row" style="margin-top:10px;">
-            <span>Listar avatar</span><span class="transp-taxa-val">2 💎 · 80% Pool + 20% Dev</span>
-          </div>
-          <div class="transp-taxa-row">
-            <span>Venda de avatar</span><span class="transp-taxa-val">10% taxa · 80% Pool + 20% Dev</span>
-          </div>
-          <div class="transp-taxa-row">
-            <span>Venda de ovo</span><span class="transp-taxa-val">10% taxa · 80% Pool + 20% Dev</span>
-          </div>
+          <strong>80% das taxas → Pool P2E</strong> · 20% → manutenção
+          <div class="transp-taxa-row" style="margin-top:10px;"><span>Listar avatar</span><span class="transp-taxa-val">2 💎</span></div>
+          <div class="transp-taxa-row"><span>Venda de avatar</span><span class="transp-taxa-val">10% taxa</span></div>
+          <div class="transp-taxa-row"><span>Venda de ovo</span><span class="transp-taxa-val">10% taxa</span></div>
         </div>
       </div>
-
     </div>
 
     <!-- ── COMPRAR CRISTAIS ── -->
     <div class="mkt-section" id="sec-buycrystals">
       <div class="section-title">💎 Comprar Cristais</div>
-      <div class="section-sub">1 MATIC = 10 💎. A transação é feita directamente no teu MetaMask — sem colar hashes.</div>
+      <div class="section-sub">1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
+
+      <!-- CTA MetaMask — aparece se não tiver carteira vinculada -->
+      <div id="metamaskCtaWrap"></div>
 
       <div class="crystal-packages" id="crystalPackages"></div>
-
       <div id="buyStatus" style="margin-top:12px;text-align:center;min-height:24px;"></div>
 
-      <!-- RESGATAR -->
       <div class="tx-verify-box" style="margin-top:24px;">
         <h3>💸 Resgatar Cristais → MATIC</h3>
         <div class="section-sub" style="margin:8px 0 16px;">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
@@ -1219,8 +640,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <!-- ── OVOS À VENDA ── -->
     <div class="mkt-section" id="sec-eggs">
       <div class="section-title">🥚 Comprar Ovos</div>
-      <div class="section-sub">Ovos Raros e Lendários listados por outros jogadores. Choca-os no jogo principal para obter avatares de raridade superior.</div>
-
+      <div class="section-sub">Ovos Raros e Lendários listados por outros jogadores.</div>
       <div class="filters-row">
         <input class="search-input" id="eggFilterElem" placeholder="🔍 Filtrar por elemento..." oninput="renderEggBrowse()"/>
         <select class="filter-select" id="eggFilterRarity" onchange="renderEggBrowse()">
@@ -1234,7 +654,6 @@ body{display:flex;flex-direction:column;min-height:100vh;}
           <option value="price_desc">Preço ↓</option>
         </select>
       </div>
-
       <div id="eggBrowseGrid" class="egg-browse-grid">
         <div class="loading"><div class="spinner"></div><div>A carregar ovos...</div></div>
       </div>
@@ -1243,11 +662,11 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   </main>
 </div>
 
-<!-- ══ MODAL LISTAR OVO ══ -->
+<!-- ══ MODAIS ══ -->
 <div class="overlay" id="listEggOverlay">
   <div class="modal-box">
     <div class="modal-title">🥚 Listar Ovo à Venda</div>
-    <div class="modal-sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário e listado no marketplace.</div>
+    <div class="modal-sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário.</div>
     <div id="listEggPreview"></div>
     <div class="modal-field">
       <div class="modal-label">Preço em 💎 Cristais</div>
@@ -1261,11 +680,10 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   </div>
 </div>
 
-<!-- ══ MODAL LISTAR ══ -->
 <div class="overlay" id="listOverlay">
   <div class="modal-box">
     <div class="modal-title">📋 Listar Avatar</div>
-    <div class="modal-sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado até ser vendido ou retirado.</div>
+    <div class="modal-sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.</div>
     <div class="modal-warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
     <div id="listAvatarPreview" style="margin-bottom:14px;"></div>
     <div class="modal-field">
@@ -1279,19 +697,16 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   </div>
 </div>
 
-<!-- ══ MODAL DETALHE AVATAR ══ -->
 <div class="overlay" id="avatarDetailOverlay">
   <div class="modal-box" id="avatarDetailBox"></div>
 </div>
 
-<!-- ══ MODAL QUEIMAR AVATAR ══ -->
 <div class="overlay" id="burnOverlay">
   <div class="modal-box" style="max-width:320px;text-align:center;">
     <div class="modal-title" style="color:#f87171;">🔥 Queimar Avatar</div>
     <div id="burnAvatarPreview" style="margin:12px 0;"></div>
     <div class="modal-warn" style="border-color:#7f1d1d;color:#fca5a5;">
-      Esta acção é <b>permanente e irreversível</b>.<br>
-      O avatar será destruído e o slot libertado.
+      Esta acção é <b>permanente e irreversível</b>.<br>O avatar será destruído e o slot libertado.
     </div>
     <div class="modal-row" style="margin-top:16px;">
       <button class="btn-modal-cancel" onclick="closeBurnModal()">Cancelar</button>
@@ -1300,12 +715,12 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
 <div id="toast"></div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
 <script>
   const firebaseConfig = {
@@ -1318,56 +733,32 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   };
   firebase.initializeApp(firebaseConfig);
   window.db = firebase.firestore();
-  var db = window.db; // var para ser global entre scripts
+  var db = window.db;
 </script>
 <script src="js/data.js"></script>
 <script src="js/pool.js"></script>
 <script src="js/cristais.js"></script>
 <script src="js/avatars-market.js"></script>
 <script src="js/eggs-market.js"></script>
+<script src="js/marketplace-auth.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // MARKETPLACE — CORE
-// Variáveis globais, funções de arranque, navegação e utils
 // ═══════════════════════════════════════════
 
-const PAYMENT_ADDRESS  = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030'; // owner do contrato
+const PAYMENT_ADDRESS  = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030';
 const POLYGONSCAN_API  = 'https://api.polygonscan.com/api';
-const LIST_COST        = 2;   // 💎 taxa de listagem de avatar
-const UNLOCK_SLOT_COST = 15;  // 💎 custo de desbloquear slot
+const LIST_COST        = 2;
+const UNLOCK_SLOT_COST = 15;
 
-// ── Estado global ──
 let walletAddress  = null;
-let playerData     = null;  // dados do jogador carregados do Firestore
-let listings       = [];    // listagens de avatares (listener em tempo real)
+let playerData     = null;
+let listings       = [];
 let listingUnsub   = null;
-let listingSlotIdx = null;  // slot seleccionado para listar
-
-// ── Navegação ──
+let listingSlotIdx = null;
 let currentSection = 'slots';
 
-// ═══════════════════════════════════════════
-// CARTEIRA — conectar e carregar dados
-// ═══════════════════════════════════════════
-async function connectWallet() {
-  if(typeof window.ethereum === 'undefined') {
-    showToast('MetaMask não encontrada. Instala a extensão.', 'err'); return;
-  }
-  try {
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-    walletAddress = accounts[0].toLowerCase();
-    document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
-    document.getElementById('walletDot').classList.remove('off');
-    document.getElementById('connectWall').style.display = 'none';
-    await loadPlayerData();
-    loadListings();
-    await loadPool();
-    renderSection();
-  } catch(e) {
-    showToast('Conexão recusada.', 'err');
-  }
-}
-
+// ── Carregar dados do jogador ──
 async function loadPlayerData() {
   const snap = await db.collection('players').doc(walletAddress).get();
   playerData = snap.exists ? snap.data() : { cristais:0, avatarSlots:[null,null,null], activeSlotIdx:0, extraSlots:0 };
@@ -1384,20 +775,15 @@ async function savePlayerData() {
   updateCristaisDisplay();
 }
 
-// Lê avatarSlots frescos do Firebase, aplica mutação, guarda só avatarSlots + campos económicos
 async function updateSlots(mutateFn, extraFields = {}) {
   const snap = await db.collection('players').doc(walletAddress).get();
   const data = snap.exists ? snap.data() : {};
-  const slots = (data.avatarSlots || [null, null, null]).map(s => s || null);
+  const slots = (data.avatarSlots || [null,null,null]).map(s => s || null);
   mutateFn(slots, data);
-  await db.collection('players').doc(walletAddress).update({
-    avatarSlots: slots,
-    ...extraFields
-  });
-  // Actualiza playerData local para UI
+  await db.collection('players').doc(walletAddress).update({ avatarSlots: slots, ...extraFields });
   playerData.avatarSlots = slots;
   if(extraFields.cristais !== undefined) playerData.cristais = extraFields.cristais;
-  if(extraFields['gs.cristais'] !== undefined) { if(!playerData.gs) playerData.gs = {}; playerData.gs.cristais = extraFields['gs.cristais']; }
+  if(extraFields['gs.cristais'] !== undefined) { if(!playerData.gs) playerData.gs={}; playerData.gs.cristais = extraFields['gs.cristais']; }
   updateCristaisDisplay();
 }
 
@@ -1409,21 +795,39 @@ function getUnlockedSlots() {
   return Math.min(MAX_SLOTS, BASE_SLOTS + (playerData?.extraSlots || 0));
 }
 
-// ═══════════════════════════════════════════
-// NAVEGAÇÃO — secções da sidebar
-// ═══════════════════════════════════════════
+// ── Render MetaMask CTA na secção de cristais ──
+function renderMetaMaskCta() {
+  const wrap = document.getElementById('metamaskCtaWrap');
+  if(!wrap) return;
+  const carteira = playerData?.carteira;
+  if(carteira) {
+    wrap.innerHTML = `
+      <div class="metamask-linked">
+        <div class="metamask-linked-dot"></div>
+        <div>
+          <div class="metamask-linked-txt">🦊 MetaMask vinculada</div>
+          <div class="metamask-linked-addr">${carteira.slice(0,6)}...${carteira.slice(-4)}</div>
+        </div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="metamask-cta">
+        <div class="metamask-cta-title">🦊 MetaMask necessária</div>
+        <div class="metamask-cta-sub">Para comprar ou resgatar Cristais com MATIC, vincula a tua carteira MetaMask. O teu progresso no jogo já está seguro — a carteira é só para pagamentos.</div>
+        <button class="btn-metamask" onclick="vincularCarteira().then(renderMetaMaskCta)">Vincular MetaMask</button>
+      </div>`;
+  }
+}
+
+// ── Navegação ──
 function showSection(id) {
   currentSection = id;
   document.querySelectorAll('.mkt-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.mkt-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   document.getElementById('nav-'+id)?.classList.add('active');
-  // Purgar SVGs das secções inactivas para evitar colisão de IDs de filtro
   document.querySelectorAll('.mkt-section:not(.active)').forEach(sec => {
-    sec.querySelectorAll('svg').forEach(svg => {
-      svg.innerHTML = '';
-      svg.remove();
-    });
+    sec.querySelectorAll('svg').forEach(svg => { svg.innerHTML=''; svg.remove(); });
   });
   renderSection();
 }
@@ -1431,14 +835,12 @@ function showSection(id) {
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
   if(currentSection === 'slots')         renderSlots();
-  if(currentSection === 'buycrystals')   renderCrystals();
+  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
 }
 
-// ═══════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════
+// ── Utils ──
 let _toastTimer = null;
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
@@ -1448,82 +850,36 @@ function showToast(msg, type='ok') {
   _toastTimer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// Fechar overlays ao clicar no fundo
 document.getElementById('listOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeListModal(); });
 document.getElementById('avatarDetailOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
 
-// ═══════════════════════════════════════════
-// AUTO-CONNECT — tenta até 4x com delay
-// (MetaMask pode demorar a inicializar)
-// ═══════════════════════════════════════════
-window.addEventListener('load', async () => {
-  const loading = document.getElementById('loadingWall');
-  const wall    = document.getElementById('connectWall');
-
-  async function tryAutoConnect(attemptsLeft) {
-    try {
-      if(typeof window.ethereum === 'undefined') {
-        loading.style.display = 'none';
-        wall.style.display = 'flex';
-        return;
-      }
-      const accounts = await ethereum.request({ method:'eth_accounts' });
-      if(accounts.length > 0) {
-        walletAddress = accounts[0].toLowerCase();
-        document.getElementById('hdrWallet').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
-        document.getElementById('walletDot').classList.remove('off');
-        loading.style.display = 'none';
-        await loadPlayerData();
-        loadListings();
-        await loadPool();
-        renderSection();
-        return;
-      }
-      // Sem sessão ainda — retry se tiver tentativas
-      if(attemptsLeft > 0) {
-        setTimeout(() => tryAutoConnect(attemptsLeft - 1), 400);
-      } else {
-        loading.style.display = 'none';
-        wall.style.display = 'flex';
-      }
-    } catch(e) {
-      console.warn('Auto-connect falhou:', e.message);
-      loading.style.display = 'none';
-      wall.style.display = 'flex';
-    }
-  }
-
-  tryAutoConnect(3); // tenta 4x no total (0ms, 400ms, 800ms, 1200ms)
+// ── Arranque ──
+window.addEventListener('load', () => {
+  iniciarMktAuth();
 });
 </script>
 
-<!-- ══ BOTTOM NAV — mobile only (display:none no desktop, flex no mobile via CSS) ══ -->
+<!-- ══ BOTTOM NAV mobile ══ -->
 <div class="mkt-bottom-nav" style="display:none;">
   <div class="mkt-bottom-nav-inner">
     <button class="mkt-bn-btn active" id="mbn-slots" onclick="showSection('slots');_mbnActive(this)">
-      <span class="bn-icon">🧬</span>
-      <span>Avatares</span>
+      <span class="bn-icon">🧬</span><span>Avatares</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-browse" onclick="showSection('browse');_mbnActive(this)">
-      <span class="bn-icon">🛒</span>
-      <span>Mercado</span>
+      <span class="bn-icon">🛒</span><span>Mercado</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-eggs" onclick="showSection('eggs');_mbnActive(this)">
-      <span class="bn-icon">🥚</span>
-      <span>Ovos</span>
+      <span class="bn-icon">🥚</span><span>Ovos</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-buycrystals" onclick="showSection('buycrystals');_mbnActive(this)">
-      <span class="bn-icon">💎</span>
-      <span>Cristais</span>
+      <span class="bn-icon">💎</span><span>Cristais</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
-      <span class="bn-icon">🔍</span>
-      <span>Pool</span>
+      <span class="bn-icon">🔍</span><span>Pool</span>
     </button>
   </div>
 </div>
 <script>
-// Sincroniza o estado activo da bottom nav mobile
 function _mbnActive(btn) {
   document.querySelectorAll('.mkt-bn-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
