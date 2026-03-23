@@ -1,35 +1,17 @@
 // ═══════════════════════════════════════════════════════════════
 //  api/processar-compra.js — Vercel Serverless Function
 //
-//  O que esta função faz:
-//    1. Recebe o tx hash da transação confirmada no MetaMask
-//    2. Liga-se à Polygon Mainnet via RPC público
-//    3. Lê o recibo da transação e verifica o evento CristaisComprados
-//    4. Confirma que o destinatário é o nosso contrato
-//    5. Confirma que quem enviou foi a carteira do jogador
-//    6. Calcula os 💎 a creditar (MATIC enviado × RATE)
-//    7. Verifica se este tx hash já foi processado (anti-duplo)
-//    8. Credita os 💎 no Firestore atomicamente
-//
-//  Chamada pelo frontend após tx.wait() confirmar on-chain.
-//
 //  Body esperado:
-//    { jogador: "0x...", txHash: "0x..." }
+//    { jogador: "<uid Firebase>", carteira: "0x...", txHash: "0x..." }
 //
-//  Variáveis de ambiente necessárias no Vercel:
-//    CONTRACT_ADDRESS     — endereço do contrato deployado
-//    FIREBASE_PROJECT_ID
-//    FIREBASE_CLIENT_EMAIL
-//    FIREBASE_PRIVATE_KEY
-//
-//  Nota: não precisa de SIGNER_PRIVATE_KEY (não assina nada aqui)
+//  jogador = uid do Firebase Auth (doc ID no Firestore)
+//  carteira = endereço Ethereum (para verificar a tx on-chain)
 // ═══════════════════════════════════════════════════════════════
 
 const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 
-// ── Firebase Admin (inicializa uma vez por instância) ──────────
 function getDB() {
   if (!getApps().length) {
     initializeApp({
@@ -43,43 +25,40 @@ function getDB() {
   return getFirestore();
 }
 
-// ── Configuração ───────────────────────────────────────────────
-const RATE             = 10;   // 10 💎 = 1 MATIC (tem de coincidir com o contrato)
-const MAX_GEMS_CREDITO = 1000; // tecto de segurança por transação
+const RATE             = 10;
+const MAX_GEMS_CREDITO = 1000;
 
-
-// ABI mínimo — só precisamos do evento CristaisComprados
 const CONTRACT_ABI = [
   'event CristaisComprados(address indexed jogador, uint256 maticEnviado, uint256 gems)',
 ];
 
-// RPC da Polygon Mainnet — lista de fallback por ordem de prioridade
-// Todos verificados como gratuitos sem chave de API
 const POLYGON_RPCS = [
-  'https://polygon-bor-rpc.publicnode.com',  // PublicNode — gratuito sem chave
-  'https://polygon.drpc.org',                // dRPC — gratuito sem chave
-  'https://polygon.meowrpc.com',             // MeowRPC — gratuito sem chave
-  'https://polygon.llamarpc.com',            // LlamaRPC — gratuito sem chave
+  'https://polygon-bor-rpc.publicnode.com',
+  'https://polygon.drpc.org',
+  'https://polygon.meowrpc.com',
+  'https://polygon.llamarpc.com',
 ];
 
 module.exports = async function handler(req, res) {
-  // ── Apenas POST ─────────────────────────────────────────────
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  const { jogador, txHash } = req.body;
+  // jogador = uid Firebase, carteira = endereço Ethereum
+  const { jogador, carteira, txHash } = req.body;
 
-  // ── Validar inputs ──────────────────────────────────────────
-  if (!jogador || !ethers.isAddress(jogador)) {
+  // ── Validar inputs ──
+  if (!jogador || typeof jogador !== 'string' || jogador.length < 10) {
+    return res.status(400).json({ erro: 'Identificador de jogador inválido' });
+  }
+  if (!carteira || !ethers.isAddress(carteira)) {
     return res.status(400).json({ erro: 'Endereço de carteira inválido' });
   }
   if (!txHash || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
     return res.status(400).json({ erro: 'Hash de transação inválido' });
   }
 
-  const jogadorAddr    = jogador.toLowerCase();
-  const jogadorChecksum = ethers.getAddress(jogador);
+  const carteiraAddr    = carteira.toLowerCase();
   const contractAddress = process.env.CONTRACT_ADDRESS;
 
   if (!contractAddress || contractAddress === 'PENDENTE_DEPLOY') {
@@ -89,22 +68,20 @@ module.exports = async function handler(req, res) {
   try {
     const db = getDB();
 
-    // ── Anti-duplo: verifica se este tx hash já foi processado ──
-    // Guarda em compras/{txHash} — doc ID único por transação
-    const compraRef = db.collection('compras').doc(txHash);
+    // ── Anti-duplo ──
+    const compraRef  = db.collection('compras').doc(txHash);
     const compraSnap = await compraRef.get();
     if (compraSnap.exists) {
       return res.status(409).json({ erro: 'Transação já processada' });
     }
 
-    // ── Verificar transação on-chain ────────────────────────────
-    // Tenta cada RPC em sequência até um responder
+    // ── Verificar tx on-chain ──
     let recibo = null;
     for (const rpc of POLYGON_RPCS) {
       try {
         const provider = new ethers.JsonRpcProvider(rpc);
         recibo = await provider.getTransactionReceipt(txHash);
-        break; // sucesso — sai do loop
+        break;
       } catch (rpcErr) {
         console.warn(`[processar-compra] RPC ${rpc} falhou:`, rpcErr.message);
       }
@@ -125,91 +102,79 @@ module.exports = async function handler(req, res) {
     }
 
     // Verifica que foi enviada pela carteira do jogador
-    if (recibo.from?.toLowerCase() !== jogadorAddr) {
+    if (recibo.from?.toLowerCase() !== carteiraAddr) {
       return res.status(400).json({ erro: 'Transação não foi enviada pela tua carteira' });
     }
 
-    // ── Ler o evento CristaisComprados do recibo ────────────────
-    const iface  = new ethers.Interface(CONTRACT_ABI);
+    // ── Ler evento CristaisComprados ──
+    const iface = new ethers.Interface(CONTRACT_ABI);
     let gemsACreditar = 0;
     let maticEnviado  = 0n;
 
     for (const log of recibo.logs) {
-      // Filtra só os logs do nosso contrato
       if (log.address?.toLowerCase() !== contractAddress.toLowerCase()) continue;
       try {
         const parsed = iface.parseLog(log);
         if (parsed?.name === 'CristaisComprados') {
-          // Confirma que o evento é para este jogador
-          if (parsed.args.jogador?.toLowerCase() !== jogadorAddr) continue;
-          maticEnviado  = parsed.args.maticEnviado; // BigInt em wei
-          gemsACreditar = Number(parsed.args.gems);  // já calculado pelo contrato
+          if (parsed.args.jogador?.toLowerCase() !== carteiraAddr) continue;
+          maticEnviado  = parsed.args.maticEnviado;
+          gemsACreditar = Number(parsed.args.gems);
           break;
         }
-      } catch {
-        // Log de outro contrato — ignora
-      }
+      } catch { /* log de outro contrato */ }
     }
 
     if (gemsACreditar <= 0) {
-      return res.status(400).json({
-        erro: 'Evento CristaisComprados não encontrado nesta transação'
-      });
+      return res.status(400).json({ erro: 'Evento CristaisComprados não encontrado nesta transação' });
     }
-
-    // Tecto de segurança extra
     if (gemsACreditar > MAX_GEMS_CREDITO) {
-      console.error(`[processar-compra] gems suspeitos: ${gemsACreditar} para ${jogadorAddr}`);
+      console.error(`[processar-compra] gems suspeitos: ${gemsACreditar} para ${jogador}`);
       return res.status(400).json({ erro: 'Quantidade de 💎 fora dos limites esperados' });
     }
 
-    // ── Creditar 💎 atomicamente no Firestore ───────────────────
-    const playerRef = db.collection('players').doc(jogadorAddr);
+    // ── Creditar no Firestore usando uid como doc ID ──
+    const playerRef = db.collection('players').doc(jogador);
 
     await db.runTransaction(async (tx) => {
-      // Re-verifica anti-duplo dentro da transacção (race condition)
       const compraCheck = await tx.get(compraRef);
-      if (compraCheck.exists) {
-        throw new Error('ALREADY_PROCESSED');
-      }
+      if (compraCheck.exists) throw new Error('ALREADY_PROCESSED');
 
       const playerSnap = await tx.get(playerRef);
 
       if (playerSnap.exists) {
-        // Jogador já existe — incrementa cristais
         tx.update(playerRef, {
           'gs.cristais': FieldValue.increment(gemsACreditar),
           cristais:      FieldValue.increment(gemsACreditar),
+          // Guarda a carteira vinculada se ainda não estiver registada
+          carteira:      carteiraAddr,
         });
       } else {
-        // Jogador novo — cria documento mínimo
         tx.set(playerRef, {
-          gs:      { cristais: gemsACreditar },
+          gs:       { cristais: gemsACreditar },
           cristais: gemsACreditar,
+          carteira: carteiraAddr,
           criadoEm: new Date(),
         });
       }
 
-      // Regista a compra para evitar duplo-crédito
       tx.set(compraRef, {
-        jogador:      jogadorAddr,
+        jogador,
+        carteira:     carteiraAddr,
         txHash,
         gems:         gemsACreditar,
         maticWei:     maticEnviado.toString(),
         processadoEm: new Date(),
       });
 
-      // Histórico da compra no perfil do jogador
       const logRef = playerRef.collection('compras').doc(txHash);
       tx.set(logRef, {
-        gems:         gemsACreditar,
-        maticWei:     maticEnviado.toString(),
+        gems:     gemsACreditar,
+        maticWei: maticEnviado.toString(),
         txHash,
-        ts:           new Date(),
+        ts:       new Date(),
       });
     });
 
-    // ── Resposta ao frontend ────────────────────────────────────
     return res.status(200).json({
       ok:   true,
       gems: gemsACreditar,
