@@ -35,6 +35,61 @@
   <link rel="stylesheet" href="css/arena.css">
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
+
+  <style>
+    /* ── Auth tabs ── */
+    .auth-tab {
+      flex: 1; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted); font-family: 'Cinzel', serif;
+      font-size: 9px; letter-spacing: 2px;
+      padding: 8px 0; cursor: pointer; transition: all .2s;
+    }
+    .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .auth-tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Auth inputs ── */
+    .auth-input {
+      width: 100%; box-sizing: border-box;
+      background: #0a0816; border: 1px solid #2a2040;
+      border-radius: 6px; color: #e8e0f0;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      padding: 10px 12px; outline: none; letter-spacing: .5px;
+      transition: border-color .2s;
+    }
+    .auth-input:focus { border-color: #5a3a9a; }
+
+    /* ── Auth buttons ── */
+    .auth-btn-primary {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+      border: none; border-radius: 6px; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .auth-btn-primary:hover { opacity: .9; }
+    .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .auth-btn-green {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #1a4a2a, #2d7a4a);
+      border: none; border-radius: 6px; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .auth-btn-green:hover { opacity: .9; }
+    .auth-btn-green:disabled { opacity: .5; cursor: not-allowed; }
+
+    .auth-btn-link {
+      background: none; border: none; color: var(--muted);
+      font-size: 9px; cursor: pointer;
+      font-family: 'Cinzel', serif; letter-spacing: 1px;
+      margin-top: 2px; transition: color .15s;
+    }
+    .auth-btn-link:hover { color: var(--gold); }
+  </style>
 </head>
 <body>
 <canvas id="starCanvas"></canvas>
@@ -44,13 +99,47 @@
   <div id="loginCard">
     <div id="loginLogo">Fractured Veil</div>
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
-    <div id="loginDesc">Conecte sua carteira MetaMask<br>para invocar seu avatar</div>
-    <button id="loginBtn" onclick="connectWallet()">
-      <span id="loginBtnIcon">🦊</span>
-      <span id="loginBtnText">CONECTAR METAMASK</span>
-    </button>
-    <div id="loginError"></div>
-    <div id="loginFooter">Rede Polygon · Fractured Veil v1.0</div>
+
+    <!-- Abas Entrar / Criar Conta -->
+    <div style="display:flex;gap:0;margin:14px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
+      <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')">ENTRAR</button>
+      <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')">CRIAR CONTA</button>
+    </div>
+
+    <!-- ── Form: Login ── -->
+    <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+      <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input"
+        onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
+      <input id="loginSenha" type="password" placeholder="Senha" class="auth-input"
+        onkeydown="if(event.key==='Enter')loginComEmail()"/>
+      <button id="loginBtn" class="auth-btn-primary" onclick="loginComEmail()">
+        <span id="loginBtnText">ENTRAR</span>
+      </button>
+      <button class="auth-btn-link" onclick="authShowReset()">Esqueci a senha</button>
+    </div>
+
+    <!-- ── Form: Registro ── -->
+    <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
+      <input id="regEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
+      <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
+      <input id="regSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
+        onkeydown="if(event.key==='Enter')registrarComEmail()"/>
+      <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
+    </div>
+
+    <!-- ── Form: Reset de senha ── -->
+    <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
+      <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">
+        Envia um link de recuperação<br>para o teu e-mail.
+      </div>
+      <input id="resetEmail" type="email" placeholder="E-mail" class="auth-input"
+        onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
+      <button id="resetBtn" class="auth-btn-primary" onclick="enviarResetSenha()">ENVIAR E-MAIL</button>
+      <button class="auth-btn-link" onclick="authShowTab('login')">← Voltar</button>
+    </div>
+
+    <div id="loginError" style="font-size:9px;color:#e74c3c;text-align:center;min-height:14px;margin-top:6px;"></div>
+    <div id="loginFooter" style="font-size:7px;color:var(--muted);margin-top:8px;letter-spacing:1px;">Fractured Veil v1.0</div>
   </div>
 </div>
 
@@ -74,7 +163,7 @@
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
         <div class="wallet-address">
-          🦊 <span id="walletShort">0x...</span>
+          ✉️ <span id="walletShort">jogador</span>
         </div>
         <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
@@ -153,7 +242,6 @@
         <!-- ALIVE state -->
         <div id="aliveScreen" style="display:none; position:absolute; inset:0;">
 
-
           <!-- ITEM INVENTORY MODAL -->
           <div class="mini-modal" id="itemInvModal">
             <div class="modal-header">
@@ -196,41 +284,24 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
-          
-              <!-- Separador -->
+
               <div style="margin-bottom:12px;"></div>
-          
+
               <!-- Câmbio moedas → cristais -->
-              <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);
-                          letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
+              <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
               <div id="cambioPanel" style="width:100%;">
-                <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">
-                  Abre a loja para ver o câmbio.
-                </div>
+                <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
               </div>
-          
-              <!-- Separador -->
+
               <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
-          
+
               <!-- Link marketplace -->
-              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);
-                          border-radius:8px;padding:10px;text-align:center;">
-                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">
-                  💎 Precisas de mais Cristais?
-                </div>
-                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-                  Compra cristais com MATIC ou vende ovos no Marketplace.
-                </div>
-                <a href="marketplace.html"
-                  style="display:inline-block;padding:7px 16px;
-                         background:linear-gradient(135deg,#4c1d95,#7c3aed);
-                         border-radius:6px;color:#fff;font-size:8px;
-                         font-family:'Cinzel',serif;font-weight:700;
-                         text-decoration:none;letter-spacing:.5px;">
-                  Ir ao Marketplace →
-                </a>
+              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
+                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
+                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
+                <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
-          
+
             </div>
           </div>
 
@@ -249,14 +320,13 @@
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
-          
-            <!-- ABAS PVE / PVP -->
+
             <div class="gs-tabs">
               <button class="gs-tab active" id="gsTabPve" onclick="gsSetTab('pve')">🎮 PVE</button>
-              <button class="gs-tab" id="gsTabPvp" onclick="gsSetTab('pvp')">⚔️ PVP</button>
+              <button class="gs-tab"        id="gsTabPvp" onclick="gsSetTab('pvp')">⚔️ PVP</button>
             </div>
-          
-            <!-- PVE -->            
+
+            <!-- PVE -->
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
@@ -292,7 +362,7 @@
                 </div>
               </div>
             </div>
-          
+
             <!-- PVP -->
             <div id="gsGridPvp" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); openArena()">
@@ -525,10 +595,10 @@
       <div class="panel-card" id="summonCard">
         <div class="panel-title">◆ INVOCAR AVATAR</div>
         <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
-          <div style="font-size:16px;margin-bottom:6px;">🦊</div>
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">CARTEIRA NECESSÁRIA</div>
-          <div style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Conecte sua MetaMask para invocar seu avatar e garantir que seu progresso seja salvo.</div>
-          <button class="btn-connect-wallet" onclick="connectWallet()">🔌 CONECTAR METAMASK</button>
+          <div style="font-size:16px;margin-bottom:6px;">✨</div>
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">LOGIN NECESSÁRIO</div>
+          <div style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
+          <button class="btn-connect-wallet" onclick="document.getElementById('loginScreen').style.display='flex'">🔑 FAZER LOGIN</button>
         </div>
         <div class="summon-section" id="summonSection" style="display:none;">
           <button class="btn-summon" id="btnSummon" onclick="triggerSummon()">
@@ -651,6 +721,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <!-- Firebase init -->
 <script>
@@ -682,30 +753,18 @@
 <script src="js/items.js"></script>
 <script src="js/market.js"></script>
 <script src="js/coinshop.js"></script>
-<script src="js/wallet.js"></script>
 <script src="js/cards.js"></script>
 <script src="js/rouba-monte.js"></script>
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
-<script src="js/cambio.js"></script>  
+<script src="js/cambio.js"></script>
+<script src="js/arena.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/main.js"></script>
 
-<!-- Arena (após wallet.js para ter acesso ao walletAddress) -->
-<script src="js/arena.js"></script>
 <script>
-  // Hook no connectWallet para iniciar listener de desafios e verificar partida pendente após login
-  const _origConnectWallet = window.connectWallet;
-  window.connectWallet = async function() {
-    await _origConnectWallet.apply(this, arguments);
-    if(walletAddress) {
-      iniciarListenerDesafiosRecebidos();
-      verificarPartidaPendente();
-      setTimeout(_limparSalasAntigas, 3000); // após 3s — deixa o jogo carregar primeiro
-      if(typeof rmIniciarListenerNotificacoes === 'function') rmIniciarListenerNotificacoes();
-      if(typeof bnIniciarListenerNotificacoes === 'function') bnIniciarListenerNotificacoes();
-    }
-  
-  };
+  // Inicia o listener de autenticação após todos os módulos carregarem
+  iniciarAuthListener();
 </script>
 
 </body>
