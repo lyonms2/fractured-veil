@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/screen.css">
   <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/mobile-index.css">
   <link rel="stylesheet" href="css/minigames.css">
   <link rel="stylesheet" href="css/modals.css">
   <link rel="stylesheet" href="css/arena.css">
@@ -767,5 +768,37 @@
   iniciarAuthListener();
 </script>
 
+<script>
+function _fvbnActive(btn) {
+  document.querySelectorAll('.fv-bn-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function scrollToDevice()  { document.querySelector('.device')?.scrollIntoView({behavior:'smooth'}); }
+function scrollToStats()   { document.querySelector('.right-panel')?.scrollIntoView({behavior:'smooth'}); }
+function scrollToActions() { document.getElementById('actionBtns')?.scrollIntoView({behavior:'smooth'}); }
+function scrollToLog()     { document.getElementById('logList')?.scrollIntoView({behavior:'smooth'}); }
+</script>
+  
+<nav class="fv-bottom-nav" style="display:none;">
+  <div class="fv-bottom-nav-inner">
+    <button class="fv-bn-btn active" id="fvbn-avatar" onclick="_fvbnActive(this);scrollToDevice()">
+      <span class="fv-bn-icon">🐣</span><span>Avatar</span>
+    </button>
+    <button class="fv-bn-btn" id="fvbn-status" onclick="_fvbnActive(this);scrollToStats()">
+      <span class="fv-bn-icon">📊</span><span>Status</span>
+    </button>
+    <button class="fv-bn-btn" id="fvbn-acoes" onclick="_fvbnActive(this);scrollToActions()">
+      <span class="fv-bn-icon">🎮</span><span>Ações</span>
+    </button>
+    <button class="fv-bn-btn" id="fvbn-market" onclick="_fvbnActive(this);goToMarketplace(event)">
+      <span class="fv-bn-icon">💎</span><span>Market</span>
+    </button>
+    <button class="fv-bn-btn" id="fvbn-log" onclick="_fvbnActive(this);scrollToLog()">
+      <span class="fv-bn-icon">📜</span><span>Log</span>
+    </button>
+  </div>
+</nav>
+  
+  
 </body>
 </html>
