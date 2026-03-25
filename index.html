@@ -130,20 +130,31 @@
         padding:6px 0 8px !important;
       }
 
-      /* Bubble: topo da creature area, estático */
+      /* Bubble: absoluto no topo da screen, bem acima do avatar */
       .bubble {
-        position:static !important;
-        transform:none !important;
-        margin:0 !important;
+        position:absolute !important;
+        top:82px !important;
+        left:50% !important;
+        transform:translateX(-50%) !important;
         font-size:9px !important;
         padding:4px 10px !important;
         border-radius:12px !important;
         white-space:nowrap;
-        z-index:5;
-        align-self:center;
+        z-index:16;
+        margin:0 !important;
       }
 
-      /* Avatar: centro */
+      /* Avatar: centrado verticalmente na creature-area */
+      .creature-area {
+        position:absolute !important;
+        top:78px !important;
+        left:0;right:0;bottom:28px !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        padding:0 !important;
+      }
       .creature-wrap {
         position:static !important;
         display:flex !important;
@@ -163,14 +174,16 @@
       .creature-shadow { display:none !important; }
       .zzz-bubble { font-size:9px !important; }
 
-      /* Phase label: base da creature area */
+      /* Phase label: absoluto na base, acima do chão */
       .phase-label {
-        position:static !important;
+        position:absolute !important;
+        bottom:32px !important;
+        left:0;right:0;
+        text-align:center;
         font-size:7px !important;
         letter-spacing:3px !important;
         color:#5a3a9a !important;
         margin:0 !important;
-        align-self:center;
       }
 
       /* ── Action buttons: grid 3×2 ── */
@@ -892,6 +905,22 @@
 
 <script>
   iniciarAuthListener();
+
+  // ── Mobile: força statusCard visível quando avatar está vivo ──
+  // O JS do jogo faz statusCard.style.display = 'none'/'block' por inline style,
+  // que sobrepõe o CSS. Patch via MutationObserver — sempre que o display mudar,
+  // no mobile re-força 'block' se o avatar estiver vivo.
+  if(window.innerWidth <= 640) {
+    const _sc = document.getElementById('statusCard');
+    if(_sc) {
+      const _scObs = new MutationObserver(() => {
+        if(typeof hatched !== 'undefined' && hatched && !dead) {
+          if(_sc.style.display === 'none') _sc.style.display = 'block';
+        }
+      });
+      _scObs.observe(_sc, { attributes: true, attributeFilter: ['style'] });
+    }
+  }
 
   // ── Bottom nav mobile — injeta só em ecrãs pequenos ──
   if(window.innerWidth <= 640) {
