@@ -10,16 +10,23 @@
   <meta name="theme-color" content="#04030a">
   <meta name="description" content="Fractured Veil — Dimensional Tamagotchi Web3. Invoca, cria e troca avatares na blockchain Polygon.">
   <meta name="format-detection" content="telephone=no">
+
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
+
+  <!-- Open Graph -->
   <meta property="og:title" content="Fractured Veil">
   <meta property="og:description" content="Dimensional Tamagotchi Web3 na Polygon">
   <meta property="og:type" content="website">
+
   <title>Fractured Veil</title>
 
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
+  <!-- CSS -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/screen.css">
   <link rel="stylesheet" href="css/ui.css">
@@ -30,285 +37,58 @@
   <link rel="stylesheet" href="css/batalha-naval.css">
 
   <style>
-    /* ── Auth ── */
-    .auth-tab { flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;padding:8px 0;cursor:pointer;transition:all .2s; }
-    .auth-tab.active { color:var(--gold);border-bottom-color:var(--gold); }
-    .auth-tab:hover:not(.active) { color:var(--text); }
-    .auth-input { width:100%;box-sizing:border-box;background:#0a0816;border:1px solid #2a2040;border-radius:6px;color:#e8e0f0;font-family:'Cinzel',serif;font-size:10px;padding:10px 12px;outline:none;letter-spacing:.5px;transition:border-color .2s; }
-    .auth-input:focus { border-color:#5a3a9a; }
-    .auth-btn-primary { width:100%;padding:11px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border:none;border-radius:6px;color:#fff;font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:opacity .15s; }
-    .auth-btn-primary:hover { opacity:.9; }
-    .auth-btn-primary:disabled { opacity:.5;cursor:not-allowed; }
-    .auth-btn-green { width:100%;padding:11px;background:linear-gradient(135deg,#1a4a2a,#2d7a4a);border:none;border-radius:6px;color:#fff;font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:opacity .15s; }
-    .auth-btn-green:hover { opacity:.9; }
-    .auth-btn-green:disabled { opacity:.5;cursor:not-allowed; }
-    .auth-btn-link { background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:1px;margin-top:2px;transition:color .15s; }
-    .auth-btn-link:hover { color:var(--gold); }
-
-    /* ════════════════════════════════════════
-       MOBILE ≤640px — apenas CSS, zero JS/HTML
-    ════════════════════════════════════════ */
-    @media (max-width: 640px) {
-
-      /* Layout */
-      .app { display:flex;flex-direction:column;min-height:100dvh;padding-bottom:56px; }
-      main { flex-direction:column;padding:0;gap:0;overflow:visible; }
-
-      /* Header compacto */
-      header { padding:6px 10px;position:sticky;top:0;z-index:90; }
-      .logo { font-size:11px; }
-      /* Recursos do header → bottom nav */
-      #btnMarket,#resMoedasBtn,#resCristaisBtn,#resOvosBtn,#resItemsBtn { display:none !important; }
-      .wallet-address { font-size:9px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-      .btn-sair { font-size:9px;padding:3px 7px; }
-
-      /* Device sem bordas laterais */
-      .device { width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;padding:0; }
-      .device-top { display:none; }
-
-      /* Screen generosa */
-      .screen { height:54vw;min-height:210px;max-height:290px;border-radius:0;position:relative;overflow:hidden; }
-
-      /* ── Vitals flutuantes no topo ── */
-      #statusCard {
-        display:block !important;
-        position:absolute !important;
-        top:8px;left:8px;right:8px;
-        margin:0 !important;
-        border:1px solid #2a2040 !important;
-        border-radius:8px !important;
-        background:rgba(13,11,24,.9) !important;
-        backdrop-filter:blur(4px);
-        -webkit-backdrop-filter:blur(4px);
-        padding:0 !important;
-        z-index:15;
-      }
-      #statusCard .status-cards-grid {
-        display:grid !important;
-        grid-template-columns:1fr 1fr !important;
-        gap:5px 12px !important;
-        padding:6px 8px !important;
-      }
-      /* Esconde higiene (5º vital) e vida restante */
-      #statusCard .status-card-item:nth-child(5),
-      #lifeEstimateRow { display:none !important; }
-
-      #statusCard .status-card-item {
-        display:flex !important;
-        flex-direction:column !important;
-        background:none !important;
-        border:none !important;
-        padding:0 !important;
-        gap:0 !important;
-      }
-      #statusCard .sci-label {
-        display:flex !important;
-        justify-content:space-between !important;
-        font-size:7px !important;
-        color:var(--muted) !important;
-        margin-bottom:3px !important;
-        letter-spacing:0 !important;
-      }
-      /* Valor numérico inline no label (já existe no HTML) */
-      #statusCard .sci-val { display:none !important; }
-      #statusCard .sci-bar { height:5px !important;background:#1a1628 !important;border-radius:3px !important;overflow:hidden !important; }
-      #statusCard .sci-fill { border-radius:3px !important; }
-      #statusCard .fill-fome    { background:linear-gradient(90deg,#d97706,#fbbf24) !important; }
-      #statusCard .fill-humor   { background:linear-gradient(90deg,#7c3aed,#a78bfa) !important; }
-      #statusCard .fill-energia { background:linear-gradient(90deg,#2563eb,#60a5fa) !important; }
-      #statusCard .fill-saude   { background:linear-gradient(90deg,#dc2626,#f87171) !important; }
-
-      /* ── Creature area: abaixo dos vitals (top ~62px + 16px gap) ── */
-      .creature-area {
-        position:absolute !important;
-        top:78px !important;
-        left:0;right:0;bottom:28px !important;
-        display:flex !important;
-        flex-direction:column !important;
-        align-items:center !important;
-        justify-content:space-between !important;
-        padding:6px 0 8px !important;
-      }
-
-      /* Bubble: absoluto no topo da screen, bem acima do avatar */
-      .bubble {
-        position:absolute !important;
-        top:82px !important;
-        left:50% !important;
-        transform:translateX(-50%) !important;
-        font-size:9px !important;
-        padding:4px 10px !important;
-        border-radius:12px !important;
-        white-space:nowrap;
-        z-index:16;
-        margin:0 !important;
-      }
-
-      /* Avatar: centrado verticalmente na creature-area */
-      .creature-area {
-        position:absolute !important;
-        top:78px !important;
-        left:0;right:0;bottom:28px !important;
-        display:flex !important;
-        flex-direction:column !important;
-        align-items:center !important;
-        justify-content:center !important;
-        padding:0 !important;
-      }
-      .creature-wrap {
-        position:static !important;
-        display:flex !important;
-        flex-direction:column !important;
-        align-items:center !important;
-        width:auto !important;
-        height:auto !important;
-        gap:0 !important;
-      }
-      .creature-svg-wrap {
-        position:static !important;
-        transform:none !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-      }
-      .creature-shadow { display:none !important; }
-      .zzz-bubble { font-size:9px !important; }
-
-      /* Phase label: absoluto na base, acima do chão */
-      .phase-label {
-        position:absolute !important;
-        bottom:32px !important;
-        left:0;right:0;
-        text-align:center;
-        font-size:7px !important;
-        letter-spacing:3px !important;
-        color:#5a3a9a !important;
-        margin:0 !important;
-      }
-
-      /* ── Action buttons: grid 3×2 ── */
-      .btns {
-        display:grid !important;
-        grid-template-columns:repeat(3,1fr) !important;
-        gap:5px !important;
-        padding:8px !important;
-        background:var(--bg) !important;
-        border-top:1px solid #1a1628 !important;
-        border-bottom:1px solid #1a1628 !important;
-      }
-      .btn-action {
-        flex-direction:column !important;
-        align-items:center !important;
-        justify-content:center !important;
-        padding:8px 4px !important;
-        min-width:0 !important;
-        gap:2px !important;
-        border-radius:8px !important;
-        font-size:8px !important;
-      }
-      .btn-action .icon { font-size:16px !important;margin:0 !important; }
-      #btnLayEgg { display:flex !important; }
-
-      /* ── Painel direito oculto ── */
-      .right-panel { display:none !important; }
-
-      /* ── Creature card e diário abaixo dos botões ── */
-      #creatureCard,
-      .panel-card:has(#logList) {
-        display:block !important;
-        margin:0 !important;
-        border-radius:0 !important;
-        border-left:none !important;
-        border-right:none !important;
-        border-top:none !important;
-        padding:10px 14px !important;
-      }
-      #creatureCard { border-bottom:1px solid #1a1628 !important; }
-      /* Elementos dispensáveis no mobile */
-      #idDesc,#renameForm,#renameBtn,#rarityBonusTxt { display:none !important; }
-      .xp-track { height:3px !important; }
-      .log-list { max-height:72px;overflow-y:hidden; }
-      .panel-card:has(#logList) .panel-title { font-size:7px !important; }
-
-      /* ── Bottom nav ── */
-      #mobileBottomNav {
-        position:fixed;
-        bottom:0;left:0;right:0;
-        height:56px;
-        background:#0d0b18;
-        border-top:1px solid #2a2040;
-        display:grid;
-        grid-template-columns:repeat(5,1fr);
-        z-index:100;
-        padding-bottom:env(safe-area-inset-bottom,0px);
-      }
-      #mobileBottomNav button {
-        background:none;border:none;
-        display:flex;flex-direction:column;
-        align-items:center;justify-content:center;
-        gap:2px;padding:4px 0;
-        color:var(--muted);
-        font-family:'Cinzel',serif;
-        font-size:7px;letter-spacing:.5px;
-        cursor:pointer;transition:color .2s;
-        position:relative;
-      }
-      #mobileBottomNav button .bn-icon { font-size:16px;line-height:1; }
-      #mobileBottomNav button.active { color:#c4b5fd; }
-      #mobileBottomNav button.active::after {
-        content:'';position:absolute;bottom:4px;
-        width:4px;height:4px;border-radius:50%;background:#7c3aed;
-      }
-
-      /* ── Modais como bottom sheet ── */
-      .mini-modal {
-        border-radius:16px 16px 0 0 !important;
-        bottom:0 !important;top:auto !important;
-        max-height:82dvh !important;
-        left:0 !important;right:0 !important;width:100% !important;
-        overflow-y:auto !important;
-      }
-      .mini-modal::before {
-        content:'';display:block;
-        width:32px;height:3px;background:#3a3060;border-radius:2px;
-        margin:8px auto 4px;
-      }
-
-      /* Game selector bottom sheet */
-      #gameSelector {
-        border-radius:16px 16px 0 0 !important;
-        bottom:0 !important;top:auto !important;
-        max-height:85dvh !important;
-        left:0 !important;right:0 !important;width:100% !important;
-        overflow-y:auto !important;
-      }
-      #gameSelector::before {
-        content:'';display:block;
-        width:32px;height:3px;background:#3a3060;border-radius:2px;
-        margin:8px auto 4px;
-      }
-      /* Game buttons: lista vertical */
-      .gs-grid { display:flex !important;flex-direction:column !important;gap:6px !important; }
-      .gs-btn { flex-direction:row !important;align-items:center !important;gap:10px !important;padding:10px 12px !important; }
-      .gs-btn-icon { font-size:20px !important;flex-shrink:0; }
-      .gs-btn-info { text-align:left !important; }
-
-      /* Campo minado: scroll interno */
-      #minaModal { overflow-y:auto !important; }
-      #minaGrid  { overflow-x:auto !important; }
-
-      /* Overlays acima de tudo */
-      #levelUpOverlay,#phaseUpOverlay,#sleepOverlay,
-      #repousoOverlay,#summonOverlay { z-index:200 !important; }
-      #summonOverlay { position:fixed !important; }
-
-      /* Estados idle e egg */
-      #idleScreen,#eggScreen { position:absolute !important;inset:0 !important; }
-
-      /* Dead screen */
-      #deadScreen { padding:20px 16px !important; }
-      .dead-btn { padding:10px 20px !important;font-size:9px !important; }
+    /* ── Auth tabs ── */
+    .auth-tab {
+      flex: 1; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted); font-family: 'Cinzel', serif;
+      font-size: 9px; letter-spacing: 2px;
+      padding: 8px 0; cursor: pointer; transition: all .2s;
     }
+    .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .auth-tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Auth inputs ── */
+    .auth-input {
+      width: 100%; box-sizing: border-box;
+      background: #0a0816; border: 1px solid #2a2040;
+      border-radius: 6px; color: #e8e0f0;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      padding: 10px 12px; outline: none; letter-spacing: .5px;
+      transition: border-color .2s;
+    }
+    .auth-input:focus { border-color: #5a3a9a; }
+
+    /* ── Auth buttons ── */
+    .auth-btn-primary {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+      border: none; border-radius: 6px; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .auth-btn-primary:hover { opacity: .9; }
+    .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .auth-btn-green {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #1a4a2a, #2d7a4a);
+      border: none; border-radius: 6px; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 10px;
+      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .auth-btn-green:hover { opacity: .9; }
+    .auth-btn-green:disabled { opacity: .5; cursor: not-allowed; }
+
+    .auth-btn-link {
+      background: none; border: none; color: var(--muted);
+      font-size: 9px; cursor: pointer;
+      font-family: 'Cinzel', serif; letter-spacing: 1px;
+      margin-top: 2px; transition: color .15s;
+    }
+    .auth-btn-link:hover { color: var(--gold); }
   </style>
 </head>
 <body>
@@ -319,28 +99,45 @@
   <div id="loginCard">
     <div id="loginLogo">Fractured Veil</div>
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
+
+    <!-- Abas Entrar / Criar Conta -->
     <div style="display:flex;gap:0;margin:14px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
       <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')">ENTRAR</button>
       <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')">CRIAR CONTA</button>
     </div>
+
+    <!-- ── Form: Login ── -->
     <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
-      <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input" onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
-      <input id="loginSenha" type="password" placeholder="Senha" class="auth-input" onkeydown="if(event.key==='Enter')loginComEmail()"/>
-      <button id="loginBtn" class="auth-btn-primary" onclick="loginComEmail()"><span id="loginBtnText">ENTRAR</span></button>
+      <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input"
+        onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
+      <input id="loginSenha" type="password" placeholder="Senha" class="auth-input"
+        onkeydown="if(event.key==='Enter')loginComEmail()"/>
+      <button id="loginBtn" class="auth-btn-primary" onclick="loginComEmail()">
+        <span id="loginBtnText">ENTRAR</span>
+      </button>
       <button class="auth-btn-link" onclick="authShowReset()">Esqueci a senha</button>
     </div>
+
+    <!-- ── Form: Registro ── -->
     <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
       <input id="regEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
       <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
-      <input id="regSenha2" type="password" placeholder="Confirmar senha"            class="auth-input" onkeydown="if(event.key==='Enter')registrarComEmail()"/>
+      <input id="regSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
+        onkeydown="if(event.key==='Enter')registrarComEmail()"/>
       <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
     </div>
+
+    <!-- ── Form: Reset de senha ── -->
     <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
-      <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">Envia um link de recuperação<br>para o teu e-mail.</div>
-      <input id="resetEmail" type="email" placeholder="E-mail" class="auth-input" onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
+      <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">
+        Envia um link de recuperação<br>para o teu e-mail.
+      </div>
+      <input id="resetEmail" type="email" placeholder="E-mail" class="auth-input"
+        onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
       <button id="resetBtn" class="auth-btn-primary" onclick="enviarResetSenha()">ENVIAR E-MAIL</button>
       <button class="auth-btn-link" onclick="authShowTab('login')">← Voltar</button>
     </div>
+
     <div id="loginError" style="font-size:9px;color:#e74c3c;text-align:center;min-height:14px;margin-top:6px;"></div>
     <div id="loginFooter" style="font-size:7px;color:var(--muted);margin-top:8px;letter-spacing:1px;">Fractured Veil v1.0</div>
   </div>
@@ -348,6 +145,7 @@
 
 <div class="app">
 
+  <!-- LOADING OVERLAY -->
   <div id="gameLoadingOverlay" style="position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:500;">
     <div style="width:36px;height:36px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
     <div style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
@@ -364,22 +162,26 @@
     </div>
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
-        <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
+        <div class="wallet-address">
+          ✉️ <span id="walletShort">jogador</span>
+        </div>
         <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- LEFT: DEVICE -->
     <div class="device">
       <div class="device-top">
         <div class="device-title">AVATAR</div>
         <div class="status-dot" id="statusDot"></div>
       </div>
 
+      <!-- SCREEN -->
       <div class="screen" id="mainScreen">
 
-        <!-- IDLE -->
+        <!-- IDLE state -->
         <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
           <svg width="90" height="90" viewBox="0 0 90 90">
             <defs>
@@ -400,7 +202,7 @@
           <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;">PORTAL DIMENSIONAL<br><span style="opacity:.5">aguardando invocação</span></div>
         </div>
 
-        <!-- EGG -->
+        <!-- EGG state -->
         <div id="eggScreen" class="egg-screen" style="display:none;">
           <div id="eggWrap" style="position:relative;width:100px;height:110px;cursor:pointer;">
             <svg id="eggSvg" width="100" height="110" viewBox="0 0 100 110" style="transition:transform .12s ease;display:block;">
@@ -437,9 +239,10 @@
           <div class="egg-progress" id="eggProgress">0 / 5</div>
         </div>
 
-        <!-- ALIVE -->
+        <!-- ALIVE state -->
         <div id="aliveScreen" style="display:none; position:absolute; inset:0;">
 
+          <!-- ITEM INVENTORY MODAL -->
           <div class="mini-modal" id="itemInvModal">
             <div class="modal-header">
               <div>
@@ -455,6 +258,7 @@
             </div>
           </div>
 
+          <!-- EGG INVENTORY MODAL -->
           <div class="mini-modal" id="eggInvModal">
             <div class="modal-header">
               <div>
@@ -470,6 +274,7 @@
             </div>
           </div>
 
+          <!-- COIN SHOP MODAL -->
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
@@ -479,20 +284,28 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
+
               <div style="margin-bottom:12px;"></div>
+
+              <!-- Câmbio moedas → cristais -->
               <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
               <div id="cambioPanel" style="width:100%;">
                 <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
               </div>
+
               <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
+
+              <!-- Link marketplace -->
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
                 <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
                 <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
                 <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
+
             </div>
           </div>
 
+          <!-- MARKET MODAL -->
           <div class="mini-modal" id="marketModal">
             <div class="modal-header">
               <div class="mini-title" style="margin:0;">🔮 ITENS</div>
@@ -503,13 +316,17 @@
             </div>
           </div>
 
+          <!-- GAME SELECTOR -->
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
+
             <div class="gs-tabs">
               <button class="gs-tab active" id="gsTabPve" onclick="gsSetTab('pve')">🎮 PVE</button>
-              <button class="gs-tab" id="gsTabPvp" onclick="gsSetTab('pvp')">⚔️ PVP</button>
+              <button class="gs-tab"        id="gsTabPvp" onclick="gsSetTab('pvp')">⚔️ PVP</button>
             </div>
+
+            <!-- PVE -->
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
@@ -545,6 +362,8 @@
                 </div>
               </div>
             </div>
+
+            <!-- PVP -->
             <div id="gsGridPvp" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); openArena()">
                 <div class="gs-btn-icon">⚔️</div>
@@ -573,6 +392,7 @@
             </div>
           </div>
 
+          <!-- HATCH CONFIRM MODAL -->
           <div class="mini-modal" id="hatchConfirmModal">
             <div class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
             <div style="text-align:center;margin:10px 0 6px;">
@@ -586,6 +406,7 @@
             </div>
           </div>
 
+          <!-- MEMÓRIA ELEMENTAL -->
           <div class="mini-modal" id="memoriaModal">
             <div class="mini-title">🃏 MEMÓRIA ELEMENTAL</div>
             <div class="mini-sub" id="memSub">Encontre todos os pares!</div>
@@ -599,6 +420,7 @@
             </div>
           </div>
 
+          <!-- SIMON SAYS -->
           <div class="mini-modal" id="simonModal">
             <div class="mini-title">🎵 SIMON SAYS</div>
             <div class="simon-seq-display" id="simonSeqDisplay">Observe a sequência...</div>
@@ -612,6 +434,7 @@
             </div>
           </div>
 
+          <!-- JOGO DA VELHA -->
           <div class="mini-modal" id="velhaModal">
             <div class="mini-title">✕○ JOGO DA VELHA</div>
             <div class="mini-sub" id="velhaInfo">Sua vez! ✕</div>
@@ -624,6 +447,7 @@
             </div>
           </div>
 
+          <!-- CAMPO MINADO -->
           <div class="mini-modal" id="minaModal">
             <div class="mini-title">💣 CAMPO MINADO</div>
             <div class="mina-info-row">
@@ -639,22 +463,36 @@
             </div>
           </div>
 
+          <!-- ⚔️ ARENA DIMENSIONAL MODAL -->
           <div id="arenaModal"></div>
+
+          <!-- 🃏 ROUBA MONTE MODAL -->
           <div id="roubaMontModal"></div>
+
+          <!-- 🚢 BATALHA NAVAL MODAL -->
           <div id="batalhaNavalModal"></div>
 
+          <!-- Level-up overlay -->
           <div id="levelUpOverlay">
             <div class="lu-burst"></div>
-            <div class="lu-ring"></div><div class="lu-ring"></div><div class="lu-ring"></div>
+            <div class="lu-ring"></div>
+            <div class="lu-ring"></div>
+            <div class="lu-ring"></div>
             <div class="lu-text" id="luText">NÍVEL UP!</div>
             <div class="lu-nivel" id="luNivel">NÍVEL 2</div>
           </div>
+
+          <!-- Phase Up overlay -->
           <div id="phaseUpOverlay">
             <div class="pu-bg"></div>
-            <div class="pu-ring"></div><div class="pu-ring"></div><div class="pu-ring"></div>
+            <div class="pu-ring"></div>
+            <div class="pu-ring"></div>
+            <div class="pu-ring"></div>
             <div class="pu-text" id="puText">EVOLUÇÃO!</div>
             <div class="pu-fase" id="puFase">FASE: CRIANÇA</div>
           </div>
+
+          <!-- Sleep overlay -->
           <div id="sleepOverlay">
             <div class="sleep-moon">🌙</div>
             <div class="sleep-star" style="left:18%;top:35%;font-size:7px;animation-delay:.4s">✦</div>
@@ -692,6 +530,7 @@
           <div class="ground"></div>
         </div>
 
+        <!-- REPOUSO OVERLAY -->
         <div id="repousoOverlay">
           <div class="repouso-zzz">
             <span style="animation-delay:0s">z</span>
@@ -702,9 +541,13 @@
           <button class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
         </div>
 
+        <!-- DEAD state -->
         <div id="deadScreen" class="dead-screen" style="display:none">
           <div class="dead-particles" id="deadParticles"></div>
-          <div class="dead-orb"><div class="dead-runes"></div>👻</div>
+          <div class="dead-orb">
+            <div class="dead-runes"></div>
+            👻
+          </div>
           <div class="dead-title">ENTIDADE PERDIDA</div>
           <div class="dead-name" id="deadAvatarName"></div>
           <div class="dead-sub">partiu para outra dimensão...<br>sua essência persiste nos ovos.</div>
@@ -714,6 +557,7 @@
 
       </div><!-- /screen -->
 
+      <!-- ACTION BUTTONS -->
       <div class="btns" id="actionBtns" style="opacity:0;pointer-events:none;transition:opacity .5s;">
         <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 10 🪙">
           <span class="icon">🍖</span><span>NUTRIR</span>
@@ -740,12 +584,14 @@
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
           <span class="icon">🥚</span><span>BOTAR OVO</span>
         </button>
-      </div>
+      </div><!-- /btns -->
 
     </div><!-- /device -->
 
+    <!-- RIGHT PANEL -->
     <div class="right-panel">
 
+      <!-- SUMMON -->
       <div class="panel-card" id="summonCard">
         <div class="panel-title">◆ INVOCAR AVATAR</div>
         <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
@@ -761,6 +607,7 @@
         </div>
       </div>
 
+      <!-- CREATURE CARD -->
       <div class="panel-card" id="creatureCard" style="display:none">
         <div id="avatarNameBlock" style="margin-bottom:10px;">
           <div style="display:flex;align-items:flex-start;gap:5px;">
@@ -780,12 +627,15 @@
             </div>
           </div>
         </div>
+
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
           <span class="badge" id="idBadge">COMUM</span>
           <span id="idMeta" style="font-size:8px;color:var(--muted);"></span>
           <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:8px;color:var(--gold);font-weight:700;" id="nivelTxt">NV 1</span>
         </div>
+
         <div id="idDesc" style="font-size:8px;color:#887799;font-style:italic;line-height:1.7;margin-bottom:10px;padding:6px 8px;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:rgba(255,255,255,.02);"></div>
+
         <div style="margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
             <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
@@ -793,6 +643,7 @@
           </div>
           <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
         </div>
+
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
             <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
@@ -800,9 +651,12 @@
           </div>
           <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
         </div>
+
         <div style="display:flex;justify-content:flex-end;align-items:center;">
           <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
         </div>
+
+        <!-- STATUS CARDS -->
         <div id="statusCard" style="display:none;margin:10px -18px -12px;border-top:1px solid var(--border);">
           <div class="status-cards-grid" style="padding:10px 14px 4px;">
             <div class="status-card-item">
@@ -835,9 +689,11 @@
             <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
             <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
           </div>
-        </div>
+        </div><!-- /statusCard -->
+
       </div>
 
+      <!-- DIÁRIO -->
       <div class="panel-card">
         <div class="panel-title">◆ DIÁRIO DIMENSIONAL</div>
         <ul class="log-list" id="logList"></ul>
@@ -866,6 +722,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<!-- Firebase init -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
@@ -881,6 +739,7 @@
   const _rtdb = firebase.database();
 </script>
 
+<!-- Game modules (order matters) -->
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
@@ -904,71 +763,8 @@
 <script src="js/main.js"></script>
 
 <script>
+  // Inicia o listener de autenticação após todos os módulos carregarem
   iniciarAuthListener();
-
-  // ── Mobile: força statusCard visível quando avatar está vivo ──
-  // O JS do jogo faz statusCard.style.display = 'none'/'block' por inline style,
-  // que sobrepõe o CSS. Patch via MutationObserver — sempre que o display mudar,
-  // no mobile re-força 'block' se o avatar estiver vivo.
-  if(window.innerWidth <= 640) {
-    const _sc = document.getElementById('statusCard');
-    if(_sc) {
-      const _scObs = new MutationObserver(() => {
-        if(typeof hatched !== 'undefined' && hatched && !dead) {
-          if(_sc.style.display === 'none') _sc.style.display = 'block';
-        }
-      });
-      _scObs.observe(_sc, { attributes: true, attributeFilter: ['style'] });
-    }
-  }
-
-  // ── Bottom nav mobile — injeta só em ecrãs pequenos ──
-  if(window.innerWidth <= 640) {
-    const nav = document.createElement('nav');
-    nav.id = 'mobileBottomNav';
-    nav.innerHTML = `
-      <button class="active" id="mbn-avatar" onclick="_mbnGo('avatar',this)">
-        <span class="bn-icon">🐣</span><span>AVATAR</span>
-      </button>
-      <button id="mbn-moedas" onclick="_mbnGo('moedas',this)">
-        <span class="bn-icon">🪙</span><span id="mbnMoedas">0</span>
-      </button>
-      <button id="mbn-cristais" onclick="_mbnGo('cristais',this)">
-        <span class="bn-icon">💎</span><span id="mbnCristais">0</span>
-      </button>
-      <button id="mbn-ovos" onclick="_mbnGo('ovos',this)">
-        <span class="bn-icon">🥚</span><span id="mbnOvos">0</span>
-      </button>
-      <button id="mbn-itens" onclick="_mbnGo('itens',this)">
-        <span class="bn-icon">🎒</span><span>ITENS</span>
-      </button>
-    `;
-    document.body.appendChild(nav);
-  }
-
-  function _mbnGo(tab, btn) {
-    document.querySelectorAll('#mobileBottomNav button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if(tab === 'moedas')   openCoinShop?.();
-    if(tab === 'cristais') { window.location.href = 'marketplace.html'; }
-    if(tab === 'ovos')     openEggInventory?.();
-    if(tab === 'itens')    openItemInventory?.();
-  }
-
-  // Sincroniza contadores da bottom nav com os do header
-  function _syncMobileNav() {
-    const m = document.getElementById('mbnMoedas');
-    const c = document.getElementById('mbnCristais');
-    const o = document.getElementById('mbnOvos');
-    if(m) m.textContent = document.getElementById('resMonedas')?.textContent  || '0';
-    if(c) c.textContent = document.getElementById('resCristais')?.textContent || '0';
-    if(o) o.textContent = document.getElementById('resOvos')?.textContent      || '0';
-  }
-  const _navObs = new MutationObserver(_syncMobileNav);
-  ['resMonedas','resCristais','resOvos'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) _navObs.observe(el, { childList:true, subtree:true, characterData:true });
-  });
 </script>
 
 </body>
