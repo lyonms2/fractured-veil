@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FRACTURED VEIL — Mobile Responsive (index.html)
+   Mesmo padrão do marketplace.html:
+   • Zero JS alterado
+   • Desktop não é afectado (só dispara em ≤680px)
+   • Bottom nav: display:none no desktop, flex no mobile via CSS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Bottom nav: escondida no desktop ── */
+.fv-bottom-nav { display: none; }
+
+@media (max-width: 680px) {
+
+  /* ══════════════════════════════════════
+     BASE
+  ══════════════════════════════════════ */
+  html { font-size: 100% !important; } /* cancela o zoom de 175% do desktop */
+  body { padding-bottom: 60px; }       /* espaço para a bottom nav */
+
+  /* ══════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════ */
+  header {
+    padding: 10px 12px 0;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+  }
+  .logo { font-size: 10px; letter-spacing: 2px; }
+
+  /* Recursos: scroll horizontal sem barra visível */
+  .header-center {
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+  .header-center::-webkit-scrollbar { display: none; }
+
+  .res { font-size: 9px; padding: 3px 8px; gap: 3px; white-space: nowrap; flex-shrink: 0; }
+  .res b { font-size: 9px; }
+
+  /* Wallet: só endereço, sem botão Sair */
+  .wallet-address { font-size: 7px; padding: 3px 7px; }
+  .btn-wallet.btn-sair { display: none; }
+
+  /* ══════════════════════════════════════
+     MAIN: grid 2 colunas → coluna única
+  ══════════════════════════════════════ */
+  main {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px 12px 20px;
+  }
+
+  /* ══════════════════════════════════════
+     DEVICE
+  ══════════════════════════════════════ */
+  .device { padding: 12px 12px 14px; border-radius: 14px 14px 22px 22px; }
+
+  /* Screen menor para caber sem scroll */
+  .screen { height: 220px; margin-bottom: 10px; }
+
+  /* Botões de ação: 3 por linha */
+  .btns {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .btn-action { padding: 7px 4px; font-size: 7px; gap: 2px; }
+  .btn-action .icon { font-size: 14px; }
+
+  /* ══════════════════════════════════════
+     LOGIN SCREEN
+  ══════════════════════════════════════ */
+  #loginCard { padding: 28px 18px; max-width: 92vw; }
+  #loginLogo { font-size: 18px; letter-spacing: 3px; }
+  #loginSub  { font-size: 6px; letter-spacing: 2px; }
+
+  /* ══════════════════════════════════════
+     MODAIS — sobem de baixo (sheet)
+  ══════════════════════════════════════ */
+  .mini-modal {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-y: auto;
+    transform: none !important;
+  }
+
+  /* Game selector: sheet também */
+  #gameSelector {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-y: auto;
+  }
+
+  /* Arena e Rouba Monte: full screen */
+  #arenaModal,
+  #roubaMontModal,
+  #batalhaNavalModal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+  }
+
+  /* ══════════════════════════════════════
+     TOAST — acima da bottom nav
+  ══════════════════════════════════════ */
+  #toast, .toast {
+    bottom: 68px !important;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════════
+     BOTTOM NAVIGATION BAR
+  ══════════════════════════════════════ */
+  .fv-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .fv-bottom-nav-inner {
+    display: flex;
+    width: 100%;
+    height: 56px;
+  }
+  .fv-bn-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: color .2s;
+    padding: 0;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fv-bn-icon { font-size: 18px; line-height: 1; }
+  .fv-bn-btn.active { color: var(--gold); }
+  .fv-bn-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--border-glow);
+  }
+
+} /* fim @media */
