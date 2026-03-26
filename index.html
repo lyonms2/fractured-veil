@@ -107,7 +107,7 @@
       <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')">CRIAR CONTA</button>
     </div>
 
-    <!-- ── Form: Login ── -->
+    <!-- Form: Login -->
     <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
       <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input"
         onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
@@ -119,7 +119,7 @@
       <button class="auth-btn-link" onclick="authShowReset()">Esqueci a senha</button>
     </div>
 
-    <!-- ── Form: Registro ── -->
+    <!-- Form: Registro -->
     <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
       <input id="regEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
       <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
@@ -128,7 +128,7 @@
       <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
     </div>
 
-    <!-- ── Form: Reset de senha ── -->
+    <!-- Form: Reset de senha -->
     <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
       <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">
         Envia um link de recuperação<br>para o teu e-mail.
@@ -285,24 +285,17 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
-
               <div style="margin-bottom:12px;"></div>
-
-              <!-- Câmbio moedas → cristais -->
               <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
               <div id="cambioPanel" style="width:100%;">
                 <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
               </div>
-
               <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
-
-              <!-- Link marketplace -->
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
                 <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
                 <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
                 <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
-
             </div>
           </div>
 
@@ -321,13 +314,10 @@
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
-
             <div class="gs-tabs">
               <button class="gs-tab active" id="gsTabPve" onclick="gsSetTab('pve')">🎮 PVE</button>
               <button class="gs-tab"        id="gsTabPvp" onclick="gsSetTab('pvp')">⚔️ PVP</button>
             </div>
-
-            <!-- PVE -->
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
@@ -363,8 +353,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- PVP -->
             <div id="gsGridPvp" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); openArena()">
                 <div class="gs-btn-icon">⚔️</div>
@@ -464,13 +452,13 @@
             </div>
           </div>
 
-          <!-- ⚔️ ARENA DIMENSIONAL MODAL -->
+          <!-- ARENA DIMENSIONAL MODAL -->
           <div id="arenaModal"></div>
 
-          <!-- 🃏 ROUBA MONTE MODAL -->
+          <!-- ROUBA MONTE MODAL -->
           <div id="roubaMontModal"></div>
 
-          <!-- 🚢 BATALHA NAVAL MODAL -->
+          <!-- BATALHA NAVAL MODAL -->
           <div id="batalhaNavalModal"></div>
 
           <!-- Level-up overlay -->
@@ -616,7 +604,9 @@
               <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-light);margin:0 0 1px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></h2>
               <div id="idSufixo" style="font-size:8px;color:var(--muted);font-style:italic;letter-spacing:.3px;"></div>
             </div>
-            <button id="renameBtn" onclick="startRename()" title="Renomear" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px;line-height:1;flex-shrink:0;transition:color .15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
+            <button id="renameBtn" onclick="startRename()" title="Renomear"
+              style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px;line-height:1;flex-shrink:0;transition:color .15s;"
+              onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
           </div>
           <div id="renameForm" style="display:none;margin-top:6px;">
             <input id="renameInput" type="text" maxlength="20" placeholder="Novo nome..."
@@ -657,7 +647,7 @@
           <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
         </div>
 
-        <!-- STATUS CARDS -->
+        <!-- STATUS CARDS (desktop) -->
         <div id="statusCard" style="display:none;margin:10px -18px -12px;border-top:1px solid var(--border);">
           <div class="status-cards-grid" style="padding:10px 14px 4px;">
             <div class="status-card-item">
@@ -690,8 +680,7 @@
             <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
             <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
           </div>
-        </div><!-- /statusCard -->
-
+        </div>
       </div>
 
       <!-- DIÁRIO -->
@@ -702,7 +691,7 @@
 
     </div><!-- /right-panel -->
   </main>
-</div>
+</div><!-- /app -->
 
 <!-- SUMMON OVERLAY -->
 <div id="summonOverlay">
@@ -764,41 +753,126 @@
 <script src="js/main.js"></script>
 
 <script>
-  // Inicia o listener de autenticação após todos os módulos carregarem
   iniciarAuthListener();
 </script>
 
+<!-- ══════════════════════════════════════════════════════════════
+     MOBILE HELPERS
+     Injecta o bloco de status inline no device e sincroniza
+     as barras a cada tick. Botão Dormir preserva o long-press.
+════════════════════════════════════════════════════════════════ -->
 <script>
-function _fvbnActive(btn) {
-  document.querySelectorAll('.fv-bn-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+function _initMobileStatus() {
+  if (window.innerWidth > 680) return;
+  if (document.getElementById('mobileStatusInline')) return;
+
+  const device     = document.querySelector('.device');
+  const actionBtns = document.getElementById('actionBtns');
+  if (!device || !actionBtns) return;
+
+  const block = document.createElement('div');
+  block.id = 'mobileStatusInline';
+  block.innerHTML = `
+    <div class="msi-row">
+      <span class="msi-icon">🍖</span>
+      <div class="msi-track"><div class="msi-fill msi-fome"    id="msiFome"    style="width:100%"></div></div>
+      <span class="msi-val" id="msiValFome">100</span>
+    </div>
+    <div class="msi-row">
+      <span class="msi-icon">😊</span>
+      <div class="msi-track"><div class="msi-fill msi-humor"   id="msiHumor"   style="width:100%"></div></div>
+      <span class="msi-val" id="msiValHumor">100</span>
+    </div>
+    <div class="msi-row">
+      <span class="msi-icon">⚡</span>
+      <div class="msi-track"><div class="msi-fill msi-energia" id="msiEnergia" style="width:100%"></div></div>
+      <span class="msi-val" id="msiValEnergia">100</span>
+    </div>
+    <div class="msi-row">
+      <span class="msi-icon">❤️</span>
+      <div class="msi-track"><div class="msi-fill msi-saude"   id="msiSaude"   style="width:100%"></div></div>
+      <span class="msi-val" id="msiValSaude">100</span>
+    </div>
+    <div class="msi-row">
+      <span class="msi-icon">🧹</span>
+      <div class="msi-track"><div class="msi-fill msi-higiene" id="msiHigiene" style="width:100%"></div></div>
+      <span class="msi-val" id="msiValHigiene">100</span>
+    </div>
+  `;
+  device.insertBefore(block, actionBtns);
 }
-function scrollToDevice()  { document.querySelector('.device')?.scrollIntoView({behavior:'smooth'}); }
-function scrollToStats()   { document.querySelector('.right-panel')?.scrollIntoView({behavior:'smooth'}); }
-function scrollToActions() { document.getElementById('actionBtns')?.scrollIntoView({behavior:'smooth'}); }
-function scrollToLog()     { document.getElementById('logList')?.scrollIntoView({behavior:'smooth'}); }
+
+function _updateMobileStatus() {
+  if (window.innerWidth > 680) return;
+  const map = [
+    ['msiFome',    'msiValFome',    typeof vitals !== 'undefined' ? vitals.fome    : 100],
+    ['msiHumor',   'msiValHumor',   typeof vitals !== 'undefined' ? vitals.humor   : 100],
+    ['msiEnergia', 'msiValEnergia', typeof vitals !== 'undefined' ? vitals.energia : 100],
+    ['msiSaude',   'msiValSaude',   typeof vitals !== 'undefined' ? vitals.saude   : 100],
+    ['msiHigiene', 'msiValHigiene', typeof vitals !== 'undefined' ? vitals.higiene : 100],
+  ];
+  map.forEach(([barId, valId, v]) => {
+    const bar = document.getElementById(barId);
+    const val = document.getElementById(valId);
+    if (!bar || !val) return;
+    bar.style.width = v + '%';
+    val.textContent = Math.floor(v);
+    v < 25 ? bar.classList.add('critical') : bar.classList.remove('critical');
+  });
+}
+
+window.addEventListener('load', () => {
+  _initMobileStatus();
+  // Acopla ao updateAllUI existente para manter as barras em sync
+  const _orig = window.updateAllUI;
+  if (typeof _orig === 'function') {
+    window.updateAllUI = function () {
+      _orig.apply(this, arguments);
+      _updateMobileStatus();
+    };
+  }
+});
 </script>
-  
+
+<!-- BOTTOM NAV MOBILE — ações diretas do avatar -->
 <nav class="fv-bottom-nav" style="display:none;">
   <div class="fv-bottom-nav-inner">
-    <button class="fv-bn-btn active" id="fvbn-avatar" onclick="_fvbnActive(this);scrollToDevice()">
-      <span class="fv-bn-icon">🐣</span><span>Avatar</span>
+
+    <button class="fv-bn-btn" id="fvbn-feed"
+      onclick="feedCreature()">
+      <span class="fv-bn-icon">🍖</span>
+      <span>Nutrir</span>
     </button>
-    <button class="fv-bn-btn" id="fvbn-status" onclick="_fvbnActive(this);scrollToStats()">
-      <span class="fv-bn-icon">📊</span><span>Status</span>
+
+    <button class="fv-bn-btn" id="fvbn-play"
+      onclick="playCreature()">
+      <span class="fv-bn-icon">🎮</span>
+      <span>Brincar</span>
     </button>
-    <button class="fv-bn-btn" id="fvbn-acoes" onclick="_fvbnActive(this);scrollToActions()">
-      <span class="fv-bn-icon">🎮</span><span>Ações</span>
+
+    <!-- Dormir: long-press idêntico ao botão original -->
+    <button class="fv-bn-btn" id="fvbn-sleep"
+      onpointerdown="onSleepPointerDown()"
+      onpointerup="onSleepPointerUp()"
+      onpointerleave="onSleepPointerUp()">
+      <span class="fv-bn-icon">💤</span>
+      <span id="fvbnSleepLabel">Dormir</span>
     </button>
-    <button class="fv-bn-btn" id="fvbn-market" onclick="_fvbnActive(this);goToMarketplace(event)">
-      <span class="fv-bn-icon">💎</span><span>Market</span>
+
+    <button class="fv-bn-btn" id="fvbn-heal"
+      onclick="healCreature()">
+      <span class="fv-bn-icon">💊</span>
+      <span>Medicar</span>
     </button>
-    <button class="fv-bn-btn" id="fvbn-log" onclick="_fvbnActive(this);scrollToLog()">
-      <span class="fv-bn-icon">📜</span><span>Log</span>
+
+    <button class="fv-bn-btn" id="fvbn-bath"
+      onclick="cleanCreature()">
+      <span class="fv-bn-icon">🛁</span>
+      <span>Banho</span>
     </button>
+
   </div>
 </nav>
-  
-  
+
 </body>
 </html>
