@@ -11,22 +11,17 @@
   <meta name="description" content="Fractured Veil — Dimensional Tamagotchi Web3. Invoca, cria e troca avatares na blockchain Polygon.">
   <meta name="format-detection" content="telephone=no">
 
-  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
-
-  <!-- Open Graph -->
   <meta property="og:title" content="Fractured Veil">
   <meta property="og:description" content="Dimensional Tamagotchi Web3 na Polygon">
   <meta property="og:type" content="website">
 
   <title>Fractured Veil</title>
 
-  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/screen.css">
   <link rel="stylesheet" href="css/ui.css">
@@ -38,7 +33,6 @@
   <link rel="stylesheet" href="css/batalha-naval.css">
 
   <style>
-    /* ── Auth tabs ── */
     .auth-tab {
       flex: 1; background: none; border: none;
       border-bottom: 2px solid transparent;
@@ -49,7 +43,6 @@
     .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
     .auth-tab:hover:not(.active) { color: var(--text); }
 
-    /* ── Auth inputs ── */
     .auth-input {
       width: 100%; box-sizing: border-box;
       background: #0a0816; border: 1px solid #2a2040;
@@ -60,7 +53,6 @@
     }
     .auth-input:focus { border-color: #5a3a9a; }
 
-    /* ── Auth buttons ── */
     .auth-btn-primary {
       width: 100%; padding: 11px;
       background: linear-gradient(135deg, #4c1d95, #7c3aed);
@@ -69,7 +61,7 @@
       font-weight: 700; letter-spacing: 2px; cursor: pointer;
       transition: opacity .15s;
     }
-    .auth-btn-primary:hover { opacity: .9; }
+    .auth-btn-primary:hover  { opacity: .9; }
     .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
     .auth-btn-green {
@@ -80,7 +72,7 @@
       font-weight: 700; letter-spacing: 2px; cursor: pointer;
       transition: opacity .15s;
     }
-    .auth-btn-green:hover { opacity: .9; }
+    .auth-btn-green:hover  { opacity: .9; }
     .auth-btn-green:disabled { opacity: .5; cursor: not-allowed; }
 
     .auth-btn-link {
@@ -101,13 +93,11 @@
     <div id="loginLogo">Fractured Veil</div>
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
 
-    <!-- Abas Entrar / Criar Conta -->
     <div style="display:flex;gap:0;margin:14px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
       <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')">ENTRAR</button>
       <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')">CRIAR CONTA</button>
     </div>
 
-    <!-- Form: Login -->
     <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
       <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input"
         onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
@@ -119,7 +109,6 @@
       <button class="auth-btn-link" onclick="authShowReset()">Esqueci a senha</button>
     </div>
 
-    <!-- Form: Registro -->
     <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
       <input id="regEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
       <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
@@ -128,7 +117,6 @@
       <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
     </div>
 
-    <!-- Form: Reset de senha -->
     <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
       <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">
         Envia um link de recuperação<br>para o teu e-mail.
@@ -163,9 +151,7 @@
     </div>
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
-        <div class="wallet-address">
-          ✉️ <span id="walletShort">jogador</span>
-        </div>
+        <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
         <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
     </div>
@@ -182,7 +168,7 @@
       <!-- SCREEN -->
       <div class="screen" id="mainScreen">
 
-        <!-- IDLE state -->
+        <!-- IDLE -->
         <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
           <svg width="90" height="90" viewBox="0 0 90 90">
             <defs>
@@ -203,7 +189,7 @@
           <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;">PORTAL DIMENSIONAL<br><span style="opacity:.5">aguardando invocação</span></div>
         </div>
 
-        <!-- EGG state -->
+        <!-- EGG -->
         <div id="eggScreen" class="egg-screen" style="display:none;">
           <div id="eggWrap" style="position:relative;width:100px;height:110px;cursor:pointer;">
             <svg id="eggSvg" width="100" height="110" viewBox="0 0 100 110" style="transition:transform .12s ease;display:block;">
@@ -240,10 +226,9 @@
           <div class="egg-progress" id="eggProgress">0 / 5</div>
         </div>
 
-        <!-- ALIVE state -->
+        <!-- ALIVE -->
         <div id="aliveScreen" style="display:none; position:absolute; inset:0;">
 
-          <!-- ITEM INVENTORY MODAL -->
           <div class="mini-modal" id="itemInvModal">
             <div class="modal-header">
               <div>
@@ -259,7 +244,6 @@
             </div>
           </div>
 
-          <!-- EGG INVENTORY MODAL -->
           <div class="mini-modal" id="eggInvModal">
             <div class="modal-header">
               <div>
@@ -275,7 +259,6 @@
             </div>
           </div>
 
-          <!-- COIN SHOP MODAL -->
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
@@ -299,7 +282,6 @@
             </div>
           </div>
 
-          <!-- MARKET MODAL -->
           <div class="mini-modal" id="marketModal">
             <div class="modal-header">
               <div class="mini-title" style="margin:0;">🔮 ITENS</div>
@@ -310,7 +292,6 @@
             </div>
           </div>
 
-          <!-- GAME SELECTOR -->
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div class="gs-title">◆ ESCOLHA UM JOGO</div>
@@ -381,7 +362,6 @@
             </div>
           </div>
 
-          <!-- HATCH CONFIRM MODAL -->
           <div class="mini-modal" id="hatchConfirmModal">
             <div class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
             <div style="text-align:center;margin:10px 0 6px;">
@@ -395,7 +375,6 @@
             </div>
           </div>
 
-          <!-- MEMÓRIA ELEMENTAL -->
           <div class="mini-modal" id="memoriaModal">
             <div class="mini-title">🃏 MEMÓRIA ELEMENTAL</div>
             <div class="mini-sub" id="memSub">Encontre todos os pares!</div>
@@ -409,7 +388,6 @@
             </div>
           </div>
 
-          <!-- SIMON SAYS -->
           <div class="mini-modal" id="simonModal">
             <div class="mini-title">🎵 SIMON SAYS</div>
             <div class="simon-seq-display" id="simonSeqDisplay">Observe a sequência...</div>
@@ -423,7 +401,6 @@
             </div>
           </div>
 
-          <!-- JOGO DA VELHA -->
           <div class="mini-modal" id="velhaModal">
             <div class="mini-title">✕○ JOGO DA VELHA</div>
             <div class="mini-sub" id="velhaInfo">Sua vez! ✕</div>
@@ -436,7 +413,6 @@
             </div>
           </div>
 
-          <!-- CAMPO MINADO -->
           <div class="mini-modal" id="minaModal">
             <div class="mini-title">💣 CAMPO MINADO</div>
             <div class="mina-info-row">
@@ -452,36 +428,24 @@
             </div>
           </div>
 
-          <!-- ARENA DIMENSIONAL MODAL -->
           <div id="arenaModal"></div>
-
-          <!-- ROUBA MONTE MODAL -->
           <div id="roubaMontModal"></div>
-
-          <!-- BATALHA NAVAL MODAL -->
           <div id="batalhaNavalModal"></div>
 
-          <!-- Level-up overlay -->
           <div id="levelUpOverlay">
             <div class="lu-burst"></div>
-            <div class="lu-ring"></div>
-            <div class="lu-ring"></div>
-            <div class="lu-ring"></div>
+            <div class="lu-ring"></div><div class="lu-ring"></div><div class="lu-ring"></div>
             <div class="lu-text" id="luText">NÍVEL UP!</div>
             <div class="lu-nivel" id="luNivel">NÍVEL 2</div>
           </div>
 
-          <!-- Phase Up overlay -->
           <div id="phaseUpOverlay">
             <div class="pu-bg"></div>
-            <div class="pu-ring"></div>
-            <div class="pu-ring"></div>
-            <div class="pu-ring"></div>
+            <div class="pu-ring"></div><div class="pu-ring"></div><div class="pu-ring"></div>
             <div class="pu-text" id="puText">EVOLUÇÃO!</div>
             <div class="pu-fase" id="puFase">FASE: CRIANÇA</div>
           </div>
 
-          <!-- Sleep overlay -->
           <div id="sleepOverlay">
             <div class="sleep-moon">🌙</div>
             <div class="sleep-star" style="left:18%;top:35%;font-size:7px;animation-delay:.4s">✦</div>
@@ -530,13 +494,10 @@
           <button class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
         </div>
 
-        <!-- DEAD state -->
+        <!-- DEAD -->
         <div id="deadScreen" class="dead-screen" style="display:none">
           <div class="dead-particles" id="deadParticles"></div>
-          <div class="dead-orb">
-            <div class="dead-runes"></div>
-            👻
-          </div>
+          <div class="dead-orb"><div class="dead-runes"></div>👻</div>
           <div class="dead-title">ENTIDADE PERDIDA</div>
           <div class="dead-name" id="deadAvatarName"></div>
           <div class="dead-sub">partiu para outra dimensão...<br>sua essência persiste nos ovos.</div>
@@ -546,7 +507,7 @@
 
       </div><!-- /screen -->
 
-      <!-- ACTION BUTTONS -->
+      <!-- ACTION BUTTONS (desktop) -->
       <div class="btns" id="actionBtns" style="opacity:0;pointer-events:none;transition:opacity .5s;">
         <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 10 🪙">
           <span class="icon">🍖</span><span>NUTRIR</span>
@@ -573,14 +534,13 @@
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
           <span class="icon">🥚</span><span>BOTAR OVO</span>
         </button>
-      </div><!-- /btns -->
+      </div>
 
     </div><!-- /device -->
 
     <!-- RIGHT PANEL -->
     <div class="right-panel">
 
-      <!-- SUMMON -->
       <div class="panel-card" id="summonCard">
         <div class="panel-title">◆ INVOCAR AVATAR</div>
         <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
@@ -596,7 +556,6 @@
         </div>
       </div>
 
-      <!-- CREATURE CARD -->
       <div class="panel-card" id="creatureCard" style="display:none">
         <div id="avatarNameBlock" style="margin-bottom:10px;">
           <div style="display:flex;align-items:flex-start;gap:5px;">
@@ -643,7 +602,7 @@
           <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;align-items:center;">
+        <div style="display:flex;justify-content:flex-end;">
           <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
         </div>
 
@@ -683,7 +642,6 @@
         </div>
       </div>
 
-      <!-- DIÁRIO -->
       <div class="panel-card">
         <div class="panel-title">◆ DIÁRIO DIMENSIONAL</div>
         <ul class="log-list" id="logList"></ul>
@@ -713,7 +671,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
-<!-- Firebase init -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
@@ -729,7 +686,6 @@
   const _rtdb = firebase.database();
 </script>
 
-<!-- Game modules (order matters) -->
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
@@ -758,99 +714,101 @@
 
 <!-- ══════════════════════════════════════════════════════════════
      MOBILE HELPERS
-     Injecta o bloco de status inline no device e sincroniza
-     as barras a cada tick. Botão Dormir preserva o long-press.
 ════════════════════════════════════════════════════════════════ -->
 <script>
-function _initMobileStatus() {
-  if (window.innerWidth > 680) return;
-  if (document.getElementById('mobileStatusInline')) return;
+(function () {
+  if (window.innerWidth > 680) return;  // só corre no mobile
 
-  const device     = document.querySelector('.device');
-  const actionBtns = document.getElementById('actionBtns');
-  if (!device || !actionBtns) return;
+  // ── Injeta bloco de status inline no device ──────────────────
+  function initStatus() {
+    if (document.getElementById('mobileStatusInline')) return;
+    const device     = document.querySelector('.device');
+    const actionBtns = document.getElementById('actionBtns');
+    if (!device || !actionBtns) return;
 
-  const block = document.createElement('div');
-  block.id = 'mobileStatusInline';
-  block.innerHTML = `
-    <div class="msi-row">
-      <span class="msi-icon">🍖</span>
-      <div class="msi-track"><div class="msi-fill msi-fome"    id="msiFome"    style="width:100%"></div></div>
-      <span class="msi-val" id="msiValFome">100</span>
-    </div>
-    <div class="msi-row">
-      <span class="msi-icon">😊</span>
-      <div class="msi-track"><div class="msi-fill msi-humor"   id="msiHumor"   style="width:100%"></div></div>
-      <span class="msi-val" id="msiValHumor">100</span>
-    </div>
-    <div class="msi-row">
-      <span class="msi-icon">⚡</span>
-      <div class="msi-track"><div class="msi-fill msi-energia" id="msiEnergia" style="width:100%"></div></div>
-      <span class="msi-val" id="msiValEnergia">100</span>
-    </div>
-    <div class="msi-row">
-      <span class="msi-icon">❤️</span>
-      <div class="msi-track"><div class="msi-fill msi-saude"   id="msiSaude"   style="width:100%"></div></div>
-      <span class="msi-val" id="msiValSaude">100</span>
-    </div>
-    <div class="msi-row">
-      <span class="msi-icon">🧹</span>
-      <div class="msi-track"><div class="msi-fill msi-higiene" id="msiHigiene" style="width:100%"></div></div>
-      <span class="msi-val" id="msiValHigiene">100</span>
-    </div>
-  `;
-  device.insertBefore(block, actionBtns);
-}
-
-function _updateMobileStatus() {
-  if (window.innerWidth > 680) return;
-  const map = [
-    ['msiFome',    'msiValFome',    typeof vitals !== 'undefined' ? vitals.fome    : 100],
-    ['msiHumor',   'msiValHumor',   typeof vitals !== 'undefined' ? vitals.humor   : 100],
-    ['msiEnergia', 'msiValEnergia', typeof vitals !== 'undefined' ? vitals.energia : 100],
-    ['msiSaude',   'msiValSaude',   typeof vitals !== 'undefined' ? vitals.saude   : 100],
-    ['msiHigiene', 'msiValHigiene', typeof vitals !== 'undefined' ? vitals.higiene : 100],
-  ];
-  map.forEach(([barId, valId, v]) => {
-    const bar = document.getElementById(barId);
-    const val = document.getElementById(valId);
-    if (!bar || !val) return;
-    bar.style.width = v + '%';
-    val.textContent = Math.floor(v);
-    v < 25 ? bar.classList.add('critical') : bar.classList.remove('critical');
-  });
-}
-
-window.addEventListener('load', () => {
-  _initMobileStatus();
-  // Acopla ao updateAllUI existente para manter as barras em sync
-  const _orig = window.updateAllUI;
-  if (typeof _orig === 'function') {
-    window.updateAllUI = function () {
-      _orig.apply(this, arguments);
-      _updateMobileStatus();
-    };
+    const block = document.createElement('div');
+    block.id = 'mobileStatusInline';
+    block.innerHTML = `
+      <div class="msi-row"><span class="msi-icon">🍖</span>
+        <div class="msi-track"><div class="msi-fill msi-fome"    id="msiFome"    style="width:100%"></div></div>
+        <span class="msi-val" id="msiValFome">100</span></div>
+      <div class="msi-row"><span class="msi-icon">😊</span>
+        <div class="msi-track"><div class="msi-fill msi-humor"   id="msiHumor"   style="width:100%"></div></div>
+        <span class="msi-val" id="msiValHumor">100</span></div>
+      <div class="msi-row"><span class="msi-icon">⚡</span>
+        <div class="msi-track"><div class="msi-fill msi-energia" id="msiEnergia" style="width:100%"></div></div>
+        <span class="msi-val" id="msiValEnergia">100</span></div>
+      <div class="msi-row"><span class="msi-icon">❤️</span>
+        <div class="msi-track"><div class="msi-fill msi-saude"   id="msiSaude"   style="width:100%"></div></div>
+        <span class="msi-val" id="msiValSaude">100</span></div>
+      <div class="msi-row"><span class="msi-icon">🧹</span>
+        <div class="msi-track"><div class="msi-fill msi-higiene" id="msiHigiene" style="width:100%"></div></div>
+        <span class="msi-val" id="msiValHigiene">100</span></div>`;
+    device.insertBefore(block, actionBtns);
   }
-});
+
+  // ── Sincroniza barras com os vitals do jogo ──────────────────
+  function syncStatus() {
+    if (typeof vitals === 'undefined') return;
+    const map = [
+      ['msiFome',    'msiValFome',    vitals.fome],
+      ['msiHumor',   'msiValHumor',   vitals.humor],
+      ['msiEnergia', 'msiValEnergia', vitals.energia],
+      ['msiSaude',   'msiValSaude',   vitals.saude],
+      ['msiHigiene', 'msiValHigiene', vitals.higiene],
+    ];
+    map.forEach(([bId, vId, v]) => {
+      const bar = document.getElementById(bId);
+      const val = document.getElementById(vId);
+      if (!bar || !val) return;
+      bar.style.width  = v + '%';
+      val.textContent  = Math.floor(v);
+      v < 25 ? bar.classList.add('critical') : bar.classList.remove('critical');
+    });
+  }
+
+  // ── Sincroniza label "Dormir/Acordar" na bottom nav ──────────
+  function syncSleepLabel() {
+    const lbl = document.getElementById('fvbnSleepLabel');
+    if (!lbl) return;
+    if (typeof sleeping === 'undefined') return;
+    lbl.textContent = sleeping ? 'Acordar' : 'Dormir';
+    const btn = document.getElementById('fvbn-sleep');
+    if (btn) sleeping ? btn.classList.add('sleep-active') : btn.classList.remove('sleep-active');
+  }
+
+  // ── Hook em updateAllUI ──────────────────────────────────────
+  window.addEventListener('load', () => {
+    initStatus();
+    const orig = window.updateAllUI;
+    if (typeof orig === 'function') {
+      window.updateAllUI = function () {
+        orig.apply(this, arguments);
+        syncStatus();
+        syncSleepLabel();
+      };
+    }
+  });
+})();
 </script>
 
-<!-- BOTTOM NAV MOBILE — ações diretas do avatar -->
+<!-- BOTTOM NAV MOBILE — ações diretas -->
 <nav class="fv-bottom-nav" style="display:none;">
   <div class="fv-bottom-nav-inner">
 
-    <button class="fv-bn-btn" id="fvbn-feed"
-      onclick="feedCreature()">
-      <span class="fv-bn-icon">🍖</span>
-      <span>Nutrir</span>
+    <button class="fv-bn-btn" id="fvbn-feed" onclick="feedCreature()">
+      <span class="fv-bn-icon">🍖</span><span>Nutrir</span>
     </button>
 
-    <button class="fv-bn-btn" id="fvbn-play"
-      onclick="playCreature()">
-      <span class="fv-bn-icon">🎮</span>
-      <span>Brincar</span>
+    <button class="fv-bn-btn" id="fvbn-play" onclick="playCreature()">
+      <span class="fv-bn-icon">🎮</span><span>Brincar</span>
     </button>
 
-    <!-- Dormir: long-press idêntico ao botão original -->
+    <!--
+      Dormir: onpointerdown/up idêntico ao btnSleep original.
+      Long-press (>600ms) activa modo repouso, tap simples
+      dorme/acorda — comportamento definido em wallet.js.
+    -->
     <button class="fv-bn-btn" id="fvbn-sleep"
       onpointerdown="onSleepPointerDown()"
       onpointerup="onSleepPointerUp()"
@@ -859,16 +817,12 @@ window.addEventListener('load', () => {
       <span id="fvbnSleepLabel">Dormir</span>
     </button>
 
-    <button class="fv-bn-btn" id="fvbn-heal"
-      onclick="healCreature()">
-      <span class="fv-bn-icon">💊</span>
-      <span>Medicar</span>
+    <button class="fv-bn-btn" id="fvbn-heal" onclick="healCreature()">
+      <span class="fv-bn-icon">💊</span><span>Medicar</span>
     </button>
 
-    <button class="fv-bn-btn" id="fvbn-bath"
-      onclick="cleanCreature()">
-      <span class="fv-bn-icon">🛁</span>
-      <span>Banho</span>
+    <button class="fv-bn-btn" id="fvbn-bath" onclick="cleanCreature()">
+      <span class="fv-bn-icon">🛁</span><span>Banho</span>
     </button>
 
   </div>
