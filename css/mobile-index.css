@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════
-   FRACTURED VEIL — Mobile Responsive v3 (index.html)
-   Só dispara em ≤ 680px. Desktop não é afectado.
+   FRACTURED VEIL — Mobile Responsive v2 (index.html)
+   Padrão idêntico ao marketplace.html — zero JS alterado.
+   Só dispara em ≤ 680px.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Bottom nav: escondida no desktop */
+/* ── Bottom nav: escondida no desktop ── */
 .fv-bottom-nav { display: none; }
 
 @media (max-width: 680px) {
@@ -12,10 +13,10 @@
      BASE
   ════════════════════════════════════════ */
   html { font-size: 100% !important; }  /* cancela zoom 175% do desktop */
-  body { padding-bottom: 56px; }
+  body { padding-bottom: 56px; }        /* espaço para a bottom nav */
 
   /* ════════════════════════════════════════
-     HEADER
+     HEADER — compacto
   ════════════════════════════════════════ */
   header {
     padding: 10px 12px 0;
@@ -36,11 +37,13 @@
 
   .res { font-size: 9px; padding: 3px 8px; gap: 3px; white-space: nowrap; flex-shrink: 0; }
   .res b { font-size: 9px; }
+
+  /* Endereço: compacto; botão Sair: esconde (acesso via menu) */
   .wallet-address { font-size: 7px; padding: 3px 7px; }
   .btn-wallet.btn-sair { display: none; }
 
   /* ════════════════════════════════════════
-     MAIN — coluna única
+     MAIN — grid 2 colunas → coluna única
   ════════════════════════════════════════ */
   main {
     grid-template-columns: 1fr;
@@ -52,58 +55,59 @@
      DEVICE
   ════════════════════════════════════════ */
   .device {
-    display: flex;
-    flex-direction: column;
     padding: 10px 10px 12px;
     border-radius: 14px 14px 20px 20px;
   }
-  .device-top { order: 0; margin-bottom: 8px; }
+  .device-top { margin-bottom: 8px; }
 
-  /* ── SCREEN
-     CRÍTICO: mantém position:relative para que .mini-modal e
-     #gameSelector (position:absolute;inset:0) continuem a
-     cobrir a screen correctamente.
-     overflow:visible permite que a .bubble saia por cima.      */
-  .screen {
-    order: 1;
-    height: 220px;
-    margin-bottom: 0;
-    position: relative;       /* NÃO muda — modais dependem disto */
-    overflow: visible;        /* bubble já não é cortada */
-  }
+  /* ── BUBBLE: tira da screen e coloca acima dela, dentro do device ──
+     A .screen tem overflow:hidden e cortava a bubble.
+     Solução: bubble sai do fluxo da screen e fica num wrapper próprio. */
+  .screen { overflow: visible; }  /* deixa bubble escapar */
 
-  /* ── Bubble: sai acima da screen sem ser cortada ── */
+  /* Bubble posiciona acima da screen sem ser cortada */
   .bubble {
     position: absolute;
-    top: -36px;
+    /* em mobile a screen tem 220px de altura, a bubble fica acima */
+    top: -34px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
     white-space: nowrap;
-    max-width: 88vw;
+    max-width: 90vw;
     font-size: 7px;
     padding: 4px 10px;
   }
 
-  /* ── Modais de jogo: continuam position:absolute dentro da screen.
-     Quando abertos, a screen precisa crescer para preencher a viewport.
-     Fazemos isso expandindo a .screen quando tem um modal .open dentro. ── */
-  .screen:has(.mini-modal.open),
-  .screen:has(#gameSelector.open),
-  .screen:has(#arenaModal:not(:empty)),
-  .screen:has(#roubaMontModal:not(:empty)),
-  .screen:has(#batalhaNavalModal:not(:empty)) {
-    /* Cresce para preencher tudo menos header e bottom nav */
-    position: fixed !important;
-    inset: 0 0 56px 0 !important;
-    height: auto !important;
-    width: 100% !important;
-    border-radius: 0 !important;
-    z-index: 150 !important;
-    overflow: hidden !important;
+  /* Screen: altura reduzida */
+  .screen {
+    height: 220px;
+    margin-bottom: 0;           /* status vem logo abaixo, sem gap */
+    position: relative;
   }
 
-  /* ── STATUS inline — aparece entre screen e actionBtns ── */
+  /* ════════════════════════════════════════
+     STATUS — move para dentro do device,
+     logo abaixo da screen (antes dos btns)
+  ════════════════════════════════════════ */
+
+  /* Esconde o statusCard original (fica no right-panel, lá embaixo) */
+  #statusCard { display: none !important; }
+
+  /* Bloco de status inline: inserido via CSS logo após a screen */
+  /* O truque: usa o ::before do #actionBtns como separador e
+     exibe as barras compactas num bloco que vem do right-panel
+     movido para cima com order no flex.                         */
+
+  /* Device vira flex-column para controlar a ordem */
+  .device {
+    display: flex;
+    flex-direction: column;
+  }
+  .device-top  { order: 0; }
+  .screen      { order: 1; }
+
+  /* Painel de status inline — aparece entre screen e btns */
   #mobileStatusInline {
     order: 2;
     display: flex;
@@ -113,17 +117,17 @@
     border-top: 1px solid var(--border);
     margin-top: 6px;
   }
+
   .msi-row {
     display: flex;
     align-items: center;
     gap: 5px;
   }
   .msi-icon {
-    font-size: 11px;
-    width: 18px;
+    font-size: 10px;
+    width: 16px;
     text-align: center;
     flex-shrink: 0;
-    line-height: 1;
   }
   .msi-track {
     flex: 1;
@@ -152,16 +156,27 @@
     flex-shrink: 0;
   }
 
-  /* ── ACTION BUTTONS: escondidos no mobile (ficam na bottom nav) ── */
+  /* ════════════════════════════════════════
+     ACTION BUTTONS — esconde no mobile.
+     As ações ficam na bottom nav.
+  ════════════════════════════════════════ */
   #actionBtns { display: none !important; order: 3; }
 
   /* ════════════════════════════════════════
-     RIGHT PANEL
+     RIGHT PANEL — cartão de avatar compacto
   ════════════════════════════════════════ */
-  .right-panel { gap: 10px; }
-  .panel-card  { padding: 12px 14px; }
+  .right-panel { gap: 10px; order: 4; }
 
-  /* Descrição do avatar: máx 2 linhas */
+  .panel-card { padding: 12px 14px; }
+
+  /* Esconde cards que não fazem sentido na sequência mobile */
+  #summonCard  { order: 0; }
+  #creatureCard {
+    order: 1;
+    /* Esconde o statusCard dentro do creatureCard (já temos o inline) */
+  }
+
+  /* Descrição do avatar: limita linhas */
   #idDesc {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -169,15 +184,56 @@
     overflow: hidden;
   }
 
-  /* Log: altura menor */
+  /* Log: altura máxima menor */
   .log-list { max-height: 120px; }
+
+  /* ════════════════════════════════════════
+     MODAIS — sobem de baixo (sheet pattern)
+  ════════════════════════════════════════ */
+  .mini-modal {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-y: auto;
+    transform: none !important;
+    /* Empurra acima da bottom nav */
+    margin-bottom: 56px;
+  }
+
+  #gameSelector {
+    position: fixed !important;
+    inset: auto 0 56px 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-y: auto;
+  }
+
+  /* Arena, Rouba Monte, Batalha Naval: full screen */
+  #arenaModal,
+  #roubaMontModal,
+  #batalhaNavalModal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+  }
 
   /* ════════════════════════════════════════
      LOGIN SCREEN
   ════════════════════════════════════════ */
-  #loginCard { padding: 28px 18px; max-width: 92vw; }
-  #loginLogo { font-size: 18px; letter-spacing: 3px; }
-  #loginSub  { font-size: 6px;  letter-spacing: 2px; }
+  #loginCard  { padding: 28px 18px; max-width: 92vw; }
+  #loginLogo  { font-size: 18px; letter-spacing: 3px; }
+  #loginSub   { font-size: 6px; letter-spacing: 2px; }
 
   /* ════════════════════════════════════════
      TOAST — acima da bottom nav
@@ -200,8 +256,7 @@
     height: 56px;
     background: var(--surface);
     border-top: 1px solid var(--border);
-    /* z-index menor que a screen expandida (150) para não tapar modais */
-    z-index: 100;
+    z-index: 200;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .fv-bottom-nav-inner {
@@ -231,9 +286,21 @@
     touch-action: manipulation;
   }
   .fv-bn-icon { font-size: 20px; line-height: 1; }
-  .fv-bn-btn:active { color: var(--gold-light); transform: scale(.92); }
 
-  /* Botão de dormir: fica dourado quando modo repouso activo */
-  .fv-bn-btn.sleep-active { color: var(--raro); }
+  .fv-bn-btn.active       { color: var(--gold); }
+  .fv-bn-btn.btn-disabled { opacity: .25; pointer-events: none; }
+
+  /* Ponto indicador na tab activa */
+  .fv-bn-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--border-glow);
+  }
+
+  /* Flash de feedback ao tocar */
+  .fv-bn-btn:active { color: var(--gold-light); transform: scale(.92); }
 
 } /* fim @media */
