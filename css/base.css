@@ -27,6 +27,11 @@ body {
   html { zoom: 1.5; }
 }
 
+/* ── Mobile: reset explícito do zoom — mesmo padrão do marketplace ── */
+@media(max-width:680px) {
+  html { zoom: 1; }
+}
+
 #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 body::after {
   content:''; position:fixed; inset:0;
