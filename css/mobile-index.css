@@ -3,7 +3,7 @@
    Só dispara em ≤ 768px. Desktop fica com zoom:1.5 intocado.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Bottom nav: escondida por defeito — JS e CSS controlam visibilidade ── */
+/* ── Bottom nav: escondida por defeito ── */
 .fv-bottom-nav { display: none; }
 
 /* ── Garante que desktop nunca mostra a bottom nav ── */
@@ -16,8 +16,8 @@
   /* ════════════════════════════════════════
      BASE
   ════════════════════════════════════════ */
-  html { font-size: 100% !important; }  /* cancela zoom 1.5 do desktop */
-  body { padding-bottom: 56px; }        /* espaço para a bottom nav */
+  html { font-size: 100% !important; }
+  body { padding-bottom: 56px; }
 
   /* ════════════════════════════════════════
      HEADER — compacto
@@ -46,7 +46,7 @@
   .btn-wallet.btn-sair { display: none; }
 
   /* ════════════════════════════════════════
-     MAIN — grid 2 colunas → coluna única
+     MAIN — coluna única
   ════════════════════════════════════════ */
   main {
     grid-template-columns: 1fr;
@@ -64,10 +64,8 @@
     border-radius: 14px 14px 20px 20px;
   }
   .device-top { order: 0; margin-bottom: 8px; }
-  .screen     { order: 1; }
+  .screen     { order: 1; overflow: visible; height: 220px; margin-bottom: 0; position: relative; }
 
-  /* Bubble acima da screen sem ser cortada */
-  .screen { overflow: visible; height: 220px; margin-bottom: 0; position: relative; }
   .bubble {
     position: absolute;
     top: -34px; left: 50%;
@@ -102,16 +100,24 @@
 
   /* ════════════════════════════════════════
      ACTION BUTTONS — esconde no mobile
+     (substituídos pela bottom nav)
   ════════════════════════════════════════ */
   #actionBtns { display: none !important; order: 3; }
 
   /* ════════════════════════════════════════
-     RIGHT PANEL
+     RIGHT PANEL — ordem: summon → avatar → diário por último
   ════════════════════════════════════════ */
-  .right-panel { gap: 10px; order: 4; }
-  .panel-card  { padding: 12px 14px; }
-  #summonCard  { order: 0; }
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .panel-card   { padding: 12px 14px; }
+  #summonCard   { order: 0; }
   #creatureCard { order: 1; }
+  /* Diário dimensional — sempre por último */
+  .right-panel .panel-card:last-child { order: 99; }
+
   #idDesc {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -177,7 +183,7 @@
   }
 
   /* ════════════════════════════════════════
-     BOTTOM NAV — ações diretas do avatar
+     BOTTOM NAV — fixa, mesma largura do conteúdo
   ════════════════════════════════════════ */
   .fv-bottom-nav {
     display: flex !important;
@@ -187,14 +193,18 @@
     background: var(--surface);
     border-top: 1px solid var(--border);
     z-index: 200;
+    /* Mesmo padding lateral do main (10px) */
+    padding-left: 10px;
+    padding-right: 10px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    /* Cancela qualquer zoom herdado */
     zoom: 1;
     font-size: 14px;
+    box-sizing: border-box;
   }
   .fv-bottom-nav-inner {
     display: flex;
-    width: 100%; height: 56px;
+    width: 100%;
+    height: 56px;
   }
   .fv-bn-btn {
     flex: 1;
