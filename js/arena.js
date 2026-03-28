@@ -263,6 +263,13 @@ function _iniciarLobbyListener() {
     const myKey = (walletAddress||'').toLowerCase();
     const agora = Date.now();
 
+    // Limpeza server-side: remove entradas stale (heartbeat parou sem onDisconnect disparar)
+    Object.entries(dados).forEach(([k, d]) => {
+      if(d.ts && typeof d.ts === 'number' && (agora - d.ts) >= ARENA_LOBBY_TTL) {
+        rtdb().ref(`arena/lobby/${fila}/${k}`).remove().catch(() => {});
+      }
+    });
+
     const avatares = Object.entries(dados).filter(([k, d]) => {
       const isMe      = k.toLowerCase() === myKey;
       const emPartida = d.emPartida === true;
@@ -391,11 +398,22 @@ async function desafiarJogador(walletOponente) {
     recompensaDistribuida: false,
   };
 
+  // Marca oponente como emPartida de forma atómica — evita que dois jogadores
+  // desafiem o mesmo oponente simultaneamente (race condition TOCTOU)
+  const opEmPartidaRef = rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`);
+  const { committed } = await opEmPartidaRef.transaction(current => {
+    if(current === true) return; // undefined → aborta a transaction
+    return true;
+  });
+  if(!committed) {
+    showBubble('Oponente já entrou em outra partida!');
+    return;
+  }
+
   await rtdb().ref(`arena/salas/${salaId}`).set(sala);
 
-  // Marca os dois como em partida no lobby
+  // Marca o criador como emPartida (oponente já foi marcado pela transaction)
   await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
-  await rtdb().ref(`arena/lobby/${fila}/${walletOponente}/emPartida`).set(true);
 
   // Para o heartbeat e o listener do lobby — não precisa mais
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
