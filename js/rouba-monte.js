@@ -1027,6 +1027,21 @@ async function rmJogarCarta(salaId, opWallet) {
   const cartaJogada = minha_mao.splice(_rmCartaSel, 1)[0];
   _rmCartaSel = null;
 
+  // Efeito visual — carta saindo da mão
+  const _rmModal = document.getElementById('roubaMontModal');
+  if(_rmModal) {
+    const _flash = document.createElement('div');
+    _flash.style.cssText = `position:absolute;inset:0;z-index:80;display:flex;align-items:center;
+      justify-content:center;pointer-events:none;`;
+    const _cor = cartaJogada.cor === 'vermelho' ? '#e74c3c' : '#f0d080';
+    _flash.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:28px;font-weight:700;
+      color:${_cor};text-shadow:0 0 12px ${_cor}60;animation:arena-pop .4s cubic-bezier(.34,1.6,.64,1) forwards;">
+      ${cartaJogada.label}${cartaJogada.naipe}</div>`;
+    _rmModal.style.position = 'relative';
+    _rmModal.appendChild(_flash);
+    setTimeout(() => _flash.remove(), 450);
+  }
+
   let mesa     = _rmToArray(sala.mesa);
   let meuMonte = _rmToArray(sala.montes?.[walletAddress]);
   let opMonte  = _rmToArray(sala.montes?.[opWallet]);

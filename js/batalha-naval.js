@@ -551,7 +551,7 @@ function _bnRenderColocacao(salaId, sala) {
       <div id="bnNavioInfo" style="flex-shrink:0;padding:6px 8px;
            background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);
            border-radius:6px;font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">
-        ${_bnHtmlNavioInfo()}
+        ${_bnHtmlNavioInfo(salaId)}
       </div>
 
       <!-- Tabuleiro de colocação -->
@@ -597,10 +597,21 @@ function _bnRenderColocacao(salaId, sala) {
   });
 }
 
-function _bnHtmlNavioInfo() {
-  if(_bnNavioAtual >= BN_NAVIOS.length) return '✅ Todos os navios posicionados!';
-  const n = BN_NAVIOS[_bnNavioAtual];
-  return `${n.icon} A colocar: <b>${n.nome}</b> (${n.tam} casas) · ${_bnNaviosColocados[n.id] ? '✅ Colocado' : 'Clica no tabuleiro'}`;
+function _bnHtmlNavioInfo(salaId) {
+  let info;
+  if(_bnNavioAtual >= BN_NAVIOS.length) {
+    info = '✅ Todos os navios posicionados!';
+  } else {
+    const n = BN_NAVIOS[_bnNavioAtual];
+    info = `${n.icon} A colocar: <b>${n.nome}</b> (${n.tam} casas) · ${_bnNaviosColocados[n.id] ? '✅ Colocado' : 'Clica no tabuleiro'}`;
+  }
+  const desfazerBtn = _bnNavioAtual > 0
+    ? ` <button onclick="bnDesfazerNavio('${salaId}')"
+          style="margin-left:8px;font-family:'Cinzel',serif;font-size:6px;padding:2px 8px;
+                 border:1px solid rgba(255,100,100,.3);border-radius:3px;
+                 background:rgba(231,76,60,.08);color:#e74c3c;cursor:pointer;">↩ DESFAZER</button>`
+    : '';
+  return info + desfazerBtn;
 }
 
 function _bnHtmlNaviosLista() {
@@ -695,7 +706,7 @@ function bnColocarNavio(r, c, salaId) {
   const info = document.getElementById('bnNavioInfo');
   const lista = document.getElementById('bnNaviosLista');
   if(tab)   tab.innerHTML   = _bnHtmlTabColocacao(salaId);
-  if(info)  info.innerHTML  = _bnHtmlNavioInfo();
+  if(info)  info.innerHTML  = _bnHtmlNavioInfo(salaId);
   if(lista) lista.innerHTML = _bnHtmlNaviosLista();
 
   // Todos colocados?
@@ -703,6 +714,26 @@ function bnColocarNavio(r, c, salaId) {
     const btn = document.getElementById('bnBtnConfirmar');
     if(btn) btn.style.display = 'block';
   }
+}
+
+function bnDesfazerNavio(salaId) {
+  if(_bnNavioAtual === 0) return;
+  _bnNavioAtual--;
+  const n     = BN_NAVIOS[_bnNavioAtual];
+  const casas = _bnNaviosColocados[n.id];
+  if(casas) {
+    casas.forEach(([r, c]) => { _bnMeuTabuleiro[r][c] = null; });
+    delete _bnNaviosColocados[n.id];
+  }
+  _bnPreview = [];
+  const tab   = document.getElementById('bnTabColocacao');
+  const info  = document.getElementById('bnNavioInfo');
+  const lista = document.getElementById('bnNaviosLista');
+  const btn   = document.getElementById('bnBtnConfirmar');
+  if(tab)   tab.innerHTML   = _bnHtmlTabColocacao(salaId);
+  if(info)  info.innerHTML  = _bnHtmlNavioInfo(salaId);
+  if(lista) lista.innerHTML = _bnHtmlNaviosLista();
+  if(btn)   btn.style.display = 'none';
 }
 
 async function bnConfirmarColocacao(salaId) {
@@ -866,17 +897,23 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet) {
 
       if(casa === 'acerto') {
         bg = 'rgba(231,76,60,.2)'; border = '1px solid rgba(231,76,60,.5)'; content = '💥';
+        if(meuTurno) cursor = 'not-allowed';
       } else if(casa === 'afundado') {
         bg = 'rgba(231,76,60,.35)'; border = '1px solid #e74c3c'; content = '🔥';
+        if(meuTurno) cursor = 'not-allowed';
       } else if(casa === 'agua') {
         bg = 'rgba(90,180,232,.1)'; border = '1px solid rgba(90,180,232,.3)'; content = '🌊';
+        if(meuTurno) cursor = 'not-allowed';
       } else if(meuTurno) {
         bg = 'rgba(255,255,255,.03)'; border = '1px solid rgba(255,255,255,.08)'; cursor = 'pointer';
       } else {
         bg = 'rgba(255,255,255,.02)'; border = '1px solid rgba(255,255,255,.05)';
       }
 
-      html += `<td onclick="${meuTurno && !casa ? `bnAtirar(${r},${c},'${salaId}','${opWallet}')` : ''}"
+      const clickHandler = meuTurno
+        ? (casa ? `showBubble('Já atacada! ⚡')` : `bnAtirar(${r},${c},'${salaId}','${opWallet}')`)
+        : '';
+      html += `<td onclick="${clickHandler}"
                    style="width:${cell}px;height:${cell}px;text-align:center;
                           background:${bg};border:${border};cursor:${cursor};
                           font-size:9px;transition:all .1s;
@@ -927,6 +964,35 @@ function _bnHtmlTabDefesa(meuTabPub) {
   }
   html += `</table>`;
   return html;
+}
+
+// ── Animação de navio afundado ──
+function _bnMostrarAfundado(nomeNavio, euAfundei, callback) {
+  const modal = document.getElementById('batalhaNavalModal');
+  if(!modal) { callback?.(); return; }
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:absolute;inset:0;z-index:90;
+    background:rgba(4,3,10,.9);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;border-radius:inherit;`;
+  overlay.innerHTML = `
+    <style>
+      @keyframes bn-afund-pop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+    </style>
+    <div style="font-size:44px;animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1);">${euAfundei ? '🔥' : '💥'}</div>
+    <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:2px;
+                color:${euAfundei ? '#7ab87a' : '#e74c3c'};
+                animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1) .06s both;">
+      ${euAfundei ? 'NAVIO AFUNDADO!' : 'TEU NAVIO AFUNDADO!'}
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);
+                animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1) .12s both;">
+      ${nomeNavio}
+    </div>`;
+  modal.style.position = 'relative';
+  modal.appendChild(overlay);
+  setTimeout(() => { overlay.remove(); callback?.(); }, 1800);
 }
 
 // ── Timer ──
@@ -1003,8 +1069,16 @@ function _bnEscutarSala(salaId, opWallet) {
       if(ts !== _ultimoTs) {
         _ultimoTs = ts;
         _bnPararTimer();
-        _bnRenderPartida(salaId, s, opWallet);
-        if(s.turno === walletAddress) _bnIniciarTimer(salaId, opWallet);
+        if(s.ultimaJogada?.afundou) {
+          const euAfundei = s.ultimaJogada.jogador === walletAddress;
+          _bnMostrarAfundado(s.ultimaJogada.afundou, euAfundei, () => {
+            _bnRenderPartida(salaId, s, opWallet);
+            if(s.turno === walletAddress) _bnIniciarTimer(salaId, opWallet);
+          });
+        } else {
+          _bnRenderPartida(salaId, s, opWallet);
+          if(s.turno === walletAddress) _bnIniciarTimer(salaId, opWallet);
+        }
       }
     }
   });

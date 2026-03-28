@@ -757,6 +757,16 @@ async function fazerEscolha(salaId, escolha) {
   _arenaEscolhaFeita = true;
   _pararTimer();
 
+  // Efeito visual no botão escolhido
+  document.querySelectorAll('.arena-escolha-btn').forEach(b => {
+    if(b.textContent.includes(JKP_EMOJIS[escolha])) {
+      b.classList.add('pop');
+      b.style.background  = 'rgba(201,168,76,.2)';
+      b.style.borderColor = 'var(--gold)';
+      b.style.boxShadow   = '0 0 18px rgba(201,168,76,.4)';
+    }
+  });
+
   document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = true);
 
   // Grava escolha no RTDB
@@ -1156,7 +1166,7 @@ async function _carregarRanking() {
           <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
           <span class="arena-rank-nome">${d.nome||(d.wallet||'').slice(0,10)+'...'}</span>
           <span class="arena-rank-pts">${d.pontos||0} pts</span>
-          <span class="arena-rank-wl">${d.vitorias||0}V ${d.derrotas||0}D</span>
+          <span class="arena-rank-wl">${d.vitorias||0}V ${d.derrotas||0}D ${d.empates||0}E</span>
         </div>`).join('');
 
   // Pool — lê do Firestore (onde as taxas são depositadas)
