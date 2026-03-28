@@ -544,7 +544,49 @@ function _bnRenderColocacao(salaId, sala) {
   const el = document.getElementById('batalhaNavalModal');
   if(!el) return;
 
-  el.innerHTML = `
+  const isPC = window.innerWidth > 600;
+  el.innerHTML = isPC ? `
+    <div style="display:flex;flex-direction:column;height:100%;padding:8px 10px;gap:6px;overflow:hidden;">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">🚢 POSICIONAR NAVIOS</div>
+        <button style="font-family:'Cinzel',serif;font-size:7px;padding:3px 9px;
+                       border:1px solid var(--border);border-radius:4px;background:transparent;
+                       color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
+          Orientação: <b id="bnOrientLabel">H</b>
+        </button>
+      </div>
+
+      <!-- 2-col: board | seleção -->
+      <div style="display:flex;gap:10px;flex:1;min-height:0;overflow:hidden;">
+
+        <!-- Esquerda: tabuleiro -->
+        <div style="flex-shrink:0;">
+          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">CLICA PARA POSICIONAR</div>
+          <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId, 22)}</div>
+        </div>
+
+        <!-- Direita: seleção de navios -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;overflow-y:auto;">
+          <div id="bnNavioInfo" style="padding:5px 7px;background:rgba(201,168,76,.06);
+               border:1px solid rgba(201,168,76,.2);border-radius:5px;
+               font-family:'Cinzel',serif;font-size:7px;color:var(--gold);flex-shrink:0;">
+            ${_bnHtmlNavioInfo(salaId)}
+          </div>
+          <div id="bnNaviosLista" style="flex:1;">${_bnHtmlNaviosLista()}</div>
+          <div id="bnBtnConfirmar" style="display:none;flex-shrink:0;">
+            <button class="arena-btn-entrar" style="font-size:6.5px;" onclick="bnConfirmarColocacao('${salaId}')">
+              ✅ CONFIRMAR POSIÇÕES
+            </button>
+          </div>
+          <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;">
+            <div class="arena-aguardando"><div class="arena-pulse"></div>Aguardando oponente posicionar navios...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>` : `
     <div style="display:flex;flex-direction:column;height:100%;gap:6px;padding:8px;overflow-y:auto;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -556,32 +598,25 @@ function _bnRenderColocacao(salaId, sala) {
         </button>
       </div>
 
-      <!-- Navio actual a colocar -->
       <div id="bnNavioInfo" style="flex-shrink:0;padding:6px 8px;
            background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);
            border-radius:6px;font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">
         ${_bnHtmlNavioInfo(salaId)}
       </div>
 
-      <!-- Tabuleiro de colocação -->
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">
-          MEU TABULEIRO — clica para colocar
-        </div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">MEU TABULEIRO — clica para colocar</div>
         <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId)}</div>
       </div>
 
-      <!-- Navios colocados -->
       <div id="bnNaviosLista" style="flex-shrink:0;">${_bnHtmlNaviosLista()}</div>
 
-      <!-- Botão confirmar (só aparece após colocar todos) -->
       <div id="bnBtnConfirmar" style="flex-shrink:0;display:none;">
         <button class="arena-btn-entrar" onclick="bnConfirmarColocacao('${salaId}')">
           ✅ CONFIRMAR POSIÇÕES
         </button>
       </div>
 
-      <!-- Aguardando oponente -->
       <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;margin-top:8px;">
         <div class="arena-aguardando"><div class="arena-pulse"></div>Aguardando oponente posicionar navios...</div>
       </div>
@@ -626,20 +661,35 @@ function _bnHtmlNavioInfo(salaId) {
 }
 
 function _bnHtmlNaviosLista() {
-  return BN_NAVIOS.map(n => {
-    const colocado = !!_bnNaviosColocados[n.id];
-    return `<div style="display:inline-flex;align-items:center;gap:4px;margin:2px;
-                        padding:2px 6px;border-radius:4px;font-size:6px;
-                        border:1px solid ${colocado?'rgba(122,184,122,.4)':'rgba(255,255,255,.08)'};
-                        background:${colocado?'rgba(122,184,122,.08)':'rgba(255,255,255,.02)'};
-                        color:${colocado?'#7ab87a':'var(--muted)'};">
-      ${n.icon} ${n.nome} (${n.tam}) ${colocado?'✅':''}
+  return BN_NAVIOS.map((n, idx) => {
+    const colocado  = !!_bnNaviosColocados[n.id];
+    const isAtual   = idx === _bnNavioAtual && !colocado;
+    const cor       = colocado ? '#7ab87a' : isAtual ? 'var(--gold)' : 'var(--muted)';
+    const bgItem    = colocado ? 'rgba(122,184,122,.07)' : isAtual ? 'rgba(201,168,76,.07)' : 'transparent';
+    const bdItem    = colocado ? 'rgba(122,184,122,.25)' : isAtual ? 'rgba(201,168,76,.3)' : 'rgba(255,255,255,.06)';
+    const cellCol   = colocado ? 'rgba(122,184,122,.55)' : isAtual ? 'rgba(201,168,76,.45)' : 'rgba(90,180,232,.2)';
+    const cellBd    = colocado ? 'rgba(122,184,122,.7)'  : isAtual ? 'rgba(201,168,76,.65)'  : 'rgba(90,180,232,.35)';
+    const shipCells = Array.from({length: n.tam}, (_, i) =>
+      `<span style="display:inline-flex;align-items:center;justify-content:center;
+                    width:13px;height:13px;font-size:8px;
+                    background:${cellCol};border:1px solid ${cellBd};
+                    border-radius:${i===0?'3px 0 0 3px':i===n.tam-1?'0 3px 3px 0':'0'};
+                    margin-right:-1px;">${i===0?n.icon:''}</span>`
+    ).join('');
+    return `<div style="display:flex;align-items:center;gap:7px;padding:3px 6px;
+                        border-radius:4px;margin-bottom:3px;
+                        border:1px solid ${bdItem};background:${bgItem};">
+      <div style="display:inline-flex;align-items:center;flex-shrink:0;">${shipCells}</div>
+      <span style="font-family:'Cinzel',serif;font-size:6px;color:${cor};
+                   ${isAtual?'font-weight:700;':''}flex:1;white-space:nowrap;
+                   overflow:hidden;text-overflow:ellipsis;">${n.nome}</span>
+      ${colocado ? '<span style="font-size:9px;flex-shrink:0;">✅</span>' : ''}
     </div>`;
   }).join('');
 }
 
-function _bnHtmlTabColocacao(salaId) {
-  const cell = 22;
+function _bnHtmlTabColocacao(salaId, cellSize) {
+  const cell = cellSize || 22;
   let html = `<table style="border-collapse:collapse;">`;
   // Header colunas
   html += `<tr><td style="width:${cell}px;"></td>`;
@@ -866,10 +916,78 @@ function _bnRenderPartida(salaId, sala, opWallet) {
   const opAcertos     = acertos[opWallet]        || 0;
   const ultimaJogada  = sala.ultimaJogada || null;
 
-  el.innerHTML = `
+  const isPC = window.innerWidth > 600;
+
+  const _timerHtml = meuTurno ? `
+    <div style="flex-shrink:0;margin-bottom:2px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+        <span style="font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">TEMPO</span>
+        <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">${BN_TIMER_SEG}s</span>
+      </div>
+      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
+        <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:2px;"></div>
+      </div>
+    </div>` : '';
+
+  const _ultimaHtml = ultimaJogada ? `
+    <div style="flex-shrink:0;padding:4px 6px;border-radius:4px;font-size:6px;
+                background:${ultimaJogada.acertou?'rgba(122,184,122,.08)':'rgba(90,180,232,.06)'};
+                border:1px solid ${ultimaJogada.acertou?'rgba(122,184,122,.3)':'rgba(90,180,232,.2)'};
+                color:${ultimaJogada.acertou?'#7ab87a':'#5ab4e8'};">
+      ${ultimaJogada.jogador === walletAddress ? '🎯' : '💀'}
+      <b>${String.fromCharCode(65 + ultimaJogada.col)}${ultimaJogada.row + 1}</b>
+      ${ultimaJogada.acertou ? `💥${ultimaJogada.afundou ? ' 🔥 AFUNDADO!' : ' Acerto!'}` : '🌊 Água'}
+    </div>` : '';
+
+  el.innerHTML = isPC ? `
+    <div style="display:flex;flex-direction:column;height:100%;padding:8px 10px;gap:5px;overflow:hidden;">
+
+      <!-- Header: título + score + status -->
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:1px;flex:1;">🚢 BATALHA NAVAL</div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
+          <span style="font-size:6px;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
+          <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#e74c3c;">${opAcertos}</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
+          background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
+          border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
+          color:${meuTurno?'#7ab87a':'var(--muted)'};">
+          ${meuTurno ? '⚡ SUA VEZ' : '⏳ AGUARDANDO'}
+        </div>
+      </div>
+
+      ${_timerHtml}
+
+      <!-- 2-col: ataque | defesa + info -->
+      <div style="display:flex;gap:8px;flex:1;min-height:0;overflow:hidden;">
+
+        <!-- Esquerda: tabuleiro de ataque -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px;">
+          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;">
+            ${meuTurno ? '🎯 CLICA PARA ATIRAR' : '🌊 OPONENTE'}
+          </div>
+          <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet, 18)}</div>
+        </div>
+
+        <!-- Direita: última jogada + defesa + abandonar -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;overflow-y:auto;">
+          ${_ultimaHtml}
+          <div style="flex-shrink:0;">
+            <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🛡️ MEU TABULEIRO</div>
+            ${_bnHtmlTabDefesa(meuTabPub, 11)}
+          </div>
+          <div style="margin-top:auto;flex-shrink:0;">
+            <button class="arena-btn-sair" style="font-size:6px;padding:4px 8px;"
+              onclick="bnAbandonar('${salaId}')">🏳️ ABANDONAR</button>
+          </div>
+        </div>
+
+      </div>
+    </div>` : `
     <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;overflow-y:auto;">
 
-      <!-- Status -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">🚢 BATALHA NAVAL</div>
         <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
@@ -880,19 +998,8 @@ function _bnRenderPartida(salaId, sala, opWallet) {
         </div>
       </div>
 
-      <!-- Timer -->
-      ${meuTurno ? `
-      <div style="flex-shrink:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-          <span style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);">TEMPO</span>
-          <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">${BN_TIMER_SEG}s</span>
-        </div>
-        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
-          <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:2px;"></div>
-        </div>
-      </div>` : ''}
+      ${_timerHtml}
 
-      <!-- Placar -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;
                   padding:5px 8px;background:rgba(255,255,255,.02);border-radius:6px;
                   border:1px solid rgba(255,255,255,.06);">
@@ -909,18 +1016,8 @@ function _bnRenderPartida(salaId, sala, opWallet) {
         </div>
       </div>
 
-      <!-- Última jogada -->
-      ${ultimaJogada ? `
-      <div style="flex-shrink:0;padding:4px 8px;border-radius:4px;font-size:6.5px;
-                  background:${ultimaJogada.acertou?'rgba(122,184,122,.08)':'rgba(90,180,232,.06)'};
-                  border:1px solid ${ultimaJogada.acertou?'rgba(122,184,122,.3)':'rgba(90,180,232,.2)'};
-                  color:${ultimaJogada.acertou?'#7ab87a':'#5ab4e8'};">
-        ${ultimaJogada.jogador === walletAddress ? '🎯 Tu:' : '💀 Oponente:'} 
-        <b>${String.fromCharCode(65 + ultimaJogada.col)}${ultimaJogada.row + 1}</b>
-        ${ultimaJogada.acertou ? `💥 Acerto${ultimaJogada.afundou?' — '+ultimaJogada.afundou+' AFUNDADO! 🔥':''}!` : '🌊 Água'}
-      </div>` : ''}
+      ${_ultimaHtml}
 
-      <!-- Tabuleiro do oponente (onde atiro) -->
       <div style="flex-shrink:0;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">
           ${meuTurno ? '🎯 CLICA PARA ATIRAR' : '🌊 TABULEIRO DO OPONENTE'}
@@ -928,13 +1025,11 @@ function _bnRenderPartida(salaId, sala, opWallet) {
         <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet)}</div>
       </div>
 
-      <!-- Meu tabuleiro (defesa) -->
       <div style="flex-shrink:0;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🛡️ MEU TABULEIRO</div>
         <div>${_bnHtmlTabDefesa(meuTabPub)}</div>
       </div>
 
-      <!-- Abandonar -->
       <div style="flex-shrink:0;margin-top:4px;">
         <button class="arena-btn-sair" style="font-size:6px;padding:5px 10px;"
           onclick="bnAbandonar('${salaId}')">🏳️ ABANDONAR</button>
@@ -943,8 +1038,8 @@ function _bnRenderPartida(salaId, sala, opWallet) {
     </div>`;
 }
 
-function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet) {
-  const cell = 20;
+function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
+  const cell = cellSize || 20;
   let html = `<table style="border-collapse:collapse;">`;
   html += `<tr><td style="width:14px;"></td>`;
   for(let c = 0; c < BN_TAMANHO; c++)
@@ -991,8 +1086,8 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet) {
   return html;
 }
 
-function _bnHtmlTabDefesa(meuTabPub) {
-  const cell = 18;
+function _bnHtmlTabDefesa(meuTabPub, cellSize) {
+  const cell = cellSize || 18;
   // Sobrepõe o meu tabuleiro privado com os acertos públicos
   let html = `<table style="border-collapse:collapse;">`;
   html += `<tr><td style="width:13px;"></td>`;
