@@ -8,7 +8,10 @@
 .fv-bottom-nav { display: none; }
 
 @media (max-width: 768px) {
-
+   
+.fv-bottom-nav {
+  zoom: 1 !important;
+}
   /* ════════════════════════════════════════
      BASE
   ════════════════════════════════════════ */
