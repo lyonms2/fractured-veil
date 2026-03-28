@@ -260,6 +260,57 @@
   .arena-btn-sair     { min-height: 44px !important; font-size: 8px !important; padding: 10px 14px !important; }
   .arena-btn-desafiar { min-height: 40px !important; font-size: 7px !important; padding: 8px 10px !important; white-space: nowrap; }
 
+  /* Arena — textos escalados para fullscreen mobile */
+  .arena-title            { font-size: 14px !important; }
+  .arena-sub              { font-size: 9px !important; }
+  .arena-tab              { font-size: 11px !important; padding: 8px 0 !important; }
+  .arena-aposta-info      { font-size: 10px !important; }
+  .arena-lobby-nome       { font-size: 12px !important; }
+  .arena-lobby-meta       { font-size: 9px !important; }
+  .arena-lobby-titulo     { font-size: 9px !important; }
+  .arena-lobby-vazio      { font-size: 10px !important; }
+  .arena-lobby-aguarda    { font-size: 9px !important; }
+  .arena-vs-nome          { font-size: 10px !important; max-width: none !important; }
+  .arena-vs-escolha       { font-size: 32px !important; }
+  .arena-vs-stars         { font-size: 14px !important; }
+  .arena-turno-label      { font-size: 9px !important; }
+  .arena-escolha-btn span { font-size: 9px !important; }
+  .arena-partida-status   { font-size: 10px !important; }
+  .arena-rodada-badge     { font-size: 11px !important; }
+  .arena-premio-badge     { font-size: 10px !important; }
+  .arena-resultado-titulo { font-size: 22px !important; }
+  .arena-rank-row         { font-size: 10px !important; }
+  .arena-aguardando       { font-size: 10px !important; }
+  .arena-pool-titulo      { font-size: 10px !important; }
+  .arena-sem-saldo        { font-size: 9px !important; }
+
+  /* Rouba Monte — cartas maiores para toque */
+  #roubaMontModal [data-carta]             { width: 60px !important; height: 84px !important; }
+  #roubaMontModal div[style*="width:26px"] { width: 38px !important; height: 54px !important; }
+  #roubaMontModal [style*="font-size:5"],
+  #roubaMontModal [style*="font-size:6"],
+  #roubaMontModal [style*="font-size:7"]   { font-size: 11px !important; }
+
+  /* Batalha Naval — grade responsiva no mobile */
+  /* Células de dados: 20→35px (ataque), 22→35px (colocação), 18→35px (defesa) */
+  #batalhaNavalModal td[style*="width:18px"],
+  #batalhaNavalModal td[style*="width:20px"],
+  #batalhaNavalModal td[style*="width:22px"]   { width: 35px !important; height: 35px !important; }
+  /* Cabeçalhos de coluna — altura reduzida (regra vem depois, wins cascade) */
+  #batalhaNavalModal td[style*="height:14px"],
+  #batalhaNavalModal td[style*="height:12px"]  { height: 20px !important; }
+  /* Colunas de rótulo de linha */
+  #batalhaNavalModal td[style*="width:13px"],
+  #batalhaNavalModal td[style*="width:14px"]   { width: 20px !important; }
+  /* Emojis de resultado no grid */
+  #batalhaNavalModal td[style*="font-size:9px"],
+  #batalhaNavalModal td[style*="font-size:10px"] { font-size: 20px !important; }
+  #batalhaNavalModal td[style*="font-size:8px"]  { font-size: 18px !important; }
+  /* Labels e texto pequeno */
+  #batalhaNavalModal [style*="font-size:5"],
+  #batalhaNavalModal [style*="font-size:6"],
+  #batalhaNavalModal [style*="font-size:7"]    { font-size: 11px !important; }
+
   /* ════════════════════
      MINIGAMES
   ════════════════════ */
