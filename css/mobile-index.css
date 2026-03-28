@@ -1,21 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════════
-   FRACTURED VEIL — Mobile Responsive v2 (index.html)
-   Padrão idêntico ao marketplace.html — zero JS alterado.
-   Só dispara em ≤ 680px.
+   FRACTURED VEIL — Mobile Responsive (index.html)
+   Só dispara em ≤ 768px. Desktop fica com zoom:1.5 intocado.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Bottom nav: escondida no desktop ── */
+/* ── Bottom nav: escondida por defeito — JS e CSS controlam visibilidade ── */
 .fv-bottom-nav { display: none; }
 
-@media (max-width: 768px) {
-   
-.fv-bottom-nav {
-  zoom: 1 !important;
+/* ── Garante que desktop nunca mostra a bottom nav ── */
+@media (min-width: 769px) {
+  .fv-bottom-nav { display: none !important; }
 }
+
+@media (max-width: 768px) {
+
   /* ════════════════════════════════════════
      BASE
   ════════════════════════════════════════ */
-  html { font-size: 100% !important; }  /* cancela zoom 175% do desktop */
+  html { font-size: 100% !important; }  /* cancela zoom 1.5 do desktop */
   body { padding-bottom: 56px; }        /* espaço para a bottom nav */
 
   /* ════════════════════════════════════════
@@ -41,7 +42,6 @@
   .res { font-size: 9px; padding: 3px 8px; gap: 3px; white-space: nowrap; flex-shrink: 0; }
   .res b { font-size: 9px; }
 
-  /* Endereço: compacto; botão Sair: esconde (acesso via menu) */
   .wallet-address { font-size: 7px; padding: 3px 7px; }
   .btn-wallet.btn-sair { display: none; }
 
@@ -58,140 +58,70 @@
      DEVICE
   ════════════════════════════════════════ */
   .device {
+    display: flex;
+    flex-direction: column;
     padding: 10px 10px 12px;
     border-radius: 14px 14px 20px 20px;
   }
-  .device-top { margin-bottom: 8px; }
+  .device-top { order: 0; margin-bottom: 8px; }
+  .screen     { order: 1; }
 
-  /* ── BUBBLE: tira da screen e coloca acima dela, dentro do device ──
-     A .screen tem overflow:hidden e cortava a bubble.
-     Solução: bubble sai do fluxo da screen e fica num wrapper próprio. */
-  .screen { overflow: visible; }  /* deixa bubble escapar */
-
-  /* Bubble posiciona acima da screen sem ser cortada */
+  /* Bubble acima da screen sem ser cortada */
+  .screen { overflow: visible; height: 220px; margin-bottom: 0; position: relative; }
   .bubble {
     position: absolute;
-    /* em mobile a screen tem 220px de altura, a bubble fica acima */
-    top: -34px;
-    left: 50%;
+    top: -34px; left: 50%;
     transform: translateX(-50%);
-    z-index: 30;
-    white-space: nowrap;
-    max-width: 90vw;
-    font-size: 7px;
-    padding: 4px 10px;
-  }
-
-  /* Screen: altura reduzida */
-  .screen {
-    height: 220px;
-    margin-bottom: 0;           /* status vem logo abaixo, sem gap */
-    position: relative;
+    z-index: 30; white-space: nowrap;
+    max-width: 90vw; font-size: 7px; padding: 4px 10px;
   }
 
   /* ════════════════════════════════════════
-     STATUS — move para dentro do device,
-     logo abaixo da screen (antes dos btns)
+     STATUS INLINE
   ════════════════════════════════════════ */
-
-  /* Esconde o statusCard original (fica no right-panel, lá embaixo) */
   #statusCard { display: none !important; }
 
-  /* Bloco de status inline: inserido via CSS logo após a screen */
-  /* O truque: usa o ::before do #actionBtns como separador e
-     exibe as barras compactas num bloco que vem do right-panel
-     movido para cima com order no flex.                         */
-
-  /* Device vira flex-column para controlar a ordem */
-  .device {
-    display: flex;
-    flex-direction: column;
-  }
-  .device-top  { order: 0; }
-  .screen      { order: 1; }
-
-  /* Painel de status inline — aparece entre screen e btns */
   #mobileStatusInline {
     order: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
     padding: 8px 2px 6px;
     border-top: 1px solid var(--border);
     margin-top: 6px;
   }
-
-  .msi-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .msi-icon {
-    font-size: 10px;
-    width: 16px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .msi-track {
-    flex: 1;
-    height: 5px;
-    background: #0a0816;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .msi-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width .6s cubic-bezier(.4,0,.2,1);
-  }
+  .msi-row { display: flex; align-items: center; gap: 5px; }
+  .msi-icon { font-size: 10px; width: 16px; text-align: center; flex-shrink: 0; }
+  .msi-track { flex: 1; height: 5px; background: #0a0816; border-radius: 3px; overflow: hidden; }
+  .msi-fill { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
   .msi-fill.msi-fome    { background: linear-gradient(90deg,#c0392b,#e74c3c); }
   .msi-fill.msi-humor   { background: linear-gradient(90deg,#d4ac0d,#f4d03f); }
   .msi-fill.msi-energia { background: linear-gradient(90deg,#1a5276,#2e86c1); }
   .msi-fill.msi-saude   { background: linear-gradient(90deg,#1e8449,#27ae60); }
   .msi-fill.msi-higiene { background: linear-gradient(90deg,#6c3483,#8e44ad); }
   .msi-fill.critical    { animation: critical-pulse 1s ease-in-out infinite; }
-  .msi-val {
-    font-family: 'Cinzel', serif;
-    font-size: 7px;
-    color: var(--text);
-    width: 22px;
-    text-align: right;
-    flex-shrink: 0;
-  }
+  .msi-val { font-family: 'Cinzel', serif; font-size: 7px; color: var(--text); width: 22px; text-align: right; flex-shrink: 0; }
 
   /* ════════════════════════════════════════
-     ACTION BUTTONS — esconde no mobile.
-     As ações ficam na bottom nav.
+     ACTION BUTTONS — esconde no mobile
   ════════════════════════════════════════ */
   #actionBtns { display: none !important; order: 3; }
 
   /* ════════════════════════════════════════
-     RIGHT PANEL — cartão de avatar compacto
+     RIGHT PANEL
   ════════════════════════════════════════ */
   .right-panel { gap: 10px; order: 4; }
-
-  .panel-card { padding: 12px 14px; }
-
-  /* Esconde cards que não fazem sentido na sequência mobile */
+  .panel-card  { padding: 12px 14px; }
   #summonCard  { order: 0; }
-  #creatureCard {
-    order: 1;
-    /* Esconde o statusCard dentro do creatureCard (já temos o inline) */
-  }
-
-  /* Descrição do avatar: limita linhas */
+  #creatureCard { order: 1; }
   #idDesc {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-
-  /* Log: altura máxima menor */
   .log-list { max-height: 120px; }
 
   /* ════════════════════════════════════════
-     MODAIS — sobem de baixo (sheet pattern)
+     MODAIS — sheet pattern
   ════════════════════════════════════════ */
   .mini-modal {
     position: fixed !important;
@@ -203,7 +133,6 @@
     border-radius: 16px 16px 0 0 !important;
     overflow-y: auto;
     transform: none !important;
-    /* Empurra acima da bottom nav */
     margin-bottom: 56px;
   }
 
@@ -217,7 +146,7 @@
     overflow-y: auto;
   }
 
-  /* Arena, Rouba Monte, Batalha Naval: full screen */
+  /* PVP — full screen */
   #arenaModal,
   #roubaMontModal,
   #batalhaNavalModal {
@@ -234,19 +163,17 @@
   /* ════════════════════════════════════════
      LOGIN SCREEN
   ════════════════════════════════════════ */
-  #loginCard  { padding: 28px 18px; max-width: 92vw; }
-  #loginLogo  { font-size: 18px; letter-spacing: 3px; }
-  #loginSub   { font-size: 6px; letter-spacing: 2px; }
+  #loginCard { padding: 28px 18px; max-width: 92vw; }
+  #loginLogo { font-size: 18px; letter-spacing: 3px; }
+  #loginSub  { font-size: 6px; letter-spacing: 2px; }
 
   /* ════════════════════════════════════════
      TOAST — acima da bottom nav
   ════════════════════════════════════════ */
   #toast, .toast {
     bottom: 64px !important;
-    right: 12px;
-    left: 12px;
-    max-width: none;
-    text-align: center;
+    right: 12px; left: 12px;
+    max-width: none; text-align: center;
   }
 
   /* ════════════════════════════════════════
@@ -261,30 +188,26 @@
     border-top: 1px solid var(--border);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Cancela qualquer zoom herdado */
+    zoom: 1;
+    font-size: 14px;
   }
   .fv-bottom-nav-inner {
     display: flex;
-    width: 100%;
-    height: 56px;
+    width: 100%; height: 56px;
   }
   .fv-bn-btn {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     gap: 2px;
-    background: none;
-    border: none;
+    background: none; border: none;
     color: var(--muted);
     font-family: 'Cinzel', serif;
-    font-size: 7px;
-    font-weight: 600;
+    font-size: 7px; font-weight: 600;
     letter-spacing: 0.3px;
-    cursor: pointer;
-    transition: color .15s;
-    padding: 0;
-    position: relative;
+    cursor: pointer; transition: color .15s;
+    padding: 0; position: relative;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
@@ -293,17 +216,14 @@
   .fv-bn-btn.active       { color: var(--gold); }
   .fv-bn-btn.btn-disabled { opacity: .25; pointer-events: none; }
 
-  /* Ponto indicador na tab activa */
   .fv-bn-btn.active::after {
     content: '';
-    position: absolute;
-    bottom: 4px;
+    position: absolute; bottom: 4px;
     width: 4px; height: 4px;
     border-radius: 50%;
     background: var(--border-glow);
   }
 
-  /* Flash de feedback ao tocar */
   .fv-bn-btn:active { color: var(--gold-light); transform: scale(.92); }
 
 } /* fim @media */
