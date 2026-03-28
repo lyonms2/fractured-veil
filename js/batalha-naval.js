@@ -652,30 +652,27 @@ function _bnHtmlTabColocacao(salaId) {
     html += `<td style="width:${cell}px;height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">${r+1}</td>`;
     for(let c = 0; c < BN_TAMANHO; c++) {
       const cell_data = _bnMeuTabuleiro[r][c];
-      const isPreview = _bnPreview.some(([pr,pc]) => pr===r && pc===c);
       let bg, border, content = '';
       if(cell_data) {
         const navio = BN_NAVIOS.find(n => n.id === cell_data);
         bg      = 'rgba(90,180,232,.2)';
         border  = '1px solid rgba(90,180,232,.5)';
         content = navio?.icon || '🚢';
-      } else if(isPreview && _bnPreviewValido) {
-        bg     = 'rgba(122,184,122,.25)';
-        border = '1px dashed rgba(122,184,122,.7)';
-      } else if(isPreview && !_bnPreviewValido) {
-        bg     = 'rgba(231,76,60,.2)';
-        border = '1px dashed rgba(231,76,60,.6)';
       } else {
         bg     = 'rgba(255,255,255,.03)';
         border = '1px solid rgba(255,255,255,.08)';
       }
+      // data-bnbg / data-bnborder guardam o estilo base para restaurar após preview
       html += `<td onclick="bnColocarNavio(${r},${c},'${salaId}')"
                    onmouseenter="bnPreviewNavio(${r},${c},'${salaId}')"
-                   onmouseleave="bnLimparPreview('${salaId}')"
+                   onmouseleave="bnLimparPreview()"
                    ontouchstart="bnPreviewNavio(${r},${c},'${salaId}')"
+                   data-bnr="${r}" data-bnc="${c}"
+                   data-bnbg="${bg}" data-bnborder="${border}"
+                   ${cell_data ? 'data-bnship="1"' : ''}
                    style="width:${cell}px;height:${cell}px;text-align:center;
                           background:${bg};border:${border};cursor:pointer;
-                          font-size:10px;transition:background .1s,border .1s;">${content}</td>`;
+                          font-size:10px;transition:background .12s,border .12s;">${content}</td>`;
     }
     html += `</tr>`;
   }
@@ -689,32 +686,54 @@ function _bnToggleOrientacao() {
   if(lbl) lbl.textContent = _bnOrientacao;
 }
 
-function bnPreviewNavio(r, c, salaId) {
+function bnPreviewNavio(r, c) {
   if(_bnNavioAtual >= BN_NAVIOS.length) return;
   const n      = BN_NAVIOS[_bnNavioAtual];
   const valido = _bnCasasValidas(r, c, n.tam, _bnOrientacao);
   _bnPreviewValido = !!valido;
-  if(valido) {
-    _bnPreview = valido;
-  } else {
-    // Preview a vermelho mostrando onde o navio ficaria (mesmo que inválido)
+
+  // Limpa preview anterior sem re-render
+  document.querySelectorAll('#bnTabColocacao td[data-bnprev]').forEach(td => {
+    td.style.background = td.dataset.bnbg || '';
+    td.style.border     = td.dataset.bnborder || '';
+    td.removeAttribute('data-bnprev');
+  });
+
+  const cells = valido ? valido : (() => {
     const raw = [];
     for(let i = 0; i < n.tam; i++) {
       const nr = _bnOrientacao === 'V' ? r + i : r;
       const nc = _bnOrientacao === 'H' ? c + i : c;
       if(nr < BN_TAMANHO && nc < BN_TAMANHO) raw.push([nr, nc]);
     }
-    _bnPreview = raw;
-  }
-  const tab = document.getElementById('bnTabColocacao');
-  if(tab) tab.innerHTML = _bnHtmlTabColocacao(salaId);
+    return raw;
+  })();
+
+  _bnPreview = cells;
+
+  const bg     = valido ? 'rgba(122,184,122,.25)' : 'rgba(231,76,60,.2)';
+  const border = valido ? '1px dashed rgba(122,184,122,.7)' : '1px dashed rgba(231,76,60,.6)';
+  const table  = document.querySelector('#bnTabColocacao table');
+  if(!table) return;
+  cells.forEach(([pr, pc]) => {
+    const row = table.rows[pr + 1];
+    if(!row) return;
+    const td = row.cells[pc + 1];
+    if(!td || td.dataset.bnship) return;
+    td.setAttribute('data-bnprev', '1');
+    td.style.background = bg;
+    td.style.border     = border;
+  });
 }
 
-function bnLimparPreview(salaId) {
+function bnLimparPreview() {
+  document.querySelectorAll('#bnTabColocacao td[data-bnprev]').forEach(td => {
+    td.style.background = td.dataset.bnbg || '';
+    td.style.border     = td.dataset.bnborder || '';
+    td.removeAttribute('data-bnprev');
+  });
   _bnPreview       = [];
   _bnPreviewValido = true;
-  const tab = document.getElementById('bnTabColocacao');
-  if(tab) tab.innerHTML = _bnHtmlTabColocacao(salaId);
 }
 
 function bnColocarNavio(r, c, salaId) {
