@@ -312,6 +312,43 @@
   #batalhaNavalModal [style*="font-size:7"]    { font-size: 11px !important; }
 
   /* ════════════════════
+     LOBBIES PVP — melhorias mobile
+  ════════════════════ */
+  /* Arena — corrige o inline font-size:6px na linha "15% → pool" */
+  #arenaModal [style*="font-size:5"],
+  #arenaModal [style*="font-size:6"] { font-size: 10px !important; }
+
+  /* Tabs — área de toque confortável */
+  .arena-tab { min-height: 40px !important; }
+
+  /* Tab content — mais espaço entre secções no fullscreen */
+  .arena-tab-content { gap: 12px !important; padding: 4px 0 8px !important; }
+
+  /* Player cards — mais espaçosos e com avatar maior */
+  .arena-lobby-card     { padding: 14px 16px !important; gap: 14px !important; }
+  .arena-lobby-svg      { width: 48px !important; height: 48px !important; }
+  .arena-lobby-svg svg  { width: 48px !important; height: 48px !important; }
+
+  /* Bet info (RM e BN) — padding maior e valores em destaque */
+  #roubaMontModal   div[style*="grid-template-columns:1fr 1fr 1fr"],
+  #batalhaNavalModal div[style*="grid-template-columns:1fr 1fr 1fr"] {
+    padding: 16px 12px !important;
+    border-radius: 10px !important;
+    gap: 10px;
+  }
+  #roubaMontModal   div[style*="grid-template-columns:1fr 1fr 1fr"] [style*="font-size:11px"],
+  #batalhaNavalModal div[style*="grid-template-columns:1fr 1fr 1fr"] [style*="font-size:11px"] {
+    font-size: 16px !important;
+  }
+
+  /* How-to-play — mais padding e visual mais respeitável */
+  #roubaMontModal   div[style*="padding:8px 10px"],
+  #batalhaNavalModal div[style*="padding:8px 10px"] {
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+  }
+
+  /* ════════════════════
      MINIGAMES
   ════════════════════ */
   .mem-card   { width: 44px !important; height: 44px !important; font-size: 20px !important; border-radius: 8px !important; }
