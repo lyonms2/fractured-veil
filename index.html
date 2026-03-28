@@ -649,6 +649,32 @@
 
     </div><!-- /right-panel -->
   </main>
+
+  <!-- ══ BOTTOM NAV MOBILE — dentro do .app para herdar o zoom correcto ══ -->
+  <nav class="fv-bottom-nav">
+    <div class="fv-bottom-nav-inner">
+      <button class="fv-bn-btn" id="fvbn-feed" onclick="feedCreature()">
+        <span class="fv-bn-icon">🍖</span><span>Nutrir</span>
+      </button>
+      <button class="fv-bn-btn" id="fvbn-play" onclick="playCreature()">
+        <span class="fv-bn-icon">🎮</span><span>Brincar</span>
+      </button>
+      <button class="fv-bn-btn" id="fvbn-sleep"
+        onpointerdown="onSleepPointerDown()"
+        onpointerup="onSleepPointerUp()"
+        onpointerleave="onSleepPointerUp()">
+        <span class="fv-bn-icon">💤</span>
+        <span id="fvbnSleepLabel">Dormir</span>
+      </button>
+      <button class="fv-bn-btn" id="fvbn-heal" onclick="healCreature()">
+        <span class="fv-bn-icon">💊</span><span>Medicar</span>
+      </button>
+      <button class="fv-bn-btn" id="fvbn-bath" onclick="cleanCreature()">
+        <span class="fv-bn-icon">🛁</span><span>Banho</span>
+      </button>
+    </div>
+  </nav>
+
 </div><!-- /app -->
 
 <!-- SUMMON OVERLAY -->
@@ -720,13 +746,11 @@
   const isMobile = window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent);
   if (!isMobile) return;
 
-  // ── Injeta bloco de status inline no device ──────────────────
   function initStatus() {
     if (document.getElementById('mobileStatusInline')) return;
     const device     = document.querySelector('.device');
     const actionBtns = document.getElementById('actionBtns');
     if (!device || !actionBtns) return;
-
     const block = document.createElement('div');
     block.id = 'mobileStatusInline';
     block.innerHTML = `
@@ -748,7 +772,6 @@
     device.insertBefore(block, actionBtns);
   }
 
-  // ── Sincroniza barras com os vitals do jogo ──────────────────
   function syncStatus() {
     if (typeof vitals === 'undefined') return;
     const map = [
@@ -762,13 +785,12 @@
       const bar = document.getElementById(bId);
       const val = document.getElementById(vId);
       if (!bar || !val) return;
-      bar.style.width  = v + '%';
-      val.textContent  = Math.floor(v);
+      bar.style.width = v + '%';
+      val.textContent = Math.floor(v);
       v < 25 ? bar.classList.add('critical') : bar.classList.remove('critical');
     });
   }
 
-  // ── Sincroniza label "Dormir/Acordar" na bottom nav ──────────
   function syncSleepLabel() {
     const lbl = document.getElementById('fvbnSleepLabel');
     if (!lbl) return;
@@ -778,9 +800,9 @@
     if (btn) sleeping ? btn.classList.add('sleep-active') : btn.classList.remove('sleep-active');
   }
 
-  // ── Hook em updateAllUI ──────────────────────────────────────
   window.addEventListener('load', () => {
     initStatus();
+    // Mostra a nav (está dentro do .app, herda zoom correcto)
     const nav = document.querySelector('.fv-bottom-nav');
     if (nav) nav.style.display = 'flex';
     const orig = window.updateAllUI;
@@ -794,42 +816,6 @@
   });
 })();
 </script>
-
-<!-- BOTTOM NAV MOBILE — ações diretas -->
-<nav class="fv-bottom-nav">
-  <div class="fv-bottom-nav-inner">
-
-    <button class="fv-bn-btn" id="fvbn-feed" onclick="feedCreature()">
-      <span class="fv-bn-icon">🍖</span><span>Nutrir</span>
-    </button>
-
-    <button class="fv-bn-btn" id="fvbn-play" onclick="playCreature()">
-      <span class="fv-bn-icon">🎮</span><span>Brincar</span>
-    </button>
-
-    <!--
-      Dormir: onpointerdown/up idêntico ao btnSleep original.
-      Long-press (>600ms) activa modo repouso, tap simples
-      dorme/acorda — comportamento definido em wallet.js.
-    -->
-    <button class="fv-bn-btn" id="fvbn-sleep"
-      onpointerdown="onSleepPointerDown()"
-      onpointerup="onSleepPointerUp()"
-      onpointerleave="onSleepPointerUp()">
-      <span class="fv-bn-icon">💤</span>
-      <span id="fvbnSleepLabel">Dormir</span>
-    </button>
-
-    <button class="fv-bn-btn" id="fvbn-heal" onclick="healCreature()">
-      <span class="fv-bn-icon">💊</span><span>Medicar</span>
-    </button>
-
-    <button class="fv-bn-btn" id="fvbn-bath" onclick="cleanCreature()">
-      <span class="fv-bn-icon">🛁</span><span>Banho</span>
-    </button>
-
-  </div>
-</nav>
 
 </body>
 </html>
