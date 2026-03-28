@@ -35,9 +35,12 @@ var _arenaAtiva          = false;
 var _arenaPartidaId      = null;
 var _arenaLobbyRef       = null;   // ref do nó do jogador no lobby
 var _arenaLobbyListRef   = null;   // ref da fila inteira (listener)
-var _arenaHeartbeat      = null;
-var _arenaTimerInterval  = null;
-var _arenaEscolhaFeita   = false;
+var _arenaHeartbeat         = null;
+var _arenaTimerInterval     = null;
+var _arenaEscolhaFeita      = false;
+var _arenaPresencaHeartbeat = null;  // heartbeat de presença durante a partida
+var _arenaPresencaRef       = null;  // ref RTDB para cancelar onDisconnect
+var _arenaOpWallet          = null;  // wallet do oponente na partida activa
 
 // ── Sanitiza wallet → chave RTDB válida ──
 // O RTDB não aceita '.' '$' '#' '[' ']' '/' em chaves
@@ -115,6 +118,7 @@ function closeArena() {
   _pararLobbyListener();
   _pararSalaListener();
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
+  _arenaLimparPresenca();
 
   // Se há partida activa, escreve abandono directamente no RTDB → oponente ganha
   if(_arenaPartidaId && rtdb() && walletAddress) {
@@ -122,10 +126,12 @@ function closeArena() {
       rtdb().ref(`arena/salas/${_arenaPartidaId}`).update({
         status:   'finalizada',
         abandono: walletAddress,
+        vencedor: _arenaOpWallet || null,
       });
     } catch(e) {}
     _arenaPartidaId = null;
   }
+  _arenaOpWallet = null;
 
   ModalManager.close('arenaModal');
 }
@@ -425,12 +431,11 @@ async function cancelarDesafio(salaId) {
   setTimeout(async () => {
     try {
       await rtdb().ref(`arena/salas/${salaId}`).remove();
-      await rtdb().ref(`arena/notificacoes`).once('value').then(snap => {
-        const todos = snap.val() || {};
-        Object.keys(todos).forEach(async wallet => {
-          await rtdb().ref(`arena/notificacoes/${wallet}/desafios/${salaId}`).remove();
-        });
-      });
+      const notifSnap = await rtdb().ref(`arena/notificacoes`).once('value');
+      const todos = notifSnap.val() || {};
+      await Promise.all(Object.keys(todos).map(wallet =>
+        rtdb().ref(`arena/notificacoes/${wallet}/desafios/${salaId}`).remove()
+      ));
     } catch(e){}
   }, 3000);
   _arenaAtiva    = false;
@@ -541,6 +546,8 @@ function _renderPartida(salaId, sala) {
 
   const meu          = sala.jogadores[walletAddress] || {};
   const opWallet     = walletAddress === sala.criador ? sala.oponente : sala.criador;
+  _arenaOpWallet = opWallet;
+  _arenaIniciarPresenca(salaId);
   const op           = sala.jogadores[opWallet] || {};
   const placar       = sala.placar || {};
   const rodada       = sala.rodada || 1;
@@ -639,6 +646,25 @@ function _pararSalaListener() {
   }
 }
 
+function _arenaIniciarPresenca(salaId) {
+  if(_arenaPresencaHeartbeat) return; // já activo — evita duplicar no re-render de round
+  if(!rtdb() || !walletAddress) return;
+  _arenaPresencaRef = rtdb().ref(`arena/salas/${salaId}/presenca/${walletAddress}`);
+  _arenaPresencaRef.onDisconnect().set('desconectado');
+  _arenaPresencaRef.set('activo');
+  _arenaPresencaHeartbeat = setInterval(() => {
+    if(_arenaPresencaRef) try { _arenaPresencaRef.set('activo'); } catch(e) {}
+  }, 10000);
+}
+
+function _arenaLimparPresenca() {
+  if(_arenaPresencaHeartbeat) { clearInterval(_arenaPresencaHeartbeat); _arenaPresencaHeartbeat = null; }
+  if(_arenaPresencaRef) {
+    try { _arenaPresencaRef.onDisconnect().cancel(); } catch(e) {}
+    _arenaPresencaRef = null;
+  }
+}
+
 function _escutarSala(salaId, opWallet) {
   _arenaAnimando = false;
   _pararSalaListener();
@@ -650,6 +676,17 @@ function _escutarSala(salaId, opWallet) {
   _arenaSalaRef.on('value', snap => {
     const s = snap.val();
     if(!s || _arenaAnimando) return;
+
+    // Detectar abandono por desconexão do oponente
+    if(s.status === 'em_jogo' && s.presenca?.[opWallet] === 'desconectado') {
+      console.log('[ARENA] Oponente desconectou — declarando abandono');
+      rtdb().ref(`arena/salas/${salaId}`).update({
+        status:   'finalizada',
+        abandono: opWallet,
+        vencedor: walletAddress,
+      });
+      return;
+    }
 
     const euSouCriador = walletAddress === s.criador;
     const turno        = s.turno || 1;
@@ -899,10 +936,14 @@ function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function _renderResultado(sala, opWallet) {
   _pararTimer();
+  _arenaLimparPresenca();
   const el = document.getElementById('arenaModal');
   if(!el) return;
 
-  const vencedor = sala.vencedor;
+  // Fallback: se vencedor não está definido mas há abandono, deduz o vencedor
+  const vencedor = sala.vencedor || (sala.abandono
+    ? (sala.abandono === walletAddress ? opWallet : walletAddress)
+    : null);
   const euVenci  = vencedor === walletAddress;
   const empate   = vencedor === 'empate';
   const aposta   = sala.aposta;
