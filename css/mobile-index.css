@@ -123,7 +123,7 @@
   .msi-fill.msi-energia { background: linear-gradient(90deg,#1a5276,#2e86c1); }
   .msi-fill.msi-saude   { background: linear-gradient(90deg,#1e8449,#27ae60); }
   .msi-fill.msi-higiene { background: linear-gradient(90deg,#5a3a00,#a06010); }
-  .msi-fill.critical    { animation: critical-pulse 1s ease-in-out infinite; }
+  .msi-fill.critical    { animation: critical-pulse-msi 1s ease-in-out infinite; }
   .msi-val { font-family: 'Cinzel', serif; font-size: 7px; color: var(--text); width: 24px; text-align: right; flex-shrink: 0; }
 
   /* ════════════════════
@@ -178,8 +178,10 @@
     top: auto !important;
     width: 100% !important;
     max-width: none !important;
+    height: auto !important;
     max-height: 90vh;
     border-radius: 20px 20px 0 0 !important;
+    overflow-x: hidden !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -390,4 +392,9 @@
   .mem-card   { width: 38px !important; height: 38px !important; }
   .velha-cell { width: 50px !important; height: 50px !important; }
   .velha-grid { grid-template-columns: repeat(3, 50px) !important; }
+}
+
+@keyframes critical-pulse-msi {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
 }

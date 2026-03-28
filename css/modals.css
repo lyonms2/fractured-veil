@@ -414,3 +414,17 @@
 .mkt-catalog-buy { flex:1; padding:7px; cursor:pointer; font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; font-weight:700; border:1px solid var(--gold); border-radius:6px; background:rgba(201,168,76,.1); color:var(--gold); transition:all .2s; }
 .mkt-catalog-buy:hover { background:rgba(201,168,76,.25); }
 .mkt-catalog-buy:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ── MODAIS PVP (Arena, Rouba Monte, Batalha Naval) ── */
+#arenaModal,
+#roubaMontModal,
+#batalhaNavalModal {
+  position:absolute; inset:0; z-index:33;
+  display:flex; flex-direction:column;
+  background:rgba(4,3,10,.97);
+  opacity:0; pointer-events:none; transition:opacity .3s;
+  overflow-y:auto; overflow-x:hidden;
+}
+#arenaModal.open,
+#roubaMontModal.open,
+#batalhaNavalModal.open { opacity:1; pointer-events:all; }
