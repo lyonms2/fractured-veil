@@ -1374,27 +1374,44 @@ function rmIniciarListenerNotificacoes() {
 // Verifica se há partida activa para este wallet ao reconectar
 async function _rmVerificarPartidaAtiva() {
   if(!_rmRtdb()||!walletAddress) return;
-  console.log('[RM] _rmVerificarPartidaAtiva — verificando salas activas...');
 
   try {
-    const snap = await _rmRtdb().ref('roubaMonte/salas').orderByChild('status').equalTo('em_jogo').once('value');
-    const salas = snap.val();
-    if(!salas) { console.log('[RM] Nenhuma sala activa encontrada'); return; }
+    const [snapC, snapO] = await Promise.all([
+      _rmRtdb().ref('roubaMonte/salas').orderByChild('criador').equalTo(walletAddress).once('value'),
+      _rmRtdb().ref('roubaMonte/salas').orderByChild('oponente').equalTo(walletAddress).once('value'),
+    ]);
 
-    const minhas = Object.entries(salas).filter(([id, s]) =>
-      s.criador===walletAddress || s.oponente===walletAddress);
+    let salaId = null, sala = null;
+    const buscar = snap => snap.forEach(child => {
+      const s = child.val();
+      if(s && (s.status==='aguardando'||s.status==='em_jogo') && !salaId) {
+        salaId = child.key; sala = s;
+      }
+    });
+    buscar(snapC); buscar(snapO);
+    if(!salaId) return;
 
-    if(!minhas.length) { console.log('[RM] Nenhuma sala activa para este wallet'); return; }
-
-    const [salaId, sala] = minhas[0];
-    console.log('[RM] Partida activa encontrada após reconexão — sala:', salaId);
+    console.log('[RM] Partida activa encontrada:', salaId, sala.status);
     _rmSalaId   = salaId;
     _rmAtiva    = true;
     _rmOpWallet = sala.criador===walletAddress ? sala.oponente : sala.criador;
     _rmBloquearUI(true);
 
-    showBubble('Partida em curso detectada! 🃏');
-    addLog('Partida de Rouba Monte em curso — abra o jogo para continuar.','info');
+    await new Promise(r => setTimeout(r, 1500));
+
+    addLog('Reconectado à partida de Rouba Monte!', 'info');
+    showBubble('Reconectado! 🃏');
+    ModalManager.open('roubaMontModal');
+
+    if(sala.status === 'aguardando') {
+      if(sala.criador === walletAddress) {
+        _rmRenderEspera(salaId);
+      } else {
+        _rmRenderDesafioPendente(sala);
+      }
+    } else {
+      _rmIniciarPartida(salaId, sala);
+    }
   } catch(e) {
     console.warn('[RM] _rmVerificarPartidaAtiva erro:', e);
   }

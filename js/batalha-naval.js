@@ -1327,8 +1327,60 @@ async function _bnCarregarRanking() {
 // NOTIFICAÇÕES
 // ═══════════════════════════════════════════════════════════════════
 
+// Verifica se há partida activa para este wallet ao reconectar
+async function _bnVerificarPartidaAtiva() {
+  if(!_bnRtdb() || !walletAddress) return;
+
+  try {
+    const [snapC, snapO] = await Promise.all([
+      _bnRtdb().ref('batalhaNaval/salas').orderByChild('criador').equalTo(walletAddress).once('value'),
+      _bnRtdb().ref('batalhaNaval/salas').orderByChild('oponente').equalTo(walletAddress).once('value'),
+    ]);
+
+    let salaId = null, sala = null;
+    const buscar = snap => snap.forEach(child => {
+      const s = child.val();
+      if(s && (s.status==='aguardando'||s.status==='colocacao'||s.status==='em_jogo') && !salaId) {
+        salaId = child.key; sala = s;
+      }
+    });
+    buscar(snapC); buscar(snapO);
+    if(!salaId) return;
+
+    console.log('[BN] Partida activa encontrada:', salaId, sala.status);
+    _bnSalaId   = salaId;
+    _bnAtiva    = true;
+    _bnOpWallet = sala.criador===walletAddress ? sala.oponente : sala.criador;
+    _bnBloquearUI(true);
+
+    await new Promise(r => setTimeout(r, 1500));
+
+    addLog('Reconectado à partida de Batalha Naval!', 'info');
+    showBubble('Reconectado! 🚢');
+    ModalManager.open('batalhaNavalModal');
+
+    if(sala.status === 'aguardando') {
+      if(sala.criador === walletAddress) {
+        _bnRenderEspera(salaId);
+      } else {
+        _bnRenderDesafioPendente(sala);
+      }
+    } else if(sala.status === 'colocacao') {
+      _bnRenderColocacao(salaId, sala);
+    } else {
+      _bnIniciarPartida(salaId, sala);
+    }
+  } catch(e) {
+    console.warn('[BN] _bnVerificarPartidaAtiva erro:', e);
+  }
+}
+
 function bnIniciarListenerNotificacoes() {
   if(!_bnRtdb() || !walletAddress) return;
+
+  // Verificar se há partida em curso ao reconectar
+  _bnVerificarPartidaAtiva();
+
   const notifRef = _bnRtdb().ref(`batalhaNaval/notificacoes/${walletAddress}`);
   notifRef.on('child_added', async snap => {
     const notif = snap.val();
@@ -1392,7 +1444,8 @@ window.bnConfirmarColocacao         = bnConfirmarColocacao;
 window.bnAbandonar                  = bnAbandonar;
 window.bnConfirmarAbandono          = bnConfirmarAbandono;
 window.bnShowTab                    = bnShowTab;
-window.bnIniciarListenerNotificacoes= bnIniciarListenerNotificacoes;
+window.bnIniciarListenerNotificacoes = bnIniciarListenerNotificacoes;
+window._bnVerificarPartidaAtiva     = _bnVerificarPartidaAtiva;
 window._bnRenderLobby               = _bnRenderLobby;
 window._bnToggleOrientacao          = _bnToggleOrientacao;
 
