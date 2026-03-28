@@ -35,6 +35,9 @@ let _bnSalaListener    = null;
 let _bnTimerInt        = null;
 let _bnOpWallet        = null;
 
+// Guard: evita dois tiros simultâneos (timer + clique)
+let _bnAtirando        = false;
+
 // Estado de colocação de navios
 let _bnMeuTabuleiro    = [];  // Array 8x8: null | { navioId, acertado }
 let _bnNaviosColocados = {};  // { navioId: [{r,c},...] }
@@ -366,8 +369,20 @@ async function bnSairDoLobby() {
 
 async function bnDesafiar(walletOponente) {
   if(!_bnAtiva || !_bnRtdb()) return;
+  const fila = _bnRaridade();
+
+  // Marca oponente como emPartida de forma atómica — evita dois jogadores desafiarem o mesmo alvo
+  const opEmPartidaRef = _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletOponente}/emPartida`);
+  const { committed } = await opEmPartidaRef.transaction(current => {
+    if(current === true) return; // undefined → aborta
+    return true;
+  });
+  if(!committed) {
+    showBubble('Oponente já entrou em outra partida!');
+    return;
+  }
+
   const aposta = _bnAposta();
-  const fila   = _bnRaridade();
   const salaId = `bn_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
 
   const sala = {
@@ -396,8 +411,8 @@ async function bnDesafiar(walletOponente) {
   };
 
   await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).set(sala);
+  // Marca o criador como emPartida (oponente já foi marcado pela transaction acima)
   await _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletAddress}/emPartida`).set(true);
-  await _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletOponente}/emPartida`).set(true);
 
   if(_bnHeartbeat) { clearInterval(_bnHeartbeat); _bnHeartbeat = null; }
   _bnPararLobby();
@@ -580,16 +595,18 @@ function _bnRenderColocacao(salaId, sala) {
     </div>`;
 
   // Listener — detecta quando ambos estão prontos
-  const salaRef = _bnRtdb().ref(`batalhaNaval/salas/${salaId}`);
-  salaRef.on('value', snap => {
+  // Rastreado em _bnSalaListener para ser limpo por _bnPararSala() se necessário
+  _bnPararSala();
+  _bnSalaListener = _bnRtdb().ref(`batalhaNaval/salas/${salaId}`);
+  _bnSalaListener.on('value', snap => {
     const s = snap.val();
     if(!s) return;
     if(s.status === 'em_jogo') {
-      salaRef.off('value');
+      _bnPararSala();
       _bnIniciarPartida(salaId, s);
     }
     if(s.status === 'cancelada') {
-      salaRef.off('value');
+      _bnPararSala();
       _bnAtiva = false; _bnSalaId = null;
       addLog('Partida cancelada.', 'bad');
       _bnRenderLobby();
@@ -752,13 +769,11 @@ async function bnConfirmarColocacao(salaId) {
   if(btn) btn.style.display = 'none';
   if(ags) ags.style.display = 'flex';
 
-  // Verifica se ambos estão prontos para iniciar
-  const snap = await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).once('value');
-  const s    = snap.val();
-  const j    = s.jogadores || {};
-  const ambos = Object.values(j).every(jg => jg.pronto);
-  if(ambos) {
-    await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({ status: 'em_jogo' });
+  // Transaction atómica no contador de prontos — evita TOCTOU quando os dois confirmam ao mesmo tempo
+  const countRef = _bnRtdb().ref(`batalhaNaval/salas/${salaId}/prontoCount`);
+  const { committed, snapshot } = await countRef.transaction(n => (n || 0) + 1);
+  if(committed && snapshot.val() >= 2) {
+    await _bnRtdb().ref(`batalhaNaval/salas/${salaId}/status`).set('em_jogo');
   }
 }
 
@@ -766,10 +781,27 @@ async function bnConfirmarColocacao(salaId) {
 // PARTIDA
 // ═══════════════════════════════════════════════════════════════════
 
-function _bnIniciarPartida(salaId, sala) {
+async function _bnIniciarPartida(salaId, sala) {
   _bnOpWallet    = sala.criador === walletAddress ? sala.oponente : sala.criador;
   _bnSalaId      = salaId;
+  _bnAtirando    = false; // reset em reconect
   _bnBloquearUI(true);
+
+  // Reconect: carrega o tabuleiro privado do RTDB para mostrar os navios no painel de defesa
+  if(!_bnMeuTabuleiro || _bnMeuTabuleiro.length === 0 || !_bnMeuTabuleiro[0]) {
+    try {
+      const tabSnap = await _bnRtdb().ref(`batalhaNaval/salas/${salaId}/tabuleiros/${walletAddress}`).once('value');
+      const tabData = tabSnap.val();
+      if(tabData) {
+        const tab = _bnTabuleiroVazio();
+        Object.entries(tabData).forEach(([key, val]) => {
+          const [r, c] = key.split('_').map(Number);
+          if(val?.navioId) tab[r][c] = val.navioId; // armazena só o id, igual à fase de colocação
+        });
+        _bnMeuTabuleiro = tab;
+      }
+    } catch(e) {}
+  }
 
   if(_bnHeartbeatSala) clearInterval(_bnHeartbeatSala);
   _bnHeartbeatSala = setInterval(async () => {
@@ -1089,12 +1121,13 @@ function _bnEscutarSala(salaId, opWallet) {
 // ═══════════════════════════════════════════════════════════════════
 
 async function bnAtirar(row, col, salaId, opWallet) {
-  if(!_bnRtdb()) return;
+  if(!_bnRtdb() || _bnAtirando) return;
+  _bnAtirando = true;
   _bnPararTimer();
 
   const snap = await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).once('value');
   const s    = snap.val();
-  if(!s || s.turno !== walletAddress) return;
+  if(!s || s.turno !== walletAddress) { _bnAtirando = false; return; }
 
   // Verifica se casa já foi atacada
   const pubKey = `${row}_${col}`;
@@ -1161,6 +1194,7 @@ async function bnAtirar(row, col, salaId, opWallet) {
   };
 
   await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update(updates);
+  _bnAtirando = false;
 
   const coord = `${String.fromCharCode(65+col)}${row+1}`;
   if(acertou) {
@@ -1530,5 +1564,6 @@ window.bnIniciarListenerNotificacoes = bnIniciarListenerNotificacoes;
 window._bnVerificarPartidaAtiva     = _bnVerificarPartidaAtiva;
 window._bnRenderLobby               = _bnRenderLobby;
 window._bnToggleOrientacao          = _bnToggleOrientacao;
+window.bnDesfazerNavio              = bnDesfazerNavio;
 
 console.log('[BATALHA NAVAL] Módulo carregado.');
