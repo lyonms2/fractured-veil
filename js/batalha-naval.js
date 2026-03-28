@@ -1137,7 +1137,15 @@ async function bnConfirmarAbandono(salaId) {
   _bnPararTimer();
   if(_bnHeartbeatSala) { clearInterval(_bnHeartbeatSala); _bnHeartbeatSala = null; }
   try { _bnRtdb().ref(`batalhaNaval/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel(); } catch(e) {}
-  await _bnRtdb().ref(`batalhaNaval/salas/${salaId}/presenca/${walletAddress}`).set('desconectado');
+
+  // Escreve abandono directamente → oponente ganha mesmo que esteja offline
+  try {
+    await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
+      status:   'finalizada',
+      abandono: walletAddress,
+    });
+  } catch(e) {}
+
   _bnBloquearUI(false);
   _bnSalaId = null; _bnOpWallet = null; _bnAtiva = false;
   addLog('Abandonaste a partida. 🏳️', 'bad');

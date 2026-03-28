@@ -1210,7 +1210,13 @@ async function rmConfirmarAbandono(salaId) {
     _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel();
   } catch(e) {}
 
-  await _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).set('desconectado');
+  // Escreve abandono directamente → oponente ganha mesmo que esteja offline
+  try {
+    await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
+      status:   'finalizada',
+      abandono: walletAddress,
+    });
+  } catch(e) {}
 
   _rmBloquearUI(false);
   _rmSalaId   = null;

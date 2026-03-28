@@ -115,6 +115,18 @@ function closeArena() {
   _pararLobbyListener();
   _pararSalaListener();
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
+
+  // Se há partida activa, escreve abandono directamente no RTDB → oponente ganha
+  if(_arenaPartidaId && rtdb() && walletAddress) {
+    try {
+      rtdb().ref(`arena/salas/${_arenaPartidaId}`).update({
+        status:   'finalizada',
+        abandono: walletAddress,
+      });
+    } catch(e) {}
+    _arenaPartidaId = null;
+  }
+
   ModalManager.close('arenaModal');
 }
 
