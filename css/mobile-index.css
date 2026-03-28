@@ -3,7 +3,7 @@
    Só dispara em ≤ 768px. Desktop nunca é afetado.
    ═══════════════════════════════════════════════════════════════════ */
 
-.fv-bottom-nav { display: none; }
+.fv-bottom-nav { display: none !important; }
 
 @media (min-width: 769px) {
   .fv-bottom-nav { display: none !important; }
@@ -16,7 +16,7 @@
 
   html { font-size: 100% !important; }
   body {
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     overflow-x: hidden;
   }
 
@@ -127,9 +127,26 @@
   .msi-val { font-family: 'Cinzel', serif; font-size: 7px; color: var(--text); width: 24px; text-align: right; flex-shrink: 0; }
 
   /* ════════════════════
-     BOTÕES DE AÇÃO — ocultos no mobile
+     BOTÕES DE AÇÃO — inline no mobile, abaixo do status
   ════════════════════ */
-  #actionBtns { display: none !important; }
+  #actionBtns {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+    order: 3;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 0 4px;
+  }
+
+  .btn-action {
+    min-height: 52px !important;
+    padding: 8px 4px !important;
+    font-size: 6px !important;
+    border-radius: 10px !important;
+  }
+
+  .btn-action .icon { font-size: 20px !important; }
 
   /* ════════════════════
      RIGHT PANEL
@@ -271,110 +288,13 @@
      TOAST
   ════════════════════ */
   #toast, .toast {
-    bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
     right: 12px; left: 12px;
     max-width: none;
     text-align: center;
   }
 
-  /* ════════════════════════════════════════
-     BOTTOM NAV
-     Classes usadas no HTML:
-       .fv-bottom-nav
-       .fv-bottom-nav-inner
-       .fv-bn-btn  (cada botão)
-       .fv-bn-icon (emoji)
-       #fvbn-feed / #fvbn-play / #fvbn-sleep / #fvbn-heal / #fvbn-bath
-  ════════════════════════════════════════ */
-  .fv-bottom-nav {
-    display: flex !important;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: calc(58px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    z-index: 200;
-    box-sizing: border-box;
-  }
-
-  .fv-bottom-nav-inner {
-    display: flex;
-    width: 100%;
-    height: 58px;
-    align-items: stretch;
-  }
-
-  .fv-bn-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'Cinzel', serif;
-    font-size: 6.5px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    transition: color .15s, background .15s;
-    padding: 0 2px;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-width: 44px;   /* área mínima de toque */
-    min-height: 44px;
-  }
-
-  .fv-bn-icon {
-    font-size: 22px;
-    line-height: 1;
-    transition: transform .15s;
-  }
-
-  /* Ativo (ex: avatar vivo) */
-  .fv-bn-btn.active { color: var(--gold); }
-  .fv-bn-btn.active .fv-bn-icon { transform: translateY(-1px); }
-  .fv-bn-btn.active::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 20%; right: 20%;
-    height: 2px;
-    border-radius: 0 0 2px 2px;
-    background: var(--gold);
-  }
-
-  /* Dormir ativo */
-  .fv-bn-btn.sleep-active { color: var(--raro); }
-  .fv-bn-btn.sleep-active::after { background: var(--raro); }
-
-  /* Desabilitado (sem avatar) */
-  .fv-bn-btn.btn-disabled {
-    opacity: .25;
-    pointer-events: none;
-  }
-
-  /* Feedback de toque */
-  .fv-bn-btn:active { background: rgba(201,168,76,.06); }
-  .fv-bn-btn:active .fv-bn-icon { transform: scale(.88); }
-
-  /* Badge de alerta */
-  .fv-bn-badge {
-    position: absolute;
-    top: 6px; right: calc(50% - 18px);
-    min-width: 14px; height: 14px;
-    background: #e74c3c;
-    border-radius: 7px;
-    border: 1.5px solid var(--surface);
-    font-size: 7px; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0 3px;
-    pointer-events: none;
-    font-family: 'Cinzel', serif;
-  }
+  /* fv-bottom-nav removida do mobile — botões inline no device card */
 
 } /* fim @media ≤ 768px */
 
