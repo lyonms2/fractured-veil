@@ -733,7 +733,7 @@
 <script src="js/arena.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/main.js"></script>
-<script src="js/mobile-ui.js"></script>  
+
 
 <script>
   iniciarAuthListener();
@@ -744,77 +744,148 @@
 ════════════════════════════════════════════════════════════════ -->
 <script>
 (function () {
-  const isMobile = window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent);
-  if (!isMobile) return;
-
-  function initStatus() {
+  'use strict';
+ 
+  const isMobile = () => window.innerWidth <= 768;
+ 
+  /* ── 1. Injeta o status inline abaixo da screen ── */
+  function initStatusInline() {
     if (document.getElementById('mobileStatusInline')) return;
     const device     = document.querySelector('.device');
     const actionBtns = document.getElementById('actionBtns');
     if (!device || !actionBtns) return;
+ 
     const block = document.createElement('div');
     block.id = 'mobileStatusInline';
     block.innerHTML = `
-      <div class="msi-row"><span class="msi-icon">🍖</span>
+      <div class="msi-row">
+        <span class="msi-icon">🍖</span>
         <div class="msi-track"><div class="msi-fill msi-fome"    id="msiFome"    style="width:100%"></div></div>
-        <span class="msi-val" id="msiValFome">100</span></div>
-      <div class="msi-row"><span class="msi-icon">😊</span>
+        <span class="msi-val" id="msiValFome">100</span>
+      </div>
+      <div class="msi-row">
+        <span class="msi-icon">😊</span>
         <div class="msi-track"><div class="msi-fill msi-humor"   id="msiHumor"   style="width:100%"></div></div>
-        <span class="msi-val" id="msiValHumor">100</span></div>
-      <div class="msi-row"><span class="msi-icon">⚡</span>
+        <span class="msi-val" id="msiValHumor">100</span>
+      </div>
+      <div class="msi-row">
+        <span class="msi-icon">⚡</span>
         <div class="msi-track"><div class="msi-fill msi-energia" id="msiEnergia" style="width:100%"></div></div>
-        <span class="msi-val" id="msiValEnergia">100</span></div>
-      <div class="msi-row"><span class="msi-icon">❤️</span>
+        <span class="msi-val" id="msiValEnergia">100</span>
+      </div>
+      <div class="msi-row">
+        <span class="msi-icon">❤️</span>
         <div class="msi-track"><div class="msi-fill msi-saude"   id="msiSaude"   style="width:100%"></div></div>
-        <span class="msi-val" id="msiValSaude">100</span></div>
-      <div class="msi-row"><span class="msi-icon">🧹</span>
+        <span class="msi-val" id="msiValSaude">100</span>
+      </div>
+      <div class="msi-row">
+        <span class="msi-icon">🧹</span>
         <div class="msi-track"><div class="msi-fill msi-higiene" id="msiHigiene" style="width:100%"></div></div>
-        <span class="msi-val" id="msiValHigiene">100</span></div>`;
+        <span class="msi-val" id="msiValHigiene">100</span>
+      </div>`;
+ 
+    // Insere ANTES de #actionBtns (que fica hidden no mobile)
     device.insertBefore(block, actionBtns);
   }
-
+ 
+  /* ── 2. Sincroniza as barras com vitals do jogo ── */
   function syncStatus() {
     if (typeof vitals === 'undefined') return;
     const map = [
-      ['msiFome',    'msiValFome',    vitals.fome],
-      ['msiHumor',   'msiValHumor',   vitals.humor],
-      ['msiEnergia', 'msiValEnergia', vitals.energia],
-      ['msiSaude',   'msiValSaude',   vitals.saude],
-      ['msiHigiene', 'msiValHigiene', vitals.higiene],
+      ['msiFome',    'msiValFome',    vitals.fome    ?? 100],
+      ['msiHumor',   'msiValHumor',   vitals.humor   ?? 100],
+      ['msiEnergia', 'msiValEnergia', vitals.energia ?? 100],
+      ['msiSaude',   'msiValSaude',   vitals.saude   ?? 100],
+      ['msiHigiene', 'msiValHigiene', vitals.higiene ?? 100],
     ];
     map.forEach(([bId, vId, v]) => {
       const bar = document.getElementById(bId);
       const val = document.getElementById(vId);
       if (!bar || !val) return;
-      bar.style.width = v + '%';
-      val.textContent = Math.floor(v);
-      v < 25 ? bar.classList.add('critical') : bar.classList.remove('critical');
+      const pct = Math.max(0, Math.min(100, Math.round(v)));
+      bar.style.width  = pct + '%';
+      val.textContent  = pct;
+      bar.classList.toggle('critical', pct < 25);
     });
   }
-
-  function syncSleepLabel() {
-    const lbl = document.getElementById('fvbnSleepLabel');
-    if (!lbl) return;
-    if (typeof sleeping === 'undefined') return;
-    lbl.textContent = sleeping ? 'Acordar' : 'Dormir';
-    const btn = document.getElementById('fvbn-sleep');
-    if (btn) sleeping ? btn.classList.add('sleep-active') : btn.classList.remove('sleep-active');
-  }
-
-  window.addEventListener('load', () => {
-    initStatus();
-    // Mostra a nav (está dentro do .app, herda zoom correcto)
-    const nav = document.querySelector('.fv-bottom-nav');
-    if (nav) nav.style.display = 'flex';
-    const orig = window.updateAllUI;
-    if (typeof orig === 'function') {
-      window.updateAllUI = function () {
-        orig.apply(this, arguments);
-        syncStatus();
-        syncSleepLabel();
-      };
+ 
+  /* ── 3. Sincroniza estado dos botões da bottom nav ── */
+  function syncNav() {
+    const alive = typeof hatched !== 'undefined' && hatched &&
+                  typeof dead   !== 'undefined' && !dead;
+ 
+    // Habilita/desabilita todos os botões
+    ['fvbn-feed','fvbn-play','fvbn-sleep','fvbn-heal','fvbn-bath'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.toggle('btn-disabled', !alive);
+    });
+ 
+    // Estado do botão dormir
+    const isSleeping = typeof sleeping !== 'undefined' && sleeping;
+    const bnSleep    = document.getElementById('fvbn-sleep');
+    const sleepLbl   = document.getElementById('fvbnSleepLabel');
+    if (bnSleep)   bnSleep.classList.toggle('sleep-active', isSleeping);
+    if (sleepLbl)  sleepLbl.textContent = isSleeping ? 'Acordar' : 'Dormir';
+ 
+    // Badges de alerta
+    if (alive && typeof vitals !== 'undefined') {
+      _badge('fvbn-feed', vitals.fome   < 25);
+      _badge('fvbn-play', vitals.humor  < 30);
+      _badge('fvbn-heal', typeof sick !== 'undefined' && sick);
     }
-  });
+  }
+ 
+  function _badge(btnId, show) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    let badge = btn.querySelector('.fv-bn-badge');
+    if (show && !badge) {
+      badge = document.createElement('span');
+      badge.className   = 'fv-bn-badge';
+      badge.textContent = '!';
+      btn.appendChild(badge);
+    } else if (!show && badge) {
+      badge.remove();
+    }
+  }
+ 
+  /* ── 4. Hook no updateAllUI do jogo ── */
+  function hookUpdateUI() {
+    const orig = window.updateAllUI;
+    if (typeof orig !== 'function') return;
+    window.updateAllUI = function () {
+      orig.apply(this, arguments);
+      if (isMobile()) { syncStatus(); syncNav(); }
+    };
+  }
+ 
+  /* ── 5. Init ── */
+  function init() {
+    if (!isMobile()) return;
+ 
+    initStatusInline();
+    hookUpdateUI();
+ 
+    // Retry do hook (scripts podem ainda não estar prontos)
+    setTimeout(hookUpdateUI, 600);
+    setTimeout(hookUpdateUI, 1500);
+ 
+    // Sync inicial após o jogo carregar
+    setTimeout(() => { syncStatus(); syncNav(); }, 900);
+ 
+    // Fallback: sync a cada 2s caso o hook falhe
+    setInterval(() => { if (isMobile()) { syncStatus(); syncNav(); } }, 2000);
+  }
+ 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    // DOM pronto mas scripts do jogo podem ainda não estar — aguarda load
+    window.addEventListener('load', init);
+    // Tenta também imediatamente (caso load já disparou)
+    setTimeout(init, 100);
+  }
+ 
 })();
 </script>
 
