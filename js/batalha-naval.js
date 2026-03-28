@@ -37,6 +37,8 @@ let _bnOpWallet        = null;
 
 // Guard: evita dois tiros simultâneos (timer + clique)
 let _bnAtirando        = false;
+// Preview da colocação: indica se a posição é válida (para cor do highlight)
+let _bnPreviewValido   = true;
 
 // Estado de colocação de navios
 let _bnMeuTabuleiro    = [];  // Array 8x8: null | { navioId, acertado }
@@ -103,7 +105,8 @@ function _bnDesserTab(obj) {
   return tab;
 }
 
-// Verifica casas adjacentes para garantir que navios não se tocam
+// Verifica se as casas são válidas para colocar um navio
+// Regra: sem sobreposição directa (navios podem ficar adjacentes — Batalha Naval standard)
 function _bnCasasValidas(r, c, tam, orient, excluir = null) {
   const casas = [];
   for(let i = 0; i < tam; i++) {
@@ -112,18 +115,9 @@ function _bnCasasValidas(r, c, tam, orient, excluir = null) {
     if(nr >= BN_TAMANHO || nc >= BN_TAMANHO) return null;
     casas.push([nr, nc]);
   }
-  // Verifica colisão com navios já colocados
+  // Apenas impede sobreposição directa com outro navio
   for(const [nr, nc] of casas) {
     if(_bnMeuTabuleiro[nr][nc] && _bnMeuTabuleiro[nr][nc] !== excluir) return null;
-    // Verifica adjacência (navios não podem se tocar)
-    for(let dr = -1; dr <= 1; dr++) {
-      for(let dc = -1; dc <= 1; dc++) {
-        const ar = nr+dr, ac = nc+dc;
-        if(ar >= 0 && ar < BN_TAMANHO && ac >= 0 && ac < BN_TAMANHO) {
-          if(_bnMeuTabuleiro[ar][ac] && _bnMeuTabuleiro[ar][ac] !== excluir) return null;
-        }
-      }
-    }
   }
   return casas;
 }
@@ -662,12 +656,15 @@ function _bnHtmlTabColocacao(salaId) {
       let bg, border, content = '';
       if(cell_data) {
         const navio = BN_NAVIOS.find(n => n.id === cell_data);
-        bg     = 'rgba(90,180,232,.2)';
-        border = '1px solid rgba(90,180,232,.5)';
+        bg      = 'rgba(90,180,232,.2)';
+        border  = '1px solid rgba(90,180,232,.5)';
         content = navio?.icon || '🚢';
-      } else if(isPreview) {
-        bg     = 'rgba(201,168,76,.2)';
-        border = '1px dashed rgba(201,168,76,.6)';
+      } else if(isPreview && _bnPreviewValido) {
+        bg     = 'rgba(122,184,122,.25)';
+        border = '1px dashed rgba(122,184,122,.7)';
+      } else if(isPreview && !_bnPreviewValido) {
+        bg     = 'rgba(231,76,60,.2)';
+        border = '1px dashed rgba(231,76,60,.6)';
       } else {
         bg     = 'rgba(255,255,255,.03)';
         border = '1px solid rgba(255,255,255,.08)';
@@ -675,9 +672,10 @@ function _bnHtmlTabColocacao(salaId) {
       html += `<td onclick="bnColocarNavio(${r},${c},'${salaId}')"
                    onmouseenter="bnPreviewNavio(${r},${c},'${salaId}')"
                    onmouseleave="bnLimparPreview('${salaId}')"
+                   ontouchstart="bnPreviewNavio(${r},${c},'${salaId}')"
                    style="width:${cell}px;height:${cell}px;text-align:center;
                           background:${bg};border:${border};cursor:pointer;
-                          font-size:10px;transition:all .1s;">${content}</td>`;
+                          font-size:10px;transition:background .1s,border .1s;">${content}</td>`;
     }
     html += `</tr>`;
   }
@@ -693,15 +691,28 @@ function _bnToggleOrientacao() {
 
 function bnPreviewNavio(r, c, salaId) {
   if(_bnNavioAtual >= BN_NAVIOS.length) return;
-  const n    = BN_NAVIOS[_bnNavioAtual];
+  const n      = BN_NAVIOS[_bnNavioAtual];
   const valido = _bnCasasValidas(r, c, n.tam, _bnOrientacao);
-  _bnPreview = valido ? valido : [];
+  _bnPreviewValido = !!valido;
+  if(valido) {
+    _bnPreview = valido;
+  } else {
+    // Preview a vermelho mostrando onde o navio ficaria (mesmo que inválido)
+    const raw = [];
+    for(let i = 0; i < n.tam; i++) {
+      const nr = _bnOrientacao === 'V' ? r + i : r;
+      const nc = _bnOrientacao === 'H' ? c + i : c;
+      if(nr < BN_TAMANHO && nc < BN_TAMANHO) raw.push([nr, nc]);
+    }
+    _bnPreview = raw;
+  }
   const tab = document.getElementById('bnTabColocacao');
   if(tab) tab.innerHTML = _bnHtmlTabColocacao(salaId);
 }
 
 function bnLimparPreview(salaId) {
-  _bnPreview = [];
+  _bnPreview       = [];
+  _bnPreviewValido = true;
   const tab = document.getElementById('bnTabColocacao');
   if(tab) tab.innerHTML = _bnHtmlTabColocacao(salaId);
 }
@@ -716,7 +727,8 @@ function bnColocarNavio(r, c, salaId) {
   casas.forEach(([nr, nc]) => { _bnMeuTabuleiro[nr][nc] = n.id; });
   _bnNaviosColocados[n.id] = casas;
   _bnNavioAtual++;
-  _bnPreview = [];
+  _bnPreview       = [];
+  _bnPreviewValido = true;
 
   // Atualiza UI
   const tab  = document.getElementById('bnTabColocacao');
@@ -742,7 +754,8 @@ function bnDesfazerNavio(salaId) {
     casas.forEach(([r, c]) => { _bnMeuTabuleiro[r][c] = null; });
     delete _bnNaviosColocados[n.id];
   }
-  _bnPreview = [];
+  _bnPreview       = [];
+  _bnPreviewValido = true;
   const tab   = document.getElementById('bnTabColocacao');
   const info  = document.getElementById('bnNavioInfo');
   const lista = document.getElementById('bnNaviosLista');
