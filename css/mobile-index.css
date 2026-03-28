@@ -14,10 +14,10 @@
   /* ── Previne zoom em inputs no iOS ── */
   input, select, textarea { font-size: 16px !important; }
 
-  html { font-size: 100% !important; overflow-x: hidden; }
+  html { font-size: 100% !important; overflow-x: clip; }
   body {
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* ════════════════════
@@ -58,7 +58,7 @@
   .res b { font-size: 9px; }
 
   .wallet-address { font-size: 7px; padding: 4px 8px; }
-  .btn-wallet.btn-sair { display: none; }
+  .btn-wallet.btn-sair { padding: 3px 6px; font-size: 6px; }
 
   /* ════════════════════
      MAIN
