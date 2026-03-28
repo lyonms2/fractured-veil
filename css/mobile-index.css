@@ -14,7 +14,7 @@
   /* ── Previne zoom em inputs no iOS ── */
   input, select, textarea { font-size: 16px !important; }
 
-  html { font-size: 100% !important; }
+  html { font-size: 100% !important; overflow-x: hidden; }
   body {
     padding-bottom: env(safe-area-inset-bottom, 0px);
     overflow-x: hidden;
@@ -94,8 +94,9 @@
     top: -36px; left: 50%;
     transform: translateX(-50%);
     z-index: 30;
-    white-space: nowrap;
-    max-width: 90vw;
+    white-space: normal;
+    max-width: 80vw;
+    text-align: center;
     font-size: 7px;
     padding: 4px 10px;
   }
