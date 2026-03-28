@@ -717,7 +717,8 @@
 ════════════════════════════════════════════════════════════════ -->
 <script>
 (function () {
-  if (window.innerWidth > 680) return;  // só corre no mobile
+  const isMobile = window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent);
+  if (!isMobile) return;
 
   // ── Injeta bloco de status inline no device ──────────────────
   function initStatus() {
@@ -780,6 +781,8 @@
   // ── Hook em updateAllUI ──────────────────────────────────────
   window.addEventListener('load', () => {
     initStatus();
+    const nav = document.querySelector('.fv-bottom-nav');
+    if (nav) nav.style.display = 'flex';
     const orig = window.updateAllUI;
     if (typeof orig === 'function') {
       window.updateAllUI = function () {
