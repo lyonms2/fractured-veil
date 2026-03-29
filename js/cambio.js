@@ -117,7 +117,19 @@ async function cambioConverter(quantidade) {
     const batch     = fbDb().batch();
     const poolRef   = fbDb().collection('config').doc('pool');
     const playerRef = fbDb().collection('players').doc(walletAddress);
-    batch.update(poolRef,   { cristais: increment(-qtd) });
+    batch.update(poolRef, {
+      cristais:  increment(-qtd),
+      totalSaiu: increment(qtd),
+    });
+    const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
+    batch.set(logRef, {
+      tipo:   'saida',
+      motivo: `Câmbio — ${custo * qtd} 🪙 → ${qtd} 💎`,
+      origem: walletAddress,
+      total:  qtd,
+      pool:   -qtd,
+      ts:     firebase.firestore.FieldValue.serverTimestamp(),
+    });
     batch.update(playerRef, {
       'gs.cristais': gs.cristais,
       cristais:      gs.cristais,

@@ -1082,7 +1082,8 @@ async function _distribuirRecompensas(sala, opWallet) {
   await rtdb().ref(`arena/salas/${sala.id}/recompensaDistribuida`).set(true);
 
   // Taxa vai para a pool P2E do marketplace (Firestore — mesmo doc que pool.js usa)
-  if(taxa > 0 && fbDb()) {
+  // Só cristais alimentam a pool; moedas são apenas queimadas
+  if(taxa > 0 && usaCris && fbDb()) {
     try {
       const POOL_SPLIT      = 0.80;
       const DEV_WALLET_ADDR = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';

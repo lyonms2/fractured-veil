@@ -224,7 +224,7 @@ async function loadPoolLogs(reset) {
 // ENTRADA NA POOL (taxas)
 // Split: 80% → pool P2E, 20% → conta dev (manutenção)
 // ═══════════════════════════════════════════
-const DEV_WALLET_ADDR  = '0x1fcb61db743a0276b92382b9e7b92a62ca8cf030';
+const DEV_WALLET_ADDR  = DEV_WALLET;
 const POOL_SPLIT       = 0.80; // 80% para a pool
 const DEV_SPLIT        = 0.20; // 20% para a conta dev
 
