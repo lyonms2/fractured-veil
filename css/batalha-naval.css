@@ -18,3 +18,8 @@
   overscroll-behavior: contain;
 }
 #batalhaNavalModal.open { opacity: 1; pointer-events: all; }
+
+/* ── PC fullscreen ── */
+@media(min-width:601px) {
+  #batalhaNavalModal { padding: 20px 32px !important; }
+}

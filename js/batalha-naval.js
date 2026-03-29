@@ -33,6 +33,7 @@ let _bnHeartbeat       = null;
 let _bnHeartbeatSala   = null;
 let _bnSalaListener    = null;
 let _bnTimerInt        = null;
+let _bnTimerColocacao  = null; // timer de 90s para posicionar navios
 let _bnOpWallet        = null;
 
 // Guard: evita dois tiros simultâneos (timer + clique)
@@ -75,6 +76,9 @@ function _bnCreditarPremio(bruto, usaCris) {
 }
 function _bnPararTimer() {
   if(_bnTimerInt) { clearInterval(_bnTimerInt); _bnTimerInt = null; }
+}
+function _bnPararTimerColocacao() {
+  if(_bnTimerColocacao) { clearInterval(_bnTimerColocacao); _bnTimerColocacao = null; }
 }
 function _bnPararLobby() {
   if(_bnLobbyListRef) { _bnLobbyListRef.off('value'); _bnLobbyListRef = null; }
@@ -544,13 +548,20 @@ function _bnRenderColocacao(salaId, sala) {
   const el = document.getElementById('batalhaNavalModal');
   if(!el) return;
 
+  const opWallet = sala.criador === walletAddress ? sala.oponente : sala.criador;
   const isPC = window.innerWidth > 600;
   el.innerHTML = isPC ? `
-    <div style="display:flex;flex-direction:column;height:100%;padding:8px 10px;gap:6px;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;width:100%;max-width:620px;height:100%;padding:8px 10px;gap:6px;overflow:hidden;">
 
-      <!-- Header -->
-      <div style="flex-shrink:0;">
+      <!-- Header + timer -->
+      <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">🚢 POSICIONAR NAVIOS</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">90s</span>
+          <div style="width:60px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
+            <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:2px;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- 2-col: board | seleção -->
@@ -599,6 +610,15 @@ function _bnRenderColocacao(salaId, sala) {
         </button>
       </div>
 
+      <!-- Timer de colocação -->
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:1px;">TEMPO</span>
+        <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">90s</span>
+        <div style="flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
+          <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:2px;"></div>
+        </div>
+      </div>
+
       <div id="bnNavioInfo" style="flex-shrink:0;padding:6px 8px;
            background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);
            border-radius:6px;font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">
@@ -633,15 +653,66 @@ function _bnRenderColocacao(salaId, sala) {
     if(!s) return;
     if(s.status === 'em_jogo') {
       _bnPararSala();
+      _bnPararTimerColocacao();
       _bnIniciarPartida(salaId, s);
+    }
+    if(s.status === 'finalizada') {
+      _bnPararSala();
+      _bnPararTimerColocacao();
+      _bnRenderResultado(s, opWallet);
     }
     if(s.status === 'cancelada') {
       _bnPararSala();
+      _bnPararTimerColocacao();
       _bnAtiva = false; _bnSalaId = null;
       addLog('Partida cancelada.', 'bad');
       _bnRenderLobby();
     }
   });
+
+  _bnIniciarTimerColocacao(salaId, opWallet);
+}
+
+// ─── Timer de colocação (90s) ───────────────────────────────────────
+function _bnIniciarTimerColocacao(salaId, opWallet) {
+  _bnPararTimerColocacao();
+  const TOTAL = 90;
+  let seg = TOTAL;
+  _bnTimerColocacao = setInterval(async () => {
+    seg--;
+    const bar   = document.getElementById('bnTimerColBar');
+    const segEl = document.getElementById('bnTimerColSeg');
+    if(bar) {
+      const pct = (seg / TOTAL) * 100;
+      bar.style.width = pct + '%';
+      if(pct < 30)      bar.style.background = '#e74c3c';
+      else if(pct < 60) bar.style.background = '#e8a030';
+      else              bar.style.background = '#7ab87a';
+    }
+    if(segEl) {
+      segEl.textContent = seg + 's';
+      if(seg <= 10)      segEl.style.color = '#e74c3c';
+      else if(seg <= 30) segEl.style.color = '#e8a030';
+    }
+    if(seg <= 0) {
+      _bnPararTimerColocacao();
+      _bnPararSala();
+      addLog('Tempo esgotado! Oponente ganhou. ⏳', 'bad');
+      showBubble('Tempo esgotado! ⏳');
+      try {
+        await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
+          status:   'finalizada',
+          abandono: walletAddress,
+        });
+      } catch(e) {}
+      _bnBloquearUI(false);
+      _bnSalaId = null; _bnOpWallet = null; _bnAtiva = false;
+      try {
+        const snap = await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).once('value');
+        _bnRenderResultado(snap.val(), opWallet);
+      } catch(e) { _bnRenderLobby(); }
+    }
+  }, 1000);
 }
 
 function _bnHtmlNavioInfo(salaId) {
@@ -839,6 +910,7 @@ function bnDesfazerNavio(salaId) {
 async function bnConfirmarColocacao(salaId) {
   if(!_bnRtdb()) return;
   if(_bnNavioAtual < BN_NAVIOS.length) { showBubble('Coloca todos os navios primeiro!'); return; }
+  _bnPararTimerColocacao();
 
   // Guarda o tabuleiro privado (com posições dos navios)
   await _bnRtdb().ref(`batalhaNaval/salas/${salaId}/tabuleiros/${walletAddress}`).set(_bnSerTab(
@@ -865,6 +937,7 @@ async function bnConfirmarColocacao(salaId) {
 // ═══════════════════════════════════════════════════════════════════
 
 async function _bnIniciarPartida(salaId, sala) {
+  _bnPararTimerColocacao();
   _bnOpWallet    = sala.criador === walletAddress ? sala.oponente : sala.criador;
   _bnSalaId      = salaId;
   _bnAtirando    = false; // reset em reconect
@@ -1397,6 +1470,7 @@ async function bnConfirmarAbandono(salaId) {
 
 async function _bnRenderResultado(sala, opWallet) {
   _bnPararTimer();
+  _bnPararTimerColocacao();
   if(_bnHeartbeatSala) { clearInterval(_bnHeartbeatSala); _bnHeartbeatSala = null; }
   if(_bnRtdb() && sala.id && walletAddress) {
     try { _bnRtdb().ref(`batalhaNaval/salas/${sala.id}/presenca/${walletAddress}`).onDisconnect().cancel(); } catch(e) {}
