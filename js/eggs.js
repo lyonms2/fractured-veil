@@ -65,7 +65,6 @@ function calcEggExpiry(raridade) {
 function layEgg() {
   if(getFase() < 3) { showBubble('Ainda não cresci o suficiente... 🥚'); return; }
   if(!avatar || !hatched || dead) return;
-  if(getFase() !== 3) { showBubble('Ainda não cresci o suficiente...'); return; }
   if(eggLayCooldown > 0) {
     const horasRestantes = Math.ceil(eggLayCooldown * 60 / 3600);
     showBubble(`Preciso descansar... (~${horasRestantes}h)`);
@@ -704,11 +703,13 @@ function petCreature() {
   if(!canAct()) return;
   if(petCooldown > 0) return;
   vitals.humor = Math.min(100, vitals.humor + 8);
+  vinculo = Math.min(400, vinculo + 1);
   petCooldown = 10;
   playAnim('anim-pet');
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');
   updateAllUI();
+  scheduleSave();
 }
 
 // ═══════════════════════════════════════════════════════════════════

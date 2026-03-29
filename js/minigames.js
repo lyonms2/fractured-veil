@@ -260,7 +260,10 @@ function wakeUp(reason) {
 
 function healCreature() {
   if(!canAct()) return;
-  if(!sick && vitals.saude >= 100){ showBubble('Estou bem!'); return; }
+  if(!sick && vitals.saude >= 100 && activeDiseases.length === 0){ showBubble('Estou bem!'); return; }
+  if(activeDiseases.length > 0) {
+    addLog(`⚠️ Tens ${activeDiseases.length} doença(s) activa(s)! O Medicar recupera saúde mas não cura doenças — usa o Antídoto Dimensional (300 🪙) na loja.`, 'bad');
+  }
   const COST = 40;
   if(gs.moedas < COST) { showBubble('Sem moedas... 😢'); addLog(`Precisa de ${COST} 🪙 para medicar!`,'bad'); return; }
   if(!spendCoins(COST)) return;
