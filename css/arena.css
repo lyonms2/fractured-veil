@@ -447,11 +447,74 @@
 }
 
 /* ══════════════════════════════════════
+   PARTIDA — FULLSCREEN MOBILE (≤768px)
+   Aproveita o ecrã todo do telemóvel.
+══════════════════════════════════════ */
+@media(max-width:768px) {
+  .arena-partida {
+    gap: 10px;
+    padding: 4px 0;
+    justify-content: space-between;
+    flex: 1;
+  }
+
+  /* Avatares: SVG é 38px inline, escalar via CSS */
+  .arena-vs-svg     { width: 56px !important; height: 56px !important; }
+  .arena-vs-svg svg { width: 56px !important; height: 56px !important; }
+
+  .arena-vs-lado {
+    padding: 12px 8px !important;
+    border-radius: 12px !important;
+    gap: 6px !important;
+  }
+  .arena-vs-nome    { font-size: 9px !important; max-width: 110px !important; }
+  .arena-vs-stars   { font-size: 16px !important; }
+  .arena-vs-escolha { font-size: 36px !important; min-height: 42px !important; }
+
+  .arena-vs-centro  { width: 52px !important; gap: 6px !important; }
+  .arena-vs-label   { font-size: 11px !important; }
+  .arena-turno-wrap { width: 44px !important; height: 5px !important; }
+  .arena-turno-label { font-size: 8px !important; }
+
+  .arena-partida-status {
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* Botões de escolha — grandes para toque */
+  .arena-escolhas { gap: 10px !important; }
+  .arena-escolha-btn {
+    padding: 16px 4px !important;
+    font-size: 30px !important;
+    border-radius: 14px !important;
+    gap: 6px !important;
+    min-height: 0 !important;
+  }
+  .arena-escolha-btn span {
+    font-size: 8px !important;
+    letter-spacing: 1.5px !important;
+  }
+
+  .arena-rodada-badge { font-size: 10px !important; }
+  .arena-premio-badge { font-size: 9px !important; }
+
+  .arena-round-banner {
+    padding: 10px 12px !important;
+    font-size: 10px !important;
+    border-radius: 10px !important;
+  }
+  .arena-resultado-titulo { font-size: 22px !important; }
+}
+
+/* ══════════════════════════════════════
    PARTIDA — FULLSCREEN PC (≥769px)
    Escala os elementos do jogo para aproveitar o espaço.
    .arena-partida fica com max-width para não esticar demais.
 ══════════════════════════════════════ */
 @media(min-width:769px) {
+  /* Modal da partida pode precisar de scroll em telas baixas */
+  #arenaModal { overflow-y: auto !important; }
+
   .arena-partida {
     max-width: 680px;
     width: 100%;
