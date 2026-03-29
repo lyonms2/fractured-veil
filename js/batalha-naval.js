@@ -1014,48 +1014,54 @@ function _bnRenderPartida(salaId, sala, opWallet) {
     </div>` : '';
 
   el.innerHTML = isPC ? `
-    <div style="display:flex;flex-direction:column;height:100%;padding:8px 10px;gap:5px;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;width:100%;max-width:680px;gap:10px;">
 
-      <!-- Header: título + score + status -->
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:1px;flex:1;">🚢 BATALHA NAVAL</div>
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
-          <span style="font-size:6px;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
-          <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#e74c3c;">${opAcertos}</span>
+      <!-- Header: título + score + status + abandonar -->
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;flex:1;">🚢 BATALHA NAVAL</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
+          <span style="font-size:9px;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
+          <span style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#e74c3c;">${opAcertos}</span>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
+        <div style="font-family:'Cinzel',serif;font-size:9px;padding:5px 14px;border-radius:10px;flex-shrink:0;
           background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
           border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
           color:${meuTurno?'#7ab87a':'var(--muted)'};">
           ${meuTurno ? '⚡ SUA VEZ' : '⏳ AGUARDANDO'}
         </div>
+        <button class="arena-btn-sair" style="font-size:7px;padding:5px 12px;flex-shrink:0;"
+          onclick="bnAbandonar('${salaId}')">🏳️</button>
       </div>
 
-      ${_timerHtml}
+      ${meuTurno ? `
+      <div style="flex-shrink:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">TEMPO RESTANTE</span>
+          <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:10px;color:var(--gold);">${BN_TIMER_SEG}s</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
+          <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:3px;"></div>
+        </div>
+      </div>` : ''}
 
-      <!-- 2-col: ataque | defesa + info -->
-      <div style="display:flex;gap:8px;flex:1;min-height:0;overflow:hidden;">
+      ${_ultimaHtml}
 
-        <!-- Esquerda: tabuleiro de ataque -->
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;">
+      <!-- 2-col: ataque | defesa -->
+      <div style="display:flex;gap:20px;align-items:flex-start;">
+
+        <!-- Esquerda: tabuleiro de ataque (30px cells) -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">
             ${meuTurno ? '🎯 CLICA PARA ATIRAR' : '🌊 OPONENTE'}
           </div>
-          <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet, 18)}</div>
+          <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet, 30)}</div>
         </div>
 
-        <!-- Direita: última jogada + defesa + abandonar -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;overflow-y:auto;">
-          ${_ultimaHtml}
-          <div style="flex-shrink:0;">
-            <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🛡️ MEU TABULEIRO</div>
-            ${_bnHtmlTabDefesa(meuTabPub, 11)}
-          </div>
-          <div style="margin-top:auto;flex-shrink:0;">
-            <button class="arena-btn-sair" style="font-size:6px;padding:4px 8px;"
-              onclick="bnAbandonar('${salaId}')">🏳️ ABANDONAR</button>
-          </div>
+        <!-- Direita: tabuleiro de defesa (20px cells) -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">🛡️ MEU TABULEIRO</div>
+          ${_bnHtmlTabDefesa(meuTabPub, 20)}
         </div>
 
       </div>
