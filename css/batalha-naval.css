@@ -9,6 +9,11 @@
   opacity: 0; pointer-events: none;
   transition: opacity .3s;
   padding: 10px 12px;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+/* Lobby precisa de scroll no conteúdo interno */
+#batalhaNavalModal .bn-lobby-scroll {
   overflow-y: auto;
   overscroll-behavior: contain;
 }

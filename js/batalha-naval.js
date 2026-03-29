@@ -16,11 +16,11 @@ const BN_APOSTAS   = {
 
 // Navios: [nome, tamanho, ícone]
 const BN_NAVIOS = [
-  { id:'portaAvioes',  nome:'Porta-Aviões',    tam:5, icon:'🛸' },
-  { id:'guerreiro',    nome:'Navio de Guerra',  tam:4, icon:'⚔️' },
-  { id:'submarino',    nome:'Submarino',        tam:3, icon:'🌊' },
-  { id:'destroyer',    nome:'Destroyer',        tam:3, icon:'💀' },
-  { id:'lancha',       nome:'Lancha',           tam:2, icon:'⚡' },
+  { id:'portaAvioes',  nome:'Porta-Aviões',    tam:5, icon:'🚢' },
+  { id:'guerreiro',    nome:'Navio de Guerra',  tam:4, icon:'🛳️' },
+  { id:'submarino',    nome:'Submarino',        tam:3, icon:'⛴️' },
+  { id:'destroyer',    nome:'Destroyer',        tam:3, icon:'🛥️' },
+  { id:'lancha',       nome:'Lancha',           tam:2, icon:'⛵' },
 ];
 const BN_TOTAL_CASAS = BN_NAVIOS.reduce((s, n) => s + n.tam, 0); // 17
 
@@ -215,7 +215,7 @@ function _bnRenderLobby() {
       <button class="arena-tab"        id="bnTabRanking" onclick="bnShowTab('ranking')">🏆 RANKING</button>
     </div>
 
-    <div id="bnTabContentLobby" class="arena-tab-content">
+    <div id="bnTabContentLobby" class="arena-tab-content bn-lobby-scroll">
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;
                   padding:10px 8px;background:rgba(201,168,76,.05);
@@ -256,7 +256,7 @@ function _bnRenderLobby() {
 
     </div>
 
-    <div id="bnTabContentRanking" class="arena-tab-content" style="display:none;">
+    <div id="bnTabContentRanking" class="arena-tab-content bn-lobby-scroll" style="display:none;">
       <div class="arena-ranking-wrap" id="bnRankingWrap">
         <div class="arena-lobby-vazio">Carregando...</div>
       </div>
@@ -549,39 +549,40 @@ function _bnRenderColocacao(salaId, sala) {
     <div style="display:flex;flex-direction:column;height:100%;padding:8px 10px;gap:6px;overflow:hidden;">
 
       <!-- Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="flex-shrink:0;">
         <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">🚢 POSICIONAR NAVIOS</div>
-        <button style="font-family:'Cinzel',serif;font-size:7px;padding:3px 9px;
-                       border:1px solid var(--border);border-radius:4px;background:transparent;
-                       color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
-          Orientação: <b id="bnOrientLabel">H</b>
-        </button>
       </div>
 
       <!-- 2-col: board | seleção -->
-      <div style="display:flex;gap:10px;flex:1;min-height:0;overflow:hidden;">
+      <div style="display:flex;gap:8px;flex:1;min-height:0;overflow:hidden;">
 
         <!-- Esquerda: tabuleiro -->
-        <div style="flex-shrink:0;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">CLICA PARA POSICIONAR</div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;">CLICA PARA POSICIONAR</div>
           <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId, 22)}</div>
-        </div>
-
-        <!-- Direita: seleção de navios -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;overflow-y:auto;">
-          <div id="bnNavioInfo" style="padding:5px 7px;background:rgba(201,168,76,.06);
-               border:1px solid rgba(201,168,76,.2);border-radius:5px;
-               font-family:'Cinzel',serif;font-size:7px;color:var(--gold);flex-shrink:0;">
+          <div id="bnNavioInfo" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">
             ${_bnHtmlNavioInfo(salaId)}
           </div>
-          <div id="bnNaviosLista" style="flex:1;">${_bnHtmlNaviosLista()}</div>
+        </div>
+
+        <!-- Direita: navios -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:1px;">NAVIOS</span>
+            <button style="font-family:'Cinzel',serif;font-size:6px;padding:2px 8px;
+                           border:1px solid var(--border);border-radius:4px;background:transparent;
+                           color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
+              <b id="bnOrientLabel">H</b> ↕
+            </button>
+          </div>
+          <div id="bnNaviosLista" style="flex:1;overflow-y:auto;">${_bnHtmlNaviosLista()}</div>
           <div id="bnBtnConfirmar" style="display:none;flex-shrink:0;">
-            <button class="arena-btn-entrar" style="font-size:6.5px;" onclick="bnConfirmarColocacao('${salaId}')">
-              ✅ CONFIRMAR POSIÇÕES
+            <button class="arena-btn-entrar" style="font-size:6px;padding:5px 8px;width:100%;" onclick="bnConfirmarColocacao('${salaId}')">
+              ✅ CONFIRMAR
             </button>
           </div>
           <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;">
-            <div class="arena-aguardando"><div class="arena-pulse"></div>Aguardando oponente posicionar navios...</div>
+            <div class="arena-aguardando" style="font-size:6px;text-align:center;"><div class="arena-pulse"></div>Aguardando oponente...</div>
           </div>
         </div>
 
@@ -1027,7 +1028,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
 
       <div style="flex-shrink:0;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🛡️ MEU TABULEIRO</div>
-        <div>${_bnHtmlTabDefesa(meuTabPub)}</div>
+        <div>${_bnHtmlTabDefesa(meuTabPub, 14)}</div>
       </div>
 
       <div style="flex-shrink:0;margin-top:4px;">
@@ -1087,17 +1088,20 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
 }
 
 function _bnHtmlTabDefesa(meuTabPub, cellSize) {
-  const cell = cellSize || 18;
+  const cell  = cellSize || 18;
+  const fsize = cell <= 14 ? '4px' : '5px';
+  const hdr   = cell <= 14 ? `${cell - 2}px` : '12px';
+  const rowW  = cell <= 14 ? `${cell}px` : '13px';
   // Sobrepõe o meu tabuleiro privado com os acertos públicos
   let html = `<table style="border-collapse:collapse;">`;
-  html += `<tr><td style="width:13px;"></td>`;
+  html += `<tr><td style="width:${rowW};"></td>`;
   for(let c = 0; c < BN_TAMANHO; c++)
-    html += `<td style="width:${cell}px;height:12px;text-align:center;font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
+    html += `<td style="width:${cell}px;height:${hdr};text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
   html += `</tr>`;
 
   for(let r = 0; r < BN_TAMANHO; r++) {
     html += `<tr>`;
-    html += `<td style="width:13px;height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">${r+1}</td>`;
+    html += `<td style="width:${rowW};height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${r+1}</td>`;
     for(let c = 0; c < BN_TAMANHO; c++) {
       const key      = `${r}_${c}`;
       const pubCasa  = meuTabPub[key];
@@ -1117,7 +1121,7 @@ function _bnHtmlTabDefesa(meuTabPub, cellSize) {
       }
 
       html += `<td style="width:${cell}px;height:${cell}px;text-align:center;
-                          background:${bg};border:${border};font-size:8px;">${content}</td>`;
+                          background:${bg};border:${border};font-size:${cell <= 14 ? '7px' : '8px'};">${content}</td>`;
     }
     html += `</tr>`;
   }
