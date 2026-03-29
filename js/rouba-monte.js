@@ -1233,6 +1233,8 @@ async function rmConfirmarAbandono(salaId) {
     });
   } catch(e) {}
 
+  const _filaAbandono = _rmRaridade();
+  try{await _rmRtdb().ref(`roubaMonte/lobby/${_filaAbandono}/${walletAddress}`).remove();}catch(e){}
   _rmBloquearUI(false);
   _rmSalaId   = null;
   _rmOpWallet = null;
@@ -1316,15 +1318,16 @@ async function _rmRenderResultado(sala, opWallet) {
   vinculo += euVenci?6:2;
   checkXP(); updateAllUI(); scheduleSave();
 
+  // Remove do lobby — próprio e oponente (idempotente)
   const fila = _rmRaridade();
   try{await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`).remove();}catch(e){}
+  try{await _rmRtdb().ref(`roubaMonte/lobby/${fila}/${opWallet}`).remove();}catch(e){}
   _rmAtiva=false; _rmSalaId=null;
 
-  if(sala.criador===walletAddress) {
-    setTimeout(async()=>{
-      try{await _rmRtdb().ref(`roubaMonte/salas/${sala.id}`).remove();}catch(e){}
-    },10000);
-  }
+  // Limpeza da sala — ambos os jogadores tentam (Firebase ignora se já deletada)
+  setTimeout(async()=>{
+    try{await _rmRtdb().ref(`roubaMonte/salas/${sala.id}`).remove();}catch(e){}
+  },10000);
   // Limpa notificações de ambos os jogadores para esta sala
   setTimeout(async()=>{
     try{await _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}/${sala.id}`).remove();}catch(e){}

@@ -1464,6 +1464,8 @@ async function bnConfirmarAbandono(salaId) {
     });
   } catch(e) {}
 
+  const _fila = _bnRaridade();
+  try { await _bnRtdb().ref(`batalhaNaval/lobby/${_fila}/${walletAddress}`).remove(); } catch(e) {}
   _bnBloquearUI(false);
   _bnSalaId = null; _bnOpWallet = null; _bnAtiva = false;
   addLog('Abandonaste a partida. 🏳️', 'bad');
@@ -1538,17 +1540,16 @@ async function _bnRenderResultado(sala, opWallet) {
   vinculo += euVenci ? 7 : 2;
   checkXP(); updateAllUI(); scheduleSave();
 
-  // Remove do lobby
+  // Remove do lobby — próprio e oponente (idempotente)
   const fila = _bnRaridade();
   try { await _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletAddress}`).remove(); } catch(e) {}
+  try { await _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${opWallet}`).remove(); } catch(e) {}
   _bnAtiva = false;
 
-  // Limpeza após 10s (só criador)
-  if(sala.criador === walletAddress) {
-    setTimeout(async () => {
-      try { await _bnRtdb().ref(`batalhaNaval/salas/${sala.id}`).remove(); } catch(e) {}
-    }, 10000);
-  }
+  // Limpeza da sala — ambos os jogadores tentam (Firebase ignora se já deletada)
+  setTimeout(async () => {
+    try { await _bnRtdb().ref(`batalhaNaval/salas/${sala.id}`).remove(); } catch(e) {}
+  }, 10000);
   setTimeout(async () => {
     try { await _bnRtdb().ref(`batalhaNaval/notificacoes/${walletAddress}/${sala.id}`).remove(); } catch(e) {}
     try { await _bnRtdb().ref(`batalhaNaval/notificacoes/${opWallet}/${sala.id}`).remove(); } catch(e) {}
