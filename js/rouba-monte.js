@@ -633,7 +633,15 @@ async function rmRecusarDesafio(salaId) {
 function _rmIniciarPartida(salaId, sala) {
   console.log('[RM] _rmIniciarPartida — turno inicial:', sala.turno, '| é meu turno:', sala.turno===walletAddress);
   _rmOpWallet = sala.criador===walletAddress ? sala.oponente : sala.criador;
+  const _ehReconect = (_rmSalaId === salaId);
   _rmSalaId   = salaId;
+
+  // Custo de participar — só na primeira vez, não em reconexão
+  if(!_ehReconect) {
+    vitals.energia = Math.max(0, vitals.energia - 10);
+    vitals.fome    = Math.max(0, vitals.fome    - 5);
+    updateAllUI();
+  }
 
   // Bloqueia botões de acção enquanto na partida
   _rmBloquearUI(true);
@@ -1314,7 +1322,8 @@ async function _rmRenderResultado(sala, opWallet) {
   const rb = rarityBonus();
   const xpGain = Math.round(d.xp*(euVenci?2.0:0.5)*rb.xp);
   xp += xpGain;
-  vitals.humor = Math.min(100, vitals.humor+(euVenci?15:5));
+  vitals.humor   = Math.min(100, vitals.humor  +(euVenci?15:10));
+  vitals.higiene = Math.max(0,   vitals.higiene - 8);
   vinculo += euVenci?6:2;
   checkXP(); updateAllUI(); scheduleSave();
 

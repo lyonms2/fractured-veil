@@ -939,9 +939,17 @@ async function bnConfirmarColocacao(salaId) {
 async function _bnIniciarPartida(salaId, sala) {
   _bnPararTimerColocacao();
   _bnOpWallet    = sala.criador === walletAddress ? sala.oponente : sala.criador;
+  const _ehReconect = (_bnSalaId === salaId);
   _bnSalaId      = salaId;
   _bnAtirando    = false; // reset em reconect
   _bnBloquearUI(true);
+
+  // Custo de participar — só na primeira vez, não em reconexão
+  if(!_ehReconect) {
+    vitals.energia = Math.max(0, vitals.energia - 10);
+    vitals.fome    = Math.max(0, vitals.fome    - 5);
+    updateAllUI();
+  }
 
   // Reconect: carrega o tabuleiro privado do RTDB para mostrar os navios no painel de defesa
   if(!_bnMeuTabuleiro || _bnMeuTabuleiro.length === 0 || !_bnMeuTabuleiro[0]) {
@@ -1536,7 +1544,8 @@ async function _bnRenderResultado(sala, opWallet) {
   const d     = miniDifficulty();
   const xpGain = Math.round(d.xp * (euVenci ? 2.5 : 0.5) * rb.xp);
   xp += xpGain;
-  vitals.humor = Math.min(100, vitals.humor + (euVenci ? 18 : 5));
+  vitals.humor   = Math.min(100, vitals.humor   + (euVenci ? 18 : 10));
+  vitals.higiene = Math.max(0,   vitals.higiene - 8);
   vinculo += euVenci ? 7 : 2;
   checkXP(); updateAllUI(); scheduleSave();
 
