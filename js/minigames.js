@@ -102,6 +102,7 @@ const SIMON_ELEMS = [
 let simonSeq = [], simonStep = 0, simonPlayerTurn = false, simonRound = 0;
 
 function startSimon() {
+  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
   simonSeq = []; simonStep = 0; simonPlayerTurn = false; simonRound = 0;
   document.getElementById('simonResult').textContent = '';
   document.getElementById('simonResult').className   = 'mini-result-box';
@@ -584,7 +585,8 @@ function velhaEnd(result, winLine) {
     showBubble('Empate! Bem jogado 🤝');
   }
 
-  const xpGain   = Math.round(d.xp    * xpMult   * rb.xp);
+  const vb       = getVinculoBonus();
+  const xpGain   = Math.round(d.xp    * xpMult   * rb.xp * vb.xpMult);
   const coinGain = Math.round(d.coins * coinMult  * rb.moedas);
   xp += xpGain;
   earnCoins(coinGain);
