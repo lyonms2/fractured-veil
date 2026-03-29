@@ -60,7 +60,7 @@ const ITEM_CATALOG = {
     emoji:    '🎭',
     desc:     'Uma máscara etérea que irradia serenidade e mantém o humor elevado.',
     efeito:   'Reduz decay de Humor em 40% por ciclo',
-    tipo:     'Coroa',
+    tipo:     'Amuleto',
     raridade: 'Raro',
     preco:    1600,
     cor:      '#e8c870',
