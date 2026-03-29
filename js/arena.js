@@ -729,6 +729,13 @@ function _escutarSala(salaId, opWallet) {
       return; // não anima com dados do estado inicial
     }
 
+    // Oponente marcou pronto → mostra ✅ no lado dele antes da revelação
+    const opPronto = s.jogadores?.[opWallet]?.pronto;
+    if(opPronto) {
+      const opEl = document.getElementById('escolhaOp');
+      if(opEl && opEl.textContent === '❓') opEl.textContent = '✅';
+    }
+
     // roundResult gravado após o listener ser criado → animar
     if(s.roundResult && !_arenaAnimando) {
       _arenaAnimando = true;
