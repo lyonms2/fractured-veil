@@ -291,21 +291,24 @@
   #roubaMontModal [style*="font-size:6"],
   #roubaMontModal [style*="font-size:7"]   { font-size: 11px !important; }
 
-  /* Batalha Naval — grade responsiva no mobile */
-  /* Células de dados: 20→35px (ataque), 22→35px (colocação), 18→35px (defesa) */
+  /* Batalha Naval — grade fullscreen mobile */
+  /* Células de dados: →40px (mais espaço com fullscreen) */
   #batalhaNavalModal td[style*="width:18px"],
   #batalhaNavalModal td[style*="width:20px"],
-  #batalhaNavalModal td[style*="width:22px"]   { width: 35px !important; height: 35px !important; }
-  /* Cabeçalhos de coluna — altura reduzida (regra vem depois, wins cascade) */
+  #batalhaNavalModal td[style*="width:22px"]   { width: 40px !important; height: 40px !important; }
+  /* Células de defesa pequenas (14px) */
+  #batalhaNavalModal td[style*="width:14px"][style*="height:14px"],
+  #batalhaNavalModal td[style*="width:14px"][style*="height:40px"] { width: 40px !important; height: 40px !important; }
+  /* Cabeçalhos de coluna */
   #batalhaNavalModal td[style*="height:14px"],
-  #batalhaNavalModal td[style*="height:12px"]  { height: 20px !important; }
-  /* Colunas de rótulo de linha */
+  #batalhaNavalModal td[style*="height:12px"]  { height: 22px !important; }
+  /* Rótulos de linha */
   #batalhaNavalModal td[style*="width:13px"],
-  #batalhaNavalModal td[style*="width:14px"]   { width: 20px !important; }
-  /* Emojis de resultado no grid */
+  #batalhaNavalModal td[style*="width:14px"]   { width: 22px !important; }
+  /* Emojis de resultado */
   #batalhaNavalModal td[style*="font-size:9px"],
-  #batalhaNavalModal td[style*="font-size:10px"] { font-size: 20px !important; }
-  #batalhaNavalModal td[style*="font-size:8px"]  { font-size: 18px !important; }
+  #batalhaNavalModal td[style*="font-size:10px"] { font-size: 22px !important; }
+  #batalhaNavalModal td[style*="font-size:8px"]  { font-size: 20px !important; }
   /* Labels e texto pequeno */
   #batalhaNavalModal [style*="font-size:5"],
   #batalhaNavalModal [style*="font-size:6"],
@@ -349,13 +352,52 @@
   }
 
   /* ════════════════════
-     MINIGAMES
+     MINIGAMES — fullscreen mobile
+     Elementos maiores agora que os jogos cobrem o ecrã todo.
   ════════════════════ */
-  .mem-card   { width: 44px !important; height: 44px !important; font-size: 20px !important; border-radius: 8px !important; }
-  .simon-btn  { width: 56px !important; height: 56px !important; font-size: 24px !important; border-radius: 12px !important; }
-  .simon-grid { grid-template-columns: repeat(4, 56px) !important; gap: 8px !important; }
-  .velha-cell { width: 56px !important; height: 56px !important; font-size: 24px !important; }
-  .velha-grid { grid-template-columns: repeat(3, 56px) !important; gap: 7px !important; }
+
+  /* PVE: padding confortável + centralizado */
+  #jkpModal.open,
+  #memoriaModal.open, #simonModal.open,
+  #velhaModal.open,   #minaModal.open {
+    padding: 28px 20px !important;
+    gap: 14px !important;
+  }
+
+  /* Títulos e botões */
+  .mini-title      { font-size: 13px !important; letter-spacing: 4px !important; }
+  .mini-sub        { font-size: 9px !important; }
+  .mini-btn        { font-size: 9px !important; padding: 9px 20px !important; }
+  .mini-btns       { gap: 10px !important; margin-top: 12px !important; }
+  .mini-result-box { font-size: 18px !important; }
+  .mini-reward-txt { font-size: 10px !important; }
+
+  /* Jokenpô */
+  .jkp-hand     { width: 80px !important; height: 80px !important; font-size: 38px !important; }
+  .jkp-choice   { width: 64px !important; height: 64px !important; font-size: 28px !important; }
+  .jkp-choice-label { font-size: 6px !important; }
+  .jkp-choices  { gap: 12px !important; }
+  .jkp-result   { font-size: 16px !important; }
+  .jkp-btn      { font-size: 9px !important; padding: 8px 16px !important; }
+
+  /* Memória */
+  .mem-card   { width: 60px !important; height: 60px !important; font-size: 26px !important; border-radius: 10px !important; }
+  .mem-grid   { gap: 8px !important; }
+  .mem-info   { font-size: 9px !important; }
+
+  /* Simon Says */
+  .simon-btn  { width: 72px !important; height: 72px !important; font-size: 30px !important; border-radius: 14px !important; }
+  .simon-grid { grid-template-columns: repeat(4, 72px) !important; gap: 10px !important; }
+  .simon-info { font-size: 10px !important; }
+  .simon-seq-display { font-size: 9px !important; }
+
+  /* Velha */
+  .velha-cell { width: 78px !important; height: 78px !important; font-size: 34px !important; border-radius: 10px !important; }
+  .velha-grid { grid-template-columns: repeat(3, 78px) !important; gap: 8px !important; }
+
+  /* Campo Minado — zoom no grid */
+  #minaGrid { zoom: 1.35; }
+  .mina-info-row { font-size: 9px !important; }
 
   /* ════════════════════
      LOGIN
@@ -396,11 +438,13 @@
   .fv-bn-icon { font-size: 20px; }
   main { padding: 8px 8px 12px; }
   .res { font-size: 8px; padding: 3px 7px; }
-  .simon-btn  { width: 48px !important; height: 48px !important; }
-  .simon-grid { grid-template-columns: repeat(4, 48px) !important; }
-  .mem-card   { width: 38px !important; height: 38px !important; }
-  .velha-cell { width: 50px !important; height: 50px !important; }
-  .velha-grid { grid-template-columns: repeat(3, 50px) !important; }
+  .simon-btn  { width: 58px !important; height: 58px !important; }
+  .simon-grid { grid-template-columns: repeat(4, 58px) !important; }
+  .mem-card   { width: 50px !important; height: 50px !important; }
+  .velha-cell { width: 64px !important; height: 64px !important; }
+  .velha-grid { grid-template-columns: repeat(3, 64px) !important; }
+  .jkp-hand   { width: 66px !important; height: 66px !important; font-size: 30px !important; }
+  .jkp-choice { width: 54px !important; height: 54px !important; font-size: 22px !important; }
 }
 
 @keyframes critical-pulse-msi {
