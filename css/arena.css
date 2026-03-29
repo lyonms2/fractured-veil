@@ -482,16 +482,17 @@
   }
 
   /* Botões de escolha — grandes para toque */
-  .arena-escolhas { gap: 10px !important; }
+  .arena-escolhas { gap: 10px !important; flex: 1 !important; align-items: stretch !important; }
   .arena-escolha-btn {
-    padding: 16px 4px !important;
-    font-size: 30px !important;
-    border-radius: 14px !important;
-    gap: 6px !important;
+    padding: 12px 4px !important;
+    font-size: 42px !important;
+    border-radius: 16px !important;
+    gap: 8px !important;
     min-height: 0 !important;
+    flex: 1 !important;
   }
   .arena-escolha-btn span {
-    font-size: 8px !important;
+    font-size: 9px !important;
     letter-spacing: 1.5px !important;
   }
 
@@ -512,17 +513,18 @@
    .arena-partida fica com max-width para não esticar demais.
 ══════════════════════════════════════ */
 @media(min-width:769px) {
-  /* Modal da partida pode precisar de scroll em telas baixas */
-  #arenaModal { overflow-y: auto !important; }
+  /* Modal scroll + padding generoso para o banner de resultado não cortar */
+  #arenaModal { overflow-y: auto !important; padding: 24px 32px !important; }
 
   .arena-partida {
     max-width: 680px;
     width: 100%;
     margin: 0 auto;
-    gap: 18px;
-    padding: 8px 0;
+    gap: 14px;       /* reduzido para o banner caber sem scroll */
+    padding: 0;
     justify-content: center;
     flex: 1;
+    min-height: 0;
   }
 
   .arena-partida-header {
@@ -534,7 +536,7 @@
   /* VS row — avatares grandes, lado a lado */
   .arena-vs-row  { gap: 12px; }
   .arena-vs-lado {
-    padding: 20px 10px !important;
+    padding: 16px 10px !important;
     border-radius: 14px !important;
     gap: 10px !important;
   }
