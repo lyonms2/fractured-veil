@@ -141,7 +141,8 @@ function burnEgg(id) {
     eggsInInventory.splice(idx, 1);
     gs.cristais = (gs.cristais || 0) + finalGems;
     addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
-    showFloat(`+${finalGems}💎`, '#a78bfa');
+    showFloat(`+${finalGems} 💎`, '#a78bfa');
+    showBubble(`+${finalGems} 💎 🔥`);
   }
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
@@ -196,6 +197,7 @@ async function sellEggToPool(id) {
   if(pool.cristais < preco) { addLog('Pool sem saldo suficiente.','bad'); return; }
 
   try {
+    // Operação atómica: debita pool + credita cristais ao jogador + regista log
     const batch = fbDb().batch();
     batch.update(fbDb().collection('config').doc('pool'), {
       cristais:  firebase.firestore.FieldValue.increment(-preco),
@@ -211,30 +213,20 @@ async function sellEggToPool(id) {
       pool:   -preco,
       ts:     firebase.firestore.FieldValue.serverTimestamp(),
     });
-    await batch.commit();
-
+    // Credita cristais e actualiza poolVendasLog no mesmo batch
     const agora2 = new Date();
     const startOfYear2 = new Date(agora2.getFullYear(), 0, 1);
     const weekNum2 = Math.ceil(((agora2 - startOfYear2) / 86400000 + startOfYear2.getDay() + 1) / 7);
     const semana_str2 = `${agora2.getFullYear()}-W${weekNum2}`;
-    const playerSnap2 = await fbDb().collection('players').doc(walletAddress).get();
-    const pData2 = playerSnap2.data() || {};
-    const poolLog2 = pData2.poolVendasLog || {};
-    const novoCount2 = poolLog2.semana === semana_str2 ? (poolLog2.count || 0) + 1 : 1;
-    await fbDb().collection('players').doc(walletAddress).update({
-      poolVendasLog: { semana: semana_str2, count: novoCount2 }
+    const countSemana2 = poolLog.semana === semana_str2 ? (poolLog.count || 0) + 1 : 1;
+    batch.update(fbDb().collection('players').doc(walletAddress), {
+      cristais:                firebase.firestore.FieldValue.increment(preco),
+      'gs.cristais':           firebase.firestore.FieldValue.increment(preco),
+      poolVendasLog:           { semana: semana_str2, count: countSemana2 },
     });
+    await batch.commit();
 
-    const freshSnap = await fbDb().collection('players').doc(walletAddress).get();
-    const freshData = freshSnap.data() || {};
-    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
-    const novoCristais  = freshCristais + preco;
-    await fbDb().collection('players').doc(walletAddress).update({
-      cristais:      novoCristais,
-      'gs.cristais': novoCristais,
-    });
-    gs.cristais = novoCristais;
-
+    gs.cristais = (gs.cristais || 0) + preco;
     eggsInInventory.splice(idx, 1);
     scheduleSave();
     renderEggInventory();
