@@ -41,12 +41,7 @@ var _arenaEscolhaFeita      = false;
 var _arenaPresencaHeartbeat = null;  // heartbeat de presença durante a partida
 var _arenaPresencaRef       = null;  // ref RTDB para cancelar onDisconnect
 var _arenaOpWallet          = null;  // wallet do oponente na partida activa
-
-// ── Sanitiza wallet → chave RTDB válida ──
-// O RTDB não aceita '.' '$' '#' '[' ']' '/' em chaves
-function _wkey(w) {
-  return (w || '').toLowerCase().replace(/[^a-z0-9]/g, '_');
-}
+var _arenaDesafioStatusRef  = null;  // ref do listener de status em _renderDesafioPendente
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -429,6 +424,7 @@ async function desafiarJogador(walletOponente) {
   });
 
   _debitarAposta();
+  scheduleSave();
   _arenaPartidaId = salaId;
   addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`, 'info');
   showBubble('Desafio enviado! ⚔️');
@@ -445,6 +441,7 @@ async function cancelarDesafio(salaId) {
   if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
   else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
   updateResourceUI();
+  scheduleSave();
   // Limpa sala e notificações após 3s
   setTimeout(async () => {
     try {
@@ -494,6 +491,7 @@ function _renderSalaEspera(salaId) {
       if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
       else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
       updateResourceUI();
+      scheduleSave();
       _arenaAtiva     = false;
       _arenaPartidaId = null;
       addLog('Desafio cancelado ou recusado.', 'bad');
@@ -520,6 +518,7 @@ async function aceitarDesafio(salaId) {
   }
 
   _debitarAposta();
+  scheduleSave();
   _arenaPartidaId = salaId;
 
   await rtdb().ref(`arena/salas/${salaId}`).update({
@@ -1332,11 +1331,14 @@ function _renderDesafioPendente(sala) {
   `;
 
   // Listener — detecta se o criador cancelou antes do oponente aceitar
-  const salaRef = rtdb().ref(`arena/salas/${sala.id}/status`);
-  salaRef.on('value', snap => {
+  // Para listener anterior para evitar acumulação de listeners órfãos
+  if(_arenaDesafioStatusRef) { _arenaDesafioStatusRef.off('value'); _arenaDesafioStatusRef = null; }
+  _arenaDesafioStatusRef = rtdb().ref(`arena/salas/${sala.id}/status`);
+  _arenaDesafioStatusRef.on('value', snap => {
     const status = snap.val();
     if(status === 'cancelada') {
-      salaRef.off('value');
+      _arenaDesafioStatusRef.off('value');
+      _arenaDesafioStatusRef = null;
       addLog('Desafio cancelado pelo oponente.', 'bad');
       showBubble('Desafio cancelado! 😔');
       const fila = _getFila();
