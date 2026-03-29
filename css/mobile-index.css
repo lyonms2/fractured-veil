@@ -373,7 +373,7 @@
 
   /* Memória */
   .mem-card   { width: 60px !important; height: 60px !important; font-size: 26px !important; border-radius: 10px !important; }
-  .mem-grid   { gap: 8px !important; }
+  .mem-grid   { grid-template-columns: repeat(4, 60px) !important; gap: 8px !important; }
   .mem-info   { font-size: 9px !important; }
 
   /* Simon Says */
@@ -432,6 +432,7 @@
   .simon-btn  { width: 58px !important; height: 58px !important; }
   .simon-grid { grid-template-columns: repeat(4, 58px) !important; }
   .mem-card   { width: 50px !important; height: 50px !important; }
+  .mem-grid   { grid-template-columns: repeat(4, 50px) !important; }
   .velha-cell { width: 64px !important; height: 64px !important; }
   .velha-grid { grid-template-columns: repeat(3, 64px) !important; }
   .jkp-hand   { width: 66px !important; height: 66px !important; font-size: 30px !important; }

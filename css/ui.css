@@ -412,7 +412,7 @@
 
   /* ── Memória ── */
   .mem-card { width: 80px !important; height: 80px !important; font-size: 32px !important; border-radius: 10px !important; }
-  .mem-grid { gap: 10px !important; margin-bottom: 18px !important; }
+  .mem-grid { grid-template-columns: repeat(4, 80px) !important; gap: 10px !important; margin-bottom: 18px !important; }
 
   /* ── Simon Says ── */
   .simon-grid        { grid-template-columns: repeat(4, 90px) !important; gap: 14px !important; margin-bottom: 16px !important; }
