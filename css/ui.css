@@ -340,6 +340,27 @@
   #starCanvas { display:none !important; }
 }
 
+/* ══════════════════════════════════════
+   JOGOS EM TELA CHEIA NO PC
+   Todos os modais de jogo (PVP + PVE) passam a position:fixed
+   quando abertos, escapando do .screen e ocupando o viewport.
+══════════════════════════════════════ */
+@media(min-width:601px) {
+  #arenaModal.open,
+  #roubaMontModal.open,
+  #batalhaNavalModal.open,
+  #jkpModal.open,
+  #memoriaModal.open,
+  #simonModal.open,
+  #velhaModal.open,
+  #minaModal.open {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 200 !important;
+    border-radius: 0 !important;
+  }
+}
+
 /* ── COIN FLOAT ANIMATION ── */
 @keyframes coin-fly {
   0%   { opacity:1; transform:translateX(-50%) translateY(0)   scale(1); }
