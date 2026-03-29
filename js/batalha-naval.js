@@ -422,6 +422,7 @@ async function bnDesafiar(walletOponente) {
 
   _bnDebitarAposta();
   _bnSalaId = salaId;
+  scheduleSave();
   addLog(`Desafio de Batalha Naval enviado!`, 'info');
   showBubble('Desafio enviado! 🚢');
   _bnRenderEspera(salaId);
@@ -474,7 +475,7 @@ function _bnRenderEspera(salaId) {
       const a = _bnAposta();
       if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
       else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
-      updateResourceUI();
+      updateResourceUI(); scheduleSave();
       _bnAtiva = false; _bnSalaId = null;
       addLog('Desafio cancelado ou recusado.', 'bad');
       _bnRenderLobby();
@@ -490,7 +491,7 @@ async function bnCancelarDesafio(salaId) {
   const a = _bnAposta();
   if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
   else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
-  updateResourceUI();
+  updateResourceUI(); scheduleSave();
   _bnAtiva = false; _bnSalaId = null;
   _bnRenderLobby();
 }
@@ -507,6 +508,7 @@ async function bnAceitarDesafio(salaId) {
 
   _bnDebitarAposta();
   _bnSalaId = salaId;
+  scheduleSave();
 
   await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
     status: 'colocacao',
@@ -1542,7 +1544,8 @@ async function _bnRenderResultado(sala, opWallet) {
   // XP e humor
   const rb    = rarityBonus();
   const d     = miniDifficulty();
-  const xpGain = Math.round(d.xp * (euVenci ? 2.5 : 0.5) * rb.xp);
+  const vb = getVinculoBonus();
+  const xpGain = Math.round(d.xp * (euVenci ? 2.5 : 0.5) * rb.xp * vb.xpMult);
   xp += xpGain;
   vitals.humor   = Math.min(100, vitals.humor   + (euVenci ? 18 : 10));
   vitals.higiene = Math.max(0,   vitals.higiene - 8);
