@@ -506,6 +506,7 @@ async function rmDesafiar(walletOponente) {
   });
 
   _rmDebitarAposta();
+  scheduleSave();
   _rmSalaId = salaId;
   addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`,'info');
   showBubble('Desafio enviado! 🃏');
@@ -566,6 +567,7 @@ function _rmRenderEspera(salaId) {
       if(a.cristais>0) gs.cristais=(gs.cristais||0)+a.cristais;
       else             gs.moedas  =(gs.moedas  ||0)+a.moedas;
       updateResourceUI();
+      scheduleSave();
       _rmAtiva=false; _rmSalaId=null;
       addLog('Desafio cancelado ou recusado.','bad');
       _rmRenderLobby();
@@ -582,6 +584,7 @@ async function rmCancelarDesafio(salaId) {
   if(a.cristais>0) gs.cristais=(gs.cristais||0)+a.cristais;
   else             gs.moedas  =(gs.moedas  ||0)+a.moedas;
   updateResourceUI();
+  scheduleSave();
   _rmAtiva=false; _rmSalaId=null;
   _rmRenderLobby();
 }
@@ -597,6 +600,7 @@ async function rmAceitarDesafio(salaId) {
   if(snapCheck.val()!=='aguardando') { addLog('Desafio já expirou.','bad'); _rmRenderLobby(); return; }
 
   _rmDebitarAposta();
+  scheduleSave();
   _rmSalaId = salaId;
 
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
@@ -1320,7 +1324,8 @@ async function _rmRenderResultado(sala, opWallet) {
 
   const d  = miniDifficulty();
   const rb = rarityBonus();
-  const xpGain = Math.round(d.xp*(euVenci?2.0:0.5)*rb.xp);
+  const vb = getVinculoBonus();
+  const xpGain = Math.round(d.xp*(euVenci?2.0:0.5)*rb.xp*vb.xpMult);
   xp += xpGain;
   vitals.humor   = Math.min(100, vitals.humor  +(euVenci?15:10));
   vitals.higiene = Math.max(0,   vitals.higiene - 8);
