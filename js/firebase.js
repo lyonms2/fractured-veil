@@ -179,6 +179,17 @@ function applyGameState(data) {
   const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededApply) avatarSlots.push(null);
 
+  // Limpa itens expirados em todos os slots ao carregar
+  const _now = Date.now();
+  avatarSlots.forEach(slot => {
+    if(!slot || !slot.items) return;
+    const before = slot.items.length;
+    slot.items = slot.items.filter(i => !i.expiraEm || _now <= i.expiraEm);
+    if(slot.items.length < before) {
+      console.log(`[applyGameState] ${before - slot.items.length} item(s) expirado(s) removido(s) do slot.`);
+    }
+  });
+
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 

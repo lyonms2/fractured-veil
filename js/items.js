@@ -15,44 +15,69 @@ function renderItemInventory() {
   const countEl = document.getElementById('itemInvCount');
   if(!list) return;
 
-  const equippedNormal = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
-  const equippedCenario = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
-  if(countEl) countEl.innerHTML = `${itemInventory.length} ite${itemInventory.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equippedNormal}/${MAX_EQUIPPED} equipados</span>`;
+  // Filtra consumíveis do inventário (nunca devem aparecer aqui)
+  const displayItems = itemInventory.filter(i => !ITEM_CATALOG[i.catalogId]?.consumivel);
 
-  // Update header counter
+  const equippedNormal  = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
+  const equippedCenario = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
+  if(countEl) countEl.innerHTML = `${displayItems.length} ite${displayItems.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equippedNormal}/${MAX_EQUIPPED} equipados</span>`;
+
   const resEl = document.getElementById('resItems');
-  if(resEl) resEl.textContent = itemInventory.length;
+  if(resEl) resEl.textContent = displayItems.length;
 
-  if(itemInventory.length === 0) {
+  if(displayItems.length === 0) {
     list.innerHTML = '<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum item no inventário</div>';
     return;
   }
 
-  list.innerHTML = itemInventory.map(entry => {
+  // Agrupa por tipo
+  const TIPO_ORDER = ['Amuleto', 'Coroa', 'Cenário', 'Especial'];
+  const grupos = {};
+  displayItems.forEach(entry => {
+    const tipo = ITEM_CATALOG[entry.catalogId]?.tipo || 'Outro';
+    if(!grupos[tipo]) grupos[tipo] = [];
+    grupos[tipo].push(entry);
+  });
+
+  const tiposPresentes = TIPO_ORDER.filter(t => grupos[t]).concat(
+    Object.keys(grupos).filter(t => !TIPO_ORDER.includes(t))
+  );
+
+  function renderCard(entry) {
     const item = ITEM_CATALOG[entry.catalogId];
     if(!item) return '';
     const isEquipped = entry.equipped;
     const isCenario  = item.tipo === 'Cenário';
     const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
-    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:6px;padding:8px 10px;box-sizing:border-box;${isEquipped?`box-shadow:0 0 8px ${item.cor}22;`:''}">
+    const diasRest   = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : null;
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:6px;padding:8px 10px;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 8px ${item.cor}22;` : ''}">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:16px;">${item.emoji}</span>
         <div style="flex:1;">
           <div style="font-family:'Cinzel',serif;font-size:7.5px;color:${item.cor};">${item.nome}</div>
           <div style="font-size:6px;color:var(--muted);margin-top:1px;">✦ ${item.efeito}</div>
-          ${entry.expiraEm ? `<div class="item-expiry-warn" style="color:${Math.floor((entry.expiraEm-Date.now())/86400000) <= 3 ? '#e05050' : '#887799'}">${Math.max(0,Math.floor((entry.expiraEm-Date.now())/86400000))}d restantes</div>` : ''}
+          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'}">${diasRest}d restantes</div>` : ''}
         </div>
         ${isEquipped ? `<span style="font-size:6px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;">EQUIPADO</span>` : ''}
       </div>
       <div style="display:flex;gap:5px;margin-top:7px;">
         ${isEquipped
           ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6px;">DESEQUIPAR</button>`
-          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6px;${!canEquip?'opacity:.4;cursor:not-allowed;':''}" ${!canEquip?'disabled':''}>EQUIPAR</button>`
+          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6px;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>EQUIPAR</button>`
         }
         <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6px;">EXCLUIR</button>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  list.innerHTML = tiposPresentes.map(tipo => `
+    <div style="margin-bottom:4px;">
+      <div style="font-family:'Cinzel',serif;font-size:6px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:4px 2px 5px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px;">◆ ${tipo}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${grupos[tipo].map(renderCard).join('')}
+      </div>
+    </div>
+  `).join('');
 }
 
 
