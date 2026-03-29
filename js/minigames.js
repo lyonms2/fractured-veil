@@ -290,6 +290,64 @@ function spawnFoodParticles() {
   });
 }
 
+function useAntidote() {
+  if(!canAct()) return;
+  if(activeDiseases.length === 0 && !sick) {
+    showBubble('Não tenho nenhuma doença! 💪');
+    addLog('O avatar está saudável — antídoto não é necessário.', 'info');
+    return;
+  }
+  const COST = 300;
+  if(gs.moedas < COST) {
+    showBubble('Sem moedas para o antídoto... 😢');
+    addLog(`Precisas de ${COST} 🪙 para o Antídoto Dimensional!`, 'bad');
+    return;
+  }
+  if(!spendCoins(COST)) return;
+
+  const numDiseases = activeDiseases.length;
+  activeDiseases  = [];
+  diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+  sick = false;
+  vitals.saude = Math.min(100, vitals.saude + 20);
+
+  playAnim('anim-antidote');
+  spawnAntidoteParticles();
+  showBubble('Curado! ✨');
+  showFloat('+20 💚', '#a855f7');
+  const msg = numDiseases > 1 ? `${numDiseases} doenças curadas!` : numDiseases === 1 ? 'Doença curada!' : 'Recuperado!';
+  addLog(`🧪 Antídoto Dimensional usado! ${msg} +20 saúde  (-${COST} 🪙)`, 'good');
+  updateSickVisuals();
+  updateAllUI();
+  scheduleSave();
+}
+
+function spawnAntidoteParticles() {
+  const wrap = document.getElementById('creatureWrap');
+  if(!wrap) return;
+
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:absolute;inset:0;z-index:21;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 50% 50%,rgba(168,85,247,.4) 0%,transparent 70%);transition:opacity .2s;';
+  wrap.appendChild(flash);
+  setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 250); }, 300);
+
+  const symbols = ['✦','🧪','✨','💊','✦','⭐','✦','💫'];
+  const offsets = [
+    {ax:'-50px',ay:'-10px'},{ax:'50px',ay:'-10px'},
+    {ax:'0px',ay:'-55px'}, {ax:'-35px',ay:'-40px'},
+    {ax:'35px',ay:'-40px'},{ax:'-55px',ay:'15px'},
+    {ax:'55px',ay:'15px'}, {ax:'0px',ay:'25px'},
+  ];
+  offsets.forEach((pos, i) => {
+    const el = document.createElement('div');
+    el.className = 'antidote-particle';
+    el.textContent = symbols[i % symbols.length];
+    el.style.cssText = `--ax:${pos.ax};--ay:${pos.ay};top:50%;left:50%;animation-delay:${i*0.06}s;color:#a855f7;text-shadow:0 0 8px #a855f780;font-size:14px;`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 1400);
+  });
+}
+
 function spawnHealParticles() {
   const wrap  = document.getElementById('creatureWrap');
   const flash = document.getElementById('healFlash');

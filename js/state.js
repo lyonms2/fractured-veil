@@ -12,6 +12,21 @@ const GAME_SPEED  = 1.0;
 // ═══════════════════════════════════════════════════════════════════
 // ITEM SYSTEM
 // ═══════════════════════════════════════════════════════════════════
+// SISTEMA DE DOENÇAS
+// ═══════════════════════════════════════════════════════════════════
+const DISEASES = {
+  exaustao:    { id:'exaustao',    nome:'Exaustão Crónica',      emoji:'😵', cor:'#e8a030', vital:'energia', limiar:20 },
+  desnutricao: { id:'desnutricao', nome:'Desnutrição',           emoji:'🥵', cor:'#e85030', vital:'fome',    limiar:15 },
+  infeccao:    { id:'infeccao',    nome:'Infecção',              emoji:'🤢', cor:'#7ab830', vital:'higiene', limiar:15 },
+  melancolia:  { id:'melancolia',  nome:'Melancolia Dimensional',emoji:'😔', cor:'#8b5cf6', vital:'humor',   limiar:20 },
+};
+const DISEASE_STRESS_THRESHOLD = 20; // 20 ciclos = ~20 min de descuido
+const DISEASE_DECAY_PER_CYCLE  = 0.07; // saúde perdida por ciclo por doença activa
+
+let diseaseStress  = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+let activeDiseases = []; // array de ids das doenças activas
+
+// ═══════════════════════════════════════════════════════════════════
 let itemInventory   = [];
 const MAX_EQUIPPED  = 3;
 const ITEM_CATALOG = {
@@ -62,7 +77,21 @@ const ITEM_CATALOG = {
     preco:    1200,
     cor:      '#7b68ee',
     efeitos:  { sleepEnergyMult: 2.0 }
-  }
+  },
+  'antidoto_dimensional': {
+    id:         'antidoto_dimensional',
+    nome:       'Antídoto Dimensional',
+    emoji:      '🧪',
+    desc:       'Uma poção de cristal purificado que dissolve qualquer mal que aflige o avatar.',
+    efeito:     'Cura todas as doenças activas + recupera +20 saúde',
+    tipo:       'Consumível',
+    raridade:   'Especial',
+    preco:      300,
+    cor:        '#a855f7',
+    efeitos:    {},
+    consumivel: true,
+    onUse:      'useAntidote',
+  },
 };
 function getEquippedItems() {
   const now = Date.now();
@@ -172,12 +201,14 @@ function saveRuntimeToSlot(idx) {
   Object.assign(avatarSlots[idx], {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
-    modoRepouso,                        // FIX: persiste modo repouso no slot
+    modoRepouso,
     bornAt, poopCount, dirtyLevel, poopPressure,
     eggLayCooldown, petCooldown,
-    vitals: {...vitals},
-    eggs:   eggsInInventory.map(e => ({...e})),
-    items:  itemInventory.map(i => ({...i})),
+    vitals:         {...vitals},
+    eggs:           eggsInInventory.map(e => ({...e})),
+    items:          itemInventory.map(i => ({...i})),
+    diseaseStress:  {...diseaseStress},
+    activeDiseases: [...activeDiseases],
   });
 }
 
@@ -187,12 +218,14 @@ function loadRuntimeFromSlot(idx) {
   if(!s || !s.hatched) {
     nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
     hatched = false; dead = false; sick = false; sleeping = false;
-    modoRepouso = false;                // FIX: reset modo repouso ao carregar slot vazio
+    modoRepouso = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
     eggLayCooldown = 0; petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
     eggsInInventory = s?.eggs  ? s.eggs.map(e => ({...e}))  : [];
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
+    diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+    activeDiseases  = [];
     return;
   }
   nivel          = s.nivel          ?? 1;
@@ -213,6 +246,8 @@ function loadRuntimeFromSlot(idx) {
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
+  diseaseStress   = s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+  activeDiseases  = s.activeDiseases ? [...s.activeDiseases] : [];
 }
 
 async function switchSlot(newIdx) {

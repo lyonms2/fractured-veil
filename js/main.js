@@ -143,6 +143,9 @@ document.addEventListener('visibilitychange', async () => {
           if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - 0.02);
           if(vitals.saude <= 0)   { vitals.saude = 0; break; }
         }
+        if(activeDiseases.length > 0) {
+          vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
+        }
       }
 
       if(sleeping && !wasSleeping) {

@@ -307,6 +307,28 @@ function gameTick() {
     addLog('Ficou doente! Use medicar!','bad');
   }
 
+  // ── DOENÇAS — contadores de stress ──
+  if(!sleeping && !modoRepouso) {
+    diseaseStress.exaustao    = vitals.energia < 20 ? diseaseStress.exaustao    + 1 : 0;
+    diseaseStress.desnutricao = vitals.fome    < 15 ? diseaseStress.desnutricao + 1 : 0;
+    diseaseStress.infeccao    = vitals.higiene < 15 ? diseaseStress.infeccao    + 1 : 0;
+    diseaseStress.melancolia  = vitals.humor   < 20 ? diseaseStress.melancolia  + 1 : 0;
+  } else {
+    if(sleeping) { diseaseStress.exaustao = 0; }
+  }
+  for(const id of Object.keys(DISEASES)) {
+    if(diseaseStress[id] >= DISEASE_STRESS_THRESHOLD && !activeDiseases.includes(id)) {
+      activeDiseases.push(id);
+      const d = DISEASES[id];
+      addLog(`⚠️ ${d.emoji} ${d.nome} desenvolvida! Usa o Antídoto Dimensional (300 🪙).`, 'bad');
+      showBubble(`${d.emoji} Sinto-me mal...`);
+    }
+  }
+  if(activeDiseases.length > 0) {
+    vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
+  }
+  if(typeof updateSickVisuals === 'function') updateSickVisuals();
+
   // ── COCÔ — só no modo ativo ──
   if(!sleeping && !modoRepouso && poopPressure >= 100) {
     spawnPoop();

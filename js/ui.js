@@ -266,6 +266,42 @@ function updatePhaseLabel() {
 }
 
 // ═══════════════════════════════════════════
+// SICK VISUALS
+// ═══════════════════════════════════════════
+function updateSickVisuals() {
+  const wrap = document.getElementById('creatureWrap');
+  if(!wrap) return;
+
+  const isSick = (activeDiseases.length > 0 || sick) && hatched && !dead;
+  wrap.classList.toggle('diseased', isSick);
+
+  // Badges de doenças — injectadas por baixo do statusCard
+  let badgesEl = document.getElementById('diseaseBadges');
+  if(!badgesEl) {
+    badgesEl = document.createElement('div');
+    badgesEl.id = 'diseaseBadges';
+    badgesEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;padding:2px 8px 6px;justify-content:center;';
+    const statusCard = document.getElementById('statusCard');
+    if(statusCard) statusCard.insertAdjacentElement('afterend', badgesEl);
+  }
+
+  if(!hatched || dead || (activeDiseases.length === 0 && !sick)) {
+    badgesEl.innerHTML = '';
+    return;
+  }
+
+  const badges = [];
+  if(sick && activeDiseases.length === 0) {
+    badges.push(`<span class="disease-badge" style="--d-cor:#e05050;">🤒 Doente</span>`);
+  }
+  activeDiseases.forEach(id => {
+    const d = DISEASES[id];
+    if(d) badges.push(`<span class="disease-badge" style="--d-cor:${d.cor};">${d.emoji} ${d.nome}</span>`);
+  });
+  badgesEl.innerHTML = badges.join('');
+}
+
+// ═══════════════════════════════════════════
 // EQUIPPED ITEMS DISPLAY
 // ═══════════════════════════════════════════
 function updateEquippedDisplay() {

@@ -94,6 +94,48 @@
 .creature-wrap.anim-sad  svg { animation:sad-shake .5s ease-in-out; }
 .creature-wrap.anim-dead svg { animation:dead-fall 1s ease-out forwards; }
 .creature-wrap.anim-heal svg { animation:heal-pulse 1s ease-in-out; }
+
+/* ── DOENTE ── */
+.creature-wrap.diseased svg {
+  animation:sick-tremor .45s ease-in-out infinite;
+  filter:drop-shadow(0 0 7px #7ab83066) sepia(.35) hue-rotate(55deg);
+}
+@keyframes sick-tremor {
+  0%,100% { transform:translate(0,0)     rotate(0deg); }
+  20%     { transform:translate(-2px,1px) rotate(-1deg); }
+  40%     { transform:translate(2px,-1px) rotate(1deg); }
+  60%     { transform:translate(-1px,2px) rotate(-.5deg); }
+  80%     { transform:translate(1px,-2px) rotate(.5deg); }
+}
+.disease-badge {
+  font-family:'Cinzel',serif; font-size:6.5px; font-weight:700;
+  color:var(--d-cor,#e05050); border:1px solid var(--d-cor,#e05050);
+  background:color-mix(in srgb,var(--d-cor,#e05050) 12%,transparent);
+  border-radius:20px; padding:2px 8px; letter-spacing:.5px;
+  box-shadow:0 0 6px color-mix(in srgb,var(--d-cor,#e05050) 30%,transparent);
+}
+
+/* ── ANTÍDOTO ── */
+.creature-wrap.anim-antidote svg {
+  animation:antidote-pulse 1.2s ease-in-out;
+}
+@keyframes antidote-pulse {
+  0%   { transform:scale(1);    filter:none; }
+  20%  { transform:scale(1.15); filter:drop-shadow(0 0 22px #a855f7) brightness(1.45); }
+  42%  { transform:scale(.94);  filter:drop-shadow(0 0 14px #a855f7) hue-rotate(30deg); }
+  65%  { transform:scale(1.09); filter:drop-shadow(0 0 18px #7c3aed) brightness(1.3); }
+  85%  { transform:scale(.98);  filter:drop-shadow(0 0 8px #a855f7); }
+  100% { transform:scale(1);    filter:none; }
+}
+.antidote-particle {
+  position:absolute; pointer-events:none; z-index:22;
+  animation:antidote-fly 1.1s ease-out forwards;
+}
+@keyframes antidote-fly {
+  0%   { opacity:1; transform:translate(var(--ax),var(--ay)) scale(1.2); }
+  55%  { opacity:1; }
+  100% { opacity:0; transform:translate(calc(var(--ax)*2.6),calc(var(--ay)*2.6)) scale(.4) rotate(200deg); }
+}
 @keyframes heal-pulse {
   0%  { transform:scale(1);    filter:none; }
   25% { transform:scale(1.12); filter:drop-shadow(0 0 12px #27ae60) brightness(1.3); }
