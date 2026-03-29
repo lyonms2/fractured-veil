@@ -353,19 +353,11 @@
 
   /* ════════════════════
      MINIGAMES — fullscreen mobile
-     Elementos maiores agora que os jogos cobrem o ecrã todo.
+     Elementos maiores aproveitando o ecrã todo.
   ════════════════════ */
 
-  /* PVE: padding confortável + centralizado */
-  #jkpModal.open,
-  #memoriaModal.open, #simonModal.open,
-  #velhaModal.open,   #minaModal.open {
-    padding: 28px 20px !important;
-    gap: 14px !important;
-  }
-
   /* Títulos e botões */
-  .mini-title      { font-size: 13px !important; letter-spacing: 4px !important; }
+  .mini-title      { font-size: 12px !important; letter-spacing: 3px !important; }
   .mini-sub        { font-size: 9px !important; }
   .mini-btn        { font-size: 9px !important; padding: 9px 20px !important; }
   .mini-btns       { gap: 10px !important; margin-top: 12px !important; }
@@ -375,7 +367,6 @@
   /* Jokenpô */
   .jkp-hand     { width: 80px !important; height: 80px !important; font-size: 38px !important; }
   .jkp-choice   { width: 64px !important; height: 64px !important; font-size: 28px !important; }
-  .jkp-choice-label { font-size: 6px !important; }
   .jkp-choices  { gap: 12px !important; }
   .jkp-result   { font-size: 16px !important; }
   .jkp-btn      { font-size: 9px !important; padding: 8px 16px !important; }
@@ -395,7 +386,7 @@
   .velha-cell { width: 78px !important; height: 78px !important; font-size: 34px !important; border-radius: 10px !important; }
   .velha-grid { grid-template-columns: repeat(3, 78px) !important; gap: 8px !important; }
 
-  /* Campo Minado — zoom no grid */
+  /* Campo Minado */
   #minaGrid { zoom: 1.35; }
   .mina-info-row { font-size: 9px !important; }
 

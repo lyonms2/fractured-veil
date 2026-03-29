@@ -360,73 +360,73 @@
 }
 
 /* ══════════════════════════════════════
-   PC (≥769px) — conteúdo centrado + elementos escalados
-   Padding horizontal cria colunas de conteúdo com max-width.
-   max(20px, (100vw - N) / 2) → N px centrado, mín 20px de margem.
+   PC (≥769px) — elementos escalados para tela cheia
+   PVE: modais já centram o conteúdo — só escalar elementos.
+   PVP: conteúdo limitado a uma largura razoável via max-width
+        no div filho direto, sem tocar no padding do modal.
 ══════════════════════════════════════ */
 @media(min-width:769px) {
-  /* PVE — coluna de 520px centrada */
-  #jkpModal.open,
-  #memoriaModal.open,
-  #simonModal.open,
-  #velhaModal.open,
-  #minaModal.open {
-    padding: 40px max(20px, calc((100vw - 520px) / 2)) !important;
-    gap: 14px !important;
-    justify-content: center !important;
-  }
 
-  /* Arena — coluna de 600px centrada */
-  #arenaModal.open {
-    padding: 28px max(24px, calc((100vw - 600px) / 2)) !important;
-  }
+  /* ── PVP: coluna de conteúdo centrada ── */
+  /* Arena: header + tabs + tab-content já têm width:100% e o modal
+     tem align-items:center — basta limitar a largura max */
+  #arenaModal.open .arena-header,
+  #arenaModal.open .arena-tabs,
+  #arenaModal.open .arena-tab-content { max-width: 700px !important; }
 
-  /* Rouba Monte — coluna de 660px centrada */
-  #roubaMontModal.open {
-    padding: 24px max(24px, calc((100vw - 660px) / 2)) !important;
-  }
+  /* RM e BN rendem um único <div> filho direto */
+  #roubaMontModal.open   > div { max-width: 760px;  width: 100%; margin: 0 auto; box-sizing: border-box; }
+  #batalhaNavalModal.open > div { max-width: 1020px; width: 100%; margin: 0 auto; box-sizing: border-box; }
 
-  /* Batalha Naval — coluna de 920px centrada (2 tabuleiros) */
-  #batalhaNavalModal.open {
-    padding: 16px max(16px, calc((100vw - 920px) / 2)) !important;
-  }
+  /* ── PVP: escala de texto ── */
+  .arena-title        { font-size: 16px !important; }
+  .arena-sub          { font-size: 9px  !important; }
+  .arena-tab          { font-size: 10px !important; padding: 8px 0 !important; }
+  .arena-tab-content  { gap: 14px !important; }
+  .arena-btn-entrar,
+  .arena-btn-sair     { font-size: 9px !important; padding: 10px 20px !important; }
+  .arena-lobby-card   { padding: 12px 16px !important; gap: 12px !important; }
+  .arena-rank-row     { font-size: 9px !important; padding: 8px 12px !important; }
+  .arena-aguardando   { font-size: 9px !important; }
 
-  /* ── Textos gerais (mini-modais) ── */
-  .mini-title      { font-size: 15px !important; letter-spacing: 5px !important; }
+  /* ── PVE: textos e botões ── */
+  .mini-title      { font-size: 15px !important; letter-spacing: 5px !important; margin-bottom: 8px !important; }
   .mini-sub        { font-size: 10px !important; margin-bottom: 16px !important; }
-  .mini-btn        { font-size: 10px !important; padding: 10px 24px !important; }
-  .mini-btns       { gap: 12px !important; margin-top: 16px !important; }
-  .mini-result-box { font-size: 20px !important; margin: 14px 0 8px !important; }
-  .mini-reward-txt { font-size: 12px !important; }
+  .mini-btn        { font-size: 10px !important; padding: 11px 28px !important; border-radius: 6px !important; }
+  .mini-btns       { gap: 14px !important; margin-top: 20px !important; }
+  .mini-result-box { font-size: 22px !important; margin: 16px 0 10px !important; }
+  .mini-reward-txt { font-size: 11px !important; }
   .mem-info        { font-size: 10px !important; margin-bottom: 12px !important; }
 
   /* ── Jokenpô ── */
-  .jkp-title    { font-size: 12px !important; margin-bottom: 14px !important; }
-  .jkp-arena    { gap: 24px !important; margin-bottom: 14px !important; }
-  .jkp-hand     { width: 110px !important; height: 110px !important; font-size: 50px !important; }
-  .jkp-vs       { font-size: 16px !important; }
-  .jkp-result   { font-size: 22px !important; height: 34px !important; margin-bottom: 8px !important; }
-  .jkp-choices  { gap: 16px !important; margin-bottom: 28px !important; }
-  .jkp-choice   { width: 78px !important; height: 78px !important; font-size: 34px !important; }
-  .jkp-btn      { font-size: 10px !important; padding: 10px 22px !important; }
+  .jkp-title    { font-size: 12px !important; letter-spacing: 4px !important; margin-bottom: 16px !important; }
+  .jkp-arena    { gap: 32px !important; margin-bottom: 16px !important; }
+  .jkp-hand     { width: 140px !important; height: 140px !important; font-size: 62px !important; border-radius: 16px !important; }
+  .jkp-vs       { font-size: 18px !important; }
+  .jkp-result   { font-size: 24px !important; height: 36px !important; margin-bottom: 10px !important; }
+  .jkp-rewards  { font-size: 11px !important; margin-bottom: 16px !important; }
+  .jkp-choices  { gap: 18px !important; margin-bottom: 32px !important; }
+  .jkp-choice   { width: 90px !important; height: 90px !important; font-size: 40px !important; border-radius: 14px !important; }
+  .jkp-btn      { font-size: 10px !important; padding: 10px 24px !important; }
+  .jkp-side-label { font-size: 9px !important; }
 
   /* ── Memória ── */
-  .mem-card { width: 68px !important; height: 68px !important; font-size: 28px !important; border-radius: 10px !important; }
-  .mem-grid { gap: 8px !important; margin-bottom: 16px !important; }
+  .mem-card { width: 80px !important; height: 80px !important; font-size: 32px !important; border-radius: 10px !important; }
+  .mem-grid { gap: 10px !important; margin-bottom: 18px !important; }
 
   /* ── Simon Says ── */
-  .simon-grid        { grid-template-columns: repeat(4, 78px) !important; gap: 12px !important; margin-bottom: 14px !important; }
-  .simon-btn         { width: 78px !important; height: 78px !important; font-size: 34px !important; border-radius: 14px !important; }
+  .simon-grid        { grid-template-columns: repeat(4, 90px) !important; gap: 14px !important; margin-bottom: 16px !important; }
+  .simon-btn         { width: 90px !important; height: 90px !important; font-size: 38px !important; border-radius: 14px !important; }
   .simon-info        { font-size: 11px !important; margin-bottom: 12px !important; }
   .simon-seq-display { font-size: 10px !important; margin-bottom: 10px !important; }
 
   /* ── Jogo da Velha ── */
-  .velha-grid { grid-template-columns: repeat(3, 96px) !important; gap: 10px !important; }
-  .velha-cell { width: 96px !important; height: 96px !important; font-size: 42px !important; border-radius: 12px !important; }
+  .velha-grid { grid-template-columns: repeat(3, 110px) !important; gap: 10px !important; }
+  .velha-cell { width: 110px !important; height: 110px !important; font-size: 48px !important; border-radius: 12px !important; }
 
-  /* ── Campo Minado (células via JS inline) — zoom no grid ── */
-  #minaGrid { zoom: 1.75; margin: 6px 0 !important; }
-  .mina-info-row { font-size: 10px !important; margin-bottom: 4px !important; }
+  /* ── Campo Minado ── */
+  #minaGrid      { zoom: 1.8; margin: 8px 0 !important; }
+  .mina-info-row { font-size: 10px !important; margin-bottom: 6px !important; }
 }
 
 /* ── COIN FLOAT ANIMATION ── */
