@@ -14,9 +14,11 @@ function closeMarket() {
 function renderMarketItems() {
   const list = document.getElementById('mktItemsList');
   if(!list) return;
+
   const owned = new Set(itemInventory.map(i => i.catalogId));
-  list.innerHTML = Object.values(ITEM_CATALOG).map(item => {
-    const disc      = rarityBonus().shopDiscount || 0;
+  const disc  = rarityBonus().shopDiscount || 0;
+
+  function renderCard(item) {
     const preco     = Math.round(item.preco * (1 - disc));
     const canAfford = gs.moedas >= preco;
     const precoHtml = disc > 0
@@ -51,7 +53,27 @@ function renderMarketItems() {
       <div class="mkt-catalog-effect">✦ ${item.efeito}</div>
       <div class="mkt-catalog-footer">${footerBtn}</div>
     </div>`;
-  }).join('');
+  }
+
+  // Agrupa por tipo na mesma ordem do inventário
+  const TIPO_ORDER = ['Amuleto', 'Coroa', 'Cenário', 'Consumível', 'Especial'];
+  const grupos = {};
+  Object.values(ITEM_CATALOG).forEach(item => {
+    const tipo = item.tipo || 'Outro';
+    if(!grupos[tipo]) grupos[tipo] = [];
+    grupos[tipo].push(item);
+  });
+
+  const tiposPresentes = TIPO_ORDER.filter(t => grupos[t]).concat(
+    Object.keys(grupos).filter(t => !TIPO_ORDER.includes(t))
+  );
+
+  list.innerHTML = tiposPresentes.map(tipo => `
+    <div style="margin-bottom:8px;">
+      <div style="font-family:'Cinzel',serif;font-size:6px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:4px 2px 5px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px;">◆ ${tipo}</div>
+      ${grupos[tipo].map(renderCard).join('')}
+    </div>
+  `).join('');
 }
 
 function buyItem(catalogId) {
