@@ -445,3 +445,69 @@
   border-radius: 8px;
   animation: arena-pop .3s ease;
 }
+
+/* ══════════════════════════════════════
+   PARTIDA — FULLSCREEN PC (≥769px)
+   Escala os elementos do jogo para aproveitar o espaço.
+   .arena-partida fica com max-width para não esticar demais.
+══════════════════════════════════════ */
+@media(min-width:769px) {
+  .arena-partida {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    gap: 18px;
+    padding: 8px 0;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .arena-partida-header {
+    padding: 0 4px;
+  }
+  .arena-rodada-badge { font-size: 13px !important; letter-spacing: 2px !important; }
+  .arena-premio-badge { font-size: 11px !important; }
+
+  /* VS row — avatares grandes, lado a lado */
+  .arena-vs-row  { gap: 12px; }
+  .arena-vs-lado {
+    padding: 20px 10px !important;
+    border-radius: 14px !important;
+    gap: 10px !important;
+  }
+  .arena-vs-svg     { width: 90px !important; height: 90px !important; }
+  .arena-vs-svg svg { width: 90px !important; height: 90px !important; }
+  .arena-vs-nome { font-size: 11px !important; max-width: 160px !important; }
+  .arena-vs-stars { font-size: 20px !important; }
+  .arena-vs-escolha { font-size: 52px !important; min-height: 60px !important; }
+
+  /* Centro VS */
+  .arena-vs-centro { width: 72px !important; gap: 8px !important; }
+  .arena-vs-label  { font-size: 14px !important; }
+  .arena-turno-wrap { width: 56px !important; height: 6px !important; }
+  .arena-turno-label { font-size: 8px !important; }
+
+  /* Status */
+  .arena-partida-status { font-size: 11px !important; letter-spacing: 2px !important; min-height: 18px !important; }
+
+  /* Botões de escolha — muito maiores */
+  .arena-escolhas { gap: 12px !important; }
+  .arena-escolha-btn {
+    padding: 22px 8px !important;
+    font-size: 38px !important;
+    border-radius: 16px !important;
+    gap: 8px !important;
+  }
+  .arena-escolha-btn span { font-size: 9px !important; letter-spacing: 2px !important; }
+
+  /* Banner de round */
+  .arena-round-banner {
+    padding: 14px 20px !important;
+    font-size: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Resultado final */
+  .arena-resultado-titulo { font-size: 28px !important; }
+  .arena-recompensa-card  { padding: 16px 24px !important; font-size: 11px !important; }
+}
