@@ -14,3 +14,8 @@
   overscroll-behavior: contain;
 }
 #roubaMontModal.open { opacity: 1; pointer-events: all; }
+
+/* ── PC fullscreen ── */
+@media(min-width:769px) {
+  #roubaMontModal { overflow-y: auto !important; padding: 24px 32px !important; }
+}

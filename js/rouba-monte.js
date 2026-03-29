@@ -685,7 +685,7 @@ function _rmRenderPartida(salaId, sala, opWallet) {
     '| meuMonte:', meuMonte.length, '| opMonte:', opMonte.length, '| baralho:', baralhoRest);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;
+    <div style="display:flex;flex-direction:column;width:100%;height:100%;gap:4px;padding:6px;
                 overflow-y:auto;overflow-x:hidden;
                 scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.3) rgba(255,255,255,.04);">
 
@@ -1339,13 +1339,13 @@ async function _rmRenderResultado(sala, opWallet) {
     <div class="arena-resultado">
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
       <div class="arena-vs-row" style="margin:12px 0;">
-        <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
+        <div class="arena-vs-lado ${empate?'arena-empate':euVenci?'arena-vencedor':'arena-perdedor'}">
           <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44)}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
           <div class="arena-vs-pts" style="font-size:18px;">🃏 ${meuMonte}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
-        <div class="arena-vs-lado ${!euVenci&&!empate?'arena-vencedor':''}">
+        <div class="arena-vs-lado ${empate?'arena-empate':!euVenci?'arena-vencedor':'arena-perdedor'}">
           <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,44,44)}</div>
           <div class="arena-vs-nome">${op_info.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:18px;">🃏 ${opMonte}</div>
