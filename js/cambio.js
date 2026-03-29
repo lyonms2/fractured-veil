@@ -105,19 +105,25 @@ async function cambioConverter(quantidade) {
   // Debitar moedas
   if(!spendCoins(custoTotal)) return false;
 
-  // Creditar cristais
+  // Creditar cristais localmente
   gs.cristais = (gs.cristais || 0) + qtd;
   updateResourceUI();
 
-  // Registar log no Firestore
+  // Batch atómico: debita pool + credita jogador + regista log
   const hoje = new Date().toISOString().slice(0, 10);
   const novoCount = (dados.cambioLog?.data === hoje ? (dados.cambioLog.count || 0) : 0) + qtd;
+  const increment = firebase.firestore.FieldValue.increment;
   try {
-    await fbDb().collection('players').doc(walletAddress).update({
+    const batch     = fbDb().batch();
+    const poolRef   = fbDb().collection('config').doc('pool');
+    const playerRef = fbDb().collection('players').doc(walletAddress);
+    batch.update(poolRef,   { cristais: increment(-qtd) });
+    batch.update(playerRef, {
       'gs.cristais': gs.cristais,
       cristais:      gs.cristais,
-      cambioLog: { data: hoje, count: novoCount },
+      cambioLog:     { data: hoje, count: novoCount },
     });
+    await batch.commit();
   } catch(e) {
     console.warn('[cambio] erro ao salvar:', e);
   }
@@ -209,7 +215,7 @@ async function renderCambioPanel() {
           const custoQtd = custo * qtd;
           const podeComprar = gs.moedas >= custoQtd;
           return `<button
-            onclick="cambioExecutar(${qtd})"
+            onclick="cambioExecutar(event,${qtd})"
             ${!podeComprar ? 'disabled' : ''}
             style="flex:1;min-width:60px;padding:6px 4px;
                    font-family:'Cinzel',serif;font-size:7px;font-weight:700;
@@ -237,8 +243,8 @@ async function renderCambioPanel() {
 }
 
 // ── Wrapper chamado pelos botões da UI ──
-async function cambioExecutar(qtd) {
-  const btn = event?.target?.closest('button');
+async function cambioExecutar(ev, qtd) {
+  const btn = ev?.target?.closest('button');
   if(btn) { btn.disabled = true; btn.style.opacity = '.5'; }
   const ok = await cambioConverter(qtd);
   // Re-render painel após a troca
