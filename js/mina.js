@@ -216,6 +216,8 @@ function minaGameOver() {
   if(frac > 0.1) {
     const r = miniReward(frac * 0.6, frac * 0.6, 1);
     document.getElementById('minaReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+  } else {
+    scheduleSave();
   }
 
   document.getElementById('minaResult').textContent = '💥 BOOM!';

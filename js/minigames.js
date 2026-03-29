@@ -196,11 +196,12 @@ function simonGameOver() {
   const frac = roundsCompleted / _sm;
 
   applyGameCost();
-  if(frac > 0) {    
+  if(frac > 0) {
     const r = miniReward(frac * 0.8, frac * 0.8, 1);
     document.getElementById('simonReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
   } else {
     document.getElementById('simonReward').textContent = '';
+    scheduleSave();
   }
 
   vitals.humor = Math.min(100, vitals.humor + 5);
