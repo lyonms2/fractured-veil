@@ -112,28 +112,31 @@ document.addEventListener('visibilitychange', async () => {
     const offlineSecs   = Math.floor((Date.now() - _hiddenAt) / 1000);
     const offlineCycles = Math.floor(offlineSecs / 60);
     if(offlineCycles > 0) {
-      const _d = rarityBonus().decay;
+      const _d  = rarityBonus().decay;
+      const _eb = getElementoBonus();
       let wasSleeping    = sleeping;
       let wasModoRepouso = modoRepouso;
       let sonoEsgotado   = false;
 
       for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
         if(wasSleeping) {
-          vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
+          vitals.energia = Math.min(100, vitals.energia + 4 * getItemEffect('sleepEnergyMult') * _eb.sleepEnergy);
+          vitals.fome    = Math.max(0, vitals.fome    - (0.30 * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
+          vitals.higiene = Math.max(0, vitals.higiene - (0.05 * _eb.higieneDecay));
           if(vitals.energia >= 100) { vitals.energia = 100; wasSleeping = false; sonoEsgotado = true; }
         } else if(wasModoRepouso) {
-          vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
-          vitals.higiene = Math.max(0, vitals.higiene - 0.03);
-          vitals.humor   = Math.max(0, vitals.humor   - 0.02);
-          vitals.energia = Math.min(100, vitals.energia + 0.2);
-          vinculo        = Math.max(0, vinculo - 0.01);
+          vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d * _eb.fomeDecay));
+          vitals.higiene = Math.max(0, vitals.higiene - (0.03 * _eb.higieneDecay));
+          vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
+          vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
+          vinculo        = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
           if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
           if(vitals.saude <= 0) { vitals.saude = 0; break; }
         } else {
-          vitals.fome    = Math.max(0, vitals.fome    - 0.4  * _d * getItemEffect('fomeDecayMult'));
-          vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
-          vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
-          vitals.higiene = Math.max(0, vitals.higiene - 0.06);
+          vitals.fome    = Math.max(0, vitals.fome    - (0.4  * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
+          vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d * _eb.humorDecay   * getItemEffect('humorDecayMult')));
+          vitals.energia = Math.max(0, vitals.energia - (0.3  * _d * _eb.energiaDecay));
+          vitals.higiene = Math.max(0, vitals.higiene - (0.06 * _eb.higieneDecay));
           if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
           if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
           if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.03);
@@ -149,6 +152,7 @@ document.addEventListener('visibilitychange', async () => {
       if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
       totalSecs += offlineSecs;
       saveRuntimeToSlot(activeSlotIdx);
+      scheduleSave();
       updateAllUI();
       const hrs  = Math.floor(offlineSecs / 3600);
       const mins = Math.floor((offlineSecs % 3600) / 60);
