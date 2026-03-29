@@ -104,8 +104,68 @@ document.addEventListener('visibilitychange', async () => {
     return;
   }
 
+  const _hiddenAt = _lastHidden;
+  _lastHidden = 0;
+
+  // ── Offline catch-up (cobre bloqueio de ecrã / throttle do browser) ──
+  if(_hiddenAt > 0 && typeof hatched !== 'undefined' && hatched && !dead) {
+    const offlineSecs   = Math.floor((Date.now() - _hiddenAt) / 1000);
+    const offlineCycles = Math.floor(offlineSecs / 60);
+    if(offlineCycles > 0) {
+      const _d = rarityBonus().decay;
+      let wasSleeping    = sleeping;
+      let wasModoRepouso = modoRepouso;
+      let sonoEsgotado   = false;
+
+      for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
+        if(wasSleeping) {
+          vitals.energia = Math.min(100, vitals.energia + 0.5 * _d * getItemEffect('sleepEnergyMult'));
+          if(vitals.energia >= 100) { vitals.energia = 100; wasSleeping = false; sonoEsgotado = true; }
+        } else if(wasModoRepouso) {
+          vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d));
+          vitals.higiene = Math.max(0, vitals.higiene - 0.03);
+          vitals.humor   = Math.max(0, vitals.humor   - 0.02);
+          vitals.energia = Math.min(100, vitals.energia + 0.2);
+          vinculo        = Math.max(0, vinculo - 0.01);
+          if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
+          if(vitals.saude <= 0) { vitals.saude = 0; break; }
+        } else {
+          vitals.fome    = Math.max(0, vitals.fome    - 0.4  * _d * getItemEffect('fomeDecayMult'));
+          vitals.humor   = Math.max(0, vitals.humor   - 0.25 * _d);
+          vitals.energia = Math.max(0, vitals.energia - 0.3  * _d);
+          vitals.higiene = Math.max(0, vitals.higiene - 0.06);
+          if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
+          if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
+          if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.03);
+          if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - 0.02);
+          if(vitals.saude <= 0)   { vitals.saude = 0; break; }
+        }
+      }
+
+      if(sleeping && !wasSleeping) {
+        sleeping = false;
+        addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
+      }
+      if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
+      totalSecs += offlineSecs;
+      saveRuntimeToSlot(activeSlotIdx);
+      updateAllUI();
+      const hrs  = Math.floor(offlineSecs / 3600);
+      const mins = Math.floor((offlineSecs % 3600) / 60);
+      const modoLog = wasSleeping || sonoEsgotado ? '☀️ acordou enquanto ausente'
+                    : wasModoRepouso              ? '💤 modo repouso activo'
+                    :                              'stats atualizados';
+      addLog(`Ausente por ${hrs}h ${mins}min — ${modoLog}.`, 'info');
+      if(vitals.saude <= 0) {
+        dead = true;
+        addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+      }
+    }
+  }
+
+  // ── Firebase sync (slot / inbox) ──
   if(!walletAddress || !fbDb()) return;
-  if(Date.now() - _lastHidden < 2000) return;
+  if(Date.now() - _hiddenAt < 2000) return;
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) return;
   if(typeof modoRepouso !== 'undefined' && modoRepouso) return;
 

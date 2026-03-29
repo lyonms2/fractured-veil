@@ -430,7 +430,7 @@ function checkXP() {
     const faseAfter = getFase();
     const _pl = document.getElementById('phaseLabel');
     if(_pl) {
-      _pl.textContent = FASES[faseAfter];
+      _pl.textContent = 'FASE: ' + FASES[faseAfter];
       _pl.className = 'phase-label fase-' + FASES[faseAfter].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace('ê','e').replace('ç','c');
     }
     addLog(`Nível ${nivel}! Seu avatar ficou mais forte!`,'leg');

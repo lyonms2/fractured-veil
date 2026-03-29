@@ -260,7 +260,7 @@ function updatePhaseLabel() {
   const _pl = document.getElementById('phaseLabel');
   if(!_pl) return;
   const fase = FASES[getFase()];
-  _pl.textContent = fase;
+  _pl.textContent = 'FASE: ' + fase;
   const cls = { 'BEBÊ':'bebe', 'CRIANÇA':'crianca', 'JOVEM':'jovem', 'ADULTO':'adulto' };
   _pl.className = 'phase-label fase-' + (cls[fase] || 'bebe');
 }

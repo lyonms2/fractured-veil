@@ -2,7 +2,7 @@
 // SUMMON SYSTEM
 // ═══════════════════════════════════════════
 function triggerSummon() {
-  if(!walletAddress) { addLog('Conecte a MetaMask primeiro!','bad'); showBubble('Precisa da MetaMask! 🦊'); return; }
+  if(!walletAddress) { addLog('Faz login primeiro!','bad'); showBubble('Precisas fazer login! 🔑'); return; }
   const btn = document.getElementById('btnSummon');
   if(!btn || btn.disabled) return;
   btn.disabled = true;

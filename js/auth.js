@@ -8,6 +8,9 @@
 
 function fbAuth() { return typeof firebase !== 'undefined' ? firebase.auth() : null; }
 
+let _sessionId   = null;
+let _sessionUnsub = null;
+
 // ─── Mostrar/esconder abas do login ───────────────────────────────
 function authShowTab(tab) {
   document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
@@ -118,6 +121,8 @@ async function enviarResetSenha() {
 // ─── Logout ───────────────────────────────────────────────────────
 async function disconnectWallet() {
   window._fvConnected = false;
+  if(_sessionUnsub) { _sessionUnsub(); _sessionUnsub = null; }
+  _sessionId = null;
   try { await fbAuth().signOut(); } catch(e) {}
 
   // Reset estado do jogo
@@ -197,6 +202,22 @@ async function _onLoginSuccess(user) {
   document.getElementById('walletInfo').style.display = 'flex';
 
   const loaded = await loadFromFirebase();
+
+  // ── Session guard: impede dois dispositivos simultâneos ──
+  if(fbDb()) {
+    _sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    await fbDb().collection('players').doc(walletAddress).set({ sessionId: _sessionId }, { merge: true });
+    if(_sessionUnsub) _sessionUnsub();
+    _sessionUnsub = fbDb().collection('players').doc(walletAddress).onSnapshot(snap => {
+      if(!snap.exists || !_sessionId) return;
+      const remote = snap.data().sessionId;
+      if(remote && remote !== _sessionId) {
+        addLog('⚠️ Sessão iniciada noutro dispositivo. A encerrar...', 'bad');
+        if(typeof showBubble === 'function') showBubble('Sessão encerrada ⚠️');
+        setTimeout(disconnectWallet, 1500);
+      }
+    });
+  }
 
   updateHeaderButtons();
 
