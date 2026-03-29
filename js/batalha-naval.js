@@ -1512,9 +1512,9 @@ async function _bnRenderResultado(sala, opWallet) {
       else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
       updateResourceUI(); scheduleSave();
     }
-    // Taxa para pool
+    // Taxa para pool — só partidas com cristais (Raro/Lendário)
     const taxa = Math.floor(bruto * BN_TAXA);
-    if(taxa > 0 && typeof fbDb === 'function' && fbDb()) {
+    if(taxa > 0 && usaCris && typeof fbDb === 'function' && fbDb()) {
       try {
         await fbDb().collection('config').doc('pool').update({
           cristais: firebase.firestore.FieldValue.increment(taxa),

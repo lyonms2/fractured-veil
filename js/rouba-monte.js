@@ -1293,7 +1293,7 @@ async function _rmRenderResultado(sala, opWallet) {
       updateResourceUI(); scheduleSave();
     }
     const taxa = Math.floor(bruto*RM_TAXA);
-    if(taxa>0 && typeof fbDb==='function' && fbDb()) {
+    if(taxa>0 && usaCris && typeof fbDb==='function' && fbDb()) {
       try {
         await fbDb().collection('config').doc('pool').update({
           cristais: firebase.firestore.FieldValue.increment(taxa),
