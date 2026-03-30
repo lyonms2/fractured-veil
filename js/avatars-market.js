@@ -157,79 +157,84 @@ function closeDetail() {
 // ═══════════════════════════════════════════
 async function buyAvatar(listingId, price) {
   if(!playerData || playerData.cristais < price) { showToast('Cristais insuficientes.','err'); return; }
-
-  // Find free slot
-  const slots = playerData.avatarSlots;
-  const freeIdx = slots.findIndex((s,i) => s === null && i < getUnlockedSlots());
+  const freeIdx = playerData.avatarSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
   if(freeIdx === -1) { showToast('Sem slots disponíveis. Desbloqueia mais slots.','err'); return; }
 
+  let l = null;
+  let newBuyerSlots = null;
+  let newBuyerCristais = 0;
+
   try {
-    const listRef = db.collection('avatarMarket').doc(listingId);
-    const listSnap = await listRef.get();
-    if(!listSnap.exists || listSnap.data().status !== 'listed') { showToast('Listagem já não disponível.','err'); return; }
-    const l = listSnap.data();
+    const listRef  = db.collection('avatarMarket').doc(listingId);
+    const buyerRef = db.collection('players').doc(walletAddress);
 
-    // Read fresh buyer data before writing
-    const buyerSnap = await db.collection('players').doc(walletAddress).get();
-    const buyerData = buyerSnap.data() || {};
-    const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-    if(freshCristais < price) { showToast('Cristais insuficientes.','err'); return; }
+    // Transacção atómica — evita dupla compra por compradores simultâneos
+    await db.runTransaction(async (tx) => {
+      const listSnap = await tx.get(listRef);
+      if(!listSnap.exists || listSnap.data().status !== 'listed') throw new Error('NOT_AVAILABLE');
+      l = listSnap.data();
 
-    const buyerSlots = buyerData.avatarSlots || playerData.avatarSlots;
-    const freshFreeIdx = buyerSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
-    if(freshFreeIdx === -1) { showToast('Sem slots disponíveis.','err'); return; }
+      const buyerSnap     = await tx.get(buyerRef);
+      const buyerData     = buyerSnap.data() || {};
+      const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
+      if(freshCristais < price) throw new Error('INSUFFICIENT');
 
-    const newCristais = freshCristais - price;
-    buyerSlots[freshFreeIdx] = {
-      nome: l.nome, elemento: l.elemento, raridade: l.raridade,
-      descricao: l.descricao, seed: l.seed||0,
-      nivel: l.nivel||1, xp: l.xp||0, vinculo: l.vinculo||0,
-      diasVida: l.diasVida||0, totalOvos: l.totalOvos||0, totalRaros: l.totalRaros||0,
-      bornAt: l.bornAt||Date.now(), acquiredAt: Date.now(),
-      hatched: true, dead: false, vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
-      eggs: [], items: [],
-    };
-    await db.collection('players').doc(walletAddress).update({
-      avatarSlots:   buyerSlots,
-      cristais:      newCristais,
-      'gs.cristais': newCristais,
-    });
-    playerData.avatarSlots = buyerSlots;
-    playerData.cristais    = newCristais;
-    if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = newCristais;
-    updateCristaisDisplay();
+      const buyerSlots   = [...(buyerData.avatarSlots || playerData.avatarSlots)];
+      const freshFreeIdx = buyerSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
+      if(freshFreeIdx === -1) throw new Error('NO_SLOT');
 
-    // Remove avatar do slot do vendedor e credita cristais
-    const sellerRef  = db.collection('players').doc(l.sellerId);
-    const sellerSnap = await sellerRef.get();
-    const sellerData = sellerSnap.data() || {};
-    const sellerCristais = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
-    const sellerSlots = sellerData.avatarSlots || [];
-    const slotIdx = l.slotIdx;
-    if(slotIdx !== undefined && sellerSlots[slotIdx]) {
-      sellerSlots[slotIdx] = null; // remove avatar do vendedor
-    }
-    const taxaAvatar   = Math.round(price * TAXA_MARKETPLACE);
-    const sellerRecebe = price - taxaAvatar;
-    await sellerRef.update({
-      avatarSlots:    sellerSlots,
-      cristais:       sellerCristais + sellerRecebe,
-      'gs.cristais':  sellerCristais + sellerRecebe,
+      newBuyerCristais = freshCristais - price;
+      buyerSlots[freshFreeIdx] = {
+        nome: l.nome, elemento: l.elemento, raridade: l.raridade,
+        descricao: l.descricao, seed: l.seed||0,
+        nivel: l.nivel||1, xp: l.xp||0, vinculo: l.vinculo||0,
+        diasVida: l.diasVida||0, totalOvos: l.totalOvos||0, totalRaros: l.totalRaros||0,
+        bornAt: l.bornAt||Date.now(), acquiredAt: Date.now(),
+        hatched: true, dead: false, vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
+        eggs: [], items: [],
+      };
+      newBuyerSlots = buyerSlots;
+      tx.update(buyerRef, {
+        avatarSlots:   buyerSlots,
+        cristais:      newBuyerCristais,
+        'gs.cristais': newBuyerCristais,
+      });
+
+      const sellerRef  = db.collection('players').doc(l.sellerId);
+      const sellerSnap = await tx.get(sellerRef);
+      const sellerData = sellerSnap.data() || {};
+      const sellerCris = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
+      const sellerSlots = [...(sellerData.avatarSlots || [])];
+      if(l.slotIdx !== undefined && sellerSlots[l.slotIdx]) sellerSlots[l.slotIdx] = null;
+      const taxaAvatar   = Math.round(price * TAXA_MARKETPLACE);
+      const sellerRecebe = price - taxaAvatar;
+      tx.update(sellerRef, {
+        avatarSlots:    sellerSlots,
+        cristais:       sellerCris + sellerRecebe,
+        'gs.cristais':  sellerCris + sellerRecebe,
+      });
+
+      tx.delete(listRef);
     });
 
-    // Taxa vai para a pool
+    // Taxa para a pool (fora da transacção — tem o seu próprio batch)
+    const taxaAvatar = Math.round(price * TAXA_MARKETPLACE);
     if(taxaAvatar > 0) await addToPool(taxaAvatar, `venda avatar ${l.nome}`);
 
-    // Mark listing as sold
-    await listRef.delete(); // remove listagem do Firestore após venda
+    playerData.avatarSlots  = newBuyerSlots;
+    playerData.cristais     = newBuyerCristais;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais  = newBuyerCristais;
+    updateCristaisDisplay();
 
     closeDetail();
     showToast(`✅ ${l.nome} adquirido! (taxa ${taxaAvatar}💎 → pool)`, 'ok');
     showSection('slots');
   } catch(e) {
-    console.error(e);
-    showToast('Erro ao comprar avatar.','err');
+    if(e.message === 'NOT_AVAILABLE') showToast('Listagem já não disponível.','err');
+    else if(e.message === 'INSUFFICIENT') showToast('Cristais insuficientes.','err');
+    else if(e.message === 'NO_SLOT') showToast('Sem slots disponíveis.','err');
+    else { console.error(e); showToast('Erro ao comprar avatar.','err'); }
   }
 }
 
@@ -276,23 +281,16 @@ async function confirmList() {
     const newCristais = freshCristais - LIST_COST;
     freshSlots[listingSlotIdx].listed = true;
 
-    await db.collection('players').doc(walletAddress).update({
+    // Batch atómico — debita cristais, marca slot e cria listagem em simultâneo
+    const diasVida   = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
+    const listingRef = db.collection('avatarMarket').doc();
+    const listBatch  = db.batch();
+    listBatch.update(db.collection('players').doc(walletAddress), {
       avatarSlots:   freshSlots,
       cristais:      newCristais,
       'gs.cristais': newCristais,
     });
-    playerData.avatarSlots = freshSlots;
-    playerData.cristais    = newCristais;
-    if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = newCristais;
-    updateCristaisDisplay();
-
-    // Taxa de listagem vai para a pool
-    await addToPool(LIST_COST, 'listagem avatar');
-
-    // Create market listing
-    const diasVida = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
-    await db.collection('avatarMarket').add({
+    listBatch.set(listingRef, {
       sellerId:   walletAddress,
       slotIdx:    listingSlotIdx,
       nome:       s.nome,
@@ -309,8 +307,18 @@ async function confirmList() {
       bornAt:     s.bornAt||Date.now(),
       price,
       status:     'listed',
-      listedAt:   firebase.firestore.FieldValue.serverTimestamp()
+      listedAt:   firebase.firestore.FieldValue.serverTimestamp(),
     });
+    await listBatch.commit();
+
+    playerData.avatarSlots = freshSlots;
+    playerData.cristais    = newCristais;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    updateCristaisDisplay();
+
+    // Taxa de listagem vai para a pool
+    await addToPool(LIST_COST, 'listagem avatar');
 
     closeListModal();
     showToast(`✅ Avatar listado por ${price} 💎!`, 'ok');
@@ -343,12 +351,16 @@ async function unlistAvatar(listingId) {
     const l = snap.data();
     if(l.sellerId !== walletAddress) return;
 
-    // Unfreeze slot — read fresh slots before marking
-    const slotIdx = l.slotIdx;
-    await updateSlots(slots => {
-      if(slots[slotIdx]) slots[slotIdx].listed = false;
-    });
-    await db.collection('avatarMarket').doc(listingId).delete();
+    // Batch atómico — des-lista slot e apaga listagem em simultâneo
+    const slotIdx    = l.slotIdx;
+    const freshSnap2 = await db.collection('players').doc(walletAddress).get();
+    const freshSlots2 = (freshSnap2.data()?.avatarSlots || playerData.avatarSlots).map(s => s || null);
+    if(slotIdx !== undefined && freshSlots2[slotIdx]) freshSlots2[slotIdx].listed = false;
+    const unlistBatch2 = db.batch();
+    unlistBatch2.update(db.collection('players').doc(walletAddress), { avatarSlots: freshSlots2 });
+    unlistBatch2.delete(db.collection('avatarMarket').doc(listingId));
+    await unlistBatch2.commit();
+    playerData.avatarSlots = freshSlots2;
 
     closeDetail();
     showToast('Listagem cancelada. Avatar desbloqueado.', 'ok');

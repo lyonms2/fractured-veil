@@ -145,11 +145,13 @@ async function confirmListEgg() {
     }
     const ovoToRemove = inboxEggs[ovoIdx];
 
-    // Remove do inboxEggs e cria listagem
-    await db.collection('players').doc(walletAddress).update({
+    // Remove do inboxEggs e cria listagem em batch atómico
+    const listingRef = db.collection('eggMarket').doc();
+    const batch = db.batch();
+    batch.update(db.collection('players').doc(walletAddress), {
       inboxEggs: firebase.firestore.FieldValue.arrayRemove(ovoToRemove)
     });
-    await db.collection('eggMarket').add({
+    batch.set(listingRef, {
       raridade:  listingEggData.raridade,
       elemento:  listingEggData.elemento,
       expiraEm:  listingEggData.expiraEm,
@@ -159,6 +161,7 @@ async function confirmListEgg() {
       status:   'listed',
       listedAt:  Date.now(),
     });
+    await batch.commit();
 
     closeListEggModal();
     showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
@@ -178,68 +181,61 @@ async function confirmListEgg() {
 async function buyEggFromMarket(listingId) {
   if(!playerData || !walletAddress) return;
 
+  let egg = null;
   try {
     const listRef  = db.collection('eggMarket').doc(listingId);
-    const listSnap = await listRef.get();
-    if(!listSnap.exists || listSnap.data().status !== 'listed') {
-      showToast('Ovo já não disponível.', 'err'); return;
-    }
-    const egg = listSnap.data();
+    const buyerRef = db.collection('players').doc(walletAddress);
 
-    if(egg.sellerId === walletAddress) {
-      showToast('Não podes comprar o teu próprio ovo.', 'err'); return;
-    }
+    // Transacção atómica — evita dupla compra por compradores simultâneos
+    await db.runTransaction(async (tx) => {
+      const listSnap = await tx.get(listRef);
+      if(!listSnap.exists || listSnap.data().status !== 'listed') throw new Error('NOT_AVAILABLE');
+      egg = listSnap.data();
+      if(egg.sellerId === walletAddress) throw new Error('OWN_EGG');
 
-    // Lê cristais frescos do comprador
-    const buyerSnap = await db.collection('players').doc(walletAddress).get();
-    const buyerData = buyerSnap.data() || {};
-    const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-    if(freshCristais < egg.price) {
-      showToast('Cristais insuficientes.', 'err'); return;
-    }
+      const buyerSnap     = await tx.get(buyerRef);
+      const buyerData     = buyerSnap.data() || {};
+      const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
+      if(freshCristais < egg.price) throw new Error('INSUFFICIENT');
 
-    const taxa         = Math.round(egg.price * EGG_SALE_TAX);
-    const sellerRecebe = egg.price - taxa;
-    const newCristais  = freshCristais - egg.price;
+      const taxa         = Math.round(egg.price * EGG_SALE_TAX);
+      const sellerRecebe = egg.price - taxa;
+      const newCristais  = freshCristais - egg.price;
+      const newEgg = { id: egg.eggId || Date.now(), raridade: egg.raridade, elemento: egg.elemento, expiraEm: egg.expiraEm };
 
-    // Debita comprador + entrega ovo no inboxEggs
-    const newEgg = {
-      id:       egg.eggId || Date.now(),
-      raridade: egg.raridade,
-      elemento: egg.elemento,
-      expiraEm: egg.expiraEm,
-    };
-    await db.collection('players').doc(walletAddress).update({
-      cristais:      newCristais,
-      'gs.cristais': newCristais,
-      inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
+      tx.update(buyerRef, {
+        cristais:      newCristais,
+        'gs.cristais': newCristais,
+        inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
+      });
+
+      const sellerRef  = db.collection('players').doc(egg.sellerId);
+      const sellerSnap = await tx.get(sellerRef);
+      const sellerData = sellerSnap.data() || {};
+      const sellerCris = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
+      tx.update(sellerRef, {
+        cristais:      sellerCris + sellerRecebe,
+        'gs.cristais': sellerCris + sellerRecebe,
+      });
+
+      tx.delete(listRef);
     });
 
-    // Credita vendedor
-    const sellerSnap = await db.collection('players').doc(egg.sellerId).get();
-    const sellerData = sellerSnap.data() || {};
-    const sellerCristais = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
-    await db.collection('players').doc(egg.sellerId).update({
-      cristais:      sellerCristais + sellerRecebe,
-      'gs.cristais': sellerCristais + sellerRecebe,
-    });
-
-    // Remove listagem
-    await listRef.delete();
-
-    // Taxa para a pool
+    // Taxa para a pool (fora da transacção — tem o seu próprio batch)
+    const taxa = Math.round(egg.price * EGG_SALE_TAX);
     if(taxa > 0) await addToPool(taxa, `venda ovo ${egg.raridade} · ${egg.elemento}`, egg.sellerId);
 
-    // Actualiza local
-    playerData.cristais = newCristais;
+    playerData.cristais = (playerData.cristais || 0) - egg.price;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = newCristais;
+    playerData.gs.cristais = playerData.cristais;
     updateCristaisDisplay();
 
     showToast(`✅ Ovo ${egg.raridade} ${egg.elemento} adquirido! Vai para o teu inventário no jogo.`, 'ok');
   } catch(e) {
-    console.error(e);
-    showToast('Erro ao comprar ovo. Tenta novamente.', 'err');
+    if(e.message === 'NOT_AVAILABLE') showToast('Ovo já não disponível.', 'err');
+    else if(e.message === 'OWN_EGG')  showToast('Não podes comprar o teu próprio ovo.', 'err');
+    else if(e.message === 'INSUFFICIENT') showToast('Cristais insuficientes.', 'err');
+    else { console.error(e); showToast('Erro ao comprar ovo. Tenta novamente.', 'err'); }
   }
 }
 
@@ -254,17 +250,19 @@ async function unlistEgg(listingId) {
     const egg = listSnap.data();
     if(egg.sellerId !== walletAddress) { showToast('Não autorizado.','err'); return; }
 
-    // Devolve ovo ao inboxEggs
+    // Devolve ovo ao inboxEggs e apaga listagem em batch atómico
     const ovoRestaurado = {
       id:       egg.eggId || Date.now(),
       raridade: egg.raridade,
       elemento: egg.elemento,
       expiraEm: egg.expiraEm,
     };
-    await db.collection('players').doc(walletAddress).update({
+    const unlistBatch = db.batch();
+    unlistBatch.update(db.collection('players').doc(walletAddress), {
       inboxEggs: firebase.firestore.FieldValue.arrayUnion(ovoRestaurado)
     });
-    await listRef.delete();
+    unlistBatch.delete(listRef);
+    await unlistBatch.commit();
 
     showToast('Ovo retirado da venda e devolvido ao inventário.', 'ok');
   } catch(e) {
