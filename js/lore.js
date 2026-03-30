@@ -315,9 +315,8 @@ function _loreRenderCena() {
           <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">RECOMPENSAS</div>
           ${recompTxt}
         </div>
-        <div style="display:flex;gap:8px;margin-top:14px;">
-          <button class="lore-btn-secondary" onclick="_loreRenderLista()">← Capítulos</button>
-          <button class="lore-btn-primary"   onclick="rejograrCapitulo('${cap.id}')">↺ Jogar novamente</button>
+        <div style="margin-top:14px;">
+          <button class="lore-btn-secondary" style="width:100%;" onclick="_loreRenderLista()">← Capítulos</button>
         </div>
       </div>`;
     return;
@@ -386,9 +385,8 @@ function lerCapituloSalvo(capId) {
   }
 
   html += `
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button class="lore-btn-secondary" onclick="_loreRenderLista()">← Capítulos</button>
-      <button class="lore-btn-primary"   onclick="rejograrCapitulo('${cap.id}')">↺ Jogar novamente</button>
+    <div style="margin-top:14px;">
+      <button class="lore-btn-secondary" style="width:100%;" onclick="_loreRenderLista()">← Capítulos</button>
     </div>
   </div>`;
 
