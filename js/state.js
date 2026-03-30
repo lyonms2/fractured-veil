@@ -15,10 +15,10 @@ const GAME_SPEED  = 1.0;
 // SISTEMA DE DOENÇAS
 // ═══════════════════════════════════════════════════════════════════
 const DISEASES = {
-  exaustao:    { id:'exaustao',    nome:'Exaustão Crónica',      emoji:'😵', cor:'#e8a030', vital:'energia', limiar:20 },
-  desnutricao: { id:'desnutricao', nome:'Desnutrição',           emoji:'🥵', cor:'#e85030', vital:'fome',    limiar:15 },
-  infeccao:    { id:'infeccao',    nome:'Infecção',              emoji:'🤢', cor:'#7ab830', vital:'higiene', limiar:15 },
-  melancolia:  { id:'melancolia',  nome:'Melancolia Dimensional',emoji:'😔', cor:'#8b5cf6', vital:'humor',   limiar:20 },
+  exaustao:    { id:'exaustao',    get nome(){ return t('disease.exhaustion');   }, emoji:'😵', cor:'#e8a030', vital:'energia', limiar:20 },
+  desnutricao: { id:'desnutricao', get nome(){ return t('disease.malnutrition'); }, emoji:'🥵', cor:'#e85030', vital:'fome',    limiar:15 },
+  infeccao:    { id:'infeccao',    get nome(){ return t('disease.infection');    }, emoji:'🤢', cor:'#7ab830', vital:'higiene', limiar:15 },
+  melancolia:  { id:'melancolia',  get nome(){ return t('disease.melancholy');   }, emoji:'😔', cor:'#8b5cf6', vital:'humor',   limiar:20 },
 };
 const DISEASE_STRESS_THRESHOLD = 20; // 20 ciclos = ~20 min de descuido
 const DISEASE_DECAY_PER_CYCLE  = 0.07; // saúde perdida por ciclo por doença activa
@@ -32,10 +32,10 @@ const MAX_EQUIPPED  = 3;
 const ITEM_CATALOG = {
   'amuleto_saciedade': {
     id:       'amuleto_saciedade',
-    nome:     'Amuleto da Saciedade',
+    get nome()  { return t('item.satiety_amulet.name'); },
+    get desc()  { return t('item.satiety_amulet.desc'); },
+    get efeito(){ return t('item.satiety_amulet.eff');  },
     emoji:    '🥞',
-    desc:     'Uma erva dimensional que suprime a fome e melhora a digestão.',
-    efeito:   'Reduz consumo de Fome em 25% e frequência de cocô',
     tipo:     'Amuleto',
     raridade: 'Comum',
     preco:    800,
@@ -44,10 +44,10 @@ const ITEM_CATALOG = {
   },
   'decoracao_pascoa': {
     id:       'decoracao_pascoa',
-    nome:     'Decoração de Páscoa',
+    get nome()  { return t('item.easter_deco.name'); },
+    get desc()  { return t('item.easter_deco.desc'); },
+    get efeito(){ return t('item.easter_deco.eff');  },
     emoji:    '🥚',
-    desc:     'Ovos coloridos enfeitam o cenário. Edição limitada de Páscoa!',
-    efeito:   'Decora o cenário com ovos animados',
     tipo:     'Cenário',
     raridade: 'Especial',
     preco:    500,
@@ -56,10 +56,10 @@ const ITEM_CATALOG = {
   },
   'coroa_cristal': {
     id:       'coroa_cristal',
-    nome:     'Máscara da Alegria',
+    get nome()  { return t('item.joy_mask.name'); },
+    get desc()  { return t('item.joy_mask.desc'); },
+    get efeito(){ return t('item.joy_mask.eff');  },
     emoji:    '🎭',
-    desc:     'Uma máscara etérea que irradia serenidade e mantém o humor elevado.',
-    efeito:   'Reduz decay de Humor em 40% por ciclo',
     tipo:     'Amuleto',
     raridade: 'Raro',
     preco:    1600,
@@ -68,10 +68,10 @@ const ITEM_CATALOG = {
   },
   'amuleto_sono': {
     id:       'amuleto_sono',
-    nome:     'Amuleto do Sono Profundo',
+    get nome()  { return t('item.sleep_amulet.name'); },
+    get desc()  { return t('item.sleep_amulet.desc'); },
+    get efeito(){ return t('item.sleep_amulet.eff');  },
     emoji:    '🌙',
-    desc:     'Um cristal que pulsa durante o sono, amplificando a recuperação de energia.',
-    efeito:   'Energia recupera 2× mais rápido dormindo',
     tipo:     'Amuleto',
     raridade: 'Comum',
     preco:    1200,
@@ -80,10 +80,10 @@ const ITEM_CATALOG = {
   },
   'antidoto_dimensional': {
     id:         'antidoto_dimensional',
-    nome:       'Antídoto Dimensional',
+    get nome()  { return t('item.antidote.name'); },
+    get desc()  { return t('item.antidote.desc'); },
+    get efeito(){ return t('item.antidote.eff');  },
     emoji:      '🧪',
-    desc:       'Uma poção de cristal purificado que dissolve qualquer mal que aflige o avatar.',
-    efeito:     'Cura todas as doenças activas + recupera +20 saúde',
     tipo:       'Consumível',
     raridade:   'Especial',
     preco:      300,
@@ -118,10 +118,10 @@ let nivel       = 1;
 let xp          = 0;
 let vinculo     = 0;
 const VINCULO_TIERS = [
-  { min:0,   label:'Distante',    cor:'#887799' },
-  { min:51,  label:'Amigo',       cor:'#7ab87a' },
-  { min:151, label:'Companheiro', cor:'#5ab4e8' },
-  { min:301, label:'Alma Gémea',  cor:'#c870e8' },
+  { min:0,   get label(){ return t('vinculo.distant');   }, cor:'#887799' },
+  { min:51,  get label(){ return t('vinculo.friend');    }, cor:'#7ab87a' },
+  { min:151, get label(){ return t('vinculo.companion'); }, cor:'#5ab4e8' },
+  { min:301, get label(){ return t('vinculo.soulmate');  }, cor:'#c870e8' },
 ];
 function getVinculoTier() {
   for(let i = VINCULO_TIERS.length-1; i >= 0; i--)
@@ -138,7 +138,7 @@ let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
 const gs = { moedas:100, ovos:0, cristais:0, extraSlots:0 };
-const FASES = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
+const FASES = t('fases');
 const getFase = () => nivel < 5 ? 0 : nivel < 10 ? 1 : nivel < 17 ? 2 : 3;
 const FASE_SIZES = [75, 100, 120, 140];
 const getFaseSize = () => FASE_SIZES[getFase()];
@@ -157,13 +157,13 @@ function rarityBonus() {
   }
 }
 const FALAS = {
-  happy:  ['Estou feliz! ✨','Te amo! 💕','Que dia incrível!','Brinca comigo!'],
-  hungry: ['Estou com fome...','Me alimente!','Faminto aqui! 🍖','Preciso comer!'],
-  tired:  ['Tão cansado...','Vou dormir zzz','Preciso descansar','Exausto...'],
-  sick:   ['Me sinto mal...','Preciso de remédio','Não estou bem :('],
-  pet:    ['Heee~ 💕','Mais! Mais!','*ronrona*','♪ ♪ ♪','Adoro você!'],
-  bored:  ['Entediado...','Me divirta!','Tão entediado...'],
-  dirty:  ['Estou sujo... 😔','Preciso de banho!','Limpeza por favor! 🧹','Que cheiro ruim...']
+  get happy()  { return t('falas.happy');  },
+  get hungry() { return t('falas.hungry'); },
+  get tired()  { return t('falas.tired');  },
+  get sick()   { return t('falas.sick');   },
+  get pet()    { return t('falas.pet');    },
+  get bored()  { return t('falas.bored');  },
+  get dirty()  { return t('falas.dirty');  },
 };
 // ═══════════════════════════════════════════
 // SISTEMA DE SLOTS DE AVATAR

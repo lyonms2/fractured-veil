@@ -72,6 +72,8 @@ function gsSetTab(tab) {
 
 setInterval(gameTick, 1000);
 updateResourceUI();
+applyI18nDOM();
+window.setLang = setLang;
 
 window.addEventListener('beforeunload', () => {
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
@@ -152,7 +154,7 @@ document.addEventListener('visibilitychange', async () => {
 
       if(sleeping && !wasSleeping) {
         sleeping = false;
-        addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
+        addLog(t('log.woke_offline'), 'good');
       }
       if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
       totalSecs += offlineSecs;
@@ -161,13 +163,13 @@ document.addEventListener('visibilitychange', async () => {
       updateAllUI();
       const hrs  = Math.floor(offlineSecs / 3600);
       const mins = Math.floor((offlineSecs % 3600) / 60);
-      const modoLog = wasSleeping || sonoEsgotado ? '☀️ acordou enquanto ausente'
-                    : wasModoRepouso              ? '💤 modo repouso activo'
-                    :                              'stats atualizados';
-      addLog(`Ausente por ${hrs}h ${mins}min — ${modoLog}.`, 'info');
+      const modoLog = wasSleeping || sonoEsgotado ? t('log.offline_slept')
+                    : wasModoRepouso              ? t('log.offline_repouso')
+                    :                              t('log.offline_updated');
+      addLog(t('log.offline_away', { h: hrs, m: mins, status: modoLog }), 'info');
       if(vitals.saude <= 0) {
         dead = true;
-        addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+        addLog(t('log.died_offline', { name: avatar ? avatar.nome.split(',')[0] : 'Avatar' }), 'bad');
       }
     }
   }

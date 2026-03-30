@@ -39,10 +39,10 @@ async function loginComEmail() {
   const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('loginBtn');
 
-  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Preenche e-mail e senha.'; return; }
+  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.fill_fields'); return; }
 
   btn.disabled = true;
-  document.getElementById('loginBtnText').textContent = 'ENTRANDO...';
+  document.getElementById('loginBtnText').textContent = t('auth.btn.logging_in');
   errEl.textContent = '';
 
   try {
@@ -50,16 +50,16 @@ async function loginComEmail() {
     // onAuthStateChanged trata o resto
   } catch(e) {
     btn.disabled = false;
-    document.getElementById('loginBtnText').textContent = 'ENTRAR';
+    document.getElementById('loginBtnText').textContent = t('auth.btn.login');
     const msgs = {
-      'auth/user-not-found':    'E-mail não encontrado.',
-      'auth/wrong-password':    'Senha incorreta.',
-      'auth/invalid-email':     'E-mail inválido.',
-      'auth/too-many-requests': 'Muitas tentativas. Tenta mais tarde.',
-      'auth/invalid-credential':'E-mail ou senha incorretos.',
+      'auth/user-not-found':    t('auth.error.not_found'),
+      'auth/wrong-password':    t('auth.error.wrong_pass'),
+      'auth/invalid-email':     t('auth.error.invalid_email'),
+      'auth/too-many-requests': t('auth.error.too_many'),
+      'auth/invalid-credential':t('auth.error.invalid_cred'),
     };
     errEl.style.color = '#e74c3c';
-    errEl.textContent = msgs[e.code] || 'Erro ao entrar. Tenta novamente.';
+    errEl.textContent = msgs[e.code] || t('auth.error.login');
   }
 }
 
@@ -71,12 +71,12 @@ async function registrarComEmail() {
   const errEl  = document.getElementById('loginError');
   const btn    = document.getElementById('regBtn');
 
-  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Preenche todos os campos.'; return; }
-  if(senha !== senha2)  { errEl.style.color = '#e74c3c'; errEl.textContent = 'As senhas não coincidem.'; return; }
-  if(senha.length < 6)  { errEl.style.color = '#e74c3c'; errEl.textContent = 'Senha deve ter pelo menos 6 caracteres.'; return; }
+  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.fill_all'); return; }
+  if(senha !== senha2)  { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.pass_mismatch'); return; }
+  if(senha.length < 6)  { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.pass_short'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'CRIANDO...';
+  btn.textContent = t('auth.btn.creating');
   errEl.textContent = '';
 
   try {
@@ -84,14 +84,14 @@ async function registrarComEmail() {
     // onAuthStateChanged trata o resto
   } catch(e) {
     btn.disabled = false;
-    btn.textContent = 'CRIAR CONTA';
+    btn.textContent = t('auth.btn.create');
     const msgs = {
-      'auth/email-already-in-use': 'Este e-mail já está em uso.',
-      'auth/invalid-email':        'E-mail inválido.',
-      'auth/weak-password':        'Senha muito fraca.',
+      'auth/email-already-in-use': t('auth.reg.email_in_use'),
+      'auth/invalid-email':        t('auth.error.invalid_email'),
+      'auth/weak-password':        t('auth.reg.weak_pass'),
     };
     errEl.style.color = '#e74c3c';
-    errEl.textContent = msgs[e.code] || 'Erro ao criar conta. Tenta novamente.';
+    errEl.textContent = msgs[e.code] || t('auth.reg.error');
   }
 }
 
@@ -101,26 +101,26 @@ async function enviarResetSenha() {
   const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('resetBtn');
 
-  if(!email) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Insere o teu e-mail.'; return; }
+  if(!email) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reset.fill'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'ENVIANDO...';
+  btn.textContent = t('auth.btn.sending');
   errEl.textContent = '';
 
   try {
     await fbAuth().sendPasswordResetEmail(email);
     errEl.style.color = '#7ab87a';
-    errEl.textContent = '✓ E-mail de recuperação enviado!';
-    btn.textContent = 'ENVIADO ✓';
+    errEl.textContent = t('auth.reset.sent');
+    btn.textContent = t('auth.btn.sent');
   } catch(e) {
     btn.disabled = false;
-    btn.textContent = 'ENVIAR E-MAIL';
+    btn.textContent = t('auth.btn.send_email');
     errEl.style.color = '#e74c3c';
     const msgs = {
-      'auth/user-not-found': 'E-mail não encontrado.',
-      'auth/invalid-email':  'E-mail inválido.',
+      'auth/user-not-found': t('auth.reset.not_found'),
+      'auth/invalid-email':  t('auth.error.invalid_email'),
     };
-    errEl.textContent = msgs[e.code] || 'Erro ao enviar. Tenta novamente.';
+    errEl.textContent = msgs[e.code] || t('auth.reset.error');
   }
 }
 
@@ -228,7 +228,7 @@ async function _onLoginSuccess(user) {
       const remote = snap.data().sessionId;
       if(remote && remote !== _sessionId) {
         addLog('⚠️ Sessão iniciada noutro dispositivo. A encerrar...', 'bad');
-        if(typeof showBubble === 'function') showBubble('Sessão encerrada ⚠️');
+        if(typeof showBubble === 'function') showBubble(t('bubble.session_ended'));
         setTimeout(disconnectWallet, 1500);
       }
     });
@@ -243,10 +243,10 @@ async function _onLoginSuccess(user) {
   const _bs = document.getElementById('btnSummon');
   if(_bs) _bs.disabled = false;
   updateResourceUI();
-  addLog(`Bem-vindo de volta! ✨`, 'good');
+  addLog(t('log.welcome_back'), 'good');
 
   if(loaded) {
-    addLog('Estado restaurado da nuvem! ☁️', 'good');
+    addLog(t('log.state_restored'), 'good');
 
     // ── Offline decay ──
     if(hatched && !dead) {
@@ -291,20 +291,20 @@ async function _onLoginSuccess(user) {
 
         if(sleeping && !wasSleeping) {
           sleeping = false;
-          addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
+          addLog(t('log.woke_offline'), 'good');
         }
         if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
         totalSecs += offlineSecs;
         saveRuntimeToSlot(activeSlotIdx);
         const hrs  = Math.floor(offlineSecs / 3600);
         const mins = Math.floor((offlineSecs % 3600) / 60);
-        const modoLog = wasSleeping || sonoEsgotado ? '☀️ acordou enquanto ausente'
-                      : wasModoRepouso              ? '💤 modo repouso activo'
-                      :                              'stats atualizados';
-        addLog(`Ausente por ${hrs}h ${mins}min — ${modoLog}.`, 'info');
+        const modoLog = wasSleeping || sonoEsgotado ? t('log.offline_slept')
+                      : wasModoRepouso              ? t('log.offline_repouso')
+                      :                              t('log.offline_updated');
+        addLog(t('log.offline_away', { h: hrs, m: mins, status: modoLog }), 'info');
         if(vitals.saude <= 0) {
           dead = true;
-          addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+          addLog(t('log.died_offline', { name: avatar ? avatar.nome.split(',')[0] : 'Avatar' }), 'bad');
         }
       }
     }
@@ -339,7 +339,7 @@ async function _onLoginSuccess(user) {
       }
       document.getElementById('deadScreen').style.display = 'flex';
       updateResourceUI();
-      addLog(`${_name} partiu para outra dimensão... 💀`, 'bad');
+      addLog(t('log.died', { name: _name }), 'bad');
 
     } else if(hatched && avatar) {
       setupAvatar();
@@ -359,7 +359,7 @@ async function _onLoginSuccess(user) {
       if(sleeping) startSleep();
       if(modoRepouso) {
         _repousoVisual(true);
-        addLog('Modo repouso activo. 💤', 'info');
+        addLog(t('log.repouso_active'), 'info');
       }
 
       if(poopCount > 0) {
@@ -396,7 +396,7 @@ async function _onLoginSuccess(user) {
     }
 
   } else {
-    addLog('Bem-vindo! Comece uma nova aventura! ✨', 'good');
+    addLog(t('log.welcome_new'), 'good');
     updateResourceUI();
   }
 

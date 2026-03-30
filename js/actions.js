@@ -7,8 +7,8 @@ if(typeof _repousoTimer === 'undefined') var _repousoTimer = null;
 
 function canAct() {
   if(dead || !hatched || !avatar) return false;
-  if(sleeping) { showBubble('Shh... está dormindo 💤'); return false; }
-  if(modoRepouso) { showBubble('Em repouso... segure 💤 para retomar'); return false; }
+  if(sleeping) { showBubble(t('bubble.sleeping')); return false; }
+  if(modoRepouso) { showBubble(t('bubble.repouso')); return false; }
   return true;
 }
 
@@ -47,9 +47,9 @@ function earnCoins(amount) {
 
 function feedCreature() {
   if(!canAct()) return;
-  if(vitals.fome >= 100){ showBubble('Estou satisfeito!'); return; }
+  if(vitals.fome >= 100){ showBubble(t('bubble.satisfied')); return; }
   const COST = 10;
-  if(gs.moedas < COST) { showBubble('Sem moedas... 😢'); addLog(`Precisa de ${COST} 🪙 para alimentar!`,'bad'); return; }
+  if(gs.moedas < COST) { showBubble(t('bubble.no_coins')); addLog(t('log.feed_no_coins', { cost: COST }),'bad'); return; }
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
@@ -64,17 +64,17 @@ function feedCreature() {
   spawnFoodParticles();
   showBubble(rnd(FALAS.happy));
   showFloat(`+${g} 🍖`,'#e74c3c');
-  addLog(`Alimentado! +${g} fome  (-${COST} 🪙)`, 'good');
+  addLog(t('log.fed', { gain: g, cost: COST }), 'good');
   checkXP(); updateAllUI(); scheduleSave();
 }
 
 function playCreature() {
-  if(dead)     { showBubble('...💀'); return; }
-  if(!hatched || !avatar) { showBubble('Nenhum avatar activo!'); return; }
-  if(sleeping) { showBubble('Shh... está dormindo 💤'); return; }
-  if(modoRepouso) { showBubble('Em repouso... segure 💤 para retomar'); return; }
-  if(vitals.fome < 10)   { showBubble('Estou faminto! 🍖'); return; }
-  if(vitals.energia < 10){ showBubble('Cansado demais... 😴'); return; }
+  if(dead)     { showBubble(t('bubble.dead')); return; }
+  if(!hatched || !avatar) { showBubble(t('bubble.no_avatar')); return; }
+  if(sleeping) { showBubble(t('bubble.sleeping')); return; }
+  if(modoRepouso) { showBubble(t('bubble.repouso')); return; }
+  if(vitals.fome < 10)   { showBubble(t('bubble.hungry')); return; }
+  if(vitals.energia < 10){ showBubble(t('bubble.tired')); return; }
   openGameSelector();
 }
 
@@ -100,7 +100,7 @@ function confirmRename() {
   if(!raw) { cancelRename(); return; }
 
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
-  if(!clean) { showBubble('Nome inválido! ✕'); return; }
+  if(!clean) { showBubble(t('bubble.invalid_name')); return; }
 
   const parts  = avatar.nome.split(',');
   const suffix = parts.slice(1).join(',');
@@ -110,8 +110,8 @@ function confirmRename() {
   cancelRename();
 
   if(walletAddress) scheduleSave();
-  addLog(`Avatar renomeado para "${clean}" 💕`, 'good');
-  showBubble(`${clean}... Adoro esse nome! 💕`);
+  addLog(t('log.renamed', { name: clean }), 'good');
+  showBubble(t('bubble.renamed', { name: clean }));
   updateAllUI();
 }
 
@@ -129,14 +129,14 @@ function _repousoVisual(ativo) {
   const lblPC   = document.getElementById('sleepLabel');
   const actBtns = document.getElementById('actionBtns');
   if(btnPC) btnPC.classList.toggle('active-repouso', ativo);
-  if(lblPC) lblPC.textContent = ativo ? 'REPOUSO' : 'DORMIR';
+  if(lblPC) lblPC.textContent = ativo ? t('ui.repouso_mode') : 'DORMIR';
   if(actBtns) actBtns.classList.toggle('repouso-mode', ativo);
 
   // Mobile
   const btnMob  = document.getElementById('fvbn-sleep');
   const lblMob  = document.getElementById('fvbnSleepLabel');
   if(btnMob) btnMob.classList.toggle('active-repouso', ativo);
-  if(lblMob) lblMob.textContent = ativo ? 'Repouso' : 'Dormir';
+  if(lblMob) lblMob.textContent = ativo ? t('ui.repouso_mode') : 'Dormir';
 
   // Overlay
   const overlay = document.getElementById('repousoOverlay');
@@ -199,7 +199,7 @@ function ativarModoRepouso() {
   modoRepouso = true;
   _repousoVisual(true);
   ModalManager.closeAll();
-  addLog('Modo repouso ativado. Stats desaceleram. ⏸', 'info');
+  addLog(t('log.repouso_on'), 'info');
   saveToFirebase();
 }
 
@@ -207,8 +207,8 @@ function desativarModoRepouso() {
   if(!modoRepouso) return;
   modoRepouso = false;
   _repousoVisual(false);
-  addLog('Modo repouso desativado. Bem-vindo de volta! ✨', 'good');
-  showBubble('De volta! ✨');
+  addLog(t('log.repouso_off'), 'good');
+  showBubble(t('bubble.back'));
   updateAllUI();
   saveToFirebase();
 }

@@ -137,7 +137,7 @@
   <!-- LOADING OVERLAY -->
   <div id="gameLoadingOverlay" style="position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:500;">
     <div style="width:36px;height:36px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
-    <div style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
+    <div data-i18n="ui.loading" style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
   </div>
 
   <header>
@@ -152,7 +152,7 @@
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
         <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
-        <button class="btn-wallet btn-sair" onclick="disconnectWallet()">✕ SAIR</button>
+        <button class="btn-wallet btn-sair" data-i18n="ui.logout" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
     </div>
   </header>
@@ -527,8 +527,8 @@
             <span style="animation-delay:.7s">Z</span>
             <span style="animation-delay:1.4s">Z</span>
           </div>
-          <div class="repouso-label">MODO REPOUSO</div>
-          <button class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
+          <div data-i18n="ui.repouso_mode" class="repouso-label">MODO REPOUSO</div>
+          <button data-i18n="ui.repouso_resume" class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
         </div>
 
         <!-- DEAD -->
@@ -582,13 +582,13 @@
         <div class="panel-title">◆ INVOCAR AVATAR</div>
         <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
           <div style="font-size:16px;margin-bottom:6px;">✨</div>
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">LOGIN NECESSÁRIO</div>
+          <div data-i18n="ui.login_required" style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">LOGIN NECESSÁRIO</div>
           <div style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
-          <button class="btn-connect-wallet" onclick="document.getElementById('loginScreen').style.display='flex'">🔑 FAZER LOGIN</button>
+          <button data-i18n="ui.do_login" class="btn-connect-wallet" onclick="document.getElementById('loginScreen').style.display='flex'">🔑 FAZER LOGIN</button>
         </div>
         <div class="summon-section" id="summonSection" style="display:none;">
           <button class="btn-summon" id="btnSummon" onclick="triggerSummon()">
-            <span id="btnSummonLabel">▶ Invocar Avatar (Gratuito)</span>
+            <span id="btnSummonLabel" data-i18n="ui.summon_btn">▶ Invocar Avatar (Gratuito)</span>
           </button>
         </div>
       </div>
@@ -751,6 +751,7 @@
   const _rtdb = firebase.database();
 </script>
 
+<script src="js/i18n.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
