@@ -869,12 +869,16 @@
       if (btn) btn.classList.toggle('btn-disabled', !alive);
     });
  
-    // Estado do botão dormir
-    const isSleeping = typeof sleeping !== 'undefined' && sleeping;
-    const bnSleep    = document.getElementById('fvbn-sleep');
-    const sleepLbl   = document.getElementById('fvbnSleepLabel');
-    if (bnSleep)   bnSleep.classList.toggle('sleep-active', isSleeping);
-    if (sleepLbl)  sleepLbl.textContent = isSleeping ? 'Acordar' : 'Dormir';
+    // Estado do botão dormir / repouso
+    const isSleeping  = typeof sleeping     !== 'undefined' && sleeping;
+    const isRepouso   = typeof modoRepouso  !== 'undefined' && modoRepouso;
+    const bnSleep     = document.getElementById('fvbn-sleep');
+    const sleepLbl    = document.getElementById('fvbnSleepLabel');
+    if (bnSleep) {
+      bnSleep.classList.toggle('sleep-active',   isSleeping);
+      bnSleep.classList.toggle('active-repouso', isRepouso);
+    }
+    if (sleepLbl) sleepLbl.textContent = isSleeping ? 'Acordar' : isRepouso ? 'Repouso' : 'Dormir';
  
     // Badges de alerta
     if (alive && typeof vitals !== 'undefined') {

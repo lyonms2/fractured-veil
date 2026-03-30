@@ -392,8 +392,9 @@
 .repouso-mode .btn-action  { opacity: .2; pointer-events: none; cursor: not-allowed; }
 .repouso-mode #btnSleep    { opacity: .2; pointer-events: none; cursor: not-allowed; }
 
-/* Barra de progresso do long press */
-#btnSleep.pressing::after {
+/* Barra de progresso do long press — PC e mobile */
+#btnSleep.pressing::after,
+#fvbn-sleep.pressing::after {
   content: '';
   position: absolute; bottom: 0; left: 0;
   height: 2px;
@@ -406,7 +407,9 @@
   to   { width: 100%; }
 }
 
-.btn-action.active-repouso {
+/* Destaque visual do botão em modo repouso — PC e mobile */
+.btn-action.active-repouso,
+.fv-bn-btn.active-repouso {
   border-color: #8ad4ff !important;
   color: #8ad4ff !important;
   box-shadow: 0 0 12px rgba(138,212,255,.3) !important;

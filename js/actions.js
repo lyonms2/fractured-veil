@@ -122,17 +122,42 @@ function confirmRename() {
 // (dorme se acordado, acorda se dormindo).
 // ═══════════════════════════════════════════
 
+// ── Helper: aplica estado visual do repouso nos dois layouts ─────
+function _repousoVisual(ativo) {
+  // PC
+  const btnPC   = document.getElementById('btnSleep');
+  const lblPC   = document.getElementById('sleepLabel');
+  const actBtns = document.getElementById('actionBtns');
+  if(btnPC) btnPC.classList.toggle('active-repouso', ativo);
+  if(lblPC) lblPC.textContent = ativo ? 'REPOUSO' : 'DORMIR';
+  if(actBtns) actBtns.classList.toggle('repouso-mode', ativo);
+
+  // Mobile
+  const btnMob  = document.getElementById('fvbn-sleep');
+  const lblMob  = document.getElementById('fvbnSleepLabel');
+  if(btnMob) btnMob.classList.toggle('active-repouso', ativo);
+  if(lblMob) lblMob.textContent = ativo ? 'Repouso' : 'Dormir';
+
+  // Overlay
+  const overlay = document.getElementById('repousoOverlay');
+  if(overlay) overlay.classList.toggle('active', ativo);
+}
+
 function onSleepPointerDown() {
   if(!hatched || !avatar || dead) return;
-  const btn = document.getElementById('btnSleep');
+  // Ambos os botões (PC e mobile) recebem o efeito pressing
+  const btns = [
+    document.getElementById('btnSleep'),
+    document.getElementById('fvbn-sleep'),
+  ];
 
   if(modoRepouso) {
     _repousoTimer = setTimeout(() => {
       _repousoTimer = null;
-      if(btn) btn.classList.remove('pressing');
+      btns.forEach(b => b?.classList.remove('pressing'));
       desativarModoRepouso();
     }, 2000);
-    if(btn) btn.classList.add('pressing');
+    btns.forEach(b => b?.classList.add('pressing'));
     return;
   }
 
@@ -143,15 +168,18 @@ function onSleepPointerDown() {
 
   _repousoTimer = setTimeout(() => {
     _repousoTimer = null;
-    if(btn) btn.classList.remove('pressing');
+    btns.forEach(b => b?.classList.remove('pressing'));
     ativarModoRepouso();
   }, 2000);
-  if(btn) btn.classList.add('pressing');
+  btns.forEach(b => b?.classList.add('pressing'));
 }
 
 function onSleepPointerUp() {
-  const btn = document.getElementById('btnSleep');
-  if(btn) btn.classList.remove('pressing');
+  const btns = [
+    document.getElementById('btnSleep'),
+    document.getElementById('fvbn-sleep'),
+  ];
+  btns.forEach(b => b?.classList.remove('pressing'));
 
   if(window._sleepBtnDownWhileSleeping) {
     window._sleepBtnDownWhileSleeping = false;
@@ -169,42 +197,18 @@ function onSleepPointerUp() {
 function ativarModoRepouso() {
   if(modoRepouso || sleeping) return;
   modoRepouso = true;
-
-  const overlay = document.getElementById('repousoOverlay');
-  const btn     = document.getElementById('btnSleep');
-
-  if(overlay) overlay.classList.add('active');
-  if(btn) {
-    btn.querySelector('.icon').textContent            = '💤';
-    document.getElementById('sleepLabel').textContent = 'REPOUSO';
-    btn.classList.add('active-repouso');
-  }
-
-  document.getElementById('actionBtns').classList.add('repouso-mode');
+  _repousoVisual(true);
   ModalManager.closeAll();
   addLog('Modo repouso ativado. Stats desaceleram. ⏸', 'info');
-  // Save imediato — crítico para preservar modoRepouso se o jogador fechar o jogo rapidamente
   saveToFirebase();
 }
 
 function desativarModoRepouso() {
   if(!modoRepouso) return;
   modoRepouso = false;
-
-  const overlay = document.getElementById('repousoOverlay');
-  const btn     = document.getElementById('btnSleep');
-
-  if(overlay) overlay.classList.remove('active');
-  if(btn) {
-    btn.querySelector('.icon').textContent            = '💤';
-    document.getElementById('sleepLabel').textContent = 'DORMIR';
-    btn.classList.remove('active-repouso');
-  }
-
-  document.getElementById('actionBtns').classList.remove('repouso-mode');
+  _repousoVisual(false);
   addLog('Modo repouso desativado. Bem-vindo de volta! ✨', 'good');
   showBubble('De volta! ✨');
   updateAllUI();
-  // Save imediato — garante que modoRepouso=false fica persistido
   saveToFirebase();
 }
