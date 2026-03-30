@@ -1038,6 +1038,7 @@ async function rmJogarCarta(salaId, opWallet) {
 
   const cartaJogada = minha_mao.splice(_rmCartaSel, 1)[0];
   _rmCartaSel = null;
+  playSound('card_flip');
 
   // Efeito visual — carta saindo da mão
   const _rmModal = document.getElementById('roubaMontModal');
@@ -1141,6 +1142,7 @@ async function rmDescartar(salaId, opWallet) {
   if(minha_mao.length===0) { console.warn('[RM] rmDescartar — mão vazia'); return; }
 
   const idxDesc   = (_rmCartaSel!==null && _rmCartaSel<minha_mao.length) ? _rmCartaSel : 0;
+  playSound('card_flip');
   const cartaDesc = minha_mao.splice(idxDesc, 1)[0];
   _rmCartaSel = null;
 
@@ -1288,6 +1290,7 @@ async function _rmRenderResultado(sala, opWallet) {
   console.log('[RM] Resultado — meuMonte:', meuMonte, '| opMonte:', opMonte,
     '| euVenci:', euVenci, '| empate:', empate);
 
+  playSound(euVenci ? 'win' : empate ? 'arena_round_draw' : 'lose');
   // Actualiza ranking
   await _rmAtualizarRanking(sala.id, euVenci, empate);
 

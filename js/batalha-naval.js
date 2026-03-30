@@ -867,6 +867,7 @@ function bnColocarNavio(r, c, salaId) {
   if(!casas) { showBubble('Posição inválida! 🚫'); return; }
 
   // Coloca o navio
+  playSound('mine_click');
   casas.forEach(([nr, nc]) => { _bnMeuTabuleiro[nr][nc] = n.id; });
   _bnNaviosColocados[n.id] = casas;
   _bnNavioAtual++;
@@ -1418,9 +1419,11 @@ async function bnAtirar(row, col, salaId, opWallet) {
 
   const coord = `${String.fromCharCode(65+col)}${row+1}`;
   if(acertou) {
+    playSound(navioAfundado ? 'mine_explode' : 'arena_choice');
     showBubble(navioAfundado ? `${navioAfundado} afundado! 🔥` : 'Acerto! 💥 Joga de novo!');
     addLog(`Batalha Naval: 💥 Acerto em ${coord}${navioAfundado?' — '+navioAfundado+' afundado!':''}`, 'good');
   } else {
+    playSound('mine_click');
     addLog(`Batalha Naval: 🌊 Água em ${coord}`, 'info');
   }
 }
@@ -1591,6 +1594,7 @@ async function _bnRenderResultado(sala, opWallet) {
 
   const titulo = abandono ? '🏆 VITÓRIA! (abandono)' : empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
   const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
+  playSound(euVenci ? 'win' : empate ? 'arena_round_draw' : 'lose');
 
   addLog(`Batalha Naval: ${titulo} · ${meusAc} vs ${opAc} acertos`, euVenci ? 'good' : empate ? 'info' : 'bad');
   if(euVenci) showBubble(`Vitória! +${Math.floor(bruto - bruto*BN_TAXA)} ${moeda} 🏆`);
