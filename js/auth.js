@@ -18,14 +18,18 @@ function authShowTab(tab) {
   document.getElementById('authFormLogin').style.display    = tab === 'login'    ? 'flex' : 'none';
   document.getElementById('authFormRegister').style.display = tab === 'register' ? 'flex' : 'none';
   document.getElementById('authFormReset').style.display    = 'none';
-  document.getElementById('loginError').textContent = '';
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  errEl.style.color = '';
 }
 
 function authShowReset() {
   document.getElementById('authFormLogin').style.display    = 'none';
   document.getElementById('authFormRegister').style.display = 'none';
   document.getElementById('authFormReset').style.display    = 'flex';
-  document.getElementById('loginError').textContent = '';
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  errEl.style.color = '';
 }
 
 // ─── Login ────────────────────────────────────────────────────────
@@ -123,6 +127,10 @@ async function disconnectWallet() {
   window._fvConnected = false;
   if(_sessionUnsub) { _sessionUnsub(); _sessionUnsub = null; }
   _sessionId = null;
+  // Limpa walletAddress antes do signOut para evitar dupla chamada:
+  // onAuthStateChanged dispara com user=null enquanto walletAddress ainda estaria definido,
+  // causando uma segunda invocação concorrente de disconnectWallet().
+  walletAddress = null;
   try { await fbAuth().signOut(); } catch(e) {}
 
   // Reset estado do jogo
@@ -137,7 +145,6 @@ async function disconnectWallet() {
   eggsInInventory = [];
   itemInventory   = [];
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
-  walletAddress = null;
   window._cambioLog = null;
 
   // Reset UI
