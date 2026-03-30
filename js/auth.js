@@ -20,7 +20,7 @@ function authShowTab(tab) {
   document.getElementById('authFormReset').style.display    = 'none';
   const errEl = document.getElementById('loginError');
   errEl.textContent = '';
-  errEl.style.color = '';
+  errEl.style.color = '#e74c3c'; // repõe vermelho (não '' — apagaria a cor do inline style)
 }
 
 function authShowReset() {
@@ -29,7 +29,7 @@ function authShowReset() {
   document.getElementById('authFormReset').style.display    = 'flex';
   const errEl = document.getElementById('loginError');
   errEl.textContent = '';
-  errEl.style.color = '';
+  errEl.style.color = '#e74c3c';
 }
 
 // ─── Login ────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ async function loginComEmail() {
   const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('loginBtn');
 
-  if(!email || !senha) { errEl.textContent = 'Preenche e-mail e senha.'; return; }
+  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Preenche e-mail e senha.'; return; }
 
   btn.disabled = true;
   document.getElementById('loginBtnText').textContent = 'ENTRANDO...';
@@ -58,6 +58,7 @@ async function loginComEmail() {
       'auth/too-many-requests': 'Muitas tentativas. Tenta mais tarde.',
       'auth/invalid-credential':'E-mail ou senha incorretos.',
     };
+    errEl.style.color = '#e74c3c';
     errEl.textContent = msgs[e.code] || 'Erro ao entrar. Tenta novamente.';
   }
 }
@@ -70,9 +71,9 @@ async function registrarComEmail() {
   const errEl  = document.getElementById('loginError');
   const btn    = document.getElementById('regBtn');
 
-  if(!email || !senha) { errEl.textContent = 'Preenche todos os campos.'; return; }
-  if(senha !== senha2)  { errEl.textContent = 'As senhas não coincidem.'; return; }
-  if(senha.length < 6)  { errEl.textContent = 'Senha deve ter pelo menos 6 caracteres.'; return; }
+  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Preenche todos os campos.'; return; }
+  if(senha !== senha2)  { errEl.style.color = '#e74c3c'; errEl.textContent = 'As senhas não coincidem.'; return; }
+  if(senha.length < 6)  { errEl.style.color = '#e74c3c'; errEl.textContent = 'Senha deve ter pelo menos 6 caracteres.'; return; }
 
   btn.disabled = true;
   btn.textContent = 'CRIANDO...';
@@ -89,6 +90,7 @@ async function registrarComEmail() {
       'auth/invalid-email':        'E-mail inválido.',
       'auth/weak-password':        'Senha muito fraca.',
     };
+    errEl.style.color = '#e74c3c';
     errEl.textContent = msgs[e.code] || 'Erro ao criar conta. Tenta novamente.';
   }
 }
@@ -99,7 +101,7 @@ async function enviarResetSenha() {
   const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('resetBtn');
 
-  if(!email) { errEl.textContent = 'Insere o teu e-mail.'; return; }
+  if(!email) { errEl.style.color = '#e74c3c'; errEl.textContent = 'Insere o teu e-mail.'; return; }
 
   btn.disabled = true;
   btn.textContent = 'ENVIANDO...';
@@ -113,7 +115,7 @@ async function enviarResetSenha() {
   } catch(e) {
     btn.disabled = false;
     btn.textContent = 'ENVIAR E-MAIL';
-    errEl.style.color = '';
+    errEl.style.color = '#e74c3c';
     const msgs = {
       'auth/user-not-found': 'E-mail não encontrado.',
       'auth/invalid-email':  'E-mail inválido.',
