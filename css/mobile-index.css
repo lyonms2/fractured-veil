@@ -108,7 +108,8 @@
 
   #mobileStatusInline {
     order: 2;
-    display: flex;
+    /* Começa escondido — syncNav() define display:flex quando avatar está vivo */
+    display: none;
     flex-direction: column;
     gap: 5px;
     padding: 8px 2px 6px;

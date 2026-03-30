@@ -813,7 +813,11 @@
   function syncNav() {
     const alive = typeof hatched !== 'undefined' && hatched &&
                   typeof dead   !== 'undefined' && !dead;
- 
+
+    // Mostra/esconde o status inline só quando o avatar está vivo
+    const msi = document.getElementById('mobileStatusInline');
+    if (msi) msi.style.display = alive ? 'flex' : 'none';
+
     // Habilita/desabilita todos os botões
     ['fvbn-feed','fvbn-play','fvbn-sleep','fvbn-heal','fvbn-bath'].forEach(id => {
       const btn = document.getElementById(id);
