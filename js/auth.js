@@ -215,9 +215,15 @@ async function _onLoginSuccess(user) {
   // ── Session guard: impede dois dispositivos simultâneos ──
   if(fbDb()) {
     _sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    // Aguarda o set() terminar antes de ativar o listener —
+    // evita race condition onde o snapshot inicial chega com o sessionId
+    // antigo e dispara um falso logout (common em mobile/throttle).
     await fbDb().collection('players').doc(walletAddress).set({ sessionId: _sessionId }, { merge: true });
     if(_sessionUnsub) _sessionUnsub();
+    // Ignora o primeiro snapshot (reflete o set() que acabamos de fazer)
+    let _sessionFirstSnap = true;
     _sessionUnsub = fbDb().collection('players').doc(walletAddress).onSnapshot(snap => {
+      if(_sessionFirstSnap) { _sessionFirstSnap = false; return; }
       if(!snap.exists || !_sessionId) return;
       const remote = snap.data().sessionId;
       if(remote && remote !== _sessionId) {
@@ -352,15 +358,7 @@ async function _onLoginSuccess(user) {
 
       if(sleeping) startSleep();
       if(modoRepouso) {
-        const _ov  = document.getElementById('repousoOverlay');
-        const _btn = document.getElementById('btnSleep');
-        if(_ov)  _ov.classList.add('active');
-        if(_btn) {
-          _btn.querySelector('.icon').textContent = '💤';
-          document.getElementById('sleepLabel').textContent = 'REPOUSO';
-          _btn.classList.add('active-repouso');
-        }
-        document.getElementById('actionBtns').classList.add('repouso-mode');
+        _repousoVisual(true);
         addLog('Modo repouso activo. 💤', 'info');
       }
 
