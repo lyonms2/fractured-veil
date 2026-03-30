@@ -697,6 +697,7 @@ function petCreature() {
   vitals.humor = Math.min(100, vitals.humor + 8);
   vinculo = Math.min(400, vinculo + 1);
   petCooldown = 10;
+  playSound('pet');
   playAnim('anim-pet');
   showBubble(rnd(FALAS.pet));
   showFloat('💕','#e830c0');

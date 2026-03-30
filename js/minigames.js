@@ -35,6 +35,7 @@ function memFlip(i) {
   if(memLocked) return;
   const el = document.getElementById('mc' + i);
   if(!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  playSound('card_flip');
   el.textContent = memCards[i];
   el.classList.add('flipped');
   memFlipped.push(i);
@@ -43,6 +44,7 @@ function memFlip(i) {
     const [a, b] = memFlipped;
     if(memCards[a] === memCards[b]) {
       setTimeout(() => {
+        playSound('card_match');
         document.getElementById('mc'+a).classList.replace('flipped','matched');
         document.getElementById('mc'+b).classList.replace('flipped','matched');
         memMatched++;
@@ -53,6 +55,7 @@ function memFlip(i) {
     } else {
       memErrors++;
       setTimeout(() => {
+        playSound('card_error');
         ['mc'+a,'mc'+b].forEach(id => {
           const el2 = document.getElementById(id);
           el2.classList.add('wrong');
@@ -74,6 +77,7 @@ function updateMemInfo() {
 }
 
 function memVictory() {
+  playSound('win');
   const perfMult  = memErrors === 0 ? 1.5 : memErrors <= 2 ? 1.2 : 1.0;
   const humorGain = memErrors === 0 ? 20  : memErrors <= 2 ? 15  : 10;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
@@ -151,6 +155,7 @@ function simonNextRound() {
 function simonFlash(idx) {
   const btn = document.getElementById('sb' + idx);
   if(!btn) return;
+  playSimonTone(idx % 5);
   btn.classList.add('active');
   setTimeout(() => btn.classList.remove('active'), 400);
 }
@@ -163,8 +168,10 @@ function simonPlayerClick(idx) {
   setTimeout(() => btn.classList.remove('player-hit'), 200);
 
   if(idx !== simonSeq[simonStep]) {
+    playSound('simon_wrong');
     simonGameOver(); return;
   }
+  playSimonTone(idx % 5);
   simonStep++;
   if(simonStep === simonSeq.length) {
     simonPlayerTurn = false;
@@ -175,6 +182,7 @@ function simonPlayerClick(idx) {
 }
 
 function simonVictory() {
+  playSound('win');
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
   const r = miniReward(1.3, 1.3);
@@ -187,6 +195,7 @@ function simonVictory() {
 }
 
 function simonGameOver() {
+  playSound('lose');
   simonPlayerTurn = false;
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
@@ -225,6 +234,7 @@ function toggleSleep() {
 
 function startSleep() {
   sleeping = true;
+  playSound('sleep');
   ModalManager.closeAll();
   // jkpPlaying removido — JKP solo foi descontinuado
   document.getElementById('sleepOverlay').classList.add('active');
@@ -241,6 +251,7 @@ function startSleep() {
 
 function wakeUp(reason) {
   sleeping = false;
+  playSound('wakeup');
   document.getElementById('sleepOverlay').classList.remove('active');
   document.getElementById('creatureWrap').classList.remove('sleeping');
   const grp = document.querySelector('#sleepEyesGroup');
@@ -272,6 +283,7 @@ function healCreature() {
   vitals.saude = Math.min(100, vitals.saude + 40);
   sick = false;
   vinculo += 4;
+  playSound('heal');
   playAnim('anim-heal');
   spawnHealParticles();
   showFloat('+40 💚','#27ae60');
@@ -482,6 +494,7 @@ function velhaRender() {
 
 function velhaClick(i) {
   if(!velhaPlayerTurn || velhaOver || velhaBoard[i]) return;
+  playSound('velha_place');
   velhaBoard[i] = 'X';
   velhaRender();
 
@@ -570,6 +583,10 @@ function velhaEnd(result, winLine) {
   const rb = rarityBonus();
 
   let xpMult, coinMult, msg, cls;
+  if(result === 'win')        playSound('velha_win');
+  else if(result === 'lose')  playSound('velha_lose');
+  else                        playSound('velha_draw');
+
   if(result === 'win') {
     xpMult   = d.tier === 0 ? 1.0 : d.tier === 1 ? 1.1 : d.tier === 2 ? 1.2 : 1.3;
     coinMult = xpMult;

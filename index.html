@@ -152,6 +152,7 @@
     <div class="header-right">
       <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
         <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
+        <button id="btnAudio" class="btn-wallet" onclick="toggleAudio()" style="min-width:32px;padding:4px 8px;">🔊</button>
         <button class="btn-wallet btn-sair" data-i18n="ui.logout" onclick="disconnectWallet()">✕ SAIR</button>
       </div>
     </div>
@@ -752,6 +753,7 @@
 </script>
 
 <script src="js/i18n.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>

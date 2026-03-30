@@ -49,7 +49,7 @@ function feedCreature() {
   if(!canAct()) return;
   if(vitals.fome >= 100){ showBubble(t('bubble.satisfied')); return; }
   const COST = 10;
-  if(gs.moedas < COST) { showBubble(t('bubble.no_coins')); addLog(t('log.feed_no_coins', { cost: COST }),'bad'); return; }
+  if(gs.moedas < COST) { playSound('no_coins'); showBubble(t('bubble.no_coins')); addLog(t('log.feed_no_coins', { cost: COST }),'bad'); return; }
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
   vitals.fome = Math.min(100, vitals.fome + g);
@@ -60,6 +60,7 @@ function feedCreature() {
   xp += Math.round(5 * _rb.xp); vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
   if(_rb.moedas > 1) setTimeout(() => earnCoins(coinBonus), 650);
+  playSound('feed');
   playAnim('anim-eat');
   spawnFoodParticles();
   showBubble(rnd(FALAS.happy));
@@ -100,7 +101,7 @@ function confirmRename() {
   if(!raw) { cancelRename(); return; }
 
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
-  if(!clean) { showBubble(t('bubble.invalid_name')); return; }
+  if(!clean) { playSound('error'); showBubble(t('bubble.invalid_name')); return; }
 
   const parts  = avatar.nome.split(',');
   const suffix = parts.slice(1).join(',');
@@ -110,6 +111,7 @@ function confirmRename() {
   cancelRename();
 
   if(walletAddress) scheduleSave();
+  playSound('rename');
   addLog(t('log.renamed', { name: clean }), 'good');
   showBubble(t('bubble.renamed', { name: clean }));
   updateAllUI();
@@ -197,6 +199,7 @@ function onSleepPointerUp() {
 function ativarModoRepouso() {
   if(modoRepouso || sleeping) return;
   modoRepouso = true;
+  playSound('repouso_on');
   _repousoVisual(true);
   ModalManager.closeAll();
   addLog(t('log.repouso_on'), 'info');
@@ -206,6 +209,7 @@ function ativarModoRepouso() {
 function desativarModoRepouso() {
   if(!modoRepouso) return;
   modoRepouso = false;
+  playSound('repouso_off');
   _repousoVisual(false);
   addLog(t('log.repouso_off'), 'good');
   showBubble(t('bubble.back'));

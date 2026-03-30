@@ -295,6 +295,7 @@ function _loreRenderCena(cenaId) {
       fimId:     cenaId,
       concluido: true,
     });
+    playSound('lore_complete');
     lerCapituloSalvo(cap.id);
     return;
   }
@@ -322,6 +323,7 @@ function _loreRenderCena(cenaId) {
   const choicesEl = document.getElementById('loreTwChoices');
   const closeEl   = document.getElementById('loreTwClose');
 
+  playSound('lore_scene');
   _loreTypewriter(textEl, _loreFmt(cena.texto), () => {
     choicesEl.classList.remove('lore-tw-hidden');
     choicesEl.classList.add('lore-tw-reveal');
@@ -344,6 +346,7 @@ function loreEscolher(idx) {
     texto:  _loreFmt(cena.escolhas[idx].texto),
   };
   const proxima = cena.escolhas[idx].proxima;
+  playSound('lore_choice');
 
   // Salva a escolha + avança a cena ANTES de renderizar
   _loreSetProg(_loreCapituloAtual.id, {

@@ -142,6 +142,7 @@ function minaClick(r, c) {
   if(cell.mine) {
     cell.revealed = true;
     minaOver = true;
+    playSound('mine_explode');
     // Revela todas as minas
     for(let i = 0; i < minaRows; i++)
       for(let j = 0; j < minaCols; j++)
@@ -151,6 +152,7 @@ function minaClick(r, c) {
     return;
   }
 
+  playSound('mine_click');
   minaReveal(r, c);
   minaRender();
 
@@ -181,6 +183,7 @@ function minaFlag(e, r, c) {
   if(minaOver) return;
   const cell = minaBoard[r][c];
   if(cell.revealed) return;
+  playSound('mine_flag');
   if(cell.flagged) {
     cell.flagged = false;
     minaFlags--;
@@ -193,6 +196,7 @@ function minaFlag(e, r, c) {
 }
 
 function minaVictory() {
+  playSound('win');
   const d         = miniDifficulty();
   const xpMult    = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
   const humorGain = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;

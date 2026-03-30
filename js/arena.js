@@ -760,6 +760,7 @@ function _escutarSala(salaId, opWallet) {
 
 async function fazerEscolha(salaId, escolha) {
   if(_arenaEscolhaFeita || !rtdb()) return;
+  playSound('arena_choice');
   _arenaEscolhaFeita = true;
   _pararTimer();
 
@@ -1026,6 +1027,9 @@ async function _renderResultado(sala, opWallet) {
     }, 10000); // 10s — garante que os dois lados já viram o resultado
   }
 
+  if(empate)       playSound('arena_round_draw');
+  else if(euVenci) playSound('win');
+  else             playSound('lose');
   const titulo = empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
   const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
 

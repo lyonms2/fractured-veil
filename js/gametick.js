@@ -73,6 +73,7 @@ function cleanCreature() {
   vitals.humor   = Math.min(100, vitals.humor   + humorGain);
   vinculo += 3;
 
+  playSound('bath');
   playAnim('anim-clean', false);
   spawnBathParticles();
 
@@ -331,6 +332,7 @@ function gameTick() {
 
   // ── COCÔ — só no modo ativo ──
   if(!sleeping && !modoRepouso && poopPressure >= 100) {
+    playSound('poop_alert');
     spawnPoop();
     poopPressure = 0;
   }
@@ -392,6 +394,7 @@ function autoSpeak() {
 }
 
 function playPhaseUp(faseName) {
+  playSound('evolve');
   const ov = document.getElementById('phaseUpOverlay');
   if(!ov) return;
   document.getElementById('puFase').textContent = 'FASE: ' + faseName;
@@ -412,6 +415,7 @@ function playPhaseUp(faseName) {
 
 function killCreature() {
   dead = true;
+  playSound('death');
   if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
   saveToFirebase();
   ModalManager.closeAll();
@@ -465,6 +469,7 @@ function checkXP() {
 }
 
 function playLevelUp(newNivel) {
+  playSound('levelup');
   const ov = document.getElementById('levelUpOverlay');
   if(!ov) return;
 
