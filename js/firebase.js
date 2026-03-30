@@ -110,37 +110,6 @@ function applyGameState(data) {
   }
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
 
-  // Migration helper — builds a full slot from flat legacy fields
-  function buildLegacySlot(a, d) {
-    const slot = {
-      nome: a.nome||'', elemento: a.elemento||'Fogo', raridade: a.raridade||'Comum',
-      descricao: a.descricao||'', seed: a.seed||0, listed: false,
-      hatched: d.hatched??false, dead: d.dead??false,
-      sick: d.sick??false, sleeping: d.sleeping??false,
-      nivel: d.nivel??1, xp: d.xp??0, vinculo: d.vinculo??0,
-      totalSecs: d.totalSecs??0, bornAt: d.bornAt??0,
-      poopCount: d.poopCount??0, dirtyLevel: d.dirtyLevel??0,
-      poopPressure: d.poopPressure ?? d.poopCooldown ?? 0,
-      eggLayCooldown: d.eggLayCooldown??0, petCooldown: d.petCooldown??0,
-      vitals: d.vitals ? {...d.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
-      eggs:  (d.eggs  || []).map(e => ({...e})),
-      items: (d.items || []).map(i => ({...i})),
-      totalOvos: 0, totalRaros: 0,
-    };
-    if(slot.elemento) slot.car = CARACTERISTICAS_ELEMENTAIS[slot.elemento] || null;
-    return slot;
-  }
-
-  // Case 1: no avatarSlots at all — pure legacy save
-  if(!data.avatarSlots && data.avatar) {
-    avatarSlots[0] = buildLegacySlot(data.avatar, data);
-    activeSlotIdx  = 0;
-  }
-
-  // Case 2: avatarSlots exists but active slot is null/empty — partial migration
-  if(data.avatarSlots && !avatarSlots[activeSlotIdx]?.nome && data.avatar) {
-    avatarSlots[activeSlotIdx] = buildLegacySlot(data.avatar, data);
-  }
 
   // Consumir inboxEggs
   if(data.inboxEggs && data.inboxEggs.length > 0) {
