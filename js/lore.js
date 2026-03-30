@@ -19,7 +19,7 @@ const LORE_CUSTOS = {
 let _loreCapituloAtual  = null;
 let _loreCenaAtual      = null;
 let _loreEscolhasFeitas = [];
-let _loreTabAtual       = 'comum';
+let _loreTabAtual = 'comum'; // 'comum' | 'raro' | 'lendario'
 
 // ── Substitui [nome] e [elemento] pelo avatar atual ──────────────
 function _loreFmt(texto) {
@@ -60,8 +60,9 @@ function fecharLore() {
 
 function loreSetTab(tab) {
   _loreTabAtual = tab;
-  document.getElementById('loreTabComum').classList.toggle('active', tab === 'comum');
-  document.getElementById('loreTabRaro').classList.toggle('active',  tab === 'raro');
+  document.getElementById('loreTabComum').classList.toggle('active',    tab === 'comum');
+  document.getElementById('loreTabRaro').classList.toggle('active',     tab === 'raro');
+  document.getElementById('loreTabLendario').classList.toggle('active', tab === 'lendario');
   _loreRenderLista();
 }
 
@@ -80,11 +81,18 @@ function _loreRenderLista() {
   }
 
   // Filtra pela aba ativa
-  const lista = LORE_CAPITULOS.filter(c =>
-    _loreTabAtual === 'comum'
-      ? c.raridade === 'Comum'
-      : c.raridade === 'Raro' || c.raridade === 'Lendário'
-  );
+  const mapRar = { comum: 'Comum', raro: 'Raro', lendario: 'Lendário' };
+  const lista  = LORE_CAPITULOS.filter(c => c.raridade === mapRar[_loreTabAtual]);
+
+  if(!lista.length) {
+    const label = mapRar[_loreTabAtual];
+    body.innerHTML = `
+      <div style="text-align:center;padding:20px 10px;color:var(--muted);font-size:9px;line-height:1.8;">
+        <div style="font-size:28px;margin-bottom:8px;">${_loreTabAtual === 'raro' ? '🔵' : '🌟'}</div>
+        Histórias ${label}s em desenvolvimento.<br>Em breve novas aventuras aqui.
+      </div>`;
+    return;
+  }
 
   body.innerHTML = lista.map(cap => {
     const custo      = LORE_CUSTOS[cap.raridade];

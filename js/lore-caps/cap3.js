@@ -5,7 +5,7 @@ LORE_CAPITULOS.push({
   descricao:'Outros sobreviventes com Avatares se reuniram. Uma aliança frágil, motivações diferentes, um inimigo em comum. Sua voz — e a de [nome] — pode mudar tudo.',
   icone:    '🏕️',
   raridade: 'Raro',
-  anterior: null,
+  anterior: null, // início da série Raro
   emBreve:  true,
   cenas: {},
 });

@@ -5,7 +5,7 @@ LORE_CAPITULOS.push({
   descricao:'A origem de tudo. O preço da vitória. A verdade sobre as Fracturas — e sobre o que [nome] realmente é.',
   icone:    '🕳️',
   raridade: 'Lendário',
-  anterior: 'conselho_sobreviventes',
+  anterior: null, // início da série Lendário
   emBreve:  true,
   cenas: {},
 });
