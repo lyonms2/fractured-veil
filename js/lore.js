@@ -258,8 +258,16 @@ function continuarCapitulo(capId) {
   const prog = _loreGetProg(capId);
   if(!cap || !prog || prog.concluido) return;
 
+  // Se a cena salva não existir mais (ex.: capítulo foi reescrito),
+  // reinicia do início sem cobrar novamente
+  const cenaId = cap.cenas[prog.cenaAtual] ? prog.cenaAtual : 'inicio';
+  if(cenaId === 'inicio' && prog.cenaAtual !== 'inicio') {
+    _loreSetProg(capId, { caminho: [], cenaAtual: 'inicio', concluido: false, fimId: null });
+    showBubble('Capítulo reiniciado — história atualizada 📖');
+  }
+
   _loreCapituloAtual = cap;
-  _loreRenderCena(prog.cenaAtual);
+  _loreRenderCena(cenaId);
 }
 
 // ── Renderiza uma cena ────────────────────────────────────────────
@@ -270,7 +278,12 @@ function _loreRenderCena(cenaId) {
 
   const cap  = _loreCapituloAtual;
   const cena = cap.cenas[cenaId];
-  if(!cena) return;
+  if(!cena) {
+    // Cena inválida — reseta progresso para o início
+    _loreSetProg(cap.id, { caminho: [], cenaAtual: 'inicio', concluido: false, fimId: null });
+    _loreRenderCena('inicio');
+    return;
+  }
 
   // Cena final — conclui e vai para modo leitura
   if(cena.fim) {
