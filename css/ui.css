@@ -553,3 +553,9 @@
   background:rgba(255,255,255,.03); border:1px solid var(--border); color:var(--muted);
 }
 .lore-btn-secondary:hover { background:rgba(255,255,255,.07); color:var(--text); }
+/* Escolha exibida no modo leitura */
+.lore-escolha-lida {
+  font-size:8px; color:var(--gold); padding:6px 10px;
+  border-left:2px solid rgba(212,175,55,.4);
+  margin:6px 0 10px; font-style:italic; opacity:.85;
+}
