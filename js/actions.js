@@ -41,6 +41,7 @@ function spendCoins(amount) {
 
 function earnCoins(amount) {
   gs.moedas += amount;
+  playSound('coin');
   showCoinAnim(amount, false);
   updateResourceUI();
 }

@@ -98,6 +98,7 @@ function layEgg() {
   eggLayNotified  = false;
 
   playAnim('anim-layegg');
+  playSound('egg_laid');
   const wrap = document.getElementById('creatureWrap');
   if(wrap) {
     const ep = document.createElement('div');
@@ -408,6 +409,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
     cracks.style.opacity = '1';
     if(lines[0]) lines[0].style.opacity = '1';
     if(lines[1]) lines[1].style.opacity = '1';
+    playSound('egg_crack');
   }, 0);
   setTimeout(() => { svg.style.transform = 'rotate(8deg) scale(1.08)'; }, 120);
   setTimeout(() => {
@@ -421,6 +423,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
     if(lines[4]) lines[4].style.opacity = '1';
     pulse.style.transition = 'opacity .15s';
     pulse.style.opacity = '0.8';
+    playSound('summon_pulse');
   }, 500);
   setTimeout(() => { pulse.style.opacity = '0'; }, 680);
   setTimeout(() => {
@@ -428,6 +431,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
     svg.style.transition = 'transform .2s ease, opacity .2s ease';
     svg.style.transform  = 'scale(1.4)';
     svg.style.opacity    = '0';
+    playSound('summon_impact');
   }, 900);
   setTimeout(() => {
     flash.style.opacity = '0';
@@ -541,6 +545,7 @@ function applyEggVisual(raridade, crackColor) {
 }
 
 function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
+  playSound('summon_start');
   const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
   const prefPool  = PREFIXOS[elemento]?.[raridade] || PREFIXOS[elemento]?.['Comum'] || ['Mistix'];
   const nome      = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;

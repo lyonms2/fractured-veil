@@ -304,6 +304,11 @@ function hatch() {
   setTimeout(() => { wrap.style.transform = 'scale(1) translateY(0)'; }, 100);
   setTimeout(() => { wrap.style.transition = ''; }, 700);
 
+  playSound('hatch');
+  const _rar = avatar?.raridade;
+  if(_rar === 'Lendário') playSound('rarity_lendario');
+  else if(_rar === 'Raro') playSound('rarity_raro');
+  else                     playSound('rarity_comum');
   showBubble('Olá! 🐣');
   addLog(`${avatar.nome.split(',')[0]} nasceu! Cuide bem dele.`, 'good');
 }

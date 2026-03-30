@@ -406,6 +406,7 @@ async function desafiarJogador(walletOponente) {
   }
 
   await rtdb().ref(`arena/salas/${salaId}`).set(sala);
+  playSound('arena_challenge');
 
   // Marca o criador como emPartida (oponente já foi marcado pela transaction)
   await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
@@ -529,6 +530,7 @@ async function aceitarDesafio(salaId) {
     [`jogadores/${walletAddress}/seed`]:     avatar.seed || 0,
     [`jogadores/${walletAddress}/nivel`]:    nivel || 1,
   });
+  playSound('arena_accept');
 
   const fila = _getFila();
   await rtdb().ref(`arena/lobby/${fila}/${walletAddress}/emPartida`).set(true);
@@ -904,6 +906,9 @@ async function _animarRevelacao(salaId, sala, opWallet) {
   await _sleep(600);
 
   // ── Fase 4: banner de resultado ──
+  if(res === 'vitoria')      playSound('arena_round_win');
+  else if(res === 'derrota') playSound('arena_round_lose');
+  else                       playSound('arena_round_draw');
   const cfg = {
     vitoria: { txt:'🏆 VOCÊ VENCEU A RODADA!', cor:'#7ab87a', bg:'rgba(122,184,122,.12)', borda:'rgba(122,184,122,.3)' },
     derrota: { txt:'💀 VOCÊ PERDEU A RODADA',  cor:'#e74c3c', bg:'rgba(231,76,60,.10)',   borda:'rgba(231,76,60,.3)' },
