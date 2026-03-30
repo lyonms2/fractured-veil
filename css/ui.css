@@ -559,3 +559,28 @@
   border-left:2px solid rgba(212,175,55,.4);
   margin:6px 0 10px; font-style:italic; opacity:.85;
 }
+/* Typewriter */
+.lore-p {
+  margin-bottom:8px;
+}
+.lore-p:last-child { margin-bottom:0; }
+.lore-p-typing::after {
+  content:'▌';
+  color:var(--gold);
+  animation:lore-cursor-blink .7s step-end infinite;
+}
+@keyframes lore-cursor-blink {
+  0%,100% { opacity:.9; }
+  50%     { opacity:0;  }
+}
+.lore-tw-hidden {
+  opacity:0; pointer-events:none;
+}
+.lore-tw-reveal {
+  animation:lore-fade-in .5s ease forwards;
+  pointer-events:auto;
+}
+@keyframes lore-fade-in {
+  from { opacity:0; transform:translateY(4px); }
+  to   { opacity:1; transform:translateY(0);   }
+}

@@ -28,6 +28,83 @@ const LORE_RAR_MAP = { comum: 'Comum', raro: 'Raro', lendario: 'Lendário' };
 let _loreSerieAtual    = 'comum';
 let _loreCapituloAtual = null;
 
+// ── Typewriter engine ─────────────────────────────────────────────
+let _loreTwHandle = null;
+
+function _loreCancelTypewriter() {
+  if(_loreTwHandle) { _loreTwHandle.cancel(); _loreTwHandle = null; }
+}
+
+function _loreTypewriter(container, rawText, onDone) {
+  _loreCancelTypewriter();
+
+  const SPEED = 18; // ms por caractere
+  const PAUSE = 380; // pausa entre parágrafos (ms)
+
+  const paragraphs = rawText.split('\n\n').map(p => p.trim()).filter(Boolean);
+  container.innerHTML = '';
+
+  let dead    = false;
+  let timerId = null;
+  let pIdx    = 0;
+  let curEl   = null;
+  let charIdx = 0;
+
+  function kill() {
+    dead = true;
+    if(timerId) { clearInterval(timerId); clearTimeout(timerId); timerId = null; }
+  }
+  _loreTwHandle = { cancel: kill };
+
+  // Clique em qualquer lugar pula a animação
+  const body = document.getElementById('loreBody');
+  function skip() {
+    if(dead) return;
+    kill();
+    container.innerHTML = '';
+    paragraphs.forEach(txt => {
+      const p = document.createElement('p');
+      p.className = 'lore-p';
+      p.textContent = txt;
+      container.appendChild(p);
+    });
+    _loreTwHandle = null;
+    onDone();
+  }
+  body.addEventListener('click', skip, { once: true });
+
+  function nextParagraph() {
+    if(dead) return;
+    if(pIdx >= paragraphs.length) {
+      body.removeEventListener('click', skip);
+      _loreTwHandle = null;
+      onDone();
+      return;
+    }
+    curEl = document.createElement('p');
+    curEl.className = 'lore-p lore-p-typing';
+    container.appendChild(curEl);
+    charIdx = 0;
+    timerId = setInterval(typeChar, SPEED);
+  }
+
+  function typeChar() {
+    if(dead) return;
+    const text = paragraphs[pIdx];
+    if(charIdx <= text.length) {
+      curEl.textContent = text.slice(0, charIdx);
+      charIdx++;
+    } else {
+      clearInterval(timerId); timerId = null;
+      curEl.classList.remove('lore-p-typing');
+      pIdx++;
+      timerId = setTimeout(nextParagraph, PAUSE);
+    }
+  }
+
+  nextParagraph();
+}
+
 // ── Substitui [nome] e [elemento] pelo avatar atual ──────────────
 function _loreFmt(texto) {
   const nome = avatar?.nome?.split(',')[0]?.trim() || 'seu Avatar';
@@ -69,6 +146,7 @@ function abrirLore(serie) {
 }
 
 function fecharLore() {
+  _loreCancelTypewriter();
   const modal = document.getElementById('loreModal');
   if(modal) modal.style.display = 'none';
   _loreCapituloAtual = null;
@@ -76,6 +154,7 @@ function fecharLore() {
 
 // ── Lista de capítulos da série atual ────────────────────────────
 function _loreRenderLista() {
+  _loreCancelTypewriter();
   const body = document.getElementById('loreBody');
   if(!body) return;
 
@@ -184,6 +263,7 @@ function continuarCapitulo(capId) {
 
 // ── Renderiza uma cena ────────────────────────────────────────────
 function _loreRenderCena(cenaId) {
+  _loreCancelTypewriter();
   const body = document.getElementById('loreBody');
   if(!body || !_loreCapituloAtual) return;
 
@@ -194,7 +274,6 @@ function _loreRenderCena(cenaId) {
   // Cena final — conclui e vai para modo leitura
   if(cena.fim) {
     _loreAplicarRecompensa(cena.recompensa);
-
     const prog = _loreGetProg(cap.id) || { caminho: [] };
     _loreSetProg(cap.id, {
       caminho:   prog.caminho,
@@ -202,15 +281,17 @@ function _loreRenderCena(cenaId) {
       fimId:     cenaId,
       concluido: true,
     });
-
-    // Mostra o modo leitura completo imediatamente
     lerCapituloSalvo(cap.id);
     return;
   }
 
-  // Cena normal — atualiza cenaAtual no progresso (mas não o caminho ainda)
+  // Cena normal — atualiza cenaAtual no progresso
   const prog = _loreGetProg(cap.id) || { caminho: [] };
   _loreSetProg(cap.id, { ...prog, cenaAtual: cenaId });
+
+  const escolhasHtml = cena.escolhas.map((e, i) =>
+    `<button class="lore-escolha-btn" onclick="loreEscolher(${i})">${_loreFmt(e.texto)}</button>`
+  ).join('');
 
   body.innerHTML = `
     <div class="lore-cena-wrap">
@@ -218,14 +299,21 @@ function _loreRenderCena(cenaId) {
         <div style="font-size:22px;">${cap.icone}</div>
         <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:3px;">${cap.titulo}</div>
       </div>
-      <div class="lore-texto">${_loreFmt(cena.texto)}</div>
-      <div class="lore-escolhas">
-        ${cena.escolhas.map((e, i) => `
-          <button class="lore-escolha-btn" onclick="loreEscolher(${i})">${_loreFmt(e.texto)}</button>
-        `).join('')}
-      </div>
-      <button class="lore-btn-secondary" style="margin-top:10px;width:100%;" onclick="fecharLore()">✕ Fechar</button>
+      <div class="lore-texto" id="loreTwText"></div>
+      <div class="lore-escolhas lore-tw-hidden" id="loreTwChoices">${escolhasHtml}</div>
+      <button class="lore-btn-secondary lore-tw-hidden" id="loreTwClose" style="margin-top:10px;width:100%;" onclick="fecharLore()">✕ Fechar</button>
     </div>`;
+
+  const textEl    = document.getElementById('loreTwText');
+  const choicesEl = document.getElementById('loreTwChoices');
+  const closeEl   = document.getElementById('loreTwClose');
+
+  _loreTypewriter(textEl, _loreFmt(cena.texto), () => {
+    choicesEl.classList.remove('lore-tw-hidden');
+    choicesEl.classList.add('lore-tw-reveal');
+    closeEl.classList.remove('lore-tw-hidden');
+    closeEl.classList.add('lore-tw-reveal');
+  });
 }
 
 // ── Processa a escolha — salva imediatamente antes de avançar ────
@@ -255,6 +343,7 @@ function loreEscolher(idx) {
 
 // ── Modo leitura — história completa, sem interação ──────────────
 function lerCapituloSalvo(capId) {
+  _loreCancelTypewriter();
   const cap  = LORE_CAPITULOS.find(c => c.id === capId);
   const prog = _loreGetProg(capId);
   if(!cap || !prog) return;
