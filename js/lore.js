@@ -15,11 +15,20 @@ const LORE_CUSTOS = {
   Lendário: { moeda: 'cristais', valor: 15 },
 };
 
+// ── Títulos dos modais por série ─────────────────────────────────
+const LORE_TITULOS = {
+  comum:    '📖 HISTÓRIAS DO VÉU',
+  raro:     '🔵 CRÔNICAS DOS RAROS',
+  lendario: '🌟 ÉPICOS DO VÁCUO',
+};
+
+const LORE_RAR_MAP = { comum: 'Comum', raro: 'Raro', lendario: 'Lendário' };
+
 // ── Estado da sessão ─────────────────────────────────────────────
+let _loreSerieAtual     = 'comum';
 let _loreCapituloAtual  = null;
 let _loreCenaAtual      = null;
 let _loreEscolhasFeitas = [];
-let _loreTabAtual = 'comum'; // 'comum' | 'raro' | 'lendario'
 
 // ── Substitui [nome] e [elemento] pelo avatar atual ──────────────
 function _loreFmt(texto) {
@@ -30,9 +39,6 @@ function _loreFmt(texto) {
 
 // ═══════════════════════════════════════════════════════════════════
 // DESBLOQUEIO SEQUENCIAL
-// Um capítulo fica disponível se:
-//   1. Não tem campo `anterior` (é o primeiro da série)
-//   2. O capítulo anterior foi concluído (existe em gs.loreProgresso)
 // ═══════════════════════════════════════════════════════════════════
 function loreCapDesbloqueado(cap) {
   if(!cap.anterior) return true;
@@ -43,9 +49,12 @@ function loreCapDesbloqueado(cap) {
 // MODAL PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════
 
-function abrirLore() {
+function abrirLore(serie) {
+  _loreSerieAtual = serie || 'comum';
   const modal = document.getElementById('loreModal');
   if(!modal) return;
+  const tituloEl = document.getElementById('loreTitulo');
+  if(tituloEl) tituloEl.textContent = LORE_TITULOS[_loreSerieAtual] || '📖 LORE';
   modal.style.display = 'flex';
   _loreRenderLista();
 }
@@ -58,15 +67,7 @@ function fecharLore() {
   _loreEscolhasFeitas = [];
 }
 
-function loreSetTab(tab) {
-  _loreTabAtual = tab;
-  document.getElementById('loreTabComum').classList.toggle('active',    tab === 'comum');
-  document.getElementById('loreTabRaro').classList.toggle('active',     tab === 'raro');
-  document.getElementById('loreTabLendario').classList.toggle('active', tab === 'lendario');
-  _loreRenderLista();
-}
-
-// ── Lista de capítulos ────────────────────────────────────────────
+// ── Lista de capítulos da série atual ────────────────────────────
 function _loreRenderLista() {
   const body = document.getElementById('loreBody');
   if(!body) return;
@@ -80,31 +81,30 @@ function _loreRenderLista() {
     return;
   }
 
-  // Filtra pela aba ativa
-  const mapRar = { comum: 'Comum', raro: 'Raro', lendario: 'Lendário' };
-  const lista  = LORE_CAPITULOS.filter(c => c.raridade === mapRar[_loreTabAtual]);
+  const rarFiltro = LORE_RAR_MAP[_loreSerieAtual];
+  const lista = LORE_CAPITULOS.filter(c => c.raridade === rarFiltro);
 
   if(!lista.length) {
-    const label = mapRar[_loreTabAtual];
+    const icone = _loreSerieAtual === 'raro' ? '🔵' : _loreSerieAtual === 'lendario' ? '🌟' : '📖';
     body.innerHTML = `
       <div style="text-align:center;padding:20px 10px;color:var(--muted);font-size:9px;line-height:1.8;">
-        <div style="font-size:28px;margin-bottom:8px;">${_loreTabAtual === 'raro' ? '🔵' : '🌟'}</div>
-        Histórias ${label}s em desenvolvimento.<br>Em breve novas aventuras aqui.
+        <div style="font-size:28px;margin-bottom:8px;">${icone}</div>
+        Histórias ${rarFiltro}s em desenvolvimento.<br>Em breve novas aventuras aqui.
       </div>`;
     return;
   }
 
-  body.innerHTML = lista.map(cap => {
-    const custo      = LORE_CUSTOS[cap.raridade];
-    const emBreve    = !!cap.emBreve;
-    const desbloq    = loreCapDesbloqueado(cap);
-    const temSaldo   = custo.moeda === 'moedas' ? gs.moedas >= custo.valor : gs.cristais >= custo.valor;
-    const concluido  = !!(gs.loreProgresso?.[cap.id]);
-    const iconeRar   = cap.raridade === 'Lendário' ? '🌟' : cap.raridade === 'Raro' ? '🔵' : '⚪';
-    const corRar     = cap.raridade === 'Lendário' ? 'var(--lendario)' : cap.raridade === 'Raro' ? 'var(--raro)' : 'var(--muted)';
-    const moedaIcon  = custo.moeda === 'moedas' ? '🪙' : '💎';
+  const corRarMap  = { Comum: 'var(--muted)', Raro: 'var(--raro)', Lendário: 'var(--lendario)' };
+  const iconeRarMap = { Comum: '⚪', Raro: '🔵', Lendário: '🌟' };
 
-    // Calcular tag e ação
+  body.innerHTML = lista.map(cap => {
+    const custo     = LORE_CUSTOS[cap.raridade];
+    const emBreve   = !!cap.emBreve;
+    const desbloq   = loreCapDesbloqueado(cap);
+    const temSaldo  = custo.moeda === 'moedas' ? gs.moedas >= custo.valor : gs.cristais >= custo.valor;
+    const concluido = !!(gs.loreProgresso?.[cap.id]);
+    const moedaIcon = custo.moeda === 'moedas' ? '🪙' : '💎';
+
     let tagHtml, acao = '';
     if(emBreve) {
       tagHtml = `<div class="lore-bloqueado-tag">🔜 Em breve</div>`;
@@ -127,7 +127,7 @@ function _loreRenderLista() {
           <div class="lore-cap-titulo">${cap.titulo}</div>
           <div class="lore-cap-desc">${_loreFmt(cap.descricao)}</div>
           <div class="lore-cap-meta">
-            <span style="color:${corRar};font-size:7px;">${iconeRar} ${cap.raridade}</span>
+            <span style="color:${corRarMap[cap.raridade]};font-size:7px;">${iconeRarMap[cap.raridade]} ${cap.raridade}</span>
             <span class="lore-cap-custo">${moedaIcon} ${custo.valor}</span>
           </div>
         </div>
@@ -136,11 +136,11 @@ function _loreRenderLista() {
   }).join('');
 }
 
-// ── Iniciar capítulo (cobra custo e abre a primeira cena) ─────────
+// ── Iniciar capítulo ─────────────────────────────────────────────
 function iniciarCapitulo(capId) {
   const cap = LORE_CAPITULOS.find(c => c.id === capId);
   if(!cap || !hatched || dead || !avatar) return;
-  if(cap.emBreve)          { showBubble('Este capítulo ainda não está disponível.'); return; }
+  if(cap.emBreve)               { showBubble('Este capítulo ainda não está disponível.'); return; }
   if(!loreCapDesbloqueado(cap)) { showBubble('Termine o capítulo anterior primeiro.'); return; }
 
   const custo = LORE_CUSTOS[cap.raridade];
@@ -172,7 +172,6 @@ function _loreRenderCena() {
   if(cena.fim) {
     _loreAplicarRecompensa(cena.recompensa);
 
-    // Salva o caminho percorrido
     if(!gs.loreProgresso) gs.loreProgresso = {};
     gs.loreProgresso[cap.id] = {
       caminho: [..._loreEscolhasFeitas],
@@ -199,7 +198,6 @@ function _loreRenderCena() {
     return;
   }
 
-  // Cena com escolhas
   body.innerHTML = `
     <div class="lore-cena-wrap">
       <div style="text-align:center;margin-bottom:10px;">
@@ -230,7 +228,7 @@ function loreEscolher(idx) {
   _loreRenderCena();
 }
 
-// ── Modo leitura — exibe o caminho salvo sem interação ────────────
+// ── Modo leitura ─────────────────────────────────────────────────
 function lerCapituloSalvo(capId) {
   const cap  = LORE_CAPITULOS.find(c => c.id === capId);
   const prog = gs.loreProgresso?.[capId];
@@ -308,7 +306,6 @@ function _loreRecompensaTxt(r) {
 // ── Exports ───────────────────────────────────────────────────────
 window.abrirLore        = abrirLore;
 window.fecharLore       = fecharLore;
-window.loreSetTab       = loreSetTab;
 window.iniciarCapitulo  = iniciarCapitulo;
 window.loreEscolher     = loreEscolher;
 window._loreRenderLista = _loreRenderLista;
