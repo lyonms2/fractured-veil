@@ -24,11 +24,9 @@ const LORE_TITULOS = {
 
 const LORE_RAR_MAP = { comum: 'Comum', raro: 'Raro', lendario: 'Lendário' };
 
-// ── Estado da sessão ─────────────────────────────────────────────
-let _loreSerieAtual     = 'comum';
-let _loreCapituloAtual  = null;
-let _loreCenaAtual      = null;
-let _loreEscolhasFeitas = [];
+// ── Estado da sessão (em memória) ────────────────────────────────
+let _loreSerieAtual    = 'comum';
+let _loreCapituloAtual = null;
 
 // ── Substitui [nome] e [elemento] pelo avatar atual ──────────────
 function _loreFmt(texto) {
@@ -37,12 +35,23 @@ function _loreFmt(texto) {
   return texto.replace(/\[nome\]/g, nome).replace(/\[elemento\]/g, elem);
 }
 
+// ── Helpers de progresso ─────────────────────────────────────────
+function _loreGetProg(capId) {
+  return gs.loreProgresso?.[capId] || null;
+}
+
+function _loreSetProg(capId, dados) {
+  if(!gs.loreProgresso) gs.loreProgresso = {};
+  gs.loreProgresso[capId] = dados;
+  scheduleSave();
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // DESBLOQUEIO SEQUENCIAL
 // ═══════════════════════════════════════════════════════════════════
 function loreCapDesbloqueado(cap) {
   if(!cap.anterior) return true;
-  return !!(gs.loreProgresso?.[cap.anterior]);
+  return !!(_loreGetProg(cap.anterior)?.concluido);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -62,9 +71,7 @@ function abrirLore(serie) {
 function fecharLore() {
   const modal = document.getElementById('loreModal');
   if(modal) modal.style.display = 'none';
-  _loreCapituloAtual  = null;
-  _loreCenaAtual      = null;
-  _loreEscolhasFeitas = [];
+  _loreCapituloAtual = null;
 }
 
 // ── Lista de capítulos da série atual ────────────────────────────
@@ -94,15 +101,17 @@ function _loreRenderLista() {
     return;
   }
 
-  const corRarMap  = { Comum: 'var(--muted)', Raro: 'var(--raro)', Lendário: 'var(--lendario)' };
+  const corRarMap   = { Comum: 'var(--muted)', Raro: 'var(--raro)', Lendário: 'var(--lendario)' };
   const iconeRarMap = { Comum: '⚪', Raro: '🔵', Lendário: '🌟' };
 
   body.innerHTML = lista.map(cap => {
-    const custo     = LORE_CUSTOS[cap.raridade];
-    const emBreve   = !!cap.emBreve;
-    const desbloq   = loreCapDesbloqueado(cap);
-    const temSaldo  = custo.moeda === 'moedas' ? gs.moedas >= custo.valor : gs.cristais >= custo.valor;
-    const concluido = !!(gs.loreProgresso?.[cap.id]);
+    const custo    = LORE_CUSTOS[cap.raridade];
+    const emBreve  = !!cap.emBreve;
+    const desbloq  = loreCapDesbloqueado(cap);
+    const prog     = _loreGetProg(cap.id);
+    const concluido   = !!prog?.concluido;
+    const emAndamento = !!prog && !concluido;
+    const temSaldo = custo.moeda === 'moedas' ? gs.moedas >= custo.valor : gs.cristais >= custo.valor;
     const moedaIcon = custo.moeda === 'moedas' ? '🪙' : '💎';
 
     let tagHtml, acao = '';
@@ -113,6 +122,9 @@ function _loreRenderLista() {
     } else if(concluido) {
       tagHtml = `<div class="lore-jogar-tag" style="background:rgba(100,200,120,.12);color:#6ee7a0;border-color:rgba(100,200,120,.25);">📖 LER</div>`;
       acao = `lerCapituloSalvo('${cap.id}')`;
+    } else if(emAndamento) {
+      tagHtml = `<div class="lore-jogar-tag" style="background:rgba(212,175,55,.12);color:var(--gold);border-color:rgba(212,175,55,.3);">▶ CONTINUAR</div>`;
+      acao = `continuarCapitulo('${cap.id}')`;
     } else if(!temSaldo) {
       tagHtml = `<div class="lore-bloqueado-tag" style="background:rgba(231,76,60,.12);color:#e74c3c;border-color:rgba(231,76,60,.2);">Sem saldo</div>`;
     } else {
@@ -136,7 +148,7 @@ function _loreRenderLista() {
   }).join('');
 }
 
-// ── Iniciar capítulo ─────────────────────────────────────────────
+// ── Iniciar capítulo (cobra custo, cria progresso vazio) ──────────
 function iniciarCapitulo(capId) {
   const cap = LORE_CAPITULOS.find(c => c.id === capId);
   if(!cap || !hatched || dead || !avatar) return;
@@ -152,51 +164,53 @@ function iniciarCapitulo(capId) {
     gs.cristais -= custo.valor;
   }
   updateResourceUI();
-  scheduleSave();
 
-  _loreCapituloAtual  = cap;
-  _loreCenaAtual      = 'inicio';
-  _loreEscolhasFeitas = [];
-  _loreRenderCena();
+  // Cria o progresso inicial — salvo imediatamente
+  _loreSetProg(capId, { caminho: [], cenaAtual: 'inicio', concluido: false, fimId: null });
+
+  _loreCapituloAtual = cap;
+  _loreRenderCena('inicio');
 }
 
-// ── Renderiza a cena atual ────────────────────────────────────────
-function _loreRenderCena() {
+// ── Continuar capítulo em andamento ──────────────────────────────
+function continuarCapitulo(capId) {
+  const cap  = LORE_CAPITULOS.find(c => c.id === capId);
+  const prog = _loreGetProg(capId);
+  if(!cap || !prog || prog.concluido) return;
+
+  _loreCapituloAtual = cap;
+  _loreRenderCena(prog.cenaAtual);
+}
+
+// ── Renderiza uma cena ────────────────────────────────────────────
+function _loreRenderCena(cenaId) {
   const body = document.getElementById('loreBody');
-  if(!body || !_loreCapituloAtual || !_loreCenaAtual) return;
+  if(!body || !_loreCapituloAtual) return;
 
   const cap  = _loreCapituloAtual;
-  const cena = cap.cenas[_loreCenaAtual];
+  const cena = cap.cenas[cenaId];
   if(!cena) return;
 
+  // Cena final — conclui e vai para modo leitura
   if(cena.fim) {
     _loreAplicarRecompensa(cena.recompensa);
 
-    if(!gs.loreProgresso) gs.loreProgresso = {};
-    gs.loreProgresso[cap.id] = {
-      caminho: [..._loreEscolhasFeitas],
-      fimId:   _loreCenaAtual,
-    };
-    scheduleSave();
+    const prog = _loreGetProg(cap.id) || { caminho: [] };
+    _loreSetProg(cap.id, {
+      caminho:   prog.caminho,
+      cenaAtual: cenaId,
+      fimId:     cenaId,
+      concluido: true,
+    });
 
-    body.innerHTML = `
-      <div class="lore-cena-wrap">
-        <div style="text-align:center;margin-bottom:12px;">
-          <div style="font-size:28px;">${cap.icone}</div>
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:1px;margin-top:4px;">${cap.titulo}</div>
-        </div>
-        <div class="lore-texto">${_loreFmt(cena.texto)}</div>
-        <div class="lore-fim-tag">${_loreFmt(cena.texto_fim)}</div>
-        <div class="lore-recomp-box">
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">RECOMPENSAS</div>
-          ${_loreRecompensaTxt(cena.recompensa)}
-        </div>
-        <div style="margin-top:14px;">
-          <button class="lore-btn-secondary" style="width:100%;" onclick="_loreRenderLista()">← Capítulos</button>
-        </div>
-      </div>`;
+    // Mostra o modo leitura completo imediatamente
+    lerCapituloSalvo(cap.id);
     return;
   }
+
+  // Cena normal — atualiza cenaAtual no progresso (mas não o caminho ainda)
+  const prog = _loreGetProg(cap.id) || { caminho: [] };
+  _loreSetProg(cap.id, { ...prog, cenaAtual: cenaId });
 
   body.innerHTML = `
     <div class="lore-cena-wrap">
@@ -210,32 +224,45 @@ function _loreRenderCena() {
           <button class="lore-escolha-btn" onclick="loreEscolher(${i})">${_loreFmt(e.texto)}</button>
         `).join('')}
       </div>
-      <button class="lore-btn-secondary" style="margin-top:10px;width:100%;" onclick="_loreRenderLista()">✕ Abandonar capítulo</button>
+      <button class="lore-btn-secondary" style="margin-top:10px;width:100%;" onclick="fecharLore()">✕ Fechar</button>
     </div>`;
 }
 
-// ── Processa a escolha ────────────────────────────────────────────
+// ── Processa a escolha — salva imediatamente antes de avançar ────
 function loreEscolher(idx) {
-  if(!_loreCapituloAtual || !_loreCenaAtual) return;
-  const cena = _loreCapituloAtual.cenas[_loreCenaAtual];
+  if(!_loreCapituloAtual) return;
+  const prog = _loreGetProg(_loreCapituloAtual.id);
+  if(!prog) return;
+
+  const cena = _loreCapituloAtual.cenas[prog.cenaAtual];
   if(!cena || !cena.escolhas[idx]) return;
 
-  _loreEscolhasFeitas.push({
-    cenaId: _loreCenaAtual,
+  const escolha = {
+    cenaId: prog.cenaAtual,
     texto:  _loreFmt(cena.escolhas[idx].texto),
+  };
+  const proxima = cena.escolhas[idx].proxima;
+
+  // Salva a escolha + avança a cena ANTES de renderizar
+  _loreSetProg(_loreCapituloAtual.id, {
+    ...prog,
+    caminho:   [...prog.caminho, escolha],
+    cenaAtual: proxima,
   });
-  _loreCenaAtual = cena.escolhas[idx].proxima;
-  _loreRenderCena();
+
+  _loreRenderCena(proxima);
 }
 
-// ── Modo leitura ─────────────────────────────────────────────────
+// ── Modo leitura — história completa, sem interação ──────────────
 function lerCapituloSalvo(capId) {
   const cap  = LORE_CAPITULOS.find(c => c.id === capId);
-  const prog = gs.loreProgresso?.[capId];
-  if(!cap || !prog) { iniciarCapitulo(capId); return; }
+  const prog = _loreGetProg(capId);
+  if(!cap || !prog) return;
 
   const body = document.getElementById('loreBody');
   if(!body) return;
+
+  _loreCapituloAtual = cap;
 
   let html = `<div class="lore-cena-wrap">
     <div style="text-align:center;margin-bottom:12px;">
@@ -250,10 +277,18 @@ function lerCapituloSalvo(capId) {
     html += `<div class="lore-escolha-lida">▶ ${passo.texto}</div>`;
   }
 
-  const cenaFim = cap.cenas[prog.fimId];
-  if(cenaFim) {
-    html += `<div class="lore-texto">${_loreFmt(cenaFim.texto)}</div>`;
-    html += `<div class="lore-fim-tag">${_loreFmt(cenaFim.texto_fim)}</div>`;
+  if(prog.fimId) {
+    const cenaFim = cap.cenas[prog.fimId];
+    if(cenaFim) {
+      html += `<div class="lore-texto">${_loreFmt(cenaFim.texto)}</div>`;
+      html += `<div class="lore-fim-tag">${_loreFmt(cenaFim.texto_fim)}</div>`;
+      if(cenaFim.recompensa) {
+        html += `<div class="lore-recomp-box">
+          <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">RECOMPENSAS</div>
+          ${_loreRecompensaTxt(cenaFim.recompensa)}
+        </div>`;
+      }
+    }
   }
 
   html += `
@@ -278,7 +313,6 @@ function _loreAplicarRecompensa(r) {
 
   updateResourceUI();
   if(typeof updateAllUI === 'function') updateAllUI();
-  scheduleSave();
 
   const moedaTxt = r.moedas ? ` +${r.moedas}🪙` : '';
   const xpTxt    = r.xp    ? ` +${r.xp}XP`     : '';
@@ -304,9 +338,10 @@ function _loreRecompensaTxt(r) {
 }
 
 // ── Exports ───────────────────────────────────────────────────────
-window.abrirLore        = abrirLore;
-window.fecharLore       = fecharLore;
-window.iniciarCapitulo  = iniciarCapitulo;
-window.loreEscolher     = loreEscolher;
-window._loreRenderLista = _loreRenderLista;
-window.lerCapituloSalvo = lerCapituloSalvo;
+window.abrirLore          = abrirLore;
+window.fecharLore         = fecharLore;
+window.iniciarCapitulo    = iniciarCapitulo;
+window.continuarCapitulo  = continuarCapitulo;
+window.loreEscolher       = loreEscolher;
+window._loreRenderLista   = _loreRenderLista;
+window.lerCapituloSalvo   = lerCapituloSalvo;
