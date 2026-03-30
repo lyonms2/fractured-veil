@@ -57,6 +57,7 @@ function _loreTypewriter(container, rawText, onDone) {
   _loreTwHandle = { cancel: kill };
 
   // Clique em qualquer lugar pula a animação
+  // (setTimeout evita que o clique que abriu a cena dispare o skip imediatamente)
   const body = document.getElementById('loreBody');
   function skip() {
     if(dead) return;
@@ -71,7 +72,7 @@ function _loreTypewriter(container, rawText, onDone) {
     _loreTwHandle = null;
     onDone();
   }
-  body.addEventListener('click', skip, { once: true });
+  setTimeout(() => { if(!dead) body.addEventListener('click', skip, { once: true }); }, 50);
 
   function nextParagraph() {
     if(dead) return;
