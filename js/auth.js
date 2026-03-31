@@ -350,7 +350,7 @@ async function _onLoginSuccess(user) {
       document.getElementById('statusCard').style.display   = 'block';
       document.getElementById('actionBtns').style.opacity   = '1';
       document.getElementById('actionBtns').style.pointerEvents = 'all';
-      document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
+      document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
       updateAvatarSize();
       document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
       updateAllUI();

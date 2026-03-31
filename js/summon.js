@@ -222,7 +222,7 @@ function hatch() {
     document.getElementById('actionBtns').style.pointerEvents = 'all';
     loadRuntimeFromSlot(activeSlotIdx);
     document.getElementById('aliveScreen').style.display = 'block';
-    document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
+    document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
     document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
     updateEquippedDisplay();
     syncEasterEggs();
@@ -274,7 +274,7 @@ function hatch() {
   alive.style.opacity = '0';
   alive.style.transition = 'opacity .6s ease';
 
-  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize());
+  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
   syncEasterEggs();

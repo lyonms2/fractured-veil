@@ -95,7 +95,8 @@ const ELEM_CFG = {
   'Aether':       { cores:['#f0f9ff','#e6f7ff','#d6f0ff','#b3e0ff'], coresSec:['#cce7ff','#b3d9ff','#99ccff'], corBrilho:'#ffffff', corOlho:'#bfecff', particulas:'aether' }
 };
 
-function gerarSVG(elemento, raridade, seed, w, h) {
+function gerarSVG(elemento, raridade, seed, w, h, fase) {
+  fase = (typeof fase === 'number') ? fase : 0;
   // random determinístico
   let _seed = seed;
   const random = (min, max) => {
@@ -126,7 +127,16 @@ function gerarSVG(elemento, raridade, seed, w, h) {
   const bocaTipo  = random(1, 8);
   const sid       = seed; // stable id for filter refs
 
-  let s = `<svg viewBox="0 0 200 200" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  // Fase visual features — seed independente para não alterar aparência existente
+  const temCorpoInferior = fase >= 2;
+  const temAsasFase      = fase >= 3;
+  let _fseed = (seed ^ 0xDEAD) >>> 0;
+  const _fr = (mn, mx) => { _fseed = (Math.imul(_fseed, 1664525) + 1013904223) >>> 0; return mn + (_fseed % (mx - mn + 1)); };
+  const tipoSegmento = _fr(1, 3);
+  const tipoAsaFase  = _fr(1, 3);
+
+  const vbH = temCorpoInferior ? 250 : 200;
+  let s = `<svg viewBox="0 0 200 ${vbH}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
   <defs>
     <filter id="glow${sid}"><feGaussianBlur stdDeviation="${raridade==='Lendário'?'6':'4'}" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <filter id="ig${sid}"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -141,6 +151,20 @@ function gerarSVG(elemento, raridade, seed, w, h) {
     <circle cx="100" cy="100" r="85" fill="none" stroke="${cor1}" stroke-width="3" opacity=".5" filter="url(#glow${sid})"><animate attributeName="r" values="80;90;80" dur="3s" repeatCount="indefinite"/></circle>`;
   else if(raridade === 'Raro') s += `
     <circle cx="100" cy="100" r="88" fill="none" stroke="${corBrilho}" stroke-width="2" opacity=".2" filter="url(#glow${sid})"><animate attributeName="r" values="85;90;85" dur="2.5s" repeatCount="indefinite"/></circle>`;
+
+  // Asas de fase (fase 3+) — renderizadas atrás do corpo
+  if(temAsasFase) {
+    if(tipoAsaFase===1) s+=`<path d="M 68 100 Q 48 83 22 62 Q 34 80 46 92 Q 56 99 68 104 Z" fill="${cor1}" stroke="${corBrilho}" stroke-width="1.5" opacity=".72"><animate attributeName="d" values="M 68 100 Q 48 83 22 62 Q 34 80 46 92 Q 56 99 68 104 Z;M 68 100 Q 47 81 20 60 Q 32 78 44 90 Q 54 97 68 102 Z;M 68 100 Q 48 83 22 62 Q 34 80 46 92 Q 56 99 68 104 Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 68 100 Q 46 86 28 70 Q 40 82 54 94 Z" fill="${corBrilho}" opacity=".20"/><path d="M 132 100 Q 152 83 178 62 Q 166 80 154 92 Q 144 99 132 104 Z" fill="${cor1}" stroke="${corBrilho}" stroke-width="1.5" opacity=".72"><animate attributeName="d" values="M 132 100 Q 152 83 178 62 Q 166 80 154 92 Q 144 99 132 104 Z;M 132 100 Q 153 81 180 60 Q 168 78 156 90 Q 146 97 132 102 Z;M 132 100 Q 152 83 178 62 Q 166 80 154 92 Q 144 99 132 104 Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 132 100 Q 154 86 172 70 Q 160 82 146 94 Z" fill="${corBrilho}" opacity=".20"/>`;
+    else if(tipoAsaFase===2) s+=`<path d="M 65 98 L 38 75 L 20 62 L 28 82 L 44 93 L 60 100 Z" fill="${corSec}" stroke="${cor1}" stroke-width="1.5" opacity=".68"><animate attributeName="opacity" values=".68;.82;.68" dur="2.5s" repeatCount="indefinite"/></path><path d="M 65 98 L 32 76 L 18 66 Z" fill="${corBrilho}" opacity=".22" filter="url(#ig${sid})"/><path d="M 135 98 L 162 75 L 180 62 L 172 82 L 156 93 L 140 100 Z" fill="${corSec}" stroke="${cor1}" stroke-width="1.5" opacity=".68"><animate attributeName="opacity" values=".68;.82;.68" dur="2.5s" repeatCount="indefinite"/></path><path d="M 135 98 L 168 76 L 182 66 Z" fill="${corBrilho}" opacity=".22" filter="url(#ig${sid})"/>`;
+    else s+=`<path d="M 66 96 Q 48 82 26 66 Q 38 80 50 90 Q 58 95 66 100 Z" fill="${cor2}" stroke="${corBrilho}" stroke-width="1" opacity=".75"><animate attributeName="d" values="M 66 96 Q 48 82 26 66 Q 38 80 50 90 Q 58 95 66 100 Z;M 66 96 Q 47 80 24 64 Q 36 78 48 88 Q 56 93 66 98 Z;M 66 96 Q 48 82 26 66 Q 38 80 50 90 Q 58 95 66 100 Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 66 103 Q 50 92 34 80 Q 46 90 58 98 Z" fill="${cor1}" opacity=".50"/><path d="M 66 110 Q 52 102 40 94 Q 50 100 62 106 Z" fill="${cor2}" opacity=".35"/><path d="M 134 96 Q 152 82 174 66 Q 162 80 150 90 Q 142 95 134 100 Z" fill="${cor2}" stroke="${corBrilho}" stroke-width="1" opacity=".75"><animate attributeName="d" values="M 134 96 Q 152 82 174 66 Q 162 80 150 90 Q 142 95 134 100 Z;M 134 96 Q 153 80 176 64 Q 164 78 152 88 Q 144 93 134 98 Z;M 134 96 Q 152 82 174 66 Q 162 80 150 90 Q 142 95 134 100 Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 134 103 Q 150 92 166 80 Q 154 90 142 98 Z" fill="${cor1}" opacity=".50"/><path d="M 134 110 Q 148 102 160 94 Q 150 100 138 106 Z" fill="${cor2}" opacity=".35"/>`;
+  }
+
+  // Corpo inferior (fase 2+) — renderizado atrás do corpo principal
+  if(temCorpoInferior) {
+    if(tipoSegmento===1) s+=`<path d="M 84 143 Q 74 162 76 183 Q 84 205 100 208 Q 116 205 124 183 Q 126 162 116 143 Z" fill="url(#grad${sid})" stroke="${corSec}" stroke-width="1.5" opacity=".88"><animate attributeName="opacity" values=".88;.94;.88" dur="3s" repeatCount="indefinite"/></path><ellipse cx="100" cy="178" rx="13" ry="8" fill="${cor2}" opacity=".35" filter="url(#ig${sid})"/>`;
+    else if(tipoSegmento===2) s+=`<polygon points="78,143 122,143 132,168 122,193 78,193 68,168" fill="url(#grad${sid})" stroke="${corBrilho}" stroke-width="1.5" opacity=".85"><animate attributeName="opacity" values=".85;.92;.85" dur="3s" repeatCount="indefinite"/></polygon><line x1="78" y1="168" x2="122" y2="168" stroke="${corBrilho}" stroke-width="1" opacity=".25"/><ellipse cx="100" cy="168" rx="11" ry="7" fill="${corBrilho}" opacity=".15" filter="url(#ig${sid})"/>`;
+    else s+=`<path d="M 88 143 Q 81 160 79 178 Q 82 200 100 204 Q 118 200 121 178 Q 119 160 112 143 Z" fill="url(#grad${sid})" stroke="${corSec}" stroke-width="1.5" opacity=".87"><animate attributeName="opacity" values=".87;.93;.87" dur="3.5s" repeatCount="indefinite"/></path><ellipse cx="100" cy="162" rx="9" ry="5" fill="${corBrilho}" opacity=".18" filter="url(#ig${sid})"/><ellipse cx="100" cy="179" rx="11" ry="6" fill="${corBrilho}" opacity=".18" filter="url(#ig${sid})"/><line x1="100" y1="148" x2="100" y2="196" stroke="${cor1}" stroke-width="1" opacity=".20"/>`;
+  }
 
   // Cauda
   if(temCauda) {

@@ -170,10 +170,11 @@ function updateAvatarSize() {
   const wrap = document.getElementById('creatureSVG');
   if(!wrap || !hatched || dead) return;
   const sz = getFaseSize();
-  const svg = wrap.querySelector('svg');
-  if(svg) {
-    svg.setAttribute('width', sz);
-    svg.setAttribute('height', sz);
+  if(avatar) {
+    wrap.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, sz, sz, getFase());
+  } else {
+    const svg = wrap.querySelector('svg');
+    if(svg) { svg.setAttribute('width', sz); svg.setAttribute('height', sz); }
   }
   wrap.style.width  = sz + 'px';
   wrap.style.height = sz + 'px';
