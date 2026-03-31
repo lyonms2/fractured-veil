@@ -291,6 +291,16 @@
 .pu-ring:nth-child(3) { animation-delay:.15s; border-color:rgba(90,180,232,.4); }
 .pu-ring:nth-child(4) { animation-delay:.3s;  border-color:rgba(90,180,232,.2); }
 
+@keyframes evolve-flash {
+  0%   { opacity:0; transform:scale(.5); }
+  30%  { opacity:1; transform:scale(1.1); }
+  100% { opacity:0; transform:scale(1.4); }
+}
+@keyframes evolve-particle {
+  0%   { opacity:1; transform:translate(-50%,-50%) translate(0,0) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-50%) translate(var(--ex),var(--ey)) scale(0); }
+}
+
 /* ── MARKET ── */
 .mkt-item {
   display:flex; align-items:center; gap:8px;
