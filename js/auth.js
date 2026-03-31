@@ -220,10 +220,12 @@ async function _onLoginSuccess(user) {
     // antigo e dispara um falso logout (common em mobile/throttle).
     await fbDb().collection('players').doc(walletAddress).set({ sessionId: _sessionId }, { merge: true });
     if(_sessionUnsub) _sessionUnsub();
-    // Ignora o primeiro snapshot (reflete o set() que acabamos de fazer)
-    let _sessionFirstSnap = true;
+    // Janela de graça de 3s após o set() — no mobile o Firestore dispara
+    // 2-3 snapshots rápidos (cache local → write local → confirmação servidor)
+    // e um deles pode ter o sessionId antigo, causando falso logout.
+    const _sessionSetAt = Date.now();
     _sessionUnsub = fbDb().collection('players').doc(walletAddress).onSnapshot(snap => {
-      if(_sessionFirstSnap) { _sessionFirstSnap = false; return; }
+      if(Date.now() - _sessionSetAt < 3000) return; // ignora bursts iniciais
       if(!snap.exists || !_sessionId) return;
       const remote = snap.data().sessionId;
       if(remote && remote !== _sessionId) {
