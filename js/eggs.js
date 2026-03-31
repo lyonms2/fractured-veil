@@ -118,7 +118,7 @@ function layEgg() {
   updateResourceUI();
 }
 
-function burnEgg(id) {
+async function burnEgg(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) return;
   const ovo = eggsInInventory[idx];
@@ -136,11 +136,20 @@ function burnEgg(id) {
     addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
     showFloat(`+${moedas}🪙`, '#c9a84c');
   } else {
-    const baseGems = ovo.raridade === 'Lendário' ? 20 : 6;
+    const baseGems = ovo.raridade === 'Lendário' ? 6 : 2;
     const finalGems = Math.round(baseGems * (1 + bonus));
     const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
+
+    // Cristais vêm da pool — verificar saldo antes de queimar
+    if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
+      if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
+      addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
+      return;
+    }
+
     eggsInInventory.splice(idx, 1);
     gs.cristais = (gs.cristais || 0) + finalGems;
+    await sacoDaPool(finalGems, walletAddress || 'sistema', `Queima de ovo ${ovo.raridade}`);
     addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
     showFloat(`+${finalGems} 💎`, '#a78bfa');
     showBubble(`+${finalGems} 💎 🔥`);

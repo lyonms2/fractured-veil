@@ -5,10 +5,10 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const POOL_ALVO        = 1000; // 💎 referência para preço dinâmico
-const POOL_BASE_RARO   = 0.5;  // 💎 preço base por ovo Raro (pool no alvo)
-const POOL_BASE_LEND   = 1.0;  // 💎 preço base por ovo Lendário (pool no alvo)
-const POOL_MIN_RARO    = 0.10; // 💎 mínimo garantido (pool vazia)
-const POOL_MIN_LEND    = 0.25; // 💎 mínimo garantido (pool vazia)
+const POOL_BASE_RARO   = 2.5;  // 💎 preço base por ovo Raro (pool no alvo)
+const POOL_BASE_LEND   = 7.0;  // 💎 preço base por ovo Lendário (pool no alvo)
+const POOL_MIN_RARO    = 0.5;  // 💎 mínimo garantido (pool vazia)
+const POOL_MIN_LEND    = 1.5;  // 💎 mínimo garantido (pool vazia)
 const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
