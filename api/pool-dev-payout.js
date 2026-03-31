@@ -18,9 +18,10 @@ if(!admin.apps.length) {
 
 const db = admin.firestore();
 
-const PCT_DEV      = 0.15;
-const DEV_WALLET   = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
-const MIN_POOL     = 20;
+const { carregarEconomia, calcPctJogo } = require('./_pool-economia');
+
+const DEV_WALLET = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
+const MIN_POOL   = 20;
 
 module.exports = async (req, res) => {
   const auth = req.headers['authorization'];
@@ -30,15 +31,20 @@ module.exports = async (req, res) => {
 
   try {
     const poolRef  = db.collection('config').doc('pool');
-    const poolSnap = await poolRef.get();
-    const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0 };
+    const [poolSnap, eco] = await Promise.all([
+      poolRef.get(),
+      carregarEconomia(db),
+    ]);
+    const poolData  = poolSnap.exists ? poolSnap.data() : { cristais: 0 };
     const poolTotal = poolData.cristais || 0;
 
     if(poolTotal < MIN_POOL) {
       return res.status(200).json({ ok: true, msg: `Pool insuficiente (${poolTotal} 💎). Nada distribuído.` });
     }
 
-    const paraDev = Math.floor(poolTotal * PCT_DEV);
+    // Dev recebe o mesmo % dinâmico que cada jogo
+    const pctDev  = calcPctJogo(poolTotal, eco);
+    const paraDev = Math.floor(poolTotal * pctDev);
     if(paraDev <= 0) {
       return res.status(200).json({ ok: true, msg: 'Valor calculado é zero. Nada distribuído.' });
     }
@@ -57,7 +63,7 @@ module.exports = async (req, res) => {
     const logRef = poolRef.collection('logs').doc();
     batch.set(logRef, {
       tipo:   'saida',
-      motivo: 'Distribuição semanal dev (15%)',
+      motivo: `Distribuição semanal dev (${(pctDev*100).toFixed(1)}%)`,
       origem: DEV_WALLET,
       total:  paraDev,
       pool:   -paraDev,
@@ -73,7 +79,9 @@ module.exports = async (req, res) => {
     await batch.commit();
 
     return res.status(200).json({
-      ok:      true,
+      ok:        true,
+      pctDev:    (pctDev * 100).toFixed(1) + '%',
+      jogosAtivos: eco.jogosAtivos,
       poolAntes: poolTotal,
       paraDev,
       poolDepois: poolTotal - paraDev,

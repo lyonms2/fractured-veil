@@ -20,11 +20,13 @@ if(!admin.apps.length) {
 const db   = admin.firestore();
 const rtdb = admin.database();
 
+const { carregarEconomia, calcPctJogo } = require('./_pool-economia');
+
 // ════════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO
 // ════════════════════════════════════════════════════════════════
-
-const PCT_POOL_SEMANAL = 0.15; // 15% da pool por jogo · 3 jogos + dev = 60% semanal
+// PCT_POOL_SEMANAL é agora dinâmico — calculado via calcPctJogo()
+// Parâmetros em Firestore: config/economia
 
 const SPLIT_LENDARIO = 0.60; // 60% do bolo → Lendário
 const SPLIT_RARO     = 0.40; // 40% do bolo → Raro
@@ -62,13 +64,16 @@ module.exports = async (req, res) => {
   const semana = _semanaAtual();
 
   try {
-    // ── 1. Carrega pool ──
-    const poolSnap = await db.collection('config').doc('pool').get();
-    const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0 };
+    // ── 1. Carrega pool e config de economia ──
+    const [poolSnap, eco] = await Promise.all([
+      db.collection('config').doc('pool').get(),
+      carregarEconomia(db),
+    ]);
+    const poolData  = poolSnap.exists ? poolSnap.data() : { cristais: 0 };
     const poolTotal = poolData.cristais || 0;
 
     log.push(`=== Rouba Monte — Semana ${semana} ===`);
-    log.push(`Pool total: ${poolTotal} 💎`);
+    log.push(`Pool total: ${poolTotal} 💎 · Jogos activos: ${eco.jogosAtivos}`);
 
     if(poolTotal < 20) {
       log.push('Pool insuficiente (mínimo 20 💎). Ranking resetado sem prêmios.');
@@ -76,12 +81,13 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, semana, log });
     }
 
-    // ── 2. Calcula o bolo semanal ──
-    const boloSemanal  = Math.floor(poolTotal * PCT_POOL_SEMANAL);
+    // ── 2. Calcula o bolo semanal (% dinâmico) ──
+    const pctSemanal   = calcPctJogo(poolTotal, eco);
+    const boloSemanal  = Math.floor(poolTotal * pctSemanal);
     const boloLendario = Math.floor(boloSemanal * SPLIT_LENDARIO);
     const boloRaro     = boloSemanal - boloLendario;
 
-    log.push(`Bolo semanal (${PCT_POOL_SEMANAL*100}% da pool): ${boloSemanal} 💎`);
+    log.push(`Bolo semanal (${(pctSemanal*100).toFixed(1)}% dinâmico): ${boloSemanal} 💎`);
     log.push(`  → Lendário: ${boloLendario} 💎`);
     log.push(`  → Raro: ${boloRaro} 💎`);
     log.push(`  → Comum: ${MOEDAS_COMUM_TOTAL} 🪙 (moedas internas)`);
