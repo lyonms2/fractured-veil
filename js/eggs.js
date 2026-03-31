@@ -118,42 +118,92 @@ function layEgg() {
   updateResourceUI();
 }
 
-async function burnEgg(id) {
+function burnEgg(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) return;
   const ovo = eggsInInventory[idx];
+
+  // Ovo apodrecido — descarta sem confirmação
   if(Date.now() > ovo.expiraEm) {
     eggsInInventory.splice(idx, 1);
     addLog('Ovo apodrecido descartado.', 'bad');
     renderEggInventory(); updateResourceUI(); scheduleSave();
     return;
   }
-  const bonus = rarityBonus().burnBonus;
+
+  const bonus    = rarityBonus().burnBonus;
+  const bonusPct = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
+
   if(ovo.raridade === 'Comum') {
     const moedas = Math.round(20 * (1 + bonus));
-    eggsInInventory.splice(idx, 1);
-    earnCoins(moedas);
-    addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
-    showFloat(`+${moedas}🪙`, '#c9a84c');
+    const overlay = document.getElementById('eggBurnOverlay');
+    const preview = document.getElementById('eggBurnPreview');
+    if(overlay && preview) {
+      preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${ovo.elemento}</b><br>
+        Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
+        <span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`;
+      document.getElementById('eggBurnConfirmBtn').onclick = () => {
+        overlay.style.display = 'none';
+        _doBurnComum(id, moedas);
+      };
+      overlay.style.display = 'flex';
+    } else {
+      _doBurnComum(id, moedas);
+    }
   } else {
     const baseGems = ovo.raridade === 'Lendário' ? 6 : 2;
     const finalGems = Math.round(baseGems * (1 + bonus));
-    const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
-
-    // Cristais vêm da pool — verificar saldo antes de queimar
-    if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
-      if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
+    const poolOk = poolData && (poolData.cristais || 0) >= finalGems && poolDisponivel();
+    const overlay = document.getElementById('eggBurnOverlay');
+    const preview = document.getElementById('eggBurnPreview');
+    if(overlay && preview) {
+      const rarColor = ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8';
+      preview.innerHTML = `Ovo <b style="color:${rarColor}">${ovo.raridade} · ${ovo.elemento}</b><br>
+        Receberás <b style="color:#a78bfa">${finalGems} 💎</b>${bonusPct}<br>
+        ${!poolOk ? `<span style="color:#f87171;font-size:8px;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
+          `<span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`}`;
+      const btn = document.getElementById('eggBurnConfirmBtn');
+      btn.disabled = !poolOk;
+      btn.style.opacity = poolOk ? '1' : '.4';
+      btn.onclick = poolOk ? () => { overlay.style.display = 'none'; _doBurnRaro(id, finalGems, bonus); } : null;
+      overlay.style.display = 'flex';
+    } else if(poolOk) {
+      _doBurnRaro(id, finalGems, bonus);
+    } else {
       addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
-      return;
     }
-
-    eggsInInventory.splice(idx, 1);
-    gs.cristais = (gs.cristais || 0) + finalGems;
-    await sacoDaPool(finalGems, walletAddress || 'sistema', `Queima de ovo ${ovo.raridade}`);
-    addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
-    showFloat(`+${finalGems} 💎`, '#a78bfa');
-    showBubble(`+${finalGems} 💎 🔥`);
   }
+}
+
+function _doBurnComum(id, moedas) {
+  const idx = eggsInInventory.findIndex(e => e.id === id);
+  if(idx === -1) return;
+  eggsInInventory.splice(idx, 1);
+  earnCoins(moedas);
+  addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
+  showFloat(`+${moedas}🪙`, '#c9a84c');
+  renderEggInventory(); updateResourceUI(); scheduleSave();
+}
+
+async function _doBurnRaro(id, finalGems, bonus) {
+  const idx = eggsInInventory.findIndex(e => e.id === id);
+  if(idx === -1) return;
+  const ovo = eggsInInventory[idx];
+  const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
+
+  // Verificação final antes de executar
+  if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
+    if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
+    addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
+    return;
+  }
+
+  eggsInInventory.splice(idx, 1);
+  gs.cristais = (gs.cristais || 0) + finalGems;
+  await sacoDaPool(finalGems, walletAddress || 'sistema', `Queima de ovo ${ovo.raridade}`);
+  addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
+  showFloat(`+${finalGems} 💎`, '#a78bfa');
+  showBubble(`+${finalGems} 💎 🔥`);
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
