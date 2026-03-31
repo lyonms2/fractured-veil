@@ -257,7 +257,7 @@
 
 /* ── PHASE UP OVERLAY ── */
 #phaseUpOverlay {
-  position:absolute; inset:0; z-index:29;
+  position:fixed; inset:0; z-index:10000;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   pointer-events:none; opacity:0;
 }
