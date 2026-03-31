@@ -378,10 +378,6 @@ function gameTick() {
     if(btn) btn.style.display = 'none';
   }
 
-  // Moedas passivas: +2 a cada 2 minutos
-  if(tickCount % (60 * 2) === 0) {
-    earnCoins(Math.round(2 * rarityBonus().moedas));
-  }
 }
 
 function autoSpeak() {
