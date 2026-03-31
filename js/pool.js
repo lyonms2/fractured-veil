@@ -222,56 +222,34 @@ async function loadPoolLogs(reset) {
 
 // ═══════════════════════════════════════════
 // ENTRADA NA POOL (taxas)
-// Split: 80% → pool P2E, 20% → conta dev (manutenção)
+// 100% das taxas vão para a pool — dev recebe via cron semanal separado
 // ═══════════════════════════════════════════
-const DEV_WALLET_ADDR  = DEV_WALLET;
-const POOL_SPLIT       = 0.80; // 80% para a pool
-const DEV_SPLIT        = 0.20; // 20% para a conta dev
-
 async function addToPool(totalTaxa, motivo, origem) {
   if(totalTaxa <= 0) return;
-
-  // Calcular split — arredonda para baixo, dev leva o resto
-  const paraPool = Math.floor(totalTaxa * POOL_SPLIT);
-  const paraDev  = totalTaxa - paraPool; // garante que paraPool + paraDev = totalTaxa
 
   try {
     const batch = db.batch();
 
-    // 80% → pool P2E
-    if(paraPool > 0) {
-      batch.update(db.collection('config').doc('pool'), {
-        cristais:    firebase.firestore.FieldValue.increment(paraPool),
-        totalEntrou: firebase.firestore.FieldValue.increment(paraPool),
-      });
+    batch.update(db.collection('config').doc('pool'), {
+      cristais:    firebase.firestore.FieldValue.increment(totalTaxa),
+      totalEntrou: firebase.firestore.FieldValue.increment(totalTaxa),
+    });
 
-      const logRef = db.collection('config').doc('pool')
-        .collection('logs').doc();
-      batch.set(logRef, {
-        tipo:    'entrada',
-        motivo,
-        origem:  origem || walletAddress || 'sistema',
-        total:   totalTaxa,
-        pool:    paraPool,
-        dev:     paraDev,
-        ts:      firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    }
-
-    // 20% → conta dev no Firestore
-    if(paraDev > 0) {
-      const devRef = db.collection('players').doc(DEV_WALLET_ADDR);
-      batch.set(devRef, {
-        'gs.cristais': firebase.firestore.FieldValue.increment(paraDev),
-        cristais:      firebase.firestore.FieldValue.increment(paraDev),
-      }, { merge: true });
-    }
+    const logRef = db.collection('config').doc('pool').collection('logs').doc();
+    batch.set(logRef, {
+      tipo:   'entrada',
+      motivo,
+      origem: origem || walletAddress || 'sistema',
+      total:  totalTaxa,
+      pool:   totalTaxa,
+      ts:     firebase.firestore.FieldValue.serverTimestamp(),
+    });
 
     await batch.commit();
 
     if(poolData) {
-      poolData.cristais    = (poolData.cristais    || 0) + paraPool;
-      poolData.totalEntrou = (poolData.totalEntrou || 0) + paraPool;
+      poolData.cristais    = (poolData.cristais    || 0) + totalTaxa;
+      poolData.totalEntrou = (poolData.totalEntrou || 0) + totalTaxa;
     }
 
     renderPoolWidget();

@@ -1529,31 +1529,20 @@ async function _bnRenderResultado(sala, opWallet) {
     const taxa = Math.floor(bruto * BN_TAXA);
     if(taxa > 0 && usaCris && typeof fbDb === 'function' && fbDb()) {
       try {
-        const POOL_SPLIT      = 0.80;
-        const DEV_WALLET_ADDR = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
-        const paraPool = Math.floor(taxa * POOL_SPLIT);
-        const paraDev  = taxa - paraPool;
-        const motivo   = `Batalha Naval ${_bnRaridade()} — taxa de partida`;
-        const inc = firebase.firestore.FieldValue.increment;
-        const batch = fbDb().batch();
-        if(paraPool > 0) {
-          batch.update(fbDb().collection('config').doc('pool'), {
-            cristais:    inc(paraPool),
-            totalEntrou: inc(paraPool),
-          });
-          const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-          batch.set(logRef, {
-            tipo: 'entrada', motivo,
-            origem: walletAddress || 'bn',
-            total: taxa, pool: paraPool, dev: paraDev,
-            ts: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-        }
-        if(paraDev > 0) {
-          batch.set(fbDb().collection('players').doc(DEV_WALLET_ADDR), {
-            'gs.cristais': inc(paraDev), cristais: inc(paraDev),
-          }, { merge: true });
-        }
+        const motivo = `Batalha Naval ${_bnRaridade()} — taxa de partida`;
+        const inc    = firebase.firestore.FieldValue.increment;
+        const batch  = fbDb().batch();
+        batch.update(fbDb().collection('config').doc('pool'), {
+          cristais:    inc(taxa),
+          totalEntrou: inc(taxa),
+        });
+        const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
+        batch.set(logRef, {
+          tipo: 'entrada', motivo,
+          origem: walletAddress || 'bn',
+          total: taxa, pool: taxa,
+          ts: firebase.firestore.FieldValue.serverTimestamp(),
+        });
         await batch.commit();
       } catch(e) { console.warn('[BN] pool error:', e); }
     }

@@ -24,9 +24,9 @@ const rtdb = admin.database();
 // CONFIGURAÇÃO
 // ════════════════════════════════════════════════════════════════
 
-// % do total da pool que será distribuída a cada semana
-// 20% é conservador — mantém a pool saudável e crescendo
-const PCT_POOL_SEMANAL = 0.20;
+// % do total da pool que será distribuída a cada semana por jogo
+// 3 jogos × 15% + dev 15% = 60% semanal · 40% fica na pool crescendo
+const PCT_POOL_SEMANAL = 0.15;
 
 // Como o bolo semanal é dividido entre as filas
 const SPLIT_LENDARIO = 0.60; // 60% do bolo vai para Lendário

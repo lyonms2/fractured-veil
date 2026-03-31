@@ -24,7 +24,7 @@ const rtdb = admin.database();
 // CONFIGURAÇÃO
 // ════════════════════════════════════════════════════════════════
 
-const PCT_POOL_SEMANAL = 0.20; // 20% da pool distribuída por semana
+const PCT_POOL_SEMANAL = 0.15; // 15% da pool por jogo · 3 jogos + dev = 60% semanal
 
 const SPLIT_LENDARIO = 0.60; // 60% do bolo → Lendário
 const SPLIT_RARO     = 0.40; // 40% do bolo → Raro

@@ -1090,43 +1090,25 @@ async function _distribuirRecompensas(sala, opWallet) {
 
   await rtdb().ref(`arena/salas/${sala.id}/recompensaDistribuida`).set(true);
 
-  // Taxa vai para a pool P2E do marketplace (Firestore — mesmo doc que pool.js usa)
+  // Taxa vai para a pool P2E — 100% (dev recebe via cron semanal)
   // Só cristais alimentam a pool; moedas são apenas queimadas
   if(taxa > 0 && usaCris && fbDb()) {
     try {
-      const POOL_SPLIT      = 0.80;
-      const DEV_WALLET_ADDR = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
-      const paraPool = Math.floor(taxa * POOL_SPLIT);
-      const paraDev  = taxa - paraPool;
-      const motivo   = `Arena ${sala.fila} — taxa de partida`;
+      const motivo = `Arena ${sala.fila} — taxa de partida`;
+      const inc    = firebase.firestore.FieldValue.increment;
+      const batch  = fbDb().batch();
 
-      const batch = fbDb().batch();
-
-      // 80% → pool P2E
-      if(paraPool > 0) {
-        batch.update(fbDb().collection('config').doc('pool'), {
-          cristais:    firebase.firestore.FieldValue.increment(paraPool),
-          totalEntrou: firebase.firestore.FieldValue.increment(paraPool),
-        });
-        const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-        batch.set(logRef, {
-          tipo:   'entrada',
-          motivo,
-          origem: walletAddress || 'arena',
-          total:  taxa,
-          pool:   paraPool,
-          dev:    paraDev,
-          ts:     firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      }
-
-      // 20% → carteira dev
-      if(paraDev > 0) {
-        batch.set(fbDb().collection('players').doc(DEV_WALLET_ADDR), {
-          'gs.cristais': firebase.firestore.FieldValue.increment(paraDev),
-          cristais:      firebase.firestore.FieldValue.increment(paraDev),
-        }, { merge: true });
-      }
+      batch.update(fbDb().collection('config').doc('pool'), {
+        cristais:    inc(taxa),
+        totalEntrou: inc(taxa),
+      });
+      const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
+      batch.set(logRef, {
+        tipo: 'entrada', motivo,
+        origem: walletAddress || 'arena',
+        total: taxa, pool: taxa,
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
 
       await batch.commit();
     } catch(e) { console.warn('[ARENA] addToPool erro:', e); }
