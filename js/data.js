@@ -129,15 +129,14 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
 
   // Fase visual features — seed independente para não alterar aparência existente
   const temCorpoInferior = fase >= 2;
-  const temAsasFase      = fase >= 3;
   let _fseed = (seed ^ 0xDEAD) >>> 0;
   const _fr = (mn, mx) => { _fseed = (Math.imul(_fseed, 1664525) + 1013904223) >>> 0; return mn + (_fseed % (mx - mn + 1)); };
   const tipoSegmento = _fr(1, 3);
   const tipoAsaFase  = _fr(1, 3);
+  const temAsasFase  = fase >= 3 && _fr(0, 9) < 7; // 70% de chance, determinado pelo seed
 
   const vbH       = temCorpoInferior ? 260 : 200;
-  const wdy       = temCorpoInferior ? 63 : 0;   // fase wings: offset from y=100 to body
-  const ady       = temCorpoInferior ? 73 : 0;   // raridade wings: offset from y=90 to body
+  const wdy       = temCorpoInferior ? 63 : 0;   // wings: offset from y=100 to body
   const brAnchorY = temCorpoInferior ? 163 : 95; // arms: attachment Y
   const brAnchorR = temCorpoInferior ? 30 : 35;  // arms: half-width of attachment
   const caudaY0   = temCorpoInferior ? 213 : 140; // tail: origin Y
@@ -181,14 +180,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     else s+=`<path d="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45};M 100 ${cy2} Q 72 ${cy2+22} 62 ${cy2+47};M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path><path d="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45};M 100 ${cy2} Q 128 ${cy2+22} 138 ${cy2+47};M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path>`;
   }
 
-  // Asas
-  if(temAsas) {
-    s+=`<g transform="translate(0, ${ady})">`;
-    if(tipoAsas===1) s+=`<ellipse cx="60" cy="90" rx="28" ry="40" fill="url(#lg${sid})" opacity=".6" transform="rotate(-25 60 90)" stroke="${corBrilho}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="-25 60 90;-30 60 90;-25 60 90" dur="2s" repeatCount="indefinite"/></ellipse><ellipse cx="140" cy="90" rx="28" ry="40" fill="url(#lg${sid})" opacity=".6" transform="rotate(25 140 90)" stroke="${corBrilho}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="25 140 90;30 140 90;25 140 90" dur="2s" repeatCount="indefinite"/></ellipse>`;
-    else if(tipoAsas===2) s+=`<path d="M 70 95 Q 45 85 40 65 Q 50 70 70 80 Z" fill="${cor1}" opacity=".7" stroke="${cor2}" stroke-width="2"><animate attributeName="d" values="M 70 95 Q 45 85 40 65 Q 50 70 70 80 Z;M 70 95 Q 42 83 38 62 Q 48 68 70 78 Z;M 70 95 Q 45 85 40 65 Q 50 70 70 80 Z" dur="2s" repeatCount="indefinite"/></path><path d="M 130 95 Q 155 85 160 65 Q 150 70 130 80 Z" fill="${cor1}" opacity=".7" stroke="${cor2}" stroke-width="2"><animate attributeName="d" values="M 130 95 Q 155 85 160 65 Q 150 70 130 80 Z;M 130 95 Q 158 83 162 62 Q 152 68 130 78 Z;M 130 95 Q 155 85 160 65 Q 150 70 130 80 Z" dur="2s" repeatCount="indefinite"/></path>`;
-    else s+=`<path d="M 70 90 Q 45 70 35 60 L 40 75 L 50 70 L 55 85 Z" fill="${corSec}" opacity=".8" stroke="${cor1}" stroke-width="2"><animate attributeName="opacity" values=".8;.6;.8" dur="2s" repeatCount="indefinite"/></path><path d="M 130 90 Q 155 70 165 60 L 160 75 L 150 70 L 145 85 Z" fill="${corSec}" opacity=".8" stroke="${cor1}" stroke-width="2"><animate attributeName="opacity" values=".8;.6;.8" dur="2s" repeatCount="indefinite"/></path>`;
-    s+=`</g>`;
-  }
+  // (temAsas e tipoAsas mantidos como phantoms para preservar sequência do seed)
 
   // Tentáculos
   if(temTent) {
