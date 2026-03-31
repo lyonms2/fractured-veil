@@ -101,6 +101,7 @@ function renderPoolWidget() {
 async function renderPoolSection() {
   await loadPool();
   renderPoolStatsCard();
+  renderTranspDistribuicao();
   await loadPoolLogs(true);
 }
 
@@ -149,8 +150,8 @@ function renderPoolStatsCard() {
       </div>
     </div>
     <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.8;">
-      100% das taxas do marketplace alimentam esta pool.<br>
-      O preço de recompra sobe quando a pool está cheia e desce quando está baixa.<br>
+      100% das taxas do jogo alimentam esta pool.<br>
+      Distribuição semanal dinâmica: <strong style="color:var(--gem2);">${_calcPctDisplay(saldo)}% estimado esta semana</strong> por jogo.<br>
       <span style="color:var(--gem2);font-weight:700;">
         ${saldo < 100
           ? '📊 Limite actual: 1 venda/semana · Cresce com a pool'
@@ -162,6 +163,37 @@ function renderPoolStatsCard() {
       </span>
     </div>
   </div>`;
+}
+
+// ═══════════════════════════════════════════
+// CÁLCULO DE % DINÂMICO (espelho do _pool-economia.js)
+// Usado apenas para exibição no frontend
+// ═══════════════════════════════════════════
+function _calcPctDisplay(saldo) {
+  const PCT_MIN = 0.05, PCT_MAX_JOGO = 0.20, PCT_MAX_TOTAL = 0.45, NUM_JOGOS = 3;
+  const ratio    = Math.min(1, saldo / POOL_ALVO);
+  const maxPJ    = Math.min(PCT_MAX_JOGO, PCT_MAX_TOTAL / NUM_JOGOS);
+  const pct      = PCT_MIN + (maxPJ - PCT_MIN) * ratio;
+  return (pct * 100).toFixed(1);
+}
+
+// Preenche os campos dinâmicos da aba de transparência
+function renderTranspDistribuicao() {
+  if(!poolData) return;
+  const saldo = poolData.cristais || 0;
+  const pct   = parseFloat(_calcPctDisplay(saldo));
+  const total = pct * 4; // 3 jogos + dev
+  const retencao = Math.max(0, 100 - total).toFixed(1);
+
+  const fmt = v => `${v.toFixed(1)}% da pool`;
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('transPctArena',    fmt(pct));
+  set('transPctRM',       fmt(pct));
+  set('transPctBN',       fmt(pct));
+  set('transPctDev',      fmt(pct));
+  set('transPctRetencao', `${retencao}% na pool`);
+  set('transPriceRaro',   `${calcPoolPrice('Raro')} 💎 actual · até ${(POOL_BASE_RARO * 2).toFixed(1)} 💎`);
+  set('transPriceLend',   `${calcPoolPrice('Lendário')} 💎 actual · até ${(POOL_BASE_LEND * 2).toFixed(1)} 💎`);
 }
 
 // ═══════════════════════════════════════════

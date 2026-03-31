@@ -570,8 +570,12 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     <!-- ── POOL & TRANSPARÊNCIA ── -->
     <div class="mkt-section" id="sec-transparencia">
       <div class="section-title">🔍 Pool & Transparência</div>
-      <div class="section-sub">Estado da pool de recompensas e como funciona o dinheiro no Fractured Veil.</div>
+      <div class="section-sub">Tudo o que entra e sai da pool é público. Aqui podes ver o estado em tempo real e como a economia do Fractured Veil funciona.</div>
+
+      <!-- Estado da pool (renderizado via pool.js) -->
       <div id="poolStatsCard"></div>
+
+      <!-- Histórico -->
       <div class="pool-log-header" style="margin-top:16px;">
         <div class="pool-log-title">📋 Histórico da Pool</div>
         <div class="pool-log-legend">
@@ -583,36 +587,107 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="loading"><div class="spinner"></div><div>A carregar histórico...</div></div>
       </div>
       <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
+
       <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;">◆ COMO FUNCIONA A ECONOMIA</div>
+
+      <!-- COFRE -->
       <div class="transp-block">
         <div class="transp-block-title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
-          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar.<br><br>
+          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.<br><br>
           <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
           <div class="transp-timelock-status" id="transpTimelockStatus">A carregar...</div>
         </div>
       </div>
+
+      <!-- COMPRA DE CRISTAIS -->
       <div class="transp-block">
-        <div class="transp-block-title">💸 Quando compras 💎 Cristais</div>
+        <div class="transp-block-title">💸 Comprar e Resgatar Cristais</div>
         <div class="transp-block-body">
-          O MATIC vai 100% para o cofre do contrato. Os 💎 são creditados após verificação on-chain.
-          <div class="transp-taxa-row" style="margin-top:10px;"><span>MATIC enviado</span><span class="transp-taxa-val">100% → Cofre</span></div>
-          <div class="transp-taxa-row"><span>💎 creditados</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.
+          <div class="transp-taxa-row" style="margin-top:10px;"><span>Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          <div class="transp-taxa-row"><span>Taxa de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
           <div class="transp-taxa-row"><span>Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
           <br>O teu limite hoje:
           <div class="transp-limit-bar-wrap"><div class="transp-limit-bar" id="transpLimitBar"></div></div>
           <div class="transp-limit-txt" id="transpLimitTxt">Vincula a MetaMask na secção de Cristais para ver o teu limite.</div>
         </div>
       </div>
+
+      <!-- COMO A POOL É ALIMENTADA -->
       <div class="transp-block">
-        <div class="transp-block-title">🏪 Taxas do Marketplace</div>
+        <div class="transp-block-title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
-          <strong>80% das taxas → Pool P2E</strong> · 20% → manutenção
-          <div class="transp-taxa-row" style="margin-top:10px;"><span>Listar avatar</span><span class="transp-taxa-val">2 💎</span></div>
-          <div class="transp-taxa-row"><span>Venda de avatar</span><span class="transp-taxa-val">10% taxa</span></div>
-          <div class="transp-taxa-row"><span>Venda de ovo</span><span class="transp-taxa-val">10% taxa</span></div>
+          <strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">MARKETPLACE</div>
+          <div class="transp-taxa-row"><span>Listar avatar</span><span class="transp-taxa-val">2 💎 → pool</span></div>
+          <div class="transp-taxa-row"><span>Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div class="transp-taxa-row"><span>Venda de ovo no mercado</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">JOGOS PvP (apenas filas Raro e Lendário)</div>
+          <div class="transp-taxa-row"><span>Arena Dimensional</span><span class="transp-taxa-val">15% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span>Rouba Monte</span><span class="transp-taxa-val">10% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span>Batalha Naval</span><span class="transp-taxa-val">10% do prémio → pool</span></div>
         </div>
       </div>
+
+      <!-- DISTRIBUIÇÃO SEMANAL -->
+      <div class="transp-block">
+        <div class="transp-block-title">🏆 Distribuição Semanal (toda segunda-feira)</div>
+        <div class="transp-block-body">
+          Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PARA QUEM VAI</div>
+          <div class="transp-taxa-row"><span>Top 10 Arena (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctArena">—</span></div>
+          <div class="transp-taxa-row"><span>Top 10 Rouba Monte (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctRM">—</span></div>
+          <div class="transp-taxa-row"><span>Top 10 Batalha Naval (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctBN">—</span></div>
+          <div class="transp-taxa-row"><span>Manutenção e desenvolvimento</span><span class="transp-taxa-val" id="transPctDev">—</span></div>
+          <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:12px;">
+            <span style="color:var(--text);font-weight:600;">Pool retém</span>
+            <span class="transp-taxa-val" style="color:var(--green)" id="transPctRetencao">—</span>
+          </div>
+          <div style="margin-top:10px;font-size:8px;color:var(--muted);">
+            Mínimo garantido: <strong style="color:var(--text);">5%</strong> por distribuição · Máximo: <strong style="color:var(--text);">20%</strong> por jogo<br>
+            Ranking Comum recebe <strong style="color:var(--text);">moedas internas</strong> — não cristais.<br>
+            É necessário no mínimo <strong style="color:var(--text);">5 pontos</strong> na semana para receber premiação.
+          </div>
+        </div>
+      </div>
+
+      <!-- OVOS -->
+      <div class="transp-block">
+        <div class="transp-block-title">🥚 Ovos — Queima e Venda para Pool</div>
+        <div class="transp-block-body">
+          Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">QUEIMAR OVO (sai da pool)</div>
+          <div class="transp-taxa-row"><span>Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:9px;">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span>Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:9px;">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span>Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:9px;">(moedas internas)</span></span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">VENDER À POOL (preço dinâmico)</div>
+          <div class="transp-taxa-row"><span>Ovo Raro</span><span class="transp-taxa-val" id="transPriceRaro">—</span></div>
+          <div class="transp-taxa-row"><span>Ovo Lendário</span><span class="transp-taxa-val" id="transPriceLend">—</span></div>
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);">
+            O preço de venda sobe até 2× quando a pool ultrapassa o alvo de <strong style="color:var(--text);">1000 💎</strong>.<br>
+            Limites de venda por semana: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)
+          </div>
+        </div>
+      </div>
+
+      <!-- CÂMBIO / PLAY-TO-EARN -->
+      <div class="transp-block">
+        <div class="transp-block-title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
+        <div class="transp-block-body">
+          Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TAXA DE CÂMBIO (por 1 💎)</div>
+          <div class="transp-taxa-row"><span>Pool ≥ 1000 💎</span><span class="transp-taxa-val">1 000 🪙</span></div>
+          <div class="transp-taxa-row"><span>Pool ≥ 500 💎</span><span class="transp-taxa-val">1 500 🪙</span></div>
+          <div class="transp-taxa-row"><span>Pool ≥ 100 💎</span><span class="transp-taxa-val">2 000 🪙</span></div>
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);">
+            Requisito: avatar nível ≥ 20 · Pool mínima: 100 💎<br>
+            Limite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ── COMPRAR CRISTAIS ── -->
