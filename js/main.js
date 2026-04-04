@@ -211,7 +211,9 @@ document.addEventListener('visibilitychange', async () => {
 function openAvatarZoom() {
   if(!hatched || !avatar || dead) return;
   const size = 260;
-  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFase());
+  const zoomEl = document.getElementById('avatarZoomSVG');
+  zoomEl.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFase());
+  zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = `${avatar.elemento} · ${avatar.raridade} · ${FASES[getFase()]} · Nível ${nivel}`;
   const ov = document.getElementById('avatarZoomOverlay');
