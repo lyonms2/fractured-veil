@@ -78,15 +78,32 @@ function showFloat(txt, color = '#c9a84c') {
   setTimeout(() => el.remove(), 1500);
 }
 
+let _currentAnim = null;
+let _animTimeout = null;
+
 function playAnim(cls, persist = false) {
   const w = document.getElementById('creatureWrap');
   if(!w) return;
-  w.className = 'creature-wrap ' + cls;
-  if(!persist) setTimeout(() => resetAnim(), 900);
+  // Remove animação anterior sem tocar nas classes persistentes (diseased, dirty-creature, sleeping…)
+  if(_currentAnim) { w.classList.remove(_currentAnim); }
+  clearTimeout(_animTimeout);
+  _currentAnim = cls;
+  _animTimeout = null;
+  w.classList.add(cls);
+  if(!persist) {
+    _animTimeout = setTimeout(() => {
+      w.classList.remove(cls);
+      if(_currentAnim === cls) _currentAnim = null;
+      _animTimeout = null;
+    }, 900);
+  }
 }
 function resetAnim() {
   const w = document.getElementById('creatureWrap');
-  if(w) w.className = 'creature-wrap';
+  clearTimeout(_animTimeout);
+  if(w && _currentAnim) w.classList.remove(_currentAnim);
+  _currentAnim = null;
+  _animTimeout = null;
 }
 
 function addLog(msg, type = '') {
