@@ -19,6 +19,7 @@ function triggerSummon() {
   const seed = Math.abs(_h);
 
   dead = false; hatched = false; sick = false; sleeping = false;
+  try { localStorage.removeItem('fv_dead_' + activeSlotIdx); } catch(e) {}
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
   eggClicks = 0; eggLayCooldown = 0;
   poopCount = 0; dirtyLevel = 0; poopPressure = 0;

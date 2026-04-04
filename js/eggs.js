@@ -1,9 +1,14 @@
-function goToMarketplace(e) {
+async function goToMarketplace(e) {
   if(e) e.preventDefault();
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
     showBubble('Choca o ovo primeiro! 🥚');
     addLog('Termina a chocagem antes de ir ao Marketplace.', 'bad');
     return;
+  }
+  // Garante que o estado actual (incluindo dead:true) está no Firebase antes de navegar
+  if(typeof saveToFirebase === 'function') {
+    clearTimeout(_saveTimeout); _saveTimeout = null;
+    await saveToFirebase();
   }
   window.location.href = 'marketplace.html';
 }

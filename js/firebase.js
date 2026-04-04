@@ -169,6 +169,19 @@ function applyGameState(data) {
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 
+  // Backup localStorage: se o save async foi interrompido por navegação, recupera dead:true
+  try {
+    if(localStorage.getItem('fv_dead_' + activeSlotIdx) === '1') {
+      dead = true;
+      if(avatarSlots[activeSlotIdx]) avatarSlots[activeSlotIdx].dead = true;
+      // Só limpa o flag quando Firebase confirmar (próximo save bem-sucedido)
+    }
+    // Limpa flags de slots onde dead==false confirmado pelo Firebase
+    avatarSlots.forEach((s, i) => {
+      if(s && s.dead === false) localStorage.removeItem('fv_dead_' + i);
+    });
+  } catch(e) {}
+
   // Inject orphanEggs
   if(window._orphanEggs && window._orphanEggs.length > 0) {
     const existingIds = new Set(eggsInInventory.map(e => e.id));

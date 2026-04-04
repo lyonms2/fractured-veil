@@ -453,7 +453,11 @@ function killCreature() {
   dead = true;
   playSound('death');
   if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
+  // Cancela qualquer save agendado e persiste imediatamente — garante dead:true no Firebase
+  clearTimeout(_saveTimeout); _saveTimeout = null;
   saveToFirebase();
+  // Backup local: garante que dead:true sobrevive mesmo se navegação interromper o save async
+  try { localStorage.setItem('fv_dead_' + activeSlotIdx, '1'); } catch(e) {}
   ModalManager.closeAll();
 
   const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
