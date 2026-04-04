@@ -60,6 +60,8 @@ function getGameState() {
       poopPressure:   s.poopPressure   ?? 0,
       eggLayCooldown: s.eggLayCooldown ?? 0,
       petCooldown:    s.petCooldown    ?? 0,
+      activeDiseases: s.activeDiseases ? [...s.activeDiseases] : [],
+      diseaseStress:  s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 },
       vitals:         s.vitals ? {...s.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
       eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
       items:          (s.items || []).map(i => ({...i})),
