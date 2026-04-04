@@ -135,11 +135,12 @@ function simonNextRound() {
   document.getElementById('simonSeqDisplay').textContent = 'Observe...';
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
-  const speed = d.tier === 0 ? 800 : d.tier === 1 ? 600 : d.tier === 2 ? 400 : 280;
+  const speed = 600;
+  const flashDur = 380;
   let delay = 500;
   simonSeq.forEach((idx, pos) => {
     setTimeout(() => {
-      simonFlash(idx);
+      simonFlash(idx, flashDur);
       if(pos === simonSeq.length - 1) {
         setTimeout(() => {
           simonPlayerTurn = true;
@@ -152,12 +153,15 @@ function simonNextRound() {
   });
 }
 
-function simonFlash(idx) {
+function simonFlash(idx, duration = 380) {
   const btn = document.getElementById('sb' + idx);
   if(!btn) return;
   playSimonTone(idx % 5);
+  // Força reflow para reiniciar animação mesmo em botões consecutivos iguais
+  btn.classList.remove('active');
+  void btn.offsetWidth;
   btn.classList.add('active');
-  setTimeout(() => btn.classList.remove('active'), 400);
+  setTimeout(() => btn.classList.remove('active'), duration);
 }
 
 function simonPlayerClick(idx) {
