@@ -240,15 +240,20 @@
 /* ══════════════════════════════════════
    SUJEIRA
 ══════════════════════════════════════ */
-.dirt-spot { position:absolute; border-radius:50%; background:radial-gradient(circle,#3d2000 0%,#1a0d00 70%,transparent 100%); opacity:0; pointer-events:none; z-index:7; transition:opacity 1.5s ease,transform 1s ease; transform:scale(.3); }
-.dirt-spot.visible { opacity:1; transform:scale(1); }
+.dirt-spot { position:absolute; border-radius:50%; background:radial-gradient(circle,#3d2000 0%,#1a0d00 70%,transparent 100%); opacity:0; transform:scale(0); pointer-events:none; z-index:7; transition:opacity 1.2s ease; }
+.dirt-spot.visible { opacity:1; animation:dirt-splat .55s cubic-bezier(.34,1.7,.64,1) forwards; }
+@keyframes dirt-splat { 0%{transform:scale(0);opacity:0} 55%{transform:scale(1.35);opacity:1} 80%{transform:scale(.88)} 100%{transform:scale(1);opacity:1} }
 .screen::before { content:''; position:absolute; inset:0; z-index:3; pointer-events:none; border-radius:inherit; background:radial-gradient(ellipse at 20% 80%,rgba(60,30,0,calc(var(--dirty,0)*.45)) 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,rgba(40,20,0,calc(var(--dirty,0)*.35)) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(80,40,0,calc(var(--dirty,0)*.30)) 0%,transparent 40%); transition:background 2s ease; }
 .screen::after { content:''; position:absolute; bottom:0; left:0; right:0; height:calc(var(--dirty,0)*35%); z-index:4; pointer-events:none; border-radius:0 0 inherit inherit; background:linear-gradient(to top,rgba(50,25,0,calc(var(--dirty,0)*.5)) 0%,rgba(35,18,0,calc(var(--dirty,0)*.3)) 40%,transparent 100%); transition:height 2s ease,background 2s ease; }
-.stink { position:absolute; z-index:8; pointer-events:none; font-size:9px; color:#6a5000; font-family:'Cinzel',serif; animation:stink-rise 2.5s ease-out infinite; opacity:0; transition:opacity 1s; }
-.stink.visible { opacity:1; }
-@keyframes stink-rise { 0%{opacity:0;transform:translateY(0) rotate(-5deg) scale(.8)} 20%{opacity:.8} 80%{opacity:.4} 100%{opacity:0;transform:translateY(-35px) rotate(6deg) scale(1.1)} }
+.stink { position:absolute; z-index:8; pointer-events:none; font-size:11px; color:#9a7010; font-family:'Cinzel',serif; animation:stink-rise 3s ease-in-out infinite; opacity:0; transition:opacity 1s; }
+#stink1 { animation-duration:2.8s; font-size:10px; }
+#stink2 { animation-duration:3.6s; font-size:13px; }
+#stink3 { animation-duration:2.3s; font-size:10px; }
+@keyframes stink-rise { 0%{opacity:0;transform:translateY(0) translateX(0) rotate(-8deg) scale(.7)} 15%{opacity:.9} 45%{transform:translateY(-16px) translateX(5px) rotate(4deg) scale(1.05)} 80%{opacity:.4;transform:translateY(-30px) translateX(-3px) rotate(-4deg) scale(1)} 100%{opacity:0;transform:translateY(-44px) translateX(2px) rotate(6deg) scale(.85)} }
 #creatureWrap .creature-svg-wrap { transition:filter 2s ease,width .8s cubic-bezier(.34,1.56,.64,1),height .8s cubic-bezier(.34,1.56,.64,1); filter:sepia(calc(var(--dirty,0)*.7)) saturate(calc(1 - var(--dirty,0)*.5)) brightness(calc(1 - var(--dirty,0)*.2)); }
 #creatureWrap::before { content:''; position:absolute; inset:0; border-radius:8px; pointer-events:none; z-index:5; background:radial-gradient(ellipse at 40% 70%,rgba(60,30,0,calc(var(--dirty,0)*.35)) 0%,transparent 60%); transition:background 2s ease; }
+.dirty-creature { animation:dirty-fidget 5s ease-in-out infinite; }
+@keyframes dirty-fidget { 0%,100%{transform:rotate(0deg) translateX(0)} 20%{transform:rotate(-1.2deg) translateX(-1px)} 45%{transform:rotate(1deg) translateX(1px)} 65%{transform:rotate(-.7deg) translateX(0)} 82%{transform:rotate(1.3deg) translateX(1px)} }
 
 /* ══════════════════════════════════════
    LEVEL UP / PHASE UP
