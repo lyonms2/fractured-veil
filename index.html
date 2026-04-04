@@ -474,6 +474,7 @@
           <div id="batalhaNavalModal"></div>
 
           <div class="creature-area">
+            <button class="avatar-zoom-btn" onclick="openAvatarZoom()" title="Ampliar avatar">🔍</button>
             <div class="creature-wrap" id="creatureWrap" onclick="petCreature()">
               <div id="equippedItemsDisplay"></div>
               <div class="creature-svg-wrap" id="creatureSVG"></div>
@@ -931,6 +932,16 @@
  
 })();
 </script>
+
+<!-- AVATAR ZOOM MODAL -->
+<div id="avatarZoomOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:950;align-items:center;justify-content:center;" onclick="closeAvatarZoom()">
+  <div class="avatar-zoom-modal" onclick="event.stopPropagation()">
+    <button class="avatar-zoom-close" onclick="closeAvatarZoom()">✕</button>
+    <div id="avatarZoomSVG"></div>
+    <div id="avatarZoomName" class="avatar-zoom-name"></div>
+    <div id="avatarZoomInfo" class="avatar-zoom-info"></div>
+  </div>
+</div>
 
 <!-- EGG BURN CONFIRM OVERLAY -->
 <div id="eggBurnOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">

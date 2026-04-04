@@ -238,6 +238,19 @@
 @keyframes poop-cloud-rise { 0%{opacity:0;transform:translate(var(--px),10px) scale(.5)} 20%{opacity:.9;transform:translate(var(--px),0px) scale(1)} 100%{opacity:0;transform:translate(var(--px),-35px) scale(.7)} }
 
 /* ══════════════════════════════════════
+   AVATAR ZOOM
+══════════════════════════════════════ */
+.avatar-zoom-btn { position:absolute; top:8px; right:8px; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:4px 7px; font-size:13px; cursor:pointer; color:#fff; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; }
+.avatar-zoom-btn:hover { background:rgba(60,40,120,.7); transform:scale(1.1); }
+.avatar-zoom-modal { background:#0d0b1a; border:1px solid rgba(167,139,250,.25); border-radius:18px; padding:24px 20px 20px; display:flex; flex-direction:column; align-items:center; gap:12px; position:relative; max-width:320px; width:90%; animation:zoom-modal-in .25s cubic-bezier(.34,1.5,.64,1) forwards; }
+@keyframes zoom-modal-in { 0%{opacity:0;transform:scale(.85)} 100%{opacity:1;transform:scale(1)} }
+.avatar-zoom-close { position:absolute; top:10px; right:12px; background:none; border:none; color:var(--muted); font-size:14px; cursor:pointer; padding:4px; line-height:1; }
+.avatar-zoom-close:hover { color:#fff; }
+#avatarZoomSVG { display:flex; align-items:center; justify-content:center; }
+.avatar-zoom-name { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold-light); letter-spacing:2px; text-align:center; }
+.avatar-zoom-info { font-family:'Cinzel',serif; font-size:8px; color:var(--muted); letter-spacing:1px; text-align:center; }
+
+/* ══════════════════════════════════════
    SUJEIRA
 ══════════════════════════════════════ */
 .dirt-spot { position:absolute; border-radius:50%; background:radial-gradient(circle,#3d2000 0%,#1a0d00 70%,transparent 100%); opacity:0; transform:scale(0); pointer-events:none; z-index:7; transition:opacity 1.2s ease; }

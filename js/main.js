@@ -206,3 +206,19 @@ document.addEventListener('visibilitychange', async () => {
     }
   } catch(e) { console.warn('visibilitychange sync error:', e); }
 });
+
+// ── Avatar Zoom Modal ──
+function openAvatarZoom() {
+  if(!hatched || !avatar || dead) return;
+  const size = 260;
+  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFase());
+  document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
+  document.getElementById('avatarZoomInfo').textContent = `${avatar.elemento} · ${avatar.raridade} · ${FASES[getFase()]} · Nível ${nivel}`;
+  const ov = document.getElementById('avatarZoomOverlay');
+  ov.style.display = 'flex';
+}
+function closeAvatarZoom() {
+  document.getElementById('avatarZoomOverlay').style.display = 'none';
+}
+window.openAvatarZoom  = openAvatarZoom;
+window.closeAvatarZoom = closeAvatarZoom;
