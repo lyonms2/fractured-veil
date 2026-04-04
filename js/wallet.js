@@ -114,6 +114,10 @@ async function connectWallet() {
 
       // ── Apply offline decay ──
       if(hatched && !dead) {
+        // Usa localStorage como fallback: cobre fechar o browser antes do Firebase salvar
+        const _lsHidden = parseInt(localStorage.getItem('fv_lastHidden') || '0');
+        if(_lsHidden > (window.loadedLastSeen || 0)) window.loadedLastSeen = _lsHidden;
+        localStorage.removeItem('fv_lastHidden');
         const offlineSecs   = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
         const offlineCycles = Math.floor(offlineSecs / 60);
         if(offlineCycles > 0) {

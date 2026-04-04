@@ -80,6 +80,8 @@ window.addEventListener('beforeunload', () => {
     avatarSlots[window._pendingEggSlot] = null;
     window._pendingEggSlot = null;
   }
+  // Persiste timestamp para catch-up offline mesmo após fechar o browser
+  localStorage.setItem('fv_lastHidden', Date.now());
 });
 
 // ── DETECTOR DE INATIVIDADE — sugere modo repouso ──
@@ -105,11 +107,14 @@ let _lastHidden = 0;
 document.addEventListener('visibilitychange', async () => {
   if(document.visibilityState === 'hidden') {
     _lastHidden = Date.now();
+    localStorage.setItem('fv_lastHidden', _lastHidden);
     return;
   }
 
-  const _hiddenAt = _lastHidden;
+  const _lsHidden = parseInt(localStorage.getItem('fv_lastHidden') || '0');
+  const _hiddenAt = _lastHidden || _lsHidden;
   _lastHidden = 0;
+  localStorage.removeItem('fv_lastHidden');
 
   // ── Offline catch-up (cobre bloqueio de ecrã / throttle do browser) ──
   if(_hiddenAt > 0 && typeof hatched !== 'undefined' && hatched && !dead) {
