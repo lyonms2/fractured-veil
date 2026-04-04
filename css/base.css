@@ -49,6 +49,8 @@ header {
   align-items:center;
   gap:8px;
 }
+/* No desktop, header-row1 age como a .logo (grid col 1) */
+.header-row1 { display:contents; }
 .logo {
   font-family:'Cinzel',serif; font-weight:900; font-size:12px;
   letter-spacing:4px; color:var(--gold); opacity:.8;

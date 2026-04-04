@@ -141,20 +141,22 @@
   </div>
 
   <header>
-    <div class="logo">Fractured Veil</div>
+    <div class="header-row1">
+      <div class="logo">Fractured Veil</div>
+      <div class="header-right">
+        <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
+          <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
+          <button id="btnAudio" class="btn-wallet" onclick="toggleAudio()" style="min-width:32px;padding:4px 8px;">🔊</button>
+          <button class="btn-wallet btn-sair" data-i18n="ui.logout" onclick="disconnectWallet()">✕ SAIR</button>
+        </div>
+      </div>
+    </div>
     <div class="header-center">
       <button class="res res-clickable" id="btnMarket" onclick="openMarket()" title="Mercado" style="display:none;">🛒</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
       <a class="res res-clickable" id="resCristaisBtn" href="#" onclick="goToMarketplace(event)" title="Marketplace" style="display:none;text-decoration:none;color:inherit;">💎 <b id="resCristais">0</b></a>
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
       <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
-    </div>
-    <div class="header-right">
-      <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
-        <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
-        <button id="btnAudio" class="btn-wallet" onclick="toggleAudio()" style="min-width:32px;padding:4px 8px;">🔊</button>
-        <button class="btn-wallet btn-sair" data-i18n="ui.logout" onclick="disconnectWallet()">✕ SAIR</button>
-      </div>
     </div>
   </header>
 
