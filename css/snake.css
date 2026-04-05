@@ -2,16 +2,59 @@
    SNAKE ELEMENTAL
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ── Desktop: overlay fixo centrado ── */
+@media (min-width: 769px) {
+  #snakeModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 500 !important;
+    border-radius: 0 !important;
+    background: rgba(4,3,10,.97) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 24px !important;
+  }
+
+  #snakeCanvas {
+    width: 360px !important;
+    height: 360px !important;
+  }
+
+  .snake-dpad { display: none; }
+
+  #snakeModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 6px; }
+  #snakeModal .mini-info   { font-size: 10px !important; }
+  #snakeModal #snakeScore  { font-size: 13px !important; }
+  #snakeModal .mini-result-box  { font-size: 13px !important; }
+  #snakeModal .mini-reward-txt  { font-size: 11px !important; }
+  #snakeModal .mini-btns   { margin-top: 8px; gap: 10px; }
+  #snakeModal .mini-btn    { font-size: 10px !important; padding: 10px 24px !important; }
+
+  /* Dica de teclado */
+  #snakeModal::after {
+    content: '↑ ↓ ← →  ou  W A S D';
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: rgba(255,255,255,.2);
+    letter-spacing: 2px;
+    margin-top: -4px;
+  }
+}
+
+/* ── Canvas base ── */
 #snakeCanvas {
   display: block;
   border-radius: 10px;
   border: 1px solid rgba(167,139,250,.2);
-  box-shadow: 0 0 24px rgba(100,200,100,.08), inset 0 0 40px rgba(0,0,0,.4);
+  box-shadow: 0 0 24px rgba(100,200,100,.1), inset 0 0 40px rgba(0,0,0,.4);
   touch-action: none;
   cursor: none;
 }
 
-/* D-pad mobile */
+/* ── D-pad (mobile) ── */
 .snake-dpad {
   display: flex;
   flex-direction: column;
@@ -54,16 +97,11 @@
   color: transparent;
 }
 
-/* Score display */
+/* ── Score ── */
 #snakeScore {
   font-family: 'Cinzel', serif;
   font-size: 11px;
   color: #86efac;
   letter-spacing: 2px;
   margin: 4px 0 0;
-}
-
-/* Ocultar d-pad em desktop */
-@media (min-width: 769px) {
-  .snake-dpad { display: none; }
 }
