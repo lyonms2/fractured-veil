@@ -2,48 +2,6 @@
    SNAKE ELEMENTAL
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Desktop: overlay fixo centrado ── */
-@media (min-width: 769px) {
-  #snakeModal {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 500 !important;
-    border-radius: 0 !important;
-    background: rgba(4,3,10,.97) !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 32px 24px !important;
-  }
-
-  #snakeCanvas {
-    width: 360px !important;
-    height: 360px !important;
-  }
-
-  .snake-dpad { display: none; }
-
-  #snakeModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 6px; }
-  #snakeModal .mini-info   { font-size: 10px !important; }
-  #snakeModal #snakeScore  { font-size: 13px !important; }
-  #snakeModal .mini-result-box  { font-size: 13px !important; }
-  #snakeModal .mini-reward-txt  { font-size: 11px !important; }
-  #snakeModal .mini-btns   { margin-top: 8px; gap: 10px; }
-  #snakeModal .mini-btn    { font-size: 10px !important; padding: 10px 24px !important; }
-
-  /* Dica de teclado */
-  #snakeModal::after {
-    content: '↑ ↓ ← →  ou  W A S D';
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    color: rgba(255,255,255,.2);
-    letter-spacing: 2px;
-    margin-top: -4px;
-  }
-}
-
 /* ── Canvas base ── */
 #snakeCanvas {
   display: block;
@@ -54,7 +12,7 @@
   cursor: none;
 }
 
-/* ── D-pad (mobile) ── */
+/* ── D-pad (mobile only) ── */
 .snake-dpad {
   display: flex;
   flex-direction: column;
@@ -104,4 +62,51 @@
   color: #86efac;
   letter-spacing: 2px;
   margin: 4px 0 0;
+}
+
+/* ── Desktop: overlay fixo centrado ── */
+@media (min-width: 769px) {
+  #snakeModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 500 !important;
+    border-radius: 0 !important;
+    background: rgba(4,3,10,.97) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 24px !important;
+    max-height: 100vh;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  #snakeCanvas {
+    /* Ajusta ao espaço disponível: viewport menos os elementos ao redor (~190px) */
+    width:  min(360px, calc(100vh - 190px)) !important;
+    height: min(360px, calc(100vh - 190px)) !important;
+  }
+
+  /* D-pad desnecessário no desktop — teclado/WASD disponível */
+  .snake-dpad { display: none !important; }
+
+  #snakeModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
+  #snakeModal .mini-info   { font-size: 10px !important; }
+  #snakeModal #snakeScore  { font-size: 13px !important; }
+  #snakeModal .mini-result-box  { font-size: 13px !important; }
+  #snakeModal .mini-reward-txt  { font-size: 11px !important; }
+  #snakeModal .mini-btns   { margin-top: 4px; gap: 10px; }
+  #snakeModal .mini-btn    { font-size: 10px !important; padding: 10px 24px !important; }
+
+  /* Dica de teclado */
+  #snakeModal::after {
+    content: '↑ ↓ ← →  ou  W A S D';
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: rgba(255,255,255,.2);
+    letter-spacing: 2px;
+    margin-top: -2px;
+  }
 }
