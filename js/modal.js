@@ -187,7 +187,7 @@ function miniReward(xpMult, coinMult, vinculoGain = 3) {
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
-  const coinGain = Math.round(d.coins * coinMult * rb.moedas);
+  const coinGain = Math.round(d.coins * coinMult * rb.moedas * 0.65);
   xp      += xpGain;
   earnCoins(coinGain);
   vinculo += vinculoGain;
@@ -196,7 +196,9 @@ function miniReward(xpMult, coinMult, vinculoGain = 3) {
 }
 
 function applyGameCost() {
-  vitals.energia = Math.max(0, vitals.energia - 10);
-  vitals.fome    = Math.max(0, vitals.fome    - 5);
+  vitals.energia    = Math.max(0,   vitals.energia - 5);
+  vitals.fome       = Math.max(0,   vitals.fome    - 3);
+  poopPressure      = Math.min(100, poopPressure   + 3);
+  vitals.humor      = Math.min(100, vitals.humor   + 3);
   updateAllUI();
 }
