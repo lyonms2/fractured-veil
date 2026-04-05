@@ -4,14 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal','bjModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal','bjModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -119,6 +119,12 @@ function openGameSelector() {
     const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
     oddEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
+  const bjEl = document.getElementById('rewardBlackjack');
+  if(bjEl) {
+    const xpMin = r(d.xp*0.4*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
+    const cMin  = r(d.coins*0.4*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
+    bjEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
 
   ModalManager.open('gameSelector');
 }
@@ -135,7 +141,8 @@ function openMinigame(type) {
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
   if(type === 'oddone')    { ModalManager.open('oddModal');   startOddOne();    return; }
-  if(type === 'labirinto') { ModalManager.open('mazeModal'); startLabirinto(); return; }
+  if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
+  if(type === 'blackjack')  { ModalManager.open('bjModal');   startBlackjack();  return; }
 }
 
 function openMiniModal(id) {
