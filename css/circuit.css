@@ -1,0 +1,66 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CIRCUITO ELEMENTAL
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Desktop: overlay fixo centrado ── */
+@media (min-width: 769px) {
+  #circuitModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 500 !important;
+    border-radius: 0 !important;
+    background: rgba(4,3,10,.97) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 24px !important;
+  }
+
+  #circuitCanvas {
+    width: 380px !important;
+    height: 380px !important;
+  }
+
+  #circuitModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 4px; }
+  #circuitModal .mini-info   { font-size: 10px !important; }
+  #circuitModal .mini-btns   { margin-top: 6px; gap: 10px; }
+  #circuitModal .mini-btn    { font-size: 10px !important; padding: 10px 24px !important; }
+}
+
+/* ── Canvas base ── */
+#circuitCanvas {
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(134,239,172,.18);
+  box-shadow: 0 0 28px rgba(134,239,172,.08), inset 0 0 40px rgba(0,0,0,.5);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#circuitCanvas:active {
+  transform: scale(.995);
+}
+
+/* ── Timer ── */
+#circuitTimer {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: #86efac;
+  letter-spacing: 3px;
+  margin: 2px 0;
+  transition: color .4s;
+}
+
+/* ── Hint text no desktop ── */
+@media (min-width: 769px) {
+  #circuitModal::after {
+    content: 'Clique nas peças para girá-las · Conecte ⚡ ao ◎';
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: rgba(255,255,255,.2);
+    letter-spacing: 2px;
+    margin-top: -2px;
+  }
+}

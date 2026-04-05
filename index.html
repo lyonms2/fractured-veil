@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
   <link rel="stylesheet" href="css/snake.css">
+  <link rel="stylesheet" href="css/circuit.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -346,6 +347,14 @@
                   <div class="gs-btn-reward" id="rewardSnake">+0~126 XP · +0~200 🪙</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="openMinigame('circuit')">
+                <div class="gs-btn-icon">⚡</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">CIRCUITO ELEMENTAL</div>
+                  <div class="gs-btn-desc">Gire as peças e conecte a fonte ao receptor</div>
+                  <div class="gs-btn-reward" id="rewardCircuit">+0~90 XP · +0~155 🪙</div>
+                </div>
+              </div>
             </div>
             <div id="gsGridLore" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
@@ -506,6 +515,19 @@
             <div class="mini-btns">
               <button class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
               <button class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
+            </div>
+          </div>
+
+          <div class="mini-modal" id="circuitModal">
+            <div class="mini-title">⚡ CIRCUITO ELEMENTAL</div>
+            <div id="circuitInfo" class="mini-info">Gire as peças e conecte ⚡ ao ◎</div>
+            <div id="circuitTimer" style="font-family:'Cinzel',serif;font-size:13px;color:#86efac;letter-spacing:3px;margin:2px 0;">⏱ 120s</div>
+            <canvas id="circuitCanvas" width="280" height="280" onclick="circuitClick(event)"></canvas>
+            <div class="mini-result-box" id="circuitResult"></div>
+            <div class="mini-reward-txt" id="circuitReward"></div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="circuitAgainBtn" onclick="startCircuit()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn close" onclick="closeMiniModal('circuitModal')">FECHAR</button>
             </div>
           </div>
 
@@ -801,6 +823,7 @@
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
 <script src="js/snake.js"></script>
+<script src="js/circuit.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
 <script src="js/lore.js"></script>
