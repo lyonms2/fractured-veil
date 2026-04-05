@@ -132,7 +132,6 @@ function startLabirinto() {
   }
 
   _mzRunning = true;
-  applyGameCost();
 }
 
 // ── Geração do labirinto (DFS iterativo) ───────────────────────────
@@ -372,6 +371,8 @@ function _mzEnd(won, reason) {
   const result = document.getElementById('mazeResult');
   const reward = document.getElementById('mazeReward');
   const again  = document.getElementById('mazeAgainBtn');
+
+  applyGameCost();
 
   if(!won) {
     if(typeof playSound === 'function') playSound('lose');

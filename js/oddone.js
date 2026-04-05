@@ -64,7 +64,6 @@ function startOddOne() {
   _oddSetScore();
   _oddClearResult();
   _oddNewRound();
-  applyGameCost();
 }
 
 function _oddSetScore() {
@@ -286,6 +285,8 @@ function _oddEnd() {
   const result = document.getElementById('oddResult');
   const reward = document.getElementById('oddReward');
   const again  = document.getElementById('oddAgainBtn');
+
+  applyGameCost();
 
   if(_oddScore === 0) {
     if(result) { result.textContent = '⏰ TEMPO ESGOTADO'; result.className = 'mini-result-box lose'; }

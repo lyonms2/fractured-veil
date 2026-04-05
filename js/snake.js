@@ -68,7 +68,6 @@ function startSnake() {
   clearInterval(_snakeInterval);
   _snakeInterval = setInterval(_snakeTick, speed);
 
-  applyGameCost();
 }
 
 // ── Posicionar comida ──────────────────────────────────────────────
@@ -243,6 +242,8 @@ function _snakeEnd() {
     const d = miniDifficulty();
     const maxScore = d.tier === 0 ? 10 : d.tier === 1 ? 16 : d.tier === 2 ? 22 : 30;
     const frac = Math.min(1, _snakeScore / maxScore);
+
+    applyGameCost();
 
     if(_snakeScore === 0) {
       playSound && playSound('lose');

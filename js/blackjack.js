@@ -98,7 +98,6 @@ function startBlackjack() {
       : `${d.label} · Chegue a 21!`;
 
   _bjShowButtons(false);
-  applyGameCost();
 
   // Anima a distribuição inicial (2 cartas cada)
   const now = performance.now();
@@ -272,6 +271,9 @@ function _bjEndRound(result) {
     againBtn.onclick       = () => _bjNextRound();
     return;
   }
+
+  // Custo aplicado no fim da sessão (junto com as premiações)
+  applyGameCost();
 
   // Recompensas
   let xpMult = 0, coinMult = 0, vinculo = 0;
