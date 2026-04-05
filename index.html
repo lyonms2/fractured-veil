@@ -31,7 +31,6 @@
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
   <link rel="stylesheet" href="css/snake.css">
-  <link rel="stylesheet" href="css/oddone.css">
   <link rel="stylesheet" href="css/labirinto.css">
   <link rel="stylesheet" href="css/blackjack.css">
   <link rel="stylesheet" href="css/mobile-index.css">
@@ -333,14 +332,6 @@
                   <div class="gs-btn-reward" id="rewardSimon">+4~120 XP · +8~195 🪙</div>
                 </div>
               </div>
-              <div class="gs-btn" onclick="openMinigame('velha')">
-                <div class="gs-btn-icon">✕○</div>
-                <div class="gs-btn-info">
-                  <div class="gs-btn-name">JOGO DA VELHA</div>
-                  <div class="gs-btn-desc">Enfrente seu avatar no tabuleiro</div>
-                  <div class="gs-btn-reward" id="rewardVelha">+2~96 XP · +5~156 🪙</div>
-                </div>
-              </div>
               <div class="gs-btn" onclick="openMinigame('snake')">
                 <div class="gs-btn-icon">🐍</div>
                 <div class="gs-btn-info">
@@ -355,14 +346,6 @@
                   <div class="gs-btn-name">LABIRINTO ELEMENTAL</div>
                   <div class="gs-btn-desc">Navegue na névoa, fuja do perseguidor, ache a saída</div>
                   <div class="gs-btn-reward" id="rewardLabirinto">+0~90 XP · +0~155 🪙</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="openMinigame('oddone')">
-                <div class="gs-btn-icon">🔍</div>
-                <div class="gs-btn-info">
-                  <div class="gs-btn-name">ACHE O DIFERENTE</div>
-                  <div class="gs-btn-desc">Identifique o elemento fora do padrão antes do tempo</div>
-                  <div class="gs-btn-reward" id="rewardOddOne">+0~90 XP · +0~155 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('blackjack')">
@@ -478,17 +461,6 @@
             </div>
           </div>
 
-          <div class="mini-modal" id="velhaModal">
-            <div class="mini-title">✕○ JOGO DA VELHA</div>
-            <div class="mini-sub" id="velhaInfo">Sua vez! ✕</div>
-            <div class="velha-grid" id="velhaGrid"></div>
-            <div class="mini-result-box" id="velhaResult"></div>
-            <div class="mini-reward-txt" id="velhaReward"></div>
-            <div class="mini-btns">
-              <button class="mini-btn primary" id="velhaAgainBtn" onclick="startVelha()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('velhaModal')">FECHAR</button>
-            </div>
-          </div>
 
           <div class="mini-modal" id="minaModal">
             <div class="mini-title">💣 CAMPO MINADO</div>
@@ -566,18 +538,6 @@
             </div>
           </div>
 
-          <div class="mini-modal" id="oddModal">
-            <div class="mini-title">🔍 ACHE O DIFERENTE</div>
-            <div id="oddInfo" class="mini-info">Identifique o elemento fora do padrão</div>
-            <canvas id="oddCanvas" width="280" height="280"></canvas>
-            <div id="oddScore" style="font-family:'Cinzel',serif;font-size:11px;color:#a78bfa;letter-spacing:2px;margin:4px 0 0;">🔍 Rodada 1</div>
-            <div class="mini-result-box" id="oddResult"></div>
-            <div class="mini-reward-txt" id="oddReward"></div>
-            <div class="mini-btns">
-              <button class="mini-btn primary" id="oddAgainBtn" onclick="startOddOne()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('oddModal')">FECHAR</button>
-            </div>
-          </div>
 
           <div class="mini-modal" id="bjModal">
             <div class="mini-title">♠ BLACKJACK ELEMENTAL</div>
@@ -889,7 +849,6 @@
 <script src="js/batalha-naval.js"></script>
 <script src="js/snake.js"></script>
 <script src="js/labirinto.js"></script>
-<script src="js/oddone.js"></script>
 <script src="js/blackjack.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>

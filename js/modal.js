@@ -3,15 +3,15 @@
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal','bjModal'
+  'memoriaModal','simonModal','marketModal','coinShopModal',
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal','bjModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -95,12 +95,6 @@ function openGameSelector() {
     const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
     simEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
-  const velhaEl = document.getElementById('rewardVelha');
-  if(velhaEl) {
-    const xpMin = r(d.xp*0.3*rb.xp); const xpMax = r(d.xp*1.2*rb.xp);
-    const cMin  = r(d.coins*0.3*rb.moedas); const cMax = r(d.coins*1.2*rb.moedas);
-    velhaEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
-  }
   const minaEl = document.getElementById('rewardMina');
   if(minaEl) {
     const xpMin = r(d.xp*0.8*rb.xp); const xpMax = r(d.xp*2.0*rb.xp);
@@ -116,12 +110,6 @@ function openGameSelector() {
     const t = Math.max(0, tier);
     const cMax = coinCounts[t] * coinVals[t];
     labEl.textContent = `+${xpMin}~${xpMax} XP · até ${cMax} 🪙 (colete no labirinto!)`;
-  }
-  const oddEl = document.getElementById('rewardOddOne');
-  if(oddEl) {
-    const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
-    const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
-    oddEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
   const bjEl = document.getElementById('rewardBlackjack');
   if(bjEl) {
@@ -139,12 +127,10 @@ function closeGameSelector() {
 
 function openMinigame(type) {
   ModalManager.close('gameSelector');
-  if(type === 'velha')   { ModalManager.open('velhaModal');   startVelha();   return; }
   if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
   if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
-  if(type === 'oddone')    { ModalManager.open('oddModal');   startOddOne();    return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
   if(type === 'blackjack')  { ModalManager.open('bjModal');   startBlackjack();  return; }
 }
