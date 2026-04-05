@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="css/batalha-naval.css">
   <link rel="stylesheet" href="css/snake.css">
   <link rel="stylesheet" href="css/oddone.css">
+  <link rel="stylesheet" href="css/labirinto.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -347,6 +348,14 @@
                   <div class="gs-btn-reward" id="rewardSnake">+0~126 XP · +0~200 🪙</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="openMinigame('labirinto')">
+                <div class="gs-btn-icon">🌀</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">LABIRINTO ELEMENTAL</div>
+                  <div class="gs-btn-desc">Navegue na névoa, fuja do perseguidor, ache a saída</div>
+                  <div class="gs-btn-reward" id="rewardLabirinto">+0~90 XP · +0~155 🪙</div>
+                </div>
+              </div>
               <div class="gs-btn" onclick="openMinigame('oddone')">
                 <div class="gs-btn-icon">🔍</div>
                 <div class="gs-btn-info">
@@ -515,6 +524,36 @@
             <div class="mini-btns">
               <button class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
               <button class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
+            </div>
+          </div>
+
+          <div class="mini-modal" id="mazeModal">
+            <div class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
+            <div id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
+            <canvas id="mazeCanvas" width="280" height="280"></canvas>
+            <div id="mazeTimer" style="font-family:'Cinzel',serif;font-size:13px;color:#86efac;letter-spacing:3px;margin:2px 0;">⏱ 120s</div>
+            <div class="mini-result-box" id="mazeResult"></div>
+            <div class="mini-reward-txt" id="mazeReward"></div>
+            <div class="maze-dpad">
+              <div class="maze-dpad-row">
+                <div class="maze-dpad-btn maze-dpad-center"></div>
+                <button class="maze-dpad-btn" onpointerdown="mazeDpad(1)" onpointerup="mazeDpadRelease(1)" onpointercancel="mazeDpadRelease(1)">▲</button>
+                <div class="maze-dpad-btn maze-dpad-center"></div>
+              </div>
+              <div class="maze-dpad-row">
+                <button class="maze-dpad-btn" onpointerdown="mazeDpad(8)" onpointerup="mazeDpadRelease(8)" onpointercancel="mazeDpadRelease(8)">◀</button>
+                <div class="maze-dpad-btn maze-dpad-center"></div>
+                <button class="maze-dpad-btn" onpointerdown="mazeDpad(2)" onpointerup="mazeDpadRelease(2)" onpointercancel="mazeDpadRelease(2)">▶</button>
+              </div>
+              <div class="maze-dpad-row">
+                <div class="maze-dpad-btn maze-dpad-center"></div>
+                <button class="maze-dpad-btn" onpointerdown="mazeDpad(4)" onpointerup="mazeDpadRelease(4)" onpointercancel="mazeDpadRelease(4)">▼</button>
+                <div class="maze-dpad-btn maze-dpad-center"></div>
+              </div>
+            </div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="mazeAgainBtn" onclick="startLabirinto()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn close" onclick="closeMiniModal('mazeModal')">FECHAR</button>
             </div>
           </div>
 
@@ -823,6 +862,7 @@
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
 <script src="js/snake.js"></script>
+<script src="js/labirinto.js"></script>
 <script src="js/oddone.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>

@@ -4,14 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','oddModal','mazeModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -107,6 +107,12 @@ function openGameSelector() {
     const cMin  = r(d.coins*0.8*rb.moedas); const cMax = r(d.coins*2.0*rb.moedas);
     minaEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
+  const labEl = document.getElementById('rewardLabirinto');
+  if(labEl) {
+    const xpMin = r(d.xp*0.6*rb.xp); const xpMax = r(d.xp*1.8*rb.xp);
+    const cMin  = r(d.coins*0.6*rb.moedas); const cMax = r(d.coins*1.8*rb.moedas);
+    labEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+  }
   const oddEl = document.getElementById('rewardOddOne');
   if(oddEl) {
     const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
@@ -128,7 +134,8 @@ function openMinigame(type) {
   if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
-  if(type === 'oddone')  { ModalManager.open('oddModal');     startOddOne();  return; }
+  if(type === 'oddone')    { ModalManager.open('oddModal');   startOddOne();    return; }
+  if(type === 'labirinto') { ModalManager.open('mazeModal'); startLabirinto(); return; }
 }
 
 function openMiniModal(id) {

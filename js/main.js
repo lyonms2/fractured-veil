@@ -55,8 +55,11 @@ window.minaFlag  = typeof minaFlag  !== "undefined" ? minaFlag  : ()=>{};
 window.startMina  = typeof startMina  !== "undefined" ? startMina  : ()=>{};
 window.startSnake  = typeof startSnake  !== "undefined" ? startSnake  : ()=>{};
 window.snakeDpad   = typeof snakeDpad   !== "undefined" ? snakeDpad   : ()=>{};
-window.startOddOne = typeof startOddOne !== "undefined" ? startOddOne : ()=>{};
-window.oddClick    = typeof oddClick    !== "undefined" ? oddClick    : ()=>{};
+window.startOddOne    = typeof startOddOne    !== "undefined" ? startOddOne    : ()=>{};
+window.oddClick       = typeof oddClick       !== "undefined" ? oddClick       : ()=>{};
+window.startLabirinto = typeof startLabirinto !== "undefined" ? startLabirinto : ()=>{};
+window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       : ()=>{};
+window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};
 
 // ── Modo Repouso Manual ──
 window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
