@@ -123,6 +123,14 @@ function startLabirinto() {
   clearInterval(_mzMoveInt);
   _mzMoveInt = setInterval(_mzTryMove, 160);
 
+  // Sincroniza buffer com tamanho CSS real para evitar upscaling no desktop
+  const _mzCv = document.getElementById('mazeCanvas');
+  if(_mzCv) {
+    const _mzSz = _mzCv.offsetWidth || 280;
+    _mzCv.width  = _mzSz;
+    _mzCv.height = _mzSz;
+  }
+
   _mzRunning = true;
   applyGameCost();
 }

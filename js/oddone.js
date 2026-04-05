@@ -51,14 +51,14 @@ function startOddOne() {
   const info = document.getElementById('oddInfo');
   if(info) info.textContent = `${d.label} · ${_oddCols}×${_oddCols} · Toque no diferente!`;
 
-  // Escalar canvas pelo devicePixelRatio para telas de alta densidade
+  // Buffer = tamanho CSS real × DPR → sem stretch, sem corte
   const canvas = document.getElementById('oddCanvas');
   if(canvas) {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    canvas.width  = 280 * dpr;
-    canvas.height = 280 * dpr;
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // reset + escala em um passo
+    const sz  = canvas.offsetWidth || 280;
+    canvas.width  = sz * dpr;
+    canvas.height = sz * dpr;
+    canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   _oddSetScore();

@@ -376,12 +376,13 @@ function _bjClearUI() {
   if(rewardEl) rewardEl.textContent = '';
   if(againBtn) againBtn.style.display = 'none';
 
-  // Escala DPR
+  // Buffer = tamanho CSS real × DPR → sem stretch, sem corte
   const canvas = document.getElementById('bjCanvas');
   if(canvas) {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    canvas.width  = 280 * dpr;
-    canvas.height = 280 * dpr;
+    const sz  = canvas.offsetWidth || 280;
+    canvas.width  = sz * dpr;
+    canvas.height = sz * dpr;
     canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 }

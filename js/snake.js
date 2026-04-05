@@ -40,6 +40,10 @@ function startSnake() {
 
   const canvas = document.getElementById('snakeCanvas');
   if(!canvas) return;
+  // Sincroniza buffer com tamanho CSS real para evitar upscaling no desktop
+  const _snSz = canvas.offsetWidth || 280;
+  canvas.width  = _snSz;
+  canvas.height = _snSz;
 
   _snakeBody    = [{ x:10,y:10 },{ x:9,y:10 },{ x:8,y:10 }];
   _snakeDir     = { x:1, y:0 };
