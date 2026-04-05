@@ -85,8 +85,8 @@
 
   #snakeCanvas {
     /* Ajusta ao espaço disponível: viewport menos os elementos ao redor (~190px) */
-    width:  min(360px, calc(100vh - 190px)) !important;
-    height: min(360px, calc(100vh - 190px)) !important;
+    width:  min(290px, calc(100vh - 210px)) !important;
+    height: min(290px, calc(100vh - 210px)) !important;
   }
 
   /* D-pad desnecessário no desktop — teclado/WASD disponível */

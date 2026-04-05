@@ -47,8 +47,8 @@
   }
 
   #circuitCanvas {
-    width:  min(400px, calc(100vh - 200px)) !important;
-    height: min(400px, calc(100vh - 200px)) !important;
+    width:  min(320px, calc(100vh - 220px)) !important;
+    height: min(320px, calc(100vh - 220px)) !important;
   }
 
   #circuitModal .mini-title { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
