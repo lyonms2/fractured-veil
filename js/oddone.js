@@ -51,6 +51,16 @@ function startOddOne() {
   const info = document.getElementById('oddInfo');
   if(info) info.textContent = `${d.label} · ${_oddCols}×${_oddCols} · Toque no diferente!`;
 
+  // Escalar canvas pelo devicePixelRatio para telas de alta densidade
+  const canvas = document.getElementById('oddCanvas');
+  if(canvas) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    canvas.width  = 280 * dpr;
+    canvas.height = 280 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // reset + escala em um passo
+  }
+
   _oddSetScore();
   _oddClearResult();
   _oddNewRound();
@@ -168,14 +178,15 @@ function _oddHandleInput(clientX, clientY) {
   if(!_oddRunning || _oddOver || _oddFlash) return;
   const canvas = document.getElementById('oddCanvas');
   if(!canvas) return;
-  const rect   = canvas.getBoundingClientRect();
-  const scaleX = canvas.width  / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const mx     = (clientX - rect.left) * scaleX;
-  const my     = (clientY - rect.top)  * scaleY - ODD_TIMER_H;
+  const rect = canvas.getBoundingClientRect();
+  // Coordenadas em CSS pixels (lógicas), independente do DPR
+  const mx   = (clientX - rect.left);
+  const my   = (clientY - rect.top) - ODD_TIMER_H;
   if(my < 0) return;
-  const cw     = canvas.width  / _oddCols;
-  const ch     = (canvas.height - ODD_TIMER_H) / _oddCols;
+  const W    = canvas.clientWidth  || 280;
+  const H    = canvas.clientHeight || 280;
+  const cw   = W / _oddCols;
+  const ch   = (H - ODD_TIMER_H) / _oddCols;
   const gx     = Math.floor(mx / cw);
   const gy     = Math.floor(my / ch);
   if(gx < 0 || gx >= _oddCols || gy < 0 || gy >= _oddCols) return;
@@ -239,11 +250,13 @@ function oddClick(e) { _oddHandleInput(e.clientX, e.clientY); }
 
     canvas.addEventListener('mousemove', e => {
       if(!_oddRunning) { _oddHoverIdx = -1; return; }
-      const rect   = canvas.getBoundingClientRect();
-      const mx     = (e.clientX - rect.left) * (canvas.width  / rect.width);
-      const my     = (e.clientY - rect.top)  * (canvas.height / rect.height) - ODD_TIMER_H;
-      const cw     = canvas.width  / _oddCols;
-      const ch     = (canvas.height - ODD_TIMER_H) / _oddCols;
+      const rect = canvas.getBoundingClientRect();
+      const mx   = e.clientX - rect.left;
+      const my   = e.clientY - rect.top - ODD_TIMER_H;
+      const W    = canvas.clientWidth  || 280;
+      const H    = canvas.clientHeight || 280;
+      const cw   = W / _oddCols;
+      const ch   = (H - ODD_TIMER_H) / _oddCols;
       if(my < 0) { _oddHoverIdx = -1; return; }
       const gx = Math.floor(mx / cw), gy = Math.floor(my / ch);
       _oddHoverIdx = (gx >= 0 && gx < _oddCols && gy >= 0 && gy < _oddCols)
@@ -296,7 +309,9 @@ function _oddRender() {
   const canvas = document.getElementById('oddCanvas');
   if(!canvas || !_oddItems.length) return;
   const ctx = canvas.getContext('2d');
-  const W   = canvas.width, H = canvas.height;
+  // Usa dimensões lógicas (CSS px) para o layout, independente do DPR
+  const W   = canvas.clientWidth  || 280;
+  const H   = canvas.clientHeight || 280;
   const cw  = W / _oddCols;
   const ch  = (H - ODD_TIMER_H) / _oddCols;
   const now = performance.now();
