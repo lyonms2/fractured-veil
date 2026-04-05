@@ -90,17 +90,8 @@ function startLabirinto() {
   _mzPlaceTraps();
   _mzRevealAround(_mzPx, _mzPy);
 
-  // Perseguidor: hard+ nasce no canto oposto
-  if(d.tier >= 2) {
-    _mzPurX = _mzCols - 1;
-    _mzPurY = _mzRows - 1;
-    const speed = d.tier === 2 ? 900 : 500;
-    clearInterval(_mzPurInt);
-    _mzPurInt = setInterval(_mzPursuerStep, speed);
-  } else {
-    clearInterval(_mzPurInt);
-    _mzPurInt = null;
-  }
+  clearInterval(_mzPurInt);
+  _mzPurInt = null;
 
   const info = document.getElementById('mazeInfo');
   if(info) {
