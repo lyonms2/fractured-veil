@@ -126,7 +126,21 @@ function _cGenerate(tier) {
   _cSrcCell = _cIdx(0, srcRow);
   _cSnkCell = _cIdx(cols - 1, sinkRow);
 
-  const path = _cFindPath(cols, rows, 0, srcRow, cols - 1, sinkRow);
+  // ── Caminho garantido ──────────────────────────────────────────
+  // Força que o caminho começa indo leste (path[0]=source, path[1]=(1,srcRow))
+  // e termina chegando de oeste (path[n-2]=(cols-2,sinkRow), path[n-1]=sink).
+  // Assim source (CE) e sink (CW) sempre se encaixam corretamente.
+  const innerPath = _cFindPath(cols, rows,
+    1, srcRow,       // começa em x=1 (logo após source)
+    cols - 2, sinkRow // termina em x=cols-2 (logo antes de sink)
+  );
+  // Monta o caminho completo: source → inner → sink
+  const path = [
+    { x: 0,       y: srcRow  },
+    ...innerPath,
+    { x: cols - 1, y: sinkRow },
+  ];
+
   path.forEach(p => _cPathSet.add(_cIdx(p.x, p.y)));
 
   // Mapa de conexões necessárias por célula
@@ -145,16 +159,18 @@ function _cGenerate(tier) {
       if(dy === 1) connMap[ci] |= CS; else if(dy === -1) connMap[ci] |= CN;
     }
   }
+  // Forçar source e sink com saídas fixas
   connMap[_cSrcCell] = CE;
   connMap[_cSnkCell] = CW;
 
-  // Peças bloqueadas (ficam na rotação correta já)
+  // Peças bloqueadas no caminho
   const lockRatio = tier === 1 ? 0.18 : tier === 2 ? 0.25 : tier >= 3 ? 0.32 : 0;
   const inner     = path.slice(1, -1);
   const lockCount = Math.floor(inner.length * lockRatio);
-  const locked    = new Set(_cShuffle([...inner]).slice(0, lockCount).map(p => _cIdx(p.x, p.y)));
+  const locked    = new Set(
+    _cShuffle([...inner]).slice(0, lockCount).map(p => _cIdx(p.x, p.y))
+  );
 
-  // Construir grid
   for(let y = 0; y < rows; y++) {
     for(let x = 0; x < cols; x++) {
       const idx   = _cIdx(x, y);
@@ -168,9 +184,9 @@ function _cGenerate(tier) {
         type = 'dead'; rot = 3; isLocked = true;
       } else if(_cPathSet.has(idx) && connMap[idx]) {
         const tr = _cTypeRot(connMap[idx]);
-        type = tr.type;
+        type     = tr.type;
         isLocked = locked.has(idx);
-        // Células não bloqueadas: sempre embaralhadas (nunca na posição certa)
+        // Embaralhar: garante que nunca está já na posição correta
         if(isLocked) {
           rot = tr.rot;
         } else {
@@ -178,10 +194,9 @@ function _cGenerate(tier) {
           rot = (tr.rot + offset) & 3;
         }
       } else {
-        // Células de preenchimento: APENAS dead (1 saída) ou straight
-        // → nunca criam caminhos alternativos que confundam o jogador
-        const fillTypes = ['dead', 'dead', 'straight'];
-        type     = fillTypes[Math.floor(Math.random() * fillTypes.length)];
+        // Células de preenchimento: só dead ou straight
+        // Nunca criam pontes entre células do caminho
+        type     = Math.random() < 0.55 ? 'dead' : 'straight';
         rot      = Math.floor(Math.random() * 4);
         isLocked = false;
       }
@@ -191,21 +206,20 @@ function _cGenerate(tier) {
   }
 }
 
-// DFS com backtracking garantindo caminho
+// DFS com backtracking (zona interior: x=1..cols-2)
 function _cFindPath(cols, rows, x0, y0, x1, y1) {
   const visited = new Set();
-  const path = [];
+  const path    = [];
 
   function dfs(x, y) {
-    if(x < 0 || x >= cols || y < 0 || y >= rows) return false;
+    // Restringe às colunas internas (1..cols-2) excepto origem e destino
+    if(x < 1 || x > cols - 2 || y < 0 || y >= rows) return false;
     const key = `${x},${y}`;
     if(visited.has(key)) return false;
     visited.add(key);
     path.push({ x, y });
     if(x === x1 && y === y1) return true;
-    // Favorece ir para leste para manter caminho razoável
-    const dirs = _cShuffle([{dx:1,dy:0},{dx:0,dy:1},{dx:0,dy:-1},{dx:-1,dy:0}]);
-    for(const { dx, dy } of dirs) {
+    for(const { dx, dy } of _cShuffle([{dx:1,dy:0},{dx:0,dy:1},{dx:0,dy:-1},{dx:-1,dy:0}])) {
       if(dfs(x + dx, y + dy)) return true;
     }
     path.pop();
@@ -214,6 +228,7 @@ function _cFindPath(cols, rows, x0, y0, x1, y1) {
   }
 
   if(!dfs(x0, y0)) {
+    // Fallback directo: direita até x1, depois vertical até y1
     for(let x = x0; x <= x1; x++) path.push({ x, y: y0 });
     if(y0 !== y1) {
       const step = y1 > y0 ? 1 : -1;
@@ -230,7 +245,7 @@ function _cBFS() {
   const queue = [{ x: sx, y: sy }];
   const DIRS  = [
     { bit: CN, dx:0, dy:-1 }, { bit: CE, dx:1, dy:0 },
-    { bit: CS, dx:0, dy:1  }, { bit: CW, dx:-1, dy:0 },
+    { bit: CS, dx:0, dy:1  }, { bit: CW, dx:-1,dy:0 },
   ];
 
   while(queue.length) {
@@ -268,20 +283,54 @@ function _cUpdateTimer() {
   el.style.color = _cSecs <= 15 ? '#f87171' : _cSecs <= 30 ? '#fbbf24' : '#86efac';
 }
 
-// ── Clique / toque para girar ───────────────────────────────────────
+// ── Input: clique (desktop) e toque (mobile) ───────────────────────
+// Apenas um listener por tipo para evitar double-fire
+(function _cAttachInput() {
+  function attach() {
+    const canvas = document.getElementById('circuitCanvas');
+    if(!canvas) return;
+
+    let _lastTouch = 0;
+
+    // Mobile: touchend para tap (não-passivo para poder cancelar o click sintético)
+    canvas.addEventListener('touchstart', e => {
+      _lastTouch = Date.now();
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', e => {
+      const t = e.changedTouches[0];
+      const elapsed = Date.now() - _lastTouch;
+      // Tap curto e sem movimento grande = girar
+      if(elapsed < 400) {
+        e.preventDefault(); // cancela o click sintético do browser
+        _cHandleInput(t.clientX, t.clientY);
+      }
+    }, { passive: false }); // passive:false permite preventDefault
+
+    // Desktop: click normal (não dispara em mobile por causa do preventDefault acima)
+    canvas.addEventListener('click', e => {
+      _cHandleInput(e.clientX, e.clientY);
+    });
+  }
+
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attach);
+  } else {
+    attach();
+  }
+})();
+
 function _cHandleInput(clientX, clientY) {
   if(!_cRunning || _cWon || !_cGrid.length) return;
   const canvas = document.getElementById('circuitCanvas');
   if(!canvas) return;
   const rect = canvas.getBoundingClientRect();
-  const sx   = canvas.width  / rect.width;
-  const sy   = canvas.height / rect.height;
-  const mx   = (clientX - rect.left) * sx;
-  const my   = (clientY - rect.top)  * sy;
-  const cw   = canvas.width  / _cCols;
-  const ch   = canvas.height / _cRows;
-  const gx   = Math.floor(mx / cw);
-  const gy   = Math.floor(my / ch);
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (clientX - rect.left) * scaleX;
+  const my = (clientY - rect.top)  * scaleY;
+  const gx = Math.floor(mx / (canvas.width  / _cCols));
+  const gy = Math.floor(my / (canvas.height / _cRows));
   if(gx < 0 || gx >= _cCols || gy < 0 || gy >= _cRows) return;
 
   const idx  = _cIdx(gx, gy);
@@ -298,45 +347,16 @@ function _cHandleInput(clientX, clientY) {
   }
 }
 
-function circuitClick(e) {
-  _cHandleInput(e.clientX, e.clientY);
-}
-
-// Touch support
-(function() {
-  function _attachCircuitTouch() {
-    const canvas = document.getElementById('circuitCanvas');
-    if(!canvas) return;
-    let _tx = null, _ty = null;
-    canvas.addEventListener('touchstart', e => {
-      _tx = e.touches[0].clientX;
-      _ty = e.touches[0].clientY;
-    }, { passive: true });
-    canvas.addEventListener('touchend', e => {
-      if(_tx === null) return;
-      const dx = e.changedTouches[0].clientX - _tx;
-      const dy = e.changedTouches[0].clientY - _ty;
-      _tx = null; _ty = null;
-      // Tap (não swipe)
-      if(Math.abs(dx) < 12 && Math.abs(dy) < 12) {
-        _cHandleInput(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-      }
-    }, { passive: true });
-  }
-  if(document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _attachCircuitTouch);
-  } else {
-    _attachCircuitTouch();
-  }
-})();
+// circuitClick mantido para compatibilidade (main.js expõe via window)
+function circuitClick(e) { _cHandleInput(e.clientX, e.clientY); }
 
 // ── Fim de jogo ────────────────────────────────────────────────────
 function _cEnd(won) {
   clearInterval(_cTimer);
   _cRunning = false;
 
-  const d       = miniDifficulty();
-  const maxSecs = d.tier === 0 ? 120 : d.tier === 1 ? 100 : d.tier === 2 ? 80 : 60;
+  const d        = miniDifficulty();
+  const maxSecs  = d.tier === 0 ? 120 : d.tier === 1 ? 100 : d.tier === 2 ? 80 : 60;
   const timeFrac = won ? Math.min(1, _cSecs / maxSecs) : 0;
   const frac     = won ? (0.5 + timeFrac * 0.5) : 0;
 
@@ -369,11 +389,11 @@ function _cRender() {
   const cw  = W / _cCols,   ch = H / _cRows;
   const now = performance.now();
 
-  // ── Fundo com padrão de placa de circuito ──
+  // Fundo estilo PCB
   ctx.fillStyle = '#040c08';
   ctx.fillRect(0, 0, W, H);
 
-  // Grade com pontinhos nos cruzamentos
+  // Grade sutil
   ctx.strokeStyle = 'rgba(134,239,172,0.06)';
   ctx.lineWidth = 0.5;
   for(let i = 0; i <= _cCols; i++) {
@@ -401,13 +421,12 @@ function _cRender() {
       const isSrc = idx === _cSrcCell;
       const isSnk = idx === _cSnkCell;
 
-      // Animação de rotação
+      // Animação de rotação (ease-out)
       let rotDelta = 0;
       const ra = _cRotAnim[idx];
       if(ra) {
         const t = (now - ra.start) / 180;
         if(t < 1) {
-          // Ease-out
           rotDelta = -(1 - t * t) * (Math.PI / 2);
         } else {
           delete _cRotAnim[idx];
@@ -419,7 +438,6 @@ function _cRender() {
       ctx.rotate(rotDelta);
       ctx.translate(-cx, -cy);
 
-      // Fundo da célula iluminada
       if(cell.lit) {
         ctx.fillStyle = `rgba(${_cElRgb},0.06)`;
         ctx.fillRect(px + 1, py + 1, cw - 2, ch - 2);
@@ -428,9 +446,8 @@ function _cRender() {
       const bits = _cConn(cell.type, cell.rot);
       _cDrawPipes(ctx, cx, cy, cw, ch, bits, cell.lit, isSrc, isSnk);
 
-      // Ícone de bloqueio
       if(cell.locked && !isSrc && !isSnk) {
-        ctx.globalAlpha = 0.35;
+        ctx.globalAlpha = 0.30;
         ctx.font = `${Math.round(cw * 0.22)}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -442,7 +459,7 @@ function _cRender() {
     }
   }
 
-  // Overlay de vitória pulsante
+  // Overlay de vitória
   if(_cWon) {
     const pulse = 0.06 + 0.05 * Math.sin(now / 160);
     ctx.fillStyle = `rgba(${_cElRgb},${pulse})`;
@@ -451,124 +468,97 @@ function _cRender() {
 }
 
 function _cDrawPipes(ctx, cx, cy, cw, ch, bits, lit, isSrc, isSnk) {
-  const pW = Math.max(3, Math.min(cw * 0.22, 8)); // espessura do pipe
+  const pW    = Math.max(3, Math.min(cw * 0.22, 8));
+  const color = lit ? _cElColor : 'rgba(255,255,255,0.10)';
+  const half  = cw * 0.5;
 
-  const litColor  = _cElColor;
-  const deadColor = 'rgba(255,255,255,0.10)';
-  const color     = lit ? litColor : deadColor;
-
-  const ARMS = [
-    { bit: CN, ex: cx,          ey: py => py - cw * 0.5 },
-    { bit: CE, ex: px => px + cw * 0.5, ey: cy          },
-    { bit: CS, ex: cx,          ey: py => py + cw * 0.5 },
-    { bit: CW, ex: px => px - cw * 0.5, ey: cy          },
+  const arms = [
+    { bit: CN, ex: cx,        ey: cy - half },
+    { bit: CE, ex: cx + half, ey: cy        },
+    { bit: CS, ex: cx,        ey: cy + half },
+    { bit: CW, ex: cx - half, ey: cy        },
   ];
 
-  // Montagem dos pontos reais
-  const half = cw * 0.5;
-  const arms4 = [
-    { bit: CN, ex: cx,       ey: cy - half },
-    { bit: CE, ex: cx + half, ey: cy       },
-    { bit: CS, ex: cx,        ey: cy + half},
-    { bit: CW, ex: cx - half, ey: cy       },
-  ];
-
-  // Glow
-  if(lit) {
-    ctx.shadowColor = _cElColor;
-    ctx.shadowBlur  = 10;
-  }
-
+  if(lit) { ctx.shadowColor = _cElColor; ctx.shadowBlur = 10; }
   ctx.strokeStyle = color;
   ctx.lineWidth   = pW;
   ctx.lineCap     = 'round';
   ctx.lineJoin    = 'round';
 
-  // Desenha pipes como segmentos do centro até borda
   let hasAny = false;
-  for(const { bit, ex, ey } of arms4) {
+  for(const { bit, ex, ey } of arms) {
     if(!(bits & bit)) continue;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(ex, ey);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
     hasAny = true;
   }
-
   ctx.shadowBlur = 0;
 
-  // Nó central (quando tem 2+ conexões)
+  // Nó central
   if(hasAny && !isSrc && !isSnk) {
-    const nr = pW * 0.7;
     if(lit) { ctx.shadowColor = _cElColor; ctx.shadowBlur = 12; }
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(cx, cy, nr, 0, Math.PI * 2);
+    ctx.arc(cx, cy, pW * 0.7, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
   }
 
-  // Tampinha nas pontas (cap nas bordas da célula)
+  // Tampinhas brilhantes nas pontas
   if(lit) {
-    const capR = pW * 0.55;
     ctx.fillStyle = _cElColor;
     ctx.shadowColor = _cElColor;
     ctx.shadowBlur  = 8;
-    for(const { bit, ex, ey } of arms4) {
+    for(const { bit, ex, ey } of arms) {
       if(!(bits & bit)) continue;
       ctx.beginPath();
-      ctx.arc(ex, ey, capR, 0, Math.PI * 2);
+      ctx.arc(ex, ey, pW * 0.55, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.shadowBlur = 0;
   }
 
-  // Terminal source / sink
   if(isSrc || isSnk) _cDrawTerminal(ctx, cx, cy, cw, lit, isSrc);
 }
 
 function _cDrawTerminal(ctx, cx, cy, cw, lit, isSrc) {
-  const r  = Math.max(5, cw * 0.24);
-  const won = _cWon;
-  const color = (won && !isSrc) ? '#fde68a' : lit ? _cElColor : 'rgba(255,255,255,0.2)';
+  const r     = Math.max(5, cw * 0.24);
+  const color = (_cWon && !isSrc) ? '#fde68a' : lit ? _cElColor : 'rgba(255,255,255,0.20)';
 
   ctx.shadowColor = lit ? color : 'transparent';
   ctx.shadowBlur  = lit ? 20 : 0;
 
   // Anel externo
   ctx.strokeStyle = color;
-  ctx.lineWidth   = Math.max(1.5, r * 0.3);
+  ctx.lineWidth   = Math.max(1.5, r * 0.30);
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Preenchimento
-  ctx.fillStyle = `rgba(4,12,8,0.85)`;
+  // Interior
+  ctx.fillStyle = 'rgba(4,12,8,0.85)';
   ctx.beginPath();
   ctx.arc(cx, cy, r - ctx.lineWidth * 0.5, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.shadowBlur = 0;
-
-  // Ícone interno
+  ctx.fillStyle  = color;
   const s = r * 0.55;
-  ctx.fillStyle = color;
 
   if(isSrc) {
     // Raio ⚡
     ctx.beginPath();
-    ctx.moveTo(cx + s * 0.15,  cy - s);
-    ctx.lineTo(cx - s * 0.15,  cy - s * 0.05);
-    ctx.lineTo(cx + s * 0.2,   cy - s * 0.05);
-    ctx.lineTo(cx - s * 0.15,  cy + s);
+    ctx.moveTo(cx + s * 0.15, cy - s);
+    ctx.lineTo(cx - s * 0.15, cy - s * 0.05);
+    ctx.lineTo(cx + s * 0.20, cy - s * 0.05);
+    ctx.lineTo(cx - s * 0.15, cy + s);
     ctx.closePath();
     ctx.fill();
   } else {
-    // Círculo alvo ◎
+    // Bullseye ◎
     ctx.beginPath();
     ctx.arc(cx, cy, s * 0.72, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = `rgba(4,12,8,0.9)`;
+    ctx.fillStyle = 'rgba(4,12,8,0.9)';
     ctx.beginPath();
     ctx.arc(cx, cy, s * 0.38, 0, Math.PI * 2);
     ctx.fill();
