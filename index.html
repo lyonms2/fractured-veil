@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
   <link rel="stylesheet" href="css/snake.css">
+  <link rel="stylesheet" href="css/oddone.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -346,6 +347,14 @@
                   <div class="gs-btn-reward" id="rewardSnake">+0~126 XP · +0~200 🪙</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="openMinigame('oddone')">
+                <div class="gs-btn-icon">🔍</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">ACHE O DIFERENTE</div>
+                  <div class="gs-btn-desc">Identifique o elemento fora do padrão antes do tempo</div>
+                  <div class="gs-btn-reward" id="rewardOddOne">+0~90 XP · +0~155 🪙</div>
+                </div>
+              </div>
             </div>
             <div id="gsGridLore" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
@@ -506,6 +515,19 @@
             <div class="mini-btns">
               <button class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
               <button class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
+            </div>
+          </div>
+
+          <div class="mini-modal" id="oddModal">
+            <div class="mini-title">🔍 ACHE O DIFERENTE</div>
+            <div id="oddInfo" class="mini-info">Identifique o elemento fora do padrão</div>
+            <canvas id="oddCanvas" width="280" height="280"></canvas>
+            <div id="oddScore" style="font-family:'Cinzel',serif;font-size:11px;color:#a78bfa;letter-spacing:2px;margin:4px 0 0;">🔍 Rodada 1</div>
+            <div class="mini-result-box" id="oddResult"></div>
+            <div class="mini-reward-txt" id="oddReward"></div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="oddAgainBtn" onclick="startOddOne()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn close" onclick="closeMiniModal('oddModal')">FECHAR</button>
             </div>
           </div>
 
@@ -801,6 +823,7 @@
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
 <script src="js/snake.js"></script>
+<script src="js/oddone.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
 <script src="js/lore.js"></script>

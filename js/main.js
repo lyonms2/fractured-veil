@@ -53,8 +53,10 @@ window.gsSetTab = typeof gsSetTab !== "undefined" ? gsSetTab : ()=>{};
 window.minaClick = typeof minaClick !== "undefined" ? minaClick : ()=>{};
 window.minaFlag  = typeof minaFlag  !== "undefined" ? minaFlag  : ()=>{};
 window.startMina  = typeof startMina  !== "undefined" ? startMina  : ()=>{};
-window.startSnake = typeof startSnake !== "undefined" ? startSnake : ()=>{};
-window.snakeDpad  = typeof snakeDpad  !== "undefined" ? snakeDpad  : ()=>{};
+window.startSnake  = typeof startSnake  !== "undefined" ? startSnake  : ()=>{};
+window.snakeDpad   = typeof snakeDpad   !== "undefined" ? snakeDpad   : ()=>{};
+window.startOddOne = typeof startOddOne !== "undefined" ? startOddOne : ()=>{};
+window.oddClick    = typeof oddClick    !== "undefined" ? oddClick    : ()=>{};
 
 // ── Modo Repouso Manual ──
 window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
