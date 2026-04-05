@@ -121,24 +121,54 @@ function _rmSerDeck(deck) { return deck.map(_rmSerCarta); }
 
 // ── Render de uma carta ──
 function _rmHtmlCarta(c, idx, clicavel, sel) {
-  const s = sel === idx;
+  const s   = sel === idx;
+  const cor = c.cor || '#e8a030';
+  // ♦ dourado é legível em fundo claro com tom mais escuro
+  const textCor = cor === '#f0d080' ? '#b8860b' : cor;
   return `<div
     data-carta="${idx}"
-    data-cor="${c.cor||'rgba(201,168,76,.25)'}"
+    data-cor="${cor}"
     onclick="${clicavel ? `rmSelecionarCarta(${idx})` : ''}"
     style="
       width:40px;height:56px;border-radius:6px;
-      background:${s?'rgba(201,168,76,.12)':'#0d0a1e'};
-      border:1.5px solid ${s?'#f0d080':(c.cor||'rgba(201,168,76,.25)')};
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+      background:#f8f5ee;
+      border:1.5px solid ${s ? '#f0d080' : 'rgba(0,0,0,.12)'};
+      position:relative;
       cursor:${clicavel?'pointer':'default'};
-      transform:${s?'translateY(-6px)':'none'};
+      transform:${s?'translateY(-7px)':'none'};
       transition:all .15s;
-      box-shadow:${s?'0 4px 14px rgba(201,168,76,.3)':'none'};
-      flex-shrink:0;
+      box-shadow:${s?'0 6px 18px rgba(201,168,76,.55), 0 2px 6px rgba(0,0,0,.35)':'0 2px 5px rgba(0,0,0,.4)'};
+      flex-shrink:0;overflow:hidden;
     ">
-    <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#e8a030;">${c.label}</span>
-    <span style="font-size:11px;color:${c.cor};">${c.naipe}</span>
+    <div style="position:absolute;top:2px;left:3px;line-height:1.15;text-align:left;">
+      <div style="font-family:'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:${textCor};">${c.label}</div>
+      <div style="font-size:8px;line-height:1;color:${textCor};">${c.naipe}</div>
+    </div>
+    <div style="font-size:17px;color:${textCor};text-align:center;width:100%;margin-top:6px;line-height:1;">${c.naipe}</div>
+    <div style="position:absolute;bottom:2px;right:3px;transform:rotate(180deg);line-height:1.15;text-align:left;">
+      <div style="font-family:'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:${textCor};">${c.label}</div>
+      <div style="font-size:8px;line-height:1;color:${textCor};">${c.naipe}</div>
+    </div>
+  </div>`;
+}
+
+// ── Carta mini (26×36) — mesa central e topos de monte ─────────────
+function _rmHtmlCartaMini(c) {
+  const cor     = c.cor || '#e8a030';
+  const textCor = cor === '#f0d080' ? '#b8860b' : cor;
+  return `<div style="
+    width:26px;height:36px;border-radius:4px;
+    background:#f8f5ee;
+    border:1px solid rgba(0,0,0,.12);
+    position:relative;overflow:hidden;flex-shrink:0;
+    box-shadow:0 2px 5px rgba(0,0,0,.4);">
+    <div style="position:absolute;top:1px;left:2px;line-height:1.1;">
+      <div style="font-size:7px;font-weight:700;color:${textCor};">${c.label}</div>
+    </div>
+    <div style="font-size:12px;color:${textCor};text-align:center;width:100%;margin-top:8px;line-height:1;">${c.naipe}</div>
+    <div style="position:absolute;bottom:1px;right:2px;transform:rotate(180deg);line-height:1.1;">
+      <div style="font-size:7px;font-weight:700;color:${textCor};">${c.label}</div>
+    </div>
   </div>`;
 }
 
@@ -744,13 +774,7 @@ function _rmRenderPartida(salaId, sala, opWallet) {
         ${topoOpMonte ? `
         <div style="flex-shrink:0;text-align:center;">
           <div style="font-size:5px;color:var(--muted);margin-bottom:2px;letter-spacing:.5px;">TOPO MONTE</div>
-          <div style="width:26px;height:36px;border-radius:4px;background:#0a0816;
-                      border:1.5px solid ${topoOpMonte.cor};
-                      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-                      box-shadow:0 0 6px ${topoOpMonte.cor}44;">
-            <span style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#e8a030;">${topoOpMonte.label}</span>
-            <span style="font-size:8px;color:${topoOpMonte.cor};">${topoOpMonte.naipe}</span>
-          </div>
+          ${_rmHtmlCartaMini(topoOpMonte)}
         </div>` : `
         <div style="flex-shrink:0;font-size:5.5px;color:var(--muted);text-align:center;width:30px;">
           monte<br>vazio
@@ -766,13 +790,7 @@ function _rmRenderPartida(salaId, sala, opWallet) {
                     border:1px dashed rgba(201,168,76,.12);">
           ${mesa.length===0
             ? `<div style="font-size:6px;color:var(--muted);margin:auto;font-style:italic;">mesa vazia</div>`
-            : mesa.map(c=>`
-              <div style="width:26px;height:36px;border-radius:3px;background:#0a0816;
-                          border:1px solid ${c.cor||'rgba(201,168,76,.2)'};
-                          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
-                <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#e8a030;">${c.label}</span>
-                <span style="font-size:7px;color:${c.cor};">${c.naipe}</span>
-              </div>`).join('')}
+            : mesa.map(c=>_rmHtmlCartaMini(c)).join('')}
         </div>
       </div>
 
