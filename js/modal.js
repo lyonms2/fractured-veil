@@ -4,14 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal','velhaModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','circuitModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','circuitModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','velhaModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -107,13 +107,6 @@ function openGameSelector() {
     const cMin  = r(d.coins*0.8*rb.moedas); const cMax = r(d.coins*2.0*rb.moedas);
     minaEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
   }
-  const circEl = document.getElementById('rewardCircuit');
-  if(circEl) {
-    const xpMin = r(d.xp*0.6*rb.xp); const xpMax = r(d.xp*1.6*rb.xp);
-    const cMin  = r(d.coins*0.6*rb.moedas); const cMax = r(d.coins*1.6*rb.moedas);
-    circEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
-  }
-
   ModalManager.open('gameSelector');
 }
 
@@ -128,7 +121,6 @@ function openMinigame(type) {
   if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
-  if(type === 'circuit') { ModalManager.open('circuitModal'); startCircuit(); return; }
 }
 
 function openMiniModal(id) {
