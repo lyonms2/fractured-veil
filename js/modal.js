@@ -121,6 +121,7 @@ function openMinigame(type) {
   if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
   if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
+  if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
 }
 
 function openMiniModal(id) {

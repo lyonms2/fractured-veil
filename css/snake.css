@@ -1,0 +1,69 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SNAKE ELEMENTAL
+   ═══════════════════════════════════════════════════════════════════ */
+
+#snakeCanvas {
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(167,139,250,.2);
+  box-shadow: 0 0 24px rgba(100,200,100,.08), inset 0 0 40px rgba(0,0,0,.4);
+  touch-action: none;
+  cursor: none;
+}
+
+/* D-pad mobile */
+.snake-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 6px 0 2px;
+}
+
+.snake-dpad-row {
+  display: flex;
+  gap: 2px;
+}
+
+.snake-dpad-btn {
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #a78bfa;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .1s, transform .1s;
+  user-select: none;
+}
+
+.snake-dpad-btn:active {
+  background: rgba(167,139,250,.25);
+  transform: scale(.92);
+}
+
+.snake-dpad-btn.snake-dpad-center {
+  background: transparent;
+  border-color: transparent;
+  pointer-events: none;
+  color: transparent;
+}
+
+/* Score display */
+#snakeScore {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: #86efac;
+  letter-spacing: 2px;
+  margin: 4px 0 0;
+}
+
+/* Ocultar d-pad em desktop */
+@media (min-width: 769px) {
+  .snake-dpad { display: none; }
+}

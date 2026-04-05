@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="css/arena.css">
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
+  <link rel="stylesheet" href="css/snake.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -337,6 +338,14 @@
                   <div class="gs-btn-reward" id="rewardVelha">+2~96 XP · +5~156 🪙</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="openMinigame('snake')">
+                <div class="gs-btn-icon">🐍</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">SNAKE ELEMENTAL</div>
+                  <div class="gs-btn-desc">Colete os elementos sem bater em si mesmo</div>
+                  <div class="gs-btn-reward" id="rewardSnake">+0~126 XP · +0~200 🪙</div>
+                </div>
+              </div>
             </div>
             <div id="gsGridLore" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
@@ -466,6 +475,37 @@
             <div class="mini-btns">
               <button class="mini-btn primary" id="minaAgainBtn" onclick="startMina()" style="display:none">JOGAR DE NOVO</button>
               <button class="mini-btn close" onclick="closeMiniModal('minaModal')">FECHAR</button>
+            </div>
+          </div>
+
+          <div class="mini-modal" id="snakeModal">
+            <div class="mini-title">🐍 SNAKE ELEMENTAL</div>
+            <div id="snakeInfo" class="mini-info">Fácil · Coma os elementos!</div>
+            <canvas id="snakeCanvas" width="280" height="280"></canvas>
+            <div id="snakeScore" style="font-family:'Cinzel',serif;font-size:11px;color:#86efac;letter-spacing:2px;margin:4px 0 0;">🐍 0 elementos</div>
+            <div class="mini-result-box" id="snakeResult"></div>
+            <div class="mini-reward-txt" id="snakeReward"></div>
+            <!-- D-pad (visível só no mobile) -->
+            <div class="snake-dpad">
+              <div class="snake-dpad-row">
+                <button class="snake-dpad-btn snake-dpad-center">·</button>
+                <button class="snake-dpad-btn" onpointerdown="snakeDpad(0,-1)">▲</button>
+                <button class="snake-dpad-btn snake-dpad-center">·</button>
+              </div>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad-btn" onpointerdown="snakeDpad(-1,0)">◀</button>
+                <button class="snake-dpad-btn snake-dpad-center">·</button>
+                <button class="snake-dpad-btn" onpointerdown="snakeDpad(1,0)">▶</button>
+              </div>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad-btn snake-dpad-center">·</button>
+                <button class="snake-dpad-btn" onpointerdown="snakeDpad(0,1)">▼</button>
+                <button class="snake-dpad-btn snake-dpad-center">·</button>
+              </div>
+            </div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
             </div>
           </div>
 
@@ -760,6 +800,7 @@
 <script src="js/rouba-monte.js"></script>
 <script src="js/mina.js"></script>
 <script src="js/batalha-naval.js"></script>
+<script src="js/snake.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
 <script src="js/lore.js"></script>
