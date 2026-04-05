@@ -92,10 +92,14 @@ function buildListingCard(l) {
   const sufixo   = parts.slice(1).join(',').trim();
   const elemCar  = CARACTERISTICAS_ELEMENTAIS[l.elemento];
   const elemEmoji= elemCar ? elemCar.emoji : '✦';
+  const zoomCall = `event.stopPropagation();openAvatarZoomData('${l.elemento}','${l.raridade}',${l.seed||0},${l.nivel||1},${JSON.stringify(l.nome||'Avatar')})`;
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
-      <div class="av-svg-wrap">${svgHtml}</div>
+      <div class="av-svg-wrap" style="position:relative;">
+        ${svgHtml}
+        <button class="avatar-zoom-btn" onclick="${zoomCall}" title="Ampliar" style="position:absolute;top:2px;right:2px;">🔍</button>
+      </div>
       <div class="av-name">${nomeProp}</div>
       ${sufixo ? `<div class="av-sufixo">${sufixo}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
       <div class="av-pill ${l.raridade}">${elemEmoji} ${l.elemento} · ${l.raridade}</div>
@@ -418,7 +422,10 @@ function renderSlots() {
           ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
           ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
         </div>
-        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}</div>
+        <div class="slot-svg-wrap" style="position:relative;">
+          ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
+          <button class="avatar-zoom-btn" onclick="openAvatarZoomData('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},${JSON.stringify(s.nome||'Avatar')})" title="Ampliar" style="position:absolute;top:2px;right:2px;">🔍</button>
+        </div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
           <div class="slot-av-sub">${_ss}</div>

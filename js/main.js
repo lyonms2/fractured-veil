@@ -233,5 +233,19 @@ function openAvatarZoom() {
 function closeAvatarZoom() {
   document.getElementById('avatarZoomOverlay').style.display = 'none';
 }
-window.openAvatarZoom  = openAvatarZoom;
-window.closeAvatarZoom = closeAvatarZoom;
+
+// Zoom genérico — usado no marketplace e meus avatares
+function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome) {
+  const size  = 260;
+  const fase  = faseFromNivel(nivelAv);
+  const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
+  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(elemento, raridade, seed, size, size, fase);
+  document.getElementById('avatarZoomSVG').className = '';
+  document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
+  document.getElementById('avatarZoomInfo').textContent = `${elemento} · ${raridade} · ${fases[fase]} · Nível ${nivelAv||1}`;
+  document.getElementById('avatarZoomOverlay').style.display = 'flex';
+}
+
+window.openAvatarZoom      = openAvatarZoom;
+window.closeAvatarZoom     = closeAvatarZoom;
+window.openAvatarZoomData  = openAvatarZoomData;
