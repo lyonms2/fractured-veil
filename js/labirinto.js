@@ -21,6 +21,9 @@ let _mzOver     = false;
 let _mzWon      = false;
 let _mzGold     = false;
 let _mzTier     = 0;
+let _mzCoinCells       = new Set(); // índices das células com moeda
+let _mzCoinsCollected  = 0;
+let _mzCoinTotal       = 0;
 let _mzSecs     = 120;
 let _mzTimerInt = null;
 let _mzVisionR  = 3;
@@ -84,20 +87,19 @@ function startLabirinto() {
   _mzPurPath = [];
   _mzTrapTime = 0;
   _mzMsg = ''; _mzMsgTime = 0;
+  _mzCoinCells      = new Set();
+  _mzCoinsCollected = 0;
 
   _mzGenerate();
   _mzPlaceExits();
   _mzPlaceTraps();
+  _mzPlaceCoins();
   _mzRevealAround(_mzPx, _mzPy);
 
   clearInterval(_mzPurInt);
   _mzPurInt = null;
 
-  const info = document.getElementById('mazeInfo');
-  if(info) {
-    const hasTwo = _mzExits.length > 1;
-    info.textContent = `${d.label} · ${_mzCols}×${_mzCols} · ${hasTwo ? '⚡ gold = bônus!' : 'Ache a saída!'}`;
-  }
+  _mzUpdateCoinDisplay();
 
   _mzSetTimer(_mzSecs);
 
@@ -206,6 +208,39 @@ function _mzPlaceTraps() {
   for(let i = 0; i < count; i++) _mzCells[candidates[i]].trap = true;
 }
 
+// ── Espalhar moedas ────────────────────────────────────────────────
+function _mzPlaceCoins() {
+  const counts = [8, 12, 16, 20];
+  _mzCoinTotal = counts[_mzTier];
+
+  // Células protegidas: início, perto das saídas
+  const safe = new Set();
+  for(let dy = 0; dy <= 2; dy++) for(let dx = 0; dx <= 2; dx++) safe.add(_mzIdx(dx, dy));
+  _mzExits.forEach(e => {
+    for(let dy = -1; dy <= 1; dy++) for(let dx = -1; dx <= 1; dx++) {
+      const nx = e.x + dx, ny = e.y + dy;
+      if(nx >= 0 && nx < _mzCols && ny >= 0 && ny < _mzRows) safe.add(_mzIdx(nx, ny));
+    }
+  });
+
+  const candidates = [];
+  for(let i = 0; i < _mzCols * _mzRows; i++) {
+    if(!safe.has(i) && !_mzCells[i].trap) candidates.push(i);
+  }
+  _mzShuf(candidates);
+  for(let i = 0; i < Math.min(_mzCoinTotal, candidates.length); i++) {
+    _mzCoinCells.add(candidates[i]);
+  }
+}
+
+// ── Atualizar contador de moedas ───────────────────────────────────
+function _mzUpdateCoinDisplay() {
+  const el = document.getElementById('mazeInfo');
+  if(!el) return;
+  const lbl = ['FÁCIL','MÉDIO','DIFÍCIL','MESTRE'][_mzTier];
+  el.textContent = `${lbl} · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} moedas`;
+}
+
 // ── BFS — caminho mais curto respeitando paredes ───────────────────
 function _mzBFS(fromX, fromY) {
   const n    = _mzCols * _mzRows;
@@ -290,6 +325,15 @@ function _mzTryMove() {
     if(typeof playSound === 'function') playSound('lose');
   }
 
+  // Moeda
+  const ci = _mzIdx(_mzPx, _mzPy);
+  if(_mzCoinCells.has(ci)) {
+    _mzCoinCells.delete(ci);
+    _mzCoinsCollected++;
+    _mzUpdateCoinDisplay();
+    if(typeof playSound === 'function') playSound('feed');
+  }
+
   // Verificar saídas
   for(const exit of _mzExits) {
     if(_mzPx === exit.x && _mzPy === exit.y) {
@@ -363,19 +407,30 @@ function _mzEnd(won, reason) {
   const reward = document.getElementById('mazeReward');
   const again  = document.getElementById('mazeAgainBtn');
 
+  // Moedas coletadas: valor por dificuldade ×  quantidade encontrada
+  const coinValues   = [3, 4, 7, 9];
+  const coinPerPiece = coinValues[_mzTier];
+  const coinReward   = _mzCoinsCollected * coinPerPiece;
+
   applyGameCost();
 
   if(!won) {
     if(typeof playSound === 'function') playSound('lose');
     const msg = reason === 'caught' ? '👁 APANHADO!' : '⏰ TEMPO ESGOTADO';
     if(result) { result.textContent = msg; result.className = 'mini-result-box lose'; }
-    if(reward) reward.textContent = '';
+    if(coinReward > 0) {
+      earnCoins(coinReward);
+      if(reward) reward.textContent = `🪙 ${_mzCoinsCollected} moeda${_mzCoinsCollected !== 1 ? 's' : ''} (+${coinReward} 🪙)`;
+    } else {
+      if(reward) reward.textContent = '';
+    }
   } else {
     if(typeof playSound === 'function') playSound('win');
-    const r = miniReward(Math.min(2, frac * 1.8), Math.min(2, frac * 1.8), 3);
+    const r = miniReward(Math.min(2, frac * 1.8), 0, 3); // XP e vínculo; moedas vêm das moedas coletadas
+    earnCoins(coinReward);
     const exitLbl = _mzGold ? '⚡ SAÍDA DOURADA!' : '🚪 SAÍDA ENCONTRADA!';
     if(result) { result.textContent = exitLbl; result.className = 'mini-result-box win'; }
-    if(reward) reward.textContent = `+${r.xpGain} XP · +${r.coinGain} 🪙`;
+    if(reward) reward.textContent = `+${r.xpGain} XP · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} (+${coinReward} 🪙)`;
     vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
     scheduleSave();
   }
@@ -517,6 +572,27 @@ function _mzRender() {
       ctx.beginPath(); ctx.moveTo(cx - r, cy - r); ctx.lineTo(cx + r, cy + r); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx + r, cy - r); ctx.lineTo(cx - r, cy + r); ctx.stroke();
     }
+  }
+
+  // ── Moedas ──
+  for(const idx of _mzCoinCells) {
+    const cx2 = idx % _mzCols, cy2 = Math.floor(idx / _mzCols);
+    const cell = _mzCells[idx];
+    if(!cell.explored) continue;
+    const ddx2 = Math.abs(cx2 - _mzPx), ddy2 = Math.abs(cy2 - _mzPy);
+    if(Math.max(ddx2, ddy2) > _mzVisionR + 1) continue;
+    const cpx  = offX + cx2 * cs + cs * 0.5;
+    const cpy  = offY + cy2 * cs + cs * 0.5;
+    const cr   = cs * 0.20;
+    const pulse = 0.65 + 0.35 * Math.sin(now / 350 + idx);
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur  = 7 * pulse;
+    ctx.fillStyle   = `hsl(43,96%,${Math.round(55 + 15 * pulse)}%)`;
+    ctx.beginPath(); ctx.arc(cpx, cpy, cr, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur  = 0;
+    // Brilho interno
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.arc(cpx - cr * 0.28, cpy - cr * 0.30, cr * 0.32, 0, Math.PI * 2); ctx.fill();
   }
 
   // ── Perseguidor ──

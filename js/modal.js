@@ -110,8 +110,12 @@ function openGameSelector() {
   const labEl = document.getElementById('rewardLabirinto');
   if(labEl) {
     const xpMin = r(d.xp*0.6*rb.xp); const xpMax = r(d.xp*1.8*rb.xp);
-    const cMin  = r(d.coins*0.6*rb.moedas); const cMax = r(d.coins*1.8*rb.moedas);
-    labEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+    const coinCounts = [8,12,16,20];
+    const coinVals   = [3,4,7,9];
+    const tier = DIFF_TIERS.indexOf(d);
+    const t = Math.max(0, tier);
+    const cMax = coinCounts[t] * coinVals[t];
+    labEl.textContent = `+${xpMin}~${xpMax} XP · até ${cMax} 🪙 (colete no labirinto!)`;
   }
   const oddEl = document.getElementById('rewardOddOne');
   if(oddEl) {
