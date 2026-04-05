@@ -185,7 +185,7 @@ function _mzPlaceExits() {
 // ── Posicionar armadilhas ──────────────────────────────────────────
 function _mzPlaceTraps() {
   if(_mzTier < 1) return;
-  const ratio = [0, 0.10, 0.12, 0.15][_mzTier];
+  const ratio = [0, 0.04, 0.06, 0.08][_mzTier];
   const n     = _mzCols * _mzRows;
   const safe  = new Set();
   safe.add(_mzIdx(0, 0));
