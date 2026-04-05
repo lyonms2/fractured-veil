@@ -435,7 +435,7 @@ function _rmIniciarLobbyListener() {
     if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
     lista.innerHTML = jogadores.map(([k,d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento,d.raridade,d.seed,36,36)}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento,d.raridade,d.seed,36,36,faseFromNivel(d.nivel))}</div>
         <div class="arena-lobby-info">
           <div class="arena-lobby-nome">${d.nome||'???'}</div>
           <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'}</div>
@@ -761,7 +761,7 @@ function _rmRenderPartida(salaId, sala, opWallet) {
       <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;
                   background:rgba(255,255,255,.03);border-radius:6px;
                   border:1px solid rgba(255,255,255,.07);flex-shrink:0;">
-        <div style="flex-shrink:0;">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,24,24)}</div>
+        <div style="flex-shrink:0;">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,24,24,faseFromNivel(op_info.nivel))}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold-light);
                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -1389,13 +1389,13 @@ async function _rmRenderResultado(sala, opWallet) {
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
       <div class="arena-vs-row" style="margin:12px 0;">
         <div class="arena-vs-lado ${empate?'arena-empate':euVenci?'arena-vencedor':'arena-perdedor'}">
-          <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44,getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
           <div class="arena-vs-pts" style="font-size:18px;">🃏 ${meuMonte}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${empate?'arena-empate':!euVenci?'arena-vencedor':'arena-perdedor'}">
-          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,44,44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,44,44,faseFromNivel(op_info.nivel))}</div>
           <div class="arena-vs-nome">${op_info.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:18px;">🃏 ${opMonte}</div>
         </div>

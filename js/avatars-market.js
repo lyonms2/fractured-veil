@@ -15,6 +15,11 @@ const MAX_SLOTS  = 5;
 // ═══════════════════════════════════════════
 // HELPERS DE FASE
 // ═══════════════════════════════════════════
+function _faseNum(nivel) {
+  const n = nivel || 1;
+  return n < 5 ? 0 : n < 10 ? 1 : n < 17 ? 2 : 3;
+}
+
 function getFaseNome(nivel) {
   const n = nivel || 1;
   if(n < 5)  return 'BEBÊ';
@@ -80,7 +85,7 @@ function renderBrowse() {
 
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
-  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72, "browse");
+  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
   const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
   const parts   = (l.nome||'Avatar').split(',');
   const nomeProp = parts[0].trim();
@@ -115,7 +120,7 @@ async function openDetail(listingId) {
   const isMine   = l.sellerId === walletAddress;
   const canBuy   = !isMine && (playerData?.cristais||0) >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
-  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, "detail");
+  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
   const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento]?.bonus || '';
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
@@ -246,7 +251,7 @@ function openListModal(slotIdx) {
   const s = playerData.avatarSlots[slotIdx];
   document.getElementById('listAvatarPreview').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);padding:10px;border-radius:8px;">
-      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,"listprev")}
+      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:11px;">${s.nome}</div>
         <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · Nv.${s.nivel||1}</div>
@@ -413,7 +418,7 @@ function renderSlots() {
           ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
           ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
         </div>
-        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,"slots")}</div>
+        <div class="slot-svg-wrap">${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}</div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
           <div class="slot-av-sub">${_ss}</div>
@@ -494,7 +499,7 @@ function burnAvatar(idx) {
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, "burn")}
+      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
       <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${_ns}</div>
       ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${_ss}</div>` : ''}
       <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade} · Nível ${s.nivel||1}</div>

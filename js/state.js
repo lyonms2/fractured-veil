@@ -140,6 +140,7 @@ let eggClicks = 0;
 const gs = { moedas:100, ovos:0, cristais:0, extraSlots:0 };
 const FASES = t('fases');
 const getFase = () => nivel < 5 ? 0 : nivel < 10 ? 1 : nivel < 17 ? 2 : 3;
+const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v < 17 ? 2 : 3; };
 const FASE_SIZES = [75, 100, 120, 140];
 const getFaseSize = () => FASE_SIZES[getFase()];
 function xpParaNivel(n) {

@@ -316,7 +316,7 @@ function _bnIniciarLobbyListener() {
     if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
     lista.innerHTML = jogadores.map(([k,d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36)}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36, faseFromNivel(d.nivel))}</div>
         <div class="arena-lobby-info">
           <div class="arena-lobby-nome">${d.nome||'???'}</div>
           <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'}</div>
@@ -1594,13 +1594,13 @@ async function _bnRenderResultado(sala, opWallet) {
 
       <div class="arena-vs-row" style="margin:12px 0;">
         <div class="arena-vs-lado ${euVenci ? 'arena-vencedor' : ''}">
-          <div class="arena-vs-svg">${gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 44, 44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 44, 44, getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
           <div class="arena-vs-pts" style="font-size:18px;">💥 ${meusAc}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci && !empate ? 'arena-vencedor' : ''}">
-          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 44, 44)}</div>
+          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 44, 44, faseFromNivel(op_info.nivel))}</div>
           <div class="arena-vs-nome">${op_info.nome || opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:18px;">💥 ${opAc}</div>
         </div>
