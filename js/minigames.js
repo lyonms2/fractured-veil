@@ -250,7 +250,7 @@ function startSleep() {
   document.getElementById('sleepLabel').textContent = 'ACORDAR';
   document.getElementById('btnSleep').classList.add('active-sleep');
   showBubble('zzz... 💤');
-  addLog('Dormindo...','info'); scheduleSave();
+  addLog('Dormindo...','info'); saveToFirebase();
 }
 
 function wakeUp(reason) {
