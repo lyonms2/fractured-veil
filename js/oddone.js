@@ -41,7 +41,7 @@ function startOddOne() {
   _oddCols  = [3, 4, 5, 5][d.tier];
 
   _oddScore     = 0;
-  _oddMaxTime   = [9000, 7500, 6500, 5500][d.tier];
+  _oddMaxTime   = [13000, 10000, 8000, 6500][d.tier];
   _oddOver      = false;
   _oddRunning   = false;
   _oddFlash     = null;
@@ -116,7 +116,7 @@ function _oddNewRound() {
     }
     case 'size': {
       // Alterna entre menor e maior
-      odd.size = Math.random() < 0.5 ? 0.58 : 1.52;
+      odd.size = Math.random() < 0.5 ? 0.48 : 1.65;
       break;
     }
     case 'fill': {
@@ -192,14 +192,14 @@ function _oddHandleInput(clientX, clientY) {
     setTimeout(() => {
       if(_oddOver) return;
       _oddFlash = null;
-      const decay = [320, 350, 400, 450][_oddTier];
-      _oddMaxTime = Math.max(2200, _oddMaxTime - decay);
+      const decay = [180, 230, 300, 370][_oddTier];
+      _oddMaxTime = Math.max(3500, _oddMaxTime - decay);
       _oddNewRound();
     }, 440);
   } else {
     if(typeof playSound === 'function') playSound('lose');
-    // Penalidade: avança o timer em 2.5s
-    _oddPenalty += 2500;
+    // Penalidade: avança o timer em 1.5s
+    _oddPenalty += 1500;
     setTimeout(() => {
       if(!_oddOver) _oddFlash = null;
     }, 380);
