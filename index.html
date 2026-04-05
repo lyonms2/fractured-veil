@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="css/snake.css">
   <link rel="stylesheet" href="css/labirinto.css">
   <link rel="stylesheet" href="css/blackjack.css">
+  <link rel="stylesheet" href="css/pintura.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -356,6 +357,22 @@
                   <div class="gs-btn-reward" id="rewardBlackjack">+0~90 XP · +0~155 🪙</div>
                 </div>
               </div>
+              <div class="gs-btn" onclick="openMinigame('pintura')">
+                <div class="gs-btn-icon">🎨</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">PINTURA ELEMENTAL</div>
+                  <div class="gs-btn-desc">Pinte por números e complete a obra</div>
+                  <div class="gs-btn-reward" id="rewardPintura">XP · 🪙 únicos por desenho</div>
+                </div>
+              </div>
+              <div class="gs-btn" onclick="openGaleria()">
+                <div class="gs-btn-icon">🖼</div>
+                <div class="gs-btn-info">
+                  <div class="gs-btn-name">GALERIA</div>
+                  <div class="gs-btn-desc">Veja suas obras concluídas</div>
+                  <div class="gs-btn-reward" style="color:var(--muted);">Coleção de pinturas</div>
+                </div>
+              </div>
             </div>
             <div id="gsGridLore" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
@@ -559,6 +576,31 @@
           <div id="arenaModal"></div>
           <div id="roubaMontModal"></div>
           <div id="batalhaNavalModal"></div>
+
+          <!-- ── PINTURA ELEMENTAL ── -->
+          <div class="mini-modal" id="pinturaModal">
+            <div class="mini-title">🎨 PINTURA ELEMENTAL</div>
+            <div id="pinturaDrawingName" class="mini-info">Carregando...</div>
+            <div id="pinturaProgress" style="font-family:'Cinzel',serif;font-size:10px;color:#a78bfa;letter-spacing:2px;margin:2px 0;">🎨 0 / 0</div>
+            <canvas id="pinturaCanvas" width="300" height="300"></canvas>
+            <div id="pinturaPaleta"></div>
+            <div class="mini-result-box" id="pinturaResult"></div>
+            <div class="mini-reward-txt" id="pinturaReward"></div>
+            <div class="mini-btns">
+              <button class="mini-btn primary" id="pinturaAgainBtn" onclick="startPintura()" style="display:none">PRÓXIMA OBRA</button>
+              <button class="mini-btn close" onclick="closeMiniModal('pinturaModal')">FECHAR</button>
+            </div>
+          </div>
+
+          <!-- ── GALERIA ── -->
+          <div class="mini-modal" id="galeriaModal">
+            <div class="mini-title">🖼 GALERIA</div>
+            <div class="mini-info">Suas obras concluídas</div>
+            <div id="galeriaGrid"></div>
+            <div class="mini-btns">
+              <button class="mini-btn close" onclick="closeMiniModal('galeriaModal')">FECHAR</button>
+            </div>
+          </div>
 
           <div class="creature-area">
             <button class="avatar-zoom-btn" onclick="openAvatarZoom()" title="Ampliar avatar">🔍</button>
@@ -850,6 +892,7 @@
 <script src="js/snake.js"></script>
 <script src="js/labirinto.js"></script>
 <script src="js/blackjack.js"></script>
+<script src="js/pintura.js"></script>
 <script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
 <script src="js/lore.js"></script>

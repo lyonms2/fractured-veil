@@ -4,14 +4,15 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal',
+  'pinturaModal','galeriaModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal','pinturaModal','galeriaModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -133,6 +134,7 @@ function openMinigame(type) {
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
   if(type === 'blackjack')  { ModalManager.open('bjModal');   startBlackjack();  return; }
+  if(type === 'pintura')    { ModalManager.open('pinturaModal'); startPintura();  return; }
 }
 
 function openMiniModal(id) {
