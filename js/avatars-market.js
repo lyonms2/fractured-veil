@@ -92,13 +92,15 @@ function buildListingCard(l) {
   const sufixo   = parts.slice(1).join(',').trim();
   const elemCar  = CARACTERISTICAS_ELEMENTAIS[l.elemento];
   const elemEmoji= elemCar ? elemCar.emoji : '✦';
-  const zoomCall = `event.stopPropagation();mktOpenZoom('${l.elemento}','${l.raridade}',${l.seed||0},${l.nivel||1},${JSON.stringify(l.nome||'Avatar')})`;
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
       <div class="av-svg-wrap">
         ${svgHtml}
-        <button class="mkt-avatar-zoom-btn" onclick="${zoomCall}" title="Ampliar">🔍</button>
+        <button class="mkt-avatar-zoom-btn" title="Ampliar"
+          data-el="${l.elemento}" data-rar="${l.raridade}" data-seed="${l.seed||0}"
+          data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
+          onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
       </div>
       <div class="av-name">${nomeProp}</div>
       ${sufixo ? `<div class="av-sufixo">${sufixo}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
@@ -424,7 +426,10 @@ function renderSlots() {
         </div>
         <div class="slot-svg-wrap">
           ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
-          <button class="mkt-avatar-zoom-btn" onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},${JSON.stringify(s.nome||'Avatar')})" title="Ampliar">🔍</button>
+          <button class="mkt-avatar-zoom-btn" title="Ampliar"
+            data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
+            data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
+            onclick="mktOpenZoomBtn(this)">🔍</button>
         </div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>

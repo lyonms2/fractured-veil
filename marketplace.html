@@ -982,6 +982,9 @@ function _mbnActive(btn) {
   </div>
 </div>
 <script>
+function mktOpenZoomBtn(btn) {
+  mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);
+}
 function mktOpenZoom(elemento, raridade, seed, nivelAv, nome) {
   const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
   const fase  = faseFromNivel(nivelAv);
