@@ -178,7 +178,7 @@
 }
 .arena-lobby-lista {
   display: flex; flex-direction: column;
-  gap: 7px; width: 100%;
+  gap: 12px; width: 100%;
 }
 .arena-lobby-vazio {
   font-size: 7px; color: var(--muted);
