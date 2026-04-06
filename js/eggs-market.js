@@ -75,8 +75,8 @@ function renderEggBrowse() {
       <div class="egg-mkt-stripe"></div>
       <div class="egg-mkt-inner">
         <div class="egg-mkt-icon">${icon}</div>
-        <div class="egg-mkt-pill">${elemEmoji} ${egg.raridade}</div>
-        <div class="egg-mkt-elem">${egg.elemento || '—'}</div>
+        <div class="egg-mkt-pill">${elemEmoji} ${esc(egg.raridade)}</div>
+        <div class="egg-mkt-elem">${esc(egg.elemento) || '—'}</div>
         <div class="egg-mkt-stats">
           <div class="egg-mkt-stat"><span>Expira</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
           <div class="egg-mkt-stat"><span>Vendedor</span><b>${seller}</b></div>
@@ -109,7 +109,7 @@ function openListEggModal(ovoData) {
   document.getElementById('listEggPreview').innerHTML = `
     <div class="egg-list-preview">
       <div class="egg-list-preview-icon">${icon}</div>
-      <div class="egg-list-preview-name">${ovoData.raridade} · ${ovoData.elemento}</div>
+      <div class="egg-list-preview-name">${esc(ovoData.raridade)} · ${esc(ovoData.elemento)}</div>
       <div class="egg-list-preview-sub">10% da venda vai para a pool P2E</div>
     </div>`;
   document.getElementById('listEggPriceInput').value = '';

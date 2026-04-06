@@ -102,9 +102,9 @@ function buildListingCard(l) {
           data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
           onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
       </div>
-      <div class="av-name">${nomeProp}</div>
-      ${sufixo ? `<div class="av-sufixo">${sufixo}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
-      <div class="av-pill ${l.raridade}">${elemEmoji} ${l.elemento} · ${l.raridade}</div>
+      <div class="av-name">${esc(nomeProp)}</div>
+      ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
+      <div class="av-pill ${l.raridade}">${elemEmoji} ${esc(l.elemento)} · ${esc(l.raridade)}</div>
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>Nível</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>Vínculo</div>
@@ -133,9 +133,9 @@ async function openDetail(listingId) {
     <div class="detail-header">
       <div class="detail-svg">${svgHtml}</div>
       <div class="detail-info">
-        <div class="detail-name">${l.nome||'Avatar'}</div>
-        <div class="detail-rarity ${l.raridade}">${l.raridade} · ${l.elemento}</div>
-        <div style="font-size:9px;color:var(--text2);">${l.descricao||''}</div>
+        <div class="detail-name">${esc(l.nome||'Avatar')}</div>
+        <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(l.elemento)}</div>
+        <div style="font-size:9px;color:var(--text2);">${esc(l.descricao||'')}</div>
       </div>
     </div>
     <div class="detail-stats-grid">
@@ -460,9 +460,9 @@ function burnAvatar(idx) {
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
       ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
-      <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${_ns}</div>
-      ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${_ss}</div>` : ''}
-      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade} · Nível ${s.nivel||1}</div>
+      <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
+      ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
+      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · Nível ${s.nivel||1}</div>
     </div>`;
 
   document.getElementById('burnOverlay').classList.add('open');

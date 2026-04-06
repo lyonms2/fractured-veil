@@ -312,17 +312,17 @@ function _arenaFiltrarLobby(query) {
     ? _arenaLobbyAvatares.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
     : _arenaLobbyAvatares;
   if(!filtrados.length) {
-    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+query+'"' : 'Nenhum avatar na fila ainda...'}</div>`;
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+esc(query)+'"' : 'Nenhum avatar na fila ainda...'}</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(([k, d]) => `
     <div class="arena-lobby-card">
       <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
       <div class="arena-lobby-info">
-        <div class="arena-lobby-nome">${d.nome || '???'}</div>
+        <div class="arena-lobby-nome">${esc(d.nome) || '???'}</div>
         <div class="arena-lobby-meta">
           <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
-          <span>${d.raridade||'Comum'}</span>
+          <span>${esc(d.raridade)||'Comum'}</span>
           <span>· 💜 ${d.vinculo||0}</span>
         </div>
       </div>

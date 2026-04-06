@@ -343,17 +343,17 @@ function _bnFiltrarLobby(query) {
     ? _bnLobbyJogadores.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
     : _bnLobbyJogadores;
   if(!filtrados.length) {
-    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+query+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+esc(query)+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(([k,d]) => `
     <div class="arena-lobby-card">
       <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
       <div class="arena-lobby-info">
-        <div class="arena-lobby-nome">${d.nome||'???'}</div>
+        <div class="arena-lobby-nome">${esc(d.nome)||'???'}</div>
         <div class="arena-lobby-meta">
           <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
-          <span>${d.raridade||'Comum'}</span>
+          <span>${esc(d.raridade)||'Comum'}</span>
         </div>
       </div>
       ${_bnAtiva

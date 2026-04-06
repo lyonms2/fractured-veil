@@ -233,7 +233,7 @@ async function loadPoolLogs(reset) {
       return `<div class="pool-log-row ${log.tipo}">
         <div class="pool-log-icon">${icon}</div>
         <div class="pool-log-info">
-          <div class="pool-log-motivo">${log.motivo || '—'}</div>
+          <div class="pool-log-motivo">${esc(log.motivo) || '—'}</div>
           <div class="pool-log-wallet">${wallet}</div>
         </div>
         <div class="pool-log-amount">${sinal}${Math.abs(log.pool)} 💎</div>

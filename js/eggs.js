@@ -144,7 +144,7 @@ function burnEgg(id) {
     const overlay = document.getElementById('eggBurnOverlay');
     const preview = document.getElementById('eggBurnPreview');
     if(overlay && preview) {
-      preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${ovo.elemento}</b><br>
+      preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
         <span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`;
       document.getElementById('eggBurnConfirmBtn').onclick = () => {
@@ -163,7 +163,7 @@ function burnEgg(id) {
     const preview = document.getElementById('eggBurnPreview');
     if(overlay && preview) {
       const rarColor = ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8';
-      preview.innerHTML = `Ovo <b style="color:${rarColor}">${ovo.raridade} · ${ovo.elemento}</b><br>
+      preview.innerHTML = `Ovo <b style="color:${rarColor}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:#a78bfa">${finalGems} 💎</b>${bonusPct}<br>
         ${!poolOk ? `<span style="color:#f87171;font-size:8px;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
           `<span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`}`;
@@ -320,7 +320,7 @@ function hatchEggFromInventory(id) {
 
   document.getElementById('hatchConfirmEgg').textContent = rarEmoji[ovo.raridade];
   document.getElementById('hatchConfirmRarity').innerHTML =
-    `<span style="color:${color};font-weight:700;font-family:'Cinzel',serif">${ovo.raridade.toUpperCase()} · ${ovo.elemento}</span>`;
+    `<span style="color:${color};font-weight:700;font-family:'Cinzel',serif">${esc(ovo.raridade.toUpperCase())} · ${esc(ovo.elemento)}</span>`;
 
   const targetPreview = findTargetSlot();
   const confirmBtn = document.getElementById('hatchConfirmYes');
@@ -744,7 +744,7 @@ function renderEggInventory() {
     return `<div class="${cls}">
       <div class="egg-mini-svg">${eggMiniSVG(expired ? 'Comum' : ovo.raridade, 38)}</div>
       <div class="egg-info">
-        <div class="egg-name" style="color:${rarColor[ovo.raridade]}">${ovo.raridade} · ${ovo.elemento}</div>
+        <div class="egg-name" style="color:${rarColor[ovo.raridade]}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</div>
         <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>
       </div>
       <div class="egg-actions">

@@ -2,6 +2,16 @@
 // SISTEMAS DO JOGO
 // ═══════════════════════════════════════════
 
+// Escapa HTML para prevenir XSS ao inserir dados do Firebase em innerHTML
+function esc(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const CARACTERISTICAS_ELEMENTAIS = {
   'Fogo':         { bonus:'Espírito Ardente: humor decai 15% mais devagar, fome 10% mais rápido', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
   'Água':         { bonus:'Serenidade das Marés: humor e higiene decaem 15% mais devagar', cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
