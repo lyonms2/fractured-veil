@@ -18,40 +18,58 @@
 /* ── Header ── */
 .arena-header {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   flex-shrink: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  width: 100%;
 }
 .arena-title {
   font-family: 'Cinzel', serif;
-  font-size: 10px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 3px; color: var(--gold);
 }
 .arena-sub {
-  font-size: 6px; color: var(--muted);
-  letter-spacing: 2px; margin-top: 3px;
+  font-size: 7px; color: var(--muted);
+  letter-spacing: 1.5px; margin-top: 5px;
+  line-height: 1.6;
 }
 
 /* ── Tabs ── */
 .arena-tabs {
-  display: flex; gap: 6px;
-  margin-bottom: 10px;
+  display: flex; gap: 8px;
+  margin-bottom: 14px;
   flex-shrink: 0;
+  width: 100%;
 }
 .arena-tab {
-  flex: 1; padding: 5px 0;
+  flex: 1; padding: 9px 4px 7px;
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 1px;
+  font-size: 7px; letter-spacing: 1.5px;
   border: 1px solid var(--border);
-  border-radius: 20px;
-  background: transparent; color: var(--muted);
-  cursor: pointer; transition: all .15s;
+  border-radius: 10px;
+  background: rgba(255,255,255,.03);
+  color: var(--muted);
+  cursor: pointer; transition: all .18s;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  position: relative; overflow: hidden;
 }
-.arena-tab:hover { border-color: var(--gold); color: var(--gold-light); }
+.arena-tab::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 2px;
+  opacity: 0; transition: opacity .18s;
+  background: linear-gradient(90deg, var(--gold), #ffe066);
+}
+.arena-tab-icon { font-size: 14px; line-height: 1; }
+.arena-tab:hover  { border-color: rgba(201,168,76,.4); color: var(--gold-light); background: rgba(201,168,76,.05); }
 .arena-tab.active {
   border-color: var(--gold);
-  background: rgba(201,168,76,.15);
+  background: linear-gradient(160deg, rgba(201,168,76,.16) 0%, rgba(11,9,22,.5) 100%);
   color: var(--gold);
+  box-shadow: 0 0 14px rgba(201,168,76,.18);
 }
+.arena-tab.active::after { opacity: 1; }
 
 /* ── Tab content ── */
 .arena-tab-content {
@@ -64,16 +82,17 @@
 /* ── Info da aposta ── */
 .arena-aposta-info {
   display: flex; flex-direction: column; align-items: center;
-  gap: 3px;
-  padding: 8px 12px;
-  background: rgba(201,168,76,.05);
-  border: 1px solid rgba(201,168,76,.2);
-  border-radius: 8px;
+  gap: 5px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(201,168,76,.07), rgba(201,168,76,.03));
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 10px;
   font-family: 'Cinzel', serif;
-  font-size: 7px; color: var(--muted);
+  font-size: 7.5px; color: var(--muted);
   width: 100%; text-align: center;
+  line-height: 1.8;
 }
-.arena-aposta-info b { color: var(--gold); }
+.arena-aposta-info b { color: var(--gold); font-size: 9px; }
 
 /* ── Botões de ação ── */
 .arena-lobby-actions {
@@ -83,35 +102,37 @@
 }
 
 .arena-btn-entrar {
-  width: 100%; padding: 10px;
+  width: 100%; padding: 13px;
   font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing: 2px;
+  font-size: 9px; letter-spacing: 2.5px; font-weight: 700;
   border: 1px solid var(--gold);
-  border-radius: 6px;
-  background: rgba(201,168,76,.08);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(201,168,76,.15), rgba(201,168,76,.05));
   color: var(--gold); cursor: pointer;
-  transition: background .2s, color .2s, box-shadow .2s;
+  transition: all .2s;
+  box-shadow: 0 2px 12px rgba(201,168,76,.1);
 }
 .arena-btn-entrar:hover {
-  background: var(--gold);
+  background: linear-gradient(135deg, var(--gold), #c9a84c);
   color: #0a0816;
-  box-shadow: 0 0 16px rgba(201,168,76,.35);
+  box-shadow: 0 0 22px rgba(201,168,76,.45);
+  transform: translateY(-1px);
 }
 .arena-btn-entrar.disabled {
-  opacity: .4; cursor: not-allowed;
+  opacity: .35; cursor: not-allowed;
   border-color: var(--border); color: var(--muted);
-  background: transparent;
+  background: transparent; box-shadow: none; transform: none;
 }
 
 .arena-btn-sair {
-  padding: 6px 18px;
+  padding: 7px 20px;
   font-family: 'Cinzel', serif;
   font-size: 7px; letter-spacing: 1px;
-  border: 1px solid #e74c3c;
-  border-radius: 4px; background: transparent;
+  border: 1px solid rgba(231,76,60,.5);
+  border-radius: 6px; background: transparent;
   color: #e74c3c; cursor: pointer; transition: all .15s;
 }
-.arena-btn-sair:hover { background: rgba(231,76,60,.12); }
+.arena-btn-sair:hover { background: rgba(231,76,60,.12); border-color: #e74c3c; }
 
 .arena-sem-saldo {
   font-size: 6px; color: #e74c3c;
@@ -120,125 +141,191 @@
 
 /* ── Aguardando ── */
 .arena-aguardando {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
   font-family: 'Cinzel', serif;
-  font-size: 7px; color: var(--raro);
-  letter-spacing: 1px;
+  font-size: 8px; color: var(--raro);
+  letter-spacing: 1.5px;
+  padding: 10px 14px;
+  background: rgba(90,180,232,.06);
+  border: 1px solid rgba(90,180,232,.2);
+  border-radius: 10px; width: 100%;
+  justify-content: center;
 }
 .arena-pulse {
-  width: 8px; height: 8px; border-radius: 50%;
+  width: 10px; height: 10px; border-radius: 50%;
   background: var(--raro);
-  box-shadow: 0 0 6px var(--raro);
+  box-shadow: 0 0 10px var(--raro);
   animation: arena-pulse-anim 1.4s ease-in-out infinite;
+  flex-shrink: 0;
 }
 @keyframes arena-pulse-anim {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: .4; transform: scale(.7); }
+  50%       { opacity: .4; transform: scale(.65); }
 }
 
 /* ── Lobby lista ── */
 .arena-lobby-titulo {
   font-family: 'Cinzel', serif;
-  font-size: 6px; letter-spacing: 2px;
+  font-size: 7px; letter-spacing: 2px;
   color: var(--muted); text-transform: uppercase;
-  align-self: flex-start; margin-top: 2px;
+  align-self: flex-start; margin-top: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.arena-lobby-titulo::before {
+  content: ''; display: inline-block;
+  width: 16px; height: 1px;
+  background: var(--border);
 }
 .arena-lobby-lista {
   display: flex; flex-direction: column;
-  gap: 6px; width: 100%;
+  gap: 7px; width: 100%;
 }
 .arena-lobby-vazio {
   font-size: 7px; color: var(--muted);
-  text-align: center; padding: 16px 0;
+  text-align: center; padding: 24px 0;
   font-family: 'Cinzel', serif; letter-spacing: .5px;
+  opacity: .6;
 }
 
 /* ── Card de avatar no lobby ── */
 .arena-lobby-card {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
-  border-radius: 8px;
-  transition: border-color .2s;
+  border-radius: 10px;
+  transition: all .2s;
 }
-.arena-lobby-card:hover { border-color: rgba(201,168,76,.3); }
+.arena-lobby-card:hover {
+  border-color: rgba(201,168,76,.35);
+  background: rgba(201,168,76,.04);
+  transform: translateX(2px);
+}
 .arena-lobby-svg {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,.03);
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
 }
 .arena-lobby-info { flex: 1; min-width: 0; }
 .arena-lobby-nome {
   font-family: 'Cinzel', serif;
-  font-size: 8px; font-weight: 700;
+  font-size: 9px; font-weight: 700;
   color: var(--gold-light);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .arena-lobby-meta {
-  font-size: 6px; color: var(--muted); margin-top: 2px;
+  font-size: 6.5px; color: var(--muted); margin-top: 3px;
+  display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+}
+.arena-lobby-nv {
+  font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700;
+  color: var(--gold); background: rgba(201,168,76,.12);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 4px; padding: 1px 5px;
 }
 
 .arena-btn-desafiar {
-  padding: 5px 10px; flex-shrink: 0;
+  padding: 7px 12px; flex-shrink: 0;
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: .5px;
-  border: 1px solid var(--gold);
-  border-radius: 4px; background: rgba(201,168,76,.08);
-  color: var(--gold); cursor: pointer; transition: all .15s;
+  font-size: 7px; letter-spacing: 1px; font-weight: 700;
+  border: 1px solid rgba(201,168,76,.5);
+  border-radius: 7px; background: rgba(201,168,76,.1);
+  color: var(--gold); cursor: pointer; transition: all .18s;
   white-space: nowrap;
 }
-.arena-btn-desafiar:hover { background: rgba(201,168,76,.22); }
+.arena-btn-desafiar:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,.3), rgba(201,168,76,.15));
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(201,168,76,.2);
+  transform: translateY(-1px);
+}
 
 .arena-lobby-aguarda {
-  font-size: 6px; color: var(--muted);
-  font-family: 'Cinzel', serif;
+  font-size: 6.5px; color: var(--muted);
+  font-family: 'Cinzel', serif; letter-spacing: .5px;
+  opacity: .7;
 }
 
 /* ── Ranking ── */
 .arena-ranking-wrap {
   display: flex; flex-direction: column;
-  gap: 4px; width: 100%;
+  gap: 5px; width: 100%;
 }
 .arena-rank-row {
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.06);
-  border-radius: 6px;
-  font-family: 'Cinzel', serif; font-size: 7px;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif; font-size: 7.5px;
+  transition: background .15s;
+}
+/* Top 3 */
+.arena-rank-row:nth-child(1) {
+  background: linear-gradient(135deg, rgba(201,168,76,.12), rgba(201,168,76,.04));
+  border-color: rgba(201,168,76,.35);
+}
+.arena-rank-row:nth-child(2) {
+  background: linear-gradient(135deg, rgba(192,192,192,.08), rgba(192,192,192,.02));
+  border-color: rgba(192,192,192,.25);
+}
+.arena-rank-row:nth-child(3) {
+  background: linear-gradient(135deg, rgba(205,127,50,.1), rgba(205,127,50,.03));
+  border-color: rgba(205,127,50,.3);
 }
 .arena-rank-row.arena-rank-meu {
-  border-color: rgba(201,168,76,.4);
-  background: rgba(201,168,76,.06);
+  border-color: rgba(167,139,250,.5) !important;
+  background: linear-gradient(135deg, rgba(167,139,250,.12), rgba(167,139,250,.04)) !important;
+  box-shadow: 0 0 10px rgba(167,139,250,.12);
 }
-.arena-rank-pos { width: 20px; text-align: center; font-size: 10px; flex-shrink: 0; }
-.arena-rank-nome { flex: 1; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.arena-rank-pts { color: var(--gold); font-weight: 700; flex-shrink: 0; }
-.arena-rank-wl  { flex-shrink: 0; margin-left: 4px; }
+.arena-rank-pos {
+  width: 26px; text-align: center;
+  font-size: 13px; flex-shrink: 0;
+  line-height: 1;
+}
+.arena-rank-nome {
+  flex: 1; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 8px;
+}
+.arena-rank-pts {
+  color: var(--gold); font-weight: 700;
+  flex-shrink: 0; font-size: 8.5px;
+}
+.arena-rank-wl {
+  flex-shrink: 0; margin-left: 4px;
+  font-size: 6.5px; color: var(--muted);
+}
 
 /* ── Pool semanal ── */
 .arena-pool-card {
   margin-top: 10px;
-  padding: 10px 12px;
-  background: rgba(167,139,250,.06);
-  border: 1px solid rgba(167,139,250,.2);
-  border-radius: 8px; text-align: center;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(167,139,250,.1), rgba(124,58,237,.05));
+  border: 1px solid rgba(167,139,250,.3);
+  border-radius: 12px; text-align: center;
   width: 100%;
+  box-shadow: 0 0 20px rgba(124,58,237,.1);
 }
 .arena-pool-titulo {
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 2px;
-  color: var(--gem); margin-bottom: 6px;
+  font-size: 8px; letter-spacing: 2.5px;
+  color: var(--gem); margin-bottom: 8px; font-weight: 700;
 }
 .arena-pool-valor {
   font-family: 'Cinzel', serif;
-  font-size: 20px; font-weight: 700;
+  font-size: 26px; font-weight: 700;
   color: var(--gem2);
-  text-shadow: 0 0 16px rgba(196,181,253,.4);
+  text-shadow: 0 0 22px rgba(196,181,253,.5);
+  line-height: 1;
 }
 .arena-pool-sub {
-  font-size: 6px; color: var(--muted); margin-top: 4px; letter-spacing: .5px;
+  font-size: 6.5px; color: var(--muted);
+  margin-top: 6px; letter-spacing: .5px;
 }
 
 /* ══════════════════════════════════════════════════════════════

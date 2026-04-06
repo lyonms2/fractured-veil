@@ -215,24 +215,26 @@ function _bnRenderLobby() {
     </div>
 
     <div class="arena-tabs">
-      <button class="arena-tab active" id="bnTabLobby"   onclick="bnShowTab('lobby')">🏟️ LOBBY</button>
-      <button class="arena-tab"        id="bnTabRanking" onclick="bnShowTab('ranking')">🏆 RANKING</button>
+      <button class="arena-tab active" id="bnTabLobby"   onclick="bnShowTab('lobby')">
+        <span class="arena-tab-icon">🏟️</span><span>LOBBY</span>
+      </button>
+      <button class="arena-tab"        id="bnTabRanking" onclick="bnShowTab('ranking')">
+        <span class="arena-tab-icon">🏆</span><span>RANKING</span>
+      </button>
     </div>
 
     <div id="bnTabContentLobby" class="arena-tab-content bn-lobby-scroll">
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;
-                  padding:10px 8px;background:rgba(201,168,76,.05);
-                  border:1px solid rgba(201,168,76,.2);border-radius:8px;width:100%;">
-        <div style="text-align:center;">
+      <div class="arena-aposta-info" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+        <div style="text-align:center;padding:0 6px;">
           <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_bnDescAposta()}</div>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align:center;padding:0 6px;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
           <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align:center;padding:0 6px;">
           <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
         </div>
@@ -240,8 +242,7 @@ function _bnRenderLobby() {
 
       <div id="bnLobbyActions" style="width:100%;">${_bnHtmlAcoes(podePagar)}</div>
 
-      <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);
-                  letter-spacing:2px;align-self:flex-start;">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
       <div class="arena-lobby-lista" id="bnLobbyLista" style="width:100%;">
         <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
       </div>
@@ -316,14 +317,17 @@ function _bnIniciarLobbyListener() {
     if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
     lista.innerHTML = jogadores.map(([k,d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 36, 36, faseFromNivel(d.nivel))}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
         <div class="arena-lobby-info">
           <div class="arena-lobby-nome">${d.nome||'???'}</div>
-          <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'}</div>
+          <div class="arena-lobby-meta">
+            <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
+            <span>${d.raridade||'Comum'}</span>
+          </div>
         </div>
         ${_bnAtiva
           ? `<button class="arena-btn-desafiar" onclick="bnDesafiar('${d.wallet}')">🚢 DESAFIAR</button>`
-          : `<div class="arena-lobby-aguarda">Entre na fila para desafiar</div>`}
+          : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
       </div>`).join('');
   });
 }

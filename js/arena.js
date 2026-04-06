@@ -155,8 +155,12 @@ function _renderLobby() {
     </div>
 
     <div class="arena-tabs">
-      <button class="arena-tab active" id="tabLobby"   onclick="arenaShowTab('lobby')">🏟️ LOBBY</button>
-      <button class="arena-tab"        id="tabRanking" onclick="arenaShowTab('ranking')">🏆 RANKING</button>
+      <button class="arena-tab active" id="tabLobby"   onclick="arenaShowTab('lobby')">
+        <span class="arena-tab-icon">🏟️</span><span>LOBBY</span>
+      </button>
+      <button class="arena-tab"        id="tabRanking" onclick="arenaShowTab('ranking')">
+        <span class="arena-tab-icon">🏆</span><span>RANKING</span>
+      </button>
     </div>
 
     <!-- TAB LOBBY -->
@@ -279,14 +283,18 @@ function _iniciarLobbyListener() {
 
     lista.innerHTML = avatares.map(([k, d]) => `
       <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 36, 36, faseFromNivel(d.nivel))}</div>
+        <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
         <div class="arena-lobby-info">
           <div class="arena-lobby-nome">${d.nome || '???'}</div>
-          <div class="arena-lobby-meta">NV ${d.nivel||1} · ${d.raridade||'Comum'} · Vínculo ${d.vinculo||0}</div>
+          <div class="arena-lobby-meta">
+            <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
+            <span>${d.raridade||'Comum'}</span>
+            <span>· 💜 ${d.vinculo||0}</span>
+          </div>
         </div>
         ${_arenaAtiva
           ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">⚔️ DESAFIAR</button>`
-          : `<div class="arena-lobby-aguarda">Entre na fila para desafiar</div>`}
+          : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
       </div>
     `).join('');
   });
