@@ -205,6 +205,13 @@
       'hatch.confirm':           '✓ CONFIRMAR',
       'hatch.cancel':            'CANCELAR',
 
+      // Difficulty tiers
+      'diff.easy':               'FÁCIL',
+      'diff.medium':             'MÉDIO',
+      'diff.hard':               'DIFÍCIL',
+      'diff.master':             'MESTRE',
+      'diff.locked_tip':         'Desbloqueie no nível',
+
       // Action buttons
       'btn.feed':                'NUTRIR',
       'btn.play':                'BRINCAR',
@@ -438,6 +445,13 @@
       'hatch.title':             '🥚 HATCH EGG',
       'hatch.confirm':           '✓ CONFIRM',
       'hatch.cancel':            'CANCEL',
+
+      // Difficulty tiers
+      'diff.easy':               'EASY',
+      'diff.medium':             'MEDIUM',
+      'diff.hard':               'HARD',
+      'diff.master':             'MASTER',
+      'diff.locked_tip':         'Unlock at level',
 
       // Action buttons
       'btn.feed':                'FEED',

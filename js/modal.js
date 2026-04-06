@@ -71,13 +71,19 @@ function openGameSelector() {
   // ── Difficulty pills ──
   const pillsEl = document.getElementById('diffPills');
   if(pillsEl) {
-    pillsEl.innerHTML = DIFF_TIERS.map((t, i) => {
-      const unlocked = i <= max;
-      const active   = t.tier === d.tier;
+    pillsEl.innerHTML = DIFF_TIERS.map((dt, i) => {
+      const unlocked  = i <= max;
+      const active    = dt.tier === d.tier;
+      const label     = t(dt.i18nKey);
+      const tipLocked = t('diff.locked_tip') + ' ' + dt.minNivel;
       return `<button class="diff-pill ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
+        data-tier="${i}"
         onclick="${unlocked ? 'setDifficulty('+i+')' : ''}"
-        title="${!unlocked ? 'Desbloqueie no nível '+t.minNivel : t.label}">
-        ${!unlocked ? '🔒' : t.label}
+        title="${!unlocked ? tipLocked : label}">
+        ${!unlocked
+          ? '<span class="dp-lock">🔒</span>'
+          : `<span class="dp-icon">${dt.icon}</span>`}
+        <span>${label}</span>
       </button>`;
     }).join('');
   }
@@ -146,10 +152,10 @@ function closeMiniModal(id) {
 
 // ── Dificuldades ──
 const DIFF_TIERS = [
-  { tier:0, label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
-  { tier:1, label:'MÉDIO',   xp:28,  coins:52,  minNivel:6  },
-  { tier:2, label:'DIFÍCIL', xp:55,  coins:95,  minNivel:13 },
-  { tier:3, label:'MESTRE',  xp:90,  coins:155, minNivel:21 },
+  { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
+  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:52,  minNivel:6  },
+  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:95,  minNivel:13 },
+  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:155, minNivel:21 },
 ];
 
 function maxUnlockedTier() {
