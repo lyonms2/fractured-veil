@@ -46,7 +46,15 @@ async function loginComEmail() {
   errEl.textContent = '';
 
   try {
-    await fbAuth().signInWithEmailAndPassword(email, senha);
+    const cred = await fbAuth().signInWithEmailAndPassword(email, senha);
+    if(!cred.user.emailVerified) {
+      await fbAuth().signOut();
+      btn.disabled = false;
+      document.getElementById('loginBtnText').textContent = t('auth.btn.login');
+      errEl.style.color = '#e74c3c';
+      errEl.textContent = '❌ Email não verificado. Verifica a tua caixa de entrada (e spam).';
+      return;
+    }
     // onAuthStateChanged trata o resto
   } catch(e) {
     btn.disabled = false;
@@ -80,8 +88,15 @@ async function registrarComEmail() {
   errEl.textContent = '';
 
   try {
-    await fbAuth().createUserWithEmailAndPassword(email, senha);
-    // onAuthStateChanged trata o resto
+    const cred = await fbAuth().createUserWithEmailAndPassword(email, senha);
+    await cred.user.sendEmailVerification();
+    // Faz logout imediato — só entra após verificar o email
+    await fbAuth().signOut();
+    errEl.style.color = '#7ab87a';
+    errEl.textContent = '✅ Conta criada! Verifica o teu email antes de entrar.';
+    btn.disabled = false;
+    btn.textContent = t('auth.btn.create');
+    authShowTab('login');
   } catch(e) {
     btn.disabled = false;
     btn.textContent = t('auth.btn.create');

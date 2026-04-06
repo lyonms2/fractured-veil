@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /c/Users/LeoPC/fractured-veil log --oneline -10)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(grep -n \"av-svg-wrap\\\\|slot-svg-wrap\" css/*.css)",
+      "Bash(grep -n \"rtdb\\(\\)\" /c/Users/LeoPC/fractured-veil/js/*.js)",
+      "Bash(grep -n \"let db\\\\|const db\\\\|var db\\\\|_fbDb\\\\|firebase.initializeApp\\\\|getFirestore\" /c/Users/LeoPC/fractured-veil/js/*.js)",
+      "Bash(grep -n \"getUnlockedSlots\\\\|TAXA_MARKETPLACE\\\\|LIST_COST\" /c/Users/LeoPC/fractured-veil/*.html)",
+      "Bash(grep -n \"functions\\\\|firebase.functions\\\\|httpsCallable\\\\|Functions\" js/*.js marketplace.html index.html)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -rn \"\\\\.collection\\\\|fbDb\\(\\)\\\\|_rtdb\\\\|rtdb\\(\\)\" js/*.js --include=\"*.js\")",
+      "Bash(wc -l js/*.js index.html marketplace.html)",
+      "Bash(ls js/*.js)",
+      "Bash(grep -n \"buildListingCard\\\\|renderCard\\\\|renderCena\" js/*.js)"
+    ]
+  }
+}
