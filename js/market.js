@@ -69,9 +69,11 @@ function renderMarketItems() {
   );
 
   list.innerHTML = tiposPresentes.map(tipo => `
-    <div style="margin-bottom:8px;">
-      <div style="font-family:'Cinzel',serif;font-size:6px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:4px 2px 5px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px;">◆ ${tipo}</div>
-      ${grupos[tipo].map(renderCard).join('')}
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px;">◆ ${tipo}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${grupos[tipo].map(renderCard).join('')}
+      </div>
     </div>
   `).join('');
 }

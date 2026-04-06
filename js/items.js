@@ -50,30 +50,30 @@ function renderItemInventory() {
     const isCenario  = item.tipo === 'Cenário';
     const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
     const diasRest   = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : null;
-    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:6px;padding:8px 10px;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 8px ${item.cor}22;` : ''}">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:16px;">${item.emoji}</span>
-        <div style="flex:1;">
-          <div style="font-family:'Cinzel',serif;font-size:7.5px;color:${item.cor};">${item.nome}</div>
-          <div style="font-size:6px;color:var(--muted);margin-top:1px;">✦ ${item.efeito}</div>
-          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'}">${diasRest}d restantes</div>` : ''}
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:8px;padding:11px 13px;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 10px ${item.cor}28;` : ''}">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;flex-shrink:0;">${item.emoji}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:${item.cor};font-weight:700;">${item.nome}</div>
+          <div style="font-size:6.5px;color:var(--muted);margin-top:2px;">✦ ${item.efeito}</div>
+          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'};margin-top:2px;">${diasRest}d restantes</div>` : ''}
         </div>
-        ${isEquipped ? `<span style="font-size:6px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;">EQUIPADO</span>` : ''}
+        ${isEquipped ? `<span style="font-size:6.5px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;flex-shrink:0;">EQUIPADO</span>` : ''}
       </div>
-      <div style="display:flex;gap:5px;margin-top:7px;">
+      <div style="display:flex;gap:6px;margin-top:10px;">
         ${isEquipped
-          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6px;">DESEQUIPAR</button>`
-          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6px;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>EQUIPAR</button>`
+          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">DESEQUIPAR</button>`
+          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>EQUIPAR</button>`
         }
-        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6px;">EXCLUIR</button>
+        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">EXCLUIR</button>
       </div>
     </div>`;
   }
 
   list.innerHTML = tiposPresentes.map(tipo => `
-    <div style="margin-bottom:4px;">
-      <div style="font-family:'Cinzel',serif;font-size:6px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:4px 2px 5px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px;">◆ ${tipo}</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:10px;">◆ ${tipo}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
         ${grupos[tipo].map(renderCard).join('')}
       </div>
     </div>

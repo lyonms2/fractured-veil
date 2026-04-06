@@ -470,16 +470,16 @@
 .mkt-btn-confirm:hover { background:rgba(122,184,122,.25); }
 .mkt-btn-cancel { flex:1; padding:7px; cursor:pointer; font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; border:1px solid rgba(255,255,255,.1); border-radius:6px; background:transparent; color:var(--muted); transition:all .2s; }
 .mkt-btn-cancel:hover { border-color:#e74c3c; color:#e74c3c; }
-.mkt-catalog-card { border-radius:8px; padding:12px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.07); transition:border-color .2s; }
-.mkt-catalog-card:hover { border-color:rgba(201,168,76,.2); }
-.mkt-catalog-top { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.mkt-catalog-emoji { font-size:22px; flex-shrink:0; }
+.mkt-catalog-card { border-radius:10px; padding:14px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.07); transition:border-color .2s; }
+.mkt-catalog-card:hover { border-color:rgba(201,168,76,.25); background:rgba(201,168,76,.03); }
+.mkt-catalog-top { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.mkt-catalog-emoji { font-size:24px; flex-shrink:0; }
 .mkt-catalog-info { flex:1; }
-.mkt-catalog-name { font-family:'Cinzel',serif; font-size:8px; font-weight:700; letter-spacing:1px; }
-.mkt-catalog-type { font-size:6px; color:var(--muted); margin-top:2px; }
-.mkt-catalog-price { font-family:'Cinzel',serif; font-size:11px; color:var(--gold); font-weight:700; text-align:right; flex-shrink:0; }
-.mkt-catalog-desc { font-size:6.5px; color:#887799; margin-bottom:5px; }
-.mkt-catalog-effect { font-size:6.5px; color:#5ab4e8; margin-bottom:10px; padding:4px 8px; border-left:2px solid #1a6080; background:rgba(90,180,232,.05); border-radius:0 4px 4px 0; }
+.mkt-catalog-name { font-family:'Cinzel',serif; font-size:8.5px; font-weight:700; letter-spacing:1px; }
+.mkt-catalog-type { font-size:6.5px; color:var(--muted); margin-top:3px; }
+.mkt-catalog-price { font-family:'Cinzel',serif; font-size:12px; color:var(--gold); font-weight:700; text-align:right; flex-shrink:0; }
+.mkt-catalog-desc { font-size:7px; color:#887799; margin-bottom:7px; line-height:1.6; }
+.mkt-catalog-effect { font-size:7px; color:#5ab4e8; margin-bottom:12px; padding:6px 10px; border-left:2px solid #1a6080; background:rgba(90,180,232,.05); border-radius:0 4px 4px 0; line-height:1.5; }
 .mkt-catalog-footer { display:flex; align-items:center; gap:8px; }
 .mkt-owned-badge { flex:1; text-align:center; padding:6px; font-size:6px; font-family:'Cinzel',serif; letter-spacing:1px; color:#7ab87a; border:1px solid rgba(122,184,122,.3); border-radius:6px; background:rgba(122,184,122,.05); }
 .mkt-duration-note { font-size:5.5px; color:var(--muted); }
