@@ -108,7 +108,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .av-card-stripe.Raro{background:linear-gradient(90deg,var(--rare),#3a80c0);}
 .av-card-stripe.Lendário{background:linear-gradient(90deg,var(--legendary),#c87820);}
 .av-card-inner{padding:10px;display:flex;flex-direction:column;align-items:center;flex:1;}
-.av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:6px;}
+.av-svg-wrap{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:6px;position:relative;}
 .av-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
 .av-sufixo{font-size:8px;color:var(--muted);text-align:center;margin-bottom:6px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
 .av-pill{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:8px;white-space:nowrap;}
@@ -149,7 +149,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .slot-badge{font-size:7px;font-family:'Cinzel',serif;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;font-weight:700;}
 .slot-badge.active{background:rgba(34,197,94,.15);color:var(--green2);border:1px solid rgba(34,197,94,.3);}
 .slot-badge.frozen{background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid rgba(201,168,76,.3);}
-.slot-svg-wrap{width:100px;height:100px;margin:14px auto 4px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);border-radius:16px;flex-shrink:0;}
+.slot-svg-wrap{width:100px;height:100px;margin:14px auto 4px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);border-radius:16px;flex-shrink:0;position:relative;}
 .slot-svg-wrap svg{width:96px;height:96px;display:block;}
 .slot-body{padding:10px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
 .slot-av-name{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.3;}
@@ -958,6 +958,40 @@ window.addEventListener('load', () => {
 function _mbnActive(btn) {
   document.querySelectorAll('.mkt-bn-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+}
+</script>
+
+<!-- ── AVATAR ZOOM OVERLAY ── -->
+<style>
+.mkt-avatar-zoom-btn{position:absolute;top:3px;right:3px;z-index:15;background:rgba(13,11,26,.75);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:3px 6px;font-size:12px;cursor:pointer;color:#fff;line-height:1;transition:background .15s,transform .15s;-webkit-tap-highlight-color:transparent;}
+.mkt-avatar-zoom-btn:hover{background:rgba(60,40,120,.7);transform:scale(1.1);}
+#mktAvatarZoomOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:950;align-items:center;justify-content:center;}
+.mkt-zoom-modal{background:#0d0b1a;border:1px solid rgba(167,139,250,.25);border-radius:18px;padding:24px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;max-width:320px;width:90%;animation:mkt-zoom-in .25s cubic-bezier(.34,1.5,.64,1) forwards;}
+@keyframes mkt-zoom-in{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.mkt-zoom-close{position:absolute;top:10px;right:12px;background:none;border:none;color:#666;font-size:14px;cursor:pointer;padding:4px;line-height:1;}
+.mkt-zoom-close:hover{color:#fff;}
+.mkt-zoom-name{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#fde68a;letter-spacing:2px;text-align:center;}
+.mkt-zoom-info{font-family:'Cinzel',serif;font-size:8px;color:#666;letter-spacing:1px;text-align:center;}
+</style>
+<div id="mktAvatarZoomOverlay" onclick="mktCloseZoom()">
+  <div class="mkt-zoom-modal" onclick="event.stopPropagation()">
+    <button class="mkt-zoom-close" onclick="mktCloseZoom()">✕</button>
+    <div id="mktAvatarZoomSVG" style="display:flex;align-items:center;justify-content:center;"></div>
+    <div id="mktAvatarZoomName" class="mkt-zoom-name"></div>
+    <div id="mktAvatarZoomInfo" class="mkt-zoom-info"></div>
+  </div>
+</div>
+<script>
+function mktOpenZoom(elemento, raridade, seed, nivelAv, nome) {
+  const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
+  const fase  = faseFromNivel(nivelAv);
+  document.getElementById('mktAvatarZoomSVG').innerHTML = gerarSVG(elemento, raridade, seed, 260, 260, fase);
+  document.getElementById('mktAvatarZoomName').textContent = nome ? nome.split(',')[0] : '';
+  document.getElementById('mktAvatarZoomInfo').textContent = `${elemento} · ${raridade} · ${fases[fase]} · Nível ${nivelAv||1}`;
+  document.getElementById('mktAvatarZoomOverlay').style.display = 'flex';
+}
+function mktCloseZoom() {
+  document.getElementById('mktAvatarZoomOverlay').style.display = 'none';
 }
 </script>
 </body>
