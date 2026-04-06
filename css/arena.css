@@ -75,8 +75,9 @@
 .arena-tab-content {
   display: flex; flex-direction: column;
   align-items: center; width: 100%;
-  gap: 8px; overflow-y: auto; flex: 1;
+  gap: 14px; overflow-y: auto; flex: 1;
   overscroll-behavior: contain;
+  padding-bottom: 8px;
 }
 
 /* ── Info da aposta ── */
