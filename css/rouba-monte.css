@@ -10,6 +10,7 @@
   opacity: 0; pointer-events: none;
   transition: opacity .3s;
   padding: 10px 12px;
+  gap: 12px;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
