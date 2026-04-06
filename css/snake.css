@@ -57,6 +57,32 @@
   color: transparent;
 }
 
+/* ── Botão fechar dentro do d-pad (mobile) — canto sup. esq. longe das setas ── */
+/* No mobile o FECHAR dos mini-btns some — fica só o do d-pad */
+.dpad-close-desktop { display: none; }
+
+.dpad-close-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  background: rgba(231,76,60,.12);
+  border: 1px solid rgba(231,76,60,.3);
+  border-radius: 6px;
+  color: #e74c3c;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  touch-action: manipulation;
+}
+.dpad-close-btn:active {
+  background: rgba(231,76,60,.28);
+}
+
 /* ── Score ── */
 #snakeScore {
   font-family: 'Cinzel', serif;
@@ -93,6 +119,8 @@
 
   /* D-pad desnecessário no desktop — teclado/WASD disponível */
   .snake-dpad { display: none !important; }
+  /* No desktop o FECHAR fica nos mini-btns normais */
+  .dpad-close-desktop { display: inline-flex !important; }
 
   #snakeModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
   #snakeModal .mini-info   { font-size: 10px !important; }
