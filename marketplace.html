@@ -982,6 +982,7 @@ function _mbnActive(btn) {
   </div>
 </div>
 <script>
+function faseFromNivel(n) { const v=n||1; return v<5?0:v<10?1:v<17?2:3; }
 function mktOpenZoomBtn(btn) {
   mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);
 }
