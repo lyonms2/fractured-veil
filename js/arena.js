@@ -205,7 +205,7 @@ function _htmlAcoes(podePagar) {
   if(_arenaAtiva) {
     return `
       <button class="arena-btn-sair" onclick="sairDoLobby()">⬅ SAIR DA FILA</button>
-      <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — aguardando oponente...</div>`;
+      <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — matchmaking automático ativo...</div>`;
   }
   return `
     <button class="arena-btn-entrar ${!podePagar ? 'disabled' : ''}"
@@ -277,6 +277,18 @@ function _iniciarLobbyListener() {
       const tsOk      = !d.ts || typeof d.ts !== 'number' || (agora - d.ts) < ARENA_LOBBY_TTL;
       return !isMe && !emPartida && tsOk;
     });
+
+    // ── Matchmaking automático ──
+    // Se estou na fila e há oponentes disponíveis, desafia o primeiro automaticamente
+    if(_arenaAtiva && !_arenaPartidaId && avatares.length > 0) {
+      // Usa o wallet como critério de desempate para evitar que ambos desafiem ao mesmo tempo
+      const [opKey, opData] = avatares[0];
+      if((walletAddress||'').toLowerCase() < opKey.toLowerCase()) {
+        setTimeout(() => {
+          if(_arenaAtiva && !_arenaPartidaId) desafiarJogador(opData.wallet);
+        }, 800);
+      }
+    }
 
     if(!avatares.length) {
       lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';

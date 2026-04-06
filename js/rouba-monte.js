@@ -318,7 +318,7 @@ function _rmHtmlAcoes(podePagar) {
   if(_rmAtiva) return `
     <button class="arena-btn-sair" onclick="rmSairDoLobby()">⬅ SAIR DA FILA</button>
     <div class="arena-aguardando" style="margin-top:10px;">
-      <div class="arena-pulse"></div>Na fila — aguardando oponente...
+      <div class="arena-pulse"></div>Na fila — matchmaking automático ativo...
     </div>`;
   return `
     <button class="arena-btn-entrar ${!podePagar?'disabled':''}"
@@ -434,6 +434,17 @@ function _rmIniciarLobbyListener() {
     const agora = Date.now();
     const jogadores = Object.entries(dados).filter(([k,d]) =>
       k.toLowerCase()!==myKey && !d.emPartida && (!d.ts||(agora-d.ts)<RM_LOBBY_TTL));
+
+    // ── Matchmaking automático ──
+    if(_rmAtiva && !_rmSalaId && jogadores.length > 0) {
+      const [opKey, opData] = jogadores[0];
+      if((walletAddress||'').toLowerCase() < opKey.toLowerCase()) {
+        setTimeout(() => {
+          if(_rmAtiva && !_rmSalaId) rmDesafiar(opData.wallet);
+        }, 800);
+      }
+    }
+
     if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
     lista.innerHTML = jogadores.map(([k,d]) => `
       <div class="arena-lobby-card">
