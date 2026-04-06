@@ -150,6 +150,7 @@
         <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
           <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
           <button id="btnAudio" class="btn-wallet" onclick="toggleAudio()" style="min-width:32px;padding:4px 8px;">🔊</button>
+          <button class="btn-wallet" onclick="setLang(window._currentLang==='pt'?'en':'pt')" title="Language / Idioma" style="min-width:36px;padding:4px 8px;font-size:11px;letter-spacing:.5px;" id="btnLang">🌐</button>
           <button class="btn-wallet btn-sair" data-i18n="ui.logout" onclick="disconnectWallet()">✕ SAIR</button>
         </div>
       </div>
@@ -830,6 +831,14 @@
 </script>
 
 <script src="js/i18n.js"></script>
+<script>
+  // Aplica traduções estáticas e atualiza label do botão de idioma
+  document.addEventListener('DOMContentLoaded', () => {
+    applyI18nDOM();
+    const btn = document.getElementById('btnLang');
+    if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
+  });
+</script>
 <script src="js/audio.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>

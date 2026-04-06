@@ -497,6 +497,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="mkt-wallet-dot" id="walletDot"></div>
       <span id="hdrWallet">—</span>
     </div>
+    <button class="mkt-back" onclick="setLang(window._currentLang==='pt'?'en':'pt')" title="Language / Idioma" id="btnLangMkt" style="min-width:48px;">🌐 EN</button>
     <button class="mkt-back" onclick="mktLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red2);">✕ SAIR</button>
     <a href="index.html" class="mkt-back">← Voltar ao jogo</a>
   </div>
@@ -810,6 +811,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   window.db = firebase.firestore();
   var db = window.db;
 </script>
+<script src="js/i18n.js"></script>
 <script src="js/data.js"></script>
 <script src="js/pool.js"></script>
 <script src="js/cristais.js"></script>
@@ -983,6 +985,12 @@ function _mbnActive(btn) {
 </div>
 <script>
 function faseFromNivel(n) { const v=n||1; return v<5?0:v<10?1:v<17?2:3; }
+// Aplica idioma e atualiza label do botão
+document.addEventListener('DOMContentLoaded', () => {
+  applyI18nDOM();
+  const btn = document.getElementById('btnLangMkt');
+  if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
+});
 function mktOpenZoomBtn(btn) {
   mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);
 }
