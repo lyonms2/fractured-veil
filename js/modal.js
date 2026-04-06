@@ -146,8 +146,12 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
+const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','bjModal'];
 function closeMiniModal(id) {
   ModalManager.close(id);
+  if(_PVE_MODALS.includes(id) && typeof openGameSelector === 'function') {
+    openGameSelector(); gsSetTab('pve');
+  }
 }
 
 // ── Dificuldades ──

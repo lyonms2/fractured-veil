@@ -220,6 +220,7 @@ function closeRoubaMonte() {
   if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
   _rmBloquearUI(false);
   ModalManager.close('roubaMontModal');
+  if(typeof openGameSelector === 'function') { openGameSelector(); gsSetTab('pvp'); }
 }
 
 // ═══════════════════════════════════════════════════════════════════

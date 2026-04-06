@@ -129,6 +129,8 @@ function closeArena() {
   _arenaOpWallet = null;
 
   ModalManager.close('arenaModal');
+  // Volta ao Game Selector na aba PVP se não estava em partida
+  if(typeof openGameSelector === 'function') { openGameSelector(); gsSetTab('pvp'); }
 }
 
 // ═══════════════════════════════════════════════════════════════════

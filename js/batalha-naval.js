@@ -189,6 +189,7 @@ function closeBatalhaNaval() {
   if(_bnHeartbeatSala) { clearInterval(_bnHeartbeatSala); _bnHeartbeatSala = null; }
   _bnBloquearUI(false);
   ModalManager.close('batalhaNavalModal');
+  if(typeof openGameSelector === 'function') { openGameSelector(); gsSetTab('pvp'); }
 }
 
 // ═══════════════════════════════════════════════════════════════════
