@@ -301,9 +301,18 @@
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div data-i18n="gs.title" class="gs-title">◆ ESCOLHA UM JOGO</div>
             <div class="gs-tabs">
-              <button data-i18n="gs.tab.pve" class="gs-tab active" id="gsTabPve"  onclick="gsSetTab('pve')">🎮 PVE</button>
-              <button data-i18n="gs.tab.pvp" class="gs-tab"        id="gsTabPvp"  onclick="gsSetTab('pvp')">⚔️ PVP</button>
-              <button data-i18n="gs.tab.lore" class="gs-tab"       id="gsTabLore" onclick="gsSetTab('lore')">📖 LORE</button>
+              <button class="gs-tab active" id="gsTabPve"  onclick="gsSetTab('pve')">
+                <span class="gs-tab-icon">🎮</span>
+                <span data-i18n="gs.tab.pve" class="gs-tab-label">PVE</span>
+              </button>
+              <button class="gs-tab" id="gsTabPvp"  onclick="gsSetTab('pvp')">
+                <span class="gs-tab-icon">⚔️</span>
+                <span data-i18n="gs.tab.pvp" class="gs-tab-label">PVP</span>
+              </button>
+              <button class="gs-tab" id="gsTabLore" onclick="gsSetTab('lore')">
+                <span class="gs-tab-icon">📖</span>
+                <span data-i18n="gs.tab.lore" class="gs-tab-label">LORE</span>
+              </button>
             </div>
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>

@@ -147,9 +147,9 @@
 
       // Game selector
       'gs.title':                '◆ ESCOLHA UM JOGO',
-      'gs.tab.pve':              '🎮 PVE',
-      'gs.tab.pvp':              '⚔️ PVP',
-      'gs.tab.lore':             '📖 LORE',
+      'gs.tab.pve':              'PVE',
+      'gs.tab.pvp':              'PVP',
+      'gs.tab.lore':             'LORE',
       // PVE
       'gs.memoria.name':         'MEMÓRIA ELEMENTAL',
       'gs.memoria.desc':         'Encontre todos os pares de elementos',
@@ -381,9 +381,9 @@
 
       // Game selector
       'gs.title':                '◆ CHOOSE A GAME',
-      'gs.tab.pve':              '🎮 PVE',
-      'gs.tab.pvp':              '⚔️ PVP',
-      'gs.tab.lore':             '📖 LORE',
+      'gs.tab.pve':              'PVE',
+      'gs.tab.pvp':              'PVP',
+      'gs.tab.lore':             'LORE',
       // PVE
       'gs.memoria.name':         'ELEMENTAL MEMORY',
       'gs.memoria.desc':         'Find all pairs of elements',
