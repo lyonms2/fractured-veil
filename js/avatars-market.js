@@ -171,81 +171,29 @@ async function buyAvatar(listingId, price) {
   const freeIdx = playerData.avatarSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
   if(freeIdx === -1) { showToast('Sem slots disponíveis. Desbloqueia mais slots.','err'); return; }
 
-  let l = null;
-  let newBuyerSlots = null;
-  let newBuyerCristais = 0;
-
   try {
-    const listRef  = db.collection('avatarMarket').doc(listingId);
-    const buyerRef = db.collection('players').doc(walletAddress);
-
-    // Transacção atómica — evita dupla compra por compradores simultâneos
-    await db.runTransaction(async (tx) => {
-      const listSnap = await tx.get(listRef);
-      if(!listSnap.exists || listSnap.data().status !== 'listed') throw new Error('NOT_AVAILABLE');
-      l = listSnap.data();
-
-      const buyerSnap     = await tx.get(buyerRef);
-      const buyerData     = buyerSnap.data() || {};
-      const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-      if(freshCristais < price) throw new Error('INSUFFICIENT');
-
-      const buyerSlots   = [...(buyerData.avatarSlots || playerData.avatarSlots)];
-      const freshFreeIdx = buyerSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
-      if(freshFreeIdx === -1) throw new Error('NO_SLOT');
-
-      newBuyerCristais = freshCristais - price;
-      buyerSlots[freshFreeIdx] = {
-        nome: l.nome, elemento: l.elemento, raridade: l.raridade,
-        descricao: l.descricao, seed: l.seed||0,
-        nivel: l.nivel||1, xp: l.xp||0, vinculo: l.vinculo||0,
-        diasVida: l.diasVida||0, totalOvos: l.totalOvos||0, totalRaros: l.totalRaros||0,
-        bornAt: l.bornAt||Date.now(), acquiredAt: Date.now(),
-        hatched: true, dead: false, vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
-        eggs: [], items: [],
-      };
-      newBuyerSlots = buyerSlots;
-      tx.update(buyerRef, {
-        avatarSlots:   buyerSlots,
-        cristais:      newBuyerCristais,
-        'gs.cristais': newBuyerCristais,
-      });
-
-      const sellerRef  = db.collection('players').doc(l.sellerId);
-      const sellerSnap = await tx.get(sellerRef);
-      const sellerData = sellerSnap.data() || {};
-      const sellerCris = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
-      const sellerSlots = [...(sellerData.avatarSlots || [])];
-      if(l.slotIdx !== undefined && sellerSlots[l.slotIdx]) sellerSlots[l.slotIdx] = null;
-      const taxaAvatar   = Math.round(price * TAXA_MARKETPLACE);
-      const sellerRecebe = price - taxaAvatar;
-      tx.update(sellerRef, {
-        avatarSlots:    sellerSlots,
-        cristais:       sellerCris + sellerRecebe,
-        'gs.cristais':  sellerCris + sellerRecebe,
-      });
-
-      tx.delete(listRef);
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/comprar-avatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ listingId, idToken }),
     });
+    const data = await resp.json();
+    if(!resp.ok) { showToast(data.erro || 'Erro ao comprar avatar.', 'err'); return; }
 
-    // Taxa para a pool (fora da transacção — tem o seu próprio batch)
-    const taxaAvatar = Math.round(price * TAXA_MARKETPLACE);
-    if(taxaAvatar > 0) await addToPool(taxaAvatar, `venda avatar ${l.nome}`);
-
-    playerData.avatarSlots  = newBuyerSlots;
-    playerData.cristais     = newBuyerCristais;
+    playerData.avatarSlots = data.slots;
+    playerData.cristais    = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais  = newBuyerCristais;
+    playerData.gs.cristais = data.novoSaldo;
     updateCristaisDisplay();
 
+    const taxa = Math.round(price * TAXA_MARKETPLACE);
     closeDetail();
-    showToast(`✅ ${l.nome} adquirido! (taxa ${taxaAvatar}💎 → pool)`, 'ok');
+    showToast(`✅ ${data.nome} adquirido! (taxa ${taxa}💎 → pool)`, 'ok');
     showSection('slots');
   } catch(e) {
-    if(e.message === 'NOT_AVAILABLE') showToast('Listagem já não disponível.','err');
-    else if(e.message === 'INSUFFICIENT') showToast('Cristais insuficientes.','err');
-    else if(e.message === 'NO_SLOT') showToast('Sem slots disponíveis.','err');
-    else { console.error(e); showToast('Erro ao comprar avatar.','err'); }
+    console.error(e);
+    showToast('Erro ao comprar avatar.', 'err');
   }
 }
 
