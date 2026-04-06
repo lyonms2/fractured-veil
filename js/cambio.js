@@ -114,8 +114,27 @@ async function renderCambioPanel() {
 
   el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">A carregar câmbio...</div>`;
 
-  const elegivel = calcCambioEligivel();
+  // Verifica avatar/nível antes de carregar dados da pool
+  const elegivelBasico = calcCambioEligivel();
+  if(!elegivelBasico.ok && elegivelBasico.motivo !== 'Pool insuficiente. Tenta mais tarde.') {
+    el.innerHTML = `
+      <div style="padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:6px;text-align:center;">
+        <div style="font-size:16px;margin-bottom:4px;">🔒</div>
+        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);">${elegivelBasico.motivo}</div>
+      </div>`;
+    return;
+  }
 
+  // Carrega dados da pool antes de verificar saldo
+  const dados = await cambioCarregarDados();
+  if(!dados) {
+    el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;">Erro ao carregar dados.</div>`;
+    return;
+  }
+
+  // Verificação completa agora que _cambioPoolSaldo está actualizado
+  const elegivel = calcCambioEligivel();
   if(!elegivel.ok) {
     el.innerHTML = `
       <div style="padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
@@ -123,12 +142,6 @@ async function renderCambioPanel() {
         <div style="font-size:16px;margin-bottom:4px;">🔒</div>
         <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);">${elegivel.motivo}</div>
       </div>`;
-    return;
-  }
-
-  const dados = await cambioCarregarDados();
-  if(!dados) {
-    el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;">Erro ao carregar dados.</div>`;
     return;
   }
 
