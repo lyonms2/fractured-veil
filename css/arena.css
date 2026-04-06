@@ -186,6 +186,25 @@
   opacity: .6;
 }
 
+.arena-lobby-search {
+  width: 100%; box-sizing: border-box;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 8px; letter-spacing: .5px;
+  outline: none;
+  transition: border-color .2s;
+}
+.arena-lobby-search::placeholder {
+  color: var(--muted); opacity: .6;
+}
+.arena-lobby-search:focus {
+  border-color: rgba(201,168,76,.35);
+}
+
 /* ── Card de avatar no lobby ── */
 .arena-lobby-card {
   display: flex; align-items: center; gap: 10px;

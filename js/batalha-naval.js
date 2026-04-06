@@ -244,6 +244,9 @@ function _bnRenderLobby() {
       <div id="bnLobbyActions" style="width:100%;">${_bnHtmlAcoes(podePagar)}</div>
 
       <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <input class="arena-lobby-search" id="bnLobbySearch" type="text"
+        placeholder="Buscar avatar..."
+        oninput="_bnFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="bnLobbyLista" style="width:100%;">
         <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
       </div>

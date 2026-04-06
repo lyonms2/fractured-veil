@@ -181,7 +181,7 @@ function _renderLobby() {
 
       <div class="arena-lobby-titulo">Avatares na fila ${rar}</div>
       <input class="arena-lobby-search" id="arenaLobbySearch" type="text"
-        placeholder="🔍 Buscar por nome..."
+        placeholder="Buscar avatar..."
         oninput="_arenaFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="arenaLobbyLista">
         <div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>

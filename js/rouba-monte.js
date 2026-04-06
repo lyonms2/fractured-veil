@@ -282,7 +282,7 @@ function _rmRenderLobby() {
       <!-- Lista de jogadores -->
       <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
       <input class="arena-lobby-search" id="rmLobbySearch" type="text"
-        placeholder="🔍 Buscar por nome..."
+        placeholder="Buscar avatar..."
         oninput="_rmFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="rmLobbyLista" style="width:100%;">
         <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
