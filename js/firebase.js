@@ -169,18 +169,7 @@ function applyGameState(data) {
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 
-  // Backup localStorage: se o save async foi interrompido por navegação, recupera dead:true
-  try {
-    if(localStorage.getItem('fv_dead_' + activeSlotIdx) === '1') {
-      dead = true;
-      if(avatarSlots[activeSlotIdx]) avatarSlots[activeSlotIdx].dead = true;
-      // Só limpa o flag quando Firebase confirmar (próximo save bem-sucedido)
-    }
-    // Limpa flags de slots onde dead==false confirmado pelo Firebase
-    avatarSlots.forEach((s, i) => {
-      if(s && s.dead === false) localStorage.removeItem('fv_dead_' + i);
-    });
-  } catch(e) {}
+  // Dead state vem do Firebase — fallback via RTDB presence (ver setupPresence/getPresenceData)
 
   // Inject orphanEggs
   if(window._orphanEggs && window._orphanEggs.length > 0) {
@@ -243,6 +232,56 @@ async function loadFromFirebase() {
     applyGameState(snap.data());
     return true;
   } catch(e) { console.warn('Load error:', e); return false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRESENCE — lastSeen e deadSlot server-side via RTDB onDisconnect
+// Impede que o utilizador manipule localStorage para contornar decay/morte
+// ═══════════════════════════════════════════════════════════════════
+
+function _presRef(uid) {
+  const db = typeof _rtdb !== 'undefined' ? _rtdb : null;
+  return (db && uid) ? db.ref('presence/' + uid) : null;
+}
+
+// Chamar após login: regista onDisconnect no RTDB — Firebase escreve server-side ao desligar
+function setupPresence(uid) {
+  const db = typeof _rtdb !== 'undefined' ? _rtdb : null;
+  if(!db || !uid) return;
+  db.ref('.info/connected').on('value', snap => {
+    if(!snap.val()) return;
+    const ref = _presRef(uid);
+    if(!ref) return;
+    ref.onDisconnect().update({
+      lastSeen: firebase.database.ServerValue.TIMESTAMP,
+      online:   false,
+    });
+    ref.update({ online: true });
+  });
+}
+
+// Ler lastSeen e deadSlot do RTDB (server-side, não manipulável)
+async function getPresenceData(uid) {
+  const ref = _presRef(uid);
+  if(!ref) return null;
+  try {
+    const snap = await ref.once('value');
+    return snap.val() || null;
+  } catch(e) { return null; }
+}
+
+// Chamar quando o avatar morre: garante dead:true mesmo se browser fechar antes do Firestore salvar
+function setPresenceDead(uid, slotIdx) {
+  const ref = _presRef(uid);
+  if(!ref) return;
+  ref.update({ deadSlot: slotIdx });
+  ref.onDisconnect().update({ deadSlot: slotIdx });
+}
+
+// Limpar deadSlot após aplicado (ou após novo avatar ser invocado)
+function clearPresenceDead(uid) {
+  const ref = _presRef(uid);
+  if(ref) ref.child('deadSlot').remove().catch(() => {});
 }
 
 // Auto-save on every gameTick cycle (every 60s)

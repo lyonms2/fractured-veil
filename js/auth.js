@@ -250,12 +250,19 @@ async function _onLoginSuccess(user) {
   if(loaded) {
     addLog(t('log.state_restored'), 'good');
 
+    // ── Presence: lastSeen e deadSlot server-side ──
+    setupPresence(walletAddress);
+    const _presData = await getPresenceData(walletAddress);
+    if(_presData?.lastSeen > (window.loadedLastSeen || 0)) window.loadedLastSeen = _presData.lastSeen;
+    if(_presData?.deadSlot != null) {
+      const _ds = _presData.deadSlot;
+      if(avatarSlots[_ds]) avatarSlots[_ds].dead = true;
+      if(_ds === activeSlotIdx) dead = true;
+      clearPresenceDead(walletAddress);
+    }
+
     // ── Offline decay ──
     if(hatched && !dead) {
-      // Usa localStorage como fallback: cobre fechar o browser antes do Firebase salvar
-      const _lsHidden = parseInt(localStorage.getItem('fv_lastHidden') || '0');
-      if(_lsHidden > (window.loadedLastSeen || 0)) window.loadedLastSeen = _lsHidden;
-      localStorage.removeItem('fv_lastHidden');
       const offlineSecs   = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
       const offlineCycles = Math.floor(offlineSecs / 60);
       if(offlineCycles > 0) {
