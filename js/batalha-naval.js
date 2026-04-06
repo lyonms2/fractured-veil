@@ -326,23 +326,39 @@ function _bnIniciarLobbyListener() {
       }
     }
 
-    if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
-    lista.innerHTML = jogadores.map(([k,d]) => `
-      <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
-        <div class="arena-lobby-info">
-          <div class="arena-lobby-nome">${d.nome||'???'}</div>
-          <div class="arena-lobby-meta">
-            <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
-            <span>${d.raridade||'Comum'}</span>
-          </div>
-        </div>
-        ${_bnAtiva
-          ? `<button class="arena-btn-desafiar" onclick="bnDesafiar('${d.wallet}')">🚢 DESAFIAR</button>`
-          : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
-      </div>`).join('');
+    _bnLobbyJogadores = jogadores;
+    _bnFiltrarLobby(document.getElementById('bnLobbySearch')?.value || '');
   });
 }
+
+let _bnLobbyJogadores = [];
+function _bnFiltrarLobby(query) {
+  const lista = document.getElementById('bnLobbyLista');
+  if(!lista) return;
+  const q = (query||'').toLowerCase().trim();
+  const filtrados = q
+    ? _bnLobbyJogadores.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
+    : _bnLobbyJogadores;
+  if(!filtrados.length) {
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+query+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(([k,d]) => `
+    <div class="arena-lobby-card">
+      <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
+      <div class="arena-lobby-info">
+        <div class="arena-lobby-nome">${d.nome||'???'}</div>
+        <div class="arena-lobby-meta">
+          <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
+          <span>${d.raridade||'Comum'}</span>
+        </div>
+      </div>
+      ${_bnAtiva
+        ? `<button class="arena-btn-desafiar" onclick="bnDesafiar('${d.wallet}')">🚢 DESAFIAR</button>`
+        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+    </div>`).join('');
+}
+window._bnFiltrarLobby = _bnFiltrarLobby;
 
 // ═══════════════════════════════════════════════════════════════════
 // ENTRAR / SAIR DO LOBBY

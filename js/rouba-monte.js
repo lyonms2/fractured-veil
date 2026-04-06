@@ -281,6 +281,9 @@ function _rmRenderLobby() {
 
       <!-- Lista de jogadores -->
       <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <input class="arena-lobby-search" id="rmLobbySearch" type="text"
+        placeholder="🔍 Buscar por nome..."
+        oninput="_rmFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="rmLobbyLista" style="width:100%;">
         <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
       </div>
@@ -445,23 +448,39 @@ function _rmIniciarLobbyListener() {
       }
     }
 
-    if(!jogadores.length) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
-    lista.innerHTML = jogadores.map(([k,d]) => `
-      <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento,d.raridade,d.seed,44,44,faseFromNivel(d.nivel))}</div>
-        <div class="arena-lobby-info">
-          <div class="arena-lobby-nome">${d.nome||'???'}</div>
-          <div class="arena-lobby-meta">
-            <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
-            <span>${d.raridade||'Comum'}</span>
-          </div>
-        </div>
-        ${_rmAtiva
-          ? `<button class="arena-btn-desafiar" onclick="rmDesafiar('${d.wallet}')">🃏 DESAFIAR</button>`
-          : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
-      </div>`).join('');
+    _rmLobbyJogadores = jogadores;
+    _rmFiltrarLobby(document.getElementById('rmLobbySearch')?.value || '');
   });
 }
+
+let _rmLobbyJogadores = [];
+function _rmFiltrarLobby(query) {
+  const lista = document.getElementById('rmLobbyLista');
+  if(!lista) return;
+  const q = (query||'').toLowerCase().trim();
+  const filtrados = q
+    ? _rmLobbyJogadores.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
+    : _rmLobbyJogadores;
+  if(!filtrados.length) {
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+query+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(([k,d]) => `
+    <div class="arena-lobby-card">
+      <div class="arena-lobby-svg">${gerarSVG(d.elemento,d.raridade,d.seed,44,44,faseFromNivel(d.nivel))}</div>
+      <div class="arena-lobby-info">
+        <div class="arena-lobby-nome">${d.nome||'???'}</div>
+        <div class="arena-lobby-meta">
+          <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
+          <span>${d.raridade||'Comum'}</span>
+        </div>
+      </div>
+      ${_rmAtiva
+        ? `<button class="arena-btn-desafiar" onclick="rmDesafiar('${d.wallet}')">🃏 DESAFIAR</button>`
+        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+    </div>`).join('');
+}
+window._rmFiltrarLobby = _rmFiltrarLobby;
 
 // ═══════════════════════════════════════════════════════════════════
 // ENTRAR / SAIR DO LOBBY

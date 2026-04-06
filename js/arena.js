@@ -180,6 +180,9 @@ function _renderLobby() {
       </div>
 
       <div class="arena-lobby-titulo">Avatares na fila ${rar}</div>
+      <input class="arena-lobby-search" id="arenaLobbySearch" type="text"
+        placeholder="🔍 Buscar por nome..."
+        oninput="_arenaFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="arenaLobbyLista">
         <div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>
       </div>
@@ -295,24 +298,41 @@ function _iniciarLobbyListener() {
       return;
     }
 
-    lista.innerHTML = avatares.map(([k, d]) => `
-      <div class="arena-lobby-card">
-        <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
-        <div class="arena-lobby-info">
-          <div class="arena-lobby-nome">${d.nome || '???'}</div>
-          <div class="arena-lobby-meta">
-            <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
-            <span>${d.raridade||'Comum'}</span>
-            <span>· 💜 ${d.vinculo||0}</span>
-          </div>
-        </div>
-        ${_arenaAtiva
-          ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">⚔️ DESAFIAR</button>`
-          : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
-      </div>
-    `).join('');
+    _arenaLobbyAvatares = avatares;
+    _arenaFiltrarLobby(document.getElementById('arenaLobbySearch')?.value || '');
   });
 }
+
+let _arenaLobbyAvatares = [];
+function _arenaFiltrarLobby(query) {
+  const lista = document.getElementById('arenaLobbyLista');
+  if(!lista) return;
+  const q = (query||'').toLowerCase().trim();
+  const filtrados = q
+    ? _arenaLobbyAvatares.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
+    : _arenaLobbyAvatares;
+  if(!filtrados.length) {
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+query+'"' : 'Nenhum avatar na fila ainda...'}</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(([k, d]) => `
+    <div class="arena-lobby-card">
+      <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
+      <div class="arena-lobby-info">
+        <div class="arena-lobby-nome">${d.nome || '???'}</div>
+        <div class="arena-lobby-meta">
+          <span class="arena-lobby-nv">NV ${d.nivel||1}</span>
+          <span>${d.raridade||'Comum'}</span>
+          <span>· 💜 ${d.vinculo||0}</span>
+        </div>
+      </div>
+      ${_arenaAtiva
+        ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">⚔️ DESAFIAR</button>`
+        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+    </div>
+  `).join('');
+}
+window._arenaFiltrarLobby = _arenaFiltrarLobby;
 
 // ═══════════════════════════════════════════════════════════════════
 // ENTRAR / SAIR DO LOBBY
