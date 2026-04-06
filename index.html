@@ -156,11 +156,11 @@
       </div>
     </div>
     <div class="header-center">
-      <button class="res res-clickable" id="btnMarket" onclick="openMarket()" title="Mercado" style="display:none;">🛒</button>
-      <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
+      <button class="res res-clickable" id="btnMarket" onclick="openMarket()" data-i18n-title="ui.market_title" title="Mercado" style="display:none;">🛒</button>
+      <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" data-i18n-title="ui.coins_title" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
       <a class="res res-clickable" id="resCristaisBtn" href="#" onclick="goToMarketplace(event)" title="Marketplace" style="display:none;text-decoration:none;color:inherit;">💎 <b id="resCristais">0</b></a>
-      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
-      <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
+      <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" data-i18n-title="ui.eggs_title" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
+      <div class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" data-i18n-title="ui.items_title" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></div>
     </div>
   </header>
 
@@ -193,7 +193,7 @@
             </circle>
             <text x="45" y="52" text-anchor="middle" font-size="24" opacity=".4">✦</text>
           </svg>
-          <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;">PORTAL DIMENSIONAL<br><span style="opacity:.5">aguardando invocação</span></div>
+          <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;"><span data-i18n="portal.waiting">PORTAL DIMENSIONAL</span><br><span data-i18n="portal.sub" style="opacity:.5">aguardando invocação</span></div>
         </div>
 
         <!-- EGG -->
@@ -229,7 +229,7 @@
             </svg>
             <div id="eggFlash" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,#c4b5fd 40%,transparent 70%);opacity:0;pointer-events:none;transition:opacity .15s;"></div>
           </div>
-          <div class="egg-hint" id="eggHint">CLIQUE PARA CHOCAR</div>
+          <div data-i18n="egg.hint" class="egg-hint" id="eggHint">CLIQUE PARA CHOCAR</div>
           <div class="egg-progress" id="eggProgress">0 / 5</div>
         </div>
 
@@ -239,7 +239,7 @@
           <div class="mini-modal" id="itemInvModal">
             <div class="modal-header">
               <div>
-                <div class="mini-title">🎒 INVENTÁRIO DE ITENS</div>
+                <div data-i18n="inv.items_title" class="mini-title">🎒 INVENTÁRIO DE ITENS</div>
                 <div class="mini-sub" id="itemInvCount" style="margin:0;">0 itens · <span style="color:var(--gold)">0/3 equipados</span></div>
               </div>
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeItemInventory()">✕</button>
@@ -254,7 +254,7 @@
           <div class="mini-modal" id="eggInvModal">
             <div class="modal-header">
               <div>
-                <div class="mini-title">🥚 INVENTÁRIO DE OVOS</div>
+                <div data-i18n="inv.eggs_title" class="mini-title">🥚 INVENTÁRIO DE OVOS</div>
                 <div class="mini-sub" id="eggInvCount" style="margin:0;">0 ovos</div>
               </div>
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeEggInventory()">✕</button>
@@ -269,29 +269,29 @@
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
-                <div class="mini-title">🪙 MOEDAS</div>
-                <div class="mini-sub" style="margin:0;">Moeda interna do jogo</div>
+                <div data-i18n="inv.coins_title" class="mini-title">🪙 MOEDAS</div>
+                <div data-i18n="inv.coins_sub" class="mini-sub" style="margin:0;">Moeda interna do jogo</div>
               </div>
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
             </div>
             <div class="modal-scroll-body">
               <div style="margin-bottom:12px;"></div>
-              <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
+              <div data-i18n="inv.exchange_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
               <div id="cambioPanel" style="width:100%;">
-                <div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
+                <div data-i18n="inv.exchange_empty" style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
               </div>
               <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
-                <div style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
-                <div style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
-                <a href="marketplace.html" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
+                <div data-i18n="inv.crystals_cta" style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
+                <div data-i18n="inv.crystals_desc" style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
+                <a href="marketplace.html" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
             </div>
           </div>
 
           <div class="mini-modal" id="marketModal">
             <div class="modal-header">
-              <div class="mini-title" style="margin:0;">🔮 ITENS</div>
+              <div data-i18n="inv.items_store" class="mini-title" style="margin:0;">🔮 ITENS</div>
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeMarket()">✕</button>
             </div>
             <div id="mktItemsSection" class="modal-scroll-body">
@@ -301,59 +301,59 @@
 
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
-            <div class="gs-title">◆ ESCOLHA UM JOGO</div>
+            <div data-i18n="gs.title" class="gs-title">◆ ESCOLHA UM JOGO</div>
             <div class="gs-tabs">
-              <button class="gs-tab active" id="gsTabPve"  onclick="gsSetTab('pve')">🎮 PVE</button>
-              <button class="gs-tab"        id="gsTabPvp"  onclick="gsSetTab('pvp')">⚔️ PVP</button>
-              <button class="gs-tab"        id="gsTabLore" onclick="gsSetTab('lore')">📖 LORE</button>
+              <button data-i18n="gs.tab.pve" class="gs-tab active" id="gsTabPve"  onclick="gsSetTab('pve')">🎮 PVE</button>
+              <button data-i18n="gs.tab.pvp" class="gs-tab"        id="gsTabPvp"  onclick="gsSetTab('pvp')">⚔️ PVP</button>
+              <button data-i18n="gs.tab.lore" class="gs-tab"       id="gsTabLore" onclick="gsSetTab('lore')">📖 LORE</button>
             </div>
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
                 <div class="gs-btn-icon">🃏</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">MEMÓRIA ELEMENTAL</div>
-                  <div class="gs-btn-desc">Encontre todos os pares de elementos</div>
+                  <div data-i18n="gs.memoria.name" class="gs-btn-name">MEMÓRIA ELEMENTAL</div>
+                  <div data-i18n="gs.memoria.desc" class="gs-btn-desc">Encontre todos os pares de elementos</div>
                   <div class="gs-btn-reward" id="rewardMemoria">+5~65 XP · +12~104 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('mina')">
                 <div class="gs-btn-icon">💣</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">CAMPO MINADO</div>
-                  <div class="gs-btn-desc">Revele o campo sem explodir as minas</div>
+                  <div data-i18n="gs.mina.name" class="gs-btn-name">CAMPO MINADO</div>
+                  <div data-i18n="gs.mina.desc" class="gs-btn-desc">Revele o campo sem explodir as minas</div>
                   <div class="gs-btn-reward" id="rewardMina">+5~65 XP · +12~104 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('simon')">
                 <div class="gs-btn-icon">🎵</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">SIMON SAYS</div>
-                  <div class="gs-btn-desc">Repita a sequência de elementos</div>
+                  <div data-i18n="gs.simon.name" class="gs-btn-name">SIMON SAYS</div>
+                  <div data-i18n="gs.simon.desc" class="gs-btn-desc">Repita a sequência de elementos</div>
                   <div class="gs-btn-reward" id="rewardSimon">+4~120 XP · +8~195 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('snake')">
                 <div class="gs-btn-icon">🐍</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">SNAKE ELEMENTAL</div>
-                  <div class="gs-btn-desc">Colete os elementos sem bater em si mesmo</div>
+                  <div data-i18n="gs.snake.name" class="gs-btn-name">SNAKE ELEMENTAL</div>
+                  <div data-i18n="gs.snake.desc" class="gs-btn-desc">Colete os elementos sem bater em si mesmo</div>
                   <div class="gs-btn-reward" id="rewardSnake">+0~126 XP · +0~200 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('labirinto')">
                 <div class="gs-btn-icon">🌀</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">LABIRINTO ELEMENTAL</div>
-                  <div class="gs-btn-desc">Navegue na névoa, fuja do perseguidor, ache a saída</div>
+                  <div data-i18n="gs.maze.name" class="gs-btn-name">LABIRINTO ELEMENTAL</div>
+                  <div data-i18n="gs.maze.desc" class="gs-btn-desc">Navegue na névoa, fuja do perseguidor, ache a saída</div>
                   <div class="gs-btn-reward" id="rewardLabirinto">+0~90 XP · +0~155 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('blackjack')">
                 <div class="gs-btn-icon">♠</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">BLACKJACK ELEMENTAL</div>
-                  <div class="gs-btn-desc">Chegue a 21 sem passar — vença o dealer</div>
+                  <div data-i18n="gs.blackjack.name" class="gs-btn-name">BLACKJACK ELEMENTAL</div>
+                  <div data-i18n="gs.blackjack.desc" class="gs-btn-desc">Chegue a 21 sem passar — vença o dealer</div>
                   <div class="gs-btn-reward" id="rewardBlackjack">+0~90 XP · +0~155 🪙</div>
                 </div>
               </div>
@@ -362,25 +362,25 @@
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
                 <div class="gs-btn-icon">📖</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">HISTÓRIAS DO VÉU</div>
-                  <div class="gs-btn-desc">A saga pós-guerra — Fracturas, Avatares e O Vácuo</div>
-                  <div class="gs-btn-reward" style="color:var(--muted);">⚪ Avatar Comum · 50🪙 por capítulo</div>
+                  <div data-i18n="gs.lore1.name" class="gs-btn-name">HISTÓRIAS DO VÉU</div>
+                  <div data-i18n="gs.lore1.desc" class="gs-btn-desc">A saga pós-guerra — Fracturas, Avatares e O Vácuo</div>
+                  <div data-i18n="gs.lore1.reward" class="gs-btn-reward" style="color:var(--muted);">⚪ Avatar Comum · 50🪙 por capítulo</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('raro')">
                 <div class="gs-btn-icon">🔵</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">CRÔNICAS DOS RAROS</div>
-                  <div class="gs-btn-desc">Histórias exclusivas para Avatares Raros</div>
-                  <div class="gs-btn-reward" style="color:var(--raro);">🔵 Avatar Raro · 5💎 por capítulo</div>
+                  <div data-i18n="gs.lore2.name" class="gs-btn-name">CRÔNICAS DOS RAROS</div>
+                  <div data-i18n="gs.lore2.desc" class="gs-btn-desc">Histórias exclusivas para Avatares Raros</div>
+                  <div data-i18n="gs.lore2.reward" class="gs-btn-reward" style="color:var(--raro);">🔵 Avatar Raro · 5💎 por capítulo</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('lendario')">
                 <div class="gs-btn-icon">🌟</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">ÉPICOS DO VÁCUO</div>
-                  <div class="gs-btn-desc">A verdade sobre as Fracturas — apenas para Lendários</div>
-                  <div class="gs-btn-reward" style="color:var(--lendario);">🌟 Avatar Lendário · 15💎 por capítulo</div>
+                  <div data-i18n="gs.lore3.name" class="gs-btn-name">ÉPICOS DO VÁCUO</div>
+                  <div data-i18n="gs.lore3.desc" class="gs-btn-desc">A verdade sobre as Fracturas — apenas para Lendários</div>
+                  <div data-i18n="gs.lore3.reward" class="gs-btn-reward" style="color:var(--lendario);">🌟 Avatar Lendário · 15💎 por capítulo</div>
                 </div>
               </div>
             </div>
@@ -388,25 +388,25 @@
               <div class="gs-btn" onclick="closeGameSelector(); openArena()">
                 <div class="gs-btn-icon">⚔️</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">ARENA DIMENSIONAL</div>
-                  <div class="gs-btn-desc">Jo-Ken-Pô ao vivo contra outros jogadores</div>
-                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool semanal</div>
+                  <div data-i18n="gs.arena.name" class="gs-btn-name">ARENA DIMENSIONAL</div>
+                  <div data-i18n="gs.arena.desc" class="gs-btn-desc">Jo-Ken-Pô ao vivo contra outros jogadores</div>
+                  <div data-i18n="gs.arena.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool semanal</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="closeGameSelector(); openRoubaMonte()">
                 <div class="gs-btn-icon">🃏</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">ROUBA MONTE</div>
-                  <div class="gs-btn-desc">Duelo de cartas ao vivo contra outros jogadores</div>
-                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Pool P2E</div>
+                  <div data-i18n="gs.rouba.name" class="gs-btn-name">ROUBA MONTE</div>
+                  <div data-i18n="gs.rouba.desc" class="gs-btn-desc">Duelo de cartas ao vivo contra outros jogadores</div>
+                  <div data-i18n="gs.rouba.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Pool P2E</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="closeGameSelector(); openBatalhaNaval()">
                 <div class="gs-btn-icon">🚢</div>
                 <div class="gs-btn-info">
-                  <div class="gs-btn-name">BATALHA NAVAL</div>
-                  <div class="gs-btn-desc">Afunda os navios do oponente</div>
-                  <div class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool P2E</div>
+                  <div data-i18n="gs.naval.name" class="gs-btn-name">BATALHA NAVAL</div>
+                  <div data-i18n="gs.naval.desc" class="gs-btn-desc">Afunda os navios do oponente</div>
+                  <div data-i18n="gs.naval.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool P2E</div>
                 </div>
               </div>
             </div>
@@ -424,47 +424,47 @@
           </div>
 
           <div class="mini-modal" id="hatchConfirmModal">
-            <div class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
+            <div data-i18n="hatch.title" class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
             <div style="text-align:center;margin:10px 0 6px;">
               <div style="font-size:28px" id="hatchConfirmEgg">🥚</div>
               <div style="font-size:9px;margin-top:6px;" id="hatchConfirmRarity"></div>
             </div>
             <div style="font-size:8px;color:#c8a8e8;text-align:center;line-height:1.8;margin-bottom:14px;" id="hatchConfirmMsg"></div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="hatchConfirmYes" onclick="confirmHatch()">✓ CONFIRMAR</button>
-              <button class="mini-btn close" onclick="closeMiniModal('hatchConfirmModal')">CANCELAR</button>
+              <button data-i18n="mini.confirm" class="mini-btn primary" id="hatchConfirmYes" onclick="confirmHatch()">✓ CONFIRMAR</button>
+              <button data-i18n="mini.cancel" class="mini-btn close" onclick="closeMiniModal('hatchConfirmModal')">CANCELAR</button>
             </div>
           </div>
 
           <div class="mini-modal" id="memoriaModal">
-            <div class="mini-title">🃏 MEMÓRIA ELEMENTAL</div>
-            <div class="mini-sub" id="memSub">Encontre todos os pares!</div>
+            <div data-i18n="mini.memoria.title" class="mini-title">🃏 MEMÓRIA ELEMENTAL</div>
+            <div data-i18n="mini.memoria.sub" class="mini-sub" id="memSub">Encontre todos os pares!</div>
             <div class="mem-info" id="memInfo">Pares: 0/0 · Erros: 0</div>
             <div class="mem-grid" id="memGrid"></div>
             <div class="mini-result-box" id="memResult"></div>
             <div class="mini-reward-txt" id="memReward"></div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="memAgainBtn" onclick="startMemoria()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('memoriaModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="memAgainBtn" onclick="startMemoria()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('memoriaModal')">FECHAR</button>
             </div>
           </div>
 
           <div class="mini-modal" id="simonModal">
-            <div class="mini-title">🎵 SIMON SAYS</div>
-            <div class="simon-seq-display" id="simonSeqDisplay">Observe a sequência...</div>
+            <div data-i18n="mini.simon.title" class="mini-title">🎵 SIMON SAYS</div>
+            <div data-i18n="mini.simon.observe" class="simon-seq-display" id="simonSeqDisplay">Observe a sequência...</div>
             <div class="simon-info" id="simonInfo">Rodada 1</div>
             <div class="simon-grid" id="simonGrid"></div>
             <div class="mini-result-box" id="simonResult"></div>
             <div class="mini-reward-txt" id="simonReward"></div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="simonAgainBtn" onclick="startSimon()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('simonModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="simonAgainBtn" onclick="startSimon()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('simonModal')">FECHAR</button>
             </div>
           </div>
 
 
           <div class="mini-modal" id="minaModal">
-            <div class="mini-title">💣 CAMPO MINADO</div>
+            <div data-i18n="mini.mina.title" class="mini-title">💣 CAMPO MINADO</div>
             <div class="mina-info-row">
               <span id="minaInfo">FÁCIL · 7×7 · 💣 8</span>
               <span id="minaFlags">🚩 8 restantes</span>
@@ -473,13 +473,13 @@
             <div class="mini-result-box" id="minaResult"></div>
             <div class="mini-reward-txt" id="minaReward"></div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="minaAgainBtn" onclick="startMina()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('minaModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="minaAgainBtn" onclick="startMina()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('minaModal')">FECHAR</button>
             </div>
           </div>
 
           <div class="mini-modal" id="snakeModal">
-            <div class="mini-title">🐍 SNAKE ELEMENTAL</div>
+            <div data-i18n="mini.snake.title" class="mini-title">🐍 SNAKE ELEMENTAL</div>
             <div id="snakeInfo" class="mini-info">Fácil · Coma os elementos!</div>
             <canvas id="snakeCanvas" width="280" height="280"></canvas>
             <div id="snakeScore" style="font-family:'Cinzel',serif;font-size:11px;color:#86efac;letter-spacing:2px;margin:4px 0 0;">🐍 0 elementos</div>
@@ -504,14 +504,14 @@
               </div>
             </div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('snakeModal')">FECHAR</button>
             </div>
           </div>
 
           <div class="mini-modal" id="mazeModal">
-            <div class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
-            <div id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
+            <div data-i18n="mini.maze.title" class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
+            <div data-i18n="mini.maze.info" id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
             <canvas id="mazeCanvas" width="280" height="280"></canvas>
             <div id="mazeTimer" style="font-family:'Cinzel',serif;font-size:13px;color:#86efac;letter-spacing:3px;margin:2px 0;">⏱ 120s</div>
             <div class="mini-result-box" id="mazeResult"></div>
@@ -534,15 +534,15 @@
               </div>
             </div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="mazeAgainBtn" onclick="startLabirinto()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('mazeModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="mazeAgainBtn" onclick="startLabirinto()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('mazeModal')">FECHAR</button>
             </div>
           </div>
 
 
           <div class="mini-modal" id="bjModal">
-            <div class="mini-title">♠ BLACKJACK ELEMENTAL</div>
-            <div id="bjInfo" class="mini-info">Chegue a 21 sem passar!</div>
+            <div data-i18n="mini.bj.title" class="mini-title">♠ BLACKJACK ELEMENTAL</div>
+            <div data-i18n="mini.bj.info" id="bjInfo" class="mini-info">Chegue a 21 sem passar!</div>
             <canvas id="bjCanvas" width="280" height="280"></canvas>
             <div id="bjActionBtns">
               <button class="bj-action-btn" id="bjHitBtn"    onclick="bjHit()">HIT</button>
@@ -552,8 +552,8 @@
             <div class="mini-result-box" id="bjResult"></div>
             <div class="mini-reward-txt" id="bjReward"></div>
             <div class="mini-btns">
-              <button class="mini-btn primary" id="bjAgainBtn" onclick="startBlackjack()" style="display:none">JOGAR DE NOVO</button>
-              <button class="mini-btn close" onclick="closeMiniModal('bjModal')">FECHAR</button>
+              <button data-i18n="mini.play_again" class="mini-btn primary" id="bjAgainBtn" onclick="startBlackjack()" style="display:none">JOGAR DE NOVO</button>
+              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('bjModal')">FECHAR</button>
             </div>
           </div>
 
@@ -614,11 +614,11 @@
         <div id="deadScreen" class="dead-screen" style="display:none">
           <div class="dead-particles" id="deadParticles"></div>
           <div class="dead-orb"><div class="dead-runes"></div>👻</div>
-          <div class="dead-title">ENTIDADE PERDIDA</div>
+          <div data-i18n="dead.title" class="dead-title">ENTIDADE PERDIDA</div>
           <div class="dead-name" id="deadAvatarName"></div>
-          <div class="dead-sub">partiu para outra dimensão...<br>sua essência persiste nos ovos.</div>
+          <div data-i18n="dead.sub" class="dead-sub">partiu para outra dimensão...<br>sua essência persiste nos ovos.</div>
           <div class="dead-stats" id="deadStats"></div>
-          <button class="dead-btn" onclick="triggerSummon()">✦ INVOCAR NOVO AVATAR</button>
+          <button data-i18n="dead.btn" class="dead-btn" onclick="triggerSummon()">✦ INVOCAR NOVO AVATAR</button>
         </div>
 
       </div><!-- /screen -->
@@ -626,29 +626,29 @@
       <!-- ACTION BUTTONS (desktop) -->
       <div class="btns" id="actionBtns" style="opacity:0;pointer-events:none;transition:opacity .5s;">
         <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 10 🪙">
-          <span class="icon">🍖</span><span>NUTRIR</span>
+          <span class="icon">🍖</span><span data-i18n="btn.feed">NUTRIR</span>
           <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">10 🪙</span>
         </button>
         <button class="btn-action" id="btnPlay" onclick="playCreature()">
-          <span class="icon">🎮</span><span>BRINCAR</span>
+          <span class="icon">🎮</span><span data-i18n="btn.play">BRINCAR</span>
         </button>
         <button class="btn-action" id="btnSleep"
           onpointerdown="onSleepPointerDown()"
           onpointerup="onSleepPointerUp()"
           onpointerleave="onSleepPointerUp()">
           <span class="icon">💤</span>
-          <span id="sleepLabel">DORMIR</span>
+          <span data-i18n="btn.sleep" id="sleepLabel">DORMIR</span>
         </button>
         <button class="btn-action" id="btnHeal" onclick="healCreature()" title="Custo: 40 🪙">
-          <span class="icon">💊</span><span>MEDICAR</span>
+          <span class="icon">💊</span><span data-i18n="btn.heal">MEDICAR</span>
           <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">40 🪙</span>
         </button>
         <button class="btn-action" id="btnBath" onclick="cleanCreature()">
-          <span class="icon">🛁</span><span>BANHO</span>
+          <span class="icon">🛁</span><span data-i18n="btn.bath">BANHO</span>
           <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">-15 ⚡</span>
         </button>
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
-          <span class="icon">🥚</span><span>BOTAR OVO</span>
+          <span class="icon">🥚</span><span data-i18n="btn.lay_egg">BOTAR OVO</span>
         </button>
       </div>
 
@@ -658,11 +658,11 @@
     <div class="right-panel">
 
       <div class="panel-card" id="summonCard">
-        <div class="panel-title">◆ INVOCAR AVATAR</div>
+        <div data-i18n="panel.summon_title" class="panel-title">◆ INVOCAR AVATAR</div>
         <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
           <div style="font-size:16px;margin-bottom:6px;">✨</div>
           <div data-i18n="ui.login_required" style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">LOGIN NECESSÁRIO</div>
-          <div style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
+          <div data-i18n="panel.login_desc" style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
           <button data-i18n="ui.do_login" class="btn-connect-wallet" onclick="document.getElementById('loginScreen').style.display='flex'">🔑 FAZER LOGIN</button>
         </div>
         <div class="summon-section" id="summonSection" style="display:none;">
@@ -685,12 +685,12 @@
               onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
           </div>
           <div id="renameForm" style="display:none;margin-top:6px;">
-            <input id="renameInput" type="text" maxlength="20" placeholder="Novo nome..."
+            <input id="renameInput" data-i18n-ph="rename.placeholder" type="text" maxlength="20" placeholder="Novo nome..."
               style="width:100%;box-sizing:border-box;background:#0a0816;border:1px solid var(--gold);border-radius:4px;color:var(--gold-light);font-family:'Cinzel',serif;font-size:9px;padding:4px 8px;outline:none;letter-spacing:1px;"
               onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();" />
             <div style="display:flex;gap:5px;margin-top:4px;">
-              <button onclick="confirmRename()" style="flex:1;padding:3px 0;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:3px;color:var(--gold);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✓ SALVAR</button>
-              <button onclick="cancelRename()" style="flex:1;padding:3px 0;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✕ CANCELAR</button>
+              <button data-i18n="rename.save" onclick="confirmRename()" style="flex:1;padding:3px 0;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:3px;color:var(--gold);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✓ SALVAR</button>
+              <button data-i18n="rename.cancel" onclick="cancelRename()" style="flex:1;padding:3px 0;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✕ CANCELAR</button>
             </div>
           </div>
         </div>
@@ -706,7 +706,7 @@
 
         <div style="margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-            <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
+            <span data-i18n="panel.xp_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
             <span style="font-size:7px;color:var(--muted);" id="xpTxt">0/100</span>
           </div>
           <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
@@ -714,7 +714,7 @@
 
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-            <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
+            <span data-i18n="panel.vinculo_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
             <span style="font-size:7px;" id="vinculoTxt">Distante · 0</span>
           </div>
           <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
@@ -761,7 +761,7 @@
       </div>
 
       <div class="panel-card">
-        <div class="panel-title">◆ DIÁRIO DIMENSIONAL</div>
+        <div data-i18n="panel.diary_title" class="panel-title">◆ DIÁRIO DIMENSIONAL</div>
         <ul class="log-list" id="logList"></ul>
       </div>
 
@@ -772,23 +772,23 @@
   <nav class="fv-bottom-nav">
     <div class="fv-bottom-nav-inner">
       <button class="fv-bn-btn" id="fvbn-feed" onclick="feedCreature()">
-        <span class="fv-bn-icon">🍖</span><span>Nutrir</span>
+        <span class="fv-bn-icon">🍖</span><span data-i18n="btn.feed">Nutrir</span>
       </button>
       <button class="fv-bn-btn" id="fvbn-play" onclick="playCreature()">
-        <span class="fv-bn-icon">🎮</span><span>Brincar</span>
+        <span class="fv-bn-icon">🎮</span><span data-i18n="btn.play">Brincar</span>
       </button>
       <button class="fv-bn-btn" id="fvbn-sleep"
         onpointerdown="onSleepPointerDown()"
         onpointerup="onSleepPointerUp()"
         onpointerleave="onSleepPointerUp()">
         <span class="fv-bn-icon">💤</span>
-        <span id="fvbnSleepLabel">Dormir</span>
+        <span data-i18n="btn.sleep" id="fvbnSleepLabel">Dormir</span>
       </button>
       <button class="fv-bn-btn" id="fvbn-heal" onclick="healCreature()">
-        <span class="fv-bn-icon">💊</span><span>Medicar</span>
+        <span class="fv-bn-icon">💊</span><span data-i18n="btn.heal">Medicar</span>
       </button>
       <button class="fv-bn-btn" id="fvbn-bath" onclick="cleanCreature()">
-        <span class="fv-bn-icon">🛁</span><span>Banho</span>
+        <span class="fv-bn-icon">🛁</span><span data-i18n="btn.bath">Banho</span>
       </button>
     </div>
   </nav>

@@ -126,6 +126,118 @@
       'ui.login_required':       'LOGIN NECESSÁRIO',
       'ui.login_required_desc':  'Entra na tua conta para invocar o teu avatar e guardar o progresso.',
       'ui.do_login':             '🔑 FAZER LOGIN',
+
+      // Header / nav
+      'ui.market_title':         'Mercado',
+      'ui.coins_title':          'Câmbio de Moedas',
+      'ui.eggs_title':           'Inventário de ovos',
+      'ui.items_title':          'Inventário de itens',
+
+      // Modais de inventário
+      'inv.items_title':         '🎒 INVENTÁRIO DE ITENS',
+      'inv.eggs_title':          '🥚 INVENTÁRIO DE OVOS',
+      'inv.coins_title':         '🪙 MOEDAS',
+      'inv.coins_sub':           'Moeda interna do jogo',
+      'inv.exchange_label':      '◆ CÂMBIO 🪙 → 💎',
+      'inv.exchange_empty':      'Abre a loja para ver o câmbio.',
+      'inv.crystals_cta':        '💎 Precisas de mais Cristais?',
+      'inv.crystals_desc':       'Compra cristais com MATIC ou vende ovos no Marketplace.',
+      'inv.crystals_btn':        'Ir ao Marketplace →',
+      'inv.items_store':         '🔮 ITENS',
+
+      // Game selector
+      'gs.title':                '◆ ESCOLHA UM JOGO',
+      'gs.tab.pve':              '🎮 PVE',
+      'gs.tab.pvp':              '⚔️ PVP',
+      'gs.tab.lore':             '📖 LORE',
+      // PVE
+      'gs.memoria.name':         'MEMÓRIA ELEMENTAL',
+      'gs.memoria.desc':         'Encontre todos os pares de elementos',
+      'gs.mina.name':            'CAMPO MINADO',
+      'gs.mina.desc':            'Revele o campo sem explodir as minas',
+      'gs.simon.name':           'SIMON SAYS',
+      'gs.simon.desc':           'Repita a sequência de elementos',
+      'gs.snake.name':           'SNAKE ELEMENTAL',
+      'gs.snake.desc':           'Colete os elementos sem bater em si mesmo',
+      'gs.maze.name':            'LABIRINTO ELEMENTAL',
+      'gs.maze.desc':            'Navegue na névoa e ache a saída',
+      'gs.blackjack.name':       'BLACKJACK ELEMENTAL',
+      'gs.blackjack.desc':       'Chegue a 21 sem passar — vença o dealer',
+      // Lore
+      'gs.lore1.name':           'HISTÓRIAS DO VÉU',
+      'gs.lore1.desc':           'A saga pós-guerra — Fracturas, Avatares e O Vácuo',
+      'gs.lore1.reward':         '⚪ Avatar Comum · 50🪙 por capítulo',
+      'gs.lore2.name':           'CRÔNICAS DOS RAROS',
+      'gs.lore2.desc':           'Histórias exclusivas para Avatares Raros',
+      'gs.lore2.reward':         '🔵 Avatar Raro · 5💎 por capítulo',
+      'gs.lore3.name':           'ÉPICOS DO VÁCUO',
+      'gs.lore3.desc':           'A verdade sobre as Fracturas — apenas para Lendários',
+      'gs.lore3.reward':         '🌟 Avatar Lendário · 15💎 por capítulo',
+      // PVP
+      'gs.arena.name':           'ARENA DIMENSIONAL',
+      'gs.arena.desc':           'Jo-Ken-Pô ao vivo contra outros jogadores',
+      'gs.arena.reward':         'Apostas · Ranking · Pool semanal',
+      'gs.rouba.name':           'ROUBA MONTE',
+      'gs.rouba.desc':           'Duelo de cartas ao vivo contra outros jogadores',
+      'gs.rouba.reward':         'Apostas · Pool P2E',
+      'gs.naval.name':           'BATALHA NAVAL',
+      'gs.naval.desc':           'Afunda os navios do oponente',
+      'gs.naval.reward':         'Apostas · Ranking · Pool P2E',
+
+      // Minigames — títulos e botões comuns
+      'mini.play_again':         'JOGAR DE NOVO',
+      'mini.close':              'FECHAR',
+      'mini.confirm':            '✓ CONFIRMAR',
+      'mini.cancel':             'CANCELAR',
+      'mini.memoria.title':      '🃏 MEMÓRIA ELEMENTAL',
+      'mini.memoria.sub':        'Encontre todos os pares!',
+      'mini.simon.title':        '🎵 SIMON SAYS',
+      'mini.simon.observe':      'Observe a sequência...',
+      'mini.mina.title':         '💣 CAMPO MINADO',
+      'mini.snake.title':        '🐍 SNAKE ELEMENTAL',
+      'mini.maze.title':         '🌀 LABIRINTO ELEMENTAL',
+      'mini.maze.info':          'Navegue na névoa e ache a saída!',
+      'mini.bj.title':           '♠ BLACKJACK ELEMENTAL',
+      'mini.bj.info':            'Chegue a 21 sem passar!',
+
+      // Hatch confirm
+      'hatch.title':             '🥚 CHOCAR OVO',
+      'hatch.confirm':           '✓ CONFIRMAR',
+      'hatch.cancel':            'CANCELAR',
+
+      // Action buttons
+      'btn.feed':                'NUTRIR',
+      'btn.play':                'BRINCAR',
+      'btn.sleep':               'DORMIR',
+      'btn.heal':                'MEDICAR',
+      'btn.bath':                'BANHO',
+      'btn.lay_egg':             'BOTAR OVO',
+      'btn.wake':                'ACORDAR',
+      'btn.repouso':             'REPOUSO',
+
+      // Panel / right side
+      'panel.summon_title':      '◆ INVOCAR AVATAR',
+      'panel.login_desc':        'Entra na tua conta para invocar o teu avatar e guardar o progresso.',
+      'panel.xp_label':          'XP',
+      'panel.vinculo_label':     'VÍNCULO',
+      'panel.diary_title':       '◆ DIÁRIO DIMENSIONAL',
+
+      // Dead screen
+      'dead.title':              'ENTIDADE PERDIDA',
+      'dead.sub':                'partiu para outra dimensão...\nsua essência persiste nos ovos.',
+      'dead.btn':                '✦ INVOCAR NOVO AVATAR',
+
+      // Portal (idle)
+      'portal.waiting':          'PORTAL DIMENSIONAL',
+      'portal.sub':              'aguardando invocação',
+
+      // Egg screen
+      'egg.hint':                'CLIQUE PARA CHOCAR',
+
+      // Rename
+      'rename.placeholder':      'Novo nome...',
+      'rename.save':             '✓ SALVAR',
+      'rename.cancel':           '✕ CANCELAR',
     },
 
     // ── ENGLISH ───────────────────────────────────────────────────
@@ -248,6 +360,118 @@
       'ui.login_required':       'LOGIN REQUIRED',
       'ui.login_required_desc':  'Sign in to summon your avatar and save your progress.',
       'ui.do_login':             '🔑 SIGN IN',
+
+      // Header / nav
+      'ui.market_title':         'Market',
+      'ui.coins_title':          'Coin Exchange',
+      'ui.eggs_title':           'Egg Inventory',
+      'ui.items_title':          'Item Inventory',
+
+      // Inventory modals
+      'inv.items_title':         '🎒 ITEM INVENTORY',
+      'inv.eggs_title':          '🥚 EGG INVENTORY',
+      'inv.coins_title':         '🪙 COINS',
+      'inv.coins_sub':           'In-game currency',
+      'inv.exchange_label':      '◆ EXCHANGE 🪙 → 💎',
+      'inv.exchange_empty':      'Open the shop to see the exchange.',
+      'inv.crystals_cta':        '💎 Need more Crystals?',
+      'inv.crystals_desc':       'Buy crystals with MATIC or sell eggs on the Marketplace.',
+      'inv.crystals_btn':        'Go to Marketplace →',
+      'inv.items_store':         '🔮 ITEMS',
+
+      // Game selector
+      'gs.title':                '◆ CHOOSE A GAME',
+      'gs.tab.pve':              '🎮 PVE',
+      'gs.tab.pvp':              '⚔️ PVP',
+      'gs.tab.lore':             '📖 LORE',
+      // PVE
+      'gs.memoria.name':         'ELEMENTAL MEMORY',
+      'gs.memoria.desc':         'Find all pairs of elements',
+      'gs.mina.name':            'MINESWEEPER',
+      'gs.mina.desc':            'Clear the field without hitting mines',
+      'gs.simon.name':           'SIMON SAYS',
+      'gs.simon.desc':           'Repeat the elemental sequence',
+      'gs.snake.name':           'ELEMENTAL SNAKE',
+      'gs.snake.desc':           'Collect elements without hitting yourself',
+      'gs.maze.name':            'ELEMENTAL MAZE',
+      'gs.maze.desc':            'Navigate the fog and find the exit',
+      'gs.blackjack.name':       'ELEMENTAL BLACKJACK',
+      'gs.blackjack.desc':       'Get to 21 without busting — beat the dealer',
+      // Lore
+      'gs.lore1.name':           'TALES OF THE VEIL',
+      'gs.lore1.desc':           'The post-war saga — Fractures, Avatars and The Void',
+      'gs.lore1.reward':         '⚪ Common Avatar · 50🪙 per chapter',
+      'gs.lore2.name':           'CHRONICLES OF THE RARE',
+      'gs.lore2.desc':           'Exclusive stories for Rare Avatars',
+      'gs.lore2.reward':         '🔵 Rare Avatar · 5💎 per chapter',
+      'gs.lore3.name':           'EPICS OF THE VOID',
+      'gs.lore3.desc':           'The truth about the Fractures — Legendary only',
+      'gs.lore3.reward':         '🌟 Legendary Avatar · 15💎 per chapter',
+      // PVP
+      'gs.arena.name':           'DIMENSIONAL ARENA',
+      'gs.arena.desc':           'Rock-Paper-Scissors live against other players',
+      'gs.arena.reward':         'Bets · Ranking · Weekly pool',
+      'gs.rouba.name':           'STEAL THE PILE',
+      'gs.rouba.desc':           'Live card duel against other players',
+      'gs.rouba.reward':         'Bets · P2E Pool',
+      'gs.naval.name':           'BATTLESHIP',
+      'gs.naval.desc':           "Sink the opponent's ships",
+      'gs.naval.reward':         'Bets · Ranking · P2E Pool',
+
+      // Minigames — titles and common buttons
+      'mini.play_again':         'PLAY AGAIN',
+      'mini.close':              'CLOSE',
+      'mini.confirm':            '✓ CONFIRM',
+      'mini.cancel':             'CANCEL',
+      'mini.memoria.title':      '🃏 ELEMENTAL MEMORY',
+      'mini.memoria.sub':        'Find all the pairs!',
+      'mini.simon.title':        '🎵 SIMON SAYS',
+      'mini.simon.observe':      'Watch the sequence...',
+      'mini.mina.title':         '💣 MINESWEEPER',
+      'mini.snake.title':        '🐍 ELEMENTAL SNAKE',
+      'mini.maze.title':         '🌀 ELEMENTAL MAZE',
+      'mini.maze.info':          'Navigate the fog and find the exit!',
+      'mini.bj.title':           '♠ ELEMENTAL BLACKJACK',
+      'mini.bj.info':            'Get to 21 without busting!',
+
+      // Hatch confirm
+      'hatch.title':             '🥚 HATCH EGG',
+      'hatch.confirm':           '✓ CONFIRM',
+      'hatch.cancel':            'CANCEL',
+
+      // Action buttons
+      'btn.feed':                'FEED',
+      'btn.play':                'PLAY',
+      'btn.sleep':               'SLEEP',
+      'btn.heal':                'HEAL',
+      'btn.bath':                'BATH',
+      'btn.lay_egg':             'LAY EGG',
+      'btn.wake':                'WAKE UP',
+      'btn.repouso':             'REST',
+
+      // Panel / right side
+      'panel.summon_title':      '◆ SUMMON AVATAR',
+      'panel.login_desc':        'Sign in to summon your avatar and save your progress.',
+      'panel.xp_label':          'XP',
+      'panel.vinculo_label':     'BOND',
+      'panel.diary_title':       '◆ DIMENSIONAL DIARY',
+
+      // Dead screen
+      'dead.title':              'LOST ENTITY',
+      'dead.sub':                'departed to another dimension...\nyour essence lives on in the eggs.',
+      'dead.btn':                '✦ SUMMON NEW AVATAR',
+
+      // Portal (idle)
+      'portal.waiting':          'DIMENSIONAL PORTAL',
+      'portal.sub':              'awaiting invocation',
+
+      // Egg screen
+      'egg.hint':                'CLICK TO HATCH',
+
+      // Rename
+      'rename.placeholder':      'New name...',
+      'rename.save':             '✓ SAVE',
+      'rename.cancel':           '✕ CANCEL',
     },
   };
 
@@ -284,7 +508,10 @@ function applyI18nDOM() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = t(key);
-    if(val !== key) el.textContent = val;
+    if(val !== key) {
+      if(val.includes('\n')) el.innerHTML = val.replace(/\n/g, '<br>');
+      else el.textContent = val;
+    }
   });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     const key = el.getAttribute('data-i18n-ph');
