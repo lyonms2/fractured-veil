@@ -11,8 +11,9 @@
 const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
+const { getAuth }                      = require('firebase-admin/auth');
 
-function getDB() {
+function initAdmin() {
   if (!getApps().length) {
     initializeApp({
       credential: cert({
@@ -22,23 +23,34 @@ function getDB() {
       }),
     });
   }
-  return getFirestore();
+  return { db: getFirestore(), auth: getAuth() };
 }
 
 const RATE                 = 10;
 const MAX_GEMS_POR_RESGATE = 100;
+const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  // jogador = uid Firebase, carteira = endereço Ethereum
-  const { jogador, carteira, gems } = req.body;
+  // idToken substitui jogador do body — uid é extraído server-side do token
+  const { idToken, carteira, gems } = req.body;
 
-  // ── Validar jogador (uid Firebase) ──
-  if (!jogador || typeof jogador !== 'string' || jogador.length < 10) {
-    return res.status(400).json({ erro: 'Identificador de jogador inválido' });
+  // ── Verificar identidade via Firebase ID token ──
+  if (!idToken || typeof idToken !== 'string') {
+    return res.status(400).json({ erro: 'idToken em falta' });
+  }
+
+  const { db, auth } = initAdmin();
+
+  let jogador;
+  try {
+    const decoded = await auth.verifyIdToken(idToken);
+    jogador = decoded.uid;
+  } catch {
+    return res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 
   // ── Validar carteira Ethereum ──
@@ -62,7 +74,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const db      = getDB();
     // Doc ID = uid do Firebase (não o endereço Ethereum)
     const userRef = db.collection('players').doc(jogador);
 
@@ -80,10 +91,21 @@ module.exports = async function handler(req, res) {
         throw new Error(`Saldo insuficiente: tens ${cristais} 💎, precisas de ${gemsNum} 💎`);
       }
 
-      // Verifica que a carteira enviada corresponde à carteira vinculada
-      // (segurança extra — evita que alguém use o uid de outro jogador)
+      // ── Limite diário de resgate ──
+      const hoje        = new Date().toISOString().slice(0, 10);
+      const resgateLog  = data?.resgateLog || null;
+      const resgateHoje = (resgateLog?.data === hoje) ? (resgateLog.total || 0) : 0;
+      if (resgateHoje + gemsNum > MAX_GEMS_POR_DIA) {
+        const restante = Math.max(0, MAX_GEMS_POR_DIA - resgateHoje);
+        throw new Error(`Limite diário atingido. Podes resgatar mais ${restante} 💎 hoje.`);
+      }
+
+      // ── Validar carteira (obrigatória) ──
       const carteiraGuardada = data?.carteira;
-      if (carteiraGuardada && carteiraGuardada.toLowerCase() !== carteira.toLowerCase()) {
+      if (!carteiraGuardada) {
+        throw new Error('Vincula a MetaMask primeiro para poder resgatar.');
+      }
+      if (carteiraGuardada.toLowerCase() !== carteira.toLowerCase()) {
         throw new Error('Carteira não corresponde à conta. Vincula a carteira correcta.');
       }
 
@@ -100,10 +122,12 @@ module.exports = async function handler(req, res) {
       const sig         = await wallet.signMessage(ethers.getBytes(msgHash));
       const { v, r, s } = ethers.Signature.from(sig);
 
-      // Debitar 💎
+      // Debitar 💎 + atualizar limite diário
+      const novoResgateHoje = resgateHoje + gemsNum;
       tx.update(userRef, {
         'gs.cristais': FieldValue.increment(-gemsNum),
         cristais:      FieldValue.increment(-gemsNum),
+        resgateLog:    { data: hoje, total: novoResgateHoje },
       });
 
       // Histórico do resgate

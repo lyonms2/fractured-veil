@@ -181,56 +181,22 @@ async function confirmListEgg() {
 async function buyEggFromMarket(listingId) {
   if(!playerData || !walletAddress) return;
 
-  let egg = null;
   try {
-    const listRef  = db.collection('eggMarket').doc(listingId);
-    const buyerRef = db.collection('players').doc(walletAddress);
-
-    // Transacção atómica — evita dupla compra por compradores simultâneos
-    await db.runTransaction(async (tx) => {
-      const listSnap = await tx.get(listRef);
-      if(!listSnap.exists || listSnap.data().status !== 'listed') throw new Error('NOT_AVAILABLE');
-      egg = listSnap.data();
-      if(egg.sellerId === walletAddress) throw new Error('OWN_EGG');
-
-      const buyerSnap     = await tx.get(buyerRef);
-      const buyerData     = buyerSnap.data() || {};
-      const freshCristais = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-      if(freshCristais < egg.price) throw new Error('INSUFFICIENT');
-
-      const taxa         = Math.round(egg.price * EGG_SALE_TAX);
-      const sellerRecebe = egg.price - taxa;
-      const newCristais  = freshCristais - egg.price;
-      const newEgg = { id: egg.eggId || Date.now(), raridade: egg.raridade, elemento: egg.elemento, expiraEm: egg.expiraEm };
-
-      tx.update(buyerRef, {
-        cristais:      newCristais,
-        'gs.cristais': newCristais,
-        inboxEggs:     firebase.firestore.FieldValue.arrayUnion(newEgg),
-      });
-
-      const sellerRef  = db.collection('players').doc(egg.sellerId);
-      const sellerSnap = await tx.get(sellerRef);
-      const sellerData = sellerSnap.data() || {};
-      const sellerCris = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
-      tx.update(sellerRef, {
-        cristais:      sellerCris + sellerRecebe,
-        'gs.cristais': sellerCris + sellerRecebe,
-      });
-
-      tx.delete(listRef);
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/comprar-ovo', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ listingId, idToken }),
     });
+    const data = await resp.json();
+    if(!resp.ok) { showToast(data.erro || 'Erro ao comprar ovo.', 'err'); return; }
 
-    // Taxa para a pool (fora da transacção — tem o seu próprio batch)
-    const taxa = Math.round(egg.price * EGG_SALE_TAX);
-    if(taxa > 0) await addToPool(taxa, `venda ovo ${egg.raridade} · ${egg.elemento}`, egg.sellerId);
-
-    playerData.cristais = (playerData.cristais || 0) - egg.price;
+    playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = playerData.cristais;
+    playerData.gs.cristais = data.novoSaldo;
     updateCristaisDisplay();
 
-    showToast(`✅ Ovo ${egg.raridade} ${egg.elemento} adquirido! Vai para o teu inventário no jogo.`, 'ok');
+    showToast(`✅ Ovo ${esc(data.raridade)} ${esc(data.elemento)} adquirido! Vai para o teu inventário no jogo.`, 'ok');
   } catch(e) {
     if(e.message === 'NOT_AVAILABLE') showToast('Ovo já não disponível.', 'err');
     else if(e.message === 'OWN_EGG')  showToast('Não podes comprar o teu próprio ovo.', 'err');

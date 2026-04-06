@@ -192,11 +192,11 @@ async function resgatar() {
   status.innerHTML = '<span class="tx-pending">⏳ A pedir autorização ao servidor...</span>';
 
   try {
-    // Usa uid como identificador + carteira Ethereum para o contrato
+    const idToken = await firebase.auth().currentUser.getIdToken();
     const apiRes = await fetch('/api/resgatar', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ jogador: walletAddress, carteira: carteiraEth, gems }),
+      body:    JSON.stringify({ idToken, carteira: carteiraEth, gems }),
     });
     const apiData = await apiRes.json();
 

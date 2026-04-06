@@ -72,79 +72,39 @@ async function cambioCarregarDados() {
   }
 }
 
-// ── Executa a conversão ──
+// ── Executa a conversão (server-side via /api/cambiar) ──
 async function cambioConverter(quantidade) {
   const elegivel = calcCambioEligivel();
   if(!elegivel.ok) { showBubble(elegivel.motivo); return false; }
 
-  const custo     = calcCambioTaxa();
-  const limite    = calcCambioLimite();
-  const dados     = await cambioCarregarDados();
-  if(!dados)      { showBubble('Erro ao verificar a pool.'); return false; }
-
-  const usadoHoje = calcCambioUsadoHoje(dados.cambioLog);
-  const restante  = limite - usadoHoje;
-
-  if(restante <= 0) {
-    showBubble('Limite diário atingido! Volta amanhã. 🌙');
-    addLog('Câmbio: limite diário atingido.', 'bad');
-    return false;
-  }
-
-  // Garante que não ultrapassa o limite
-  const qtd = Math.min(quantidade, restante);
-  if(qtd <= 0) { showBubble('Sem limite disponível.'); return false; }
-
-  const custoTotal = custo * qtd;
-  if(gs.moedas < custoTotal) {
-    showBubble(`Precisas de ${custoTotal} 🪙!`);
-    addLog(`Câmbio: saldo insuficiente (${gs.moedas}/${custoTotal} 🪙).`, 'bad');
-    return false;
-  }
-
-  // Debitar moedas
-  if(!spendCoins(custoTotal)) return false;
-
-  // Creditar cristais localmente
-  gs.cristais = (gs.cristais || 0) + qtd;
-  updateResourceUI();
-
-  // Batch atómico: debita pool + credita jogador + regista log
-  const hoje = new Date().toISOString().slice(0, 10);
-  const novoCount = (dados.cambioLog?.data === hoje ? (dados.cambioLog.count || 0) : 0) + qtd;
-  const increment = firebase.firestore.FieldValue.increment;
   try {
-    const batch     = fbDb().batch();
-    const poolRef   = fbDb().collection('config').doc('pool');
-    const playerRef = fbDb().collection('players').doc(walletAddress);
-    batch.update(poolRef, {
-      cristais:  increment(-qtd),
-      totalSaiu: increment(qtd),
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/cambiar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ quantidade, idToken }),
     });
-    const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-    batch.set(logRef, {
-      tipo:   'saida',
-      motivo: `Câmbio — ${custo * qtd} 🪙 → ${qtd} 💎`,
-      origem: walletAddress,
-      total:  qtd,
-      pool:   -qtd,
-      ts:     firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    batch.update(playerRef, {
-      'gs.cristais': gs.cristais,
-      cristais:      gs.cristais,
-      cambioLog:     { data: hoje, count: novoCount },
-    });
-    await batch.commit();
-  } catch(e) {
-    console.warn('[cambio] erro ao salvar:', e);
-  }
+    const data = await resp.json();
+    if(!resp.ok) {
+      showBubble(data.erro || 'Erro no câmbio.');
+      addLog(`Câmbio: ${data.erro || 'Erro.'}`, 'bad');
+      return false;
+    }
 
-  scheduleSave();
-  showBubble(`+${qtd} 💎 obtidos! ✨`);
-  addLog(`Câmbio: ${custoTotal} 🪙 → +${qtd} 💎 (${custo} 🪙/💎)`, 'good');
-  showFloat(`+${qtd} 💎`, '#a78bfa');
-  return true;
+    gs.moedas   = data.novoSaldoMoedas;
+    gs.cristais = data.novoSaldoCristais;
+    updateResourceUI();
+
+    showBubble(`+${data.cristais} 💎 obtidos! ✨`);
+    addLog(`Câmbio: ${data.moedasGastas} 🪙 → +${data.cristais} 💎`, 'good');
+    showFloat(`+${data.cristais} 💎`, '#a78bfa');
+    scheduleSave();
+    return true;
+  } catch(e) {
+    console.error('[cambio]', e);
+    showBubble('Erro de ligação. Tenta novamente.');
+    return false;
+  }
 }
 
 // ── Render do painel de câmbio (chamado pelo coinshop) ──
