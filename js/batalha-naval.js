@@ -1551,43 +1551,23 @@ async function _bnRenderResultado(sala, opWallet) {
 
   await _bnAtualizarRanking(euVenci, empate);
 
-  // Recompensas
-  if(sala.criador === walletAddress && !sala.recompensaDistribuida) {
-    await _bnRtdb().ref(`batalhaNaval/salas/${sala.id}/recompensaDistribuida`).set(true);
-    if(euVenci)      _bnCreditarPremio(bruto, usaCris);
-    else if(empate)  {
-      if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-      else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
-      updateResourceUI(); scheduleSave();
-    }
-    // Taxa para pool — só partidas com cristais (Raro/Lendário)
-    const taxa = Math.floor(bruto * BN_TAXA);
-    if(taxa > 0 && usaCris && typeof fbDb === 'function' && fbDb()) {
-      try {
-        const motivo = `Batalha Naval ${_bnRaridade()} — taxa de partida`;
-        const inc    = firebase.firestore.FieldValue.increment;
-        const batch  = fbDb().batch();
-        batch.update(fbDb().collection('config').doc('pool'), {
-          cristais:    inc(taxa),
-          totalEntrou: inc(taxa),
-        });
-        const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-        batch.set(logRef, {
-          tipo: 'entrada', motivo,
-          origem: walletAddress || 'bn',
-          total: taxa, pool: taxa,
-          ts: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        await batch.commit();
-      } catch(e) { console.warn('[BN] pool error:', e); }
-    }
-  } else if(sala.criador !== walletAddress) {
-    if(euVenci)     _bnCreditarPremio(bruto, usaCris);
-    else if(empate) {
-      if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-      else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
-      updateResourceUI(); scheduleSave();
-    }
+  // Recompensa via servidor (seguro — API valida resultado no RTDB e credita)
+  if(euVenci || empate) {
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const resp = await fetch('/api/pvp-recompensa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, salaId: sala.id, jogo: 'batalhaNaval' }),
+      });
+      const data = await resp.json();
+      if(data.ok) {
+        gs.cristais = data.novoSaldoCristais;
+        gs.moedas   = data.novoSaldoMoedas;
+        updateResourceUI();
+        scheduleSave();
+      }
+    } catch(e) { console.warn('[BN] recompensa servidor erro:', e); }
   }
 
   // XP e humor

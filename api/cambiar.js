@@ -114,6 +114,12 @@ module.exports = async function handler(req, res) {
     const qtdFinal   = Math.min(qtd, restante);
     const custoTotal = custo * qtdFinal;
 
+    // ── Rate limit: mínimo 5 s entre câmbios ──
+    const ultimoCambio = data.ultimoCambio || 0;
+    if (Date.now() - ultimoCambio < 5000) {
+      return res.status(429).json({ erro: 'Aguarda uns segundos antes de tentar novamente.' });
+    }
+
     // ── Validar saldo de moedas ──
     const moedas = data.gs?.moedas ?? data.moedas ?? 0;
     if (moedas < custoTotal) {
@@ -132,7 +138,8 @@ module.exports = async function handler(req, res) {
         moedas:      novasMoedas,
         'gs.cristais': novosCristais,
         cristais:      novosCristais,
-        cambioLog:   { data: hoje, count: novoCount },
+        cambioLog:    { data: hoje, count: novoCount },
+        ultimoCambio: Date.now(),
       });
 
       tx.update(poolRef, {

@@ -1037,19 +1037,27 @@ async function _renderResultado(sala, opWallet) {
   const op       = sala.jogadores[opWallet]       || {};
   const placar   = sala.placar || {};
 
-  // Distribui recompensa (só o criador)
-  const criador = sala.criador;
-  if(criador === walletAddress && !sala.recompensaDistribuida) {
-    await _distribuirRecompensas(sala, opWallet);
-  } else if(criador !== walletAddress) {
-    // Oponente aplica a recompensa para si mesmo
-    if(euVenci)       _creditarPremio(bruto, usaCris);
-    else if(empate) {
-      if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-      else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
-      updateResourceUI(); scheduleSave();
-    }
+  // Recompensa via servidor (seguro — não confia no cliente)
+  // API valida o resultado no RTDB e credita; também adiciona taxa à pool se vencedor
+  if(euVenci || empate) {
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const resp = await fetch('/api/pvp-recompensa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, salaId: sala.id, jogo: 'arena' }),
+      });
+      const data = await resp.json();
+      if(data.ok) {
+        gs.cristais = data.novoSaldoCristais;
+        gs.moedas   = data.novoSaldoMoedas;
+        updateResourceUI();
+        scheduleSave();
+      }
+    } catch(e) { console.warn('[ARENA] recompensa servidor erro:', e); }
   }
+
+  const criador = sala.criador;
 
   await _atualizarRanking(sala, opWallet, euVenci, empate);
 

@@ -1352,41 +1352,23 @@ async function _rmRenderResultado(sala, opWallet) {
   const bruto   = usaCris ? aposta.cristais*2 : aposta.moedas*2;
   const moeda   = usaCris?'💎':'🪙';
 
-  if(sala.criador===walletAddress && !sala.recompensaDistribuida) {
-    await _rmRtdb().ref(`roubaMonte/salas/${sala.id}/recompensaDistribuida`).set(true);
-    if(euVenci) _rmCreditarPremio(bruto, usaCris);
-    else if(empate) {
-      if(usaCris) gs.cristais=(gs.cristais||0)+aposta.cristais;
-      else        gs.moedas  =(gs.moedas  ||0)+aposta.moedas;
-      updateResourceUI(); scheduleSave();
-    }
-    const taxa = Math.floor(bruto*RM_TAXA);
-    if(taxa>0 && usaCris && typeof fbDb==='function' && fbDb()) {
-      try {
-        const motivo = `Rouba Monte ${_rmRaridade()} — taxa de partida`;
-        const inc    = firebase.firestore.FieldValue.increment;
-        const batch  = fbDb().batch();
-        batch.update(fbDb().collection('config').doc('pool'), {
-          cristais:    inc(taxa),
-          totalEntrou: inc(taxa),
-        });
-        const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-        batch.set(logRef, {
-          tipo: 'entrada', motivo,
-          origem: walletAddress || 'rm',
-          total: taxa, pool: taxa,
-          ts: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        await batch.commit();
-      } catch(e){ console.warn('[RM] pool error:',e); }
-    }
-  } else if(sala.criador!==walletAddress) {
-    if(euVenci) _rmCreditarPremio(bruto, usaCris);
-    else if(empate) {
-      if(usaCris) gs.cristais=(gs.cristais||0)+aposta.cristais;
-      else        gs.moedas  =(gs.moedas  ||0)+aposta.moedas;
-      updateResourceUI(); scheduleSave();
-    }
+  // Recompensa via servidor (seguro — API valida resultado no RTDB e credita)
+  if(euVenci || empate) {
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const resp = await fetch('/api/pvp-recompensa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, salaId: sala.id, jogo: 'roubaMonte' }),
+      });
+      const data = await resp.json();
+      if(data.ok) {
+        gs.cristais = data.novoSaldoCristais;
+        gs.moedas   = data.novoSaldoMoedas;
+        updateResourceUI();
+        scheduleSave();
+      }
+    } catch(e) { console.warn('[RM] recompensa servidor erro:', e); }
   }
 
   const d  = miniDifficulty();

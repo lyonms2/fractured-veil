@@ -91,6 +91,12 @@ module.exports = async function handler(req, res) {
         throw new Error(`Saldo insuficiente: tens ${cristais} 💎, precisas de ${gemsNum} 💎`);
       }
 
+      // ── Rate limit: mínimo 30 s entre resgates ──
+      const ultimoResgate = data?.ultimoResgate || 0;
+      if (Date.now() - ultimoResgate < 30000) {
+        throw new Error('Aguarda 30 segundos entre resgates.');
+      }
+
       // ── Limite diário de resgate ──
       const hoje        = new Date().toISOString().slice(0, 10);
       const resgateLog  = data?.resgateLog || null;
@@ -122,12 +128,13 @@ module.exports = async function handler(req, res) {
       const sig         = await wallet.signMessage(ethers.getBytes(msgHash));
       const { v, r, s } = ethers.Signature.from(sig);
 
-      // Debitar 💎 + atualizar limite diário
+      // Debitar 💎 + atualizar limite diário + rate limit timestamp
       const novoResgateHoje = resgateHoje + gemsNum;
       tx.update(userRef, {
         'gs.cristais': FieldValue.increment(-gemsNum),
         cristais:      FieldValue.increment(-gemsNum),
         resgateLog:    { data: hoje, total: novoResgateHoje },
+        ultimoResgate: Date.now(),
       });
 
       // Histórico do resgate
