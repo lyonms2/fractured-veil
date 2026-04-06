@@ -12,6 +12,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 const { getDatabase }                  = require('firebase-admin/database');
+const { contribuirFissura }            = require('./_fissura-utils');
 
 // Taxa de casa para cada jogo (espelha as constantes do cliente)
 const TAXAS = {
@@ -191,6 +192,16 @@ module.exports = async function handler(req, res) {
         // Não critica — pool é secundária; recompensa já foi creditada
         console.warn('[pvp-recompensa] pool error:', poolErr);
       }
+    }
+
+    // ── Contribuir pontos para a Fissura (fire-and-forget) ──
+    try {
+      const fissuraAtvd = euVenci
+        ? (sala.fila === 'Lendário' ? 'pvp_vitoria_lend' : sala.fila === 'Raro' ? 'pvp_vitoria_raro' : 'pvp_vitoria_comum')
+        : empate ? 'pvp_empate' : 'pvp_derrota';
+      await contribuirFissura(db, uid, fissuraAtvd);
+    } catch (fe) {
+      console.warn('[pvp-recompensa] fissura erro:', fe.message);
     }
 
     return res.status(200).json({

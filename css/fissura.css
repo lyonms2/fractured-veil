@@ -1,0 +1,235 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FISSURA — A Grande Fissura: guerra mensal de facções
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Secção principal ── */
+#fissuraSection {
+  width: 100%; max-width: 420px;
+  margin: 0 auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 0 12px 20px;
+}
+
+/* ── Card genérico ── */
+.fissura-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+/* ── Cabeçalho da secção ── */
+.fissura-header {
+  text-align: center;
+  padding: 18px 18px 14px;
+  position: relative;
+}
+.fissura-header-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px; letter-spacing: 3px;
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(201,168,76,.45);
+  margin-bottom: 4px;
+}
+.fissura-header-sub {
+  font-size: 9px; color: var(--muted);
+  letter-spacing: 1px;
+}
+.fissura-timer {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: 'Cinzel', serif; font-size: 9px;
+  color: var(--gold-light);
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.22);
+  border-radius: 20px; padding: 3px 12px;
+}
+
+/* ── Estado: não inscrito ── */
+.fissura-join-box {
+  text-align: center;
+  padding: 20px 18px 22px;
+}
+.fissura-join-title {
+  font-family: 'Cinzel', serif; font-size: 10px;
+  color: var(--text); letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.fissura-join-desc {
+  font-size: 9px; color: var(--muted); line-height: 1.6;
+  margin-bottom: 14px;
+}
+.fissura-faction-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.fissura-faction-btn {
+  background: #0f0d1c;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  transition: all .18s;
+  font-family: 'Crimson Pro', serif; font-size: 9px;
+  color: var(--muted);
+}
+.fissura-faction-btn:hover  { transform: translateY(-2px); }
+.fissura-faction-btn.selected { border-width: 2px; }
+
+/* Cores por facção */
+.fissura-faction-btn[data-faccao="Caos"]        { --fc: #e05050; }
+.fissura-faction-btn[data-faccao="Equilíbrio"]  { --fc: #5ab4e8; }
+.fissura-faction-btn[data-faccao="Éter"]        { --fc: #9b7cd4; }
+.fissura-faction-btn:hover,
+.fissura-faction-btn.selected { border-color: var(--fc); color: var(--fc); box-shadow: 0 0 10px rgba(0,0,0,.3); }
+
+.fissura-faction-icon { font-size: 22px; }
+.fissura-faction-name { font-family: 'Cinzel', serif; font-size: 7.5px; letter-spacing: 1px; }
+.fissura-faction-members { font-size: 7px; color: var(--muted); }
+
+.fissura-join-custo {
+  font-size: 8px; color: var(--muted);
+  margin-bottom: 10px;
+}
+.fissura-join-custo strong { color: var(--gold); }
+
+.fissura-join-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #1a1030 0%, #2a1a50 100%);
+  border: 1px solid var(--gold);
+  border-radius: 8px; padding: 9px 22px;
+  font-family: 'Cinzel', serif; font-size: 9px;
+  color: var(--gold); cursor: pointer;
+  transition: all .18s; letter-spacing: 1px;
+}
+.fissura-join-btn:hover  { background: rgba(201,168,76,.15); box-shadow: 0 0 14px rgba(201,168,76,.25); }
+.fissura-join-btn:active { transform: scale(.96); }
+.fissura-join-btn:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
+
+/* ── Estado: inscrito — painel de progresso ── */
+.fissura-status-card {
+  padding: 16px 18px;
+}
+.fissura-status-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.fissura-status-faccao {
+  display: flex; align-items: center; gap: 8px;
+}
+.fissura-status-icon { font-size: 20px; }
+.fissura-status-name {
+  font-family: 'Cinzel', serif; font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.fissura-status-name.fc-Caos        { color: #e05050; }
+.fissura-status-name.fc-Equilibrio  { color: #5ab4e8; }
+.fissura-status-name.fc-Eter        { color: #9b7cd4; }
+
+.fissura-pts-badge {
+  font-family: 'Cinzel', serif; font-size: 9px;
+  color: var(--gold-light);
+  background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 20px; padding: 3px 10px;
+}
+
+/* ── Barras de progresso das facções ── */
+.fissura-bars { display: flex; flex-direction: column; gap: 8px; }
+.fissura-bar-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.fissura-bar-label {
+  font-size: 8px; width: 70px; flex-shrink: 0;
+  color: var(--muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.fissura-bar-track {
+  flex: 1; height: 7px;
+  background: rgba(255,255,255,.06);
+  border-radius: 4px; overflow: hidden;
+}
+.fissura-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .5s ease;
+  min-width: 2px;
+}
+.fissura-bar-fill.fc-Caos        { background: linear-gradient(90deg, #c03030, #e05050); }
+.fissura-bar-fill.fc-Equilibrio  { background: linear-gradient(90deg, #3a80c0, #5ab4e8); }
+.fissura-bar-fill.fc-Eter        { background: linear-gradient(90deg, #6a4ab0, #9b7cd4); }
+
+.fissura-bar-pts {
+  font-size: 7.5px; width: 42px; text-align: right;
+  flex-shrink: 0; color: var(--muted);
+}
+
+/* ── Prémios section ── */
+.fissura-prize-title {
+  font-family: 'Cinzel', serif; font-size: 8px;
+  letter-spacing: 2px; color: var(--gold);
+  margin-bottom: 10px;
+}
+.fissura-prize-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.fissura-prize-item {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 6px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.fissura-prize-rar {
+  font-family: 'Cinzel', serif; font-size: 7px;
+  letter-spacing: 1px;
+}
+.fissura-prize-rar.r-Comum    { color: var(--comum); }
+.fissura-prize-rar.r-Raro     { color: var(--raro); }
+.fissura-prize-rar.r-Lendario { color: var(--lendario); }
+
+.fissura-prize-val {
+  font-size: 9px; color: var(--text);
+}
+.fissura-prize-tax {
+  font-size: 7px; color: var(--muted);
+}
+.fissura-prize-entry {
+  font-size: 7px; color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Como ganhar pontos ── */
+.fissura-pts-list {
+  list-style: none; display: flex; flex-direction: column; gap: 5px;
+}
+.fissura-pts-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 8.5px; color: var(--muted);
+  border-bottom: 1px solid var(--border); padding-bottom: 4px;
+}
+.fissura-pts-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.fissura-pts-list .pts-val {
+  font-family: 'Cinzel', serif; font-size: 8px;
+  color: var(--gold-light); white-space: nowrap;
+}
+
+/* ── Toast de feedback ── */
+#fissuraToast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: #1a1030; border: 1px solid var(--gold);
+  border-radius: 20px; padding: 8px 18px;
+  font-family: 'Cinzel', serif; font-size: 9px; color: var(--gold);
+  z-index: 9999; opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  white-space: nowrap;
+}
+#fissuraToast.show { opacity: 1; }
+
+/* ── Mobile tweaks ── */
+@media (max-width: 680px) {
+  #fissuraSection { padding: 0 8px 16px; }
+  .fissura-faction-grid { gap: 6px; }
+  .fissura-prize-grid   { gap: 6px; }
+}

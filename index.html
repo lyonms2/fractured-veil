@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="css/snake.css">
   <link rel="stylesheet" href="css/labirinto.css">
   <link rel="stylesheet" href="css/blackjack.css">
+  <link rel="stylesheet" href="css/fissura.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
   <style>
@@ -147,6 +148,7 @@
     <div class="logo">Fractured Veil</div>
     <div class="header-center">
       <button class="res res-clickable" id="btnMarket" onclick="openMarket()" data-i18n-title="ui.market_title" title="Mercado" style="display:none;">🛒</button>
+      <button class="res res-clickable" id="btnFissura" onclick="abrirFissura()" title="A Grande Fissura" style="display:none;">⚡</button>
       <div class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" data-i18n-title="ui.coins_title" title="Câmbio de Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></div>
       <a class="res res-clickable" id="resCristaisBtn" href="#" onclick="goToMarketplace(event)" title="Marketplace" style="display:none;text-decoration:none;color:inherit;">💎 <b id="resCristais">0</b></a>
       <div class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" data-i18n-title="ui.eggs_title" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></div>
@@ -415,6 +417,19 @@
                   <div data-i18n="gs.naval.desc" class="gs-btn-desc">Afunda os navios do oponente</div>
                   <div data-i18n="gs.naval.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool P2E</div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── FISSURA MODAL ── -->
+          <div id="fissuraOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.95);z-index:200;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;">
+            <div style="background:var(--surface);border:1px solid rgba(201,168,76,.2);border-radius:14px;width:100%;max-width:440px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;margin:auto;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;">⚡ A GRANDE FISSURA</div>
+                <button onclick="fecharFissura()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1;">✕</button>
+              </div>
+              <div style="flex:1;min-height:0;overflow-y:auto;">
+                <div id="fissuraSection"></div>
               </div>
             </div>
           </div>
@@ -872,6 +887,7 @@
 <script src="js/labirinto.js"></script>
 <script src="js/blackjack.js"></script><script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
+<script src="js/fissura.js"></script>
 <script src="js/lore.js"></script>
 <script src="js/lore-caps/cap1.js"></script>
 <script src="js/lore-caps/cap2.js"></script>

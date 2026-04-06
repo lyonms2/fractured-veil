@@ -307,7 +307,7 @@ function _bjEndRound(result) {
   resultEl.textContent = label;
 
   if(isWin || isPush) {
-    const r = miniReward(xpMult, coinMult, vinculo);
+    const r = miniReward(xpMult, coinMult, vinculo, isWin);
     rewardEl.textContent = `+${r.xpGain} XP · +${r.coinGain} 🪙`;
   } else {
     rewardEl.textContent = '';

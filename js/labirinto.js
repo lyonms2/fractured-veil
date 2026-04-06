@@ -426,7 +426,7 @@ function _mzEnd(won, reason) {
     }
   } else {
     if(typeof playSound === 'function') playSound('win');
-    const r = miniReward(Math.min(2, frac * 1.8), 0, 3); // XP e vínculo; moedas vêm das moedas coletadas
+    const r = miniReward(Math.min(2, frac * 1.8), 0, 3, true); // XP e vínculo; moedas vêm das moedas coletadas
     earnCoins(coinReward);
     const exitLbl = _mzGold ? '⚡ SAÍDA DOURADA!' : '🚪 SAÍDA ENCONTRADA!';
     if(result) { result.textContent = exitLbl; result.className = 'mini-result-box win'; }

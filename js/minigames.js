@@ -82,7 +82,7 @@ function memVictory() {
   const humorGain = memErrors === 0 ? 20  : memErrors <= 2 ? 15  : 10;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
-  const r = miniReward(perfMult, perfMult);
+  const r = miniReward(perfMult, perfMult, 3, true);
   document.getElementById('memResult').textContent = memErrors === 0 ? '🌟 PERFEITO!' : '✓ COMPLETO!';
   document.getElementById('memResult').className   = 'mini-result-box win';
   document.getElementById('memReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
@@ -189,7 +189,7 @@ function simonVictory() {
   playSound('win');
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
-  const r = miniReward(1.3, 1.3);
+  const r = miniReward(1.3, 1.3, 3, true);
   document.getElementById('simonResult').textContent = '🎵 MESTRE!';
   document.getElementById('simonResult').className   = 'mini-result-box win';
   document.getElementById('simonReward').textContent = `+20 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;

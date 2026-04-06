@@ -202,7 +202,7 @@ function minaVictory() {
   const humorGain = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
-  const r = miniReward(xpMult, xpMult);
+  const r = miniReward(xpMult, xpMult, 3, true);
   document.getElementById('minaResult').textContent = d.tier >= 2 ? '🌟 MESTRE!' : '✅ LIMPO!';
   document.getElementById('minaResult').className   = 'mini-result-box win';
   document.getElementById('minaReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;

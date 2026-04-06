@@ -9,6 +9,7 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const { contribuirFissura }            = require('./_fissura-utils');
 
 const CAMBIO_POOL_MIN  = 100;
 const CAMBIO_NIVEL_MIN = 20;
@@ -157,6 +158,9 @@ module.exports = async function handler(req, res) {
         ts:     FieldValue.serverTimestamp(),
       });
     });
+
+    // Fissura — fire-and-forget
+    contribuirFissura(db, uid, 'cambio').catch(() => {});
 
     return res.status(200).json({
       ok:          true,
