@@ -86,8 +86,6 @@
 
   /* D-pad desnecessário no desktop */
   .maze-dpad { display: none !important; }
-  /* No desktop o FECHAR fica nos mini-btns normais */
-  .dpad-close-desktop { display: inline-flex !important; }
 
   #mazeModal .mini-title { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
   #mazeModal .mini-info  { font-size: 10px !important; }

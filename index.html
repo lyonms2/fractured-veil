@@ -486,15 +486,17 @@
           </div>
 
           <div class="mini-modal" id="snakeModal">
-            <div data-i18n="mini.snake.title" class="mini-title">🐍 SNAKE ELEMENTAL</div>
+            <div class="mini-modal-header">
+              <div data-i18n="mini.snake.title" class="mini-title">🐍 SNAKE ELEMENTAL</div>
+              <button onclick="closeMiniModal('snakeModal')" class="mini-modal-close-btn">✕ FECHAR</button>
+            </div>
             <div id="snakeInfo" class="mini-info">Fácil · Coma os elementos!</div>
             <canvas id="snakeCanvas" width="280" height="280"></canvas>
             <div id="snakeScore" style="font-family:'Cinzel',serif;font-size:11px;color:#86efac;letter-spacing:2px;margin:4px 0 0;">🐍 0 elementos</div>
             <div class="mini-result-box" id="snakeResult"></div>
             <div class="mini-reward-txt" id="snakeReward"></div>
-            <!-- D-pad (visível só no mobile) — FECHAR no canto sup. esq., longe das setas -->
-            <div class="snake-dpad" style="position:relative;">
-              <button onclick="closeMiniModal('snakeModal')" class="dpad-close-btn">✕</button>
+            <!-- D-pad (visível só no mobile) -->
+            <div class="snake-dpad">
               <div class="snake-dpad-row">
                 <button class="snake-dpad-btn snake-dpad-center">·</button>
                 <button class="snake-dpad-btn" onpointerdown="snakeDpad(0,-1)">▲</button>
@@ -513,20 +515,20 @@
             </div>
             <div class="mini-btns">
               <button data-i18n="mini.play_again" class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
-              <button data-i18n="mini.close" class="mini-btn close dpad-close-desktop" onclick="closeMiniModal('snakeModal')">FECHAR</button>
             </div>
           </div>
 
           <div class="mini-modal" id="mazeModal">
-            <div data-i18n="mini.maze.title" class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
+            <div class="mini-modal-header">
+              <div data-i18n="mini.maze.title" class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
+              <button onclick="closeMiniModal('mazeModal')" class="mini-modal-close-btn">✕ FECHAR</button>
+            </div>
             <div data-i18n="mini.maze.info" id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
             <canvas id="mazeCanvas" width="280" height="280"></canvas>
             <div id="mazeTimer" style="font-family:'Cinzel',serif;font-size:13px;color:#86efac;letter-spacing:3px;margin:2px 0;">⏱ 120s</div>
             <div class="mini-result-box" id="mazeResult"></div>
             <div class="mini-reward-txt" id="mazeReward"></div>
-            <!-- FECHAR no canto sup. esq., longe das setas -->
-            <div class="maze-dpad" style="position:relative;">
-              <button onclick="closeMiniModal('mazeModal')" class="dpad-close-btn">✕</button>
+            <div class="maze-dpad">
               <div class="maze-dpad-row">
                 <div class="maze-dpad-btn maze-dpad-center"></div>
                 <button class="maze-dpad-btn" onpointerdown="mazeDpad(1)" onpointerup="mazeDpadRelease(1)" onpointercancel="mazeDpadRelease(1)">▲</button>
@@ -545,7 +547,6 @@
             </div>
             <div class="mini-btns">
               <button data-i18n="mini.play_again" class="mini-btn primary" id="mazeAgainBtn" onclick="startLabirinto()" style="display:none">JOGAR DE NOVO</button>
-              <button data-i18n="mini.close" class="mini-btn close dpad-close-desktop" onclick="closeMiniModal('mazeModal')">FECHAR</button>
             </div>
           </div>
 
