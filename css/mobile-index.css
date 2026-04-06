@@ -35,16 +35,23 @@
     border-bottom: 1px solid var(--border);
   }
 
-  /* Linha 1: logo + wallet */
-  .header-row1 {
-    display: flex;
+  /* Linha 1: logo (esquerda) + wallet-right (direita) */
+  .logo { font-size: 10px; letter-spacing: 2px; }
+
+  header {
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding-bottom: 5px;
+    padding-bottom: 0;
   }
-
-  .logo { font-size: 10px; letter-spacing: 2px; }
+  header > .logo         { flex: 0 0 auto; }
+  header > .header-right { flex: 0 0 auto; }
+  header > .header-center {
+    flex: 0 0 100%;
+    border-top: 1px solid rgba(255,255,255,.06);
+    padding: 5px 0 7px;
+  }
 
   /* Linha 2: botões de recursos — largura total */
   .header-center {
