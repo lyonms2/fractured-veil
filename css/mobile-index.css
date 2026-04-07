@@ -486,6 +486,14 @@
   body.fv-has-creature #idBadgesRow {
     order: 2;
     margin: 0 14px 10px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+  body.fv-has-creature #idBadgesRow .badge,
+  body.fv-has-creature #idBadgesRow .ccm-badge {
+    margin: 0 !important;
+    flex-shrink: 0;
   }
 
   /* ── Animação do avatar ── */
@@ -507,21 +515,22 @@
     border-bottom: none !important;
   }
 
-  /* ── Botões de ação ── */
-  body.fv-has-creature #actionBtns {
-    order: 5;
-    padding: 8px 10px !important;
-    border-top: 1px solid var(--border) !important;
-  }
-
   /* ── XP e Vínculo ── */
   body.fv-has-creature #idXpSection {
-    order: 6;
+    order: 5;
     margin: 10px 14px 0 !important;
   }
   body.fv-has-creature #idVinculoSection {
+    order: 6;
+    margin: 8px 14px 10px !important;
+  }
+
+  /* ── Botões de ação ── */
+  body.fv-has-creature #actionBtns {
     order: 7;
-    margin: 8px 14px 12px !important;
+    padding: 8px 10px 10px !important;
+    border-top: 1px solid var(--border) !important;
+    margin-top: 0 !important;
   }
 
   /* ── Ocultar elementos desnecessários no hero card ── */
