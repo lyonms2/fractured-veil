@@ -1,15 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/arena-reset-ranking",
-      "schedule": "0 0 * * 1"
-    },
-    {
-      "path": "/api/rouba-monte-reset-ranking",
-      "schedule": "0 0 * * 1"
-    },
-    {
-      "path": "/api/batalha-naval-reset-ranking",
+      "path": "/api/pvp-reset-ranking",
       "schedule": "0 0 * * 1"
     },
     {
