@@ -43,23 +43,17 @@ function poolDisponivel() {
 // ═══════════════════════════════════════════
 async function loadPool() {
   try {
-    const snap = await db.collection('config').doc('pool').get();
-    if(snap.exists) {
-      poolData = snap.data();
-      // Reset diário
-      const agora = Date.now();
-      const ultimoReset = poolData.ultimoReset || 0;
-      if(agora - ultimoReset > 86400000) {
-        await db.collection('config').doc('pool').update({ saqueHoje: 0, ultimoReset: agora });
-        poolData.saqueHoje = 0;
-        poolData.ultimoReset = agora;
-      }
-    } else {
-      // Criar pool inicial se não existir
-      const inicial = { cristais: 0, saqueHoje: 0, ultimoReset: Date.now() };
-      await db.collection('config').doc('pool').set(inicial);
-      poolData = inicial;
-    }
+    const resp = await fetch('/api/pool');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.erro || 'erro');
+    poolData = {
+      cristais:    json.cristais,
+      saqueHoje:   json.saqueHoje,
+      totalEntrou: json.totalEntrou,
+      totalSaiu:   json.totalSaiu,
+      ultimoReset: json.ultimoReset,
+    };
     renderPoolWidget();
   } catch(e) { console.warn('loadPool error:', e); }
 }
@@ -207,29 +201,32 @@ async function loadPoolLogs(reset) {
   if(reset) { poolLogs = []; poolLogsLast = null; }
 
   try {
-    let q = db.collection('config').doc('pool').collection('logs')
-      .orderBy('ts', 'desc').limit(20);
-    if(poolLogsLast) q = q.startAfter(poolLogsLast);
+    let url = '/api/pool?logs=1';
+    if(poolLogsLast) url += '&after=' + encodeURIComponent(poolLogsLast);
 
-    const snap = await q.get();
-    if(snap.empty && reset) {
+    const resp = await fetch(url);
+    const json = await resp.json();
+
+    if(!json.ok) throw new Error(json.erro || 'erro');
+
+    if(json.logs.length === 0 && reset) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">Nenhuma transacção ainda.</div></div>';
       if(moreBtn) moreBtn.innerHTML = '';
       return;
     }
 
-    snap.docs.forEach(d => poolLogs.push({ id: d.id, ...d.data() }));
-    if(snap.docs.length > 0) poolLogsLast = snap.docs[snap.docs.length - 1];
+    poolLogs.push(...json.logs);
+    if(json.lastId) poolLogsLast = json.lastId;
 
     list.innerHTML = poolLogs.map(log => {
       const isEntrada = log.tipo === 'entrada';
-      const ts  = log.ts?.toDate ? log.ts.toDate() : new Date();
+      const ts  = log.ts ? new Date(log.ts) : new Date();
       const timeStr = ts.toLocaleDateString('pt-PT') + ' ' + ts.toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'});
       const wallet = log.origem && log.origem.startsWith('0x')
         ? log.origem.slice(0,6)+'…'+log.origem.slice(-4)
         : (log.origem || 'sistema');
-      const icon   = isEntrada ? '▲' : '▼';
-      const sinal  = isEntrada ? '+' : '-';
+      const icon  = isEntrada ? '▲' : '▼';
+      const sinal = isEntrada ? '+' : '-';
       return `<div class="pool-log-row ${log.tipo}">
         <div class="pool-log-icon">${icon}</div>
         <div class="pool-log-info">
@@ -242,7 +239,7 @@ async function loadPoolLogs(reset) {
     }).join('');
 
     if(moreBtn) {
-      moreBtn.innerHTML = snap.docs.length === 20
+      moreBtn.innerHTML = json.hasMore
         ? `<button class="btn-slot-activate" style="font-size:9px;padding:6px 16px;" onclick="loadPoolLogs(false)">Carregar mais</button>`
         : '';
     }
