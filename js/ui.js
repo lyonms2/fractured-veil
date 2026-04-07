@@ -1,6 +1,16 @@
 // ═══════════════════════════════════════════
 // UI HELPERS
 // ═══════════════════════════════════════════
+
+// Mobile: observa visibilidade do creatureCard para aplicar
+// estilos de "hero card" (device + creatureCard fundidos)
+document.addEventListener('DOMContentLoaded', () => {
+  const cc = document.getElementById('creatureCard');
+  if (!cc) return;
+  const sync = () => document.body.classList.toggle('fv-has-creature', cc.style.display !== 'none');
+  new MutationObserver(sync).observe(cc, { attributes: true, attributeFilter: ['style'] });
+  sync();
+});
 function setBar(id, val, miniId) {
   // Suporte às novas barras do status-cards-grid (sci-fill) E às antigas (stat-fill)
   const b  = document.getElementById(id);
