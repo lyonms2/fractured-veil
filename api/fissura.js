@@ -54,6 +54,23 @@ function getMesAtual() {
 
 // ── Handler principal ───────────────────────────────────────────
 module.exports = async function handler(req, res) {
+  const { db, auth } = initAdmin();
+
+  // GET /api/fissura?mes=2026-04 — dados públicos dos standings (sem auth)
+  if (req.method === 'GET') {
+    const mes = req.query?.mes || getMesAtual();
+    try {
+      const fissuraSnap = await db.collection('fissura').doc(mes).get();
+      return res.status(200).json({
+        ok:   true,
+        mes,
+        data: fissuraSnap.exists ? fissuraSnap.data() : null,
+      });
+    } catch(e) {
+      return res.status(500).json({ erro: 'Erro ao carregar dados.' });
+    }
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
@@ -63,11 +80,18 @@ module.exports = async function handler(req, res) {
   if (!idToken || typeof idToken !== 'string') {
     return res.status(400).json({ erro: 'idToken em falta' });
   }
+
+  // acao=dados: retorna dados do jogador + standings (autenticado)
+  if (acao === 'dados') {
+    let uid;
+    try { const d = await auth.verifyIdToken(idToken); uid = d.uid; }
+    catch { return res.status(401).json({ erro: 'Token inválido ou expirado' }); }
+    return handleDados(req, res, db, uid);
+  }
+
   if (acao !== 'inscrever' && acao !== 'contribuir') {
     return res.status(400).json({ erro: 'acao inválida' });
   }
-
-  const { db, auth } = initAdmin();
 
   let uid;
   try {
@@ -80,6 +104,30 @@ module.exports = async function handler(req, res) {
   if (acao === 'inscrever') return handleInscrever(req, res, db, uid);
   if (acao === 'contribuir') return handleContribuir(req, res, db, uid);
 };
+
+// ── Dados (jogador + standings) ─────────────────────────────────
+async function handleDados(req, res, db, uid) {
+  const mes = getMesAtual();
+  try {
+    const [playerSnap, fissuraSnap] = await Promise.all([
+      db.collection('players').doc(uid).get(),
+      db.collection('fissura').doc(mes).get(),
+    ]);
+    const player  = playerSnap.exists  ? playerSnap.data()  : null;
+    const global  = fissuraSnap.exists ? fissuraSnap.data() : null;
+    return res.status(200).json({
+      ok: true,
+      mes,
+      faccao:          player?.faccao          || null,
+      fissuraMes:      player?.fissuraMes      || null,
+      fissuraPontos:   player?.fissuraPontos   || 0,
+      fissuraRaridade: player?.fissuraRaridade || null,
+      global,
+    });
+  } catch(e) {
+    return res.status(500).json({ erro: 'Erro ao carregar dados.' });
+  }
+}
 
 // ── Inscrever ───────────────────────────────────────────────────
 async function handleInscrever(req, res, db, uid) {

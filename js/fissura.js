@@ -44,15 +44,24 @@ function fissuraTimerStr() {
 
 // ── Carregar dados ─────────────────────────────────────────────────
 async function fissuraCarregarDados() {
-  if (!walletAddress || !fbDb()) return;
-  const mes = getMesAtualFissura();
+  if (!walletAddress) return;
   try {
-    const [playerSnap, fissuraSnap] = await Promise.all([
-      fbDb().collection('players').doc(walletAddress).get(),
-      fbDb().collection('fissura').doc(mes).get(),
-    ]);
-    _fissuraData   = playerSnap.exists ? playerSnap.data() : null;
-    _fissuraGlobal = fissuraSnap.exists ? fissuraSnap.data() : null;
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/fissura', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'dados', idToken }),
+    });
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.erro || 'erro');
+    // Simula a estrutura anterior
+    _fissuraData   = {
+      faccao:          json.faccao,
+      fissuraMes:      json.fissuraMes,
+      fissuraPontos:   json.fissuraPontos,
+      fissuraRaridade: json.fissuraRaridade,
+    };
+    _fissuraGlobal = json.global;
   } catch (e) {
     console.warn('[fissura] erro ao carregar dados:', e.message);
     _fissuraData   = null;
