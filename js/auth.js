@@ -92,11 +92,17 @@ async function registrarComEmail() {
     await cred.user.sendEmailVerification();
     // Faz logout imediato — só entra após verificar o email
     await fbAuth().signOut();
-    errEl.style.color = '#7ab87a';
-    errEl.textContent = '✅ Conta criada! Verifica o teu email antes de entrar.';
     btn.disabled = false;
     btn.textContent = t('auth.btn.create');
     authShowTab('login');
+    // authShowTab limpa loginError — escrever depois via microtask
+    Promise.resolve().then(() => {
+      const loginErr = document.getElementById('loginError');
+      if(loginErr) {
+        loginErr.style.color = '#7ab87a';
+        loginErr.textContent = '✅ Conta criada! Verifica o teu email antes de entrar.';
+      }
+    });
   } catch(e) {
     btn.disabled = false;
     btn.textContent = t('auth.btn.create');
