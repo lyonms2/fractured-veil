@@ -446,45 +446,91 @@
 
   /* fv-bottom-nav removida do mobile — botões inline no device card */
 
-  /* ════════════════════
-     HERO CARD — device + creatureCard fundidos num único card
-  ════════════════════ */
+  /* ════════════════════════════════════════════════════
+     HERO CARD — device + creatureCard num único card
+     Usa display:contents no creatureCard para os filhos
+     fluírem no flex do .device, reordenados via order.
+  ════════════════════════════════════════════════════ */
 
-  /* Device: canto plano em baixo para colar ao creatureCard */
   body.fv-has-creature .device {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    border-bottom-color: transparent !important;
-    padding-bottom: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;       /* padding vai para cada secção */
+    overflow: hidden;
   }
 
-  /* right-panel: encosta ao device (cancela o gap do main) */
-  body.fv-has-creature .right-panel {
-    margin-top: -12px;
-  }
+  /* device-top: hidden no hero — nome substitui */
+  body.fv-has-creature .device-top { display: none !important; }
 
-  /* creatureCard: canto plano em cima, sem borda topo */
+  /* creatureCard: transparente — filhos fluem no device */
   body.fv-has-creature #creatureCard {
-    border-top: none !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
+    display: contents !important;
   }
 
-  /* Stripe de raridade vira o separador entre animação e stats */
+  /* ── Stripe de raridade: ocupa a faixa do topo do card ── */
   body.fv-has-creature #creatureCardStripe {
-    height: 2px !important;
-    margin: -12px -14px 12px !important; /* ajusta ao padding mobile do panel-card */
+    order: 0;
+    height: 3px !important;
+    margin: 0 !important;
+    flex-shrink: 0;
   }
 
-  /* Esconde descrição no hero card mobile — poupa espaço */
-  body.fv-has-creature #idDesc { display: none !important; }
+  /* ── Nome + ✏️ ── */
+  body.fv-has-creature #avatarNameBlock {
+    order: 1;
+    margin: 10px 14px 6px !important;
+  }
 
-  /* Nome: mais compacto no hero card */
-  body.fv-has-creature #avatarNameBlock { margin-bottom: 7px !important; }
+  /* ── Badges row (raridade · elemento · slot · nível) ── */
+  body.fv-has-creature #idBadgesRow {
+    order: 2;
+    margin: 0 14px 10px !important;
+  }
 
-  /* Badges row: alinha com nível à direita */
-  body.fv-has-creature #avatarNameBlock + div {
-    margin-bottom: 8px !important;
+  /* ── Animação do avatar ── */
+  body.fv-has-creature .screen {
+    order: 3;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    background: rgba(255,255,255,.01);
+  }
+
+  /* ── Barras de vitais inline ── */
+  body.fv-has-creature #mobileStatusInline {
+    order: 4;
+    margin: 0 !important;
+    padding: 8px 14px 6px !important;
+    border-top: 1px solid var(--border) !important;
+    border-bottom: none !important;
+  }
+
+  /* ── Botões de ação ── */
+  body.fv-has-creature #actionBtns {
+    order: 5;
+    padding: 8px 10px !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  /* ── XP e Vínculo ── */
+  body.fv-has-creature #idXpSection {
+    order: 6;
+    margin: 10px 14px 0 !important;
+  }
+  body.fv-has-creature #idVinculoSection {
+    order: 7;
+    margin: 8px 14px 12px !important;
+  }
+
+  /* ── Ocultar elementos desnecessários no hero card ── */
+  body.fv-has-creature #idDesc         { display: none !important; }
+  body.fv-has-creature #statusCard     { display: none !important; }
+  body.fv-has-creature #rarityBonusTxt { display: none !important; }
+  /* O div container do rarityBonusTxt */
+  body.fv-has-creature #creatureCard > div:last-of-type:not(#statusCard):not(#idVinculoSection):not(#idXpSection) {
+    display: none !important;
   }
 
 } /* fim @media ≤ 768px */

@@ -2,15 +2,38 @@
 // UI HELPERS
 // ═══════════════════════════════════════════
 
-// Mobile: observa visibilidade do creatureCard para aplicar
-// estilos de "hero card" (device + creatureCard fundidos)
-document.addEventListener('DOMContentLoaded', () => {
-  const cc = document.getElementById('creatureCard');
-  if (!cc) return;
-  const sync = () => document.body.classList.toggle('fv-has-creature', cc.style.display !== 'none');
-  new MutationObserver(sync).observe(cc, { attributes: true, attributeFilter: ['style'] });
-  sync();
-});
+// Mobile hero card: move #creatureCard para dentro de .device e usa
+// display:contents + order para fundir animação e stats num único card.
+(function() {
+  let _heroReady = false;
+
+  function setupMobileHero() {
+    if (_heroReady) return;
+    if (window.innerWidth > 768) return;
+    const device = document.querySelector('.device');
+    const cc     = document.getElementById('creatureCard');
+    if (!device || !cc) return;
+
+    // Move creatureCard para dentro de .device (após actionBtns)
+    device.appendChild(cc);
+    _heroReady = true;
+  }
+
+  function syncHeroClass() {
+    const cc = document.getElementById('creatureCard');
+    if (!cc) return;
+    const visible = cc.style.display !== 'none';
+    document.body.classList.toggle('fv-has-creature', visible);
+    if (visible) setupMobileHero();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const cc = document.getElementById('creatureCard');
+    if (!cc) return;
+    new MutationObserver(syncHeroClass).observe(cc, { attributes: true, attributeFilter: ['style'] });
+    syncHeroClass();
+  });
+})();
 function setBar(id, val, miniId) {
   // Suporte às novas barras do status-cards-grid (sci-fill) E às antigas (stat-fill)
   const b  = document.getElementById(id);
