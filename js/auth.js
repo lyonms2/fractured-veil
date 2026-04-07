@@ -270,10 +270,10 @@ async function _onLoginSuccess(user) {
   if(_ultimoLogin !== _hoje) {
     localStorage.setItem('fv_fissura_login', _hoje);
     firebase.auth().currentUser.getIdToken().then(idToken => {
-      fetch('/api/fissura-contribuir', {
+      fetch('/api/fissura', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, atividade: 'login_diario' }),
+        body: JSON.stringify({ acao: 'contribuir', idToken, atividade: 'login_diario' }),
       }).catch(() => {});
     }).catch(() => {});
   }

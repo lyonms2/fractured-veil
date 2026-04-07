@@ -1,26 +1,40 @@
 // ═══════════════════════════════════════════════════════════════
-//  api/fissura-inscrever.js — Vercel Serverless Function
-//
-//  Inscreve o jogador na Grande Fissura mensal.
-//  Cobra a taxa de inscrição e regista a facção escolhida.
+//  api/fissura.js — Vercel Serverless Function
+//  Rota única para a Grande Fissura.
 //
 //  Body esperado:
-//    { idToken: "...", faccao: "Caos"|"Equilíbrio"|"Éter" }
+//    { acao: "inscrever"|"contribuir", idToken: "...", ...params }
+//
+//  acao=inscrever  → { faccao: "Caos"|"Equilíbrio"|"Éter" }
+//  acao=contribuir → { atividade: "login_diario"|"pve_vitoria"|... }
 // ═══════════════════════════════════════════════════════════════
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
+// ── Constantes ──────────────────────────────────────────────────
 const FACCOES = ['Caos', 'Equilíbrio', 'Éter'];
 
-// Taxa de inscrição por raridade
 const TAXA_INSCRICAO = {
   Comum:    { moedas: 200, cristais: 0  },
   Raro:     { moedas: 0,   cristais: 5  },
   Lendário: { moedas: 0,   cristais: 10 },
 };
 
+const PONTOS = {
+  login_diario:       5,
+  pve_completo:       8,
+  pve_vitoria:       15,
+  cambio:            10,
+  pvp_derrota:        5,
+  pvp_empate:        10,
+  pvp_vitoria_comum: 20,
+  pvp_vitoria_raro:  35,
+  pvp_vitoria_lend:  50,
+};
+
+// ── Admin SDK ───────────────────────────────────────────────────
 function initAdmin() {
   if (!getApps().length) {
     initializeApp({
@@ -38,18 +52,19 @@ function getMesAtual() {
   return new Date().toISOString().slice(0, 7); // "2026-04"
 }
 
+// ── Handler principal ───────────────────────────────────────────
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  const { idToken, faccao } = req.body;
+  const { acao, idToken } = req.body;
 
   if (!idToken || typeof idToken !== 'string') {
     return res.status(400).json({ erro: 'idToken em falta' });
   }
-  if (!faccao || !FACCOES.includes(faccao)) {
-    return res.status(400).json({ erro: 'Facção inválida' });
+  if (acao !== 'inscrever' && acao !== 'contribuir') {
+    return res.status(400).json({ erro: 'acao inválida' });
   }
 
   const { db, auth } = initAdmin();
@@ -60,6 +75,18 @@ module.exports = async function handler(req, res) {
     uid = decoded.uid;
   } catch {
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
+  }
+
+  if (acao === 'inscrever') return handleInscrever(req, res, db, uid);
+  if (acao === 'contribuir') return handleContribuir(req, res, db, uid);
+};
+
+// ── Inscrever ───────────────────────────────────────────────────
+async function handleInscrever(req, res, db, uid) {
+  const { faccao } = req.body;
+
+  if (!faccao || !FACCOES.includes(faccao)) {
+    return res.status(400).json({ erro: 'Facção inválida' });
   }
 
   const mes        = getMesAtual();
@@ -75,12 +102,10 @@ module.exports = async function handler(req, res) {
 
       const data = playerSnap.data();
 
-      // Verifica se já está inscrito neste mês
       if (data.fissuraMes === mes) {
         throw new Error('Já estás inscrito na Fissura deste mês');
       }
 
-      // Determina raridade do avatar ativo
       const activeSlot = (data.avatarSlots || [])[data.gs?.activeSlot ?? data.activeSlot ?? 0];
       if (!activeSlot || !activeSlot.hatched || activeSlot.dead) {
         throw new Error('Precisas de um avatar ativo para participar');
@@ -88,18 +113,12 @@ module.exports = async function handler(req, res) {
       const raridade = activeSlot.raridade || 'Comum';
       const taxa     = TAXA_INSCRICAO[raridade] || TAXA_INSCRICAO.Comum;
 
-      // Valida saldo
       const moedas   = data.gs?.moedas   ?? data.moedas   ?? 0;
       const cristais = data.gs?.cristais ?? data.cristais ?? 0;
 
-      if (taxa.moedas > 0 && moedas < taxa.moedas) {
-        throw new Error(`Saldo insuficiente: precisas de ${taxa.moedas} 🪙`);
-      }
-      if (taxa.cristais > 0 && cristais < taxa.cristais) {
-        throw new Error(`Saldo insuficiente: precisas de ${taxa.cristais} 💎`);
-      }
+      if (taxa.moedas   > 0 && moedas   < taxa.moedas)   throw new Error(`Saldo insuficiente: precisas de ${taxa.moedas} 🪙`);
+      if (taxa.cristais > 0 && cristais < taxa.cristais) throw new Error(`Saldo insuficiente: precisas de ${taxa.cristais} 💎`);
 
-      // Debita taxa
       const novasMoedas   = moedas   - taxa.moedas;
       const novosCristais = cristais - taxa.cristais;
 
@@ -108,26 +127,23 @@ module.exports = async function handler(req, res) {
         moedas:        novasMoedas,
         'gs.cristais': novosCristais,
         cristais:      novosCristais,
-        faccao:        faccao,
-        fissuraMes:    mes,
-        fissuraPontos: 0,
+        faccao,
+        fissuraMes:      mes,
+        fissuraPontos:   0,
         fissuraRaridade: raridade,
       });
 
-      // Atualiza doc global da fissura
       const fissuraData = fissuraSnap.exists ? fissuraSnap.data() : {};
-      const facData = fissuraData[faccao] || { pontos: 0, membros: 0, pontosTotal: 0 };
+      const facData = fissuraData[faccao] || { pontosTotal: 0, membros: 0 };
 
       tx.set(fissuraRef, {
         [faccao]: {
-          pontos:      facData.pontos,
-          membros:     (facData.membros || 0) + 1,
           pontosTotal: facData.pontosTotal || 0,
+          membros:     (facData.membros || 0) + 1,
         },
         updatedAt: FieldValue.serverTimestamp(),
       }, { merge: true });
 
-      // Taxa vai para a pool
       if (taxa.cristais > 0) {
         const poolRef = db.collection('config').doc('pool');
         tx.update(poolRef, {
@@ -149,7 +165,55 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('[fissura-inscrever]', err.message);
+    console.error('[fissura/inscrever]', err.message);
     return res.status(400).json({ erro: err.message });
   }
-};
+}
+
+// ── Contribuir ──────────────────────────────────────────────────
+async function handleContribuir(req, res, db, uid) {
+  const { atividade } = req.body;
+
+  if (!atividade || !PONTOS[atividade]) {
+    return res.status(400).json({ erro: 'Atividade inválida' });
+  }
+
+  const mes       = getMesAtual();
+  const pontos    = PONTOS[atividade];
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const playerSnap = await playerRef.get();
+    if (!playerSnap.exists) return res.status(200).json({ ok: true, ignorado: true });
+
+    const data = playerSnap.data();
+
+    if (data.fissuraMes !== mes || !data.faccao) {
+      return res.status(200).json({ ok: true, ignorado: true });
+    }
+
+    const faccao     = data.faccao;
+    const fissuraRef = db.collection('fissura').doc(mes);
+
+    const batch = db.batch();
+    batch.update(playerRef, { fissuraPontos: FieldValue.increment(pontos) });
+    batch.set(fissuraRef, {
+      [faccao]: { pontosTotal: FieldValue.increment(pontos) },
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    await batch.commit();
+
+    return res.status(200).json({
+      ok:     true,
+      pontos,
+      totalJogador: (data.fissuraPontos || 0) + pontos,
+      faccao,
+    });
+
+  } catch (err) {
+    console.error('[fissura/contribuir]', err.message);
+    // Não bloqueia o fluxo principal
+    return res.status(200).json({ ok: true, ignorado: true });
+  }
+}

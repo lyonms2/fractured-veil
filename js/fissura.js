@@ -259,10 +259,10 @@ async function fissuraInscrever() {
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch('/api/fissura-inscrever', {
+    const resp    = await fetch('/api/fissura', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ idToken, faccao: _fissuraFaccaoSel }),
+      body:    JSON.stringify({ acao: 'inscrever', idToken, faccao: _fissuraFaccaoSel }),
     });
     const json = await resp.json();
 
