@@ -98,7 +98,11 @@ function layEgg() {
     }
   }
   const raridade = eggsInInventory[eggsInInventory.length - numEggs].raridade;
-  eggLayCooldown  = Math.round(1440 * rb.cooldown);
+  // Usa timestamp para que o cooldown avance mesmo com a página fechada
+  const cooldownMs = Math.round(1440 * rb.cooldown) * 60 * 1000; // minutos → ms
+  eggLayCooldown = cooldownMs; // mantém compatibilidade com gametick
+  window._eggLayReadyAt = Date.now() + cooldownMs;
+  if(avatar) avatar.eggLayReadyAt = window._eggLayReadyAt;
   scheduleSave();
   eggLayNotified  = false;
 

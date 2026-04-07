@@ -205,6 +205,7 @@ function saveRuntimeToSlot(idx) {
     modoRepouso,
     bornAt, poopCount, dirtyLevel, poopPressure,
     eggLayCooldown, petCooldown,
+    eggLayReadyAt: window._eggLayReadyAt || 0,
     vitals:         {...vitals},
     eggs:           eggsInInventory.map(e => ({...e})),
     items:          itemInventory.map(i => ({...i})),
@@ -242,8 +243,16 @@ function loadRuntimeFromSlot(idx) {
   poopCount      = s.poopCount      ?? 0;
   dirtyLevel     = s.dirtyLevel     ?? 0;
   poopPressure   = s.poopPressure   ?? 0;
-  eggLayCooldown = s.eggLayCooldown ?? 0;
   petCooldown    = s.petCooldown    ?? 0;
+  // Recalcula eggLayCooldown a partir do timestamp real (funciona com página fechada)
+  if(s.eggLayReadyAt && s.eggLayReadyAt > Date.now()) {
+    const msLeft = s.eggLayReadyAt - Date.now();
+    eggLayCooldown = Math.ceil(msLeft / 60000); // converte ms → minutos (ticks)
+    window._eggLayReadyAt = s.eggLayReadyAt;
+  } else {
+    eggLayCooldown = 0;
+    window._eggLayReadyAt = 0;
+  }
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
