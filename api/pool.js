@@ -1,15 +1,20 @@
 // ═══════════════════════════════════════════════════════════════
 //  api/pool.js — Vercel Serverless Function
-//  Leitura segura dos dados públicos da Pool P2E.
-//  Sem escrita — todo o write é feito pelo Admin SDK nas outras APIs.
 //
-//  GET  /api/pool          → dados da pool (cristais, totais, preço)
-//  GET  /api/pool?logs=1   → últimos 20 logs de transacção
-//  GET  /api/pool?logs=1&after=<docId> → próxima página de logs
+//  GET  /api/pool              → dados da pool
+//  GET  /api/pool?logs=1       → histórico de transacções
+//  POST /api/pool { acao, idToken, ... }
+//    acao='taxa'       → entrada na pool (taxa de listagem/venda)
+//    acao='vender-ovo' → jogador vende ovo à pool
+//    acao='queimar-ovo'→ jogador queima ovo e recebe cristais
 // ═══════════════════════════════════════════════════════════════
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore }                 = require('firebase-admin/firestore');
+const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
+const { getAuth }                      = require('firebase-admin/auth');
+
+const POOL_ALVO       = 1000;
+const POOL_LIMITE_DIA = 100;
 
 function initAdmin() {
   if (!getApps().length) {
@@ -21,83 +26,268 @@ function initAdmin() {
       }),
     });
   }
-  return getFirestore();
+  return { db: getFirestore(), auth: getAuth() };
 }
 
+function getMesAtual() { return new Date().toISOString().slice(0, 7); }
+
+function semanaAtual() {
+  const now = new Date();
+  const ini = new Date(now.getFullYear(), 0, 1);
+  const sem = Math.ceil(((now - ini) / 86400000 + ini.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(sem).padStart(2, '0')}`;
+}
+
+// ── Handler principal ───────────────────────────────────────────
 module.exports = async function handler(req, res) {
-  // CORS básico — só GET
-  if (req.method !== 'GET') {
-    return res.status(405).json({ erro: 'Método não permitido' });
-  }
+  const { db, auth } = initAdmin();
+  const poolRef = db.collection('config').doc('pool');
 
-  const db = initAdmin();
+  // ── GET ─────────────────────────────────────────────────────
+  if (req.method === 'GET') {
+    try {
+      const poolSnap = await poolRef.get();
+      const poolData = poolSnap.exists ? poolSnap.data() : {
+        cristais: 0, saqueHoje: 0, ultimoReset: 0, totalEntrou: 0, totalSaiu: 0,
+      };
 
-  try {
-    const poolRef  = db.collection('config').doc('pool');
-    const poolSnap = await poolRef.get();
-
-    const poolData = poolSnap.exists ? poolSnap.data() : {
-      cristais: 0, saqueHoje: 0, ultimoReset: 0,
-      totalEntrou: 0, totalSaiu: 0,
-    };
-
-    // Reset diário server-side (se passou mais de 24h)
-    const agora = Date.now();
-    if (agora - (poolData.ultimoReset || 0) > 86400000) {
-      await poolRef.set({ saqueHoje: 0, ultimoReset: agora }, { merge: true });
-      poolData.saqueHoje   = 0;
-      poolData.ultimoReset = agora;
-    }
-
-    // Se pediu os logs
-    if (req.query?.logs === '1') {
-      let q = poolRef.collection('logs').orderBy('ts', 'desc').limit(20);
-
-      if (req.query?.after) {
-        try {
-          const afterSnap = await poolRef.collection('logs').doc(req.query.after).get();
-          if (afterSnap.exists) q = q.startAfter(afterSnap);
-        } catch (_) {}
+      // Reset diário
+      const agora = Date.now();
+      if (agora - (poolData.ultimoReset || 0) > 86400000) {
+        await poolRef.set({ saqueHoje: 0, ultimoReset: agora }, { merge: true });
+        poolData.saqueHoje = 0; poolData.ultimoReset = agora;
       }
 
-      const logsSnap = await q.get();
-      const logs = logsSnap.docs.map(d => {
-        const data = d.data();
-        return {
-          id:     d.id,
-          tipo:   data.tipo,
-          motivo: data.motivo  || '',
-          origem: data.origem  || '',
-          pool:   data.pool    ?? 0,
-          total:  data.total   ?? 0,
-          ts:     data.ts?.toMillis ? data.ts.toMillis() : null,
-        };
-      });
-
-      const lastId = logsSnap.docs.length > 0
-        ? logsSnap.docs[logsSnap.docs.length - 1].id
-        : null;
+      if (req.query?.logs === '1') {
+        let q = poolRef.collection('logs').orderBy('ts', 'desc').limit(20);
+        if (req.query?.after) {
+          try {
+            const afterSnap = await poolRef.collection('logs').doc(req.query.after).get();
+            if (afterSnap.exists) q = q.startAfter(afterSnap);
+          } catch (_) {}
+        }
+        const logsSnap = await q.get();
+        const logs = logsSnap.docs.map(d => {
+          const data = d.data();
+          return {
+            id:     d.id,
+            tipo:   data.tipo,
+            motivo: data.motivo || '',
+            origem: data.origem || '',
+            pool:   data.pool   ?? 0,
+            total:  data.total  ?? 0,
+            ts:     data.ts?.toMillis ? data.ts.toMillis() : null,
+          };
+        });
+        return res.status(200).json({
+          ok: true, logs,
+          lastId:  logsSnap.docs.length > 0 ? logsSnap.docs[logsSnap.docs.length - 1].id : null,
+          hasMore: logsSnap.docs.length === 20,
+        });
+      }
 
       return res.status(200).json({
         ok: true,
-        logs,
-        lastId,
-        hasMore: logsSnap.docs.length === 20,
+        cristais:    poolData.cristais    || 0,
+        saqueHoje:   poolData.saqueHoje   || 0,
+        totalEntrou: poolData.totalEntrou || 0,
+        totalSaiu:   poolData.totalSaiu   || 0,
+        ultimoReset: poolData.ultimoReset || 0,
       });
+    } catch (err) {
+      console.error('[pool GET]', err);
+      return res.status(500).json({ erro: 'Erro ao carregar pool.' });
     }
+  }
 
-    // Resposta base — dados da pool sem informação sensível
-    return res.status(200).json({
-      ok:          true,
-      cristais:    poolData.cristais    || 0,
-      saqueHoje:   poolData.saqueHoje   || 0,
-      totalEntrou: poolData.totalEntrou || 0,
-      totalSaiu:   poolData.totalSaiu   || 0,
-      ultimoReset: poolData.ultimoReset || 0,
+  // ── POST ────────────────────────────────────────────────────
+  if (req.method !== 'POST') return res.status(405).json({ erro: 'Método não permitido' });
+
+  const { acao, idToken } = req.body;
+  if (!idToken) return res.status(400).json({ erro: 'idToken em falta' });
+
+  let uid;
+  try {
+    const decoded = await auth.verifyIdToken(idToken);
+    uid = decoded.uid;
+  } catch {
+    return res.status(401).json({ erro: 'Token inválido ou expirado' });
+  }
+
+  if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
+  if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
+  if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
+
+  return res.status(400).json({ erro: 'acao inválida' });
+};
+
+// ── Taxa: entrada na pool (listagem, venda, etc.) ───────────────
+async function handleTaxa(req, res, db, poolRef, uid) {
+  const { valor, motivo } = req.body;
+  const v = parseFloat(valor);
+  if (!v || v <= 0) return res.status(400).json({ erro: 'Valor inválido' });
+
+  try {
+    const batch  = db.batch();
+    const logRef = poolRef.collection('logs').doc();
+    batch.update(poolRef, {
+      cristais:    FieldValue.increment(v),
+      totalEntrou: FieldValue.increment(v),
+    });
+    batch.set(logRef, {
+      tipo: 'entrada', motivo: motivo || 'taxa',
+      origem: uid, total: v, pool: v,
+      ts: FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error('[pool/taxa]', err);
+    return res.status(500).json({ erro: 'Erro ao registar taxa.' });
+  }
+}
+
+// ── Vender ovo à pool ───────────────────────────────────────────
+async function handleVenderOvo(req, res, db, poolRef, uid) {
+  const { raridade, ovoId } = req.body;
+  if (!raridade || raridade === 'Comum') return res.status(400).json({ erro: 'Ovos Comuns não são aceites.' });
+  if (!ovoId) return res.status(400).json({ erro: 'ovoId em falta' });
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const [playerSnap, poolSnap] = await Promise.all([tx.get(playerRef), tx.get(poolRef)]);
+      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+
+      const pData   = playerSnap.data();
+      const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0, saqueHoje: 0 };
+
+      // Validar pool
+      if ((poolData.cristais || 0) <= 0) throw new Error('Pool vazia de momento.');
+      const saqueHoje = poolData.saqueHoje || 0;
+      if (saqueHoje >= POOL_LIMITE_DIA)   throw new Error('Limite diário global da pool atingido.');
+
+      // Validar ovo no inventário
+      const activeSlot = (pData.avatarSlots || [])[pData.gs?.activeSlot ?? pData.activeSlot ?? 0];
+      const eggs = activeSlot?.eggs || [];
+      const ovoIdx = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
+
+      // Limite semanal por jogador
+      const semana = semanaAtual();
+      const poolLog = pData.poolVendasLog || {};
+      const countSemana = poolLog.semana === semana ? (poolLog.count || 0) : 0;
+      const limiteSemanal = poolData.cristais >= 1000 ? 5 : poolData.cristais >= 500 ? 3 : poolData.cristais >= 100 ? 2 : 1;
+      if (countSemana >= limiteSemanal) throw new Error(`Limite semanal atingido (${limiteSemanal}x). Volta na próxima semana.`);
+
+      // Calcular preço
+      const ratio = Math.min(2, poolData.cristais / POOL_ALVO);
+      const base  = raridade === 'Lendário' ? 1.0 : 0.5;
+      const minP  = raridade === 'Lendário' ? 0.25 : 0.10;
+      const preco = Math.max(minP, parseFloat((base * ratio).toFixed(2)));
+
+      if (poolData.cristais < preco) throw new Error('Pool sem saldo suficiente.');
+
+      // Remover ovo do inventário
+      const newEggs = [...eggs];
+      newEggs.splice(ovoIdx, 1);
+      const newSlots = [...(pData.avatarSlots || [])];
+      const slotIdx  = pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
+      if (newSlots[slotIdx]) newSlots[slotIdx] = { ...newSlots[slotIdx], eggs: newEggs };
+
+      const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
+      const novosCristais  = cristaisAtuais + preco;
+
+      tx.update(playerRef, {
+        avatarSlots:   newSlots,
+        'gs.cristais': novosCristais,
+        cristais:      novosCristais,
+        poolVendasLog: { semana, count: countSemana + 1 },
+      });
+      tx.update(poolRef, {
+        cristais:  FieldValue.increment(-preco),
+        saqueHoje: FieldValue.increment(preco),
+        totalSaiu: FieldValue.increment(preco),
+      });
+      const logRef = poolRef.collection('logs').doc();
+      tx.set(logRef, {
+        tipo: 'saida', motivo: `Ovo ${raridade} vendido à pool`,
+        origem: uid, total: preco, pool: -preco,
+        ts: FieldValue.serverTimestamp(),
+      });
+
+      return { preco, novosCristais };
     });
 
+    return res.status(200).json({ ok: true, preco: resultado.preco, novosCristais: resultado.novosCristais });
+
   } catch (err) {
-    console.error('[pool]', err);
-    return res.status(500).json({ erro: 'Erro ao carregar pool.' });
+    console.error('[pool/vender-ovo]', err.message);
+    return res.status(400).json({ erro: err.message });
   }
-};
+}
+
+// ── Queimar ovo (recebe cristais da pool) ───────────────────────
+async function handleQueimarOvo(req, res, db, poolRef, uid) {
+  const { raridade, ovoId, gems } = req.body;
+  const finalGems = parseFloat(gems);
+  if (!raridade || raridade === 'Comum' || !ovoId || !finalGems || finalGems <= 0) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const [playerSnap, poolSnap] = await Promise.all([tx.get(playerRef), tx.get(poolRef)]);
+      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+
+      const pData    = playerSnap.data();
+      const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0, saqueHoje: 0 };
+
+      if ((poolData.cristais || 0) < finalGems) throw new Error('Pool sem saldo suficiente.');
+      if ((poolData.saqueHoje || 0) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
+
+      // Validar ovo
+      const activeSlot = (pData.avatarSlots || [])[pData.gs?.activeSlot ?? pData.activeSlot ?? 0];
+      const eggs = activeSlot?.eggs || [];
+      const ovoIdx = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
+
+      const newEggs  = [...eggs];
+      newEggs.splice(ovoIdx, 1);
+      const newSlots = [...(pData.avatarSlots || [])];
+      const slotIdx  = pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
+      if (newSlots[slotIdx]) newSlots[slotIdx] = { ...newSlots[slotIdx], eggs: newEggs };
+
+      const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
+      const novosCristais  = cristaisAtuais + finalGems;
+
+      tx.update(playerRef, {
+        avatarSlots:   newSlots,
+        'gs.cristais': novosCristais,
+        cristais:      novosCristais,
+      });
+      tx.update(poolRef, {
+        cristais:  FieldValue.increment(-finalGems),
+        saqueHoje: FieldValue.increment(finalGems),
+        totalSaiu: FieldValue.increment(finalGems),
+      });
+      const logRef = poolRef.collection('logs').doc();
+      tx.set(logRef, {
+        tipo: 'saida', motivo: `Queima de ovo ${raridade}`,
+        origem: uid, total: finalGems, pool: -finalGems,
+        ts: FieldValue.serverTimestamp(),
+      });
+
+      return { novosCristais };
+    });
+
+    return res.status(200).json({ ok: true, novosCristais: resultado.novosCristais });
+
+  } catch (err) {
+    console.error('[pool/queimar-ovo]', err.message);
+    return res.status(400).json({ erro: err.message });
+  }
+}

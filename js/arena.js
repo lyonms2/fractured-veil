@@ -1142,25 +1142,9 @@ async function _distribuirRecompensas(sala, opWallet) {
 
   // Taxa vai para a pool P2E — 100% (dev recebe via cron semanal)
   // Só cristais alimentam a pool; moedas são apenas queimadas
-  if(taxa > 0 && usaCris && fbDb()) {
+  if(taxa > 0 && usaCris && firebase.auth().currentUser) {
     try {
-      const motivo = `Arena ${sala.fila} — taxa de partida`;
-      const inc    = firebase.firestore.FieldValue.increment;
-      const batch  = fbDb().batch();
-
-      batch.update(fbDb().collection('config').doc('pool'), {
-        cristais:    inc(taxa),
-        totalEntrou: inc(taxa),
-      });
-      const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-      batch.set(logRef, {
-        tipo: 'entrada', motivo,
-        origem: walletAddress || 'arena',
-        total: taxa, pool: taxa,
-        ts: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      await batch.commit();
+      await addToPool(taxa, `Arena ${sala.fila} — taxa de partida`);
     } catch(e) { console.warn('[ARENA] addToPool erro:', e); }
   }
 

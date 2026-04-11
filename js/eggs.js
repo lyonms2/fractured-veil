@@ -200,20 +200,38 @@ async function _doBurnRaro(id, finalGems, bonus) {
   const ovo = eggsInInventory[idx];
   const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
 
-  // Verificação final antes de executar
   if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
     if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
     addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
     return;
   }
 
-  eggsInInventory.splice(idx, 1);
-  gs.cristais = (gs.cristais || 0) + finalGems;
-  await sacoDaPool(finalGems, walletAddress || 'sistema', `Queima de ovo ${ovo.raridade}`);
-  addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
-  showFloat(`+${finalGems} 💎`, '#a78bfa');
-  showBubble(`+${finalGems} 💎 🔥`);
-  renderEggInventory(); updateResourceUI(); scheduleSave();
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id, gems: finalGems }),
+    });
+    const json = await resp.json();
+    if(!json.ok) throw new Error(json.erro || 'erro');
+
+    eggsInInventory.splice(idx, 1);
+    gs.cristais = json.novosCristais;
+    if(poolData) {
+      poolData.cristais  = (poolData.cristais  || 0) - finalGems;
+      poolData.saqueHoje = (poolData.saqueHoje || 0) + finalGems;
+      poolData.totalSaiu = (poolData.totalSaiu || 0) + finalGems;
+    }
+    addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
+    showFloat(`+${finalGems} 💎`, '#a78bfa');
+    showBubble(`+${finalGems} 💎 🔥`);
+    renderEggInventory(); updateResourceUI(); renderPoolWidget();
+  } catch(err) {
+    console.warn('[_doBurnRaro]', err.message);
+    if(typeof showToast === 'function') showToast(err.message || 'Erro ao queimar ovo.', 'warn');
+    addLog(`⚠️ ${err.message}`, 'bad');
+  }
 }
 
 async function sellEggToPool(id) {
@@ -221,91 +239,34 @@ async function sellEggToPool(id) {
   if(idx === -1) return;
   const ovo = eggsInInventory[idx];
   if(ovo.raridade === 'Comum') { addLog('Ovos Comuns não são aceites pela pool.','bad'); return; }
-  if(!walletAddress || !fbDb()) { addLog('Conecta a carteira primeiro.','bad'); return; }
-
-  let pool;
-  try {
-    const snap = await fbDb().collection('config').doc('pool').get();
-    pool = snap.exists ? snap.data() : null;
-  } catch(e) { addLog('Erro ao aceder à pool.','bad'); return; }
-
-  if(!pool || pool.cristais <= 0) { addLog('Pool vazia de momento. Tenta mais tarde.','bad'); return; }
-
-  const hoje = pool.saqueHoje || 0;
-  const limiteGlobal = 100;
-  if(hoje >= limiteGlobal) { addLog('Limite diário global da pool atingido. Volta amanhã.','bad'); return; }
-
-  function calcLimiteSemanal(saldo) {
-    if(saldo >= 1000) return 5;
-    if(saldo >= 500)  return 3;
-    if(saldo >= 100)  return 2;
-    return 1;
-  }
-  const limiteSemanal = calcLimiteSemanal(pool.cristais);
+  if(!firebase.auth().currentUser) { addLog('Conecta a carteira primeiro.','bad'); return; }
 
   try {
-    const playerSnap = await fbDb().collection('players').doc(walletAddress).get();
-    const pData = playerSnap.data() || {};
-    const poolLog = pData.poolVendasLog || {};
-    const agora = new Date();
-    const startOfYear = new Date(agora.getFullYear(), 0, 1);
-    const weekNum = Math.ceil(((agora - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-    const semana_str = `${agora.getFullYear()}-W${weekNum}`;
-    const countSemana = poolLog.semana === semana_str ? (poolLog.count || 0) : 0;
-    if(countSemana >= limiteSemanal) {
-      addLog(`Limite semanal da pool atingido (${limiteSemanal}x). Volta na próxima semana. 🌙 A pool precisa de crescer para aumentar o limite.`,'bad');
-      return;
-    }
-  } catch(e2) { console.warn('poolVendasLog check error:', e2); }
-
-  const ratio = Math.min(2, pool.cristais / 1000);
-  const base  = ovo.raridade === 'Lendário' ? 1.0 : 0.5;
-  const minPreco = ovo.raridade === 'Lendário' ? 0.25 : 0.10;
-  const preco = Math.max(minPreco, parseFloat((base * ratio).toFixed(2)));
-
-  if(pool.cristais < preco) { addLog('Pool sem saldo suficiente.','bad'); return; }
-
-  try {
-    // Operação atómica: debita pool + credita cristais ao jogador + regista log
-    const batch = fbDb().batch();
-    batch.update(fbDb().collection('config').doc('pool'), {
-      cristais:  firebase.firestore.FieldValue.increment(-preco),
-      saqueHoje: firebase.firestore.FieldValue.increment(preco),
-      totalSaiu: firebase.firestore.FieldValue.increment(preco),
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id }),
     });
-    const logRef = fbDb().collection('config').doc('pool').collection('logs').doc();
-    batch.set(logRef, {
-      tipo:   'saida',
-      motivo: `Ovo ${ovo.raridade} vendido à pool`,
-      origem: walletAddress,
-      total:  preco,
-      pool:   -preco,
-      ts:     firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    // Credita cristais e actualiza poolVendasLog no mesmo batch
-    const agora2 = new Date();
-    const startOfYear2 = new Date(agora2.getFullYear(), 0, 1);
-    const weekNum2 = Math.ceil(((agora2 - startOfYear2) / 86400000 + startOfYear2.getDay() + 1) / 7);
-    const semana_str2 = `${agora2.getFullYear()}-W${weekNum2}`;
-    const countSemana2 = poolLog.semana === semana_str2 ? (poolLog.count || 0) + 1 : 1;
-    batch.update(fbDb().collection('players').doc(walletAddress), {
-      cristais:                firebase.firestore.FieldValue.increment(preco),
-      'gs.cristais':           firebase.firestore.FieldValue.increment(preco),
-      poolVendasLog:           { semana: semana_str2, count: countSemana2 },
-    });
-    await batch.commit();
+    const json = await resp.json();
+    if(!json.ok) throw new Error(json.erro || 'erro');
 
-    gs.cristais = (gs.cristais || 0) + preco;
     eggsInInventory.splice(idx, 1);
-    scheduleSave();
+    gs.cristais = json.novosCristais;
+    if(poolData) {
+      poolData.cristais  = (poolData.cristais  || 0) - json.preco;
+      poolData.saqueHoje = (poolData.saqueHoje || 0) + json.preco;
+      poolData.totalSaiu = (poolData.totalSaiu || 0) + json.preco;
+    }
     renderEggInventory();
     updateResourceUI();
-    addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${preco} 💎!`, 'good');
-    showFloat(`+${preco}💎`, '#a78bfa');
-    showBubble(`+${preco} 💎 da pool!`);
-  } catch(e) {
-    console.error(e);
-    addLog('Erro ao vender à pool.','bad');
+    renderPoolWidget();
+    addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${json.preco} 💎!`, 'good');
+    showFloat(`+${json.preco}💎`, '#a78bfa');
+    showBubble(`+${json.preco} 💎 da pool!`);
+  } catch(err) {
+    console.error('[sellEggToPool]', err.message);
+    addLog(`⚠️ ${err.message || 'Erro ao vender à pool.'}`, 'bad');
   }
 }
 

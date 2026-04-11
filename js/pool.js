@@ -253,64 +253,21 @@ async function loadPoolLogs(reset) {
 // ENTRADA NA POOL (taxas)
 // 100% das taxas vão para a pool — dev recebe via cron semanal separado
 // ═══════════════════════════════════════════
-async function addToPool(totalTaxa, motivo, origem) {
+async function addToPool(totalTaxa, motivo) {
   if(totalTaxa <= 0) return;
-
   try {
-    const batch = db.batch();
-
-    batch.update(db.collection('config').doc('pool'), {
-      cristais:    firebase.firestore.FieldValue.increment(totalTaxa),
-      totalEntrou: firebase.firestore.FieldValue.increment(totalTaxa),
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'taxa', idToken, valor: totalTaxa, motivo }),
     });
-
-    const logRef = db.collection('config').doc('pool').collection('logs').doc();
-    batch.set(logRef, {
-      tipo:   'entrada',
-      motivo,
-      origem: origem || walletAddress || 'sistema',
-      total:  totalTaxa,
-      pool:   totalTaxa,
-      ts:     firebase.firestore.FieldValue.serverTimestamp(),
-    });
-
-    await batch.commit();
-
+    const json = await resp.json();
+    if(!json.ok) throw new Error(json.erro || 'erro');
     if(poolData) {
       poolData.cristais    = (poolData.cristais    || 0) + totalTaxa;
       poolData.totalEntrou = (poolData.totalEntrou || 0) + totalTaxa;
     }
-
     renderPoolWidget();
   } catch(e) { console.warn('addToPool error:', e); }
-}
-
-// ═══════════════════════════════════════════
-// SAÍDA DA POOL (jogador vendeu ovo)
-// ═══════════════════════════════════════════
-async function sacoDaPool(cristais, destino, motivo) {
-  try {
-    const batch = db.batch();
-    batch.update(db.collection('config').doc('pool'), {
-      cristais:    firebase.firestore.FieldValue.increment(-cristais),
-      saqueHoje:   firebase.firestore.FieldValue.increment(cristais),
-      totalSaiu:   firebase.firestore.FieldValue.increment(cristais),
-    });
-    const logRef = db.collection('config').doc('pool').collection('logs').doc();
-    batch.set(logRef, {
-      tipo:    'saida',
-      motivo,
-      origem:  destino,
-      total:   cristais,
-      pool:    -cristais,
-      ts:      firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
-    if(poolData) {
-      poolData.cristais  = (poolData.cristais  || 0) - cristais;
-      poolData.saqueHoje = (poolData.saqueHoje || 0) + cristais;
-      poolData.totalSaiu = (poolData.totalSaiu || 0) + cristais;
-    }
-    renderPoolWidget();
-  } catch(e) { console.warn('sacoDaPool error:', e); }
 }

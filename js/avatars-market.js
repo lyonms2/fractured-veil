@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // AVATARES — Marketplace e gestão de slots
 // Depende de: db (global), walletAddress (global), playerData (global),
-//             addToPool() (pool.js), sacoDaPool() (pool.js),
+//             addToPool() (pool.js),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             updateSlots() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
