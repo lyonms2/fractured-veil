@@ -441,32 +441,37 @@
 }
 .item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
 
-/* ── MARKET MODAL ── */
-#marketModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
-#marketModal .modal-card { padding:0; max-height:calc(100vh - 48px); overflow-y:auto; }
-#marketModal .modal-header { position:sticky; top:0; z-index:1; background:var(--surface); }
-#marketModal .modal-scroll-body { overflow:visible; padding:10px 16px 16px; width:100%; box-sizing:border-box; }
+/* ── MODAIS COM SCROLL (market, coinshop, itemInv, eggInv) ──
+   height explícito no card é OBRIGATÓRIO para flex:1; min-height:0
+   funcionar no scroll body interno. max-height sozinho não chega. */
+#marketModal, #coinShopModal, #itemInvModal, #eggInvModal {
+  padding:12px; justify-content:center; align-items:center; overflow:hidden;
+}
+#marketModal .modal-card,
+#coinShopModal .modal-card,
+#itemInvModal .modal-card,
+#eggInvModal .modal-card {
+  padding:0;
+  height:calc(100vh - 48px);
+  max-height:calc(100vh - 48px);
+  overflow:hidden;
+  justify-content:flex-start;
+}
+#marketModal .modal-header,
+#coinShopModal .modal-header,
+#itemInvModal .modal-header,
+#eggInvModal .modal-header { flex-shrink:0; }
+#marketModal .modal-scroll-body,
+#coinShopModal .modal-scroll-body,
+#itemInvModal .modal-scroll-body,
+#eggInvModal .modal-scroll-body {
+  flex:1; min-height:0; overflow-y:auto;
+  width:100%; padding:10px 16px 16px; box-sizing:border-box;
+}
+
 .mkt-header { width:100%; padding:12px 14px 10px; border-bottom:1px solid rgba(201,168,76,.18); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(201,168,76,.03); }
 .mkt-header .mini-title { margin:0; font-size:10px; }
 .mkt-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 14px 14px; box-sizing:border-box; display:flex; flex-direction:column; gap:8px; }
-
-/* ── COIN SHOP MODAL ── */
-#coinShopModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
-#coinShopModal .modal-card { padding:0; max-height:calc(100vh - 48px); overflow-y:auto; }
-#coinShopModal .modal-header { position:sticky; top:0; z-index:1; background:var(--surface); }
-#coinShopModal .modal-scroll-body { overflow:visible; padding:10px 16px 16px; width:100%; box-sizing:border-box; }
-
-/* ── ITEM INV MODAL ── */
-#itemInvModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
-#itemInvModal .modal-card { padding:0; max-height:calc(100vh - 48px); overflow-y:auto; }
-#itemInvModal .modal-header { position:sticky; top:0; z-index:1; background:var(--surface); }
-#itemInvModal .modal-scroll-body { overflow:visible; padding:10px 16px 16px; width:100%; box-sizing:border-box; }
-
-/* ── EGG INV MODAL ── */
-#eggInvModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
-#eggInvModal .modal-card { padding:0; max-height:calc(100vh - 48px); overflow-y:auto; }
-#eggInvModal .modal-header { position:sticky; top:0; z-index:1; background:var(--surface); }
-#eggInvModal .modal-scroll-body { overflow:visible; padding:10px 16px 16px; width:100%; box-sizing:border-box; }
 
 /* hatchConfirmModal e simonModal — conteúdo fixo */
 #hatchConfirmModal, #simonModal, #jkpModal { overflow:hidden; }
