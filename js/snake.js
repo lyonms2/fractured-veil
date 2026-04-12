@@ -251,31 +251,37 @@ function _snakeEnd() {
       document.getElementById('snakeResult').className   = 'mini-result-box lose';
       document.getElementById('snakeReward').textContent = '';
     } else {
-      playSound && playSound(frac >= 0.8 ? 'win' : 'lose');
+      const cleared = frac >= 1.0;
+      playSound && playSound(cleared || frac >= 0.8 ? 'win' : 'lose');
       // Bónus por bola: cada elemento apanhado vale +XP e +🪙 extra
       const rb = rarityBonus();
       const vb = getVinculoBonus();
-      const d  = miniDifficulty();
-      const xpPorBola   = Math.round(4  * rb.xp     * vb.xpMult);
-      const coinPorBola = Math.round(3  * rb.moedas);
+      const xpPorBola   = Math.round(4 * rb.xp     * vb.xpMult);
+      const coinPorBola = Math.round(3 * rb.moedas);
       const xpBonus     = xpPorBola   * _snakeScore;
       const coinBonus   = coinPorBola * _snakeScore;
+      // Bónus de conclusão: +60% moedas e XP extras ao completar o maxScore
+      const clearXp   = cleared ? Math.round(xpBonus   * 0.6) : 0;
+      const clearCoin = cleared ? Math.round(coinBonus  * 0.6) : 0;
       // Recompensa base (fraca — o grosso vem do bónus por bola)
-      const r = miniReward(frac * 0.6, frac * 0.6, 1);
-      // Adiciona bónus
-      xp += xpBonus;
-      earnCoins(coinBonus);
+      const r = miniReward(frac * 0.6, frac * 0.6, cleared ? 3 : 1, cleared);
+      // Adiciona bónus por bola + bónus conclusão
+      xp += xpBonus + clearXp;
+      earnCoins(coinBonus + clearCoin);
       checkXP(); updateAllUI(); scheduleSave();
 
-      const totalXp   = r.xpGain + xpBonus;
-      const totalCoin = r.coinGain + coinBonus;
+      const totalXp   = r.xpGain + xpBonus + clearXp;
+      const totalCoin = r.coinGain + coinBonus + clearCoin;
 
       document.getElementById('snakeResult').textContent =
-        frac >= 0.8 ? `🏆 ${_snakeScore} elementos!` : `🐍 ${_snakeScore} elementos`;
+        cleared          ? `🏆 CAMPO LIMPO! (${_snakeScore} elementos)` :
+        frac >= 0.8      ? `🎉 ${_snakeScore} elementos!` :
+                           `🐍 ${_snakeScore} elementos`;
       document.getElementById('snakeResult').className =
-        'mini-result-box ' + (frac >= 0.8 ? 'win' : '');
-      document.getElementById('snakeReward').textContent =
-        `+${totalXp} XP · +${totalCoin} 🪙  (${_snakeScore}× bónus)`;
+        'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
+      document.getElementById('snakeReward').textContent = cleared
+        ? `+${totalXp} XP · +${totalCoin} 🪙  (${_snakeScore}× bola + bônus conclusão!)`
+        : `+${totalXp} XP · +${totalCoin} 🪙  (${_snakeScore}× bola)`;
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
     }
