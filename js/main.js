@@ -82,20 +82,14 @@ function gsSetTab(tab) {
   document.getElementById('gsTabLore').classList.toggle('active', tab === 'lore');
 }
 
-// ── Mover modais para body (evita overflow:hidden do .screen quebrar position:fixed) ──
-// e injectar .modal-card dentro de cada .mini-modal
-[...document.querySelectorAll('.mini-modal'), document.getElementById('gameSelector')]
-  .filter(Boolean)
-  .forEach(modal => {
-    document.body.appendChild(modal);
-    if(modal.classList.contains('mini-modal')) {
-      const hasScrollBody = modal.querySelector('.modal-scroll-body');
-      const card = document.createElement('div');
-      card.className = hasScrollBody ? 'modal-card has-scroll' : 'modal-card';
-      while (modal.firstChild) card.appendChild(modal.firstChild);
-      modal.appendChild(card);
-    }
-  });
+// ── Injectar .modal-card em todos os .mini-modal ──
+document.querySelectorAll('.mini-modal').forEach(modal => {
+  const hasScrollBody = modal.querySelector('.modal-scroll-body');
+  const card = document.createElement('div');
+  card.className = hasScrollBody ? 'modal-card has-scroll' : 'modal-card';
+  while (modal.firstChild) card.appendChild(modal.firstChild);
+  modal.appendChild(card);
+});
 
 setInterval(gameTick, 1000);
 updateResourceUI();
