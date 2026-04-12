@@ -72,6 +72,12 @@ function getGameState() {
     };
   });
 
+  // nomeBusca — campo de topo para pesquisa de amigos (nome do avatar activo, minúsculas)
+  const _activeSlot = avatarSlots[activeSlotIdx];
+  const nomeBusca = (_activeSlot?.hatched && !_activeSlot?.dead && _activeSlot?.nome)
+    ? _activeSlot.nome.split(',')[0].toLowerCase().trim()
+    : '';
+
   return {
     avatarSlots:   slotsSafe,
     activeSlotIdx: activeSlotIdx,
@@ -79,7 +85,8 @@ function getGameState() {
     cristais:      gs.cristais   || 0,
     extraSlots:    gs.extraSlots || 0,
     cambioLog:     window._cambioLog || null,
-    lastSeen:      Date.now()
+    lastSeen:      Date.now(),
+    nomeBusca,
   };
 }
 
