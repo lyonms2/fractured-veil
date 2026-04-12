@@ -360,6 +360,8 @@ async function executarVisita(tipo) {
     if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! +50 🪙 +${XP_VISITA} XP`, 'good');
 
     _renderVisitaOverlay();
+    // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)
+    setTimeout(() => _playVisitaAnim(tipo), 50);
   } catch(err) {
     if(btn) { btn.disabled = false; btn.classList.remove('disabled'); }
     if(typeof showToast === 'function') showToast(err.message, 'warn');
