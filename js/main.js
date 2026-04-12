@@ -73,14 +73,12 @@ window.desativarModoRepouso = typeof desativarModoRepouso !== "undefined" ? desa
 
 // ── GAME SELECTOR TABS ──
 function gsSetTab(tab) {
-  document.getElementById('gsGridPve').style.display    = tab === 'pve'    ? 'grid'  : 'none';
-  document.getElementById('gsGridPvp').style.display    = tab === 'pvp'    ? 'grid'  : 'none';
-  document.getElementById('gsGridLore').style.display   = tab === 'lore'   ? 'grid'  : 'none';
-  document.getElementById('gsGridAmigos').style.display = tab === 'amigos' ? 'block' : 'none';
-  document.getElementById('gsTabPve').classList.toggle('active',    tab === 'pve');
-  document.getElementById('gsTabPvp').classList.toggle('active',    tab === 'pvp');
-  document.getElementById('gsTabLore').classList.toggle('active',   tab === 'lore');
-  document.getElementById('gsTabAmigos').classList.toggle('active', tab === 'amigos');
+  document.getElementById('gsGridPve').style.display  = tab === 'pve'  ? 'grid' : 'none';
+  document.getElementById('gsGridPvp').style.display  = tab === 'pvp'  ? 'grid' : 'none';
+  document.getElementById('gsGridLore').style.display = tab === 'lore' ? 'grid' : 'none';
+  document.getElementById('gsTabPve').classList.toggle('active',  tab === 'pve');
+  document.getElementById('gsTabPvp').classList.toggle('active',  tab === 'pvp');
+  document.getElementById('gsTabLore').classList.toggle('active', tab === 'lore');
 }
 
 setInterval(gameTick, 1000);

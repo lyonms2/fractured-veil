@@ -12,12 +12,19 @@ let _amigosData    = null; // { amigos, pedidos, visitasLog }
 let _visitaAtual   = null; // perfil do amigo sendo visitado
 let _buscaTimeout  = null;
 
-// ── Abrir secção ─────────────────────────────────────────────
+// ── Abrir / fechar overlay ───────────────────────────────────
 async function openAmigos() {
-  gsSetTab('amigos');
+  const overlay = document.getElementById('amigosOverlay');
+  if(overlay) overlay.style.display = 'flex';
   await _carregarAmigos();
 }
 window.openAmigos = openAmigos;
+
+function fecharAmigos() {
+  const overlay = document.getElementById('amigosOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+window.fecharAmigos = fecharAmigos;
 
 // ── Carregar dados da API ────────────────────────────────────
 async function _carregarAmigos() {
