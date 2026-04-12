@@ -260,10 +260,11 @@ function _bjEndRound(result) {
   const masterContinue = _bjTier === 3 && isWin && _bjWins < _bjRoundsTarget;
 
   if(masterContinue) {
-    const d = miniDifficulty();
+    // Pequena recompensa por cada vitória intermediária no modo Mestre
+    const rPartial = miniReward(0.4, 0.35, 1, false);
     resultEl.textContent = `♠ VENCEU! (${_bjWins}/${_bjRoundsTarget})`;
     resultEl.className   = 'mini-result-box win';
-    rewardEl.textContent = '';
+    rewardEl.textContent = `+${rPartial.xpGain} XP · +${rPartial.coinGain} 🪙`;
     playSound('win');
     showBubble(`${_bjWins}/${_bjRoundsTarget} ♠`);
     againBtn.style.display = 'inline-block';
@@ -280,20 +281,25 @@ function _bjEndRound(result) {
   let msg = '', label = '';
 
   if(result === 'blackjack') {
-    xpMult = 1.5; coinMult = 1.5; vinculo = 5;
+    // Natural blackjack: evento raro, melhor prêmio
+    xpMult = 1.8; coinMult = 1.8; vinculo = 5;
     label  = '♠ BLACKJACK!';
     msg    = 'Blackjack! ♠';
     playSound('win');
   } else if(result === 'win') {
-    const mult = _bjDoubled ? 1.3 : 1.0;
-    xpMult = mult; coinMult = mult; vinculo = 3;
+    // Double down arriscado: recompensa maior
+    const mult = _bjDoubled ? 1.6 : 1.1;
+    // Bônus extra por completar o modo Mestre (3 vitórias)
+    const masterBonus = (_bjTier === 3 && _bjWins >= _bjRoundsTarget) ? 0.4 : 0;
+    xpMult = mult + masterBonus; coinMult = mult + masterBonus; vinculo = 3;
     label  = _bjTier === 3
-      ? `♠ ${_bjWins}/${_bjRoundsTarget} — VITÓRIA!`
-      : '♠ VOCÊ VENCEU!';
-    msg    = 'Venceu! ♠';
+      ? `♠ MESTRE! (${_bjWins}/${_bjRoundsTarget})`
+      : _bjDoubled ? '♠ DOUBLE DOWN!' : '♠ VOCÊ VENCEU!';
+    msg    = _bjDoubled ? 'Double down! ♠' : 'Venceu! ♠';
     playSound('win');
   } else if(result === 'push') {
-    xpMult = 0.4; coinMult = 0.3; vinculo = 1;
+    // Empate: só XP, sem moedas
+    xpMult = 0.4; coinMult = 0; vinculo = 1;
     label  = '🤝 EMPATE';
     msg    = 'Empate 🤝';
     playSound('lore_choice');
@@ -308,7 +314,12 @@ function _bjEndRound(result) {
 
   if(isWin || isPush) {
     const r = miniReward(xpMult, coinMult, vinculo, isWin);
-    rewardEl.textContent = `+${r.xpGain} XP · +${r.coinGain} 🪙`;
+    const parts = [`+${r.xpGain} XP`];
+    if(r.coinGain > 0) parts.push(`+${r.coinGain} 🪙`);
+    if(result === 'blackjack') parts.push('(blackjack!)');
+    else if(_bjDoubled) parts.push('(double down!)');
+    else if(_bjTier === 3 && _bjWins >= _bjRoundsTarget) parts.push('(bônus Mestre!)');
+    rewardEl.textContent = parts.join(' · ');
   } else {
     rewardEl.textContent = '';
   }
