@@ -194,6 +194,20 @@
   background:rgba(0,0,0,.5); border-radius:50%; filter:blur(3px);
 }
 
+/* ── Egg-ready badge (mostra no avatar quando pronto para botar) ── */
+#eggReadyBadge {
+  position:absolute; bottom:8px; right:4px;
+  font-size:18px; line-height:1;
+  filter: drop-shadow(0 0 6px rgba(201,168,76,.8));
+  animation: egg-ready-pulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+@keyframes egg-ready-pulse {
+  0%,100% { transform: scale(1)   translateY(0);   opacity: 1; }
+  50%      { transform: scale(1.2) translateY(-4px); opacity: .85; }
+}
+
 /* speech bubble */
 .bubble {
   position:absolute; top:-42px; left:50%; transform:translateX(-50%);

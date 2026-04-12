@@ -281,12 +281,15 @@ function hatch() {
   syncEasterEggs();
 
   const btnLayEgg = document.getElementById('btnLayEgg');
+  const isAdult = getFase() === 3;
+  const eggReady = isAdult && eggLayCooldown === 0;
   if(btnLayEgg) {
-    const isAdult = getFase() === 3;
     btnLayEgg.style.display = isAdult ? 'flex' : 'none';
-    btnLayEgg.style.opacity = (isAdult && eggLayCooldown === 0) ? '1' : '.4';
+    btnLayEgg.style.opacity = eggReady ? '1' : '.4';
     btnLayEgg.title = eggLayCooldown > 0 ? `Pronto em ~${Math.ceil(eggLayCooldown*60/3600)}h` : 'Pronto para botar!';
   }
+  const eggReadyBadge = document.getElementById('eggReadyBadge');
+  if(eggReadyBadge) eggReadyBadge.style.display = eggReady ? 'block' : 'none';
 
   renderEggInventory();
   saveToFirebase();

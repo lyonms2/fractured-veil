@@ -616,6 +616,7 @@
               <div id="equippedItemsDisplay"></div>
               <div class="creature-svg-wrap" id="creatureSVG"></div>
               <div class="creature-shadow"></div>
+              <div id="eggReadyBadge" style="display:none;">🥚</div>
               <div class="bubble" id="bubble">Olá!</div>
               <div class="zzz-bubble" id="zzz1" style="bottom:115px;left:56%;font-size:11px;animation-delay:0s">z</div>
               <div class="zzz-bubble" id="zzz2" style="bottom:132px;left:63%;font-size:14px;animation-delay:.9s">Z</div>
@@ -698,8 +699,9 @@
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
           <span class="icon">🥚</span><span data-i18n="btn.lay_egg">BOTAR OVO</span>
         </button>
-        <button class="btn-action" id="btnAmigos" onclick="openAmigos()" style="border-color:rgba(90,180,232,.4);color:#5ab4e8;">
+        <button class="btn-action" id="btnAmigos" onclick="openAmigos()" style="border-color:rgba(90,180,232,.4);color:#5ab4e8;position:relative;">
           <span class="icon">👥</span><span>AMIGOS</span>
+          <span id="amigosBadge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;background:#e74c3c;border-radius:50%;font-size:8px;font-family:'Cinzel',serif;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;border:1.5px solid var(--bg);"></span>
         </button>
       </div>
 

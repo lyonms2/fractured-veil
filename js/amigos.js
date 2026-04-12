@@ -12,6 +12,17 @@ let _amigosData    = null; // { amigos, pedidos, visitasLog }
 let _visitaAtual   = null; // perfil do amigo sendo visitado
 let _buscaTimeout  = null;
 
+function _updateAmigosBadge(count) {
+  const badge = document.getElementById('amigosBadge');
+  if(!badge) return;
+  if(count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 // ── Abrir / fechar overlay ───────────────────────────────────
 async function openAmigos() {
   const overlay = document.getElementById('amigosOverlay');
@@ -38,6 +49,7 @@ async function _carregarAmigos() {
     const json    = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
     _amigosData = { amigos: json.amigos, pedidos: json.pedidos, visitasLog: json.visitasLog };
+    _updateAmigosBadge(json.pedidos.length);
     _renderAmigos();
   } catch(err) {
     if(el) el.innerHTML = `<div class="amigos-empty">Erro: ${esc(err.message)}</div>`;
@@ -174,6 +186,7 @@ async function amigoAceitar(alvoUid) {
     if(_amigosData) {
       _amigosData.amigos[alvoUid] = { nome: json.nomeAlvo || '???', ts: Date.now() };
       _amigosData.pedidos = _amigosData.pedidos.filter(p => p.de !== alvoUid);
+      _updateAmigosBadge(_amigosData.pedidos.length);
     }
     _renderAmigos();
   } catch(err) {
@@ -193,7 +206,10 @@ async function amigoRecusar(alvoUid) {
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
-    if(_amigosData) _amigosData.pedidos = _amigosData.pedidos.filter(p => p.de !== alvoUid);
+    if(_amigosData) {
+      _amigosData.pedidos = _amigosData.pedidos.filter(p => p.de !== alvoUid);
+      _updateAmigosBadge(_amigosData.pedidos.length);
+    }
     _renderAmigos();
   } catch(err) {
     if(typeof showToast === 'function') showToast(err.message, 'warn');
