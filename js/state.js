@@ -144,10 +144,12 @@ const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v <
 const FASE_SIZES = [75, 100, 120, 140];
 const getFaseSize = () => FASE_SIZES[getFase()];
 function xpParaNivel(n) {
-  if(n < 5)  return 80;
-  if(n < 10) return 150;
-  if(n < 17) return 280;
-  return 500;
+  if(n < 5)  return 400;
+  if(n < 10) return 800;
+  if(n < 17) return 1500;
+  if(n < 25) return 2500;
+  if(n < 35) return 4000;
+  return 6000;
 }
 function rarityBonus() {
   if(!avatar) return { xp:1, moedas:1, decay:1, eggs:1, cooldown:1, burnBonus:0, shopDiscount:0 };
