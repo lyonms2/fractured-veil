@@ -210,14 +210,21 @@
 ══════════════════════════════════════ */
 #minaModal {
   position:fixed; inset:0; z-index:150;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none;
   transition:opacity .3s ease;
   padding:12px;
-  overflow-y:auto;
+  overflow:hidden;
 }
 #minaModal.open { opacity:1; pointer-events:all; }
+#minaModal .modal-card {
+  justify-content:flex-start;
+  overflow-y:auto;
+  max-height:100%;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
 
 .mina-info-row {
   display:flex; align-items:center; justify-content:space-between;
