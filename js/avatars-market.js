@@ -96,11 +96,13 @@ function buildListingCard(l) {
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
       <div class="av-svg-wrap">
-        ${svgHtml}
-        <button class="mkt-avatar-zoom-btn" title="Ampliar"
-          data-el="${l.elemento}" data-rar="${l.raridade}" data-seed="${l.seed||0}"
-          data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
-          onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
+        <div class="av-zoom-wrap">
+          ${svgHtml}
+          <button class="mkt-avatar-zoom-btn" title="Ampliar"
+            data-el="${l.elemento}" data-rar="${l.raridade}" data-seed="${l.seed||0}"
+            data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
+            onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
+        </div>
       </div>
       <div class="av-name">${esc(nomeProp)}</div>
       ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
@@ -373,11 +375,13 @@ function renderSlots() {
           ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
         </div>
         <div class="slot-svg-wrap">
-          ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
-          <button class="mkt-avatar-zoom-btn" title="Ampliar"
-            data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
-            data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
-            onclick="mktOpenZoomBtn(this)">🔍</button>
+          <div class="av-zoom-wrap">
+            ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
+            <button class="mkt-avatar-zoom-btn" title="Ampliar"
+              data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
+              data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
+              onclick="mktOpenZoomBtn(this)">🔍</button>
+          </div>
         </div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>

@@ -965,7 +965,8 @@ function _mbnActive(btn) {
 
 <!-- ── AVATAR ZOOM OVERLAY ── -->
 <style>
-.mkt-avatar-zoom-btn{position:absolute;top:3px;right:3px;z-index:15;background:rgba(13,11,26,.75);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:3px 6px;font-size:12px;cursor:pointer;color:#fff;line-height:1;transition:background .15s,transform .15s;-webkit-tap-highlight-color:transparent;}
+.av-zoom-wrap{position:relative;display:inline-block;}
+.mkt-avatar-zoom-btn{position:absolute;bottom:3px;right:3px;z-index:15;background:rgba(13,11,26,.75);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:3px 6px;font-size:12px;cursor:pointer;color:#fff;line-height:1;transition:background .15s,transform .15s;-webkit-tap-highlight-color:transparent;}
 .mkt-avatar-zoom-btn:hover{background:rgba(60,40,120,.7);transform:scale(1.1);}
 #mktAvatarZoomOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:950;align-items:center;justify-content:center;}
 .mkt-zoom-modal{background:#0d0b1a;border:1px solid rgba(167,139,250,.25);border-radius:18px;padding:24px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;max-width:320px;width:90%;animation:mkt-zoom-in .25s cubic-bezier(.34,1.5,.64,1) forwards;}
