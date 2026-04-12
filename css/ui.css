@@ -804,7 +804,7 @@
 .amigos-btn-remover:hover { opacity: .75; }
 
 /* Overlay de visita */
-.visita-avatar { text-align: center; margin-bottom: 6px; }
+.visita-avatar { display: flex; justify-content: center; margin-bottom: 6px; }
 .visita-nome {
   text-align: center;
   font-family: 'Cinzel', serif;

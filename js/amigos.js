@@ -278,8 +278,11 @@ function _renderVisitaOverlay() {
   ];
 
   body.innerHTML = `
-    <div class="visita-avatar">
+    <div class="visita-avatar" style="position:relative;display:inline-block;">
       ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, Math.ceil((perfil.nivel || 1) / 5))}
+      <button class="avatar-zoom-btn" style="position:absolute;bottom:0;right:0;"
+        onclick="openAvatarZoomData('${esc(perfil.elemento)}','${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
+        title="Ampliar avatar">🔍</button>
     </div>
     <div class="visita-nome">${esc(perfil.nome)}</div>
     <div class="visita-meta">NV ${perfil.nivel} · ${esc(perfil.raridade)} · ${esc(perfil.elemento)}</div>
