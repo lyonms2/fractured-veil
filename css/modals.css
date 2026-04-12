@@ -36,11 +36,29 @@
   animation: coin-spend-fly .9s cubic-bezier(.2,.8,.4,1) forwards;
 }
 
+/* ── BACKDROP COMPARTILHADO ── */
+#miniModalBackdrop {
+  position:fixed; inset:0; z-index:149;
+  background:rgba(4,3,10,.92);
+  display:none; pointer-events:none;
+}
+body:has(.mini-modal.open) #miniModalBackdrop,
+body:has(#gameSelector.open) #miniModalBackdrop,
+body:has(#arenaModal.open) #miniModalBackdrop,
+body:has(#roubaMontModal.open) #miniModalBackdrop,
+body:has(#batalhaNavalModal.open) #miniModalBackdrop,
+body:has(#jkpModal.open) #miniModalBackdrop,
+body:has(#minaModal.open) #miniModalBackdrop { display:block; pointer-events:all; }
+
 /* ── GAME SELECTOR ── */
 #gameSelector {
-  position:fixed; inset:0; z-index:150;
+  position:fixed; z-index:150;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:calc(100% - 24px); max-width:480px;
+  max-height:calc(100dvh - 24px);
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  background:rgba(4,3,10,.97);
+  background:var(--surface);
+  border:1px solid rgba(201,168,76,.18); border-radius:14px;
   opacity:0; pointer-events:none; transition:opacity .3s;
   gap:8px; padding:12px 14px;
   overflow-y:auto;
@@ -145,12 +163,16 @@
 
 /* ── SHARED MINI MODAL ── */
 .mini-modal {
-  position:fixed; inset:0; z-index:150;
+  position:fixed; z-index:150;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:calc(100% - 24px); max-width:460px;
+  max-height:calc(100dvh - 24px);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:rgba(4,3,10,.97); opacity:0; pointer-events:none;
+  background:var(--surface);
+  border:1px solid rgba(201,168,76,.12); border-radius:14px;
+  opacity:0; pointer-events:none;
   transition:opacity .3s; padding:14px; gap:0;
-  height:100%;
-  overflow: hidden;
+  overflow:hidden;
 }
 .mini-modal.open { opacity:1; pointer-events:all; }
 .mini-title {
@@ -491,9 +513,13 @@
 #arenaModal,
 #roubaMontModal,
 #batalhaNavalModal {
-  position:fixed; inset:0; z-index:150;
+  position:fixed; z-index:150;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:calc(100% - 24px); max-width:500px;
+  max-height:calc(100dvh - 24px);
   display:flex; flex-direction:column;
-  background:rgba(4,3,10,.97);
+  background:var(--surface);
+  border:1px solid rgba(201,168,76,.12); border-radius:14px;
   opacity:0; pointer-events:none; transition:opacity .3s;
   overflow-y:auto; overflow-x:hidden;
 }

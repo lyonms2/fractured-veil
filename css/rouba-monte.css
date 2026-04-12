@@ -4,13 +4,10 @@
 ══════════════════════════════════════════════════════════════ */
 
 #roubaMontModal {
-  position: fixed; inset: 0; z-index: 150;
-  display: flex; flex-direction: column; align-items: center;
-  background: rgba(4,3,10,.97);
-  opacity: 0; pointer-events: none;
-  transition: opacity .3s;
+  /* layout controlado por modals.css */
   padding: 10px 12px;
   gap: 12px;
+  align-items: center;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
