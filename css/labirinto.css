@@ -60,23 +60,17 @@
   pointer-events: none;
 }
 
-/* ── Desktop: overlay fixo centrado ── */
+/* ── Desktop: modal card com scroll interno ── */
 @media (min-width: 769px) {
   #mazeModal {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 500 !important;
-    border-radius: 0 !important;
-    background: rgba(4,3,10,.97) !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 12px !important;
+  }
+  #mazeModal .modal-card {
     justify-content: center;
     gap: 8px;
     padding: 20px 24px !important;
-    max-height: 100vh;
+    max-height: calc(100vh - 48px);
     overflow: hidden;
-    box-sizing: border-box;
   }
 
   #mazeCanvas {
