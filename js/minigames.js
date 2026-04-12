@@ -78,12 +78,14 @@ function updateMemInfo() {
 
 function memVictory() {
   playSound('win');
-  const perfMult  = memErrors === 0 ? 1.5 : memErrors <= 2 ? 1.2 : 1.0;
-  const humorGain = memErrors === 0 ? 20  : memErrors <= 2 ? 15  : 10;
+  const xpMult    = Math.max(0.5, 1.5 - memErrors * 0.08);
+  const coinMult  = Math.max(0.2, 1.5 - memErrors * 0.15);
+  const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : memErrors <= 5 ? 10 : 5;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
-  const r = miniReward(perfMult, perfMult, 3, true);
-  document.getElementById('memResult').textContent = memErrors === 0 ? '🌟 PERFEITO!' : '✓ COMPLETO!';
+  const r = miniReward(xpMult, coinMult, 3, true);
+  const label = memErrors === 0 ? '🌟 PERFEITO!' : memErrors <= 3 ? '✓ COMPLETO!' : '😅 COMPLETO';
+  document.getElementById('memResult').textContent = label;
   document.getElementById('memResult').className   = 'mini-result-box win';
   document.getElementById('memReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
   document.getElementById('memAgainBtn').style.display = 'inline-block';
