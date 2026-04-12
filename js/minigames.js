@@ -105,11 +105,11 @@ const SIMON_ELEMS = [
   { emoji:'🌑', color:'#4a4a6a' },
   { emoji:'✨', color:'#c9a84c' },
 ];
-let simonSeq = [], simonStep = 0, simonPlayerTurn = false, simonRound = 0;
+let simonSeq = [], simonStep = 0, simonPlayerTurn = false, simonRound = 0, simonCorrectHits = 0;
 
 function startSimon() {
   if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
-  simonSeq = []; simonStep = 0; simonPlayerTurn = false; simonRound = 0;
+  simonSeq = []; simonStep = 0; simonPlayerTurn = false; simonRound = 0; simonCorrectHits = 0;
   document.getElementById('simonResult').textContent = '';
   document.getElementById('simonResult').className   = 'mini-result-box';
   document.getElementById('simonReward').textContent = '';
@@ -179,6 +179,7 @@ function simonPlayerClick(idx) {
   }
   playSimonTone(idx % 5);
   simonStep++;
+  simonCorrectHits++;
   if(simonStep === simonSeq.length) {
     simonPlayerTurn = false;
     SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
@@ -189,10 +190,18 @@ function simonPlayerClick(idx) {
 
 function simonVictory() {
   playSound('win');
+  const d       = miniDifficulty();
+  const maxRounds = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
+  // Total de acertos possíveis = 1+2+...+maxRounds
+  const maxHits  = maxRounds * (maxRounds + 1) / 2;
+  const frac     = maxHits > 0 ? simonCorrectHits / maxHits : 1;
+  // Moedas: proporcional aos acertos + bônus conclusão
+  const coinMult = frac + 0.6;
+  const xpMult   = frac + 0.3;
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
-  const r = miniReward(1.3, 1.3, 3, true);
-  document.getElementById('simonResult').textContent = '🎵 MESTRE!';
+  const r = miniReward(xpMult, coinMult, 3, true);
+  document.getElementById('simonResult').textContent = '🎵 MESTRE! (bônus conclusão!)';
   document.getElementById('simonResult').className   = 'mini-result-box win';
   document.getElementById('simonReward').textContent = `+20 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
@@ -205,23 +214,26 @@ function simonGameOver() {
   simonPlayerTurn = false;
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
-  const _sd = miniDifficulty();
-  const _sm = _sd.tier === 0 ? 4 : _sd.tier === 1 ? 6 : _sd.tier === 2 ? 8 : 10;
-  const roundsCompleted = Math.max(0, simonRound - 1);
-  const frac = roundsCompleted / _sm;
+  const d         = miniDifficulty();
+  const maxRounds = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
+  const maxHits   = maxRounds * (maxRounds + 1) / 2;
+  const frac      = maxHits > 0 ? simonCorrectHits / maxHits : 0;
 
   applyGameCost();
-  if(frac > 0) {
-    const r = miniReward(frac * 0.8, frac * 0.8, 1);
-    document.getElementById('simonReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+  const rewardText = [];
+  if(frac >= 0.05) {
+    const r = miniReward(frac * 0.8, frac * 0.9, 1);
+    if(r.xpGain > 0)   rewardText.push(`+${r.xpGain} XP`);
+    if(r.coinGain > 0) rewardText.push(`+${r.coinGain} 🪙`);
   } else {
-    document.getElementById('simonReward').textContent = '';
     scheduleSave();
   }
 
   vitals.humor = Math.min(100, vitals.humor + 5);
-  document.getElementById('simonResult').textContent = '✗ ERROU!';
+  const pct = Math.round(frac * 100);
+  document.getElementById('simonResult').textContent = `✗ ERROU! (${simonCorrectHits} acertos)`;
   document.getElementById('simonResult').className   = 'mini-result-box lose';
+  document.getElementById('simonReward').textContent = rewardText.join('  ');
   document.getElementById('simonSeqDisplay').textContent = '';
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   showBubble('Quase... 😔');
