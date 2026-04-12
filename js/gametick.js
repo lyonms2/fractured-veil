@@ -360,10 +360,18 @@ function gameTick() {
 
   // ── POSTURA DE OVOS (apenas fase Adulto) ──
   if(getFase() === 3) {
+    // Recalcula a partir do timestamp real — imune a drift do setInterval
+    if(window._eggLayReadyAt && window._eggLayReadyAt > Date.now()) {
+      eggLayCooldown = Math.ceil((window._eggLayReadyAt - Date.now()) / 60000);
+    } else {
+      eggLayCooldown = 0;
+      window._eggLayReadyAt = 0;
+    }
     if(eggLayCooldown > 0) {
-      eggLayCooldown--;
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = 'none';
+      const corner = document.getElementById('btnLayEggCorner');
+      if(corner) corner.style.display = 'none';
     } else {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = '';
