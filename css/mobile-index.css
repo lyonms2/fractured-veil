@@ -534,6 +534,7 @@
   }
 
   /* ── Ocultar elementos desnecessários no hero card ── */
+  #btnLayEgg                           { display: none !important; }
   body.fv-has-creature #idDesc         { display: none !important; }
   body.fv-has-creature #statusCard     { display: none !important; }
   body.fv-has-creature #rarityBonusTxt { display: none !important; }

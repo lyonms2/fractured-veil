@@ -39,6 +39,7 @@ window.openItemInventory = typeof openItemInventory !== "undefined" ? openItemIn
 window.openMarket = typeof openMarket !== "undefined" ? openMarket : ()=>{};
 window.openMinigame = typeof openMinigame !== "undefined" ? openMinigame : ()=>{};
 window.petCreature = typeof petCreature !== "undefined" ? petCreature : ()=>{};
+window.avatarClick = typeof avatarClick !== "undefined" ? avatarClick : ()=>{};
 window.playCreature = typeof playCreature !== "undefined" ? playCreature : ()=>{};
 window.selectEggToSell = typeof selectEggToSell !== "undefined" ? selectEggToSell : ()=>{};
 window.simonPlayerClick = typeof simonPlayerClick !== "undefined" ? simonPlayerClick : ()=>{};
