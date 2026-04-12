@@ -278,11 +278,13 @@ function _renderVisitaOverlay() {
   ];
 
   body.innerHTML = `
-    <div class="visita-avatar" style="position:relative;display:inline-block;">
-      ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, Math.ceil((perfil.nivel || 1) / 5))}
-      <button class="avatar-zoom-btn" style="position:absolute;bottom:0;right:0;"
-        onclick="openAvatarZoomData('${esc(perfil.elemento)}','${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
-        title="Ampliar avatar">🔍</button>
+    <div class="visita-avatar">
+      <div id="visitaAvatarWrap" class="creature-wrap" style="position:relative;display:inline-block;width:80px;height:80px;">
+        ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, Math.ceil((perfil.nivel || 1) / 5))}
+        <button class="avatar-zoom-btn" style="position:absolute;bottom:0;right:0;"
+          onclick="openAvatarZoomData('${esc(perfil.elemento)}','${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
+          title="Ampliar avatar">🔍</button>
+      </div>
     </div>
     <div class="visita-nome">${esc(perfil.nome)}</div>
     <div class="visita-meta">NV ${perfil.nivel} · ${esc(perfil.raridade)} · ${esc(perfil.elemento)}</div>
@@ -320,6 +322,7 @@ async function executarVisita(tipo) {
   if(!_visitaAtual) return;
   const btn = document.getElementById(`visitaBtn-${tipo}`);
   if(btn) { btn.disabled = true; btn.classList.add('disabled'); }
+  _playVisitaAnim(tipo);
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -362,6 +365,20 @@ async function executarVisita(tipo) {
   }
 }
 window.executarVisita = executarVisita;
+
+// ── Animação do avatar na visita ────────────────────────────
+const _VISITA_ANIM = { alimentar: 'anim-eat', brincar: 'anim-play', limpar: 'anim-clean' };
+
+function _playVisitaAnim(tipo) {
+  const w = document.getElementById('visitaAvatarWrap');
+  if(!w) return;
+  const cls = _VISITA_ANIM[tipo];
+  if(!cls) return;
+  w.classList.remove('anim-eat', 'anim-play', 'anim-clean');
+  void w.offsetWidth; // força reflow para reiniciar a animação
+  w.classList.add(cls);
+  setTimeout(() => w.classList.remove(cls), 1000);
+}
 
 // ── Utilitários ──────────────────────────────────────────────
 function _formatTs(ts) {
