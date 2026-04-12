@@ -441,26 +441,26 @@
 .item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
 
 /* ── MARKET MODAL ── */
-#marketModal { padding:12px; justify-content:flex-start; align-items:center; overflow-y:auto; }
-#marketModal .modal-card { padding:0; justify-content:flex-start; overflow:hidden; height:calc(100vh - 48px); max-height:calc(100vh - 48px); flex-shrink:0; }
+#marketModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
+#marketModal .modal-card { padding:0; justify-content:flex-start; display:flex; flex-direction:column; overflow:hidden; max-height:calc(100vh - 48px); }
 #marketModal .modal-scroll-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 16px 16px; box-sizing:border-box; }
 .mkt-header { width:100%; padding:12px 14px 10px; border-bottom:1px solid rgba(201,168,76,.18); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(201,168,76,.03); }
 .mkt-header .mini-title { margin:0; font-size:10px; }
 .mkt-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 14px 14px; box-sizing:border-box; display:flex; flex-direction:column; gap:8px; }
 
 /* ── COIN SHOP MODAL ── */
-#coinShopModal { padding:12px; justify-content:flex-start; align-items:center; overflow-y:auto; }
-#coinShopModal .modal-card { padding:0; justify-content:flex-start; overflow:hidden; height:calc(100vh - 48px); max-height:calc(100vh - 48px); flex-shrink:0; }
+#coinShopModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
+#coinShopModal .modal-card { padding:0; justify-content:flex-start; display:flex; flex-direction:column; overflow:hidden; max-height:calc(100vh - 48px); }
 #coinShopModal .modal-scroll-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 16px 16px; box-sizing:border-box; }
 
 /* ── ITEM INV MODAL ── */
-#itemInvModal { padding:12px; justify-content:flex-start; align-items:center; overflow-y:auto; }
-#itemInvModal .modal-card { padding:0; justify-content:flex-start; overflow:hidden; height:calc(100vh - 48px); max-height:calc(100vh - 48px); flex-shrink:0; }
+#itemInvModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
+#itemInvModal .modal-card { padding:0; justify-content:flex-start; display:flex; flex-direction:column; overflow:hidden; max-height:calc(100vh - 48px); }
 #itemInvModal .modal-scroll-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 16px 16px; box-sizing:border-box; }
 
 /* ── EGG INV MODAL ── */
-#eggInvModal { padding:12px; justify-content:flex-start; align-items:center; overflow-y:auto; }
-#eggInvModal .modal-card { padding:0; justify-content:flex-start; overflow:hidden; height:calc(100vh - 48px); max-height:calc(100vh - 48px); flex-shrink:0; }
+#eggInvModal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
+#eggInvModal .modal-card { padding:0; justify-content:flex-start; display:flex; flex-direction:column; overflow:hidden; max-height:calc(100vh - 48px); }
 #eggInvModal .modal-scroll-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 16px 16px; box-sizing:border-box; }
 
 /* hatchConfirmModal e simonModal — conteúdo fixo */
