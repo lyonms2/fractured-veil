@@ -19,6 +19,8 @@
 .btn-action span { z-index:1; pointer-events:none; }
 .btn-action.disabled { opacity:.3; cursor:not-allowed; pointer-events:none; }
 .btn-action.active-sleep { border-color:var(--raro); color:var(--raro); }
+#btnAmigos { overflow:visible; }
+#btnAmigos::before { display:none; }
 
 /* ══════════════════════════════════════
    RIGHT PANEL
