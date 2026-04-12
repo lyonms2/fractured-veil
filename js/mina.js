@@ -197,15 +197,20 @@ function minaFlag(e, r, c) {
 
 function minaVictory() {
   playSound('win');
-  const d         = miniDifficulty();
-  const xpMult    = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
-  const humorGain = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
+  const d          = miniDifficulty();
+  const totalSafe  = minaRows * minaCols - minaMines;
+  // Moedas: proporcional às casas reveladas (=100%) + bônus limpeza +60%
+  const coinMult   = 1.0 + 0.6;
+  // XP: escala com dificuldade
+  const xpMult     = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
+  const humorGain  = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
-  const r = miniReward(xpMult, xpMult, 3, true);
-  document.getElementById('minaResult').textContent = d.tier >= 2 ? '🌟 MESTRE!' : '✅ LIMPO!';
+  const r = miniReward(xpMult, coinMult, 3, true);
+  const label = d.tier >= 3 ? '🌟 CAMPO LIMPO!' : d.tier >= 2 ? '💎 CAMPO LIMPO!' : '✅ CAMPO LIMPO!';
+  document.getElementById('minaResult').textContent = label;
   document.getElementById('minaResult').className   = 'mini-result-box win';
-  document.getElementById('minaReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
+  document.getElementById('minaReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙 (bônus limpeza!)`;
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
   showBubble(d.tier >= 2 ? 'Limpou o campo! 💎' : 'Sobreviveu! ✅');
   addLog(`Campo Minado: VITÓRIA! +${r.xpGain}XP +${r.coinGain}🪙`, 'good');
@@ -215,18 +220,25 @@ function minaGameOver() {
   const totalSafe = minaRows * minaCols - minaMines;
   const frac      = totalSafe > 0 ? minaRevealed / totalSafe : 0;
   vitals.humor = Math.min(100, vitals.humor + 5);
-
   applyGameCost();
-  if(frac > 0.1) {
-    const r = miniReward(frac * 0.6, frac * 0.6, 1);
-    document.getElementById('minaReward').textContent = `+${r.xpGain} XP  +${r.coinGain} 🪙`;
+
+  // Moedas e XP proporcionais às casas reveladas, sem bônus de limpeza
+  const rewardText = [];
+  if(frac >= 0.05) {
+    const coinMult = frac * 0.9;
+    const xpMult   = frac * 0.7;
+    const r = miniReward(xpMult, coinMult, 1);
+    if(r.xpGain > 0)   rewardText.push(`+${r.xpGain} XP`);
+    if(r.coinGain > 0) rewardText.push(`+${r.coinGain} 🪙`);
   } else {
     scheduleSave();
   }
 
-  document.getElementById('minaResult').textContent = '💥 BOOM!';
+  const pct = Math.round(frac * 100);
+  document.getElementById('minaResult').textContent = `💥 BOOM! (${pct}% revelado)`;
   document.getElementById('minaResult').className   = 'mini-result-box lose';
+  document.getElementById('minaReward').textContent = rewardText.join('  ');
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
   showBubble('BOOM! 💥');
-  addLog(`Campo Minado: Explodiu! ${Math.round(frac*100)}% limpo`, 'bad');
+  addLog(`Campo Minado: Explodiu! ${pct}% limpo`, 'bad');
 }
