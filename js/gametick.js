@@ -296,6 +296,14 @@ function gameTick() {
     vitals.higiene = Math.max(0, vitals.higiene - (0.12 * GAME_SPEED      * _eb.higieneDecay));
   }
 
+  // Auto-sleep: energia crítica e nenhum modal aberto
+  if(!sleeping && !modoRepouso && hatched && !dead && vitals.energia < 5) {
+    if(!ModalManager.anyOpen()) {
+      showBubble('Exausto... 😴 dormindo!');
+      setTimeout(() => { if(typeof startSleep === 'function') startSleep(); }, 600);
+    }
+  }
+
   // Penalidades de saúde — só no modo ativo (não durante repouso/sono)
   if(!sleeping && !modoRepouso) {
     if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - (0.3  * GAME_SPEED));
