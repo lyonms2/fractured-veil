@@ -374,13 +374,14 @@ function renderSlots() {
           ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
           ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
         </div>
-        <div class="slot-svg-wrap">
+        <div class="slot-svg-wrap" style="cursor:pointer;"
+          onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}')">
           <div class="av-zoom-wrap">
             ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
               data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
               data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
-              onclick="mktOpenZoomBtn(this)">🔍</button>
+              onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
           </div>
         </div>
         <div class="slot-body">
