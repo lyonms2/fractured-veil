@@ -739,13 +739,4 @@ function petCreature() {
   scheduleSave();
 }
 
-function avatarClick() {
-  if(typeof getFase === 'function' && getFase() >= 3 && eggLayCooldown === 0 && hatched && !dead && avatar) {
-    layEgg();
-  } else {
-    petCreature();
-  }
-}
-window.avatarClick = avatarClick;
-
 // ═══════════════════════════════════════════════════════════════════

@@ -288,8 +288,8 @@ function hatch() {
     btnLayEgg.style.opacity = eggReady ? '1' : '.4';
     btnLayEgg.title = eggLayCooldown > 0 ? `Pronto em ~${Math.ceil(eggLayCooldown*60/3600)}h` : 'Pronto para botar!';
   }
-  const eggReadyBadge = document.getElementById('eggReadyBadge');
-  if(eggReadyBadge) eggReadyBadge.style.display = eggReady ? 'block' : 'none';
+  const btnLayEggCorner = document.getElementById('btnLayEggCorner');
+  if(btnLayEggCorner) btnLayEggCorner.style.display = eggReady ? 'block' : 'none';
 
   renderEggInventory();
   saveToFirebase();
