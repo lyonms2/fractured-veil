@@ -383,6 +383,8 @@ function gameTick() {
     } else {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = '';
+      const corner = document.getElementById('btnLayEggCorner');
+      if(corner) corner.style.display = 'block';
       if(!eggLayNotified) {
         eggLayNotified = true;
         showBubble('Sinto algo... 🥚');
