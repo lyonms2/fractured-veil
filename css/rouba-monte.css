@@ -3,14 +3,7 @@
    Modal dentro da .screen, mesmo padrão da Arena
 ══════════════════════════════════════════════════════════════ */
 
-#roubaMontModal {
-  /* layout controlado por modals.css */
-  padding: 10px 12px;
-  gap: 12px;
-  align-items: center;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
+#roubaMontModal { gap: 12px; overflow-y: auto; overscroll-behavior: contain; }
 #roubaMontModal.open { opacity: 1; pointer-events: all; }
 
 /* ── PC fullscreen ── */

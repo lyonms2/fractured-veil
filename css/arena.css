@@ -3,13 +3,7 @@
    Modal dentro da .screen, mesmo padrão dos outros minigames
 ══════════════════════════════════════════════════════════════ */
 
-#arenaModal {
-  /* layout controlado por modals.css */
-  padding: 10px 12px;
-  gap: 12px;
-  align-items: center;
-  overflow: hidden;
-}
+#arenaModal { gap: 12px; }
 #arenaModal.open { opacity: 1; pointer-events: all; }
 
 /* ── Header ── */

@@ -36,34 +36,17 @@
   animation: coin-spend-fly .9s cubic-bezier(.2,.8,.4,1) forwards;
 }
 
-/* ── BACKDROP COMPARTILHADO ── */
-#miniModalBackdrop {
-  position:fixed; inset:0; z-index:149;
-  background:rgba(4,3,10,.92);
-  display:none; pointer-events:none;
-}
-body:has(.mini-modal.open) #miniModalBackdrop,
-body:has(#gameSelector.open) #miniModalBackdrop,
-body:has(#arenaModal.open) #miniModalBackdrop,
-body:has(#roubaMontModal.open) #miniModalBackdrop,
-body:has(#batalhaNavalModal.open) #miniModalBackdrop,
-body:has(#jkpModal.open) #miniModalBackdrop,
-body:has(#minaModal.open) #miniModalBackdrop { display:block; pointer-events:all; }
-
 /* ── GAME SELECTOR ── */
 #gameSelector {
-  position:fixed; z-index:150;
-  top:50%; left:50%; transform:translate(-50%,-50%);
-  width:calc(100% - 24px); max-width:480px;
-  max-height:calc(100dvh - 24px);
+  position:fixed; inset:0; z-index:150;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  background:var(--surface);
-  border:1px solid rgba(201,168,76,.18); border-radius:14px;
+  background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none; transition:opacity .3s;
-  gap:8px; padding:12px 14px;
+  padding:12px;
   overflow-y:auto;
 }
 #gameSelector.open { opacity:1; pointer-events:all; }
+#gameSelector > *:not(.gs-x-btn) { width:100%; max-width:460px; flex-shrink:0; }
 .gs-x-btn {
   position:absolute; top:10px; right:10px;
   background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);
@@ -163,18 +146,32 @@ body:has(#minaModal.open) #miniModalBackdrop { display:block; pointer-events:all
 
 /* ── SHARED MINI MODAL ── */
 .mini-modal {
-  position:fixed; z-index:150;
-  top:50%; left:50%; transform:translate(-50%,-50%);
-  width:calc(100% - 24px); max-width:460px;
-  max-height:calc(100dvh - 24px);
+  position:fixed; inset:0; z-index:150;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:var(--surface);
-  border:1px solid rgba(201,168,76,.12); border-radius:14px;
+  background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none;
-  transition:opacity .3s; padding:14px; gap:0;
-  overflow:hidden;
+  transition:opacity .3s;
+  padding:12px;
+  overflow-y:auto;
 }
 .mini-modal.open { opacity:1; pointer-events:all; }
+
+/* Card interno — injectado por JS em main.js */
+.modal-card {
+  background:var(--surface);
+  border:1px solid rgba(201,168,76,.15);
+  border-radius:14px;
+  width:100%; max-width:460px;
+  max-height:calc(100vh - 24px);
+  display:flex; flex-direction:column; align-items:center;
+  padding:14px; gap:0;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.mini-modal .modal-card .mini-title { text-align:center; }
+/* Modais com scroll interno já têm modal-scroll-body */
+.modal-card.has-scroll { padding:0; }
+.modal-card.has-scroll .modal-scroll-body { padding:10px 16px 16px; }
 .mini-title {
   font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px;
   color:var(--gold); margin-bottom:4px; text-align:center;
@@ -513,16 +510,19 @@ body:has(#minaModal.open) #miniModalBackdrop { display:block; pointer-events:all
 #arenaModal,
 #roubaMontModal,
 #batalhaNavalModal {
-  position:fixed; z-index:150;
-  top:50%; left:50%; transform:translate(-50%,-50%);
-  width:calc(100% - 24px); max-width:500px;
-  max-height:calc(100dvh - 24px);
-  display:flex; flex-direction:column;
-  background:var(--surface);
-  border:1px solid rgba(201,168,76,.12); border-radius:14px;
+  position:fixed; inset:0; z-index:150;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none; transition:opacity .3s;
+  padding:12px; overflow-y:auto;
   overflow-y:auto; overflow-x:hidden;
 }
 #arenaModal.open,
 #roubaMontModal.open,
 #batalhaNavalModal.open { opacity:1; pointer-events:all; }
+/* Conteúdo interno centrado e com largura limitada */
+#arenaModal > *,
+#roubaMontModal > *,
+#batalhaNavalModal > *,
+#jkpModal > *,
+#minaModal > * { width:100%; max-width:480px; }
