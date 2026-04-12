@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // LABIRINTO ELEMENTAL
-// Navegação com fog of war, armadilhas, perseguidor e saídas múltiplas
+// Navegação com fog of war, perseguidor e saídas múltiplas
 // ═══════════════════════════════════════════════════════════════════
 
 // Paredes por bitmask: N=1, E=2, S=4, W=8
@@ -41,7 +41,6 @@ let _mzCurDir   = 0;
 let _mzMoveInt  = null;
 
 // Efeitos visuais
-let _mzTrapTime   = 0;   // última armadilha (ms)
 let _mzMsg        = '';  // mensagem overlay
 let _mzMsgTime    = 0;
 
@@ -85,14 +84,12 @@ function startLabirinto() {
   _mzCurDir = 0;
   _mzPurX = -1; _mzPurY = -1;
   _mzPurPath = [];
-  _mzTrapTime = 0;
   _mzMsg = ''; _mzMsgTime = 0;
   _mzCoinCells      = new Set();
   _mzCoinsCollected = 0;
 
   _mzGenerate();
   _mzPlaceExits();
-  _mzPlaceTraps();
   _mzPlaceCoins();
   _mzRevealAround(_mzPx, _mzPy);
 
@@ -132,7 +129,6 @@ function _mzGenerate() {
   const n = _mzCols * _mzRows;
   _mzCells = Array.from({length: n}, () => ({
     walls: MZ_N | MZ_E | MZ_S | MZ_W,
-    trap: false,
     explored: false,
   }));
 
@@ -182,32 +178,6 @@ function _mzPlaceExits() {
   }
 }
 
-// ── Posicionar armadilhas ──────────────────────────────────────────
-function _mzPlaceTraps() {
-  if(_mzTier < 1) return;
-  const ratio = [0, 0.04, 0.06, 0.08][_mzTier];
-  const n     = _mzCols * _mzRows;
-  const safe  = new Set();
-  safe.add(_mzIdx(0, 0));
-  _mzExits.forEach(e => {
-    // Protege a saída e vizinhos
-    for(let dy = -2; dy <= 2; dy++) {
-      for(let dx = -2; dx <= 2; dx++) {
-        const nx = e.x + dx, ny = e.y + dy;
-        if(nx >= 0 && nx < _mzCols && ny >= 0 && ny < _mzRows) safe.add(_mzIdx(nx, ny));
-      }
-    }
-  });
-  // Protege área inicial
-  for(let dy = 0; dy <= 2; dy++) for(let dx = 0; dx <= 2; dx++) safe.add(_mzIdx(dx, dy));
-
-  const candidates = [];
-  for(let i = 0; i < n; i++) if(!safe.has(i)) candidates.push(i);
-  _mzShuf(candidates);
-  const count = Math.floor(candidates.length * ratio);
-  for(let i = 0; i < count; i++) _mzCells[candidates[i]].trap = true;
-}
-
 // ── Espalhar moedas ────────────────────────────────────────────────
 function _mzPlaceCoins() {
   const counts = [8, 12, 16, 20];
@@ -225,7 +195,7 @@ function _mzPlaceCoins() {
 
   const candidates = [];
   for(let i = 0; i < _mzCols * _mzRows; i++) {
-    if(!safe.has(i) && !_mzCells[i].trap) candidates.push(i);
+    if(!safe.has(i)) candidates.push(i);
   }
   _mzShuf(candidates);
   for(let i = 0; i < Math.min(_mzCoinTotal, candidates.length); i++) {
@@ -313,17 +283,6 @@ function _mzTryMove() {
 
   _mzPx = nx; _mzPy = ny;
   _mzRevealAround(_mzPx, _mzPy);
-
-  // Armadilha
-  const nc = _mzCell(_mzPx, _mzPy);
-  if(nc.trap) {
-    nc.trap = false;
-    _mzSecs = Math.max(3, _mzSecs - 4);
-    _mzSetTimer(_mzSecs);
-    _mzTrapTime = performance.now();
-    _mzShowMsg('⚠ ARMADILHA! −4s');
-    if(typeof playSound === 'function') playSound('lose');
-  }
 
   // Moeda
   const ci = _mzIdx(_mzPx, _mzPy);
@@ -420,17 +379,22 @@ function _mzEnd(won, reason) {
     if(result) { result.textContent = msg; result.className = 'mini-result-box lose'; }
     if(coinReward > 0) {
       earnCoins(coinReward);
-      if(reward) reward.textContent = `🪙 ${_mzCoinsCollected} moeda${_mzCoinsCollected !== 1 ? 's' : ''} (+${coinReward} 🪙)`;
+      if(reward) reward.textContent = `🪙 ${_mzCoinsCollected} moeda${_mzCoinsCollected !== 1 ? 's' : ''} coletada${_mzCoinsCollected !== 1 ? 's' : ''} (+${coinReward} 🪙)`;
     } else {
       if(reward) reward.textContent = '';
     }
+    scheduleSave();
   } else {
     if(typeof playSound === 'function') playSound('win');
-    const r = miniReward(Math.min(2, frac * 1.8), 0, 3, true); // XP e vínculo; moedas vêm das moedas coletadas
-    earnCoins(coinReward);
+    // Bônus de saída: 60% extra sobre as moedas coletadas + bônus dourado 50%
+    const exitBonus = Math.round(coinReward * (0.6 + (_mzGold ? 0.5 : 0)));
+    const totalCoins = coinReward + exitBonus;
+    const r = miniReward(Math.min(2, frac * 1.8), 0, 3, true);
+    earnCoins(totalCoins);
     const exitLbl = _mzGold ? '⚡ SAÍDA DOURADA!' : '🚪 SAÍDA ENCONTRADA!';
     if(result) { result.textContent = exitLbl; result.className = 'mini-result-box win'; }
-    if(reward) reward.textContent = `+${r.xpGain} XP · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} (+${coinReward} 🪙)`;
+    const bonusLbl = _mzGold ? 'bônus saída dourada!' : 'bônus saída!';
+    if(reward) reward.textContent = `+${r.xpGain} XP · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} moedas (+${totalCoins} 🪙 — ${bonusLbl})`;
     vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
     scheduleSave();
   }
@@ -556,24 +520,6 @@ function _mzRender() {
     ctx.fillText(exit.gold ? '⚡' : '🚪', cx, cy);
   }
 
-  // ── Armadilhas (visíveis apenas nas células exploradas) ──
-  for(let y = 0; y < _mzRows; y++) {
-    for(let x = 0; x < _mzCols; x++) {
-      const cell = _mzCell(x, y);
-      if(!cell.trap || !cell.explored) continue;
-      const ddx = Math.abs(x - _mzPx), ddy = Math.abs(y - _mzPy);
-      if(Math.max(ddx, ddy) > _mzVisionR + 1) continue;
-      const px = offX + x * cs, py = offY + y * cs;
-      const cx = px + cs * 0.5, cy = py + cs * 0.5;
-      const r  = cs * 0.22;
-      ctx.strokeStyle = 'rgba(248,113,113,0.55)';
-      ctx.lineWidth   = Math.max(1, cs * 0.08);
-      ctx.lineCap     = 'round';
-      ctx.beginPath(); ctx.moveTo(cx - r, cy - r); ctx.lineTo(cx + r, cy + r); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx + r, cy - r); ctx.lineTo(cx - r, cy + r); ctx.stroke();
-    }
-  }
-
   // ── Moedas ──
   for(const idx of _mzCoinCells) {
     const cx2 = idx % _mzCols, cy2 = Math.floor(idx / _mzCols);
@@ -633,15 +579,6 @@ function _mzRender() {
     // Brilho interno
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath(); ctx.arc(px - r * 0.22, py - r * 0.28, r * 0.28, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // ── Flash de armadilha ──
-  if(_mzTrapTime > 0) {
-    const t = (now - _mzTrapTime) / 500;
-    if(t < 1) {
-      ctx.fillStyle = `rgba(248,113,113,${(0.30 * (1 - t)).toFixed(3)})`;
-      ctx.fillRect(0, 0, W, H);
-    } else { _mzTrapTime = 0; }
   }
 
   // ── Mensagem overlay ──
