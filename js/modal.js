@@ -156,10 +156,10 @@ function closeMiniModal(id) {
 
 // ── Dificuldades ──
 const DIFF_TIERS = [
-  { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
-  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:52,  minNivel:6  },
-  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:95,  minNivel:13 },
-  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:155, minNivel:21 },
+  { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:40,  minNivel:1  },
+  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:90,  minNivel:6  },
+  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:160, minNivel:13 },
+  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:260, minNivel:21 },
 ];
 
 function maxUnlockedTier() {
@@ -187,7 +187,7 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
-  const coinGain = Math.round(d.coins * coinMult * rb.moedas * 0.65);
+  const coinGain = Math.round(d.coins * coinMult * rb.moedas);
   xp      += xpGain;
   earnCoins(coinGain);
   vinculo += vinculoGain;
