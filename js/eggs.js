@@ -1,5 +1,5 @@
 // Taxa de chocagem por raridade (💎 cristais)
-const HATCH_FEE = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
+const HATCH_FEE = { 'Comum': 0, 'Raro': 50, 'Lendário': 100 };
 let pendingHatchFee = 0;
 
 async function goToMarketplace(e) {

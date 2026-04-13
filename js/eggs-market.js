@@ -12,7 +12,7 @@ let eggListings     = [];
 let eggListingUnsub = null;
 let listingEggData  = null; // ovo a listar
 
-const EGG_LIST_FEE = 1;    // 1 💎 de taxa para listar ovo (vai para a pool)
+const EGG_LIST_FEE = { 'Raro': 25, 'Lendário': 50 }; // 💎 de taxa por raridade
 const EGG_SALE_TAX = 0.10; // 10% da venda vai para a pool
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -115,7 +115,7 @@ function openListEggModal(ovoData) {
     <div class="egg-list-preview">
       <div class="egg-list-preview-icon">${icon}</div>
       <div class="egg-list-preview-name">${esc(ovoData.raridade)} · ${esc(ovoData.elemento)}</div>
-      <div class="egg-list-preview-sub">10% da venda vai para a pool P2E</div>
+      <div class="egg-list-preview-sub">Taxa de listagem: ${EGG_LIST_FEE[ovoData.raridade] || 0} 💎 · 10% da venda → pool</div>
     </div>`;
   document.getElementById('listEggPriceInput').value = '';
   document.getElementById('listEggStatus').textContent = '';
@@ -136,10 +136,11 @@ async function confirmListEgg() {
   }
 
   const statusEl = document.getElementById('listEggStatus');
+  const taxa = EGG_LIST_FEE[listingEggData.raridade] || 0;
 
   // Verificar saldo para a taxa de listagem
-  if((playerData?.cristais || 0) < EGG_LIST_FEE) {
-    statusEl.textContent = `Precisas de ${EGG_LIST_FEE} 💎 para listar.`;
+  if((playerData?.cristais || 0) < taxa) {
+    statusEl.textContent = `Precisas de ${taxa} 💎 para listar este ovo.`;
     return;
   }
 
@@ -151,8 +152,8 @@ async function confirmListEgg() {
     const freshData = freshSnap.data() || {};
     const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
 
-    if(freshCristais < EGG_LIST_FEE) {
-      statusEl.textContent = `Precisas de ${EGG_LIST_FEE} 💎 para listar.`;
+    if(freshCristais < taxa) {
+      statusEl.textContent = `Precisas de ${taxa} 💎 para listar este ovo.`;
       return;
     }
 
@@ -162,8 +163,8 @@ async function confirmListEgg() {
       statusEl.textContent = 'Ovo não encontrado no inventário.';
       return;
     }
-    const ovoToRemove  = inboxEggs[ovoIdx];
-    const newCristais  = freshCristais - EGG_LIST_FEE;
+    const ovoToRemove = inboxEggs[ovoIdx];
+    const newCristais = freshCristais - taxa;
 
     // Remove do inboxEggs, debita taxa e cria listagem em batch atómico
     const listingRef = db.collection('eggMarket').doc();
@@ -195,7 +196,7 @@ async function confirmListEgg() {
     }
 
     // Taxa vai para a pool
-    await addToPool(EGG_LIST_FEE, `listagem ovo ${listingEggData.raridade}`);
+    if(taxa > 0) await addToPool(taxa, `listagem ovo ${listingEggData.raridade}`);
 
     closeListEggModal();
     showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
