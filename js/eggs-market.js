@@ -12,7 +12,7 @@ let eggListings     = [];
 let eggListingUnsub = null;
 let listingEggData  = null; // ovo a listar
 
-const EGG_LIST_FEE = 0;    // sem taxa de listagem — mais simples para ovos
+const EGG_LIST_FEE = 1;    // 1 💎 de taxa para listar ovo (vai para a pool)
 const EGG_SALE_TAX = 0.10; // 10% da venda vai para a pool
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -136,25 +136,42 @@ async function confirmListEgg() {
   }
 
   const statusEl = document.getElementById('listEggStatus');
+
+  // Verificar saldo para a taxa de listagem
+  if((playerData?.cristais || 0) < EGG_LIST_FEE) {
+    statusEl.textContent = `Precisas de ${EGG_LIST_FEE} 💎 para listar.`;
+    return;
+  }
+
   statusEl.textContent = 'A listar...';
 
   try {
-    // Lê inboxEggs frescos para remover o ovo correcto
+    // Lê dados frescos para evitar saldo desactualizado
     const freshSnap = await db.collection('players').doc(walletAddress).get();
     const freshData = freshSnap.data() || {};
+    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
+
+    if(freshCristais < EGG_LIST_FEE) {
+      statusEl.textContent = `Precisas de ${EGG_LIST_FEE} 💎 para listar.`;
+      return;
+    }
+
     const inboxEggs = freshData.inboxEggs || [];
     const ovoIdx = inboxEggs.findIndex(e => e.id === listingEggData.id);
     if(ovoIdx === -1) {
       statusEl.textContent = 'Ovo não encontrado no inventário.';
       return;
     }
-    const ovoToRemove = inboxEggs[ovoIdx];
+    const ovoToRemove  = inboxEggs[ovoIdx];
+    const newCristais  = freshCristais - EGG_LIST_FEE;
 
-    // Remove do inboxEggs e cria listagem em batch atómico
+    // Remove do inboxEggs, debita taxa e cria listagem em batch atómico
     const listingRef = db.collection('eggMarket').doc();
     const batch = db.batch();
     batch.update(db.collection('players').doc(walletAddress), {
-      inboxEggs: firebase.firestore.FieldValue.arrayRemove(ovoToRemove)
+      inboxEggs:     firebase.firestore.FieldValue.arrayRemove(ovoToRemove),
+      cristais:      newCristais,
+      'gs.cristais': newCristais,
     });
     batch.set(listingRef, {
       raridade:  listingEggData.raridade,
@@ -168,12 +185,20 @@ async function confirmListEgg() {
     });
     await batch.commit();
 
-    closeListEggModal();
-    showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
-    // Actualiza inventário local (game vai sync no próximo load)
+    // Actualiza estado local
+    playerData.cristais = newCristais;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    updateCristaisDisplay();
     if(playerData.inboxEggs) {
       playerData.inboxEggs = playerData.inboxEggs.filter(e => e.id !== listingEggData.id);
     }
+
+    // Taxa vai para a pool
+    await addToPool(EGG_LIST_FEE, `listagem ovo ${listingEggData.raridade}`);
+
+    closeListEggModal();
+    showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
   } catch(e) {
     console.error(e);
     statusEl.textContent = 'Erro ao listar. Tenta novamente.';

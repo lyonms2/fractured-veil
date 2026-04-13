@@ -1,3 +1,7 @@
+// Taxa de chocagem por raridade (💎 cristais)
+const HATCH_FEE = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
+let pendingHatchFee = 0;
+
 async function goToMarketplace(e) {
   if(e) e.preventDefault();
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
@@ -328,7 +332,8 @@ function hatchEggFromInventory(id) {
     return;
   }
 
-  pendingHatchId = id;
+  pendingHatchId  = id;
+  pendingHatchFee = HATCH_FEE[ovo.raridade] || 0;
   const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
   const rarEmoji  = { 'Comum':'🥚', 'Raro':'💙', 'Lendário':'🌟' };
   const color = rarColors[ovo.raridade];
@@ -350,6 +355,18 @@ function hatchEggFromInventory(id) {
     msg = `O ovo nascerá no Slot ${targetPreview+1}.<br>Clica 5× para fazer nascer o teu novo avatar.`;
     if(confirmBtn) confirmBtn.style.display = '';
   }
+
+  // Mostrar taxa de chocagem (se aplicável)
+  if(pendingHatchFee > 0 && confirmBtn && confirmBtn.style.display !== 'none') {
+    const saldo = gs.cristais || 0;
+    if(saldo < pendingHatchFee) {
+      msg += `<br><br><span style="color:#f87171;font-size:8px;">⚠️ Precisas de <b>${pendingHatchFee} 💎</b> para chocar.<br>Saldo actual: ${saldo} 💎</span>`;
+      if(confirmBtn) confirmBtn.style.display = 'none';
+    } else {
+      msg += `<br><br><span style="color:#a78bfa;font-size:8px;">Taxa de choco: <b>${pendingHatchFee} 💎</b></span>`;
+    }
+  }
+
   document.getElementById('hatchConfirmMsg').innerHTML = msg;
 
   ModalManager.open('hatchConfirmModal');
@@ -370,8 +387,26 @@ async function confirmHatch() {
   }
 
   const ovo = eggsInInventory[idx];
+
+  // Verificação final da taxa de chocagem
+  if(pendingHatchFee > 0 && (gs.cristais || 0) < pendingHatchFee) {
+    addLog(`Cristais insuficientes para chocar (precisas de ${pendingHatchFee} 💎).`, 'bad');
+    pendingHatchId = null; pendingHatchFee = 0;
+    ModalManager.close('hatchConfirmModal');
+    return;
+  }
+
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
+
+  // Debitar taxa de chocagem
+  if(pendingHatchFee > 0) {
+    gs.cristais = Math.max(0, (gs.cristais || 0) - pendingHatchFee);
+    updateAllUI();
+    scheduleSave();
+    _payHatchFeeToPool(pendingHatchFee, ovo.raridade);
+    pendingHatchFee = 0;
+  }
 
   // Backup do ovo no Firebase antes de remover da memória
   if(walletAddress && fbDb()) {
@@ -773,6 +808,17 @@ function renderEggInventory() {
       </div>
     </div>`;
   }).join('');
+}
+
+async function _payHatchFeeToPool(fee, raridade) {
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'taxa', idToken, valor: fee, motivo: `chocar ovo ${raridade}` }),
+    });
+  } catch(e) { console.warn('[hatch fee pool]', e); }
 }
 
 function listEggOnMarket(eggId) {
