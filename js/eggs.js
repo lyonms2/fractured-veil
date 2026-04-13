@@ -104,7 +104,9 @@ function layEgg() {
   eggLayCooldown = cooldownMins; // em minutos — consistente com gametick
   window._eggLayReadyAt = Date.now() + cooldownMs;
   if(avatar) avatar.eggLayReadyAt = window._eggLayReadyAt;
-  scheduleSave();
+  // Save imediato — não usa scheduleSave para evitar bug de ovo infinito ao recarregar a página
+  clearTimeout(_saveTimeout); _saveTimeout = null;
+  saveToFirebase();
   eggLayNotified  = false;
 
   playAnim('anim-layegg');
