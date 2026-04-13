@@ -25,6 +25,7 @@ body {
 /* ── Desktop: zoom 1.5 escala tudo parelho (letras, px, bordas, ícones) ── */
 @media(min-width:681px) {
   html { zoom: 1.5; }
+  #btnLayEgg { display: none !important; }
 }
 
 /* ── Mobile: reset explícito do zoom — mesmo padrão do marketplace ── */
