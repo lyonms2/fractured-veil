@@ -250,41 +250,74 @@ async function _doBurnRaro(id, finalGems, bonus) {
   }
 }
 
-async function sellEggToPool(id) {
+function sellEggToPool(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) { addLog('Ovo não encontrado localmente.', 'bad'); return; }
   const ovo = eggsInInventory[idx];
   if(ovo.raridade === 'Comum') { addLog('Ovos Comuns não são aceites pela pool.','bad'); return; }
   if(!firebase?.auth?.()?.currentUser) { addLog('Conecta a conta primeiro.','bad'); return; }
 
-  try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp = await fetch('/api/pool', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
-    });
-    const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
+  // Estima preço (mesmo cálculo do servidor)
+  const cristaisPool = poolData?.cristais || 0;
+  const ratio  = Math.min(2, cristaisPool / 1000);
+  const base   = ovo.raridade === 'Lendário' ? 1.0 : 0.5;
+  const minP   = ovo.raridade === 'Lendário' ? 0.25 : 0.10;
+  const preco  = Math.max(minP, parseFloat((base * ratio).toFixed(2)));
 
-    eggsInInventory.splice(idx, 1);
-    gs.cristais = json.novosCristais;
-    if(poolData) {
-      poolData.cristais  = (poolData.cristais  || 0) - json.preco;
-      poolData.saqueHoje = (poolData.saqueHoje || 0) + json.preco;
-      poolData.totalSaiu = (poolData.totalSaiu || 0) + json.preco;
+  const overlay = document.getElementById('eggSellOverlay');
+  const preview = document.getElementById('eggSellPreview');
+  const confirmBtn = document.getElementById('eggSellConfirmBtn');
+  if(!overlay || !preview || !confirmBtn) return;
+
+  const poolOk = cristaisPool > 0;
+  preview.innerHTML = `
+    Ovo <strong style="color:${ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8'}">${ovo.raridade}</strong><br>
+    Elemento: <strong>${ovo.elemento}</strong><br><br>
+    ${poolOk
+      ? `Receberás <strong style="color:#a78bfa">${preco} 💎</strong> da pool<br><small style="opacity:.6">(pool: ${cristaisPool} 💎 disponíveis)</small>`
+      : `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
+    }`;
+
+  overlay.style.display = 'flex';
+
+  // Remove listener anterior e adiciona novo
+  const newBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+  if(!poolOk) { newBtn.disabled = true; newBtn.style.opacity = '.4'; return; }
+
+  newBtn.onclick = async () => {
+    overlay.style.display = 'none';
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const resp = await fetch('/api/pool', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
+      });
+      const json = await resp.json();
+      if(!json.ok) throw new Error(json.erro || 'erro');
+
+      eggsInInventory.splice(idx, 1);
+      gs.cristais = json.novosCristais;
+      if(poolData) {
+        poolData.cristais  = (poolData.cristais  || 0) - json.preco;
+        poolData.saqueHoje = (poolData.saqueHoje || 0) + json.preco;
+        poolData.totalSaiu = (poolData.totalSaiu || 0) + json.preco;
+      }
+      renderEggInventory();
+      updateResourceUI();
+      renderPoolWidget();
+      addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${json.preco} 💎!`, 'good');
+      showFloat(`+${json.preco} 💎`, '#a78bfa');
+      showBubble(`+${json.preco} 💎 da pool!`);
+      scheduleSave();
+    } catch(err) {
+      console.error('[sellEggToPool]', err);
+      showBubble('Erro ao vender ovo 😢');
+      addLog(`⚠️ ${err.message || 'Erro ao vender à pool.'}`, 'bad');
     }
-    renderEggInventory();
-    updateResourceUI();
-    renderPoolWidget();
-    addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${json.preco} 💎!`, 'good');
-    showFloat(`+${json.preco}💎`, '#a78bfa');
-    showBubble(`+${json.preco} 💎 da pool!`);
-  } catch(err) {
-    console.error('[sellEggToPool]', err);
-    showBubble('Erro ao vender ovo 😢');
-    addLog(`⚠️ ${err.message || 'Erro ao vender à pool.'}`, 'bad');
-  }
+  };
 }
 
 function hatchEggFromInventory(id) {

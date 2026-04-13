@@ -1109,6 +1109,18 @@
   </div>
 </div>
 
+<!-- EGG SELL CONFIRM OVERLAY -->
+<div id="eggSellOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">
+  <div style="background:#0d0b1a;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:20px 18px;max-width:300px;width:90%;text-align:center;">
+    <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:12px;">💎 Vender à Pool</div>
+    <div id="eggSellPreview" style="margin-bottom:14px;font-size:10px;line-height:2;color:var(--muted);"></div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button onclick="document.getElementById('eggSellOverlay').style.display='none'" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;">Cancelar</button>
+      <button id="eggSellConfirmBtn" style="flex:1;padding:8px;background:rgba(76,29,149,.6);border:1px solid #a78bfa;border-radius:8px;color:#c4b5fd;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;">💎 Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Level-up e Phase-up: fixed acima de tudo -->
 <div id="levelUpOverlay">
   <div class="lu-burst"></div>
