@@ -4,14 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal'
 ];
 
 const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','bjModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -117,13 +117,6 @@ function openGameSelector() {
     const cMax = coinCounts[t] * coinVals[t];
     labEl.textContent = `+${xpMin}~${xpMax} XP · até ${cMax} 🪙 (colete no labirinto!)`;
   }
-  const bjEl = document.getElementById('rewardBlackjack');
-  if(bjEl) {
-    const xpMin = r(d.xp*0.4*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
-    const cMin  = r(d.coins*0.4*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
-    bjEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
-  }
-
   ModalManager.open('gameSelector');
 }
 
@@ -138,7 +131,6 @@ function openMinigame(type) {
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
-  if(type === 'blackjack')  { ModalManager.open('bjModal');   startBlackjack();  return; }
 }
 
 function openMiniModal(id) {
@@ -146,7 +138,7 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
-const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','bjModal'];
+const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal'];
 function closeMiniModal(id) {
   ModalManager.close(id);
   if(_PVE_MODALS.includes(id) && typeof openGameSelector === 'function') {

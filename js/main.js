@@ -60,10 +60,6 @@ window.oddClick       = typeof oddClick       !== "undefined" ? oddClick       :
 window.startLabirinto = typeof startLabirinto !== "undefined" ? startLabirinto : ()=>{};
 window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       : ()=>{};
 window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};
-window.startBlackjack = typeof startBlackjack !== "undefined" ? startBlackjack : ()=>{};
-window.bjHit          = typeof bjHit          !== "undefined" ? bjHit          : ()=>{};
-window.bjStand        = typeof bjStand        !== "undefined" ? bjStand        : ()=>{};
-window.bjDouble       = typeof bjDouble       !== "undefined" ? bjDouble       : ()=>{};
 
 // ── Modo Repouso Manual ──
 window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};

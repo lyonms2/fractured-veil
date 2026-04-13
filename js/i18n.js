@@ -161,8 +161,6 @@
       'gs.snake.desc':           'Colete os elementos sem bater em si mesmo',
       'gs.maze.name':            'LABIRINTO ELEMENTAL',
       'gs.maze.desc':            'Navegue na névoa e ache a saída',
-      'gs.blackjack.name':       'BLACKJACK ELEMENTAL',
-      'gs.blackjack.desc':       'Chegue a 21 sem passar — vença o dealer',
       // Lore
       'gs.lore1.name':           'HISTÓRIAS DO VÉU',
       'gs.lore1.desc':           'A saga pós-guerra — Fracturas, Avatares e O Vácuo',
@@ -197,9 +195,6 @@
       'mini.snake.title':        '🐍 SNAKE ELEMENTAL',
       'mini.maze.title':         '🌀 LABIRINTO ELEMENTAL',
       'mini.maze.info':          'Navegue na névoa e ache a saída!',
-      'mini.bj.title':           '♠ BLACKJACK ELEMENTAL',
-      'mini.bj.info':            'Chegue a 21 sem passar!',
-
       // Hatch confirm
       'hatch.title':             '🥚 CHOCAR OVO',
       'hatch.confirm':           '✓ CONFIRMAR',
@@ -402,8 +397,6 @@
       'gs.snake.desc':           'Collect elements without hitting yourself',
       'gs.maze.name':            'ELEMENTAL MAZE',
       'gs.maze.desc':            'Navigate the fog and find the exit',
-      'gs.blackjack.name':       'ELEMENTAL BLACKJACK',
-      'gs.blackjack.desc':       'Get to 21 without busting — beat the dealer',
       // Lore
       'gs.lore1.name':           'TALES OF THE VEIL',
       'gs.lore1.desc':           'The post-war saga — Fractures, Avatars and The Void',
@@ -438,9 +431,6 @@
       'mini.snake.title':        '🐍 ELEMENTAL SNAKE',
       'mini.maze.title':         '🌀 ELEMENTAL MAZE',
       'mini.maze.info':          'Navigate the fog and find the exit!',
-      'mini.bj.title':           '♠ ELEMENTAL BLACKJACK',
-      'mini.bj.info':            'Get to 21 without busting!',
-
       // Hatch confirm
       'hatch.title':             '🥚 HATCH EGG',
       'hatch.confirm':           '✓ CONFIRM',

@@ -32,7 +32,6 @@
   <link rel="stylesheet" href="css/batalha-naval.css">
   <link rel="stylesheet" href="css/snake.css">
   <link rel="stylesheet" href="css/labirinto.css">
-  <link rel="stylesheet" href="css/blackjack.css">
   <link rel="stylesheet" href="css/fissura.css">
   <link rel="stylesheet" href="css/mobile-index.css">
 
@@ -358,14 +357,6 @@
                   <div class="gs-btn-reward" id="rewardLabirinto">+0~90 XP · +0~155 🪙</div>
                 </div>
               </div>
-              <div class="gs-btn" onclick="openMinigame('blackjack')">
-                <div class="gs-btn-icon">♠</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.blackjack.name" class="gs-btn-name">BLACKJACK ELEMENTAL</div>
-                  <div data-i18n="gs.blackjack.desc" class="gs-btn-desc">Chegue a 21 sem passar — vença o dealer</div>
-                  <div class="gs-btn-reward" id="rewardBlackjack">+0~90 XP · +0~155 🪙</div>
-                </div>
-              </div>
             </div>
             <div id="gsGridLore" class="gs-grid" style="display:none;">
               <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
@@ -588,22 +579,6 @@
           </div>
 
 
-          <div class="mini-modal" id="bjModal">
-            <div data-i18n="mini.bj.title" class="mini-title">♠ BLACKJACK ELEMENTAL</div>
-            <div data-i18n="mini.bj.info" id="bjInfo" class="mini-info">Chegue a 21 sem passar!</div>
-            <canvas id="bjCanvas" width="280" height="280"></canvas>
-            <div id="bjActionBtns">
-              <button class="bj-action-btn" id="bjHitBtn"    onclick="bjHit()">HIT</button>
-              <button class="bj-action-btn" id="bjStandBtn"  onclick="bjStand()">STAND</button>
-              <button class="bj-action-btn" id="bjDoubleBtn" onclick="bjDouble()">DOUBLE</button>
-            </div>
-            <div class="mini-result-box" id="bjResult"></div>
-            <div class="mini-reward-txt" id="bjReward"></div>
-            <div class="mini-btns">
-              <button data-i18n="mini.play_again" class="mini-btn primary" id="bjAgainBtn" onclick="startBlackjack()" style="display:none">JOGAR DE NOVO</button>
-              <button data-i18n="mini.close" class="mini-btn close" onclick="closeMiniModal('bjModal')">FECHAR</button>
-            </div>
-          </div>
 
           <div id="arenaModal"></div>
           <div id="roubaMontModal"></div>
@@ -916,7 +891,7 @@
 <script src="js/batalha-naval.js"></script>
 <script src="js/snake.js"></script>
 <script src="js/labirinto.js"></script>
-<script src="js/blackjack.js"></script><script src="js/cambio.js"></script>
+<script src="js/cambio.js"></script>
 <script src="js/arena.js"></script>
 <script src="js/fissura.js"></script>
 <script src="js/lore.js"></script>
