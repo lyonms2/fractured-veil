@@ -236,23 +236,27 @@
     z-index: 300 !important;
   }
 
-  /* Modais de painel (market, inventário) — no mobile o próprio modal rola,
-     o overflow:hidden do desktop ficaria a bloquear o scroll */
+  /* Modais de painel (market, inventário) — no mobile fixamos a altura do
+     container para o flex:1 da modal-scroll-body ter referência e rolar.
+     O scroll acontece na scroll-body, não no modal em si. */
   #marketModal,
   #itemInvModal,
   #coinShopModal,
   #eggInvModal {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    height: 90vh !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
   }
   #marketModal .modal-scroll-body,
   #itemInvModal .modal-scroll-body,
   #coinShopModal .modal-scroll-body,
   #eggInvModal .modal-scroll-body {
-    overflow-y: visible;
-    flex: unset;
-    min-height: unset;
-    height: auto;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   /* Drag handle visual */
