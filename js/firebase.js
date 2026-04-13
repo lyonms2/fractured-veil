@@ -59,6 +59,7 @@ function getGameState() {
       dirtyLevel:     s.dirtyLevel     ?? 0,
       poopPressure:   s.poopPressure   ?? 0,
       eggLayCooldown: s.eggLayCooldown ?? 0,
+      eggLayReadyAt:  s.eggLayReadyAt  || 0,
       petCooldown:    s.petCooldown    ?? 0,
       activeDiseases: s.activeDiseases ? [...s.activeDiseases] : [],
       diseaseStress:  s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 },
