@@ -245,7 +245,7 @@
 .av-zoom-wrap { position:relative; display:inline-block; }
 .avatar-zoom-btn { position:absolute; top:8px; right:8px; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:4px 7px; font-size:13px; cursor:pointer; color:#fff; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; }
 .avatar-zoom-btn:hover { background:rgba(60,40,120,.7); transform:scale(1.1); }
-#btnLayEggCorner { position:absolute; bottom:8px; left:8px; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(201,168,76,.4); border-radius:8px; padding:4px 7px; font-size:13px; cursor:pointer; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; animation:egg-ready-pulse 1.4s ease-in-out infinite; }
+#btnLayEggCorner { position:absolute; bottom:8px; left:8px; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(201,168,76,.4); border-radius:10px; padding:8px 12px; font-size:20px; cursor:pointer; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; animation:egg-ready-pulse 1.4s ease-in-out infinite; }
 #btnLayEggCorner:hover { background:rgba(201,168,76,.15); transform:scale(1.1); }
 /* Usado no overlay de visita e marketplace — ancorado ao SVG e não ao container flex */
 .mkt-avatar-zoom-btn { position:absolute; bottom:3px; right:3px; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:3px 6px; font-size:12px; cursor:pointer; color:#fff; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; }
