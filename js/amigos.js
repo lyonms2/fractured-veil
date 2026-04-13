@@ -395,9 +395,50 @@ function _playVisitaAnim(tipo) {
   const cls = _VISITA_ANIM[tipo];
   if(!cls) return;
   w.classList.remove('anim-eat', 'anim-play', 'anim-clean');
-  void w.offsetWidth; // força reflow para reiniciar a animação
+  void w.offsetWidth;
   w.classList.add(cls);
-  setTimeout(() => w.classList.remove(cls), 1000);
+  setTimeout(() => w.classList.remove(cls), 900);
+
+  // Partículas — mesmos efeitos do index mas no wrap da visita
+  if(tipo === 'alimentar') {
+    const foods = ['🍖','🍗','✨','⭐'];
+    [{fx:'-28px'},{fx:'0px'},{fx:'28px'},{fx:'-14px'},{fx:'14px'}].forEach((pos, i) => {
+      const el = document.createElement('div');
+      el.className = 'food-particle';
+      el.textContent = foods[i % foods.length];
+      el.style.cssText = `--fx:${pos.fx};--fr:${(Math.random()*60-30).toFixed(0)}deg;top:10px;left:50%;transform:translateX(-50%);animation-delay:${i*0.06}s`;
+      w.appendChild(el);
+      setTimeout(() => el.remove(), 1100);
+    });
+  } else if(tipo === 'limpar') {
+    const curtain = document.createElement('div');
+    curtain.className = 'bath-curtain';
+    w.appendChild(curtain);
+    setTimeout(() => curtain.remove(), 1000);
+    for(let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const d = document.createElement('div');
+        d.className = 'bath-drop';
+        d.textContent = ['💧','💦'][i % 2];
+        d.style.left = `${8 + i * 8 + (Math.random()*6-3)}%`;
+        d.style.setProperty('--dur', `${0.35 + Math.random()*0.3}s`);
+        w.appendChild(d);
+        setTimeout(() => d.remove(), 600);
+      }, i * 80);
+    }
+  } else if(tipo === 'brincar') {
+    const emojis = ['🎮','⭐','✨','🎯'];
+    for(let i = 0; i < 4; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'food-particle';
+        el.textContent = emojis[i % emojis.length];
+        el.style.cssText = `--fx:${(Math.random()*60-30).toFixed(0)}px;--fr:${(Math.random()*60-30).toFixed(0)}deg;top:10px;left:50%;transform:translateX(-50%);animation-delay:0s`;
+        w.appendChild(el);
+        setTimeout(() => el.remove(), 1100);
+      }, i * 80);
+    }
+  }
 }
 
 // ── Utilitários ──────────────────────────────────────────────
