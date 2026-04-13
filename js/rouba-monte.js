@@ -123,51 +123,52 @@ function _rmSerDeck(deck) { return deck.map(_rmSerCarta); }
 function _rmHtmlCarta(c, idx, clicavel, sel) {
   const s   = sel === idx;
   const cor = c.cor || '#e8a030';
-  // ♦ dourado é legível em fundo claro com tom mais escuro
-  const textCor = cor === '#f0d080' ? '#b8860b' : cor;
   return `<div
     data-carta="${idx}"
     data-cor="${cor}"
     onclick="${clicavel ? `rmSelecionarCarta(${idx})` : ''}"
     style="
-      width:40px;height:56px;border-radius:6px;
-      background:#f8f5ee;
-      border:1.5px solid ${s ? '#f0d080' : 'rgba(0,0,0,.12)'};
+      width:44px;height:62px;border-radius:7px;
+      background:linear-gradient(145deg,#1e1535,#0d0820);
+      border:1.5px solid ${s ? '#f0d080' : cor+'99'};
       position:relative;
       cursor:${clicavel?'pointer':'default'};
-      transform:${s?'translateY(-7px)':'none'};
+      transform:${s?'translateY(-8px)':'none'};
       transition:all .15s;
-      box-shadow:${s?'0 6px 18px rgba(201,168,76,.55), 0 2px 6px rgba(0,0,0,.35)':'0 2px 5px rgba(0,0,0,.4)'};
+      box-shadow:${s
+        ? `0 8px 20px rgba(201,168,76,.5), 0 0 10px ${cor}55`
+        : `0 0 6px ${cor}22, 0 2px 5px rgba(0,0,0,.6)`};
       flex-shrink:0;overflow:hidden;
     ">
-    <div style="position:absolute;top:2px;left:3px;line-height:1.15;text-align:left;">
-      <div style="font-family:'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:${textCor};">${c.label}</div>
-      <div style="font-size:8px;line-height:1;color:${textCor};">${c.naipe}</div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,${cor}22,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;top:3px;left:4px;line-height:1.15;text-align:left;">
+      <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${cor};text-shadow:0 0 6px ${cor}66;">${c.label}</div>
+      <div style="font-size:10px;line-height:1;color:${cor};">${c.naipe}</div>
     </div>
-    <div style="font-size:17px;color:${textCor};text-align:center;width:100%;margin-top:6px;line-height:1;">${c.naipe}</div>
-    <div style="position:absolute;bottom:2px;right:3px;transform:rotate(180deg);line-height:1.15;text-align:left;">
-      <div style="font-family:'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:${textCor};">${c.label}</div>
-      <div style="font-size:8px;line-height:1;color:${textCor};">${c.naipe}</div>
+    <div style="font-size:20px;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 10px ${cor}88;">${c.naipe}</div>
+    <div style="position:absolute;bottom:3px;right:4px;transform:rotate(180deg);line-height:1.15;text-align:left;">
+      <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${cor};text-shadow:0 0 6px ${cor}66;">${c.label}</div>
+      <div style="font-size:10px;line-height:1;color:${cor};">${c.naipe}</div>
     </div>
   </div>`;
 }
 
 // ── Carta mini (26×36) — mesa central e topos de monte ─────────────
 function _rmHtmlCartaMini(c) {
-  const cor     = c.cor || '#e8a030';
-  const textCor = cor === '#f0d080' ? '#b8860b' : cor;
+  const cor = c.cor || '#e8a030';
   return `<div style="
-    width:26px;height:36px;border-radius:4px;
-    background:#f8f5ee;
-    border:1px solid rgba(0,0,0,.12);
+    width:28px;height:40px;border-radius:5px;
+    background:linear-gradient(145deg,#1e1535,#0d0820);
+    border:1px solid ${cor}88;
     position:relative;overflow:hidden;flex-shrink:0;
-    box-shadow:0 2px 5px rgba(0,0,0,.4);">
-    <div style="position:absolute;top:1px;left:2px;line-height:1.1;">
-      <div style="font-size:7px;font-weight:700;color:${textCor};">${c.label}</div>
+    box-shadow:0 0 5px ${cor}22, 0 2px 4px rgba(0,0,0,.6);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,${cor}18,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;top:2px;left:3px;line-height:1.1;">
+      <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:${cor};text-shadow:0 0 4px ${cor}66;">${c.label}</div>
     </div>
-    <div style="font-size:12px;color:${textCor};text-align:center;width:100%;margin-top:8px;line-height:1;">${c.naipe}</div>
-    <div style="position:absolute;bottom:1px;right:2px;transform:rotate(180deg);line-height:1.1;">
-      <div style="font-size:7px;font-weight:700;color:${textCor};">${c.label}</div>
+    <div style="font-size:14px;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 8px ${cor}88;">${c.naipe}</div>
+    <div style="position:absolute;bottom:2px;right:3px;transform:rotate(180deg);line-height:1.1;">
+      <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:${cor};text-shadow:0 0 4px ${cor}66;">${c.label}</div>
     </div>
   </div>`;
 }
@@ -861,12 +862,6 @@ function _rmRenderPartida(salaId, sala, opWallet) {
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
           ✅ JOGAR CARTA
-        </button>
-        <button id="rmBtnDescartar" class="arena-btn-sair"
-          style="flex:1;font-size:7px;padding:7px 4px;"
-          onclick="rmDescartar('${salaId}','${opWallet}')"
-          ${_rmCartaSel===null?'disabled':''}>
-          ↩️ DESCARTAR
         </button>` : `
         <div style="flex:1;display:flex;align-items:center;justify-content:center;
                     font-size:6px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;">
@@ -1061,16 +1056,14 @@ function rmSelecionarCarta(idx) {
     const i   = Number(el.dataset.carta);
     const sel = _rmCartaSel===i;
     const cor = el.dataset.cor||'rgba(201,168,76,.25)';
-    el.style.background = sel?'rgba(201,168,76,.12)':'#0d0a1e';
-    el.style.border     = `1.5px solid ${sel?'#f0d080':cor}`;
-    el.style.transform  = sel?'translateY(-6px)':'none';
-    el.style.boxShadow  = sel?'0 4px 14px rgba(201,168,76,.3)':'none';
+    el.style.background = sel ? 'linear-gradient(145deg,#2a1d45,#1a0f30)' : 'linear-gradient(145deg,#1e1535,#0d0820)';
+    el.style.border     = `1.5px solid ${sel ? '#f0d080' : cor+'99'}`;
+    el.style.transform  = sel ? 'translateY(-8px)' : 'none';
+    el.style.boxShadow  = sel ? `0 8px 20px rgba(201,168,76,.5), 0 0 10px ${cor}55` : `0 0 6px ${cor}22, 0 2px 5px rgba(0,0,0,.6)`;
   });
 
   const btn = document.getElementById('rmBtnJogar');
   if(btn) btn.disabled = _rmCartaSel===null;
-  const btnDesc = document.getElementById('rmBtnDescartar');
-  if(btnDesc) btnDesc.disabled = _rmCartaSel===null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
