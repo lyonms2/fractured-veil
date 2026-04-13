@@ -128,7 +128,15 @@ function iniciarMktAuth() {
       await loadPlayerData();
       loadListings();
       await loadPool();
-      renderSection();
+
+      // Deep-link: ?section=eggs&listEgg=<b64>
+      const deepSection = new URLSearchParams(window.location.search).get('section');
+      if(deepSection && deepSection !== currentSection) {
+        showSection(deepSection);
+      } else {
+        renderSection();
+      }
+      if(typeof checkPendingEggListing === 'function') checkPendingEggListing();
 
     } else {
       // Não autenticado — mostra connectWall

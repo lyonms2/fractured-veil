@@ -15,6 +15,11 @@ let listingEggData  = null; // ovo a listar
 const EGG_LIST_FEE = 0;    // sem taxa de listagem — mais simples para ovos
 const EGG_SALE_TAX = 0.10; // 10% da venda vai para a pool
 
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('listEggOverlay');
+  if(overlay) overlay.addEventListener('click', e => { if(e.target === overlay) closeListEggModal(); });
+});
+
 // ═══════════════════════════════════════════
 // CARREGAR LISTAGENS DE OVOS (listener em tempo real)
 // ═══════════════════════════════════════════
@@ -202,6 +207,23 @@ async function buyEggFromMarket(listingId) {
     else if(e.message === 'OWN_EGG')  showToast('Não podes comprar o teu próprio ovo.', 'err');
     else if(e.message === 'INSUFFICIENT') showToast('Cristais insuficientes.', 'err');
     else { console.error(e); showToast('Erro ao comprar ovo. Tenta novamente.', 'err'); }
+  }
+}
+
+// ═══════════════════════════════════════════
+// DEEP-LINK: abrir modal de listagem via URL param
+// ═══════════════════════════════════════════
+function checkPendingEggListing() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('listEgg');
+  if(!raw) return;
+  // Limpa os params da URL para não reabrir em navegações futuras
+  history.replaceState(null, '', window.location.pathname);
+  try {
+    const ovoData = JSON.parse(atob(raw));
+    openListEggModal(ovoData);
+  } catch(e) {
+    console.warn('[checkPendingEggListing] param inválido', e);
   }
 }
 

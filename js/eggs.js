@@ -766,13 +766,21 @@ function renderEggInventory() {
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 Chocar</button>
-             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="window.open('marketplace.html','_blank')">🛒</button>` : ''}
+             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="listEggOnMarket(${ovo.id})">🛒</button>` : ''}
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎</button>` : ''}
              <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
         }
       </div>
     </div>`;
   }).join('');
+}
+
+function listEggOnMarket(eggId) {
+  const ovo = eggsInInventory.find(e => e.id === eggId);
+  if(!ovo) return;
+  const data = { id: ovo.id, raridade: ovo.raridade, elemento: ovo.elemento, expiraEm: ovo.expiraEm };
+  const encoded = btoa(JSON.stringify(data));
+  window.open(`marketplace.html?section=eggs&listEgg=${encoded}`, '_blank');
 }
 
 function petCreature() {
