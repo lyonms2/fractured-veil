@@ -379,15 +379,7 @@ function gameTick() {
     if(eggLayCooldown > 0) {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = 'none';
-      // Mostra botão desabilitado com tempo restante
-      if(corner) {
-        const horasR = Math.ceil(eggLayCooldown * 60 / 3600);
-        corner.style.display = 'block';
-        corner.style.opacity = '0.45';
-        corner.style.animation = 'none';
-        corner.title = `Pronto em ~${horasR}h`;
-        corner.textContent = `🥚 ${horasR}h`;
-      }
+      if(corner) corner.style.display = 'none';
     } else {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = '';
