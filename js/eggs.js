@@ -252,17 +252,17 @@ async function _doBurnRaro(id, finalGems, bonus) {
 
 async function sellEggToPool(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
-  if(idx === -1) return;
+  if(idx === -1) { addLog('Ovo não encontrado localmente.', 'bad'); return; }
   const ovo = eggsInInventory[idx];
   if(ovo.raridade === 'Comum') { addLog('Ovos Comuns não são aceites pela pool.','bad'); return; }
-  if(!firebase.auth().currentUser) { addLog('Conecta a carteira primeiro.','bad'); return; }
+  if(!firebase?.auth?.()?.currentUser) { addLog('Conecta a conta primeiro.','bad'); return; }
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id }),
+      body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
@@ -281,7 +281,8 @@ async function sellEggToPool(id) {
     showFloat(`+${json.preco}💎`, '#a78bfa');
     showBubble(`+${json.preco} 💎 da pool!`);
   } catch(err) {
-    console.error('[sellEggToPool]', err.message);
+    console.error('[sellEggToPool]', err);
+    showBubble('Erro ao vender ovo 😢');
     addLog(`⚠️ ${err.message || 'Erro ao vender à pool.'}`, 'bad');
   }
 }
