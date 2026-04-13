@@ -74,8 +74,8 @@
   }
 
   #mazeCanvas {
-    width:  min(310px, calc(100vh - 210px)) !important;
-    height: min(310px, calc(100vh - 210px)) !important;
+    width:  min(270px, calc(100vh - 240px)) !important;
+    height: min(270px, calc(100vh - 240px)) !important;
   }
 
   /* D-pad desnecessário no desktop */
