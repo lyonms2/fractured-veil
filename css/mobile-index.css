@@ -236,6 +236,25 @@
     z-index: 300 !important;
   }
 
+  /* Modais de painel (market, inventário) — no mobile o próprio modal rola,
+     o overflow:hidden do desktop ficaria a bloquear o scroll */
+  #marketModal,
+  #itemInvModal,
+  #coinShopModal,
+  #eggInvModal {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  #marketModal .modal-scroll-body,
+  #itemInvModal .modal-scroll-body,
+  #coinShopModal .modal-scroll-body,
+  #eggInvModal .modal-scroll-body {
+    overflow-y: visible;
+    flex: unset;
+    min-height: unset;
+    height: auto;
+  }
+
   /* Drag handle visual */
   .mini-modal::before {
     content: '';
