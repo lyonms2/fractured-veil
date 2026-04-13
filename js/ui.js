@@ -282,6 +282,20 @@ function fillCreatureCard() {
     descEl.style.color           = car ? car.cor + 'bb' : '#887799';
   }
 
+  const bonusBlock = document.getElementById('elemBonusBlock');
+  const bonusTxt   = document.getElementById('elemBonusTxt');
+  const bonusLabel = document.getElementById('elemBonusLabel');
+  if(bonusBlock && bonusTxt && car?.bonus) {
+    bonusTxt.textContent              = car.bonus;
+    bonusTxt.style.color              = car.cor + 'cc';
+    bonusLabel.style.color            = car.cor;
+    bonusBlock.style.borderColor      = car.cor + '33';
+    bonusBlock.style.backgroundColor  = car.cor + '0d';
+    bonusBlock.style.display          = '';
+  } else if(bonusBlock) {
+    bonusBlock.style.display = 'none';
+  }
+
   const rb   = rarityBonus();
   const rbEl = document.getElementById('rarityBonusTxt');
   if(rbEl) {
