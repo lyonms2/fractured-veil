@@ -67,7 +67,7 @@ function calcEggExpiry(raridade) {
   return Date.now() + dias * 24 * 60 * 60 * 1000;
 }
 
-function layEgg() {
+async function layEgg() {
   if(getFase() < 3) { showBubble('Ainda não cresci o suficiente... 🥚'); return; }
   if(!avatar || !hatched || dead) return;
   if(eggLayCooldown > 0) {
@@ -75,59 +75,72 @@ function layEgg() {
     showBubble(`Preciso descansar... (~${horasRestantes}h)`);
     return;
   }
-  const EGG_COST = 50;
-  if(gs.moedas < EGG_COST) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
-  spendCoins(EGG_COST);
-
-  const MAX_EGGS = 10;
-  if(eggsInInventory.length >= MAX_EGGS) {
-    showBubble(`Inventário cheio! (${MAX_EGGS} ovos máx) 🥚`);
-    addLog(`Inventário cheio — descarta ou choca um ovo primeiro.`, 'bad');
-    earnCoins(EGG_COST);
+  if(gs.moedas < 50) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
+  if(eggsInInventory.length >= 10) {
+    showBubble('Inventário cheio! (10 ovos máx) 🥚');
+    addLog('Inventário cheio — descarta ou choca um ovo primeiro.', 'bad');
     return;
   }
-  const rb = rarityBonus();
-  const numEggs = Math.min(rb.eggs, MAX_EGGS - eggsInInventory.length);
-  for(let i = 0; i < numEggs; i++) {
-    const raridade = calcEggRarity();
-    const expiraEm = calcEggExpiry(raridade);
-    eggsInInventory.push({ raridade, elemento: avatar.elemento, expiraEm, id: Date.now() + i });
-    if(avatar) {
-      avatar.totalOvos  = (avatar.totalOvos ||0)+1;
-      if(raridade !== 'Comum') avatar.totalRaros = (avatar.totalRaros||0)+1;
+  if(!firebase?.auth?.()?.currentUser) { showBubble('Conecta a conta primeiro!'); return; }
+
+  // Bloqueia clique duplo
+  eggLayCooldown = 1;
+  showBubble('A botar ovo... 🥚');
+
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/layegg', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ idToken }),
+    });
+    const json = await resp.json();
+    if(!json.ok) throw new Error(json.erro || 'Erro ao botar ovo');
+
+    // Aplica estado retornado pelo servidor
+    json.eggs.forEach((ovo, i) => {
+      eggsInInventory.push(ovo);
+      if(avatar) {
+        avatar.totalOvos  = (avatar.totalOvos  || 0) + 1;
+        if(ovo.raridade !== 'Comum') avatar.totalRaros = (avatar.totalRaros || 0) + 1;
+      }
+    });
+    gs.moedas            = json.novasMoedas;
+    window._eggLayReadyAt = json.eggLayReadyAt;
+    if(avatar) avatar.eggLayReadyAt = json.eggLayReadyAt;
+    const msLeft = json.eggLayReadyAt - Date.now();
+    eggLayCooldown = Math.ceil(msLeft / 60000);
+    eggLayNotified = false;
+
+    const raridade = json.eggs[0].raridade;
+    const numEggs  = json.eggs.length;
+
+    playAnim('anim-layegg');
+    playSound('egg_laid');
+    const wrap = document.getElementById('creatureWrap');
+    if(wrap) {
+      const ep = document.createElement('div');
+      ep.className  = 'egg-pop';
+      ep.textContent = raridade === 'Lendário' ? '🌟' : raridade === 'Raro' ? '🔵' : '🥚';
+      ep.style.cssText = 'left:50%;top:30%;';
+      wrap.appendChild(ep);
+      setTimeout(() => ep.remove(), 1500);
     }
-  }
-  const raridade = eggsInInventory[eggsInInventory.length - numEggs].raridade;
-  // Usa timestamp para que o cooldown avance mesmo com a página fechada
-  const cooldownMins = Math.round(1440 * rb.cooldown); // minutos (24h base × multiplicador)
-  const cooldownMs   = cooldownMins * 60 * 1000;
-  eggLayCooldown = cooldownMins; // em minutos — consistente com gametick
-  window._eggLayReadyAt = Date.now() + cooldownMs;
-  if(avatar) avatar.eggLayReadyAt = window._eggLayReadyAt;
-  // Save imediato — não usa scheduleSave para evitar bug de ovo infinito ao recarregar a página
-  clearTimeout(_saveTimeout); _saveTimeout = null;
-  saveToFirebase();
-  eggLayNotified  = false;
 
-  playAnim('anim-layegg');
-  playSound('egg_laid');
-  const wrap = document.getElementById('creatureWrap');
-  if(wrap) {
-    const ep = document.createElement('div');
-    ep.className = 'egg-pop';
-    ep.textContent = raridade === 'Lendário' ? '🌟' : raridade === 'Raro' ? '🔵' : '🥚';
-    ep.style.cssText = 'left:50%;top:30%;';
-    wrap.appendChild(ep);
-    setTimeout(() => ep.remove(), 1500);
-  }
+    const rarColor = raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good';
+    const eggWord  = numEggs > 1 ? `${numEggs} ovos` : 'um ovo';
+    showBubble(numEggs > 1 ? `Botei ${numEggs} ovos! 🥚` : `Botei um ovo ${raridade === 'Lendário' ? 'Lendário! 🌟' : raridade === 'Raro' ? 'Raro! 💙' : 'Comum! 🥚'}`);
+    addLog(`🥚 Botou ${eggWord}! Verifique o inventário.`, rarColor);
+    showFloat(`🥚 ×${numEggs}`, raridade === 'Lendário' ? '#e8a030' : raridade === 'Raro' ? '#5ab4e8' : '#7ab87a');
+    renderEggInventory();
+    updateResourceUI();
+    scheduleSave();
 
-  const rarColor = raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good';
-  const eggWord = numEggs > 1 ? `${numEggs} ovos` : 'um ovo';
-  showBubble(numEggs > 1 ? `Botei ${numEggs} ovos! 🥚` : `Botei um ovo ${raridade === 'Lendário' ? 'Lendário! 🌟' : raridade === 'Raro' ? 'Raro! 💙' : 'Comum! 🥚'}`);
-  addLog(`🥚 Botou ${eggWord}! Verifique o inventário.`, rarColor);
-  showFloat(`🥚 ×${numEggs}`, raridade === 'Lendário' ? '#e8a030' : raridade === 'Raro' ? '#5ab4e8' : '#7ab87a');
-  renderEggInventory();
-  updateResourceUI();
+  } catch(err) {
+    eggLayCooldown = 0; // libera botão se falhou
+    showBubble(`Erro: ${err.message}`);
+    addLog(`⚠️ ${err.message}`, 'bad');
+  }
 }
 
 function burnEgg(id) {
