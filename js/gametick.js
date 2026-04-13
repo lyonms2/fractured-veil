@@ -375,16 +375,29 @@ function gameTick() {
       eggLayCooldown = 0;
       window._eggLayReadyAt = 0;
     }
+    const corner = document.getElementById('btnLayEggCorner');
     if(eggLayCooldown > 0) {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = 'none';
-      const corner = document.getElementById('btnLayEggCorner');
-      if(corner) corner.style.display = 'none';
+      // Mostra botão desabilitado com tempo restante
+      if(corner) {
+        const horasR = Math.ceil(eggLayCooldown * 60 / 3600);
+        corner.style.display = 'block';
+        corner.style.opacity = '0.45';
+        corner.style.animation = 'none';
+        corner.title = `Pronto em ~${horasR}h`;
+        corner.textContent = `🥚 ${horasR}h`;
+      }
     } else {
       const btn = document.getElementById('btnLayEgg');
       if(btn) btn.style.display = '';
-      const corner = document.getElementById('btnLayEggCorner');
-      if(corner) corner.style.display = 'block';
+      if(corner) {
+        corner.style.display = 'block';
+        corner.style.opacity = '1';
+        corner.style.animation = 'egg-ready-pulse 1.4s ease-in-out infinite';
+        corner.title = 'Pronto para botar!';
+        corner.textContent = '🥚';
+      }
       if(!eggLayNotified) {
         eggLayNotified = true;
         showBubble('Sinto algo... 🥚');
