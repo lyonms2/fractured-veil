@@ -169,9 +169,11 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
       if (saqueHoje >= POOL_LIMITE_DIA)   throw new Error('Limite diário global da pool atingido.');
 
       // Validar ovo no inventário
-      const activeSlot = (pData.avatarSlots || [])[pData.gs?.activeSlot ?? pData.activeSlot ?? 0];
-      const eggs = activeSlot?.eggs || [];
-      const ovoIdx = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      // Campo correto no Firebase é activeSlotIdx (não activeSlot)
+      const slotIdx    = pData.activeSlotIdx ?? pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
+      const activeSlot = (pData.avatarSlots || [])[slotIdx];
+      const eggs       = activeSlot?.eggs || [];
+      const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
       if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
 
       // Limite semanal por jogador
@@ -190,10 +192,9 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
       if (poolData.cristais < preco) throw new Error('Pool sem saldo suficiente.');
 
       // Remover ovo do inventário
-      const newEggs = [...eggs];
+      const newEggs  = [...eggs];
       newEggs.splice(ovoIdx, 1);
       const newSlots = [...(pData.avatarSlots || [])];
-      const slotIdx  = pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
       if (newSlots[slotIdx]) newSlots[slotIdx] = { ...newSlots[slotIdx], eggs: newEggs };
 
       const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
@@ -250,15 +251,15 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
       if ((poolData.saqueHoje || 0) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
 
       // Validar ovo
-      const activeSlot = (pData.avatarSlots || [])[pData.gs?.activeSlot ?? pData.activeSlot ?? 0];
-      const eggs = activeSlot?.eggs || [];
-      const ovoIdx = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      const slotIdx    = pData.activeSlotIdx ?? pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
+      const activeSlot = (pData.avatarSlots || [])[slotIdx];
+      const eggs       = activeSlot?.eggs || [];
+      const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
       if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
 
       const newEggs  = [...eggs];
       newEggs.splice(ovoIdx, 1);
       const newSlots = [...(pData.avatarSlots || [])];
-      const slotIdx  = pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
       if (newSlots[slotIdx]) newSlots[slotIdx] = { ...newSlots[slotIdx], eggs: newEggs };
 
       const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
