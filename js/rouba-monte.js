@@ -1169,7 +1169,7 @@ async function rmJogarCarta(salaId, opWallet) {
   });
 
   addLog(`Rouba Monte: ${acao}`, roubou?'good':'info');
-  if(roubou) showBubble('Roubei o monte! 🔥');
+  if(roubou) showBubble(rnd(FALAS.roubo));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1371,8 +1371,11 @@ async function _rmRenderResultado(sala, opWallet) {
   xp += xpGain;
   vitals.humor   = Math.min(100, vitals.humor  +(euVenci?15:10));
   vitals.higiene = Math.max(0,   vitals.higiene - 8);
+  const _oldVinculoRm = vinculo;
   vinculo += euVenci?6:2;
+  checkVinculoTier(_oldVinculoRm);
   checkXP(); updateAllUI(); scheduleSave();
+  setTimeout(() => showBubble(rnd(euVenci ? FALAS.win : empate ? FALAS.happy : FALAS.lose)), 800);
 
   // Remove do lobby — próprio e oponente (idempotente)
   const fila = _rmRaridade();

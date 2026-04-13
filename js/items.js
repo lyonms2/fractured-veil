@@ -128,6 +128,7 @@ function equipItem(id) {
   entry.equipped = true;
   const item = ITEM_CATALOG[entry.catalogId];
   addLog(`${item.emoji} ${item.nome} equipado!`, 'good');
+  showBubble(rnd(FALAS.item));
   scheduleSave();
   renderItemInventory();
   updateEquippedDisplay();

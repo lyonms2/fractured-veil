@@ -280,10 +280,10 @@ function wakeUp(reason) {
   document.getElementById('sleepLabel').textContent = 'DORMIR';
   document.getElementById('btnSleep').classList.remove('active-sleep');
   if(reason === 'full') {
-    showBubble('Energia cheia! ☀️');
+    showBubble(rnd(FALAS.fullEnergy));
     addLog('Acordou com energia plena!', 'good');
   } else {
-    showBubble('Acordei! 😊');
+    showBubble(rnd(FALAS.fullEnergy));
     addLog('Acordou descansado!', 'good');
   }
   scheduleSave();

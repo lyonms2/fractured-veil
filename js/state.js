@@ -134,6 +134,12 @@ function getVinculoBonus() {
   if(vinculo >= 51)  return { xpMult:1.10, eggRaro:0,  eggDura:1.0 };
   return               { xpMult:1.0,  eggRaro:0,  eggDura:1.0 };
 }
+function checkVinculoTier(oldVal) {
+  const oldTier = VINCULO_TIERS.filter(t => oldVal >= t.min).length;
+  const newTier = VINCULO_TIERS.filter(t => vinculo >= t.min).length;
+  if(newTier > oldTier && typeof showBubble === 'function' && typeof FALAS !== 'undefined')
+    showBubble(rnd(FALAS.vinculo));
+}
 let totalSecs = 0;
 let tickCount = 0;
 let eggClicks = 0;
@@ -160,13 +166,25 @@ function rarityBonus() {
   }
 }
 const FALAS = {
-  get happy()  { return t('falas.happy');  },
-  get hungry() { return t('falas.hungry'); },
-  get tired()  { return t('falas.tired');  },
-  get sick()   { return t('falas.sick');   },
-  get pet()    { return t('falas.pet');    },
-  get bored()  { return t('falas.bored');  },
-  get dirty()  { return t('falas.dirty');  },
+  get happy()       { return t('falas.happy');       },
+  get hungry()      { return t('falas.hungry');      },
+  get tired()       { return t('falas.tired');       },
+  get sick()        { return t('falas.sick');        },
+  get pet()         { return t('falas.pet');         },
+  get bored()       { return t('falas.bored');       },
+  get dirty()       { return t('falas.dirty');       },
+  get win()         { return t('falas.win');         },
+  get lose()        { return t('falas.lose');        },
+  get roubo()       { return t('falas.roubo');       },
+  get levelup()     { return t('falas.levelup');     },
+  get vinculo()     { return t('falas.vinculo');     },
+  get fullEnergy()  { return t('falas.fullEnergy');  },
+  get item()        { return t('falas.item');        },
+  get elemento() {
+    const el = avatar?.elemento;
+    const arr = el ? t(`falas.elem.${el}`) : null;
+    return (Array.isArray(arr) && arr.length) ? arr : t('falas.happy');
+  },
 };
 // ═══════════════════════════════════════════
 // SISTEMA DE SLOTS DE AVATAR

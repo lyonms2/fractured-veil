@@ -405,12 +405,12 @@ function gameTick() {
 
 function autoSpeak() {
   if(modoRepouso) return;
-  if(dirtyLevel >= 2)       showBubble(rnd(FALAS.dirty));
+  if(dirtyLevel >= 2)          showBubble(rnd(FALAS.dirty));
   else if(vitals.fome < 25)    showBubble(rnd(FALAS.hungry));
   else if(vitals.energia < 20) showBubble(rnd(FALAS.tired));
   else if(sick)                showBubble(rnd(FALAS.sick));
   else if(vitals.humor < 30)   showBubble(rnd(FALAS.bored));
-  else if(Math.random() < .3)  showBubble(rnd(FALAS.happy));
+  else if(Math.random() < .3)  showBubble(Math.random() < .35 ? rnd(FALAS.elemento) : rnd(FALAS.happy));
 }
 
 function playPhaseUp(faseName) {
@@ -569,5 +569,5 @@ function playLevelUp(newNivel) {
     clone.classList.remove('active');
   }, 2400);
 
-  showBubble('Nível up! 🌟');
+  showBubble(rnd(FALAS.levelup));
 }

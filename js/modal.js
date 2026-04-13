@@ -182,7 +182,9 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   const coinGain = Math.round(d.coins * coinMult * rb.moedas * 0.80);
   xp      += xpGain;
   earnCoins(coinGain);
+  const _oldVinculo = vinculo;
   vinculo += vinculoGain;
+  checkVinculoTier(_oldVinculo);
   checkXP(); updateAllUI(); scheduleSave();
 
   // Fissura — contribuir pontos PVE (fire-and-forget)
