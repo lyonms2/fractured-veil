@@ -296,7 +296,6 @@ function _renderVisitaOverlay() {
   const agora        = Date.now();
   const visitasFeitas = _contarVisitasGlobais();
   const limiteAtingido = visitasFeitas >= MAX_VISITAS_GLOBAL;
-  const semMoedas      = (gs?.moedas ?? 0) < CUSTO_VISITA;
 
   function btnInfo(tipo, vitalKey) {
     const last   = cooldowns[tipo] || 0;
@@ -305,12 +304,11 @@ function _renderVisitaOverlay() {
     const vitalMax   = Math.round(vitals[vitalKey] ?? 100) >= 100;
 
     let disabled = false;
-    let subLabel = `-${CUSTO_VISITA} 🪙 · +${XP_VISITA} XP`;
+    let subLabel = `+${CUSTO_VISITA} 🪙 · +${XP_VISITA} XP`;
 
-    if(emCooldown)      { disabled = true; subLabel = `(${_formatMs(restMs)})`; }
-    else if(vitalMax)   { disabled = true; subLabel = 'Já no máximo'; }
+    if(emCooldown)          { disabled = true; subLabel = `(${_formatMs(restMs)})`; }
+    else if(vitalMax)       { disabled = true; subLabel = 'Já no máximo'; }
     else if(limiteAtingido) { disabled = true; subLabel = 'Limite atingido'; }
-    else if(semMoedas)  { disabled = true; subLabel = 'Sem moedas'; }
 
     return { disabled, subLabel };
   }
@@ -404,8 +402,8 @@ async function executarVisita(tipo) {
     }
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
-    if(typeof showFloat === 'function') showFloat(`-${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#a78bfa');
-    if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! -${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, 'good');
+    if(typeof showFloat === 'function') showFloat(`+${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#7ab87a');
+    if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! +${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, 'good');
 
     _renderVisitaOverlay();
     // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)

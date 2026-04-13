@@ -340,9 +340,7 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
         throw new Error(`Limite de ${MAX_VISITAS} interações por 8h atingido.`);
       }
 
-      // Validar saldo do visitante
-      const moedas = myData.gs?.moedas ?? myData.moedas ?? 0;
-      if (moedas < MOEDAS_VISITA) throw new Error(`Precisas de ${MOEDAS_VISITA} 🪙 para interagir.`);
+      const moedas = myData.gs?.moedas ?? myData.moedas ?? 0;;
 
       // Validar que o alvo tem avatar activo e vivo
       const slotIdx = targetData.activeSlotIdx ?? targetData.gs?.activeSlotIdx ?? 0;
@@ -363,8 +361,8 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
         return { ...s, vitals: { ...(s.vitals || {}), [vitalField]: novoVital } };
       });
 
-      // Deduzir custo do visitante
-      const novasMoedas = moedas - MOEDAS_VISITA;
+      // Recompensar visitante
+      const novasMoedas = moedas + MOEDAS_VISITA;
 
       tx.update(db.collection('players').doc(uid), {
         'gs.moedas':                        novasMoedas,
