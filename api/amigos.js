@@ -23,6 +23,7 @@ const VITAL_BOOST   = 20;
 const COOLDOWN_MS   = 8 * 60 * 60 * 1000; // 8 horas
 const MAX_AMIGOS    = 50;
 const MAX_PEDIDOS   = 20;
+const MAX_VISITAS   = 10; // limite global por janela de 8h
 
 const TIPO_VITAL = {
   alimentar: 'fome',
@@ -317,13 +318,31 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
       // Validar amizade (bilateral)
       if (!myData.amigos?.[alvoUid]) throw new Error('Não são amigos.');
 
-      // Validar cooldown
-      const myCooldowns = (myData.visitasLog || {})[alvoUid] || {};
+      // Validar cooldown por botão
+      const visitasLog  = myData.visitasLog || {};
+      const myCooldowns = (visitasLog[alvoUid]) || {};
       const lastVisita   = myCooldowns[tipo] || 0;
       if (Date.now() - lastVisita < COOLDOWN_MS) {
         const restante = Math.ceil((COOLDOWN_MS - (Date.now() - lastVisita)) / 60000);
         throw new Error(`Aguarda mais ${restante} min para ${tipo} de novo.`);
       }
+
+      // Validar limite global de interações nas últimas 8h
+      const agora = Date.now();
+      let totalInteracoes = 0;
+      for (const amigoUid of Object.keys(visitasLog)) {
+        const amigoLog = visitasLog[amigoUid] || {};
+        for (const t of Object.keys(amigoLog)) {
+          if (agora - (amigoLog[t] || 0) < COOLDOWN_MS) totalInteracoes++;
+        }
+      }
+      if (totalInteracoes >= MAX_VISITAS) {
+        throw new Error(`Limite de ${MAX_VISITAS} interações por 8h atingido.`);
+      }
+
+      // Validar saldo do visitante
+      const moedas = myData.gs?.moedas ?? myData.moedas ?? 0;
+      if (moedas < MOEDAS_VISITA) throw new Error(`Precisas de ${MOEDAS_VISITA} 🪙 para interagir.`);
 
       // Validar que o alvo tem avatar activo e vivo
       const slotIdx = targetData.activeSlotIdx ?? targetData.gs?.activeSlotIdx ?? 0;
@@ -331,8 +350,11 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
       const slot    = slots[slotIdx];
       if (!slot?.hatched || slot?.dead) throw new Error('O amigo não tem avatar activo.');
 
-      // Calcular novos vitals do alvo (capped a 100)
+      // Validar que o vital não está já no máximo
       const vitalAtual = slot.vitals?.[vitalField] ?? 100;
+      if (vitalAtual >= 100) throw new Error(`${vitalField} já está no máximo.`);
+
+      // Calcular novos vitals do alvo (capped a 100)
       const novoVital  = Math.min(100, vitalAtual + VITAL_BOOST);
 
       // Actualizar slot do alvo em memória e escrever array completo
@@ -341,9 +363,8 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
         return { ...s, vitals: { ...(s.vitals || {}), [vitalField]: novoVital } };
       });
 
-      // Calcular recompensas do visitante
-      const moedas      = myData.gs?.moedas ?? myData.moedas ?? 0;
-      const novasMoedas = moedas + MOEDAS_VISITA;
+      // Deduzir custo do visitante
+      const novasMoedas = moedas - MOEDAS_VISITA;
 
       tx.update(db.collection('players').doc(uid), {
         'gs.moedas':                        novasMoedas,

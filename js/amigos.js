@@ -7,6 +7,8 @@
 
 const COOLDOWN_VISITA_MS = 8 * 60 * 60 * 1000; // 8h
 const XP_VISITA          = 15;
+const CUSTO_VISITA       = 50;
+const MAX_VISITAS_GLOBAL = 10;
 
 let _amigosData    = null; // { amigos, pedidos, visitasLog }
 let _visitaAtual   = null; // perfil do amigo sendo visitado
@@ -237,6 +239,20 @@ async function amigoRemover(alvoUid) {
 }
 window.amigoRemover = amigoRemover;
 
+// ── Contar interações globais nas últimas 8h ─────────────────
+function _contarVisitasGlobais() {
+  if(!_amigosData?.visitasLog) return 0;
+  const agora = Date.now();
+  let total = 0;
+  for(const amigoUid of Object.keys(_amigosData.visitasLog)) {
+    const log = _amigosData.visitasLog[amigoUid] || {};
+    for(const t of Object.keys(log)) {
+      if(agora - (log[t] || 0) < COOLDOWN_VISITA_MS) total++;
+    }
+  }
+  return total;
+}
+
 // ── Abrir overlay de visita ──────────────────────────────────
 async function amigoAbrirVisita(alvoUid) {
   const overlay = document.getElementById('visitaOverlay');
@@ -277,14 +293,26 @@ function _renderVisitaOverlay() {
   if(!body || !_visitaAtual) return;
   const { perfil, cooldowns } = _visitaAtual;
   const { vitals } = perfil;
-  const agora = Date.now();
+  const agora        = Date.now();
+  const visitasFeitas = _contarVisitasGlobais();
+  const limiteAtingido = visitasFeitas >= MAX_VISITAS_GLOBAL;
+  const semMoedas      = (gs?.moedas ?? 0) < CUSTO_VISITA;
 
-  function cooldownInfo(tipo) {
-    const last    = cooldowns[tipo] || 0;
-    const restMs  = COOLDOWN_VISITA_MS - (agora - last);
-    const pronto  = restMs <= 0;
-    const label   = pronto ? '' : `(${_formatMs(restMs)})`;
-    return { pronto, label };
+  function btnInfo(tipo, vitalKey) {
+    const last   = cooldowns[tipo] || 0;
+    const restMs = COOLDOWN_VISITA_MS - (agora - last);
+    const emCooldown = restMs > 0;
+    const vitalMax   = Math.round(vitals[vitalKey] ?? 100) >= 100;
+
+    let disabled = false;
+    let subLabel = `-${CUSTO_VISITA} 🪙 · +${XP_VISITA} XP`;
+
+    if(emCooldown)      { disabled = true; subLabel = `(${_formatMs(restMs)})`; }
+    else if(vitalMax)   { disabled = true; subLabel = 'Já no máximo'; }
+    else if(limiteAtingido) { disabled = true; subLabel = 'Limite atingido'; }
+    else if(semMoedas)  { disabled = true; subLabel = 'Sem moedas'; }
+
+    return { disabled, subLabel };
   }
 
   const acoes = [
@@ -322,14 +350,18 @@ function _renderVisitaOverlay() {
       }).join('')}
     </div>
 
+    <div class="visita-limite-info" style="text-align:center;font-size:11px;color:${limiteAtingido?'#e06c75':'#aaa'};margin-bottom:6px;">
+      ${visitasFeitas}/${MAX_VISITAS_GLOBAL} interações (8h)
+    </div>
+
     <div class="visita-acoes">
       ${acoes.map(a => {
-        const { pronto, label } = cooldownInfo(a.tipo);
+        const { disabled, subLabel } = btnInfo(a.tipo, a.vital);
         return `
-          <button class="visita-acao-btn ${pronto ? '' : 'disabled'}" id="visitaBtn-${a.tipo}"
-            ${pronto ? `onclick="executarVisita('${a.tipo}')"` : 'disabled'}>
+          <button class="visita-acao-btn ${disabled ? 'disabled' : ''}" id="visitaBtn-${a.tipo}"
+            ${disabled ? 'disabled' : `onclick="executarVisita('${a.tipo}')"`}>
             ${a.icon} ${a.label}<br>
-            <span class="visita-acao-sub">${pronto ? '+50 🪙 · +15 XP' : label}</span>
+            <span class="visita-acao-sub">${subLabel}</span>
           </button>`;
       }).join('')}
     </div>`;
@@ -372,8 +404,8 @@ async function executarVisita(tipo) {
     }
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
-    if(typeof showFloat === 'function') showFloat(`+50 🪙 +${XP_VISITA} XP`, '#7ab87a');
-    if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! +50 🪙 +${XP_VISITA} XP`, 'good');
+    if(typeof showFloat === 'function') showFloat(`-${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#a78bfa');
+    if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! -${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, 'good');
 
     _renderVisitaOverlay();
     // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)
