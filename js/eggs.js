@@ -89,10 +89,10 @@ async function layEgg() {
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch('/api/layegg', {
+    const resp    = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ idToken }),
+      body:    JSON.stringify({ acao: 'botar-ovo', idToken }),
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'Erro ao botar ovo');

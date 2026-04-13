@@ -117,6 +117,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
+  if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -289,6 +290,82 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
 
   } catch (err) {
     console.error('[pool/queimar-ovo]', err.message);
+    return res.status(400).json({ erro: err.message });
+  }
+}
+
+// ── Botar ovo (server-side, relógio do servidor) ────────────────
+function _calcEggRarity(raridade, nivel, vinculo) {
+  let c;
+  if (raridade === 'Comum') {
+    c = nivel < 25 ? [97,3,0] : nivel < 35 ? [94,5.5,0.5] : [90,8,2];
+  } else if (raridade === 'Raro') {
+    c = nivel < 25 ? [55,40,5] : nivel < 35 ? [40,50,10] : [25,55,20];
+  } else {
+    c = nivel < 25 ? [20,55,25] : nivel < 35 ? [10,50,40] : [5,40,55];
+  }
+  if (vinculo >= 301 && c[2] < 95) { c[1] = Math.max(0, c[1]-5); c[2] = Math.min(95, c[2]+10); }
+  else if (vinculo >= 151 && c[2] < 95) { c[1] = Math.max(0, c[1]-2.5); c[2] = Math.min(95, c[2]+5); }
+  const roll = Math.random() * 100;
+  if (roll < c[0]) return 'Comum';
+  if (roll < c[0] + c[1]) return 'Raro';
+  return 'Lendário';
+}
+
+async function handleBotarOvo(_req, res, db, uid) {
+  const playerRef = db.collection('players').doc(uid);
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('Jogador não encontrado');
+      const pData = snap.data();
+
+      const slotIdx = pData.activeSlotIdx ?? 0;
+      const slots   = pData.avatarSlots || [];
+      const slot    = slots[slotIdx];
+      if (!slot || !slot.hatched || slot.dead) throw new Error('Avatar não disponível');
+
+      const fase = slot.nivel >= 17 ? 3 : slot.nivel >= 10 ? 2 : slot.nivel >= 5 ? 1 : 0;
+      if (fase < 3) throw new Error('Avatar ainda não é adulto');
+
+      // Validar cooldown pelo relógio do servidor
+      const now           = Date.now();
+      const eggLayReadyAt = slot.eggLayReadyAt || 0;
+      if (eggLayReadyAt > now) {
+        const hLeft = Math.ceil((eggLayReadyAt - now) / 3600000);
+        throw new Error(`Cooldown ativo — pronto em ~${hLeft}h`);
+      }
+
+      const moedas = pData.gs?.moedas ?? pData.moedas ?? 0;
+      if (moedas < 50) throw new Error('Moedas insuficientes (precisa de 50 🪙)');
+
+      const raridade = slot.raridade || 'Comum';
+      const numEggs  = raridade === 'Lendário' ? 3 : raridade === 'Raro' ? 2 : 1;
+      const slotEggs = slot.eggs || [];
+      const canAdd   = Math.min(numEggs, 10 - slotEggs.length);
+      if (canAdd <= 0) throw new Error('Inventário de ovos cheio (máx 10)');
+
+      const novosOvos = [];
+      for (let i = 0; i < canAdd; i++) {
+        const r        = _calcEggRarity(raridade, slot.nivel || 1, slot.vinculo || 0);
+        const baseDias = r === 'Lendário' ? 30 : r === 'Raro' ? 14 : 7;
+        novosOvos.push({ raridade: r, elemento: slot.elemento || 'Terra', expiraEm: now + baseDias * 86400000, id: now + i });
+      }
+
+      const cdMult   = raridade === 'Lendário' ? 1.5 : raridade === 'Raro' ? 2.0 : 1.0;
+      const cdMs     = Math.round(24 * 3600000 * cdMult);
+      const newReady = now + cdMs;
+
+      const newSlots = [...slots];
+      newSlots[slotIdx] = { ...slot, eggs: [...slotEggs, ...novosOvos], eggLayReadyAt: newReady, eggLayCooldown: Math.ceil(cdMs / 60000) };
+      tx.update(playerRef, { avatarSlots: newSlots, 'gs.moedas': moedas - 50, moedas: moedas - 50 });
+
+      return { eggs: novosOvos, novasMoedas: moedas - 50, eggLayReadyAt: newReady };
+    });
+
+    return res.status(200).json({ ok: true, ...resultado });
+  } catch (err) {
+    console.error('[pool/botar-ovo]', err.message);
     return res.status(400).json({ erro: err.message });
   }
 }
