@@ -178,9 +178,9 @@ function _rmHtmlCartaMini(c) {
 // ═══════════════════════════════════════════════════════════════════
 
 function openRoubaMonte() {
-  if(!hatched||dead||!avatar) { showBubble('Precisa de um avatar ativo!'); return; }
-  if(sleeping||modoRepouso)   { showBubble('Descansando agora...'); return; }
-  if(!_rmRtdb())              { showBubble('Rouba Monte indisponível'); return; }
+  if(!hatched||dead||!avatar) { showBubble(t('arena.bub.need_avatar')); return; }
+  if(sleeping||modoRepouso)   { showBubble(t('arena.bub.resting')); return; }
+  if(!_rmRtdb())              { showBubble(t('rm.bub.unavailable')); return; }
   ModalManager.open('roubaMontModal');
 
   // Se há partida activa → restaura em vez de mostrar lobby
@@ -244,17 +244,17 @@ function _rmRenderLobby() {
 
     <!-- Cabeçalho -->
     <div class="arena-header" style="margin-bottom:8px;">
-      <div class="arena-title">🃏 ROUBA MONTE</div>
-      <div class="arena-sub">Duelo de cartas · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
+      <div class="arena-title">${t('rm.title')}</div>
+      <div class="arena-sub">${t('rm.sub')} <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
 
     <!-- Tabs -->
     <div class="arena-tabs">
       <button class="arena-tab active" id="rmTabLobby"   onclick="rmShowTab('lobby')">
-        <span class="arena-tab-icon">🏟️</span><span>LOBBY</span>
+        <span class="arena-tab-icon">🏟️</span><span>${t('arena.tab.lobby')}</span>
       </button>
       <button class="arena-tab"        id="rmTabRanking" onclick="rmShowTab('ranking')">
-        <span class="arena-tab-icon">🏆</span><span>RANKING</span>
+        <span class="arena-tab-icon">🏆</span><span>${t('arena.tab.ranking')}</span>
       </button>
     </div>
 
@@ -264,15 +264,15 @@ function _rmRenderLobby() {
       <!-- Aposta -->
       <div class="arena-aposta-info" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
         <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.bet_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
         </div>
         <div style="text-align:center;padding:0 6px;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.prize_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
         </div>
         <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.tax_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
         </div>
       </div>
@@ -281,19 +281,19 @@ function _rmRenderLobby() {
       <div id="rmLobbyActions" style="width:100%;">${_rmHtmlAcoes(podePagar)}</div>
 
       <!-- Lista de jogadores -->
-      <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <div class="arena-lobby-titulo">${t('rm.queue_label', {rar: rar.toUpperCase()})}</div>
       <input class="arena-lobby-search" id="rmLobbySearch" type="text"
-        placeholder="Buscar avatar..."
+        placeholder="${t('arena.search_ph')}"
         oninput="_rmFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="rmLobbyLista" style="width:100%;">
-        <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
+        <div class="arena-lobby-vazio">${t('rm.no_players')}</div>
       </div>
 
       <!-- Regras -->
       <div style="padding:8px 10px;background:rgba(255,255,255,.02);
                   border:1px solid rgba(255,255,255,.06);border-radius:6px;width:100%;">
         <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                    letter-spacing:1px;margin-bottom:6px;">◆ COMO JOGAR</div>
+                    letter-spacing:1px;margin-bottom:6px;">${t('rm.how_to')}</div>
         <div style="font-size:6.5px;color:var(--muted);line-height:2;">
           🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
           ✅ Carta igual à mesa → captura para o teu monte<br>
@@ -308,7 +308,7 @@ function _rmRenderLobby() {
     <!-- TAB RANKING -->
     <div id="rmTabContentRanking" class="arena-tab-content" style="display:none;">
       <div class="arena-ranking-wrap" id="rmRankingWrap">
-        <div class="arena-lobby-vazio">Carregando...</div>
+        <div class="arena-lobby-vazio">${t('ui.loading')}</div>
       </div>
       <div id="rmPoolInfo"></div>
     </div>
@@ -320,16 +320,16 @@ function _rmRenderLobby() {
 
 function _rmHtmlAcoes(podePagar) {
   if(_rmAtiva) return `
-    <button class="arena-btn-sair" onclick="rmSairDoLobby()">⬅ SAIR DA FILA</button>
+    <button class="arena-btn-sair" onclick="rmSairDoLobby()">${t('arena.leave_queue')}</button>
     <div class="arena-aguardando" style="margin-top:10px;">
-      <div class="arena-pulse"></div>Na fila — matchmaking automático ativo...
+      <div class="arena-pulse"></div>${t('arena.queue_active')}
     </div>`;
   return `
     <button class="arena-btn-entrar ${!podePagar?'disabled':''}"
       onclick="${podePagar?'rmEntrarNoLobby()':''}" ${!podePagar?'disabled':''}>
-      🃏 ENTRAR NA FILA
+      ${t('rm.enter_queue')}
     </button>
-    ${!podePagar?`<div class="arena-sem-saldo" style="margin-top:6px;">Saldo insuficiente (${_rmDescAposta()} necessário)</div>`:''}`;
+    ${!podePagar?`<div class="arena-sem-saldo" style="margin-top:6px;">${t('arena.no_balance_cost', {cost: _rmDescAposta()})}</div>`:''}`;
 }
 
 function _rmAtualizarAcoes() {
@@ -381,7 +381,7 @@ async function _rmCarregarRanking() {
 
   const medalhas = ['🥇','🥈','🥉'];
   wrap.innerHTML = lista.length===0
-    ? '<div class="arena-lobby-vazio">Nenhuma partida ainda.</div>'
+    ? `<div class="arena-lobby-vazio">${t('arena.no_matches')}</div>`
     : lista.map((d,i) => `
         <div class="arena-rank-row ${(d.wallet||'').toLowerCase()===(walletAddress||'').toLowerCase()?'arena-rank-meu':''}">
           <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
@@ -398,14 +398,14 @@ async function _rmCarregarRanking() {
       const poolVal  = poolData?.cristais || 0;
       if(pool) pool.innerHTML = `
         <div class="arena-pool-card">
-          <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
+          <div class="arena-pool-titulo">${t('arena.pool_title')}</div>
           <div class="arena-pool-valor">${poolVal} 💎</div>
-          <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+          <div class="arena-pool-sub">${t('arena.pool_reset')}</div>
         </div>
         <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.02);
                     border:1px solid rgba(255,255,255,.06);border-radius:6px;">
           <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                      letter-spacing:1px;margin-bottom:6px;">◆ COMO É DISTRIBUÍDO</div>
+                      letter-spacing:1px;margin-bottom:6px;">${t('arena.pool_how')}</div>
           <div style="font-size:6.5px;color:var(--muted);line-height:2;">
             📊 <b style="color:var(--text);">20%</b> da pool é distribuído por semana<br>
             💎 <b style="color:var(--text);">Lendário</b> recebe 60% do bolo · <b style="color:var(--text);">Raro</b> recebe 40%<br>
@@ -433,7 +433,7 @@ function _rmIniciarLobbyListener() {
     const lista = document.getElementById('rmLobbyLista');
     if(!lista) return;
     const dados = snap.val();
-    if(!dados) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
+    if(!dados) { lista.innerHTML = `<div class="arena-lobby-vazio">${t('rm.no_players')}</div>`; return; }
     const myKey = (walletAddress||'').toLowerCase();
     const agora = Date.now();
     const jogadores = Object.entries(dados).filter(([k,d]) =>
@@ -463,7 +463,7 @@ function _rmFiltrarLobby(query) {
     ? _rmLobbyJogadores.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
     : _rmLobbyJogadores;
   if(!filtrados.length) {
-    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+esc(query)+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? t('rm.no_results', {q: esc(query)}) : t('rm.no_players')}</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(([k,d]) => `
@@ -477,8 +477,8 @@ function _rmFiltrarLobby(query) {
         </div>
       </div>
       ${_rmAtiva
-        ? `<button class="arena-btn-desafiar" onclick="rmDesafiar('${d.wallet}')">🃏 DESAFIAR</button>`
-        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+        ? `<button class="arena-btn-desafiar" onclick="rmDesafiar('${d.wallet}')">${t('rm.challenge_btn')}</button>`
+        : `<div class="arena-lobby-aguarda">${t('arena.join_to_challenge')}</div>`}
     </div>`).join('');
 }
 window._rmFiltrarLobby = _rmFiltrarLobby;
@@ -489,7 +489,7 @@ window._rmFiltrarLobby = _rmFiltrarLobby;
 
 async function rmEntrarNoLobby() {
   if(!_rmRtdb()||!walletAddress||!avatar) return;
-  if(!_rmPodePagar()) { showBubble('Saldo insuficiente!'); return; }
+  if(!_rmPodePagar()) { showBubble(t('arena.bub.no_balance')); return; }
   const fila = _rmRaridade();
   _rmLobbyRef = _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`);
   await _rmLobbyRef.set({
@@ -504,7 +504,7 @@ async function rmEntrarNoLobby() {
     if(_rmLobbyRef) _rmLobbyRef.update({ts:firebase.database.ServerValue.TIMESTAMP});
   }, 10000);
   _rmAtiva = true;
-  addLog('Entrou na fila do Rouba Monte! 🃏','info');
+  addLog(t('rm.log.joined'), 'info');
   _rmAtualizarAcoes();
 }
 
@@ -512,7 +512,7 @@ async function rmSairDoLobby() {
   if(_rmLobbyRef) { try{await _rmLobbyRef.remove();}catch(e){} _rmLobbyRef=null; }
   if(_rmHeartbeat) { clearInterval(_rmHeartbeat); _rmHeartbeat=null; }
   _rmAtiva = false;
-  addLog('Saiu da fila do Rouba Monte.','info');
+  addLog(t('rm.log.left'), 'info');
   _rmAtualizarAcoes();
 }
 
@@ -574,8 +574,8 @@ async function rmDesafiar(walletOponente) {
   _rmDebitarAposta();
   scheduleSave();
   _rmSalaId = salaId;
-  addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`,'info');
-  showBubble('Desafio enviado! 🃏');
+  addLog(t('rm.log.sent_to', {wallet: walletOponente.slice(0,8)}), 'info');
+  showBubble(t('rm.bub.sent'));
   _rmRenderEspera(salaId);
 }
 
@@ -588,16 +588,16 @@ function _rmRenderEspera(salaId) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">🃏 ROUBA MONTE</div>
+      <div class="arena-title">${t('rm.title')}</div>
       <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">DESAFIO ENVIADO</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">Aguardando oponente aceitar...</div>
-      <div style="font-size:6px;color:var(--muted);margin-top:3px;">Sala #${salaId.slice(-6).toUpperCase()}</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
+      <div style="font-size:6px;color:var(--muted);margin-top:3px;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
       <div id="rmDesafioTimer" style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);margin-top:8px;">⏳ 60s</div>
       <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;width:100%;margin-top:4px;">
         <div id="rmDesafioTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
       </div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="rmCancelarDesafio('${salaId}')">✕ CANCELAR</button>
+      <button class="arena-btn-sair" style="margin-top:18px;" onclick="rmCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>`;
 
   // Timer de expiração — 60s sem resposta cancela automaticamente
@@ -635,7 +635,7 @@ function _rmRenderEspera(salaId) {
       updateResourceUI();
       scheduleSave();
       _rmAtiva=false; _rmSalaId=null;
-      addLog('Desafio cancelado ou recusado.','bad');
+      addLog(t('arena.log.cancelled'), 'bad');
       _rmRenderLobby();
     }
   });
@@ -661,9 +661,9 @@ async function rmCancelarDesafio(salaId) {
 
 async function rmAceitarDesafio(salaId) {
   if(!_rmRtdb()||!walletAddress||!avatar) return;
-  if(!_rmPodePagar()) { showBubble('Saldo insuficiente!'); return; }
+  if(!_rmPodePagar()) { showBubble(t('arena.bub.no_balance')); return; }
   const snapCheck = await _rmRtdb().ref(`roubaMonte/salas/${salaId}/status`).once('value');
-  if(snapCheck.val()!=='aguardando') { addLog('Desafio já expirou.','bad'); _rmRenderLobby(); return; }
+  if(snapCheck.val()!=='aguardando') { addLog(t('rm.log.expired'), 'bad'); _rmRenderLobby(); return; }
 
   _rmDebitarAposta();
   scheduleSave();
@@ -692,7 +692,7 @@ async function rmRecusarDesafio(salaId) {
     try{await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).remove();}catch(e){}
     try{await _rmRtdb().ref(`roubaMonte/notificacoes/${walletAddress}/${salaId}`).remove();}catch(e){}
   },3000);
-  addLog('Desafio recusado.','info');
+  addLog(t('arena.log.refused'), 'info');
   _rmRenderLobby();
 }
 
@@ -769,13 +769,13 @@ function _rmRenderPartida(salaId, sala, opWallet) {
 
       <!-- Cabeçalho status -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">🃏 ROUBA MONTE</div>
+        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">${t('rm.title')}</div>
         <div style="display:flex;align-items:center;gap:6px;">
           <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
             background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
             border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
             color:${meuTurno?'#7ab87a':'var(--muted)'};">
-            ${meuTurno?'⚡ SUA VEZ':'⏳ AGUARDANDO'}
+            ${meuTurno?t('rm.your_turn'):t('rm.wait')}
           </div>
           <span style="font-size:6px;color:var(--muted);">🃏 ${baralhoRest}</span>
         </div>
@@ -785,7 +785,7 @@ function _rmRenderPartida(salaId, sala, opWallet) {
       ${meuTurno ? `
       <div style="flex-shrink:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-          <span style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);letter-spacing:1px;">TEMPO RESTANTE</span>
+          <span style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);letter-spacing:1px;">${t('rm.time_left')}</span>
           <span id="rmTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">30s</span>
         </div>
         <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
@@ -804,28 +804,28 @@ function _rmRenderPartida(salaId, sala, opWallet) {
             ${op_info.nome||opWallet.slice(0,12)+'...'}
           </div>
           <div style="font-size:5.5px;color:var(--muted);margin-top:1px;">
-            Monte: <b style="color:var(--text);">${opMonte.length}</b> cartas
+            ${t('rm.op_pile', {n: opMonte.length})}
           </div>
         </div>
         ${topoOpMonte ? `
         <div style="flex-shrink:0;text-align:center;">
-          <div style="font-size:5px;color:var(--muted);margin-bottom:2px;letter-spacing:.5px;">TOPO MONTE</div>
+          <div style="font-size:5px;color:var(--muted);margin-bottom:2px;letter-spacing:.5px;">${t('rm.pile_top_lbl')}</div>
           ${_rmHtmlCartaMini(topoOpMonte)}
         </div>` : `
         <div style="flex-shrink:0;font-size:5.5px;color:var(--muted);text-align:center;width:30px;">
-          monte<br>vazio
+          ${t('rm.pile_empty')}
         </div>`}
       </div>
 
       <!-- Mesa central -->
       <div style="flex-shrink:0;">
         <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
-                    letter-spacing:1.5px;margin-bottom:3px;">MESA CENTRAL · ${mesa.length} CARTAS</div>
+                    letter-spacing:1.5px;margin-bottom:3px;">${t('rm.table', {n: mesa.length})}</div>
         <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:42px;
                     padding:4px 5px;background:rgba(255,255,255,.02);border-radius:6px;
                     border:1px dashed rgba(201,168,76,.12);">
           ${mesa.length===0
-            ? `<div style="font-size:6px;color:var(--muted);margin:auto;font-style:italic;">mesa vazia</div>`
+            ? `<div style="font-size:6px;color:var(--muted);margin:auto;font-style:italic;">${t('rm.table_empty')}</div>`
             : mesa.map(c=>_rmHtmlCartaMini(c)).join('')}
         </div>
       </div>
@@ -834,11 +834,11 @@ function _rmRenderPartida(salaId, sala, opWallet) {
       <div style="display:flex;align-items:center;gap:6px;padding:4px 7px;
                   background:rgba(122,184,122,.04);border:1px solid rgba(122,184,122,.12);
                   border-radius:5px;flex-shrink:0;">
-        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">📦 MEU MONTE</span>
-        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#7ab87a;">${meuMonte.length} cartas</span>
+        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">${t('rm.my_pile')}</span>
+        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#7ab87a;">${t('rm.pile_cards', {n: meuMonte.length})}</span>
         ${meuMonte.length>0?`
         <span style="font-size:5.5px;color:var(--muted);margin-left:auto;">
-          Topo: <b style="color:var(--gold);">${meuMonte[meuMonte.length-1].label}${meuMonte[meuMonte.length-1].naipe}</b>
+          ${t('rm.pile_top_mine', {card: meuMonte[meuMonte.length-1].label+meuMonte[meuMonte.length-1].naipe})}
         </span>`:''}
       </div>
 
@@ -846,11 +846,11 @@ function _rmRenderPartida(salaId, sala, opWallet) {
       <div style="flex-shrink:0;">
         <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
                     letter-spacing:1.5px;margin-bottom:5px;">
-          MINHA MÃO · ${minha_mao.length} CARTAS
+          ${t('rm.my_hand', {n: minha_mao.length})}
         </div>
         <div style="display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;">
           ${minha_mao.map((c,i)=>_rmHtmlCarta(c,i,meuTurno,_rmCartaSel)).join('')}
-          ${minha_mao.length===0?`<div style="font-size:6px;color:var(--muted);font-style:italic;">sem cartas</div>`:''}
+          ${minha_mao.length===0?`<div style="font-size:6px;color:var(--muted);font-style:italic;">${t('rm.no_cards')}</div>`:''}
         </div>
       </div>
 
@@ -861,11 +861,11 @@ function _rmRenderPartida(salaId, sala, opWallet) {
           style="flex:1;font-size:7px;padding:7px 4px;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
-          ✅ JOGAR CARTA
+          ${t('rm.play_card')}
         </button>` : `
         <div style="flex:1;display:flex;align-items:center;justify-content:center;
                     font-size:6px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;">
-          ⏳ vez do oponente...
+          ${t('rm.op_turn')}
         </div>`}
         <button class="arena-btn-sair"
           style="font-size:7px;padding:7px 10px;border-color:rgba(255,255,255,.2);color:var(--muted);"
@@ -986,10 +986,10 @@ function _rmAnimacaoRoubo(euRoubei, carta, callback) {
   `;
 
   const cor    = euRoubei ? '#e74c3c' : '#a78bfa';
-  const titulo = euRoubei ? '🔥 ROUBASTE O MONTE!' : '💀 MONTE ROUBADO!';
+  const titulo = euRoubei ? t('rm.stole') : t('rm.pile_stolen');
   const sub    = euRoubei
-    ? `${carta?.label||''}${carta?.naipe||''} bateu no topo do oponente`
-    : `Oponente roubou o teu monte`;
+    ? t('rm.stole_sub', {card: `${carta?.label||''}${carta?.naipe||''}`})
+    : t('rm.stolen_sub');
 
   overlay.innerHTML = `
     <div style="
@@ -1248,19 +1248,19 @@ function rmAbandonar(salaId) {
   overlay.innerHTML = `
     <div style="font-size:32px;">🏳️</div>
     <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;
-                color:#e74c3c;letter-spacing:2px;text-align:center;">ABANDONAR?</div>
+                color:#e74c3c;letter-spacing:2px;text-align:center;">${t('rm.abandon_title')}</div>
     <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.9;
                 padding:0 10px;">
-      O oponente ganhará a partida<br>e ficará com o prémio.
+      ${t('rm.abandon_desc')}
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;width:100%;">
       <button class="arena-btn-sair" style="flex:1;font-size:8px;"
         onclick="rmConfirmarAbandono('${salaId}')">
-        🏳️ CONFIRMAR
+        ${t('rm.abandon_confirm')}
       </button>
       <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
         onclick="document.getElementById('rmAbandonarOverlay').remove()">
-        ← CONTINUAR
+        ${t('rm.abandon_back')}
       </button>
     </div>
   `;
@@ -1301,7 +1301,7 @@ async function rmConfirmarAbandono(salaId) {
   _rmCartaSel = null;
   _rmAtiva    = false;
 
-  addLog('Abandonaste a partida. O oponente ganhou. 🏳️', 'bad');
+  addLog(t('rm.log.abandoned'), 'bad');
   ModalManager.close('roubaMontModal');
 }
 
@@ -1393,9 +1393,9 @@ async function _rmRenderResultado(sala, opWallet) {
     try{await _rmRtdb().ref(`roubaMonte/notificacoes/${opWallet}/${sala.id}`).remove();}catch(e){}
   }, 3000);
 
-  const titulo = abandono ? '🏆 VITÓRIA! (abandono)' : empate?'🤝 EMPATE!':euVenci?'🏆 VITÓRIA!':'💀 DERROTA';
+  const titulo = abandono ? t('rm.victory_abandon') : empate?t('arena.draw_final'):euVenci?t('rm.victory'):t('rm.defeat');
   const cor    = empate?'var(--gold)':euVenci?'#7ab87a':'#e74c3c';
-  addLog(`Rouba Monte: ${titulo} · ${meuMonte} vs ${opMonte} cartas`,euVenci?'good':empate?'info':'bad');
+  addLog(t('rm.log.result', {titulo, meu: meuMonte, op: opMonte}), euVenci?'good':empate?'info':'bad');
 
   el.innerHTML = `
     <div class="arena-resultado">
@@ -1415,14 +1415,14 @@ async function _rmRenderResultado(sala, opWallet) {
       </div>
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">+${Math.floor(bruto-bruto*RM_TAXA)} ${moeda} · +${xpGain} XP</div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: Math.floor(bruto-bruto*RM_TAXA), moeda, xp: xpGain})}</div>`
           : empate
-            ? `<div style="color:var(--muted);font-size:7px;">Apostas devolvidas · +${xpGain} XP</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">Melhor sorte! · +${xpGain} XP</div>`}
+            ? `<div style="color:var(--muted);font-size:7px;">${t('rm.bets_returned', {xp: xpGain})}</div>`
+            : `<div style="color:#e74c3c;font-size:7px;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_rmRenderLobby()">🃏 JOGAR DE NOVO</button>
-        <button class="arena-btn-sair" onclick="closeRoubaMonte()">✕ FECHAR</button>
+        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_rmRenderLobby()">${t('rm.play_again')}</button>
+        <button class="arena-btn-sair" onclick="closeRoubaMonte()">${t('arena.close_btn')}</button>
       </div>
     </div>`;
 }
@@ -1447,8 +1447,8 @@ function rmIniciarListenerNotificacoes() {
     const sala = salaSnap.val();
     if(!sala||sala.status!=='aguardando') return;
     console.log('[RM] Desafio recebido — sala:', notif.salaId);
-    showBubble('Desafio de Rouba Monte! 🃏');
-    addLog(`Desafio de Rouba Monte recebido de ${(sala.criador||'').slice(0,8)}...`,'info');
+    showBubble(t('rm.bub.challenged'));
+    addLog(t('rm.log.recv_from', {wallet: (sala.criador||'').slice(0,8)}), 'info');
     const el = document.getElementById('roubaMontModal');
     if(el&&el.classList.contains('open')) _rmRenderDesafioPendente(sala);
   });
@@ -1482,8 +1482,8 @@ async function _rmVerificarPartidaAtiva() {
 
     await new Promise(r => setTimeout(r, 1500));
 
-    addLog('Reconectado à partida de Rouba Monte!', 'info');
-    showBubble('Reconectado! 🃏');
+    addLog(t('rm.log.recon_match'), 'info');
+    showBubble(t('rm.bub.reconnected'));
     ModalManager.open('roubaMontModal');
 
     if(sala.status === 'aguardando') {
@@ -1505,15 +1505,15 @@ function _rmRenderDesafioPendente(sala) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">🃏 ROUBA MONTE</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">DESAFIO RECEBIDO!</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">De: ${(sala.criador||'').slice(0,10)}...</div>
+      <div class="arena-title">${t('rm.title')}</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
       <div style="font-size:7px;color:var(--muted);margin-top:3px;">
-        Aposta: ${sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'}
+        ${t('arena.bet_label', {val: sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'})}
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="rmAceitarDesafio('${sala.id}')">✅ ACEITAR</button>
-        <button class="arena-btn-sair" onclick="rmRecusarDesafio('${sala.id}')">✕ RECUSAR</button>
+        <button class="arena-btn-entrar" style="font-size:8px;" onclick="rmAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+        <button class="arena-btn-sair" onclick="rmRecusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>`;
 
@@ -1521,8 +1521,8 @@ function _rmRenderDesafioPendente(sala) {
   salaRef.on('value', snap => {
     if(snap.val()==='cancelada') {
       salaRef.off('value');
-      addLog('Desafio cancelado pelo oponente.','bad');
-      showBubble('Desafio cancelado! 😔');
+      addLog(t('arena.log.op_cancelled'), 'bad');
+      showBubble(t('arena.bub.ch_cancelled'));
       _rmRenderLobby();
     }
   });

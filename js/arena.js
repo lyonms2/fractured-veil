@@ -100,9 +100,9 @@ function _pararLobbyListener() {
 // ═══════════════════════════════════════════════════════════════════
 
 function openArena() {
-  if(!hatched || dead || !avatar) { showBubble('Precisa de um avatar ativo!'); return; }
-  if(sleeping || modoRepouso)     { showBubble('Descansando agora...'); return; }
-  if(!rtdb())                     { showBubble('Arena indisponível'); return; }
+  if(!hatched || dead || !avatar) { showBubble(t('arena.bub.need_avatar')); return; }
+  if(sleeping || modoRepouso)     { showBubble(t('arena.bub.resting')); return; }
+  if(!rtdb())                     { showBubble(t('arena.bub.unavailable')); return; }
   console.log('[ARENA] openArena — avatar:', avatar?.nome, 'raridade:', avatar?.raridade, 'rtdb ok:', !!rtdb());
   ModalManager.open('arenaModal');
   _renderLobby();
@@ -152,16 +152,16 @@ function _renderLobby() {
     <button class="gs-x-btn" onclick="closeArena()">✕</button>
 
     <div class="arena-header">
-      <div class="arena-title">⚔️ ARENA DIMENSIONAL</div>
-      <div class="arena-sub">Jo-Ken-Pô ao vivo · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
+      <div class="arena-title">${t('arena.title')}</div>
+      <div class="arena-sub">${t('arena.sub')} <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
 
     <div class="arena-tabs">
       <button class="arena-tab active" id="tabLobby"   onclick="arenaShowTab('lobby')">
-        <span class="arena-tab-icon">🏟️</span><span>LOBBY</span>
+        <span class="arena-tab-icon">🏟️</span><span>${t('arena.tab.lobby')}</span>
       </button>
       <button class="arena-tab"        id="tabRanking" onclick="arenaShowTab('ranking')">
-        <span class="arena-tab-icon">🏆</span><span>RANKING</span>
+        <span class="arena-tab-icon">🏆</span><span>${t('arena.tab.ranking')}</span>
       </button>
     </div>
 
@@ -169,9 +169,9 @@ function _renderLobby() {
     <div id="arenaTabLobby" class="arena-tab-content">
 
       <div class="arena-aposta-info">
-        <span>Aposta: <b>${_descAposta()}</b></span>
-        <span>Vencedor leva: <b>${valorLiq}</b></span>
-        <span style="color:var(--muted);font-size:6px;">15% → pool do ranking</span>
+        <span>${t('arena.bet_label', {val: _descAposta()})}</span>
+        <span>${t('arena.winner_takes', {val: valorLiq})}</span>
+        <span style="color:var(--muted);font-size:6px;">${t('arena.pool_pct')}</span>
       </div>
 
       <!-- Botões de ação — atualizados sem recriar o modal -->
@@ -179,19 +179,19 @@ function _renderLobby() {
         ${_htmlAcoes(podePagar)}
       </div>
 
-      <div class="arena-lobby-titulo">Avatares na fila ${rar}</div>
+      <div class="arena-lobby-titulo">${t('arena.queue_label', {rar})}</div>
       <input class="arena-lobby-search" id="arenaLobbySearch" type="text"
-        placeholder="Buscar avatar..."
+        placeholder="${t('arena.search_ph')}"
         oninput="_arenaFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="arenaLobbyLista">
-        <div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>
+        <div class="arena-lobby-vazio">${t('arena.no_avatars')}</div>
       </div>
     </div>
 
     <!-- TAB RANKING -->
     <div id="arenaTabRanking" class="arena-tab-content" style="display:none;">
       <div class="arena-ranking-wrap" id="arenaRankingWrap">
-        <div class="arena-lobby-vazio">Carregando...</div>
+        <div class="arena-lobby-vazio">${t('ui.loading')}</div>
       </div>
       <div id="arenaPoolInfo"></div>
     </div>
@@ -207,16 +207,16 @@ function _renderLobby() {
 function _htmlAcoes(podePagar) {
   if(_arenaAtiva) {
     return `
-      <button class="arena-btn-sair" onclick="sairDoLobby()">⬅ SAIR DA FILA</button>
-      <div class="arena-aguardando"><div class="arena-pulse"></div>Na fila — matchmaking automático ativo...</div>`;
+      <button class="arena-btn-sair" onclick="sairDoLobby()">${t('arena.leave_queue')}</button>
+      <div class="arena-aguardando"><div class="arena-pulse"></div>${t('arena.queue_active')}</div>`;
   }
   return `
     <button class="arena-btn-entrar ${!podePagar ? 'disabled' : ''}"
       onclick="${podePagar ? 'entrarNoLobby()' : ''}"
       ${!podePagar ? 'disabled' : ''}>
-      ⚔️ ENTRAR NA FILA
+      ${t('arena.enter_queue')}
     </button>
-    ${!podePagar ? `<div class="arena-sem-saldo">Saldo insuficiente (${_descAposta()} necessário)</div>` : ''}`;
+    ${!podePagar ? `<div class="arena-sem-saldo">${t('arena.no_balance_cost', {cost: _descAposta()})}</div>` : ''}`;
 }
 
 function _atualizarBotoesAcoes() {
@@ -260,7 +260,7 @@ function _iniciarLobbyListener() {
     const dados = snap.val();
 
     if(!dados) {
-      lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';
+      lista.innerHTML = `<div class="arena-lobby-vazio">${t('arena.no_avatars')}</div>`;
       return;
     }
 
@@ -294,7 +294,7 @@ function _iniciarLobbyListener() {
     }
 
     if(!avatares.length) {
-      lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum avatar na fila ainda...</div>';
+      lista.innerHTML = `<div class="arena-lobby-vazio">${t('arena.no_avatars')}</div>`;
       return;
     }
 
@@ -312,7 +312,7 @@ function _arenaFiltrarLobby(query) {
     ? _arenaLobbyAvatares.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
     : _arenaLobbyAvatares;
   if(!filtrados.length) {
-    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+esc(query)+'"' : 'Nenhum avatar na fila ainda...'}</div>`;
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? t('arena.no_results', {q: esc(query)}) : t('arena.no_avatars')}</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(([k, d]) => `
@@ -327,8 +327,8 @@ function _arenaFiltrarLobby(query) {
         </div>
       </div>
       ${_arenaAtiva
-        ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">⚔️ DESAFIAR</button>`
-        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+        ? `<button class="arena-btn-desafiar" onclick="desafiarJogador('${d.wallet}')">${t('arena.challenge_btn')}</button>`
+        : `<div class="arena-lobby-aguarda">${t('arena.join_to_challenge')}</div>`}
     </div>
   `).join('');
 }
@@ -340,7 +340,7 @@ window._arenaFiltrarLobby = _arenaFiltrarLobby;
 
 async function entrarNoLobby() {
   if(!rtdb() || !walletAddress || !avatar) return;
-  if(!_podePagar()) { showBubble('Saldo insuficiente!'); return; }
+  if(!_podePagar()) { showBubble(t('arena.bub.no_balance')); return; }
 
   const fila = _getFila();
   _arenaLobbyRef = rtdb().ref(`arena/lobby/${fila}/${walletAddress}`);
@@ -367,7 +367,7 @@ async function entrarNoLobby() {
   }, 10000);
 
   _arenaAtiva = true;
-  addLog('Entrou na fila da Arena! ⚔️', 'info');
+  addLog(t('arena.log.joined'), 'info');
   _atualizarBotoesAcoes();
 }
 
@@ -381,7 +381,7 @@ async function sairDoLobby() {
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
 
   _arenaAtiva = false;
-  addLog('Saiu da fila da Arena.', 'info');
+  addLog(t('arena.log.left'), 'info');
   _atualizarBotoesAcoes();
   // Não para o listener — continua vendo outros avatares na fila
 }
@@ -443,7 +443,7 @@ async function desafiarJogador(walletOponente) {
     return true;
   });
   if(!committed) {
-    showBubble('Oponente já entrou em outra partida!');
+    showBubble(t('arena.bub.op_in_match'));
     return;
   }
 
@@ -469,8 +469,8 @@ async function desafiarJogador(walletOponente) {
   _debitarAposta();
   scheduleSave();
   _arenaPartidaId = salaId;
-  addLog(`Desafio enviado para ${walletOponente.slice(0,8)}...`, 'info');
-  showBubble('Desafio enviado! ⚔️');
+  addLog(t('arena.log.sent_to', {wallet: walletOponente.slice(0,8)}), 'info');
+  showBubble(t('arena.bub.sent'));
   _renderSalaEspera(salaId);
 }
 
@@ -510,12 +510,12 @@ function _renderSalaEspera(salaId) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">⚔️ ARENA DIMENSIONAL</div>
+      <div class="arena-title">${t('arena.title')}</div>
       <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">DESAFIO ENVIADO</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">Aguardando o oponente aceitar...</div>
-      <div style="font-size:6px;color:var(--muted);margin-top:3px;">Sala #${salaId.slice(-6).toUpperCase()}</div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="cancelarDesafio('${salaId}')">✕ CANCELAR</button>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
+      <div style="font-size:6px;color:var(--muted);margin-top:3px;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
+      <button class="arena-btn-sair" style="margin-top:18px;" onclick="cancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>
   `;
 
@@ -537,7 +537,7 @@ function _renderSalaEspera(salaId) {
       scheduleSave();
       _arenaAtiva     = false;
       _arenaPartidaId = null;
-      addLog('Desafio cancelado ou recusado.', 'bad');
+      addLog(t('arena.log.cancelled'), 'bad');
       _renderLobby();
     }
   });
@@ -549,13 +549,13 @@ function _renderSalaEspera(salaId) {
 
 async function aceitarDesafio(salaId) {
   if(!rtdb() || !walletAddress || !avatar) return;
-  if(!_podePagar()) { showBubble('Saldo insuficiente para aceitar!'); return; }
+  if(!_podePagar()) { showBubble(t('arena.bub.no_bal_accept')); return; }
 
   // Verifica se a sala ainda está aguardando antes de debitar
   const snapCheck = await rtdb().ref(`arena/salas/${salaId}/status`).once('value');
   if(snapCheck.val() !== 'aguardando') {
-    addLog('Desafio já foi cancelado ou expirou.', 'bad');
-    showBubble('Desafio não disponível!');
+    addLog(t('arena.log.ch_expired'), 'bad');
+    showBubble(t('arena.bub.ch_unavail'));
     _renderLobby();
     return;
   }
@@ -589,7 +589,7 @@ async function recusarDesafio(salaId) {
     try { await rtdb().ref(`arena/salas/${salaId}`).remove(); } catch(e){}
     try { await rtdb().ref(`arena/notificacoes/${walletAddress}/desafios/${salaId}`).remove(); } catch(e){}
   }, 3000);
-  addLog('Desafio recusado.', 'info');
+  addLog(t('arena.log.refused'), 'info');
   _renderLobby();
 }
 
@@ -624,14 +624,14 @@ function _renderPartida(salaId, sala) {
   el.innerHTML = `
     <div class="arena-partida">
       <div class="arena-partida-header">
-        <div class="arena-rodada-badge">RODADA ${rodada} <span style="color:var(--muted)">/ ${ARENA_MAX_RODADAS}</span></div>
+        <div class="arena-rodada-badge">${t('arena.round_badge', {n: rodada, max: ARENA_MAX_RODADAS})}</div>
         <div class="arena-premio-badge">💰 ${_premioLiquido(bruto)} ${usaCris?'💎':'🪙'}</div>
       </div>
 
       <div class="arena-vs-row">
         <div class="arena-vs-lado" id="vsEu">
           <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 38, 38, faseFromNivel(meu.nivel))}</div>
-          <div class="arena-vs-nome">${meu.nome||'Você'}</div>
+          <div class="arena-vs-nome">${meu.nome||t('arena.you')}</div>
           <div class="arena-vs-stars" id="starsEu">${_pv(placar[walletAddress]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaEu">❓</div>
         </div>
@@ -641,7 +641,7 @@ function _renderPartida(salaId, sala) {
           <div class="arena-turno-wrap">
             <div class="arena-turno-bar" id="arenaTurnoBar" style="width:${minhaTurno?'100%':'0%'}"></div>
           </div>
-          <div class="arena-turno-label" id="arenaTurnoLabel">${minhaTurno?'SUA VEZ':'AGUARDE'}</div>
+          <div class="arena-turno-label" id="arenaTurnoLabel">${minhaTurno?t('arena.your_turn'):t('arena.wait')}</div>
         </div>
 
         <div class="arena-vs-lado" id="vsOp">
@@ -653,13 +653,13 @@ function _renderPartida(salaId, sala) {
       </div>
 
       <div class="arena-partida-status" id="arenaStatus">
-        ${minhaTurno ? '⚔️ Escolha sua jogada!' : '⏳ Aguardando oponente...'}
+        ${minhaTurno ? t('arena.choose') : t('arena.waiting_op')}
       </div>
 
       <div class="arena-escolhas" id="arenaEscolhas">
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','pedra')"   ${!minhaTurno?'disabled':''}>🪨<span>PEDRA</span></button>
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','papel')"   ${!minhaTurno?'disabled':''}>📄<span>PAPEL</span></button>
-        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','tesoura')" ${!minhaTurno?'disabled':''}>✂️<span>TESOURA</span></button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','pedra')"   ${!minhaTurno?'disabled':''}>🪨<span>${t('arena.rock')}</span></button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','papel')"   ${!minhaTurno?'disabled':''}>📄<span>${t('arena.paper')}</span></button>
+        <button class="arena-escolha-btn" onclick="fazerEscolha('${salaId}','tesoura')" ${!minhaTurno?'disabled':''}>✂️<span>${t('arena.scissors')}</span></button>
       </div>
 
       <div class="arena-round-banner" id="arenaRoundBanner" style="display:none;"></div>
@@ -757,10 +757,10 @@ function _escutarSala(salaId, opWallet) {
       _turnoAnterior = turno;
       if(turno === 2 && !euSouCriador) {
         const st = document.getElementById('arenaStatus');
-        if(st) st.textContent = '⚔️ Escolha sua jogada!';
+        if(st) st.textContent = t('arena.choose');
         document.querySelectorAll('.arena-escolha-btn').forEach(b => b.disabled = false);
         const label = document.getElementById('arenaTurnoLabel');
-        if(label) { label.textContent = 'SUA VEZ'; label.style.color = 'var(--gold)'; }
+        if(label) { label.textContent = t('arena.your_turn'); label.style.color = 'var(--gold)'; }
         _pararTimer();
         _iniciarBarraTurno(salaId, opWallet);
       }
@@ -840,17 +840,17 @@ async function fazerEscolha(salaId, escolha) {
     // ── Turno 1: criador escolheu ──
     // Atualiza só o meu lado (escolhaEu = meu lado quando sou criador)
     if(euEl) euEl.textContent = '✅';
-    if(st)   st.textContent   = '⏳ Aguardando oponente...';
+    if(st)   st.textContent   = t('arena.waiting_op');
     // Para barra e mostra neutra
     if(bar) { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.background = 'rgba(255,255,255,.08)'; }
-    if(lbl) { lbl.textContent = 'AGUARDE'; lbl.style.color = 'var(--muted)'; }
+    if(lbl) { lbl.textContent = t('arena.wait'); lbl.style.color = 'var(--muted)'; }
     // Avança turno para 2
     await rtdb().ref(`arena/salas/${salaId}`).update({ turno: 2 });
 
   } else {
     // ── Turno 2: oponente escolheu ──
     if(opEl) opEl.textContent = '✅';
-    if(st)   st.textContent   = '⚡ Calculando resultado...';
+    if(st)   st.textContent   = t('arena.calculating');
     if(bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
     if(lbl)   lbl.textContent = '';
 
@@ -919,7 +919,7 @@ async function _animarRevelacao(salaId, sala, opWallet) {
   if(lbl) lbl.textContent = '';
 
   // ── Fase 1: revela as escolhas dos dois ──
-  if(st) { st.textContent = '⚡ Revelando...'; st.className = 'arena-partida-status arena-countdown'; }
+  if(st) { st.textContent = t('arena.revealing'); st.className = 'arena-partida-status arena-countdown'; }
   await _sleep(400);
 
   if(eEu) { eEu.textContent = JKP_EMOJIS[minhaEscolha]; eEu.classList.add('pop'); }
@@ -952,9 +952,9 @@ async function _animarRevelacao(salaId, sala, opWallet) {
   else if(res === 'derrota') playSound('arena_round_lose');
   else                       playSound('arena_round_draw');
   const cfg = {
-    vitoria: { txt:'🏆 VOCÊ VENCEU A RODADA!', cor:'#7ab87a', bg:'rgba(122,184,122,.12)', borda:'rgba(122,184,122,.3)' },
-    derrota: { txt:'💀 VOCÊ PERDEU A RODADA',  cor:'#e74c3c', bg:'rgba(231,76,60,.10)',   borda:'rgba(231,76,60,.3)' },
-    empate:  { txt:'🤝 EMPATE!',               cor:'var(--gold)', bg:'rgba(201,168,76,.10)', borda:'rgba(201,168,76,.3)' },
+    vitoria: { txt: t('arena.round_win'),  cor:'#7ab87a',    bg:'rgba(122,184,122,.12)', borda:'rgba(122,184,122,.3)' },
+    derrota: { txt: t('arena.round_lose'), cor:'#e74c3c',    bg:'rgba(231,76,60,.10)',   borda:'rgba(231,76,60,.3)' },
+    empate:  { txt: t('arena.draw_round'), cor:'var(--gold)', bg:'rgba(201,168,76,.10)', borda:'rgba(201,168,76,.3)' },
   };
   const c = cfg[res];
   if(banner) {
@@ -1085,7 +1085,7 @@ async function _renderResultado(sala, opWallet) {
   if(empate)       playSound('arena_round_draw');
   else if(euVenci) playSound('win');
   else             playSound('lose');
-  const titulo = empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
+  const titulo = empate ? t('arena.draw_final') : euVenci ? t('arena.victory') : t('arena.defeat');
   const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
 
   el.innerHTML = `
@@ -1095,7 +1095,7 @@ async function _renderResultado(sala, opWallet) {
       <div class="arena-vs-row" style="margin:12px 0;">
         <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
           <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 36, 36, faseFromNivel(meu.nivel))}</div>
-          <div class="arena-vs-nome">${meu.nome||'Você'}</div>
+          <div class="arena-vs-nome">${meu.nome||t('arena.you')}</div>
           <div class="arena-vs-pts" style="font-size:20px;">${placar[walletAddress]||0}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
@@ -1108,23 +1108,23 @@ async function _renderResultado(sala, opWallet) {
 
       <div class="arena-recompensa-card">
         ${empate
-          ? `<div style="color:var(--muted);font-size:7px;">Empate — apostas devolvidas</div>`
+          ? `<div style="color:var(--muted);font-size:7px;">${t('arena.tie_refund')}</div>`
           : euVenci
-            ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">+${premio} ${moeda} recebidos!</div>
-               <div style="color:var(--muted);font-size:6px;margin-top:3px;">+${ARENA_PONTOS.vitoria} pontos no ranking</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">Melhor sorte na próxima!</div>
-               <div style="color:var(--muted);font-size:6px;margin-top:3px;">+${ARENA_PONTOS.derrota} ponto no ranking</div>`}
+            ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('arena.prize_received', {val: premio, moeda})}</div>
+               <div style="color:var(--muted);font-size:6px;margin-top:3px;">${t('arena.rank_pts_win', {pts: ARENA_PONTOS.vitoria})}</div>`
+            : `<div style="color:#e74c3c;font-size:7px;">${t('arena.better_luck')}</div>
+               <div style="color:var(--muted);font-size:6px;margin-top:3px;">${t('arena.rank_pts_lose', {pts: ARENA_PONTOS.derrota})}</div>`}
       </div>
 
       <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_renderLobby()">⚔️ JOGAR DE NOVO</button>
-        <button class="arena-btn-sair" onclick="closeArena()">✕ FECHAR</button>
+        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_renderLobby()">${t('arena.play_again')}</button>
+        <button class="arena-btn-sair" onclick="closeArena()">${t('arena.close_btn')}</button>
       </div>
     </div>
   `;
 
-  addLog(`Arena: ${titulo} contra ${op.nome||opWallet.slice(0,8)}`, euVenci?'good':empate?'info':'bad');
-  if(euVenci) showBubble(`Vitória! +${premio} ${moeda} 🏆`);
+  addLog(t('arena.log.result', {titulo, nome: op.nome||opWallet.slice(0,8)}), euVenci?'good':empate?'info':'bad');
+  if(euVenci) showBubble(t('arena.bub.victory', {val: premio, moeda}));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1192,7 +1192,7 @@ async function _carregarRanking() {
 
   const medalhas = ['🥇','🥈','🥉'];
   wrap.innerHTML = lista.length === 0
-    ? '<div class="arena-lobby-vazio">Nenhuma partida ainda.</div>'
+    ? `<div class="arena-lobby-vazio">${t('arena.no_matches')}</div>`
     : lista.map((d,i) => `
         <div class="arena-rank-row ${(d.wallet||'').toLowerCase() === (walletAddress||'').toLowerCase() ? 'arena-rank-meu' : ''}">
           <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
@@ -1209,14 +1209,14 @@ async function _carregarRanking() {
       const poolVal  = poolData?.cristais || 0;
       if(pool) pool.innerHTML = `
         <div class="arena-pool-card">
-          <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
+          <div class="arena-pool-titulo">${t('arena.pool_title')}</div>
           <div class="arena-pool-valor">${poolVal} 💎</div>
-          <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+          <div class="arena-pool-sub">${t('arena.pool_reset')}</div>
         </div>
         <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.02);
                     border:1px solid rgba(255,255,255,.06);border-radius:6px;">
           <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                      letter-spacing:1px;margin-bottom:6px;">◆ COMO É DISTRIBUÍDO</div>
+                      letter-spacing:1px;margin-bottom:6px;">${t('arena.pool_how')}</div>
           <div style="font-size:6.5px;color:var(--muted);line-height:2;">
             📊 <b style="color:var(--text);">20%</b> da pool é distribuído por semana<br>
             💎 <b style="color:var(--text);">Lendário</b> recebe 60% do bolo · <b style="color:var(--text);">Raro</b> recebe 40%<br>
@@ -1289,9 +1289,9 @@ function iniciarListenerDesafiosRecebidos() {
       if(!p || p.lida) return;
       await snap.ref.update({ lida: true });
 
-      const msg = `🏆 Arena ${p.fila}: ${p.posicao}º lugar — +${p.premio} ${p.moeda}!`;
+      const msg = t('arena.log.placement', {fila: p.fila, pos: p.posicao, val: p.premio, moeda: p.moeda});
       addLog(msg, 'leg');
-      showBubble(`${p.posicao}º lugar na Arena! ${p.moeda}`);
+      showBubble(t('arena.bub.placement', {pos: p.posicao, moeda: p.moeda}));
     });
 
   // Escuta o nó de notificações dedicado para este wallet
@@ -1309,8 +1309,8 @@ function iniciarListenerDesafiosRecebidos() {
     const sala = salaSnap.val();
     if(!sala || sala.status !== 'aguardando') return;
 
-    showBubble('Você foi desafiado! ⚔️');
-    addLog(`Desafio recebido de ${(sala.criador||'').slice(0,8)}...! Abra a Arena para aceitar.`, 'info');
+    showBubble(t('arena.bub.challenged'));
+    addLog(t('arena.log.recv_from', {wallet: (sala.criador||'').slice(0,8)}), 'info');
 
     // Se a arena estiver aberta, mostra o card
     const el = document.getElementById('arenaModal');
@@ -1328,8 +1328,8 @@ function iniciarListenerDesafiosRecebidos() {
       if(!sala || sala.status !== 'aguardando') return;
       if(sala.criador === walletAddress) return;
 
-      showBubble('Você foi desafiado! ⚔️');
-      addLog(`Desafio recebido! Abra a Arena para aceitar.`, 'info');
+      showBubble(t('arena.bub.challenged'));
+      addLog(t('arena.log.received'), 'info');
 
       const el = document.getElementById('arenaModal');
       if(el && el.classList.contains('open')) {
@@ -1343,15 +1343,15 @@ function _renderDesafioPendente(sala) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">⚔️ ARENA DIMENSIONAL</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">DESAFIO RECEBIDO!</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">De: ${(sala.criador||'').slice(0,10)}...</div>
+      <div class="arena-title">${t('arena.title')}</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
       <div style="font-size:7px;color:var(--muted);margin-top:3px;">
-        Aposta: ${sala.aposta?.cristais > 0 ? sala.aposta.cristais+' 💎' : sala.aposta?.moedas+' 🪙'}
+        ${t('arena.bet_label', {val: sala.aposta?.cristais > 0 ? sala.aposta.cristais+' 💎' : sala.aposta?.moedas+' 🪙'})}
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="aceitarDesafio('${sala.id}')">✅ ACEITAR</button>
-        <button class="arena-btn-sair" onclick="recusarDesafio('${sala.id}')">✕ RECUSAR</button>
+        <button class="arena-btn-entrar" style="font-size:8px;" onclick="aceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+        <button class="arena-btn-sair" onclick="recusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>
   `;
@@ -1365,8 +1365,8 @@ function _renderDesafioPendente(sala) {
     if(status === 'cancelada') {
       _arenaDesafioStatusRef.off('value');
       _arenaDesafioStatusRef = null;
-      addLog('Desafio cancelado pelo oponente.', 'bad');
-      showBubble('Desafio cancelado! 😔');
+      addLog(t('arena.log.op_cancelled'), 'bad');
+      showBubble(t('arena.bub.ch_cancelled'));
       const fila = _getFila();
       rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove();
       _arenaAtiva     = false;
@@ -1422,8 +1422,8 @@ async function verificarPartidaPendente() {
       const euSouCriador = salaAtiva.criador === walletAddress;
       if(euSouCriador) {
         // Volta para a sala de espera
-        addLog('Reconectado — aguardando oponente aceitar.', 'info');
-        showBubble('Reconectado! ⚔️');
+        addLog(t('arena.log.recon_waiting'), 'info');
+        showBubble(t('arena.bub.reconnected'));
         _arenaPartidaId = salaAtiva.id;
         _arenaAtiva     = true;
         // Abre a arena e vai direto para sala de espera
@@ -1431,15 +1431,15 @@ async function verificarPartidaPendente() {
         _renderSalaEspera(salaAtiva.id);
       } else {
         // É o oponente — mostra tela de aceitar
-        addLog('Você tem um desafio pendente!', 'info');
-        showBubble('Desafio pendente! ⚔️');
+        addLog(t('arena.log.has_pending'), 'info');
+        showBubble(t('arena.bub.pending'));
         ModalManager.open('arenaModal');
         _renderDesafioPendente(salaAtiva);
       }
     } else if(salaAtiva.status === 'em_jogo') {
       // Reentra na partida
-      addLog('Reconectado à partida em andamento!', 'info');
-      showBubble('Reconectado! ⚔️');
+      addLog(t('arena.log.recon_match'), 'info');
+      showBubble(t('arena.bub.reconnected'));
       _arenaPartidaId = salaAtiva.id;
       _arenaAtiva     = true;
       ModalManager.open('arenaModal');
