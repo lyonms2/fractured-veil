@@ -12,38 +12,47 @@ let _sessionId   = null;
 let _sessionUnsub = null;
 
 // ─── Mostrar/esconder abas do login ───────────────────────────────
+function _authMsg(msg, type = 'error') {
+  const el = document.getElementById('loginError');
+  if(!el) return;
+  el.className = 'msg-' + type;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+  if(msg) {
+    // re-trigger animation
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+  }
+}
+
 function authShowTab(tab) {
   document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
   document.getElementById('authTabRegister').classList.toggle('active', tab === 'register');
   document.getElementById('authFormLogin').style.display    = tab === 'login'    ? 'flex' : 'none';
   document.getElementById('authFormRegister').style.display = tab === 'register' ? 'flex' : 'none';
   document.getElementById('authFormReset').style.display    = 'none';
-  const errEl = document.getElementById('loginError');
-  errEl.textContent = '';
-  errEl.style.color = '#e74c3c'; // repõe vermelho (não '' — apagaria a cor do inline style)
+  _authMsg('');
 }
 
 function authShowReset() {
   document.getElementById('authFormLogin').style.display    = 'none';
   document.getElementById('authFormRegister').style.display = 'none';
   document.getElementById('authFormReset').style.display    = 'flex';
-  const errEl = document.getElementById('loginError');
-  errEl.textContent = '';
-  errEl.style.color = '#e74c3c';
+  _authMsg('');
 }
 
 // ─── Login ────────────────────────────────────────────────────────
 async function loginComEmail() {
   const email = document.getElementById('loginEmail').value.trim();
   const senha = document.getElementById('loginSenha').value;
-  const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('loginBtn');
 
-  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.fill_fields'); return; }
+  if(!email || !senha) { _authMsg(t('auth.fill_fields')); return; }
 
   btn.disabled = true;
   document.getElementById('loginBtnText').textContent = t('auth.btn.logging_in');
-  errEl.textContent = '';
+  _authMsg('');
 
   try {
     const cred = await fbAuth().signInWithEmailAndPassword(email, senha);
@@ -51,8 +60,7 @@ async function loginComEmail() {
       await fbAuth().signOut();
       btn.disabled = false;
       document.getElementById('loginBtnText').textContent = t('auth.btn.login');
-      errEl.style.color = '#e74c3c';
-      errEl.textContent = '❌ Email não verificado. Verifica a tua caixa de entrada (e spam).';
+      _authMsg(t('auth.error.not_verified'), 'warn');
       return;
     }
     // onAuthStateChanged trata o resto
@@ -66,8 +74,7 @@ async function loginComEmail() {
       'auth/too-many-requests': t('auth.error.too_many'),
       'auth/invalid-credential':t('auth.error.invalid_cred'),
     };
-    errEl.style.color = '#e74c3c';
-    errEl.textContent = msgs[e.code] || t('auth.error.login');
+    _authMsg(msgs[e.code] || t('auth.error.login'));
   }
 }
 
@@ -76,16 +83,15 @@ async function registrarComEmail() {
   const email  = document.getElementById('regEmail').value.trim();
   const senha  = document.getElementById('regSenha').value;
   const senha2 = document.getElementById('regSenha2').value;
-  const errEl  = document.getElementById('loginError');
   const btn    = document.getElementById('regBtn');
 
-  if(!email || !senha) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.fill_all'); return; }
-  if(senha !== senha2)  { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.pass_mismatch'); return; }
-  if(senha.length < 6)  { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reg.pass_short'); return; }
+  if(!email || !senha) { _authMsg(t('auth.reg.fill_all')); return; }
+  if(senha !== senha2)  { _authMsg(t('auth.reg.pass_mismatch')); return; }
+  if(senha.length < 6)  { _authMsg(t('auth.reg.pass_short')); return; }
 
   btn.disabled = true;
   btn.textContent = t('auth.btn.creating');
-  errEl.textContent = '';
+  _authMsg('');
 
   try {
     const cred = await fbAuth().createUserWithEmailAndPassword(email, senha);
@@ -95,14 +101,8 @@ async function registrarComEmail() {
     btn.disabled = false;
     btn.textContent = t('auth.btn.create');
     authShowTab('login');
-    // authShowTab limpa loginError — escrever depois via microtask
-    Promise.resolve().then(() => {
-      const loginErr = document.getElementById('loginError');
-      if(loginErr) {
-        loginErr.style.color = '#7ab87a';
-        loginErr.textContent = '✅ Conta criada! Verifica o teu email antes de entrar.';
-      }
-    });
+    // authShowTab limpa a mensagem — escrever depois via microtask
+    Promise.resolve().then(() => _authMsg(t('auth.reg.success'), 'success'));
   } catch(e) {
     btn.disabled = false;
     btn.textContent = t('auth.btn.create');
@@ -111,37 +111,33 @@ async function registrarComEmail() {
       'auth/invalid-email':        t('auth.error.invalid_email'),
       'auth/weak-password':        t('auth.reg.weak_pass'),
     };
-    errEl.style.color = '#e74c3c';
-    errEl.textContent = msgs[e.code] || t('auth.reg.error');
+    _authMsg(msgs[e.code] || t('auth.reg.error'));
   }
 }
 
 // ─── Reset de senha ───────────────────────────────────────────────
 async function enviarResetSenha() {
   const email = document.getElementById('resetEmail').value.trim();
-  const errEl = document.getElementById('loginError');
   const btn   = document.getElementById('resetBtn');
 
-  if(!email) { errEl.style.color = '#e74c3c'; errEl.textContent = t('auth.reset.fill'); return; }
+  if(!email) { _authMsg(t('auth.reset.fill')); return; }
 
   btn.disabled = true;
   btn.textContent = t('auth.btn.sending');
-  errEl.textContent = '';
+  _authMsg('');
 
   try {
     await fbAuth().sendPasswordResetEmail(email);
-    errEl.style.color = '#7ab87a';
-    errEl.textContent = t('auth.reset.sent');
+    _authMsg(t('auth.reset.sent'), 'success');
     btn.textContent = t('auth.btn.sent');
   } catch(e) {
     btn.disabled = false;
     btn.textContent = t('auth.btn.send_email');
-    errEl.style.color = '#e74c3c';
     const msgs = {
       'auth/user-not-found': t('auth.reset.not_found'),
       'auth/invalid-email':  t('auth.error.invalid_email'),
     };
-    errEl.textContent = msgs[e.code] || t('auth.reset.error');
+    _authMsg(msgs[e.code] || t('auth.reset.error'));
   }
 }
 

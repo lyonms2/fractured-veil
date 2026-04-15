@@ -85,6 +85,39 @@
       margin-top: 2px; transition: color .15s;
     }
     .auth-btn-link:hover { color: var(--gold); }
+
+    @keyframes auth-msg-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #loginError {
+      display: none;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: .5px;
+      line-height: 1.5;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 8px;
+      border-left: 3px solid;
+      animation: auth-msg-in .2s ease;
+    }
+    #loginError.msg-error {
+      color: #f87171;
+      background: rgba(231, 76, 60, .12);
+      border-left-color: #e74c3c;
+    }
+    #loginError.msg-success {
+      color: #86efac;
+      background: rgba(122, 184, 122, .12);
+      border-left-color: #7ab87a;
+    }
+    #loginError.msg-warn {
+      color: #fcd34d;
+      background: rgba(201, 168, 76, .12);
+      border-left-color: #c9a84c;
+    }
   </style>
 </head>
 <body>
@@ -130,7 +163,7 @@
       <button class="auth-btn-link" onclick="authShowTab('login')">← Voltar</button>
     </div>
 
-    <div id="loginError" style="font-size:9px;color:#e74c3c;text-align:center;min-height:14px;margin-top:6px;"></div>
+    <div id="loginError"></div>
     <div id="loginFooter" style="font-size:7px;color:var(--muted);margin-top:8px;letter-spacing:1px;">Fractured Veil v1.0</div>
   </div>
 </div>

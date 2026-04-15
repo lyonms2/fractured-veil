@@ -76,15 +76,13 @@ async function connectWallet() {
     return;
   }
   if(typeof window.ethereum === 'undefined') {
-    const le = document.getElementById('loginError');
-    if(le) le.textContent = t('wallet.log.no_metamask');
+    if(typeof _authMsg === 'function') _authMsg(t('wallet.log.no_metamask'));
     addLog(t('wallet.log.no_metamask'), 'bad');
     return;
   }
   const loginBtn = document.getElementById('loginBtn');
-  const loginError = document.getElementById('loginError');
   if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent=t('wallet.btn.connecting'); }
-  if(loginError) loginError.textContent = '';
+  if(typeof _authMsg === 'function') _authMsg('');
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     walletAddress = accounts[0].toLowerCase();
@@ -299,8 +297,7 @@ async function connectWallet() {
     const _msg = e.message?.includes('bloqueada') ? t('wallet.err.blocked')
                : e.message?.includes('rejected') || e.code === 4001 ? t('wallet.err.rejected')
                : t('wallet.err.failed');
-    const _le = document.getElementById('loginError');
-    if(_le) _le.textContent = _msg;
+    if(typeof _authMsg === 'function') _authMsg(_msg);
     addLog(_msg, 'info');
     const _lb = document.getElementById('loginBtn');
     const _lt = document.getElementById('loginBtnText');

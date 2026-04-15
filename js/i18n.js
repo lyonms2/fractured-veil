@@ -14,8 +14,9 @@
       'auth.error.wrong_pass':   'Senha incorreta.',
       'auth.error.invalid_email':'E-mail inválido.',
       'auth.error.too_many':     'Muitas tentativas. Tenta mais tarde.',
-      'auth.error.invalid_cred': 'E-mail ou senha incorretos.',
-      'auth.error.login':        'Erro ao entrar. Tenta novamente.',
+      'auth.error.invalid_cred':   'E-mail ou senha incorretos.',
+      'auth.error.login':          'Erro ao entrar. Tenta novamente.',
+      'auth.error.not_verified':   '⚠️ Email não verificado. Verifica a tua caixa de entrada (e spam).',
       // Auth — registo
       'auth.reg.fill_all':       'Preenche todos os campos.',
       'auth.reg.pass_mismatch':  'As senhas não coincidem.',
@@ -23,6 +24,7 @@
       'auth.reg.email_in_use':   'Este e-mail já está em uso.',
       'auth.reg.weak_pass':      'Senha muito fraca.',
       'auth.reg.error':          'Erro ao criar conta. Tenta novamente.',
+      'auth.reg.success':        '✓ Conta criada! Verifica o teu email antes de entrar.',
       // Auth — reset
       'auth.reset.fill':         'Insere o teu e-mail.',
       'auth.reset.sent':         '✓ E-mail de recuperação enviado!',
@@ -283,8 +285,9 @@
       'auth.error.wrong_pass':   'Incorrect password.',
       'auth.error.invalid_email':'Invalid email address.',
       'auth.error.too_many':     'Too many attempts. Please try again later.',
-      'auth.error.invalid_cred': 'Incorrect email or password.',
-      'auth.error.login':        'Login error. Please try again.',
+      'auth.error.invalid_cred':   'Incorrect email or password.',
+      'auth.error.login':          'Login error. Please try again.',
+      'auth.error.not_verified':   '⚠️ Email not verified. Check your inbox (and spam).',
       // Auth — register
       'auth.reg.fill_all':       'Please fill in all fields.',
       'auth.reg.pass_mismatch':  'Passwords do not match.',
@@ -292,6 +295,7 @@
       'auth.reg.email_in_use':   'This email is already in use.',
       'auth.reg.weak_pass':      'Password is too weak.',
       'auth.reg.error':          'Account creation error. Please try again.',
+      'auth.reg.success':        '✓ Account created! Verify your email before signing in.',
       // Auth — reset
       'auth.reset.fill':         'Please enter your email.',
       'auth.reset.sent':         '✓ Recovery email sent!',
