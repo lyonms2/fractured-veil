@@ -151,9 +151,9 @@ function _bnBloquearUI(bloquear) {
 // ═══════════════════════════════════════════════════════════════════
 
 function openBatalhaNaval() {
-  if(!hatched || dead || !avatar) { showBubble('Precisa de um avatar ativo!'); return; }
-  if(sleeping || modoRepouso)     { showBubble('Descansando agora...'); return; }
-  if(!_bnRtdb())                  { showBubble('Batalha Naval indisponível'); return; }
+  if(!hatched || dead || !avatar) { showBubble(t('arena.bub.need_avatar')); return; }
+  if(sleeping || modoRepouso)     { showBubble(t('arena.bub.resting')); return; }
+  if(!_bnRtdb())                  { showBubble(t('bn.bub.unavailable')); return; }
   ModalManager.open('batalhaNavalModal');
 
   if(_bnSalaId) {
@@ -211,16 +211,16 @@ function _bnRenderLobby() {
     <button class="gs-x-btn" onclick="closeBatalhaNaval()">✕</button>
 
     <div class="arena-header" style="margin-bottom:8px;">
-      <div class="arena-title">🚢 BATALHA NAVAL</div>
-      <div class="arena-sub">Duelo estratégico · Fila <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
+      <div class="arena-title">${t('bn.title')}</div>
+      <div class="arena-sub">${t('bn.sub')} <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
 
     <div class="arena-tabs">
       <button class="arena-tab active" id="bnTabLobby"   onclick="bnShowTab('lobby')">
-        <span class="arena-tab-icon">🏟️</span><span>LOBBY</span>
+        <span class="arena-tab-icon">🏟️</span><span>${t('arena.tab.lobby')}</span>
       </button>
       <button class="arena-tab"        id="bnTabRanking" onclick="bnShowTab('ranking')">
-        <span class="arena-tab-icon">🏆</span><span>RANKING</span>
+        <span class="arena-tab-icon">🏆</span><span>${t('arena.tab.ranking')}</span>
       </button>
     </div>
 
@@ -228,38 +228,35 @@ function _bnRenderLobby() {
 
       <div class="arena-aposta-info" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
         <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">APOSTA</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.bet_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_bnDescAposta()}</div>
         </div>
         <div style="text-align:center;padding:0 6px;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">PRÉMIO</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.prize_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
         </div>
         <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">TAXA</div>
+          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.tax_col')}</div>
           <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
         </div>
       </div>
 
       <div id="bnLobbyActions" style="width:100%;">${_bnHtmlAcoes(podePagar)}</div>
 
-      <div class="arena-lobby-titulo">JOGADORES NA FILA · ${rar.toUpperCase()}</div>
+      <div class="arena-lobby-titulo">${t('rm.queue_label', {rar: rar.toUpperCase()})}</div>
       <input class="arena-lobby-search" id="bnLobbySearch" type="text"
-        placeholder="Buscar avatar..."
+        placeholder="${t('arena.search_ph')}"
         oninput="_bnFiltrarLobby(this.value)" autocomplete="off">
       <div class="arena-lobby-lista" id="bnLobbyLista" style="width:100%;">
-        <div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>
+        <div class="arena-lobby-vazio">${t('rm.no_players')}</div>
       </div>
 
       <div style="padding:8px 10px;background:rgba(255,255,255,.02);
                   border:1px solid rgba(255,255,255,.06);border-radius:6px;width:100%;">
         <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                    letter-spacing:1px;margin-bottom:6px;">◆ COMO JOGAR</div>
+                    letter-spacing:1px;margin-bottom:6px;">${t('rm.how_to')}</div>
         <div style="font-size:6.5px;color:var(--muted);line-height:2;">
-          🚢 Coloca ${BN_NAVIOS.length} navios no teu tabuleiro ${BN_TAMANHO}×${BN_TAMANHO}<br>
-          🎯 Turnos alternados — escolhe uma coordenada do adversário<br>
-          💥 Acerto → joga de novo · 🌊 Água → passa a vez<br>
-          🏆 Quem afundar todos os navios do oponente vence
+          ${t('bn.how_to_text', {ships: BN_NAVIOS.length, size: BN_TAMANHO})}
         </div>
       </div>
 
@@ -267,7 +264,7 @@ function _bnRenderLobby() {
 
     <div id="bnTabContentRanking" class="arena-tab-content bn-lobby-scroll" style="display:none;">
       <div class="arena-ranking-wrap" id="bnRankingWrap">
-        <div class="arena-lobby-vazio">Carregando...</div>
+        <div class="arena-lobby-vazio">${t('bn.loading')}</div>
       </div>
       <div id="bnPoolInfo"></div>
     </div>
@@ -279,16 +276,16 @@ function _bnRenderLobby() {
 
 function _bnHtmlAcoes(podePagar) {
   if(_bnAtiva) return `
-    <button class="arena-btn-sair" onclick="bnSairDoLobby()">⬅ SAIR DA FILA</button>
+    <button class="arena-btn-sair" onclick="bnSairDoLobby()">${t('arena.leave_queue')}</button>
     <div class="arena-aguardando" style="margin-top:10px;">
-      <div class="arena-pulse"></div>Na fila — matchmaking automático ativo...
+      <div class="arena-pulse"></div>${t('arena.queue_active')}
     </div>`;
   return `
     <button class="arena-btn-entrar ${!podePagar ? 'disabled' : ''}"
       onclick="${podePagar ? 'bnEntrarNoLobby()' : ''}" ${!podePagar ? 'disabled' : ''}>
-      🚢 ENTRAR NA FILA
+      ${t('bn.enter_queue')}
     </button>
-    ${!podePagar ? `<div class="arena-sem-saldo" style="margin-top:6px;">Saldo insuficiente (${_bnDescAposta()} necessário)</div>` : ''}`;
+    ${!podePagar ? `<div class="arena-sem-saldo" style="margin-top:6px;">${t('arena.no_balance_cost', {cost: _bnDescAposta()})}</div>` : ''}`;
 }
 
 function _bnAtualizarAcoes() {
@@ -313,7 +310,7 @@ function _bnIniciarLobbyListener() {
     const lista = document.getElementById('bnLobbyLista');
     if(!lista) return;
     const dados = snap.val();
-    if(!dados) { lista.innerHTML = '<div class="arena-lobby-vazio">Nenhum jogador na fila ainda...</div>'; return; }
+    if(!dados) { lista.innerHTML = `<div class="arena-lobby-vazio">${t('rm.no_players')}</div>`; return; }
     const myKey = (walletAddress||'').toLowerCase();
     const agora = Date.now();
     const jogadores = Object.entries(dados).filter(([k,d]) =>
@@ -343,7 +340,7 @@ function _bnFiltrarLobby(query) {
     ? _bnLobbyJogadores.filter(([k,d]) => (d.nome||'').toLowerCase().includes(q))
     : _bnLobbyJogadores;
   if(!filtrados.length) {
-    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? 'Nenhum resultado para "'+esc(query)+'"' : 'Nenhum jogador na fila ainda...'}</div>`;
+    lista.innerHTML = `<div class="arena-lobby-vazio">${q ? t('rm.no_results', {q: esc(query)}) : t('rm.no_players')}</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(([k,d]) => `
@@ -358,7 +355,7 @@ function _bnFiltrarLobby(query) {
       </div>
       ${_bnAtiva
         ? `<button class="arena-btn-desafiar" onclick="bnDesafiar('${d.wallet}')">🚢 DESAFIAR</button>`
-        : `<div class="arena-lobby-aguarda">Entre na fila<br>para desafiar</div>`}
+        : `<div class="arena-lobby-aguarda">${t('arena.join_to_challenge')}</div>`}
     </div>`).join('');
 }
 window._bnFiltrarLobby = _bnFiltrarLobby;
@@ -369,7 +366,7 @@ window._bnFiltrarLobby = _bnFiltrarLobby;
 
 async function bnEntrarNoLobby() {
   if(!_bnRtdb() || !walletAddress || !avatar) return;
-  if(!_bnPodePagar()) { showBubble('Saldo insuficiente!'); return; }
+  if(!_bnPodePagar()) { showBubble(t('arena.bub.no_balance')); return; }
   const fila = _bnRaridade();
   _bnLobbyRef = _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletAddress}`);
   await _bnLobbyRef.set({
@@ -384,7 +381,7 @@ async function bnEntrarNoLobby() {
     if(_bnLobbyRef) _bnLobbyRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
   }, 10000);
   _bnAtiva = true;
-  addLog('Entrou na fila da Batalha Naval! 🚢', 'info');
+  addLog(t('bn.log.joined'), 'info');
   _bnAtualizarAcoes();
 }
 
@@ -392,7 +389,7 @@ async function bnSairDoLobby() {
   if(_bnLobbyRef) { try { await _bnLobbyRef.remove(); } catch(e) {} _bnLobbyRef = null; }
   if(_bnHeartbeat) { clearInterval(_bnHeartbeat); _bnHeartbeat = null; }
   _bnAtiva = false;
-  addLog('Saiu da fila da Batalha Naval.', 'info');
+  addLog(t('bn.log.left'), 'info');
   _bnAtualizarAcoes();
 }
 
@@ -411,7 +408,7 @@ async function bnDesafiar(walletOponente) {
     return true;
   });
   if(!committed) {
-    showBubble('Oponente já entrou em outra partida!');
+    showBubble(t('arena.bub.op_in_match'));
     return;
   }
 
@@ -458,8 +455,8 @@ async function bnDesafiar(walletOponente) {
   _bnDebitarAposta();
   _bnSalaId = salaId;
   scheduleSave();
-  addLog(`Desafio de Batalha Naval enviado!`, 'info');
-  showBubble('Desafio enviado! 🚢');
+  addLog(t('bn.log.sent'), 'info');
+  showBubble(t('bn.bub.sent'));
   _bnRenderEspera(salaId);
 }
 
@@ -472,16 +469,16 @@ function _bnRenderEspera(salaId) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">🚢 BATALHA NAVAL</div>
+      <div class="arena-title">${t('bn.title')}</div>
       <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">DESAFIO ENVIADO</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">Aguardando oponente aceitar...</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
       <div style="font-size:6px;color:var(--muted);margin-top:3px;">Sala #${salaId.slice(-6).toUpperCase()}</div>
       <div id="bnDesafioTimer" style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);margin-top:8px;">⏳ 60s</div>
       <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;width:100%;margin-top:4px;">
         <div id="bnDesafioTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
       </div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="bnCancelarDesafio('${salaId}')">✕ CANCELAR</button>
+      <button class="arena-btn-sair" style="margin-top:18px;" onclick="bnCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>`;
 
   let seg = 60;
@@ -512,7 +509,7 @@ function _bnRenderEspera(salaId) {
       else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
       updateResourceUI(); scheduleSave();
       _bnAtiva = false; _bnSalaId = null;
-      addLog('Desafio cancelado ou recusado.', 'bad');
+      addLog(t('arena.log.cancelled'), 'bad');
       _bnRenderLobby();
     }
   });
@@ -537,9 +534,9 @@ async function bnCancelarDesafio(salaId) {
 
 async function bnAceitarDesafio(salaId) {
   if(!_bnRtdb() || !walletAddress || !avatar) return;
-  if(!_bnPodePagar()) { showBubble('Saldo insuficiente!'); return; }
+  if(!_bnPodePagar()) { showBubble(t('arena.bub.no_balance')); return; }
   const snapCheck = await _bnRtdb().ref(`batalhaNaval/salas/${salaId}/status`).once('value');
-  if(snapCheck.val() !== 'aguardando') { addLog('Desafio já expirou.', 'bad'); _bnRenderLobby(); return; }
+  if(snapCheck.val() !== 'aguardando') { addLog(t('rm.log.expired'), 'bad'); _bnRenderLobby(); return; }
 
   _bnDebitarAposta();
   _bnSalaId = salaId;
@@ -567,7 +564,7 @@ async function bnRecusarDesafio(salaId) {
     try { await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).remove(); } catch(e) {}
     try { await _bnRtdb().ref(`batalhaNaval/notificacoes/${walletAddress}/${salaId}`).remove(); } catch(e) {}
   }, 3000);
-  addLog('Desafio recusado.', 'info');
+  addLog(t('arena.log.refused'), 'info');
   _bnRenderLobby();
 }
 
@@ -592,7 +589,7 @@ function _bnRenderColocacao(salaId, sala) {
 
       <!-- Header + timer -->
       <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">🚢 POSICIONAR NAVIOS</div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('bn.place_ships')}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
           <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">90s</span>
           <div style="width:60px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
@@ -626,11 +623,11 @@ function _bnRenderColocacao(salaId, sala) {
           <div id="bnNaviosLista" style="flex:1;overflow-y:auto;">${_bnHtmlNaviosLista()}</div>
           <div id="bnBtnConfirmar" style="display:none;flex-shrink:0;">
             <button class="arena-btn-entrar" style="font-size:6px;padding:5px 8px;width:100%;" onclick="bnConfirmarColocacao('${salaId}')">
-              ✅ CONFIRMAR
+              ${t('bn.confirm_pos')}
             </button>
           </div>
           <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;">
-            <div class="arena-aguardando" style="font-size:6px;text-align:center;"><div class="arena-pulse"></div>Aguardando oponente...</div>
+            <div class="arena-aguardando" style="font-size:6px;text-align:center;"><div class="arena-pulse"></div>${t('bn.waiting_op')}</div>
           </div>
         </div>
 
@@ -639,7 +636,7 @@ function _bnRenderColocacao(salaId, sala) {
     <div style="display:flex;flex-direction:column;height:100%;gap:6px;padding:8px;overflow-y:auto;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">🚢 POSICIONAR NAVIOS</div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('bn.place_ships')}</div>
         <button style="font-family:'Cinzel',serif;font-size:7px;padding:4px 10px;
                        border:1px solid var(--border);border-radius:4px;background:transparent;
                        color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
@@ -663,7 +660,7 @@ function _bnRenderColocacao(salaId, sala) {
       </div>
 
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">MEU TABULEIRO — clica para colocar</div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('bn.my_board_col')}</div>
         <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId)}</div>
       </div>
 
@@ -671,12 +668,12 @@ function _bnRenderColocacao(salaId, sala) {
 
       <div id="bnBtnConfirmar" style="flex-shrink:0;display:none;">
         <button class="arena-btn-entrar" onclick="bnConfirmarColocacao('${salaId}')">
-          ✅ CONFIRMAR POSIÇÕES
+          ${t('bn.confirm_pos')}
         </button>
       </div>
 
       <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;margin-top:8px;">
-        <div class="arena-aguardando"><div class="arena-pulse"></div>Aguardando oponente posicionar navios...</div>
+        <div class="arena-aguardando"><div class="arena-pulse"></div>${t('bn.waiting_place')}</div>
       </div>
 
     </div>`;
@@ -702,7 +699,7 @@ function _bnRenderColocacao(salaId, sala) {
       _bnPararSala();
       _bnPararTimerColocacao();
       _bnAtiva = false; _bnSalaId = null;
-      addLog('Partida cancelada.', 'bad');
+      addLog(t('bn.log.cancelled'), 'bad');
       _bnRenderLobby();
     }
   });
@@ -734,8 +731,8 @@ function _bnIniciarTimerColocacao(salaId, opWallet) {
     if(seg <= 0) {
       _bnPararTimerColocacao();
       _bnPararSala();
-      addLog('Tempo esgotado! Oponente ganhou. ⏳', 'bad');
-      showBubble('Tempo esgotado! ⏳');
+      addLog(t('bn.log.timeout'), 'bad');
+      showBubble(t('bn.bub.timeout'));
       try {
         await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
           status:   'finalizada',
@@ -755,16 +752,16 @@ function _bnIniciarTimerColocacao(salaId, opWallet) {
 function _bnHtmlNavioInfo(salaId) {
   let info;
   if(_bnNavioAtual >= BN_NAVIOS.length) {
-    info = '✅ Todos os navios posicionados!';
+    info = t('bn.all_placed');
   } else {
     const n = BN_NAVIOS[_bnNavioAtual];
-    info = `${n.icon} A colocar: <b>${n.nome}</b> (${n.tam} casas) · ${_bnNaviosColocados[n.id] ? '✅ Colocado' : 'Clica no tabuleiro'}`;
+    info = `${n.icon} ${t('bn.placing', {nome: n.nome, tam: n.tam})} · ${_bnNaviosColocados[n.id] ? t('bn.placed') : t('bn.click_board')}`;
   }
   const desfazerBtn = _bnNavioAtual > 0
     ? ` <button onclick="bnDesfazerNavio('${salaId}')"
           style="margin-left:8px;font-family:'Cinzel',serif;font-size:6px;padding:2px 8px;
                  border:1px solid rgba(255,100,100,.3);border-radius:3px;
-                 background:rgba(231,76,60,.08);color:#e74c3c;cursor:pointer;">↩ DESFAZER</button>`
+                 background:rgba(231,76,60,.08);color:#e74c3c;cursor:pointer;">${t('bn.undo')}</button>`
     : '';
   return info + desfazerBtn;
 }
@@ -899,7 +896,7 @@ function bnColocarNavio(r, c, salaId) {
   if(_bnNavioAtual >= BN_NAVIOS.length) return;
   const n      = BN_NAVIOS[_bnNavioAtual];
   const casas  = _bnCasasValidas(r, c, n.tam, _bnOrientacao);
-  if(!casas) { showBubble('Posição inválida! 🚫'); return; }
+  if(!casas) { showBubble(t('bn.bub.invalid_pos')); return; }
 
   // Coloca o navio
   playSound('mine_click');
@@ -947,7 +944,7 @@ function bnDesfazerNavio(salaId) {
 
 async function bnConfirmarColocacao(salaId) {
   if(!_bnRtdb()) return;
-  if(_bnNavioAtual < BN_NAVIOS.length) { showBubble('Coloca todos os navios primeiro!'); return; }
+  if(_bnNavioAtual < BN_NAVIOS.length) { showBubble(t('bn.bub.place_all')); return; }
   _bnPararTimerColocacao();
 
   // Guarda o tabuleiro privado (com posições dos navios)
@@ -1041,7 +1038,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
   const _timerHtml = meuTurno ? `
     <div style="flex-shrink:0;margin-bottom:2px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-        <span style="font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">TEMPO</span>
+        <span style="font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">${t('rm.time_left')}</span>
         <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">${BN_TIMER_SEG}s</span>
       </div>
       <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
@@ -1056,7 +1053,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
                 color:${ultimaJogada.acertou?'#7ab87a':'#5ab4e8'};">
       ${ultimaJogada.jogador === walletAddress ? '🎯' : '💀'}
       <b>${String.fromCharCode(65 + ultimaJogada.col)}${ultimaJogada.row + 1}</b>
-      ${ultimaJogada.acertou ? `💥${ultimaJogada.afundou ? ' 🔥 AFUNDADO!' : ' Acerto!'}` : '🌊 Água'}
+      ${ultimaJogada.acertou ? `💥${ultimaJogada.afundou ? ' 🔥 ' + t('bn.sunk_label') : ' ' + t('bn.hit_label')}` : '🌊 ' + t('bn.miss_label')}
     </div>` : '';
 
   el.innerHTML = isPC ? `
@@ -1064,7 +1061,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
 
       <!-- Header: título + score + status + abandonar -->
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;flex:1;">🚢 BATALHA NAVAL</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;flex:1;">${t('bn.title')}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
           <span style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
           <span style="font-size:9px;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
@@ -1074,7 +1071,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
           background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
           border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
           color:${meuTurno?'#7ab87a':'var(--muted)'};">
-          ${meuTurno ? '⚡ SUA VEZ' : '⏳ AGUARDANDO'}
+          ${meuTurno ? t('bn.your_turn') : t('bn.wait')}
         </div>
         <button class="arena-btn-sair" style="font-size:7px;padding:5px 12px;flex-shrink:0;"
           onclick="bnAbandonar('${salaId}')">🏳️</button>
@@ -1083,7 +1080,7 @@ function _bnRenderPartida(salaId, sala, opWallet) {
       ${meuTurno ? `
       <div style="flex-shrink:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">TEMPO RESTANTE</span>
+          <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">${t('rm.time_left')}</span>
           <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:10px;color:var(--gold);">${BN_TIMER_SEG}s</span>
         </div>
         <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
@@ -1099,14 +1096,14 @@ function _bnRenderPartida(salaId, sala, opWallet) {
         <!-- Esquerda: tabuleiro de ataque (30px cells) -->
         <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
           <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">
-            ${meuTurno ? '🎯 CLICA PARA ATIRAR' : '🌊 OPONENTE'}
+            ${meuTurno ? t('bn.click_fire') : t('bn.op_board')}
           </div>
           <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet, 30)}</div>
         </div>
 
         <!-- Direita: tabuleiro de defesa (20px cells) -->
         <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">🛡️ MEU TABULEIRO</div>
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">${t('bn.my_board')}</div>
           ${_bnHtmlTabDefesa(meuTabPub, 20)}
         </div>
 
@@ -1115,12 +1112,12 @@ function _bnRenderPartida(salaId, sala, opWallet) {
     <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;overflow-y:auto;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">🚢 BATALHA NAVAL</div>
+        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">${t('bn.title')}</div>
         <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
           background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
           border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
           color:${meuTurno?'#7ab87a':'var(--muted)'};">
-          ${meuTurno ? '⚡ SUA VEZ' : '⏳ AGUARDANDO'}
+          ${meuTurno ? t('bn.your_turn') : t('bn.wait')}
         </div>
       </div>
 
@@ -1130,13 +1127,13 @@ function _bnRenderPartida(salaId, sala, opWallet) {
                   padding:5px 8px;background:rgba(255,255,255,.02);border-radius:6px;
                   border:1px solid rgba(255,255,255,.06);">
         <div style="flex:1;text-align:center;">
-          <div style="font-size:6px;color:var(--muted);">EU</div>
+          <div style="font-size:6px;color:var(--muted);">${t('bn.me')}</div>
           <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#7ab87a;">${meusAcertos}</div>
           <div style="font-size:5px;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
         </div>
         <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);">VS</div>
         <div style="flex:1;text-align:center;">
-          <div style="font-size:6px;color:var(--muted);">${op_info.nome||'Oponente'}</div>
+          <div style="font-size:6px;color:var(--muted);">${op_info.nome||t('bn.opponent')}</div>
           <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#e74c3c;">${opAcertos}</div>
           <div style="font-size:5px;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
         </div>
@@ -1146,19 +1143,19 @@ function _bnRenderPartida(salaId, sala, opWallet) {
 
       <div style="flex-shrink:0;">
         <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">
-          ${meuTurno ? '🎯 CLICA PARA ATIRAR' : '🌊 TABULEIRO DO OPONENTE'}
+          ${meuTurno ? t('bn.click_fire') : t('bn.op_board_lbl')}
         </div>
         <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet)}</div>
       </div>
 
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">🛡️ MEU TABULEIRO</div>
+        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">${t('bn.my_board')}</div>
         <div>${_bnHtmlTabDefesa(meuTabPub, 14)}</div>
       </div>
 
       <div style="flex-shrink:0;margin-top:4px;">
         <button class="arena-btn-sair" style="font-size:6px;padding:5px 10px;"
-          onclick="bnAbandonar('${salaId}')">🏳️ ABANDONAR</button>
+          onclick="bnAbandonar('${salaId}')">🏳️ ${t('bn.abandon_btn')}</button>
       </div>
 
     </div>`;
@@ -1196,7 +1193,7 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
       }
 
       const clickHandler = meuTurno
-        ? (casa ? `showBubble('Já atacada! ⚡')` : `bnAtirar(${r},${c},'${salaId}','${opWallet}')`)
+        ? (casa ? `showBubble(t('bn.bub.already_hit'))` : `bnAtirar(${r},${c},'${salaId}','${opWallet}')`)
         : '';
       html += `<td onclick="${clickHandler}"
                    style="width:${cell}px;height:${cell}px;text-align:center;
@@ -1455,11 +1452,11 @@ async function bnAtirar(row, col, salaId, opWallet) {
   const coord = `${String.fromCharCode(65+col)}${row+1}`;
   if(acertou) {
     playSound(navioAfundado ? 'mine_explode' : 'arena_choice');
-    showBubble(navioAfundado ? `${navioAfundado} afundado! 🔥` : 'Acerto! 💥 Joga de novo!');
-    addLog(`Batalha Naval: 💥 Acerto em ${coord}${navioAfundado?' — '+navioAfundado+' afundado!':''}`, 'good');
+    showBubble(navioAfundado ? t('bn.bub.sunk', {nome: navioAfundado}) : t('bn.bub.hit'));
+    addLog(navioAfundado ? t('bn.log.hit_sunk', {coord, nome: navioAfundado}) : t('bn.log.hit', {coord}), 'good');
   } else {
     playSound('mine_click');
-    addLog(`Batalha Naval: 🌊 Água em ${coord}`, 'info');
+    addLog(t('bn.log.miss', {coord}), 'info');
   }
 }
 
@@ -1484,15 +1481,15 @@ function bnAbandonar(salaId) {
   overlay.innerHTML = `
     <div style="font-size:32px;">🏳️</div>
     <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;
-                color:#e74c3c;letter-spacing:2px;">ABANDONAR?</div>
+                color:#e74c3c;letter-spacing:2px;">${t('rm.abandon_title')}</div>
     <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.9;padding:0 10px;">
-      O oponente ganhará a partida<br>e ficará com o prémio.
+      ${t('rm.abandon_desc')}
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;width:100%;">
       <button class="arena-btn-sair" style="flex:1;font-size:8px;"
-        onclick="bnConfirmarAbandono('${salaId}')">🏳️ CONFIRMAR</button>
+        onclick="bnConfirmarAbandono('${salaId}')">${t('rm.abandon_confirm')}</button>
       <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
-        onclick="document.getElementById('bnAbandonarOverlay').remove()">← CONTINUAR</button>
+        onclick="document.getElementById('bnAbandonarOverlay').remove()">${t('rm.abandon_back')}</button>
     </div>`;
   modal.style.position = 'relative';
   modal.appendChild(overlay);
@@ -1516,7 +1513,7 @@ async function bnConfirmarAbandono(salaId) {
   try { await _bnRtdb().ref(`batalhaNaval/lobby/${_fila}/${walletAddress}`).remove(); } catch(e) {}
   _bnBloquearUI(false);
   _bnSalaId = null; _bnOpWallet = null; _bnAtiva = false;
-  addLog('Abandonaste a partida. 🏳️', 'bad');
+  addLog(t('bn.log.abandoned'), 'bad');
   ModalManager.close('batalhaNavalModal');
 }
 
@@ -1596,12 +1593,12 @@ async function _bnRenderResultado(sala, opWallet) {
     try { await _bnRtdb().ref(`batalhaNaval/notificacoes/${opWallet}/${sala.id}`).remove(); } catch(e) {}
   }, 3000);
 
-  const titulo = abandono ? '🏆 VITÓRIA! (abandono)' : empate ? '🤝 EMPATE!' : euVenci ? '🏆 VITÓRIA!' : '💀 DERROTA';
+  const titulo = abandono ? t('rm.victory_abandon') : empate ? t('arena.draw_final') : euVenci ? t('arena.victory') : t('arena.defeat');
   const cor    = empate ? 'var(--gold)' : euVenci ? '#7ab87a' : '#e74c3c';
   playSound(euVenci ? 'win' : empate ? 'arena_round_draw' : 'lose');
 
-  addLog(`Batalha Naval: ${titulo} · ${meusAc} vs ${opAc} acertos`, euVenci ? 'good' : empate ? 'info' : 'bad');
-  if(euVenci) showBubble(`Vitória! +${Math.floor(bruto - bruto*BN_TAXA)} ${moeda} 🏆`);
+  addLog(t('bn.log.result', {titulo, meusAc, opAc}), euVenci ? 'good' : empate ? 'info' : 'bad');
+  if(euVenci) showBubble(t('arena.bub.victory', {val: Math.floor(bruto - bruto*BN_TAXA), moeda}));
 
   el.innerHTML = `
     <div class="arena-resultado">
@@ -1623,15 +1620,15 @@ async function _bnRenderResultado(sala, opWallet) {
 
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">+${Math.floor(bruto - bruto*BN_TAXA)} ${moeda} · +${xpGain} XP</div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: Math.floor(bruto - bruto*BN_TAXA), moeda, xp: xpGain})}</div>`
           : empate
-            ? `<div style="color:var(--muted);font-size:7px;">Apostas devolvidas · +${xpGain} XP</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">Melhor sorte! · +${xpGain} XP</div>`}
+            ? `<div style="color:var(--muted);font-size:7px;">${t('rm.bets_returned', {xp: xpGain})}</div>`
+            : `<div style="color:#e74c3c;font-size:7px;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
       </div>
 
       <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_bnRenderLobby()">🚢 JOGAR DE NOVO</button>
-        <button class="arena-btn-sair" onclick="closeBatalhaNaval()">✕ FECHAR</button>
+        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_bnRenderLobby()">${t('bn.play_again')}</button>
+        <button class="arena-btn-sair" onclick="closeBatalhaNaval()">${t('arena.close_btn')}</button>
       </div>
     </div>`;
 }
@@ -1671,7 +1668,7 @@ async function _bnCarregarRanking() {
     .sort((a,b) => b.pontos - a.pontos);
   const medalhas = ['🥇','🥈','🥉'];
   wrap.innerHTML = lista.length === 0
-    ? '<div class="arena-lobby-vazio">Nenhuma partida ainda.</div>'
+    ? `<div class="arena-lobby-vazio">${t('arena.no_matches')}</div>`
     : lista.map((d,i) => `
         <div class="arena-rank-row ${(d.wallet||'').toLowerCase()===(walletAddress||'').toLowerCase()?'arena-rank-meu':''}">
           <span class="arena-rank-pos">${medalhas[i]||`#${i+1}`}</span>
@@ -1685,9 +1682,9 @@ async function _bnCarregarRanking() {
       const poolVal  = poolSnap.exists ? (poolSnap.data()?.cristais || 0) : 0;
       if(pool) pool.innerHTML = `
         <div class="arena-pool-card">
-          <div class="arena-pool-titulo">💰 POOL SEMANAL</div>
+          <div class="arena-pool-titulo">${t('arena.pool_title')}</div>
           <div class="arena-pool-valor">${poolVal} 💎</div>
-          <div class="arena-pool-sub">Distribuído toda segunda-feira · Reset automático</div>
+          <div class="arena-pool-sub">${t('arena.pool_reset')}</div>
         </div>`;
     }
   } catch(e) { if(pool) pool.innerHTML = ''; }
@@ -1725,8 +1722,8 @@ async function _bnVerificarPartidaAtiva() {
 
     await new Promise(r => setTimeout(r, 1500));
 
-    addLog('Reconectado à partida de Batalha Naval!', 'info');
-    showBubble('Reconectado! 🚢');
+    addLog(t('bn.log.recon_match'), 'info');
+    showBubble(t('bn.bub.reconnected'));
     ModalManager.open('batalhaNavalModal');
 
     if(sala.status === 'aguardando') {
@@ -1759,8 +1756,8 @@ function bnIniciarListenerNotificacoes() {
     const salaSnap = await _bnRtdb().ref(`batalhaNaval/salas/${notif.salaId}`).once('value');
     const sala = salaSnap.val();
     if(!sala || sala.status !== 'aguardando') return;
-    showBubble('Desafio de Batalha Naval! 🚢');
-    addLog(`Desafio de Batalha Naval recebido de ${(sala.criador||'').slice(0,8)}...`, 'info');
+    showBubble(t('bn.bub.challenged'));
+    addLog(t('bn.log.recv_from', {wallet: (sala.criador||'').slice(0,8)}), 'info');
     const el = document.getElementById('batalhaNavalModal');
     if(el && el.classList.contains('open')) _bnRenderDesafioPendente(sala);
   });
@@ -1771,15 +1768,15 @@ function _bnRenderDesafioPendente(sala) {
   if(!el) return;
   el.innerHTML = `
     <div class="arena-espera">
-      <div class="arena-title">🚢 BATALHA NAVAL</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">DESAFIO RECEBIDO!</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">De: ${(sala.criador||'').slice(0,10)}...</div>
+      <div class="arena-title">${t('bn.title')}</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
       <div style="font-size:7px;color:var(--muted);margin-top:3px;">
-        Aposta: ${sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'}
+        ${t('arena.bet_label', {val: sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'})}
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="bnAceitarDesafio('${sala.id}')">✅ ACEITAR</button>
-        <button class="arena-btn-sair" onclick="bnRecusarDesafio('${sala.id}')">✕ RECUSAR</button>
+        <button class="arena-btn-entrar" style="font-size:8px;" onclick="bnAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+        <button class="arena-btn-sair" onclick="bnRecusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>`;
 
@@ -1787,8 +1784,8 @@ function _bnRenderDesafioPendente(sala) {
   salaRef.on('value', snap => {
     if(snap.val() === 'cancelada') {
       salaRef.off('value');
-      addLog('Desafio cancelado pelo oponente.', 'bad');
-      showBubble('Desafio cancelado! 😔');
+      addLog(t('arena.log.op_cancelled'), 'bad');
+      showBubble(t('arena.bub.ch_cancelled'));
       _bnRenderLobby();
     }
   });
