@@ -253,25 +253,9 @@ function _snakeEnd() {
     } else {
       const cleared = frac >= 1.0;
       playSound && playSound(cleared || frac >= 0.8 ? 'win' : 'lose');
-      // Bónus por bola: cada elemento apanhado vale +XP e +🪙 extra
-      const rb = rarityBonus();
-      const vb = getVinculoBonus();
-      const xpPorBola   = Math.round(4 * rb.xp     * vb.xpMult);
-      const coinPorBola = Math.round(3 * rb.moedas);
-      const xpBonus     = xpPorBola   * _snakeScore;
-      const coinBonus   = coinPorBola * _snakeScore;
-      // Bónus de conclusão: +60% moedas e XP extras ao completar o maxScore
-      const clearXp   = cleared ? Math.round(xpBonus   * 0.6) : 0;
-      const clearCoin = cleared ? Math.round(coinBonus  * 0.6) : 0;
-      // Recompensa base (fraca — o grosso vem do bónus por bola)
-      const r = miniReward(frac * 0.6, frac * 0.6, cleared ? 3 : 1, cleared);
-      // Adiciona bónus por bola + bónus conclusão
-      xp += xpBonus + clearXp;
-      earnCoins(coinBonus + clearCoin);
-      checkXP(); updateAllUI(); scheduleSave();
-
-      const totalXp   = r.xpGain + xpBonus + clearXp;
-      const totalCoin = r.coinGain + coinBonus + clearCoin;
+      // XP escala com dificuldade; coins proporcionais à fração completada
+      const xpMult = d.tier === 0 ? 1.3 : d.tier === 1 ? 1.6 : d.tier === 2 ? 1.8 : 2.0;
+      const r = miniReward(frac * xpMult, frac * 1.5, cleared ? 3 : 1, cleared);
 
       document.getElementById('snakeResult').textContent =
         cleared          ? t('snake.result.clear', {n: _snakeScore}) :
@@ -279,9 +263,8 @@ function _snakeEnd() {
                            t('snake.result.ok',    {n: _snakeScore});
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
-      document.getElementById('snakeReward').textContent = cleared
-        ? t('snake.reward.clear',  {xp: totalXp, coins: totalCoin, n: _snakeScore})
-        : t('snake.reward.normal', {xp: totalXp, coins: totalCoin, n: _snakeScore});
+      document.getElementById('snakeReward').textContent =
+        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
     }
