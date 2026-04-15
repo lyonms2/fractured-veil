@@ -5,8 +5,8 @@ let pendingHatchFee = 0;
 async function goToMarketplace(e) {
   if(e) e.preventDefault();
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
-    showBubble('Choca o ovo primeiro! 🥚');
-    addLog('Termina a chocagem antes de ir ao Marketplace.', 'bad');
+    showBubble(t('egg.bub.hatch_first'));
+    addLog(t('egg.log.hatch_first'), 'bad');
     return;
   }
   // Garante que o estado actual (incluindo dead:true) está no Firebase antes de navegar
@@ -72,24 +72,24 @@ function calcEggExpiry(raridade) {
 }
 
 async function layEgg() {
-  if(getFase() < 3) { showBubble('Ainda não cresci o suficiente... 🥚'); return; }
+  if(getFase() < 3) { showBubble(t('egg.bub.not_grown')); return; }
   if(!avatar || !hatched || dead) return;
   if(eggLayCooldown > 0) {
     const horasRestantes = Math.ceil(eggLayCooldown * 60 / 3600);
-    showBubble(`Preciso descansar... (~${horasRestantes}h)`);
+    showBubble(t('egg.bub.cooldown', {h: horasRestantes}));
     return;
   }
-  if(gs.moedas < 50) { showBubble('Sem moedas para botar ovo... 😢'); addLog('Precisa de 50 🪙 para botar um ovo!','bad'); return; }
+  if(gs.moedas < 50) { showBubble(t('egg.bub.no_coins')); addLog(t('egg.log.no_coins'), 'bad'); return; }
   if(eggsInInventory.length >= 10) {
-    showBubble('Inventário cheio! (10 ovos máx) 🥚');
-    addLog('Inventário cheio — descarta ou choca um ovo primeiro.', 'bad');
+    showBubble(t('egg.bub.inv_full'));
+    addLog(t('egg.log.inv_full'), 'bad');
     return;
   }
-  if(!firebase?.auth?.()?.currentUser) { showBubble('Conecta a conta primeiro!'); return; }
+  if(!firebase?.auth?.()?.currentUser) { showBubble(t('egg.bub.connect')); return; }
 
   // Bloqueia clique duplo
   eggLayCooldown = 1;
-  showBubble('A botar ovo... 🥚');
+  showBubble(t('egg.bub.laying'));
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -132,9 +132,9 @@ async function layEgg() {
     }
 
     const rarColor = raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good';
-    const eggWord  = numEggs > 1 ? `${numEggs} ovos` : 'um ovo';
-    showBubble(numEggs > 1 ? `Botei ${numEggs} ovos! 🥚` : `Botei um ovo ${raridade === 'Lendário' ? 'Lendário! 🌟' : raridade === 'Raro' ? 'Raro! 💙' : 'Comum! 🥚'}`);
-    addLog(`🥚 Botou ${eggWord}! Verifique o inventário.`, rarColor);
+    const eggWord  = numEggs > 1 ? t('egg.inv.egg_word_multi', {n: numEggs}) : t('egg.inv.egg_word_one');
+    showBubble(numEggs > 1 ? t('egg.bub.laid_multi', {n: numEggs}) : t(`egg.bub.laid_${raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'raro' : 'common'}`));
+    addLog(t('egg.log.laid', {word: eggWord}), rarColor);
     showFloat(`🥚 ×${numEggs}`, raridade === 'Lendário' ? '#e8a030' : raridade === 'Raro' ? '#5ab4e8' : '#7ab87a');
     renderEggInventory();
     updateResourceUI();
@@ -155,7 +155,7 @@ function burnEgg(id) {
   // Ovo apodrecido — descarta sem confirmação
   if(Date.now() > ovo.expiraEm) {
     eggsInInventory.splice(idx, 1);
-    addLog('Ovo apodrecido descartado.', 'bad');
+    addLog(t('egg.log.rotten_discarded'), 'bad');
     renderEggInventory(); updateResourceUI(); scheduleSave();
     return;
   }
@@ -199,7 +199,7 @@ function burnEgg(id) {
     } else if(poolOk) {
       _doBurnRaro(id, finalGems, bonus);
     } else {
-      addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
+      addLog(t('egg.log.pool_unavail', {rar: ovo.raridade}), 'bad');
     }
   }
 }
@@ -209,7 +209,7 @@ function _doBurnComum(id, moedas) {
   if(idx === -1) return;
   eggsInInventory.splice(idx, 1);
   earnCoins(moedas);
-  addLog(`🔥 Ovo Comum queimado! +${moedas} 🪙`, 'good');
+  addLog(t('egg.log.burned_common', {moedas}), 'good');
   showFloat(`+${moedas}🪙`, '#c9a84c');
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
@@ -222,7 +222,7 @@ async function _doBurnRaro(id, finalGems, bonus) {
 
   if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
     if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
-    addLog(`⚠️ Pool indisponível para queimar ovo ${ovo.raridade}.`, 'bad');
+    addLog(t('egg.log.pool_unavail', {rar: ovo.raridade}), 'bad');
     return;
   }
 
@@ -243,7 +243,7 @@ async function _doBurnRaro(id, finalGems, bonus) {
       poolData.saqueHoje = (poolData.saqueHoje || 0) + finalGems;
       poolData.totalSaiu = (poolData.totalSaiu || 0) + finalGems;
     }
-    addLog(`🔥 Ovo ${ovo.raridade} queimado! +${finalGems} 💎${bonusTxt}`, 'good');
+    addLog(t('egg.log.burned_rare', {rar: ovo.raridade, gems: finalGems, bonus: bonusTxt}), 'good');
     showFloat(`+${finalGems} 💎`, '#a78bfa');
     showBubble(`+${finalGems} 💎 🔥`);
     renderEggInventory(); updateResourceUI(); renderPoolWidget();
@@ -256,10 +256,10 @@ async function _doBurnRaro(id, finalGems, bonus) {
 
 function sellEggToPool(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
-  if(idx === -1) { addLog('Ovo não encontrado localmente.', 'bad'); return; }
+  if(idx === -1) { addLog(t('egg.log.not_found'), 'bad'); return; }
   const ovo = eggsInInventory[idx];
-  if(ovo.raridade === 'Comum') { addLog('Ovos Comuns não são aceites pela pool.','bad'); return; }
-  if(!firebase?.auth?.()?.currentUser) { addLog('Conecta a conta primeiro.','bad'); return; }
+  if(ovo.raridade === 'Comum') { addLog(t('egg.log.common_no_pool'), 'bad'); return; }
+  if(!firebase?.auth?.()?.currentUser) { addLog(t('egg.log.connect'), 'bad'); return; }
 
   // Estima preço (mesmo cálculo do servidor)
   const cristaisPool = poolData?.cristais || 0;
@@ -312,14 +312,14 @@ function sellEggToPool(id) {
       renderEggInventory();
       updateResourceUI();
       renderPoolWidget();
-      addLog(`💎 Ovo ${ovo.raridade} vendido à pool por ${json.preco} 💎!`, 'good');
+      addLog(t('egg.log.sold', {rar: ovo.raridade, preco: json.preco}), 'good');
       showFloat(`+${json.preco} 💎`, '#a78bfa');
       showBubble(`+${json.preco} 💎 da pool!`);
       scheduleSave();
     } catch(err) {
       console.error('[sellEggToPool]', err);
-      showBubble('Erro ao vender ovo 😢');
-      addLog(`⚠️ ${err.message || 'Erro ao vender à pool.'}`, 'bad');
+      showBubble(t('egg.bub.sell_error'));
+      addLog(`⚠️ ${err.message || t('egg.log.sell_error')}`, 'bad');
     }
   };
 }
@@ -328,7 +328,7 @@ function hatchEggFromInventory(id) {
   const ovo = eggsInInventory.find(e => e.id === id);
   if(!ovo) return;
   if(Date.now() > ovo.expiraEm) {
-    addLog('Este ovo apodreceu — não pode mais ser chocado.', 'bad');
+    addLog(t('egg.log.rotten_hatch'), 'bad');
     return;
   }
 
@@ -346,13 +346,13 @@ function hatchEggFromInventory(id) {
   const confirmBtn = document.getElementById('hatchConfirmYes');
   let msg = '';
   if(targetPreview === -1) {
-    msg = `Todos os slots estão ocupados.<br>Liberta um slot no Marketplace antes de chocar.`;
+    msg = t('egg.hatch.slots_full');
     if(confirmBtn) confirmBtn.style.display = 'none';
   } else if(hatched && !dead && targetPreview !== activeSlotIdx) {
-    msg = `O novo avatar nascerá no <b style="color:#7ab87a">Slot ${targetPreview+1}</b>.<br>O teu avatar activo <b style="color:#e8a030">${avatar ? avatar.nome.split(',')[0] : ''}</b> continua no Slot ${activeSlotIdx+1}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>`;
+    msg = t('egg.hatch.multi_slot', {slot: targetPreview+1, nome: avatar ? avatar.nome.split(',')[0] : '', activeSlot: activeSlotIdx+1});
     if(confirmBtn) confirmBtn.style.display = '';
   } else {
-    msg = `O ovo nascerá no Slot ${targetPreview+1}.<br>Clica 5× para fazer nascer o teu novo avatar.`;
+    msg = t('egg.hatch.same_slot', {slot: targetPreview+1});
     if(confirmBtn) confirmBtn.style.display = '';
   }
 
@@ -360,10 +360,10 @@ function hatchEggFromInventory(id) {
   if(pendingHatchFee > 0 && confirmBtn && confirmBtn.style.display !== 'none') {
     const saldo = gs.cristais || 0;
     if(saldo < pendingHatchFee) {
-      msg += `<br><br><span style="color:#f87171;font-size:8px;">⚠️ Precisas de <b>${pendingHatchFee} 💎</b> para chocar.<br>Saldo actual: ${saldo} 💎</span>`;
+      msg += t('egg.hatch.need_gems', {fee: pendingHatchFee, saldo});
       if(confirmBtn) confirmBtn.style.display = 'none';
     } else {
-      msg += `<br><br><span style="color:#a78bfa;font-size:8px;">Taxa de choco: <b>${pendingHatchFee} 💎</b></span>`;
+      msg += t('egg.hatch.fee', {fee: pendingHatchFee});
     }
   }
 
@@ -379,8 +379,8 @@ async function confirmHatch() {
 
   const targetSlot = findTargetSlot();
   if(targetSlot === -1) {
-    addLog('Sem slots livres. Liberta um slot no Marketplace.', 'bad');
-    showBubble('Sem slots livres! 😢');
+    addLog(t('egg.log.no_slots'), 'bad');
+    showBubble(t('egg.bub.no_slots'));
     pendingHatchId = null;
     ModalManager.close('hatchConfirmModal');
     return;
@@ -390,7 +390,7 @@ async function confirmHatch() {
 
   // Verificação final da taxa de chocagem
   if(pendingHatchFee > 0 && (gs.cristais || 0) < pendingHatchFee) {
-    addLog(`Cristais insuficientes para chocar (precisas de ${pendingHatchFee} 💎).`, 'bad');
+    addLog(t('egg.log.no_gems', {fee: pendingHatchFee}), 'bad');
     pendingHatchId = null; pendingHatchFee = 0;
     ModalManager.close('hatchConfirmModal');
     return;
@@ -505,7 +505,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
     l.setAttribute('stroke', crackColor); l.style.opacity='0';
   });
 
-  document.getElementById('eggHint').textContent = 'A chocar...';
+  document.getElementById('eggHint').textContent = t('egg.hint.hatching');
   document.getElementById('eggProgress').textContent = '';
 
   const svg    = document.getElementById('eggSvg');
@@ -566,7 +566,7 @@ function cancelHatch() {
 
   eggClicks = 0;
   document.getElementById('eggProgress').textContent = '0 / 5';
-  document.getElementById('eggHint').textContent = 'CLIQUE PARA CHOCAR';
+  document.getElementById('eggHint').textContent = t('egg.hint');
   document.getElementById('eggCracks').style.opacity = '0';
   document.querySelectorAll('#eggCracks line').forEach(l => l.style.opacity = '0');
 
@@ -596,7 +596,7 @@ function cancelHatch() {
     }).catch(e => console.warn('inboxEggs cleanup failed:', e));
   }
   scheduleSave();
-  addLog('Chocagem cancelada. Ovo devolvido ao inventário.', 'info');
+  addLog(t('egg.log.cancelled'), 'info');
 }
 
 function prepareEggScreen(ovo, targetSlot) {
@@ -704,14 +704,14 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
 
   document.getElementById('eggCracks').style.opacity = '0';
   document.getElementById('eggProgress').textContent = '0 / 5';
-  document.getElementById('eggHint').textContent = 'CLIQUE PARA CHOCAR';
+  document.getElementById('eggHint').textContent = t('egg.hint');
   document.getElementById('eggFlash').style.opacity = '0';
 
   fillCreatureCard();
   updateAllUI();
   renderEggInventory();
 
-  addLog(`🥚 Ovo ${raridade} de ${elemento} pronto para chocar!`, raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good');
+  addLog(t('egg.log.ready', {rar: raridade, elem: elemento}), raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good');
 }
 
 function openEggInventory() {
@@ -761,12 +761,10 @@ function renderEggInventory() {
 
   const countEl = document.getElementById('eggInvCount');
   const _maxEggs = 10;
-  if(countEl) countEl.textContent = eggsInInventory.length === 0
-    ? `0 / ${_maxEggs} ovos`
-    : `${eggsInInventory.length} / ${_maxEggs} ovo${eggsInInventory.length > 1 ? 's' : ''}`;
+  if(countEl) countEl.textContent = t('egg.inv.count', {n: eggsInInventory.length, max: _maxEggs, s: eggsInInventory.length !== 1 ? 's' : ''});
 
   if(eggsInInventory.length === 0) {
-    list.innerHTML = '<div class="egg-empty">Nenhum ovo no inventário</div>';
+    list.innerHTML = `<div class="egg-empty">${t('egg.inv.empty')}</div>`;
     return;
   }
 
@@ -786,9 +784,9 @@ function renderEggInventory() {
     const hoursLeft= Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
     const urgent   = !expired && msLeft < 86400000;
     const timeStr  = expired
-      ? '⚠️ APODRECIDO'
-      : daysLeft > 0 ? `${daysLeft}d ${hoursLeft}h restantes`
-      : `${hoursLeft}h restantes`;
+      ? t('egg.inv.rotten')
+      : daysLeft > 0 ? t('egg.inv.time_dh', {d: daysLeft, h: hoursLeft})
+      : t('egg.inv.time_h', {h: hoursLeft});
     const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '');
 
     return `<div class="${cls}">
@@ -799,8 +797,8 @@ function renderEggInventory() {
       </div>
       <div class="egg-actions">
         ${expired
-          ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">Descartar</button>`
-          : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 Chocar</button>
+          ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`
+          : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="listEggOnMarket(${ovo.id})">🛒</button>` : ''}
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎</button>` : ''}
              <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
