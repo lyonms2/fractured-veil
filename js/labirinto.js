@@ -50,7 +50,7 @@ function _mzCell(x, y) { return _mzCells[_mzIdx(x, y)]; }
 // ── Iniciar ────────────────────────────────────────────────────────
 function startLabirinto() {
   if(vitals.energia < 10) {
-    showBubble('Cansado demais... 😴');
+    showBubble(t('mg.bub.tired'));
     ModalManager.close('mazeModal');
     return;
   }
@@ -207,8 +207,8 @@ function _mzPlaceCoins() {
 function _mzUpdateCoinDisplay() {
   const el = document.getElementById('mazeInfo');
   if(!el) return;
-  const lbl = ['FÁCIL','MÉDIO','DIFÍCIL','MESTRE'][_mzTier];
-  el.textContent = `${lbl} · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} moedas`;
+  const lbl = t(['diff.easy','diff.medium','diff.hard','diff.master'][_mzTier]);
+  el.textContent = t('maze.info', {diff: lbl, got: _mzCoinsCollected, total: _mzCoinTotal});
 }
 
 // ── BFS — caminho mais curto respeitando paredes ───────────────────
@@ -338,7 +338,7 @@ function _mzTimerTick() {
 function _mzSetTimer(s) {
   const el = document.getElementById('mazeTimer');
   if(!el) return;
-  el.textContent = `⏱ ${s}s`;
+  el.textContent = t('maze.timer', {s});
   el.style.color = s <= 10 ? '#f87171' : s <= 25 ? '#fbbf24' : '#86efac';
 }
 
@@ -375,11 +375,12 @@ function _mzEnd(won, reason) {
 
   if(!won) {
     if(typeof playSound === 'function') playSound('lose');
-    const msg = reason === 'caught' ? '👁 APANHADO!' : '⏰ TEMPO ESGOTADO';
+    const msg = reason === 'caught' ? t('maze.result.caught') : t('maze.result.timeout');
     if(result) { result.textContent = msg; result.className = 'mini-result-box lose'; }
     if(coinReward > 0) {
       earnCoins(coinReward);
-      if(reward) reward.textContent = `🪙 ${_mzCoinsCollected} moeda${_mzCoinsCollected !== 1 ? 's' : ''} coletada${_mzCoinsCollected !== 1 ? 's' : ''} (+${coinReward} 🪙)`;
+      const _s = _mzCoinsCollected !== 1 ? 's' : '';
+      if(reward) reward.textContent = t('maze.reward.coins', {n: _mzCoinsCollected, s: _s, coins: coinReward});
     } else {
       if(reward) reward.textContent = '';
     }
@@ -391,10 +392,10 @@ function _mzEnd(won, reason) {
     const totalCoins = coinReward + exitBonus;
     const r = miniReward(Math.min(2, frac * 1.8), 0, 3, true);
     earnCoins(totalCoins);
-    const exitLbl = _mzGold ? '⚡ SAÍDA DOURADA!' : '🚪 SAÍDA ENCONTRADA!';
+    const exitLbl = _mzGold ? t('maze.result.exit_gold') : t('maze.result.exit');
     if(result) { result.textContent = exitLbl; result.className = 'mini-result-box win'; }
-    const bonusLbl = _mzGold ? 'bônus saída dourada!' : 'bônus saída!';
-    if(reward) reward.textContent = `+${r.xpGain} XP · 🪙 ${_mzCoinsCollected}/${_mzCoinTotal} moedas (+${totalCoins} 🪙 — ${bonusLbl})`;
+    const bonusLbl = _mzGold ? t('maze.bonus.exit_gold') : t('maze.bonus.exit');
+    if(reward) reward.textContent = t('maze.reward.win', {xp: r.xpGain, got: _mzCoinsCollected, total: _mzCoinTotal, coins: totalCoins, bonus: bonusLbl});
     vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
     scheduleSave();
   }

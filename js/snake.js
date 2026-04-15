@@ -33,7 +33,7 @@ let _snakeTouchY   = null;
 // ── Iniciar ────────────────────────────────────────────────────────
 function startSnake() {
   if(vitals.energia < 10) {
-    showBubble('Cansado demais... 😴');
+    showBubble(t('mg.bub.tired'));
     ModalManager.close('snakeModal');
     return;
   }
@@ -59,7 +59,7 @@ function startSnake() {
 
   const d = miniDifficulty();
   document.getElementById('snakeInfo').textContent =
-    `${d.label} · Nível ${nivel} · Coma os elementos!`;
+    t('snake.info', {diff: t(d.i18nKey), nivel});
 
   _snakePlaceFood();
   _snakeRender();
@@ -247,7 +247,7 @@ function _snakeEnd() {
 
     if(_snakeScore === 0) {
       playSound && playSound('lose');
-      document.getElementById('snakeResult').textContent = '💀 GAME OVER';
+      document.getElementById('snakeResult').textContent = t('snake.result.gameover');
       document.getElementById('snakeResult').className   = 'mini-result-box lose';
       document.getElementById('snakeReward').textContent = '';
     } else {
@@ -274,14 +274,14 @@ function _snakeEnd() {
       const totalCoin = r.coinGain + coinBonus + clearCoin;
 
       document.getElementById('snakeResult').textContent =
-        cleared          ? `🏆 CAMPO LIMPO! (${_snakeScore} elementos)` :
-        frac >= 0.8      ? `🎉 ${_snakeScore} elementos!` :
-                           `🐍 ${_snakeScore} elementos`;
+        cleared          ? t('snake.result.clear', {n: _snakeScore}) :
+        frac >= 0.8      ? t('snake.result.good',  {n: _snakeScore}) :
+                           t('snake.result.ok',    {n: _snakeScore});
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
       document.getElementById('snakeReward').textContent = cleared
-        ? `+${totalXp} XP · +${totalCoin} 🪙  (${_snakeScore}× bola + bônus conclusão!)`
-        : `+${totalXp} XP · +${totalCoin} 🪙  (${_snakeScore}× bola)`;
+        ? t('snake.reward.clear',  {xp: totalXp, coins: totalCoin, n: _snakeScore})
+        : t('snake.reward.normal', {xp: totalXp, coins: totalCoin, n: _snakeScore});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
     }
@@ -308,7 +308,7 @@ function _snakeRenderDead() {
 // ── Score display ──────────────────────────────────────────────────
 function _snakeUpdateScore() {
   const el = document.getElementById('snakeScore');
-  if(el) el.textContent = `🐍 ${_snakeScore} elemento${_snakeScore !== 1 ? 's' : ''}`;
+  if(el) el.textContent = t('snake.score', {n: _snakeScore, s: _snakeScore !== 1 ? 's' : ''});
 }
 
 // ── Controles de direção ───────────────────────────────────────────
