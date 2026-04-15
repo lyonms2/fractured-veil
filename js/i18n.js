@@ -265,6 +265,24 @@
       'btn.lay_egg':             'BOTAR OVO',
       'btn.wake':                'ACORDAR',
       'btn.repouso':             'REPOUSO',
+      'btn.friends':             'AMIGOS',
+
+      // Stat labels
+      'stat.fome':               '🍖 FOME',
+      'stat.humor':              '😊 HUMOR',
+      'stat.energia':            '⚡ ENERGIA',
+      'stat.saude':              '❤️ SAÚDE',
+      'stat.higiene':            '🧹 HIGIENE',
+
+      // Misc UI
+      'ui.cancel':               'Cancelar',
+      'ui.elem_passive':         'Passivo Elemental',
+
+      // Egg actions
+      'egg.burn.title':          '🔥 Queimar Ovo',
+      'egg.burn.btn':            '🔥 Confirmar',
+      'egg.sell.title':          '💎 Vender à Pool',
+      'egg.sell.btn':            '💎 Confirmar',
 
       // Panel / right side
       'panel.summon_title':      '◆ INVOCAR AVATAR',
@@ -552,6 +570,24 @@
       'btn.lay_egg':             'LAY EGG',
       'btn.wake':                'WAKE UP',
       'btn.repouso':             'REST',
+      'btn.friends':             'FRIENDS',
+
+      // Stat labels
+      'stat.fome':               '🍖 HUNGER',
+      'stat.humor':              '😊 MOOD',
+      'stat.energia':            '⚡ ENERGY',
+      'stat.saude':              '❤️ HEALTH',
+      'stat.higiene':            '🧹 HYGIENE',
+
+      // Misc UI
+      'ui.cancel':               'Cancel',
+      'ui.elem_passive':         'Elemental Passive',
+
+      // Egg actions
+      'egg.burn.title':          '🔥 Burn Egg',
+      'egg.burn.btn':            '🔥 Confirm',
+      'egg.sell.title':          '💎 Sell to Pool',
+      'egg.sell.btn':            '💎 Confirm',
 
       // Panel / right side
       'panel.summon_title':      '◆ SUMMON AVATAR',

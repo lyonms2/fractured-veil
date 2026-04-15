@@ -288,7 +288,7 @@
             </div>
             <div class="modal-scroll-body">
               <div id="itemInvList" style="display:flex;flex-direction:column;gap:6px;width:100%;">
-                <div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum item no inventário</div>
+                <div data-i18n="ui.no_items" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;"></div>
               </div>
             </div>
           </div>
@@ -303,7 +303,7 @@
             </div>
             <div class="modal-scroll-body">
               <div class="egg-inv-list" id="eggInvList">
-                <div class="egg-empty">Nenhum ovo ainda</div>
+                <div class="egg-empty" data-i18n="ui.no_eggs"></div>
               </div>
             </div>
           </div>
@@ -559,7 +559,7 @@
           <div class="mini-modal" id="snakeModal">
             <div class="mini-modal-header">
               <div data-i18n="mini.snake.title" class="mini-title">🐍 SNAKE ELEMENTAL</div>
-              <button onclick="closeMiniModal('snakeModal')" class="mini-modal-close-btn">✕ FECHAR</button>
+              <button onclick="closeMiniModal('snakeModal')" class="mini-modal-close-btn" data-i18n="mini.close"></button>
             </div>
             <div id="snakeInfo" class="mini-info">Fácil · Coma os elementos!</div>
             <canvas id="snakeCanvas" width="280" height="280"></canvas>
@@ -592,7 +592,7 @@
           <div class="mini-modal" id="mazeModal">
             <div class="mini-modal-header">
               <div data-i18n="mini.maze.title" class="mini-title">🌀 LABIRINTO ELEMENTAL</div>
-              <button onclick="closeMiniModal('mazeModal')" class="mini-modal-close-btn">✕ FECHAR</button>
+              <button onclick="closeMiniModal('mazeModal')" class="mini-modal-close-btn" data-i18n="mini.close"></button>
             </div>
             <div data-i18n="mini.maze.info" id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
             <canvas id="mazeCanvas" width="280" height="280"></canvas>
@@ -718,7 +718,7 @@
           <span class="icon">🥚</span><span data-i18n="btn.lay_egg">BOTAR OVO</span>
         </button>
         <button class="btn-action" id="btnAmigos" onclick="openAmigos()" style="border-color:rgba(90,180,232,.4);color:#5ab4e8;position:relative;overflow:visible;">
-          <span class="icon">👥</span><span>AMIGOS</span>
+          <span class="icon">👥</span><span data-i18n="btn.friends"></span>
           <span id="amigosBadge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;background:#e74c3c;border-radius:50%;font-size:8px;font-family:'Cinzel',serif;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;border:1.5px solid var(--bg);"></span>
         </button>
       </div>
@@ -775,7 +775,7 @@
 
         <div id="idDesc" style="font-size:8px;color:#887799;font-style:italic;line-height:1.7;margin-bottom:6px;padding:6px 8px;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:rgba(255,255,255,.02);"></div>
         <div id="elemBonusBlock" style="display:none;font-size:7.5px;line-height:1.6;margin-bottom:10px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);">
-          <span id="elemBonusLabel" style="font-family:'Cinzel',serif;font-weight:700;letter-spacing:.5px;font-size:7px;text-transform:uppercase;opacity:.7;display:block;margin-bottom:2px;">Passivo Elemental</span>
+          <span id="elemBonusLabel" data-i18n="ui.elem_passive" style="font-family:'Cinzel',serif;font-weight:700;letter-spacing:.5px;font-size:7px;text-transform:uppercase;opacity:.7;display:block;margin-bottom:2px;"></span>
           <span id="elemBonusTxt" style="color:#a89bc0;"></span>
         </div>
 
@@ -803,33 +803,33 @@
         <div id="statusCard" style="display:none;margin:10px -18px -12px;border-top:1px solid var(--border);">
           <div class="status-cards-grid" style="padding:10px 14px 4px;">
             <div class="status-card-item">
-              <div class="sci-label">🍖 FOME</div>
+              <div data-i18n="stat.fome" class="sci-label"></div>
               <div class="sci-val" id="valFome">100</div>
               <div class="sci-bar"><div class="sci-fill fill-fome" id="barFome" style="width:100%"></div></div>
             </div>
             <div class="status-card-item">
-              <div class="sci-label">😊 HUMOR</div>
+              <div data-i18n="stat.humor" class="sci-label"></div>
               <div class="sci-val" id="valHumor">100</div>
               <div class="sci-bar"><div class="sci-fill fill-humor" id="barHumor" style="width:100%"></div></div>
             </div>
             <div class="status-card-item">
-              <div class="sci-label">⚡ ENERGIA</div>
+              <div data-i18n="stat.energia" class="sci-label"></div>
               <div class="sci-val" id="valEnergia">100</div>
               <div class="sci-bar"><div class="sci-fill fill-energia" id="barEnergia" style="width:100%"></div></div>
             </div>
             <div class="status-card-item">
-              <div class="sci-label">❤️ SAÚDE</div>
+              <div data-i18n="stat.saude" class="sci-label"></div>
               <div class="sci-val" id="valSaude">100</div>
               <div class="sci-bar"><div class="sci-fill fill-saude" id="barSaude" style="width:100%"></div></div>
             </div>
             <div class="status-card-item">
-              <div class="sci-label">🧹 HIGIENE</div>
+              <div data-i18n="stat.higiene" class="sci-label"></div>
               <div class="sci-val" id="valHigiene">100</div>
               <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
             </div>
           </div>
           <div id="lifeEstimateRow" style="margin:0 14px;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:6px;color:var(--muted);letter-spacing:.5px;">⏳ VIDA RESTANTE</span>
+            <span data-i18n="ui.life_remaining" style="font-size:6px;color:var(--muted);letter-spacing:.5px;"></span>
             <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
           </div>
         </div>
@@ -1057,7 +1057,7 @@
       bnSleep.classList.toggle('sleep-active',   isSleeping);
       bnSleep.classList.toggle('active-repouso', isRepouso);
     }
-    if (sleepLbl) sleepLbl.textContent = isSleeping ? 'Acordar' : isRepouso ? 'Repouso' : 'Dormir';
+    if (sleepLbl) sleepLbl.textContent = isSleeping ? t('btn.wake') : isRepouso ? t('btn.repouso') : t('ui.sleep_btn_mobile');
  
     // Badges de alerta
     if (alive && typeof vitals !== 'undefined') {
@@ -1134,11 +1134,11 @@
 <!-- EGG BURN CONFIRM OVERLAY -->
 <div id="eggBurnOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">
   <div style="background:#0d0b1a;border:1px solid rgba(248,113,113,.3);border-radius:14px;padding:20px 18px;max-width:280px;width:90%;text-align:center;">
-    <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#f87171;margin-bottom:12px;">🔥 Queimar Ovo</div>
+    <div data-i18n="egg.burn.title" style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#f87171;margin-bottom:12px;"></div>
     <div id="eggBurnPreview" style="margin-bottom:14px;font-size:10px;line-height:2;color:var(--muted);"></div>
     <div style="display:flex;gap:8px;justify-content:center;">
-      <button onclick="document.getElementById('eggBurnOverlay').style.display='none'" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;">Cancelar</button>
-      <button id="eggBurnConfirmBtn" style="flex:1;padding:8px;background:rgba(127,29,29,.6);border:1px solid #f87171;border-radius:8px;color:#fca5a5;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;">🔥 Confirmar</button>
+      <button onclick="document.getElementById('eggBurnOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;"></button>
+      <button id="eggBurnConfirmBtn" data-i18n="egg.burn.btn" style="flex:1;padding:8px;background:rgba(127,29,29,.6);border:1px solid #f87171;border-radius:8px;color:#fca5a5;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;"></button>
     </div>
   </div>
 </div>
@@ -1146,11 +1146,11 @@
 <!-- EGG SELL CONFIRM OVERLAY -->
 <div id="eggSellOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">
   <div style="background:#0d0b1a;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:20px 18px;max-width:300px;width:90%;text-align:center;">
-    <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:12px;">💎 Vender à Pool</div>
+    <div data-i18n="egg.sell.title" style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:12px;"></div>
     <div id="eggSellPreview" style="margin-bottom:14px;font-size:10px;line-height:2;color:var(--muted);"></div>
     <div style="display:flex;gap:8px;justify-content:center;">
-      <button onclick="document.getElementById('eggSellOverlay').style.display='none'" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;">Cancelar</button>
-      <button id="eggSellConfirmBtn" style="flex:1;padding:8px;background:rgba(76,29,149,.6);border:1px solid #a78bfa;border-radius:8px;color:#c4b5fd;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;">💎 Confirmar</button>
+      <button onclick="document.getElementById('eggSellOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;"></button>
+      <button id="eggSellConfirmBtn" data-i18n="egg.sell.btn" style="flex:1;padding:8px;background:rgba(76,29,149,.6);border:1px solid #a78bfa;border-radius:8px;color:#c4b5fd;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;"></button>
     </div>
   </div>
 </div>
