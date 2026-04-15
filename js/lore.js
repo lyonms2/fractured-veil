@@ -232,15 +232,15 @@ function _loreRenderLista() {
 function iniciarCapitulo(capId) {
   const cap = LORE_CAPITULOS.find(c => c.id === capId);
   if(!cap || !hatched || dead || !avatar) return;
-  if(cap.emBreve)               { showBubble('Este capítulo ainda não está disponível.'); return; }
-  if(!loreCapDesbloqueado(cap)) { showBubble('Termine o capítulo anterior primeiro.'); return; }
+  if(cap.emBreve)               { showBubble(t('lore.bub.soon')); return; }
+  if(!loreCapDesbloqueado(cap)) { showBubble(t('lore.bub.locked')); return; }
 
   const custo = LORE_CUSTOS[cap.raridade];
   if(custo.moeda === 'moedas') {
-    if(gs.moedas < custo.valor)   { showBubble(`Você precisa de ${custo.valor} 🪙!`); return; }
+    if(gs.moedas < custo.valor)   { showBubble(t('lore.bub.need_coins', {n: custo.valor})); return; }
     gs.moedas -= custo.valor;
   } else {
-    if(gs.cristais < custo.valor) { showBubble(`Você precisa de ${custo.valor} 💎!`); return; }
+    if(gs.cristais < custo.valor) { showBubble(t('lore.bub.need_gems', {n: custo.valor})); return; }
     gs.cristais -= custo.valor;
   }
   updateResourceUI();
@@ -263,7 +263,7 @@ function continuarCapitulo(capId) {
   const cenaId = cap.cenas[prog.cenaAtual] ? prog.cenaAtual : 'inicio';
   if(cenaId === 'inicio' && prog.cenaAtual !== 'inicio') {
     _loreSetProg(capId, { caminho: [], cenaAtual: 'inicio', concluido: false, fimId: null });
-    showBubble('Capítulo reiniciado — história atualizada 📖');
+    showBubble(t('lore.bub.reset'));
   }
 
   _loreCapituloAtual = cap;
@@ -422,7 +422,7 @@ function _loreAplicarRecompensa(r) {
 
   const moedaTxt = r.moedas ? ` +${r.moedas}🪙` : '';
   const xpTxt    = r.xp    ? ` +${r.xp}XP`     : '';
-  addLog(`Lore: ${_loreCapituloAtual?.titulo}${xpTxt}${moedaTxt}`, 'good');
+  addLog(t('lore.log.completed', {titulo: _loreCapituloAtual?.titulo, xp: xpTxt, coins: moedaTxt}), 'good');
 }
 
 // ── Formata recompensas ───────────────────────────────────────────

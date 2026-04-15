@@ -55,7 +55,7 @@ async function disconnectWallet() {
 
   clearTimeout(_saveTimeout);
   document.getElementById('logList').innerHTML = '';
-  addLog('Sessão encerrada. Conecte a carteira para continuar.', 'info');
+  addLog(t('wallet.log.disconnected'), 'info');
 }
 
 // ── Centraliza visibilidade dos botões do header ──────────────────
@@ -72,18 +72,18 @@ function updateHeaderButtons() {
 
 async function connectWallet() {
   if(walletAddress) {
-    addLog(`Carteira: ${walletAddress}`, 'info');
+    addLog(t('wallet.log.address', {addr: walletAddress}), 'info');
     return;
   }
   if(typeof window.ethereum === 'undefined') {
     const le = document.getElementById('loginError');
-    if(le) le.textContent = 'MetaMask não encontrada. Instale em metamask.io';
-    addLog('MetaMask não encontrada. Instale em metamask.io', 'bad');
+    if(le) le.textContent = t('wallet.log.no_metamask');
+    addLog(t('wallet.log.no_metamask'), 'bad');
     return;
   }
   const loginBtn = document.getElementById('loginBtn');
   const loginError = document.getElementById('loginError');
-  if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent='CONECTANDO...'; }
+  if(loginBtn) { loginBtn.disabled=true; document.getElementById('loginBtnText').textContent=t('wallet.btn.connecting'); }
   if(loginError) loginError.textContent = '';
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -107,10 +107,10 @@ async function connectWallet() {
     const _bs = document.getElementById('btnSummon');
     if(_bs) _bs.disabled = false;
     updateResourceUI();
-    addLog(`Carteira conectada: ${short}`, 'good');
+    addLog(t('wallet.log.connected', {addr: short}), 'good');
 
     if(loaded) {
-      addLog('Estado restaurado da nuvem! ☁️', 'good');
+      addLog(t('wallet.log.restored'), 'good');
 
       // ── Presence: lastSeen e deadSlot server-side ──
       setupPresence(walletAddress);
@@ -172,7 +172,7 @@ async function connectWallet() {
 
           if(sleeping && !wasSleeping) {
             sleeping = false;
-            addLog('Acordou com energia plena enquanto estava offline! ☀️', 'good');
+            addLog(t('wallet.log.wake_offline'), 'good');
           }
 
           if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
@@ -180,13 +180,13 @@ async function connectWallet() {
           saveRuntimeToSlot(activeSlotIdx);
           const hrs  = Math.floor(offlineSecs / 3600);
           const mins = Math.floor((offlineSecs % 3600) / 60);
-          const modoLog = wasSleeping || sonoEsgotado ? '☀️ acordou enquanto ausente'
-                        : wasModoRepouso              ? '💤 modo repouso activo'
-                        :                              'stats atualizados';
-          addLog(`Ausente por ${hrs}h ${mins}min — ${modoLog}.`, 'info');
+          const modoLog = wasSleeping || sonoEsgotado ? t('wallet.log.mode_woke')
+                        : wasModoRepouso              ? t('wallet.log.mode_repouso')
+                        :                              t('wallet.log.mode_active');
+          addLog(t('wallet.log.offline', {h: hrs, m: mins, modo: modoLog}), 'info');
           if(vitals.saude <= 0) {
             dead = true;
-            addLog(`${avatar ? avatar.nome.split(',')[0] : 'Avatar'} não sobreviveu à sua ausência...`, 'bad');
+            addLog(t('wallet.log.died_offline', {nome: avatar ? avatar.nome.split(',')[0] : 'Avatar'}), 'bad');
           }
         }
       }
@@ -204,9 +204,10 @@ async function connectWallet() {
         const _name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
         document.getElementById('deadAvatarName').textContent = _name.toUpperCase();
         const _h = Math.floor(totalSecs/3600), _m = Math.floor((totalSecs%3600)/60);
+        const _timeStr = (_h > 0 ? `${_h}h ` : '') + `${_m}min`;
         document.getElementById('deadStats').innerHTML =
-          `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
-          `Viveu ${_h > 0 ? _h+'h ' : ''}${_m}min · Vínculo: ${Math.floor(vinculo)}`;
+          t('gt.dead.stats1', {nivel, fase: FASES[getFase()], n: eggsInInventory.length, s: eggsInInventory.length !== 1 ? 's' : ''}) + '<br>' +
+          t('wallet.log.dead_time', {time: _timeStr, vinculo: Math.floor(vinculo)});
         const dp = document.getElementById('deadParticles');
         if(dp) {
           dp.innerHTML = '';
@@ -221,7 +222,7 @@ async function connectWallet() {
         }
         document.getElementById('deadScreen').style.display = 'flex';
         updateResourceUI();
-        addLog(`${_name} partiu para outra dimensão... 💀`, 'bad');
+        addLog(t('gt.dead.log', {nome: _name}), 'bad');
 
       } else if(hatched && avatar) {
         setupAvatar();
@@ -245,11 +246,11 @@ async function connectWallet() {
           if(_ov)  _ov.classList.add('active');
           if(_btn) {
             _btn.querySelector('.icon').textContent            = '💤';
-            document.getElementById('sleepLabel').textContent = 'REPOUSO';
+            document.getElementById('sleepLabel').textContent = t('wallet.label.repouso');
             _btn.classList.add('active-repouso');
           }
           document.getElementById('actionBtns').classList.add('repouso-mode');
-          addLog('Modo repouso activo. 💤', 'info');
+          addLog(t('wallet.log.repouso'), 'info');
         }
 
         if(poopCount > 0) {
@@ -262,7 +263,7 @@ async function connectWallet() {
               el.className = 'poop';
               el.style.left = pos.left; el.style.bottom = pos.bottom;
               el.style.zIndex = 6 + _p;
-              el.title = 'Clique para limpar';
+              el.title = t('gt.poop.title');
               el.style.transform = `scale(${(.8 + Math.random()*.4).toFixed(2)})`;
               el.textContent = '💩';
               el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
@@ -285,7 +286,7 @@ async function connectWallet() {
         updateResourceUI();
       }
     } else {
-      addLog('Nenhum save encontrado. Comece uma nova aventura!', 'info');
+      addLog(t('wallet.log.no_save'), 'info');
       updateResourceUI();
     }
 
@@ -295,16 +296,16 @@ async function connectWallet() {
   } catch(e) {
     const _gloErr = document.getElementById('gameLoadingOverlay');
     if(_gloErr) _gloErr.style.display = 'none';
-    const _msg = e.message?.includes('bloqueada') ? 'Desbloqueie o MetaMask primeiro.'
-               : e.message?.includes('rejected') || e.code === 4001 ? 'Conexão cancelada.'
-               : 'Erro ao conectar. Tente novamente.';
+    const _msg = e.message?.includes('bloqueada') ? t('wallet.err.blocked')
+               : e.message?.includes('rejected') || e.code === 4001 ? t('wallet.err.rejected')
+               : t('wallet.err.failed');
     const _le = document.getElementById('loginError');
     if(_le) _le.textContent = _msg;
     addLog(_msg, 'info');
     const _lb = document.getElementById('loginBtn');
     const _lt = document.getElementById('loginBtnText');
     if(_lb) _lb.disabled = false;
-    if(_lt) _lt.textContent = 'CONECTAR METAMASK';
+    if(_lt) _lt.textContent = t('wallet.btn.connect');
   }
 }
 

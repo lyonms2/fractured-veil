@@ -2,7 +2,7 @@
 // SUMMON SYSTEM
 // ═══════════════════════════════════════════
 function triggerSummon() {
-  if(!walletAddress) { addLog('Faz login primeiro!','bad'); showBubble('Precisas fazer login! 🔑'); return; }
+  if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
   const btn = document.getElementById('btnSummon');
   if(!btn || btn.disabled) return;
   btn.disabled = true;
@@ -166,7 +166,7 @@ function triggerSummon() {
     hatchWithAnimation(raridade, elemento, activeSlotIdx);
   }, 4300);
 
-  const msg = raridade==='Lendário'?'🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!':raridade==='Raro'?'✨ Invocação Rara! Um guardião experiente surge!':'Uma entidade dimensional foi invocada!';
+  const msg = raridade==='Lendário' ? t('summon.log.legendary') : raridade==='Raro' ? t('summon.log.rare') : t('summon.log.common');
   addLog(msg, raridade==='Lendário'?'leg':raridade==='Raro'?'info':'good');
   updateResourceUI();
 }
@@ -180,7 +180,7 @@ function setupAvatar() {
   document.getElementById('aliveScreen').style.display  = 'none';
   document.getElementById('deadScreen').style.display   = 'none';
   fillCreatureCard();
-  if(!avatar.bornAt) addLog(`${avatar.nome} foi invocado!`, 'good');
+  if(!avatar.bornAt) addLog(t('summon.log.invoked', {nome: avatar.nome}), 'good');
   updateAllUI();
   scheduleSave();
 }
@@ -224,15 +224,15 @@ function hatch() {
     loadRuntimeFromSlot(activeSlotIdx);
     document.getElementById('aliveScreen').style.display = 'block';
     document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
-    document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
+    document.getElementById('phaseLabel').textContent = t('gt.phase.label', {fase: FASES[getFase()]});
     updateEquippedDisplay();
     syncEasterEggs();
     renderEggInventory();
     updateAllUI();
     saveToFirebase();
     if(typeof updateHeaderButtons === 'function') updateHeaderButtons();
-    showBubble('Novo avatar no Slot ' + (pendingSlot+1) + '! 🐣');
-    addLog(`${pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar'} nasceu no Slot ${pendingSlot+1}! Activa-o no Marketplace.`, 'good');
+    showBubble(t('summon.bub.new_slot', {n: pendingSlot+1}));
+    addLog(t('summon.log.born_slot', {nome: pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar', n: pendingSlot+1}), 'good');
     return;
   }
 
@@ -313,6 +313,6 @@ function hatch() {
   if(_rar === 'Lendário') playSound('rarity_lendario');
   else if(_rar === 'Raro') playSound('rarity_raro');
   else                     playSound('rarity_comum');
-  showBubble('Olá! 🐣');
-  addLog(`${avatar.nome.split(',')[0]} nasceu! Cuide bem dele.`, 'good');
+  showBubble(t('summon.bub.hello'));
+  addLog(t('summon.log.born', {nome: avatar.nome.split(',')[0]}), 'good');
 }

@@ -403,7 +403,7 @@ async function executarVisita(tipo) {
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
     if(typeof showFloat === 'function') showFloat(`+${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#7ab87a');
-    if(typeof addLog   === 'function') addLog(`${icones[tipo]} Visitaste ${esc(_visitaAtual.perfil.nome)}! +${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, 'good');
+    if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaAtual.perfil.nome), coins: CUSTO_VISITA, xp: XP_VISITA}), 'good');
 
     _renderVisitaOverlay();
     // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)

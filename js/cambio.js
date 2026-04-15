@@ -86,8 +86,8 @@ async function cambioConverter(quantidade) {
     });
     const data = await resp.json();
     if(!resp.ok) {
-      showBubble(data.erro || 'Erro no câmbio.');
-      addLog(`Câmbio: ${data.erro || 'Erro.'}`, 'bad');
+      showBubble(data.erro || t('cambio.bub.error'));
+      addLog(t('cambio.log.error', {msg: data.erro || t('cambio.bub.error')}), 'bad');
       return false;
     }
 
@@ -95,14 +95,14 @@ async function cambioConverter(quantidade) {
     gs.cristais = data.novoSaldoCristais;
     updateResourceUI();
 
-    showBubble(`+${data.cristais} 💎 obtidos! ✨`);
-    addLog(`Câmbio: ${data.moedasGastas} 🪙 → +${data.cristais} 💎`, 'good');
+    showBubble(t('cambio.bub.success', {cristais: data.cristais}));
+    addLog(t('cambio.log.success', {moedas: data.moedasGastas, cristais: data.cristais}), 'good');
     showFloat(`+${data.cristais} 💎`, '#a78bfa');
     scheduleSave();
     return true;
   } catch(e) {
     console.error('[cambio]', e);
-    showBubble('Erro de ligação. Tenta novamente.');
+    showBubble(t('cambio.bub.conn_err'));
     return false;
   }
 }

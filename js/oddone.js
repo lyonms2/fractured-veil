@@ -31,7 +31,7 @@ let _oddHoverIdx   = -1;
 // ── Iniciar ────────────────────────────────────────────────────────
 function startOddOne() {
   if(vitals.energia < 10) {
-    showBubble('Cansado demais... 😴');
+    showBubble(t('mg.bub.tired'));
     ModalManager.close('oddModal');
     return;
   }

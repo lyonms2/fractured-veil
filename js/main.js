@@ -108,8 +108,8 @@ function _resetInatividade() {
   if(!hatched || dead || sleeping || modoRepouso) return;
   _inativoTimer = setTimeout(() => {
     if(!hatched || dead || sleeping || modoRepouso) return;
-    showBubble('Vai sair? Ativa o repouso! 🌙');
-    addLog('Inativo há 5min — segure 💤 DORMIR para ativar o modo repouso.', 'info');
+    showBubble(t('main.bub.inativo'));
+    addLog(t('main.log.inativo'), 'info');
   }, INATIVIDADE_MS);
 }
 
@@ -209,11 +209,11 @@ document.addEventListener('visibilitychange', async () => {
       updateAllUI();
       if(typeof renderEggInventory === 'function') renderEggInventory();
       if(remoteSlotIdx !== activeSlotIdx) {
-        addLog(`Slot activo alterado para Slot ${remoteSlotIdx+1} via Marketplace.`, 'info');
+        addLog(t('main.log.slot_changed', {n: remoteSlotIdx+1}), 'info');
       }
       if(hasInbox) {
-        addLog(`🥚 Novos ovos recebidos!`, 'good');
-        showBubble('Ovos chegaram! 🥚');
+        addLog(t('main.log.inbox_eggs'), 'good');
+        showBubble(t('main.bub.inbox_eggs'));
       }
     }
   } catch(e) { console.warn('visibilitychange sync error:', e); }
@@ -227,7 +227,7 @@ function openAvatarZoom() {
   zoomEl.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFase());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = `${avatar.elemento} · ${avatar.raridade} · ${FASES[getFase()]} · Nível ${nivel}`;
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});
   const ov = document.getElementById('avatarZoomOverlay');
   ov.style.display = 'flex';
 }
@@ -243,7 +243,7 @@ function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome) {
   document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(elemento, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = `${elemento} · ${raridade} · ${fases[fase]} · Nível ${nivelAv||1}`;
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: elemento, rar: raridade, fase: fases[fase], nivel: nivelAv||1});
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }
 
