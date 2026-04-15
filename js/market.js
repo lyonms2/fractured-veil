@@ -29,15 +29,15 @@ function renderMarketItems() {
     if(item.consumivel) {
       const hasDiseases = (typeof activeDiseases !== 'undefined' && activeDiseases.length > 0) || sick;
       const disabled    = !canAfford || !hasDiseases;
-      const label       = !canAfford ? '⚠ SEM MOEDAS' : !hasDiseases ? '✦ SEM DOENÇAS' : '✦ USAR AGORA';
+      const label       = !canAfford ? t('mkt.btn.no_coins') : !hasDiseases ? t('mkt.btn.no_diseases') : t('mkt.btn.use_now');
       footerBtn = `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${disabled?'disabled':''}>${label}</button>
-                   <div class="mkt-duration-note" style="color:#a855f7;">💊 consumível</div>`;
+                   <div class="mkt-duration-note" style="color:#a855f7;">${t('mkt.label.consumable')}</div>`;
     } else {
       const alreadyOwned = owned.has(item.id);
       footerBtn = alreadyOwned
-        ? `<div class="mkt-owned-badge">✓ JÁ POSSUI</div><div class="mkt-duration-note">⏳ 30 dias</div>`
-        : `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${!canAfford?'disabled':''}>${!canAfford ? '⚠ SEM MOEDAS' : '✦ ADQUIRIR'}</button>
-           <div class="mkt-duration-note">⏳ 30 dias</div>`;
+        ? `<div class="mkt-owned-badge">${t('mkt.label.owned')}</div><div class="mkt-duration-note">${t('mkt.label.duration')}</div>`
+        : `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${!canAfford?'disabled':''}>${!canAfford ? t('mkt.btn.no_coins') : t('mkt.btn.buy')}</button>
+           <div class="mkt-duration-note">${t('mkt.label.duration')}</div>`;
     }
 
     return `<div class="mkt-catalog-card">
@@ -93,18 +93,18 @@ function buyItem(catalogId) {
 
   const discount = rarityBonus().shopDiscount || 0;
   const preco = Math.round(item.preco * (1 - discount));
-  if(gs.moedas < preco) { showBubble('Sem moedas! 😢'); return; }
+  if(gs.moedas < preco) { showBubble(t('mkt.bub.no_coins')); return; }
   if(itemInventory.find(i => i.catalogId === catalogId)) {
-    addLog('Você já possui este item.', 'info'); return;
+    addLog(t('mkt.log.already_owned'), 'info'); return;
   }
   spendCoins(preco);
   const entry = { id: Date.now(), catalogId, equipped: false, expiraEm: Date.now() + 2592000000 };
   itemInventory.push(entry);
   updateResourceUI();
   scheduleSave();
-  const discountTxt = discount > 0 ? ` (-${Math.round(discount*100)}% desconto)` : '';
-  addLog(`${item.emoji} ${item.nome} adquirido!${discountTxt}`, 'good');
-  showBubble(`${item.emoji} Item obtido!`);
+  const discountTxt = discount > 0 ? t('mkt.log.discount', {pct: Math.round(discount*100)}) : '';
+  addLog(t('mkt.log.bought', {emoji: item.emoji, nome: item.nome, discount: discountTxt}), 'good');
+  showBubble(t('mkt.bub.bought', {emoji: item.emoji}));
   renderMarketItems();
   renderItemInventory();
 }
