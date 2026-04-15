@@ -25,6 +25,7 @@
       'auth.reg.weak_pass':      'Senha muito fraca.',
       'auth.reg.error':          'Erro ao criar conta. Tenta novamente.',
       'auth.reg.success':        '✓ Conta criada! Verifica o teu email antes de entrar.',
+      'auth.reg.email_notice':   '📧 Após criar a conta, receberás um email de confirmação.\nVerifica também a pasta de spam.',
       // Auth — reset
       'auth.reset.fill':         'Insere o teu e-mail.',
       'auth.reset.sent':         '✓ E-mail de recuperação enviado!',
@@ -296,6 +297,7 @@
       'auth.reg.weak_pass':      'Password is too weak.',
       'auth.reg.error':          'Account creation error. Please try again.',
       'auth.reg.success':        '✓ Account created! Verify your email before signing in.',
+      'auth.reg.email_notice':   '📧 After creating your account, you\'ll receive a confirmation email.\nAlso check your spam folder.',
       // Auth — reset
       'auth.reset.fill':         'Please enter your email.',
       'auth.reset.sent':         '✓ Recovery email sent!',

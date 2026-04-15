@@ -86,6 +86,17 @@
     }
     .auth-btn-link:hover { color: var(--gold); }
 
+    .auth-email-notice {
+      font-size: 9px;
+      color: #a89bc2;
+      text-align: center;
+      line-height: 1.7;
+      padding: 6px 10px;
+      background: rgba(90, 58, 154, .12);
+      border: 1px solid rgba(90, 58, 154, .25);
+      border-radius: 6px;
+    }
+
     @keyframes auth-msg-in {
       from { opacity: 0; transform: translateY(-4px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -150,6 +161,7 @@
       <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
       <input id="regSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
         onkeydown="if(event.key==='Enter')registrarComEmail()"/>
+      <div class="auth-email-notice" data-i18n="auth.reg.email_notice"></div>
       <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
     </div>
 
