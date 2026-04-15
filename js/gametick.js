@@ -55,7 +55,7 @@ function removePoop(el) {
   dirtyLevel = Math.min(3, Math.floor(poopCount / 2));
   vinculo += 2;
   playAnim('anim-clean', false);
-  showFloat('✨ limpinho!', '#a78bfa');
+  showFloat(t('gt.bath.bub_0'), '#a78bfa');
   updateAllUI();
   scheduleSave();
 }

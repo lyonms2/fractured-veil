@@ -418,7 +418,7 @@ async function _onLoginSuccess(user) {
             el.className = 'poop';
             el.style.left = pos.left; el.style.bottom = pos.bottom;
             el.style.zIndex = 6 + _p;
-            el.title = 'Clique para limpar';
+            el.title = t('gt.poop.title');
             el.style.transform = `scale(${(.8 + Math.random()*.4).toFixed(2)})`;
             el.textContent = '💩';
             el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
