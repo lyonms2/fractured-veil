@@ -20,13 +20,13 @@ function renderItemInventory() {
 
   const equippedNormal  = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
   const equippedCenario = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
-  if(countEl) countEl.innerHTML = `${displayItems.length} ite${displayItems.length !== 1 ? 'ns' : 'm'} · <span style="color:var(--gold)">${equippedNormal}/${MAX_EQUIPPED} equipados</span>`;
+  if(countEl) countEl.innerHTML = t('item.inv.count', {n: displayItems.length, word: t(displayItems.length !== 1 ? 'item.inv.word_multi' : 'item.inv.word_one'), eq: equippedNormal, max: MAX_EQUIPPED});
 
   const resEl = document.getElementById('resItems');
   if(resEl) resEl.textContent = displayItems.length;
 
   if(displayItems.length === 0) {
-    list.innerHTML = '<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">Nenhum item no inventário</div>';
+    list.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">${t('item.inv.empty')}</div>`;
     return;
   }
 
@@ -56,16 +56,16 @@ function renderItemInventory() {
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Cinzel',serif;font-size:8px;color:${item.cor};font-weight:700;">${item.nome}</div>
           <div style="font-size:6.5px;color:var(--muted);margin-top:2px;">✦ ${item.efeito}</div>
-          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'};margin-top:2px;">${diasRest}d restantes</div>` : ''}
+          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'};margin-top:2px;">${t('item.card.days_left', {d: diasRest})}</div>` : ''}
         </div>
-        ${isEquipped ? `<span style="font-size:6.5px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;flex-shrink:0;">EQUIPADO</span>` : ''}
+        ${isEquipped ? `<span style="font-size:6.5px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;flex-shrink:0;">${t('item.card.equipped')}</span>` : ''}
       </div>
       <div style="display:flex;gap:6px;margin-top:10px;">
         ${isEquipped
-          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">DESEQUIPAR</button>`
-          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>EQUIPAR</button>`
+          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">${t('item.btn.unequip')}</button>`
+          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>${t('item.btn.equip')}</button>`
         }
-        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">EXCLUIR</button>
+        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">${t('item.btn.delete')}</button>
       </div>
     </div>`;
   }
@@ -92,7 +92,7 @@ function updateEquippedDisplay() {
   itemInventory = itemInventory.filter(i => {
     if(i.expiraEm && now > i.expiraEm) {
       const item = ITEM_CATALOG[i.catalogId];
-      addLog(`⏳ ${item ? item.nome : 'Item'} expirou após 30 dias.`, 'bad');
+      addLog(t('item.log.expired', {nome: item ? item.nome : 'Item'}), 'bad');
       changed = true;
       return false;
     }
@@ -109,7 +109,7 @@ function updateEquippedDisplay() {
     const item = ITEM_CATALOG[entry.catalogId];
     if(!item) return '';
     const daysLeft = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : 99;
-    const warn = daysLeft <= 3 ? `title="${daysLeft}d restantes!"` : `title="${item.nome} (${daysLeft}d)"`;
+    const warn = daysLeft <= 3 ? `title="${t('item.tooltip.days_warn', {d: daysLeft})}"` : `title="${t('item.tooltip.days', {nome: item.nome, d: daysLeft})}"` ;
     return `<span class="equipped-item-badge" ${warn}>${item.emoji}</span>`;
   }).join('');
 }
@@ -120,14 +120,14 @@ function equipItem(id) {
   const isCenario = ITEM_CATALOG[entry.catalogId]?.tipo === 'Cenário';
   if(isCenario) {
     const cCount = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
-    if(cCount >= 1) { addLog('Já tens uma decoração de cenário equipada.', 'info'); return; }
+    if(cCount >= 1) { addLog(t('item.log.cenario_full'), 'info'); return; }
   } else {
     const nCount = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
-    if(nCount >= MAX_EQUIPPED) { addLog(`Máximo de ${MAX_EQUIPPED} itens equipados.`, 'info'); return; }
+    if(nCount >= MAX_EQUIPPED) { addLog(t('item.log.max_equipped', {max: MAX_EQUIPPED}), 'info'); return; }
   }
   entry.equipped = true;
   const item = ITEM_CATALOG[entry.catalogId];
-  addLog(`${item.emoji} ${item.nome} equipado!`, 'good');
+  addLog(t('item.log.equipped', {emoji: item.emoji, nome: item.nome}), 'good');
   showBubble(rnd(FALAS.item));
   scheduleSave();
   renderItemInventory();
@@ -140,7 +140,7 @@ function unequipItem(id) {
   if(!entry) return;
   entry.equipped = false;
   const item = ITEM_CATALOG[entry.catalogId];
-  addLog(`${item.emoji} ${item.nome} desequipado.`, 'info');
+  addLog(t('item.log.unequipped', {emoji: item.emoji, nome: item.nome}), 'info');
   scheduleSave();
   renderItemInventory();
   updateEquippedDisplay();
@@ -152,7 +152,7 @@ function deleteItem(id) {
   if(idx === -1) return;
   const item = ITEM_CATALOG[itemInventory[idx].catalogId];
   itemInventory.splice(idx, 1);
-  addLog(`${item ? item.emoji + ' ' + item.nome : 'Item'} excluído.`, 'info');
+  addLog(t('item.log.deleted', {nome: item ? item.emoji + ' ' + item.nome : 'Item'}), 'info');
   updateResourceUI();
   scheduleSave();
   renderItemInventory();
