@@ -24,7 +24,7 @@ let minaOver     = false;
 let minaFirst    = true; // primeira clique gera minas depois — garante segurança
 
 function startMina() {
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('minaModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('minaModal'); return; }
 
   const d   = miniDifficulty();
   const cfg = MINA_CONFIGS[d.tier];
@@ -45,8 +45,8 @@ function startMina() {
   document.getElementById('minaResult').className    = 'mini-result-box';
   document.getElementById('minaReward').textContent  = '';
   document.getElementById('minaAgainBtn').style.display = 'none';
-  document.getElementById('minaInfo').textContent    = `${d.label} · ${minaRows}×${minaCols} · 💣 ${minaMines}`;
-  document.getElementById('minaFlags').textContent   = `🚩 ${minaMines} restantes`;
+  document.getElementById('minaInfo').textContent    = t('mina.info', {diff: t(d.i18nKey), r: minaRows, c: minaCols, mines: minaMines});
+  document.getElementById('minaFlags').textContent   = t('mina.flags', {n: minaMines});
 
   minaRender();
 }
@@ -126,7 +126,7 @@ function minaRender() {
   grid.innerHTML = html;
 
   const flagsEl = document.getElementById('minaFlags');
-  if(flagsEl) flagsEl.textContent = `🚩 ${minaMines - minaFlags} restantes`;
+  if(flagsEl) flagsEl.textContent = t('mina.flags', {n: minaMines - minaFlags});
 }
 
 function minaClick(r, c) {
@@ -207,13 +207,13 @@ function minaVictory() {
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
-  const label = d.tier >= 3 ? '🌟 CAMPO LIMPO!' : d.tier >= 2 ? '💎 CAMPO LIMPO!' : '✅ CAMPO LIMPO!';
+  const label = d.tier >= 3 ? t('mina.result.win_mst') : d.tier >= 2 ? t('mina.result.win_hard') : t('mina.result.win');
   document.getElementById('minaResult').textContent = label;
   document.getElementById('minaResult').className   = 'mini-result-box win';
-  document.getElementById('minaReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙 (bônus limpeza!)`;
+  document.getElementById('minaReward').textContent = t('mina.reward.win', {humor: humorGain, xp: r.xpGain, coins: r.coinGain});
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
-  showBubble(d.tier >= 2 ? 'Limpou o campo! 💎' : 'Sobreviveu! ✅');
-  addLog(`Campo Minado: VITÓRIA! +${r.xpGain}XP +${r.coinGain}🪙`, 'good');
+  showBubble(d.tier >= 2 ? t('mina.bub.win_hard') : t('mina.bub.win'));
+  addLog(t('mina.log.win', {xp: r.xpGain, coins: r.coinGain}), 'good');
 }
 
 function minaGameOver() {
@@ -235,10 +235,10 @@ function minaGameOver() {
   }
 
   const pct = Math.round(frac * 100);
-  document.getElementById('minaResult').textContent = `💥 BOOM! (${pct}% revelado)`;
+  document.getElementById('minaResult').textContent = t('mina.result.boom', {pct});
   document.getElementById('minaResult').className   = 'mini-result-box lose';
   document.getElementById('minaReward').textContent = rewardText.join('  ');
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
-  showBubble('BOOM! 💥');
-  addLog(`Campo Minado: Explodiu! ${pct}% limpo`, 'bad');
+  showBubble(t('mina.bub.boom'));
+  addLog(t('mina.log.boom', {pct}), 'bad');
 }
