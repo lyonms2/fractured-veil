@@ -43,7 +43,7 @@ window.fecharAmigos = fecharAmigos;
 async function _carregarAmigos() {
   const el = document.getElementById('amigosConteudo');
   if(!el) return;
-  el.innerHTML = '<div class="amigos-loading">A carregar...</div>';
+  el.innerHTML = `<div class="amigos-loading">${t('amigos.loading')}</div>`;
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -54,7 +54,7 @@ async function _carregarAmigos() {
     _updateAmigosBadge(json.pedidos.length);
     _renderAmigos();
   } catch(err) {
-    if(el) el.innerHTML = `<div class="amigos-empty">Erro: ${esc(err.message)}</div>`;
+    if(el) el.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
   }
 }
 
@@ -77,23 +77,23 @@ function _renderAmigos() {
 
     <!-- Pedidos pendentes -->
     ${numPedidos > 0 ? `
-    <div class="amigos-section-title">📬 Pedidos (${numPedidos})</div>
+    <div class="amigos-section-title">${t('amigos.requests', {n: numPedidos})}</div>
     <div class="amigos-pedidos-lista">
       ${pedidos.map(p => `
         <div class="amigos-pedido-card" id="pedido-${esc(p.de)}">
           <span class="amigos-pedido-nome">${esc(p.nome)}</span>
           <span class="amigos-pedido-data">${_formatTs(p.ts)}</span>
           <div class="amigos-pedido-btns">
-            <button class="amigos-btn-aceitar" onclick="amigoAceitar('${esc(p.de)}')">✓ Aceitar</button>
+            <button class="amigos-btn-aceitar" onclick="amigoAceitar('${esc(p.de)}')">${t('amigos.btn.accept')}</button>
             <button class="amigos-btn-recusar" onclick="amigoRecusar('${esc(p.de)}')">✕</button>
           </div>
         </div>`).join('')}
     </div>` : ''}
 
     <!-- Lista de amigos -->
-    <div class="amigos-section-title">👥 Amigos (${numAmigos})</div>
+    <div class="amigos-section-title">${t('amigos.friends_count', {n: numAmigos})}</div>
     ${numAmigos === 0
-      ? '<div class="amigos-empty">Ainda não tens amigos.<br>Pesquisa por nome acima!</div>'
+      ? `<div class="amigos-empty">${t('amigos.empty')}</div>`
       : `<div class="amigos-lista">
           ${Object.entries(amigos).map(([uid, info]) => _renderAmigoCard(uid, info)).join('')}
         </div>`}
@@ -105,7 +105,7 @@ function _renderAmigoCard(uid, info) {
     <div class="amigos-card" id="amigo-card-${uid}">
       <div class="amigos-card-nome">${esc(info.nome || '???')}</div>
       <div class="amigos-card-btns">
-        <button class="amigos-btn-visitar" onclick="amigoAbrirVisita('${uid}')">🏠 Visitar</button>
+        <button class="amigos-btn-visitar" onclick="amigoAbrirVisita('${uid}')">${t('amigos.btn.visit')}</button>
         <button class="amigos-btn-remover" onclick="amigoRemover('${uid}')">✕</button>
       </div>
     </div>`;
@@ -123,14 +123,14 @@ window.amigoBuscarDebounce = amigoBuscarDebounce;
 async function _buscarJogador(query) {
   const el = document.getElementById('amigosBuscaResultados');
   if(!el) return;
-  el.innerHTML = '<div class="amigos-loading">A pesquisar...</div>';
+  el.innerHTML = `<div class="amigos-loading">${t('amigos.searching')}</div>`;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp    = await fetch(`/api/amigos?buscar=${encodeURIComponent(query)}&idToken=${encodeURIComponent(idToken)}`);
     const json    = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
     if(!json.resultados.length) {
-      el.innerHTML = '<div class="amigos-empty">Nenhum resultado.</div>';
+      el.innerHTML = `<div class="amigos-empty">${t('amigos.no_results')}</div>`;
       return;
     }
     const jaAmigo = uid => _amigosData?.amigos?.[uid];
@@ -141,15 +141,15 @@ async function _buscarJogador(query) {
             <div class="amigos-busca-svg">${gerarSVG(p.elemento, p.raridade, p.seed, 38, 38, 1)}</div>
             <div class="amigos-busca-info">
               <div class="amigos-busca-nome">${esc(p.nome)}</div>
-              <div class="amigos-busca-meta">NV ${p.nivel} · ${esc(p.raridade)} · ${esc(p.elemento)}</div>
+              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade), elemento: esc(p.elemento)})}</div>
             </div>
             ${jaAmigo(p.uid)
-              ? '<div class="amigos-busca-ja">✓ Amigo</div>'
-              : `<button class="amigos-btn-add" onclick="amigoEnviarPedido('${p.uid}', this)">+ Adicionar</button>`}
+              ? `<div class="amigos-busca-ja">${t('amigos.already_friend')}</div>`
+              : `<button class="amigos-btn-add" onclick="amigoEnviarPedido('${p.uid}', this)">${t('amigos.btn.add')}</button>`}
           </div>`).join('')}
       </div>`;
   } catch(err) {
-    el.innerHTML = `<div class="amigos-empty">Erro: ${esc(err.message)}</div>`;
+    el.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
   }
 }
 
@@ -165,9 +165,9 @@ async function amigoEnviarPedido(alvoUid, btn) {
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
-    if(btn) { btn.textContent = '✓ Enviado'; btn.classList.add('amigos-btn-enviado'); }
+    if(btn) { btn.textContent = t('amigos.btn.sent'); btn.classList.add('amigos-btn-enviado'); }
   } catch(err) {
-    if(btn) { btn.disabled = false; btn.textContent = '+ Adicionar'; }
+    if(btn) { btn.disabled = false; btn.textContent = t('amigos.btn.add'); }
     if(typeof showToast === 'function') showToast(err.message, 'warn');
   }
 }
@@ -221,7 +221,7 @@ window.amigoRecusar = amigoRecusar;
 
 // ── Remover amigo ────────────────────────────────────────────
 async function amigoRemover(alvoUid) {
-  if(!confirm('Remover este amigo?')) return;
+  if(!confirm(t('amigos.confirm_remove'))) return;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp    = await fetch('/api/amigos', {
@@ -259,7 +259,7 @@ async function amigoAbrirVisita(alvoUid) {
   const body    = document.getElementById('visitaBody');
   if(!overlay || !body) return;
 
-  body.innerHTML = '<div class="amigos-loading">A carregar...</div>';
+  body.innerHTML = `<div class="amigos-loading">${t('amigos.loading')}</div>`;
   overlay.style.display = 'flex';
 
   try {
@@ -269,14 +269,14 @@ async function amigoAbrirVisita(alvoUid) {
     if(!json.ok) throw new Error(json.erro || 'erro');
 
     if(json.semAvatar) {
-      body.innerHTML = '<div class="amigos-empty">Este amigo não tem avatar activo.</div>';
+      body.innerHTML = `<div class="amigos-empty">${t('amigos.no_avatar')}</div>`;
       return;
     }
 
     _visitaAtual = { uid: alvoUid, perfil: json.perfil, cooldowns: json.cooldowns };
     _renderVisitaOverlay();
   } catch(err) {
-    body.innerHTML = `<div class="amigos-empty">Erro: ${esc(err.message)}</div>`;
+    body.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
   }
 }
 window.amigoAbrirVisita = amigoAbrirVisita;
@@ -304,19 +304,19 @@ function _renderVisitaOverlay() {
     const vitalMax   = Math.round(vitals[vitalKey] ?? 100) >= 100;
 
     let disabled = false;
-    let subLabel = `+${CUSTO_VISITA} 🪙 · +${XP_VISITA} XP`;
+    let subLabel = t('amigos.visit.cost', {coins: CUSTO_VISITA, xp: XP_VISITA});
 
     if(emCooldown)          { disabled = true; subLabel = `(${_formatMs(restMs)})`; }
-    else if(vitalMax)       { disabled = true; subLabel = 'Já no máximo'; }
-    else if(limiteAtingido) { disabled = true; subLabel = 'Limite atingido'; }
+    else if(vitalMax)       { disabled = true; subLabel = t('amigos.vital_max'); }
+    else if(limiteAtingido) { disabled = true; subLabel = t('amigos.limit_reached'); }
 
     return { disabled, subLabel };
   }
 
   const acoes = [
-    { tipo: 'alimentar', icon: '🍖', label: 'Alimentar', vital: 'fome',    cor: '#7ab87a' },
-    { tipo: 'brincar',   icon: '🎮', label: 'Brincar',   vital: 'humor',   cor: '#a78bfa' },
-    { tipo: 'limpar',    icon: '🧼', label: 'Limpar',    vital: 'higiene', cor: '#5ab4e8' },
+    { tipo: 'alimentar', icon: '🍖', label: t('amigos.action.feed'),  vital: 'fome',    cor: '#7ab87a' },
+    { tipo: 'brincar',   icon: '🎮', label: t('amigos.action.play'),  vital: 'humor',   cor: '#a78bfa' },
+    { tipo: 'limpar',    icon: '🧼', label: t('amigos.action.clean'), vital: 'higiene', cor: '#5ab4e8' },
   ];
 
   body.innerHTML = `
@@ -331,7 +331,7 @@ function _renderVisitaOverlay() {
       </div>
     </div>
     <div class="visita-nome">${esc(perfil.nome)}</div>
-    <div class="visita-meta">NV ${perfil.nivel} · ${esc(perfil.raridade)} · ${esc(perfil.elemento)}</div>
+    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade), elemento: esc(perfil.elemento)})}</div>
 
     <div class="visita-vitals">
       ${acoes.map(a => {
@@ -349,7 +349,7 @@ function _renderVisitaOverlay() {
     </div>
 
     <div class="visita-limite-info" style="text-align:center;font-size:11px;color:${limiteAtingido?'#e06c75':'#aaa'};margin-bottom:6px;">
-      ${visitasFeitas}/${MAX_VISITAS_GLOBAL} interações (8h)
+      ${t('amigos.interactions', {done: visitasFeitas, max: MAX_VISITAS_GLOBAL})}
     </div>
 
     <div class="visita-acoes">
