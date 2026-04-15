@@ -141,38 +141,36 @@
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
 
     <div style="display:flex;gap:0;margin:14px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
-      <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')">ENTRAR</button>
-      <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')">CRIAR CONTA</button>
+      <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')"    data-i18n="auth.tab.login"></button>
+      <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')" data-i18n="auth.tab.register"></button>
     </div>
 
     <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
-      <input id="loginEmail" type="email" placeholder="E-mail" class="auth-input"
+      <input id="loginEmail" type="email"    data-i18n-ph="auth.ph.email"    class="auth-input"
         onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
-      <input id="loginSenha" type="password" placeholder="Senha" class="auth-input"
+      <input id="loginSenha" type="password" data-i18n-ph="auth.ph.password" class="auth-input"
         onkeydown="if(event.key==='Enter')loginComEmail()"/>
       <button id="loginBtn" class="auth-btn-primary" onclick="loginComEmail()">
-        <span id="loginBtnText">ENTRAR</span>
+        <span id="loginBtnText" data-i18n="auth.btn.login"></span>
       </button>
-      <button class="auth-btn-link" onclick="authShowReset()">Esqueci a senha</button>
+      <button class="auth-btn-link" onclick="authShowReset()" data-i18n="auth.link.forgot"></button>
     </div>
 
     <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
-      <input id="regEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
-      <input id="regSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
-      <input id="regSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
+      <input id="regEmail"  type="email"    data-i18n-ph="auth.ph.email"            class="auth-input"/>
+      <input id="regSenha"  type="password" data-i18n-ph="auth.ph.password_min"     class="auth-input"/>
+      <input id="regSenha2" type="password" data-i18n-ph="auth.ph.password_confirm" class="auth-input"
         onkeydown="if(event.key==='Enter')registrarComEmail()"/>
       <div class="auth-email-notice" data-i18n="auth.reg.email_notice"></div>
-      <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()">CRIAR CONTA</button>
+      <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()" data-i18n="auth.tab.register"></button>
     </div>
 
     <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
-      <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.7;">
-        Envia um link de recuperação<br>para o teu e-mail.
-      </div>
-      <input id="resetEmail" type="email" placeholder="E-mail" class="auth-input"
+      <div class="auth-email-notice" data-i18n="auth.reset.hint"></div>
+      <input id="resetEmail" type="email" data-i18n-ph="auth.ph.email" class="auth-input"
         onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
-      <button id="resetBtn" class="auth-btn-primary" onclick="enviarResetSenha()">ENVIAR E-MAIL</button>
-      <button class="auth-btn-link" onclick="authShowTab('login')">← Voltar</button>
+      <button id="resetBtn" class="auth-btn-primary" onclick="enviarResetSenha()" data-i18n="auth.btn.send_email"></button>
+      <button class="auth-btn-link" onclick="authShowTab('login')" data-i18n="auth.link.back"></button>
     </div>
 
     <div id="loginError"></div>

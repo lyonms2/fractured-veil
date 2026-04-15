@@ -8,6 +8,21 @@
 
     // ── PORTUGUÊS ─────────────────────────────────────────────────
     pt: {
+      // Auth — abas e navegação
+      'auth.tab.login':          'ENTRAR',
+      'auth.tab.register':       'CRIAR CONTA',
+      'auth.link.forgot':        'Esqueci a senha',
+      'auth.link.back':          '← Voltar',
+
+      // Auth — placeholders
+      'auth.ph.email':           'E-mail',
+      'auth.ph.password':        'Senha',
+      'auth.ph.password_min':    'Senha (mín. 6 caracteres)',
+      'auth.ph.password_confirm':'Confirmar senha',
+
+      // Auth — hint reset
+      'auth.reset.hint':         '📧 Envia um link de recuperação\npara o teu e-mail.',
+
       // Auth — login
       'auth.fill_fields':        'Preenche e-mail e senha.',
       'auth.error.not_found':    'E-mail não encontrado.',
@@ -280,6 +295,21 @@
 
     // ── ENGLISH ───────────────────────────────────────────────────
     en: {
+      // Auth — tabs and navigation
+      'auth.tab.login':          'SIGN IN',
+      'auth.tab.register':       'CREATE ACCOUNT',
+      'auth.link.forgot':        'Forgot password',
+      'auth.link.back':          '← Back',
+
+      // Auth — placeholders
+      'auth.ph.email':           'Email',
+      'auth.ph.password':        'Password',
+      'auth.ph.password_min':    'Password (min. 6 characters)',
+      'auth.ph.password_confirm':'Confirm password',
+
+      // Auth — reset hint
+      'auth.reset.hint':         '📧 We\'ll send a recovery link\nto your email.',
+
       // Auth — login
       'auth.fill_fields':        'Please fill in your email and password.',
       'auth.error.not_found':    'Email not found.',
