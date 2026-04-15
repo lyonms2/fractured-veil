@@ -20,7 +20,7 @@ function spawnPoop() {
   el.style.left  = pos.left;
   el.style.bottom= pos.bottom;
   el.style.zIndex = 6 + poopCount;
-  el.title = 'Clique para limpar';
+  el.title = t('gt.poop.title');
   const scale = .8 + Math.random() * .4;
   el.style.transform = `scale(${scale.toFixed(2)})`;
   el.textContent = '💩';
@@ -31,8 +31,8 @@ function spawnPoop() {
   dirtyLevel = Math.min(3, Math.floor(poopCount / 2));
   vitals.higiene = Math.max(0, vitals.higiene - 18);
 
-  addLog('Seu avatar fez as necessidades! 💩', 'bad');
-  showBubble('Ops... 😳');
+  addLog(t('gt.poop.log'), 'bad');
+  showBubble(t('gt.poop.bub'));
   playAnim('anim-poop');
   const wrap = document.getElementById('creatureWrap');
   if(wrap) {
@@ -62,8 +62,8 @@ function removePoop(el) {
 
 function cleanCreature() {
   if(!canAct()) return;
-  if(sleeping) { showBubble('Zzz... 💤'); return; }
-  if(vitals.energia < 15) { showBubble('Sem energia para se banhar! 😩'); return; }
+  if(sleeping) { showBubble(t('mg.sleep.bub')); return; }
+  if(vitals.energia < 15) { showBubble(t('gt.bath.no_energy')); return; }
 
   vitals.energia = Math.max(0, vitals.energia - 15);
 
@@ -77,10 +77,10 @@ function cleanCreature() {
   playAnim('anim-clean', false);
   spawnBathParticles();
 
-  showBubble(rnd(['Que limpinho! 🛁✨','Adoro banho! 💧','Me sinto novo! ✨','Cheiro bem agora! 🌸']));
+  showBubble(rnd([t('gt.bath.bub_0'), t('gt.bath.bub_1'), t('gt.bath.bub_2'), t('gt.bath.bub_3')]));
   showFloat(`+${higieneGain} 🛁`, '#5ab4e8');
   setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
-  addLog(`Banho tomado! +${higieneGain} higiene  +${humorGain} humor  (-15 ⚡)`, 'good');
+  addLog(t('gt.bath.log', {hygiene: higieneGain, humor: humorGain}), 'good');
 
   if(!sleeping) {
     const humorBad = vitals.humor < 30;
@@ -299,7 +299,7 @@ function gameTick() {
   // Auto-sleep: energia crítica e nenhum modal aberto
   if(!sleeping && !modoRepouso && hatched && !dead && vitals.energia < 5) {
     if(!ModalManager.anyOpen()) {
-      showBubble('Exausto... 😴 dormindo!');
+      showBubble(t('gt.autosleep.bub'));
       setTimeout(() => { if(typeof startSleep === 'function') startSleep(); }, 600);
     }
   }
@@ -314,7 +314,7 @@ function gameTick() {
   if(vitals.saude < 20 && !sick && Math.random() < (0.02 * GAME_SPEED)) {
     sick = true;
     showBubble(rnd(FALAS.sick));
-    addLog('Ficou doente! Use medicar!','bad');
+    addLog(t('gt.sick.log'), 'bad');
   }
 
   // ── DOENÇAS — contadores de stress ──
@@ -330,8 +330,8 @@ function gameTick() {
     if(diseaseStress[id] >= DISEASE_STRESS_THRESHOLD && !activeDiseases.includes(id)) {
       activeDiseases.push(id);
       const d = DISEASES[id];
-      addLog(`⚠️ ${d.emoji} ${d.nome} desenvolvida! Usa o Antídoto Dimensional (300 🪙).`, 'bad');
-      showBubble(`${d.emoji} Sinto-me mal...`);
+      addLog(t('gt.disease.log', {emoji: d.emoji, nome: d.nome}), 'bad');
+      showBubble(t('gt.disease.bub', {emoji: d.emoji}));
     }
   }
   if(activeDiseases.length > 0) {
@@ -387,13 +387,13 @@ function gameTick() {
         corner.style.display = 'block';
         corner.style.opacity = '1';
         corner.style.animation = 'egg-ready-pulse 1.4s ease-in-out infinite';
-        corner.title = 'Pronto para botar!';
+        corner.title = t('gt.egg_ready.corner');
         corner.textContent = '🥚';
       }
       if(!eggLayNotified) {
         eggLayNotified = true;
-        showBubble('Sinto algo... 🥚');
-        addLog('Seu avatar está pronto para botar um ovo!', 'leg');
+        showBubble(t('gt.egg_ready.bub'));
+        addLog(t('gt.egg_ready.log'), 'leg');
       }
     }
   } else {
@@ -456,7 +456,7 @@ function playPhaseUp(faseName) {
   // ── Overlay de fase ─────────────────────────────────────────────
   const ov = document.getElementById('phaseUpOverlay');
   if(!ov) return;
-  document.getElementById('puFase').textContent = 'FASE: ' + faseName;
+  document.getElementById('puFase').textContent = t('gt.phase.label', {fase: faseName});
   const clone = ov.cloneNode(true);
   ov.parentNode.replaceChild(clone, ov);
   clone.style.opacity = '1';
@@ -468,8 +468,8 @@ function playPhaseUp(faseName) {
     clone.style.transition = '';
     clone.style.opacity = '';
   }, 2700);
-  showBubble(`Evoluí para ${faseName}! 🌟`);
-  addLog(`✨ EVOLUÇÃO! ${avatar.nome.split(',')[0]} chegou à fase ${faseName}!`, 'leg');
+  showBubble(t('gt.phase.bub', {fase: faseName}));
+  addLog(t('gt.phase.log', {nome: avatar.nome.split(',')[0], fase: faseName}), 'leg');
 }
 
 function killCreature() {
@@ -487,8 +487,8 @@ function killCreature() {
   document.getElementById('deadAvatarName').textContent = name.toUpperCase();
   const diasVividos = bornAt ? Math.floor((Date.now() - bornAt) / (1000*60*60*24)) + 1 : 1;
   document.getElementById('deadStats').innerHTML =
-    `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
-    `Viveu ${diasVividos} dia${diasVividos!==1?'s':''} · Vínculo: ${Math.floor(vinculo)}`;
+    t('gt.dead.stats1', {nivel, fase: FASES[getFase()], n: eggsInInventory.length, s: eggsInInventory.length !== 1 ? 's' : ''}) + '<br>' +
+    t('gt.dead.stats2', {dias: diasVividos, ds: diasVividos !== 1 ? 's' : '', vinculo: Math.floor(vinculo)});
 
   const souls = ['👻','✦','💀','✧','🌑'];
   const dp = document.getElementById('deadParticles');
@@ -507,7 +507,7 @@ function killCreature() {
   document.getElementById('deadScreen').style.display  = 'flex';
   document.getElementById('actionBtns').style.opacity  = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
-  addLog(`${name} partiu para outra dimensão... 💀`,'bad');
+  addLog(t('gt.dead.log', {nome: name}), 'bad');
   showBubble('...');
 }
 
@@ -519,10 +519,10 @@ function checkXP() {
     const faseAfter = getFase();
     const _pl = document.getElementById('phaseLabel');
     if(_pl) {
-      _pl.textContent = 'FASE: ' + FASES[faseAfter];
+      _pl.textContent = t('gt.phase.label', {fase: FASES[faseAfter]});
       _pl.className = 'phase-label fase-' + FASES[faseAfter].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace('ê','e').replace('ç','c');
     }
-    addLog(`Nível ${nivel}! Seu avatar ficou mais forte!`,'leg');
+    addLog(t('gt.levelup.log', {nivel}), 'leg');
     playLevelUp(nivel);
     if(faseAfter !== faseBefore) {
       setTimeout(() => playPhaseUp(FASES[faseAfter]), 600);
@@ -536,8 +536,8 @@ function playLevelUp(newNivel) {
   const ov = document.getElementById('levelUpOverlay');
   if(!ov) return;
 
-  document.getElementById('luText').textContent = 'NÍVEL UP!';
-  document.getElementById('luNivel').textContent = `NÍVEL ${newNivel}`;
+  document.getElementById('luText').textContent = t('gt.levelup.title');
+  document.getElementById('luNivel').textContent = t('gt.levelup.nivel', {nivel: newNivel});
 
   const starEmojis = ['✦','✧','★','✨','⭐'];
   const positions = [
