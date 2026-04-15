@@ -18,7 +18,8 @@
 .btn-action .icon { font-size:17px; z-index:1; }
 .btn-action span { z-index:1; pointer-events:none; }
 .btn-action.disabled { opacity:.3; cursor:not-allowed; pointer-events:none; }
-.btn-action.active-sleep { border-color:var(--raro); color:var(--raro); }
+.btn-action.active-sleep   { border-color:var(--raro); color:var(--raro); }
+.btn-action.active-amigos  { border-color:#5ab4e8; color:#5ab4e8; }
 #btnAmigos { overflow:visible; }
 #btnAmigos::before { display:none; }
 

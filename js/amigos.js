@@ -29,6 +29,7 @@ function _updateAmigosBadge(count) {
 async function openAmigos() {
   const overlay = document.getElementById('amigosOverlay');
   if(overlay) overlay.style.display = 'flex';
+  document.getElementById('btnAmigos')?.classList.add('active-amigos');
   await _carregarAmigos();
 }
 window.openAmigos = openAmigos;
@@ -36,6 +37,7 @@ window.openAmigos = openAmigos;
 function fecharAmigos() {
   const overlay = document.getElementById('amigosOverlay');
   if(overlay) overlay.style.display = 'none';
+  document.getElementById('btnAmigos')?.classList.remove('active-amigos');
 }
 window.fecharAmigos = fecharAmigos;
 
