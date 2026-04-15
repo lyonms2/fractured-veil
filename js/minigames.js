@@ -5,7 +5,7 @@ const MEM_ELEMENTS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
 let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = false;
 
 function startMemoria() {
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
   const pairs = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;
   const cols = 4;
@@ -14,7 +14,7 @@ function startMemoria() {
   document.getElementById('memResult').className    = 'mini-result-box';
   document.getElementById('memReward').textContent  = '';
   document.getElementById('memAgainBtn').style.display = 'none';
-  document.getElementById('memSub').textContent = `${d.label} · ${pairs} pares`;
+  document.getElementById('memSub').textContent = `${t(d.i18nKey)} · ${t('mg.mem.sub_pairs', {n: pairs})}`;
 
   const elems = MEM_ELEMENTS.slice(0, pairs);
   const deck  = [...elems, ...elems].sort(() => Math.random() - .5);
@@ -31,7 +31,7 @@ function startMemoria() {
 }
 
 function memFlip(i) {
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('memoriaModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('memoriaModal'); return; }
   if(memLocked) return;
   const el = document.getElementById('mc' + i);
   if(!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
@@ -73,7 +73,7 @@ function memFlip(i) {
 
 function updateMemInfo() {
   const total = memCards.length / 2;
-  document.getElementById('memInfo').textContent = `Pares: ${memMatched}/${total} · Erros: ${memErrors}`;
+  document.getElementById('memInfo').textContent = t('mg.mem.info', {matched: memMatched, total, errors: memErrors});
 }
 
 function memVictory() {
@@ -84,12 +84,12 @@ function memVictory() {
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
-  const label = memErrors === 0 ? '🌟 PERFEITO!' : memErrors <= 3 ? '✓ COMPLETO!' : '😅 COMPLETO';
+  const label = memErrors === 0 ? t('mg.mem.perfect') : memErrors <= 3 ? t('mg.mem.complete') : t('mg.mem.done');
   document.getElementById('memResult').textContent = label;
   document.getElementById('memResult').className   = 'mini-result-box win';
-  document.getElementById('memReward').textContent = `+${humorGain} 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
+  document.getElementById('memReward').textContent = t('mg.reward_humor', {humor: humorGain, xp: r.xpGain, coins: r.coinGain});
   document.getElementById('memAgainBtn').style.display = 'inline-block';
-  showBubble(memErrors === 0 ? 'Memória perfeita! 🌟' : 'Conseguimos! 🃏');
+  showBubble(memErrors === 0 ? t('mg.mem.bub.perfect') : t('mg.mem.bub.complete'));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -108,7 +108,7 @@ const SIMON_ELEMS = [
 let simonSeq = [], simonStep = 0, simonPlayerTurn = false, simonRound = 0, simonCorrectHits = 0;
 
 function startSimon() {
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('simonModal'); return; }
   simonSeq = []; simonStep = 0; simonPlayerTurn = false; simonRound = 0; simonCorrectHits = 0;
   document.getElementById('simonResult').textContent = '';
   document.getElementById('simonResult').className   = 'mini-result-box';
@@ -133,8 +133,8 @@ function simonNextRound() {
   simonSeq.push(Math.floor(Math.random() * 8));
   simonStep = 0; simonPlayerTurn = false;
 
-  document.getElementById('simonInfo').textContent = `Rodada ${simonRound}/${maxRounds}`;
-  document.getElementById('simonSeqDisplay').textContent = 'Observe...';
+  document.getElementById('simonInfo').textContent = t('mg.simon.round', {n: simonRound, max: maxRounds});
+  document.getElementById('simonSeqDisplay').textContent = t('mg.simon.watch');
   SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
 
   const speed = 600;
@@ -147,7 +147,7 @@ function simonNextRound() {
         setTimeout(() => {
           simonPlayerTurn = true;
           simonStep = 0;
-          document.getElementById('simonSeqDisplay').textContent = 'Sua vez!';
+          document.getElementById('simonSeqDisplay').textContent = t('mg.simon.your_turn');
           SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = false);
         }, speed + 100);
       }
@@ -168,7 +168,7 @@ function simonFlash(idx, duration = 380) {
 
 function simonPlayerClick(idx) {
   if(!simonPlayerTurn) return;
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('simonModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('simonModal'); return; }
   const btn = document.getElementById('sb' + idx);
   btn.classList.add('player-hit');
   setTimeout(() => btn.classList.remove('player-hit'), 200);
@@ -183,7 +183,7 @@ function simonPlayerClick(idx) {
   if(simonStep === simonSeq.length) {
     simonPlayerTurn = false;
     SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
-    document.getElementById('simonSeqDisplay').textContent = '✓ Correto!';
+    document.getElementById('simonSeqDisplay').textContent = t('mg.simon.correct');
     setTimeout(simonNextRound, 800);
   }
 }
@@ -201,12 +201,12 @@ function simonVictory() {
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
-  document.getElementById('simonResult').textContent = '🎵 MESTRE! (bônus conclusão!)';
+  document.getElementById('simonResult').textContent = t('mg.simon.master');
   document.getElementById('simonResult').className   = 'mini-result-box win';
-  document.getElementById('simonReward').textContent = `+20 😊  +${r.xpGain} XP  +${r.coinGain} 🪙`;
+  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain});
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   document.getElementById('simonSeqDisplay').textContent = '';
-  showBubble('Mestre da memória! 🎵');
+  showBubble(t('mg.simon.bub.master'));
 }
 
 function simonGameOver() {
@@ -231,12 +231,12 @@ function simonGameOver() {
 
   vitals.humor = Math.min(100, vitals.humor + 5);
   const pct = Math.round(frac * 100);
-  document.getElementById('simonResult').textContent = `✗ ERROU! (${simonCorrectHits} acertos)`;
+  document.getElementById('simonResult').textContent = t('mg.simon.failed', {hits: simonCorrectHits});
   document.getElementById('simonResult').className   = 'mini-result-box lose';
   document.getElementById('simonReward').textContent = rewardText.join('  ');
   document.getElementById('simonSeqDisplay').textContent = '';
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
-  showBubble('Quase... 😔');
+  showBubble(t('mg.bub.almost'));
   updateAllUI();
 }
 
@@ -245,7 +245,7 @@ function toggleSleep() {
   if(sleeping) {
     wakeUp('manual');
   } else {
-    if(vitals.energia >= 100){ showBubble('Não estou cansado!'); return; }
+    if(vitals.energia >= 100){ showBubble(t('mg.bub.not_tired')); return; }
     startSleep();
   }
 }
@@ -261,10 +261,10 @@ function startSleep() {
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.add('sleeping'));
   playAnim('anim-sleep', true);
   document.getElementById('actionBtns').classList.add('sleeping-mode');
-  document.getElementById('sleepLabel').textContent = 'ACORDAR';
+  document.getElementById('sleepLabel').textContent = t('mg.sleep.wake_btn');
   document.getElementById('btnSleep').classList.add('active-sleep');
-  showBubble('zzz... 💤');
-  addLog('Dormindo...','info'); saveToFirebase();
+  showBubble(t('mg.sleep.bub'));
+  addLog(t('mg.sleep.log'), 'info'); saveToFirebase();
 }
 
 function wakeUp(reason) {
@@ -277,26 +277,26 @@ function wakeUp(reason) {
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.remove('sleeping'));
   resetAnim();
   document.getElementById('actionBtns').classList.remove('sleeping-mode');
-  document.getElementById('sleepLabel').textContent = 'DORMIR';
+  document.getElementById('sleepLabel').textContent = t('mg.sleep.sleep_btn');
   document.getElementById('btnSleep').classList.remove('active-sleep');
   if(reason === 'full') {
     showBubble(rnd(FALAS.fullEnergy));
-    addLog('Acordou com energia plena!', 'good');
+    addLog(t('mg.sleep.log.full'), 'good');
   } else {
     showBubble(rnd(FALAS.fullEnergy));
-    addLog('Acordou descansado!', 'good');
+    addLog(t('mg.sleep.log.rested'), 'good');
   }
   scheduleSave();
 }
 
 function healCreature() {
   if(!canAct()) return;
-  if(!sick && vitals.saude >= 100 && activeDiseases.length === 0){ showBubble('Estou bem!'); return; }
+  if(!sick && vitals.saude >= 100 && activeDiseases.length === 0){ showBubble(t('mg.heal.bub.healthy')); return; }
   if(activeDiseases.length > 0) {
-    addLog(`⚠️ Tens ${activeDiseases.length} doença(s) activa(s)! O Medicar recupera saúde mas não cura doenças — usa o Antídoto Dimensional (300 🪙) na loja.`, 'bad');
+    addLog(t('mg.heal.log.diseases', {n: activeDiseases.length}), 'bad');
   }
   const COST = 40;
-  if(gs.moedas < COST) { showBubble('Sem moedas... 😢'); addLog(`Precisa de ${COST} 🪙 para medicar!`,'bad'); return; }
+  if(gs.moedas < COST) { showBubble(t('mg.heal.bub.no_coins')); addLog(t('mg.heal.log.no_coins', {cost: COST}), 'bad'); return; }
   if(!spendCoins(COST)) return;
   vitals.saude = Math.min(100, vitals.saude + 40);
   sick = false;
@@ -305,8 +305,8 @@ function healCreature() {
   playAnim('anim-heal');
   spawnHealParticles();
   showFloat('+40 💚','#27ae60');
-  showBubble('Me sinto melhor! 💊');
-  addLog(`Medicado! +40 saúde  (-40 🪙)`,'good');
+  showBubble(t('mg.heal.bub.better'));
+  addLog(t('mg.heal.log.healed'), 'good');
   updateAllUI(); scheduleSave();
 }
 
@@ -328,14 +328,14 @@ function spawnFoodParticles() {
 function useAntidote() {
   if(!canAct()) return;
   if(activeDiseases.length === 0 && !sick) {
-    showBubble('Não tenho nenhuma doença! 💪');
-    addLog('O avatar está saudável — antídoto não é necessário.', 'info');
+    showBubble(t('mg.antidote.bub.healthy'));
+    addLog(t('mg.antidote.log.healthy'), 'info');
     return;
   }
   const COST = 300;
   if(gs.moedas < COST) {
-    showBubble('Sem moedas para o antídoto... 😢');
-    addLog(`Precisas de ${COST} 🪙 para o Antídoto Dimensional!`, 'bad');
+    showBubble(t('mg.antidote.bub.no_coins'));
+    addLog(t('mg.antidote.log.no_coins', {cost: COST}), 'bad');
     return;
   }
   if(!spendCoins(COST)) return;
@@ -348,10 +348,10 @@ function useAntidote() {
 
   playAnim('anim-antidote');
   spawnAntidoteParticles();
-  showBubble('Curado! ✨');
+  showBubble(t('mg.antidote.bub.cured'));
   showFloat('+20 💚', '#a855f7');
-  const msg = numDiseases > 1 ? `${numDiseases} doenças curadas!` : numDiseases === 1 ? 'Doença curada!' : 'Recuperado!';
-  addLog(`🧪 Antídoto Dimensional usado! ${msg} +20 saúde  (-${COST} 🪙)`, 'good');
+  const msg = numDiseases > 1 ? t('mg.antidote.msg.multi', {n: numDiseases}) : numDiseases === 1 ? t('mg.antidote.msg.one') : t('mg.antidote.msg.none');
+  addLog(t('mg.antidote.log.used', {msg, cost: COST}), 'good');
   updateSickVisuals();
   updateAllUI();
   scheduleSave();
@@ -486,13 +486,13 @@ const VELHA_LINES = [
 ];
 
 function startVelha() {
-  if(vitals.energia < 10) { showBubble('Cansado demais... 😴'); ModalManager.close('velhaModal'); return; }
+  if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('velhaModal'); return; }
   velhaBoard = Array(9).fill(null);
   velhaPlayerTurn = true;
   velhaOver = false;
 
   const d = miniDifficulty();
-  document.getElementById('velhaInfo').textContent    = `${d.label} · Sua vez! ✕`;
+  document.getElementById('velhaInfo').textContent    = t('mg.velha.info', {diff: t(d.i18nKey)});
   document.getElementById('velhaResult').textContent  = '';
   document.getElementById('velhaResult').className    = 'mini-result-box';
   document.getElementById('velhaReward').textContent  = '';
@@ -521,7 +521,7 @@ function velhaClick(i) {
   if(velhaBoard.every(c => c)) { velhaEnd('draw'); return; }
 
   velhaPlayerTurn = false;
-  document.getElementById('velhaInfo').textContent = 'Vez do Avatar... 🤔';
+  document.getElementById('velhaInfo').textContent = t('mg.velha.ai_turn');
   setTimeout(velhaAiMove, 500);
 }
 
@@ -546,7 +546,7 @@ function velhaAiMove() {
 
   velhaPlayerTurn = true;
   const d2 = miniDifficulty();
-  document.getElementById('velhaInfo').textContent = `${d2.label} · Sua vez! ✕`;
+  document.getElementById('velhaInfo').textContent = t('mg.velha.info', {diff: t(d2.i18nKey)});
 }
 
 function velhaRandomMove() {
@@ -608,17 +608,17 @@ function velhaEnd(result, winLine) {
   if(result === 'win') {
     xpMult   = d.tier === 0 ? 1.0 : d.tier === 1 ? 1.1 : d.tier === 2 ? 1.2 : 1.3;
     coinMult = xpMult;
-    msg = d.tier >= 2 ? '🌟 INCRÍVEL!' : '✕ VITÓRIA!';
+    msg = d.tier >= 2 ? t('mg.velha.incredible') : t('mg.velha.win');
     cls = 'win';
-    showBubble(d.tier >= 3 ? 'Venceu o mestre! 🏆' : 'Venceu na velha! ✕');
+    showBubble(d.tier >= 3 ? t('mg.velha.bub.master_win') : t('mg.velha.bub.win'));
   } else if(result === 'lose') {
     xpMult = 0.1; coinMult = 0.1;
-    msg = '○ DERROTA'; cls = 'lose';
-    showBubble('Quase! Próxima vez... 😔');
+    msg = t('mg.velha.lose'); cls = 'lose';
+    showBubble(t('mg.velha.bub.lose'));
   } else {
     xpMult = 0.4; coinMult = 0.4;
-    msg = '✕○ EMPATE'; cls = 'draw';
-    showBubble('Empate! Bem jogado 🤝');
+    msg = t('mg.velha.draw'); cls = 'draw';
+    showBubble(t('mg.velha.bub.draw'));
   }
 
   const vb       = getVinculoBonus();
@@ -633,8 +633,8 @@ function velhaEnd(result, winLine) {
 
   document.getElementById('velhaResult').textContent = msg;
   document.getElementById('velhaResult').className   = `mini-result-box ${cls}`;
-  document.getElementById('velhaReward').textContent = `+${xpGain} XP  +${coinGain} 🪙`;
+  document.getElementById('velhaReward').textContent = t('mg.reward_xp', {xp: xpGain, coins: coinGain});
   document.getElementById('velhaAgainBtn').style.display = 'inline-block';
-  addLog(`Jogo da Velha: ${msg} +${xpGain}XP +${coinGain}🪙`, result === 'win' ? 'good' : 'info');
+  addLog(t('mg.velha.log', {msg, xp: xpGain, coins: coinGain}), result === 'win' ? 'good' : 'info');
   scheduleSave();
 }
