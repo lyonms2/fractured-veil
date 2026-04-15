@@ -57,7 +57,7 @@ function updateAllUI() {
   const xpPctReal = Math.min(100, (xp / xpNeeded) * 100);
   document.getElementById('xpFill').style.width = xpPctReal + '%';
   document.getElementById('xpTxt').textContent  = `${Math.floor(xp)}/${xpNeeded}`;
-  document.getElementById('nivelTxt').textContent = `NÍVEL ${nivel}`;
+  document.getElementById('nivelTxt').textContent = t('ui.nivel', {n: nivel});
 
   // Vínculo
   const vt    = getVinculoTier();
@@ -88,7 +88,7 @@ function updateResourceUI() {
   if(resItems) resItems.textContent = itemInventory.length;
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
-  document.getElementById('btnSummonLabel').textContent = '▶ Invocar Avatar (Gratuito)';
+  document.getElementById('btnSummonLabel').textContent = t('ui.summon_btn');
   // FIX: actualiza visibilidade dos botões do header após qualquer mudança de estado
   if(typeof updateHeaderButtons === 'function' && walletAddress) updateHeaderButtons();
 }
@@ -204,7 +204,7 @@ async function tryAutoReconnect() { /* desativado */ }
 function updateLifeEstimate() {
   const el = document.getElementById('lifeEstimateTxt');
   if(!el) return;
-  if(!hatched || dead || sleeping) { el.textContent = sleeping ? '💤 dormindo' : '—'; el.style.color = 'var(--muted)'; return; }
+  if(!hatched || dead || sleeping) { el.textContent = sleeping ? t('ui.sleeping') : '—'; el.style.color = 'var(--muted)'; return; }
 
   const _d = rarityBonus().decay * GAME_SPEED;
   let decayPerCycle = 0;
@@ -232,7 +232,7 @@ function updateLifeEstimate() {
       cyclesUntilHigieneCrit || Infinity
     );
 
-    if(minCycles === Infinity) { el.textContent = '✅ estável'; el.style.color = '#7ab87a'; return; }
+    if(minCycles === Infinity) { el.textContent = t('ui.stable'); el.style.color = '#7ab87a'; return; }
 
     const cyclesAfter = vitals.saude / 0.3;
     const totalSecs   = Math.round((minCycles + cyclesAfter) * 60);
@@ -300,7 +300,7 @@ function fillCreatureCard() {
   const rbEl = document.getElementById('rarityBonusTxt');
   if(rbEl) {
     if(avatar.raridade !== 'Comum') {
-      rbEl.textContent   = `🥚×${rb.eggs} · ⚡×${rb.xp} XP · 💚-${Math.round((1-rb.decay)*100)}% decay`;
+      rbEl.textContent   = t('ui.rarity_bonus', {eggs: rb.eggs, xp: rb.xp, decay: Math.round((1-rb.decay)*100)});
       rbEl.style.display = '';
     } else {
       rbEl.style.display = 'none';
@@ -316,7 +316,7 @@ function fillCreatureCard() {
   // Badge "ATIVO · SLOT X"
   const badge2 = document.getElementById('idBadge2');
   if(badge2) {
-    badge2.textContent = `ATIVO · SLOT ${activeSlotIdx + 1}`;
+    badge2.textContent = t('ui.active_slot', {n: activeSlotIdx + 1});
   }
 }
 
@@ -324,7 +324,7 @@ function updatePhaseLabel() {
   const _pl = document.getElementById('phaseLabel');
   if(!_pl) return;
   const fase = FASES[getFase()];
-  _pl.textContent = 'FASE: ' + fase;
+  _pl.textContent = t('gt.phase.label', {fase});
   const cls = { 'BEBÊ':'bebe', 'CRIANÇA':'crianca', 'JOVEM':'jovem', 'ADULTO':'adulto' };
   _pl.className = 'phase-label fase-' + (cls[fase] || 'bebe');
 }

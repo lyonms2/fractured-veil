@@ -143,6 +143,17 @@
       'ui.sick':                 '🤒 Doente',
       'ui.life_remaining':       '⏳ VIDA RESTANTE',
       'ui.summon_btn':           '▶ Invocar Avatar (Gratuito)',
+      'ui.nivel':                'NÍVEL {n}',
+      'ui.stable':               '✅ estável',
+      'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
+      'ui.active_slot':          'ATIVO · SLOT {n}',
+      'ui.sleep_btn':            'DORMIR',
+      'ui.sleep_btn_mobile':     'Dormir',
+
+      // Modal reward labels
+      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
+      'modal.reward_maze':       '+{xpMin}~{xpMax} XP · até {cMax} 🪙 (colete no labirinto!)',
+
       'ui.login_required':       'LOGIN NECESSÁRIO',
       'ui.login_required_desc':  'Entra na tua conta para invocar o teu avatar e guardar o progresso.',
       'ui.do_login':             '🔑 FAZER LOGIN',
@@ -401,6 +412,17 @@
       'ui.sick':                 '🤒 Sick',
       'ui.life_remaining':       '⏳ LIFE REMAINING',
       'ui.summon_btn':           '▶ Summon Avatar (Free)',
+      'ui.nivel':                'LEVEL {n}',
+      'ui.stable':               '✅ stable',
+      'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
+      'ui.active_slot':          'ACTIVE · SLOT {n}',
+      'ui.sleep_btn':            'SLEEP',
+      'ui.sleep_btn_mobile':     'Sleep',
+
+      // Modal reward labels
+      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
+      'modal.reward_maze':       '+{xpMin}~{xpMax} XP · up to {cMax} 🪙 (collect in maze!)',
+
       'ui.login_required':       'LOGIN REQUIRED',
       'ui.login_required_desc':  'Sign in to summon your avatar and save your progress.',
       'ui.do_login':             '🔑 SIGN IN',

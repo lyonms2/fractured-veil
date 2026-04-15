@@ -93,19 +93,19 @@ function openGameSelector() {
   if(memEl) {
     const xpMin = r(d.xp*1.0*rb.xp); const xpMax = r(d.xp*1.6*rb.xp);
     const cMin  = r(d.coins*1.0*rb.moedas); const cMax = r(d.coins*1.6*rb.moedas);
-    memEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+    memEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
   }
   const simEl = document.getElementById('rewardSimon');
   if(simEl) {
     const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
     const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
-    simEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+    simEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
   }
   const minaEl = document.getElementById('rewardMina');
   if(minaEl) {
     const xpMin = r(d.xp*0.8*rb.xp); const xpMax = r(d.xp*2.0*rb.xp);
     const cMin  = r(d.coins*0.8*rb.moedas); const cMax = r(d.coins*2.0*rb.moedas);
-    minaEl.textContent = `+${xpMin}~${xpMax} XP · +${cMin}~${cMax} 🪙`;
+    minaEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
   }
   const labEl = document.getElementById('rewardLabirinto');
   if(labEl) {
@@ -113,9 +113,9 @@ function openGameSelector() {
     const coinCounts = [8,12,16,20];
     const coinVals   = [3,4,7,9];
     const tier = DIFF_TIERS.indexOf(d);
-    const t = Math.max(0, tier);
-    const cMax = coinCounts[t] * coinVals[t];
-    labEl.textContent = `+${xpMin}~${xpMax} XP · até ${cMax} 🪙 (colete no labirinto!)`;
+    const ti = Math.max(0, tier);
+    const cMax = coinCounts[ti] * coinVals[ti];
+    labEl.textContent = t('modal.reward_maze', {xpMin, xpMax, cMax});
   }
   ModalManager.open('gameSelector');
 }

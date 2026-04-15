@@ -132,14 +132,14 @@ function _repousoVisual(ativo) {
   const lblPC   = document.getElementById('sleepLabel');
   const actBtns = document.getElementById('actionBtns');
   if(btnPC) btnPC.classList.toggle('active-repouso', ativo);
-  if(lblPC) lblPC.textContent = ativo ? t('ui.repouso_mode') : 'DORMIR';
+  if(lblPC) lblPC.textContent = ativo ? t('ui.repouso_mode') : t('ui.sleep_btn');
   if(actBtns) actBtns.classList.toggle('repouso-mode', ativo);
 
   // Mobile
   const btnMob  = document.getElementById('fvbn-sleep');
   const lblMob  = document.getElementById('fvbnSleepLabel');
   if(btnMob) btnMob.classList.toggle('active-repouso', ativo);
-  if(lblMob) lblMob.textContent = ativo ? t('ui.repouso_mode') : 'Dormir';
+  if(lblMob) lblMob.textContent = ativo ? t('ui.repouso_mode') : t('ui.sleep_btn_mobile');
 
   // Overlay
   const overlay = document.getElementById('repousoOverlay');
