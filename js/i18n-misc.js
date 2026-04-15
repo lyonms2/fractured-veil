@@ -37,7 +37,8 @@ window.registerStrings(
     'amigos.action.play':    'Brincar',
     'amigos.action.clean':   'Limpar',
     'amigos.visit.cost':     '+{coins} 🪙 · +{xp} XP',
-    'amigos.interactions':   '{done}/{max} interações (8h)',
+    'amigos.interactions':        '{done}/{max} interações (8h)',
+    'amigos.search.placeholder':  '🔍 Pesquisar por nome de avatar...',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -73,6 +74,7 @@ window.registerStrings(
     'amigos.action.play':    'Play',
     'amigos.action.clean':   'Clean',
     'amigos.visit.cost':     '+{coins} 🪙 · +{xp} XP',
-    'amigos.interactions':   '{done}/{max} interactions (8h)',
+    'amigos.interactions':        '{done}/{max} interactions (8h)',
+    'amigos.search.placeholder':  '🔍 Search by avatar name...',
   }
 );

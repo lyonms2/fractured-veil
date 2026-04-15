@@ -70,7 +70,7 @@ function _renderAmigos() {
   el.innerHTML = `
     <!-- Pesquisa -->
     <div class="amigos-search-wrap">
-      <input id="amigosBusca" class="amigos-input" type="text" placeholder="🔍 Pesquisar por nome de avatar..." maxlength="30"
+      <input id="amigosBusca" class="amigos-input" type="text" placeholder="${t('amigos.search.placeholder')}" maxlength="30"
         oninput="amigoBuscarDebounce(this.value)">
     </div>
     <div id="amigosBuscaResultados"></div>
