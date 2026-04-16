@@ -286,7 +286,7 @@ function fillCreatureCard() {
   const bonusTxt   = document.getElementById('elemBonusTxt');
   const bonusLabel = document.getElementById('elemBonusLabel');
   if(bonusBlock && bonusTxt && car?.bonus) {
-    bonusTxt.textContent              = car.bonus;
+    bonusTxt.textContent              = t('elem.bonus.' + avatar.elemento) || car.bonus;
     bonusTxt.style.color              = car.cor + 'cc';
     bonusLabel.style.color            = car.cor;
     bonusBlock.style.borderColor      = car.cor + '33';
