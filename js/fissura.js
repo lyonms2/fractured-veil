@@ -33,13 +33,13 @@ function fissuraTimerStr() {
   const now  = new Date();
   const fim  = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 5, 0); // 1º do mês seguinte às 00:05
   const diff = fim - now;
-  if (diff <= 0) return '— Fim de mês —';
+  if (diff <= 0) return t('fissura.timer.end');
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000)  / 60000);
-  if (d > 0) return `${d}d ${h}h restantes`;
-  if (h > 0) return `${h}h ${m}m restantes`;
-  return `${m}m restantes`;
+  if (d > 0) return t('fissura.timer.days',  { d, h });
+  if (h > 0) return t('fissura.timer.hours', { h, m });
+  return t('fissura.timer.mins', { m });
 }
 
 // ── Carregar dados ─────────────────────────────────────────────────
@@ -74,16 +74,16 @@ async function renderFissura() {
   const section = document.getElementById('fissuraSection');
   if (!section) return;
 
-  section.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:9px">A carregar...</div>';
+  section.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:9px">${t('fissura.loading')}</div>`;
 
   if (!walletAddress) {
     section.innerHTML = `
       <div class="fissura-card fissura-header">
-        <div class="fissura-header-title">⚡ A GRANDE FISSURA</div>
-        <div class="fissura-header-sub">GUERRA MENSAL DE FACÇÕES</div>
+        <div class="fissura-header-title">${t('fissura.title')}</div>
+        <div class="fissura-header-sub">${t('fissura.sub')}</div>
       </div>
       <div class="fissura-card" style="text-align:center;padding:22px 18px;color:var(--muted);font-size:9px">
-        Inicia sessão para participar.
+        ${t('fissura.login')}
       </div>
     `;
     return;
@@ -121,8 +121,8 @@ function fissuraRenderUI(section) {
   section.innerHTML = `
     <!-- Cabeçalho -->
     <div class="fissura-card fissura-header">
-      <div class="fissura-header-title">⚡ A GRANDE FISSURA</div>
-      <div class="fissura-header-sub">GUERRA MENSAL DE FACÇÕES · ${mes}</div>
+      <div class="fissura-header-title">${t('fissura.title')}</div>
+      <div class="fissura-header-sub">${t('fissura.sub')} · ${mes}</div>
       <div class="fissura-timer" id="fissuraTimer">${fissuraTimerStr()}</div>
     </div>
 
@@ -130,7 +130,7 @@ function fissuraRenderUI(section) {
 
     <!-- Standings -->
     <div class="fissura-card">
-      <div class="fissura-prize-title">CLASSIFICAÇÃO ACTUAL</div>
+      <div class="fissura-prize-title">${t('fissura.standings')}</div>
       <div class="fissura-bars" id="fissuraBars">
         ${standings.map(s => `
           <div class="fissura-bar-row">
@@ -146,39 +146,39 @@ function fissuraRenderUI(section) {
 
     <!-- Prémios -->
     <div class="fissura-card">
-      <div class="fissura-prize-title">PRÉMIOS DA FACÇÃO VENCEDORA</div>
+      <div class="fissura-prize-title">${t('fissura.prizes.title')}</div>
       <div class="fissura-prize-grid">
         <div class="fissura-prize-item">
           <div class="fissura-prize-rar r-Comum">COMUM</div>
           <div class="fissura-prize-val">500 🪙</div>
-          <div class="fissura-prize-tax">por membro</div>
-          <div class="fissura-prize-entry">Entrada: 200 🪙</div>
+          <div class="fissura-prize-tax">${t('fissura.prizes.per_member')}</div>
+          <div class="fissura-prize-entry">${t('fissura.prizes.entry', {cost: '200 🪙'})}</div>
         </div>
         <div class="fissura-prize-item">
           <div class="fissura-prize-rar r-Raro">RARO</div>
           <div class="fissura-prize-val">até 15 💎</div>
-          <div class="fissura-prize-tax">4% pool / membros</div>
-          <div class="fissura-prize-entry">Entrada: 5 💎</div>
+          <div class="fissura-prize-tax">${t('fissura.prizes.pool', {pct: 4})}</div>
+          <div class="fissura-prize-entry">${t('fissura.prizes.entry', {cost: '5 💎'})}</div>
         </div>
         <div class="fissura-prize-item">
           <div class="fissura-prize-rar r-Lendario">LENDÁRIO</div>
           <div class="fissura-prize-val">até 30 💎</div>
-          <div class="fissura-prize-tax">8% pool / membros</div>
-          <div class="fissura-prize-entry">Entrada: 10 💎</div>
+          <div class="fissura-prize-tax">${t('fissura.prizes.pool', {pct: 8})}</div>
+          <div class="fissura-prize-entry">${t('fissura.prizes.entry', {cost: '10 💎'})}</div>
         </div>
       </div>
       <div style="font-size:7.5px;color:var(--muted);margin-top:8px;line-height:1.5">
-        ⚠️ Mínimo 1000 pontos para receber prémio. Vence a facção com maior média de pontos por membro.
+        ${t('fissura.prizes.note')}
       </div>
     </div>
 
     <!-- Como ganhar pontos -->
     <div class="fissura-card">
-      <div class="fissura-prize-title">COMO GANHAR PONTOS</div>
+      <div class="fissura-prize-title">${t('fissura.pts.title')}</div>
       <ul class="fissura-pts-list">
-        ${FISSURA_PONTOS_LISTA.map(p => `
+        ${FISSURA_PONTOS_LISTA.map((p, i) => `
           <li>
-            <span>${p.label}</span>
+            <span>${t('fissura.pts.'+i)}</span>
             <span class="pts-val">+${p.pts} pts</span>
           </li>
         `).join('')}
@@ -197,7 +197,7 @@ function fissuraRenderStatus(faccao, pontos, standings, maxTotal) {
   const fac = FISSURA_FACCOES.find(f => f.id === faccao) || FISSURA_FACCOES[0];
   const minha = standings.find(s => s.id === faccao);
   const pos   = [...standings].sort((a,b) => b.pontosTotal - a.pontosTotal).findIndex(s => s.id === faccao) + 1;
-  const posStr = pos === 1 ? '🥇 1.º lugar' : pos === 2 ? '🥈 2.º lugar' : '🥉 3.º lugar';
+  const posStr = t('fissura.status.pos.'+(pos <= 3 ? pos : 3));
 
   return `
     <div class="fissura-card fissura-status-card">
@@ -206,13 +206,13 @@ function fissuraRenderStatus(faccao, pontos, standings, maxTotal) {
           <span class="fissura-status-icon">${fac.icon}</span>
           <div>
             <div class="fissura-status-name fc-${fac.css}">${fac.id.toUpperCase()}</div>
-            <div style="font-size:7.5px;color:var(--muted)">${posStr} · ${minha?.membros || 0} membros</div>
+            <div style="font-size:7.5px;color:var(--muted)">${posStr} · ${minha?.membros || 0} ${t('fissura.status.members')}</div>
           </div>
         </div>
         <div class="fissura-pts-badge">⚡ ${pontos.toLocaleString()} pts</div>
       </div>
       <div style="font-size:7.5px;color:var(--muted);margin-top:2px">
-        A tua contribuição conta para a vitória da facção. Continua a jogar!
+        ${t('fissura.status.contribution')}
       </div>
     </div>
   `;
@@ -221,10 +221,9 @@ function fissuraRenderStatus(faccao, pontos, standings, maxTotal) {
 function fissuraRenderJoin(standings, custoInsc, raridade) {
   return `
     <div class="fissura-card fissura-join-box">
-      <div class="fissura-join-title">ESCOLHE A TUA FACÇÃO</div>
+      <div class="fissura-join-title">${t('fissura.join.title')}</div>
       <div class="fissura-join-desc">
-        Inscreve-te numa das 3 facções e contribui com pontos durante o mês.
-        A facção com maior média de pontos vence e reparte os prémios pelos membros qualificados.
+        ${t('fissura.join.desc').replace('\n','<br>')}
       </div>
       <div class="fissura-faction-grid" id="fissuraFaccaoGrid">
         ${FISSURA_FACCOES.map(f => {
@@ -234,17 +233,17 @@ function fissuraRenderJoin(standings, custoInsc, raridade) {
               onclick="fissuraSelectFaccao('${f.id}')">
               <span class="fissura-faction-icon">${f.icon}</span>
               <span class="fissura-faction-name">${f.id}</span>
-              <span class="fissura-faction-members">${d.membros} membros</span>
+              <span class="fissura-faction-members">${d.membros} ${t('fissura.status.members')}</span>
             </button>
           `;
         }).join('')}
       </div>
       <div class="fissura-join-custo">
-        Taxa de inscrição (${raridade}): <strong>${custoInsc}</strong>
+        ${t('fissura.join.entry_fee', {rar: raridade})}<strong>${custoInsc}</strong>
       </div>
       <button class="fissura-join-btn" id="fissuraJoinBtn" disabled
         onclick="fissuraInscrever()">
-        INSCREVER
+        ${t('fissura.join.btn')}
       </button>
     </div>
   `;
@@ -261,10 +260,10 @@ function fissuraSelectFaccao(id) {
 
 async function fissuraInscrever() {
   if (!_fissuraFaccaoSel) return;
-  if (!walletAddress) { fissuraToast('Inicia sessão primeiro.'); return; }
+  if (!walletAddress) { fissuraToast(t('fissura.toast.login')); return; }
 
   const joinBtn = document.getElementById('fissuraJoinBtn');
-  if (joinBtn) { joinBtn.disabled = true; joinBtn.textContent = 'A inscrever...'; }
+  if (joinBtn) { joinBtn.disabled = true; joinBtn.textContent = t('fissura.join.joining'); }
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -276,8 +275,8 @@ async function fissuraInscrever() {
     const json = await resp.json();
 
     if (!json.ok) {
-      fissuraToast(json.erro || 'Erro ao inscrever.');
-      if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'INSCREVER'; }
+      fissuraToast(json.erro || t('fissura.toast.err'));
+      if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = t('fissura.join.btn'); }
       return;
     }
 
@@ -286,14 +285,14 @@ async function fissuraInscrever() {
     gs.cristais = json.novoSaldoCristais;
     updateAllUI();
 
-    fissuraToast(`✅ Inscrito em ${_fissuraFaccaoSel}!`);
+    fissuraToast(t('fissura.toast.ok', { faccao: _fissuraFaccaoSel }));
     _fissuraFaccaoSel = null;
     // Re-render com dados actualizados
     await renderFissura();
 
   } catch (e) {
-    fissuraToast('Erro de ligação. Tenta novamente.');
-    if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'INSCREVER'; }
+    fissuraToast(t('fissura.toast.conn_err'));
+    if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = t('fissura.join.btn'); }
   }
 }
 
