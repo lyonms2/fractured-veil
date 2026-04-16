@@ -179,15 +179,15 @@ function renderTranspDistribuicao() {
   const total = pct * 4; // 3 jogos + dev
   const retencao = Math.max(0, 100 - total).toFixed(1);
 
-  const fmt = v => `${v.toFixed(1)}% da pool`;
+  const fmt = v => t('mkt.transp.pct_of_pool', { pct: v.toFixed(1) });
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
   set('transPctArena',    fmt(pct));
   set('transPctRM',       fmt(pct));
   set('transPctBN',       fmt(pct));
   set('transPctDev',      fmt(pct));
-  set('transPctRetencao', `${retencao}% na pool`);
-  set('transPriceRaro',   `${calcPoolPrice('Raro')} 💎 actual · até ${(POOL_BASE_RARO * 2).toFixed(1)} 💎`);
-  set('transPriceLend',   `${calcPoolPrice('Lendário')} 💎 actual · até ${(POOL_BASE_LEND * 2).toFixed(1)} 💎`);
+  set('transPctRetencao', t('mkt.transp.retained', { pct: retencao }));
+  set('transPriceRaro',   t('mkt.transp.price_display', { price: calcPoolPrice('Raro'),    max: (POOL_BASE_RARO * 2).toFixed(1) }));
+  set('transPriceLend',   t('mkt.transp.price_display', { price: calcPoolPrice('Lendário'), max: (POOL_BASE_LEND * 2).toFixed(1) }));
 }
 
 // ═══════════════════════════════════════════

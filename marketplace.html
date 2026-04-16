@@ -603,9 +603,9 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.vault_title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
-          Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.<br><br>
-          <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
-          <div class="transp-timelock-status" id="transpTimelockStatus">A carregar...</div>
+          <span data-i18n="mkt.transp.vault_body">Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.</span><br><br>
+          <a class="transp-link" id="transpContractLink" href="#" target="_blank" data-i18n="mkt.transp.vault_link">Ver contrato no Polygonscan ↗</a>
+          <div class="transp-timelock-status" id="transpTimelockStatus" data-i18n="mkt.loading">A carregar...</div>
         </div>
       </div>
 
@@ -613,13 +613,13 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.crystal_title">💸 Comprar e Resgatar Cristais</div>
         <div class="transp-block-body">
-          O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.
-          <div class="transp-taxa-row" style="margin-top:10px;"><span>Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
-          <div class="transp-taxa-row"><span>Taxa de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
-          <div class="transp-taxa-row"><span>Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
-          <br>O teu limite hoje:
+          <span data-i18n="mkt.transp.crystal_body">O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.</span>
+          <div class="transp-taxa-row" style="margin-top:10px;"><span data-i18n="mkt.transp.buy_rate">Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_rate">Taxa de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_limit">Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
+          <br><span data-i18n="mkt.transp.your_limit">O teu limite hoje:</span>
           <div class="transp-limit-bar-wrap"><div class="transp-limit-bar" id="transpLimitBar"></div></div>
-          <div class="transp-limit-txt" id="transpLimitTxt">Vincula a MetaMask na secção de Cristais para ver o teu limite.</div>
+          <div class="transp-limit-txt" id="transpLimitTxt" data-i18n="mkt.metamask.limit_missing">Vincula a MetaMask na secção de Cristais para ver o teu limite.</div>
         </div>
       </div>
 
@@ -627,15 +627,15 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
-          <strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">MARKETPLACE</div>
-          <div class="transp-taxa-row"><span>Listar avatar</span><span class="transp-taxa-val">2 💎 → pool</span></div>
-          <div class="transp-taxa-row"><span>Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
-          <div class="transp-taxa-row"><span>Venda de ovo no mercado</span><span class="transp-taxa-val">10% → pool</span></div>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">JOGOS PvP (apenas filas Raro e Lendário)</div>
-          <div class="transp-taxa-row"><span>Jo-Ken-Pô</span><span class="transp-taxa-val" id="transpTaxaJokenpo">15% do prémio → pool</span></div>
-          <div class="transp-taxa-row"><span>Rouba Monte</span><span class="transp-taxa-val">10% do prémio → pool</span></div>
-          <div class="transp-taxa-row"><span>Batalha Naval</span><span class="transp-taxa-val">10% do prémio → pool</span></div>
+          <span data-i18n="mkt.transp.feed_body"><strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.list_avatar">Listar avatar</span><span class="transp-taxa-val">2 💎 → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_avatar">Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_egg_mkt">Venda de ovo no mercado</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.pvp_games">JOGOS PvP (apenas filas Raro e Lendário)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.jokenpo_lbl">Jo-Ken-Pô</span><span class="transp-taxa-val" id="transpTaxaJokenpo" data-i18n="mkt.transp.jokenpo_pct">15% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.rouba_lbl">Rouba Monte</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.naval_lbl">Batalha Naval</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
         </div>
       </div>
 
@@ -643,17 +643,17 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.weekly_title">🏆 Distribuição Semanal (toda segunda-feira)</div>
         <div class="transp-block-body">
-          Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PARA QUEM VAI</div>
-          <div class="transp-taxa-row"><span>Top 10 Jo-Ken-Pô (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctArena">—</span></div>
-          <div class="transp-taxa-row"><span>Top 10 Rouba Monte (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctRM">—</span></div>
-          <div class="transp-taxa-row"><span>Top 10 Batalha Naval (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctBN">—</span></div>
-          <div class="transp-taxa-row"><span>Manutenção e desenvolvimento</span><span class="transp-taxa-val" id="transPctDev">—</span></div>
+          <span data-i18n="mkt.transp.weekly_body">Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.for_who">PARA QUEM VAI</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_arena">Top 10 Jo-Ken-Pô (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctArena">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_rm">Top 10 Rouba Monte (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctRM">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_bn">Top 10 Batalha Naval (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctBN">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.maintenance">Manutenção e desenvolvimento</span><span class="transp-taxa-val" id="transPctDev">—</span></div>
           <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:12px;">
-            <span style="color:var(--text);font-weight:600;">Pool retém</span>
+            <span style="color:var(--text);font-weight:600;" data-i18n="mkt.transp.pool_retains">Pool retém</span>
             <span class="transp-taxa-val" style="color:var(--green)" id="transPctRetencao">—</span>
           </div>
-          <div style="margin-top:10px;font-size:8px;color:var(--muted);">
+          <div style="margin-top:10px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.weekly_note">
             Mínimo garantido: <strong style="color:var(--text);">5%</strong> por distribuição · Máximo: <strong style="color:var(--text);">20%</strong> por jogo<br>
             Ranking Comum recebe <strong style="color:var(--text);">moedas internas</strong> — não cristais.<br>
             É necessário no mínimo <strong style="color:var(--text);">5 pontos</strong> na semana para receber premiação.
@@ -665,15 +665,15 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.eggs_title">🥚 Ovos — Queima e Venda para Pool</div>
         <div class="transp-block-body">
-          Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">QUEIMAR OVO (sai da pool)</div>
-          <div class="transp-taxa-row"><span>Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:9px;">(+ bónus de raridade)</span></span></div>
-          <div class="transp-taxa-row"><span>Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:9px;">(+ bónus de raridade)</span></span></div>
-          <div class="transp-taxa-row"><span>Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:9px;">(moedas internas)</span></span></div>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">VENDER À POOL (preço dinâmico)</div>
-          <div class="transp-taxa-row"><span>Ovo Raro</span><span class="transp-taxa-val" id="transPriceRaro">—</span></div>
-          <div class="transp-taxa-row"><span>Ovo Lendário</span><span class="transp-taxa-val" id="transPriceLend">—</span></div>
-          <div style="margin-top:8px;font-size:8px;color:var(--muted);">
+          <span data-i18n="mkt.transp.eggs_body">Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.burn_label">QUEIMAR OVO (sai da pool)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_common">Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.coins_internal">(moedas internas)</span></span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.sell_pool">VENDER À POOL (preço dinâmico)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val" id="transPriceRaro">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val" id="transPriceLend">—</span></div>
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.eggs_note">
             O preço de venda sobe até 2× quando a pool ultrapassa o alvo de <strong style="color:var(--text);">1000 💎</strong>.<br>
             Limites de venda por semana: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)
           </div>
@@ -684,12 +684,12 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.exchange_title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
         <div class="transp-block-body">
-          Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TAXA DE CÂMBIO (por 1 💎)</div>
+          <span data-i18n="mkt.transp.exchange_body">Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.exchange_rate">TAXA DE CÂMBIO (por 1 💎)</div>
           <div class="transp-taxa-row"><span>Pool ≥ 1000 💎</span><span class="transp-taxa-val">1 000 🪙</span></div>
           <div class="transp-taxa-row"><span>Pool ≥ 500 💎</span><span class="transp-taxa-val">1 500 🪙</span></div>
           <div class="transp-taxa-row"><span>Pool ≥ 100 💎</span><span class="transp-taxa-val">2 000 🪙</span></div>
-          <div style="margin-top:8px;font-size:8px;color:var(--muted);">
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.exchange_note">
             Requisito: avatar nível ≥ 20 · Pool mínima: 100 💎<br>
             Limite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>
           </div>
