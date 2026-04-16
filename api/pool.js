@@ -4,9 +4,11 @@
 //  GET  /api/pool              → dados da pool
 //  GET  /api/pool?logs=1       → histórico de transacções
 //  POST /api/pool { acao, idToken, ... }
-//    acao='taxa'       → entrada na pool (taxa de listagem/venda)
-//    acao='vender-ovo' → jogador vende ovo à pool
-//    acao='queimar-ovo'→ jogador queima ovo e recebe cristais
+//    acao='taxa'        → entrada na pool (taxa de listagem/venda)
+//    acao='listar-ovo'  → lista ovo no eggMarket (atómico, server-side)
+//    acao='vender-ovo'  → jogador vende ovo à pool
+//    acao='queimar-ovo' → jogador queima ovo e recebe cristais
+//    acao='botar-ovo'   → avatar bota ovo (relógio do servidor)
 // ═══════════════════════════════════════════════════════════════
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
@@ -15,6 +17,9 @@ const { getAuth }                      = require('firebase-admin/auth');
 
 const POOL_ALVO       = 1000;
 const POOL_LIMITE_DIA = 100;
+const EGG_LIST_FEE    = { 'Raro': 25, 'Lendário': 50 };
+const PRICE_MIN       = 1;
+const PRICE_MAX       = 10000;
 
 function initAdmin() {
   if (!getApps().length) {
@@ -115,6 +120,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
+  if (acao === 'listar-ovo')  return handleListarOvo(req, res, db, poolRef, uid);
   if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
@@ -148,6 +154,82 @@ async function handleTaxa(req, res, db, poolRef, uid) {
   } catch (err) {
     console.error('[pool/taxa]', err);
     return res.status(500).json({ erro: 'Erro ao registar taxa.' });
+  }
+}
+
+// ── Listar ovo no eggMarket (atómico, server-side) ─────────────
+async function handleListarOvo(req, res, db, poolRef, uid) {
+  const { ovoId, raridade, elemento, expiraEm, price } = req.body;
+  if (!ovoId)                          return res.status(400).json({ erro: 'ovoId em falta' });
+  if (!raridade || !EGG_LIST_FEE[raridade]) return res.status(400).json({ erro: 'Raridade inválida (Raro ou Lendário)' });
+  const priceInt = parseInt(price, 10);
+  if (!priceInt || priceInt < PRICE_MIN || priceInt > PRICE_MAX)
+    return res.status(400).json({ erro: `Preço inválido (${PRICE_MIN}–${PRICE_MAX})` });
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const playerSnap = await tx.get(playerRef);
+      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+
+      const pData     = playerSnap.data();
+      const inboxEggs = pData.inboxEggs || [];
+      const cristais  = pData.gs?.cristais ?? pData.cristais ?? 0;
+
+      const ovoIdx = inboxEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      if (ovoIdx === -1) throw new Error('OVO_NOT_FOUND');
+
+      const taxa         = EGG_LIST_FEE[raridade];
+      if (cristais < taxa) throw new Error('INSUFFICIENT');
+
+      const ovoToRemove  = inboxEggs[ovoIdx];
+      const novosCristais = cristais - taxa;
+
+      tx.update(playerRef, {
+        inboxEggs:     FieldValue.arrayRemove(ovoToRemove),
+        cristais:      novosCristais,
+        'gs.cristais': novosCristais,
+      });
+
+      const listRef = db.collection('eggMarket').doc();
+      tx.set(listRef, {
+        raridade: raridade,
+        elemento: elemento  || ovoToRemove.elemento || '',
+        expiraEm: expiraEm  || ovoToRemove.expiraEm || 0,
+        eggId:    ovoToRemove.id,
+        sellerId: uid,
+        price:    priceInt,
+        status:  'listed',
+        listedAt: Date.now(),
+      });
+
+      tx.update(poolRef, {
+        cristais:    FieldValue.increment(taxa),
+        totalEntrou: FieldValue.increment(taxa),
+      });
+      const logRef = poolRef.collection('logs').doc();
+      tx.set(logRef, {
+        tipo:   'entrada',
+        motivo: `listagem ovo ${raridade}`,
+        origem: uid,
+        total:  taxa,
+        pool:   taxa,
+        ts:     FieldValue.serverTimestamp(),
+      });
+
+      return { novoSaldo: novosCristais, taxa, raridade, elemento: ovoToRemove.elemento || elemento || '' };
+    });
+
+    return res.status(200).json({ ok: true, ...resultado });
+  } catch (err) {
+    const erros = {
+      OVO_NOT_FOUND: [400, 'Ovo não encontrado no inventário.'],
+      INSUFFICIENT:  [400, 'Cristais insuficientes para a taxa de listagem.'],
+    };
+    const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
+    if (status === 500) console.error('[pool/listar-ovo]', err);
+    return res.status(status).json({ erro: msg });
   }
 }
 

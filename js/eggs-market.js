@@ -147,10 +147,11 @@ async function confirmListEgg() {
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp = await fetch('/api/listar-ovo', {
+    const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
+        acao:     'listar-ovo',
         idToken,
         ovoId:    listingEggData.id,
         raridade: listingEggData.raridade,
