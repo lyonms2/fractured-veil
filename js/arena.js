@@ -69,14 +69,6 @@ function _debitarAposta() {
   updateResourceUI();
 }
 
-function _creditarPremio(bruto, cristais) {
-  const v = _premioLiquido(bruto);
-  if(cristais) gs.cristais = (gs.cristais||0) + v;
-  else         gs.moedas   = (gs.moedas  ||0) + v;
-  updateResourceUI();
-  scheduleSave();
-}
-
 function _jkpRes(minha, dele) {
   if(minha === dele) return 'empate';
   return JKP_VENCE[minha] === dele ? 'vitoria' : 'derrota';
@@ -1125,36 +1117,6 @@ async function _renderResultado(sala, opWallet) {
 
   addLog(t('arena.log.result', {titulo, nome: op.nome||opWallet.slice(0,8)}), euVenci?'good':empate?'info':'bad');
   if(euVenci) showBubble(t('arena.bub.victory', {val: premio, moeda}));
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// RECOMPENSAS
-// ═══════════════════════════════════════════════════════════════════
-
-async function _distribuirRecompensas(sala, opWallet) {
-  const aposta   = sala.aposta;
-  const usaCris  = aposta.cristais > 0;
-  const bruto    = usaCris ? aposta.cristais * 2 : aposta.moedas * 2;
-  const taxa     = sala.taxaPool || 0;
-  const vencedor = sala.vencedor;
-
-  await rtdb().ref(`arena/salas/${sala.id}/recompensaDistribuida`).set(true);
-
-  // Taxa vai para a pool P2E — 100% (dev recebe via cron semanal)
-  // Só cristais alimentam a pool; moedas são apenas queimadas
-  if(taxa > 0 && usaCris && firebase.auth().currentUser) {
-    try {
-      await addToPool(taxa, `Arena ${sala.fila} — taxa de partida`);
-    } catch(e) { console.warn('[ARENA] addToPool erro:', e); }
-  }
-
-  // Prêmio ao criador se ele venceu
-  if(vencedor === walletAddress) _creditarPremio(bruto, usaCris);
-  else if(vencedor === 'empate') {
-    if(usaCris) gs.cristais = (gs.cristais||0) + aposta.cristais;
-    else        gs.moedas   = (gs.moedas  ||0) + aposta.moedas;
-    updateResourceUI(); scheduleSave();
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
