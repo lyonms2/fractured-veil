@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // AVATARES — Marketplace e gestão de slots
-// Depende de: db (global), walletAddress (global), playerData (global),
-//             addToPool() (pool.js),
+// Depende de: db (global), firebase (global), walletAddress (global), playerData (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             updateSlots() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
@@ -221,61 +220,25 @@ function closeListModal() {
 async function confirmList() {
   const price = parseInt(document.getElementById('listPriceInput').value);
   if(!price || price < 1) { showToast(t('mkt.avatar.price_invalid'),'err'); return; }
-  if(playerData.cristais < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
+  if((playerData?.cristais || 0) < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
   if(listingSlotIdx === null) return;
 
   try {
-    // Read fresh data to avoid stale cristais or slots
-    const freshSnap = await db.collection('players').doc(walletAddress).get();
-    const freshData = freshSnap.data() || {};
-    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
-    if(freshCristais < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
-
-    const freshSlots = freshData.avatarSlots || playerData.avatarSlots;
-    const s = freshSlots[listingSlotIdx];
-    if(!s) { showToast(t('mkt.avatar.slot_invalid'),'err'); return; }
-
-    const newCristais = freshCristais - LIST_COST;
-    freshSlots[listingSlotIdx].listed = true;
-
-    // Batch atómico — debita cristais, marca slot e cria listagem em simultâneo
-    const diasVida   = s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0;
-    const listingRef = db.collection('avatarMarket').doc();
-    const listBatch  = db.batch();
-    listBatch.update(db.collection('players').doc(walletAddress), {
-      avatarSlots:   freshSlots,
-      cristais:      newCristais,
-      'gs.cristais': newCristais,
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/comprar-avatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'listar-avatar', idToken, slotIdx: listingSlotIdx, price }),
     });
-    listBatch.set(listingRef, {
-      sellerId:   walletAddress,
-      slotIdx:    listingSlotIdx,
-      nome:       s.nome,
-      elemento:   s.elemento,
-      raridade:   s.raridade,
-      descricao:  s.descricao||'',
-      seed:       s.seed||0,
-      nivel:      s.nivel||1,
-      xp:         s.xp||0,
-      vinculo:    s.vinculo||0,
-      diasVida,
-      totalOvos:  s.totalOvos||0,
-      totalRaros: s.totalRaros||0,
-      bornAt:     s.bornAt||Date.now(),
-      price,
-      status:     'listed',
-      listedAt:   firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    await listBatch.commit();
+    const data = await resp.json();
+    if(!resp.ok) { showToast(data.erro || t('mkt.avatar.list_err'), 'err'); return; }
 
-    playerData.avatarSlots = freshSlots;
-    playerData.cristais    = newCristais;
+    // Actualiza estado local com dados devolvidos pelo servidor
+    playerData.avatarSlots = data.slots;
+    playerData.cristais    = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = newCristais;
+    playerData.gs.cristais = data.novoSaldo;
     updateCristaisDisplay();
-
-    // Taxa de listagem vai para a pool
-    await addToPool(LIST_COST, 'listagem avatar');
 
     closeListModal();
     showToast(t('mkt.avatar.listed', {price}), 'ok');

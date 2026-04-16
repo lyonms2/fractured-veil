@@ -1,14 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
 //  api/comprar-avatar.js — Vercel Serverless Function
 //
-//  Body esperado:
-//    { listingId: "...", idToken: "..." }
-//
-//  idToken = Firebase ID token do comprador (obtido com getIdToken())
-//  listingId = ID do documento em avatarMarket
-//
-//  Executa no servidor com Admin SDK para poder escrever em docs
-//  de comprador e vendedor sem expor essa permissão ao cliente.
+//  POST /api/comprar-avatar
+//    acao='listar-avatar' → { idToken, slotIdx, price }
+//    (sem acao)           → { listingId, idToken }  ← comprar avatar
 // ═══════════════════════════════════════════════════════════════
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
@@ -16,6 +11,9 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
+const LIST_COST        = 2;    // 💎 taxa de listagem de avatar
+const PRICE_MIN        = 1;
+const PRICE_MAX        = 10000;
 const BASE_SLOTS       = 3;
 const MAX_SLOTS        = 5;
 
@@ -42,24 +40,120 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  const { listingId, idToken } = req.body;
+  const { acao, idToken } = req.body;
 
-  if (!listingId || typeof listingId !== 'string') {
-    return res.status(400).json({ erro: 'listingId inválido' });
-  }
   if (!idToken || typeof idToken !== 'string') {
     return res.status(400).json({ erro: 'idToken em falta' });
   }
 
   const { db, auth } = initAdmin();
 
-  // ── Verificar identidade do comprador ──
-  let buyerUid;
+  let uid;
   try {
     const decoded = await auth.verifyIdToken(idToken);
-    buyerUid = decoded.uid;
+    uid = decoded.uid;
   } catch {
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
+  }
+
+  if (acao === 'listar-avatar') return handleListarAvatar(req, res, db, uid);
+  return handleComprarAvatar(req, res, db, uid);
+};
+
+// ── Listar avatar no mercado (atómico, server-side) ─────────────
+async function handleListarAvatar(req, res, db, uid) {
+  const { slotIdx, price } = req.body;
+  const slotIdxInt = parseInt(slotIdx, 10);
+  const priceInt   = parseInt(price, 10);
+
+  if (isNaN(slotIdxInt) || slotIdxInt < 0) {
+    return res.status(400).json({ erro: 'slotIdx inválido' });
+  }
+  if (!priceInt || priceInt < PRICE_MIN || priceInt > PRICE_MAX) {
+    return res.status(400).json({ erro: `Preço inválido (${PRICE_MIN}–${PRICE_MAX})` });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  const poolRef   = db.collection('config').doc('pool');
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const playerSnap = await tx.get(playerRef);
+      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+
+      const pData    = playerSnap.data();
+      const cristais = pData.gs?.cristais ?? pData.cristais ?? 0;
+      if (cristais < LIST_COST) throw new Error('INSUFFICIENT');
+
+      const slots = [...(pData.avatarSlots || [])];
+      const s     = slots[slotIdxInt];
+      if (!s || s.dead) throw new Error('SLOT_INVALID');
+
+      const newCristais = cristais - LIST_COST;
+      slots[slotIdxInt] = { ...s, listed: true };
+
+      const diasVida  = s.bornAt ? Math.floor((Date.now() - s.bornAt) / 86400000) : 0;
+      const listingRef = db.collection('avatarMarket').doc();
+
+      tx.update(playerRef, {
+        avatarSlots:   slots,
+        cristais:      newCristais,
+        'gs.cristais': newCristais,
+      });
+      tx.set(listingRef, {
+        sellerId:   uid,
+        slotIdx:    slotIdxInt,
+        nome:       s.nome,
+        elemento:   s.elemento,
+        raridade:   s.raridade,
+        descricao:  s.descricao  || '',
+        seed:       s.seed       || 0,
+        nivel:      s.nivel      || 1,
+        xp:         s.xp         || 0,
+        vinculo:    s.vinculo    || 0,
+        diasVida,
+        totalOvos:  s.totalOvos  || 0,
+        totalRaros: s.totalRaros || 0,
+        bornAt:     s.bornAt     || Date.now(),
+        price:      priceInt,
+        status:    'listed',
+        listedAt:   FieldValue.serverTimestamp(),
+      });
+      tx.update(poolRef, {
+        cristais:    FieldValue.increment(LIST_COST),
+        totalEntrou: FieldValue.increment(LIST_COST),
+      });
+      const logRef = poolRef.collection('logs').doc();
+      tx.set(logRef, {
+        tipo:   'entrada',
+        motivo: 'listagem avatar',
+        origem: uid,
+        total:  LIST_COST,
+        pool:   LIST_COST,
+        ts:     FieldValue.serverTimestamp(),
+      });
+
+      return { novoSaldo: newCristais, slots };
+    });
+
+    return res.status(200).json({ ok: true, ...resultado });
+  } catch (err) {
+    const erros = {
+      INSUFFICIENT: [400, 'Cristais insuficientes para a taxa de listagem.'],
+      SLOT_INVALID: [400, 'Slot inválido ou avatar morto.'],
+    };
+    const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
+    if (status === 500) console.error('[comprar-avatar/listar]', err);
+    return res.status(status).json({ erro: msg });
+  }
+}
+
+// ── Comprar avatar do mercado ───────────────────────────────────
+async function handleComprarAvatar(req, res, db, buyerUid) {
+  const { listingId } = req.body;
+
+  if (!listingId || typeof listingId !== 'string') {
+    return res.status(400).json({ erro: 'listingId inválido' });
   }
 
   const listRef  = db.collection('avatarMarket').doc(listingId);
@@ -67,7 +161,7 @@ module.exports = async function handler(req, res) {
   const poolRef  = db.collection('config').doc('pool');
 
   let listing = null;
-  let novoSaldoComprador = 0;
+  let novoSaldoComprador  = 0;
   let novosSlotsComprador = null;
 
   try {
@@ -77,53 +171,44 @@ module.exports = async function handler(req, res) {
         tx.get(buyerRef),
       ]);
 
-      // ── Validar listagem ──
       if (!listSnap.exists || listSnap.data().status !== 'listed') {
         throw new Error('NOT_AVAILABLE');
       }
       listing = listSnap.data();
 
-      if (listing.sellerId === buyerUid) {
-        throw new Error('OWN_LISTING');
-      }
+      if (listing.sellerId === buyerUid) throw new Error('OWN_LISTING');
 
-      // ── Validar saldo do comprador ──
-      const buyerData   = buyerSnap.data() || {};
-      const cristais    = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-      const price       = listing.price;
+      const buyerData = buyerSnap.data() || {};
+      const cristais  = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
+      const price     = listing.price;
       if (cristais < price) throw new Error('INSUFFICIENT');
 
-      // ── Validar slot livre ──
       const slots         = [...(buyerData.avatarSlots || [])];
       const unlockedSlots = getUnlockedSlots(buyerData);
       const freeIdx       = slots.findIndex((s, i) => !s && i < unlockedSlots);
       if (freeIdx === -1) throw new Error('NO_SLOT');
 
-      // ── Preparar novo slot do comprador ──
       novoSaldoComprador = cristais - price;
       slots[freeIdx] = {
         nome:       listing.nome,
         elemento:   listing.elemento,
         raridade:   listing.raridade,
         descricao:  listing.descricao,
-        seed:       listing.seed || 0,
-        nivel:      listing.nivel || 1,
-        xp:         listing.xp || 0,
-        vinculo:    listing.vinculo || 0,
+        seed:       listing.seed     || 0,
+        nivel:      listing.nivel    || 1,
+        xp:         listing.xp       || 0,
+        vinculo:    listing.vinculo  || 0,
         diasVida:   listing.diasVida || 0,
-        totalOvos:  listing.totalOvos || 0,
+        totalOvos:  listing.totalOvos  || 0,
         totalRaros: listing.totalRaros || 0,
-        bornAt:     listing.bornAt || Date.now(),
+        bornAt:     listing.bornAt   || Date.now(),
         acquiredAt: Date.now(),
-        hatched:    true,
-        dead:       false,
-        vitals:     { fome: 100, humor: 100, energia: 100, saude: 100, higiene: 100 },
-        eggs:       [],
-        items:      [],
+        hatched: true, dead: false,
+        vitals: { fome: 100, humor: 100, energia: 100, saude: 100, higiene: 100 },
+        eggs: [], items: [],
       };
       novosSlotsComprador = slots;
 
-      // ── Preparar atualização do vendedor ──
       const sellerRef  = db.collection('players').doc(listing.sellerId);
       const sellerSnap = await tx.get(sellerRef);
       const sellerData = sellerSnap.data() || {};
@@ -132,25 +217,21 @@ module.exports = async function handler(req, res) {
       if (listing.slotIdx !== undefined && sellerSlots[listing.slotIdx]) {
         sellerSlots[listing.slotIdx] = null;
       }
-      const taxa        = Math.round(price * TAXA_MARKETPLACE);
+      const taxa         = Math.round(price * TAXA_MARKETPLACE);
       const sellerRecebe = price - taxa;
 
-      // ── Aplicar writes ──
       tx.update(buyerRef, {
         avatarSlots:   novosSlotsComprador,
         cristais:      novoSaldoComprador,
         'gs.cristais': novoSaldoComprador,
       });
-
       tx.update(sellerRef, {
         avatarSlots:   sellerSlots,
         cristais:      sellerCris + sellerRecebe,
         'gs.cristais': sellerCris + sellerRecebe,
       });
-
       tx.delete(listRef);
 
-      // ── Taxa para a pool (dentro da transação) ──
       if (taxa > 0) {
         tx.update(poolRef, {
           cristais:    FieldValue.increment(taxa),
@@ -169,10 +250,10 @@ module.exports = async function handler(req, res) {
     });
 
     return res.status(200).json({
-      ok:              true,
-      nome:            listing.nome,
-      novoSaldo:       novoSaldoComprador,
-      slots:           novosSlotsComprador,
+      ok:        true,
+      nome:      listing.nome,
+      novoSaldo: novoSaldoComprador,
+      slots:     novosSlotsComprador,
     });
 
   } catch (err) {
@@ -186,4 +267,4 @@ module.exports = async function handler(req, res) {
     if (status === 500) console.error('[comprar-avatar]', err);
     return res.status(status).json({ erro: msg });
   }
-};
+}
