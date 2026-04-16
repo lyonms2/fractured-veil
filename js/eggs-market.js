@@ -2,7 +2,6 @@
 // OVOS — Marketplace de ovos entre jogadores
 // Depende de: db (global), firebase (global), walletAddress (global),
 //             playerData (global), currentSection (global),
-//             addToPool() (pool.js),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
 //             CARACTERISTICAS_ELEMENTAIS (data.js)
@@ -138,7 +137,7 @@ async function confirmListEgg() {
   const statusEl = document.getElementById('listEggStatus');
   const taxa = EGG_LIST_FEE[listingEggData.raridade] || 0;
 
-  // Verificar saldo para a taxa de listagem
+  // Verificar saldo local antes de chamar o servidor
   if((playerData?.cristais || 0) < taxa) {
     statusEl.textContent = t('mkt.eggs.list_cost', {cost: taxa});
     return;
@@ -147,56 +146,33 @@ async function confirmListEgg() {
   statusEl.textContent = t('mkt.eggs.listing');
 
   try {
-    // Lê dados frescos para evitar saldo desactualizado
-    const freshSnap = await db.collection('players').doc(walletAddress).get();
-    const freshData = freshSnap.data() || {};
-    const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
-
-    if(freshCristais < taxa) {
-      statusEl.textContent = t('mkt.eggs.list_cost', {cost: taxa});
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/listar-ovo', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        idToken,
+        ovoId:    listingEggData.id,
+        raridade: listingEggData.raridade,
+        elemento: listingEggData.elemento,
+        expiraEm: listingEggData.expiraEm,
+        price,
+      }),
+    });
+    const data = await resp.json();
+    if(!resp.ok) {
+      statusEl.textContent = data.erro || t('mkt.eggs.list_err');
       return;
     }
 
-    const inboxEggs = freshData.inboxEggs || [];
-    const ovoIdx = inboxEggs.findIndex(e => e.id === listingEggData.id);
-    if(ovoIdx === -1) {
-      statusEl.textContent = t('mkt.eggs.not_in_inv');
-      return;
-    }
-    const ovoToRemove = inboxEggs[ovoIdx];
-    const newCristais = freshCristais - taxa;
-
-    // Remove do inboxEggs, debita taxa e cria listagem em batch atómico
-    const listingRef = db.collection('eggMarket').doc();
-    const batch = db.batch();
-    batch.update(db.collection('players').doc(walletAddress), {
-      inboxEggs:     firebase.firestore.FieldValue.arrayRemove(ovoToRemove),
-      cristais:      newCristais,
-      'gs.cristais': newCristais,
-    });
-    batch.set(listingRef, {
-      raridade:  listingEggData.raridade,
-      elemento:  listingEggData.elemento,
-      expiraEm:  listingEggData.expiraEm,
-      eggId:     listingEggData.id,
-      sellerId:  walletAddress,
-      price,
-      status:   'listed',
-      listedAt:  Date.now(),
-    });
-    await batch.commit();
-
-    // Actualiza estado local
-    playerData.cristais = newCristais;
+    // Actualiza estado local com o saldo devolvido pelo servidor
+    playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
-    playerData.gs.cristais = newCristais;
+    playerData.gs.cristais = data.novoSaldo;
     updateCristaisDisplay();
     if(playerData.inboxEggs) {
       playerData.inboxEggs = playerData.inboxEggs.filter(e => e.id !== listingEggData.id);
     }
-
-    // Taxa vai para a pool
-    if(taxa > 0) await addToPool(taxa, `listagem ovo ${listingEggData.raridade}`);
 
     closeListEggModal();
     showToast(t('mkt.eggs.listed', {rarity: listingEggData.raridade, price}), 'ok');

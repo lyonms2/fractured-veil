@@ -123,10 +123,13 @@ module.exports = async function handler(req, res) {
 };
 
 // ── Taxa: entrada na pool (listagem, venda, etc.) ───────────────
+// Taxa máxima legítima: 50 💎 (listagem ovo Lendário) ou 10% de uma venda de avatar
+const TAXA_MAX = 50;
+
 async function handleTaxa(req, res, db, poolRef, uid) {
   const { valor, motivo } = req.body;
   const v = parseFloat(valor);
-  if (!v || v <= 0) return res.status(400).json({ erro: 'Valor inválido' });
+  if (!v || v <= 0 || v > TAXA_MAX) return res.status(400).json({ erro: 'Valor inválido' });
 
   try {
     const batch  = db.batch();
