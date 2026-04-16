@@ -292,6 +292,9 @@ window.registerStrings({
   'mkt.transp.exchange_body':  'Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.',
   'mkt.transp.exchange_rate':  'TAXA DE CÂMBIO (por 1 💎)',
   'mkt.transp.exchange_note':  'Requisito: avatar nível ≥ 20 · Pool mínima: 100 💎\nLimite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>',
+  'mkt.transp.polygonscan':    '— Ver no Polygonscan ↗',
+  'mkt.transp.vault_active':   '✅ Cofre ativo na Polygon Mainnet.',
+  'mkt.pool.system':           'sistema',
 }, {
   // ════════════════════════════════════════════════════════════════
   // ENGLISH
@@ -583,4 +586,7 @@ window.registerStrings({
   'mkt.transp.exchange_body':  'Active players can convert coins earned in the game into real 💎 crystals. The rate changes based on pool status — the fuller it is, the cheaper.',
   'mkt.transp.exchange_rate':  'EXCHANGE RATE (per 1 💎)',
   'mkt.transp.exchange_note':  'Requirement: avatar level ≥ 20 · Minimum pool: 100 💎\nDaily limit: <strong style="color:var(--text);">Common 1💎 · Rare 2💎 · Legendary 4💎</strong>',
+  'mkt.transp.polygonscan':    '— View on Polygonscan ↗',
+  'mkt.transp.vault_active':   '✅ Vault active on Polygon Mainnet.',
+  'mkt.pool.system':           'system',
 });

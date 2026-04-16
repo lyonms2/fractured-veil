@@ -25,13 +25,13 @@ async function renderTransparencia() {
   const linkEl = document.getElementById('transpContractLink');
   if(linkEl) {
     linkEl.href = `https://polygonscan.com/address/${CONTRACT_ADDRESS}`;
-    linkEl.textContent = `${CONTRACT_ADDRESS.slice(0,6)}...${CONTRACT_ADDRESS.slice(-4)} — Ver no Polygonscan ↗`;
+    linkEl.textContent = `${CONTRACT_ADDRESS.slice(0,6)}...${CONTRACT_ADDRESS.slice(-4)} ${t('mkt.transp.polygonscan')}`;
   }
 
   const statusEl = document.getElementById('transpTimelockStatus');
   if(statusEl) {
     statusEl.className = 'transp-timelock-status transp-timelock-ok';
-    statusEl.innerHTML = '✅ Cofre ativo na Polygon Mainnet.';
+    statusEl.innerHTML = t('mkt.transp.vault_active');
   }
 
   const barEl = document.getElementById('transpLimitBar');

@@ -221,10 +221,11 @@ async function loadPoolLogs(reset) {
     list.innerHTML = poolLogs.map(log => {
       const isEntrada = log.tipo === 'entrada';
       const ts  = log.ts ? new Date(log.ts) : new Date();
-      const timeStr = ts.toLocaleDateString('pt-PT') + ' ' + ts.toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'});
+      const locale = localStorage.getItem('lang') === 'en' ? 'en-US' : 'pt-PT';
+      const timeStr = ts.toLocaleDateString(locale) + ' ' + ts.toLocaleTimeString(locale, {hour:'2-digit',minute:'2-digit'});
       const wallet = log.origem && log.origem.startsWith('0x')
         ? log.origem.slice(0,6)+'…'+log.origem.slice(-4)
-        : (log.origem || 'sistema');
+        : (log.origem || t('mkt.pool.system'));
       const icon  = isEntrada ? '▲' : '▼';
       const sinal = isEntrada ? '+' : '-';
       return `<div class="pool-log-row ${log.tipo}">
