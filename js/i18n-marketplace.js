@@ -1,0 +1,500 @@
+// ═══════════════════════════════════════════════════════════════════
+// I18N — Marketplace
+// Extensão de strings para marketplace.html e ficheiros relacionados.
+// Carregado após i18n.js via registerStrings().
+// ═══════════════════════════════════════════════════════════════════
+
+window.registerStrings({
+  // ── Navegação (sidebar + bottom nav) ─────────────────────────────
+  'mkt.nav.account':          'Minha Conta',
+  'mkt.nav.my_avatars':       'Meus Avatares',
+  'mkt.nav.market':           'Mercado',
+  'mkt.nav.buy_avatars':      'Comprar Avatares',
+  'mkt.nav.buy_crystals':     'Comprar Cristais',
+  'mkt.nav.buy_eggs':         'Comprar Ovos',
+  'mkt.nav.info':             'Informação',
+  'mkt.nav.pool':             'Pool & Transparência',
+
+  // ── Header ────────────────────────────────────────────────────────
+  'mkt.logo.sub':             'Marketplace',
+  'mkt.btn.back':             '← Voltar\nao jogo',
+  'mkt.btn.logout':           '✕ SAIR',
+  'mkt.loading':              'A carregar...',
+
+  // ── Auth mkt-específico ───────────────────────────────────────────
+  'mkt.auth.reset_hint':      'Envia um link de recuperação para o teu e-mail.',
+
+  // ── Browse ────────────────────────────────────────────────────────
+  'mkt.browse.title':         '🛒 Comprar Avatares',
+  'mkt.browse.sub':           'Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.',
+  'mkt.browse.search_ph':     '🔍 Procurar nome ou elemento...',
+  'mkt.browse.rarity_all':    'Raridade: Todas',
+  'mkt.browse.elem_all':      'Elemento: Todos',
+  'mkt.browse.sort_recent':   'Mais recentes',
+  'mkt.browse.sort_asc':      'Preço ↑',
+  'mkt.browse.sort_desc':     'Preço ↓',
+  'mkt.browse.sort_level':    'Nível ↓',
+  'mkt.browse.loading':       'A carregar listagens...',
+  'mkt.browse.empty':         'Nenhum avatar encontrado.\nAjusta os filtros ou volta mais tarde.',
+
+  // ── Meus Avatares (slots) ─────────────────────────────────────────
+  'mkt.slots.title':          '🧬 Meus Avatares',
+  'mkt.slots.sub':            'Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.',
+
+  // Slot card labels
+  'mkt.slot.label':           'Slot {n}',
+  'mkt.slot.active':          'Activo',
+  'mkt.slot.for_sale':        'À venda',
+  'mkt.slot.hatching':        'A chocar',
+  'mkt.slot.hatching_title':  'A chocar…',
+  'mkt.slot.hatching_sub':    'Volta ao jogo\npara completar',
+  'mkt.slot.empty':           'Vazio',
+  'mkt.slot.empty_sub':       'Choca um ovo\nno jogo',
+  'mkt.slot.locked':          'Bloqueado',
+  'mkt.slot.locked_cost':     '{cost} 💎 para desbloquear',
+  'mkt.slot.btn_activate':    '⚡ Activar',
+  'mkt.slot.btn_list':        '✦ Listar à Venda',
+  'mkt.slot.btn_burn':        '🔥 Queimar',
+  'mkt.slot.frozen_label':    '❄️ Listado à venda',
+  'mkt.slot.btn_unlist':      '✕ Retirar listagem',
+  'mkt.slot.btn_unlock':      '🔓 Desbloquear Slot {n} — {cost} 💎',
+  'mkt.slot.max_unlocked':    'Slots máximos desbloqueados ({max})',
+
+  // Avatar stat labels
+  'mkt.stat.nivel':           'Nível',
+  'mkt.stat.xp':              'XP',
+  'mkt.stat.vinculo':         'Vínculo',
+  'mkt.stat.fase':            'Fase',
+  'mkt.stat.ovos':            'Ovos',
+  'mkt.stat.ovos_total':      'Ovos botados',
+  'mkt.stat.raros':           'Raros/Lendários',
+  'mkt.stat.nivel_abbr':      'Nv.{n}',
+
+  // Avatar card
+  'mkt.card.mine':            '⭐ O teu avatar',
+  'mkt.card.by':              'Por {addr}',
+
+  // Avatar detail overlay
+  'mkt.detail.buy':           'Comprar',
+  'mkt.detail.insufficient':  'Cristais insuficientes',
+  'mkt.detail.close':         'Fechar',
+  'mkt.detail.unlist':        'Retirar listagem',
+
+  // ── Pool & Transparência ──────────────────────────────────────────
+  'mkt.pool.title':           '🔍 Pool & Transparência',
+  'mkt.pool.sub':             'Tudo o que entra e sai da pool é público. Aqui podes ver o estado em tempo real e como a economia do Fractured Veil funciona.',
+  'mkt.pool.history':         '📋 Histórico da Pool',
+  'mkt.pool.legend_in':       '▲ Entrada',
+  'mkt.pool.legend_out':      '▼ Saída',
+  'mkt.pool.load_more':       'Carregar mais',
+  'mkt.pool.loading':         'A carregar histórico...',
+  'mkt.pool.empty':           'Nenhuma transacção ainda.',
+  'mkt.pool.error':           'Erro ao carregar histórico.',
+  'mkt.pool.economy':         '◆ COMO FUNCIONA A ECONOMIA',
+
+  // Pool widget stats
+  'mkt.pool.balance':         'Saldo',
+  'mkt.pool.rare_egg':        'Ovo Raro',
+  'mkt.pool.legendary_egg':   'Ovo Lendário',
+  'mkt.pool.available':       'Disponível hoje',
+  'mkt.pool.empty_msg':       'Pool vazia — em breve! 🌱',
+  'mkt.pool.state_title':     'Estado actual da pool',
+  'mkt.pool.total_in':        'Total entrou',
+  'mkt.pool.total_out':       'Total saiu',
+  'mkt.pool.price_sub':       'preço actual de recompra',
+
+  // ── Comprar Cristais ──────────────────────────────────────────────
+  'mkt.crystals.title':       '💎 Comprar Cristais',
+  'mkt.crystals.sub':         '1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.',
+  'mkt.crystals.buy_btn':     'Comprar',
+  'mkt.crystals.popular':     'Mais popular',
+  'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
+  'mkt.crystals.redeem_sub':  'Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.',
+  'mkt.crystals.redeem_btn':  'Resgatar',
+  'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
+
+  // Nomes dos pacotes de cristais
+  'mkt.pkg.0':                'Punhado',
+  'mkt.pkg.1':                'Bolsa',
+  'mkt.pkg.2':                'Saco',
+  'mkt.pkg.3':                'Baú',
+  'mkt.pkg.4':                'Tesouro',
+
+  // ── MetaMask CTA ──────────────────────────────────────────────────
+  'mkt.metamask.title':       '🦊 MetaMask necessária',
+  'mkt.metamask.sub':         'Para comprar ou resgatar Cristais com MATIC, vincula a tua carteira MetaMask. O teu progresso no jogo já está seguro — a carteira é só para pagamentos.',
+  'mkt.metamask.btn':         'Vincular MetaMask',
+  'mkt.metamask.linked':      '🦊 MetaMask vinculada',
+  'mkt.metamask.not_found':   'MetaMask não encontrada.',
+  'mkt.metamask.err':         'Erro ao conectar MetaMask.',
+  'mkt.metamask.link_first':  'Vincula a tua MetaMask primeiro.',
+  'mkt.metamask.limit_missing':'Vincula a MetaMask na secção de Cristais para ver o teu limite.',
+  'mkt.metamask.limit_err':   'Não foi possível verificar o limite.',
+
+  // ── Comprar Ovos ──────────────────────────────────────────────────
+  'mkt.eggs.title':           '🥚 Comprar Ovos',
+  'mkt.eggs.sub':             'Ovos Raros e Lendários listados por outros jogadores.',
+  'mkt.eggs.filter_ph':       '🔍 Filtrar por elemento...',
+  'mkt.eggs.loading':         'A carregar ovos...',
+
+  // ── Transações / status ───────────────────────────────────────────
+  'mkt.tx.open_mm':           '⏳ Abre o MetaMask para confirmar...',
+  'mkt.tx.sent':              '⏳ Transação enviada. A aguardar confirmação...',
+  'mkt.tx.crediting':         '⏳ A creditar os teus 💎...',
+  'mkt.tx.credited':          '✅ +{gems} 💎 creditados! Saldo: {balance} 💎',
+  'mkt.tx.not_credited':      '⚠️ Transação confirmada mas não creditada: {err}',
+  'mkt.tx.credit_err':        '⚠️ Tx confirmada mas erro ao creditar. Os teus 💎 serão recuperados.',
+  'mkt.tx.gems_added':        '+{gems} 💎 Cristais adicionados!',
+  'mkt.tx.min_gems':          'Mínimo 10 💎, em múltiplos de 10.',
+  'mkt.tx.insufficient':      'Saldo insuficiente. Tens {balance} 💎.',
+  'mkt.tx.insufficient_matic':'❌ Saldo insuficiente. Precisas de pelo menos {matic} MATIC na tua carteira Polygon.',
+  'mkt.tx.exchange_hint':     'Podes comprar MATIC numa exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.',
+  'mkt.tx.insufficient_toast':'Saldo insuficiente — precisas de {matic} MATIC',
+  'mkt.tx.requesting':        '⏳ A pedir autorização ao servidor...',
+  'mkt.tx.open_mm_redeem':    '⏳ Abre o MetaMask para confirmar o resgate...',
+  'mkt.tx.redeemed':          '✅ Resgatado! Recebeste {matic} MATIC na tua carteira.',
+  'mkt.tx.matic_sent':        '💸 {matic} MATIC enviados!',
+  'mkt.tx.cancelled':         'Transação cancelada.',
+  'mkt.tx.redeem_cancelled':  'Resgate cancelado. Os teus 💎 foram restaurados pelo servidor.',
+  'mkt.tx.redeem_err':        'Erro no resgate. Tenta novamente.',
+  'mkt.tx.failed':            '❌ Transação falhou. Tenta novamente.',
+  'mkt.tx.chain_fail':        '❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.',
+  'mkt.tx.general_err':       'Erro ao enviar. Verifica o saldo de MATIC e tenta novamente.',
+  'mkt.tx.link_mm':           'Vincula a MetaMask primeiro.',
+
+  // ── Toasts de avatar ──────────────────────────────────────────────
+  'mkt.avatar.insufficient':  'Cristais insuficientes.',
+  'mkt.avatar.no_slots':      'Sem slots disponíveis. Desbloqueia mais slots.',
+  'mkt.avatar.bought':        '✅ {name} adquirido! (taxa {tax}💎 → pool)',
+  'mkt.avatar.buy_err':       'Erro ao comprar avatar.',
+  'mkt.avatar.price_invalid': 'Preço inválido.',
+  'mkt.avatar.list_cost':     'Precisas de {cost} 💎 para listar.',
+  'mkt.avatar.slot_invalid':  'Slot inválido.',
+  'mkt.avatar.listed':        '✅ Avatar listado por {price} 💎!',
+  'mkt.avatar.list_err':      'Erro ao listar.',
+  'mkt.avatar.unlist_404':    'Listagem não encontrada.',
+  'mkt.avatar.unlist_err':    'Erro ao retirar listagem.',
+  'mkt.avatar.unlisted':      'Listagem cancelada. Avatar desbloqueado.',
+  'mkt.avatar.activated':     '✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.',
+  'mkt.avatar.unlock_cost':   'Precisas de {cost} 💎.',
+  'mkt.avatar.max_slots':     'Já tens o máximo de slots.',
+  'mkt.avatar.unlocked':      '✅ Slot {n} desbloqueado!',
+
+  // ── Modais ────────────────────────────────────────────────────────
+  'mkt.modal.list_egg.title':  '🥚 Listar Ovo à Venda',
+  'mkt.modal.list_egg.sub':    'Define o preço em 💎 Cristais. O ovo será removido do teu inventário.',
+  'mkt.modal.list_egg.price':  'Preço em 💎 Cristais',
+  'mkt.modal.list_egg.cancel': 'Cancelar',
+  'mkt.modal.list_egg.confirm':'Listar',
+
+  'mkt.modal.list_av.title':   '📋 Listar Avatar',
+  'mkt.modal.list_av.sub':     'Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.',
+  'mkt.modal.list_av.warn':    '⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.',
+  'mkt.modal.list_av.price':   'Preço em 💎 Cristais',
+  'mkt.modal.list_av.cancel':  'Cancelar',
+  'mkt.modal.list_av.confirm': 'Listar por 2 💎',
+
+  'mkt.modal.burn.title':      '🔥 Queimar Avatar',
+  'mkt.modal.burn.cancel':     'Cancelar',
+  'mkt.modal.burn.confirm':    '🔥 Confirmar Queima',
+
+  // ── Bottom nav ────────────────────────────────────────────────────
+  'mkt.bn.avatars':            'Avatares',
+  'mkt.bn.market':             'Mercado',
+  'mkt.bn.eggs':               'Ovos',
+  'mkt.bn.crystals':           'Cristais',
+  'mkt.bn.pool':               'Pool',
+
+  // ── Ovos — strings dinâmicas (eggs-market.js) ────────────────────
+  'mkt.eggs.empty':          'Nenhum ovo à venda de momento.\nAvatares Raros e Lendários adultos botam ovos que podes listar aqui.',
+  'mkt.eggs.own':            'Teu',
+  'mkt.eggs.expires':        'Expira',
+  'mkt.eggs.seller':         'Vendedor',
+  'mkt.eggs.no_balance':     'Sem saldo',
+  'mkt.eggs.buy_btn':        '💎 Comprar',
+  'mkt.eggs.unlist_btn':     '✕ Retirar listagem',
+  'mkt.eggs.list_fee':       'Taxa de listagem: {fee} 💎 · 10% da venda → pool',
+  'mkt.eggs.price_invalid':  'Define um preço válido (mínimo 1 💎).',
+  'mkt.eggs.list_cost':      'Precisas de {cost} 💎 para listar este ovo.',
+  'mkt.eggs.listing':        'A listar...',
+  'mkt.eggs.not_in_inv':     'Ovo não encontrado no inventário.',
+  'mkt.eggs.listed':         '✅ Ovo {rarity} listado por {price} 💎!',
+  'mkt.eggs.list_err':       'Erro ao listar. Tenta novamente.',
+  'mkt.eggs.buy_err':        'Erro ao comprar ovo.',
+  'mkt.eggs.bought':         '✅ Ovo {rarity} {elem} adquirido! Vai para o teu inventário no jogo.',
+  'mkt.eggs.unavailable':    'Ovo já não disponível.',
+  'mkt.eggs.own_egg':        'Não podes comprar o teu próprio ovo.',
+  'mkt.eggs.buy_err2':       'Erro ao comprar ovo. Tenta novamente.',
+  'mkt.eggs.unauthorized':   'Não autorizado.',
+  'mkt.eggs.unlisted':       'Ovo retirado da venda e devolvido ao inventário.',
+
+  // Limit bar info
+  'mkt.limit.no_limit':        '{used} MATIC sacados hoje · Sem limite diário',
+  'mkt.limit.with_limit':      '{used} MATIC sacados hoje · {remaining} MATIC restantes (limite: 5 MATIC/dia)',
+
+  // Pool limit tiers
+  'mkt.pool.limit_1':          '📊 Limite actual: 1 venda/semana · Cresce com a pool',
+  'mkt.pool.limit_2':          '📊 Limite actual: 2 vendas/semana · Pool em crescimento',
+  'mkt.pool.limit_3':          '📊 Limite actual: 3 vendas/semana · Pool saudável',
+  'mkt.pool.limit_5':          '📊 Limite actual: 5 vendas/semana · Pool forte 💪',
+  'mkt.pool.weekly_dist':      'Distribuição semanal dinâmica:',
+  'mkt.pool.fees':             '100% das taxas do jogo alimentam esta pool.',
+  'mkt.pool.estimated':        '{pct}% estimado esta semana',
+  'mkt.pool.per_game':         'por jogo.',
+
+  // Transparency block — "Cofre"
+  'mkt.transp.vault_title':    '🏦 O Cofre (Smart Contract)',
+  'mkt.transp.crystal_title':  '💸 Comprar e Resgatar Cristais',
+  'mkt.transp.feed_title':     '⬆️ Como a Pool é Alimentada',
+  'mkt.transp.weekly_title':   '🏆 Distribuição Semanal (toda segunda-feira)',
+  'mkt.transp.eggs_title':     '🥚 Ovos — Queima e Venda para Pool',
+  'mkt.transp.exchange_title': '🔄 Câmbio Moedas → Cristais (Play-to-Earn)',
+}, {
+  // ════════════════════════════════════════════════════════════════
+  // ENGLISH
+  // ════════════════════════════════════════════════════════════════
+
+  // Navigation
+  'mkt.nav.account':          'My Account',
+  'mkt.nav.my_avatars':       'My Avatars',
+  'mkt.nav.market':           'Market',
+  'mkt.nav.buy_avatars':      'Buy Avatars',
+  'mkt.nav.buy_crystals':     'Buy Crystals',
+  'mkt.nav.buy_eggs':         'Buy Eggs',
+  'mkt.nav.info':             'Information',
+  'mkt.nav.pool':             'Pool & Transparency',
+
+  // Header
+  'mkt.logo.sub':             'Marketplace',
+  'mkt.btn.back':             '← Back\nto game',
+  'mkt.btn.logout':           '✕ LOGOUT',
+  'mkt.loading':              'Loading...',
+
+  // Auth
+  'mkt.auth.reset_hint':      'Send a recovery link to your email.',
+
+  // Browse
+  'mkt.browse.title':         '🛒 Buy Avatars',
+  'mkt.browse.sub':           'Rare and Legendary avatars listed by other players. Prices in 💎 Crystals.',
+  'mkt.browse.search_ph':     '🔍 Search name or element...',
+  'mkt.browse.rarity_all':    'Rarity: All',
+  'mkt.browse.elem_all':      'Element: All',
+  'mkt.browse.sort_recent':   'Most recent',
+  'mkt.browse.sort_asc':      'Price ↑',
+  'mkt.browse.sort_desc':     'Price ↓',
+  'mkt.browse.sort_level':    'Level ↓',
+  'mkt.browse.loading':       'Loading listings...',
+  'mkt.browse.empty':         'No avatars found.\nAdjust the filters or come back later.',
+
+  // Slots
+  'mkt.slots.title':          '🧬 My Avatars',
+  'mkt.slots.sub':            'Manage your avatar slots. The active slot is what you play in the main game.',
+
+  'mkt.slot.label':           'Slot {n}',
+  'mkt.slot.active':          'Active',
+  'mkt.slot.for_sale':        'For Sale',
+  'mkt.slot.hatching':        'Hatching',
+  'mkt.slot.hatching_title':  'Hatching…',
+  'mkt.slot.hatching_sub':    'Return to game\nto complete',
+  'mkt.slot.empty':           'Empty',
+  'mkt.slot.empty_sub':       'Hatch an egg\nin the game',
+  'mkt.slot.locked':          'Locked',
+  'mkt.slot.locked_cost':     '{cost} 💎 to unlock',
+  'mkt.slot.btn_activate':    '⚡ Activate',
+  'mkt.slot.btn_list':        '✦ List for Sale',
+  'mkt.slot.btn_burn':        '🔥 Burn',
+  'mkt.slot.frozen_label':    '❄️ Listed for sale',
+  'mkt.slot.btn_unlist':      '✕ Remove listing',
+  'mkt.slot.btn_unlock':      '🔓 Unlock Slot {n} — {cost} 💎',
+  'mkt.slot.max_unlocked':    'Maximum slots unlocked ({max})',
+
+  // Stat labels
+  'mkt.stat.nivel':           'Level',
+  'mkt.stat.xp':              'XP',
+  'mkt.stat.vinculo':         'Bond',
+  'mkt.stat.fase':            'Phase',
+  'mkt.stat.ovos':            'Eggs',
+  'mkt.stat.ovos_total':      'Eggs laid',
+  'mkt.stat.raros':           'Rare/Legendary',
+  'mkt.stat.nivel_abbr':      'Lv.{n}',
+
+  // Avatar card
+  'mkt.card.mine':            '⭐ Your avatar',
+  'mkt.card.by':              'By {addr}',
+
+  // Avatar detail
+  'mkt.detail.buy':           'Buy',
+  'mkt.detail.insufficient':  'Insufficient crystals',
+  'mkt.detail.close':         'Close',
+  'mkt.detail.unlist':        'Remove listing',
+
+  // Pool section
+  'mkt.pool.title':           '🔍 Pool & Transparency',
+  'mkt.pool.sub':             'Everything that enters and exits the pool is public. Here you can see the real-time status and how the Fractured Veil economy works.',
+  'mkt.pool.history':         '📋 Pool History',
+  'mkt.pool.legend_in':       '▲ Inflow',
+  'mkt.pool.legend_out':      '▼ Outflow',
+  'mkt.pool.load_more':       'Load more',
+  'mkt.pool.loading':         'Loading history...',
+  'mkt.pool.empty':           'No transactions yet.',
+  'mkt.pool.error':           'Error loading history.',
+  'mkt.pool.economy':         '◆ HOW THE ECONOMY WORKS',
+
+  // Pool widget stats
+  'mkt.pool.balance':         'Balance',
+  'mkt.pool.rare_egg':        'Rare Egg',
+  'mkt.pool.legendary_egg':   'Legendary Egg',
+  'mkt.pool.available':       'Available today',
+  'mkt.pool.empty_msg':       'Empty pool — coming soon! 🌱',
+  'mkt.pool.state_title':     'Current pool state',
+  'mkt.pool.total_in':        'Total in',
+  'mkt.pool.total_out':       'Total out',
+  'mkt.pool.price_sub':       'current buyback price',
+
+  // Crystals
+  'mkt.crystals.title':       '💎 Buy Crystals',
+  'mkt.crystals.sub':         '1 MATIC = 10 💎. Requires MetaMask to send the on-chain transaction.',
+  'mkt.crystals.buy_btn':     'Buy',
+  'mkt.crystals.popular':     'Most popular',
+  'mkt.crystals.redeem_title':'💸 Redeem Crystals → MATIC',
+  'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: 5 MATIC/day.',
+  'mkt.crystals.redeem_btn':  'Redeem',
+  'mkt.crystals.redeem_ph':   'Amount of 💎 (min. 10)',
+
+  // Package names
+  'mkt.pkg.0':                'Handful',
+  'mkt.pkg.1':                'Pouch',
+  'mkt.pkg.2':                'Bag',
+  'mkt.pkg.3':                'Chest',
+  'mkt.pkg.4':                'Treasure',
+
+  // MetaMask
+  'mkt.metamask.title':       '🦊 MetaMask required',
+  'mkt.metamask.sub':         'To buy or redeem Crystals with MATIC, link your MetaMask wallet. Your game progress is already safe — the wallet is only for payments.',
+  'mkt.metamask.btn':         'Link MetaMask',
+  'mkt.metamask.linked':      '🦊 MetaMask linked',
+  'mkt.metamask.not_found':   'MetaMask not found.',
+  'mkt.metamask.err':         'Error connecting MetaMask.',
+  'mkt.metamask.link_first':  'Link your MetaMask first.',
+  'mkt.metamask.limit_missing':'Link MetaMask in the Crystals section to see your limit.',
+  'mkt.metamask.limit_err':   'Could not verify your limit.',
+
+  // Eggs section
+  'mkt.eggs.title':           '🥚 Buy Eggs',
+  'mkt.eggs.sub':             'Rare and Legendary eggs listed by other players.',
+  'mkt.eggs.filter_ph':       '🔍 Filter by element...',
+  'mkt.eggs.loading':         'Loading eggs...',
+
+  // TX status
+  'mkt.tx.open_mm':           '⏳ Open MetaMask to confirm...',
+  'mkt.tx.sent':              '⏳ Transaction sent. Waiting for confirmation...',
+  'mkt.tx.crediting':         '⏳ Crediting your 💎...',
+  'mkt.tx.credited':          '✅ +{gems} 💎 credited! Balance: {balance} 💎',
+  'mkt.tx.not_credited':      '⚠️ Transaction confirmed but not credited: {err}',
+  'mkt.tx.credit_err':        '⚠️ Tx confirmed but credit error. Your 💎 will be recovered.',
+  'mkt.tx.gems_added':        '+{gems} 💎 Crystals added!',
+  'mkt.tx.min_gems':          'Minimum 10 💎, in multiples of 10.',
+  'mkt.tx.insufficient':      'Insufficient balance. You have {balance} 💎.',
+  'mkt.tx.insufficient_matic':'❌ Insufficient balance. You need at least {matic} MATIC in your Polygon wallet.',
+  'mkt.tx.exchange_hint':     'You can buy MATIC on an exchange (e.g. Binance, Crypto.com) and transfer to the Polygon network.',
+  'mkt.tx.insufficient_toast':'Insufficient balance — you need {matic} MATIC',
+  'mkt.tx.requesting':        '⏳ Requesting server authorization...',
+  'mkt.tx.open_mm_redeem':    '⏳ Open MetaMask to confirm the redeem...',
+  'mkt.tx.redeemed':          '✅ Redeemed! You received {matic} MATIC in your wallet.',
+  'mkt.tx.matic_sent':        '💸 {matic} MATIC sent!',
+  'mkt.tx.cancelled':         'Transaction cancelled.',
+  'mkt.tx.redeem_cancelled':  'Redeem cancelled. Your 💎 were restored by the server.',
+  'mkt.tx.redeem_err':        'Redeem error. Please try again.',
+  'mkt.tx.failed':            '❌ Transaction failed. Please try again.',
+  'mkt.tx.chain_fail':        '❌ Transaction failed on-chain. Contact support with the tx hash.',
+  'mkt.tx.general_err':       'Send error. Check your MATIC balance and try again.',
+  'mkt.tx.link_mm':           'Link MetaMask first.',
+
+  // Avatar toasts
+  'mkt.avatar.insufficient':  'Insufficient crystals.',
+  'mkt.avatar.no_slots':      'No slots available. Unlock more slots.',
+  'mkt.avatar.bought':        '✅ {name} acquired! (fee {tax}💎 → pool)',
+  'mkt.avatar.buy_err':       'Error buying avatar.',
+  'mkt.avatar.price_invalid': 'Invalid price.',
+  'mkt.avatar.list_cost':     'You need {cost} 💎 to list.',
+  'mkt.avatar.slot_invalid':  'Invalid slot.',
+  'mkt.avatar.listed':        '✅ Avatar listed for {price} 💎!',
+  'mkt.avatar.list_err':      'Error listing.',
+  'mkt.avatar.unlist_404':    'Listing not found.',
+  'mkt.avatar.unlist_err':    'Error removing listing.',
+  'mkt.avatar.unlisted':      'Listing cancelled. Avatar unlocked.',
+  'mkt.avatar.activated':     '✅ Active slot changed! Return to the game to play with this avatar.',
+  'mkt.avatar.unlock_cost':   'You need {cost} 💎.',
+  'mkt.avatar.max_slots':     'You already have the maximum number of slots.',
+  'mkt.avatar.unlocked':      '✅ Slot {n} unlocked!',
+
+  // Modals
+  'mkt.modal.list_egg.title':  '🥚 List Egg for Sale',
+  'mkt.modal.list_egg.sub':    'Set the price in 💎 Crystals. The egg will be removed from your inventory.',
+  'mkt.modal.list_egg.price':  'Price in 💎 Crystals',
+  'mkt.modal.list_egg.cancel': 'Cancel',
+  'mkt.modal.list_egg.confirm':'List',
+
+  'mkt.modal.list_av.title':   '📋 List Avatar',
+  'mkt.modal.list_av.sub':     'Set the price in 💎 Crystals. Listing costs 2 💎 and the avatar gets frozen.',
+  'mkt.modal.list_av.warn':    '⚠️ The avatar will be frozen: no vital decay, no XP, cannot play with it.',
+  'mkt.modal.list_av.price':   'Price in 💎 Crystals',
+  'mkt.modal.list_av.cancel':  'Cancel',
+  'mkt.modal.list_av.confirm': 'List for 2 💎',
+
+  'mkt.modal.burn.title':      '🔥 Burn Avatar',
+  'mkt.modal.burn.cancel':     'Cancel',
+  'mkt.modal.burn.confirm':    '🔥 Confirm Burn',
+
+  // Bottom nav
+  'mkt.bn.avatars':            'Avatars',
+  'mkt.bn.market':             'Market',
+  'mkt.bn.eggs':               'Eggs',
+  'mkt.bn.crystals':           'Crystals',
+  'mkt.bn.pool':               'Pool',
+
+  // Eggs — dynamic strings (eggs-market.js)
+  'mkt.eggs.empty':          'No eggs for sale right now.\nRare and Legendary adult avatars lay eggs you can list here.',
+  'mkt.eggs.own':            'Yours',
+  'mkt.eggs.expires':        'Expires',
+  'mkt.eggs.seller':         'Seller',
+  'mkt.eggs.no_balance':     'No balance',
+  'mkt.eggs.buy_btn':        '💎 Buy',
+  'mkt.eggs.unlist_btn':     '✕ Remove listing',
+  'mkt.eggs.list_fee':       'Listing fee: {fee} 💎 · 10% of sale → pool',
+  'mkt.eggs.price_invalid':  'Set a valid price (minimum 1 💎).',
+  'mkt.eggs.list_cost':      'You need {cost} 💎 to list this egg.',
+  'mkt.eggs.listing':        'Listing...',
+  'mkt.eggs.not_in_inv':     'Egg not found in inventory.',
+  'mkt.eggs.listed':         '✅ {rarity} egg listed for {price} 💎!',
+  'mkt.eggs.list_err':       'Error listing. Please try again.',
+  'mkt.eggs.buy_err':        'Error buying egg.',
+  'mkt.eggs.bought':         '✅ {rarity} {elem} egg acquired! It will appear in your in-game inventory.',
+  'mkt.eggs.unavailable':    'Egg no longer available.',
+  'mkt.eggs.own_egg':        "You can't buy your own egg.",
+  'mkt.eggs.buy_err2':       'Error buying egg. Please try again.',
+  'mkt.eggs.unauthorized':   'Not authorized.',
+  'mkt.eggs.unlisted':       'Egg removed from sale and returned to inventory.',
+
+  // Limit bar
+  'mkt.limit.no_limit':        '{used} MATIC redeemed today · No daily limit',
+  'mkt.limit.with_limit':      '{used} MATIC redeemed today · {remaining} MATIC remaining (limit: 5 MATIC/day)',
+
+  // Pool limit tiers
+  'mkt.pool.limit_1':          '📊 Current limit: 1 sale/week · Grows with the pool',
+  'mkt.pool.limit_2':          '📊 Current limit: 2 sales/week · Pool growing',
+  'mkt.pool.limit_3':          '📊 Current limit: 3 sales/week · Healthy pool',
+  'mkt.pool.limit_5':          '📊 Current limit: 5 sales/week · Strong pool 💪',
+  'mkt.pool.weekly_dist':      'Weekly dynamic distribution:',
+  'mkt.pool.fees':             '100% of game fees feed this pool.',
+  'mkt.pool.estimated':        '{pct}% estimated this week',
+  'mkt.pool.per_game':         'per game.',
+
+  // Transparency block titles
+  'mkt.transp.vault_title':    '🏦 The Vault (Smart Contract)',
+  'mkt.transp.crystal_title':  '💸 Buy and Redeem Crystals',
+  'mkt.transp.feed_title':     '⬆️ How the Pool is Fed',
+  'mkt.transp.weekly_title':   '🏆 Weekly Distribution (every Monday)',
+  'mkt.transp.eggs_title':     '🥚 Eggs — Burn and Sell to Pool',
+  'mkt.transp.exchange_title': '🔄 Coins → Crystals Exchange (Play-to-Earn)',
+});

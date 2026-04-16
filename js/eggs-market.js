@@ -57,7 +57,7 @@ function renderEggBrowse() {
   if(!list.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
       <div class="empty-icon">🥚</div>
-      <div class="empty-txt">Nenhum ovo à venda de momento.<br>Avatares Raros e Lendários adultos botam ovos que podes listar aqui.</div>
+      <div class="empty-txt">${t('mkt.eggs.empty').replace('\n','<br>')}</div>
     </div>`;
     return;
   }
@@ -76,23 +76,23 @@ function renderEggBrowse() {
     const elemCar   = CARACTERISTICAS_ELEMENTAIS?.[egg.elemento];
     const elemEmoji = elemCar ? elemCar.emoji : '✦';
     return `<div class="egg-mkt-card ${cls}">
-      ${isOwn ? '<div class="egg-mkt-own">Teu</div>' : ''}
+      ${isOwn ? `<div class="egg-mkt-own">${t('mkt.eggs.own')}</div>` : ''}
       <div class="egg-mkt-stripe"></div>
       <div class="egg-mkt-inner">
         <div class="egg-mkt-icon">${icon}</div>
         <div class="egg-mkt-pill">${elemEmoji} ${esc(egg.raridade)}</div>
         <div class="egg-mkt-elem">${esc(egg.elemento) || '—'}</div>
         <div class="egg-mkt-stats">
-          <div class="egg-mkt-stat"><span>Expira</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
-          <div class="egg-mkt-stat"><span>Vendedor</span><b>${seller}</b></div>
+          <div class="egg-mkt-stat"><span>${t('mkt.eggs.expires')}</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
+          <div class="egg-mkt-stat"><span>${t('mkt.eggs.seller')}</span><b>${seller}</b></div>
         </div>
         <div class="egg-mkt-price">💎 ${egg.price}</div>
         ${isOwn
           ? `<button class="btn-buy-egg-mkt" style="background:rgba(232,96,58,.15);color:var(--red2);border:1px solid rgba(232,96,58,.3);"
-               onclick="event.stopPropagation();unlistEgg('${egg.id}')">✕ Retirar listagem</button>`
+               onclick="event.stopPropagation();unlistEgg('${egg.id}')">${t('mkt.eggs.unlist_btn')}</button>`
           : `<button class="btn-buy-egg-mkt" ${!canBuy ? 'disabled' : ''}
                onclick="event.stopPropagation();buyEggFromMarket('${egg.id}')">
-               ${!playerData || playerData.cristais < egg.price ? 'Sem saldo' : '💎 Comprar'}
+               ${!playerData || playerData.cristais < egg.price ? t('mkt.eggs.no_balance') : t('mkt.eggs.buy_btn')}
              </button>`
         }
       </div>
@@ -115,7 +115,7 @@ function openListEggModal(ovoData) {
     <div class="egg-list-preview">
       <div class="egg-list-preview-icon">${icon}</div>
       <div class="egg-list-preview-name">${esc(ovoData.raridade)} · ${esc(ovoData.elemento)}</div>
-      <div class="egg-list-preview-sub">Taxa de listagem: ${EGG_LIST_FEE[ovoData.raridade] || 0} 💎 · 10% da venda → pool</div>
+      <div class="egg-list-preview-sub">${t('mkt.eggs.list_fee', {fee: EGG_LIST_FEE[ovoData.raridade] || 0})}</div>
     </div>`;
   document.getElementById('listEggPriceInput').value = '';
   document.getElementById('listEggStatus').textContent = '';
@@ -131,7 +131,7 @@ async function confirmListEgg() {
   if(!listingEggData || !walletAddress) return;
   const price = parseInt(document.getElementById('listEggPriceInput').value);
   if(!price || price < 1) {
-    document.getElementById('listEggStatus').textContent = 'Define um preço válido (mínimo 1 💎).';
+    document.getElementById('listEggStatus').textContent = t('mkt.eggs.price_invalid');
     return;
   }
 
@@ -140,11 +140,11 @@ async function confirmListEgg() {
 
   // Verificar saldo para a taxa de listagem
   if((playerData?.cristais || 0) < taxa) {
-    statusEl.textContent = `Precisas de ${taxa} 💎 para listar este ovo.`;
+    statusEl.textContent = t('mkt.eggs.list_cost', {cost: taxa});
     return;
   }
 
-  statusEl.textContent = 'A listar...';
+  statusEl.textContent = t('mkt.eggs.listing');
 
   try {
     // Lê dados frescos para evitar saldo desactualizado
@@ -153,14 +153,14 @@ async function confirmListEgg() {
     const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
 
     if(freshCristais < taxa) {
-      statusEl.textContent = `Precisas de ${taxa} 💎 para listar este ovo.`;
+      statusEl.textContent = t('mkt.eggs.list_cost', {cost: taxa});
       return;
     }
 
     const inboxEggs = freshData.inboxEggs || [];
     const ovoIdx = inboxEggs.findIndex(e => e.id === listingEggData.id);
     if(ovoIdx === -1) {
-      statusEl.textContent = 'Ovo não encontrado no inventário.';
+      statusEl.textContent = t('mkt.eggs.not_in_inv');
       return;
     }
     const ovoToRemove = inboxEggs[ovoIdx];
@@ -199,10 +199,10 @@ async function confirmListEgg() {
     if(taxa > 0) await addToPool(taxa, `listagem ovo ${listingEggData.raridade}`);
 
     closeListEggModal();
-    showToast(`✅ Ovo ${listingEggData.raridade} listado por ${price} 💎!`, 'ok');
+    showToast(t('mkt.eggs.listed', {rarity: listingEggData.raridade, price}), 'ok');
   } catch(e) {
     console.error(e);
-    statusEl.textContent = 'Erro ao listar. Tenta novamente.';
+    statusEl.textContent = t('mkt.eggs.list_err');
   }
 }
 
@@ -220,19 +220,19 @@ async function buyEggFromMarket(listingId) {
       body:    JSON.stringify({ listingId, idToken }),
     });
     const data = await resp.json();
-    if(!resp.ok) { showToast(data.erro || 'Erro ao comprar ovo.', 'err'); return; }
+    if(!resp.ok) { showToast(data.erro || t('mkt.eggs.buy_err'), 'err'); return; }
 
     playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
     updateCristaisDisplay();
 
-    showToast(`✅ Ovo ${esc(data.raridade)} ${esc(data.elemento)} adquirido! Vai para o teu inventário no jogo.`, 'ok');
+    showToast(t('mkt.eggs.bought', {rarity: esc(data.raridade), elem: esc(data.elemento)}), 'ok');
   } catch(e) {
-    if(e.message === 'NOT_AVAILABLE') showToast('Ovo já não disponível.', 'err');
-    else if(e.message === 'OWN_EGG')  showToast('Não podes comprar o teu próprio ovo.', 'err');
-    else if(e.message === 'INSUFFICIENT') showToast('Cristais insuficientes.', 'err');
-    else { console.error(e); showToast('Erro ao comprar ovo. Tenta novamente.', 'err'); }
+    if(e.message === 'NOT_AVAILABLE') showToast(t('mkt.eggs.unavailable'), 'err');
+    else if(e.message === 'OWN_EGG')  showToast(t('mkt.eggs.own_egg'), 'err');
+    else if(e.message === 'INSUFFICIENT') showToast(t('mkt.avatar.insufficient'), 'err');
+    else { console.error(e); showToast(t('mkt.eggs.buy_err2'), 'err'); }
   }
 }
 
@@ -260,9 +260,9 @@ async function unlistEgg(listingId) {
   try {
     const listRef  = db.collection('eggMarket').doc(listingId);
     const listSnap = await listRef.get();
-    if(!listSnap.exists) { showToast('Listagem não encontrada.','err'); return; }
+    if(!listSnap.exists) { showToast(t('mkt.avatar.unlist_404'),'err'); return; }
     const egg = listSnap.data();
-    if(egg.sellerId !== walletAddress) { showToast('Não autorizado.','err'); return; }
+    if(egg.sellerId !== walletAddress) { showToast(t('mkt.eggs.unauthorized'),'err'); return; }
 
     // Devolve ovo ao inboxEggs e apaga listagem em batch atómico
     const ovoRestaurado = {
@@ -278,9 +278,9 @@ async function unlistEgg(listingId) {
     unlistBatch.delete(listRef);
     await unlistBatch.commit();
 
-    showToast('Ovo retirado da venda e devolvido ao inventário.', 'ok');
+    showToast(t('mkt.eggs.unlisted'), 'ok');
   } catch(e) {
     console.error(e);
-    showToast('Erro ao retirar listagem.', 'err');
+    showToast(t('mkt.avatar.unlist_err'), 'err');
   }
 }

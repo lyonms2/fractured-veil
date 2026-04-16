@@ -21,11 +21,7 @@ function _faseNum(nivel) {
 }
 
 function getFaseNome(nivel) {
-  const n = nivel || 1;
-  if(n < 5)  return 'BEBÊ';
-  if(n < 10) return 'CRIANÇA';
-  if(n < 17) return 'JOVEM';
-  return 'ADULTO';
+  return t('fases')[_faseNum(nivel)];
 }
 
 function getFaseCor(nivel) {
@@ -76,7 +72,7 @@ function renderBrowse() {
   if(sort === 'recent')     filtered.sort((a,b) => (b.listedAt?.seconds||0) - (a.listedAt?.seconds||0));
 
   if(filtered.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌌</div><div class="empty-txt">Nenhum avatar encontrado.<br>Ajusta os filtros ou volta mais tarde.</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌌</div><div class="empty-txt">${t('mkt.browse.empty').replace('\n','<br>')}</div></div>`;
     return;
   }
 
@@ -108,13 +104,13 @@ function buildListingCard(l) {
       ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
       <div class="av-pill ${l.raridade}">${elemEmoji} ${esc(l.elemento)} · ${esc(l.raridade)}</div>
       <div class="av-stats">
-        <div class="av-stat"><b>${l.nivel||1}</b>Nível</div>
-        <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>Vínculo</div>
-        <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>Fase</div>
-        <div class="av-stat"><b>${l.totalOvos||0}</b>Ovos</div>
+        <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
+        <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
+        <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>${t('mkt.stat.fase')}</div>
+        <div class="av-stat"><b>${l.totalOvos||0}</b>${t('mkt.stat.ovos')}</div>
       </div>
       <div class="av-price">💎 ${l.price}</div>
-      <div class="av-seller">${isMine ? '⭐ O teu avatar' : `Por ${sellerShort}`}</div>
+      <div class="av-seller">${isMine ? t('mkt.card.mine') : t('mkt.card.by', {addr: sellerShort})}</div>
     </div>
   </div>`;
 }
@@ -141,22 +137,22 @@ async function openDetail(listingId) {
       </div>
     </div>
     <div class="detail-stats-grid">
-      <div class="detail-stat">Nível <b>${l.nivel||1}</b></div>
-      <div class="detail-stat">XP <b>${Math.floor(l.xp||0)}</b></div>
-      <div class="detail-stat">Vínculo <b>${Math.floor(l.vinculo||0)}</b></div>
-      <div class="detail-stat">Fase <b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b></div>
-      <div class="detail-stat">Ovos botados <b>${l.totalOvos||0}</b></div>
-      <div class="detail-stat">Raros/Lendários <b>${l.totalRaros||0}</b></div>
+      <div class="detail-stat">${t('mkt.stat.nivel')} <b>${l.nivel||1}</b></div>
+      <div class="detail-stat">${t('mkt.stat.xp')} <b>${Math.floor(l.xp||0)}</b></div>
+      <div class="detail-stat">${t('mkt.stat.vinculo')} <b>${Math.floor(l.vinculo||0)}</b></div>
+      <div class="detail-stat">${t('mkt.stat.fase')} <b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b></div>
+      <div class="detail-stat">${t('mkt.stat.ovos_total')} <b>${l.totalOvos||0}</b></div>
+      <div class="detail-stat">${t('mkt.stat.raros')} <b>${l.totalRaros||0}</b></div>
     </div>
     ${bonusText ? `<div class="detail-bonus">✨ ${bonusText}</div>` : ''}
     <div class="detail-price-row">
       <div class="detail-price">💎 ${l.price}</div>
       ${isMine
-        ? `<button class="btn-buy-avatar" style="background:var(--red)" onclick="unlistAvatar('${l.id}')">Retirar listagem</button>`
-        : `<button class="btn-buy-avatar" ${canBuy?'':'disabled'} onclick="buyAvatar('${l.id}',${l.price})">${canBuy?'Comprar':'Cristais insuficientes'}</button>`
+        ? `<button class="btn-buy-avatar" style="background:var(--red)" onclick="unlistAvatar('${l.id}')">${t('mkt.detail.unlist')}</button>`
+        : `<button class="btn-buy-avatar" ${canBuy?'':'disabled'} onclick="buyAvatar('${l.id}',${l.price})">${canBuy?t('mkt.detail.buy'):t('mkt.detail.insufficient')}</button>`
       }
     </div>
-    <div style="text-align:right;"><button class="btn-modal-cancel" onclick="closeDetail()">Fechar</button></div>
+    <div style="text-align:right;"><button class="btn-modal-cancel" onclick="closeDetail()">${t('mkt.detail.close')}</button></div>
   `;
   document.getElementById('avatarDetailOverlay').classList.add('open');
 }
@@ -169,9 +165,9 @@ function closeDetail() {
 // COMPRAR AVATAR
 // ═══════════════════════════════════════════
 async function buyAvatar(listingId, price) {
-  if(!playerData || playerData.cristais < price) { showToast('Cristais insuficientes.','err'); return; }
+  if(!playerData || playerData.cristais < price) { showToast(t('mkt.avatar.insufficient'),'err'); return; }
   const freeIdx = playerData.avatarSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
-  if(freeIdx === -1) { showToast('Sem slots disponíveis. Desbloqueia mais slots.','err'); return; }
+  if(freeIdx === -1) { showToast(t('mkt.avatar.no_slots'),'err'); return; }
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -181,7 +177,7 @@ async function buyAvatar(listingId, price) {
       body:    JSON.stringify({ listingId, idToken }),
     });
     const data = await resp.json();
-    if(!resp.ok) { showToast(data.erro || 'Erro ao comprar avatar.', 'err'); return; }
+    if(!resp.ok) { showToast(data.erro || t('mkt.avatar.buy_err'), 'err'); return; }
 
     playerData.avatarSlots = data.slots;
     playerData.cristais    = data.novoSaldo;
@@ -191,11 +187,11 @@ async function buyAvatar(listingId, price) {
 
     const taxa = Math.round(price * TAXA_MARKETPLACE);
     closeDetail();
-    showToast(`✅ ${data.nome} adquirido! (taxa ${taxa}💎 → pool)`, 'ok');
+    showToast(t('mkt.avatar.bought', {name: data.nome, tax: taxa}), 'ok');
     showSection('slots');
   } catch(e) {
     console.error(e);
-    showToast('Erro ao comprar avatar.', 'err');
+    showToast(t('mkt.avatar.buy_err'), 'err');
   }
 }
 
@@ -210,7 +206,7 @@ function openListModal(slotIdx) {
       ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:11px;">${s.nome}</div>
-        <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · Nv.${s.nivel||1}</div>
+        <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
   document.getElementById('listPriceInput').value = '';
@@ -224,8 +220,8 @@ function closeListModal() {
 
 async function confirmList() {
   const price = parseInt(document.getElementById('listPriceInput').value);
-  if(!price || price < 1) { showToast('Preço inválido.','err'); return; }
-  if(playerData.cristais < LIST_COST) { showToast(`Precisas de ${LIST_COST} 💎 para listar.`,'err'); return; }
+  if(!price || price < 1) { showToast(t('mkt.avatar.price_invalid'),'err'); return; }
+  if(playerData.cristais < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
   if(listingSlotIdx === null) return;
 
   try {
@@ -233,11 +229,11 @@ async function confirmList() {
     const freshSnap = await db.collection('players').doc(walletAddress).get();
     const freshData = freshSnap.data() || {};
     const freshCristais = freshData.gs?.cristais ?? freshData.cristais ?? 0;
-    if(freshCristais < LIST_COST) { showToast(`Precisas de ${LIST_COST} 💎 para listar.`,'err'); return; }
+    if(freshCristais < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
 
     const freshSlots = freshData.avatarSlots || playerData.avatarSlots;
     const s = freshSlots[listingSlotIdx];
-    if(!s) { showToast('Slot inválido.','err'); return; }
+    if(!s) { showToast(t('mkt.avatar.slot_invalid'),'err'); return; }
 
     const newCristais = freshCristais - LIST_COST;
     freshSlots[listingSlotIdx].listed = true;
@@ -282,11 +278,11 @@ async function confirmList() {
     await addToPool(LIST_COST, 'listagem avatar');
 
     closeListModal();
-    showToast(`✅ Avatar listado por ${price} 💎!`, 'ok');
+    showToast(t('mkt.avatar.listed', {price}), 'ok');
     showSection('slots');
   } catch(e) {
     console.error(e);
-    showToast('Erro ao listar.','err');
+    showToast(t('mkt.avatar.list_err'),'err');
   }
 }
 
@@ -298,10 +294,10 @@ async function unlistFromSlot(slotIdx) {
       .where('slotIdx','==',slotIdx)
       .where('status','==','listed')
       .limit(1).get();
-    if(snap.empty) { showToast('Listagem não encontrada.','err'); return; }
+    if(snap.empty) { showToast(t('mkt.avatar.unlist_404'),'err'); return; }
     await unlistAvatar(snap.docs[0].id);
   } catch(e) {
-    showToast('Erro ao retirar listagem.','err');
+    showToast(t('mkt.avatar.unlist_err'),'err');
   }
 }
 
@@ -324,9 +320,9 @@ async function unlistAvatar(listingId) {
     playerData.avatarSlots = freshSlots2;
 
     closeDetail();
-    showToast('Listagem cancelada. Avatar desbloqueado.', 'ok');
+    showToast(t('mkt.avatar.unlisted'), 'ok');
   } catch(e) {
-    showToast('Erro ao retirar listagem.','err');
+    showToast(t('mkt.avatar.unlist_err'),'err');
   }
 }
 
@@ -353,13 +349,13 @@ function renderSlots() {
       html += `<div class="slot-card" style="border-style:${isPending?'solid':'dashed'};border-color:${isPending?'var(--border2)':'var(--border)'};">
         <div class="slot-stripe" style="background:${isPending?'var(--gold)':'transparent'};"></div>
         <div class="slot-header">
-          <div class="slot-label">Slot ${i+1}</div>
-          ${isPending ? '<div class="slot-badge" style="background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);">A chocar</div>' : ''}
+          <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
+          ${isPending ? `<div class="slot-badge" style="background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);">${t('mkt.slot.hatching')}</div>` : ''}
         </div>
         <div class="slot-empty-wrap">
           <div class="slot-empty-icon">${isPending ? '🥚' : '🌀'}</div>
-          <div class="slot-empty-title">${isPending ? 'A chocar…' : 'Vazio'}</div>
-          <div class="slot-empty-txt">${isPending ? 'Volta ao jogo<br>para completar' : 'Choca um ovo<br>no jogo'}</div>
+          <div class="slot-empty-title">${isPending ? t('mkt.slot.hatching_title') : t('mkt.slot.empty')}</div>
+          <div class="slot-empty-txt">${isPending ? t('mkt.slot.hatching_sub').replace('\n','<br>') : t('mkt.slot.empty_sub').replace('\n','<br>')}</div>
         </div>
       </div>`;
     } else {
@@ -370,9 +366,9 @@ function renderSlots() {
       html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
         <div class="slot-stripe ${s.raridade}"></div>
         <div class="slot-header">
-          <div class="slot-label">Slot ${i+1}</div>
-          ${isActive ? '<div class="slot-badge active">Activo</div>' : ''}
-          ${isFrozen ? '<div class="slot-badge frozen">À venda</div>' : ''}
+          <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
+          ${isActive ? `<div class="slot-badge active">${t('mkt.slot.active')}</div>` : ''}
+          ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
           onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}')">
@@ -389,20 +385,20 @@ function renderSlots() {
           <div class="slot-av-sub">${_ss}</div>
           <div class="slot-av-pill ${s.raridade}">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
           <div class="slot-stats">
-            <div class="slot-stat"><b>${s.nivel||1}</b><span>Nível</span></div>
-            <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>Vínculo</span></div>
-            <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>Fase</span></div>
+            <div class="slot-stat"><b>${s.nivel||1}</b><span>${t('mkt.stat.nivel')}</span></div>
+            <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
+            <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
           ${!isActive && !isFrozen ? `
           <div class="slot-actions">
-            <button class="btn-slot-activate" onclick="activateSlot(${i})">⚡ Activar</button>
-            ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">✦ Listar à Venda</button>` : ''}
-            <button class="btn-slot-burn" onclick="burnAvatar(${i})">🔥 Queimar</button>
+            <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_activate')}</button>
+            ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>` : ''}
+            <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>
           </div>` : ''}
           ${isFrozen ? `
           <div class="slot-actions">
-            <div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;padding:4px 0;">❄️ Listado à venda</div>
-            <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">✕ Retirar listagem</button>
+            <div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;padding:4px 0;">${t('mkt.slot.frozen_label')}</div>
+            <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">${t('mkt.slot.btn_unlist')}</button>
           </div>` : ''}
         </div>
       </div>`;
@@ -414,12 +410,12 @@ function renderSlots() {
     html += `<div class="slot-card slot-locked">
       <div class="slot-stripe" style="background:transparent;"></div>
       <div class="slot-header">
-        <div class="slot-label">Slot ${i+1}</div>
+        <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
       </div>
       <div class="slot-empty-wrap">
         <div class="slot-locked-icon">🔒</div>
-        <div class="slot-empty-title">Bloqueado</div>
-        <div class="slot-locked-cost">${UNLOCK_SLOT_COST} 💎 para desbloquear</div>
+        <div class="slot-empty-title">${t('mkt.slot.locked')}</div>
+        <div class="slot-locked-cost">${t('mkt.slot.locked_cost', {cost: UNLOCK_SLOT_COST})}</div>
       </div>
     </div>`;
   }
@@ -429,10 +425,10 @@ function renderSlots() {
   // Unlock button
   if(unlocked < MAX_SLOTS) {
     unlockRow.innerHTML = `<button class="btn-unlock-slot" onclick="unlockSlot()">
-      🔓 Desbloquear Slot ${unlocked+1} — ${UNLOCK_SLOT_COST} 💎
+      ${t('mkt.slot.btn_unlock', {n: unlocked+1, cost: UNLOCK_SLOT_COST})}
     </button>`;
   } else {
-    unlockRow.innerHTML = `<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">Slots máximos desbloqueados (${MAX_SLOTS})</div>`;
+    unlockRow.innerHTML = `<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">${t('mkt.slot.max_unlocked', {max: MAX_SLOTS})}</div>`;
   }
 }
 
@@ -444,7 +440,7 @@ async function activateSlot(idx) {
   playerData.activeSlotIdx = idx;
   if(!playerData.gs) playerData.gs = {};
   playerData.gs.activeSlotIdx = idx;
-  showToast('✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.', 'ok');
+  showToast(t('mkt.avatar.activated'), 'ok');
   renderSlots();
 }
 
@@ -467,7 +463,7 @@ function burnAvatar(idx) {
       ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
       <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
       ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
-      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · Nível ${s.nivel||1}</div>
+      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
     </div>`;
 
   document.getElementById('burnOverlay').classList.add('open');
@@ -498,9 +494,9 @@ async function unlockSlot() {
   // Re-read cristais from Firebase to avoid stale data
   const snap = await db.collection('players').doc(walletAddress).get();
   const freshCristais = snap.data()?.gs?.cristais ?? snap.data()?.cristais ?? 0;
-  if(freshCristais < UNLOCK_SLOT_COST) { showToast(`Precisas de ${UNLOCK_SLOT_COST} 💎.`,'err'); return; }
+  if(freshCristais < UNLOCK_SLOT_COST) { showToast(t('mkt.avatar.unlock_cost', {cost: UNLOCK_SLOT_COST}),'err'); return; }
   const unlocked = getUnlockedSlots();
-  if(unlocked >= MAX_SLOTS) { showToast('Já tens o máximo de slots.','err'); return; }
+  if(unlocked >= MAX_SLOTS) { showToast(t('mkt.avatar.max_slots'),'err'); return; }
 
   const newCristais   = freshCristais - UNLOCK_SLOT_COST;
   const newExtraSlots = (playerData.extraSlots||0) + 1;
@@ -520,6 +516,6 @@ async function unlockSlot() {
   while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
 
   updateCristaisDisplay();
-  showToast(`✅ Slot ${getUnlockedSlots()} desbloqueado!`, 'ok');
+  showToast(t('mkt.avatar.unlocked', {n: getUnlockedSlots()}), 'ok');
   renderSlots();
 }

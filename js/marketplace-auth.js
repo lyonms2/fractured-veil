@@ -33,22 +33,22 @@ async function mktLogin() {
   const errEl = document.getElementById('mktAuthError');
   const btn   = document.getElementById('mktLoginBtn');
 
-  if(!email || !senha) { errEl.textContent = 'Preenche e-mail e senha.'; return; }
-  btn.disabled = true; btn.textContent = 'ENTRANDO...';
+  if(!email || !senha) { errEl.textContent = t('auth.fill_fields'); return; }
+  btn.disabled = true; btn.textContent = t('auth.btn.logging_in');
   errEl.textContent = '';
 
   try {
     await fbAuthMkt().signInWithEmailAndPassword(email, senha);
   } catch(e) {
-    btn.disabled = false; btn.textContent = 'ENTRAR';
+    btn.disabled = false; btn.textContent = t('auth.btn.login');
     const msgs = {
-      'auth/user-not-found':    'E-mail não encontrado.',
-      'auth/wrong-password':    'Senha incorreta.',
-      'auth/invalid-email':     'E-mail inválido.',
-      'auth/too-many-requests': 'Muitas tentativas. Tenta mais tarde.',
-      'auth/invalid-credential':'E-mail ou senha incorretos.',
+      'auth/user-not-found':    t('auth.error.not_found'),
+      'auth/wrong-password':    t('auth.error.wrong_pass'),
+      'auth/invalid-email':     t('auth.error.invalid_email'),
+      'auth/too-many-requests': t('auth.error.too_many'),
+      'auth/invalid-credential':t('auth.error.invalid_cred'),
     };
-    errEl.textContent = msgs[e.code] || 'Erro ao entrar.';
+    errEl.textContent = msgs[e.code] || t('auth.error.login');
   }
 }
 
@@ -60,23 +60,23 @@ async function mktRegistrar() {
   const errEl  = document.getElementById('mktAuthError');
   const btn    = document.getElementById('mktRegBtn');
 
-  if(!email || !senha)  { errEl.textContent = 'Preenche todos os campos.'; return; }
-  if(senha !== senha2)  { errEl.textContent = 'As senhas não coincidem.'; return; }
-  if(senha.length < 6)  { errEl.textContent = 'Senha deve ter pelo menos 6 caracteres.'; return; }
+  if(!email || !senha)  { errEl.textContent = t('auth.reg.fill_all'); return; }
+  if(senha !== senha2)  { errEl.textContent = t('auth.reg.pass_mismatch'); return; }
+  if(senha.length < 6)  { errEl.textContent = t('auth.reg.pass_short'); return; }
 
-  btn.disabled = true; btn.textContent = 'CRIANDO...';
+  btn.disabled = true; btn.textContent = t('auth.btn.creating');
   errEl.textContent = '';
 
   try {
     await fbAuthMkt().createUserWithEmailAndPassword(email, senha);
   } catch(e) {
-    btn.disabled = false; btn.textContent = 'CRIAR CONTA';
+    btn.disabled = false; btn.textContent = t('auth.btn.create');
     const msgs = {
-      'auth/email-already-in-use': 'Este e-mail já está em uso.',
-      'auth/invalid-email':        'E-mail inválido.',
-      'auth/weak-password':        'Senha muito fraca.',
+      'auth/email-already-in-use': t('auth.reg.email_in_use'),
+      'auth/invalid-email':        t('auth.error.invalid_email'),
+      'auth/weak-password':        t('auth.reg.weak_pass'),
     };
-    errEl.textContent = msgs[e.code] || 'Erro ao criar conta.';
+    errEl.textContent = msgs[e.code] || t('auth.reg.error');
   }
 }
 
@@ -86,18 +86,18 @@ async function mktResetSenha() {
   const errEl = document.getElementById('mktAuthError');
   const btn   = document.getElementById('mktResetBtn');
 
-  if(!email) { errEl.textContent = 'Insere o teu e-mail.'; return; }
-  btn.disabled = true; btn.textContent = 'ENVIANDO...';
+  if(!email) { errEl.textContent = t('auth.reset.fill'); return; }
+  btn.disabled = true; btn.textContent = t('auth.btn.sending');
 
   try {
     await fbAuthMkt().sendPasswordResetEmail(email);
     errEl.style.color = '#7ab87a';
-    errEl.textContent = '✓ E-mail de recuperação enviado!';
-    btn.textContent = 'ENVIADO ✓';
+    errEl.textContent = t('auth.reset.sent');
+    btn.textContent = t('auth.btn.sent');
   } catch(e) {
-    btn.disabled = false; btn.textContent = 'ENVIAR E-MAIL';
+    btn.disabled = false; btn.textContent = t('auth.btn.send_email');
     errEl.style.color = '';
-    errEl.textContent = e.code === 'auth/user-not-found' ? 'E-mail não encontrado.' : 'Erro ao enviar.';
+    errEl.textContent = e.code === 'auth/user-not-found' ? t('auth.reset.not_found') : t('auth.reset.error');
   }
 }
 
@@ -151,7 +151,7 @@ function iniciarMktAuth() {
 // ── Vincular MetaMask ao uid (para comprar/resgatar cristais) ─────
 async function vincularCarteira() {
   if(typeof window.ethereum === 'undefined') {
-    showToast('MetaMask não encontrada.', 'err'); return;
+    showToast(t('mkt.metamask.not_found'), 'err'); return;
   }
   try {
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
@@ -172,7 +172,7 @@ async function vincularCarteira() {
     showToast(`✅ MetaMask vinculada: ${endereco.slice(0,6)}...${endereco.slice(-4)}`, 'ok');
     return endereco;
   } catch(e) {
-    if(e.code !== 4001) showToast('Erro ao conectar MetaMask.', 'err');
+    if(e.code !== 4001) showToast(t('mkt.metamask.err'), 'err');
     return null;
   }
 }
@@ -193,7 +193,7 @@ async function garantirCarteira() {
   } catch(e) {}
 
   // Não tem carteira vinculada — pede ao utilizador
-  showToast('Vincula a tua MetaMask primeiro.', 'err');
+  showToast(t('mkt.metamask.link_first'), 'err');
   return null;
 }
 

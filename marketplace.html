@@ -438,7 +438,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 <!-- ══ LOADING OVERLAY ══ -->
 <div id="loadingWall" style="position:fixed;inset:0;background:rgba(4,3,10,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:300;">
   <div style="width:32px;height:32px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
-  <div style="font-family:'Cinzel',serif;font-size:12px;color:#6b7280;letter-spacing:1px;">A carregar...</div>
+  <div style="font-family:'Cinzel',serif;font-size:12px;color:#6b7280;letter-spacing:1px;" data-i18n="mkt.loading">A carregar...</div>
 </div>
 
 <!-- ══ CONNECT WALL — Login por email ══ -->
@@ -449,36 +449,40 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
     <!-- Abas -->
     <div style="display:flex;gap:0;margin:0 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
-      <button id="mktAuthTabLogin" class="auth-tab active" onclick="mktAuthShowTab('login')">ENTRAR</button>
-      <button id="mktAuthTabReg"   class="auth-tab"        onclick="mktAuthShowTab('register')">CRIAR CONTA</button>
+      <button id="mktAuthTabLogin" class="auth-tab active" onclick="mktAuthShowTab('login')" data-i18n="auth.tab.login">ENTRAR</button>
+      <button id="mktAuthTabReg"   class="auth-tab"        onclick="mktAuthShowTab('register')" data-i18n="auth.tab.register">CRIAR CONTA</button>
     </div>
 
     <!-- Form Login -->
     <div id="mktAuthFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
       <input id="mktLoginEmail" type="email"    placeholder="E-mail"  class="auth-input"
+        data-i18n-ph="auth.ph.email"
         onkeydown="if(event.key==='Enter')document.getElementById('mktLoginSenha').focus()"/>
       <input id="mktLoginSenha" type="password" placeholder="Senha"   class="auth-input"
+        data-i18n-ph="auth.ph.password"
         onkeydown="if(event.key==='Enter')mktLogin()"/>
-      <button id="mktLoginBtn" class="auth-btn-primary" onclick="mktLogin()">ENTRAR</button>
-      <button class="auth-btn-link" onclick="mktAuthShowReset()">Esqueci a senha</button>
+      <button id="mktLoginBtn" class="auth-btn-primary" onclick="mktLogin()" data-i18n="auth.btn.login">ENTRAR</button>
+      <button class="auth-btn-link" onclick="mktAuthShowReset()" data-i18n="auth.link.forgot">Esqueci a senha</button>
     </div>
 
     <!-- Form Registro -->
     <div id="mktAuthFormReg" style="display:none;flex-direction:column;gap:8px;width:100%;">
-      <input id="mktRegEmail"  type="email"    placeholder="E-mail"                    class="auth-input"/>
-      <input id="mktRegSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input"/>
+      <input id="mktRegEmail"  type="email"    placeholder="E-mail"                    class="auth-input" data-i18n-ph="auth.ph.email"/>
+      <input id="mktRegSenha"  type="password" placeholder="Senha (mín. 6 caracteres)" class="auth-input" data-i18n-ph="auth.ph.password_min"/>
       <input id="mktRegSenha2" type="password" placeholder="Confirmar senha"            class="auth-input"
+        data-i18n-ph="auth.ph.password_confirm"
         onkeydown="if(event.key==='Enter')mktRegistrar()"/>
-      <button id="mktRegBtn" class="auth-btn-green" onclick="mktRegistrar()">CRIAR CONTA</button>
+      <button id="mktRegBtn" class="auth-btn-green" onclick="mktRegistrar()" data-i18n="auth.btn.create">CRIAR CONTA</button>
     </div>
 
     <!-- Form Reset -->
     <div id="mktAuthFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
-      <div style="font-size:11px;color:var(--text2);text-align:center;line-height:1.6;">Envia um link de recuperação para o teu e-mail.</div>
+      <div style="font-size:11px;color:var(--text2);text-align:center;line-height:1.6;" data-i18n="mkt.auth.reset_hint">Envia um link de recuperação para o teu e-mail.</div>
       <input id="mktResetEmail" type="email" placeholder="E-mail" class="auth-input"
+        data-i18n-ph="auth.ph.email"
         onkeydown="if(event.key==='Enter')mktResetSenha()"/>
-      <button id="mktResetBtn" class="auth-btn-primary" onclick="mktResetSenha()">ENVIAR E-MAIL</button>
-      <button class="auth-btn-link" onclick="mktAuthShowTab('login')">← Voltar</button>
+      <button id="mktResetBtn" class="auth-btn-primary" onclick="mktResetSenha()" data-i18n="auth.btn.send_email">ENVIAR E-MAIL</button>
+      <button class="auth-btn-link" onclick="mktAuthShowTab('login')" data-i18n="auth.link.back">← Voltar</button>
     </div>
 
     <div id="mktAuthError" style="font-size:10px;color:#e74c3c;text-align:center;min-height:14px;margin-top:6px;"></div>
@@ -500,8 +504,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <span id="hdrWallet">—</span>
     </div>
     <button class="mkt-back" onclick="setLang(window._currentLang==='pt'?'en':'pt')" title="Language / Idioma" id="btnLangMkt" style="min-width:48px;">🌐 EN</button>
-    <button class="mkt-back" onclick="mktLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red2);">✕ SAIR</button>
-    <a href="index.html" class="mkt-back" style="text-align:center;line-height:1.3;">← Voltar<br>ao jogo</a>
+    <button class="mkt-back" onclick="mktLogout()" style="border-color:rgba(239,68,68,.3);color:var(--red2);" data-i18n="mkt.btn.logout">✕ SAIR</button>
+    <a href="index.html" class="mkt-back" style="text-align:center;line-height:1.3;" data-i18n="mkt.btn.back">← Voltar<br>ao jogo</a>
   </div>
 </header>
 
@@ -510,23 +514,23 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
   <!-- SIDEBAR -->
   <nav class="mkt-sidebar">
-    <div class="mkt-nav-section">Minha Conta</div>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.account">Minha Conta</div>
     <button class="mkt-nav-btn active" onclick="showSection('slots')" id="nav-slots">
-      <span class="nav-icon">🧬</span> Meus Avatares
+      <span class="nav-icon">🧬</span><span data-i18n="mkt.nav.my_avatars"> Meus Avatares</span>
     </button>
-    <div class="mkt-nav-section">Mercado</div>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.market">Mercado</div>
     <button class="mkt-nav-btn" onclick="showSection('browse')" id="nav-browse">
-      <span class="nav-icon">🛒</span> Comprar Avatares
+      <span class="nav-icon">🛒</span><span data-i18n="mkt.nav.buy_avatars"> Comprar Avatares</span>
     </button>
     <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
-      <span class="nav-icon">💎</span> Comprar Cristais
+      <span class="nav-icon">💎</span><span data-i18n="mkt.nav.buy_crystals"> Comprar Cristais</span>
     </button>
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
-      <span class="nav-icon">🥚</span> Comprar Ovos
+      <span class="nav-icon">🥚</span><span data-i18n="mkt.nav.buy_eggs"> Comprar Ovos</span>
     </button>
-    <div class="mkt-nav-section">Informação</div>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
-      <span class="nav-icon">🔍</span> Pool & Transparência
+      <span class="nav-icon">🔍</span><span data-i18n="mkt.nav.pool"> Pool & Transparência</span>
     </button>
   </nav>
 
@@ -535,68 +539,69 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
     <!-- ── EXPLORAR ── -->
     <div class="mkt-section" id="sec-browse">
-      <div class="section-title">🛒 Comprar Avatares</div>
-      <div class="section-sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
+      <div class="section-title" data-i18n="mkt.browse.title">🛒 Comprar Avatares</div>
+      <div class="section-sub" data-i18n="mkt.browse.sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
       <div class="filters-row">
-        <input class="search-input" id="filterSearch" placeholder="🔍 Procurar nome ou elemento..." oninput="applyFilters()"/>
+        <input class="search-input" id="filterSearch" placeholder="🔍 Procurar nome ou elemento..."
+          data-i18n-ph="mkt.browse.search_ph" oninput="applyFilters()"/>
         <select class="filter-select" id="filterRarity" onchange="applyFilters()">
-          <option value="">Raridade: Todas</option>
+          <option value="" data-i18n="mkt.browse.rarity_all">Raridade: Todas</option>
           <option value="Raro">Raro</option>
           <option value="Lendário">Lendário</option>
         </select>
         <select class="filter-select" id="filterElem" onchange="applyFilters()">
-          <option value="">Elemento: Todos</option>
+          <option value="" data-i18n="mkt.browse.elem_all">Elemento: Todos</option>
           <option>Fogo</option><option>Água</option><option>Terra</option>
           <option>Vento</option><option>Eletricidade</option><option>Sombra</option>
           <option>Luz</option><option>Void</option><option>Aether</option>
         </select>
         <select class="filter-select" id="filterSort" onchange="applyFilters()">
-          <option value="recent">Mais recentes</option>
-          <option value="price_asc">Preço ↑</option>
-          <option value="price_desc">Preço ↓</option>
-          <option value="level">Nível ↓</option>
+          <option value="recent" data-i18n="mkt.browse.sort_recent">Mais recentes</option>
+          <option value="price_asc" data-i18n="mkt.browse.sort_asc">Preço ↑</option>
+          <option value="price_desc" data-i18n="mkt.browse.sort_desc">Preço ↓</option>
+          <option value="level" data-i18n="mkt.browse.sort_level">Nível ↓</option>
         </select>
       </div>
       <div id="browseGrid" class="avatar-grid">
-        <div class="loading"><div class="spinner"></div><div>A carregar listagens...</div></div>
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.browse.loading">A carregar listagens...</div></div>
       </div>
     </div>
 
     <!-- ── MEUS AVATARES ── -->
     <div class="mkt-section active" id="sec-slots">
-      <div class="section-title">🧬 Meus Avatares</div>
-      <div class="section-sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
+      <div class="section-title" data-i18n="mkt.slots.title">🧬 Meus Avatares</div>
+      <div class="section-sub" data-i18n="mkt.slots.sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
       <div id="slotsGrid" class="slots-grid"></div>
       <div id="unlockSlotRow"></div>
     </div>
 
     <!-- ── POOL & TRANSPARÊNCIA ── -->
     <div class="mkt-section" id="sec-transparencia">
-      <div class="section-title">🔍 Pool & Transparência</div>
-      <div class="section-sub">Tudo o que entra e sai da pool é público. Aqui podes ver o estado em tempo real e como a economia do Fractured Veil funciona.</div>
+      <div class="section-title" data-i18n="mkt.pool.title">🔍 Pool & Transparência</div>
+      <div class="section-sub" data-i18n="mkt.pool.sub">Tudo o que entra e sai da pool é público. Aqui podes ver o estado em tempo real e como a economia do Fractured Veil funciona.</div>
 
       <!-- Estado da pool (renderizado via pool.js) -->
       <div id="poolStatsCard"></div>
 
       <!-- Histórico -->
       <div class="pool-log-header" style="margin-top:16px;">
-        <div class="pool-log-title">📋 Histórico da Pool</div>
+        <div class="pool-log-title" data-i18n="mkt.pool.history">📋 Histórico da Pool</div>
         <div class="pool-log-legend">
-          <span class="pool-leg entrada">▲ Entrada</span>
-          <span class="pool-leg saida">▼ Saída</span>
+          <span class="pool-leg entrada" data-i18n="mkt.pool.legend_in">▲ Entrada</span>
+          <span class="pool-leg saida" data-i18n="mkt.pool.legend_out">▼ Saída</span>
         </div>
       </div>
       <div id="poolLogList" class="pool-log-list">
-        <div class="loading"><div class="spinner"></div><div>A carregar histórico...</div></div>
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.pool.loading">A carregar histórico...</div></div>
       </div>
       <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
 
       <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;">◆ COMO FUNCIONA A ECONOMIA</div>
+      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;" data-i18n="mkt.pool.economy">◆ COMO FUNCIONA A ECONOMIA</div>
 
       <!-- COFRE -->
       <div class="transp-block">
-        <div class="transp-block-title">🏦 O Cofre (Smart Contract)</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.vault_title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
           Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.<br><br>
           <a class="transp-link" id="transpContractLink" href="#" target="_blank">Ver contrato no Polygonscan ↗</a>
@@ -606,7 +611,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
       <!-- COMPRA DE CRISTAIS -->
       <div class="transp-block">
-        <div class="transp-block-title">💸 Comprar e Resgatar Cristais</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.crystal_title">💸 Comprar e Resgatar Cristais</div>
         <div class="transp-block-body">
           O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.
           <div class="transp-taxa-row" style="margin-top:10px;"><span>Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
@@ -620,7 +625,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
       <!-- COMO A POOL É ALIMENTADA -->
       <div class="transp-block">
-        <div class="transp-block-title">⬆️ Como a Pool é Alimentada</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
           <strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.
           <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">MARKETPLACE</div>
@@ -636,7 +641,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
       <!-- DISTRIBUIÇÃO SEMANAL -->
       <div class="transp-block">
-        <div class="transp-block-title">🏆 Distribuição Semanal (toda segunda-feira)</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.weekly_title">🏆 Distribuição Semanal (toda segunda-feira)</div>
         <div class="transp-block-body">
           Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.
           <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">PARA QUEM VAI</div>
@@ -658,7 +663,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
       <!-- OVOS -->
       <div class="transp-block">
-        <div class="transp-block-title">🥚 Ovos — Queima e Venda para Pool</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.eggs_title">🥚 Ovos — Queima e Venda para Pool</div>
         <div class="transp-block-body">
           Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).
           <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">QUEIMAR OVO (sai da pool)</div>
@@ -677,7 +682,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
       <!-- CÂMBIO / PLAY-TO-EARN -->
       <div class="transp-block">
-        <div class="transp-block-title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
+        <div class="transp-block-title" data-i18n="mkt.transp.exchange_title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
         <div class="transp-block-body">
           Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.
           <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">TAXA DE CÂMBIO (por 1 💎)</div>
@@ -695,8 +700,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
     <!-- ── COMPRAR CRISTAIS ── -->
     <div class="mkt-section" id="sec-buycrystals">
-      <div class="section-title">💎 Comprar Cristais</div>
-      <div class="section-sub">1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
+      <div class="section-title" data-i18n="mkt.crystals.title">💎 Comprar Cristais</div>
+      <div class="section-sub" data-i18n="mkt.crystals.sub">1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
 
       <!-- CTA MetaMask — aparece se não tiver carteira vinculada -->
       <div id="metamaskCtaWrap"></div>
@@ -705,11 +710,12 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <div id="buyStatus" style="margin-top:12px;text-align:center;min-height:24px;"></div>
 
       <div class="tx-verify-box" style="margin-top:24px;">
-        <h3>💸 Resgatar Cristais → MATIC</h3>
-        <div class="section-sub" style="margin:8px 0 16px;">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
+        <h3 data-i18n="mkt.crystals.redeem_title">💸 Resgatar Cristais → MATIC</h3>
+        <div class="section-sub" style="margin:8px 0 16px;" data-i18n="mkt.crystals.redeem_sub">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
         <div class="tx-input-row">
-          <input class="tx-hash-input" id="resgateGems" type="number" min="10" step="10" placeholder="Quantidade de 💎 (mín. 10)"/>
-          <button class="btn-verify" id="btnResgatar" onclick="resgatar()">Resgatar</button>
+          <input class="tx-hash-input" id="resgateGems" type="number" min="10" step="10" placeholder="Quantidade de 💎 (mín. 10)"
+            data-i18n-ph="mkt.crystals.redeem_ph"/>
+          <button class="btn-verify" id="btnResgatar" onclick="resgatar()" data-i18n="mkt.crystals.redeem_btn">Resgatar</button>
         </div>
         <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
       </div>
@@ -717,23 +723,24 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
     <!-- ── OVOS À VENDA ── -->
     <div class="mkt-section" id="sec-eggs">
-      <div class="section-title">🥚 Comprar Ovos</div>
-      <div class="section-sub">Ovos Raros e Lendários listados por outros jogadores.</div>
+      <div class="section-title" data-i18n="mkt.eggs.title">🥚 Comprar Ovos</div>
+      <div class="section-sub" data-i18n="mkt.eggs.sub">Ovos Raros e Lendários listados por outros jogadores.</div>
       <div class="filters-row">
-        <input class="search-input" id="eggFilterElem" placeholder="🔍 Filtrar por elemento..." oninput="renderEggBrowse()"/>
+        <input class="search-input" id="eggFilterElem" placeholder="🔍 Filtrar por elemento..."
+          data-i18n-ph="mkt.eggs.filter_ph" oninput="renderEggBrowse()"/>
         <select class="filter-select" id="eggFilterRarity" onchange="renderEggBrowse()">
-          <option value="">Raridade: Todas</option>
+          <option value="" data-i18n="mkt.browse.rarity_all">Raridade: Todas</option>
           <option value="Raro">🔵 Raro</option>
           <option value="Lendário">🌟 Lendário</option>
         </select>
         <select class="filter-select" id="eggFilterSort" onchange="renderEggBrowse()">
-          <option value="recent">Mais recentes</option>
-          <option value="price_asc">Preço ↑</option>
-          <option value="price_desc">Preço ↓</option>
+          <option value="recent" data-i18n="mkt.browse.sort_recent">Mais recentes</option>
+          <option value="price_asc" data-i18n="mkt.browse.sort_asc">Preço ↑</option>
+          <option value="price_desc" data-i18n="mkt.browse.sort_desc">Preço ↓</option>
         </select>
       </div>
       <div id="eggBrowseGrid" class="egg-browse-grid">
-        <div class="loading"><div class="spinner"></div><div>A carregar ovos...</div></div>
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.eggs.loading">A carregar ovos...</div></div>
       </div>
     </div>
 
@@ -743,35 +750,35 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 <!-- ══ MODAIS ══ -->
 <div class="overlay" id="listEggOverlay">
   <div class="modal-box">
-    <div class="modal-title">🥚 Listar Ovo à Venda</div>
-    <div class="modal-sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário.</div>
+    <div class="modal-title" data-i18n="mkt.modal.list_egg.title">🥚 Listar Ovo à Venda</div>
+    <div class="modal-sub" data-i18n="mkt.modal.list_egg.sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário.</div>
     <div class="modal-warn">⚠️ Taxa de listagem: <b>Raro 25 💎 · Lendário 50 💎</b> — vai para a pool P2E.</div>
     <div id="listEggPreview"></div>
     <div class="modal-field">
-      <div class="modal-label">Preço em 💎 Cristais</div>
+      <div class="modal-label" data-i18n="mkt.modal.list_egg.price">Preço em 💎 Cristais</div>
       <input class="modal-input" id="listEggPriceInput" type="number" min="1" placeholder="ex: 5"/>
     </div>
     <div id="listEggStatus" style="font-size:9px;color:var(--muted);margin-bottom:10px;text-align:center;"></div>
     <div class="modal-row">
-      <button class="btn-modal-cancel" onclick="closeListEggModal()">Cancelar</button>
-      <button class="btn-modal-confirm" onclick="confirmListEgg()">Listar</button>
+      <button class="btn-modal-cancel" onclick="closeListEggModal()" data-i18n="mkt.modal.list_egg.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmListEgg()" data-i18n="mkt.modal.list_egg.confirm">Listar</button>
     </div>
   </div>
 </div>
 
 <div class="overlay" id="listOverlay">
   <div class="modal-box">
-    <div class="modal-title">📋 Listar Avatar</div>
-    <div class="modal-sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.</div>
-    <div class="modal-warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
+    <div class="modal-title" data-i18n="mkt.modal.list_av.title">📋 Listar Avatar</div>
+    <div class="modal-sub" data-i18n="mkt.modal.list_av.sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.</div>
+    <div class="modal-warn" data-i18n="mkt.modal.list_av.warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
     <div id="listAvatarPreview" style="margin-bottom:14px;"></div>
     <div class="modal-field">
-      <div class="modal-label">Preço em 💎 Cristais</div>
+      <div class="modal-label" data-i18n="mkt.modal.list_av.price">Preço em 💎 Cristais</div>
       <input class="modal-input" id="listPriceInput" type="number" min="1" placeholder="ex: 50"/>
     </div>
     <div class="modal-row">
-      <button class="btn-modal-cancel" onclick="closeListModal()">Cancelar</button>
-      <button class="btn-modal-confirm" onclick="confirmList()">Listar por 2 💎</button>
+      <button class="btn-modal-cancel" onclick="closeListModal()" data-i18n="mkt.modal.list_av.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmList()" data-i18n="mkt.modal.list_av.confirm">Listar por 2 💎</button>
     </div>
   </div>
 </div>
@@ -782,14 +789,14 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 
 <div class="overlay" id="burnOverlay">
   <div class="modal-box" style="max-width:320px;text-align:center;">
-    <div class="modal-title" style="color:#f87171;">🔥 Queimar Avatar</div>
+    <div class="modal-title" style="color:#f87171;" data-i18n="mkt.modal.burn.title">🔥 Queimar Avatar</div>
     <div id="burnAvatarPreview" style="margin:12px 0;"></div>
     <div class="modal-warn" style="border-color:#7f1d1d;color:#fca5a5;">
       Esta acção é <b>permanente e irreversível</b>.<br>O avatar será destruído e o slot libertado.
     </div>
     <div class="modal-row" style="margin-top:16px;">
-      <button class="btn-modal-cancel" onclick="closeBurnModal()">Cancelar</button>
-      <button class="btn-modal-confirm" onclick="confirmBurnAvatar()" style="background:#7f1d1d;border-color:#f87171;color:#fca5a5;">🔥 Confirmar Queima</button>
+      <button class="btn-modal-cancel" onclick="closeBurnModal()" data-i18n="mkt.modal.burn.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmBurnAvatar()" style="background:#7f1d1d;border-color:#f87171;color:#fca5a5;" data-i18n="mkt.modal.burn.confirm">🔥 Confirmar Queima</button>
     </div>
   </div>
 </div>
@@ -815,6 +822,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   var db = window.db;
 </script>
 <script src="js/i18n.js"></script>
+<script src="js/i18n-marketplace.js"></script>
 <script src="js/data.js"></script>
 <script src="js/pool.js"></script>
 <script src="js/cristais.js"></script>
@@ -885,16 +893,16 @@ function renderMetaMaskCta() {
       <div class="metamask-linked">
         <div class="metamask-linked-dot"></div>
         <div>
-          <div class="metamask-linked-txt">🦊 MetaMask vinculada</div>
+          <div class="metamask-linked-txt">${t('mkt.metamask.linked')}</div>
           <div class="metamask-linked-addr">${carteira.slice(0,6)}...${carteira.slice(-4)}</div>
         </div>
       </div>`;
   } else {
     wrap.innerHTML = `
       <div class="metamask-cta">
-        <div class="metamask-cta-title">🦊 MetaMask necessária</div>
-        <div class="metamask-cta-sub">Para comprar ou resgatar Cristais com MATIC, vincula a tua carteira MetaMask. O teu progresso no jogo já está seguro — a carteira é só para pagamentos.</div>
-        <button class="btn-metamask" onclick="vincularCarteira().then(renderMetaMaskCta)">Vincular MetaMask</button>
+        <div class="metamask-cta-title">${t('mkt.metamask.title')}</div>
+        <div class="metamask-cta-sub">${t('mkt.metamask.sub')}</div>
+        <button class="btn-metamask" onclick="vincularCarteira().then(renderMetaMaskCta)">${t('mkt.metamask.btn')}</button>
       </div>`;
   }
 }
@@ -943,19 +951,19 @@ window.addEventListener('load', () => {
 <div class="mkt-bottom-nav" style="display:none;">
   <div class="mkt-bottom-nav-inner">
     <button class="mkt-bn-btn active" id="mbn-slots" onclick="showSection('slots');_mbnActive(this)">
-      <span class="bn-icon">🧬</span><span>Avatares</span>
+      <span class="bn-icon">🧬</span><span data-i18n="mkt.bn.avatars">Avatares</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-browse" onclick="showSection('browse');_mbnActive(this)">
-      <span class="bn-icon">🛒</span><span>Mercado</span>
+      <span class="bn-icon">🛒</span><span data-i18n="mkt.bn.market">Mercado</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-eggs" onclick="showSection('eggs');_mbnActive(this)">
-      <span class="bn-icon">🥚</span><span>Ovos</span>
+      <span class="bn-icon">🥚</span><span data-i18n="mkt.bn.eggs">Ovos</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-buycrystals" onclick="showSection('buycrystals');_mbnActive(this)">
-      <span class="bn-icon">💎</span><span>Cristais</span>
+      <span class="bn-icon">💎</span><span data-i18n="mkt.bn.crystals">Cristais</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
-      <span class="bn-icon">🔍</span><span>Pool</span>
+      <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>
     </button>
   </div>
 </div>
@@ -999,7 +1007,7 @@ function mktOpenZoomBtn(btn) {
   mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);
 }
 function mktOpenZoom(elemento, raridade, seed, nivelAv, nome) {
-  const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
+  const fases = t('fases');
   const fase  = faseFromNivel(nivelAv);
   document.getElementById('mktAvatarZoomSVG').innerHTML = gerarSVG(elemento, raridade, seed, 260, 260, fase);
   document.getElementById('mktAvatarZoomName').textContent = nome ? nome.split(',')[0] : '';

@@ -80,12 +80,12 @@ function renderPoolWidget() {
         <div class="pool-bar" style="width:${pct}%;background:${barColor};"></div>
       </div>
       <div class="pool-stats">
-        <div class="pool-stat"><span>Saldo</span><b>${saldo} 💎</b></div>
-        <div class="pool-stat"><span>Ovo Raro</span><b>${precoRaro} 💎</b></div>
-        <div class="pool-stat"><span>Ovo Lendário</span><b>${precoLend} 💎</b></div>
-        <div class="pool-stat"><span>Disponível hoje</span><b>${restante} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.balance')}</span><b>${saldo} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.rare_egg')}</span><b>${precoRaro} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.legendary_egg')}</span><b>${precoLend} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.available')}</span><b>${restante} 💎</b></div>
       </div>
-      ${saldo === 0 ? '<div class="pool-empty">Pool vazia — em breve! 🌱</div>' : ''}
+      ${saldo === 0 ? `<div class="pool-empty">${t('mkt.pool.empty_msg')}</div>` : ''}
     </div>`;
 }
 
@@ -114,7 +114,7 @@ function renderPoolStatsCard() {
 
   el.innerHTML = `
   <div class="pool-stats-card">
-    <div class="pool-sc-title">Estado actual da pool</div>
+    <div class="pool-sc-title">${t('mkt.pool.state_title')}</div>
     <div class="pool-sc-balance">${saldo} 💎</div>
     <div class="pool-sc-balance-sub">${pct}% do alvo (${POOL_ALVO} 💎)</div>
     <div class="pool-sc-bar-wrap">
@@ -122,38 +122,38 @@ function renderPoolStatsCard() {
     </div>
     <div class="pool-sc-grid">
       <div class="pool-sc-stat">
-        <span>Total entrou</span><b>${totalIn} 💎</b>
+        <span>${t('mkt.pool.total_in')}</span><b>${totalIn} 💎</b>
       </div>
       <div class="pool-sc-stat">
-        <span>Total saiu</span><b>${totalOut} 💎</b>
+        <span>${t('mkt.pool.total_out')}</span><b>${totalOut} 💎</b>
       </div>
       <div class="pool-sc-stat">
-        <span>Disponível hoje</span><b>${restante} 💎</b>
+        <span>${t('mkt.pool.available')}</span><b>${restante} 💎</b>
       </div>
     </div>
     <div class="pool-prices">
       <div class="pool-price-card raro">
-        <div class="pool-price-label">🔵 Ovo Raro</div>
+        <div class="pool-price-label">🔵 ${t('mkt.pool.rare_egg')}</div>
         <div class="pool-price-val">${precoRaro} 💎</div>
-        <div class="pool-price-sub">preço actual de recompra</div>
+        <div class="pool-price-sub">${t('mkt.pool.price_sub')}</div>
       </div>
       <div class="pool-price-card lendario">
-        <div class="pool-price-label">🌟 Ovo Lendário</div>
+        <div class="pool-price-label">🌟 ${t('mkt.pool.legendary_egg')}</div>
         <div class="pool-price-val">${precoLend} 💎</div>
-        <div class="pool-price-sub">preço actual de recompra</div>
+        <div class="pool-price-sub">${t('mkt.pool.price_sub')}</div>
       </div>
     </div>
     <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.8;">
-      100% das taxas do jogo alimentam esta pool.<br>
-      Distribuição semanal dinâmica: <strong style="color:var(--gem2);">${_calcPctDisplay(saldo)}% estimado esta semana</strong> por jogo.<br>
+      ${t('mkt.pool.fees')}<br>
+      ${t('mkt.pool.weekly_dist')} <strong style="color:var(--gem2);">${t('mkt.pool.estimated', {pct: _calcPctDisplay(saldo)})}</strong> ${t('mkt.pool.per_game')}<br>
       <span style="color:var(--gem2);font-weight:700;">
         ${saldo < 100
-          ? '📊 Limite actual: 1 venda/semana · Cresce com a pool'
+          ? t('mkt.pool.limit_1')
           : saldo < 500
-            ? '📊 Limite actual: 2 vendas/semana · Pool em crescimento'
+            ? t('mkt.pool.limit_2')
             : saldo < 1000
-              ? '📊 Limite actual: 3 vendas/semana · Pool saudável'
-              : '📊 Limite actual: 5 vendas/semana · Pool forte 💪'}
+              ? t('mkt.pool.limit_3')
+              : t('mkt.pool.limit_5')}
       </span>
     </div>
   </div>`;
@@ -210,7 +210,7 @@ async function loadPoolLogs(reset) {
     if(!json.ok) throw new Error(json.erro || 'erro');
 
     if(json.logs.length === 0 && reset) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">Nenhuma transacção ainda.</div></div>';
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">${t('mkt.pool.empty')}</div></div>`;
       if(moreBtn) moreBtn.innerHTML = '';
       return;
     }
@@ -240,12 +240,12 @@ async function loadPoolLogs(reset) {
 
     if(moreBtn) {
       moreBtn.innerHTML = json.hasMore
-        ? `<button class="btn-slot-activate" style="font-size:9px;padding:6px 16px;" onclick="loadPoolLogs(false)">Carregar mais</button>`
+        ? `<button class="btn-slot-activate" style="font-size:9px;padding:6px 16px;" onclick="loadPoolLogs(false)">${t('mkt.pool.load_more')}</button>`
         : '';
     }
   } catch(e) {
     console.warn('loadPoolLogs error:', e);
-    list.innerHTML = '<div class="empty-state"><div class="empty-txt">Erro ao carregar histórico.</div></div>';
+    list.innerHTML = `<div class="empty-state"><div class="empty-txt">${t('mkt.pool.error')}</div></div>`;
   }
 }
 
