@@ -291,6 +291,9 @@ async function _onLoginSuccess(user) {
       const _ds = _presData.deadSlot;
       if(avatarSlots[_ds]) avatarSlots[_ds].dead = true;
       if(_ds === activeSlotIdx) dead = true;
+      // Persiste dead:true no Firestore antes de apagar o backup RTDB.
+      // Sem isto, um segundo refresh apagava a morte (Firestore ainda tinha dead:false).
+      await saveToFirebase();
       clearPresenceDead(walletAddress);
     }
 
@@ -350,6 +353,8 @@ async function _onLoginSuccess(user) {
         addLog(t('log.offline_away', { h: hrs, m: mins, status: modoLog }), 'info');
         if(vitals.saude <= 0) {
           dead = true;
+          saveRuntimeToSlot(activeSlotIdx); // flush dead:true no slot antes de salvar
+          saveToFirebase();                 // persiste imediatamente — sem isto o avatar volta ao refrescar
           addLog(t('log.died_offline', { name: avatar ? avatar.nome.split(',')[0] : 'Avatar' }), 'bad');
         }
       }
