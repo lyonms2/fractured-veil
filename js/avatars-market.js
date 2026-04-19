@@ -266,26 +266,20 @@ async function unlistFromSlot(slotIdx) {
 
 async function unlistAvatar(listingId) {
   try {
-    const snap = await db.collection('avatarMarket').doc(listingId).get();
-    if(!snap.exists) return;
-    const l = snap.data();
-    if(l.sellerId !== walletAddress) return;
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch('/api/comprar-avatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'deslistar-avatar', idToken, listingId }),
+    });
+    const data = await res.json();
+    if(!res.ok) { showToast(data.erro || t('mkt.avatar.unlist_err'), 'err'); return; }
 
-    // Batch atómico — des-lista slot e apaga listagem em simultâneo
-    const slotIdx    = l.slotIdx;
-    const freshSnap2 = await db.collection('players').doc(walletAddress).get();
-    const freshSlots2 = (freshSnap2.data()?.avatarSlots || playerData.avatarSlots).map(s => s || null);
-    if(slotIdx !== undefined && freshSlots2[slotIdx]) freshSlots2[slotIdx].listed = false;
-    const unlistBatch2 = db.batch();
-    unlistBatch2.update(db.collection('players').doc(walletAddress), { avatarSlots: freshSlots2 });
-    unlistBatch2.delete(db.collection('avatarMarket').doc(listingId));
-    await unlistBatch2.commit();
-    playerData.avatarSlots = freshSlots2;
-
+    playerData.avatarSlots = data.slots;
     closeDetail();
     showToast(t('mkt.avatar.unlisted'), 'ok');
   } catch(e) {
-    showToast(t('mkt.avatar.unlist_err'),'err');
+    showToast(t('mkt.avatar.unlist_err'), 'err');
   }
 }
 
@@ -454,31 +448,27 @@ async function confirmBurnAvatar() {
 // DESBLOQUEAR SLOT
 // ═══════════════════════════════════════════
 async function unlockSlot() {
-  // Re-read cristais from Firebase to avoid stale data
-  const snap = await db.collection('players').doc(walletAddress).get();
-  const freshCristais = snap.data()?.gs?.cristais ?? snap.data()?.cristais ?? 0;
-  if(freshCristais < UNLOCK_SLOT_COST) { showToast(t('mkt.avatar.unlock_cost', {cost: UNLOCK_SLOT_COST}),'err'); return; }
-  const unlocked = getUnlockedSlots();
-  if(unlocked >= MAX_SLOTS) { showToast(t('mkt.avatar.max_slots'),'err'); return; }
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch('/api/comprar-avatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'desbloquear-slot', idToken }),
+    });
+    const data = await res.json();
+    if(!res.ok) { showToast(data.erro || t('mkt.avatar.unlock_err'), 'err'); return; }
 
-  const newCristais   = freshCristais - UNLOCK_SLOT_COST;
-  const newExtraSlots = (playerData.extraSlots||0) + 1;
+    playerData.cristais   = data.novoSaldo;
+    playerData.extraSlots = data.extraSlots;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais   = data.novoSaldo;
+    playerData.gs.extraSlots = data.extraSlots;
+    while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
 
-  await db.collection('players').doc(walletAddress).update({
-    cristais:         newCristais,
-    'gs.cristais':    newCristais,
-    extraSlots:       newExtraSlots,
-    'gs.extraSlots':  newExtraSlots,
-  });
-
-  playerData.cristais   = newCristais;
-  playerData.extraSlots = newExtraSlots;
-  if(!playerData.gs) playerData.gs = {};
-  playerData.gs.cristais   = newCristais;
-  playerData.gs.extraSlots = newExtraSlots;
-  while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
-
-  updateCristaisDisplay();
-  showToast(t('mkt.avatar.unlocked', {n: getUnlockedSlots()}), 'ok');
-  renderSlots();
+    updateCristaisDisplay();
+    showToast(t('mkt.avatar.unlocked', {n: getUnlockedSlots()}), 'ok');
+    renderSlots();
+  } catch(e) {
+    showToast(t('mkt.avatar.unlock_err'), 'err');
+  }
 }

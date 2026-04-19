@@ -2,8 +2,10 @@
 //  api/comprar-avatar.js — Vercel Serverless Function
 //
 //  POST /api/comprar-avatar
-//    acao='listar-avatar' → { idToken, slotIdx, price }
-//    (sem acao)           → { listingId, idToken }  ← comprar avatar
+//    acao='listar-avatar'    → { idToken, slotIdx, price }
+//    acao='deslistar-avatar' → { idToken, listingId }
+//    acao='desbloquear-slot' → { idToken }
+//    (sem acao)              → { listingId, idToken }  ← comprar avatar
 // ═══════════════════════════════════════════════════════════════
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
@@ -56,7 +58,9 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 
-  if (acao === 'listar-avatar') return handleListarAvatar(req, res, db, uid);
+  if (acao === 'listar-avatar')    return handleListarAvatar(req, res, db, uid);
+  if (acao === 'deslistar-avatar') return handleDeslistarAvatar(req, res, db, uid);
+  if (acao === 'desbloquear-slot') return handleDesbloquearSlot(req, res, db, uid);
   return handleComprarAvatar(req, res, db, uid);
 };
 
@@ -144,6 +148,101 @@ async function handleListarAvatar(req, res, db, uid) {
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
     if (status === 500) console.error('[comprar-avatar/listar]', err);
+    return res.status(status).json({ erro: msg });
+  }
+}
+
+// ── Deslistar avatar do mercado (atómico, server-side) ──────────
+async function handleDeslistarAvatar(req, res, db, uid) {
+  const { listingId } = req.body;
+
+  if (!listingId || typeof listingId !== 'string') {
+    return res.status(400).json({ erro: 'listingId inválido' });
+  }
+
+  const listRef   = db.collection('avatarMarket').doc(listingId);
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const [listSnap, playerSnap] = await Promise.all([
+        tx.get(listRef),
+        tx.get(playerRef),
+      ]);
+
+      if (!listSnap.exists || listSnap.data().status !== 'listed') {
+        throw new Error('NOT_FOUND');
+      }
+      const listing = listSnap.data();
+      if (listing.sellerId !== uid) throw new Error('NOT_OWNER');
+
+      const slots    = [...(playerSnap.data()?.avatarSlots || [])];
+      const slotIdx  = listing.slotIdx;
+      if (slotIdx !== undefined && slots[slotIdx]) {
+        slots[slotIdx] = { ...slots[slotIdx], listed: false };
+      }
+
+      tx.update(playerRef, { avatarSlots: slots });
+      tx.delete(listRef);
+
+      return { slots };
+    });
+
+    return res.status(200).json({ ok: true, ...resultado });
+  } catch (err) {
+    const erros = {
+      NOT_FOUND: [404, 'Listagem não encontrada.'],
+      NOT_OWNER: [403, 'Não és o dono desta listagem.'],
+    };
+    const [status, msg] = erros[err.message] || [500, 'Erro interno ao deslistar.'];
+    if (status === 500) console.error('[comprar-avatar/deslistar]', err);
+    return res.status(status).json({ erro: msg });
+  }
+}
+
+// ── Desbloquear slot extra (atómico, server-side) ────────────────
+async function handleDesbloquearSlot(_req, res, db, uid) {
+  const UNLOCK_COST = 15;
+  const BASE_SLOTS  = 3;
+  const MAX_SLOTS   = 5;
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const resultado = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('NOT_FOUND');
+
+      const data       = snap.data();
+      const cristais   = data.gs?.cristais ?? data.cristais ?? 0;
+      const extraSlots = data.gs?.extraSlots ?? data.extraSlots ?? 0;
+      const unlocked   = Math.min(MAX_SLOTS, BASE_SLOTS + extraSlots);
+
+      if (unlocked >= MAX_SLOTS) throw new Error('MAX_SLOTS');
+      if (cristais < UNLOCK_COST) throw new Error('INSUFFICIENT');
+
+      const newCristais   = cristais - UNLOCK_COST;
+      const newExtraSlots = extraSlots + 1;
+
+      tx.update(playerRef, {
+        cristais:        newCristais,
+        'gs.cristais':   newCristais,
+        extraSlots:      newExtraSlots,
+        'gs.extraSlots': newExtraSlots,
+      });
+
+      return { novoSaldo: newCristais, extraSlots: newExtraSlots };
+    });
+
+    return res.status(200).json({ ok: true, ...resultado });
+  } catch (err) {
+    const erros = {
+      NOT_FOUND:   [404, 'Jogador não encontrado.'],
+      MAX_SLOTS:   [400, 'Já tens o número máximo de slots.'],
+      INSUFFICIENT:[400, 'Cristais insuficientes.'],
+    };
+    const [status, msg] = erros[err.message] || [500, 'Erro interno ao desbloquear slot.'];
+    if (status === 500) console.error('[comprar-avatar/desbloquear-slot]', err);
     return res.status(status).json({ erro: msg });
   }
 }

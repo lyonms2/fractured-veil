@@ -177,6 +177,7 @@ window.registerStrings({
   'mkt.avatar.unlisted':      'Listagem cancelada. Avatar desbloqueado.',
   'mkt.avatar.activated':     '✅ Slot activo alterado! Volta ao jogo para jogar com este avatar.',
   'mkt.avatar.unlock_cost':   'Precisas de {cost} 💎.',
+  'mkt.avatar.unlock_err':    'Erro ao desbloquear slot. Tenta novamente.',
   'mkt.avatar.max_slots':     'Já tens o máximo de slots.',
   'mkt.avatar.unlocked':      '✅ Slot {n} desbloqueado!',
 
@@ -471,6 +472,7 @@ window.registerStrings({
   'mkt.avatar.unlisted':      'Listing cancelled. Avatar unlocked.',
   'mkt.avatar.activated':     '✅ Active slot changed! Return to the game to play with this avatar.',
   'mkt.avatar.unlock_cost':   'You need {cost} 💎.',
+  'mkt.avatar.unlock_err':    'Error unlocking slot. Please try again.',
   'mkt.avatar.max_slots':     'You already have the maximum number of slots.',
   'mkt.avatar.unlocked':      '✅ Slot {n} unlocked!',
 
