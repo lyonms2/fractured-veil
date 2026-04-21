@@ -301,7 +301,23 @@ function renderSlots() {
   for(let i=0;i<unlocked;i++) {
     const s = slots[i];
     const isActive = i === playerData.activeSlotIdx;
-    if(!s || s.pendingEgg) {
+    if(s && s.dead) {
+      html += `<div class="slot-card" style="border-style:solid;border-color:rgba(180,60,60,.4);opacity:.7;">
+        <div class="slot-stripe" style="background:rgba(180,60,60,.5);"></div>
+        <div class="slot-header">
+          <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
+          <div class="slot-badge" style="background:rgba(180,60,60,.15);color:#e05555;border:1px solid rgba(180,60,60,.3);">${t('mkt.slot.dead') || 'Morto'}</div>
+        </div>
+        <div class="slot-empty-wrap">
+          <div class="slot-empty-icon">💀</div>
+          <div class="slot-empty-title">${t('mkt.slot.dead_title') || (s.nome ? s.nome.split(',')[0] : 'Avatar')}</div>
+          <div class="slot-empty-txt" style="color:var(--muted);">${t('mkt.slot.dead_sub') || 'Este avatar não sobreviveu.'}</div>
+        </div>
+        <div class="slot-actions">
+          <button class="btn-slot-burn" style="border-color:rgba(180,60,60,.4);color:#e05555;" onclick="clearDeadSlot(${i})">${t('mkt.slot.btn_clear_dead') || '💀 Limpar Slot'}</button>
+        </div>
+      </div>`;
+    } else if(!s || s.pendingEgg) {
       const isPending = s && s.pendingEgg;
       html += `<div class="slot-card" style="border-style:${isPending?'solid':'dashed'};border-color:${isPending?'var(--border2)':'var(--border)'};">
         <div class="slot-stripe" style="background:${isPending?'var(--gold)':'transparent'};"></div>
@@ -441,6 +457,15 @@ async function confirmBurnAvatar() {
 
   await updateSlots(slots => { slots[idx] = null; });
   showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
+  renderSlots();
+}
+
+async function clearDeadSlot(idx) {
+  const s = playerData.avatarSlots?.[idx];
+  if(!s || !s.dead) return;
+  const name = s.nome?.split(',')[0] || 'Avatar';
+  await updateSlots(slots => { slots[idx] = null; });
+  showToast(`💀 ${name} foi descansado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();
 }
 

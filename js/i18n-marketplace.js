@@ -57,6 +57,10 @@ window.registerStrings({
   'mkt.slot.btn_burn':        '🔥 Queimar',
   'mkt.slot.frozen_label':    '❄️ Listado à venda',
   'mkt.slot.btn_unlist':      '✕ Retirar listagem',
+  'mkt.slot.dead':            'Morto',
+  'mkt.slot.dead_title':      'Avatar perdido',
+  'mkt.slot.dead_sub':        'Este avatar não sobreviveu.\nGera um novo ovo para continuar.',
+  'mkt.slot.btn_clear_dead':  '💀 Limpar Slot',
   'mkt.slot.btn_unlock':      '🔓 Desbloquear Slot {n} — {cost} 💎',
   'mkt.slot.max_unlocked':    'Slots máximos desbloqueados ({max})',
 
@@ -352,6 +356,10 @@ window.registerStrings({
   'mkt.slot.btn_burn':        '🔥 Burn',
   'mkt.slot.frozen_label':    '❄️ Listed for sale',
   'mkt.slot.btn_unlist':      '✕ Remove listing',
+  'mkt.slot.dead':            'Dead',
+  'mkt.slot.dead_title':      'Avatar lost',
+  'mkt.slot.dead_sub':        'This avatar did not survive.\nGenerate a new egg to continue.',
+  'mkt.slot.btn_clear_dead':  '💀 Clear Slot',
   'mkt.slot.btn_unlock':      '🔓 Unlock Slot {n} — {cost} 💎',
   'mkt.slot.max_unlocked':    'Maximum slots unlocked ({max})',
 
