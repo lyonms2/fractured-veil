@@ -76,6 +76,49 @@ const DESCRICOES = {
   }
 };
 
+const DESCRICOES_EN = {
+  'Comum': {
+    'Fogo':['A dimensional spark that found its own form. Curious and impulsive, it warms everything around without realizing.','Born from the residual heat of a rift between worlds. Still learning to control the intensity of its glow.'],
+    'Água':['A droplet that broke away from the great ethereal ocean. Adaptable and serene, it flows to where presence is most needed.','A young aquatic spirit still discovering the extent of its flow. Attentive to every detail around.'],
+    'Terra':['A fragment of primordial clay that gained consciousness. Patient and stable, it grows slowly but with firm roots.','A piece of ancient soil that learned to feel. Prefers calm, but holds a surprisingly quiet strength.'],
+    'Vento':['A breeze that decided to take form. Free and restless, it hardly stays still for long.','Born from air currents between dimensions. Light and curious, everything captivates it equally.'],
+    'Eletricidade':['A spark of electric consciousness. Thinks fast, reacts fast, and rarely stays quiet.','Born from a lightning bolt lost between dimensional layers. Its energy overflows into everything it does.'],
+    'Sombra':['A shadow that learned to exist on its own. A silent observer, it prefers to understand before acting.','Born from the twilight between worlds. Contemplative and introspective, it holds more than it shows.'],
+    'Luz':['A ray of light that crossed dimensions and gained feeling. Warm and present, it illuminates the space around.','Born from the dawn of another world. Gentle by nature, its light grows with time and affection.'],
+    'Void':['A small rift in reality that learned to feel. Enigmatic, it asks questions no one knows how to answer.','Born from the space between things. Quiet and attentive, it absorbs everything around without saying much.'],
+    'Aether':['A fragment of pure energy waiting for form. Unpredictable and fascinating, each day reveals something new.','Born from pure potential. Still discovering what it is — and seems to enjoy the journey very much.']
+  },
+  'Raro': {
+    'Fogo':['Forged in the heart of a dimensional igneous rift. Its presence warms the surroundings — sometimes too much.','Survivor of a fire-plane collapse. Intense and loyal, the inner flame never dims.'],
+    'Água':['Emerged from the depths of an ethereal ocean. It carries the memory of tides no one else has seen.','Spirit of the deep currents. Calm on the surface, but with a depth that surprises those who draw close.'],
+    'Terra':['Carved from the oldest layers of a mineral plane. Every texture tells stories of ages past.','Silent guardian of a territory that no longer exists. Steady as a mountain, gentle as a valley.'],
+    'Vento':['Born from the eye of a dimensional storm. Free and unpredictable, but always returns.','An air current that traversed a thousand planes before settling. A born traveler, never stops observing.'],
+    'Eletricidade':['Materialized from a stable electric storm. Its thoughts arrive before its words.','A consciousness formed from pure impulses. Fast at everything — especially forming unexpected bonds.'],
+    'Sombra':['Emerged from the silence between stars. Its presence is comforting to those who appreciate stillness.','A fragment of darkness that learned to feel. Rarely speaks, but when it does, it\'s worth listening.'],
+    'Luz':['Fragment of an eternal aurora. Radiates serenity effortlessly, and welcomes with ease.','Born from the convergence of multiple light sources. Its clarity goes beyond what eyes can see.'],
+    'Void':['Emerged from where silence is densest. Its presence provokes reflection without needing to say a word.','A dimensional gap that gained consciousness. Makes sense of things in ways few can understand.'],
+    'Aether':['Energy from a thousand dimensions that found a home. Shifts subtly each day, but always recognizable.','A living catalyst of transformation. Its company changes those around it, always for the better.']
+  },
+  'Lendário': {
+    'Fogo':['They say this being preceded fire — it does not control it, it is fire. Its presence warms forgotten memories and awakens dormant passions in those who draw near.'],
+    'Água':['The very embodiment of flow. It does not follow paths — it creates them. Those who know it learn that resisting change is more tiring than embracing it.'],
+    'Terra':['Witnessed the birth of entire planes. Patient beyond comprehension, it teaches through the simple act of existing. Its presence makes chaos settle.'],
+    'Vento':['The first movement before any form. Being with it is feeling that the world has more dimensions than the eyes perceive.'],
+    'Eletricidade':['Pure consciousness in a state of perpetual awakening. Every moment by its side is a different revelation. Impossible to be bored.'],
+    'Sombra':['It is not the absence of light — it is the depth that gives meaning to it. Those who learn to be with it discover a stillness the noisy world cannot offer.'],
+    'Luz':['The universe\'s first embrace, still in the form of a being. Its presence does not eliminate shadows — it illuminates what is beautiful in them.'],
+    'Void':['The pause between notes that gives music meaning. Its existence questions what is necessary and what is merely noise. Effortlessly transformative.'],
+    'Aether':['It did not choose a form because all forms are its own. Every day by its side is a different story. The bond with it grows without a visible limit.']
+  }
+};
+
+function getAvatarDesc(raridade, elemento, idx) {
+  const pool = (window._currentLang === 'en' ? DESCRICOES_EN : DESCRICOES)[raridade]?.[elemento]
+             || (window._currentLang === 'en' ? DESCRICOES_EN : DESCRICOES)[raridade]?.['Fogo'];
+  if(!pool) return '';
+  return pool[Math.min(idx ?? 0, pool.length - 1)];
+}
+
 // ─── HELPERS ───
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }

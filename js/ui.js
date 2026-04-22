@@ -277,7 +277,7 @@ function fillCreatureCard() {
 
   const descEl = document.getElementById('idDesc');
   if(descEl) {
-    descEl.textContent           = avatar.descricao || '';
+    descEl.textContent           = (avatar.descricaoIdx != null ? getAvatarDesc(avatar.raridade, avatar.elemento, avatar.descricaoIdx) : avatar.descricao) || '';
     descEl.style.borderLeftColor = car ? car.cor : 'var(--border)';
     descEl.style.color           = car ? car.cor + 'bb' : '#887799';
   }

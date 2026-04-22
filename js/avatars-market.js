@@ -132,7 +132,7 @@ async function openDetail(listingId) {
       <div class="detail-info">
         <div class="detail-name">${esc(l.nome||'Avatar')}</div>
         <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(l.elemento)}</div>
-        <div style="font-size:9px;color:var(--text2);">${esc(l.descricao||'')}</div>
+        <div style="font-size:9px;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l.elemento, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
     </div>
     <div class="detail-stats-grid">

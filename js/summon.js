@@ -12,7 +12,9 @@ function triggerSummon() {
   const car      = CARACTERISTICAS_ELEMENTAIS[elemento];
   const prefPool = PREFIXOS[elemento][raridade];
   const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
-  const descricao= rnd(DESCRICOES[raridade][elemento]);
+  const _descPool    = DESCRICOES[raridade][elemento];
+  const descricaoIdx = Math.floor(Math.random() * _descPool.length);
+  const descricao    = _descPool[descricaoIdx];
   let _h = 0;
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
@@ -28,7 +30,7 @@ function triggerSummon() {
 
   while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
   avatarSlots[activeSlotIdx] = {
-    nome, elemento, raridade, descricao, car, seed,
+    nome, elemento, raridade, descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,

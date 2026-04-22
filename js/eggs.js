@@ -430,14 +430,16 @@ async function confirmHatch() {
   const car      = CARACTERISTICAS_ELEMENTAIS[ovo.elemento] || null;
   const prefPool = PREFIXOS[ovo.elemento]?.[ovo.raridade] || PREFIXOS[ovo.elemento]?.['Comum'] || ['Mistix'];
   const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[ovo.raridade])}`;
-  const descricao= rnd(DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo']);
+  const _descPool  = DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo'];
+  const descricaoIdx = Math.floor(Math.random() * _descPool.length);
+  const descricao    = _descPool[descricaoIdx];
   let _h = 0; const _str = nome + ovo.elemento;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
   const seed = Math.abs(_h);
 
   while(avatarSlots.length <= targetSlot) avatarSlots.push(null);
   avatarSlots[targetSlot] = {
-    nome, elemento: ovo.elemento, raridade: ovo.raridade, descricao, car, seed,
+    nome, elemento: ovo.elemento, raridade: ovo.raridade, descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
@@ -663,7 +665,9 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
   const prefPool  = PREFIXOS[elemento]?.[raridade] || PREFIXOS[elemento]?.['Comum'] || ['Mistix'];
   const nome      = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
-  const descricao = rnd(DESCRICOES[raridade][elemento] || DESCRICOES[raridade]['Fogo']);
+  const _descPool2   = DESCRICOES[raridade][elemento] || DESCRICOES[raridade]['Fogo'];
+  const descricaoIdx = Math.floor(Math.random() * _descPool2.length);
+  const descricao    = _descPool2[descricaoIdx];
   let _h = 0;
   const _str = nome + elemento;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
@@ -672,7 +676,7 @@ function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
   const tgt = (typeof targetSlot === 'number' && targetSlot >= 0) ? targetSlot : activeSlotIdx;
   while(avatarSlots.length <= tgt) avatarSlots.push(null);
   avatarSlots[tgt] = {
-    nome, elemento, raridade, descricao, car, seed,
+    nome, elemento, raridade, descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,

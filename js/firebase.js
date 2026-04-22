@@ -41,8 +41,9 @@ function getGameState() {
       nome:      s.nome      || '',
       elemento:  s.elemento  || 'Fogo',
       raridade:  s.raridade  || 'Comum',
-      descricao: s.descricao || '',
-      seed:      s.seed      || 0,
+      descricao:    s.descricao    || '',
+      descricaoIdx: s.descricaoIdx ?? null,
+      seed:         s.seed         || 0,
       listed:    s.listed    || false,
       // Runtime state
       hatched:        s.hatched        ?? false,
