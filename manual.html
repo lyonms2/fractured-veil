@@ -403,6 +403,8 @@
 
     /* ── LANG ── */
     .c-en { display: none; }
+    .lang-en .c-en { display: revert; }
+    .lang-en .c-pt { display: none; }
     .lang-btn {
       display: block;
       margin: 8px 16px 4px;
@@ -1937,11 +1939,10 @@
   function setLang(lang) {
     _lang = lang;
     localStorage.setItem('fv_lang', lang);
-    document.querySelectorAll('.c-pt').forEach(el => el.style.display = lang === 'en' ? 'none' : '');
-    document.querySelectorAll('.c-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+    document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
+    document.documentElement.classList.toggle('lang-en', lang === 'en');
     const btn = document.getElementById('langBtn');
     if(btn) btn.textContent = lang === 'en' ? '🌐 PT' : '🌐 EN';
-    document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
     const mbl = document.getElementById('mobileLangBtn');
     if(mbl) mbl.textContent = lang === 'en' ? '🌐 PT' : '🌐 EN';
   }
