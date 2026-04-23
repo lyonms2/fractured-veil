@@ -401,6 +401,25 @@
     }
     .sidebar-overlay.open { display: block; }
 
+    /* ── LANG ── */
+    .c-en { display: none; }
+    .lang-btn {
+      display: block;
+      margin: 8px 16px 4px;
+      padding: 5px 10px;
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text2);
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+    }
+    .lang-btn:hover { border-color: var(--gold); color: var(--gold); }
+
     @media(max-width: 640px) {
       .sidebar {
         position: fixed;
@@ -423,7 +442,10 @@
 <!-- Mobile header -->
 <div class="mobile-header">
   <span class="mobile-logo">✦ MANUAL</span>
-  <button class="mobile-menu-btn" onclick="toggleMenu()">☰ Índice</button>
+  <div style="display:flex;gap:6px">
+    <button class="mobile-menu-btn" id="mobileLangBtn" onclick="toggleLang()">🌐 EN</button>
+    <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+  </div>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMenu()"></div>
@@ -433,78 +455,82 @@
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-title">✦ FRACTURED VEIL</div>
-      <div class="logo-sub">Manual do Jogador</div>
+      <div class="logo-sub"><span class="c-pt">Manual do Jogador</span><span class="c-en">Player's Manual</span></div>
     </div>
-    <a class="sidebar-back" href="index.html">← Voltar ao Jogo</a>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 EN</button>
+    <a class="sidebar-back" href="index.html">
+      <span class="c-pt">← Voltar ao Jogo</span>
+      <span class="c-en">← Back to Game</span>
+    </a>
 
     <div class="sidebar-nav">
-      <div class="nav-section-title">Início</div>
+      <div class="nav-section-title"><span class="c-pt">Início</span><span class="c-en">Start</span></div>
       <a class="nav-item active" onclick="showSection('intro')">
-        <span class="nav-icon">🌌</span> O Que é FV
+        <span class="nav-icon">🌌</span><span class="c-pt">O Que é FV</span><span class="c-en">What is FV</span>
       </a>
       <a class="nav-item" onclick="showSection('avatar')">
-        <span class="nav-icon">🥚</span> Criar Avatar
+        <span class="nav-icon">🥚</span><span class="c-pt">Criar Avatar</span><span class="c-en">Create Avatar</span>
       </a>
 
-      <div class="nav-section-title">Cuidados Diários</div>
+      <div class="nav-section-title"><span class="c-pt">Cuidados Diários</span><span class="c-en">Daily Care</span></div>
       <a class="nav-item" onclick="showSection('vitais')">
-        <span class="nav-icon">💓</span> Vitais
+        <span class="nav-icon">💓</span><span class="c-pt">Vitais</span><span class="c-en">Vitals</span>
       </a>
       <a class="nav-item" onclick="showSection('sono')">
-        <span class="nav-icon">🌙</span> Sono & Repouso
+        <span class="nav-icon">🌙</span><span class="c-pt">Sono & Repouso</span><span class="c-en">Sleep & Rest</span>
       </a>
       <a class="nav-item" onclick="showSection('doencas')">
-        <span class="nav-icon">🩺</span> Doenças
+        <span class="nav-icon">🩺</span><span class="c-pt">Doenças</span><span class="c-en">Diseases</span>
       </a>
 
-      <div class="nav-section-title">Crescimento</div>
+      <div class="nav-section-title"><span class="c-pt">Crescimento</span><span class="c-en">Growth</span></div>
       <a class="nav-item" onclick="showSection('niveis')">
-        <span class="nav-icon">⭐</span> Níveis & Fases
+        <span class="nav-icon">⭐</span><span class="c-pt">Níveis & Fases</span><span class="c-en">Levels & Phases</span>
       </a>
       <a class="nav-item" onclick="showSection('vinculo')">
-        <span class="nav-icon">🤝</span> Vínculo
+        <span class="nav-icon">🤝</span><span class="c-pt">Vínculo</span><span class="c-en">Bond</span>
       </a>
       <a class="nav-item" onclick="showSection('ovos')">
-        <span class="nav-icon">🪺</span> Ovos
+        <span class="nav-icon">🪺</span><span class="c-pt">Ovos</span><span class="c-en">Eggs</span>
       </a>
 
-      <div class="nav-section-title">Economia</div>
+      <div class="nav-section-title"><span class="c-pt">Economia</span><span class="c-en">Economy</span></div>
       <a class="nav-item" onclick="showSection('moedas')">
-        <span class="nav-icon">🪙</span> Moedas & Cristais
+        <span class="nav-icon">🪙</span><span class="c-pt">Moedas & Cristais</span><span class="c-en">Coins & Crystals</span>
       </a>
       <a class="nav-item" onclick="showSection('itens')">
-        <span class="nav-icon">🎒</span> Loja de Itens
+        <span class="nav-icon">🎒</span><span class="c-pt">Loja de Itens</span><span class="c-en">Item Shop</span>
       </a>
       <a class="nav-item" onclick="showSection('marketplace')">
-        <span class="nav-icon">💎</span> Marketplace
+        <span class="nav-icon">💎</span>Marketplace
       </a>
 
-      <div class="nav-section-title">Actividades</div>
+      <div class="nav-section-title"><span class="c-pt">Atividades</span><span class="c-en">Activities</span></div>
       <a class="nav-item" onclick="showSection('minijogos')">
-        <span class="nav-icon">🎮</span> Minijogos
+        <span class="nav-icon">🎮</span><span class="c-pt">Minijogos</span><span class="c-en">Minigames</span>
       </a>
       <a class="nav-item" onclick="showSection('arena')">
-        <span class="nav-icon">⚔️</span> Arena PvP
+        <span class="nav-icon">⚔️</span>Arena PvP
       </a>
       <a class="nav-item" onclick="showSection('fissura')">
-        <span class="nav-icon">⚡</span> Fissura
+        <span class="nav-icon">⚡</span><span class="c-pt">Fissura</span><span class="c-en">The Rift</span>
       </a>
       <a class="nav-item" onclick="showSection('lore')">
-        <span class="nav-icon">📖</span> Lore
+        <span class="nav-icon">📖</span>Lore
       </a>
       <a class="nav-item" onclick="showSection('amigos')">
-        <span class="nav-icon">👥</span> Amigos
+        <span class="nav-icon">👥</span><span class="c-pt">Amigos</span><span class="c-en">Friends</span>
       </a>
 
-      <div class="nav-section-title">Referência</div>
+      <div class="nav-section-title"><span class="c-pt">Referência</span><span class="c-en">Reference</span></div>
       <a class="nav-item" onclick="showSection('elementos')">
-        <span class="nav-icon">🔮</span> Elementos
+        <span class="nav-icon">🔮</span><span class="c-pt">Elementos</span><span class="c-en">Elements</span>
       </a>
       <a class="nav-item" onclick="showSection('raridades')">
-        <span class="nav-icon">✨</span> Raridades
+        <span class="nav-icon">✨</span><span class="c-pt">Raridades</span><span class="c-en">Rarities</span>
       </a>
       <a class="nav-item" onclick="showSection('dicas')">
-        <span class="nav-icon">💡</span> Dicas & Truques
+        <span class="nav-icon">💡</span><span class="c-pt">Dicas & Truques</span><span class="c-en">Tips & Tricks</span>
       </a>
     </div>
   </nav>
@@ -516,6 +542,7 @@
          INTRO
     ══════════════════════════════════════════════════════ -->
     <section class="section active" id="s-intro">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 0</div>
         <div class="section-title">O que é Fractured Veil?</div>
@@ -537,7 +564,7 @@
         <div class="card">
           <div class="card-icon">⭐</div>
           <div class="card-title">3. Crescer</div>
-          <div class="card-body">Joga minijogos e completa actividades para subir de nível e evoluir de fase.</div>
+          <div class="card-body">Joga minijogos e completa atividades para subir de nível e evoluir de fase.</div>
         </div>
         <div class="card">
           <div class="card-icon">🪺</div>
@@ -557,7 +584,7 @@
       </div>
 
       <h2>Ecrã Principal</h2>
-      <p>O ecrã principal tem três zonas importantes:</p>
+      <p>O tela principal tem três zonas importantes:</p>
       <ul>
         <li><strong>Centro</strong> — O teu Avatar animado. Clica nele para o acariciar.</li>
         <li><strong>Barras de topo</strong> — Fome, Humor, Energia, Higiene e Saúde em tempo real.</li>
@@ -565,14 +592,42 @@
       </ul>
 
       <div class="callout">
-        <strong>💡 Dica de iniciante:</strong> O jogo corre mesmo com o separador fechado. O Avatar continua a perder vitais enquanto estás offline — ativa o <em>Modo Repouso</em> antes de sair por longos períodos.
+        <strong>💡 Dica de iniciante:</strong> O jogo roda mesmo com a aba fechada. O Avatar continua a perder vitais enquanto você está offline — ative o <em>Modo Repouso</em> antes de sair por longos períodos.
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 0</div>
+        <div class="section-title">What is Fractured Veil?</div>
+        <p class="section-intro">Fractured Veil is a dimensional Web3 tamagotchi. Summon an Avatar from an egg, care for it daily, and watch it grow through 4 phases — from baby to adult. Rare and Legendary Avatars can be sold on the marketplace for real 💎 crystals on the Polygon blockchain.</p>
+      </div>
+      <h2>The Game Loop</h2>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon">🥚</div><div class="card-title">1. Summon</div><div class="card-body">Click 5× on the egg to hatch it and invoke your Avatar.</div></div>
+        <div class="card"><div class="card-icon">💓</div><div class="card-title">2. Care</div><div class="card-body">Feed, clean, and entertain your Avatar daily to keep vitals up.</div></div>
+        <div class="card"><div class="card-icon">⭐</div><div class="card-title">3. Grow</div><div class="card-body">Play minigames and complete activities to level up and evolve.</div></div>
+        <div class="card"><div class="card-icon">🪺</div><div class="card-title">4. Reproduce</div><div class="card-body">At level 17+ your Avatar can lay eggs with random rarities.</div></div>
+        <div class="card"><div class="card-icon">💎</div><div class="card-title">5. Earn</div><div class="card-body">Sell rare eggs to the P2E pool or Avatars on the marketplace for crystals.</div></div>
+        <div class="card"><div class="card-icon">♻️</div><div class="card-title">6. Restart</div><div class="card-body">When your Avatar dies, hatch a new egg and repeat — wiser this time.</div></div>
+      </div>
+      <h2>Main Screen</h2>
+      <p>The main screen has three key areas:</p>
+      <ul>
+        <li><strong>Center</strong> — Your animated Avatar. Click it to pet it.</li>
+        <li><strong>Top bars</strong> — Hunger, Mood, Energy, Hygiene, and Health in real time.</li>
+        <li><strong>Bottom buttons</strong> — Actions: Feed, Bath, Sleep, Shop, Eggs, Inventory, Friends, Lore, Arena, Rift, Minigames.</li>
+      </ul>
+      <div class="callout">
+        <strong>💡 Beginner tip:</strong> The game runs even with the tab closed. Your Avatar keeps losing vitals while offline — always enable <em>Rest Mode</em> before leaving for long periods.
+      </div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          CRIAR AVATAR
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-avatar">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 1</div>
         <div class="section-title">Criar o teu Avatar</div>
@@ -580,7 +635,7 @@
       </div>
 
       <h2>Invocar (Eclodir)</h2>
-      <p>Quando tiveres um ovo no inventário, vai ao ecrã principal e clica <strong>5 vezes</strong> no ovo para o eclodir. Uma animação de invocação será exibida e o teu Avatar nasce no <strong>Nível 1</strong> com todas as vitais a 100.</p>
+      <p>Quando tiveres um ovo no inventário, vai ao tela principal e clica <strong>5 vezes</strong> no ovo para o eclodir. Uma animação de invocação será exibida e o teu Avatar nasce no <strong>Nível 1</strong> com todas as vitais a 100.</p>
 
       <div class="callout">
         <strong>Custo de eclosão:</strong> Ovos Comuns são gratuitos. Ovos Raros custam <em>50 💎</em>. Ovos Lendários custam <em>100 💎</em>.
@@ -607,20 +662,47 @@
       </div>
 
       <h2>Elementos (9 tipos)</h2>
-      <p>O elemento é escolhido aleatoriamente no nascimento e define bónus de decaimento e personalidade do Avatar. Ver secção <a onclick="showSection('elementos')" style="color:var(--gold);cursor:pointer;">Elementos</a> para a tabela completa.</p>
+      <p>O elemento é escolhido aleatoriamente no nascimento e define bónus de decaimento e personalidade do Avatar. Ver seção <a onclick="showSection('elementos')" style="color:var(--gold);cursor:pointer;">Elementos</a> para a tabela completa.</p>
 
       <h2>Múltiplos Avatares (Slots)</h2>
       <p>Tens <strong>3 slots</strong> de Avatar por defeito, expansíveis até 5 (15 💎 cada slot extra). Podes trocar de slot a qualquer momento — o Avatar inativo fica "congelado" sem consumir nada. Só o Avatar ativo consome vitais.</p>
 
       <div class="callout danger">
-        <strong>Cuidado:</strong> Ao eclodir um ovo num slot já ocupado, o Avatar anterior é <em>substituído permanentemente</em>. Confirma sempre o slot antes de eclodir.
+        <strong>Cuidado:</strong> Ao eclodir um ovo num slot já ocupado, o Avatar anterior é <em>substituído permanentemente</em>. Confirme sempre o slot antes de eclodir.
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 1</div>
+        <div class="section-title">Creating Your Avatar</div>
+        <p class="section-intro">Everything begins with an egg. When you register you receive your first Common egg. Avatars have 3 fixed attributes: <em>Element</em>, <em>Rarity</em>, and <em>Appearance</em> (visual seed).</p>
+      </div>
+      <h2>Hatching</h2>
+      <p>With an egg in inventory, go to the main screen and click it <strong>5 times</strong> to hatch. A summoning animation plays and your Avatar is born at <strong>Level 1</strong> with all vitals at 100.</p>
+      <div class="callout">
+        <strong>Hatching cost:</strong> Common eggs are free. Rare eggs cost <em>50 💎</em>. Legendary eggs cost <em>100 💎</em>.
+      </div>
+      <h2>Rarities</h2>
+      <div class="card-grid">
+        <div class="card" style="border-color:rgba(122,184,122,.3)"><div class="card-icon">⚪</div><div class="card-title" style="color:var(--comum)">Common</div><div class="card-body">Most frequent. Great for learning. Normal decay, 1 egg per laying.</div></div>
+        <div class="card" style="border-color:rgba(90,180,232,.3)"><div class="card-icon">🔵</div><div class="card-title" style="color:var(--raro)">Rare</div><div class="card-body">Decays 20% slower. XP +30%. 10% shop discount. Up to 2 eggs per laying.</div></div>
+        <div class="card" style="border-color:rgba(232,160,48,.3)"><div class="card-icon">🌟</div><div class="card-title" style="color:var(--lend)">Legendary</div><div class="card-body">Decays 40% slower. XP +60%. 20% shop discount. Up to 3 eggs per laying.</div></div>
+      </div>
+      <h2>Elements (9 types)</h2>
+      <p>Element is assigned randomly at birth and affects decay bonuses and personality. See the <a onclick="showSection('elementos')" style="color:var(--gold);cursor:pointer;">Elements</a> section for the full table.</p>
+      <h2>Multiple Avatars (Slots)</h2>
+      <p>You have <strong>3 avatar slots</strong> by default, expandable up to 5 (15 💎 each). Switch slots anytime — inactive Avatars are frozen and consume nothing. Only the active Avatar loses vitals.</p>
+      <div class="callout danger">
+        <strong>Warning:</strong> Hatching an egg into an occupied slot <em>permanently replaces</em> the previous Avatar. Always confirm the slot before hatching.
+      </div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          VITAIS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-vitais">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 2</div>
         <div class="section-title">Vitais</div>
@@ -677,7 +759,7 @@
       </div>
 
       <h2>Cocó & Higiene</h2>
-      <p>O Avatar faz cocó periodicamente. Surgem até <strong>6 objectos</strong> no ecrã que deves remover (clica neles). Cada cocó removido dá +2 Vínculo. Se ignorados, a Higiene cai mais depressa. Com 3+ dejectos, aparecem visualmente nuvens de odor e o ecrã fica tingido.</p>
+      <p>O Avatar faz cocó periodicamente. Surgem até <strong>6 objectos</strong> no tela que deves remover (clica neles). Cada cocó removido dá +2 Vínculo. Se ignorados, a Higiene cai mais depressa. Com 3+ dejectos, aparecem visualmente nuvens de odor e o tela fica tingido.</p>
 
       <h2>Acções básicas</h2>
       <div class="tbl-wrap">
@@ -689,12 +771,39 @@
           <tr><td>💩 Remover cocó</td><td>+Higiene, +2 Vínculo</td><td>Grátis</td></tr>
         </table>
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 2</div>
+        <div class="section-title">Vitals</div>
+        <p class="section-intro">Your Avatar has 5 vitals ranging from 0 to 100. Each decays over time. If <em>Health</em> reaches zero, the Avatar dies permanently.</p>
+      </div>
+      <h2>The 5 Vitals</h2>
+      <div class="stat-block">
+        <div class="vital-item"><div class="vital-emoji">🍖</div><div class="vital-info"><div class="vital-name">HUNGER</div><div class="vital-desc">Decays over time. Feed with the 🍖 button.</div><div class="vital-crit">⚠ Below 15: loses Health −0.3/cycle</div></div><div class="vital-decay">−0.8/min</div></div>
+        <div class="vital-item"><div class="vital-emoji">😄</div><div class="vital-info"><div class="vital-name">MOOD</div><div class="vital-desc">Rises when you pet, play minigames, or clean. Decays over time.</div><div class="vital-crit">⚠ Below 10: loses Health −0.1/cycle</div></div><div class="vital-decay">−1.5/min</div></div>
+        <div class="vital-item"><div class="vital-emoji">⚡</div><div class="vital-info"><div class="vital-name">ENERGY</div><div class="vital-desc">Recovers while sleeping. Minigames cost 10 energy.</div><div class="vital-crit">⚠ Below 5: loses Health −0.1/cycle · Auto-sleeps</div></div><div class="vital-decay">−0.6/min</div></div>
+        <div class="vital-item"><div class="vital-emoji">🚿</div><div class="vital-info"><div class="vital-name">HYGIENE</div><div class="vital-desc">Clean with the 🚿 button. Avatar poops as pressure accumulates.</div><div class="vital-crit">⚠ Below 15: loses Health −0.04/cycle</div></div><div class="vital-decay">−0.12/min</div></div>
+        <div class="vital-item"><div class="vital-emoji">❤️</div><div class="vital-info"><div class="vital-name">HEALTH</div><div class="vital-desc">Master vital. Only recovers naturally when other vitals are high. No direct button.</div><div class="vital-crit">⚠ Reaches 0 = Avatar dies permanently</div></div><div class="vital-decay">Affected by criticals</div></div>
+      </div>
+      <h2>Poop & Hygiene</h2>
+      <p>Your Avatar poops periodically. Up to <strong>6 poop objects</strong> appear on screen — click them to remove. Each removal gives +2 Bond. If ignored, Hygiene drops faster. With 3+ poops, odor clouds and a tinted screen appear.</p>
+      <h2>Basic Actions</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Action</th><th>Effect</th><th>Cost</th></tr>
+        <tr><td>🍖 Feed</td><td>+Hunger, removes critical hunger</td><td>Free</td></tr>
+        <tr><td>😄 Pet</td><td>+8 Mood, +1 Bond</td><td>Cooldown 10 cycles</td></tr>
+        <tr><td>🚿 Bath</td><td>+50–70 Hygiene, +15 Mood, +3 Bond</td><td>−15 Energy</td></tr>
+        <tr><td>💩 Remove poop</td><td>+Hygiene, +2 Bond</td><td>Free</td></tr>
+      </table></div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          SONO
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-sono">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 3</div>
         <div class="section-title">Sono & Modo Repouso</div>
@@ -702,7 +811,7 @@
       </div>
 
       <h2>Sono Normal</h2>
-      <p>Ativa manualmente ou automático quando Energia &lt; 5. O Avatar acorda automaticamente quando Energia chega a 100.</p>
+      <p>Ative manualmente ou automático quando Energia &lt; 5. O Avatar acorda automaticamente quando Energia chega a 100.</p>
       <div class="stat-block">
         <div class="stat-block-title">Durante o Sono</div>
         <div class="stat-row"><span class="label">⚡ Energia</span><span class="value">+4/ciclo (até ×1.15 com item ou elemento)</span></div>
@@ -712,7 +821,7 @@
       </div>
 
       <h2>Modo Repouso 😴</h2>
-      <p>Modo AFK para quando vais estar ausente por horas ou dias. Ativa manualmente. O Avatar entra em estado de hibernação mínima.</p>
+      <p>Modo AFK para quando vais estar ausente por horas ou dias. Ative manualmente. O Avatar entra em estado de hibernação mínima.</p>
       <div class="stat-block">
         <div class="stat-block-title">Durante o Modo Repouso</div>
         <div class="stat-row"><span class="label">🍖 Fome</span><span class="value">−0.05/ciclo (5% do normal)</span></div>
@@ -724,17 +833,49 @@
       </div>
 
       <div class="callout tip">
-        <strong>Recomendação:</strong> Ativa sempre o Modo Repouso antes de sair por mais de 2 horas. O Avatar aguenta vários dias em repouso sem morrer.
+        <strong>Recomendação:</strong> Ative sempre o Modo Repouso antes de sair por mais de 2 horas. O Avatar aguenta vários dias em repouso sem morrer.
       </div>
 
       <h2>Catchup Offline</h2>
-      <p>Quando regressas ao jogo depois de ausência, o sistema simula automaticamente até <strong>3 dias</strong> de tempo decorrido em segundo plano. Se as vitais chegarem a zero durante esse período, o Avatar pode morrer mesmo sem estares presente — por isso usa o Modo Repouso.</p>
+      <p>Quando você retorna ao jogo após uma ausência, o sistema simula automaticamente até <strong>3 dias</strong> de tempo decorrido em segundo plano. Se as vitais chegarem a zero durante esse período, o Avatar pode morrer mesmo sem você estar presente — por isso use o Modo Repouso.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 3</div>
+        <div class="section-title">Sleep & Rest Mode</div>
+        <p class="section-intro">When Energy drops, your Avatar needs to sleep. There are two rest modes with different behaviors.</p>
+      </div>
+      <h2>Normal Sleep</h2>
+      <p>Triggered manually or automatically when Energy &lt; 5. The Avatar wakes up automatically when Energy reaches 100.</p>
+      <div class="stat-block">
+        <div class="stat-block-title">During Sleep</div>
+        <div class="stat-row"><span class="label">⚡ Energy</span><span class="value">+4/cycle (up to ×1.15 with item or element)</span></div>
+        <div class="stat-row"><span class="label">🍖 Hunger</span><span class="value">−0.30/cycle (greatly reduced decay)</span></div>
+        <div class="stat-row"><span class="label">🚿 Hygiene</span><span class="value">−0.05/cycle</span></div>
+        <div class="stat-row"><span class="label">Minigames / Arena</span><span class="value">Blocked while sleeping</span></div>
+      </div>
+      <h2>Rest Mode 😴</h2>
+      <p>AFK mode for when you'll be away for hours or days. Activate manually. The Avatar enters minimal hibernation.</p>
+      <div class="stat-block">
+        <div class="stat-block-title">During Rest Mode</div>
+        <div class="stat-row"><span class="label">🍖 Hunger</span><span class="value">−0.05/cycle (5% of normal)</span></div>
+        <div class="stat-row"><span class="label">😄 Mood</span><span class="value">−0.02/cycle</span></div>
+        <div class="stat-row"><span class="label">🚿 Hygiene</span><span class="value">−0.03/cycle</span></div>
+        <div class="stat-row"><span class="label">⚡ Energy</span><span class="value">+0.2/cycle (slow recovery)</span></div>
+        <div class="stat-row"><span class="label">🤝 Bond</span><span class="value">−0.01/cycle</span></div>
+        <div class="stat-row"><span class="label">Health</span><span class="value">Only drops if Hunger &lt; 5</span></div>
+      </div>
+      <div class="callout tip"><strong>Recommendation:</strong> Always enable Rest Mode before leaving for more than 2 hours. Your Avatar can survive several days in rest without dying.</div>
+      <h2>Offline Catchup</h2>
+      <p>When you return after absence, the system automatically simulates up to <strong>3 days</strong> of elapsed time. If vitals hit zero during that period, your Avatar can die even while you're away — so use Rest Mode.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          DOENÇAS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-doencas">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 4</div>
         <div class="section-title">Doenças</div>
@@ -756,14 +897,32 @@
       </div>
 
       <div class="callout danger">
-        <strong>Perigo:</strong> Com 4 doenças activas em simultâneo, o Avatar perde −0.28 Saúde/ciclo só de doenças. Sem intervenção, pode morrer em poucas horas.
+        <strong>Perigo:</strong> Com 4 doenças ativas em simultâneo, o Avatar perde −0.28 Saúde/ciclo só de doenças. Sem intervenção, pode morrer em poucas horas.
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 4</div>
+        <div class="section-title">Diseases</div>
+        <p class="section-intro">If a vital stays in critical zone for too long (20 cycles), the Avatar develops a disease. Each active disease drains an additional −0.07 Health/cycle.</p>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Disease</th><th>Cause</th><th>Icon</th><th>Cure</th></tr>
+        <tr><td><strong>Exhaustion</strong></td><td>Energy &lt; 20 for 20+ cycles</td><td>😵</td><td>Sleep until Energy &gt; 20</td></tr>
+        <tr><td><strong>Malnutrition</strong></td><td>Hunger &lt; 15 for 20+ cycles</td><td>🥵</td><td>Feed regularly</td></tr>
+        <tr><td><strong>Infection</strong></td><td>Hygiene &lt; 15 for 20+ cycles</td><td>🤢</td><td>Bath + keep Hygiene high</td></tr>
+        <tr><td><strong>Melancholy</strong></td><td>Mood &lt; 20 for 20+ cycles</td><td>😔</td><td>Pet + play minigames</td></tr>
+      </table></div>
+      <div class="callout"><strong>Dimensional Antidote 🧪</strong> — Consumable item available in the shop for <em>300 🪙</em>. Instantly cures <strong>all</strong> active diseases. Use in emergencies.</div>
+      <div class="callout danger"><strong>Danger:</strong> With 4 active diseases simultaneously, the Avatar loses −0.28 Health/cycle from diseases alone. Without intervention, it can die within hours.</div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          NÍVEIS & FASES
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-niveis">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 5</div>
         <div class="section-title">Níveis & Fases</div>
@@ -824,14 +983,48 @@
       </ul>
 
       <div class="callout">
-        <strong>Multiplicadores de XP:</strong> Raridade Raro ×1.3 · Lendário ×1.6 · Vínculo Companheiro ×1.10 · Vínculo Alma Gémea ×1.15
+        <strong>Multiplicadores de XP:</strong> Raridade Raro ×1.3 · Lendário ×1.6 · Vínculo Companheiro ×1.10 · Vínculo Alma Gêmea ×1.15
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 5</div>
+        <div class="section-title">Levels & Phases</div>
+        <p class="section-intro">Your Avatar evolves through 4 visual phases as it levels up. From <em>Adult</em> (level 17) it can lay eggs.</p>
+      </div>
+      <h2>Evolution Phases</h2>
+      <div class="phase-list">
+        <div class="phase-item"><div class="phase-level">LVL 1–4</div><div><div class="phase-name">🐣 BABY</div><div class="phase-desc">Initial phase. Small Avatar (75px). No egg access.</div></div></div>
+        <div class="phase-item"><div class="phase-level">LVL 5–9</div><div><div class="phase-name">🧒 CHILD</div><div class="phase-desc">Grows (100px). More expressive. Personality begins to form.</div></div></div>
+        <div class="phase-item"><div class="phase-level">LVL 10–16</div><div><div class="phase-name">🧑 YOUNG</div><div class="phase-desc">Full form (120px). Full access to advanced minigames and arena.</div></div></div>
+        <div class="phase-item"><div class="phase-level">LVL 17+</div><div><div class="phase-name">🧙 ADULT</div><div class="phase-desc">Max size (140px). Can lay eggs. Access to all features.</div></div></div>
+      </div>
+      <h2>XP per Level</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Levels</th><th>XP Required</th></tr>
+        <tr><td>1–4</td><td>400 XP per level</td></tr>
+        <tr><td>5–9</td><td>800 XP per level</td></tr>
+        <tr><td>10–16</td><td>1,500 XP per level</td></tr>
+        <tr><td>17–24</td><td>2,500 XP per level</td></tr>
+        <tr><td>25–34</td><td>4,000 XP per level</td></tr>
+        <tr><td>35+</td><td>6,000 XP per level</td></tr>
+      </table></div>
+      <h2>How to Earn XP</h2>
+      <ul>
+        <li>Win <strong>minigames</strong> (main source)</li>
+        <li>Win <strong>Arena PvP</strong> battles</li>
+        <li>Visit <strong>friends</strong> (+15 XP, max 10 visits/day)</li>
+        <li>Complete <strong>Lore</strong> chapters</li>
+      </ul>
+      <div class="callout"><strong>XP Multipliers:</strong> Rare ×1.3 · Legendary ×1.6 · Companion Bond ×1.10 · Soulmate Bond ×1.15</div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          VÍNCULO
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-vinculo">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 6</div>
         <div class="section-title">Vínculo</div>
@@ -859,12 +1052,38 @@
 
       <h2>Decaimento do Vínculo</h2>
       <p>O Vínculo decai passivamente em −0.02 a −0.05/ciclo dependendo do Humor. Com Humor abaixo de 30, o decaimento acelera. Manter o Avatar feliz é a chave para um Vínculo forte.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 6</div>
+        <div class="section-title">Bond</div>
+        <p class="section-intro">Bond represents your relationship with the Avatar. It grows through care and attention. High Bond gives significant bonuses to egg rarity and XP.</p>
+      </div>
+      <h2>Bond Levels</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Level</th><th>Points</th><th>Bonus</th></tr>
+        <tr><td>Distant</td><td>0–50</td><td>No bonus</td></tr>
+        <tr><td><span class="badge badge-comum">Friend</span></td><td>51–150</td><td>XP ×1.10</td></tr>
+        <tr><td><span class="badge badge-raro">Companion</span></td><td>151–300</td><td>XP ×1.10 · Egg rarity +5% · Egg validity +1×</td></tr>
+        <tr><td><span class="badge badge-lend">Soulmate</span></td><td>301+</td><td>XP ×1.15 · Egg rarity +10% · Validity +2× · Max 3 eggs</td></tr>
+      </table></div>
+      <h2>How to Increase Bond</h2>
+      <ul>
+        <li><strong>Pet</strong> — +1 point (10-cycle cooldown)</li>
+        <li><strong>Bath</strong> — +3 points</li>
+        <li><strong>Remove poop</strong> — +2 points</li>
+        <li>Keeping <strong>Mood high</strong> slows Bond decay</li>
+      </ul>
+      <h2>Bond Decay</h2>
+      <p>Bond passively decays at −0.02 to −0.05/cycle depending on Mood. Below Mood 30, decay accelerates. Keeping your Avatar happy is key to a strong Bond.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          OVOS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-ovos">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 7</div>
         <div class="section-title">Ovos</div>
@@ -918,13 +1137,61 @@
           <tr><td>🌟 Lendário</td><td>7.0 💎</td><td>1.5 💎</td><td>14.0 💎</td></tr>
         </table>
       </div>
-      <p>Avatares Lendários têm +50% de bónus ao queimar ovos.</p>
+      <p>Avatares Lendários têm +50% de bônus ao queimar ovos.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 7</div>
+        <div class="section-title">Eggs</div>
+        <p class="section-intro">Adult Avatars (level 17+) can lay eggs that can be hatched, sold, or burned for crystals. Eggs are the main P2E income source.</p>
+      </div>
+      <h2>Laying Eggs</h2>
+      <ul>
+        <li>Requires level <strong>17+</strong> and <strong>50 🪙</strong></li>
+        <li><strong>6-hour</strong> cooldown between layings</li>
+        <li>Per laying: Common 1 egg · Rare 2 eggs · Legendary 3 eggs</li>
+        <li>Max <strong>10 eggs</strong> in inventory</li>
+      </ul>
+      <h2>Egg Rarity</h2>
+      <p>Egg rarity depends on the Avatar's rarity, level, and Bond bonus:</p>
+      <div class="tbl-wrap"><table>
+        <tr><th>Avatar</th><th>Level</th><th>⚪ Common</th><th>🔵 Rare</th><th>🌟 Legendary</th></tr>
+        <tr><td rowspan="3"><span class="badge badge-comum">Common</span></td><td>&lt;25</td><td>97%</td><td>3%</td><td>0%</td></tr>
+        <tr><td>25–35</td><td>94%</td><td>5.5%</td><td>0.5%</td></tr>
+        <tr><td>35+</td><td>90%</td><td>8%</td><td>2%</td></tr>
+        <tr><td rowspan="3"><span class="badge badge-raro">Rare</span></td><td>&lt;25</td><td>55%</td><td>40%</td><td>5%</td></tr>
+        <tr><td>25–35</td><td>40%</td><td>50%</td><td>10%</td></tr>
+        <tr><td>35+</td><td>25%</td><td>55%</td><td>20%</td></tr>
+        <tr><td rowspan="3"><span class="badge badge-lend">Legendary</span></td><td>&lt;25</td><td>20%</td><td>55%</td><td>25%</td></tr>
+        <tr><td>25–35</td><td>10%</td><td>50%</td><td>40%</td></tr>
+        <tr><td>35+</td><td>5%</td><td>40%</td><td>55%</td></tr>
+      </table></div>
+      <p style="font-size:12px;color:var(--muted);">+5% rarity if all vitals &gt;80 · +5–10% with Companion/Soulmate Bond</p>
+      <h2>Egg Validity</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Rarity</th><th>Base Validity</th></tr>
+        <tr><td>⚪ Common</td><td>7 days</td></tr>
+        <tr><td>🔵 Rare</td><td>14 days</td></tr>
+        <tr><td>🌟 Legendary</td><td>30 days</td></tr>
+      </table></div>
+      <p>Soulmate Bond doubles egg validity.</p>
+      <h2>Burning Eggs (Sell to P2E Pool)</h2>
+      <p>Instead of hatching, you can burn eggs for crystals. Price varies with the pool balance:</p>
+      <div class="tbl-wrap"><table>
+        <tr><th>Egg</th><th>Base Price</th><th>Min</th><th>Max</th></tr>
+        <tr><td>⚪ Common</td><td>20 🪙</td><td>—</td><td>—</td></tr>
+        <tr><td>🔵 Rare</td><td>2.5 💎</td><td>0.5 💎</td><td>5.0 💎</td></tr>
+        <tr><td>🌟 Legendary</td><td>7.0 💎</td><td>1.5 💎</td><td>14.0 💎</td></tr>
+      </table></div>
+      <p>Legendary Avatars get +50% bonus when burning eggs.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          MOEDAS & CRISTAIS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-moedas">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 8</div>
         <div class="section-title">Moedas & Cristais</div>
@@ -979,12 +1246,50 @@
           <tr><td>Tesouro</td><td>10 MATIC</td><td>100 💎</td></tr>
         </table>
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 8</div>
+        <div class="section-title">Coins & Crystals</div>
+        <p class="section-intro">The game has two currencies: <em>Coins 🪙</em> (in-game) and <em>Crystals 💎</em> (premium, real value on Polygon blockchain).</p>
+      </div>
+      <h2>Coins 🪙</h2>
+      <div class="card-grid">
+        <div class="card"><div class="card-title">How to Earn</div><div class="card-body">Minigames · Arena PvP (Common) · Burn Common eggs · Marketplace sales</div></div>
+        <div class="card"><div class="card-title">How to Spend</div><div class="card-body">Shop items · Lay eggs (50🪙) · Visit friends (50🪙) · Exchange to 💎 · Common Lore (50🪙/ch)</div></div>
+      </div>
+      <h2>Crystals 💎</h2>
+      <div class="card-grid">
+        <div class="card"><div class="card-title">How to Earn</div><div class="card-body">Burn Rare/Legendary eggs · Coin exchange · Arena PvP (Rare/Legendary) · Buy with MATIC</div></div>
+        <div class="card"><div class="card-title">How to Spend</div><div class="card-body">Hatch Rare (50💎) / Legendary (100💎) · Arena (10–20💎) · Lore (5–15💎) · Unlock slots (15💎)</div></div>
+      </div>
+      <h2>Exchange 🪙 → 💎</h2>
+      <p>Convert Coins to Crystals with a level 20+ Avatar. Rate varies with pool balance:</p>
+      <div class="tbl-wrap"><table>
+        <tr><th>Pool Balance</th><th>Rate</th></tr>
+        <tr><td>&gt; 1,000 💎</td><td>1,000 🪙 = 1 💎</td></tr>
+        <tr><td>500–1,000 💎</td><td>1,500 🪙 = 1 💎</td></tr>
+        <tr><td>&lt; 500 💎</td><td>2,000 🪙 = 1 💎</td></tr>
+        <tr><td>&lt; 100 💎</td><td>Exchange disabled</td></tr>
+      </table></div>
+      <p>Daily exchange limit: Common 1💎 · Rare 2💎 · Legendary 4💎.</p>
+      <h2>Buy Crystals</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Pack</th><th>Price (MATIC)</th><th>Crystals</th></tr>
+        <tr><td>Handful</td><td>0.5 MATIC</td><td>5 💎</td></tr>
+        <tr><td>Pouch ⭐</td><td>1 MATIC</td><td>10 💎</td></tr>
+        <tr><td>Bag</td><td>3 MATIC</td><td>30 💎</td></tr>
+        <tr><td>Chest</td><td>5 MATIC</td><td>50 💎</td></tr>
+        <tr><td>Treasure</td><td>10 MATIC</td><td>100 💎</td></tr>
+      </table></div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          ITENS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-itens">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 9</div>
         <div class="section-title">Loja de Itens</div>
@@ -1034,12 +1339,31 @@
       <div class="callout">
         <strong>Melhor combinação para iniciantes:</strong> Amuleto de Saciedade + Coroa de Cristal reduzem as duas vitais que decaem mais depressa, dando muito mais margem de manobra.
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 9</div>
+        <div class="section-title">Item Shop</div>
+        <p class="section-intro">The shop sells items that boost your Avatar's performance for 30 days. You can have up to 3 items equipped simultaneously (max 1 scenery).</p>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Item</th><th>Effect</th><th>Duration</th><th>Price</th></tr>
+        <tr><td>🥞 <strong>Satiety Amulet</strong></td><td>Hunger decays 25% slower</td><td>30 days</td><td>800 🪙</td></tr>
+        <tr><td>🎭 <strong>Crystal Crown</strong></td><td>Mood decays 40% slower</td><td>30 days</td><td>1,600 🪙</td></tr>
+        <tr><td>🌙 <strong>Sleep Amulet</strong></td><td>Energy recovery while sleeping ×2</td><td>30 days</td><td>1,200 🪙</td></tr>
+        <tr><td>🧪 <strong>Dimensional Antidote</strong></td><td>Instantly cures all diseases</td><td>Consumable</td><td>300 🪙</td></tr>
+        <tr><td>🥚 <strong>Easter Decoration</strong></td><td>Cosmetic (scenery)</td><td>30 days</td><td>500 🪙</td></tr>
+      </table></div>
+      <div class="callout tip"><strong>Rarity discount:</strong> Rare Avatars get −10% · Legendary get −20% on all shop items.</div>
+      <div class="callout"><strong>Best beginner combo:</strong> Satiety Amulet + Crystal Crown reduce the two fastest-decaying vitals, giving you much more breathing room.</div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          MARKETPLACE
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-marketplace">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 10</div>
         <div class="section-title">Marketplace</div>
@@ -1047,7 +1371,7 @@
       </div>
 
       <h2>Comprar Avatares</h2>
-      <p>Podes explorar os avatares à venda de outros jogadores, filtrar por elemento, raridade, nível e preço, e comprar directamente com Cristais.</p>
+      <p>Podes explorar os avatares à venda de outros jogadores, filtrar por elemento, raridade, nível e preço, e comprar diretamente com Cristais.</p>
       <ul>
         <li>10% de taxa de plataforma sobre cada venda (vai para a pool)</li>
         <li>Podes fazer zoom no avatar antes de comprar</li>
@@ -1061,13 +1385,35 @@
       <p>A pool acumula fundos através das taxas de marketplace, arena e câmbio. Quanto maior o saldo, melhores os preços de queima de ovos. Podes ver o estado da pool em tempo real no marketplace.</p>
 
       <h2>Meus Avatares</h2>
-      <p>Gestão dos teus slots de avatar: activar, listar, queimar ou desbloquear novos slots (15 💎 cada, máx 5 slots total).</p>
+      <p>Gerencie seus slots de avatar: ativar, listar, queimar ou desbloquear novos slots (15 💎 cada, máx 5 slots total).</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 10</div>
+        <div class="section-title">Marketplace</div>
+        <p class="section-intro">The Marketplace is a separate page where you can buy and sell Avatars, manage your slots, buy Crystals, and check the P2E pool status.</p>
+      </div>
+      <h2>Buy Avatars</h2>
+      <p>Browse Avatars for sale from other players, filter by element, rarity, level and price, and buy directly with Crystals.</p>
+      <ul>
+        <li>10% platform fee on each sale (goes to the pool)</li>
+        <li>Zoom in on an Avatar before buying</li>
+        <li>MetaMask wallet required for transactions</li>
+      </ul>
+      <h2>Sell Avatars</h2>
+      <p>List any <span class="badge badge-raro">Rare</span> or <span class="badge badge-lend">Legendary</span> Avatar for sale. Listed Avatars are frozen and cannot be played until de-listed.</p>
+      <h2>P2E Pool</h2>
+      <p>The pool accumulates funds through marketplace fees, arena, and exchange. The higher the balance, the better the egg burn prices. View pool status in real time on the marketplace.</p>
+      <h2>My Avatars</h2>
+      <p>Manage your avatar slots: activate, list, burn, or unlock new slots (15 💎 each, max 5 slots total).</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          MINIJOGOS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-minijogos">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 11</div>
         <div class="section-title">Minijogos</div>
@@ -1108,7 +1454,7 @@
             <div class="game-tags"><span class="badge badge-gold">Estratégia</span></div>
           </div>
         </div>
-        <div class="game-desc">Encontra os navios escondidos na grelha. Recompensa proporcional ao rácio acertos/erros.</div>
+        <div class="game-desc">Encontra os navios escondidos na grade. Recompensa proporcional ao rácio acertos/erros.</div>
       </div>
 
       <div class="game-card">
@@ -1141,7 +1487,7 @@
             <div class="game-tags"><span class="badge badge-gold">Atenção</span></div>
           </div>
         </div>
-        <div class="game-desc">Encontra o elemento diferente numa grelha de itens similares. Dificuldade aumenta por ronda.</div>
+        <div class="game-desc">Encontra o elemento diferente numa grade de itens similares. Dificuldade aumenta por ronda.</div>
       </div>
 
       <div class="game-card">
@@ -1152,14 +1498,31 @@
             <div class="game-tags"><span class="badge badge-gold">Observação</span></div>
           </div>
         </div>
-        <div class="game-desc">Segue as cartas enquanto são trocadas de posição. Clica na carta certa para ganhar pontos.</div>
+        <div class="game-desc">Acompanhe as cartas enquanto são trocadas de posição. Clique na carta certa para ganhar pontos.</div>
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 11</div>
+        <div class="section-title">Minigames</div>
+        <p class="section-intro">Minigames are the main source of XP and Coins. Each costs <em>10 Energy</em> and has 4 difficulties (Easy, Normal, Hard, Extreme).</p>
+      </div>
+      <div class="callout"><strong>Difficulty XP/Coin bonus:</strong> Easy (base) · Normal (+25%) · Hard (+50%) · Extreme (+100%).</div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🃏</div><div><div class="game-title">MEMORY</div><div class="game-tags"><span class="badge badge-gold">Concentration</span></div></div></div><div class="game-desc">Find matching card pairs. Perfect game (0 mistakes) earns max bonus. Up to 10 pairs on Extreme.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🔵</div><div><div class="game-title">SIMON</div><div class="game-tags"><span class="badge badge-gold">Memory</span></div></div></div><div class="game-desc">Repeat increasingly long color sequences. More rounds completed = higher reward.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🚢</div><div><div class="game-title">BATTLESHIP</div><div class="game-tags"><span class="badge badge-gold">Strategy</span></div></div></div><div class="game-desc">Find hidden ships on the grid. Reward proportional to hit/miss ratio.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🐍</div><div><div class="game-title">SNAKE</div><div class="game-tags"><span class="badge badge-gold">Reflexes</span></div></div></div><div class="game-desc">Classic Snake. Reward based on length reached before collision.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🌫️</div><div><div class="game-title">MAZE</div><div class="game-tags"><span class="badge badge-red">Challenging</span></div></div></div><div class="game-desc">Navigate a maze with fog of war and a BFS-chasing AI enemy. Reach the exit before time runs out. Grid 11×11 (Easy) to 17×17 (Extreme). Coins scattered on the map.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🔍</div><div><div class="game-title">ODD ONE OUT</div><div class="game-tags"><span class="badge badge-gold">Attention</span></div></div></div><div class="game-desc">Find the different element in a grid of similar items. Difficulty increases each round.</div></div>
+      <div class="game-card"><div class="game-header"><div class="game-icon">🃏</div><div><div class="game-title">SHELL GAME</div><div class="game-tags"><span class="badge badge-gold">Observation</span></div></div></div><div class="game-desc">Track cards as they're shuffled. Click the correct card to earn points.</div></div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          ARENA PVP
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-arena">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 12</div>
         <div class="section-title">Arena PvP</div>
@@ -1170,7 +1533,7 @@
       <ul>
         <li>Pedra-Papel-Tesoura · 3 rondas por combate · 30 segundos por ronda</li>
         <li>Filas separadas: <span class="badge badge-comum">Comum</span> <span class="badge badge-raro">Raro</span> <span class="badge badge-lend">Lendário</span></li>
-        <li>Avatar deve estar activo, vivo, acordado e fora do modo repouso</li>
+        <li>Avatar deve estar ativo, vivo, acordado e fora do modo repouso</li>
       </ul>
 
       <h2>Apostas & Recompensas</h2>
@@ -1188,16 +1551,43 @@
         <li>Vitória Comum: +20 pts · Raro: +35 pts · Lendário: +50 pts</li>
         <li>Empate: +10 pts · Derrota: +5 pts (participação)</li>
       </ul>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 12</div>
+        <div class="section-title">Arena PvP</div>
+        <p class="section-intro">Challenge other players in dimensional Rock-Paper-Scissors. Queues are separated by rarity to maintain balance.</p>
+      </div>
+      <h2>Rules</h2>
+      <ul>
+        <li>Rock-Paper-Scissors · 3 rounds per match · 30 seconds per round</li>
+        <li>Separate queues: <span class="badge badge-comum">Common</span> <span class="badge badge-raro">Rare</span> <span class="badge badge-lend">Legendary</span></li>
+        <li>Avatar must be active, alive, awake, and not in Rest Mode</li>
+      </ul>
+      <h2>Stakes & Rewards</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Queue</th><th>Stake</th><th>Net Prize (winner)</th><th>Arena Fee</th></tr>
+        <tr><td><span class="badge badge-comum">Common</span></td><td>50 🪙</td><td>85 🪙 (+35)</td><td>15%</td></tr>
+        <tr><td><span class="badge badge-raro">Rare</span></td><td>10 💎</td><td>17 💎 (+7)</td><td>15%</td></tr>
+        <tr><td><span class="badge badge-lend">Legendary</span></td><td>20 💎</td><td>34 💎 (+14)</td><td>15%</td></tr>
+      </table></div>
+      <h2>Rift Points (per arena)</h2>
+      <ul>
+        <li>Win Common: +20 pts · Rare: +35 pts · Legendary: +50 pts</li>
+        <li>Draw: +10 pts · Loss: +5 pts (participation)</li>
+      </ul>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          FISSURA
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-fissura">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 13</div>
         <div class="section-title">A Grande Fissura</div>
-        <p class="section-intro">Evento mensal de guerra entre facções. Junta-te a uma das 3 facções e contribui pontos através de todas as actividades do jogo. No final do mês, as facções são classificadas e os melhores contribuidores recebem recompensas.</p>
+        <p class="section-intro">Evento mensal de guerra entre facções. Junta-te a uma das 3 facções e contribui pontos através de todas as atividades do jogo. No final do mês, as facções são classificadas e os melhores contribuidores recebem recompensas.</p>
       </div>
 
       <h2>Facções</h2>
@@ -1236,12 +1626,41 @@
       </div>
 
       <p>A Fissura reinicia no dia 1 de cada mês às 00:05 UTC.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 13</div>
+        <div class="section-title">The Great Rift</div>
+        <p class="section-intro">A monthly faction war event. Join one of 3 factions and contribute points through all game activities. At month's end, factions are ranked and top contributors receive rewards.</p>
+      </div>
+      <h2>Factions</h2>
+      <div class="card-grid">
+        <div class="card" style="border-color:rgba(232,80,48,.3)"><div class="card-icon">🔥</div><div class="card-title" style="color:#e84830">CHAOS</div><div class="card-body">"Destroy to create." The faction of brute force and transformation.</div></div>
+        <div class="card" style="border-color:rgba(90,180,232,.3)"><div class="card-icon">⚖️</div><div class="card-title" style="color:var(--raro)">BALANCE</div><div class="card-body">"Harmony between forces." The faction of strategy and consistency.</div></div>
+        <div class="card" style="border-color:rgba(201,168,76,.3)"><div class="card-icon">✨</div><div class="card-title" style="color:var(--gold)">AETHER</div><div class="card-body">"Beyond the veil." The faction of knowledge and transcendence.</div></div>
+      </div>
+      <h2>How to Earn Points</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Activity</th><th>Points</th></tr>
+        <tr><td>Daily login</td><td>5</td></tr>
+        <tr><td>Coin exchange</td><td>10</td></tr>
+        <tr><td>PvP loss</td><td>5</td></tr>
+        <tr><td>PvP draw</td><td>10</td></tr>
+        <tr><td>PvP win (Common)</td><td>20</td></tr>
+        <tr><td>PvP win (Rare)</td><td>35</td></tr>
+        <tr><td>PvP win (Legendary)</td><td>50</td></tr>
+        <tr><td>PvE complete</td><td>8</td></tr>
+        <tr><td>PvE win</td><td>15</td></tr>
+      </table></div>
+      <p>The Rift resets on the 1st of each month at 00:05 UTC.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          LORE
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-lore">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 14</div>
         <div class="section-title">Lore</div>
@@ -1272,13 +1691,29 @@
         </table>
       </div>
 
-      <p>Os capítulos têm animação de máquina de escrever. Clica para saltar a animação. O Avatar deve estar vivo para ler Lore.</p>
+      <p>Os capítulos têm animação de máquina de escrever. Clique para saltar a animação. O Avatar deve estar vivo para ler Lore.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 14</div>
+        <div class="section-title">Lore</div>
+        <p class="section-intro">Explore the Fractured Veil universe's narrative through chapters unlocked based on your Avatar's rarity. Each chapter tells a piece of the dimensional post-apocalyptic story.</p>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Series</th><th>Min Rarity</th><th>Cost/Ch</th><th>Theme</th></tr>
+        <tr><td>📖 Veil Stories</td><td><span class="badge badge-comum">Common</span></td><td>50 🪙</td><td>The post-war saga — Fractures, Avatars and The Void</td></tr>
+        <tr><td>🔵 Rare Chronicles</td><td><span class="badge badge-raro">Rare</span></td><td>5 💎</td><td>Exclusive stories for Rare Avatars</td></tr>
+        <tr><td>🌟 Void Epics</td><td><span class="badge badge-lend">Legendary</span></td><td>15 💎</td><td>The truth about the Fractures — Legendary only</td></tr>
+      </table></div>
+      <p>Chapters have a typewriter animation. Click to skip it. The Avatar must be alive to read Lore.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          AMIGOS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-amigos">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 15</div>
         <div class="section-title">Amigos</div>
@@ -1293,13 +1728,30 @@
       </ul>
 
       <h2>Adicionar Amigos</h2>
-      <p>Adiciona pelo endereço de carteira ou nome de utilizador. Podes ver o Avatar e o nível dos teus amigos, e eles podem ver o teu.</p>
+      <p>Adicione pelo endereço de carteira ou nome de usuário. Você pode ver o Avatar e o nível dos seus amigos, e eles podem ver o seu.</p>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 15</div>
+        <div class="section-title">Friends</div>
+        <p class="section-intro">Add other players as friends, visit their Avatars, and earn bonus XP. A way to socialize and discover rare Avatars from other players.</p>
+      </div>
+      <h2>Visits</h2>
+      <ul>
+        <li>Visiting a friend costs <strong>50 🪙</strong> and gives <strong>+15 XP</strong></li>
+        <li>Max <strong>10 visits per day</strong></li>
+        <li><strong>8-hour</strong> cooldown between visits to the same friend</li>
+      </ul>
+      <h2>Adding Friends</h2>
+      <p>Add by wallet address or username. You can see your friends' Avatars and levels, and they can see yours.</p>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          ELEMENTOS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-elementos">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">REFERÊNCIA A</div>
         <div class="section-title">Tabela de Elementos</div>
@@ -1322,14 +1774,36 @@
       </div>
 
       <div class="callout tip">
-        <strong>Melhor elemento para iniciantes:</strong> <em>Aether</em> tem todos os decaimentos a −5%, tornando-o o mais fácil de gerir. <em>Terra</em> e <em>Vento</em> também são boas escolhas por reduzirem os decaimentos mais problemáticos.
+        <strong>Melhor elemento para iniciantes:</strong> <em>Aether</em> tem todos os decaimentos a −5%, sendo o mais fácil de gerenciar. <em>Terra</em> e <em>Vento</em> também são boas escolhas por reduzirem os decaimentos mais problemáticos.
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">REFERENCE A</div>
+        <div class="section-title">Elements Table</div>
+        <p class="section-intro">Each element applies modifiers to base decay rates. Values &lt;1.0 = slower decay (better). Values &gt;1.0 = faster decay.</p>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Element</th><th>🍖 Hunger</th><th>😄 Mood</th><th>⚡ Energy</th><th>🚿 Hygiene</th><th>Special</th></tr>
+        <tr><td>🔥 Fire</td><td style="color:#e05555">×1.10</td><td style="color:var(--green)">×0.85</td><td>—</td><td>—</td><td>Eats more, happier</td></tr>
+        <tr><td>💧 Water</td><td>—</td><td style="color:var(--green)">×0.85</td><td>—</td><td style="color:var(--green)">×0.85</td><td>Clean and serene</td></tr>
+        <tr><td>🪨 Earth</td><td style="color:var(--green)">×0.85</td><td>—</td><td>—</td><td>—</td><td>Eats less food</td></tr>
+        <tr><td>💨 Wind</td><td>—</td><td>—</td><td style="color:var(--green)">×0.85</td><td>—</td><td>Energy efficient</td></tr>
+        <tr><td>⚡ Lightning</td><td>—</td><td style="color:#e05555">×1.10</td><td style="color:var(--green)">×0.90</td><td>—</td><td>Sleep recovers ×1.15 energy</td></tr>
+        <tr><td>🌑 Shadow</td><td>—</td><td>—</td><td>—</td><td style="color:var(--green)">×0.90</td><td>Sleep recovers ×1.15 energy</td></tr>
+        <tr><td>✨ Light</td><td>—</td><td style="color:var(--green)">×0.90</td><td>—</td><td>—</td><td>Bond decays ×0.80 (more loyal)</td></tr>
+        <tr><td>🕳️ Void</td><td style="color:var(--green)">×0.90</td><td style="color:var(--green)">×0.90</td><td>—</td><td style="color:#e05555">×1.05</td><td>Balanced but dirty</td></tr>
+        <tr><td>🌀 Aether</td><td style="color:var(--green)">×0.95</td><td style="color:var(--green)">×0.95</td><td style="color:var(--green)">×0.95</td><td style="color:var(--green)">×0.95</td><td>Sleep ×1.05 · Most balanced</td></tr>
+      </table></div>
+      <div class="callout tip"><strong>Best element for beginners:</strong> <em>Aether</em> has all decays at −5%, making it the easiest to manage. <em>Earth</em> and <em>Wind</em> are also good choices for reducing the most problematic decays.</div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          RARIDADES
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-raridades">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">REFERÊNCIA B</div>
         <div class="section-title">Comparação de Raridades</div>
@@ -1351,12 +1825,34 @@
           <tr><td>Chance de nascimento</td><td>78%</td><td>20%</td><td>2%</td></tr>
         </table>
       </div>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">REFERENCE B</div>
+        <div class="section-title">Rarity Comparison</div>
+        <p class="section-intro">A complete summary of how rarities affect all game mechanics.</p>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Attribute</th><th><span class="badge badge-comum">Common</span></th><th><span class="badge badge-raro">Rare</span></th><th><span class="badge badge-lend">Legendary</span></th></tr>
+        <tr><td>XP Multiplier</td><td>×1.0</td><td>×1.3</td><td>×1.6</td></tr>
+        <tr><td>Coin Multiplier</td><td>×1.0</td><td>×1.2</td><td>×1.5</td></tr>
+        <tr><td>Decay speed</td><td>×1.0 (normal)</td><td>×0.8 (−20%)</td><td>×0.6 (−40%)</td></tr>
+        <tr><td>Eggs per laying</td><td>1 egg</td><td>2 eggs</td><td>3 eggs</td></tr>
+        <tr><td>Shop discount</td><td>—</td><td>−10%</td><td>−20%</td></tr>
+        <tr><td>Egg burn bonus</td><td>—</td><td>+25%</td><td>+50%</td></tr>
+        <tr><td>Daily exchange</td><td>1 💎/day</td><td>2 💎/day</td><td>4 💎/day</td></tr>
+        <tr><td>Arena stake</td><td>50 🪙</td><td>10 💎</td><td>20 💎</td></tr>
+        <tr><td>Hatch cost</td><td>Free</td><td>50 💎</td><td>100 💎</td></tr>
+        <tr><td>Birth chance</td><td>78%</td><td>20%</td><td>2%</td></tr>
+      </table></div>
+    </div><!-- /c-en -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
          DICAS
     ══════════════════════════════════════════════════════ -->
     <section class="section" id="s-dicas">
+    <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">REFERÊNCIA C</div>
         <div class="section-title">Dicas & Truques</div>
@@ -1390,23 +1886,73 @@
       <h2>Sobreviver mais tempo</h2>
       <ul>
         <li>Elemento <em>Aether</em> ou <em>Terra</em> para um início mais suave.</li>
-        <li>Com 4 doenças activas usa o <strong>Antídoto Dimensional</strong> (300🪙) imediatamente — não esperes.</li>
+        <li>Com 4 doenças ativas use o <strong>Antídoto Dimensional</strong> (300🪙) imediatamente — não espere.</li>
         <li>O Avatar pode sobreviver semanas em <strong>Modo Repouso</strong> sem atenção diária.</li>
-        <li>Subscreve os 3 itens da loja ao mesmo tempo para o Avatar quase se gerir sozinho.</li>
+        <li>Equipe os 3 itens da loja ao mesmo tempo para o Avatar quase se gerenciar sozinho.</li>
       </ul>
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">REFERENCE C</div>
+        <div class="section-title">Tips & Tricks</div>
+        <p class="section-intro">Practical advice to get the most out of the game.</p>
+      </div>
+      <h2>For Beginners</h2>
+      <ul>
+        <li>Always enable <strong>Rest Mode</strong> when leaving for more than 2 hours.</li>
+        <li><strong>Mood</strong> decays fastest (−1.5/cycle). Play minigames frequently.</li>
+        <li>Buy the <strong>Satiety Amulet</strong> as soon as you have 800🪙 — reduces Hunger decay by 25%.</li>
+        <li>Remove poop as soon as it appears to keep Bond growing.</li>
+        <li>Don't wait for the Avatar to auto-sleep — use the <em>Sleep</em> button when Energy is low.</li>
+      </ul>
+      <h2>Fast Growth</h2>
+      <ul>
+        <li>Play <strong>Maze</strong> on Extreme difficulty — best XP and coins per energy spent.</li>
+        <li>Keep all vitals above 80 when laying eggs — gives +5% rarity bonus.</li>
+        <li>Reach <strong>Soulmate Bond</strong> (301 pts) as fast as possible — eggs last twice as long and have better rarity.</li>
+      </ul>
+      <h2>P2E Economy</h2>
+      <ul>
+        <li>Check the <strong>pool balance</strong> before burning eggs — a full pool means better prices.</li>
+        <li>A <strong>Legendary level 35+</strong> Avatar with Soulmate Bond has 55% chance of laying Legendary eggs (7–14 💎 each).</li>
+        <li>Use the <strong>daily exchange</strong> every day with your best Avatar — small gains add up.</li>
+        <li>Pool withdrawal limit is 100 💎/day — plan your redemptions.</li>
+      </ul>
+      <h2>Survive Longer</h2>
+      <ul>
+        <li><em>Aether</em> or <em>Earth</em> element for a smoother start.</li>
+        <li>With 4 active diseases, use the <strong>Dimensional Antidote</strong> (300🪙) immediately — don't wait.</li>
+        <li>Your Avatar can survive weeks in <strong>Rest Mode</strong> without daily attention.</li>
+        <li>Equip all 3 shop items at once for a nearly self-managing Avatar.</li>
+      </ul>
+    </div><!-- /c-en -->
     </section>
 
   </main>
 </div>
 
 <script>
+  let _lang = localStorage.getItem('fv_lang') || 'pt';
+
+  function setLang(lang) {
+    _lang = lang;
+    localStorage.setItem('fv_lang', lang);
+    document.querySelectorAll('.c-pt').forEach(el => el.style.display = lang === 'en' ? 'none' : '');
+    document.querySelectorAll('.c-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+    const btn = document.getElementById('langBtn');
+    if(btn) btn.textContent = lang === 'en' ? '🌐 PT' : '🌐 EN';
+    document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
+    const mbl = document.getElementById('mobileLangBtn');
+    if(mbl) mbl.textContent = lang === 'en' ? '🌐 PT' : '🌐 EN';
+  }
+
+  function toggleLang() { setLang(_lang === 'en' ? 'pt' : 'en'); }
+
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const sec = document.getElementById('s-' + id);
     if(sec) sec.classList.add('active');
-    event.currentTarget && event.currentTarget.classList.add('active');
-    // find nav item by onclick
     document.querySelectorAll('.nav-item').forEach(n => {
       if(n.getAttribute('onclick') === `showSection('${id}')`) n.classList.add('active');
     });
@@ -1423,6 +1969,9 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('open');
   }
+
+  // Apply saved language on load
+  if(_lang === 'en') setLang('en');
 </script>
 </body>
 </html>
