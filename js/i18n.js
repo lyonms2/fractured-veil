@@ -163,6 +163,7 @@
 
       // UI estático
       'ui.loading':              'CARREGANDO...',
+      'ui.lang_btn':             '🌐 EN',
       'ui.logout':               '✕ SAIR',
       'ui.repouso_mode':         'MODO REPOUSO',
       'ui.repouso_resume':       '▶ RETOMAR',
@@ -479,6 +480,7 @@
 
       // Static UI
       'ui.loading':              'LOADING...',
+      'ui.lang_btn':             '🌐 PT',
       'ui.logout':               '✕ LOGOUT',
       'ui.repouso_mode':         'REST MODE',
       'ui.repouso_resume':       '▶ RESUME',
