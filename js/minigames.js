@@ -78,8 +78,10 @@ function updateMemInfo() {
 
 function memVictory() {
   playSound('win');
-  const xpMult    = Math.max(0.5, 1.5 - memErrors * 0.08);
-  const coinMult  = Math.max(0.2, 1.5 - memErrors * 0.15);
+  const _dMem    = miniDifficulty();
+  const _baseMem = [0.65, 0.75, 0.85, 1.0][_dMem.tier];
+  const xpMult   = Math.max(0.5,  1.5 - memErrors * 0.08);
+  const coinMult = Math.max(0.15, _baseMem - memErrors * 0.12);
   const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : memErrors <= 5 ? 10 : 5;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
@@ -195,15 +197,17 @@ function simonVictory() {
   // Total de acertos possíveis = 1+2+...+maxRounds
   const maxHits  = maxRounds * (maxRounds + 1) / 2;
   const frac     = maxHits > 0 ? simonCorrectHits / maxHits : 1;
-  // Moedas: proporcional aos acertos + bônus conclusão
-  const coinMult = frac + 0.6;
-  const xpMult   = frac + 0.3;
+  const _simonTierF = [1.0, 1.2, 1.4, 1.8][d.tier];
+  const coinMult  = frac * _simonTierF + 0.4;
+  const xpMult    = frac + 0.3;
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
+  const _simonBonus = d.tier >= 2 ? Math.round(d.coins * (d.tier === 2 ? 0.2 : 0.4) * rarityBonus().moedas) : 0;
+  if(_simonBonus > 0) earnCoins(_simonBonus);
   document.getElementById('simonResult').textContent = t('mg.simon.master');
   document.getElementById('simonResult').className   = 'mini-result-box win';
-  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain});
+  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain + _simonBonus});
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   document.getElementById('simonSeqDisplay').textContent = '';
   showBubble(t('mg.simon.bub.master'));

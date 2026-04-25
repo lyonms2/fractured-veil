@@ -179,7 +179,7 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
-  const coinGain = Math.round(d.coins * coinMult * rb.moedas * 0.80);
+  const coinGain = Math.round(d.coins * coinMult * rb.moedas);
   xp      += xpGain;
   earnCoins(coinGain);
   const _oldVinculo = vinculo;

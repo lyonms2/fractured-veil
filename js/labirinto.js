@@ -367,7 +367,7 @@ function _mzEnd(won, reason) {
   const again  = document.getElementById('mazeAgainBtn');
 
   // Moedas coletadas: valor por dificuldade ×  quantidade encontrada
-  const coinValues   = [3, 4, 7, 9];
+  const coinValues   = [2, 4, 6, 7];
   const coinPerPiece = coinValues[_mzTier];
   const coinReward   = _mzCoinsCollected * coinPerPiece;
 

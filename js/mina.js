@@ -199,18 +199,21 @@ function minaVictory() {
   playSound('win');
   const d          = miniDifficulty();
   const totalSafe  = minaRows * minaCols - minaMines;
-  // Moedas: proporcional às casas reveladas (=100%) + bônus limpeza +60%
-  const coinMult   = 1.0 + 0.6;
-  // XP: escala com dificuldade
-  const xpMult     = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
-  const humorGain  = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
+  const _minaMults  = [1.2, 1.5, 1.8, 2.2];
+  const coinMult    = _minaMults[d.tier];
+  const xpMult      = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
+  const humorGain   = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
+  const _flagBonus  = [1, 1, 2, 3][d.tier];
+  const _correctFl  = minaBoard.flat().filter(c => c.mine && c.flagged).length;
+  const _bombBonus  = Math.round(_correctFl * _flagBonus * rarityBonus().moedas);
+  if(_bombBonus > 0) earnCoins(_bombBonus);
   const label = d.tier >= 3 ? t('mina.result.win_mst') : d.tier >= 2 ? t('mina.result.win_hard') : t('mina.result.win');
   document.getElementById('minaResult').textContent = label;
   document.getElementById('minaResult').className   = 'mini-result-box win';
-  document.getElementById('minaReward').textContent = t('mina.reward.win', {humor: humorGain, xp: r.xpGain, coins: r.coinGain});
+  document.getElementById('minaReward').textContent = t('mina.reward.win', {humor: humorGain, xp: r.xpGain, coins: r.coinGain + _bombBonus});
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
   showBubble(d.tier >= 2 ? t('mina.bub.win_hard') : t('mina.bub.win'));
   addLog(t('mina.log.win', {xp: r.xpGain, coins: r.coinGain}), 'good');

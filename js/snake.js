@@ -253,9 +253,13 @@ function _snakeEnd() {
     } else {
       const cleared = frac >= 1.0;
       playSound && playSound(cleared || frac >= 0.8 ? 'win' : 'lose');
-      // XP escala com dificuldade; coins proporcionais à fração completada
       const xpMult = d.tier === 0 ? 1.3 : d.tier === 1 ? 1.6 : d.tier === 2 ? 1.8 : 2.0;
-      const r = miniReward(frac * xpMult, frac * 1.5, cleared ? 3 : 1, cleared);
+      const _snCoinMults = [1.0, 1.4, 1.7, 2.0];
+      const _snBallBonus = [1, 2, 3, 4];
+      const _cappedScore = Math.min(_snakeScore, maxScore);
+      const _ballBonus   = Math.round(_cappedScore * _snBallBonus[d.tier] * rarityBonus().moedas);
+      const r = miniReward(frac * xpMult, frac * _snCoinMults[d.tier], cleared ? 3 : 1, cleared);
+      if(_ballBonus > 0) earnCoins(_ballBonus);
 
       document.getElementById('snakeResult').textContent =
         cleared          ? t('snake.result.clear', {n: _snakeScore}) :
@@ -264,7 +268,7 @@ function _snakeEnd() {
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
       document.getElementById('snakeReward').textContent =
-        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain});
+        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain + _ballBonus});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
     }
