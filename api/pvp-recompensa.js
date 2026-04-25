@@ -16,7 +16,7 @@ const { contribuirFissura }            = require('./_fissura-utils');
 
 // Taxa de casa para cada jogo (espelha as constantes do cliente)
 const TAXAS = {
-  arena:        0.15,
+  arena:        0.08,
   batalhaNaval: 0.10,
   roubaMonte:   0.10,
 };

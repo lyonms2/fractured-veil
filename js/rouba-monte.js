@@ -235,7 +235,7 @@ function _rmRenderLobby() {
   const podePagar = _rmPodePagar();
   const aposta    = _rmAposta();
   const bruto     = aposta.cristais>0 ? aposta.cristais*2 : aposta.moedas*2;
-  const premio    = bruto - Math.floor(bruto*RM_TAXA);
+  const premio    = usaCris ? bruto - Math.floor(bruto*RM_TAXA) : bruto;
   const usaCris   = aposta.cristais>0;
   const moeda     = usaCris?'💎':'🪙';
 
@@ -1418,7 +1418,7 @@ async function _rmRenderResultado(sala, opWallet) {
       </div>
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: Math.floor(bruto-bruto*RM_TAXA), moeda, xp: xpGain})}</div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: (usaCris ? Math.floor(bruto-bruto*RM_TAXA) : bruto), moeda, xp: xpGain})}</div>`
           : empate
             ? `<div style="color:var(--muted);font-size:7px;">${t('rm.bets_returned', {xp: xpGain})}</div>`
             : `<div style="color:#e74c3c;font-size:7px;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}

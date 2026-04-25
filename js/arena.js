@@ -14,7 +14,7 @@ window._arenaLoaded = true;
 function rtdb() { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
 
 // ── Constantes ──
-var ARENA_TAXA        = 0.15;
+var ARENA_TAXA        = 0.08;
 var ARENA_TIMER_SEG   = 30;
 var ARENA_MAX_RODADAS = 3;
 // TTL generoso — 5 minutos — para não filtrar quem acabou de entrar
@@ -138,7 +138,7 @@ function _renderLobby() {
   const podePagar = _podePagar();
   const valorLiq  = aposta.cristais > 0
     ? `${_premioLiquido(aposta.cristais * 2)} 💎`
-    : `${_premioLiquido(aposta.moedas   * 2)} 🪙`;
+    : `${aposta.moedas * 2} 🪙`;
 
   el.innerHTML = `
     <button class="gs-x-btn" onclick="closeArena()">✕</button>
@@ -617,7 +617,7 @@ function _renderPartida(salaId, sala) {
     <div class="arena-partida">
       <div class="arena-partida-header">
         <div class="arena-rodada-badge">${t('arena.round_badge', {n: rodada, max: ARENA_MAX_RODADAS})}</div>
-        <div class="arena-premio-badge">💰 ${_premioLiquido(bruto)} ${usaCris?'💎':'🪙'}</div>
+        <div class="arena-premio-badge">💰 ${usaCris ? _premioLiquido(bruto) : bruto} ${usaCris?'💎':'🪙'}</div>
       </div>
 
       <div class="arena-vs-row">
@@ -1023,7 +1023,7 @@ async function _renderResultado(sala, opWallet) {
   const aposta   = sala.aposta;
   const usaCris  = aposta.cristais > 0;
   const bruto    = usaCris ? aposta.cristais * 2 : aposta.moedas * 2;
-  const premio   = _premioLiquido(bruto);
+  const premio   = usaCris ? _premioLiquido(bruto) : bruto;
   const moeda    = usaCris ? '💎' : '🪙';
   const meu      = sala.jogadores[walletAddress] || {};
   const op       = sala.jogadores[opWallet]       || {};
