@@ -443,7 +443,7 @@ async function handleBotarOvo(_req, res, db, uid) {
 
       const newSlots = [...slots];
       newSlots[slotIdx] = { ...slot, eggs: [...slotEggs, ...novosOvos], eggLayReadyAt: newReady, eggLayCooldown: Math.ceil(cdMs / 60000) };
-      tx.update(playerRef, { avatarSlots: newSlots, 'gs.moedas': moedas - 50, moedas: moedas - 50 });
+      tx.update(playerRef, { avatarSlots: newSlots, 'gs.moedas': moedas - 50 });
 
       return { eggs: novosOvos, novasMoedas: moedas - 50, eggLayReadyAt: newReady };
     });

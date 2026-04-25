@@ -31,6 +31,24 @@ function showCoinAnim(amount, isSpend = true) {
   setTimeout(() => fly.remove(), 950);
 }
 
+function showCristalAnim(amount, isSpend = true) {
+  const el = document.getElementById('resCristais');
+  if(!el) return;
+  el.parentElement.classList.remove('res-flash');
+  void el.parentElement.offsetWidth;
+  el.parentElement.classList.add('res-flash');
+  setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
+
+  const container = el.closest('.res') || el.parentElement;
+  container.style.position = 'relative';
+  const fly = document.createElement('div');
+  fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
+  fly.textContent = isSpend ? `-${amount} 💎` : `+${amount} 💎`;
+  fly.style.cssText = `position:absolute;left:50%;top:-4px;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${isSpend?'#e74c3c':'#a78bfa'};animation:coin-fly 0.9s ease-out forwards;`;
+  container.appendChild(fly);
+  setTimeout(() => fly.remove(), 950);
+}
+
 function spendCoins(amount) {
   if(gs.moedas < amount) return false;
   gs.moedas -= amount;

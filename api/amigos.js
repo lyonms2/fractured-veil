@@ -366,7 +366,6 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
 
       tx.update(db.collection('players').doc(uid), {
         'gs.moedas':                        novasMoedas,
-        moedas:                             novasMoedas,
         [`visitasLog.${alvoUid}.${tipo}`]:  Date.now(),
       });
       tx.update(db.collection('players').doc(alvoUid), {

@@ -39,8 +39,8 @@ function _rmDescAposta() {
 }
 function _rmDebitarAposta() {
   const a = _rmAposta();
-  if(a.cristais > 0) gs.cristais = (gs.cristais||0) - a.cristais;
-  else               gs.moedas   = (gs.moedas  ||0) - a.moedas;
+  if(a.cristais > 0) { gs.cristais = (gs.cristais||0) - a.cristais; showCristalAnim(a.cristais, true); }
+  else               { gs.moedas   = (gs.moedas  ||0) - a.moedas;   showCoinAnim(a.moedas, true); }
   updateResourceUI();
 }
 function _rmCreditarPremio(bruto, usaCris) {
@@ -1356,8 +1356,11 @@ async function _rmRenderResultado(sala, opWallet) {
       });
       const data = await resp.json();
       if(data.ok) {
+        const oldMoedas = gs.moedas; const oldCristais = gs.cristais;
         gs.cristais = data.novoSaldoCristais;
         gs.moedas   = data.novoSaldoMoedas;
+        if(usaCris) showCristalAnim(data.novoSaldoCristais - oldCristais, false);
+        else        showCoinAnim(data.novoSaldoMoedas - oldMoedas, false);
         updateResourceUI();
         scheduleSave();
       }

@@ -172,9 +172,7 @@ async function handleInscrever(req, res, db, uid) {
 
       tx.update(playerRef, {
         'gs.moedas':   novasMoedas,
-        moedas:        novasMoedas,
         'gs.cristais': novosCristais,
-        cristais:      novosCristais,
         faccao,
         fissuraMes:      mes,
         fissuraPontos:   0,

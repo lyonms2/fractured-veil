@@ -64,8 +64,8 @@ function _descAposta() {
 
 function _debitarAposta() {
   const a = _getAposta();
-  if(a.cristais > 0) gs.cristais = (gs.cristais||0) - a.cristais;
-  else               gs.moedas   = (gs.moedas  ||0) - a.moedas;
+  if(a.cristais > 0) { gs.cristais = (gs.cristais||0) - a.cristais; showCristalAnim(a.cristais, true); }
+  else               { gs.moedas   = (gs.moedas  ||0) - a.moedas;   showCoinAnim(a.moedas, true); }
   updateResourceUI();
 }
 
@@ -473,8 +473,8 @@ async function cancelarDesafio(salaId) {
   try { await rtdb().ref(`arena/lobby/${fila}/${walletAddress}`).remove(); } catch(e){}
   // Devolve aposta
   const a = _getAposta();
-  if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
-  else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
+  if(a.cristais > 0) { gs.cristais = (gs.cristais||0) + a.cristais; showCristalAnim(a.cristais, false); }
+  else               { gs.moedas   = (gs.moedas  ||0) + a.moedas;   showCoinAnim(a.moedas, false); }
   updateResourceUI();
   scheduleSave();
   // Limpa sala e notificações após 3s
@@ -523,8 +523,8 @@ function _renderSalaEspera(salaId) {
     if(s.status === 'cancelada' || s.status === 'recusada') {
       salaRef.off('value');
       const a = _getAposta();
-      if(a.cristais > 0) gs.cristais = (gs.cristais||0) + a.cristais;
-      else               gs.moedas   = (gs.moedas  ||0) + a.moedas;
+      if(a.cristais > 0) { gs.cristais = (gs.cristais||0) + a.cristais; showCristalAnim(a.cristais, false); }
+      else               { gs.moedas   = (gs.moedas  ||0) + a.moedas;   showCoinAnim(a.moedas, false); }
       updateResourceUI();
       scheduleSave();
       _arenaAtiva     = false;
@@ -1041,8 +1041,11 @@ async function _renderResultado(sala, opWallet) {
       });
       const data = await resp.json();
       if(data.ok) {
+        const oldMoedas = gs.moedas; const oldCristais = gs.cristais;
         gs.cristais = data.novoSaldoCristais;
         gs.moedas   = data.novoSaldoMoedas;
+        if(usaCris) showCristalAnim(data.novoSaldoCristais - oldCristais, false);
+        else        showCoinAnim(data.novoSaldoMoedas - oldMoedas, false);
         updateResourceUI();
         scheduleSave();
       }

@@ -135,10 +135,8 @@ module.exports = async function handler(req, res) {
 
     await db.runTransaction(async (tx) => {
       tx.update(playerRef, {
-        'gs.moedas': novasMoedas,
-        moedas:      novasMoedas,
+        'gs.moedas':   novasMoedas,
         'gs.cristais': novosCristais,
-        cristais:      novosCristais,
         cambioLog:    { data: hoje, count: novoCount },
         ultimoCambio: Date.now(),
       });

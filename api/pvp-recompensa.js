@@ -161,9 +161,7 @@ module.exports = async function handler(req, res) {
 
       tx.update(playerRef, {
         'gs.cristais': novosCristais,
-        cristais:      novosCristais,
         'gs.moedas':   novasMoedas,
-        moedas:        novasMoedas,
       });
 
       return { novosCristais, novasMoedas };
