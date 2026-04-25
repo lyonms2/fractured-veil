@@ -158,7 +158,7 @@ async function disconnectWallet() {
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
   eggClicks = 0; eggLayCooldown = 0;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
-  Object.assign(gs, { moedas:100, ovos:0, cristais:0, extraSlots:0, primeira:true });
+  Object.assign(gs, { moedas:200, ovos:0, cristais:0, extraSlots:0, primeira:true });
   avatarSlots   = [null, null, null];
   activeSlotIdx = 0;
   eggsInInventory = [];
@@ -351,6 +351,9 @@ async function _onLoginSuccess(user) {
                       : wasModoRepouso              ? t('log.offline_repouso')
                       :                              t('log.offline_updated');
         addLog(t('log.offline_away', { h: hrs, m: mins, status: modoLog }), 'info');
+        if(vitals.saude < 40 && !dead) {
+          setTimeout(() => { addLog(t('onboard.tip.offline'), 'bad'); showBubble(t('onboard.tip.offline')); }, 800);
+        }
         if(vitals.saude <= 0) {
           dead = true;
           saveRuntimeToSlot(activeSlotIdx); // flush dead:true no slot antes de salvar
@@ -435,6 +438,10 @@ async function _onLoginSuccess(user) {
       updateEquippedDisplay();
       syncEasterEggs();
 
+      if(gs.moedas < 30) {
+        setTimeout(() => addLog(t('onboard.tip.coins'), 'bad'), 1200);
+      }
+
     } else if(avatar && !hatched) {
       setupAvatar();
       document.getElementById('idleScreen').style.display    = 'none';
@@ -448,6 +455,9 @@ async function _onLoginSuccess(user) {
 
   } else {
     addLog(t('log.welcome_new'), 'good');
+    setTimeout(() => addLog(t('onboard.tip.summon'), 'info'), 1000);
+    setTimeout(() => addLog(t('onboard.tip.feed'),   'info'), 2500);
+    setTimeout(() => addLog(t('onboard.tip.play'),   'info'), 4500);
     updateResourceUI();
   }
 

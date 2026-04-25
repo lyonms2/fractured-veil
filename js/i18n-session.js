@@ -46,6 +46,14 @@ window.registerStrings(
     'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Activa-o no Marketplace.',
     'summon.bub.hello':      'Olá! 🐣',
     'summon.log.born':       '{nome} nasceu! Cuide bem dele.',
+
+    // onboarding tips
+    'onboard.tip.summon':  '💡 Dica: clique em INVOCAR para criar seu primeiro avatar — é gratuito!',
+    'onboard.tip.feed':    '🍖 Dica: alimente seu avatar clicando em ALIMENTAR (10 🪙 por refeição).',
+    'onboard.tip.play':    '🎮 Dica: jogue minigames para ganhar moedas e XP — clique em BRINCAR.',
+    'onboard.tip.rest':    '💤 Dica: antes de sair, ative o Repouso segurando o botão 💤 DORMIR.',
+    'onboard.tip.offline': '⚠️ Saúde crítica! Alimente e cure seu avatar o quanto antes.',
+    'onboard.tip.coins':   '⚠️ Poucas moedas! Jogue minigames (BRINCAR) para ganhar mais.',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -90,5 +98,13 @@ window.registerStrings(
     'summon.log.born_slot':  '{nome} was born in Slot {n}! Activate it in Marketplace.',
     'summon.bub.hello':      'Hello! 🐣',
     'summon.log.born':       '{nome} was born! Take good care of them.',
+
+    // onboarding tips
+    'onboard.tip.summon':  '💡 Tip: click SUMMON to create your first avatar — it\'s free!',
+    'onboard.tip.feed':    '🍖 Tip: feed your avatar by clicking FEED (10 🪙 per meal).',
+    'onboard.tip.play':    '🎮 Tip: play minigames to earn coins and XP — click PLAY.',
+    'onboard.tip.rest':    '💤 Tip: before leaving, activate Rest by holding the 💤 SLEEP button.',
+    'onboard.tip.offline': '⚠️ Critical health! Feed and heal your avatar as soon as possible.',
+    'onboard.tip.coins':   '⚠️ Low on coins! Play minigames (PLAY) to earn more.',
   }
 );

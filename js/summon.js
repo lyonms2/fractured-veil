@@ -317,4 +317,11 @@ function hatch() {
   else                     playSound('rarity_comum');
   showBubble(t('summon.bub.hello'));
   addLog(t('summon.log.born', {nome: avatar.nome.split(',')[0]}), 'good');
+
+  if(!localStorage.getItem('fv_first_hatch')) {
+    localStorage.setItem('fv_first_hatch', '1');
+    setTimeout(() => addLog(t('onboard.tip.feed'), 'info'), 2000);
+    setTimeout(() => addLog(t('onboard.tip.play'), 'info'), 4500);
+    setTimeout(() => addLog(t('onboard.tip.rest'), 'info'), 7500);
+  }
 }
