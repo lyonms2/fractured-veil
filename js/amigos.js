@@ -248,8 +248,8 @@ function _contarVisitasGlobais() {
   let total = 0;
   for(const amigoUid of Object.keys(_amigosData.visitasLog)) {
     const log = _amigosData.visitasLog[amigoUid] || {};
-    for(const t of Object.keys(log)) {
-      if(agora - (log[t] || 0) < COOLDOWN_VISITA_MS) total++;
+    for(const _logTs of Object.keys(log)) {
+      if(agora - (log[_logTs] || 0) < COOLDOWN_VISITA_MS) total++;
     }
   }
   return total;

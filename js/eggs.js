@@ -451,7 +451,6 @@ async function confirmHatch() {
   };
   window._pendingEggSlot = targetSlot;
 
-  console.log('[confirmHatch] slot', targetSlot, 'reservado com pendingEgg=true');
   hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);
 }
 
@@ -467,45 +466,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   document.getElementById('actionBtns').style.pointerEvents = 'none';
   const _cb = document.getElementById('btnCancelHatch'); if(_cb) _cb.style.display = 'none';
 
-  const stop1 = document.querySelector('#eggGrad stop:first-child');
-  const stop2 = document.querySelector('#eggGrad stop:nth-child(2)');
-  const stop3 = document.querySelector('#eggGrad stop:last-child');
-  const aura1 = document.getElementById('eggAura1');
-  const aura2 = document.getElementById('eggAura2');
-  const glowEl= document.getElementById('eggGlowEl');
-  const shine = document.getElementById('eggShine');
-  const sparks= document.getElementById('eggSparkles');
-  if(raridade === 'Lendário') {
-    if(stop1) stop1.setAttribute('stop-color','#c8860a');
-    if(stop2) stop2.setAttribute('stop-color','#7a4400');
-    if(stop3) stop3.setAttribute('stop-color','#1a0e00');
-    if(glowEl){ glowEl.setAttribute('fill','#8a5a00'); glowEl.setAttribute('opacity','.6'); }
-    if(shine)  shine.setAttribute('fill','#ffd700');
-    if(aura1){ aura1.setAttribute('stroke','#e8a030'); aura1.style.opacity='0.7'; }
-    if(aura2){ aura2.setAttribute('stroke','#ffd700'); aura2.style.opacity='0.4'; }
-    if(sparks) sparks.style.opacity='1';
-  } else if(raridade === 'Raro') {
-    if(stop1) stop1.setAttribute('stop-color','#1a6aaa');
-    if(stop2) stop2.setAttribute('stop-color','#0d3560');
-    if(stop3) stop3.setAttribute('stop-color','#0a0f1e');
-    if(glowEl){ glowEl.setAttribute('fill','#1a4a8a'); glowEl.setAttribute('opacity','.5'); }
-    if(shine)  shine.setAttribute('fill','#7dc8f0');
-    if(aura1){ aura1.setAttribute('stroke','#5ab4e8'); aura1.style.opacity='0.6'; }
-    if(aura2){ aura2.setAttribute('stroke','#a0d8f0'); aura2.style.opacity='0.3'; }
-    if(sparks) sparks.style.opacity='0';
-  } else {
-    if(stop1) stop1.setAttribute('stop-color','#5a3a9a');
-    if(stop2) stop2.setAttribute('stop-color','#2d1a5e');
-    if(stop3) stop3.setAttribute('stop-color','#0b0916');
-    if(glowEl){ glowEl.setAttribute('fill','#3d2a6e'); glowEl.setAttribute('opacity','.4'); }
-    if(shine)  shine.setAttribute('fill','#8060c0');
-    if(aura1)  aura1.style.opacity='0';
-    if(aura2)  aura2.style.opacity='0';
-    if(sparks) sparks.style.opacity='0';
-  }
-  document.querySelectorAll('#eggCracks line').forEach(l => {
-    l.setAttribute('stroke', crackColor); l.style.opacity='0';
-  });
+  applyEggVisual(raridade, crackColor);
 
   document.getElementById('eggHint').textContent = t('egg.hint.hatching');
   document.getElementById('eggProgress').textContent = '';
@@ -551,7 +512,6 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   }, 900);
   setTimeout(() => {
     flash.style.opacity = '0';
-    console.log('[hatchWithAnimation] chamando hatch()');
     hatch();
   }, 1200);
 }
@@ -601,11 +561,6 @@ function cancelHatch() {
   addLog(t('egg.log.cancelled'), 'info');
 }
 
-function prepareEggScreen(ovo, targetSlot) {
-  const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
-  const crackColor = rarColors[ovo.raridade];
-  summonFromEgg(ovo.raridade, ovo.elemento, crackColor, targetSlot);
-}
 
 function applyEggVisual(raridade, crackColor) {
   const stop1 = document.querySelector('#eggGrad stop:first-child');

@@ -99,11 +99,6 @@ function renderEggBrowse() {
   }).join('');
 }
 
-// Placeholder para modal de detalhe futuro
-function openEggDetail(id) {
-  // por agora só o botão nos cards — futuramente modal de detalhe
-}
-
 // ═══════════════════════════════════════════
 // LISTAR OVO À VENDA
 // ═══════════════════════════════════════════

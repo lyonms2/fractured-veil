@@ -21,14 +21,10 @@ function getGameState() {
   // que estava nesse slot antes da chocagem começar.
   const hasPendingEgg = avatarSlots.some(s => s && s.pendingEgg);
   if(hasPendingEgg) {
-    console.log('[getGameState] pendingEgg detectado — avatarSlots não será salvo neste ciclo');
     return {
-      // Salva só o estado económico e o lastSeen — slots ficam intactos no Firebase
-      gs:         {...gs},
-      cristais:   gs.cristais   || 0,
-      extraSlots: gs.extraSlots || 0,
-      cambioLog:  window._cambioLog || null,
-      lastSeen:   Date.now()
+      gs:        {...gs},
+      cambioLog: window._cambioLog || null,
+      lastSeen:  Date.now()
       // avatarSlots deliberadamente omitido — merge:true preserva o valor actual no Firebase
     };
   }
@@ -84,8 +80,6 @@ function getGameState() {
     avatarSlots:   slotsSafe,
     activeSlotIdx: activeSlotIdx,
     gs:            {...gs},
-    cristais:      gs.cristais   || 0,
-    extraSlots:    gs.extraSlots || 0,
     cambioLog:     window._cambioLog || null,
     lastSeen:      Date.now(),
     nomeBusca,
