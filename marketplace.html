@@ -800,7 +800,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="section-title">⚔️ Missões</div>
         <button class="btn-miss-publish" onclick="openMissaoModal()">＋ Publicar Missão</button>
       </div>
-      <div class="section-sub">Contrata outros jogadores para tarefas usando 💎 Cristais como escrow. Pagamento garantido por depósito duplo.</div>
+      <div class="section-sub">Contrata outros jogadores para tarefas usando 💎 Cristais como garantia. Pagamento assegurado por depósito duplo.</div>
 
       <div class="miss-banner">
         <div class="miss-banner-title">◆ COMO FUNCIONA</div>
@@ -1169,7 +1169,7 @@ async function confirmPublicarMissao() {
     updateCristaisDisplay();
 
     closeMissaoModal();
-    showToast('✅ Missão publicada! Os cristais estão em escrow.');
+    showToast('✅ Missão publicada! Os cristais estão bloqueados como garantia.');
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     status.textContent = 'Erro ao publicar. Tenta novamente.';
@@ -1183,7 +1183,7 @@ async function confirmPublicarMissao() {
 <div class="overlay" id="missaoModalOverlay" style="display:none;align-items:center;justify-content:center;">
   <div class="modal-box" style="max-width:460px;">
     <div class="modal-title">⚔️ Publicar Missão</div>
-    <div class="modal-sub">Define os detalhes da missão. O valor em cristais será bloqueado em escrow até a conclusão.</div>
+    <div class="modal-sub">Define os detalhes da missão. O valor em cristais será bloqueado como garantia até à conclusão.</div>
 
     <div class="modal-field">
       <div class="modal-label">Título da Missão</div>
