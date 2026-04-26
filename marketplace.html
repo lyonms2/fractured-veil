@@ -423,6 +423,25 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .btn-miss-ver-cands:disabled{opacity:.4;cursor:not-allowed;}
 .miss-det-closed{font-size:11px;color:var(--muted);text-align:center;padding:20px;background:var(--surface2);border-radius:8px;}
 .miss-apply-note{font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5;}
+
+/* ── Painel de candidatos ── */
+.miss-cand-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;transition:border-color .2s;}
+.miss-cand-card:hover{border-color:var(--border2);}
+.miss-cand-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.miss-cand-wallet{font-family:monospace;font-size:11px;color:var(--text2);font-weight:600;}
+.miss-cand-date{font-size:8px;color:var(--muted);}
+.miss-cand-msg{font-size:11px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:10px;line-height:1.5;}
+.miss-cand-rep-row{margin-bottom:10px;}
+.miss-cand-rep{font-size:8px;color:var(--muted);font-style:italic;opacity:.7;}
+.miss-cand-actions{display:flex;justify-content:flex-end;}
+.btn-miss-select{padding:7px 18px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;}
+.btn-miss-select:hover{filter:brightness(1.15);}
+.miss-cand-confirm{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 12px;margin-top:8px;}
+.miss-cand-confirm-txt{font-size:9px;color:var(--gold);margin-bottom:8px;text-align:center;line-height:1.5;}
+.miss-cand-confirm-row{display:flex;gap:8px;}
+.miss-cands-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;}
+.miss-cands-header-title{font-family:'Cinzel',serif;font-size:11px;color:var(--text);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.miss-cands-header-reward{font-family:'Cinzel',serif;font-size:12px;color:var(--gem2);flex-shrink:0;}
 .miss-already-applied{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-already-applied-title{font-family:'Cinzel',serif;font-size:11px;color:var(--green2);letter-spacing:1px;margin-bottom:8px;}
 .miss-cand-msg-preview{font-size:10px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:8px;text-align:left;}
@@ -1179,7 +1198,7 @@ async function missOpenDetail(id) {
         <div class="miss-det-owner-box">
           <div class="miss-det-owner-title">✦ A tua missão</div>
           <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
-          <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="closeMissDetalhe()">
+          <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="missVerCandidatos('${id}')">
             ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
           </button>
         </div>`;
@@ -1218,6 +1237,105 @@ async function missOpenDetail(id) {
 function closeMissDetalhe() {
   document.getElementById('missDetalheOverlay').style.display = 'none';
   _missCurrentId = null;
+}
+
+// ══ PARTE 2 — VER E SELECIONAR CANDIDATOS ══
+
+async function missVerCandidatos(missId) {
+  closeMissDetalhe();
+  const ov = document.getElementById('missCandidatosOverlay');
+  ov.style.display = 'flex';
+  document.getElementById('candMissTitle').textContent = 'A carregar...';
+  document.getElementById('candMissReward').textContent = '';
+  document.getElementById('candList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const [missSnap, candSnap] = await Promise.all([
+      db.collection('missoes').doc(missId).get(),
+      db.collection('missoes').doc(missId).collection('candidaturas').orderBy('createdAt','asc').get()
+    ]);
+    if(!missSnap.exists) { document.getElementById('candList').innerHTML = '<div class="miss-det-closed">Missão não encontrada.</div>'; return; }
+    const m = { id: missSnap.id, ...missSnap.data() };
+    const icon = _MISS_CAT_ICONS[m.category] || '📦';
+    document.getElementById('candMissTitle').textContent = `${icon} ${m.title}`;
+    document.getElementById('candMissReward').textContent = `💎 ${m.reward}`;
+
+    const cands = candSnap.docs.map(d => ({ uid: d.id, ...d.data() })).filter(c => c.status === 'pending');
+    if(!cands.length) {
+      document.getElementById('candList').innerHTML = '<div class="miss-det-closed">Nenhuma candidatura pendente.</div>';
+      return;
+    }
+    document.getElementById('candList').innerHTML = cands.map((c, i) => {
+      const addr = c.uid.slice(0,6)+'...'+c.uid.slice(-4);
+      const when = c.createdAt?.toDate ? c.createdAt.toDate().toLocaleDateString('pt-PT') : '—';
+      return `<div class="miss-cand-card" id="cand-card-${i}">
+        <div class="miss-cand-header">
+          <div class="miss-cand-wallet">🧑 ${addr}</div>
+          <div class="miss-cand-date">${when}</div>
+        </div>
+        <div class="miss-cand-msg">"${c.mensagem}"</div>
+        <div class="miss-cand-rep-row">
+          <span class="miss-cand-rep">⭐ Sistema de reputação disponível em breve</span>
+        </div>
+        <div class="miss-cand-actions" id="cand-actions-${i}">
+          <button class="btn-miss-select" onclick="missShowConfirm(${i},'${missId}','${c.uid}')">Selecionar</button>
+        </div>
+        <div class="miss-cand-confirm" id="cand-confirm-${i}" style="display:none;">
+          <div class="miss-cand-confirm-txt">Tens a certeza? Os outros candidatos serão rejeitados e esta ação é irreversível.</div>
+          <div class="miss-cand-confirm-row">
+            <button class="btn-modal-cancel" style="flex:1;font-size:10px;" onclick="missCancelConfirm(${i})">Cancelar</button>
+            <button class="btn-modal-confirm" style="flex:1;font-size:10px;" onclick="missConfirmSelect('${missId}','${c.uid}',${i})">✓ Confirmar</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('candList').innerHTML = '<div class="miss-det-closed">Erro ao carregar candidatos.</div>';
+  }
+}
+
+function closeMissCandidatos() {
+  document.getElementById('missCandidatosOverlay').style.display = 'none';
+}
+
+function missShowConfirm(idx) {
+  document.getElementById(`cand-actions-${idx}`).style.display = 'none';
+  document.getElementById(`cand-confirm-${idx}`).style.display = 'block';
+}
+
+function missCancelConfirm(idx) {
+  document.getElementById(`cand-actions-${idx}`).style.display = 'flex';
+  document.getElementById(`cand-confirm-${idx}`).style.display = 'none';
+}
+
+async function missConfirmSelect(missId, candidatoUid, idx) {
+  const btn = document.querySelector(`#cand-confirm-${idx} .btn-modal-confirm`);
+  btn.disabled = true;
+  btn.textContent = 'A processar...';
+  try {
+    const candSnap = await db.collection('missoes').doc(missId).collection('candidaturas').get();
+    const batch = db.batch();
+    candSnap.docs.forEach(d => {
+      batch.update(d.ref, { status: d.id === candidatoUid ? 'selected' : 'rejected' });
+    });
+    batch.update(db.collection('missoes').doc(missId), {
+      status: 'awaiting',
+      selectedWorker: candidatoUid
+    });
+    await batch.commit();
+
+    const addr = candidatoUid.slice(0,6)+'...'+candidatoUid.slice(-4);
+    document.getElementById('candList').innerHTML = `
+      <div class="miss-already-applied" style="padding:24px;text-align:center;">
+        <div class="miss-already-applied-title">✅ Candidato Selecionado</div>
+        <div class="miss-cand-msg-preview">Wallet: ${addr}</div>
+        <div class="miss-already-applied-sub" style="margin-top:6px;">O candidato irá depositar a garantia para confirmar a participação.</div>
+      </div>`;
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✓ Confirmar';
+    showToast('Erro ao selecionar. Tenta novamente.', 'err');
+  }
 }
 
 async function submitCandidatura(missId) {
@@ -1358,6 +1476,21 @@ async function confirmPublicarMissao() {
     <div class="modal-row" style="margin-top:14px;">
       <button class="btn-modal-cancel" onclick="closeMissaoModal()">Cancelar</button>
       <button class="btn-modal-confirm" onclick="confirmPublicarMissao()">Publicar & Depositar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CANDIDATOS ══ -->
+<div class="overlay" id="missCandidatosOverlay" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal-box" style="max-width:500px;max-height:85vh;overflow-y:auto;">
+    <div class="modal-title">👥 Candidatos</div>
+    <div class="miss-cands-header">
+      <div class="miss-cands-header-title" id="candMissTitle"></div>
+      <div class="miss-cands-header-reward" id="candMissReward"></div>
+    </div>
+    <div id="candList"></div>
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+      <button class="btn-modal-cancel" onclick="closeMissCandidatos()">Fechar</button>
     </div>
   </div>
 </div>
