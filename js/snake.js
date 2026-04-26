@@ -65,6 +65,7 @@ function startSnake() {
   document.getElementById('snakeInfo').textContent =
     t('snake.info', {diff: t(d.i18nKey), nivel});
 
+  _snakeSyncBest();
   _snakePlaceFood();
   _snakeRender();
 
@@ -367,8 +368,19 @@ document.addEventListener('keydown', e => {
 // ── Ranking ────────────────────────────────────────────────────────
 async function _snakeSaveRanking(score) {
   if(!rtdb() || !walletAddress || !avatar) return;
-  const nome = avatar.nome ? avatar.nome.split(',')[0] : '???';
-  await rtdb().ref(`snakeRanking/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
+  try {
+    const nome = avatar.nome ? avatar.nome.split(',')[0] : '???';
+    await rtdb().ref(`snakeRanking/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
+  } catch(e) {}
+}
+
+async function _snakeSyncBest() {
+  if(!rtdb() || !walletAddress || !avatar || !(gs.snakeBest > 0)) return;
+  try {
+    const snap = await rtdb().ref(`snakeRanking/${walletAddress}`).once('value');
+    const cur  = snap.val();
+    if(!cur || cur.score < gs.snakeBest) _snakeSaveRanking(gs.snakeBest);
+  } catch(e) {}
 }
 
 async function snakeLoadRanking() {
