@@ -442,6 +442,20 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .miss-cands-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;}
 .miss-cands-header-title{font-family:'Cinzel',serif;font-size:11px;color:var(--text);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .miss-cands-header-reward{font-family:'Cinzel',serif;font-size:12px;color:var(--gem2);flex-shrink:0;}
+
+/* ── Confirmação de participação (Parte 3) ── */
+.miss-card.miss-card-awaiting{border-color:var(--gold);animation:miss-pulse 2.5s ease-in-out infinite;}
+@keyframes miss-pulse{0%,100%{box-shadow:0 0 14px rgba(201,168,76,.15);}50%{box-shadow:0 0 28px rgba(201,168,76,.35);}}
+.miss-selected-banner{background:linear-gradient(90deg,rgba(201,168,76,.12),rgba(124,58,237,.08));border-bottom:1px solid rgba(201,168,76,.2);padding:6px 14px;font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:2px;text-align:center;}
+.miss-confirm-box{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:16px;}
+.miss-confirm-box-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);letter-spacing:1px;margin-bottom:6px;text-align:center;}
+.miss-confirm-box-sub{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:14px;text-align:center;}
+.miss-confirm-gains{background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:12px;}
+.miss-confirm-gain-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:var(--text2);}
+.miss-confirm-gain-row:last-child{border-bottom:none;padding-top:10px;margin-top:4px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:var(--text);}
+.miss-confirm-cost{color:var(--red2);font-weight:700;font-family:'Cinzel',serif;font-size:12px;}
+.miss-confirm-earn{color:var(--gem2);font-weight:700;font-family:'Cinzel',serif;font-size:12px;}
+.miss-confirm-net{color:var(--green2);font-weight:700;font-family:'Cinzel',serif;font-size:13px;}
 .miss-already-applied{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-already-applied-title{font-family:'Cinzel',serif;font-size:11px;color:var(--green2);letter-spacing:1px;margin-bottom:8px;}
 .miss-cand-msg-preview{font-size:10px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:8px;text-align:left;}
@@ -1116,7 +1130,7 @@ async function renderMissoes() {
     if(_missFilterVal === 'open')     docs = docs.filter(m => m.status === 'open');
     if(_missFilterVal === 'progress') docs = docs.filter(m => m.status === 'progress');
     if(_missFilterVal === 'done')     docs = docs.filter(m => m.status === 'done');
-    if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.worker === walletAddress);
+    if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.selectedWorker === walletAddress || m.worker === walletAddress);
     if(!docs.length) {
       list.innerHTML = `<div class="miss-empty">
         <div class="miss-empty-icon">⚔️</div>
@@ -1131,8 +1145,10 @@ async function renderMissoes() {
       const deadline = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
       const employer = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
       const icon = _MISS_CAT_ICONS[m.category] || '📦';
-      return `<div class="miss-card" onclick="missOpenDetail('${m.id}')">
+      const isMyTurn = m.status === 'awaiting' && m.selectedWorker === walletAddress;
+      return `<div class="miss-card${isMyTurn ? ' miss-card-awaiting' : ''}" onclick="missOpenDetail('${m.id}')">
         <div class="miss-card-stripe"></div>
+        ${isMyTurn ? `<div class="miss-selected-banner">✦ Foste selecionado — confirma a tua participação</div>` : ''}
         <div class="miss-card-body">
           <div class="miss-card-top">
             <div class="miss-card-title">${icon} ${m.title||'—'}</div>
@@ -1190,33 +1206,85 @@ async function missOpenDetail(id) {
       </div>`;
     document.getElementById('detEmployer').innerHTML = `Publicado por <span class="miss-det-employer-addr">${employer}</span>`;
 
-    const isEmployer = walletAddress === m.employer;
+    const isEmployer       = walletAddress === m.employer;
+    const isSelectedWorker = m.selectedWorker === walletAddress;
+
+    // ── Empregador ──
     if(isEmployer) {
-      const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
-      const n = candSnap.size;
+      if(m.status === 'awaiting') {
+        const addr = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-det-owner-box">
+            <div class="miss-det-owner-title">✦ Candidato Selecionado</div>
+            <div class="miss-det-owner-sub">A aguardar que <strong style="color:var(--text)">${addr}</strong> confirme a participação e deposite a garantia.</div>
+          </div>`;
+      } else {
+        const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
+        const n = candSnap.size;
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-det-owner-box">
+            <div class="miss-det-owner-title">✦ A tua missão</div>
+            <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
+            <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="missVerCandidatos('${id}')">
+              ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
+            </button>
+          </div>`;
+      }
+      return;
+    }
+
+    // ── Trabalhador selecionado — confirmar participação ──
+    if(isSelectedWorker && m.status === 'awaiting') {
       document.getElementById('detActionArea').innerHTML = `
-        <div class="miss-det-owner-box">
-          <div class="miss-det-owner-title">✦ A tua missão</div>
-          <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
-          <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="missVerCandidatos('${id}')">
-            ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
+        <div class="miss-confirm-box">
+          <div class="miss-confirm-box-title">✦ Foste Selecionado!</div>
+          <div class="miss-confirm-box-sub">O empregador escolheu-te. Confirma a participação depositando a garantia para bloquear a missão.</div>
+          <div class="miss-confirm-gains">
+            <div class="miss-confirm-gain-row">
+              <span>Garantia a depositar</span>
+              <span class="miss-confirm-cost">− 💎 ${m.reward}</span>
+            </div>
+            <div class="miss-confirm-gain-row">
+              <span>Receberás ao concluir</span>
+              <span class="miss-confirm-earn">+ 💎 ${m.reward*2}</span>
+            </div>
+            <div class="miss-confirm-gain-row">
+              <span>Lucro líquido</span>
+              <span class="miss-confirm-net">+ 💎 ${m.reward}</span>
+            </div>
+          </div>
+          <div id="detConfirmStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-bottom:8px;text-align:center;"></div>
+          <button class="btn-modal-confirm" style="width:100%;" onclick="missConfirmarParticipacao('${id}',${m.reward})">
+            ✓ Confirmar & Depositar 💎 ${m.reward}
           </button>
         </div>`;
       return;
     }
+
+    // ── Missão em aguardo mas utilizador não é o selecionado ──
+    if(m.status === 'awaiting') {
+      document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">A aguardar confirmação do candidato selecionado.</div>';
+      return;
+    }
+
+    // ── Missão fechada (em andamento, concluída, disputa) ──
     if(m.status !== 'open') {
       document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Esta missão já não aceita candidaturas.</div>';
       return;
     }
+
+    // ── Já candidatou ──
     const candDoc = await db.collection('missoes').doc(id).collection('candidaturas').doc(walletAddress).get();
     if(candDoc.exists) {
       const cand = candDoc.data();
-      document.getElementById('detActionArea').innerHTML = `
-        <div class="miss-already-applied">
-          <div class="miss-already-applied-title">✅ Candidatura enviada</div>
-          <div class="miss-cand-msg-preview">"${cand.mensagem}"</div>
-          <div class="miss-already-applied-sub">Aguarda a resposta do empregador.</div>
-        </div>`;
+      const rejeitado = cand.status === 'rejected';
+      document.getElementById('detActionArea').innerHTML = rejeitado
+        ? `<div class="miss-det-closed" style="color:var(--muted);">A tua candidatura não foi selecionada desta vez.</div>`
+        : `<div class="miss-already-applied">
+             <div class="miss-already-applied-title">✅ Candidatura enviada</div>
+             <div class="miss-cand-msg-preview">"${cand.mensagem}"</div>
+             <div class="miss-already-applied-sub">Aguarda a resposta do empregador.</div>
+           </div>`;
       return;
     }
     document.getElementById('detActionArea').innerHTML = `
@@ -1335,6 +1403,45 @@ async function missConfirmSelect(missId, candidatoUid, idx) {
     btn.disabled = false;
     btn.textContent = '✓ Confirmar';
     showToast('Erro ao selecionar. Tenta novamente.', 'err');
+  }
+}
+
+async function missConfirmarParticipacao(missId, reward) {
+  const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
+  const statusEl = document.getElementById('detConfirmStatus');
+  if(cristais < reward) {
+    statusEl.textContent = `Saldo insuficiente (tens ${cristais} 💎, precisas ${reward} 💎).`;
+    return;
+  }
+  const btn = document.querySelector('#detActionArea .btn-modal-confirm');
+  btn.disabled = true;
+  statusEl.textContent = 'A processar...';
+  try {
+    const batch = db.batch();
+    batch.update(db.collection('missoes').doc(missId), { status: 'progress' });
+    batch.update(
+      db.collection('missoes').doc(missId).collection('candidaturas').doc(walletAddress),
+      { status: 'confirmed' }
+    );
+    const newCristais = cristais - reward;
+    batch.update(db.collection('players').doc(walletAddress), { 'gs.cristais': newCristais });
+    await batch.commit();
+
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    playerData.cristais    = newCristais;
+    updateCristaisDisplay();
+
+    document.getElementById('detActionArea').innerHTML = `
+      <div class="miss-already-applied">
+        <div class="miss-already-applied-title">✅ Participação Confirmada!</div>
+        <div class="miss-cand-msg-preview">Conclui a missão dentro do prazo e gera o QR code de entrega para receber o pagamento.</div>
+        <div class="miss-already-applied-sub">💎 ${reward} bloqueados como garantia.</div>
+      </div>`;
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    statusEl.textContent = 'Erro ao processar. Tenta novamente.';
+    btn.disabled = false;
   }
 }
 
