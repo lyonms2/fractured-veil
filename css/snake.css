@@ -241,29 +241,29 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 20px 24px !important;
+    gap: 5px;
+    padding: 14px 20px !important;
     max-height: 100vh;
     overflow: hidden;
     box-sizing: border-box;
   }
 
   #snakeCanvas {
-    /* Ajusta ao espaço disponível: viewport menos os elementos ao redor (~190px) */
-    width:  min(290px, calc(100vh - 210px)) !important;
-    height: min(290px, calc(100vh - 210px)) !important;
+    /* ~10% menor: 260px cap, offset aumentado para dar folga aos elementos */
+    width:  min(260px, calc(100vh - 240px)) !important;
+    height: min(260px, calc(100vh - 240px)) !important;
   }
 
   /* D-pad desnecessário no desktop — teclado/WASD disponível */
   .snake-dpad { display: none !important; }
 
-  #snakeModal .mini-title  { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
-  #snakeModal .mini-info   { font-size: 10px !important; }
-  #snakeModal #snakeScore  { font-size: 13px !important; }
-  #snakeModal .mini-result-box  { font-size: 13px !important; }
-  #snakeModal .mini-reward-txt  { font-size: 11px !important; }
-  #snakeModal .mini-btns   { margin-top: 4px; gap: 10px; }
-  #snakeModal .mini-btn    { font-size: 10px !important; padding: 10px 24px !important; }
+  #snakeModal .mini-title  { font-size: 12px !important; letter-spacing: 4px; margin-bottom: 0; }
+  #snakeModal .mini-info   { font-size: 9px !important; }
+  #snakeModal #snakeScore  { font-size: 12px !important; }
+  #snakeModal .mini-result-box  { font-size: 12px !important; }
+  #snakeModal .mini-reward-txt  { font-size: 10px !important; }
+  #snakeModal .mini-btns   { margin-top: 2px; gap: 8px; }
+  #snakeModal .mini-btn    { font-size: 9px !important; padding: 8px 20px !important; }
 
   /* Dica de teclado */
   #snakeModal::after {
