@@ -202,9 +202,9 @@ function _bnRenderLobby() {
   const rar       = _bnRaridade();
   const podePagar = _bnPodePagar();
   const aposta    = _bnAposta();
-  const bruto     = aposta.cristais > 0 ? aposta.cristais*2 : aposta.moedas*2;
-  const premio    = usaCris ? bruto - Math.floor(bruto * BN_TAXA) : bruto;
   const usaCris   = aposta.cristais > 0;
+  const bruto     = usaCris ? aposta.cristais*2 : aposta.moedas*2;
+  const premio    = usaCris ? bruto - Math.floor(bruto * BN_TAXA) : bruto;
   const moeda     = usaCris ? '💎' : '🪙';
 
   el.innerHTML = `
