@@ -58,7 +58,8 @@ function startSnake() {
   document.getElementById('snakeReward').textContent = '';
   document.getElementById('snakeAgainBtn').style.display   = 'none';
   document.getElementById('snakeRankingBtn').style.display = 'none';
-  document.getElementById('snakeRankingPanel').style.display = 'none';
+  document.getElementById('snakeRankingPanel').style.display   = 'none';
+  document.getElementById('snakeRankingBackdrop').style.display = 'none';
   _snakeRankOpen = false;
   _snakeUpdateScore();
 
@@ -465,8 +466,10 @@ function _snakeRecordAnim(score) {
 
 function snakeToggleRanking() {
   _snakeRankOpen = !_snakeRankOpen;
-  const panel = document.getElementById('snakeRankingPanel');
-  panel.style.display = _snakeRankOpen ? 'flex' : 'none';
+  const panel    = document.getElementById('snakeRankingPanel');
+  const backdrop = document.getElementById('snakeRankingBackdrop');
+  panel.style.display    = _snakeRankOpen ? 'flex' : 'none';
+  backdrop.style.display = _snakeRankOpen ? 'block' : 'none';
   if(_snakeRankOpen) {
     const tierKey = `t${_snakeLastTier}`;
     document.getElementById('snakeRankingTitle').textContent =

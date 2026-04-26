@@ -276,6 +276,15 @@
   #snakeModal .mini-btns   { margin-top: 2px; gap: 8px; }
   #snakeModal .mini-btn    { font-size: 9px !important; padding: 8px 20px !important; }
 
+  /* Backdrop escuro atrás do painel de ranking */
+  .snake-ranking-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 509;
+    background: rgba(4,3,10,.75);
+    cursor: pointer;
+  }
+
   /* Ranking panel: overlay sobre o canvas no desktop */
   #snakeRankingPanel {
     position: fixed;
