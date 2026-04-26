@@ -492,6 +492,24 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 /* ── Badge de ações pendentes ── */
 .miss-nav-badge{display:inline-block;background:#ef4444;color:#fff;font-size:7px;font-weight:700;font-family:'Rajdhani',sans-serif;min-width:14px;height:14px;border-radius:7px;text-align:center;line-height:14px;padding:0 3px;margin-left:4px;vertical-align:middle;}
 
+/* ── Banner de disputas abertas ── */
+.miss-dispute-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.22);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.miss-dispute-banner-txt{font-size:10px;color:var(--red2);line-height:1.4;}
+.miss-dispute-banner-txt strong{font-family:'Cinzel',serif;letter-spacing:.3px;}
+.btn-miss-ver-disputas{padding:5px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:6px;color:var(--red2);font-family:'Cinzel',serif;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;flex-shrink:0;}
+.btn-miss-ver-disputas:hover{background:rgba(239,68,68,.22);}
+
+/* ── Status de votante ── */
+.miss-voter-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:9px;line-height:1.5;}
+.miss-voter-status.qualified{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--green2);}
+.miss-voter-status.progress{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);color:var(--muted);}
+.miss-voter-status-icon{font-size:16px;flex-shrink:0;}
+.miss-voter-status-bar{display:flex;gap:6px;margin-top:3px;}
+.miss-voter-req{display:flex;align-items:center;gap:3px;}
+.miss-voter-req-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.miss-voter-req-dot.ok{background:var(--green2);}
+.miss-voter-req-dot.no{background:var(--muted);opacity:.5;}
+
 /* ── Cancelar / Timeout ── */
 .miss-cancel-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-cancel-title{font-family:'Cinzel',serif;font-size:10px;color:var(--red2);letter-spacing:1px;margin-bottom:6px;}
@@ -973,6 +991,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="miss-banner-note">⚠️ Em caso de disputa, o tribunal comunitário decide. A parte perdedora perde o depósito.</div>
       </div>
 
+      <div id="missVoterStatus" style="display:none;"></div>
+      <div id="missDisputeBanner" style="display:none;"></div>
       <div class="miss-search-row">
         <input class="miss-search-input" id="missSearchInput" placeholder="🔍 Pesquisar missões..."
           oninput="missOnSearch(this.value)"/>
@@ -983,6 +1003,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <button class="miss-filter-btn" onclick="missSetFilter(this,'progress')">Em Andamento</button>
         <button class="miss-filter-btn" onclick="missSetFilter(this,'done')">Concluídas</button>
         <button class="miss-filter-btn" onclick="missSetFilter(this,'mine')">Minhas</button>
+        <button class="miss-filter-btn" id="missFilterDisputas" onclick="missSetFilter(this,'dispute')">⚖️ Disputas</button>
       </div>
 
       <div id="missoesList" class="miss-grid">
@@ -1232,6 +1253,7 @@ async function renderMissoes(append) {
     if(_missFilterVal === 'open')     docs = docs.filter(m => m.status === 'open');
     if(_missFilterVal === 'progress') docs = docs.filter(m => m.status === 'progress');
     if(_missFilterVal === 'done')     docs = docs.filter(m => m.status === 'done');
+    if(_missFilterVal === 'dispute')  docs = docs.filter(m => m.status === 'dispute');
     if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.selectedWorker === walletAddress);
     if(_missSearchQuery) {
       const q2 = _missSearchQuery;
@@ -2198,17 +2220,41 @@ async function _missResolverDisputa(missId, m, reward) {
   if(currentSection === 'missoes') renderMissoes();
 }
 
-// ══ FEATURE 4 — BADGE DE AÇÕES PENDENTES ══
+// ══ FEATURE 4 — BADGE + VOTER STATUS + DISPUTE BANNER ══
 
 async function missCheckBadge() {
   if(!walletAddress) return;
   try {
-    const [asWorkerSnap, asEmployerSnap] = await Promise.all([
-      db.collection('missoes').where('selectedWorker','==',walletAddress).where('status','==','awaiting').limit(5).get(),
-      db.collection('missoes').where('employer','==',walletAddress).where('status','==','dispute').limit(5).get()
-    ]);
-    const count = asWorkerSnap.size + asEmployerSnap.size;
+    const rep          = playerData?.gs?.rep || null;
+    const done         = rep?.done         || 0;
+    const scoreCount   = rep?.scoreCount   || 0;
+    const isQualified  = done >= MISS_VOTE_REQ_DONE && scoreCount >= MISS_VOTE_REQ_RATINGS;
+
+    const queries = [
+      db.collection('missoes').where('selectedWorker','==',walletAddress).where('status','==','awaiting').limit(9).get(),
+      db.collection('missoes').where('employer','==',walletAddress).where('status','==','dispute').limit(9).get()
+    ];
+    if(isQualified) {
+      queries.push(db.collection('missoes').where('status','==','dispute').limit(20).get());
+    }
+
+    const results = await Promise.all(queries);
+    const awaitingSnap  = results[0];
+    const myDisputeSnap = results[1];
+    const allDisputeSnap = isQualified ? results[2] : null;
+
+    // disputas onde posso votar (não sou parte)
+    const votableDisputes = allDisputeSnap
+      ? allDisputeSnap.docs.filter(d => {
+          const m = d.data();
+          return m.employer !== walletAddress && m.selectedWorker !== walletAddress;
+        })
+      : [];
+
+    const count = awaitingSnap.size + myDisputeSnap.size + votableDisputes.length;
     _missUpdateBadge(count);
+    _missUpdateVoterStatus(done, scoreCount, isQualified);
+    _missUpdateDisputeBanner(votableDisputes.length);
   } catch(e) {}
 }
 
@@ -2219,6 +2265,59 @@ function _missUpdateBadge(count) {
     if(count > 0) { el.textContent = count > 9 ? '9+' : count; el.style.display = ''; }
     else { el.style.display = 'none'; }
   });
+}
+
+function _missUpdateVoterStatus(done, scoreCount, isQualified) {
+  const el = document.getElementById('missVoterStatus');
+  if(!el || !walletAddress) return;
+  if(isQualified) {
+    el.style.display = '';
+    el.innerHTML = `
+      <div class="miss-voter-status qualified">
+        <div class="miss-voter-status-icon">⚖️</div>
+        <div>
+          <strong style="font-family:'Cinzel',serif;letter-spacing:.3px;">Tribunal Qualificado</strong>
+          <div>Podes votar em disputas e receber recompensas.</div>
+        </div>
+      </div>`;
+  } else {
+    el.style.display = '';
+    const doneOk  = done  >= MISS_VOTE_REQ_DONE;
+    const rcOk    = scoreCount >= MISS_VOTE_REQ_RATINGS;
+    el.innerHTML = `
+      <div class="miss-voter-status progress">
+        <div class="miss-voter-status-icon">⚖️</div>
+        <div>
+          <div>Progresso para Tribunal</div>
+          <div class="miss-voter-status-bar">
+            <div class="miss-voter-req">
+              <div class="miss-voter-req-dot ${doneOk?'ok':'no'}"></div>
+              <span>${done}/${MISS_VOTE_REQ_DONE} missões concluídas</span>
+            </div>
+            <span style="opacity:.3">·</span>
+            <div class="miss-voter-req">
+              <div class="miss-voter-req-dot ${rcOk?'ok':'no'}"></div>
+              <span>${scoreCount}/${MISS_VOTE_REQ_RATINGS} avaliações recebidas</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+function _missUpdateDisputeBanner(count) {
+  const el = document.getElementById('missDisputeBanner');
+  if(!el) return;
+  if(count <= 0) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="miss-dispute-banner">
+      <div class="miss-dispute-banner-txt">
+        <strong>⚖️ ${count} disputa${count!==1?'s':''} aberta${count!==1?'s':''}</strong><br>
+        A tua opinião conta — vota e ganha recompensas da pool P2E.
+      </div>
+      <button class="btn-miss-ver-disputas" onclick="missSetFilter(document.getElementById('missFilterDisputas'),'dispute')">Ver Disputas</button>
+    </div>`;
 }
 
 // ══ FEATURE 5 — HELPER DONE (avaliação) ══
