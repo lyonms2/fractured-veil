@@ -456,6 +456,19 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .miss-confirm-cost{color:var(--red2);font-weight:700;font-family:'Cinzel',serif;font-size:12px;}
 .miss-confirm-earn{color:var(--gem2);font-weight:700;font-family:'Cinzel',serif;font-size:12px;}
 .miss-confirm-net{color:var(--green2);font-weight:700;font-family:'Cinzel',serif;font-size:13px;}
+
+/* ── QR de entrega (Parte 4) ── */
+.miss-deliver-box{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:16px;text-align:center;}
+.miss-deliver-title{font-family:'Cinzel',serif;font-size:11px;color:var(--blue2);letter-spacing:1px;margin-bottom:6px;}
+.miss-deliver-sub{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.miss-qr-wrap{margin-top:14px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:10px;padding:16px;text-align:center;}
+.miss-qr-title{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:3px;margin-bottom:12px;}
+.miss-qr-img-wrap{background:#fff;border-radius:8px;padding:8px;display:inline-block;margin-bottom:10px;}
+.miss-qr-img{width:180px;height:180px;display:block;}
+.miss-qr-token{font-size:9px;color:var(--muted);font-family:monospace;letter-spacing:.5px;margin-bottom:8px;word-break:break-all;}
+.miss-entrega-confirm-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:4px;}
+.miss-entrega-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:var(--text2);}
+.miss-entrega-row:last-child{border-bottom:none;}
 .miss-already-applied{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-already-applied-title{font-family:'Cinzel',serif;font-size:11px;color:var(--green2);letter-spacing:1px;margin-bottom:8px;}
 .miss-cand-msg-preview{font-size:10px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:8px;text-align:left;}
@@ -1267,7 +1280,40 @@ async function missOpenDetail(id) {
       return;
     }
 
-    // ── Missão fechada (em andamento, concluída, disputa) ──
+    // ── Trabalhador em andamento — gerar QR ──
+    if(isSelectedWorker && m.status === 'progress') {
+      document.getElementById('detActionArea').innerHTML = `
+        <div class="miss-deliver-box">
+          <div class="miss-deliver-title">⚔️ Missão em Andamento</div>
+          <div class="miss-deliver-sub">Quando concluíres a tarefa, gera o QR code e mostra-o ao empregador para receber o pagamento.</div>
+          <button class="btn-miss-select" style="width:100%;" onclick="missGerarQR('${id}',${m.reward})">
+            📱 Gerar QR Code de Entrega
+          </button>
+        </div>
+        <div id="detQRArea"></div>`;
+      return;
+    }
+
+    // ── Empregador em andamento — aguardar QR ou token manual ──
+    if(isEmployer && m.status === 'progress') {
+      const wAddr = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
+      document.getElementById('detActionArea').innerHTML = `
+        <div class="miss-det-owner-box">
+          <div class="miss-det-owner-title">⚔️ Missão em Andamento</div>
+          <div class="miss-det-owner-sub">Trabalhador: <strong style="color:var(--text)">${wAddr}</strong><br>Quando concluir, ele irá apresentar o QR code de entrega.</div>
+          <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;">
+            <div class="modal-label" style="margin-bottom:6px;">Confirmar com token manual</div>
+            <div style="display:flex;gap:8px;">
+              <input class="modal-input" id="detDeliverToken" placeholder="Cola o token aqui..." style="flex:1;font-family:monospace;font-size:11px;"/>
+              <button class="btn-miss-select" style="white-space:nowrap;padding:8px 14px;" onclick="missValidarToken('${id}',${m.reward})">Confirmar</button>
+            </div>
+            <div id="detDeliverStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    // ── Missão fechada (concluída, disputa, etc.) ──
     if(m.status !== 'open') {
       document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Esta missão já não aceita candidaturas.</div>';
       return;
@@ -1404,6 +1450,134 @@ async function missConfirmSelect(missId, candidatoUid, idx) {
     btn.textContent = '✓ Confirmar';
     showToast('Erro ao selecionar. Tenta novamente.', 'err');
   }
+}
+
+// ══ PARTE 4 — QR CODE DE ENTREGA ══
+
+async function missGerarQR(missId, reward) {
+  const btn = document.querySelector('#detActionArea .btn-miss-select');
+  if(btn) { btn.disabled = true; btn.textContent = 'A gerar...'; }
+  try {
+    const token = btoa(`${missId}|${walletAddress}|${Date.now()}`).replace(/[^A-Za-z0-9]/g,'').slice(0, 24);
+    await db.collection('missoes').doc(missId).update({ deliveryToken: token });
+    const url  = `${window.location.origin}${window.location.pathname}?deliver=${encodeURIComponent(missId)}&tok=${token}`;
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+    document.getElementById('detQRArea').innerHTML = `
+      <div class="miss-qr-wrap">
+        <div class="miss-qr-title">◆ MOSTRA AO EMPREGADOR PARA CONFIRMAR</div>
+        <div class="miss-qr-img-wrap">
+          <img class="miss-qr-img" src="${qrSrc}" alt="QR Code"/>
+        </div>
+        <div class="miss-qr-token">Token: <strong>${token}</strong></div>
+        <button class="btn-modal-cancel" style="width:100%;"
+          onclick="navigator.clipboard?.writeText('${token}').then(()=>showToast('Token copiado!'))">
+          📋 Copiar Token
+        </button>
+      </div>`;
+  } catch(e) {
+    if(btn) { btn.disabled = false; btn.textContent = '📱 Gerar QR Code de Entrega'; }
+    showToast('Erro ao gerar QR. Tenta novamente.', 'err');
+  }
+}
+
+async function missValidarToken(missId, reward) {
+  const tok      = (document.getElementById('detDeliverToken')?.value || '').trim();
+  const statusEl = document.getElementById('detDeliverStatus');
+  if(!tok) { statusEl.textContent = 'Introduz o token de entrega.'; return; }
+  statusEl.textContent = 'A validar...';
+  try {
+    const snap = await db.collection('missoes').doc(missId).get();
+    if(!snap.exists) { statusEl.textContent = 'Missão não encontrada.'; return; }
+    const m = snap.data();
+    if(m.deliveryToken !== tok) { statusEl.textContent = 'Token inválido.'; return; }
+    statusEl.textContent = '';
+    _missAbrirConfirmEntrega(missId, m);
+  } catch(e) { statusEl.textContent = 'Erro ao validar. Tenta novamente.'; }
+}
+
+function _missAbrirConfirmEntrega(missId, m) {
+  const wAddr = m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4);
+  const icon  = _MISS_CAT_ICONS[m.category] || '📦';
+  document.getElementById('entregaMissId').value  = missId;
+  document.getElementById('entregaWorker').value  = m.selectedWorker;
+  document.getElementById('entregaReward').value  = m.reward;
+  document.getElementById('entregaContent').innerHTML = `
+    <div style="font-size:11px;color:var(--text2);margin-bottom:14px;line-height:1.6;text-align:center;">
+      Confirmas que a missão foi concluída e autorizas o pagamento?
+    </div>
+    <div class="miss-entrega-confirm-box">
+      <div class="miss-entrega-row">
+        <span style="font-family:'Cinzel',serif;color:var(--text);">${icon} ${m.title}</span>
+      </div>
+      <div class="miss-entrega-row">
+        <span>Trabalhador</span>
+        <span style="font-family:monospace;font-size:10px;">${wAddr}</span>
+      </div>
+      <div class="miss-entrega-row">
+        <span>Pagamento liberado</span>
+        <span style="color:var(--green2);font-family:'Cinzel',serif;font-weight:700;">💎 ${m.reward * 2}</span>
+      </div>
+    </div>`;
+  document.getElementById('entregaConfirmBtn').disabled = false;
+  document.getElementById('entregaConfirmBtn').textContent = '✓ Confirmar & Pagar';
+  document.getElementById('missEntregaOverlay').style.display = 'flex';
+}
+
+function closeMissEntrega() {
+  document.getElementById('missEntregaOverlay').style.display = 'none';
+}
+
+async function missFinalizarEntrega() {
+  const missId  = document.getElementById('entregaMissId').value;
+  const worker  = document.getElementById('entregaWorker').value;
+  const reward  = parseInt(document.getElementById('entregaReward').value);
+  const btn     = document.getElementById('entregaConfirmBtn');
+  btn.disabled  = true;
+  btn.textContent = 'A processar...';
+  try {
+    const workerSnap    = await db.collection('players').doc(worker).get();
+    const workerCristais = workerSnap.data()?.gs?.cristais ?? workerSnap.data()?.cristais ?? 0;
+    const batch = db.batch();
+    batch.update(db.collection('players').doc(worker), { 'gs.cristais': workerCristais + reward * 2 });
+    batch.update(db.collection('missoes').doc(missId), {
+      status: 'done',
+      deliveryToken: firebase.firestore.FieldValue.delete(),
+      completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await batch.commit();
+    closeMissEntrega();
+    closeMissDetalhe();
+    showToast('✅ Entrega confirmada! Pagamento liberado.');
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✓ Confirmar & Pagar';
+    showToast('Erro ao processar pagamento.', 'err');
+  }
+}
+
+// ── Detecção de URL params (employer escaneia QR) ──
+firebase.auth().onAuthStateChanged(user => {
+  if(!user) return;
+  setTimeout(_checkDeliveryParams, 1800);
+});
+
+async function _checkDeliveryParams() {
+  const params  = new URLSearchParams(window.location.search);
+  const missId  = params.get('deliver');
+  const tok     = params.get('tok');
+  if(!missId || !tok) return;
+  window.history.replaceState({}, '', window.location.pathname);
+  try {
+    const snap = await db.collection('missoes').doc(missId).get();
+    if(!snap.exists) { showToast('Missão não encontrada.', 'err'); return; }
+    const m = snap.data();
+    if(m.employer !== walletAddress) { showToast('Não és o empregador desta missão.', 'err'); return; }
+    if(m.status !== 'progress')      { showToast('Esta missão não está em andamento.', 'err'); return; }
+    if(m.deliveryToken !== tok)      { showToast('Token de entrega inválido.', 'err'); return; }
+    showSection('missoes');
+    _missAbrirConfirmEntrega(missId, m);
+  } catch(e) { showToast('Erro ao validar QR de entrega.', 'err'); }
 }
 
 async function missConfirmarParticipacao(missId, reward) {
@@ -1583,6 +1757,21 @@ async function confirmPublicarMissao() {
     <div class="modal-row" style="margin-top:14px;">
       <button class="btn-modal-cancel" onclick="closeMissaoModal()">Cancelar</button>
       <button class="btn-modal-confirm" onclick="confirmPublicarMissao()">Publicar & Depositar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIRMAR ENTREGA ══ -->
+<div class="overlay" id="missEntregaOverlay" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-title">📦 Confirmar Entrega</div>
+    <input type="hidden" id="entregaMissId"/>
+    <input type="hidden" id="entregaWorker"/>
+    <input type="hidden" id="entregaReward"/>
+    <div id="entregaContent"></div>
+    <div class="modal-row" style="margin-top:16px;">
+      <button class="btn-modal-cancel" onclick="closeMissEntrega()">Cancelar</button>
+      <button class="btn-modal-confirm" id="entregaConfirmBtn" onclick="missFinalizarEntrega()">✓ Confirmar & Pagar</button>
     </div>
   </div>
 </div>
