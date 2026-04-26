@@ -137,6 +137,7 @@ function iniciarMktAuth() {
         renderSection();
       }
       if(typeof checkPendingEggListing === 'function') checkPendingEggListing();
+      if(typeof missCheckBadge === 'function') setTimeout(missCheckBadge, 500);
 
     } else {
       // Não autenticado — mostra connectWall

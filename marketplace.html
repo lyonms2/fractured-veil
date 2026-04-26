@@ -489,6 +489,63 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .miss-cand-msg-preview{font-size:10px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:8px;text-align:left;}
 .miss-already-applied-sub{font-size:9px;color:var(--muted);}
 
+/* ── Badge de ações pendentes ── */
+.miss-nav-badge{display:inline-block;background:#ef4444;color:#fff;font-size:7px;font-weight:700;font-family:'Rajdhani',sans-serif;min-width:14px;height:14px;border-radius:7px;text-align:center;line-height:14px;padding:0 3px;margin-left:4px;vertical-align:middle;}
+
+/* ── Cancelar / Timeout ── */
+.miss-cancel-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px;text-align:center;}
+.miss-cancel-title{font-family:'Cinzel',serif;font-size:10px;color:var(--red2);letter-spacing:1px;margin-bottom:6px;}
+.miss-cancel-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
+.miss-expired-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:16px;text-align:center;}
+.miss-expired-title{font-family:'Cinzel',serif;font-size:10px;color:var(--red2);letter-spacing:1px;margin-bottom:6px;}
+.miss-expired-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
+.btn-miss-danger{padding:7px 18px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:var(--red2);font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;width:100%;}
+.btn-miss-danger:hover{background:rgba(239,68,68,.22);}
+
+/* ── Disputa ── */
+.miss-dispute-box{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px;}
+.miss-dispute-title{font-family:'Cinzel',serif;font-size:10px;color:var(--red2);letter-spacing:1px;margin-bottom:6px;text-align:center;}
+.miss-dispute-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;text-align:center;}
+.miss-vote-box{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.18);border-radius:10px;padding:16px;}
+.miss-vote-title{font-family:'Cinzel',serif;font-size:10px;color:var(--gem2);letter-spacing:1px;margin-bottom:4px;text-align:center;}
+.miss-vote-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:10px;}
+.miss-vote-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.miss-vote-side{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.miss-vote-side-label{font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;}
+.miss-vote-side-count{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--text);}
+.miss-vote-progress{height:4px;background:var(--surface2);border-radius:2px;margin:8px 0;overflow:hidden;}
+.miss-vote-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--purple));transition:width .3s;}
+.miss-vote-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.btn-miss-vote{padding:7px 10px;border-radius:8px;font-family:'Cinzel',serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;border:1px solid;}
+.btn-miss-vote-emp{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.3);color:var(--gold);}
+.btn-miss-vote-emp:hover{background:rgba(201,168,76,.22);}
+.btn-miss-vote-wkr{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:var(--gem2);}
+.btn-miss-vote-wkr:hover{background:rgba(167,139,250,.22);}
+.miss-voted-msg{font-size:10px;color:var(--muted);text-align:center;padding:8px;font-style:italic;}
+.miss-status.cancelled{background:rgba(107,114,128,.1);color:var(--muted);border:1px solid rgba(107,114,128,.2);}
+
+/* ── Pesquisa + paginação ── */
+.miss-search-row{display:flex;gap:8px;margin-bottom:10px;}
+.miss-search-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;padding:7px 12px;outline:none;transition:border-color .2s;}
+.miss-search-input:focus{border-color:var(--purple);}
+.miss-search-input::placeholder{color:var(--muted);}
+.btn-miss-load-more{display:block;width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5px;cursor:pointer;margin-top:12px;transition:all .2s;}
+.btn-miss-load-more:hover{border-color:var(--purple);color:var(--gem2);}
+
+/* ── Perfil de reputação ── */
+#missPerfilOverlay{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(4,3,10,.8);}
+.miss-perfil-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:24px 20px;max-width:300px;width:90%;text-align:center;}
+.miss-perfil-addr{font-family:monospace;font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;}
+.miss-perfil-score{font-family:'Cinzel',serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
+.miss-perfil-stars{font-size:18px;margin:4px 0 10px;color:var(--gold);}
+.miss-perfil-new{font-family:'Cinzel',serif;font-size:14px;color:var(--muted);padding:20px 0;}
+.miss-perfil-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+.miss-perfil-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.miss-perfil-stat-val{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gem2);}
+.miss-perfil-stat-label{font-size:8px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.miss-link-btn{font-family:monospace;font-size:9px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.15);padding:0;transition:color .2s;}
+.miss-link-btn:hover{color:var(--text2);}
+
 /* ═══════════════════════════════════════════
    MOBILE
 ═══════════════════════════════════════════ */
@@ -660,7 +717,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       <span class="nav-icon">🥚</span><span data-i18n="mkt.nav.buy_eggs"> Comprar Ovos</span>
     </button>
     <button class="mkt-nav-btn" onclick="showSection('missoes')" id="nav-missoes">
-      <span class="nav-icon">⚔️</span><span> Missões</span>
+      <span class="nav-icon">⚔️</span><span> Missões</span><span class="miss-nav-badge" id="missNavBadge" style="display:none;"></span>
     </button>
     <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
@@ -916,6 +973,10 @@ body{display:flex;flex-direction:column;min-height:100vh;}
         <div class="miss-banner-note">⚠️ Em caso de disputa, o tribunal comunitário decide. A parte perdedora perde o depósito.</div>
       </div>
 
+      <div class="miss-search-row">
+        <input class="miss-search-input" id="missSearchInput" placeholder="🔍 Pesquisar missões..."
+          oninput="missOnSearch(this.value)"/>
+      </div>
       <div class="miss-filters">
         <button class="miss-filter-btn active" onclick="missSetFilter(this,'all')">Todas</button>
         <button class="miss-filter-btn" onclick="missSetFilter(this,'open')">Abertas</button>
@@ -1116,7 +1177,7 @@ function renderSection() {
   if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
-  if(currentSection === 'missoes')       renderMissoes();
+  if(currentSection === 'missoes')       { renderMissoes(); missCheckBadge(); }
 }
 
 // ── Utils ──
@@ -1142,24 +1203,42 @@ let _missFilterVal = 'all';
 
 function missSetFilter(btn, filter) {
   _missFilterVal = filter;
+  _missLastDoc   = null;
   document.querySelectorAll('.miss-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderMissoes();
 }
 
-async function renderMissoes() {
+async function renderMissoes(append) {
   const list = document.getElementById('missoesList');
   if(!list) return;
-  list.innerHTML = '<div class="loading"><div class="spinner"></div><div>A carregar missões...</div></div>';
+  if(!append) {
+    _missLastDoc = null;
+    list.innerHTML = '<div class="loading"><div class="spinner"></div><div>A carregar missões...</div></div>';
+  } else {
+    document.getElementById('missLoadMoreBtn')?.remove();
+  }
   try {
-    let query = db.collection('missoes').orderBy('createdAt','desc').limit(50);
-    const snap = await query.get();
-    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const isSearchOrFilter = _missSearchQuery || _missFilterVal !== 'all';
+    let q = db.collection('missoes').orderBy('createdAt','desc');
+    if(!isSearchOrFilter) {
+      q = _missLastDoc ? q.startAfter(_missLastDoc).limit(MISS_PAGE) : q.limit(MISS_PAGE);
+    } else {
+      q = q.limit(100);
+    }
+    const snap = await q.get();
+    let docs = snap.docs.map(d => ({ id: d.id, _doc: d, ...d.data() }));
+
     if(_missFilterVal === 'open')     docs = docs.filter(m => m.status === 'open');
     if(_missFilterVal === 'progress') docs = docs.filter(m => m.status === 'progress');
     if(_missFilterVal === 'done')     docs = docs.filter(m => m.status === 'done');
-    if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.selectedWorker === walletAddress || m.worker === walletAddress);
-    if(!docs.length) {
+    if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.selectedWorker === walletAddress);
+    if(_missSearchQuery) {
+      const q2 = _missSearchQuery;
+      docs = docs.filter(m => (m.title||'').toLowerCase().includes(q2) || (m.desc||'').toLowerCase().includes(q2));
+    }
+
+    if(!append && !docs.length) {
       list.innerHTML = `<div class="miss-empty">
         <div class="miss-empty-icon">⚔️</div>
         <div class="miss-empty-title">Nenhuma missão disponível</div>
@@ -1168,11 +1247,14 @@ async function renderMissoes() {
       </div>`;
       return;
     }
-    list.innerHTML = docs.map(m => {
+
+    const html = docs.map(m => {
       const [sc, sl] = _MISS_STATUS_MAP[m.status] || ['open','Aberta'];
+      const now      = Date.now();
+      const expired  = m.deadline && new Date(m.deadline).getTime() < now && (m.status === 'open' || m.status === 'progress' || m.status === 'awaiting');
       const deadline = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
       const employer = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
-      const icon = _MISS_CAT_ICONS[m.category] || '📦';
+      const icon     = _MISS_CAT_ICONS[m.category] || '📦';
       const isMyTurn = m.status === 'awaiting' && m.selectedWorker === walletAddress;
       return `<div class="miss-card${isMyTurn ? ' miss-card-awaiting' : ''}" onclick="missOpenDetail('${m.id}')">
         <div class="miss-card-stripe"></div>
@@ -1180,25 +1262,47 @@ async function renderMissoes() {
         <div class="miss-card-body">
           <div class="miss-card-top">
             <div class="miss-card-title">${icon} ${m.title||'—'}</div>
-            <div class="miss-status ${sc}">${sl}</div>
+            <div class="miss-status ${expired ? 'dispute' : sc}">${expired ? '⏰ Expirada' : sl}</div>
           </div>
           <div class="miss-card-desc">${m.desc||''}</div>
           <div class="miss-card-meta">
-            <div class="miss-card-deadline">⏳ ${deadline}</div>
+            <div class="miss-card-deadline${expired ? '" style="color:var(--red2)' : ''}">⏳ ${deadline}</div>
             <div class="miss-card-reward">💎 ${m.reward||0}</div>
           </div>
           <div class="miss-card-employer">Por: ${employer}</div>
         </div>
       </div>`;
     }).join('');
+
+    if(append) {
+      list.insertAdjacentHTML('beforeend', html);
+    } else {
+      list.innerHTML = html;
+    }
+
+    if(!isSearchOrFilter && snap.docs.length === MISS_PAGE) {
+      _missLastDoc = snap.docs[snap.docs.length - 1];
+      list.insertAdjacentHTML('beforeend',
+        `<div style="grid-column:1/-1;"><button class="btn-miss-load-more" id="missLoadMoreBtn" onclick="renderMissoes(true)">Carregar mais missões</button></div>`);
+    }
+    missCheckBadge();
   } catch(e) {
-    list.innerHTML = '<div class="miss-empty"><div class="miss-empty-icon">⚔️</div><div class="miss-empty-title">Erro ao carregar missões</div></div>';
+    if(!append) list.innerHTML = '<div class="miss-empty"><div class="miss-empty-icon">⚔️</div><div class="miss-empty-title">Erro ao carregar missões</div></div>';
   }
 }
 
 let _missCurrentId = null;
+let _missLastDoc   = null;
+let _missSearchQuery = '';
+const MISS_PAGE = 12;
 const _MISS_CAT_ICONS = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
-const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'] };
+const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
+
+function missOnSearch(val) {
+  _missSearchQuery = val.trim().toLowerCase();
+  _missLastDoc = null;
+  renderMissoes();
+}
 
 async function missOpenDetail(id) {
   _missCurrentId = id;
@@ -1232,14 +1336,63 @@ async function missOpenDetail(id) {
         <div class="miss-det-infobox"><div class="miss-det-infobox-label">Garantia</div><div class="miss-det-infobox-val">💎 ${m.reward}</div></div>
         <div class="miss-det-infobox"><div class="miss-det-infobox-label">Ganho total</div><div class="miss-det-infobox-val" style="color:var(--green2)">💎 ${m.reward*2}</div></div>
       </div>`;
-    document.getElementById('detEmployer').innerHTML = `Publicado por <span class="miss-det-employer-addr">${employer}</span>`;
+    document.getElementById('detEmployer').innerHTML = `Publicado por <button class="miss-link-btn" onclick="missAbrirPerfil('${m.employer}',event)">${employer}</button>`;
     db.collection('players').doc(m.employer).get().then(s => {
       const badge = missRepBadge(s.data()?.gs?.rep);
-      document.getElementById('detEmployer').innerHTML = `Publicado por <span class="miss-det-employer-addr">${employer}</span> &nbsp;${badge}`;
+      document.getElementById('detEmployer').innerHTML = `Publicado por <button class="miss-link-btn" onclick="missAbrirPerfil('${m.employer}',event)">${employer}</button> &nbsp;${badge}`;
     }).catch(()=>{});
 
     const isEmployer       = walletAddress === m.employer;
     const isSelectedWorker = m.selectedWorker === walletAddress;
+    const now              = Date.now();
+    const isExpired        = m.deadline && new Date(m.deadline).getTime() < now;
+
+    // ── Missão cancelada ──
+    if(m.status === 'cancelled') {
+      document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Esta missão foi cancelada.</div>';
+      return;
+    }
+
+    // ── Expirada — antes de qualquer outro case ──
+    if(isExpired && (m.status === 'open' || m.status === 'awaiting')) {
+      if(isEmployer) {
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-expired-box">
+            <div class="miss-expired-title">⏰ Prazo Expirado</div>
+            <div class="miss-expired-sub">O prazo desta missão terminou sem trabalhador confirmado. Podes recuperar o teu depósito.</div>
+            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Recuperar Depósito 💎 ${m.reward}</button>
+          </div>`;
+      } else {
+        document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">O prazo desta missão expirou.</div>';
+      }
+      return;
+    }
+
+    if(isExpired && m.status === 'progress') {
+      if(isEmployer) {
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-expired-box">
+            <div class="miss-expired-title">⏰ Prazo Expirado</div>
+            <div class="miss-expired-sub">O trabalhador não entregou dentro do prazo. Podes reclamar ambos os depósitos.</div>
+            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Reclamar 💎 ${m.reward * 2} (ambos os depósitos)</button>
+          </div>`;
+      } else if(isSelectedWorker) {
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-expired-box">
+            <div class="miss-expired-title">⏰ Prazo Expirado</div>
+            <div class="miss-expired-sub">O prazo expirou. O empregador pode reclamar os depósitos. Entra em contacto para resolver.</div>
+          </div>`;
+      } else {
+        document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">O prazo desta missão expirou.</div>';
+      }
+      return;
+    }
+
+    // ── Disputa ──
+    if(m.status === 'dispute') {
+      await _missRenderDisputa(id, m, isEmployer, isSelectedWorker);
+      return;
+    }
 
     // ── Empregador ──
     if(isEmployer) {
@@ -1249,19 +1402,44 @@ async function missOpenDetail(id) {
           <div class="miss-det-owner-box">
             <div class="miss-det-owner-title">✦ Candidato Selecionado</div>
             <div class="miss-det-owner-sub">A aguardar que <strong style="color:var(--text)">${addr}</strong> confirme a participação e deposite a garantia.</div>
+            <button class="btn-miss-danger" style="margin-top:10px;" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Cancelar Seleção & Reembolsar</button>
           </div>`;
-      } else {
-        const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
-        const n = candSnap.size;
+        return;
+      }
+      if(m.status === 'progress') {
+        const wAddr = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
         document.getElementById('detActionArea').innerHTML = `
           <div class="miss-det-owner-box">
-            <div class="miss-det-owner-title">✦ A tua missão</div>
-            <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
-            <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="missVerCandidatos('${id}')">
-              ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
-            </button>
+            <div class="miss-det-owner-title">⚔️ Missão em Andamento</div>
+            <div class="miss-det-owner-sub">Trabalhador: <button class="miss-link-btn" onclick="missAbrirPerfil('${m.selectedWorker}',event)">${wAddr}</button><br>Quando concluir, apresentará o QR code de entrega.</div>
+            <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;">
+              <div class="modal-label" style="margin-bottom:6px;">Confirmar com token manual</div>
+              <div style="display:flex;gap:8px;">
+                <input class="modal-input" id="detDeliverToken" placeholder="Cola o token aqui..." style="flex:1;font-family:monospace;font-size:11px;"/>
+                <button class="btn-miss-select" style="white-space:nowrap;padding:8px 14px;" onclick="missValidarToken('${id}',${m.reward})">Confirmar</button>
+              </div>
+              <div id="detDeliverStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
+            </div>
+            <div style="margin-top:10px;">
+              <button class="btn-miss-danger" onclick="missAbrirDisputa('${id}','employer')">⚠️ Abrir Disputa</button>
+            </div>
           </div>`;
+        return;
       }
+      // status === 'open'
+      const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
+      const n = candSnap.size;
+      document.getElementById('detActionArea').innerHTML = `
+        <div class="miss-det-owner-box">
+          <div class="miss-det-owner-title">✦ A tua missão</div>
+          <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
+          <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="missVerCandidatos('${id}')">
+            ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
+          </button>
+          <div style="margin-top:10px;">
+            <button class="btn-miss-danger" onclick="missMostrarCancelar('${id}',${m.reward})">Cancelar Missão</button>
+          </div>
+        </div>`;
       return;
     }
 
@@ -1309,58 +1487,20 @@ async function missOpenDetail(id) {
             📱 Gerar QR Code de Entrega
           </button>
         </div>
-        <div id="detQRArea"></div>`;
-      return;
-    }
-
-    // ── Empregador em andamento — aguardar QR ou token manual ──
-    if(isEmployer && m.status === 'progress') {
-      const wAddr = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
-      document.getElementById('detActionArea').innerHTML = `
-        <div class="miss-det-owner-box">
-          <div class="miss-det-owner-title">⚔️ Missão em Andamento</div>
-          <div class="miss-det-owner-sub">Trabalhador: <strong style="color:var(--text)">${wAddr}</strong><br>Quando concluir, ele irá apresentar o QR code de entrega.</div>
-          <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;">
-            <div class="modal-label" style="margin-bottom:6px;">Confirmar com token manual</div>
-            <div style="display:flex;gap:8px;">
-              <input class="modal-input" id="detDeliverToken" placeholder="Cola o token aqui..." style="flex:1;font-family:monospace;font-size:11px;"/>
-              <button class="btn-miss-select" style="white-space:nowrap;padding:8px 14px;" onclick="missValidarToken('${id}',${m.reward})">Confirmar</button>
-            </div>
-            <div id="detDeliverStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
-          </div>
+        <div id="detQRArea"></div>
+        <div style="margin-top:10px;">
+          <button class="btn-miss-danger" onclick="missAbrirDisputa('${id}','worker')">⚠️ Abrir Disputa</button>
         </div>`;
       return;
     }
 
     // ── Missão concluída — prompt de avaliação ──
     if(m.status === 'done') {
-      const canRateAsEmployer = isEmployer && !m.ratedByEmployer && m.selectedWorker;
-      const canRateAsWorker   = isSelectedWorker && !m.ratedByWorker && m.employer;
-      if(canRateAsEmployer || canRateAsWorker) {
-        const targetUid  = canRateAsEmployer ? m.selectedWorker : m.employer;
-        const targetAddr = targetUid.slice(0,6)+'...'+targetUid.slice(-4);
-        const role       = canRateAsEmployer ? `o trabalhador` : `o empregador`;
-        document.getElementById('detActionArea').innerHTML = `
-          <div class="miss-rate-box" id="rateArea">
-            <div class="miss-rate-title">Avalia a tua experiência</div>
-            <div class="miss-rate-sub">Como foi trabalhar com ${role} (${targetAddr})?</div>
-            <div class="miss-star-row">
-              ${[1,2,3,4,5].map(i=>`<button class="miss-star-btn" onclick="missSetStar(${i})">★</button>`).join('')}
-            </div>
-            <button class="btn-modal-confirm" id="rateSubmitBtn" style="width:100%;" disabled
-              onclick="missSubmitRating('${id}','${targetUid}',${!!canRateAsEmployer})">
-              Enviar Avaliação
-            </button>
-          </div>`;
-        _missRatingVal = 0;
-      } else {
-        document.getElementById('detActionArea').innerHTML =
-          `<div class="miss-det-closed" style="color:var(--green2);">✅ Missão concluída${(isEmployer||isSelectedWorker) ? ' · Avaliação já enviada' : ''}.</div>`;
-      }
+      _missRenderDone(id, m, isEmployer, isSelectedWorker);
       return;
     }
 
-    // ── Missão fechada (em andamento via outro utilizador, disputa, etc.) ──
+    // ── Missão fechada ──
     if(m.status !== 'open') {
       document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Esta missão já não aceita candidaturas.</div>';
       return;
@@ -1435,7 +1575,7 @@ async function missVerCandidatos(missId) {
       const rep  = missRepBadge(repMap[c.uid]);
       return `<div class="miss-cand-card" id="cand-card-${i}">
         <div class="miss-cand-header">
-          <div class="miss-cand-wallet">🧑 ${addr}</div>
+          <div class="miss-cand-wallet">🧑 <button class="miss-link-btn" onclick="missAbrirPerfil('${c.uid}',event)">${addr}</button></div>
           <div class="miss-cand-date">${when}</div>
         </div>
         <div class="miss-cand-msg">"${c.mensagem}"</div>
@@ -1803,6 +1943,306 @@ async function confirmPublicarMissao() {
     btn.disabled = false;
   }
 }
+
+// ══ FEATURE 1 — CANCELAR MISSÃO ══
+
+function missMostrarCancelar(missId, reward) {
+  document.getElementById('detActionArea').innerHTML = `
+    <div class="miss-cancel-box">
+      <div class="miss-cancel-title">⚠️ Cancelar Missão</div>
+      <div class="miss-cancel-sub">Tens a certeza? O depósito de <strong style="color:var(--gem2)">💎 ${reward}</strong> será devolvido.</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-modal-cancel" style="flex:1;" onclick="missOpenDetail('${missId}')">Voltar</button>
+        <button class="btn-miss-danger" style="flex:1;" onclick="missCancelarMissao('${missId}',${reward})">Confirmar Cancelamento</button>
+      </div>
+    </div>`;
+}
+
+async function missCancelarMissao(missId, reward) {
+  const btn = document.querySelector('#detActionArea .btn-miss-danger');
+  if(btn) { btn.disabled = true; btn.textContent = 'A processar...'; }
+  try {
+    const batch = db.batch();
+    batch.update(db.collection('missoes').doc(missId), { status: 'cancelled', cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+    batch.update(db.collection('players').doc(walletAddress), { 'gs.cristais': firebase.firestore.FieldValue.increment(reward) });
+    await batch.commit();
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = (playerData.gs.cristais || 0) + reward;
+    playerData.cristais    = playerData.gs.cristais;
+    updateCristaisDisplay();
+    closeMissDetalhe();
+    showToast(`✅ Missão cancelada. 💎 ${reward} devolvidos.`);
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    showToast('Erro ao cancelar. Tenta novamente.', 'err');
+    if(btn) { btn.disabled = false; btn.textContent = 'Confirmar Cancelamento'; }
+  }
+}
+
+// ══ FEATURE 2 — RECLAMAR POT (TIMEOUT) ══
+
+async function missReclamarPot(missId, reward, reason) {
+  const btn = document.querySelector('#detActionArea .btn-miss-danger');
+  if(btn) { btn.disabled = true; btn.textContent = 'A processar...'; }
+  try {
+    const missSnap = await db.collection('missoes').doc(missId).get();
+    if(!missSnap.exists) { showToast('Missão não encontrada.', 'err'); return; }
+    const m = missSnap.data();
+    if(m.employer !== walletAddress) { showToast('Não és o empregador.', 'err'); return; }
+
+    const totalPot = m.status === 'progress' ? reward * 2 : reward;
+    const batch    = db.batch();
+    batch.update(db.collection('missoes').doc(missId), {
+      status: 'cancelled',
+      cancelReason: reason,
+      cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.update(db.collection('players').doc(walletAddress), {
+      'gs.cristais': firebase.firestore.FieldValue.increment(totalPot)
+    });
+    await batch.commit();
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = (playerData.gs.cristais || 0) + totalPot;
+    playerData.cristais    = playerData.gs.cristais;
+    updateCristaisDisplay();
+    closeMissDetalhe();
+    showToast(`✅ 💎 ${totalPot} recuperados.`);
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    showToast('Erro ao reclamar. Tenta novamente.', 'err');
+    if(btn) { btn.disabled = false; btn.textContent = 'Recuperar Depósito'; }
+  }
+}
+
+// ══ FEATURE 3 — DISPUTA ══
+
+async function missAbrirDisputa(missId, side) {
+  document.getElementById('detActionArea').innerHTML = `
+    <div class="miss-dispute-box">
+      <div class="miss-dispute-title">⚠️ Abrir Disputa</div>
+      <div class="miss-dispute-sub">Descreve o motivo da disputa. A comunidade irá votar em quem tem razão.</div>
+      <textarea class="modal-input" id="disputeReason" rows="3" maxlength="300"
+        placeholder="Descreve o problema de forma objetiva..."
+        style="resize:vertical;min-height:72px;margin-bottom:8px;"></textarea>
+      <div id="disputeStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-modal-cancel" style="flex:1;" onclick="missOpenDetail('${missId}')">Voltar</button>
+        <button class="btn-miss-danger" style="flex:1;" onclick="_missSubmitDisputa('${missId}','${side}')">Submeter Disputa</button>
+      </div>
+    </div>`;
+}
+
+async function _missSubmitDisputa(missId, side) {
+  const reason = (document.getElementById('disputeReason')?.value || '').trim();
+  const status = document.getElementById('disputeStatus');
+  if(!reason) { status.textContent = 'Descreve o motivo da disputa.'; return; }
+  const btn = document.querySelector('#detActionArea .btn-miss-danger');
+  if(btn) { btn.disabled = true; btn.textContent = 'A submeter...'; }
+  try {
+    await db.collection('missoes').doc(missId).update({
+      status: 'dispute',
+      disputeBy: side,
+      disputeReason: reason,
+      disputeAt: firebase.firestore.FieldValue.serverTimestamp(),
+      votesEmployer: 0,
+      votesWorker: 0
+    });
+    closeMissDetalhe();
+    showToast('⚠️ Disputa aberta. A comunidade irá votar.');
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    if(btn) { btn.disabled = false; btn.textContent = 'Submeter Disputa'; }
+    if(status) status.textContent = 'Erro ao submeter. Tenta novamente.';
+  }
+}
+
+async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
+  const vEmployer = m.votesEmployer || 0;
+  const vWorker   = m.votesWorker   || 0;
+  const total     = vEmployer + vWorker;
+  const pct       = total > 0 ? Math.round((vEmployer / total) * 100) : 50;
+  const eAddr     = m.employer      ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
+  const wAddr     = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
+
+  let voteBtns = '';
+  const isParty = isEmployer || isSelectedWorker;
+  if(!isParty && walletAddress) {
+    const voteSnap = await db.collection('missoes').doc(id).collection('votos').doc(walletAddress).get();
+    const repSnap  = await db.collection('players').doc(walletAddress).get();
+    const repDone  = repSnap.data()?.gs?.rep?.done || 0;
+    if(voteSnap.exists) {
+      voteBtns = `<div class="miss-voted-msg">✅ Já votaste nesta disputa.</div>`;
+    } else if(repDone < 1) {
+      voteBtns = `<div class="miss-voted-msg">Precisas de pelo menos 1 missão concluída para votar.</div>`;
+    } else {
+      voteBtns = `<div class="miss-vote-btn-row">
+        <button class="btn-miss-vote btn-miss-vote-emp" onclick="missVotar('${id}','employer',${m.reward})">🏛️ Favor do Empregador</button>
+        <button class="btn-miss-vote btn-miss-vote-wkr" onclick="missVotar('${id}','worker',${m.reward})">⚔️ Favor do Trabalhador</button>
+      </div>`;
+    }
+  } else if(isParty) {
+    voteBtns = `<div class="miss-voted-msg">Não podes votar na tua própria disputa.</div>`;
+  }
+
+  document.getElementById('detActionArea').innerHTML = `
+    <div class="miss-vote-box">
+      <div class="miss-vote-title">⚖️ Disputa em Curso</div>
+      <div class="miss-vote-sub">Motivo: "${m.disputeReason || '—'}"</div>
+      <div class="miss-vote-sides">
+        <div class="miss-vote-side">
+          <div class="miss-vote-side-label">🏛️ Empregador<br><span style="font-family:monospace;font-size:7px;">${eAddr}</span></div>
+          <div class="miss-vote-side-count">${vEmployer}</div>
+        </div>
+        <div class="miss-vote-side">
+          <div class="miss-vote-side-label">⚔️ Trabalhador<br><span style="font-family:monospace;font-size:7px;">${wAddr}</span></div>
+          <div class="miss-vote-side-count">${vWorker}</div>
+        </div>
+      </div>
+      <div class="miss-vote-progress"><div class="miss-vote-bar" style="width:${pct}%;"></div></div>
+      <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/10 votos · Maioria decide</div>
+      ${voteBtns}
+    </div>`;
+}
+
+async function missVotar(missId, side, reward) {
+  const btns = document.querySelectorAll('#detActionArea .btn-miss-vote');
+  btns.forEach(b => { b.disabled = true; });
+  try {
+    const voteRef = db.collection('missoes').doc(missId).collection('votos').doc(walletAddress);
+    const voteSnap = await voteRef.get();
+    if(voteSnap.exists) { showToast('Já votaste nesta disputa.', 'err'); return; }
+    const field = side === 'employer' ? 'votesEmployer' : 'votesWorker';
+    await voteRef.set({ side, votedAt: firebase.firestore.FieldValue.serverTimestamp(), voter: walletAddress });
+    await db.collection('missoes').doc(missId).update({ [field]: firebase.firestore.FieldValue.increment(1) });
+    const freshSnap = await db.collection('missoes').doc(missId).get();
+    const m = freshSnap.data();
+    if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 10) {
+      await _missResolverDisputa(missId, m, reward);
+    } else {
+      showToast('✅ Voto registado!');
+      missOpenDetail(missId);
+    }
+  } catch(e) {
+    showToast('Erro ao votar. Tenta novamente.', 'err');
+    btns.forEach(b => { b.disabled = false; });
+  }
+}
+
+async function _missResolverDisputa(missId, m, reward) {
+  const winner = (m.votesEmployer || 0) >= (m.votesWorker || 0) ? m.employer : m.selectedWorker;
+  const batch  = db.batch();
+  batch.update(db.collection('missoes').doc(missId), {
+    status: 'cancelled',
+    disputeWinner: winner,
+    resolvedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  batch.update(db.collection('players').doc(winner), {
+    'gs.cristais': firebase.firestore.FieldValue.increment(reward * 2)
+  });
+  await batch.commit();
+  closeMissDetalhe();
+  showToast('⚖️ Disputa resolvida! O vencedor recebeu os depósitos.');
+  if(currentSection === 'missoes') renderMissoes();
+}
+
+// ══ FEATURE 4 — BADGE DE AÇÕES PENDENTES ══
+
+async function missCheckBadge() {
+  if(!walletAddress) return;
+  try {
+    const [asWorkerSnap, asEmployerSnap] = await Promise.all([
+      db.collection('missoes').where('selectedWorker','==',walletAddress).where('status','==','awaiting').limit(5).get(),
+      db.collection('missoes').where('employer','==',walletAddress).where('status','==','dispute').limit(5).get()
+    ]);
+    const count = asWorkerSnap.size + asEmployerSnap.size;
+    _missUpdateBadge(count);
+  } catch(e) {}
+}
+
+function _missUpdateBadge(count) {
+  ['missNavBadge','missBnBadge'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(count > 0) { el.textContent = count > 9 ? '9+' : count; el.style.display = ''; }
+    else { el.style.display = 'none'; }
+  });
+}
+
+// ══ FEATURE 5 — HELPER DONE (avaliação) ══
+
+function _missRenderDone(id, m, isEmployer, isSelectedWorker) {
+  const canRateAsEmployer = isEmployer && !m.ratedByEmployer && m.selectedWorker;
+  const canRateAsWorker   = isSelectedWorker && !m.ratedByWorker && m.employer;
+  if(canRateAsEmployer || canRateAsWorker) {
+    const targetUid  = canRateAsEmployer ? m.selectedWorker : m.employer;
+    const targetAddr = targetUid.slice(0,6)+'...'+targetUid.slice(-4);
+    const role       = canRateAsEmployer ? `o trabalhador` : `o empregador`;
+    document.getElementById('detActionArea').innerHTML = `
+      <div class="miss-rate-box" id="rateArea">
+        <div class="miss-rate-title">Avalia a tua experiência</div>
+        <div class="miss-rate-sub">Como foi trabalhar com ${role} (<button class="miss-link-btn" onclick="missAbrirPerfil('${targetUid}',event)">${targetAddr}</button>)?</div>
+        <div class="miss-star-row">
+          ${[1,2,3,4,5].map(i=>`<button class="miss-star-btn" onclick="missSetStar(${i})">★</button>`).join('')}
+        </div>
+        <button class="btn-modal-confirm" id="rateSubmitBtn" style="width:100%;" disabled
+          onclick="missSubmitRating('${id}','${targetUid}',${!!canRateAsEmployer})">
+          Enviar Avaliação
+        </button>
+      </div>`;
+    _missRatingVal = 0;
+  } else {
+    document.getElementById('detActionArea').innerHTML =
+      `<div class="miss-det-closed" style="color:var(--green2);">✅ Missão concluída${(isEmployer||isSelectedWorker) ? ' · Avaliação já enviada' : ''}.</div>`;
+  }
+}
+
+// ══ FEATURE 6 — PERFIL DE REPUTAÇÃO ══
+
+async function missAbrirPerfil(uid, evt) {
+  if(evt) evt.stopPropagation();
+  const ov = document.getElementById('missPerfilOverlay');
+  if(!ov) return;
+  ov.style.display = 'flex';
+  ov.querySelector('.miss-perfil-box').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const snap = await db.collection('players').doc(uid).get();
+    const rep  = snap.data()?.gs?.rep || null;
+    const addr = uid.slice(0,6)+'...'+uid.slice(-4);
+    let inner;
+    if(!rep || !rep.scoreCount) {
+      inner = `
+        <div class="miss-perfil-addr">${uid}</div>
+        <div class="miss-perfil-new">⭐ Sem avaliações ainda</div>`;
+    } else {
+      const avg   = (rep.scoreTotal / rep.scoreCount).toFixed(1);
+      const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+      inner = `
+        <div class="miss-perfil-addr">${uid}</div>
+        <div class="miss-perfil-score">${avg}</div>
+        <div class="miss-perfil-stars">${stars}</div>
+        <div style="font-size:9px;color:var(--muted);">${rep.scoreCount} avaliação${rep.scoreCount!==1?'ões':''}</div>
+        <div class="miss-perfil-stats">
+          <div class="miss-perfil-stat">
+            <div class="miss-perfil-stat-val">${rep.done || 0}</div>
+            <div class="miss-perfil-stat-label">Concluídas</div>
+          </div>
+          <div class="miss-perfil-stat">
+            <div class="miss-perfil-stat-val">${rep.published || 0}</div>
+            <div class="miss-perfil-stat-label">Publicadas</div>
+          </div>
+        </div>`;
+    }
+    ov.querySelector('.miss-perfil-box').innerHTML = inner +
+      `<button class="btn-modal-cancel" style="width:100%;margin-top:16px;" onclick="closeMissPerfil()">Fechar</button>`;
+  } catch(e) {
+    ov.querySelector('.miss-perfil-box').innerHTML = '<div class="miss-det-closed">Erro ao carregar perfil.</div>';
+  }
+}
+
+function closeMissPerfil() {
+  const ov = document.getElementById('missPerfilOverlay');
+  if(ov) ov.style.display = 'none';
+}
 </script>
 
 <!-- ══ MODAL MISSÃO ══ -->
@@ -1906,6 +2346,13 @@ async function confirmPublicarMissao() {
   </div>
 </div>
 
+<!-- ══ MODAL PERFIL REPUTAÇÃO ══ -->
+<div id="missPerfilOverlay" style="display:none;" onclick="if(event.target===this)closeMissPerfil()">
+  <div class="miss-perfil-box">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
 <!-- ══ BOTTOM NAV mobile ══ -->
 <div class="mkt-bottom-nav" style="display:none;">
   <div class="mkt-bottom-nav-inner">
@@ -1922,7 +2369,7 @@ async function confirmPublicarMissao() {
       <span class="bn-icon">💎</span><span data-i18n="mkt.bn.crystals">Cristais</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-missoes" onclick="showSection('missoes');_mbnActive(this)">
-      <span class="bn-icon">⚔️</span><span>Missões</span>
+      <span class="bn-icon">⚔️</span><span>Missões</span><span class="miss-nav-badge" id="missBnBadge" style="display:none;"></span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
       <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>
