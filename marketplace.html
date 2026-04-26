@@ -1272,15 +1272,18 @@ async function renderMissoes(append) {
 
     const html = docs.map(m => {
       const [sc, sl] = _MISS_STATUS_MAP[m.status] || ['open','Aberta'];
-      const now      = Date.now();
-      const expired  = m.deadline && new Date(m.deadline).getTime() < now && (m.status === 'open' || m.status === 'progress' || m.status === 'awaiting');
-      const deadline = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
-      const employer = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
-      const icon     = _MISS_CAT_ICONS[m.category] || '📦';
-      const isMyTurn = m.status === 'awaiting' && m.selectedWorker === walletAddress;
+      const now            = Date.now();
+      const expired        = m.deadline && new Date(m.deadline).getTime() < now && (m.status === 'open' || m.status === 'progress' || m.status === 'awaiting');
+      const selAt          = m.selectedAt?.toDate ? m.selectedAt.toDate() : null;
+      const awaitingExpired = m.status === 'awaiting' && selAt && (now - selAt.getTime()) > MISS_AWAITING_TIMEOUT_H * 3600000;
+      const deadline       = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
+      const employer       = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
+      const icon           = _MISS_CAT_ICONS[m.category] || '📦';
+      const isMyTurn       = m.status === 'awaiting' && m.selectedWorker === walletAddress && !awaitingExpired;
       return `<div class="miss-card${isMyTurn ? ' miss-card-awaiting' : ''}" onclick="missOpenDetail('${m.id}')">
         <div class="miss-card-stripe"></div>
         ${isMyTurn ? `<div class="miss-selected-banner">✦ Foste selecionado — confirma a tua participação</div>` : ''}
+        ${awaitingExpired && m.employer === walletAddress ? `<div class="miss-selected-banner" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);color:var(--red2);">⏰ Confirmação expirada — reabrir missão</div>` : ''}
         <div class="miss-card-body">
           <div class="miss-card-top">
             <div class="miss-card-title">${icon} ${m.title||'—'}</div>
@@ -1319,8 +1322,9 @@ let _missSearchQuery = '';
 const MISS_PAGE             = 12;
 const MISS_FEE_RATE         = 0.05; // 5% sobre o pot ao concluir
 const MISS_DISPUTE_FEE_RATE = 0.10; // 10% sobre o pot ao resolver disputa
-const MISS_VOTE_REQ_DONE    = 3;    // mínimo de missões concluídas para votar
-const MISS_VOTE_REQ_RATINGS = 2;    // mínimo de avaliações recebidas para votar
+const MISS_VOTE_REQ_DONE      = 3;  // mínimo de missões concluídas para votar
+const MISS_VOTE_REQ_RATINGS   = 2;  // mínimo de avaliações recebidas para votar
+const MISS_AWAITING_TIMEOUT_H = 24; // horas para worker confirmar antes da missão reabrir
 // requer avatar Raro ou Lendário no inventário
 const _MISS_CAT_ICONS = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
@@ -1373,6 +1377,9 @@ async function missOpenDetail(id) {
     const isSelectedWorker = m.selectedWorker === walletAddress;
     const now              = Date.now();
     const isExpired        = m.deadline && new Date(m.deadline).getTime() < now;
+    const selAt            = m.selectedAt?.toDate ? m.selectedAt.toDate() : null;
+    const awaitingExpired  = m.status === 'awaiting' && selAt &&
+      (now - selAt.getTime()) > MISS_AWAITING_TIMEOUT_H * 3600000;
 
     // ── Missão cancelada ──
     if(m.status === 'cancelled') {
@@ -1421,6 +1428,25 @@ async function missOpenDetail(id) {
       return;
     }
 
+    // ── Awaiting expirado (timeout de confirmação) ──
+    if(awaitingExpired) {
+      if(isEmployer) {
+        document.getElementById('detActionArea').innerHTML = `
+          <div class="miss-expired-box">
+            <div class="miss-expired-title">⏰ Confirmação Expirada</div>
+            <div class="miss-expired-sub">O candidato selecionado não confirmou a participação dentro de ${MISS_AWAITING_TIMEOUT_H}h. Podes reabrir a missão para outros candidatos — o teu depósito continua bloqueado.</div>
+            <button class="btn-miss-danger" onclick="missReverterSelecao('${id}')">🔄 Reabrir Missão</button>
+          </div>`;
+      } else if(isSelectedWorker) {
+        document.getElementById('detActionArea').innerHTML =
+          `<div class="miss-det-closed" style="color:var(--muted);">O prazo de confirmação expirou. Não confirmaste a participação a tempo — a missão foi reaberta para outros candidatos.</div>`;
+      } else {
+        document.getElementById('detActionArea').innerHTML =
+          `<div class="miss-det-closed">A missão está prestes a ser reaberta pelo empregador.</div>`;
+      }
+      return;
+    }
+
     // ── Empregador ──
     if(isEmployer) {
       if(m.status === 'awaiting') {
@@ -1428,8 +1454,8 @@ async function missOpenDetail(id) {
         document.getElementById('detActionArea').innerHTML = `
           <div class="miss-det-owner-box">
             <div class="miss-det-owner-title">✦ Candidato Selecionado</div>
-            <div class="miss-det-owner-sub">A aguardar que <strong style="color:var(--text)">${addr}</strong> confirme a participação e deposite a garantia.</div>
-            <button class="btn-miss-danger" style="margin-top:10px;" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Cancelar Seleção & Reembolsar</button>
+            <div class="miss-det-owner-sub">A aguardar que <strong style="color:var(--text)">${addr}</strong> confirme a participação e deposite a garantia. Tens <strong style="color:var(--gold)">${MISS_AWAITING_TIMEOUT_H}h</strong> até o prazo expirar.</div>
+            <button class="btn-miss-danger" style="margin-top:10px;" onclick="missReverterSelecao('${id}')">↩ Cancelar Seleção</button>
           </div>`;
         return;
       }
@@ -1472,10 +1498,13 @@ async function missOpenDetail(id) {
 
     // ── Trabalhador selecionado — confirmar participação ──
     if(isSelectedWorker && m.status === 'awaiting') {
+      const hoursLeft = selAt
+        ? Math.max(0, Math.ceil((selAt.getTime() + MISS_AWAITING_TIMEOUT_H * 3600000 - now) / 3600000))
+        : MISS_AWAITING_TIMEOUT_H;
       document.getElementById('detActionArea').innerHTML = `
         <div class="miss-confirm-box">
           <div class="miss-confirm-box-title">✦ Foste Selecionado!</div>
-          <div class="miss-confirm-box-sub">O empregador escolheu-te. Confirma a participação depositando a garantia para bloquear a missão.</div>
+          <div class="miss-confirm-box-sub">O empregador escolheu-te. Confirma a participação depositando a garantia para bloquear a missão.<br><span style="color:var(--gold);font-size:9px;">⏰ Tens ${hoursLeft}h para confirmar.</span></div>
           <div class="miss-confirm-gains">
             <div class="miss-confirm-gain-row">
               <span>Garantia a depositar</span>
@@ -1650,7 +1679,8 @@ async function missConfirmSelect(missId, candidatoUid, idx) {
     });
     batch.update(db.collection('missoes').doc(missId), {
       status: 'awaiting',
-      selectedWorker: candidatoUid
+      selectedWorker: candidatoUid,
+      selectedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     await batch.commit();
 
@@ -2022,6 +2052,33 @@ async function missCancelarMissao(missId, reward) {
   } catch(e) {
     showToast('Erro ao cancelar. Tenta novamente.', 'err');
     if(btn) { btn.disabled = false; btn.textContent = 'Confirmar Cancelamento'; }
+  }
+}
+
+// ══ FEATURE 1B — REVERTER SELEÇÃO (voltar a open) ══
+
+async function missReverterSelecao(missId) {
+  const btn = document.querySelector('#detActionArea .btn-miss-danger');
+  if(btn) { btn.disabled = true; btn.textContent = 'A processar...'; }
+  try {
+    const FV = firebase.firestore.FieldValue;
+    // reabrir missão e limpar seleção
+    const batch = db.batch();
+    batch.update(db.collection('missoes').doc(missId), {
+      status: 'open',
+      selectedWorker: FV.delete(),
+      selectedAt: FV.delete()
+    });
+    // repor todas as candidaturas para pending (inclusive a selecionada e as rejeitadas)
+    const candSnap = await db.collection('missoes').doc(missId).collection('candidaturas').get();
+    candSnap.docs.forEach(d => batch.update(d.ref, { status: 'pending' }));
+    await batch.commit();
+    closeMissDetalhe();
+    showToast('✅ Missão reaberta. Todos os candidatos anteriores podem ser considerados.');
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    showToast('Erro ao reabrir missão. Tenta novamente.', 'err');
+    if(btn) { btn.disabled = false; btn.textContent = '↩ Cancelar Seleção'; }
   }
 }
 
