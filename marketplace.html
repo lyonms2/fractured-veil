@@ -362,6 +362,50 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ═══════════════════════════════════════════
+   MISSÕES
+═══════════════════════════════════════════ */
+.miss-banner{background:linear-gradient(135deg,rgba(201,168,76,.06),rgba(124,58,237,.08));border:1px solid rgba(201,168,76,.2);border-radius:12px;padding:18px 20px;margin-bottom:20px;}
+.miss-banner-title{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:3px;margin-bottom:14px;}
+.miss-steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:6px;}
+.miss-step{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
+.miss-step-icon{font-size:22px;line-height:1;}
+.miss-step-label{font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:.5px;white-space:nowrap;}
+.miss-step-desc{font-size:8px;color:var(--text2);line-height:1.4;max-width:90px;}
+.miss-step-arrow{font-size:16px;color:rgba(201,168,76,.4);align-self:center;margin-top:-10px;}
+.miss-banner-note{font-size:9px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);}
+.miss-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.miss-filter-btn{padding:5px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px;}
+.miss-filter-btn:hover{border-color:var(--purple);color:var(--text);}
+.miss-filter-btn.active{background:rgba(124,58,237,.15);border-color:var(--purple);color:var(--gem2);}
+.miss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.miss-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:0;overflow:hidden;transition:all .25s;cursor:pointer;}
+.miss-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.1);}
+.miss-card-stripe{height:3px;background:linear-gradient(90deg,var(--gold),rgba(124,58,237,.6));}
+.miss-card-body{padding:14px;}
+.miss-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.miss-card-title{font-family:'Cinzel',serif;font-size:11px;color:var(--text);font-weight:700;line-height:1.3;flex:1;}
+.miss-status{font-size:7px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.miss-status.open{background:rgba(34,197,94,.12);color:var(--green2);border:1px solid rgba(34,197,94,.25);}
+.miss-status.progress{background:rgba(59,130,246,.12);color:var(--blue2);border:1px solid rgba(59,130,246,.25);}
+.miss-status.done{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+.miss-status.dispute{background:rgba(239,68,68,.1);color:var(--red2);border:1px solid rgba(239,68,68,.2);}
+.miss-card-desc{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.miss-card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.miss-card-category{font-size:8px;color:var(--muted);letter-spacing:.3px;}
+.miss-card-deadline{font-size:8px;color:var(--muted);}
+.miss-card-reward{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gem2);}
+.miss-card-employer{font-size:8px;color:var(--muted);font-family:monospace;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.05);}
+.miss-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:8px;}
+.miss-empty-icon{font-size:48px;opacity:.15;margin-bottom:6px;}
+.miss-empty-title{font-family:'Cinzel',serif;font-size:11px;color:var(--muted);letter-spacing:1px;}
+.miss-empty-sub{font-size:10px;color:var(--muted);opacity:.6;max-width:280px;line-height:1.6;}
+.btn-miss-publish{padding:8px 18px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(124,58,237,.15));border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;}
+.btn-miss-publish:hover{background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(124,58,237,.25));}
+.miss-escrow-note{font-size:10px;color:var(--text2);background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px 12px;line-height:1.6;margin-top:14px;}
+.miss-escrow-note strong{color:var(--gem2);}
+.miss-cat-icon{font-size:14px;}
+
+/* ═══════════════════════════════════════════
    MOBILE
 ═══════════════════════════════════════════ */
 @media (max-width:640px) {
@@ -430,6 +474,9 @@ body{display:flex;flex-direction:column;min-height:100vh;}
   .egg-browse-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
   .btn-unlock-slot{font-size:11px;padding:12px;}
   #unlockSlotRow{padding:4px 0;}
+  .miss-steps{grid-template-columns:1fr 1fr;gap:8px;}
+  .miss-step-arrow{display:none;}
+  .miss-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -527,6 +574,9 @@ body{display:flex;flex-direction:column;min-height:100vh;}
     </button>
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
       <span class="nav-icon">🥚</span><span data-i18n="mkt.nav.buy_eggs"> Comprar Ovos</span>
+    </button>
+    <button class="mkt-nav-btn" onclick="showSection('missoes')" id="nav-missoes">
+      <span class="nav-icon">⚔️</span><span> Missões</span>
     </button>
     <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
@@ -744,6 +794,62 @@ body{display:flex;flex-direction:column;min-height:100vh;}
       </div>
     </div>
 
+    <!-- ── MISSÕES ── -->
+    <div class="mkt-section" id="sec-missoes">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+        <div class="section-title">⚔️ Missões</div>
+        <button class="btn-miss-publish" onclick="openMissaoModal()">＋ Publicar Missão</button>
+      </div>
+      <div class="section-sub">Contrata outros jogadores para tarefas usando 💎 Cristais como escrow. Pagamento garantido por depósito duplo.</div>
+
+      <div class="miss-banner">
+        <div class="miss-banner-title">◆ COMO FUNCIONA</div>
+        <div class="miss-steps">
+          <div class="miss-step">
+            <div class="miss-step-icon">📋</div>
+            <div class="miss-step-label">1. Publicar</div>
+            <div class="miss-step-desc">Crias a missão e depositais o valor em cristais como garantia</div>
+          </div>
+          <div class="miss-step-arrow">→</div>
+          <div class="miss-step">
+            <div class="miss-step-icon">🤝</div>
+            <div class="miss-step-label">2. Aceitar</div>
+            <div class="miss-step-desc">O trabalhador deposita o mesmo valor como comprometimento</div>
+          </div>
+          <div class="miss-step-arrow">→</div>
+          <div class="miss-step">
+            <div class="miss-step-icon">⚔️</div>
+            <div class="miss-step-label">3. Executar</div>
+            <div class="miss-step-desc">Trabalho realizado dentro do prazo combinado</div>
+          </div>
+          <div class="miss-step-arrow">→</div>
+          <div class="miss-step">
+            <div class="miss-step-icon">✅</div>
+            <div class="miss-step-label">4. Confirmar</div>
+            <div class="miss-step-desc">Empregador confirma — trabalhador recebe 2× o depósito</div>
+          </div>
+        </div>
+        <div class="miss-banner-note">⚠️ Em caso de disputa, o tribunal comunitário decide. A parte perdedora perde o depósito.</div>
+      </div>
+
+      <div class="miss-filters">
+        <button class="miss-filter-btn active" onclick="missSetFilter(this,'all')">Todas</button>
+        <button class="miss-filter-btn" onclick="missSetFilter(this,'open')">Abertas</button>
+        <button class="miss-filter-btn" onclick="missSetFilter(this,'progress')">Em Andamento</button>
+        <button class="miss-filter-btn" onclick="missSetFilter(this,'done')">Concluídas</button>
+        <button class="miss-filter-btn" onclick="missSetFilter(this,'mine')">Minhas</button>
+      </div>
+
+      <div id="missoesList" class="miss-grid">
+        <div class="miss-empty">
+          <div class="miss-empty-icon">⚔️</div>
+          <div class="miss-empty-title">Nenhuma missão disponível</div>
+          <div class="miss-empty-sub">Sê o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
+          <button class="btn-miss-publish" onclick="openMissaoModal()" style="margin-top:16px;">＋ Publicar Primeira Missão</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -926,6 +1032,7 @@ function renderSection() {
   if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
+  if(currentSection === 'missoes')       renderMissoes();
 }
 
 // ── Utils ──
@@ -945,7 +1052,184 @@ document.getElementById('avatarDetailOverlay').addEventListener('click', e => { 
 window.addEventListener('load', () => {
   iniciarMktAuth();
 });
+
+// ══ MISSÕES ══
+let _missFilterVal = 'all';
+
+function missSetFilter(btn, filter) {
+  _missFilterVal = filter;
+  document.querySelectorAll('.miss-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMissoes();
+}
+
+async function renderMissoes() {
+  const list = document.getElementById('missoesList');
+  if(!list) return;
+  list.innerHTML = '<div class="loading"><div class="spinner"></div><div>A carregar missões...</div></div>';
+  try {
+    let query = db.collection('missoes').orderBy('createdAt','desc').limit(50);
+    const snap = await query.get();
+    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if(_missFilterVal === 'open')     docs = docs.filter(m => m.status === 'open');
+    if(_missFilterVal === 'progress') docs = docs.filter(m => m.status === 'progress');
+    if(_missFilterVal === 'done')     docs = docs.filter(m => m.status === 'done');
+    if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.worker === walletAddress);
+    if(!docs.length) {
+      list.innerHTML = `<div class="miss-empty">
+        <div class="miss-empty-icon">⚔️</div>
+        <div class="miss-empty-title">Nenhuma missão disponível</div>
+        <div class="miss-empty-sub">Sê o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
+        <button class="btn-miss-publish" onclick="openMissaoModal()" style="margin-top:16px;">＋ Publicar Primeira Missão</button>
+      </div>`;
+      return;
+    }
+    const catIcons = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
+    const statusMap = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'] };
+    list.innerHTML = docs.map(m => {
+      const [sc, sl] = statusMap[m.status] || ['open','Aberta'];
+      const deadline = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
+      const employer = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
+      const icon = catIcons[m.category] || '📦';
+      return `<div class="miss-card" onclick="missOpenDetail('${m.id}')">
+        <div class="miss-card-stripe"></div>
+        <div class="miss-card-body">
+          <div class="miss-card-top">
+            <div class="miss-card-title">${icon} ${m.title||'—'}</div>
+            <div class="miss-status ${sc}">${sl}</div>
+          </div>
+          <div class="miss-card-desc">${m.desc||''}</div>
+          <div class="miss-card-meta">
+            <div class="miss-card-deadline">⏳ ${deadline}</div>
+            <div class="miss-card-reward">💎 ${m.reward||0}</div>
+          </div>
+          <div class="miss-card-employer">Por: ${employer}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="miss-empty"><div class="miss-empty-icon">⚔️</div><div class="miss-empty-title">Erro ao carregar missões</div></div>';
+  }
+}
+
+function missOpenDetail(id) { /* placeholder — detail modal in future update */ }
+
+function openMissaoModal() {
+  if(!walletAddress) { showToast('Faz login primeiro.', 'err'); return; }
+  const ov = document.getElementById('missaoModalOverlay');
+  ov.style.display = 'flex';
+  document.getElementById('missTitle').value = '';
+  document.getElementById('missDesc').value = '';
+  document.getElementById('missReward').value = '';
+  document.getElementById('missDeadline').value = '';
+  document.getElementById('missModalStatus').textContent = '';
+  document.getElementById('missEscrowAmt').textContent = '—';
+}
+function closeMissaoModal() {
+  document.getElementById('missaoModalOverlay').style.display = 'none';
+}
+
+async function confirmPublicarMissao() {
+  const title    = document.getElementById('missTitle').value.trim();
+  const desc     = document.getElementById('missDesc').value.trim();
+  const reward   = parseInt(document.getElementById('missReward').value) || 0;
+  const deadline = parseInt(document.getElementById('missDeadline').value) || 0;
+  const category = document.getElementById('missCategory').value;
+  const status   = document.getElementById('missModalStatus');
+
+  if(!title)       { status.textContent = 'Título obrigatório.'; return; }
+  if(!desc)        { status.textContent = 'Descrição obrigatória.'; return; }
+  if(reward < 1)   { status.textContent = 'Recompensa mínima: 1 💎.'; return; }
+  if(deadline < 1) { status.textContent = 'Prazo mínimo: 1 dia.'; return; }
+
+  const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
+  if(cristais < reward) { status.textContent = `Saldo insuficiente (tens ${cristais} 💎, precisas ${reward} 💎).`; return; }
+
+  const btn = document.querySelector('#missaoModalOverlay .btn-modal-confirm');
+  btn.disabled = true;
+  status.textContent = 'A publicar...';
+
+  try {
+    const deadlineDate = new Date();
+    deadlineDate.setDate(deadlineDate.getDate() + deadline);
+
+    await db.collection('missoes').add({
+      title, desc, category, reward,
+      deadline: deadlineDate.toISOString(),
+      employer: walletAddress,
+      status: 'open',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    const newCristais = cristais - reward;
+    await db.collection('players').doc(walletAddress).update({ 'gs.cristais': newCristais });
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.cristais = newCristais;
+    playerData.cristais    = newCristais;
+    updateCristaisDisplay();
+
+    closeMissaoModal();
+    showToast('✅ Missão publicada! Os cristais estão em escrow.');
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    status.textContent = 'Erro ao publicar. Tenta novamente.';
+  } finally {
+    btn.disabled = false;
+  }
+}
 </script>
+
+<!-- ══ MODAL MISSÃO ══ -->
+<div class="overlay" id="missaoModalOverlay" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-title">⚔️ Publicar Missão</div>
+    <div class="modal-sub">Define os detalhes da missão. O valor em cristais será bloqueado em escrow até a conclusão.</div>
+
+    <div class="modal-field">
+      <div class="modal-label">Título da Missão</div>
+      <input class="modal-input" id="missTitle" type="text" maxlength="60" placeholder="Ex: Criar arte para o meu avatar"/>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Descrição / Requisitos</div>
+      <textarea class="modal-input" id="missDesc" rows="3" placeholder="Descreve o que precisa ser feito, critérios de aceitação, referências..." style="resize:vertical;min-height:72px;"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="modal-field">
+        <div class="modal-label">Categoria</div>
+        <select class="modal-input" id="missCategory" style="cursor:pointer;">
+          <option value="arte">🎨 Arte</option>
+          <option value="gameplay">⚔️ Gameplay</option>
+          <option value="guild">🛡️ Guild</option>
+          <option value="traducao">🌐 Tradução</option>
+          <option value="outro">📦 Outro</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Recompensa (💎 Cristais)</div>
+        <input class="modal-input" id="missReward" type="number" min="1" placeholder="ex: 20" oninput="document.getElementById('missEscrowAmt').textContent=parseInt(this.value)||0"/>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">Prazo (dias a partir de hoje)</div>
+      <input class="modal-input" id="missDeadline" type="number" min="1" max="90" placeholder="ex: 7"/>
+    </div>
+
+    <div class="miss-escrow-note">
+      💡 Depósito duplo: tu depositais <strong id="missEscrowAmt">—</strong> 💎 como garantia.
+      O trabalhador depositará o mesmo valor ao aceitar a missão.
+    </div>
+
+    <div id="missModalStatus" style="font-size:9px;color:var(--red2);text-align:center;min-height:14px;margin-top:8px;"></div>
+
+    <div class="modal-row" style="margin-top:14px;">
+      <button class="btn-modal-cancel" onclick="closeMissaoModal()">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmPublicarMissao()">Publicar & Depositar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ BOTTOM NAV mobile ══ -->
 <div class="mkt-bottom-nav" style="display:none;">
@@ -961,6 +1245,9 @@ window.addEventListener('load', () => {
     </button>
     <button class="mkt-bn-btn" id="mbn-buycrystals" onclick="showSection('buycrystals');_mbnActive(this)">
       <span class="bn-icon">💎</span><span data-i18n="mkt.bn.crystals">Cristais</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-missoes" onclick="showSection('missoes');_mbnActive(this)">
+      <span class="bn-icon">⚔️</span><span>Missões</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
       <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>
