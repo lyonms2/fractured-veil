@@ -1294,7 +1294,11 @@ async function renderMissoes(append) {
 let _missCurrentId = null;
 let _missLastDoc   = null;
 let _missSearchQuery = '';
-const MISS_PAGE = 12;
+const MISS_PAGE             = 12;
+const MISS_FEE_RATE         = 0.05; // 5% sobre o pot ao concluir
+const MISS_DISPUTE_FEE_RATE = 0.10; // 10% sobre o pot ao resolver disputa
+const MISS_VOTE_REQ_DONE    = 3;    // mínimo de missões concluídas para votar
+const MISS_VOTE_REQ_RATINGS = 2;    // mínimo de avaliações recebidas para votar
 const _MISS_CAT_ICONS = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
 
@@ -1726,8 +1730,11 @@ async function missValidarToken(missId, reward) {
 }
 
 function _missAbrirConfirmEntrega(missId, m) {
-  const wAddr = m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4);
-  const icon  = _MISS_CAT_ICONS[m.category] || '📦';
+  const wAddr     = m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4);
+  const icon      = _MISS_CAT_ICONS[m.category] || '📦';
+  const totalPot  = m.reward * 2;
+  const fee       = Math.floor(totalPot * MISS_FEE_RATE);
+  const workerAmt = totalPot - fee;
   document.getElementById('entregaMissId').value  = missId;
   document.getElementById('entregaWorker').value  = m.selectedWorker;
   document.getElementById('entregaReward').value  = m.reward;
@@ -1744,8 +1751,12 @@ function _missAbrirConfirmEntrega(missId, m) {
         <span style="font-family:monospace;font-size:10px;">${wAddr}</span>
       </div>
       <div class="miss-entrega-row">
-        <span>Pagamento liberado</span>
-        <span style="color:var(--green2);font-family:'Cinzel',serif;font-weight:700;">💎 ${m.reward * 2}</span>
+        <span>Trabalhador recebe</span>
+        <span style="color:var(--green2);font-family:'Cinzel',serif;font-weight:700;">💎 ${workerAmt}</span>
+      </div>
+      <div class="miss-entrega-row">
+        <span style="color:var(--muted);">Taxa P2E (5%)</span>
+        <span style="color:var(--muted);font-size:10px;">− 💎 ${fee}</span>
       </div>
     </div>`;
   document.getElementById('entregaConfirmBtn').disabled = false;
@@ -1758,29 +1769,41 @@ function closeMissEntrega() {
 }
 
 async function missFinalizarEntrega() {
-  const missId  = document.getElementById('entregaMissId').value;
-  const worker  = document.getElementById('entregaWorker').value;
-  const reward  = parseInt(document.getElementById('entregaReward').value);
-  const btn     = document.getElementById('entregaConfirmBtn');
-  btn.disabled  = true;
+  const missId    = document.getElementById('entregaMissId').value;
+  const worker    = document.getElementById('entregaWorker').value;
+  const reward    = parseInt(document.getElementById('entregaReward').value);
+  const btn       = document.getElementById('entregaConfirmBtn');
+  btn.disabled    = true;
   btn.textContent = 'A processar...';
   try {
-    const workerSnap    = await db.collection('players').doc(worker).get();
-    const workerCristais = workerSnap.data()?.gs?.cristais ?? workerSnap.data()?.cristais ?? 0;
-    const batch = db.batch();
-    batch.update(db.collection('players').doc(worker), { 'gs.cristais': workerCristais + reward * 2 });
+    const totalPot  = reward * 2;
+    const fee       = Math.floor(totalPot * MISS_FEE_RATE);
+    const workerAmt = totalPot - fee;
+    const poolRef   = db.collection('config').doc('pool');
+    const logRef    = poolRef.collection('logs').doc();
+    const FV        = firebase.firestore.FieldValue;
+    const batch     = db.batch();
+    batch.update(db.collection('players').doc(worker), {
+      'gs.cristais': FV.increment(workerAmt),
+      'gs.rep.done': FV.increment(1)
+    });
     batch.update(db.collection('missoes').doc(missId), {
       status: 'done',
-      deliveryToken: firebase.firestore.FieldValue.delete(),
-      completedAt: firebase.firestore.FieldValue.serverTimestamp()
+      deliveryToken: FV.delete(),
+      completedAt: FV.serverTimestamp()
+    });
+    batch.update(poolRef, {
+      cristais:    FV.increment(fee),
+      totalEntrou: FV.increment(fee)
+    });
+    batch.set(logRef, {
+      tipo: 'entrada', motivo: 'Missão concluída — taxa 5%',
+      origem: worker, total: fee, pool: fee, ts: FV.serverTimestamp()
     });
     await batch.commit();
-    await db.collection('players').doc(worker).update({
-      'gs.rep.done': firebase.firestore.FieldValue.increment(1)
-    });
     closeMissEntrega();
     closeMissDetalhe();
-    showToast('✅ Entrega confirmada! Pagamento liberado.');
+    showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${workerAmt} · taxa pool: 💎 ${fee}.`);
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     btn.disabled = false;
@@ -2070,15 +2093,22 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
     const voteSnap = await db.collection('missoes').doc(id).collection('votos').doc(walletAddress).get();
     const repSnap  = await db.collection('players').doc(walletAddress).get();
     const repDone  = repSnap.data()?.gs?.rep?.done || 0;
+    const repScoreCount = repSnap.data()?.gs?.rep?.scoreCount || 0;
     if(voteSnap.exists) {
       voteBtns = `<div class="miss-voted-msg">✅ Já votaste nesta disputa.</div>`;
-    } else if(repDone < 1) {
-      voteBtns = `<div class="miss-voted-msg">Precisas de pelo menos 1 missão concluída para votar.</div>`;
+    } else if(repDone < MISS_VOTE_REQ_DONE || repScoreCount < MISS_VOTE_REQ_RATINGS) {
+      voteBtns = `<div class="miss-voted-msg">Precisas de ${MISS_VOTE_REQ_DONE} missões concluídas e ${MISS_VOTE_REQ_RATINGS} avaliações recebidas para votar.</div>`;
     } else {
-      voteBtns = `<div class="miss-vote-btn-row">
-        <button class="btn-miss-vote btn-miss-vote-emp" onclick="missVotar('${id}','employer',${m.reward})">🏛️ Favor do Empregador</button>
-        <button class="btn-miss-vote btn-miss-vote-wkr" onclick="missVotar('${id}','worker',${m.reward})">⚔️ Favor do Trabalhador</button>
-      </div>`;
+      const voterEst = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 10);
+      const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${voterEst} por voto` : '';
+      voteBtns = `
+        <div style="font-size:9px;color:var(--gold);text-align:center;margin-bottom:8px;opacity:.8;">
+          🏆 Votantes recebem 5% do pot dividido entre si${voterEstTxt}
+        </div>
+        <div class="miss-vote-btn-row">
+          <button class="btn-miss-vote btn-miss-vote-emp" onclick="missVotar('${id}','employer',${m.reward})">🏛️ Favor do Empregador</button>
+          <button class="btn-miss-vote btn-miss-vote-wkr" onclick="missVotar('${id}','worker',${m.reward})">⚔️ Favor do Trabalhador</button>
+        </div>`;
     }
   } else if(isParty) {
     voteBtns = `<div class="miss-voted-msg">Não podes votar na tua própria disputa.</div>`;
@@ -2129,19 +2159,42 @@ async function missVotar(missId, side, reward) {
 }
 
 async function _missResolverDisputa(missId, m, reward) {
-  const winner = (m.votesEmployer || 0) >= (m.votesWorker || 0) ? m.employer : m.selectedWorker;
-  const batch  = db.batch();
+  const totalPot   = reward * 2;
+  const fee        = Math.floor(totalPot * MISS_DISPUTE_FEE_RATE); // 10%
+  const voterTotal = Math.floor(fee / 2);                           // 5% para votantes
+  const poolShare  = fee - voterTotal;                              // 5% para pool (+ sobras de arredondamento)
+  const winnerAmt  = totalPot - fee;                               // 90% para o vencedor
+  const winner     = (m.votesEmployer || 0) >= (m.votesWorker || 0) ? m.employer : m.selectedWorker;
+
+  const votersSnap = await db.collection('missoes').doc(missId).collection('votos').get();
+  const voterUids  = votersSnap.docs.map(d => d.id);
+  const voterAmt   = voterUids.length > 0 ? Math.floor(voterTotal / voterUids.length) : 0;
+  const poolFinal  = poolShare + (voterTotal - voterAmt * voterUids.length); // absorve resto
+
+  const FV      = firebase.firestore.FieldValue;
+  const poolRef = db.collection('config').doc('pool');
+  const logRef  = poolRef.collection('logs').doc();
+  const batch   = db.batch();
+
   batch.update(db.collection('missoes').doc(missId), {
-    status: 'cancelled',
-    disputeWinner: winner,
-    resolvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    status: 'cancelled', disputeWinner: winner, resolvedAt: FV.serverTimestamp()
   });
   batch.update(db.collection('players').doc(winner), {
-    'gs.cristais': firebase.firestore.FieldValue.increment(reward * 2)
+    'gs.cristais': FV.increment(winnerAmt)
+  });
+  voterUids.forEach(uid => {
+    if(voterAmt > 0) batch.update(db.collection('players').doc(uid), { 'gs.cristais': FV.increment(voterAmt) });
+  });
+  batch.update(poolRef, { cristais: FV.increment(poolFinal), totalEntrou: FV.increment(poolFinal) });
+  batch.set(logRef, {
+    tipo: 'entrada', motivo: 'Disputa resolvida — taxa 10%',
+    origem: winner, total: poolFinal, pool: poolFinal, ts: FV.serverTimestamp()
   });
   await batch.commit();
+
   closeMissDetalhe();
-  showToast('⚖️ Disputa resolvida! O vencedor recebeu os depósitos.');
+  const voterMsg = voterAmt > 0 ? ` · ${voterUids.length} votante${voterUids.length!==1?'s':''} receberam 💎 ${voterAmt} cada` : '';
+  showToast(`⚖️ Disputa resolvida! Vencedor recebeu 💎 ${winnerAmt}.${voterMsg}`);
   if(currentSection === 'missoes') renderMissoes();
 }
 
@@ -2274,7 +2327,7 @@ function closeMissPerfil() {
       </div>
       <div class="modal-field">
         <div class="modal-label">Recompensa (💎 Cristais)</div>
-        <input class="modal-input" id="missReward" type="number" min="1" placeholder="ex: 20" oninput="document.getElementById('missEscrowAmt').textContent=parseInt(this.value)||0"/>
+        <input class="modal-input" id="missReward" type="number" min="1" placeholder="ex: 20" oninput="const _v=parseInt(this.value)||0; document.getElementById('missEscrowAmt').textContent=_v; document.getElementById('missWorkerAmt').textContent=_v?(_v*2-Math.floor(_v*2*MISS_FEE_RATE)):'—';"/>
       </div>
     </div>
 
@@ -2284,8 +2337,7 @@ function closeMissPerfil() {
     </div>
 
     <div class="miss-escrow-note">
-      💡 Depósito duplo: tu depositais <strong id="missEscrowAmt">—</strong> 💎 como garantia.
-      O trabalhador depositará o mesmo valor ao aceitar a missão.
+      💡 Depósito duplo: tu depositais <strong id="missEscrowAmt">—</strong> 💎 como garantia. O trabalhador depositará o mesmo valor ao aceitar a missão. Ao concluir, aplica-se uma <strong>taxa de 5%</strong> sobre o pot total para a pool P2E — o trabalhador recebe <strong id="missWorkerAmt">—</strong> 💎 líquidos.
     </div>
 
     <div id="missModalStatus" style="font-size:9px;color:var(--red2);text-align:center;min-height:14px;margin-top:8px;"></div>
