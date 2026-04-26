@@ -1321,6 +1321,7 @@ const MISS_FEE_RATE         = 0.05; // 5% sobre o pot ao concluir
 const MISS_DISPUTE_FEE_RATE = 0.10; // 10% sobre o pot ao resolver disputa
 const MISS_VOTE_REQ_DONE    = 3;    // mínimo de missões concluídas para votar
 const MISS_VOTE_REQ_RATINGS = 2;    // mínimo de avaliações recebidas para votar
+// requer avatar Raro ou Lendário no inventário
 const _MISS_CAT_ICONS = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
 
@@ -2116,10 +2117,15 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
     const repSnap  = await db.collection('players').doc(walletAddress).get();
     const repDone  = repSnap.data()?.gs?.rep?.done || 0;
     const repScoreCount = repSnap.data()?.gs?.rep?.scoreCount || 0;
+    const hasAvatar     = _missHasQualAvatar();
     if(voteSnap.exists) {
       voteBtns = `<div class="miss-voted-msg">✅ Já votaste nesta disputa.</div>`;
-    } else if(repDone < MISS_VOTE_REQ_DONE || repScoreCount < MISS_VOTE_REQ_RATINGS) {
-      voteBtns = `<div class="miss-voted-msg">Precisas de ${MISS_VOTE_REQ_DONE} missões concluídas e ${MISS_VOTE_REQ_RATINGS} avaliações recebidas para votar.</div>`;
+    } else if(repDone < MISS_VOTE_REQ_DONE || repScoreCount < MISS_VOTE_REQ_RATINGS || !hasAvatar) {
+      const missing = [];
+      if(repDone < MISS_VOTE_REQ_DONE)       missing.push(`${MISS_VOTE_REQ_DONE} missões concluídas`);
+      if(repScoreCount < MISS_VOTE_REQ_RATINGS) missing.push(`${MISS_VOTE_REQ_RATINGS} avaliações recebidas`);
+      if(!hasAvatar)                          missing.push('avatar Raro ou Lendário');
+      voteBtns = `<div class="miss-voted-msg">Requisitos em falta: ${missing.join(' · ')}.</div>`;
     } else {
       const voterEst = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 10);
       const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${voterEst} por voto` : '';
@@ -2222,13 +2228,18 @@ async function _missResolverDisputa(missId, m, reward) {
 
 // ══ FEATURE 4 — BADGE + VOTER STATUS + DISPUTE BANNER ══
 
+function _missHasQualAvatar() {
+  return (playerData?.avatarSlots || []).some(s => s && (s.raridade === 'Raro' || s.raridade === 'Lendário'));
+}
+
 async function missCheckBadge() {
   if(!walletAddress) return;
   try {
     const rep          = playerData?.gs?.rep || null;
     const done         = rep?.done         || 0;
     const scoreCount   = rep?.scoreCount   || 0;
-    const isQualified  = done >= MISS_VOTE_REQ_DONE && scoreCount >= MISS_VOTE_REQ_RATINGS;
+    const hasAvatar    = _missHasQualAvatar();
+    const isQualified  = done >= MISS_VOTE_REQ_DONE && scoreCount >= MISS_VOTE_REQ_RATINGS && hasAvatar;
 
     const queries = [
       db.collection('missoes').where('selectedWorker','==',walletAddress).where('status','==','awaiting').limit(9).get(),
@@ -2253,7 +2264,7 @@ async function missCheckBadge() {
 
     const count = awaitingSnap.size + myDisputeSnap.size + votableDisputes.length;
     _missUpdateBadge(count);
-    _missUpdateVoterStatus(done, scoreCount, isQualified);
+    _missUpdateVoterStatus(done, scoreCount, hasAvatar, isQualified);
     _missUpdateDisputeBanner(votableDisputes.length);
   } catch(e) {}
 }
@@ -2267,7 +2278,7 @@ function _missUpdateBadge(count) {
   });
 }
 
-function _missUpdateVoterStatus(done, scoreCount, isQualified) {
+function _missUpdateVoterStatus(done, scoreCount, hasAvatar, isQualified) {
   const el = document.getElementById('missVoterStatus');
   if(!el || !walletAddress) return;
   if(isQualified) {
@@ -2282,8 +2293,9 @@ function _missUpdateVoterStatus(done, scoreCount, isQualified) {
       </div>`;
   } else {
     el.style.display = '';
-    const doneOk  = done  >= MISS_VOTE_REQ_DONE;
-    const rcOk    = scoreCount >= MISS_VOTE_REQ_RATINGS;
+    const doneOk   = done        >= MISS_VOTE_REQ_DONE;
+    const rcOk     = scoreCount  >= MISS_VOTE_REQ_RATINGS;
+    const avOk     = hasAvatar;
     el.innerHTML = `
       <div class="miss-voter-status progress">
         <div class="miss-voter-status-icon">⚖️</div>
@@ -2292,12 +2304,17 @@ function _missUpdateVoterStatus(done, scoreCount, isQualified) {
           <div class="miss-voter-status-bar">
             <div class="miss-voter-req">
               <div class="miss-voter-req-dot ${doneOk?'ok':'no'}"></div>
-              <span>${done}/${MISS_VOTE_REQ_DONE} missões concluídas</span>
+              <span>${done}/${MISS_VOTE_REQ_DONE} missões</span>
             </div>
             <span style="opacity:.3">·</span>
             <div class="miss-voter-req">
               <div class="miss-voter-req-dot ${rcOk?'ok':'no'}"></div>
-              <span>${scoreCount}/${MISS_VOTE_REQ_RATINGS} avaliações recebidas</span>
+              <span>${scoreCount}/${MISS_VOTE_REQ_RATINGS} avaliações</span>
+            </div>
+            <span style="opacity:.3">·</span>
+            <div class="miss-voter-req">
+              <div class="miss-voter-req-dot ${avOk?'ok':'no'}"></div>
+              <span>avatar Raro/Lendário</span>
             </div>
           </div>
         </div>
