@@ -457,6 +457,21 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .miss-confirm-earn{color:var(--gem2);font-weight:700;font-family:'Cinzel',serif;font-size:12px;}
 .miss-confirm-net{color:var(--green2);font-weight:700;font-family:'Cinzel',serif;font-size:13px;}
 
+/* ── Scanner QR in-app ── */
+.miss-scanner-wrap{margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;}
+.miss-scanner-title{font-family:'Cinzel',serif;font-size:8px;color:var(--gem2);letter-spacing:2px;margin-bottom:8px;text-align:center;}
+.miss-scanner-video-wrap{position:relative;border-radius:10px;overflow:hidden;background:#000;margin-bottom:8px;}
+#missQRVideo{display:block;width:100%;max-height:200px;object-fit:cover;}
+.miss-scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.miss-scanner-frame{width:140px;height:140px;border:2px solid rgba(167,139,250,.7);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.4);}
+.miss-scanner-corner{position:absolute;width:18px;height:18px;border-color:var(--gem2);border-style:solid;}
+.miss-scanner-corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:3px 0 0 0;}
+.miss-scanner-corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 3px 0 0;}
+.miss-scanner-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 3px;}
+.miss-scanner-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 3px 0;}
+.miss-scanner-status{font-size:9px;color:var(--muted);text-align:center;min-height:14px;margin-bottom:8px;}
+.miss-scanner-btns{display:flex;gap:8px;}
+
 /* ── QR de entrega (Parte 4) ── */
 .miss-deliver-box{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-deliver-title{font-family:'Cinzel',serif;font-size:11px;color:var(--blue2);letter-spacing:1px;margin-bottom:6px;}
@@ -1080,6 +1095,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQRTyxWNUZ20FV4zisvNm5Xvq1IUf7H9w",
@@ -1466,7 +1482,11 @@ async function missOpenDetail(id) {
             <div class="miss-det-owner-title">⚔️ Missão em Andamento</div>
             <div class="miss-det-owner-sub">Trabalhador: <button class="miss-link-btn" onclick="missAbrirPerfil('${m.selectedWorker}',event)">${wAddr}</button><br>Quando concluir, apresentará o QR code de entrega.</div>
             <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;">
-              <div class="modal-label" style="margin-bottom:6px;">Confirmar com token manual</div>
+              <button class="btn-miss-select" style="width:100%;margin-bottom:10px;" onclick="missAbrirScanner('${id}',${m.reward})">
+                📷 Escanear QR Code
+              </button>
+              <div id="detQRScanArea"></div>
+              <div class="modal-label" style="margin-bottom:6px;margin-top:4px;">Ou introduz o token manualmente</div>
               <div style="display:flex;gap:8px;">
                 <input class="modal-input" id="detDeliverToken" placeholder="Cola o token aqui..." style="flex:1;font-family:monospace;font-size:11px;"/>
                 <button class="btn-miss-select" style="white-space:nowrap;padding:8px 14px;" onclick="missValidarToken('${id}',${m.reward})">Confirmar</button>
@@ -1592,6 +1612,7 @@ async function missOpenDetail(id) {
 }
 
 function closeMissDetalhe() {
+  _missStopScanner();
   document.getElementById('missDetalheOverlay').style.display = 'none';
   _missCurrentId = null;
 }
@@ -2468,6 +2489,128 @@ async function missAbrirPerfil(uid, evt) {
 function closeMissPerfil() {
   const ov = document.getElementById('missPerfilOverlay');
   if(ov) ov.style.display = 'none';
+}
+
+// ══ LEITOR QR IN-APP ══
+
+let _missStream    = null;
+let _missScanning  = false;
+
+async function missAbrirScanner(missId, reward) {
+  const area = document.getElementById('detQRScanArea');
+  if(!area) return;
+  if(_missStream) { _missStopScanner(); return; }
+
+  if(!navigator.mediaDevices?.getUserMedia) {
+    area.innerHTML = `<div class="miss-scanner-status" style="color:var(--red2);">Câmera não suportada neste browser.</div>`;
+    return;
+  }
+
+  area.innerHTML = `
+    <div class="miss-scanner-wrap">
+      <div class="miss-scanner-title">◆ APONTA PARA O QR DO TRABALHADOR</div>
+      <div class="miss-scanner-video-wrap">
+        <video id="missQRVideo" autoplay playsinline muted></video>
+        <div class="miss-scanner-overlay">
+          <div style="position:relative;width:140px;height:140px;">
+            <div class="miss-scanner-frame"></div>
+            <div class="miss-scanner-corner tl"></div>
+            <div class="miss-scanner-corner tr"></div>
+            <div class="miss-scanner-corner bl"></div>
+            <div class="miss-scanner-corner br"></div>
+          </div>
+        </div>
+      </div>
+      <canvas id="missQRCanvas" style="display:none;"></canvas>
+      <div class="miss-scanner-status" id="missQRScanStatus">A iniciar câmera...</div>
+      <button class="btn-modal-cancel" style="width:100%;" onclick="_missStopScanner()">✕ Cancelar Scanner</button>
+    </div>`;
+
+  try {
+    _missStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 } }
+    });
+    const video = document.getElementById('missQRVideo');
+    video.srcObject = _missStream;
+    await video.play();
+    document.getElementById('missQRScanStatus').textContent = 'A escanear...';
+    _missScanning = true;
+    _missDoScan(missId, reward);
+  } catch(e) {
+    const msg = e.name === 'NotAllowedError' ? 'Permissão de câmera negada.' : 'Não foi possível aceder à câmera.';
+    const statusEl = document.getElementById('missQRScanStatus');
+    if(statusEl) statusEl.textContent = msg;
+    _missStopScanner(true);
+  }
+}
+
+function _missStopScanner(keepArea) {
+  _missScanning = false;
+  if(_missStream) {
+    _missStream.getTracks().forEach(t => t.stop());
+    _missStream = null;
+  }
+  if(!keepArea) {
+    const area = document.getElementById('detQRScanArea');
+    if(area) area.innerHTML = '';
+  }
+}
+
+function _missDoScan(missId, reward) {
+  if(!_missScanning) return;
+  const video  = document.getElementById('missQRVideo');
+  const canvas = document.getElementById('missQRCanvas');
+  if(!video || !canvas || !_missStream) return;
+
+  const tick = () => {
+    if(!_missScanning || !document.getElementById('missQRVideo')) return;
+
+    if('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      detector.detect(video).then(codes => {
+        if(codes.length > 0) {
+          _missStopScanner();
+          _missHandleQRResult(codes[0].rawValue, missId, reward);
+        } else {
+          requestAnimationFrame(tick);
+        }
+      }).catch(() => requestAnimationFrame(tick));
+    } else if(typeof jsQR !== 'undefined' && video.readyState >= 2) {
+      canvas.width  = video.videoWidth  || 320;
+      canvas.height = video.videoHeight || 240;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+      if(code) {
+        _missStopScanner();
+        _missHandleQRResult(code.data, missId, reward);
+      } else {
+        requestAnimationFrame(tick);
+      }
+    } else {
+      requestAnimationFrame(tick);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
+function _missHandleQRResult(raw, missId, reward) {
+  try {
+    const url    = new URL(raw);
+    const params = new URLSearchParams(url.search);
+    const scannedId = params.get('deliver');
+    const tok       = params.get('tok');
+    if(!tok) { showToast('QR inválido — token não encontrado.', 'err'); return; }
+    if(scannedId && scannedId !== missId) {
+      showToast('Este QR pertence a uma missão diferente.', 'err'); return;
+    }
+    const input = document.getElementById('detDeliverToken');
+    if(input) input.value = tok;
+    missValidarToken(missId, reward);
+  } catch(e) {
+    showToast('QR inválido ou ilegível.', 'err');
+  }
 }
 </script>
 
