@@ -86,6 +86,140 @@
   background: rgba(231,76,60,.25);
 }
 
+/* ── Record animation ── */
+.snake-record-ov {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: snake-rec-bg .25s ease forwards;
+}
+
+@keyframes snake-rec-bg {
+  from { background: transparent; }
+  to   { background: rgba(4,3,10,.8); }
+}
+
+.snake-record-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 2px solid rgba(251,191,36,.7);
+  animation: snake-rec-ring .6s ease .05s both;
+}
+
+@keyframes snake-rec-ring {
+  0%   { width:20px;  height:20px;  margin:-10px 0 0 -10px; opacity:.9; }
+  100% { width:280px; height:280px; margin:-140px 0 0 -140px; opacity:0; }
+}
+
+.snake-record-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(14px, 4vw, 22px);
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #fbbf24;
+  text-shadow: 0 0 20px #fbbf24, 0 0 48px rgba(251,191,36,.5);
+  animation: snake-rec-title .45s cubic-bezier(.175,.885,.32,1.275) .1s both;
+}
+
+@keyframes snake-rec-title {
+  from { opacity:0; transform:scale(.25); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+.snake-record-score {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(12px, 3.5vw, 18px);
+  color: #86efac;
+  letter-spacing: 3px;
+  margin-top: 8px;
+  animation: snake-rec-score .35s ease .42s both;
+}
+
+@keyframes snake-rec-score {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.snake-record-star {
+  position: absolute;
+  top: 50%; left: 50%;
+  font-size: 15px;
+  animation: snake-rec-star .75s ease both;
+}
+
+@keyframes snake-rec-star {
+  0%   { opacity:0; transform:translate(-50%,-50%) translate(0,0) scale(.4); }
+  25%  { opacity:1; }
+  100% { opacity:0; transform:translate(-50%,-50%) translate(var(--sx),var(--sy)) scale(1.4) rotate(200deg); }
+}
+
+/* ── Ranking panel ── */
+.snake-ranking-panel {
+  flex-direction: column;
+  width: 100%;
+  max-height: 180px;
+  overflow-y: auto;
+  background: rgba(10,8,24,.85);
+  border: 1px solid rgba(167,139,250,.18);
+  border-radius: 8px;
+  padding: 6px 4px;
+  margin: 4px 0 2px;
+  gap: 2px;
+}
+
+.snake-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.02);
+}
+
+.snake-rank-meu {
+  background: rgba(167,139,250,.12);
+  border: 1px solid rgba(167,139,250,.25);
+}
+
+.snake-rank-pos {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--gold, #fbbf24);
+  min-width: 22px;
+  text-align: center;
+}
+
+.snake-rank-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: var(--text, #e2e8f0);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.snake-rank-pts {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.snake-rank-loading {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: var(--muted, #64748b);
+  text-align: center;
+  padding: 8px;
+}
+
 /* ── Score ── */
 #snakeScore {
   font-family: 'Cinzel', serif;

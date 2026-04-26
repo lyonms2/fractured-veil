@@ -29,6 +29,7 @@ let _snakeInterval = null;
 let _snakeRunning  = false;
 let _snakeTouchX   = null;
 let _snakeTouchY   = null;
+let _snakeRankOpen = false;
 
 // ── Iniciar ────────────────────────────────────────────────────────
 function startSnake() {
@@ -54,7 +55,10 @@ function startSnake() {
   document.getElementById('snakeResult').textContent = '';
   document.getElementById('snakeResult').className   = 'mini-result-box';
   document.getElementById('snakeReward').textContent = '';
-  document.getElementById('snakeAgainBtn').style.display = 'none';
+  document.getElementById('snakeAgainBtn').style.display   = 'none';
+  document.getElementById('snakeRankingBtn').style.display = 'none';
+  document.getElementById('snakeRankingPanel').style.display = 'none';
+  _snakeRankOpen = false;
   _snakeUpdateScore();
 
   const d = miniDifficulty();
@@ -271,6 +275,15 @@ function _snakeEnd() {
         t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain + _ballBonus});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
+
+      if(_snakeScore > (gs.snakeBest || 0)) {
+        gs.snakeBest = _snakeScore;
+        scheduleSave();
+        _snakeSaveRanking(_snakeScore);
+        setTimeout(() => _snakeRecordAnim(_snakeScore), 300);
+      }
+
+      document.getElementById('snakeRankingBtn').style.display = 'inline-block';
     }
 
     document.getElementById('snakeAgainBtn').style.display = 'inline-block';
@@ -350,3 +363,83 @@ document.addEventListener('keydown', e => {
   if(_snakeRunning && _snakeFood) _snakeRender();
   requestAnimationFrame(_snakeFoodLoop);
 })();
+
+// ── Ranking ────────────────────────────────────────────────────────
+async function _snakeSaveRanking(score) {
+  if(!rtdb() || !walletAddress || !avatar) return;
+  const nome = avatar.nome ? avatar.nome.split(',')[0] : '???';
+  await rtdb().ref(`snakeRanking/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
+}
+
+async function snakeLoadRanking() {
+  const wrap = document.getElementById('snakeRankingList');
+  if(!wrap || !rtdb()) return;
+  wrap.innerHTML = `<div class="snake-rank-loading">${t('ui.loading')}</div>`;
+
+  const snap  = await rtdb().ref('snakeRanking').orderByChild('score').limitToLast(10).once('value');
+  const lista = Object.values(snap.val() || {}).sort((a, b) => b.score - a.score);
+  const medalhas = ['🥇','🥈','🥉'];
+
+  wrap.innerHTML = lista.length === 0
+    ? `<div class="snake-rank-loading">—</div>`
+    : lista.map((d, i) => `
+        <div class="snake-rank-row${(d.wallet||'') === walletAddress ? ' snake-rank-meu' : ''}">
+          <span class="snake-rank-pos">${medalhas[i] || `#${i+1}`}</span>
+          <span class="snake-rank-nome">${d.nome || '???'}</span>
+          <span class="snake-rank-pts">${d.score} 🐍</span>
+        </div>`).join('');
+}
+
+function _snakeRecordAnim(score) {
+  const modal = document.getElementById('snakeModal');
+  if(!modal) return;
+  modal.querySelector('.snake-record-ov')?.remove();
+
+  const ov = document.createElement('div');
+  ov.className = 'snake-record-ov';
+
+  const emojis   = ['✦','✧','★','✨','🐍','⭐','✦','✧'];
+  const positions = [
+    {sx:'-80px',sy:'-70px'},{sx:'80px',sy:'-65px'},
+    {sx:'-90px',sy:'20px'}, {sx:'90px', sy:'15px'},
+    {sx:'-35px',sy:'-90px'},{sx:'35px', sy:'-85px'},
+    {sx:'60px', sy:'70px'}, {sx:'-60px',sy:'65px'},
+  ];
+  positions.forEach((pos, i) => {
+    const s = document.createElement('div');
+    s.className = 'snake-record-star';
+    s.textContent = emojis[i];
+    s.style.cssText = `--sx:${pos.sx};--sy:${pos.sy};animation-delay:${i * 0.045}s`;
+    ov.appendChild(s);
+  });
+
+  const ring = document.createElement('div');
+  ring.className = 'snake-record-ring';
+  ov.appendChild(ring);
+
+  const title = document.createElement('div');
+  title.className = 'snake-record-title';
+  title.textContent = t('snake.record.title');
+  ov.appendChild(title);
+
+  const sc = document.createElement('div');
+  sc.className = 'snake-record-score';
+  sc.textContent = `${score} 🐍`;
+  ov.appendChild(sc);
+
+  modal.appendChild(ov);
+  playSound && playSound('levelup');
+
+  setTimeout(() => {
+    ov.style.transition = 'opacity .5s ease';
+    ov.style.opacity = '0';
+    setTimeout(() => ov.remove(), 500);
+  }, 2400);
+}
+
+function snakeToggleRanking() {
+  _snakeRankOpen = !_snakeRankOpen;
+  const panel = document.getElementById('snakeRankingPanel');
+  panel.style.display = _snakeRankOpen ? 'flex' : 'none';
+  if(_snakeRankOpen) snakeLoadRanking();
+}

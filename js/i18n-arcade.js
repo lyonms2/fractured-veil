@@ -14,6 +14,7 @@ window.registerStrings(
     'snake.result.ok':      '🐍 {n} elementos',
     'snake.reward.clear':   '+{xp} XP · +{coins} 🪙  ({n}× bola + bônus conclusão!)',
     'snake.reward.normal':  '+{xp} XP · +{coins} 🪙  ({n}× bola)',
+    'snake.record.title':   '✦ NOVO RECORDE ✦',
 
     // Labirinto
     'maze.info':            '{diff} · 🪙 {got}/{total} moedas',
@@ -38,6 +39,7 @@ window.registerStrings(
     'snake.result.ok':      '🐍 {n} elements',
     'snake.reward.clear':   '+{xp} XP · +{coins} 🪙  ({n}× ball + clear bonus!)',
     'snake.reward.normal':  '+{xp} XP · +{coins} 🪙  ({n}× ball)',
+    'snake.record.title':   '✦ NEW RECORD ✦',
 
     // Maze
     'maze.info':            '{diff} · 🪙 {got}/{total} coins',

@@ -587,8 +587,12 @@
                 <button class="snake-dpad-btn snake-dpad-center">·</button>
               </div>
             </div>
+            <div id="snakeRankingPanel" class="snake-ranking-panel" style="display:none">
+              <div id="snakeRankingList"></div>
+            </div>
             <div class="mini-btns">
               <button data-i18n="mini.play_again" class="mini-btn primary" id="snakeAgainBtn" onclick="startSnake()" style="display:none">JOGAR DE NOVO</button>
+              <button class="mini-btn" id="snakeRankingBtn" onclick="snakeToggleRanking()" style="display:none">🏆 RANKING</button>
             </div>
           </div>
 
