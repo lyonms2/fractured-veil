@@ -30,6 +30,7 @@ let _snakeRunning  = false;
 let _snakeTouchX   = null;
 let _snakeTouchY   = null;
 let _snakeRankOpen = false;
+let _snakeLastTier = 0;
 
 // ── Iniciar ────────────────────────────────────────────────────────
 function startSnake() {
@@ -62,6 +63,7 @@ function startSnake() {
   _snakeUpdateScore();
 
   const d = miniDifficulty();
+  _snakeLastTier = d.tier;
   document.getElementById('snakeInfo').textContent =
     t('snake.info', {diff: t(d.i18nKey), nivel});
 
@@ -277,10 +279,12 @@ function _snakeEnd() {
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
 
-      if(_snakeScore > (gs.snakeBest || 0)) {
-        gs.snakeBest = _snakeScore;
+      if(!gs.snakeBests) gs.snakeBests = {};
+      const _tierKey = `t${d.tier}`;
+      if(_snakeScore > (gs.snakeBests[_tierKey] || 0)) {
+        gs.snakeBests[_tierKey] = _snakeScore;
         scheduleSave();
-        _snakeSaveRanking(_snakeScore);
+        _snakeSaveRanking(_snakeScore, _tierKey);
         setTimeout(() => _snakeRecordAnim(_snakeScore), 300);
       }
 
@@ -366,30 +370,36 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── Ranking ────────────────────────────────────────────────────────
-async function _snakeSaveRanking(score) {
+async function _snakeSaveRanking(score, tierKey) {
   if(!rtdb() || !walletAddress || !avatar) return;
   try {
     const nome = avatar.nome ? avatar.nome.split(',')[0] : '???';
-    await rtdb().ref(`snakeRanking/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
+    await rtdb().ref(`snakeRanking/${tierKey}/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
   } catch(e) {}
 }
 
 async function _snakeSyncBest() {
-  if(!rtdb() || !walletAddress || !avatar || !(gs.snakeBest > 0)) return;
-  try {
-    const snap = await rtdb().ref(`snakeRanking/${walletAddress}`).once('value');
-    const cur  = snap.val();
-    if(!cur || cur.score < gs.snakeBest) _snakeSaveRanking(gs.snakeBest);
-  } catch(e) {}
+  if(!rtdb() || !walletAddress || !avatar) return;
+  const bests = gs.snakeBests || {};
+  for(const [key, score] of Object.entries(bests)) {
+    if(!(score > 0)) continue;
+    try {
+      const snap = await rtdb().ref(`snakeRanking/${key}/${walletAddress}`).once('value');
+      const cur  = snap.val();
+      if(!cur || cur.score < score) _snakeSaveRanking(score, key);
+    } catch(e) {}
+  }
 }
 
-async function snakeLoadRanking() {
+const _SNAKE_DIFF_LABELS = ['EASY','NORMAL','HARD','EXTREME'];
+
+async function snakeLoadRanking(tierKey) {
   const wrap = document.getElementById('snakeRankingList');
   if(!wrap || !rtdb()) return;
   wrap.innerHTML = `<div class="snake-rank-loading">${t('ui.loading')}</div>`;
 
   try {
-    const snap  = await rtdb().ref('snakeRanking').orderByChild('score').limitToLast(10).once('value');
+    const snap  = await rtdb().ref(`snakeRanking/${tierKey}`).orderByChild('score').limitToLast(10).once('value');
     const lista = Object.values(snap.val() || {}).sort((a, b) => b.score - a.score);
     const medalhas = ['🥇','🥈','🥉'];
 
@@ -457,5 +467,10 @@ function snakeToggleRanking() {
   _snakeRankOpen = !_snakeRankOpen;
   const panel = document.getElementById('snakeRankingPanel');
   panel.style.display = _snakeRankOpen ? 'flex' : 'none';
-  if(_snakeRankOpen) snakeLoadRanking();
+  if(_snakeRankOpen) {
+    const tierKey = `t${_snakeLastTier}`;
+    document.getElementById('snakeRankingTitle').textContent =
+      _SNAKE_DIFF_LABELS[_snakeLastTier] || 'EASY';
+    snakeLoadRanking(tierKey);
+  }
 }
