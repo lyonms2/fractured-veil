@@ -376,18 +376,22 @@ async function snakeLoadRanking() {
   if(!wrap || !rtdb()) return;
   wrap.innerHTML = `<div class="snake-rank-loading">${t('ui.loading')}</div>`;
 
-  const snap  = await rtdb().ref('snakeRanking').orderByChild('score').limitToLast(10).once('value');
-  const lista = Object.values(snap.val() || {}).sort((a, b) => b.score - a.score);
-  const medalhas = ['🥇','🥈','🥉'];
+  try {
+    const snap  = await rtdb().ref('snakeRanking').orderByChild('score').limitToLast(10).once('value');
+    const lista = Object.values(snap.val() || {}).sort((a, b) => b.score - a.score);
+    const medalhas = ['🥇','🥈','🥉'];
 
-  wrap.innerHTML = lista.length === 0
-    ? `<div class="snake-rank-loading">—</div>`
-    : lista.map((d, i) => `
-        <div class="snake-rank-row${(d.wallet||'') === walletAddress ? ' snake-rank-meu' : ''}">
-          <span class="snake-rank-pos">${medalhas[i] || `#${i+1}`}</span>
-          <span class="snake-rank-nome">${d.nome || '???'}</span>
-          <span class="snake-rank-pts">${d.score} 🐍</span>
-        </div>`).join('');
+    wrap.innerHTML = lista.length === 0
+      ? `<div class="snake-rank-loading">—</div>`
+      : lista.map((d, i) => `
+          <div class="snake-rank-row${(d.wallet||'') === walletAddress ? ' snake-rank-meu' : ''}">
+            <span class="snake-rank-pos">${medalhas[i] || `#${i+1}`}</span>
+            <span class="snake-rank-nome">${d.nome || '???'}</span>
+            <span class="snake-rank-pts">${d.score} 🐍</span>
+          </div>`).join('');
+  } catch(e) {
+    wrap.innerHTML = `<div class="snake-rank-loading">—</div>`;
+  }
 }
 
 function _snakeRecordAnim(score) {
