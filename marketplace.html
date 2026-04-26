@@ -405,6 +405,29 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .miss-escrow-note strong{color:var(--gem2);}
 .miss-cat-icon{font-size:14px;}
 
+/* ── Detalhe + candidatura ── */
+.miss-det-title{font-family:'Cinzel',serif;font-size:14px;color:var(--text);font-weight:700;line-height:1.3;flex:1;}
+.miss-det-meta{font-size:10px;color:var(--muted);margin-bottom:14px;}
+.miss-det-desc{font-size:12px;color:var(--text2);line-height:1.7;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+.miss-det-inforow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.miss-det-infobox{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.miss-det-infobox-label{font-size:8px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.miss-det-infobox-val{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gem2);}
+.miss-det-employer{font-size:9px;color:var(--muted);margin-bottom:16px;}
+.miss-det-employer-addr{font-family:monospace;color:var(--text2);}
+.miss-det-owner-box{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.18);border-radius:10px;padding:16px;text-align:center;}
+.miss-det-owner-title{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:6px;}
+.miss-det-owner-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
+.btn-miss-ver-cands{padding:8px 20px;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(124,58,237,.2));border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-family:'Cinzel',serif;font-size:10px;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.btn-miss-ver-cands:hover:not(:disabled){background:linear-gradient(135deg,rgba(201,168,76,.3),rgba(124,58,237,.3));}
+.btn-miss-ver-cands:disabled{opacity:.4;cursor:not-allowed;}
+.miss-det-closed{font-size:11px;color:var(--muted);text-align:center;padding:20px;background:var(--surface2);border-radius:8px;}
+.miss-apply-note{font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5;}
+.miss-already-applied{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:16px;text-align:center;}
+.miss-already-applied-title{font-family:'Cinzel',serif;font-size:11px;color:var(--green2);letter-spacing:1px;margin-bottom:8px;}
+.miss-cand-msg-preview{font-size:10px;color:var(--text2);font-style:italic;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 10px;margin-bottom:8px;text-align:left;}
+.miss-already-applied-sub{font-size:9px;color:var(--muted);}
+
 /* ═══════════════════════════════════════════
    MOBILE
 ═══════════════════════════════════════════ */
@@ -1084,13 +1107,11 @@ async function renderMissoes() {
       </div>`;
       return;
     }
-    const catIcons = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
-    const statusMap = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'] };
     list.innerHTML = docs.map(m => {
-      const [sc, sl] = statusMap[m.status] || ['open','Aberta'];
+      const [sc, sl] = _MISS_STATUS_MAP[m.status] || ['open','Aberta'];
       const deadline = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
       const employer = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
-      const icon = catIcons[m.category] || '📦';
+      const icon = _MISS_CAT_ICONS[m.category] || '📦';
       return `<div class="miss-card" onclick="missOpenDetail('${m.id}')">
         <div class="miss-card-stripe"></div>
         <div class="miss-card-body">
@@ -1112,7 +1133,117 @@ async function renderMissoes() {
   }
 }
 
-function missOpenDetail(id) { /* placeholder — detail modal in future update */ }
+let _missCurrentId = null;
+const _MISS_CAT_ICONS = { arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
+const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'] };
+
+async function missOpenDetail(id) {
+  _missCurrentId = id;
+  const ov = document.getElementById('missDetalheOverlay');
+  ov.style.display = 'flex';
+  document.getElementById('detTitle').textContent = 'A carregar...';
+  document.getElementById('detStatus').textContent = '';
+  document.getElementById('detMeta').textContent = '';
+  document.getElementById('detDesc').textContent = '';
+  document.getElementById('detInfo').innerHTML = '';
+  document.getElementById('detEmployer').innerHTML = '';
+  document.getElementById('detActionArea').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const snap = await db.collection('missoes').doc(id).get();
+    if(!snap.exists) { document.getElementById('detTitle').textContent = 'Missão não encontrada.'; document.getElementById('detActionArea').innerHTML=''; return; }
+    const m = { id: snap.id, ...snap.data() };
+    const [sc, sl] = _MISS_STATUS_MAP[m.status] || ['open','Aberta'];
+    const deadline  = m.deadline ? new Date(m.deadline).toLocaleDateString('pt-PT') : '—';
+    const employer  = m.employer ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
+    const icon      = _MISS_CAT_ICONS[m.category] || '📦';
+
+    document.getElementById('detTitle').textContent = `${icon} ${m.title}`;
+    const statusEl = document.getElementById('detStatus');
+    statusEl.className = `miss-status ${sc}`;
+    statusEl.textContent = sl;
+    document.getElementById('detMeta').innerHTML = `<span style="text-transform:capitalize">${m.category||'outro'}</span> &nbsp;·&nbsp; <span>⏳ Prazo: ${deadline}</span>`;
+    document.getElementById('detDesc').textContent = m.desc || '—';
+    document.getElementById('detInfo').innerHTML = `
+      <div class="miss-det-inforow">
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Recompensa</div><div class="miss-det-infobox-val">💎 ${m.reward}</div></div>
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Garantia</div><div class="miss-det-infobox-val">💎 ${m.reward}</div></div>
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Ganho total</div><div class="miss-det-infobox-val" style="color:var(--green2)">💎 ${m.reward*2}</div></div>
+      </div>`;
+    document.getElementById('detEmployer').innerHTML = `Publicado por <span class="miss-det-employer-addr">${employer}</span>`;
+
+    const isEmployer = walletAddress === m.employer;
+    if(isEmployer) {
+      const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
+      const n = candSnap.size;
+      document.getElementById('detActionArea').innerHTML = `
+        <div class="miss-det-owner-box">
+          <div class="miss-det-owner-title">✦ A tua missão</div>
+          <div class="miss-det-owner-sub">${n===0 ? 'Ainda sem candidatos. Partilha a missão para receber candidaturas.' : `${n} candidato${n>1?'s':''} aguarda${n>1?'m':''} a tua decisão.`}</div>
+          <button class="btn-miss-ver-cands" ${n===0?'disabled':''} onclick="closeMissDetalhe()">
+            ${n===0 ? '⏳ Aguardando Candidatos' : `👥 Ver ${n} Candidato${n>1?'s':''}`}
+          </button>
+        </div>`;
+      return;
+    }
+    if(m.status !== 'open') {
+      document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Esta missão já não aceita candidaturas.</div>';
+      return;
+    }
+    const candDoc = await db.collection('missoes').doc(id).collection('candidaturas').doc(walletAddress).get();
+    if(candDoc.exists) {
+      const cand = candDoc.data();
+      document.getElementById('detActionArea').innerHTML = `
+        <div class="miss-already-applied">
+          <div class="miss-already-applied-title">✅ Candidatura enviada</div>
+          <div class="miss-cand-msg-preview">"${cand.mensagem}"</div>
+          <div class="miss-already-applied-sub">Aguarda a resposta do empregador.</div>
+        </div>`;
+      return;
+    }
+    document.getElementById('detActionArea').innerHTML = `
+      <div>
+        <div class="modal-label" style="margin-bottom:6px;">Mensagem de Candidatura</div>
+        <textarea class="modal-input" id="detCandMsg" rows="3" maxlength="300"
+          placeholder="Apresenta-te brevemente. Porque és a pessoa certa para esta missão?..."
+          style="resize:vertical;min-height:72px;"></textarea>
+        <div id="detCandStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
+        <div class="miss-apply-note">Ao candidatar-te não haverá débito imediato. O depósito de <strong style="color:var(--gem2)">💎 ${m.reward}</strong> só é feito se fores selecionado.</div>
+        <button class="btn-modal-confirm" style="width:100%;margin-top:12px;" onclick="submitCandidatura('${id}')">Candidatar-me</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Erro ao carregar. Tenta novamente.</div>';
+  }
+}
+
+function closeMissDetalhe() {
+  document.getElementById('missDetalheOverlay').style.display = 'none';
+  _missCurrentId = null;
+}
+
+async function submitCandidatura(missId) {
+  const msg    = (document.getElementById('detCandMsg')?.value || '').trim();
+  const status = document.getElementById('detCandStatus');
+  if(!msg) { status.textContent = 'Escreve uma mensagem de candidatura.'; return; }
+  const btn = document.querySelector('#detActionArea .btn-modal-confirm');
+  if(btn) btn.disabled = true;
+  status.textContent = 'A enviar...';
+  try {
+    await db.collection('missoes').doc(missId).collection('candidaturas').doc(walletAddress).set({
+      mensagem: msg,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      status: 'pending'
+    });
+    document.getElementById('detActionArea').innerHTML = `
+      <div class="miss-already-applied">
+        <div class="miss-already-applied-title">✅ Candidatura enviada</div>
+        <div class="miss-cand-msg-preview">"${msg}"</div>
+        <div class="miss-already-applied-sub">Aguarda a resposta do empregador.</div>
+      </div>`;
+  } catch(e) {
+    status.textContent = 'Erro ao enviar. Tenta novamente.';
+    if(btn) btn.disabled = false;
+  }
+}
 
 function openMissaoModal() {
   if(!walletAddress) { showToast('Faz login primeiro.', 'err'); return; }
@@ -1227,6 +1358,25 @@ async function confirmPublicarMissao() {
     <div class="modal-row" style="margin-top:14px;">
       <button class="btn-modal-cancel" onclick="closeMissaoModal()">Cancelar</button>
       <button class="btn-modal-confirm" onclick="confirmPublicarMissao()">Publicar & Depositar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DETALHE MISSÃO ══ -->
+<div class="overlay" id="missDetalheOverlay" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal-box" style="max-width:500px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;">
+      <div class="miss-det-title" id="detTitle">A carregar...</div>
+      <div id="detStatus" class="miss-status"></div>
+    </div>
+    <div class="miss-det-meta" id="detMeta"></div>
+    <div class="modal-label" style="margin-bottom:6px;">Descrição</div>
+    <div id="detDesc" class="miss-det-desc"></div>
+    <div id="detInfo"></div>
+    <div id="detEmployer" class="miss-det-employer"></div>
+    <div id="detActionArea"></div>
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+      <button class="btn-modal-cancel" onclick="closeMissDetalhe()">Fechar</button>
     </div>
   </div>
 </div>
