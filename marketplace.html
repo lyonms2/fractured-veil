@@ -566,6 +566,9 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 .miss-search-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;padding:7px 12px;outline:none;transition:border-color .2s;}
 .miss-search-input:focus{border-color:var(--purple);}
 .miss-search-input::placeholder{color:var(--muted);}
+.miss-filter-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:11px;padding:7px 28px 7px 10px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s;}
+.miss-filter-select:focus{border-color:var(--purple);}
+@media(max-width:600px){.miss-search-row{flex-wrap:wrap;} .miss-filter-select{flex:1 1 calc(50% - 4px);}}
 .btn-miss-load-more{display:block;width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5px;cursor:pointer;margin-top:12px;transition:all .2s;}
 .btn-miss-load-more:hover{border-color:var(--purple);color:var(--gem2);}
 
@@ -1016,6 +1019,17 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       <div class="miss-search-row">
         <input class="miss-search-input" id="missSearchInput" placeholder="🔍 Pesquisar missões..."
           oninput="missOnSearch(this.value)"/>
+        <select class="miss-filter-select" id="missCatFilter" onchange="missApplySecondary()">
+          <option value="">Categoria: Todas</option>
+          <option value="entregador">📦 Entregador</option>
+          <option value="servico">🔧 Serviço</option>
+        </select>
+        <select class="miss-filter-select" id="missSortFilter" onchange="missApplySecondary()">
+          <option value="recent">Mais recentes</option>
+          <option value="reward_desc">Maior recompensa</option>
+          <option value="reward_asc">Menor recompensa</option>
+          <option value="deadline">Prazo mais próximo</option>
+        </select>
       </div>
       <div class="miss-filters">
         <button class="miss-filter-btn active" onclick="missSetFilter(this,'all')">Todas</button>
@@ -1242,12 +1256,21 @@ window.addEventListener('load', () => {
 
 // ══ MISSÕES ══
 let _missFilterVal = 'all';
+let _missCatFilter  = '';
+let _missSortFilter = 'recent';
 
 function missSetFilter(btn, filter) {
   _missFilterVal = filter;
   _missLastDoc   = null;
   document.querySelectorAll('.miss-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  renderMissoes();
+}
+
+function missApplySecondary() {
+  _missCatFilter  = document.getElementById('missCatFilter')?.value  || '';
+  _missSortFilter = document.getElementById('missSortFilter')?.value || 'recent';
+  _missLastDoc    = null;
   renderMissoes();
 }
 
@@ -1261,7 +1284,7 @@ async function renderMissoes(append) {
     document.getElementById('missLoadMoreBtn')?.remove();
   }
   try {
-    const isSearchOrFilter = _missSearchQuery || _missFilterVal !== 'all';
+    const isSearchOrFilter = _missSearchQuery || _missFilterVal !== 'all' || _missCatFilter || _missSortFilter !== 'recent';
     let q = db.collection('missoes').orderBy('createdAt','desc');
     if(!isSearchOrFilter) {
       q = _missLastDoc ? q.startAfter(_missLastDoc).limit(MISS_PAGE) : q.limit(MISS_PAGE);
@@ -1280,6 +1303,11 @@ async function renderMissoes(append) {
       const q2 = _missSearchQuery;
       docs = docs.filter(m => (m.title||'').toLowerCase().includes(q2) || (m.desc||'').toLowerCase().includes(q2));
     }
+    if(_missCatFilter) docs = docs.filter(m => m.category === _missCatFilter);
+    if(_missSortFilter === 'reward_desc') docs.sort((a,b) => (b.reward||0) - (a.reward||0));
+    else if(_missSortFilter === 'reward_asc') docs.sort((a,b) => (a.reward||0) - (b.reward||0));
+    else if(_missSortFilter === 'deadline') docs.sort((a,b) => new Date(a.deadline||0) - new Date(b.deadline||0));
+    // 'recent' já vem ordenado do Firestore (createdAt desc)
 
     if(!append && !docs.length) {
       list.innerHTML = `<div class="miss-empty">
