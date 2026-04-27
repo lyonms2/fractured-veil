@@ -41,7 +41,7 @@ function loadListings() {
     .onSnapshot(snap => {
       listings = snap.docs.map(d => ({ id:d.id, ...d.data() }));
       if(currentSection === 'browse') renderBrowse();
-    });
+    }, err => console.warn('[avatarMarket] snapshot:', err));
 }
 
 function applyFilters() {

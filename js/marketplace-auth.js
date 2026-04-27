@@ -125,7 +125,7 @@ function iniciarMktAuth() {
       if(wall)    wall.style.display    = 'none';
       if(loading) loading.style.display = 'none';
 
-      await loadPlayerData();
+      try { await loadPlayerData(); } catch(e) { console.warn('[mkt] loadPlayerData:', e); }
       loadListings();
       await loadPool();
 
