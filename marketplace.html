@@ -1030,7 +1030,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
         <div class="miss-empty">
           <div class="miss-empty-icon">⚔️</div>
           <div class="miss-empty-title">Nenhuma missão disponível</div>
-          <div class="miss-empty-sub">Sê o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
+          <div class="miss-empty-sub">Seja o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
           <button class="btn-miss-publish" onclick="openMissaoModal()" style="margin-top:16px;">＋ Publicar Primeira Missão</button>
         </div>
       </div>
@@ -1285,7 +1285,7 @@ async function renderMissoes(append) {
       list.innerHTML = `<div class="miss-empty">
         <div class="miss-empty-icon">⚔️</div>
         <div class="miss-empty-title">Nenhuma missão disponível</div>
-        <div class="miss-empty-sub">Sê o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
+        <div class="miss-empty-sub">Seja o primeiro a publicar uma missão e encontrar um herói para completá-la.</div>
         <button class="btn-miss-publish" onclick="openMissaoModal()" style="margin-top:16px;">＋ Publicar Primeira Missão</button>
       </div>`;
       return;
@@ -1567,7 +1567,7 @@ async function missOpenDetail(id) {
         <div class="miss-deliver-box">
           <div class="miss-deliver-title">⚔️ Missão em Andamento</div>
           ${localHtml}
-          <div class="miss-deliver-sub">Quando concluíres a tarefa, gera o QR code e mostra-o ao empregador para receber o pagamento.</div>
+          <div class="miss-deliver-sub">Quando concluir a tarefa, gere o QR code e mostre ao empregador para receber o pagamento.</div>
           <button class="btn-miss-select" style="width:100%;" onclick="missGerarQR('${id}',${m.reward})">
             📱 Gerar QR Code de Entrega
           </button>
@@ -1609,11 +1609,11 @@ async function missOpenDetail(id) {
       <div>
         <div class="modal-label" style="margin-bottom:6px;">Mensagem de Candidatura</div>
         <textarea class="modal-input" id="detCandMsg" rows="3" maxlength="300"
-          placeholder="Apresenta-te brevemente. Porque és a pessoa certa para esta missão?..."
+          placeholder="Se apresente brevemente. Por que você é a pessoa certa para esta missão?..."
           style="resize:vertical;min-height:72px;"></textarea>
         <div id="detCandStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
-        <div class="miss-apply-note">Ao candidatar-te não haverá débito imediato. O depósito de <strong style="color:var(--gem2)">💎 ${m.reward}</strong> só é feito se fores selecionado.</div>
-        <button class="btn-modal-confirm" style="width:100%;margin-top:12px;" onclick="submitCandidatura('${id}')">Candidatar-me</button>
+        <div class="miss-apply-note">Ao se candidatar não haverá débito imediato. O depósito de <strong style="color:var(--gem2)">💎 ${m.reward}</strong> só é feito se você for selecionado.</div>
+        <button class="btn-modal-confirm" style="width:100%;margin-top:12px;" onclick="submitCandidatura('${id}')">Candidatar-se</button>
       </div>`;
   } catch(e) {
     document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">Erro ao carregar. Tenta novamente.</div>';
@@ -1909,7 +1909,7 @@ async function _checkDeliveryParams() {
     const snap = await db.collection('missoes').doc(missId).get();
     if(!snap.exists) { showToast('Missão não encontrada.', 'err'); return; }
     const m = snap.data();
-    if(m.employer !== walletAddress) { showToast('Não és o empregador desta missão.', 'err'); return; }
+    if(m.employer !== walletAddress) { showToast('Você não é o empregador desta missão.', 'err'); return; }
     if(m.status !== 'progress')      { showToast('Esta missão não está em andamento.', 'err'); return; }
     const tokHash = await _missHashToken(tok);
     if(m.deliveryToken !== tokHash)  { showToast('Token de entrega inválido.', 'err'); return; }
@@ -1922,7 +1922,7 @@ async function missConfirmarParticipacao(missId, reward) {
   const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
   const statusEl = document.getElementById('detConfirmStatus');
   if(cristais < reward) {
-    statusEl.textContent = `Saldo insuficiente (tens ${cristais} 💎, precisas ${reward} 💎).`;
+    statusEl.textContent = `Saldo insuficiente (você tem ${cristais} 💎, precisa de ${reward} 💎).`;
     return;
   }
   const btn = document.querySelector('#detActionArea .btn-modal-confirm');
@@ -1947,7 +1947,7 @@ async function missConfirmarParticipacao(missId, reward) {
     document.getElementById('detActionArea').innerHTML = `
       <div class="miss-already-applied">
         <div class="miss-already-applied-title">✅ Participação Confirmada!</div>
-        <div class="miss-cand-msg-preview">Conclui a missão dentro do prazo e gera o QR code de entrega para receber o pagamento.</div>
+        <div class="miss-cand-msg-preview">Conclua a missão dentro do prazo e gere o QR code de entrega para receber o pagamento.</div>
         <div class="miss-already-applied-sub">💎 ${reward} bloqueados como garantia.</div>
       </div>`;
     if(currentSection === 'missoes') renderMissoes();
@@ -2016,7 +2016,7 @@ async function confirmPublicarMissao() {
   if(deadline < 1) { status.textContent = 'Prazo mínimo: 1 dia.'; return; }
 
   const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
-  if(cristais < reward) { status.textContent = `Saldo insuficiente (tens ${cristais} 💎, precisas ${reward} 💎).`; return; }
+  if(cristais < reward) { status.textContent = `Saldo insuficiente (você tem ${cristais} 💎, precisa de ${reward} 💎).`; return; }
 
   const btn = document.querySelector('#missaoModalOverlay .btn-modal-confirm');
   btn.disabled = true;
@@ -2126,7 +2126,7 @@ async function missReclamarPot(missId, reward, reason) {
     const missSnap = await db.collection('missoes').doc(missId).get();
     if(!missSnap.exists) { showToast('Missão não encontrada.', 'err'); return; }
     const m = missSnap.data();
-    if(m.employer !== walletAddress) { showToast('Não és o empregador.', 'err'); return; }
+    if(m.employer !== walletAddress) { showToast('Você não é o empregador.', 'err'); return; }
 
     const totalPot = m.status === 'progress' ? reward * 2 : reward;
     const batch    = db.batch();
