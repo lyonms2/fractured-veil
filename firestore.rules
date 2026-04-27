@@ -2,65 +2,80 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Funções auxiliares ──
-    function authed()       { return request.auth != null; }
-    function isOwner(uid)   { return authed() && request.auth.uid == uid; }
-
     // ── Players ──
-    // Cada jogador só escreve no próprio doc; leitura autenticada universal.
-    // Operações financeiras inter-jogadores (cristais, rep) devem passar pelas
-    // Vercel functions (Admin SDK) que não estão sujeitas a estas regras.
+    // Leitura por qualquer autenticado (marketplace precisa de ver dados do vendedor)
+    // Escrita só no próprio doc — transferências financeiras passam pela API (Admin SDK)
     match /players/{uid} {
-      allow read:  if authed();
-      allow write: if isOwner(uid);
+      allow read:  if request.auth != null;
+      allow write: if request.auth.uid == uid;
+    }
+
+    // ── Marketplace de avatares ──
+    match /avatarMarket/{listingId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null
+                 && request.resource.data.sellerId == request.auth.uid;
+      allow delete: if request.auth != null
+                 && resource.data.sellerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ── Marketplace de ovos ──
+    match /eggMarket/{listingId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null
+                 && request.resource.data.sellerId == request.auth.uid;
+      allow delete: if request.auth != null
+                 && resource.data.sellerId == request.auth.uid;
+      allow update: if false;
     }
 
     // ── Missões ──
     match /missoes/{missId} {
-      allow read: if authed();
+      allow read: if request.auth != null;
 
-      // Criar: chamador deve ser employer, status inicial = 'open', reward > 0
-      allow create: if authed()
-        && request.resource.data.employer   == request.auth.uid
-        && request.resource.data.status     == 'open'
-        && request.resource.data.reward     is int
-        && request.resource.data.reward     >  0;
+      // Criar: chamador deve ser employer, status inicial = 'open', reward inteiro e positivo
+      allow create: if request.auth != null
+        && request.resource.data.employer == request.auth.uid
+        && request.resource.data.status   == 'open'
+        && request.resource.data.reward   is int
+        && request.resource.data.reward   >  0;
 
-      // Update: transições de status permitidas por papel
-      allow update: if authed() && (
+      // Update: transições de status validadas por papel
+      allow update: if request.auth != null && (
         // Employer cancela missão aberta
-        (resource.data.employer == request.auth.uid
-          && resource.data.status          == 'open'
-          && request.resource.data.status  == 'cancelled')
+        (resource.data.employer         == request.auth.uid
+          && resource.data.status         == 'open'
+          && request.resource.data.status == 'cancelled')
         ||
         // Employer selecciona worker (open → awaiting)
-        (resource.data.employer == request.auth.uid
-          && resource.data.status          == 'open'
-          && request.resource.data.status  == 'awaiting')
+        (resource.data.employer         == request.auth.uid
+          && resource.data.status         == 'open'
+          && request.resource.data.status == 'awaiting')
         ||
         // Employer reverte seleção (awaiting → open)
-        (resource.data.employer == request.auth.uid
-          && resource.data.status          == 'awaiting'
-          && request.resource.data.status  == 'open')
+        (resource.data.employer         == request.auth.uid
+          && resource.data.status         == 'awaiting'
+          && request.resource.data.status == 'open')
         ||
         // Worker confirma seleção (awaiting → progress)
-        (resource.data.selectedWorker == request.auth.uid
-          && resource.data.status          == 'awaiting'
-          && request.resource.data.status  == 'progress')
+        (resource.data.selectedWorker   == request.auth.uid
+          && resource.data.status         == 'awaiting'
+          && request.resource.data.status == 'progress')
         ||
-        // Worker gera/actualiza QR (mantém progress, só altera deliveryToken)
-        (resource.data.selectedWorker == request.auth.uid
-          && resource.data.status          == 'progress'
-          && request.resource.data.status  == 'progress')
+        // Worker gera/actualiza QR de entrega (mantém progress)
+        (resource.data.selectedWorker   == request.auth.uid
+          && resource.data.status         == 'progress'
+          && request.resource.data.status == 'progress')
         ||
         // Employer ou worker abre disputa (progress → dispute)
-        ((resource.data.employer       == request.auth.uid
-          || resource.data.selectedWorker == request.auth.uid)
-          && resource.data.status          == 'progress'
-          && request.resource.data.status  == 'dispute')
+        ((resource.data.employer        == request.auth.uid
+            || resource.data.selectedWorker == request.auth.uid)
+          && resource.data.status         == 'progress'
+          && request.resource.data.status == 'dispute')
         ||
-        // Actualizar contadores de votos (qualquer autenticado; voto já foi validado nas sub-rules)
-        (resource.data.status == 'dispute'
+        // Actualizar contadores de votos dentro de disputa activa
+        (resource.data.status           == 'dispute'
           && request.resource.data.status == 'dispute')
       );
 
@@ -69,22 +84,22 @@ service cloud.firestore {
 
       // ── Candidaturas ──
       match /candidaturas/{candidatoId} {
-        allow read: if authed();
+        allow read: if request.auth != null;
         // Só o próprio pode criar a sua candidatura
-        allow create: if isOwner(candidatoId)
+        allow create: if request.auth.uid == candidatoId
           && request.resource.data.status == 'pending';
-        // Employer pode actualizar (aceitar/rejeitar); candidato pode retirar
-        allow update: if authed()
+        // Employer aceita/rejeita; candidato pode actualizar a sua
+        allow update: if request.auth != null
           && (get(/databases/$(database)/documents/missoes/$(missId)).data.employer == request.auth.uid
-              || isOwner(candidatoId));
+              || request.auth.uid == candidatoId);
         allow delete: if false;
       }
 
       // ── Votos ──
       match /votos/{voterId} {
-        allow read: if authed();
-        // Cada votante só pode criar o seu próprio doc de voto, uma única vez
-        allow create: if isOwner(voterId)
+        allow read: if request.auth != null;
+        // Cada votante cria apenas o seu próprio doc, uma única vez
+        allow create: if request.auth.uid == voterId
           && !exists(/databases/$(database)/documents/missoes/$(missId)/votos/$(voterId))
           && request.resource.data.voter == request.auth.uid;
         // Votos são imutáveis e não apagáveis
@@ -92,20 +107,14 @@ service cloud.firestore {
       }
     }
 
-    // ── Config (pool P2E, etc.) ──
-    // Leitura permitida para clientes autenticados; escrita apenas via Admin SDK.
+    // ── Config (pool P2E, etc.) — read-only para clientes, escrita via Admin SDK ──
     match /config/{doc} {
-      allow read:  if authed();
+      allow read:  if request.auth != null;
       allow write: if false;
     }
     match /config/{doc}/{sub=**} {
-      allow read:  if authed();
+      allow read:  if request.auth != null;
       allow write: if false;
-    }
-
-    // ── Default: negar tudo o que não foi explicitamente permitido ──
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }
