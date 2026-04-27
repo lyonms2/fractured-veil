@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
   if (!missId || typeof missId !== 'string' || !/^[\w-]+$/.test(missId)) {
     return res.status(400).json({ erro: 'missId inválido' });
   }
-  if (action !== 'finalizar' && action !== 'resolver') {
+  if (!['finalizar', 'resolver', 'rating'].includes(action)) {
     return res.status(400).json({ erro: 'action inválida' });
   }
 
@@ -60,6 +60,7 @@ module.exports = async function handler(req, res) {
 
   if (action === 'finalizar') return handleFinalizar(res, db, uid, missId);
   if (action === 'resolver')  return handleResolver(res, db, uid, missId);
+  if (action === 'rating')    return handleRating(res, db, uid, req.body);
 };
 
 // ── Confirmar entrega (employer) ────────────────────────────────
@@ -160,4 +161,37 @@ async function handleResolver(res, db, uid, missId) {
     console.error('[missoes/resolver]', err);
     return res.status(500).json({ erro: 'Erro ao resolver disputa. Tenta novamente.' });
   }
+}
+
+// ── Avaliação pós-missão ────────────────────────────────────────
+async function handleRating(res, db, uid, body) {
+  const { missId, score } = body;
+  if (!missId || typeof score !== 'number' || score < 1 || score > 5) {
+    return res.status(400).json({ erro: 'Dados inválidos' });
+  }
+  const missRef  = db.collection('missoes').doc(missId);
+  const missSnap = await missRef.get();
+  if (!missSnap.exists) return res.status(404).json({ erro: 'Missão não encontrada' });
+  const m = missSnap.data();
+  if (m.status !== 'done') return res.status(400).json({ erro: 'Missão não concluída' });
+
+  const isEmployer = m.employer === uid;
+  const isWorker   = m.selectedWorker === uid;
+  if (!isEmployer && !isWorker) return res.status(403).json({ erro: 'Sem permissão' });
+
+  const ratedField = isEmployer ? 'ratedByEmployer' : 'ratedByWorker';
+  if (m[ratedField]) return res.status(409).json({ erro: 'Já avaliaste esta missão' });
+
+  const targetUid = isEmployer ? m.selectedWorker : m.employer;
+  if (!targetUid) return res.status(400).json({ erro: 'Utilizador alvo não encontrado' });
+
+  const { FieldValue } = require('firebase-admin/firestore');
+  const batch = db.batch();
+  batch.update(missRef, { [ratedField]: true });
+  batch.update(db.collection('players').doc(targetUid), {
+    'gs.rep.scoreTotal': FieldValue.increment(score),
+    'gs.rep.scoreCount': FieldValue.increment(1),
+  });
+  await batch.commit();
+  return res.status(200).json({ ok: true });
 }

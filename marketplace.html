@@ -1504,6 +1504,8 @@ async function missOpenDetail(id) {
           </div>`;
         return;
       }
+      // status === 'done'
+      if(m.status === 'done') { _missRenderDone(id, m, isEmployer, isSelectedWorker); return; }
       // status === 'open'
       const candSnap = await db.collection('missoes').doc(id).collection('candidaturas').get();
       const n = candSnap.size;
@@ -1753,19 +1755,19 @@ async function missSubmitRating(missId, targetUid, isEmployerRating) {
   btn.disabled = true;
   btn.textContent = 'A enviar...';
   try {
-    const ratedField = isEmployerRating ? 'ratedByEmployer' : 'ratedByWorker';
-    const batch = db.batch();
-    batch.update(db.collection('missoes').doc(missId), { [ratedField]: true });
-    batch.update(db.collection('players').doc(targetUid), {
-      'gs.rep.scoreTotal': firebase.firestore.FieldValue.increment(_missRatingVal),
-      'gs.rep.scoreCount': firebase.firestore.FieldValue.increment(1)
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/missoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, missId, action: 'rating', score: _missRatingVal }),
     });
-    await batch.commit();
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.erro || 'Erro ao enviar avaliação.');
     document.getElementById('rateArea').innerHTML = `<div class="miss-rate-done">⭐ Obrigado pela avaliação!</div>`;
   } catch(e) {
     btn.disabled = false;
     btn.textContent = 'Enviar Avaliação';
-    showToast('Erro ao enviar avaliação.', 'err');
+    showToast(e.message || 'Erro ao enviar avaliação.', 'err');
   }
 }
 
