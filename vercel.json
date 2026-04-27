@@ -9,7 +9,7 @@
       "schedule": "5 0 * * 1"
     },
     {
-      "path": "/api/fissura-reset",
+      "path": "/api/fissura?cron=reset",
       "schedule": "5 0 1 * *"
     }
   ]

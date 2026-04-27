@@ -52,9 +52,29 @@ function getMesAtual() {
   return new Date().toISOString().slice(0, 7); // "2026-04"
 }
 
+// ── Constantes do reset mensal (anteriormente em fissura-reset.js) ──
+const PONTOS_MINIMOS   = 1000;
+const PCT_POOL_RARO    = 0.04;
+const PCT_POOL_LEND    = 0.08;
+const CAP_RARO         = 15;
+const CAP_LEND         = 30;
+const PREMIO_COMUM     = 500;
+
+function getMesAnterior() {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - 1);
+  return d.toISOString().slice(0, 7);
+}
+
 // ── Handler principal ───────────────────────────────────────────
 module.exports = async function handler(req, res) {
   const { db, auth } = initAdmin();
+
+  // GET /api/fissura?cron=reset — cron mensal Vercel (sem auth de utilizador)
+  if (req.method === 'GET' && req.query?.cron === 'reset') {
+    return handleReset(req, res, db);
+  }
 
   // GET /api/fissura?mes=2026-04 — dados públicos dos standings (sem auth)
   if (req.method === 'GET') {
@@ -261,5 +281,106 @@ async function handleContribuir(req, res, db, uid) {
     console.error('[fissura/contribuir]', err.message);
     // Não bloqueia o fluxo principal
     return res.status(200).json({ ok: true, ignorado: true });
+  }
+}
+
+// ── Reset mensal (cron GET ?cron=reset) ─────────────────────────
+async function handleReset(req, res, db) {
+  // Trigger manual via POST com token de admin
+  if (req.method === 'POST') {
+    const adminToken = req.headers['x-admin-token'];
+    if (!adminToken || adminToken !== process.env.ADMIN_CRON_TOKEN) {
+      return res.status(401).json({ erro: 'Não autorizado' });
+    }
+  }
+
+  const mes = getMesAnterior();
+  console.log(`[fissura-reset] A processar mês: ${mes}`);
+
+  try {
+    const fissuraSnap = await db.collection('fissura').doc(mes).get();
+    if (!fissuraSnap.exists) {
+      return res.status(200).json({ ok: true, msg: 'Sem dados de fissura para este mês' });
+    }
+    const fissuraData = fissuraSnap.data();
+
+    const faccoes = ['Caos', 'Equilíbrio', 'Éter'];
+    let vencedor = null, melhorMedia = -1;
+    for (const f of faccoes) {
+      const fd = fissuraData[f];
+      if (!fd || !fd.membros) continue;
+      const media = (fd.pontosTotal || 0) / fd.membros;
+      if (media > melhorMedia) { melhorMedia = media; vencedor = f; }
+    }
+    if (!vencedor) return res.status(200).json({ ok: true, msg: 'Sem participantes' });
+
+    console.log(`[fissura-reset] Vencedor: ${vencedor} (média: ${melhorMedia.toFixed(0)})`);
+
+    const poolSnap  = await db.collection('config').doc('pool').get();
+    const poolSaldo = poolSnap.exists ? (poolSnap.data()?.cristais || 0) : 0;
+    const premioRaroPorMembro = Math.min(CAP_RARO, Math.floor(poolSaldo * PCT_POOL_RARO));
+    const premioLendPorMembro = Math.min(CAP_LEND, Math.floor(poolSaldo * PCT_POOL_LEND));
+
+    const jogadoresSnap = await db.collection('players').where('fissuraMes', '==', mes).get();
+    const qualComum = [], qualRaro = [], qualLend = [];
+    jogadoresSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.faccao !== vencedor || (d.fissuraPontos || 0) < PONTOS_MINIMOS) return;
+      const rar = d.fissuraRaridade || 'Comum';
+      if (rar === 'Lendário') qualLend.push(doc);
+      else if (rar === 'Raro') qualRaro.push(doc);
+      else qualComum.push(doc);
+    });
+
+    console.log(`[fissura-reset] Qualificados — Comum:${qualComum.length} Raro:${qualRaro.length} Lend:${qualLend.length}`);
+
+    const BATCH_SIZE = 400;
+    let batch = db.batch(), opCount = 0, totalCristaisDistribuidos = 0;
+    const flush = async () => { await batch.commit(); batch = db.batch(); opCount = 0; };
+    const inc   = async ()  => { opCount++; if (opCount >= BATCH_SIZE) await flush(); };
+
+    for (const doc of qualComum) {
+      batch.update(doc.ref, { 'gs.moedas': FieldValue.increment(PREMIO_COMUM), moedas: FieldValue.increment(PREMIO_COMUM), fissuraVitoria: mes });
+      await inc();
+    }
+    if (premioRaroPorMembro > 0) {
+      for (const doc of qualRaro) {
+        batch.update(doc.ref, { 'gs.cristais': FieldValue.increment(premioRaroPorMembro), cristais: FieldValue.increment(premioRaroPorMembro), fissuraVitoria: mes });
+        totalCristaisDistribuidos += premioRaroPorMembro;
+        await inc();
+      }
+    }
+    if (premioLendPorMembro > 0) {
+      for (const doc of qualLend) {
+        batch.update(doc.ref, { 'gs.cristais': FieldValue.increment(premioLendPorMembro), cristais: FieldValue.increment(premioLendPorMembro), fissuraVitoria: mes });
+        totalCristaisDistribuidos += premioLendPorMembro;
+        await inc();
+      }
+    }
+
+    if (totalCristaisDistribuidos > 0) {
+      const poolRef = db.collection('config').doc('pool');
+      batch.update(poolRef, { cristais: FieldValue.increment(-totalCristaisDistribuidos), totalSaiu: FieldValue.increment(totalCristaisDistribuidos) });
+      batch.set(poolRef.collection('logs').doc(), { tipo: 'saida', motivo: `Grande Fissura ${mes} — prémio facção ${vencedor}`, origem: 'fissura-reset', total: totalCristaisDistribuidos, pool: -totalCristaisDistribuidos, ts: FieldValue.serverTimestamp() });
+      opCount += 2;
+      if (opCount >= BATCH_SIZE) await flush();
+    }
+
+    batch.set(db.collection('fissura').doc(mes), { vencedor, mediaVencedor: Math.round(melhorMedia), premioRaroPorMembro, premioLendPorMembro, premioComumPorMembro: PREMIO_COMUM, qualComum: qualComum.length, qualRaro: qualRaro.length, qualLend: qualLend.length, processadoEm: FieldValue.serverTimestamp() }, { merge: true });
+    opCount++;
+    if (opCount >= BATCH_SIZE) await flush();
+
+    for (const doc of jogadoresSnap.docs) {
+      batch.update(doc.ref, { faccao: FieldValue.delete(), fissuraMes: FieldValue.delete(), fissuraPontos: FieldValue.delete(), fissuraRaridade: FieldValue.delete() });
+      await inc();
+    }
+    if (opCount > 0) await batch.commit();
+
+    console.log(`[fissura-reset] Concluído — ${totalCristaisDistribuidos}💎 distribuídos`);
+    return res.status(200).json({ ok: true, mes, vencedor, mediaVencedor: Math.round(melhorMedia), qualComum: qualComum.length, qualRaro: qualRaro.length, qualLend: qualLend.length, cristaisDistribuidos: totalCristaisDistribuidos });
+
+  } catch (err) {
+    console.error('[fissura-reset] erro:', err);
+    return res.status(500).json({ erro: err.message });
   }
 }

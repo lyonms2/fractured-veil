@@ -1865,10 +1865,10 @@ async function missFinalizarEntrega() {
   btn.disabled = true; btn.textContent = 'A processar...';
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch('/api/miss-finalizar', {
+    const resp    = await fetch('/api/missoes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken, missId }),
+      body: JSON.stringify({ idToken, missId, action: 'finalizar' }),
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.erro || 'Erro ao processar pagamento.');
@@ -2259,10 +2259,10 @@ async function missVotar(missId, side, reward) {
     const m = freshSnap.data();
     if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 10) {
       const idToken = await firebase.auth().currentUser.getIdToken();
-      const resp    = await fetch('/api/miss-resolver', {
+      const resp    = await fetch('/api/missoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, missId }),
+        body: JSON.stringify({ idToken, missId, action: 'resolver' }),
       });
       const data = await resp.json();
       if(!resp.ok) throw new Error(data.erro || 'Erro ao resolver disputa.');

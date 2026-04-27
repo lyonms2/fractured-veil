@@ -14,7 +14,16 @@
       "Bash(grep -rn \"\\\\.collection\\\\|fbDb\\(\\)\\\\|_rtdb\\\\|rtdb\\(\\)\" js/*.js --include=\"*.js\")",
       "Bash(wc -l js/*.js index.html marketplace.html)",
       "Bash(ls js/*.js)",
-      "Bash(grep -n \"buildListingCard\\\\|renderCard\\\\|renderCena\" js/*.js)"
+      "Bash(grep -n \"buildListingCard\\\\|renderCard\\\\|renderCena\" js/*.js)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git rm *)",
+      "Bash(ls api/*.js)",
+      "Bash(grep -E \"\\\\.\\(js|html|json\\)$\")",
+      "Read(//c/Users/LeoPC/.claude/projects/c--Users-LeoPC-fractured-veil/memory/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\LeoPC\\.claude\\projects\\c--Users-LeoPC-fractured-veil\\memory"
     ]
   }
 }
