@@ -751,8 +751,9 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
       <span class="nav-icon">🥚</span><span data-i18n="mkt.nav.buy_eggs"> Comprar Ovos</span>
     </button>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.community">Comunidade</div>
     <button class="mkt-nav-btn" onclick="showSection('missoes')" id="nav-missoes">
-      <span class="nav-icon">⚔️</span><span> Missões</span><span class="miss-nav-badge" id="missNavBadge" style="display:none;"></span>
+      <span class="nav-icon">⚔️</span><span data-i18n="mkt.nav.missions"> Missões</span><span class="miss-nav-badge" id="missNavBadge" style="display:none;"></span>
     </button>
     <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
@@ -2718,7 +2719,7 @@ function _missHandleQRResult(raw, missId, reward) {
       <span class="bn-icon">💎</span><span data-i18n="mkt.bn.crystals">Cristais</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-missoes" onclick="showSection('missoes');_mbnActive(this)">
-      <span class="bn-icon">⚔️</span><span>Missões</span><span class="miss-nav-badge" id="missBnBadge" style="display:none;"></span>
+      <span class="bn-icon">⚔️</span><span data-i18n="mkt.nav.missions">Missões</span><span class="miss-nav-badge" id="missBnBadge" style="display:none;"></span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
       <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>

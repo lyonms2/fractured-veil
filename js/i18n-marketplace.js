@@ -12,6 +12,8 @@ window.registerStrings({
   'mkt.nav.buy_avatars':      'Comprar Avatares',
   'mkt.nav.buy_crystals':     'Comprar Cristais',
   'mkt.nav.buy_eggs':         'Comprar Ovos',
+  'mkt.nav.community':        'Comunidade',
+  'mkt.nav.missions':         'Missões',
   'mkt.nav.info':             'Informação',
   'mkt.nav.pool':             'Pool & Transparência',
 
@@ -312,6 +314,8 @@ window.registerStrings({
   'mkt.nav.buy_avatars':      'Buy Avatars',
   'mkt.nav.buy_crystals':     'Buy Crystals',
   'mkt.nav.buy_eggs':         'Buy Eggs',
+  'mkt.nav.community':        'Community',
+  'mkt.nav.missions':         'Missions',
   'mkt.nav.info':             'Information',
   'mkt.nav.pool':             'Pool & Transparency',
 
