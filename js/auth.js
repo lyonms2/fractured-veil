@@ -461,8 +461,7 @@ async function _onLoginSuccess(user) {
     updateResourceUI();
   }
 
-  const _glo2 = document.getElementById('gameLoadingOverlay');
-  if(_glo2) _glo2.style.display = 'none';
+  if(typeof hideSplash === 'function') hideSplash();
 
   // Iniciar listeners de jogos multiplayer
   if(typeof iniciarListenerDesafiosRecebidos === 'function') iniciarListenerDesafiosRecebidos();

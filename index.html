@@ -184,11 +184,32 @@
 
 <div class="app">
 
-  <!-- LOADING OVERLAY -->
-  <div id="gameLoadingOverlay" style="position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:500;">
-    <div style="width:36px;height:36px;border:2px solid #2a2040;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;"></div>
-    <div data-i18n="ui.loading" style="font-family:'Cinzel',serif;font-size:11px;color:#6b7280;letter-spacing:2px;">CARREGANDO...</div>
+  <!-- SPLASH SCREEN -->
+  <style>
+    #gameLoadingOverlay{position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;transition:opacity .6s ease;}
+    #gameLoadingOverlay.splash-out{opacity:0;pointer-events:none;}
+    .splash-img{width:min(420px,80vw);animation:splashIn .9s cubic-bezier(.22,1,.36,1) both,splashPulse 4s ease-in-out 1s infinite;}
+    @keyframes splashIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+    @keyframes splashPulse{0%,100%{filter:drop-shadow(0 0 18px rgba(201,168,76,.25))}50%{filter:drop-shadow(0 0 38px rgba(201,168,76,.55))}}
+    .splash-bar-wrap{width:min(260px,60vw);height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:28px;}
+    .splash-bar-fill{height:100%;width:30%;background:linear-gradient(90deg,#7c3aed,#c9a84c);border-radius:2px;animation:splashBar 1.6s ease-in-out infinite;}
+    @keyframes splashBar{0%{width:0%;margin-left:0}60%{width:60%}100%{width:0%;margin-left:100%}}
+    .splash-label{font-family:'Cinzel',serif;font-size:10px;color:#4b5563;letter-spacing:3px;margin-top:12px;animation:splashFadeTxt 1.6s ease-in-out infinite;}
+    @keyframes splashFadeTxt{0%,100%{opacity:.4}50%{opacity:.9}}
+  </style>
+  <div id="gameLoadingOverlay">
+    <img class="splash-img" src="/splash.webp" alt="Fractured Veil"/>
+    <div class="splash-bar-wrap"><div class="splash-bar-fill"></div></div>
+    <div class="splash-label" data-i18n="ui.loading">CARREGANDO...</div>
   </div>
+  <script>
+    function hideSplash(){
+      const el=document.getElementById('gameLoadingOverlay');
+      if(!el)return;
+      el.classList.add('splash-out');
+      setTimeout(()=>el.style.display='none',650);
+    }
+  </script>
 
   <header>
     <div class="logo">Fractured Veil</div>

@@ -293,12 +293,10 @@ async function connectWallet() {
       updateResourceUI();
     }
 
-    const _glo2 = document.getElementById('gameLoadingOverlay');
-    if(_glo2) _glo2.style.display = 'none';
+    if(typeof hideSplash === 'function') hideSplash();
 
   } catch(e) {
-    const _gloErr = document.getElementById('gameLoadingOverlay');
-    if(_gloErr) _gloErr.style.display = 'none';
+    if(typeof hideSplash === 'function') hideSplash();
     const _msg = e.message?.includes('bloqueada') ? t('wallet.err.blocked')
                : e.message?.includes('rejected') || e.code === 4001 ? t('wallet.err.rejected')
                : t('wallet.err.failed');
