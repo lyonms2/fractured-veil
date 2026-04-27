@@ -479,6 +479,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 .miss-deliver-box{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:16px;text-align:center;}
 .miss-deliver-title{font-family:'Cinzel',serif;font-size:11px;color:var(--blue2);letter-spacing:1px;margin-bottom:6px;}
 .miss-deliver-sub{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.miss-local-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:10px 14px;font-size:10px;color:var(--gold);text-align:left;margin-bottom:12px;line-height:1.5;word-break:break-word;}
 .miss-qr-wrap{margin-top:14px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:10px;padding:16px;text-align:center;}
 .miss-qr-title{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:3px;margin-bottom:12px;}
 .miss-qr-img-wrap{background:#fff;border-radius:8px;padding:8px;display:inline-block;margin-bottom:10px;}
@@ -1559,9 +1560,13 @@ async function missOpenDetail(id) {
 
     // ── Trabalhador em andamento — gerar QR ──
     if(isSelectedWorker && m.status === 'progress') {
+      const localHtml = m.localEntrega
+        ? `<div class="miss-local-box">📍 <strong>Local de entrega:</strong> ${esc(m.localEntrega)}</div>`
+        : '';
       document.getElementById('detActionArea').innerHTML = `
         <div class="miss-deliver-box">
           <div class="miss-deliver-title">⚔️ Missão em Andamento</div>
+          ${localHtml}
           <div class="miss-deliver-sub">Quando concluíres a tarefa, gera o QR code e mostra-o ao empregador para receber o pagamento.</div>
           <button class="btn-miss-select" style="width:100%;" onclick="missGerarQR('${id}',${m.reward})">
             📱 Gerar QR Code de Entrega
@@ -1985,6 +1990,9 @@ function openMissaoModal() {
   document.getElementById('missDesc').value = '';
   document.getElementById('missReward').value = '';
   document.getElementById('missDeadline').value = '';
+  document.getElementById('missLocal').value = '';
+  document.getElementById('missCategory').value = 'entregador';
+  document.getElementById('missLocalField').style.display = '';
   document.getElementById('missModalStatus').textContent = '';
   document.getElementById('missEscrowAmt').textContent = '—';
 }
@@ -1993,12 +2001,14 @@ function closeMissaoModal() {
 }
 
 async function confirmPublicarMissao() {
-  const title    = document.getElementById('missTitle').value.trim();
-  const desc     = document.getElementById('missDesc').value.trim();
-  const reward   = parseInt(document.getElementById('missReward').value) || 0;
-  const deadline = parseInt(document.getElementById('missDeadline').value) || 0;
-  const category = document.getElementById('missCategory').value;
-  const status   = document.getElementById('missModalStatus');
+  const title      = document.getElementById('missTitle').value.trim();
+  const desc       = document.getElementById('missDesc').value.trim();
+  const reward     = parseInt(document.getElementById('missReward').value) || 0;
+  const deadline   = parseInt(document.getElementById('missDeadline').value) || 0;
+  const category   = document.getElementById('missCategory').value;
+  const localRaw   = document.getElementById('missLocal').value.trim();
+  const localEntrega = category === 'entregador' && localRaw ? localRaw : null;
+  const status     = document.getElementById('missModalStatus');
 
   if(!title)       { status.textContent = 'Título obrigatório.'; return; }
   if(!desc)        { status.textContent = 'Descrição obrigatória.'; return; }
@@ -2016,13 +2026,14 @@ async function confirmPublicarMissao() {
     const deadlineDate = new Date();
     deadlineDate.setDate(deadlineDate.getDate() + deadline);
 
-    await db.collection('missoes').add({
-      title, desc, category, reward,
+    const missDoc = { title, desc, category, reward,
       deadline: deadlineDate.toISOString(),
       employer: walletAddress,
       status: 'open',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    };
+    if(localEntrega) missDoc.localEntrega = localEntrega;
+    await db.collection('missoes').add(missDoc);
 
     const newCristais = cristais - reward;
     await db.collection('players').doc(walletAddress).update({
@@ -2619,7 +2630,7 @@ function _missHandleQRResult(raw, missId, reward) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="modal-field">
         <div class="modal-label">Categoria</div>
-        <select class="modal-input" id="missCategory" style="cursor:pointer;">
+        <select class="modal-input" id="missCategory" style="cursor:pointer;" onchange="document.getElementById('missLocalField').style.display=this.value==='entregador'?'':'none';">
           <option value="entregador">📦 Entregador</option>
           <option value="servico">🔧 Serviço</option>
         </select>
@@ -2628,6 +2639,11 @@ function _missHandleQRResult(raw, missId, reward) {
         <div class="modal-label">Recompensa (💎 Cristais)</div>
         <input class="modal-input" id="missReward" type="number" min="1" placeholder="ex: 20" oninput="const _v=parseInt(this.value)||0; document.getElementById('missEscrowAmt').textContent=_v; document.getElementById('missWorkerAmt').textContent=_v?(_v*2-Math.floor(_v*2*MISS_FEE_RATE)):'—';"/>
       </div>
+    </div>
+
+    <div class="modal-field" id="missLocalField" style="display:none;">
+      <div class="modal-label">📍 Local de Entrega <span style="color:var(--muted);font-weight:400;">(visível só ao trabalhador selecionado)</span></div>
+      <input class="modal-input" id="missLocal" type="text" maxlength="120" placeholder="Ex: Rua das Flores 12, 2º Esq — ou Discord: user#1234"/>
     </div>
 
     <div class="modal-field">
