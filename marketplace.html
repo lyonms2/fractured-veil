@@ -1183,7 +1183,8 @@ async function updateSlots(mutateFn, extraFields = {}) {
 }
 
 function updateCristaisDisplay() {
-  document.getElementById('hdrCristais').textContent = playerData?.cristais || 0;
+  const v = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
+  document.getElementById('hdrCristais').textContent = fmtC(v);
 }
 
 function getUnlockedSlots() {
@@ -1341,7 +1342,7 @@ async function renderMissoes(append) {
           <div class="miss-card-desc">${m.desc||''}</div>
           <div class="miss-card-meta">
             <div class="miss-card-deadline${expired ? '" style="color:var(--red2)' : ''}">⏳ ${deadline}</div>
-            <div class="miss-card-reward">💎 ${m.reward||0}</div>
+            <div class="miss-card-reward">💎 ${fmtC(m.reward||0)}</div>
           </div>
           <div class="miss-card-employer">Por: ${employer}</div>
         </div>
@@ -1412,9 +1413,9 @@ async function missOpenDetail(id) {
     document.getElementById('detDesc').textContent = m.desc || '—';
     document.getElementById('detInfo').innerHTML = `
       <div class="miss-det-inforow">
-        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Recompensa</div><div class="miss-det-infobox-val">💎 ${m.reward}</div></div>
-        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Garantia</div><div class="miss-det-infobox-val">💎 ${m.reward}</div></div>
-        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Ganho total</div><div class="miss-det-infobox-val" style="color:var(--green2)">💎 ${m.reward*2}</div></div>
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Recompensa</div><div class="miss-det-infobox-val">💎 ${fmtC(m.reward)}</div></div>
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Garantia</div><div class="miss-det-infobox-val">💎 ${fmtC(m.reward)}</div></div>
+        <div class="miss-det-infobox"><div class="miss-det-infobox-label">Ganho total</div><div class="miss-det-infobox-val" style="color:var(--green2)">💎 ${fmtC(m.reward*2)}</div></div>
       </div>`;
     document.getElementById('detEmployer').innerHTML = `Publicado por <button class="miss-link-btn" onclick="missAbrirPerfil('${m.employer}',event)">${employer}</button>`;
     db.collection('players').doc(m.employer).get().then(s => {
@@ -1443,7 +1444,7 @@ async function missOpenDetail(id) {
           <div class="miss-expired-box">
             <div class="miss-expired-title">⏰ Prazo Expirado</div>
             <div class="miss-expired-sub">O prazo desta missão terminou sem trabalhador confirmado. Podes recuperar o teu depósito.</div>
-            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Recuperar Depósito 💎 ${m.reward}</button>
+            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Recuperar Depósito 💎 ${fmtC(m.reward)}</button>
           </div>`;
       } else {
         document.getElementById('detActionArea').innerHTML = '<div class="miss-det-closed">O prazo desta missão expirou.</div>';
@@ -1457,7 +1458,7 @@ async function missOpenDetail(id) {
           <div class="miss-expired-box">
             <div class="miss-expired-title">⏰ Prazo Expirado</div>
             <div class="miss-expired-sub">O trabalhador não entregou dentro do prazo. Podes reclamar ambos os depósitos.</div>
-            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Reclamar 💎 ${m.reward * 2} (ambos os depósitos)</button>
+            <button class="btn-miss-danger" onclick="missReclamarPot('${id}',${m.reward},'employer_timeout')">Reclamar 💎 ${fmtC(m.reward * 2)} (ambos os depósitos)</button>
           </div>`;
       } else if(isSelectedWorker) {
         document.getElementById('detActionArea').innerHTML = `
@@ -1563,20 +1564,20 @@ async function missOpenDetail(id) {
           <div class="miss-confirm-gains">
             <div class="miss-confirm-gain-row">
               <span>Garantia a depositar</span>
-              <span class="miss-confirm-cost">− 💎 ${m.reward}</span>
+              <span class="miss-confirm-cost">− 💎 ${fmtC(m.reward)}</span>
             </div>
             <div class="miss-confirm-gain-row">
               <span>Receberás ao concluir</span>
-              <span class="miss-confirm-earn">+ 💎 ${m.reward*2}</span>
+              <span class="miss-confirm-earn">+ 💎 ${fmtC(m.reward*2)}</span>
             </div>
             <div class="miss-confirm-gain-row">
               <span>Lucro líquido</span>
-              <span class="miss-confirm-net">+ 💎 ${m.reward}</span>
+              <span class="miss-confirm-net">+ 💎 ${fmtC(m.reward)}</span>
             </div>
           </div>
           <div id="detConfirmStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-bottom:8px;text-align:center;"></div>
           <button class="btn-modal-confirm" style="width:100%;" onclick="missConfirmarParticipacao('${id}',${m.reward})">
-            ✓ Confirmar & Depositar 💎 ${m.reward}
+            ✓ Confirmar & Depositar 💎 ${fmtC(m.reward)}
           </button>
         </div>`;
       return;
@@ -1642,7 +1643,7 @@ async function missOpenDetail(id) {
           placeholder="Se apresente brevemente. Por que você é a pessoa certa para esta missão?..."
           style="resize:vertical;min-height:72px;"></textarea>
         <div id="detCandStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-top:4px;"></div>
-        <div class="miss-apply-note">Ao se candidatar não haverá débito imediato. O depósito de <strong style="color:var(--gem2)">💎 ${m.reward}</strong> só é feito se você for selecionado.</div>
+        <div class="miss-apply-note">Ao se candidatar não haverá débito imediato. O depósito de <strong style="color:var(--gem2)">💎 ${fmtC(m.reward)}</strong> só é feito se você for selecionado.</div>
         <button class="btn-modal-confirm" style="width:100%;margin-top:12px;" onclick="submitCandidatura('${id}')">Candidatar-se</button>
       </div>`;
   } catch(e) {
@@ -1674,7 +1675,7 @@ async function missVerCandidatos(missId) {
     const m = { id: missSnap.id, ...missSnap.data() };
     const icon = _MISS_CAT_ICONS[m.category] || '📦';
     document.getElementById('candMissTitle').textContent = `${icon} ${m.title}`;
-    document.getElementById('candMissReward').textContent = `💎 ${m.reward}`;
+    document.getElementById('candMissReward').textContent = `💎 ${fmtC(m.reward)}`;
 
     const cands = candSnap.docs.map(d => ({ uid: d.id, ...d.data() })).filter(c => c.status === 'pending');
     if(!cands.length) {
@@ -1881,11 +1882,11 @@ function _missAbrirConfirmEntrega(missId, m) {
       </div>
       <div class="miss-entrega-row">
         <span>Trabalhador recebe</span>
-        <span style="color:var(--green2);font-family:'Cinzel',serif;font-weight:700;">💎 ${workerAmt}</span>
+        <span style="color:var(--green2);font-family:'Cinzel',serif;font-weight:700;">💎 ${fmtC(workerAmt)}</span>
       </div>
       <div class="miss-entrega-row">
         <span style="color:var(--muted);">Taxa P2E (5%)</span>
-        <span style="color:var(--muted);font-size:10px;">− 💎 ${fee}</span>
+        <span style="color:var(--muted);font-size:10px;">− 💎 ${fmtC(fee)}</span>
       </div>
     </div>`;
   document.getElementById('entregaConfirmBtn').disabled = false;
@@ -1914,7 +1915,7 @@ async function missFinalizarEntrega() {
     _missCurrentDelivery = null;
     closeMissEntrega();
     closeMissDetalhe();
-    showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${data.workerAmt} · taxa pool: 💎 ${data.fee}.`);
+    showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${fmtC(data.workerAmt)} · taxa pool: 💎 ${fmtC(data.fee)}.`);
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     btn.disabled = false;
@@ -1952,7 +1953,7 @@ async function missConfirmarParticipacao(missId, reward) {
   const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
   const statusEl = document.getElementById('detConfirmStatus');
   if(cristais < reward) {
-    statusEl.textContent = `Saldo insuficiente (você tem ${cristais} 💎, precisa de ${reward} 💎).`;
+    statusEl.textContent = `Saldo insuficiente (você tem ${fmtC(cristais)} 💎, precisa de ${fmtC(reward)} 💎).`;
     return;
   }
   const btn = document.querySelector('#detActionArea .btn-modal-confirm');
@@ -1978,7 +1979,7 @@ async function missConfirmarParticipacao(missId, reward) {
       <div class="miss-already-applied">
         <div class="miss-already-applied-title">✅ Participação Confirmada!</div>
         <div class="miss-cand-msg-preview">Conclua a missão dentro do prazo e gere o QR code de entrega para receber o pagamento.</div>
-        <div class="miss-already-applied-sub">💎 ${reward} bloqueados como garantia.</div>
+        <div class="miss-already-applied-sub">💎 ${fmtC(reward)} bloqueados como garantia.</div>
       </div>`;
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
@@ -2046,7 +2047,7 @@ async function confirmPublicarMissao() {
   if(deadline < 1) { status.textContent = 'Prazo mínimo: 1 dia.'; return; }
 
   const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
-  if(cristais < reward) { status.textContent = `Saldo insuficiente (você tem ${cristais} 💎, precisa de ${reward} 💎).`; return; }
+  if(cristais < reward) { status.textContent = `Saldo insuficiente (você tem ${fmtC(cristais)} 💎, precisa de ${fmtC(reward)} 💎).`; return; }
 
   const btn = document.querySelector('#missaoModalOverlay .btn-modal-confirm');
   btn.disabled = true;
@@ -2091,7 +2092,7 @@ function missMostrarCancelar(missId, reward) {
   document.getElementById('detActionArea').innerHTML = `
     <div class="miss-cancel-box">
       <div class="miss-cancel-title">⚠️ Cancelar Missão</div>
-      <div class="miss-cancel-sub">Tens a certeza? O depósito de <strong style="color:var(--gem2)">💎 ${reward}</strong> será devolvido.</div>
+      <div class="miss-cancel-sub">Tens a certeza? O depósito de <strong style="color:var(--gem2)">💎 ${fmtC(reward)}</strong> será devolvido.</div>
       <div style="display:flex;gap:8px;">
         <button class="btn-modal-cancel" style="flex:1;" onclick="missOpenDetail('${missId}')">Voltar</button>
         <button class="btn-miss-danger" style="flex:1;" onclick="missCancelarMissao('${missId}',${reward})">Confirmar Cancelamento</button>
@@ -2112,7 +2113,7 @@ async function missCancelarMissao(missId, reward) {
     playerData.cristais    = playerData.gs.cristais;
     updateCristaisDisplay();
     closeMissDetalhe();
-    showToast(`✅ Missão cancelada. 💎 ${reward} devolvidos.`);
+    showToast(`✅ Missão cancelada. 💎 ${fmtC(reward)} devolvidos.`);
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     showToast('Erro ao cancelar. Tenta novamente.', 'err');
@@ -2174,7 +2175,7 @@ async function missReclamarPot(missId, reward, reason) {
     playerData.cristais    = playerData.gs.cristais;
     updateCristaisDisplay();
     closeMissDetalhe();
-    showToast(`✅ 💎 ${totalPot} recuperados.`);
+    showToast(`✅ 💎 ${fmtC(totalPot)} recuperados.`);
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     showToast('Erro ao reclamar. Tenta novamente.', 'err');
@@ -2250,7 +2251,7 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
       voteBtns = `<div class="miss-voted-msg">Requisitos em falta: ${missing.join(' · ')}.</div>`;
     } else {
       const voterEst = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 10);
-      const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${voterEst} por voto` : '';
+      const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${fmtC(voterEst)} por voto` : '';
       voteBtns = `
         <div style="font-size:9px;color:var(--gold);text-align:center;margin-bottom:8px;opacity:.8;">
           🏆 Votantes recebem 5% do pot dividido entre si${voterEstTxt}
@@ -2313,9 +2314,9 @@ async function missVotar(missId, side, reward) {
       if(!resp.ok) throw new Error(data.erro || 'Erro ao resolver disputa.');
       closeMissDetalhe();
       const voterMsg = data.voterAmt > 0
-        ? ` · ${data.voterCount} votante${data.voterCount !== 1 ? 's' : ''} receberam 💎 ${data.voterAmt} cada`
+        ? ` · ${data.voterCount} votante${data.voterCount !== 1 ? 's' : ''} receberam 💎 ${fmtC(data.voterAmt)} cada`
         : '';
-      showToast(`⚖️ Disputa resolvida! Vencedor recebeu 💎 ${data.winnerAmt}.${voterMsg}`);
+      showToast(`⚖️ Disputa resolvida! Vencedor recebeu 💎 ${fmtC(data.winnerAmt)}.${voterMsg}`);
       if(currentSection === 'missoes') renderMissoes();
     } else {
       showToast('✅ Voto registado!');

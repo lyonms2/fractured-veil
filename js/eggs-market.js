@@ -85,7 +85,7 @@ function renderEggBrowse() {
           <div class="egg-mkt-stat"><span>${t('mkt.eggs.expires')}</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
           <div class="egg-mkt-stat"><span>${t('mkt.eggs.seller')}</span><b>${seller}</b></div>
         </div>
-        <div class="egg-mkt-price">💎 ${egg.price}</div>
+        <div class="egg-mkt-price">💎 ${fmtC(egg.price)}</div>
         ${isOwn
           ? `<button class="btn-buy-egg-mkt" style="background:rgba(232,96,58,.15);color:var(--red2);border:1px solid rgba(232,96,58,.3);"
                onclick="event.stopPropagation();unlistEgg('${egg.id}')">${t('mkt.eggs.unlist_btn')}</button>`

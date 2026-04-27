@@ -653,6 +653,9 @@ window.registerStrings = function(pt, en) {
   Object.assign(window.LANG_STRINGS, ext);
 };
 
+// ── fmtC(v) — formata valor de cristais com 2 casas decimais ─────
+function fmtC(v) { return parseFloat(v || 0).toFixed(2); }
+
 // ── t(key, vars) — retorna string traduzida ──────────────────────
 function t(key, vars) {
   const s = window.LANG_STRINGS || {};

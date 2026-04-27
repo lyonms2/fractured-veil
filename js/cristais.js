@@ -136,8 +136,8 @@ async function comprarCristais(idx) {
           if(!playerData.gs) playerData.gs = {};
           playerData.gs.cristais = playerData.cristais;
           updateCristaisDisplay();
-          status.innerHTML = `<span class="tx-ok">${t('mkt.tx.credited', {gems: apiData.gems, balance: playerData.cristais})}</span>`;
-          showToast(t('mkt.tx.gems_added', {gems: apiData.gems}), 'ok');
+          status.innerHTML = `<span class="tx-ok">${t('mkt.tx.credited', {gems: fmtC(apiData.gems), balance: fmtC(playerData.cristais)})}</span>`;
+          showToast(t('mkt.tx.gems_added', {gems: fmtC(apiData.gems)}), 'ok');
         } else {
           status.innerHTML = `<span class="tx-err">${t('mkt.tx.not_credited', {err: apiData.erro})}</span>`;
         }
@@ -184,7 +184,7 @@ async function resgatar() {
     return;
   }
   if(gems > (playerData.cristais || 0)) {
-    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: playerData.cristais || 0})}</span>`;
+    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(playerData.cristais || 0)})}</span>`;
     return;
   }
 

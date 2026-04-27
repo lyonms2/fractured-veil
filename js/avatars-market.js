@@ -108,7 +108,7 @@ function buildListingCard(l) {
         <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>${t('mkt.stat.fase')}</div>
         <div class="av-stat"><b>${l.totalOvos||0}</b>${t('mkt.stat.ovos')}</div>
       </div>
-      <div class="av-price">💎 ${l.price}</div>
+      <div class="av-price">💎 ${fmtC(l.price)}</div>
       <div class="av-seller">${isMine ? t('mkt.card.mine') : t('mkt.card.by', {addr: sellerShort})}</div>
     </div>
   </div>`;
@@ -145,7 +145,7 @@ async function openDetail(listingId) {
     </div>
     ${bonusText ? `<div class="detail-bonus">✨ ${bonusText}</div>` : ''}
     <div class="detail-price-row">
-      <div class="detail-price">💎 ${l.price}</div>
+      <div class="detail-price">💎 ${fmtC(l.price)}</div>
       ${isMine
         ? `<button class="btn-buy-avatar" style="background:var(--red)" onclick="unlistAvatar('${l.id}')">${t('mkt.detail.unlist')}</button>`
         : `<button class="btn-buy-avatar" ${canBuy?'':'disabled'} onclick="buyAvatar('${l.id}',${l.price})">${canBuy?t('mkt.detail.buy'):t('mkt.detail.insufficient')}</button>`

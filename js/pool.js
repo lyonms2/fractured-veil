@@ -80,10 +80,10 @@ function renderPoolWidget() {
         <div class="pool-bar" style="width:${pct}%;background:${barColor};"></div>
       </div>
       <div class="pool-stats">
-        <div class="pool-stat"><span>${t('mkt.pool.balance')}</span><b>${saldo} 💎</b></div>
-        <div class="pool-stat"><span>${t('mkt.pool.rare_egg')}</span><b>${precoRaro} 💎</b></div>
-        <div class="pool-stat"><span>${t('mkt.pool.legendary_egg')}</span><b>${precoLend} 💎</b></div>
-        <div class="pool-stat"><span>${t('mkt.pool.available')}</span><b>${restante} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.balance')}</span><b>${fmtC(saldo)} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.rare_egg')}</span><b>${fmtC(precoRaro)} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.legendary_egg')}</span><b>${fmtC(precoLend)} 💎</b></div>
+        <div class="pool-stat"><span>${t('mkt.pool.available')}</span><b>${fmtC(restante)} 💎</b></div>
       </div>
       ${saldo === 0 ? `<div class="pool-empty">${t('mkt.pool.empty_msg')}</div>` : ''}
     </div>`;
@@ -115,31 +115,31 @@ function renderPoolStatsCard() {
   el.innerHTML = `
   <div class="pool-stats-card">
     <div class="pool-sc-title">${t('mkt.pool.state_title')}</div>
-    <div class="pool-sc-balance">${saldo} 💎</div>
+    <div class="pool-sc-balance">${fmtC(saldo)} 💎</div>
     <div class="pool-sc-balance-sub">${pct}% do alvo (${POOL_ALVO} 💎)</div>
     <div class="pool-sc-bar-wrap">
       <div class="pool-sc-bar" style="width:${pct}%;background:${barColor};"></div>
     </div>
     <div class="pool-sc-grid">
       <div class="pool-sc-stat">
-        <span>${t('mkt.pool.total_in')}</span><b>${totalIn} 💎</b>
+        <span>${t('mkt.pool.total_in')}</span><b>${fmtC(totalIn)} 💎</b>
       </div>
       <div class="pool-sc-stat">
-        <span>${t('mkt.pool.total_out')}</span><b>${totalOut} 💎</b>
+        <span>${t('mkt.pool.total_out')}</span><b>${fmtC(totalOut)} 💎</b>
       </div>
       <div class="pool-sc-stat">
-        <span>${t('mkt.pool.available')}</span><b>${restante} 💎</b>
+        <span>${t('mkt.pool.available')}</span><b>${fmtC(restante)} 💎</b>
       </div>
     </div>
     <div class="pool-prices">
       <div class="pool-price-card raro">
         <div class="pool-price-label">🔵 ${t('mkt.pool.rare_egg')}</div>
-        <div class="pool-price-val">${precoRaro} 💎</div>
+        <div class="pool-price-val">${fmtC(precoRaro)} 💎</div>
         <div class="pool-price-sub">${t('mkt.pool.price_sub')}</div>
       </div>
       <div class="pool-price-card lendario">
         <div class="pool-price-label">🌟 ${t('mkt.pool.legendary_egg')}</div>
-        <div class="pool-price-val">${precoLend} 💎</div>
+        <div class="pool-price-val">${fmtC(precoLend)} 💎</div>
         <div class="pool-price-sub">${t('mkt.pool.price_sub')}</div>
       </div>
     </div>
@@ -186,8 +186,8 @@ function renderTranspDistribuicao() {
   set('transPctBN',       fmt(pct));
   set('transPctDev',      fmt(pct));
   set('transPctRetencao', t('mkt.transp.retained', { pct: retencao }));
-  set('transPriceRaro',   t('mkt.transp.price_display', { price: calcPoolPrice('Raro'),    max: (POOL_BASE_RARO * 2).toFixed(1) }));
-  set('transPriceLend',   t('mkt.transp.price_display', { price: calcPoolPrice('Lendário'), max: (POOL_BASE_LEND * 2).toFixed(1) }));
+  set('transPriceRaro',   t('mkt.transp.price_display', { price: fmtC(calcPoolPrice('Raro')),    max: fmtC(POOL_BASE_RARO * 2) }));
+  set('transPriceLend',   t('mkt.transp.price_display', { price: fmtC(calcPoolPrice('Lendário')), max: fmtC(POOL_BASE_LEND * 2) }));
 }
 
 // ═══════════════════════════════════════════
@@ -234,7 +234,7 @@ async function loadPoolLogs(reset) {
           <div class="pool-log-motivo">${esc(log.motivo) || '—'}</div>
           <div class="pool-log-wallet">${wallet}</div>
         </div>
-        <div class="pool-log-amount">${sinal}${Math.abs(log.pool)} 💎</div>
+        <div class="pool-log-amount">${sinal}${fmtC(log.pool)} 💎</div>
         <div class="pool-log-time">${timeStr}</div>
       </div>`;
     }).join('');
