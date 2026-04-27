@@ -1762,12 +1762,26 @@ async function missSubmitRating(missId, targetUid, isEmployerRating) {
 
 // ══ PARTE 4 — QR CODE DE ENTREGA ══
 
+// Token de 36 hex chars via CSPRNG
+function _missGenToken() {
+  const arr = new Uint8Array(18);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// SHA-256 do token — só o hash é guardado no Firestore
+async function _missHashToken(token) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function missGerarQR(missId, reward) {
   const btn = document.querySelector('#detActionArea .btn-miss-select');
   if(btn) { btn.disabled = true; btn.textContent = 'A gerar...'; }
   try {
-    const token = btoa(`${missId}|${walletAddress}|${Date.now()}`).replace(/[^A-Za-z0-9]/g,'').slice(0, 24);
-    await db.collection('missoes').doc(missId).update({ deliveryToken: token });
+    const token   = _missGenToken();
+    const tokHash = await _missHashToken(token);
+    await db.collection('missoes').doc(missId).update({ deliveryToken: tokHash });
     const url  = `${window.location.origin}${window.location.pathname}?deliver=${encodeURIComponent(missId)}&tok=${token}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
     document.getElementById('detQRArea').innerHTML = `
@@ -1796,8 +1810,9 @@ async function missValidarToken(missId, reward) {
   try {
     const snap = await db.collection('missoes').doc(missId).get();
     if(!snap.exists) { statusEl.textContent = 'Missão não encontrada.'; return; }
-    const m = snap.data();
-    if(m.deliveryToken !== tok) { statusEl.textContent = 'Token inválido.'; return; }
+    const m       = snap.data();
+    const tokHash = await _missHashToken(tok);
+    if(m.deliveryToken !== tokHash) { statusEl.textContent = 'Token inválido.'; return; }
     statusEl.textContent = '';
     _missAbrirConfirmEntrega(missId, m);
   } catch(e) { statusEl.textContent = 'Erro ao validar. Tenta novamente.'; }
@@ -1809,6 +1824,7 @@ function _missAbrirConfirmEntrega(missId, m) {
   const totalPot  = m.reward * 2;
   const fee       = Math.floor(totalPot * MISS_FEE_RATE);
   const workerAmt = totalPot - fee;
+  _missCurrentDelivery = { missId, worker: m.selectedWorker, reward: m.reward };
   document.getElementById('entregaMissId').value  = missId;
   document.getElementById('entregaWorker').value  = m.selectedWorker;
   document.getElementById('entregaReward').value  = m.reward;
@@ -1843,21 +1859,28 @@ function closeMissEntrega() {
 }
 
 async function missFinalizarEntrega() {
-  const missId    = document.getElementById('entregaMissId').value;
-  const worker    = document.getElementById('entregaWorker').value;
-  const reward    = parseInt(document.getElementById('entregaReward').value);
-  const btn       = document.getElementById('entregaConfirmBtn');
-  btn.disabled    = true;
-  btn.textContent = 'A processar...';
+  if(!_missCurrentDelivery) return;
+  const { missId, worker, reward } = _missCurrentDelivery;
+  const btn = document.getElementById('entregaConfirmBtn');
+  btn.disabled = true; btn.textContent = 'A processar...';
   try {
-    const totalPot  = reward * 2;
+    // Re-validar contra Firestore — nunca confiar em valores do DOM
+    const snap = await db.collection('missoes').doc(missId).get();
+    if(!snap.exists)                       throw new Error('Missão não encontrada.');
+    const m = snap.data();
+    if(m.employer !== walletAddress)       throw new Error('Não és o empregador.');
+    if(m.status !== 'progress')            throw new Error('Missão não está em andamento.');
+    if(m.selectedWorker !== worker)        throw new Error('Trabalhador diverge.');
+    if(m.reward !== reward)                throw new Error('Recompensa diverge.');
+
+    const totalPot  = m.reward * 2;
     const fee       = Math.floor(totalPot * MISS_FEE_RATE);
     const workerAmt = totalPot - fee;
     const poolRef   = db.collection('config').doc('pool');
     const logRef    = poolRef.collection('logs').doc();
     const FV        = firebase.firestore.FieldValue;
     const batch     = db.batch();
-    batch.update(db.collection('players').doc(worker), {
+    batch.update(db.collection('players').doc(m.selectedWorker), {
       'gs.cristais': FV.increment(workerAmt),
       'gs.rep.done': FV.increment(1)
     });
@@ -1866,15 +1889,13 @@ async function missFinalizarEntrega() {
       deliveryToken: FV.delete(),
       completedAt: FV.serverTimestamp()
     });
-    batch.update(poolRef, {
-      cristais:    FV.increment(fee),
-      totalEntrou: FV.increment(fee)
-    });
+    batch.update(poolRef, { cristais: FV.increment(fee), totalEntrou: FV.increment(fee) });
     batch.set(logRef, {
       tipo: 'entrada', motivo: 'Missão concluída — taxa 5%',
-      origem: worker, total: fee, pool: fee, ts: FV.serverTimestamp()
+      origem: m.selectedWorker, total: fee, pool: fee, ts: FV.serverTimestamp()
     });
     await batch.commit();
+    _missCurrentDelivery = null;
     closeMissEntrega();
     closeMissDetalhe();
     showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${workerAmt} · taxa pool: 💎 ${fee}.`);
@@ -1882,7 +1903,7 @@ async function missFinalizarEntrega() {
   } catch(e) {
     btn.disabled = false;
     btn.textContent = '✓ Confirmar & Pagar';
-    showToast('Erro ao processar pagamento.', 'err');
+    showToast(e.message || 'Erro ao processar pagamento.', 'err');
   }
 }
 
@@ -1904,7 +1925,8 @@ async function _checkDeliveryParams() {
     const m = snap.data();
     if(m.employer !== walletAddress) { showToast('Não és o empregador desta missão.', 'err'); return; }
     if(m.status !== 'progress')      { showToast('Esta missão não está em andamento.', 'err'); return; }
-    if(m.deliveryToken !== tok)      { showToast('Token de entrega inválido.', 'err'); return; }
+    const tokHash = await _missHashToken(tok);
+    if(m.deliveryToken !== tokHash)  { showToast('Token de entrega inválido.', 'err'); return; }
     showSection('missoes');
     _missAbrirConfirmEntrega(missId, m);
   } catch(e) { showToast('Erro ao validar QR de entrega.', 'err'); }
@@ -2243,14 +2265,20 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
 async function missVotar(missId, side, reward) {
   const btns = document.querySelectorAll('#detActionArea .btn-miss-vote');
   btns.forEach(b => { b.disabled = true; });
+  const voteRef = db.collection('missoes').doc(missId).collection('votos').doc(walletAddress);
+  const mRef    = db.collection('missoes').doc(missId);
+  const FV      = firebase.firestore.FieldValue;
   try {
-    const voteRef = db.collection('missoes').doc(missId).collection('votos').doc(walletAddress);
-    const voteSnap = await voteRef.get();
-    if(voteSnap.exists) { showToast('Já votaste nesta disputa.', 'err'); return; }
-    const field = side === 'employer' ? 'votesEmployer' : 'votesWorker';
-    await voteRef.set({ side, votedAt: firebase.firestore.FieldValue.serverTimestamp(), voter: walletAddress });
-    await db.collection('missoes').doc(missId).update({ [field]: firebase.firestore.FieldValue.increment(1) });
-    const freshSnap = await db.collection('missoes').doc(missId).get();
+    // Transação atómica — previne duplo voto por race condition
+    await db.runTransaction(async (tx) => {
+      const [voteSnap, mSnap] = await Promise.all([tx.get(voteRef), tx.get(mRef)]);
+      if(voteSnap.exists)                   throw Object.assign(new Error('Já votaste nesta disputa.'), { code: 'dup' });
+      if(mSnap.data()?.status !== 'dispute') throw Object.assign(new Error('Disputa já encerrada.'), { code: 'closed' });
+      const field = side === 'employer' ? 'votesEmployer' : 'votesWorker';
+      tx.set(voteRef, { side, votedAt: FV.serverTimestamp(), voter: walletAddress });
+      tx.update(mRef, { [field]: FV.increment(1) });
+    });
+    const freshSnap = await mRef.get();
     const m = freshSnap.data();
     if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 10) {
       await _missResolverDisputa(missId, m, reward);
@@ -2259,7 +2287,10 @@ async function missVotar(missId, side, reward) {
       missOpenDetail(missId);
     }
   } catch(e) {
-    showToast('Erro ao votar. Tenta novamente.', 'err');
+    const msg = e.code === 'dup'    ? 'Já votaste nesta disputa.'
+              : e.code === 'closed' ? 'Disputa já encerrada.'
+              : 'Erro ao votar. Tenta novamente.';
+    showToast(msg, 'err');
     btns.forEach(b => { b.disabled = false; });
   }
 }
@@ -2493,8 +2524,9 @@ function closeMissPerfil() {
 
 // ══ LEITOR QR IN-APP ══
 
-let _missStream    = null;
-let _missScanning  = false;
+let _missStream          = null;
+let _missScanning        = false;
+let _missCurrentDelivery = null; // { missId, worker, reward } — ref em memória, evita DOM manipulation
 
 async function missAbrirScanner(missId, reward) {
   const area = document.getElementById('detQRScanArea');
