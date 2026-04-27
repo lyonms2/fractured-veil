@@ -485,6 +485,10 @@ function iniciarAuthListener() {
     } else if(!user && walletAddress) {
       // Sessão expirou
       await disconnectWallet();
+    } else if(!user && !walletAddress) {
+      // Não logado — mostra o ecrã de login e remove o splash
+      document.getElementById('loginScreen').style.display = 'flex';
+      if(typeof hideSplash === 'function') hideSplash();
     }
   });
 }
