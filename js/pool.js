@@ -223,7 +223,7 @@ async function loadPoolLogs(reset) {
       const ts  = log.ts ? new Date(log.ts) : new Date();
       const locale = localStorage.getItem('lang') === 'en' ? 'en-US' : 'pt-PT';
       const timeStr = ts.toLocaleDateString(locale) + ' ' + ts.toLocaleTimeString(locale, {hour:'2-digit',minute:'2-digit'});
-      const wallet = log.origem && log.origem.startsWith('0x')
+      const wallet = log.origem && log.origem.length > 10
         ? log.origem.slice(0,6)+'…'+log.origem.slice(-4)
         : (log.origem || t('mkt.pool.system'));
       const icon  = isEntrada ? '▲' : '▼';
