@@ -1860,45 +1860,22 @@ function closeMissEntrega() {
 
 async function missFinalizarEntrega() {
   if(!_missCurrentDelivery) return;
-  const { missId, worker, reward } = _missCurrentDelivery;
+  const { missId, reward } = _missCurrentDelivery;
   const btn = document.getElementById('entregaConfirmBtn');
   btn.disabled = true; btn.textContent = 'A processar...';
   try {
-    // Re-validar contra Firestore — nunca confiar em valores do DOM
-    const snap = await db.collection('missoes').doc(missId).get();
-    if(!snap.exists)                       throw new Error('Missão não encontrada.');
-    const m = snap.data();
-    if(m.employer !== walletAddress)       throw new Error('Não és o empregador.');
-    if(m.status !== 'progress')            throw new Error('Missão não está em andamento.');
-    if(m.selectedWorker !== worker)        throw new Error('Trabalhador diverge.');
-    if(m.reward !== reward)                throw new Error('Recompensa diverge.');
-
-    const totalPot  = m.reward * 2;
-    const fee       = Math.floor(totalPot * MISS_FEE_RATE);
-    const workerAmt = totalPot - fee;
-    const poolRef   = db.collection('config').doc('pool');
-    const logRef    = poolRef.collection('logs').doc();
-    const FV        = firebase.firestore.FieldValue;
-    const batch     = db.batch();
-    batch.update(db.collection('players').doc(m.selectedWorker), {
-      'gs.cristais': FV.increment(workerAmt),
-      'gs.rep.done': FV.increment(1)
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp    = await fetch('/api/miss-finalizar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, missId }),
     });
-    batch.update(db.collection('missoes').doc(missId), {
-      status: 'done',
-      deliveryToken: FV.delete(),
-      completedAt: FV.serverTimestamp()
-    });
-    batch.update(poolRef, { cristais: FV.increment(fee), totalEntrou: FV.increment(fee) });
-    batch.set(logRef, {
-      tipo: 'entrada', motivo: 'Missão concluída — taxa 5%',
-      origem: m.selectedWorker, total: fee, pool: fee, ts: FV.serverTimestamp()
-    });
-    await batch.commit();
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.erro || 'Erro ao processar pagamento.');
     _missCurrentDelivery = null;
     closeMissEntrega();
     closeMissDetalhe();
-    showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${workerAmt} · taxa pool: 💎 ${fee}.`);
+    showToast(`✅ Entrega confirmada! Trabalhador recebeu 💎 ${data.workerAmt} · taxa pool: 💎 ${data.fee}.`);
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     btn.disabled = false;
@@ -2281,7 +2258,20 @@ async function missVotar(missId, side, reward) {
     const freshSnap = await mRef.get();
     const m = freshSnap.data();
     if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 10) {
-      await _missResolverDisputa(missId, m, reward);
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const resp    = await fetch('/api/miss-resolver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, missId }),
+      });
+      const data = await resp.json();
+      if(!resp.ok) throw new Error(data.erro || 'Erro ao resolver disputa.');
+      closeMissDetalhe();
+      const voterMsg = data.voterAmt > 0
+        ? ` · ${data.voterCount} votante${data.voterCount !== 1 ? 's' : ''} receberam 💎 ${data.voterAmt} cada`
+        : '';
+      showToast(`⚖️ Disputa resolvida! Vencedor recebeu 💎 ${data.winnerAmt}.${voterMsg}`);
+      if(currentSection === 'missoes') renderMissoes();
     } else {
       showToast('✅ Voto registado!');
       missOpenDetail(missId);
@@ -2293,46 +2283,6 @@ async function missVotar(missId, side, reward) {
     showToast(msg, 'err');
     btns.forEach(b => { b.disabled = false; });
   }
-}
-
-async function _missResolverDisputa(missId, m, reward) {
-  const totalPot   = reward * 2;
-  const fee        = Math.floor(totalPot * MISS_DISPUTE_FEE_RATE); // 10%
-  const voterTotal = Math.floor(fee / 2);                           // 5% para votantes
-  const poolShare  = fee - voterTotal;                              // 5% para pool (+ sobras de arredondamento)
-  const winnerAmt  = totalPot - fee;                               // 90% para o vencedor
-  const winner     = (m.votesEmployer || 0) >= (m.votesWorker || 0) ? m.employer : m.selectedWorker;
-
-  const votersSnap = await db.collection('missoes').doc(missId).collection('votos').get();
-  const voterUids  = votersSnap.docs.map(d => d.id);
-  const voterAmt   = voterUids.length > 0 ? Math.floor(voterTotal / voterUids.length) : 0;
-  const poolFinal  = poolShare + (voterTotal - voterAmt * voterUids.length); // absorve resto
-
-  const FV      = firebase.firestore.FieldValue;
-  const poolRef = db.collection('config').doc('pool');
-  const logRef  = poolRef.collection('logs').doc();
-  const batch   = db.batch();
-
-  batch.update(db.collection('missoes').doc(missId), {
-    status: 'cancelled', disputeWinner: winner, resolvedAt: FV.serverTimestamp()
-  });
-  batch.update(db.collection('players').doc(winner), {
-    'gs.cristais': FV.increment(winnerAmt)
-  });
-  voterUids.forEach(uid => {
-    if(voterAmt > 0) batch.update(db.collection('players').doc(uid), { 'gs.cristais': FV.increment(voterAmt) });
-  });
-  batch.update(poolRef, { cristais: FV.increment(poolFinal), totalEntrou: FV.increment(poolFinal) });
-  batch.set(logRef, {
-    tipo: 'entrada', motivo: 'Disputa resolvida — taxa 10%',
-    origem: winner, total: poolFinal, pool: poolFinal, ts: FV.serverTimestamp()
-  });
-  await batch.commit();
-
-  closeMissDetalhe();
-  const voterMsg = voterAmt > 0 ? ` · ${voterUids.length} votante${voterUids.length!==1?'s':''} receberam 💎 ${voterAmt} cada` : '';
-  showToast(`⚖️ Disputa resolvida! Vencedor recebeu 💎 ${winnerAmt}.${voterMsg}`);
-  if(currentSection === 'missoes') renderMissoes();
 }
 
 // ══ FEATURE 4 — BADGE + VOTER STATUS + DISPUTE BANNER ══
