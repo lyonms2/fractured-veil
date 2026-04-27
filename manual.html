@@ -513,6 +513,9 @@
       <a class="nav-item" onclick="showSection('marketplace')">
         <span class="nav-icon">💎</span>Marketplace
       </a>
+      <a class="nav-item" onclick="showSection('missoes')">
+        <span class="nav-icon">📋</span><span class="c-pt">Missões</span><span class="c-en">Missions</span>
+      </a>
 
       <div class="nav-section-title"><span class="c-pt">Atividades</span><span class="c-en">Activities</span></div>
       <a class="nav-item" onclick="showSection('minijogos')">
@@ -1415,6 +1418,276 @@
       <p>The pool accumulates funds through marketplace fees, arena, and exchange. The higher the balance, the better the egg burn prices. View pool status in real time on the marketplace.</p>
       <h2>My Avatars</h2>
       <p>Manage your avatar slots: activate, list, burn, or unlock new slots (15 💎 each, max 5 slots total).</p>
+    </div><!-- /c-en -->
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         MISSÕES
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" id="s-missoes">
+    <div class="c-pt">
+      <div class="section-hero">
+        <div class="section-tag">CAPÍTULO 10B</div>
+        <div class="section-title">Missões</div>
+        <p class="section-intro">O sistema de Missões permite que jogadores publiquem tarefas pagas e contratem outros jogadores para as executar. Todo o fluxo — desde a candidatura até ao pagamento — é gerido dentro do Marketplace.</p>
+      </div>
+
+      <h2>Como Funciona</h2>
+      <p>Uma missão passa por vários estados ao longo da sua vida. Cada transição requer uma ação do empregador ou do trabalhador:</p>
+
+      <div class="phase-list">
+        <div class="phase-item">
+          <div class="phase-level">1</div>
+          <div>
+            <div class="phase-name">Aberta <span class="badge badge-green">open</span></div>
+            <div class="phase-desc">O empregador publica a missão com título, categoria, descrição e recompensa em 💎 Cristais. Os cristais da recompensa ficam em custódia até a missão ser concluída ou cancelada.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">2</div>
+          <div>
+            <div class="phase-name">Candidaturas</div>
+            <div class="phase-desc">Qualquer jogador pode candidatar-se a uma missão aberta. O empregador vê todas as candidaturas e escolhe quem vai executar a tarefa.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">3</div>
+          <div>
+            <div class="phase-name">Aguardando <span class="badge badge-gold">awaiting</span></div>
+            <div class="phase-desc">O empregador selecionou um candidato. O trabalhador tem <strong>24 horas</strong> para confirmar a seleção e depositar os seus cristais (igual à recompensa). Se não confirmar no prazo, a missão regressa a <em>Aberta</em> automaticamente.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">4</div>
+          <div>
+            <div class="phase-name">Em Andamento <span class="badge badge-raro">progress</span></div>
+            <div class="phase-desc">Ambos confirmaram. O trabalhador executa a tarefa e, ao concluir, gera um <strong>QR Code de entrega</strong> dentro do marketplace. O empregador escaneia o QR — ou introduz o token manualmente — para confirmar a entrega.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">5</div>
+          <div>
+            <div class="phase-name">Concluída <span class="badge badge-green">done</span></div>
+            <div class="phase-desc">O empregador confirmou a entrega. O trabalhador recebe <strong>95%</strong> do pot total (recompensa × 2). Os restantes <strong>5%</strong> vão para a pool P2E.</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Depósito & Pagamento</h2>
+      <p>O sistema usa um <strong>duplo depósito</strong> para garantir compromisso de ambos os lados:</p>
+      <div class="stat-block">
+        <div class="stat-block-title">Fluxo de Cristais</div>
+        <div class="stat-row"><span class="label">Empregador deposita ao publicar</span><span class="value">💎 Recompensa</span></div>
+        <div class="stat-row"><span class="label">Trabalhador deposita ao confirmar</span><span class="value">💎 Recompensa</span></div>
+        <div class="stat-row"><span class="label">Pot total em custódia</span><span class="value">💎 Recompensa × 2</span></div>
+        <div class="stat-row"><span class="label">Trabalhador recebe ao concluir</span><span class="value">💎 95% do pot</span></div>
+        <div class="stat-row"><span class="label">Taxa pool P2E</span><span class="value">💎 5% do pot</span></div>
+      </div>
+
+      <h2>Entrega por QR Code</h2>
+      <p>Quando a tarefa está pronta, o trabalhador gera um QR Code exclusivo dentro do detalhe da missão. Este QR contém um token de entrega único e não adivinhável.</p>
+      <ul>
+        <li>O empregador escaneia o QR com a câmara (leitor in-app) <strong>ou</strong> introduz o token manualmente</li>
+        <li>Após validar o token, abre o ecrã de confirmação com o resumo do pagamento</li>
+        <li>O empregador confirma e o pagamento é processado automaticamente</li>
+      </ul>
+      <div class="callout tip">
+        <strong>Dica:</strong> O botão "Copiar Token" permite enviar o código por mensagem se o empregador não estiver presente fisicamente.
+      </div>
+
+      <h2>Cancelar & Reverter</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ação</th><th>Quem pode</th><th>Estado</th><th>Reembolso</th></tr></thead>
+          <tbody>
+            <tr><td>Cancelar missão</td><td>Empregador</td><td>Aberta</td><td>Recompensa devolvida ao empregador</td></tr>
+            <tr><td>Reverter seleção</td><td>Empregador</td><td>Aguardando</td><td>Missão volta a Aberta (sem reembolso)</td></tr>
+            <tr><td>Timeout automático</td><td>Sistema</td><td>Aguardando +24h</td><td>Missão volta a Aberta automaticamente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Disputas</h2>
+      <p>Se empregador ou trabalhador não concordarem com o resultado, qualquer um dos dois pode abrir uma <strong>Disputa</strong> enquanto a missão está em andamento.</p>
+      <p>A disputa é resolvida por votação da comunidade:</p>
+      <ul>
+        <li>São necessários <strong>10 votos</strong> para encerrar a disputa</li>
+        <li>A maioria decide o vencedor (empregador ou trabalhador)</li>
+        <li>O vencedor recebe <strong>90%</strong> do pot</li>
+        <li>Os votantes partilham <strong>5%</strong> do pot entre si</li>
+        <li>Os restantes <strong>5%</strong> vão para a pool P2E</li>
+      </ul>
+
+      <div class="callout danger">
+        <strong>Atenção:</strong> Abrir uma disputa é irreversível. Usa esta opção apenas se não houver acordo — a decisão da comunidade é final.
+      </div>
+
+      <h2>Quem Pode Votar</h2>
+      <p>Para participar no tribunal de disputas precisas de reunir <strong>todos</strong> os seguintes requisitos:</p>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">✅</div>
+          <div class="card-title">MISSÕES FEITAS</div>
+          <div class="card-body">Ter concluído pelo menos <strong>3 missões</strong> como trabalhador.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">⭐</div>
+          <div class="card-title">AVALIAÇÕES</div>
+          <div class="card-body">Ter recebido pelo menos <strong>2 avaliações</strong> de empregadores.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🐉</div>
+          <div class="card-title">AVATAR RARO+</div>
+          <div class="card-body">Ter pelo menos um avatar <span class="badge badge-raro">Raro</span> ou <span class="badge badge-lend">Lendário</span> nos slots.</div>
+        </div>
+      </div>
+      <p>Votantes qualificados recebem um badge de notificação <strong>(V)</strong> quando há disputas abertas à espera de votos.</p>
+
+      <h2>Reputação</h2>
+      <p>O teu perfil de reputação é visível publicamente e acumula-se ao longo do tempo:</p>
+      <div class="stat-block">
+        <div class="stat-block-title">Métricas de Reputação</div>
+        <div class="stat-row"><span class="label">Missões publicadas</span><span class="value">Como empregador</span></div>
+        <div class="stat-row"><span class="label">Missões concluídas</span><span class="value">Como trabalhador</span></div>
+        <div class="stat-row"><span class="label">Avaliação média</span><span class="value">0–5 estrelas</span></div>
+        <div class="stat-row"><span class="label">Número de avaliações</span><span class="value">Total recebidas</span></div>
+      </div>
+
+      <h2>Categorias</h2>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon">🎨</div><div class="card-title">ARTE</div><div class="card-body">Criação de assets, ilustrações ou conteúdo visual.</div></div>
+        <div class="card"><div class="card-icon">⚔️</div><div class="card-title">GAMEPLAY</div><div class="card-body">Treino, coaching, acompanhamento em jogos.</div></div>
+        <div class="card"><div class="card-icon">🛡️</div><div class="card-title">GUILD</div><div class="card-body">Tarefas organizacionais de clã ou guild.</div></div>
+        <div class="card"><div class="card-icon">🌐</div><div class="card-title">TRADUÇÃO</div><div class="card-body">Tradução de textos, guias ou conteúdo.</div></div>
+        <div class="card"><div class="card-icon">📦</div><div class="card-title">OUTRO</div><div class="card-body">Qualquer tarefa que não se encaixe nas outras categorias.</div></div>
+      </div>
+
+    </div><!-- /c-pt -->
+    <div class="c-en">
+      <div class="section-hero">
+        <div class="section-tag">CHAPTER 10B</div>
+        <div class="section-title">Missions</div>
+        <p class="section-intro">The Missions system lets players post paid tasks and hire other players to complete them. The entire flow — from application to payment — is handled inside the Marketplace.</p>
+      </div>
+
+      <h2>How It Works</h2>
+      <p>A mission goes through several states during its lifecycle. Each transition requires an action from the employer or the worker:</p>
+
+      <div class="phase-list">
+        <div class="phase-item">
+          <div class="phase-level">1</div>
+          <div>
+            <div class="phase-name">Open <span class="badge badge-green">open</span></div>
+            <div class="phase-desc">The employer posts the mission with a title, category, description and reward in 💎 Crystals. The reward crystals are held in custody until the mission is completed or cancelled.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">2</div>
+          <div>
+            <div class="phase-name">Applications</div>
+            <div class="phase-desc">Any player can apply for an open mission. The employer reviews all applications and selects who will carry out the task.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">3</div>
+          <div>
+            <div class="phase-name">Awaiting <span class="badge badge-gold">awaiting</span></div>
+            <div class="phase-desc">The employer selected a candidate. The worker has <strong>24 hours</strong> to confirm and deposit their crystals (equal to the reward). If they don't confirm in time, the mission automatically returns to <em>Open</em>.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">4</div>
+          <div>
+            <div class="phase-name">In Progress <span class="badge badge-raro">progress</span></div>
+            <div class="phase-desc">Both parties confirmed. The worker completes the task and generates a <strong>Delivery QR Code</strong> inside the marketplace. The employer scans the QR — or enters the token manually — to confirm delivery.</div>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-level">5</div>
+          <div>
+            <div class="phase-name">Completed <span class="badge badge-green">done</span></div>
+            <div class="phase-desc">The employer confirmed delivery. The worker receives <strong>95%</strong> of the total pot (reward × 2). The remaining <strong>5%</strong> goes to the P2E pool.</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Deposit & Payment</h2>
+      <p>The system uses a <strong>double deposit</strong> to ensure commitment from both sides:</p>
+      <div class="stat-block">
+        <div class="stat-block-title">Crystal Flow</div>
+        <div class="stat-row"><span class="label">Employer deposits on publish</span><span class="value">💎 Reward</span></div>
+        <div class="stat-row"><span class="label">Worker deposits on confirm</span><span class="value">💎 Reward</span></div>
+        <div class="stat-row"><span class="label">Total pot in custody</span><span class="value">💎 Reward × 2</span></div>
+        <div class="stat-row"><span class="label">Worker receives on completion</span><span class="value">💎 95% of pot</span></div>
+        <div class="stat-row"><span class="label">P2E pool fee</span><span class="value">💎 5% of pot</span></div>
+      </div>
+
+      <h2>QR Code Delivery</h2>
+      <p>When the task is ready, the worker generates a unique QR Code from within the mission detail. This QR contains a unique, unguessable delivery token.</p>
+      <ul>
+        <li>The employer scans the QR with the camera (in-app reader) <strong>or</strong> enters the token manually</li>
+        <li>After validating the token, a confirmation screen opens showing the payment summary</li>
+        <li>The employer confirms and payment is processed automatically</li>
+      </ul>
+      <div class="callout tip">
+        <strong>Tip:</strong> The "Copy Token" button lets you send the code by message if the employer isn't physically present.
+      </div>
+
+      <h2>Cancel & Revert</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Who</th><th>State</th><th>Refund</th></tr></thead>
+          <tbody>
+            <tr><td>Cancel mission</td><td>Employer</td><td>Open</td><td>Reward returned to employer</td></tr>
+            <tr><td>Revert selection</td><td>Employer</td><td>Awaiting</td><td>Mission returns to Open (no refund)</td></tr>
+            <tr><td>Auto-timeout</td><td>System</td><td>Awaiting +24h</td><td>Mission returns to Open automatically</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Disputes</h2>
+      <p>If the employer or worker disagree on the outcome, either party can open a <strong>Dispute</strong> while the mission is in progress.</p>
+      <p>The dispute is resolved by community vote:</p>
+      <ul>
+        <li><strong>10 votes</strong> are required to close a dispute</li>
+        <li>The majority decides the winner (employer or worker)</li>
+        <li>The winner receives <strong>90%</strong> of the pot</li>
+        <li>Voters share <strong>5%</strong> of the pot among themselves</li>
+        <li>The remaining <strong>5%</strong> goes to the P2E pool</li>
+      </ul>
+
+      <div class="callout danger">
+        <strong>Warning:</strong> Opening a dispute is irreversible. Use this option only if there is no agreement — the community's decision is final.
+      </div>
+
+      <h2>Who Can Vote</h2>
+      <p>To participate in the dispute tribunal you must meet <strong>all</strong> of the following requirements:</p>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon">✅</div><div class="card-title">MISSIONS DONE</div><div class="card-body">Have completed at least <strong>3 missions</strong> as a worker.</div></div>
+        <div class="card"><div class="card-icon">⭐</div><div class="card-title">RATINGS</div><div class="card-body">Have received at least <strong>2 ratings</strong> from employers.</div></div>
+        <div class="card"><div class="card-icon">🐉</div><div class="card-title">RARE+ AVATAR</div><div class="card-body">Have at least one <span class="badge badge-raro">Rare</span> or <span class="badge badge-lend">Legendary</span> avatar in your slots.</div></div>
+      </div>
+      <p>Qualified voters receive a notification badge <strong>(V)</strong> when disputes are open and waiting for votes.</p>
+
+      <h2>Reputation</h2>
+      <p>Your reputation profile is publicly visible and accumulates over time:</p>
+      <div class="stat-block">
+        <div class="stat-block-title">Reputation Metrics</div>
+        <div class="stat-row"><span class="label">Missions published</span><span class="value">As employer</span></div>
+        <div class="stat-row"><span class="label">Missions completed</span><span class="value">As worker</span></div>
+        <div class="stat-row"><span class="label">Average rating</span><span class="value">0–5 stars</span></div>
+        <div class="stat-row"><span class="label">Number of ratings</span><span class="value">Total received</span></div>
+      </div>
+
+      <h2>Categories</h2>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon">🎨</div><div class="card-title">ART</div><div class="card-body">Asset creation, illustrations or visual content.</div></div>
+        <div class="card"><div class="card-icon">⚔️</div><div class="card-title">GAMEPLAY</div><div class="card-body">Training, coaching, game accompaniment.</div></div>
+        <div class="card"><div class="card-icon">🛡️</div><div class="card-title">GUILD</div><div class="card-body">Clan or guild organisational tasks.</div></div>
+        <div class="card"><div class="card-icon">🌐</div><div class="card-title">TRANSLATION</div><div class="card-body">Translation of texts, guides or content.</div></div>
+        <div class="card"><div class="card-icon">📦</div><div class="card-title">OTHER</div><div class="card-body">Any task that doesn't fit the other categories.</div></div>
+      </div>
+
     </div><!-- /c-en -->
     </section>
 
