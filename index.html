@@ -209,7 +209,17 @@
       el.classList.add('splash-out');
       setTimeout(()=>el.style.display='none',650);
     }
+    function navigateTo(url){
+      const ov=document.getElementById('pageTransOut');
+      if(!ov){window.location.href=url;return;}
+      ov.style.opacity='1';
+      ov.style.pointerEvents='all';
+      setTimeout(()=>window.location.href=url,420);
+    }
   </script>
+  <div id="pageTransOut" style="position:fixed;inset:0;background:#04030a;z-index:9999;opacity:0;pointer-events:none;transition:opacity .4s ease;display:flex;align-items:center;justify-content:center;">
+    <img src="/splash.webp" style="width:min(320px,70vw);animation:splashPulse 4s ease-in-out infinite;"/>
+  </div>
 
   <header>
     <div class="logo">Fractured Veil</div>
@@ -351,7 +361,7 @@
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
                 <div data-i18n="inv.crystals_cta" style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
                 <div data-i18n="inv.crystals_desc" style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
-                <a href="marketplace.html" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
+                <a href="#" onclick="navigateTo('marketplace.html');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
             </div>
           </div>

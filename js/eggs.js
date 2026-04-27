@@ -14,7 +14,8 @@ async function goToMarketplace(e) {
     clearTimeout(_saveTimeout); _saveTimeout = null;
     await saveToFirebase();
   }
-  window.location.href = 'marketplace.html';
+  if(typeof navigateTo === 'function') navigateTo('marketplace.html');
+  else window.location.href = 'marketplace.html';
 }
 
 function findTargetSlot() {
