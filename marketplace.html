@@ -544,8 +544,20 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 .miss-dispute-title{font-family:'Cinzel',serif;font-size:10px;color:var(--red2);letter-spacing:1px;margin-bottom:6px;text-align:center;}
 .miss-dispute-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;text-align:center;}
 .miss-vote-box{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.18);border-radius:10px;padding:16px;}
-.miss-vote-title{font-family:'Cinzel',serif;font-size:10px;color:var(--gem2);letter-spacing:1px;margin-bottom:4px;text-align:center;}
+.miss-vote-title{font-family:'Cinzel',serif;font-size:10px;color:var(--gem2);letter-spacing:1px;margin-bottom:10px;text-align:center;}
 .miss-vote-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:10px;}
+/* ── Provas das partes ── */
+.miss-evidences{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.miss-evidence-side{border-radius:8px;padding:10px 12px;}
+.miss-evidence-side.miss-evidence-a{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);}
+.miss-evidence-side.miss-evidence-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);}
+.miss-evidence-side.miss-evidence-b.pending{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);}
+.miss-evidence-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5px;font-weight:700;margin-bottom:5px;opacity:.8;}
+.miss-evidence-a .miss-evidence-label{color:var(--red2);}
+.miss-evidence-b .miss-evidence-label{color:var(--blue2);}
+.miss-evidence-text{font-size:9px;color:var(--text2);line-height:1.6;white-space:pre-wrap;}
+.miss-evidence-link{display:inline-block;margin-top:6px;font-size:8px;color:var(--gold);text-decoration:none;opacity:.8;}
+.miss-evidence-link:hover{opacity:1;text-decoration:underline;}
 .miss-vote-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .miss-vote-side{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
 .miss-vote-side-label{font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;}
@@ -2188,10 +2200,13 @@ async function missAbrirDisputa(missId, side) {
   document.getElementById('detActionArea').innerHTML = `
     <div class="miss-dispute-box">
       <div class="miss-dispute-title">⚠️ Abrir Disputa</div>
-      <div class="miss-dispute-sub">Descreve o motivo da disputa. A comunidade irá votar em quem tem razão.</div>
-      <textarea class="modal-input" id="disputeReason" rows="3" maxlength="300"
-        placeholder="Descreve o problema de forma objetiva..."
+      <div class="miss-dispute-sub">Apresente seu argumento. A outra parte terá 24h para responder antes dos Jurados votarem.</div>
+      <textarea class="modal-input" id="disputeReason" rows="3" maxlength="400"
+        placeholder="Descreva o problema de forma objetiva..."
         style="resize:vertical;min-height:72px;margin-bottom:8px;"></textarea>
+      <input class="modal-input" id="disputeEvidence" type="url" maxlength="500"
+        placeholder="🔗 Link de prova — opcional (Imgur, Drive, etc.)"
+        style="margin-bottom:8px;" />
       <div id="disputeStatus" style="font-size:9px;color:var(--red2);min-height:14px;margin-bottom:8px;"></div>
       <div style="display:flex;gap:8px;">
         <button class="btn-modal-cancel" style="flex:1;" onclick="missOpenDetail('${missId}')">Voltar</button>
@@ -2201,25 +2216,32 @@ async function missAbrirDisputa(missId, side) {
 }
 
 async function _missSubmitDisputa(missId, side) {
-  const reason = (document.getElementById('disputeReason')?.value || '').trim();
-  const status = document.getElementById('disputeStatus');
+  const reason     = (document.getElementById('disputeReason')?.value || '').trim();
+  const evRaw      = (document.getElementById('disputeEvidence')?.value || '').trim();
+  const evidenceA  = (evRaw.startsWith('http://') || evRaw.startsWith('https://')) ? evRaw : null;
+  const status     = document.getElementById('disputeStatus');
   if(!reason) { status.textContent = 'Descreva o motivo da disputa.'; return; }
   const btn = document.querySelector('#detActionArea .btn-miss-danger');
   if(btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
   try {
     const _missSnap = await db.collection('missoes').doc(missId).get();
     const _m = _missSnap.data() || {};
+    const deadline = new Date(Date.now() + 24 * 3600 * 1000);
     await db.collection('missoes').doc(missId).update({
       status: 'dispute',
       disputeBy: side,
       disputeReason: reason,
+      disputeEvidenceA: evidenceA,
       disputeAt: firebase.firestore.FieldValue.serverTimestamp(),
+      disputeResponseDeadline: firebase.firestore.Timestamp.fromDate(deadline),
+      disputeVotingOpen: false,
       votesEmployer: 0,
-      votesWorker: 0
+      votesWorker: 0,
     });
-    _missPostDisputaForum(missId, _m, reason, side);
+    const threadId = await _missPostDisputaForum(missId, _m, reason, side, evidenceA);
+    if(threadId) await db.collection('missoes').doc(missId).update({ disputeThreadId: threadId });
     closeMissDetalhe();
-    showToast('⚠️ Disputa aberta. Os Jurados serão notificados.');
+    showToast('⚠️ Disputa aberta. A outra parte tem 24h para responder.');
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     if(btn) { btn.disabled = false; btn.textContent = 'Submeter Disputa'; }
@@ -2227,53 +2249,171 @@ async function _missSubmitDisputa(missId, side) {
   }
 }
 
-function _missPostDisputaForum(missId, m, reason, side) {
-  const _sideLabel  = side === 'employer' ? '👔 Empregador' : '📦 Entregador';
-  const _pot        = fmtC((m.reward || 0) * 2);
-  const _cat        = (_MISS_CAT_ICONS[m.category] || '📦') + ' ' + (m.category || '—');
-  fetch(_DW_JURI, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      thread_name: `⚖️ ${m.title || 'Disputa'} — ${new Date().toLocaleDateString('pt-BR')}`,
-      embeds: [{
-        title: `⚠️ Nova Disputa Aberta`,
-        color: 0xef4444,
-        description: `**Missão:** ${m.title || '—'}\n**Categoria:** ${_cat}\n\n**Motivo da disputa:**\n> ${reason}`,
-        fields: [
-          { name: '⚖️ Aberta por',      value: _sideLabel,         inline: true },
-          { name: '💎 Em jogo',          value: `${_pot} cristais`, inline: true },
-          { name: '🗳️ Votos necessários', value: '5 no total',       inline: true },
-          { name: '📋 ID da Missão',     value: `\`${missId}\``,    inline: false },
-          { name: '🗺️ Como votar',       value: 'Marketplace → Missões → filtro **⚖️ Disputas** → abra a missão e vote', inline: false },
-        ],
-        footer: { text: 'Discuta aqui antes de votar • Vote no jogo' },
-        timestamp: new Date().toISOString(),
-      }],
-    }),
-  }).catch(() => {});
+async function _missPostDisputaForum(missId, m, reason, side, evidenceA) {
+  const _sideLabel = side === 'employer' ? '👔 Empregador' : '📦 Entregador';
+  const _pot       = fmtC((m.reward || 0) * 2);
+  const _cat       = (_MISS_CAT_ICONS[m.category] || '📦') + ' ' + (m.category || '—');
+  const _evField   = evidenceA ? [{ name: '🔗 Prova apresentada', value: evidenceA, inline: false }] : [];
+  try {
+    const r = await fetch(_DW_JURI, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        thread_name: `⚖️ ${m.title || 'Disputa'} — ${new Date().toLocaleDateString('pt-BR')}`,
+        embeds: [{
+          title: `⚠️ ${_sideLabel} abriu uma disputa`,
+          color: 0xef4444,
+          description: `**Missão:** ${m.title || '—'}\n**Categoria:** ${_cat}\n\n**Argumento:**\n> ${reason}`,
+          fields: [
+            ..._evField,
+            { name: '💎 Em jogo',         value: `${_pot} cristais`, inline: true },
+            { name: '⏳ Prazo resposta',   value: '24 horas',         inline: true },
+            { name: '🗳️ Votos',            value: '5 (após resposta)',  inline: true },
+            { name: '📋 ID da Missão',     value: `\`${missId}\``,    inline: false },
+            { name: '🗺️ Como votar',       value: 'Marketplace → Missões → **⚖️ Disputas**', inline: false },
+          ],
+          footer: { text: 'A outra parte tem 24h para responder • Discuta aqui antes de votar' },
+          timestamp: new Date().toISOString(),
+        }],
+      }),
+    });
+    if(r.ok) { const d = await r.json(); return d.id || null; }
+  } catch(e) {}
+  return null;
+}
+
+async function _missResponderDisputa(missId) {
+  const response  = (document.getElementById('disputeResponse')?.value || '').trim();
+  const evRaw     = (document.getElementById('disputeEvidenceB')?.value || '').trim();
+  const evidenceB = (evRaw.startsWith('http://') || evRaw.startsWith('https://')) ? evRaw : null;
+  const statusEl  = document.getElementById('responseStatus');
+  if(!response) { if(statusEl) statusEl.textContent = 'Descreva sua resposta.'; return; }
+  const btn = document.querySelector('#detActionArea .btn-miss-respond');
+  if(btn) btn.disabled = true;
+  try {
+    const _missSnap = await db.collection('missoes').doc(missId).get();
+    const _m = _missSnap.data() || {};
+    await db.collection('missoes').doc(missId).update({
+      disputeResponseB: response,
+      disputeEvidenceB: evidenceB,
+      disputeRespondedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      disputeVotingOpen: true,
+    });
+    if(_m.disputeThreadId) {
+      const _partyBLabel = _m.disputeBy === 'employer' ? '📦 Entregador' : '👔 Empregador';
+      const _evField = evidenceB ? [{ name: '🔗 Prova', value: evidenceB, inline: false }] : [];
+      fetch(`${_DW_JURI}?thread_id=${_m.disputeThreadId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [{
+            title: `📨 ${_partyBLabel} respondeu à disputa`,
+            color: 0x3b82f6,
+            description: `**Resposta:**\n> ${response}`,
+            fields: [
+              ..._evField,
+              { name: '✅ Votação', value: 'Aberta — Jurados podem votar agora', inline: false },
+            ],
+            footer: { text: 'Acesse o Marketplace → Missões → ⚖️ Disputas para votar' },
+            timestamp: new Date().toISOString(),
+          }],
+        }),
+      }).catch(() => {});
+    }
+    closeMissDetalhe();
+    showToast('✅ Resposta enviada. Votação liberada para os Jurados!');
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    if(btn) btn.disabled = false;
+    if(statusEl) statusEl.textContent = 'Erro ao enviar. Tente novamente.';
+  }
 }
 
 async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
+  // Quem é parte A (abriu) e parte B (responde)
+  const partyAIsEmp = m.disputeBy === 'employer';
+  const partyALabel = partyAIsEmp ? '👔 Empregador' : '📦 Entregador';
+  const partyBLabel = partyAIsEmp ? '📦 Entregador' : '👔 Empregador';
+  const isPartyA    = partyAIsEmp ? isEmployer : isSelectedWorker;
+  const isPartyB    = partyAIsEmp ? isSelectedWorker : isEmployer;
+  const isParty     = isPartyA || isPartyB;
+
+  // Verificar deadline (24h) — abre votação automaticamente se passou
+  let votingOpen = m.disputeVotingOpen === true;
+  if(!votingOpen) {
+    const deadline = m.disputeResponseDeadline?.toDate?.();
+    if(deadline && Date.now() > deadline.getTime()) {
+      db.collection('missoes').doc(id).update({ disputeVotingOpen: true }).catch(() => {});
+      votingOpen = true;
+    }
+  }
+
+  // Horas restantes para resposta
+  const deadline    = m.disputeResponseDeadline?.toDate?.();
+  const horasLeft   = deadline ? Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 3600000)) : null;
+  const hasResponse = !!m.disputeResponseB;
+
+  // Seção parte A
+  const secA = `
+    <div class="miss-evidence-side miss-evidence-a">
+      <div class="miss-evidence-label">${partyALabel} — argumento</div>
+      <div class="miss-evidence-text">${m.disputeReason || '—'}</div>
+      ${m.disputeEvidenceA ? `<a class="miss-evidence-link" href="${m.disputeEvidenceA}" target="_blank" rel="noopener">🔗 Ver prova</a>` : ''}
+    </div>`;
+
+  // Seção parte B
+  let secB = '';
+  if(hasResponse) {
+    secB = `
+      <div class="miss-evidence-side miss-evidence-b">
+        <div class="miss-evidence-label">${partyBLabel} — resposta</div>
+        <div class="miss-evidence-text">${m.disputeResponseB}</div>
+        ${m.disputeEvidenceB ? `<a class="miss-evidence-link" href="${m.disputeEvidenceB}" target="_blank" rel="noopener">🔗 Ver prova</a>` : ''}
+      </div>`;
+  } else if(isPartyB && !votingOpen) {
+    secB = `
+      <div class="miss-evidence-side miss-evidence-b pending">
+        <div class="miss-evidence-label">${partyBLabel} — sua vez de responder</div>
+        <textarea class="modal-input" id="disputeResponse" rows="3" maxlength="400"
+          placeholder="Apresente sua versão dos fatos..."
+          style="resize:vertical;min-height:72px;margin:8px 0;"></textarea>
+        <input class="modal-input" id="disputeEvidenceB" type="url" maxlength="500"
+          placeholder="🔗 Link de prova — opcional (Imgur, Drive, etc.)"
+          style="margin-bottom:8px;" />
+        <div id="responseStatus" style="font-size:9px;color:var(--red2);min-height:12px;margin-bottom:4px;"></div>
+        <button class="btn-miss-action btn-miss-respond" onclick="_missResponderDisputa('${id}')" style="width:100%;">📨 Enviar Resposta</button>
+      </div>`;
+  } else if(!votingOpen) {
+    secB = `
+      <div class="miss-evidence-side miss-evidence-b pending">
+        <div class="miss-evidence-label">${partyBLabel} — aguardando resposta</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:6px;">⏳ ${horasLeft !== null ? `${horasLeft}h restantes para responder.` : 'Prazo em apuração.'}</div>
+      </div>`;
+  }
+
+  // Seção de votação
   const vEmployer = m.votesEmployer || 0;
   const vWorker   = m.votesWorker   || 0;
   const total     = vEmployer + vWorker;
   const pct       = total > 0 ? Math.round((vEmployer / total) * 100) : 50;
-  const eAddr     = m.employer      ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
+  const eAddr     = m.employer       ? m.employer.slice(0,6)+'...'+m.employer.slice(-4) : '—';
   const wAddr     = m.selectedWorker ? m.selectedWorker.slice(0,6)+'...'+m.selectedWorker.slice(-4) : '—';
 
   let voteBtns = '';
-  const isParty = isEmployer || isSelectedWorker;
-  if(!isParty && walletAddress) {
-    const voteSnap = await db.collection('missoes').doc(id).collection('votos').doc(walletAddress).get();
-    const repSnap  = await db.collection('players').doc(walletAddress).get();
+  if(!votingOpen) {
+    voteBtns = `<div class="miss-voted-msg">🔒 Votação abre após a resposta da outra parte${horasLeft !== null ? ` ou em ${horasLeft}h` : ''}.</div>`;
+  } else if(!isParty && walletAddress) {
+    const [voteSnap, repSnap] = await Promise.all([
+      db.collection('missoes').doc(id).collection('votos').doc(walletAddress).get(),
+      db.collection('players').doc(walletAddress).get(),
+    ]);
     const isJurado = repSnap.data()?.gs?.jurado === true;
     if(voteSnap.exists) {
-      voteBtns = `<div class="miss-voted-msg">✅ Já votou nesta disputa.</div>`;
+      voteBtns = `<div class="miss-voted-msg">✅ Você já votou nesta disputa.</div>`;
     } else if(!isJurado) {
       voteBtns = `<div class="miss-voted-msg">Apenas ⚖️ Jurados podem votar em disputas.</div>`;
     } else {
-      const voterEst = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 10);
+      const voterEst    = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 5);
       const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${fmtC(voterEst)} por voto` : '';
       voteBtns = `
         <div style="font-size:9px;color:var(--gold);text-align:center;margin-bottom:8px;opacity:.8;">
@@ -2285,25 +2425,28 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
         </div>`;
     }
   } else if(isParty) {
-    voteBtns = `<div class="miss-voted-msg">Não podes votar na tua própria disputa.</div>`;
+    voteBtns = `<div class="miss-voted-msg">Você é parte desta disputa e não pode votar.</div>`;
   }
+
+  const voteSection = votingOpen ? `
+    <div class="miss-vote-sides" style="margin-top:12px;">
+      <div class="miss-vote-side">
+        <div class="miss-vote-side-label">🏛️ Empregador<br><span style="font-family:monospace;font-size:7px;">${eAddr}</span></div>
+        <div class="miss-vote-side-count">${vEmployer}</div>
+      </div>
+      <div class="miss-vote-side">
+        <div class="miss-vote-side-label">⚔️ Trabalhador<br><span style="font-family:monospace;font-size:7px;">${wAddr}</span></div>
+        <div class="miss-vote-side-count">${vWorker}</div>
+      </div>
+    </div>
+    <div class="miss-vote-progress"><div class="miss-vote-bar" style="width:${pct}%;"></div></div>
+    <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/5 votos · Maioria decide</div>` : '';
 
   document.getElementById('detActionArea').innerHTML = `
     <div class="miss-vote-box">
-      <div class="miss-vote-title">⚖️ Disputa em Curso</div>
-      <div class="miss-vote-sub">Motivo: "${m.disputeReason || '—'}"</div>
-      <div class="miss-vote-sides">
-        <div class="miss-vote-side">
-          <div class="miss-vote-side-label">🏛️ Empregador<br><span style="font-family:monospace;font-size:7px;">${eAddr}</span></div>
-          <div class="miss-vote-side-count">${vEmployer}</div>
-        </div>
-        <div class="miss-vote-side">
-          <div class="miss-vote-side-label">⚔️ Trabalhador<br><span style="font-family:monospace;font-size:7px;">${wAddr}</span></div>
-          <div class="miss-vote-side-count">${vWorker}</div>
-        </div>
-      </div>
-      <div class="miss-vote-progress"><div class="miss-vote-bar" style="width:${pct}%;"></div></div>
-      <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/5 votos · Maioria decide</div>
+      <div class="miss-vote-title">⚖️ Disputa em Andamento</div>
+      <div class="miss-evidences">${secA}${secB}</div>
+      ${voteSection}
       ${voteBtns}
     </div>`;
 }
@@ -2326,7 +2469,7 @@ async function missVotar(missId, side, reward) {
     });
     const freshSnap = await mRef.get();
     const m = freshSnap.data();
-    if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 10) {
+    if((m.votesEmployer || 0) + (m.votesWorker || 0) >= 5) {
       const idToken = await firebase.auth().currentUser.getIdToken();
       const resp    = await fetch('/api/missoes', {
         method: 'POST',
