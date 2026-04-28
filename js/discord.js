@@ -4,7 +4,11 @@
 const _DW_SHARE = 'https://discord.com/api/webhooks/1498526206650486835/2bAZaPB41KyojNWEiqUEc1mIRPY45xEve4I9-Z2Failfys5_9wbGsZgyP6MeAbwRAmSk';
 const _DW_AUDIT = 'https://discord.com/api/webhooks/1498526631529287762/6VXpQzefSApqrrI0Qv4bS9vvWzPQ5ChfOjTQKOYfdU_dat5CPzv91tsE62VTO_4DIVjQ';
 
-const _RARITY_HEX = { 'Comum': '#9ca3af', 'Raro': '#818cf8', 'Lendário': '#f59e0b' };
+const _RARITY_THEME = {
+  'Comum':   { accent: '#9ca3af', border: 'rgba(156,163,175,.6)', innerBorder: 'rgba(156,163,175,.2)', bg0: '#0d0d0f', bg1: '#04030a', glow: 'rgba(156,163,175,.07)' },
+  'Raro':    { accent: '#818cf8', border: 'rgba(129,140,248,.7)', innerBorder: 'rgba(129,140,248,.2)', bg0: '#0c0b1e', bg1: '#04030a', glow: 'rgba(129,140,248,.09)' },
+  'Lendário':{ accent: '#f59e0b', border: 'rgba(245,158,11,.75)', innerBorder: 'rgba(245,158,11,.25)', bg0: '#110e04', bg1: '#04030a', glow: 'rgba(245,158,11,.10)' },
+};
 
 // ── Compartilhar card do avatar ─────────────────────────────────────
 async function shareAvatarCard() {
@@ -22,34 +26,43 @@ async function shareAvatarCard() {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
+  const theme = _RARITY_THEME[avatar.raridade] || _RARITY_THEME['Comum'];
+
   // Background
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#0f0c1e');
-  bg.addColorStop(1, '#04030a');
+  bg.addColorStop(0, theme.bg0);
+  bg.addColorStop(1, theme.bg1);
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
+  // Glow radial no topo (sutil)
+  const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, H * 0.6);
+  glow.addColorStop(0, theme.glow);
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
   // Outer border
-  ctx.strokeStyle = '#c9a84c';
+  ctx.strokeStyle = theme.border;
   ctx.lineWidth = 2;
   _roundRect(ctx, 14, 14, W - 28, H - 28, 10);
   ctx.stroke();
 
   // Inner border
-  ctx.strokeStyle = 'rgba(201,168,76,0.25)';
+  ctx.strokeStyle = theme.innerBorder;
   ctx.lineWidth = 1;
   _roundRect(ctx, 20, 20, W - 40, H - 40, 8);
   ctx.stroke();
 
   // Title
   await document.fonts.ready;
-  ctx.fillStyle = '#c9a84c';
+  ctx.fillStyle = theme.accent;
   ctx.font = 'bold 12px Cinzel, serif';
   ctx.textAlign = 'center';
   ctx.letterSpacing = '4px';
   ctx.fillText('✦  FRACTURED VEIL  ✦', W / 2, 52);
 
-  ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+  ctx.strokeStyle = theme.innerBorder;
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(50, 62); ctx.lineTo(W - 50, 62); ctx.stroke();
 
@@ -58,7 +71,7 @@ async function shareAvatarCard() {
   await _svgToCanvas(ctx, svgStr, 140, 70, 200, 200);
 
   // Rarity strip
-  const rarCol = _RARITY_HEX[avatar.raridade] || '#9ca3af';
+  const rarCol = theme.accent;
   ctx.fillStyle = rarCol + '66';
   ctx.fillRect(50, 288, W - 100, 3);
 
@@ -71,7 +84,7 @@ async function shareAvatarCard() {
   ctx.fillText(_nome.toUpperCase(), W / 2, 334);
 
   // Rarity · Element
-  ctx.fillStyle = rarCol;
+  ctx.fillStyle = theme.accent;
   ctx.font = '12px Cinzel, serif';
   ctx.letterSpacing = '2px';
   ctx.fillText(`◆ ${(avatar.raridade || '').toUpperCase()}  ·  ${(avatar.elemento || '').toUpperCase()}`, W / 2, 360);
@@ -108,7 +121,7 @@ async function shareAvatarCard() {
   });
 
   // Footer
-  ctx.strokeStyle = 'rgba(201,168,76,0.2)';
+  ctx.strokeStyle = theme.innerBorder;
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(50, 545); ctx.lineTo(W - 50, 545); ctx.stroke();
   ctx.fillStyle = '#374151';
