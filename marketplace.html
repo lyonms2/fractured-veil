@@ -2054,7 +2054,7 @@ async function confirmPublicarMissao() {
 
   if(!title)       { status.textContent = 'Título obrigatório.'; return; }
   if(!desc)        { status.textContent = 'Descrição obrigatória.'; return; }
-  if(reward < 1)   { status.textContent = 'Recompensa mínima: 1 💎.'; return; }
+  if(reward < 10)  { status.textContent = 'Recompensa mínima: 10 💎.'; return; }
   if(deadline < 1) { status.textContent = 'Prazo mínimo: 1 dia.'; return; }
 
   const cristais = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
@@ -2810,7 +2810,7 @@ function _missHandleQRResult(raw, missId, reward) {
       </div>
       <div class="modal-field">
         <div class="modal-label">Recompensa (💎 Cristais)</div>
-        <input class="modal-input" id="missReward" type="number" min="1" placeholder="ex: 20" oninput="const _v=parseInt(this.value)||0; document.getElementById('missEscrowAmt').textContent=_v; document.getElementById('missWorkerAmt').textContent=_v?(_v*2-Math.floor(_v*2*MISS_FEE_RATE)):'—';"/>
+        <input class="modal-input" id="missReward" type="number" min="10" placeholder="mín. 10 💎" oninput="const _v=parseInt(this.value)||0; document.getElementById('missEscrowAmt').textContent=_v; document.getElementById('missWorkerAmt').textContent=_v?(_v*2-Math.floor(_v*2*MISS_FEE_RATE)):'—';"/>
       </div>
     </div>
 
