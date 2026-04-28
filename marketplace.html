@@ -1371,9 +1371,10 @@ let _missCurrentId = null;
 let _missLastDoc   = null;
 let _missSearchQuery = '';
 const MISS_PAGE             = 12;
-const MISS_FEE_RATE         = 0.05; // 5% sobre o pot ao concluir
-const MISS_DISPUTE_FEE_RATE = 0.10; // 10% sobre o pot ao resolver disputa
-const MISS_AWAITING_TIMEOUT_H = 24; // horas para worker confirmar antes da missão reabrir
+const MISS_FEE_RATE           = 0.05;
+const MISS_DISPUTE_FEE_RATE   = 0.10;
+const MISS_AWAITING_TIMEOUT_H = 24;
+const _DW_JURI = 'https://discord.com/api/webhooks/1498546063592652970/IsBVlUJGPo1OSvdCxUtSbK5ZmsKnFbmf7KADLR5VCfOlBMmaffYY53eIG2eNUQ3kD0W0';
 const _MISS_CAT_ICONS = { entregador:'📦', servico:'🔧', arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
 
@@ -2202,10 +2203,12 @@ async function missAbrirDisputa(missId, side) {
 async function _missSubmitDisputa(missId, side) {
   const reason = (document.getElementById('disputeReason')?.value || '').trim();
   const status = document.getElementById('disputeStatus');
-  if(!reason) { status.textContent = 'Descreve o motivo da disputa.'; return; }
+  if(!reason) { status.textContent = 'Descreva o motivo da disputa.'; return; }
   const btn = document.querySelector('#detActionArea .btn-miss-danger');
-  if(btn) { btn.disabled = true; btn.textContent = 'A submeter...'; }
+  if(btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
   try {
+    const _missSnap = await db.collection('missoes').doc(missId).get();
+    const _m = _missSnap.data() || {};
     await db.collection('missoes').doc(missId).update({
       status: 'dispute',
       disputeBy: side,
@@ -2214,13 +2217,41 @@ async function _missSubmitDisputa(missId, side) {
       votesEmployer: 0,
       votesWorker: 0
     });
+    _missPostDisputaForum(missId, _m, reason, side);
     closeMissDetalhe();
-    showToast('⚠️ Disputa aberta. A comunidade irá votar.');
+    showToast('⚠️ Disputa aberta. Os Jurados serão notificados.');
     if(currentSection === 'missoes') renderMissoes();
   } catch(e) {
     if(btn) { btn.disabled = false; btn.textContent = 'Submeter Disputa'; }
-    if(status) status.textContent = 'Erro ao submeter. Tenta novamente.';
+    if(status) status.textContent = 'Erro ao submeter. Tente novamente.';
   }
+}
+
+function _missPostDisputaForum(missId, m, reason, side) {
+  const _sideLabel  = side === 'employer' ? '👔 Empregador' : '📦 Entregador';
+  const _pot        = fmtC((m.reward || 0) * 2);
+  const _cat        = (_MISS_CAT_ICONS[m.category] || '📦') + ' ' + (m.category || '—');
+  fetch(_DW_JURI, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      thread_name: `⚖️ ${m.title || 'Disputa'} — ${new Date().toLocaleDateString('pt-BR')}`,
+      embeds: [{
+        title: `⚠️ Nova Disputa Aberta`,
+        color: 0xef4444,
+        description: `**Missão:** ${m.title || '—'}\n**Categoria:** ${_cat}\n\n**Motivo da disputa:**\n> ${reason}`,
+        fields: [
+          { name: '⚖️ Aberta por',      value: _sideLabel,         inline: true },
+          { name: '💎 Em jogo',          value: `${_pot} cristais`, inline: true },
+          { name: '🗳️ Votos necessários', value: '5 no total',       inline: true },
+          { name: '📋 ID da Missão',     value: `\`${missId}\``,    inline: false },
+          { name: '🗺️ Como votar',       value: 'Marketplace → Missões → filtro **⚖️ Disputas** → abra a missão e vote', inline: false },
+        ],
+        footer: { text: 'Discuta aqui antes de votar • Vote no jogo' },
+        timestamp: new Date().toISOString(),
+      }],
+    }),
+  }).catch(() => {});
 }
 
 async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
