@@ -13,7 +13,7 @@ async function shareAvatarCard() {
   const _cooldownKey = 'fv_last_share';
   const _last = parseInt(localStorage.getItem(_cooldownKey) || '0');
   if (Date.now() - _last < 3600000) {
-    showBubble('Partilhaste recentemente! Tenta daqui a 1 hora. 🕐');
+    showBubble('Você já compartilhou recentemente! Tente daqui a 1 hora. 🕐');
     return;
   }
 
@@ -121,20 +121,20 @@ async function shareAvatarCard() {
     const form = new FormData();
     form.append('file', blob, 'avatar-card.png');
     form.append('payload_json', JSON.stringify({
-      content: `**${_nome}** surge das dimensões! 🌑\n*${avatar.raridade} · ${avatar.elemento} · Nível ${nivel}*`,
+      content: `**${_nome}** surge das dimensões! 🌑\n*${avatar.raridade} · ${avatar.elemento} · Nível ${nivel}*\n*Compartilhado por um jogador de Fractured Veil*`,
       username: 'Fractured Veil',
     }));
     try {
       const r = await fetch(_DW_SHARE, { method: 'POST', body: form });
       if (r.ok) {
         localStorage.setItem(_cooldownKey, Date.now().toString());
-        showBubble('Card partilhado no Discord! 🎉');
-        addLog('Avatar partilhado na comunidade Discord!', 'good');
+        showBubble('Card compartilhado no Discord! 🎉');
+        addLog('Avatar compartilhado na comunidade Discord!', 'good');
       } else {
-        showBubble('Erro ao partilhar. Tenta novamente.');
+        showBubble('Erro ao compartilhar. Tente novamente.');
       }
     } catch (e) {
-      showBubble('Sem ligação para partilhar.');
+      showBubble('Sem conexão para compartilhar.');
     }
   }, 'image/png');
 }
