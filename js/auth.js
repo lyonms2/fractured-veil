@@ -250,6 +250,7 @@ async function _onLoginSuccess(user) {
       if(remote && remote !== _sessionId) {
         addLog('⚠️ Sessão iniciada noutro dispositivo. A encerrar...', 'bad');
         if(typeof showBubble === 'function') showBubble(t('bubble.session_ended'));
+        if(typeof discordAudit === 'function') discordAudit('🔴 Sessão Duplicada Detectada', [['UID', walletAddress], ['Hora', new Date().toLocaleString('pt-BR')]], 0xef4444);
         setTimeout(disconnectWallet, 1500);
       }
     });
@@ -358,7 +359,9 @@ async function _onLoginSuccess(user) {
           dead = true;
           saveRuntimeToSlot(activeSlotIdx); // flush dead:true no slot antes de salvar
           saveToFirebase();                 // persiste imediatamente — sem isto o avatar volta ao refrescar
-          addLog(t('log.died_offline', { name: avatar ? avatar.nome.split(',')[0] : 'Avatar' }), 'bad');
+          const _dnome = avatar ? avatar.nome.split(',')[0] : 'Avatar';
+          addLog(t('log.died_offline', { name: _dnome }), 'bad');
+          if(typeof discordAudit === 'function') discordAudit('💀 Avatar Morreu Offline', [['UID', walletAddress], ['Avatar', _dnome], ['Nível', nivel], ['Tempo vivo', `${Math.floor(totalSecs/3600)}h ${Math.floor((totalSecs%3600)/60)}min`]], 0x7c3aed);
         }
       }
     }

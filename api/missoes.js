@@ -17,6 +17,20 @@ const { getAuth }                      = require('firebase-admin/auth');
 
 const MISS_FEE_RATE         = 0.05;
 const MISS_DISPUTE_FEE_RATE = 0.10;
+const _AUDIT_WH = 'https://discord.com/api/webhooks/1498526631529287762/6VXpQzefSApqrrI0Qv4bS9vvWzPQ5ChfOjTQKOYfdU_dat5CPzv91tsE62VTO_4DIVjQ';
+
+async function _sendAudit(title, fields, color = 0x7c3aed) {
+  try {
+    await fetch(_AUDIT_WH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'FV Audit',
+        embeds: [{ title, color, fields: fields.map(([name, value]) => ({ name, value: String(value), inline: true })), timestamp: new Date().toISOString() }],
+      }),
+    });
+  } catch (e) {}
+}
 
 function initAdmin() {
   if (!getApps().length) {
@@ -97,6 +111,7 @@ async function handleFinalizar(res, db, uid, missId) {
       tx.set(logRef, { tipo: 'entrada', motivo: 'Missão concluída — taxa 5%', origem: m.selectedWorker, total: fee, pool: fee, ts: FieldValue.serverTimestamp() });
       return { workerAmt, fee, worker: m.selectedWorker };
     });
+    _sendAudit('✅ Missão Concluída', [['Missão', missId], ['Empregador', m.employer], ['Worker', m.selectedWorker], ['Pago (💎)', result.workerAmt], ['Taxa pool (💎)', result.fee]], 0x10b981);
     return res.status(200).json({ ok: true, ...result });
   } catch (err) {
     if (err.code === 'stale') return res.status(409).json({ erro: err.message });
@@ -155,6 +170,7 @@ async function handleResolver(res, db, uid, missId) {
       tx.set(logRef, { tipo: 'entrada', motivo: 'Disputa de missão resolvida — taxa 10%', origem: winner, total: poolFinal, pool: poolFinal, ts: FieldValue.serverTimestamp() });
       return { winner, winnerAmt, voterAmt, voterCount: voterUids.length };
     });
+    _sendAudit('⚖️ Disputa Resolvida', [['Missão', missId], ['Vencedor', result.winner], ['Valor ganho (💎)', result.winnerAmt], ['Votantes', result.voterCount], ['Por votante (💎)', result.voterAmt]], 0xf59e0b);
     return res.status(200).json({ ok: true, ...result });
   } catch (err) {
     if (err.code === 'already_done') return res.status(409).json({ erro: 'Disputa já resolvida' });
