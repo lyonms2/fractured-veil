@@ -320,6 +320,8 @@
 .badge-Comum    { color:var(--comum);   border-color:var(--comum);   background:rgba(122,184,122,.08); }
 .badge-Raro     { color:var(--raro);    border-color:var(--raro);    background:rgba(90,180,232,.08); }
 .badge-Lendário { color:var(--lendario);border-color:var(--lendario);background:rgba(232,160,48,.1); }
+#idBadgesRow .badge,
+#idBadgesRow .ccm-badge { margin:0; vertical-align:middle; }
 
 /* timer */
 .timer-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding:6px 10px; background:#060610; border:1px solid var(--border); border-radius:6px; font-family:'Cinzel',serif; font-size:8px; color:var(--muted); }
