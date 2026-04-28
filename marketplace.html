@@ -1373,10 +1373,7 @@ let _missSearchQuery = '';
 const MISS_PAGE             = 12;
 const MISS_FEE_RATE         = 0.05; // 5% sobre o pot ao concluir
 const MISS_DISPUTE_FEE_RATE = 0.10; // 10% sobre o pot ao resolver disputa
-const MISS_VOTE_REQ_DONE      = 3;  // mínimo de missões concluídas para votar
-const MISS_VOTE_REQ_RATINGS   = 2;  // mínimo de avaliações recebidas para votar
 const MISS_AWAITING_TIMEOUT_H = 24; // horas para worker confirmar antes da missão reabrir
-// requer avatar Raro ou Lendário no inventário
 const _MISS_CAT_ICONS = { entregador:'📦', servico:'🔧', arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
 
@@ -2239,17 +2236,11 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
   if(!isParty && walletAddress) {
     const voteSnap = await db.collection('missoes').doc(id).collection('votos').doc(walletAddress).get();
     const repSnap  = await db.collection('players').doc(walletAddress).get();
-    const repDone  = repSnap.data()?.gs?.rep?.done || 0;
-    const repScoreCount = repSnap.data()?.gs?.rep?.scoreCount || 0;
-    const hasAvatar     = _missHasQualAvatar();
+    const isJurado = repSnap.data()?.gs?.jurado === true;
     if(voteSnap.exists) {
-      voteBtns = `<div class="miss-voted-msg">✅ Já votaste nesta disputa.</div>`;
-    } else if(repDone < MISS_VOTE_REQ_DONE || repScoreCount < MISS_VOTE_REQ_RATINGS || !hasAvatar) {
-      const missing = [];
-      if(repDone < MISS_VOTE_REQ_DONE)       missing.push(`${MISS_VOTE_REQ_DONE} missões concluídas`);
-      if(repScoreCount < MISS_VOTE_REQ_RATINGS) missing.push(`${MISS_VOTE_REQ_RATINGS} avaliações recebidas`);
-      if(!hasAvatar)                          missing.push('avatar Raro ou Lendário');
-      voteBtns = `<div class="miss-voted-msg">Requisitos em falta: ${missing.join(' · ')}.</div>`;
+      voteBtns = `<div class="miss-voted-msg">✅ Já votou nesta disputa.</div>`;
+    } else if(!isJurado) {
+      voteBtns = `<div class="miss-voted-msg">Apenas ⚖️ Jurados podem votar em disputas.</div>`;
     } else {
       const voterEst = Math.floor(m.reward * 2 * MISS_DISPUTE_FEE_RATE / 2 / 10);
       const voterEstTxt = voterEst > 0 ? ` · estimativa: 💎 ${fmtC(voterEst)} por voto` : '';
@@ -2281,7 +2272,7 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
         </div>
       </div>
       <div class="miss-vote-progress"><div class="miss-vote-bar" style="width:${pct}%;"></div></div>
-      <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/10 votos · Maioria decide</div>
+      <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/5 votos · Maioria decide</div>
       ${voteBtns}
     </div>`;
 }
@@ -2341,11 +2332,7 @@ function _missHasQualAvatar() {
 async function missCheckBadge() {
   if(!walletAddress) return;
   try {
-    const rep          = playerData?.gs?.rep || null;
-    const done         = rep?.done         || 0;
-    const scoreCount   = rep?.scoreCount   || 0;
-    const hasAvatar    = _missHasQualAvatar();
-    const isQualified  = done >= MISS_VOTE_REQ_DONE && scoreCount >= MISS_VOTE_REQ_RATINGS && hasAvatar;
+    const isQualified  = playerData?.gs?.jurado === true;
 
     const queries = [
       db.collection('missoes').where('selectedWorker','==',walletAddress).where('status','==','awaiting').limit(9).get(),
@@ -2370,7 +2357,7 @@ async function missCheckBadge() {
 
     const count = awaitingSnap.size + myDisputeSnap.size + votableDisputes.length;
     _missUpdateBadge(count);
-    _missUpdateVoterStatus(done, scoreCount, hasAvatar, isQualified);
+    _missUpdateVoterStatus(isQualified);
     _missUpdateDisputeBanner(votableDisputes.length);
   } catch(e) {}
 }
@@ -2384,45 +2371,25 @@ function _missUpdateBadge(count) {
   });
 }
 
-function _missUpdateVoterStatus(done, scoreCount, hasAvatar, isQualified) {
+function _missUpdateVoterStatus(isQualified) {
   const el = document.getElementById('missVoterStatus');
   if(!el || !walletAddress) return;
+  el.style.display = '';
   if(isQualified) {
-    el.style.display = '';
     el.innerHTML = `
       <div class="miss-voter-status qualified">
         <div class="miss-voter-status-icon">⚖️</div>
         <div>
-          <strong style="font-family:'Cinzel',serif;letter-spacing:.3px;">Tribunal Qualificado</strong>
-          <div>Podes votar em disputas e receber recompensas.</div>
+          <strong style="font-family:'Cinzel',serif;letter-spacing:.3px;">⚖️ Jurado</strong>
+          <div>Você pode votar em disputas e receber recompensas.</div>
         </div>
       </div>`;
   } else {
-    el.style.display = '';
-    const doneOk   = done        >= MISS_VOTE_REQ_DONE;
-    const rcOk     = scoreCount  >= MISS_VOTE_REQ_RATINGS;
-    const avOk     = hasAvatar;
     el.innerHTML = `
       <div class="miss-voter-status progress">
         <div class="miss-voter-status-icon">⚖️</div>
         <div>
-          <div>Progresso para Tribunal</div>
-          <div class="miss-voter-status-bar">
-            <div class="miss-voter-req">
-              <div class="miss-voter-req-dot ${doneOk?'ok':'no'}"></div>
-              <span>${done}/${MISS_VOTE_REQ_DONE} missões</span>
-            </div>
-            <span style="opacity:.3">·</span>
-            <div class="miss-voter-req">
-              <div class="miss-voter-req-dot ${rcOk?'ok':'no'}"></div>
-              <span>${scoreCount}/${MISS_VOTE_REQ_RATINGS} avaliações</span>
-            </div>
-            <span style="opacity:.3">·</span>
-            <div class="miss-voter-req">
-              <div class="miss-voter-req-dot ${avOk?'ok':'no'}"></div>
-              <span>avatar Raro/Lendário</span>
-            </div>
-          </div>
+          <div style="font-size:9px;color:var(--muted);">Apenas Jurados aprovados pela comunidade podem votar em disputas.</div>
         </div>
       </div>`;
   }
@@ -2437,7 +2404,7 @@ function _missUpdateDisputeBanner(count) {
     <div class="miss-dispute-banner">
       <div class="miss-dispute-banner-txt">
         <strong>⚖️ ${count} disputa${count!==1?'s':''} aberta${count!==1?'s':''}</strong><br>
-        A tua opinião conta — vota e ganha recompensas da pool P2E.
+        Sua opinião conta — vote e ganhe recompensas da pool P2E.
       </div>
       <button class="btn-miss-ver-disputas" onclick="missSetFilter(document.getElementById('missFilterDisputas'),'dispute')">Ver Disputas</button>
     </div>`;

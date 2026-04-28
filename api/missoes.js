@@ -131,7 +131,7 @@ async function handleResolver(res, db, uid, missId) {
   if (m.status !== 'dispute') {
     return res.status(409).json({ erro: 'Disputa já resolvida ou missão não está em disputa' });
   }
-  if ((m.votesEmployer || 0) + (m.votesWorker || 0) < 10) {
+  if ((m.votesEmployer || 0) + (m.votesWorker || 0) < 5) {
     return res.status(400).json({ erro: 'Votos insuficientes para resolução (mínimo 10)' });
   }
 

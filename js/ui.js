@@ -318,6 +318,19 @@ function fillCreatureCard() {
   if(badge2) {
     badge2.textContent = t('ui.active_slot', {n: activeSlotIdx + 1});
   }
+
+  // Badge ⚖️ JURADO
+  let _jb = document.getElementById('idBadgeJurado');
+  if(gs?.jurado) {
+    if(!_jb) {
+      _jb = document.createElement('span');
+      _jb.id = 'idBadgeJurado';
+      _jb.style.cssText = "font-size:7px;font-family:'Cinzel',serif;color:#a78bfa;border:1px solid rgba(167,139,250,.4);background:rgba(167,139,250,.08);padding:2px 6px;border-radius:6px;letter-spacing:.5px;flex-shrink:0;";
+      _jb.textContent = '⚖️ JURADO';
+      const _row = document.getElementById('idBadgesRow');
+      if(_row) _row.insertBefore(_jb, document.getElementById('nivelTxt'));
+    }
+  } else if(_jb) { _jb.remove(); }
 }
 
 function updatePhaseLabel() {
