@@ -327,6 +327,16 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 select.modal-input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b5f8a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 select.modal-input option{background:var(--surface2);color:var(--text);}
 .modal-input:focus{border-color:var(--purple);}
+input[type=number].modal-input{-moz-appearance:textfield;}
+input[type=number].modal-input::-webkit-inner-spin-button,
+input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.num-spin-wrap{position:relative;display:flex;align-items:stretch;}
+.num-spin-wrap input[type=number].modal-input{border-radius:8px 0 0 8px;width:calc(100% - 22px);}
+.num-spin-wrap input[type=number].modal-input:focus{border-color:var(--purple);}
+.num-spin-btns{display:flex;flex-direction:column;border:1px solid var(--border);border-left:none;border-radius:0 8px 8px 0;overflow:hidden;background:var(--surface3);}
+.num-spin-btn{flex:1;background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:7px;line-height:1;padding:0 7px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.num-spin-btn:hover{background:var(--surface2);color:var(--gold2);}
+.num-spin-btn+.num-spin-btn{border-top:1px solid var(--border);}
 .modal-row{display:flex;gap:8px;margin-top:4px;}
 .btn-modal-confirm{flex:1;padding:10px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:8px;color:#fff;font-family:'Cinzel',serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;}
 .btn-modal-cancel{padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;cursor:pointer;}
@@ -1386,7 +1396,9 @@ const MISS_PAGE             = 12;
 const MISS_FEE_RATE           = 0.05;
 const MISS_DISPUTE_FEE_RATE   = 0.10;
 const MISS_AWAITING_TIMEOUT_H = 24;
-const _DW_JURI = 'https://discord.com/api/webhooks/1498546063592652970/IsBVlUJGPo1OSvdCxUtSbK5ZmsKnFbmf7KADLR5VCfOlBMmaffYY53eIG2eNUQ3kD0W0';
+const _DW_JURI    = 'https://discord.com/api/webhooks/1498546063592652970/IsBVlUJGPo1OSvdCxUtSbK5ZmsKnFbmf7KADLR5VCfOlBMmaffYY53eIG2eNUQ3kD0W0';
+const _DW_JURI_EN = 'https://discord.com/api/webhooks/1498881342123937913/_B_ozHLnXtTxWoNsjPwKy1WaJz-fUaIXcUpMLeuY1hEzF3RYiLSoqHUZwBOhq6DD3KVh';
+function _dwJuri() { return window._currentLang === 'en' ? _DW_JURI_EN : _DW_JURI; }
 const _MISS_CAT_ICONS = { entregador:'📦', servico:'🔧', arte:'🎨', gameplay:'⚔️', guild:'🛡️', traducao:'🌐', outro:'📦' };
 const _MISS_STATUS_MAP = { open:['open','Aberta'], progress:['progress','Em Andamento'], done:['done','Concluída'], dispute:['dispute','Disputa'], awaiting:['awaiting','Aguardando'], cancelled:['cancelled','Cancelada'] };
 
@@ -2250,29 +2262,35 @@ async function _missSubmitDisputa(missId, side) {
 }
 
 async function _missPostDisputaForum(missId, m, reason, side, evidenceA) {
-  const _sideLabel = side === 'employer' ? '👔 Empregador' : '📦 Entregador';
+  const _en        = window._currentLang === 'en';
+  const _sideLabel = _en
+    ? (side === 'employer' ? '👔 Employer' : '📦 Worker')
+    : (side === 'employer' ? '👔 Empregador' : '📦 Entregador');
   const _pot       = fmtC((m.reward || 0) * 2);
   const _cat       = (_MISS_CAT_ICONS[m.category] || '📦') + ' ' + (m.category || '—');
-  const _evField   = evidenceA ? [{ name: '🔗 Prova apresentada', value: evidenceA, inline: false }] : [];
+  const _evField   = evidenceA ? [{ name: _en ? '🔗 Evidence submitted' : '🔗 Prova apresentada', value: evidenceA, inline: false }] : [];
+  const _date      = new Date().toLocaleDateString(_en ? 'en-US' : 'pt-BR');
   try {
-    const r = await fetch(_DW_JURI, {
+    const r = await fetch(_dwJuri(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        thread_name: `⚖️ ${m.title || 'Disputa'} — ${new Date().toLocaleDateString('pt-BR')}`,
+        thread_name: `⚖️ ${m.title || (_en ? 'Dispute' : 'Disputa')} — ${_date}`,
         embeds: [{
-          title: `⚠️ ${_sideLabel} abriu uma disputa`,
+          title: _en ? `⚠️ ${_sideLabel} opened a dispute` : `⚠️ ${_sideLabel} abriu uma disputa`,
           color: 0xef4444,
-          description: `**Missão:** ${m.title || '—'}\n**Categoria:** ${_cat}\n\n**Argumento:**\n> ${reason}`,
+          description: _en
+            ? `**Quest:** ${m.title || '—'}\n**Category:** ${_cat}\n\n**Argument:**\n> ${reason}`
+            : `**Missão:** ${m.title || '—'}\n**Categoria:** ${_cat}\n\n**Argumento:**\n> ${reason}`,
           fields: [
             ..._evField,
-            { name: '💎 Em jogo',         value: `${_pot} cristais`, inline: true },
-            { name: '⏳ Prazo resposta',   value: '24 horas',         inline: true },
-            { name: '🗳️ Votos',            value: '5 (após resposta)',  inline: true },
-            { name: '📋 ID da Missão',     value: `\`${missId}\``,    inline: false },
-            { name: '🗺️ Como votar',       value: 'Marketplace → Missões → **⚖️ Disputas**', inline: false },
+            { name: _en ? '💎 At stake'       : '💎 Em jogo',       value: _en ? `${_pot} crystals` : `${_pot} cristais`, inline: true },
+            { name: _en ? '⏳ Response deadline' : '⏳ Prazo resposta', value: _en ? '24 hours' : '24 horas',              inline: true },
+            { name: _en ? '🗳️ Votes'           : '🗳️ Votos',         value: _en ? '5 (after response)' : '5 (após resposta)', inline: true },
+            { name: _en ? '📋 Quest ID'        : '📋 ID da Missão',  value: `\`${missId}\``, inline: false },
+            { name: _en ? '🗺️ How to vote'     : '🗺️ Como votar',    value: _en ? 'Marketplace → Quests → **⚖️ Disputes**' : 'Marketplace → Missões → **⚖️ Disputas**', inline: false },
           ],
-          footer: { text: 'A outra parte tem 24h para responder • Discuta aqui antes de votar' },
+          footer: { text: _en ? 'The other party has 24h to respond • Discuss here before voting' : 'A outra parte tem 24h para responder • Discuta aqui antes de votar' },
           timestamp: new Date().toISOString(),
         }],
       }),
@@ -2300,21 +2318,24 @@ async function _missResponderDisputa(missId) {
       disputeVotingOpen: true,
     });
     if(_m.disputeThreadId) {
-      const _partyBLabel = _m.disputeBy === 'employer' ? '📦 Entregador' : '👔 Empregador';
-      const _evField = evidenceB ? [{ name: '🔗 Prova', value: evidenceB, inline: false }] : [];
-      fetch(`${_DW_JURI}?thread_id=${_m.disputeThreadId}`, {
+      const _en = window._currentLang === 'en';
+      const _partyBLabel = _en
+        ? (_m.disputeBy === 'employer' ? '📦 Worker' : '👔 Employer')
+        : (_m.disputeBy === 'employer' ? '📦 Entregador' : '👔 Empregador');
+      const _evField = evidenceB ? [{ name: _en ? '🔗 Evidence' : '🔗 Prova', value: evidenceB, inline: false }] : [];
+      fetch(`${_dwJuri()}?thread_id=${_m.disputeThreadId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           embeds: [{
-            title: `📨 ${_partyBLabel} respondeu à disputa`,
+            title: _en ? `📨 ${_partyBLabel} responded to the dispute` : `📨 ${_partyBLabel} respondeu à disputa`,
             color: 0x3b82f6,
-            description: `**Resposta:**\n> ${response}`,
+            description: _en ? `**Response:**\n> ${response}` : `**Resposta:**\n> ${response}`,
             fields: [
               ..._evField,
-              { name: '✅ Votação', value: 'Aberta — Jurados podem votar agora', inline: false },
+              { name: _en ? '✅ Voting' : '✅ Votação', value: _en ? 'Open — Jurors can vote now' : 'Aberta — Jurados podem votar agora', inline: false },
             ],
-            footer: { text: 'Acesse o Marketplace → Missões → ⚖️ Disputas para votar' },
+            footer: { text: _en ? 'Go to Marketplace → Quests → ⚖️ Disputes to vote' : 'Acesse o Marketplace → Missões → ⚖️ Disputas para votar' },
             timestamp: new Date().toISOString(),
           }],
         }),
@@ -2951,6 +2972,18 @@ document.addEventListener('DOMContentLoaded', () => {
   applyI18nDOM();
   const btn = document.getElementById('btnLangMkt');
   if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
+  document.querySelectorAll('input[type=number].modal-input').forEach(inp => {
+    const wrap = document.createElement('div');
+    wrap.className = 'num-spin-wrap';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const btns = document.createElement('div');
+    btns.className = 'num-spin-btns';
+    btns.innerHTML = '<button type="button" class="num-spin-btn" tabindex="-1">▲</button><button type="button" class="num-spin-btn" tabindex="-1">▼</button>';
+    btns.children[0].onclick = () => { inp.stepUp();   inp.dispatchEvent(new Event('input', {bubbles:true})); };
+    btns.children[1].onclick = () => { inp.stepDown(); inp.dispatchEvent(new Event('input', {bubbles:true})); };
+    wrap.appendChild(btns);
+  });
 });
 function mktOpenZoomBtn(btn) {
   mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);

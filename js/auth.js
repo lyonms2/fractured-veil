@@ -458,6 +458,11 @@ async function _onLoginSuccess(user) {
 
   } else {
     addLog(t('log.welcome_new'), 'good');
+    if(typeof discordAudit === 'function') discordAudit(
+      '🌟 Novo Jogador',
+      [['UID', walletAddress], ['Email', user.email || '?'], ['Hora', new Date().toLocaleString('pt-BR')]],
+      0x22c55e
+    );
     setTimeout(() => addLog(t('onboard.tip.summon'), 'info'), 1000);
     setTimeout(() => addLog(t('onboard.tip.feed'),   'info'), 2500);
     setTimeout(() => addLog(t('onboard.tip.play'),   'info'), 4500);
