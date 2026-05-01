@@ -252,10 +252,10 @@ async function _onLoginSuccess(user) {
     if (pendingRef) {
       try {
         const refToken = await firebase.auth().currentUser.getIdToken();
-        const refRes   = await fetch('/api/salvar-referral', {
+        const refRes   = await fetch('/api/resgatar', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ idToken: refToken, refUid: pendingRef }),
+          body:    JSON.stringify({ idToken: refToken, action: 'salvar-referral', refUid: pendingRef }),
         });
         if (refRes.ok) localStorage.removeItem('fv_pending_ref');
       } catch(e) { /* falha silenciosa — tentará novamente no próximo login */ }

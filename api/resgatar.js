@@ -1,11 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
 //  api/resgatar.js — Vercel Serverless Function
 //
-//  Body esperado:
-//    { jogador: "<uid Firebase>", carteira: "0x...", gems: 10 }
+//  Ações disponíveis (campo "action" no body):
+//    (sem action)        → saque de cristais: { idToken, carteira, gems }
+//    "salvar-referral"   → registar convite:  { idToken, action, refUid }
 //
-//  jogador = uid do Firebase Auth (doc ID no Firestore)
-//  carteira = endereço Ethereum (para assinar a autorização on-chain)
+//  Consolidado num único endpoint para respeitar o limite de 12
+//  Serverless Functions do plano Hobby do Vercel.
 // ═══════════════════════════════════════════════════════════════
 
 const { ethers }                       = require('ethers');
@@ -30,13 +31,59 @@ const RATE                 = 10;
 const MAX_GEMS_POR_RESGATE = 100;
 const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
+// ── Registar cadeia de referral (até 3 níveis) ───────────────────
+async function handleSalvarReferral(req, res, db, auth) {
+  const { idToken, refUid } = req.body;
+
+  if (!refUid || typeof refUid !== 'string' || refUid.length < 5) {
+    return res.status(400).json({ erro: 'refUid inválido' });
+  }
+
+  let uid;
+  try {
+    const decoded = await auth.verifyIdToken(idToken);
+    uid = decoded.uid;
+  } catch {
+    return res.status(401).json({ erro: 'Token inválido ou expirado' });
+  }
+
+  if (uid === refUid) {
+    return res.status(400).json({ erro: 'Não é possível usar seu próprio link de convite' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  const refRef    = db.collection('players').doc(refUid);
+  const [playerSnap, refSnap] = await Promise.all([playerRef.get(), refRef.get()]);
+
+  if (!refSnap.exists) {
+    return res.status(400).json({ erro: 'Jogador convidador não encontrado' });
+  }
+  if (playerSnap.exists && playerSnap.data()?.referralChain) {
+    return res.status(200).json({ ok: true, skip: true });
+  }
+
+  // Construir cadeia: L1 = quem convidou, L2 = avô, L3 = bisavô
+  const refChain = refSnap.data()?.referralChain || {};
+  const chain    = { l1: refUid };
+  if (refChain.l1) chain.l2 = refChain.l1;
+  if (refChain.l2) chain.l3 = refChain.l2;
+
+  if (Object.values(chain).includes(uid)) {
+    return res.status(400).json({ erro: 'Referral circular detectado' });
+  }
+
+  await playerRef.set({ referralChain: chain }, { merge: true });
+  await refRef.set({ referralCount: FieldValue.increment(1) }, { merge: true });
+
+  return res.status(200).json({ ok: true, chain });
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  // idToken substitui jogador do body — uid é extraído server-side do token
-  const { idToken, carteira, gems } = req.body;
+  const { idToken, action } = req.body;
 
   // ── Verificar identidade via Firebase ID token ──
   if (!idToken || typeof idToken !== 'string') {
@@ -44,6 +91,19 @@ module.exports = async function handler(req, res) {
   }
 
   const { db, auth } = initAdmin();
+
+  // ── Roteamento por action ──
+  if (action === 'salvar-referral') {
+    try {
+      return await handleSalvarReferral(req, res, db, auth);
+    } catch (err) {
+      console.error('[salvar-referral]', err.message);
+      return res.status(500).json({ erro: 'Erro interno' });
+    }
+  }
+
+  // ── A partir daqui: saque de cristais ──
+  const { carteira, gems } = req.body;
 
   let jogador;
   try {
