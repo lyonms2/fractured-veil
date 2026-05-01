@@ -77,6 +77,9 @@ module.exports = async function handler(req, res) {
     // Doc ID = uid do Firebase (não o endereço Ethereum)
     const userRef = db.collection('players').doc(jogador);
 
+    // Referral chain capturada dentro da transação para uso após ela
+    let userReferralChain = null;
+
     const resultado = await db.runTransaction(async (tx) => {
       const userSnap = await tx.get(userRef);
 
@@ -128,6 +131,9 @@ module.exports = async function handler(req, res) {
       const sig         = await wallet.signMessage(ethers.getBytes(msgHash));
       const { v, r, s } = ethers.Signature.from(sig);
 
+      // Capturar cadeia de referral antes de fechar a transação
+      userReferralChain = data.referralChain || null;
+
       // Debitar 💎 + atualizar limite diário + rate limit timestamp
       const novoResgateHoje = resgateHoje + gemsNum;
       tx.update(userRef, {
@@ -150,6 +156,31 @@ module.exports = async function handler(req, res) {
 
       return { v, r, s, nonce };
     });
+
+    // ── Distribuir bônus de referral (best-effort, não bloqueia o saque) ──
+    // L1 recebe 5%, L2 recebe 2%, L3 recebe 1% do valor sacado em cristais.
+    // Esses cristais são creditados no saldo in-game dos convidadores.
+    if (userReferralChain) {
+      const REFERRAL_RATES = { l1: 0.05, l2: 0.02, l3: 0.01 };
+      const batch = db.batch();
+      let hasBonuses = false;
+      for (const [level, rate] of Object.entries(REFERRAL_RATES)) {
+        const refUid = userReferralChain[level];
+        if (!refUid) continue;
+        const bonus = Math.floor(gemsNum * rate);
+        if (bonus < 1) continue;
+        const refDocRef = db.collection('players').doc(refUid);
+        batch.update(refDocRef, {
+          'gs.cristais':  FieldValue.increment(bonus),
+          cristais:       FieldValue.increment(bonus),
+          referralEarned: FieldValue.increment(bonus),
+        });
+        hasBonuses = true;
+      }
+      if (hasBonuses) {
+        batch.commit().catch(err => console.error('[referral-bonus]', err.message));
+      }
+    }
 
     return res.status(200).json({
       ok:    true,

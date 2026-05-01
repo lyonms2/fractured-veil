@@ -11,6 +11,18 @@ function fbAuth() { return typeof firebase !== 'undefined' ? firebase.auth() : n
 let _sessionId   = null;
 let _sessionUnsub = null;
 
+// ── Capturar ?ref= da URL e guardar no localStorage ──────────────
+// Feito imediatamente ao carregar a página, antes do login,
+// para preservar o código de convite mesmo após redirecionamentos.
+(function _captureRef() {
+  try {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref && ref.length >= 5 && ref.length <= 128) {
+      localStorage.setItem('fv_pending_ref', ref);
+    }
+  } catch(e) {}
+})();
+
 // ─── Mostrar/esconder abas do login ───────────────────────────────
 function _authMsg(msg, type = 'error') {
   const el = document.getElementById('loginError');
@@ -230,6 +242,25 @@ async function _onLoginSuccess(user) {
   document.getElementById('walletInfo').style.display = 'flex';
 
   const loaded = await loadFromFirebase();
+
+  // ── Registar referral no primeiro acesso (jogador novo) ──
+  // Se o jogador acessou o jogo via link de convite (?ref=UID),
+  // o ref foi salvo no localStorage antes do login.
+  // Enviamos ao servidor uma única vez — a cadeia L1/L2/L3 é imutável.
+  if (!loaded) {
+    const pendingRef = localStorage.getItem('fv_pending_ref');
+    if (pendingRef) {
+      try {
+        const refToken = await firebase.auth().currentUser.getIdToken();
+        const refRes   = await fetch('/api/salvar-referral', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ idToken: refToken, refUid: pendingRef }),
+        });
+        if (refRes.ok) localStorage.removeItem('fv_pending_ref');
+      } catch(e) { /* falha silenciosa — tentará novamente no próximo login */ }
+    }
+  }
 
   // ── Session guard: impede dois dispositivos simultâneos ──
   if(fbDb()) {

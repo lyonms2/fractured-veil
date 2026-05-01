@@ -244,3 +244,66 @@ async function resgatar() {
   }
   btn.disabled = false;
 }
+
+// ═══════════════════════════════════════════
+// REFERRAL — Link de convite e estatísticas
+// ═══════════════════════════════════════════
+function renderReferral() {
+  const card = document.getElementById('referralCard');
+  if(!card || !walletAddress) return;
+
+  // Link de convite: aponta para index.html (onde fica o formulário de registro)
+  // O ?ref= é lido por auth.js antes mesmo do login e salvo no localStorage.
+  const refLink = `${location.origin}/?ref=${walletAddress}`;
+
+  const earned = playerData?.referralEarned || 0;
+  const count  = playerData?.referralCount  || 0;
+
+  card.innerHTML = `
+    <div class="referral-box">
+      <div class="referral-title">🔗 Seu Link de Convite</div>
+      <div class="referral-sub">
+        Convide amigos para o jogo e ganhe <b style="color:var(--gold);">💎 cristais</b> toda vez que eles sacarem.<br>
+        Os créditos vão direto para seu saldo — sem nenhuma ação necessária.
+      </div>
+
+      <div class="referral-link-row">
+        <input class="referral-link-input" id="referralLinkInput" type="text"
+          value="${refLink}" readonly onclick="this.select();" />
+        <button class="btn-referral-copy" onclick="_referralCopiarLink()">📋 Copiar</button>
+      </div>
+
+      <div class="referral-stats">
+        <div class="referral-stat">
+          <div class="referral-stat-val">${count}</div>
+          <div class="referral-stat-lbl">👥 Convidados<br>diretos</div>
+        </div>
+        <div class="referral-stat">
+          <div class="referral-stat-val">💎 ${fmtC(earned)}</div>
+          <div class="referral-stat-lbl">🏆 Total<br>ganho</div>
+        </div>
+      </div>
+
+      <div class="referral-levels">
+        <b>Como funciona:</b><br>
+        🥇 <b>Nível 1</b> (seus convidados): <b style="color:var(--gold);">5%</b> de cada saque deles<br>
+        🥈 <b>Nível 2</b> (convidados dos seus convidados): <b style="color:var(--gold);">2%</b> de cada saque<br>
+        🥉 <b>Nível 3</b> (3º grau): <b style="color:var(--gold);">1%</b> de cada saque<br>
+        <span style="color:var(--muted);font-size:7.5px;margin-top:4px;display:block;">
+          Os cristais são creditados automaticamente em seu saldo quando alguém em sua rede saca. Quem saca recebe o valor integral em MATIC — o bônus é gerado pelo jogo.
+        </span>
+      </div>
+    </div>`;
+}
+
+function _referralCopiarLink() {
+  const input = document.getElementById('referralLinkInput');
+  if(!input) return;
+  navigator.clipboard.writeText(input.value)
+    .then(() => showToast('🔗 Link de convite copiado!', 'ok'))
+    .catch(() => {
+      input.select();
+      document.execCommand('copy');
+      showToast('🔗 Link copiado!', 'ok');
+    });
+}

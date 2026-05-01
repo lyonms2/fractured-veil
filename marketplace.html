@@ -255,6 +255,21 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .metamask-linked-txt{font-size:10px;color:var(--green2);}
 .metamask-linked-addr{font-size:9px;color:var(--muted);font-family:monospace;}
 
+/* ── Referral / Convite ── */
+.referral-box{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px;margin-top:20px;}
+.referral-title{font-family:'Cinzel',serif;font-size:12px;color:var(--gold);margin-bottom:3px;}
+.referral-sub{font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+.referral-link-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.referral-link-input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text2);font-family:monospace;font-size:9px;outline:none;min-width:0;}
+.btn-referral-copy{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;border:none;border-radius:6px;padding:7px 14px;font-family:'Cinzel',serif;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .2s;}
+.btn-referral-copy:hover{opacity:.85;}
+.referral-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.referral-stat{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:80px;}
+.referral-stat-val{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);}
+.referral-stat-lbl{font-size:8px;color:var(--muted);margin-top:2px;}
+.referral-levels{font-size:8px;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:10px;margin-top:2px;}
+.referral-levels b{color:var(--text2);}
+
 /* TX */
 .tx-verify-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:500px;}
 .tx-verify-box h3{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:12px;}
@@ -987,6 +1002,9 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
         </div>
         <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
       </div>
+
+      <!-- Card de referral preenchido por renderReferral() -->
+      <div id="referralCard"></div>
     </div>
 
     <!-- ── OVOS À VENDA ── -->
@@ -1267,7 +1285,7 @@ function showSection(id) {
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
   if(currentSection === 'slots')         renderSlots();
-  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
+  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); renderReferral(); }
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
   if(currentSection === 'missoes')       { renderMissoes(); missCheckBadge(); }
