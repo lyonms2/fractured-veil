@@ -2401,6 +2401,26 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
     }
   }
 
+  // Timeout de 5 dias — auto-resolve por maioria se há pelo menos 1 voto
+  const MISS_DISPUTE_TIMEOUT_DAYS = 5;
+  const disputeAt = m.disputeAt?.toDate?.();
+  const totalVotesCheck = (m.votesEmployer || 0) + (m.votesWorker || 0);
+  const disputeExpired = !!(disputeAt && (Date.now() - disputeAt.getTime()) > MISS_DISPUTE_TIMEOUT_DAYS * 86400000);
+  if(disputeExpired && votingOpen && totalVotesCheck >= 1) {
+    const idToken = await firebase.auth().currentUser?.getIdToken();
+    if(idToken) {
+      fetch('/api/missoes', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, missId: id, action: 'resolver' }) })
+        .then(r => r.json())
+        .then(data => {
+          closeMissDetalhe();
+          showToast(`⚖️ Disputa resolvida por prazo! Vencedor recebeu 💎 ${fmtC(data.winnerAmt)}.`);
+          if(currentSection === 'missoes') renderMissoes();
+        }).catch(() => {});
+    }
+    return;
+  }
+
   // Horas restantes para resposta
   const deadline    = m.disputeResponseDeadline?.toDate?.();
   const horasLeft   = deadline ? Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 3600000)) : null;
@@ -2493,11 +2513,11 @@ async function _missRenderDisputa(id, m, isEmployer, isSelectedWorker) {
       </div>
     </div>
     <div class="miss-vote-progress"><div class="miss-vote-bar" style="width:${pct}%;"></div></div>
-    <div style="font-size:8px;color:var(--muted);text-align:center;margin-bottom:4px;">${total}/5 votos · Maioria decide</div>` : '';
+    <div style="font-size:8px;color:${disputeExpired ? 'var(--red2)' : 'var(--muted)'};text-align:center;margin-bottom:4px;">${disputeExpired ? '⏰ Prazo de 5 dias esgotado · Aguardando resolução' : `${total}/5 votos · Maioria decide`}</div>` : '';
 
   document.getElementById('detActionArea').innerHTML = `
     <div class="miss-vote-box">
-      <div class="miss-vote-title">⚖️ Disputa em Andamento</div>
+      <div class="miss-vote-title">⚖️ Disputa em Andamento${disputeExpired ? ' <span style="color:var(--red2);font-size:9px;">⏰ PRAZO ESGOTADO</span>' : ''}</div>
       <div class="miss-evidences">${secA}${secB}</div>
       ${voteSection}
       ${voteBtns}
