@@ -228,7 +228,11 @@ async function resgatar() {
       playerData.cristais = (playerData.cristais || 0) - gems;
       updateCristaisDisplay();
       gemsInput.value = '';
-      status.innerHTML = `<span class="tx-ok">${t('mkt.tx.redeemed', {matic: apiData.matic})}</span>`;
+      const refBonus = apiData.referralBonus || 0;
+      const refNote  = refBonus > 0
+        ? `<span style="font-size:8px;color:var(--muted);display:block;margin-top:4px;">💸 ${fmtC(refBonus)} 💎 distribuídos para sua rede de convidadores</span>`
+        : '';
+      status.innerHTML = `<span class="tx-ok">${t('mkt.tx.redeemed', {matic: apiData.matic})}</span>${refNote}`;
       showToast(t('mkt.tx.matic_sent', {matic: apiData.matic}), 'ok');
     } else {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.chain_fail')}</span>`;
@@ -290,7 +294,7 @@ function renderReferral() {
         🥈 <b>Nível 2</b> (convidados dos seus convidados): <b style="color:var(--gold);">2%</b> de cada saque<br>
         🥉 <b>Nível 3</b> (3º grau): <b style="color:var(--gold);">1%</b> de cada saque<br>
         <span style="color:var(--muted);font-size:7.5px;margin-top:4px;display:block;">
-          Os cristais são creditados automaticamente em seu saldo quando alguém em sua rede saca. Quem saca recebe o valor integral em MATIC — o bônus é gerado pelo jogo.
+          Os cristais são creditados automaticamente no seu saldo quando alguém da sua rede saca. O bônus vem do valor sacado — quem convida recebe, quem saca fica com o restante em MATIC. Nenhuma inflação: a pool permanece sempre equilibrada.
         </span>
       </div>
     </div>`;

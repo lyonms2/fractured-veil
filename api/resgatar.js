@@ -66,7 +66,6 @@ module.exports = async function handler(req, res) {
 
   // Endereço com checksum correcto para assinatura on-chain
   const carteiraChecksum = ethers.getAddress(carteira);
-  const maticAEnviar     = gemsNum / RATE;
   const contractAddress  = process.env.CONTRACT_ADDRESS;
 
   if (!contractAddress || contractAddress === 'PENDENTE_DEPLOY') {
@@ -77,8 +76,8 @@ module.exports = async function handler(req, res) {
     // Doc ID = uid do Firebase (não o endereço Ethereum)
     const userRef = db.collection('players').doc(jogador);
 
-    // Referral chain capturada dentro da transação para uso após ela
-    let userReferralChain = null;
+    // Mapa de bônus calculado dentro da transação e usado depois
+    let referralBonuses = null;
 
     const resultado = await db.runTransaction(async (tx) => {
       const userSnap = await tx.get(userRef);
@@ -101,6 +100,7 @@ module.exports = async function handler(req, res) {
       }
 
       // ── Limite diário de resgate ──
+      // Conta gemsNum no limite (não gemsToSign) — o jogador quis sacar essa quantia.
       const hoje        = new Date().toISOString().slice(0, 10);
       const resgateLog  = data?.resgateLog || null;
       const resgateHoje = (resgateLog?.data === hoje) ? (resgateLog.total || 0) : 0;
@@ -118,23 +118,42 @@ module.exports = async function handler(req, res) {
         throw new Error('Carteira não corresponde à conta. Vincula a carteira correcta.');
       }
 
+      // ── Calcular bônus de referral ──
+      // Os bônus saem do valor sacado — não são criados do nada.
+      // O jogador recebe (gemsNum - totalBonus) em MATIC; os convidadores
+      // ficam com os cristais correspondentes para sacar quando quiserem.
+      // Pool sempre equilibrada: MATIC saindo = MATIC coberto por cristais existentes.
+      const REFERRAL_RATES = { l1: 0.05, l2: 0.02, l3: 0.01 };
+      const refChain = data.referralChain || {};
+      const bonusMap = {};  // { uid → gemsBonus }
+      let totalBonus = 0;
+      for (const [level, rate] of Object.entries(REFERRAL_RATES)) {
+        const refUid = refChain[level];
+        if (!refUid) continue;
+        const bonus = Math.floor(gemsNum * rate);
+        if (bonus < 1) continue;
+        bonusMap[refUid] = (bonusMap[refUid] || 0) + bonus;
+        totalBonus += bonus;
+      }
+      referralBonuses = Object.keys(bonusMap).length > 0 ? bonusMap : null;
+
+      // Quantidade efetiva que vai para o contrato (o que o jogador recebe em MATIC)
+      const gemsToSign  = gemsNum - totalBonus;
+      const maticFinal  = gemsToSign / RATE;
+
       // Gerar nonce único
       const nonce = Date.now();
 
-      // Assinar autorização — o contrato verifica esta assinatura
-      // Mensagem = keccak256(carteira, gems, nonce, contrato)
+      // Assinar autorização para gemsToSign — contrato libera maticFinal ao jogador
       const wallet  = new ethers.Wallet(process.env.SIGNER_PRIVATE_KEY);
       const msgHash = ethers.solidityPackedKeccak256(
         ['address', 'uint256', 'uint256', 'address'],
-        [carteiraChecksum, gemsNum, nonce, contractAddress]
+        [carteiraChecksum, gemsToSign, nonce, contractAddress]
       );
       const sig         = await wallet.signMessage(ethers.getBytes(msgHash));
       const { v, r, s } = ethers.Signature.from(sig);
 
-      // Capturar cadeia de referral antes de fechar a transação
-      userReferralChain = data.referralChain || null;
-
-      // Debitar 💎 + atualizar limite diário + rate limit timestamp
+      // Debitar gemsNum do jogador (o total — inclui a parte dos convidadores)
       const novoResgateHoje = resgateHoje + gemsNum;
       tx.update(userRef, {
         'gs.cristais': FieldValue.increment(-gemsNum),
@@ -146,50 +165,43 @@ module.exports = async function handler(req, res) {
       // Histórico do resgate
       const logRef = userRef.collection('resgates').doc();
       tx.set(logRef, {
-        gems:     gemsNum,
-        matic:    maticAEnviar,
-        carteira: carteira.toLowerCase(),
+        gemsTotal:    gemsNum,
+        gemsNet:      gemsToSign,
+        referralBonus: totalBonus,
+        matic:         maticFinal,
+        carteira:      carteira.toLowerCase(),
         nonce,
-        ts:       new Date(),
-        status:   'autorizado',
+        ts:            new Date(),
+        status:        'autorizado',
       });
 
-      return { v, r, s, nonce };
+      return { v, r, s, nonce, gemsToSign, maticFinal, totalBonus };
     });
 
-    // ── Distribuir bônus de referral (best-effort, não bloqueia o saque) ──
-    // L1 recebe 5%, L2 recebe 2%, L3 recebe 1% do valor sacado em cristais.
-    // Esses cristais são creditados no saldo in-game dos convidadores.
-    if (userReferralChain) {
-      const REFERRAL_RATES = { l1: 0.05, l2: 0.02, l3: 0.01 };
+    // ── Creditar bônus de referral (best-effort, não bloqueia o saque) ──
+    // Os cristais creditados aqui são exatamente os que foram deduzidos
+    // do jogador — nenhuma inflação, pool sempre coberta.
+    if (referralBonuses) {
       const batch = db.batch();
-      let hasBonuses = false;
-      for (const [level, rate] of Object.entries(REFERRAL_RATES)) {
-        const refUid = userReferralChain[level];
-        if (!refUid) continue;
-        const bonus = Math.floor(gemsNum * rate);
-        if (bonus < 1) continue;
-        const refDocRef = db.collection('players').doc(refUid);
-        batch.update(refDocRef, {
+      for (const [refUid, bonus] of Object.entries(referralBonuses)) {
+        batch.update(db.collection('players').doc(refUid), {
           'gs.cristais':  FieldValue.increment(bonus),
           cristais:       FieldValue.increment(bonus),
           referralEarned: FieldValue.increment(bonus),
         });
-        hasBonuses = true;
       }
-      if (hasBonuses) {
-        batch.commit().catch(err => console.error('[referral-bonus]', err.message));
-      }
+      batch.commit().catch(err => console.error('[referral-bonus]', err.message));
     }
 
     return res.status(200).json({
-      ok:    true,
-      gems:  gemsNum,
-      matic: maticAEnviar,
-      nonce: resultado.nonce,
-      v:     resultado.v,
-      r:     resultado.r,
-      s:     resultado.s,
+      ok:           true,
+      gems:         resultado.gemsToSign,   // o que o contrato vai liberar
+      matic:        resultado.maticFinal,
+      referralBonus: resultado.totalBonus,  // info para o cliente mostrar
+      nonce:        resultado.nonce,
+      v:            resultado.v,
+      r:            resultado.r,
+      s:            resultado.s,
     });
 
   } catch (err) {
