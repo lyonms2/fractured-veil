@@ -6,7 +6,7 @@ window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     // Geral
-    'fissura.loading':             'A carregar...',
+    'fissura.loading':             'Carregando...',
     'fissura.title':               '⚡ A GRANDE FISSURA',
     'fissura.sub':                 'GUERRA MENSAL DE FACÇÕES',
     'fissura.login':               'Inicia sessão para participar.',
@@ -18,14 +18,14 @@ window.registerStrings(
     'fissura.timer.mins':          '{m}m restantes',
 
     // Standings
-    'fissura.standings':           'CLASSIFICAÇÃO ACTUAL',
+    'fissura.standings':           'CLASSIFICAÇÃO ATUAL',
 
     // Prémios
-    'fissura.prizes.title':        'PRÉMIOS DA FACÇÃO VENCEDORA',
+    'fissura.prizes.title':        'PRÊMIOS DA FACÇÃO VENCEDORA',
     'fissura.prizes.per_member':   'por membro',
     'fissura.prizes.entry':        'Entrada: {cost}',
     'fissura.prizes.pool':         '{pct}% pool / membros',
-    'fissura.prizes.note':         '⚠️ Mínimo 1000 pontos para receber prémio. Vence a facção com maior média de pontos por membro.',
+    'fissura.prizes.note':         '⚠️ Mínimo 1000 pontos para receber prêmio. Vence a facção com maior média de pontos por membro.',
 
     // Como ganhar pontos
     'fissura.pts.title':           'COMO GANHAR PONTOS',
@@ -44,14 +44,14 @@ window.registerStrings(
     'fissura.status.pos.1':        '🥇 1.º lugar',
     'fissura.status.pos.2':        '🥈 2.º lugar',
     'fissura.status.pos.3':        '🥉 3.º lugar',
-    'fissura.status.contribution': 'A tua contribuição conta para a vitória da facção. Continua a jogar!',
+    'fissura.status.contribution': 'Sua contribuição conta para a vitória da facção. Continue jogando!',
 
     // Inscrição
-    'fissura.join.title':          'ESCOLHE A TUA FACÇÃO',
-    'fissura.join.desc':           'Inscreve-te numa das 3 facções e contribui com pontos durante o mês.\nA facção com maior média de pontos vence e reparte os prémios pelos membros qualificados.',
+    'fissura.join.title':          'ESCOLHA SUA FACÇÃO',
+    'fissura.join.desc':           'Inscreva-se em uma das 3 facções e contribua com pontos durante o mês.\nA facção com maior média de pontos vence e reparte os prêmios pelos membros qualificados.',
     'fissura.join.entry_fee':      'Taxa de inscrição ({rar}): ',
     'fissura.join.btn':            'INSCREVER',
-    'fissura.join.joining':        'A inscrever...',
+    'fissura.join.joining':        'Inscrevendo...',
 
     // Toasts
     'fissura.toast.login':         'Inicia sessão primeiro.',

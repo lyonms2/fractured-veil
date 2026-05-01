@@ -21,31 +21,31 @@
       'auth.ph.password_confirm':'Confirmar senha',
 
       // Auth — hint reset
-      'auth.reset.hint':         '📧 Envia um link de recuperação\npara o teu e-mail.',
+      'auth.reset.hint':         '📧 Envie um link de recuperação\npara seu e-mail.',
 
       // Auth — login
-      'auth.fill_fields':        'Preenche e-mail e senha.',
+      'auth.fill_fields':        'Preencha o e-mail e a senha.',
       'auth.error.not_found':    'E-mail não encontrado.',
       'auth.error.wrong_pass':   'Senha incorreta.',
       'auth.error.invalid_email':'E-mail inválido.',
-      'auth.error.too_many':     'Muitas tentativas. Tenta mais tarde.',
+      'auth.error.too_many':     'Muitas tentativas. Tente mais tarde.',
       'auth.error.invalid_cred':   'E-mail ou senha incorretos.',
-      'auth.error.login':          'Erro ao entrar. Tenta novamente.',
-      'auth.error.not_verified':   '⚠️ Email não verificado. Verifica a tua caixa de entrada (e spam).',
+      'auth.error.login':          'Erro ao entrar. Tente novamente.',
+      'auth.error.not_verified':   '⚠️ E-mail não verificado. Verifique sua caixa de entrada (e spam).',
       // Auth — registo
-      'auth.reg.fill_all':       'Preenche todos os campos.',
+      'auth.reg.fill_all':       'Preencha todos os campos.',
       'auth.reg.pass_mismatch':  'As senhas não coincidem.',
       'auth.reg.pass_short':     'Senha deve ter pelo menos 6 caracteres.',
       'auth.reg.email_in_use':   'Este e-mail já está em uso.',
       'auth.reg.weak_pass':      'Senha muito fraca.',
-      'auth.reg.error':          'Erro ao criar conta. Tenta novamente.',
-      'auth.reg.success':        '✓ Conta criada! Verifica o teu email antes de entrar.',
-      'auth.reg.email_notice':   '📧 Após criar a conta, receberás um email de confirmação.\nVerifica também a pasta de spam.',
+      'auth.reg.error':          'Erro ao criar conta. Tente novamente.',
+      'auth.reg.success':        '✓ Conta criada! Verifique seu e-mail antes de entrar.',
+      'auth.reg.email_notice':   '📧 Após criar a conta, você receberá um e-mail de confirmação.\nVerifique também a pasta de spam.',
       // Auth — reset
-      'auth.reset.fill':         'Insere o teu e-mail.',
+      'auth.reset.fill':         'Insira seu e-mail.',
       'auth.reset.sent':         '✓ E-mail de recuperação enviado!',
       'auth.reset.not_found':    'E-mail não encontrado.',
-      'auth.reset.error':        'Erro ao enviar. Tenta novamente.',
+      'auth.reset.error':        'Erro ao enviar. Tente novamente.',
       // Auth — botões
       'auth.btn.logging_in':     'ENTRANDO...',
       'auth.btn.login':          'ENTRAR',
@@ -57,11 +57,11 @@
 
       // Logs
       'log.session_ended':       'Sessão encerrada.',
-      'log.session_other':       '⚠️ Sessão iniciada noutro dispositivo. A encerrar...',
+      'log.session_other':       '⚠️ Sessão iniciada em outro dispositivo. Encerrando...',
       'log.welcome_back':        'Bem-vindo de volta! ✨',
       'log.state_restored':      'Estado restaurado da nuvem! ☁️',
       'log.woke_offline':        'Acordou com energia plena enquanto estava offline! ☀️',
-      'log.repouso_active':      'Modo repouso activo. 💤',
+      'log.repouso_active':      'Modo repouso ativo. 💤',
       'log.died_offline':        '{name} não sobreviveu à sua ausência...',
       'log.died':                '{name} partiu para outra dimensão... 💀',
       'log.welcome_new':         'Bem-vindo! Comece uma nova aventura! ✨',
@@ -72,7 +72,7 @@
       'log.repouso_off':         'Modo repouso desativado. Bem-vindo de volta! ✨',
       'log.offline_away':        'Ausente por {h}h {m}min — {status}.',
       'log.offline_slept':       '☀️ acordou enquanto ausente',
-      'log.offline_repouso':     '💤 modo repouso activo',
+      'log.offline_repouso':     '💤 modo repouso ativo',
       'log.offline_updated':     'stats atualizados',
 
       // Bolhas de fala (showBubble)
@@ -81,7 +81,7 @@
       'bubble.satisfied':        'Estou satisfeito!',
       'bubble.no_coins':         'Sem moedas... 😢',
       'bubble.dead':             '...💀',
-      'bubble.no_avatar':        'Nenhum avatar activo!',
+      'bubble.no_avatar':        'Nenhum avatar ativo!',
       'bubble.hungry':           'Estou faminto! 🍖',
       'bubble.tired':            'Cansado demais... 😴',
       'bubble.invalid_name':     'Nome inválido! ✕',
@@ -136,10 +136,10 @@
       'vinculo.distant':    'Distante',
       'vinculo.friend':     'Amigo',
       'vinculo.companion':  'Companheiro',
-      'vinculo.soulmate':   'Alma Gémea',
+      'vinculo.soulmate':   'Alma Gêmea',
 
       // Doenças
-      'disease.exhaustion':   'Exaustão Crónica',
+      'disease.exhaustion':   'Exaustão Crônica',
       'disease.malnutrition': 'Desnutrição',
       'disease.infection':    'Infecção',
       'disease.melancholy':   'Melancolia Dimensional',
@@ -159,7 +159,7 @@
       'item.sleep_amulet.eff':     'Energia recupera 2× mais rápido dormindo',
       'item.antidote.name':        'Antídoto Dimensional',
       'item.antidote.desc':        'Uma poção de cristal purificado que dissolve qualquer mal que aflige o avatar.',
-      'item.antidote.eff':         'Cura todas as doenças activas + recupera +20 saúde',
+      'item.antidote.eff':         'Cura todas as doenças ativas + recupera +20 saúde',
 
       // UI estático
       'ui.loading':              'CARREGANDO...',
@@ -185,7 +185,7 @@
       'modal.reward_maze':       '+{xpMin}~{xpMax} XP · até {cMax} 🪙 (colete no labirinto!)',
 
       'ui.login_required':       'LOGIN NECESSÁRIO',
-      'ui.login_required_desc':  'Entra na tua conta para invocar o teu avatar e guardar o progresso.',
+      'ui.login_required_desc':  'Entre na sua conta para invocar seu avatar e guardar o progresso.',
       'ui.do_login':             '🔑 FAZER LOGIN',
 
       // Header / nav
@@ -201,7 +201,7 @@
       'inv.coins_sub':           'Moeda interna do jogo',
       'inv.exchange_label':      '◆ CÂMBIO 🪙 → 💎',
       'inv.exchange_empty':      'Abre a loja para ver o câmbio.',
-      'inv.crystals_cta':        '💎 Precisas de mais Cristais?',
+      'inv.crystals_cta':        '💎 Precisa de mais Cristais?',
       'inv.crystals_desc':       'Compra cristais com MATIC ou vende ovos no Marketplace.',
       'inv.crystals_btn':        'Ir ao Marketplace →',
       'inv.items_store':         '🔮 ITENS',
@@ -298,7 +298,7 @@
 
       // Panel / right side
       'panel.summon_title':      '◆ INVOCAR AVATAR',
-      'panel.login_desc':        'Entra na tua conta para invocar o teu avatar e guardar o progresso.',
+      'panel.login_desc':        'Entre na sua conta para invocar seu avatar e guardar o progresso.',
       'panel.xp_label':          'XP',
       'panel.vinculo_label':     'VÍNCULO',
       'panel.diary_title':       '◆ DIÁRIO DIMENSIONAL',

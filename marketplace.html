@@ -73,7 +73,7 @@ body{display:flex;flex-direction:column;min-height:100vh;}
    LAYOUT
 ═══════════════════════════════════════════ */
 .mkt-body{display:flex;flex:1;}
-.mkt-sidebar{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:4px;}
+.mkt-sidebar{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:4px;height:100%;overflow-y:auto;}
 .mkt-main{flex:1;padding:16px;}
 
 .mkt-nav-section{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 8px 4px;margin-top:4px;}
@@ -548,6 +548,10 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
 .miss-expired-sub{font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
 .btn-miss-danger{padding:7px 18px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:var(--red2);font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;width:100%;}
 .btn-miss-danger:hover{background:rgba(239,68,68,.22);}
+.btn-miss-privacy{padding:7px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--muted);font-family:'Cinzel',serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;width:100%;margin-top:6px;}
+.btn-miss-privacy:hover{background:rgba(255,255,255,.08);color:var(--text);}
+.btn-miss-privacy.locked{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.22);color:var(--gold);}
+.btn-miss-privacy.locked:hover{background:rgba(201,168,76,.13);}
 
 /* ── Disputa ── */
 .miss-dispute-box{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px;}
@@ -787,6 +791,12 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
       <span class="nav-icon">🔍</span><span data-i18n="mkt.nav.pool"> Pool & Transparência</span>
     </button>
+    <div style="margin-top:auto;padding:10px 4px 4px;">
+      <a href="https://discord.gg/rsjV5R2r" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);color:#8b9cf4;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;letter-spacing:.3px;" onmouseover="this.style.background='rgba(88,101,242,.18)'" onmouseout="this.style.background='rgba(88,101,242,.08)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.036.052a19.85 19.85 0 0 0 5.993 3.03.08.08 0 0 0 .085-.026c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Comunidade Discord
+      </a>
+    </div>
   </nav>
 
   <!-- MAIN -->
@@ -1323,6 +1333,7 @@ async function renderMissoes(append) {
     if(_missFilterVal === 'done')     docs = docs.filter(m => m.status === 'done');
     if(_missFilterVal === 'dispute')  docs = docs.filter(m => m.status === 'dispute');
     if(_missFilterVal === 'mine')     docs = docs.filter(m => m.employer === walletAddress || m.selectedWorker === walletAddress);
+    docs = docs.filter(m => !m.isPrivate || m.employer === walletAddress || m.selectedWorker === walletAddress);
     if(_missSearchQuery) {
       const q2 = _missSearchQuery;
       docs = docs.filter(m => (m.title||'').toLowerCase().includes(q2) || (m.desc||'').toLowerCase().includes(q2));
@@ -1360,7 +1371,10 @@ async function renderMissoes(append) {
         <div class="miss-card-body">
           <div class="miss-card-top">
             <div class="miss-card-title">${icon} ${m.title||'—'}</div>
-            <div class="miss-status ${expired ? 'dispute' : sc}">${expired ? '⏰ Expirada' : sl}</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${m.isPrivate ? `<span title="Missão privada" style="font-size:10px;color:var(--gold);opacity:.7;">🔒</span>` : ''}
+              <div class="miss-status ${expired ? 'dispute' : sc}">${expired ? '⏰ Expirada' : sl}</div>
+            </div>
           </div>
           <div class="miss-card-desc">${m.desc||''}</div>
           <div class="miss-card-meta">
@@ -1529,6 +1543,7 @@ async function missOpenDetail(id) {
             <div class="miss-det-owner-title">✦ Candidato Selecionado</div>
             <div class="miss-det-owner-sub">A aguardar que <strong style="color:var(--text)">${addr}</strong> confirme a participação e deposite a garantia. Tens <strong style="color:var(--gold)">${MISS_AWAITING_TIMEOUT_H}h</strong> até o prazo expirar.</div>
             <button class="btn-miss-danger" style="margin-top:10px;" onclick="missReverterSelecao('${id}')">↩ Cancelar Seleção</button>
+            <button class="btn-miss-privacy ${m.isPrivate ? 'locked' : ''}" onclick="missTogglePrivacidade('${id}',${!!m.isPrivate})">${m.isPrivate ? '🔒 Privada — Tornar Pública' : '🔓 Tornar Privada'}</button>
           </div>`;
         return;
       }
@@ -1552,6 +1567,7 @@ async function missOpenDetail(id) {
             </div>
             <div style="margin-top:10px;">
               <button class="btn-miss-danger" onclick="missAbrirDisputa('${id}','employer')">⚠️ Abrir Disputa</button>
+              <button class="btn-miss-privacy ${m.isPrivate ? 'locked' : ''}" onclick="missTogglePrivacidade('${id}',${!!m.isPrivate})">${m.isPrivate ? '🔒 Privada — Tornar Pública' : '🔓 Tornar Privada'}</button>
             </div>
           </div>`;
         return;
@@ -2171,6 +2187,19 @@ async function missReverterSelecao(missId) {
   }
 }
 
+// ══ PRIVACIDADE DE MISSÃO ══
+
+async function missTogglePrivacidade(missId, isPrivate) {
+  try {
+    await db.collection('missoes').doc(missId).update({ isPrivate: !isPrivate });
+    showToast(isPrivate ? '🔓 Missão tornada pública.' : '🔒 Missão tornada privada.');
+    missOpenDetail(missId);
+    if(currentSection === 'missoes') renderMissoes();
+  } catch(e) {
+    showToast('Erro ao alterar visibilidade. Tenta novamente.', 'err');
+  }
+}
+
 // ══ FEATURE 2 — RECLAMAR POT (TIMEOUT) ══
 
 async function missReclamarPot(missId, reward, reason) {
@@ -2295,7 +2324,7 @@ async function _missPostDisputaForum(missId, m, reason, side, evidenceA) {
         }],
       }),
     });
-    if(r.ok) { const d = await r.json(); return d.id || null; }
+    if(r.ok) { const d = await r.json(); return d.channel_id || d.id || null; }
   } catch(e) {}
   return null;
 }

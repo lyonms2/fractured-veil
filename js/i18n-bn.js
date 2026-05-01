@@ -15,8 +15,8 @@ window.registerStrings(
     'bn.all_placed':     '✅ Todos os navios posicionados!',
     'bn.placing':        'A colocar: <b>{nome}</b> ({tam} casas)',
     'bn.placed':         '✅ Colocado',
-    'bn.click_board':    'Clica no tabuleiro',
-    'bn.my_board_col':   'MEU TABULEIRO — clica para colocar',
+    'bn.click_board':    'Clique no tabuleiro',
+    'bn.my_board_col':   'MEU TABULEIRO — clique para colocar',
     'bn.undo':           '↩ DESFAZER',
     'bn.confirm_pos':    '✅ CONFIRMAR POSIÇÕES',
     'bn.waiting_op':     'Aguardando oponente...',
@@ -25,7 +25,7 @@ window.registerStrings(
     // Batalha
     'bn.your_turn':      '⚡ SUA VEZ',
     'bn.wait':           '⏳ AGUARDANDO',
-    'bn.click_fire':     '🎯 CLICA PARA ATIRAR',
+    'bn.click_fire':     '🎯 CLIQUE PARA ATIRAR',
     'bn.op_board':       '🌊 OPONENTE',
     'bn.op_board_lbl':   '🌊 TABULEIRO DO OPONENTE',
     'bn.my_board':       '🛡️ MEU TABULEIRO',
@@ -46,8 +46,8 @@ window.registerStrings(
     'bn.bub.reconnected':  'Reconectado! 🚢',
     'bn.bub.timeout':      'Tempo esgotado! ⏳',
     'bn.bub.invalid_pos':  'Posição inválida! 🚫',
-    'bn.bub.place_all':    'Coloca todos os navios primeiro!',
-    'bn.bub.hit':          'Acerto! 💥 Joga de novo!',
+    'bn.bub.place_all':    'Coloque todos os navios primeiro!',
+    'bn.bub.hit':          'Acerto! 💥 Jogue de novo!',
     'bn.bub.sunk':         '{nome} afundado! 🔥',
     'bn.bub.already_hit':  'Já atacada! ⚡',
 
@@ -60,13 +60,13 @@ window.registerStrings(
     'bn.log.hit':          'Batalha Naval: 💥 Acerto em {coord}',
     'bn.log.hit_sunk':     'Batalha Naval: 💥 Acerto em {coord} — {nome} afundado!',
     'bn.log.miss':         'Batalha Naval: 🌊 Água em {coord}',
-    'bn.log.abandoned':    'Abandonaste a partida. 🏳️',
+    'bn.log.abandoned':    'Você abandonou a partida. 🏳️',
     'bn.log.result':       'Batalha Naval: {titulo} · {meusAc} vs {opAc} acertos',
     'bn.log.recon_match':  'Reconectado à partida de Batalha Naval!',
     'bn.log.recv_from':    'Desafio de Batalha Naval recebido de {wallet}...',
 
     // How-to (multiline via {ships} e {size})
-    'bn.how_to_text':      '🚢 Coloca {ships} navios no teu tabuleiro {size}×{size}<br>🎯 Turnos alternados — escolhe uma coordenada do adversário<br>💥 Acerto → joga de novo · 🌊 Água → passa a vez<br>🏆 Quem afundar todos os navios do oponente vence',
+    'bn.how_to_text':      '🚢 Coloque {ships} navios no seu tabuleiro {size}×{size}<br>🎯 Turnos alternados — escolha uma coordenada do adversário<br>💥 Acerto → jogue de novo · 🌊 Água → passa a vez<br>🏆 Quem afundar todos os navios do oponente vence',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {

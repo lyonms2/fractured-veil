@@ -8,7 +8,7 @@ window.registerStrings(
     // main.js
     'main.bub.inativo':      'Vai sair? Ativa o repouso! 🌙',
     'main.log.inativo':      'Inativo há 5min — segure 💤 DORMIR para ativar o modo repouso.',
-    'main.log.slot_changed': 'Slot activo alterado para Slot {n} via Marketplace.',
+    'main.log.slot_changed': 'Slot ativo alterado para Slot {n} via Marketplace.',
     'main.log.inbox_eggs':   '🥚 Novos ovos recebidos!',
     'main.bub.inbox_eggs':   'Ovos chegaram! 🥚',
     'main.zoom.info':        '{elem} · {rar} · {fase} · Nível {nivel}',
@@ -21,12 +21,12 @@ window.registerStrings(
     'wallet.log.restored':     'Estado restaurado da nuvem! ☁️',
     'wallet.log.wake_offline': 'Acordou com energia plena enquanto estava offline! ☀️',
     'wallet.log.mode_woke':    '☀️ acordou enquanto ausente',
-    'wallet.log.mode_repouso': '💤 modo repouso activo',
+    'wallet.log.mode_repouso': '💤 modo repouso ativo',
     'wallet.log.mode_active':  'stats atualizados',
     'wallet.log.offline':      'Ausente por {h}h {m}min — {modo}.',
     'wallet.log.died_offline': '{nome} não sobreviveu à sua ausência...',
     'wallet.log.dead_time':    'Viveu {time} · Vínculo: {vinculo}',
-    'wallet.log.repouso':      'Modo repouso activo. 💤',
+    'wallet.log.repouso':      'Modo repouso ativo. 💤',
     'wallet.log.no_save':      'Nenhum save encontrado. Comece uma nova aventura!',
     'wallet.label.repouso':    'REPOUSO',
     'wallet.err.blocked':      'Desbloqueie o MetaMask primeiro.',
@@ -37,7 +37,7 @@ window.registerStrings(
 
     // summon.js
     'summon.log.no_login':   'Faz login primeiro!',
-    'summon.bub.no_login':   'Precisas fazer login! 🔑',
+    'summon.bub.no_login':   'Faça login primeiro! 🔑',
     'summon.log.legendary':  '🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!',
     'summon.log.rare':       '✨ Invocação Rara! Um guardião experiente surge!',
     'summon.log.common':     'Uma entidade dimensional foi invocada!',

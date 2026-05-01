@@ -42,7 +42,7 @@ window.registerStrings(
     'mg.heal.bub.healthy':   'Estou bem!',
     'mg.heal.bub.no_coins':  'Sem moedas... 😢',
     'mg.heal.bub.better':    'Me sinto melhor! 💊',
-    'mg.heal.log.diseases':  '⚠️ Tens {n} doença(s) activa(s)! O Medicar recupera saúde mas não cura doenças — usa o Antídoto Dimensional (300 🪙) na loja.',
+    'mg.heal.log.diseases':  '⚠️ Você tem {n} doença(s) ativa(s)! O Medicar recupera saúde mas não cura doenças — use o Antídoto Dimensional (300 🪙) na loja.',
     'mg.heal.log.no_coins':  'Precisa de {cost} 🪙 para medicar!',
     'mg.heal.log.healed':    'Medicado! +40 saúde  (-40 🪙)',
 
@@ -51,7 +51,7 @@ window.registerStrings(
     'mg.antidote.bub.no_coins': 'Sem moedas para o antídoto... 😢',
     'mg.antidote.bub.cured':    'Curado! ✨',
     'mg.antidote.log.healthy':  'O avatar está saudável — antídoto não é necessário.',
-    'mg.antidote.log.no_coins': 'Precisas de {cost} 🪙 para o Antídoto Dimensional!',
+    'mg.antidote.log.no_coins': 'Você precisa de {cost} 🪙 para o Antídoto Dimensional!',
     'mg.antidote.msg.multi':    '{n} doenças curadas!',
     'mg.antidote.msg.one':      'Doença curada!',
     'mg.antidote.msg.none':     'Recuperado!',

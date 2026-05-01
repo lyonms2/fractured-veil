@@ -42,13 +42,13 @@ window.registerStrings(
 
     // Hatch confirm modal (HTML)
     'egg.hatch.slots_full':  'Todos os slots estão ocupados.<br>Liberta um slot no Marketplace antes de chocar.',
-    'egg.hatch.multi_slot':  'O novo avatar nascerá no <b style="color:#7ab87a">Slot {slot}</b>.<br>O teu avatar activo <b style="color:#e8a030">{nome}</b> continua no Slot {activeSlot}.<br><span style="font-size:7px;color:var(--muted);">Activa o novo avatar no Marketplace → Meus Avatares.</span>',
-    'egg.hatch.same_slot':   'O ovo nascerá no Slot {slot}.<br>Clica 5× para fazer nascer o teu novo avatar.',
-    'egg.hatch.need_gems':   '<br><br><span style="color:#f87171;font-size:8px;">⚠️ Precisas de <b>{fee} 💎</b> para chocar.<br>Saldo actual: {saldo} 💎</span>',
+    'egg.hatch.multi_slot':  'O novo avatar nascerá no <b style="color:#7ab87a">Slot {slot}</b>.<br>Seu avatar ativo <b style="color:#e8a030">{nome}</b> continua no Slot {activeSlot}.<br><span style="font-size:7px;color:var(--muted);">Ative o novo avatar no Marketplace → Meus Avatares.</span>',
+    'egg.hatch.same_slot':   'O ovo nascerá no Slot {slot}.<br>Clique 5× para fazer nascer seu novo avatar.',
+    'egg.hatch.need_gems':   '<br><br><span style="color:#f87171;font-size:8px;">⚠️ Você precisa de <b>{fee} 💎</b> para chocar.<br>Saldo atual: {saldo} 💎</span>',
     'egg.hatch.fee':         '<br><br><span style="color:#a78bfa;font-size:8px;">Taxa de choco: <b>{fee} 💎</b></span>',
 
     // Egg screen
-    'egg.hint.hatching':     'A chocar...',
+    'egg.hint.hatching':     'Chocando...',
 
     // Inventário
     'egg.inv.count':         '{n} / {max} ovo{s}',

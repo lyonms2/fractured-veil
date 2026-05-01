@@ -17,7 +17,7 @@ window.registerStrings(
     'item.tooltip.days_warn': '{d}d restantes!',
     'item.tooltip.days':      '{nome} ({d}d)',
     'item.log.expired':       '⏳ {nome} expirou após 30 dias.',
-    'item.log.cenario_full':  'Já tens uma decoração de cenário equipada.',
+    'item.log.cenario_full':  'Você já tem uma decoração de cenário equipada.',
     'item.log.max_equipped':  'Máximo de {max} itens equipados.',
     'item.log.equipped':      '{emoji} {nome} equipado!',
     'item.log.unequipped':    '{emoji} {nome} desequipado.',
