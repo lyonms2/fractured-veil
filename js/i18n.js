@@ -686,6 +686,7 @@ function applyI18nDOM() {
     const val = t(key);
     if(val !== key) {
       if(val.includes('\n')) el.innerHTML = val.replace(/\n/g, '<br>');
+      else if(val.includes('<')) el.innerHTML = val;
       else el.textContent = val;
     }
   });
