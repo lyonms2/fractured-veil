@@ -256,19 +256,33 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 .metamask-linked-addr{font-size:9px;color:var(--muted);font-family:monospace;}
 
 /* ── Referral / Convite ── */
-.referral-box{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px;margin-top:20px;}
+.referral-box{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px;margin-bottom:4px;}
 .referral-title{font-family:'Cinzel',serif;font-size:12px;color:var(--gold);margin-bottom:3px;}
 .referral-sub{font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
 .referral-link-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
 .referral-link-input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text2);font-family:monospace;font-size:9px;outline:none;min-width:0;}
 .btn-referral-copy{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;border:none;border-radius:6px;padding:7px 14px;font-family:'Cinzel',serif;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .2s;}
 .btn-referral-copy:hover{opacity:.85;}
-.referral-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.referral-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
 .referral-stat{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:80px;}
 .referral-stat-val{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);}
 .referral-stat-lbl{font-size:8px;color:var(--muted);margin-top:2px;}
-.referral-levels{font-size:8px;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:10px;margin-top:2px;}
-.referral-levels b{color:var(--text2);}
+/* Níveis e cards de jogadores */
+.referral-level-section{margin:20px 0 4px;}
+.referral-level-hdr{display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px;font-family:'Cinzel',serif;font-size:10px;color:var(--text2);}
+.referral-level-badge{background:var(--purple);color:#fff;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;}
+.referral-level-pct{color:var(--gold);margin-left:auto;font-size:10px;font-weight:700;}
+.referral-level-count{color:var(--muted);font-size:9px;}
+.referral-empty{font-size:10px;color:var(--muted);padding:14px;text-align:center;font-style:italic;background:rgba(0,0,0,.15);border-radius:8px;}
+.referral-players-list{display:flex;flex-direction:column;gap:6px;}
+.referral-player-card{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;}
+.referral-player-info{flex:1;min-width:0;}
+.referral-player-name{font-family:'Cinzel',serif;font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.referral-player-uid{font-family:monospace;font-size:7.5px;color:var(--muted);margin-top:1px;}
+.referral-player-active{font-size:8px;color:var(--green2);white-space:nowrap;}
+.referral-player-inactive{font-size:8px;color:var(--muted);white-space:nowrap;}
+.referral-footer-note{font-size:8px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);padding-top:12px;margin-top:16px;}
+.referral-footer-note b{color:var(--text2);}
 
 /* TX */
 .tx-verify-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:500px;}
@@ -805,6 +819,9 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
     <button class="mkt-nav-btn" onclick="showSection('missoes')" id="nav-missoes">
       <span class="nav-icon">⚔️</span><span data-i18n="mkt.nav.missions"> Missões</span><span class="miss-nav-badge" id="missNavBadge" style="display:none;"></span>
     </button>
+    <button class="mkt-nav-btn" onclick="showSection('referral')" id="nav-referral">
+      <span class="nav-icon">🔗</span><span> Convites</span>
+    </button>
     <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
     <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
       <span class="nav-icon">🔍</span><span data-i18n="mkt.nav.pool"> Pool & Transparência</span>
@@ -857,6 +874,10 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
       <div id="slotsGrid" class="slots-grid"></div>
       <div id="unlockSlotRow"></div>
     </div>
+
+    <!-- ── CONVITES / REFERRAL ── -->
+    <!-- Conteúdo preenchido dinamicamente por renderReferral() em cristais.js -->
+    <div class="mkt-section" id="sec-referral"></div>
 
     <!-- ── POOL & TRANSPARÊNCIA ── -->
     <div class="mkt-section" id="sec-transparencia">
@@ -1002,9 +1023,6 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
         </div>
         <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
       </div>
-
-      <!-- Card de referral preenchido por renderReferral() -->
-      <div id="referralCard"></div>
     </div>
 
     <!-- ── OVOS À VENDA ── -->
@@ -1285,7 +1303,8 @@ function showSection(id) {
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
   if(currentSection === 'slots')         renderSlots();
-  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); renderReferral(); }
+  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
+  if(currentSection === 'referral')      renderReferral();
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }
   if(currentSection === 'missoes')       { renderMissoes(); missCheckBadge(); }
@@ -3001,6 +3020,9 @@ function _missHandleQRResult(raw, missId, reward) {
     </button>
     <button class="mkt-bn-btn" id="mbn-missoes" onclick="showSection('missoes');_mbnActive(this)">
       <span class="bn-icon">⚔️</span><span data-i18n="mkt.nav.missions">Missões</span><span class="miss-nav-badge" id="missBnBadge" style="display:none;"></span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-referral" onclick="showSection('referral');_mbnActive(this)">
+      <span class="bn-icon">🔗</span><span>Convites</span>
     </button>
     <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
       <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>

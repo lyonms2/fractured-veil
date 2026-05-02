@@ -250,54 +250,128 @@ async function resgatar() {
 }
 
 // ═══════════════════════════════════════════
-// REFERRAL — Link de convite e estatísticas
+// REFERRAL — Aba completa de convites
 // ═══════════════════════════════════════════
-function renderReferral() {
-  const card = document.getElementById('referralCard');
-  if(!card || !walletAddress) return;
 
-  // Link de convite: aponta para index.html (onde fica o formulário de registro)
-  // O ?ref= é lido por auth.js antes mesmo do login e salvo no localStorage.
+// Renderiza o cabeçalho (link + stats) de imediato, depois carrega a
+// lista de convidados por nível via 3 queries paralelas ao Firestore.
+async function renderReferral() {
+  const sec = document.getElementById('sec-referral');
+  if(!sec || !walletAddress) return;
+
   const refLink = `${location.origin}/?ref=${walletAddress}`;
+  const earned  = playerData?.referralEarned || 0;
+  const count   = playerData?.referralCount  || 0;
 
-  const earned = playerData?.referralEarned || 0;
-  const count  = playerData?.referralCount  || 0;
+  sec.innerHTML = `
+    <div class="section-title">🔗 Programa de Convites</div>
+    <div class="section-sub">Convide amigos e ganhe 💎 cristais quando eles sacarem — até 3 níveis de profundidade.</div>
 
-  card.innerHTML = `
     <div class="referral-box">
-      <div class="referral-title">🔗 Seu Link de Convite</div>
+      <div class="referral-title">Seu link de convite</div>
       <div class="referral-sub">
-        Convide amigos para o jogo e ganhe <b style="color:var(--gold);">💎 cristais</b> toda vez que eles sacarem.<br>
-        Os créditos vão direto para seu saldo — sem nenhuma ação necessária.
+        Envie este link para quem quiser convidar. Quando eles se registrarem e sacarem cristais,
+        você recebe automaticamente no seu saldo — sem nenhuma ação.
       </div>
-
       <div class="referral-link-row">
         <input class="referral-link-input" id="referralLinkInput" type="text"
-          value="${refLink}" readonly onclick="this.select();" />
+          value="${refLink}" readonly onclick="this.select();"/>
         <button class="btn-referral-copy" onclick="_referralCopiarLink()">📋 Copiar</button>
       </div>
-
       <div class="referral-stats">
         <div class="referral-stat">
           <div class="referral-stat-val">${count}</div>
-          <div class="referral-stat-lbl">👥 Convidados<br>diretos</div>
+          <div class="referral-stat-lbl">👥 Convidados<br>diretos (L1)</div>
         </div>
         <div class="referral-stat">
           <div class="referral-stat-val">💎 ${fmtC(earned)}</div>
-          <div class="referral-stat-lbl">🏆 Total<br>ganho</div>
+          <div class="referral-stat-lbl">🏆 Total ganho<br>em convites</div>
         </div>
       </div>
+    </div>
 
-      <div class="referral-levels">
-        <b>Como funciona:</b><br>
-        🥇 <b>Nível 1</b> (seus convidados): <b style="color:var(--gold);">5%</b> de cada saque deles<br>
-        🥈 <b>Nível 2</b> (convidados dos seus convidados): <b style="color:var(--gold);">2%</b> de cada saque<br>
-        🥉 <b>Nível 3</b> (3º grau): <b style="color:var(--gold);">1%</b> de cada saque<br>
-        <span style="color:var(--muted);font-size:7.5px;margin-top:4px;display:block;">
-          Os cristais são creditados automaticamente no seu saldo quando alguém da sua rede saca. O bônus vem do valor sacado — quem convida recebe, quem saca fica com o restante em MATIC. Nenhuma inflação: a pool permanece sempre equilibrada.
-        </span>
+    <div id="referralLevelsList">
+      <div class="loading" style="margin-top:20px;">
+        <div class="spinner"></div>
+        <div style="font-size:10px;color:var(--muted);">Carregando sua rede...</div>
       </div>
     </div>`;
+
+  // Queries paralelas ao Firestore: quem tem meu UID em cada nível da cadeia
+  try {
+    const [l1Snap, l2Snap, l3Snap] = await Promise.all([
+      db.collection('players').where('referralChain.l1', '==', walletAddress).get(),
+      db.collection('players').where('referralChain.l2', '==', walletAddress).get(),
+      db.collection('players').where('referralChain.l3', '==', walletAddress).get(),
+    ]);
+
+    const el = document.getElementById('referralLevelsList');
+    if(!el) return;
+
+    el.innerHTML =
+      _referralLevelHtml(l1Snap, 1, 5, 'Seus convidados diretos') +
+      _referralLevelHtml(l2Snap, 2, 2, 'Convidados dos seus convidados') +
+      _referralLevelHtml(l3Snap, 3, 1, '3º grau da rede') +
+      `<div class="referral-footer-note">
+        <b>Como funciona:</b><br>
+        🥇 <b>L1 — diretos:</b> você ganha <b style="color:var(--gold);">5%</b> de cada saque deles<br>
+        🥈 <b>L2 — convidados dos seus:</b> você ganha <b style="color:var(--gold);">2%</b> de cada saque<br>
+        🥉 <b>L3 — 3º grau:</b> você ganha <b style="color:var(--gold);">1%</b> de cada saque<br>
+        <span style="font-size:7.5px;display:block;margin-top:4px;">
+          O bônus é descontado do valor sacado pelo convidado — a pool permanece sempre equilibrada, sem inflação.
+        </span>
+      </div>`;
+  } catch(e) {
+    const el = document.getElementById('referralLevelsList');
+    if(el) el.innerHTML = `<div style="color:var(--red2);font-size:10px;margin-top:16px;text-align:center;">Erro ao carregar rede de convites.</div>`;
+  }
+}
+
+// Gera o HTML de uma seção de nível (L1/L2/L3) com os jogadores encontrados
+function _referralLevelHtml(snap, lvl, pct, label) {
+  const badgeColor = lvl === 1 ? 'var(--purple)' : lvl === 2 ? '#1e6b9e' : '#2d6b3a';
+  const header = `
+    <div class="referral-level-section">
+      <div class="referral-level-hdr">
+        <span class="referral-level-badge" style="background:${badgeColor};">L${lvl}</span>
+        <span>${label}</span>
+        <span class="referral-level-pct">${pct}%</span>
+        ${!snap.empty ? `<span class="referral-level-count">${snap.size} jogador${snap.size !== 1 ? 'es' : ''}</span>` : ''}
+      </div>`;
+
+  if(snap.empty) {
+    return header + `<div class="referral-empty">Nenhum jogador ainda — compartilhe seu link!</div></div>`;
+  }
+
+  const cards = snap.docs.map(doc => {
+    const d       = doc.data();
+    const slotIdx = d.gs?.activeSlotIdx ?? d.activeSlotIdx ?? 0;
+    const slot    = (d.avatarSlots || [])[slotIdx];
+    const nome    = slot?.nome?.split(',')[0] || 'Sem avatar';
+    const rarity  = slot?.raridade || '';
+    const rColor  = rarity === 'Lendário' ? 'var(--gold)'
+                  : rarity === 'Raro'     ? 'var(--gem2)'
+                  : 'var(--muted)';
+    const cristais = d.gs?.cristais ?? d.cristais ?? 0;
+    const active   = cristais > 0;
+    const shortUid = doc.id.slice(0, 5) + '...' + doc.id.slice(-4);
+
+    return `
+      <div class="referral-player-card">
+        <div class="referral-player-info">
+          <div class="referral-player-name">${nome}</div>
+          <div class="referral-player-uid">${shortUid}</div>
+        </div>
+        <div style="font-size:8.5px;color:${rColor};text-align:right;white-space:nowrap;">
+          ${rarity || 'Comum'}<br>
+          ${active
+            ? '<span class="referral-player-active">● Ativo</span>'
+            : '<span class="referral-player-inactive">○ Inativo</span>'}
+        </div>
+      </div>`;
+  }).join('');
+
+  return header + `<div class="referral-players-list">${cards}</div></div>`;
 }
 
 function _referralCopiarLink() {
