@@ -11,9 +11,10 @@
 //  action=resolver  → Resolve disputa após 10 votos (10% taxa)
 // ═══════════════════════════════════════════════════════════════
 
-const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
-const { getAuth }                      = require('firebase-admin/auth');
+const { initializeApp, cert, getApps }   = require('firebase-admin/app');
+const { getFirestore, FieldValue }       = require('firebase-admin/firestore');
+const { getAuth }                        = require('firebase-admin/auth');
+const { sendAwardsWebhook, getPlayerName } = require('./_discord');
 
 const MISS_FEE_RATE         = 0.05;
 const MISS_DISPUTE_FEE_RATE = 0.10;
@@ -112,6 +113,18 @@ async function handleFinalizar(res, db, uid, missId) {
       return { workerAmt, fee, worker: m.selectedWorker };
     });
     _sendAudit('✅ Missão Concluída', [['Missão', missId], ['Empregador', m.employer], ['Worker', m.selectedWorker], ['Pago (💎)', result.workerAmt], ['Taxa pool (💎)', result.fee]], 0x10b981);
+
+    // Publicar no canal de premiações (fire-and-forget)
+    getPlayerName(db, m.selectedWorker).then(nome => sendAwardsWebhook({
+      title: '✅ Missão Concluída!',
+      description: `**${m.title || 'Missão'}**\n${nome} completou a missão e recebeu a recompensa.`,
+      color: 0x10b981,
+      fields: [
+        { name: '💎 Recebido pelo worker', value: `${result.workerAmt} cristais`, inline: true },
+        { name: '🏦 Taxa da pool',         value: `${result.fee} cristais`,       inline: true },
+      ],
+    })).catch(() => {});
+
     return res.status(200).json({ ok: true, ...result });
   } catch (err) {
     if (err.code === 'stale') return res.status(409).json({ erro: err.message });
@@ -171,6 +184,18 @@ async function handleResolver(res, db, uid, missId) {
       return { winner, winnerAmt, voterAmt, voterCount: voterUids.length };
     });
     _sendAudit('⚖️ Disputa Resolvida', [['Missão', missId], ['Vencedor', result.winner], ['Valor ganho (💎)', result.winnerAmt], ['Votantes', result.voterCount], ['Por votante (💎)', result.voterAmt]], 0xf59e0b);
+
+    // Publicar no canal de premiações (fire-and-forget)
+    getPlayerName(db, result.winner).then(nome => sendAwardsWebhook({
+      title: '⚖️ Disputa de Missão Resolvida!',
+      description: `${nome} venceu a disputa e levou o prêmio.`,
+      color: 0xf59e0b,
+      fields: [
+        { name: '💎 Prêmio do vencedor', value: `${result.winnerAmt} cristais`,                                                              inline: true },
+        { name: '⚖️ Jurados',           value: `${result.voterCount} votante${result.voterCount !== 1 ? 's' : ''} · 💎 ${result.voterAmt} cada`, inline: true },
+      ],
+    })).catch(() => {});
+
     return res.status(200).json({ ok: true, ...result });
   } catch (err) {
     if (err.code === 'already_done') return res.status(409).json({ erro: 'Disputa já resolvida' });
