@@ -2,11 +2,14 @@
    MODAL SHELL — encaixa o marketplace (sidebar + main) dentro do
    .mini-modal/.modal-card padrão do jogo (ver css/modals.css)
 ═══════════════════════════════════════════ */
-#marketplaceModal.mini-modal { padding:12px; justify-content:center; align-items:center; overflow:hidden; }
+/* Ocupa a tela inteira (sem margem/borda arredondada) — em telas grandes
+   aproveita todo o espaço em vez de ficar preso a um max-width pequeno. */
+#marketplaceModal.mini-modal { padding:0; justify-content:center; align-items:center; overflow:hidden; }
 #marketplaceModal .modal-card {
-  padding:0; width:100%; max-width:1040px;
+  padding:0; width:100%; max-width:none;
   height:100%; max-height:100%; overflow:hidden;
   justify-content:flex-start;
+  border-radius:0; border:none;
 }
 #marketplaceModal .modal-header { flex-shrink:0; }
 #marketplaceModal .mktmp-body { height:100%; min-height:0; }
