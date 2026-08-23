@@ -180,7 +180,10 @@ const COMBATE_SLOTS = [
   { papel:'forte',   custo:50, gera:0,  tipo:'dano',
     calc: f => Math.round(Math.max(f.FOR, f.INT) * 2.4 + Math.min(f.FOR, f.INT) * 1.0) },
   { papel:'suporte', custo:20, gera:0,  tipo:'escudo',
-    calc: f => Math.round(f.RES * 2.5) },
+    // RES x1.6 e não x2.5 como na spec: a RES já dá 10 de HP por ponto,
+    // e com o escudo a x2.5 ela contava duas vezes — o elemento de RES
+    // alta ficava com HP efectivo tão grande que a batalha não fechava.
+    calc: f => Math.round(f.RES * 1.6) },
 ];
 
 // ── OS 7 KITS ──
