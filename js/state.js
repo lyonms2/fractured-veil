@@ -202,9 +202,17 @@ let activeSlotIdx = 0;
 // var + guard (não const): js/avatars-market.js declara os mesmos nomes para
 // funcionar standalone em marketplace.html — evita SyntaxError de redeclaração
 // quando ambos os arquivos carregam juntos em index.html.
-if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 3;
-if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 5;
+// 5 slots grátis (a equipa de combate são 3, sobra margem para rodar)
+// e mais 5 compráveis com cristais, até 10.
+if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 5;
+if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
 const SLOT_COST   = 15;
+
+// ── INVOCAÇÃO ──
+// Os 3 primeiros avatares são grátis — é a equipa mínima para o combate.
+// A partir daí a invocação custa moedas, para não desvalorizar os ovos.
+const SUMMON_GRATIS   = 3;
+const SUMMON_CUSTO    = 500;
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));

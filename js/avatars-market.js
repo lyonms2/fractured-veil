@@ -12,8 +12,8 @@
 // arquivo é carregado junto com o jogo principal (index.html) — evita
 // SyntaxError de redeclaração, mantendo compatibilidade standalone com
 // marketplace.html (que não carrega state.js).
-if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 3;
-if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 5;
+if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 5;
+if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
 
 // ═══════════════════════════════════════════
 // SYNC COM O ESTADO VIVO DO JOGO (index.html mesclado)

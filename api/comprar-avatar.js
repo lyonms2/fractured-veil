@@ -203,8 +203,8 @@ async function handleDeslistarAvatar(req, res, db, uid) {
 // ── Desbloquear slot extra (atómico, server-side) ────────────────
 async function handleDesbloquearSlot(_req, res, db, uid) {
   const UNLOCK_COST = 15;
-  const BASE_SLOTS  = 3;
-  const MAX_SLOTS   = 5;
+  const BASE_SLOTS  = 5;   // grátis
+  const MAX_SLOTS   = 10;  // os 5 acima do base compram-se com cristais
 
   const playerRef = db.collection('players').doc(uid);
 
