@@ -27,6 +27,7 @@ const ModalManager = {
       if(btn) btn.classList.add('disabled');
     }
     this._syncHelpBtn();
+    this._syncBodyScroll();
   },
 
   close(id) {
@@ -38,6 +39,7 @@ const ModalManager = {
       if(this._onClose) { this._onClose(); this._onClose = null; }
     }
     this._syncHelpBtn();
+    this._syncBodyScroll();
   },
 
   closeAll() {
@@ -48,6 +50,7 @@ const ModalManager = {
     const btn = document.getElementById('btnPlay');
     if(btn) btn.classList.remove('disabled');
     this._syncHelpBtn();
+    this._syncBodyScroll();
   },
 
   isOpen(id) { return this.current === id; },
@@ -71,6 +74,13 @@ const ModalManager = {
   _syncHelpBtn() {
     const btn = document.getElementById('gameHelpBtn');
     if(btn) btn.style.display = this.anyOpen() ? 'none' : 'flex';
+  },
+
+  // Trava o scroll/arraste da página principal enquanto um modal está
+  // aberto — sem isto, o modal cobre a tela visualmente mas o dedo/scroll
+  // ainda arrasta o body por baixo dele.
+  _syncBodyScroll() {
+    document.body.classList.toggle('modal-scroll-lock', this.anyOpen());
   }
 };
 

@@ -22,6 +22,14 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Travado pelo ModalManager (js/modal.js) enquanto qualquer modal está
+   aberto — sem isto, o modal cobre a tela visualmente mas o scroll/arraste
+   ainda passa por baixo dele e mexe na página principal. */
+body.modal-scroll-lock {
+  overflow: hidden;
+  touch-action: none;
+}
+
 /* ── Desktop: zoom 1.5 escala tudo parelho (letras, px, bordas, ícones) ── */
 @media(min-width:681px) {
   html { zoom: 1.5; }
