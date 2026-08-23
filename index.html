@@ -752,6 +752,15 @@
           <button class="btn-summon" id="btnSummon" onclick="triggerSummon()">
             <span id="btnSummonLabel" data-i18n="ui.summon_btn">▶ Invocar Avatar (Gratuito)</span>
           </button>
+          <!-- Aviso para quando as invocações grátis acabaram e não há moedas.
+               Sem isto o jogador ficava num slot vazio sem botões de ação, sem
+               o ícone das moedas e sem nenhuma pista de como voltar ao jogo. -->
+          <div id="summonLockHint" style="display:none;margin-top:10px;padding:10px;border:1px solid rgba(232,160,48,.35);border-radius:6px;background:rgba(232,160,48,.06);text-align:center;">
+            <div style="font-size:15px;margin-bottom:6px;">🔒</div>
+            <div id="summonLockTitle" style="font-family:'Cinzel',serif;font-size:7px;color:#e8a030;letter-spacing:1px;margin-bottom:6px;"></div>
+            <div id="summonLockDesc" style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;"></div>
+            <button id="summonLockBtn" class="btn-connect-wallet" onclick="voltarAoAvatarVivo()"></button>
+          </div>
         </div>
       </div>
 

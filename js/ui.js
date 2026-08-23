@@ -88,10 +88,12 @@ function updateResourceUI() {
   if(resItems) resItems.textContent = itemInventory.length;
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
-  // Os 3 primeiros são grátis; a partir daí o botão mostra o preço
+  // As primeiras INVOCACOES_GRATIS são grátis; a partir daí o botão mostra o preço
   const _custoInv = typeof custoDaInvocacao === 'function' ? custoDaInvocacao() : 0;
   document.getElementById('btnSummonLabel').textContent =
     _custoInv > 0 ? t('ui.summon_btn_paid', { cost: _custoInv }) : t('ui.summon_btn');
+  // Se o preço estiver fora do alcance, explica porquê e dá a saída
+  if(typeof updateSummonLockHint === 'function') updateSummonLockHint();
   // FIX: actualiza visibilidade dos botões do header após qualquer mudança de estado
   if(typeof updateHeaderButtons === 'function' && walletAddress) updateHeaderButtons();
 }

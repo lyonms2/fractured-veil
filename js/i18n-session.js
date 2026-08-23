@@ -15,8 +15,12 @@ window.registerStrings(
 
     // summon.js
     'summon.log.no_login':   'Faz login primeiro!',
-    'summon.log.no_coins':   'Precisa de {cost} 🪙 para invocar outro avatar. Os 3 primeiros são grátis.',
+    'summon.log.no_coins':   'Precisa de {cost} 🪙 para invocar outro avatar. Volte a um avatar seu e jogue os minigames para ganhar moedas.',
     'summon.bub.no_coins':   'Moedas insuficientes... 😢',
+    'summon.lock.title':     'INVOCAÇÕES GRÁTIS ESGOTADAS',
+    'summon.lock.desc':      'A próxima invocação custa {cost} 🪙 e tem {have} 🪙 — faltam {missing} 🪙. Volte a um avatar seu e jogue os minigames para ganhar moedas.',
+    'summon.lock.desc_nofree':'A próxima invocação custa {cost} 🪙 e ainda não tem o suficiente. Jogue os minigames para ganhar moedas.',
+    'summon.lock.btn':       '↩ VOLTAR AO SLOT {n}',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
     'summon.log.legendary':  '🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!',
     'summon.log.rare':       '✨ Invocação Rara! Um guardião experiente surge!',
@@ -46,8 +50,12 @@ window.registerStrings(
 
     // summon.js
     'summon.log.no_login':   'Log in first!',
-    'summon.log.no_coins':   'You need {cost} 🪙 to summon another avatar. The first 3 are free.',
+    'summon.log.no_coins':   'You need {cost} 🪙 to summon another avatar. Go back to one of your avatars and play the minigames to earn coins.',
     'summon.bub.no_coins':   'Not enough coins... 😢',
+    'summon.lock.title':     'FREE SUMMONS USED UP',
+    'summon.lock.desc':      'The next summon costs {cost} 🪙 and you have {have} 🪙 — {missing} 🪙 short. Go back to one of your avatars and play the minigames to earn coins.',
+    'summon.lock.desc_nofree':'The next summon costs {cost} 🪙 and you do not have enough yet. Play the minigames to earn coins.',
+    'summon.lock.btn':       '↩ BACK TO SLOT {n}',
     'summon.bub.no_login':   'You need to log in! 🔑',
     'summon.log.legendary':  '🌟 LEGENDARY SUMMON! A primordial entity answered the call!',
     'summon.log.rare':       '✨ Rare Summon! An experienced guardian emerges!',

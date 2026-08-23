@@ -22,6 +22,60 @@ function custoDaInvocacao() {
   return (gs.totalInvocacoes || 0) < INVOCACOES_GRATIS ? 0 : SUMMON_CUSTO;
 }
 
+// Índice do primeiro slot com um avatar vivo, ou -1 se não houver nenhum.
+function primeiroSlotVivo() {
+  if(typeof avatarSlots === 'undefined') return -1;
+  return avatarSlots.findIndex(s => s && !s.dead);
+}
+
+// Leva o jogador de volta a um avatar que ele já tem. É a saída do beco sem
+// saída: num slot vazio os botões de ação estão desligados e o ícone das
+// moedas escondido, portanto sem isto não havia forma de chegar aos
+// minigames para ganhar as moedas da próxima invocação.
+function voltarAoAvatarVivo() {
+  const i = primeiroSlotVivo();
+  if(i < 0) return;
+  if(typeof closeMarketplaceModal === 'function') closeMarketplaceModal();
+  if(typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
+  switchSlot(i);
+}
+
+// Mostra/esconde o aviso de bloqueio no painel de invocação.
+// Chamado por updateResourceUI(), ou seja, depois de qualquer mudança de
+// estado (trocar de slot, ganhar moedas num minigame, invocar).
+function updateSummonLockHint() {
+  const box = document.getElementById('summonLockHint');
+  if(!box) return;
+  const btn = document.getElementById('btnSummon');
+
+  const custo    = custoDaInvocacao();
+  // Só interessa num slot vazio — é aí que o painel de invocação aparece
+  const semSaldo = !avatar && custo > 0 && gs.moedas < custo;
+
+  if(!semSaldo) {
+    box.style.display = 'none';
+    if(btn) btn.disabled = false;
+    return;
+  }
+
+  box.style.display = 'block';
+  if(btn) btn.disabled = true;
+
+  const falta = custo - gs.moedas;
+  const alvo  = primeiroSlotVivo();
+  document.getElementById('summonLockTitle').textContent =
+    t('summon.lock.title', { cost: custo });
+  document.getElementById('summonLockDesc').textContent =
+    alvo >= 0 ? t('summon.lock.desc', { have: gs.moedas, cost: custo, missing: falta })
+              : t('summon.lock.desc_nofree', { cost: custo });
+
+  const b = document.getElementById('summonLockBtn');
+  if(b) {
+    b.style.display   = alvo >= 0 ? '' : 'none';
+    b.textContent     = t('summon.lock.btn', { n: alvo + 1 });
+  }
+}
+
 function triggerSummon() {
   if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
   const btn = document.getElementById('btnSummon');
