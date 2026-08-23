@@ -390,3 +390,68 @@ function updateEquippedDisplay() {
     `<span style="position:absolute;font-size:11px;opacity:.7;pointer-events:none;" title="${item.nome}">${item.emoji}</span>`
   ).join('');
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// RECONSTRUIR ECRÃS AO TROCAR DE SLOT
+//
+// A lógica que decide qual ecrã mostrar (inicial / ovo / vivo / morto)
+// só existia dentro do _onLoginSuccess, portanto trocar de slot mudava
+// o estado mas deixava a interface a mostrar o avatar anterior — só um
+// refresh à página é que corrigia.
+//
+// Chamada pelo switchSlot() em state.js.
+// ═══════════════════════════════════════════════════════════════════
+function rebuildScreensParaSlot() {
+  const $ = id => document.getElementById(id);
+  const set = (id, v) => { const el = $(id); if(el) el.style.display = v; };
+  const btns = $('actionBtns');
+
+  if(!avatar) {
+    // Slot vazio — volta ao ecrã inicial com o painel de invocar
+    set('idleScreen','flex'); set('eggScreen','none');
+    set('aliveScreen','none'); set('deadScreen','none');
+    set('creatureCard','none'); set('statusCard','none');
+    set('summonCard','block');
+    if(walletAddress) set('summonSection','block');
+    const b = $('btnSummon'); if(b) b.disabled = false;
+    if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
+    const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
+    if(typeof updateResourceUI === 'function') updateResourceUI();
+    return;
+  }
+
+  if(dead) {
+    set('idleScreen','none'); set('eggScreen','none');
+    set('aliveScreen','none'); set('deadScreen','flex');
+    set('summonCard','none'); set('creatureCard','none'); set('statusCard','none');
+    if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
+    if(typeof updateResourceUI === 'function') updateResourceUI();
+    return;
+  }
+
+  if(!hatched) {
+    // Ovo por chocar — setupAvatar já põe os ecrãs certos
+    if(typeof setupAvatar === 'function') setupAvatar();
+    if(typeof updateResourceUI === 'function') updateResourceUI();
+    return;
+  }
+
+  // Avatar vivo
+  if(typeof setupAvatar === 'function') setupAvatar();
+  set('idleScreen','none'); set('eggScreen','none');
+  set('aliveScreen','block'); set('deadScreen','none');
+  set('summonCard','none'); set('creatureCard','block'); set('statusCard','block');
+  if(btns) { btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }
+  const svg = $('creatureSVG');
+  if(svg) svg.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed,
+                                   getFaseSize(), getFaseSize(), getFase());
+  if(typeof updateAvatarSize === 'function') updateAvatarSize();
+  const pl = $('phaseLabel');
+  if(pl) pl.textContent = t('gt.phase.label', {fase: FASES[getFase()]});
+  const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
+  if(typeof updateDirtyVisuals === 'function') updateDirtyVisuals();
+  if(typeof updateEquippedDisplay === 'function') updateEquippedDisplay();
+  if(typeof updateAllUI === 'function') updateAllUI();
+  if(typeof updateResourceUI === 'function') updateResourceUI();
+  if(sleeping && typeof startSleep === 'function') startSleep();
+}

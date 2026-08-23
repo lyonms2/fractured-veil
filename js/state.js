@@ -307,5 +307,7 @@ async function switchSlot(newIdx) {
   saveRuntimeToSlot(activeSlotIdx);
   activeSlotIdx = newIdx;
   loadRuntimeFromSlot(newIdx);
+  // Sem isto a interface fica a mostrar o avatar anterior até um refresh
+  if(typeof rebuildScreensParaSlot === 'function') rebuildScreensParaSlot();
   scheduleSave();
 }
