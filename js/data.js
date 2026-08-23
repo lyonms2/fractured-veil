@@ -130,6 +130,9 @@ const ELEM_CFG = {
   'Luz':          { cores:['#fbbf24','#fde047','#fef08a','#fefce8'], coresSec:['#f59e0b','#d97706','#b45309'], corBrilho:'#ffffff', corOlho:'#fef3c7', particulas:'estrelas' }
 };
 
+// Contador global para dar um ID irrepetível a cada SVG gerado
+let _svgUid = 0;
+
 function gerarSVG(elemento, raridade, seed, w, h, fase) {
   fase = (typeof fase === 'number') ? fase : 0;
   // random determinístico
@@ -160,7 +163,12 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   const temTent   = raridade !== 'Comum' && random(0,9) > 6;
   const numEsp    = raridade === 'Lendário' ? random(0,4) : raridade === 'Raro' ? random(0,2) : 0;
   const bocaTipo  = random(1, 8);
-  const sid       = seed; // stable id for filter refs
+  // ID único por render, não por seed. Se dois SVGs do mesmo avatar
+  // coexistirem (por exemplo o do jogo e o do card no marketplace), IDs
+  // iguais fazem o browser resolver url(#grad…) sempre para o primeiro —
+  // e se esse primeiro for escondido ou removido, os outros perdem o
+  // gradiente e aparecem transparentes.
+  const sid       = `${seed}_${++_svgUid}`;
 
   // Fase visual features — seed independente para não alterar aparência existente
   const temCorpoInferior = fase >= 2;
