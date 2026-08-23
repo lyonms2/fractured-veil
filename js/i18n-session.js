@@ -28,9 +28,9 @@ window.registerStrings(
     // onboarding tips
     'onboard.tip.summon':  '💡 Dica: clique em INVOCAR para criar seu primeiro avatar — é gratuito!',
     'onboard.tip.feed':    '🍖 Dica: alimente seu avatar clicando em ALIMENTAR (10 🪙 por refeição).',
-    'onboard.tip.play':    '🎮 Dica: jogue minigames para ganhar moedas e XP — clique em BRINCAR.',
+    'onboard.tip.play':    '🎮 Dica: jogue minigames para ganhar moedas e XP — clique em JOGOS.',
     'onboard.tip.rest':    '💤 Dica: antes de sair, clica no botão 💤 DORMIR — a energia continua a subir mesmo ausente.',
-    'onboard.tip.coins':   '⚠️ Poucas moedas! Jogue minigames (BRINCAR) para ganhar mais.',
+    'onboard.tip.coins':   '⚠️ Poucas moedas! Jogue minigames (JOGOS) para ganhar mais.',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -57,8 +57,8 @@ window.registerStrings(
     // onboarding tips
     'onboard.tip.summon':  '💡 Tip: click SUMMON to create your first avatar — it\'s free!',
     'onboard.tip.feed':    '🍖 Tip: feed your avatar by clicking FEED (10 🪙 per meal).',
-    'onboard.tip.play':    '🎮 Tip: play minigames to earn coins and XP — click PLAY.',
+    'onboard.tip.play':    '🎮 Tip: play minigames to earn coins and XP — click GAMES.',
     'onboard.tip.rest':    '💤 Tip: before leaving, click the 💤 SLEEP button — energy keeps rising even while away.',
-    'onboard.tip.coins':   '⚠️ Low on coins! Play minigames (PLAY) to earn more.',
+    'onboard.tip.coins':   '⚠️ Low on coins! Play minigames (GAMES) to earn more.',
   }
 );

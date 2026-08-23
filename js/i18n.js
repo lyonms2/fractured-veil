@@ -262,7 +262,7 @@
 
       // Action buttons
       'btn.feed':                'NUTRIR',
-      'btn.play':                'BRINCAR',
+      'btn.play':                'JOGOS',
       'btn.sleep':               'DORMIR',
       'btn.heal':                'MEDICAR',
       'btn.bath':                'BANHO',
@@ -570,7 +570,7 @@
 
       // Action buttons
       'btn.feed':                'FEED',
-      'btn.play':                'PLAY',
+      'btn.play':                'GAMES',
       'btn.sleep':               'SLEEP',
       'btn.heal':                'HEAL',
       'btn.bath':                'BATH',
