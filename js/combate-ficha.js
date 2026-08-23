@@ -46,7 +46,7 @@ const COMBATE_CRESC_NIVEL = 0.10;
 
 // ── BARRAS ──
 const COMBATE_HP_BASE   = 40;
-const COMBATE_HP_POR_RES = 8;
+const COMBATE_HP_POR_RES = 10;
 const COMBATE_EN_BASE   = 100;   // igual para todos; só o elemento modifica
 
 // ═══════════════════════════════════════════════════════════════════
@@ -73,7 +73,7 @@ function _combateRng(seed) {
 // fichaDeCombate — o cálculo principal
 //
 //   fichaDeCombate(12345, 'Lendário', 'Fogo', 12)
-//   → { FOR:27, RES:15, HAB:19, INT:15, hpMax:160, enMax:110, ... }
+//   → { FOR:27, RES:15, HAB:19, INT:15, hpMax:190, enMax:110, ... }
 //
 // Aceita também um objecto de slot directamente:
 //   fichaDeCombate(avatarSlots[0])
@@ -122,7 +122,8 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
   if      (afin.primaria   === 'HAB') enMax = Math.round(COMBATE_EN_BASE * 1.20);
   else if (afin.secundaria === 'HAB') enMax = Math.round(COMBATE_EN_BASE * 1.10);
 
-  // 5. qual atributo escala o golpe forte — sempre o maior entre FOR e INT.
+  // 5. qual atributo domina o golpe forte — o maior entre FOR e INT.
+  //    (a fórmula usa os dois, mas este é o que pesa; ver COMBATE_SLOTS)
   //    RES e HAB nunca fazem dano: RES é sobrevivência, HAB é economia de
   //    acção. Manter os pilares separados foi o que evitou que um atributo
   //    contasse duas vezes.
@@ -154,8 +155,12 @@ const COMBATE_SLOTS = [
     calc: f => Math.round(f.FOR * 1.4) },
   { papel:'skill',   custo:25, gera:0,  tipo:'dano',
     calc: f => Math.round(f.INT * 2.3 + f.FOR * 0.5) },
+  // O termo do menor atributo nao e enfeite: sem ele o golpe forte saia
+  // MAIS FRACO do que a habilidade de 25 EN em Vento, Terra e Luz — a
+  // habilidade soma dois atributos e a forte usava so um. Com ele, a
+  // forte fica acima em todos os 7 elementos, raridades e niveis.
   { papel:'forte',   custo:50, gera:0,  tipo:'dano',
-    calc: f => Math.round(Math.max(f.FOR, f.INT) * 2.4) },
+    calc: f => Math.round(Math.max(f.FOR, f.INT) * 2.4 + Math.min(f.FOR, f.INT) * 1.0) },
   { papel:'suporte', custo:20, gera:0,  tipo:'escudo',
     calc: f => Math.round(f.RES * 2.5) },
 ];
