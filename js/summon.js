@@ -7,7 +7,20 @@ function avataresVivos() {
   return avatarSlots.filter(s => s && !s.dead).length;
 }
 
-function custoDaInvocacao() { return SUMMON_CUSTO; }
+// Grátis nas primeiras INVOCACOES_GRATIS, e sempre grátis se o jogador
+// ficou sem nenhum avatar vivo — essa é a rede de segurança para nunca
+// ficar preso sem forma de jogar.
+//
+// Repare que conta INVOCAÇÕES TOTAIS, não avatares vivos. Um avatar
+// queimado ou morto continua a contar, portanto invocar-queimar-invocar
+// à procura do elemento ou da ficha ideal gasta as tentativas grátis
+// como qualquer outra. Só se pode queimar um slot que não seja o activo
+// (ver avatars-market.js), logo também não dá para chegar a zero vivos
+// de propósito para reactivar a rede de segurança.
+function custoDaInvocacao() {
+  if(avataresVivos() === 0) return 0;
+  return (gs.totalInvocacoes || 0) < INVOCACOES_GRATIS ? 0 : SUMMON_CUSTO;
+}
 
 function triggerSummon() {
   if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
@@ -61,6 +74,7 @@ function triggerSummon() {
     pendingSlot: activeSlotIdx,
   };
   window._pendingEggSlot = activeSlotIdx;
+  gs.totalInvocacoes = (gs.totalInvocacoes || 0) + 1;
 
   // ── CINEMATIC SUMMON OVERLAY ──
   const ov         = document.getElementById('summonOverlay');

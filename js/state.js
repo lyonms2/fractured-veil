@@ -146,7 +146,7 @@ let tickCount = 0;
 // enquanto ausente, mesmo dormindo.
 const OFFLINE_SLEEP_ENERGY_PER_CYCLE = 2;
 let eggClicks = 0;
-const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0 };
+const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0, totalInvocacoes:0 };
 const FASES = t('fases');
 const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v < 17 ? 2 : 3; };
 // Idade mínima (tempo de jogo real, em segundos) por fase — impede que
@@ -209,10 +209,15 @@ if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
 const SLOT_COST   = 15;
 
 // ── INVOCAÇÃO ──
-// Sempre gratuita. Invocar dá sempre um Comum nível 1, portanto nunca
-// compete com um ovo — é lá que está a raridade. O portão do jogo não é
-// obter avatares, é criá-los (nível 17 + 20h para chocar).
-const SUMMON_CUSTO = 0;
+// As primeiras invocações são grátis — enchem os slots livres e formam a
+// equipa de combate logo no início. A partir daí custa moedas.
+//
+// O contador é do total de invocações, NÃO dos avatares vivos. Isso é o
+// que impede o jogador de invocar, queimar o que não gostou e invocar
+// outra vez à procura do elemento ou da ficha ideal: cada tentativa gasta
+// uma invocação, mesmo que o avatar acabe queimado.
+const INVOCACOES_GRATIS = 5;
+const SUMMON_CUSTO      = 500;
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
