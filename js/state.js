@@ -145,8 +145,13 @@ let tickCount = 0;
 let eggClicks = 0;
 const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0 };
 const FASES = t('fases');
-const getFase = () => nivel < 5 ? 0 : nivel < 10 ? 1 : nivel < 17 ? 2 : 3;
 const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v < 17 ? 2 : 3; };
+// Idade mínima (tempo de jogo real, em segundos) por fase — impede que
+// alguém compre/grinde XP e pule direto pra fase adulta sem tempo de jogo.
+const FASE_MIN_SECS = [0, 2*3600, 8*3600, 20*3600];
+const faseFromAge   = secs => { const s = secs||0; return s < FASE_MIN_SECS[1] ? 0 : s < FASE_MIN_SECS[2] ? 1 : s < FASE_MIN_SECS[3] ? 2 : 3; };
+// A fase real do avatar precisa de nível E idade suficientes — o menor dos dois.
+const getFase = () => Math.min(faseFromNivel(nivel), faseFromAge(totalSecs));
 const FASE_SIZES = [75, 100, 120, 140];
 const getFaseSize = () => FASE_SIZES[getFase()];
 function xpParaNivel(n) {
