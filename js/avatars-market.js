@@ -420,7 +420,6 @@ function renderSlots() {
           </div>
           <div class="slot-actions">
             ${_slotBtnEquipa(i, s)}
-            <button class="btn-slot-ficha" onclick="abrirFichaSlot(${i})">${t('mkt.slot.btn_ficha')}</button>
           </div>
           ${!isActive && !isFrozen ? `
           <div class="slot-actions">

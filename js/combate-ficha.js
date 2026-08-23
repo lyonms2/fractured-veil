@@ -138,6 +138,72 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// OS QUATRO SLOTS DE HABILIDADE
+//
+// Todo elemento preenche o mesmo molde — é isso que mantém as lutas
+// legíveis: aprende-se a gramática uma vez e reconhece-se o kit de
+// qualquer oponente de imediato.
+//
+// O golpe forte escala pelo MAIOR entre FOR e INT, e não pela primária
+// do elemento. Prender o dano aos dois atributos que só fazem dano é o
+// que mantém os pilares separados: RES é sobrevivência, HAB é economia
+// de acção, e nenhuma delas ganha uma segunda função ofensiva.
+// ═══════════════════════════════════════════════════════════════════
+const COMBATE_SLOTS = [
+  { papel:'comum',   custo:0,  gera:15, tipo:'dano',
+    calc: f => Math.round(f.FOR * 1.4) },
+  { papel:'skill',   custo:25, gera:0,  tipo:'dano',
+    calc: f => Math.round(f.INT * 2.3 + f.FOR * 0.5) },
+  { papel:'forte',   custo:50, gera:0,  tipo:'dano',
+    calc: f => Math.round(Math.max(f.FOR, f.INT) * 2.4) },
+  { papel:'suporte', custo:20, gera:0,  tipo:'escudo',
+    calc: f => Math.round(f.RES * 2.5) },
+];
+
+// ── OS 7 KITS ──
+// Aqui está só o que difere do molde. Os nomes e as descrições vivem
+// em js/i18n-combate.js, porque são texto e o jogo é bilingue.
+//   tipo: quando o slot não faz o que o molde diz (cura em vez de dano,
+//         ou um efeito sem número nenhum)
+//   mult: multiplicador sobre o valor do molde
+const COMBATE_KITS = {
+  'Fogo':         [ {}, {}, {}, {} ],
+  'Água':         [ {}, { tipo:'cura' }, {}, {} ],
+  'Terra':        [ {}, {}, {}, { mult:1.3 } ],
+  'Vento':        [ {}, {}, {}, { tipo:'efeito' } ],
+  'Eletricidade': [ {}, {}, {}, {} ],
+  'Sombra':       [ {}, {}, {}, { tipo:'efeito' } ],
+  'Luz':          [ {}, {}, {}, {} ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// habilidadesDoAvatar — as 4 habilidades já com os números calculados
+//
+//   habilidadesDoAvatar(fichaDeCombate(slot))
+//   → [{ papel, custo, gera, tipo, valor, chave }, ...]
+//
+// 'chave' é o prefixo i18n do nome e da descrição.
+// ═══════════════════════════════════════════════════════════════════
+function habilidadesDoAvatar(ficha) {
+  if (!ficha) return [];
+  const kit = COMBATE_KITS[ficha.elemento] || COMBATE_KITS['Fogo'];
+  return COMBATE_SLOTS.map((slot, i) => {
+    const ov   = kit[i] || {};
+    const tipo = ov.tipo || slot.tipo;
+    // Um slot de puro efeito não tem número — mostrar um seria mentira
+    const valor = tipo === 'efeito' ? null
+                : Math.round(slot.calc(ficha) * (ov.mult || 1));
+    return {
+      papel: slot.papel,
+      custo: slot.custo,
+      gera:  slot.gera,
+      tipo, valor,
+      chave: `hab.${ficha.elemento}.${i}`,
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // PODER — usado para emparelhar as filas e para ordenar os rankings.
 //
 // Fórmula derivada por simulação: de quatro candidatas testadas em 5000

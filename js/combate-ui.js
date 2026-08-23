@@ -58,6 +58,43 @@ function renderFichaHTML(seed, raridade, elemento, nivel) {
       ${t('ficha.afinidade', { elem: f.elemento, prim: f.primaria, sec: f.secundaria })}<br>
       ${t('ficha.ultimate', { stat: f.statDoUltimate })}
     </div>
+    ${renderHabilidadesHTML(f)}
+  </div>`;
+}
+
+// Cor da etiqueta de custo: o ataque comum não gasta energia, dá.
+const HAB_COR_VALOR = { dano:'#e05555', cura:'#7ab87a', escudo:'#5ab4e8' };
+
+// ═══════════════════════════════════════════════════════════════════
+// As 4 habilidades do kit, com o número que cada uma faz para ESTE
+// avatar. O número é o que torna a ficha útil: duas Explosões Solares
+// não valem o mesmo se a FOR for diferente.
+// ═══════════════════════════════════════════════════════════════════
+function renderHabilidadesHTML(f) {
+  if (typeof habilidadesDoAvatar !== 'function') return '';
+  const habs = habilidadesDoAvatar(f);
+  if (!habs.length) return '';
+
+  const linhas = habs.map(h => {
+    const custo = h.custo === 0
+      ? `<span class="hab-custo livre">${t('hab.custo.livre', { gera: h.gera })}</span>`
+      : `<span class="hab-custo">${t('hab.custo.en', { custo: h.custo })}</span>`;
+    const valor = h.valor === null ? ''
+      : `<span class="hab-valor" style="color:${HAB_COR_VALOR[h.tipo] || 'var(--text)'};">${t('hab.val.' + h.tipo, { v: h.valor })}</span>`;
+    return `<div class="hab">
+      <div class="hab-top">
+        <span class="hab-papel">${t('hab.slot.' + h.papel)}</span>
+        ${custo}
+      </div>
+      <div class="hab-nome">${t(h.chave + '.nome')}</div>
+      ${valor}
+      <div class="hab-efeito">${t(h.chave + '.efeito')}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="hab-bloco">
+    <div class="hab-titulo">${t('hab.titulo')}</div>
+    ${linhas}
   </div>`;
 }
 
@@ -125,11 +162,4 @@ function toggleEquipa(i) {
 
   if (typeof scheduleSave === 'function') scheduleSave();
   if (typeof renderSlots === 'function') renderSlots();
-}
-
-// Abre a ficha de um slot no overlay de zoom (o mesmo do 🔍).
-function abrirFichaSlot(i) {
-  const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[i] : null;
-  if (!s) return;
-  openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || 'Avatar');
 }
