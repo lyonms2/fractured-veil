@@ -17,16 +17,18 @@
 
 // ── AFINIDADE ELEMENTAL ──
 // Cada elemento puxa um atributo como primário e outro como secundário.
-// Distribuição escolhida por simulação: é a mais equilibrada possível
-// com 7 elementos (pesos 4/6/6/5, o óptimo aritmético seria 5.25 cada).
+//
+// Com 4 elementos e 4 atributos existe uma atribuição perfeita, que com
+// 7 era impossível: a rotação FOR → HAB → INT → RES → FOR. Cada atributo
+// é primário exactamente uma vez e secundário exactamente uma vez, logo
+// todos pesam 3. Com 7 elementos o melhor que se conseguia era 4/6/6/5,
+// e a assimetria da FOR (primária só do Fogo) andou a distorcer o
+// equilíbrio desde o início.
 const COMBATE_AFINIDADE = {
-  'Fogo':         { primaria:'FOR', secundaria:'HAB' },  // agressão e dano contínuo
-  'Terra':        { primaria:'RES', secundaria:'FOR' },  // muralha que também bate
-  'Água':         { primaria:'RES', secundaria:'INT' },  // sustentação e cura
-  'Luz':          { primaria:'HAB', secundaria:'RES' },  // velocidade que aguenta
-  'Vento':        { primaria:'HAB', secundaria:'FOR' },  // velocidade e múltiplos golpes
-  'Sombra':       { primaria:'INT', secundaria:'HAB' },  // debuff, crítico e roubo
-  'Eletricidade': { primaria:'INT', secundaria:'RES' },  // burst que aguenta o troco
+  'Fogo':  { primaria:'FOR', secundaria:'HAB' },  // agressão e dano contínuo
+  'Vento': { primaria:'HAB', secundaria:'INT' },  // velocidade e múltiplos golpes
+  'Água':  { primaria:'INT', secundaria:'RES' },  // sustentação e cura
+  'Terra': { primaria:'RES', secundaria:'FOR' },  // muralha que também bate
 };
 
 // ── ORÇAMENTO DE PONTOS POR RARIDADE ──
@@ -200,10 +202,7 @@ const COMBATE_KITS = {
   'Fogo':         [ {}, {}, {}, {} ],
   'Água':         [ {}, { tipo:'cura' }, {}, {} ],
   'Terra':        [ {}, {}, {}, { mult:1.3 } ],
-  'Vento':        [ {}, {}, {}, { tipo:'efeito' } ],
-  'Eletricidade': [ {}, {}, {}, {} ],
-  'Sombra':       [ {}, {}, {}, { tipo:'efeito' } ],
-  'Luz':          [ {}, {}, {}, {} ],
+  'Vento':        [ {}, {}, {}, {} ],
 };
 
 // ═══════════════════════════════════════════════════════════════════

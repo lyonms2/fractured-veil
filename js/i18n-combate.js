@@ -60,37 +60,7 @@ window.registerStrings({
   'hab.Vento.2.nome':    'Ciclone Dimensional',
   'hab.Vento.2.efeito':  'Dano crescente a cada golpe acertado antes.',
   'hab.Vento.3.nome':    'Véu de Correntes',
-  'hab.Vento.3.efeito':  'Reduz o acerto de quem atacar em 15% por 2 turnos.',
-
-  // ── ⚡ ELETRICIDADE ────────────────────────────────────────────────
-  'hab.Eletricidade.0.nome':   'Choque Direto',
-  'hab.Eletricidade.0.efeito': 'Descarga imediata, age sempre primeiro. Devolve energia.',
-  'hab.Eletricidade.1.nome':   'Descarga em Cadeia',
-  'hab.Eletricidade.1.efeito': 'Dano dobrado se o alvo já estiver com escudo.',
-  'hab.Eletricidade.2.nome':   'Julgamento do Trovão',
-  'hab.Eletricidade.2.efeito': '40% de chance de crítico.',
-  'hab.Eletricidade.3.nome':   'Campo Estático',
-  'hab.Eletricidade.3.efeito': 'Escudo que devolve 30 de energia.',
-
-  // ── 🌑 SOMBRA ─────────────────────────────────────────────────────
-  'hab.Sombra.0.nome':   'Toque Umbral',
-  'hab.Sombra.0.efeito': 'Golpe silencioso pelas costas. Sempre disponível e devolve energia.',
-  'hab.Sombra.1.nome':   'Presságio Sombrio',
-  'hab.Sombra.1.efeito': 'Reduz a FOR e a INT do alvo por 3 turnos.',
-  'hab.Sombra.2.nome':   'Devorar Essência',
-  'hab.Sombra.2.efeito': 'Converte metade do dano causado em HP.',
-  'hab.Sombra.3.nome':   'Manto de Penumbra',
-  'hab.Sombra.3.efeito': 'O próximo ataque é crítico garantido.',
-
-  // ── ✨ LUZ ────────────────────────────────────────────────────────
-  'hab.Luz.0.nome':      'Lâmina Radiante',
-  'hab.Luz.0.efeito':    'Corte luminoso limpo. Sempre disponível e devolve energia.',
-  'hab.Luz.1.nome':      'Raio Purificador',
-  'hab.Luz.1.efeito':    'Remove buffs e escudos do alvo.',
-  'hab.Luz.2.nome':      'Aurora Sagrada',
-  'hab.Luz.2.efeito':    'Dano alto, e cura metade do valor causado.',
-  'hab.Luz.3.nome':      'Égide Solar',
-  'hab.Luz.3.efeito':    'Escudo com regeneração por turno.',
+  'hab.Vento.3.efeito':  'Escudo que também reduz o acerto de quem atacar, por 2 turnos.',
 }, {
   // ── ENGLISH ───────────────────────────────────────────────────────
   'hab.slot.comum':      'Basic attack',
@@ -138,32 +108,6 @@ window.registerStrings({
   'hab.Vento.2.nome':    'Dimensional Cyclone',
   'hab.Vento.2.efeito':  'Damage grows with every hit that landed before it.',
   'hab.Vento.3.nome':    'Veil of Currents',
-  'hab.Vento.3.efeito':  'Lowers the attacker accuracy by 15% for 2 turns.',
+  'hab.Vento.3.efeito':  'Shield that also lowers the attacker accuracy, for 2 turns.',
 
-  'hab.Eletricidade.0.nome':   'Direct Shock',
-  'hab.Eletricidade.0.efeito': 'Instant discharge, always acts first. Returns energy.',
-  'hab.Eletricidade.1.nome':   'Chain Discharge',
-  'hab.Eletricidade.1.efeito': 'Double damage if the target already has a shield.',
-  'hab.Eletricidade.2.nome':   'Thunder Judgement',
-  'hab.Eletricidade.2.efeito': '40% chance to crit.',
-  'hab.Eletricidade.3.nome':   'Static Field',
-  'hab.Eletricidade.3.efeito': 'Shield that returns 30 energy.',
-
-  'hab.Sombra.0.nome':   'Umbral Touch',
-  'hab.Sombra.0.efeito': 'Silent strike from behind. Always available and returns energy.',
-  'hab.Sombra.1.nome':   'Dark Omen',
-  'hab.Sombra.1.efeito': 'Lowers the target FOR and INT for 3 turns.',
-  'hab.Sombra.2.nome':   'Devour Essence',
-  'hab.Sombra.2.efeito': 'Converts half the damage dealt into HP.',
-  'hab.Sombra.3.nome':   'Penumbra Mantle',
-  'hab.Sombra.3.efeito': 'The next attack is a guaranteed crit.',
-
-  'hab.Luz.0.nome':      'Radiant Blade',
-  'hab.Luz.0.efeito':    'Clean luminous cut. Always available and returns energy.',
-  'hab.Luz.1.nome':      'Purifying Ray',
-  'hab.Luz.1.efeito':    'Removes buffs and shields from the target.',
-  'hab.Luz.2.nome':      'Sacred Aurora',
-  'hab.Luz.2.efeito':    'High damage, and heals half the value dealt.',
-  'hab.Luz.3.nome':      'Solar Aegis',
-  'hab.Luz.3.efeito':    'Shield with regeneration each turn.',
 });

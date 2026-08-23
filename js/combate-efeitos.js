@@ -8,14 +8,16 @@
 // efeito forte com dano forte. Quem tem os efeitos mais potentes tem
 // menos números, e vice-versa.
 //
-// Estes valores vieram de descida por coordenadas sobre ~3000 batalhas
-// por iteração, PARADA A MEIO de propósito. Levada até ao fim, ela põe
-// todos os elementos a 50% — e aí os elementos deixam de se sentir
-// diferentes, uma equipa variada deixa de valer mais do que três iguais,
-// e trocar deixa de ter sentido. O plano pede 13pp de amplitude, não
-// zero; este é o passo que a produz. A tabela original estava INVERTIDA: dava 1.00 à Eletricidade e à Sombra, que
-// são das que mais dano fazem, e 0.50 à Água e à Luz, que são das que
-// menos fazem. Compunha o desequilíbrio em vez de o compensar.
+// Estes valores vieram de descida por coordenadas sobre 12.000 batalhas
+// por iteração, com alvo de 50% para todos, e depois puxados a meio
+// caminho de volta para o neutro. Levada até ao fim, a afinação põe os
+// quatro elementos a 50% — e aí deixam de se sentir diferentes. O plano
+// pede 13pp de amplitude, não zero.
+//
+// A gama é estreita (0.57 a 0.93) e isso é bom sinal: com 4 elementos e
+// a rotação perfeita de afinidades, a tabela quase não precisa de
+// corrigir nada. Com 7 elementos ia de 0.30 a 1.65, porque estava a
+// compensar a assimetria da própria tabela de afinidades.
 //
 // Nada aqui aplica nada. São descrições de dados; quem as executa é o
 // js/combate-motor.js. Manter separado permite mexer no equilíbrio sem
@@ -23,13 +25,10 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const COMBATE_INTENSIDADE = {
-  'Vento':        1.65,   // o de menos HP e sem escudo — vive dos efeitos
-  'Luz':          1.23,   // não tem atributo de dano nenhum no kit
-  'Sombra':       0.74,   // roubo de vida e debuff de FOR/INT
-  'Água':         0.71,   // cura e escudo com regeneração de energia
-  'Terra':        0.62,   // muralha e atordoamento, com HP alto por trás
-  'Eletricidade': 0.46,   // já tem INT primária e o crítico de 40%
-  'Fogo':         0.39,   // tem o maior dano bruto do jogo — paga aqui
+  'Vento': 0.93,   // o de menos HP; o escudo dele é o mais fraco dos quatro
+  'Terra': 0.90,   // muralha e atordoamento, com HP alto por trás
+  'Água':  0.70,   // cura, dreno de energia e escudo que regenera
+  'Fogo':  0.57,   // tem o maior dano bruto do jogo — paga aqui
 };
 
 // Magnitudes base dos efeitos, antes da intensidade do elemento.
@@ -82,25 +81,11 @@ const COMBATE_EFEITOS = {
     null,
     { tipo:'multi_golpe' },
     { tipo:'crescente' },
-    { tipo:'debuff_acerto', turnos:2, alvo:'proprio' },
-  ],
-  'Eletricidade': [
-    null,
-    { tipo:'dobra_se_escudo' },
-    { tipo:'crit_alto' },
-    { tipo:'escudo', devolveEnergia:true },
-  ],
-  'Sombra': [
-    null,
-    { tipo:'debuff_stat', turnos:3, stats:['FOR','INT'] },
-    { tipo:'roubo_vida' },
-    { tipo:'crit_garantido' },
-  ],
-  'Luz': [
-    null,
-    { tipo:'purificar' },
-    { tipo:'roubo_vida' },
-    { tipo:'escudo', regenHP:true },
+    // Escudo E esquiva. Era só esquiva, e o Vento ficava o único
+    // elemento sem escudo nenhum pelos mesmos 28 EN — com o HP mais
+    // baixo do jogo por cima disso. Ganhava 33% das batalhas contra 61%
+    // do Fogo; com o escudo sobe para 44% sem tocar em mais nada.
+    { tipo:'escudo', evasao:true, turnos:2 },
   ],
 };
 

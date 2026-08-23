@@ -13,7 +13,7 @@ const R=require('path').join(__dirname,'..','js')+'/';
 const rd=f=>fs.readFileSync(R+f,'utf8').replace(/if \(typeof module[\s\S]*$/m,'');
 const g=new Function(`${rd('combate-ficha.js')}\n${rd('combate-efeitos.js')}\n${rd('combate-motor.js')}
   return {combateSimular,fichaDeCombate,poderDoAvatar,COMBATE_CUSTOS};`)();
-const ELS=['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz'],RARS=['Comum','Raro','Lendário'];
+const ELS=['Fogo','Água','Terra','Vento'],RARS=['Comum','Raro','Lendário'];
 let _s=12345; const rnd=()=>(_s=(Math.imul(_s,1664525)+1013904223)>>>0)/4294967296;
 const esc=a=>a[Math.floor(rnd()*a.length)];
 const av=(el,rar,nv)=>({nome:'x',elemento:el||esc(ELS),raridade:rar||esc(RARS),nivel:nv||1+Math.floor(rnd()*20),seed:Math.floor(rnd()*1e6)});
@@ -43,7 +43,7 @@ for(let i=0;i<N*3;i++){const rar=esc(RARS),nv=1+Math.floor(rnd()*20),a=esc(ELS),
   const r=g.combateSimular([0,1,2].map(()=>av(a,rar,nv)),[0,1,2].map(()=>av(b,rar,nv)),i*17+3);
   if(r.vencedor==='A'){w[a].v++;w[b].d++;}else if(r.vencedor==='B'){w[b].v++;w[a].d++;}}
 const tx=ELS.map(e=>({e,p:w[e].v/((w[e].v+w[e].d)||1)*100})).sort((x,y)=>y.p-x.p);
-ok.push(linha('5 · Amplitude entre elementos',tx[0].p-tx[6].p,13,5,'pp'));
+ok.push(linha('5 · Amplitude entre elementos',tx[0].p-tx[tx.length-1].p,13,5,'pp'));
 console.log('    '+tx.map(t=>`${t.e} ${t.p.toFixed(0)}%`).join(' · '));
 let ac=0,ct=0;
 for(let i=0;i<N;i++){const A=eq(),B=eq();

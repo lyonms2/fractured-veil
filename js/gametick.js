@@ -229,14 +229,8 @@ function getElementoBonus() {
     case 'Vento':
       // Leveza do Vento — energia decai mais devagar
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 0.85, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Eletricidade':
-      // Mente Acelerada — mais energia mas gasta mais humor
       return { fomeDecay: 1.0, humorDecay: 1.10, energiaDecay: 0.90, higieneDecay: 1.0, sleepEnergy: 1.15, vinculoDecay: 1.0 };
-    case 'Sombra':
-      // Ciclo Lunar — recupera energia mais rápido dormindo, higiene estável
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 0.90, sleepEnergy: 1.15, vinculoDecay: 1.0 };
-    case 'Luz':
-      // Aura Solar — vínculo decai mais devagar, humor estável
       return { fomeDecay: 1.0, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 0.80 };
     default:
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };

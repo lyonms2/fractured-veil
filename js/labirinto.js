@@ -67,9 +67,6 @@ function startLabirinto() {
     'Água':         ['#60a5fa','96,165,250'],
     'Terra':        ['#86efac','134,239,172'],
     'Vento':        ['#fbbf24','251,191,36'],
-    'Eletricidade': ['#a78bfa','167,139,250'],
-    'Luz':          ['#67e8f9','103,232,249'],
-    'Sombra':       ['#c084fc','192,132,252'],
   };
   const ec   = (avatar && EL[avatar.elemento]) || EL['Terra'];
   _mzElColor = ec[0];

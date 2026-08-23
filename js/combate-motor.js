@@ -14,23 +14,21 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // ── VANTAGEM ELEMENTAL ──
-// Ciclo material de 5: cada um vence o seguinte e perde para o anterior.
-// Apaga · queima · erode · aterra · conduz.
-const COMBATE_CICLO = ['Água', 'Fogo', 'Vento', 'Terra', 'Eletricidade'];
-// Luz e Sombra estão FORA do ciclo e são neutras contra tudo, inclusive
-// uma contra a outra. A spec dava-lhes vantagem mútua, o que na prática
-// significava vantagem sem fraqueza nenhuma — as únicas duas do jogo
-// nessa situação. O papel delas é mecânico (suporte e controlo), não um
-// multiplicador.
-const COMBATE_NEUTROS = ['Luz', 'Sombra'];
-
+// Os quatro clássicos em ciclo fechado: cada um vence o seguinte e perde
+// para o anterior. A água apaga o fogo, o fogo consome o ar, o vento
+// erode a terra, a terra absorve a água.
+//
+// Com 4 elementos, metade dos confrontos possíveis tem factor elemental
+// (8 de 16 pares ordenados). Com 7 eram 20%, porque a Luz e a Sombra
+// estavam fora da tabela e não multiplicavam nada.
+const COMBATE_CICLO = ['Água', 'Fogo', 'Vento', 'Terra'];
 const COMBATE_MULT_VANTAGEM = 1.25;
 const COMBATE_MULT_FRAQUEZA = 0.80;
 
 function multElemental(atacante, defensor) {
   const a = COMBATE_CICLO.indexOf(atacante);
   const d = COMBATE_CICLO.indexOf(defensor);
-  if (a < 0 || d < 0) return 1.0;                       // um dos dois é neutro
+  if (a < 0 || d < 0) return 1.0;                       // elemento desconhecido
   if ((a + 1) % COMBATE_CICLO.length === d) return COMBATE_MULT_VANTAGEM;
   if ((d + 1) % COMBATE_CICLO.length === a) return COMBATE_MULT_FRAQUEZA;
   return 1.0;
@@ -204,6 +202,7 @@ function _executarHabilidade(atk, def, slot, rng, log) {
     atk.escudoRegenHP = (ef && ef.regenHP)       ? Math.round(esc * COMBATE_EF.ESCUDO_REGEN_HP * inten) : 0;
     atk.escudoRegenEN = (ef && ef.regenEnergia)  ? Math.round(COMBATE_EF.ESCUDO_REGEN_EN * inten) : 0;
     if (ef && ef.devolveEnergia) _darEnergia(atk, Math.round(COMBATE_EF.DEVOLVE_EN * inten));
+    if (ef && ef.evasao) atk.evasao.push({ v: COMBATE_EF.DEBUFF_ACERTO * inten, turnos: ef.turnos });
     return slot;
   }
 
@@ -412,10 +411,12 @@ function combateSimular(equipaA, equipaB, seed, opts) {
       if (log.eventos) log.eventos.push({ turno: turnos, troca: true, lado: 'B', quem: B[ativoB].nome, elemento: B[ativoB].elemento }); }
 
     // Ordem: prioridade do Choque Directo, depois HAB, depois FOR
-    const prio = (c, slot) => (c.elemento === 'Eletricidade' && slot === 0) ? 1 : 0;
+    // Nenhum dos 4 elementos tem ataque de prioridade. O Choque Directo
+    // da Eletricidade tinha, mas a Eletricidade saiu do jogo.
+    const prio = () => 0;
     const lados = [
-      { c: A[ativoA], alvo: B[ativoB], slot: aA.slot, eq: A, p: prio(A[ativoA], aA.slot) },
-      { c: B[ativoB], alvo: A[ativoA], slot: aB.slot, eq: B, p: prio(B[ativoB], aB.slot) },
+      { c: A[ativoA], alvo: B[ativoB], slot: aA.slot, eq: A, p: prio() },
+      { c: B[ativoB], alvo: A[ativoA], slot: aB.slot, eq: B, p: prio() },
     ].sort((x, y) => (y.p - x.p)
                   || (_stat(y.c, 'HAB') - _stat(x.c, 'HAB'))
                   || (_stat(y.c, 'FOR') - _stat(x.c, 'FOR')));
@@ -523,6 +524,6 @@ function combateNarrar(equipaA, equipaB, seed) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { combateSimular, combateNarrar, multElemental, politicaPadrao,
-                     COMBATE_CICLO, COMBATE_NEUTROS, COMBATE_CUSTOS, COMBATE_TROCA_EN,
+                     COMBATE_CICLO, COMBATE_CUSTOS, COMBATE_TROCA_EN,
                      COMBATE_TETO_GOLPE, COMBATE_MAX_TURNOS };
 }

@@ -108,6 +108,12 @@ function applyGameState(data) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
       const restored = {...s};
+      // Avatares gravados quando o jogo tinha 9 ou 7 elementos passam
+      // aqui a ter um dos 4 actuais. A conversão é permanente: o próximo
+      // save já grava o elemento novo.
+      if(restored.elemento && typeof normalizarElemento === 'function') {
+        restored.elemento = normalizarElemento(restored.elemento);
+      }
       if(restored.elemento) restored.car = CARACTERISTICAS_ELEMENTAIS[restored.elemento] || null;
       return restored;
     });
