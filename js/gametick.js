@@ -277,15 +277,6 @@ function gameTick() {
     vitals.higiene = Math.max(0, vitals.higiene - (0.05 * _eb.higieneDecay));
     if(vitals.energia >= 100) { wakeUp('full'); }
 
-  } else if(modoRepouso) {
-    // Modo repouso → decay mínimo, energia recupera lentamente
-    vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d * _eb.fomeDecay));
-    vitals.higiene = Math.max(0, vitals.higiene - (0.03 * _eb.higieneDecay));
-    vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
-    // FIX: energia recupera +0.2/ciclo em repouso — sem acordar o avatar (sem wakeUp)
-    vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
-    vinculo = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
-
   } else {
     // Acordado e ativo → decay normal com bônus elementais e de itens
     vitals.fome    = Math.max(0, vitals.fome    - (0.8  * _d * GAME_SPEED * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
@@ -295,7 +286,7 @@ function gameTick() {
   }
 
   // Auto-sleep: energia crítica e nenhum modal aberto
-  if(!sleeping && !modoRepouso && hatched && !dead && vitals.energia < 5) {
+  if(!sleeping && hatched && !dead && vitals.energia < 5) {
     if(!ModalManager.anyOpen()) {
       showBubble(t('gt.autosleep.bub'));
       setTimeout(() => { if(typeof startSleep === 'function') startSleep(); }, 600);
@@ -309,13 +300,13 @@ function gameTick() {
   }
 
   // ── DOENÇAS — contadores de stress ──
-  if(!sleeping && !modoRepouso) {
+  if(!sleeping) {
     diseaseStress.exaustao    = vitals.energia < 20 ? diseaseStress.exaustao    + 1 : 0;
     diseaseStress.desnutricao = vitals.fome    < 15 ? diseaseStress.desnutricao + 1 : 0;
     diseaseStress.infeccao    = vitals.higiene < 15 ? diseaseStress.infeccao    + 1 : 0;
     diseaseStress.melancolia  = vitals.humor   < 20 ? diseaseStress.melancolia  + 1 : 0;
   } else {
-    if(sleeping) { diseaseStress.exaustao = 0; }
+    diseaseStress.exaustao = 0;
   }
   for(const id of Object.keys(DISEASES)) {
     if(diseaseStress[id] >= DISEASE_STRESS_THRESHOLD && !activeDiseases.includes(id)) {
@@ -334,7 +325,7 @@ function gameTick() {
   if(typeof updateSickVisuals === 'function') updateSickVisuals();
 
   // ── COCÔ — só no modo ativo ──
-  if(!sleeping && !modoRepouso && poopPressure >= 100) {
+  if(!sleeping && poopPressure >= 100) {
     playSound('poop_alert');
     spawnPoop();
     poopPressure = 0;
@@ -347,7 +338,7 @@ function gameTick() {
   if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
 
   // ── VÍNCULO — decaimento passivo (só modo ativo) ──
-  if(!sleeping && !modoRepouso) {
+  if(!sleeping) {
     const humorBad = vitals.humor < 30;
     const decayV   = humorBad ? 0.05 : 0.02;
     vinculo = Math.max(0, vinculo - (decayV * _eb.vinculoDecay));
@@ -397,7 +388,7 @@ function gameTick() {
 }
 
 function autoSpeak() {
-  if(modoRepouso) return;
+  if(sleeping) return;
   if(dirtyLevel >= 2)          showBubble(rnd(FALAS.dirty));
   else if(vitals.fome < 25)    showBubble(rnd(FALAS.hungry));
   else if(vitals.energia < 20) showBubble(rnd(FALAS.tired));
@@ -468,7 +459,6 @@ function playPhaseUp(faseName) {
 function killCreature() {
   dead = true;
   playSound('death');
-  if(modoRepouso && typeof desativarModoRepouso === 'function') desativarModoRepouso();
   // Cancela qualquer save agendado e persiste imediatamente — garante dead:true no Firebase
   clearTimeout(_saveTimeout); _saveTimeout = null;
   saveToFirebase();

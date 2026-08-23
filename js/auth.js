@@ -384,10 +384,6 @@ async function _onLoginSuccess(user) {
       updateResourceUI();
 
       if(sleeping) startSleep();
-      if(modoRepouso) {
-        _repousoVisual(true);
-        addLog(t('log.repouso_active'), 'info');
-      }
 
       if(poopCount > 0) {
         const container = document.getElementById('poopContainer');

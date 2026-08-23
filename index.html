@@ -692,17 +692,6 @@
           <div class="ground"></div>
         </div>
 
-        <!-- REPOUSO OVERLAY -->
-        <div id="repousoOverlay">
-          <div class="repouso-zzz">
-            <span style="animation-delay:0s">z</span>
-            <span style="animation-delay:.7s">Z</span>
-            <span style="animation-delay:1.4s">Z</span>
-          </div>
-          <div data-i18n="ui.repouso_mode" class="repouso-label">MODO REPOUSO</div>
-          <button data-i18n="ui.repouso_resume" class="repouso-btn-retomar" onclick="desativarModoRepouso()">▶ RETOMAR</button>
-        </div>
-
         <!-- DEAD -->
         <div id="deadScreen" class="dead-screen" style="display:none">
           <div class="dead-particles" id="deadParticles"></div>
@@ -725,10 +714,7 @@
         <button class="btn-action" id="btnPlay" onclick="playCreature()">
           <span class="icon">🎮</span><span data-i18n="btn.play">BRINCAR</span>
         </button>
-        <button class="btn-action" id="btnSleep"
-          onpointerdown="onSleepPointerDown()"
-          onpointerup="onSleepPointerUp()"
-          onpointerleave="onSleepPointerUp()">
+        <button class="btn-action" id="btnSleep" onclick="toggleSleep()">
           <span class="icon">💤</span>
           <span data-i18n="btn.sleep" id="sleepLabel">DORMIR</span>
         </button>
@@ -878,10 +864,7 @@
       <button class="fv-bn-btn" id="fvbn-play" onclick="playCreature()">
         <span class="fv-bn-icon">🎮</span><span data-i18n="btn.play">Brincar</span>
       </button>
-      <button class="fv-bn-btn" id="fvbn-sleep"
-        onpointerdown="onSleepPointerDown()"
-        onpointerup="onSleepPointerUp()"
-        onpointerleave="onSleepPointerUp()">
+      <button class="fv-bn-btn" id="fvbn-sleep" onclick="toggleSleep()">
         <span class="fv-bn-icon">💤</span>
         <span data-i18n="btn.sleep" id="fvbnSleepLabel">Dormir</span>
       </button>
@@ -1085,16 +1068,12 @@
       if (btn) btn.classList.toggle('btn-disabled', !alive);
     });
  
-    // Estado do botão dormir / repouso
-    const isSleeping  = typeof sleeping     !== 'undefined' && sleeping;
-    const isRepouso   = typeof modoRepouso  !== 'undefined' && modoRepouso;
+    // Estado do botão dormir
+    const isSleeping  = typeof sleeping !== 'undefined' && sleeping;
     const bnSleep     = document.getElementById('fvbn-sleep');
     const sleepLbl    = document.getElementById('fvbnSleepLabel');
-    if (bnSleep) {
-      bnSleep.classList.toggle('sleep-active',   isSleeping);
-      bnSleep.classList.toggle('active-repouso', isRepouso);
-    }
-    if (sleepLbl) sleepLbl.textContent = isSleeping ? t('btn.wake') : isRepouso ? t('btn.repouso') : t('ui.sleep_btn_mobile');
+    if (bnSleep) bnSleep.classList.toggle('sleep-active', isSleeping);
+    if (sleepLbl) sleepLbl.textContent = isSleeping ? t('btn.wake') : t('ui.sleep_btn_mobile');
  
     // Badges de alerta
     if (alive && typeof vitals !== 'undefined') {

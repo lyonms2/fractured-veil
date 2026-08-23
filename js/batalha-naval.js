@@ -152,7 +152,7 @@ function _bnBloquearUI(bloquear) {
 
 function openBatalhaNaval() {
   if(!hatched || dead || !avatar) { showBubble(t('arena.bub.need_avatar')); return; }
-  if(sleeping || modoRepouso)     { showBubble(t('arena.bub.resting')); return; }
+  if(sleeping)                    { showBubble(t('arena.bub.resting')); return; }
   if(!_bnRtdb())                  { showBubble(t('bn.bub.unavailable')); return; }
   ModalManager.open('batalhaNavalModal');
 

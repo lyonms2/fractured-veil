@@ -109,7 +109,6 @@ function getItemEffect(key) {
 }
 let eggLayNotified  = false;
 let sleeping    = false;
-let modoRepouso = false;
 let sick        = false;
 let dead        = false;
 let selectedDifficulty = null;
@@ -234,7 +233,6 @@ function saveRuntimeToSlot(idx) {
   Object.assign(avatarSlots[idx], {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
-    modoRepouso,
     bornAt, poopCount, dirtyLevel, poopPressure,
     eggLayCooldown, petCooldown,
     eggLayReadyAt: window._eggLayReadyAt || 0,
@@ -252,7 +250,6 @@ function loadRuntimeFromSlot(idx) {
   if(!s || !s.hatched) {
     nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
     hatched = false; dead = false; sick = false; sleeping = false;
-    modoRepouso = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
     eggLayCooldown = 0; petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
@@ -270,7 +267,6 @@ function loadRuntimeFromSlot(idx) {
   dead           = s.dead           ?? false;
   sick           = s.sick           ?? false;
   sleeping       = s.sleeping       ?? false;
-  modoRepouso    = s.modoRepouso    ?? false;  // FIX: restaura modo repouso do slot
   bornAt         = s.bornAt         ?? 0;
   poopCount      = s.poopCount      ?? 0;
   dirtyLevel     = s.dirtyLevel     ?? 0;

@@ -142,19 +142,6 @@ function playSound(id) {
       break;
     }
 
-    case 'repouso_on': {
-      // Descida calma e longa
-      _sweep(300, 160, 'sine', t, 0.60, 0.10, ctx);
-      break;
-    }
-
-    case 'repouso_off': {
-      // Subida animada
-      _sweep(200, 400, 'sine', t, 0.30, 0.14, ctx);
-      _osc(500, 'sine', t+0.28, 0.16, 0.12, ctx);
-      break;
-    }
-
     case 'coin': {
       // Tinido metálico
       _osc(1200, 'sine',   t,      0.06, 0.20, ctx);

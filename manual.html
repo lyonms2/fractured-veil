@@ -487,7 +487,7 @@
         <span class="nav-icon">💓</span><span class="c-pt">Vitais</span><span class="c-en">Vitals</span>
       </a>
       <a class="nav-item" onclick="showSection('sono')">
-        <span class="nav-icon">🌙</span><span class="c-pt">Sono & Repouso</span><span class="c-en">Sleep & Rest</span>
+        <span class="nav-icon">🌙</span><span class="c-pt">Sono</span><span class="c-en">Sleep</span>
       </a>
       <a class="nav-item" onclick="showSection('doencas')">
         <span class="nav-icon">🩺</span><span class="c-pt">Doenças</span><span class="c-en">Diseases</span>
@@ -599,7 +599,7 @@
       </ul>
 
       <div class="callout">
-        <strong>💡 Dica de iniciante:</strong> O jogo roda mesmo com a aba fechada. O Avatar continua a perder vitais enquanto você está offline — ative o <em>Modo Repouso</em> antes de sair por longos períodos.
+        <strong>💡 Dica de iniciante:</strong> O Avatar fica em pausa enquanto você está ausente — nada decai. Bota ele pra dormir antes de sair e a Energia continua a subir sozinha (mais devagar que ao vivo).
       </div>
     </div><!-- /c-pt -->
     <div class="c-en">
@@ -625,7 +625,7 @@
         <li><strong>Bottom buttons</strong> — Actions: Feed, Bath, Sleep, Shop, Eggs, Inventory, Friends, Lore, Arena, Minigames.</li>
       </ul>
       <div class="callout">
-        <strong>💡 Beginner tip:</strong> The game runs even with the tab closed. Your Avatar keeps losing vitals while offline — always enable <em>Rest Mode</em> before leaving for long periods.
+        <strong>💡 Beginner tip:</strong> Your Avatar is paused while you're away — nothing decays. Put it to sleep before leaving and Energy keeps rising on its own (slower than live).
       </div>
     </div><!-- /c-en -->
     </section>
@@ -813,68 +813,54 @@
     <div class="c-pt">
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 3</div>
-        <div class="section-title">Sono & Modo Repouso</div>
-        <p class="section-intro">Quando a Energia cai, o Avatar precisa de dormir. Há dois modos de descanso com comportamentos diferentes.</p>
+        <div class="section-title">Sono</div>
+        <p class="section-intro">Quando a Energia cai, o Avatar precisa de dormir.</p>
       </div>
 
-      <h2>Sono Normal</h2>
+      <h2>Sono</h2>
       <p>Ative manualmente ou automático quando Energia &lt; 5. O Avatar acorda automaticamente quando Energia chega a 100.</p>
       <div class="stat-block">
-        <div class="stat-block-title">Durante o Sono</div>
+        <div class="stat-block-title">Durante o Sono (jogo aberto)</div>
         <div class="stat-row"><span class="label">⚡ Energia</span><span class="value">+4/ciclo (até ×1.15 com item ou elemento)</span></div>
         <div class="stat-row"><span class="label">🍖 Fome</span><span class="value">−0.30/ciclo (decaimento muito reduzido)</span></div>
         <div class="stat-row"><span class="label">🚿 Higiene</span><span class="value">−0.05/ciclo</span></div>
         <div class="stat-row"><span class="label">Minijogos / Arena</span><span class="value">Bloqueados enquanto dorme</span></div>
       </div>
 
-      <h2>Modo Repouso 😴</h2>
-      <p>Modo AFK para quando vais estar ausente por horas ou dias. Ative manualmente. O Avatar entra em estado de hibernação mínima.</p>
+      <h2>Ausência (aba fechada ou em segundo plano)</h2>
+      <p>O Avatar fica em pausa enquanto você está ausente — nenhuma vital decai, e a idade (tempo de jogo real) também não avança. A única exceção é a Energia: se o Avatar estava dormindo quando você saiu, ela continua a subir sozinha, só que mais devagar que ao vivo.</p>
       <div class="stat-block">
-        <div class="stat-block-title">Durante o Modo Repouso</div>
-        <div class="stat-row"><span class="label">🍖 Fome</span><span class="value">−0.05/ciclo (5% do normal)</span></div>
-        <div class="stat-row"><span class="label">😄 Humor</span><span class="value">−0.02/ciclo</span></div>
-        <div class="stat-row"><span class="label">🚿 Higiene</span><span class="value">−0.03/ciclo</span></div>
-        <div class="stat-row"><span class="label">⚡ Energia</span><span class="value">+0.2/ciclo (recuperação lenta)</span></div>
-        <div class="stat-row"><span class="label">🤝 Vínculo</span><span class="value">−0.01/ciclo</span></div>
-        <div class="stat-row"><span class="label">Saúde</span><span class="value">Só perde se Fome &lt; 5</span></div>
+        <div class="stat-block-title">Ausente e dormindo</div>
+        <div class="stat-row"><span class="label">⚡ Energia</span><span class="value">+2/ciclo (metade do ritmo ao vivo) — acorda sozinho ao chegar em 100</span></div>
+        <div class="stat-row"><span class="label">Resto das vitais / Saúde / Idade</span><span class="value">Congelados</span></div>
       </div>
-
       <div class="callout tip">
-        <strong>Recomendação:</strong> Ative sempre o Modo Repouso antes de sair por mais de 2 horas. O Avatar aguenta vários dias em repouso sem morrer.
+        <strong>Recomendação:</strong> Bota o Avatar pra dormir antes de sair — não há mais risco de morte por ausência, só ganhas menos energia do que dormindo com o jogo aberto.
       </div>
-
-      <h2>Catchup Offline</h2>
-      <p>Quando você retorna ao jogo após uma ausência, o sistema simula automaticamente até <strong>3 dias</strong> de tempo decorrido em segundo plano. Se as vitais chegarem a zero durante esse período, o Avatar pode morrer mesmo sem você estar presente — por isso use o Modo Repouso.</p>
     </div><!-- /c-pt -->
     <div class="c-en">
       <div class="section-hero">
         <div class="section-tag">CHAPTER 3</div>
-        <div class="section-title">Sleep & Rest Mode</div>
-        <p class="section-intro">When Energy drops, your Avatar needs to sleep. There are two rest modes with different behaviors.</p>
+        <div class="section-title">Sleep</div>
+        <p class="section-intro">When Energy drops, your Avatar needs to sleep.</p>
       </div>
-      <h2>Normal Sleep</h2>
+      <h2>Sleep</h2>
       <p>Triggered manually or automatically when Energy &lt; 5. The Avatar wakes up automatically when Energy reaches 100.</p>
       <div class="stat-block">
-        <div class="stat-block-title">During Sleep</div>
+        <div class="stat-block-title">While Sleeping (game open)</div>
         <div class="stat-row"><span class="label">⚡ Energy</span><span class="value">+4/cycle (up to ×1.15 with item or element)</span></div>
         <div class="stat-row"><span class="label">🍖 Hunger</span><span class="value">−0.30/cycle (greatly reduced decay)</span></div>
         <div class="stat-row"><span class="label">🚿 Hygiene</span><span class="value">−0.05/cycle</span></div>
         <div class="stat-row"><span class="label">Minigames / Arena</span><span class="value">Blocked while sleeping</span></div>
       </div>
-      <h2>Rest Mode 😴</h2>
-      <p>AFK mode for when you'll be away for hours or days. Activate manually. The Avatar enters minimal hibernation.</p>
+      <h2>Away (tab closed or in background)</h2>
+      <p>Your Avatar is paused while you're away — no vital decays, and age (real play time) doesn't advance either. The one exception is Energy: if the Avatar was sleeping when you left, it keeps rising on its own, just slower than live.</p>
       <div class="stat-block">
-        <div class="stat-block-title">During Rest Mode</div>
-        <div class="stat-row"><span class="label">🍖 Hunger</span><span class="value">−0.05/cycle (5% of normal)</span></div>
-        <div class="stat-row"><span class="label">😄 Mood</span><span class="value">−0.02/cycle</span></div>
-        <div class="stat-row"><span class="label">🚿 Hygiene</span><span class="value">−0.03/cycle</span></div>
-        <div class="stat-row"><span class="label">⚡ Energy</span><span class="value">+0.2/cycle (slow recovery)</span></div>
-        <div class="stat-row"><span class="label">🤝 Bond</span><span class="value">−0.01/cycle</span></div>
-        <div class="stat-row"><span class="label">Health</span><span class="value">Only drops if Hunger &lt; 5</span></div>
+        <div class="stat-block-title">Away and sleeping</div>
+        <div class="stat-row"><span class="label">⚡ Energy</span><span class="value">+2/cycle (half the live rate) — wakes up on its own at 100</span></div>
+        <div class="stat-row"><span class="label">Other vitals / Health / Age</span><span class="value">Frozen</span></div>
       </div>
-      <div class="callout tip"><strong>Recommendation:</strong> Always enable Rest Mode before leaving for more than 2 hours. Your Avatar can survive several days in rest without dying.</div>
-      <h2>Offline Catchup</h2>
-      <p>When you return after absence, the system automatically simulates up to <strong>3 days</strong> of elapsed time. If vitals hit zero during that period, your Avatar can die even while you're away — so use Rest Mode.</p>
+      <div class="callout tip"><strong>Recommendation:</strong> Put your Avatar to sleep before leaving — there's no more risk of dying from absence, you just gain less energy than sleeping with the game open.</div>
     </div><!-- /c-en -->
     </section>
 
@@ -1540,7 +1526,7 @@
       <ul>
         <li>Pedra-Papel-Tesoura · 3 rondas por combate · 30 segundos por ronda</li>
         <li>Filas separadas: <span class="badge badge-comum">Comum</span> <span class="badge badge-raro">Raro</span> <span class="badge badge-lend">Lendário</span></li>
-        <li>Avatar deve estar ativo, vivo, acordado e fora do modo repouso</li>
+        <li>Avatar deve estar ativo, vivo e acordado</li>
       </ul>
 
       <h2>Apostas & Recompensas</h2>
@@ -1564,7 +1550,7 @@
       <ul>
         <li>Rock-Paper-Scissors · 3 rounds per match · 30 seconds per round</li>
         <li>Separate queues: <span class="badge badge-comum">Common</span> <span class="badge badge-raro">Rare</span> <span class="badge badge-lend">Legendary</span></li>
-        <li>Avatar must be active, alive, awake, and not in Rest Mode</li>
+        <li>Avatar must be active, alive, and awake</li>
       </ul>
       <h2>Stakes & Rewards</h2>
       <div class="tbl-wrap"><table>
@@ -1782,7 +1768,7 @@
 
       <h2>Para Iniciantes</h2>
       <ul>
-        <li>Começa sempre com o <strong>Modo Repouso</strong> quando vais sair por mais de 2 horas.</li>
+        <li>Bota o Avatar pra <strong>dormir</strong> antes de sair — a Energia continua a subir sozinha, e nada mais decai enquanto ausente.</li>
         <li>O <strong>Humor</strong> é a vital que decai mais depressa (−1.5/ciclo). Joga minijogos frequentemente.</li>
         <li>Compra o <strong>Amuleto de Saciedade</strong> logo que tiveres 800🪙 — reduz 25% do decaimento da Fome.</li>
         <li>Remove os cocós assim que aparecem para manter o Vínculo a crescer.</li>
@@ -1808,7 +1794,7 @@
       <ul>
         <li>Elemento <em>Aether</em> ou <em>Terra</em> para um início mais suave.</li>
         <li>Com 4 doenças ativas use o <strong>Antídoto Dimensional</strong> (300🪙) imediatamente — não espere.</li>
-        <li>O Avatar pode sobreviver semanas em <strong>Modo Repouso</strong> sem atenção diária.</li>
+        <li>O Avatar fica em pausa indefinidamente enquanto ausente — não há mais risco de morte por negligência à distância.</li>
         <li>Equipe os 3 itens da loja ao mesmo tempo para o Avatar quase se gerenciar sozinho.</li>
       </ul>
     </div><!-- /c-pt -->
@@ -1820,7 +1806,7 @@
       </div>
       <h2>For Beginners</h2>
       <ul>
-        <li>Always enable <strong>Rest Mode</strong> when leaving for more than 2 hours.</li>
+        <li>Put your Avatar to <strong>sleep</strong> before leaving — Energy keeps rising on its own, and nothing else decays while away.</li>
         <li><strong>Mood</strong> decays fastest (−1.5/cycle). Play minigames frequently.</li>
         <li>Buy the <strong>Satiety Amulet</strong> as soon as you have 800🪙 — reduces Hunger decay by 25%.</li>
         <li>Remove poop as soon as it appears to keep Bond growing.</li>
@@ -1843,7 +1829,7 @@
       <ul>
         <li><em>Aether</em> or <em>Earth</em> element for a smoother start.</li>
         <li>With 4 active diseases, use the <strong>Dimensional Antidote</strong> (300🪙) immediately — don't wait.</li>
-        <li>Your Avatar can survive weeks in <strong>Rest Mode</strong> without daily attention.</li>
+        <li>Your Avatar is paused indefinitely while you're away — no more risk of dying from long-distance neglect.</li>
         <li>Equip all 3 shop items at once for a nearly self-managing Avatar.</li>
       </ul>
     </div><!-- /c-en -->

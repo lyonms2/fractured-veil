@@ -93,7 +93,7 @@ function _pararLobbyListener() {
 
 function openArena() {
   if(!hatched || dead || !avatar) { showBubble(t('arena.bub.need_avatar')); return; }
-  if(sleeping || modoRepouso)     { showBubble(t('arena.bub.resting')); return; }
+  if(sleeping)                    { showBubble(t('arena.bub.resting')); return; }
   if(!rtdb())                     { showBubble(t('arena.bub.unavailable')); return; }
   console.log('[ARENA] openArena — avatar:', avatar?.nome, 'raridade:', avatar?.raridade, 'rtdb ok:', !!rtdb());
   ModalManager.open('arenaModal');

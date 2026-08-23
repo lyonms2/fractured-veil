@@ -60,14 +60,11 @@
       'log.session_other':       '⚠️ Sessão iniciada em outro dispositivo. Encerrando...',
       'log.welcome_back':        'Bem-vindo de volta! ✨',
       'log.state_restored':      'Estado restaurado da nuvem! ☁️',
-      'log.repouso_active':      'Modo repouso ativo. 💤',
       'log.died':                '{name} partiu para outra dimensão... 💀',
       'log.welcome_new':         'Bem-vindo! Comece uma nova aventura! ✨',
       'log.fed':                 'Alimentado! +{gain} fome  (-{cost} 🪙)',
       'log.feed_no_coins':       'Precisa de {cost} 🪙 para alimentar!',
       'log.renamed':             'Avatar renomeado para "{name}" 💕',
-      'log.repouso_on':          'Modo repouso ativado. Stats desaceleram. ⏸',
-      'log.repouso_off':         'Modo repouso desativado. Bem-vindo de volta! ✨',
       'log.offline_away':        'Ausente por {h}h {m}min — {status}',
       'log.offline_paused':      'o avatar ficou em pausa, nada mudou. ⏸',
       'log.offline_slept':       'dormiu e recuperou energia. 💤',
@@ -75,7 +72,6 @@
 
       // Bolhas de fala (showBubble)
       'bubble.sleeping':         'Shh... está dormindo 💤',
-      'bubble.repouso':          'Em repouso... segure 💤 para retomar',
       'bubble.satisfied':        'Estou satisfeito!',
       'bubble.no_coins':         'Sem moedas... 😢',
       'bubble.dead':             '...💀',
@@ -163,8 +159,6 @@
       'ui.loading':              'CARREGANDO...',
       'ui.lang_btn':             '🌐 EN',
       'ui.logout':               '✕ SAIR',
-      'ui.repouso_mode':         'MODO REPOUSO',
-      'ui.repouso_resume':       '▶ RETOMAR',
       'ui.sleeping':             '💤 dormindo',
       'ui.no_items':             'Nenhum item no inventário',
       'ui.no_eggs':              'Nenhum ovo ainda',
@@ -274,7 +268,6 @@
       'btn.bath':                'BANHO',
       'btn.lay_egg':             'BOTAR OVO',
       'btn.wake':                'ACORDAR',
-      'btn.repouso':             'REPOUSO',
       'btn.friends':             'AMIGOS',
 
       // Stat labels
@@ -375,14 +368,11 @@
       'log.session_other':       '⚠️ Session started on another device. Disconnecting...',
       'log.welcome_back':        'Welcome back! ✨',
       'log.state_restored':      'State restored from cloud! ☁️',
-      'log.repouso_active':      'Rest mode active. 💤',
       'log.died':                '{name} departed to another dimension... 💀',
       'log.welcome_new':         'Welcome! Begin a new adventure! ✨',
       'log.fed':                 'Fed! +{gain} hunger  (-{cost} 🪙)',
       'log.feed_no_coins':       'You need {cost} 🪙 to feed!',
       'log.renamed':             'Avatar renamed to "{name}" 💕',
-      'log.repouso_on':          'Rest mode activated. Stats slow down. ⏸',
-      'log.repouso_off':         'Rest mode deactivated. Welcome back! ✨',
       'log.offline_away':        'Away for {h}h {m}min — {status}',
       'log.offline_paused':      'your avatar was paused, nothing changed. ⏸',
       'log.offline_slept':       'it slept and recovered energy. 💤',
@@ -390,7 +380,6 @@
 
       // Bubbles
       'bubble.sleeping':         'Shh... sleeping 💤',
-      'bubble.repouso':          'Resting... hold 💤 to resume',
       'bubble.satisfied':        "I'm full!",
       'bubble.no_coins':         'Not enough coins... 😢',
       'bubble.dead':             '...💀',
@@ -478,8 +467,6 @@
       'ui.loading':              'LOADING...',
       'ui.lang_btn':             '🌐 PT',
       'ui.logout':               '✕ LOGOUT',
-      'ui.repouso_mode':         'REST MODE',
-      'ui.repouso_resume':       '▶ RESUME',
       'ui.sleeping':             '💤 sleeping',
       'ui.no_items':             'No items in inventory',
       'ui.no_eggs':              'No eggs yet',
@@ -589,7 +576,6 @@
       'btn.bath':                'BATH',
       'btn.lay_egg':             'LAY EGG',
       'btn.wake':                'WAKE UP',
-      'btn.repouso':             'REST',
       'btn.friends':             'FRIENDS',
 
       // Stat labels

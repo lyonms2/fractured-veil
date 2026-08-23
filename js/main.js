@@ -61,12 +61,6 @@ window.startLabirinto = typeof startLabirinto !== "undefined" ? startLabirinto :
 window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       : ()=>{};
 window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};
 
-// ── Modo Repouso Manual ──
-window.onSleepPointerDown   = typeof onSleepPointerDown   !== "undefined" ? onSleepPointerDown   : ()=>{};
-window.onSleepPointerUp     = typeof onSleepPointerUp     !== "undefined" ? onSleepPointerUp     : ()=>{};
-window.ativarModoRepouso    = typeof ativarModoRepouso    !== "undefined" ? ativarModoRepouso    : ()=>{};
-window.desativarModoRepouso = typeof desativarModoRepouso !== "undefined" ? desativarModoRepouso : ()=>{};
-
 // ── GAME SELECTOR TABS ──
 function gsSetTab(tab) {
   document.getElementById('gsGridPve').style.display  = tab === 'pve'  ? 'grid' : 'none';
@@ -99,15 +93,15 @@ window.addEventListener('beforeunload', () => {
   // lastSeen é persistido server-side pelo RTDB onDisconnect (setupPresence)
 });
 
-// ── DETECTOR DE INATIVIDADE — sugere modo repouso ──
+// ── DETECTOR DE INATIVIDADE — sugere dormir ──
 const INATIVIDADE_MS = 5 * 60 * 1000;
 let _inativoTimer = null;
 
 function _resetInatividade() {
   clearTimeout(_inativoTimer);
-  if(!hatched || dead || sleeping || modoRepouso) return;
+  if(!hatched || dead || sleeping) return;
   _inativoTimer = setTimeout(() => {
-    if(!hatched || dead || sleeping || modoRepouso) return;
+    if(!hatched || dead || sleeping) return;
     showBubble(t('main.bub.inativo'));
     addLog(t('main.log.inativo'), 'info');
   }, INATIVIDADE_MS);
@@ -158,7 +152,6 @@ document.addEventListener('visibilitychange', async () => {
   if(!walletAddress || !fbDb()) return;
   if(Date.now() - _hiddenAt < 2000) return;
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) return;
-  if(typeof modoRepouso !== 'undefined' && modoRepouso) return;
 
   try {
     const snap = await fbDb().collection('players').doc(walletAddress).get();

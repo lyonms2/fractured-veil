@@ -179,7 +179,7 @@ function _rmHtmlCartaMini(c) {
 
 function openRoubaMonte() {
   if(!hatched||dead||!avatar) { showBubble(t('arena.bub.need_avatar')); return; }
-  if(sleeping||modoRepouso)   { showBubble(t('arena.bub.resting')); return; }
+  if(sleeping)                { showBubble(t('arena.bub.resting')); return; }
   if(!_rmRtdb())              { showBubble(t('rm.bub.unavailable')); return; }
   ModalManager.open('roubaMontModal');
 
