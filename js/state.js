@@ -209,10 +209,10 @@ if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
 const SLOT_COST   = 15;
 
 // ── INVOCAÇÃO ──
-// Os 3 primeiros avatares são grátis — é a equipa mínima para o combate.
-// A partir daí a invocação custa moedas, para não desvalorizar os ovos.
-const SUMMON_GRATIS   = 3;
-const SUMMON_CUSTO    = 500;
+// Sempre gratuita. Invocar dá sempre um Comum nível 1, portanto nunca
+// compete com um ovo — é lá que está a raridade. O portão do jogo não é
+// obter avatares, é criá-los (nível 17 + 20h para chocar).
+const SUMMON_CUSTO = 0;
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));

@@ -1,24 +1,19 @@
 // ═══════════════════════════════════════════
 // SUMMON SYSTEM
 // ═══════════════════════════════════════════
-// Quantos avatares o jogador já tem (contando ovos a chocar e ignorando mortos).
-// Se um avatar morrer e o slot for limpo, volta a poder invocar de graça — é a
-// rede de segurança para nunca ficar sem equipa.
+// Quantos avatares vivos o jogador tem — usado pela interface de slots.
 function avataresVivos() {
   if(typeof avatarSlots === 'undefined') return 0;
   return avatarSlots.filter(s => s && !s.dead).length;
 }
 
-function custoDaInvocacao() {
-  return avataresVivos() < SUMMON_GRATIS ? 0 : SUMMON_CUSTO;
-}
+function custoDaInvocacao() { return SUMMON_CUSTO; }
 
 function triggerSummon() {
   if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
   const btn = document.getElementById('btnSummon');
   if(!btn || btn.disabled) return;
 
-  // A partir do 4º avatar a invocação custa moedas
   const custo = custoDaInvocacao();
   if(custo > 0) {
     if(gs.moedas < custo) {

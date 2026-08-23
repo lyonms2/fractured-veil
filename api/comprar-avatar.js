@@ -93,6 +93,14 @@ async function handleListarAvatar(req, res, db, uid) {
       const s     = slots[slotIdxInt];
       if (!s || s.dead) throw new Error('SLOT_INVALID');
 
+      // Só Raro e Lendário se vendem. O cliente já esconde o botão para
+      // Comuns, mas isso é só interface — sem esta validação, um cliente
+      // modificado listava Comuns e trocava-os por cristais, que saem em
+      // MATIC. Tem de ser verificado aqui.
+      if (s.raridade !== 'Raro' && s.raridade !== 'Lendário') {
+        throw new Error('RARIDADE_INVALIDA');
+      }
+
       const newCristais = cristais - LIST_COST;
       slots[slotIdxInt] = { ...s, listed: true };
 
@@ -143,8 +151,9 @@ async function handleListarAvatar(req, res, db, uid) {
     return res.status(200).json({ ok: true, ...resultado });
   } catch (err) {
     const erros = {
-      INSUFFICIENT: [400, 'Cristais insuficientes para a taxa de listagem.'],
-      SLOT_INVALID: [400, 'Slot inválido ou avatar morto.'],
+      INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
+      SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
+      RARIDADE_INVALIDA: [400, 'Apenas avatares Raros e Lendários podem ser listados.'],
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
     if (status === 500) console.error('[comprar-avatar/listar]', err);
