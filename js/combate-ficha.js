@@ -18,12 +18,16 @@
 // ── AFINIDADE ELEMENTAL ──
 // Cada elemento puxa um atributo como primário e outro como secundário.
 //
-// Com 4 elementos e 4 atributos existe uma atribuição perfeita, que com
-// 7 era impossível: a rotação FOR → HAB → INT → RES → FOR. Cada atributo
-// é primário exactamente uma vez e secundário exactamente uma vez, logo
-// todos pesam 3. Com 7 elementos o melhor que se conseguia era 4/6/6/5,
-// e a assimetria da FOR (primária só do Fogo) andou a distorcer o
-// equilíbrio desde o início.
+// São 5 atributos para 4 elementos, portanto um fica sem ser primário de
+// ninguém. É a RES, de propósito: ela e a ARM são as duas defensivas, e
+// nenhum elemento devia ter as duas no topo. A RES compensa sendo
+// secundária de dois — o peso final fica entre 2 e 3 para todos.
+//
+//   FOR  dano físico          → o ataque comum e metade do golpe forte
+//   HAB  velocidade e esquiva → ordem de turno e a defesa arriscada
+//   INT  dano mágico e cura   → a habilidade e os efeitos
+//   RES  vitalidade           → só HP
+//   ARM  armadura             → a defesa segura, reduz o golpe que entra
 const COMBATE_AFINIDADE = {
   'Fogo':  { primaria:'FOR', secundaria:'HAB' },  // agressão e dano contínuo
   'Vento': { primaria:'HAB', secundaria:'INT' },  // velocidade e múltiplos golpes
@@ -32,14 +36,30 @@ const COMBATE_AFINIDADE = {
 };
 
 // ── ORÇAMENTO DE PONTOS POR RARIDADE ──
-// [primária, secundária, terceira, quarta] — a soma é o orçamento total.
-// A razão 20 : 28 : 36 (1 : 1.4 : 1.8) é a mesma do multiplicador de XP
-// que rarityBonus() já usa, para a ficha não inventar uma escala nova.
+// [primária, secundária, 3ª, 4ª, 5ª] — a soma é o orçamento total.
+// Subiu de 20/28/36 para 25/35/45 ao passar de 4 para 5 atributos: com o
+// orçamento antigo cada atributo encolhia 20% e todas as fórmulas que
+// dependem deles (HP, dano, escudo) davam números menores sem que nada
+// no desenho tivesse mudado. A razão 1 : 1.4 : 1.8 entre raridades é a
+// mesma de sempre — a que rarityBonus() já usa para o XP.
 const COMBATE_ORCAMENTO = {
-  'Comum':    [7, 5, 4, 4],   // 20
-  'Raro':     [10, 7, 6, 5],  // 28
-  'Lendário': [13, 9, 7, 7],  // 36
+  'Comum':    [8, 6, 4, 4],    // 22
+  'Raro':     [11, 8, 6, 5],   // 30
+  'Lendário': [14, 11, 7, 7],  // 39
 };
+
+// ── ARMADURA ──
+// A ARM fica FORA da rotação elemental, de propósito. Testei-a como
+// primária: seja qual for o elemento que a apanhe, ele afunda. A Terra
+// com ARM primária ganhava 31% das batalhas contra 61% do Fogo, e nem a
+// intensidade de efeitos no tecto a levantava. É o mesmo padrão que a
+// RES e a HAB já tinham mostrado — atributos defensivos não ganham
+// batalhas quando a única vitória é zerar o HP do outro.
+//
+// Aqui ela varia por avatar (o seed mexe-lhe ±2 como nos outros) e cresce
+// com a raridade e o nível, mas nenhum elemento é dono dela. Continua a
+// haver o avatar duro e o avatar de papel; só não há o elemento condenado.
+const COMBATE_ARM_BASE = { 'Comum': 4, 'Raro': 5.6, 'Lendário': 7.2 };
 
 const COMBATE_STATS = ['FOR', 'RES', 'HAB', 'INT'];
 
@@ -137,6 +157,11 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
 
   // 4. barras
   //    HP vem só da RES. Energia é fixa, com bónus de quem tem HAB no kit.
+  // ARM: base da raridade, a crescer com o nível como tudo o resto, com
+  // uma variação de -1 a +2 tirada do mesmo gerador — dois avatares
+  // iguais não têm a mesma armadura.
+  s.ARM = Math.max(1, Math.round((COMBATE_ARM_BASE[raridade] || 4) * mult) + rnd(0, 3) - 1);
+
   const hpMax = COMBATE_HP_BASE + s.RES * COMBATE_HP_POR_RES;
   let enMax = COMBATE_EN_BASE;
   if      (afin.primaria   === 'HAB') enMax = Math.round(COMBATE_EN_BASE * 1.20);
@@ -150,7 +175,7 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
   const statDoUltimate = s.INT >= s.FOR ? 'INT' : 'FOR';
 
   return {
-    FOR: s.FOR, RES: s.RES, HAB: s.HAB, INT: s.INT,
+    FOR: s.FOR, RES: s.RES, HAB: s.HAB, INT: s.INT, ARM: s.ARM,
     hpMax, enMax, statDoUltimate,
     primaria: afin.primaria,
     secundaria: afin.secundaria,
@@ -176,15 +201,15 @@ const COMBATE_SLOTS = [
   // abundante ninguem o usava: os elementos de INT primaria ganhavam
   // 76% das batalhas e os de FOR ficavam pelos 50%.
   { papel:'comum',   custo:0,  gera:15, tipo:'dano',
-    calc: f => Math.round(f.FOR * 1.9) },
+    calc: f => Math.round(f.FOR * 2.66) },
   { papel:'skill',   custo:25, gera:0,  tipo:'dano',
-    calc: f => Math.round(f.INT * 2.3 + f.FOR * 0.5) },
+    calc: f => Math.round(f.INT * 3.22 + f.FOR * 0.7) },
   // O termo do menor atributo nao e enfeite: sem ele o golpe forte saia
   // MAIS FRACO do que a habilidade de 25 EN em Vento, Terra e Luz — a
   // habilidade soma dois atributos e a forte usava so um. Com ele, a
   // forte fica acima em todos os 7 elementos, raridades e niveis.
   { papel:'forte',   custo:50, gera:0,  tipo:'dano',
-    calc: f => Math.round(Math.max(f.FOR, f.INT) * 2.4 + Math.min(f.FOR, f.INT) * 1.0) },
+    calc: f => Math.round(Math.max(f.FOR, f.INT) * 3.36 + Math.min(f.FOR, f.INT) * 1.4) },
   { papel:'suporte', custo:20, gera:0,  tipo:'escudo',
     // RES x1.6 e não x2.5 como na spec: a RES já dá 10 de HP por ponto,
     // e com o escudo a x2.5 ela contava duas vezes — o elemento de RES

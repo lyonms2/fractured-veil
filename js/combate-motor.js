@@ -50,11 +50,28 @@ const COMBATE_GERA_EN  = 15;    // o ataque comum devolve energia
 const COMBATE_TROCA_EN = 25;    // trocar custa energia, não o turno
 const COMBATE_RESERVA_EN = 25;  // quem está no banco recupera energia
 
-const COMBATE_ACERTO_BASE = 0.85;
-const COMBATE_ACERTO_POR_HAB = 0.015;
-const COMBATE_ACERTO_MIN = 0.70;   // banda normal
-const COMBATE_ACERTO_MAX = 0.95;   // nunca existe acerto garantido
-const COMBATE_ACERTO_PISO = 0.50;  // nem empilhando debuffs
+// ── DEFESA ──
+// Quem é atacado escolhe: esquivar ou bloquear. Não há defesa passiva —
+// o teste de acerto automático que existia dava pontaria à HAB de graça,
+// e com a HAB a passar a dar esquiva contaria duas vezes.
+//
+//   ESQUIVAR (HAB)  tudo ou nada. Se sai, não entra dano nenhum.
+//                   Se falha, o golpe entra inteiro. Custa energia.
+//   BLOQUEAR (ARM)  garantido, nunca anula. Reduz uma fracção do golpe
+//                   que cresce com a ARM. Não custa nada.
+//
+// Os dois valem sensivelmente o mesmo em dano esperado. A diferença é a
+// variância — e é aí que está a decisão.
+const COMBATE_ESQUIVA_BASE = 0.30;
+const COMBATE_ESQUIVA_POR_HAB = 0.025;   // por ponto de HAB acima do atacante
+const COMBATE_ESQUIVA_MIN = 0.05;
+const COMBATE_ESQUIVA_MAX = 0.60;        // nem o mais rápido é intocável
+const COMBATE_ESQUIVA_EN  = 12;          // esquivar cansa; bloquear não
+
+// Redução do bloqueio: ARM/(ARM+K). Curva com rendimentos decrescentes,
+// para dobrar a ARM não dobrar a defesa e a Terra não virar imortal.
+const COMBATE_BLOQUEIO_K   = 26;
+const COMBATE_BLOQUEIO_MAX = 0.60;
 
 const COMBATE_CRIT       = 0.16;
 const COMBATE_CRIT_MULT  = 1.50;
@@ -117,13 +134,48 @@ function _valorSlot(c, slot) {
   return COMBATE_SLOTS[slot].calc(efetivo);
 }
 
-function _chanceAcerto(atk, def, rng) {
-  let p = COMBATE_ACERTO_BASE + (_stat(atk, 'HAB') - _stat(def, 'HAB')) * COMBATE_ACERTO_POR_HAB;
-  p = Math.max(COMBATE_ACERTO_MIN, Math.min(COMBATE_ACERTO_MAX, p));
-  for (const d of atk.debuffAcerto) p -= d.v;
-  for (const e of def.evasao)       p -= e.v;
-  return Math.max(COMBATE_ACERTO_PISO, p);
+// Quanto o defensor esquiva deste atacante. Os debuffs de pontaria do
+// atacante e a evasão do defensor entram aqui — passaram a ser bónus de
+// esquiva em vez de penalizações de acerto, que é a mesma coisa vista do
+// outro lado da mesa.
+function _chanceEsquiva(atk, def) {
+  let p = COMBATE_ESQUIVA_BASE + (_stat(def, 'HAB') - _stat(atk, 'HAB')) * COMBATE_ESQUIVA_POR_HAB;
+  for (const d of atk.debuffAcerto) p += d.v;
+  for (const e of def.evasao)       p += e.v;
+  return Math.max(COMBATE_ESQUIVA_MIN, Math.min(COMBATE_ESQUIVA_MAX, p));
 }
+
+function _reducaoBloqueio(def) {
+  const arm = _stat(def, 'ARM');
+  return Math.min(COMBATE_BLOQUEIO_MAX, arm / (arm + COMBATE_BLOQUEIO_K));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// A DECISÃO DO DEFENSOR
+//
+// Chamada uma vez por ataque. Em PvE responde a IA; em PvP é o jogador,
+// com um relógio — esgotado o tempo entra o que esta função devolve.
+// Devolve 'esquivar' ou 'bloquear'.
+// ═══════════════════════════════════════════════════════════════════
+function politicaDefesa(def, atk, danoPrevisto) {
+  const podeEsquivar = def.en >= COMBATE_ESQUIVA_EN;
+  if (!podeEsquivar) return 'bloquear';
+
+  const pEsq = _chanceEsquiva(atk, def);
+  const red  = _reducaoBloqueio(def);
+  const esperadoEsquiva  = danoPrevisto * (1 - pEsq);
+  const esperadoBloqueio = danoPrevisto * (1 - red);
+
+  // Se o golpe me mata a bloquear, esquivar é a única hipótese — mesmo
+  // sendo pior em média. Preferir a média aqui seria morrer com razão.
+  if (esperadoBloqueio >= def.hp + def.escudo && esperadoEsquiva < def.hp + def.escudo + danoPrevisto) {
+    return 'esquivar';
+  }
+  // Caso contrário, o menor dano esperado — com um empurrão para o
+  // bloqueio, que é grátis, quando a diferença é pequena.
+  return (esperadoEsquiva < esperadoBloqueio * 0.9) ? 'esquivar' : 'bloquear';
+}
+
 
 // Aplica dano com o tecto rígido, depois de TODOS os multiplicadores.
 // Devolve o dano que entrou de facto, para os efeitos que dependem dele
@@ -160,14 +212,16 @@ function _darEnergia(c, v) {
 // ═══════════════════════════════════════════════════════════════════
 // Envolve _executarHabilidade para registar o que aconteceu, sem ter de
 // espalhar chamadas ao log pelos vários return lá dentro.
-function _usarHabilidade(atk, def, slot, rng, log) {
-  if (!log || !log.eventos) return _executarHabilidade(atk, def, slot, rng, log);
+function _usarHabilidade(atk, def, slot, rng, log, opts) {
+  if (!log || !log.eventos) return _executarHabilidade(atk, def, slot, rng, log, opts);
   const a = { hpAlvo: def.hp, escAlvo: def.escudo, hpMeu: atk.hp, en: atk.en };
-  const usado = _executarHabilidade(atk, def, slot, rng, log);
+  log.ultimaDefesa = null; log.ultimoEsquivou = false;
+  const usado = _executarHabilidade(atk, def, slot, rng, log, opts);
   const ef = efeitoDe(atk.elemento, usado);
   log.eventos.push({
     turno: log.turno, quem: atk.nome, elemento: atk.elemento,
     slot: usado, alvo: def.nome, tipo: ef ? ef.tipo : (usado === 3 ? 'escudo' : 'dano'),
+    defesa: log.ultimaDefesa || null, esquivou: !!log.ultimoEsquivou,
     dano:   Math.max(0, (a.hpAlvo - def.hp) + (a.escAlvo - def.escudo)),
     aoEscudo: Math.max(0, a.escAlvo - def.escudo),
     curou:  Math.max(0, atk.hp - a.hpMeu),
@@ -179,7 +233,7 @@ function _usarHabilidade(atk, def, slot, rng, log) {
   return usado;
 }
 
-function _executarHabilidade(atk, def, slot, rng, log) {
+function _executarHabilidade(atk, def, slot, rng, log, opts) {
   const custo = COMBATE_CUSTOS[slot];
   if (atk.en < custo) slot = 0;                       // sem energia, cai no comum
   atk.en -= COMBATE_CUSTOS[slot];
@@ -221,22 +275,40 @@ function _executarHabilidade(atk, def, slot, rng, log) {
 
   for (let g = 0; g < golpes; g++) {
     if (!def.vivo) break;
-    if (rng() > _chanceAcerto(atk, def, rng)) continue;   // falhou
-    acertouAlguma = true;
     atk.golpesAcertados++;
 
     let base = valor * fracao;
     if (tipo === 'crescente') base *= (1 + COMBATE_EF.CICLONE_POR_GOLPE * inten * atk.golpesAcertados);
     if (tipo === 'dobra_se_escudo' && def.escudo > 0) base *= 2;
 
-    // Crítico: 16% fixo, nunca em ultimates — a excepção é o Julgamento
-    // do Trovão, que é literalmente a habilidade do elemento.
+    // Crítico: 16% fixo, nunca em ultimates.
     let chanceCrit = (slot === 2) ? 0 : COMBATE_CRIT;
     if (tipo === 'crit_alto') chanceCrit = COMBATE_EF.CRIT_TROVAO * inten;
     if (atk.critGarantido) { chanceCrit = 1; atk.critGarantido = false; }
-    if (rng() < chanceCrit) base *= COMBATE_CRIT_MULT;
+    const critou = rng() < chanceCrit;
+    if (critou) base *= COMBATE_CRIT_MULT;
 
-    const r = _aplicarDano(def, base * multEl, { ignoraEscudo: !!(ef && ef.ignoraEscudo) });
+    // ── O DEFENSOR DECIDE ──
+    // Uma decisão por golpe. Numa Rajada Tripla são três, e isso é
+    // deliberado: cada golpe é uma oportunidade de esquivar.
+    const previsto = Math.round(base * multEl);
+    const defesa = (opts && opts.defesa) ? opts.defesa(def, atk, previsto)
+                                         : politicaDefesa(def, atk, previsto);
+    let entra = base * multEl, esquivou = false;
+    if (defesa === 'esquivar') {
+      _darEnergia(def, -COMBATE_ESQUIVA_EN);
+      if (rng() < _chanceEsquiva(atk, def)) { entra = 0; esquivou = true; }
+    } else {
+      entra *= (1 - _reducaoBloqueio(def));
+    }
+    if (log && log.eventos) {
+      log.ultimaDefesa = defesa;
+      log.ultimoEsquivou = esquivou;
+    }
+    if (esquivou) continue;
+    acertouAlguma = true;
+
+    const r = _aplicarDano(def, entra, { ignoraEscudo: !!(ef && ef.ignoraEscudo) });
     danoTotal += r.dano;
     if (r.refletido > 0) _aplicarDano(atk, r.refletido, { ignoraEscudo: true });
     if (log) log.maiorGolpe = Math.max(log.maiorGolpe || 0, r.dano / def.hpMax);
@@ -302,9 +374,9 @@ function politicaPadrao(eu, activo, inimigo, activoIni, opts) {
   const acao = { troca: null, slot: 0 };
 
   // Quanto o inimigo tira por golpe, para saber quem sobrevive à entrada
-  const ameaca = Math.min(
-    Math.round(_valorSlot(d, 2) * multElemental(d.elemento, c.elemento)),
-    Math.floor(c.hpMax * COMBATE_TETO_GOLPE));
+  const ameaca = Math.round(Math.min(
+    _valorSlot(d, 2) * multElemental(d.elemento, c.elemento),
+    Math.floor(c.hpMax * COMBATE_TETO_GOLPE)) * (1 - _reducaoBloqueio(c)));
 
   // Quanto vale estar em campo contra este inimigo. O peso da vida é
   // grande de propósito: sem ele a política trocava para dentro um
@@ -344,8 +416,11 @@ function politicaPadrao(eu, activo, inimigo, activoIni, opts) {
   const ataca = s => { const t = tipoDe(s); return t !== 'cura' && t !== 'escudo'
                        && !(t === 'debuff_acerto' && efeitoDe(act.elemento, s).alvo === 'proprio')
                        && t !== 'crit_garantido'; };
+  // Desconta a defesa média do alvo: sem isto o atacante achava que
+  // rematava com um golpe que o defensor ia bloquear a meio.
+  const mitiga = 1 - Math.max(_reducaoBloqueio(d), _chanceEsquiva(act, d));
   const dano = s => ataca(s)
-    ? Math.min(Math.round(_valorSlot(act, s) * multEl), Math.floor(d.hpMax * COMBATE_TETO_GOLPE))
+    ? Math.round(Math.min(_valorSlot(act, s) * multEl, Math.floor(d.hpMax * COMBATE_TETO_GOLPE)) * mitiga)
     : 0;
 
   // Rematar sempre que der: um alvo morto não devolve o golpe
@@ -424,7 +499,7 @@ function combateSimular(equipaA, equipaB, seed, opts) {
     for (const l of lados) {
       if (!l.c.vivo || !l.alvo.vivo) continue;
       if (l.c.atordoado > 0) continue;
-      _usarHabilidade(l.c, l.alvo, l.slot, rng, log);
+      _usarHabilidade(l.c, l.alvo, l.slot, rng, log, opts);
     }
 
     _fimDeTurno(A, ativoA);
@@ -501,7 +576,9 @@ function combateNarrar(equipaA, equipaB, seed) {
     if (ev.turno !== t) { t = ev.turno; L.push(`\n── turno ${t} ──`); }
     if (ev.troca) { L.push(`  ↩ ${ev.lado}: entra ${ev.quem}`); continue; }
     const partes = [];
-    if (ev.dano)   partes.push(`${ev.dano} de dano${ev.aoEscudo ? ` (${ev.aoEscudo} no escudo)` : ''}`);
+    if (ev.defesa === 'esquivar' && !ev.dano) partes.push('o alvo ESQUIVOU');
+    else if (ev.defesa === 'bloquear' && ev.dano) partes.push(`${ev.dano} de dano (bloqueado)`);
+    else if (ev.dano)   partes.push(`${ev.dano} de dano${ev.aoEscudo ? ` (${ev.aoEscudo} no escudo)` : ''}`);
     if (ev.curou)  partes.push(`+${ev.curou} de vida`);
     if (ev.sofreu) partes.push(`levou ${ev.sofreu} de volta`);
     if (ev.escudoProprio && ev.slot === 3) partes.push(`escudo de ${ev.escudoProprio}`);
@@ -523,7 +600,7 @@ function combateNarrar(equipaA, equipaB, seed) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { combateSimular, combateNarrar, multElemental, politicaPadrao,
+  module.exports = { combateSimular, combateNarrar, multElemental, politicaPadrao, politicaDefesa,
                      COMBATE_CICLO, COMBATE_CUSTOS, COMBATE_TROCA_EN,
                      COMBATE_TETO_GOLPE, COMBATE_MAX_TURNOS };
 }

@@ -25,10 +25,10 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const COMBATE_INTENSIDADE = {
-  'Vento': 0.93,   // o de menos HP; o escudo dele é o mais fraco dos quatro
-  'Terra': 0.90,   // muralha e atordoamento, com HP alto por trás
-  'Água':  0.70,   // cura, dreno de energia e escudo que regenera
-  'Fogo':  0.57,   // tem o maior dano bruto do jogo — paga aqui
+  'Água':  1.02,   // cura, dreno de energia e escudo que regenera
+  'Terra': 0.95,   // muralha e atordoamento, com HP alto por trás
+  'Vento': 0.94,   // o de menos HP; compensa na esquiva e nos efeitos
+  'Fogo':  0.37,   // tem o maior dano bruto do jogo — paga aqui
 };
 
 // Magnitudes base dos efeitos, antes da intensidade do elemento.
