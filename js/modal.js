@@ -26,6 +26,7 @@ const ModalManager = {
       const btn = document.getElementById('btnPlay');
       if(btn) btn.classList.add('disabled');
     }
+    this._syncHelpBtn();
   },
 
   close(id) {
@@ -36,6 +37,7 @@ const ModalManager = {
       this.current = null;
       if(this._onClose) { this._onClose(); this._onClose = null; }
     }
+    this._syncHelpBtn();
   },
 
   closeAll() {
@@ -45,6 +47,7 @@ const ModalManager = {
     document.getElementById('actionBtns').classList.remove('jkp-mode');
     const btn = document.getElementById('btnPlay');
     if(btn) btn.classList.remove('disabled');
+    this._syncHelpBtn();
   },
 
   isOpen(id) { return this.current === id; },
@@ -60,6 +63,14 @@ const ModalManager = {
       const btn = document.getElementById('btnPlay');
       if(btn) btn.classList.remove('disabled');
     }
+  },
+
+  // Esconde o botão flutuante "?" (canto inferior-direito, sempre visível)
+  // enquanto qualquer modal está aberto — no mobile ele sobrepunha a barra
+  // inferior do marketplace, que ocupa esse mesmo canto.
+  _syncHelpBtn() {
+    const btn = document.getElementById('gameHelpBtn');
+    if(btn) btn.style.display = this.anyOpen() ? 'none' : 'flex';
   }
 };
 
