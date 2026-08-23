@@ -9,7 +9,11 @@
   justify-content:flex-start;
 }
 #marketplaceModal .modal-header { flex-shrink:0; }
-#marketplaceModal .mktmp-body { height:100%; }
+#marketplaceModal .mktmp-body { height:100%; min-height:0; }
+/* .mkt-main não tinha overflow/altura própria no layout de página inteira
+   original (a página inteira crescia e rolava); dentro do modal, com altura
+   fixa, precisa rolar internamente. */
+#marketplaceModal .mkt-main { overflow-y:auto; min-height:0; }
 
 /* ═══════════════════════════════════════════
    BASE
