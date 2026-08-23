@@ -164,10 +164,64 @@ function poderDaEquipa(membros) {
   }, 0);
 }
 
-// A equipa do jogador são os seus avatarSlots preenchidos e vivos.
-// Hoje um jogador novo tem 1 — o combate adapta-se ao tamanho (1v1, 2v2,
-// 3v3) e a fórmula de poder trata do emparelhamento sozinha.
+// ═══════════════════════════════════════════════════════════════════
+// EQUIPA DE COMBATE
+//
+// O combate é sempre 3v3. O jogador escolhe quais dos seus slots entram,
+// e a escolha vive em gs.equipa como uma lista de índices de slot —
+// portanto viaja no mesmo save que tudo o resto, sem campo novo.
+//
+// Guardar índices e não cópias do avatar é deliberado: o avatar continua
+// a ser o do slot, com o nível e o estado que tiver na hora da batalha.
+// ═══════════════════════════════════════════════════════════════════
+const COMBATE_EQUIPA_MAX = 3;
+
+// Um avatar à venda está congelado e pode mudar de dono a qualquer
+// momento; morto ou por chocar não luta. Nenhum desses entra na equipa.
+function _elegivelParaEquipa(s) {
+  return !!(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed);
+}
+
+// Índices escolhidos, já saneados. Se o jogador ainda não escolheu — ou
+// se os que escolheu deixaram de ser elegíveis — preenche com os
+// primeiros disponíveis, para nunca haver equipa vazia por omissão.
+function equipaIdx() {
+  if (typeof avatarSlots === 'undefined') return [];
+  const bruto  = (typeof gs !== 'undefined' && Array.isArray(gs.equipa)) ? gs.equipa : [];
+  const vistos = new Set();
+  const out    = [];
+  for (const i of bruto) {
+    if (typeof i !== 'number' || vistos.has(i)) continue;
+    if (!_elegivelParaEquipa(avatarSlots[i])) continue;
+    vistos.add(i); out.push(i);
+    if (out.length >= COMBATE_EQUIPA_MAX) break;
+  }
+  if (out.length === 0) {
+    for (let i = 0; i < avatarSlots.length && out.length < COMBATE_EQUIPA_MAX; i++) {
+      if (_elegivelParaEquipa(avatarSlots[i])) out.push(i);
+    }
+  }
+  return out;
+}
+
+function estaNaEquipa(i)  { return equipaIdx().includes(i); }
+function equipaCompleta() { return equipaIdx().length >= COMBATE_EQUIPA_MAX; }
+
+// Devolve o que aconteceu, para quem chama poder dar a mensagem certa:
+// 'add' | 'remove' | 'cheia' | 'inelegivel'
+function alternarNaEquipa(i) {
+  if (typeof gs === 'undefined' || typeof avatarSlots === 'undefined') return 'inelegivel';
+  if (!_elegivelParaEquipa(avatarSlots[i])) return 'inelegivel';
+  const atual = equipaIdx();
+  const pos   = atual.indexOf(i);
+  if (pos >= 0) { atual.splice(pos, 1); gs.equipa = atual; return 'remove'; }
+  if (atual.length >= COMBATE_EQUIPA_MAX) return 'cheia';
+  atual.push(i); gs.equipa = atual;
+  return 'add';
+}
+
+// Os avatares da equipa, na ordem em que o jogador os escolheu.
 function equipaDoJogador() {
   if (typeof avatarSlots === 'undefined') return [];
-  return avatarSlots.filter(s => s && s.hatched && !s.dead && !s.pendingEgg);
+  return equipaIdx().map(i => avatarSlots[i]);
 }

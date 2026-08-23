@@ -192,6 +192,7 @@ function openAvatarZoom() {
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, avatar.elemento, nivel);
   _lockZoomScroll();
   const ov = document.getElementById('avatarZoomOverlay');
   ov.style.display = 'flex';
@@ -211,6 +212,7 @@ function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome) {
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: elemento, rar: raridade, fase: fases[fase], nivel: nivelAv||1});
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, elemento, nivelAv||1);
   _lockZoomScroll();
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }

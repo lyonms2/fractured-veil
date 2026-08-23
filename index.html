@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="css/minigames.css">
   <link rel="stylesheet" href="css/modals.css">
   <link rel="stylesheet" href="css/marketplace.css">
+  <link rel="stylesheet" href="css/combate.css">
   <link rel="stylesheet" href="css/arena.css">
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
@@ -952,6 +953,7 @@
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/combate-ficha.js"></script>
+<script src="js/combate-ui.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/firebase.js"></script>
@@ -1219,6 +1221,8 @@
     <div class="mkt-section active" id="sec-slots">
       <div class="section-title" data-i18n="mkt.slots.title">🧬 Meus Avatares</div>
       <div class="section-sub" data-i18n="mkt.slots.sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
+      <!-- Barra da equipa de combate — preenchida por renderEquipaBar() -->
+      <div id="equipaBar"></div>
       <div id="slotsGrid" class="slots-grid"></div>
       <div id="unlockSlotRow"></div>
     </div>
@@ -1483,6 +1487,8 @@
     <div id="avatarZoomSVG"></div>
     <div id="avatarZoomName" class="avatar-zoom-name"></div>
     <div id="avatarZoomInfo" class="avatar-zoom-info"></div>
+    <!-- Ficha de combate — preenchida por renderFichaHTML() (js/combate-ui.js) -->
+    <div id="avatarZoomFicha"></div>
   </div>
 </div>
 

@@ -321,6 +321,21 @@ async function unlistAvatar(listingId) {
 // ═══════════════════════════════════════════
 // MEUS AVATARES / SLOTS
 // ═══════════════════════════════════════════
+// Botão ⚔ de um card. Um avatar à venda está congelado e não pode
+// lutar — nesse caso o botão aparece desativado, em vez de desaparecer,
+// para o jogador perceber porque é que aquele não entra na equipa.
+function _slotBtnEquipa(i, s) {
+  if(typeof estaNaEquipa !== 'function') return '';
+  if(s.listed) {
+    return `<button class="btn-slot-equipa" disabled title="${t('equipa.btn_listed_title')}">${t('equipa.btn_listed')}</button>`;
+  }
+  const dentro = estaNaEquipa(i);
+  const bloqueado = !dentro && equipaCompleta();
+  return `<button class="btn-slot-equipa ${dentro?'on':''}" ${bloqueado?'disabled':''}
+    title="${bloqueado ? t('equipa.btn_full_title', {max: COMBATE_EQUIPA_MAX}) : ''}"
+    onclick="toggleEquipa(${i})">${dentro ? t('equipa.btn_on') : t('equipa.btn_off')}</button>`;
+}
+
 function renderSlots() {
   // Limpar SVGs anteriores para evitar colisão de filter IDs
   const _sg = document.getElementById('slotsGrid');
@@ -403,6 +418,10 @@ function renderSlots() {
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
             <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
+          <div class="slot-actions">
+            ${_slotBtnEquipa(i, s)}
+            <button class="btn-slot-ficha" onclick="abrirFichaSlot(${i})">${t('mkt.slot.btn_ficha')}</button>
+          </div>
           ${!isActive && !isFrozen ? `
           <div class="slot-actions">
             <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_activate')}</button>
@@ -435,6 +454,9 @@ function renderSlots() {
   }
 
   grid.innerHTML = html;
+
+  // Resumo da equipa de combate por cima da grelha
+  if(typeof renderEquipaBar === 'function') renderEquipaBar();
 
   // Unlock button
   if(unlocked < MAX_SLOTS) {
