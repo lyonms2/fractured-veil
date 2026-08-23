@@ -160,7 +160,28 @@ function _darEnergia(c, v) {
 // ═══════════════════════════════════════════════════════════════════
 // EXECUTAR UMA HABILIDADE
 // ═══════════════════════════════════════════════════════════════════
+// Envolve _executarHabilidade para registar o que aconteceu, sem ter de
+// espalhar chamadas ao log pelos vários return lá dentro.
 function _usarHabilidade(atk, def, slot, rng, log) {
+  if (!log || !log.eventos) return _executarHabilidade(atk, def, slot, rng, log);
+  const a = { hpAlvo: def.hp, escAlvo: def.escudo, hpMeu: atk.hp, en: atk.en };
+  const usado = _executarHabilidade(atk, def, slot, rng, log);
+  const ef = efeitoDe(atk.elemento, usado);
+  log.eventos.push({
+    turno: log.turno, quem: atk.nome, elemento: atk.elemento,
+    slot: usado, alvo: def.nome, tipo: ef ? ef.tipo : (usado === 3 ? 'escudo' : 'dano'),
+    dano:   Math.max(0, (a.hpAlvo - def.hp) + (a.escAlvo - def.escudo)),
+    aoEscudo: Math.max(0, a.escAlvo - def.escudo),
+    curou:  Math.max(0, atk.hp - a.hpMeu),
+    sofreu: Math.max(0, a.hpMeu - atk.hp),      // reflexo
+    hpAlvoDepois: def.hp, hpAlvoMax: def.hpMax,
+    hpDepois: atk.hp, hpMax: atk.hpMax, enDepois: atk.en,
+    escudoProprio: atk.escudo, morreu: !def.vivo,
+  });
+  return usado;
+}
+
+function _executarHabilidade(atk, def, slot, rng, log) {
   const custo = COMBATE_CUSTOS[slot];
   if (atk.en < custo) slot = 0;                       // sem energia, cai no comum
   atk.en -= COMBATE_CUSTOS[slot];
@@ -172,7 +193,7 @@ function _usarHabilidade(atk, def, slot, rng, log) {
   const tipo  = ef ? ef.tipo : (slot === 3 ? 'escudo' : 'dano');
 
   // ── slots que não atacam ──
-  if (tipo === 'cura') { _curar(atk, valor); return; }
+  if (tipo === 'cura') { _curar(atk, valor); return slot; }
 
   if (tipo === 'escudo') {
     let esc = valor;
@@ -183,15 +204,15 @@ function _usarHabilidade(atk, def, slot, rng, log) {
     atk.escudoRegenHP = (ef && ef.regenHP)       ? Math.round(esc * COMBATE_EF.ESCUDO_REGEN_HP * inten) : 0;
     atk.escudoRegenEN = (ef && ef.regenEnergia)  ? Math.round(COMBATE_EF.ESCUDO_REGEN_EN * inten) : 0;
     if (ef && ef.devolveEnergia) _darEnergia(atk, Math.round(COMBATE_EF.DEVOLVE_EN * inten));
-    return;
+    return slot;
   }
 
   if (tipo === 'debuff_acerto' && ef.alvo === 'proprio') {
     atk.evasao.push({ v: COMBATE_EF.DEBUFF_ACERTO * inten, turnos: ef.turnos });
-    return;
+    return slot;
   }
 
-  if (tipo === 'crit_garantido') { atk.critGarantido = true; return; }
+  if (tipo === 'crit_garantido') { atk.critGarantido = true; return slot; }
 
   // ── daqui para baixo, tudo ataca ──
   const golpes = (tipo === 'multi_golpe') ? COMBATE_EF.RAJADA_GOLPES : 1;
@@ -222,7 +243,7 @@ function _usarHabilidade(atk, def, slot, rng, log) {
     if (log) log.maiorGolpe = Math.max(log.maiorGolpe || 0, r.dano / def.hpMax);
   }
 
-  if (!acertouAlguma) return;
+  if (!acertouAlguma) return slot;
 
   // ── efeitos que dependem de ter acertado ──
   if (tipo === 'queimadura') {
@@ -243,6 +264,7 @@ function _usarHabilidade(atk, def, slot, rng, log) {
     def.escudo = 0; def.escudoTurnos = 0; def.escudoRefl = 0;
     def.escudoRegenHP = 0; def.escudoRegenEN = 0; def.evasao = [];
   }
+  return slot;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -280,17 +302,28 @@ function politicaPadrao(eu, activo, inimigo, activoIni, opts) {
   const c = eu[activo], d = inimigo[activoIni];
   const acao = { troca: null, slot: 0 };
 
-  // Quanto vale estar em campo contra este inimigo: o que eu multiplico
-  // menos o que ele me multiplica, mais um prémio por estar inteiro.
-  const valorEmCampo = o => multElemental(o.elemento, d.elemento)
-                          - multElemental(d.elemento, o.elemento)
-                          + (o.hp / o.hpMax) * 0.5;
+  // Quanto o inimigo tira por golpe, para saber quem sobrevive à entrada
+  const ameaca = Math.min(
+    Math.round(_valorSlot(d, 2) * multElemental(d.elemento, c.elemento)),
+    Math.floor(c.hpMax * COMBATE_TETO_GOLPE));
+
+  // Quanto vale estar em campo contra este inimigo. O peso da vida é
+  // grande de propósito: sem ele a política trocava para dentro um
+  // avatar com 10 de HP só porque tinha vantagem elemental, e ele
+  // morria no golpe seguinte — vantagem que não dá para usar não vale.
+  const valorEmCampo = o => {
+    const sobrevive = o.hp + o.escudo > Math.round(_valorSlot(d, 2) * multElemental(d.elemento, o.elemento));
+    return multElemental(o.elemento, d.elemento)
+         - multElemental(d.elemento, o.elemento)
+         + (o.hp / o.hpMax) * 1.0
+         + (sobrevive ? 0.6 : 0);
+  };
 
   if (opts.podeTrocar !== false) {
-    // Quem ENTRA é que paga os 40 EN — é o que torna a troca um custo
-    // real: entra-se em campo com menos meia barra.
+    // Quem ENTRA é que paga a troca — é o que a torna um custo real:
+    // entra-se em campo com um quarto da barra a menos.
     const meu = valorEmCampo(c);
-    let melhor = -1, melhorV = meu + 0.02;   // qualquer melhoria real serve
+    let melhor = -1, melhorV = meu + 0.15;
     eu.forEach((o, i) => {
       if (i === activo || !o.vivo || o.en < COMBATE_TROCA_EN) return;
       const v = valorEmCampo(o);
@@ -301,15 +334,46 @@ function politicaPadrao(eu, activo, inimigo, activoIni, opts) {
 
   const act = acao.troca !== null ? eu[acao.troca] : c;
   const en  = act.en - (acao.troca !== null ? COMBATE_TROCA_EN : 0);
+  const multEl = multElemental(act.elemento, d.elemento);
 
-  // Defender quando estou a cair e ainda não tenho escudo
-  if (act.hp / act.hpMax < 0.35 && act.escudo <= 0 && en >= COMBATE_CUSTOS[3]) {
-    acao.slot = 3; return acao;
+  // Nem todo o slot ataca. A Maré Curativa da Água é uma cura no slot
+  // que noutros elementos é dano, e o Véu de Correntes do Vento não tem
+  // número nenhum. Sem consultar o tipo, a política usava a cura da Água
+  // como se fosse ataque e ela nunca fazia mal a ninguém.
+  const tipoDe = s => { const e = efeitoDe(act.elemento, s);
+                        return e ? e.tipo : (s === 3 ? 'escudo' : 'dano'); };
+  const ataca = s => { const t = tipoDe(s); return t !== 'cura' && t !== 'escudo'
+                       && !(t === 'debuff_acerto' && efeitoDe(act.elemento, s).alvo === 'proprio')
+                       && t !== 'crit_garantido'; };
+  const dano = s => ataca(s)
+    ? Math.min(Math.round(_valorSlot(act, s) * multEl), Math.floor(d.hpMax * COMBATE_TETO_GOLPE))
+    : 0;
+
+  // Rematar sempre que der: um alvo morto não devolve o golpe
+  for (const s of [2, 1, 0]) {
+    if (en >= COMBATE_CUSTOS[s] && dano(s) >= d.hp + d.escudo) { acao.slot = s; return acao; }
   }
-  // Ultimate quando dá para pagar
-  if (en >= COMBATE_CUSTOS[2]) { acao.slot = 2; return acao; }
-  if (en >= COMBATE_CUSTOS[1]) { acao.slot = 1; return acao; }
-  acao.slot = 0;
+  // Curar-se ou erguer escudo quando o próximo golpe dele me apanha
+  if (act.hp <= ameaca * 1.6) {
+    if (tipoDe(1) === 'cura' && en >= COMBATE_CUSTOS[1] && act.hp < act.hpMax * 0.7) {
+      acao.slot = 1; return acao;
+    }
+    if (act.escudo <= 0 && en >= COMBATE_CUSTOS[3]) { acao.slot = 3; return acao; }
+  }
+  // Caso normal: o melhor dano por energia gasta, tratando o ataque
+  // comum como custo baixo porque devolve energia em vez de a gastar.
+  // É isto que faz a habilidade de 20 EN competir com o golpe de 40 —
+  // sem esta conta a política usava só o golpe forte, todos os turnos.
+  let melhorS = 0, melhorR = -1;
+  for (const s of [0, 1, 2]) {
+    if (en < COMBATE_CUSTOS[s] || !ataca(s)) continue;
+    const r = dano(s) / (COMBATE_CUSTOS[s] || 8);
+    if (r > melhorR) { melhorR = r; melhorS = s; }
+  }
+  // Com a barra quase cheia, gastar no golpe forte antes de a energia
+  // transbordar (o ataque comum devolve energia que se perderia)
+  if (en >= act.enMax - COMBATE_GERA_EN && en >= COMBATE_CUSTOS[2] && ataca(2)) melhorS = 2;
+  acao.slot = melhorS;
   return acao;
 }
 
@@ -322,13 +386,17 @@ function combateSimular(equipaA, equipaB, seed, opts) {
   const A = equipaA.map(_criarCombatente);
   const B = equipaB.map(_criarCombatente);
   let ativoA = 0, ativoB = 0, turnos = 0;
-  const log = { maiorGolpe: 0 };
+  // O histórico só é montado a pedido: nas 5000 batalhas do banco de
+  // alvos ninguém o lê, e construí-lo custaria tempo por nada.
+  const log = { maiorGolpe: 0, turno: 0 };
+  if (opts.historico) log.eventos = [];
 
   const vivos = t => t.some(c => c.vivo);
   const proximo = (t, i) => (t[i] && t[i].vivo) ? i : t.findIndex(c => c.vivo);
 
   while (vivos(A) && vivos(B) && turnos < COMBATE_MAX_TURNOS) {
     turnos++;
+    log.turno = turnos;
     ativoA = proximo(A, ativoA);
     ativoB = proximo(B, ativoB);
 
@@ -338,8 +406,10 @@ function combateSimular(equipaA, equipaB, seed, opts) {
     // Trocas primeiro: pagam energia e NÃO gastam o turno.
     // Paga quem entra, não quem sai — senão um avatar sem energia ficava
     // preso em campo, e a política não teria como o resgatar.
-    if (aA.troca !== null) { ativoA = aA.troca; A[ativoA].en -= COMBATE_TROCA_EN; }
-    if (aB.troca !== null) { ativoB = aB.troca; B[ativoB].en -= COMBATE_TROCA_EN; }
+    if (aA.troca !== null) { ativoA = aA.troca; A[ativoA].en -= COMBATE_TROCA_EN;
+      if (log.eventos) log.eventos.push({ turno: turnos, troca: true, lado: 'A', quem: A[ativoA].nome, elemento: A[ativoA].elemento }); }
+    if (aB.troca !== null) { ativoB = aB.troca; B[ativoB].en -= COMBATE_TROCA_EN;
+      if (log.eventos) log.eventos.push({ turno: turnos, troca: true, lado: 'B', quem: B[ativoB].nome, elemento: B[ativoB].elemento }); }
 
     // Ordem: prioridade do Choque Directo, depois HAB, depois FOR
     const prio = (c, slot) => (c.elemento === 'Eletricidade' && slot === 0) ? 1 : 0;
@@ -363,14 +433,96 @@ function combateSimular(equipaA, equipaB, seed, opts) {
   const vA = vivos(A), vB = vivos(B);
   return {
     vencedor: vA && !vB ? 'A' : vB && !vA ? 'B' : 'empate',
-    turnos, maiorGolpe: log.maiorGolpe,
+    turnos, maiorGolpe: log.maiorGolpe, eventos: log.eventos || null,
     hpA: A.reduce((s, c) => s + c.hp, 0),
     hpB: B.reduce((s, c) => s + c.hp, 0),
   };
 }
 
+
+// ═══════════════════════════════════════════════════════════════════
+// combateNarrar — assistir a uma batalha em texto
+//
+// Na consola do jogo:
+//   combateNarrar()                      equipas aleatórias
+//   combateNarrar(null, null, 7)         a mesma batalha, sempre igual
+//   combateNarrar(equipaDoJogador())     a tua equipa contra uma qualquer
+//
+// Existe para se poder julgar o combate ANTES de haver interface: se as
+// batalhas forem monótonas em texto, não é a interface que as vai
+// salvar.
+// ═══════════════════════════════════════════════════════════════════
+function _equipaAleatoria(rng) {
+  const els = Object.keys(COMBATE_AFINIDADE);
+  const rars = ['Comum', 'Comum', 'Raro', 'Lendário'];
+  const suf = ['Bravo', 'Sombrio', 'Antigo', 'Veloz', 'Sereno', 'Rubro'];
+  return [0, 1, 2].map(i => {
+    const el = els[Math.floor(rng() * els.length)];
+    return { nome: `${el} ${suf[Math.floor(rng() * suf.length)]}`, elemento: el,
+             raridade: rars[Math.floor(rng() * rars.length)],
+             nivel: 5 + Math.floor(rng() * 12), seed: Math.floor(rng() * 1e6) };
+  });
+}
+
+function combateNarrar(equipaA, equipaB, seed) {
+  seed = seed != null ? seed : Math.floor(Math.random() * 1e6);
+  const rng = _rngBatalha(seed + 7777);
+  const A = equipaA && equipaA.length ? equipaA.slice(0, 3) : _equipaAleatoria(rng);
+  const B = equipaB && equipaB.length ? equipaB.slice(0, 3) : _equipaAleatoria(rng);
+  const r = combateSimular(A, B, seed, { historico: true });
+
+  const barra = (v, m, n) => {
+    const c = Math.max(0, Math.round(v / m * (n || 12)));
+    return '█'.repeat(c) + '·'.repeat((n || 12) - c);
+  };
+  const ficha = e => { const f = fichaDeCombate(e); return `${e.nome} (${e.elemento} ${e.raridade} nv${e.nivel}) HP ${f.hpMax} · FOR ${f.FOR} RES ${f.RES} HAB ${f.HAB} INT ${f.INT}`; };
+  const nomeSlot = ['ataque comum', 'habilidade', 'GOLPE FORTE', 'defesa'];
+  const SEM_NUMERO = {
+    debuff_acerto:  'baixa a pontaria',
+    crit_garantido: 'prepara o golpe seguinte',
+    debuff_stat:    'enfraquece o alvo',
+    atordoar:       'tenta atordoar',
+    dreno_energia:  'drena energia',
+    purificar:      'limpa escudos e buffs',
+  };
+
+  const L = [];
+  L.push('═'.repeat(64));
+  L.push(`BATALHA  semente ${seed}`);
+  L.push('─ EQUIPA A ' + '─'.repeat(52));
+  A.forEach(e => L.push('  ' + ficha(e)));
+  L.push('─ EQUIPA B ' + '─'.repeat(52));
+  B.forEach(e => L.push('  ' + ficha(e)));
+  L.push('═'.repeat(64));
+
+  let t = 0;
+  for (const ev of (r.eventos || [])) {
+    if (ev.turno !== t) { t = ev.turno; L.push(`\n── turno ${t} ──`); }
+    if (ev.troca) { L.push(`  ↩ ${ev.lado}: entra ${ev.quem}`); continue; }
+    const partes = [];
+    if (ev.dano)   partes.push(`${ev.dano} de dano${ev.aoEscudo ? ` (${ev.aoEscudo} no escudo)` : ''}`);
+    if (ev.curou)  partes.push(`+${ev.curou} de vida`);
+    if (ev.sofreu) partes.push(`levou ${ev.sofreu} de volta`);
+    if (ev.escudoProprio && ev.slot === 3) partes.push(`escudo de ${ev.escudoProprio}`);
+    // Nem toda a habilidade tem número. Sem isto, o Véu de Correntes do
+    // Vento e o Manto de Penumbra da Sombra apareciam como "falhou".
+    if (!partes.length && SEM_NUMERO[ev.tipo]) partes.push(SEM_NUMERO[ev.tipo]);
+    const mostraAlvo = ev.slot !== 3 && ev.dano > 0;
+    L.push(`  ${ev.quem} usa ${nomeSlot[ev.slot]}` +
+           (partes.length ? ` — ${partes.join(', ')}` : ' — falhou') +
+           (mostraAlvo ? `   ${ev.alvo} ${barra(ev.hpAlvoDepois, ev.hpAlvoMax)} ${ev.hpAlvoDepois}/${ev.hpAlvoMax}` : '') +
+           (ev.morreu ? '   ☠' : ''));
+  }
+  L.push('\n' + '═'.repeat(64));
+  L.push(r.vencedor === 'empate' ? `EMPATE aos ${r.turnos} turnos`
+        : `VENCE A EQUIPA ${r.vencedor} em ${r.turnos} turnos   (HP restante: A ${r.hpA} · B ${r.hpB})`);
+  const texto = L.join('\n');
+  if (typeof console !== 'undefined') console.log(texto);
+  return texto;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { combateSimular, multElemental, politicaPadrao,
+  module.exports = { combateSimular, combateNarrar, multElemental, politicaPadrao,
                      COMBATE_CICLO, COMBATE_NEUTROS, COMBATE_CUSTOS, COMBATE_TROCA_EN,
                      COMBATE_TETO_GOLPE, COMBATE_MAX_TURNOS };
 }

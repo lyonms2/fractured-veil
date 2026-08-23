@@ -23,13 +23,13 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const COMBATE_INTENSIDADE = {
-  'Vento':        1.33,   // o de menos HP e sem escudo — vive dos efeitos
-  'Terra':        1.04,   // muralha e atordoamento carregam o elemento
-  'Sombra':       0.78,   // roubo de vida e debuff de FOR/INT
-  'Luz':          0.68,   // purificar e escudo regenerativo
-  'Eletricidade': 0.60,   // já tem INT primária e o crítico de 40%
-  'Água':         0.57,   // cura e escudo com regeneração de energia
-  'Fogo':         0.46,   // tem o maior dano bruto do jogo — paga aqui
+  'Vento':        1.65,   // o de menos HP e sem escudo — vive dos efeitos
+  'Luz':          1.23,   // não tem atributo de dano nenhum no kit
+  'Sombra':       0.74,   // roubo de vida e debuff de FOR/INT
+  'Água':         0.71,   // cura e escudo com regeneração de energia
+  'Terra':        0.62,   // muralha e atordoamento, com HP alto por trás
+  'Eletricidade': 0.46,   // já tem INT primária e o crítico de 40%
+  'Fogo':         0.39,   // tem o maior dano bruto do jogo — paga aqui
 };
 
 // Magnitudes base dos efeitos, antes da intensidade do elemento.

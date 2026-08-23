@@ -169,8 +169,12 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
 // de acção, e nenhuma delas ganha uma segunda função ofensiva.
 // ═══════════════════════════════════════════════════════════════════
 const COMBATE_SLOTS = [
+  // FOR x1.9 e nao x1.4 como na spec. A x1.4 o ataque comum era fraco
+  // demais face a habilidade (INT x2.3 por 20 EN), e como a energia e
+  // abundante ninguem o usava: os elementos de INT primaria ganhavam
+  // 76% das batalhas e os de FOR ficavam pelos 50%.
   { papel:'comum',   custo:0,  gera:15, tipo:'dano',
-    calc: f => Math.round(f.FOR * 1.4) },
+    calc: f => Math.round(f.FOR * 1.9) },
   { papel:'skill',   custo:25, gera:0,  tipo:'dano',
     calc: f => Math.round(f.INT * 2.3 + f.FOR * 0.5) },
   // O termo do menor atributo nao e enfeite: sem ele o golpe forte saia
