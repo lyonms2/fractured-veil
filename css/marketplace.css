@@ -12,7 +12,12 @@
   border-radius:0; border:none;
 }
 #marketplaceModal .modal-header { flex-shrink:0; }
-#marketplaceModal .mktmp-body { height:100%; min-height:0; }
+/* .modal-card tem align-items:center (css/modals.css) — sem width:100%
+   explícito aqui, o corpo (sidebar+conteúdo) encolhe pro tamanho do
+   conteúdo e fica centralizado com faixas vazias nas laterais, em vez de
+   esticar por baixo do header. Mesmo padrão já usado por .modal-scroll-body
+   nos outros modais-painel (marketModal, coinShopModal, etc). */
+#marketplaceModal .mktmp-body { width:100%; height:100%; min-height:0; }
 /* .mkt-main não tinha overflow/altura própria no layout de página inteira
    original (a página inteira crescia e rolava); dentro do modal, com altura
    fixa, precisa rolar internamente. */
