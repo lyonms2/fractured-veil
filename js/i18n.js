@@ -109,8 +109,6 @@
       'falas.elem.Eletricidade': ['Carregado de energia! ⚡','Nada me para! ⚡','Mente acelerada! ⚡','Puro poder elétrico! ⚡'],
       'falas.elem.Sombra':       ['As sombras são minha morada... 🌑','Vejo o que os outros não veem! 🌑','Confortável na escuridão... 🌑','Mistério é meu dom! 🖤'],
       'falas.elem.Luz':          ['Brilho onde há escuridão! ☀️','Sou pura luz! ✨','Ilumino tudo ao meu redor! 🌟','A luz nunca mente! ☀️'],
-      'falas.elem.Void':         ['O vazio dentro de mim... é paz! 🌌','Vejo além do que existe! 🌌','No nada, tudo começa! ⚫','Sou além do tempo! 🌌'],
-      'falas.elem.Aether':       ['Potencial infinito! ✨🌌','Sou de outro plano! ✨','O éter flui por mim! 🌟','Equilíbrio perfeito! ✨'],
 
       // Passivos elementais
       'elem.bonus.Fogo':         'Espírito Ardente: humor decai 15% mais devagar, fome 10% mais rápido',
@@ -120,8 +118,6 @@
       'elem.bonus.Eletricidade': 'Mente Acelerada: energia decai 10% mais devagar, recupera 15% mais rápido dormindo',
       'elem.bonus.Sombra':       'Ciclo Lunar: higiene decai 10% mais devagar, recupera energia 15% mais rápido dormindo',
       'elem.bonus.Luz':          'Aura Solar: vínculo decai 20% mais devagar, humor 10% mais devagar',
-      'elem.bonus.Void':         'Essência Vazia: fome e humor decaem 10% mais devagar, higiene 5% mais rápido',
-      'elem.bonus.Aether':       'Potencial Infinito: todos os stats decaem 5% mais devagar',
 
       // Fases
       'fases': ['BEBÊ','CRIANÇA','JOVEM','ADULTO'],
@@ -417,8 +413,6 @@
       'falas.elem.Eletricidade': ["Charged with energy! ⚡","Nothing stops me! ⚡","Accelerated mind! ⚡","Pure electric power! ⚡"],
       'falas.elem.Sombra':       ["Shadows are my home... 🌑","I see what others can't! 🌑","Comfortable in the dark... 🌑","Mystery is my gift! 🖤"],
       'falas.elem.Luz':          ["I shine where there's darkness! ☀️","I am pure light! ✨","I illuminate everything around me! 🌟","Light never lies! ☀️"],
-      'falas.elem.Void':         ["The void within me... is peace! 🌌","I see beyond what exists! 🌌","In nothing, everything begins! ⚫","I am beyond time! 🌌"],
-      'falas.elem.Aether':       ["Infinite potential! ✨🌌","I'm from another plane! ✨","Aether flows through me! 🌟","Perfect balance! ✨"],
 
       // Elemental passives
       'elem.bonus.Fogo':         'Burning Spirit: mood decays 15% slower, hunger 10% faster',
@@ -428,8 +422,6 @@
       'elem.bonus.Eletricidade': 'Accelerated Mind: energy decays 10% slower, recovers 15% faster while sleeping',
       'elem.bonus.Sombra':       'Lunar Cycle: hygiene decays 10% slower, energy recovers 15% faster while sleeping',
       'elem.bonus.Luz':          'Solar Aura: bond decays 20% slower, mood 10% slower',
-      'elem.bonus.Void':         'Void Essence: hunger and mood decay 10% slower, hygiene 5% faster',
-      'elem.bonus.Aether':       'Infinite Potential: all stats decay 5% slower',
 
       // Phases
       'fases': ['BABY','CHILD','YOUNG','ADULT'],

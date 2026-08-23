@@ -238,12 +238,6 @@ function getElementoBonus() {
     case 'Luz':
       // Aura Solar — vínculo decai mais devagar, humor estável
       return { fomeDecay: 1.0, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 0.80 };
-    case 'Void':
-      // Essência Vazia — precisa comer menos, mais introspectivo (humor cai menos)
-      return { fomeDecay: 0.90, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.05, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Aether':
-      // Potencial Infinito — equilibrado com leve bônus em tudo
-      return { fomeDecay: 0.95, humorDecay: 0.95, energiaDecay: 0.95, higieneDecay: 0.95, sleepEnergy: 1.05, vinculoDecay: 0.95 };
     default:
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
   }

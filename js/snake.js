@@ -15,8 +15,6 @@ const SNAKE_EL = [
   { color:'#a78bfa', shine:'#c4b5fd', label:'Elet.'   },
   { color:'#67e8f9', shine:'#a5f3fc', label:'Luz'     },
   { color:'#c084fc', shine:'#e9d5ff', label:'Sombra'  },
-  { color:'#34d399', shine:'#6ee7b7', label:'Void'    },
-  { color:'#fde68a', shine:'#fef9c3', label:'Aether'  },
 ];
 
 let _snakeBody     = [];

@@ -19,9 +19,7 @@ const CARACTERISTICAS_ELEMENTAIS = {
   'Vento':        { bonus:'Leveza do Vento: energia decai 15% mais devagar', cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
   'Eletricidade': { bonus:'Mente Acelerada: energia decai 10% mais devagar, recupera 15% mais rápido dormindo', cor:'#FFD700', emoji:'⚡', decor:['⚡','🔮'] },
   'Sombra':       { bonus:'Ciclo Lunar: higiene decai 10% mais devagar, recupera energia 15% mais rápido dormindo', cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] },
-  'Luz':          { bonus:'Aura Solar: vínculo decai 20% mais devagar, humor 10% mais devagar', cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] },
-  'Void':         { bonus:'Essência Vazia: fome e humor decaem 10% mais devagar, higiene 5% mais rápido', cor:'#9b30e8', emoji:'🕳️', decor:['🔮','💫'] },
-  'Aether':       { bonus:'Potencial Infinito: todos os stats decaem 5% mais devagar', cor:'#e830c0', emoji:'🌌', decor:['🌌','💫'] }
+  'Luz':          { bonus:'Aura Solar: vínculo decai 20% mais devagar, humor 10% mais devagar', cor:'#FFD700', emoji:'✨', decor:['⭐','🌟'] }
 };
 
 const PREFIXOS = {
@@ -31,9 +29,7 @@ const PREFIXOS = {
   'Vento':        { 'Comum':['Breeze','Gust','Wisp','Draft','Waft','Puff'], 'Raro':['Aero','Zephyr','Gale','Storm','Tempest','Cyclone'], 'Lendário':['Fujin','Boreas','Aeolus','Enlil','Stribog','Vayu'] },
   'Eletricidade': { 'Comum':['Static','Pulse','Current','Charge','Jolt','Buzz'], 'Raro':['Volt','Thunder','Spark','Bolt','Tesla','Ion'], 'Lendário':['Zeus','Thor','Raijin','Indra','Perun','Ukko'] },
   'Sombra':       { 'Comum':['Shade','Dusk','Murk','Gloom','Haze','Dim'], 'Raro':['Umbra','Nox','Eclipse','Void','Phantom','Abyss'], 'Lendário':['Erebus','Nyx','Tenebris','Moros','Kali','Apophis'] },
-  'Luz':          { 'Comum':['Gleam','Shimmer','Glow','Ray','Beam','Flash'], 'Raro':['Lux','Sol','Aurora','Radiant','Dawn','Celestial'], 'Lendário':['Ra','Apollo','Amaterasu','Lucifer','Baldur','Inti'] },
-  'Void':         { 'Comum':['Null','Zero','Empty','Hollow','Blank','Naught'], 'Raro':['Nihil','Vacuo','Oblivion','Entropy','Nullus','Absence'], 'Lendário':['Ouroboros','Azathoth','Chronos','Shūnyatā','Annihilus','The Uncreated'] },
-  'Aether':       { 'Comum':['Flux','Shift','Essence','Mote','Spark','Glimmer'], 'Raro':['Aether','Quintessence','Prisma','Nexus','Catalyst','Arcanum'], 'Lendário':['Metatron','Akasha','Philosopher','Prima Materia','The Unified','Yggdrasil'] }
+  'Luz':          { 'Comum':['Gleam','Shimmer','Glow','Ray','Beam','Flash'], 'Raro':['Lux','Sol','Aurora','Radiant','Dawn','Celestial'], 'Lendário':['Ra','Apollo','Amaterasu','Lucifer','Baldur','Inti'] }
 };
 const SUFIXOS = {
   'Comum':    ['o Curioso','o Brincalhão','o Tímido','o Guloso','o Sonolento','o Teimoso','o Carinhoso','o Inquieto'],
@@ -48,9 +44,7 @@ const DESCRICOES = {
     'Vento':['Uma brisa que decidiu ter forma. Livre e inquieto, dificilmente fica parado por muito tempo.','Nascido de correntes de ar entre dimensões. Leve e curioso, tudo o entretém por igual.'],
     'Eletricidade':['Uma faísca de consciência elétrica. Pensa rápido, reage rápido, e raramente fica quieto.','Nascido de um relâmpago perdido entre camadas dimensionais. Sua energia transborda em tudo que faz.'],
     'Sombra':['Uma sombra que aprendeu a existir por conta própria. Observador silencioso, prefere entender antes de agir.','Nascido da penumbra entre mundos. Contemplativo e introspectivo, guarda mais do que mostra.'],
-    'Luz':['Um raio de luz que atravessou dimensões e ganhou sentimento. Caloroso e presente, ilumina o espaço ao redor.','Nascido do amanhecer de outro mundo. Gentil por natureza, seu brilho cresce com o tempo e o afeto.'],
-    'Void':['Uma pequena fenda na realidade que aprendeu a sentir. Enigmático, faz perguntas que ninguém sabe responder.','Nascido do espaço entre as coisas. Quieto e atento, absorve tudo ao redor sem dizer muito.'],
-    'Aether':['Um fragmento de energia pura à espera de forma. Imprevisível e fascinante, cada dia revela algo novo.','Nascido do potencial puro. Ainda descobrindo o que é — e parece gostar muito dessa jornada.']
+    'Luz':['Um raio de luz que atravessou dimensões e ganhou sentimento. Caloroso e presente, ilumina o espaço ao redor.','Nascido do amanhecer de outro mundo. Gentil por natureza, seu brilho cresce com o tempo e o afeto.']
   },
   'Raro': {
     'Fogo':['Forjado no coração de uma fissura ígnea dimensional. Sua presença aquece o ambiente — às vezes demais.','Sobrevivente de um colapso de plano de fogo. Intenso e leal, a chama interior nunca diminui.'],
@@ -59,9 +53,7 @@ const DESCRICOES = {
     'Vento':['Nascido do olho de uma tempestade dimensional. Livre e imprevisível, mas sempre volta.','Corrente de ar que percorreu mil planos antes de se estabelecer. Viajante nato, nunca para de observar.'],
     'Eletricidade':['Materializado de uma tempestade elétrica estável. Seus pensamentos chegam antes das palavras.','Consciência formada de impulsos puros. Rápido em tudo — especialmente em criar vínculos inesperados.'],
     'Sombra':['Emergiu do silêncio entre estrelas. Sua presença é reconfortante para quem aprecia a quietude.','Um fragmento do escuro que aprendeu a sentir. Raramente fala, mas quando o faz, vale escutar.'],
-    'Luz':['Fragmento de uma aurora eterna. Irradia serenidade sem esforço, e acolhe com naturalidade.','Nascido da convergência de múltiplas fontes de luz. Sua clareza vai além do que os olhos enxergam.'],
-    'Void':['Emergiu de onde o silêncio é mais denso. Sua presença provoca reflexão sem precisar dizer nada.','Uma lacuna dimensional que ganhou consciência. Faz sentido das coisas de maneiras que poucos compreendem.'],
-    'Aether':['Energia de mil dimensões que encontrou um lar. Cambia sutilmente a cada dia, mas sempre reconhecível.','Catalisador vivo de transformação. Sua companhia muda quem o acompanha, sempre para melhor.']
+    'Luz':['Fragmento de uma aurora eterna. Irradia serenidade sem esforço, e acolhe com naturalidade.','Nascido da convergência de múltiplas fontes de luz. Sua clareza vai além do que os olhos enxergam.']
   },
   'Lendário': {
     'Fogo':['Dizem que este ser precedeu o fogo — ele não o controla, ele o é. Sua presença aquece memórias esquecidas e desperta paixões adormecidas em quem se aproxima.'],
@@ -70,9 +62,7 @@ const DESCRICOES = {
     'Vento':['O primeiro movimento antes de qualquer forma. Estar com ele é sentir que o mundo tem mais dimensões do que os olhos percebem.'],
     'Eletricidade':['Consciência pura em estado de perpétuo despertar. Cada momento ao seu lado é uma revelação diferente. Impossível ficar entediado.'],
     'Sombra':['Não é ausência de luz — é a profundidade que dá sentido a ela. Quem aprende a estar com ele descobre uma quietude que o mundo barulhento não oferece.'],
-    'Luz':['O primeiro acolhimento do universo, ainda em forma de ser. Sua presença não elimina as sombras — ilumina o que há de belo nelas.'],
-    'Void':['A pausa entre as notas que dá sentido à música. Sua existência questiona o que é necessário e o que é apenas ruído. Transformador sem esforço.'],
-    'Aether':['Não escolheu uma forma porque todas as formas são suas. Cada dia ao seu lado é uma história diferente. O vínculo com ele cresce sem limite visível.']
+    'Luz':['O primeiro acolhimento do universo, ainda em forma de ser. Sua presença não elimina as sombras — ilumina o que há de belo nelas.']
   }
 };
 
@@ -84,9 +74,7 @@ const DESCRICOES_EN = {
     'Vento':['A breeze that decided to take form. Free and restless, it hardly stays still for long.','Born from air currents between dimensions. Light and curious, everything captivates it equally.'],
     'Eletricidade':['A spark of electric consciousness. Thinks fast, reacts fast, and rarely stays quiet.','Born from a lightning bolt lost between dimensional layers. Its energy overflows into everything it does.'],
     'Sombra':['A shadow that learned to exist on its own. A silent observer, it prefers to understand before acting.','Born from the twilight between worlds. Contemplative and introspective, it holds more than it shows.'],
-    'Luz':['A ray of light that crossed dimensions and gained feeling. Warm and present, it illuminates the space around.','Born from the dawn of another world. Gentle by nature, its light grows with time and affection.'],
-    'Void':['A small rift in reality that learned to feel. Enigmatic, it asks questions no one knows how to answer.','Born from the space between things. Quiet and attentive, it absorbs everything around without saying much.'],
-    'Aether':['A fragment of pure energy waiting for form. Unpredictable and fascinating, each day reveals something new.','Born from pure potential. Still discovering what it is — and seems to enjoy the journey very much.']
+    'Luz':['A ray of light that crossed dimensions and gained feeling. Warm and present, it illuminates the space around.','Born from the dawn of another world. Gentle by nature, its light grows with time and affection.']
   },
   'Raro': {
     'Fogo':['Forged in the heart of a dimensional igneous rift. Its presence warms the surroundings — sometimes too much.','Survivor of a fire-plane collapse. Intense and loyal, the inner flame never dims.'],
@@ -95,9 +83,7 @@ const DESCRICOES_EN = {
     'Vento':['Born from the eye of a dimensional storm. Free and unpredictable, but always returns.','An air current that traversed a thousand planes before settling. A born traveler, never stops observing.'],
     'Eletricidade':['Materialized from a stable electric storm. Its thoughts arrive before its words.','A consciousness formed from pure impulses. Fast at everything — especially forming unexpected bonds.'],
     'Sombra':['Emerged from the silence between stars. Its presence is comforting to those who appreciate stillness.','A fragment of darkness that learned to feel. Rarely speaks, but when it does, it\'s worth listening.'],
-    'Luz':['Fragment of an eternal aurora. Radiates serenity effortlessly, and welcomes with ease.','Born from the convergence of multiple light sources. Its clarity goes beyond what eyes can see.'],
-    'Void':['Emerged from where silence is densest. Its presence provokes reflection without needing to say a word.','A dimensional gap that gained consciousness. Makes sense of things in ways few can understand.'],
-    'Aether':['Energy from a thousand dimensions that found a home. Shifts subtly each day, but always recognizable.','A living catalyst of transformation. Its company changes those around it, always for the better.']
+    'Luz':['Fragment of an eternal aurora. Radiates serenity effortlessly, and welcomes with ease.','Born from the convergence of multiple light sources. Its clarity goes beyond what eyes can see.']
   },
   'Lendário': {
     'Fogo':['They say this being preceded fire — it does not control it, it is fire. Its presence warms forgotten memories and awakens dormant passions in those who draw near.'],
@@ -106,9 +92,7 @@ const DESCRICOES_EN = {
     'Vento':['The first movement before any form. Being with it is feeling that the world has more dimensions than the eyes perceive.'],
     'Eletricidade':['Pure consciousness in a state of perpetual awakening. Every moment by its side is a different revelation. Impossible to be bored.'],
     'Sombra':['It is not the absence of light — it is the depth that gives meaning to it. Those who learn to be with it discover a stillness the noisy world cannot offer.'],
-    'Luz':['The universe\'s first embrace, still in the form of a being. Its presence does not eliminate shadows — it illuminates what is beautiful in them.'],
-    'Void':['The pause between notes that gives music meaning. Its existence questions what is necessary and what is merely noise. Effortlessly transformative.'],
-    'Aether':['It did not choose a form because all forms are its own. Every day by its side is a different story. The bond with it grows without a visible limit.']
+    'Luz':['The universe\'s first embrace, still in the form of a being. Its presence does not eliminate shadows — it illuminates what is beautiful in them.']
   }
 };
 
@@ -131,7 +115,7 @@ function determinarRaridade() {
 }
 
 function escolherElemento() {
-  const todos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz','Void','Aether'];
+  const todos = ['Fogo','Água','Terra','Vento','Eletricidade','Sombra','Luz'];
   return rnd(todos);
 }
 
@@ -143,9 +127,7 @@ const ELEM_CFG = {
   'Vento':        { cores:['#e0f2fe','#bae6fd','#7dd3fc','#38bdf8'], coresSec:['#0c4a6e','#075985','#0369a1'], corBrilho:'#f0fdfa', corOlho:'#22d3ee', particulas:'espirais' },
   'Eletricidade': { cores:['#eab308','#facc15','#fde047','#fef08a'], coresSec:['#713f12','#854d0e','#a16207'], corBrilho:'#fef9c3', corOlho:'#fde047', particulas:'raios' },
   'Sombra':       { cores:['#581c87','#6b21a8','#7c3aed','#8b5cf6'], coresSec:['#1e1b4b','#312e81','#3730a3'], corBrilho:'#c4b5fd', corOlho:'#a78bfa', particulas:'sombras' },
-  'Luz':          { cores:['#fbbf24','#fde047','#fef08a','#fefce8'], coresSec:['#f59e0b','#d97706','#b45309'], corBrilho:'#ffffff', corOlho:'#fef3c7', particulas:'estrelas' },
-  'Void':         { cores:['#0a0014','#1a0033','#2d004d','#4d0099'], coresSec:['#000000','#0d0019','#1a0028'], corBrilho:'#8000ff', corOlho:'#a000ff', particulas:'void' },
-  'Aether':       { cores:['#f0f9ff','#e6f7ff','#d6f0ff','#b3e0ff'], coresSec:['#cce7ff','#b3d9ff','#99ccff'], corBrilho:'#ffffff', corOlho:'#bfecff', particulas:'aether' }
+  'Luz':          { cores:['#fbbf24','#fde047','#fef08a','#fefce8'], coresSec:['#f59e0b','#d97706','#b45309'], corBrilho:'#ffffff', corOlho:'#fef3c7', particulas:'estrelas' }
 };
 
 function gerarSVG(elemento, raridade, seed, w, h, fase) {
@@ -326,8 +308,6 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
       case 'estrelas': s+=`<path d="M ${px} ${py-pt*2} L ${px+pt*.5} ${py-pt*.5} L ${px+pt*2} ${py} L ${px+pt*.5} ${py+pt*.5} L ${px} ${py+pt*2} L ${px-pt*.5} ${py+pt*.5} L ${px-pt*2} ${py} L ${px-pt*.5} ${py-pt*.5} Z" fill="${corBrilho}" opacity=".6" filter="url(#glow${sid})"><animate attributeName="opacity" values=".6;.2;.6" dur="1.5s" begin="${delay}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" from="0 ${px} ${py}" to="360 ${px} ${py}" dur="8s" begin="${delay}s" repeatCount="indefinite"/></path>`;break;
       case 'pedras': s+=`<rect x="${px-pt}" y="${py-pt}" width="${pt*2}" height="${pt*2}" fill="${corBrilho}" opacity=".4" transform="rotate(${random(0,360)} ${px} ${py})" filter="url(#glow${sid})"><animate attributeName="opacity" values=".4;.2;.4" dur="3s" begin="${delay}s" repeatCount="indefinite"/></rect>`;break;
       case 'sombras': s+=`<circle cx="${px}" cy="${py}" r="${pt}" fill="${corBrilho}" opacity=".4" filter="url(#glow${sid})"><animate attributeName="r" values="${pt};${pt*1.5};${pt}" dur="2s" begin="${delay}s" repeatCount="indefinite"/></circle>`;break;
-      case 'void': s+=`<circle cx="${px}" cy="${py}" r="${pt*1.5}" fill="#000000" opacity=".6" filter="url(#glow${sid})"><animate attributeName="r" values="${pt*1.5};${pt*.5};${pt*1.5}" dur="2.5s" begin="${delay}s" repeatCount="indefinite"/></circle><circle cx="${px}" cy="${py}" r="${pt}" fill="${corBrilho}" opacity=".5" filter="url(#glow${sid})"><animate attributeName="r" values="${pt};${pt*1.2};${pt}" dur="1.8s" begin="${delay}s" repeatCount="indefinite"/></circle>`;break;
-      case 'aether': s+=`<circle cx="${px}" cy="${py}" r="${pt*1.2}" fill="${corBrilho}" opacity=".3" filter="url(#glow${sid})"><animate attributeName="r" values="${pt*1.2};${pt*1.8};${pt*1.2}" dur="3s" begin="${delay}s" repeatCount="indefinite"/></circle><path d="M ${px-pt} ${py} L ${px} ${py-pt} L ${px+pt} ${py} L ${px} ${py+pt}" fill="none" stroke="${corBrilho}" stroke-width="1" opacity=".5" filter="url(#glow${sid})"><animateTransform attributeName="transform" type="rotate" from="0 ${px} ${py}" to="360 ${px} ${py}" dur="6s" begin="${delay}s" repeatCount="indefinite"/></path>`;break;
     }
   }
 

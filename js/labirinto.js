@@ -70,8 +70,6 @@ function startLabirinto() {
     'Eletricidade': ['#a78bfa','167,139,250'],
     'Luz':          ['#67e8f9','103,232,249'],
     'Sombra':       ['#c084fc','192,132,252'],
-    'Void':         ['#34d399','52,211,153'],
-    'Aether':       ['#fde68a','253,230,138'],
   };
   const ec   = (avatar && EL[avatar.elemento]) || EL['Terra'];
   _mzElColor = ec[0];
