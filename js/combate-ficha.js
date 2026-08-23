@@ -69,6 +69,16 @@ function _combateRng(seed) {
   };
 }
 
+// A variação do seed não pode inverter o que o elemento é. Um Vento tem
+// de continuar a ser o mais rápido de todos, um Terra o mais duro. Por
+// isso a primária fica estritamente a mais alta, e a secundária nunca
+// desce abaixo dos dois atributos que não pertencem ao kit.
+function _respeitaAfinidade(s, afin) {
+  const fora = COMBATE_STATS.filter(k => k !== afin.primaria && k !== afin.secundaria);
+  if (s[afin.primaria] <= s[afin.secundaria]) return false;
+  return fora.every(k => s[afin.primaria] > s[k] && s[afin.secundaria] >= s[k]);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // fichaDeCombate — o cálculo principal
 //
@@ -98,16 +108,24 @@ function fichaDeCombate(seed, raridade, elemento, nivel) {
     [outras[1]]:       orc[3],
   };
 
-  // 2. variação individual pelo seed: move 2 pontos de um atributo para
-  //    outro, mantendo o orçamento intacto — dois avatares do mesmo
+  // 2. variação individual pelo seed: move até 2 pontos de um atributo
+  //    para outro, mantendo o orçamento intacto — dois avatares do mesmo
   //    elemento e raridade nunca saem idênticos, mas nenhum nasce melhor.
+  //
+  //    Tenta 2 pontos, depois 1, e fica pelo primeiro que não quebre a
+  //    afinidade. Sem esta trava, um Vento Comum (orçamento 7/5/4/4)
+  //    podia tirar 2 da HAB e pôr na RES — HAB 5, RES 6 — e passava a ter
+  //    RES como atributo mais alto. Deixava de ser um Vento.
   const rnd = _combateRng(seed || 0);
   const de  = COMBATE_STATS[rnd(0, 3)];
   let para  = COMBATE_STATS[rnd(0, 3)];
   if (para === de) para = COMBATE_STATS[(COMBATE_STATS.indexOf(de) + 1) % 4];
-  const move = Math.min(2, Math.max(0, base[de] - 1));  // nunca deixa um atributo abaixo de 1
-  base[de]   -= move;
-  base[para] += move;
+  for (let mv = 2; mv >= 1; mv--) {
+    if (base[de] - mv < 1) continue;          // nunca deixa um atributo abaixo de 1
+    const teste = { ...base };
+    teste[de] -= mv; teste[para] += mv;
+    if (_respeitaAfinidade(teste, afin)) { base[de] -= mv; base[para] += mv; break; }
+  }
 
   // 3. crescimento por nível — multiplica a base, portanto a vantagem
   //    da raridade mantém-se do nível 1 ao 35
