@@ -47,7 +47,7 @@ window.registerStrings({
   'hab.Terra.0.efeito':  'Impacto pesado e lento. Sempre disponível e devolve energia.',
   'hab.Terra.1.nome':    'Estilhaços de Rocha',
   'hab.Terra.1.efeito':  'Reduz o acerto do alvo em 15% por 2 turnos.',
-  'hab.Terra.2.nome':    'Colapso Tectónico',
+  'hab.Terra.2.nome':    'Colapso Tectônico',
   'hab.Terra.2.efeito':  'Dano massivo, com 50% de chance de atordoar 1 turno.',
   'hab.Terra.3.nome':    'Muralha Primordial',
   'hab.Terra.3.efeito':  'Escudo 30% maior que o normal, dura 2 turnos.',

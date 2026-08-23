@@ -14,12 +14,12 @@ window.registerStrings(
     'main.zoom.info':        '{elem} · {rar} · {fase} · Nível {nivel}',
 
     // summon.js
-    'summon.log.no_login':   'Faz login primeiro!',
-    'summon.log.no_coins':   'Precisa de {cost} 🪙 para invocar outro avatar. Volte a um avatar seu e jogue os minigames para ganhar moedas.',
+    'summon.log.no_login':   'Faça login primeiro!',
+    'summon.log.no_coins':   'Você precisa de {cost} 🪙 para invocar outro avatar. Volte para um avatar seu e jogue os minigames para ganhar moedas.',
     'summon.bub.no_coins':   'Moedas insuficientes... 😢',
     'summon.lock.title':     'INVOCAÇÕES GRÁTIS ESGOTADAS',
-    'summon.lock.desc':      'A próxima invocação custa {cost} 🪙 e tem {have} 🪙 — faltam {missing} 🪙. Volte a um avatar seu e jogue os minigames para ganhar moedas.',
-    'summon.lock.desc_nofree':'A próxima invocação custa {cost} 🪙 e ainda não tem o suficiente. Jogue os minigames para ganhar moedas.',
+    'summon.lock.desc':      'A próxima invocação custa {cost} 🪙 e você tem {have} 🪙 — faltam {missing} 🪙. Volte para um avatar seu e jogue os minigames para ganhar moedas.',
+    'summon.lock.desc_nofree':'A próxima invocação custa {cost} 🪙 e você ainda não tem o suficiente. Jogue os minigames para ganhar moedas.',
     'summon.lock.btn':       '↩ VOLTAR AO SLOT {n}',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
     'summon.log.legendary':  '🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!',
@@ -27,7 +27,7 @@ window.registerStrings(
     'summon.log.common':     'Uma entidade dimensional foi invocada!',
     'summon.log.invoked':    '{nome} foi invocado!',
     'summon.bub.new_slot':   'Novo avatar no Slot {n}! 🐣',
-    'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Activa-o no Marketplace.',
+    'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Ative-o no Marketplace.',
     'summon.bub.hello':      'Olá! 🐣',
     'summon.log.born':       '{nome} nasceu! Cuide bem dele.',
 
@@ -35,7 +35,7 @@ window.registerStrings(
     'onboard.tip.summon':  '💡 Dica: clique em INVOCAR para criar seu primeiro avatar — é gratuito!',
     'onboard.tip.feed':    '🍖 Dica: alimente seu avatar clicando em ALIMENTAR (10 🪙 por refeição).',
     'onboard.tip.play':    '🎮 Dica: jogue minigames para ganhar moedas e XP — clique em JOGOS.',
-    'onboard.tip.rest':    '💤 Dica: antes de sair, clica no botão 💤 DORMIR — a energia continua a subir mesmo ausente.',
+    'onboard.tip.rest':    '💤 Dica: antes de sair, clique no botão 💤 DORMIR — a energia continua subindo mesmo ausente.',
     'onboard.tip.coins':   '⚠️ Poucas moedas! Jogue minigames (JOGOS) para ganhar mais.',
   },
   // ── ENGLISH ────────────────────────────────────────────────────

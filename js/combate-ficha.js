@@ -253,21 +253,31 @@ function _elegivelParaEquipa(s) {
   return !!(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed);
 }
 
-// Índices escolhidos, já saneados. Se o jogador ainda não escolheu — ou
-// se os que escolheu deixaram de ser elegíveis — preenche com os
-// primeiros disponíveis, para nunca haver equipa vazia por omissão.
+// Índices escolhidos, já saneados.
+//
+// Três estados diferentes, e a diferença importa:
+//   · gs.equipa não é array  → o jogador nunca escolheu. Preenche com os
+//     primeiros disponíveis, para a equipa não nascer vazia.
+//   · gs.equipa é [] vazio   → esvaziou de propósito. Fica vazio. Sem
+//     isto, tirar o último da equipa parecia não fazer nada, porque o
+//     preenchimento automático repunha-o no mesmo instante.
+//   · gs.equipa tem entradas mas nenhuma sobrevive (morreram, foram
+//     queimados, foram à venda) → repõe, senão o jogador ficava com uma
+//     equipa vazia sem ter feito nada.
 function equipaIdx() {
   if (typeof avatarSlots === 'undefined') return [];
-  const bruto  = (typeof gs !== 'undefined' && Array.isArray(gs.equipa)) ? gs.equipa : [];
-  const vistos = new Set();
-  const out    = [];
+  const escolheu = (typeof gs !== 'undefined' && Array.isArray(gs.equipa));
+  const bruto    = escolheu ? gs.equipa : [];
+  const vistos   = new Set();
+  const out      = [];
   for (const i of bruto) {
     if (typeof i !== 'number' || vistos.has(i)) continue;
     if (!_elegivelParaEquipa(avatarSlots[i])) continue;
     vistos.add(i); out.push(i);
     if (out.length >= COMBATE_EQUIPA_MAX) break;
   }
-  if (out.length === 0) {
+  const esvaziouDePropósito = escolheu && gs.equipa.length === 0;
+  if (out.length === 0 && !esvaziouDePropósito) {
     for (let i = 0; i < avatarSlots.length && out.length < COMBATE_EQUIPA_MAX; i++) {
       if (_elegivelParaEquipa(avatarSlots[i])) out.push(i);
     }

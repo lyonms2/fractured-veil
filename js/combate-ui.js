@@ -130,6 +130,7 @@ function renderEquipaBar() {
     </div>`;
   }
 
+  const faltam = COMBATE_EQUIPA_MAX - idx.length;
   const poder = (typeof poderDaEquipa === 'function')
     ? Math.round(poderDaEquipa(equipaDoJogador())) : 0;
 
@@ -140,7 +141,7 @@ function renderEquipaBar() {
     </div>
     <div class="equipa-slots">${cartoes}</div>
     <div class="equipa-foot">
-      ${cheia ? t('equipa.pronta') : t('equipa.incompleta', { faltam: COMBATE_EQUIPA_MAX - idx.length })}<br>
+      ${cheia ? t('equipa.pronta') : t(faltam === 1 ? 'equipa.incompleta_1' : 'equipa.incompleta', { faltam })}<br>
       ${t('equipa.poder', { poder })}
     </div>
   </div>`;
