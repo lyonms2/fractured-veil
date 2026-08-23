@@ -1,10 +1,22 @@
 /* ═══════════════════════════════════════════
-   MODAL SHELL — encaixa o marketplace (sidebar + main) dentro do
-   .mini-modal/.modal-card padrão do jogo (ver css/modals.css)
+   MODAL SHELL — overlay auto-contido, como #fissuraOverlay/#loreModal em
+   index.html — NÃO usa a classe .mini-modal. O override mobile genérico
+   dela (css/mobile-index.css) transforma qualquer .mini-modal num "bottom
+   sheet" que só cobre ~85-90vh, deixando a página principal visível e sem
+   escurecer no topo. Aqui o marketplace cobre a tela inteira com fundo
+   sólido, em qualquer largura — igual à Grande Fissura.
 ═══════════════════════════════════════════ */
-/* Ocupa a tela inteira (sem margem/borda arredondada) — em telas grandes
-   aproveita todo o espaço em vez de ficar preso a um max-width pequeno. */
-#marketplaceModal.mini-modal { padding:0; justify-content:center; align-items:center; overflow:hidden; }
+#marketplaceModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,3,10,.97);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#marketplaceModal.open { display: flex; }
 #marketplaceModal .modal-card {
   padding:0; width:100%; max-width:none;
   height:100%; max-height:100%; overflow:hidden;
