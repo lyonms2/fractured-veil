@@ -312,12 +312,12 @@ async function _onLoginSuccess(user) {
       clearPresenceDead(walletAddress);
     }
 
-    // ── Offline: avatar fica em pausa — vitals e saúde não decaem enquanto
-    // o jogador está ausente, só o tempo total de vida é contabilizado. ──
+    // ── Offline: avatar fica em pausa — nada decai nem o tempo de vida
+    // avança enquanto o jogador está ausente (idade = tempo de jogo real,
+    // usado no card de venda no marketplace). ──
     if(hatched && !dead) {
       const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
       if(offlineSecs > 0) {
-        totalSecs += offlineSecs;
         saveRuntimeToSlot(activeSlotIdx);
         const hrs  = Math.floor(offlineSecs / 3600);
         const mins = Math.floor((offlineSecs % 3600) / 60);
