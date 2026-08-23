@@ -151,21 +151,17 @@ document.addEventListener('visibilitychange', async () => {
           vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
           vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
           vinculo        = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
-          if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
-          if(vitals.saude <= 0) { vitals.saude = 0; break; }
         } else {
           vitals.fome    = Math.max(0, vitals.fome    - (0.4  * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
           vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d * _eb.humorDecay   * getItemEffect('humorDecayMult')));
           vitals.energia = Math.max(0, vitals.energia - (0.3  * _d * _eb.energiaDecay));
           vitals.higiene = Math.max(0, vitals.higiene - (0.06 * _eb.higieneDecay));
-          if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - 0.08);
-          if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - 0.03);
-          if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - 0.03);
-          if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - 0.02);
-          if(vitals.saude <= 0)   { vitals.saude = 0; break; }
         }
+        // Saúde só cai por doença activa — vitals críticos por si só não
+        // causam dano directo (só levam a uma doença depois de sustidos).
         if(activeDiseases.length > 0) {
           vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
+          if(vitals.saude <= 0) { vitals.saude = 0; break; }
         }
       }
 

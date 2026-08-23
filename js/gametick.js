@@ -284,8 +284,6 @@ function gameTick() {
     vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
     // FIX: energia recupera +0.2/ciclo em repouso — sem acordar o avatar (sem wakeUp)
     vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
-    // Saúde só cai se fome absolutamente zerada
-    if(vitals.fome < 5) vitals.saude = Math.max(0, vitals.saude - 0.05);
     vinculo = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
 
   } else {
@@ -302,13 +300,6 @@ function gameTick() {
       showBubble(t('gt.autosleep.bub'));
       setTimeout(() => { if(typeof startSleep === 'function') startSleep(); }, 600);
     }
-  }
-
-  // Penalidades de saúde — só no modo ativo (não durante repouso/sono)
-  if(!sleeping && !modoRepouso) {
-    if(vitals.fome    < 15) vitals.saude = Math.max(0, vitals.saude - (0.3  * GAME_SPEED));
-    if(vitals.humor   < 10) vitals.saude = Math.max(0, vitals.saude - (0.1  * GAME_SPEED));
-    if(vitals.energia < 5)  vitals.saude = Math.max(0, vitals.saude - (0.1  * GAME_SPEED));
   }
 
   if(vitals.saude < 20 && !sick && Math.random() < (0.02 * GAME_SPEED)) {
@@ -334,6 +325,9 @@ function gameTick() {
       showBubble(t('gt.disease.bub', {emoji: d.emoji}));
     }
   }
+  // Única fonte de perda de saúde do jogo — vitals críticos por si só não
+  // causam dano directo, só levam a uma doença depois de sustidos por
+  // DISEASE_STRESS_THRESHOLD ciclos (ver js/state.js).
   if(activeDiseases.length > 0) {
     vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
   }
@@ -348,10 +342,9 @@ function gameTick() {
 
   if(tickCount % 60 === 0 && walletAddress) scheduleSave();
 
-  // Sujeira afeta saúde e humor (todos os modos)
-  if(dirtyLevel >= 2) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
+  // Sujeira afeta o humor (a saúde só cai por doença — ver infecção, que já
+  // é causada por higiene baixa sustida)
   if(dirtyLevel >= 1) vitals.humor = Math.max(0, vitals.humor - 0.1);
-  if(vitals.higiene < 15) vitals.saude = Math.max(0, vitals.saude - (0.04 * GAME_SPEED));
 
   // ── VÍNCULO — decaimento passivo (só modo ativo) ──
   if(!sleeping && !modoRepouso) {
