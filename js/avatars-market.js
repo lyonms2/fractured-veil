@@ -359,12 +359,18 @@ function renderSlots() {
         <div class="slot-header">
           <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
           ${isPending ? `<div class="slot-badge" style="background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);">${t('mkt.slot.hatching')}</div>` : ''}
+          ${isActive && !isPending ? `<div class="slot-badge active">${t('mkt.slot.active')}</div>` : ''}
         </div>
         <div class="slot-empty-wrap">
           <div class="slot-empty-icon">${isPending ? '🥚' : '🌀'}</div>
           <div class="slot-empty-title">${isPending ? t('mkt.slot.hatching_title') : t('mkt.slot.empty')}</div>
-          <div class="slot-empty-txt">${isPending ? t('mkt.slot.hatching_sub').replace('\n','<br>') : t('mkt.slot.empty_sub').replace('\n','<br>')}</div>
+          <div class="slot-empty-txt">${isPending ? t('mkt.slot.hatching_sub').replace('\n','<br>')
+            : (isActive ? t('mkt.slot.empty_active_sub') : t('mkt.slot.empty_sub')).replace('\n','<br>')}</div>
         </div>
+        ${!isPending && !isActive ? `
+        <div class="slot-actions">
+          <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_use_empty')}</button>
+        </div>` : ''}
       </div>`;
     } else {
       const isFrozen = !!s.listed;
