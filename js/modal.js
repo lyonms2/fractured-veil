@@ -1,4 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════
+// TRAVA DE SCROLL DO BODY — usada por qualquer overlay em tela cheia
+// (ModalManager e também overlays soltos como avatarZoomOverlay, que não
+// passam por ele). Só overflow:hidden não é confiável em touch/mobile —
+// o padrão robusto é fixar o body na posição actual do scroll e restaurar
+// ao destravar. Contagem de referências: vários overlays podem travar ao
+// mesmo tempo (ex: zoom de avatar aberto por cima do marketplace) — só
+// destrava de facto quando o último for fechado.
+// ═══════════════════════════════════════════════════════════════════
+let _scrollLockCount = 0;
+let _scrollLockY     = 0;
+
+function lockBodyScroll() {
+  if(_scrollLockCount === 0) {
+    _scrollLockY = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add('modal-scroll-lock');
+    document.body.style.top = `-${_scrollLockY}px`;
+  }
+  _scrollLockCount++;
+}
+
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if(_scrollLockCount === 0) {
+    document.body.classList.remove('modal-scroll-lock');
+    document.body.style.top = '';
+    window.scrollTo(0, _scrollLockY);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // MODAL MANAGER — um modal de cada vez
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
@@ -76,11 +106,14 @@ const ModalManager = {
     if(btn) btn.style.display = this.anyOpen() ? 'none' : 'flex';
   },
 
-  // Trava o scroll/arraste da página principal enquanto um modal está
-  // aberto — sem isto, o modal cobre a tela visualmente mas o dedo/scroll
-  // ainda arrasta o body por baixo dele.
+  // Trava/destrava o scroll do body via lockBodyScroll()/unlockBodyScroll()
+  // — só chama quando o estado "algo aberto" realmente muda (evita travar
+  // duas vezes ao trocar de modal, já que open() fecha o anterior primeiro).
+  _bodyLocked: false,
   _syncBodyScroll() {
-    document.body.classList.toggle('modal-scroll-lock', this.anyOpen());
+    const shouldLock = this.anyOpen();
+    if(shouldLock && !this._bodyLocked) { this._bodyLocked = true; lockBodyScroll(); }
+    else if(!shouldLock && this._bodyLocked) { this._bodyLocked = false; unlockBodyScroll(); }
   }
 };
 

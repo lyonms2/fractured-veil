@@ -22,10 +22,15 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Travado pelo ModalManager (js/modal.js) enquanto qualquer modal está
-   aberto — sem isto, o modal cobre a tela visualmente mas o scroll/arraste
-   ainda passa por baixo dele e mexe na página principal. */
+/* Aplicado por lockBodyScroll()/unlockBodyScroll() (js/modal.js) enquanto
+   qualquer modal/overlay está aberto — só overflow:hidden não é
+   suficiente em touch/mobile (o browser ainda deixa "arrastar" a página
+   por baixo), por isso fixamos o body na posição actual do scroll; a
+   coordenada (top) é escrita via JS em style.top. */
 body.modal-scroll-lock {
+  position: fixed;
+  left: 0;
+  right: 0;
   overflow: hidden;
   touch-action: none;
 }

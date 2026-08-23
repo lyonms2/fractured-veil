@@ -220,6 +220,14 @@ document.addEventListener('visibilitychange', async () => {
 });
 
 // ── Avatar Zoom Modal ──
+// Trava/destrava o scroll do body (js/modal.js) — este overlay não passa
+// pelo ModalManager. Guarda contra display já sendo 'flex' pra não travar
+// duas vezes (openAvatarZoom/openAvatarZoomData podem ser chamados um
+// depois do outro sem fechar entre eles).
+function _lockZoomScroll() {
+  const ov = document.getElementById('avatarZoomOverlay');
+  if(ov.style.display !== 'flex' && typeof lockBodyScroll === 'function') lockBodyScroll();
+}
 function openAvatarZoom() {
   if(!hatched || !avatar || dead) return;
   const size = 260;
@@ -228,11 +236,14 @@ function openAvatarZoom() {
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});
+  _lockZoomScroll();
   const ov = document.getElementById('avatarZoomOverlay');
   ov.style.display = 'flex';
 }
 function closeAvatarZoom() {
-  document.getElementById('avatarZoomOverlay').style.display = 'none';
+  const ov = document.getElementById('avatarZoomOverlay');
+  if(ov.style.display === 'flex' && typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  ov.style.display = 'none';
 }
 
 // Zoom genérico — usado no marketplace e meus avatares
@@ -244,6 +255,7 @@ function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome) {
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: elemento, rar: raridade, fase: fases[fase], nivel: nivelAv||1});
+  _lockZoomScroll();
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }
 
