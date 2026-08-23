@@ -142,6 +142,10 @@ function checkVinculoTier(oldVal) {
 }
 let totalSecs = 0;
 let tickCount = 0;
+// Recuperação de energia dormindo enquanto ausente (offline/segundo plano) —
+// metade do ritmo ao vivo (4/ciclo em js/gametick.js). Nada mais decai/recupera
+// enquanto ausente, mesmo dormindo.
+const OFFLINE_SLEEP_ENERGY_PER_CYCLE = 2;
 let eggClicks = 0;
 const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0 };
 const FASES = t('fases');

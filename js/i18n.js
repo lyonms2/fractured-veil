@@ -68,7 +68,10 @@
       'log.renamed':             'Avatar renomeado para "{name}" 💕',
       'log.repouso_on':          'Modo repouso ativado. Stats desaceleram. ⏸',
       'log.repouso_off':         'Modo repouso desativado. Bem-vindo de volta! ✨',
-      'log.offline_away':        'Ausente por {h}h {m}min — o avatar ficou em pausa, nada mudou. ⏸',
+      'log.offline_away':        'Ausente por {h}h {m}min — {status}',
+      'log.offline_paused':      'o avatar ficou em pausa, nada mudou. ⏸',
+      'log.offline_slept':       'dormiu e recuperou energia. 💤',
+      'log.woke_offline':        'Acordou com energia plena enquanto estava ausente! ☀️',
 
       // Bolhas de fala (showBubble)
       'bubble.sleeping':         'Shh... está dormindo 💤',
@@ -380,7 +383,10 @@
       'log.renamed':             'Avatar renamed to "{name}" 💕',
       'log.repouso_on':          'Rest mode activated. Stats slow down. ⏸',
       'log.repouso_off':         'Rest mode deactivated. Welcome back! ✨',
-      'log.offline_away':        'Away for {h}h {m}min — your avatar was paused, nothing changed. ⏸',
+      'log.offline_away':        'Away for {h}h {m}min — {status}',
+      'log.offline_paused':      'your avatar was paused, nothing changed. ⏸',
+      'log.offline_slept':       'it slept and recovered energy. 💤',
+      'log.woke_offline':        'Woke up fully rested while you were away! ☀️',
 
       // Bubbles
       'bubble.sleeping':         'Shh... sleeping 💤',

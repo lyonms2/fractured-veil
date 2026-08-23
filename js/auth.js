@@ -314,14 +314,25 @@ async function _onLoginSuccess(user) {
 
     // ── Offline: avatar fica em pausa — nada decai nem o tempo de vida
     // avança enquanto o jogador está ausente (idade = tempo de jogo real,
-    // usado no card de venda no marketplace). ──
+    // usado no card de venda no marketplace). Excepção: dormindo, a energia
+    // continua a subir (mais devagar que ao vivo), o resto continua parado. ──
     if(hatched && !dead) {
       const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
       if(offlineSecs > 0) {
+        let status = t('log.offline_paused');
+        if(sleeping && vitals.energia < 100) {
+          const offlineCycles = Math.floor(offlineSecs / 60);
+          vitals.energia = Math.min(100, vitals.energia + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
+          status = t('log.offline_slept');
+          if(vitals.energia >= 100) {
+            sleeping = false;
+            addLog(t('log.woke_offline'), 'good');
+          }
+        }
         saveRuntimeToSlot(activeSlotIdx);
         const hrs  = Math.floor(offlineSecs / 3600);
         const mins = Math.floor((offlineSecs % 3600) / 60);
-        addLog(t('log.offline_away', { h: hrs, m: mins }), 'info');
+        addLog(t('log.offline_away', { h: hrs, m: mins, status }), 'info');
       }
     }
 
