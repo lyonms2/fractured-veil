@@ -7,10 +7,6 @@
     {
       "path": "/api/pool-dev-payout",
       "schedule": "5 0 * * 1"
-    },
-    {
-      "path": "/api/fissura?cron=reset",
-      "schedule": "5 0 1 * *"
     }
   ]
 }

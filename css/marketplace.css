@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════
-   MODAL SHELL — overlay auto-contido, como #fissuraOverlay/#loreModal em
-   index.html — NÃO usa a classe .mini-modal. O override mobile genérico
-   dela (css/mobile-index.css) transforma qualquer .mini-modal num "bottom
+   MODAL SHELL — overlay auto-contido, como #loreModal em index.html —
+   NÃO usa a classe .mini-modal. O override mobile genérico dela
+   (css/mobile-index.css) transforma qualquer .mini-modal num "bottom
    sheet" que só cobre ~85-90vh, deixando a página principal visível e sem
    escurecer no topo. Aqui o marketplace cobre a tela inteira com fundo
-   sólido, em qualquer largura — igual à Grande Fissura.
+   sólido, em qualquer largura.
 ═══════════════════════════════════════════ */
 #marketplaceModal {
   display: none;

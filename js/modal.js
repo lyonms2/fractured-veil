@@ -199,17 +199,6 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   checkVinculoTier(_oldVinculo);
   checkXP(); updateAllUI(); scheduleSave();
 
-  // Fissura — contribuir pontos PVE (fire-and-forget)
-  if(walletAddress && firebase?.auth?.()?.currentUser) {
-    firebase.auth().currentUser.getIdToken().then(idToken => {
-      fetch('/api/fissura', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ acao: 'contribuir', idToken, atividade: vitoria ? 'pve_vitoria' : 'pve_completo' }),
-      }).catch(() => {});
-    }).catch(() => {});
-  }
-
   return { xpGain, coinGain };
 }
 

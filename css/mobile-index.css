@@ -198,7 +198,7 @@
      GAME SELECTOR
   ════════════════════ */
   /* Tela cheia (sem gap no topo mostrando a página por trás) — mesmo
-     padrão de #fissuraOverlay/#marketplaceModal/#arenaModal etc. */
+     padrão de #marketplaceModal/#arenaModal etc. */
   #gameSelector {
     position: fixed !important;
     inset: 0 !important;
@@ -221,7 +221,7 @@
      MODAIS GENÉRICOS — tela cheia (sem gap no topo mostrando a página
      por trás; antes era um "sheet" bottom-anchored com max-height:90vh,
      que deixava o topo da tela sem fundo). Mesmo padrão de
-     #fissuraOverlay/#marketplaceModal/#arenaModal etc. Conteúdo pequeno
+     #marketplaceModal/#arenaModal etc. Conteúdo pequeno
      (ex: hatchConfirmModal) continua centralizado e do tamanho do
      conteúdo — só o fundo/backdrop passa a cobrir a tela inteira.
   ════════════════════ */

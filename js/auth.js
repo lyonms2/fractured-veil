@@ -196,7 +196,6 @@ async function disconnectWallet() {
 
   document.getElementById('walletInfo').style.display       = 'none';
   document.getElementById('btnMarket').style.display        = 'none';
-  document.getElementById('btnFissura').style.display       = 'none';
   document.getElementById('resMoedasBtn').style.display     = 'none';
   document.getElementById('resCristaisBtn').style.display   = 'none';
   document.getElementById('resOvosBtn').style.display       = 'none';
@@ -218,7 +217,6 @@ function updateHeaderButtons() {
   const temAvatar = hatched && !dead;
   const temOvos   = eggsInInventory.length > 0;
   document.getElementById('btnMarket').style.display      = 'flex';
-  document.getElementById('btnFissura').style.display     = 'flex';
   document.getElementById('resCristaisBtn').style.display = '';
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
   document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
@@ -296,20 +294,6 @@ async function _onLoginSuccess(user) {
   if(_bs) _bs.disabled = false;
   updateResourceUI();
   addLog(t('log.welcome_back'), 'good');
-
-  // ── Fissura: login diário (só uma vez por dia) ──
-  const _hoje = new Date().toISOString().slice(0, 10);
-  const _ultimoLogin = localStorage.getItem('fv_fissura_login');
-  if(_ultimoLogin !== _hoje) {
-    localStorage.setItem('fv_fissura_login', _hoje);
-    firebase.auth().currentUser.getIdToken().then(idToken => {
-      fetch('/api/fissura', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ acao: 'contribuir', idToken, atividade: 'login_diario' }),
-      }).catch(() => {});
-    }).catch(() => {});
-  }
 
   if(loaded) {
     addLog(t('log.state_restored'), 'good');
