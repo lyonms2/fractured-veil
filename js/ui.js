@@ -206,44 +206,42 @@ function updateLifeEstimate() {
   if(!el) return;
   if(!hatched || dead || sleeping) { el.textContent = sleeping ? t('ui.sleeping') : '—'; el.style.color = 'var(--muted)'; return; }
 
-  const _d = rarityBonus().decay * GAME_SPEED;
-  let decayPerCycle = 0;
-  if(vitals.fome    < 15) decayPerCycle += 0.3;
-  if(vitals.humor   < 10) decayPerCycle += 0.1;
-  if(vitals.energia < 5)  decayPerCycle += 0.1;
-  if(vitals.higiene < 15) decayPerCycle += 0.04;
-  if(dirtyLevel     >= 2) decayPerCycle += 0.04;
-
-  if(decayPerCycle <= 0) {
-    const fomeDecay    = 0.8  * _d * getItemEffect('fomeDecayMult');
-    const humorDecay   = 0.5  * _d;
-    const energiaDecay = 0.6  * _d;
-    const higieneDecay = 0.12 * GAME_SPEED;
-
-    const cyclesUntilFomeCrit    = vitals.fome    > 15 ? (vitals.fome    - 15) / fomeDecay    : 0;
-    const cyclesUntilHumorCrit   = vitals.humor   > 10 ? (vitals.humor   - 10) / humorDecay   : 0;
-    const cyclesUntilEnergiaCrit = vitals.energia > 5  ? (vitals.energia - 5)  / energiaDecay : 0;
-    const cyclesUntilHigieneCrit = vitals.higiene > 15 ? (vitals.higiene - 15) / higieneDecay : 0;
-
-    const minCycles = Math.min(
-      cyclesUntilFomeCrit    || Infinity,
-      cyclesUntilHumorCrit   || Infinity,
-      cyclesUntilEnergiaCrit || Infinity,
-      cyclesUntilHigieneCrit || Infinity
-    );
-
-    if(minCycles === Infinity) { el.textContent = t('ui.stable'); el.style.color = '#7ab87a'; return; }
-
-    const cyclesAfter = vitals.saude / 0.3;
-    const totalSecs   = Math.round((minCycles + cyclesAfter) * 60);
-    el.style.color    = totalSecs < 3600 ? '#e74c3c' : totalSecs < 7200 ? '#c9a84c' : '#7ab87a';
-    el.textContent    = _fmtTime(totalSecs);
-  } else {
-    const cyclesLeft = vitals.saude / decayPerCycle;
-    const secsLeft   = Math.round(cyclesLeft * 60);
-    el.style.color   = secsLeft < 1800 ? '#e74c3c' : '#c9a84c';
-    el.textContent   = _fmtTime(secsLeft);
+  // A saúde só cai por doença activa (ver js/gametick.js), então o tempo de
+  // vida estimado é: ciclos até um vital ficar crítico + ciclos de descuido
+  // sustido até a doença activar (DISEASE_STRESS_THRESHOLD) + ciclos até a
+  // saúde esgotar sob o dreno da doença (DISEASE_DECAY_PER_CYCLE).
+  if(activeDiseases.length > 0) {
+    const secsLeft = Math.round((vitals.saude / (DISEASE_DECAY_PER_CYCLE * activeDiseases.length)) * 60);
+    el.style.color  = secsLeft < 1800 ? '#e74c3c' : '#c9a84c';
+    el.textContent  = _fmtTime(secsLeft);
+    return;
   }
+
+  const _d = rarityBonus().decay * GAME_SPEED;
+  const vitalDecay = {
+    energia: 0.6  * _d,
+    fome:    0.8  * _d * getItemEffect('fomeDecayMult'),
+    higiene: 0.12 * GAME_SPEED,
+    humor:   0.5  * _d,
+  };
+
+  let minCyclesUntilDisease = Infinity;
+  for(const id in DISEASES) {
+    const { vital, limiar } = DISEASES[id];
+    const current = vitals[vital];
+    const cyclesUntilCrit = current > limiar ? (current - limiar) / vitalDecay[vital] : 0;
+    const stressCyclesLeft = cyclesUntilCrit > 0
+      ? DISEASE_STRESS_THRESHOLD
+      : Math.max(0, DISEASE_STRESS_THRESHOLD - diseaseStress[id]);
+    minCyclesUntilDisease = Math.min(minCyclesUntilDisease, cyclesUntilCrit + stressCyclesLeft);
+  }
+
+  if(minCyclesUntilDisease === Infinity) { el.textContent = t('ui.stable'); el.style.color = '#7ab87a'; return; }
+
+  const cyclesAfterDisease = vitals.saude / DISEASE_DECAY_PER_CYCLE;
+  const totalSecs = Math.round((minCyclesUntilDisease + cyclesAfterDisease) * 60);
+  el.style.color  = totalSecs < 3600 ? '#e74c3c' : totalSecs < 7200 ? '#c9a84c' : '#7ab87a';
+  el.textContent  = _fmtTime(totalSecs);
 }
 
 function _fmtTime(secs) {
