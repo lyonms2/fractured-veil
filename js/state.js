@@ -191,8 +191,11 @@ const FALAS = {
 // ═══════════════════════════════════════════
 let avatarSlots   = [null, null, null];
 let activeSlotIdx = 0;
-const BASE_SLOTS  = 3;
-const MAX_SLOTS   = 5;
+// var + guard (não const): js/avatars-market.js declara os mesmos nomes para
+// funcionar standalone em marketplace.html — evita SyntaxError de redeclaração
+// quando ambos os arquivos carregam juntos em index.html.
+if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 3;
+if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 5;
 const SLOT_COST   = 15;
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {

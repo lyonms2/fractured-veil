@@ -165,6 +165,10 @@ async function confirmListEgg() {
     playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
+    if(typeof gs !== 'undefined') {
+      gs.cristais = data.novoSaldo;
+      if(typeof updateResourceUI === 'function') updateResourceUI();
+    }
     updateCristaisDisplay();
     if(playerData.inboxEggs) {
       playerData.inboxEggs = playerData.inboxEggs.filter(e => e.id !== listingEggData.id);
@@ -197,6 +201,10 @@ async function buyEggFromMarket(listingId) {
     playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
+    if(typeof gs !== 'undefined') {
+      gs.cristais = data.novoSaldo;
+      if(typeof updateResourceUI === 'function') updateResourceUI();
+    }
     updateCristaisDisplay();
 
     showToast(t('mkt.eggs.bought', {rarity: esc(data.raridade), elem: esc(data.elemento)}), 'ok');
@@ -249,6 +257,26 @@ async function unlistEgg(listingId) {
     });
     unlistBatch.delete(listRef);
     await unlistBatch.commit();
+
+    // Quando mesclado em index.html: reflecte o ovo restaurado no inventário
+    // vivo imediatamente (mesma lógica de applyGameState() para inboxEggs),
+    // em vez de esperar o jogador recarregar a página.
+    if(typeof eggsInInventory !== 'undefined' && typeof avatarSlots !== 'undefined'
+      && Date.now() < ovoRestaurado.expiraEm) {
+      const MAX_EGGS = 10;
+      const slot = avatarSlots[activeSlotIdx];
+      if(slot) {
+        if(!slot.eggs) slot.eggs = [];
+        const jaNoSlot = slot.eggs.some(e => e.id === ovoRestaurado.id);
+        if(!jaNoSlot && slot.eggs.length < MAX_EGGS) slot.eggs.push({...ovoRestaurado});
+      }
+      const jaNoInv = eggsInInventory.some(e => e.id === ovoRestaurado.id);
+      if(!jaNoInv) eggsInInventory.push({...ovoRestaurado});
+      window._inboxConsumed = true; // limpa inboxEggs no próximo saveToFirebase()
+      if(typeof renderEggInventory === 'function') renderEggInventory();
+      if(typeof updateResourceUI === 'function') updateResourceUI();
+      if(typeof scheduleSave === 'function') scheduleSave();
+    }
 
     showToast(t('mkt.eggs.unlisted'), 'ok');
   } catch(e) {

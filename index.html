@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="css/ui.css">
   <link rel="stylesheet" href="css/minigames.css">
   <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/marketplace.css">
   <link rel="stylesheet" href="css/arena.css">
   <link rel="stylesheet" href="css/rouba-monte.css">
   <link rel="stylesheet" href="css/batalha-naval.css">
@@ -348,7 +349,6 @@
               </div>
             </div>
           </div>
-
           <div class="mini-modal" id="coinShopModal">
             <div class="modal-header">
               <div>
@@ -367,7 +367,7 @@
               <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
                 <div data-i18n="inv.crystals_cta" style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
                 <div data-i18n="inv.crystals_desc" style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
-                <a href="#" onclick="navigateTo('marketplace.html');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
+                <a href="#" onclick="openMarketplaceModal('buycrystals');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
               </div>
             </div>
           </div>
@@ -953,6 +953,9 @@
   firebase.initializeApp(firebaseConfig);
   const _fbDb = firebase.firestore();
   const _rtdb = firebase.database();
+  // Shim para js/pool.js, js/cristais.js, js/avatars-market.js, js/eggs-market.js —
+  // esses arquivos (originalmente só de marketplace.html) esperam um `db` global.
+  window.db = _fbDb;
 </script>
 
 <script src="js/i18n.js"></script>
@@ -969,6 +972,7 @@
 <script src="js/i18n-session.js"></script>
 <script src="js/i18n-misc.js"></script>
 <script src="js/i18n-lore.js"></script>
+<script src="js/i18n-marketplace.js"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1008,6 +1012,14 @@
 <script src="js/amigos.js"></script>
 <script src="js/discord.js"></script>
 <script src="js/auth.js"></script>
+
+<!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
+<script src="js/pool.js"></script>
+<script src="js/cristais.js"></script>
+<script src="js/avatars-market.js"></script>
+<script src="js/eggs-market.js"></script>
+<script src="js/marketplace-core.js"></script>
+
 <script src="js/main.js"></script>
 
 
@@ -1175,6 +1187,340 @@
 </script>
 
 <!-- AVATAR ZOOM MODAL -->
+          <div class="mini-modal" id="marketplaceModal">
+            <div class="modal-header">
+              <div class="mini-title" style="margin:0;">🛒 MARKETPLACE</div>
+              <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeMarketplaceModal()">✕</button>
+            </div>
+<div class="mktmp-body">
+
+  <!-- SIDEBAR -->
+  <nav class="mkt-sidebar">
+    <div class="mkt-nav-section" data-i18n="mkt.nav.account">Minha Conta</div>
+    <button class="mkt-nav-btn active" onclick="showSection('slots')" id="nav-slots">
+      <span class="nav-icon">🧬</span><span data-i18n="mkt.nav.my_avatars"> Meus Avatares</span>
+    </button>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.market">Mercado</div>
+    <button class="mkt-nav-btn" onclick="showSection('browse')" id="nav-browse">
+      <span class="nav-icon">🛒</span><span data-i18n="mkt.nav.buy_avatars"> Comprar Avatares</span>
+    </button>
+    <button class="mkt-nav-btn" onclick="showSection('buycrystals')" id="nav-buycrystals">
+      <span class="nav-icon">💎</span><span data-i18n="mkt.nav.buy_crystals"> Comprar Cristais</span>
+    </button>
+    <button class="mkt-nav-btn" onclick="showSection('eggs')" id="nav-eggs">
+      <span class="nav-icon">🥚</span><span data-i18n="mkt.nav.buy_eggs"> Comprar Ovos</span>
+    </button>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.community">Comunidade</div>
+    <button class="mkt-nav-btn" onclick="showSection('referral')" id="nav-referral">
+      <span class="nav-icon">🔗</span><span> Convites</span>
+    </button>
+    <div class="mkt-nav-section" data-i18n="mkt.nav.info">Informação</div>
+    <button class="mkt-nav-btn" onclick="showSection('transparencia')" id="nav-transparencia">
+      <span class="nav-icon">🔍</span><span data-i18n="mkt.nav.pool"> Pool & Transparência</span>
+    </button>
+    <div style="margin-top:auto;padding:10px 4px 4px;">
+      <a href="https://discord.gg/rsjV5R2r" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);color:#8b9cf4;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;letter-spacing:.3px;" onmouseover="this.style.background='rgba(88,101,242,.18)'" onmouseout="this.style.background='rgba(88,101,242,.08)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.04.036.052a19.85 19.85 0 0 0 5.993 3.03.08.08 0 0 0 .085-.026c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Comunidade Discord
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="mkt-main">
+
+    <!-- ── EXPLORAR ── -->
+    <div class="mkt-section" id="sec-browse">
+      <div class="section-title" data-i18n="mkt.browse.title">🛒 Comprar Avatares</div>
+      <div class="section-sub" data-i18n="mkt.browse.sub">Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.</div>
+      <div class="filters-row">
+        <input class="search-input" id="filterSearch" placeholder="🔍 Procurar nome ou elemento..."
+          data-i18n-ph="mkt.browse.search_ph" oninput="applyFilters()"/>
+        <select class="filter-select" id="filterRarity" onchange="applyFilters()">
+          <option value="" data-i18n="mkt.browse.rarity_all">Raridade: Todas</option>
+          <option value="Raro">Raro</option>
+          <option value="Lendário">Lendário</option>
+        </select>
+        <select class="filter-select" id="filterElem" onchange="applyFilters()">
+          <option value="" data-i18n="mkt.browse.elem_all">Elemento: Todos</option>
+          <option>Fogo</option><option>Água</option><option>Terra</option>
+          <option>Vento</option><option>Eletricidade</option><option>Sombra</option>
+          <option>Luz</option><option>Void</option><option>Aether</option>
+        </select>
+        <select class="filter-select" id="filterSort" onchange="applyFilters()">
+          <option value="recent" data-i18n="mkt.browse.sort_recent">Mais recentes</option>
+          <option value="price_asc" data-i18n="mkt.browse.sort_asc">Preço ↑</option>
+          <option value="price_desc" data-i18n="mkt.browse.sort_desc">Preço ↓</option>
+          <option value="level" data-i18n="mkt.browse.sort_level">Nível ↓</option>
+        </select>
+      </div>
+      <div id="browseGrid" class="avatar-grid">
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.browse.loading">A carregar listagens...</div></div>
+      </div>
+    </div>
+
+    <!-- ── MEUS AVATARES ── -->
+    <div class="mkt-section active" id="sec-slots">
+      <div class="section-title" data-i18n="mkt.slots.title">🧬 Meus Avatares</div>
+      <div class="section-sub" data-i18n="mkt.slots.sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
+      <div id="slotsGrid" class="slots-grid"></div>
+      <div id="unlockSlotRow"></div>
+    </div>
+
+    <!-- ── CONVITES / REFERRAL ── -->
+    <!-- Conteúdo preenchido dinamicamente por renderReferral() em cristais.js -->
+    <div class="mkt-section" id="sec-referral"></div>
+
+    <!-- ── POOL & TRANSPARÊNCIA ── -->
+    <div class="mkt-section" id="sec-transparencia">
+      <div class="section-title" data-i18n="mkt.pool.title">🔍 Pool & Transparência</div>
+      <div class="section-sub" data-i18n="mkt.pool.sub">Tudo o que entra e sai da pool é público. Aqui podes ver o estado em tempo real e como a economia do Fractured Veil funciona.</div>
+
+      <!-- Estado da pool (renderizado via pool.js) -->
+      <div id="poolStatsCard"></div>
+
+      <!-- Histórico -->
+      <div class="pool-log-header" style="margin-top:16px;">
+        <div class="pool-log-title" data-i18n="mkt.pool.history">📋 Histórico da Pool</div>
+        <div class="pool-log-legend">
+          <span class="pool-leg entrada" data-i18n="mkt.pool.legend_in">▲ Entrada</span>
+          <span class="pool-leg saida" data-i18n="mkt.pool.legend_out">▼ Saída</span>
+        </div>
+      </div>
+      <div id="poolLogList" class="pool-log-list">
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.pool.loading">A carregar histórico...</div></div>
+      </div>
+      <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
+
+      <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;" data-i18n="mkt.pool.economy">◆ COMO FUNCIONA A ECONOMIA</div>
+
+      <!-- COFRE -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.vault_title">🏦 O Cofre (Smart Contract)</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.vault_body">Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.</span><br><br>
+          <a class="transp-link" id="transpContractLink" href="#" target="_blank" data-i18n="mkt.transp.vault_link">Ver contrato no Polygonscan ↗</a>
+          <div class="transp-timelock-status" id="transpTimelockStatus" data-i18n="mkt.loading">A carregar...</div>
+        </div>
+      </div>
+
+      <!-- COMPRA DE CRISTAIS -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.crystal_title">💸 Comprar e Resgatar Cristais</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.crystal_body">O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.</span>
+          <div class="transp-taxa-row" style="margin-top:10px;"><span data-i18n="mkt.transp.buy_rate">Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_rate">Taxa de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_limit">Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
+          <br><span data-i18n="mkt.transp.your_limit">O teu limite hoje:</span>
+          <div class="transp-limit-bar-wrap"><div class="transp-limit-bar" id="transpLimitBar"></div></div>
+          <div class="transp-limit-txt" id="transpLimitTxt" data-i18n="mkt.metamask.limit_missing">Vincula a MetaMask na secção de Cristais para ver o teu limite.</div>
+        </div>
+      </div>
+
+      <!-- COMO A POOL É ALIMENTADA -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.feed_body"><strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.list_avatar">Listar avatar</span><span class="transp-taxa-val">2 💎 → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_avatar">Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_egg_mkt">Venda de ovo no mercado</span><span class="transp-taxa-val">10% → pool</span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.pvp_games">JOGOS PvP (apenas filas Raro e Lendário)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.jokenpo_lbl">Jo-Ken-Pô</span><span class="transp-taxa-val" id="transpTaxaJokenpo" data-i18n="mkt.transp.jokenpo_pct">15% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.rouba_lbl">Rouba Monte</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.naval_lbl">Batalha Naval</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
+        </div>
+      </div>
+
+      <!-- DISTRIBUIÇÃO SEMANAL -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.weekly_title">🏆 Distribuição Semanal (toda segunda-feira)</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.weekly_body">Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.for_who">PARA QUEM VAI</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_arena">Top 10 Jo-Ken-Pô (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctArena">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_rm">Top 10 Rouba Monte (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctRM">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.top10_bn">Top 10 Batalha Naval (Raro + Lendário)</span><span class="transp-taxa-val" id="transPctBN">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.maintenance">Manutenção e desenvolvimento</span><span class="transp-taxa-val" id="transPctDev">—</span></div>
+          <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:12px;">
+            <span style="color:var(--text);font-weight:600;" data-i18n="mkt.transp.pool_retains">Pool retém</span>
+            <span class="transp-taxa-val" style="color:var(--green)" id="transPctRetencao">—</span>
+          </div>
+          <div style="margin-top:10px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.weekly_note">
+            Mínimo garantido: <strong style="color:var(--text);">5%</strong> por distribuição · Máximo: <strong style="color:var(--text);">20%</strong> por jogo<br>
+            Ranking Comum recebe <strong style="color:var(--text);">moedas internas</strong> — não cristais.<br>
+            É necessário no mínimo <strong style="color:var(--text);">5 pontos</strong> na semana para receber premiação.
+          </div>
+        </div>
+      </div>
+
+      <!-- OVOS -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.eggs_title">🥚 Ovos — Queima e Venda para Pool</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.eggs_body">Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.burn_label">QUEIMAR OVO (sai da pool)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_common">Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.coins_internal">(moedas internas)</span></span></div>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.sell_pool">VENDER À POOL (preço dinâmico)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val" id="transPriceRaro">—</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val" id="transPriceLend">—</span></div>
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.eggs_note">
+            O preço de venda sobe até 2× quando a pool ultrapassa o alvo de <strong style="color:var(--text);">1000 💎</strong>.<br>
+            Limites de venda por semana: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)
+          </div>
+        </div>
+      </div>
+
+      <!-- CÂMBIO / PLAY-TO-EARN -->
+      <div class="transp-block">
+        <div class="transp-block-title" data-i18n="mkt.transp.exchange_title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
+        <div class="transp-block-body">
+          <span data-i18n="mkt.transp.exchange_body">Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.</span>
+          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.exchange_rate">TAXA DE CÂMBIO (por 1 💎)</div>
+          <div class="transp-taxa-row"><span>Pool ≥ 1000 💎</span><span class="transp-taxa-val">1 000 🪙</span></div>
+          <div class="transp-taxa-row"><span>Pool ≥ 500 💎</span><span class="transp-taxa-val">1 500 🪙</span></div>
+          <div class="transp-taxa-row"><span>Pool ≥ 100 💎</span><span class="transp-taxa-val">2 000 🪙</span></div>
+          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.exchange_note">
+            Requisito: avatar nível ≥ 20 · Pool mínima: 100 💎<br>
+            Limite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COMPRAR CRISTAIS ── -->
+    <div class="mkt-section" id="sec-buycrystals">
+      <div class="section-title" data-i18n="mkt.crystals.title">💎 Comprar Cristais</div>
+      <div class="section-sub" data-i18n="mkt.crystals.sub">1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
+
+      <!-- CTA MetaMask — aparece se não tiver carteira vinculada -->
+      <div id="metamaskCtaWrap"></div>
+
+      <div class="crystal-packages" id="crystalPackages"></div>
+      <div id="buyStatus" style="margin-top:12px;text-align:center;min-height:24px;"></div>
+
+      <div class="tx-verify-box" style="margin-top:24px;">
+        <h3 data-i18n="mkt.crystals.redeem_title">💸 Resgatar Cristais → MATIC</h3>
+        <div class="section-sub" style="margin:8px 0 16px;" data-i18n="mkt.crystals.redeem_sub">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
+        <div class="tx-input-row">
+          <input class="tx-hash-input" id="resgateGems" type="number" min="10" step="10" placeholder="Quantidade de 💎 (mín. 10)"
+            data-i18n-ph="mkt.crystals.redeem_ph"/>
+          <button class="btn-verify" id="btnResgatar" onclick="resgatar()" data-i18n="mkt.crystals.redeem_btn">Resgatar</button>
+        </div>
+        <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
+      </div>
+    </div>
+
+    <!-- ── OVOS À VENDA ── -->
+    <div class="mkt-section" id="sec-eggs">
+      <div class="section-title" data-i18n="mkt.eggs.title">🥚 Comprar Ovos</div>
+      <div class="section-sub" data-i18n="mkt.eggs.sub">Ovos Raros e Lendários listados por outros jogadores.</div>
+      <div class="filters-row">
+        <input class="search-input" id="eggFilterElem" placeholder="🔍 Filtrar por elemento..."
+          data-i18n-ph="mkt.eggs.filter_ph" oninput="renderEggBrowse()"/>
+        <select class="filter-select" id="eggFilterRarity" onchange="renderEggBrowse()">
+          <option value="" data-i18n="mkt.browse.rarity_all">Raridade: Todas</option>
+          <option value="Raro">🔵 Raro</option>
+          <option value="Lendário">🌟 Lendário</option>
+        </select>
+        <select class="filter-select" id="eggFilterSort" onchange="renderEggBrowse()">
+          <option value="recent" data-i18n="mkt.browse.sort_recent">Mais recentes</option>
+          <option value="price_asc" data-i18n="mkt.browse.sort_asc">Preço ↑</option>
+          <option value="price_desc" data-i18n="mkt.browse.sort_desc">Preço ↓</option>
+        </select>
+      </div>
+      <div id="eggBrowseGrid" class="egg-browse-grid">
+        <div class="loading"><div class="spinner"></div><div data-i18n="mkt.eggs.loading">A carregar ovos...</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+            <div id="toast"></div>
+<div class="overlay" id="listEggOverlay">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="mkt.modal.list_egg.title">🥚 Listar Ovo à Venda</div>
+    <div class="modal-sub" data-i18n="mkt.modal.list_egg.sub">Define o preço em 💎 Cristais. O ovo será removido do teu inventário.</div>
+    <div class="modal-warn">⚠️ Taxa de listagem: <b>Raro 25 💎 · Lendário 50 💎</b> — vai para a pool P2E.</div>
+    <div id="listEggPreview"></div>
+    <div class="modal-field">
+      <div class="modal-label" data-i18n="mkt.modal.list_egg.price">Preço em 💎 Cristais</div>
+      <input class="modal-input" id="listEggPriceInput" type="number" min="1" placeholder="ex: 5"/>
+    </div>
+    <div id="listEggStatus" style="font-size:9px;color:var(--muted);margin-bottom:10px;text-align:center;"></div>
+    <div class="modal-row">
+      <button class="btn-modal-cancel" onclick="closeListEggModal()" data-i18n="mkt.modal.list_egg.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmListEgg()" data-i18n="mkt.modal.list_egg.confirm">Listar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="listOverlay">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="mkt.modal.list_av.title">📋 Listar Avatar</div>
+    <div class="modal-sub" data-i18n="mkt.modal.list_av.sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.</div>
+    <div class="modal-warn" data-i18n="mkt.modal.list_av.warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
+    <div id="listAvatarPreview" style="margin-bottom:14px;"></div>
+    <div class="modal-field">
+      <div class="modal-label" data-i18n="mkt.modal.list_av.price">Preço em 💎 Cristais</div>
+      <input class="modal-input" id="listPriceInput" type="number" min="1" placeholder="ex: 50"/>
+    </div>
+    <div class="modal-row">
+      <button class="btn-modal-cancel" onclick="closeListModal()" data-i18n="mkt.modal.list_av.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmList()" data-i18n="mkt.modal.list_av.confirm">Listar por 2 💎</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="avatarDetailOverlay">
+  <div class="modal-box" id="avatarDetailBox"></div>
+</div>
+
+<div class="overlay" id="burnOverlay">
+  <div class="modal-box" style="max-width:320px;text-align:center;">
+    <div class="modal-title" style="color:#f87171;" data-i18n="mkt.modal.burn.title">🔥 Queimar Avatar</div>
+    <div id="burnAvatarPreview" style="margin:12px 0;"></div>
+    <div class="modal-warn" style="border-color:#7f1d1d;color:#fca5a5;">
+      Esta acção é <b>permanente e irreversível</b>.<br>O avatar será destruído e o slot libertado.
+    </div>
+    <div class="modal-row" style="margin-top:16px;">
+      <button class="btn-modal-cancel" onclick="closeBurnModal()" data-i18n="mkt.modal.burn.cancel">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="confirmBurnAvatar()" style="background:#7f1d1d;border-color:#f87171;color:#fca5a5;" data-i18n="mkt.modal.burn.confirm">🔥 Confirmar Queima</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="mkt-bottom-nav" style="display:none;">
+  <div class="mkt-bottom-nav-inner">
+    <button class="mkt-bn-btn active" id="mbn-slots" onclick="showSection('slots');_mbnActive(this)">
+      <span class="bn-icon">🧬</span><span data-i18n="mkt.bn.avatars">Avatares</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-browse" onclick="showSection('browse');_mbnActive(this)">
+      <span class="bn-icon">🛒</span><span data-i18n="mkt.bn.market">Mercado</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-eggs" onclick="showSection('eggs');_mbnActive(this)">
+      <span class="bn-icon">🥚</span><span data-i18n="mkt.bn.eggs">Ovos</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-buycrystals" onclick="showSection('buycrystals');_mbnActive(this)">
+      <span class="bn-icon">💎</span><span data-i18n="mkt.bn.crystals">Cristais</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-referral" onclick="showSection('referral');_mbnActive(this)">
+      <span class="bn-icon">🔗</span><span>Convites</span>
+    </button>
+    <button class="mkt-bn-btn" id="mbn-transparencia" onclick="showSection('transparencia');_mbnActive(this)">
+      <span class="bn-icon">🔍</span><span data-i18n="mkt.bn.pool">Pool</span>
+    </button>
+  </div>
+</div>
+          </div>
+
 <div id="avatarZoomOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:950;align-items:center;justify-content:center;" onclick="closeAvatarZoom()">
   <div class="avatar-zoom-modal" onclick="event.stopPropagation()">
     <button class="avatar-zoom-close" onclick="closeAvatarZoom()">✕</button>

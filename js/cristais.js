@@ -135,6 +135,13 @@ async function comprarCristais(idx) {
           playerData.cristais = (playerData.cristais || 0) + apiData.gems;
           if(!playerData.gs) playerData.gs = {};
           playerData.gs.cristais = playerData.cristais;
+          // Sincroniza com o estado vivo do jogo (index.html mesclado) — sem
+          // isto o próximo scheduleSave() reverteria o crédito já persistido
+          // no servidor com o saldo antigo em memória.
+          if(typeof gs !== 'undefined') {
+            gs.cristais = playerData.cristais;
+            if(typeof updateResourceUI === 'function') updateResourceUI();
+          }
           updateCristaisDisplay();
           status.innerHTML = `<span class="tx-ok">${t('mkt.tx.credited', {gems: fmtC(apiData.gems), balance: fmtC(playerData.cristais)})}</span>`;
           showToast(t('mkt.tx.gems_added', {gems: fmtC(apiData.gems)}), 'ok');
@@ -226,6 +233,10 @@ async function resgatar() {
 
     if(receipt.status === 1) {
       playerData.cristais = (playerData.cristais || 0) - gems;
+      if(typeof gs !== 'undefined') {
+        gs.cristais = playerData.cristais;
+        if(typeof updateResourceUI === 'function') updateResourceUI();
+      }
       updateCristaisDisplay();
       gemsInput.value = '';
       const refBonus = apiData.referralBonus || 0;

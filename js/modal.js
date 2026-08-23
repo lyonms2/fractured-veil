@@ -4,13 +4,14 @@
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','marketModal','coinShopModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal'
+  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
+  'marketplaceModal'
 ];
 
 const ModalManager = {
   current: null,
 
-  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal'],
+  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal','marketplaceModal'],
   GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal'],
 
   open(id, onClose) {

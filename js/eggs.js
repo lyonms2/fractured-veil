@@ -9,13 +9,9 @@ async function goToMarketplace(e) {
     addLog(t('egg.log.hatch_first'), 'bad');
     return;
   }
-  // Garante que o estado actual (incluindo dead:true) está no Firebase antes de navegar
-  if(typeof saveToFirebase === 'function') {
-    clearTimeout(_saveTimeout); _saveTimeout = null;
-    await saveToFirebase();
-  }
-  if(typeof navigateTo === 'function') navigateTo('marketplace.html');
-  else window.location.href = 'marketplace.html';
+  // Marketplace agora é um modal in-game (ver js/marketplace-core.js) — sem
+  // navegação de página, sem precisar flush do save antes de sair.
+  if(typeof openMarketplaceModal === 'function') openMarketplaceModal('slots');
 }
 
 function findTargetSlot() {
@@ -779,12 +775,15 @@ async function _payHatchFeeToPool(fee, raridade) {
   } catch(e) { console.warn('[hatch fee pool]', e); }
 }
 
-function listEggOnMarket(eggId) {
+async function listEggOnMarket(eggId) {
   const ovo = eggsInInventory.find(e => e.id === eggId);
   if(!ovo) return;
   const data = { id: ovo.id, raridade: ovo.raridade, elemento: ovo.elemento, expiraEm: ovo.expiraEm };
-  const encoded = btoa(JSON.stringify(data));
-  window.open(`marketplace.html?section=eggs&listEgg=${encoded}`, '_blank');
+  // Marketplace agora é um modal in-game — abre direto na secção de ovos e
+  // chama openListEggModal() (js/eggs-market.js) com o payload já em mãos,
+  // sem precisar do roundtrip por query string em nova aba.
+  if(typeof openMarketplaceModal === 'function') await openMarketplaceModal('eggs');
+  if(typeof openListEggModal === 'function') openListEggModal(data);
 }
 
 function petCreature() {

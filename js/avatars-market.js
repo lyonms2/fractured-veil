@@ -8,8 +8,38 @@
 //             LIST_COST, UNLOCK_SLOT_COST, TAXA_MARKETPLACE (marketplace.html inline)
 // ═══════════════════════════════════════════════════════════════════
 
-const BASE_SLOTS = 3;
-const MAX_SLOTS  = 5;
+// var + guard (não const): js/state.js declara os mesmos nomes quando este
+// arquivo é carregado junto com o jogo principal (index.html) — evita
+// SyntaxError de redeclaração, mantendo compatibilidade standalone com
+// marketplace.html (que não carrega state.js).
+if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 3;
+if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 5;
+
+// ═══════════════════════════════════════════
+// SYNC COM O ESTADO VIVO DO JOGO (index.html mesclado)
+// ═══════════════════════════════════════════
+// Quando este arquivo roda dentro de index.html (mesclado com state.js/
+// firebase.js), o jogo tem seu próprio scheduleSave() que re-serializa TODO
+// o `gs`/`avatarSlots` em memória a cada ~60s e em quase toda ação. Uma
+// operação server-authoritative (compra/venda/etc.) que só actualize
+// `playerData` sem tocar `gs`/`avatarSlots` seria revertida silenciosamente
+// pelo próximo autosave. Estas funções, quando disponíveis, mantêm as duas
+// fontes em sincronia; em marketplace.html standalone (sem state.js) elas
+// são no-ops e o código cai no comportamento original via `playerData`.
+function _mktGameStateDisponivel() {
+  return typeof gs !== 'undefined' && typeof avatarSlots !== 'undefined';
+}
+function _mktSyncGs(patch) {
+  if(!_mktGameStateDisponivel()) return false;
+  Object.assign(gs, patch);
+  if(typeof updateResourceUI === 'function') updateResourceUI();
+  return true;
+}
+function _mktSyncSlots(newSlots) {
+  if(!_mktGameStateDisponivel()) return false;
+  avatarSlots = newSlots;
+  return true;
+}
 
 // ═══════════════════════════════════════════
 // HELPERS DE FASE
@@ -182,6 +212,8 @@ async function buyAvatar(listingId, price) {
     playerData.cristais    = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
+    _mktSyncSlots(data.slots);
+    _mktSyncGs({ cristais: data.novoSaldo });
     updateCristaisDisplay();
 
     const taxa = Math.round(price * TAXA_MARKETPLACE);
@@ -238,6 +270,8 @@ async function confirmList() {
     playerData.cristais    = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
+    _mktSyncSlots(data.slots);
+    _mktSyncGs({ cristais: data.novoSaldo });
     updateCristaisDisplay();
 
     closeListModal();
@@ -276,6 +310,7 @@ async function unlistAvatar(listingId) {
     if(!res.ok) { showToast(data.erro || t('mkt.avatar.unlist_err'), 'err'); return; }
 
     playerData.avatarSlots = data.slots;
+    _mktSyncSlots(data.slots);
     closeDetail();
     showToast(t('mkt.avatar.unlisted'), 'ok');
   } catch(e) {
@@ -406,13 +441,26 @@ function renderSlots() {
 }
 
 async function activateSlot(idx) {
-  await db.collection('players').doc(walletAddress).update({
-    activeSlotIdx: idx,
-    'gs.activeSlotIdx': idx
-  });
-  playerData.activeSlotIdx = idx;
-  if(!playerData.gs) playerData.gs = {};
-  playerData.gs.activeSlotIdx = idx;
+  if(_mktGameStateDisponivel() && typeof switchSlot === 'function') {
+    // Fonte única: usa o próprio switchSlot() do jogo (state.js) — evita a
+    // race entre esta troca e o próximo scheduleSave() do jogo.
+    await switchSlot(idx);
+    if(playerData) {
+      playerData.activeSlotIdx = activeSlotIdx;
+      if(!playerData.gs) playerData.gs = {};
+      playerData.gs.activeSlotIdx = activeSlotIdx;
+    }
+    if(typeof updateAllUI === 'function') updateAllUI();
+  } else {
+    // Standalone (marketplace.html sem state.js) — comportamento original.
+    await db.collection('players').doc(walletAddress).update({
+      activeSlotIdx: idx,
+      'gs.activeSlotIdx': idx
+    });
+    playerData.activeSlotIdx = idx;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.activeSlotIdx = idx;
+  }
   showToast(t('mkt.avatar.activated'), 'ok');
   renderSlots();
 }
@@ -447,6 +495,20 @@ function closeBurnModal() {
   document.getElementById('burnOverlay').classList.remove('open');
 }
 
+// Limpa um slot (queima/descansa) — usa o estado vivo do jogo quando
+// disponível (avatarSlots + scheduleSave), evitando a mesma race de
+// activateSlot(); cai para updateSlots() (marketplace.html inline) quando
+// standalone.
+async function _mktClearSlot(idx) {
+  if(_mktGameStateDisponivel()) {
+    avatarSlots[idx] = null;
+    if(playerData) playerData.avatarSlots = avatarSlots;
+    if(typeof scheduleSave === 'function') scheduleSave();
+  } else {
+    await updateSlots(slots => { slots[idx] = null; });
+  }
+}
+
 async function confirmBurnAvatar() {
   const idx = _burnPendingIdx;
   _burnPendingIdx = null;
@@ -455,7 +517,7 @@ async function confirmBurnAvatar() {
 
   const name = playerData.avatarSlots[idx]?.nome?.split(',')[0] || 'Avatar';
 
-  await updateSlots(slots => { slots[idx] = null; });
+  await _mktClearSlot(idx);
   showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();
 }
@@ -464,7 +526,7 @@ async function clearDeadSlot(idx) {
   const s = playerData.avatarSlots?.[idx];
   if(!s || !s.dead) return;
   const name = s.nome?.split(',')[0] || 'Avatar';
-  await updateSlots(slots => { slots[idx] = null; });
+  await _mktClearSlot(idx);
   showToast(`💀 ${name} foi descansado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();
 }
@@ -489,6 +551,8 @@ async function unlockSlot() {
     playerData.gs.cristais   = data.novoSaldo;
     playerData.gs.extraSlots = data.extraSlots;
     while(playerData.avatarSlots.length < getUnlockedSlots()) playerData.avatarSlots.push(null);
+    _mktSyncGs({ cristais: data.novoSaldo, extraSlots: data.extraSlots });
+    if(_mktGameStateDisponivel()) while(avatarSlots.length < getUnlockedSlots()) avatarSlots.push(null);
 
     updateCristaisDisplay();
     showToast(t('mkt.avatar.unlocked', {n: getUnlockedSlots()}), 'ok');
