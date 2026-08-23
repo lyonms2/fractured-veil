@@ -281,7 +281,6 @@ async function _onLoginSuccess(user) {
       if(remote && remote !== _sessionId) {
         addLog('⚠️ Sessão iniciada noutro dispositivo. A encerrar...', 'bad');
         if(typeof showBubble === 'function') showBubble(t('bubble.session_ended'));
-        if(typeof discordAudit === 'function') discordAudit('🔴 Sessão Duplicada Detectada', [['UID', walletAddress], ['Hora', new Date().toLocaleString('pt-BR')]], 0xef4444);
         setTimeout(disconnectWallet, 1500);
       }
     });
@@ -392,7 +391,6 @@ async function _onLoginSuccess(user) {
           saveToFirebase();                 // persiste imediatamente — sem isto o avatar volta ao refrescar
           const _dnome = avatar ? avatar.nome.split(',')[0] : 'Avatar';
           addLog(t('log.died_offline', { name: _dnome }), 'bad');
-          if(typeof discordAudit === 'function') discordAudit('💀 Avatar Morreu Offline', [['UID', walletAddress], ['Avatar', _dnome], ['Nível', nivel], ['Tempo vivo', `${Math.floor(totalSecs/3600)}h ${Math.floor((totalSecs%3600)/60)}min`]], 0x7c3aed);
         }
       }
     }
@@ -489,11 +487,6 @@ async function _onLoginSuccess(user) {
 
   } else {
     addLog(t('log.welcome_new'), 'good');
-    if(typeof discordAudit === 'function') discordAudit(
-      '🌟 Novo Jogador',
-      [['UID', walletAddress], ['Email', user.email || '?'], ['Hora', new Date().toLocaleString('pt-BR')]],
-      0x22c55e
-    );
     setTimeout(() => addLog(t('onboard.tip.summon'), 'info'), 1000);
     setTimeout(() => addLog(t('onboard.tip.feed'),   'info'), 2500);
     setTimeout(() => addLog(t('onboard.tip.play'),   'info'), 4500);

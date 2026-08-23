@@ -12,7 +12,6 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
-const { sendAwardsWebhook }            = require('./_discord');
 
 // ── Constantes ──────────────────────────────────────────────────
 const FACCOES = ['Caos', 'Equilíbrio', 'Éter'];
@@ -378,20 +377,6 @@ async function handleReset(req, res, db) {
     if (opCount > 0) await batch.commit();
 
     console.log(`[fissura-reset] Concluído — ${totalCristaisDistribuidos}💎 distribuídos`);
-
-    sendAwardsWebhook({
-      title: `🌋 Grande Fissura — ${mes} concluída!`,
-      description: `A facção **${vencedor}** dominou este mês com média de **${Math.round(melhorMedia)} pontos**!`,
-      color: vencedor === 'Caos' ? 0xef4444 : vencedor === 'Éter' ? 0x7c3aed : 0x10b981,
-      fields: [
-        { name: '🏆 Facção Vencedora',  value: vencedor,                                                                                                    inline: true  },
-        { name: '📊 Média de pontos',   value: String(Math.round(melhorMedia)),                                                                              inline: true  },
-        { name: '🧬 Premiados Comum',   value: qualComum.length > 0 ? `${qualComum.length} jogadores · 🪙 ${PREMIO_COMUM} cada`         : 'Nenhum',          inline: false },
-        { name: '💎 Premiados Raro',    value: qualRaro.length  > 0 ? `${qualRaro.length} jogadores · 💎 ${premioRaroPorMembro} cada`   : 'Nenhum',          inline: false },
-        { name: '🌟 Premiados Lendário', value: qualLend.length > 0 ? `${qualLend.length} jogadores · 💎 ${premioLendPorMembro} cada`   : 'Nenhum',          inline: false },
-        { name: '💎 Total distribuído', value: `${totalCristaisDistribuidos} cristais`,                                                                      inline: true  },
-      ],
-    }).catch(() => {});
 
     return res.status(200).json({ ok: true, mes, vencedor, mediaVencedor: Math.round(melhorMedia), qualComum: qualComum.length, qualRaro: qualRaro.length, qualLend: qualLend.length, cristaisDistribuidos: totalCristaisDistribuidos });
 

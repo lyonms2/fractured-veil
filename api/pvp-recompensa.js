@@ -13,18 +13,6 @@ const { getFirestore, FieldValue }         = require('firebase-admin/firestore')
 const { getAuth }                          = require('firebase-admin/auth');
 const { getDatabase }                      = require('firebase-admin/database');
 const { contribuirFissura }                = require('./_fissura-utils');
-const { sendAwardsWebhook, getPlayerName } = require('./_discord');
-
-const JOGO_NOMES = {
-  arena:        '⚔️ Arena de Cristais',
-  batalhaNaval: '🚢 Batalha Naval',
-  roubaMonte:   '🃏 Rouba Monte',
-};
-const JOGO_CORES = {
-  arena:        0x7c3aed,
-  batalhaNaval: 0x2563eb,
-  roubaMonte:   0xef4444,
-};
 
 // Taxa de casa para cada jogo (espelha as constantes do cliente)
 const TAXAS = {
@@ -202,19 +190,6 @@ module.exports = async function handler(req, res) {
         // Não critica — pool é secundária; recompensa já foi creditada
         console.warn('[pvp-recompensa] pool error:', poolErr);
       }
-    }
-
-    // ── Publicar vitória no canal de premiações (fire-and-forget) ──
-    if (euVenci) {
-      getPlayerName(db, walletAddress).then(nome => sendAwardsWebhook({
-        title: `🏆 ${JOGO_NOMES[jogo] || jogo}`,
-        description: `**${nome}** venceu uma partida e levou o prêmio!`,
-        color: JOGO_CORES[jogo] || 0xc9a84c,
-        fields: [
-          { name: usaCris ? '💎 Prêmio' : '🪙 Prêmio', value: `${valorCreditar} ${usaCris ? 'cristais' : 'moedas'}`, inline: true },
-          { name: '🎯 Fila',                             value: sala.fila || 'Comum',                                  inline: true },
-        ],
-      })).catch(() => {});
     }
 
     // ── Contribuir pontos para a Fissura (fire-and-forget) ──

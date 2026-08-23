@@ -21,7 +21,6 @@ const db   = admin.firestore();
 const rtdb = admin.database();
 
 const { carregarEconomia, calcPctJogo } = require('./_pool-economia');
-const { sendAwardsWebhook }            = require('./_discord');
 
 // ════════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO
@@ -94,7 +93,6 @@ module.exports = async (req, res) => {
       ];
 
       let totalCristaisPagos = 0;
-      const webhookFields = [];
 
       for(const fila of filas) {
         log.push(`\n--- Fila ${fila.nome} (${fila.bolo} ${fila.usaCristais?'💎':'🪙'}) ---`);
@@ -114,14 +112,6 @@ module.exports = async (req, res) => {
         if(lista.length === 0) { log.push('  Nenhum jogador qualificado.'); continue; }
 
         log.push(`  ${lista.length} jogador(es) qualificado(s):`);
-
-        // Coleta top 3 para o embed Discord
-        const top3Lines = lista.slice(0, 3).map((j, i) => {
-          const w = j.wallet || j.key;
-          const p = Math.floor(fila.bolo * (DIST_POR_POSICAO[i] || 0));
-          return `${i+1}º \`${w.slice(0,6)}…${w.slice(-4)}\` · ${p} ${fila.usaCristais ? '💎' : '🪙'}`;
-        }).join('\n');
-        if (top3Lines) webhookFields.push({ name: `${fila.usaCristais ? '💎' : '🪙'} Fila ${fila.nome}`, value: top3Lines, inline: true });
 
         for(let i = 0; i < lista.length; i++) {
           const jogador = lista[i];
@@ -173,16 +163,6 @@ module.exports = async (req, res) => {
             erros.push(`[${jogo.label}] Erro ao pagar ${wallet.slice(0,10)}: ${e.message}`);
           }
         }
-      }
-
-      if(webhookFields.length > 0) {
-        const jogoColor = jogo.id === 'arena' ? 0x7c3aed : jogo.id === 'batalhaNaval' ? 0x2563eb : 0xef4444;
-        sendAwardsWebhook({
-          title:       `🏆 Ranking PvP Semanal — ${jogo.label}`,
-          description: `Semana **${semana}** encerrada! Confira os vencedores.`,
-          color:       jogoColor,
-          fields:      webhookFields,
-        }).catch(() => {});
       }
 
       if(totalCristaisPagos > 0) {
