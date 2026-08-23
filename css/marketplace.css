@@ -79,7 +79,12 @@
 ═══════════════════════════════════════════ */
 .mktmp-body{display:flex;flex:1;}
 .mkt-sidebar{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:4px;height:100%;overflow-y:auto;}
-.mkt-main{flex:1;padding:16px;}
+/* display/max-width explícitos: sem isso, o seletor genérico "main{...}"
+   do jogo (css/base.css — display:grid;grid-template-columns:340px 1fr;
+   max-width:1080px, para o <main> do próprio jogo) vazava pra cá, porque
+   .mkt-main nunca declarava essas propriedades e um seletor de tag ainda
+   vence quando a classe não diz nada sobre elas. */
+.mkt-main{display:block;flex:1;max-width:none;padding:16px;}
 
 .mkt-nav-section{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 8px 4px;margin-top:4px;}
 .mkt-nav-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:none;border:none;color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;cursor:pointer;width:100%;text-align:left;transition:all .2s;letter-spacing:.3px;}
