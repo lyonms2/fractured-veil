@@ -312,66 +312,16 @@ async function _onLoginSuccess(user) {
       clearPresenceDead(walletAddress);
     }
 
-    // ── Offline decay ──
+    // ── Offline: avatar fica em pausa — vitals e saúde não decaem enquanto
+    // o jogador está ausente, só o tempo total de vida é contabilizado. ──
     if(hatched && !dead) {
-      const offlineSecs   = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
-      const offlineCycles = Math.floor(offlineSecs / 60);
-      if(offlineCycles > 0) {
-        const _d  = rarityBonus().decay;
-        const _eb = getElementoBonus();
-        let wasSleeping    = sleeping;
-        let wasModoRepouso = modoRepouso;
-        let sonoEsgotado   = false;
-
-        for(let _i = 0; _i < Math.min(offlineCycles, 4320); _i++) {
-          if(wasSleeping) {
-            vitals.energia = Math.min(100, vitals.energia + 4 * getItemEffect('sleepEnergyMult') * _eb.sleepEnergy);
-            vitals.fome    = Math.max(0, vitals.fome    - (0.30 * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
-            vitals.higiene = Math.max(0, vitals.higiene - (0.05 * _eb.higieneDecay));
-            if(vitals.energia >= 100) { vitals.energia = 100; wasSleeping = false; sonoEsgotado = true; }
-          } else if(wasModoRepouso) {
-            vitals.fome    = Math.max(0, vitals.fome    - (0.05 * _d * _eb.fomeDecay));
-            vitals.higiene = Math.max(0, vitals.higiene - (0.03 * _eb.higieneDecay));
-            vitals.humor   = Math.max(0, vitals.humor   - (0.02 * _eb.humorDecay));
-            vitals.energia = Math.min(100, vitals.energia + (0.2  * _eb.sleepEnergy));
-            vinculo        = Math.max(0, vinculo - (0.01 * _eb.vinculoDecay));
-          } else {
-            vitals.fome    = Math.max(0, vitals.fome    - (0.4  * _d * _eb.fomeDecay    * getItemEffect('fomeDecayMult')));
-            vitals.humor   = Math.max(0, vitals.humor   - (0.25 * _d * _eb.humorDecay   * getItemEffect('humorDecayMult')));
-            vitals.energia = Math.max(0, vitals.energia - (0.3  * _d * _eb.energiaDecay));
-            vitals.higiene = Math.max(0, vitals.higiene - (0.06 * _eb.higieneDecay));
-          }
-          // Saúde só cai por doença activa — vitals críticos por si só não
-          // causam dano directo (só levam a uma doença depois de sustidos).
-          if(activeDiseases.length > 0) {
-            vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
-            if(vitals.saude <= 0) { vitals.saude = 0; break; }
-          }
-        }
-
-        if(sleeping && !wasSleeping) {
-          sleeping = false;
-          addLog(t('log.woke_offline'), 'good');
-        }
-        if(vitals.saude < 30 && Math.random() < 0.4) sick = true;
+      const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
+      if(offlineSecs > 0) {
         totalSecs += offlineSecs;
         saveRuntimeToSlot(activeSlotIdx);
         const hrs  = Math.floor(offlineSecs / 3600);
         const mins = Math.floor((offlineSecs % 3600) / 60);
-        const modoLog = wasSleeping || sonoEsgotado ? t('log.offline_slept')
-                      : wasModoRepouso              ? t('log.offline_repouso')
-                      :                              t('log.offline_updated');
-        addLog(t('log.offline_away', { h: hrs, m: mins, status: modoLog }), 'info');
-        if(vitals.saude < 40 && !dead) {
-          setTimeout(() => { addLog(t('onboard.tip.offline'), 'bad'); showBubble(t('onboard.tip.offline')); }, 800);
-        }
-        if(vitals.saude <= 0) {
-          dead = true;
-          saveRuntimeToSlot(activeSlotIdx); // flush dead:true no slot antes de salvar
-          saveToFirebase();                 // persiste imediatamente — sem isto o avatar volta ao refrescar
-          const _dnome = avatar ? avatar.nome.split(',')[0] : 'Avatar';
-          addLog(t('log.died_offline', { name: _dnome }), 'bad');
-        }
+        addLog(t('log.offline_away', { h: hrs, m: mins }), 'info');
       }
     }
 

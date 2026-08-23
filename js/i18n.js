@@ -60,9 +60,7 @@
       'log.session_other':       '⚠️ Sessão iniciada em outro dispositivo. Encerrando...',
       'log.welcome_back':        'Bem-vindo de volta! ✨',
       'log.state_restored':      'Estado restaurado da nuvem! ☁️',
-      'log.woke_offline':        'Acordou com energia plena enquanto estava offline! ☀️',
       'log.repouso_active':      'Modo repouso ativo. 💤',
-      'log.died_offline':        '{name} não sobreviveu à sua ausência...',
       'log.died':                '{name} partiu para outra dimensão... 💀',
       'log.welcome_new':         'Bem-vindo! Comece uma nova aventura! ✨',
       'log.fed':                 'Alimentado! +{gain} fome  (-{cost} 🪙)',
@@ -70,10 +68,7 @@
       'log.renamed':             'Avatar renomeado para "{name}" 💕',
       'log.repouso_on':          'Modo repouso ativado. Stats desaceleram. ⏸',
       'log.repouso_off':         'Modo repouso desativado. Bem-vindo de volta! ✨',
-      'log.offline_away':        'Ausente por {h}h {m}min — {status}.',
-      'log.offline_slept':       '☀️ acordou enquanto ausente',
-      'log.offline_repouso':     '💤 modo repouso ativo',
-      'log.offline_updated':     'stats atualizados',
+      'log.offline_away':        'Ausente por {h}h {m}min — o avatar ficou em pausa, nada mudou. ⏸',
 
       // Bolhas de fala (showBubble)
       'bubble.sleeping':         'Shh... está dormindo 💤',
@@ -377,9 +372,7 @@
       'log.session_other':       '⚠️ Session started on another device. Disconnecting...',
       'log.welcome_back':        'Welcome back! ✨',
       'log.state_restored':      'State restored from cloud! ☁️',
-      'log.woke_offline':        'Woke up fully rested while offline! ☀️',
       'log.repouso_active':      'Rest mode active. 💤',
-      'log.died_offline':        '{name} did not survive your absence...',
       'log.died':                '{name} departed to another dimension... 💀',
       'log.welcome_new':         'Welcome! Begin a new adventure! ✨',
       'log.fed':                 'Fed! +{gain} hunger  (-{cost} 🪙)',
@@ -387,10 +380,7 @@
       'log.renamed':             'Avatar renamed to "{name}" 💕',
       'log.repouso_on':          'Rest mode activated. Stats slow down. ⏸',
       'log.repouso_off':         'Rest mode deactivated. Welcome back! ✨',
-      'log.offline_away':        'Away for {h}h {m}min — {status}.',
-      'log.offline_slept':       '☀️ woke up while away',
-      'log.offline_repouso':     '💤 rest mode was active',
-      'log.offline_updated':     'stats updated',
+      'log.offline_away':        'Away for {h}h {m}min — your avatar was paused, nothing changed. ⏸',
 
       // Bubbles
       'bubble.sleeping':         'Shh... sleeping 💤',
