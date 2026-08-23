@@ -197,14 +197,16 @@
   /* ════════════════════
      GAME SELECTOR
   ════════════════════ */
+  /* Tela cheia (sem gap no topo mostrando a página por trás) — mesmo
+     padrão de #fissuraOverlay/#marketplaceModal/#arenaModal etc. */
   #gameSelector {
     position: fixed !important;
-    inset: auto 0 0 0 !important;
-    top: auto !important;
+    inset: 0 !important;
     width: 100% !important;
+    height: 100% !important;
     max-width: none !important;
-    max-height: 82vh;
-    border-radius: 20px 20px 0 0 !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     z-index: 300 !important;
@@ -216,17 +218,21 @@
   .gs-btn-name { font-size: 10px; }
 
   /* ════════════════════
-     MODAIS GENÉRICOS — sheet (sobe de baixo)
+     MODAIS GENÉRICOS — tela cheia (sem gap no topo mostrando a página
+     por trás; antes era um "sheet" bottom-anchored com max-height:90vh,
+     que deixava o topo da tela sem fundo). Mesmo padrão de
+     #fissuraOverlay/#marketplaceModal/#arenaModal etc. Conteúdo pequeno
+     (ex: hatchConfirmModal) continua centralizado e do tamanho do
+     conteúdo — só o fundo/backdrop passa a cobrir a tela inteira.
   ════════════════════ */
   .mini-modal {
     position: fixed !important;
-    inset: auto 0 0 0 !important;
-    top: auto !important;
+    inset: 0 !important;
     width: 100% !important;
     max-width: none !important;
-    height: auto !important;
-    max-height: 90vh;
-    border-radius: 20px 20px 0 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
     overflow-x: hidden !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -243,7 +249,7 @@
   #itemInvModal,
   #coinShopModal,
   #eggInvModal {
-    height: 90vh !important;
+    height: 100% !important;
     justify-content: flex-start !important;
     align-items: stretch !important;
     overflow: hidden !important;
@@ -259,16 +265,9 @@
     touch-action: pan-y;
   }
 
-  /* Drag handle visual */
-  .mini-modal::before {
-    content: '';
-    display: block;
-    width: 36px; height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 10px auto 2px;
-    flex-shrink: 0;
-  }
+  /* Handle de "arrastar" removido — não faz mais sentido sem o visual de
+     sheet (o modal agora é tela cheia, como os modais PvP). */
+  .mini-modal::before { display: none !important; }
 
   .mini-btn {
     min-height: 44px;
