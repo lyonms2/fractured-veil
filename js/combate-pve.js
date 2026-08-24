@@ -211,6 +211,8 @@ function _pveShell() {
       <span id="cbTurno"></span>
       <span class="cb-topo-nome">${t('pve.titulo')}</span>
       <span class="cb-topo-dir">
+        <button class="ajuda" onclick="_pveAlternarAjuda()"
+                title="${t('pve.ajuda.titulo', { nome: '' })}">?</button>
         <button id="cbDesistir" class="desistir" onclick="_pveDesistir()"
                 title="${t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR })}">${t('pve.acao.desistir')}</button>
         <button onclick="fecharCombatePvE()">✕</button>
@@ -220,6 +222,7 @@ function _pveShell() {
     <div class="cb-log" id="cbLog"></div>
     <div class="cb-lado" id="cbJogador"></div>
     <div class="cb-acoes" id="cbAcoes"></div>
+    <div class="cb-ajuda" id="cbAjuda"></div>
   </div>`;
 }
 
@@ -276,56 +279,146 @@ function _pveBolinhas(atual, max, tipo) {
   return html;
 }
 
-function _pveCartao(c, lado) {
+// ═══════════════════════════════════════════════════════════════════
+// OS TRÊS LADO A LADO
+//
+// Antes havia um cartão grande para quem estava em campo e dois quadrados
+// de 30px para os outros — e nesses não se via nada: nem vida, nem magia,
+// nem o que os afligia. Trocar de avatar era às cegas.
+//
+// Agora os três estão à vista com a mesma informação, e quem está em
+// campo distingue-se pelo tamanho e pelo brilho, não por ser o único
+// legível.
+// ═══════════════════════════════════════════════════════════════════
+function _pveLutador(c, i, lado, ativo) {
   const el = CARACTERISTICAS_ELEMENTAIS[c.elemento];
-  const marcas = [];
-  if (c.furia)     marcas.push(`<span class="cb-marca furia">${t('pve.marca.furia')}</span>`);
-  if (c.veneno)    marcas.push(`<span class="cb-marca veneno">${t('pve.marca.veneno')}</span>`);
-  if (c.indefeso)  marcas.push(`<span class="cb-marca indefeso">${t('pve.marca.indefeso')}</span>`);
-  if (c.assombrado) marcas.push(`<span class="cb-marca sombra">${t('pve.marca.assombrado')}</span>`);
-  if (c.semFoco)    marcas.push(`<span class="cb-marca sombra">${t('pve.marca.sem_foco')}</span>`);
-  if (c.bonusA)    marcas.push(`<span class="cb-marca escudo">A+${c.bonusA}</span>`);
-  if (c.bonusF)    marcas.push(`<span class="cb-marca buff">F+${c.bonusF}</span>`);
-  if (c.bonusFD)   marcas.push(`<span class="cb-marca escudo">FD+${c.bonusFD}</span>`);
-  if (c.invulneravel)   marcas.push(`<span class="cb-marca escudo">${t('pve.marca.invul')}</span>`);
-  if (c.barreira > 0)   marcas.push(`<span class="cb-marca escudo">${t('pve.marca.barreira')} ${c.barreira}</span>`);
-  if (c.ocultado)       marcas.push(`<span class="cb-marca escudo">${t('pve.marca.oculto')}</span>`);
-  if (c.imuneEspiritual)marcas.push(`<span class="cb-marca escudo">${t('pve.marca.alma')}</span>`);
-  if (c.bonusEsquiva)   marcas.push(`<span class="cb-marca escudo">${t('pve.marca.esquiva')}+${c.bonusEsquiva}</span>`);
+  const emCampo = i === ativo;
+  const cls = ['cb-lutador', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
+  const tam = emCampo ? 52 : 38;
 
-  return `<div class="cb-cartao ${lado}" id="cbCartao${lado}">
-    <div class="cb-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 68, 68, _pveFase(c))}</div>
-    <div class="cb-info">
-      <div class="cb-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
-      <div class="cb-caracs">F${_c3(c,'F')} H${_c3(c,'H')} R${_c3(c,'R')} A${_c3(c,'A')}</div>
-      <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
-      <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
-      ${marcas.length ? `<div class="cb-marcas">${marcas.join('')}</div>` : ''}
-    </div>
+  const marcas = [];
+  const m = (t, k) => marcas.push(`<span class="cb-marca ${k}">${t}</span>`);
+  if (c.furia)          m(t('pve.marca.furia'), 'furia');
+  if (c.veneno)         m(t('pve.marca.veneno'), 'veneno');
+  if (c.indefeso)       m(t('pve.marca.indefeso'), 'indefeso');
+  if (c.assombrado)     m(t('pve.marca.assombrado'), 'sombra');
+  if (c.semFoco)        m(t('pve.marca.sem_foco'), 'sombra');
+  if (c.invulneravel)   m(t('pve.marca.invul'), 'escudo');
+  if (c.barreira > 0)   m(`${t('pve.marca.barreira')} ${c.barreira}`, 'escudo');
+  if (c.ocultado)       m(t('pve.marca.oculto'), 'escudo');
+  if (c.imuneEspiritual)m(t('pve.marca.alma'), 'escudo');
+  if (c.armaduraDobrada)m('A×2', 'escudo');
+  if (c.vorpal)         m('✦', 'escudo');
+  if (c.roubando)       m('🩸', 'veneno');
+  if (c.bonusA)         m(`A+${c.bonusA}`, 'escudo');
+  if (c.bonusF)         m(`F+${c.bonusF}`, 'buff');
+  if (c.bonusFD)        m(`FD+${c.bonusFD}`, 'escudo');
+  if (c.bonusEsquiva)   m(`${t('pve.marca.esquiva')}+${c.bonusEsquiva}`, 'escudo');
+  if (c.cegoAtaque)     m(t('pve.marca.cego'), 'veneno');
+
+  return `<div class="${cls}" id="cbLut${lado}${i}">
+    <div class="cb-lutador-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
+    <div class="cb-lutador-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
+    <div class="cb-lutador-carac">F${_c3(c,'F')} H${_c3(c,'H')} R${_c3(c,'R')} A${_c3(c,'A')}</div>
+    <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
+    <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
+    ${marcas.length ? `<div class="cb-marcas">${marcas.join('')}</div>` : ''}
   </div>`;
 }
 
-function _pveBanco(equipa, ativo) {
-  return equipa.map((c, i) => {
-    if (i === ativo && c.vivo) return `<div class="cb-banco-slot ativo"></div>`;
-    const cls = c.vivo ? '' : 'caido';
-    return `<div class="cb-banco-slot ${cls}" title="${c.nome}">
-      ${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 26, 26, _pveFase(c))}
-      <span>${c.vivo ? Math.round(c.pv / c.pvMax * 100) + '%' : '✕'}</span>
-    </div>`;
-  }).join('');
+function _pveEquipa(equipa, ativo, lado) {
+  return `<div class="cb-equipa ${lado}">
+    ${equipa.map((c, i) => _pveLutador(c, i, lado, ativo)).join('')}
+  </div>`;
 }
 
 function _pveDesenhar() {
   const e = _pveEstado; if (!e) return;
   const eu = e.A[e.ativoA], ini = e.B[e.ativoB];
 
-  document.getElementById('cbInimigo').innerHTML =
-    _pveCartao(ini, 'ini') + `<div class="cb-banco">${_pveBanco(e.B, e.ativoB)}</div>`;
-  document.getElementById('cbJogador').innerHTML =
-    `<div class="cb-banco">${_pveBanco(e.A, e.ativoA)}</div>` + _pveCartao(eu, 'eu');
+  document.getElementById('cbInimigo').innerHTML = _pveEquipa(e.B, e.ativoB, 'ini');
+  document.getElementById('cbJogador').innerHTML = _pveEquipa(e.A, e.ativoA, 'eu');
   document.getElementById('cbTurno').textContent = t('pve.turno', { n: e.turnos + 1 });
   _pveDesenharAcoes(eu, ini);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O QUE FAZ CADA MAGIA
+//
+// Um painel que se abre por cima da batalha e explica, do avatar em
+// campo: o golpe comum, as três magias e a vantagem com que nasceu.
+//
+// Existe porque a barra de acções só tem espaço para o nome e o custo, e
+// isso não chega a quem está a começar — "Ferrões Salinos, 3 PM" não diz
+// que envenena. Aqui cabe a descrição inteira, a conta da Força de
+// Ataque e o que a magia faz para além do dano.
+// ═══════════════════════════════════════════════════════════════════
+function _pveAlternarAjuda() {
+  const el = document.getElementById('cbAjuda'); if (!el) return;
+  const abrir = !el.classList.contains('aberta');
+  if (abrir) el.innerHTML = _pveAjudaHTML();
+  el.classList.toggle('aberta', abrir);
+}
+
+// A conta da Força de Ataque, em texto legível
+function _pveFormula(g, eu) {
+  if (!g || !g.fa) return null;
+  const f = g.fa, p = [];
+  if (f.H) p.push(`H${_c3(eu, 'H')}`);
+  if (f.F) p.push(`F${_c3(eu, 'F')}`);
+  if (f.fixo) p.push(String(f.fixo));
+  const d = f.dados || 0;
+  if (d) p.push(`${d}d`); else p.push('1d');
+  let s = 'FA ' + p.join(' + ');
+  if (f.dadosPorPM) s += ` (+${f.dadosPorPM === 0.5 ? '1d por 2' : f.dadosPorPM + 'd por'} PM)`;
+  if (f.fixoPorPM)  s += ` (+${f.fixoPorPM} por PM)`;
+  return s;
+}
+
+function _pveAjudaHTML() {
+  const eu = _pveEstado.A[_pveEstado.ativoA];
+  const tecto = _c3(eu, 'H') * 5;
+
+  const linha = (rot, nome, custo, desc, extra, trancada) => `
+    <div class="cb-ajuda-item${trancada ? ' trancada' : ''}">
+      <div class="cb-ajuda-top">
+        <span class="cb-ajuda-papel">${rot}</span>
+        <span class="cb-ajuda-nome">${nome}</span>
+        <span class="cb-ajuda-custo">${custo}</span>
+      </div>
+      <div class="cb-ajuda-desc">${desc}</div>
+      ${extra ? `<div class="cb-ajuda-conta">${extra}</div>` : ''}
+    </div>`;
+
+  let html = linha(t('pve.ajuda.golpe'), t('pve.acao.comum'), t('mag.custo.livre'),
+                   t('pve.ajuda.golpe_desc'),
+                   `FA H${_c3(eu,'H')} + F${_c3(eu,'F')} + 1d`, false);
+
+  for (const cat of ['ataque', 'forte', 'defesa']) {
+    const g = eu.magias[cat]; if (!g) continue;
+    const trancada = g.pm > tecto;
+    const custo = trancada ? t('mag.tecto', { h: Math.ceil(g.pm / 5) })
+      : g.pm === 0 ? t('mag.custo.livre')
+      : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
+      : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
+      : t('mag.custo', { pm: g.pm });
+    html += linha(t('mag.cat.' + cat), t('mag.' + g.id + '.nome'), custo,
+                  t('mag.' + g.id + '.desc'), _pveFormula(g, eu), trancada);
+  }
+
+  const v = eu.vant;
+  if (v) html += linha(t('vd.vantagem'), t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
+                       v.pm ? t('mag.custo', { pm: v.pm }) : '',
+                       t('vd.' + v.id + '.desc').replace(/\{elem\}/g, v.elemento || ''), null, false);
+  const d = eu.desv;
+  if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{elem}', d.elemento || ''),
+                       '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''), null, false);
+
+  return `<div class="cb-ajuda-cab">
+      <span>${t('pve.ajuda.titulo', { nome: eu.nome })}</span>
+      <button onclick="_pveAlternarAjuda()">✕</button>
+    </div>
+    <div class="cb-ajuda-lista">${html}</div>`;
 }
 
 // ── A barra de acções ──
@@ -569,16 +662,28 @@ function _pveAnimar(eventos) {
 
 function _pveMostrarEvento(ev) {
   const souEu   = ev.lado === 'A';
-  const cartaoAlvo = document.getElementById(souEu ? 'cbCartaoini' : 'cbCartaoeu');
+  const e2 = _pveEstado;
+  const cartaoAlvo = document.getElementById(
+    souEu ? 'cbLutini' + e2.ativoB : 'cbLuteu' + e2.ativoA);
 
   if (ev.apanhouFoco) {
-    _pveLog(t('pve.log.apanhou_foco', { quem: ev.quem }), souEu ? 'good' : 'warn');
+    _pveLog(t('pve.log.apanhou_foco', { quem: ev.quem }), souEu ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
     return;
   }
 
+  // O roubo de vida acontece no fim do turno, sem ataque nenhum
+  if (ev.roubou != null && ev.fa == null) {
+    _pveLog(`<b>${ev.quem}</b> · ${t('vd.sangue_por_magia.nome') && ''}${t('mag.so_a3.nome')}` +
+            `<div class="cb-extras"><span>${t('pve.ev.roubou', { n: ev.roubou })}</span>` +
+            (ev.caiu ? `<span>${t('pve.ev.caiu', { nome: ev.alvo })}</span>` : '') + `</div>`,
+            souEu ? 'good' : 'bad', ev.turno);
+    _pveAtualizarBarras();
+    return;
+  }
+
   if (ev.entrada) {
-    _pveLog(t('pve.log.entra', { nome: ev.quem }), souEu ? 'good' : 'warn');
+    _pveLog(t('pve.log.entra', { nome: ev.quem }), souEu ? 'good' : 'warn', _pveEstado.turnos);
     _pveDesenhar();
     return;
   }
@@ -586,7 +691,7 @@ function _pveMostrarEvento(ev) {
   if (ev.troca) {
     _pveLog(t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
             (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')),
-            ev.limpa ? 'good' : 'warn');
+            ev.limpa ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
     return;
   }
@@ -645,13 +750,22 @@ function _pveMostrarEvento(ev) {
   if (ev.pagouComSangue) extras.push(t('pve.ev.sangue', { n: ev.pagouComSangue }));
   if (ev.perdeuFoco)     extras.push(t('pve.ev.perdeu_foco'));
   if (ev.caiuSozinho)    extras.push(t('pve.ev.caiu_sozinho'));
+  if (ev.cegou)         extras.push(t('pve.ev.cegou'));
+  if (ev.congelouUmTurno) extras.push(t('pve.ev.congelou'));
+  if (ev.decapitou)     extras.push(t('pve.ev.decapitou'));
+  if (ev.aguentouVorpal)extras.push(t('pve.ev.aguentou_vorpal'));
+  if (ev.armaduraDobrou)extras.push(t('pve.ev.armadura_dobrou'));
+  if (ev.vorpal)        extras.push(t('pve.ev.vorpal'));
+  if (ev.roubando)      extras.push(t('pve.ev.roubando'));
+  if (ev.roubou)        extras.push(t('pve.ev.roubou', { n: ev.roubou }));
+  if (ev.bonusFD)       extras.push(t('pve.ev.bonus_fd', { n: ev.bonusFD }));
   if (ev.caiu)       extras.push(t('pve.ev.caiu', { nome: ev.alvo }));
   if (ev.matouAtacante) extras.push(t('pve.ev.caiu', { nome: ev.quem }));
 
   _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
           (conta ? `<br><span class="cb-conta">${conta}</span>` : '') +
-          (extras.length ? `<br><span class="cb-extras">${extras.join(' · ')}</span>` : ''),
-          souEu ? 'good' : 'bad');
+          (extras.length ? `<div class="cb-extras">${extras.map(x => `<span>${x}</span>`).join('')}</div>` : ''),
+          souEu ? 'good' : 'bad', ev.turno);
 
   // Efeitos, reaproveitando os que já existiam
   if (cartaoAlvo && ev.dano > 0) {
@@ -706,7 +820,7 @@ function _pveOndaDeChoque(alvo) {
 // As barras descem com atraso, para se ver quanto caiu
 function _pveAtualizarBarras() {
   const e = _pveEstado; if (!e) return;
-  const par = [[e.A[e.ativoA], 'cbCartaoeu'], [e.B[e.ativoB], 'cbCartaoini']];
+  const par = [[e.A[e.ativoA], 'cbLuteu' + e.ativoA], [e.B[e.ativoB], 'cbLutini' + e.ativoB]];
   for (const [c, id] of par) {
     const el = document.getElementById(id); if (!el || !c) continue;
     const pv = el.querySelector('.cb-bolas.pv');
@@ -724,11 +838,36 @@ function _pveTextoFim() {
 // ═══════════════════════════════════════════════════════════════════
 // O registo — guarda tudo, e é aqui que se vê o motor a funcionar
 // ═══════════════════════════════════════════════════════════════════
-function _pveLog(html, tipo) {
+// ═══════════════════════════════════════════════════════════════════
+// O REGISTO
+//
+// Agrupado por turno, e o turno mais recente fica EM CIMA — quem lê quer
+// saber o que acabou de acontecer, não desenrolar o combate desde o
+// princípio. Dentro do turno a ordem é a natural: quem agiu primeiro
+// aparece primeiro, senão a troca de golpes lia-se ao contrário.
+// ═══════════════════════════════════════════════════════════════════
+function _pveBlocoDoTurno(n) {
+  const el = document.getElementById('cbLog'); if (!el) return null;
+  const id = 'cbTurnoBloco' + n;
+  let bloco = document.getElementById(id);
+  if (!bloco) {
+    bloco = document.createElement('div');
+    bloco.className = 'cb-turno-bloco';
+    bloco.id = id;
+    bloco.innerHTML = `<div class="cb-turno-cab">${t('pve.turno', { n })}</div>`;
+    el.insertBefore(bloco, el.firstChild);     // o mais recente à cabeça
+    el.scrollTop = 0;
+  }
+  return bloco;
+}
+
+function _pveLog(html, tipo, turno) {
   const el = document.getElementById('cbLog'); if (!el) return;
   const d = document.createElement('div');
   d.className = 'cb-log-linha ' + (tipo || '');
   d.innerHTML = html;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
+  const bloco = (turno != null) ? _pveBlocoDoTurno(turno) : null;
+  if (bloco) bloco.appendChild(d);             // dentro do turno, ordem natural
+  else { el.insertBefore(d, el.firstChild); }
+  el.scrollTop = 0;
 }
