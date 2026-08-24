@@ -266,6 +266,33 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// TROCAR DE AVATAR
+//
+// O manual não tem regra para isto — no 3D&T o grupo todo luta ao mesmo
+// tempo, não há "activo" nem banco. O formato 3v3 é nosso, e a troca
+// também. Mas a regra é a do manual: um teste de Habilidade com
+// penalidade igual à H do adversário, igual à esquiva.
+//
+//   passa  → sai limpo. A troca não custa o turno e quem entra ainda age.
+//   falha  → sai à pressa. A troca gasta o turno inteiro.
+//
+// Quem é mais lento que o inimigo nunca passa (a penalidade zera o
+// teste), portanto para esse a troca custa sempre o turno. É o mesmo
+// princípio da esquiva, e faz sentido: para sair de uma luta sem levar
+// o troco é preciso ser mais rápido do que quem está à frente.
+// ═══════════════════════════════════════════════════════════════════
+const C3_TROCA_BONUS = 2;   // "Tarefas Fáceis: bónus de +2 a +4" (manual)
+
+function _c3trocaLimpa(quemSai, inimigo, rng) {
+  const margem = _c3(quemSai, 'H') - _c3(inimigo, 'H');
+  if (margem < 1) return false;              // mais lento: nem se rola
+  // O bónus vem da tabela de dificuldades do manual. Sem ele o teste era
+  // quase sempre de margem 1, ou seja passava uma vez em seis, e a regra
+  // "a não ser que sejas mais rápido" ficava sem efeito prático.
+  return _c3teste(margem + C3_TROCA_BONUS, rng);
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // O QUE UMA MAGIA CUSTA A ESTE AVATAR
 //
 // A Afinidade Profunda paga metade nas magias do próprio elemento
@@ -292,6 +319,30 @@ function _c3podeMagiar(c) {
 // Não é "a IA do jogo": é um jogador razoável de referência, para as
 // medições terem sentido. Um humano joga melhor do que isto.
 // ═══════════════════════════════════════════════════════════════════
+// Vale a pena trocar? Duas razões concretas, e nenhuma delas é palpite:
+//   · tenho Ferida do elemento dele — a minha Armadura conta zero
+//   · ele tem Couraça do meu elemento — a Armadura dele conta a dobrar
+// Mais a razão de sempre: estou quase a cair e há quem esteja inteiro.
+function _c3valeTrocar(eu, inimigo, banco) {
+  const feridoPeloElemento = eu.desv && eu.desv.armaduraZero && eu.desv.elemento === inimigo.elemento;
+  const eleResisteMe       = inimigo.vant && inimigo.vant.armaduraDobra && inimigo.vant.elemento === eu.elemento;
+  const quaseACair         = eu.pv <= eu.pvMax * 0.25;
+  if (!feridoPeloElemento && !eleResisteMe && !quaseACair) return -1;
+
+  // O melhor do banco: sem ferida contra este inimigo, e o mais inteiro
+  let melhor = -1, melhorNota = -1;
+  banco.forEach((o, i) => {
+    if (!o || !o.vivo || o === eu) return;
+    const ferido = o.desv && o.desv.armaduraZero && o.desv.elemento === inimigo.elemento;
+    const resiste = o.vant && o.vant.armaduraDobra && o.vant.elemento === inimigo.elemento;
+    const nota = (o.pv / o.pvMax) + (ferido ? -1 : 0) + (resiste ? 0.6 : 0);
+    if (nota > melhorNota) { melhorNota = nota; melhor = i; }
+  });
+  // Só troca se o outro estiver mesmo melhor do que quem está em campo
+  const minha = (eu.pv / eu.pvMax) + (feridoPeloElemento ? -1 : 0);
+  return (melhor >= 0 && melhorNota > minha + 0.3) ? melhor : -1;
+}
+
 function politica3dt(eu, inimigo) {
   const m = eu.magias || {};
   if (!_c3podeMagiar(eu)) return { magia: null, pm: 0 };   // fúria ou limiar baixo
@@ -398,6 +449,21 @@ function combate3dtSimular(equipaA, equipaB, seed, opts) {
 
     for (const l of lados) {
       if (!l.c.vivo || !l.alvo.vivo) continue;
+
+      // ── Trocar de avatar ──
+      const banco = l.lado === 'A' ? A : B;
+      const querTrocar = (opts.escolhaTroca || _c3valeTrocar)(l.c, l.alvo, banco);
+      if (querTrocar >= 0 && banco[querTrocar] && banco[querTrocar].vivo) {
+        const limpa = _c3trocaLimpa(l.c, l.alvo, rng);
+        const entra = banco[querTrocar];
+        if (l.lado === 'A') ativoA = querTrocar; else ativoB = querTrocar;
+        if (eventos) eventos.push({ turno: turnos, lado: l.lado, quem: l.c.nome,
+                                    troca: entra.nome, limpa });
+        if (!limpa) continue;                       // saiu à pressa: perde o turno
+        l.c = entra;                                 // saiu limpo: quem entra ainda age
+        if (l.lado === 'A') l.alvo = B[ativoB]; else l.alvo = A[ativoA];
+      }
+
       const acao = (opts.politica || politica3dt)(l.c, l.alvo);
       const magia = acao.magia;
       const pmBruto = magia ? acao.pm : 0;
@@ -519,6 +585,11 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
   let turno = 0;
   for (const ev of (r.eventos || [])) {
     if (ev.turno !== turno) { turno = ev.turno; L.push('\n-- turno ' + turno + ' --'); }
+    if (ev.troca) {
+      L.push('  ' + ev.lado + ': sai ' + ev.quem + ', entra ' + ev.troca +
+             (ev.limpa ? '  (saiu limpo — ainda age)' : '  (à pressa — perde o turno)'));
+      continue;
+    }
     const nmv = id => (typeof t === 'function' && id)
       ? t('vd.' + id + '.nome').replace('{elem}', '') : id;
     const acc = (ev.vantagem ? nmv(ev.vantagem) : nm(ev.magia)) + (ev.pm ? ' (' + ev.pm + ' PM)' : '');
