@@ -248,9 +248,35 @@ function fecharCombatePvE() {
 // ═══════════════════════════════════════════════════════════════════
 // Desenhar
 // ═══════════════════════════════════════════════════════════════════
+// A fase do avatar vem do nível, como em todo o resto do jogo. Estava
+// fixa em 2 e um bebé aparecia em combate com corpo de adulto.
+function _pveFase(c) {
+  const nv = (c.ficha && c.ficha.nivel) || 1;
+  return (typeof _faseNum === 'function') ? _faseNum(nv)
+       : nv < 5 ? 0 : nv < 10 ? 1 : nv < 17 ? 2 : 3;
+}
+
+// ── VIDA E MAGIA EM BOLINHAS ──
+// Uma bolinha por cada 5 pontos, que é exactamente o que a Resistência
+// vale: PV = R×5 e PM = R×5. Portanto o NÚMERO DE BOLINHAS É A
+// RESISTÊNCIA do avatar — lê-se a ficha só de olhar para o cartão.
+//
+// A bolinha da vez enche-se por fracção, para um golpe de 3 num avatar
+// de 20 não desaparecer sem deixar rasto.
+const PVE_POR_BOLINHA = 5;
+
+function _pveBolinhas(atual, max, tipo) {
+  const n = Math.max(1, Math.ceil(max / PVE_POR_BOLINHA));
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    const cheio = Math.max(0, Math.min(PVE_POR_BOLINHA, atual - i * PVE_POR_BOLINHA));
+    const pct = Math.round(cheio / PVE_POR_BOLINHA * 100);
+    html += `<i class="cb-bola ${tipo}${pct === 0 ? ' vazia' : ''}" style="--f:${pct}%"></i>`;
+  }
+  return html;
+}
+
 function _pveCartao(c, lado) {
-  const pctPV = Math.max(0, c.pv / c.pvMax * 100);
-  const pctPM = c.pmMax ? Math.max(0, c.pm / c.pmMax * 100) : 0;
   const el = CARACTERISTICAS_ELEMENTAIS[c.elemento];
   const marcas = [];
   if (c.furia)     marcas.push(`<span class="cb-marca furia">${t('pve.marca.furia')}</span>`);
@@ -268,14 +294,12 @@ function _pveCartao(c, lado) {
   if (c.bonusEsquiva)   marcas.push(`<span class="cb-marca escudo">${t('pve.marca.esquiva')}+${c.bonusEsquiva}</span>`);
 
   return `<div class="cb-cartao ${lado}" id="cbCartao${lado}">
-    <div class="cb-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 68, 68, 2)}</div>
+    <div class="cb-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 68, 68, _pveFase(c))}</div>
     <div class="cb-info">
       <div class="cb-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
       <div class="cb-caracs">F${_c3(c,'F')} H${_c3(c,'H')} R${_c3(c,'R')} A${_c3(c,'A')}</div>
-      <div class="cb-barra pv"><span style="width:${pctPV}%"></span>
-        <b>${c.pv}/${c.pvMax}</b></div>
-      <div class="cb-barra pm"><span style="width:${pctPM}%"></span>
-        <b>${c.pm}/${c.pmMax}</b></div>
+      <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
+      <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
       ${marcas.length ? `<div class="cb-marcas">${marcas.join('')}</div>` : ''}
     </div>
   </div>`;
@@ -286,7 +310,7 @@ function _pveBanco(equipa, ativo) {
     if (i === ativo && c.vivo) return `<div class="cb-banco-slot ativo"></div>`;
     const cls = c.vivo ? '' : 'caido';
     return `<div class="cb-banco-slot ${cls}" title="${c.nome}">
-      ${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 26, 26, 1)}
+      ${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, 26, 26, _pveFase(c))}
       <span>${c.vivo ? Math.round(c.pv / c.pvMax * 100) + '%' : '✕'}</span>
     </div>`;
   }).join('');
@@ -685,12 +709,10 @@ function _pveAtualizarBarras() {
   const par = [[e.A[e.ativoA], 'cbCartaoeu'], [e.B[e.ativoB], 'cbCartaoini']];
   for (const [c, id] of par) {
     const el = document.getElementById(id); if (!el || !c) continue;
-    const pv = el.querySelector('.cb-barra.pv');
-    const pm = el.querySelector('.cb-barra.pm');
-    if (pv) { pv.querySelector('span').style.width = Math.max(0, c.pv / c.pvMax * 100) + '%';
-              pv.querySelector('b').textContent = `${c.pv}/${c.pvMax}`; }
-    if (pm) { pm.querySelector('span').style.width = Math.max(0, c.pm / c.pmMax * 100) + '%';
-              pm.querySelector('b').textContent = `${c.pm}/${c.pmMax}`; }
+    const pv = el.querySelector('.cb-bolas.pv');
+    const pm = el.querySelector('.cb-bolas.pm');
+    if (pv) pv.innerHTML = _pveBolinhas(c.pv, c.pvMax, 'pv') + `<b>${c.pv}</b>`;
+    if (pm) pm.innerHTML = _pveBolinhas(c.pm, c.pmMax, 'pm') + `<b>${c.pm}</b>`;
   }
 }
 

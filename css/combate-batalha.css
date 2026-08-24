@@ -12,7 +12,13 @@
 #combateModal {
   position: fixed; inset: 0; z-index: 150;
   display: flex; flex-direction: column; align-items: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(40,10,60,.5), rgba(4,3,10,.97) 70%);
+  /* Opaco. A primeira versão tinha .5 no topo do gradiente e via-se a
+     página inteira por trás — o nome do jogo, as barras dos vitais, o
+     diário. Numa batalha por turnos, onde se está a ler contas, isso é
+     ruído a competir com o que interessa. O desfoque é a rede para o
+     caso de alguma coisa ainda transparecer. */
+  background: radial-gradient(ellipse at 50% 0%, rgba(38,12,56,.97), rgba(4,3,10,1) 70%);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   opacity: 0; pointer-events: none; transition: opacity .3s;
   padding: 10px; overflow: hidden;
 }
@@ -72,23 +78,34 @@
   font-family: 'Courier New', monospace;
 }
 
-/* Barras: a largura anima, para se ver o golpe a descontar */
-.cb-barra {
-  position: relative; height: 7px; border-radius: 4px;
-  background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.06);
-  overflow: hidden;
+/* ── Vida e magia em bolinhas ──
+   Uma bolinha por cada 5 pontos. Como PV = R×5 e PM = R×5, o número de
+   bolinhas é a Resistência do avatar: lê-se a ficha de relance. A da vez
+   enche-se por fracção (--f), para um golpe pequeno deixar rasto. */
+.cb-bolas {
+  display: flex; align-items: center; gap: 2.5px; flex-wrap: wrap;
+  min-height: 8px;
 }
-.cb-barra span {
-  position: absolute; inset: 0 auto 0 0; border-radius: 3px;
-  transition: width .5s cubic-bezier(.22,1,.36,1);
+.cb-bolas b {
+  margin-left: 4px; font-size: 5.5px; font-family: 'Courier New', monospace;
+  font-weight: 700; letter-spacing: .5px; color: var(--muted);
 }
-.cb-barra b {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 5px; font-family: 'Courier New', monospace; font-weight: 700;
-  color: #fff; text-shadow: 0 0 3px #000, 0 1px 1px #000; letter-spacing: .5px;
+.cb-bola {
+  width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+  border: 1px solid; position: relative; overflow: hidden;
+  transition: box-shadow .3s;
 }
-.cb-barra.pv span { background: linear-gradient(90deg, #7a2020, #e05555); }
-.cb-barra.pm span { background: linear-gradient(90deg, #1e4a6e, #5ab4e8); }
+.cb-bola::after {
+  content: ''; position: absolute; inset: 0;
+  background: var(--cor);
+  clip-path: inset(calc(100% - var(--f)) 0 0 0);
+  transition: clip-path .45s cubic-bezier(.22,1,.36,1);
+}
+.cb-bola.pv { --cor: #e05555; border-color: rgba(224,85,85,.55); background: rgba(224,85,85,.08); }
+.cb-bola.pm { --cor: #5ab4e8; border-color: rgba(90,180,232,.5);  background: rgba(90,180,232,.08); }
+.cb-bola.pv:not(.vazia) { box-shadow: 0 0 3px rgba(224,85,85,.5); }
+.cb-bola.pm:not(.vazia) { box-shadow: 0 0 3px rgba(90,180,232,.45); }
+.cb-bola.vazia { opacity: .45; }
 
 /* ── Marcas de estado: é aqui que se vê o motor a funcionar ── */
 .cb-marcas { display: flex; flex-wrap: wrap; gap: 3px; }
