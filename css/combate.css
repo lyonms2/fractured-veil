@@ -258,3 +258,59 @@
   opacity: .4;
   cursor: not-allowed;
 }
+
+/* ── FICHA 3D&T: escalão, vantagens e desvantagens ── */
+.ficha-escalao {
+  font-size: 7px;
+  letter-spacing: .8px;
+  color: var(--muted);
+  text-align: center;
+  margin: -6px 0 9px;
+}
+.ficha-stat-lbl { width: 14px; }
+
+.vd-bloco {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.vd {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border-left: 2px solid var(--border);
+  background: rgba(255,255,255,.03);
+}
+/* A vantagem custa pontos, a desvantagem rende — daí o verde e o vermelho
+   estarem ao contrário do que se esperaria de "bom" e "mau". */
+.vd.boa { border-left-color: #7ab87a; }
+.vd.ma  { border-left-color: #e05555; }
+.vd-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+.vd-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: .4px;
+}
+.vd-custo {
+  font-size: 7px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.vd.boa .vd-custo { color: #e05555; }
+.vd.ma  .vd-custo { color: #7ab87a; }
+.vd-desc {
+  font-size: 6.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.hab.vazia { opacity: .5; }

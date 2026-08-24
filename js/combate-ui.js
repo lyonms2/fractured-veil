@@ -9,86 +9,94 @@
 // se um dia a fórmula mudar, muda num sítio só.
 // ═══════════════════════════════════════════════════════════════════
 
-// Escala das barras: um Lendário nível 35 chega perto de 45 no atributo
-// primário, portanto 45 é o topo visual. Acima disso a barra fica cheia.
-const FICHA_ESCALA = 45;
 
+// ═══════════════════════════════════════════════════════════════════
+// renderFichaHTML — a ficha 3D&T do avatar
+//
+// Quatro características de 0 a 5, as duas barras (PV = R×5, PM = R×5),
+// a vantagem e a desvantagem com que nasceu, e as três magias que
+// conhece. Não calcula nada: tudo vem de js/ficha-3dt.js, js/magias.js
+// e js/vantagens.js.
+// ═══════════════════════════════════════════════════════════════════
 const FICHA_COR = {
-  FOR: '#e05555',   // vermelho — dano bruto
-  RES: '#7ab87a',   // verde — sobrevivência
-  HAB: '#5ab4e8',   // azul — velocidade e economia
-  INT: '#a855f7',   // roxo — dano mágico e suporte
+  F: '#e05555',   // Força — dano
+  H: '#5ab4e8',   // Habilidade — iniciativa, esquiva, tecto de magia
+  R: '#7ab87a',   // Resistência — vida e magia
+  A: '#c9a84c',   // Armadura — defesa
 };
 
-// ═══════════════════════════════════════════════════════════════════
-// renderFichaHTML — o bloco visual da ficha
-//
-// Aceita um slot ({seed, raridade, elemento, nivel}) ou os 4 valores.
-// Devolve HTML; quem chama decide onde o mete.
-// ═══════════════════════════════════════════════════════════════════
-function renderFichaHTML(seed, raridade, elemento, nivel) {
-  if (typeof fichaDeCombate !== 'function') return '';
-  const f = fichaDeCombate(seed, raridade, elemento, nivel);
-  if (!f) return '';
+// Escala das barrinhas. Um avatar de nível 35 chega a 13 num atributo,
+// mas a esmagadora maioria vive entre 0 e 6 — por isso a barra satura
+// aos 8, senão as fichas normais apareciam todas vazias.
+const FICHA_ESCALA = 8;
 
-  const linhas = ['FOR', 'RES', 'HAB', 'INT'].map(k => {
-    const papel = k === f.primaria ? 'prim' : k === f.secundaria ? 'sec' : '';
-    const tag   = k === f.primaria ? '◆' : k === f.secundaria ? '◈' : '';
-    const pct   = Math.min(100, Math.round(f[k] / FICHA_ESCALA * 100));
-    return `<div class="ficha-stat ${papel}">
+function renderFichaHTML(seed, raridade, elemento, nivel) {
+  if (typeof fichaDeAvatar !== 'function') return '';
+  const f = fichaDeAvatar(seed, raridade, elemento, nivel);
+  if (!f) return '';
+  f.seed = (seed && typeof seed === 'object') ? seed.seed : seed;
+
+  const linhas = ['F', 'H', 'R', 'A'].map(k => {
+    const pct = Math.min(100, Math.round(f[k] / FICHA_ESCALA * 100));
+    return `<div class="ficha-stat">
       <div class="ficha-stat-lbl">${k}</div>
-      <div class="ficha-stat-tag">${tag}</div>
       <div class="ficha-stat-bar"><div class="ficha-stat-fill" style="width:${pct}%;background:${FICHA_COR[k]};"></div></div>
       <div class="ficha-stat-val">${f[k]}</div>
     </div>`;
   }).join('');
 
-  const poder = typeof poderDoAvatar === 'function'
-    ? Math.round(poderDoAvatar(f.raridade, f.nivel)) : 0;
-
   return `<div class="ficha">
     <div class="ficha-title">${t('ficha.title')}</div>
+    <div class="ficha-escalao">${f.escalao} · ${f.pontos} ${t('ficha.pontos')}</div>
     <div class="ficha-stats">${linhas}</div>
     <div class="ficha-bars">
-      <div class="ficha-bar"><b style="color:#e05555;">${f.hpMax}</b><span>${t('ficha.hp')}</span></div>
-      <div class="ficha-bar"><b style="color:#5ab4e8;">${f.enMax}</b><span>${t('ficha.energia')}</span></div>
-      <div class="ficha-bar"><b style="color:var(--gold-light);">${poder}</b><span>${t('ficha.poder')}</span></div>
+      <div class="ficha-bar"><b style="color:#e05555;">${f.pv}</b><span>${t('ficha.pv')}</span></div>
+      <div class="ficha-bar"><b style="color:#5ab4e8;">${f.pm}</b><span>${t('ficha.pm')}</span></div>
+      <div class="ficha-bar"><b style="color:var(--gold-light);">${f.H * 5}</b><span>${t('ficha.tecto')}</span></div>
     </div>
-    <div class="ficha-foot">
-      ${t('ficha.afinidade', { elem: f.elemento, prim: f.primaria, sec: f.secundaria })}<br>
-      ${t('ficha.ultimate', { stat: f.statDoUltimate })}
-    </div>
-    ${renderHabilidadesHTML(f)}
+    ${renderVantagensHTML(f)}
+    ${renderMagiasHTML(f)}
   </div>`;
 }
 
-// Cor da etiqueta de custo: o ataque comum não gasta energia, dá.
-const HAB_COR_VALOR = { dano:'#e05555', cura:'#7ab87a', escudo:'#5ab4e8' };
+// ── Vantagem e desvantagem ──
+function renderVantagensHTML(f) {
+  if (!f.vantagem) return '';
+  const nm = (id, el) => t('vd.' + id + '.nome').replace('{elem}', el || '');
+  const ds = (id, el) => t('vd.' + id + '.desc').replace(/\{elem\}/g, el || '');
+  const linha = (v, cls, sinal) => `<div class="vd ${cls}">
+      <div class="vd-top"><span class="vd-nome">${nm(v.id, v.elemento)}</span>
+        <span class="vd-custo">${sinal}${Math.abs(v.custo)}</span></div>
+      <div class="vd-desc">${ds(v.id, v.elemento)}</div>
+    </div>`;
+  return `<div class="vd-bloco">
+    ${linha(f.vantagem, 'boa', '−')}
+    ${linha(f.desvantagem, 'ma', '+')}
+  </div>`;
+}
 
-// ═══════════════════════════════════════════════════════════════════
-// As 4 habilidades do kit, com o número que cada uma faz para ESTE
-// avatar. O número é o que torna a ficha útil: duas Explosões Solares
-// não valem o mesmo se a FOR for diferente.
-// ═══════════════════════════════════════════════════════════════════
-function renderHabilidadesHTML(f) {
-  if (typeof habilidadesDoAvatar !== 'function') return '';
-  const habs = habilidadesDoAvatar(f);
-  if (!habs.length) return '';
+// ── As três magias ──
+function renderMagiasHTML(f) {
+  if (typeof magiasDoAvatar !== 'function') return '';
+  const m = magiasDoAvatar(f);
+  const custo = g => g.pm === 0 ? t('mag.custo.livre')
+    : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
+    : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
+    : t('mag.custo', { pm: g.pm });
 
-  const linhas = habs.map(h => {
-    const custo = h.custo === 0
-      ? `<span class="hab-custo livre">${t('hab.custo.livre', { gera: h.gera })}</span>`
-      : `<span class="hab-custo">${t('hab.custo.en', { custo: h.custo })}</span>`;
-    const valor = h.valor === null ? ''
-      : `<span class="hab-valor" style="color:${HAB_COR_VALOR[h.tipo] || 'var(--text)'};">${t('hab.val.' + h.tipo, { v: h.valor })}</span>`;
+  const linhas = ['ataque', 'forte', 'defesa'].map(cat => {
+    const g = m[cat];
+    if (!g) return `<div class="hab vazia">
+        <div class="hab-top"><span class="hab-papel">${t('mag.cat.' + cat)}</span></div>
+        <div class="hab-efeito">${t('ficha.sem_magia')}</div>
+      </div>`;
     return `<div class="hab">
       <div class="hab-top">
-        <span class="hab-papel">${t('hab.slot.' + h.papel)}</span>
-        ${custo}
+        <span class="hab-papel">${t('mag.cat.' + cat)}</span>
+        <span class="hab-custo${g.pm === 0 ? ' livre' : ''}">${custo(g)}</span>
       </div>
-      <div class="hab-nome">${t(h.chave + '.nome')}</div>
-      ${valor}
-      <div class="hab-efeito">${t(h.chave + '.efeito')}</div>
+      <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
+      <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
     </div>`;
   }).join('');
 
@@ -131,8 +139,9 @@ function renderEquipaBar() {
   }
 
   const faltam = COMBATE_EQUIPA_MAX - idx.length;
-  const poder = (typeof poderDaEquipa === 'function')
-    ? Math.round(poderDaEquipa(equipaDoJogador())) : 0;
+  // O poder passa a ser o total de pontos, que é a medida do manual
+  const poder = (typeof poderDaEquipa3dt === 'function')
+    ? poderDaEquipa3dt(equipaDoJogador()) : 0;
 
   box.innerHTML = `<div class="equipa-bar">
     <div class="equipa-head">
