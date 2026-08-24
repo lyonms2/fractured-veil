@@ -80,6 +80,9 @@ window.registerStrings({
   'pve.marca.alma':     'ALMA',
   'pve.marca.esquiva':  'ESQUIVA',
 
+  'pve.ev.sem_dano':       'não feriu — o efeito nem chegou a agir',
+  'pve.ev.resistiu_veneno':'o alvo resistiu ao veneno',
+  'pve.ev.sem_pm_roubar':  'o alvo não tinha magia para roubar',
   'pve.ev.cegou':          'cegou o alvo — ataca com −1, esquiva com −3',
   'pve.ev.congelou':       'congelou por um turno',
   'pve.ev.decapitou':      'o corte perfeito acabou com ele',
@@ -185,6 +188,9 @@ window.registerStrings({
   'pve.marca.alma':     'SOUL',
   'pve.marca.esquiva':  'DODGE',
 
+  'pve.ev.sem_dano':       'did not wound — the effect never got to act',
+  'pve.ev.resistiu_veneno':'the target resisted the poison',
+  'pve.ev.sem_pm_roubar':  'the target had no magic left to steal',
   'pve.ev.cegou':          'blinded the target — attacks at −1, dodges at −3',
   'pve.ev.congelou':       'frozen for one turn',
   'pve.ev.decapitou':      'the perfect cut finished them',

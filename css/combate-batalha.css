@@ -329,11 +329,7 @@
   .cb-topo button.desistir { font-size: 6.5px; }
 }
 
-/* ── Ecrãs largos: dá altura ao registo em vez de esticar tudo ── */
-@media (min-width: 900px) {
-  .cb-arena { max-width: 560px; }
-  .cb-log-linha { font-size: 6px; }
-}
+
 
 /* ── Magia que o avatar sabe mas ainda não alcança ──
    Não se esconde: mostra-se apagada com o que falta para a destrancar.
@@ -470,4 +466,47 @@
   .cb-lutador-nome { font-size: 5px; }
   .cb-lutador.ativo .cb-lutador-nome { font-size: 6px; }
   .cb-ajuda-desc { font-size: 6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NO COMPUTADOR, MAIOR
+   O jogo inteiro desenha em 4–7px por causa do html{zoom:1.5}, o que
+   funciona num telemovel encostado à cara e não funciona num monitor a
+   um braço de distância. Aqui há espaço de sobra em largura — usa-se.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  .cb-arena { max-width: 640px; }
+
+  .cb-log-linha        { font-size: 7.5px; line-height: 1.7; padding: 5px 8px; }
+  .cb-conta            { font-size: 8px; }
+  .cb-conta b          { font-size: 9.5px; }
+  .cb-extras span      { font-size: 6.5px; padding: 3px 7px; }
+  .cb-turno-cab        { font-size: 6.5px; }
+  .cb-onda-total       { font-size: 8px; }
+
+  .cb-lutador-nome                 { font-size: 7px; }
+  .cb-lutador.ativo .cb-lutador-nome { font-size: 8.5px; }
+  .cb-lutador-carac    { font-size: 6px; letter-spacing: 1px; }
+  .cb-marca            { font-size: 5.5px; padding: 2px 4px; }
+  .cb-bolas b          { font-size: 6px; }
+  .cb-bola             { width: 8px; height: 8px; }
+
+  .cb-btn-rot          { font-size: 8.5px; }
+  .cb-btn-sub          { font-size: 6.5px; }
+  .cb-btn              { padding: 9px 6px; }
+
+  .cb-topo             { font-size: 8.5px; }
+  .cb-topo button      { font-size: 9px; padding: 4px 9px; }
+  .cb-topo button.desistir { font-size: 7.5px; }
+
+  .cb-ajuda-cab        { font-size: 9px; }
+  .cb-ajuda-nome       { font-size: 9px; }
+  .cb-ajuda-desc       { font-size: 7.5px; line-height: 1.75; }
+  .cb-ajuda-papel      { font-size: 6px; }
+  .cb-ajuda-custo      { font-size: 6.5px; }
+  .cb-ajuda-conta      { font-size: 6.5px; }
+
+  .cb-premio           { font-size: 8px; }
+  .cb-fim              { font-size: 12px; }
+  .cb-fratura          { font-size: 7px; }
 }

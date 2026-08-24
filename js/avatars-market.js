@@ -42,6 +42,29 @@ function _mktSyncSlots(newSlots) {
 }
 
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// AS DOENÇAS DO AVATAR, NO CARTÃO
+//
+// Estavam invisíveis aqui: só se via que um avatar estava doente depois
+// de o pôr em campo. Com a batalha a distribuir Fraturas, isso deixou de
+// servir — o jogador precisa de saber, do lado de fora, qual dos seus
+// avatares precisa de antídoto.
+//
+// A do avatar activo vive nas variáveis vivas; a dos outros no slot.
+// ═══════════════════════════════════════════════════════════════════
+function _slotDoencas(i, s) {
+  const lista = (typeof activeSlotIdx !== 'undefined' && i === activeSlotIdx
+                 && typeof activeDiseases !== 'undefined')
+    ? activeDiseases : (s.activeDiseases || []);
+  if (!lista.length) return '';
+  const itens = lista.map(id => {
+    const d = (typeof DISEASES !== 'undefined') ? DISEASES[id] : null;
+    if (!d) return '';
+    return `<span class="slot-doenca" style="--c:${d.cor}" title="${d.nome}">${d.emoji} ${d.nome}</span>`;
+  }).join('');
+  return `<div class="slot-doencas">${itens}</div>`;
+}
+
 // HELPERS DE FASE
 // ═══════════════════════════════════════════
 function _faseNum(nivel) {
@@ -418,6 +441,7 @@ function renderSlots() {
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
             <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
+          ${_slotDoencas(i, s)}
           <div class="slot-actions">
             ${_slotBtnEquipa(i, s)}
           </div>

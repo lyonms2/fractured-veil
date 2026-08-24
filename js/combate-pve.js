@@ -25,10 +25,11 @@ const PVE_ENERGIA_CUSTO    = 10;  // o mesmo que uma batalha PvP cobra
 const PVE_ENERGIA_DESISTIR = 4;   // desistir a meio sai mais barato
 
 // ── A FRATURA ──
-// Cair em combate parte alguma coisa. Não é certo, é uma hipótese em
-// cada duas e meia — e uma vez apanhada come saúde todo o ciclo como
-// qualquer outra doença, até matar se não for tratada com o antídoto.
-const PVE_FRATURA_CHANCE = 0.40;
+// Cair em combate parte alguma coisa. Uma vez em cada dez — começou em
+// 40% e era chato de mais: com trocas e quedas normais numa batalha,
+// quase toda a luta acabava com alguém fracturado. Uma vez apanhada,
+// come saúde todo o ciclo até matar se não for tratada com o antídoto.
+const PVE_FRATURA_CHANCE = 0.10;
 
 let _pveEstado = null;      // estado da batalha vindo do motor
 let _pveAcao   = null;      // o que o jogador escolheu neste turno
@@ -750,6 +751,9 @@ function _pveMostrarEvento(ev) {
   if (ev.pagouComSangue) extras.push(t('pve.ev.sangue', { n: ev.pagouComSangue }));
   if (ev.perdeuFoco)     extras.push(t('pve.ev.perdeu_foco'));
   if (ev.caiuSozinho)    extras.push(t('pve.ev.caiu_sozinho'));
+  if (ev.semDano)       extras.push(t('pve.ev.sem_dano'));
+  if (ev.resistiuVeneno)extras.push(t('pve.ev.resistiu_veneno'));
+  if (ev.semPMparaRoubar) extras.push(t('pve.ev.sem_pm_roubar'));
   if (ev.cegou)         extras.push(t('pve.ev.cegou'));
   if (ev.congelouUmTurno) extras.push(t('pve.ev.congelou'));
   if (ev.decapitou)     extras.push(t('pve.ev.decapitou'));

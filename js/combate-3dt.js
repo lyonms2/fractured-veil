@@ -332,14 +332,21 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   if (!magia) return;
 
   // Veneno: teste de R com penalidade; falhando, −1 em tudo e sangra
-  if (magia.veneno && dano > 0) {
-    if (!_c3teste(_c3rResistir(def, atk, true) + (magia.veneno.testeR || 0), rng)) {
+  if (magia.veneno) {
+    // Um efeito que precisa de ferir e não feriu tem de o dizer. Antes
+    // ficava em silêncio e o jogador não sabia se a magia estava
+    // avariada, se o alvo resistiu, ou se nem chegou a haver teste.
+    if (dano <= 0) ev.semDano = true;
+    else if (!_c3teste(_c3rResistir(def, atk, true) + (magia.veneno.testeR || 0), rng)) {
       def.veneno = true; def.penalidade += magia.veneno.penalidade || 1;
       ev.envenenou = true;
-    }
+    } else ev.resistiuVeneno = true;
   }
   // Dor persistente: −1 de Resistência até ao fim do combate
-  if (magia.debuffR && dano > 0) { def.penalidadeR += magia.debuffR; ev.enfraqueceu = true; }
+  if (magia.debuffR) {
+    if (dano > 0) { def.penalidadeR += magia.debuffR; ev.enfraqueceu = true; }
+    else ev.semDano = true;
+  }
 
   // Tirar de combate sem passar pelos PV. Não é dano: é um teste de
   // Resistência e acabou. É o que o motor antigo não sabia fazer.
@@ -373,8 +380,9 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 
   // Congelar por um turno: não tira de combate como a Prisão de Gelo,
   // só deixa o alvo indefeso — sem atacar, esquivar nem lançar magia.
-  if (magia.congelaUmTurno && dano > 0) {
-    if (!_c3teste(_c3rResistir(def, atk, false), rng)) {
+  if (magia.congelaUmTurno) {
+    if (dano <= 0) ev.semDano = true;
+    else if (!_c3teste(_c3rResistir(def, atk, false), rng)) {
       def.indefeso = true; def.indefesoTurnos = 2; ev.congelouUmTurno = true;
     } else ev.resistiu = true;
   }
@@ -417,10 +425,13 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   if (magia.esquivaBonus) { atk.bonusEsquiva = (atk.bonusEsquiva || 0) + pmGastos; ev.esquivaMais = pmGastos; }
 
   // Sugar magia: rouba ao alvo tantos PM quantos o dano que passou.
-  if (magia.drenaPM && dano > 0) {
-    const roubado = Math.min(def.pm, dano);
-    def.pm -= roubado; atk.pm = Math.min(atk.pmMax, atk.pm + roubado);
-    ev.drenou = roubado;
+  if (magia.drenaPM) {
+    if (dano <= 0) ev.semDano = true;
+    else {
+      const roubado = Math.min(def.pm, dano);
+      def.pm -= roubado; atk.pm = Math.min(atk.pmMax, atk.pm + roubado);
+      if (roubado > 0) ev.drenou = roubado; else ev.semPMparaRoubar = true;
+    }
   }
 
   // Fúria: H+1 e F+1, mas enquanto durar não se esquiva NEM se lança
@@ -691,17 +702,27 @@ function combate3dtTurno(e) {
   e.ativoB = proximo(B, e.ativoB);
   const turnos = e.turnos;
 
-  // Ordem: iniciativa mais alta primeiro; empate pela H; depois juntos.
-  const lados = [
-    { c: A[e.ativoA], alvo: B[e.ativoB], lado: 'A' },
-    { c: B[e.ativoB], alvo: A[e.ativoA], lado: 'B' },
-  ].sort((x, y) => (y.c.iniciativa - x.c.iniciativa) || (_c3(y.c, 'H') - _c3(x.c, 'H')));
+  // A ordem de quem age: iniciativa mais alta primeiro, empate pela H.
+  // Guarda-se só o LADO, não os combatentes — quem está em campo pode
+  // mudar a meio do turno, e era esse o defeito: com a dupla fixada aqui,
+  // quem atacava depois de uma troca acertava no avatar que já tinha
+  // saído. Agora o atacante e o alvo são lidos no momento de agir.
+  const ordem = [
+    { lado: 'A', ini: A[e.ativoA] },
+    { lado: 'B', ini: B[e.ativoB] },
+  ].sort((x, y) => (y.ini.iniciativa - x.ini.iniciativa) || (_c3(y.ini, 'H') - _c3(x.ini, 'H')));
 
-  for (const l of lados) {
-    if (!l.c.vivo || !l.alvo.vivo) continue;
+  for (const o of ordem) {
+    const meu  = o.lado === 'A' ? A : B;
+    const dele = o.lado === 'A' ? B : A;
+    const iMeu  = () => (o.lado === 'A' ? e.ativoA : e.ativoB);
+    const iDele = () => (o.lado === 'A' ? e.ativoB : e.ativoA);
+
+    const l = { lado: o.lado, c: meu[iMeu()], alvo: dele[iDele()] };
+    if (!l.c || !l.alvo || !l.c.vivo || !l.alvo.vivo) continue;
 
     // ── Trocar de avatar ──
-    const banco = l.lado === 'A' ? A : B;
+    const banco = meu;
     const querTrocar = (opts.escolhaTroca || _c3valeTrocar)(l.c, l.alvo, banco);
     if (querTrocar >= 0 && banco[querTrocar] && banco[querTrocar].vivo) {
       const limpa = _c3trocaLimpa(l.c, l.alvo, rng);
@@ -709,9 +730,11 @@ function combate3dtTurno(e) {
       if (l.lado === 'A') e.ativoA = querTrocar; else e.ativoB = querTrocar;
       if (eventos) eventos.push({ turno: turnos, lado: l.lado, quem: l.c.nome,
                                   troca: entra.nome, limpa });
-      if (!limpa) continue;                       // saiu à pressa: perde o turno
-      l.c = entra;                                 // saiu limpo: quem entra ainda age
-      if (l.lado === 'A') l.alvo = B[e.ativoB]; else l.alvo = A[e.ativoA];
+      // Saiu à pressa: perde o turno. Mas quem entrou fica em campo, e é
+      // ELE que leva o golpe do inimigo — é esse o risco de trocar.
+      if (!limpa) continue;
+      l.c = meu[iMeu()];                           // saiu limpo: quem entra ainda age
+      l.alvo = dele[iDele()];
     }
   const acao = (opts.politica || politica3dt)(l.c, l.alvo);
 
