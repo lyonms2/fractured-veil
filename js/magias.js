@@ -29,8 +29,14 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // Nenhuma magia atinge área: o combate é entre dois avatares activos, e
-// efeitos de área não teriam onde pegar. As magias de área do manual
-// ficaram todas de fora.
+// efeitos de área não teriam onde pegar.
+//
+// Mas várias magias do manual eram de área por CENÁRIO, não por
+// mecânica — a Bola de Fogo explode num raio de 5m, e a fórmula dela
+// (FA = H + 1d + PMs) não depende disso em nada. Essas foram adaptadas
+// para alvo único: fica a conta, cai o raio. As que só existem por
+// causa da área (empurrar tudo em volta, cobrir um corredor) ficaram
+// mesmo de fora.
 const MAGIA_CATEGORIAS = ['ataque', 'forte', 'defesa'];
 
 const MAGIAS = {
@@ -39,10 +45,13 @@ const MAGIAS = {
       { id:'fg_a1', pm:1,  fa:{ dados:1, fixo:2 } },
       { id:'fg_a2', pm:0,  fa:{ fixo:2 } },
       { id:'fg_a3', pm:1, pmMax:5, fa:{ H:1, fixoPorPM:1 } },
+      { id:'fg_a4', pm:1, pmMax:10, fa:{ H:1, dados:1, fixoPorPM:1 } },
+      { id:'fg_a5', pm:1, porTurno:true, fa:{ dados:1 }, ignoraArmadura:true },
     ],
     forte: [
       { id:'fg_f1', pm:25, fa:{ dados:10 }, ignoraArmadura:true },
       { id:'fg_f2', pm:10, fa:{ dados:1, fixo:10 } },
+      { id:'fg_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
     ],
     // Vazia de propósito: no manual NÃO EXISTE uma única magia de fogo
     // defensiva. Todas são ataque ou utilidade. Ver magiasDoAvatar().
@@ -58,6 +67,7 @@ const MAGIAS = {
     forte: [
       { id:'ag_f1', pm:30, fa:{ dados:10 } },
       { id:'ag_f2', pm:10, fa:{ H:1, dados:1, fixo:10 } },
+      { id:'ag_f3', pm:10, congela:true },
     ],
     defesa: [
       { id:'ag_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
@@ -73,6 +83,7 @@ const MAGIAS = {
     forte: [
       { id:'te_f1', pm:10, fa:{ H:1, fixo:15 } },
       { id:'te_f2', pm:5,  petrifica:true },
+      { id:'te_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
     ],
     defesa: [
       { id:'te_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
@@ -113,8 +124,8 @@ const MAGIAS = {
 };
 
 // ── LISTA UNIVERSAL ──
-// A escola "todas" do manual. Qualquer elemento pode usar, e é daqui
-// que sai a gaveta de defesa do Fogo.
+// A escola "todas" do manual: qualquer conjurador elemental as lança,
+// seja qual for o seu elemento. Entram no bolo de todos.
 const MAGIAS_UNIVERSAIS = {
   ataque: [
     { id:'un_a1', pm:2, pmMax:10, fa:{ H:1, dadosPorPM:0.5 } },
@@ -153,8 +164,11 @@ function magiasDoAvatar(ficha) {
   for (const cat of MAGIA_CATEGORIAS) {
     // Só entram as que o avatar consegue pagar. Se o elemento não tiver
     // nenhuma na gaveta, ou nenhuma dentro do tecto, cai na universal.
-    let pool = (kit[cat] || []).filter(m => m.pm <= tecto);
-    if (!pool.length) pool = (MAGIAS_UNIVERSAIS[cat] || []).filter(m => m.pm <= tecto);
+    // A escola "todas" do manual é castável por qualquer conjurador
+    // elemental, portanto entra no bolo de todos os elementos e não só
+    // quando falta alguma coisa.
+    let pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])]
+                 .filter(m => m.pm <= tecto);
     // Última saída, SÓ para a defesa: um segundo ataque do elemento.
     // A gaveta do ataque forte fica mesmo vazia se nada couber no tecto
     // — é a regra H×5 a funcionar, e é uma razão concreta para subir de
