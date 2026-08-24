@@ -120,7 +120,15 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
     return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum', s.elemento || 'Fogo', s.nivel || 1);
   }
 
-  const pontos = pontosDoAvatar(raridade, nivel);
+  const pontosBase = pontosDoAvatar(raridade, nivel);
+
+  // Vantagem e desvantagem entram na MESMA bolsa: a desvantagem dá
+  // pontos, a vantagem custa, e o que sobra compra as características.
+  // É o que o manual faz — não são dois orçamentos separados.
+  const vd = (typeof sortearVantagens === 'function')
+    ? sortearVantagens(seed, pontosBase, elemento) : null;
+  const pontos = vd ? vd.pontos : pontosBase;
+
   const tecto  = FICHA_MAX_INICIAL + Math.floor((Math.max(1, nivel || 1) - 1) / FICHA_NIVEIS_POR_PONTO);
   const rnd    = _fichaRng(seed || 0);
 
@@ -153,13 +161,19 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
     c[k]++; porGastar--;
   }
 
-  const pv = c.R * FICHA_PV_POR_R;
-  const pm = c.R * FICHA_PM_POR_R;
+  // As vantagens de reserva dão PV ou PM como se a Resistência fosse
+  // maior, sem mexer na R verdadeira.
+  const bonusPV = (vd && vd.vantagem.pvComoR) ? vd.vantagem.pvComoR : 0;
+  const bonusPM = (vd && vd.vantagem.pmComoR) ? vd.vantagem.pmComoR : 0;
+  const pv = (c.R + bonusPV) * FICHA_PV_POR_R;
+  const pm = (c.R + bonusPM) * FICHA_PM_POR_R;
 
   return {
     F: c.F, H: c.H, R: c.R, A: c.A,
     pv, pvMax: pv, pm, pmMax: pm,
-    pontos, tecto,
+    pontos, pontosBase, tecto,
+    vantagem:    vd ? vd.vantagem    : null,
+    desvantagem: vd ? vd.desvantagem : null,
     elemento, raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
   };
