@@ -88,7 +88,8 @@ function renderMagiasHTML(f) {
     const g = m[cat];
     if (!g) return `<div class="hab vazia">
         <div class="hab-top"><span class="hab-papel">${t('mag.cat.' + cat)}</span></div>
-        <div class="hab-efeito">${t('ficha.sem_magia')}</div>
+        <div class="hab-efeito">${t('ficha.sem_magia', {
+          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(f.elemento, cat) : '?') })}</div>
       </div>`;
     return `<div class="hab">
       <div class="hab-top">

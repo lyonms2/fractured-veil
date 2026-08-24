@@ -25,7 +25,7 @@ window.registerStrings({
   'ficha.pv':         'VIDA',
   'ficha.pm':         'MAGIA',
   'ficha.tecto':      'TECTO',
-  'ficha.sem_magia':  'A Habilidade ainda não chega para nenhuma.',
+  'ficha.sem_magia':  'Nenhuma ao alcance. A mais barata precisa de Habilidade {h}.',
 
   // ── 🔥 FOGO ───────────────────────────────────────────────────────
   'mag.fg_a1.nome':   'Chuva de Brasas',
@@ -131,7 +131,7 @@ window.registerStrings({
   'ficha.pv':         'LIFE',
   'ficha.pm':         'MAGIC',
   'ficha.tecto':      'CEILING',
-  'ficha.sem_magia':  'Skill is not high enough for any of them yet.',
+  'ficha.sem_magia':  'None within reach. The cheapest needs Skill {h}.',
 
   'mag.fg_a1.nome':   'Ember Rain',
   'mag.fg_a1.desc':   'Spheres of fire burst around the target. Great to watch, modest to feel.',

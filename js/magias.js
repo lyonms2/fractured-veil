@@ -188,6 +188,16 @@ function magiasDoAvatar(ficha) {
   return fora;
 }
 
+// A Habilidade mínima para alcançar alguma magia desta gaveta.
+// Serve para a ficha dizer quanto falta, em vez de só dizer que falta.
+function habilidadeNecessaria(elemento, cat) {
+  const kit = MAGIAS[elemento] || MAGIAS['Fogo'];
+  const pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])];
+  if (!pool.length) return null;
+  const maisBarata = pool.reduce((a, b) => b.pm < a.pm ? b : a);
+  return Math.max(1, Math.ceil(maisBarata.pm / 5));
+}
+
 // Quanto custa e quanto faz, para um número concreto de PMs investidos.
 function valorDaMagia(magia, ficha, pmGastos) {
   if (!magia || !magia.fa) return null;
@@ -204,5 +214,5 @@ function valorDaMagia(magia, ficha, pmGastos) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar, valorDaMagia };
+  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar, valorDaMagia, habilidadeNecessaria };
 }
