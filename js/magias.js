@@ -18,6 +18,9 @@
 //
 // ── COMO LER A FÓRMULA ──
 // fa: { F, H, dados, fixo, dadosPorPM, fixoPorPM }
+//   ondasPor    — a magia dispara uma onda por cada N PMs (até ondasMax),
+//                 cada uma com a sua própria rolagem de FA
+//   alvoIndefeso— o alvo não usa a Habilidade na Defesa (FD = A + 1d)
 //   F e H       — 1 se a característica entra na conta, 0 se não
 //   dados       — quantos d6 se rolam
 //   fixo        — valor somado
@@ -48,9 +51,9 @@ const MAGIAS = {
 
   'Água': {
     ataque: [
-      { id:'ag_a1', pm:5,  fa:{ H:1, dados:1 } },
+      { id:'ag_a1', pm:5,  fa:{ H:1, dados:1 }, debuffR:1 },
       { id:'ag_a2', pm:2, pmMax:10, fa:{ F:1, H:1, dadosPorPM:0.5 } },
-      { id:'ag_a3', pm:3,  fa:{ H:1, dados:1 }, veneno:true },
+      { id:'ag_a3', pm:3,  fa:{ H:1, dados:2 }, veneno:{ testeR:-1, penalidade:1, pvPorTurno:1 } },
     ],
     forte: [
       { id:'ag_f1', pm:30, fa:{ dados:10 } },
@@ -64,7 +67,7 @@ const MAGIAS = {
 
   'Terra': {
     ataque: [
-      { id:'te_a1', pm:5,  fa:{ F:1, H:1, dados:1 }, duracao:'sustentavel' },
+      { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
       { id:'te_a2', pm:5,  fa:{ fixo:16 } },
     ],
     forte: [
@@ -80,8 +83,8 @@ const MAGIAS = {
   'Vento': {
     ataque: [
       { id:'vt_a1', pm:0,  fa:{ fixo:2 } },
-      { id:'vt_a2', pm:4,  fa:{ H:1, dados:1 } },
-      { id:'vt_a3', pm:2, pmMax:10, fa:{ H:1, dados:1 } },
+      { id:'vt_a2', pm:4,  fa:{ H:1, dados:2 }, ignoraArmadura:true },
+      { id:'vt_a3', pm:2, pmMax:10, fa:{ H:1, dados:1 }, ondasPor:2, ondasMax:5, alvoIndefeso:true },
     ],
     forte: [
       { id:'vt_f1', pm:8,  fa:{ H:1, dados:4 } },
