@@ -554,27 +554,25 @@ function _pveEscolher(tipo, arg) {
 function _pveJogarTurno() {
   const e = _pveEstado;
   const antes = e.eventos.length;
-
-  // Quando um avatar cai, o motor avança sozinho para o seguinte no
-  // início do turno, e isso não gera evento nenhum — sem isto o
-  // adversário mudava de cara a meio da batalha sem uma palavra.
-  //
-  // A conta tem de ser feita ANTES do turno, com a mesma regra que o
-  // motor usa. Feita depois, apanhava também as trocas voluntárias que
-  // acontecem a meio do turno e anunciava a entrada errada.
-  const entradas = [];
-  const proximo = (t, i) => (t[i] && t[i].vivo) ? i : t.findIndex(c => c.vivo);
-  for (const [equipa, ativo, lado] of [[e.A, e.ativoA, 'A'], [e.B, e.ativoB, 'B']]) {
-    const atual = equipa[ativo];
-    if (atual && !atual.vivo) {
-      const entra = equipa[proximo(equipa, ativo)];
-      if (entra) entradas.push({ entrada: true, lado, quem: entra.nome });
-    }
-  }
+  const eraA = e.A[e.ativoA], eraB = e.B[e.ativoB];
 
   combate3dtTurno(e);
   _pveAcao = null;
-  _pveAnimar(entradas.concat(e.eventos.slice(antes)));
+
+  // Quem entrou em campo por o anterior ter caído. O motor troca-o
+  // sozinho no fim do turno e não gera evento nenhum — sem isto, o
+  // adversário mudava de cara sem uma palavra.
+  //
+  // Vem DEPOIS dos eventos do turno, que é a ordem real: primeiro
+  // alguém cai, só depois o seguinte entra. As trocas voluntárias ficam
+  // de fora porque já têm evento próprio (aí o anterior está vivo).
+  const entradas = [];
+  for (const [antigo, atual, lado] of [[eraA, e.A[e.ativoA], 'A'], [eraB, e.B[e.ativoB], 'B']]) {
+    if (atual && antigo && atual !== antigo && !antigo.vivo)
+      entradas.push({ entrada: true, lado, quem: atual.nome, turno: e.turnos });
+  }
+
+  _pveAnimar(e.eventos.slice(antes).concat(entradas));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -684,14 +682,23 @@ function _pveMostrarEvento(ev) {
   }
 
   if (ev.entrada) {
-    _pveLog(t('pve.log.entra', { nome: ev.quem }), souEu ? 'good' : 'warn', _pveEstado.turnos);
+    _pveLog(t('pve.log.entra', { nome: ev.quem }), souEu ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
     return;
   }
 
   if (ev.troca) {
+    const tst = (ev.testes || [])[0];
+    const conta = tst
+      ? `<div class="cb-testes"><span class="cb-teste ${tst.passou ? 'passou' : 'falhou'}">
+           <b>${t('pve.teste.troca')}</b> ${tst.partes.join(' ')} = ${tst.valor} · 1d[<i>${tst.dado}</i>]
+           → ${tst.passou ? t('pve.teste.passou') : t('pve.teste.falhou')}</span></div>`
+      : ev.semRolagem
+      ? `<div class="cb-testes"><span class="cb-teste falhou">
+           <b>${t('pve.teste.troca')}</b> ${ev.semRolagem.join(' ')} → ${t('pve.teste.sem_rolagem')}</span></div>`
+      : '';
     _pveLog(t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
-            (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')),
+            (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')) + conta,
             ev.limpa ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
     return;
@@ -726,6 +733,26 @@ function _pveMostrarEvento(ev) {
              : ev.golpes   ? t('pve.acao.encadeado', { n: ev.golpes })
              : ev.carregado? t('pve.acao.carregado')
              : t('pve.acao.comum');
+
+  // ── A CONTA DOS TESTES ──
+  // O ataque já mostrava FA contra FD. Os testes mostravam só o
+  // resultado — "o alvo resistiu ao veneno" — e quem perde um efeito
+  // por um ponto tem direito a ver qual foi o ponto.
+  //
+  //   veneno   R3 −1 = 2 · 1d[5] → falhou
+  //
+  // O manual manda passar com um valor IGUAL OU MENOR ao da
+  // característica, e um 6 falha sempre por mais alta que ela seja —
+  // por isso o 6 é marcado, senão parecia erro de conta.
+  const testes = (ev.testes || []).map(x => {
+    // Com uma parcela só, ela já diz tudo ("H5"); somar "= 5" seria ruído.
+    const soma = x.partes.length > 1 ? `${x.partes.join(' ')} = ${x.valor}` : x.partes[0];
+    const res = x.passou ? t('pve.teste.passou') : t('pve.teste.falhou');
+    return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
+        <b>${t('pve.teste.' + x.rotulo)}</b> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
+        ${x.seis ? `<em>${t('pve.teste.seis')}</em>` : ''}
+      </span>`;
+  }).join('');
 
   const extras = [];
   if (ev.reflexo)    extras.push(t('pve.ev.reflexo'));
@@ -768,6 +795,7 @@ function _pveMostrarEvento(ev) {
 
   _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
           (conta ? `<br><span class="cb-conta">${conta}</span>` : '') +
+          (testes ? `<div class="cb-testes">${testes}</div>` : '') +
           (extras.length ? `<div class="cb-extras">${extras.map(x => `<span>${x}</span>`).join('')}</div>` : ''),
           souEu ? 'good' : 'bad', ev.turno);
 

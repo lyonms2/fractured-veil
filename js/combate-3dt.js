@@ -131,15 +131,50 @@ function _c3aDef(def, atk) {
 // Somam-se aqui, num sítio só, três coisas que puxam em sentidos
 // opostos — senão ficavam espalhadas e uma delas acabava esquecida.
 function _c3rResistir(def, atk, ehVeneno) {
+  return _c3resistirDetalhe(def, atk, ehVeneno).valor;
+}
+
+// A mesma conta, mas mostrando as parcelas. Serve para o registo poder
+// escrever "R3 +2 −1 = 4" em vez de só dizer que o alvo resistiu: quem
+// perde um efeito por um ponto tem direito a saber qual foi o ponto.
+function _c3resistirDetalhe(def, atk, ehVeneno) {
   let v = _c3(def, 'R');
+  const partes = ['R' + v];
   // Brilho Inofensivo: a magia é tão bonita que custa a levar a sério
-  if (atk && atk.desv && atk.desv.inimigoGanhaR) v += atk.desv.inimigoGanhaR;
+  if (atk && atk.desv && atk.desv.inimigoGanhaR) {
+    v += atk.desv.inimigoGanhaR; partes.push('+' + atk.desv.inimigoGanhaR);
+  }
   // Alma Rija: +2 contra magia — mas o manual exclui veneno de propósito
-  if (def.vant && def.vant.bonusTesteMagia && !(ehVeneno && def.vant.excetoVeneno))
-    v += def.vant.bonusTesteMagia;
+  if (def.vant && def.vant.bonusTesteMagia && !(ehVeneno && def.vant.excetoVeneno)) {
+    v += def.vant.bonusTesteMagia; partes.push('+' + def.vant.bonusTesteMagia);
+  }
   // Magia Perfurante: quem lança torna-a mais difícil de resistir
-  if (atk && atk.vant && atk.vant.penalidadeTesteAlvo) v -= atk.vant.penalidadeTesteAlvo;
-  return v;
+  if (atk && atk.vant && atk.vant.penalidadeTesteAlvo) {
+    v -= atk.vant.penalidadeTesteAlvo; partes.push('−' + atk.vant.penalidadeTesteAlvo);
+  }
+  return { valor: v, partes };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UM TESTE, COM A CONTA À VISTA
+//
+// O _c3teste devolve só sim ou não e deita o dado fora. Este guarda
+// tudo no evento, para o registo poder mostrar a rolagem como já mostra
+// a Força de Ataque contra a Força de Defesa. Um jogador que perca o
+// veneno por um ponto tem de ver esse ponto.
+// ═══════════════════════════════════════════════════════════════════
+function _c3testeReg(valor, rng, ev, rotulo, partes) {
+  const d = _d6(rng);
+  const passou = d !== 6 && d <= valor;
+  if (ev) {
+    (ev.testes = ev.testes || []).push({
+      rotulo, valor, dado: d, passou,
+      // um 6 falha sempre, por mais alta que seja a característica
+      seis: d === 6 && valor >= 6,
+      partes: partes || [String(valor)],
+    });
+  }
+  return passou;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -171,9 +206,14 @@ function _c3podeEsquivar(def, atk) {
   return _c3(def, 'H') - def.cegoEsquiva + _c3bonusEsquiva(def) - _c3hAtk(atk, def) >= 1;
 }
 
-function _c3esquivou(def, atk, rng) {
+function _c3esquivou(def, atk, rng, ev) {
   def.esquivas++;
-  return _c3teste(_c3(def, 'H') - def.cegoEsquiva + _c3bonusEsquiva(def) - _c3hAtk(atk, def), rng);
+  const h = _c3(def, 'H'), bonus = _c3bonusEsquiva(def), pen = _c3hAtk(atk, def);
+  const partes = ['H' + h];
+  if (def.cegoEsquiva) partes.push('−' + def.cegoEsquiva);
+  if (bonus) partes.push('+' + bonus);
+  partes.push('−H' + pen);
+  return _c3testeReg(h - def.cegoEsquiva + bonus - pen, rng, ev, 'esquiva', partes);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -250,7 +290,7 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
 
   // O defensor pode tentar esquivar antes de rolar a Defesa
   if (_c3podeEsquivar(def, atk) && !(magia && magia.alvoIndefeso)) {
-    if (_c3esquivou(def, atk, rng)) {
+    if (_c3esquivou(def, atk, rng, ev)) {
       ev.esquivou = true; ev.fa = fa.total; ev.dano = 0;
       return 0;
     }
@@ -304,20 +344,23 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   // Ataque Vorpal: num crítico que vença a Defesa, o alvo testa a
   // Armadura. Falhando, acabou — não é dano, é o fim.
   if (atk.vorpal && fa.critico && passou > 0 && def.vivo) {
-    if (!_c3teste(_c3(def, 'A'), rng)) { def.vivo = false; def.pv = 0; ev.decapitou = true; }
-    else ev.aguentouVorpal = true;
+    if (!_c3testeReg(_c3(def, 'A'), rng, ev, 'vorpal', ['A' + _c3(def, 'A')])) {
+      def.vivo = false; def.pv = 0; ev.decapitou = true;
+    } else ev.aguentouVorpal = true;
   }
 
   // O Foco Frágil deixa cair o objecto que canaliza a magia. Sem ele
   // não se lança nada até se gastar um turno a apanhá-lo.
   if (passou > 0 && def.vivo && def.desv && def.desv.perdeFocoAoSofrerDano && !def.semFoco) {
-    if (!_c3teste(_c3(def, 'H'), rng)) { def.semFoco = true; ev.perdeuFoco = true; }
+    if (!_c3testeReg(_c3(def, 'H'), rng, ev, 'foco', ['H' + _c3(def, 'H')])) {
+      def.semFoco = true; ev.perdeuFoco = true;
+    }
   }
 
   // O Sangue Quente perde a cabeça ao levar dano: testa Resistência e,
   // falhando, entra em fúria — bate mais, mas não esquiva nem magia.
   if (passou > 0 && def.vivo && def.desv && def.desv.furiaAoSofrerDano && !def.furia) {
-    if (!_c3teste(_c3(def, 'R'), rng)) {
+    if (!_c3testeReg(_c3(def, 'R'), rng, ev, 'furia', ['R' + _c3(def, 'R')])) {
       def.furia = true; def.bonusF += 1; def.bonusH += 1;
       ev.enfureceu = true;
     }
@@ -336,8 +379,10 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
     // Um efeito que precisa de ferir e não feriu tem de o dizer. Antes
     // ficava em silêncio e o jogador não sabia se a magia estava
     // avariada, se o alvo resistiu, ou se nem chegou a haver teste.
+    const r = _c3resistirDetalhe(def, atk, true);
+    if (magia.veneno.testeR) r.partes.push((magia.veneno.testeR > 0 ? '+' : '−') + Math.abs(magia.veneno.testeR));
     if (dano <= 0) ev.semDano = true;
-    else if (!_c3teste(_c3rResistir(def, atk, true) + (magia.veneno.testeR || 0), rng)) {
+    else if (!_c3testeReg(r.valor + (magia.veneno.testeR || 0), rng, ev, 'veneno', r.partes)) {
       def.veneno = true; def.penalidade += magia.veneno.penalidade || 1;
       ev.envenenou = true;
     } else ev.resistiuVeneno = true;
@@ -352,8 +397,11 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   // Resistência e acabou. É o que o motor antigo não sabia fazer.
   if (magia.petrifica || magia.congela || magia.destroiAlma) {
     if (def.imuneEspiritual) ev.imunizou = true;
-    else if (!_c3teste(_c3rResistir(def, atk, false), rng)) { def.fora = true; def.vivo = false; ev.fora = true; }
-    else ev.resistiu = true;
+    else {
+      const r = _c3resistirDetalhe(def, atk, false);
+      if (!_c3testeReg(r.valor, rng, ev, 'fora', r.partes)) { def.fora = true; def.vivo = false; ev.fora = true; }
+      else ev.resistiu = true;
+    }
   }
 
   // Magias sustentadas: ficam a pagar PM todo o turno
@@ -382,15 +430,19 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   // só deixa o alvo indefeso — sem atacar, esquivar nem lançar magia.
   if (magia.congelaUmTurno) {
     if (dano <= 0) ev.semDano = true;
-    else if (!_c3teste(_c3rResistir(def, atk, false), rng)) {
-      def.indefeso = true; def.indefesoTurnos = 2; ev.congelouUmTurno = true;
-    } else ev.resistiu = true;
+    else {
+      const r = _c3resistirDetalhe(def, atk, false);
+      if (!_c3testeReg(r.valor, rng, ev, 'congelar', r.partes)) {
+        def.indefeso = true; def.indefesoTurnos = 2; ev.congelouUmTurno = true;
+      } else ev.resistiu = true;
+    }
   }
 
   // ── CEGUEIRA ──
   // Não fere: estraga a pontaria e a esquiva até ao fim do combate.
   if (magia.cegueira) {
-    if (!_c3teste(_c3rResistir(def, atk, false), rng)) {
+    const r = _c3resistirDetalhe(def, atk, false);
+    if (!_c3testeReg(r.valor, rng, ev, 'cegueira', r.partes)) {
       def.cegoAtaque += magia.cegueira.ataque; def.cegoEsquiva += magia.cegueira.esquiva;
       ev.cegou = true;
     } else ev.resistiu = true;
@@ -463,13 +515,17 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 // ═══════════════════════════════════════════════════════════════════
 const C3_TROCA_BONUS = 2;   // "Tarefas Fáceis: bónus de +2 a +4" (manual)
 
-function _c3trocaLimpa(quemSai, inimigo, rng) {
+function _c3trocaLimpa(quemSai, inimigo, rng, ev) {
   const margem = _c3(quemSai, 'H') - _c3(inimigo, 'H');
-  if (margem < 1) return false;              // mais lento: nem se rola
+  if (margem < 1) {                          // mais lento: nem se rola
+    if (ev) ev.semRolagem = ['H' + _c3(quemSai, 'H'), '−H' + _c3(inimigo, 'H')];
+    return false;
+  }
   // O bónus vem da tabela de dificuldades do manual. Sem ele o teste era
   // quase sempre de margem 1, ou seja passava uma vez em seis, e a regra
   // "a não ser que sejas mais rápido" ficava sem efeito prático.
-  return _c3teste(margem + C3_TROCA_BONUS, rng);
+  return _c3testeReg(margem + C3_TROCA_BONUS, rng, ev, 'troca',
+    ['H' + _c3(quemSai, 'H'), '−H' + _c3(inimigo, 'H'), '+' + C3_TROCA_BONUS]);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -725,11 +781,12 @@ function combate3dtTurno(e) {
     const banco = meu;
     const querTrocar = (opts.escolhaTroca || _c3valeTrocar)(l.c, l.alvo, banco);
     if (querTrocar >= 0 && banco[querTrocar] && banco[querTrocar].vivo) {
-      const limpa = _c3trocaLimpa(l.c, l.alvo, rng);
+      const evT = { turno: turnos, lado: l.lado, quem: l.c.nome };
+      const limpa = _c3trocaLimpa(l.c, l.alvo, rng, evT);
       const entra = banco[querTrocar];
       if (l.lado === 'A') e.ativoA = querTrocar; else e.ativoB = querTrocar;
-      if (eventos) eventos.push({ turno: turnos, lado: l.lado, quem: l.c.nome,
-                                  troca: entra.nome, limpa });
+      evT.troca = entra.nome; evT.limpa = limpa;
+      if (eventos) eventos.push(evT);
       // Saiu à pressa: perde o turno. Mas quem entrou fica em campo, e é
       // ELE que leva o golpe do inimigo — é esse o risco de trocar.
       if (!limpa) continue;
@@ -778,7 +835,8 @@ function combate3dtTurno(e) {
         ev.subiu = alvo;
       }
       if (w.paralisa) {
-        if (!_c3teste(_c3rResistir(l.alvo, l.c, false), rng)) {
+        const rp = _c3resistirDetalhe(l.alvo, l.c, false);
+        if (!_c3testeReg(rp.valor, rng, ev, 'paralisia', rp.partes)) {
           // Dois turnos: o que resta deste, e o seguinte inteiro — que é
           // o único em que quem paralisou pode aproveitar.
           l.alvo.indefeso = true; l.alvo.indefesoTurnos = 2;
@@ -861,6 +919,17 @@ function combate3dtTurno(e) {
   }
 
   [...A, ...B].forEach(_c3fimTurno);
+
+  // ── QUEM FICA EM CAMPO ──
+  // O avanço para o seguinte acontece AQUI, no fim, e não no início do
+  // turno seguinte. A diferença só se vê num jogo com pausa entre
+  // turnos: com o avanço no início, o estado entre um turno e o outro
+  // ainda apontava para o que tinha acabado de cair — o jogador olhava
+  // para um cadáver e escolhia a jogada sem saber contra quem ia.
+  // A rolagem do início continua lá, e passa a não fazer nada.
+  e.ativoA = proximo(A, e.ativoA);
+  e.ativoB = proximo(B, e.ativoB);
+
   e.acabou = !vivos(A) || !vivos(B) || e.turnos >= C3_MAX_TURNOS;
   return e;
 }
