@@ -49,15 +49,33 @@ const FICHA_PONTOS_RARIDADE = {
 const FICHA_NIVEIS_POR_PONTO = 4;
 
 // Tecto por característica. O manual proíbe passar de 5 na criação, mas
-// permite subir depois com experiência — por isso o tecto acompanha os
-// pontos ganhos por nível em vez de ser fixo.
+// autoriza explicitamente subir depois com experiência — por isso o
+// tecto acompanha os pontos ganhos por nível em vez de ser fixo.
+//
+// Sobre as Escalas de Poder (Ningen ×1, Sugoi ×10, Kiodai ×100, Kami
+// ×1000): não são precisas aqui. São uma notação para não ter de
+// escrever F300, e só mudam alguma coisa quando criaturas de escalas
+// DIFERENTES se enfrentam. Todos os avatares são Ningen, e o máximo que
+// atingem ao nível 35 é 13 — perfeitamente escrevível. As escalas ficam
+// disponíveis se um dia houver chefes fora da escala humana.
 const FICHA_MAX_INICIAL = 5;
 
 const FICHA_PV_POR_R = 5;
 const FICHA_PM_POR_R = 5;
 
-// A Resistência não pode ser 0: seria nascer com 0 PVs, ou seja morto.
-const FICHA_R_MINIMO = 1;
+// ── PISO DE RESISTÊNCIA ──
+// O manual permite R0 e resolve com "sempre 1 Ponto de Vida e 1 Ponto de
+// Magia" — mas essa regra é para Pessoas Comuns, figurantes que não
+// lutam. Os nossos avatares lutam todos, e um avatar com 1 PV morre ao
+// primeiro golpe depois de semanas a ser criado.
+//
+// O piso cresce com o total de pontos porque, sem isso, um avatar com
+// foco em Habilidade ficava preso a R3 (15 PV) do nível 1 ao 35 enquanto
+// a Força dos adversários subia até 8. Não é dar pontos de graça: são
+// pontos do próprio orçamento, apenas com um mínimo garantido na R.
+function _pisoDeR(pontos) {
+  return 1 + Math.floor(pontos / 6);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Gerador determinístico — mesmo LCG do resto do jogo, com constante
@@ -115,8 +133,9 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
 
   const peso = k => k === foco ? 6 : k === apoio ? 3 : 1;
 
-  const c = { F: 0, H: 0, R: FICHA_R_MINIMO, A: 0 };
-  let porGastar = pontos - FICHA_R_MINIMO;
+  const piso = _pisoDeR(pontos);
+  const c = { F: 0, H: 0, R: piso, A: 0 };
+  let porGastar = pontos - piso;
 
   while (porGastar > 0) {
     const disponiveis = FICHA_CARACS.filter(k => c[k] < tecto);
@@ -139,8 +158,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
   };
 }
 
-// O nome do escalão, para mostrar na ficha. Acima de Lenda o manual
-// manda usar as Escalas de Poder, que ainda não implementámos.
+// O nome do escalão, para mostrar na ficha.
 function _escalaoDe(pontos) {
   if (pontos <= 4)  return 'Pessoa Comum';
   if (pontos <= 6)  return 'Novato';
