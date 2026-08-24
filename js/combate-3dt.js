@@ -67,6 +67,8 @@ function _c3criar(slot, rng) {
     bonusA: 0,            // armadura extra de magia sustentada
     bonusFD: 0,           // bónus directo à Força de Defesa
     bonusF: 0,            // Força extra de magia sustentada
+    bonusH: 0,            // Habilidade extra (fúria)
+    furia: false,         // em fúria: bate mais, mas não esquiva nem magia
     penalidade: 0,        // −N em todas as características (veneno)
     penalidadeR: 0,       // −N só na Resistência
     sustentadas: [],      // [{ magia, pm }] a pagar todo o turno
@@ -78,7 +80,8 @@ function _c3criar(slot, rng) {
 
 // Característica efectiva, já com penalidades
 function _c3(c, k) {
-  let v = c.ficha[k] + (k === 'F' ? c.bonusF : 0) + (k === 'A' ? c.bonusA : 0);
+  let v = c.ficha[k] + (k === 'F' ? c.bonusF : 0) + (k === 'A' ? c.bonusA : 0)
+              + (k === 'H' ? c.bonusH : 0);
   v -= c.penalidade;
   if (k === 'R') v -= c.penalidadeR;
   return Math.max(0, v);
@@ -98,6 +101,7 @@ function _c3teste(valor, rng) {
 // ESQUIVA — reacção, com penalidade igual à H do atacante
 // ═══════════════════════════════════════════════════════════════════
 function _c3podeEsquivar(def, atk) {
+  if (def.furia) return false;                       // quem está em fúria não esquiva
   if (def.esquivas >= _c3(def, 'H')) return false;   // já gastou as deste turno
   return _c3(def, 'H') - _c3(atk, 'H') >= 1;         // abaixo disto é impossível
 }
@@ -203,6 +207,16 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
     if (magia.buffForca)     atk.bonusF += magia.buffForca;
   }
   if (magia.bonusFD) { atk.bonusFD += magia.bonusFD; atk.sustentadas.push({ magia, pm: 0 }); }
+
+  // Fúria: H+1 e F+1, mas enquanto durar não se esquiva NEM se lança
+  // magia nenhuma. É o compromisso mais duro do manual, e é o que
+  // quebra o empate entre duas fichas parecidas — a troco de ficar sem
+  // rede. Antes disto a magia não fazia nada: nunca tinha sido tratada.
+  if (magia.buffFuria) {
+    atk.furia = true; atk.bonusF += 1; atk.bonusH += 1;
+    atk.sustentadas.push({ magia, pm: pmGastos });
+    ev.furia = true;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -213,6 +227,7 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 // ═══════════════════════════════════════════════════════════════════
 function politica3dt(eu, inimigo) {
   const m = eu.magias || {};
+  if (eu.furia) return { magia: null, pm: 0 };       // em fúria só há o golpe comum
   const tecto = _c3(eu, 'H') * 5;
   const podePagar = g => g && g.pm <= eu.pm && g.pm <= tecto;
 
@@ -224,6 +239,16 @@ function politica3dt(eu, inimigo) {
   if (podePagar(m.defesa) && !eu.bonusA && !eu.bonusFD && eu.pm > eu.pmMax * 0.5
       && eu.pv < eu.pvMax * 0.7) {
     return { magia: m.defesa, pm: _c3pmIdeal(m.defesa, eu, tecto) };
+  }
+  // Abrir com um buff sustentado, se tiver um e ainda não estiver de pé.
+  // É isto que quebra o empate entre duas fichas parecidas: com F+2 a
+  // conta FA vs FD deixa de dar zero. Sem isto a política trocava
+  // golpes que não faziam nada.
+  for (const cand of [m.ataque, m.defesa]) {
+    if (cand && (cand.buffForca || cand.buffFuria) && podePagar(cand)
+        && !eu.bonusF && !eu.furia) {
+      return { magia: cand, pm: cand.pm };
+    }
   }
   // Caso normal: a magia de ataque se der, senão o golpe comum (grátis)
   if (podePagar(m.ataque)) return { magia: m.ataque, pm: _c3pmIdeal(m.ataque, eu, tecto) };
@@ -248,6 +273,7 @@ function _c3fimTurno(c) {
   let custo = c.sustentadas.reduce((t, s) => t + (s.magia.porTurno ? s.pm : 0), 0);
   if (custo > c.pm) {
     c.sustentadas = []; c.bonusA = 0; c.bonusF = 0; c.bonusFD = 0;
+    c.bonusH = 0; c.furia = false;
   } else {
     c.pm -= custo;
   }
