@@ -56,6 +56,7 @@ function _c3criar(slot, rng) {
   const m = magiasDoAvatar(f);
   return {
     ficha: f, magias: m,
+    vant: f.vantagem || null, desv: f.desvantagem || null,
     nome: (slot.nome || 'Avatar').split(',')[0].trim(),
     elemento: f.elemento,
     pv: f.pv, pvMax: f.pv,
@@ -100,15 +101,20 @@ function _c3teste(valor, rng) {
 // ═══════════════════════════════════════════════════════════════════
 // ESQUIVA — reacção, com penalidade igual à H do atacante
 // ═══════════════════════════════════════════════════════════════════
+// O Passo Rápido soma 1 à Habilidade só para esquivar
+function _c3bonusEsquiva(def) {
+  return (def.vant && def.vant.bonusEsquiva) ? def.vant.bonusEsquiva : 0;
+}
+
 function _c3podeEsquivar(def, atk) {
   if (def.furia) return false;                       // quem está em fúria não esquiva
   if (def.esquivas >= _c3(def, 'H')) return false;   // já gastou as deste turno
-  return _c3(def, 'H') - _c3(atk, 'H') >= 1;         // abaixo disto é impossível
+  return _c3(def, 'H') + _c3bonusEsquiva(def) - _c3(atk, 'H') >= 1;
 }
 
 function _c3esquivou(def, atk, rng) {
   def.esquivas++;
-  return _c3teste(_c3(def, 'H') - _c3(atk, 'H'), rng);
+  return _c3teste(_c3(def, 'H') + _c3bonusEsquiva(def) - _c3(atk, 'H'), rng);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -142,6 +148,15 @@ function _c3fd(def, rng, opts) {
   const d = _d6(rng);
   const critico = d === 6;                 // o crítico dobra a ARMADURA
   let A = opts.ignoraArmadura ? 0 : _c3(def, 'A');
+
+  // Couraça e Ferida agem contra um elemento. Só valem contra MAGIA
+  // desse elemento — um murro de um elemental de fogo é dano físico, e
+  // uma Couraça de Fogo não o trava. É por isso que o golpe comum
+  // continua a servir contra quem tem couraça.
+  if (opts.elemento) {
+    if (def.vant && def.vant.armaduraDobra && def.vant.elemento === opts.elemento) A *= 2;
+    if (def.desv && def.desv.armaduraZero  && def.desv.elemento === opts.elemento) A = 0;
+  }
   if (critico) A *= 2;
   // Alvo indefeso não usa a Habilidade na Defesa
   const H = (opts.indefeso || def.indefeso) ? 0 : _c3(def, 'H');
@@ -162,17 +177,48 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev) {
     }
   }
 
+  // O Reflexo dobra a Habilidade na Defesa deste golpe. Custa PM e
+  // conta como esquiva — não se pode usar mais vezes por turno do que
+  // a própria Habilidade permite.
+  let reflexo = 0;
+  if (def.vant && def.vant.habilidadeDobra && def.pm >= def.vant.pm
+      && def.esquivas <= _c3(def, 'H') && !def.furia) {
+    def.pm -= def.vant.pm; def.esquivas++;
+    reflexo = _c3(def, 'H');            // a H a contar a dobrar
+    ev.reflexo = true;
+  }
+
   const fd = _c3fd(def, rng, {
     ignoraArmadura: !!(magia && magia.ignoraArmadura),
     indefeso: !!(magia && magia.alvoIndefeso),
+    elemento: magia ? atk.elemento : null,   // só a magia carrega elemento
   });
 
-  const dano = Math.max(0, fa.total - fd.total);
+  const totalFD = fd.total + reflexo;
+  const dano = Math.max(0, fa.total - totalFD);
+
+  // O Reflexo Espelhado devolve o golpe se a defesa o segurou por inteiro
+  if (reflexo && dano === 0 && def.vant.devolve) {
+    const volta = Math.max(0, fa.total - (_c3(atk, 'H') + _c3(atk, 'A')));
+    atk.pv = Math.max(0, atk.pv - volta);
+    if (atk.pv === 0) atk.vivo = false;
+    ev.devolveu = volta;
+  }
+
   def.pv = Math.max(0, def.pv - dano);
   if (def.pv === 0) def.vivo = false;
 
-  ev.fa = fa.total; ev.fd = fd.total; ev.dano = dano;
+  ev.fa = fa.total; ev.fd = totalFD; ev.dano = dano;
   ev.criticoAtk = fa.critico; ev.criticoDef = fd.critico;
+
+  // O Sangue Quente perde a cabeça ao levar dano: testa Resistência e,
+  // falhando, entra em fúria — bate mais, mas não esquiva nem magia.
+  if (dano > 0 && def.vivo && def.desv && def.desv.furiaAoSofrerDano && !def.furia) {
+    if (!_c3teste(_c3(def, 'R'), rng)) {
+      def.furia = true; def.bonusF += 1; def.bonusH += 1;
+      ev.enfureceu = true;
+    }
+  }
   return dano;
 }
 
@@ -220,6 +266,27 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// O QUE UMA MAGIA CUSTA A ESTE AVATAR
+//
+// A Afinidade Profunda paga metade nas magias do próprio elemento
+// (arredondando para cima, como o manual manda). As universais não
+// contam: não são do elemento de ninguém.
+// ═══════════════════════════════════════════════════════════════════
+function _c3custoMagia(c, magia, pm) {
+  if (!magia) return 0;
+  const propria = magia.id && magia.id.slice(0, 3) !== 'un_';
+  if (c.vant && c.vant.metadeCustoProprioElemento && propria) return Math.ceil(pm / 2);
+  return pm;
+}
+
+// O Limiar Baixo tranca a magia abaixo de metade da vida
+function _c3podeMagiar(c) {
+  if (c.furia) return false;
+  if (c.desv && c.desv.semMagiaAbaixoDeMetade && c.pv < c.pvMax / 2) return false;
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // A POLÍTICA — como um lado decide o que fazer
 //
 // Não é "a IA do jogo": é um jogador razoável de referência, para as
@@ -227,9 +294,27 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 // ═══════════════════════════════════════════════════════════════════
 function politica3dt(eu, inimigo) {
   const m = eu.magias || {};
-  if (eu.furia) return { magia: null, pm: 0 };       // em fúria só há o golpe comum
+  if (!_c3podeMagiar(eu)) return { magia: null, pm: 0 };   // fúria ou limiar baixo
   const tecto = _c3(eu, 'H') * 5;
-  const podePagar = g => g && g.pm <= eu.pm && g.pm <= tecto;
+  const podePagar = g => g && g.pm <= tecto && _c3custoMagia(eu, g, g.pm) <= eu.pm;
+
+  // ── Vantagens que gastam a acção do turno ──
+  const v = eu.vant;
+  // O Segundo Fôlego só compensa quando já se perdeu muita vida: gasta
+  // o turno inteiro, portanto usá-lo com a vida quase cheia é oferecer
+  // um turno ao adversário.
+  if (v && v.curaTudo && eu.pm >= v.pm && eu.pv < eu.pvMax * 0.35) {
+    return { vantagem: v, pm: v.pm };
+  }
+  // A Reserva Oculta sobe uma característica; vale a pena cedo, para o
+  // bónus durar o combate todo.
+  if (v && v.subirCarac && eu.pm >= v.pm && (eu.reservaGasta || 0) < v.maxTotal) {
+    return { vantagem: v, pm: v.pm };
+  }
+  // O Toque Paralisante não fere: tira o adversário de acção.
+  if (v && v.paralisa && eu.pm >= v.pm && !inimigo.indefeso) {
+    return { vantagem: v, pm: v.pm };
+  }
 
   // Rematar: se o ataque forte cabe e o inimigo está por um fio, usa-o
   if (podePagar(m.forte) && inimigo.pv <= inimigo.pvMax * 0.4) {
@@ -278,6 +363,10 @@ function _c3fimTurno(c) {
     c.pm -= custo;
   }
   if (c.veneno) { c.pv = Math.max(0, c.pv - 1); if (c.pv === 0) c.vivo = false; }
+  // A Cura Perpétua fecha o corpo sozinha, sem custo nenhum
+  if (c.vant && c.vant.pvPorTurno && c.vivo) {
+    c.pv = Math.min(c.pvMax, c.pv + c.vant.pvPorTurno);
+  }
   c.esquivas = 0;
   c.indefeso = false;
 }
@@ -311,11 +400,42 @@ function combate3dtSimular(equipaA, equipaB, seed, opts) {
       if (!l.c.vivo || !l.alvo.vivo) continue;
       const acao = (opts.politica || politica3dt)(l.c, l.alvo);
       const magia = acao.magia;
-      const pm = magia ? Math.min(acao.pm, l.c.pm) : 0;
-      if (magia) l.c.pm -= pm;
+      const pmBruto = magia ? acao.pm : 0;
+      const pm = magia ? Math.min(pmBruto, l.c.pm) : 0;
+      if (magia) {
+        l.c.pm -= _c3custoMagia(l.c, magia, pm);
+        // A Sina Cobradora tira vida a cada magia, sem direito a resistir
+        if (l.c.desv && l.c.desv.danoPorMagia) {
+          l.c.pv = Math.max(0, l.c.pv - l.c.desv.danoPorMagia);
+          if (l.c.pv === 0) l.c.vivo = false;
+        }
+      }
 
       const ev = { turno: turnos, lado: l.lado, quem: l.c.nome, alvo: l.alvo.nome,
                    magia: magia ? magia.id : null, pm };
+
+      // Vantagem usada como acção do turno
+      if (acao.vantagem) {
+        const w = acao.vantagem;
+        l.c.pm -= w.pm;
+        if (w.curaTudo)    { l.c.pv = l.c.pvMax; ev.curou = true; }
+        if (w.subirCarac)  {
+          // Sobe a característica que mais falta faz: a Força se não
+          // fere, a Armadura se está a levar de mais.
+          const alvo = (l.c.pv < l.c.pvMax * 0.5) ? 'A' : 'F';
+          l.c[alvo === 'A' ? 'bonusA' : 'bonusF'] += w.subirCarac;
+          l.c.reservaGasta = (l.c.reservaGasta || 0) + w.subirCarac;
+          ev.subiu = alvo;
+        }
+        if (w.paralisa) {
+          if (!_c3teste(_c3(l.alvo, 'R'), rng)) { l.alvo.indefeso = true; ev.paralisou = true; }
+          else ev.resistiu = true;
+        }
+        ev.vantagem = w.id; ev.suporte = true;
+        ev.pvAlvo = l.alvo.pv; ev.pvAlvoMax = l.alvo.pvMax; ev.pmProprio = l.c.pm;
+        if (eventos) eventos.push(ev);
+        continue;
+      }
 
       // Magias que não atacam (escudo, buff) não rolam FA
       if (magia && !magia.fa) {
@@ -388,6 +508,10 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
              '  ' + f.pv + ' PV / ' + f.pm + ' PM');
       L.push('     ' + ['ataque','forte','defesa']
         .map(c => mg[c] ? nm(mg[c].id) : '-').join(' | '));
+      const nv2 = (id, el) => (typeof t === 'function' && id)
+        ? t('vd.' + id + '.nome').replace('{elem}', el || '') : id;
+      if (f.vantagem) L.push('     + ' + nv2(f.vantagem.id, f.vantagem.elemento) +
+                             '   - ' + nv2(f.desvantagem.id, f.desvantagem.elemento));
     });
   }
   L.push('='.repeat(66));
@@ -395,8 +519,17 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
   let turno = 0;
   for (const ev of (r.eventos || [])) {
     if (ev.turno !== turno) { turno = ev.turno; L.push('\n-- turno ' + turno + ' --'); }
-    const acc = nm(ev.magia) + (ev.pm ? ' (' + ev.pm + ' PM)' : '');
-    if (ev.suporte) { L.push('  ' + ev.quem + ': ' + acc); continue; }
+    const nmv = id => (typeof t === 'function' && id)
+      ? t('vd.' + id + '.nome').replace('{elem}', '') : id;
+    const acc = (ev.vantagem ? nmv(ev.vantagem) : nm(ev.magia)) + (ev.pm ? ' (' + ev.pm + ' PM)' : '');
+    if (ev.suporte) {
+      let sup = '  ' + ev.quem + ': ' + acc;
+      if (ev.curou)     sup += ' -> vida cheia';
+      if (ev.subiu)     sup += ' -> ' + ev.subiu + ' +1';
+      if (ev.paralisou) sup += ' -> ' + ev.alvo + ' PARALISADO';
+      if (ev.resistiu)  sup += ' -> resistiu';
+      L.push(sup); continue;
+    }
     let linha = '  ' + ev.quem + ' usa ' + acc + ' -> ';
     if (ev.esquivou) linha += ev.alvo + ' ESQUIVOU (FA ' + ev.fa + ')';
     else if (ev.fora) linha += ev.alvo + ' saiu de combate sem levar dano';
@@ -406,6 +539,9 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
                ' = ' + ev.dano + (ev.ondas > 1 ? ' (' + ev.ondas + ' ondas)' : '');
       linha += '   ' + barra(ev.pvAlvo, ev.pvAlvoMax) + ' ' + ev.pvAlvo + '/' + ev.pvAlvoMax;
     }
+    if (ev.reflexo)     linha += ' [reflexo]';
+    if (ev.devolveu)    linha += ' [devolveu ' + ev.devolveu + ']';
+    if (ev.enfureceu)   linha += ' [enfureceu-se]';
     if (ev.envenenou)   linha += ' [envenenado]';
     if (ev.enfraqueceu) linha += ' [enfraquecido]';
     if (ev.resistiu)    linha += ' [resistiu]';
