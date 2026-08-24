@@ -29,6 +29,7 @@ const COMBATE_INTENSIDADE = {
   'Terra': 0.95,   // muralha e atordoamento, com HP alto por trás
   'Vento': 0.94,   // o de menos HP; compensa na esquiva e nos efeitos
   'Fogo':  0.37,   // tem o maior dano bruto do jogo — paga aqui
+  'Sombra':0.75,   // reposta; será reafinada na passagem para 3D&T
 };
 
 // Magnitudes base dos efeitos, antes da intensidade do elemento.
@@ -70,6 +71,12 @@ const COMBATE_EFEITOS = {
     { tipo:'cura' },
     { tipo:'dreno_energia' },
     { tipo:'escudo', regenEnergia:true },
+  ],
+  'Sombra': [
+    null,
+    { tipo:'debuff_stat', turnos:3, stats:['FOR','INT'] },
+    { tipo:'roubo_vida' },
+    { tipo:'crit_garantido' },
   ],
   'Terra': [
     null,

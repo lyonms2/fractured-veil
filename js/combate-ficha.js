@@ -33,6 +33,7 @@ const COMBATE_AFINIDADE = {
   'Vento': { primaria:'HAB', secundaria:'INT' },  // velocidade e múltiplos golpes
   'Água':  { primaria:'INT', secundaria:'RES' },  // sustentação e cura
   'Terra': { primaria:'RES', secundaria:'FOR' },  // muralha que também bate
+  'Sombra':{ primaria:'INT', secundaria:'HAB' },  // debuff, roubo e controlo
 };
 
 // ── ORÇAMENTO DE PONTOS POR RARIDADE ──
@@ -228,6 +229,7 @@ const COMBATE_KITS = {
   'Água':         [ {}, { tipo:'cura' }, {}, {} ],
   'Terra':        [ {}, {}, {}, { mult:1.3 } ],
   'Vento':        [ {}, {}, {}, {} ],
+  'Sombra':       [ {}, {}, {}, { tipo:'efeito' } ],
 };
 
 // ═══════════════════════════════════════════════════════════════════

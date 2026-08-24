@@ -61,6 +61,16 @@ window.registerStrings({
   'hab.Vento.2.efeito':  'Dano crescente a cada golpe acertado antes.',
   'hab.Vento.3.nome':    'Véu de Correntes',
   'hab.Vento.3.efeito':  'Escudo que também reduz o acerto de quem atacar, por 2 turnos.',
+
+  // ── 🌑 SOMBRA ─────────────────────────────────────────────────
+  'hab.Sombra.0.nome':   'Toque Umbral',
+  'hab.Sombra.0.efeito': 'Golpe silencioso pelas costas. Sempre disponível e devolve energia.',
+  'hab.Sombra.1.nome':   'Presságio Sombrio',
+  'hab.Sombra.1.efeito': 'Reduz a FOR e a INT do alvo por 3 turnos.',
+  'hab.Sombra.2.nome':   'Devorar Essência',
+  'hab.Sombra.2.efeito': 'Converte metade do dano causado em HP.',
+  'hab.Sombra.3.nome':   'Manto de Penumbra',
+  'hab.Sombra.3.efeito': 'O próximo ataque é crítico garantido.',
 }, {
   // ── ENGLISH ───────────────────────────────────────────────────────
   'hab.slot.comum':      'Basic attack',
@@ -109,5 +119,14 @@ window.registerStrings({
   'hab.Vento.2.efeito':  'Damage grows with every hit that landed before it.',
   'hab.Vento.3.nome':    'Veil of Currents',
   'hab.Vento.3.efeito':  'Shield that also lowers the attacker accuracy, for 2 turns.',
+
+  'hab.Sombra.0.nome':   'Umbral Touch',
+  'hab.Sombra.0.efeito': 'Silent strike from behind. Always available and returns energy.',
+  'hab.Sombra.1.nome':   'Dark Omen',
+  'hab.Sombra.1.efeito': 'Lowers the target FOR and INT for 3 turns.',
+  'hab.Sombra.2.nome':   'Devour Essence',
+  'hab.Sombra.2.efeito': 'Converts half the damage dealt into HP.',
+  'hab.Sombra.3.nome':   'Penumbra Mantle',
+  'hab.Sombra.3.efeito': 'The next attack is a guaranteed crit.',
 
 });

@@ -46,14 +46,14 @@ const MANILHAS = [
 // Os 4 naipes repetem o mesmo avatar — só muda a cor
 const AVATAR_POR_VALOR = {
   'A':  { elemento: 'Fogo',  raridade: 'Lendário', seed: 1001 },
-  'K':  { elemento: 'Terra', raridade: 'Raro',     seed: 1002 },
+  'K':  { elemento: 'Sombra', raridade: 'Raro',     seed: 1002 },
   'Q':  { elemento: 'Água',  raridade: 'Raro',     seed: 1003 },
   'J':  { elemento: 'Vento', raridade: 'Raro',     seed: 1004 },
   '10': { elemento: 'Vento',        raridade: 'Comum',    seed: 1005 },
   '9':  { elemento: 'Água',         raridade: 'Comum',    seed: 1006 },
   '8':  { elemento: 'Terra',        raridade: 'Comum',    seed: 1007 },
   '7':  { elemento: 'Fogo',         raridade: 'Comum',    seed: 1008 },
-  '6':  { elemento: 'Terra', raridade: 'Comum',    seed: 1009 },
+  '6':  { elemento: 'Sombra', raridade: 'Comum',    seed: 1009 },
   '5':  { elemento: 'Vento',        raridade: 'Comum',    seed: 1010 },
   '4':  { elemento: 'Terra',        raridade: 'Raro',     seed: 1011 },
   '3':  { elemento: 'Fogo',         raridade: 'Raro',     seed: 1012 },
@@ -62,7 +62,7 @@ const AVATAR_POR_VALOR = {
 
 // Avatar do coringa
 const AVATAR_CORINGA = [
-  { elemento: 'Água',  raridade: 'Lendário', seed: 9901 }, // coringa 1
+  { elemento: 'Sombra', raridade: 'Lendário', seed: 9901 }, // coringa 1
   { elemento: 'Vento', raridade: 'Lendário', seed: 9902 }, // coringa 2
 ];
 

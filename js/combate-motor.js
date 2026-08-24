@@ -13,26 +13,16 @@
 // no cliente.
 // ═══════════════════════════════════════════════════════════════════
 
-// ── VANTAGEM ELEMENTAL ──
-// Os quatro clássicos em ciclo fechado: cada um vence o seguinte e perde
-// para o anterior. A água apaga o fogo, o fogo consome o ar, o vento
-// erode a terra, a terra absorve a água.
+// ── SEM VANTAGEM ELEMENTAL ──
+// O elemento deixou de multiplicar dano. Ele passa a ditar apenas a
+// lista de magias do avatar, que é como o 3D&T trata a Magia Elemental:
+// uma escola, não uma tabela de fraquezas. O ciclo Água>Fogo>Vento>Terra
+// era invenção nossa e não existe no manual.
 //
-// Com 4 elementos, metade dos confrontos possíveis tem factor elemental
-// (8 de 16 pares ordenados). Com 7 eram 20%, porque a Luz e a Sombra
-// estavam fora da tabela e não multiplicavam nada.
-const COMBATE_CICLO = ['Água', 'Fogo', 'Vento', 'Terra'];
-const COMBATE_MULT_VANTAGEM = 1.25;
-const COMBATE_MULT_FRAQUEZA = 0.80;
+// A função fica, a devolver sempre 1.0, para o resto do motor não ter de
+// mudar enquanto a passagem para 3D&T não estiver feita.
+function multElemental() { return 1.0; }
 
-function multElemental(atacante, defensor) {
-  const a = COMBATE_CICLO.indexOf(atacante);
-  const d = COMBATE_CICLO.indexOf(defensor);
-  if (a < 0 || d < 0) return 1.0;                       // elemento desconhecido
-  if ((a + 1) % COMBATE_CICLO.length === d) return COMBATE_MULT_VANTAGEM;
-  if ((d + 1) % COMBATE_CICLO.length === a) return COMBATE_MULT_FRAQUEZA;
-  return 1.0;
-}
 
 // ── CONSTANTES DE BATALHA ──
 // Custos afinados por simulação. Com a energia fixa em 100, o ultimate
@@ -601,6 +591,6 @@ function combateNarrar(equipaA, equipaB, seed) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { combateSimular, combateNarrar, multElemental, politicaPadrao, politicaDefesa,
-                     COMBATE_CICLO, COMBATE_CUSTOS, COMBATE_TROCA_EN,
+                     COMBATE_CUSTOS, COMBATE_TROCA_EN,
                      COMBATE_TETO_GOLPE, COMBATE_MAX_TURNOS };
 }

@@ -12,6 +12,7 @@ const SNAKE_EL = [
   { color:'#60a5fa', shine:'#93c5fd', label:'Água'    },
   { color:'#86efac', shine:'#bbf7d0', label:'Terra'   },
   { color:'#fbbf24', shine:'#fde68a', label:'Vento'   },
+  { color:'#c084fc', shine:'#e9d5ff', label:'Sombra'  },
 ];
 
 let _snakeBody     = [];
