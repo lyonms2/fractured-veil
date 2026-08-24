@@ -91,13 +91,20 @@ function renderMagiasHTML(f) {
         <div class="hab-efeito">${t('ficha.sem_magia', {
           h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(f.elemento, cat) : '?') })}</div>
       </div>`;
-    return `<div class="hab">
+    // A magia é do avatar desde que nasce e nunca muda. O que pode faltar
+    // é Habilidade para a lançar — e isso mostra-se, em vez de esconder a
+    // magia: é um objectivo concreto para subir de nível, e o avatar sabe
+    // que chegará lá (o sorteio só dá magias alcançáveis ao nível 35).
+    const alcanca = (typeof magiaAoAlcance !== 'function') || magiaAoAlcance(f, g);
+    const falta   = (typeof habilidadeParaMagia === 'function') ? habilidadeParaMagia(g) : '?';
+    return `<div class="hab${alcanca ? '' : ' trancada'}">
       <div class="hab-top">
         <span class="hab-papel">${t('mag.cat.' + cat)}</span>
         <span class="hab-custo${g.pm === 0 ? ' livre' : ''}">${custo(g)}</span>
       </div>
       <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
       <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
+      ${alcanca ? '' : `<div class="hab-tranca">🔒 ${t('mag.tecto', { h: falta })}</div>`}
     </div>`;
   }).join('');
 
@@ -154,7 +161,31 @@ function renderEquipaBar() {
       ${cheia ? t('equipa.pronta') : t(faltam === 1 ? 'equipa.incompleta_1' : 'equipa.incompleta', { faltam })}<br>
       ${t('equipa.poder', { poder })}
     </div>
+    ${renderBotaoBatalhar(cheia)}
   </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O BOTÃO DE BATALHAR
+//
+// Fica onde a equipa é escolhida, que é onde o jogador está quando
+// acaba de a montar. Diz sempre porque não dá, em vez de só ficar
+// apagado: falta gente na equipa, ou há alguém cansado de mais.
+// ═══════════════════════════════════════════════════════════════════
+function renderBotaoBatalhar(cheia) {
+  if (!cheia) return `<div class="equipa-batalhar-off">${t('equipa.batalhar.incompleta')}</div>`;
+
+  const cansados = (typeof _pveCansados === 'function') ? _pveCansados() : [];
+  if (cansados.length) {
+    return `<div class="equipa-batalhar-off cansada">
+      ${t('equipa.batalhar.cansada', { nomes: cansados.map(c => c.nome).join(', ') })}
+    </div>`;
+  }
+  return `<button class="equipa-batalhar" onclick="abrirCombatePvE()">
+    <span class="eb-icone">⚔️</span>
+    <span class="eb-texto">${t('equipa.batalhar')}</span>
+    <span class="eb-custo">${t('equipa.batalhar.custo', { n: (typeof PVE_ENERGIA_CUSTO !== 'undefined' ? PVE_ENERGIA_CUSTO : 10) })}</span>
+  </button>`;
 }
 
 // Botão ⚔ de cada card. Só re-renderiza a barra e a grelha — a escolha

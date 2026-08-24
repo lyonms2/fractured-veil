@@ -346,7 +346,7 @@ function useAntidote() {
 
   const numDiseases = activeDiseases.length;
   activeDiseases  = [];
-  diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+  diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
   sick = false;
   vitals.saude = Math.min(100, vitals.saude + 20);
 

@@ -129,6 +129,7 @@
       'disease.malnutrition': 'Desnutrição',
       'disease.infection':    'Infecção',
       'disease.melancholy':   'Melancolia Dimensional',
+      'disease.fracture':     'Fratura de Batalha',
 
       // Itens — nomes
       'item.satiety_amulet.name':  'Amuleto da Saciedade',
@@ -430,6 +431,7 @@
       'disease.malnutrition': 'Malnutrition',
       'disease.infection':    'Infection',
       'disease.melancholy':   'Dimensional Melancholy',
+      'disease.fracture':     'Battle Fracture',
 
       // Items — names
       'item.satiety_amulet.name':  'Satiety Amulet',

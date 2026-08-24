@@ -39,7 +39,26 @@
 // mesmo de fora.
 const MAGIA_CATEGORIAS = ['ataque', 'forte', 'defesa'];
 
+// ═══════════════════════════════════════════════════════════════════
+// OS CINCO PAPÉIS
+//
+// Cada elemento faz uma coisa melhor do que os outros. As magias são
+// todas do manual e as regras são as dele, mas a REPARTIÇÃO por elemento
+// é nossa — e tinha de ser: os nossos cinco elementos não são as cinco
+// escolas do manual (não temos "espírito", temos Sombra), e lá a mesma
+// magia aparece muitas vezes em duas escolas ao mesmo tempo
+// ("Elemental (água ou terra)", "Branca ou Negra"). A escola nunca foi
+// uma parede.
+//
+//   FOGO    bate mais forte que todos, e não tem defesa nenhuma
+//   TERRA   a maior defesa: a Armadura chega a contar a dobrar
+//   ÁGUA    aguenta-se: cura-se, e sustenta escudo e véu
+//   VENTO   rápido e esquivo, bate mais fraco, mas às vezes bate várias
+//   SOMBRA  drena e atrapalha — o que incomoda
+// ═══════════════════════════════════════════════════════════════════
+
 const MAGIAS = {
+  // ── FOGO ── o dano, sem rede ──────────────────────────────────────
   'Fogo': {
     ataque: [
       { id:'fg_a1', pm:1,  fa:{ dados:1, fixo:2 } },
@@ -50,14 +69,42 @@ const MAGIAS = {
     ],
     forte: [
       { id:'fg_f1', pm:25, fa:{ dados:10 }, ignoraArmadura:true },
-      { id:'fg_f2', pm:10, fa:{ dados:1, fixo:10 } },
+      // "Essa lava mágica ignora a Armadura do alvo"
+      { id:'fg_f2', pm:10, fa:{ dados:1, fixo:10 }, ignoraArmadura:true },
+      // O Terremoto do manual: 2d+4 por cada 4 PMs. Escala como nenhuma
+      // outra, e é POR ISSO que ficou só com o Fogo — era o que fazia o
+      // Fogo e a Terra terem os dois o melhor ultimate do jogo.
       { id:'fg_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
     ],
-    // Vazia de propósito: no manual NÃO EXISTE uma única magia de fogo
-    // defensiva. Todas são ataque ou utilidade. Ver magiasDoAvatar().
+    // Vazia de propósito, e agora por duas razões. O manual não tem uma
+    // única magia de fogo defensiva — e o Fogo é o elemento que responde
+    // a tudo batendo mais forte. Continua a defender-se pela Força de
+    // Defesa como toda a gente; só não tem magia que a melhore.
     defesa: [],
   },
 
+  // ── TERRA ── a muralha ────────────────────────────────────────────
+  'Terra': {
+    ataque: [
+      { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
+      { id:'te_a2', pm:5,  fa:{ fixo:16 } },
+      { id:'te_a3', pm:1,  fa:{ H:1, dados:1 } },
+    ],
+    forte: [
+      { id:'te_f1', pm:10, fa:{ H:1, fixo:15 } },
+      { id:'te_f2', pm:5,  petrifica:true },
+    ],
+    defesa: [
+      { id:'te_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
+      { id:'te_d2', pm:2, porTurno:true, armadura:2 },
+      // A Resistência de Helena: "concede Armadura Extra contra todos os
+      // ataques, excepto magia". Armadura Extra é a Armadura a contar a
+      // dobrar — é a defesa mais forte que existe, e é da Terra.
+      { id:'te_d3', pm:2, porTurno:true, armaduraDobra:true, excetoMagia:true },
+    ],
+  },
+
+  // ── ÁGUA ── quem aguenta ──────────────────────────────────────────
   'Água': {
     ataque: [
       { id:'ag_a1', pm:5,  fa:{ H:1, dados:1 }, debuffR:1 },
@@ -68,29 +115,23 @@ const MAGIAS = {
       { id:'ag_f1', pm:30, fa:{ dados:10 } },
       { id:'ag_f2', pm:10, fa:{ H:1, dados:1, fixo:10 } },
       { id:'ag_f3', pm:10, congela:true },
+      // Inferno de Gelo: FA = H+2d, ignora a Armadura por completo, e
+      // quem levar dano testa Resistência ou fica congelado e indefeso
+      // um turno. É o golpe forte barato que faltava à Água.
+      { id:'ag_f4', pm:5, fa:{ H:1, dados:2 }, ignoraArmadura:true,
+        congelaUmTurno:true },
     ],
     defesa: [
       { id:'ag_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
       { id:'ag_d2', pm:1, porTurno:true, ocultacao:true },
+      // Cura Mágica do manual: "para cada 2 PMs gastos, você pode curar
+      // 1d Pontos de Vida". É a única cura de verdade do jogo, e é da
+      // Água — é isto que faz dela o elemento que se aguenta.
+      { id:'ag_d3', pm:2, pmMax:20, cura:{ dadosPorPM:0.5 } },
     ],
   },
 
-  'Terra': {
-    ataque: [
-      { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
-      { id:'te_a2', pm:5,  fa:{ fixo:16 } },
-    ],
-    forte: [
-      { id:'te_f1', pm:10, fa:{ H:1, fixo:15 } },
-      { id:'te_f2', pm:5,  petrifica:true },
-      { id:'te_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
-    ],
-    defesa: [
-      { id:'te_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
-      { id:'te_d2', pm:2, porTurno:true, armadura:2 },
-    ],
-  },
-
+  // ── VENTO ── depressa, e muitas vezes ─────────────────────────────
   'Vento': {
     ataque: [
       { id:'vt_a1', pm:0,  fa:{ fixo:2 } },
@@ -100,17 +141,29 @@ const MAGIAS = {
     forte: [
       { id:'vt_f1', pm:8,  fa:{ H:1, dados:4 } },
       { id:'vt_f2', pm:10, fa:{ H:1, dados:5 } },
+      // Ataque Vorpal: não aumenta o dano. Num acerto crítico que vença a
+      // Defesa, o alvo testa a Armadura — falhando, acabou. É o Vento a
+      // não bater mais forte, mas a bater onde dói.
+      { id:'vt_f3', pm:1, porTurno:true, vorpal:true },
     ],
     defesa: [
       { id:'vt_d1', pm:5,  bonusFD:10 },
       { id:'vt_d2', pm:1, pmMax:5, esquivaBonus:true },
+      // Criar Vento: bónus na Defesa igual aos PMs gastos, enquanto durar
+      { id:'vt_d3', pm:1, pmMax:5, porTurno:true, bonusFDPorPM:1 },
     ],
   },
 
+  // ── SOMBRA ── o que incomoda ──────────────────────────────────────
   'Sombra': {
     ataque: [
       { id:'so_a1', pm:10, fa:{ H:1, dados:3 }, drenaPM:true },
       { id:'so_a2', pm:2,  buffFuria:true, duracao:'sustentavel' },
+      // Roubo de Vida: 1 PM por turno rouba 1d PV, que passam para si
+      { id:'so_a3', pm:1, porTurno:true, roubaVida:{ dados:1 } },
+      // Cegueira: o alvo testa Resistência ou fica a ver mal — H−1 para
+      // bater e H−3 para esquivar, até ao fim do combate
+      { id:'so_a4', pm:3, cegueira:{ ataque:1, esquiva:3 } },
     ],
     forte: [
       { id:'so_f1', pm:10, fa:{ dados:6 } },
@@ -129,7 +182,11 @@ const MAGIAS = {
 const MAGIAS_UNIVERSAIS = {
   ataque: [
     { id:'un_a1', pm:2, pmMax:10, fa:{ H:1, dadosPorPM:0.5 } },
-    { id:'un_a2', pm:2, fa:{ F:1, H:1, dados:1, fixo:2 }, arremessa:true },
+    // "atira o alvo para trás" é imagem, não mecânica: este combate não
+    // tem distâncias, e no manual o arremesso só muda a posição do alvo.
+    // Fica a descrição; sai a propriedade, que não codificava efeito
+    // nenhum e fazia a magia prometer o que não cumpria.
+    { id:'un_a2', pm:2, fa:{ F:1, H:1, dados:1, fixo:2 } },
   ],
   forte: [],
   defesa: [
@@ -156,36 +213,62 @@ function _magiaRng(seed) {
 
 function magiasDoAvatar(ficha) {
   if (!ficha) return {};
-  const kit   = MAGIAS[ficha.elemento] || MAGIAS['Fogo'];
-  const tecto = ficha.H * 5;                       // regra do manual
-  const rnd   = _magiaRng((ficha.seed || 0) ^ 0x51);
-  const fora  = {};
+  const kit = MAGIAS[ficha.elemento] || MAGIAS['Fogo'];
+  const rnd = _magiaRng((ficha.seed || 0) ^ 0x51);
+  const fora = {};
+
+  // ── O TECTO QUE ESTE AVATAR VAI TER ──
+  // O bolo é filtrado por aquilo que ele ALCANÇARÁ no nível 35, e não
+  // pelo que alcança hoje. São duas coisas diferentes e as duas importam:
+  //   · filtrar pelo tecto de hoje era o defeito antigo — o bolo crescia
+  //     com o nível e a magia trocava sozinha
+  //   · não filtrar de todo dava magias que certos avatares nunca
+  //     poderiam lançar (24% dos Lendários de nível 35 ficavam com um
+  //     golpe forte eternamente trancado)
+  // O tecto do nível 35 é constante para um dado avatar, portanto não
+  // muda nada ao subir de nível — e garante que tudo o que ele sabe é
+  // alcançável se chegar lá.
+  const tectoFinal = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35).H * 5
+    : ficha.H * 5;
 
   for (const cat of MAGIA_CATEGORIAS) {
-    // Só entram as que o avatar consegue pagar. Se o elemento não tiver
-    // nenhuma na gaveta, ou nenhuma dentro do tecto, cai na universal.
-    // A escola "todas" do manual é castável por qualquer conjurador
-    // elemental, portanto entra no bolo de todos os elementos e não só
-    // quando falta alguma coisa.
-    let pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])]
-                 .filter(m => m.pm <= tecto);
-    // Última saída, SÓ para a defesa: um segundo ataque do elemento.
-    // A gaveta do ataque forte fica mesmo vazia se nada couber no tecto
-    // — é a regra H×5 a funcionar, e é uma razão concreta para subir de
-    // nível. Preenchê-la com um ataque fraco seria mentir no rótulo.
+    // O bolo, limitado ao que este avatar chegará a alcançar.
     //
-    // Isto acontece sempre ao Fogo, e não é acidente nem falta de
-    // trabalho: o manual NÃO TEM uma única magia de fogo defensiva.
-    // Todas são ataque ou utilidade. Em vez de inventar uma, o Fogo
-    // fica com dois ataques — o elemento que responde a tudo batendo
-    // mais forte. Continua a defender-se como toda a gente, pela Força
-    // de Defesa (H + A + 1d); só não tem magia que a melhore.
+    // Filtrar aqui era um defeito sério: quando a Habilidade subia,
+    // entravam mais magias no bolo, o índice sorteado caía noutro sítio,
+    // e o avatar TROCAVA de magia ao subir de nível — em 1,52% das
+    // subidas, e 36% dessas trocas eram para pior. O pior caso trocava a
+    // Fenda Vulcânica (55 de dano médio) pela Erupção (14).
+    //
+    // Agora as três magias saem do seed e mais nada: são as mesmas do
+    // nascimento à lenda. O tecto H×5 do manual continua a valer, mas
+    // decide outra coisa — se o avatar JÁ CONSEGUE LANÇAR o que sabe.
+    // A ficha mostra "precisa de Habilidade 4" em vez de esconder a
+    // magia, e subir de nível só pode destrancar, nunca tirar.
+    let pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])]
+                 .filter(m => m.pm <= tectoFinal);
+
+    // Última saída, só para a defesa: um segundo ataque do elemento.
+    // Acontece sempre ao Fogo, e não é acidente — o manual não tem uma
+    // única magia de fogo defensiva, e o Fogo é o elemento que responde
+    // a tudo batendo mais forte.
     if (!pool.length && cat === 'defesa') {
-      pool = (kit.ataque || []).filter(m => m.pm <= tecto && m !== fora.ataque);
+      pool = (kit.ataque || []).filter(m => m !== fora.ataque && m.pm <= tectoFinal);
     }
     fora[cat] = pool.length ? pool[rnd(0, pool.length - 1)] : null;
   }
   return fora;
+}
+
+// Esta magia já cabe no tecto H×5 deste avatar?
+function magiaAoAlcance(ficha, magia) {
+  return !!magia && magia.pm <= ficha.H * 5;
+}
+
+// A Habilidade que falta para alcançar esta magia.
+function habilidadeParaMagia(magia) {
+  return magia ? Math.max(1, Math.ceil(magia.pm / 5)) : null;
 }
 
 // A Habilidade mínima para alcançar alguma magia desta gaveta.
@@ -214,5 +297,6 @@ function valorDaMagia(magia, ficha, pmGastos) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar, valorDaMagia, habilidadeNecessaria };
+  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar,
+                   magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria };
 }

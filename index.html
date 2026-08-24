@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!-- ═══════════════════════════════════════════════════════════════
+     VERSÃO DOS FICHEIROS — ?v=2026-08-24a
+
+     Todos os js/ e css/ locais levam esta marca. Serve para uma
+     coisa só: o browser dos jogadores não continuar a servir a
+     versão antiga depois de um deploy. Sem ela, quem já abriu o
+     jogo fica com o código velho em cache e vê comportamentos
+     que já não existem.
+
+     >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
+     Basta um procurar-e-substituir de "?v=2026-08-24a" pelo novo.
+     ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -23,19 +35,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/screen.css">
-  <link rel="stylesheet" href="css/ui.css">
-  <link rel="stylesheet" href="css/minigames.css">
-  <link rel="stylesheet" href="css/modals.css">
-  <link rel="stylesheet" href="css/marketplace.css">
-  <link rel="stylesheet" href="css/combate.css">
-  <link rel="stylesheet" href="css/arena.css">
-  <link rel="stylesheet" href="css/rouba-monte.css">
-  <link rel="stylesheet" href="css/batalha-naval.css">
-  <link rel="stylesheet" href="css/snake.css">
-  <link rel="stylesheet" href="css/labirinto.css">
-  <link rel="stylesheet" href="css/mobile-index.css">
+  <link rel="stylesheet" href="css/base.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/screen.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/ui.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/modals.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/combate.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/arena.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/snake.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-24a">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-24a">
 
   <style>
     .auth-tab {
@@ -394,6 +407,14 @@
             </div>
             <div id="gsGridPve" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
+              <div class="gs-btn" onclick="closeGameSelector(); abrirCombatePvE();">
+                <div class="gs-btn-icon">⚔️</div>
+                <div class="gs-btn-info">
+                  <div data-i18n="gs.batalha.name" class="gs-btn-name">BATALHA ELEMENTAL</div>
+                  <div data-i18n="gs.batalha.desc" class="gs-btn-desc">Sua equipe de 3 contra um trio das ruínas</div>
+                  <div class="gs-btn-reward">3D&amp;T · turno a turno</div>
+                </div>
+              </div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
                 <div class="gs-btn-icon">🃏</div>
                 <div class="gs-btn-info">
@@ -651,6 +672,7 @@
 
 
           <div id="arenaModal"></div>
+          <div id="combateModal"></div>
           <div id="roubaMontModal"></div>
           <div id="batalhaNavalModal"></div>
 
@@ -927,23 +949,23 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js"></script>
-<script src="js/i18n-pvp.js"></script>
-<script src="js/i18n-bn.js"></script>
-<script src="js/i18n-minigames.js"></script>
-<script src="js/i18n-eggs.js"></script>
-<script src="js/i18n-gametick.js"></script>
-<script src="js/i18n-items.js"></script>
-<script src="js/i18n-market.js"></script>
-<script src="js/i18n-mina.js"></script>
-<script src="js/i18n-arcade.js"></script>
-<script src="js/i18n-session.js"></script>
-<script src="js/i18n-misc.js"></script>
-<script src="js/i18n-lore.js"></script>
-<script src="js/i18n-marketplace.js"></script>
-<script src="js/i18n-combate.js"></script>
-<script src="js/i18n-magias.js"></script>
-<script src="js/i18n-vantagens.js"></script>
+<script src="js/i18n.js?v=2026-08-24a"></script>
+<script src="js/i18n-pvp.js?v=2026-08-24a"></script>
+<script src="js/i18n-bn.js?v=2026-08-24a"></script>
+<script src="js/i18n-minigames.js?v=2026-08-24a"></script>
+<script src="js/i18n-eggs.js?v=2026-08-24a"></script>
+<script src="js/i18n-gametick.js?v=2026-08-24a"></script>
+<script src="js/i18n-items.js?v=2026-08-24a"></script>
+<script src="js/i18n-market.js?v=2026-08-24a"></script>
+<script src="js/i18n-mina.js?v=2026-08-24a"></script>
+<script src="js/i18n-arcade.js?v=2026-08-24a"></script>
+<script src="js/i18n-session.js?v=2026-08-24a"></script>
+<script src="js/i18n-misc.js?v=2026-08-24a"></script>
+<script src="js/i18n-lore.js?v=2026-08-24a"></script>
+<script src="js/i18n-marketplace.js?v=2026-08-24a"></script>
+<script src="js/i18n-magias.js?v=2026-08-24a"></script>
+<script src="js/i18n-vantagens.js?v=2026-08-24a"></script>
+<script src="js/i18n-pve.js?v=2026-08-24a"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -952,52 +974,51 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js"></script>
-<script src="js/data.js"></script>
-<script src="js/state.js"></script>
-<script src="js/vantagens.js"></script>
-<script src="js/ficha-3dt.js"></script>
-<script src="js/magias.js"></script>
-<script src="js/combate-3dt.js"></script>
-<script src="js/combate-ficha.js"></script>
-<script src="js/combate-efeitos.js"></script>
-<script src="js/combate-motor.js"></script>
-<script src="js/combate-ui.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/modal.js"></script>
-<script src="js/firebase.js"></script>
-<script src="js/gametick.js"></script>
-<script src="js/actions.js"></script>
-<script src="js/minigames.js"></script>
-<script src="js/summon.js"></script>
-<script src="js/eggs.js"></script>
-<script src="js/items.js"></script>
-<script src="js/market.js"></script>
-<script src="js/coinshop.js"></script>
-<script src="js/cards.js"></script>
-<script src="js/rouba-monte.js"></script>
-<script src="js/mina.js"></script>
-<script src="js/batalha-naval.js"></script>
-<script src="js/snake.js"></script>
-<script src="js/labirinto.js"></script>
-<script src="js/cambio.js"></script>
-<script src="js/arena.js"></script>
-<script src="js/lore.js"></script>
-<script src="js/lore-caps/cap1.js"></script>
-<script src="js/lore-caps/cap2.js"></script>
-<script src="js/lore-caps/cap3.js"></script>
-<script src="js/lore-caps/cap4.js"></script>
-<script src="js/amigos.js"></script>
-<script src="js/auth.js"></script>
+<script src="js/audio.js?v=2026-08-24a"></script>
+<script src="js/data.js?v=2026-08-24a"></script>
+<script src="js/state.js?v=2026-08-24a"></script>
+<script src="js/vantagens.js?v=2026-08-24a"></script>
+<script src="js/ficha-3dt.js?v=2026-08-24a"></script>
+<script src="js/magias.js?v=2026-08-24a"></script>
+<script src="js/combate-3dt.js?v=2026-08-24a"></script>
+<script src="js/equipa.js?v=2026-08-24a"></script>
+<script src="js/combate-ui.js?v=2026-08-24a"></script>
+<script src="js/combate-pve.js?v=2026-08-24a"></script>
+<script src="js/ui.js?v=2026-08-24a"></script>
+<script src="js/modal.js?v=2026-08-24a"></script>
+<script src="js/firebase.js?v=2026-08-24a"></script>
+<script src="js/gametick.js?v=2026-08-24a"></script>
+<script src="js/actions.js?v=2026-08-24a"></script>
+<script src="js/minigames.js?v=2026-08-24a"></script>
+<script src="js/summon.js?v=2026-08-24a"></script>
+<script src="js/eggs.js?v=2026-08-24a"></script>
+<script src="js/items.js?v=2026-08-24a"></script>
+<script src="js/market.js?v=2026-08-24a"></script>
+<script src="js/coinshop.js?v=2026-08-24a"></script>
+<script src="js/cards.js?v=2026-08-24a"></script>
+<script src="js/rouba-monte.js?v=2026-08-24a"></script>
+<script src="js/mina.js?v=2026-08-24a"></script>
+<script src="js/batalha-naval.js?v=2026-08-24a"></script>
+<script src="js/snake.js?v=2026-08-24a"></script>
+<script src="js/labirinto.js?v=2026-08-24a"></script>
+<script src="js/cambio.js?v=2026-08-24a"></script>
+<script src="js/arena.js?v=2026-08-24a"></script>
+<script src="js/lore.js?v=2026-08-24a"></script>
+<script src="js/lore-caps/cap1.js?v=2026-08-24a"></script>
+<script src="js/lore-caps/cap2.js?v=2026-08-24a"></script>
+<script src="js/lore-caps/cap3.js?v=2026-08-24a"></script>
+<script src="js/lore-caps/cap4.js?v=2026-08-24a"></script>
+<script src="js/amigos.js?v=2026-08-24a"></script>
+<script src="js/auth.js?v=2026-08-24a"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js"></script>
-<script src="js/cristais.js"></script>
-<script src="js/avatars-market.js"></script>
-<script src="js/eggs-market.js"></script>
-<script src="js/marketplace-core.js"></script>
+<script src="js/pool.js?v=2026-08-24a"></script>
+<script src="js/cristais.js?v=2026-08-24a"></script>
+<script src="js/avatars-market.js?v=2026-08-24a"></script>
+<script src="js/eggs-market.js?v=2026-08-24a"></script>
+<script src="js/marketplace-core.js?v=2026-08-24a"></script>
 
-<script src="js/main.js"></script>
+<script src="js/main.js?v=2026-08-24a"></script>
 
 
 <script>

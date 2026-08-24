@@ -33,18 +33,67 @@ const VANTAGENS = {
   reserva_oculta:    { custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
   toque_paralisante: { custo: 1, pm: 2, paralisa: true },
   afinidade_profunda:{ custo: 1, metadeCustoProprioElemento: true },
+
+  // Ataque Especial: 1 PM compra F+2 num único golpe. É uma manobra,
+  // não uma acção à parte — soma-se ao murro do turno.
+  golpe_carregado:   { custo: 1, pm: 1, bonusFGolpe: 2 },
+
+  // Ataque Múltiplo: vários golpes de Força na mesma rodada, 1 PM cada,
+  // até ao limite da Habilidade. Cada um rola a sua própria FA contra a
+  // FD do inimigo — não se somam, que é o que trava a vantagem.
+  golpe_encadeado:   { custo: 1, pmPorGolpe: 1, golpesMultiplos: true },
+
+  // Toque de Energia: FA = Armadura + 1d + PMs gastos, e a Habilidade
+  // NÃO entra. Um ataque para quem tem a Armadura alta e a Força baixa,
+  // que de outra forma não teria como ferir ninguém.
+  toque_ardente:     { custo: 1, toqueEnergia: true },
+
+  // Resistência à Magia: +2 nos testes para ignorar efeitos de magia.
+  // O manual exclui veneno de propósito — contra isso não vale.
+  alma_rija:         { custo: 1, bonusTesteMagia: 2, excetoVeneno: true },
+
+  // Magia Irresistível: quem tenta resistir às tuas magias leva −1.
+  magia_perfurante:  { custo: 1, penalidadeTesteAlvo: 1 },
+
+  // Energia Vital: 2 PV valem 1 PM. Continuas a lançar depois de os PM
+  // acabarem, a pagar com o corpo.
+  sangue_por_magia:  { custo: 2, pvComoPM: 2 },
 };
 
+// As desvantagens são todas de COMBATE, e é de propósito. Houve duas
+// que cobravam no ciclo do bichinho (a energia caía mais depressa, o
+// vínculo crescia mais devagar) e saíram daqui por duas razões: nada no
+// jogo as lia — davam o ponto e não cobravam nada — e mesmo ligadas
+// seriam pagas numa moeda diferente daquela em que o ponto foi gasto.
+// Se um dia voltarem, será numa bolsa própria do tamagotchi.
 const DESVANTAGENS = {
-  // ── De combate ──
   ferida_antiga:  { custo: -2, contraElemento: true, armaduraZero: true },
   sina_cobradora: { custo: -1, danoPorMagia: 1 },
   sangue_quente:  { custo: -1, furiaAoSofrerDano: true },
   limiar_baixo:   { custo: -2, semMagiaAbaixoDeMetade: true },
 
-  // ── Do ciclo de cuidado ──
-  chama_curta:    { custo: -1, energiaDecaiMais: 1.35 },
-  presenca_dura:  { custo: -1, vinculoCresceMenos: 0.7 },
+  // Assombrado: no início de cada batalha rola-se 1d. Saindo 4, 5 ou 6,
+  // a assombração apareceu: −1 em TUDO e magia ao dobro do preço, até
+  // ao fim da luta. É a única que muda de batalha para batalha.
+  sombra_faminta: { custo: -2, assombraEm: 4, penalidadeTudo: 1, dobraCustoMagia: true },
+
+  // Fetiche: ao sofrer dano faz-se um teste de Habilidade; falhando,
+  // o foco cai e não há magia nenhuma até se gastar um turno a apanhá-lo.
+  foco_fragil:    { custo: -1, perdeFocoAoSofrerDano: true },
+
+  // Ponto Fraco: quem já te viu lutar sabe onde bater. O adversário
+  // ganha H+1 contra ti — na Força de Ataque dele e na tua esquiva.
+  brecha_conhecida: { custo: -1, inimigoGanhaH: 1 },
+
+  // Restrição de Poder: contra um elemento, a magia custa o dobro.
+  veia_travada:   { custo: -1, contraElemento: true, dobraCustoMagia: true },
+
+  // Poder Vergonhoso (Constrangedor): a magia sai com Força de Ataque −1.
+  conjuro_desajeitado: { custo: -1, faMagiaMenos: 1 },
+
+  // Poder Vergonhoso (Agradável): é tudo tão bonito que mal faz mal.
+  // O adversário ganha A+1 e R+1 contra ti.
+  brilho_inofensivo: { custo: -1, inimigoGanhaA: 1, inimigoGanhaR: 1 },
 };
 
 // ═══════════════════════════════════════════════════════════════════

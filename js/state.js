@@ -19,11 +19,17 @@ const DISEASES = {
   desnutricao: { id:'desnutricao', get nome(){ return t('disease.malnutrition'); }, emoji:'🥵', cor:'#e85030', vital:'fome',    limiar:15 },
   infeccao:    { id:'infeccao',    get nome(){ return t('disease.infection');    }, emoji:'🤢', cor:'#7ab830', vital:'higiene', limiar:15 },
   melancolia:  { id:'melancolia',  get nome(){ return t('disease.melancholy');   }, emoji:'😔', cor:'#8b5cf6', vital:'humor',   limiar:20 },
+  // A fratura é a única que não vem de um vital em baixo — vem de cair em
+  // combate. Por isso não tem 'vital' nem 'limiar': o ciclo do jogo nunca
+  // a liga sozinho, quem a liga é a batalha (ver js/combate-pve.js).
+  // Depois disso comporta-se como as outras: come saúde todo o ciclo e
+  // mata se não for tratada. Cura-se no mesmo sítio, com o antídoto.
+  fratura:     { id:'fratura',     get nome(){ return t('disease.fracture');     }, emoji:'🦴', cor:'#c9a84c', vital:null,      limiar:null },
 };
 const DISEASE_STRESS_THRESHOLD = 20; // 20 ciclos = ~20 min de descuido
 const DISEASE_DECAY_PER_CYCLE  = 0.07; // saúde perdida por ciclo por doença activa
 
-let diseaseStress  = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+let diseaseStress  = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
 let activeDiseases = []; // array de ids das doenças activas
 
 // ═══════════════════════════════════════════════════════════════════
@@ -268,7 +274,7 @@ function loadRuntimeFromSlot(idx) {
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
     eggsInInventory = s?.eggs  ? s.eggs.map(e => ({...e}))  : [];
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
-    diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+    diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
     activeDiseases  = [];
     return;
   }
@@ -297,7 +303,7 @@ function loadRuntimeFromSlot(idx) {
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
-  diseaseStress   = s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 };
+  diseaseStress   = s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
   activeDiseases  = s.activeDiseases ? [...s.activeDiseases] : [];
 }
 

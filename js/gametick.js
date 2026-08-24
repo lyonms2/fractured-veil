@@ -239,6 +239,38 @@ function getElementoBonus() {
   }
 }
 
+// Energia que um avatar recupera por ciclo enquanto está no banco.
+// Metade do ritmo de quem dorme activo (4/ciclo), porque descansar não é
+// o mesmo que ser cuidado.
+const BANCO_ENERGIA_POR_CICLO = 2;
+// A saúde de quem está no banco nunca desce abaixo disto: doente sim,
+// morto sem o dono ver, não.
+const BANCO_SAUDE_MINIMA = 1;
+
+function recuperarEnergiaNoBanco() {
+  if (typeof avatarSlots === 'undefined') return;
+  avatarSlots.forEach((s, i) => {
+    if (!s || i === activeSlotIdx) return;      // o activo tem o seu próprio ciclo
+    if (!s.hatched || s.dead) return;
+    if (!s.vitals) return;
+    s.vitals.energia = Math.min(100, (s.vitals.energia ?? 100) + BANCO_ENERGIA_POR_CICLO);
+
+    // Uma doença apanhada em batalha (a fratura) tem de doer no banco
+    // também — se não doesse, bastava guardar o avatar para a curar de
+    // graça, e a fratura não seria ameaça nenhuma.
+    //
+    // Mas PÁRA EM 1 e nunca mata. Matar um avatar que o jogador nem
+    // está a ver, e que vale dinheiro no marketplace, é castigo a mais
+    // por uma coisa que ele nem viu acontecer. O bicho fica à beira,
+    // visivelmente doente, à espera do antídoto — e só morre mesmo se
+    // for posto em campo e continuar sem tratamento.
+    const doencas = (s.activeDiseases || []).length;
+    if (doencas > 0)
+      s.vitals.saude = Math.max(BANCO_SAUDE_MINIMA,
+        (s.vitals.saude ?? 100) - DISEASE_DECAY_PER_CYCLE * doencas);
+  });
+}
+
 function gameTick() {
   tickCount++;
   if(hatched && !dead) totalSecs++;
@@ -255,6 +287,18 @@ function gameTick() {
   if(petCooldown > 0) petCooldown--;
 
   if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
+
+  // ── OS AVATARES NO BANCO DESCANSAM ──
+  // Só o slot activo é que decai e recupera; os outros ficam congelados
+  // no estado em que foram guardados. Isso deixou de servir quando a
+  // batalha passou a cobrar energia aos TRÊS da equipa: sem descanso, ao
+  // fim de nove batalhas os do banco ficavam presos abaixo do limiar e a
+  // equipa nunca mais lutava.
+  //
+  // Descansam só ENERGIA, e mais devagar do que quem dorme a sério (2
+  // contra 4 por ciclo). A fome, o humor e a higiene continuam congeladas
+  // — quem não está a ser cuidado também não passa fome.
+  recuperarEnergiaNoBanco();
 
   const _d  = rarityBonus().decay;
   const _eb = getElementoBonus(); // bônus elementais passivos
@@ -299,6 +343,9 @@ function gameTick() {
     diseaseStress.exaustao = 0;
   }
   for(const id of Object.keys(DISEASES)) {
+    // Doenças sem limiar não nascem do descuido — a fratura vem da
+    // batalha, e é lá que é ligada.
+    if(DISEASES[id].limiar == null) continue;
     if(diseaseStress[id] >= DISEASE_STRESS_THRESHOLD && !activeDiseases.includes(id)) {
       activeDiseases.push(id);
       const d = DISEASES[id];

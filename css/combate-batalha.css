@@ -1,0 +1,337 @@
+/* ═══════════════════════════════════════════════════════════════════
+   BATALHA PvE
+
+   Três zonas empilhadas: inimigo em cima, registo ao meio, você e as
+   acções em baixo. Uma só disposição — em ecrã largo cresce, no telemóvel
+   encolhe, mas a ordem nunca muda.
+
+   NOTA: css/base.css tem html{zoom:1.5}. Nada aqui usa vh — as alturas
+   são percentagens do modal, que partilha o mesmo sistema de coordenadas.
+   ═══════════════════════════════════════════════════════════════════ */
+
+#combateModal {
+  position: fixed; inset: 0; z-index: 150;
+  display: flex; flex-direction: column; align-items: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(40,10,60,.5), rgba(4,3,10,.97) 70%);
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+  padding: 10px; overflow: hidden;
+}
+#combateModal.open { opacity: 1; pointer-events: all; }
+
+/* A arena rola como último recurso. Não devia ser preciso — o registo
+   encolhe primeiro — mas em ecrãs muito baixos vale mais rolar do que
+   ter o overflow:hidden do modal a cortar os botões pelo meio. */
+.cb-arena {
+  width: 100%; max-width: 480px; height: 100%;
+  display: flex; flex-direction: column; gap: 6px;
+  overflow-y: auto; overflow-x: hidden;
+}
+
+/* ── Cabeçalho ── */
+.cb-topo {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 1.5px;
+  color: var(--gold); padding: 2px 4px; flex: 0 0 auto;
+}
+.cb-topo-nome { flex: 1; text-align: center; }
+.cb-topo-dir  { display: flex; gap: 5px; align-items: center; }
+.cb-topo button {
+  background: none; border: 1px solid rgba(201,168,76,.3); border-radius: 4px;
+  color: var(--muted); font-size: 8px; padding: 3px 7px; cursor: pointer;
+  font-family: 'Cinzel', serif; letter-spacing: .8px;
+}
+.cb-topo button:hover { color: var(--gold); border-color: var(--gold); }
+.cb-topo button.desistir {
+  font-size: 6px; border-color: rgba(224,85,85,.3); color: #e88a8a;
+}
+.cb-topo button.desistir:hover { color: #ff9a9a; border-color: #e05555; }
+
+/* ── Cartão de combatente ── */
+.cb-lado { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
+
+.cb-cartao {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  padding: 7px 9px; border-radius: 10px;
+  border: 1px solid rgba(201,168,76,.22);
+  background: linear-gradient(135deg, rgba(30,25,45,.85), rgba(15,12,25,.85));
+  overflow: visible;
+}
+.cb-cartao.ini { border-color: rgba(224,85,85,.3); }
+.cb-cartao.eu  { border-color: rgba(122,184,122,.3); }
+
+.cb-svg { flex: 0 0 auto; width: 46px; height: 46px; display: grid; place-items: center; }
+.cb-svg svg { width: 100%; height: 100%; }
+.cb-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.cb-nome {
+  font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: .8px;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cb-caracs {
+  font-size: 5.5px; letter-spacing: 1.2px; color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
+/* Barras: a largura anima, para se ver o golpe a descontar */
+.cb-barra {
+  position: relative; height: 7px; border-radius: 4px;
+  background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+}
+.cb-barra span {
+  position: absolute; inset: 0 auto 0 0; border-radius: 3px;
+  transition: width .5s cubic-bezier(.22,1,.36,1);
+}
+.cb-barra b {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 5px; font-family: 'Courier New', monospace; font-weight: 700;
+  color: #fff; text-shadow: 0 0 3px #000, 0 1px 1px #000; letter-spacing: .5px;
+}
+.cb-barra.pv span { background: linear-gradient(90deg, #7a2020, #e05555); }
+.cb-barra.pm span { background: linear-gradient(90deg, #1e4a6e, #5ab4e8); }
+
+/* ── Marcas de estado: é aqui que se vê o motor a funcionar ── */
+.cb-marcas { display: flex; flex-wrap: wrap; gap: 3px; }
+.cb-marca {
+  font-size: 4.5px; letter-spacing: .6px; padding: 2px 4px; border-radius: 3px;
+  font-family: 'Cinzel', serif; border: 1px solid;
+}
+.cb-marca.furia    { color:#ff8a4c; border-color:rgba(255,138,76,.4);  background:rgba(255,138,76,.1); }
+.cb-marca.veneno   { color:#8ede8e; border-color:rgba(142,222,142,.4); background:rgba(142,222,142,.1); }
+.cb-marca.indefeso { color:#e0e0e0; border-color:rgba(224,224,224,.35);background:rgba(224,224,224,.08); }
+.cb-marca.sombra   { color:#c4b5fd; border-color:rgba(196,181,253,.4); background:rgba(196,181,253,.1); }
+.cb-marca.escudo   { color:#c9a84c; border-color:rgba(201,168,76,.4);  background:rgba(201,168,76,.1); }
+.cb-marca.buff     { color:#e05555; border-color:rgba(224,85,85,.4);   background:rgba(224,85,85,.1); }
+
+/* ── Banco: os outros dois da equipe ── */
+.cb-banco { display: flex; gap: 4px; justify-content: center; }
+.cb-banco-slot {
+  width: 30px; height: 30px; border-radius: 6px; position: relative;
+  border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.35);
+  display: grid; place-items: center;
+}
+.cb-banco-slot.ativo { visibility: hidden; }
+.cb-banco-slot.caido { opacity: .3; filter: grayscale(1); }
+.cb-banco-slot span {
+  position: absolute; bottom: -1px; right: 1px;
+  font-size: 4.5px; font-family: 'Courier New', monospace; color: var(--muted);
+  text-shadow: 0 0 3px #000;
+}
+
+/* ── Registo: a conta fica aqui, e é o coração desta versão ──
+   O min-height impede que a barra de acções o esmague — ela cresce com
+   o avatar (um com Toque Ardente traz um botão a mais). Mas tem de ser
+   pequeno: com 150px o conjunto passava a altura do modal e o
+   overflow:hidden cortava o fundo dos botões. 90px chegam para duas
+   linhas de conta, que é o mínimo para se perceber o turno. */
+.cb-log {
+  flex: 1 1 auto; min-height: 90px; overflow-y: auto;
+  border-radius: 8px; padding: 6px 8px;
+  border: 1px solid rgba(201,168,76,.12); background: rgba(0,0,0,.35);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.cb-log-linha {
+  font-size: 5.5px; line-height: 1.6; letter-spacing: .3px;
+  padding: 4px 6px; border-radius: 5px; border-left: 2px solid transparent;
+  animation: cb-log-in .25s ease-out;
+}
+.cb-log-linha.good { border-left-color: #7ab87a; background: rgba(122,184,122,.06); color: #cfe6cf; }
+.cb-log-linha.bad  { border-left-color: #e05555; background: rgba(224,85,85,.06);  color: #eccfcf; }
+.cb-log-linha.warn { border-left-color: #c9a84c; background: rgba(201,168,76,.06); color: #ecdfc0; }
+.cb-log-linha.info { border-left-color: var(--gold); color: var(--gold);
+                     font-family:'Cinzel',serif; text-align:center; letter-spacing:1px; }
+.cb-conta {
+  font-family: 'Courier New', monospace; font-size: 6px; color: var(--gold-light);
+  letter-spacing: .5px;
+}
+.cb-conta b { color: #ff7a6b; font-size: 7px; }
+.cb-conta i { color: var(--muted); font-style: normal; }
+.cb-onda-linha { display:block; }
+.cb-onda-total { display:block; color:#ff7a6b; font-weight:700; margin-top:2px; }
+.cb-extras { font-size: 5px; color: var(--muted); font-style: italic; }
+@keyframes cb-log-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+
+/* ── Acções ── */
+.cb-acoes {
+  flex: 0 0 auto; display: grid; gap: 5px;
+  grid-template-columns: repeat(2, 1fr);
+}
+.cb-trocas { grid-column: 1 / -1; display: flex; gap: 5px; }
+.cb-trocas .cb-btn { flex: 1; }
+
+.cb-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 5px; cursor: pointer; text-align: center;
+  border: 1px solid rgba(201,168,76,.3); border-radius: 7px;
+  background: linear-gradient(180deg, rgba(201,168,76,.12), rgba(201,168,76,.04));
+  transition: transform .12s, background .2s, border-color .2s;
+}
+.cb-btn:hover:not(:disabled) {
+  background: rgba(201,168,76,.22); border-color: var(--gold); transform: translateY(-1px);
+}
+.cb-btn:active:not(:disabled) { transform: translateY(1px); }
+.cb-btn:disabled { opacity: .32; cursor: not-allowed; }
+.cb-btn-rot {
+  font-family: 'Cinzel', serif; font-size: 6.5px; letter-spacing: .8px;
+  color: var(--gold-light); line-height: 1.3;
+}
+.cb-btn-sub {
+  font-size: 5px; color: var(--muted); font-family: 'Courier New', monospace;
+  letter-spacing: .3px;
+}
+.cb-btn.troca { background: linear-gradient(180deg, rgba(90,180,232,.12), rgba(90,180,232,.03));
+                border-color: rgba(90,180,232,.3); }
+.cb-btn.troca .cb-btn-rot { color: #8fd0f5; }
+.cb-btn.vant  { background: linear-gradient(180deg, rgba(122,184,122,.12), rgba(122,184,122,.03));
+                border-color: rgba(122,184,122,.3); }
+.cb-btn.vant .cb-btn-rot { color: #9fdc9f; }
+.cb-btn.sair  { grid-column: 1 / -1; }
+
+.cb-fim {
+  grid-column: 1 / -1; text-align: center; padding: 9px;
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 3px;
+  border-radius: 8px;
+}
+.cb-fim.bom { color: var(--gold); border: 1px solid var(--gold); background: rgba(201,168,76,.1);
+              animation: critical-pulse 1.4s ease-in-out infinite; }
+.cb-fim.mau { color: #e05555; border: 1px solid rgba(224,85,85,.4); background: rgba(224,85,85,.08); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   EFEITOS — os mesmos que o jogo já usava noutros sítios
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Encaixe: o cartão salta para trás ao levar */
+@keyframes cb-bate {
+  0%   { transform: none; filter: none; }
+  8%   { transform: translateX(6px) scale(1.03); filter: brightness(3) saturate(0); }
+  18%  { transform: translateX(-5px); filter: brightness(1.6); }
+  32%  { transform: translateX(3px); filter: none; }
+  50%  { transform: translateX(-2px); }
+  100% { transform: none; }
+}
+.cb-bate { animation: cb-bate .42s cubic-bezier(.36,.07,.19,.97); }
+
+/* Números que sobem — o mesmo gesto do float-up do jogo */
+@keyframes cb-dano-sobe {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(.6); }
+  18%  { opacity: 1; transform: translate(-50%, -8px) scale(1.15); }
+  30%  { transform: translate(-50%, -10px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -34px) scale(.9); }
+}
+.cb-dano {
+  position: absolute; left: 50%; top: 4px; pointer-events: none; z-index: 5;
+  font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+  color: #ff6b5b; text-shadow: 0 0 6px rgba(255,60,40,.9), 0 2px 3px #000;
+  animation: cb-dano-sobe .9s ease-out forwards;
+}
+.cb-dano.crit {
+  font-size: 19px; color: #ffd76b;
+  text-shadow: 0 0 10px rgba(255,190,60,1), 0 0 20px rgba(255,140,0,.7), 0 2px 3px #000;
+}
+
+/* Partículas — mesma ideia das ov-particle da invocação */
+@keyframes cb-part-voa {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2); }
+}
+.cb-particula {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 4;
+  animation: cb-part-voa .7s ease-out forwards;
+}
+
+/* Anel de choque no crítico — o mesmo gesto da .ov-shockwave da invocação */
+.cb-onda {
+  position: absolute; left: 50%; top: 50%; width: 40px; height: 40px;
+  margin: -20px 0 0 -20px; border-radius: 50%; pointer-events: none; z-index: 3;
+  border: 2px solid rgba(255,200,80,.9); box-shadow: 0 0 14px rgba(255,180,40,.7);
+  animation: cb-onda-abre .65s ease-out forwards;
+}
+@keyframes cb-onda-abre {
+  0%   { opacity: .95; transform: scale(.25); }
+  100% { opacity: 0;   transform: scale(3.2); }
+}
+
+/* ── Telemóvel: o alvo do dedo manda ──
+   O resto do jogo desenha em 5–7px por causa do zoom:1.5, e os botões
+   herdavam essa escala — davam 32px de altura, que é pouco para um dedo
+   numa decisão que se toma dezenas de vezes por batalha. O registo tem
+   folga de sobra para ceder estes pixels. */
+@media (max-width: 560px) {
+  .cb-btn { min-height: 44px; justify-content: center; }
+  .cb-btn-rot { font-size: 7px; }
+  /* Os botões do cabeçalho ficavam com 16px de altura — pouco para um
+     dedo. Cresce a área de toque sem os tornar mais visíveis, que
+     nenhum dos dois é uma jogada: um sai da batalha, o outro fecha-a. */
+  .cb-topo button { padding: 8px 10px; min-height: 30px; }
+  .cb-topo button.desistir { font-size: 6.5px; }
+}
+
+/* ── Ecrãs largos: dá altura ao registo em vez de esticar tudo ── */
+@media (min-width: 900px) {
+  .cb-arena { max-width: 560px; }
+  .cb-log-linha { font-size: 6px; }
+}
+
+/* ── Magia que o avatar sabe mas ainda não alcança ──
+   Não se esconde: mostra-se apagada com o que falta para a destrancar.
+   As três magias vêm do seed e nunca mudam, portanto isto é um objectivo
+   com data marcada, não uma ausência. */
+.hab.trancada { opacity: .55; }
+.hab.trancada .hab-nome { color: var(--muted); }
+.hab-tranca {
+  margin-top: 3px; font-size: 5px; letter-spacing: .5px;
+  font-family: 'Cinzel', serif; color: var(--gold);
+  border-top: 1px solid rgba(201,168,76,.2); padding-top: 3px;
+}
+
+/* ── O que a batalha rendeu ── */
+.cb-premio {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center; padding: 6px;
+  font-family: 'Cinzel', serif; font-size: 6.5px; letter-spacing: .8px;
+  color: var(--gold-light);
+  border: 1px solid rgba(201,168,76,.2); border-radius: 6px;
+  background: rgba(201,168,76,.05);
+}
+.cb-premio .gasto { color: #e0a050; }
+.cb-premio .cada  { color: var(--muted); font-size: 5.5px; width: 100%; text-align: center; }
+
+/* ── Desistir e a fratura ── */
+.cb-btn.desistir { background: linear-gradient(180deg, rgba(224,85,85,.1), rgba(224,85,85,.03));
+                   border-color: rgba(224,85,85,.28); }
+.cb-btn.desistir .cb-btn-rot { color: #e88a8a; }
+.cb-fratura {
+  grid-column: 1 / -1; text-align: center; padding: 6px 8px;
+  font-size: 5.5px; line-height: 1.5; letter-spacing: .3px; color: #ecd6a0;
+  border: 1px solid rgba(201,168,76,.35); border-radius: 6px;
+  background: rgba(201,168,76,.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O BOTÃO DE BATALHAR — vive na barra da equipa, em "Meus Avatares"
+   ═══════════════════════════════════════════════════════════════════ */
+.equipa-batalhar {
+  width: 100%; margin-top: 8px; padding: 9px 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  border: 1px solid var(--gold); border-radius: 8px;
+  background: linear-gradient(180deg, rgba(201,168,76,.22), rgba(201,168,76,.07));
+  transition: transform .12s, background .2s, box-shadow .2s;
+}
+.equipa-batalhar:hover {
+  background: rgba(201,168,76,.32); transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(201,168,76,.25);
+}
+.equipa-batalhar:active { transform: translateY(1px); }
+.equipa-batalhar .eb-icone { font-size: 12px; line-height: 1; }
+.equipa-batalhar .eb-texto {
+  font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 2.5px;
+  color: var(--gold-light); font-weight: 700;
+}
+.equipa-batalhar .eb-custo { font-size: 5.5px; color: var(--muted); letter-spacing: .5px; }
+
+.equipa-batalhar-off {
+  margin-top: 8px; padding: 8px 6px; text-align: center;
+  font-size: 5.5px; line-height: 1.5; letter-spacing: .4px; color: var(--muted);
+  border: 1px dashed rgba(255,255,255,.12); border-radius: 8px;
+}
+.equipa-batalhar-off.cansada { color: #e0a050; border-color: rgba(224,160,80,.3); }

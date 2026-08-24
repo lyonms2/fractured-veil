@@ -58,31 +58,57 @@ const FICHA_NIVEIS_POR_PONTO = 4;
 // DIFERENTES se enfrentam. Todos os avatares são Ningen, e o máximo que
 // atingem ao nível 35 é 13 — perfeitamente escrevível. As escalas ficam
 // disponíveis se um dia houver chefes fora da escala humana.
+// Tecto de cada característica na distribuição. O valor final leva
+// ainda o +1 do piso, portanto um avatar de nível 1 chega a 6.
 const FICHA_MAX_INICIAL = 5;
 
 const FICHA_PV_POR_R = 5;
 const FICHA_PM_POR_R = 5;
 
-// ── PISOS ──
-// O manual permite R0 e resolve com "sempre 1 Ponto de Vida e 1 Ponto de
-// Magia" — mas essa regra é para Pessoas Comuns, figurantes que não
-// lutam. Os nossos avatares lutam todos, e um avatar com 1 PV morre ao
-// primeiro golpe depois de semanas a ser criado.
+// ── PISO DA RESISTÊNCIA ──
+// Cuidado ao ler isto: já não é o que era, e o comentário antigo mentia.
 //
-// O piso cresce com o total de pontos porque, sem isso, um avatar com
-// foco em Habilidade ficava preso a R3 (15 PV) do nível 1 ao 35 enquanto
-// a Força dos adversários subia até 8. Não é dar pontos de graça: são
-// pontos do próprio orçamento, apenas com um mínimo garantido na R.
+// Nasceu para impedir R0 (que daria 0 PV, um avatar morto à nascença).
+// Essa parte deixou de ser dele: o +1 somado no fim da distribuição já
+// garante R≥1 para toda a gente. O que este piso ainda faz são DUAS
+// coisas, e nenhuma delas é a original:
+//
+//   · o "1 +" garante um MÍNIMO DE 10 PV E 10 PM em combate. Sem ele o
+//     mínimo cairia para 5 de cada, e 2,5% dos avatares entrariam em
+//     luta com 5 pontos de magia — quase nada, quando a magia média
+//     custa 5. Ficou por decisão, não por inércia: tirá-lo não daria
+//     mais variedade nenhuma (a amplitude das fichas nem se mexe),
+//     só avatares mais frágeis.
+//
+//   · o "floor(pontos/6)" faz o ESCALONAMENTO, e esse o +1 não dá por
+//     ser uma constante. Sem ele, um avatar com foco em Habilidade
+//     ficava preso na mesma vida do nível 1 ao 35 enquanto a Força dos
+//     adversários subia até 8.
+//
+// Não é dar pontos de graça: são pontos do próprio orçamento, apenas
+// com um mínimo garantido na Resistência.
 function _pisoDeR(pontos) {
   return 1 + Math.floor(pontos / 6);
 }
 
-// ── PISO DE HABILIDADE ──
-// O manual limita o custo de uma magia a H×5. Com H0 o tecto é 0 PMs, e
-// o avatar não consegue lançar nenhuma das magias do jogo excepto as de
-// custo zero — não é um avatar fraco, é um avatar sem magias, com as
-// três gavetas do kit vazias. Por isso a Habilidade nunca é 0.
-const FICHA_H_MINIMO = 1;
+// ── A HABILIDADE NÃO TEM PISO PRÓPRIO ──
+// Teve, enquanto o 0 era possível: com H0 o tecto H×5 dava 0 PMs e o
+// avatar não lançava magia nenhuma. O +1 somado no fim resolveu isso —
+// a Habilidade mínima passou a ser 1, e um tecto de 5 PMs já alcança
+// magia.
+//
+// Alcança as de ataque e as de defesa, mas nem sempre o golpe forte,
+// que é o mais caro. E isso deixou de ser um defeito para passar a ser
+// o ponto: um avatar de Habilidade baixa nasce sem o seu golpe forte, e
+// a ficha diz-lhe de quanta Habilidade precisa para o alcançar.
+//
+//   Comum nv1     27% nascem sem o golpe forte
+//   Lendário nv1  13%
+//   Comum nv35    13%  — o buraco fecha-se com o nível
+//
+// É a raridade a valer alguma coisa para além do número de pontos, e é
+// uma razão concreta para subir de nível. O ataque e a defesa nunca
+// faltam: essas gavetas têm magias baratas que cabem em qualquer tecto.
 
 // ═══════════════════════════════════════════════════════════════════
 // Gerador determinístico — mesmo LCG do resto do jogo, com constante
@@ -129,13 +155,12 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
     ? sortearVantagens(seed, pontosBase, elemento) : null;
   const pontos = vd ? vd.pontos : pontosBase;
 
-  const tecto  = FICHA_MAX_INICIAL + Math.floor((Math.max(1, nivel || 1) - 1) / FICHA_NIVEIS_POR_PONTO);
+  const nv     = Math.max(1, nivel || 1);
   const rnd    = _fichaRng(seed || 0);
 
-  // Distribuição: a Resistência recebe o mínimo primeiro (senão o avatar
-  // nasce com 0 PVs), e o resto vai ponto a ponto para uma característica
-  // sorteada. Distribuir um a um em vez de sortear quatro números de uma
-  // vez é o que garante que o total bate sempre certo com o orçamento.
+  // Distribuição: os pontos vão um a um para uma característica sorteada.
+  // Distribuir um a um em vez de sortear quatro números de uma vez é o
+  // que garante que o total bate sempre certo com o orçamento.
   //
   // O sorteio é PESADO, não uniforme: o seed escolhe uma característica
   // de foco e outra de apoio, e essas saem mais vezes. Sem isso o
@@ -148,18 +173,66 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
 
   const peso = k => k === foco ? 6 : k === apoio ? 3 : 1;
 
-  const piso = _pisoDeR(pontos);
-  const c = { F: 0, H: FICHA_H_MINIMO, R: piso, A: 0 };
-  let porGastar = pontos - piso - FICHA_H_MINIMO;
+  // ── SUBIR DE NÍVEL SÓ PODE SOMAR ──
+  // A ficha é recalculada do zero a cada nível, e isso já lhe custou um
+  // defeito: em 0,89% das subidas uma característica DESCIA. A culpa era
+  // do tecto, que sobe com o nível — quando subia, um ponto que antes
+  // tinha transbordado deixava de transbordar, e o sorteio inteiro
+  // desalinhava para trás.
+  //
+  // A correcção é dar a cada ponto O TECTO QUE VALIA NO NÍVEL EM QUE ELE
+  // FOI GANHO. Os pontos que vêm da raridade valem todos do nível 1
+  // (tecto 5); cada ponto ganho por nível traz consigo +1 de tecto. Assim
+  // um nível novo acrescenta um sorteio ao fim da fila e nunca mexe nos
+  // que já foram feitos.
+  const pontosDeNivel = Math.floor((nv - 1) / FICHA_NIVEIS_POR_PONTO);
+  const pontosNoNv1   = pontos - pontosDeNivel;
+  // Quantos sorteios este avatar já fazia ao nascer. Vem do orçamento do
+  // NÍVEL 1, que não muda nunca — se viesse do orçamento actual, o piso
+  // da Resistência (que sobe de seis em seis pontos) deslocava o limiar
+  // e voltava a desalinhar a fila. Foi assim que sobraram 1880
+  // regressões depois da primeira correcção.
+  const sorteiosNoNv1 = pontosNoNv1 - _pisoDeR(pontosNoNv1);
 
-  while (porGastar > 0) {
-    const disponiveis = FICHA_CARACS.filter(k => c[k] < tecto);
+  // O piso da Resistência entra como ponto de partida e sai da bolsa,
+  // como sempre saiu — mas o tecto da R sobe com ele. Sem isso, um piso
+  // maior deixava menos espaço até ao tecto, a R transbordava um sorteio
+  // mais cedo e o resto da fila desalinhava: a segunda fonte da mesma
+  // regressão. Com o tecto a acompanhar, a folga da R é sempre a mesma
+  // que a das outras três, e subir o piso não desloca sorteio nenhum.
+  const piso = _pisoDeR(pontos);
+  const c = { F: 0, H: 0, R: piso, A: 0 };
+  const porGastar = pontos - piso;
+
+  for (let i = 1; i <= porGastar; i++) {
+    // Este é o i-ésimo ponto. Se veio da raridade, tecto 5; se veio de
+    // um nível, tecto 5 + quantos níveis já tinham passado.
+    const tectoAqui = FICHA_MAX_INICIAL + Math.max(0, i - sorteiosNoNv1);
+    const disponiveis = FICHA_CARACS.filter(k => c[k] < tectoAqui + (k === 'R' ? piso : 0));
     if (!disponiveis.length) break;                      // tudo no tecto
     const total = disponiveis.reduce((t, k) => t + peso(k), 0);
     let alvo = rnd(1, total), k = disponiveis[0];
     for (const cand of disponiveis) { alvo -= peso(cand); if (alvo <= 0) { k = cand; break; } }
-    c[k]++; porGastar--;
+    c[k]++;
   }
+
+  const tecto = FICHA_MAX_INICIAL + pontosDeNivel;
+
+  // ── O PISO DE 1 ──
+  // Somado no FIM, depois de a bolsa estar distribuída, e não antes. A
+  // diferença é tudo: um piso pago da bolsa comeria 4 dos 5 pontos de um
+  // Comum de nível 1 e sairiam todos 1/1/1/1. Somado no fim, a distância
+  // entre as características fica intacta — a Tasha do manual (F0 H4 R3
+  // A2) passa a F1 H5 R4 A3, a mesma personagem um degrau acima.
+  //
+  // Existe porque um 0 desliga regras em silêncio:
+  //   · o crítico dobra a Força e a Armadura, e dobrar zero dá zero —
+  //     um 6 natural não valia nada para ~30% dos avatares
+  //   · a Habilidade manda no tecto H×5, e com H baixo havia gavetas de
+  //     magia que ficavam vazias por não caber lá nada
+  // Repare que os quatro sobem, portanto a FA e a FD sobem as duas: o
+  // dano por golpe fica onde estava.
+  c.F += 1; c.H += 1; c.R += 1; c.A += 1;
 
   // As vantagens de reserva dão PV ou PM como se a Resistência fosse
   // maior, sem mexer na R verdadeira.
@@ -169,6 +242,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
   const pm = (c.R + bonusPM) * FICHA_PM_POR_R;
 
   return {
+    seed: seed || 0,
     F: c.F, H: c.H, R: c.R, A: c.A,
     pv, pvMax: pv, pm, pmMax: pm,
     pontos, pontosBase, tecto,
