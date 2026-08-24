@@ -63,7 +63,7 @@ const FICHA_MAX_INICIAL = 5;
 const FICHA_PV_POR_R = 5;
 const FICHA_PM_POR_R = 5;
 
-// ── PISO DE RESISTÊNCIA ──
+// ── PISOS ──
 // O manual permite R0 e resolve com "sempre 1 Ponto de Vida e 1 Ponto de
 // Magia" — mas essa regra é para Pessoas Comuns, figurantes que não
 // lutam. Os nossos avatares lutam todos, e um avatar com 1 PV morre ao
@@ -76,6 +76,13 @@ const FICHA_PM_POR_R = 5;
 function _pisoDeR(pontos) {
   return 1 + Math.floor(pontos / 6);
 }
+
+// ── PISO DE HABILIDADE ──
+// O manual limita o custo de uma magia a H×5. Com H0 o tecto é 0 PMs, e
+// o avatar não consegue lançar nenhuma das magias do jogo excepto as de
+// custo zero — não é um avatar fraco, é um avatar sem magias, com as
+// três gavetas do kit vazias. Por isso a Habilidade nunca é 0.
+const FICHA_H_MINIMO = 1;
 
 // ═══════════════════════════════════════════════════════════════════
 // Gerador determinístico — mesmo LCG do resto do jogo, com constante
@@ -134,8 +141,8 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
   const peso = k => k === foco ? 6 : k === apoio ? 3 : 1;
 
   const piso = _pisoDeR(pontos);
-  const c = { F: 0, H: 0, R: piso, A: 0 };
-  let porGastar = pontos - piso;
+  const c = { F: 0, H: FICHA_H_MINIMO, R: piso, A: 0 };
+  let porGastar = pontos - piso - FICHA_H_MINIMO;
 
   while (porGastar > 0) {
     const disponiveis = FICHA_CARACS.filter(k => c[k] < tecto);
