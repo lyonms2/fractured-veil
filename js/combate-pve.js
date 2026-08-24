@@ -316,6 +316,9 @@ function _pveLutador(c, i, lado, ativo) {
   if (c.bonusFD)        m(`FD+${c.bonusFD}`, 'escudo');
   if (c.bonusEsquiva)   m(`${t('pve.marca.esquiva')}+${c.bonusEsquiva}`, 'escudo');
   if (c.cegoAtaque)     m(t('pve.marca.cego'), 'veneno');
+  if (c.penalidade)     m(`${t('pve.marca.tudo')}−${c.penalidade}`, 'veneno');
+  if (c.penalidadeR)    m(`R−${c.penalidadeR}`, 'veneno');
+  if (c.indefesoTurnos > 1) m(t('pve.marca.preso'), 'indefeso');
 
   return `<div class="${cls}" id="cbLut${lado}${i}">
     <div class="cb-lutador-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
@@ -377,8 +380,23 @@ function _pveFormula(g, eu) {
 }
 
 function _pveAjudaHTML() {
-  const eu = _pveEstado.A[_pveEstado.ativoA];
+  return `<div class="cb-ajuda-cab">
+      <span>${t('pve.ajuda.titulo2')}</span>
+      <button onclick="_pveAlternarAjuda()">✕</button>
+    </div>
+    <div class="cb-ajuda-lista">
+      ${_pveAjudaDe(_pveEstado.A[_pveEstado.ativoA], 'eu')}
+      ${_pveAjudaDe(_pveEstado.B[_pveEstado.ativoB], 'ini')}
+    </div>`;
+}
+
+// Um lado do painel. O inimigo mostra o mesmo que o jogador — saber o
+// que ele sabe fazer é metade da decisão, e antes só se descobria
+// levando com a magia na cara.
+function _pveAjudaDe(eu, lado) {
+  if (!eu) return '';
   const tecto = _c3(eu, 'H') * 5;
+  const el = CARACTERISTICAS_ELEMENTAIS[eu.elemento];
 
   const linha = (rot, nome, custo, desc, extra, trancada) => `
     <div class="cb-ajuda-item${trancada ? ' trancada' : ''}">
@@ -415,11 +433,13 @@ function _pveAjudaHTML() {
   if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{elem}', d.elemento || ''),
                        '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''), null, false);
 
-  return `<div class="cb-ajuda-cab">
-      <span>${t('pve.ajuda.titulo', { nome: eu.nome })}</span>
-      <button onclick="_pveAlternarAjuda()">✕</button>
+  return `<div class="cb-ajuda-lado ${lado}">
+    <div class="cb-ajuda-quem">
+      ${el ? el.emoji : '✦'} ${eu.nome}
+      <span>F${_c3(eu,'F')} H${_c3(eu,'H')} R${_c3(eu,'R')} A${_c3(eu,'A')} · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
-    <div class="cb-ajuda-lista">${html}</div>`;
+    ${html}
+  </div>`;
 }
 
 // ── A barra de acções ──
@@ -543,11 +563,72 @@ function _pveEscolher(tipo, arg) {
   else if (tipo === 'vantagem') _pveAcao = { vantagem: eu.vant, pm: eu.vant.pm };
   else {
     const g = eu.magias[tipo];
-    // Investe o que pode: metade do PM disponível nas de custo variável,
-    // como a política do motor. A escolha fina do PM fica para a próxima
-    // passagem da interface.
-    _pveAcao = { magia: g, pm: _c3pmIdeal(g, eu, _c3(eu, 'H') * 5) };
+    // Magia de custo variável: em vez de decidir por ele, abre-se a
+    // escolha. Cada opção mostra o que rende, para a decisão ser
+    // informada e não um palpite.
+    const tecto = _c3(eu, 'H') * 5;
+    const max = Math.min(g.pmMax || g.pm, tecto, _c3pmDisponivel(eu));
+    if (g.pmMax && max > g.pm) { _pveEscolherPM(tipo, g, max); return; }
+    _pveAcao = { magia: g, pm: _c3pmIdeal(g, eu, tecto) };
   }
+  _pveJogarTurno();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// QUANTO PM INVESTIR
+//
+// Metade das magias do manual escalam com os PMs gastos, e a interface
+// decidia sozinha (metade do que havia). Isso tirava ao jogador a
+// decisão mais interessante que estas magias oferecem: guardar magia
+// para o turno seguinte, ou gastar tudo agora.
+//
+// Cada opção mostra a Força de Ataque que rende — a mesma regra do
+// resto do ecrã, mostrar a conta em vez de pedir fé.
+// ═══════════════════════════════════════════════════════════════════
+function _pveEscolherPM(tipo, g, max) {
+  const eu = _pveEstado.A[_pveEstado.ativoA];
+  const alvo = document.getElementById('cbAcoes');
+  // Só os degraus que rendem mesmo alguma coisa a mais. Numa magia que
+  // ganha 1d a cada 2 PMs, gastar 4 em vez de 2 dá exactamente o mesmo —
+  // e oferecer essa opção é oferecer uma armadilha.
+  const rende = pm => {
+    const v = (typeof valorDaMagia === 'function') ? valorDaMagia(g, eu.ficha, pm) : null;
+    // O "|| 1" é a regra do motor: uma magia sem dados próprios rola na
+    // mesma o dado do ataque. Sem isto, 2 e 4 PMs pareciam diferentes na
+    // conta e davam exactamente o mesmo em jogo.
+    return v ? v.caracs + '|' + (v.dados || 1) : String(pm);
+  };
+  const escolhas = [];
+  let ultimo = null;
+  for (let pm = g.pm; pm <= max; pm++) {
+    const r = rende(pm);
+    if (r !== ultimo) { escolhas.push(pm); ultimo = r; }
+  }
+  // Se ainda assim forem muitos, ficam os extremos e três pelo meio.
+  const podados = escolhas.length <= 6 ? escolhas
+    : [0, 1, 2, 3, 4, 5].map(i => escolhas[Math.round(i * (escolhas.length - 1) / 5)])
+        .filter((v, i, ar) => ar.indexOf(v) === i);
+
+  alvo.innerHTML = `<div class="cb-pm-cab">
+      ${t('pve.pm.titulo', { nome: t('mag.' + g.id + '.nome') })}
+    </div>` + podados.map(pm => {
+    const v = (typeof valorDaMagia === 'function') ? valorDaMagia(g, eu.ficha, pm) : null;
+    const custo = _c3custoMagia(eu, g, pm, _pveEstado.B[_pveEstado.ativoB]);
+    const conta = v ? `FA ${v.caracs}${v.dados ? ' + ' + v.dados + 'd' : ' + 1d'}` : '';
+    return `<button class="cb-btn" onclick="_pveLancarCom('${tipo}',${pm})">
+        <span class="cb-btn-rot">${pm} PM</span>
+        <span class="cb-btn-sub">${conta}${custo !== pm ? ` · ${t('pve.pm.paga', { n: custo })}` : ''}</span>
+      </button>`;
+  }).join('') + `<div class="cb-trocas">
+      <button class="cb-btn troca" onclick="if(!_pveAnim)_pveDesenhar()">
+        <span class="cb-btn-rot">${t('pve.pm.voltar')}</span></button>
+    </div>`;
+}
+
+function _pveLancarCom(tipo, pm) {
+  if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
+  const eu = _pveEstado.A[_pveEstado.ativoA];
+  _pveAcao = { magia: eu.magias[tipo], pm };
   _pveJogarTurno();
 }
 
@@ -573,6 +654,16 @@ function _pveJogarTurno() {
   }
 
   _pveAnimar(e.eventos.slice(antes).concat(entradas));
+}
+
+// Enquanto a animação corre não se joga. O motor já resolveu o turno —
+// o que está no ecrã é a repetição — e aceitar outra jogada aqui seria
+// jogar um turno sem ter visto o anterior.
+function _pveTravarAcoes(travar) {
+  const el = document.getElementById('cbAcoes');
+  if (el) el.classList.toggle('a-animar', travar);
+  const bd = document.getElementById('cbDesistir');
+  if (bd) bd.disabled = travar;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -646,13 +737,29 @@ function _pveFecharContas() {
 // ═══════════════════════════════════════════════════════════════════
 function _pveAnimar(eventos) {
   _pveAnim = true;
+  // O clique já era ignorado enquanto a animação corria, mas os botões
+  // continuavam com ar de clicáveis — carregar e não acontecer nada
+  // parece avaria. Agora apagam-se e deixam de receber o rato.
+  _pveTravarAcoes(true);
+  // ── O RITMO ──
+  // Nem tudo merece o mesmo tempo. Um golpe precisa de respirar: há um
+  // número a subir, o cartão a tremer, partículas. Já o veneno a tirar
+  // 1 de vida ou uma magia a cobrar PM é escrituração — e são até seis
+  // por turno, um por avatar. A 850ms cada, um turno passava a demorar
+  // sete segundos e ninguém esperaria por isso.
+  const TEMPO = ev => ev.fimDeTurno ? 220
+                    : ev.entrada    ? 420
+                    : ev.troca      ? 500
+                    : ev.suporte    ? 600
+                    : 850;
   let atraso = 0;
   for (const ev of eventos) {
     setTimeout(() => _pveMostrarEvento(ev), atraso);
-    atraso += ev.troca ? 500 : 850;
+    atraso += TEMPO(ev);
   }
   setTimeout(() => {
     _pveAnim = false;
+    _pveTravarAcoes(false);
     if (_pveEstado.acabou) _pveFecharContas();
     _pveDesenhar();
     if (_pveEstado.acabou) _pveLog(_pveTextoFim(), 'info');
@@ -661,13 +768,36 @@ function _pveAnimar(eventos) {
 
 function _pveMostrarEvento(ev) {
   const souEu   = ev.lado === 'A';
-  const e2 = _pveEstado;
-  const cartaoAlvo = document.getElementById(
-    souEu ? 'cbLutini' + e2.ativoB : 'cbLuteu' + e2.ativoA);
+  // O cartão em que o golpe caiu, pelo ÍNDICE do evento. Usar o activo
+  // do momento estava errado desde que o avanço passou para o fim do
+  // turno: a animação ia para o inimigo seguinte enquanto o dano tinha
+  // sido no anterior.
+  const cartaoAlvo = (ev.alvoIdx != null)
+    ? document.getElementById((souEu ? 'cbLutini' : 'cbLuteu') + ev.alvoIdx)
+    : null;
 
   if (ev.apanhouFoco) {
     _pveLog(t('pve.log.apanhou_foco', { quem: ev.quem }), souEu ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
+    return;
+  }
+
+  // O que o fim do turno cobra: veneno, cura perpétua, sustentadas.
+  // Mexia nos números sem dizer nada, e por isso o veneno parecia não
+  // funcionar — funcionava, só não se via.
+  if (ev.fimDeTurno) {
+    const its = [];
+    if (ev.sangrou)  its.push(t('pve.fim.sangrou', { n: ev.sangrou }));
+    if (ev.regenerou)its.push(t('pve.fim.regenerou', { n: ev.regenerou }));
+    if (ev.sustentouPor)     its.push(t('pve.fim.sustentou', { n: ev.sustentouPor }));
+    if (ev.sustentadasCairam)its.push(t('pve.fim.caiu_sustentada'));
+    if (ev.destravou)its.push(t('pve.fim.destravou'));
+    if (ev.caiu)     its.push(t('pve.ev.caiu', { nome: ev.quem }));
+    if (!its.length) return;
+    _pveLog(`<b>${ev.quem}</b>` +
+            `<div class="cb-extras">${its.map(x => `<span>${x}</span>`).join('')}</div>`,
+            souEu ? 'good' : 'bad', ev.turno);
+    _pveAtualizarBarras();
     return;
   }
 
@@ -852,7 +982,10 @@ function _pveOndaDeChoque(alvo) {
 // As barras descem com atraso, para se ver quanto caiu
 function _pveAtualizarBarras() {
   const e = _pveEstado; if (!e) return;
-  const par = [[e.A[e.ativoA], 'cbLuteu' + e.ativoA], [e.B[e.ativoB], 'cbLutini' + e.ativoB]];
+  // Todos os seis, não só os dois em campo: o veneno e a cura perpétua
+  // mexem na vida de quem está no banco também.
+  const par = [...e.A.map((c, i) => [c, 'cbLuteu' + i]),
+               ...e.B.map((c, i) => [c, 'cbLutini' + i])];
   for (const [c, id] of par) {
     const el = document.getElementById(id); if (!el || !c) continue;
     const pv = el.querySelector('.cb-bolas.pv');

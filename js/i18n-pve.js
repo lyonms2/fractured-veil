@@ -13,6 +13,10 @@ window.registerStrings({
   'equipa.batalhar.cansada':    'Cansados demais para batalhar: {nomes}',
 
   'pve.ajuda.titulo':  'O que {nome} sabe fazer',
+  'pve.ajuda.titulo2': 'O QUE CADA UM SABE FAZER',
+  'pve.pm.titulo':     'Quanto investir em {nome}?',
+  'pve.pm.paga':       'paga {n}',
+  'pve.pm.voltar':     'Voltar',
   'pve.ajuda.golpe':   'Golpe comum',
   'pve.ajuda.golpe_desc':'Um ataque físico, sem magia nenhuma. Não custa PM e está sempre disponível — é o que sobra quando a magia não chega ou não serve.',
   'pve.titulo':        'BATALHA',
@@ -54,6 +58,12 @@ window.registerStrings({
   'pve.teste.vorpal':   'aguentar o corte',
   'pve.teste.esquiva':  'esquiva',
   'pve.teste.troca':    'troca',
+
+  'pve.fim.sangrou':        'o veneno tirou {n} de vida',
+  'pve.fim.regenerou':      'o corpo fechou-se: +{n} de vida',
+  'pve.fim.sustentou':      'pagou {n} PM para manter a magia de pé',
+  'pve.fim.caiu_sustentada':'sem PM: a magia sustentada caiu',
+  'pve.fim.destravou':      'voltou a mexer-se',
 
   'pve.nada':          'sem dano',
   'pve.total':         'total {n}',
@@ -108,6 +118,8 @@ window.registerStrings({
   'pve.ev.roubou':         'roubou {n} de vida',
   'pve.ev.bonus_fd':       'defesa +{n} contra este inimigo',
   'pve.marca.cego':        'CEGO',
+  'pve.marca.tudo':        'TUDO',
+  'pve.marca.preso':       'PRESO',
 
   'pve.marca.furia':    'FÚRIA',
   'pve.marca.veneno':   'VENENO',
@@ -136,6 +148,10 @@ window.registerStrings({
   'equipa.batalhar.cansada':    'Too tired to battle: {nomes}',
 
   'pve.ajuda.titulo':  'What {nome} can do',
+  'pve.ajuda.titulo2': 'WHAT EACH ONE CAN DO',
+  'pve.pm.titulo':     'How much to invest in {nome}?',
+  'pve.pm.paga':       'pays {n}',
+  'pve.pm.voltar':     'Back',
   'pve.ajuda.golpe':   'Basic strike',
   'pve.ajuda.golpe_desc':'A physical attack, no magic at all. Costs no MP and is always available — it is what is left when magic will not reach or will not serve.',
   'pve.titulo':        'BATTLE',
@@ -177,6 +193,12 @@ window.registerStrings({
   'pve.teste.vorpal':   'withstand the cut',
   'pve.teste.esquiva':  'dodge',
   'pve.teste.troca':    'switch',
+
+  'pve.fim.sangrou':        'the poison took {n} life',
+  'pve.fim.regenerou':      'the body closed itself: +{n} life',
+  'pve.fim.sustentou':      'paid {n} MP to keep the spell up',
+  'pve.fim.caiu_sustentada':'out of MP: the sustained spell dropped',
+  'pve.fim.destravou':      'can move again',
 
   'pve.nada':          'no damage',
   'pve.total':         'total {n}',
@@ -231,6 +253,8 @@ window.registerStrings({
   'pve.ev.roubou':         'stole {n} life',
   'pve.ev.bonus_fd':       'defence +{n} against this enemy',
   'pve.marca.cego':        'BLIND',
+  'pve.marca.tudo':        'ALL',
+  'pve.marca.preso':       'HELD',
 
   'pve.marca.furia':    'RAGE',
   'pve.marca.veneno':   'POISON',

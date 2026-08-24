@@ -712,28 +712,51 @@ function _c3pmIdeal(magia, eu, tecto) {
 // ═══════════════════════════════════════════════════════════════════
 // FIM DE TURNO
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// O FIM DO TURNO
+//
+// Aqui cobra-se o veneno, a cura perpétua e as magias sustentadas. Fazia
+// tudo isto EM SILÊNCIO: a vida do envenenado descia sozinha sem uma
+// linha no registo, e por isso o veneno parecia não estar a funcionar
+// — funcionava, só não se via.
+//
+// Agora devolve o que aconteceu, para o turno gerar os eventos.
+// ═══════════════════════════════════════════════════════════════════
 function _c3fimTurno(c) {
-  if (!c.vivo) return;
+  if (!c.vivo) return null;
+  const fora = {};
   // Magias sustentadas cobram todo o turno. Sem PM, caem.
   let custo = c.sustentadas.reduce((t, s) => t + (s.magia.porTurno ? s.pm : 0), 0);
   if (custo > c.pm) {
+    if (c.sustentadas.length) fora.sustentadasCairam = c.sustentadas.length;
     c.sustentadas = []; c.bonusA = 0; c.bonusF = 0; c.bonusFD = 0;
     c.bonusH = 0; c.furia = false;
     c.invulneravel = false; c.ocultado = false; c.bonusEsquiva = 0;
     c.armaduraDobrada = false; c.vorpal = false; c.roubando = null;
-  } else {
+  } else if (custo > 0) {
     c.pm -= custo;
+    fora.sustentouPor = custo;
   }
-  if (c.veneno) { c.pv = Math.max(0, c.pv - 1); if (c.pv === 0) c.vivo = false; }
+  if (c.veneno) {
+    c.pv = Math.max(0, c.pv - 1);
+    fora.sangrou = 1;
+    if (c.pv === 0) { c.vivo = false; fora.caiu = true; }
+  }
   // A Cura Perpétua fecha o corpo sozinha, sem custo nenhum
-  if (c.vant && c.vant.pvPorTurno && c.vivo) {
+  if (c.vant && c.vant.pvPorTurno && c.vivo && c.pv < c.pvMax) {
+    const antes = c.pv;
     c.pv = Math.min(c.pvMax, c.pv + c.vant.pvPorTurno);
+    fora.regenerou = c.pv - antes;
   }
   c.esquivas = 0;
   // A paralisia conta turnos; tudo o resto que deixe indefeso vale só
   // enquanto o golpe que o causou está a ser resolvido.
-  if (c.indefesoTurnos > 0) { c.indefesoTurnos--; c.indefeso = c.indefesoTurnos > 0; }
+  if (c.indefesoTurnos > 0) {
+    c.indefesoTurnos--; c.indefeso = c.indefesoTurnos > 0;
+    if (!c.indefeso) fora.destravou = true;
+  }
   else c.indefeso = false;
+  return Object.keys(fora).length ? fora : null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -781,7 +804,7 @@ function combate3dtTurno(e) {
     const banco = meu;
     const querTrocar = (opts.escolhaTroca || _c3valeTrocar)(l.c, l.alvo, banco);
     if (querTrocar >= 0 && banco[querTrocar] && banco[querTrocar].vivo) {
-      const evT = { turno: turnos, lado: l.lado, quem: l.c.nome };
+      const evT = { turno: turnos, lado: l.lado, quem: l.c.nome, quemIdx: iMeu() };
       const limpa = _c3trocaLimpa(l.c, l.alvo, rng, evT);
       const entra = banco[querTrocar];
       if (l.lado === 'A') e.ativoA = querTrocar; else e.ativoB = querTrocar;
@@ -799,7 +822,8 @@ function combate3dtTurno(e) {
     if (acao.apanharFoco && l.c.semFoco) {
       l.c.semFoco = false;
       if (eventos) eventos.push({ turno: turnos, lado: l.lado, quem: l.c.nome,
-                                  alvo: l.alvo.nome, apanhouFoco: true, suporte: true });
+                                  alvo: l.alvo.nome, quemIdx: iMeu(), alvoIdx: iDele(),
+                                  apanhouFoco: true, suporte: true });
       continue;
     }
 
@@ -807,7 +831,12 @@ function combate3dtTurno(e) {
     const pmBruto = magia ? acao.pm : 0;
     const pm = magia ? Math.min(pmBruto, _c3pmDisponivel(l.c)) : 0;
 
+    // Os índices, não só os nomes: a interface anima o cartão certo com
+    // eles. Sem isto ela usava o activo do momento — e como o activo
+    // avança no fim do turno, a animação do golpe caía no inimigo
+    // seguinte enquanto o dano tinha sido no anterior.
     const ev = { turno: turnos, lado: l.lado, quem: l.c.nome, alvo: l.alvo.nome,
+                 quemIdx: iMeu(), alvoIdx: iDele(),
                  magia: magia ? magia.id : null, pm };
 
     if (magia) {
@@ -907,18 +936,26 @@ function combate3dtTurno(e) {
   // Sustentado: cada turno tira 1d de vida ao outro e passa-a para si.
   // Fica aqui e não em _c3fimTurno porque precisa dos DOIS lados, e
   // aquele só conhece um combatente de cada vez.
-  for (const [meu, dele] of [[A[e.ativoA], B[e.ativoB]], [B[e.ativoB], A[e.ativoA]]]) {
+  for (const [meu, dele, lado, iMeu, iDele] of [
+    [A[e.ativoA], B[e.ativoB], 'A', e.ativoA, e.ativoB],
+    [B[e.ativoB], A[e.ativoA], 'B', e.ativoB, e.ativoA]]) {
     if (!meu || !meu.vivo || !meu.roubando || !dele || !dele.vivo) continue;
     let v = 0; for (let i = 0; i < (meu.roubando.dados || 1); i++) v += _d6(rng);
     v = Math.min(v, dele.pv);
     dele.pv -= v; if (dele.pv === 0) dele.vivo = false;
     meu.pv = Math.min(meu.pvMax, meu.pv + v);
-    if (eventos) eventos.push({ turno: turnos, lado: meu === A[e.ativoA] ? 'A' : 'B',
-                                quem: meu.nome, alvo: dele.nome, roubou: v, suporte: true,
-                                caiu: !dele.vivo });
+    if (eventos) eventos.push({ turno: turnos, lado, quem: meu.nome, alvo: dele.nome,
+                                quemIdx: iMeu, alvoIdx: iDele,
+                                roubou: v, suporte: true, caiu: !dele.vivo });
   }
 
-  [...A, ...B].forEach(_c3fimTurno);
+  // O fim do turno cobra o veneno, a cura e as sustentadas — e agora
+  // di-lo, em vez de mexer nos números sem explicação.
+  [...A.map((c, i) => [c, 'A', i]), ...B.map((c, i) => [c, 'B', i])].forEach(([c, lado, i]) => {
+    const r = _c3fimTurno(c);
+    if (r && eventos) eventos.push({ turno: turnos, lado, quem: c.nome,
+                                     quemIdx: i, fimDeTurno: true, ...r });
+  });
 
   // ── QUEM FICA EM CAMPO ──
   // O avanço para o seguinte acontece AQUI, no fim, e não no início do

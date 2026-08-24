@@ -468,6 +468,36 @@
   .cb-ajuda-desc { font-size: 6px; }
 }
 
+/* ── Enquanto a animação corre, não se joga ──
+   O clique já era ignorado, mas os botões continuavam com ar de
+   clicáveis — carregar e não acontecer nada parece avaria. */
+.cb-acoes.a-animar { opacity: .35; pointer-events: none; filter: saturate(.4); }
+.cb-acoes { transition: opacity .2s, filter .2s; }
+
+/* ── O painel de ajuda, agora com os dois lados ── */
+.cb-ajuda-lado { display: flex; flex-direction: column; gap: 6px; }
+.cb-ajuda-quem {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 1px;
+  padding: 5px 8px; border-radius: 6px; margin-top: 2px;
+}
+.cb-ajuda-quem span {
+  font-family: 'Courier New', monospace; font-size: 5.5px;
+  letter-spacing: .5px; color: var(--muted);
+}
+.cb-ajuda-lado.eu  .cb-ajuda-quem { color: #9fdc9f; background: rgba(122,184,122,.1);
+                                    border: 1px solid rgba(122,184,122,.3); }
+.cb-ajuda-lado.ini .cb-ajuda-quem { color: #e88a8a; background: rgba(224,85,85,.1);
+                                    border: 1px solid rgba(224,85,85,.3); }
+.cb-ajuda-lado.ini .cb-ajuda-item { border-left-color: rgba(224,85,85,.6); }
+
+/* ── A escolha de quanto PM investir ── */
+.cb-pm-cab {
+  grid-column: 1 / -1; text-align: center; padding: 4px;
+  font-family: 'Cinzel', serif; font-size: 6.5px; letter-spacing: 1.2px;
+  color: var(--gold);
+}
+
 /* ── A conta dos testes de característica ──
    O ataque já mostrava FA contra FD; os testes mostravam só o resultado.
    Quem perde um efeito por um ponto tem direito a ver qual foi o ponto. */
@@ -497,6 +527,9 @@
   .cb-conta b          { font-size: 9.5px; }
   .cb-extras span      { font-size: 6.5px; padding: 3px 7px; }
   .cb-teste            { font-size: 7px; padding: 3px 8px; }
+  .cb-ajuda-quem       { font-size: 10px; }
+  .cb-ajuda-quem span  { font-size: 7px; }
+  .cb-pm-cab           { font-size: 8.5px; }
   .cb-teste i          { font-size: 8.5px; }
   .cb-turno-cab        { font-size: 6.5px; }
   .cb-onda-total       { font-size: 8px; }
