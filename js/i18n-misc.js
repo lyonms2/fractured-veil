@@ -14,7 +14,7 @@ window.registerStrings(
 
     // amigos.js
     'amigos.log.visited':    '{icon} Visitaste {nome}! +{coins} 🪙 +{xp} XP',
-    'amigos.log.recebida':  '{icon} {nome} passou por cá e {accao}. +{vinculo} de vínculo.',
+    'amigos.log.recebida':  '{icon} {nome} passou por aqui e {accao}. +{vinculo} de vínculo.',
     'amigos.recebida.alimentar': 'deu de comer ao seu avatar',
     'amigos.recebida.brincar':   'brincou com o seu avatar',
     'amigos.recebida.limpar':    'deu banho no seu avatar',

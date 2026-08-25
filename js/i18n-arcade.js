@@ -19,7 +19,7 @@ window.registerStrings(
     // Labirinto
     'maze.info':            '{diff} · 🪙 {got}/{total} moedas',
     'maze.timer':           '⏱ {s}s',
-    'maze.result.caught':   '👁 APANHADO!',
+    'maze.result.caught':   '👁 TE PEGARAM!',
     'maze.result.timeout':  '⏰ TEMPO ESGOTADO',
     'maze.result.exit':     '🚪 SAÍDA ENCONTRADA!',
     'maze.result.exit_gold':'⚡ SAÍDA DOURADA!',
