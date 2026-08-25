@@ -67,7 +67,15 @@ function _slotDoencas(i, s) {
 
 // HELPERS DE FASE
 // ═══════════════════════════════════════════
+// A fase vem do faseFromNivel() do state.js, que é o dono da regra. Isto
+// era uma segunda cópia dos mesmos limiares — ainda não tinham divergido,
+// mas foi exactamente assim que o passivo elemental e as tabelas dos ovos
+// apodreceram: duas cópias, uma delas sem quem a corrigisse.
+//
+// A conta local fica só para o marketplace.html avulso, que corre sem o
+// state.js carregado.
 function _faseNum(nivel) {
+  if(typeof faseFromNivel === 'function') return faseFromNivel(nivel);
   const n = nivel || 1;
   return n < 5 ? 0 : n < 10 ? 1 : n < 17 ? 2 : 3;
 }

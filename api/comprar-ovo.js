@@ -10,6 +10,11 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
 const EGG_SALE_TAX = 0.10;
+// O mesmo tecto do inventario no cliente (js/eggs.js). Se o comprador ja
+// esta cheio, a compra e recusada ANTES de cobrar: o ovo ia para o
+// inboxEggs, o cliente so encaixava ate 10 e os restantes eram deitados
+// fora em silencio.
+const MAX_OVOS = 10;
 
 function initAdmin() {
   if (!getApps().length) {
@@ -54,6 +59,7 @@ module.exports = async function handler(req, res) {
 
   let egg = null;
   let novoSaldoComprador = 0;
+  let eggEntregue = null;
 
   try {
     await db.runTransaction(async (tx) => {
@@ -69,9 +75,23 @@ module.exports = async function handler(req, res) {
 
       if (egg.sellerId === buyerUid) throw new Error('OWN_EGG');
 
+      // Ovo ja apodrecido nao se vende. Nao era verificado em lado
+      // nenhum: pagava-se em cristais, o ovo ia para o inboxEggs e o
+      // cliente filtrava-o na entrada seguinte
+      // (data.inboxEggs.filter(e => Date.now() < e.expiraEm)). O
+      // comprador perdia os cristais e nunca sabia porque.
+      if (egg.expiraEm && Date.now() >= egg.expiraEm) throw new Error('EXPIRED');
+
       const buyerData   = buyerSnap.data() || {};
       const cristais    = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
       if (cristais < egg.price) throw new Error('INSUFFICIENT');
+
+      // Quantos ovos o comprador ja tem: os do slot activo mais os que
+      // estao a caminho e ainda nao foram consumidos.
+      const slotIdx    = buyerData.activeSlotIdx ?? buyerData.gs?.activeSlotIdx ?? 0;
+      const slotEggs   = (buyerData.avatarSlots || [])[slotIdx]?.eggs || [];
+      const aCaminho   = (buyerData.inboxEggs || []).length;
+      if (slotEggs.length + aCaminho >= MAX_OVOS) throw new Error('FULL');
 
       const taxa         = Math.round(egg.price * EGG_SALE_TAX);
       const sellerRecebe = egg.price - taxa;
@@ -83,6 +103,7 @@ module.exports = async function handler(req, res) {
         elemento: egg.elemento,
         expiraEm: egg.expiraEm,
       };
+      eggEntregue = newEgg;
 
       tx.update(buyerRef, {
         cristais:      novoSaldoComprador,
@@ -118,18 +139,24 @@ module.exports = async function handler(req, res) {
       }
     });
 
+    // O ovo vai na resposta para o cliente o poder mostrar JA no
+    // inventario. Antes so voltavam a raridade e o elemento, e o ovo
+    // comprado so aparecia depois de recarregar a pagina.
     return res.status(200).json({
       ok:        true,
       raridade:  egg.raridade,
       elemento:  egg.elemento,
       novoSaldo: novoSaldoComprador,
+      ovo:       eggEntregue,
     });
 
   } catch (err) {
     const erros = {
-      NOT_AVAILABLE: [409, 'Ovo já não disponível.'],
+      NOT_AVAILABLE: [409, 'Este ovo já não está à venda.'],
       INSUFFICIENT:  [400, 'Cristais insuficientes.'],
-      OWN_EGG:       [400, 'Não podes comprar o teu próprio ovo.'],
+      OWN_EGG:       [400, 'Você não pode comprar o seu próprio ovo.'],
+      EXPIRED:       [409, 'Este ovo já apodreceu e não pode mais ser chocado.'],
+      FULL:          [400, 'Seu inventário de ovos está cheio (máx 10). Choque ou venda algum antes.'],
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar compra.'];
     if (status === 500) console.error('[comprar-ovo]', err);

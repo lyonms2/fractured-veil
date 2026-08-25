@@ -35,6 +35,16 @@ function loadEggListings() {
 // ═══════════════════════════════════════════
 // GRELHA DE OVOS
 // ═══════════════════════════════════════════
+// Quantos ovos o jogador já tem, contando os que estão a caminho. O
+// servidor faz a mesma conta antes de cobrar; esta serve só para o botão
+// não convidar a uma compra que vai ser recusada.
+function _mktOvosDoJogador() {
+  if(typeof eggsInInventory !== 'undefined' && Array.isArray(eggsInInventory))
+    return eggsInInventory.length;
+  const slot = playerData && (playerData.avatarSlots || [])[playerData.activeSlotIdx || 0];
+  return ((slot && slot.eggs) || []).length + ((playerData && playerData.inboxEggs) || []).length;
+}
+
 function renderEggBrowse() {
   const grid = document.getElementById('eggBrowseGrid');
   if(!grid) return;
@@ -70,7 +80,14 @@ function renderEggBrowse() {
     const expiryMs     = egg.expiraEm - now;
     const expiryDias   = Math.max(0, Math.ceil(expiryMs / 86400000));
     const expiryUrgente = expiryDias <= 2;
-    const canBuy       = !isOwn && playerData && playerData.cristais >= egg.price;
+    // Um ovo já apodrecido não se compra: o servidor recusa-o agora, e o
+    // botão tem de dizer isso antes do clique. Antes ficava activo, e
+    // quem clicasse pagava por um ovo que o próprio jogo filtrava fora
+    // do inventário na entrada seguinte.
+    const podre        = egg.expiraEm && now >= egg.expiraEm;
+    const cheio        = _mktOvosDoJogador() >= 10;
+    const semSaldo     = !playerData || playerData.cristais < egg.price;
+    const canBuy       = !isOwn && !podre && !cheio && !semSaldo;
 
     const elemCar   = CARACTERISTICAS_ELEMENTAIS?.[egg.elemento];
     const elemEmoji = elemCar ? elemCar.emoji : '✦';
@@ -91,7 +108,10 @@ function renderEggBrowse() {
                onclick="event.stopPropagation();unlistEgg('${egg.id}')">${t('mkt.eggs.unlist_btn')}</button>`
           : `<button class="btn-buy-egg-mkt" ${!canBuy ? 'disabled' : ''}
                onclick="event.stopPropagation();buyEggFromMarket('${egg.id}')">
-               ${!playerData || playerData.cristais < egg.price ? t('mkt.eggs.no_balance') : t('mkt.eggs.buy_btn')}
+               ${podre    ? t('mkt.eggs.rotten')
+               : cheio    ? t('mkt.eggs.full')
+               : semSaldo ? t('mkt.eggs.no_balance')
+               : t('mkt.eggs.buy_btn')}
              </button>`
         }
       </div>
@@ -206,6 +226,20 @@ async function buyEggFromMarket(listingId) {
       if(typeof updateResourceUI === 'function') updateResourceUI();
     }
     updateCristaisDisplay();
+
+    // O ovo entra no inventário JÁ. Antes só a resposta trazia raridade e
+    // elemento, e o ovo comprado ficava invisível até se recarregar a
+    // página — o servidor mandava-o pelo inboxEggs, que só é lido no
+    // arranque. Continua a ir por lá também: o consumo do inbox ignora
+    // ids repetidos, portanto pô-lo aqui não o duplica.
+    if(data.ovo && typeof eggsInInventory !== 'undefined') {
+      if(!eggsInInventory.some(e => e.id === data.ovo.id)) {
+        eggsInInventory.push({...data.ovo});
+        if(typeof renderEggInventory === 'function') renderEggInventory();
+        if(typeof updateResourceUI    === 'function') updateResourceUI();
+        if(typeof scheduleSave        === 'function') scheduleSave();
+      }
+    }
 
     showToast(t('mkt.eggs.bought', {rarity: esc(data.raridade), elem: esc(data.elemento)}), 'ok');
   } catch(e) {
