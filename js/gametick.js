@@ -230,10 +230,16 @@ function getElementoBonus() {
       // Leveza do Vento — energia decai mais devagar
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 0.85, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
     case 'Sombra':
-      // Ciclo Lunar — recupera energia mais rápido dormindo, higiene estável
+      // Ciclo Lunar — dorme melhor e gasta menos energia acordada, mas o
+      // humor cai mais depressa: é o único elemento que paga por aquilo
+      // que ganha, tirando o Fogo.
+      //
+      // Havia aqui mais DOIS return por baixo deste, inalcançáveis, de
+      // versões anteriores — um deles dava higiene 0.90, que é o que o
+      // comentário antigo prometia com "higiene estável". Ficam os
+      // valores que estavam mesmo a correr: mexer nisto é rebalancear a
+      // Sombra, e isso é decisão de desenho, não limpeza de código.
       return { fomeDecay: 1.0, humorDecay: 1.10, energiaDecay: 0.90, higieneDecay: 1.0, sleepEnergy: 1.15, vinculoDecay: 1.0 };
-      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 0.90, sleepEnergy: 1.15, vinculoDecay: 1.0 };
-      return { fomeDecay: 1.0, humorDecay: 0.90, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 0.80 };
     default:
       return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
   }

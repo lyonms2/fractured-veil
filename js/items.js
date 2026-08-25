@@ -82,6 +82,10 @@ function renderItemInventory() {
 
 
 // ── Render equipped items floating above avatar ──
+// Uma volta completa. Devagar de propósito: isto vive por trás do
+// avatar o tempo todo, e a pressa cansa quem está a olhar.
+const PVE_ORBITA_SEGS = 14;
+
 function updateEquippedDisplay() {
   const el = document.getElementById('equippedItemsDisplay');
   if(!el) return;
@@ -109,12 +113,39 @@ function updateEquippedDisplay() {
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = equipped.map(entry => {
+  // Os itens ORBITAM a criatura, em vez de ficarem empilhados ao lado
+  // dela. Antes eram uma coluna presa à direita: liam-se como um canto
+  // da interface e não como coisas que pertencem ao bicho.
+  //
+  // Cada um entra com a sua fase, espalhados pela volta, e leva a
+  // duração do conjunto — assim mantêm o espaçamento em vez de se
+  // apanharem uns aos outros. A escala e a opacidade seguem a mesma
+  // volta para dar profundidade: maior e opaco à frente, menor e mais
+  // apagado quando passa por trás.
+  // O raio acompanha a fase. A criatura vai de 75px em bebé a 140px em
+  // adulta (FASE_SIZES), e com um raio fixo os orbes ou ficavam longe de
+  // mais do bebé ou por cima do adulto. Assim a folga até ao corpo é
+  // sempre a mesma.
+  const tam  = (typeof getFaseSize === 'function') ? getFaseSize() : 100;
+  const raio = Math.round(tam / 2 + 20);
+  const n = equipped.length;
+  el.innerHTML = equipped.map((entry, k) => {
     const item = ITEM_CATALOG[entry.catalogId];
     if(!item) return '';
     const daysLeft = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : 99;
-    const warn = daysLeft <= 3 ? `title="${t('item.tooltip.days_warn', {d: daysLeft})}"` : `title="${t('item.tooltip.days', {nome: item.nome, d: daysLeft})}"` ;
-    return `<span class="equipped-item-badge" ${warn}>${item.emoji}</span>`;
+    const titulo = daysLeft <= 3 ? t('item.tooltip.days_warn', {d: daysLeft})
+                                 : t('item.tooltip.days', {nome: item.nome, d: daysLeft});
+    // A duração sai daqui e não da folha de estilo, para o atraso e a
+    // volta não poderem discordar. A --orbe-fixa só serve a quem pediu
+    // menos movimento: sem animação, é ela que espalha os orbes à volta
+    // em vez de os empilhar todos no mesmo ponto.
+    const atraso = -(PVE_ORBITA_SEGS * k / n).toFixed(2);
+    const angulo = Math.round(360 * k / n);
+    return `<span class="orbe-item${daysLeft <= 3 ? ' a-expirar' : ''}"
+              style="--orbe-dur:${PVE_ORBITA_SEGS}s; --orbe-raio:${raio}px; --orbe-fixa:${angulo}deg;
+                     animation-delay:${atraso}s" title="${titulo}">
+        <i style="--orbe-dur:${PVE_ORBITA_SEGS}s; animation-delay:${atraso}s">${item.emoji}</i>
+      </span>`;
   }).join('');
 }
 

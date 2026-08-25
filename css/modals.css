@@ -416,26 +416,57 @@
 .btn-connect-wallet:hover { background:rgba(90,180,232,.2); box-shadow:0 0 14px rgba(90,180,232,.25); color:#7ecfff; border-color:#7ecfff; }
 .btn-connect-wallet:active { transform:scale(.97); }
 
-/* ── EQUIPPED ITEM DISPLAY ── */
+/* ── OS ITENS EQUIPADOS ORBITAM A CRIATURA ──
+   Eram uma coluna de orbes presa à direita (right:-14px), a pulsar no
+   sítio. Liam-se como um canto da interface e não como coisas do bicho.
+   Agora dão a volta a ele, devagar.
+
+   São dois elementos por item de propósito: o <span> roda em volta e o
+   <i> lá dentro trata da escala e da opacidade. Duas animações não podem
+   mexer no mesmo transform, e sem o <i> a profundidade e a órbita
+   entravam em conflito. O rotate negativo no fim mantém o emoji
+   direito em vez de o pôr a girar sobre si próprio. */
 #equippedItemsDisplay {
-  position:absolute; right:-14px; top:50%; transform:translateY(-50%);
-  display:flex; flex-direction:column; gap:6px;
+  position:absolute; left:50%; top:50%;
+  width:0; height:0;
   z-index:12; pointer-events:none;
 }
-.equipped-item-badge {
-  width:26px; height:26px; border-radius:50%;
+.orbe-item {
+  position:absolute; left:0; top:0;
+  width:26px; height:26px; margin:-13px 0 0 -13px;
+  animation:orbe-volta var(--orbe-dur,14s) linear infinite;
+}
+.orbe-item i {
+  display:flex; align-items:center; justify-content:center;
+  width:100%; height:100%; border-radius:50%;
+  font-style:normal; font-size:13px;
   background:radial-gradient(circle at 35% 35%, rgba(255,255,255,.2), rgba(0,0,0,.5));
   border:1px solid rgba(201,168,76,.5);
-  display:flex; align-items:center; justify-content:center;
-  font-size:13px;
   box-shadow:0 0 10px rgba(201,168,76,.35), inset 0 0 6px rgba(0,0,0,.5);
-  animation:orb-pulse 3s ease-in-out infinite;
+  animation:orbe-fundo var(--orbe-dur,14s) ease-in-out infinite;
 }
-.equipped-item-badge:nth-child(2) { animation-delay:1s; }
-.equipped-item-badge:nth-child(3) { animation-delay:2s; }
-@keyframes orb-pulse {
-  0%,100% { box-shadow:0 0 10px rgba(201,168,76,.35),inset 0 0 6px rgba(0,0,0,.5); transform:scale(1); }
-  50%      { box-shadow:0 0 20px rgba(201,168,76,.7), inset 0 0 6px rgba(0,0,0,.5); transform:scale(1.08); }
+/* Prestes a expirar: deixa de ser dourado e chama a atenção */
+.orbe-item.a-expirar i {
+  border-color:rgba(232,160,48,.8);
+  box-shadow:0 0 12px rgba(232,160,48,.6), inset 0 0 6px rgba(0,0,0,.5);
+}
+
+@keyframes orbe-volta {
+  from { transform:rotate(0deg)   translateX(var(--orbe-raio,62px)) rotate(0deg); }
+  to   { transform:rotate(360deg) translateX(var(--orbe-raio,62px)) rotate(-360deg); }
+}
+/* A meia-volta é a passagem POR TRÁS: encolhe e apaga-se. */
+@keyframes orbe-fundo {
+  0%, 100% { transform:scale(1.06); opacity:1; }
+  50%      { transform:scale(.82);  opacity:.5; }
+}
+
+/* Quem pediu menos movimento ao sistema fica com os orbes quietos, em
+   roda à volta do avatar, sem perder a informação. */
+@media (prefers-reduced-motion: reduce) {
+  .orbe-item, .orbe-item i { animation:none; }
+  .orbe-item   { transform:rotate(var(--orbe-fixa,0deg)) translateX(var(--orbe-raio,62px)); }
+  .orbe-item i { opacity:.95; }
 }
 .item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
 
