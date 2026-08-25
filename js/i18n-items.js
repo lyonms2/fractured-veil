@@ -5,6 +5,21 @@
 window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
+    // O tipo e a raridade ficam guardados em português no ITEM_CATALOG
+    // porque são CHAVE: o código compara tipo === 'Cenário', ordena por
+    // TIPO_ORDER e agrupa por eles. Estas são só a fachada — traduzir o
+    // valor guardado partia a lógica toda.
+    'item.tipo.Amuleto':      'Amuleto',
+    'item.tipo.Coroa':        'Coroa',
+    'item.tipo.Cenário':      'Cenário',
+    'item.tipo.Consumível':   'Consumível',
+    'item.tipo.Especial':     'Especial',
+    'item.tipo.Outro':        'Outro',
+    'item.rar.Comum':         'Comum',
+    'item.rar.Raro':          'Raro',
+    'item.rar.Lendário':      'Lendário',
+    'item.rar.Especial':      'Especial',
+
     'item.inv.word_one':      'item',
     'item.inv.word_multi':    'itens',
     'item.inv.count':         '{n} {word} · {eq}/{max} equipados',
@@ -25,6 +40,17 @@ window.registerStrings(
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
+    'item.tipo.Amuleto':      'Amulet',
+    'item.tipo.Coroa':        'Crown',
+    'item.tipo.Cenário':      'Scenery',
+    'item.tipo.Consumível':   'Consumable',
+    'item.tipo.Especial':     'Special',
+    'item.tipo.Outro':        'Other',
+    'item.rar.Comum':         'Common',
+    'item.rar.Raro':          'Rare',
+    'item.rar.Lendário':      'Legendary',
+    'item.rar.Especial':      'Special',
+
     'item.inv.word_one':      'item',
     'item.inv.word_multi':    'items',
     'item.inv.count':         '{n} {word} · {eq}/{max} equipped',

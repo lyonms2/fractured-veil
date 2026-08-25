@@ -72,7 +72,7 @@ function renderItemInventory() {
 
   list.innerHTML = tiposPresentes.map(tipo => `
     <div style="margin-bottom:16px;">
-      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:10px;">◆ ${tipo}</div>
+      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:10px;">◆ ${tItemTipo(tipo)}</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${grupos[tipo].map(renderCard).join('')}
       </div>

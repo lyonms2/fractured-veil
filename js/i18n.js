@@ -647,6 +647,23 @@ function t(key, vars) {
   return val;
 }
 
+// ── tItemTipo / tItemRaridade — a fachada do catálogo de itens ───
+//
+// O tipo e a raridade ficam guardados em português no ITEM_CATALOG
+// porque são CHAVE, não texto: o código compara tipo === 'Cenário',
+// ordena por TIPO_ORDER e agrupa por eles. Traduzir o valor guardado
+// partia tudo isso — traduz-se só na hora de o mostrar.
+//
+// Vão direitos ao LANG_STRINGS em vez de passarem pelo t(): um tipo
+// novo que ainda não tenha tradução cai no próprio valor, que já está
+// em português, em vez de encher a consola de avisos.
+function tItemTipo(tipo) {
+  return (window.LANG_STRINGS || {})['item.tipo.' + tipo] || tipo;
+}
+function tItemRaridade(rar) {
+  return (window.LANG_STRINGS || {})['item.rar.' + rar] || rar;
+}
+
 // ── Troca idioma e recarrega ─────────────────────────────────────
 function setLang(lang) {
   localStorage.setItem('fv_lang', lang);

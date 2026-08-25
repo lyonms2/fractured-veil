@@ -42,7 +42,7 @@ function renderMarketItems() {
         <span class="mkt-catalog-emoji">${item.emoji}</span>
         <div class="mkt-catalog-info">
           <div class="mkt-catalog-name" style="color:${item.cor}">${item.nome}</div>
-          <div class="mkt-catalog-type">${item.tipo} · ${item.raridade}</div>
+          <div class="mkt-catalog-type">${tItemTipo(item.tipo)} · ${tItemRaridade(item.raridade)}</div>
         </div>
         <div class="mkt-catalog-price">${precoHtml} 🪙</div>
       </div>
@@ -67,7 +67,7 @@ function renderMarketItems() {
 
   list.innerHTML = tiposPresentes.map(tipo => `
     <div style="margin-bottom:20px;">
-      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px;">◆ ${tipo}</div>
+      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px;">◆ ${tItemTipo(tipo)}</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${grupos[tipo].map(renderCard).join('')}
       </div>
