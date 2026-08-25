@@ -29,7 +29,11 @@ function spawnPoop() {
 
   poopCount++;
   dirtyLevel = Math.min(3, Math.floor(poopCount / 2));
-  vitals.higiene = Math.max(0, vitals.higiene - 18);
+  // O Pano das Marés parte a rajada ao meio. É aqui e não no desgaste
+  // porque é daqui que vem a pressão na higiene: 18 de uma vez a cada
+  // ~3 refeições, contra 0,12 por segundo a decair.
+  const perdaHigiene = Math.round(18 * getItemEffect('poopHigieneMult'));
+  vitals.higiene = Math.max(0, vitals.higiene - perdaHigiene);
 
   addLog(t('gt.poop.log'), 'bad');
   showBubble(t('gt.poop.bub'));

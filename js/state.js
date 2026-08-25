@@ -72,6 +72,53 @@ const ITEM_CATALOG = {
     cor:      '#7b68ee',
     efeitos:  { sleepEnergyMult: 2.0 }
   },
+  // ── OS TRÊS QUE FAZEM O EQUIPAR DECIDIR ALGUMA COISA ──
+  // Havia 3 amuletos para 3 espaços: quem comprava tudo equipava tudo e
+  // não escolhia nada. Com seis, a escolha passa a depender do elemento
+  // (o Fogo come mais, a Sombra entristece mais) e de como se joga.
+  //
+  // Nenhum toca em F/H/R/A. Os dois de combate mexem no CUSTO de jogar,
+  // nunca no poder em batalha — é o que impede isto de virar pay-to-win
+  // quando o PvP chegar.
+  'pano_mares': {
+    id:       'pano_mares',
+    get nome()  { return t('item.tide_cloth.name'); },
+    get desc()  { return t('item.tide_cloth.desc'); },
+    get efeito(){ return t('item.tide_cloth.eff');  },
+    emoji:    '🫧',
+    tipo:     'Amuleto',
+    raridade: 'Comum',
+    preco:    900,
+    cor:      '#5ab4e8',
+    // A higiene decai devagar (0,12/s, 14 min para esvaziar), mas leva
+    // −18 de rajada a cada cocô, que chega a cada ~3 refeições. A
+    // pressão está no evento, não no desgaste — é aí que este item pega.
+    efeitos:  { poopHigieneMult: 0.5 }
+  },
+  'folego_combate': {
+    id:       'folego_combate',
+    get nome()  { return t('item.battle_wind.name'); },
+    get desc()  { return t('item.battle_wind.desc'); },
+    get efeito(){ return t('item.battle_wind.eff');  },
+    emoji:    '⚡',
+    tipo:     'Amuleto',
+    raridade: 'Raro',
+    preco:    1400,
+    cor:      '#e8c870',
+    efeitos:  { battleEnergyMult: 0.6 }      // 10 → 6 de energia
+  },
+  'tala_osso': {
+    id:       'tala_osso',
+    get nome()  { return t('item.bone_splint.name'); },
+    get desc()  { return t('item.bone_splint.desc'); },
+    get efeito(){ return t('item.bone_splint.eff');  },
+    emoji:    '🦴',
+    tipo:     'Amuleto',
+    raridade: 'Raro',
+    preco:    1100,
+    cor:      '#d8cfc0',
+    efeitos:  { fraturaMult: 0.4 }           // 10% → 4%
+  },
   'antidoto_dimensional': {
     id:         'antidoto_dimensional',
     get nome()  { return t('item.antidote.name'); },
@@ -107,10 +154,29 @@ function getEquippedItems() {
     .filter(Boolean);
 }
 function getItemEffect(key) {
+  return getItemEffectDoSlot(typeof activeSlotIdx !== 'undefined' ? activeSlotIdx : 0, key);
+}
+
+// O mesmo, mas de um avatar QUALQUER — não só do que está em campo.
+//
+// Existe por causa da batalha: ela cobra energia aos três da equipa, e
+// os itens são de cada um. O getItemEffect() só sabe ler o inventário do
+// slot activo (que vive na global itemInventory); os outros guardam o
+// seu em avatarSlots[i].items. Sem isto, um item de combate comprado
+// para a Bruma descontava a energia da Tasha.
+function getItemEffectDoSlot(idx, key) {
+  const activo = (typeof activeSlotIdx !== 'undefined') ? activeSlotIdx : 0;
+  const lista  = (idx === activo)
+    ? itemInventory
+    : ((typeof avatarSlots !== 'undefined' && avatarSlots[idx] && avatarSlots[idx].items) || []);
+  const agora = Date.now();
   let val = 1.0;
-  getEquippedItems().forEach(item => {
-    if(item.efeitos && item.efeitos[key] !== undefined) val *= item.efeitos[key];
-  });
+  for(const i of lista) {
+    if(!i.equipped) continue;
+    if(i.expiraEm && agora > i.expiraEm) continue;      // expirado não conta
+    const item = ITEM_CATALOG[i.catalogId];
+    if(item && item.efeitos && item.efeitos[key] !== undefined) val *= item.efeitos[key];
+  }
   return val;
 }
 let eggLayNotified  = false;

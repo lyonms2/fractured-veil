@@ -903,7 +903,15 @@ function _pveFecharContas() {
   // ── A energia dos três ──
   const idx = (typeof equipaIdx === 'function') ? equipaIdx() : [];
   const custo = e._desistiu ? PVE_ENERGIA_DESISTIR : PVE_ENERGIA_CUSTO;
-  idx.forEach(i => _pveGastarEnergia(i, custo));
+  // Por avatar, e não pela equipa: o Fôlego de Combate é de quem o traz
+  // vestido. Daí o getItemEffectDoSlot — o getItemEffect() só sabe ler o
+  // inventário de quem está em campo, e aqui pagam os três.
+  // Nunca menos de 1: uma batalha de graça seria energia infinita.
+  idx.forEach(i => {
+    const m = (typeof getItemEffectDoSlot === 'function')
+      ? getItemEffectDoSlot(i, 'battleEnergyMult') : 1;
+    _pveGastarEnergia(i, Math.max(1, Math.round(custo * m)));
+  });
 
   // ── A fratura ──
   // Vale para quem caiu, tenha a batalha acabado como acabou. Quem
@@ -911,7 +919,10 @@ function _pveFecharContas() {
   const fraturados = [];
   e.A.forEach((c, n) => {
     if (c.vivo || idx[n] == null) return;
-    if (Math.random() >= PVE_FRATURA_CHANCE) return;
+    // A Tala de Osso é de quem caiu, não de quem está em campo.
+    const chance = PVE_FRATURA_CHANCE * ((typeof getItemEffectDoSlot === 'function')
+      ? getItemEffectDoSlot(idx[n], 'fraturaMult') : 1);
+    if (Math.random() >= chance) return;
     if (_pveAdoecer(idx[n], 'fratura')) fraturados.push(c.nome);
   });
   e._fraturados = fraturados;
