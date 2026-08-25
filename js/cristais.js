@@ -8,6 +8,36 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const CONTRACT_ADDRESS = '0xCcA07f21a40129955db81Dc0073693a26e777d8E';
+
+// ═══════════════════════════════════════════════════════════════════
+// O ETHERS CHEGA SÓ QUANDO É PRECISO
+//
+// O marketplace.html avulso carregava-o num <script> no topo. Quando o
+// marketplace passou a viver dentro do index.html, o script ficou para
+// trás — e o index.html nunca o carregou. Resultado: comprar cristais e
+// resgatar rebentavam com "ethers is not defined", apanhado pelo
+// try/catch de cada função e mostrado ao jogador como um erro genérico.
+// O caminho do dinheiro real estava morto e a dizer só "erro".
+//
+// Carrega-se aqui, sob procura, para não pesar o arranque de quem nunca
+// abre estas secções. A promessa é guardada: várias chamadas ao mesmo
+// tempo esperam pelo mesmo carregamento.
+const ETHERS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js';
+let _ethersPromise = null;
+
+function carregarEthers() {
+  if(typeof ethers !== 'undefined') return Promise.resolve(true);
+  if(_ethersPromise) return _ethersPromise;
+  _ethersPromise = new Promise((resolve, reject) => {
+    const el = document.createElement('script');
+    el.src = ETHERS_CDN;
+    el.async = true;
+    el.onload  = () => resolve(true);
+    el.onerror = () => { _ethersPromise = null; reject(new Error('ethers_indisponivel')); };
+    document.head.appendChild(el);
+  });
+  return _ethersPromise;
+}
 const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
 
 const CRYSTAL_PACKAGES = [
@@ -47,6 +77,7 @@ async function renderTransparencia() {
   }
 
   try {
+    await carregarEthers();
     const provider = new ethers.BrowserProvider(window.ethereum);
     const abi = ['function limiteHoje(address) view returns (uint256, uint256)'];
     const contrato = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
@@ -108,6 +139,7 @@ async function comprarCristais(idx) {
   try {
     status.innerHTML = `<span class="tx-pending">${t('mkt.tx.open_mm')}</span>`;
 
+    await carregarEthers();
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer   = await provider.getSigner();
     const maticWei = ethers.parseEther(pkg.matic.toString());
@@ -157,7 +189,11 @@ async function comprarCristais(idx) {
 
   } catch(e) {
     console.error('[comprarCristais]', e);
-    if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
+    // Sem a biblioteca não há transacção nenhuma — dizer isso em vez de
+    // um "erro" que não ajuda ninguém a perceber o que fazer.
+    if(e.message === 'ethers_indisponivel') {
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.sem_ethers')}</span>`;
+    } else if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.cancelled')}</span>`;
     } else if(e.code === 'INSUFFICIENT_FUNDS' || e?.message?.includes('insufficient funds')) {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${pkg.matic} MATIC</b>`})}<br><small>${t('mkt.tx.exchange_hint')}</small></span>`;
@@ -215,6 +251,7 @@ async function resgatar() {
 
     status.innerHTML = `<span class="tx-pending">${t('mkt.tx.open_mm_redeem')}</span>`;
 
+    await carregarEthers();
     const provider  = new ethers.BrowserProvider(window.ethereum);
     const signer    = await provider.getSigner();
     const abi = ['function withdraw(uint256 gems, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external'];
@@ -266,7 +303,9 @@ async function resgatar() {
 
   } catch(e) {
     console.error('[resgatar]', e);
-    if(e.code === 'ACTION_REJECTED') {
+    if(e.message === 'ethers_indisponivel') {
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.sem_ethers')}</span>`;
+    } else if(e.code === 'ACTION_REJECTED') {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.redeem_cancelled')}</span>`;
     } else {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.redeem_err')}</span>`;

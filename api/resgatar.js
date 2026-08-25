@@ -31,6 +31,32 @@ const RATE                 = 10;
 const MAX_GEMS_POR_RESGATE = 100;
 const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
+// ── O contrato já consumiu este nonce? ──────────────────────────
+//
+// O contrato expõe nonceUsado(address,uint256) → bool. É o que permite
+// saber se um saque autorizado chegou mesmo a acontecer, e por isso
+// distinguir "o jogador não completou" de "completou e não nos avisou".
+const POLYGON_RPCS = [
+  'https://polygon-bor-rpc.publicnode.com',
+  'https://polygon.drpc.org',
+  'https://polygon.meowrpc.com',
+  'https://polygon.llamarpc.com',
+];
+const ABI_NONCE = ['function nonceUsado(address,uint256) view returns (bool)'];
+
+async function _nonceJaUsado(carteira, nonce) {
+  const endereco = ethers.getAddress(carteira);
+  let ultimoErro = null;
+  for (const rpc of POLYGON_RPCS) {
+    try {
+      const provider = new ethers.JsonRpcProvider(rpc);
+      const contrato = new ethers.Contract(process.env.CONTRACT_ADDRESS, ABI_NONCE, provider);
+      return await contrato.nonceUsado(endereco, BigInt(nonce));
+    } catch (err) { ultimoErro = err; }
+  }
+  throw ultimoErro || new Error('sem RPC disponível');
+}
+
 // ── Registar cadeia de referral (até 3 níveis) ───────────────────
 async function handleSalvarReferral(req, res, db, auth) {
   const { idToken, refUid } = req.body;
@@ -175,18 +201,40 @@ module.exports = async function handler(req, res) {
       .orderBy('ts', 'desc').limit(1).get();
 
     if (!pendentes.empty) {
-      const pend = pendentes.docs[0].data();
-      return res.status(200).json({
-        ok:            true,
-        retomado:      true,
-        gems:          pend.gemsNet,
-        matic:         pend.matic,
-        referralBonus: pend.referralBonus || 0,
-        nonce:         pend.nonce,
-        v:             pend.v,
-        r:             pend.r,
-        s:             pend.s,
-      });
+      const pendRef = pendentes.docs[0].ref;
+      const pend    = pendentes.docs[0].data();
+
+      // Antes de a devolver, perguntar à blockchain se ela já foi usada.
+      // Sem isto ficava um beco: quem completasse o saque on-chain mas
+      // perdesse a confirmação (aba fechada, rede em baixo) era atendido
+      // para sempre com a mesma autorização, que o contrato recusa por
+      // nonce repetido — via um erro sem saída.
+      let jaUsada = false;
+      try {
+        jaUsada = await _nonceJaUsado(pend.carteira, pend.nonce);
+      } catch (err) {
+        // Blockchain fora de alcance: é mais seguro devolver a pendente do
+        // que assinar outra. No pior caso o jogador tenta e o contrato
+        // recusa; se assinássemos, debitávamos duas vezes.
+        console.warn('[resgatar] nonceUsado indisponível:', err.message);
+      }
+
+      if (jaUsada) {
+        await pendRef.update({ status: 'concluido', concluidoEm: new Date(), fechadoPor: 'on-chain' });
+        // e segue em frente para criar uma autorização nova
+      } else {
+        return res.status(200).json({
+          ok:            true,
+          retomado:      true,
+          gems:          pend.gemsNet,
+          matic:         pend.matic,
+          referralBonus: pend.referralBonus || 0,
+          nonce:         pend.nonce,
+          v:             pend.v,
+          r:             pend.r,
+          s:             pend.s,
+        });
+      }
     }
 
     const resultado = await db.runTransaction(async (tx) => {

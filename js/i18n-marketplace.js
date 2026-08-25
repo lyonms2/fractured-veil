@@ -233,6 +233,7 @@ window.registerStrings({
   'mkt.tx.failed':            '❌ Transação falhou. Tente novamente.',
   'mkt.tx.chain_fail':        '❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.',
   'mkt.tx.general_err':       'Erro ao enviar. Verifique o saldo de MATIC e tente novamente.',
+  'mkt.tx.sem_ethers':      'Não foi possível carregar a carteira. Verifique sua conexão e tente de novo.',
   'mkt.tx.link_mm':           'Vincule a MetaMask primeiro.',
 
   // ── Toasts de avatar ──────────────────────────────────────────────
@@ -598,6 +599,7 @@ window.registerStrings({
   'mkt.tx.failed':            '❌ Transaction failed. Please try again.',
   'mkt.tx.chain_fail':        '❌ Transaction failed on-chain. Contact support with the tx hash.',
   'mkt.tx.general_err':       'Send error. Check your MATIC balance and try again.',
+  'mkt.tx.sem_ethers':      'Could not load the wallet library. Check your connection and try again.',
   'mkt.tx.link_mm':           'Link MetaMask first.',
 
   // Avatar toasts
