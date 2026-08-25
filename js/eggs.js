@@ -211,21 +211,27 @@ async function _doBurnRaro(id, finalGems, bonus) {
     const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id, gems: finalGems }),
+      // O `gems` deixou de ir no pedido: quem calcula o valor é o
+      // servidor. Ia daqui e era pago tal e qual, sem tecto nenhum.
+      body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id }),
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
 
+    // E o que se mostra é o que o servidor diz ter pago, não a nossa
+    // previsão — se as duas contas divergirem, quem manda é ele.
+    const pagos = (json.gems != null) ? json.gems : finalGems;
+
     eggsInInventory.splice(idx, 1);
     gs.cristais = json.novosCristais;
     if(poolData) {
-      poolData.cristais  = (poolData.cristais  || 0) - finalGems;
-      poolData.saqueHoje = (poolData.saqueHoje || 0) + finalGems;
-      poolData.totalSaiu = (poolData.totalSaiu || 0) + finalGems;
+      poolData.cristais  = (poolData.cristais  || 0) - pagos;
+      poolData.saqueHoje = (poolData.saqueHoje || 0) + pagos;
+      poolData.totalSaiu = (poolData.totalSaiu || 0) + pagos;
     }
-    addLog(t('egg.log.burned_rare', {rar: ovo.raridade, gems: finalGems, bonus: bonusTxt}), 'good');
-    showFloat(`+${finalGems} 💎`, '#a78bfa');
-    showBubble(`+${finalGems} 💎 🔥`);
+    addLog(t('egg.log.burned_rare', {rar: ovo.raridade, gems: pagos, bonus: bonusTxt}), 'good');
+    showFloat(`+${pagos} 💎`, '#a78bfa');
+    showBubble(`+${pagos} 💎 🔥`);
     renderEggInventory(); updateResourceUI(); renderPoolWidget();
   } catch(err) {
     console.warn('[_doBurnRaro]', err.message);

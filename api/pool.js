@@ -316,10 +316,36 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
 }
 
 // ── Queimar ovo (recebe cristais da pool) ───────────────────────
+//
+// Quanto vale queimar um ovo. Espelha a conta que o cliente mostra em
+// js/eggs.js (burnEgg): base pela raridade do OVO, bónus pela raridade
+// do AVATAR activo de quem queima.
+//
+//   base   Lendário 6 · Raro 2
+//   bónus  Lendário +50% · Raro +25% · Comum 0
+//   máximo legítimo: 6 × 1.5 = 9 💎
+const QUEIMA_BASE  = { 'Lendário': 6, 'Raro': 2 };
+const QUEIMA_BONUS = { 'Lendário': 0.5, 'Raro': 0.25 };
+
+function _valorDaQueima(raridadeOvo, raridadeAvatar) {
+  const base  = QUEIMA_BASE[raridadeOvo];
+  if (!base) return 0;                       // Comum não se queima por cristais
+  const bonus = QUEIMA_BONUS[raridadeAvatar] || 0;
+  return Math.round(base * (1 + bonus));
+}
+
 async function handleQueimarOvo(req, res, db, poolRef, uid) {
-  const { raridade, ovoId, gems } = req.body;
-  const finalGems = parseFloat(gems);
-  if (!raridade || raridade === 'Comum' || !ovoId || !finalGems || finalGems <= 0) {
+  // O `gems` do corpo do pedido é IGNORADO de propósito. Era ele que
+  // decidia quanto a pool pagava: o servidor fazia parseFloat e pagava,
+  // sem calcular nada e sem tecto — o valor legítimo máximo são 9 💎, mas
+  // um pedido com 500 passava desde que a pool tivesse. E o limite diário
+  // não protegia contra isso: só bloqueia DEPOIS de 100 terem saído, não
+  // limita o pedido em si.
+  //
+  // (O handleTaxa, que põe dinheiro NA pool, já tinha TAXA_MAX = 50. A
+  // guarda existia no sentido inofensivo e faltava no perigoso.)
+  const { raridade, ovoId } = req.body;
+  if (!raridade || raridade === 'Comum' || !ovoId) {
     return res.status(400).json({ erro: 'Parâmetros inválidos.' });
   }
 
@@ -333,15 +359,25 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
       const pData    = playerSnap.data();
       const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0, saqueHoje: 0 };
 
-      if ((poolData.cristais || 0) < finalGems) throw new Error('Pool sem saldo suficiente.');
-      if ((poolData.saqueHoje || 0) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
-
       // Validar ovo
       const slotIdx    = pData.activeSlotIdx ?? pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
       const activeSlot = (pData.avatarSlots || [])[slotIdx];
       const eggs       = activeSlot?.eggs || [];
       const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
       if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
+
+      // Ovo apodrecido não vale cristais — no jogo é descartado sem prémio.
+      const ovoAlvo = eggs[ovoIdx];
+      if (ovoAlvo.expiraEm && Date.now() >= ovoAlvo.expiraEm) {
+        throw new Error('Este ovo apodreceu e já não vale cristais.');
+      }
+
+      // O valor sai daqui, do servidor, e não do pedido.
+      const finalGems = _valorDaQueima(raridade, activeSlot?.raridade);
+      if (!finalGems) throw new Error('Esta raridade não pode ser queimada por cristais.');
+
+      if ((poolData.cristais || 0) < finalGems) throw new Error('Pool sem saldo suficiente.');
+      if ((poolData.saqueHoje || 0) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
 
       const newEggs  = [...eggs];
       newEggs.splice(ovoIdx, 1);
@@ -368,10 +404,10 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
         ts: FieldValue.serverTimestamp(),
       });
 
-      return { novosCristais };
+      return { novosCristais, finalGems };
     });
 
-    return res.status(200).json({ ok: true, novosCristais: resultado.novosCristais });
+    return res.status(200).json({ ok: true, novosCristais: resultado.novosCristais, gems: resultado.finalGems });
 
   } catch (err) {
     console.error('[pool/queimar-ovo]', err.message);

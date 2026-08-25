@@ -93,6 +93,25 @@ module.exports = async function handler(req, res) {
   const { db, auth } = initAdmin();
 
   // ── Roteamento por action ──
+  // Marca um saque como concluído depois de a transacção on-chain
+  // passar. Sem isto o registo ficava 'autorizado' para sempre e o
+  // jogador seria sempre atendido com a autorização velha.
+  if (action === 'confirmar-resgate') {
+    const { nonce } = req.body;
+    if (!nonce) return res.status(400).json({ erro: 'nonce em falta' });
+    try {
+      const decoded = await auth.verifyIdToken(idToken);
+      const snap = await db.collection('players').doc(decoded.uid)
+        .collection('resgates').where('nonce', '==', Number(nonce)).limit(1).get();
+      if (snap.empty) return res.status(404).json({ erro: 'Resgate não encontrado' });
+      await snap.docs[0].ref.update({ status: 'concluido', concluidoEm: new Date() });
+      return res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error('[confirmar-resgate]', err.message);
+      return res.status(400).json({ erro: 'Não foi possível confirmar o resgate.' });
+    }
+  }
+
   if (action === 'salvar-referral') {
     try {
       return await handleSalvarReferral(req, res, db, auth);
@@ -138,6 +157,37 @@ module.exports = async function handler(req, res) {
 
     // Mapa de bônus calculado dentro da transação e usado depois
     let referralBonuses = null;
+
+    // ── UMA AUTORIZAÇÃO PENDENTE É RETOMADA, NÃO SUBSTITUÍDA ──
+    //
+    // Os cristais são debitados aqui, ao assinar — e a chamada on-chain
+    // acontece depois, no browser do jogador. Se ela falhar (cofre sem
+    // MATIC, MetaMask recusada, aba fechada), os cristais já saíram e
+    // nada os devolvia: o registo ficava em 'autorizado' para sempre e o
+    // jogador perdia o saldo sem receber nada.
+    //
+    // Devolver a mesma autorização resolve isso sem abrir a porta a um
+    // duplo saque: o valor passa a viver na ASSINATURA, que o contrato só
+    // aceita uma vez (o nonce). O jogador pode tentar as vezes que
+    // precisar; a segunda tentativa não volta a debitar.
+    const pendentes = await userRef.collection('resgates')
+      .where('status', '==', 'autorizado')
+      .orderBy('ts', 'desc').limit(1).get();
+
+    if (!pendentes.empty) {
+      const pend = pendentes.docs[0].data();
+      return res.status(200).json({
+        ok:            true,
+        retomado:      true,
+        gems:          pend.gemsNet,
+        matic:         pend.matic,
+        referralBonus: pend.referralBonus || 0,
+        nonce:         pend.nonce,
+        v:             pend.v,
+        r:             pend.r,
+        s:             pend.s,
+      });
+    }
 
     const resultado = await db.runTransaction(async (tx) => {
       const userSnap = await tx.get(userRef);
@@ -224,6 +274,8 @@ module.exports = async function handler(req, res) {
 
       // Histórico do resgate
       const logRef = userRef.collection('resgates').doc();
+      // A assinatura fica guardada com o registo: é ela que permite
+      // retomar o saque se a chamada on-chain não chegar a acontecer.
       tx.set(logRef, {
         gemsTotal:    gemsNum,
         gemsNet:      gemsToSign,
@@ -231,6 +283,7 @@ module.exports = async function handler(req, res) {
         matic:         maticFinal,
         carteira:      carteira.toLowerCase(),
         nonce,
+        v, r, s,
         ts:            new Date(),
         status:        'autorizado',
       });

@@ -232,7 +232,22 @@ async function resgatar() {
     const receipt = await tx.wait();
 
     if(receipt.status === 1) {
-      playerData.cristais = (playerData.cristais || 0) - gems;
+      // Fecha a autorização. Enquanto ela ficar aberta, um novo pedido de
+      // saque devolve esta mesma em vez de criar outra — é isso que
+      // impede os cristais de se perderem quando a chamada on-chain
+      // falha, e é isto que a fecha quando ela passa.
+      try {
+        const tk = await firebase.auth().currentUser.getIdToken();
+        await fetch('/api/resgatar', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ idToken: tk, action: 'confirmar-resgate', nonce: apiData.nonce }),
+        });
+      } catch(e) { console.warn('[resgatar] confirmação falhou:', e); }
+
+      // Num saque retomado o débito já aconteceu na primeira tentativa —
+      // descontar outra vez aqui tirava cristais que já não existiam.
+      if(!apiData.retomado) playerData.cristais = (playerData.cristais || 0) - gems;
       if(typeof gs !== 'undefined') {
         gs.cristais = playerData.cristais;
         if(typeof updateResourceUI === 'function') updateResourceUI();
