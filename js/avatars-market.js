@@ -177,7 +177,7 @@ async function openDetail(listingId) {
   const canBuy   = !isMine && (playerData?.cristais||0) >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
   const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
-  const bonusText= t('elem.bonus.' + l.elemento) || CARACTERISTICAS_ELEMENTAIS[l.elemento]?.bonus || '';
+  const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento] ? t('elem.bonus.' + l.elemento) : '';
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
     <div class="detail-header">

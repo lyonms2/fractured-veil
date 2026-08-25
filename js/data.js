@@ -12,12 +12,17 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
+// O texto do passivo vive SÓ no i18n ('elem.bonus.<Elemento>'). Havia
+// aqui uma segunda cópia, num campo `bonus`, que ninguém chegava a
+// mostrar — o ecrã usava-a apenas para decidir se desenhava o bloco e
+// tirava o texto do t(). Resultado: a cópia apodrecia sem se ver, e a
+// da Sombra já estava desactualizada em relação ao motor.
 const CARACTERISTICAS_ELEMENTAIS = {
-  'Fogo':         { bonus:'Espírito Ardente: humor decai 15% mais devagar, fome 10% mais rápido', cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
-  'Água':         { bonus:'Serenidade das Marés: humor e higiene decaem 15% mais devagar', cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
-  'Terra':        { bonus:'Raízes Profundas: fome decai 15% mais devagar', cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
-  'Vento':        { bonus:'Leveza do Vento: energia decai 15% mais devagar', cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
-  'Sombra':       { bonus:'Ciclo Lunar: higiene decai 10% mais devagar, recupera energia 15% mais rápido dormindo', cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] }
+  'Fogo':         { cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
+  'Água':         { cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
+  'Terra':        { cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
+  'Vento':        { cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
+  'Sombra':       { cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] }
 };
 
 const PREFIXOS = {
@@ -101,15 +106,19 @@ function determinarRaridade() {
 // ═══════════════════════════════════════════════════════════════════
 // ELEMENTOS QUE DEIXARAM DE EXISTIR
 //
-// O jogo começou com 9 elementos, passou a 7 e agora tem os 4 clássicos.
-// Avatares gerados antes disto continuam gravados no Firestore com o
-// elemento antigo — sem esta tabela ficariam sem cores, sem ficha de
-// combate e sem kit, e o SVG rebentava.
+// O jogo começou com 9 elementos, passou a 7 e tem hoje CINCO: Fogo,
+// Água, Terra, Vento e Sombra. Avatares gerados antes disto continuam
+// gravados no Firestore com o elemento antigo — sem esta tabela ficariam
+// sem cores, sem ficha de combate e sem kit, e o SVG rebentava.
 //
 // O mapeamento é pelo ATRIBUTO PRIMÁRIO, não pelo tema: é o que faz o
-// avatar lutar de forma parecida com o que lutava antes. Por isso a
-// Sombra (INT) vai para Água (INT) e não para Terra, que seria a
+// avatar lutar de forma parecida com o que lutava antes. Daí a
+// Eletricidade (INT) ir para Água (INT) e não para Vento, que seria a
 // escolha temática óbvia.
+//
+// O vinculoDecay que anda pelo getElementoBonus, ligado mas a 1.0 em
+// todos os cinco, é resto de um destes quatro — ficou o campo e foi-se
+// quem o usava.
 // ═══════════════════════════════════════════════════════════════════
 const ELEMENTO_LEGADO = {
   'Eletricidade': 'Água',    // INT primária → INT primária

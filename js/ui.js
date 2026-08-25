@@ -288,8 +288,11 @@ function fillCreatureCard() {
   const bonusBlock = document.getElementById('elemBonusBlock');
   const bonusTxt   = document.getElementById('elemBonusTxt');
   const bonusLabel = document.getElementById('elemBonusLabel');
-  if(bonusBlock && bonusTxt && car?.bonus) {
-    bonusTxt.textContent              = t('elem.bonus.' + avatar.elemento) || car.bonus;
+  // `car` sozinho basta como porteiro: um avatar antigo com um elemento
+  // que já não existe não tem entrada aqui, e o bloco não aparece — que
+  // era exactamente o que o antigo `car?.bonus` fazia.
+  if(bonusBlock && bonusTxt && car) {
+    bonusTxt.textContent              = t('elem.bonus.' + avatar.elemento);
     bonusTxt.style.color              = car.cor + 'cc';
     bonusLabel.style.color            = car.cor;
     bonusBlock.style.borderColor      = car.cor + '33';
