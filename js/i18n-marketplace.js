@@ -6,6 +6,36 @@
 
 window.registerStrings({
   // ── Navegação (sidebar + bottom nav) ─────────────────────────────
+  // ── PROGRAMA DE CONVITES ──
+  // A secção inteira estava escrita à mão em português dentro do
+  // js/cristais.js, sem uma única chamada a t() — com o jogo em inglês
+  // ficava tudo em português.
+  'ref.title':          '🔗 Programa de Convites',
+  'ref.sub':            'Convide amigos e ganhe 💎 cristais quando eles sacarem — até 3 níveis de profundidade.',
+  'ref.link_title':     'Seu link de convite',
+  'ref.link_sub':       'Envie este link para quem quiser convidar. Quando eles se registrarem e sacarem cristais, você recebe automaticamente no seu saldo — sem nenhuma ação.',
+  'ref.copy':           '📋 Copiar',
+  'ref.copied':         '🔗 Link de convite copiado!',
+  'ref.stat_invited':   '👥 Convidados<br>diretos (L1)',
+  'ref.stat_earned':    '🏆 Total ganho<br>em convites',
+  'ref.loading':        'Carregando sua rede...',
+  'ref.error':          'Erro ao carregar a rede de convites.',
+  'ref.l1_label':       'Seus convidados diretos',
+  'ref.l2_label':       'Convidados dos seus convidados',
+  'ref.l3_label':       '3º grau da rede',
+  'ref.empty':          'Nenhum jogador ainda — compartilhe seu link!',
+  'ref.players_one':    '{n} jogador',
+  'ref.players_many':   '{n} jogadores',
+  'ref.no_avatar':      'Sem avatar',
+  'ref.active':         '● Ativo',
+  'ref.inactive':       '○ Inativo',
+  'ref.how_title':      'Como funciona:',
+  'ref.how_l1':         '🥇 <b>L1 — diretos:</b> você ganha <b>{pct}%</b> de cada saque deles',
+  'ref.how_l2':         '🥈 <b>L2 — convidados dos seus:</b> você ganha <b>{pct}%</b> de cada saque',
+  'ref.how_l3':         '🥉 <b>L3 — 3º grau:</b> você ganha <b>{pct}%</b> de cada saque',
+  'ref.how_note':       'O bônus é descontado do valor sacado pelo convidado — a pool permanece sempre equilibrada, sem inflação.',
+
+
   'mkt.nav.account':          'Minha Conta',
   'mkt.nav.my_avatars':       'Meus Avatares',
   'mkt.nav.market':           'Mercado',
@@ -342,6 +372,31 @@ window.registerStrings({
   'mkt.transp.vault_active':   '✅ Cofre ativo na Polygon Mainnet.',
   'mkt.pool.system':           'sistema',
 }, {
+  // ── REFERRAL PROGRAMME ──
+  'ref.title':          '🔗 Invite Programme',
+  'ref.sub':            'Invite friends and earn 💎 crystals when they withdraw — up to 3 levels deep.',
+  'ref.link_title':     'Your invite link',
+  'ref.link_sub':       'Send this link to anyone you want to invite. When they sign up and withdraw crystals, you receive your share automatically — nothing to claim.',
+  'ref.copy':           '📋 Copy',
+  'ref.copied':         '🔗 Invite link copied!',
+  'ref.stat_invited':   '👥 Direct<br>invites (L1)',
+  'ref.stat_earned':    '🏆 Total earned<br>from invites',
+  'ref.loading':        'Loading your network...',
+  'ref.error':          'Could not load the invite network.',
+  'ref.l1_label':       'Your direct invites',
+  'ref.l2_label':       'Invites of your invites',
+  'ref.l3_label':       '3rd degree of the network',
+  'ref.empty':          'No players yet — share your link!',
+  'ref.players_one':    '{n} player',
+  'ref.players_many':   '{n} players',
+  'ref.no_avatar':      'No avatar',
+  'ref.active':         '● Active',
+  'ref.inactive':       '○ Inactive',
+  'ref.how_title':      'How it works:',
+  'ref.how_l1':         '🥇 <b>L1 — direct:</b> you earn <b>{pct}%</b> of each of their withdrawals',
+  'ref.how_l2':         '🥈 <b>L2 — invites of yours:</b> you earn <b>{pct}%</b> of each withdrawal',
+  'ref.how_l3':         '🥉 <b>L3 — 3rd degree:</b> you earn <b>{pct}%</b> of each withdrawal',
+  'ref.how_note':       'The bonus comes out of the amount the invitee withdraws — the pool stays balanced, with no inflation.',
   // ════════════════════════════════════════════════════════════════
   // ENGLISH
   // ════════════════════════════════════════════════════════════════

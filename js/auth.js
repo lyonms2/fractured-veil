@@ -243,7 +243,14 @@ async function _onLoginSuccess(user) {
   // Se o jogador acessou o jogo via link de convite (?ref=UID),
   // o ref foi salvo no localStorage antes do login.
   // Enviamos ao servidor uma única vez — a cadeia L1/L2/L3 é imutável.
-  if (!loaded) {
+  //
+  // Só para conta nova: a cadeia é imutável e o servidor recusa quem já
+  // a tem. Quem clica num link de convite já tendo conta ficava com a
+  // chave presa no localStorage para sempre — limpa-se aqui, que já não
+  // serve para nada.
+  if (loaded) {
+    localStorage.removeItem('fv_pending_ref');
+  } else {
     const pendingRef = localStorage.getItem('fv_pending_ref');
     if (pendingRef) {
       try {

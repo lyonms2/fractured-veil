@@ -266,37 +266,43 @@ async function resgatar() {
 
 // Renderiza o cabeçalho (link + stats) de imediato, depois carrega a
 // lista de convidados por nível via 3 queries paralelas ao Firestore.
+// ═══════════════════════════════════════════════════════════════════
+// PROGRAMA DE CONVITES
+//
+// As percentagens vivem AQUI, num sítio só. Estavam escritas à mão no
+// rodapé e outra vez em cada cabeçalho de nível — e o servidor tem as
+// suas em api/resgatar.js (REFERRAL_RATES, em fracção). Não dá para
+// partilhar a constante através da rede, mas do lado do cliente passa a
+// haver uma única cópia; se mexer numa, mexa na outra.
+// ═══════════════════════════════════════════════════════════════════
+const REFERRAL_PCT = { l1: 5, l2: 2, l3: 1 };
+
 async function renderReferral() {
   const sec = document.getElementById('sec-referral');
   if(!sec || !walletAddress) return;
 
   const refLink = `${location.origin}/?ref=${walletAddress}`;
-  const earned  = playerData?.referralEarned || 0;
-  const count   = playerData?.referralCount  || 0;
 
   sec.innerHTML = `
-    <div class="section-title">🔗 Programa de Convites</div>
-    <div class="section-sub">Convide amigos e ganhe 💎 cristais quando eles sacarem — até 3 níveis de profundidade.</div>
+    <div class="section-title">${t('ref.title')}</div>
+    <div class="section-sub">${t('ref.sub')}</div>
 
     <div class="referral-box">
-      <div class="referral-title">Seu link de convite</div>
-      <div class="referral-sub">
-        Envie este link para quem quiser convidar. Quando eles se registrarem e sacarem cristais,
-        você recebe automaticamente no seu saldo — sem nenhuma ação.
-      </div>
+      <div class="referral-title">${t('ref.link_title')}</div>
+      <div class="referral-sub">${t('ref.link_sub')}</div>
       <div class="referral-link-row">
         <input class="referral-link-input" id="referralLinkInput" type="text"
           value="${refLink}" readonly onclick="this.select();"/>
-        <button class="btn-referral-copy" onclick="_referralCopiarLink()">📋 Copiar</button>
+        <button class="btn-referral-copy" onclick="_referralCopiarLink()">${t('ref.copy')}</button>
       </div>
       <div class="referral-stats">
         <div class="referral-stat">
-          <div class="referral-stat-val">${count}</div>
-          <div class="referral-stat-lbl">👥 Convidados<br>diretos (L1)</div>
+          <div class="referral-stat-val" id="refStatCount">—</div>
+          <div class="referral-stat-lbl">${t('ref.stat_invited')}</div>
         </div>
         <div class="referral-stat">
-          <div class="referral-stat-val">💎 ${fmtC(earned)}</div>
-          <div class="referral-stat-lbl">🏆 Total ganho<br>em convites</div>
+          <div class="referral-stat-val" id="refStatEarned">—</div>
+          <div class="referral-stat-lbl">${t('ref.stat_earned')}</div>
         </div>
       </div>
     </div>
@@ -304,61 +310,81 @@ async function renderReferral() {
     <div id="referralLevelsList">
       <div class="loading" style="margin-top:20px;">
         <div class="spinner"></div>
-        <div style="font-size:10px;color:var(--muted);">Carregando sua rede...</div>
+        <div style="font-size:10px;color:var(--muted);">${t('ref.loading')}</div>
       </div>
     </div>`;
 
-  // Queries paralelas ao Firestore: quem tem meu UID em cada nível da cadeia
   try {
-    const [l1Snap, l2Snap, l3Snap] = await Promise.all([
+    // Os dois números do topo saíam do playerData, que o loadPlayerData()
+    // monta a partir do gs — e o gs nunca teve referralCount nem
+    // referralEarned. Mostravam sempre zero, enquanto a lista logo
+    // abaixo listava a rede a sério: a mesma tela dizia "0 convidados" e
+    // "3 jogadores" com três centímetros de distância.
+    //
+    // O total ganho vem do documento; o número de convidados passa a ser
+    // o tamanho da própria lista L1, que é a verdade em vez de um
+    // contador à parte que pode ficar para trás.
+    const [l1Snap, l2Snap, l3Snap, meuDoc] = await Promise.all([
       db.collection('players').where('referralChain.l1', '==', walletAddress).get(),
       db.collection('players').where('referralChain.l2', '==', walletAddress).get(),
       db.collection('players').where('referralChain.l3', '==', walletAddress).get(),
+      db.collection('players').doc(walletAddress).get(),
     ]);
+
+    const ganho = meuDoc.exists ? (meuDoc.data().referralEarned || 0) : 0;
+    const elCount  = document.getElementById('refStatCount');
+    const elEarned = document.getElementById('refStatEarned');
+    if(elCount)  elCount.textContent  = l1Snap.size;
+    if(elEarned) elEarned.textContent = '💎 ' + fmtC(ganho);
 
     const el = document.getElementById('referralLevelsList');
     if(!el) return;
 
     el.innerHTML =
-      _referralLevelHtml(l1Snap, 1, 5, 'Seus convidados diretos') +
-      _referralLevelHtml(l2Snap, 2, 2, 'Convidados dos seus convidados') +
-      _referralLevelHtml(l3Snap, 3, 1, '3º grau da rede') +
+      _referralLevelHtml(l1Snap, 1, REFERRAL_PCT.l1, t('ref.l1_label')) +
+      _referralLevelHtml(l2Snap, 2, REFERRAL_PCT.l2, t('ref.l2_label')) +
+      _referralLevelHtml(l3Snap, 3, REFERRAL_PCT.l3, t('ref.l3_label')) +
       `<div class="referral-footer-note">
-        <b>Como funciona:</b><br>
-        🥇 <b>L1 — diretos:</b> você ganha <b style="color:var(--gold);">5%</b> de cada saque deles<br>
-        🥈 <b>L2 — convidados dos seus:</b> você ganha <b style="color:var(--gold);">2%</b> de cada saque<br>
-        🥉 <b>L3 — 3º grau:</b> você ganha <b style="color:var(--gold);">1%</b> de cada saque<br>
-        <span style="font-size:7.5px;display:block;margin-top:4px;">
-          O bônus é descontado do valor sacado pelo convidado — a pool permanece sempre equilibrada, sem inflação.
-        </span>
+        <b>${t('ref.how_title')}</b><br>
+        ${t('ref.how_l1', {pct: REFERRAL_PCT.l1})}<br>
+        ${t('ref.how_l2', {pct: REFERRAL_PCT.l2})}<br>
+        ${t('ref.how_l3', {pct: REFERRAL_PCT.l3})}<br>
+        <span style="font-size:7.5px;display:block;margin-top:4px;">${t('ref.how_note')}</span>
       </div>`;
   } catch(e) {
+    console.warn('[renderReferral]', e);
     const el = document.getElementById('referralLevelsList');
-    if(el) el.innerHTML = `<div style="color:var(--red2);font-size:10px;margin-top:16px;text-align:center;">Erro ao carregar rede de convites.</div>`;
+    if(el) el.innerHTML = `<div style="color:var(--red2);font-size:10px;margin-top:16px;text-align:center;">${t('ref.error')}</div>`;
+    const elCount  = document.getElementById('refStatCount');
+    const elEarned = document.getElementById('refStatEarned');
+    if(elCount)  elCount.textContent  = '—';
+    if(elEarned) elEarned.textContent = '—';
   }
 }
 
 // Gera o HTML de uma seção de nível (L1/L2/L3) com os jogadores encontrados
 function _referralLevelHtml(snap, lvl, pct, label) {
   const badgeColor = lvl === 1 ? 'var(--purple)' : lvl === 2 ? '#1e6b9e' : '#2d6b3a';
+  const quantos = snap.size === 1 ? t('ref.players_one', {n: snap.size})
+                                  : t('ref.players_many', {n: snap.size});
   const header = `
     <div class="referral-level-section">
       <div class="referral-level-hdr">
         <span class="referral-level-badge" style="background:${badgeColor};">L${lvl}</span>
         <span>${label}</span>
         <span class="referral-level-pct">${pct}%</span>
-        ${!snap.empty ? `<span class="referral-level-count">${snap.size} jogador${snap.size !== 1 ? 'es' : ''}</span>` : ''}
+        ${!snap.empty ? `<span class="referral-level-count">${quantos}</span>` : ''}
       </div>`;
 
   if(snap.empty) {
-    return header + `<div class="referral-empty">Nenhum jogador ainda — compartilhe seu link!</div></div>`;
+    return header + `<div class="referral-empty">${t('ref.empty')}</div></div>`;
   }
 
   const cards = snap.docs.map(doc => {
     const d       = doc.data();
     const slotIdx = d.gs?.activeSlotIdx ?? d.activeSlotIdx ?? 0;
     const slot    = (d.avatarSlots || [])[slotIdx];
-    const nome    = slot?.nome?.split(',')[0] || 'Sem avatar';
+    const nome    = slot?.nome?.split(',')[0] || t('ref.no_avatar');
     const rarity  = slot?.raridade || '';
     const rColor  = rarity === 'Lendário' ? 'var(--gold)'
                   : rarity === 'Raro'     ? 'var(--gem2)'
@@ -370,14 +396,14 @@ function _referralLevelHtml(snap, lvl, pct, label) {
     return `
       <div class="referral-player-card">
         <div class="referral-player-info">
-          <div class="referral-player-name">${nome}</div>
+          <div class="referral-player-name">${esc(nome)}</div>
           <div class="referral-player-uid">${shortUid}</div>
         </div>
         <div style="font-size:8.5px;color:${rColor};text-align:right;white-space:nowrap;">
-          ${rarity || 'Comum'}<br>
+          ${esc(rarity || 'Comum')}<br>
           ${active
-            ? '<span class="referral-player-active">● Ativo</span>'
-            : '<span class="referral-player-inactive">○ Inativo</span>'}
+            ? `<span class="referral-player-active">${t('ref.active')}</span>`
+            : `<span class="referral-player-inactive">${t('ref.inactive')}</span>`}
         </div>
       </div>`;
   }).join('');
@@ -389,10 +415,10 @@ function _referralCopiarLink() {
   const input = document.getElementById('referralLinkInput');
   if(!input) return;
   navigator.clipboard.writeText(input.value)
-    .then(() => showToast('🔗 Link de convite copiado!', 'ok'))
+    .then(() => showToast(t('ref.copied'), 'ok'))
     .catch(() => {
       input.select();
       document.execCommand('copy');
-      showToast('🔗 Link copiado!', 'ok');
+      showToast(t('ref.copied'), 'ok');
     });
 }
