@@ -164,6 +164,51 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
                      : PERSISTENTES.map(p => p.campo + ' ' + vistos[p.campo]).join(' · '));
 }
 
+console.log('\n═══ 5. O QUE ACUMULA E O QUE NÃO ACUMULA ═══\n');
+{
+  // O manual trata veneno e cegueira como ESTADOS: "uma vítima
+  // envenenada", "ficará cega". Estar envenenado duas vezes não existe.
+  // Acumulavam sem limite e chegavam a −5 em tudo e −27 na esquiva.
+  const ELS = ['Fogo','Água','Terra','Vento','Sombra'], RARS = ['Comum','Raro','Lendário'];
+  let s2 = 13;
+  const rnd = () => (s2 = (Math.imul(s2, 1664525) + 1013904223) >>> 0) / 4294967296;
+  const esc = a2 => a2[Math.floor(rnd() * a2.length)];
+  const eq = () => [0,1,2].map((_, i) => ({ nome: 'av' + i, elemento: esc(ELS),
+    raridade: esc(RARS), nivel: 1 + Math.floor(rnd() * 25), seed: Math.floor(rnd() * 1e6) }));
+
+  const max = { penalidade: 0, cegoAtaque: 0, cegoEsquiva: 0, penalidadeR: 0 };
+  for (let i = 0; i < 600; i++) {
+    const e = M.combate3dtIniciar(eq(), eq(), i);
+    while (!e.acabou) {
+      M.combate3dtTurno(e);
+      for (const c of [...e.A, ...e.B])
+        for (const k of Object.keys(max)) if (c[k] > max[k]) max[k] = c[k];
+    }
+  }
+  A.ver('O veneno é um estado, não um contador — nunca passa de −1',
+        max.penalidade <= 1, `máximo atingido: −${max.penalidade}`);
+  A.ver('A cegueira é um estado — nunca passa de −1 no ataque e −3 na esquiva',
+        max.cegoAtaque <= 1 && max.cegoEsquiva <= 3,
+        `ataque −${max.cegoAtaque} · esquiva −${max.cegoEsquiva}`);
+  A.ver('A dor persistente acumula, como o manual manda',
+        max.penalidadeR > 1, `chegou a −${max.penalidadeR} na Resistência`);
+
+  // e a segunda tentativa tem de o DIZER, em vez de falhar em silêncio
+  const veneno = { id: 'ag_a3', pm: 3, fa: { H: 1, dados: 2 },
+                   veneno: { testeR: -1, penalidade: 1, pvPorTurno: 1 } };
+  let disse = 0;
+  for (let s3 = 1; s3 <= 300; s3++) {
+    const e = A.duelo({ seed: s3, politica: () => ({ magia: veneno, pm: 3 }),
+      a: { carac: { F: 6, H: 6, R: 8, A: 0 }, pm: 60 },
+      b: { carac: { F: 0, H: 0, R: 1, A: 0 }, pv: 500 } });
+    e.B[0].veneno = true; e.B[0].penalidade = 1;
+    M.combate3dtTurno(e);
+    if (e.eventos.some(x => x.jaEnvenenado)) disse++;
+  }
+  A.ver('Envenenar quem já está envenenado diz-o, em vez de falhar calado',
+        disse > 0, `disse em ${disse}/300`);
+}
+
 const r = A.relatorio();
 console.log('\n' + r.linhas.map(l => l[0] + ' ' + l[1] + (l[2] ? '\n         ' + l[2] : '')).join('\n'));
 console.log(`\n─────────────────────────────\n${r.ok} passaram · ${r.mau} falharam\n`);

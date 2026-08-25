@@ -97,13 +97,26 @@ function _c3criar(slot, rng) {
 
 // Característica efectiva, já com penalidades
 function _c3(c, k) {
-  let v = c.ficha[k] + (k === 'F' ? c.bonusF : 0) + (k === 'A' ? c.bonusA : 0)
-              + (k === 'H' ? c.bonusH : 0);
-  v -= c.penalidade;
+  return _c3detalhe(c, k).valor;
+}
+
+// A mesma conta, decomposta: o que a ficha diz e o que o combate lhe
+// somou ou tirou. Serve para o cartão poder escrever "F2−1" em vez de
+// só "F1" — o jogador vê que aquilo já foi 2 e porquê.
+//
+// O modificador é o CRU, sem o corte no zero: uma penalidade de −3 sobre
+// uma Força 1 mostra −3, e não −1. É o que está a acontecer ao avatar.
+function _c3detalhe(c, k) {
+  const base = c.ficha[k];
+  let mod = 0;
+  if (k === 'F') mod += c.bonusF;
+  if (k === 'A') mod += c.bonusA;
+  if (k === 'H') mod += c.bonusH;
+  mod -= c.penalidade;
   // A assombração pesa −1 em todas as características até ao fim da luta
-  if (c.assombrado && c.desv && c.desv.penalidadeTudo) v -= c.desv.penalidadeTudo;
-  if (k === 'R') v -= c.penalidadeR;
-  return Math.max(0, v);
+  if (c.assombrado && c.desv && c.desv.penalidadeTudo) mod -= c.desv.penalidadeTudo;
+  if (k === 'R') mod -= c.penalidadeR;
+  return { base, mod, valor: Math.max(0, base + mod) };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -385,12 +398,21 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
     const r = _c3resistirDetalhe(def, atk, true);
     if (magia.veneno.testeR) r.partes.push((magia.veneno.testeR > 0 ? '+' : '−') + Math.abs(magia.veneno.testeR));
     if (dano <= 0) ev.semDano = true;
+    // "Uma vítima ENVENENADA sofre uma penalidade de −1 em todas as suas
+    // características" — é um estado, não um contador. Envenenar duas
+    // vezes deixa a vítima envenenada, não duplamente envenenada. Sem
+    // isto a penalidade acumulava sem limite e chegava a −5 em tudo.
+    else if (def.veneno) ev.jaEnvenenado = true;
     else if (!_c3testeReg(r.valor + (magia.veneno.testeR || 0), rng, ev, 'veneno', r.partes)) {
       def.veneno = true; def.penalidade += magia.veneno.penalidade || 1;
       ev.envenenou = true;
     } else ev.resistiuVeneno = true;
   }
   // Dor persistente: −1 de Resistência até ao fim do combate
+  // A dor persistente é a única que ACUMULA de propósito: o manual diz
+  // "−1 em Resistência até ao fim do combate" e a magia existe para
+  // enfraquecer aos poucos. Fica naturalmente travada quando a
+  // Resistência chega a zero.
   if (magia.debuffR) {
     if (dano > 0) { def.penalidadeR += magia.debuffR; ev.enfraqueceu = true; }
     else ev.semDano = true;
@@ -444,11 +466,16 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   // ── CEGUEIRA ──
   // Não fere: estraga a pontaria e a esquiva até ao fim do combate.
   if (magia.cegueira) {
-    const r = _c3resistirDetalhe(def, atk, false);
-    if (!_c3testeReg(r.valor, rng, ev, 'cegueira', r.partes)) {
-      def.cegoAtaque += magia.cegueira.ataque; def.cegoEsquiva += magia.cegueira.esquiva;
-      ev.cegou = true;
-    } else ev.resistiu = true;
+    // "Se falhar, FICARÁ CEGA" — outro estado. Quem já está cego não
+    // fica mais cego; a cegueira chegava a −27 na esquiva por acumular.
+    if (def.cegoEsquiva) ev.jaCego = true;
+    else {
+      const r = _c3resistirDetalhe(def, atk, false);
+      if (!_c3testeReg(r.valor, rng, ev, 'cegueira', r.partes)) {
+        def.cegoAtaque += magia.cegueira.ataque; def.cegoEsquiva += magia.cegueira.esquiva;
+        ev.cegou = true;
+      } else ev.resistiu = true;
+    }
   }
   if (magia.bonusFD) { atk.bonusFD += magia.bonusFD; atk.sustentadas.push({ magia, pm: 0 }); }
 

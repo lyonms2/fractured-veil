@@ -108,7 +108,15 @@
 .cb-lutador-carac {
   font-size: 4.5px; letter-spacing: .8px; color: var(--muted);
   font-family: 'Courier New', monospace;
+  display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;
 }
+/* O que o combate somou ou tirou, colado ao número da ficha: "F2−1".
+   Sem isto o número mudava e nada dizia porquê. */
+.cb-lutador-carac b { font-weight: 700; margin-left: .5px; }
+.cb-lutador-carac b.desce { color: #ff8a8a; }
+.cb-lutador-carac b.sobe  { color: #8ede8e; }
+.cb-ajuda-quem span b.desce { color: #ff8a8a; }
+.cb-ajuda-quem span b.sobe  { color: #8ede8e; }
 
 /* ── Vida e magia em bolinhas ──
    Uma bolinha por cada 5 pontos. Como PV = R×5 e PM = R×5, o número de

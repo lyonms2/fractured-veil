@@ -107,6 +107,8 @@ window.registerStrings({
 
   'pve.ev.sem_dano':       'não feriu — o efeito nem chegou a agir',
   'pve.ev.resistiu_veneno':'o alvo resistiu ao veneno',
+  'pve.ev.ja_envenenado':  'já estava envenenado — não piora',
+  'pve.ev.ja_cego':        'já estava cego — não piora',
   'pve.ev.sem_pm_roubar':  'o alvo não tinha magia para roubar',
   'pve.ev.cegou':          'cegou o alvo — ataca com −1, esquiva com −3',
   'pve.ev.congelou':       'congelou por um turno',
@@ -245,6 +247,8 @@ window.registerStrings({
 
   'pve.ev.sem_dano':       'did not wound — the effect never got to act',
   'pve.ev.resistiu_veneno':'the target resisted the poison',
+  'pve.ev.ja_envenenado':  'already poisoned — no worse',
+  'pve.ev.ja_cego':        'already blind — no worse',
   'pve.ev.sem_pm_roubar':  'the target had no magic left to steal',
   'pve.ev.cegou':          'blinded the target — attacks at −1, dodges at −3',
   'pve.ev.congelou':       'frozen for one turn',

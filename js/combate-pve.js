@@ -291,6 +291,18 @@ function _pveBolinhas(atual, max, tipo) {
 // campo distingue-se pelo tamanho e pelo brilho, não por ser o único
 // legível.
 // ═══════════════════════════════════════════════════════════════════
+// As quatro características, com o que o combate lhes somou ou tirou à
+// vista: "F2−1" em vez de "F1". Sem isto, um avatar envenenado parecia
+// ter nascido fraco — o número mudava e nada dizia porquê.
+function _pveCaracs(c) {
+  return ['F', 'H', 'R', 'A'].map(k => {
+    const d = _c3detalhe(c, k);
+    if (!d.mod) return `<span>${k}${d.base}</span>`;
+    const sinal = d.mod > 0 ? '+' : '−';
+    return `<span>${k}${d.base}<b class="${d.mod > 0 ? 'sobe' : 'desce'}">${sinal}${Math.abs(d.mod)}</b></span>`;
+  }).join(' ');
+}
+
 function _pveLutador(c, i, lado, ativo) {
   const el = CARACTERISTICAS_ELEMENTAIS[c.elemento];
   const emCampo = i === ativo;
@@ -323,7 +335,7 @@ function _pveLutador(c, i, lado, ativo) {
   return `<div class="${cls}" id="cbLut${lado}${i}">
     <div class="cb-lutador-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
     <div class="cb-lutador-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
-    <div class="cb-lutador-carac">F${_c3(c,'F')} H${_c3(c,'H')} R${_c3(c,'R')} A${_c3(c,'A')}</div>
+    <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
     <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
     <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
     ${marcas.length ? `<div class="cb-marcas">${marcas.join('')}</div>` : ''}
@@ -436,7 +448,7 @@ function _pveAjudaDe(eu, lado) {
   return `<div class="cb-ajuda-lado ${lado}">
     <div class="cb-ajuda-quem">
       ${el ? el.emoji : '✦'} ${eu.nome}
-      <span>F${_c3(eu,'F')} H${_c3(eu,'H')} R${_c3(eu,'R')} A${_c3(eu,'A')} · ${t('ficha.tecto')} ${tecto} PM</span>
+      <span>${_pveCaracs(eu)} · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
     ${html}
   </div>`;
@@ -950,6 +962,8 @@ function _pveMostrarEvento(ev) {
   if (ev.caiuSozinho)   meus.push(t('pve.ev.caiu_sozinho'));
   if (ev.semDano)       dele.push(t('pve.ev.sem_dano'));
   if (ev.resistiuVeneno)dele.push(t('pve.ev.resistiu_veneno'));
+  if (ev.jaEnvenenado)  dele.push(t('pve.ev.ja_envenenado'));
+  if (ev.jaCego)        dele.push(t('pve.ev.ja_cego'));
   if (ev.semPMparaRoubar)dele.push(t('pve.ev.sem_pm_roubar'));
   if (ev.cegou)         dele.push(t('pve.ev.cegou'));
   if (ev.congelouUmTurno)dele.push(t('pve.ev.congelou'));
