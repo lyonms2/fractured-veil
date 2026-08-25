@@ -242,10 +242,9 @@
     z-index: 300 !important;
   }
 
-  /* Modais de painel (market, inventário) — no mobile fixamos a altura do
+  /* Modais de painel (moedas, inventários) — no mobile fixamos a altura do
      container para o flex:1 da modal-scroll-body ter referência e rolar.
      O scroll acontece na scroll-body, não no modal em si. */
-  #marketModal,
   #itemInvModal,
   #coinShopModal,
   #eggInvModal {
@@ -254,7 +253,6 @@
     align-items: stretch !important;
     overflow: hidden !important;
   }
-  #marketModal .modal-scroll-body,
   #itemInvModal .modal-scroll-body,
   #coinShopModal .modal-scroll-body,
   #eggInvModal .modal-scroll-body {

@@ -1,15 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════
-// MERCADO DE ITENS
+// LOJA DE ITENS
+//
+// Já não tem modal nem botão próprios. Vive dentro do painel das Moedas
+// (coinShopModal), que é a moeda que a paga — quem abre openCoinShop()
+// chama o renderMarketItems() daqui. Tinha um 🛒 no topo chamado
+// "Mercado" que abria um painel chamado "🔮 ITENS", e chocava com o 🛒
+// "Comprar Avatares" do menu do marketplace.
 // ═══════════════════════════════════════════════════════════════════
-
-function openMarket() {
-  ModalManager.open('marketModal');
-  renderMarketItems();
-}
-
-function closeMarket() {
-  ModalManager.close('marketModal');
-}
 
 function renderMarketItems() {
   const list = document.getElementById('mktItemsList');
@@ -85,7 +82,7 @@ function buyItem(catalogId) {
   // Consumíveis — usar imediatamente via função dedicada
   if(item.consumivel) {
     if(item.onUse === 'useAntidote') {
-      closeMarket();
+      closeCoinShop();
       setTimeout(() => useAntidote(), 150);
     }
     return;

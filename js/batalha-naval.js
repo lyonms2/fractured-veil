@@ -128,7 +128,7 @@ function _bnCasasValidas(r, c, tam, orient, excluir = null) {
 
 // ── Bloqueia/desbloqueia UI ──
 function _bnBloquearUI(bloquear) {
-  const ids = ['btnMarket','resMoedasBtn','resCristaisBtn','resOvosBtn','resItemsBtn','btnPlay'];
+  const ids = ['resMoedasBtn','resCristaisBtn','resOvosBtn','resItemsBtn','btnPlay'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;

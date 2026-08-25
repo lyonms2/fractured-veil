@@ -63,7 +63,7 @@ function _rmPararSala() {
 
 // Bloqueia/desbloqueia botões do header durante a partida
 function _rmBloquearUI(bloquear) {
-  const ids = ['btnMarket','resMoedasBtn','resCristaisBtn','resOvosBtn','resItemsBtn','btnPlay'];
+  const ids = ['resMoedasBtn','resCristaisBtn','resOvosBtn','resItemsBtn','btnPlay'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;

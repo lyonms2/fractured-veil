@@ -33,7 +33,7 @@ function unlockBodyScroll() {
 // ═══════════════════════════════════════════════════════════════════
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
-  'memoriaModal','simonModal','marketModal','coinShopModal',
+  'memoriaModal','simonModal','coinShopModal',
   'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
   'marketplaceModal','combateModal'
 ];
@@ -41,7 +41,7 @@ const MODAL_IDS = [
 const ModalManager = {
   current: null,
 
-  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketModal','marketplaceModal'],
+  PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketplaceModal'],
   GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','combateModal'],
 
   open(id, onClose) {

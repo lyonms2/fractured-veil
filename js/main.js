@@ -10,7 +10,6 @@ window.closeCoinShop = typeof closeCoinShop !== "undefined" ? closeCoinShop : ()
 window.closeEggInventory = typeof closeEggInventory !== "undefined" ? closeEggInventory : ()=>{};
 window.closeGameSelector = typeof closeGameSelector !== "undefined" ? closeGameSelector : ()=>{};
 window.closeItemInventory = typeof closeItemInventory !== "undefined" ? closeItemInventory : ()=>{};
-window.closeMarket = typeof closeMarket !== "undefined" ? closeMarket : ()=>{};
 window.closeMiniModal = typeof closeMiniModal !== "undefined" ? closeMiniModal : ()=>{};
 window.closeShop = typeof closeShop !== "undefined" ? closeShop : ()=>{};
 window.cancelHatch = typeof cancelHatch !== "undefined" ? cancelHatch : ()=>{};
@@ -36,7 +35,6 @@ window.memFlip = typeof memFlip !== "undefined" ? memFlip : ()=>{};
 window.openCoinShop = typeof openCoinShop !== "undefined" ? openCoinShop : ()=>{};
 window.openEggInventory = typeof openEggInventory !== "undefined" ? openEggInventory : ()=>{};
 window.openItemInventory = typeof openItemInventory !== "undefined" ? openItemInventory : ()=>{};
-window.openMarket = typeof openMarket !== "undefined" ? openMarket : ()=>{};
 window.openMinigame = typeof openMinigame !== "undefined" ? openMinigame : ()=>{};
 window.petCreature = typeof petCreature !== "undefined" ? petCreature : ()=>{};
 window.playCreature = typeof playCreature !== "undefined" ? playCreature : ()=>{};

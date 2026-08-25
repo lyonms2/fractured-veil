@@ -195,7 +195,6 @@ async function disconnectWallet() {
   document.getElementById('dirtLayer').className            = '';
 
   document.getElementById('walletInfo').style.display       = 'none';
-  document.getElementById('btnMarket').style.display        = 'none';
   document.getElementById('resMoedasBtn').style.display     = 'none';
   document.getElementById('resCristaisBtn').style.display   = 'none';
   document.getElementById('resOvosBtn').style.display       = 'none';
@@ -216,7 +215,6 @@ function updateHeaderButtons() {
   if(!walletAddress) return;
   const temAvatar = hatched && !dead;
   const temOvos   = eggsInInventory.length > 0;
-  document.getElementById('btnMarket').style.display      = 'flex';
   document.getElementById('resCristaisBtn').style.display = '';
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
   document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';

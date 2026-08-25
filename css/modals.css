@@ -317,8 +317,6 @@
 .btn-wallet:hover { border-color:rgba(255,255,255,.4); background:rgba(255,255,255,.08); }
 .btn-wallet.connected { border-color:#7ab87a; color:#7ab87a; background:rgba(122,184,122,.08); }
 .btn-wallet.connected:hover { background:rgba(122,184,122,.15); }
-#btnMarket { border-color:rgba(90,180,232,.4); color:#5ab4e8; }
-#btnMarket:hover { border-color:#5ab4e8; background:rgba(90,180,232,.1); }
 
 /* ── SHOP ── */
 .shop-item {
@@ -444,10 +442,9 @@
 /* ── MODAIS COM SCROLL (market, coinshop, itemInv, eggInv) ──
    height explícito no card é OBRIGATÓRIO para flex:1; min-height:0
    funcionar no scroll body interno. max-height sozinho não chega. */
-#marketModal, #coinShopModal, #itemInvModal, #eggInvModal {
+#coinShopModal, #itemInvModal, #eggInvModal {
   padding:12px; justify-content:center; align-items:center; overflow:hidden;
 }
-#marketModal .modal-card,
 #coinShopModal .modal-card,
 #itemInvModal .modal-card,
 #eggInvModal .modal-card {
@@ -457,11 +454,9 @@
   overflow:hidden;
   justify-content:flex-start;
 }
-#marketModal .modal-header,
 #coinShopModal .modal-header,
 #itemInvModal .modal-header,
 #eggInvModal .modal-header { flex-shrink:0; }
-#marketModal .modal-scroll-body,
 #coinShopModal .modal-scroll-body,
 #itemInvModal .modal-scroll-body,
 #eggInvModal .modal-scroll-body {

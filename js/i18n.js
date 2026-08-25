@@ -175,22 +175,26 @@
       'ui.do_login':             '🔑 FAZER LOGIN',
 
       // Header / nav
-      'ui.market_title':         'Mercado',
-      'ui.coins_title':          'Câmbio de Moedas',
+      // O que a dica diz por fora tem de ser o que o painel diz por
+      // dentro. O 🪙 dizia "Câmbio de Moedas" e abria "🪙 MOEDAS"; o 💎
+      // tinha o título escrito à mão no HTML e era o único que não
+      // traduzia.
+      'ui.coins_title':          'Moedas',
       'ui.eggs_title':           'Inventário de ovos',
       'ui.items_title':          'Inventário de itens',
+      'ui.marketplace_title':    'Marketplace',
 
       // Modais de inventário
       'inv.items_title':         '🎒 INVENTÁRIO DE ITENS',
       'inv.eggs_title':          '🥚 INVENTÁRIO DE OVOS',
       'inv.coins_title':         '🪙 MOEDAS',
-      'inv.coins_sub':           'Moeda interna do jogo',
+      'inv.coins_sub':           'Compre itens e troque por cristais',
       'inv.exchange_label':      '◆ CÂMBIO 🪙 → 💎',
       'inv.exchange_empty':      'Abre a loja para ver o câmbio.',
       'inv.crystals_cta':        '💎 Precisa de mais Cristais?',
       'inv.crystals_desc':       'Compra cristais com MATIC ou vende ovos no Marketplace.',
       'inv.crystals_btn':        'Ir ao Marketplace →',
-      'inv.items_store':         '🔮 ITENS',
+      'inv.items_store':         '◆ LOJA DE ITENS',
 
       // Game selector
       'gs.title':                '◆ ESCOLHA UM JOGO',
@@ -477,22 +481,22 @@
       'ui.do_login':             '🔑 SIGN IN',
 
       // Header / nav
-      'ui.market_title':         'Market',
-      'ui.coins_title':          'Coin Exchange',
+      'ui.coins_title':          'Coins',
       'ui.eggs_title':           'Egg Inventory',
       'ui.items_title':          'Item Inventory',
+      'ui.marketplace_title':    'Marketplace',
 
       // Inventory modals
       'inv.items_title':         '🎒 ITEM INVENTORY',
       'inv.eggs_title':          '🥚 EGG INVENTORY',
       'inv.coins_title':         '🪙 COINS',
-      'inv.coins_sub':           'In-game currency',
+      'inv.coins_sub':           'Buy items and trade for crystals',
       'inv.exchange_label':      '◆ EXCHANGE 🪙 → 💎',
       'inv.exchange_empty':      'Open the shop to see the exchange.',
       'inv.crystals_cta':        '💎 Need more Crystals?',
       'inv.crystals_desc':       'Buy crystals with MATIC or sell eggs on the Marketplace.',
       'inv.crystals_btn':        'Go to Marketplace →',
-      'inv.items_store':         '🔮 ITEMS',
+      'inv.items_store':         '◆ ITEM SHOP',
 
       // Game selector
       'gs.title':                '◆ CHOOSE A GAME',
@@ -664,5 +668,17 @@ function applyI18nDOM() {
     const key = el.getAttribute('data-i18n-ph');
     const val = t(key);
     if(val !== key) el.placeholder = val;
+  });
+  // O data-i18n-title existia no HTML desde sempre e ninguém o lia: as
+  // dicas do cabeçalho ficavam em português mesmo com o jogo em inglês.
+  // E nesses quatro botões a dica é a ÚNICA legenda que existe — o que
+  // se vê é só o ícone e o número.
+  //
+  // Vai também para aria-label, que é o que um leitor de ecrã anuncia;
+  // o title sozinho não chega.
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const val = t(key);
+    if(val !== key) { el.title = val; el.setAttribute('aria-label', val); }
   });
 }
