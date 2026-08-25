@@ -292,6 +292,26 @@
   text-shadow: 0 0 10px rgba(255,190,60,1), 0 0 20px rgba(255,140,0,.7), 0 2px 3px #000;
 }
 
+/* ── O PM a sair, em azul ──
+   Mesmo gesto do dano mas do outro lado do cartão: se saísse do mesmo
+   sítio, o custo da magia e o golpe recebido escreviam-se um por cima
+   do outro no mesmo turno. */
+@keyframes cb-pm-sobe {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(.6); }
+  20%  { opacity: 1; transform: translate(-50%, 6px) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, 26px) scale(.85); }
+}
+.cb-pm-flut {
+  position: absolute; left: 50%; bottom: 2px; pointer-events: none; z-index: 5;
+  font-family: 'Cinzel', serif; font-size: 8px; font-weight: 700; white-space: nowrap;
+  color: #7ccbf5; text-shadow: 0 0 6px rgba(90,180,232,.9), 0 2px 3px #000;
+  animation: cb-pm-sobe 1s ease-out forwards;
+}
+
+.cb-btn.largar { background: linear-gradient(180deg, rgba(90,180,232,.1), rgba(90,180,232,.03));
+                 border-color: rgba(90,180,232,.28); }
+.cb-btn.largar .cb-btn-rot { color: #8fd0f5; }
+
 /* Partículas — mesma ideia das ov-particle da invocação */
 @keyframes cb-part-voa {
   0%   { opacity: 1; transform: translate(0,0) scale(1); }
@@ -540,6 +560,7 @@
   .cb-conta b          { font-size: 9.5px; }
   .cb-extras span      { font-size: 6.5px; padding: 3px 7px; }
   .cb-teste            { font-size: 7px; padding: 3px 8px; }
+  .cb-pm-flut          { font-size: 10px; }
   .cb-ajuda-quem       { font-size: 10px; }
   .cb-ajuda-quem span  { font-size: 7px; }
   .cb-pm-cab           { font-size: 8.5px; }

@@ -716,6 +716,32 @@ function _c3pmIdeal(magia, eu, tecto) {
 // FIM DE TURNO
 // ═══════════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════════
+// LARGAR AS MAGIAS SUSTENTADAS
+//
+// Acontecia só quando o PM acabava. Mas manter uma magia de pé é uma
+// escolha que se paga todo o turno, e quem escolhe pagar tem de poder
+// deixar de pagar — senão um escudo lançado no primeiro turno drena o
+// avatar até ao fim da luta sem hipótese de o desligar.
+//
+// Larga tudo o que elas seguravam. Nada disto é reversível: para voltar
+// a ter o escudo é preciso lançar a magia outra vez.
+// ═══════════════════════════════════════════════════════════════════
+function _c3largarSustentadas(c) {
+  const quantas = c.sustentadas.length;
+  c.sustentadas = [];
+  c.bonusA = 0; c.bonusF = 0; c.bonusFD = 0; c.bonusH = 0;
+  c.furia = false;
+  c.invulneravel = false; c.ocultado = false; c.bonusEsquiva = 0;
+  c.armaduraDobrada = false; c.vorpal = false; c.roubando = null;
+  return quantas;
+}
+
+// Quanto PM as magias de pé cobram por turno.
+function _c3custoSustentadas(c) {
+  return c.sustentadas.reduce((t, s) => t + (s.magia.porTurno ? s.pm : 0), 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // O FIM DO TURNO
 //
 // Aqui cobra-se o veneno, a cura perpétua e as magias sustentadas. Fazia
@@ -729,13 +755,10 @@ function _c3fimTurno(c) {
   if (!c.vivo) return null;
   const fora = {};
   // Magias sustentadas cobram todo o turno. Sem PM, caem.
-  let custo = c.sustentadas.reduce((t, s) => t + (s.magia.porTurno ? s.pm : 0), 0);
+  let custo = _c3custoSustentadas(c);
   if (custo > c.pm) {
     if (c.sustentadas.length) fora.sustentadasCairam = c.sustentadas.length;
-    c.sustentadas = []; c.bonusA = 0; c.bonusF = 0; c.bonusFD = 0;
-    c.bonusH = 0; c.furia = false;
-    c.invulneravel = false; c.ocultado = false; c.bonusEsquiva = 0;
-    c.armaduraDobrada = false; c.vorpal = false; c.roubando = null;
+    _c3largarSustentadas(c);
   } else if (custo > 0) {
     c.pm -= custo;
     fora.sustentouPor = custo;

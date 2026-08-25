@@ -509,6 +509,15 @@ function _pveDesenharAcoes(eu, ini) {
                 on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
   }
 
+  // Desligar as magias de pé, se houver alguma a cobrar
+  const custoDePe = _c3custoSustentadas(eu);
+  if (custoDePe > 0) {
+    html += `<div class="cb-trocas"><button class="cb-btn largar" onclick="_pveLargarSustentadas()">
+        <span class="cb-btn-rot">${t('pve.acao.largar')}</span>
+        <span class="cb-btn-sub">${t('pve.acao.largar_sub', { pm: custoDePe })}</span>
+      </button></div>`;
+  }
+
   // Trocar
   const banco = _pveEstado.A.map((c, i) => ({ c, i }))
     .filter(x => x.i !== _pveEstado.ativoA && x.c.vivo);
@@ -630,6 +639,28 @@ function _pveLancarCom(tipo, pm) {
   const eu = _pveEstado.A[_pveEstado.ativoA];
   _pveAcao = { magia: eu.magias[tipo], pm };
   _pveJogarTurno();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DESLIGAR UMA MAGIA SUSTENTADA
+//
+// Manter uma magia de pé custa PM todo o turno. Sem forma de a desligar,
+// um escudo lançado no primeiro turno drenava o avatar até ao fim da
+// luta — e a única saída era ficar sem PM, que é a pior altura possível.
+//
+// NÃO gasta o turno: deixar de pagar não é uma jogada, é parar de fazer
+// uma coisa. Depois de desligar, o jogador ainda escolhe o que fazer.
+// ═══════════════════════════════════════════════════════════════════
+function _pveLargarSustentadas() {
+  if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
+  const eu = _pveEstado.A[_pveEstado.ativoA];
+  if (!eu.sustentadas.length) return;
+  const custo = _c3custoSustentadas(eu);
+  const n = _c3largarSustentadas(eu);
+  _pveLog(`<b>${eu.nome}</b>` +
+          `<div class="cb-extras"><span>${t('pve.largou', { n, pm: custo })}</span></div>`,
+          'warn', _pveEstado.turnos + 1);
+  _pveDesenhar();
 }
 
 function _pveJogarTurno() {
@@ -794,6 +825,11 @@ function _pveMostrarEvento(ev) {
     if (ev.destravou)its.push(t('pve.fim.destravou'));
     if (ev.caiu)     its.push(t('pve.ev.caiu', { nome: ev.quem }));
     if (!its.length) return;
+    // O gasto de PM sai a flutuar do cartão de quem pagou, como o dano
+    const cartao = (ev.quemIdx != null)
+      ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
+    if (cartao && ev.sustentouPor) _pveNumeroPM(cartao, ev.sustentouPor);
+    if (cartao && ev.sangrou) _pveNumeroFlutuante(cartao, ev.sangrou, false);
     _pveLog(`<b>${ev.quem}</b>` +
             `<div class="cb-extras">${its.map(x => `<span>${x}</span>`).join('')}</div>`,
             souEu ? 'good' : 'bad', ev.turno);
@@ -961,6 +997,18 @@ function _pveNumeroFlutuante(alvo, n, critico) {
   d.textContent = '−' + n;
   alvo.appendChild(d);
   setTimeout(() => d.remove(), 900);
+}
+
+// O PM sai igual ao dano, mas em azul e do outro lado do cartão — se
+// saísse do mesmo sítio, o custo da magia e o golpe recebido escreviam-se
+// um por cima do outro no mesmo turno.
+function _pveNumeroPM(alvo, n) {
+  if (!alvo || !n) return;
+  const d = document.createElement('div');
+  d.className = 'cb-pm-flut';
+  d.textContent = '−' + n + ' PM';
+  alvo.appendChild(d);
+  setTimeout(() => d.remove(), 1000);
 }
 
 // Partículas da cor do elemento — o ELEM_CFG já as tinha
