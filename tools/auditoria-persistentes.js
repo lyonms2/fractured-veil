@@ -32,8 +32,13 @@ const _lut = UI.slice(UI.indexOf('function _pveCaracs'), UI.indexOf('function _p
 // Se acrescentar campo novo ao _c3criar, acrescente-o aqui também.
 const PERSISTENTES = [
   { campo: 'veneno',          nome: 'Veneno',                  marca: 'c.veneno' },
-  { campo: 'penalidade',      nome: '−1 em tudo (do veneno)',  marca: 'c.penalidade' },
-  { campo: 'penalidadeR',     nome: '−R (dor persistente)',    marca: 'c.penalidadeR' },
+  // Estas duas não têm etiqueta de propósito: aparecem nos próprios
+  // atributos ("F2−1 H3−1 R2−1 A1−1"), que é onde interessam. Uma
+  // etiqueta "TUDO−1" ao lado seria a mesma informação duas vezes.
+  { campo: 'penalidade',      nome: '−1 em tudo (do veneno)',  marca: null,
+    semMarcaPorque: 'aparece no modificador de cada atributo' },
+  { campo: 'penalidadeR',     nome: '−R (dor persistente)',    marca: null,
+    semMarcaPorque: 'aparece no modificador da Resistência' },
   { campo: 'furia',           nome: 'Fúria',                   marca: 'c.furia' },
   { campo: 'indefeso',        nome: 'Indefeso',                marca: 'c.indefeso' },
   { campo: 'indefesoTurnos',  nome: 'Paralisia a contar',      marca: 'c.indefesoTurnos' },

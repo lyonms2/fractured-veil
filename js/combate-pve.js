@@ -331,8 +331,9 @@ function _pveLutador(c, i, lado, ativo) {
   if (c.bonusFD)        m(`FD+${c.bonusFD}`, 'escudo');
   if (c.bonusEsquiva)   m(`${t('pve.marca.esquiva')}+${c.bonusEsquiva}`, 'escudo');
   if (c.cegoAtaque)     m(t('pve.marca.cego'), 'veneno');
-  if (c.penalidade)     m(`${t('pve.marca.tudo')}−${c.penalidade}`, 'veneno');
-  if (c.penalidadeR)    m(`R−${c.penalidadeR}`, 'veneno');
+  // As penalidades não levam etiqueta: já aparecem nos próprios
+  // atributos, em "F2−1 H3−1 R2−1 A1−1". Uma etiqueta "TUDO−1" ao lado
+  // é a mesma informação escrita duas vezes.
   if (c.indefesoTurnos > 1) m(t('pve.marca.preso'), 'indefeso');
 
   return `<div class="${cls}" id="cbLut${lado}${i}">
@@ -861,8 +862,14 @@ function _pveMostrarEvento(ev) {
       ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
     if (cartao && ev.sustentouPor) _pveNumeroPM(cartao, ev.sustentouPor);
     if (cartao && ev.sangrou) _pveNumeroFlutuante(cartao, ev.sangrou, false);
-    _pveLog(`<b>${ev.quem}</b>` +
-            `<div class="cb-extras">${its.map(x => `<span>${x}</span>`).join('')}</div>`,
+    // O nome vai numa etiqueta da cor do lado, e não num <b> discreto.
+    // Estas linhas não têm nome de magia a ancorá-las, e num turno podem
+    // aparecer duas seguidas de avatares DIFERENTES — um a sangrar, outro
+    // a curar-se. Lidas depressa, pareciam o mesmo avatar a perder vida
+    // apesar de se estar a curar.
+    _pveLog(`<div class="cb-extras ${souEu ? 'de-eu' : 'de-ini'}">` +
+            `<span class="quem">${ev.quem}</span>` +
+            its.map(x => `<span>${x}</span>`).join('') + `</div>`,
             souEu ? 'good' : 'bad', ev.turno);
     _pveAtualizarBarras();
     return;
@@ -942,16 +949,24 @@ function _pveMostrarEvento(ev) {
   // por isso o 6 é marcado, senão parecia erro de conta.
   const testes = (ev.testes || []).map(x => _pveTesteHTML(x, ev)).join('');
 
+  // ── SEM REPETIR O QUE O TESTE JÁ DISSE ──
+  // O teste escreve o desfecho em palavras: "→ foi envenenado". Uma
+  // etiqueta a seguir a dizer "envenenado" é a mesma frase outra vez.
+  // Só ficam as que ACRESCENTAM alguma coisa — a cegueira, por exemplo,
+  // fica porque diz os números (−1 no ataque, −3 na esquiva).
+  const rolou = new Set((ev.testes || []).map(x => x.rotulo));
+  const repete = r => rolou.has(r);
+
   const meus = [], dele = [];
   if (ev.reflexo)       dele.push(t('pve.ev.reflexo'));
   // O Reflexo Espelhado manda o golpe de volta: quem o leva é o
   // ATACANTE. Estava no bloco do alvo e lia-se ao contrário.
   if (ev.devolveu)      meus.push(t('pve.ev.devolveu', { n: ev.devolveu }));
-  if (ev.envenenou)     dele.push(t('pve.ev.envenenou'));
+  if (ev.envenenou && !repete('veneno')) dele.push(t('pve.ev.envenenou'));
   if (ev.enfraqueceu)   dele.push(t('pve.ev.enfraqueceu'));
-  if (ev.enfureceu)     dele.push(t('pve.ev.enfureceu'));
-  if (ev.paralisou)     dele.push(t('pve.ev.paralisou'));
-  if (ev.resistiu)      dele.push(t('pve.ev.resistiu'));
+  if (ev.enfureceu && !repete('furia')) dele.push(t('pve.ev.enfureceu'));
+  if (ev.paralisou && !repete('paralisia')) dele.push(t('pve.ev.paralisou'));
+  if (ev.resistiu && !rolou.size) dele.push(t('pve.ev.resistiu'));
   if (ev.fora)          dele.push(t('pve.ev.fora'));
   if (ev.curou)         meus.push(t('pve.ev.curou'));
   if (ev.subiu)         meus.push(t('pve.ev.subiu', { c: ev.subiu }));
@@ -966,17 +981,17 @@ function _pveMostrarEvento(ev) {
   if (ev.barreiraComeu) dele.push(t('pve.ev.barreira_comeu', { n: ev.barreiraComeu }));
   if (ev.barreiraCaiu)  dele.push(t('pve.ev.barreira_caiu'));
   if (ev.pagouComSangue)meus.push(t('pve.ev.sangue', { n: ev.pagouComSangue }));
-  if (ev.perdeuFoco)    dele.push(t('pve.ev.perdeu_foco'));
+  if (ev.perdeuFoco && !repete('foco')) dele.push(t('pve.ev.perdeu_foco'));
   if (ev.caiuSozinho)   meus.push(t('pve.ev.caiu_sozinho'));
   if (ev.semDano)       dele.push(t('pve.ev.sem_dano'));
-  if (ev.resistiuVeneno)dele.push(t('pve.ev.resistiu_veneno'));
+  if (ev.resistiuVeneno && !repete('veneno')) dele.push(t('pve.ev.resistiu_veneno'));
   if (ev.jaEnvenenado)  dele.push(t('pve.ev.ja_envenenado'));
   if (ev.jaCego)        dele.push(t('pve.ev.ja_cego'));
   if (ev.semPMparaRoubar)dele.push(t('pve.ev.sem_pm_roubar'));
   if (ev.cegou)         dele.push(t('pve.ev.cegou'));
-  if (ev.congelouUmTurno)dele.push(t('pve.ev.congelou'));
+  if (ev.congelouUmTurno && !repete('congelar')) dele.push(t('pve.ev.congelou'));
   if (ev.decapitou)     dele.push(t('pve.ev.decapitou'));
-  if (ev.aguentouVorpal)dele.push(t('pve.ev.aguentou_vorpal'));
+  if (ev.aguentouVorpal && !repete('vorpal')) dele.push(t('pve.ev.aguentou_vorpal'));
   if (ev.armaduraDobrou)meus.push(t('pve.ev.armadura_dobrou'));
   if (ev.vorpal)        meus.push(t('pve.ev.vorpal'));
   if (ev.roubando)      meus.push(t('pve.ev.roubando'));

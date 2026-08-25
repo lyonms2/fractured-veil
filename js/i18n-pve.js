@@ -81,7 +81,7 @@ window.registerStrings({
   'pve.teste.troca':    'troca',
 
   'pve.fim.sangrou':        'o veneno tirou {n} de vida',
-  'pve.fim.regenerou':      'o corpo fechou-se: +{n} de vida',
+  'pve.fim.regenerou':      'Cura Perpétua: +{n} de vida',
   'pve.fim.sustentou':      'pagou {n} PM para manter a magia de pé',
   'pve.fim.caiu_sustentada':'sem PM: a magia sustentada caiu',
   'pve.fim.destravou':      'voltou a mexer-se',
@@ -242,7 +242,7 @@ window.registerStrings({
   'pve.teste.troca':    'switch',
 
   'pve.fim.sangrou':        'the poison took {n} life',
-  'pve.fim.regenerou':      'the body closed itself: +{n} life',
+  'pve.fim.regenerou':      'Perpetual Mending: +{n} life',
   'pve.fim.sustentou':      'paid {n} MP to keep the spell up',
   'pve.fim.caiu_sustentada':'out of MP: the sustained spell dropped',
   'pve.fim.destravou':      'can move again',
