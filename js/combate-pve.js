@@ -1123,6 +1123,10 @@ function _pveMostrarEvento(ev) {
   if (ev.paralisou && !repete('paralisia')) dele.push(t('pve.ev.paralisou'));
   if (ev.resistiu && !rolou.size) dele.push(t('pve.ev.resistiu'));
   if (ev.fora)          dele.push(t('pve.ev.fora'));
+  // A Fúria Sombria erguia-se em silêncio: aparecia a marca no cartão e
+  // mais nada. É a única magia que TIRA alguma coisa a quem a lança —
+  // nem esquiva nem magia enquanto estiver de pé — e isso merece linha.
+  if (ev.furia)         meus.push(t('pve.ev.furia'));
   if (ev.curou)         meus.push(t('pve.ev.curou'));
   if (ev.subiu)         meus.push(t('pve.ev.subiu', { c: ev.subiu }));
   if (ev.invulneravel)  meus.push(t('pve.ev.invulneravel'));
