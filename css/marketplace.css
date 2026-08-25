@@ -23,7 +23,9 @@
   justify-content:flex-start;
   border-radius:0; border:none;
 }
-#marketplaceModal .modal-header { flex-shrink:0; }
+/* Sem titulo a esquerda, o space-between do .modal-header punha o X
+   encostado a esquerda. Empurra-se para o seu canto. */
+#marketplaceModal .modal-header { flex-shrink:0; justify-content:flex-end; }
 /* .modal-card tem align-items:center (css/modals.css) — sem width:100%
    explícito aqui, o corpo (sidebar+conteúdo) encolhe pro tamanho do
    conteúdo e fica centralizado com faixas vazias nas laterais, em vez de
