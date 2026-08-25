@@ -210,11 +210,16 @@ function getVinculoTier() {
     if(vinculo >= VINCULO_TIERS[i].min) return VINCULO_TIERS[i];
   return VINCULO_TIERS[0];
 }
+// Só o xpMult vive aqui. Havia também eggRaro e eggDura, mas os ovos
+// são decididos no servidor (api/pool.js) e eram estes dois campos que
+// ninguém lia — o eggDura chegou a prometer validade a dobrar durante
+// todo este tempo sem nada a cumpri-lo. Os efeitos existem, estão lá:
+//   vínculo 151+  → +5 de chance de ovo lendário
+//   vínculo 301+  → +10 de chance, e validade do ovo a dobrar
 function getVinculoBonus() {
-  if(vinculo >= 301) return { xpMult:1.15, eggRaro:10, eggDura:2.0 };
-  if(vinculo >= 151) return { xpMult:1.10, eggRaro:5,  eggDura:1.0 };
-  if(vinculo >= 51)  return { xpMult:1.10, eggRaro:0,  eggDura:1.0 };
-  return               { xpMult:1.0,  eggRaro:0,  eggDura:1.0 };
+  if(vinculo >= 301) return { xpMult:1.15 };
+  if(vinculo >= 51)  return { xpMult:1.10 };
+  return               { xpMult:1.0  };
 }
 function checkVinculoTier(oldVal) {
   const oldTier = VINCULO_TIERS.filter(t => oldVal >= t.min).length;

@@ -176,9 +176,15 @@ function applyGameState(data) {
       if(slot.items.length < bi) console.log(`[applyGameState] ${bi - slot.items.length} item(s) expirado(s) removido(s).`);
     }
     if(slot.eggs) {
-      const be = slot.eggs.length;
+      // Os ovos apodreciam em SILÊNCIO: iam para um console.log que só o
+      // programador vê. Os itens sempre avisaram ("expirou após 30
+      // dias") — quem perdia um ovo lendário nunca ficava sabendo.
+      const podres = slot.eggs.filter(e => _now > e.expiraEm);
       slot.eggs = slot.eggs.filter(e => _now <= e.expiraEm);
-      if(slot.eggs.length < be) console.log(`[applyGameState] ${be - slot.eggs.length} ovo(s) apodrecido(s) removido(s).`);
+      if(podres.length) {
+        window._ovosPodres = (window._ovosPodres || []).concat(
+          podres.map(e => ({ raridade: e.raridade, elemento: e.elemento })));
+      }
     }
   });
 

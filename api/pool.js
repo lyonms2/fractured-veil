@@ -380,7 +380,10 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
 }
 
 // ── Botar ovo (server-side, relógio do servidor) ────────────────
-function _calcEggRarity(raridade, nivel, vinculo) {
+// A raridade do ovo. O cliente tinha uma cópia disto que estava morta —
+// quem decide é aqui, e é por isso que o bônus dos vitais que só existia
+// lá nunca aconteceu.
+function _calcEggRarity(raridade, nivel, vinculo, vitals) {
   let c;
   if (raridade === 'Comum') {
     c = nivel < 25 ? [97,3,0] : nivel < 35 ? [94,5.5,0.5] : [90,8,2];
@@ -391,6 +394,13 @@ function _calcEggRarity(raridade, nivel, vinculo) {
   }
   if (vinculo >= 301 && c[2] < 95) { c[1] = Math.max(0, c[1]-5); c[2] = Math.min(95, c[2]+10); }
   else if (vinculo >= 151 && c[2] < 95) { c[1] = Math.max(0, c[1]-2.5); c[2] = Math.min(95, c[2]+5); }
+  // Bicho bem cuidado bota ovo melhor. Estava escrito na função morta do
+  // cliente e nunca chegou a valer nada — agora vale, e é o motivo mais
+  // direto que o jogo tem para você manter os medidores em cima.
+  const v = vitals || {};
+  const bemCuidado = ['fome','humor','energia','saude','higiene']
+    .every(k => (v[k] ?? 0) > 80);
+  if (bemCuidado && c[2] < 95) { c[1] = Math.max(0, c[1]-5); c[2] = Math.min(95, c[2]+5); }
   const roll = Math.random() * 100;
   if (roll < c[0]) return 'Comum';
   if (roll < c[0] + c[1]) return 'Raro';
@@ -425,20 +435,34 @@ async function handleBotarOvo(_req, res, db, uid) {
       if (moedas < 50) throw new Error('Moedas insuficientes (precisa de 50 🪙)');
 
       const raridade = slot.raridade || 'Comum';
-      const numEggs  = raridade === 'Lendário' ? 3 : raridade === 'Raro' ? 2 : 1;
+      // Dois ovos para todos, e 24h para todos. Antes eram 1/2/3 ovos com
+      // esperas de 24h/48h/36h, e daí saíam duas coisas tortas: o Raro
+      // produzia exatamente no mesmo ritmo que o Comum (2 em 48h = 1 em
+      // 24h), e o Comum pagava 50🪙 por ovo contra 25🪙 do Raro — o avatar
+      // mais fraco pagando o dobro.
+      //
+      // Agora a raridade decide a QUALIDADE do ovo, não a quantidade: a
+      // tabela de _calcEggRarity já dá ao Lendário 55% de chance de ovo
+      // lendário contra 2% do Comum. Não precisa somar volume a isso.
+      const numEggs  = 2;
       const slotEggs = slot.eggs || [];
       const canAdd   = Math.min(numEggs, 10 - slotEggs.length);
       if (canAdd <= 0) throw new Error('Inventário de ovos cheio (máx 10)');
 
       const novosOvos = [];
       for (let i = 0; i < canAdd; i++) {
-        const r        = _calcEggRarity(raridade, slot.nivel || 1, slot.vinculo || 0);
+        const r        = _calcEggRarity(raridade, slot.nivel || 1, slot.vinculo || 0, slot.vitals);
         const baseDias = r === 'Lendário' ? 30 : r === 'Raro' ? 14 : 7;
-        novosOvos.push({ raridade: r, elemento: slot.elemento || 'Terra', expiraEm: now + baseDias * 86400000, id: now + i });
+        // Alma Gêmea (vínculo 301+) dobra a validade. O getVinculoBonus()
+        // do cliente promete isto no campo eggDura desde sempre e ninguém
+        // o implementava — era o único benefício do último patamar que
+        // não valia nada.
+        const duraMult = (slot.vinculo || 0) >= 301 ? 2 : 1;
+        novosOvos.push({ raridade: r, elemento: slot.elemento || 'Terra',
+                         expiraEm: now + baseDias * duraMult * 86400000, id: now + i });
       }
 
-      const cdMult   = raridade === 'Lendário' ? 1.5 : raridade === 'Raro' ? 2.0 : 1.0;
-      const cdMs     = Math.round(24 * 3600000 * cdMult);
+      const cdMs     = 24 * 3600000;
       const newReady = now + cdMs;
 
       const newSlots = [...slots];

@@ -341,6 +341,17 @@ async function _onLoginSuccess(user) {
       }
     }
 
+    // ── Ovos que apodreceram enquanto estavas fora ──
+    if(Array.isArray(window._ovosPodres) && window._ovosPodres.length) {
+      const podres = window._ovosPodres;
+      window._ovosPodres = null;
+      const raros = podres.filter(o => o.raridade !== 'Comum').length;
+      addLog(t(podres.length === 1 ? 'egg.log.apodreceu_1' : 'egg.log.apodreceu_n',
+               { n: podres.length, raridade: podres[0].raridade }), 'bad');
+      if(raros && typeof showToast === 'function')
+        showToast(t('egg.toast.apodreceu_raro', { n: raros }), 'err');
+    }
+
     // ── Quem passou cá enquanto estavas fora ──
     // A visita já não corre num sentido só: o vínculo veio somado do
     // servidor, e o recado aparece aqui. Sem isto, o medidor subia

@@ -1,5 +1,9 @@
 // Taxa de chocagem por raridade (💎 cristais)
 const HATCH_FEE = { 'Comum': 0, 'Raro': 50, 'Lendário': 100 };
+// Quantos ovos saem de cada postura. Tem de bater com o numEggs do
+// api/pool.js — é o servidor que bota, este número existe só para o
+// cliente saber se há espaço antes de cobrar.
+const OVOS_POR_POSTURA = 2;
 let pendingHatchFee = 0;
 
 async function goToMarketplace(e) {
@@ -31,42 +35,16 @@ function findTargetSlot() {
 // SISTEMA DE OVOS
 // ═══════════════════════════════════════════════════════════════════
 
-function calcEggRarity() {
-  const r = avatar.raridade;
-  const n = nivel;
-  let chances;
-  if(r === 'Comum') {
-    if(n < 25)      chances = [97,   3,   0  ];
-    else if(n < 35) chances = [94,   5.5, 0.5];
-    else            chances = [90,   8,   2  ];
-  } else if(r === 'Raro') {
-    if(n < 25)      chances = [55,  40,   5  ];
-    else if(n < 35) chances = [40,  50,  10  ];
-    else            chances = [25,  55,  20  ];
-  } else {
-    if(n < 25)      chances = [20,  55,  25  ];
-    else if(n < 35) chances = [10,  50,  40  ];
-    else            chances = [5,   40,  55  ];
-  }
-  const allHigh = Object.values(vitals).every(v => v > 80);
-  if(allHigh && chances[2] < 95) { chances[1] = Math.max(0, chances[1]-5); chances[2] += 5; }
-  const vb = getVinculoBonus();
-  if(vb.eggRaro > 0 && chances[2] < 95) {
-    const bonus = vb.eggRaro;
-    chances[1] = Math.max(0, chances[1] - Math.floor(bonus/2));
-    chances[2] = Math.min(95, chances[2] + bonus);
-  }
-  const roll = Math.random() * 100;
-  if(roll < chances[0]) return 'Comum';
-  if(roll < chances[0] + chances[1]) return 'Raro';
-  return 'Lendário';
-}
-
-function calcEggExpiry(raridade) {
-  const base = raridade === 'Lendário' ? 30 : raridade === 'Raro' ? 14 : 7;
-  const dias  = base * getVinculoBonus().eggDura;
-  return Date.now() + dias * 24 * 60 * 60 * 1000;
-}
+// A raridade e a validade do ovo são decididas NO SERVIDOR
+// (_calcEggRarity e handleBotarOvo, em api/pool.js). Havia aqui uma
+// segunda cópia das duas — calcEggRarity() e calcEggExpiry() — que nunca
+// era chamada por ninguém, e as duas versões já tinham divergido: a
+// daqui aplicava um bônus por ter todos os vitais acima de 80 que o
+// servidor nunca conheceu, e multiplicava a validade pelo eggDura do
+// vínculo, que também só existia aqui. Quem lesse este ficheiro
+// acreditava em duas regras que não valiam nada.
+//
+// As duas passaram para o servidor de verdade. Esta cópia saiu.
 
 async function layEgg() {
   if(getFase() < 3) { showBubble(t('egg.bub.not_grown')); return; }
@@ -77,9 +55,14 @@ async function layEgg() {
     return;
   }
   if(gs.moedas < 50) { showBubble(t('egg.bub.no_coins')); addLog(t('egg.log.no_coins'), 'bad'); return; }
-  if(eggsInInventory.length >= 10) {
+  // O servidor bota DOIS ovos por postura e entrega só os que couberem,
+  // cobrando os 50🪙 na mesma. Com 9 ovos guardados, pagava-se o preço
+  // inteiro por um ovo só — e sem aviso nenhum.
+  const CABEM = 10 - eggsInInventory.length;
+  if(CABEM < OVOS_POR_POSTURA) {
     showBubble(t('egg.bub.inv_full'));
-    addLog(t('egg.log.inv_full'), 'bad');
+    addLog(t(CABEM <= 0 ? 'egg.log.inv_full' : 'egg.log.inv_quase_full',
+             { cabem: CABEM, ovos: OVOS_POR_POSTURA }), 'bad');
     return;
   }
   if(!firebase?.auth?.()?.currentUser) { showBubble(t('egg.bub.connect')); return; }
