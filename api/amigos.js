@@ -20,6 +20,13 @@ const { getAuth }                      = require('firebase-admin/auth');
 const MOEDAS_VISITA = 50;
 const XP_VISITA     = 15;
 const VITAL_BOOST   = 20;
+// O que fica para QUEM É VISITADO. Vínculo e não moedas de propósito:
+// duas contas a visitarem-se uma à outra já se pagam como visitantes, e
+// dar moedas dos dois lados dobrava isso. O vínculo é do avatar, não se
+// troca nem se converte em cristais — e é a moeda certa para "alguém
+// cuidou do teu bicho".
+const VINCULO_VISITADO = 1;
+const MAX_INBOX_VISITAS = 30;
 const COOLDOWN_MS   = 8 * 60 * 60 * 1000; // 8 horas
 const MAX_AMIGOS    = 50;
 const MAX_PEDIDOS   = 20;
@@ -364,12 +371,33 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
       // Recompensar visitante
       const novasMoedas = moedas + MOEDAS_VISITA;
 
+      // ── E O OUTRO LADO ──
+      // Até aqui a visita só corria num sentido: o visitante ganhava, o
+      // visitado via um medidor subir sem nunca saber porquê nem por
+      // quem. Agora leva vínculo e fica com o recado, que o jogo lhe
+      // entrega quando voltar (ver inboxVisitas em js/firebase.js).
+      const mySlotIdx = myData.activeSlotIdx ?? myData.gs?.activeSlotIdx ?? 0;
+      const meuNome   = (myData.avatarSlots || [])[mySlotIdx]?.nome?.split(',')[0] || 'Viajante';
+
+      const slotsComVinculo = newSlots.map((sl, i) => {
+        if (i !== slotIdx || !sl) return sl;
+        return { ...sl, vinculo: (sl.vinculo || 0) + VINCULO_VISITADO };
+      });
+
+      // Aparado no servidor: o cliente consome e limpa, mas se alguém
+      // nunca voltar isto não pode crescer sem fim dentro do documento.
+      const inboxAtual = Array.isArray(targetData.inboxVisitas) ? targetData.inboxVisitas : [];
+      const inboxNovo  = inboxAtual.concat([{
+        de: uid, nome: meuNome, tipo, vinculo: VINCULO_VISITADO, quando: Date.now(),
+      }]).slice(-MAX_INBOX_VISITAS);
+
       tx.update(db.collection('players').doc(uid), {
         'gs.moedas':                        novasMoedas,
         [`visitasLog.${alvoUid}.${tipo}`]:  Date.now(),
       });
       tx.update(db.collection('players').doc(alvoUid), {
-        avatarSlots: newSlots,
+        avatarSlots:   slotsComVinculo,
+        inboxVisitas:  inboxNovo,
       });
 
       return { novasMoedas, xpGanho: XP_VISITA, novoVital };

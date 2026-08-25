@@ -325,7 +325,10 @@ function _renderVisitaOverlay() {
     <div class="visita-avatar">
       <div class="av-zoom-wrap" style="position:relative;display:inline-block;">
         <div id="visitaAvatarWrap" class="creature-wrap" style="width:80px;height:80px;">
-          ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, Math.ceil((perfil.nivel || 1) / 5))}
+          <!-- A fase vem do _faseNum(), como em todo o resto do jogo.
+               Estava em Math.ceil(nivel/5): errava em 8 de 10 níveis e a
+               partir do 16 pedia uma fase que não existe (só há 0-3). -->
+          ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, _faseNum(perfil.nivel || 1))}
         </div>
         <button class="mkt-avatar-zoom-btn"
           onclick="openAvatarZoomData('${esc(perfil.elemento)}','${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"

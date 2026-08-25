@@ -341,6 +341,27 @@ async function _onLoginSuccess(user) {
       }
     }
 
+    // ── Quem passou cá enquanto estavas fora ──
+    // A visita já não corre num sentido só: o vínculo veio somado do
+    // servidor, e o recado aparece aqui. Sem isto, o medidor subia
+    // sozinho e ninguém sabia porquê.
+    if(Array.isArray(window._visitasRecebidas) && window._visitasRecebidas.length) {
+      const visitas = window._visitasRecebidas;
+      window._visitasRecebidas = null;
+      window._visitasPorLimpar = true;
+      const ACCAO = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
+      for(const v of visitas.slice(-8)) {
+        addLog(t('amigos.log.recebida', {
+          icon: ACCAO[v.tipo] || '✦', nome: v.nome || '???',
+          accao: t('amigos.recebida.' + v.tipo), vinculo: v.vinculo || 0,
+        }), 'good');
+      }
+      const total = visitas.length;
+      if(typeof showToast === 'function')
+        showToast(t(total === 1 ? 'amigos.toast.visita_1' : 'amigos.toast.visita_n', { n: total }), 'ok');
+      if(typeof scheduleSave === 'function') scheduleSave();
+    }
+
     // ── Rebuild screens ──
     if(dead && avatar) {
       document.getElementById('idleScreen').style.display   = 'none';

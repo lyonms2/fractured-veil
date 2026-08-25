@@ -121,6 +121,14 @@ function applyGameState(data) {
   if(data.activeSlotIdx !== undefined) activeSlotIdx = data.activeSlotIdx;
 
 
+  // ── Consumir inboxVisitas ──
+  // Quem passou pelo teu bicho enquanto estavas fora. O vínculo já foi
+  // somado ao slot pelo servidor (dentro da mesma transacção da visita);
+  // aqui só se guarda o recado para o mostrar, e limpa-se lá.
+  if(Array.isArray(data.inboxVisitas) && data.inboxVisitas.length > 0) {
+    window._visitasRecebidas = data.inboxVisitas.slice();
+  }
+
   // Consumir inboxEggs
   if(data.inboxEggs && data.inboxEggs.length > 0) {
     data.inboxEggs = data.inboxEggs.filter(e => Date.now() < e.expiraEm);
@@ -228,6 +236,13 @@ async function saveToFirebase() {
     } else if(window._inboxConsumed) {
       window._inboxConsumed = false;
       await fbDb().collection('players').doc(walletAddress).update({ inboxEggs: [] });
+    }
+    // Os recados de visita seguem o mesmo caminho dos ovos: lidos ao
+    // entrar, limpos no primeiro save. Se falhar, ficam lá e aparecem da
+    // próxima — melhor repetidos do que perdidos.
+    if(window._visitasPorLimpar) {
+      window._visitasPorLimpar = false;
+      await fbDb().collection('players').doc(walletAddress).update({ inboxVisitas: [] });
     }
   } catch(e) { console.warn('Save error:', e); }
 }

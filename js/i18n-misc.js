@@ -14,6 +14,12 @@ window.registerStrings(
 
     // amigos.js
     'amigos.log.visited':    '{icon} Visitaste {nome}! +{coins} 🪙 +{xp} XP',
+    'amigos.log.recebida':  '{icon} {nome} passou por cá e {accao}. +{vinculo} de vínculo.',
+    'amigos.recebida.alimentar': 'deu de comer ao seu avatar',
+    'amigos.recebida.brincar':   'brincou com o seu avatar',
+    'amigos.recebida.limpar':    'deu banho no seu avatar',
+    'amigos.toast.visita_1': '1 amigo cuidou do seu avatar enquanto você esteve fora.',
+    'amigos.toast.visita_n': '{n} amigos cuidaram do seu avatar enquanto você esteve fora.',
     'amigos.title':          '👥 AMIGOS',
     'amigos.visit.title':    '🏠 VISITAR AMIGO',
     'amigos.loading':        'Carregando...',
@@ -51,6 +57,12 @@ window.registerStrings(
 
     // amigos.js
     'amigos.log.visited':    '{icon} Visited {nome}! +{coins} 🪙 +{xp} XP',
+    'amigos.log.recebida':  '{icon} {nome} came by and {accao}. +{vinculo} bond.',
+    'amigos.recebida.alimentar': 'fed your avatar',
+    'amigos.recebida.brincar':   'played with your avatar',
+    'amigos.recebida.limpar':    'bathed your avatar',
+    'amigos.toast.visita_1': '1 friend looked after your avatar while you were away.',
+    'amigos.toast.visita_n': '{n} friends looked after your avatar while you were away.',
     'amigos.title':          '👥 FRIENDS',
     'amigos.visit.title':    '🏠 VISIT FRIEND',
     'amigos.loading':        'Loading...',
