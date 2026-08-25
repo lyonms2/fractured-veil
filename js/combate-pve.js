@@ -435,7 +435,7 @@ function _pveClone(c) { return JSON.parse(JSON.stringify(c)); }
 // cura — anunciar-se com "0.3 de dano, fere em 18% das tentativas",
 // porque o resolvedor lhe rolava um ataque de 1d que ninguém pediu.
 const PVE_MAGIA_OFENSIVA = ['fa', 'roubaVida', 'drenaPM', 'veneno', 'cegueira',
-  'petrifica', 'congela', 'congelaUmTurno', 'destroiAlma', 'debuffR',
+  'petrifica', 'congela', 'congelaTurnos', 'destroiAlma', 'debuffR',
   'alvoIndefeso', 'ondasPor', 'vorpal'];
 
 function _pvePrognostico(eu, alvo, magia, pm, extra) {
@@ -451,8 +451,19 @@ function _pvePrognostico(eu, alvo, magia, pm, extra) {
     const a = _pveClone(eu), d = _pveClone(alvo);
     const ev = { testes: [] };
     let passou = 0;
-    try { passou = _c3resolver(a, d, magia, pm, rng, ev, extra || {}) || 0; }
-    catch (err) { return null; }
+    // O ciclo de turnos faz DUAS coisas: rola o golpe (_c3resolver) e só
+    // depois aplica os efeitos (_c3aplicarEfeitos). Isto chamava apenas
+    // a primeira, e por isso o prognóstico não via veneno, cegueira nem
+    // gelo — os efeitos todos vivem na segunda. Aqui encadeiam-se na
+    // mesma ordem, e as magias que não atacam entram com dano 0, tal
+    // como lá.
+    try {
+      if (magia && !magia.fa) _c3aplicarEfeitos(a, d, magia, pm, 0, rng, ev);
+      else {
+        passou = _c3resolver(a, d, magia, pm, rng, ev, extra || {}) || 0;
+        _c3aplicarEfeitos(a, d, magia, pm, passou, rng, ev);
+      }
+    } catch (err) { return null; }
     soma += passou;
     if (passou > 0) { acertos++; if (passou > maior) maior = passou; }
     if (ev.esquivou) esquivas++;
@@ -1002,6 +1013,16 @@ function _pveMostrarEvento(ev) {
   // O que o fim do turno cobra: veneno, cura perpétua, sustentadas.
   // Mexia nos números sem dizer nada, e por isso o veneno parecia não
   // funcionar — funcionava, só não se via.
+  // Preso no gelo: perdeu o turno inteiro. Sem esta linha o turno
+  // passava sem uma palavra sobre ele, e parecia que a interface tinha
+  // esquecido o avatar.
+  if (ev.preso) {
+    _pveLog(`<div class="cb-extras ${souEu ? 'de-eu' : 'de-ini'}">` +
+            `<span class="quem">${ev.quem}</span><span>${t('pve.ev.preso')}</span></div>`,
+            souEu ? 'bad' : 'good', ev.turno);
+    return;
+  }
+
   if (ev.fimDeTurno) {
     const its = [];
     if (ev.sangrou)  its.push(t('pve.fim.sangrou', { n: ev.sangrou }));
@@ -1009,6 +1030,7 @@ function _pveMostrarEvento(ev) {
     if (ev.sustentouPor)     its.push(t('pve.fim.sustentou', { n: ev.sustentouPor }));
     if (ev.sustentadasCairam)its.push(t('pve.fim.caiu_sustentada', { n: ev.sustentadasCairam }));
     if (ev.destravou)its.push(t('pve.fim.destravou'));
+    if (ev.descongelou)its.push(t('pve.fim.descongelou'));
     if (ev.acalmou) its.push(t('pve.fim.acalmou'));
     if (ev.caiu)     its.push(t('pve.ev.caiu', { nome: ev.quem }));
     if (!its.length) return;
@@ -1148,7 +1170,7 @@ function _pveMostrarEvento(ev) {
   if (ev.jaCego)        dele.push(t('pve.ev.ja_cego'));
   if (ev.semPMparaRoubar)dele.push(t('pve.ev.sem_pm_roubar'));
   if (ev.cegou)         dele.push(t('pve.ev.cegou'));
-  if (ev.congelouUmTurno && !repete('congelar')) dele.push(t('pve.ev.congelou'));
+  if (ev.congelou && !repete('congelar')) dele.push(t('pve.ev.congelou', { n: ev.congelou }));
   if (ev.decapitou)     dele.push(t('pve.ev.decapitou'));
   if (ev.aguentouVorpal && !repete('vorpal')) dele.push(t('pve.ev.aguentou_vorpal'));
   if (ev.armaduraDobrou)meus.push(t('pve.ev.armadura_dobrou'));

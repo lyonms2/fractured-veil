@@ -89,6 +89,12 @@ function _c3criar(slot, rng) {
     sustentadas: [],      // [{ magia, pm }] a pagar todo o turno
     veneno: false,
     indefeso: false,      // não usa a H na Defesa neste turno
+    // Congelado é MAIS do que indefeso: indefeso é não se defender bem,
+    // congelado é não fazer nada. Ficam separados porque o Toque
+    // Paralisante promete só a primeira coisa — "sem esquivar nem se
+    // defender direito" — e não devia ganhar a segunda de borla.
+    congelado: false,     // preso no gelo: não age de todo
+    congeladoTurnos: 0,
     fora: false,          // petrificado, congelado, alma destruída
     invulneravel: false,  // corpo elemental sustentado: o dano não entra
     barreira: 0,          // escudo de pontos que come dano até esgotar
@@ -460,12 +466,18 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 
   // Congelar por um turno: não tira de combate como a Prisão de Gelo,
   // só deixa o alvo indefeso — sem atacar, esquivar nem lançar magia.
-  if (magia.congelaUmTurno) {
+  if (magia.congelaTurnos) {
     if (dano <= 0) ev.semDano = true;
     else {
       const r = _c3resistirDetalhe(def, atk, false);
       if (!_c3testeReg(r.valor, rng, ev, 'congelar', r.partes)) {
-        def.indefeso = true; def.indefesoTurnos = 2; ev.congelouUmTurno = true;
+        // +1 porque o turno em que a magia cai já vai a meio: descontar
+        // esse deixava o alvo com um turno inteiro a menos do que o
+        // texto promete. Com N+1, perde N turnos completos.
+        const presoAte = magia.congelaTurnos + 1;
+        def.congelado = true; def.congeladoTurnos = presoAte;
+        def.indefeso  = true; def.indefesoTurnos  = presoAte;
+        ev.congelou = magia.congelaTurnos;
       } else ev.resistiu = true;
     }
   }
@@ -857,6 +869,11 @@ function _c3fimTurno(c) {
     if (!c.indefeso) fora.destravou = true;
   }
   else c.indefeso = false;
+  if (c.congeladoTurnos > 0) {
+    c.congeladoTurnos--; c.congelado = c.congeladoTurnos > 0;
+    if (!c.congelado) fora.descongelou = true;
+  }
+  else c.congelado = false;
   return Object.keys(fora).length ? fora : null;
 }
 
@@ -900,6 +917,20 @@ function combate3dtTurno(e) {
 
     const l = { lado: o.lado, c: meu[iMeu()], alvo: dele[iDele()] };
     if (!l.c || !l.alvo || !l.c.vivo || !l.alvo.vivo) continue;
+
+    // ── Preso no gelo: não age ──
+    // O ciclo nunca olhava para isto. A magia dizia "sem atacar nem
+    // esquivar" e só a esquiva era verdade: o congelado continuava a
+    // bater todos os turnos, como se nada fosse.
+    //
+    // Fica ANTES da troca de propósito. Trocar também é agir, e deixar
+    // o congelado sair de campo fazia do gelo um estorvo de um segundo:
+    // bastava mandar entrar outro e a prisão não prendia nada.
+    if (l.c.congelado) {
+      if (eventos) eventos.push({ turno: turnos, lado: l.lado, quem: l.c.nome,
+                                  quemIdx: iMeu(), preso: true, suporte: true });
+      continue;
+    }
 
     // ── Trocar de avatar ──
     const banco = meu;

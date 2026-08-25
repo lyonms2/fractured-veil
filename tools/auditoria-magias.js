@@ -224,7 +224,7 @@ const TRATADAS = new Set(['fa','id','pm','pmMax','porTurno','ignoraArmadura','al
   'buffFuria','armadura','armaduraPorPM','armaduraMax','bonusFD','drenaPM','barreira',
   'invulneravel','imuneEspiritual','ocultacao','esquivaBonus','duracao',
   // as do nivelamento por elemento
-  'armaduraDobra','excetoMagia','cura','vorpal','roubaVida','cegueira','bonusFDPorPM','congelaUmTurno']);
+  'armaduraDobra','excetoMagia','cura','vorpal','roubaVida','cegueira','bonusFDPorPM','congelaTurnos']);
 const orfas = [];
 for (const { g, el, cat } of TODAS)
   for (const k of Object.keys(g))

@@ -119,7 +119,7 @@ const MAGIAS = {
       // quem levar dano testa Resistência ou fica congelado e indefeso
       // um turno. É o golpe forte barato que faltava à Água.
       { id:'ag_f4', pm:5, fa:{ H:1, dados:2 }, ignoraArmadura:true,
-        congelaUmTurno:true },
+        congelaTurnos:2 },
     ],
     defesa: [
       { id:'ag_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
@@ -158,7 +158,7 @@ const MAGIAS = {
   'Sombra': {
     ataque: [
       { id:'so_a1', pm:10, fa:{ H:1, dados:3 }, drenaPM:true },
-      { id:'so_a2', pm:2,  buffFuria:true, duracao:'sustentavel' },
+      { id:'so_a2', pm:2,  buffFuria:true },
       // Roubo de Vida: 1 PM por turno rouba 1d PV, que passam para si
       { id:'so_a3', pm:1, porTurno:true, roubaVida:{ dados:1 } },
       // Cegueira: o alvo testa Resistência ou fica a ver mal — H−1 para

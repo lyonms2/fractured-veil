@@ -29,7 +29,7 @@ window.registerStrings({
   'ficha.sem_magia':  'Nenhuma ao alcance. A mais barata precisa de Habilidade {h}.',
 
   'mag.ag_f4.nome':   'Inverno Súbito',
-  'mag.ag_f4.desc':   'Lascas de gelo que passam por qualquer armadura. Quem levar testa Resistência ou congela um turno inteiro, sem atacar nem esquivar.',
+  'mag.ag_f4.desc':   'Lascas de gelo que passam por qualquer armadura. Quem levar testa Resistência ou fica preso no gelo por 2 turnos inteiros — sem atacar, sem esquivar e sem usar a Habilidade para se defender.',
   'mag.te_a3.nome':   'Bola de Lama',
   'mag.te_a3.desc':   'Um punhado de terra molhada, atirado com força. Barato e sem cerimônia.',
   'mag.te_d3.nome':   'Casca de Helena',
@@ -151,7 +151,7 @@ window.registerStrings({
   'ficha.sem_magia':  'None within reach. The cheapest needs Skill {h}.',
 
   'mag.ag_f4.nome':   'Sudden Winter',
-  'mag.ag_f4.desc':   'Ice shards that pass through any armour. Whoever is hit tests Endurance or freezes for a whole turn, unable to attack or dodge.',
+  'mag.ag_f4.desc':   'Ice shards that pass through any armour. Whoever is hit tests Endurance or is locked in ice for 2 whole turns — no attacking, no dodging, and no Skill on defence.',
   'mag.te_a3.nome':   'Mud Ball',
   'mag.te_a3.desc':   'A fistful of wet earth, thrown hard. Cheap and without ceremony.',
   'mag.te_d3.nome':   "Helena's Shell",

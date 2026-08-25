@@ -114,6 +114,88 @@ console.log('\n═══ AS DURAÇÕES ═══\n');
         `depois do 1.º fim de turno: preso=${presoDepoisDe1} · depois do 2.º: preso=${c.indefeso}`);
 }
 
+// ── O INVERNO SÚBITO PRENDE MESMO, E PELO TEMPO QUE DIZ ──
+// A magia prometia "sem atacar nem esquivar" e só cumpria a esquiva: o
+// ciclo de turnos nunca olhava para a bandeira, e o congelado continuava
+// a bater todos os turnos como se nada fosse. E durava um turno, não
+// dois.
+{
+  const g = M.MAGIAS['Água'].forte.find(x => x.id === 'ag_f4');
+  A.ver('o Inverno Súbito declara quantos turnos prende',
+        g.congelaTurnos === 2, `congelaTurnos = ${g.congelaTurnos}`);
+
+  // Uma batalha a sério, com a magia lançada de verdade, a contar os
+  // turnos INTEIROS que o alvo perde depois do turno em que congelou.
+  const perdidos = [];
+  for (let s = 1; s <= 60; s++) {
+    const e = M.combate3dtIniciar(
+      [{ nome: 'GELO', elemento: 'Água', raridade: 'Lendário', nivel: 28, seed: 41 }],
+      [{ nome: 'ALVO', elemento: 'Terra', raridade: 'Comum', nivel: 6, seed: 9 }], s,
+      { historico: true,
+        politica: eu => eu.nome === 'GELO' ? { magia: g, pm: g.pm } : { magia: null, pm: 0 } });
+    e.B[0].pv = 900; e.B[0].pvMax = 900; e.A[0].pm = 900; e.A[0].pmMax = 900;
+    let viu = false, conta = 0;
+    for (let turno = 1; turno <= 8 && !e.acabou; turno++) {
+      const antes = e.eventos.length;
+      M.combate3dtTurno(e);
+      const novos = e.eventos.slice(antes);
+      if (!viu) { if (novos.some(v => v.congelou)) viu = true; continue; }
+      if (novos.some(v => v.lado === 'B' && v.preso) && !novos.some(v => v.lado === 'B' && v.fa != null)) conta++;
+      else break;
+    }
+    if (viu) perdidos.push(conta);
+  }
+  A.ver('e prende por 2 turnos inteiros, no mínimo',
+        perdidos.length > 0 && Math.min(...perdidos) >= 2,
+        `${perdidos.length} casos · mínimo ${Math.min(...perdidos)} turnos`);
+}
+
+// ── Congelado é não fazer NADA ──
+{
+  const e = M.combate3dtIniciar(
+    [{ nome: 'EU', elemento: 'Fogo', raridade: 'Comum', nivel: 5, seed: 3 }],
+    [{ nome: 'PRESO', elemento: 'Fogo', raridade: 'Comum', nivel: 5, seed: 4 },
+     { nome: 'BANCO', elemento: 'Fogo', raridade: 'Comum', nivel: 5, seed: 5 }],
+    2, { historico: true, escolhaTroca: (eu) => eu.nome === 'PRESO' ? 1 : -1 });
+  const preso = e.B[0];
+  preso.pv = 500; preso.pvMax = 500;
+  preso.congelado = true; preso.congeladoTurnos = 3;
+  preso.indefeso = true; preso.indefesoTurnos = 3;
+  const antes = e.eventos.length;
+  M.combate3dtTurno(e);
+  const novos = e.eventos.slice(antes);
+  A.ver('quem está congelado não ataca',
+        !novos.some(v => v.lado === 'B' && v.fa != null) && novos.some(v => v.preso),
+        novos.filter(v => v.lado === 'B').map(v => Object.keys(v).join('+')).join(' · ') || 'nada');
+  // Trocar também é agir: deixá-lo sair de campo fazia do gelo um
+  // estorvo de um segundo, bastava mandar entrar outro.
+  A.ver('e também não sai de campo a trocar',
+        e.ativoB === 0, `ativoB = ${e.ativoB} (pediu para trocar para o 1)`);
+}
+
+// ── O Toque Paralisante continua a ser só o que promete ──
+// "sem esquivar nem se defender direito" — nunca prometeu tirar a acção,
+// e não pode ganhá-la de borla por o gelo passar a tirá-la.
+{
+  const e = M.combate3dtIniciar(
+    [{ nome: 'EU', elemento: 'Fogo', raridade: 'Comum', nivel: 5, seed: 3 }],
+    [{ nome: 'TRAVADO', elemento: 'Fogo', raridade: 'Comum', nivel: 5, seed: 4 }],
+    2, { historico: true });
+  const c = e.B[0]; c.pv = 500; c.pvMax = 500;
+  c.indefeso = true; c.indefesoTurnos = 2;      // paralisia, não gelo
+  const antes = e.eventos.length;
+  M.combate3dtTurno(e);
+  const novos = e.eventos.slice(antes);
+  // Agir não é só bater: uma vantagem de suporte, uma troca, apanhar o
+  // foco — tudo conta. A primeira versão desta prova só procurava golpes
+  // e dava falha quando o avatar tinha usado a Reserva Oculta.
+  const agiu = novos.filter(x => x.lado === 'B' && !x.preso && !x.fimDeTurno);
+  A.ver('o paralisado defende-se mal, mas continua a agir',
+        agiu.length > 0 && !novos.some(x => x.preso),
+        c.congelado ? 'congelado (errado)'
+          : 'só indefeso, como o texto diz · fez: ' + agiu.map(x => x.magia || x.vantagem || '?').join(', '));
+}
+
 // ── As esquivas voltam a zero todo o turno ──
 {
   const c = arena().A[0];
