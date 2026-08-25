@@ -297,9 +297,13 @@ function _pveBolinhas(atual, max, tipo) {
 function _pveCaracs(c) {
   return ['F', 'H', 'R', 'A'].map(k => {
     const d = _c3detalhe(c, k);
-    if (!d.mod) return `<span>${k}${d.base}</span>`;
+    // A Casca de Helena não soma à Armadura: dobra-a. Estava numa etiqueta
+    // à parte ("A×2") longe do número que multiplica — e um multiplicador
+    // longe do seu número não diz nada a ninguém.
+    const dobra = (k === 'A' && c.armaduraDobrada) ? '<b class="sobe">×2</b>' : '';
+    if (!d.mod) return `<span>${k}${d.base}${dobra}</span>`;
     const sinal = d.mod > 0 ? '+' : '−';
-    return `<span>${k}${d.base}<b class="${d.mod > 0 ? 'sobe' : 'desce'}">${sinal}${Math.abs(d.mod)}</b></span>`;
+    return `<span>${k}${d.base}<b class="${d.mod > 0 ? 'sobe' : 'desce'}">${sinal}${Math.abs(d.mod)}</b>${dobra}</span>`;
   }).join(' ');
 }
 
@@ -320,7 +324,6 @@ function _pveLutador(c, i, lado, ativo) {
   if (c.barreira > 0)   m(`${t('pve.marca.barreira')} ${c.barreira}`, 'escudo');
   if (c.ocultado)       m(t('pve.marca.oculto'), 'escudo');
   if (c.imuneEspiritual)m(t('pve.marca.alma'), 'escudo');
-  if (c.armaduraDobrada)m('A×2', 'escudo');
   if (c.vorpal)         m('✦', 'escudo');
   if (c.roubando)       m('🩸', 'veneno');
   if (c.bonusA)         m(`A+${c.bonusA}`, 'escudo');
@@ -809,6 +812,22 @@ function _pveAnimar(eventos) {
   }, atraso + 150);
 }
 
+// Um teste de característica, escrito. Existe uma vez só porque a troca
+// desenhava o seu à parte e ficava sem o nome do dono nem o desfecho em
+// palavras — duas cópias da mesma coisa divergem sempre.
+function _pveTesteHTML(x, ev) {
+  const soma = x.partes.length > 1 ? `${x.partes.join(' ')} = ${x.valor}` : x.partes[0];
+  const chave = 'pve.teste.res.' + x.rotulo + '.' + (x.passou ? 'sim' : 'nao');
+  const res = t(chave) === chave
+    ? (x.passou ? t('pve.teste.passou') : t('pve.teste.falhou'))
+    : t(chave);
+  const dono = (x.de === 'quem' ? ev.quem : ev.alvo) || '';
+  return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
+      <b>${t('pve.teste.' + x.rotulo)}</b> <u>${dono}</u> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
+      ${x.seis ? `<em>${t('pve.teste.seis')}</em>` : ''}
+    </span>`;
+}
+
 function _pveMostrarEvento(ev) {
   const souEu   = ev.lado === 'A';
   // O cartão em que o golpe caiu, pelo ÍNDICE do evento. Usar o activo
@@ -868,12 +887,11 @@ function _pveMostrarEvento(ev) {
   if (ev.troca) {
     const tst = (ev.testes || [])[0];
     const conta = tst
-      ? `<div class="cb-testes"><span class="cb-teste ${tst.passou ? 'passou' : 'falhou'}">
-           <b>${t('pve.teste.troca')}</b> ${tst.partes.join(' ')} = ${tst.valor} · 1d[<i>${tst.dado}</i>]
-           → ${tst.passou ? t('pve.teste.passou') : t('pve.teste.falhou')}</span></div>`
+      ? `<div class="cb-testes">${_pveTesteHTML(tst, ev)}</div>`
       : ev.semRolagem
       ? `<div class="cb-testes"><span class="cb-teste falhou">
-           <b>${t('pve.teste.troca')}</b> ${ev.semRolagem.join(' ')} → ${t('pve.teste.sem_rolagem')}</span></div>`
+           <b>${t('pve.teste.troca')}</b> <u>${ev.quem}</u> ${ev.semRolagem.join(' ')}
+           → ${t('pve.teste.sem_rolagem')}</span></div>`
       : '';
     _pveLog(t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
             (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')) + conta,
@@ -922,23 +940,13 @@ function _pveMostrarEvento(ev) {
   // O manual manda passar com um valor IGUAL OU MENOR ao da
   // característica, e um 6 falha sempre por mais alta que ela seja —
   // por isso o 6 é marcado, senão parecia erro de conta.
-  const testes = (ev.testes || []).map(x => {
-    // Com uma parcela só, ela já diz tudo ("H5"); somar "= 5" seria ruído.
-    const soma = x.partes.length > 1 ? `${x.partes.join(' ')} = ${x.valor}` : x.partes[0];
-    const res = x.passou ? t('pve.teste.passou') : t('pve.teste.falhou');
-    // De quem é a característica que rolou. Quase sempre é o alvo que
-    // resiste ou esquiva, e sem o nome ali o "R3" lia-se como sendo de
-    // quem lançou a magia.
-    const dono = (x.de === 'quem' ? ev.quem : ev.alvo) || '';
-    return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
-        <b>${t('pve.teste.' + x.rotulo)}</b> <u>${dono}</u> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
-        ${x.seis ? `<em>${t('pve.teste.seis')}</em>` : ''}
-      </span>`;
-  }).join('');
+  const testes = (ev.testes || []).map(x => _pveTesteHTML(x, ev)).join('');
 
   const meus = [], dele = [];
   if (ev.reflexo)       dele.push(t('pve.ev.reflexo'));
-  if (ev.devolveu)      dele.push(t('pve.ev.devolveu', { n: ev.devolveu }));
+  // O Reflexo Espelhado manda o golpe de volta: quem o leva é o
+  // ATACANTE. Estava no bloco do alvo e lia-se ao contrário.
+  if (ev.devolveu)      meus.push(t('pve.ev.devolveu', { n: ev.devolveu }));
   if (ev.envenenou)     dele.push(t('pve.ev.envenenou'));
   if (ev.enfraqueceu)   dele.push(t('pve.ev.enfraqueceu'));
   if (ev.enfureceu)     dele.push(t('pve.ev.enfureceu'));

@@ -21,8 +21,12 @@ const soco = () => ({ magia: null, pm: 0 });
 
 // A interface, lida como texto: para saber se um estado tem marca no
 // cartão sem precisar de um browser.
+// Tudo o que desenha o cartão: as características (onde vivem os
+// modificadores e o ×2 da Armadura) e o corpo do cartão (onde vivem as
+// etiquetas de estado). São duas funções e o teste tem de ver as duas —
+// olhar só para uma dava falha quando um estado mudava de casa.
 const UI  = fs.readFileSync(path.join(__dirname, '..', 'js', 'combate-pve.js'), 'utf8');
-const _lut = UI.slice(UI.indexOf('function _pveLutador'), UI.indexOf('function _pveEquipa'));
+const _lut = UI.slice(UI.indexOf('function _pveCaracs'), UI.indexOf('function _pveEquipa'));
 
 // Todo o estado que um combatente carrega de um turno para o outro.
 // Se acrescentar campo novo ao _c3criar, acrescente-o aqui também.
