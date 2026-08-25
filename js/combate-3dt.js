@@ -76,7 +76,14 @@ function _c3criar(slot, rng) {
     bonusFD: 0,           // bónus directo à Força de Defesa
     bonusF: 0,            // Força extra de magia sustentada
     bonusH: 0,            // Habilidade extra (fúria)
+    // Os quatro acima são a SOMA de tudo. Estes são a parte que NÃO vem
+    // de magia sustentada — a Reserva Oculta que já se pagou, a fúria do
+    // Sangue Quente. Sem esta separação, largar um escudo levava também
+    // os 5 pontos de Reserva Oculta que custaram 10 PM, e o avatar não
+    // os podia comprar outra vez porque a conta já estava gasta.
+    perm: { F: 0, H: 0, A: 0, FD: 0 },
     furia: false,         // em fúria: bate mais, mas não esquiva nem magia
+    furiaDesv: false,     // a fúria veio do Sangue Quente, não de magia
     penalidade: 0,        // −N em todas as características (veneno)
     penalidadeR: 0,       // −N só na Resistência
     sustentadas: [],      // [{ magia, pm }] a pagar todo o turno
@@ -377,7 +384,8 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   // falhando, entra em fúria — bate mais, mas não esquiva nem magia.
   if (passou > 0 && def.vivo && def.desv && def.desv.furiaAoSofrerDano && !def.furia) {
     if (!_c3testeReg(_c3(def, 'R'), rng, ev, 'furia', ['R' + _c3(def, 'R')])) {
-      def.furia = true; def.bonusF += 1; def.bonusH += 1;
+      def.furia = true; def.furiaDesv = true;
+      def.perm.F += 1; def.perm.H += 1; def.bonusF += 1; def.bonusH += 1;
       ev.enfureceu = true;
     }
   }
@@ -431,14 +439,13 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 
   // Magias sustentadas: ficam a pagar PM todo o turno
   if (magia.porTurno) {
-    atk.sustentadas.push({ magia, pm: pmGastos });
-    if (magia.armaduraPorPM) atk.bonusA += Math.min(pmGastos, magia.armaduraMax || 5);
-    if (magia.armadura)      atk.bonusA += magia.armadura;
-    if (magia.buffForca)     atk.bonusF += magia.buffForca;
-    if (magia.armaduraDobra) { atk.armaduraDobrada = true; ev.armaduraDobrou = true; }
-    if (magia.bonusFDPorPM)  { atk.bonusFD += pmGastos * magia.bonusFDPorPM; ev.bonusFD = pmGastos; }
-    if (magia.vorpal)        { atk.vorpal = true; ev.vorpal = true; }
-    if (magia.roubaVida)     { atk.roubando = magia.roubaVida; ev.roubando = true; }
+    const s = { magia, pm: pmGastos };
+    atk.sustentadas.push(s);
+    _c3efeitosSustentada(atk, s);
+    if (magia.armaduraDobra) ev.armaduraDobrou = true;
+    if (magia.bonusFDPorPM)  ev.bonusFD = pmGastos;
+    if (magia.vorpal)        ev.vorpal = true;
+    if (magia.roubaVida)     ev.roubando = true;
   }
 
   // ── CURA ──
@@ -477,7 +484,11 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
       } else ev.resistiu = true;
     }
   }
-  if (magia.bonusFD) { atk.bonusFD += magia.bonusFD; atk.sustentadas.push({ magia, pm: 0 }); }
+  if (magia.bonusFD) {
+    const s = { magia, pm: 0 };
+    atk.sustentadas.push(s);
+    _c3efeitosSustentada(atk, s);
+  }
 
   // ── AS DEFENSIVAS ──
   // Estavam todas no catálogo e nenhuma existia no motor: gastavam PM e
@@ -521,8 +532,9 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   // quebra o empate entre duas fichas parecidas — a troco de ficar sem
   // rede. Antes disto a magia não fazia nada: nunca tinha sido tratada.
   if (magia.buffFuria) {
-    atk.furia = true; atk.bonusF += 1; atk.bonusH += 1;
-    atk.sustentadas.push({ magia, pm: pmGastos });
+    const s = { magia, pm: pmGastos };
+    atk.sustentadas.push(s);
+    _c3efeitosSustentada(atk, s);
     ev.furia = true;
   }
 }
@@ -753,14 +765,48 @@ function _c3pmIdeal(magia, eu, tecto) {
 // Larga tudo o que elas seguravam. Nada disto é reversível: para voltar
 // a ter o escudo é preciso lançar a magia outra vez.
 // ═══════════════════════════════════════════════════════════════════
-function _c3largarSustentadas(c) {
-  const quantas = c.sustentadas.length;
-  c.sustentadas = [];
-  c.bonusA = 0; c.bonusF = 0; c.bonusFD = 0; c.bonusH = 0;
-  c.furia = false;
-  c.invulneravel = false; c.ocultado = false; c.bonusEsquiva = 0;
+// Os efeitos que UMA magia de pé concede. Existe em separado para os
+// poder voltar a erguer: quando uma magia cai, as outras continuam de pé
+// e os seus bónus têm de sobreviver.
+function _c3efeitosSustentada(c, s) {
+  const g = s.magia, pm = s.pm;
+  if (g.armaduraPorPM) c.bonusA += Math.min(pm, g.armaduraMax || 5);
+  if (g.armadura)      c.bonusA += g.armadura;
+  if (g.buffForca)     c.bonusF += g.buffForca;
+  if (g.bonusFD)       c.bonusFD += g.bonusFD;
+  if (g.bonusFDPorPM)  c.bonusFD += pm * g.bonusFDPorPM;
+  if (g.armaduraDobra) c.armaduraDobrada = true;
+  if (g.vorpal)        c.vorpal = true;
+  if (g.roubaVida)     c.roubando = g.roubaVida;
+  if (g.invulneravel)  c.invulneravel = true;
+  if (g.ocultacao)     c.ocultado = true;
+  if (g.buffFuria)   { c.furia = true; c.bonusF += 1; c.bonusH += 1; }
+}
+
+// Volta a somar tudo do zero: o que é permanente mais o que ainda está
+// de pé. Substitui o zerar-tudo de antes, que levava à frente coisas que
+// não vinham de magia nenhuma.
+function _c3recalcular(c) {
+  c.bonusF = c.perm.F; c.bonusH = c.perm.H;
+  c.bonusA = c.perm.A; c.bonusFD = c.perm.FD;
+  c.furia = c.furiaDesv;
+  c.invulneravel = false; c.ocultado = false;
   c.armaduraDobrada = false; c.vorpal = false; c.roubando = null;
-  return quantas;
+  for (const s of c.sustentadas) _c3efeitosSustentada(c, s);
+}
+
+// Larga magias de pé. Sem filtro larga todas; com filtro, só as que ele
+// escolher — porque desligar o Punho de Pedra para poupar 5 PM não é
+// razão para perder o Manto que se está a pagar de bom grado.
+//
+// A bonusEsquiva não entra aqui: a Corrente de Ar não é sustentada,
+// paga-se uma vez e dura a luta toda. Era zerada com o resto.
+function _c3largarSustentadas(c, quais) {
+  const antes = c.sustentadas.length;
+  if (quais) c.sustentadas = c.sustentadas.filter(s => !quais(s));
+  else       c.sustentadas = [];
+  _c3recalcular(c);
+  return antes - c.sustentadas.length;
 }
 
 // Quanto PM as magias de pé cobram por turno.
@@ -784,8 +830,10 @@ function _c3fimTurno(c) {
   // Magias sustentadas cobram todo o turno. Sem PM, caem.
   let custo = _c3custoSustentadas(c);
   if (custo > c.pm) {
-    if (c.sustentadas.length) fora.sustentadasCairam = c.sustentadas.length;
-    _c3largarSustentadas(c);
+    // Só as que cobram por turno. As que se pagaram de uma vez ficam:
+    // não é por faltar PM ao escudo que a fúria já paga se desfaz.
+    const caidas = _c3largarSustentadas(c, s => s.magia.porTurno);
+    if (caidas) fora.sustentadasCairam = caidas;
   } else if (custo > 0) {
     c.pm -= custo;
     fora.sustentouPor = custo;
@@ -912,7 +960,9 @@ function combate3dtTurno(e) {
         // Sobe a característica que mais falta faz: a Força se não
         // fere, a Armadura se está a levar de mais.
         const alvo = (l.c.pv < l.c.pvMax * 0.5) ? 'A' : 'F';
-        l.c[alvo === 'A' ? 'bonusA' : 'bonusF'] += w.subirCarac;
+        const campo = alvo === 'A' ? 'A' : 'F';
+        l.c['bonus' + campo] += w.subirCarac;
+        l.c.perm[campo]      += w.subirCarac;
         l.c.reservaGasta = (l.c.reservaGasta || 0) + w.subirCarac;
         ev.subiu = alvo;
       }
@@ -1009,6 +1059,25 @@ function combate3dtTurno(e) {
     if (r && eventos) eventos.push({ turno: turnos, lado, quem: c.nome,
                                      quemIdx: i, fimDeTurno: true, ...r });
   });
+
+  // ── A FÚRIA DO SANGUE QUENTE PASSA ──
+  // "não esquiva nem lança magia até alguém cair" — e ninguém a tirava.
+  // Uma vez em fúria, o avatar ficava em fúria o resto da luta: sem
+  // esquiva e sem magia nenhuma, quando o texto prometia que aquilo
+  // durava até à primeira queda. A fúria da magia (Fúria Sombria) é
+  // outra coisa, comprada de propósito, e essa fica.
+  if ([...A, ...B].some(c => !c.vivo)) {
+    for (const c of [...A, ...B]) {
+      if (!c.vivo || !c.furiaDesv) continue;
+      c.furiaDesv = false;
+      c.perm.F = Math.max(0, c.perm.F - 1);
+      c.perm.H = Math.max(0, c.perm.H - 1);
+      _c3recalcular(c);
+      if (eventos) eventos.push({ turno: turnos, lado: A.includes(c) ? 'A' : 'B',
+                                  quem: c.nome, quemIdx: (A.includes(c) ? A : B).indexOf(c),
+                                  fimDeTurno: true, acalmou: true });
+    }
+  }
 
   // ── QUEM FICA EM CAMPO ──
   // O avanço para o seguinte acontece AQUI, no fim, e não no início do

@@ -481,11 +481,50 @@
   letter-spacing: .5px; color: var(--gold); opacity: .85;
 }
 
-.cb-topo button.ajuda {
-  font-size: 8px; padding: 3px 8px; color: var(--gold-light);
-  border-color: rgba(201,168,76,.4);
+/* ── A FICHA ABRE-SE NO CARTÃO ──
+   Havia um "?" no topo que abria a ficha de dois avatares: o meu activo
+   e o dele. Nunca a de quem está no banco — que é justamente quem se
+   precisa de conhecer ANTES de o mandar entrar. Agora cada cartão abre
+   a sua, e o "ficha" no canto diz que dá para tocar. */
+.cb-lutador { cursor: pointer; }
+.cb-lutador:hover      { border-color: rgba(201,168,76,.5); }
+.cb-lutador:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
+.cb-lutador-ver {
+  position: absolute; top: 3px; right: 4px; z-index: 2;
+  font-family: 'Cinzel', serif; font-size: 3.6px; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted); opacity: .5;
+  pointer-events: none; transition: opacity .25s, color .25s;
 }
-.cb-topo button.ajuda:hover { background: rgba(201,168,76,.15); }
+.cb-lutador:hover .cb-lutador-ver { opacity: 1; color: var(--gold); }
+.cb-lutador.caido .cb-lutador-ver { opacity: .25; }
+
+/* ── O ALVO, no cabeçalho do painel ──
+   "6 de dano" não diz nada sem saber se ele tem 12 de vida ou 60. */
+.cb-ajuda-contra {
+  margin: 0 8px; padding: 6px 8px; border-radius: 7px;
+  border: 1px solid rgba(224,85,85,.22); background: rgba(224,85,85,.07);
+  font-family: 'Cinzel', serif; font-size: 5.5px; letter-spacing: .8px;
+  color: #e8b8b8; display: flex; justify-content: space-between;
+  align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.cb-ajuda-contra span {
+  font-family: 'Courier New', monospace; letter-spacing: .3px;
+  font-size: 5px; color: #cdc4dd; opacity: .9;
+}
+
+/* ── O PROGNÓSTICO ──
+   A fórmula diz como se conta; isto diz quanto vale contra quem está à
+   frente agora. Os números saem de correr o próprio motor umas centenas
+   de vezes, não de repetir a matemática dele à mão. */
+.cb-prog {
+  margin-top: 5px; padding-top: 5px; display: flex; flex-wrap: wrap;
+  gap: 3px 7px; border-top: 1px dashed rgba(255,255,255,.1);
+  font-size: 4.8px; font-family: 'Courier New', monospace;
+  letter-spacing: .3px; color: var(--muted);
+}
+.cb-prog span { white-space: nowrap; }
+.cb-prog span:first-child { color: #cdc4dd; }
+.cb-prog b { font-size: 7px; font-weight: 700; color: #ffd98a; margin-right: 1px; }
 
 /* O modal precisa de ser o berço do painel, que é absoluto */
 #combateModal .cb-arena { position: relative; }
@@ -494,6 +533,9 @@
   .cb-lutador-nome { font-size: 5px; }
   .cb-lutador.ativo .cb-lutador-nome { font-size: 6px; }
   .cb-ajuda-desc { font-size: 6px; }
+  .cb-prog { font-size: 5.4px; }
+  .cb-ajuda-contra { font-size: 6px; }
+  .cb-lutador-ver { font-size: 4.2px; }
 }
 
 /* ── O que aconteceu ao ALVO, separado do que aconteceu a quem agiu ──
@@ -605,6 +647,11 @@
   .cb-ajuda-papel      { font-size: 6px; }
   .cb-ajuda-custo      { font-size: 6.5px; }
   .cb-ajuda-conta      { font-size: 6.5px; }
+  .cb-ajuda-contra     { font-size: 7.5px; padding: 8px 10px; }
+  .cb-ajuda-contra span{ font-size: 7px; }
+  .cb-prog             { font-size: 6.5px; gap: 4px 10px; }
+  .cb-prog b           { font-size: 10px; }
+  .cb-lutador-ver      { font-size: 5px; }
 
   .cb-premio           { font-size: 8px; }
   .cb-fim              { font-size: 12px; }

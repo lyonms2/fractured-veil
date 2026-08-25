@@ -19,7 +19,8 @@ const M = new Function('t',
             combate3dtIniciar, combate3dtTurno, combate3dtResultado,
             _c3, _c3rng, _c3criar, _c3fa, _c3fd, _c3custoMagia, _c3podeMagiar,
             _c3trocaLimpa, _c3resolver, _c3fimTurno, _c3teste, _c3bonusEsquiva, _c3podeEsquivar,
-            _c3hAtk, _c3aDef, _c3rResistir, _c3pmDisponivel, _c3pagar, fichaDeAvatar, politica3dt, _c3pmIdeal, _d6 };`
+            _c3hAtk, _c3aDef, _c3rResistir, _c3pmDisponivel, _c3pagar, fichaDeAvatar, politica3dt, _c3pmIdeal, _d6,
+            _c3largarSustentadas, _c3custoSustentadas, _c3recalcular, _c3efeitosSustentada };`
 )(id => (global.__PT[id] || id));
 
 // ── Um duelo controlado ────────────────────────────────────────────

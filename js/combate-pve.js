@@ -212,8 +212,6 @@ function _pveShell() {
       <span id="cbTurno"></span>
       <span class="cb-topo-nome">${t('pve.titulo')}</span>
       <span class="cb-topo-dir">
-        <button class="ajuda" onclick="_pveAlternarAjuda()"
-                title="${t('pve.ajuda.titulo', { nome: '' })}">?</button>
         <button id="cbDesistir" class="desistir" onclick="_pveDesistir()"
                 title="${t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR })}">${t('pve.acao.desistir')}</button>
         <button onclick="fecharCombatePvE()">✕</button>
@@ -336,7 +334,14 @@ function _pveLutador(c, i, lado, ativo) {
   // é a mesma informação escrita duas vezes.
   if (c.indefesoTurnos > 1) m(t('pve.marca.preso'), 'indefeso');
 
-  return `<div class="${cls}" id="cbLut${lado}${i}">
+  // O cartão inteiro abre a ficha deste avatar. Antes havia um "?" no
+  // topo que abria a de dois — o activo meu e o activo dele — e nunca a
+  // dos que estão no banco, que é justamente quem se precisa de conhecer
+  // antes de o mandar entrar.
+  return `<div class="${cls}" id="cbLut${lado}${i}"
+       role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
+       title="${t('pve.ajuda.abrir', { nome: c.nome })}">
+    <span class="cb-lutador-ver">${t('pve.ajuda.ver')}</span>
     <div class="cb-lutador-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
     <div class="cb-lutador-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
     <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
@@ -360,6 +365,17 @@ function _pveDesenhar() {
   document.getElementById('cbJogador').innerHTML = _pveEquipa(e.A, e.ativoA, 'eu');
   document.getElementById('cbTurno').textContent = t('pve.turno', { n: e.turnos + 1 });
   _pveDesenharAcoes(eu, ini);
+
+  // Se a ficha estiver aberta, refaz-se. O prognóstico é contra quem
+  // está do outro lado AGORA — deixá-lo do turno passado seria mostrar
+  // contas contra um avatar que já saiu de campo, ou já morreu.
+  const painel = document.getElementById('cbAjuda');
+  if (painel && painel.classList.contains('aberta') && painel.dataset.quem) {
+    const lado = painel.dataset.quem.slice(0, -1), i = +painel.dataset.quem.slice(-1);
+    const c = (lado === 'eu' ? e.A : e.B)[i];
+    const contra = lado === 'eu' ? e.B[e.ativoB] : e.A[e.ativoA];
+    if (c) painel.innerHTML = _pveAjudaHTML(c, lado, contra);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -375,9 +391,116 @@ function _pveDesenhar() {
 // ═══════════════════════════════════════════════════════════════════
 function _pveAlternarAjuda() {
   const el = document.getElementById('cbAjuda'); if (!el) return;
-  const abrir = !el.classList.contains('aberta');
-  if (abrir) el.innerHTML = _pveAjudaHTML();
-  el.classList.toggle('aberta', abrir);
+  el.classList.remove('aberta');
+}
+
+// Abre a ficha de UM avatar — o que foi tocado, esteja em campo ou no
+// banco. Tocar no mesmo outra vez fecha.
+function _pveAbrirAjuda(lado, i) {
+  const el = document.getElementById('cbAjuda'); if (!el || !_pveEstado) return;
+  const c = (lado === 'eu' ? _pveEstado.A : _pveEstado.B)[i];
+  if (!c) return;
+  const chave = lado + i;
+  if (el.classList.contains('aberta') && el.dataset.quem === chave) {
+    el.classList.remove('aberta'); return;
+  }
+  el.dataset.quem = chave;
+  // O prognóstico é contra quem está do outro lado neste momento
+  const contra = lado === 'eu' ? _pveEstado.B[_pveEstado.ativoB] : _pveEstado.A[_pveEstado.ativoA];
+  el.innerHTML = _pveAjudaHTML(c, lado, contra);
+  el.classList.add('aberta');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O PROGNÓSTICO — o que esta magia faz CONTRA ESTE ALVO
+//
+// A fórmula sozinha ("FA H4 + F2 + 2d") não responde à pergunta que o
+// jogador tem: vale a pena? Isso depende da Armadura de quem está à
+// frente, de ele conseguir esquivar, de a magia ignorar armadura ou não.
+//
+// Em vez de repetir a matemática do motor aqui — que é a forma mais
+// certa de os dois números discordarem — corre o PRÓPRIO motor umas
+// centenas de vezes contra uma cópia do alvo e conta o que aconteceu.
+// O número no ecrã sai da mesma função que resolve o golpe a sério.
+// ═══════════════════════════════════════════════════════════════════
+const PVE_PROGNOSTICO_N = 240;
+
+// Cópia funda e descartável. Os combatentes são dados simples; as magias
+// e a ficha vão junto por valor, o que não faz mal a quem só vai servir
+// para uma simulação e ser deitado fora.
+function _pveClone(c) { return JSON.parse(JSON.stringify(c)); }
+
+// O que uma magia faz ao OUTRO. As de defesa não constam: agem sobre
+// quem as lança, e forçá-las por aqui fazia a Maré Restauradora — que
+// cura — anunciar-se com "0.3 de dano, fere em 18% das tentativas",
+// porque o resolvedor lhe rolava um ataque de 1d que ninguém pediu.
+const PVE_MAGIA_OFENSIVA = ['fa', 'roubaVida', 'drenaPM', 'veneno', 'cegueira',
+  'petrifica', 'congela', 'congelaUmTurno', 'destroiAlma', 'debuffR',
+  'alvoIndefeso', 'ondasPor', 'vorpal'];
+
+function _pvePrognostico(eu, alvo, magia, pm, extra) {
+  if (!alvo || !alvo.vivo || !eu.vivo) return null;
+  if (magia && !PVE_MAGIA_OFENSIVA.some(k => magia[k])) return null;
+  const rng = _c3rng(0x5EED);
+  let soma = 0, acertos = 0, esquivas = 0, criticos = 0, maior = 0;
+  // Os efeitos que não são dano — envenenar, cegar, paralisar — medem-se
+  // pelo teste que o alvo faz para lhes escapar. Uma magia pode não tirar
+  // um único ponto de vida e continuar a ser a jogada certa.
+  const efeitos = {};
+  for (let i = 0; i < PVE_PROGNOSTICO_N; i++) {
+    const a = _pveClone(eu), d = _pveClone(alvo);
+    const ev = { testes: [] };
+    let passou = 0;
+    try { passou = _c3resolver(a, d, magia, pm, rng, ev, extra || {}) || 0; }
+    catch (err) { return null; }
+    soma += passou;
+    if (passou > 0) { acertos++; if (passou > maior) maior = passou; }
+    if (ev.esquivou) esquivas++;
+    if (ev.criticoAtk) criticos++;
+    for (const x of (ev.testes || [])) {
+      // A esquiva já tem linha própria; a troca não é efeito de magia;
+      // e os testes de quem age não dizem nada sobre o alvo.
+      if (x.rotulo === 'esquiva' || x.rotulo === 'troca' || x.de === 'quem') continue;
+      const e = efeitos[x.rotulo] || (efeitos[x.rotulo] = { tentou: 0, pegou: 0 });
+      e.tentou++; if (!x.passou) e.pegou++;
+    }
+  }
+  const N = PVE_PROGNOSTICO_N;
+  // Guarda se isto era um ataque de todo: para os que o são, "0.0 de
+  // dano" é uma resposta — diz que a magia não serve contra este alvo —
+  // e esconder a linha deixava a pergunta no ar.
+  const fere = !magia || !!magia.fa || !!magia.roubaVida;
+  // Uma magia que o alvo esquiva todas as vezes não é "nada a dizer" —
+  // é a coisa mais importante a dizer. Antes devolvia null e o painel
+  // ficava em branco, como se a magia não tivesse conta nenhuma.
+  if (!soma && !acertos && !Object.keys(efeitos).length && !esquivas) return null;
+  return { media: soma / N, acerto: acertos / N, esquiva: esquivas / N,
+           critico: criticos / N, maior, efeitos, fere, alvo: alvo.nome };
+}
+
+// O prognóstico em texto. Só diz o que é verdade para este par.
+function _pvePrognosticoHTML(pr) {
+  if (!pr) return '';
+  const pc = x => Math.round(x * 100) + '%';
+  const p = [];
+  if (pr.fere || pr.media > 0 || pr.acerto > 0) {
+    p.push(`<b>${pr.media.toFixed(1)}</b> ${t('pve.prog.dano')}`);
+    p.push(t('pve.prog.passa', { pc: pc(pr.acerto) }));
+    if (pr.maior) p.push(t('pve.prog.maior', { n: pr.maior }));
+  }
+  // "foi envenenado 67%" diz mais do que "0.0 de dano" — e há magias em
+  // que este é o número todo.
+  for (const [rot, e] of Object.entries(pr.efeitos || {})) {
+    if (!e.tentou) continue;
+    const nome = t('pve.teste.res.' + rot + '.nao');
+    p.push(`${nome === 'pve.teste.res.' + rot + '.nao' ? rot : nome} ${pc(e.pegou / e.tentou)}`);
+  }
+  // O nome, e não "ele": o painel do inimigo mostra o que ele faz ao MEU
+  // avatar, e "ele esquiva" ali dentro não dizia quem.
+  if (pr.esquiva > 0.005) p.push(t('pve.prog.esquiva', { pc: pc(pr.esquiva), nome: pr.alvo }));
+  if (pr.critico > 0.005) p.push(t('pve.prog.critico', { pc: pc(pr.critico) }));
+  if (!p.length) return '';
+  return `<div class="cb-prog">${p.map(x => `<span>${x}</span>`).join('')}</div>`;
 }
 
 // A conta da Força de Ataque, em texto legível
@@ -395,26 +518,23 @@ function _pveFormula(g, eu) {
   return s;
 }
 
-function _pveAjudaHTML() {
+function _pveAjudaHTML(c, lado, contra) {
   return `<div class="cb-ajuda-cab">
-      <span>${t('pve.ajuda.titulo2')}</span>
+      <span>${t('pve.ajuda.titulo', { nome: c.nome })}</span>
       <button onclick="_pveAlternarAjuda()">✕</button>
     </div>
-    <div class="cb-ajuda-lista">
-      ${_pveAjudaDe(_pveEstado.A[_pveEstado.ativoA], 'eu')}
-      ${_pveAjudaDe(_pveEstado.B[_pveEstado.ativoB], 'ini')}
-    </div>`;
+    <div class="cb-ajuda-lista">${_pveAjudaDe(c, lado, contra)}</div>`;
 }
 
 // Um lado do painel. O inimigo mostra o mesmo que o jogador — saber o
 // que ele sabe fazer é metade da decisão, e antes só se descobria
 // levando com a magia na cara.
-function _pveAjudaDe(eu, lado) {
+function _pveAjudaDe(eu, lado, contra) {
   if (!eu) return '';
   const tecto = _c3(eu, 'H') * 5;
   const el = CARACTERISTICAS_ELEMENTAIS[eu.elemento];
 
-  const linha = (rot, nome, custo, desc, extra, trancada) => `
+  const linha = (rot, nome, custo, desc, extra, trancada, prog) => `
     <div class="cb-ajuda-item${trancada ? ' trancada' : ''}">
       <div class="cb-ajuda-top">
         <span class="cb-ajuda-papel">${rot}</span>
@@ -423,11 +543,13 @@ function _pveAjudaDe(eu, lado) {
       </div>
       <div class="cb-ajuda-desc">${desc}</div>
       ${extra ? `<div class="cb-ajuda-conta">${extra}</div>` : ''}
+      ${prog || ''}
     </div>`;
 
   let html = linha(t('pve.ajuda.golpe'), t('pve.acao.comum'), t('mag.custo.livre'),
                    t('pve.ajuda.golpe_desc'),
-                   `FA H${_c3(eu,'H')} + F${_c3(eu,'F')} + 1d`, false);
+                   `FA H${_c3(eu,'H')} + F${_c3(eu,'F')} + 1d`, false,
+                   _pvePrognosticoHTML(_pvePrognostico(eu, contra, null, 0)));
 
   for (const cat of ['ataque', 'forte', 'defesa']) {
     const g = eu.magias[cat]; if (!g) continue;
@@ -437,8 +559,13 @@ function _pveAjudaDe(eu, lado) {
       : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
       : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
       : t('mag.custo', { pm: g.pm });
+    // O prognóstico usa os PM que a magia gastaria de facto — as de
+    // faixa contam com o máximo que a Habilidade e a reserva deixam,
+    // que é o que o jogador vai querer comparar.
+    const pmProg = g.pmMax ? Math.min(g.pmMax, tecto, Math.max(g.pm, eu.pm)) : g.pm;
     html += linha(t('mag.cat.' + cat), t('mag.' + g.id + '.nome'), custo,
-                  t('mag.' + g.id + '.desc'), _pveFormula(g, eu), trancada);
+                  t('mag.' + g.id + '.desc'), _pveFormula(g, eu), trancada,
+                  trancada ? '' : _pvePrognosticoHTML(_pvePrognostico(eu, contra, g, pmProg)));
   }
 
   const v = eu.vant;
@@ -449,11 +576,25 @@ function _pveAjudaDe(eu, lado) {
   if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{elem}', d.elemento || ''),
                        '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''), null, false);
 
+  // Quanto o alvo aguenta e o que ele opõe. Sem isto o prognóstico dá
+  // um número sem escala: 6 de dano é muito ou pouco? Depende de ele ter
+  // 12 de vida ou 60.
+  let contraHTML = '';
+  if (contra && contra.vivo) {
+    const fd = `${_c3(contra,'H')} + ${_c3(contra,'A')} + 1d`;
+    contraHTML = `<div class="cb-ajuda-contra">
+      ${t('pve.prog.contra', { nome: contra.nome })}
+      <span>${t('pve.prog.vida')} ${contra.pv}/${contra.pvMax} · FD ${fd}${
+        _c3podeEsquivar(contra, eu) ? ' · ' + t('pve.prog.esquiva_pode') : ' · ' + t('pve.prog.esquiva_nao')}</span>
+    </div>`;
+  }
+
   return `<div class="cb-ajuda-lado ${lado}">
     <div class="cb-ajuda-quem">
       ${el ? el.emoji : '✦'} ${eu.nome}
-      <span>${_pveCaracs(eu)} · ${t('ficha.tecto')} ${tecto} PM</span>
+      <span>${_pveCaracs(eu)} · ${t('pve.prog.vida')} ${eu.pv}/${eu.pvMax} · ${eu.pm}/${eu.pmMax} PM · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
+    ${contraHTML}
     ${html}
   </div>`;
 }
@@ -525,13 +666,25 @@ function _pveDesenharAcoes(eu, ini) {
                 on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
   }
 
-  // Desligar as magias de pé, se houver alguma a cobrar
-  const custoDePe = _c3custoSustentadas(eu);
-  if (custoDePe > 0) {
-    html += `<div class="cb-trocas"><button class="cb-btn largar" onclick="_pveLargarSustentadas()">
-        <span class="cb-btn-rot">${t('pve.acao.largar')}</span>
-        <span class="cb-btn-sub">${t('pve.acao.largar_sub', { pm: custoDePe })}</span>
-      </button></div>`;
+  // ── As magias de pé, uma a uma ──
+  // Um só botão desligava TODAS. Quem tinha o Manto e o Punho de pé e
+  // queria parar de pagar os 5 PM do Punho perdia também o Manto, que
+  // estava a pagar de bom grado. Agora cada uma tem o seu botão, e as
+  // que não cobram nada por turno nem aparecem — não há o que desligar.
+  //
+  // A Fúria Sombria entra mesmo não cobrando nada por turno: ela tranca
+  // a esquiva e a magia, e não haver forma de a desligar fazia dela uma
+  // armadilha. As que só dão bónus e não cobram nada ficam de fora —
+  // não há decisão nenhuma a tomar sobre elas.
+  const dePe = eu.sustentadas.filter(x => x.magia.porTurno || x.magia.buffFuria);
+  if (dePe.length) {
+    html += `<div class="cb-trocas">${dePe.map(x =>
+      `<button class="cb-btn largar" onclick="_pveLargarSustentada('${x.magia.id}')">
+         <span class="cb-btn-rot">${t('pve.acao.largar_uma', { nome: t('mag.' + x.magia.id + '.nome') })}</span>
+         <span class="cb-btn-sub">${x.magia.porTurno
+            ? t('pve.acao.largar_sub', { pm: x.pm })
+            : t('pve.acao.largar_furia')}</span>
+       </button>`).join('')}</div>`;
   }
 
   // Trocar
@@ -667,14 +820,15 @@ function _pveLancarCom(tipo, pm) {
 // NÃO gasta o turno: deixar de pagar não é uma jogada, é parar de fazer
 // uma coisa. Depois de desligar, o jogador ainda escolhe o que fazer.
 // ═══════════════════════════════════════════════════════════════════
-function _pveLargarSustentadas() {
+function _pveLargarSustentada(id) {
   if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
   const eu = _pveEstado.A[_pveEstado.ativoA];
-  if (!eu.sustentadas.length) return;
-  const custo = _c3custoSustentadas(eu);
-  const n = _c3largarSustentadas(eu);
-  _pveLog(`<b>${eu.nome}</b>` +
-          `<div class="cb-extras"><span>${t('pve.largou', { n, pm: custo })}</span></div>`,
+  const alvo = eu.sustentadas.find(x => x.magia.id === id);
+  if (!alvo) return;
+  const poupa = alvo.magia.porTurno ? alvo.pm : 0;
+  _c3largarSustentadas(eu, x => x.magia.id === id);
+  _pveLog(`<div class="cb-extras de-eu"><span class="quem">${eu.nome}</span>` +
+          `<span>${t('pve.largou_uma', { nome: t('mag.' + id + '.nome'), pm: poupa })}</span></div>`,
           'warn', _pveEstado.turnos + 1);
   _pveDesenhar();
 }
@@ -853,8 +1007,9 @@ function _pveMostrarEvento(ev) {
     if (ev.sangrou)  its.push(t('pve.fim.sangrou', { n: ev.sangrou }));
     if (ev.regenerou)its.push(t('pve.fim.regenerou', { n: ev.regenerou }));
     if (ev.sustentouPor)     its.push(t('pve.fim.sustentou', { n: ev.sustentouPor }));
-    if (ev.sustentadasCairam)its.push(t('pve.fim.caiu_sustentada'));
+    if (ev.sustentadasCairam)its.push(t('pve.fim.caiu_sustentada', { n: ev.sustentadasCairam }));
     if (ev.destravou)its.push(t('pve.fim.destravou'));
+    if (ev.acalmou) its.push(t('pve.fim.acalmou'));
     if (ev.caiu)     its.push(t('pve.ev.caiu', { nome: ev.quem }));
     if (!its.length) return;
     // O gasto de PM sai a flutuar do cartão de quem pagou, como o dano
