@@ -25,17 +25,38 @@ const CARACTERISTICAS_ELEMENTAIS = {
   'Sombra':       { cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] }
 };
 
+// Doze nomes por elemento e raridade, e dezesseis sufixos por raridade —
+// eram seis e oito. Com o seed do avatar já vindo do id do ovo, dois
+// bichos com o mesmo nome deixaram de ser o mesmo bicho, mas homônimos
+// entre jogadores apareciam cedo demais: 48 combinações por gaveta
+// esgotavam-se depressa. Agora são 192.
+//
+// O tom sobe com a raridade: palavras do dia a dia nos Comuns, formas
+// latinizadas nos Raros, e divindades de verdade nos Lendários.
 const PREFIXOS = {
-  'Fogo':         { 'Comum':['Ember','Spark','Cinder','Ash','Scorch','Char'], 'Raro':['Ignis','Pyro','Vulcan','Blaze','Inferno','Magma'], 'Lendário':['Prometheus','Surtr','Hephaestus','Helios','Agni','Kagutsuchi'] },
-  'Água':         { 'Comum':['Drip','Mist','Tide','Brook','Rain','Dew'], 'Raro':['Aqua','Hydro','Oceanus','Torrent','Cascade','Glacier'], 'Lendário':['Poseidon','Leviathan','Tiamat','Ægir','Ryūjin','Sedna'] },
-  'Terra':        { 'Comum':['Pebble','Clay','Dust','Sand','Mud','Stone'], 'Raro':['Terra','Geo','Boulder','Titan','Granite','Bedrock'], 'Lendário':['Atlas','Gaia','Cronus','Ymir','Nidhogg','Kū'] },
-  'Vento':        { 'Comum':['Breeze','Gust','Wisp','Draft','Waft','Puff'], 'Raro':['Aero','Zephyr','Gale','Storm','Tempest','Cyclone'], 'Lendário':['Fujin','Boreas','Aeolus','Enlil','Stribog','Vayu'] },
-  'Sombra':       { 'Comum':['Shade','Dusk','Murk','Gloom','Haze','Dim'], 'Raro':['Umbra','Nox','Eclipse','Void','Phantom','Abyss'], 'Lendário':['Erebus','Nyx','Tenebris','Moros','Kali','Apophis'] }
+  'Fogo':         { 'Comum':['Ember','Spark','Cinder','Ash','Scorch','Char','Flicker','Smoke','Soot','Glow','Singe','Kindle'],
+                    'Raro':['Ignis','Pyro','Vulcan','Blaze','Inferno','Magma','Ardor','Flare','Caldera','Solaris','Fornax','Ignifer'],
+                    'Lendário':['Prometheus','Surtr','Hephaestus','Helios','Agni','Kagutsuchi','Ra','Pele','Logi','Vesta','Brigid','Chantico'] },
+  'Água':         { 'Comum':['Drip','Mist','Tide','Brook','Rain','Dew','Ripple','Puddle','Splash','Foam','Creek','Drizzle'],
+                    'Raro':['Aqua','Hydro','Oceanus','Torrent','Cascade','Glacier','Nereid','Maelstrom','Undine','Marina','Riptide','Fathom'],
+                    'Lendário':['Poseidon','Leviathan','Tiamat','Ægir','Ryūjin','Sedna','Neptune','Varuna','Njord','Nammu','Mazu','Yam'] },
+  'Terra':        { 'Comum':['Pebble','Clay','Dust','Sand','Mud','Stone','Gravel','Loam','Moss','Root','Silt','Flint'],
+                    'Raro':['Terra','Geo','Boulder','Titan','Granite','Bedrock','Obsidian','Basalt','Quartz','Monolith','Slate','Crag'],
+                    'Lendário':['Atlas','Gaia','Cronus','Ymir','Nidhogg','Kū','Geb','Jörð','Pachamama','Prithvi','Tellus','Antaeus'] },
+  'Vento':        { 'Comum':['Breeze','Gust','Wisp','Draft','Waft','Puff','Whirl','Flutter','Swirl','Drift','Sigh','Feather'],
+                    'Raro':['Aero','Zephyr','Gale','Storm','Tempest','Cyclone','Vortex','Typhoon','Sirocco','Monsoon','Squall','Tornado'],
+                    'Lendário':['Fujin','Boreas','Aeolus','Enlil','Stribog','Vayu','Notus','Eurus','Shu','Ehecatl','Tawhiri','Pazuzu'] },
+  'Sombra':       { 'Comum':['Shade','Dusk','Murk','Gloom','Haze','Dim','Twilight','Cloak','Veil','Blur','Grey','Hush'],
+                    'Raro':['Umbra','Nox','Eclipse','Void','Phantom','Abyss','Wraith','Specter','Penumbra','Obscura','Shroud','Requiem'],
+                    'Lendário':['Erebus','Nyx','Tenebris','Moros','Kali','Apophis','Nott','Ratri','Ereshkigal','Hel','Achlys','Chernobog'] }
 };
 const SUFIXOS = {
-  'Comum':    ['o Curioso','o Brincalhão','o Tímido','o Guloso','o Sonolento','o Teimoso','o Carinhoso','o Inquieto'],
-  'Raro':     ['o Sábio','o Misterioso','o Sereno','o Vibrante','o Contemplativo','o Peculiar','o Sensível','o Antigo'],
-  'Lendário': ['o Eterno','o Primordial','o Transcendente','o Visionário','o Imorredouro','o Sempiterno','o Singular','o Majestoso']
+  'Comum':    ['o Curioso','o Brincalhão','o Tímido','o Guloso','o Sonolento','o Teimoso','o Carinhoso','o Inquieto',
+               'o Bagunceiro','o Desastrado','o Manhoso','o Resmungão','o Saltitante','o Preguiçoso','o Xereta','o Chorão'],
+  'Raro':     ['o Sábio','o Misterioso','o Sereno','o Vibrante','o Contemplativo','o Peculiar','o Sensível','o Antigo',
+               'o Astuto','o Pensativo','o Silencioso','o Nobre','o Enigmático','o Constante','o Fiel','o Errante'],
+  'Lendário': ['o Eterno','o Primordial','o Transcendente','o Visionário','o Imorredouro','o Sempiterno','o Singular','o Majestoso',
+               'o Infinito','o Inexorável','o Soberano','o Ancestral','o Insondável','o Absoluto','o Indômito','o Supremo']
 };
 const DESCRICOES = {
   'Comum': {
