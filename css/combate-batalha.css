@@ -468,6 +468,19 @@
   .cb-ajuda-desc { font-size: 6px; }
 }
 
+/* ── O que aconteceu ao ALVO, separado do que aconteceu a quem agiu ──
+   Estavam misturados na linha de quem agiu, e assim "envenenado"
+   aparecia debaixo do nome de quem lançou a magia. */
+.cb-extras.no-alvo { border-left: 2px solid rgba(224,85,85,.35); padding-left: 5px; }
+.cb-extras .quem {
+  background: rgba(224,85,85,.14); border-color: rgba(224,85,85,.35);
+  color: #e8b8b8; font-family: 'Cinzel', serif; letter-spacing: .6px;
+}
+.cb-teste u {
+  text-decoration: none; font-family: 'Cinzel', serif; letter-spacing: .5px;
+  opacity: .8; margin-right: 3px;
+}
+
 /* ── Enquanto a animação corre, não se joga ──
    O clique já era ignorado, mas os botões continuavam com ar de
    clicáveis — carregar e não acontecer nada parece avaria. */

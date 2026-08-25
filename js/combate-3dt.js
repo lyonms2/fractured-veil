@@ -163,12 +163,15 @@ function _c3resistirDetalhe(def, atk, ehVeneno) {
 // a Força de Ataque contra a Força de Defesa. Um jogador que perca o
 // veneno por um ponto tem de ver esse ponto.
 // ═══════════════════════════════════════════════════════════════════
-function _c3testeReg(valor, rng, ev, rotulo, partes) {
+function _c3testeReg(valor, rng, ev, rotulo, partes, de) {
   const d = _d6(rng);
   const passou = d !== 6 && d <= valor;
   if (ev) {
     (ev.testes = ev.testes || []).push({
-      rotulo, valor, dado: d, passou,
+      // De quem é a característica que rolou. Quase todos os testes são
+      // do ALVO — é ele que resiste, que esquiva, que segura o foco — e
+      // sem isto o "R3" parecia ser de quem lançou a magia.
+      rotulo, valor, dado: d, passou, de: de || 'alvo',
       // um 6 falha sempre, por mais alta que seja a característica
       seis: d === 6 && valor >= 6,
       partes: partes || [String(valor)],
@@ -525,7 +528,7 @@ function _c3trocaLimpa(quemSai, inimigo, rng, ev) {
   // quase sempre de margem 1, ou seja passava uma vez em seis, e a regra
   // "a não ser que sejas mais rápido" ficava sem efeito prático.
   return _c3testeReg(margem + C3_TROCA_BONUS, rng, ev, 'troca',
-    ['H' + _c3(quemSai, 'H'), '−H' + _c3(inimigo, 'H'), '+' + C3_TROCA_BONUS]);
+    ['H' + _c3(quemSai, 'H'), '−H' + _c3(inimigo, 'H'), '+' + C3_TROCA_BONUS], 'quem');
 }
 
 // ═══════════════════════════════════════════════════════════════════

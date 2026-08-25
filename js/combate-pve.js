@@ -878,55 +878,63 @@ function _pveMostrarEvento(ev) {
     // Com uma parcela só, ela já diz tudo ("H5"); somar "= 5" seria ruído.
     const soma = x.partes.length > 1 ? `${x.partes.join(' ')} = ${x.valor}` : x.partes[0];
     const res = x.passou ? t('pve.teste.passou') : t('pve.teste.falhou');
+    // De quem é a característica que rolou. Quase sempre é o alvo que
+    // resiste ou esquiva, e sem o nome ali o "R3" lia-se como sendo de
+    // quem lançou a magia.
+    const dono = (x.de === 'quem' ? ev.quem : ev.alvo) || '';
     return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
-        <b>${t('pve.teste.' + x.rotulo)}</b> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
+        <b>${t('pve.teste.' + x.rotulo)}</b> <u>${dono}</u> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
         ${x.seis ? `<em>${t('pve.teste.seis')}</em>` : ''}
       </span>`;
   }).join('');
 
-  const extras = [];
-  if (ev.reflexo)    extras.push(t('pve.ev.reflexo'));
-  if (ev.devolveu)   extras.push(t('pve.ev.devolveu', { n: ev.devolveu }));
-  if (ev.envenenou)  extras.push(t('pve.ev.envenenou'));
-  if (ev.enfraqueceu)extras.push(t('pve.ev.enfraqueceu'));
-  if (ev.enfureceu)  extras.push(t('pve.ev.enfureceu'));
-  if (ev.paralisou)  extras.push(t('pve.ev.paralisou'));
-  if (ev.resistiu)   extras.push(t('pve.ev.resistiu'));
-  if (ev.fora)       extras.push(t('pve.ev.fora'));
-  if (ev.curou)      extras.push(t('pve.ev.curou'));
-  if (ev.subiu)      extras.push(t('pve.ev.subiu', { c: ev.subiu }));
-  if (ev.invulneravel)  extras.push(t('pve.ev.invulneravel'));
-  if (ev.barreira)      extras.push(t('pve.ev.barreira', { n: ev.barreira }));
-  if (ev.imune)         extras.push(t('pve.ev.imune'));
-  if (ev.imunizou)      extras.push(t('pve.ev.imunizou'));
-  if (ev.ocultou)       extras.push(t('pve.ev.ocultou'));
-  if (ev.esquivaMais)   extras.push(t('pve.ev.esquiva_mais', { n: ev.esquivaMais }));
-  if (ev.drenou)        extras.push(t('pve.ev.drenou', { n: ev.drenou }));
-  if (ev.absorveuTudo)  extras.push(t('pve.ev.absorveu'));
-  if (ev.barreiraComeu) extras.push(t('pve.ev.barreira_comeu', { n: ev.barreiraComeu }));
-  if (ev.barreiraCaiu)  extras.push(t('pve.ev.barreira_caiu'));
-  if (ev.pagouComSangue) extras.push(t('pve.ev.sangue', { n: ev.pagouComSangue }));
-  if (ev.perdeuFoco)     extras.push(t('pve.ev.perdeu_foco'));
-  if (ev.caiuSozinho)    extras.push(t('pve.ev.caiu_sozinho'));
-  if (ev.semDano)       extras.push(t('pve.ev.sem_dano'));
-  if (ev.resistiuVeneno)extras.push(t('pve.ev.resistiu_veneno'));
-  if (ev.semPMparaRoubar) extras.push(t('pve.ev.sem_pm_roubar'));
-  if (ev.cegou)         extras.push(t('pve.ev.cegou'));
-  if (ev.congelouUmTurno) extras.push(t('pve.ev.congelou'));
-  if (ev.decapitou)     extras.push(t('pve.ev.decapitou'));
-  if (ev.aguentouVorpal)extras.push(t('pve.ev.aguentou_vorpal'));
-  if (ev.armaduraDobrou)extras.push(t('pve.ev.armadura_dobrou'));
-  if (ev.vorpal)        extras.push(t('pve.ev.vorpal'));
-  if (ev.roubando)      extras.push(t('pve.ev.roubando'));
-  if (ev.roubou)        extras.push(t('pve.ev.roubou', { n: ev.roubou }));
-  if (ev.bonusFD)       extras.push(t('pve.ev.bonus_fd', { n: ev.bonusFD }));
-  if (ev.caiu)       extras.push(t('pve.ev.caiu', { nome: ev.alvo }));
-  if (ev.matouAtacante) extras.push(t('pve.ev.caiu', { nome: ev.quem }));
+  const meus = [], dele = [];
+  if (ev.reflexo)       dele.push(t('pve.ev.reflexo'));
+  if (ev.devolveu)      dele.push(t('pve.ev.devolveu', { n: ev.devolveu }));
+  if (ev.envenenou)     dele.push(t('pve.ev.envenenou'));
+  if (ev.enfraqueceu)   dele.push(t('pve.ev.enfraqueceu'));
+  if (ev.enfureceu)     dele.push(t('pve.ev.enfureceu'));
+  if (ev.paralisou)     dele.push(t('pve.ev.paralisou'));
+  if (ev.resistiu)      dele.push(t('pve.ev.resistiu'));
+  if (ev.fora)          dele.push(t('pve.ev.fora'));
+  if (ev.curou)         meus.push(t('pve.ev.curou'));
+  if (ev.subiu)         meus.push(t('pve.ev.subiu', { c: ev.subiu }));
+  if (ev.invulneravel)  meus.push(t('pve.ev.invulneravel'));
+  if (ev.barreira)      meus.push(t('pve.ev.barreira', { n: ev.barreira }));
+  if (ev.imune)         meus.push(t('pve.ev.imune'));
+  if (ev.imunizou)      dele.push(t('pve.ev.imunizou'));
+  if (ev.ocultou)       meus.push(t('pve.ev.ocultou'));
+  if (ev.esquivaMais)   meus.push(t('pve.ev.esquiva_mais', { n: ev.esquivaMais }));
+  if (ev.drenou)        meus.push(t('pve.ev.drenou', { n: ev.drenou }));
+  if (ev.absorveuTudo)  dele.push(t('pve.ev.absorveu'));
+  if (ev.barreiraComeu) dele.push(t('pve.ev.barreira_comeu', { n: ev.barreiraComeu }));
+  if (ev.barreiraCaiu)  dele.push(t('pve.ev.barreira_caiu'));
+  if (ev.pagouComSangue)meus.push(t('pve.ev.sangue', { n: ev.pagouComSangue }));
+  if (ev.perdeuFoco)    dele.push(t('pve.ev.perdeu_foco'));
+  if (ev.caiuSozinho)   meus.push(t('pve.ev.caiu_sozinho'));
+  if (ev.semDano)       dele.push(t('pve.ev.sem_dano'));
+  if (ev.resistiuVeneno)dele.push(t('pve.ev.resistiu_veneno'));
+  if (ev.semPMparaRoubar)dele.push(t('pve.ev.sem_pm_roubar'));
+  if (ev.cegou)         dele.push(t('pve.ev.cegou'));
+  if (ev.congelouUmTurno)dele.push(t('pve.ev.congelou'));
+  if (ev.decapitou)     dele.push(t('pve.ev.decapitou'));
+  if (ev.aguentouVorpal)dele.push(t('pve.ev.aguentou_vorpal'));
+  if (ev.armaduraDobrou)meus.push(t('pve.ev.armadura_dobrou'));
+  if (ev.vorpal)        meus.push(t('pve.ev.vorpal'));
+  if (ev.roubando)      meus.push(t('pve.ev.roubando'));
+  if (ev.roubou)        meus.push(t('pve.ev.roubou', { n: ev.roubou }));
+  if (ev.bonusFD)       meus.push(t('pve.ev.bonus_fd', { n: ev.bonusFD }));
+  if (ev.caiu)          dele.push(t('pve.ev.caiu', { nome: ev.alvo }));
+  if (ev.matouAtacante) meus.push(t('pve.ev.caiu', { nome: ev.quem }));
 
   _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
           (conta ? `<br><span class="cb-conta">${conta}</span>` : '') +
           (testes ? `<div class="cb-testes">${testes}</div>` : '') +
-          (extras.length ? `<div class="cb-extras">${extras.map(x => `<span>${x}</span>`).join('')}</div>` : ''),
+          (meus.length ? `<div class="cb-extras">${meus.map(x => `<span>${x}</span>`).join('')}</div>` : '') +
+          (dele.length ? `<div class="cb-extras no-alvo">
+              <span class="quem">→ ${ev.alvo}</span>
+              ${dele.map(x => `<span>${x}</span>`).join('')}
+            </div>` : ''),
           souEu ? 'good' : 'bad', ev.turno);
 
   // Efeitos, reaproveitando os que já existiam
