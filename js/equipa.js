@@ -66,6 +66,46 @@ function alternarNaEquipa(i) {
   return 'add';
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// A ORDEM CONTA
+//
+// O motor começa a luta com o PRIMEIRO da lista (ativoA: 0) e, quando
+// esse cai, faz entrar o seguinte que ainda esteja de pé — por ordem.
+// Portanto as três posições decidem quem apanha o primeiro golpe e quem
+// fica guardado para o fim.
+//
+// Isso estava tudo invisível: a ordem era a de clique, ninguém a via, e
+// para a mudar era preciso tirar os três e voltar a pô-los na ordem
+// certa. Agora dá para movê-los.
+//
+// Devolve true se alguma coisa mudou, para quem chama saber se vale a
+// pena voltar a desenhar e a gravar.
+function moverNaEquipa(i, dir) {
+  if (typeof gs === 'undefined') return false;
+  const atual = equipaIdx();
+  const pos = atual.indexOf(i);
+  if (pos < 0) return false;
+  const destino = pos + dir;
+  if (destino < 0 || destino >= atual.length) return false;
+  atual[pos] = atual[destino]; atual[destino] = i;
+  gs.equipa = atual;
+  return true;
+}
+
+// Põe este avatar à frente de todos: é ele que abre a luta.
+function porPrimeiroNaEquipa(i) {
+  if (typeof gs === 'undefined') return false;
+  const atual = equipaIdx();
+  const pos = atual.indexOf(i);
+  if (pos <= 0) return false;                 // já é o primeiro, ou não está
+  atual.splice(pos, 1); atual.unshift(i);
+  gs.equipa = atual;
+  return true;
+}
+
+// Em que posição está — 1, 2 ou 3. Zero se não estiver na equipa.
+function posicaoNaEquipa(i) { return equipaIdx().indexOf(i) + 1; }
+
 // Os avatares da equipa, na ordem em que o jogador os escolheu.
 function equipaDoJogador() {
   if (typeof avatarSlots === 'undefined') return [];

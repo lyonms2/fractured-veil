@@ -132,17 +132,41 @@ function renderEquipaBar() {
   const idx   = equipaIdx();
   const cheia = idx.length >= COMBATE_EQUIPA_MAX;
 
+  // ── A ORDEM À VISTA ──
+  // O primeiro da fila abre a luta; os outros entram por ordem, à medida
+  // que os da frente caem. Isso decidia-se pela ordem de clique e não se
+  // via em lado nenhum — o jogador montava a equipa sem saber quem ia
+  // apanhar o primeiro golpe.
   let cartoes = '';
   for (let n = 0; n < COMBATE_EQUIPA_MAX; n++) {
     const i = idx[n];
     const s = (typeof i === 'number') ? avatarSlots[i] : null;
-    if (!s) { cartoes += `<div class="equipa-slot vazio">+</div>`; continue; }
+    if (!s) {
+      cartoes += `<div class="equipa-slot vazio"><span class="equipa-pos">${n + 1}</span>+</div>`;
+      continue;
+    }
     const nome = (s.nome || 'Avatar').split(',')[0].trim();
     const ec   = (typeof CARACTERISTICAS_ELEMENTAIS !== 'undefined') ? CARACTERISTICAS_ELEMENTAIS[s.elemento] : null;
-    cartoes += `<div class="equipa-slot" title="${t('mkt.slot.label', {n: i+1})}">
+    const papel = n === 0 ? t('equipa.ordem.comeca')
+                : n === 1 ? t('equipa.ordem.segundo')
+                          : t('equipa.ordem.terceiro');
+    // Setas só onde há para onde ir, e desactivadas em vez de ausentes:
+    // um botão que aparece e desaparece muda a largura do cartão a cada
+    // troca, e o dedo vai bater ao lado.
+    const setas = `<div class="equipa-mover">
+      <button ${n === 0 ? 'disabled' : ''} onclick="moverEquipa(${i},-1)"
+              title="${t('equipa.ordem.subir')}">◀</button>
+      <button ${n >= idx.length - 1 ? 'disabled' : ''} onclick="moverEquipa(${i},1)"
+              title="${t('equipa.ordem.descer')}">▶</button>
+    </div>`;
+    cartoes += `<div class="equipa-slot${n === 0 ? ' primeiro' : ''}"
+         title="${t('mkt.slot.label', {n: i+1})}">
+      <span class="equipa-pos">${n + 1}</span>
       ${gerarSVG(s.elemento, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
       <div class="equipa-slot-nome">${nome}</div>
       <div class="equipa-slot-sub">${ec ? ec.emoji : '✦'} ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
+      <div class="equipa-papel">${papel}</div>
+      ${setas}
     </div>`;
   }
 
@@ -157,6 +181,7 @@ function renderEquipaBar() {
       <div class="equipa-count ${cheia ? 'full' : ''}">${idx.length}/${COMBATE_EQUIPA_MAX}</div>
     </div>
     <div class="equipa-slots">${cartoes}</div>
+    ${idx.length ? `<div class="equipa-ordem-nota">${t('equipa.ordem.nota')}</div>` : ''}
     <div class="equipa-foot">
       ${cheia ? t('equipa.pronta') : t(faltam === 1 ? 'equipa.incompleta_1' : 'equipa.incompleta', { faltam })}<br>
       ${t('equipa.poder', { poder })}
@@ -204,4 +229,17 @@ function toggleEquipa(i) {
 
   if (typeof scheduleSave === 'function') scheduleSave();
   if (typeof renderSlots === 'function') renderSlots();
+}
+
+// Trocar de lugar na fila. Não gasta nada e não tem consequência
+// nenhuma fora da próxima batalha — por isso não pede confirmação.
+function moverEquipa(i, dir) {
+  if (typeof moverNaEquipa !== 'function') return;
+  if (!moverNaEquipa(i, dir)) return;
+  if (typeof scheduleSave === 'function') scheduleSave();
+  if (typeof renderSlots === 'function') renderSlots();
+  const nome = (avatarSlots[i]?.nome || 'Avatar').split(',')[0].trim();
+  const pos  = posicaoNaEquipa(i);
+  showToast(pos === 1 ? t('equipa.toast.comeca', { nome })
+                      : t('equipa.toast.posicao', { nome, n: pos }), 'ok');
 }

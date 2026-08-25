@@ -234,6 +234,52 @@
 }
 .equipa-foot b { color: var(--gold-light); }
 
+/* ── A ORDEM DA FILA ──
+   O 1.º abre a batalha e os outros entram à medida que os da frente
+   caem. A ordem era a de clique e não se via em lado nenhum: montava-se
+   a equipa sem saber quem apanhava o primeiro golpe. */
+.equipa-slot { position: relative; }
+.equipa-pos {
+  position: absolute; top: 3px; left: 4px;
+  width: 11px; height: 11px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Cinzel', serif; font-size: 6px; line-height: 1;
+  background: rgba(0,0,0,.55); border: 1px solid var(--border);
+  color: var(--muted);
+}
+/* Quem abre a luta destaca-se pela moldura, não por um rótulo a mais */
+.equipa-slot.primeiro {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.09);
+  box-shadow: 0 0 10px rgba(201,168,76,.14);
+}
+.equipa-slot.primeiro .equipa-pos {
+  background: var(--gold); border-color: var(--gold);
+  color: #1a1626; font-weight: 700;
+}
+.equipa-papel {
+  margin-top: 3px; font-size: 5.5px; letter-spacing: .5px;
+  color: var(--muted); font-family: 'Cinzel', serif;
+}
+.equipa-slot.primeiro .equipa-papel { color: var(--gold-light); }
+
+.equipa-mover { display: flex; gap: 3px; margin-top: 4px; justify-content: center; }
+.equipa-mover button {
+  flex: 1; padding: 2px 0; border-radius: 4px; cursor: pointer;
+  font-size: 7px; line-height: 1;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border); color: var(--muted);
+}
+.equipa-mover button:hover:not(:disabled) { color: var(--gold); border-color: var(--gold); }
+/* Desactivada em vez de ausente: um botão que aparece e desaparece muda
+   a largura do cartão a cada troca, e o dedo vai bater ao lado. */
+.equipa-mover button:disabled { opacity: .25; cursor: default; }
+
+.equipa-ordem-nota {
+  margin-top: 6px; font-size: 6px; line-height: 1.6;
+  color: var(--muted); text-align: center; opacity: .8;
+}
+
 /* ── BOTÕES NOS CARDS DE SLOT ── */
 .btn-slot-equipa {
   width: 100%;
@@ -257,6 +303,12 @@
 .btn-slot-equipa:disabled {
   opacity: .4;
   cursor: not-allowed;
+}
+/* Quem abre a luta lê-se de longe, sem ter de ir à barra de cima */
+.btn-slot-equipa.on.primeiro {
+  background: rgba(201,168,76,.24);
+  border-color: var(--gold);
+  color: #ffe6a8;
 }
 
 /* ── FICHA 3D&T: escalão, vantagens e desvantagens ── */

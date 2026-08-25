@@ -354,9 +354,18 @@ function _slotBtnEquipa(i, s) {
   }
   const dentro = estaNaEquipa(i);
   const bloqueado = !dentro && equipaCompleta();
-  return `<button class="btn-slot-equipa ${dentro?'on':''}" ${bloqueado?'disabled':''}
-    title="${bloqueado ? t('equipa.btn_full_title', {max: COMBATE_EQUIPA_MAX}) : ''}"
-    onclick="toggleEquipa(${i})">${dentro ? t('equipa.btn_on') : t('equipa.btn_off')}</button>`;
+  // Quem está na equipa mostra a POSIÇÃO, não só que lá está: o 1.º abre
+  // a luta e os outros entram por ordem quando os da frente caem. Dizia
+  // apenas "Na equipe", e daí não se percebia que a ordem decidia algo.
+  const pos = (typeof posicaoNaEquipa === 'function') ? posicaoNaEquipa(i) : 0;
+  const rot = !dentro ? t('equipa.btn_off')
+            : pos === 1 ? t('equipa.btn_on_1')
+                        : t('equipa.btn_on_n', { n: pos });
+  return `<button class="btn-slot-equipa ${dentro?'on':''} ${dentro && pos===1?'primeiro':''}"
+    ${bloqueado?'disabled':''}
+    title="${bloqueado ? t('equipa.btn_full_title', {max: COMBATE_EQUIPA_MAX})
+                       : dentro ? t('equipa.btn_on_title') : ''}"
+    onclick="toggleEquipa(${i})">${rot}</button>`;
 }
 
 function renderSlots() {

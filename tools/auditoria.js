@@ -10,3 +10,4 @@ require('./auditoria-regras.js');
 require('./auditoria-papeis.js');
 require('./auditoria-persistentes.js');
 require('./auditoria-duracoes.js');
+require('./auditoria-equipa.js');
