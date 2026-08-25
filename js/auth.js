@@ -319,8 +319,15 @@ async function _onLoginSuccess(user) {
       if(offlineSecs > 0) {
         let status = t('log.offline_paused');
         if(sleeping && vitals.energia < 100) {
+          // O Amuleto do Sono Profundo conta aqui também. Prometia
+          // "energia recupera 2× mais rápido dormindo" e só valia ao
+          // vivo — mas dormir com o separador fechado É a forma de
+          // dormir, portanto o amuleto não fazia nada onde mais fazia
+          // falta. Os itens são do avatar em campo, e este ramo só corre
+          // para esse, que é o que estava a dormir.
           const offlineCycles = Math.floor(offlineSecs / 60);
-          vitals.energia = Math.min(100, vitals.energia + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
+          const porCiclo = OFFLINE_SLEEP_ENERGY_PER_CYCLE * getItemEffect('sleepEnergyMult');
+          vitals.energia = Math.min(100, vitals.energia + offlineCycles * porCiclo);
           status = t('log.offline_slept');
           if(vitals.energia >= 100) {
             sleeping = false;
@@ -403,7 +410,6 @@ async function _onLoginSuccess(user) {
       }
       updateDirtyVisuals();
       updateEquippedDisplay();
-      syncEasterEggs();
 
       if(gs.moedas < 30) {
         setTimeout(() => addLog(t('onboard.tip.coins'), 'bad'), 1200);

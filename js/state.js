@@ -48,18 +48,6 @@ const ITEM_CATALOG = {
     cor:      '#7ab87a',
     efeitos:  { fomeDecayMult: 0.75 }
   },
-  'decoracao_pascoa': {
-    id:       'decoracao_pascoa',
-    get nome()  { return t('item.easter_deco.name'); },
-    get desc()  { return t('item.easter_deco.desc'); },
-    get efeito(){ return t('item.easter_deco.eff');  },
-    emoji:    '🥚',
-    tipo:     'Cenário',
-    raridade: 'Especial',
-    preco:    500,
-    cor:      '#f0a0c0',
-    efeitos:  {}
-  },
   'coroa_cristal': {
     id:       'coroa_cristal',
     get nome()  { return t('item.joy_mask.name'); },
@@ -99,6 +87,18 @@ const ITEM_CATALOG = {
     onUse:      'useAntidote',
   },
 };
+// O preço que o jogador paga, já com o desconto da raridade do avatar.
+//
+// Existe porque estava calculado em três sítios e um deles esqueceu-se
+// do desconto: o cartão do Antídoto mostrava 240 a um Lendário e o
+// useAntidote() cobrava os 300 do catálogo. Pior, o botão ficava activo
+// com 250 moedas, a loja fechava e o jogador levava com um erro.
+function precoItem(item) {
+  if(!item) return 0;
+  const desconto = (typeof rarityBonus === 'function' ? rarityBonus().shopDiscount : 0) || 0;
+  return Math.round(item.preco * (1 - desconto));
+}
+
 function getEquippedItems() {
   const now = Date.now();
   return itemInventory

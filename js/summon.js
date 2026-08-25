@@ -316,7 +316,6 @@ function hatch() {
     document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
     document.getElementById('phaseLabel').textContent = t('gt.phase.label', {fase: FASES[getFase()]});
     updateEquippedDisplay();
-    syncEasterEggs();
     renderEggInventory();
     updateAllUI();
     saveToFirebase();
@@ -368,7 +367,6 @@ function hatch() {
   document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
-  syncEasterEggs();
 
   const btnLayEgg = document.getElementById('btnLayEgg');
   const isAdult = getFase() === 3;

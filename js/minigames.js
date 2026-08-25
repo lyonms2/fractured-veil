@@ -336,7 +336,9 @@ function useAntidote() {
     addLog(t('mg.antidote.log.healthy'), 'info');
     return;
   }
-  const COST = 300;
+  // O mesmo preço que o cartão da loja mostra — desconto de raridade
+  // incluído. Estava aqui fixo em 300 enquanto o cartão já descontava.
+  const COST = precoItem(ITEM_CATALOG['antidoto_dimensional']);
   if(gs.moedas < COST) {
     showBubble(t('mg.antidote.bub.no_coins'));
     addLog(t('mg.antidote.log.no_coins', {cost: COST}), 'bad');
