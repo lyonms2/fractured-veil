@@ -110,7 +110,7 @@ function triggerSummon() {
   dead = false; hatched = false; sick = false; sleeping = false;
   clearPresenceDead(walletAddress);
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
-  eggClicks = 0; eggLayCooldown = 0;
+  eggLayCooldown = 0;
   poopCount = 0; dirtyLevel = 0; poopPressure = 0;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   document.getElementById('poopContainer').innerHTML = '';
@@ -261,7 +261,14 @@ function triggerSummon() {
   updateResourceUI();
 }
 
-// setupAvatar mantido para compatibilidade com outros fluxos que possam chamá-lo
+// Chamado quando se volta ao jogo com um avatar que existe mas ainda não
+// nasceu (avatar && !hatched) — alguém que fechou a aba nos 1,2s da
+// animação, ou a quem a chocagem falhou a meio.
+//
+// Antes isto punha o ovo no ecrã e parava ali. Com a chocagem por
+// cliques ainda viva, o jogador clicava cinco vezes e saía dali; depois
+// de ela sair, ficava um ovo que não respondia a nada e sem botão
+// nenhum — um beco sem saída. Agora termina o que ficou por terminar.
 function setupAvatar() {
   document.getElementById('summonCard').style.display  = 'none';
   document.getElementById('creatureCard').style.display = 'block';
@@ -273,6 +280,11 @@ function setupAvatar() {
   if(!avatar.bornAt) addLog(t('summon.log.invoked', {nome: avatar.nome}), 'good');
   updateAllUI();
   scheduleSave();
+
+  if(typeof hatchWithAnimation === 'function') {
+    hatchWithAnimation(avatar.raridade, avatar.elemento,
+                       (typeof activeSlotIdx === 'number') ? activeSlotIdx : 0);
+  }
 }
 
 // ═══════════════════════════════════════════

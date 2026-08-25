@@ -12,7 +12,6 @@ window.closeGameSelector = typeof closeGameSelector !== "undefined" ? closeGameS
 window.closeItemInventory = typeof closeItemInventory !== "undefined" ? closeItemInventory : ()=>{};
 window.closeMiniModal = typeof closeMiniModal !== "undefined" ? closeMiniModal : ()=>{};
 window.closeShop = typeof closeShop !== "undefined" ? closeShop : ()=>{};
-window.cancelHatch = typeof cancelHatch !== "undefined" ? cancelHatch : ()=>{};
 window.confirmHatch = typeof confirmHatch !== "undefined" ? confirmHatch : ()=>{};
 window.goToMarketplace = typeof goToMarketplace !== "undefined" ? goToMarketplace : ()=>{};
 window.connectWallet = typeof connectWallet !== "undefined" ? connectWallet : ()=>{};

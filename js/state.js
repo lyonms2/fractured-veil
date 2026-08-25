@@ -233,7 +233,6 @@ let tickCount = 0;
 // metade do ritmo ao vivo (4/ciclo em js/gametick.js). Nada mais decai/recupera
 // enquanto ausente, mesmo dormindo.
 const OFFLINE_SLEEP_ENERGY_PER_CYCLE = 2;
-let eggClicks = 0;
 const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0, totalInvocacoes:0, equipa:null };
 const FASES = t('fases');
 const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v < 17 ? 2 : 3; };

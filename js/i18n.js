@@ -317,7 +317,6 @@
       'portal.sub':              'aguardando invocação',
 
       // Egg screen
-      'egg.hint':                'CLIQUE PARA CHOCAR',
 
       // Rename
       'rename.placeholder':      'Novo nome...',
@@ -632,7 +631,6 @@
       'portal.sub':              'awaiting invocation',
 
       // Egg screen
-      'egg.hint':                'CLICK TO HATCH',
 
       // Rename
       'rename.placeholder':      'New name...',

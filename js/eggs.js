@@ -413,7 +413,16 @@ async function confirmHatch() {
   const _descPool  = DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo'];
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
-  let _h = 0; const _str = nome + ovo.elemento;
+  // O seed saía só do nome + elemento, e há 6 prefixos × 8 sufixos = 48
+  // nomes por elemento/raridade. Como a ficha de combate também deriva
+  // do seed, dois avatares com o mesmo nome eram IDÊNTICOS — mesmo
+  // desenho, mesmos F/H/R/A, mesmas magias. Ao chocar 20 ovos saíam ~3,5
+  // repetidos, e o jogo inteiro só conseguia 720 avatares diferentes.
+  //
+  // O id do ovo é o carimbo de tempo da postura, e entra aqui para cada
+  // chocagem dar um avatar seu. Os nomes continuam a repetir-se — isso é
+  // sabor, não identidade.
+  let _h = 0; const _str = nome + ovo.elemento + '#' + ovo.id;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
   const seed = Math.abs(_h);
 
@@ -434,7 +443,18 @@ async function confirmHatch() {
   hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);
 }
 
+// Os temporizadores da chocagem, para se poderem cancelar. São dez em
+// 1,2s e mexem todos no DOM do ovo — se a tela mudar no meio (uma
+// segunda chocagem, um logout), os que ficaram pendentes escreviam por
+// cima do que veio a seguir.
+let _hatchTimers = [];
+function _pararAnimacaoDeChocar() {
+  _hatchTimers.forEach(clearTimeout);
+  _hatchTimers = [];
+}
+
 function hatchWithAnimation(raridade, elemento, targetSlot) {
+  _pararAnimacaoDeChocar();
   const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
   const crackColor = rarColors[raridade] || '#c4b5fd';
 
@@ -444,7 +464,6 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   document.getElementById('eggScreen').style.display   = 'flex';
   document.getElementById('actionBtns').style.opacity      = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
-  const _cb = document.getElementById('btnCancelHatch'); if(_cb) _cb.style.display = 'none';
 
   applyEggVisual(raridade, crackColor);
 
@@ -460,87 +479,60 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
 
   const lines = document.querySelectorAll('#eggCracks line');
 
-  setTimeout(() => {
+  _hatchTimers.push(setTimeout(() => {
     svg.style.transition = 'transform .08s ease';
     svg.style.transform  = 'rotate(-10deg) scale(1.05)';
     cracks.style.opacity = '1';
     if(lines[0]) lines[0].style.opacity = '1';
     if(lines[1]) lines[1].style.opacity = '1';
     playSound('egg_crack');
-  }, 0);
-  setTimeout(() => { svg.style.transform = 'rotate(8deg) scale(1.08)'; }, 120);
-  setTimeout(() => {
+  }, 0));
+  _hatchTimers.push(setTimeout(() => { svg.style.transform = 'rotate(8deg) scale(1.08)'; }, 120));
+  _hatchTimers.push(setTimeout(() => {
     svg.style.transform = 'rotate(-6deg) scale(1.06)';
     if(lines[2]) lines[2].style.opacity = '1';
     if(lines[3]) lines[3].style.opacity = '1';
-  }, 250);
-  setTimeout(() => { svg.style.transform = 'rotate(4deg) scale(1.1)'; }, 380);
-  setTimeout(() => {
+  }, 250));
+  _hatchTimers.push(setTimeout(() => { svg.style.transform = 'rotate(4deg) scale(1.1)'; }, 380));
+  _hatchTimers.push(setTimeout(() => {
     svg.style.transform = 'rotate(0deg) scale(1.12)';
     if(lines[4]) lines[4].style.opacity = '1';
     pulse.style.transition = 'opacity .15s';
     pulse.style.opacity = '0.8';
     playSound('summon_pulse');
-  }, 500);
-  setTimeout(() => { pulse.style.opacity = '0'; }, 680);
-  setTimeout(() => {
+  }, 500));
+  _hatchTimers.push(setTimeout(() => { pulse.style.opacity = '0'; }, 680));
+  _hatchTimers.push(setTimeout(() => {
     flash.style.opacity = '1';
     svg.style.transition = 'transform .2s ease, opacity .2s ease';
     svg.style.transform  = 'scale(1.4)';
     svg.style.opacity    = '0';
     playSound('summon_impact');
-  }, 900);
-  setTimeout(() => {
+  }, 900));
+  _hatchTimers.push(setTimeout(() => {
     flash.style.opacity = '0';
     hatch();
-  }, 1200);
+  }, 1200));
 }
 
-function cancelHatch() {
-  const pendingSlot = window._pendingEggSlot;
-  if(typeof pendingSlot === 'number') {
-    avatarSlots[pendingSlot] = null;
-    window._pendingEggSlot = null;
-  }
-
-  const cancelBtn = document.getElementById('btnCancelHatch');
-  if(cancelBtn) cancelBtn.style.display = 'none';
-
-  eggClicks = 0;
-  document.getElementById('eggProgress').textContent = '0 / 5';
-  document.getElementById('eggHint').textContent = t('egg.hint');
-  document.getElementById('eggCracks').style.opacity = '0';
-  document.querySelectorAll('#eggCracks line').forEach(l => l.style.opacity = '0');
-
-  const eggToRestore = window._cancelledEgg;
-  window._cancelledEgg = null;
-
-  if(eggToRestore) {
-    eggsInInventory.push(eggToRestore);
-    renderEggInventory();
-  }
-
-  document.getElementById('eggScreen').style.display = 'none';
-  document.getElementById('actionBtns').style.opacity = '1';
-  document.getElementById('actionBtns').style.pointerEvents = 'auto';
-
-  if(hatched && !dead) {
-    document.getElementById('aliveScreen').style.display = 'block';
-  } else if(dead) {
-    document.getElementById('deadScreen').style.display = 'block';
-  } else {
-    document.getElementById('idleScreen').style.display = 'flex';
-  }
-
-  if(walletAddress && fbDb() && eggToRestore) {
-    fbDb().collection('players').doc(walletAddress).update({
-      inboxEggs: firebase.firestore.FieldValue.arrayRemove(eggToRestore)
-    }).catch(e => console.warn('inboxEggs cleanup failed:', e));
-  }
-  scheduleSave();
-  addLog(t('egg.log.cancelled'), 'info');
-}
-
+// ═══════════════════════════════════════════════════════════════════
+// A CHOCAGEM POR CLIQUES SAIU
+//
+// O ovo já foi chocado clicando cinco vezes nele. Isso deu lugar à
+// animação automática (hatchWithAnimation), e o que ficou para trás foi
+// tudo isto:
+//
+//   summonFromEgg()  montava a tela dos cliques — ninguém a chamava
+//   cancelHatch()    era como se desistia a meio — ninguém a chamava
+//   eggClicks        contador que só era posto a zero, nunca somado
+//   #eggWrap         ficou com cursor:pointer e nenhum handler
+//   btnCancelHatch   três referências no JS a um botão que não existe
+//   "0 / 5"          escrito no HTML por baixo do ovo
+//
+// E a janela de confirmação continuava a dizer "Clique 5× para fazer
+// nascer seu novo avatar", que era a única dessas peças que o jogador
+// chegava a ver — e mentia.
+// ═══════════════════════════════════════════════════════════════════
 
 function applyEggVisual(raridade, crackColor) {
   const stop1 = document.querySelector('#eggGrad stop:first-child');
@@ -593,64 +585,6 @@ function applyEggVisual(raridade, crackColor) {
       l.style.opacity = '0';
     });
   }
-}
-
-function summonFromEgg(raridade, elemento, crackColor, targetSlot) {
-  playSound('summon_start');
-  const car       = CARACTERISTICAS_ELEMENTAIS[elemento] || null;
-  const prefPool  = PREFIXOS[elemento]?.[raridade] || PREFIXOS[elemento]?.['Comum'] || ['Mistix'];
-  const nome      = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
-  const _descPool2   = DESCRICOES[raridade][elemento] || DESCRICOES[raridade]['Fogo'];
-  const descricaoIdx = Math.floor(Math.random() * _descPool2.length);
-  const descricao    = _descPool2[descricaoIdx];
-  let _h = 0;
-  const _str = nome + elemento;
-  for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
-  const seed = Math.abs(_h);
-
-  const tgt = (typeof targetSlot === 'number' && targetSlot >= 0) ? targetSlot : activeSlotIdx;
-  while(avatarSlots.length <= tgt) avatarSlots.push(null);
-  avatarSlots[tgt] = {
-    nome, elemento, raridade, descricao, descricaoIdx, car, seed,
-    hatched: false, dead: false, sick: false, sleeping: false,
-    nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
-    bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
-    eggLayCooldown: 0, petCooldown: 0,
-    vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
-    eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
-    pendingEgg: true,
-    pendingSlot: tgt,
-  };
-  window._pendingEggSlot = tgt;
-  eggClicks = 0;
-
-  document.getElementById('aliveScreen').style.display = 'none';
-  document.getElementById('deadScreen').style.display  = 'none';
-  document.getElementById('idleScreen').style.display  = 'none';
-  document.getElementById('eggScreen').style.display   = 'flex';
-  document.getElementById('actionBtns').style.opacity      = '0';
-  document.getElementById('actionBtns').style.pointerEvents = 'none';
-
-  const cancelBtn = document.getElementById('btnCancelHatch');
-  if(cancelBtn) cancelBtn.style.display = 'flex';
-
-  const svg = document.getElementById('eggSvg');
-  svg.style.transform = 'rotate(0deg) scale(1)';
-  svg.style.opacity = '1';
-  svg.style.transition = '';
-
-  applyEggVisual(raridade, crackColor);
-
-  document.getElementById('eggCracks').style.opacity = '0';
-  document.getElementById('eggProgress').textContent = '0 / 5';
-  document.getElementById('eggHint').textContent = t('egg.hint');
-  document.getElementById('eggFlash').style.opacity = '0';
-
-  fillCreatureCard();
-  updateAllUI();
-  renderEggInventory();
-
-  addLog(t('egg.log.ready', {rar: raridade, elem: elemento}), raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good');
 }
 
 function openEggInventory() {
