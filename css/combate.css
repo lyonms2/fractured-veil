@@ -304,6 +304,16 @@
   opacity: .4;
   cursor: not-allowed;
 }
+/* Em ecrã estreito o cartão do avatar vira grelha de duas colunas e este
+   botão fica numa coluna de ~90px. A explicação partia-se em duas linhas
+   a 7px, enquanto os botões ao lado (Ativar, Queimar) têm 8px e nowrap —
+   era o único a destoar. Fica a posição, que é o que importa de relance;
+   a explicação continua no computador e na barra da equipa. */
+@media (max-width: 720px) {
+  .btn-slot-equipa { font-size: 8px; padding: 5px 8px; white-space: nowrap; width: auto; }
+  .btn-slot-equipa .eq-txt { display: none; }
+}
+
 /* Quem abre a luta lê-se de longe, sem ter de ir à barra de cima */
 .btn-slot-equipa.on.primeiro {
   background: rgba(201,168,76,.24);

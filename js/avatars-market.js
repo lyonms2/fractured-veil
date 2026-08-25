@@ -358,9 +358,18 @@ function _slotBtnEquipa(i, s) {
   // a luta e os outros entram por ordem quando os da frente caem. Dizia
   // apenas "Na equipe", e daí não se percebia que a ordem decidia algo.
   const pos = (typeof posicaoNaEquipa === 'function') ? posicaoNaEquipa(i) : 0;
-  const rot = !dentro ? t('equipa.btn_off')
-            : pos === 1 ? t('equipa.btn_on_1')
-                        : t('equipa.btn_on_n', { n: pos });
+  // O rótulo vem em duas metades. No telemóvel o botão vive numa coluna
+  // de 90px e a explicação partia-se em duas linhas a 7px, enquanto os
+  // botões ao lado têm 8px e nowrap — era o único a destoar. A metade
+  // explicativa esconde-se lá (ver .eq-txt em css/combate.css) e o que
+  // fica, "⚔ 1º", chega para saber onde ele está na fila.
+  const cabeca = !dentro ? t('equipa.btn_off')
+               : pos === 1 ? t('equipa.btn_on_1')
+                           : t('equipa.btn_on_n', { n: pos });
+  const cauda  = !dentro ? t('equipa.btn_off_txt')
+               : pos === 1 ? t('equipa.btn_on_1_txt')
+                           : t('equipa.btn_on_n_txt');
+  const rot = `<span class="eq-pos">${cabeca}</span><span class="eq-txt">${cauda}</span>`;
   return `<button class="btn-slot-equipa ${dentro?'on':''} ${dentro && pos===1?'primeiro':''}"
     ${bloqueado?'disabled':''}
     title="${bloqueado ? t('equipa.btn_full_title', {max: COMBATE_EQUIPA_MAX})
@@ -451,20 +460,23 @@ function renderSlots() {
             <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
           ${_slotDoencas(i, s)}
+          <!-- UM só bloco de acções, e não vários.
+               No telemóvel o .slot-body é uma grelha de duas colunas e o
+               .slot-actions está preso à segunda, a ocupar as quatro
+               linhas (grid-column:2; grid-row:1/span 4). Com dois blocos,
+               os dois caíam na MESMA célula e os botões ficavam uns por
+               cima dos outros — o "1º começa a luta" em cima do Ativar e
+               do Queimar. -->
           <div class="slot-actions">
             ${_slotBtnEquipa(i, s)}
-          </div>
-          ${!isActive && !isFrozen ? `
-          <div class="slot-actions">
+            ${!isActive && !isFrozen ? `
             <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_activate')}</button>
             ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>` : ''}
-            <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>
-          </div>` : ''}
-          ${isFrozen ? `
-          <div class="slot-actions">
+            <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>` : ''}
+            ${isFrozen ? `
             <div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;padding:4px 0;">${t('mkt.slot.frozen_label')}</div>
-            <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">${t('mkt.slot.btn_unlist')}</button>
-          </div>` : ''}
+            <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">${t('mkt.slot.btn_unlist')}</button>` : ''}
+          </div>
         </div>
       </div>`;
     }
