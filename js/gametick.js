@@ -65,11 +65,12 @@ function removePoop(el) {
 }
 
 function cleanCreature() {
+  // O canAct() já barra quem dorme (e mostra o balão). Havia aqui um
+  // segundo if(sleeping) que nunca corria.
   if(!canAct()) return;
-  if(sleeping) { showBubble(t('mg.sleep.bub')); return; }
-  if(vitals.energia < 15) { showBubble(t('gt.bath.no_energy')); return; }
+  if(vitals.energia < BANHO_ENERGIA) { showBubble(t('gt.bath.no_energy')); return; }
 
-  vitals.energia = Math.max(0, vitals.energia - 15);
+  vitals.energia = Math.max(0, vitals.energia - BANHO_ENERGIA);
 
   const higieneGain = Math.round(50 + Math.random() * 20);
   const humorGain   = 15;
@@ -86,13 +87,12 @@ function cleanCreature() {
   setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
   addLog(t('gt.bath.log', {hygiene: higieneGain, humor: humorGain}), 'good');
 
-  if(!sleeping) {
-    const humorBad = vitals.humor < 30;
-    const decayV   = humorBad ? 0.05 : 0.02;
-    vinculo = Math.max(0, vinculo - decayV);
-  }
-
+  // Havia aqui um decaimento de vínculo — somava 3 acima e tirava 0,02
+  // logo a seguir. Era lógica de tick que foi parar dentro da acção, e o
+  // humorBad era avaliado DEPOIS do +15 que o próprio banho dá, portanto
+  // quase nunca disparava. O vínculo decai no tick, que é o sítio dele.
   updateDirtyVisuals();
+  updateAllUI();          // as outras acções já o faziam; esta esperava pelo tick
   scheduleSave();
 }
 

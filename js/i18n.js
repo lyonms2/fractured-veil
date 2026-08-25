@@ -273,6 +273,15 @@
       'btn.lay_egg':             'BOTAR OVO',
       'btn.wake':                'ACORDAR',
       'btn.friends':             'AMIGOS',
+      // A linha por baixo do nome nos botões de acção: ou o custo, ou a
+      // razão de estar apagado.
+      'act.sub.cheio':           'cheio',
+      'act.sub.com_fome':        'com fome',
+      'act.sub.sem_forcas':      'sem forças',
+      'act.sub.sem_sono':        'sem sono',
+      'act.sub.saudavel':        'saudável',
+      'act.sub.limpo':           'limpo',
+      'act.sub.dormindo':        'dormindo',
 
       // Stat labels
       'stat.fome':               '🍖 FOME',
@@ -581,6 +590,13 @@
       'btn.lay_egg':             'LAY EGG',
       'btn.wake':                'WAKE UP',
       'btn.friends':             'FRIENDS',
+      'act.sub.cheio':           'full',
+      'act.sub.com_fome':        'hungry',
+      'act.sub.sem_forcas':      'too tired',
+      'act.sub.sem_sono':        'not sleepy',
+      'act.sub.saudavel':        'healthy',
+      'act.sub.limpo':           'clean',
+      'act.sub.dormindo':        'asleep',
 
       // Stat labels
       'stat.fome':               '🍖 HUNGER',

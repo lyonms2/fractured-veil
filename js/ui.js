@@ -46,6 +46,71 @@ function setBar(id, val, miniId) {
   if(miniId) { const m = document.getElementById(miniId); if(m) m.style.width = val + '%'; }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// OS BOTÕES DIZEM-SE
+//
+// Antes ficavam todos iguais em qualquer estado — sem moedas, com a
+// fome cheia, sem energia — e só o clique explicava porque não dava.
+// Agora a linha de baixo diz o custo, ou a razão de estar apagado.
+//
+// Apagados mas CLICÁVEIS de propósito: o balão do bicho ("estou
+// satisfeito!", "sem moedas...") é metade da graça do jogo, e cortar o
+// clique cortava-o. O que muda é já não ser preciso clicar para saber.
+//
+// Serve as duas larguras: aos ≤768px a .fv-bottom-nav está desligada
+// (ver css/mobile-index.css:458) e o telemóvel usa estes mesmos botões,
+// inline no cartão do bicho.
+// ═══════════════════════════════════════════════════════════════════
+function estadoDasAccoes() {
+  const vivo = (typeof hatched !== 'undefined' && hatched) &&
+               (typeof dead !== 'undefined' && !dead) && !!avatar;
+  if(!vivo) return null;
+  const aDormir = (typeof sleeping !== 'undefined') && sleeping;
+  const v = vitals, m = gs.moedas;
+
+  return {
+    feed:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
+         : v.fome >= 100 ? { pode:false, sub:t('act.sub.cheio') }
+         : m < CUSTO_NUTRIR ? { pode:false, sub:`${CUSTO_NUTRIR} 🪙`, semMoedas:true }
+         : { pode:true, sub:`${CUSTO_NUTRIR} 🪙` },
+
+    play:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
+         : v.fome < 10 ? { pode:false, sub:t('act.sub.com_fome') }
+         : v.energia < 10 ? { pode:false, sub:t('act.sub.sem_forcas') }
+         : { pode:true, sub:'' },
+
+    // Dormir nunca fica indisponível a dormir: é o botão de acordar.
+    sleep: aDormir ? { pode:true, sub:'' }
+         : v.energia >= 100 ? { pode:false, sub:t('act.sub.sem_sono') }
+         : { pode:true, sub:'' },
+
+    heal:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
+         : (v.saude >= 100 && !sick) ? { pode:false, sub:t('act.sub.saudavel') }
+         : m < CUSTO_MEDICAR ? { pode:false, sub:`${CUSTO_MEDICAR} 🪙`, semMoedas:true }
+         : { pode:true, sub:`${CUSTO_MEDICAR} 🪙` },
+
+    bath:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
+         : v.energia < BANHO_ENERGIA ? { pode:false, sub:`${BANHO_ENERGIA} ⚡`, semForca:true }
+         : v.higiene >= 100 ? { pode:false, sub:t('act.sub.limpo') }
+         : { pode:true, sub:`−${BANHO_ENERGIA} ⚡` },
+  };
+}
+
+function atualizarBotoesDeAccao() {
+  const est = estadoDasAccoes();
+  const pares = [['btnFeed','subFeed','feed'], ['btnPlay','subPlay','play'],
+                 ['btnSleep','subSleep','sleep'], ['btnHeal','subHeal','heal'],
+                 ['btnBath','subBath','bath']];
+  for(const [btnId, subId, chave] of pares) {
+    const btn = document.getElementById(btnId), sub = document.getElementById(subId);
+    if(!btn) continue;
+    const e = est && est[chave];
+    btn.classList.toggle('indisponivel', !!(e && !e.pode));
+    btn.classList.toggle('em-falta',     !!(e && (e.semMoedas || e.semForca)));
+    if(sub) sub.textContent = e ? e.sub : '';
+  }
+}
+
 function updateAllUI() {
   setBar('barFome',    vitals.fome);
   setBar('barHumor',   vitals.humor);
@@ -71,6 +136,7 @@ function updateAllUI() {
 
   updateResourceUI();
   updateLifeEstimate();
+  atualizarBotoesDeAccao();
 
   // Botões de inventário
   const _eggBtn  = document.getElementById('resOvosBtn');

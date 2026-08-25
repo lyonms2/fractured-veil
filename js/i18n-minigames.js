@@ -42,7 +42,8 @@ window.registerStrings(
     'mg.heal.bub.healthy':   'Estou bem!',
     'mg.heal.bub.no_coins':  'Sem moedas... 😢',
     'mg.heal.bub.better':    'Me sinto melhor! 💊',
-    'mg.heal.log.diseases':  '⚠️ Você tem {n} doença(s) ativa(s)! O Medicar recupera saúde mas não cura doenças — use o Antídoto Dimensional (300 🪙) na loja.',
+    'mg.heal.bub.only_antidote': 'Preciso do antídoto...',
+    'mg.heal.log.diseases':  '⚠️ Você tem {n} doença(s) ativa(s)! O Medicar recupera saúde mas não cura doenças — use o Antídoto Dimensional ({preco} 🪙) na loja.',
     'mg.heal.log.no_coins':  'Precisa de {cost} 🪙 para medicar!',
     'mg.heal.log.healed':    'Medicado! +40 saúde  (-40 🪙)',
 
@@ -109,7 +110,8 @@ window.registerStrings(
     'mg.heal.bub.healthy':   "I'm fine!",
     'mg.heal.bub.no_coins':  'Not enough coins... 😢',
     'mg.heal.bub.better':    'Feeling better! 💊',
-    'mg.heal.log.diseases':  '⚠️ You have {n} active disease(s)! Heal restores health but does not cure diseases — use the Dimensional Antidote (300 🪙) from the shop.',
+    'mg.heal.bub.only_antidote': 'I need the antidote...',
+    'mg.heal.log.diseases':  '⚠️ You have {n} active disease(s)! Heal restores health but does not cure diseases — use the Dimensional Antidote ({preco} 🪙) from the shop.',
     'mg.heal.log.no_coins':  'Need {cost} 🪙 to heal!',
     'mg.heal.log.healed':    'Healed! +40 health  (-40 🪙)',
 

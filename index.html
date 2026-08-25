@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-08-25n
+     VERSÃO DOS FICHEIROS — ?v=2026-08-25o
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-08-25n" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-08-25o" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -35,20 +35,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/screen.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/ui.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/modals.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/combate.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/arena.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/snake.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-25n">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-25n">
+  <link rel="stylesheet" href="css/base.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/screen.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/ui.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/modals.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/combate.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/arena.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/snake.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-25o">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-25o">
 
   <style>
     .auth-tab {
@@ -739,30 +739,37 @@
 
       <!-- ACTION BUTTONS (desktop) -->
       <div class="btns" id="actionBtns" style="opacity:0;pointer-events:none;transition:opacity .5s;">
-        <button class="btn-action" id="btnFeed" onclick="feedCreature()" title="Custo: 10 🪙">
+        <!-- A linha por baixo do nome (.btn-sub) é preenchida pelo JS, em
+             atualizarBotoesDeAccao(). Os custos estavam aqui à mão — "10 🪙",
+             "40 🪙", "-15 ⚡" — a duplicar as constantes do JS, e nada os
+             obrigava a concordar. E os botões nunca diziam quando a acção
+             não dava: ficavam todos iguais e só o clique explicava. -->
+        <button class="btn-action" id="btnFeed" onclick="feedCreature()">
           <span class="icon">🍖</span><span data-i18n="btn.feed">NUTRIR</span>
-          <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">10 🪙</span>
+          <span class="btn-sub" id="subFeed"></span>
         </button>
         <button class="btn-action" id="btnPlay" onclick="playCreature()">
           <span class="icon">🎮</span><span data-i18n="btn.play">JOGOS</span>
+          <span class="btn-sub" id="subPlay"></span>
         </button>
         <button class="btn-action" id="btnSleep" onclick="toggleSleep()">
           <span class="icon">💤</span>
           <span data-i18n="btn.sleep" id="sleepLabel">DORMIR</span>
+          <span class="btn-sub" id="subSleep"></span>
         </button>
-        <button class="btn-action" id="btnHeal" onclick="healCreature()" title="Custo: 40 🪙">
+        <button class="btn-action" id="btnHeal" onclick="healCreature()">
           <span class="icon">💊</span><span data-i18n="btn.heal">MEDICAR</span>
-          <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">40 🪙</span>
+          <span class="btn-sub" id="subHeal"></span>
         </button>
         <button class="btn-action" id="btnBath" onclick="cleanCreature()">
           <span class="icon">🛁</span><span data-i18n="btn.bath">BANHO</span>
-          <span style="font-size:6px;opacity:.6;display:block;margin-top:1px;">-15 ⚡</span>
+          <span class="btn-sub" id="subBath"></span>
         </button>
         <button class="btn-action" id="btnLayEgg" onclick="layEgg()" style="display:none;border-color:#c9a84c;color:#c9a84c;">
           <span class="icon">🥚</span><span data-i18n="btn.lay_egg">BOTAR OVO</span>
         </button>
         <button class="btn-action" id="btnAmigos" onclick="openAmigos()" style="position:relative;overflow:visible;">
-          <span class="icon">👥</span><span data-i18n="btn.friends"></span>
+          <span class="icon">👥</span><span data-i18n="btn.friends">AMIGOS</span>
           <span id="amigosBadge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;background:#e74c3c;border-radius:50%;font-size:8px;font-family:'Cinzel',serif;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;border:1.5px solid var(--bg);"></span>
         </button>
       </div>
@@ -958,23 +965,23 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-08-25n"></script>
-<script src="js/i18n-pvp.js?v=2026-08-25n"></script>
-<script src="js/i18n-bn.js?v=2026-08-25n"></script>
-<script src="js/i18n-minigames.js?v=2026-08-25n"></script>
-<script src="js/i18n-eggs.js?v=2026-08-25n"></script>
-<script src="js/i18n-gametick.js?v=2026-08-25n"></script>
-<script src="js/i18n-items.js?v=2026-08-25n"></script>
-<script src="js/i18n-market.js?v=2026-08-25n"></script>
-<script src="js/i18n-mina.js?v=2026-08-25n"></script>
-<script src="js/i18n-arcade.js?v=2026-08-25n"></script>
-<script src="js/i18n-session.js?v=2026-08-25n"></script>
-<script src="js/i18n-misc.js?v=2026-08-25n"></script>
-<script src="js/i18n-lore.js?v=2026-08-25n"></script>
-<script src="js/i18n-marketplace.js?v=2026-08-25n"></script>
-<script src="js/i18n-magias.js?v=2026-08-25n"></script>
-<script src="js/i18n-vantagens.js?v=2026-08-25n"></script>
-<script src="js/i18n-pve.js?v=2026-08-25n"></script>
+<script src="js/i18n.js?v=2026-08-25o"></script>
+<script src="js/i18n-pvp.js?v=2026-08-25o"></script>
+<script src="js/i18n-bn.js?v=2026-08-25o"></script>
+<script src="js/i18n-minigames.js?v=2026-08-25o"></script>
+<script src="js/i18n-eggs.js?v=2026-08-25o"></script>
+<script src="js/i18n-gametick.js?v=2026-08-25o"></script>
+<script src="js/i18n-items.js?v=2026-08-25o"></script>
+<script src="js/i18n-market.js?v=2026-08-25o"></script>
+<script src="js/i18n-mina.js?v=2026-08-25o"></script>
+<script src="js/i18n-arcade.js?v=2026-08-25o"></script>
+<script src="js/i18n-session.js?v=2026-08-25o"></script>
+<script src="js/i18n-misc.js?v=2026-08-25o"></script>
+<script src="js/i18n-lore.js?v=2026-08-25o"></script>
+<script src="js/i18n-marketplace.js?v=2026-08-25o"></script>
+<script src="js/i18n-magias.js?v=2026-08-25o"></script>
+<script src="js/i18n-vantagens.js?v=2026-08-25o"></script>
+<script src="js/i18n-pve.js?v=2026-08-25o"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -983,51 +990,51 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-08-25n"></script>
-<script src="js/data.js?v=2026-08-25n"></script>
-<script src="js/state.js?v=2026-08-25n"></script>
-<script src="js/vantagens.js?v=2026-08-25n"></script>
-<script src="js/ficha-3dt.js?v=2026-08-25n"></script>
-<script src="js/magias.js?v=2026-08-25n"></script>
-<script src="js/combate-3dt.js?v=2026-08-25n"></script>
-<script src="js/equipa.js?v=2026-08-25n"></script>
-<script src="js/combate-ui.js?v=2026-08-25n"></script>
-<script src="js/combate-pve.js?v=2026-08-25n"></script>
-<script src="js/ui.js?v=2026-08-25n"></script>
-<script src="js/modal.js?v=2026-08-25n"></script>
-<script src="js/firebase.js?v=2026-08-25n"></script>
-<script src="js/gametick.js?v=2026-08-25n"></script>
-<script src="js/actions.js?v=2026-08-25n"></script>
-<script src="js/minigames.js?v=2026-08-25n"></script>
-<script src="js/summon.js?v=2026-08-25n"></script>
-<script src="js/eggs.js?v=2026-08-25n"></script>
-<script src="js/items.js?v=2026-08-25n"></script>
-<script src="js/market.js?v=2026-08-25n"></script>
-<script src="js/coinshop.js?v=2026-08-25n"></script>
-<script src="js/cards.js?v=2026-08-25n"></script>
-<script src="js/rouba-monte.js?v=2026-08-25n"></script>
-<script src="js/mina.js?v=2026-08-25n"></script>
-<script src="js/batalha-naval.js?v=2026-08-25n"></script>
-<script src="js/snake.js?v=2026-08-25n"></script>
-<script src="js/labirinto.js?v=2026-08-25n"></script>
-<script src="js/cambio.js?v=2026-08-25n"></script>
-<script src="js/arena.js?v=2026-08-25n"></script>
-<script src="js/lore.js?v=2026-08-25n"></script>
-<script src="js/lore-caps/cap1.js?v=2026-08-25n"></script>
-<script src="js/lore-caps/cap2.js?v=2026-08-25n"></script>
-<script src="js/lore-caps/cap3.js?v=2026-08-25n"></script>
-<script src="js/lore-caps/cap4.js?v=2026-08-25n"></script>
-<script src="js/amigos.js?v=2026-08-25n"></script>
-<script src="js/auth.js?v=2026-08-25n"></script>
+<script src="js/audio.js?v=2026-08-25o"></script>
+<script src="js/data.js?v=2026-08-25o"></script>
+<script src="js/state.js?v=2026-08-25o"></script>
+<script src="js/vantagens.js?v=2026-08-25o"></script>
+<script src="js/ficha-3dt.js?v=2026-08-25o"></script>
+<script src="js/magias.js?v=2026-08-25o"></script>
+<script src="js/combate-3dt.js?v=2026-08-25o"></script>
+<script src="js/equipa.js?v=2026-08-25o"></script>
+<script src="js/combate-ui.js?v=2026-08-25o"></script>
+<script src="js/combate-pve.js?v=2026-08-25o"></script>
+<script src="js/ui.js?v=2026-08-25o"></script>
+<script src="js/modal.js?v=2026-08-25o"></script>
+<script src="js/firebase.js?v=2026-08-25o"></script>
+<script src="js/gametick.js?v=2026-08-25o"></script>
+<script src="js/actions.js?v=2026-08-25o"></script>
+<script src="js/minigames.js?v=2026-08-25o"></script>
+<script src="js/summon.js?v=2026-08-25o"></script>
+<script src="js/eggs.js?v=2026-08-25o"></script>
+<script src="js/items.js?v=2026-08-25o"></script>
+<script src="js/market.js?v=2026-08-25o"></script>
+<script src="js/coinshop.js?v=2026-08-25o"></script>
+<script src="js/cards.js?v=2026-08-25o"></script>
+<script src="js/rouba-monte.js?v=2026-08-25o"></script>
+<script src="js/mina.js?v=2026-08-25o"></script>
+<script src="js/batalha-naval.js?v=2026-08-25o"></script>
+<script src="js/snake.js?v=2026-08-25o"></script>
+<script src="js/labirinto.js?v=2026-08-25o"></script>
+<script src="js/cambio.js?v=2026-08-25o"></script>
+<script src="js/arena.js?v=2026-08-25o"></script>
+<script src="js/lore.js?v=2026-08-25o"></script>
+<script src="js/lore-caps/cap1.js?v=2026-08-25o"></script>
+<script src="js/lore-caps/cap2.js?v=2026-08-25o"></script>
+<script src="js/lore-caps/cap3.js?v=2026-08-25o"></script>
+<script src="js/lore-caps/cap4.js?v=2026-08-25o"></script>
+<script src="js/amigos.js?v=2026-08-25o"></script>
+<script src="js/auth.js?v=2026-08-25o"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-08-25n"></script>
-<script src="js/cristais.js?v=2026-08-25n"></script>
-<script src="js/avatars-market.js?v=2026-08-25n"></script>
-<script src="js/eggs-market.js?v=2026-08-25n"></script>
-<script src="js/marketplace-core.js?v=2026-08-25n"></script>
+<script src="js/pool.js?v=2026-08-25o"></script>
+<script src="js/cristais.js?v=2026-08-25o"></script>
+<script src="js/avatars-market.js?v=2026-08-25o"></script>
+<script src="js/eggs-market.js?v=2026-08-25o"></script>
+<script src="js/marketplace-core.js?v=2026-08-25o"></script>
 
-<script src="js/main.js?v=2026-08-25n"></script>
+<script src="js/main.js?v=2026-08-25o"></script>
 
 
 <script>

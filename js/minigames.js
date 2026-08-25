@@ -295,11 +295,27 @@ function wakeUp(reason) {
 
 function healCreature() {
   if(!canAct()) return;
-  if(!sick && vitals.saude >= 100 && activeDiseases.length === 0){ showBubble(t('mg.heal.bub.healthy')); return; }
-  if(activeDiseases.length > 0) {
-    addLog(t('mg.heal.log.diseases', {n: activeDiseases.length}), 'bad');
+  const temDoencas = activeDiseases.length > 0;
+  const saudeCheia = vitals.saude >= 100;
+  if(!sick && saudeCheia && !temDoencas){ showBubble(t('mg.heal.bub.healthy')); return; }
+  // Com a saúde no tecto não há nada a repor, e o Medicar nunca curou
+  // doenças — cobrava os 40 na mesma e escrevia "+40 saúde" no registo.
+  // Agora recusa e manda ao sítio certo.
+  if(saudeCheia && !sick && temDoencas) {
+    showBubble(t('mg.heal.bub.only_antidote'));
+    addLog(t('mg.heal.log.diseases', {
+      n: activeDiseases.length,
+      preco: precoItem(ITEM_CATALOG['antidoto_dimensional'])
+    }), 'bad');
+    return;
   }
-  const COST = 40;
+  if(temDoencas) {
+    addLog(t('mg.heal.log.diseases', {
+      n: activeDiseases.length,
+      preco: precoItem(ITEM_CATALOG['antidoto_dimensional'])
+    }), 'bad');
+  }
+  const COST = CUSTO_MEDICAR;
   if(gs.moedas < COST) { showBubble(t('mg.heal.bub.no_coins')); addLog(t('mg.heal.log.no_coins', {cost: COST}), 'bad'); return; }
   if(!spendCoins(COST)) return;
   vitals.saude = Math.min(100, vitals.saude + 40);

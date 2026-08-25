@@ -18,6 +18,16 @@
 .btn-action .icon { font-size:17px; z-index:1; }
 .btn-action span { z-index:1; pointer-events:none; }
 .btn-action.disabled { opacity:.3; cursor:not-allowed; pointer-events:none; }
+/* A linha de baixo: custo, ou a razão de estar apagado. */
+.btn-action .btn-sub { font-size:6px; opacity:.6; display:block; margin-top:1px; }
+/* Indisponível mas CLICÁVEL: o balão do bicho é metade da graça, e
+   cortar o clique cortava-o. O que muda é já não ser preciso clicar
+   para saber. */
+.btn-action.indisponivel { opacity:.45; }
+.btn-action.indisponivel:hover { transform:none; box-shadow:none; border-color:var(--border); color:var(--muted); }
+/* Falta o que a acção pede — moedas ou energia. O número em vermelho é
+   a diferença entre "não preciso" e "não posso". */
+.btn-action.em-falta .btn-sub { color:#e05555; opacity:.95; }
 .btn-action.active-sleep   { border-color:var(--raro); color:var(--raro); }
 .btn-action.active-amigos  { border-color:#5ab4e8; color:#5ab4e8; }
 #btnAmigos { overflow:visible; }

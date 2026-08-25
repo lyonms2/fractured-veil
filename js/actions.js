@@ -63,7 +63,7 @@ function earnCoins(amount) {
 function feedCreature() {
   if(!canAct()) return;
   if(vitals.fome >= 100){ showBubble(t('bubble.satisfied')); return; }
-  const COST = 10;
+  const COST = CUSTO_NUTRIR;
   if(gs.moedas < COST) { playSound('no_coins'); showBubble(t('bubble.no_coins')); addLog(t('log.feed_no_coins', { cost: COST }),'bad'); return; }
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);

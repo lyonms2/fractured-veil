@@ -33,6 +33,17 @@ let diseaseStress  = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, frat
 let activeDiseases = []; // array de ids das doenças activas
 
 // ═══════════════════════════════════════════════════════════════════
+// O QUE CADA ACÇÃO CUSTA
+//
+// Estavam como `const COST = 10` dentro de cada função e outra vez à mão
+// no HTML dos botões ("10 🪙", "40 🪙", "-15 ⚡"). Três cópias do mesmo
+// número, e nada a obrigá-las a concordar — mudar o JS deixava o botão a
+// mentir. Agora saem daqui, e o botão lê-as.
+const CUSTO_NUTRIR   = 10;   // moedas
+const CUSTO_MEDICAR  = 40;   // moedas
+const BANHO_ENERGIA  = 15;   // energia
+
+// ═══════════════════════════════════════════════════════════════════
 let itemInventory   = [];
 const MAX_EQUIPPED  = 3;
 const ITEM_CATALOG = {
