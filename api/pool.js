@@ -16,9 +16,12 @@ const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const { POOL_LIMITE_DIA, saqueDeHoje,
+        marcarSaque }                  = require('./_pool-economia.js');
 
 const POOL_ALVO       = 1000;
-const POOL_LIMITE_DIA = 100;
+// POOL_LIMITE_DIA e saqueDeHoje vêm do _pool-economia.js, para o câmbio
+// (em outro arquivo) poder usar exatamente a mesma regra.
 const EGG_LIST_FEE    = { 'Raro': 25, 'Lendário': 50 };
 const PRICE_MIN       = 1;
 const PRICE_MAX       = 10000;
@@ -330,8 +333,7 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
 
       // Validar pool
       if ((poolData.cristais || 0) <= 0) throw new Error('Pool vazia de momento.');
-      const saqueHoje = poolData.saqueHoje || 0;
-      if (saqueHoje >= POOL_LIMITE_DIA)   throw new Error('Limite diário global da pool atingido.');
+      if (saqueDeHoje(poolData) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
 
       // Validar ovo no inventário
       // Campo correto no Firebase é activeSlotIdx (não activeSlot)
@@ -371,11 +373,10 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
         cristais:      novosCristais,
         poolVendasLog: { semana, count: countSemana + 1 },
       });
-      tx.update(poolRef, {
+      tx.update(poolRef, Object.assign({
         cristais:  FieldValue.increment(-preco),
-        saqueHoje: FieldValue.increment(preco),
         totalSaiu: FieldValue.increment(preco),
-      });
+      }, marcarSaque(poolData, preco, FieldValue)));
       const logRef = poolRef.collection('logs').doc();
       tx.set(logRef, {
         tipo: 'saida', motivo: `Ovo ${raridade} vendido à pool`,
@@ -456,7 +457,7 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
       if (!finalGems) throw new Error('Esta raridade não pode ser queimada por cristais.');
 
       if ((poolData.cristais || 0) < finalGems) throw new Error('Pool sem saldo suficiente.');
-      if ((poolData.saqueHoje || 0) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
+      if (saqueDeHoje(poolData) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
 
       const newEggs  = [...eggs];
       newEggs.splice(ovoIdx, 1);
@@ -471,11 +472,10 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
         'gs.cristais': novosCristais,
         cristais:      novosCristais,
       });
-      tx.update(poolRef, {
+      tx.update(poolRef, Object.assign({
         cristais:  FieldValue.increment(-finalGems),
-        saqueHoje: FieldValue.increment(finalGems),
         totalSaiu: FieldValue.increment(finalGems),
-      });
+      }, marcarSaque(poolData, finalGems, FieldValue)));
       const logRef = poolRef.collection('logs').doc();
       tx.set(logRef, {
         tipo: 'saida', motivo: `Queima de ovo ${raridade}`,

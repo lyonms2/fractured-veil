@@ -9,6 +9,8 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const { POOL_LIMITE_DIA, saqueDeHoje,
+        marcarSaque }                  = require('./_pool-economia.js');
 
 const CAMBIO_POOL_MIN  = 100;
 const CAMBIO_NIVEL_MIN = 20;
@@ -48,7 +50,7 @@ module.exports = async function handler(req, res) {
   const qtd = parseInt(quantidade, 10);
 
   if (!idToken || typeof idToken !== 'string') {
-    return res.status(400).json({ erro: 'idToken em falta' });
+    return res.status(400).json({ erro: 'idToken ausente' });
   }
   if (!qtd || qtd < 1 || qtd > 4) {
     return res.status(400).json({ erro: 'Quantidade inválida (1 a 4)' });
@@ -78,22 +80,32 @@ module.exports = async function handler(req, res) {
     }
 
     const data      = playerSnap.data();
-    const poolSaldo = poolSnap.exists ? (poolSnap.data()?.cristais || 0) : 0;
+    const poolData  = poolSnap.exists ? poolSnap.data() : {};
+    const poolSaldo = poolData.cristais || 0;
 
     // ── Validar pool ──
     if (poolSaldo < CAMBIO_POOL_MIN) {
-      return res.status(400).json({ erro: 'Pool insuficiente. Tenta mais tarde.' });
+      return res.status(400).json({ erro: 'Pool insuficiente. Tente mais tarde.' });
+    }
+
+    // ── Teto diário global ──
+    // O limite de 1/2/4 é por conta e não trava nada quando são muitas
+    // cambiando no mesmo dia: com a pool em 1000, 225 contas Lendárias
+    // esvaziavam ela até o piso num só dia. Agora o câmbio divide o
+    // mesmo teto que vender e queimar ovos já dividiam.
+    if (saqueDeHoje(poolData) >= POOL_LIMITE_DIA) {
+      return res.status(400).json({ erro: 'Limite diário global da pool atingido. Tente amanhã.' });
     }
     const custo = calcTaxa(poolSaldo);
     if (!custo) {
-      return res.status(400).json({ erro: 'Pool insuficiente. Tenta mais tarde.' });
+      return res.status(400).json({ erro: 'Pool insuficiente. Tente mais tarde.' });
     }
 
     // ── Validar avatar ──
     const activeSlotIdx = data.gs?.activeSlot ?? data.activeSlot ?? 0;
     const slot = (data.avatarSlots || [])[activeSlotIdx];
     if (!slot || !slot.hatched || slot.dead) {
-      return res.status(400).json({ erro: 'Sem avatar activo.' });
+      return res.status(400).json({ erro: 'Sem avatar ativo.' });
     }
     if ((slot.nivel || 1) < CAMBIO_NIVEL_MIN) {
       return res.status(400).json({ erro: `Avatar precisa de nível ${CAMBIO_NIVEL_MIN}+.` });
@@ -108,7 +120,7 @@ module.exports = async function handler(req, res) {
     const restante     = limite - usadoHoje;
 
     if (restante <= 0) {
-      return res.status(400).json({ erro: 'Limite diário de câmbio atingido. Volta amanhã.' });
+      return res.status(400).json({ erro: 'Limite diário de câmbio atingido. Volte amanhã.' });
     }
 
     const qtdFinal   = Math.min(qtd, restante);
@@ -117,7 +129,7 @@ module.exports = async function handler(req, res) {
     // ── Rate limit: mínimo 5 s entre câmbios ──
     const ultimoCambio = data.ultimoCambio || 0;
     if (Date.now() - ultimoCambio < 5000) {
-      return res.status(429).json({ erro: 'Aguarda uns segundos antes de tentar novamente.' });
+      return res.status(429).json({ erro: 'Aguarde alguns segundos antes de tentar novamente.' });
     }
 
     // ── Validar saldo de moedas ──
@@ -140,10 +152,10 @@ module.exports = async function handler(req, res) {
         ultimoCambio: Date.now(),
       });
 
-      tx.update(poolRef, {
+      tx.update(poolRef, Object.assign({
         cristais:  FieldValue.increment(-qtdFinal),
         totalSaiu: FieldValue.increment(qtdFinal),
-      });
+      }, marcarSaque(poolData, qtdFinal, FieldValue)));
 
       const logRef = poolRef.collection('logs').doc();
       tx.set(logRef, {
