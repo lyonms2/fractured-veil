@@ -206,6 +206,24 @@
 
 /* ── POOL ── */
 .pool-stats-card{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:20px;}
+
+/* ── A COBERTURA DO COFRE ──
+   Segue a linguagem do cartão da pool acima, mas com o número grande a
+   mudar de cor: verde acima de 100%, dourado a partir de 90, vermelho
+   abaixo — é a única leitura que interessa de relance. */
+.pool-cob-card{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:20px;}
+.pool-cob-title{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.pool-cob-pct{font-family:'Cinzel',serif;font-size:32px;font-weight:700;text-align:center;margin-bottom:4px;}
+.pool-cob-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.5;}
+.pool-cob-linhas{display:flex;flex-direction:column;gap:8px;}
+.pool-cob-linha{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:9px;color:var(--muted);padding-bottom:7px;border-bottom:1px solid var(--border);}
+.pool-cob-linha:last-child{border-bottom:none;padding-bottom:0;}
+.pool-cob-linha b{color:var(--text);font-size:10px;}
+.pool-cob-alerta{margin-top:14px;padding:9px 11px;border-radius:8px;font-size:9px;line-height:1.6;
+  background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.3);color:var(--red2);}
+.pool-cob-nota{margin-top:12px;font-size:8px;line-height:1.6;color:var(--muted);opacity:.75;}
+.pool-cob-indisp{font-size:9px;color:var(--muted);text-align:center;padding:12px 0;}
 .pool-sc-title{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
 .pool-sc-balance{font-family:'Cinzel',serif;font-size:32px;font-weight:700;color:var(--gem2);text-align:center;margin-bottom:4px;text-shadow:0 0 20px rgba(167,139,250,.4);}
 .pool-sc-balance-sub{font-size:9px;color:var(--muted);text-align:center;margin-bottom:16px;}

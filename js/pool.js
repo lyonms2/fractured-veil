@@ -41,9 +41,9 @@ function poolDisponivel() {
 // ═══════════════════════════════════════════
 // CARREGAR POOL DO FIRESTORE
 // ═══════════════════════════════════════════
-async function loadPool() {
+async function loadPool(comCobertura) {
   try {
-    const resp = await fetch('/api/pool');
+    const resp = await fetch('/api/pool' + (comCobertura ? '?cobertura=1' : ''));
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
     if (!json.ok) throw new Error(json.erro || 'erro');
@@ -53,6 +53,8 @@ async function loadPool() {
       totalEntrou: json.totalEntrou,
       totalSaiu:   json.totalSaiu,
       ultimoReset: json.ultimoReset,
+      // Só vem quando pedida — a conta percorre todos os jogadores.
+      cobertura:   json.cobertura || poolData?.cobertura || null,
     };
     renderPoolWidget();
   } catch(e) { console.warn('loadPool error:', e); }
@@ -93,10 +95,67 @@ function renderPoolWidget() {
 // SECÇÃO POOL — aba dedicada
 // ═══════════════════════════════════════════
 async function renderPoolSection() {
-  await loadPool();
+  await loadPool(true);
   renderPoolStatsCard();
+  renderCoberturaCard();
   renderTranspDistribuicao();
   await loadPoolLogs(true);
+}
+
+// ═══════════════════════════════════════════
+// A COBERTURA
+//
+// O único número que responde "o jogo consegue pagar toda a gente?".
+// A página mostrava os cristais da pool e o link do contrato, e nunca a
+// razão entre os dois — que é o que faz dela transparência a sério.
+//
+// O MATIC vem da blockchain; os cristais, da soma de todos os jogadores
+// mais os que a pool guarda. Como as duas taxas batem certo (10 💎 por
+// MATIC nas duas direcções), 100% é o ponto de equilíbrio.
+// ═══════════════════════════════════════════
+function renderCoberturaCard() {
+  const el = document.getElementById('poolCoberturaCard');
+  if(!el) return;
+  const c = poolData?.cobertura;
+
+  if(!c) {
+    el.innerHTML = `<div class="pool-cob-card">
+      <div class="pool-cob-title">${t('mkt.cob.title')}</div>
+      <div class="pool-cob-indisp">${t('mkt.cob.indisponivel')}</div>
+    </div>`;
+    return;
+  }
+
+  // Sem ligação à blockchain mostra-se o que se sabe, e diz-se o que falta.
+  const semCofre = (c.cofre === null || c.cofre === undefined);
+  const pct      = semCofre ? null : c.pct;
+  const cor      = semCofre        ? 'var(--muted)'
+                 : pct >= 100      ? 'var(--green)'
+                 : pct >= 90       ? 'var(--gold)'
+                 : 'var(--red2)';
+
+  el.innerHTML = `
+  <div class="pool-cob-card">
+    <div class="pool-cob-title">${t('mkt.cob.title')}</div>
+    <div class="pool-cob-pct" style="color:${cor};">
+      ${semCofre ? '—' : pct + '%'}
+    </div>
+    <div class="pool-cob-sub">${semCofre ? t('mkt.cob.sem_cofre') : t('mkt.cob.sub')}</div>
+    <div class="pool-cob-linhas">
+      <div class="pool-cob-linha">
+        <span>${t('mkt.cob.circulacao')}</span><b>${fmtC(c.circulacao)} 💎</b>
+      </div>
+      <div class="pool-cob-linha">
+        <span>${t('mkt.cob.necessario')}</span><b>${fmtC(c.necessario)} MATIC</b>
+      </div>
+      <div class="pool-cob-linha">
+        <span>${t('mkt.cob.cofre')}</span><b>${semCofre ? '—' : fmtC(c.cofre) + ' MATIC'}</b>
+      </div>
+    </div>
+    ${!semCofre && pct < 100
+      ? `<div class="pool-cob-alerta">${t('mkt.cob.alerta')}</div>` : ''}
+    <div class="pool-cob-nota">${t('mkt.cob.nota', {n: c.jogadores})}</div>
+  </div>`;
 }
 
 function renderPoolStatsCard() {

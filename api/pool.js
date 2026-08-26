@@ -3,6 +3,7 @@
 //
 //  GET  /api/pool              → dados da pool
 //  GET  /api/pool?logs=1       → histórico de transacções
+//  GET  /api/pool?cobertura=1  → o cofre chega para os cristais que existem
 //  POST /api/pool { acao, idToken, ... }
 //    acao='taxa'        → entrada na pool (taxa de listagem/venda)
 //    acao='listar-ovo'  → lista ovo no eggMarket (atómico, server-side)
@@ -11,6 +12,7 @@
 //    acao='botar-ovo'   → avatar bota ovo (relógio do servidor)
 // ═══════════════════════════════════════════════════════════════
 
+const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
@@ -41,6 +43,76 @@ function semanaAtual() {
   const ini = new Date(now.getFullYear(), 0, 1);
   const sem = Math.ceil(((now - ini) / 86400000 + ini.getDay() + 1) / 7);
   return `${now.getFullYear()}-W${String(sem).padStart(2, '0')}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COBERTURA — o cofre chega para os cristais que existem?
+//
+// A pool nunca CRIA cristais: o cambio tira-lhe exactamente o que da ao
+// jogador, o PvP paga com as apostas dos dois, e os convites saem do que
+// se saca. A unica emissao e a compra em MATIC, e as duas taxas batem
+// certo (10 💎 por MATIC a comprar, 10 por MATIC a resgatar), portanto a
+// cobertura e 1:1 por construcao.
+//
+// Mas ninguem estava a CONFIRMAR isso. Este numero e o unico que responde
+// "o jogo consegue pagar toda a gente?" — e faltava na propria pagina de
+// transparencia, que mostrava os cristais da pool e o link do contrato
+// sem nunca dizer a razao entre os dois.
+//
+// Somar todos os jogadores e caro, entao guarda-se o resultado por
+// COBERTURA_CACHE_MS. Quem abre a pagina le o valor guardado.
+const RATE_GEMS_POR_MATIC = 10;   // igual ao RATE do api/resgatar.js
+const COBERTURA_CACHE_MS  = 10 * 60 * 1000;
+const POLYGON_RPCS_POOL = [
+  'https://polygon-bor-rpc.publicnode.com',
+  'https://polygon.drpc.org',
+  'https://polygon.meowrpc.com',
+  'https://polygon.llamarpc.com',
+];
+
+async function _saldoDoCofre() {
+  const endereco = process.env.CONTRACT_ADDRESS;
+  if (!endereco || endereco === 'PENDENTE_DEPLOY') return null;
+  for (const rpc of POLYGON_RPCS_POOL) {
+    try {
+      const provider = new ethers.JsonRpcProvider(rpc);
+      const wei = await provider.getBalance(endereco);
+      return parseFloat(ethers.formatEther(wei));
+    } catch (_) { /* proximo RPC */ }
+  }
+  return null;   // blockchain fora de alcance
+}
+
+async function _calcularCobertura(db, poolRef, poolData) {
+  const guardado = poolData.cobertura;
+  if (guardado && (Date.now() - (guardado.ts || 0)) < COBERTURA_CACHE_MS) {
+    return { ...guardado, cache: true };
+  }
+
+  // Cristais em maos de jogadores + os que a pool guarda
+  let emJogadores = 0;
+  const snap = await db.collection('players').select('gs', 'cristais').get();
+  snap.forEach(doc => {
+    const d = doc.data() || {};
+    emJogadores += (d.gs?.cristais ?? d.cristais ?? 0);
+  });
+
+  const naPool      = poolData.cristais || 0;
+  const circulacao  = emJogadores + naPool;
+  const necessario  = circulacao / RATE_GEMS_POR_MATIC;
+  const cofre       = await _saldoDoCofre();
+  const pct         = (cofre === null) ? null
+                    : (necessario <= 0 ? 100 : Math.round((cofre / necessario) * 1000) / 10);
+
+  const resultado = {
+    emJogadores, naPool, circulacao,
+    necessario: Math.round(necessario * 10000) / 10000,
+    cofre, pct, jogadores: snap.size, ts: Date.now(),
+  };
+  // Guardar sem bloquear a resposta
+  poolRef.set({ cobertura: resultado }, { merge: true })
+         .catch(err => console.warn('[cobertura] não guardou:', err.message));
+  return { ...resultado, cache: false };
 }
 
 // ── Handler principal ───────────────────────────────────────────
@@ -91,6 +163,12 @@ module.exports = async function handler(req, res) {
         });
       }
 
+      let cobertura = null;
+      if (req.query?.cobertura === '1') {
+        try { cobertura = await _calcularCobertura(db, poolRef, poolData); }
+        catch (err) { console.warn('[cobertura]', err.message); }
+      }
+
       return res.status(200).json({
         ok: true,
         cristais:    poolData.cristais    || 0,
@@ -98,6 +176,7 @@ module.exports = async function handler(req, res) {
         totalEntrou: poolData.totalEntrou || 0,
         totalSaiu:   poolData.totalSaiu   || 0,
         ultimoReset: poolData.ultimoReset || 0,
+        cobertura,
       });
     } catch (err) {
       console.error('[pool GET]', err);
