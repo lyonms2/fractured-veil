@@ -235,14 +235,12 @@ function renderTranspDistribuicao() {
   if(!poolData) return;
   const saldo = poolData.cristais || 0;
   const pct   = parseFloat(_calcPctDisplay(saldo));
-  const total = pct * 4; // 3 jogos + dev
-  const retencao = Math.max(0, 100 - total).toFixed(1);
+  // Era pct * 4 — os três jogos PvP mais o dev. O ranking semanal saiu
+  // com os jogos, e agora só a manutenção tira da pool toda a semana.
+  const retencao = Math.max(0, 100 - pct).toFixed(1);
 
   const fmt = v => t('mkt.transp.pct_of_pool', { pct: v.toFixed(1) });
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-  set('transPctArena',    fmt(pct));
-  set('transPctRM',       fmt(pct));
-  set('transPctBN',       fmt(pct));
   set('transPctDev',      fmt(pct));
   set('transPctRetencao', t('mkt.transp.retained', { pct: retencao }));
   set('transPriceRaro',   t('mkt.transp.price_display', { price: fmtC(calcPoolPrice('Raro')),    max: fmtC(POOL_BASE_RARO * 2) }));

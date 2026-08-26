@@ -1,8 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════
 // _pool-economia.js — Lógica partilhada de distribuição da pool
 //
-// Lido por: arena-reset-ranking, rouba-monte-reset-ranking,
-//           batalha-naval-reset-ranking, pool-dev-payout
+// Lido por: pool-dev-payout (o único, desde que o ranking semanal saiu)
+//
+// Citava três ficheiros de reset por jogo que nunca existiram — tinham
+// sido unificados num pvp-reset-ranking.js, e esse saiu com os três
+// jogos PvP. Hoje só a manutenção tira da pool toda a semana.
+//
+// O jogosAtivos deixou de dividir o bolo por vários jogos e passa a
+// servir só de divisor da fatia do dev: com 3, ele leva 15% da pool
+// cheia; se um dia voltar a haver jogos a receber, é este número que
+// os põe todos dentro do tecto do pctMaxTotal.
 //
 // Configuração dinâmica em Firestore: config/economia
 //   jogosAtivos  : número de jogos PvP activos (default 3)
