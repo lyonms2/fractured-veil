@@ -934,7 +934,10 @@
 
 .prologo-rodape { flex-shrink:0; text-align:center; padding-top:0.125rem; }
 .prologo-btn {
-  width:100%; padding:0.75rem 0.625rem; cursor:pointer;
+  /* Era width:100%, e um botão da largura da coluna de texto ficava
+     pesado ao fundo de uma página de leitura. Agora acompanha o rótulo,
+     com um mínimo para não encolher demais. */
+  min-width:11rem; padding:0.75rem 1.75rem; cursor:pointer;
   font-family:'Cinzel',serif; font-size:0.5625rem; letter-spacing:0.125rem;
   color:var(--gold); border-radius:0.5rem;
   border:1px solid rgba(212,175,55,.45);
@@ -946,6 +949,18 @@
   box-shadow:0 0 1.125rem rgba(212,175,55,.22);
 }
 .prologo-btn:active { transform:translateY(0.0625rem); }
+
+/* A saída em dois tempos: primeiro o texto e o botão, depois o fundo
+   preto — e por baixo dele o ovo já está montado. Ver o comentário do
+   prologoEstenderMao(). */
+#prologoModal.prologo-saindo .prologo-caixa {
+  opacity:0; pointer-events:none;
+  transition:opacity .35s ease;
+}
+#prologoModal.prologo-saindo-fundo {
+  opacity:0; pointer-events:none;
+  transition:opacity .5s ease;
+}
 
 @media (max-width:420px) {
   .prologo-texto { font-size:0.53125rem; line-height:1.95; }

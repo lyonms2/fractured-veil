@@ -103,12 +103,33 @@ function _prologoMostrarFim() {
 }
 
 // ── Estender a mão = invocar ─────────────────────────────────────
+//
+// A ordem aqui é tudo. Antes o prólogo fechava primeiro e a invocação
+// vinha 420ms depois: nesse intervalo aparecia a tela de "invocar
+// avatar grátis", e o jogador via o jogo por um instante antes do ovo.
+// A piscada que tirava a imersão.
+//
+// Agora a invocação arranca com o prólogo ainda por cima. O overlay do
+// ovo tem z-index 100 e o prólogo 600, portanto monta-se por baixo sem
+// se ver. Quando o fundo dele já está opaco — leva 50ms a arrancar e
+// 600ms a fechar — é que o prólogo se desvanece. Como os dois fundos
+// são pretos, a passagem não tem costura: o texto some, fica preto, e
+// o ovo já lá está.
 function prologoEstenderMao() {
   _prologoMarcarVisto();
-  fecharPrologo();
-  // Um respiro entre fechar o prólogo e a invocação, para o gesto ser
-  // lido como consequência da história e não como outra tela a saltar.
-  setTimeout(() => { if (typeof triggerSummon === 'function') triggerSummon(); }, 420);
+
+  const modal = document.getElementById('prologoModal');
+  // O conteúdo sai já, para o clique ter resposta imediata.
+  if (modal) modal.classList.add('prologo-saindo');
+
+  if (typeof triggerSummon === 'function') triggerSummon();
+
+  // O fundo só depois de o ovo estar desenhado por baixo.
+  setTimeout(() => { if (modal) modal.classList.add('prologo-saindo-fundo'); }, 750);
+  setTimeout(() => {
+    if (modal) modal.classList.remove('prologo-saindo', 'prologo-saindo-fundo');
+    fecharPrologo();
+  }, 1300);
 }
 
 function fecharPrologo() {

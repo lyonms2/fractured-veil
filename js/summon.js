@@ -184,6 +184,14 @@ function triggerSummon() {
   }
 
   ov.classList.add('active');
+  // O overlay cobre tudo mas o jogo continua montado por baixo, e sem
+  // isto aparecia barra de rolagem a meio da invocação — e ainda um
+  // salto quando o prólogo destravasse a dele. A contagem de
+  // referências do lockBodyScroll trata da sobreposição dos dois.
+  if (typeof lockBodyScroll === 'function' && !window._summonTravou) {
+    window._summonTravou = true;
+    lockBodyScroll();
+  }
   setTimeout(() => { ovBg.style.opacity = '1'; }, 50);
 
   setTimeout(() => {
@@ -241,6 +249,10 @@ function triggerSummon() {
     ov.classList.remove('active');
     ovParts.innerHTML = '';
     btn.disabled = false;
+    if (window._summonTravou && typeof unlockBodyScroll === 'function') {
+      window._summonTravou = false;
+      unlockBodyScroll();
+    }
 
     // Mostra o eggScreen brevemente e inicia a animação de chocagem
     // hatchWithAnimation() vai chamar hatch() no final (~1.2s depois)
