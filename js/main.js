@@ -113,6 +113,26 @@ let _lastHidden = 0;
 document.addEventListener('visibilitychange', async () => {
   if(document.visibilityState === 'hidden') {
     _lastHidden = Date.now();
+
+    // ── Descarrega a gravação pendente antes que seja tarde ──
+    // O scheduleSave espera 5 segundos, e nesses 5 segundos o progresso
+    // existe só na memória: este projeto não liga a persistência local do
+    // Firestore, então uma escrita que não sai morre junto com a aba, sem
+    // nova tentativa no próximo carregamento. Quem termina um minijogo, lê
+    // o "+20 XP +32 moedas" e fecha a aba perde o prêmio — cinco segundos
+    // é tempo de sobra para isso acontecer.
+    //
+    // O 'hidden' é o último momento garantido: dispara ao fechar a aba, ao
+    // trocar de aba, ao minimizar e ao sair do app no celular. O
+    // beforeunload não dispara de forma confiável no celular, e por isso
+    // não serve aqui.
+    //
+    // Mesmo padrão do killCreature, que já fazia isto para a morte.
+    if(_saveTimeout) {
+      clearTimeout(_saveTimeout);
+      _saveTimeout = null;
+      saveToFirebase();
+    }
     return;
   }
 
