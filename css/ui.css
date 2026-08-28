@@ -910,19 +910,15 @@
   box-sizing:border-box;
 }
 .prologo-topo {
-  display:flex; align-items:center; justify-content:space-between;
+  /* Era space-between por causa do botão de pular, que já não existe.
+     Com o título sozinho, centrado lê-se como cartela de abertura. */
+  display:flex; align-items:center; justify-content:center;
   flex-shrink:0;
 }
 .prologo-titulo {
   font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px;
   color:var(--gold); opacity:.75;
 }
-.prologo-pular {
-  background:none; border:none; cursor:pointer; padding:4px 6px;
-  font-size:7px; letter-spacing:1px; color:var(--muted); opacity:.6;
-  transition:opacity .2s, color .2s;
-}
-.prologo-pular:hover { opacity:1; color:var(--text); }
 
 .prologo-texto {
   flex:1; min-height:0; overflow-y:auto;

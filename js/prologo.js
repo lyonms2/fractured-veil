@@ -57,6 +57,12 @@ function abrirPrologo(releitura) {
   _prologoModoLeitura = !!releitura;
   modal.style.display = 'flex';
 
+  // O ? do manual é fixed com z-index 999 — passava por cima do prólogo
+  // e ficava a pairar no canto durante a história. Sai de cena enquanto
+  // ela dura, e volta ao fechar.
+  const ajuda = document.getElementById('gameHelpBtn');
+  if (ajuda) ajuda.style.display = 'none';
+
   const corpo = document.getElementById('prologoTexto');
   const rodape = document.getElementById('prologoRodape');
   if (!corpo || !rodape) return;
@@ -94,15 +100,10 @@ function prologoEstenderMao() {
   setTimeout(() => { if (typeof triggerSummon === 'function') triggerSummon(); }, 420);
 }
 
-// ── Saltar ───────────────────────────────────────────────────────
-// Quem salta não fica sem a história: ela passa a estar no arquivo.
-function pularPrologo() {
-  _prologoMarcarVisto();
-  fecharPrologo();
-}
-
 function fecharPrologo() {
   if (typeof _loreCancelTypewriter === 'function') _loreCancelTypewriter();
+  const ajuda = document.getElementById('gameHelpBtn');
+  if (ajuda) ajuda.style.display = '';
   const modal = document.getElementById('prologoModal');
   if (modal) modal.style.display = 'none';
   if (!_prologoModoLeitura) _prologoMarcarVisto();
