@@ -220,13 +220,13 @@
       'gs.maze.desc':            'Navegue na névoa e ache a saída',
       // Lore
       'gs.lore1.name':           'HISTÓRIAS DO VÉU',
-      'gs.lore1.desc':           'A saga pós-guerra — Fracturas, Avatares e O Vácuo',
+      'gs.lore1.desc':           'A saga pós-guerra — Fraturas, Avatares e O Vácuo',
       'gs.lore1.reward':         '⚪ Avatar Comum · 50🪙 por capítulo',
       'gs.lore2.name':           'CRÔNICAS DOS RAROS',
       'gs.lore2.desc':           'Histórias exclusivas para Avatares Raros',
       'gs.lore2.reward':         '🔵 Avatar Raro · 5💎 por capítulo',
       'gs.lore3.name':           'ÉPICOS DO VÁCUO',
-      'gs.lore3.desc':           'A verdade sobre as Fracturas — apenas para Lendários',
+      'gs.lore3.desc':           'A verdade sobre as Fraturas — apenas para Lendários',
       'gs.lore3.reward':         '🌟 Avatar Lendário · 15💎 por capítulo',
       // PVP
       'gs.arena.name':           'ARENA DIMENSIONAL',

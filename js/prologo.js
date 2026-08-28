@@ -8,7 +8,7 @@
 //
 // O prólogo desfaz esse nó. É a primeira coisa que um jogador novo vê,
 // antes de existir avatar, e termina no instante exacto em que a
-// criatura sai da Fractura e olha para ele — que é o botão INVOCAR.
+// criatura sai da Fratura e olha para ele — que é o botão INVOCAR.
 // A história entrega a mecânica na mão; não é preciso dica nenhuma.
 //
 // Regras que ele segue, e que valem para toda a lore daqui para a
@@ -120,7 +120,7 @@ function fecharPrologo() {
 function talvezAbrirPrologo() {
   if (prologoJaVisto()) return;
 
-  // Só a quem ainda não começou. A cena é a criatura a sair da Fractura
+  // Só a quem ainda não começou. A cena é a criatura a sair da Fratura
   // pela primeira vez — não se mostra isso a quem já tem três avatares
   // em casa. Esses encontram-na no arquivo.
   const jaInvocou = (gs.totalInvocacoes || 0) > 0
