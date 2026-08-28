@@ -905,9 +905,20 @@
   color:var(--gold); opacity:.75;
 }
 
+/* EB Garamond, e não a Crimson Pro do resto do jogo.
+   A Cinzel dos títulos vem das capitais romanas gravadas em pedra; a
+   Garamond, dos tipos de Claude Garamond do século XVI. As duas saem da
+   mesma linhagem humanista, e por isso combinam por parentesco e não por
+   acaso. E ouro sobre quase-preto pede uma letra com contraste de traço,
+   que pareça gravada em vez de impressa.
+
+   Com o tamanho maior de propósito: isto é superfície de leitura, não
+   interface de jogo, e a Garamond tem altura-de-x pequena — miúda ela
+   fecha. 12px no celular e 16 no desktop dão-lhe ar. */
 .prologo-texto {
   flex:1; min-height:0; overflow-y:auto;
-  font-size:0.5625rem; line-height:2.05; color:var(--text);
+  font-family:'EB Garamond','Crimson Pro',serif;
+  font-size:0.75rem; line-height:1.75; color:var(--text);
   padding:0.125rem 0.125rem 0.25rem;
 }
 /* Havia aqui uma regra a tratar o PRIMEIRO parágrafo como cartela de
@@ -959,7 +970,10 @@
 }
 
 @media (max-width:420px) {
-  .prologo-texto { font-size:0.53125rem; line-height:1.95; }
+  /* A regra base ja da 12px com a raiz de 16, e a medicao mostra que
+     cabe em 360x560 sem rolar. Encolher aqui so fechava a letra: a
+     Garamond tem altura-de-x pequena e abaixo dos 12 fica apertada. */
+  .prologo-texto { line-height:1.7; }
 }
 
 /* ══════════════════════════════════════
@@ -1004,6 +1018,17 @@
 }
 
 @media(min-width:681px) {
+  /* 0.75rem daria 18px com a raiz a 24 — de mais para uma coluna de
+     440px. 16px deixa a linha com cerca de 55 caracteres, que e onde a
+     leitura corre melhor. */
+  .prologo-texto  {
+    font-size:0.66667rem; line-height:1.8;
+    /* A caixa tem 660px no desktop (27.5rem com a raiz a 24), e a
+       16px isso dava linhas de oitenta caracteres. Texto corrido
+       le-se melhor entre 45 e 75; 21.7rem dao cerca de 65, que e o
+       ponto onde o olho encontra a linha seguinte sem procurar. */
+    max-width:21.66667rem; margin-left:auto; margin-right:auto;
+  }
   .prologo-marcas { gap:0.25rem; padding:0.375rem 0 0.1875rem; }
   .prologo-marca  { width:0.20833rem; height:0.20833rem; }
 }
