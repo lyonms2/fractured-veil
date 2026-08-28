@@ -215,7 +215,7 @@
 @keyframes ov-shock { 0%{width:3.75rem;height:3.75rem;opacity:.9;margin:-1.875rem 0 0 -1.875rem} 100%{width:21.25rem;height:21.25rem;opacity:0;margin:-10.625rem 0 0 -10.625rem} }
 .ov-avatar { width:12.5rem; height:12.5rem; opacity:0; transform:scale(.05) rotate(-15deg); transition:all .8s cubic-bezier(.34,1.4,.64,1); display:flex; align-items:center; justify-content:center; position:relative; z-index:3; filter:drop-shadow(0 0 2.5rem currentColor); }
 .ov-rarity-label { font-family:'Cinzel',serif; font-size:0.6875rem; letter-spacing:0.3125rem; opacity:0; transform:translateY(0.625rem); transition:all .5s ease; z-index:2; text-shadow:0 0 1.25rem currentColor; }
-.ov-name-label { font-family:'Crimson Pro',serif; font-style:italic; font-size:1rem; opacity:0; transform:translateY(0.5rem); transition:all .5s ease .15s; z-index:2; color:#d4c8f0; }
+.ov-name-label { font-family:'EB Garamond',serif; font-style:italic; font-size:1rem; opacity:0; transform:translateY(0.5rem); transition:all .5s ease .15s; z-index:2; color:#d4c8f0; }
 .ov-rarity-label.show, .ov-name-label.show { opacity:1; transform:translateY(0); }
 
 /* ══════════════════════════════════════
@@ -905,7 +905,7 @@
   color:var(--gold); opacity:.75;
 }
 
-/* EB Garamond, e não a Crimson Pro do resto do jogo.
+/* EB Garamond, que passou a ser a serifada do jogo inteiro.
    A Cinzel dos títulos vem das capitais romanas gravadas em pedra; a
    Garamond, dos tipos de Claude Garamond do século XVI. As duas saem da
    mesma linhagem humanista, e por isso combinam por parentesco e não por
@@ -917,7 +917,7 @@
    fecha. 12px no celular e 16 no desktop dão-lhe ar. */
 .prologo-texto {
   flex:1; min-height:0; overflow-y:auto;
-  font-family:'EB Garamond','Crimson Pro',serif;
+  font-family:'EB Garamond',serif;
   font-size:0.75rem; line-height:1.75; color:var(--text);
   padding:0.125rem 0.125rem 0.25rem;
 }

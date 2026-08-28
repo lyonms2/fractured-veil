@@ -16,7 +16,13 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Crimson Pro', serif;
+  /* Era Crimson Pro. Ela fazia exatamente o mesmo trabalho que a EB
+     Garamond do prólogo — corpo de texto serifado — e ter duas para uma
+     função só é uma fonte a mais para baixar e uma decisão a mais para
+     alguém tomar. Ficou a Garamond, que combina com a Cinzel por
+     linhagem: uma vem das capitais romanas, a outra dos tipos do século
+     XVI. */
+  font-family: 'EB Garamond', serif;
   overflow-x: hidden;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
