@@ -34,7 +34,12 @@ function calcPoolPrice(raridade) {
 
 function poolDisponivel() {
   if(!poolData) return false;
-  const hoje = poolData.saqueHoje || 0;
+  // Lia o saqueHoje cru, sem a janela das 24h que o servidor aplica
+  // (marcarSaque, no api/_pool-economia.js): um contador de ontem
+  // dizia "pool indisponível" para uma pool que o servidor deixaria
+  // sacar. É a mesma pergunta, tem de ter a mesma resposta.
+  const expirou = (Date.now() - (poolData.ultimoReset || 0)) > 86400000;
+  const hoje    = expirou ? 0 : (poolData.saqueHoje || 0);
   return poolData.cristais > 0 && hoje < POOL_LIMITE_DIA;
 }
 

@@ -29,9 +29,14 @@ const CAMBIO_LIMITES = {
   'Lendário': 4,
 };
 
-// Espelho do POOL_LIMITE_DIA do api/_pool-economia.js. Aqui serve só
-// para mostrar; quem manda é o servidor. Se mudar lá, muda aqui.
-const POOL_LIMITE_DIA = 100;
+// O teto diário vem do js/pool.js, que o declara e é carregado logo a
+// seguir a este ficheiro. Declará-lo aqui também rebentava com
+// "POOL_LIMITE_DIA has already been declared" — e como os scripts do
+// jogo partilham um escopo global só, isso matava o js/pool.js inteiro,
+// que é onde vive a página de transparência.
+//
+// Só é lido dentro do renderCambioPanel(), que corre muito depois de
+// tudo estar carregado.
 
 // ── Calcula custo atual baseado na pool ──
 function calcCambioTaxa() {
