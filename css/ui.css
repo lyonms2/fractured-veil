@@ -966,3 +966,25 @@
   .prologo-texto { font-size:0.53125rem; line-height:1.95; }
   .prologo-texto .lore-p:first-child { font-size:0.625rem; }
 }
+
+/* ══════════════════════════════════════
+   BOTÃO ? — manual, flutuante
+   Vivia todo em style="" no index.html, com o hover em onmouseover.
+   Duas consequências: um style.display='' apagava o display:flex e o
+   ? escapava do círculo, e o hover repunha sombras em px cru que a
+   passagem para rem não tinha como apanhar.
+══════════════════════════════════════ */
+#gameHelpBtn {
+  position:fixed; bottom:1.125rem; right:1.125rem; z-index:999;
+  width:2.375rem; height:2.375rem; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(11,9,22,.9); border:1px solid rgba(201,168,76,.35);
+  color:var(--gold,#c9a84c); font-family:'Cinzel',serif; font-weight:700;
+  font-size:0.9375rem; text-decoration:none;
+  box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.5);
+  transition:border-color .2s, box-shadow .2s;
+}
+#gameHelpBtn:hover {
+  border-color:rgba(201,168,76,.7);
+  box-shadow:0 0.125rem 1.125rem rgba(201,168,76,.2);
+}
