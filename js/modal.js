@@ -14,7 +14,12 @@ function lockBodyScroll() {
   if(_scrollLockCount === 0) {
     _scrollLockY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('modal-scroll-lock');
-    document.body.style.top = `-${(_scrollLockY)/16}rem`;
+    // Em px, e não em rem: o _scrollLockY é a posição de rolagem
+    // medida em px reais, não uma medida de desenho. A passagem de px
+    // para rem apanhou-o por engano e passou a multiplicá-lo pela
+    // escala da raiz — abrir um modal com a página rolada saltava 1,5x
+    // o deslocamento.
+    document.body.style.top = `-${_scrollLockY}px`;
   }
   _scrollLockCount++;
 }

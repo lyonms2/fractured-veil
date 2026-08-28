@@ -146,9 +146,6 @@ main {
    centra na mesma quando há espaço e cede quando não há. */
 #loginScreen { position:fixed; inset:0; z-index:9999; background:#04030a; display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; padding:0.5rem 0; }
 
-/* Enquanto o login está à frente, o jogo por baixo não deve dar barra
-   de rolagem: são 758px de conteúdo que ninguém consegue ver. */
-body.sem-rolagem { overflow:hidden; }
 #loginCard { margin:auto 0; display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:2.5rem 2rem; border:1px solid rgba(201,168,76,.25); border-radius:1rem; background:rgba(255,255,255,.02); box-shadow:0 0 3.75rem rgba(201,168,76,.08); max-width:17.5rem; width:90%; text-align:center; }
 #loginLogo { font-family:'Cinzel',serif; font-size:1.375rem; font-weight:700; color:var(--gold); letter-spacing:0.25rem; text-shadow:0 0 1.25rem rgba(201,168,76,.4); }
 #loginSub { font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.1875rem; color:var(--muted); }

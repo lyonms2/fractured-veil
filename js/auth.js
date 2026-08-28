@@ -99,16 +99,28 @@ async function loginComEmail() {
 // o body continua rolável. O resultado era uma barra de rolagem na tela
 // de login para conteúdo que ninguém consegue ver.
 // ═══════════════════════════════════════════════════════════════════
+// O lockBodyScroll do modal.js já fazia isto, com contagem de
+// referências e guardando a posição para a restituir — não valia a pena
+// ter um segundo mecanismo só para aqui. O `_loginTravou` evita travar
+// duas vezes se mostrarLoginScreen() for chamado com o login já aberto.
+let _loginTravou = false;
+
 function mostrarLoginScreen() {
   const el = document.getElementById('loginScreen');
   if (el) el.style.display = 'flex';
-  document.body.classList.add('sem-rolagem');
+  if (!_loginTravou && typeof lockBodyScroll === 'function') {
+    _loginTravou = true;
+    lockBodyScroll();
+  }
 }
 
 function esconderLoginScreen() {
   const el = document.getElementById('loginScreen');
   if (el) el.style.display = 'none';
-  document.body.classList.remove('sem-rolagem');
+  if (_loginTravou && typeof unlockBodyScroll === 'function') {
+    _loginTravou = false;
+    unlockBodyScroll();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

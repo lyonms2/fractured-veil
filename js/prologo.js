@@ -27,6 +27,7 @@
 const PROLOGO_PARAGRAFOS = 6;
 
 let _prologoModoLeitura = false;
+let _prologoTravou      = false;
 
 // ── Já viu? ──────────────────────────────────────────────────────
 function prologoJaVisto() {
@@ -62,6 +63,16 @@ function abrirPrologo(releitura) {
   // ela dura, e volta ao fechar.
   const ajuda = document.getElementById('gameHelpBtn');
   if (ajuda) ajuda.style.display = 'none';
+
+  // O prólogo cobre tudo, mas o jogo continua montado por baixo e o
+  // body continua rolável — dava barra de rolagem durante a história,
+  // para conteúdo que ninguém consegue ver. Mesmo problema da tela de
+  // login. O lockBodyScroll conta referências, portanto não estraga
+  // nada se outro overlay já tiver travado.
+  if (typeof lockBodyScroll === 'function' && !_prologoTravou) {
+    _prologoTravou = true;
+    lockBodyScroll();
+  }
 
   const corpo = document.getElementById('prologoTexto');
   const rodape = document.getElementById('prologoRodape');
@@ -104,6 +115,10 @@ function fecharPrologo() {
   if (typeof _loreCancelTypewriter === 'function') _loreCancelTypewriter();
   const ajuda = document.getElementById('gameHelpBtn');
   if (ajuda) ajuda.style.display = '';
+  if (_prologoTravou && typeof unlockBodyScroll === 'function') {
+    _prologoTravou = false;
+    unlockBodyScroll();
+  }
   const modal = document.getElementById('prologoModal');
   if (modal) modal.style.display = 'none';
   if (!_prologoModoLeitura) _prologoMarcarVisto();
