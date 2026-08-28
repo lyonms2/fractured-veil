@@ -579,12 +579,33 @@ async function _onLoginSuccess(user) {
 
   if(typeof hideSplash === 'function') hideSplash();
 
-  // Iniciar listeners de jogos multiplayer
-  if(typeof iniciarListenerDesafiosRecebidos === 'function') iniciarListenerDesafiosRecebidos();
-  if(typeof verificarPartidaPendente         === 'function') verificarPartidaPendente();
-  if(typeof rmIniciarListenerNotificacoes    === 'function') rmIniciarListenerNotificacoes();
-  if(typeof bnIniciarListenerNotificacoes    === 'function') bnIniciarListenerNotificacoes();
-  setTimeout(() => { if(typeof _limparSalasAntigas === 'function') _limparSalasAntigas(); }, 3000);
+  // ── Os listeners de PvP estão desligados ──
+  //
+  // Os três jogos PvP — Jo-Ken-Pô, Rouba Monte e Batalha Naval — não têm
+  // porta desde que a aba PvP saiu do menu de Jogos, e vão sair de vez
+  // quando o PvP novo entrar. Mas isto continuava a correr em TODO
+  // login:
+  //
+  //   iniciarListenerDesafiosRecebidos  .on('child_added')  permanente
+  //   rmIniciarListenerNotificacoes     .on('child_added')  permanente
+  //   bnIniciarListenerNotificacoes     .on('child_added')  permanente
+  //   verificarPartidaPendente          .once('value') x2
+  //   _limparSalasAntigas               limpeza de salas da arena
+  //
+  // Três ligações abertas o tempo todo, mais leituras avulsas, tudo
+  // cobrado, para jogos que ninguém consegue alcançar.
+  //
+  // O código dos três continua carregado e intacto; só deixou de
+  // arrancar sozinho. Para religar, basta descomentar — mas o PvP novo
+  // vai querer o seu próprio emparelhamento, e a ideia era extrair este
+  // (lobby, desafio, sala e temporizador estão copiados três vezes)
+  // antes de os apagar.
+  //
+  // if(typeof iniciarListenerDesafiosRecebidos === 'function') iniciarListenerDesafiosRecebidos();
+  // if(typeof verificarPartidaPendente         === 'function') verificarPartidaPendente();
+  // if(typeof rmIniciarListenerNotificacoes    === 'function') rmIniciarListenerNotificacoes();
+  // if(typeof bnIniciarListenerNotificacoes    === 'function') bnIniciarListenerNotificacoes();
+  // setTimeout(() => { if(typeof _limparSalasAntigas === 'function') _limparSalasAntigas(); }, 3000);
 }
 
 // ─── Listener de estado de autenticação (auto-login) ─────────────
