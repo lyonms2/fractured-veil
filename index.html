@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-08-27j
+     VERSÃO DOS FICHEIROS — ?v=2026-08-27m
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-08-27j" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-08-27m" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -35,20 +35,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/screen.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/ui.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/modals.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/combate.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/arena.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/snake.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-27j">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-27j">
+  <link rel="stylesheet" href="css/base.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/screen.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/ui.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/modals.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/combate.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/arena.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/snake.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-27m">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-27m">
 
   <style>
     .auth-tab {
@@ -196,6 +196,22 @@
      A entrada do jogo. Sem X de fechar e sem botão de pular: a única
      saída é a própria história, no botão do fim. Quem tem pressa clica
      no texto e a escrita salta logo para o fim. -->
+<!-- ══ MEUS AVATARES ══
+     O conteúdo é o mesmo de antes: renderSlots() e renderEquipaBar()
+     escrevem nos mesmos três contentores. Só mudou de casa. -->
+<div class="mini-modal" id="avataresModal">
+  <div class="modal-header">
+    <div data-i18n="mkt.slots.title" class="mini-title">🧬 MEUS AVATARES</div>
+    <button class="gs-x-btn" style="position:static;transform:none;" onclick="fecharMeusAvatares()">✕</button>
+  </div>
+  <div class="modal-scroll-body">
+    <div data-i18n="mkt.slots.sub" class="section-sub">Gerencie seus slots de avatar. O slot ativo é o que você joga na tela principal.</div>
+    <div id="equipaBar"></div>
+    <div id="slotsGrid" class="slots-grid"></div>
+    <div id="unlockSlotRow"></div>
+  </div>
+</div>
+
 <div id="prologoModal">
   <div class="prologo-caixa">
     <div class="prologo-topo">
@@ -323,6 +339,7 @@
 
            Os quatro são <button>: eram <div>, <a> e <button> misturados, e
            o teclado tratava cada um de sua maneira. -->
+      <button class="res res-clickable" id="resAvataresBtn" onclick="abrirMeusAvatares()" data-i18n-title="ui.avatars_title" title="Meus Avatares" style="display:none;">🧬 <b id="resAvatares">0</b></button>
       <button class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" data-i18n-title="ui.coins_title" title="Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></button>
       <button class="res res-clickable" id="resOvosBtn" onclick="openEggInventory()" data-i18n-title="ui.eggs_title" title="Inventário de ovos" style="display:none;">🥚 <b id="resOvos">0</b></button>
       <button class="res res-clickable" id="resItemsBtn" onclick="openItemInventory()" data-i18n-title="ui.items_title" title="Inventário de itens" style="display:none;">🎒 <b id="resItems">0</b></button>
@@ -971,24 +988,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-08-27j"></script>
-<script src="js/i18n-pvp.js?v=2026-08-27j"></script>
-<script src="js/i18n-bn.js?v=2026-08-27j"></script>
-<script src="js/i18n-minigames.js?v=2026-08-27j"></script>
-<script src="js/i18n-eggs.js?v=2026-08-27j"></script>
-<script src="js/i18n-gametick.js?v=2026-08-27j"></script>
-<script src="js/i18n-items.js?v=2026-08-27j"></script>
-<script src="js/i18n-market.js?v=2026-08-27j"></script>
-<script src="js/i18n-mina.js?v=2026-08-27j"></script>
-<script src="js/i18n-arcade.js?v=2026-08-27j"></script>
-<script src="js/i18n-session.js?v=2026-08-27j"></script>
-<script src="js/i18n-misc.js?v=2026-08-27j"></script>
-<script src="js/i18n-lore.js?v=2026-08-27j"></script>
-<script src="js/i18n-prologo.js?v=2026-08-27j"></script>
-<script src="js/i18n-marketplace.js?v=2026-08-27j"></script>
-<script src="js/i18n-magias.js?v=2026-08-27j"></script>
-<script src="js/i18n-vantagens.js?v=2026-08-27j"></script>
-<script src="js/i18n-pve.js?v=2026-08-27j"></script>
+<script src="js/i18n.js?v=2026-08-27m"></script>
+<script src="js/i18n-pvp.js?v=2026-08-27m"></script>
+<script src="js/i18n-bn.js?v=2026-08-27m"></script>
+<script src="js/i18n-minigames.js?v=2026-08-27m"></script>
+<script src="js/i18n-eggs.js?v=2026-08-27m"></script>
+<script src="js/i18n-gametick.js?v=2026-08-27m"></script>
+<script src="js/i18n-items.js?v=2026-08-27m"></script>
+<script src="js/i18n-market.js?v=2026-08-27m"></script>
+<script src="js/i18n-mina.js?v=2026-08-27m"></script>
+<script src="js/i18n-arcade.js?v=2026-08-27m"></script>
+<script src="js/i18n-session.js?v=2026-08-27m"></script>
+<script src="js/i18n-misc.js?v=2026-08-27m"></script>
+<script src="js/i18n-lore.js?v=2026-08-27m"></script>
+<script src="js/i18n-prologo.js?v=2026-08-27m"></script>
+<script src="js/i18n-marketplace.js?v=2026-08-27m"></script>
+<script src="js/i18n-magias.js?v=2026-08-27m"></script>
+<script src="js/i18n-vantagens.js?v=2026-08-27m"></script>
+<script src="js/i18n-pve.js?v=2026-08-27m"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -997,53 +1014,53 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-08-27j"></script>
-<script src="js/data.js?v=2026-08-27j"></script>
-<script src="js/state.js?v=2026-08-27j"></script>
-<script src="js/vantagens.js?v=2026-08-27j"></script>
-<script src="js/ficha-3dt.js?v=2026-08-27j"></script>
-<script src="js/magias.js?v=2026-08-27j"></script>
-<script src="js/combate-3dt.js?v=2026-08-27j"></script>
-<script src="js/equipa.js?v=2026-08-27j"></script>
-<script src="js/combate-ui.js?v=2026-08-27j"></script>
-<script src="js/combate-pve.js?v=2026-08-27j"></script>
-<script src="js/ui.js?v=2026-08-27j"></script>
-<script src="js/modal.js?v=2026-08-27j"></script>
-<script src="js/firebase.js?v=2026-08-27j"></script>
-<script src="js/gametick.js?v=2026-08-27j"></script>
-<script src="js/actions.js?v=2026-08-27j"></script>
-<script src="js/mini-avatar.js?v=2026-08-27j"></script>
-<script src="js/minigames.js?v=2026-08-27j"></script>
-<script src="js/summon.js?v=2026-08-27j"></script>
-<script src="js/eggs.js?v=2026-08-27j"></script>
-<script src="js/items.js?v=2026-08-27j"></script>
-<script src="js/market.js?v=2026-08-27j"></script>
-<script src="js/coinshop.js?v=2026-08-27j"></script>
-<script src="js/cards.js?v=2026-08-27j"></script>
-<script src="js/rouba-monte.js?v=2026-08-27j"></script>
-<script src="js/mina.js?v=2026-08-27j"></script>
-<script src="js/batalha-naval.js?v=2026-08-27j"></script>
-<script src="js/snake.js?v=2026-08-27j"></script>
-<script src="js/labirinto.js?v=2026-08-27j"></script>
-<script src="js/cambio.js?v=2026-08-27j"></script>
-<script src="js/arena.js?v=2026-08-27j"></script>
-<script src="js/lore.js?v=2026-08-27j"></script>
-<script src="js/prologo.js?v=2026-08-27j"></script>
-<script src="js/lore-caps/cap1.js?v=2026-08-27j"></script>
-<script src="js/lore-caps/cap2.js?v=2026-08-27j"></script>
-<script src="js/lore-caps/cap3.js?v=2026-08-27j"></script>
-<script src="js/lore-caps/cap4.js?v=2026-08-27j"></script>
-<script src="js/amigos.js?v=2026-08-27j"></script>
-<script src="js/auth.js?v=2026-08-27j"></script>
+<script src="js/audio.js?v=2026-08-27m"></script>
+<script src="js/data.js?v=2026-08-27m"></script>
+<script src="js/state.js?v=2026-08-27m"></script>
+<script src="js/vantagens.js?v=2026-08-27m"></script>
+<script src="js/ficha-3dt.js?v=2026-08-27m"></script>
+<script src="js/magias.js?v=2026-08-27m"></script>
+<script src="js/combate-3dt.js?v=2026-08-27m"></script>
+<script src="js/equipa.js?v=2026-08-27m"></script>
+<script src="js/combate-ui.js?v=2026-08-27m"></script>
+<script src="js/combate-pve.js?v=2026-08-27m"></script>
+<script src="js/ui.js?v=2026-08-27m"></script>
+<script src="js/modal.js?v=2026-08-27m"></script>
+<script src="js/firebase.js?v=2026-08-27m"></script>
+<script src="js/gametick.js?v=2026-08-27m"></script>
+<script src="js/actions.js?v=2026-08-27m"></script>
+<script src="js/mini-avatar.js?v=2026-08-27m"></script>
+<script src="js/minigames.js?v=2026-08-27m"></script>
+<script src="js/summon.js?v=2026-08-27m"></script>
+<script src="js/eggs.js?v=2026-08-27m"></script>
+<script src="js/items.js?v=2026-08-27m"></script>
+<script src="js/market.js?v=2026-08-27m"></script>
+<script src="js/coinshop.js?v=2026-08-27m"></script>
+<script src="js/cards.js?v=2026-08-27m"></script>
+<script src="js/rouba-monte.js?v=2026-08-27m"></script>
+<script src="js/mina.js?v=2026-08-27m"></script>
+<script src="js/batalha-naval.js?v=2026-08-27m"></script>
+<script src="js/snake.js?v=2026-08-27m"></script>
+<script src="js/labirinto.js?v=2026-08-27m"></script>
+<script src="js/cambio.js?v=2026-08-27m"></script>
+<script src="js/arena.js?v=2026-08-27m"></script>
+<script src="js/lore.js?v=2026-08-27m"></script>
+<script src="js/prologo.js?v=2026-08-27m"></script>
+<script src="js/lore-caps/cap1.js?v=2026-08-27m"></script>
+<script src="js/lore-caps/cap2.js?v=2026-08-27m"></script>
+<script src="js/lore-caps/cap3.js?v=2026-08-27m"></script>
+<script src="js/lore-caps/cap4.js?v=2026-08-27m"></script>
+<script src="js/amigos.js?v=2026-08-27m"></script>
+<script src="js/auth.js?v=2026-08-27m"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-08-27j"></script>
-<script src="js/cristais.js?v=2026-08-27j"></script>
-<script src="js/avatars-market.js?v=2026-08-27j"></script>
-<script src="js/eggs-market.js?v=2026-08-27j"></script>
-<script src="js/marketplace-core.js?v=2026-08-27j"></script>
+<script src="js/pool.js?v=2026-08-27m"></script>
+<script src="js/cristais.js?v=2026-08-27m"></script>
+<script src="js/avatars-market.js?v=2026-08-27m"></script>
+<script src="js/eggs-market.js?v=2026-08-27m"></script>
+<script src="js/marketplace-core.js?v=2026-08-27m"></script>
 
-<script src="js/main.js?v=2026-08-27j"></script>
+<script src="js/main.js?v=2026-08-27m"></script>
 
 
 <script>
@@ -1218,10 +1235,8 @@
 
   <!-- SIDEBAR -->
   <nav class="mkt-sidebar">
-    <div class="mkt-nav-section" data-i18n="mkt.nav.account">Minha Conta</div>
-    <button class="mkt-nav-btn active" onclick="showSection('slots')" id="nav-slots">
-      <span class="nav-icon">🧬</span><span data-i18n="mkt.nav.my_avatars"> Meus Avatares</span>
-    </button>
+    <!-- O cabeçalho "Minha Conta" saiu com o "Meus Avatares", que era a
+         sua única entrada. A barra lateral ficou só mercado. -->
     <div class="mkt-nav-section" data-i18n="mkt.nav.market">Mercado</div>
     <button class="mkt-nav-btn" onclick="showSection('browse')" id="nav-browse">
       <span class="nav-icon">🛒</span><span data-i18n="mkt.nav.buy_avatars"> Comprar Avatares</span>
@@ -1276,14 +1291,12 @@
     </div>
 
     <!-- ── MEUS AVATARES ── -->
-    <div class="mkt-section active" id="sec-slots">
-      <div class="section-title" data-i18n="mkt.slots.title">🧬 Meus Avatares</div>
-      <div class="section-sub" data-i18n="mkt.slots.sub">Gere os teus slots de avatar. O slot activo é o que jogas no jogo principal.</div>
-      <!-- Barra da equipa de combate — preenchida por renderEquipaBar() -->
-      <div id="equipaBar"></div>
-      <div id="slotsGrid" class="slots-grid"></div>
-      <div id="unlockSlotRow"></div>
-    </div>
+    <!-- "Meus Avatares" vivia aqui dentro, debaixo do cabeçalho "Minha
+         Conta" — a própria barra lateral já dizia que não era mercado.
+         E desde que o combate saiu do menu de Jogos, é aqui que está o
+         botão BATALHAR: a acção mais importante do jogo estava a dois
+         cliques de profundidade dentro de uma loja. Mudou-se para o
+         #avataresModal, com porta própria na fila de cima. -->
 
     <!-- ── CONVITES / REFERRAL ── -->
     <!-- Conteúdo preenchido dinamicamente por renderReferral() em cristais.js -->

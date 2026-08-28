@@ -152,6 +152,17 @@ function updateResourceUI() {
   document.getElementById('resOvos').textContent = eggsInInventory.length;
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
+  // Slots ocupados de slots disponíveis. As outras pastilhas mostram
+  // "quanto tenho"; esta mostra "quantos cabem", que é a pergunta que
+  // se faz sobre avatares.
+  const resAv = document.getElementById('resAvatares');
+  if(resAv) {
+    const disponiveis = Math.min(
+      typeof MAX_SLOTS === 'number' ? MAX_SLOTS : 9,
+      (typeof BASE_SLOTS === 'number' ? BASE_SLOTS : 3) + (gs.extraSlots || 0));
+    const ocupados = (avatarSlots || []).filter(s => s && !s.dead).length;
+    resAv.textContent = ocupados + '/' + disponiveis;
+  }
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
   // As primeiras INVOCACOES_GRATIS são grátis; a partir daí o botão mostra o preço

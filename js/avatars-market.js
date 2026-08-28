@@ -250,7 +250,7 @@ async function buyAvatar(listingId, price) {
     const taxa = Math.round(price * TAXA_MARKETPLACE);
     closeDetail();
     showToast(t('mkt.avatar.bought', {name: data.nome, tax: taxa}), 'ok');
-    showSection('slots');
+    abrirMeusAvatares();
   } catch(e) {
     console.error(e);
     showToast(t('mkt.avatar.buy_err'), 'err');
@@ -307,7 +307,7 @@ async function confirmList() {
 
     closeListModal();
     showToast(t('mkt.avatar.listed', {price}), 'ok');
-    showSection('slots');
+    abrirMeusAvatares();
   } catch(e) {
     console.error(e);
     showToast(t('mkt.avatar.list_err'),'err');
@@ -383,6 +383,28 @@ function _slotBtnEquipa(i, s) {
     title="${bloqueado ? t('equipa.btn_full_title', {max: COMBATE_EQUIPA_MAX})
                        : dentro ? t('equipa.btn_on_title') : ''}"
     onclick="toggleEquipa(${i})">${rot}</button>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MEUS AVATARES
+//
+// Vivia como uma secção do marketplace, debaixo do cabeçalho "Minha
+// Conta" — a própria barra lateral já dizia que não era mercado. E
+// desde que o combate saiu do menu de Jogos, é aqui que está o botão
+// BATALHAR: a acção mais importante do jogo estava a dois cliques de
+// profundidade dentro de uma loja.
+//
+// O conteúdo não mudou: as mesmas funções escrevem nos mesmos três
+// contentores, que agora vivem no #avataresModal.
+// ═══════════════════════════════════════════════════════════════════
+function abrirMeusAvatares() {
+  ModalManager.open('avataresModal');
+  renderSlots();
+  if (typeof renderEquipaBar === 'function') renderEquipaBar();
+}
+
+function fecharMeusAvatares() {
+  ModalManager.close('avataresModal');
 }
 
 function renderSlots() {

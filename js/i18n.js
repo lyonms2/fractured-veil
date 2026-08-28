@@ -9,6 +9,7 @@
     // ── PORTUGUÊS ─────────────────────────────────────────────────
     pt: {
       // Auth — abas e navegação
+      'ui.avatars_title':        'Meus Avatares',
       'auth.tab.login':          'ENTRAR',
       'auth.ou':                 'ou',
       'auth.google.btn':         'Entrar com Google',
@@ -335,6 +336,7 @@
     // ── ENGLISH ───────────────────────────────────────────────────
     en: {
       // Auth — tabs and navigation
+      'ui.avatars_title':        'My Avatars',
       'auth.tab.login':          'SIGN IN',
       'auth.ou':                 'or',
       'auth.google.btn':         'Sign in with Google',

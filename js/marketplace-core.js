@@ -11,7 +11,7 @@ let playerData     = null;
 let listings       = [];
 let listingUnsub   = null;
 let listingSlotIdx = null;
-let currentSection = 'slots';
+let currentSection = 'browse';
 
 // ── Carregar dados do jogador ──
 // Constroi playerData a partir do estado vivo do jogo (gs/avatarSlots ja
@@ -102,7 +102,6 @@ function showSection(id) {
 
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
-  if(currentSection === 'slots')         renderSlots();
   if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
   if(currentSection === 'referral')      renderReferral();
   if(currentSection === 'eggs')          loadEggListings();
@@ -141,7 +140,7 @@ async function openMarketplaceModal(section) {
     loadListings();
     await loadPool();
   }
-  showSection(section || 'slots');
+  showSection(section || 'browse');
 }
 function closeMarketplaceModal() {
   ModalManager.close('marketplaceModal');

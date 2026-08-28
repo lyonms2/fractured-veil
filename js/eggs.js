@@ -13,9 +13,8 @@ async function goToMarketplace(e) {
     addLog(t('egg.log.hatch_first'), 'bad');
     return;
   }
-  // Marketplace agora é um modal in-game (ver js/marketplace-core.js) — sem
-  // navegação de página, sem precisar flush do save antes de sair.
-  if(typeof openMarketplaceModal === 'function') openMarketplaceModal('slots');
+  // "Meus Avatares" saiu do marketplace e tem modal proprio.
+  if(typeof abrirMeusAvatares === 'function') abrirMeusAvatares();
 }
 
 function findTargetSlot() {

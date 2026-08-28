@@ -40,7 +40,7 @@ const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
   'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
-  'marketplaceModal','combateModal'
+  'marketplaceModal','combateModal','avataresModal'
 ];
 
 const ModalManager = {
