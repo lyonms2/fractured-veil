@@ -343,8 +343,12 @@
    uma rotação de 3 graus atira a cauda para fora do bicho.
 
    O --i vem do gerador, um por braço e um por olho, e serve para
-   escalonar: um membro de cada vez em vez de todos ao mesmo tempo. É a
-   diferença entre orgânico e mecânico.
+   escalonar os MEMBROS: um de cada vez em vez de todos ao mesmo tempo.
+   É a diferença entre orgânico e mecânico.
+
+   Nos olhos não. Olhos piscam juntos — é assim que uma pálpebra
+   funciona, mesmo quando são três. Desencontrá-los não dá organicidade,
+   dá um tique nervoso.
 ══════════════════════════════════════════════════════════════════ */
 .av-olho-un, .av-asa, .av-cauda, .av-membro, .av-boca {
   transform-box: fill-box;
@@ -352,14 +356,13 @@
 }
 
 /* ── Piscar ──
-   Raro e rápido, como convém. O passo dos 4% dura ~0,2s num ciclo de
-   5,2s; o resto do tempo o olho está aberto. Cada olho pisca com um
-   desfasamento próprio: dois olhos a piscar em uníssono parecem uma
-   avaria. */
+   Raro e rápido, como convém: o passo dos 6% dura ~0,3s num ciclo de
+   5,2s, e o resto do tempo o olho está aberto.
+
+   Todos ao mesmo tempo, e de propósito — o --i não entra aqui. */
 .av-olho-un {
   transform-origin: center;
   animation: av-piscar 5.2s ease-in-out infinite;
-  animation-delay: calc(var(--i, 0) * 0.14s);
 }
 @keyframes av-piscar {
   0%, 92%, 100% { transform: scaleY(1); }

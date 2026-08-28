@@ -112,22 +112,23 @@ function miniAvatarReagir(tipo) {
 // ainda anima — só perde a soma durante a reacção. Degrada bem.
 // ═══════════════════════════════════════════════════════════════════
 
-// Cada entrada: [selector, quadros, duração, atraso por índice]
+// Cada entrada: [selector, quadros, duração, atraso por índice].
+// O atraso é zero nos olhos: piscam e arregalam juntos, como olhos.
 const _MINI_AV_GESTOS = {
   bom: [
-    ['.av-olho-un', [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], 380, 40],
+    ['.av-olho-un', [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], 380, 0],
     ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(-14deg)' }, { transform: 'rotate(0)' }], 480, 55],
     ['.av-asa',     [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.22)' }, { transform: 'scaleY(1)' }], 420, 0],
   ],
   mau: [
     // Os olhos apertam-se e demoram a abrir: é o que lê como desânimo.
-    ['.av-olho-un', [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0.35)' }, { transform: 'scaleY(1)' }], 620, 30],
+    ['.av-olho-un', [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0.35)' }, { transform: 'scaleY(1)' }], 620, 0],
     ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(9deg)' }, { transform: 'rotate(0)' }], 620, 40],
     ['.av-cauda',   [{ transform: 'rotate(0)' }, { transform: 'rotate(6deg)' }, { transform: 'rotate(0)' }], 620, 0],
   ],
   festa: [
     ['.av-olho-un', [{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' },
-                     { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], 900, 60],
+                     { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], 900, 0],
     ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(-22deg)' }, { transform: 'rotate(8deg)' },
                      { transform: 'rotate(-12deg)' }, { transform: 'rotate(0)' }], 900, 70],
     ['.av-asa',     [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.35)' }, { transform: 'scaleY(0.9)' },
