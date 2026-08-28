@@ -17,7 +17,17 @@ const SNAKE_EL = [
 
 let _snakeBody     = [];
 let _snakeDir      = { x: 1, y: 0 };
-let _snakeNextDir  = { x: 1, y: 0 };
+// Uma FILA de viragens, e nao uma so.
+//
+// Antes havia um _snakeNextDir unico e a segunda tecla apagava a
+// primeira. Numa curva em L — cima e depois direita, dentro dos 200ms
+// de um tique no facil — a viragem para cima perdia-se e a cobra so
+// virava a direita. Era o que fazia o jogo parecer que nao responde: a
+// tecla foi lida, mas descartada.
+//
+// Duas de capacidade chega para encadear uma curva; mais do que isso e
+// o jogador a andar a frente do jogo.
+let _snakeFila = [];
 let _snakeFood     = null;
 let _snakeFoodIdx  = 0;
 let _snakeScore    = 0;
@@ -45,7 +55,7 @@ function startSnake() {
 
   _snakeBody    = [{ x:10,y:10 },{ x:9,y:10 },{ x:8,y:10 }];
   _snakeDir     = { x:1, y:0 };
-  _snakeNextDir = { x:1, y:0 };
+  _snakeFila = [];
   _snakeScore   = 0;
   _snakeRunning = true;
 
@@ -92,7 +102,7 @@ function _snakePlaceFood() {
 function _snakeTick() {
   if(!_snakeRunning) return;
 
-  _snakeDir = { ..._snakeNextDir };
+  if(_snakeFila.length) _snakeDir = _snakeFila.shift();
 
   const head = _snakeBody[0];
   const next = {
@@ -318,8 +328,17 @@ function _snakeUpdateScore() {
 // ── Controles de direção ───────────────────────────────────────────
 function snakeDpad(dx, dy) {
   if(!_snakeRunning) return;
-  if(dx === -_snakeDir.x && dy === -_snakeDir.y) return; // sem reverter
-  _snakeNextDir = { x: dx, y: dy };
+
+  // A referencia e a ULTIMA viragem pedida, nao a que esta a valer.
+  // Com fila, comparar com a aplicada deixava passar uma inversao em
+  // dois passos: a andar para a direita, um "cima" seguido de um
+  // "baixo" era aceite — e a cobra batia em si mesma no tique seguinte.
+  const ref = _snakeFila.length ? _snakeFila[_snakeFila.length - 1] : _snakeDir;
+  if(dx === -ref.x && dy === -ref.y) return;   // sem inverter
+  if(dx ===  ref.x && dy ===  ref.y) return;   // ja vai para ali
+  if(_snakeFila.length >= 2) return;
+
+  _snakeFila.push({ x: dx, y: dy });
 }
 
 // Teclado

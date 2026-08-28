@@ -180,9 +180,15 @@
 .mini-sub {
   font-size:0.4375rem; color:var(--muted); text-align:center; margin-bottom:0.75rem; letter-spacing:0.0625rem;
 }
+/* Tres coisas empilhavam este bloco quando o texto quebrava em duas
+   linhas, como no "CAMPO LIMPO! (10 elementos)" do snake:
+   line-height normal (apertado numa serifada de 18px), so 6px ate a
+   linha da recompensa, e um brilho de 18px por cima disso — o halo da
+   primeira linha caia em cima da segunda e da recompensa. */
 .mini-result-box {
-  text-align:center; margin:0.625rem 0 0.375rem;
+  text-align:center; margin:0.625rem 0 0.75rem;
   font-family:'Cinzel',serif; font-size:0.75rem; font-weight:900; letter-spacing:0.1875rem;
+  line-height:1.45;
   min-height:1.25rem;
 }
 .mini-result-box.win  { color:#7ab87a; text-shadow:0 0 0.75rem rgba(122,184,122,.5); }

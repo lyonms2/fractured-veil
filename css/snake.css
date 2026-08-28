@@ -274,7 +274,9 @@
   #snakeModal .mini-title  { font-size: 0.5rem !important; letter-spacing: 0.1875rem; margin-bottom: 0; }
   #snakeModal .mini-info   { font-size: 0.5625rem !important; }
   #snakeModal #snakeScore  { font-size: 0.75rem !important; }
-  #snakeModal .mini-result-box  { font-size: 0.75rem !important; }
+  /* Menos espacamento: o texto do snake e o mais longo dos tres
+     jogos e era o unico a quebrar em duas linhas. */
+  #snakeModal .mini-result-box  { font-size: 0.75rem !important; letter-spacing: 0.09375rem; }
   #snakeModal .mini-reward-txt  { font-size: 0.625rem !important; }
   #snakeModal .mini-btns   { margin-top: 0.125rem; gap: 0.5rem; }
   #snakeModal .mini-btn    { font-size: 0.5625rem !important; padding: 0.5rem 1.25rem !important; }
