@@ -10,6 +10,12 @@
     pt: {
       // Auth — abas e navegação
       'auth.tab.login':          'ENTRAR',
+      'auth.ou':                 'ou',
+      'auth.google.btn':         'Entrar com Google',
+      'auth.google.erro':        'Não foi possível entrar com o Google. Tente novamente.',
+      'auth.google.ja_existe':   'Este e-mail já tem conta com senha. Entre com a senha e depois vincule o Google.',
+      'auth.google.dominio':     'Este endereço não está autorizado no Firebase. Avise o administrador.',
+      'auth.google.desactivado': 'O login com Google ainda não está ativado neste projeto.',
       'auth.tab.register':       'CRIAR CONTA',
       'auth.link.forgot':        'Esqueci a senha',
       'auth.link.back':          '← Voltar',
@@ -330,6 +336,12 @@
     en: {
       // Auth — tabs and navigation
       'auth.tab.login':          'SIGN IN',
+      'auth.ou':                 'or',
+      'auth.google.btn':         'Sign in with Google',
+      'auth.google.erro':        'Could not sign in with Google. Please try again.',
+      'auth.google.ja_existe':   'This email already has a password account. Sign in with the password, then link Google.',
+      'auth.google.dominio':     'This address is not authorized in Firebase. Let the administrator know.',
+      'auth.google.desactivado': 'Google sign-in is not enabled on this project yet.',
       'auth.tab.register':       'CREATE ACCOUNT',
       'auth.link.forgot':        'Forgot password',
       'auth.link.back':          '← Back',

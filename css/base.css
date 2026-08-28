@@ -137,8 +137,19 @@ main {
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 /* ── LOGIN SCREEN ── */
-#loginScreen { position:fixed; inset:0; z-index:9999; background:#04030a; display:flex; align-items:center; justify-content:center; }
-#loginCard { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:2.5rem 2rem; border:1px solid rgba(201,168,76,.25); border-radius:1rem; background:rgba(255,255,255,.02); box-shadow:0 0 3.75rem rgba(201,168,76,.08); max-width:17.5rem; width:90%; text-align:center; }
+/* O overflow-y é o cinto de segurança: numa janela muito baixa o
+   cartão passa a rolar dentro do próprio ecrã de login em vez de ser
+   cortado. O padding impede que ele encoste nas bordas quando isso
+   acontece. */
+/* align-items:center com overflow corta o TOPO do que transborda, e o
+   que fica cortado é inalcançável mesmo com barra. A margem automática
+   centra na mesma quando há espaço e cede quando não há. */
+#loginScreen { position:fixed; inset:0; z-index:9999; background:#04030a; display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; padding:0.5rem 0; }
+
+/* Enquanto o login está à frente, o jogo por baixo não deve dar barra
+   de rolagem: são 758px de conteúdo que ninguém consegue ver. */
+body.sem-rolagem { overflow:hidden; }
+#loginCard { margin:auto 0; display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:2.5rem 2rem; border:1px solid rgba(201,168,76,.25); border-radius:1rem; background:rgba(255,255,255,.02); box-shadow:0 0 3.75rem rgba(201,168,76,.08); max-width:17.5rem; width:90%; text-align:center; }
 #loginLogo { font-family:'Cinzel',serif; font-size:1.375rem; font-weight:700; color:var(--gold); letter-spacing:0.25rem; text-shadow:0 0 1.25rem rgba(201,168,76,.4); }
 #loginSub { font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.1875rem; color:var(--muted); }
 #loginDesc { font-size:0.6875rem; color:#887799; line-height:1.8; margin:0.5rem 0; }
@@ -155,7 +166,12 @@ main {
    existe para o texto de 5-7px ser legível. Aqui volta ao tamanho que
    tem no telemóvel, com uma folga. */
 @media(min-width:681px) {
-  #loginCard { max-width:13rem; padding:1.75rem 1.5rem; gap:0.5rem; }
+  /* O recheio e o intervalo apertam mais do que a largura: é a altura
+     que estoura. Com a aba de cadastro — três campos, o aviso e o botão
+     — o cartão chegava aos 708px, e num portátil de 1366x768 a janela
+     útil ronda os 660. */
+  #loginCard { max-width:13rem; padding:1.125rem 1.5rem; gap:0.3125rem; }
+  #loginSub  { margin-bottom:0.125rem; }
 
   /* Encolher a caixa não chegava: o conteúdo dentro dela também vinha
      a 1,5x — logo de 33px, campos de 53px de altura, botão de 66px, e

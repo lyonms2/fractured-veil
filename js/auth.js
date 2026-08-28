@@ -90,6 +90,78 @@ async function loginComEmail() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// MOSTRAR E ESCONDER O LOGIN
+//
+// Cinco sítios diferentes mexiam no display à mão, e nenhum travava a
+// rolagem da página. O #loginScreen é fixed e cobre tudo, mas o jogo
+// continua montado por baixo — 758px de altura numa janela de 660 — e
+// o body continua rolável. O resultado era uma barra de rolagem na tela
+// de login para conteúdo que ninguém consegue ver.
+// ═══════════════════════════════════════════════════════════════════
+function mostrarLoginScreen() {
+  const el = document.getElementById('loginScreen');
+  if (el) el.style.display = 'flex';
+  document.body.classList.add('sem-rolagem');
+}
+
+function esconderLoginScreen() {
+  const el = document.getElementById('loginScreen');
+  if (el) el.style.display = 'none';
+  document.body.classList.remove('sem-rolagem');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ENTRAR COM GOOGLE
+//
+// Um clique contra três campos e um email de confirmação. E a conta
+// chega com emailVerified a true, portanto passa pelo mesmo portão que
+// o email e a senha — o onAuthStateChanged trata do resto.
+//
+// O popup é bloqueado com frequência (telemóvel, sobretudo), e por isso
+// há o recuo para redirect: nesse caminho o utilizador sai da página e
+// volta já autenticado, e o listener acorda sozinho.
+//
+// IMPORTANTE: isto só funciona depois de o Google estar activado em
+// Authentication > Sign-in method na consola do Firebase, e do domínio
+// estar na lista de Authorized domains.
+// ═══════════════════════════════════════════════════════════════════
+async function entrarComGoogle() {
+  const btn = document.getElementById('loginGoogleBtn');
+  if (btn) btn.disabled = true;
+  _authMsg('');
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  // Sem isto, quem tem sessão aberta entra sempre na mesma conta sem
+  // lhe ser perguntado.
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  try {
+    await fbAuth().signInWithPopup(provider);
+    // onAuthStateChanged trata o resto
+  } catch (e) {
+    if (btn) btn.disabled = false;
+
+    // Fechar o popup não é erro nenhum: é uma desistência.
+    if (e.code === 'auth/popup-closed-by-user' ||
+        e.code === 'auth/cancelled-popup-request') return;
+
+    if (e.code === 'auth/popup-blocked') {
+      try { await fbAuth().signInWithRedirect(provider); return; }
+      catch (_) { /* cai na mensagem em baixo */ }
+    }
+
+    const msgs = {
+      'auth/account-exists-with-different-credential': t('auth.google.ja_existe'),
+      'auth/unauthorized-domain':                      t('auth.google.dominio'),
+      'auth/operation-not-allowed':                    t('auth.google.desactivado'),
+      'auth/network-request-failed':                   t('auth.error.login'),
+    };
+    _authMsg(msgs[e.code] || t('auth.google.erro'));
+    console.warn('[google]', e.code, e.message);
+  }
+}
+
 // ─── Registro ─────────────────────────────────────────────────────
 async function registrarComEmail() {
   const email  = document.getElementById('regEmail').value.trim();
@@ -179,7 +251,7 @@ async function disconnectWallet() {
   window._cambioLog = null;
 
   // Reset UI
-  document.getElementById('loginScreen').style.display = 'flex';
+  mostrarLoginScreen();
   authShowTab('login');
 
   document.getElementById('idleScreen').style.display       = 'flex';
@@ -226,7 +298,7 @@ async function _onLoginSuccess(user) {
   walletAddress = user.uid;
   window._fvConnected = true;
 
-  document.getElementById('loginScreen').style.display = 'none';
+  esconderLoginScreen();
   const _glo = document.getElementById('gameLoadingOverlay');
   if(_glo) _glo.style.display = 'flex';
 
@@ -507,7 +579,13 @@ function iniciarAuthListener() {
   _authListenerIniciado = true;
 
   fbAuth().onAuthStateChanged(async user => {
-    if(user && !walletAddress) {
+    // O emailVerified estava a ser verificado só dentro do
+    // loginComEmail(), depois do signInWithEmailAndPassword. Só que o
+    // listener dispara com o utilizador ainda autenticado, antes do
+    // signOut que aquele código faz — e nessa janela um email por
+    // confirmar entrava. Aqui o portão fecha para todos os caminhos, e
+    // o Google passa porque as contas dele já vêm verificadas.
+    if(user && user.emailVerified && !walletAddress) {
       // Sessão ativa — entra direto sem mostrar login
       await _onLoginSuccess(user);
     } else if(!user && walletAddress) {
@@ -515,7 +593,7 @@ function iniciarAuthListener() {
       await disconnectWallet();
     } else if(!user && !walletAddress) {
       // Não logado — mostra o ecrã de login e remove o splash
-      document.getElementById('loginScreen').style.display = 'flex';
+      mostrarLoginScreen();
       if(typeof hideSplash === 'function') hideSplash();
     }
   });
@@ -526,7 +604,7 @@ window.connectWallet = async function() {
   // No new auth flow connectWallet is a no-op if already logged in
   if(walletAddress) return;
   // Otherwise show login screen
-  document.getElementById('loginScreen').style.display = 'flex';
+  mostrarLoginScreen();
 };
 
 // Exporta funções para inline handlers
