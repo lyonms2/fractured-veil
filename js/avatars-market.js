@@ -250,7 +250,16 @@ async function buyAvatar(listingId, price) {
     const taxa = Math.round(price * TAXA_MARKETPLACE);
     closeDetail();
     showToast(t('mkt.avatar.bought', {name: data.nome, tax: taxa}), 'ok');
-    abrirMeusAvatares();
+    // Fica na loja, de propósito. Antes trocava para a secção "slots",
+    // que era do marketplace; quando ela saiu, cheguei a mandar isto
+    // abrir o "Meus Avatares" — e isso ejectava o jogador da loja. Quem
+    // compra dois seguidos tinha de voltar a entrar, e pior: o filtro
+    // vive nos campos do DOM da secção, portanto perdia-se e havia que
+    // o montar outra vez.
+    //
+    // Não é preciso nada no lugar: o loadListings() tem um listener vivo
+    // do Firestore que redesenha o browse quando as listagens mudam, e o
+    // renderBrowse lê os campos do filtro tal como estão.
   } catch(e) {
     console.error(e);
     showToast(t('mkt.avatar.buy_err'), 'err');
