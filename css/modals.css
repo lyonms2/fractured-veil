@@ -614,11 +614,13 @@
 }
 .mini-av {
   position:relative; flex-shrink:0;
-  width:2.875rem; height:2.875rem;
+  width:3.25rem; height:3.25rem;
   display:flex; align-items:center; justify-content:center;
 }
-.mini-av-corpo { display:flex; animation:idle-float 3s ease-in-out infinite; }
-.mini-av-corpo svg { display:block; }
+.mini-av-corpo { display:flex; width:100%; height:100%; animation:idle-float 3s ease-in-out infinite; }
+/* O SVG vem desenhado a 120 e encolhe para a caixa. É a caixa, em rem,
+   que decide o tamanho — ver o comentário do js/mini-avatar.js. */
+.mini-av-corpo svg { display:block; width:100%; height:100%; }
 
 /* As reacções tomam a animação toda enquanto duram, e o idle-float
    volta sozinho quando a classe sai. */
@@ -675,7 +677,7 @@
 /* O painel é moldura, como o seletor: não segue o 1,5x do desktop. */
 @media(min-width:681px) {
   .mini-companheiro { padding:0.3125rem 0.5rem; margin-bottom:0.5rem; gap:0.5rem; }
-  .mini-av { width:2.25rem; height:2.25rem; }
+  .mini-av { width:2.75rem; height:2.75rem; }
   .mini-estado .mini-estado-jogo  { font-size:0.34375rem; }
   .mini-estado .mini-estado-linha { font-size:0.34375rem; }
   .mini-av-borbulha span { font-size:0.53125rem; }

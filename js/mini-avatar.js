@@ -41,9 +41,12 @@ function miniAvatarMontar(id) {
 
   el.style.display = '';
   const fase = (typeof getFase === 'function') ? getFase() : 0;
+  // Desenhado grande de propósito. O tamanho na tela vem do CSS, em
+  // rem, para o bicho acompanhar a escala como o resto — cravar px
+  // aqui deixava-o minúsculo no desktop, onde tudo o resto é 1,5x.
   el.innerHTML =
     '<div class="mini-av-corpo">' +
-      gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 46, 46, fase) +
+      gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 120, 120, fase) +
     '</div>' +
     '<div class="mini-av-borbulha"></div>';
 }

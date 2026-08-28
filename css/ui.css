@@ -447,7 +447,7 @@
      ecrã. */
   #memoriaModal .modal-card,
   #simonModal   .modal-card,
-  #snakeModal   .modal-card { max-width: 22rem !important; }
+  #snakeModal   .modal-card { max-width: 17rem !important; }
 
   .mini-title      { font-size: 0.5rem !important; letter-spacing: 0.1875rem !important; margin-bottom: 0.375rem !important; }
   .mini-sub        { font-size: 0.375rem !important; margin-bottom: 0.5rem !important; }
@@ -468,15 +468,20 @@
   .jkp-btn      { font-size: 0.625rem !important; padding: 0.625rem 1.5rem !important; }
   .jkp-side-label { font-size: 0.5625rem !important; }
 
-  /* ── Memória ── */
-  .mem-card { width: 5rem !important; height: 5rem !important; font-size: 2rem !important; border-radius: 0.625rem !important; }
-  .mem-grid { grid-template-columns: repeat(4, 5rem) !important; gap: 0.625rem !important; margin-bottom: 1.125rem !important; }
+  /* ── Memória ──
+     Era 5rem de carta com 2rem de letra: 120x120px com 48 de fonte no
+     desktop. Ao lado do avatar, que tem 46, parecia que o bicho estava
+     a olhar para cartas do tamanho da cabeça dele. */
+  .mem-card { width: 2.75rem !important; height: 2.75rem !important; font-size: 1.125rem !important; border-radius: 0.375rem !important; }
+  .mem-grid { grid-template-columns: repeat(4, 2.75rem) !important; gap: 0.375rem !important; margin-bottom: 0.625rem !important; }
 
-  /* ── Simon Says ── */
-  .simon-grid        { grid-template-columns: repeat(4, 5.625rem) !important; gap: 0.875rem !important; margin-bottom: 1rem !important; }
-  .simon-btn         { width: 5.625rem !important; height: 5.625rem !important; font-size: 2.375rem !important; border-radius: 0.875rem !important; }
-  .simon-info        { font-size: 0.6875rem !important; margin-bottom: 0.75rem !important; }
-  .simon-seq-display { font-size: 0.625rem !important; margin-bottom: 0.625rem !important; }
+  /* ── Simon Says ──
+     O mesmo: 5.625rem eram 135px por botão, e a grelha de quatro dava
+     603 de largura dentro de um cartão de 528 — transbordava. */
+  .simon-grid        { grid-template-columns: repeat(4, 3.125rem) !important; gap: 0.5rem !important; margin-bottom: 0.625rem !important; }
+  .simon-btn         { width: 3.125rem !important; height: 3.125rem !important; font-size: 1.375rem !important; border-radius: 0.5rem !important; }
+  .simon-info        { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
+  .simon-seq-display { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
 
   /* ── Jogo da Velha ── */
   .velha-grid { grid-template-columns: repeat(3, 6.875rem) !important; gap: 0.625rem !important; }
