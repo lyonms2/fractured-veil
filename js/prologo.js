@@ -19,7 +19,7 @@
 // preencher — é a escrita certa. O nome é o primeiro acto do jogador
 // neste mundo, e ainda não aconteceu.
 //
-// Depende de: gs, scheduleSave(), triggerSummon(), _loreTypewriter()
+// Depende de: gs, saveToFirebase(), triggerSummon(), _loreTypewriter()
 // ═══════════════════════════════════════════════════════════════════
 
 // As cenas em si vivem no i18n, porque o prólogo é a primeira tela que
@@ -36,7 +36,11 @@ function prologoJaVisto() {
 function _prologoMarcarVisto() {
   if (gs.prologoVisto) return;
   gs.prologoVisto = true;
-  scheduleSave();
+  // Grava já, sem o atraso de 5s do scheduleSave. Quem pula e fecha a
+  // aba a seguir não tem save nenhum — e sem save o prólogo voltava a
+  // abrir na próxima entrada, que é justamente o que ele não deve fazer.
+  if (typeof saveToFirebase === 'function') saveToFirebase();
+  else scheduleSave();
 }
 
 // ═══════════════════════════════════════════════════════════════════
