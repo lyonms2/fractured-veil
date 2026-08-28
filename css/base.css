@@ -149,6 +149,24 @@ main {
 #loginError { font-size:0.5625rem; color:#e74c3c; min-height:0.875rem; letter-spacing:0.03125rem; }
 #loginFooter { font-size:0.4375rem; color:#332244; letter-spacing:0.0625rem; margin-top:0.25rem; }
 
+/* No desktop a raiz é 24px, portanto o cartão inteiro vem 1,5x — dava
+   420px de largura e 650px de altura numa tela de 900, com 60px de
+   recheio. O login não é a interface do jogo: não precisa da escala que
+   existe para o texto de 5-7px ser legível. Aqui volta ao tamanho que
+   tem no telemóvel, com uma folga. */
+@media(min-width:681px) {
+  #loginCard { max-width:13rem; padding:1.75rem 1.5rem; gap:0.5rem; }
+
+  /* Encolher a caixa não chegava: o conteúdo dentro dela também vinha
+     a 1,5x — logo de 33px, campos de 53px de altura, botão de 66px, e
+     um cartão de 646px numa tela de 900. Aqui cada peça volta a uma
+     escala de tela de entrada. */
+  #loginLogo  { font-size:0.9375rem; letter-spacing:0.1875rem; }
+  #loginDesc  { font-size:0.5rem; margin:0.25rem 0; }
+  #loginBtn   { padding:0.5rem; font-size:0.5rem; }
+  #loginBtnIcon { font-size:0.75rem; }}
+
+
 /* ── SCROLLBARS ── */
 * { scrollbar-width: thin; scrollbar-color: #3a2060 #0a0816; }
 ::-webkit-scrollbar { width: 0.25rem; height: 0.25rem; }
