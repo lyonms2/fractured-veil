@@ -127,5 +127,8 @@ function talvezAbrirPrologo() {
                  || (typeof avatarSlots !== 'undefined' && avatarSlots.some(s => s));
   if (jaInvocou) return;
 
-  setTimeout(() => abrirPrologo(false), 900);
+  // Sem espera nenhuma: o modal sobe já, por cima do splash, e o painel
+  // de invocar nunca chega a ser visto. O setTimeout(0) é só para deixar
+  // o resto do login terminar antes de mexer no DOM.
+  setTimeout(() => abrirPrologo(false), 0);
 }

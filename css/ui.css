@@ -670,6 +670,10 @@
   opacity:0; pointer-events:none;
 }
 .lore-tw-reveal {
+  /* O estado final também vive aqui, e não só no keyframe: se a
+     animação não correr, o rodapé ficava preso no fotograma inicial —
+     invisível e 4px fora do sítio. Assim ela é só decoração. */
+  opacity:1; transform:none;
   animation:lore-fade-in .5s ease forwards;
   pointer-events:auto;
 }
@@ -887,12 +891,23 @@
 ══════════════════════════════════════ */
 #prologoModal {
   display:none; position:fixed; inset:0; z-index:600;
-  background:radial-gradient(ellipse at 50% 38%, rgba(40,18,10,.55) 0%, rgba(4,3,10,.97) 62%);
-  align-items:center; justify-content:center; padding:16px;
+  /* Opaco de ponta a ponta. O centro era rgba(...,.55) e deixava a tela
+     do jogo transparecer justamente onde fica o texto — não dava para
+     ler nada, e via-se o painel de invocar por baixo. */
+  background:radial-gradient(ellipse at 50% 38%, #1d100b 0%, #04030a 62%);
+  align-items:center; justify-content:center;
+  padding:16px; box-sizing:border-box;
 }
 .prologo-caixa {
-  width:100%; max-width:440px; max-height:92vh;
+  width:100%; max-width:440px;
+  /* Era max-height:92vh. No desktop o jogo corre com html{zoom:1.5}, e
+     as unidades vh resolvem contra o viewport SEM zoom — 92vh davam
+     138% do ecrã real, e o rodapé (o botão) ficava fora da tela sem
+     nada onde clicar. O 100% resolve contra o #prologoModal, que já
+     está do tamanho certo por ser fixed com inset:0. */
+  height:100%; min-height:0;
   display:flex; flex-direction:column; gap:12px;
+  box-sizing:border-box;
 }
 .prologo-topo {
   display:flex; align-items:center; justify-content:space-between;

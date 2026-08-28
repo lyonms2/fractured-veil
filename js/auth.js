@@ -476,15 +476,20 @@ async function _onLoginSuccess(user) {
     updateResourceUI();
   }
 
-  if(typeof hideSplash === 'function') hideSplash();
-
-  // O prólogo decide sozinho se aparece. Estava dentro do ramo do
+  // O prólogo entra ANTES do splash sair. Com ele depois, o jogador via
+  // o painel de invocar avatar a aparecer primeiro e a história a cair
+  // por cima — a ordem ao contrário, porque é a história que leva ao
+  // painel. Como tem z-index 600 e o splash 500, sobe por cima da
+  // cortina que ainda está a descer e não há piscar nenhum.
+  // Decide sozinho se aparece. Estava dentro do ramo do
   // "jogador sem save" e por isso só tinha uma hipótese na vida: o
   // sessionId lá em cima cria o documento com merge:true, portanto a
   // partir do segundo login o loadFromFirebase devolve sempre true e
   // aquele ramo nunca mais corre. Quem perdesse a primeira vez — um
   // index.html em cache chegava — perdia para sempre, sem aviso.
   if (typeof talvezAbrirPrologo === 'function') talvezAbrirPrologo();
+
+  if(typeof hideSplash === 'function') hideSplash();
 
   // Iniciar listeners de jogos multiplayer
   if(typeof iniciarListenerDesafiosRecebidos === 'function') iniciarListenerDesafiosRecebidos();
