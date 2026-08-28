@@ -3,8 +3,14 @@
 // Regras:
 //   · Avatar nível 20+ e vivo
 //   · Taxa varia com saldo da pool
-//   · Limite diário varia com raridade do avatar
+//   · Limite diário POR CONTA varia com raridade do avatar (1/2/4)
+//   · Teto diário DA POOL de 100 💎, partilhado com vender e queimar ovos
 //   · Pool abaixo de 100 💎 → câmbio desativado
+//
+// Os dois limites reiniciam em relógios diferentes: o da conta à
+// meia-noite UTC (o cambioLog guarda uma data), o da pool numa janela
+// de 24h corrida desde a última saída. A nota do painel diz o UTC, que
+// é o que o jogador vê mexer no seu próprio contador.
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Configuração ──
@@ -23,7 +29,11 @@ const CAMBIO_LIMITES = {
   'Lendário': 4,
 };
 
-// ── Calcula custo actual baseado na pool ──
+// Espelho do POOL_LIMITE_DIA do api/_pool-economia.js. Aqui serve só
+// para mostrar; quem manda é o servidor. Se mudar lá, muda aqui.
+const POOL_LIMITE_DIA = 100;
+
+// ── Calcula custo atual baseado na pool ──
 function calcCambioTaxa() {
   const saldo = window._cambioPoolSaldo || 0;
   for(const t of CAMBIO_TAXAS) {
@@ -47,10 +57,15 @@ function calcCambioUsadoHoje(cambioLog) {
 }
 
 // ── Valida se o jogador pode usar o câmbio ──
+// O `codigo` existe porque o render precisa de distinguir "pool baixa"
+// (que só se sabe depois de carregar a pool) das outras razões. Antes
+// comparava-se o `motivo` com a frase inteira — que é texto traduzido, e
+// portanto deixava de bater certo assim que alguém lhe mexesse ou o
+// jogador pusesse o jogo em inglês.
 function calcCambioEligivel() {
-  if(!hatched || dead || !avatar)    return { ok: false, motivo: 'Sem avatar activo.' };
-  if(nivel < CAMBIO_NIVEL_MIN)       return { ok: false, motivo: `Avatar precisa de nível ${CAMBIO_NIVEL_MIN}+.` };
-  if(calcCambioTaxa() === null)      return { ok: false, motivo: 'Pool insuficiente. Tenta mais tarde.' };
+  if(!hatched || dead || !avatar) return { ok: false, codigo: 'avatar', motivo: t('cambio.bloq.avatar') };
+  if(nivel < CAMBIO_NIVEL_MIN)    return { ok: false, codigo: 'nivel',  motivo: t('cambio.bloq.nivel', {n: CAMBIO_NIVEL_MIN}) };
+  if(calcCambioTaxa() === null)   return { ok: false, codigo: 'pool',   motivo: t('cambio.bloq.pool') };
   return { ok: true };
 }
 
@@ -62,10 +77,17 @@ async function cambioCarregarDados() {
       fbDb().collection('config').doc('pool').get(),
       fbDb().collection('players').doc(walletAddress).get(),
     ]);
-    const poolSaldo  = poolSnap.exists ? (poolSnap.data()?.cristais || 0) : 0;
+    const pool       = poolSnap.exists ? (poolSnap.data() || {}) : {};
+    const poolSaldo  = pool.cristais || 0;
     const cambioLog  = playerSnap.exists ? (playerSnap.data()?.cambioLog || null) : null;
+
+    // Mesma janela de 24h do servidor (marcarSaque, no _pool-economia.js):
+    // se a última saída foi há mais de um dia, o contador já não vale.
+    const expirou    = (Date.now() - (pool.ultimoReset || 0)) > 86400000;
+    const poolSaqueHoje = expirou ? 0 : (pool.saqueHoje || 0);
+
     window._cambioPoolSaldo = poolSaldo;
-    return { poolSaldo, cambioLog };
+    return { poolSaldo, cambioLog, poolSaqueHoje };
   } catch(e) {
     console.warn('[cambio] erro ao carregar dados:', e);
     return null;
@@ -112,11 +134,11 @@ async function renderCambioPanel() {
   const el = document.getElementById('cambioPanel');
   if(!el) return;
 
-  el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">A carregar câmbio...</div>`;
+  el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">${t('cambio.carregando')}</div>`;
 
   // Verifica avatar/nível antes de carregar dados da pool
   const elegivelBasico = calcCambioEligivel();
-  if(!elegivelBasico.ok && elegivelBasico.motivo !== 'Pool insuficiente. Tenta mais tarde.') {
+  if(!elegivelBasico.ok && elegivelBasico.codigo !== 'pool') {
     el.innerHTML = `
       <div style="padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
                   border-radius:6px;text-align:center;">
@@ -129,11 +151,11 @@ async function renderCambioPanel() {
   // Carrega dados da pool antes de verificar saldo
   const dados = await cambioCarregarDados();
   if(!dados) {
-    el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;">Erro ao carregar dados.</div>`;
+    el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;">${t('cambio.erro_dados')}</div>`;
     return;
   }
 
-  // Verificação completa agora que _cambioPoolSaldo está actualizado
+  // Verificação completa agora que _cambioPoolSaldo está atualizado
   const elegivel = calcCambioEligivel();
   if(!elegivel.ok) {
     el.innerHTML = `
@@ -152,10 +174,17 @@ async function renderCambioPanel() {
   const poolSaldo = dados.poolSaldo;
 
   // Nível da pool para label
-  const poolLabel = poolSaldo >= 1000 ? '🟢 Cheia'
-                  : poolSaldo >= 500  ? '🟡 Média'
-                  : poolSaldo >= 100  ? '🟠 Baixa'
-                  : '🔴 Insuficiente';
+  const poolLabel = poolSaldo >= 1000 ? t('cambio.pool.cheia')
+                  : poolSaldo >= 500  ? t('cambio.pool.media')
+                  : poolSaldo >= 100  ? t('cambio.pool.baixa')
+                  : t('cambio.pool.insuf');
+
+  // O teto da pool é partilhado com vender e queimar ovos: quem chega
+  // primeiro gasta. Sem isto na tela, o jogador batia num erro cru sem
+  // perceber por que é que o botão deixou de funcionar — o contador
+  // dele ainda tinha saldo.
+  const tetoRestante = Math.max(0, POOL_LIMITE_DIA - (dados.poolSaqueHoje || 0));
+  const cabemHoje    = Math.min(restante, tetoRestante);
 
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
@@ -164,13 +193,13 @@ async function renderCambioPanel() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
         <div style="padding:6px 8px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
                     border-radius:6px;text-align:center;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">TAXA ACTUAL</div>
+          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">${t('cambio.taxa')}</div>
           <div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#a78bfa;">${custo} 🪙</div>
-          <div style="font-size:5px;color:var(--muted);">por 💎</div>
+          <div style="font-size:5px;color:var(--muted);">${t('cambio.taxa_sub')}</div>
         </div>
         <div style="padding:6px 8px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
                     border-radius:6px;text-align:center;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">POOL</div>
+          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">${t('cambio.pool')}</div>
           <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:var(--gold);">${poolSaldo} 💎</div>
           <div style="font-size:5px;color:var(--muted);">${poolLabel}</div>
         </div>
@@ -179,24 +208,34 @@ async function renderCambioPanel() {
       <!-- Limite diário -->
       <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
                   border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:6px;color:var(--muted);">Limite diário (${avatar?.raridade || 'Comum'})</span>
+        <span style="font-size:6px;color:var(--muted);">${t('cambio.limite', {raridade: tItemRaridade(avatar?.raridade || 'Comum')})}</span>
         <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;
                      color:${restante > 0 ? '#7ab87a' : '#e74c3c'};">
           ${restante}/${limite} 💎
         </span>
       </div>
 
+      <!-- Teto da pool: o outro limite, o que não é só seu -->
+      <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:6px;color:var(--muted);">${t('cambio.teto_global')}</span>
+        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;
+                     color:${tetoRestante > 0 ? '#7ab87a' : '#e74c3c'};">
+          ${tetoRestante}/${POOL_LIMITE_DIA} 💎
+        </span>
+      </div>
+
       <!-- Saldo de moedas -->
       <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
                   border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:6px;color:var(--muted);">Teu saldo</span>
+        <span style="font-size:6px;color:var(--muted);">${t('cambio.saldo')}</span>
         <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);">${gs.moedas} 🪙</span>
       </div>
 
       <!-- Botões de conversão -->
-      ${restante > 0 ? `
+      ${cabemHoje > 0 ? `
       <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        ${Array.from({length: restante}, (_, i) => i + 1).map(qtd => {
+        ${Array.from({length: cabemHoje}, (_, i) => i + 1).map(qtd => {
           const custoQtd = custo * qtd;
           const podeComprar = gs.moedas >= custoQtd;
           return `<button
@@ -216,12 +255,12 @@ async function renderCambioPanel() {
       </div>` : `
       <div style="padding:8px;text-align:center;font-size:7px;color:#e74c3c;
                   border:1px solid rgba(231,76,60,.2);border-radius:6px;background:rgba(231,76,60,.05);">
-        Limite diário atingido · Volta amanhã 🌙
+        ${restante > 0 ? t('cambio.teto_cheio') : t('cambio.esgotado')}
       </div>`}
 
       <div style="font-size:5.5px;color:var(--muted);text-align:center;line-height:1.8;">
-        Taxa sobe quando a pool está baixa · Reset diário à meia-noite<br>
-        Cristais obtidos por câmbio são cristais normais
+        ${t('cambio.nota')}<br>
+        ${t('cambio.nota2')}
       </div>
 
     </div>`;
