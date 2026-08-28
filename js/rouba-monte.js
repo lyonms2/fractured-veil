@@ -1436,7 +1436,9 @@ async function _rmRenderResultado(sala, opWallet) {
 
 function rmIniciarListenerNotificacoes() {
   if(!_rmRtdb()||!walletAddress) return;
-  console.log('[RM] rmIniciarListenerNotificacoes — wallet:', walletAddress);
+  // Este imprimia o identificador da conta no console a cada entrada.
+  // Não servia para nada em produção e era o único log a expor um dado
+  // do jogador.
 
   // Verificar se há partida em curso ao reconectar
   _rmVerificarPartidaAtiva();
@@ -1583,4 +1585,4 @@ window._rmVerificarPartidaAtiva      = _rmVerificarPartidaAtiva;
 window.rmIniciarListenerNotificacoes = rmIniciarListenerNotificacoes;
 window._rmRenderLobby                = _rmRenderLobby;
 
-console.log('[ROUBA MONTE] Módulo carregado.');
+// Idem: anúncio de módulo, barulho a cada entrada.

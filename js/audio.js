@@ -7,8 +7,18 @@
 let _audioCtx = null;
 let _audioEnabled = true;
 
+// O navegador só deixa tocar som depois de um gesto do usuário. O
+// _getCtx CRIAVA o contexto na primeira tentativa de som, viesse ela de
+// onde viesse — e como há sons no arranque, o Chrome enchia o console
+// com "The AudioContext was not allowed to start", um por tentativa.
+// Eram dezassete numa entrada normal.
+//
+// Agora nada acontece antes do gesto. Não se perde som nenhum: o que
+// tocasse antes disso não seria ouvido de qualquer maneira.
+let _audioLiberado = false;
+
 function _getCtx() {
-  if(!_audioEnabled) return null;
+  if(!_audioEnabled || !_audioLiberado) return null;
   try {
     if(!_audioCtx || _audioCtx.state === 'closed') {
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -18,9 +28,20 @@ function _getCtx() {
   } catch(e) { return null; }
 }
 
-// Ativa o AudioContext no primeiro toque (necessário para iOS)
-document.addEventListener('touchstart', _getCtx, { once: true, passive: true });
-document.addEventListener('mousedown',  _getCtx, { once: true, passive: true });
+// O primeiro gesto libera o áudio. O pointerdown cobre toque e rato; o
+// keydown é para quem joga de teclado e nunca dispara um dos dois.
+function _liberarAudio() {
+  _audioLiberado = true;
+  _getCtx();
+}
+// O click entra porque nem todo clique passa por pointerdown: um botão
+// acionado pelo teclado dispara click sem pointerdown nenhum, e um
+// clique feito por código também. Sem ele, esses caminhos deixavam o
+// áudio mudo para sempre.
+document.addEventListener('pointerdown', _liberarAudio, { once: true, passive: true });
+document.addEventListener('click',       _liberarAudio, { once: true });
+document.addEventListener('keydown',     _liberarAudio, { once: true });
+document.addEventListener('touchstart',  _liberarAudio, { once: true, passive: true });
 
 // ── Helper: toca um oscilador simples ─────────────────────────────
 function _osc(freq, type, start, dur, vol, ctx, dest) {

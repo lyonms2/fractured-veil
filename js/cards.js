@@ -332,4 +332,5 @@ function getDeckInfo(deck) {
   };
 }
 
-console.log('[CARDS] Módulo carregado — 54 cartas, 14 avatares únicos.');
+// Havia aqui um console.log a anunciar o módulo. Não dizia nada a
+// ninguém em produção e era barulho a cada entrada.

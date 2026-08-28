@@ -1820,4 +1820,4 @@ window._bnRenderLobby               = _bnRenderLobby;
 window._bnToggleOrientacao          = _bnToggleOrientacao;
 window.bnDesfazerNavio              = bnDesfazerNavio;
 
-console.log('[BATALHA NAVAL] Módulo carregado.');
+// Idem: anúncio de módulo, barulho a cada entrada.
