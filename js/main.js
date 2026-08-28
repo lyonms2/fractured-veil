@@ -121,8 +121,8 @@ document.addEventListener('visibilitychange', async () => {
 
   // ── Segundo plano: avatar fica em pausa — nada decai nem o tempo de vida
   // avança enquanto a aba está escondida (idade = tempo de jogo real,
-  // usado no card de venda no marketplace). Excepção: dormindo, a energia
-  // continua a subir (mais devagar que ao vivo), o resto continua parado. ──
+  // usado no card de venda no marketplace). Exceção: dormindo, a energia
+  // continua subindo (mais devagar que ao vivo), o resto continua parado. ──
   if(_hiddenAt > 0 && typeof hatched !== 'undefined' && hatched && !dead) {
     const offlineSecs = Math.floor((Date.now() - _hiddenAt) / 1000);
     if(offlineSecs > 0) {

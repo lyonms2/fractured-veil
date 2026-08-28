@@ -23,7 +23,7 @@ let _rmHeartbeatSala   = null; // heartbeat dentro da partida
 let _rmSalaListener    = null;
 let _rmTimerInt        = null;
 let _rmCartaSel        = null;
-let _rmOpWallet        = null; // wallet do oponente na partida activa
+let _rmOpWallet        = null; // wallet do oponente na partida ativa
 
 // ── Helpers ──
 function _rmRtdb()     { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
@@ -82,7 +82,7 @@ function _rmBloquearUI(bloquear) {
   console.log('[RM] _rmBloquearUI —', bloquear ? 'BLOQUEADO' : 'DESBLOQUEADO');
 }
 
-// RTDB converte arrays em objectos — converte de volta
+// RTDB converte arrays em objetos — converte de volta
 function _rmToArray(val) {
   if(!val) return [];
   if(Array.isArray(val)) return val;
@@ -183,7 +183,7 @@ function openRoubaMonte() {
   if(!_rmRtdb())              { showBubble(t('rm.bub.unavailable')); return; }
   ModalManager.open('roubaMontModal');
 
-  // Se há partida activa → restaura em vez de mostrar lobby
+  // Se há partida ativa → restaura em vez de mostrar lobby
   if(_rmSalaId) {
     console.log('[RM] openRoubaMonte — partida activa detectada, restaurando sala:', _rmSalaId);
     _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}`).once('value').then(snap => {
@@ -208,7 +208,7 @@ function openRoubaMonte() {
 }
 
 function closeRoubaMonte() {
-  // Se há partida activa, não fecha — apenas minimiza
+  // Se há partida ativa, não fecha — apenas minimiza
   if(_rmSalaId) {
     console.log('[RM] closeRoubaMonte — partida activa, apenas fechando o modal visualmente');
     ModalManager.close('roubaMontModal');
@@ -713,10 +713,10 @@ function _rmIniciarPartida(salaId, sala) {
     updateAllUI();
   }
 
-  // Bloqueia botões de acção enquanto na partida
+  // Bloqueia botões de ação enquanto na partida
   _rmBloquearUI(true);
 
-  // Heartbeat na sala — actualiza presença a cada 10s
+  // Heartbeat na sala — atualiza presença a cada 10s
   if(_rmHeartbeatSala) clearInterval(_rmHeartbeatSala);
   _rmHeartbeatSala = setInterval(async () => {
     if(!_rmRtdb()||!_rmSalaId) return;
@@ -728,7 +728,7 @@ function _rmIniciarPartida(salaId, sala) {
   // Marca presença inicial e regista onDisconnect
   if(_rmRtdb()&&_rmSalaId) {
     const presRef = _rmRtdb().ref(`roubaMonte/salas/${_rmSalaId}/presenca/${walletAddress}`);
-    presRef.onDisconnect().set('desconectado'); // Firebase escreve isto ao fechar/actualizar
+    presRef.onDisconnect().set('desconectado'); // Firebase escreve isto ao fechar/atualizar
     presRef.set('activo');
     console.log('[RM] Presença registada com onDisconnect para abandono automático');
   }
@@ -1285,7 +1285,7 @@ async function rmConfirmarAbandono(salaId) {
     _rmRtdb().ref(`roubaMonte/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel();
   } catch(e) {}
 
-  // Escreve abandono directamente → oponente ganha mesmo que esteja offline
+  // Escreve abandono diretamente → oponente ganha mesmo que esteja offline
   try {
     await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
       status:   'finalizada',
@@ -1337,7 +1337,7 @@ async function _rmRenderResultado(sala, opWallet) {
     '| euVenci:', euVenci, '| empate:', empate);
 
   playSound(euVenci ? 'win' : empate ? 'arena_round_draw' : 'lose');
-  // Actualiza ranking
+  // Atualiza ranking
   await _rmAtualizarRanking(sala.id, euVenci, empate);
 
   const aposta  = sala.aposta;
@@ -1457,7 +1457,7 @@ function rmIniciarListenerNotificacoes() {
   });
 }
 
-// Verifica se há partida activa para este wallet ao reconectar
+// Verifica se há partida ativa para este wallet ao reconectar
 async function _rmVerificarPartidaAtiva() {
   if(!_rmRtdb()||!walletAddress) return;
 
@@ -1548,7 +1548,7 @@ function rmLimparAoDesconectar() {
   if(_rmHeartbeatSala) { clearInterval(_rmHeartbeatSala); _rmHeartbeatSala=null; }
   if(_rmLobbyRef) { try{_rmLobbyRef.remove();}catch(e){} _rmLobbyRef=null; }
 
-  // Se havia partida activa, marca presença como desconectado → oponente ganha
+  // Se havia partida ativa, marca presença como desconectado → oponente ganha
   if(_rmSalaId && _rmRtdb() && walletAddress) {
     console.log('[RM] Abandono manual — marcando presença como desconectado');
     try {

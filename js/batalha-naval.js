@@ -46,7 +46,7 @@ let _bnMeuTabuleiro    = [];  // Array 8x8: null | { navioId, acertado }
 let _bnNaviosColocados = {};  // { navioId: [{r,c},...] }
 let _bnNavioAtual      = 0;   // índice em BN_NAVIOS
 let _bnOrientacao      = 'H'; // H ou V
-let _bnPreview         = [];  // casas do preview actual
+let _bnPreview         = [];  // casas do preview atual
 
 // ── Helpers ──
 function _bnRtdb()     { return typeof _rtdb !== 'undefined' ? _rtdb : null; }
@@ -1501,7 +1501,7 @@ async function bnConfirmarAbandono(salaId) {
   if(_bnHeartbeatSala) { clearInterval(_bnHeartbeatSala); _bnHeartbeatSala = null; }
   try { _bnRtdb().ref(`batalhaNaval/salas/${salaId}/presenca/${walletAddress}`).onDisconnect().cancel(); } catch(e) {}
 
-  // Escreve abandono directamente → oponente ganha mesmo que esteja offline
+  // Escreve abandono diretamente → oponente ganha mesmo que esteja offline
   try {
     await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
       status:   'finalizada',
@@ -1697,7 +1697,7 @@ async function _bnCarregarRanking() {
 // NOTIFICAÇÕES
 // ═══════════════════════════════════════════════════════════════════
 
-// Verifica se há partida activa para este wallet ao reconectar
+// Verifica se há partida ativa para este wallet ao reconectar
 async function _bnVerificarPartidaAtiva() {
   if(!_bnRtdb() || !walletAddress) return;
 

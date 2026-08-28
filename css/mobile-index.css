@@ -376,7 +376,7 @@
   /* Tabs — área de toque confortável */
   .arena-tab { min-height: 2.5rem !important; }
 
-  /* Tab content — mais espaço entre secções no fullscreen */
+  /* Tab content — mais espaço entre seções no fullscreen */
   .arena-tab-content { gap: 0.75rem !important; padding: 0.25rem 0 0.5rem !important; }
 
   /* Player cards — mais espaçosos e com avatar maior */
@@ -405,7 +405,7 @@
 
   /* ════════════════════
      MINIGAMES — fullscreen mobile
-     Elementos maiores aproveitando o ecrã todo.
+     Elementos maiores aproveitando a tela toda.
   ════════════════════ */
 
   /* Títulos e botões */
@@ -471,7 +471,7 @@
     display: flex !important;
     flex-direction: column !important;
     gap: 0 !important;
-    padding: 0 !important;       /* padding vai para cada secção */
+    padding: 0 !important;       /* padding vai para cada seção */
     overflow: hidden;
   }
 

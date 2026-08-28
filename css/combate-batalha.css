@@ -2,7 +2,7 @@
    BATALHA PvE
 
    Três zonas empilhadas: inimigo em cima, registo ao meio, você e as
-   acções em baixo. Uma só disposição — em ecrã largo cresce, no telemóvel
+   ações em baixo. Uma só disposição — em tela larga cresce, no celular
    encolhe, mas a ordem nunca muda.
 
    NOTA: a escala vem do html{font-size} do base.css. Nada aqui usa vh — as alturas
@@ -14,7 +14,7 @@
   display: flex; flex-direction: column; align-items: center;
   /* Opaco. A primeira versão tinha .5 no topo do gradiente e via-se a
      página inteira por trás — o nome do jogo, as barras dos vitais, o
-     diário. Numa batalha por turnos, onde se está a ler contas, isso é
+     diário. Numa batalha por turnos, onde se está lendo contas, isso é
      ruído a competir com o que interessa. O desfoque é a rede para o
      caso de alguma coisa ainda transparecer. */
   background: radial-gradient(ellipse at 50% 0%, rgba(38,12,56,.97), rgba(4,3,10,1) 70%);
@@ -25,7 +25,7 @@
 #combateModal.open { opacity: 1; pointer-events: all; }
 
 /* A arena rola como último recurso. Não devia ser preciso — o registo
-   encolhe primeiro — mas em ecrãs muito baixos vale mais rolar do que
+   encolhe primeiro — mas em telas muito baixas vale mais rolar do que
    ter o overflow:hidden do modal a cortar os botões pelo meio. */
 .cb-arena {
   width: 100%; max-width: 30rem; height: 100%;
@@ -70,7 +70,7 @@
 }
 
 /* Quem está em campo: maior, aceso, e com um fio de luz por cima.
-   O destaque é o tamanho e o brilho — não o facto de ser o único que
+   O destaque é o tamanho e o brilho — não o fato de ser o único que
    dá para ler. */
 .cb-lutador.ativo {
   background: linear-gradient(160deg, rgba(42,34,60,.95), rgba(18,15,30,.95));
@@ -121,7 +121,7 @@
 /* ── Vida e magia em bolinhas ──
    Uma bolinha por cada 5 pontos. Como PV = R×5 e PM = R×5, o número de
    bolinhas é a Resistência do avatar: lê-se a ficha de relance. A da vez
-   enche-se por fracção (--f), para um golpe pequeno deixar rasto. */
+   enche-se por fração (--f), para um golpe pequeno deixar rasto. */
 .cb-bolas {
   display: flex; align-items: center; justify-content: center;
   gap: 0.125rem; flex-wrap: wrap; min-height: 0.4375rem; max-width: 100%;
@@ -159,7 +159,7 @@
 .cb-marca.buff     { color:#e05555; border-color:rgba(224,85,85,.4);   background:rgba(224,85,85,.1); }
 
 /* ── Registo: a conta fica aqui, e é o coração desta versão ──
-   O min-height impede que a barra de acções o esmague — ela cresce com
+   O min-height impede que a barra de ações o esmague — ela cresce com
    o avatar (um com Toque Ardente traz um botão a mais). Mas tem de ser
    pequeno: com 9.375rem o conjunto passava a altura do modal e o
    overflow:hidden cortava o fundo dos botões. 5.625rem chegam para duas
@@ -222,7 +222,7 @@
 .cb-onda-total { display:block; color:#ff7a6b; font-weight:700; margin-top:0.125rem; }
 @keyframes cb-log-in { from { opacity:0; transform: translateY(0.25rem); } to { opacity:1; transform:none; } }
 
-/* ── Acções ── */
+/* ── Ações ── */
 .cb-acoes {
   flex: 0 0 auto; display: grid; gap: 0.3125rem;
   grid-template-columns: repeat(2, 1fr);
@@ -342,7 +342,7 @@
   100% { opacity: 0;   transform: scale(3.2); }
 }
 
-/* ── Telemóvel: o alvo do dedo manda ──
+/* ── Celular: o alvo do dedo manda ──
    O resto do jogo desenha em 5–7px na escala base, e os botões
    herdavam essa escala — davam 32px de altura, que é pouco para um dedo
    numa decisão que se toma dezenas de vezes por batalha. O registo tem
@@ -425,7 +425,7 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    O QUE FAZ CADA MAGIA
-   Abre por cima da batalha. A barra de acções só tem espaço para o nome
+   Abre por cima da batalha. A barra de ações só tem espaço para o nome
    e o custo, e "Ferrões Salinos, 3 PM" não diz a ninguém que envenena.
    ═══════════════════════════════════════════════════════════════════ */
 .cb-ajuda {
@@ -482,7 +482,7 @@
 }
 
 /* ── A FICHA ABRE-SE NO CARTÃO ──
-   Havia um "?" no topo que abria a ficha de dois avatares: o meu activo
+   Havia um "?" no topo que abria a ficha de dois avatares: o meu ativo
    e o dele. Nunca a de quem está no banco — que é justamente quem se
    precisa de conhecer ANTES de o mandar entrar. Agora cada cartão abre
    a sua, e o "ficha" no canto diz que dá para tocar. */

@@ -28,7 +28,7 @@
 // Exemplo: { H:1, dados:4 } é FA = H + 4d.
 // ═══════════════════════════════════════════════════════════════════
 
-// Nenhuma magia atinge área: o combate é entre dois avatares activos, e
+// Nenhuma magia atinge área: o combate é entre dois avatares ativos, e
 // efeitos de área não teriam onde pegar.
 //
 // Mas várias magias do manual eram de área por CENÁRIO, não por
@@ -78,7 +78,7 @@ const MAGIAS = {
     ],
     // Vazia de propósito, e agora por duas razões. O manual não tem uma
     // única magia de fogo defensiva — e o Fogo é o elemento que responde
-    // a tudo batendo mais forte. Continua a defender-se pela Força de
+    // a tudo batendo mais forte. Continua defendendo-se pela Força de
     // Defesa como toda a gente; só não tem magia que a melhore.
     defesa: [],
   },
@@ -161,7 +161,7 @@ const MAGIAS = {
       { id:'so_a2', pm:2,  buffFuria:true },
       // Roubo de Vida: 1 PM por turno rouba 1d PV, que passam para si
       { id:'so_a3', pm:1, porTurno:true, roubaVida:{ dados:1 } },
-      // Cegueira: o alvo testa Resistência ou fica a ver mal — H−1 para
+      // Cegueira: o alvo testa Resistência ou fica vendo mal — H−1 para
       // bater e H−3 para esquivar, até ao fim do combate
       { id:'so_a4', pm:3, cegueira:{ ataque:1, esquiva:3 } },
     ],

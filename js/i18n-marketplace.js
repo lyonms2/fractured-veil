@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════
 // I18N — Marketplace
-// Extensão de strings para marketplace.html e ficheiros relacionados.
+// Extensão de strings para marketplace.html e arquivos relacionados.
 // Carregado após i18n.js via registerStrings().
 // ═══════════════════════════════════════════════════════════════════
 
 window.registerStrings({
   // ── Navegação (sidebar + bottom nav) ─────────────────────────────
   // ── PROGRAMA DE CONVITES ──
-  // A secção inteira estava escrita à mão em português dentro do
+  // A seção inteira estava escrita à mão em português dentro do
   // js/cristais.js, sem uma única chamada a t() — com o jogo em inglês
   // ficava tudo em português.
   'ref.title':          '🔗 Programa de Convites',

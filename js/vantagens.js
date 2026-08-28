@@ -35,7 +35,7 @@ const VANTAGENS = {
   afinidade_profunda:{ custo: 1, metadeCustoProprioElemento: true },
 
   // Ataque Especial: 1 PM compra F+2 num único golpe. É uma manobra,
-  // não uma acção à parte — soma-se ao murro do turno.
+  // não uma ação à parte — soma-se ao murro do turno.
   golpe_carregado:   { custo: 1, pm: 1, bonusFGolpe: 2 },
 
   // Ataque Múltiplo: vários golpes de Força na mesma rodada, 1 PM cada,

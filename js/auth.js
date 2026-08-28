@@ -130,11 +130,11 @@ function esconderLoginScreen() {
 // chega com emailVerified a true, portanto passa pelo mesmo portão que
 // o email e a senha — o onAuthStateChanged trata do resto.
 //
-// O popup é bloqueado com frequência (telemóvel, sobretudo), e por isso
-// há o recuo para redirect: nesse caminho o utilizador sai da página e
+// O popup é bloqueado com frequência (celular, sobretudo), e por isso
+// há o recuo para redirect: nesse caminho o usuário sai da página e
 // volta já autenticado, e o listener acorda sozinho.
 //
-// IMPORTANTE: isto só funciona depois de o Google estar activado em
+// IMPORTANTE: isto só funciona depois de o Google estar ativado em
 // Authentication > Sign-in method na consola do Firebase, e do domínio
 // estar na lista de Authorized domains.
 // ═══════════════════════════════════════════════════════════════════
@@ -407,8 +407,8 @@ async function _onLoginSuccess(user) {
 
     // ── Offline: avatar fica em pausa — nada decai nem o tempo de vida
     // avança enquanto o jogador está ausente (idade = tempo de jogo real,
-    // usado no card de venda no marketplace). Excepção: dormindo, a energia
-    // continua a subir (mais devagar que ao vivo), o resto continua parado. ──
+    // usado no card de venda no marketplace). Exceção: dormindo, a energia
+    // continua subindo (mais devagar que ao vivo), o resto continua parado. ──
     if(hatched && !dead) {
       const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
       if(offlineSecs > 0) {
@@ -419,7 +419,7 @@ async function _onLoginSuccess(user) {
           // vivo — mas dormir com o separador fechado É a forma de
           // dormir, portanto o amuleto não fazia nada onde mais fazia
           // falta. Os itens são do avatar em campo, e este ramo só corre
-          // para esse, que é o que estava a dormir.
+          // para esse, que é o que estava dormindo.
           const offlineCycles = Math.floor(offlineSecs / 60);
           const porCiclo = OFFLINE_SLEEP_ENERGY_PER_CYCLE * getItemEffect('sleepEnergyMult');
           vitals.energia = Math.min(100, vitals.energia + offlineCycles * porCiclo);
@@ -568,7 +568,7 @@ async function _onLoginSuccess(user) {
   // o painel de invocar avatar a aparecer primeiro e a história a cair
   // por cima — a ordem ao contrário, porque é a história que leva ao
   // painel. Como tem z-index 600 e o splash 500, sobe por cima da
-  // cortina que ainda está a descer e não há piscar nenhum.
+  // cortina que ainda está descendo e não há piscar nenhum.
   // Decide sozinho se aparece. Estava dentro do ramo do
   // "jogador sem save" e por isso só tinha uma hipótese na vida: o
   // sessionId lá em cima cria o documento com merge:true, portanto a
@@ -595,9 +595,9 @@ function iniciarAuthListener() {
   _authListenerIniciado = true;
 
   fbAuth().onAuthStateChanged(async user => {
-    // O emailVerified estava a ser verificado só dentro do
+    // O emailVerified estava sendo verificado só dentro do
     // loginComEmail(), depois do signInWithEmailAndPassword. Só que o
-    // listener dispara com o utilizador ainda autenticado, antes do
+    // listener dispara com o usuário ainda autenticado, antes do
     // signOut que aquele código faz — e nessa janela um email por
     // confirmar entrava. Aqui o portão fecha para todos os caminhos, e
     // o Google passa porque as contas dele já vêm verificadas.
@@ -608,7 +608,7 @@ function iniciarAuthListener() {
       // Sessão expirou
       await disconnectWallet();
     } else if(!user && !walletAddress) {
-      // Não logado — mostra o ecrã de login e remove o splash
+      // Não logado — mostra a tela de login e remove o splash
       mostrarLoginScreen();
       if(typeof hideSplash === 'function') hideSplash();
     }

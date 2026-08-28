@@ -186,7 +186,7 @@ async function amigoAceitar(alvoUid) {
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
-    // Actualizar estado local
+    // Atualizar estado local
     if(_amigosData) {
       _amigosData.amigos[alvoUid] = { nome: json.nomeAlvo || '???', ts: Date.now() };
       _amigosData.pedidos = _amigosData.pedidos.filter(p => p.de !== alvoUid);
@@ -370,7 +370,7 @@ function _renderVisitaOverlay() {
     </div>`;
 }
 
-// ── Executar acção de visita ─────────────────────────────────
+// ── Executar ação de visita ─────────────────────────────────
 async function executarVisita(tipo) {
   if(!_visitaAtual) return;
   const btn = document.getElementById(`visitaBtn-${tipo}`);
@@ -387,20 +387,20 @@ async function executarVisita(tipo) {
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
 
-    // Actualizar estado local do visitante
+    // Atualizar estado local do visitante
     gs.moedas = json.novasMoedas;
     xp = (xp || 0) + json.xpGanho;
     updateResourceUI();
     scheduleSave();
 
-    // Actualizar cooldown local + vital exibido
+    // Atualizar cooldown local + vital exibido
     if(_visitaAtual.cooldowns) _visitaAtual.cooldowns[tipo] = Date.now();
     if(_visitaAtual.perfil?.vitals) {
       const vitalField = { alimentar:'fome', brincar:'humor', limpar:'higiene' }[tipo];
       _visitaAtual.perfil.vitals[vitalField] = json.novoVital;
     }
 
-    // Actualizar visitasLog local
+    // Atualizar visitasLog local
     if(_amigosData) {
       if(!_amigosData.visitasLog[_visitaAtual.uid]) _amigosData.visitasLog[_visitaAtual.uid] = {};
       _amigosData.visitasLog[_visitaAtual.uid][tipo] = Date.now();

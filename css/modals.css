@@ -648,7 +648,7 @@
    que decide o tamanho — ver o comentário do js/mini-avatar.js. */
 .mini-av-corpo svg { display:block; width:100%; height:100%; }
 
-/* ── As reacções ──
+/* ── As reações ──
    Duas coisas fazem o trabalho todo aqui, e nenhuma custa código.
 
    Esmagar e esticar: o salto era um scale(1.12) uniforme, que lê como

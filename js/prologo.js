@@ -7,7 +7,7 @@
 // jogo exigia o vínculo para deixar ler como o vínculo nasceu.
 //
 // O prólogo desfaz esse nó. É a primeira coisa que um jogador novo vê,
-// antes de existir avatar, e termina no instante exacto em que a
+// antes de existir avatar, e termina no instante exato em que a
 // criatura sai da Fratura e olha para ele — que é o botão INVOCAR.
 // A história entrega a mecânica na mão; não é preciso dica nenhuma.
 //
@@ -151,7 +151,7 @@ function fecharPrologo() {
 //
 // Chamado pelo _onLoginSuccess quando não há save nenhum. O atraso
 // espera o splash sair — abrir por cima dele mostrava o prólogo a
-// aparecer por baixo de uma cortina que ainda estava a subir.
+// aparecer por baixo de uma cortina que ainda estava subindo.
 // ═══════════════════════════════════════════════════════════════════
 function talvezAbrirPrologo() {
   if (prologoJaVisto()) return;

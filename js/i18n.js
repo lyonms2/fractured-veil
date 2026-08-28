@@ -280,7 +280,7 @@
       'btn.lay_egg':             'BOTAR OVO',
       'btn.wake':                'ACORDAR',
       'btn.friends':             'AMIGOS',
-      // A linha por baixo do nome nos botões de acção: ou o custo, ou a
+      // A linha por baixo do nome nos botões de ação: ou o custo, ou a
       // razão de estar apagado.
       'act.sub.cheio':           'cheio',
       'act.sub.com_fome':        'com fome',
@@ -731,7 +731,7 @@ function applyI18nDOM() {
   // E nesses quatro botões a dica é a ÚNICA legenda que existe — o que
   // se vê é só o ícone e o número.
   //
-  // Vai também para aria-label, que é o que um leitor de ecrã anuncia;
+  // Vai também para aria-label, que é o que um leitor de tela anuncia;
   // o title sozinho não chega.
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');

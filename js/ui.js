@@ -58,7 +58,7 @@ function setBar(id, val, miniId) {
 // clique cortava-o. O que muda é já não ser preciso clicar para saber.
 //
 // Serve as duas larguras: aos ≤48rem a .fv-bottom-nav está desligada
-// (ver css/mobile-index.css:458) e o telemóvel usa estes mesmos botões,
+// (ver css/mobile-index.css:458) e o celular usa estes mesmos botões,
 // inline no cartão do bicho.
 // ═══════════════════════════════════════════════════════════════════
 function estadoDasAccoes() {
@@ -171,7 +171,7 @@ function updateResourceUI() {
     _custoInv > 0 ? t('ui.summon_btn_paid', { cost: _custoInv }) : t('ui.summon_btn');
   // Se o preço estiver fora do alcance, explica porquê e dá a saída
   if(typeof updateSummonLockHint === 'function') updateSummonLockHint();
-  // FIX: actualiza visibilidade dos botões do header após qualquer mudança de estado
+  // FIX: atualiza visibilidade dos botões do header após qualquer mudança de estado
   if(typeof updateHeaderButtons === 'function' && walletAddress) updateHeaderButtons();
 }
 
@@ -288,9 +288,9 @@ function updateLifeEstimate() {
   if(!el) return;
   if(!hatched || dead || sleeping) { el.textContent = sleeping ? t('ui.sleeping') : '—'; el.style.color = 'var(--muted)'; return; }
 
-  // A saúde só cai por doença activa (ver js/gametick.js), então o tempo de
+  // A saúde só cai por doença ativa (ver js/gametick.js), então o tempo de
   // vida estimado é: ciclos até um vital ficar crítico + ciclos de descuido
-  // sustido até a doença activar (DISEASE_STRESS_THRESHOLD) + ciclos até a
+  // sustido até a doença ativar (DISEASE_STRESS_THRESHOLD) + ciclos até a
   // saúde esgotar sob o dreno da doença (DISEASE_DECAY_PER_CYCLE).
   if(activeDiseases.length > 0) {
     const secsLeft = Math.round((vitals.saude / (DISEASE_DECAY_PER_CYCLE * activeDiseases.length)) * 60);
@@ -367,7 +367,7 @@ function fillCreatureCard() {
   const bonusLabel = document.getElementById('elemBonusLabel');
   // `car` sozinho basta como porteiro: um avatar antigo com um elemento
   // que já não existe não tem entrada aqui, e o bloco não aparece — que
-  // era exactamente o que o antigo `car?.bonus` fazia.
+  // era exatamente o que o antigo `car?.bonus` fazia.
   if(bonusBlock && bonusTxt && car) {
     bonusTxt.textContent              = t('elem.bonus.' + avatar.elemento);
     bonusTxt.style.color              = car.cor + 'cc';
@@ -476,7 +476,7 @@ function updateEquippedDisplay() {
 // ═══════════════════════════════════════════════════════════════════
 // RECONSTRUIR ECRÃS AO TROCAR DE SLOT
 //
-// A lógica que decide qual ecrã mostrar (inicial / ovo / vivo / morto)
+// A lógica que decide qual tela mostrar (inicial / ovo / vivo / morto)
 // só existia dentro do _onLoginSuccess, portanto trocar de slot mudava
 // o estado mas deixava a interface a mostrar o avatar anterior — só um
 // refresh à página é que corrigia.
@@ -489,7 +489,7 @@ function rebuildScreensParaSlot() {
   const btns = $('actionBtns');
 
   if(!avatar) {
-    // Slot vazio — volta ao ecrã inicial com o painel de invocar
+    // Slot vazio — volta à tela inicial com o painel de invocar
     set('idleScreen','flex'); set('eggScreen','none');
     set('aliveScreen','none'); set('deadScreen','none');
     set('creatureCard','none'); set('statusCard','none');
@@ -512,7 +512,7 @@ function rebuildScreensParaSlot() {
   }
 
   if(!hatched) {
-    // Ovo por chocar — setupAvatar já põe os ecrãs certos
+    // Ovo por chocar — setupAvatar já põe as telas certas
     if(typeof setupAvatar === 'function') setupAvatar();
     if(typeof updateResourceUI === 'function') updateResourceUI();
     return;

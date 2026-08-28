@@ -40,7 +40,7 @@ var _arenaTimerInterval     = null;
 var _arenaEscolhaFeita      = false;
 var _arenaPresencaHeartbeat = null;  // heartbeat de presença durante a partida
 var _arenaPresencaRef       = null;  // ref RTDB para cancelar onDisconnect
-var _arenaOpWallet          = null;  // wallet do oponente na partida activa
+var _arenaOpWallet          = null;  // wallet do oponente na partida ativa
 var _arenaDesafioStatusRef  = null;  // ref do listener de status em _renderDesafioPendente
 
 // ═══════════════════════════════════════════════════════════════════
@@ -107,7 +107,7 @@ function closeArena() {
   if(_arenaHeartbeat) { clearInterval(_arenaHeartbeat); _arenaHeartbeat = null; }
   _arenaLimparPresenca();
 
-  // Se há partida activa, escreve abandono directamente no RTDB → oponente ganha
+  // Se há partida ativa, escreve abandono diretamente no RTDB → oponente ganha
   if(_arenaPartidaId && rtdb() && walletAddress) {
     try {
       rtdb().ref(`arena/salas/${_arenaPartidaId}`).update({
@@ -700,7 +700,7 @@ function _pararSalaListener() {
 }
 
 function _arenaIniciarPresenca(salaId) {
-  if(_arenaPresencaHeartbeat) return; // já activo — evita duplicar no re-render de round
+  if(_arenaPresencaHeartbeat) return; // já ativo — evita duplicar no re-render de round
   if(!rtdb() || !walletAddress) return;
   _arenaPresencaRef = rtdb().ref(`arena/salas/${salaId}/presenca/${walletAddress}`);
   _arenaPresencaRef.onDisconnect().set('desconectado');

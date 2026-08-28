@@ -27,10 +27,10 @@ const DISEASES = {
   fratura:     { id:'fratura',     get nome(){ return t('disease.fracture');     }, emoji:'🦴', cor:'#c9a84c', vital:null,      limiar:null },
 };
 const DISEASE_STRESS_THRESHOLD = 20; // 20 ciclos = ~20 min de descuido
-const DISEASE_DECAY_PER_CYCLE  = 0.07; // saúde perdida por ciclo por doença activa
+const DISEASE_DECAY_PER_CYCLE  = 0.07; // saúde perdida por ciclo por doença ativa
 
 let diseaseStress  = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
-let activeDiseases = []; // array de ids das doenças activas
+let activeDiseases = []; // array de ids das doenças ativas
 
 // ═══════════════════════════════════════════════════════════════════
 // O QUE CADA ACÇÃO CUSTA
@@ -149,7 +149,7 @@ const ITEM_CATALOG = {
 //
 // Existe porque estava calculado em três sítios e um deles esqueceu-se
 // do desconto: o cartão do Antídoto mostrava 240 a um Lendário e o
-// useAntidote() cobrava os 300 do catálogo. Pior, o botão ficava activo
+// useAntidote() cobrava os 300 do catálogo. Pior, o botão ficava ativo
 // com 250 moedas, a loja fechava e o jogador levava com um erro.
 function precoItem(item) {
   if(!item) return 0;
@@ -172,12 +172,12 @@ function getItemEffect(key) {
 //
 // Existe por causa da batalha: ela cobra energia aos três da equipa, e
 // os itens são de cada um. O getItemEffect() só sabe ler o inventário do
-// slot activo (que vive na global itemInventory); os outros guardam o
+// slot ativo (que vive na global itemInventory); os outros guardam o
 // seu em avatarSlots[i].items. Sem isto, um item de combate comprado
 // para a Bruma descontava a energia da Tasha.
 function getItemEffectDoSlot(idx, key) {
-  const activo = (typeof activeSlotIdx !== 'undefined') ? activeSlotIdx : 0;
-  const lista  = (idx === activo)
+  const ativo = (typeof activeSlotIdx !== 'undefined') ? activeSlotIdx : 0;
+  const lista  = (idx === ativo)
     ? itemInventory
     : ((typeof avatarSlots !== 'undefined' && avatarSlots[idx] && avatarSlots[idx].items) || []);
   const agora = Date.now();
@@ -394,7 +394,7 @@ async function switchSlot(newIdx) {
   saveRuntimeToSlot(activeSlotIdx);
   activeSlotIdx = newIdx;
   loadRuntimeFromSlot(newIdx);
-  // Sem isto a interface fica a mostrar o avatar anterior até um refresh
+  // Sem isto a interface fica mostrando o avatar anterior até um refresh
   if(typeof rebuildScreensParaSlot === 'function') rebuildScreensParaSlot();
   scheduleSave();
 }

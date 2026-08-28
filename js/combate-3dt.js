@@ -11,10 +11,10 @@
 //   Iniciativa   1d + H, rolada UMA VEZ no primeiro turno e mantida até
 //                ao fim. Empate resolve pela H maior; persistindo, agem
 //                ao mesmo tempo.
-//   Acção        atacar ou lançar uma magia. Uma por turno.
+//   Ação        atacar ou lançar uma magia. Uma por turno.
 //   Movimento    quase tudo o que não seja atacar ou magiar (usar um
-//                item, por exemplo). Um por turno, e não impede a acção.
-//   Esquiva      REACÇÃO. Não é acção nem movimento, e não espera a vez.
+//                item, por exemplo). Um por turno, e não impede a ação.
+//   Esquiva      REACÇÃO. Não é ação nem movimento, e não espera a vez.
 //                Máximo de tentativas por turno igual à própria H.
 //
 // ── AS CONTAS ──
@@ -73,7 +73,7 @@ function _c3criar(slot, rng) {
     golpesExtra: 0,       // Golpe Encadeado: golpes a mais neste turno
     esquivas: 0,          // tentativas gastas neste turno
     bonusA: 0,            // armadura extra de magia sustentada
-    bonusFD: 0,           // bónus directo à Força de Defesa
+    bonusFD: 0,           // bónus direto à Força de Defesa
     bonusF: 0,            // Força extra de magia sustentada
     bonusH: 0,            // Habilidade extra (fúria)
     // Os quatro acima são a SOMA de tudo. Estes são a parte que NÃO vem
@@ -108,7 +108,7 @@ function _c3criar(slot, rng) {
   };
 }
 
-// Característica efectiva, já com penalidades
+// Característica efetiva, já com penalidades
 function _c3(c, k) {
   return _c3detalhe(c, k).valor;
 }
@@ -118,7 +118,7 @@ function _c3(c, k) {
 // só "F1" — o jogador vê que aquilo já foi 2 e porquê.
 //
 // O modificador é o CRU, sem o corte no zero: uma penalidade de −3 sobre
-// uma Força 1 mostra −3, e não −1. É o que está a acontecer ao avatar.
+// uma Força 1 mostra −3, e não −1. É o que está acontecendo ao avatar.
 function _c3detalhe(c, k) {
   const base = c.ficha[k];
   let mod = 0;
@@ -217,7 +217,7 @@ function _c3teste(valor, rng) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ESQUIVA — reacção, com penalidade igual à H do atacante
+// ESQUIVA — reação, com penalidade igual à H do atacante
 // ═══════════════════════════════════════════════════════════════════
 // O Passo Rápido soma 1 à Habilidade só para esquivar
 function _c3bonusEsquiva(def) {
@@ -295,7 +295,7 @@ function _c3fd(def, rng, opts) {
   // Couraça e Ferida agem contra um elemento. Só valem contra MAGIA
   // desse elemento — um murro de um elemental de fogo é dano físico, e
   // uma Couraça de Fogo não o trava. É por isso que o golpe comum
-  // continua a servir contra quem tem couraça.
+  // continua servindo contra quem tem couraça.
   if (opts.elemento) {
     if (def.vant && def.vant.armaduraDobra && def.vant.elemento === opts.elemento) A *= 2;
     if (def.desv && def.desv.armaduraZero  && def.desv.elemento === opts.elemento) A = 0;
@@ -378,7 +378,7 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
     } else ev.aguentouVorpal = true;
   }
 
-  // O Foco Frágil deixa cair o objecto que canaliza a magia. Sem ele
+  // O Foco Frágil deixa cair o objeto que canaliza a magia. Sem ele
   // não se lança nada até se gastar um turno a apanhá-lo.
   if (passou > 0 && def.vivo && def.desv && def.desv.perdeFocoAoSofrerDano && !def.semFoco) {
     if (!_c3testeReg(_c3(def, 'H'), rng, ev, 'foco', ['H' + _c3(def, 'H')])) {
@@ -399,7 +399,7 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// EFEITOS DE MAGIA que não são dano directo
+// EFEITOS DE MAGIA que não são dano direto
 // ═══════════════════════════════════════════════════════════════════
 function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
   if (!magia) return;
@@ -443,7 +443,7 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
     }
   }
 
-  // Magias sustentadas: ficam a pagar PM todo o turno
+  // Magias sustentadas: ficam pagando PM todo o turno
   if (magia.porTurno) {
     const s = { magia, pm: pmGastos };
     atk.sustentadas.push(s);
@@ -509,7 +509,7 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 
   // Corpo elemental: enquanto sustentada, o dano não entra. Custa 20 PM
   // TODO O TURNO, portanto na prática compra-se um turno e acaba — é a
-  // própria conta de PM que a trava, não uma excepção à regra.
+  // própria conta de PM que a trava, não uma exceção à regra.
   if (magia.invulneravel) { atk.invulneravel = true; ev.invulneravel = true; }
 
   // Barreira: um escudo de pontos que absorve dano até se gastar.
@@ -555,7 +555,7 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
 // TROCAR DE AVATAR
 //
 // O manual não tem regra para isto — no 3D&T o grupo todo luta ao mesmo
-// tempo, não há "activo" nem banco. O formato 3v3 é nosso, e a troca
+// tempo, não há "ativo" nem banco. O formato 3v3 é nosso, e a troca
 // também. Mas a regra é a do manual: um teste de Habilidade com
 // penalidade igual à H do adversário, igual à esquiva.
 //
@@ -609,7 +609,7 @@ function _c3custoMagia(c, magia, pm, inimigo) {
 //
 // Normalmente sai dos PM. Com a vantagem Sangue por Magia, o que
 // faltar sai dos PV a 2 por 1 — mas nunca até morrer: quem paga com o
-// corpo continua a precisar dele.
+// corpo continua precisando dele.
 // ═══════════════════════════════════════════════════════════════════
 function _c3pmDisponivel(c) {
   if (!(c.vant && c.vant.pvComoPM)) return c.pm;
@@ -671,7 +671,7 @@ function politica3dt(eu, inimigo) {
 
   // ── O foco caiu: apanhá-lo custa o turno, mas sem ele não há magia ──
   // Só vale a pena para quem vive de magia; um avatar que bate melhor
-  // do que lança fica a bater.
+  // do que lança fica batendo.
   if (eu.semFoco) {
     const vivoDeMagia = m.ataque || m.forte;
     if (vivoDeMagia && _c3(eu, 'F') <= _c3(eu, 'H')) return { apanharFoco: true };
@@ -684,7 +684,7 @@ function politica3dt(eu, inimigo) {
   const podePagar = g => g && g.pm <= tecto
                       && _c3custoMagia(eu, g, g.pm, inimigo) <= bolsa;
 
-  // ── Vantagens que gastam a acção do turno ──
+  // ── Vantagens que gastam a ação do turno ──
   // O Segundo Fôlego só compensa quando já se perdeu muita vida: gasta
   // o turno inteiro, portanto usá-lo com a vida quase cheia é oferecer
   // um turno ao adversário.
@@ -696,7 +696,7 @@ function politica3dt(eu, inimigo) {
   if (v && v.subirCarac && eu.pm >= v.pm && (eu.reservaGasta || 0) < v.maxTotal) {
     return { vantagem: v, pm: v.pm };
   }
-  // O Toque Paralisante não fere: tira o adversário de acção.
+  // O Toque Paralisante não fere: tira o adversário de ação.
   if (v && v.paralisa && eu.pm >= v.pm && !inimigo.indefeso) {
     return { vantagem: v, pm: v.pm };
   }
@@ -809,7 +809,7 @@ function _c3recalcular(c) {
 
 // Larga magias de pé. Sem filtro larga todas; com filtro, só as que ele
 // escolher — porque desligar o Punho de Pedra para poupar 5 PM não é
-// razão para perder o Manto que se está a pagar de bom grado.
+// razão para perder o Manto que se está pagando de bom grado.
 //
 // A bonusEsquiva não entra aqui: a Corrente de Ar não é sustentada,
 // paga-se uma vez e dura a luta toda. Era zerada com o resto.
@@ -863,7 +863,7 @@ function _c3fimTurno(c) {
   }
   c.esquivas = 0;
   // A paralisia conta turnos; tudo o resto que deixe indefeso vale só
-  // enquanto o golpe que o causou está a ser resolvido.
+  // enquanto o golpe que o causou está sendo resolvido.
   if (c.indefesoTurnos > 0) {
     c.indefesoTurnos--; c.indefeso = c.indefesoTurnos > 0;
     if (!c.indefeso) fora.destravou = true;
@@ -884,9 +884,9 @@ function _c3fimTurno(c) {
 // UM TURNO
 //
 // Extraído do ciclo para os dois modos o partilharem: o headless
-// (combate3dtSimular) corre-o em ciclo, e o interactivo chama-o uma vez
+// (combate3dtSimular) corre-o em ciclo, e o interativo chama-o uma vez
 // por decisão do jogador. Uma só implementação, portanto o que se vê no
-// ecrã é exactamente o que as 5000 batalhas de teste correram.
+// tela é exatamente o que as 5000 batalhas de teste correram.
 // ═══════════════════════════════════════════════════════════════════
 function combate3dtTurno(e) {
   const { A, B, rng, eventos } = e;
@@ -964,7 +964,7 @@ function combate3dtTurno(e) {
     const pm = magia ? Math.min(pmBruto, _c3pmDisponivel(l.c)) : 0;
 
     // Os índices, não só os nomes: a interface anima o cartão certo com
-    // eles. Sem isto ela usava o activo do momento — e como o activo
+    // eles. Sem isto ela usava o ativo do momento — e como o ativo
     // avança no fim do turno, a animação do golpe caía no inimigo
     // seguinte enquanto o dano tinha sido no anterior.
     const ev = { turno: turnos, lado: l.lado, quem: l.c.nome, alvo: l.alvo.nome,
@@ -982,14 +982,14 @@ function combate3dtTurno(e) {
       if (!l.c.vivo) { if (eventos) { ev.caiuSozinho = true; eventos.push(ev); } continue; }
     }
 
-    // Vantagem usada como acção do turno
+    // Vantagem usada como ação do turno
     if (acao.vantagem) {
       const w = acao.vantagem;
       l.c.pm -= w.pm;
       if (w.curaTudo)    { l.c.pv = l.c.pvMax; ev.curou = true; }
       if (w.subirCarac)  {
         // Sobe a característica que mais falta faz: a Força se não
-        // fere, a Armadura se está a levar de mais.
+        // fere, a Armadura se está levando de mais.
         const alvo = (l.c.pv < l.c.pvMax * 0.5) ? 'A' : 'F';
         const campo = alvo === 'A' ? 'A' : 'F';
         l.c['bonus' + campo] += w.subirCarac;

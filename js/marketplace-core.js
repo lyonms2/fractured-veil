@@ -63,7 +63,7 @@ function updateCristaisDisplay() {
   if(el) el.textContent = fmtC(v);
 }
 
-// ── Render MetaMask CTA na secção de cristais ──
+// ── Render MetaMask CTA na seção de cristais ──
 function renderMetaMaskCta() {
   const wrap = document.getElementById('metamaskCtaWrap');
   if(!wrap) return;

@@ -25,7 +25,7 @@ body {
 /* Aplicado por lockBodyScroll()/unlockBodyScroll() (js/modal.js) enquanto
    qualquer modal/overlay está aberto — só overflow:hidden não é
    suficiente em touch/mobile (o browser ainda deixa "arrastar" a página
-   por baixo), por isso fixamos o body na posição actual do scroll; a
+   por baixo), por isso fixamos o body na posição atual do scroll; a
    coordenada (top) é escrita via JS em style.top. */
 body.modal-scroll-lock {
   position: fixed;
@@ -38,7 +38,7 @@ body.modal-scroll-lock {
 /* ═══════════════════════════════════════════════════════════════
    A ESCALA DO JOGO
 
-   Era um html{zoom:1.5} no desktop e zoom:1 no telemóvel — uma folha
+   Era um html{zoom:1.5} no desktop e zoom:1 no celular — uma folha
    de estilos a servir duas escalas. Funcionava, mas o zoom mente a
    quase tudo o que mede:
 
@@ -47,17 +47,17 @@ body.modal-scroll-lock {
        layout orçava 1000 para conteúdo que ocupava 1500 — daí as telas
        espremidas;
      · o vh resolvia contra o viewport sem zoom, e uma medida de 92vh
-       saía a 138% do ecrã (foi o que cortou o rodapé do prólogo);
+       saía a 138% da tela (foi o que cortou o rodapé do prólogo);
      · o getBoundingClientRect devolvia px já multiplicados e o
        getComputedStyle devolvia px por multiplicar — duas réguas
        diferentes para o mesmo elemento;
      · e uma borda de 1px renderizava a 0,667px, nunca a assentar num
-       pixel do ecrã. Era daí que vinha o ar sujo.
+       pixel da tela. Era daí que vinha o ar sujo.
 
    O rem faz o mesmo trabalho sem nada disto: as medidas foram todas
    convertidas (1rem = 16px) e a escala passou a viver aqui.
 
-     telemóvel  16/16 = 1x     · igual ao que era
+     celular  16/16 = 1x     · igual ao que era
      desktop    24/16 = 1,5x   · igual ao que era
 
    As larguras de borda ficaram em px de propósito, para valerem 1px
@@ -138,7 +138,7 @@ main {
 
 /* ── LOGIN SCREEN ── */
 /* O overflow-y é o cinto de segurança: numa janela muito baixa o
-   cartão passa a rolar dentro do próprio ecrã de login em vez de ser
+   cartão passa a rolar dentro da própria tela de login em vez de ser
    cortado. O padding impede que ele encoste nas bordas quando isso
    acontece. */
 /* align-items:center com overflow corta o TOPO do que transborda, e o
@@ -161,7 +161,7 @@ main {
    420px de largura e 650px de altura numa tela de 900, com 60px de
    recheio. O login não é a interface do jogo: não precisa da escala que
    existe para o texto de 5-7px ser legível. Aqui volta ao tamanho que
-   tem no telemóvel, com uma folga. */
+   tem no celular, com uma folga. */
 @media(min-width:681px) {
   /* O recheio e o intervalo apertam mais do que a largura: é a altura
      que estoura. Com a aba de cadastro — três campos, o aviso e o botão

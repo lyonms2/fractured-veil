@@ -260,7 +260,7 @@
   }
 
   #snakeCanvas {
-    /* Eram 16.25rem, 390px no desktop — quase metade da altura do ecrã
+    /* Eram 16.25rem, 390px no desktop — quase metade da altura da tela
        para um tabuleiro de cobra, e desproporcionado ao lado do avatar. */
     width:  min(11.25rem, calc(100vh - 15rem)) !important;
     height: min(11.25rem, calc(100vh - 15rem)) !important;

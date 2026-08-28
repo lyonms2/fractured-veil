@@ -12,11 +12,11 @@ function avataresVivos() {
 // ficar preso sem forma de jogar.
 //
 // Repare que conta INVOCAÇÕES TOTAIS, não avatares vivos. Um avatar
-// queimado ou morto continua a contar, portanto invocar-queimar-invocar
+// queimado ou morto continua contando, portanto invocar-queimar-invocar
 // à procura do elemento ou da ficha ideal gasta as tentativas grátis
-// como qualquer outra. Só se pode queimar um slot que não seja o activo
+// como qualquer outra. Só se pode queimar um slot que não seja o ativo
 // (ver avatars-market.js), logo também não dá para chegar a zero vivos
-// de propósito para reactivar a rede de segurança.
+// de propósito para reativar a rede de segurança.
 function custoDaInvocacao() {
   if(avataresVivos() === 0) return 0;
   return (gs.totalInvocacoes || 0) < INVOCACOES_GRATIS ? 0 : SUMMON_CUSTO;
@@ -277,7 +277,7 @@ function triggerSummon() {
 // nasceu (avatar && !hatched) — alguém que fechou a aba nos 1,2s da
 // animação, ou a quem a chocagem falhou a meio.
 //
-// Antes isto punha o ovo no ecrã e parava ali. Com a chocagem por
+// Antes isto punha o ovo na tela e parava ali. Com a chocagem por
 // cliques ainda viva, o jogador clicava cinco vezes e saía dali; depois
 // de ela sair, ficava um ovo que não respondia a nada e sem botão
 // nenhum — um beco sem saída. Agora termina o que ficou por terminar.
@@ -349,7 +349,7 @@ function hatch() {
     return;
   }
 
-  // ── Chocagem normal (slot activo) ──
+  // ── Chocagem normal (slot ativo) ──
   if(avatarSlots[activeSlotIdx]) delete avatarSlots[activeSlotIdx].pendingEgg;
   window._pendingEggSlot = null;
 

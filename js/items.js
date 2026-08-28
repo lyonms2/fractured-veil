@@ -83,7 +83,7 @@ function renderItemInventory() {
 
 // ── Render equipped items floating above avatar ──
 // Uma volta completa. Devagar de propósito: isto vive por trás do
-// avatar o tempo todo, e a pressa cansa quem está a olhar.
+// avatar o tempo todo, e a pressa cansa quem está olhando.
 const PVE_ORBITA_SEGS = 14;
 
 function updateEquippedDisplay() {

@@ -30,7 +30,7 @@ const CAMBIO_LIMITES = {
 };
 
 // O teto diário vem do js/pool.js, que o declara e é carregado logo a
-// seguir a este ficheiro. Declará-lo aqui também rebentava com
+// seguir a este arquivo. Declará-lo aqui também rebentava com
 // "POOL_LIMITE_DIA has already been declared" — e como os scripts do
 // jogo partilham um escopo global só, isso matava o js/pool.js inteiro,
 // que é onde vive a página de transparência.

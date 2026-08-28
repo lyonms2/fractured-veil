@@ -14,9 +14,9 @@ function esc(str) {
 
 // O texto do passivo vive SÓ no i18n ('elem.bonus.<Elemento>'). Havia
 // aqui uma segunda cópia, num campo `bonus`, que ninguém chegava a
-// mostrar — o ecrã usava-a apenas para decidir se desenhava o bloco e
+// mostrar — a tela a usava apenas para decidir se desenhava o bloco e
 // tirava o texto do t(). Resultado: a cópia apodrecia sem se ver, e a
-// da Sombra já estava desactualizada em relação ao motor.
+// da Sombra já estava desatualizada em relação ao motor.
 const CARACTERISTICAS_ELEMENTAIS = {
   'Fogo':         { cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
   'Água':         { cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },

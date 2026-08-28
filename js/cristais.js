@@ -4,7 +4,7 @@
 //             playerData (global), walletAddress (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
-//             ethers (CDN carregado antes deste ficheiro)
+//             ethers (CDN carregado antes deste arquivo)
 // ═══════════════════════════════════════════════════════════════════
 
 const CONTRACT_ADDRESS = '0xCcA07f21a40129955db81Dc0073693a26e777d8E';
@@ -20,7 +20,7 @@ const CONTRACT_ADDRESS = '0xCcA07f21a40129955db81Dc0073693a26e777d8E';
 // O caminho do dinheiro real estava morto e a dizer só "erro".
 //
 // Carrega-se aqui, sob procura, para não pesar o arranque de quem nunca
-// abre estas secções. A promessa é guardada: várias chamadas ao mesmo
+// abre estas seções. A promessa é guardada: várias chamadas ao mesmo
 // tempo esperam pelo mesmo carregamento.
 const ETHERS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js';
 let _ethersPromise = null;
@@ -189,7 +189,7 @@ async function comprarCristais(idx) {
 
   } catch(e) {
     console.error('[comprarCristais]', e);
-    // Sem a biblioteca não há transacção nenhuma — dizer isso em vez de
+    // Sem a biblioteca não há transação nenhuma — dizer isso em vez de
     // um "erro" que não ajuda ninguém a perceber o que fazer.
     if(e.message === 'ethers_indisponivel') {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.sem_ethers')}</span>`;
@@ -325,7 +325,7 @@ async function resgatar() {
 //
 // As percentagens vivem AQUI, num sítio só. Estavam escritas à mão no
 // rodapé e outra vez em cada cabeçalho de nível — e o servidor tem as
-// suas em api/resgatar.js (REFERRAL_RATES, em fracção). Não dá para
+// suas em api/resgatar.js (REFERRAL_RATES, em fração). Não dá para
 // partilhar a constante através da rede, mas do lado do cliente passa a
 // haver uma única cópia; se mexer numa, mexa na outra.
 // ═══════════════════════════════════════════════════════════════════

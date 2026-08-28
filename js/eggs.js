@@ -42,7 +42,7 @@ function findTargetSlot() {
 // era chamada por ninguém, e as duas versões já tinham divergido: a
 // daqui aplicava um bônus por ter todos os vitais acima de 80 que o
 // servidor nunca conheceu, e multiplicava a validade pelo eggDura do
-// vínculo, que também só existia aqui. Quem lesse este ficheiro
+// vínculo, que também só existia aqui. Quem lesse este arquivo
 // acreditava em duas regras que não valiam nada.
 //
 // As duas passaram para o servidor de verdade. Esta cópia saiu.
@@ -151,7 +151,7 @@ function burnEgg(id) {
     if(overlay && preview) {
       preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
-        <span style="color:#f87171;font-size:0.5rem;">Esta acção é irreversível.</span>`;
+        <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
       document.getElementById('eggBurnConfirmBtn').onclick = () => {
         overlay.style.display = 'none';
         _doBurnComum(id, moedas);
@@ -171,7 +171,7 @@ function burnEgg(id) {
       preview.innerHTML = `Ovo <b style="color:${rarColor}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:#a78bfa">${finalGems} 💎</b>${bonusPct}<br>
         ${!poolOk ? `<span style="color:#f87171;font-size:0.5rem;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
-          `<span style="color:#f87171;font-size:0.5rem;">Esta acção é irreversível.</span>`}`;
+          `<span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`}`;
       const btn = document.getElementById('eggBurnConfirmBtn');
       btn.disabled = !poolOk;
       btn.style.opacity = poolOk ? '1' : '.4';
@@ -427,7 +427,7 @@ async function confirmHatch() {
   // repetidos, e o jogo inteiro só conseguia 720 avatares diferentes.
   //
   // O id do ovo é o carimbo de tempo da postura, e entra aqui para cada
-  // chocagem dar um avatar seu. Os nomes continuam a repetir-se — isso é
+  // chocagem dar um avatar seu. Os nomes continuam repetindo-se — isso é
   // sabor, não identidade.
   let _h = 0; const _str = nome + ovo.elemento + '#' + ovo.id;
   for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
@@ -703,7 +703,7 @@ async function listEggOnMarket(eggId) {
   const ovo = eggsInInventory.find(e => e.id === eggId);
   if(!ovo) return;
   const data = { id: ovo.id, raridade: ovo.raridade, elemento: ovo.elemento, expiraEm: ovo.expiraEm };
-  // Marketplace agora é um modal in-game — abre direto na secção de ovos e
+  // Marketplace agora é um modal in-game — abre direto na seção de ovos e
   // chama openListEggModal() (js/eggs-market.js) com o payload já em mãos,
   // sem precisar do roundtrip por query string em nova aba.
   if(typeof openMarketplaceModal === 'function') await openMarketplaceModal('eggs');

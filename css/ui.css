@@ -25,7 +25,7 @@
    para saber. */
 .btn-action.indisponivel { opacity:.45; }
 .btn-action.indisponivel:hover { transform:none; box-shadow:none; border-color:var(--border); color:var(--muted); }
-/* Falta o que a acção pede — moedas ou energia. O número em vermelho é
+/* Falta o que a ação pede — moedas ou energia. O número em vermelho é
    a diferença entre "não preciso" e "não posso". */
 .btn-action.em-falta .btn-sub { color:#e05555; opacity:.95; }
 .btn-action.active-sleep   { border-color:var(--raro); color:var(--raro); }
@@ -444,7 +444,7 @@
      acompanhavam. Hoje o resultado é uma janela desproporcionada para
      um tabuleiro de oito cartas.
      A janela de um passatempo é moldura: acompanha o tabuleiro, não o
-     ecrã. */
+     tela. */
   #memoriaModal .modal-card,
   #simonModal   .modal-card,
   #snakeModal   .modal-card { max-width: 17rem !important; }
@@ -884,7 +884,7 @@
 .prologo-caixa {
   width:100%; max-width:27.5rem;
   /* Era max-height:92vh, e com o antigo html{zoom:1.5} isso dava 138%
-     do ecrã real — o rodapé (o botão) ficava fora da tela. O zoom já
+     da tela real — o rodapé (o botão) ficava fora da tela. O zoom já
      saiu, mas o 100% fica: resolve contra o #prologoModal, que está do
      tamanho certo por ser fixed com inset:0, e não depende de nada. */
   height:100%; min-height:0;

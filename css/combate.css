@@ -237,7 +237,7 @@
 /* ── A ORDEM DA FILA ──
    O 1.º abre a batalha e os outros entram à medida que os da frente
    caem. A ordem era a de clique e não se via em lado nenhum: montava-se
-   a equipa sem saber quem apanhava o primeiro golpe. */
+   a equipa sem saber quem pegava o primeiro golpe. */
 .equipa-slot { position: relative; }
 .equipa-pos {
   position: absolute; top: 0.1875rem; left: 0.25rem;
@@ -271,7 +271,7 @@
   border: 1px solid var(--border); color: var(--muted);
 }
 .equipa-mover button:hover:not(:disabled) { color: var(--gold); border-color: var(--gold); }
-/* Desactivada em vez de ausente: um botão que aparece e desaparece muda
+/* Desativada em vez de ausente: um botão que aparece e desaparece muda
    a largura do cartão a cada troca, e o dedo vai bater ao lado. */
 .equipa-mover button:disabled { opacity: .25; cursor: default; }
 
@@ -304,7 +304,7 @@
   opacity: .4;
   cursor: not-allowed;
 }
-/* Em ecrã estreito o cartão do avatar vira grelha de duas colunas e este
+/* Em tela estreita o cartão do avatar vira grelha de duas colunas e este
    botão fica numa coluna de ~90px. A explicação partia-se em duas linhas
    a 7px, enquanto os botões ao lado (Ativar, Queimar) têm 8px e nowrap —
    era o único a destoar. Fica a posição, que é o que importa de relance;

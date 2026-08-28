@@ -88,11 +88,11 @@ function cleanCreature() {
   addLog(t('gt.bath.log', {hygiene: higieneGain, humor: humorGain}), 'good');
 
   // Havia aqui um decaimento de vínculo — somava 3 acima e tirava 0,02
-  // logo a seguir. Era lógica de tick que foi parar dentro da acção, e o
+  // logo a seguir. Era lógica de tick que foi parar dentro da ação, e o
   // humorBad era avaliado DEPOIS do +15 que o próprio banho dá, portanto
   // quase nunca disparava. O vínculo decai no tick, que é o sítio dele.
   updateDirtyVisuals();
-  updateAllUI();          // as outras acções já o faziam; esta esperava pelo tick
+  updateAllUI();          // as outras ações já o faziam; esta esperava pelo tick
   scheduleSave();
 }
 
@@ -250,7 +250,7 @@ function getElementoBonus() {
 }
 
 // Energia que um avatar recupera por ciclo enquanto está no banco.
-// Metade do ritmo de quem dorme activo (4/ciclo), porque descansar não é
+// Metade do ritmo de quem dorme ativo (4/ciclo), porque descansar não é
 // o mesmo que ser cuidado.
 const BANCO_ENERGIA_POR_CICLO = 2;
 // A saúde de quem está no banco nunca desce abaixo disto: doente sim,
@@ -260,7 +260,7 @@ const BANCO_SAUDE_MINIMA = 1;
 function recuperarEnergiaNoBanco() {
   if (typeof avatarSlots === 'undefined') return;
   avatarSlots.forEach((s, i) => {
-    if (!s || i === activeSlotIdx) return;      // o activo tem o seu próprio ciclo
+    if (!s || i === activeSlotIdx) return;      // o ativo tem o seu próprio ciclo
     if (!s.hatched || s.dead) return;
     if (!s.vitals) return;
     s.vitals.energia = Math.min(100, (s.vitals.energia ?? 100) + BANCO_ENERGIA_POR_CICLO);
@@ -270,7 +270,7 @@ function recuperarEnergiaNoBanco() {
     // graça, e a fratura não seria ameaça nenhuma.
     //
     // Mas PÁRA EM 1 e nunca mata. Matar um avatar que o jogador nem
-    // está a ver, e que vale dinheiro no marketplace, é castigo a mais
+    // está vendo, e que vale dinheiro no marketplace, é castigo a mais
     // por uma coisa que ele nem viu acontecer. O bicho fica à beira,
     // visivelmente doente, à espera do antídoto — e só morre mesmo se
     // for posto em campo e continuar sem tratamento.
@@ -299,7 +299,7 @@ function gameTick() {
   if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
 
   // ── OS AVATARES NO BANCO DESCANSAM ──
-  // Só o slot activo é que decai e recupera; os outros ficam congelados
+  // Só o slot ativo é que decai e recupera; os outros ficam congelados
   // no estado em que foram guardados. Isso deixou de servir quando a
   // batalha passou a cobrar energia aos TRÊS da equipa: sem descanso, ao
   // fim de nove batalhas os do banco ficavam presos abaixo do limiar e a
@@ -307,7 +307,7 @@ function gameTick() {
   //
   // Descansam só ENERGIA, e mais devagar do que quem dorme a sério (2
   // contra 4 por ciclo). A fome, o humor e a higiene continuam congeladas
-  // — quem não está a ser cuidado também não passa fome.
+  // — quem não está sendo cuidado também não passa fome.
   recuperarEnergiaNoBanco();
 
   const _d  = rarityBonus().decay;
@@ -364,7 +364,7 @@ function gameTick() {
     }
   }
   // Única fonte de perda de saúde do jogo — vitals críticos por si só não
-  // causam dano directo, só levam a uma doença depois de sustidos por
+  // causam dano direto, só levam a uma doença depois de sustidos por
   // DISEASE_STRESS_THRESHOLD ciclos (ver js/state.js).
   if(activeDiseases.length > 0) {
     vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);

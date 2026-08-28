@@ -2,10 +2,10 @@
 // TRAVA DE SCROLL DO BODY — usada por qualquer overlay em tela cheia
 // (ModalManager e também overlays soltos como avatarZoomOverlay, que não
 // passam por ele). Só overflow:hidden não é confiável em touch/mobile —
-// o padrão robusto é fixar o body na posição actual do scroll e restaurar
+// o padrão robusto é fixar o body na posição atual do scroll e restaurar
 // ao destravar. Contagem de referências: vários overlays podem travar ao
 // mesmo tempo (ex: zoom de avatar aberto por cima do marketplace) — só
-// destrava de facto quando o último for fechado.
+// destrava de fato quando o último for fechado.
 // ═══════════════════════════════════════════════════════════════════
 let _scrollLockCount = 0;
 let _scrollLockY     = 0;
@@ -16,7 +16,7 @@ function lockBodyScroll() {
     document.body.classList.add('modal-scroll-lock');
     // Em px, e não em rem: o _scrollLockY é a posição de rolagem
     // medida em px reais, não uma medida de desenho. A passagem de px
-    // para rem apanhou-o por engano e passou a multiplicá-lo pela
+    // para rem pegou-o por engano e passou a multiplicá-lo pela
     // escala da raiz — abrir um modal com a página rolada saltava 1,5x
     // o deslocamento.
     document.body.style.top = `-${_scrollLockY}px`;
@@ -193,7 +193,7 @@ function openMiniModal(id) {
 
 const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal'];
 function closeMiniModal(id) {
-  // Tira o painel da lista de quem recebe reacções. Sem isto, um jogo
+  // Tira o painel da lista de quem recebe reações. Sem isto, um jogo
   // fechado continuava a ser notificado pelo jogo seguinte.
   if (typeof miniAvatarDesmontar === 'function') {
     miniAvatarDesmontar({ memoriaModal:'memAvatar', simonModal:'simonAvatar',

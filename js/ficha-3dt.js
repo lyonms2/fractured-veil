@@ -4,7 +4,7 @@
 // Substitui a ficha inventada (js/combate-ficha.js) pelas regras do
 // Manual 3D&T Alpha, Edição Revisada (Jambô, 2011).
 //
-// Continua a ser FUNÇÃO PURA: nada é gravado, tudo sai do que o avatar
+// Continua sendo FUNÇÃO PURA: nada é gravado, tudo sai do que o avatar
 // já carrega — seed, raridade, elemento e nível. Um avatar que já existe
 // ganha ficha nova no instante em que isto sobe, sem migração.
 //
@@ -22,7 +22,7 @@
 //   · a distribuição dos pontos sair do seed em vez de ser escolhida
 //
 // O Poder de Fogo fica de fora: avatares não usam armas nem ataques à
-// distância. Sobram exactamente quatro características.
+// distância. Sobram exatamente quatro características.
 // ═══════════════════════════════════════════════════════════════════
 
 const FICHA_CARACS = ['F', 'H', 'R', 'A'];
@@ -138,7 +138,7 @@ function pontosDoAvatar(raridade, nivel) {
 //   fichaDeAvatar(12345, 'Raro', 'Fogo', 10)
 //   → { F:2, H:3, R:2, A:2, pv:10, pm:10, pontos:9, ... }
 //
-// Aceita também o objecto do slot:  fichaDeAvatar(avatarSlots[0])
+// Aceita também o objeto do slot:  fichaDeAvatar(avatarSlots[0])
 // ═══════════════════════════════════════════════════════════════════
 function fichaDeAvatar(seed, raridade, elemento, nivel) {
   if (seed && typeof seed === 'object') {
@@ -180,7 +180,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
   // tinha transbordado deixava de transbordar, e o sorteio inteiro
   // desalinhava para trás.
   //
-  // A correcção é dar a cada ponto O TECTO QUE VALIA NO NÍVEL EM QUE ELE
+  // A correção é dar a cada ponto O TECTO QUE VALIA NO NÍVEL EM QUE ELE
   // FOI GANHO. Os pontos que vêm da raridade valem todos do nível 1
   // (tecto 5); cada ponto ganho por nível traz consigo +1 de tecto. Assim
   // um nível novo acrescenta um sorteio ao fim da fila e nunca mexe nos
@@ -188,10 +188,10 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
   const pontosDeNivel = Math.floor((nv - 1) / FICHA_NIVEIS_POR_PONTO);
   const pontosNoNv1   = pontos - pontosDeNivel;
   // Quantos sorteios este avatar já fazia ao nascer. Vem do orçamento do
-  // NÍVEL 1, que não muda nunca — se viesse do orçamento actual, o piso
+  // NÍVEL 1, que não muda nunca — se viesse do orçamento atual, o piso
   // da Resistência (que sobe de seis em seis pontos) deslocava o limiar
   // e voltava a desalinhar a fila. Foi assim que sobraram 1880
-  // regressões depois da primeira correcção.
+  // regressões depois da primeira correção.
   const sorteiosNoNv1 = pontosNoNv1 - _pisoDeR(pontosNoNv1);
 
   // O piso da Resistência entra como ponto de partida e sai da bolsa,

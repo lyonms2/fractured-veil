@@ -2,7 +2,7 @@
 // MARKETPLACE AUTH — Firebase Email/Password
 // Substitui o connectWall de MetaMask no marketplace.
 // walletAddress = uid do Firebase Auth (igual ao jogo principal).
-// MetaMask só é conectada na secção de Cristais (comprar/resgatar).
+// MetaMask só é conectada na seção de Cristais (comprar/resgatar).
 // ═══════════════════════════════════════════════════════════════════
 
 function fbAuthMkt() {
@@ -166,7 +166,7 @@ async function vincularCarteira() {
     if(!playerData) playerData = {};
     playerData.carteira = endereco;
 
-    // Actualiza header de cristais (MetaMask conectada para transações)
+    // Atualiza header de cristais (MetaMask conectada para transações)
     const dotEl = document.getElementById('walletDot');
     if(dotEl) dotEl.style.background = 'var(--green)';
 
@@ -193,7 +193,7 @@ async function garantirCarteira() {
     }
   } catch(e) {}
 
-  // Não tem carteira vinculada — pede ao utilizador
+  // Não tem carteira vinculada — pede ao usuário
   showToast(t('mkt.metamask.link_first'), 'err');
   return null;
 }

@@ -2,8 +2,8 @@
 // BATALHA PvE
 //
 // A primeira interface do combate. O objectivo desta versão é VER O
-// MOTOR A FUNCIONAR: cada conta aparece no ecrã (FA, FD, o dado, a
-// subtracção), cada vantagem que dispara é anunciada, e o registo por
+// MOTOR A FUNCIONAR: cada conta aparece na tela (FA, FD, o dado, a
+// subtração), cada vantagem que dispara é anunciada, e o registo por
 // baixo guarda tudo. Os efeitos são os que o jogo já tinha — partículas,
 // anéis, tremor, números flutuantes.
 //
@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // ── O QUE A BATALHA CUSTA E O QUE RENDE ──
-// Custa energia a cada um dos três, não só ao que está activo: os três
+// Custa energia a cada um dos três, não só ao que está ativo: os três
 // lutaram. E um avatar cansado não entra — 10 é o mesmo limiar que o
 // banho já usava para dizer "este bicho precisa de dormir".
 // O limiar é 20 e não 10 de propósito: 20 é o mesmo número a partir do
@@ -74,7 +74,7 @@ function _pveGerarInimigo(pontosAlvo) {
 // ═══════════════════════════════════════════════════════════════════
 // A ENERGIA DE CADA AVATAR
 //
-// O avatar activo tem a energia nas variáveis vivas (vitals); os outros
+// O avatar ativo tem a energia nas variáveis vivas (vitals); os outros
 // têm-na guardada no seu slot. É a mesma energia — só muda onde está
 // escrita — e por isso passa tudo por estas duas funções, para não haver
 // dois sítios a discordar sobre quanto um avatar aguenta.
@@ -101,7 +101,7 @@ function _pveGastarEnergia(idx, quanto) {
 // ═══════════════════════════════════════════════════════════════════
 // O XP E O VÍNCULO SÃO DE CADA AVATAR
 //
-// Mesma história da energia: o activo tem-nos nas variáveis vivas, os
+// Mesma história da energia: o ativo tem-nos nas variáveis vivas, os
 // outros no seu slot. Lutaram os três, ganham os três — e cada um sobe
 // de nível com o seu próprio XP.
 //
@@ -109,7 +109,7 @@ function _pveGastarEnergia(idx, quanto) {
 // e por isso são pagas uma vez só.
 // ═══════════════════════════════════════════════════════════════════
 function _pvePremiarAvatar(idx, xpGanho, vinculoGanho) {
-  // O activo passa pelos caminhos normais do jogo — o checkXP trata da
+  // O ativo passa pelos caminhos normais do jogo — o checkXP trata da
   // fase, do som e do rótulo, e o checkVinculoTier faz o bicho falar.
   if (typeof activeSlotIdx !== 'undefined' && idx === activeSlotIdx) {
     if (typeof xp !== 'undefined') xp += xpGanho;
@@ -122,7 +122,7 @@ function _pvePremiarAvatar(idx, xpGanho, vinculoGanho) {
     return;
   }
 
-  // Os do banco sobem em silêncio: não há avatar no ecrã para festejar,
+  // Os do banco sobem em silêncio: não há avatar na tela para festejar,
   // e o jogador vê o nível novo quando trocar para ele.
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
   if (!s || !s.hatched || s.dead) return;
@@ -137,7 +137,7 @@ function _pvePremiarAvatar(idx, xpGanho, vinculoGanho) {
   }
 }
 
-// Pegar uma doença. Mesmo encaminhamento da energia e do XP: o activo
+// Pegar uma doença. Mesmo encaminhamento da energia e do XP: o ativo
 // tem-na nas variáveis vivas, os outros no slot. Devolve true se pegou.
 function _pveAdoecer(idx, doenca) {
   if (typeof activeSlotIdx !== 'undefined' && idx === activeSlotIdx) {
@@ -188,7 +188,7 @@ function abrirCombatePvE() {
   _pveEstado = combate3dtIniciar(equipa, inimigo, Math.floor(Math.random() * 1e6), {
     historico: true,
     // O lado A é o jogador: a política do motor não decide por ele.
-    // Mas se a acção vier vazia — um turno que corra sem escolha, por um
+    // Mas se a ação vier vazia — um turno que corra sem escolha, por um
     // clique a mais ou por um caminho que ainda não previmos — vale mais
     // a política do motor do que uma batalha que rebenta a meio.
     politica: (eu, alvo) => (eu._ladoJogador && _pveAcao) ? _pveAcao : politica3dt(eu, alvo),
@@ -259,11 +259,11 @@ function _pveFase(c) {
 }
 
 // ── VIDA E MAGIA EM BOLINHAS ──
-// Uma bolinha por cada 5 pontos, que é exactamente o que a Resistência
+// Uma bolinha por cada 5 pontos, que é exatamente o que a Resistência
 // vale: PV = R×5 e PM = R×5. Portanto o NÚMERO DE BOLINHAS É A
 // RESISTÊNCIA do avatar — lê-se a ficha só de olhar para o cartão.
 //
-// A bolinha da vez enche-se por fracção, para um golpe de 3 num avatar
+// A bolinha da vez enche-se por fração, para um golpe de 3 num avatar
 // de 20 não desaparecer sem deixar rasto.
 const PVE_POR_BOLINHA = 5;
 
@@ -335,7 +335,7 @@ function _pveLutador(c, i, lado, ativo) {
   if (c.indefesoTurnos > 1) m(t('pve.marca.preso'), 'indefeso');
 
   // O cartão inteiro abre a ficha deste avatar. Antes havia um "?" no
-  // topo que abria a de dois — o activo meu e o activo dele — e nunca a
+  // topo que abria a de dois — o ativo meu e o ativo dele — e nunca a
   // dos que estão no banco, que é justamente quem se precisa de conhecer
   // antes de o mandar entrar.
   return `<div class="${cls}" id="cbLut${lado}${i}"
@@ -384,8 +384,8 @@ function _pveDesenhar() {
 // Um painel que se abre por cima da batalha e explica, do avatar em
 // campo: o golpe comum, as três magias e a vantagem com que nasceu.
 //
-// Existe porque a barra de acções só tem espaço para o nome e o custo, e
-// isso não chega a quem está a começar — "Ferrões Salinos, 3 PM" não diz
+// Existe porque a barra de ações só tem espaço para o nome e o custo, e
+// isso não chega a quem está começando — "Ferrões Salinos, 3 PM" não diz
 // que envenena. Aqui cabe a descrição inteira, a conta da Força de
 // Ataque e o que a magia faz para além do dano.
 // ═══════════════════════════════════════════════════════════════════
@@ -421,7 +421,7 @@ function _pveAbrirAjuda(lado, i) {
 // Em vez de repetir a matemática do motor aqui — que é a forma mais
 // certa de os dois números discordarem — corre o PRÓPRIO motor umas
 // centenas de vezes contra uma cópia do alvo e conta o que aconteceu.
-// O número no ecrã sai da mesma função que resolve o golpe a sério.
+// O número na tela sai da mesma função que resolve o golpe a sério.
 // ═══════════════════════════════════════════════════════════════════
 const PVE_PROGNOSTICO_N = 240;
 
@@ -570,7 +570,7 @@ function _pveAjudaDe(eu, lado, contra) {
       : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
       : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
       : t('mag.custo', { pm: g.pm });
-    // O prognóstico usa os PM que a magia gastaria de facto — as de
+    // O prognóstico usa os PM que a magia gastaria de fato — as de
     // faixa contam com o máximo que a Habilidade e a reserva deixam,
     // que é o que o jogador vai querer comparar.
     const pmProg = g.pmMax ? Math.min(g.pmMax, tecto, Math.max(g.pm, eu.pm)) : g.pm;
@@ -610,7 +610,7 @@ function _pveAjudaDe(eu, lado, contra) {
   </div>`;
 }
 
-// ── A barra de acções ──
+// ── A barra de ações ──
 function _pveDesenharAcoes(eu, ini) {
   const alvo = document.getElementById('cbAcoes');
   const bd = document.getElementById('cbDesistir');
@@ -668,7 +668,7 @@ function _pveDesenharAcoes(eu, ini) {
                 podeH && podePM && !trancada);
   }
 
-  // Vantagem que gasta a acção
+  // Vantagem que gasta a ação
   const v = eu.vant;
   if (v && (v.curaTudo || v.subirCarac || v.paralisa)) {
     const on = eu.pm >= v.pm;
@@ -680,7 +680,7 @@ function _pveDesenharAcoes(eu, ini) {
   // ── As magias de pé, uma a uma ──
   // Um só botão desligava TODAS. Quem tinha o Manto e o Punho de pé e
   // queria parar de pagar os 5 PM do Punho perdia também o Manto, que
-  // estava a pagar de bom grado. Agora cada uma tem o seu botão, e as
+  // estava pagando de bom grado. Agora cada uma tem o seu botão, e as
   // que não cobram nada por turno nem aparecem — não há o que desligar.
   //
   // A Fúria Sombria entra mesmo não cobrando nada por turno: ela tranca
@@ -772,19 +772,19 @@ function _pveEscolher(tipo, arg) {
 // para o turno seguinte, ou gastar tudo agora.
 //
 // Cada opção mostra a Força de Ataque que rende — a mesma regra do
-// resto do ecrã, mostrar a conta em vez de pedir fé.
+// resto da tela, mostrar a conta em vez de pedir fé.
 // ═══════════════════════════════════════════════════════════════════
 function _pveEscolherPM(tipo, g, max) {
   const eu = _pveEstado.A[_pveEstado.ativoA];
   const alvo = document.getElementById('cbAcoes');
   // Só os degraus que rendem mesmo alguma coisa a mais. Numa magia que
-  // ganha 1d a cada 2 PMs, gastar 4 em vez de 2 dá exactamente o mesmo —
+  // ganha 1d a cada 2 PMs, gastar 4 em vez de 2 dá exatamente o mesmo —
   // e oferecer essa opção é oferecer uma armadilha.
   const rende = pm => {
     const v = (typeof valorDaMagia === 'function') ? valorDaMagia(g, eu.ficha, pm) : null;
     // O "|| 1" é a regra do motor: uma magia sem dados próprios rola na
     // mesma o dado do ataque. Sem isto, 2 e 4 PMs pareciam diferentes na
-    // conta e davam exactamente o mesmo em jogo.
+    // conta e davam exatamente o mesmo em jogo.
     return v ? v.caracs + '|' + (v.dados || 1) : String(pm);
   };
   const escolhas = [];
@@ -869,7 +869,7 @@ function _pveJogarTurno() {
 }
 
 // Enquanto a animação corre não se joga. O motor já resolveu o turno —
-// o que está no ecrã é a repetição — e aceitar outra jogada aqui seria
+// o que está na tela é a repetição — e aceitar outra jogada aqui seria
 // jogar um turno sem ter visto o anterior.
 function _pveTravarAcoes(travar) {
   const el = document.getElementById('cbAcoes');
@@ -881,10 +881,10 @@ function _pveTravarAcoes(travar) {
 // ═══════════════════════════════════════════════════════════════════
 // FECHAR AS CONTAS — o que a batalha cobra e o que paga
 //
-// Cobra energia aos TRÊS, não só ao que está activo: lutaram os três.
+// Cobra energia aos TRÊS, não só ao que está ativo: lutaram os três.
 // Paga XP, moedas e vínculo pelo mesmo cano dos minijogos (miniReward),
 // para a dificuldade, o bónus de raridade e o multiplicador de vínculo
-// se aplicarem aqui exactamente como se aplicam lá.
+// se aplicarem aqui exatamente como se aplicam lá.
 //
 // Perder também paga, menos: uma batalha perdida é tempo do jogador na
 // mesma, e sair de mãos vazias faz com que ninguém arrisque a segunda.
@@ -1007,7 +1007,7 @@ function _pveTesteHTML(x, ev) {
 
 function _pveMostrarEvento(ev) {
   const souEu   = ev.lado === 'A';
-  // O cartão em que o golpe caiu, pelo ÍNDICE do evento. Usar o activo
+  // O cartão em que o golpe caiu, pelo ÍNDICE do evento. Usar o ativo
   // do momento estava errado desde que o avanço passou para o fim do
   // turno: a animação ia para o inimigo seguinte enquanto o dano tinha
   // sido no anterior.

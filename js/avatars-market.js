@@ -21,7 +21,7 @@ if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
 // Quando este arquivo roda dentro de index.html (mesclado com state.js/
 // firebase.js), o jogo tem seu próprio scheduleSave() que re-serializa TODO
 // o `gs`/`avatarSlots` em memória a cada ~60s e em quase toda ação. Uma
-// operação server-authoritative (compra/venda/etc.) que só actualize
+// operação server-authoritative (compra/venda/etc.) que só atualize
 // `playerData` sem tocar `gs`/`avatarSlots` seria revertida silenciosamente
 // pelo próximo autosave. Estas funções, quando disponíveis, mantêm as duas
 // fontes em sincronia; em marketplace.html standalone (sem state.js) elas
@@ -50,7 +50,7 @@ function _mktSyncSlots(newSlots) {
 // servir — o jogador precisa de saber, do lado de fora, qual dos seus
 // avatares precisa de antídoto.
 //
-// A do avatar activo vive nas variáveis vivas; a dos outros no slot.
+// A do avatar ativo vive nas variáveis vivas; a dos outros no slot.
 // ═══════════════════════════════════════════════════════════════════
 function _slotDoencas(i, s) {
   const lista = (typeof activeSlotIdx !== 'undefined' && i === activeSlotIdx
@@ -69,7 +69,7 @@ function _slotDoencas(i, s) {
 // ═══════════════════════════════════════════
 // A fase vem do faseFromNivel() do state.js, que é o dono da regra. Isto
 // era uma segunda cópia dos mesmos limiares — ainda não tinham divergido,
-// mas foi exactamente assim que o passivo elemental e as tabelas dos ovos
+// mas foi exatamente assim que o passivo elemental e as tabelas dos ovos
 // apodreceram: duas cópias, uma delas sem quem a corrigisse.
 //
 // A conta local fica só para o marketplace.html avulso, que corre sem o
@@ -250,11 +250,11 @@ async function buyAvatar(listingId, price) {
     const taxa = Math.round(price * TAXA_MARKETPLACE);
     closeDetail();
     showToast(t('mkt.avatar.bought', {name: data.nome, tax: taxa}), 'ok');
-    // Fica na loja, de propósito. Antes trocava para a secção "slots",
+    // Fica na loja, de propósito. Antes trocava para a seção "slots",
     // que era do marketplace; quando ela saiu, cheguei a mandar isto
     // abrir o "Meus Avatares" — e isso ejectava o jogador da loja. Quem
     // compra dois seguidos tinha de voltar a entrar, e pior: o filtro
-    // vive nos campos do DOM da secção, portanto perdia-se e havia que
+    // vive nos campos do DOM da seção, portanto perdia-se e havia que
     // o montar outra vez.
     //
     // Não é preciso nada no lugar: o loadListings() tem um listener vivo
@@ -305,7 +305,7 @@ async function confirmList() {
     const data = await resp.json();
     if(!resp.ok) { showToast(data.erro || t('mkt.avatar.list_err'), 'err'); return; }
 
-    // Actualiza estado local com dados devolvidos pelo servidor
+    // Atualiza estado local com dados devolvidos pelo servidor
     playerData.avatarSlots = data.slots;
     playerData.cristais    = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
@@ -324,7 +324,7 @@ async function confirmList() {
 }
 
 async function unlistFromSlot(slotIdx) {
-  // Procura a listagem activa deste slot para este vendedor
+  // Procura a listagem ativa deste slot para este vendedor
   try {
     const snap = await db.collection('avatarMarket')
       .where('sellerId','==',walletAddress)
@@ -375,7 +375,7 @@ function _slotBtnEquipa(i, s) {
   // a luta e os outros entram por ordem quando os da frente caem. Dizia
   // apenas "Na equipe", e daí não se percebia que a ordem decidia algo.
   const pos = (typeof posicaoNaEquipa === 'function') ? posicaoNaEquipa(i) : 0;
-  // O rótulo vem em duas metades. No telemóvel o botão vive numa coluna
+  // O rótulo vem em duas metades. No celular o botão vive numa coluna
   // de 90px e a explicação partia-se em duas linhas a 7px, enquanto os
   // botões ao lado têm 8px e nowrap — era o único a destoar. A metade
   // explicativa esconde-se lá (ver .eq-txt em css/combate.css) e o que
@@ -397,10 +397,10 @@ function _slotBtnEquipa(i, s) {
 // ═══════════════════════════════════════════════════════════════════
 // MEUS AVATARES
 //
-// Vivia como uma secção do marketplace, debaixo do cabeçalho "Minha
+// Vivia como uma seção do marketplace, debaixo do cabeçalho "Minha
 // Conta" — a própria barra lateral já dizia que não era mercado. E
 // desde que o combate saiu do menu de Jogos, é aqui que está o botão
-// BATALHAR: a acção mais importante do jogo estava a dois cliques de
+// BATALHAR: a ação mais importante do jogo estava a dois cliques de
 // profundidade dentro de uma loja.
 //
 // O conteúdo não mudou: as mesmas funções escrevem nos mesmos três
@@ -411,7 +411,7 @@ async function abrirMeusAvatares() {
 
   // O renderSlots faz `if(!playerData) return` e sai em silêncio. Quando
   // isto vivia dentro do marketplace, quem carregava o playerData era o
-  // openMarketplaceModal, antes de mostrar a secção. Com porta própria,
+  // openMarketplaceModal, antes de mostrar a seção. Com porta própria,
   // ninguém carregava — e o painel abria vazio.
   //
   // Vale a pena chamar em cada abertura e não só na primeira: o
@@ -513,8 +513,8 @@ function renderSlots() {
             <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:0.5rem;letter-spacing:0.03125rem;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
           ${_slotDoencas(i, s)}
-          <!-- UM só bloco de acções, e não vários.
-               No telemóvel o .slot-body é uma grelha de duas colunas e o
+          <!-- UM só bloco de ações, e não vários.
+               No celular o .slot-body é uma grelha de duas colunas e o
                .slot-actions está preso à segunda, a ocupar as quatro
                linhas (grid-column:2; grid-row:1/span 4). Com dois blocos,
                os dois caíam na MESMA célula e os botões ficavam uns por
@@ -622,7 +622,7 @@ function closeBurnModal() {
 
 // Limpa um slot (queima/descansa) — usa o estado vivo do jogo quando
 // disponível (avatarSlots + scheduleSave), evitando a mesma race de
-// activateSlot(); cai para updateSlots() (marketplace.html inline) quando
+// ativateSlot(); cai para updateSlots() (marketplace.html inline) quando
 // standalone.
 async function _mktClearSlot(idx) {
   if(_mktGameStateDisponivel()) {

@@ -544,7 +544,7 @@
 
 /* ══════════════════════════════════════
    PARTIDA — FULLSCREEN MOBILE (≤768px)
-   Aproveita o ecrã todo do telemóvel.
+   Aproveita a tela toda do celular.
 ══════════════════════════════════════ */
 @media(max-width:768px) {
   .arena-partida {

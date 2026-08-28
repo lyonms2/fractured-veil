@@ -25,7 +25,7 @@ function getGameState() {
       gs:        {...gs},
       cambioLog: window._cambioLog || null,
       lastSeen:  Date.now()
-      // avatarSlots deliberadamente omitido — merge:true preserva o valor actual no Firebase
+      // avatarSlots deliberadamente omitido — merge:true preserva o valor atual no Firebase
     };
   }
 
@@ -69,7 +69,7 @@ function getGameState() {
     };
   });
 
-  // nomeBusca — campo de topo para pesquisa de amigos (nome do avatar activo, minúsculas)
+  // nomeBusca — campo de topo para pesquisa de amigos (nome do avatar ativo, minúsculas)
   const _activeSlot = avatarSlots[activeSlotIdx];
   const nomeBusca = (_activeSlot?.hatched && !_activeSlot?.dead && _activeSlot?.nome)
     ? _activeSlot.nome.split(',')[0].toLowerCase().trim()
@@ -97,7 +97,7 @@ function applyGameState(data) {
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;
   else if(data.extraSlots !== undefined) gs.extraSlots = data.extraSlots;
 
-  // Se o activeSlotIdx vai mudar, flush o slot actual em memória primeiro
+  // Se o activeSlotIdx vai mudar, flush o slot atual em memória primeiro
   const incomingSlotIdx = data.activeSlotIdx !== undefined ? data.activeSlotIdx : activeSlotIdx;
   if(incomingSlotIdx !== activeSlotIdx) {
     saveRuntimeToSlot(activeSlotIdx);
@@ -123,7 +123,7 @@ function applyGameState(data) {
 
   // ── Consumir inboxVisitas ──
   // Quem passou pelo teu bicho enquanto estavas fora. O vínculo já foi
-  // somado ao slot pelo servidor (dentro da mesma transacção da visita);
+  // somado ao slot pelo servidor (dentro da mesma transação da visita);
   // aqui só se guarda o recado para o mostrar, e limpa-se lá.
   if(Array.isArray(data.inboxVisitas) && data.inboxVisitas.length > 0) {
     window._visitasRecebidas = data.inboxVisitas.slice();
@@ -265,7 +265,7 @@ async function loadFromFirebase() {
 
 // ═══════════════════════════════════════════════════════════════════
 // PRESENCE — lastSeen e deadSlot server-side via RTDB onDisconnect
-// Impede que o utilizador manipule localStorage para contornar decay/morte
+// Impede que o usuário manipule localStorage para contornar decay/morte
 // ═══════════════════════════════════════════════════════════════════
 
 function _presRef(uid) {

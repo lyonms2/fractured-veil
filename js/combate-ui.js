@@ -150,7 +150,7 @@ function renderEquipaBar() {
     const papel = n === 0 ? t('equipa.ordem.comeca')
                 : n === 1 ? t('equipa.ordem.segundo')
                           : t('equipa.ordem.terceiro');
-    // Setas só onde há para onde ir, e desactivadas em vez de ausentes:
+    // Setas só onde há para onde ir, e desativadas em vez de ausentes:
     // um botão que aparece e desaparece muda a largura do cartão a cada
     // troca, e o dedo vai bater ao lado.
     const setas = `<div class="equipa-mover">

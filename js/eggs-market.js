@@ -81,7 +81,7 @@ function renderEggBrowse() {
     const expiryDias   = Math.max(0, Math.ceil(expiryMs / 86400000));
     const expiryUrgente = expiryDias <= 2;
     // Um ovo já apodrecido não se compra: o servidor recusa-o agora, e o
-    // botão tem de dizer isso antes do clique. Antes ficava activo, e
+    // botão tem de dizer isso antes do clique. Antes ficava ativo, e
     // quem clicasse pagava por um ovo que o próprio jogo filtrava fora
     // do inventário na entrada seguinte.
     const podre        = egg.expiraEm && now >= egg.expiraEm;
@@ -181,7 +181,7 @@ async function confirmListEgg() {
       return;
     }
 
-    // Actualiza estado local com o saldo devolvido pelo servidor
+    // Atualiza estado local com o saldo devolvido pelo servidor
     playerData.cristais = data.novoSaldo;
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.cristais = data.novoSaldo;
@@ -230,7 +230,7 @@ async function buyEggFromMarket(listingId) {
     // O ovo entra no inventário JÁ. Antes só a resposta trazia raridade e
     // elemento, e o ovo comprado ficava invisível até se recarregar a
     // página — o servidor mandava-o pelo inboxEggs, que só é lido no
-    // arranque. Continua a ir por lá também: o consumo do inbox ignora
+    // arranque. Continua indo por lá também: o consumo do inbox ignora
     // ids repetidos, portanto pô-lo aqui não o duplica.
     if(data.ovo && typeof eggsInInventory !== 'undefined') {
       if(!eggsInInventory.some(e => e.id === data.ovo.id)) {

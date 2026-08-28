@@ -6,18 +6,18 @@
 // a brincar COM a criatura — e brincar com ela é, na ficção, a razão
 // de os jogos existirem: é o que lhe sobe o humor e o vínculo.
 //
-// Este módulo põe o avatar dentro da janela, a olhar para o tabuleiro,
+// Este módulo põe o avatar dentro da janela, olhando para o tabuleiro,
 // e a reagir a cada jogada. Um acerto e ele salta; um erro e ele
 // encolhe-se. É pouco código para o que devolve.
 //
 // Reaproveita o gerarSVG() e as animações que a tela principal já usa,
-// para o bicho ser exactamente o mesmo aqui e lá — não uma ilustração
+// para o bicho ser exatamente o mesmo aqui e lá — não uma ilustração
 // parecida.
 //
 // Depende de: avatar, getFase(), gerarSVG()
 // ═══════════════════════════════════════════════════════════════════
 
-// Os painéis abertos neste momento. Uma reacção chega a todos, o que
+// Os painéis abertos neste momento. Uma reação chega a todos, o que
 // evita ter de saber qual é o jogo em curso.
 const _miniAvPaineis = new Set();
 
@@ -29,7 +29,7 @@ const _MINI_AV_EMOJI = {
 
 // ── Montar ───────────────────────────────────────────────────────
 // Chamado ao abrir cada jogo. Sem avatar vivo o painel fica vazio e
-// tudo o resto continua a funcionar.
+// tudo o resto continua funcionando.
 function miniAvatarMontar(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -45,7 +45,7 @@ function miniAvatarMontar(id) {
   // rem, para o bicho acompanhar a escala como o resto — cravar px
   // aqui deixava-o minúsculo no desktop, onde tudo o resto é 1,5x.
   // Duas camadas de propósito. A de fora flutua sem parar; a de dentro
-  // reage. Estavam na mesma e por isso a reacção SUBSTITUÍA a
+  // reage. Estavam na mesma e por isso a reação SUBSTITUÍA a
   // flutuação: o bicho parava no ar, saltava, e voltava de repente.
   // Com transforms em elementos separados, os dois somam-se.
   el.innerHTML =
@@ -89,7 +89,7 @@ function miniAvatarReagir(tipo) {
       const span = document.createElement('span');
       span.textContent = pool[Math.floor(Math.random() * pool.length)];
       // Um desvio horizontal por emoji, para dois seguidos não subirem
-      // exactamente pelo mesmo sítio.
+      // exatamente pelo mesmo sítio.
       span.style.setProperty('--dx', (Math.random() * 16 - 8).toFixed(1) + 'px');
       bolha.appendChild(span);
       setTimeout(() => span.remove(), 900);
@@ -101,15 +101,15 @@ function miniAvatarReagir(tipo) {
 // AS PARTES REAGEM
 //
 // O CSS dá a cada parte uma vida de fundo: piscar, respirar, abanar a
-// cauda. Uma reacção não deve substituir isso — deve somar-se-lhe.
+// cauda. Uma reação não deve substituir isso — deve somar-se-lhe.
 //
 // É para isso que serve o composite:'add' da Web Animations API: a
-// transformação da reacção acumula sobre a que já está a correr, em
+// transformação da reação acumula sobre a que já está rodando, em
 // vez de a apagar. Com CSS puro não dá: `animation` guarda um valor
-// só, que foi exactamente o problema que a flutuação teve.
+// só, que foi exatamente o problema que a flutuação teve.
 //
 // Se o browser não suportar composite (fica em 'replace'), a parte
-// ainda anima — só perde a soma durante a reacção. Degrada bem.
+// ainda anima — só perde a soma durante a reação. Degrada bem.
 // ═══════════════════════════════════════════════════════════════════
 
 // Cada entrada: [selector, quadros, duração, atraso por índice].
@@ -159,7 +159,7 @@ function _miniAvatarPartesReagem(raiz, tipo) {
           duration: duracao,
           delay: i * passo,
           easing: 'cubic-bezier(.34,1.4,.64,1)',
-          composite: 'add',   // soma-se ao que o CSS já está a fazer
+          composite: 'add',   // soma-se ao que o CSS já está fazendo
         });
       } catch (_) { /* browser sem WAAPI: fica só a animação do corpo */ }
     });
