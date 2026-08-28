@@ -617,34 +617,76 @@
   width:3.25rem; height:3.25rem;
   display:flex; align-items:center; justify-content:center;
 }
-.mini-av-corpo { display:flex; width:100%; height:100%; animation:idle-float 3s ease-in-out infinite; }
+/* A camada de fora só flutua, e nunca pára. */
+.mini-av-flutua {
+  width:100%; height:100%; display:flex;
+  animation:idle-float 3s ease-in-out infinite;
+}
+/* A de dentro só reage. Origem nos pés: um bicho que se agacha afunda
+   nas pernas, não encolhe a partir do umbigo. */
+.mini-av-corpo {
+  display:flex; width:100%; height:100%;
+  transform-origin:50% 100%;
+  will-change:transform;
+}
 /* O SVG vem desenhado a 120 e encolhe para a caixa. É a caixa, em rem,
    que decide o tamanho — ver o comentário do js/mini-avatar.js. */
 .mini-av-corpo svg { display:block; width:100%; height:100%; }
 
-/* As reacções tomam a animação toda enquanto duram, e o idle-float
-   volta sozinho quando a classe sai. */
-.mini-av-corpo.reage-bom   { animation:mini-av-salto .55s cubic-bezier(.34,1.6,.64,1); }
-.mini-av-corpo.reage-mau   { animation:mini-av-encolhe .5s ease-in-out; }
-.mini-av-corpo.reage-festa { animation:mini-av-festa .9s ease-in-out; }
+/* ── As reacções ──
+   Duas coisas fazem o trabalho todo aqui, e nenhuma custa código.
+
+   Esmagar e esticar: o salto era um scale(1.12) uniforme, que lê como
+   um balão a encher. Um corpo que salta estica-se na vertical ao subir
+   (scaleX menor, scaleY maior) e esmaga-se ao aterrar. É o que separa
+   "a imagem cresceu" de "o bicho saltou".
+
+   Antecipação: antes de subir, agacha-se um pouco. São 8% da duração e
+   é o que dá peso ao movimento.
+
+   O linear() é uma curva de mola de verdade — sobe, passa do alvo e
+   assenta. O cubic-bezier antes dele é a reserva para quem não o
+   suporte: uma declaração inválida é ignorada e fica a anterior. */
+.mini-av-corpo.reage-bom {
+  animation:mini-av-salto .62s cubic-bezier(.34,1.56,.64,1);
+  animation-timing-function:linear(
+    0, .009 1.5%, .039 3.4%, .154 7.6%, .548 17.5%, .69 21.5%, .797 25.6%,
+    .875 29.9%, .93 34.6%, .966 39.9%, .988 46.2%, 1.001 55.6%, 1.005 71%, 1);
+}
+.mini-av-corpo.reage-mau   { animation:mini-av-encolhe .55s cubic-bezier(.36,.07,.19,.97); }
+.mini-av-corpo.reage-festa { animation:mini-av-festa 1s cubic-bezier(.34,1.4,.64,1); }
 
 @keyframes mini-av-salto {
-  0%   { transform:translateY(0) scale(1); }
-  35%  { transform:translateY(-0.5rem) scale(1.12); }
-  60%  { transform:translateY(0.0625rem) scale(.96); }
-  100% { transform:translateY(0) scale(1); }
+  0%   { transform:translateY(0)         scale(1,     1); }
+  8%   { transform:translateY(0.0625rem) scale(1.08, .92); }  /* agacha */
+  30%  { transform:translateY(-0.5rem)   scale(.9,   1.14); } /* estica */
+  55%  { transform:translateY(-0.125rem) scale(1.06, .94); }  /* aterra */
+  75%  { transform:translateY(0)         scale(.98,  1.02); }
+  100% { transform:translateY(0)         scale(1,     1); }
 }
 @keyframes mini-av-encolhe {
-  0%,100% { transform:scale(1) rotate(0); }
-  30%     { transform:scale(.88) rotate(-6deg); }
-  60%     { transform:scale(.92) rotate(5deg); }
+  0%   { transform:scale(1,    1)   rotate(0); }
+  22%  { transform:scale(1.05, .86) rotate(-5deg); }
+  45%  { transform:scale(.94,  .9)  rotate(4deg); }
+  70%  { transform:scale(1.02, .97) rotate(-2deg); }
+  100% { transform:scale(1,    1)   rotate(0); }
 }
 @keyframes mini-av-festa {
-  0%   { transform:translateY(0) rotate(0) scale(1); }
-  25%  { transform:translateY(-0.625rem) rotate(-10deg) scale(1.15); }
-  50%  { transform:translateY(0) rotate(8deg) scale(1); }
-  75%  { transform:translateY(-0.375rem) rotate(-5deg) scale(1.08); }
-  100% { transform:translateY(0) rotate(0) scale(1); }
+  0%   { transform:translateY(0)          rotate(0)     scale(1,    1); }
+  10%  { transform:translateY(0.125rem)   rotate(0)     scale(1.1, .88); }
+  32%  { transform:translateY(-0.6875rem) rotate(-11deg) scale(.88, 1.18); }
+  52%  { transform:translateY(0)          rotate(7deg)  scale(1.08, .93); }
+  70%  { transform:translateY(-0.375rem)  rotate(-5deg) scale(.95, 1.08); }
+  88%  { transform:translateY(0)          rotate(2deg)  scale(1.03, .98); }
+  100% { transform:translateY(0)          rotate(0)     scale(1,    1); }
+}
+
+/* Quem pediu menos movimento recebe menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  .mini-av-flutua { animation:none; }
+  .mini-av-corpo.reage-bom,
+  .mini-av-corpo.reage-mau,
+  .mini-av-corpo.reage-festa { animation-duration:.2s; }
 }
 
 /* Os emojis que sobem. Nascem no topo do bicho e apagam-se a subir. */

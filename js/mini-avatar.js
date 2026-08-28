@@ -44,9 +44,15 @@ function miniAvatarMontar(id) {
   // Desenhado grande de propósito. O tamanho na tela vem do CSS, em
   // rem, para o bicho acompanhar a escala como o resto — cravar px
   // aqui deixava-o minúsculo no desktop, onde tudo o resto é 1,5x.
+  // Duas camadas de propósito. A de fora flutua sem parar; a de dentro
+  // reage. Estavam na mesma e por isso a reacção SUBSTITUÍA a
+  // flutuação: o bicho parava no ar, saltava, e voltava de repente.
+  // Com transforms em elementos separados, os dois somam-se.
   el.innerHTML =
-    '<div class="mini-av-corpo">' +
-      gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 120, 120, fase) +
+    '<div class="mini-av-flutua">' +
+      '<div class="mini-av-corpo">' +
+        gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 120, 120, fase) +
+      '</div>' +
     '</div>' +
     '<div class="mini-av-borbulha"></div>';
 }
