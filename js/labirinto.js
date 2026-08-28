@@ -511,7 +511,7 @@ function _mzRender() {
     ctx.shadowBlur = 0;
     // Seta indicativa
     ctx.fillStyle = color;
-    ctx.font      = `${Math.round(cs * 0.38)}px sans-serif`;
+    ctx.font      = `${(Math.round(cs * 0.38))/16}rem sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(exit.gold ? '⚡' : '🚪', cx, cy);
@@ -584,7 +584,7 @@ function _mzRender() {
     if(t < 1) {
       ctx.globalAlpha = Math.min(1, (1 - t) * 2.5);
       ctx.fillStyle   = '#fde68a';
-      ctx.font        = `bold ${Math.round(W * 0.07)}px 'Cinzel', serif`;
+      ctx.font        = `bold ${(Math.round(W * 0.07))/16}rem 'Cinzel', serif`;
       ctx.textAlign   = 'center';
       ctx.textBaseline= 'middle';
       ctx.shadowColor = '#000';

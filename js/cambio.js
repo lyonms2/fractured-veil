@@ -139,16 +139,16 @@ async function renderCambioPanel() {
   const el = document.getElementById('cambioPanel');
   if(!el) return;
 
-  el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">${t('cambio.carregando')}</div>`;
+  el.innerHTML = `<div style="font-size:0.4375rem;color:var(--muted);text-align:center;padding:0.5rem 0;">${t('cambio.carregando')}</div>`;
 
   // Verifica avatar/nível antes de carregar dados da pool
   const elegivelBasico = calcCambioEligivel();
   if(!elegivelBasico.ok && elegivelBasico.codigo !== 'pool') {
     el.innerHTML = `
-      <div style="padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
-                  border-radius:6px;text-align:center;">
-        <div style="font-size:16px;margin-bottom:4px;">🔒</div>
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);">${elegivelBasico.motivo}</div>
+      <div style="padding:0.5rem;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:0.375rem;text-align:center;">
+        <div style="font-size:1rem;margin-bottom:0.25rem;">🔒</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);">${elegivelBasico.motivo}</div>
       </div>`;
     return;
   }
@@ -156,7 +156,7 @@ async function renderCambioPanel() {
   // Carrega dados da pool antes de verificar saldo
   const dados = await cambioCarregarDados();
   if(!dados) {
-    el.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;">${t('cambio.erro_dados')}</div>`;
+    el.innerHTML = `<div style="font-size:0.4375rem;color:var(--muted);text-align:center;">${t('cambio.erro_dados')}</div>`;
     return;
   }
 
@@ -164,10 +164,10 @@ async function renderCambioPanel() {
   const elegivel = calcCambioEligivel();
   if(!elegivel.ok) {
     el.innerHTML = `
-      <div style="padding:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
-                  border-radius:6px;text-align:center;">
-        <div style="font-size:16px;margin-bottom:4px;">🔒</div>
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);">${elegivel.motivo}</div>
+      <div style="padding:0.5rem;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:0.375rem;text-align:center;">
+        <div style="font-size:1rem;margin-bottom:0.25rem;">🔒</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);">${elegivel.motivo}</div>
       </div>`;
     return;
   }
@@ -192,78 +192,78 @@ async function renderCambioPanel() {
   const cabemHoje    = Math.min(restante, tetoRestante);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
+    <div style="display:flex;flex-direction:column;gap:0.375rem;width:100%;">
 
       <!-- Info da pool e taxa -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
-        <div style="padding:6px 8px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
-                    border-radius:6px;text-align:center;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">${t('cambio.taxa')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:#a78bfa;">${custo} 🪙</div>
-          <div style="font-size:5px;color:var(--muted);">${t('cambio.taxa_sub')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem;">
+        <div style="padding:0.375rem 0.5rem;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
+                    border-radius:0.375rem;text-align:center;">
+          <div style="font-size:0.34375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.125rem;">${t('cambio.taxa')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:#a78bfa;">${custo} 🪙</div>
+          <div style="font-size:0.3125rem;color:var(--muted);">${t('cambio.taxa_sub')}</div>
         </div>
-        <div style="padding:6px 8px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
-                    border-radius:6px;text-align:center;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;">${t('cambio.pool')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:var(--gold);">${poolSaldo} 💎</div>
-          <div style="font-size:5px;color:var(--muted);">${poolLabel}</div>
+        <div style="padding:0.375rem 0.5rem;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
+                    border-radius:0.375rem;text-align:center;">
+          <div style="font-size:0.34375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.125rem;">${t('cambio.pool')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;color:var(--gold);">${poolSaldo} 💎</div>
+          <div style="font-size:0.3125rem;color:var(--muted);">${poolLabel}</div>
         </div>
       </div>
 
       <!-- Limite diário -->
-      <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
-                  border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:6px;color:var(--muted);">${t('cambio.limite', {raridade: tItemRaridade(avatar?.raridade || 'Comum')})}</span>
-        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;
+      <div style="padding:0.3125rem 0.5rem;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:0.375rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.375rem;color:var(--muted);">${t('cambio.limite', {raridade: tItemRaridade(avatar?.raridade || 'Comum')})}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;
                      color:${restante > 0 ? '#7ab87a' : '#e74c3c'};">
           ${restante}/${limite} 💎
         </span>
       </div>
 
       <!-- Teto da pool: o outro limite, o que não é só seu -->
-      <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
-                  border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:6px;color:var(--muted);">${t('cambio.teto_global')}</span>
-        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;
+      <div style="padding:0.3125rem 0.5rem;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:0.375rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.375rem;color:var(--muted);">${t('cambio.teto_global')}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;
                      color:${tetoRestante > 0 ? '#7ab87a' : '#e74c3c'};">
           ${tetoRestante}/${POOL_LIMITE_DIA} 💎
         </span>
       </div>
 
       <!-- Saldo de moedas -->
-      <div style="padding:5px 8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
-                  border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:6px;color:var(--muted);">${t('cambio.saldo')}</span>
-        <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);">${gs.moedas} 🪙</span>
+      <div style="padding:0.3125rem 0.5rem;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+                  border-radius:0.375rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.375rem;color:var(--muted);">${t('cambio.saldo')}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--gold);">${gs.moedas} 🪙</span>
       </div>
 
       <!-- Botões de conversão -->
       ${cabemHoje > 0 ? `
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+      <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
         ${Array.from({length: cabemHoje}, (_, i) => i + 1).map(qtd => {
           const custoQtd = custo * qtd;
           const podeComprar = gs.moedas >= custoQtd;
           return `<button
             onclick="cambioExecutar(event,${qtd})"
             ${!podeComprar ? 'disabled' : ''}
-            style="flex:1;min-width:60px;padding:6px 4px;
-                   font-family:'Cinzel',serif;font-size:7px;font-weight:700;
-                   border-radius:5px;cursor:${podeComprar ? 'pointer' : 'not-allowed'};
+            style="flex:1;min-width:3.75rem;padding:0.375rem 0.25rem;
+                   font-family:'Cinzel',serif;font-size:0.4375rem;font-weight:700;
+                   border-radius:0.3125rem;cursor:${podeComprar ? 'pointer' : 'not-allowed'};
                    border:1px solid ${podeComprar ? 'rgba(167,139,250,.5)' : 'rgba(255,255,255,.08)'};
                    background:${podeComprar ? 'rgba(167,139,250,.12)' : 'rgba(255,255,255,.02)'};
                    color:${podeComprar ? '#c4b5fd' : 'var(--muted)'};
                    transition:all .15s;">
             +${qtd} 💎<br>
-            <span style="font-size:5.5px;opacity:.7;">${custoQtd} 🪙</span>
+            <span style="font-size:0.34375rem;opacity:.7;">${custoQtd} 🪙</span>
           </button>`;
         }).join('')}
       </div>` : `
-      <div style="padding:8px;text-align:center;font-size:7px;color:#e74c3c;
-                  border:1px solid rgba(231,76,60,.2);border-radius:6px;background:rgba(231,76,60,.05);">
+      <div style="padding:0.5rem;text-align:center;font-size:0.4375rem;color:#e74c3c;
+                  border:1px solid rgba(231,76,60,.2);border-radius:0.375rem;background:rgba(231,76,60,.05);">
         ${restante > 0 ? t('cambio.teto_cheio') : t('cambio.esgotado')}
       </div>`}
 
-      <div style="font-size:5.5px;color:var(--muted);text-align:center;line-height:1.8;">
+      <div style="font-size:0.34375rem;color:var(--muted);text-align:center;line-height:1.8;">
         ${t('cambio.nota')}<br>
         ${t('cambio.nota2')}
       </div>

@@ -146,7 +146,7 @@ function triggerSummon() {
   const rarNames   = { 'Comum':'◆ COMUM ◆', 'Raro':'◈ RARO ◈', 'Lendário':'✦ LENDÁRIO ✦' };
   const rarColor   = rarColors[raridade] || '#ffffff';
 
-  ovAv.style.cssText = 'width:200px;height:200px;opacity:0;transform:scale(.05) rotate(-15deg);transition:none;display:flex;align-items:center;justify-content:center;';
+  ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05) rotate(-15deg);transition:none;display:flex;align-items:center;justify-content:center;';
   r1.style.cssText = r2.style.cssText = r3.style.cssText = 'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
   ovRarLbl.classList.remove('show');
   ovNamLbl.classList.remove('show');
@@ -179,7 +179,7 @@ function triggerSummon() {
     const p  = document.createElement('div');
     const sz = 2 + Math.random() * 5;
     p.className = 'ov-particle';
-    p.style.cssText = `width:${sz}px;height:${sz}px;left:${10+Math.random()*80}%;bottom:-10px;background:${cor};box-shadow:0 0 ${sz*2}px ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    p.style.cssText = `width:${(sz)/16}rem;height:${(sz)/16}rem;left:${10+Math.random()*80}%;bottom:-0.625rem;background:${cor};box-shadow:0 0 ${(sz*2)/16}rem ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
     ovParts.appendChild(p);
   }
 
@@ -187,12 +187,12 @@ function triggerSummon() {
   setTimeout(() => { ovBg.style.opacity = '1'; }, 50);
 
   setTimeout(() => {
-    r1.style.cssText = `position:absolute;inset:10px;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 20px ${cor}50,inset 0 0 20px ${cor}20;transition:opacity .5s`;
+    r1.style.cssText = `position:absolute;inset:0.625rem;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 1.25rem ${cor}50,inset 0 0 20px ${cor}20;transition:opacity .5s`;
     requestAnimationFrame(() => requestAnimationFrame(() => { r1.style.opacity = '.7'; }));
   }, 400);
 
   setTimeout(() => {
-    r2.style.cssText = `position:absolute;inset:40px;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 15px ${cor}40;transition:opacity .4s`;
+    r2.style.cssText = `position:absolute;inset:2.5rem;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 0.9375rem ${cor}40;transition:opacity .4s`;
     requestAnimationFrame(() => requestAnimationFrame(() => { r2.style.opacity = '.5'; }));
   }, 700);
 
@@ -209,7 +209,7 @@ function triggerSummon() {
     ovAv.style.opacity    = '1';
     ovAv.style.transform  = 'scale(1) rotate(0deg)';
     if(raridade !== 'Comum') {
-      r3.style.cssText = `position:absolute;inset:70px;border-radius:50%;border:1px dashed ${cor};opacity:0;animation:pspin 1.5s linear infinite;transition:opacity .4s`;
+      r3.style.cssText = `position:absolute;inset:4.375rem;border-radius:50%;border:1px dashed ${cor};opacity:0;animation:pspin 1.5s linear infinite;transition:opacity .4s`;
       requestAnimationFrame(() => requestAnimationFrame(() => { r3.style.opacity = '.4'; }));
     }
   }, 1100);

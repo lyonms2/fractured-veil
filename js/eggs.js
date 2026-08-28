@@ -150,7 +150,7 @@ function burnEgg(id) {
     if(overlay && preview) {
       preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
-        <span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`;
+        <span style="color:#f87171;font-size:0.5rem;">Esta acção é irreversível.</span>`;
       document.getElementById('eggBurnConfirmBtn').onclick = () => {
         overlay.style.display = 'none';
         _doBurnComum(id, moedas);
@@ -169,8 +169,8 @@ function burnEgg(id) {
       const rarColor = ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8';
       preview.innerHTML = `Ovo <b style="color:${rarColor}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</b><br>
         Receberás <b style="color:#a78bfa">${finalGems} 💎</b>${bonusPct}<br>
-        ${!poolOk ? `<span style="color:#f87171;font-size:8px;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
-          `<span style="color:#f87171;font-size:8px;">Esta acção é irreversível.</span>`}`;
+        ${!poolOk ? `<span style="color:#f87171;font-size:0.5rem;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
+          `<span style="color:#f87171;font-size:0.5rem;">Esta acção é irreversível.</span>`}`;
       const btn = document.getElementById('eggBurnConfirmBtn');
       btn.disabled = !poolOk;
       btn.style.opacity = poolOk ? '1' : '.4';

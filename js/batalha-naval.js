@@ -210,7 +210,7 @@ function _bnRenderLobby() {
   el.innerHTML = `
     <button class="gs-x-btn" onclick="closeBatalhaNaval()">✕</button>
 
-    <div class="arena-header" style="margin-bottom:8px;">
+    <div class="arena-header" style="margin-bottom:0.5rem;">
       <div class="arena-title">${t('bn.title')}</div>
       <div class="arena-sub">${t('bn.sub')} <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
@@ -227,17 +227,17 @@ function _bnRenderLobby() {
     <div id="bnTabContentLobby" class="arena-tab-content bn-lobby-scroll">
 
       <div class="arena-aposta-info" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
-        <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.bet_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_bnDescAposta()}</div>
+        <div style="text-align:center;padding:0 0.375rem;">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.bet_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:var(--gold);">${_bnDescAposta()}</div>
         </div>
-        <div style="text-align:center;padding:0 6px;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.prize_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
+        <div style="text-align:center;padding:0 0.375rem;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.prize_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
         </div>
-        <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.tax_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
+        <div style="text-align:center;padding:0 0.375rem;">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.tax_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--muted);">10%</div>
         </div>
       </div>
 
@@ -251,11 +251,11 @@ function _bnRenderLobby() {
         <div class="arena-lobby-vazio">${t('rm.no_players')}</div>
       </div>
 
-      <div style="padding:8px 10px;background:rgba(255,255,255,.02);
-                  border:1px solid rgba(255,255,255,.06);border-radius:6px;width:100%;">
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                    letter-spacing:1px;margin-bottom:6px;">${t('rm.how_to')}</div>
-        <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+      <div style="padding:0.5rem 0.625rem;background:rgba(255,255,255,.02);
+                  border:1px solid rgba(255,255,255,.06);border-radius:0.375rem;width:100%;">
+        <div style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);
+                    letter-spacing:0.0625rem;margin-bottom:0.375rem;">${t('rm.how_to')}</div>
+        <div style="font-size:0.40625rem;color:var(--muted);line-height:2;">
           ${t('bn.how_to_text', {ships: BN_NAVIOS.length, size: BN_TAMANHO})}
         </div>
       </div>
@@ -277,7 +277,7 @@ function _bnRenderLobby() {
 function _bnHtmlAcoes(podePagar) {
   if(_bnAtiva) return `
     <button class="arena-btn-sair" onclick="bnSairDoLobby()">${t('arena.leave_queue')}</button>
-    <div class="arena-aguardando" style="margin-top:10px;">
+    <div class="arena-aguardando" style="margin-top:0.625rem;">
       <div class="arena-pulse"></div>${t('arena.queue_active')}
     </div>`;
   return `
@@ -285,7 +285,7 @@ function _bnHtmlAcoes(podePagar) {
       onclick="${podePagar ? 'bnEntrarNoLobby()' : ''}" ${!podePagar ? 'disabled' : ''}>
       ${t('bn.enter_queue')}
     </button>
-    ${!podePagar ? `<div class="arena-sem-saldo" style="margin-top:6px;">${t('arena.no_balance_cost', {cost: _bnDescAposta()})}</div>` : ''}`;
+    ${!podePagar ? `<div class="arena-sem-saldo" style="margin-top:0.375rem;">${t('arena.no_balance_cost', {cost: _bnDescAposta()})}</div>` : ''}`;
 }
 
 function _bnAtualizarAcoes() {
@@ -470,15 +470,15 @@ function _bnRenderEspera(salaId) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('bn.title')}</div>
-      <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
-      <div style="font-size:6px;color:var(--muted);margin-top:3px;">Sala #${salaId.slice(-6).toUpperCase()}</div>
-      <div id="bnDesafioTimer" style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);margin-top:8px;">⏳ 60s</div>
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;width:100%;margin-top:4px;">
+      <div class="arena-pulse" style="margin:1rem auto;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.waiting_accept')}</div>
+      <div style="font-size:0.375rem;color:var(--muted);margin-top:0.1875rem;">Sala #${salaId.slice(-6).toUpperCase()}</div>
+      <div id="bnDesafioTimer" style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--gold);margin-top:0.5rem;">⏳ 60s</div>
+      <div style="height:0.1875rem;background:rgba(255,255,255,.06);border-radius:0.125rem;overflow:hidden;width:100%;margin-top:0.25rem;">
         <div id="bnDesafioTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
       </div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="bnCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
+      <button class="arena-btn-sair" style="margin-top:1.125rem;" onclick="bnCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>`;
 
   let seg = 60;
@@ -585,82 +585,82 @@ function _bnRenderColocacao(salaId, sala) {
   const opWallet = sala.criador === walletAddress ? sala.oponente : sala.criador;
   const isPC = window.innerWidth > 600;
   el.innerHTML = isPC ? `
-    <div style="display:flex;flex-direction:column;width:100%;max-width:620px;height:100%;padding:8px 10px;gap:6px;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;width:100%;max-width:38.75rem;height:100%;padding:0.5rem 0.625rem;gap:0.375rem;overflow:hidden;">
 
       <!-- Header + timer -->
-      <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('bn.place_ships')}</div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">90s</span>
-          <div style="width:60px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
-            <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:2px;"></div>
+      <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+        <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;">${t('bn.place_ships')}</div>
+        <div style="display:flex;align-items:center;gap:0.375rem;flex-shrink:0;">
+          <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);">90s</span>
+          <div style="width:3.75rem;height:0.25rem;background:rgba(255,255,255,.08);border-radius:0.125rem;overflow:hidden;">
+            <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:0.125rem;"></div>
           </div>
         </div>
       </div>
 
       <!-- 2-col: board | seleção -->
-      <div style="display:flex;gap:8px;flex:1;min-height:0;overflow:hidden;">
+      <div style="display:flex;gap:0.5rem;flex:1;min-height:0;overflow:hidden;">
 
         <!-- Esquerda: tabuleiro -->
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
-          <div style="font-size:5.5px;color:var(--muted);letter-spacing:1px;">CLICA PARA POSICIONAR</div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:0.25rem;">
+          <div style="font-size:0.34375rem;color:var(--muted);letter-spacing:0.0625rem;">CLICA PARA POSICIONAR</div>
           <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId, 22)}</div>
-          <div id="bnNavioInfo" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">
+          <div id="bnNavioInfo" style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);">
             ${_bnHtmlNavioInfo(salaId)}
           </div>
         </div>
 
         <!-- Direita: navios -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;overflow:hidden;">
+        <div style="flex:1;display:flex;flex-direction:column;gap:0.25rem;min-width:0;overflow:hidden;">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-            <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:1px;">NAVIOS</span>
-            <button style="font-family:'Cinzel',serif;font-size:6px;padding:2px 8px;
-                           border:1px solid var(--border);border-radius:4px;background:transparent;
+            <span style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;">NAVIOS</span>
+            <button style="font-family:'Cinzel',serif;font-size:0.375rem;padding:0.125rem 0.5rem;
+                           border:1px solid var(--border);border-radius:0.25rem;background:transparent;
                            color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
               <b id="bnOrientLabel">H</b> ↕
             </button>
           </div>
           <div id="bnNaviosLista" style="flex:1;overflow-y:auto;">${_bnHtmlNaviosLista()}</div>
           <div id="bnBtnConfirmar" style="display:none;flex-shrink:0;">
-            <button class="arena-btn-entrar" style="font-size:6px;padding:5px 8px;width:100%;" onclick="bnConfirmarColocacao('${salaId}')">
+            <button class="arena-btn-entrar" style="font-size:0.375rem;padding:0.3125rem 0.5rem;width:100%;" onclick="bnConfirmarColocacao('${salaId}')">
               ${t('bn.confirm_pos')}
             </button>
           </div>
-          <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;">
-            <div class="arena-aguardando" style="font-size:6px;text-align:center;"><div class="arena-pulse"></div>${t('bn.waiting_op')}</div>
+          <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:0.375rem;">
+            <div class="arena-aguardando" style="font-size:0.375rem;text-align:center;"><div class="arena-pulse"></div>${t('bn.waiting_op')}</div>
           </div>
         </div>
 
       </div>
     </div>` : `
-    <div style="display:flex;flex-direction:column;height:100%;gap:6px;padding:8px;overflow-y:auto;">
+    <div style="display:flex;flex-direction:column;height:100%;gap:0.375rem;padding:0.5rem;overflow-y:auto;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('bn.place_ships')}</div>
-        <button style="font-family:'Cinzel',serif;font-size:7px;padding:4px 10px;
-                       border:1px solid var(--border);border-radius:4px;background:transparent;
+        <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;">${t('bn.place_ships')}</div>
+        <button style="font-family:'Cinzel',serif;font-size:0.4375rem;padding:0.25rem 0.625rem;
+                       border:1px solid var(--border);border-radius:0.25rem;background:transparent;
                        color:var(--muted);cursor:pointer;" onclick="_bnToggleOrientacao()">
           Orientação: <b id="bnOrientLabel">H</b>
         </button>
       </div>
 
       <!-- Timer de colocação -->
-      <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
-        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);letter-spacing:1px;">TEMPO</span>
-        <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">90s</span>
-        <div style="flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
-          <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:2px;"></div>
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:0.5rem;">
+        <span style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;">TEMPO</span>
+        <span id="bnTimerColSeg" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);">90s</span>
+        <div style="flex:1;height:0.25rem;background:rgba(255,255,255,.08);border-radius:0.125rem;overflow:hidden;">
+          <div id="bnTimerColBar" style="height:100%;width:100%;background:#7ab87a;transition:width 1s linear;border-radius:0.125rem;"></div>
         </div>
       </div>
 
-      <div id="bnNavioInfo" style="flex-shrink:0;padding:6px 8px;
+      <div id="bnNavioInfo" style="flex-shrink:0;padding:0.375rem 0.5rem;
            background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);
-           border-radius:6px;font-family:'Cinzel',serif;font-size:7px;color:var(--gold);">
+           border-radius:0.375rem;font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);">
         ${_bnHtmlNavioInfo(salaId)}
       </div>
 
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('bn.my_board_col')}</div>
+        <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('bn.my_board_col')}</div>
         <div id="bnTabColocacao" style="display:inline-block;">${_bnHtmlTabColocacao(salaId)}</div>
       </div>
 
@@ -672,7 +672,7 @@ function _bnRenderColocacao(salaId, sala) {
         </button>
       </div>
 
-      <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:6px;margin-top:8px;">
+      <div id="bnAguardandoOponente" style="display:none;flex-direction:column;align-items:center;gap:0.375rem;margin-top:0.5rem;">
         <div class="arena-aguardando"><div class="arena-pulse"></div>${t('bn.waiting_place')}</div>
       </div>
 
@@ -759,8 +759,8 @@ function _bnHtmlNavioInfo(salaId) {
   }
   const desfazerBtn = _bnNavioAtual > 0
     ? ` <button onclick="bnDesfazerNavio('${salaId}')"
-          style="margin-left:8px;font-family:'Cinzel',serif;font-size:6px;padding:2px 8px;
-                 border:1px solid rgba(255,100,100,.3);border-radius:3px;
+          style="margin-left:0.5rem;font-family:'Cinzel',serif;font-size:0.375rem;padding:0.125rem 0.5rem;
+                 border:1px solid rgba(255,100,100,.3);border-radius:0.1875rem;
                  background:rgba(231,76,60,.08);color:#e74c3c;cursor:pointer;">${t('bn.undo')}</button>`
     : '';
   return info + desfazerBtn;
@@ -777,19 +777,19 @@ function _bnHtmlNaviosLista() {
     const cellBd    = colocado ? 'rgba(122,184,122,.7)'  : isAtual ? 'rgba(201,168,76,.65)'  : 'rgba(90,180,232,.35)';
     const shipCells = Array.from({length: n.tam}, (_, i) =>
       `<span style="display:inline-flex;align-items:center;justify-content:center;
-                    width:13px;height:13px;font-size:8px;
+                    width:0.8125rem;height:0.8125rem;font-size:0.5rem;
                     background:${cellCol};border:1px solid ${cellBd};
                     border-radius:${i===0?'3px 0 0 3px':i===n.tam-1?'0 3px 3px 0':'0'};
-                    margin-right:-1px;">${i===0?n.icon:''}</span>`
+                    margin-right:-0.0625rem;">${i===0?n.icon:''}</span>`
     ).join('');
-    return `<div style="display:flex;align-items:center;gap:7px;padding:3px 6px;
-                        border-radius:4px;margin-bottom:3px;
+    return `<div style="display:flex;align-items:center;gap:0.4375rem;padding:0.1875rem 0.375rem;
+                        border-radius:0.25rem;margin-bottom:0.1875rem;
                         border:1px solid ${bdItem};background:${bgItem};">
       <div style="display:inline-flex;align-items:center;flex-shrink:0;">${shipCells}</div>
-      <span style="font-family:'Cinzel',serif;font-size:6px;color:${cor};
+      <span style="font-family:'Cinzel',serif;font-size:0.375rem;color:${cor};
                    ${isAtual?'font-weight:700;':''}flex:1;white-space:nowrap;
                    overflow:hidden;text-overflow:ellipsis;">${n.nome}</span>
-      ${colocado ? '<span style="font-size:9px;flex-shrink:0;">✅</span>' : ''}
+      ${colocado ? '<span style="font-size:0.5625rem;flex-shrink:0;">✅</span>' : ''}
     </div>`;
   }).join('');
 }
@@ -798,14 +798,14 @@ function _bnHtmlTabColocacao(salaId, cellSize) {
   const cell = cellSize || 22;
   let html = `<table style="border-collapse:collapse;">`;
   // Header colunas
-  html += `<tr><td style="width:${cell}px;"></td>`;
+  html += `<tr><td style="width:${(cell)/16}rem;"></td>`;
   for(let c = 0; c < BN_TAMANHO; c++)
-    html += `<td style="width:${cell}px;height:14px;text-align:center;font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
+    html += `<td style="width:${(cell)/16}rem;height:0.875rem;text-align:center;font-family:'Cinzel',serif;font-size:0.375rem;color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
   html += `</tr>`;
 
   for(let r = 0; r < BN_TAMANHO; r++) {
     html += `<tr>`;
-    html += `<td style="width:${cell}px;height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">${r+1}</td>`;
+    html += `<td style="width:${(cell)/16}rem;height:${(cell)/16}rem;text-align:center;font-family:'Cinzel',serif;font-size:0.375rem;color:var(--muted);">${r+1}</td>`;
     for(let c = 0; c < BN_TAMANHO; c++) {
       const cell_data = _bnMeuTabuleiro[r][c];
       let bg, border, content = '';
@@ -826,9 +826,9 @@ function _bnHtmlTabColocacao(salaId, cellSize) {
                    data-bnr="${r}" data-bnc="${c}"
                    data-bnbg="${bg}" data-bnborder="${border}"
                    ${cell_data ? 'data-bnship="1"' : ''}
-                   style="width:${cell}px;height:${cell}px;text-align:center;
+                   style="width:${(cell)/16}rem;height:${(cell)/16}rem;text-align:center;
                           background:${bg};border:${border};cursor:pointer;
-                          font-size:10px;transition:background .12s,border .12s;">${content}</td>`;
+                          font-size:0.625rem;transition:background .12s,border .12s;">${content}</td>`;
     }
     html += `</tr>`;
   }
@@ -1036,18 +1036,18 @@ function _bnRenderPartida(salaId, sala, opWallet) {
   const isPC = window.innerWidth > 600;
 
   const _timerHtml = meuTurno ? `
-    <div style="flex-shrink:0;margin-bottom:2px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-        <span style="font-family:'Cinzel',serif;font-size:5px;color:var(--muted);">${t('rm.time_left')}</span>
-        <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">${BN_TIMER_SEG}s</span>
+    <div style="flex-shrink:0;margin-bottom:0.125rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.125rem;">
+        <span style="font-family:'Cinzel',serif;font-size:0.3125rem;color:var(--muted);">${t('rm.time_left')}</span>
+        <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);">${BN_TIMER_SEG}s</span>
       </div>
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
-        <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:2px;"></div>
+      <div style="height:0.1875rem;background:rgba(255,255,255,.06);border-radius:0.125rem;overflow:hidden;">
+        <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:0.125rem;"></div>
       </div>
     </div>` : '';
 
   const _ultimaHtml = ultimaJogada ? `
-    <div style="flex-shrink:0;padding:4px 6px;border-radius:4px;font-size:6px;
+    <div style="flex-shrink:0;padding:0.25rem 0.375rem;border-radius:0.25rem;font-size:0.375rem;
                 background:${ultimaJogada.acertou?'rgba(122,184,122,.08)':'rgba(90,180,232,.06)'};
                 border:1px solid ${ultimaJogada.acertou?'rgba(122,184,122,.3)':'rgba(90,180,232,.2)'};
                 color:${ultimaJogada.acertou?'#7ab87a':'#5ab4e8'};">
@@ -1057,63 +1057,63 @@ function _bnRenderPartida(salaId, sala, opWallet) {
     </div>` : '';
 
   el.innerHTML = isPC ? `
-    <div style="display:flex;flex-direction:column;width:100%;max-width:680px;gap:10px;">
+    <div style="display:flex;flex-direction:column;width:100%;max-width:42.5rem;gap:0.625rem;">
 
       <!-- Header: título + score + status + abandonar -->
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;flex:1;">${t('bn.title')}</div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <span style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
-          <span style="font-size:9px;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
-          <span style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#e74c3c;">${opAcertos}</span>
+      <div style="display:flex;align-items:center;gap:0.625rem;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--gold);letter-spacing:0.125rem;flex:1;">${t('bn.title')}</div>
+        <div style="display:flex;align-items:center;gap:0.375rem;flex-shrink:0;">
+          <span style="font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;color:#7ab87a;">${meusAcertos}</span>
+          <span style="font-size:0.5625rem;color:var(--muted);font-family:'Cinzel',serif;">VS</span>
+          <span style="font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;color:#e74c3c;">${opAcertos}</span>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:9px;padding:5px 14px;border-radius:10px;flex-shrink:0;
+        <div style="font-family:'Cinzel',serif;font-size:0.5625rem;padding:0.3125rem 0.875rem;border-radius:0.625rem;flex-shrink:0;
           background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
           border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
           color:${meuTurno?'#7ab87a':'var(--muted)'};">
           ${meuTurno ? t('bn.your_turn') : t('bn.wait')}
         </div>
-        <button class="arena-btn-sair" style="font-size:7px;padding:5px 12px;flex-shrink:0;"
+        <button class="arena-btn-sair" style="font-size:0.4375rem;padding:0.3125rem 0.75rem;flex-shrink:0;"
           onclick="bnAbandonar('${salaId}')">🏳️</button>
       </div>
 
       ${meuTurno ? `
       <div style="flex-shrink:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">${t('rm.time_left')}</span>
-          <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:10px;color:var(--gold);">${BN_TIMER_SEG}s</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+          <span style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);letter-spacing:0.0625rem;">${t('rm.time_left')}</span>
+          <span id="bnTimerSeg" style="font-family:'Cinzel',serif;font-size:0.625rem;color:var(--gold);">${BN_TIMER_SEG}s</span>
         </div>
-        <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
-          <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:3px;"></div>
+        <div style="height:0.3125rem;background:rgba(255,255,255,.06);border-radius:0.1875rem;overflow:hidden;">
+          <div id="bnTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:0.1875rem;"></div>
         </div>
       </div>` : ''}
 
       ${_ultimaHtml}
 
       <!-- 2-col: ataque | defesa -->
-      <div style="display:flex;gap:20px;align-items:flex-start;">
+      <div style="display:flex;gap:1.25rem;align-items:flex-start;">
 
-        <!-- Esquerda: tabuleiro de ataque (30px cells) -->
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">
+        <!-- Esquerda: tabuleiro de ataque (1.875rem cells) -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:0.375rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;">
             ${meuTurno ? t('bn.click_fire') : t('bn.op_board')}
           </div>
           <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet, 30)}</div>
         </div>
 
-        <!-- Direita: tabuleiro de defesa (20px cells) -->
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">${t('bn.my_board')}</div>
+        <!-- Direita: tabuleiro de defesa (1.25rem cells) -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:0.375rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;">${t('bn.my_board')}</div>
           ${_bnHtmlTabDefesa(meuTabPub, 20)}
         </div>
 
       </div>
     </div>` : `
-    <div style="display:flex;flex-direction:column;height:100%;gap:4px;padding:6px;overflow-y:auto;">
+    <div style="display:flex;flex-direction:column;height:100%;gap:0.25rem;padding:0.375rem;overflow-y:auto;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">${t('bn.title')}</div>
-        <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
+        <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.0625rem;">${t('bn.title')}</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.375rem;padding:0.125rem 0.4375rem;border-radius:0.625rem;
           background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
           border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
           color:${meuTurno?'#7ab87a':'var(--muted)'};">
@@ -1123,38 +1123,38 @@ function _bnRenderPartida(salaId, sala, opWallet) {
 
       ${_timerHtml}
 
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;
-                  padding:5px 8px;background:rgba(255,255,255,.02);border-radius:6px;
+      <div style="display:flex;align-items:center;gap:0.375rem;flex-shrink:0;
+                  padding:0.3125rem 0.5rem;background:rgba(255,255,255,.02);border-radius:0.375rem;
                   border:1px solid rgba(255,255,255,.06);">
         <div style="flex:1;text-align:center;">
-          <div style="font-size:6px;color:var(--muted);">${t('bn.me')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#7ab87a;">${meusAcertos}</div>
-          <div style="font-size:5px;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
+          <div style="font-size:0.375rem;color:var(--muted);">${t('bn.me')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.875rem;font-weight:700;color:#7ab87a;">${meusAcertos}</div>
+          <div style="font-size:0.3125rem;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);">VS</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--muted);">VS</div>
         <div style="flex:1;text-align:center;">
-          <div style="font-size:6px;color:var(--muted);">${op_info.nome||t('bn.opponent')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#e74c3c;">${opAcertos}</div>
-          <div style="font-size:5px;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
+          <div style="font-size:0.375rem;color:var(--muted);">${op_info.nome||t('bn.opponent')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.875rem;font-weight:700;color:#e74c3c;">${opAcertos}</div>
+          <div style="font-size:0.3125rem;color:var(--muted);">/ ${BN_TOTAL_CASAS}</div>
         </div>
       </div>
 
       ${_ultimaHtml}
 
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">
+        <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.1875rem;">
           ${meuTurno ? t('bn.click_fire') : t('bn.op_board_lbl')}
         </div>
         <div id="bnTabAtaque">${_bnHtmlTabAtaque(opTabPub, meuTurno, salaId, opWallet)}</div>
       </div>
 
       <div style="flex-shrink:0;">
-        <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;">${t('bn.my_board')}</div>
+        <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.1875rem;">${t('bn.my_board')}</div>
         <div>${_bnHtmlTabDefesa(meuTabPub, 14)}</div>
       </div>
 
-      <div style="flex-shrink:0;margin-top:4px;">
-        <button class="arena-btn-sair" style="font-size:6px;padding:5px 10px;"
+      <div style="flex-shrink:0;margin-top:0.25rem;">
+        <button class="arena-btn-sair" style="font-size:0.375rem;padding:0.3125rem 0.625rem;"
           onclick="bnAbandonar('${salaId}')">🏳️ ${t('bn.abandon_btn')}</button>
       </div>
 
@@ -1164,14 +1164,14 @@ function _bnRenderPartida(salaId, sala, opWallet) {
 function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
   const cell = cellSize || 20;
   let html = `<table style="border-collapse:collapse;">`;
-  html += `<tr><td style="width:14px;"></td>`;
+  html += `<tr><td style="width:0.875rem;"></td>`;
   for(let c = 0; c < BN_TAMANHO; c++)
-    html += `<td style="width:${cell}px;height:14px;text-align:center;font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
+    html += `<td style="width:${(cell)/16}rem;height:0.875rem;text-align:center;font-family:'Cinzel',serif;font-size:0.34375rem;color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
   html += `</tr>`;
 
   for(let r = 0; r < BN_TAMANHO; r++) {
     html += `<tr>`;
-    html += `<td style="width:14px;height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);">${r+1}</td>`;
+    html += `<td style="width:0.875rem;height:${(cell)/16}rem;text-align:center;font-family:'Cinzel',serif;font-size:0.34375rem;color:var(--muted);">${r+1}</td>`;
     for(let c = 0; c < BN_TAMANHO; c++) {
       const key  = `${r}_${c}`;
       const casa = tabPub[key];
@@ -1196,9 +1196,9 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
         ? (casa ? `showBubble(t('bn.bub.already_hit'))` : `bnAtirar(${r},${c},'${salaId}','${opWallet}')`)
         : '';
       html += `<td onclick="${clickHandler}"
-                   style="width:${cell}px;height:${cell}px;text-align:center;
+                   style="width:${(cell)/16}rem;height:${(cell)/16}rem;text-align:center;
                           background:${bg};border:${border};cursor:${cursor};
-                          font-size:9px;transition:all .1s;
+                          font-size:0.5625rem;transition:all .1s;
                           ${meuTurno && !casa ? 'onmouseover:this.style.background=\'rgba(201,168,76,.12)\'' : ''}"
                    ${meuTurno && !casa ? `onmouseover="this.style.background='rgba(201,168,76,.12)'" onmouseout="this.style.background='${bg}'"` : ''}>
                    ${content}</td>`;
@@ -1211,19 +1211,19 @@ function _bnHtmlTabAtaque(tabPub, meuTurno, salaId, opWallet, cellSize) {
 
 function _bnHtmlTabDefesa(meuTabPub, cellSize) {
   const cell  = cellSize || 18;
-  const fsize = cell <= 14 ? '4px' : '5px';
-  const hdr   = cell <= 14 ? `${cell - 2}px` : '12px';
-  const rowW  = cell <= 14 ? `${cell}px` : '13px';
+  const fsize = cell <= 14 ? '0.25rem' : '0.3125rem';
+  const hdr   = cell <= 14 ? `${(cell - 2)/16}rem` : '0.75rem';
+  const rowW  = cell <= 14 ? `${(cell)/16}rem` : '0.8125rem';
   // Sobrepõe o meu tabuleiro privado com os acertos públicos
   let html = `<table style="border-collapse:collapse;">`;
   html += `<tr><td style="width:${rowW};"></td>`;
   for(let c = 0; c < BN_TAMANHO; c++)
-    html += `<td style="width:${cell}px;height:${hdr};text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
+    html += `<td style="width:${(cell)/16}rem;height:${hdr};text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${String.fromCharCode(65+c)}</td>`;
   html += `</tr>`;
 
   for(let r = 0; r < BN_TAMANHO; r++) {
     html += `<tr>`;
-    html += `<td style="width:${rowW};height:${cell}px;text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${r+1}</td>`;
+    html += `<td style="width:${rowW};height:${(cell)/16}rem;text-align:center;font-family:'Cinzel',serif;font-size:${fsize};color:var(--muted);">${r+1}</td>`;
     for(let c = 0; c < BN_TAMANHO; c++) {
       const key      = `${r}_${c}`;
       const pubCasa  = meuTabPub[key];
@@ -1242,8 +1242,8 @@ function _bnHtmlTabDefesa(meuTabPub, cellSize) {
         bg = 'rgba(255,255,255,.02)'; border = '1px solid rgba(255,255,255,.04)';
       }
 
-      html += `<td style="width:${cell}px;height:${cell}px;text-align:center;
-                          background:${bg};border:${border};font-size:${cell <= 14 ? '7px' : '8px'};">${content}</td>`;
+      html += `<td style="width:${(cell)/16}rem;height:${(cell)/16}rem;text-align:center;
+                          background:${bg};border:${border};font-size:${cell <= 14 ? '0.4375rem' : '0.5rem'};">${content}</td>`;
     }
     html += `</tr>`;
   }
@@ -1260,18 +1260,18 @@ function _bnMostrarAfundado(nomeNavio, euAfundei, callback) {
     position:absolute;inset:0;z-index:90;
     background:rgba(4,3,10,.9);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:10px;border-radius:inherit;`;
+    gap:0.625rem;border-radius:inherit;`;
   overlay.innerHTML = `
     <style>
       @keyframes bn-afund-pop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
     </style>
-    <div style="font-size:44px;animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1);">${euAfundei ? '🔥' : '💥'}</div>
-    <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:2px;
+    <div style="font-size:2.75rem;animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1);">${euAfundei ? '🔥' : '💥'}</div>
+    <div style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;letter-spacing:0.125rem;
                 color:${euAfundei ? '#7ab87a' : '#e74c3c'};
                 animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1) .06s both;">
       ${euAfundei ? 'NAVIO AFUNDADO!' : 'TEU NAVIO AFUNDADO!'}
     </div>
-    <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);
+    <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);
                 animation:bn-afund-pop .5s cubic-bezier(.34,1.6,.64,1) .12s both;">
       ${nomeNavio}
     </div>`;
@@ -1477,18 +1477,18 @@ function bnAbandonar(salaId) {
     background:rgba(4,3,10,.96);
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
-    gap:12px;padding:24px;border-radius:inherit;`;
+    gap:0.75rem;padding:1.5rem;border-radius:inherit;`;
   overlay.innerHTML = `
-    <div style="font-size:32px;">🏳️</div>
-    <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;
-                color:#e74c3c;letter-spacing:2px;">${t('rm.abandon_title')}</div>
-    <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.9;padding:0 10px;">
+    <div style="font-size:2rem;">🏳️</div>
+    <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;
+                color:#e74c3c;letter-spacing:0.125rem;">${t('rm.abandon_title')}</div>
+    <div style="font-size:0.4375rem;color:var(--muted);text-align:center;line-height:1.9;padding:0 0.625rem;">
       ${t('rm.abandon_desc')}
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px;width:100%;">
-      <button class="arena-btn-sair" style="flex:1;font-size:8px;"
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;width:100%;">
+      <button class="arena-btn-sair" style="flex:1;font-size:0.5rem;"
         onclick="bnConfirmarAbandono('${salaId}')">${t('rm.abandon_confirm')}</button>
-      <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
+      <button class="arena-btn-entrar" style="flex:1;font-size:0.5rem;"
         onclick="document.getElementById('bnAbandonarOverlay').remove()">${t('rm.abandon_back')}</button>
     </div>`;
   modal.style.position = 'relative';
@@ -1607,30 +1607,30 @@ async function _bnRenderResultado(sala, opWallet) {
     <div class="arena-resultado">
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
 
-      <div class="arena-vs-row" style="margin:12px 0;">
+      <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${euVenci ? 'arena-vencedor' : ''}">
           <div class="arena-vs-svg">${gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 44, 44, getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">💥 ${meusAc}</div>
+          <div class="arena-vs-pts" style="font-size:1.125rem;">💥 ${meusAc}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci && !empate ? 'arena-vencedor' : ''}">
           <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 44, 44, faseFromNivel(op_info.nivel))}</div>
           <div class="arena-vs-nome">${op_info.nome || opWallet.slice(0,8)+'...'}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">💥 ${opAc}</div>
+          <div class="arena-vs-pts" style="font-size:1.125rem;">💥 ${opAc}</div>
         </div>
       </div>
 
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: (usaCris ? Math.floor(bruto - bruto*BN_TAXA) : bruto), moeda, xp: xpGain})}</div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:0.5625rem;font-weight:700;">${t('rm.prize_xp', {val: (usaCris ? Math.floor(bruto - bruto*BN_TAXA) : bruto), moeda, xp: xpGain})}</div>`
           : empate
-            ? `<div style="color:var(--muted);font-size:7px;">${t('rm.bets_returned', {xp: xpGain})}</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
+            ? `<div style="color:var(--muted);font-size:0.4375rem;">${t('rm.bets_returned', {xp: xpGain})}</div>`
+            : `<div style="color:#e74c3c;font-size:0.4375rem;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_bnRenderLobby()">${t('bn.play_again')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.4375rem;" onclick="_bnRenderLobby()">${t('bn.play_again')}</button>
         <button class="arena-btn-sair" onclick="closeBatalhaNaval()">${t('arena.close_btn')}</button>
       </div>
     </div>`;
@@ -1772,13 +1772,13 @@ function _bnRenderDesafioPendente(sala) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('bn.title')}</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:3px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;margin-top:1rem;">${t('arena.ch_received')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.1875rem;">
         ${t('arena.bet_label', {val: sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'})}
       </div>
-      <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="bnAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:1.25rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.5rem;" onclick="bnAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
         <button class="arena-btn-sair" onclick="bnRecusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>`;

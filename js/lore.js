@@ -164,8 +164,8 @@ function _loreRenderLista() {
 
   if(!hatched || dead) {
     body.innerHTML = `
-      <div style="text-align:center;padding:20px 10px;color:var(--muted);font-size:9px;line-height:1.8;">
-        <div style="font-size:28px;margin-bottom:8px;">📖</div>
+      <div style="text-align:center;padding:1.25rem 0.625rem;color:var(--muted);font-size:0.5625rem;line-height:1.8;">
+        <div style="font-size:1.75rem;margin-bottom:0.5rem;">📖</div>
         Você precisa de um avatar vivo para explorar o Lore.
       </div>`;
     return;
@@ -177,8 +177,8 @@ function _loreRenderLista() {
   if(!lista.length) {
     const icone = _loreSerieAtual === 'raro' ? '🔵' : _loreSerieAtual === 'lendario' ? '🌟' : '📖';
     body.innerHTML = `
-      <div style="text-align:center;padding:20px 10px;color:var(--muted);font-size:9px;line-height:1.8;">
-        <div style="font-size:28px;margin-bottom:8px;">${icone}</div>
+      <div style="text-align:center;padding:1.25rem 0.625rem;color:var(--muted);font-size:0.5625rem;line-height:1.8;">
+        <div style="font-size:1.75rem;margin-bottom:0.5rem;">${icone}</div>
         Histórias ${rarFiltro}s em desenvolvimento.<br>Em breve novas aventuras aqui.
       </div>`;
     return;
@@ -222,7 +222,7 @@ function _loreRenderLista() {
           <div class="lore-cap-titulo">${cap.titulo}</div>
           <div class="lore-cap-desc">${_loreFmt(cap.descricao)}</div>
           <div class="lore-cap-meta">
-            <span style="color:${corRarMap[cap.raridade]};font-size:7px;">${iconeRarMap[cap.raridade]} ${cap.raridade}</span>
+            <span style="color:${corRarMap[cap.raridade]};font-size:0.4375rem;">${iconeRarMap[cap.raridade]} ${cap.raridade}</span>
             <span class="lore-cap-custo">${moedaIcon} ${custo.valor}</span>
           </div>
         </div>
@@ -313,13 +313,13 @@ function _loreRenderCena(cenaId) {
 
   body.innerHTML = `
     <div class="lore-cena-wrap">
-      <div style="text-align:center;margin-bottom:10px;">
-        <div style="font-size:22px;">${cap.icone}</div>
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:3px;">${cap.titulo}</div>
+      <div style="text-align:center;margin-bottom:0.625rem;">
+        <div style="font-size:1.375rem;">${cap.icone}</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);letter-spacing:0.0625rem;margin-top:0.1875rem;">${cap.titulo}</div>
       </div>
       <div class="lore-texto" id="loreTwText"></div>
       <div class="lore-escolhas lore-tw-hidden" id="loreTwChoices">${escolhasHtml}</div>
-      <button class="lore-btn-secondary lore-tw-hidden" id="loreTwClose" style="margin-top:10px;width:100%;" onclick="fecharLore()">✕ Fechar</button>
+      <button class="lore-btn-secondary lore-tw-hidden" id="loreTwClose" style="margin-top:0.625rem;width:100%;" onclick="fecharLore()">✕ Fechar</button>
     </div>`;
 
   const textEl    = document.getElementById('loreTwText');
@@ -374,9 +374,9 @@ function lerCapituloSalvo(capId) {
   _loreCapituloAtual = cap;
 
   let html = `<div class="lore-cena-wrap">
-    <div style="text-align:center;margin-bottom:12px;">
-      <div style="font-size:28px;">${cap.icone}</div>
-      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:1px;margin-top:4px;">${cap.titulo}</div>
+    <div style="text-align:center;margin-bottom:0.75rem;">
+      <div style="font-size:1.75rem;">${cap.icone}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--gold);letter-spacing:0.0625rem;margin-top:0.25rem;">${cap.titulo}</div>
     </div>`;
 
   for(const passo of prog.caminho) {
@@ -393,7 +393,7 @@ function lerCapituloSalvo(capId) {
       html += `<div class="lore-fim-tag">${_loreFmt(cenaFim.texto_fim)}</div>`;
       if(cenaFim.recompensa) {
         html += `<div class="lore-recomp-box">
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">RECOMPENSAS</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;">RECOMPENSAS</div>
           ${_loreRecompensaTxt(cenaFim.recompensa)}
         </div>`;
       }
@@ -401,7 +401,7 @@ function lerCapituloSalvo(capId) {
   }
 
   html += `
-    <div style="margin-top:14px;">
+    <div style="margin-top:0.875rem;">
       <button class="lore-btn-secondary" style="width:100%;" onclick="_loreRenderLista()">← Capítulos</button>
     </div>
   </div>`;
@@ -443,7 +443,7 @@ function _loreRecompensaTxt(r) {
   if(r.energia && r.energia < 0) items.push(`<span class="lore-recomp-item" style="color:#e74c3c;">😴 ${r.energia} energia</span>`);
   if(r.vinculo && r.vinculo > 0) items.push(`<span class="lore-recomp-item">💜 +${r.vinculo} vínculo</span>`);
   if(r.vinculo && r.vinculo < 0) items.push(`<span class="lore-recomp-item" style="color:#e74c3c;">💔 ${r.vinculo} vínculo</span>`);
-  return `<div style="display:flex;flex-wrap:wrap;gap:6px;">${items.join('')}</div>`;
+  return `<div style="display:flex;flex-wrap:wrap;gap:0.375rem;">${items.join('')}</div>`;
 }
 
 // ── Exports ───────────────────────────────────────────────────────

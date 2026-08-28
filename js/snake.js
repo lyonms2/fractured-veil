@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // SNAKE ELEMENTAL
-// Grid: 20×20 células de 14px → canvas 280×280
+// Grid: 20×20 células de 0.875rem → canvas 280×280
 // ═══════════════════════════════════════════════════════════════════
 
 const SNAKE_COLS = 20;
@@ -423,10 +423,10 @@ function _snakeRecordAnim(score) {
 
   const emojis   = ['✦','✧','★','✨','🐍','⭐','✦','✧'];
   const positions = [
-    {sx:'-80px',sy:'-70px'},{sx:'80px',sy:'-65px'},
-    {sx:'-90px',sy:'20px'}, {sx:'90px', sy:'15px'},
-    {sx:'-35px',sy:'-90px'},{sx:'35px', sy:'-85px'},
-    {sx:'60px', sy:'70px'}, {sx:'-60px',sy:'65px'},
+    {sx:'-5rem',sy:'-4.375rem'},{sx:'5rem',sy:'-4.0625rem'},
+    {sx:'-5.625rem',sy:'1.25rem'}, {sx:'5.625rem', sy:'0.9375rem'},
+    {sx:'-2.1875rem',sy:'-5.625rem'},{sx:'2.1875rem', sy:'-5.3125rem'},
+    {sx:'3.75rem', sy:'4.375rem'}, {sx:'-3.75rem',sy:'4.0625rem'},
   ];
   positions.forEach((pos, i) => {
     const s = document.createElement('div');

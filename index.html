@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-08-26l
+     VERSÃO DOS FICHEIROS — ?v=2026-08-26m
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-08-26l" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-08-26m" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -35,28 +35,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/screen.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/ui.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/modals.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/combate.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/arena.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/snake.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-26l">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-26l">
+  <link rel="stylesheet" href="css/base.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/screen.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/ui.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/modals.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/combate.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/arena.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/snake.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-26m">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-26m">
 
   <style>
     .auth-tab {
       flex: 1; background: none; border: none;
       border-bottom: 2px solid transparent;
       color: var(--muted); font-family: 'Cinzel', serif;
-      font-size: 9px; letter-spacing: 2px;
-      padding: 8px 0; cursor: pointer; transition: all .2s;
+      font-size: 0.5625rem; letter-spacing: 0.125rem;
+      padding: 0.5rem 0; cursor: pointer; transition: all .2s;
     }
     .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
     .auth-tab:hover:not(.active) { color: var(--text); }
@@ -64,30 +64,30 @@
     .auth-input {
       width: 100%; box-sizing: border-box;
       background: #0a0816; border: 1px solid #2a2040;
-      border-radius: 6px; color: #e8e0f0;
-      font-family: 'Cinzel', serif; font-size: 10px;
-      padding: 10px 12px; outline: none; letter-spacing: .5px;
+      border-radius: 0.375rem; color: #e8e0f0;
+      font-family: 'Cinzel', serif; font-size: 0.625rem;
+      padding: 0.625rem 0.75rem; outline: none; letter-spacing: 0.03125rem;
       transition: border-color .2s;
     }
     .auth-input:focus { border-color: #5a3a9a; }
 
     .auth-btn-primary {
-      width: 100%; padding: 11px;
+      width: 100%; padding: 0.6875rem;
       background: linear-gradient(135deg, #4c1d95, #7c3aed);
-      border: none; border-radius: 6px; color: #fff;
-      font-family: 'Cinzel', serif; font-size: 10px;
-      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      border: none; border-radius: 0.375rem; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 0.625rem;
+      font-weight: 700; letter-spacing: 0.125rem; cursor: pointer;
       transition: opacity .15s;
     }
     .auth-btn-primary:hover  { opacity: .9; }
     .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
     .auth-btn-green {
-      width: 100%; padding: 11px;
+      width: 100%; padding: 0.6875rem;
       background: linear-gradient(135deg, #1a4a2a, #2d7a4a);
-      border: none; border-radius: 6px; color: #fff;
-      font-family: 'Cinzel', serif; font-size: 10px;
-      font-weight: 700; letter-spacing: 2px; cursor: pointer;
+      border: none; border-radius: 0.375rem; color: #fff;
+      font-family: 'Cinzel', serif; font-size: 0.625rem;
+      font-weight: 700; letter-spacing: 0.125rem; cursor: pointer;
       transition: opacity .15s;
     }
     .auth-btn-green:hover  { opacity: .9; }
@@ -95,37 +95,37 @@
 
     .auth-btn-link {
       background: none; border: none; color: var(--muted);
-      font-size: 9px; cursor: pointer;
-      font-family: 'Cinzel', serif; letter-spacing: 1px;
-      margin-top: 2px; transition: color .15s;
+      font-size: 0.5625rem; cursor: pointer;
+      font-family: 'Cinzel', serif; letter-spacing: 0.0625rem;
+      margin-top: 0.125rem; transition: color .15s;
     }
     .auth-btn-link:hover { color: var(--gold); }
 
     .auth-email-notice {
-      font-size: 9px;
+      font-size: 0.5625rem;
       color: #a89bc2;
       text-align: center;
       line-height: 1.7;
-      padding: 6px 10px;
+      padding: 0.375rem 0.625rem;
       background: rgba(90, 58, 154, .12);
       border: 1px solid rgba(90, 58, 154, .25);
-      border-radius: 6px;
+      border-radius: 0.375rem;
     }
 
     @keyframes auth-msg-in {
-      from { opacity: 0; transform: translateY(-4px); }
+      from { opacity: 0; transform: translateY(-0.25rem); }
       to   { opacity: 1; transform: translateY(0); }
     }
     #loginError {
       display: none;
       font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: .5px;
+      font-size: 0.625rem;
+      letter-spacing: 0.03125rem;
       line-height: 1.5;
       text-align: center;
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-top: 8px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      margin-top: 0.5rem;
       border-left: 3px solid;
       animation: auth-msg-in .2s ease;
     }
@@ -169,12 +169,12 @@
     <div id="loginLogo">Fractured Veil</div>
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
 
-    <div style="display:flex;gap:0;margin:14px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
+    <div style="display:flex;gap:0;margin:0.875rem 0 1rem;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
       <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')"    data-i18n="auth.tab.login"></button>
       <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')" data-i18n="auth.tab.register"></button>
     </div>
 
-    <div id="authFormLogin" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+    <div id="authFormLogin" style="display:flex;flex-direction:column;gap:0.5rem;width:100%;">
       <input id="loginEmail" type="email"    data-i18n-ph="auth.ph.email"    class="auth-input"
         onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
       <input id="loginSenha" type="password" data-i18n-ph="auth.ph.password" class="auth-input"
@@ -185,7 +185,7 @@
       <button class="auth-btn-link" onclick="authShowReset()" data-i18n="auth.link.forgot"></button>
     </div>
 
-    <div id="authFormRegister" style="display:none;flex-direction:column;gap:8px;width:100%;">
+    <div id="authFormRegister" style="display:none;flex-direction:column;gap:0.5rem;width:100%;">
       <input id="regEmail"  type="email"    data-i18n-ph="auth.ph.email"            class="auth-input"/>
       <input id="regSenha"  type="password" data-i18n-ph="auth.ph.password_min"     class="auth-input"/>
       <input id="regSenha2" type="password" data-i18n-ph="auth.ph.password_confirm" class="auth-input"
@@ -194,7 +194,7 @@
       <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()" data-i18n="auth.tab.register"></button>
     </div>
 
-    <div id="authFormReset" style="display:none;flex-direction:column;gap:8px;width:100%;">
+    <div id="authFormReset" style="display:none;flex-direction:column;gap:0.5rem;width:100%;">
       <div class="auth-email-notice" data-i18n="auth.reset.hint"></div>
       <input id="resetEmail" type="email" data-i18n-ph="auth.ph.email" class="auth-input"
         onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
@@ -203,7 +203,7 @@
     </div>
 
     <div id="loginError"></div>
-    <div id="loginFooter" style="font-size:7px;color:var(--muted);margin-top:8px;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;width:100%;">
+    <div id="loginFooter" style="font-size:0.4375rem;color:var(--muted);margin-top:0.5rem;letter-spacing:0.0625rem;display:flex;align-items:center;justify-content:space-between;width:100%;">
       <span>Fractured Veil v1.0</span>
       <button class="auth-btn-link" onclick="setLang(window._currentLang==='pt'?'en':'pt')" data-i18n="ui.lang_btn">🌐 EN</button>
     </div>
@@ -216,13 +216,13 @@
   <style>
     #gameLoadingOverlay{position:fixed;inset:0;background:#04030a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;transition:opacity .6s ease;}
     #gameLoadingOverlay.splash-out{opacity:0;pointer-events:none;}
-    .splash-img{width:min(420px,80vw);animation:splashIn .9s cubic-bezier(.22,1,.36,1) both,splashPulse 4s ease-in-out 1s infinite;}
+    .splash-img{width:min(26.25rem,80vw);animation:splashIn .9s cubic-bezier(.22,1,.36,1) both,splashPulse 4s ease-in-out 1s infinite;}
     @keyframes splashIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
-    @keyframes splashPulse{0%,100%{filter:drop-shadow(0 0 18px rgba(201,168,76,.25))}50%{filter:drop-shadow(0 0 38px rgba(201,168,76,.55))}}
-    .splash-bar-wrap{width:min(260px,60vw);height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:28px;}
-    .splash-bar-fill{height:100%;width:30%;background:linear-gradient(90deg,#7c3aed,#c9a84c);border-radius:2px;animation:splashBar 1.6s ease-in-out infinite;}
+    @keyframes splashPulse{0%,100%{filter:drop-shadow(0 0 1.125rem rgba(201,168,76,.25))}50%{filter:drop-shadow(0 0 2.375rem rgba(201,168,76,.55))}}
+    .splash-bar-wrap{width:min(16.25rem,60vw);height:0.1875rem;background:rgba(255,255,255,.07);border-radius:0.125rem;overflow:hidden;margin-top:1.75rem;}
+    .splash-bar-fill{height:100%;width:30%;background:linear-gradient(90deg,#7c3aed,#c9a84c);border-radius:0.125rem;animation:splashBar 1.6s ease-in-out infinite;}
     @keyframes splashBar{0%{width:0%;margin-left:0}60%{width:60%}100%{width:0%;margin-left:100%}}
-    .splash-label{font-family:'Cinzel',serif;font-size:10px;color:#4b5563;letter-spacing:3px;margin-top:12px;animation:splashFadeTxt 1.6s ease-in-out infinite;}
+    .splash-label{font-family:'Cinzel',serif;font-size:0.625rem;color:#4b5563;letter-spacing:0.1875rem;margin-top:0.75rem;animation:splashFadeTxt 1.6s ease-in-out infinite;}
     @keyframes splashFadeTxt{0%,100%{opacity:.4}50%{opacity:.9}}
   </style>
   <div id="gameLoadingOverlay">
@@ -246,7 +246,7 @@
     }
   </script>
   <div id="pageTransOut" style="position:fixed;inset:0;background:#04030a;z-index:9999;opacity:0;pointer-events:none;transition:opacity .4s ease;display:flex;align-items:center;justify-content:center;">
-    <img src="/splash.webp" style="width:min(320px,70vw);animation:splashPulse 4s ease-in-out infinite;"/>
+    <img src="/splash.webp" style="width:min(20rem,70vw);animation:splashPulse 4s ease-in-out infinite;"/>
   </div>
 
   <header>
@@ -269,7 +269,7 @@
       <button class="res res-clickable" id="resCristaisBtn" onclick="goToMarketplace(event)" data-i18n-title="ui.marketplace_title" title="Marketplace" style="display:none;">💎 <b id="resCristais">0</b></button>
     </div>
     <div class="header-right">
-      <div id="walletInfo" style="display:none;align-items:center;gap:6px;">
+      <div id="walletInfo" style="display:none;align-items:center;gap:0.375rem;">
         <div class="wallet-address">✉️ <span id="walletShort">jogador</span></div>
         <button id="btnAudio" class="btn-wallet" onclick="toggleAudio()">🔊</button>
         <button id="btnLang" class="btn-wallet" onclick="setLang(window._currentLang==='pt'?'en':'pt')" title="Language / Idioma" data-i18n="ui.lang_btn">🌐 EN</button>
@@ -290,7 +290,7 @@
       <div class="screen" id="mainScreen">
 
         <!-- IDLE -->
-        <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
+        <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;">
           <svg width="90" height="90" viewBox="0 0 90 90">
             <defs>
               <radialGradient id="portalGrad" cx="50%" cy="50%" r="50%">
@@ -307,12 +307,12 @@
             </circle>
             <text x="45" y="52" text-anchor="middle" font-size="24" opacity=".4">✦</text>
           </svg>
-          <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--muted);text-align:center;"><span data-i18n="portal.waiting">PORTAL DIMENSIONAL</span><br><span data-i18n="portal.sub" style="opacity:.5">aguardando invocação</span></div>
+          <div style="font-family:'Cinzel',serif;font-size:0.4375rem;letter-spacing:0.1875rem;color:var(--muted);text-align:center;"><span data-i18n="portal.waiting">PORTAL DIMENSIONAL</span><br><span data-i18n="portal.sub" style="opacity:.5">aguardando invocação</span></div>
         </div>
 
         <!-- EGG -->
         <div id="eggScreen" class="egg-screen" style="display:none;">
-          <div id="eggWrap" style="position:relative;width:100px;height:110px;">
+          <div id="eggWrap" style="position:relative;width:6.25rem;height:6.875rem;">
             <svg id="eggSvg" width="100" height="110" viewBox="0 0 100 110" style="transition:transform .12s ease;display:block;">
               <defs>
                 <radialGradient id="eggGrad" cx="38%" cy="28%" r="72%">
@@ -362,8 +362,8 @@
               <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeItemInventory()">✕</button>
             </div>
             <div class="modal-scroll-body">
-              <div id="itemInvList" style="display:flex;flex-direction:column;gap:6px;width:100%;">
-                <div data-i18n="ui.no_items" style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;"></div>
+              <div id="itemInvList" style="display:flex;flex-direction:column;gap:0.375rem;width:100%;">
+                <div data-i18n="ui.no_items" style="font-size:0.4375rem;color:var(--muted);text-align:center;padding:1.25rem 0;"></div>
               </div>
             </div>
           </div>
@@ -397,20 +397,20 @@
                    o câmbio aparece com um cadeado — e abrir o painel das
                    moedas num cadeado é a pior primeira impressão possível.
                    A loja funciona sempre; o câmbio é o passo avançado. -->
-              <div data-i18n="inv.items_store" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ LOJA DE ITENS</div>
-              <div id="mktItemsList" style="display:flex;flex-direction:column;gap:8px;width:100%;"></div>
+              <div data-i18n="inv.items_store" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.125rem;margin-bottom:0.5rem;">◆ LOJA DE ITENS</div>
+              <div id="mktItemsList" style="display:flex;flex-direction:column;gap:0.5rem;width:100%;"></div>
 
-              <div style="border-top:1px solid rgba(255,255,255,.06);margin:14px -4px;"></div>
+              <div style="border-top:1px solid rgba(255,255,255,.06);margin:0.875rem -0.25rem;"></div>
 
-              <div data-i18n="inv.exchange_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;">◆ CÂMBIO 🪙 → 💎</div>
+              <div data-i18n="inv.exchange_label" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.125rem;margin-bottom:0.5rem;">◆ CÂMBIO 🪙 → 💎</div>
               <div id="cambioPanel" style="width:100%;">
-                <div data-i18n="inv.exchange_empty" style="font-size:7px;color:var(--muted);text-align:center;padding:8px 0;">Abre a loja para ver o câmbio.</div>
+                <div data-i18n="inv.exchange_empty" style="font-size:0.4375rem;color:var(--muted);text-align:center;padding:0.5rem 0;">Abre a loja para ver o câmbio.</div>
               </div>
-              <div style="border-top:1px solid rgba(255,255,255,.06);margin:12px -4px;"></div>
-              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;text-align:center;">
-                <div data-i18n="inv.crystals_cta" style="font-size:8px;color:var(--gem2);font-weight:700;margin-bottom:6px;">💎 Precisas de mais Cristais?</div>
-                <div data-i18n="inv.crystals_desc" style="font-size:7px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
-                <a href="#" onclick="openMarketplaceModal('buycrystals');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:7px 16px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:6px;color:#fff;font-size:8px;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:.5px;">Ir ao Marketplace →</a>
+              <div style="border-top:1px solid rgba(255,255,255,.06);margin:0.75rem -0.25rem;"></div>
+              <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:0.5rem;padding:0.625rem;text-align:center;">
+                <div data-i18n="inv.crystals_cta" style="font-size:0.5rem;color:var(--gem2);font-weight:700;margin-bottom:0.375rem;">💎 Precisas de mais Cristais?</div>
+                <div data-i18n="inv.crystals_desc" style="font-size:0.4375rem;color:var(--muted);margin-bottom:0.625rem;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
+                <a href="#" onclick="openMarketplaceModal('buycrystals');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:0.4375rem 1rem;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:0.375rem;color:#fff;font-size:0.5rem;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:0.03125rem;">Ir ao Marketplace →</a>
               </div>
             </div>
           </div>
@@ -538,45 +538,45 @@
           </div>
 
           <!-- ── AMIGOS OVERLAY ── -->
-          <div id="amigosOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.95);z-index:200;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;">
-            <div style="background:var(--surface);border:1px solid rgba(90,180,232,.2);border-radius:14px;width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;margin:auto;">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-                <div data-i18n="amigos.title" style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;"></div>
-                <button onclick="fecharAmigos()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1;">✕</button>
+          <div id="amigosOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.95);z-index:200;align-items:flex-start;justify-content:center;padding:0.75rem;overflow-y:auto;">
+            <div style="background:var(--surface);border:1px solid rgba(90,180,232,.2);border-radius:0.875rem;width:100%;max-width:26.25rem;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;margin:auto;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem 0.625rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div data-i18n="amigos.title" style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--gold);letter-spacing:0.125rem;"></div>
+                <button onclick="fecharAmigos()" style="background:none;border:none;color:var(--muted);font-size:0.875rem;cursor:pointer;padding:0.125rem 0.375rem;line-height:1;">✕</button>
               </div>
-              <div id="amigosConteudo" style="flex:1;min-height:0;overflow-y:auto;padding:12px 14px;"></div>
+              <div id="amigosConteudo" style="flex:1;min-height:0;overflow-y:auto;padding:0.75rem 0.875rem;"></div>
             </div>
           </div>
 
           <!-- ── VISITA OVERLAY ── -->
-          <div id="visitaOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.95);z-index:210;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;">
-            <div style="background:var(--surface);border:1px solid rgba(122,184,122,.25);border-radius:14px;width:100%;max-width:380px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;margin:auto;">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-                <div data-i18n="amigos.visit.title" style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;"></div>
-                <button onclick="fecharVisita()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1;">✕</button>
+          <div id="visitaOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.95);z-index:210;align-items:flex-start;justify-content:center;padding:0.75rem;overflow-y:auto;">
+            <div style="background:var(--surface);border:1px solid rgba(122,184,122,.25);border-radius:0.875rem;width:100%;max-width:23.75rem;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;margin:auto;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem 0.625rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div data-i18n="amigos.visit.title" style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--gold);letter-spacing:0.125rem;"></div>
+                <button onclick="fecharVisita()" style="background:none;border:none;color:var(--muted);font-size:0.875rem;cursor:pointer;padding:0.125rem 0.375rem;line-height:1;">✕</button>
               </div>
-              <div id="visitaBody" style="flex:1;min-height:0;overflow-y:auto;padding:14px;"></div>
+              <div id="visitaBody" style="flex:1;min-height:0;overflow-y:auto;padding:0.875rem;"></div>
             </div>
           </div>
 
           <!-- ── LORE MODAL ── -->
-          <div id="loreModal" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.92);z-index:200;align-items:center;justify-content:center;padding:12px;">
-            <div style="background:var(--surface);border:1px solid rgba(167,139,250,.25);border-radius:14px;width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-                <div id="loreTitulo" style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:2px;">📖 LORE</div>
-                <button onclick="fecharLore()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1;">✕</button>
+          <div id="loreModal" style="display:none;position:fixed;inset:0;background:rgba(4,3,10,.92);z-index:200;align-items:center;justify-content:center;padding:0.75rem;">
+            <div style="background:var(--surface);border:1px solid rgba(167,139,250,.25);border-radius:0.875rem;width:100%;max-width:26.25rem;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem 0.625rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div id="loreTitulo" style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--gold);letter-spacing:0.125rem;">📖 LORE</div>
+                <button onclick="fecharLore()" style="background:none;border:none;color:var(--muted);font-size:0.875rem;cursor:pointer;padding:0.125rem 0.375rem;line-height:1;">✕</button>
               </div>
-              <div id="loreBody" style="flex:1;min-height:0;overflow-y:auto;padding:12px 14px;"></div>
+              <div id="loreBody" style="flex:1;min-height:0;overflow-y:auto;padding:0.75rem 0.875rem;"></div>
             </div>
           </div>
 
           <div class="mini-modal" id="hatchConfirmModal">
             <div data-i18n="hatch.title" class="mini-title" id="hatchConfirmTitle">🥚 CHOCAR OVO</div>
-            <div style="text-align:center;margin:10px 0 6px;">
-              <div style="font-size:28px" id="hatchConfirmEgg">🥚</div>
-              <div style="font-size:9px;margin-top:6px;" id="hatchConfirmRarity"></div>
+            <div style="text-align:center;margin:0.625rem 0 0.375rem;">
+              <div style="font-size:1.75rem" id="hatchConfirmEgg">🥚</div>
+              <div style="font-size:0.5625rem;margin-top:0.375rem;" id="hatchConfirmRarity"></div>
             </div>
-            <div style="font-size:8px;color:#c8a8e8;text-align:center;line-height:1.8;margin-bottom:14px;" id="hatchConfirmMsg"></div>
+            <div style="font-size:0.5rem;color:#c8a8e8;text-align:center;line-height:1.8;margin-bottom:0.875rem;" id="hatchConfirmMsg"></div>
             <div class="mini-btns">
               <button data-i18n="mini.confirm" class="mini-btn primary" id="hatchConfirmYes" onclick="confirmHatch()">✓ CONFIRMAR</button>
               <button data-i18n="mini.cancel" class="mini-btn close" onclick="closeMiniModal('hatchConfirmModal')">CANCELAR</button>
@@ -632,7 +632,7 @@
             </div>
             <div id="snakeInfo" class="mini-info">Fácil · Coma os elementos!</div>
             <canvas id="snakeCanvas" width="280" height="280"></canvas>
-            <div id="snakeScore" style="font-family:'Cinzel',serif;font-size:11px;color:#86efac;letter-spacing:2px;margin:4px 0 0;">🐍 0 elementos</div>
+            <div id="snakeScore" style="font-family:'Cinzel',serif;font-size:0.6875rem;color:#86efac;letter-spacing:0.125rem;margin:0.25rem 0 0;">🐍 0 elementos</div>
             <div class="mini-result-box" id="snakeResult"></div>
             <div class="mini-reward-txt" id="snakeReward"></div>
             <!-- D-pad (visível só no mobile) -->
@@ -671,7 +671,7 @@
             </div>
             <div data-i18n="mini.maze.info" id="mazeInfo" class="mini-info">Navegue na névoa e ache a saída!</div>
             <canvas id="mazeCanvas" width="280" height="280"></canvas>
-            <div id="mazeTimer" style="font-family:'Cinzel',serif;font-size:13px;color:#86efac;letter-spacing:3px;margin:2px 0;">⏱ 120s</div>
+            <div id="mazeTimer" style="font-family:'Cinzel',serif;font-size:0.8125rem;color:#86efac;letter-spacing:0.1875rem;margin:0.125rem 0;">⏱ 120s</div>
             <div class="mini-result-box" id="mazeResult"></div>
             <div class="mini-reward-txt" id="mazeReward"></div>
             <div class="maze-dpad">
@@ -712,27 +712,27 @@
               <div class="creature-svg-wrap" id="creatureSVG"></div>
               <div class="creature-shadow"></div>
               <div class="bubble" id="bubble">Olá!</div>
-              <div class="zzz-bubble" id="zzz1" style="bottom:115px;left:56%;font-size:11px;animation-delay:0s">z</div>
-              <div class="zzz-bubble" id="zzz2" style="bottom:132px;left:63%;font-size:14px;animation-delay:.9s">Z</div>
-              <div class="zzz-bubble" id="zzz3" style="bottom:150px;left:69%;font-size:17px;animation-delay:1.8s">Z</div>
+              <div class="zzz-bubble" id="zzz1" style="bottom:7.1875rem;left:56%;font-size:0.6875rem;animation-delay:0s">z</div>
+              <div class="zzz-bubble" id="zzz2" style="bottom:8.25rem;left:63%;font-size:0.875rem;animation-delay:.9s">Z</div>
+              <div class="zzz-bubble" id="zzz3" style="bottom:9.375rem;left:69%;font-size:1.0625rem;animation-delay:1.8s">Z</div>
             </div>
             <div id="sleepOverlay">
               <div class="sleep-moon">🌙</div>
-              <div class="sleep-star" style="left:18%;top:35%;font-size:7px;animation-delay:.4s">✦</div>
-              <div class="sleep-star" style="left:72%;top:28%;font-size:8px;animation-delay:1s">✦</div>
-              <div class="sleep-star" style="left:55%;top:50%;font-size:5px;animation-delay:.7s">✧</div>
-              <div class="sleep-star" style="left:30%;top:55%;font-size:6px;animation-delay:1.4s">✦</div>
-              <div class="sleep-star" style="left:82%;top:45%;font-size:5px;animation-delay:1.9s">✧</div>
+              <div class="sleep-star" style="left:18%;top:35%;font-size:0.4375rem;animation-delay:.4s">✦</div>
+              <div class="sleep-star" style="left:72%;top:28%;font-size:0.5rem;animation-delay:1s">✦</div>
+              <div class="sleep-star" style="left:55%;top:50%;font-size:0.3125rem;animation-delay:.7s">✧</div>
+              <div class="sleep-star" style="left:30%;top:55%;font-size:0.375rem;animation-delay:1.4s">✦</div>
+              <div class="sleep-star" style="left:82%;top:45%;font-size:0.3125rem;animation-delay:1.9s">✧</div>
             </div>
           </div>
           <div class="phase-label" id="phaseLabel">FASE: BEBÊ</div>
           <div id="poopContainer"></div>
           <div id="dirtLayer">
-            <div class="dirt-spot" id="dirt1" style="width:8px;height:5px;left:15%;top:35%"></div>
-            <div class="dirt-spot" id="dirt2" style="width:5px;height:4px;left:70%;top:55%"></div>
-            <div class="dirt-spot" id="dirt3" style="width:6px;height:4px;left:40%;top:70%"></div>
-            <div class="dirt-spot" id="dirt4" style="width:4px;height:3px;left:80%;top:30%"></div>
-            <div class="dirt-spot" id="dirt5" style="width:7px;height:5px;left:25%;top:60%"></div>
+            <div class="dirt-spot" id="dirt1" style="width:0.5rem;height:0.3125rem;left:15%;top:35%"></div>
+            <div class="dirt-spot" id="dirt2" style="width:0.3125rem;height:0.25rem;left:70%;top:55%"></div>
+            <div class="dirt-spot" id="dirt3" style="width:0.375rem;height:0.25rem;left:40%;top:70%"></div>
+            <div class="dirt-spot" id="dirt4" style="width:0.25rem;height:0.1875rem;left:80%;top:30%"></div>
+            <div class="dirt-spot" id="dirt5" style="width:0.4375rem;height:0.3125rem;left:25%;top:60%"></div>
           </div>
           <div class="stink" id="stink1" style="left:30%;top:50%;animation-delay:0s">〜</div>
           <div class="stink" id="stink2" style="left:50%;top:40%;animation-delay:.8s">〜〜</div>
@@ -787,7 +787,7 @@
         </button>
         <button class="btn-action" id="btnAmigos" onclick="openAmigos()" style="position:relative;overflow:visible;">
           <span class="icon">👥</span><span data-i18n="btn.friends">AMIGOS</span>
-          <span id="amigosBadge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;background:#e74c3c;border-radius:50%;font-size:8px;font-family:'Cinzel',serif;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;border:1.5px solid var(--bg);"></span>
+          <span id="amigosBadge" style="display:none;position:absolute;top:-0.3125rem;right:-0.3125rem;min-width:1rem;height:1rem;background:#e74c3c;border-radius:50%;font-size:0.5rem;font-family:'Cinzel',serif;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 0.1875rem;box-sizing:border-box;border:1.5px solid var(--bg);"></span>
         </button>
       </div>
 
@@ -798,10 +798,10 @@
 
       <div class="panel-card" id="summonCard">
         <div data-i18n="panel.summon_title" class="panel-title">◆ INVOCAR AVATAR</div>
-        <div id="walletWarning" style="margin-bottom:12px;padding:10px;border:1px solid rgba(90,180,232,.3);border-radius:6px;background:rgba(90,180,232,.05);text-align:center;">
-          <div style="font-size:16px;margin-bottom:6px;">✨</div>
-          <div data-i18n="ui.login_required" style="font-family:'Cinzel',serif;font-size:7px;color:#5ab4e8;letter-spacing:1px;margin-bottom:6px;">LOGIN NECESSÁRIO</div>
-          <div data-i18n="panel.login_desc" style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
+        <div id="walletWarning" style="margin-bottom:0.75rem;padding:0.625rem;border:1px solid rgba(90,180,232,.3);border-radius:0.375rem;background:rgba(90,180,232,.05);text-align:center;">
+          <div style="font-size:1rem;margin-bottom:0.375rem;">✨</div>
+          <div data-i18n="ui.login_required" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:#5ab4e8;letter-spacing:0.0625rem;margin-bottom:0.375rem;">LOGIN NECESSÁRIO</div>
+          <div data-i18n="panel.login_desc" style="font-size:0.375rem;color:var(--muted);line-height:1.8;margin-bottom:0.625rem;">Entra na tua conta para invocar o teu avatar e guardar o progresso.</div>
           <button data-i18n="ui.do_login" class="btn-connect-wallet" onclick="document.getElementById('loginScreen').style.display='flex'">🔑 FAZER LOGIN</button>
         </div>
         <div class="summon-section" id="summonSection" style="display:none;">
@@ -811,74 +811,74 @@
           <!-- Aviso para quando as invocações grátis acabaram e não há moedas.
                Sem isto o jogador ficava num slot vazio sem botões de ação, sem
                o ícone das moedas e sem nenhuma pista de como voltar ao jogo. -->
-          <div id="summonLockHint" style="display:none;margin-top:10px;padding:10px;border:1px solid rgba(232,160,48,.35);border-radius:6px;background:rgba(232,160,48,.06);text-align:center;">
-            <div style="font-size:15px;margin-bottom:6px;">🔒</div>
-            <div id="summonLockTitle" style="font-family:'Cinzel',serif;font-size:7px;color:#e8a030;letter-spacing:1px;margin-bottom:6px;"></div>
-            <div id="summonLockDesc" style="font-size:6px;color:var(--muted);line-height:1.8;margin-bottom:10px;"></div>
+          <div id="summonLockHint" style="display:none;margin-top:0.625rem;padding:0.625rem;border:1px solid rgba(232,160,48,.35);border-radius:0.375rem;background:rgba(232,160,48,.06);text-align:center;">
+            <div style="font-size:0.9375rem;margin-bottom:0.375rem;">🔒</div>
+            <div id="summonLockTitle" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:#e8a030;letter-spacing:0.0625rem;margin-bottom:0.375rem;"></div>
+            <div id="summonLockDesc" style="font-size:0.375rem;color:var(--muted);line-height:1.8;margin-bottom:0.625rem;"></div>
             <button id="summonLockBtn" class="btn-connect-wallet" onclick="voltarAoAvatarVivo()"></button>
           </div>
         </div>
       </div>
 
       <div class="panel-card" id="creatureCard" style="display:none">
-        <div id="creatureCardStripe" class="creature-card-stripe" style="margin:-16px -18px 10px;"></div>
-        <div id="avatarNameBlock" style="margin-bottom:10px;">
-          <div style="display:flex;align-items:flex-start;gap:5px;">
+        <div id="creatureCardStripe" class="creature-card-stripe" style="margin:-1rem -1.125rem 0.625rem;"></div>
+        <div id="avatarNameBlock" style="margin-bottom:0.625rem;">
+          <div style="display:flex;align-items:flex-start;gap:0.3125rem;">
             <div style="flex:1;min-width:0;">
-              <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-light);margin:0 0 1px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></h2>
-              <div id="idSufixo" style="font-size:8px;color:var(--muted);font-style:italic;letter-spacing:.3px;"></div>
+              <h2 id="idNome" style="font-family:'Cinzel',serif;font-size:0.8125rem;color:var(--gold-light);margin:0 0 0.0625rem;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></h2>
+              <div id="idSufixo" style="font-size:0.5rem;color:var(--muted);font-style:italic;letter-spacing:0.01875rem;"></div>
             </div>
             <button id="renameBtn" onclick="startRename()" title="Renomear"
-              style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px;line-height:1;flex-shrink:0;transition:color .15s;"
+              style="background:none;border:none;cursor:pointer;font-size:0.6875rem;color:var(--muted);padding:0.125rem;line-height:1;flex-shrink:0;transition:color .15s;"
               onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
           </div>
-          <div id="renameForm" style="display:none;margin-top:6px;">
+          <div id="renameForm" style="display:none;margin-top:0.375rem;">
             <input id="renameInput" data-i18n-ph="rename.placeholder" type="text" maxlength="20" placeholder="Novo nome..."
-              style="width:100%;box-sizing:border-box;background:#0a0816;border:1px solid var(--gold);border-radius:4px;color:var(--gold-light);font-family:'Cinzel',serif;font-size:9px;padding:4px 8px;outline:none;letter-spacing:1px;"
+              style="width:100%;box-sizing:border-box;background:#0a0816;border:1px solid var(--gold);border-radius:0.25rem;color:var(--gold-light);font-family:'Cinzel',serif;font-size:0.5625rem;padding:0.25rem 0.5rem;outline:none;letter-spacing:0.0625rem;"
               onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();" />
-            <div style="display:flex;gap:5px;margin-top:4px;">
-              <button data-i18n="rename.save" onclick="confirmRename()" style="flex:1;padding:3px 0;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:3px;color:var(--gold);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✓ SALVAR</button>
-              <button data-i18n="rename.cancel" onclick="cancelRename()" style="flex:1;padding:3px 0;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Cinzel',serif;font-size:6px;letter-spacing:1px;cursor:pointer;">✕ CANCELAR</button>
+            <div style="display:flex;gap:0.3125rem;margin-top:0.25rem;">
+              <button data-i18n="rename.save" onclick="confirmRename()" style="flex:1;padding:0.1875rem 0;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:0.1875rem;color:var(--gold);font-family:'Cinzel',serif;font-size:0.375rem;letter-spacing:0.0625rem;cursor:pointer;">✓ SALVAR</button>
+              <button data-i18n="rename.cancel" onclick="cancelRename()" style="flex:1;padding:0.1875rem 0;background:transparent;border:1px solid var(--border);border-radius:0.1875rem;color:var(--muted);font-family:'Cinzel',serif;font-size:0.375rem;letter-spacing:0.0625rem;cursor:pointer;">✕ CANCELAR</button>
             </div>
           </div>
         </div>
 
-        <div id="idBadgesRow" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        <div id="idBadgesRow" style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.625rem;flex-wrap:wrap;">
           <span class="badge" id="idBadge">COMUM</span>
           <span class="ccm-badge" id="idBadge2"></span>
-          <span id="idMeta" style="font-size:8px;color:var(--muted);"></span>
-          <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:8px;color:var(--gold);font-weight:700;" id="nivelTxt">NV 1</span>
+          <span id="idMeta" style="font-size:0.5rem;color:var(--muted);"></span>
+          <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:0.5rem;color:var(--gold);font-weight:700;" id="nivelTxt">NV 1</span>
         </div>
 
-        <div id="idDesc" style="font-size:8px;color:#887799;font-style:italic;line-height:1.7;margin-bottom:6px;padding:6px 8px;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:rgba(255,255,255,.02);"></div>
-        <div id="elemBonusBlock" style="display:none;font-size:7.5px;line-height:1.6;margin-bottom:10px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);">
-          <span id="elemBonusLabel" data-i18n="ui.elem_passive" style="font-family:'Cinzel',serif;font-weight:700;letter-spacing:.5px;font-size:7px;text-transform:uppercase;opacity:.7;display:block;margin-bottom:2px;"></span>
+        <div id="idDesc" style="font-size:0.5rem;color:#887799;font-style:italic;line-height:1.7;margin-bottom:0.375rem;padding:0.375rem 0.5rem;border-left:2px solid var(--border);border-radius:0 0.25rem 0.25rem 0;background:rgba(255,255,255,.02);"></div>
+        <div id="elemBonusBlock" style="display:none;font-size:0.46875rem;line-height:1.6;margin-bottom:0.625rem;padding:0.3125rem 0.5rem;border-radius:0.25rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);">
+          <span id="elemBonusLabel" data-i18n="ui.elem_passive" style="font-family:'Cinzel',serif;font-weight:700;letter-spacing:0.03125rem;font-size:0.4375rem;text-transform:uppercase;opacity:.7;display:block;margin-bottom:0.125rem;"></span>
           <span id="elemBonusTxt" style="color:#a89bc0;"></span>
         </div>
 
-        <div id="idXpSection" style="margin-bottom:8px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-            <span data-i18n="panel.xp_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">XP</span>
-            <span style="font-size:7px;color:var(--muted);" id="xpTxt">0/100</span>
+        <div id="idXpSection" style="margin-bottom:0.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.1875rem;">
+            <span data-i18n="panel.xp_label" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);letter-spacing:0.0625rem;">XP</span>
+            <span style="font-size:0.4375rem;color:var(--muted);" id="xpTxt">0/100</span>
           </div>
           <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
         </div>
 
-        <div id="idVinculoSection" style="margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-            <span data-i18n="panel.vinculo_label" style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;">VÍNCULO</span>
-            <span style="font-size:7px;" id="vinculoTxt">Distante · 0</span>
+        <div id="idVinculoSection" style="margin-bottom:0.625rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.1875rem;">
+            <span data-i18n="panel.vinculo_label" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--muted);letter-spacing:0.0625rem;">VÍNCULO</span>
+            <span style="font-size:0.4375rem;" id="vinculoTxt">Distante · 0</span>
           </div>
           <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
         </div>
 
         <div style="display:flex;justify-content:flex-end;">
-          <span id="rarityBonusTxt" style="font-size:7px;color:var(--muted);display:none;"></span>
+          <span id="rarityBonusTxt" style="font-size:0.4375rem;color:var(--muted);display:none;"></span>
         </div>
 
         <!-- STATUS CARDS (desktop) -->
-        <div id="statusCard" style="display:none;margin:10px -18px -12px;border-top:1px solid var(--border);">
-          <div class="status-cards-grid" style="padding:10px 14px 4px;">
+        <div id="statusCard" style="display:none;margin:0.625rem -1.125rem -0.75rem;border-top:1px solid var(--border);">
+          <div class="status-cards-grid" style="padding:0.625rem 0.875rem 0.25rem;">
             <div class="status-card-item">
               <div data-i18n="stat.fome" class="sci-label"></div>
               <div class="sci-val" id="valFome">100</div>
@@ -905,9 +905,9 @@
               <div class="sci-bar"><div class="sci-fill fill-higiene" id="barHigiene" style="width:100%"></div></div>
             </div>
           </div>
-          <div id="lifeEstimateRow" style="margin:0 14px;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-            <span data-i18n="ui.life_remaining" style="font-size:6px;color:var(--muted);letter-spacing:.5px;"></span>
-            <span style="font-size:7px;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
+          <div id="lifeEstimateRow" style="margin:0 0.875rem;padding:0.375rem 0 0.625rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
+            <span data-i18n="ui.life_remaining" style="font-size:0.375rem;color:var(--muted);letter-spacing:0.03125rem;"></span>
+            <span style="font-size:0.4375rem;font-family:'Cinzel',serif;font-weight:700;" id="lifeEstimateTxt">—</span>
           </div>
         </div>
       </div>
@@ -982,24 +982,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-08-26l"></script>
-<script src="js/i18n-pvp.js?v=2026-08-26l"></script>
-<script src="js/i18n-bn.js?v=2026-08-26l"></script>
-<script src="js/i18n-minigames.js?v=2026-08-26l"></script>
-<script src="js/i18n-eggs.js?v=2026-08-26l"></script>
-<script src="js/i18n-gametick.js?v=2026-08-26l"></script>
-<script src="js/i18n-items.js?v=2026-08-26l"></script>
-<script src="js/i18n-market.js?v=2026-08-26l"></script>
-<script src="js/i18n-mina.js?v=2026-08-26l"></script>
-<script src="js/i18n-arcade.js?v=2026-08-26l"></script>
-<script src="js/i18n-session.js?v=2026-08-26l"></script>
-<script src="js/i18n-misc.js?v=2026-08-26l"></script>
-<script src="js/i18n-lore.js?v=2026-08-26l"></script>
-<script src="js/i18n-prologo.js?v=2026-08-26l"></script>
-<script src="js/i18n-marketplace.js?v=2026-08-26l"></script>
-<script src="js/i18n-magias.js?v=2026-08-26l"></script>
-<script src="js/i18n-vantagens.js?v=2026-08-26l"></script>
-<script src="js/i18n-pve.js?v=2026-08-26l"></script>
+<script src="js/i18n.js?v=2026-08-26m"></script>
+<script src="js/i18n-pvp.js?v=2026-08-26m"></script>
+<script src="js/i18n-bn.js?v=2026-08-26m"></script>
+<script src="js/i18n-minigames.js?v=2026-08-26m"></script>
+<script src="js/i18n-eggs.js?v=2026-08-26m"></script>
+<script src="js/i18n-gametick.js?v=2026-08-26m"></script>
+<script src="js/i18n-items.js?v=2026-08-26m"></script>
+<script src="js/i18n-market.js?v=2026-08-26m"></script>
+<script src="js/i18n-mina.js?v=2026-08-26m"></script>
+<script src="js/i18n-arcade.js?v=2026-08-26m"></script>
+<script src="js/i18n-session.js?v=2026-08-26m"></script>
+<script src="js/i18n-misc.js?v=2026-08-26m"></script>
+<script src="js/i18n-lore.js?v=2026-08-26m"></script>
+<script src="js/i18n-prologo.js?v=2026-08-26m"></script>
+<script src="js/i18n-marketplace.js?v=2026-08-26m"></script>
+<script src="js/i18n-magias.js?v=2026-08-26m"></script>
+<script src="js/i18n-vantagens.js?v=2026-08-26m"></script>
+<script src="js/i18n-pve.js?v=2026-08-26m"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1008,52 +1008,52 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-08-26l"></script>
-<script src="js/data.js?v=2026-08-26l"></script>
-<script src="js/state.js?v=2026-08-26l"></script>
-<script src="js/vantagens.js?v=2026-08-26l"></script>
-<script src="js/ficha-3dt.js?v=2026-08-26l"></script>
-<script src="js/magias.js?v=2026-08-26l"></script>
-<script src="js/combate-3dt.js?v=2026-08-26l"></script>
-<script src="js/equipa.js?v=2026-08-26l"></script>
-<script src="js/combate-ui.js?v=2026-08-26l"></script>
-<script src="js/combate-pve.js?v=2026-08-26l"></script>
-<script src="js/ui.js?v=2026-08-26l"></script>
-<script src="js/modal.js?v=2026-08-26l"></script>
-<script src="js/firebase.js?v=2026-08-26l"></script>
-<script src="js/gametick.js?v=2026-08-26l"></script>
-<script src="js/actions.js?v=2026-08-26l"></script>
-<script src="js/minigames.js?v=2026-08-26l"></script>
-<script src="js/summon.js?v=2026-08-26l"></script>
-<script src="js/eggs.js?v=2026-08-26l"></script>
-<script src="js/items.js?v=2026-08-26l"></script>
-<script src="js/market.js?v=2026-08-26l"></script>
-<script src="js/coinshop.js?v=2026-08-26l"></script>
-<script src="js/cards.js?v=2026-08-26l"></script>
-<script src="js/rouba-monte.js?v=2026-08-26l"></script>
-<script src="js/mina.js?v=2026-08-26l"></script>
-<script src="js/batalha-naval.js?v=2026-08-26l"></script>
-<script src="js/snake.js?v=2026-08-26l"></script>
-<script src="js/labirinto.js?v=2026-08-26l"></script>
-<script src="js/cambio.js?v=2026-08-26l"></script>
-<script src="js/arena.js?v=2026-08-26l"></script>
-<script src="js/lore.js?v=2026-08-26l"></script>
-<script src="js/prologo.js?v=2026-08-26l"></script>
-<script src="js/lore-caps/cap1.js?v=2026-08-26l"></script>
-<script src="js/lore-caps/cap2.js?v=2026-08-26l"></script>
-<script src="js/lore-caps/cap3.js?v=2026-08-26l"></script>
-<script src="js/lore-caps/cap4.js?v=2026-08-26l"></script>
-<script src="js/amigos.js?v=2026-08-26l"></script>
-<script src="js/auth.js?v=2026-08-26l"></script>
+<script src="js/audio.js?v=2026-08-26m"></script>
+<script src="js/data.js?v=2026-08-26m"></script>
+<script src="js/state.js?v=2026-08-26m"></script>
+<script src="js/vantagens.js?v=2026-08-26m"></script>
+<script src="js/ficha-3dt.js?v=2026-08-26m"></script>
+<script src="js/magias.js?v=2026-08-26m"></script>
+<script src="js/combate-3dt.js?v=2026-08-26m"></script>
+<script src="js/equipa.js?v=2026-08-26m"></script>
+<script src="js/combate-ui.js?v=2026-08-26m"></script>
+<script src="js/combate-pve.js?v=2026-08-26m"></script>
+<script src="js/ui.js?v=2026-08-26m"></script>
+<script src="js/modal.js?v=2026-08-26m"></script>
+<script src="js/firebase.js?v=2026-08-26m"></script>
+<script src="js/gametick.js?v=2026-08-26m"></script>
+<script src="js/actions.js?v=2026-08-26m"></script>
+<script src="js/minigames.js?v=2026-08-26m"></script>
+<script src="js/summon.js?v=2026-08-26m"></script>
+<script src="js/eggs.js?v=2026-08-26m"></script>
+<script src="js/items.js?v=2026-08-26m"></script>
+<script src="js/market.js?v=2026-08-26m"></script>
+<script src="js/coinshop.js?v=2026-08-26m"></script>
+<script src="js/cards.js?v=2026-08-26m"></script>
+<script src="js/rouba-monte.js?v=2026-08-26m"></script>
+<script src="js/mina.js?v=2026-08-26m"></script>
+<script src="js/batalha-naval.js?v=2026-08-26m"></script>
+<script src="js/snake.js?v=2026-08-26m"></script>
+<script src="js/labirinto.js?v=2026-08-26m"></script>
+<script src="js/cambio.js?v=2026-08-26m"></script>
+<script src="js/arena.js?v=2026-08-26m"></script>
+<script src="js/lore.js?v=2026-08-26m"></script>
+<script src="js/prologo.js?v=2026-08-26m"></script>
+<script src="js/lore-caps/cap1.js?v=2026-08-26m"></script>
+<script src="js/lore-caps/cap2.js?v=2026-08-26m"></script>
+<script src="js/lore-caps/cap3.js?v=2026-08-26m"></script>
+<script src="js/lore-caps/cap4.js?v=2026-08-26m"></script>
+<script src="js/amigos.js?v=2026-08-26m"></script>
+<script src="js/auth.js?v=2026-08-26m"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-08-26l"></script>
-<script src="js/cristais.js?v=2026-08-26l"></script>
-<script src="js/avatars-market.js?v=2026-08-26l"></script>
-<script src="js/eggs-market.js?v=2026-08-26l"></script>
-<script src="js/marketplace-core.js?v=2026-08-26l"></script>
+<script src="js/pool.js?v=2026-08-26m"></script>
+<script src="js/cristais.js?v=2026-08-26m"></script>
+<script src="js/avatars-market.js?v=2026-08-26m"></script>
+<script src="js/eggs-market.js?v=2026-08-26m"></script>
+<script src="js/marketplace-core.js?v=2026-08-26m"></script>
 
-<script src="js/main.js?v=2026-08-26l"></script>
+<script src="js/main.js?v=2026-08-26m"></script>
 
 
 <script>
@@ -1312,7 +1312,7 @@
       <div id="poolCoberturaCard"></div>
 
       <!-- Histórico -->
-      <div class="pool-log-header" style="margin-top:16px;">
+      <div class="pool-log-header" style="margin-top:1rem;">
         <div class="pool-log-title" data-i18n="mkt.pool.history">📋 Histórico da Pool</div>
         <div class="pool-log-legend">
           <span class="pool-leg entrada" data-i18n="mkt.pool.legend_in">▲ Entrada</span>
@@ -1322,10 +1322,10 @@
       <div id="poolLogList" class="pool-log-list">
         <div class="loading"><div class="spinner"></div><div data-i18n="mkt.pool.loading">A carregar histórico...</div></div>
       </div>
-      <div id="poolLogMore" style="text-align:center;margin-top:12px;"></div>
+      <div id="poolLogMore" style="text-align:center;margin-top:0.75rem;"></div>
 
-      <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;" data-i18n="mkt.pool.economy">◆ COMO FUNCIONA A ECONOMIA</div>
+      <div style="border-top:1px solid var(--border);margin:1.5rem 0 1rem;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--muted);letter-spacing:0.125rem;margin-bottom:0.875rem;" data-i18n="mkt.pool.economy">◆ COMO FUNCIONA A ECONOMIA</div>
 
       <!-- COFRE -->
       <div class="transp-block">
@@ -1342,7 +1342,7 @@
         <div class="transp-block-title" data-i18n="mkt.transp.crystal_title">💸 Comprar e Resgatar Cristais</div>
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.crystal_body">O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.</span>
-          <div class="transp-taxa-row" style="margin-top:10px;"><span data-i18n="mkt.transp.buy_rate">Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
+          <div class="transp-taxa-row" style="margin-top:0.625rem;"><span data-i18n="mkt.transp.buy_rate">Taxa de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_rate">Taxa de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_limit">Limite de resgate</span><span class="transp-taxa-val">5 MATIC / dia</span></div>
           <br><span data-i18n="mkt.transp.your_limit">O teu limite hoje:</span>
@@ -1356,11 +1356,11 @@
         <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.feed_body"><strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.</span>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.list_avatar">Listar avatar</span><span class="transp-taxa-val">2 💎 → pool</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_avatar">Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_egg_mkt">Venda de ovo no mercado</span><span class="transp-taxa-val">10% → pool</span></div>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.pvp_games">JOGOS PvP (apenas filas Raro e Lendário)</div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.pvp_games">JOGOS PvP (apenas filas Raro e Lendário)</div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.jokenpo_lbl">Jo-Ken-Pô</span><span class="transp-taxa-val" id="transpTaxaJokenpo" data-i18n="mkt.transp.jokenpo_pct">15% do prémio → pool</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.rouba_lbl">Rouba Monte</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.naval_lbl">Batalha Naval</span><span class="transp-taxa-val" data-i18n="mkt.transp.pvp_pct">10% do prémio → pool</span></div>
@@ -1372,15 +1372,15 @@
         <div class="transp-block-title" data-i18n="mkt.transp.weekly_title">🏆 Distribuição Semanal (toda segunda-feira)</div>
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.weekly_body">Cada semana, uma percentagem da pool é distribuída automaticamente — a taxa sobe quando a pool está saudável e desce quando está baixa, protegendo sempre o ecossistema.</span>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.for_who">PARA QUEM VAI</div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.for_who">PARA QUEM VAI</div>
           <!-- Havia aqui três linhas de Top 10, uma por jogo PvP. O
                ranking semanal saiu com eles; ficou só a manutenção. -->
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.maintenance">Manutenção e desenvolvimento</span><span class="transp-taxa-val" id="transPctDev">—</span></div>
-          <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:12px;">
+          <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:0.25rem;padding-top:0.75rem;">
             <span style="color:var(--text);font-weight:600;" data-i18n="mkt.transp.pool_retains">Pool retém</span>
             <span class="transp-taxa-val" style="color:var(--green)" id="transPctRetencao">—</span>
           </div>
-          <div style="margin-top:10px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.weekly_note">
+          <div style="margin-top:0.625rem;font-size:0.5rem;color:var(--muted);" data-i18n="mkt.transp.weekly_note">
             Mínimo garantido: <strong style="color:var(--text);">5%</strong> · Máximo: <strong style="color:var(--text);">20%</strong>.
           </div>
         </div>
@@ -1391,14 +1391,14 @@
         <div class="transp-block-title" data-i18n="mkt.transp.eggs_title">🥚 Ovos — Queima e Venda para Pool</div>
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.eggs_body">Ovos Raros e Lendários podem ser <strong>queimados</strong> (instantâneo, valor fixo) ou <strong>vendidos à pool</strong> (valor dinâmico, mais alto quando a pool está cheia).</span>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.burn_label">QUEIMAR OVO (sai da pool)</div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_common">Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:9px;" data-i18n="mkt.transp.coins_internal">(moedas internas)</span></span></div>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.sell_pool">VENDER À POOL (preço dinâmico)</div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.burn_label">QUEIMAR OVO (sai da pool)</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val">2 💎 base <span style="color:var(--muted);font-size:0.5625rem;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val">6 💎 base <span style="color:var(--muted);font-size:0.5625rem;" data-i18n="mkt.transp.rarity_bonus">(+ bónus de raridade)</span></span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_common">Ovo Comum</span><span class="transp-taxa-val">20 🪙 <span style="color:var(--muted);font-size:0.5625rem;" data-i18n="mkt.transp.coins_internal">(moedas internas)</span></span></div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.sell_pool">VENDER À POOL (preço dinâmico)</div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_rare">Ovo Raro</span><span class="transp-taxa-val" id="transPriceRaro">—</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_legendary">Ovo Lendário</span><span class="transp-taxa-val" id="transPriceLend">—</span></div>
-          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.eggs_note">
+          <div style="margin-top:0.5rem;font-size:0.5rem;color:var(--muted);" data-i18n="mkt.transp.eggs_note">
             O preço de venda sobe até 2× quando a pool ultrapassa o alvo de <strong style="color:var(--text);">1000 💎</strong>.<br>
             Limites de venda por semana: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)
           </div>
@@ -1410,11 +1410,11 @@
         <div class="transp-block-title" data-i18n="mkt.transp.exchange_title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.exchange_body">Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.</span>
-          <div style="margin-top:12px;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;" data-i18n="mkt.transp.exchange_rate">TAXA DE CÂMBIO (por 1 💎)</div>
+          <div style="margin-top:0.75rem;font-size:0.5rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.375rem;" data-i18n="mkt.transp.exchange_rate">TAXA DE CÂMBIO (por 1 💎)</div>
           <div class="transp-taxa-row"><span>Pool ≥ 1000 💎</span><span class="transp-taxa-val">1 000 🪙</span></div>
           <div class="transp-taxa-row"><span>Pool ≥ 500 💎</span><span class="transp-taxa-val">1 500 🪙</span></div>
           <div class="transp-taxa-row"><span>Pool ≥ 100 💎</span><span class="transp-taxa-val">2 000 🪙</span></div>
-          <div style="margin-top:8px;font-size:8px;color:var(--muted);" data-i18n="mkt.transp.exchange_note">
+          <div style="margin-top:0.5rem;font-size:0.5rem;color:var(--muted);" data-i18n="mkt.transp.exchange_note">
             Requisito: avatar nível ≥ 20 · Pool mínima: 100 💎<br>
             Limite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>
           </div>
@@ -1432,17 +1432,17 @@
       <div id="metamaskCtaWrap"></div>
 
       <div class="crystal-packages" id="crystalPackages"></div>
-      <div id="buyStatus" style="margin-top:12px;text-align:center;min-height:24px;"></div>
+      <div id="buyStatus" style="margin-top:0.75rem;text-align:center;min-height:1.5rem;"></div>
 
-      <div class="tx-verify-box" style="margin-top:24px;">
+      <div class="tx-verify-box" style="margin-top:1.5rem;">
         <h3 data-i18n="mkt.crystals.redeem_title">💸 Resgatar Cristais → MATIC</h3>
-        <div class="section-sub" style="margin:8px 0 16px;" data-i18n="mkt.crystals.redeem_sub">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
+        <div class="section-sub" style="margin:0.5rem 0 1rem;" data-i18n="mkt.crystals.redeem_sub">Converte os teus 💎 em MATIC. Limite: 5 MATIC/dia.</div>
         <div class="tx-input-row">
           <input class="tx-hash-input" id="resgateGems" type="number" min="10" step="10" placeholder="Quantidade de 💎 (mín. 10)"
             data-i18n-ph="mkt.crystals.redeem_ph"/>
           <button class="btn-verify" id="btnResgatar" onclick="resgatar()" data-i18n="mkt.crystals.redeem_btn">Resgatar</button>
         </div>
-        <div id="resgateStatus" style="margin-top:8px;text-align:center;min-height:24px;"></div>
+        <div id="resgateStatus" style="margin-top:0.5rem;text-align:center;min-height:1.5rem;"></div>
       </div>
     </div>
 
@@ -1481,7 +1481,7 @@
       <div class="modal-label" data-i18n="mkt.modal.list_egg.price">Preço em 💎 Cristais</div>
       <input class="modal-input" id="listEggPriceInput" type="number" min="1" placeholder="ex: 5"/>
     </div>
-    <div id="listEggStatus" style="font-size:9px;color:var(--muted);margin-bottom:10px;text-align:center;"></div>
+    <div id="listEggStatus" style="font-size:0.5625rem;color:var(--muted);margin-bottom:0.625rem;text-align:center;"></div>
     <div class="modal-row">
       <button class="btn-modal-cancel" onclick="closeListEggModal()" data-i18n="mkt.modal.list_egg.cancel">Cancelar</button>
       <button class="btn-modal-confirm" onclick="confirmListEgg()" data-i18n="mkt.modal.list_egg.confirm">Listar</button>
@@ -1494,7 +1494,7 @@
     <div class="modal-title" data-i18n="mkt.modal.list_av.title">📋 Listar Avatar</div>
     <div class="modal-sub" data-i18n="mkt.modal.list_av.sub">Define o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.</div>
     <div class="modal-warn" data-i18n="mkt.modal.list_av.warn">⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.</div>
-    <div id="listAvatarPreview" style="margin-bottom:14px;"></div>
+    <div id="listAvatarPreview" style="margin-bottom:0.875rem;"></div>
     <div class="modal-field">
       <div class="modal-label" data-i18n="mkt.modal.list_av.price">Preço em 💎 Cristais</div>
       <input class="modal-input" id="listPriceInput" type="number" min="1" placeholder="ex: 50"/>
@@ -1511,13 +1511,13 @@
 </div>
 
 <div class="overlay" id="burnOverlay">
-  <div class="modal-box" style="max-width:320px;text-align:center;">
+  <div class="modal-box" style="max-width:20rem;text-align:center;">
     <div class="modal-title" style="color:#f87171;" data-i18n="mkt.modal.burn.title">🔥 Queimar Avatar</div>
-    <div id="burnAvatarPreview" style="margin:12px 0;"></div>
+    <div id="burnAvatarPreview" style="margin:0.75rem 0;"></div>
     <div class="modal-warn" style="border-color:#7f1d1d;color:#fca5a5;">
       Esta acção é <b>permanente e irreversível</b>.<br>O avatar será destruído e o slot libertado.
     </div>
-    <div class="modal-row" style="margin-top:16px;">
+    <div class="modal-row" style="margin-top:1rem;">
       <button class="btn-modal-cancel" onclick="closeBurnModal()" data-i18n="mkt.modal.burn.cancel">Cancelar</button>
       <button class="btn-modal-confirm" onclick="confirmBurnAvatar()" style="background:#7f1d1d;border-color:#f87171;color:#fca5a5;" data-i18n="mkt.modal.burn.confirm">🔥 Confirmar Queima</button>
     </div>
@@ -1563,24 +1563,24 @@
 
 <!-- EGG BURN CONFIRM OVERLAY -->
 <div id="eggBurnOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">
-  <div style="background:#0d0b1a;border:1px solid rgba(248,113,113,.3);border-radius:14px;padding:20px 18px;max-width:280px;width:90%;text-align:center;">
-    <div data-i18n="egg.burn.title" style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#f87171;margin-bottom:12px;"></div>
-    <div id="eggBurnPreview" style="margin-bottom:14px;font-size:10px;line-height:2;color:var(--muted);"></div>
-    <div style="display:flex;gap:8px;justify-content:center;">
-      <button onclick="document.getElementById('eggBurnOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;"></button>
-      <button id="eggBurnConfirmBtn" data-i18n="egg.burn.btn" style="flex:1;padding:8px;background:rgba(127,29,29,.6);border:1px solid #f87171;border-radius:8px;color:#fca5a5;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;"></button>
+  <div style="background:#0d0b1a;border:1px solid rgba(248,113,113,.3);border-radius:0.875rem;padding:1.25rem 1.125rem;max-width:17.5rem;width:90%;text-align:center;">
+    <div data-i18n="egg.burn.title" style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:#f87171;margin-bottom:0.75rem;"></div>
+    <div id="eggBurnPreview" style="margin-bottom:0.875rem;font-size:0.625rem;line-height:2;color:var(--muted);"></div>
+    <div style="display:flex;gap:0.5rem;justify-content:center;">
+      <button onclick="document.getElementById('eggBurnOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:0.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:0.5rem;color:var(--muted);font-size:0.5625rem;cursor:pointer;"></button>
+      <button id="eggBurnConfirmBtn" data-i18n="egg.burn.btn" style="flex:1;padding:0.5rem;background:rgba(127,29,29,.6);border:1px solid #f87171;border-radius:0.5rem;color:#fca5a5;font-family:'Cinzel',serif;font-size:0.5625rem;cursor:pointer;"></button>
     </div>
   </div>
 </div>
 
 <!-- EGG SELL CONFIRM OVERLAY -->
 <div id="eggSellOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;align-items:center;justify-content:center;">
-  <div style="background:#0d0b1a;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:20px 18px;max-width:300px;width:90%;text-align:center;">
-    <div data-i18n="egg.sell.title" style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:12px;"></div>
-    <div id="eggSellPreview" style="margin-bottom:14px;font-size:10px;line-height:2;color:var(--muted);"></div>
-    <div style="display:flex;gap:8px;justify-content:center;">
-      <button onclick="document.getElementById('eggSellOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--muted);font-size:9px;cursor:pointer;"></button>
-      <button id="eggSellConfirmBtn" data-i18n="egg.sell.btn" style="flex:1;padding:8px;background:rgba(76,29,149,.6);border:1px solid #a78bfa;border-radius:8px;color:#c4b5fd;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;"></button>
+  <div style="background:#0d0b1a;border:1px solid rgba(167,139,250,.3);border-radius:0.875rem;padding:1.25rem 1.125rem;max-width:18.75rem;width:90%;text-align:center;">
+    <div data-i18n="egg.sell.title" style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:#a78bfa;margin-bottom:0.75rem;"></div>
+    <div id="eggSellPreview" style="margin-bottom:0.875rem;font-size:0.625rem;line-height:2;color:var(--muted);"></div>
+    <div style="display:flex;gap:0.5rem;justify-content:center;">
+      <button onclick="document.getElementById('eggSellOverlay').style.display='none'" data-i18n="ui.cancel" style="flex:1;padding:0.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:0.5rem;color:var(--muted);font-size:0.5625rem;cursor:pointer;"></button>
+      <button id="eggSellConfirmBtn" data-i18n="egg.sell.btn" style="flex:1;padding:0.5rem;background:rgba(76,29,149,.6);border:1px solid #a78bfa;border-radius:0.5rem;color:#c4b5fd;font-family:'Cinzel',serif;font-size:0.5625rem;cursor:pointer;"></button>
     </div>
   </div>
 </div>
@@ -1601,12 +1601,12 @@
 </div>
 
 <a id="gameHelpBtn" href="manual.html" title="Manual do Jogo" style="
-  position:fixed; bottom:18px; right:18px; z-index:999;
-  width:38px; height:38px; border-radius:50%;
+  position:fixed; bottom:1.125rem; right:1.125rem; z-index:999;
+  width:2.375rem; height:2.375rem; border-radius:50%;
   background:rgba(11,9,22,.9); border:1px solid rgba(201,168,76,.35);
   color:var(--gold,#c9a84c); font-family:'Cinzel',serif; font-weight:700;
-  font-size:15px; display:flex; align-items:center; justify-content:center;
-  text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,.5);
+  font-size:0.9375rem; display:flex; align-items:center; justify-content:center;
+  text-decoration:none; box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.5);
   transition:border-color .2s, box-shadow .2s;
 " onmouseover="this.style.borderColor='rgba(201,168,76,.7)';this.style.boxShadow='0 2px 18px rgba(201,168,76,.2)'"
    onmouseout="this.style.borderColor='rgba(201,168,76,.35)';this.style.boxShadow='0 2px 12px rgba(0,0,0,.5)'">?</a>

@@ -21,10 +21,10 @@ function startMemoria() {
   memCards = deck; memFlipped = []; memMatched = 0; memErrors = 0; memLocked = false;
 
   const grid = document.getElementById('memGrid');
-  const cardSize = pairs <= 8 ? '38px' : '32px';
+  const cardSize = pairs <= 8 ? '2.375rem' : '2rem';
   grid.style.gridTemplateColumns = `repeat(${cols}, ${cardSize})`;
   grid.innerHTML = deck.map((e, i) =>
-    `<div class="mem-card" id="mc${i}" data-i="${i}" onclick="memFlip(${i})" style="width:${cardSize};height:${cardSize};font-size:${pairs<=8?'16':'13'}px">?</div>`
+    `<div class="mem-card" id="mc${i}" data-i="${i}" onclick="memFlip(${i})" style="width:${cardSize};height:${cardSize};font-size:${(pairs<=8?'16':'13')/16}rem">?</div>`
   ).join('');
 
   updateMemInfo();
@@ -334,12 +334,12 @@ function spawnFoodParticles() {
   const wrap = document.getElementById('creatureWrap');
   if(!wrap) return;
   const foods = ['🍖','🍗','✨','⭐'];
-  const positions = [{fx:'-28px'},{fx:'0px'},{fx:'28px'},{fx:'-14px'},{fx:'14px'}];
+  const positions = [{fx:'-1.75rem'},{fx:'0'},{fx:'1.75rem'},{fx:'-0.875rem'},{fx:'0.875rem'}];
   positions.forEach((pos, i) => {
     const el = document.createElement('div');
     el.className = 'food-particle';
     el.textContent = foods[i % foods.length];
-    el.style.cssText = `--fx:${pos.fx};--fr:${(Math.random()*60-30).toFixed(0)}deg;top:10px;left:50%;transform:translateX(-50%);animation-delay:${i*0.06}s`;
+    el.style.cssText = `--fx:${pos.fx};--fr:${(Math.random()*60-30).toFixed(0)}deg;top:0.625rem;left:50%;transform:translateX(-50%);animation-delay:${i*0.06}s`;
     wrap.appendChild(el);
     setTimeout(() => el.remove(), 1100);
   });
@@ -390,16 +390,16 @@ function spawnAntidoteParticles() {
 
   const symbols = ['✦','🧪','✨','💊','✦','⭐','✦','💫'];
   const offsets = [
-    {ax:'-50px',ay:'-10px'},{ax:'50px',ay:'-10px'},
-    {ax:'0px',ay:'-55px'}, {ax:'-35px',ay:'-40px'},
-    {ax:'35px',ay:'-40px'},{ax:'-55px',ay:'15px'},
-    {ax:'55px',ay:'15px'}, {ax:'0px',ay:'25px'},
+    {ax:'-3.125rem',ay:'-0.625rem'},{ax:'3.125rem',ay:'-0.625rem'},
+    {ax:'0',ay:'-3.4375rem'}, {ax:'-2.1875rem',ay:'-2.5rem'},
+    {ax:'2.1875rem',ay:'-2.5rem'},{ax:'-3.4375rem',ay:'0.9375rem'},
+    {ax:'3.4375rem',ay:'0.9375rem'}, {ax:'0',ay:'1.5625rem'},
   ];
   offsets.forEach((pos, i) => {
     const el = document.createElement('div');
     el.className = 'antidote-particle';
     el.textContent = symbols[i % symbols.length];
-    el.style.cssText = `--ax:${pos.ax};--ay:${pos.ay};top:50%;left:50%;animation-delay:${i*0.06}s;color:#a855f7;text-shadow:0 0 8px #a855f780;font-size:14px;`;
+    el.style.cssText = `--ax:${pos.ax};--ay:${pos.ay};top:50%;left:50%;animation-delay:${i*0.06}s;color:#a855f7;text-shadow:0 0 0.5rem #a855f780;font-size:0.875rem;`;
     wrap.appendChild(el);
     setTimeout(() => el.remove(), 1400);
   });
@@ -414,9 +414,9 @@ function spawnHealParticles() {
     setTimeout(() => { flash.style.opacity = '0'; }, 350);
   }
   const offsets = [
-    {hx:'-40px',hy:'0px'},{hx:'40px',hy:'0px'},
-    {hx:'0px',hy:'-40px'},{hx:'-28px',hy:'-28px'},
-    {hx:'28px',hy:'-28px'},{hx:'0px',hy:'20px'},
+    {hx:'-2.5rem',hy:'0'},{hx:'2.5rem',hy:'0'},
+    {hx:'0',hy:'-2.5rem'},{hx:'-1.75rem',hy:'-1.75rem'},
+    {hx:'1.75rem',hy:'-1.75rem'},{hx:'0',hy:'1.25rem'},
   ];
   offsets.forEach((pos, i) => {
     const el = document.createElement('div');

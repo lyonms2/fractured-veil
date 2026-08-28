@@ -57,7 +57,7 @@ function setBar(id, val, miniId) {
 // satisfeito!", "sem moedas...") é metade da graça do jogo, e cortar o
 // clique cortava-o. O que muda é já não ser preciso clicar para saber.
 //
-// Serve as duas larguras: aos ≤768px a .fv-bottom-nav está desligada
+// Serve as duas larguras: aos ≤48rem a .fv-bottom-nav está desligada
 // (ver css/mobile-index.css:458) e o telemóvel usa estes mesmos botões,
 // inline no cartão do bicho.
 // ═══════════════════════════════════════════════════════════════════
@@ -397,7 +397,7 @@ function fillCreatureCard() {
     if(!_jb) {
       _jb = document.createElement('span');
       _jb.id = 'idBadgeJurado';
-      _jb.style.cssText = "font-size:7px;font-family:'Cinzel',serif;color:#a78bfa;border:1px solid rgba(167,139,250,.4);background:rgba(167,139,250,.08);padding:2px 6px;border-radius:6px;letter-spacing:.5px;flex-shrink:0;";
+      _jb.style.cssText = "font-size:0.4375rem;font-family:'Cinzel',serif;color:#a78bfa;border:1px solid rgba(167,139,250,.4);background:rgba(167,139,250,.08);padding:0.125rem 0.375rem;border-radius:0.375rem;letter-spacing:0.03125rem;flex-shrink:0;";
       _jb.textContent = '⚖️ JURADO';
       const _row = document.getElementById('idBadgesRow');
       if(_row) _row.insertBefore(_jb, document.getElementById('nivelTxt'));
@@ -429,7 +429,7 @@ function updateSickVisuals() {
   if(!badgesEl) {
     badgesEl = document.createElement('div');
     badgesEl.id = 'diseaseBadges';
-    badgesEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;padding:2px 8px 6px;justify-content:center;';
+    badgesEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.25rem;padding:0.125rem 0.5rem 0.375rem;justify-content:center;';
     const statusCard = document.getElementById('statusCard');
     if(statusCard) statusCard.insertAdjacentElement('afterend', badgesEl);
   }
@@ -458,7 +458,7 @@ function updateEquippedDisplay() {
   if(!wrap) return;
   const equipped = getEquippedItems();
   wrap.innerHTML = equipped.map(item =>
-    `<span style="position:absolute;font-size:11px;opacity:.7;pointer-events:none;" title="${item.nome}">${item.emoji}</span>`
+    `<span style="position:absolute;font-size:0.6875rem;opacity:.7;pointer-events:none;" title="${item.nome}">${item.emoji}</span>`
   ).join('');
 }
 

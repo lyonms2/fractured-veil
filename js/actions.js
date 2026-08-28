@@ -22,7 +22,7 @@ function showCoinAnim(amount, isSpend = true) {
   const fly = document.createElement('div');
   fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
   fly.textContent = isSpend ? `-${amount} 🪙` : `+${amount} 🪙`;
-  fly.style.cssText = `position:absolute;left:50%;top:-4px;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${isSpend?'#e74c3c':'#7ab87a'};animation:coin-fly 0.9s ease-out forwards;`;
+  fly.style.cssText = `position:absolute;left:50%;top:-0.25rem;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:${isSpend?'#e74c3c':'#7ab87a'};animation:coin-fly 0.9s ease-out forwards;`;
   container.appendChild(fly);
   setTimeout(() => fly.remove(), 950);
 }
@@ -40,7 +40,7 @@ function showCristalAnim(amount, isSpend = true) {
   const fly = document.createElement('div');
   fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
   fly.textContent = isSpend ? `-${amount} 💎` : `+${amount} 💎`;
-  fly.style.cssText = `position:absolute;left:50%;top:-4px;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${isSpend?'#e74c3c':'#a78bfa'};animation:coin-fly 0.9s ease-out forwards;`;
+  fly.style.cssText = `position:absolute;left:50%;top:-0.25rem;transform:translateX(-50%);pointer-events:none;z-index:9999;white-space:nowrap;font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:${isSpend?'#e74c3c':'#a78bfa'};animation:coin-fly 0.9s ease-out forwards;`;
   container.appendChild(fly);
   setTimeout(() => fly.remove(), 950);
 }

@@ -19,7 +19,7 @@ function renderMarketItems() {
     const preco     = precoItem(item);
     const canAfford = gs.moedas >= preco;
     const precoHtml = disc > 0
-      ? `<span style="text-decoration:line-through;opacity:.5;font-size:7px;">${item.preco}</span> ${preco}`
+      ? `<span style="text-decoration:line-through;opacity:.5;font-size:0.4375rem;">${item.preco}</span> ${preco}`
       : String(preco);
 
     let footerBtn;
@@ -70,14 +70,14 @@ function renderMarketItems() {
   // slot), e os medidores só andam com o jogo aberto — nada decai
   // enquanto o jogador está fora, portanto um item que trava o decay não
   // trabalha nesse tempo.
-  const aviso = `<div style="font-size:6.5px;line-height:1.6;color:var(--muted);
+  const aviso = `<div style="font-size:0.40625rem;line-height:1.6;color:var(--muted);
     background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
-    border-radius:6px;padding:7px 9px;margin-bottom:12px;">${t('mkt.aviso.dono')}</div>`;
+    border-radius:0.375rem;padding:0.4375rem 0.5625rem;margin-bottom:0.75rem;">${t('mkt.aviso.dono')}</div>`;
 
   list.innerHTML = aviso + tiposPresentes.map(tipo => `
-    <div style="margin-bottom:20px;">
-      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px;">◆ ${tItemTipo(tipo)}</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="margin-bottom:1.25rem;">
+      <div style="font-family:'Cinzel',serif;font-size:0.40625rem;letter-spacing:0.125rem;color:var(--muted);text-transform:uppercase;padding:0.3125rem 0.125rem 0.4375rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:0.75rem;">◆ ${tItemTipo(tipo)}</div>
+      <div style="display:flex;flex-direction:column;gap:0.625rem;">
         ${grupos[tipo].map(renderCard).join('')}
       </div>
     </div>

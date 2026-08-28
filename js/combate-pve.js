@@ -1248,10 +1248,10 @@ function _pveParticulas(alvo, elemento) {
     const p = document.createElement('div');
     const sz = 2 + Math.random() * 4;
     p.className = 'cb-particula';
-    p.style.cssText = `width:${sz}px;height:${sz}px;background:${cor};` +
-      `box-shadow:0 0 ${sz * 2}px ${cor};left:${30 + Math.random() * 40}%;` +
-      `top:${30 + Math.random() * 40}%;--dx:${(Math.random() - .5) * 60}px;` +
-      `--dy:${-20 - Math.random() * 40}px;animation-delay:${Math.random() * .1}s;`;
+    p.style.cssText = `width:${(sz)/16}rem;height:${(sz)/16}rem;background:${cor};` +
+      `box-shadow:0 0 ${(sz * 2)/16}rem ${cor};left:${30 + Math.random() * 40}%;` +
+      `top:${30 + Math.random() * 40}%;--dx:${((Math.random() - .5) * 60)/16}rem;` +
+      `--dy:${(-20 - Math.random() * 40)/16}rem;animation-delay:${Math.random() * .1}s;`;
     alvo.appendChild(p);
     setTimeout(() => p.remove(), 800);
   }

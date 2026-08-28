@@ -207,7 +207,7 @@ function renderPoolStatsCard() {
         <div class="pool-price-sub">${t('mkt.pool.price_sub')}</div>
       </div>
     </div>
-    <div style="font-size:8px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.8;">
+    <div style="font-size:0.5rem;color:var(--muted);text-align:center;margin-top:0.625rem;line-height:1.8;">
       ${t('mkt.pool.fees')}<br>
       ${t('mkt.pool.weekly_dist')} <strong style="color:var(--gem2);">${t('mkt.pool.estimated', {pct: _calcPctDisplay(saldo)})}</strong> ${t('mkt.pool.per_game')}<br>
       <span style="color:var(--gem2);font-weight:700;">
@@ -303,7 +303,7 @@ async function loadPoolLogs(reset) {
 
     if(moreBtn) {
       moreBtn.innerHTML = json.hasMore
-        ? `<button class="btn-slot-activate" style="font-size:9px;padding:6px 16px;" onclick="loadPoolLogs(false)">${t('mkt.pool.load_more')}</button>`
+        ? `<button class="btn-slot-activate" style="font-size:0.5625rem;padding:0.375rem 1rem;" onclick="loadPoolLogs(false)">${t('mkt.pool.load_more')}</button>`
         : '';
     }
   } catch(e) {

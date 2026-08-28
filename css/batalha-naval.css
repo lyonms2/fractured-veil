@@ -2,7 +2,7 @@
    BATALHA NAVAL — CSS
    Modal dentro da .screen, mesmo padrão da Arena
 ══════════════════════════════════════════════════════════════ */
-#batalhaNavalModal { gap: 12px; overflow: hidden; overscroll-behavior: contain; }
+#batalhaNavalModal { gap: 0.75rem; overflow: hidden; overscroll-behavior: contain; }
 /* Lobby precisa de scroll no conteúdo interno */
 #batalhaNavalModal .bn-lobby-scroll {
   overflow-y: auto;
@@ -12,5 +12,5 @@
 
 /* ── PC fullscreen ── */
 @media(min-width:601px) {
-  #batalhaNavalModal { padding: 20px 32px !important; overflow-y: auto !important; }
+  #batalhaNavalModal { padding: 1.25rem 2rem !important; overflow-y: auto !important; }
 }

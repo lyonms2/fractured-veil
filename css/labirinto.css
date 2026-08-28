@@ -4,12 +4,12 @@
 
 #mazeCanvas {
   display: block;
-  width: min(280px, calc(100vw - 28px));
-  height: min(280px, calc(100vw - 28px));
-  border-radius: 12px;
+  width: min(17.5rem, calc(100vw - 1.75rem));
+  height: min(17.5rem, calc(100vw - 1.75rem));
+  border-radius: 0.75rem;
   border: 1px solid rgba(167,139,250,.18);
   box-shadow:
-    0 0 0 1px rgba(167,139,250,.05),
+    0 0 0 0.0625rem rgba(167,139,250,.05),
     0 0 32px rgba(80,50,180,.12),
     inset 0 0 60px rgba(0,0,0,.7);
   touch-action: none;
@@ -18,10 +18,10 @@
 
 #mazeTimer {
   font-family: 'Cinzel', serif;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #86efac;
-  letter-spacing: 3px;
-  margin: 2px 0;
+  letter-spacing: 0.1875rem;
+  margin: 0.125rem 0;
   transition: color .4s;
 }
 
@@ -30,21 +30,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  margin: 4px 0 2px;
+  gap: 0.125rem;
+  margin: 0.25rem 0 0.125rem;
 }
 .maze-dpad-row {
   display: flex;
-  gap: 2px;
+  gap: 0.125rem;
 }
 .maze-dpad-btn {
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.12);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color: #a78bfa;
-  font-size: 18px;
+  font-size: 1.125rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -63,35 +63,35 @@
 /* ── Desktop: modal card com scroll interno ── */
 @media (min-width: 769px) {
   #mazeModal {
-    padding: 12px !important;
+    padding: 0.75rem !important;
   }
   #mazeModal .modal-card {
     justify-content: center;
-    gap: 8px;
-    padding: 20px 24px !important;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem !important;
     max-height: 100%;
     overflow-y: auto;
   }
 
   #mazeCanvas {
-    width:  min(270px, calc(100vh - 240px)) !important;
-    height: min(270px, calc(100vh - 240px)) !important;
+    width:  min(16.875rem, calc(100vh - 15rem)) !important;
+    height: min(16.875rem, calc(100vh - 15rem)) !important;
   }
 
   /* D-pad desnecessário no desktop */
   .maze-dpad { display: none !important; }
 
-  #mazeModal .mini-title { font-size: 13px !important; letter-spacing: 4px; margin-bottom: 2px; }
-  #mazeModal .mini-info  { font-size: 10px !important; }
-  #mazeModal .mini-btns  { margin-top: 4px; gap: 10px; }
-  #mazeModal .mini-btn   { font-size: 10px !important; padding: 10px 24px !important; }
+  #mazeModal .mini-title { font-size: 0.8125rem !important; letter-spacing: 0.25rem; margin-bottom: 0.125rem; }
+  #mazeModal .mini-info  { font-size: 0.625rem !important; }
+  #mazeModal .mini-btns  { margin-top: 0.25rem; gap: 0.625rem; }
+  #mazeModal .mini-btn   { font-size: 0.625rem !important; padding: 0.625rem 1.5rem !important; }
 
   #mazeModal::after {
     content: '↑ ↓ ← →  ou  W A S D · Ache a saída';
     font-family: 'Cinzel', serif;
-    font-size: 8px;
+    font-size: 0.5rem;
     color: rgba(255,255,255,.2);
-    letter-spacing: 2px;
-    margin-top: -2px;
+    letter-spacing: 0.125rem;
+    margin-top: -0.125rem;
   }
 }

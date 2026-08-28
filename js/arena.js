@@ -163,7 +163,7 @@ function _renderLobby() {
       <div class="arena-aposta-info">
         <span>${t('arena.bet_label', {val: _descAposta()})}</span>
         <span>${t('arena.winner_takes', {val: valorLiq})}</span>
-        <span style="color:var(--muted);font-size:6px;">${t('arena.pool_pct')}</span>
+        <span style="color:var(--muted);font-size:0.375rem;">${t('arena.pool_pct')}</span>
       </div>
 
       <!-- Botões de ação — atualizados sem recriar o modal -->
@@ -503,11 +503,11 @@ function _renderSalaEspera(salaId) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('arena.title')}</div>
-      <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
-      <div style="font-size:6px;color:var(--muted);margin-top:3px;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="cancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
+      <div class="arena-pulse" style="margin:1rem auto;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.waiting_accept')}</div>
+      <div style="font-size:0.375rem;color:var(--muted);margin-top:0.1875rem;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
+      <button class="arena-btn-sair" style="margin-top:1.125rem;" onclick="cancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>
   `;
 
@@ -954,10 +954,10 @@ async function _animarRevelacao(salaId, sala, opWallet) {
     banner.style.background = c.bg;
     banner.style.border     = `1px solid ${c.borda}`;
     banner.innerHTML = `
-      <div style="color:${c.cor};font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;letter-spacing:2px;">${c.txt}</div>
-      <div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:16px;">
+      <div style="color:${c.cor};font-family:\'Cinzel\',serif;font-size:0.6875rem;font-weight:700;letter-spacing:0.125rem;">${c.txt}</div>
+      <div style="display:flex;justify-content:center;gap:1.25rem;margin-top:0.5rem;font-size:1rem;">
         <span title="Você">${JKP_EMOJIS[minhaEscolha]}</span>
-        <span style="font-size:10px;color:var(--muted);align-self:center;">vs</span>
+        <span style="font-size:0.625rem;color:var(--muted);align-self:center;">vs</span>
         <span title="Oponente">${JKP_EMOJIS[opEscolha]}</span>
       </div>`;
     banner.classList.add('pop');
@@ -1087,32 +1087,32 @@ async function _renderResultado(sala, opWallet) {
     <div class="arena-resultado">
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
 
-      <div class="arena-vs-row" style="margin:12px 0;">
+      <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
           <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 36, 36, faseFromNivel(meu.nivel))}</div>
           <div class="arena-vs-nome">${meu.nome||t('arena.you')}</div>
-          <div class="arena-vs-pts" style="font-size:20px;">${placar[walletAddress]||0}</div>
+          <div class="arena-vs-pts" style="font-size:1.25rem;">${placar[walletAddress]||0}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci&&!empate?'arena-vencedor':''}">
           <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 36, 36, faseFromNivel(op.nivel))}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
-          <div class="arena-vs-pts" style="font-size:20px;">${placar[opWallet]||0}</div>
+          <div class="arena-vs-pts" style="font-size:1.25rem;">${placar[opWallet]||0}</div>
         </div>
       </div>
 
       <div class="arena-recompensa-card">
         ${empate
-          ? `<div style="color:var(--muted);font-size:7px;">${t('arena.tie_refund')}</div>`
+          ? `<div style="color:var(--muted);font-size:0.4375rem;">${t('arena.tie_refund')}</div>`
           : euVenci
-            ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('arena.prize_received', {val: premio, moeda})}</div>
-               <div style="color:var(--muted);font-size:6px;margin-top:3px;">${t('arena.rank_pts_win', {pts: ARENA_PONTOS.vitoria})}</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">${t('arena.better_luck')}</div>
-               <div style="color:var(--muted);font-size:6px;margin-top:3px;">${t('arena.rank_pts_lose', {pts: ARENA_PONTOS.derrota})}</div>`}
+            ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:0.5625rem;font-weight:700;">${t('arena.prize_received', {val: premio, moeda})}</div>
+               <div style="color:var(--muted);font-size:0.375rem;margin-top:0.1875rem;">${t('arena.rank_pts_win', {pts: ARENA_PONTOS.vitoria})}</div>`
+            : `<div style="color:#e74c3c;font-size:0.4375rem;">${t('arena.better_luck')}</div>
+               <div style="color:var(--muted);font-size:0.375rem;margin-top:0.1875rem;">${t('arena.rank_pts_lose', {pts: ARENA_PONTOS.derrota})}</div>`}
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_renderLobby()">${t('arena.play_again')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.4375rem;" onclick="_renderLobby()">${t('arena.play_again')}</button>
         <button class="arena-btn-sair" onclick="closeArena()">${t('arena.close_btn')}</button>
       </div>
     </div>
@@ -1178,11 +1178,11 @@ async function _carregarRanking() {
           <div class="arena-pool-valor">${poolVal} 💎</div>
           <div class="arena-pool-sub">${t('arena.pool_reset')}</div>
         </div>
-        <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.02);
-                    border:1px solid rgba(255,255,255,.06);border-radius:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                      letter-spacing:1px;margin-bottom:6px;">${t('arena.pool_how')}</div>
-          <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+        <div style="margin-top:0.5rem;padding:0.5rem 0.625rem;background:rgba(255,255,255,.02);
+                    border:1px solid rgba(255,255,255,.06);border-radius:0.375rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);
+                      letter-spacing:0.0625rem;margin-bottom:0.375rem;">${t('arena.pool_how')}</div>
+          <div style="font-size:0.40625rem;color:var(--muted);line-height:2;">
             📊 <b style="color:var(--text);">20%</b> da pool é distribuído por semana<br>
             💎 <b style="color:var(--text);">Lendário</b> recebe 60% do bolo · <b style="color:var(--text);">Raro</b> recebe 40%<br>
             🪙 <b style="color:var(--text);">Comum</b> recebe moedas internas (não cristais)<br>
@@ -1309,13 +1309,13 @@ function _renderDesafioPendente(sala) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('arena.title')}</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:3px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;margin-top:1rem;">${t('arena.ch_received')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.1875rem;">
         ${t('arena.bet_label', {val: sala.aposta?.cristais > 0 ? sala.aposta.cristais+' 💎' : sala.aposta?.moedas+' 🪙'})}
       </div>
-      <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="aceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:1.25rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.5rem;" onclick="aceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
         <button class="arena-btn-sair" onclick="recusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>

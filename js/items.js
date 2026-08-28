@@ -26,7 +26,7 @@ function renderItemInventory() {
   if(resEl) resEl.textContent = displayItems.length;
 
   if(displayItems.length === 0) {
-    list.innerHTML = `<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px 0;">${t('item.inv.empty')}</div>`;
+    list.innerHTML = `<div style="font-size:0.4375rem;color:var(--muted);text-align:center;padding:1.25rem 0;">${t('item.inv.empty')}</div>`;
     return;
   }
 
@@ -50,30 +50,30 @@ function renderItemInventory() {
     const isCenario  = item.tipo === 'Cenário';
     const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
     const diasRest   = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : null;
-    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:8px;padding:11px 13px;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 10px ${item.cor}28;` : ''}">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:20px;flex-shrink:0;">${item.emoji}</span>
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:0.5rem;padding:0.6875rem 0.8125rem;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 0.625rem ${item.cor}28;` : ''}">
+      <div style="display:flex;align-items:center;gap:0.625rem;">
+        <span style="font-size:1.25rem;flex-shrink:0;">${item.emoji}</span>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Cinzel',serif;font-size:8px;color:${item.cor};font-weight:700;">${item.nome}</div>
-          <div style="font-size:6.5px;color:var(--muted);margin-top:2px;">✦ ${item.efeito}</div>
-          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'};margin-top:2px;">${t('item.card.days_left', {d: diasRest})}</div>` : ''}
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;color:${item.cor};font-weight:700;">${item.nome}</div>
+          <div style="font-size:0.40625rem;color:var(--muted);margin-top:0.125rem;">✦ ${item.efeito}</div>
+          ${diasRest !== null ? `<div class="item-expiry-warn" style="color:${diasRest <= 3 ? '#e05050' : '#887799'};margin-top:0.125rem;">${t('item.card.days_left', {d: diasRest})}</div>` : ''}
         </div>
-        ${isEquipped ? `<span style="font-size:6.5px;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:1px;flex-shrink:0;">${t('item.card.equipped')}</span>` : ''}
+        ${isEquipped ? `<span style="font-size:0.40625rem;color:${item.cor};font-family:'Cinzel',serif;letter-spacing:0.0625rem;flex-shrink:0;">${t('item.card.equipped')}</span>` : ''}
       </div>
-      <div style="display:flex;gap:6px;margin-top:10px;">
+      <div style="display:flex;gap:0.375rem;margin-top:0.625rem;">
         ${isEquipped
-          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">${t('item.btn.unequip')}</button>`
-          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>${t('item.btn.equip')}</button>`
+          ? `<button class="egg-btn hatch" onclick="unequipItem(${entry.id})" style="flex:1;font-size:0.40625rem;padding:0.3125rem 0;">${t('item.btn.unequip')}</button>`
+          : `<button class="egg-btn hatch" onclick="equipItem(${entry.id})" style="flex:1;font-size:0.40625rem;padding:0.3125rem 0;${!canEquip ? 'opacity:.4;cursor:not-allowed;' : ''}" ${!canEquip ? 'disabled' : ''}>${t('item.btn.equip')}</button>`
         }
-        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:6.5px;padding:5px 0;">${t('item.btn.delete')}</button>
+        <button class="egg-btn burn" onclick="deleteItem(${entry.id})" style="flex:1;font-size:0.40625rem;padding:0.3125rem 0;">${t('item.btn.delete')}</button>
       </div>
     </div>`;
   }
 
   list.innerHTML = tiposPresentes.map(tipo => `
-    <div style="margin-bottom:16px;">
-      <div style="font-family:'Cinzel',serif;font-size:6.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:5px 2px 7px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:10px;">◆ ${tItemTipo(tipo)}</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="margin-bottom:1rem;">
+      <div style="font-family:'Cinzel',serif;font-size:0.40625rem;letter-spacing:0.125rem;color:var(--muted);text-transform:uppercase;padding:0.3125rem 0.125rem 0.4375rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:0.625rem;">◆ ${tItemTipo(tipo)}</div>
+      <div style="display:flex;flex-direction:column;gap:0.625rem;">
         ${grupos[tipo].map(renderCard).join('')}
       </div>
     </div>
@@ -142,7 +142,7 @@ function updateEquippedDisplay() {
     const atraso = -(PVE_ORBITA_SEGS * k / n).toFixed(2);
     const angulo = Math.round(360 * k / n);
     return `<span class="orbe-item${daysLeft <= 3 ? ' a-expirar' : ''}"
-              style="--orbe-dur:${PVE_ORBITA_SEGS}s; --orbe-raio:${raio}px; --orbe-fixa:${angulo}deg;
+              style="--orbe-dur:${PVE_ORBITA_SEGS}s; --orbe-raio:${(raio)/16}rem; --orbe-fixa:${angulo}deg;
                      animation-delay:${atraso}s" title="${titulo}">
         <i style="--orbe-dur:${PVE_ORBITA_SEGS}s; animation-delay:${atraso}s">${item.emoji}</i>
       </span>`;

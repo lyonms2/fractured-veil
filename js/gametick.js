@@ -5,8 +5,8 @@
 // POOP & HYGIENE SYSTEM
 // ═══════════════════════════════════════════
 const POOP_POSITIONS = [
-  {left:'12%',bottom:'23px'}, {left:'25%',bottom:'23px'}, {left:'55%',bottom:'23px'},
-  {left:'68%',bottom:'23px'}, {left:'38%',bottom:'23px'}, {left:'80%',bottom:'23px'}
+  {left:'12%',bottom:'1.4375rem'}, {left:'25%',bottom:'1.4375rem'}, {left:'55%',bottom:'1.4375rem'},
+  {left:'68%',bottom:'1.4375rem'}, {left:'38%',bottom:'1.4375rem'}, {left:'80%',bottom:'1.4375rem'}
 ];
 
 function spawnPoop() {
@@ -40,11 +40,11 @@ function spawnPoop() {
   playAnim('anim-poop');
   const wrap = document.getElementById('creatureWrap');
   if(wrap) {
-    ['-12px','0px','12px'].forEach((px, i) => {
+    ['-0.75rem','0','0.75rem'].forEach((px, i) => {
       const cl = document.createElement('div');
       cl.className = 'poop-cloud';
       cl.textContent = ['💨','💩','😖'][i];
-      cl.style.cssText = `--px:${px};bottom:30px;left:50%;animation-delay:${i*0.12}s`;
+      cl.style.cssText = `--px:${px};bottom:1.875rem;left:50%;animation-delay:${i*0.12}s`;
       wrap.appendChild(cl);
       setTimeout(() => cl.remove(), 1400);
     });
@@ -135,7 +135,7 @@ function spawnBathParticles() {
       b.textContent = '🫧';
       b.style.left = `${12 + i * 14}%`;
       b.style.bottom = `${15 + Math.random() * 20}%`;
-      b.style.fontSize = `${10 + Math.random() * 8}px`;
+      b.style.fontSize = `${(10 + Math.random() * 8)/16}rem`;
       b.style.setProperty('--rise', (50 + Math.random() * 40).toFixed(0) + 'px');
       wrap.appendChild(b);
       setTimeout(() => b.remove(), 900);
@@ -150,8 +150,8 @@ function spawnBathParticles() {
       s.textContent = e;
       const angle = (i / sparkles.length) * Math.PI * 2;
       const dist  = 38 + Math.random() * 18;
-      s.style.left   = `calc(50% + ${(Math.cos(angle) * dist).toFixed(0)}px)`;
-      s.style.bottom = `calc(40% + ${(Math.sin(angle) * dist).toFixed(0)}px)`;
+      s.style.left   = `calc(50% + ${((Math.cos(angle) * dist).toFixed(0))/16}rem)`;
+      s.style.bottom = `calc(40% + ${((Math.sin(angle) * dist).toFixed(0))/16}rem)`;
       wrap.appendChild(s);
       setTimeout(() => s.remove(), 700);
     }, 700 + i * 55);
@@ -463,7 +463,7 @@ function playPhaseUp(faseName) {
 
   // Flash + partículas: fixos no centro da tela (visíveis acima de qualquer modal)
   const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85) 0%,rgba(180,130,255,.55) 50%,transparent 75%);pointer-events:none;z-index:10001;animation:evolve-flash .7s ease-out forwards;';
+  flash.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:16.25rem;height:16.25rem;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85) 0%,rgba(180,130,255,.55) 50%,transparent 75%);pointer-events:none;z-index:10001;animation:evolve-flash .7s ease-out forwards;';
   document.body.appendChild(flash);
   setTimeout(() => flash.remove(), 750);
 
@@ -475,11 +475,11 @@ function playPhaseUp(faseName) {
     const size  = 5 + Math.random() * 6;
     const color = colors[Math.floor(Math.random() * colors.length)];
     const dur   = 0.5 + Math.random() * 0.5;
-    p.style.cssText = `position:fixed;left:50%;top:50%;width:${size}px;height:${size}px;border-radius:50%;background:${color};pointer-events:none;z-index:10001;
+    p.style.cssText = `position:fixed;left:50%;top:50%;width:${(size)/16}rem;height:${(size)/16}rem;border-radius:50%;background:${color};pointer-events:none;z-index:10001;
       transform:translate(-50%,-50%);
       animation:evolve-particle ${dur}s ease-out forwards;
-      --ex:${Math.cos(angle*Math.PI/180)*dist}px;
-      --ey:${Math.sin(angle*Math.PI/180)*dist}px;`;
+      --ex:${(Math.cos(angle*Math.PI/180)*dist)/16}rem;
+      --ey:${(Math.sin(angle*Math.PI/180)*dist)/16}rem;`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), dur * 1000 + 50);
   }
@@ -571,9 +571,9 @@ function playLevelUp(newNivel) {
 
   const starEmojis = ['✦','✧','★','✨','⭐'];
   const positions = [
-    {sx:'-70px',sy:'-60px'},{sx:'70px',sy:'-55px'},{sx:'-80px',sy:'20px'},
-    {sx:'80px',sy:'15px'},{sx:'-30px',sy:'-80px'},{sx:'30px',sy:'-75px'},
-    {sx:'55px',sy:'60px'},{sx:'-55px',sy:'55px'}
+    {sx:'-4.375rem',sy:'-3.75rem'},{sx:'4.375rem',sy:'-3.4375rem'},{sx:'-5rem',sy:'1.25rem'},
+    {sx:'5rem',sy:'0.9375rem'},{sx:'-1.875rem',sy:'-5rem'},{sx:'1.875rem',sy:'-4.6875rem'},
+    {sx:'3.4375rem',sy:'3.75rem'},{sx:'-3.4375rem',sy:'3.4375rem'}
   ];
   ov.querySelectorAll('.lu-star').forEach(s => s.remove());
   positions.forEach((pos, i) => {

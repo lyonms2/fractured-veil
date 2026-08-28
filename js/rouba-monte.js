@@ -128,7 +128,7 @@ function _rmHtmlCarta(c, idx, clicavel, sel) {
     data-cor="${cor}"
     onclick="${clicavel ? `rmSelecionarCarta(${idx})` : ''}"
     style="
-      width:44px;height:62px;border-radius:7px;
+      width:2.75rem;height:3.875rem;border-radius:0.4375rem;
       background:linear-gradient(145deg,#1e1535,#0d0820);
       border:1.5px solid ${s ? '#f0d080' : cor+'99'};
       position:relative;
@@ -141,14 +141,14 @@ function _rmHtmlCarta(c, idx, clicavel, sel) {
       flex-shrink:0;overflow:hidden;
     ">
     <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,${cor}22,transparent 70%);pointer-events:none;"></div>
-    <div style="position:absolute;top:3px;left:4px;line-height:1.15;text-align:left;">
-      <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${cor};text-shadow:0 0 6px ${cor}66;">${c.label}</div>
-      <div style="font-size:10px;line-height:1;color:${cor};">${c.naipe}</div>
+    <div style="position:absolute;top:0.1875rem;left:0.25rem;line-height:1.15;text-align:left;">
+      <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:${cor};text-shadow:0 0 0.375rem ${cor}66;">${c.label}</div>
+      <div style="font-size:0.625rem;line-height:1;color:${cor};">${c.naipe}</div>
     </div>
-    <div style="font-size:20px;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 10px ${cor}88;">${c.naipe}</div>
-    <div style="position:absolute;bottom:3px;right:4px;transform:rotate(180deg);line-height:1.15;text-align:left;">
-      <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${cor};text-shadow:0 0 6px ${cor}66;">${c.label}</div>
-      <div style="font-size:10px;line-height:1;color:${cor};">${c.naipe}</div>
+    <div style="font-size:1.25rem;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 0.625rem ${cor}88;">${c.naipe}</div>
+    <div style="position:absolute;bottom:0.1875rem;right:0.25rem;transform:rotate(180deg);line-height:1.15;text-align:left;">
+      <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:${cor};text-shadow:0 0 0.375rem ${cor}66;">${c.label}</div>
+      <div style="font-size:0.625rem;line-height:1;color:${cor};">${c.naipe}</div>
     </div>
   </div>`;
 }
@@ -157,18 +157,18 @@ function _rmHtmlCarta(c, idx, clicavel, sel) {
 function _rmHtmlCartaMini(c) {
   const cor = c.cor || '#e8a030';
   return `<div style="
-    width:28px;height:40px;border-radius:5px;
+    width:1.75rem;height:2.5rem;border-radius:0.3125rem;
     background:linear-gradient(145deg,#1e1535,#0d0820);
     border:1px solid ${cor}88;
     position:relative;overflow:hidden;flex-shrink:0;
-    box-shadow:0 0 5px ${cor}22, 0 2px 4px rgba(0,0,0,.6);">
+    box-shadow:0 0 0.3125rem ${cor}22, 0 2px 4px rgba(0,0,0,.6);">
     <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,${cor}18,transparent 70%);pointer-events:none;"></div>
-    <div style="position:absolute;top:2px;left:3px;line-height:1.1;">
-      <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:${cor};text-shadow:0 0 4px ${cor}66;">${c.label}</div>
+    <div style="position:absolute;top:0.125rem;left:0.1875rem;line-height:1.1;">
+      <div style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;color:${cor};text-shadow:0 0 0.25rem ${cor}66;">${c.label}</div>
     </div>
-    <div style="font-size:14px;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 8px ${cor}88;">${c.naipe}</div>
-    <div style="position:absolute;bottom:2px;right:3px;transform:rotate(180deg);line-height:1.1;">
-      <div style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:${cor};text-shadow:0 0 4px ${cor}66;">${c.label}</div>
+    <div style="font-size:0.875rem;color:${cor};text-align:center;width:100%;position:absolute;top:50%;left:0;transform:translateY(-50%);text-shadow:0 0 0.5rem ${cor}88;">${c.naipe}</div>
+    <div style="position:absolute;bottom:0.125rem;right:0.1875rem;transform:rotate(180deg);line-height:1.1;">
+      <div style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;color:${cor};text-shadow:0 0 0.25rem ${cor}66;">${c.label}</div>
     </div>
   </div>`;
 }
@@ -243,7 +243,7 @@ function _rmRenderLobby() {
     <button class="gs-x-btn" onclick="closeRoubaMonte()">✕</button>
 
     <!-- Cabeçalho -->
-    <div class="arena-header" style="margin-bottom:8px;">
+    <div class="arena-header" style="margin-bottom:0.5rem;">
       <div class="arena-title">${t('rm.title')}</div>
       <div class="arena-sub">${t('rm.sub')} <b style="color:var(--gold)">${rar.toUpperCase()}</b></div>
     </div>
@@ -263,17 +263,17 @@ function _rmRenderLobby() {
 
       <!-- Aposta -->
       <div class="arena-aposta-info" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
-        <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.bet_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
+        <div style="text-align:center;padding:0 0.375rem;">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.bet_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:var(--gold);">${_rmDescAposta()}</div>
         </div>
-        <div style="text-align:center;padding:0 6px;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.prize_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
+        <div style="text-align:center;padding:0 0.375rem;border-left:1px solid rgba(201,168,76,.15);border-right:1px solid rgba(201,168,76,.15);">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.prize_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:#7ab87a;">${premio} ${moeda}</div>
         </div>
-        <div style="text-align:center;padding:0 6px;">
-          <div style="font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;">${t('rm.tax_col')}</div>
-          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--muted);">10%</div>
+        <div style="text-align:center;padding:0 0.375rem;">
+          <div style="font-size:0.375rem;color:var(--muted);letter-spacing:0.0625rem;margin-bottom:0.25rem;">${t('rm.tax_col')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--muted);">10%</div>
         </div>
       </div>
 
@@ -290,11 +290,11 @@ function _rmRenderLobby() {
       </div>
 
       <!-- Regras -->
-      <div style="padding:8px 10px;background:rgba(255,255,255,.02);
-                  border:1px solid rgba(255,255,255,.06);border-radius:6px;width:100%;">
-        <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                    letter-spacing:1px;margin-bottom:6px;">${t('rm.how_to')}</div>
-        <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+      <div style="padding:0.5rem 0.625rem;background:rgba(255,255,255,.02);
+                  border:1px solid rgba(255,255,255,.06);border-radius:0.375rem;width:100%;">
+        <div style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);
+                    letter-spacing:0.0625rem;margin-bottom:0.375rem;">${t('rm.how_to')}</div>
+        <div style="font-size:0.40625rem;color:var(--muted);line-height:2;">
           🃏 Cada jogador recebe 4 cartas · 4 cartas ficam na mesa<br>
           ✅ Carta igual à mesa → captura para o teu monte<br>
           🔥 Carta igual ao topo do monte do oponente → rouba tudo<br>
@@ -321,7 +321,7 @@ function _rmRenderLobby() {
 function _rmHtmlAcoes(podePagar) {
   if(_rmAtiva) return `
     <button class="arena-btn-sair" onclick="rmSairDoLobby()">${t('arena.leave_queue')}</button>
-    <div class="arena-aguardando" style="margin-top:10px;">
+    <div class="arena-aguardando" style="margin-top:0.625rem;">
       <div class="arena-pulse"></div>${t('arena.queue_active')}
     </div>`;
   return `
@@ -329,7 +329,7 @@ function _rmHtmlAcoes(podePagar) {
       onclick="${podePagar?'rmEntrarNoLobby()':''}" ${!podePagar?'disabled':''}>
       ${t('rm.enter_queue')}
     </button>
-    ${!podePagar?`<div class="arena-sem-saldo" style="margin-top:6px;">${t('arena.no_balance_cost', {cost: _rmDescAposta()})}</div>`:''}`;
+    ${!podePagar?`<div class="arena-sem-saldo" style="margin-top:0.375rem;">${t('arena.no_balance_cost', {cost: _rmDescAposta()})}</div>`:''}`;
 }
 
 function _rmAtualizarAcoes() {
@@ -402,11 +402,11 @@ async function _rmCarregarRanking() {
           <div class="arena-pool-valor">${poolVal} 💎</div>
           <div class="arena-pool-sub">${t('arena.pool_reset')}</div>
         </div>
-        <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.02);
-                    border:1px solid rgba(255,255,255,.06);border-radius:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);
-                      letter-spacing:1px;margin-bottom:6px;">${t('arena.pool_how')}</div>
-          <div style="font-size:6.5px;color:var(--muted);line-height:2;">
+        <div style="margin-top:0.5rem;padding:0.5rem 0.625rem;background:rgba(255,255,255,.02);
+                    border:1px solid rgba(255,255,255,.06);border-radius:0.375rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);
+                      letter-spacing:0.0625rem;margin-bottom:0.375rem;">${t('arena.pool_how')}</div>
+          <div style="font-size:0.40625rem;color:var(--muted);line-height:2;">
             📊 <b style="color:var(--text);">20%</b> da pool é distribuído por semana<br>
             💎 <b style="color:var(--text);">Lendário</b> recebe 60% do bolo · <b style="color:var(--text);">Raro</b> recebe 40%<br>
             🪙 <b style="color:var(--text);">Comum</b> recebe moedas internas (não cristais)<br>
@@ -589,15 +589,15 @@ function _rmRenderEspera(salaId) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('rm.title')}</div>
-      <div class="arena-pulse" style="margin:16px auto;"></div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;">${t('arena.challenge_sent')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.waiting_accept')}</div>
-      <div style="font-size:6px;color:var(--muted);margin-top:3px;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
-      <div id="rmDesafioTimer" style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold);margin-top:8px;">⏳ 60s</div>
-      <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;width:100%;margin-top:4px;">
+      <div class="arena-pulse" style="margin:1rem auto;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;">${t('arena.challenge_sent')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.waiting_accept')}</div>
+      <div style="font-size:0.375rem;color:var(--muted);margin-top:0.1875rem;">${t('arena.room_id', {id: salaId.slice(-6).toUpperCase()})}</div>
+      <div id="rmDesafioTimer" style="font-family:'Cinzel',serif;font-size:0.5rem;color:var(--gold);margin-top:0.5rem;">⏳ 60s</div>
+      <div style="height:0.1875rem;background:rgba(255,255,255,.06);border-radius:0.125rem;overflow:hidden;width:100%;margin-top:0.25rem;">
         <div id="rmDesafioTimerBar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear;"></div>
       </div>
-      <button class="arena-btn-sair" style="margin-top:18px;" onclick="rmCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
+      <button class="arena-btn-sair" style="margin-top:1.125rem;" onclick="rmCancelarDesafio('${salaId}')">${t('arena.cancel_btn')}</button>
     </div>`;
 
   // Timer de expiração — 60s sem resposta cancela automaticamente
@@ -763,112 +763,112 @@ function _rmRenderPartida(salaId, sala, opWallet) {
     '| meuMonte:', meuMonte.length, '| opMonte:', opMonte.length, '| baralho:', baralhoRest);
 
   el.innerHTML = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;gap:4px;padding:6px;
+    <div style="display:flex;flex-direction:column;width:100%;height:100%;gap:0.25rem;padding:0.375rem;
                 overflow-y:auto;overflow-x:hidden;
                 scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.3) rgba(255,255,255,.04);">
 
       <!-- Cabeçalho status -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:1px;">${t('rm.title')}</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div style="font-family:'Cinzel',serif;font-size:6px;padding:2px 7px;border-radius:10px;
+        <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.0625rem;">${t('rm.title')}</div>
+        <div style="display:flex;align-items:center;gap:0.375rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.375rem;padding:0.125rem 0.4375rem;border-radius:0.625rem;
             background:${meuTurno?'rgba(122,184,122,.15)':'rgba(255,255,255,.04)'};
             border:1px solid ${meuTurno?'#7ab87a':'rgba(255,255,255,.08)'};
             color:${meuTurno?'#7ab87a':'var(--muted)'};">
             ${meuTurno?t('rm.your_turn'):t('rm.wait')}
           </div>
-          <span style="font-size:6px;color:var(--muted);">🃏 ${baralhoRest}</span>
+          <span style="font-size:0.375rem;color:var(--muted);">🃏 ${baralhoRest}</span>
         </div>
       </div>
 
       <!-- Timer — só quando é meu turno, acima do oponente -->
       ${meuTurno ? `
       <div style="flex-shrink:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-          <span style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);letter-spacing:1px;">${t('rm.time_left')}</span>
-          <span id="rmTimerSeg" style="font-family:'Cinzel',serif;font-size:6px;color:var(--gold);">30s</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.1875rem;">
+          <span style="font-family:'Cinzel',serif;font-size:0.34375rem;color:var(--muted);letter-spacing:0.0625rem;">${t('rm.time_left')}</span>
+          <span id="rmTimerSeg" style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--gold);">30s</span>
         </div>
-        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">
-          <div id="rmTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:2px;"></div>
+        <div style="height:0.1875rem;background:rgba(255,255,255,.06);border-radius:0.125rem;overflow:hidden;">
+          <div id="rmTimerBar" style="height:100%;background:#7ab87a;width:100%;transition:width 1s linear;border-radius:0.125rem;"></div>
         </div>
       </div>` : ''}
 
       <!-- Oponente -->
-      <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;
-                  background:rgba(255,255,255,.03);border-radius:6px;
+      <div style="display:flex;align-items:center;gap:0.375rem;padding:0.3125rem 0.4375rem;
+                  background:rgba(255,255,255,.03);border-radius:0.375rem;
                   border:1px solid rgba(255,255,255,.07);flex-shrink:0;">
         <div style="flex-shrink:0;">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,24,24,faseFromNivel(op_info.nivel))}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold-light);
+          <div style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold-light);
                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
             ${op_info.nome||opWallet.slice(0,12)+'...'}
           </div>
-          <div style="font-size:5.5px;color:var(--muted);margin-top:1px;">
+          <div style="font-size:0.34375rem;color:var(--muted);margin-top:0.0625rem;">
             ${t('rm.op_pile', {n: opMonte.length})}
           </div>
         </div>
         ${topoOpMonte ? `
         <div style="flex-shrink:0;text-align:center;">
-          <div style="font-size:5px;color:var(--muted);margin-bottom:2px;letter-spacing:.5px;">${t('rm.pile_top_lbl')}</div>
+          <div style="font-size:0.3125rem;color:var(--muted);margin-bottom:0.125rem;letter-spacing:0.03125rem;">${t('rm.pile_top_lbl')}</div>
           ${_rmHtmlCartaMini(topoOpMonte)}
         </div>` : `
-        <div style="flex-shrink:0;font-size:5.5px;color:var(--muted);text-align:center;width:30px;">
+        <div style="flex-shrink:0;font-size:0.34375rem;color:var(--muted);text-align:center;width:1.875rem;">
           ${t('rm.pile_empty')}
         </div>`}
       </div>
 
       <!-- Mesa central -->
       <div style="flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
-                    letter-spacing:1.5px;margin-bottom:3px;">${t('rm.table', {n: mesa.length})}</div>
-        <div style="display:flex;gap:3px;flex-wrap:wrap;min-height:42px;
-                    padding:4px 5px;background:rgba(255,255,255,.02);border-radius:6px;
+        <div style="font-family:'Cinzel',serif;font-size:0.34375rem;color:var(--muted);
+                    letter-spacing:0.09375rem;margin-bottom:0.1875rem;">${t('rm.table', {n: mesa.length})}</div>
+        <div style="display:flex;gap:0.1875rem;flex-wrap:wrap;min-height:2.625rem;
+                    padding:0.25rem 0.3125rem;background:rgba(255,255,255,.02);border-radius:0.375rem;
                     border:1px dashed rgba(201,168,76,.12);">
           ${mesa.length===0
-            ? `<div style="font-size:6px;color:var(--muted);margin:auto;font-style:italic;">${t('rm.table_empty')}</div>`
+            ? `<div style="font-size:0.375rem;color:var(--muted);margin:auto;font-style:italic;">${t('rm.table_empty')}</div>`
             : mesa.map(c=>_rmHtmlCartaMini(c)).join('')}
         </div>
       </div>
 
       <!-- Meu monte -->
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 7px;
+      <div style="display:flex;align-items:center;gap:0.375rem;padding:0.25rem 0.4375rem;
                   background:rgba(122,184,122,.04);border:1px solid rgba(122,184,122,.12);
-                  border-radius:5px;flex-shrink:0;">
-        <span style="font-family:'Cinzel',serif;font-size:6px;color:var(--muted);">${t('rm.my_pile')}</span>
-        <span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#7ab87a;">${t('rm.pile_cards', {n: meuMonte.length})}</span>
+                  border-radius:0.3125rem;flex-shrink:0;">
+        <span style="font-family:'Cinzel',serif;font-size:0.375rem;color:var(--muted);">${t('rm.my_pile')}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.5rem;font-weight:700;color:#7ab87a;">${t('rm.pile_cards', {n: meuMonte.length})}</span>
         ${meuMonte.length>0?`
-        <span style="font-size:5.5px;color:var(--muted);margin-left:auto;">
+        <span style="font-size:0.34375rem;color:var(--muted);margin-left:auto;">
           ${t('rm.pile_top_mine', {card: meuMonte[meuMonte.length-1].label+meuMonte[meuMonte.length-1].naipe})}
         </span>`:''}
       </div>
 
       <!-- Minha mão -->
       <div style="flex-shrink:0;">
-        <div style="font-family:'Cinzel',serif;font-size:5.5px;color:var(--muted);
-                    letter-spacing:1.5px;margin-bottom:5px;">
+        <div style="font-family:'Cinzel',serif;font-size:0.34375rem;color:var(--muted);
+                    letter-spacing:0.09375rem;margin-bottom:0.3125rem;">
           ${t('rm.my_hand', {n: minha_mao.length})}
         </div>
-        <div style="display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:0.3125rem;justify-content:center;align-items:center;flex-wrap:wrap;">
           ${minha_mao.map((c,i)=>_rmHtmlCarta(c,i,meuTurno,_rmCartaSel)).join('')}
-          ${minha_mao.length===0?`<div style="font-size:6px;color:var(--muted);font-style:italic;">${t('rm.no_cards')}</div>`:''}
+          ${minha_mao.length===0?`<div style="font-size:0.375rem;color:var(--muted);font-style:italic;">${t('rm.no_cards')}</div>`:''}
         </div>
       </div>
 
       <!-- Acções -->
-      <div style="display:flex;gap:5px;flex-shrink:0;margin-top:4px;">
+      <div style="display:flex;gap:0.3125rem;flex-shrink:0;margin-top:0.25rem;">
         ${meuTurno ? `
         <button id="rmBtnJogar" class="arena-btn-entrar"
-          style="flex:1;font-size:7px;padding:7px 4px;"
+          style="flex:1;font-size:0.4375rem;padding:0.4375rem 0.25rem;"
           onclick="rmJogarCarta('${salaId}','${opWallet}')"
           ${_rmCartaSel===null?'disabled':''}>
           ${t('rm.play_card')}
         </button>` : `
         <div style="flex:1;display:flex;align-items:center;justify-content:center;
-                    font-size:6px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;">
+                    font-size:0.375rem;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:0.0625rem;">
           ${t('rm.op_turn')}
         </div>`}
         <button class="arena-btn-sair"
-          style="font-size:7px;padding:7px 10px;border-color:rgba(255,255,255,.2);color:var(--muted);"
+          style="font-size:0.4375rem;padding:0.4375rem 0.625rem;border-color:rgba(255,255,255,.2);color:var(--muted);"
           onclick="rmAbandonar('${salaId}')">🏳️</button>
       </div>
 
@@ -980,7 +980,7 @@ function _rmAnimacaoRoubo(euRoubei, carta, callback) {
     position:absolute;inset:0;z-index:50;
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
-    gap:8px;pointer-events:none;
+    gap:0.5rem;pointer-events:none;
     background:rgba(4,3,10,.85);
     animation:rm-fade-in .15s ease;
   `;
@@ -993,29 +993,29 @@ function _rmAnimacaoRoubo(euRoubei, carta, callback) {
 
   overlay.innerHTML = `
     <div style="
-      font-size:32px;
+      font-size:2rem;
       animation:rm-bounce .4s cubic-bezier(.34,1.6,.64,1);
     ">${euRoubei ? '🔥' : '💀'}</div>
     <div style="
-      font-family:'Cinzel',serif;font-size:11px;font-weight:700;
-      color:${cor};letter-spacing:2px;text-align:center;
-      text-shadow:0 0 20px ${cor}88;
+      font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;
+      color:${cor};letter-spacing:0.125rem;text-align:center;
+      text-shadow:0 0 1.25rem ${cor}88;
       animation:rm-bounce .5s cubic-bezier(.34,1.6,.64,1) .05s both;
     ">${titulo}</div>
     <div style="
-      font-size:7px;color:var(--muted);letter-spacing:.5px;text-align:center;
+      font-size:0.4375rem;color:var(--muted);letter-spacing:0.03125rem;text-align:center;
       animation:rm-fade-in .3s ease .1s both;
     ">${sub}</div>
     ${carta ? `
     <div style="
-      width:44px;height:60px;border-radius:6px;background:#0a0816;
+      width:2.75rem;height:3.75rem;border-radius:0.375rem;background:#0a0816;
       border:2px solid ${cor};
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-      box-shadow:0 0 20px ${cor}66;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.1875rem;
+      box-shadow:0 0 1.25rem ${cor}66;
       animation:rm-bounce .5s cubic-bezier(.34,1.6,.64,1) .1s both;
     ">
-      <span style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:#e8a030;">${carta.label}</span>
-      <span style="font-size:14px;color:${carta.cor||cor};">${carta.naipe}</span>
+      <span style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:#e8a030;">${carta.label}</span>
+      <span style="font-size:0.875rem;color:${carta.cor||cor};">${carta.naipe}</span>
     </div>` : ''}
   `;
 
@@ -1093,8 +1093,8 @@ async function rmJogarCarta(salaId, opWallet) {
     _flash.style.cssText = `position:absolute;inset:0;z-index:80;display:flex;align-items:center;
       justify-content:center;pointer-events:none;`;
     const _cor = cartaJogada.cor === 'vermelho' ? '#e74c3c' : '#f0d080';
-    _flash.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:28px;font-weight:700;
-      color:${_cor};text-shadow:0 0 12px ${_cor}60;animation:arena-pop .4s cubic-bezier(.34,1.6,.64,1) forwards;">
+    _flash.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:1.75rem;font-weight:700;
+      color:${_cor};text-shadow:0 0 0.75rem ${_cor}60;animation:arena-pop .4s cubic-bezier(.34,1.6,.64,1) forwards;">
       ${cartaJogada.label}${cartaJogada.naipe}</div>`;
     _rmModal.style.position = 'relative';
     _rmModal.appendChild(_flash);
@@ -1242,23 +1242,23 @@ function rmAbandonar(salaId) {
     background:rgba(4,3,10,.96);
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
-    gap:12px;padding:24px;
+    gap:0.75rem;padding:1.5rem;
     border-radius:inherit;
   `;
   overlay.innerHTML = `
-    <div style="font-size:32px;">🏳️</div>
-    <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;
-                color:#e74c3c;letter-spacing:2px;text-align:center;">${t('rm.abandon_title')}</div>
-    <div style="font-size:7px;color:var(--muted);text-align:center;line-height:1.9;
-                padding:0 10px;">
+    <div style="font-size:2rem;">🏳️</div>
+    <div style="font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;
+                color:#e74c3c;letter-spacing:0.125rem;text-align:center;">${t('rm.abandon_title')}</div>
+    <div style="font-size:0.4375rem;color:var(--muted);text-align:center;line-height:1.9;
+                padding:0 0.625rem;">
       ${t('rm.abandon_desc')}
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px;width:100%;">
-      <button class="arena-btn-sair" style="flex:1;font-size:8px;"
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;width:100%;">
+      <button class="arena-btn-sair" style="flex:1;font-size:0.5rem;"
         onclick="rmConfirmarAbandono('${salaId}')">
         ${t('rm.abandon_confirm')}
       </button>
-      <button class="arena-btn-entrar" style="flex:1;font-size:8px;"
+      <button class="arena-btn-entrar" style="flex:1;font-size:0.5rem;"
         onclick="document.getElementById('rmAbandonarOverlay').remove()">
         ${t('rm.abandon_back')}
       </button>
@@ -1403,28 +1403,28 @@ async function _rmRenderResultado(sala, opWallet) {
   el.innerHTML = `
     <div class="arena-resultado">
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
-      <div class="arena-vs-row" style="margin:12px 0;">
+      <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${empate?'arena-empate':euVenci?'arena-vencedor':'arena-perdedor'}">
           <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44,getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${meuMonte}</div>
+          <div class="arena-vs-pts" style="font-size:1.125rem;">🃏 ${meuMonte}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${empate?'arena-empate':!euVenci?'arena-vencedor':'arena-perdedor'}">
           <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo',op_info.raridade||'Comum',op_info.seed||1,44,44,faseFromNivel(op_info.nivel))}</div>
           <div class="arena-vs-nome">${op_info.nome||opWallet.slice(0,8)+'...'}</div>
-          <div class="arena-vs-pts" style="font-size:18px;">🃏 ${opMonte}</div>
+          <div class="arena-vs-pts" style="font-size:1.125rem;">🃏 ${opMonte}</div>
         </div>
       </div>
       <div class="arena-recompensa-card">
         ${euVenci
-          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:9px;font-weight:700;">${t('rm.prize_xp', {val: (usaCris ? Math.floor(bruto-bruto*RM_TAXA) : bruto), moeda, xp: xpGain})}</div>`
+          ? `<div style="color:#7ab87a;font-family:'Cinzel',serif;font-size:0.5625rem;font-weight:700;">${t('rm.prize_xp', {val: (usaCris ? Math.floor(bruto-bruto*RM_TAXA) : bruto), moeda, xp: xpGain})}</div>`
           : empate
-            ? `<div style="color:var(--muted);font-size:7px;">${t('rm.bets_returned', {xp: xpGain})}</div>`
-            : `<div style="color:#e74c3c;font-size:7px;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
+            ? `<div style="color:var(--muted);font-size:0.4375rem;">${t('rm.bets_returned', {xp: xpGain})}</div>`
+            : `<div style="color:#e74c3c;font-size:0.4375rem;">${t('rm.better_luck_xp', {xp: xpGain})}</div>`}
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:7px;" onclick="_rmRenderLobby()">${t('rm.play_again')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.4375rem;" onclick="_rmRenderLobby()">${t('rm.play_again')}</button>
         <button class="arena-btn-sair" onclick="closeRoubaMonte()">${t('arena.close_btn')}</button>
       </div>
     </div>`;
@@ -1509,13 +1509,13 @@ function _rmRenderDesafioPendente(sala) {
   el.innerHTML = `
     <div class="arena-espera">
       <div class="arena-title">${t('rm.title')}</div>
-      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);letter-spacing:2px;margin-top:16px;">${t('arena.ch_received')}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:6px;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
-      <div style="font-size:7px;color:var(--muted);margin-top:3px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.5625rem;color:var(--gold);letter-spacing:0.125rem;margin-top:1rem;">${t('arena.ch_received')}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.375rem;">${t('arena.from_wallet', {wallet: (sala.criador||'').slice(0,10)})}</div>
+      <div style="font-size:0.4375rem;color:var(--muted);margin-top:0.1875rem;">
         ${t('arena.bet_label', {val: sala.aposta?.cristais>0?sala.aposta.cristais+' 💎':sala.aposta?.moedas+' 🪙'})}
       </div>
-      <div style="display:flex;gap:8px;margin-top:20px;width:100%;">
-        <button class="arena-btn-entrar" style="font-size:8px;" onclick="rmAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
+      <div style="display:flex;gap:0.5rem;margin-top:1.25rem;width:100%;">
+        <button class="arena-btn-entrar" style="font-size:0.5rem;" onclick="rmAceitarDesafio('${sala.id}')">${t('arena.accept_btn')}</button>
         <button class="arena-btn-sair" onclick="rmRecusarDesafio('${sala.id}')">${t('arena.refuse_btn')}</button>
       </div>
     </div>`;

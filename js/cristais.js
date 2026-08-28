@@ -112,7 +112,7 @@ function renderCrystals() {
     <div class="crystal-pkg ${i === 1 ? 'featured' : ''}">
       <div class="pkg-gem">💎</div>
       <div class="pkg-amount">${pkg.gems}</div>
-      <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text2);margin-bottom:4px;">${t('mkt.pkg.'+i)}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--text2);margin-bottom:0.25rem;">${t('mkt.pkg.'+i)}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
       <div class="pkg-bonus">${i === 1 ? t('mkt.crystals.popular') : ''}</div>
       <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">${t('mkt.crystals.buy_btn')}</button>
@@ -293,7 +293,7 @@ async function resgatar() {
       gemsInput.value = '';
       const refBonus = apiData.referralBonus || 0;
       const refNote  = refBonus > 0
-        ? `<span style="font-size:8px;color:var(--muted);display:block;margin-top:4px;">💸 ${fmtC(refBonus)} 💎 distribuídos para sua rede de convidadores</span>`
+        ? `<span style="font-size:0.5rem;color:var(--muted);display:block;margin-top:0.25rem;">💸 ${fmtC(refBonus)} 💎 distribuídos para sua rede de convidadores</span>`
         : '';
       status.innerHTML = `<span class="tx-ok">${t('mkt.tx.redeemed', {matic: apiData.matic})}</span>${refNote}`;
       showToast(t('mkt.tx.matic_sent', {matic: apiData.matic}), 'ok');
@@ -362,9 +362,9 @@ async function renderReferral() {
     </div>
 
     <div id="referralLevelsList">
-      <div class="loading" style="margin-top:20px;">
+      <div class="loading" style="margin-top:1.25rem;">
         <div class="spinner"></div>
-        <div style="font-size:10px;color:var(--muted);">${t('ref.loading')}</div>
+        <div style="font-size:0.625rem;color:var(--muted);">${t('ref.loading')}</div>
       </div>
     </div>`;
 
@@ -403,12 +403,12 @@ async function renderReferral() {
         ${t('ref.how_l1', {pct: REFERRAL_PCT.l1})}<br>
         ${t('ref.how_l2', {pct: REFERRAL_PCT.l2})}<br>
         ${t('ref.how_l3', {pct: REFERRAL_PCT.l3})}<br>
-        <span style="font-size:7.5px;display:block;margin-top:4px;">${t('ref.how_note')}</span>
+        <span style="font-size:0.46875rem;display:block;margin-top:0.25rem;">${t('ref.how_note')}</span>
       </div>`;
   } catch(e) {
     console.warn('[renderReferral]', e);
     const el = document.getElementById('referralLevelsList');
-    if(el) el.innerHTML = `<div style="color:var(--red2);font-size:10px;margin-top:16px;text-align:center;">${t('ref.error')}</div>`;
+    if(el) el.innerHTML = `<div style="color:var(--red2);font-size:0.625rem;margin-top:1rem;text-align:center;">${t('ref.error')}</div>`;
     const elCount  = document.getElementById('refStatCount');
     const elEarned = document.getElementById('refStatEarned');
     if(elCount)  elCount.textContent  = '—';
@@ -453,7 +453,7 @@ function _referralLevelHtml(snap, lvl, pct, label) {
           <div class="referral-player-name">${esc(nome)}</div>
           <div class="referral-player-uid">${shortUid}</div>
         </div>
-        <div style="font-size:8.5px;color:${rColor};text-align:right;white-space:nowrap;">
+        <div style="font-size:0.53125rem;color:${rColor};text-align:right;white-space:nowrap;">
           ${esc(rarity || 'Comum')}<br>
           ${active
             ? `<span class="referral-player-active">${t('ref.active')}</span>`

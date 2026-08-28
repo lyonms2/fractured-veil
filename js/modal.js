@@ -14,7 +14,7 @@ function lockBodyScroll() {
   if(_scrollLockCount === 0) {
     _scrollLockY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('modal-scroll-lock');
-    document.body.style.top = `-${_scrollLockY}px`;
+    document.body.style.top = `-${(_scrollLockY)/16}rem`;
   }
   _scrollLockCount++;
 }

@@ -92,7 +92,7 @@ function minaRender() {
   if(!grid) return;
 
   const cellSize = minaCols <= 7 ? 28 : minaCols <= 9 ? 24 : minaCols <= 11 ? 20 : 17;
-  grid.style.gridTemplateColumns = `repeat(${minaCols}, ${cellSize}px)`;
+  grid.style.gridTemplateColumns = `repeat(${minaCols}, ${(cellSize)/16}rem)`;
 
   let html = '';
   for(let r = 0; r < minaRows; r++) {
@@ -117,7 +117,7 @@ function minaRender() {
         cls += ' mina-hidden';
       }
 
-      const sz = `width:${cellSize}px;height:${cellSize}px;font-size:${cellSize <= 20 ? 9 : 11}px;`;
+      const sz = `width:${(cellSize)/16}rem;height:${(cellSize)/16}rem;font-size:${(cellSize <= 20 ? 9 : 11)/16}rem;`;
       html += `<button class="${cls}" style="${sz}"
         onclick="minaClick(${r},${c})"
         oncontextmenu="minaFlag(event,${r},${c})">${content}</button>`;

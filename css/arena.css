@@ -3,60 +3,60 @@
    Modal dentro da .screen, mesmo padrão dos outros minigames
 ══════════════════════════════════════════════════════════════ */
 
-#arenaModal { gap: 12px; }
+#arenaModal { gap: 0.75rem; }
 #arenaModal.open { opacity: 1; pointer-events: all; }
 
 /* ── Header ── */
 .arena-header {
   text-align: center;
   flex-shrink: 0;
-  padding-bottom: 12px;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(255,255,255,.07);
   width: 100%;
 }
 .arena-title {
   font-family: 'Cinzel', serif;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 3px; color: var(--gold);
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.1875rem; color: var(--gold);
 }
 .arena-sub {
-  font-size: 7px; color: var(--muted);
-  letter-spacing: 1.5px; margin-top: 5px;
+  font-size: 0.4375rem; color: var(--muted);
+  letter-spacing: 0.09375rem; margin-top: 0.3125rem;
   line-height: 1.6;
 }
 
 /* ── Tabs ── */
 .arena-tabs {
-  display: flex; gap: 8px;
+  display: flex; gap: 0.5rem;
   flex-shrink: 0;
   width: 100%;
 }
 .arena-tab {
-  flex: 1; padding: 9px 4px 7px;
+  flex: 1; padding: 0.5625rem 0.25rem 0.4375rem;
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 1.5px;
+  font-size: 0.4375rem; letter-spacing: 0.09375rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   background: rgba(255,255,255,.03);
   color: var(--muted);
   cursor: pointer; transition: all .18s;
   display: flex; flex-direction: column;
-  align-items: center; gap: 4px;
+  align-items: center; gap: 0.25rem;
   position: relative; overflow: hidden;
 }
 .arena-tab::after {
   content: ''; position: absolute;
-  bottom: 0; left: 0; right: 0; height: 2px;
+  bottom: 0; left: 0; right: 0; height: 0.125rem;
   opacity: 0; transition: opacity .18s;
   background: linear-gradient(90deg, var(--gold), #ffe066);
 }
-.arena-tab-icon { font-size: 14px; line-height: 1; }
+.arena-tab-icon { font-size: 0.875rem; line-height: 1; }
 .arena-tab:hover  { border-color: rgba(201,168,76,.4); color: var(--gold-light); background: rgba(201,168,76,.05); }
 .arena-tab.active {
   border-color: var(--gold);
   background: linear-gradient(160deg, rgba(201,168,76,.16) 0%, rgba(11,9,22,.5) 100%);
   color: var(--gold);
-  box-shadow: 0 0 14px rgba(201,168,76,.18);
+  box-shadow: 0 0 0.875rem rgba(201,168,76,.18);
 }
 .arena-tab.active::after { opacity: 1; }
 
@@ -64,49 +64,49 @@
 .arena-tab-content {
   display: flex; flex-direction: column;
   align-items: center; width: 100%;
-  gap: 14px; overflow-y: auto; flex: 1;
+  gap: 0.875rem; overflow-y: auto; flex: 1;
   overscroll-behavior: contain;
-  padding-bottom: 8px;
+  padding-bottom: 0.5rem;
 }
 
 /* ── Info da aposta ── */
 .arena-aposta-info {
   display: flex; flex-direction: column; align-items: center;
-  gap: 5px;
-  padding: 10px 14px;
+  gap: 0.3125rem;
+  padding: 0.625rem 0.875rem;
   background: linear-gradient(135deg, rgba(201,168,76,.07), rgba(201,168,76,.03));
   border: 1px solid rgba(201,168,76,.25);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   font-family: 'Cinzel', serif;
-  font-size: 7.5px; color: var(--muted);
+  font-size: 0.46875rem; color: var(--muted);
   width: 100%; text-align: center;
   line-height: 1.8;
 }
-.arena-aposta-info b { color: var(--gold); font-size: 9px; }
+.arena-aposta-info b { color: var(--gold); font-size: 0.5625rem; }
 
 /* ── Botões de ação ── */
 .arena-lobby-actions {
   display: flex; flex-direction: column;
-  align-items: center; gap: 8px;
+  align-items: center; gap: 0.5rem;
   width: 100%;
 }
 
 .arena-btn-entrar {
-  width: 100%; padding: 13px;
+  width: 100%; padding: 0.8125rem;
   font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing: 2.5px; font-weight: 700;
+  font-size: 0.5625rem; letter-spacing: 0.15625rem; font-weight: 700;
   border: 1px solid var(--gold);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   background: linear-gradient(135deg, rgba(201,168,76,.15), rgba(201,168,76,.05));
   color: var(--gold); cursor: pointer;
   transition: all .2s;
-  box-shadow: 0 2px 12px rgba(201,168,76,.1);
+  box-shadow: 0 0.125rem 0.75rem rgba(201,168,76,.1);
 }
 .arena-btn-entrar:hover {
   background: linear-gradient(135deg, var(--gold), #c9a84c);
   color: #0a0816;
-  box-shadow: 0 0 22px rgba(201,168,76,.45);
-  transform: translateY(-1px);
+  box-shadow: 0 0 1.375rem rgba(201,168,76,.45);
+  transform: translateY(-0.0625rem);
 }
 .arena-btn-entrar.disabled {
   opacity: .35; cursor: not-allowed;
@@ -115,36 +115,36 @@
 }
 
 .arena-btn-sair {
-  padding: 7px 20px;
+  padding: 0.4375rem 1.25rem;
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 1px;
+  font-size: 0.4375rem; letter-spacing: 0.0625rem;
   border: 1px solid rgba(231,76,60,.5);
-  border-radius: 6px; background: transparent;
+  border-radius: 0.375rem; background: transparent;
   color: #e74c3c; cursor: pointer; transition: all .15s;
 }
 .arena-btn-sair:hover { background: rgba(231,76,60,.12); border-color: #e74c3c; }
 
 .arena-sem-saldo {
-  font-size: 6px; color: #e74c3c;
-  font-family: 'Cinzel', serif; letter-spacing: .5px;
+  font-size: 0.375rem; color: #e74c3c;
+  font-family: 'Cinzel', serif; letter-spacing: 0.03125rem;
 }
 
 /* ── Aguardando ── */
 .arena-aguardando {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 0.625rem;
   font-family: 'Cinzel', serif;
-  font-size: 8px; color: var(--raro);
-  letter-spacing: 1.5px;
-  padding: 10px 14px;
+  font-size: 0.5rem; color: var(--raro);
+  letter-spacing: 0.09375rem;
+  padding: 0.625rem 0.875rem;
   background: rgba(90,180,232,.06);
   border: 1px solid rgba(90,180,232,.2);
-  border-radius: 10px; width: 100%;
+  border-radius: 0.625rem; width: 100%;
   justify-content: center;
 }
 .arena-pulse {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 0.625rem; height: 0.625rem; border-radius: 50%;
   background: var(--raro);
-  box-shadow: 0 0 10px var(--raro);
+  box-shadow: 0 0 0.625rem var(--raro);
   animation: arena-pulse-anim 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -156,36 +156,36 @@
 /* ── Lobby lista ── */
 .arena-lobby-titulo {
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 2px;
+  font-size: 0.4375rem; letter-spacing: 0.125rem;
   color: var(--muted); text-transform: uppercase;
-  align-self: flex-start; margin-top: 4px;
-  display: flex; align-items: center; gap: 6px;
+  align-self: flex-start; margin-top: 0.25rem;
+  display: flex; align-items: center; gap: 0.375rem;
 }
 .arena-lobby-titulo::before {
   content: ''; display: inline-block;
-  width: 16px; height: 1px;
+  width: 1rem; height: 0.0625rem;
   background: var(--border);
 }
 .arena-lobby-lista {
   display: flex; flex-direction: column;
-  gap: 12px; width: 100%;
+  gap: 0.75rem; width: 100%;
 }
 .arena-lobby-vazio {
-  font-size: 7px; color: var(--muted);
-  text-align: center; padding: 24px 0;
-  font-family: 'Cinzel', serif; letter-spacing: .5px;
+  font-size: 0.4375rem; color: var(--muted);
+  text-align: center; padding: 1.5rem 0;
+  font-family: 'Cinzel', serif; letter-spacing: 0.03125rem;
   opacity: .6;
 }
 
 .arena-lobby-search {
   width: 100%; box-sizing: border-box;
-  padding: 8px 12px;
+  padding: 0.5rem 0.75rem;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color: var(--gold-light);
   font-family: 'Cinzel', serif;
-  font-size: 8px; letter-spacing: .5px;
+  font-size: 0.5rem; letter-spacing: 0.03125rem;
   outline: none;
   transition: border-color .2s;
 }
@@ -198,22 +198,22 @@
 
 /* ── Card de avatar no lobby ── */
 .arena-lobby-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
+  display: flex; align-items: center; gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   transition: all .2s;
 }
 .arena-lobby-card:hover {
   border-color: rgba(201,168,76,.35);
   background: rgba(201,168,76,.04);
-  transform: translateX(2px);
+  transform: translateX(0.125rem);
 }
 .arena-lobby-svg {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
+  width: 2.75rem; height: 2.75rem;
   background: rgba(255,255,255,.03);
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,.08);
@@ -222,55 +222,55 @@
 .arena-lobby-info { flex: 1; min-width: 0; }
 .arena-lobby-nome {
   font-family: 'Cinzel', serif;
-  font-size: 9px; font-weight: 700;
+  font-size: 0.5625rem; font-weight: 700;
   color: var(--gold-light);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .arena-lobby-meta {
-  font-size: 6.5px; color: var(--muted); margin-top: 3px;
-  display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+  font-size: 0.40625rem; color: var(--muted); margin-top: 0.1875rem;
+  display: flex; gap: 0.3125rem; flex-wrap: wrap; align-items: center;
 }
 .arena-lobby-nv {
-  font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700;
+  font-family: 'Cinzel', serif; font-size: 0.4375rem; font-weight: 700;
   color: var(--gold); background: rgba(201,168,76,.12);
   border: 1px solid rgba(201,168,76,.25);
-  border-radius: 4px; padding: 1px 5px;
+  border-radius: 0.25rem; padding: 0.0625rem 0.3125rem;
 }
 
 .arena-btn-desafiar {
-  padding: 7px 12px; flex-shrink: 0;
+  padding: 0.4375rem 0.75rem; flex-shrink: 0;
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 1px; font-weight: 700;
+  font-size: 0.4375rem; letter-spacing: 0.0625rem; font-weight: 700;
   border: 1px solid rgba(201,168,76,.5);
-  border-radius: 7px; background: rgba(201,168,76,.1);
+  border-radius: 0.4375rem; background: rgba(201,168,76,.1);
   color: var(--gold); cursor: pointer; transition: all .18s;
   white-space: nowrap;
 }
 .arena-btn-desafiar:hover {
   background: linear-gradient(135deg, rgba(201,168,76,.3), rgba(201,168,76,.15));
   border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(201,168,76,.2);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0.625rem rgba(201,168,76,.2);
+  transform: translateY(-0.0625rem);
 }
 
 .arena-lobby-aguarda {
-  font-size: 6.5px; color: var(--muted);
-  font-family: 'Cinzel', serif; letter-spacing: .5px;
+  font-size: 0.40625rem; color: var(--muted);
+  font-family: 'Cinzel', serif; letter-spacing: 0.03125rem;
   opacity: .7;
 }
 
 /* ── Ranking ── */
 .arena-ranking-wrap {
   display: flex; flex-direction: column;
-  gap: 5px; width: 100%;
+  gap: 0.3125rem; width: 100%;
 }
 .arena-rank-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.06);
-  border-radius: 8px;
-  font-family: 'Cinzel', serif; font-size: 7.5px;
+  border-radius: 0.5rem;
+  font-family: 'Cinzel', serif; font-size: 0.46875rem;
   transition: background .15s;
 }
 /* Top 3 */
@@ -289,52 +289,52 @@
 .arena-rank-row.arena-rank-meu {
   border-color: rgba(167,139,250,.5) !important;
   background: linear-gradient(135deg, rgba(167,139,250,.12), rgba(167,139,250,.04)) !important;
-  box-shadow: 0 0 10px rgba(167,139,250,.12);
+  box-shadow: 0 0 0.625rem rgba(167,139,250,.12);
 }
 .arena-rank-pos {
-  width: 26px; text-align: center;
-  font-size: 13px; flex-shrink: 0;
+  width: 1.625rem; text-align: center;
+  font-size: 0.8125rem; flex-shrink: 0;
   line-height: 1;
 }
 .arena-rank-nome {
   flex: 1; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-size: 8px;
+  font-size: 0.5rem;
 }
 .arena-rank-pts {
   color: var(--gold); font-weight: 700;
-  flex-shrink: 0; font-size: 8.5px;
+  flex-shrink: 0; font-size: 0.53125rem;
 }
 .arena-rank-wl {
-  flex-shrink: 0; margin-left: 4px;
-  font-size: 6.5px; color: var(--muted);
+  flex-shrink: 0; margin-left: 0.25rem;
+  font-size: 0.40625rem; color: var(--muted);
 }
 
 /* ── Pool semanal ── */
 .arena-pool-card {
-  margin-top: 10px;
-  padding: 14px 16px;
+  margin-top: 0.625rem;
+  padding: 0.875rem 1rem;
   background: linear-gradient(135deg, rgba(167,139,250,.1), rgba(124,58,237,.05));
   border: 1px solid rgba(167,139,250,.3);
-  border-radius: 12px; text-align: center;
+  border-radius: 0.75rem; text-align: center;
   width: 100%;
-  box-shadow: 0 0 20px rgba(124,58,237,.1);
+  box-shadow: 0 0 1.25rem rgba(124,58,237,.1);
 }
 .arena-pool-titulo {
   font-family: 'Cinzel', serif;
-  font-size: 8px; letter-spacing: 2.5px;
-  color: var(--gem); margin-bottom: 8px; font-weight: 700;
+  font-size: 0.5rem; letter-spacing: 0.15625rem;
+  color: var(--gem); margin-bottom: 0.5rem; font-weight: 700;
 }
 .arena-pool-valor {
   font-family: 'Cinzel', serif;
-  font-size: 26px; font-weight: 700;
+  font-size: 1.625rem; font-weight: 700;
   color: var(--gem2);
-  text-shadow: 0 0 22px rgba(196,181,253,.5);
+  text-shadow: 0 0 1.375rem rgba(196,181,253,.5);
   line-height: 1;
 }
 .arena-pool-sub {
-  font-size: 6.5px; color: var(--muted);
-  margin-top: 6px; letter-spacing: .5px;
+  font-size: 0.40625rem; color: var(--muted);
+  margin-top: 0.375rem; letter-spacing: 0.03125rem;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -352,14 +352,14 @@
 .arena-espera {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  width: 100%; flex: 1; gap: 6px;
+  width: 100%; flex: 1; gap: 0.375rem;
 }
 
 /* ── Container da partida — ocupa todo o espaço disponível ── */
 .arena-partida {
   display: flex; flex-direction: column;
   align-items: center; width: 100%;
-  gap: 6px; flex: 1;
+  gap: 0.375rem; flex: 1;
 }
 
 .arena-partida-header {
@@ -372,21 +372,21 @@
 .arena-vs-row {
   display: flex; align-items: stretch;
   justify-content: space-between;
-  width: 100%; gap: 5px;
+  width: 100%; gap: 0.3125rem;
   flex-shrink: 0;
 }
 .arena-vs-lado {
   display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-  flex: 1; padding: 6px 4px;
-  border-radius: 8px;
+  align-items: center; gap: 0.1875rem;
+  flex: 1; padding: 0.375rem 0.25rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--border);
   background: rgba(255,255,255,.02);
   transition: border-color .3s, box-shadow .3s;
 }
 .arena-vs-lado.arena-vencedor {
   border-color: var(--gold);
-  box-shadow: 0 0 14px rgba(201,168,76,.25);
+  box-shadow: 0 0 0.875rem rgba(201,168,76,.25);
   background: rgba(201,168,76,.05);
 }
 .arena-vs-lado.arena-perdedor {
@@ -395,24 +395,24 @@
 }
 .arena-vs-lado.arena-empate {
   border-color: var(--raro) !important;
-  box-shadow: 0 0 10px rgba(90,180,232,.2) !important;
+  box-shadow: 0 0 0.625rem rgba(90,180,232,.2) !important;
   transition: all .4s;
 }
 .arena-vs-svg { flex-shrink: 0; }
 .arena-vs-nome {
   font-family: 'Cinzel', serif;
-  font-size: 6px; font-weight: 700;
+  font-size: 0.375rem; font-weight: 700;
   color: var(--gold-light); text-align: center;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 70px; width: 100%;
+  max-width: 4.375rem; width: 100%;
 }
 .arena-vs-stars {
-  font-size: 11px; letter-spacing: 1px;
-  min-height: 14px; text-align: center;
+  font-size: 0.6875rem; letter-spacing: 0.0625rem;
+  min-height: 0.875rem; text-align: center;
   transition: all .3s;
 }
 .arena-vs-escolha {
-  font-size: 20px; line-height: 1; min-height: 24px;
+  font-size: 1.25rem; line-height: 1; min-height: 1.5rem;
   text-align: center;
 }
 
@@ -420,78 +420,78 @@
 .arena-vs-centro {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 3px; flex-shrink: 0; width: 44px;
+  gap: 0.1875rem; flex-shrink: 0; width: 2.75rem;
 }
 .arena-vs-label {
   font-family: 'Cinzel', serif;
-  font-size: 8px; font-weight: 700;
-  color: var(--muted); letter-spacing: 2px;
+  font-size: 0.5rem; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.125rem;
 }
 
 /* ── Barra de turno ── */
 .arena-turno-wrap {
-  width: 36px; height: 4px;
+  width: 2.25rem; height: 0.25rem;
   background: rgba(255,255,255,.08);
-  border-radius: 2px; overflow: hidden;
+  border-radius: 0.125rem; overflow: hidden;
 }
 .arena-turno-bar {
   height: 100%; width: 0%;
-  border-radius: 2px;
+  border-radius: 0.125rem;
   background: var(--gold);
   transition: width 1s linear, background .3s;
 }
 .arena-turno-label {
   font-family: 'Cinzel', serif;
-  font-size: 5px; letter-spacing: 1px;
+  font-size: 0.3125rem; letter-spacing: 0.0625rem;
   color: var(--gold); text-align: center;
-  min-height: 7px;
+  min-height: 0.4375rem;
 }
 
 /* ── Status da rodada ── */
 .arena-partida-status {
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 1px;
+  font-size: 0.4375rem; letter-spacing: 0.0625rem;
   color: var(--muted); text-align: center;
-  min-height: 12px; flex-shrink: 0;
+  min-height: 0.75rem; flex-shrink: 0;
   width: 100%;
 }
 
 /* ── Countdown ── */
 .arena-countdown {
   font-family: 'Cinzel', serif !important;
-  font-size: 16px !important; font-weight: 700 !important;
+  font-size: 1rem !important; font-weight: 700 !important;
   color: var(--gold) !important;
   animation: arena-pop .3s ease;
 }
 
 /* ── Botões de escolha — mais compactos ── */
 .arena-escolhas {
-  display: flex; gap: 6px; width: 100%; flex-shrink: 0;
+  display: flex; gap: 0.375rem; width: 100%; flex-shrink: 0;
 }
 .arena-escolha-btn {
   flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: 2px;
-  padding: 8px 2px;
-  font-family: 'Cinzel', serif; font-size: 18px;
-  border: 1px solid var(--border); border-radius: 8px;
+  align-items: center; gap: 0.125rem;
+  padding: 0.5rem 0.125rem;
+  font-family: 'Cinzel', serif; font-size: 1.125rem;
+  border: 1px solid var(--border); border-radius: 0.5rem;
   background: rgba(255,255,255,.03);
   color: var(--text); cursor: pointer; transition: all .15s;
 }
 .arena-escolha-btn span {
-  font-size: 5px; letter-spacing: 1px; color: var(--muted);
+  font-size: 0.3125rem; letter-spacing: 0.0625rem; color: var(--muted);
 }
 .arena-escolha-btn:hover:not(:disabled) {
   border-color: var(--gold);
   background: rgba(201,168,76,.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(201,168,76,.2);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.625rem rgba(201,168,76,.2);
 }
 .arena-escolha-btn:disabled { opacity: .35; cursor: not-allowed; }
 
 /* ── Banner de resultado da rodada ── */
 .arena-round-banner {
-  width: 100%; padding: 8px 10px;
-  border-radius: 8px; text-align: center;
+  width: 100%; padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem; text-align: center;
   border: 1px solid rgba(255,255,255,.08);
   flex-shrink: 0;
 }
@@ -507,38 +507,38 @@
 /* ── Badges header ── */
 .arena-rodada-badge {
   font-family: 'Cinzel', serif;
-  font-size: 8px; font-weight: 700;
-  color: var(--gold); letter-spacing: 1px;
+  font-size: 0.5rem; font-weight: 700;
+  color: var(--gold); letter-spacing: 0.0625rem;
 }
 .arena-premio-badge {
-  font-size: 7px; color: var(--muted); letter-spacing: .5px;
+  font-size: 0.4375rem; color: var(--muted); letter-spacing: 0.03125rem;
 }
 
 /* ── Resultado final ── */
 .arena-resultado {
   display: flex; flex-direction: column;
-  align-items: center; width: 100%; gap: 8px;
-  padding: 4px 0; flex: 1; justify-content: center;
+  align-items: center; width: 100%; gap: 0.5rem;
+  padding: 0.25rem 0; flex: 1; justify-content: center;
 }
 .arena-resultado-titulo {
   font-family: 'Cinzel', serif;
-  font-size: 15px; font-weight: 700;
-  letter-spacing: 3px; text-align: center;
+  font-size: 0.9375rem; font-weight: 700;
+  letter-spacing: 0.1875rem; text-align: center;
   animation: arena-pop .5s cubic-bezier(.34,1.6,.64,1);
 }
 .arena-recompensa-card {
-  width: 100%; padding: 8px 12px;
+  width: 100%; padding: 0.5rem 0.75rem;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
-  border-radius: 8px; text-align: center;
+  border-radius: 0.5rem; text-align: center;
 }
 
 /* ── Card de desafio pendente ── */
 .arena-desafio-card {
-  width: 100%; padding: 12px;
+  width: 100%; padding: 0.75rem;
   background: rgba(201,168,76,.05);
   border: 1px solid rgba(201,168,76,.3);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   animation: arena-pop .3s ease;
 }
 
@@ -548,57 +548,57 @@
 ══════════════════════════════════════ */
 @media(max-width:768px) {
   .arena-partida {
-    gap: 10px;
-    padding: 4px 0;
+    gap: 0.625rem;
+    padding: 0.25rem 0;
     justify-content: space-between;
     flex: 1;
   }
 
-  /* Avatares: SVG é 38px inline, escalar via CSS */
-  .arena-vs-svg     { width: 56px !important; height: 56px !important; }
-  .arena-vs-svg svg { width: 56px !important; height: 56px !important; }
+  /* Avatares: SVG é 2.375rem inline, escalar via CSS */
+  .arena-vs-svg     { width: 3.5rem !important; height: 3.5rem !important; }
+  .arena-vs-svg svg { width: 3.5rem !important; height: 3.5rem !important; }
 
   .arena-vs-lado {
-    padding: 12px 8px !important;
-    border-radius: 12px !important;
-    gap: 6px !important;
+    padding: 0.75rem 0.5rem !important;
+    border-radius: 0.75rem !important;
+    gap: 0.375rem !important;
   }
-  .arena-vs-nome    { font-size: 9px !important; max-width: 110px !important; }
-  .arena-vs-stars   { font-size: 16px !important; }
-  .arena-vs-escolha { font-size: 36px !important; min-height: 42px !important; }
+  .arena-vs-nome    { font-size: 0.5625rem !important; max-width: 6.875rem !important; }
+  .arena-vs-stars   { font-size: 1rem !important; }
+  .arena-vs-escolha { font-size: 2.25rem !important; min-height: 2.625rem !important; }
 
-  .arena-vs-centro  { width: 52px !important; gap: 6px !important; }
-  .arena-vs-label   { font-size: 11px !important; }
-  .arena-turno-wrap { width: 44px !important; height: 5px !important; }
-  .arena-turno-label { font-size: 8px !important; }
+  .arena-vs-centro  { width: 3.25rem !important; gap: 0.375rem !important; }
+  .arena-vs-label   { font-size: 0.6875rem !important; }
+  .arena-turno-wrap { width: 2.75rem !important; height: 0.3125rem !important; }
+  .arena-turno-label { font-size: 0.5rem !important; }
 
   .arena-partida-status {
-    font-size: 9px !important;
-    letter-spacing: 1px !important;
+    font-size: 0.5625rem !important;
+    letter-spacing: 0.0625rem !important;
   }
 
   /* Botões de escolha — grandes para toque */
-  .arena-escolhas { gap: 10px !important; flex-shrink: 0 !important; }
+  .arena-escolhas { gap: 0.625rem !important; flex-shrink: 0 !important; }
   .arena-escolha-btn {
-    padding: 18px 4px !important;
-    font-size: 42px !important;
-    border-radius: 16px !important;
-    gap: 8px !important;
+    padding: 1.125rem 0.25rem !important;
+    font-size: 2.625rem !important;
+    border-radius: 1rem !important;
+    gap: 0.5rem !important;
   }
   .arena-escolha-btn span {
-    font-size: 9px !important;
-    letter-spacing: 1.5px !important;
+    font-size: 0.5625rem !important;
+    letter-spacing: 0.09375rem !important;
   }
 
-  .arena-rodada-badge { font-size: 10px !important; }
-  .arena-premio-badge { font-size: 9px !important; }
+  .arena-rodada-badge { font-size: 0.625rem !important; }
+  .arena-premio-badge { font-size: 0.5625rem !important; }
 
   .arena-round-banner {
-    padding: 10px 12px !important;
-    font-size: 10px !important;
-    border-radius: 10px !important;
+    padding: 0.625rem 0.75rem !important;
+    font-size: 0.625rem !important;
+    border-radius: 0.625rem !important;
   }
-  .arena-resultado-titulo { font-size: 22px !important; }
+  .arena-resultado-titulo { font-size: 1.375rem !important; }
 }
 
 /* ══════════════════════════════════════
@@ -608,13 +608,13 @@
 ══════════════════════════════════════ */
 @media(min-width:769px) {
   /* Modal scroll + padding generoso para o banner de resultado não cortar */
-  #arenaModal { overflow-y: auto !important; padding: 24px 32px !important; }
+  #arenaModal { overflow-y: auto !important; padding: 1.5rem 2rem !important; }
 
   .arena-partida {
-    max-width: 680px;
+    max-width: 42.5rem;
     width: 100%;
     margin: 0 auto;
-    gap: 14px;       /* reduzido para o banner caber sem scroll */
+    gap: 0.875rem;       /* reduzido para o banner caber sem scroll */
     padding: 0;
     justify-content: center;
     flex: 1;
@@ -622,51 +622,51 @@
   }
 
   .arena-partida-header {
-    padding: 0 4px;
+    padding: 0 0.25rem;
   }
-  .arena-rodada-badge { font-size: 13px !important; letter-spacing: 2px !important; }
-  .arena-premio-badge { font-size: 11px !important; }
+  .arena-rodada-badge { font-size: 0.8125rem !important; letter-spacing: 0.125rem !important; }
+  .arena-premio-badge { font-size: 0.6875rem !important; }
 
   /* VS row — avatares grandes, lado a lado */
-  .arena-vs-row  { gap: 12px; }
+  .arena-vs-row  { gap: 0.75rem; }
   .arena-vs-lado {
-    padding: 16px 10px !important;
-    border-radius: 14px !important;
-    gap: 10px !important;
+    padding: 1rem 0.625rem !important;
+    border-radius: 0.875rem !important;
+    gap: 0.625rem !important;
   }
-  .arena-vs-svg     { width: 90px !important; height: 90px !important; }
-  .arena-vs-svg svg { width: 90px !important; height: 90px !important; }
-  .arena-vs-nome { font-size: 11px !important; max-width: 160px !important; }
-  .arena-vs-stars { font-size: 20px !important; }
-  .arena-vs-escolha { font-size: 52px !important; min-height: 60px !important; }
+  .arena-vs-svg     { width: 5.625rem !important; height: 5.625rem !important; }
+  .arena-vs-svg svg { width: 5.625rem !important; height: 5.625rem !important; }
+  .arena-vs-nome { font-size: 0.6875rem !important; max-width: 10rem !important; }
+  .arena-vs-stars { font-size: 1.25rem !important; }
+  .arena-vs-escolha { font-size: 3.25rem !important; min-height: 3.75rem !important; }
 
   /* Centro VS */
-  .arena-vs-centro { width: 72px !important; gap: 8px !important; }
-  .arena-vs-label  { font-size: 14px !important; }
-  .arena-turno-wrap { width: 56px !important; height: 6px !important; }
-  .arena-turno-label { font-size: 8px !important; }
+  .arena-vs-centro { width: 4.5rem !important; gap: 0.5rem !important; }
+  .arena-vs-label  { font-size: 0.875rem !important; }
+  .arena-turno-wrap { width: 3.5rem !important; height: 0.375rem !important; }
+  .arena-turno-label { font-size: 0.5rem !important; }
 
   /* Status */
-  .arena-partida-status { font-size: 11px !important; letter-spacing: 2px !important; min-height: 18px !important; }
+  .arena-partida-status { font-size: 0.6875rem !important; letter-spacing: 0.125rem !important; min-height: 1.125rem !important; }
 
   /* Botões de escolha — muito maiores */
-  .arena-escolhas { gap: 12px !important; }
+  .arena-escolhas { gap: 0.75rem !important; }
   .arena-escolha-btn {
-    padding: 22px 8px !important;
-    font-size: 38px !important;
-    border-radius: 16px !important;
-    gap: 8px !important;
+    padding: 1.375rem 0.5rem !important;
+    font-size: 2.375rem !important;
+    border-radius: 1rem !important;
+    gap: 0.5rem !important;
   }
-  .arena-escolha-btn span { font-size: 9px !important; letter-spacing: 2px !important; }
+  .arena-escolha-btn span { font-size: 0.5625rem !important; letter-spacing: 0.125rem !important; }
 
   /* Banner de round */
   .arena-round-banner {
-    padding: 14px 20px !important;
-    font-size: 12px !important;
-    border-radius: 12px !important;
+    padding: 0.875rem 1.25rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.75rem !important;
   }
 
   /* Resultado final */
-  .arena-resultado-titulo { font-size: 28px !important; }
-  .arena-recompensa-card  { padding: 16px 24px !important; font-size: 11px !important; }
+  .arena-resultado-titulo { font-size: 1.75rem !important; }
+  .arena-recompensa-card  { padding: 1rem 1.5rem !important; font-size: 0.6875rem !important; }
 }

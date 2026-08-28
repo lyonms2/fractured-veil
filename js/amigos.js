@@ -324,7 +324,7 @@ function _renderVisitaOverlay() {
   body.innerHTML = `
     <div class="visita-avatar">
       <div class="av-zoom-wrap" style="position:relative;display:inline-block;">
-        <div id="visitaAvatarWrap" class="creature-wrap" style="width:80px;height:80px;">
+        <div id="visitaAvatarWrap" class="creature-wrap" style="width:5rem;height:5rem;">
           <!-- A fase vem do _faseNum(), como em todo o resto do jogo.
                Estava em Math.ceil(nivel/5): errava em 8 de 10 níveis e a
                partir do 16 pedia uma fase que não existe (só há 0-3). -->
@@ -353,7 +353,7 @@ function _renderVisitaOverlay() {
       }).join('')}
     </div>
 
-    <div class="visita-limite-info" style="text-align:center;font-size:11px;color:${limiteAtingido?'#e06c75':'#aaa'};margin-bottom:6px;">
+    <div class="visita-limite-info" style="text-align:center;font-size:0.6875rem;color:${limiteAtingido?'#e06c75':'#aaa'};margin-bottom:0.375rem;">
       ${t('amigos.interactions', {done: visitasFeitas, max: MAX_VISITAS_GLOBAL})}
     </div>
 
@@ -437,11 +437,11 @@ function _playVisitaAnim(tipo) {
   // Partículas — mesmos efeitos do index mas no wrap da visita
   if(tipo === 'alimentar') {
     const foods = ['🍖','🍗','✨','⭐'];
-    [{fx:'-28px'},{fx:'0px'},{fx:'28px'},{fx:'-14px'},{fx:'14px'}].forEach((pos, i) => {
+    [{fx:'-1.75rem'},{fx:'0'},{fx:'1.75rem'},{fx:'-0.875rem'},{fx:'0.875rem'}].forEach((pos, i) => {
       const el = document.createElement('div');
       el.className = 'food-particle';
       el.textContent = foods[i % foods.length];
-      el.style.cssText = `--fx:${pos.fx};--fr:${(Math.random()*60-30).toFixed(0)}deg;top:10px;left:50%;transform:translateX(-50%);animation-delay:${i*0.06}s`;
+      el.style.cssText = `--fx:${pos.fx};--fr:${(Math.random()*60-30).toFixed(0)}deg;top:0.625rem;left:50%;transform:translateX(-50%);animation-delay:${i*0.06}s`;
       w.appendChild(el);
       setTimeout(() => el.remove(), 1100);
     });
@@ -468,7 +468,7 @@ function _playVisitaAnim(tipo) {
         const el = document.createElement('div');
         el.className = 'food-particle';
         el.textContent = emojis[i % emojis.length];
-        el.style.cssText = `--fx:${(Math.random()*60-30).toFixed(0)}px;--fr:${(Math.random()*60-30).toFixed(0)}deg;top:10px;left:50%;transform:translateX(-50%);animation-delay:0s`;
+        el.style.cssText = `--fx:${((Math.random()*60-30).toFixed(0))/16}rem;--fr:${(Math.random()*60-30).toFixed(0)}deg;top:0.625rem;left:50%;transform:translateX(-50%);animation-delay:0s`;
         w.appendChild(el);
         setTimeout(() => el.remove(), 1100);
       }, i * 80);

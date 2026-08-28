@@ -161,7 +161,7 @@ function buildListingCard(l) {
         </div>
       </div>
       <div class="av-name">${esc(nomeProp)}</div>
-      ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:6px;"></div>'}
+      ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
       <div class="av-pill ${l.raridade}">${elemEmoji} ${esc(l.elemento)} · ${esc(l.raridade)}</div>
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
@@ -193,7 +193,7 @@ async function openDetail(listingId) {
       <div class="detail-info">
         <div class="detail-name">${esc(l.nome||'Avatar')}</div>
         <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(l.elemento)}</div>
-        <div style="font-size:9px;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l.elemento, l.descricaoIdx) : l.descricao)||'')}</div>
+        <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l.elemento, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
     </div>
     <div class="detail-stats-grid">
@@ -264,11 +264,11 @@ function openListModal(slotIdx) {
   listingSlotIdx = slotIdx;
   const s = playerData.avatarSlots[slotIdx];
   document.getElementById('listAvatarPreview').innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);padding:10px;border-radius:8px;">
+    <div style="display:flex;align-items:center;gap:0.625rem;background:var(--surface2);padding:0.625rem;border-radius:0.5rem;">
       ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:11px;">${s.nome}</div>
-        <div style="font-size:9px;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${s.nome}</div>
+        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
   document.getElementById('listPriceInput').value = '';
@@ -465,7 +465,7 @@ function renderSlots() {
           <div class="slot-stats">
             <div class="slot-stat"><b>${s.nivel||1}</b><span>${t('mkt.stat.nivel')}</span></div>
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
-            <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:8px;letter-spacing:.5px;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
+            <div class="slot-stat"><b style="color:${getFaseCor(s.nivel||1)};font-size:0.5rem;letter-spacing:0.03125rem;">${getFaseNome(s.nivel||1)}</b><span>${t('mkt.stat.fase')}</span></div>
           </div>
           ${_slotDoencas(i, s)}
           <!-- UM só bloco de acções, e não vários.
@@ -482,7 +482,7 @@ function renderSlots() {
             ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>` : ''}
             <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>` : ''}
             ${isFrozen ? `
-            <div style="font-size:8px;color:var(--gold);text-align:center;letter-spacing:.5px;padding:4px 0;">${t('mkt.slot.frozen_label')}</div>
+            <div style="font-size:0.5rem;color:var(--gold);text-align:center;letter-spacing:0.03125rem;padding:0.25rem 0;">${t('mkt.slot.frozen_label')}</div>
             <button class="btn-slot-burn" style="border-color:rgba(201,168,76,.3);color:var(--gold2);" onclick="unlistFromSlot(${i})">${t('mkt.slot.btn_unlist')}</button>` : ''}
           </div>
         </div>
@@ -516,7 +516,7 @@ function renderSlots() {
       ${t('mkt.slot.btn_unlock', {n: unlocked+1, cost: UNLOCK_SLOT_COST})}
     </button>`;
   } else {
-    unlockRow.innerHTML = `<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">${t('mkt.slot.max_unlocked', {max: MAX_SLOTS})}</div>`;
+    unlockRow.innerHTML = `<div style="font-size:0.5625rem;color:var(--muted);text-align:center;padding:0.625rem;">${t('mkt.slot.max_unlocked', {max: MAX_SLOTS})}</div>`;
   }
 }
 
@@ -560,11 +560,11 @@ function burnAvatar(idx) {
   const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
       ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
-      <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
-      ${_ss ? `<div style="font-size:9px;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
-      <div style="font-size:9px;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
+      ${_ss ? `<div style="font-size:0.5625rem;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
+      <div style="font-size:0.5625rem;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
     </div>`;
 
   document.getElementById('burnOverlay').classList.add('open');

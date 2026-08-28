@@ -12,7 +12,7 @@
 }
 .coin-spend {
   position: fixed;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-family: 'Cinzel', serif;
   font-weight: 700;
   color: #e03030;
@@ -22,12 +22,12 @@
 }
 @keyframes coin-spend-fly {
   0%   { opacity: 1; transform: translateY(0) scale(1); }
-  60%  { opacity: 1; transform: translateY(-28px) scale(1.1); }
-  100% { opacity: 0; transform: translateY(-48px) scale(.8); }
+  60%  { opacity: 1; transform: translateY(-1.75rem) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-3rem) scale(.8); }
 }
 .coin-earn {
   position: fixed;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-family: 'Cinzel', serif;
   font-weight: 700;
   color: #e8c030;
@@ -42,46 +42,46 @@
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none; transition:opacity .3s;
-  padding:12px;
+  padding:0.75rem;
   overflow-y:auto;
 }
 #gameSelector.open { opacity:1; pointer-events:all; }
-#gameSelector > *:not(.gs-x-btn) { width:100%; max-width:460px; flex-shrink:0; }
+#gameSelector > *:not(.gs-x-btn) { width:100%; max-width:28.75rem; flex-shrink:0; }
 .gs-x-btn {
-  position:absolute; top:10px; right:10px;
+  position:absolute; top:0.625rem; right:0.625rem;
   background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);
-  color:#ccc; font-size:13px; width:28px; height:28px;
+  color:#ccc; font-size:0.8125rem; width:1.75rem; height:1.75rem;
   border-radius:50%; cursor:pointer; display:flex; align-items:center;
   justify-content:center; transition:all .15s; z-index:1; line-height:1;
 }
 .gs-x-btn:hover { background:rgba(231,76,60,.2); border-color:#e74c3c; color:#e74c3c; }
-.gs-title { font-family:'Cinzel',serif; font-size:8px; letter-spacing:4px; color:var(--muted); margin-bottom:4px; }
+.gs-title { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.25rem; color:var(--muted); margin-bottom:0.25rem; }
 .diff-pills-row {
-  display: flex; gap: 6px; margin-bottom: 12px;
+  display: flex; gap: 0.375rem; margin-bottom: 0.75rem;
   justify-content: center;
 }
 .diff-pill {
   flex: 1;
-  padding: 7px 4px 6px;
-  border-radius: 8px;
+  padding: 0.4375rem 0.25rem 0.375rem;
+  border-radius: 0.5rem;
   font-family: 'Cinzel', serif; font-weight: 700;
-  font-size: 6.5px; letter-spacing: 1.5px;
+  font-size: 0.40625rem; letter-spacing: 0.09375rem;
   cursor: pointer;
   border: 1px solid var(--border);
   background: rgba(255,255,255,.03);
   color: var(--muted);
   transition: all .18s ease;
   display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
+  align-items: center; gap: 0.1875rem;
   position: relative; overflow: hidden;
 }
 .diff-pill::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2px; opacity: 0; transition: opacity .18s;
+  height: 0.125rem; opacity: 0; transition: opacity .18s;
 }
-.diff-pill .dp-icon { font-size: 13px; line-height: 1; }
-.diff-pill .dp-lock { font-size: 11px; line-height: 1; }
+.diff-pill .dp-icon { font-size: 0.8125rem; line-height: 1; }
+.diff-pill .dp-lock { font-size: 0.6875rem; line-height: 1; }
 
 /* FÁCIL — verde */
 .diff-pill[data-tier="0"] { border-color: rgba(74,222,128,.2); }
@@ -90,7 +90,7 @@
 .diff-pill[data-tier="0"].active {
   border-color: #22c55e; color: #4ade80;
   background: linear-gradient(160deg, rgba(34,197,94,.2) 0%, rgba(11,9,22,.5) 100%);
-  box-shadow: 0 0 12px rgba(34,197,94,.2);
+  box-shadow: 0 0 0.75rem rgba(34,197,94,.2);
 }
 .diff-pill[data-tier="0"].active::after { opacity: 1; }
 
@@ -101,7 +101,7 @@
 .diff-pill[data-tier="1"].active {
   border-color: #3b82f6; color: #60a5fa;
   background: linear-gradient(160deg, rgba(59,130,246,.2) 0%, rgba(11,9,22,.5) 100%);
-  box-shadow: 0 0 12px rgba(59,130,246,.2);
+  box-shadow: 0 0 0.75rem rgba(59,130,246,.2);
 }
 .diff-pill[data-tier="1"].active::after { opacity: 1; }
 
@@ -112,7 +112,7 @@
 .diff-pill[data-tier="2"].active {
   border-color: #f97316; color: #fb923c;
   background: linear-gradient(160deg, rgba(249,115,22,.2) 0%, rgba(11,9,22,.5) 100%);
-  box-shadow: 0 0 12px rgba(249,115,22,.2);
+  box-shadow: 0 0 0.75rem rgba(249,115,22,.2);
 }
 .diff-pill[data-tier="2"].active::after { opacity: 1; }
 
@@ -123,25 +123,25 @@
 .diff-pill[data-tier="3"].active {
   border-color: var(--gold); color: var(--gold);
   background: linear-gradient(160deg, rgba(201,168,76,.2) 0%, rgba(11,9,22,.5) 100%);
-  box-shadow: 0 0 12px rgba(201,168,76,.2);
+  box-shadow: 0 0 0.75rem rgba(201,168,76,.2);
 }
 .diff-pill[data-tier="3"].active::after { opacity: 1; }
 
 .diff-pill.locked { opacity: .4; cursor: default; }
-.gs-grid  { display:flex; flex-direction:column; gap:7px; width:100%; }
+.gs-grid  { display:flex; flex-direction:column; gap:0.4375rem; width:100%; }
 .gs-btn {
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:0.625rem;
   background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.1);
-  border-radius:8px; padding:10px 12px; cursor:pointer;
+  border-radius:0.5rem; padding:0.625rem 0.75rem; cursor:pointer;
   transition:all .2s; font-family:'Cinzel',serif;
 }
 .gs-btn:hover { background:rgba(255,255,255,.07); border-color:var(--gold); }
-.gs-btn-icon { font-size:22px; flex-shrink:0; }
+.gs-btn-icon { font-size:1.375rem; flex-shrink:0; }
 .gs-btn-info { text-align:left; }
-.gs-btn-name { font-size:9px; font-weight:700; color:var(--gold-light); letter-spacing:1px; }
-.gs-btn-desc { font-size:7px; color:var(--muted); margin-top:2px; }
-.gs-btn-reward { font-size:7px; color:#7ab87a; margin-top:2px; }
-.gs-close { font-size:7px; color:var(--muted); cursor:pointer; margin-top:6px; letter-spacing:2px; font-family:'Cinzel',serif; }
+.gs-btn-name { font-size:0.5625rem; font-weight:700; color:var(--gold-light); letter-spacing:0.0625rem; }
+.gs-btn-desc { font-size:0.4375rem; color:var(--muted); margin-top:0.125rem; }
+.gs-btn-reward { font-size:0.4375rem; color:#7ab87a; margin-top:0.125rem; }
+.gs-close { font-size:0.4375rem; color:var(--muted); cursor:pointer; margin-top:0.375rem; letter-spacing:0.125rem; font-family:'Cinzel',serif; }
 .gs-close:hover { color:var(--gold); }
 
 /* ── SHARED MINI MODAL ── */
@@ -151,7 +151,7 @@
   background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none;
   transition:opacity .3s;
-  padding:12px;
+  padding:0.75rem;
   overflow-y:auto;
   box-sizing:border-box;
 }
@@ -161,37 +161,37 @@
 .modal-card {
   background:var(--surface);
   border:1px solid rgba(201,168,76,.15);
-  border-radius:14px;
-  width:100%; max-width:460px;
-  max-height:100%; /* % do backdrop (inset:0 + padding:12px) — zoom-safe */
+  border-radius:0.875rem;
+  width:100%; max-width:28.75rem;
+  max-height:100%; /* % do backdrop (inset:0 + padding:0.75rem) — zoom-safe */
   display:flex; flex-direction:column; align-items:center;
-  padding:14px; gap:0;
+  padding:0.875rem; gap:0;
   overflow:hidden;
   flex-shrink:0;
 }
 .mini-modal .modal-card .mini-title { text-align:center; }
 /* Modais com scroll interno já têm modal-scroll-body */
 .modal-card.has-scroll { padding:0; }
-.modal-card.has-scroll .modal-scroll-body { padding:10px 16px 16px; }
+.modal-card.has-scroll .modal-scroll-body { padding:0.625rem 1rem 1rem; }
 .mini-title {
-  font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px;
-  color:var(--gold); margin-bottom:4px; text-align:center;
+  font-family:'Cinzel',serif; font-size:0.5625rem; letter-spacing:0.1875rem;
+  color:var(--gold); margin-bottom:0.25rem; text-align:center;
 }
 .mini-sub {
-  font-size:7px; color:var(--muted); text-align:center; margin-bottom:12px; letter-spacing:1px;
+  font-size:0.4375rem; color:var(--muted); text-align:center; margin-bottom:0.75rem; letter-spacing:0.0625rem;
 }
 .mini-result-box {
-  text-align:center; margin:10px 0 6px;
-  font-family:'Cinzel',serif; font-size:12px; font-weight:900; letter-spacing:3px;
-  min-height:20px;
+  text-align:center; margin:0.625rem 0 0.375rem;
+  font-family:'Cinzel',serif; font-size:0.75rem; font-weight:900; letter-spacing:0.1875rem;
+  min-height:1.25rem;
 }
-.mini-result-box.win  { color:#7ab87a; text-shadow:0 0 12px rgba(122,184,122,.5); }
-.mini-result-box.lose { color:#e74c3c; text-shadow:0 0 12px rgba(231,76,60,.4); }
-.mini-reward-txt { font-size:8px; color:#7ab87a; text-align:center; min-height:14px; margin-bottom:8px; }
-.mini-btns { display:flex; gap:8px; margin-top:4px; }
+.mini-result-box.win  { color:#7ab87a; text-shadow:0 0 0.75rem rgba(122,184,122,.5); }
+.mini-result-box.lose { color:#e74c3c; text-shadow:0 0 0.75rem rgba(231,76,60,.4); }
+.mini-reward-txt { font-size:0.5rem; color:#7ab87a; text-align:center; min-height:0.875rem; margin-bottom:0.5rem; }
+.mini-btns { display:flex; gap:0.5rem; margin-top:0.25rem; }
 .mini-btn {
-  font-family:'Cinzel',serif; font-size:7px; font-weight:700; letter-spacing:1px;
-  padding:6px 14px; border-radius:4px; cursor:pointer; border:1px solid;
+  font-family:'Cinzel',serif; font-size:0.4375rem; font-weight:700; letter-spacing:0.0625rem;
+  padding:0.375rem 0.875rem; border-radius:0.25rem; cursor:pointer; border:1px solid;
   transition:all .15s;
 }
 .mini-btn.primary { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.1); }
@@ -201,18 +201,18 @@
 
 /* ── MEMÓRIA ELEMENTAL ── */
 /* Modal com scroll para acomodar grades grandes (tier Mestre = 20 cartas) */
-#memoriaModal { padding:12px; }
+#memoriaModal { padding:0.75rem; }
 #memoriaModal .modal-card {
   justify-content: flex-start;
   overflow-y: auto;
-  padding: 14px 14px 12px;
+  padding: 0.875rem 0.875rem 0.75rem;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   max-height: 100%; /* zoom-safe */
   box-sizing: border-box;
 }
-#memoriaModal .mini-title   { margin-bottom: 2px; flex-shrink: 0; }
-#memoriaModal .mini-sub     { margin-bottom: 8px; flex-shrink: 0; }
+#memoriaModal .mini-title   { margin-bottom: 0.125rem; flex-shrink: 0; }
+#memoriaModal .mini-sub     { margin-bottom: 0.5rem; flex-shrink: 0; }
 #memoriaModal .mem-info     { flex-shrink: 0; }
 #memoriaModal .mem-grid     { flex-shrink: 0; }
 #memoriaModal .mini-result-box { flex-shrink: 0; }
@@ -223,20 +223,20 @@
   position: sticky;
   bottom: 0;
   background: rgba(4,3,10,.97);
-  padding: 8px 0 2px;
-  margin-top: 6px;
+  padding: 0.5rem 0 0.125rem;
+  margin-top: 0.375rem;
   width: 100%;
   justify-content: center;
 }
 
 .mem-grid {
-  display:grid; gap:5px; margin-bottom:8px;
+  display:grid; gap:0.3125rem; margin-bottom:0.5rem;
 }
 .mem-card {
-  width:38px; height:38px; border-radius:6px;
+  width:2.375rem; height:2.375rem; border-radius:0.375rem;
   background:#0a0816; border:1px solid rgba(255,255,255,.12);
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; cursor:pointer;
+  font-size:1.125rem; cursor:pointer;
   transition:all .2s cubic-bezier(.34,1.4,.64,1);
   user-select:none;
 }
@@ -257,19 +257,19 @@
   animation:mem-wrong-shake .3s ease;
 }
 @keyframes mem-match-pop  { 0%{transform:scale(1.15)} 100%{transform:scale(1)} }
-@keyframes mem-wrong-shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
-.mem-info { font-size:7px; color:var(--muted); text-align:center; margin-bottom:8px; letter-spacing:1px; }
+@keyframes mem-wrong-shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-0.25rem)} 75%{transform:translateX(0.25rem)} }
+.mem-info { font-size:0.4375rem; color:var(--muted); text-align:center; margin-bottom:0.5rem; letter-spacing:0.0625rem; }
 
 /* ── SIMON SAYS ── */
 .simon-grid {
-  display:grid; grid-template-columns:repeat(4,44px);
-  gap:6px; margin-bottom:10px;
+  display:grid; grid-template-columns:repeat(4,2.75rem);
+  gap:0.375rem; margin-bottom:0.625rem;
 }
 .simon-btn {
-  width:44px; height:44px; border-radius:8px;
+  width:2.75rem; height:2.75rem; border-radius:0.5rem;
   border:2px solid rgba(255,255,255,.1);
   display:flex; align-items:center; justify-content:center;
-  font-size:20px; cursor:pointer; transition:all .15s;
+  font-size:1.25rem; cursor:pointer; transition:all .15s;
   background:rgba(255,255,255,.03);
   user-select:none;
 }
@@ -277,7 +277,7 @@
   transform:scale(1.15);
   border-color:var(--gold);
   background:rgba(201,168,76,.15);
-  box-shadow:0 0 14px rgba(201,168,76,.35);
+  box-shadow:0 0 0.875rem rgba(201,168,76,.35);
 }
 .simon-btn.player-hit {
   transform:scale(1.1);
@@ -285,31 +285,31 @@
   border-color:var(--raro);
 }
 .simon-btn:disabled { cursor:default; opacity:.7; }
-.simon-info { font-size:8px; color:var(--muted); text-align:center; margin-bottom:8px; letter-spacing:1px; }
+.simon-info { font-size:0.5rem; color:var(--muted); text-align:center; margin-bottom:0.5rem; letter-spacing:0.0625rem; }
 .simon-seq-display {
-  font-size:7px; color:var(--gold); text-align:center;
-  margin-bottom:6px; min-height:14px; letter-spacing:1px; font-family:'Cinzel',serif;
+  font-size:0.4375rem; color:var(--gold); text-align:center;
+  margin-bottom:0.375rem; min-height:0.875rem; letter-spacing:0.0625rem; font-family:'Cinzel',serif;
 }
 
 /* ── COIN SHOP ── */
 .coin-pkg {
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:0.5rem;
   background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
-  border-radius:6px; padding:8px 10px; cursor:pointer; transition:all .2s;
+  border-radius:0.375rem; padding:0.5rem 0.625rem; cursor:pointer; transition:all .2s;
 }
 .coin-pkg:hover  { border-color:var(--gold); background:rgba(201,168,76,.06); }
 .coin-pkg.disabled { opacity:.4; cursor:default; pointer-events:none; }
-.coin-pkg-icon   { font-size:18px; flex-shrink:0; }
+.coin-pkg-icon   { font-size:1.125rem; flex-shrink:0; }
 .coin-pkg-info   { flex:1; }
-.coin-pkg-name   { font-size:8px; font-weight:700; color:var(--gold-light); font-family:'Cinzel',serif; }
-.coin-pkg-desc   { font-size:7px; color:var(--muted); margin-top:1px; }
-.coin-pkg-bonus  { font-size:7px; color:#7ab87a; }
-.coin-pkg-price  { font-size:8px; color:var(--gold); font-family:'Cinzel',serif; font-weight:700; white-space:nowrap; }
+.coin-pkg-name   { font-size:0.5rem; font-weight:700; color:var(--gold-light); font-family:'Cinzel',serif; }
+.coin-pkg-desc   { font-size:0.4375rem; color:var(--muted); margin-top:0.0625rem; }
+.coin-pkg-bonus  { font-size:0.4375rem; color:#7ab87a; }
+.coin-pkg-price  { font-size:0.5rem; color:var(--gold); font-family:'Cinzel',serif; font-weight:700; white-space:nowrap; }
 
 /* ── WALLET BUTTON ── */
 .btn-wallet {
-  font-family:'Cinzel',serif; font-size:7px; font-weight:700; letter-spacing:1px;
-  padding:4px 8px; border-radius:4px; cursor:pointer;
+  font-family:'Cinzel',serif; font-size:0.4375rem; font-weight:700; letter-spacing:0.0625rem;
+  padding:0.25rem 0.5rem; border-radius:0.25rem; cursor:pointer;
   border:1px solid rgba(255,255,255,.2); color:var(--muted);
   background:rgba(255,255,255,.04); transition:border-color .2s, background .2s;
   white-space:nowrap;
@@ -320,23 +320,23 @@
 
 /* ── SHOP ── */
 .shop-item {
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:0.625rem;
   background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
-  border-radius:6px; padding:9px 11px; cursor:pointer; transition:all .2s;
+  border-radius:0.375rem; padding:0.5625rem 0.6875rem; cursor:pointer; transition:all .2s;
   position:relative;
 }
 .shop-item:hover  { border-color:var(--gold); background:rgba(201,168,76,.06); }
 .shop-item.disabled { opacity:.4; cursor:default; pointer-events:none; }
-.shop-item-icon  { font-size:22px; flex-shrink:0; }
+.shop-item-icon  { font-size:1.375rem; flex-shrink:0; }
 .shop-item-info  { flex:1; }
-.shop-item-name  { font-size:9px; font-weight:700; color:var(--gold-light); font-family:'Cinzel',serif; }
-.shop-item-desc  { font-size:7px; color:var(--muted); margin-top:2px; }
-.shop-item-effect { font-size:7px; color:#7ab87a; margin-top:1px; }
+.shop-item-name  { font-size:0.5625rem; font-weight:700; color:var(--gold-light); font-family:'Cinzel',serif; }
+.shop-item-desc  { font-size:0.4375rem; color:var(--muted); margin-top:0.125rem; }
+.shop-item-effect { font-size:0.4375rem; color:#7ab87a; margin-top:0.0625rem; }
 .shop-item-price {
-  font-size:9px; font-weight:700; color:var(--gold);
+  font-size:0.5625rem; font-weight:700; color:var(--gold);
   font-family:'Cinzel',serif; text-align:right; white-space:nowrap;
 }
-.shop-item-discount { font-size:6px; color:#7ab87a; text-align:right; }
+.shop-item-discount { font-size:0.375rem; color:#7ab87a; text-align:right; }
 
 /* ── PHASE UP OVERLAY ── */
 #phaseUpOverlay {
@@ -351,22 +351,22 @@
 }
 @keyframes pu-bg-flash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
 .pu-text {
-  font-family:'Cinzel',serif; font-size:11px; font-weight:900; letter-spacing:4px;
-  color:#fff; text-shadow:0 0 20px rgba(90,180,232,.9), 0 0 40px rgba(90,180,232,.5);
+  font-family:'Cinzel',serif; font-size:0.6875rem; font-weight:900; letter-spacing:0.25rem;
+  color:#fff; text-shadow:0 0 1.25rem rgba(90,180,232,.9), 0 0 2.5rem rgba(90,180,232,.5);
   opacity:0; transform:scale(.5);
   animation: pu-text-pop .5s cubic-bezier(.34,1.7,.64,1) .15s forwards;
   z-index:1;
 }
 @keyframes pu-text-pop { to { opacity:1; transform:scale(1); } }
 .pu-fase {
-  font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px;
+  font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.1875rem;
   color:var(--raro); opacity:0;
   animation: pu-sub-in .4s ease .4s forwards;
-  z-index:1; margin-top:4px;
+  z-index:1; margin-top:0.25rem;
 }
 @keyframes pu-sub-in { to { opacity:1; } }
 .pu-ring {
-  position:absolute; width:120px; height:120px; border-radius:50%;
+  position:absolute; width:7.5rem; height:7.5rem; border-radius:50%;
   border:2px solid rgba(90,180,232,.6);
   animation: pu-ring-expand .8s ease-out forwards;
 }
@@ -386,19 +386,19 @@
 
 /* ── MARKET ── */
 .mkt-item {
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:0.5rem;
   background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
-  border-radius:6px; padding:8px 10px; transition:all .2s;
+  border-radius:0.375rem; padding:0.5rem 0.625rem; transition:all .2s;
 }
 .mkt-item:hover { border-color:var(--gold); }
-.mkt-item-icon  { font-size:18px; flex-shrink:0; }
+.mkt-item-icon  { font-size:1.125rem; flex-shrink:0; }
 .mkt-item-info  { flex:1; }
-.mkt-item-name  { font-size:8px; font-weight:700; font-family:'Cinzel',serif; }
-.mkt-item-sub   { font-size:6px; color:var(--muted); margin-top:1px; }
-.mkt-item-price { font-size:9px; color:var(--gold); font-family:'Cinzel',serif; font-weight:700; }
+.mkt-item-name  { font-size:0.5rem; font-weight:700; font-family:'Cinzel',serif; }
+.mkt-item-sub   { font-size:0.375rem; color:var(--muted); margin-top:0.0625rem; }
+.mkt-item-price { font-size:0.5625rem; color:var(--gold); font-family:'Cinzel',serif; font-weight:700; }
 .mkt-buy-btn {
-  font-family:'Cinzel',serif; font-size:6px; font-weight:700; letter-spacing:1px;
-  padding:4px 8px; border-radius:3px; cursor:pointer;
+  font-family:'Cinzel',serif; font-size:0.375rem; font-weight:700; letter-spacing:0.0625rem;
+  padding:0.25rem 0.5rem; border-radius:0.1875rem; cursor:pointer;
   border:1px solid var(--gold); color:var(--gold);
   background:rgba(201,168,76,.08); transition:all .2s; white-space:nowrap;
 }
@@ -407,13 +407,13 @@
 
 /* ── CONNECT WALLET BUTTON ── */
 .btn-connect-wallet {
-  font-family:'Cinzel',serif; font-size:7px; font-weight:700; letter-spacing:1px;
-  padding:8px 18px; border-radius:4px; cursor:pointer; position:relative; overflow:hidden;
+  font-family:'Cinzel',serif; font-size:0.4375rem; font-weight:700; letter-spacing:0.0625rem;
+  padding:0.5rem 1.125rem; border-radius:0.25rem; cursor:pointer; position:relative; overflow:hidden;
   border:1px solid #5ab4e8; color:#5ab4e8;
   background:rgba(90,180,232,.08); transition:all .2s;
   white-space:nowrap;
 }
-.btn-connect-wallet:hover { background:rgba(90,180,232,.2); box-shadow:0 0 14px rgba(90,180,232,.25); color:#7ecfff; border-color:#7ecfff; }
+.btn-connect-wallet:hover { background:rgba(90,180,232,.2); box-shadow:0 0 0.875rem rgba(90,180,232,.25); color:#7ecfff; border-color:#7ecfff; }
 .btn-connect-wallet:active { transform:scale(.97); }
 
 /* ── OS ITENS EQUIPADOS ORBITAM A CRIATURA ──
@@ -433,27 +433,27 @@
 }
 .orbe-item {
   position:absolute; left:0; top:0;
-  width:26px; height:26px; margin:-13px 0 0 -13px;
+  width:1.625rem; height:1.625rem; margin:-0.8125rem 0 0 -0.8125rem;
   animation:orbe-volta var(--orbe-dur,14s) linear infinite;
 }
 .orbe-item i {
   display:flex; align-items:center; justify-content:center;
   width:100%; height:100%; border-radius:50%;
-  font-style:normal; font-size:13px;
+  font-style:normal; font-size:0.8125rem;
   background:radial-gradient(circle at 35% 35%, rgba(255,255,255,.2), rgba(0,0,0,.5));
   border:1px solid rgba(201,168,76,.5);
-  box-shadow:0 0 10px rgba(201,168,76,.35), inset 0 0 6px rgba(0,0,0,.5);
+  box-shadow:0 0 0.625rem rgba(201,168,76,.35), inset 0 0 0.375rem rgba(0,0,0,.5);
   animation:orbe-fundo var(--orbe-dur,14s) ease-in-out infinite;
 }
 /* Prestes a expirar: deixa de ser dourado e chama a atenção */
 .orbe-item.a-expirar i {
   border-color:rgba(232,160,48,.8);
-  box-shadow:0 0 12px rgba(232,160,48,.6), inset 0 0 6px rgba(0,0,0,.5);
+  box-shadow:0 0 0.75rem rgba(232,160,48,.6), inset 0 0 0.375rem rgba(0,0,0,.5);
 }
 
 @keyframes orbe-volta {
-  from { transform:rotate(0deg)   translateX(var(--orbe-raio,62px)) rotate(0deg); }
-  to   { transform:rotate(360deg) translateX(var(--orbe-raio,62px)) rotate(-360deg); }
+  from { transform:rotate(0deg)   translateX(var(--orbe-raio,3.875rem)) rotate(0deg); }
+  to   { transform:rotate(360deg) translateX(var(--orbe-raio,3.875rem)) rotate(-360deg); }
 }
 /* A meia-volta é a passagem POR TRÁS: encolhe e apaga-se. */
 @keyframes orbe-fundo {
@@ -465,16 +465,16 @@
    roda à volta do avatar, sem perder a informação. */
 @media (prefers-reduced-motion: reduce) {
   .orbe-item, .orbe-item i { animation:none; }
-  .orbe-item   { transform:rotate(var(--orbe-fixa,0deg)) translateX(var(--orbe-raio,62px)); }
+  .orbe-item   { transform:rotate(var(--orbe-fixa,0deg)) translateX(var(--orbe-raio,3.875rem)); }
   .orbe-item i { opacity:.95; }
 }
-.item-expiry-warn { color:#e8a030; font-size:6px; text-align:center; margin-top:2px; }
+.item-expiry-warn { color:#e8a030; font-size:0.375rem; text-align:center; margin-top:0.125rem; }
 
 /* ── MODAIS COM SCROLL (market, coinshop, itemInv, eggInv) ──
    height explícito no card é OBRIGATÓRIO para flex:1; min-height:0
    funcionar no scroll body interno. max-height sozinho não chega. */
 #coinShopModal, #itemInvModal, #eggInvModal {
-  padding:12px; justify-content:center; align-items:center; overflow:hidden;
+  padding:0.75rem; justify-content:center; align-items:center; overflow:hidden;
 }
 #coinShopModal .modal-card,
 #itemInvModal .modal-card,
@@ -492,61 +492,61 @@
 #itemInvModal .modal-scroll-body,
 #eggInvModal .modal-scroll-body {
   flex:1; min-height:0; overflow-y:auto;
-  width:100%; padding:10px 16px 16px; box-sizing:border-box;
+  width:100%; padding:0.625rem 1rem 1rem; box-sizing:border-box;
 }
 
-.mkt-header { width:100%; padding:12px 14px 10px; border-bottom:1px solid rgba(201,168,76,.18); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(201,168,76,.03); }
-.mkt-header .mini-title { margin:0; font-size:10px; }
-.mkt-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:10px 14px 14px; box-sizing:border-box; display:flex; flex-direction:column; gap:8px; }
+.mkt-header { width:100%; padding:0.75rem 0.875rem 0.625rem; border-bottom:1px solid rgba(201,168,76,.18); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(201,168,76,.03); }
+.mkt-header .mini-title { margin:0; font-size:0.625rem; }
+.mkt-body { flex:1; min-height:0; overflow-y:auto; width:100%; padding:0.625rem 0.875rem 0.875rem; box-sizing:border-box; display:flex; flex-direction:column; gap:0.5rem; }
 
 /* hatchConfirmModal e simonModal — conteúdo fixo */
 #hatchConfirmModal, #simonModal, #jkpModal { overflow:hidden; }
 
 /* ── MODAL HEADER FIXO ── */
-.modal-header { width:100%; padding:12px 16px 10px; border-bottom:1px solid rgba(201,168,76,.15); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(4,3,10,.97); }
+.modal-header { width:100%; padding:0.75rem 1rem 0.625rem; border-bottom:1px solid rgba(201,168,76,.15); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(4,3,10,.97); }
 .modal-header .mini-title { margin:0; }
 
 /* ── JOGO DA VELHA ── */
-#velhaModal { padding:12px; }
+#velhaModal { padding:0.75rem; }
 #velhaModal .modal-card { justify-content:flex-start; overflow-y:auto; max-height:100%; box-sizing:border-box; }
-#velhaModal .mini-title   { margin-bottom:2px; }
-#velhaModal .mini-sub     { margin-bottom:6px; }
-#velhaModal .mini-result-box { margin-top:6px; }
-#velhaModal .mini-btns    { margin-top:8px; }
-.velha-grid { display:grid; grid-template-columns:repeat(3,44px); gap:5px; margin:6px auto 8px; width:fit-content; }
-.velha-cell { width:44px; height:44px; border-radius:8px; border:1px solid rgba(255,255,255,.15); background:#0a0816; font-family:'Cinzel',serif; font-size:20px; font-weight:900; cursor:pointer; transition:all .15s ease; display:flex; align-items:center; justify-content:center; color:var(--text); }
+#velhaModal .mini-title   { margin-bottom:0.125rem; }
+#velhaModal .mini-sub     { margin-bottom:0.375rem; }
+#velhaModal .mini-result-box { margin-top:0.375rem; }
+#velhaModal .mini-btns    { margin-top:0.5rem; }
+.velha-grid { display:grid; grid-template-columns:repeat(3,2.75rem); gap:0.3125rem; margin:0.375rem auto 0.5rem; width:fit-content; }
+.velha-cell { width:2.75rem; height:2.75rem; border-radius:0.5rem; border:1px solid rgba(255,255,255,.15); background:#0a0816; font-family:'Cinzel',serif; font-size:1.25rem; font-weight:900; cursor:pointer; transition:all .15s ease; display:flex; align-items:center; justify-content:center; color:var(--text); }
 .velha-cell:not(:disabled):hover { border-color:var(--gold); background:rgba(201,168,76,.08); transform:scale(1.06); }
 .velha-cell.velha-x { color:var(--raro);  border-color:rgba(90,180,232,.3); }
 .velha-cell.velha-o { color:#e8a03a;      border-color:rgba(232,160,58,.3); }
-.velha-cell.velha-win { border-color:var(--gold) !important; background:rgba(201,168,76,.15) !important; box-shadow:0 0 14px rgba(201,168,76,.35); animation:velha-win-pulse .5s ease infinite alternate; }
-@keyframes velha-win-pulse { from{box-shadow:0 0 8px rgba(201,168,76,.3)} to{box-shadow:0 0 20px rgba(201,168,76,.6)} }
+.velha-cell.velha-win { border-color:var(--gold) !important; background:rgba(201,168,76,.15) !important; box-shadow:0 0 0.875rem rgba(201,168,76,.35); animation:velha-win-pulse .5s ease infinite alternate; }
+@keyframes velha-win-pulse { from{box-shadow:0 0 0.5rem rgba(201,168,76,.3)} to{box-shadow:0 0 1.25rem rgba(201,168,76,.6)} }
 .velha-cell:disabled { cursor:default; }
 
 /* ── CATALOG ITEMS ── */
-.mkt-sell-form { border:1px solid rgba(201,168,76,.2); border-radius:8px; padding:12px; background:rgba(201,168,76,.03); margin-top:4px; }
-.mkt-sell-form-label { font-family:'Cinzel',serif; font-size:6px; color:var(--muted); letter-spacing:1.5px; margin-bottom:6px; display:block; }
-.mkt-price-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.mkt-price-input { flex:1; max-width:90px; background:#0d0a1a; border:1px solid var(--border); border-radius:6px; color:var(--gold); font-family:'Cinzel',serif; font-size:10px; padding:5px 8px; outline:none; }
+.mkt-sell-form { border:1px solid rgba(201,168,76,.2); border-radius:0.5rem; padding:0.75rem; background:rgba(201,168,76,.03); margin-top:0.25rem; }
+.mkt-sell-form-label { font-family:'Cinzel',serif; font-size:0.375rem; color:var(--muted); letter-spacing:0.09375rem; margin-bottom:0.375rem; display:block; }
+.mkt-price-row { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.625rem; }
+.mkt-price-input { flex:1; max-width:5.625rem; background:#0d0a1a; border:1px solid var(--border); border-radius:0.375rem; color:var(--gold); font-family:'Cinzel',serif; font-size:0.625rem; padding:0.3125rem 0.5rem; outline:none; }
 .mkt-price-input:focus { border-color:var(--gold); }
-.mkt-action-row { display:flex; gap:6px; }
-.mkt-btn-confirm { flex:1; padding:7px; cursor:pointer; font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; border:1px solid #7ab87a; border-radius:6px; background:rgba(122,184,122,.12); color:#7ab87a; transition:all .2s; font-weight:700; }
+.mkt-action-row { display:flex; gap:0.375rem; }
+.mkt-btn-confirm { flex:1; padding:0.4375rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.0625rem; border:1px solid #7ab87a; border-radius:0.375rem; background:rgba(122,184,122,.12); color:#7ab87a; transition:all .2s; font-weight:700; }
 .mkt-btn-confirm:hover { background:rgba(122,184,122,.25); }
-.mkt-btn-cancel { flex:1; padding:7px; cursor:pointer; font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; border:1px solid rgba(255,255,255,.1); border-radius:6px; background:transparent; color:var(--muted); transition:all .2s; }
+.mkt-btn-cancel { flex:1; padding:0.4375rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.0625rem; border:1px solid rgba(255,255,255,.1); border-radius:0.375rem; background:transparent; color:var(--muted); transition:all .2s; }
 .mkt-btn-cancel:hover { border-color:#e74c3c; color:#e74c3c; }
-.mkt-catalog-card { border-radius:10px; padding:14px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.07); transition:border-color .2s; }
+.mkt-catalog-card { border-radius:0.625rem; padding:0.875rem; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.07); transition:border-color .2s; }
 .mkt-catalog-card:hover { border-color:rgba(201,168,76,.25); background:rgba(201,168,76,.03); }
-.mkt-catalog-top { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-.mkt-catalog-emoji { font-size:24px; flex-shrink:0; }
+.mkt-catalog-top { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.625rem; }
+.mkt-catalog-emoji { font-size:1.5rem; flex-shrink:0; }
 .mkt-catalog-info { flex:1; }
-.mkt-catalog-name { font-family:'Cinzel',serif; font-size:8.5px; font-weight:700; letter-spacing:1px; }
-.mkt-catalog-type { font-size:6.5px; color:var(--muted); margin-top:3px; }
-.mkt-catalog-price { font-family:'Cinzel',serif; font-size:12px; color:var(--gold); font-weight:700; text-align:right; flex-shrink:0; }
-.mkt-catalog-desc { font-size:7px; color:#887799; margin-bottom:7px; line-height:1.6; }
-.mkt-catalog-effect { font-size:7px; color:#5ab4e8; margin-bottom:12px; padding:6px 10px; border-left:2px solid #1a6080; background:rgba(90,180,232,.05); border-radius:0 4px 4px 0; line-height:1.5; }
-.mkt-catalog-footer { display:flex; align-items:center; gap:8px; }
-.mkt-owned-badge { flex:1; text-align:center; padding:6px; font-size:6px; font-family:'Cinzel',serif; letter-spacing:1px; color:#7ab87a; border:1px solid rgba(122,184,122,.3); border-radius:6px; background:rgba(122,184,122,.05); }
-.mkt-duration-note { font-size:5.5px; color:var(--muted); }
-.mkt-catalog-buy { flex:1; padding:7px; cursor:pointer; font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; font-weight:700; border:1px solid var(--gold); border-radius:6px; background:rgba(201,168,76,.1); color:var(--gold); transition:all .2s; }
+.mkt-catalog-name { font-family:'Cinzel',serif; font-size:0.53125rem; font-weight:700; letter-spacing:0.0625rem; }
+.mkt-catalog-type { font-size:0.40625rem; color:var(--muted); margin-top:0.1875rem; }
+.mkt-catalog-price { font-family:'Cinzel',serif; font-size:0.75rem; color:var(--gold); font-weight:700; text-align:right; flex-shrink:0; }
+.mkt-catalog-desc { font-size:0.4375rem; color:#887799; margin-bottom:0.4375rem; line-height:1.6; }
+.mkt-catalog-effect { font-size:0.4375rem; color:#5ab4e8; margin-bottom:0.75rem; padding:0.375rem 0.625rem; border-left:2px solid #1a6080; background:rgba(90,180,232,.05); border-radius:0 0.25rem 0.25rem 0; line-height:1.5; }
+.mkt-catalog-footer { display:flex; align-items:center; gap:0.5rem; }
+.mkt-owned-badge { flex:1; text-align:center; padding:0.375rem; font-size:0.375rem; font-family:'Cinzel',serif; letter-spacing:0.0625rem; color:#7ab87a; border:1px solid rgba(122,184,122,.3); border-radius:0.375rem; background:rgba(122,184,122,.05); }
+.mkt-duration-note { font-size:0.34375rem; color:var(--muted); }
+.mkt-catalog-buy { flex:1; padding:0.4375rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.0625rem; font-weight:700; border:1px solid var(--gold); border-radius:0.375rem; background:rgba(201,168,76,.1); color:var(--gold); transition:all .2s; }
 .mkt-catalog-buy:hover { background:rgba(201,168,76,.25); }
 .mkt-catalog-buy:disabled { opacity:.35; cursor:not-allowed; }
 
@@ -558,7 +558,7 @@
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
   background:rgba(4,3,10,.95);
   opacity:0; pointer-events:none; transition:opacity .3s;
-  padding:12px; overflow-y:auto;
+  padding:0.75rem; overflow-y:auto;
   overflow-y:auto; overflow-x:hidden;
 }
 #arenaModal.open,
@@ -569,4 +569,4 @@
 #roubaMontModal > *,
 #batalhaNavalModal > *,
 #jkpModal > *,
-#minaModal > * { width:100%; max-width:480px; }
+#minaModal > * { width:100%; max-width:30rem; }
