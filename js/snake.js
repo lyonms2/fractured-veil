@@ -110,6 +110,7 @@ function _snakeTick() {
 
   if(next.x === _snakeFood.x && next.y === _snakeFood.y) {
     _snakeScore++;
+    if (typeof miniAvatarReagir === 'function') miniAvatarReagir('bom');
     _snakeUpdateScore();
     _snakePlaceFood();
     playSound && playSound('feed');
@@ -262,6 +263,7 @@ function _snakeEnd() {
       const _snBallBonus = [1, 2, 3, 4];
       const _cappedScore = Math.min(_snakeScore, maxScore);
       const _ballBonus   = Math.round(_cappedScore * _snBallBonus[d.tier] * rarityBonus().moedas);
+      if (typeof miniAvatarReagir === 'function') miniAvatarReagir(cleared ? 'festa' : 'mau');
       const r = miniReward(frac * xpMult, frac * _snCoinMults[d.tier], cleared ? 3 : 1, cleared);
       if(_ballBonus > 0) earnCoins(_ballBonus);
 

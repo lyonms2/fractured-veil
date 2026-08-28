@@ -597,3 +597,86 @@
   #gameSelector .diff-pill .dp-icon { font-size: 0.625rem; }
   #gameSelector .diff-pill .dp-lock { font-size: 0.53125rem; }
 }
+
+/* ══════════════════════════════════════
+   O AVATAR NOS PASSATEMPOS
+
+   Uma faixa por cima do tabuleiro: o bicho à esquerda, o estado do
+   jogo à direita. Ver o comentário do js/mini-avatar.js.
+══════════════════════════════════════ */
+.mini-companheiro {
+  display:flex; align-items:center; gap:0.625rem;
+  width:100%; margin-bottom:0.625rem;
+  padding:0.4375rem 0.625rem;
+  border-radius:0.5rem;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(160deg, rgba(167,139,250,.07) 0%, rgba(255,255,255,.02) 100%);
+}
+.mini-av {
+  position:relative; flex-shrink:0;
+  width:2.875rem; height:2.875rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.mini-av-corpo { display:flex; animation:idle-float 3s ease-in-out infinite; }
+.mini-av-corpo svg { display:block; }
+
+/* As reacções tomam a animação toda enquanto duram, e o idle-float
+   volta sozinho quando a classe sai. */
+.mini-av-corpo.reage-bom   { animation:mini-av-salto .55s cubic-bezier(.34,1.6,.64,1); }
+.mini-av-corpo.reage-mau   { animation:mini-av-encolhe .5s ease-in-out; }
+.mini-av-corpo.reage-festa { animation:mini-av-festa .9s ease-in-out; }
+
+@keyframes mini-av-salto {
+  0%   { transform:translateY(0) scale(1); }
+  35%  { transform:translateY(-0.5rem) scale(1.12); }
+  60%  { transform:translateY(0.0625rem) scale(.96); }
+  100% { transform:translateY(0) scale(1); }
+}
+@keyframes mini-av-encolhe {
+  0%,100% { transform:scale(1) rotate(0); }
+  30%     { transform:scale(.88) rotate(-6deg); }
+  60%     { transform:scale(.92) rotate(5deg); }
+}
+@keyframes mini-av-festa {
+  0%   { transform:translateY(0) rotate(0) scale(1); }
+  25%  { transform:translateY(-0.625rem) rotate(-10deg) scale(1.15); }
+  50%  { transform:translateY(0) rotate(8deg) scale(1); }
+  75%  { transform:translateY(-0.375rem) rotate(-5deg) scale(1.08); }
+  100% { transform:translateY(0) rotate(0) scale(1); }
+}
+
+/* Os emojis que sobem. Nascem no topo do bicho e apagam-se a subir. */
+.mini-av-borbulha {
+  position:absolute; inset:0; pointer-events:none; overflow:visible;
+}
+.mini-av-borbulha span {
+  position:absolute; left:50%; top:-0.125rem;
+  font-size:0.6875rem; line-height:1;
+  animation:mini-av-sobe .9s ease-out forwards;
+}
+@keyframes mini-av-sobe {
+  0%   { opacity:0; transform:translate(-50%,0) scale(.6); }
+  20%  { opacity:1; transform:translate(calc(-50% + var(--dx,0px)),-0.375rem) scale(1); }
+  100% { opacity:0; transform:translate(calc(-50% + var(--dx,0px)),-1.75rem) scale(.9); }
+}
+
+/* O estado do jogo, à direita do bicho. Substitui as linhas soltas de
+   .mem-info / .simon-info, que ficavam a flutuar sem moldura. */
+.mini-estado { flex:1; min-width:0; text-align:left; }
+.mini-estado .mini-estado-jogo {
+  font-family:'Cinzel',serif; font-size:0.4375rem;
+  letter-spacing:0.09375rem; color:var(--gold-light);
+}
+.mini-estado .mini-estado-linha {
+  font-size:0.4375rem; color:var(--muted);
+  margin-top:0.125rem; letter-spacing:0.0625rem;
+}
+
+/* O painel é moldura, como o seletor: não segue o 1,5x do desktop. */
+@media(min-width:681px) {
+  .mini-companheiro { padding:0.3125rem 0.5rem; margin-bottom:0.5rem; gap:0.5rem; }
+  .mini-av { width:2.25rem; height:2.25rem; }
+  .mini-estado .mini-estado-jogo  { font-size:0.34375rem; }
+  .mini-estado .mini-estado-linha { font-size:0.34375rem; }
+  .mini-av-borbulha span { font-size:0.53125rem; }
+}

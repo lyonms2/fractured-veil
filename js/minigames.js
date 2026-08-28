@@ -48,12 +48,14 @@ function memFlip(i) {
         document.getElementById('mc'+a).classList.replace('flipped','matched');
         document.getElementById('mc'+b).classList.replace('flipped','matched');
         memMatched++;
+        if (typeof miniAvatarReagir === 'function') miniAvatarReagir('bom');
         memFlipped = []; memLocked = false;
         updateMemInfo();
         if(memMatched === memCards.length / 2) memVictory();
       }, 400);
     } else {
       memErrors++;
+      if (typeof miniAvatarReagir === 'function') miniAvatarReagir('mau');
       setTimeout(() => {
         playSound('card_error');
         ['mc'+a,'mc'+b].forEach(id => {
@@ -77,6 +79,7 @@ function updateMemInfo() {
 }
 
 function memVictory() {
+  if (typeof miniAvatarReagir === 'function') miniAvatarReagir('festa');
   playSound('win');
   const _dMem    = miniDifficulty();
   const _baseMem = [0.65, 0.75, 0.85, 1.0][_dMem.tier];
@@ -177,11 +180,13 @@ function simonPlayerClick(idx) {
 
   if(idx !== simonSeq[simonStep]) {
     playSound('simon_wrong');
+    if (typeof miniAvatarReagir === 'function') miniAvatarReagir('mau');
     simonGameOver(); return;
   }
   playSimonTone(idx % 5);
   simonStep++;
   simonCorrectHits++;
+  if (typeof miniAvatarReagir === 'function') miniAvatarReagir('bom');
   if(simonStep === simonSeq.length) {
     simonPlayerTurn = false;
     SIMON_ELEMS.forEach((_, i) => document.getElementById('sb'+i).disabled = true);
@@ -191,6 +196,7 @@ function simonPlayerClick(idx) {
 }
 
 function simonVictory() {
+  if (typeof miniAvatarReagir === 'function') miniAvatarReagir('festa');
   playSound('win');
   const d       = miniDifficulty();
   const maxRounds = d.tier === 0 ? 4 : d.tier === 1 ? 6 : d.tier === 2 ? 8 : 10;

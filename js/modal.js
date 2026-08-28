@@ -173,10 +173,16 @@ function closeGameSelector() {
 
 function openMinigame(type) {
   ModalManager.close('gameSelector');
-  if(type === 'memoria') { ModalManager.open('memoriaModal'); startMemoria(); return; }
-  if(type === 'simon')   { ModalManager.open('simonModal');   startSimon();   return; }
+  // O avatar entra com o jogo. Ver js/mini-avatar.js.
+  const comAvatar = (modalId, avId, arranque) => {
+    ModalManager.open(modalId);
+    if (typeof miniAvatarMontar === 'function') miniAvatarMontar(avId);
+    arranque();
+  };
+  if(type === 'memoria') { comAvatar('memoriaModal', 'memAvatar', startMemoria); return; }
+  if(type === 'simon')   { comAvatar('simonModal',   'simonAvatar', startSimon); return; }
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
-  if(type === 'snake')   { ModalManager.open('snakeModal');   startSnake();   return; }
+  if(type === 'snake')   { comAvatar('snakeModal',   'snakeAvatar', startSnake); return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
 }
 
@@ -187,6 +193,12 @@ function openMiniModal(id) {
 
 const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal'];
 function closeMiniModal(id) {
+  // Tira o painel da lista de quem recebe reacções. Sem isto, um jogo
+  // fechado continuava a ser notificado pelo jogo seguinte.
+  if (typeof miniAvatarDesmontar === 'function') {
+    miniAvatarDesmontar({ memoriaModal:'memAvatar', simonModal:'simonAvatar',
+                          snakeModal:'snakeAvatar' }[id] || '');
+  }
   ModalManager.close(id);
   if(_PVE_MODALS.includes(id) && typeof openGameSelector === 'function') {
     openGameSelector(); gsSetTab('pve');
