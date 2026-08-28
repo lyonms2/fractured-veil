@@ -261,9 +261,13 @@
 
   #snakeCanvas {
     /* Eram 16.25rem, 390px no desktop — quase metade da altura da tela
-       para um tabuleiro de cobra, e desproporcionado ao lado do avatar. */
-    width:  min(11.25rem, calc(100vh - 15rem)) !important;
-    height: min(11.25rem, calc(100vh - 15rem)) !important;
+       para um tabuleiro de cobra. Encolhi para 11.25rem, 270px, e ficou
+       pequeno demais: numa tela larga era um selo no meio do vazio.
+       15rem, 360px, é o meio-termo. O calc continua a mandar em telas
+       curtas — abaixo de 735px de altura o tabuleiro cede sozinho, que é
+       o que impede a janela de passar da tela. */
+    width:  min(15rem, calc(100vh - 15rem)) !important;
+    height: min(15rem, calc(100vh - 15rem)) !important;
   }
 
   /* D-pad desnecessário no desktop — teclado/WASD disponível */

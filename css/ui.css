@@ -438,26 +438,32 @@
   .arena-aguardando   { font-size: 0.5625rem !important; }
 
   /* ── PVE: textos e botões ──
-     Este bloco AUMENTAVA os passatempos no desktop: título a 22,5px,
-     caixa de resultado a 33, cartão de 690px de largura. Fazia sentido
-     no mundo do html{zoom:1.5}, onde tudo era grande e estas janelas
-     acompanhavam. Hoje o resultado é uma janela desproporcionada para
-     um tabuleiro de oito cartas.
-     A janela de um passatempo é moldura: acompanha o tabuleiro, não o
-     tela. */
+     Este bloco AUMENTAVA os passatempos no desktop: cartão de 690px,
+     título a 22,5px. Fazia sentido no mundo do html{zoom:1.5}, onde tudo
+     era grande e estas janelas acompanhavam.
+     Ao tirar o zoom encolhi para 17rem — 408px — e passei do ponto na
+     direção contrária: num monitor de 1575px de largura sobrava tela por
+     todos os lados e o tabuleiro ficava do tamanho de um selo.
+     Agora são 23rem, 552px. A regra continua a mesma — a janela é
+     moldura e acompanha o tabuleiro, não a tela — só que o tabuleiro
+     cresceu com ela: carta da memória de 66 para 90px, botão do simon de
+     75 para 102, tabuleiro do snake de 270 para 360.
+     O teto é a altura: o snake é o mais alto dos três e continua preso
+     ao calc(100vh - 15rem) do css/snake.css, que o encolhe sozinho em
+     telas curtas. */
   #memoriaModal .modal-card,
   #simonModal   .modal-card,
-  #snakeModal   .modal-card { max-width: 17rem !important; }
+  #snakeModal   .modal-card { max-width: 23rem !important; }
 
-  .mini-title      { font-size: 0.5rem !important; letter-spacing: 0.1875rem !important; margin-bottom: 0.375rem !important; }
-  .mini-sub        { font-size: 0.375rem !important; margin-bottom: 0.5rem !important; }
+  .mini-title      { font-size: 0.625rem !important; letter-spacing: 0.1875rem !important; margin-bottom: 0.375rem !important; }
+  .mini-sub        { font-size: 0.4375rem !important; margin-bottom: 0.5rem !important; }
   .mini-btn        { font-size: 0.40625rem !important; padding: 0.4375rem 1rem !important; border-radius: 0.375rem !important; }
   .mini-btns       { gap: 0.5rem !important; margin-top: 0.625rem !important; }
   /* A margem de baixo era 0.3125rem e tinha !important, portanto ganhava
      a do modals.css. Com o texto do snake a quebrar em duas linhas e o
      brilho de 18px por cima, 7,5px de folga nao chegavam. */
-  .mini-result-box { font-size: 0.75rem !important; margin: 0.5rem 0 0.75rem !important; }
-  .mini-reward-txt { font-size: 0.4375rem !important; }
+  .mini-result-box { font-size: 0.875rem !important; margin: 0.5rem 0 0.75rem !important; }
+  .mini-reward-txt { font-size: 0.5rem !important; }
 
   /* ── Jokenpô ── */
   .jkp-title    { font-size: 0.75rem !important; letter-spacing: 0.25rem !important; margin-bottom: 1rem !important; }
@@ -475,14 +481,14 @@
      Era 5rem de carta com 2rem de letra: 120x120px com 48 de fonte no
      desktop. Ao lado do avatar, que tem 46, parecia que o bicho estava
      a olhar para cartas do tamanho da cabeça dele. */
-  .mem-card { width: 2.75rem !important; height: 2.75rem !important; font-size: 1.125rem !important; border-radius: 0.375rem !important; }
-  .mem-grid { grid-template-columns: repeat(4, 2.75rem) !important; gap: 0.375rem !important; margin-bottom: 0.625rem !important; }
+  .mem-card { width: 3.75rem !important; height: 3.75rem !important; font-size: 1.5rem !important; border-radius: 0.375rem !important; }
+  .mem-grid { grid-template-columns: repeat(4, 3.75rem) !important; gap: 0.5rem !important; margin-bottom: 0.625rem !important; }
 
   /* ── Simon Says ──
      O mesmo: 5.625rem eram 135px por botão, e a grelha de quatro dava
      603 de largura dentro de um cartão de 528 — transbordava. */
-  .simon-grid        { grid-template-columns: repeat(4, 3.125rem) !important; gap: 0.5rem !important; margin-bottom: 0.625rem !important; }
-  .simon-btn         { width: 3.125rem !important; height: 3.125rem !important; font-size: 1.375rem !important; border-radius: 0.5rem !important; }
+  .simon-grid        { grid-template-columns: repeat(4, 4.25rem) !important; gap: 0.625rem !important; margin-bottom: 0.625rem !important; }
+  .simon-btn         { width: 4.25rem !important; height: 4.25rem !important; font-size: 1.875rem !important; border-radius: 0.5rem !important; }
   .simon-info        { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
   .simon-seq-display { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
 
@@ -493,6 +499,22 @@
   /* ── Campo Minado ── */
   #minaGrid      { zoom: 1.8; margin: 0.5rem 0 !important; }
   .mina-info-row { font-size: 0.625rem !important; margin-bottom: 0.375rem !important; }
+}
+
+/* ── Desktop baixo: memória e simon voltam ao tamanho antigo ──
+   O snake defende-se sozinho — o tabuleiro é min(15rem, 100vh - 15rem) e
+   cede quando a tela encurta. As grelhas da memória e do simon não tinham
+   como: são colunas de tamanho fixo e ficam altas na mesma.
+   Medido a 1280x560: a janela não chega a ser cortada, porque o
+   max-height:100% do .modal-card segura, mas ambas passam a rolar por
+   dentro e o FECHAR do simon cai abaixo da dobra. Cabiam antes de eu as
+   aumentar, portanto isto é repor o chão, não inventar defesa nova.
+   Abaixo de 640px de altura voltam aos 66 e 75px de origem. */
+@media(min-width:769px) and (max-height:639px) {
+  .mem-card  { width: 2.75rem !important; height: 2.75rem !important; font-size: 1.125rem !important; }
+  .mem-grid  { grid-template-columns: repeat(4, 2.75rem) !important; gap: 0.375rem !important; }
+  .simon-btn { width: 3.125rem !important; height: 3.125rem !important; font-size: 1.375rem !important; }
+  .simon-grid{ grid-template-columns: repeat(4, 3.125rem) !important; gap: 0.5rem !important; }
 }
 
 /* ── COIN FLOAT ANIMATION ── */
