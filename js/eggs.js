@@ -13,8 +13,10 @@ async function goToMarketplace(e) {
     addLog(t('egg.log.hatch_first'), 'bad');
     return;
   }
-  // "Meus Avatares" saiu do marketplace e tem modal proprio.
-  if(typeof abrirMeusAvatares === 'function') abrirMeusAvatares();
+  // Esta e a funcao do botao 💎 da fila de cima: abre o MARKETPLACE.
+  // Abria-o na seccao "slots", porque era la que vivia o "Meus
+  // Avatares"; agora que ele saiu, entra na primeira seccao de mercado.
+  if(typeof openMarketplaceModal === 'function') openMarketplaceModal();
 }
 
 function findTargetSlot() {
