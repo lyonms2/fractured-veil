@@ -57,7 +57,7 @@ function setBar(id, val, miniId) {
 // satisfeito!", "sem moedas...") é metade da graça do jogo, e cortar o
 // clique cortava-o. O que muda é já não ser preciso clicar para saber.
 //
-// Serve as duas larguras: aos ≤48rem a .fv-bottom-nav está desligada
+// Serve as duas larguras: a barra inferior do celular já não existe
 // (ver css/mobile-index.css:458) e o celular usa estes mesmos botões,
 // inline no cartão do bicho.
 // ═══════════════════════════════════════════════════════════════════

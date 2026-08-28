@@ -3,11 +3,9 @@
    Só dispara em ≤ 768px. Desktop nunca é afetado.
    ═══════════════════════════════════════════════════════════════════ */
 
-.fv-bottom-nav { display: none !important; }
-
-@media (min-width: 769px) {
-  .fv-bottom-nav { display: none !important; }
-}
+/* Havia aqui uma .fv-bottom-nav — barra de cinco botoes para o celular
+   — desligada com display:none tanto fora como dentro das media queries.
+   Estava morta desde nao se sabe quando, e foi apagada. */
 
 @media (max-width: 768px) {
 
@@ -459,7 +457,6 @@
     text-align: center;
   }
 
-  /* fv-bottom-nav removida do mobile — botões inline no device card */
 
   /* ════════════════════════════════════════════════════
      HERO CARD — device + creatureCard num único card
@@ -565,8 +562,6 @@
 ════════════════════════════════════════ */
 @media (max-width: 380px) {
   .screen     { height: 12.5rem; }
-  .fv-bn-btn  { font-size: 0.34375rem; }
-  .fv-bn-icon { font-size: 1.25rem; }
   main { padding: 0.5rem 0.5rem 0.75rem; }
   .res { font-size: 0.5rem; padding: 0.1875rem 0.4375rem; }
   .simon-btn  { width: 3.625rem !important; height: 3.625rem !important; }
