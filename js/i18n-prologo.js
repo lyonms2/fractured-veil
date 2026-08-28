@@ -35,8 +35,11 @@ window.registerStrings(
     // pronome vem antes.
     'prologo.p2': 'Ninguém conta mais os mortos. Agora se conta o que sobrou: doze cidades com energia, quatro estradas que ainda levam a algum lugar, e quantos dias faltam até a próxima chuva que preste.',
 
-    // "o relógio atrasar e não recuperar mais" — relógio não recupera.
-    'prologo.p3': 'As ogivas não pararam no chão. Onde caíram em cima das linhas de falha — aquelas que os geólogos mediam havia décadas e nunca souberam explicar — abriram outra coisa.\n\nRasgos verticais, da altura de um homem ou de um prédio. Não projetam sombra. Não deixam a poeira entrar. Quem chega a vinte passos sente os dentes doerem, a bússola girar devagar, o relógio atrasar e nunca mais acertar.',
+    // "Onde caíram em cima das linhas de falha — ... — abriram outra
+    // coisa" lia-se como pergunta: o "Onde" abre a frase como se fosse
+    // interrogativo, e o travessão punha quinze palavras entre o sujeito
+    // e o verbo. São duas frases agora.
+    'prologo.p3': 'As ogivas não pararam no chão. Algumas caíram bem em cima das linhas de falha — aquelas que os geólogos mediam havia décadas e nunca souberam explicar.\n\nOnde isso aconteceu, o que se abriu não foi cratera. Rasgos verticais, da altura de um homem ou de um prédio. Não projetam sombra. Não deixam a poeira entrar. Quem chega a vinte passos sente os dentes doerem, a bússola girar devagar, o relógio atrasar e nunca mais acertar.',
 
     // Havia erro de concordância: "Há O QUE vem sem forma" e logo a
     // seguir "DESSAS você ouviu falar". Agora é plural nos dois.
@@ -63,8 +66,8 @@ window.registerStrings(
     // "any more" é grafia britânica; em inglês americano é uma palavra.
     'prologo.p2': 'Nobody counts the dead anymore. What gets counted now is the remainder: twelve cities with power, four roads that still lead somewhere, and how many days until the next rain worth catching.',
 
-    // "never could explain" -> "could never explain".
-    'prologo.p3': 'The warheads did not stop at the ground. Where they came down on the fault lines — the ones geologists had been measuring for decades and could never explain — they opened something else.\n\nVertical tears, the height of a man or of a building. They cast no shadow. They let no dust in. Come within twenty paces and your teeth ache, your compass turns slowly, your watch falls behind and never catches up.',
+    // A mesma frase torcida do português, pelo mesmo motivo.
+    'prologo.p3': 'The warheads did not stop at the ground. Some of them came down right on top of the fault lines — the ones geologists had been measuring for decades and could never explain.\n\nWhere that happened, what opened was not a crater. Vertical tears, the height of a man or of a building. They cast no shadow. They let no dust in. Come within twenty paces and your teeth ache, your compass turns slowly, your watch falls behind and never catches up.',
 
     // O mesmo erro de número do português: "the kind that arrives"
     // seguido de "you have heard about THOSE".
