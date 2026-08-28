@@ -406,8 +406,22 @@ function _slotBtnEquipa(i, s) {
 // O conteúdo não mudou: as mesmas funções escrevem nos mesmos três
 // contentores, que agora vivem no #avataresModal.
 // ═══════════════════════════════════════════════════════════════════
-function abrirMeusAvatares() {
+async function abrirMeusAvatares() {
   ModalManager.open('avataresModal');
+
+  // O renderSlots faz `if(!playerData) return` e sai em silêncio. Quando
+  // isto vivia dentro do marketplace, quem carregava o playerData era o
+  // openMarketplaceModal, antes de mostrar a secção. Com porta própria,
+  // ninguém carregava — e o painel abria vazio.
+  //
+  // Vale a pena chamar em cada abertura e não só na primeira: o
+  // activeSlotIdx e os cristais são copiados por valor, e ficariam presos
+  // ao que eram quando o painel abriu pela primeira vez.
+  if (typeof loadPlayerData === 'function') {
+    try { await loadPlayerData(); }
+    catch (e) { console.warn('[avatares] playerData:', e); }
+  }
+
   renderSlots();
   if (typeof renderEquipaBar === 'function') renderEquipaBar();
 }
