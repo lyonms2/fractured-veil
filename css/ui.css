@@ -529,40 +529,8 @@
 .gs-tab-label { font-size: 0.4375rem; letter-spacing: 0.125rem; }
 
 /* PVE — verde esmeralda */
-#gsTabPve { border-color: rgba(52,211,153,.2); }
-#gsTabPve::before { background: linear-gradient(90deg, #10b981, #34d399); }
-#gsTabPve:hover { border-color: rgba(52,211,153,.5); color: #34d399; background: rgba(52,211,153,.06); }
-#gsTabPve.active {
-  background: linear-gradient(160deg, rgba(16,185,129,.18) 0%, rgba(11,9,22,.6) 100%);
-  border-color: #10b981;
-  color: #34d399;
-  box-shadow: 0 0 0.875rem rgba(16,185,129,.25), inset 0 0.0625rem 0 rgba(52,211,153,.15);
-}
-#gsTabPve.active::before { opacity: 1; }
-
-/* PVP — vermelho/laranja combate */
-#gsTabPvp { border-color: rgba(239,68,68,.2); }
-#gsTabPvp::before { background: linear-gradient(90deg, #dc2626, #f97316); }
-#gsTabPvp:hover { border-color: rgba(239,68,68,.5); color: #f87171; background: rgba(239,68,68,.06); }
-#gsTabPvp.active {
-  background: linear-gradient(160deg, rgba(220,38,38,.18) 0%, rgba(11,9,22,.6) 100%);
-  border-color: #dc2626;
-  color: #f87171;
-  box-shadow: 0 0 0.875rem rgba(220,38,38,.25), inset 0 0.0625rem 0 rgba(239,68,68,.15);
-}
-#gsTabPvp.active::before { opacity: 1; }
-
-/* LORE — roxo arcano */
-#gsTabLore { border-color: rgba(167,139,250,.2); }
-#gsTabLore::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-#gsTabLore:hover { border-color: rgba(167,139,250,.5); color: #a78bfa; background: rgba(167,139,250,.06); }
-#gsTabLore.active {
-  background: linear-gradient(160deg, rgba(124,58,237,.18) 0%, rgba(11,9,22,.6) 100%);
-  border-color: #7c3aed;
-  color: #a78bfa;
-  box-shadow: 0 0 0.875rem rgba(124,58,237,.25), inset 0 0.0625rem 0 rgba(167,139,250,.15);
-}
-#gsTabLore.active::before { opacity: 1; }
+/* As tres abas do seletor (PvE / PvP / Lore) e as suas cores viviam
+   aqui. O seletor ficou com uma lista so. */
 
 /* ══════════════════════════════════════
    LORE — Jogo narrativo de escolhas

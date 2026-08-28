@@ -570,3 +570,30 @@
 #batalhaNavalModal > *,
 #jkpModal > *,
 #minaModal > * { width:100%; max-width:30rem; }
+
+/* ══════════════════════════════════════
+   SELETOR DE JOGOS — escala de desktop
+
+   Com a raiz a 24px o painel inteiro vinha a 1,5x: coluna de 690px,
+   ícones de 33px, nomes de 13,5px. Mas o seletor é moldura, não é a
+   interface do jogo — não tem texto de 5-7px e por isso não precisa do
+   multiplicador que existe para esse texto ser legível. Mesma razão da
+   tela de login e do splash.
+══════════════════════════════════════ */
+@media(min-width:681px) {
+  #gameSelector .gs-title,
+  #gameSelector .diff-pills-row,
+  #gameSelector .gs-grid { max-width: 19rem; }
+
+  #gameSelector .gs-title { font-size: 0.40625rem; }
+
+  #gameSelector .gs-btn        { padding: 0.4375rem 0.5rem; gap: 0.4375rem; }
+  #gameSelector .gs-btn-icon   { font-size: 1rem; }
+  #gameSelector .gs-btn-name   { font-size: 0.4375rem; }
+  #gameSelector .gs-btn-desc,
+  #gameSelector .gs-btn-reward { font-size: 0.34375rem; }
+
+  #gameSelector .diff-pill { font-size: 0.3125rem; padding: 0.3125rem 0.1875rem 0.25rem; }
+  #gameSelector .diff-pill .dp-icon { font-size: 0.625rem; }
+  #gameSelector .diff-pill .dp-lock { font-size: 0.53125rem; }
+}

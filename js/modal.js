@@ -161,22 +161,9 @@ function openGameSelector() {
     const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
     simEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
   }
-  const minaEl = document.getElementById('rewardMina');
-  if(minaEl) {
-    const xpMin = r(d.xp*0.8*rb.xp); const xpMax = r(d.xp*2.0*rb.xp);
-    const cMin  = r(d.coins*0.8*rb.moedas); const cMax = r(d.coins*2.0*rb.moedas);
-    minaEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
-  }
-  const labEl = document.getElementById('rewardLabirinto');
-  if(labEl) {
-    const xpMin = r(d.xp*0.6*rb.xp); const xpMax = r(d.xp*1.8*rb.xp);
-    const coinCounts = [8,12,16,20];
-    const coinVals   = [3,4,7,9];
-    const tier = DIFF_TIERS.indexOf(d);
-    const ti = Math.max(0, tier);
-    const cMax = coinCounts[ti] * coinVals[ti];
-    labEl.textContent = t('modal.reward_maze', {xpMin, xpMax, cMax});
-  }
+  // Os rotulos de premio do Campo Minado e do Labirinto viviam aqui.
+  // Os dois sairam do seletor e os elementos ja nao existem.
+
   ModalManager.open('gameSelector');
 }
 

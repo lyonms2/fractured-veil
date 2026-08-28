@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-08-26x
+     VERSÃO DOS FICHEIROS — ?v=2026-08-26z
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-08-26x" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-08-26z" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -35,20 +35,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/screen.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/ui.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/modals.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/combate.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/arena.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/snake.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-26x">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-26x">
+  <link rel="stylesheet" href="css/base.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/screen.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/ui.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/modals.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/combate.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/arena.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/snake.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-08-26z">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-08-26z">
 
   <style>
     .auth-tab {
@@ -478,120 +478,34 @@
           <div id="gameSelector">
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div data-i18n="gs.title" class="gs-title">◆ ESCOLHA UM JOGO</div>
-            <div class="gs-tabs">
-              <button class="gs-tab active" id="gsTabPve"  onclick="gsSetTab('pve')">
-                <span class="gs-tab-icon">🎮</span>
-                <span data-i18n="gs.tab.pve" class="gs-tab-label">PVE</span>
-              </button>
-              <button class="gs-tab" id="gsTabPvp"  onclick="gsSetTab('pvp')">
-                <span class="gs-tab-icon">⚔️</span>
-                <span data-i18n="gs.tab.pvp" class="gs-tab-label">PVP</span>
-              </button>
-              <button class="gs-tab" id="gsTabLore" onclick="gsSetTab('lore')">
-                <span class="gs-tab-icon">📖</span>
-                <span data-i18n="gs.tab.lore" class="gs-tab-label">LORE</span>
-              </button>
-            </div>
-            <div id="gsGridPve" class="gs-grid">
+            <!-- Era a aba PvE de três (PvE / PvP / Lore). O combate mudou-se
+     para o botão BATALHAR da equipa, o PvP e a lore saíram daqui,
+     e o que resta é uma lista de passatempos com as pastilhas de
+     dificuldade por cima. -->
+            <div id="gsGridJogos" class="gs-grid">
               <div id="diffPills" class="diff-pills-row" style="grid-column:1/-1;"></div>
-              <div class="gs-btn" onclick="closeGameSelector(); abrirCombatePvE();">
-                <div class="gs-btn-icon">⚔️</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.batalha.name" class="gs-btn-name">BATALHA ELEMENTAL</div>
-                  <div data-i18n="gs.batalha.desc" class="gs-btn-desc">Sua equipe de 3 contra um trio das ruínas</div>
-                  <div class="gs-btn-reward">3D&amp;T · turno a turno</div>
-                </div>
-              </div>
               <div class="gs-btn" onclick="openMinigame('memoria')">
                 <div class="gs-btn-icon">🃏</div>
                 <div class="gs-btn-info">
-                  <div data-i18n="gs.memoria.name" class="gs-btn-name">MEMÓRIA ELEMENTAL</div>
-                  <div data-i18n="gs.memoria.desc" class="gs-btn-desc">Encontre todos os pares de elementos</div>
+                  <div data-i18n="gs.memoria.name" class="gs-btn-name">ECOS DO VÉU</div>
+                  <div data-i18n="gs.memoria.desc" class="gs-btn-desc">Cada elemento deixa um eco. Encontre todos os pares.</div>
                   <div class="gs-btn-reward" id="rewardMemoria">+5~90 XP · +3~130 🪙</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="openMinigame('mina')">
-                <div class="gs-btn-icon">💣</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.mina.name" class="gs-btn-name">CAMPO MINADO</div>
-                  <div data-i18n="gs.mina.desc" class="gs-btn-desc">Revele o campo sem explodir as minas</div>
-                  <div class="gs-btn-reward" id="rewardMina">+5~130 XP · +26~290 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('simon')">
                 <div class="gs-btn-icon">🎵</div>
                 <div class="gs-btn-info">
-                  <div data-i18n="gs.simon.name" class="gs-btn-name">SIMON SAYS</div>
-                  <div data-i18n="gs.simon.desc" class="gs-btn-desc">Repita a sequência de elementos</div>
+                  <div data-i18n="gs.simon.name" class="gs-btn-name">PULSO DA FRATURA</div>
+                  <div data-i18n="gs.simon.desc" class="gs-btn-desc">A Fratura pulsa uma sequência. Repita sem errar.</div>
                   <div class="gs-btn-reward" id="rewardSimon">+5~90 XP · +5~338 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('snake')">
                 <div class="gs-btn-icon">🐍</div>
                 <div class="gs-btn-info">
-                  <div data-i18n="gs.snake.name" class="gs-btn-name">SNAKE ELEMENTAL</div>
-                  <div data-i18n="gs.snake.desc" class="gs-btn-desc">Colete os elementos sem bater em si mesmo</div>
+                  <div data-i18n="gs.snake.name" class="gs-btn-name">RASTRO DE LUZ</div>
+                  <div data-i18n="gs.snake.desc" class="gs-btn-desc">Recolha os elementos e nunca cruze o próprio rastro.</div>
                   <div class="gs-btn-reward" id="rewardSnake">+0~130 XP · +0~380 🪙</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="openMinigame('labirinto')">
-                <div class="gs-btn-icon">🌀</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.maze.name" class="gs-btn-name">LABIRINTO ELEMENTAL</div>
-                  <div data-i18n="gs.maze.desc" class="gs-btn-desc">Navegue na névoa, fuja do perseguidor, ache a saída</div>
-                  <div class="gs-btn-reward" id="rewardLabirinto">+0~120 XP · +0~294 🪙</div>
-                </div>
-              </div>
-            </div>
-            <div id="gsGridLore" class="gs-grid" style="display:none;">
-              <div class="gs-btn" onclick="closeGameSelector(); abrirLore('comum')">
-                <div class="gs-btn-icon">📖</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.lore1.name" class="gs-btn-name">HISTÓRIAS DO VÉU</div>
-                  <div data-i18n="gs.lore1.desc" class="gs-btn-desc">A saga pós-guerra — Fraturas, Avatares e O Vácuo</div>
-                  <div data-i18n="gs.lore1.reward" class="gs-btn-reward" style="color:var(--muted);">⚪ Avatar Comum · 50🪙 por capítulo</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="closeGameSelector(); abrirLore('raro')">
-                <div class="gs-btn-icon">🔵</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.lore2.name" class="gs-btn-name">CRÔNICAS DOS RAROS</div>
-                  <div data-i18n="gs.lore2.desc" class="gs-btn-desc">Histórias exclusivas para Avatares Raros</div>
-                  <div data-i18n="gs.lore2.reward" class="gs-btn-reward" style="color:var(--raro);">🔵 Avatar Raro · 5💎 por capítulo</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="closeGameSelector(); abrirLore('lendario')">
-                <div class="gs-btn-icon">🌟</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.lore3.name" class="gs-btn-name">ÉPICOS DO VÁCUO</div>
-                  <div data-i18n="gs.lore3.desc" class="gs-btn-desc">A verdade sobre as Fraturas — apenas para Lendários</div>
-                  <div data-i18n="gs.lore3.reward" class="gs-btn-reward" style="color:var(--lendario);">🌟 Avatar Lendário · 15💎 por capítulo</div>
-                </div>
-              </div>
-            </div>
-            <div id="gsGridPvp" class="gs-grid" style="display:none;">
-              <div class="gs-btn" onclick="closeGameSelector(); openArena()">
-                <div class="gs-btn-icon">⚔️</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.arena.name" class="gs-btn-name">ARENA DIMENSIONAL</div>
-                  <div data-i18n="gs.arena.desc" class="gs-btn-desc">Jo-Ken-Pô ao vivo contra outros jogadores</div>
-                  <div data-i18n="gs.arena.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool semanal</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="closeGameSelector(); openRoubaMonte()">
-                <div class="gs-btn-icon">🃏</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.rouba.name" class="gs-btn-name">ROUBA MONTE</div>
-                  <div data-i18n="gs.rouba.desc" class="gs-btn-desc">Duelo de cartas ao vivo contra outros jogadores</div>
-                  <div data-i18n="gs.rouba.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Pool P2E</div>
-                </div>
-              </div>
-              <div class="gs-btn" onclick="closeGameSelector(); openBatalhaNaval()">
-                <div class="gs-btn-icon">🚢</div>
-                <div class="gs-btn-info">
-                  <div data-i18n="gs.naval.name" class="gs-btn-name">BATALHA NAVAL</div>
-                  <div data-i18n="gs.naval.desc" class="gs-btn-desc">Afunda os navios do oponente</div>
-                  <div data-i18n="gs.naval.reward" class="gs-btn-reward" style="color:var(--raro);">Apostas · Ranking · Pool P2E</div>
                 </div>
               </div>
             </div>
@@ -1042,24 +956,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-08-26x"></script>
-<script src="js/i18n-pvp.js?v=2026-08-26x"></script>
-<script src="js/i18n-bn.js?v=2026-08-26x"></script>
-<script src="js/i18n-minigames.js?v=2026-08-26x"></script>
-<script src="js/i18n-eggs.js?v=2026-08-26x"></script>
-<script src="js/i18n-gametick.js?v=2026-08-26x"></script>
-<script src="js/i18n-items.js?v=2026-08-26x"></script>
-<script src="js/i18n-market.js?v=2026-08-26x"></script>
-<script src="js/i18n-mina.js?v=2026-08-26x"></script>
-<script src="js/i18n-arcade.js?v=2026-08-26x"></script>
-<script src="js/i18n-session.js?v=2026-08-26x"></script>
-<script src="js/i18n-misc.js?v=2026-08-26x"></script>
-<script src="js/i18n-lore.js?v=2026-08-26x"></script>
-<script src="js/i18n-prologo.js?v=2026-08-26x"></script>
-<script src="js/i18n-marketplace.js?v=2026-08-26x"></script>
-<script src="js/i18n-magias.js?v=2026-08-26x"></script>
-<script src="js/i18n-vantagens.js?v=2026-08-26x"></script>
-<script src="js/i18n-pve.js?v=2026-08-26x"></script>
+<script src="js/i18n.js?v=2026-08-26z"></script>
+<script src="js/i18n-pvp.js?v=2026-08-26z"></script>
+<script src="js/i18n-bn.js?v=2026-08-26z"></script>
+<script src="js/i18n-minigames.js?v=2026-08-26z"></script>
+<script src="js/i18n-eggs.js?v=2026-08-26z"></script>
+<script src="js/i18n-gametick.js?v=2026-08-26z"></script>
+<script src="js/i18n-items.js?v=2026-08-26z"></script>
+<script src="js/i18n-market.js?v=2026-08-26z"></script>
+<script src="js/i18n-mina.js?v=2026-08-26z"></script>
+<script src="js/i18n-arcade.js?v=2026-08-26z"></script>
+<script src="js/i18n-session.js?v=2026-08-26z"></script>
+<script src="js/i18n-misc.js?v=2026-08-26z"></script>
+<script src="js/i18n-lore.js?v=2026-08-26z"></script>
+<script src="js/i18n-prologo.js?v=2026-08-26z"></script>
+<script src="js/i18n-marketplace.js?v=2026-08-26z"></script>
+<script src="js/i18n-magias.js?v=2026-08-26z"></script>
+<script src="js/i18n-vantagens.js?v=2026-08-26z"></script>
+<script src="js/i18n-pve.js?v=2026-08-26z"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1068,52 +982,52 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-08-26x"></script>
-<script src="js/data.js?v=2026-08-26x"></script>
-<script src="js/state.js?v=2026-08-26x"></script>
-<script src="js/vantagens.js?v=2026-08-26x"></script>
-<script src="js/ficha-3dt.js?v=2026-08-26x"></script>
-<script src="js/magias.js?v=2026-08-26x"></script>
-<script src="js/combate-3dt.js?v=2026-08-26x"></script>
-<script src="js/equipa.js?v=2026-08-26x"></script>
-<script src="js/combate-ui.js?v=2026-08-26x"></script>
-<script src="js/combate-pve.js?v=2026-08-26x"></script>
-<script src="js/ui.js?v=2026-08-26x"></script>
-<script src="js/modal.js?v=2026-08-26x"></script>
-<script src="js/firebase.js?v=2026-08-26x"></script>
-<script src="js/gametick.js?v=2026-08-26x"></script>
-<script src="js/actions.js?v=2026-08-26x"></script>
-<script src="js/minigames.js?v=2026-08-26x"></script>
-<script src="js/summon.js?v=2026-08-26x"></script>
-<script src="js/eggs.js?v=2026-08-26x"></script>
-<script src="js/items.js?v=2026-08-26x"></script>
-<script src="js/market.js?v=2026-08-26x"></script>
-<script src="js/coinshop.js?v=2026-08-26x"></script>
-<script src="js/cards.js?v=2026-08-26x"></script>
-<script src="js/rouba-monte.js?v=2026-08-26x"></script>
-<script src="js/mina.js?v=2026-08-26x"></script>
-<script src="js/batalha-naval.js?v=2026-08-26x"></script>
-<script src="js/snake.js?v=2026-08-26x"></script>
-<script src="js/labirinto.js?v=2026-08-26x"></script>
-<script src="js/cambio.js?v=2026-08-26x"></script>
-<script src="js/arena.js?v=2026-08-26x"></script>
-<script src="js/lore.js?v=2026-08-26x"></script>
-<script src="js/prologo.js?v=2026-08-26x"></script>
-<script src="js/lore-caps/cap1.js?v=2026-08-26x"></script>
-<script src="js/lore-caps/cap2.js?v=2026-08-26x"></script>
-<script src="js/lore-caps/cap3.js?v=2026-08-26x"></script>
-<script src="js/lore-caps/cap4.js?v=2026-08-26x"></script>
-<script src="js/amigos.js?v=2026-08-26x"></script>
-<script src="js/auth.js?v=2026-08-26x"></script>
+<script src="js/audio.js?v=2026-08-26z"></script>
+<script src="js/data.js?v=2026-08-26z"></script>
+<script src="js/state.js?v=2026-08-26z"></script>
+<script src="js/vantagens.js?v=2026-08-26z"></script>
+<script src="js/ficha-3dt.js?v=2026-08-26z"></script>
+<script src="js/magias.js?v=2026-08-26z"></script>
+<script src="js/combate-3dt.js?v=2026-08-26z"></script>
+<script src="js/equipa.js?v=2026-08-26z"></script>
+<script src="js/combate-ui.js?v=2026-08-26z"></script>
+<script src="js/combate-pve.js?v=2026-08-26z"></script>
+<script src="js/ui.js?v=2026-08-26z"></script>
+<script src="js/modal.js?v=2026-08-26z"></script>
+<script src="js/firebase.js?v=2026-08-26z"></script>
+<script src="js/gametick.js?v=2026-08-26z"></script>
+<script src="js/actions.js?v=2026-08-26z"></script>
+<script src="js/minigames.js?v=2026-08-26z"></script>
+<script src="js/summon.js?v=2026-08-26z"></script>
+<script src="js/eggs.js?v=2026-08-26z"></script>
+<script src="js/items.js?v=2026-08-26z"></script>
+<script src="js/market.js?v=2026-08-26z"></script>
+<script src="js/coinshop.js?v=2026-08-26z"></script>
+<script src="js/cards.js?v=2026-08-26z"></script>
+<script src="js/rouba-monte.js?v=2026-08-26z"></script>
+<script src="js/mina.js?v=2026-08-26z"></script>
+<script src="js/batalha-naval.js?v=2026-08-26z"></script>
+<script src="js/snake.js?v=2026-08-26z"></script>
+<script src="js/labirinto.js?v=2026-08-26z"></script>
+<script src="js/cambio.js?v=2026-08-26z"></script>
+<script src="js/arena.js?v=2026-08-26z"></script>
+<script src="js/lore.js?v=2026-08-26z"></script>
+<script src="js/prologo.js?v=2026-08-26z"></script>
+<script src="js/lore-caps/cap1.js?v=2026-08-26z"></script>
+<script src="js/lore-caps/cap2.js?v=2026-08-26z"></script>
+<script src="js/lore-caps/cap3.js?v=2026-08-26z"></script>
+<script src="js/lore-caps/cap4.js?v=2026-08-26z"></script>
+<script src="js/amigos.js?v=2026-08-26z"></script>
+<script src="js/auth.js?v=2026-08-26z"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-08-26x"></script>
-<script src="js/cristais.js?v=2026-08-26x"></script>
-<script src="js/avatars-market.js?v=2026-08-26x"></script>
-<script src="js/eggs-market.js?v=2026-08-26x"></script>
-<script src="js/marketplace-core.js?v=2026-08-26x"></script>
+<script src="js/pool.js?v=2026-08-26z"></script>
+<script src="js/cristais.js?v=2026-08-26z"></script>
+<script src="js/avatars-market.js?v=2026-08-26z"></script>
+<script src="js/eggs-market.js?v=2026-08-26z"></script>
+<script src="js/marketplace-core.js?v=2026-08-26z"></script>
 
-<script src="js/main.js?v=2026-08-26x"></script>
+<script src="js/main.js?v=2026-08-26z"></script>
 
 
 <script>

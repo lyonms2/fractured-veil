@@ -59,14 +59,14 @@ window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       :
 window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};
 
 // ── GAME SELECTOR TABS ──
-function gsSetTab(tab) {
-  document.getElementById('gsGridPve').style.display  = tab === 'pve'  ? 'grid' : 'none';
-  document.getElementById('gsGridPvp').style.display  = tab === 'pvp'  ? 'grid' : 'none';
-  document.getElementById('gsGridLore').style.display = tab === 'lore' ? 'grid' : 'none';
-  document.getElementById('gsTabPve').classList.toggle('active',  tab === 'pve');
-  document.getElementById('gsTabPvp').classList.toggle('active',  tab === 'pvp');
-  document.getElementById('gsTabLore').classList.toggle('active', tab === 'lore');
-}
+// O seletor tinha três abas — PvE, PvP e Lore — e esta função trocava
+// entre elas. Ficou uma lista só, portanto não há nada para trocar.
+//
+// Continua aqui, e a não fazer nada, porque quatro sítios ainda a
+// chamam ao sair de um jogo (arena, rouba-monte, batalha naval e o
+// gestor de modais). Apagá-la partia esses quatro; o seletor abre na
+// mesma, que é o que eles querem.
+function gsSetTab(_tab) {}
 
 // ── Injectar .modal-card em todos os .mini-modal ──
 document.querySelectorAll('.mini-modal').forEach(modal => {
