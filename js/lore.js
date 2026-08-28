@@ -38,7 +38,11 @@ function _loreCancelTypewriter() {
 // O alvoClique existe para o prólogo, que usa este mesmo motor mas
 // vive noutro modal: sem ele o listener do skip procurava sempre o
 // #loreBody, e no prólogo não havia forma de saltar a animação.
-function _loreTypewriter(container, rawText, onDone, alvoClique) {
+// O semClique existe para o prólogo. Lá a aceleração passou a viver no
+// próprio botão, e um clique em qualquer sítio da tela deixou de saltar
+// a escrita — clicar no fundo para nada é fácil, e saltar sem querer o
+// texto de abertura é mau.
+function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
   _loreCancelTypewriter();
 
   const SPEED = 18; // ms por caractere
@@ -75,7 +79,12 @@ function _loreTypewriter(container, rawText, onDone, alvoClique) {
     _loreTwHandle = null;
     onDone();
   }
-  setTimeout(() => { if(!dead) body.addEventListener('click', skip, { once: true }); }, 50);
+  // O concluir() deixa quem chamou completar a escrita sem depender de
+  // um clique na tela — é assim que o botão do prólogo acelera.
+  _loreTwHandle.concluir = skip;
+  if(!semClique) {
+    setTimeout(() => { if(!dead) body.addEventListener('click', skip, { once: true }); }, 50);
+  }
 
   function nextParagraph() {
     if(dead) return;

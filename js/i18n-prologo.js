@@ -26,7 +26,9 @@ window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     'prologo.titulo':     'ANTES DE TUDO',
-    'prologo.btn.mao':    '🖐 Estender a mão',
+    'prologo.btn.mao':        '🖐 Estender a mão',
+    'prologo.btn.continuar':  'Continuar →',
+    'prologo.btn.saltar':     '↓ Mostrar tudo',
     'prologo.btn.fechar': 'Fechar',
 
     'prologo.p1': '2047. Três anos depois das bombas.',
@@ -58,7 +60,9 @@ window.registerStrings(
   // ── ENGLISH ────────────────────────────────────────────────────
   {
     'prologo.titulo':     'BEFORE ANY OF THIS',
-    'prologo.btn.mao':    '🖐 Reach out',
+    'prologo.btn.mao':        '🖐 Reach out',
+    'prologo.btn.continuar':  'Continue →',
+    'prologo.btn.saltar':     '↓ Show it all',
     'prologo.btn.fechar': 'Close',
 
     'prologo.p1': '2047. Three years after the bombs.',

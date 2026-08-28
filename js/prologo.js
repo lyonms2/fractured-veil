@@ -27,6 +27,8 @@
 const PROLOGO_PARAGRAFOS = 6;
 
 let _prologoModoLeitura = false;
+let _prologoEtapa       = 0;
+let _prologoEscrevendo  = false;
 let _prologoTravou      = false;
 
 // ── Já viu? ──────────────────────────────────────────────────────
@@ -83,24 +85,95 @@ function abrirPrologo(releitura) {
   rodape.classList.add('lore-tw-hidden');
   rodape.classList.remove('lore-tw-reveal');
 
-  const texto = [];
-  for (let i = 1; i <= PROLOGO_PARAGRAFOS; i++) texto.push(t('prologo.p' + i));
-
-  _loreTypewriter(corpo, texto.join('\n\n'), () => _prologoMostrarFim(), modal);
+  _prologoEtapa = 0;
+  _prologoMostrarEtapa();
 }
 
-// ── O fim: o botão que continua a história noutro lugar ──────────
-function _prologoMostrarFim() {
+// ═══════════════════════════════════════════════════════════════════
+// UMA ETAPA DE CADA VEZ
+//
+// O texto corria todo numa coluna só, e em tela curta isso obrigava a
+// rolar. Pior do que a barra era o descompasso: a escrita acontece no
+// fim do texto enquanto o olho do leitor está no princípio, e o que
+// nasce abaixo da dobra passa despercebido — o leitor não sabe que há
+// mais.
+//
+// Cada bloco é uma batida do texto e cabe inteiro na tela. Medido a
+// 360x560, que é das telas mais curtas que existem: a maior das seis
+// ocupa 253px de 490 disponíveis.
+//
+// A aceleração mudou-se do fundo da tela para o botão. Antes um clique
+// em qualquer sítio saltava a escrita, e clicar no fundo para nada é
+// fácil demais — saltava-se o texto de abertura sem querer. Agora é um
+// controle só, com dois estados: enquanto escreve, completa; quando
+// termina, avança.
+// ═══════════════════════════════════════════════════════════════════
+function _prologoMostrarEtapa() {
+  const corpo  = document.getElementById('prologoTexto');
+  const rodape = document.getElementById('prologoRodape');
+  const marcas = document.getElementById('prologoMarcas');
+  if (!corpo || !rodape) return;
+
+  corpo.innerHTML = '';
+  if (marcas) {
+    marcas.innerHTML = Array.from({ length: PROLOGO_PARAGRAFOS }, (_, i) =>
+      `<span class="prologo-marca${i === _prologoEtapa ? ' aqui' : ''}${i < _prologoEtapa ? ' lida' : ''}"></span>`
+    ).join('');
+  }
+
+  _prologoEscrevendo = true;
+  _prologoDesenharBotao();
+
+  const modal = document.getElementById('prologoModal');
+  _loreTypewriter(
+    corpo,
+    t('prologo.p' + (_prologoEtapa + 1)),
+    () => { _prologoEscrevendo = false; _prologoDesenharBotao(); },
+    modal,
+    true   // sem clique global: quem acelera é o botão
+  );
+}
+
+function _prologoDesenharBotao() {
   const rodape = document.getElementById('prologoRodape');
   if (!rodape) return;
 
-  rodape.innerHTML = _prologoModoLeitura
-    ? `<button class="prologo-btn" onclick="fecharPrologo()">${t('prologo.btn.fechar')}</button>`
-    : `<button class="prologo-btn" onclick="prologoEstenderMao()">${t('prologo.btn.mao')}</button>`;
+  const ultima = _prologoEtapa >= PROLOGO_PARAGRAFOS - 1;
+  const rotulo = _prologoEscrevendo ? t('prologo.btn.saltar')
+               : ultima             ? (_prologoModoLeitura ? t('prologo.btn.fechar') : t('prologo.btn.mao'))
+               : t('prologo.btn.continuar');
 
+  rodape.innerHTML = `<button class="prologo-btn" onclick="prologoAvancar()">${rotulo}</button>`;
   rodape.classList.remove('lore-tw-hidden');
   rodape.classList.add('lore-tw-reveal');
 }
+
+// O botão faz as três coisas, conforme o momento: completa a escrita,
+// passa à etapa seguinte, ou fecha o prólogo.
+function prologoAvancar() {
+  if (_prologoEscrevendo) {
+    if (_loreTwHandle && _loreTwHandle.concluir) _loreTwHandle.concluir();
+    return;
+  }
+  if (_prologoEtapa < PROLOGO_PARAGRAFOS - 1) {
+    _prologoEtapa++;
+    _prologoMostrarEtapa();
+    return;
+  }
+  if (_prologoModoLeitura) fecharPrologo();
+  else                     prologoEstenderMao();
+}
+
+// Enter e espaço fazem o mesmo que o botão: ninguém devia precisar do
+// rato para passar uma página de texto.
+document.addEventListener('keydown', (e) => {
+  const modal = document.getElementById('prologoModal');
+  if (!modal || getComputedStyle(modal).display === 'none') return;
+  if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    prologoAvancar();
+  }
+});
 
 // ── Estender a mão = invocar ─────────────────────────────────────
 //
