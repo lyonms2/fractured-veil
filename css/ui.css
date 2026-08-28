@@ -886,7 +886,7 @@
    primeira coisa que se vê e não deve parecer um painel lateral.
 ══════════════════════════════════════ */
 #prologoModal {
-  display:none; position:fixed; inset:0; z-index:400;
+  display:none; position:fixed; inset:0; z-index:600;
   background:radial-gradient(ellipse at 50% 38%, rgba(40,18,10,.55) 0%, rgba(4,3,10,.97) 62%);
   align-items:center; justify-content:center; padding:16px;
 }

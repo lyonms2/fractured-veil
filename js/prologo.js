@@ -118,5 +118,14 @@ function fecharPrologo() {
 // ═══════════════════════════════════════════════════════════════════
 function talvezAbrirPrologo() {
   if (prologoJaVisto()) return;
+
+  // Só a quem ainda não começou. A cena é a criatura a sair da Fractura
+  // pela primeira vez — não se mostra isso a quem já tem três avatares
+  // em casa. Esses encontram-na no arquivo.
+  const jaInvocou = (gs.totalInvocacoes || 0) > 0
+                 || (typeof avatar !== 'undefined' && !!avatar)
+                 || (typeof avatarSlots !== 'undefined' && avatarSlots.some(s => s));
+  if (jaInvocou) return;
+
   setTimeout(() => abrirPrologo(false), 900);
 }
