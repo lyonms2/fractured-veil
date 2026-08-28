@@ -81,6 +81,9 @@ function miniAvatarReagir(tipo) {
     void corpo.offsetWidth;
     corpo.classList.add(classe);
 
+    // E as partes por dentro, cada uma por si.
+    _miniAvatarPartesReagem(corpo, tipo);
+
     const bolha = el.querySelector('.mini-av-borbulha');
     if (bolha) {
       const span = document.createElement('span');
@@ -91,5 +94,73 @@ function miniAvatarReagir(tipo) {
       bolha.appendChild(span);
       setTimeout(() => span.remove(), 900);
     }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AS PARTES REAGEM
+//
+// O CSS dá a cada parte uma vida de fundo: piscar, respirar, abanar a
+// cauda. Uma reacção não deve substituir isso — deve somar-se-lhe.
+//
+// É para isso que serve o composite:'add' da Web Animations API: a
+// transformação da reacção acumula sobre a que já está a correr, em
+// vez de a apagar. Com CSS puro não dá: `animation` guarda um valor
+// só, que foi exactamente o problema que a flutuação teve.
+//
+// Se o browser não suportar composite (fica em 'replace'), a parte
+// ainda anima — só perde a soma durante a reacção. Degrada bem.
+// ═══════════════════════════════════════════════════════════════════
+
+// Cada entrada: [selector, quadros, duração, atraso por índice]
+const _MINI_AV_GESTOS = {
+  bom: [
+    ['.av-olho-un', [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], 380, 40],
+    ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(-14deg)' }, { transform: 'rotate(0)' }], 480, 55],
+    ['.av-asa',     [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.22)' }, { transform: 'scaleY(1)' }], 420, 0],
+  ],
+  mau: [
+    // Os olhos apertam-se e demoram a abrir: é o que lê como desânimo.
+    ['.av-olho-un', [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0.35)' }, { transform: 'scaleY(1)' }], 620, 30],
+    ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(9deg)' }, { transform: 'rotate(0)' }], 620, 40],
+    ['.av-cauda',   [{ transform: 'rotate(0)' }, { transform: 'rotate(6deg)' }, { transform: 'rotate(0)' }], 620, 0],
+  ],
+  festa: [
+    ['.av-olho-un', [{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' },
+                     { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], 900, 60],
+    ['.av-membro',  [{ transform: 'rotate(0)' }, { transform: 'rotate(-22deg)' }, { transform: 'rotate(8deg)' },
+                     { transform: 'rotate(-12deg)' }, { transform: 'rotate(0)' }], 900, 70],
+    ['.av-asa',     [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.35)' }, { transform: 'scaleY(0.9)' },
+                     { transform: 'scaleY(1.2)' }, { transform: 'scaleY(1)' }], 900, 0],
+    ['.av-cauda',   [{ transform: 'rotate(0)' }, { transform: 'rotate(-11deg)' }, { transform: 'rotate(9deg)' },
+                     { transform: 'rotate(0)' }], 900, 0],
+  ],
+};
+
+const _miniAvSuportaSoma = (() => {
+  try { return typeof Element !== 'undefined'
+      && typeof Element.prototype.animate === 'function'; }
+  catch (_) { return false; }
+})();
+
+function _miniAvatarPartesReagem(raiz, tipo) {
+  if (!_miniAvSuportaSoma) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const gestos = _MINI_AV_GESTOS[tipo];
+  if (!gestos) return;
+
+  for (const [selector, quadros, duracao, passo] of gestos) {
+    const partes = raiz.querySelectorAll(selector);
+    partes.forEach((parte, i) => {
+      try {
+        parte.animate(quadros, {
+          duration: duracao,
+          delay: i * passo,
+          easing: 'cubic-bezier(.34,1.4,.64,1)',
+          composite: 'add',   // soma-se ao que o CSS já está a fazer
+        });
+      } catch (_) { /* browser sem WAAPI: fica só a animação do corpo */ }
+    });
   }
 }

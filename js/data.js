@@ -230,27 +230,34 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   <g>`;
 
   // Aura
+  s += `<g class="av-aura">`;
   if(raridade === 'Lendário') s += `
     <circle cx="100" cy="100" r="95" fill="none" stroke="${corBrilho}" stroke-width="4" opacity=".6" filter="url(#glow${sid})"><animate attributeName="r" values="90;100;90" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;.8;.6" dur="2s" repeatCount="indefinite"/></circle>
     <circle cx="100" cy="100" r="85" fill="none" stroke="${cor1}" stroke-width="3" opacity=".5" filter="url(#glow${sid})"><animate attributeName="r" values="80;90;80" dur="3s" repeatCount="indefinite"/></circle>`;
   else if(raridade === 'Raro') s += `
     <circle cx="100" cy="100" r="88" fill="none" stroke="${corBrilho}" stroke-width="2" opacity=".2" filter="url(#glow${sid})"><animate attributeName="r" values="85;90;85" dur="2.5s" repeatCount="indefinite"/></circle>`;
 
+  s += `</g>`;
   // Asas de fase (fase 3+) — ancoradas no corpo inferior (wdy desloca de y=100 para y=163)
+  s += `<g class="av-asa">`;
   if(temAsasFase) {
     if(tipoAsaFase===1) s+=`<path d="M 68 ${100+wdy} Q 48 ${83+wdy} 22 ${62+wdy} Q 34 ${80+wdy} 46 ${92+wdy} Q 56 ${99+wdy} 68 ${104+wdy} Z" fill="${cor1}" stroke="${corBrilho}" stroke-width="1.5" opacity=".72"><animate attributeName="d" values="M 68 ${100+wdy} Q 48 ${83+wdy} 22 ${62+wdy} Q 34 ${80+wdy} 46 ${92+wdy} Q 56 ${99+wdy} 68 ${104+wdy} Z;M 68 ${100+wdy} Q 47 ${81+wdy} 20 ${60+wdy} Q 32 ${78+wdy} 44 ${90+wdy} Q 54 ${97+wdy} 68 ${102+wdy} Z;M 68 ${100+wdy} Q 48 ${83+wdy} 22 ${62+wdy} Q 34 ${80+wdy} 46 ${92+wdy} Q 56 ${99+wdy} 68 ${104+wdy} Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 68 ${100+wdy} Q 46 ${86+wdy} 28 ${70+wdy} Q 40 ${82+wdy} 54 ${94+wdy} Z" fill="${corBrilho}" opacity=".20"/><path d="M 132 ${100+wdy} Q 152 ${83+wdy} 178 ${62+wdy} Q 166 ${80+wdy} 154 ${92+wdy} Q 144 ${99+wdy} 132 ${104+wdy} Z" fill="${cor1}" stroke="${corBrilho}" stroke-width="1.5" opacity=".72"><animate attributeName="d" values="M 132 ${100+wdy} Q 152 ${83+wdy} 178 ${62+wdy} Q 166 ${80+wdy} 154 ${92+wdy} Q 144 ${99+wdy} 132 ${104+wdy} Z;M 132 ${100+wdy} Q 153 ${81+wdy} 180 ${60+wdy} Q 168 ${78+wdy} 156 ${90+wdy} Q 146 ${97+wdy} 132 ${102+wdy} Z;M 132 ${100+wdy} Q 152 ${83+wdy} 178 ${62+wdy} Q 166 ${80+wdy} 154 ${92+wdy} Q 144 ${99+wdy} 132 ${104+wdy} Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 132 ${100+wdy} Q 154 ${86+wdy} 172 ${70+wdy} Q 160 ${82+wdy} 146 ${94+wdy} Z" fill="${corBrilho}" opacity=".20"/>`;
     else if(tipoAsaFase===2) s+=`<path d="M 65 ${98+wdy} L 38 ${75+wdy} L 20 ${62+wdy} L 28 ${82+wdy} L 44 ${93+wdy} L 60 ${100+wdy} Z" fill="${corSec}" stroke="${cor1}" stroke-width="1.5" opacity=".68"><animate attributeName="opacity" values=".68;.82;.68" dur="2.5s" repeatCount="indefinite"/></path><path d="M 65 ${98+wdy} L 32 ${76+wdy} L 18 ${66+wdy} Z" fill="${corBrilho}" opacity=".22" filter="url(#ig${sid})"/><path d="M 135 ${98+wdy} L 162 ${75+wdy} L 180 ${62+wdy} L 172 ${82+wdy} L 156 ${93+wdy} L 140 ${100+wdy} Z" fill="${corSec}" stroke="${cor1}" stroke-width="1.5" opacity=".68"><animate attributeName="opacity" values=".68;.82;.68" dur="2.5s" repeatCount="indefinite"/></path><path d="M 135 ${98+wdy} L 168 ${76+wdy} L 182 ${66+wdy} Z" fill="${corBrilho}" opacity=".22" filter="url(#ig${sid})"/>`;
     else s+=`<path d="M 66 ${96+wdy} Q 48 ${82+wdy} 26 ${66+wdy} Q 38 ${80+wdy} 50 ${90+wdy} Q 58 ${95+wdy} 66 ${100+wdy} Z" fill="${cor2}" stroke="${corBrilho}" stroke-width="1" opacity=".75"><animate attributeName="d" values="M 66 ${96+wdy} Q 48 ${82+wdy} 26 ${66+wdy} Q 38 ${80+wdy} 50 ${90+wdy} Q 58 ${95+wdy} 66 ${100+wdy} Z;M 66 ${96+wdy} Q 47 ${80+wdy} 24 ${64+wdy} Q 36 ${78+wdy} 48 ${88+wdy} Q 56 ${93+wdy} 66 ${98+wdy} Z;M 66 ${96+wdy} Q 48 ${82+wdy} 26 ${66+wdy} Q 38 ${80+wdy} 50 ${90+wdy} Q 58 ${95+wdy} 66 ${100+wdy} Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 66 ${103+wdy} Q 50 ${92+wdy} 34 ${80+wdy} Q 46 ${90+wdy} 58 ${98+wdy} Z" fill="${cor1}" opacity=".50"/><path d="M 66 ${110+wdy} Q 52 ${102+wdy} 40 ${94+wdy} Q 50 ${100+wdy} 62 ${106+wdy} Z" fill="${cor2}" opacity=".35"/><path d="M 134 ${96+wdy} Q 152 ${82+wdy} 174 ${66+wdy} Q 162 ${80+wdy} 150 ${90+wdy} Q 142 ${95+wdy} 134 ${100+wdy} Z" fill="${cor2}" stroke="${corBrilho}" stroke-width="1" opacity=".75"><animate attributeName="d" values="M 134 ${96+wdy} Q 152 ${82+wdy} 174 ${66+wdy} Q 162 ${80+wdy} 150 ${90+wdy} Q 142 ${95+wdy} 134 ${100+wdy} Z;M 134 ${96+wdy} Q 153 ${80+wdy} 176 ${64+wdy} Q 164 ${78+wdy} 152 ${88+wdy} Q 144 ${93+wdy} 134 ${98+wdy} Z;M 134 ${96+wdy} Q 152 ${82+wdy} 174 ${66+wdy} Q 162 ${80+wdy} 150 ${90+wdy} Q 142 ${95+wdy} 134 ${100+wdy} Z" dur="2.5s" repeatCount="indefinite"/></path><path d="M 134 ${103+wdy} Q 150 ${92+wdy} 166 ${80+wdy} Q 154 ${90+wdy} 142 ${98+wdy} Z" fill="${cor1}" opacity=".50"/><path d="M 134 ${110+wdy} Q 148 ${102+wdy} 160 ${94+wdy} Q 150 ${100+wdy} 138 ${106+wdy} Z" fill="${cor2}" opacity=".35"/>`;
   }
 
+  s += `</g>`;
   // Corpo inferior (fase 2+) — 12% maior para ficar proporcional
+  s += `<g class="av-corpo">`;
   if(temCorpoInferior) {
     if(tipoSegmento===1) s+=`<path d="M 80 143 Q 68 164 70 187 Q 79 212 100 216 Q 121 212 130 187 Q 132 164 120 143 Z" fill="url(#grad${sid})" stroke="${corSec}" stroke-width="1.5" opacity=".88"><animate attributeName="opacity" values=".88;.94;.88" dur="3s" repeatCount="indefinite"/></path><ellipse cx="100" cy="183" rx="15" ry="9" fill="${cor2}" opacity=".35" filter="url(#ig${sid})"/>`;
     else if(tipoSegmento===2) s+=`<polygon points="74,143 126,143 136,170 126,198 74,198 64,170" fill="url(#grad${sid})" stroke="${corBrilho}" stroke-width="1.5" opacity=".85"><animate attributeName="opacity" values=".85;.92;.85" dur="3s" repeatCount="indefinite"/></polygon><line x1="74" y1="170" x2="126" y2="170" stroke="${corBrilho}" stroke-width="1" opacity=".25"/><ellipse cx="100" cy="170" rx="13" ry="8" fill="${corBrilho}" opacity=".15" filter="url(#ig${sid})"/>`;
     else s+=`<path d="M 84 143 Q 75 162 73 182 Q 77 206 100 211 Q 123 206 127 182 Q 125 162 116 143 Z" fill="url(#grad${sid})" stroke="${corSec}" stroke-width="1.5" opacity=".87"><animate attributeName="opacity" values=".87;.93;.87" dur="3.5s" repeatCount="indefinite"/></path><ellipse cx="100" cy="164" rx="10" ry="6" fill="${corBrilho}" opacity=".18" filter="url(#ig${sid})"/><ellipse cx="100" cy="183" rx="12" ry="7" fill="${corBrilho}" opacity=".18" filter="url(#ig${sid})"/><line x1="100" y1="148" x2="100" y2="204" stroke="${cor1}" stroke-width="1" opacity=".20"/>`;
   }
 
+  s += `</g>`;
   // Cauda
+  s += `<g class="av-cauda">`;
   if(temCauda) {
     const cy2 = caudaY0;
     if(tipoCauda===1) s+=`<path d="M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55}" stroke="${cor2}" stroke-width="10" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55};M 100 ${cy2} Q 85 ${cy2+20} 72 ${cy2+40} Q 68 ${cy2+50} 78 ${cy2+55};M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55}" dur="2s" repeatCount="indefinite"/></path>`;
@@ -261,7 +268,9 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
 
   // (temAsas e tipoAsas mantidos como phantoms para preservar sequência do seed)
 
+  s += `</g>`;
   // Tentáculos
+  s += `<g class="av-tentaculo">`;
   if(temTent) {
     const nt = random(2,4);
     for(let i=0;i<nt;i++){
@@ -270,15 +279,21 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     }
   }
 
+  s += `</g>`;
   // Braços
+  s += `<g class="av-braco">`;
   for(let i=0;i<numBracos;i++){
+    s+=`<g class="av-membro" style="--i:${i}">`;
     const lado=i%2===0?-1:1, off=Math.floor(i/2)*15;
     const sx=100+(lado*brAnchorR), sy=brAnchorY+off, mx=100+(lado*50), my=brAnchorY+off+random(5,15), ex=100+(lado*65), ey=brAnchorY+off+random(20,35);
     s+=`<path d="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" stroke="${cor2}" stroke-width="${raridade==='Lendário'?8:6}" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="d" values="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey};M ${sx} ${sy} Q ${mx} ${my+3} ${ex} ${ey+2};M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" dur="3s" repeatCount="indefinite"/></path>`;
     if(raridade!=='Comum') s+=`<line x1="${ex}" y1="${ey}" x2="${ex+lado*8}" y2="${ey+6}" stroke="${corBrilho}" stroke-width="3" opacity=".8" stroke-linecap="round"><animate attributeName="opacity" values=".8;.5;.8" dur="2s" repeatCount="indefinite"/></line>`;
+    s+=`</g>`;
   }
 
+  s += `</g>`;
   // Corpo
+  s += `<g class="av-corpo">`;
   switch(tipoCorpo){
     case 1: s+=`<circle cx="100" cy="100" r="45" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="r" values="45;46;45" dur="3s" repeatCount="indefinite"/></circle>`; break;
     case 2: s+=`<ellipse cx="100" cy="100" rx="35" ry="50" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="ry" values="50;52;50" dur="3s" repeatCount="indefinite"/></ellipse>`; break;
@@ -290,21 +305,28 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     case 8: s+=`<polygon points="100,55 125,75 135,100 125,125 100,145 75,125 65,100 75,75" fill="url(#grad${sid})" opacity=".95" stroke="${corBrilho}" stroke-width="3" filter="url(#glow${sid})"><animate attributeName="opacity" values=".95;1;.95" dur="2s" repeatCount="indefinite"/></polygon>`; break;
   }
 
+  s += `</g>`;
   // Espinhos
+  s += `<g class="av-espinho">`;
   for(let i=0;i<numEsp;i++){
     const a=(Math.PI*2*i)/numEsp, r=48, x=100+Math.cos(a)*r, y=100+Math.sin(a)*r, h2=random(12,20), px=100+Math.cos(a)*(r+h2), py2=100+Math.sin(a)*(r+h2);
     s+=`<polygon points="${x},${y} ${px},${py2} ${x+3},${y+3}" fill="${corBrilho}" opacity=".7" filter="url(#ig${sid})" stroke="${cor1}" stroke-width="1"><animate attributeName="opacity" values=".7;.9;.7" dur="2s" repeatCount="indefinite"/></polygon>`;
   }
 
+  s += `</g>`;
   // Chifres
+  s += `<g class="av-chifre">`;
   for(let i=0;i<numChifres;i++){
     const x=75+(i*(50/Math.max(numChifres-1,1))), alt=random(20,35), larg=random(8,12);
     s+=`<polygon points="${x},70 ${x+larg/2},${70-alt} ${x+larg},70" fill="url(#lg${sid})" opacity=".9" filter="url(#glow${sid})" stroke="${corBrilho}" stroke-width="2"><animate attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/></polygon>`;
   }
 
+  s += `</g>`;
   // Olhos
+  s += `<g class="av-olho">`;
   const espac = numOlhos===1 ? 0 : 60/(numOlhos-1);
   for(let i=0;i<numOlhos;i++){
+    s+=`<g class="av-olho-un" style="--i:${i}">`;
     const x = numOlhos===1 ? 100 : 70+(i*espac);
     const tb = raridade==='Lendário' ? 14 : raridade==='Raro' ? 12 : 10;
     const t = tb + random(-1,1);
@@ -318,9 +340,12 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
       case 7: s+=`<circle cx="${x}" cy="95" r="${t}" fill="#0a0a0a"/><circle cx="${x}" cy="95" r="${t*.75}" fill="${corOlho}" filter="url(#glow${sid})"/><path d="M ${x} 95 Q ${x+t*.3} 95 ${x+t*.4} ${95-t*.2} Q ${x+t*.3} ${95-t*.4} ${x} ${95-t*.3}" stroke="#000" stroke-width="2" fill="none"><animateTransform attributeName="transform" type="rotate" values="0 ${x} 95;360 ${x} 95" dur="4s" repeatCount="indefinite"/></path>`;break;
       case 8: s+=`<path d="M ${x} ${95-t} L ${x+t} 95 L ${x} ${95+t} L ${x-t} 95 Z" fill="#0a0a0a"/><path d="M ${x} ${95-t*.7} L ${x+t*.7} 95 L ${x} ${95+t*.7} L ${x-t*.7} 95 Z" fill="${corOlho}" filter="url(#glow${sid})"><animate attributeName="opacity" values="1;.8;1" dur="2s" repeatCount="indefinite"/></path><circle cx="${x}" cy="95" r="${t*.3}" fill="#000"><animate attributeName="r" values="${t*.3};${t*.35};${t*.3}" dur="2s" repeatCount="indefinite"/></circle><circle cx="${x+2}" cy="93" r="${t*.2}" fill="#fff" opacity=".9"/>`;break;
     }
+    s+=`</g>`;
   }
 
+  s += `</g>`;
   // Boca
+  s += `<g class="av-boca">`;
   const by = 115;
   switch(bocaTipo){
     case 1: s+=`<path d="M 75 ${by} Q 100 ${by+12} 125 ${by}" stroke="#000" stroke-width="3" fill="none" opacity=".8"/>`;break;
@@ -333,14 +358,18 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     case 8: s+=`<path d="M 75 ${by} Q 85 ${by+5} 90 ${by} Q 95 ${by-5} 100 ${by} Q 105 ${by+5} 110 ${by} Q 115 ${by-5} 125 ${by}" stroke="#000" stroke-width="3" fill="none" opacity=".8"><animate attributeName="d" values="M 75 ${by} Q 85 ${by+5} 90 ${by} Q 95 ${by-5} 100 ${by} Q 105 ${by+5} 110 ${by} Q 115 ${by-5} 125 ${by};M 75 ${by} Q 85 ${by+7} 90 ${by} Q 95 ${by-7} 100 ${by} Q 105 ${by+7} 110 ${by} Q 115 ${by-7} 125 ${by};M 75 ${by} Q 85 ${by+5} 90 ${by} Q 95 ${by-5} 100 ${by} Q 105 ${by+5} 110 ${by} Q 115 ${by-5} 125 ${by}" dur="3s" repeatCount="indefinite"/></path>`;break;
   }
 
+  s += `</g>`;
   // Manchas
+  s += `<g class="av-mancha">`;
   const nd = raridade==='Lendário' ? random(4,6) : random(3,5);
   for(let i=0;i<nd;i++){
     const dx=random(75,125), dy=random(80,120), dr=random(2,4);
     s+=`<circle cx="${dx}" cy="${dy}" r="${dr}" fill="${corBrilho}" opacity=".25"><animate attributeName="opacity" values=".25;.15;.25" dur="3s" repeatCount="indefinite"/></circle>`;
   }
 
+  s += `</g>`;
   // Partículas por elemento
+  s += `<g class="av-particula">`;
   const np = raridade==='Lendário' ? 14 : raridade==='Raro' ? 9 : 5;
   for(let i=0;i<np;i++){
     const px=random(20,180), py=random(20,180), pt=random(1, raridade==='Lendário'?3:2), delay=(random(0,20)*0.1).toFixed(1);
@@ -353,6 +382,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     }
   }
 
+  s += `</g>`;
   s += `</g></svg>`;
   return s;
 }

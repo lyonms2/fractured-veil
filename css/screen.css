@@ -325,3 +325,96 @@
 
 /* ── DECORAÇÃO PÁSCOA ── */
 
+
+/* ══════════════════════════════════════════════════════════════════
+   AS PARTES DO AVATAR
+
+   O gerarSVG passou a envolver cada parte num <g class="av-…">. Antes
+   eram 114 formas cruas dentro de um grupo anónimo, e por isso só se
+   podia mover o bicho inteiro como um bloco — o que lê como uma imagem
+   a deslizar, não como uma criatura.
+
+   Daqui para baixo cada parte tem vida própria. Tudo em `transform`,
+   que o browser resolve na GPU e não obriga a recalcular o layout — o
+   mesmo avatar aparece em listas com muitos SVG ao mesmo tempo.
+
+   O transform-box:fill-box é o que faz o transform-origin valer sobre
+   a caixa da PRÓPRIA parte. Sem ele, a origem é o canto do viewBox e
+   uma rotação de 3 graus atira a cauda para fora do bicho.
+
+   O --i vem do gerador, um por braço e um por olho, e serve para
+   escalonar: um membro de cada vez em vez de todos ao mesmo tempo. É a
+   diferença entre orgânico e mecânico.
+══════════════════════════════════════════════════════════════════ */
+.av-olho-un, .av-asa, .av-cauda, .av-membro, .av-boca {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── Piscar ──
+   Raro e rápido, como convém. O passo dos 4% dura ~0,2s num ciclo de
+   5,2s; o resto do tempo o olho está aberto. Cada olho pisca com um
+   desfasamento próprio: dois olhos a piscar em uníssono parecem uma
+   avaria. */
+.av-olho-un {
+  transform-origin: center;
+  animation: av-piscar 5.2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.14s);
+}
+@keyframes av-piscar {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.08); }
+  98%           { transform: scaleY(1); }
+}
+
+/* ── Cauda ──
+   Origem na base, não no centro: uma cauda abana presa ao corpo. */
+.av-cauda {
+  transform-origin: 50% 20%;
+  animation: av-abanar 4.1s ease-in-out infinite;
+}
+@keyframes av-abanar {
+  0%, 100% { transform: rotate(-2.2deg); }
+  50%      { transform: rotate(2.2deg); }
+}
+
+/* ── Asas ──
+   O SVG já morfa o `d` das asas por dentro (SMIL). Isto acrescenta só
+   o batimento do conjunto, que aquilo não faz. */
+.av-asa {
+  transform-origin: 50% 45%;
+  animation: av-bater 2.8s ease-in-out infinite;
+}
+@keyframes av-bater {
+  0%, 100% { transform: scaleY(1)    rotate(0); }
+  45%      { transform: scaleY(0.93) rotate(-1.5deg); }
+}
+
+/* ── Membros ──
+   Cada braço com o seu atraso. Ciclo longo e amplitude pequena: é
+   presença, não gesticulação. */
+.av-membro {
+  transform-origin: 50% 15%;
+  animation: av-balancar 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -0.42s);
+}
+@keyframes av-balancar {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50%      { transform: rotate(1.6deg); }
+}
+
+/* ── Respirar ──
+   O corpo inteiro, muito ao de leve. É o que mais rende por linha
+   escrita: um corpo perfeitamente imóvel lê-se como morto. */
+.av-corpo {
+  transform-box: fill-box; transform-origin: 50% 85%;
+  animation: av-respirar 3.4s ease-in-out infinite;
+}
+@keyframes av-respirar {
+  0%, 100% { transform: scale(1,     1); }
+  50%      { transform: scale(1.012, 0.988); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .av-olho-un, .av-asa, .av-cauda, .av-membro, .av-corpo { animation: none; }
+}
