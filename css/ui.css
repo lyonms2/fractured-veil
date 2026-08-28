@@ -910,13 +910,23 @@
   font-size:0.5625rem; line-height:2.05; color:var(--text);
   padding:0.125rem 0.125rem 0.25rem;
 }
-/* O primeiro parágrafo é a data. Fica como uma cartela de filme. */
-.prologo-texto .lore-p:first-child {
-  font-family:'Cinzel',serif; font-size:0.6875rem; letter-spacing:0.125rem;
-  color:var(--gold); text-align:center;
-  margin:0.375rem 0 0.875rem;
-}
-.prologo-texto .lore-p { margin-bottom:0.8125rem; }
+/* Havia aqui uma regra a tratar o PRIMEIRO parágrafo como cartela de
+   filme — Cinzel dourado, centrado, entrelinha larga. Fazia sentido
+   quando o texto era uma coluna só e o primeiro parágrafo era mesmo a
+   data. Com o texto dividido em etapas deixou de fazer: cada etapa
+   redesenha, e o primeiro parágrafo de TODAS casava com o :first-child.
+   A abertura de cada página saltava para outra fonte, outro tamanho,
+   outra cor e outro alinhamento.
+
+   Uma fonte só, um tamanho só, um alinhamento só. A data não precisa de
+   tipografia própria: já se destaca por estar sozinha na primeira
+   página, que é o que a paginação lhe deu.
+
+   E à esquerda, não centrado. Os parágrafos têm de trinta a cem
+   palavras, e em texto corrido a margem esquerda é onde o olho volta a
+   cada linha; centrar obriga-o a procurar o início de cada uma. Centrar
+   serve para uma linha curta e solta, que é o que isto deixou de ter. */
+.prologo-texto .lore-p { margin-bottom:0.8125rem; text-align:left; }
 
 .prologo-rodape { flex-shrink:0; text-align:center; padding-top:0.125rem; }
 .prologo-btn {
@@ -950,7 +960,6 @@
 
 @media (max-width:420px) {
   .prologo-texto { font-size:0.53125rem; line-height:1.95; }
-  .prologo-texto .lore-p:first-child { font-size:0.625rem; }
 }
 
 /* ══════════════════════════════════════
