@@ -467,10 +467,14 @@ async function _onLoginSuccess(user) {
 
   } else {
     addLog(t('log.welcome_new'), 'good');
-    setTimeout(() => addLog(t('onboard.tip.summon'), 'info'), 1000);
-    setTimeout(() => addLog(t('onboard.tip.feed'),   'info'), 2500);
-    setTimeout(() => addLog(t('onboard.tip.play'),   'info'), 4500);
+    // A dica de INVOCAR saiu daqui: o prólogo termina no gesto de
+    // estender a mão, que É a invocação. Dizer "clique em INVOCAR" por
+    // cima disso era explicar a piada depois de contá-la. As outras
+    // duas ficam, mas esperam o prólogo sair da frente.
+    setTimeout(() => addLog(t('onboard.tip.feed'), 'info'), 2500);
+    setTimeout(() => addLog(t('onboard.tip.play'), 'info'), 4500);
     updateResourceUI();
+    if (typeof talvezAbrirPrologo === 'function') talvezAbrirPrologo();
   }
 
   if(typeof hideSplash === 'function') hideSplash();

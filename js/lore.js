@@ -35,7 +35,10 @@ function _loreCancelTypewriter() {
   if(_loreTwHandle) { _loreTwHandle.cancel(); _loreTwHandle = null; }
 }
 
-function _loreTypewriter(container, rawText, onDone) {
+// O alvoClique existe para o prólogo, que usa este mesmo motor mas
+// vive noutro modal: sem ele o listener do skip procurava sempre o
+// #loreBody, e no prólogo não havia forma de saltar a animação.
+function _loreTypewriter(container, rawText, onDone, alvoClique) {
   _loreCancelTypewriter();
 
   const SPEED = 18; // ms por caractere
@@ -58,7 +61,7 @@ function _loreTypewriter(container, rawText, onDone) {
 
   // Clique em qualquer lugar pula a animação
   // (setTimeout evita que o clique que abriu a cena dispare o skip imediatamente)
-  const body = document.getElementById('loreBody');
+  const body = alvoClique || document.getElementById('loreBody');
   function skip() {
     if(dead) return;
     kill();

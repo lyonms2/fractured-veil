@@ -1,0 +1,118 @@
+// ═══════════════════════════════════════════════════════════════════
+// PRÓLOGO — a porta de entrada do jogo
+//
+// A lore vivia numa aba do seletor de jogos, ao lado do Snake e do
+// Campo Minado, e recusava-se a abrir sem avatar vivo. Só que o
+// Capítulo I É a história de conhecer o avatar pela primeira vez: o
+// jogo exigia o vínculo para deixar ler como o vínculo nasceu.
+//
+// O prólogo desfaz esse nó. É a primeira coisa que um jogador novo vê,
+// antes de existir avatar, e termina no instante exacto em que a
+// criatura sai da Fractura e olha para ele — que é o botão INVOCAR.
+// A história entrega a mecânica na mão; não é preciso dica nenhuma.
+//
+// Regras que ele segue, e que valem para toda a lore daqui para a
+// frente: não custa nada e não dá nada. Sem preço, sem XP, sem moedas.
+// É história e mais nada.
+//
+// A criatura não tem nome nem elemento aqui, e isso não é um buraco a
+// preencher — é a escrita certa. O nome é o primeiro acto do jogador
+// neste mundo, e ainda não aconteceu.
+//
+// Depende de: gs, scheduleSave(), triggerSummon(), _loreTypewriter()
+// ═══════════════════════════════════════════════════════════════════
+
+// As cenas em si vivem no i18n, porque o prólogo é a primeira tela que
+// TODO o jogador vê — e um jogador inglês não pode receber português.
+const PROLOGO_PARAGRAFOS = 6;
+
+let _prologoModoLeitura = false;
+
+// ── Já viu? ──────────────────────────────────────────────────────
+function prologoJaVisto() {
+  return !!gs.prologoVisto;
+}
+
+function _prologoMarcarVisto() {
+  if (gs.prologoVisto) return;
+  gs.prologoVisto = true;
+  scheduleSave();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABRIR
+//
+// `releitura` distingue a entrada de verdade (uma vez na vida, termina
+// no INVOCAR) da consulta ao arquivo (quantas vezes quiser, termina num
+// simples fechar).
+// ═══════════════════════════════════════════════════════════════════
+function abrirPrologo(releitura) {
+  const modal = document.getElementById('prologoModal');
+  if (!modal) return;
+
+  _prologoModoLeitura = !!releitura;
+  modal.style.display = 'flex';
+
+  const corpo = document.getElementById('prologoTexto');
+  const rodape = document.getElementById('prologoRodape');
+  if (!corpo || !rodape) return;
+
+  corpo.innerHTML = '';
+  rodape.innerHTML = '';
+  rodape.classList.add('lore-tw-hidden');
+  rodape.classList.remove('lore-tw-reveal');
+
+  const texto = [];
+  for (let i = 1; i <= PROLOGO_PARAGRAFOS; i++) texto.push(t('prologo.p' + i));
+
+  _loreTypewriter(corpo, texto.join('\n\n'), () => _prologoMostrarFim(), modal);
+}
+
+// ── O fim: o botão que continua a história noutro lugar ──────────
+function _prologoMostrarFim() {
+  const rodape = document.getElementById('prologoRodape');
+  if (!rodape) return;
+
+  rodape.innerHTML = _prologoModoLeitura
+    ? `<button class="prologo-btn" onclick="fecharPrologo()">${t('prologo.btn.fechar')}</button>`
+    : `<button class="prologo-btn" onclick="prologoEstenderMao()">${t('prologo.btn.mao')}</button>`;
+
+  rodape.classList.remove('lore-tw-hidden');
+  rodape.classList.add('lore-tw-reveal');
+}
+
+// ── Estender a mão = invocar ─────────────────────────────────────
+function prologoEstenderMao() {
+  _prologoMarcarVisto();
+  fecharPrologo();
+  // Um respiro entre fechar o prólogo e a invocação, para o gesto ser
+  // lido como consequência da história e não como outra tela a saltar.
+  setTimeout(() => { if (typeof triggerSummon === 'function') triggerSummon(); }, 420);
+}
+
+// ── Saltar ───────────────────────────────────────────────────────
+// Quem salta não fica sem a história: ela passa a estar no arquivo.
+function pularPrologo() {
+  _prologoMarcarVisto();
+  fecharPrologo();
+}
+
+function fecharPrologo() {
+  if (typeof _loreCancelTypewriter === 'function') _loreCancelTypewriter();
+  const modal = document.getElementById('prologoModal');
+  if (modal) modal.style.display = 'none';
+  if (!_prologoModoLeitura) _prologoMarcarVisto();
+  _prologoModoLeitura = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O GANCHO
+//
+// Chamado pelo _onLoginSuccess quando não há save nenhum. O atraso
+// espera o splash sair — abrir por cima dele mostrava o prólogo a
+// aparecer por baixo de uma cortina que ainda estava a subir.
+// ═══════════════════════════════════════════════════════════════════
+function talvezAbrirPrologo() {
+  if (prologoJaVisto()) return;
+  setTimeout(() => abrirPrologo(false), 900);
+}

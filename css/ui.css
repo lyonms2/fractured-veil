@@ -879,3 +879,65 @@
   color: var(--muted);
 }
 .visita-acao-sub { font-size: 7px; color: inherit; opacity: .75; font-family: inherit; letter-spacing: .5px; }
+
+/* ══════════════════════════════════════
+   PRÓLOGO — a entrada do jogo
+   Mais escuro e mais largo que os outros modais de propósito: é a
+   primeira coisa que se vê e não deve parecer um painel lateral.
+══════════════════════════════════════ */
+#prologoModal {
+  display:none; position:fixed; inset:0; z-index:400;
+  background:radial-gradient(ellipse at 50% 38%, rgba(40,18,10,.55) 0%, rgba(4,3,10,.97) 62%);
+  align-items:center; justify-content:center; padding:16px;
+}
+.prologo-caixa {
+  width:100%; max-width:440px; max-height:92vh;
+  display:flex; flex-direction:column; gap:12px;
+}
+.prologo-topo {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.prologo-titulo {
+  font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px;
+  color:var(--gold); opacity:.75;
+}
+.prologo-pular {
+  background:none; border:none; cursor:pointer; padding:4px 6px;
+  font-size:7px; letter-spacing:1px; color:var(--muted); opacity:.6;
+  transition:opacity .2s, color .2s;
+}
+.prologo-pular:hover { opacity:1; color:var(--text); }
+
+.prologo-texto {
+  flex:1; min-height:0; overflow-y:auto;
+  font-size:9px; line-height:2.05; color:var(--text);
+  padding:2px 2px 4px;
+}
+/* O primeiro parágrafo é a data. Fica como uma cartela de filme. */
+.prologo-texto .lore-p:first-child {
+  font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px;
+  color:var(--gold); text-align:center;
+  margin:6px 0 14px;
+}
+.prologo-texto .lore-p { margin-bottom:13px; }
+
+.prologo-rodape { flex-shrink:0; text-align:center; padding-top:2px; }
+.prologo-btn {
+  width:100%; padding:12px 10px; cursor:pointer;
+  font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px;
+  color:var(--gold); border-radius:8px;
+  border:1px solid rgba(212,175,55,.45);
+  background:linear-gradient(160deg, rgba(212,175,55,.14) 0%, rgba(11,9,22,.6) 100%);
+  transition:border-color .2s, box-shadow .2s, transform .1s;
+}
+.prologo-btn:hover {
+  border-color:rgba(212,175,55,.8);
+  box-shadow:0 0 18px rgba(212,175,55,.22);
+}
+.prologo-btn:active { transform:translateY(1px); }
+
+@media (max-width:420px) {
+  .prologo-texto { font-size:8.5px; line-height:1.95; }
+  .prologo-texto .lore-p:first-child { font-size:10px; }
+}
