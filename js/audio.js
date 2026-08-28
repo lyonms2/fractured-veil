@@ -7,41 +7,84 @@
 let _audioCtx = null;
 let _audioEnabled = true;
 
-// O navegador só deixa tocar som depois de um gesto do usuário. O
-// _getCtx CRIAVA o contexto na primeira tentativa de som, viesse ela de
-// onde viesse — e como há sons no arranque, o Chrome enchia o console
-// com "The AudioContext was not allowed to start", um por tentativa.
-// Eram dezassete numa entrada normal.
+// ═══════════════════════════════════════════════════════════════════
+// O DESBLOQUEIO DO ÁUDIO
 //
-// Agora nada acontece antes do gesto. Não se perde som nenhum: o que
-// tocasse antes disso não seria ouvido de qualquer maneira.
+// O navegador só deixa tocar som depois de um gesto do usuário, e
+// reclama no console cada vez que se tenta sem ele.
+//
+// Primeira versão: o _getCtx criava o contexto na primeira tentativa de
+// som, viesse de onde viesse. Como há sons no arranque, davam dezassete
+// avisos numa entrada normal.
+//
+// Segunda versão: guardar tudo atrás de um sinalizador ligado por um
+// listener `once`. Baixou para um aviso — mas ficou um, e é instrutivo:
+// o gesto que disparou o listener não foi aceito pelo navegador como
+// ativação. Nem todo evento serve. O touchstart não conta (só o
+// touchend), uma tecla modificadora sozinha não conta, e um clique
+// feito por código nunca conta. Com `once`, essa única tentativa era
+// gasta e o áudio ficava mudo para sempre — além de deixar o aviso.
+//
+// Esta versão pergunta antes de tentar. O navigator.userActivation diz
+// se existe ativação neste instante; sem ela, não se toca em nada e
+// espera-se o gesto seguinte. Os listeners só saem quando o contexto
+// estiver mesmo a correr.
+//
+// Onde a API não existe (Firefox), tenta-se à mesma — que é o
+// comportamento de antes, e no pior caso volta o aviso nesse navegador.
+// ═══════════════════════════════════════════════════════════════════
 let _audioLiberado = false;
 
-function _getCtx() {
-  if(!_audioEnabled || !_audioLiberado) return null;
-  try {
-    if(!_audioCtx || _audioCtx.state === 'closed') {
-      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if(_audioCtx.state === 'suspended') _audioCtx.resume();
-    return _audioCtx;
-  } catch(e) { return null; }
+const _EVENTOS_GESTO = ['pointerdown', 'click', 'keydown', 'touchend'];
+
+function _temAtivacao() {
+  const ua = navigator.userActivation;
+  return ua ? ua.isActive : true;
 }
 
-// O primeiro gesto libera o áudio. O pointerdown cobre toque e rato; o
-// keydown é para quem joga de teclado e nunca dispara um dos dois.
-function _liberarAudio() {
-  _audioLiberado = true;
-  _getCtx();
+function _pararDeEscutarGestos() {
+  for (const ev of _EVENTOS_GESTO) {
+    document.removeEventListener(ev, _liberarAudio);
+  }
 }
-// O click entra porque nem todo clique passa por pointerdown: um botão
-// acionado pelo teclado dispara click sem pointerdown nenhum, e um
-// clique feito por código também. Sem ele, esses caminhos deixavam o
-// áudio mudo para sempre.
-document.addEventListener('pointerdown', _liberarAudio, { once: true, passive: true });
-document.addEventListener('click',       _liberarAudio, { once: true });
-document.addEventListener('keydown',     _liberarAudio, { once: true });
-document.addEventListener('touchstart',  _liberarAudio, { once: true, passive: true });
+
+function _liberarAudio() {
+  if (!_audioEnabled) return;
+  if (!_temAtivacao()) return;   // ainda não vale — espera o próximo
+
+  _audioLiberado = true;
+  const ctx = _getCtx();
+  if (!ctx) return;
+
+  // O resume() é assíncrono: só se pode dar por desbloqueado quando ele
+  // resolve. Enquanto não resolver em 'running', continua-se à escuta.
+  const conferir = () => { if (ctx.state === 'running') _pararDeEscutarGestos(); };
+  if (ctx.state === 'suspended') {
+    const pr = ctx.resume();
+    if (pr && pr.then) pr.then(conferir).catch(() => {});
+    else conferir();
+  } else {
+    conferir();
+  }
+}
+
+for (const ev of _EVENTOS_GESTO) {
+  document.addEventListener(ev, _liberarAudio, { passive: ev !== 'keydown' });
+}
+
+function _getCtx() {
+  if (!_audioEnabled || !_audioLiberado) return null;
+  try {
+    if (!_audioCtx || _audioCtx.state === 'closed') {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Um contexto suspenso não toca nada, e chamar resume() aqui —
+    // fora de um gesto — é exatamente o que faz o navegador reclamar.
+    // Quem retoma é o _liberarAudio, que corre dentro do gesto.
+    if (_audioCtx.state === 'suspended') return null;
+    return _audioCtx;
+  } catch (e) { return null; }
+}
 
 // ── Helper: toca um oscilador simples ─────────────────────────────
 function _osc(freq, type, start, dur, vol, ctx, dest) {
