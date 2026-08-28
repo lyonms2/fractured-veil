@@ -487,12 +487,27 @@
 }
 #coinShopModal .modal-header,
 #itemInvModal .modal-header,
-#eggInvModal .modal-header { flex-shrink:0; }
+#eggInvModal .modal-header,
+#avataresModal .modal-header { flex-shrink:0; }
+/* A regra generica .modal-card.has-scroll so poe recheio; quem rola a
+   serio precisa disto. O #avataresModal nasceu sem ela e o corpo
+   crescia ate 4585px dentro de um cartao de 764 — via-se o topo e o
+   resto ficava cortado, sem barra para la chegar. */
 #coinShopModal .modal-scroll-body,
 #itemInvModal .modal-scroll-body,
-#eggInvModal .modal-scroll-body {
+#eggInvModal .modal-scroll-body,
+#avataresModal .modal-scroll-body {
   flex:1; min-height:0; overflow-y:auto;
   width:100%; padding:0.625rem 1rem 1rem; box-sizing:border-box;
+}
+
+/* Os cartoes de slot pedem 11.25rem cada um. No cartao de 28.75rem que
+   e o tamanho por omissao cabia UMA coluna, e dez slots empilhados
+   davam quatro mil pixeis de altura. Isto e um painel de gestao: ganha
+   em ser largo. */
+#avataresModal .modal-card {
+  padding:0; height:100%; max-height:100%; max-width:42rem;
+  overflow:hidden; justify-content:flex-start;
 }
 
 .mkt-header { width:100%; padding:0.75rem 0.875rem 0.625rem; border-bottom:1px solid rgba(201,168,76,.18); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(201,168,76,.03); }
