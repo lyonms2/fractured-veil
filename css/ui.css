@@ -455,15 +455,15 @@
   #simonModal   .modal-card,
   #snakeModal   .modal-card { max-width: 23rem !important; }
 
-  .mini-title      { font-size: 0.625rem !important; letter-spacing: 0.1875rem !important; margin-bottom: 0.375rem !important; }
-  .mini-sub        { font-size: 0.4375rem !important; margin-bottom: 0.5rem !important; }
-  .mini-btn        { font-size: 0.40625rem !important; padding: 0.4375rem 1rem !important; border-radius: 0.375rem !important; }
+  .mini-title      { font-size: 0.75rem !important; letter-spacing: 0.1875rem !important; margin-bottom: 0.375rem !important; }
+  .mini-sub        { font-size: 0.5rem !important; margin-bottom: 0.5rem !important; }
+  .mini-btn        { font-size: 0.5625rem !important; padding: 0.5rem 1.25rem !important; border-radius: 0.375rem !important; }
   .mini-btns       { gap: 0.5rem !important; margin-top: 0.625rem !important; }
   /* A margem de baixo era 0.3125rem e tinha !important, portanto ganhava
      a do modals.css. Com o texto do snake a quebrar em duas linhas e o
      brilho de 18px por cima, 7,5px de folga nao chegavam. */
   .mini-result-box { font-size: 0.875rem !important; margin: 0.5rem 0 0.75rem !important; }
-  .mini-reward-txt { font-size: 0.5rem !important; }
+  .mini-reward-txt { font-size: 0.5625rem !important; }
 
   /* ── Jokenpô ── */
   .jkp-title    { font-size: 0.75rem !important; letter-spacing: 0.25rem !important; margin-bottom: 1rem !important; }
@@ -496,8 +496,13 @@
   .velha-grid { grid-template-columns: repeat(3, 6.875rem) !important; gap: 0.625rem !important; }
   .velha-cell { width: 6.875rem !important; height: 6.875rem !important; font-size: 3rem !important; border-radius: 0.75rem !important; }
 
-  /* ── Campo Minado ── */
-  #minaGrid      { zoom: 1.8; margin: 0.5rem 0 !important; }
+  /* ── Campo Minado ──
+     Havia aqui um zoom:1.8, o último do jogo, resto de quando tudo corria
+     dentro do html{zoom:1.5}. Não faz falta: a célula já vem dimensionada
+     do js/mina.js em rem (cellSize/16), o que no desktop dá 42px sozinha.
+     O zoom só a inflava para 76, que era grande demais de qualquer forma.
+     O jogo saiu do menu e hoje só se alcança por chamada direta. */
+  #minaGrid      { margin: 0.5rem 0 !important; }
   .mina-info-row { font-size: 0.625rem !important; margin-bottom: 0.375rem !important; }
 }
 

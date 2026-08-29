@@ -191,6 +191,18 @@
   line-height:1.45;
   min-height:1.25rem;
 }
+/* ── Vazias, nao ocupam espaco ──
+   As duas têm min-height para o layout não saltar quando o resultado
+   aparece. A intenção era boa, mas o preço era alto: somadas as margens,
+   guardavam 93px de vazio no meio da janela durante o jogo inteiro, entre
+   o tabuleiro e os botões. Era o buraco que se via nas três janelas.
+   O salto do fim já acontecia de qualquer maneira — o JOGAR DE NOVO
+   aparece nesse mesmo instante, escondido até ali pelo próprio jogo.
+   Tem de ser específico e nunca genérico: o #snakeCanvas também casa com
+   :empty, por ser uma tag sem filhos, e uma regra larga apagava-o. */
+.mini-result-box:empty,
+.mini-reward-txt:empty { display:none; }
+
 .mini-result-box.win  { color:#7ab87a; text-shadow:0 0 0.75rem rgba(122,184,122,.5); }
 .mini-result-box.lose { color:#e74c3c; text-shadow:0 0 0.75rem rgba(231,76,60,.4); }
 .mini-reward-txt { font-size:0.5rem; color:#7ab87a; text-align:center; min-height:0.875rem; margin-bottom:0.5rem; }
@@ -729,19 +741,23 @@
    .mem-info / .simon-info, que ficavam a flutuar sem moldura. */
 .mini-estado { flex:1; min-width:0; text-align:left; }
 .mini-estado .mini-estado-jogo {
-  font-family:'Cinzel',serif; font-size:0.4375rem;
+  font-family:'Cinzel',serif; font-size:0.625rem;
   letter-spacing:0.09375rem; color:var(--gold-light);
 }
 .mini-estado .mini-estado-linha {
-  font-size:0.4375rem; color:var(--muted);
+  font-size:0.5625rem; color:var(--muted);
   margin-top:0.125rem; letter-spacing:0.0625rem;
 }
+/* Estas duas estavam a 0.4375rem, que no celular dá 7px — ilegível.
+   No desktop a media query abaixo mandava, portanto só se via no
+   telefone. Agora a base já é legível nos dois e a media query só
+   levanta um pouco mais, para acompanhar a janela maior. */
 
 /* O painel é moldura, como o seletor: não segue o 1,5x do desktop. */
 @media(min-width:681px) {
   .mini-companheiro { padding:0.3125rem 0.5rem; margin-bottom:0.5rem; gap:0.5rem; }
   .mini-av { width:3.5rem; height:3.5rem; }
-  .mini-estado .mini-estado-jogo  { font-size:0.4375rem; }
-  .mini-estado .mini-estado-linha { font-size:0.4375rem; }
+  .mini-estado .mini-estado-jogo  { font-size:0.6875rem; }
+  .mini-estado .mini-estado-linha { font-size:0.625rem; }
   .mini-av-borbulha span { font-size:0.53125rem; }
 }

@@ -436,8 +436,8 @@
   .velha-cell { width: 4.875rem !important; height: 4.875rem !important; font-size: 2.125rem !important; border-radius: 0.625rem !important; }
   .velha-grid { grid-template-columns: repeat(3, 4.875rem) !important; gap: 0.5rem !important; }
 
-  /* Campo Minado */
-  #minaGrid { zoom: 1.35; }
+  /* Campo Minado — tinha um zoom:1.35 pelo mesmo motivo do desktop, e
+     sai pelo mesmo motivo: a célula já vem em rem do js/mina.js. */
   .mina-info-row { font-size: 0.5625rem !important; }
 
   /* ════════════════════

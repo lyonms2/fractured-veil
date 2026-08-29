@@ -75,9 +75,10 @@
   border-radius: 0.375rem;
   color: #e74c3c;
   font-family: 'Cinzel', serif;
-  font-size: 0.4375rem;
+  /* Estava a 0.4375rem: 7px no celular. */
+  font-size: 0.5625rem;
   letter-spacing: 0.0625rem;
-  padding: 0.3125rem 0.625rem;
+  padding: 0.375rem 0.75rem;
   cursor: pointer;
   touch-action: manipulation;
   white-space: nowrap;
@@ -273,9 +274,13 @@
   /* D-pad desnecessário no desktop — teclado/WASD disponível */
   .snake-dpad { display: none !important; }
 
-  /* Era 0.75rem (18px no desktop) enquanto os outros dois passatempos
-     ficaram a 12. Alinha com eles. */
-  #snakeModal .mini-title  { font-size: 0.5rem !important; letter-spacing: 0.1875rem; margin-bottom: 0; }
+  /* Alinha com os outros dois passatempos. Já esteve a 18px quando eles
+     estavam a 12, depois a 12 quando eles estavam a 15; agora os três
+     estão a 18, que é o tamanho certo para uma janela de 552px. */
+  #snakeModal .mini-title  { font-size: 0.75rem !important; letter-spacing: 0.1875rem; margin-bottom: 0; }
+  /* O FECHAR do cabeçalho do snake estava a 10.5px. Só o desktop muda —
+     a regra base serve o celular, onde a janela é bem menor. */
+  #snakeModal .mini-modal-close-btn { font-size: 0.5625rem !important; padding: 0.4375rem 0.875rem !important; }
   #snakeModal .mini-info   { font-size: 0.5625rem !important; }
   #snakeModal #snakeScore  { font-size: 0.75rem !important; }
   /* Menos espacamento: o texto do snake e o mais longo dos tres
@@ -306,13 +311,18 @@
     margin: 0;
   }
 
-  /* Dica de teclado */
+  /* Dica de teclado. Vive como ::after do modal, não do cartão, portanto
+     é um item flex da coluna: o que fica centrado na tela é o conjunto
+     cartão + dica, e não o cartão sozinho. Por isso o cartão do snake
+     assenta uns 10px acima do centro, ao contrário dos outros dois. É de
+     propósito — a dica pertence à janela e deve acompanhá-la.
+     Estava a 0.5rem, 12px, pequena demais para a janela de 552px. */
   #snakeModal::after {
     content: '↑ ↓ ← →  ou  W A S D';
     font-family: 'Cinzel', serif;
-    font-size: 0.5rem;
-    color: rgba(255,255,255,.2);
+    font-size: 0.625rem;
+    color: rgba(255,255,255,.28);
     letter-spacing: 0.125rem;
-    margin-top: -0.125rem;
+    margin-top: 0.25rem;
   }
 }
