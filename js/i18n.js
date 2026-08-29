@@ -304,8 +304,6 @@
       // Egg actions
       'egg.burn.title':          '🔥 Queimar Ovo',
       'egg.burn.btn':            '🔥 Confirmar',
-      'egg.sell.title':          '💎 Vender à Pool',
-      'egg.sell.btn':            '💎 Confirmar',
 
       // Panel / right side
       'panel.summon_title':      '◆ INVOCAR AVATAR',
@@ -625,8 +623,6 @@
       // Egg actions
       'egg.burn.title':          '🔥 Burn Egg',
       'egg.burn.btn':            '🔥 Confirm',
-      'egg.sell.title':          '💎 Sell to Pool',
-      'egg.sell.btn':            '💎 Confirm',
 
       // Panel / right side
       'panel.summon_title':      '◆ SUMMON AVATAR',

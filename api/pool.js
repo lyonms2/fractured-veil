@@ -7,7 +7,7 @@
 //  POST /api/pool { acao, idToken, ... }
 //    acao='taxa'        → entrada na pool (taxa de listagem/venda)
 //    acao='listar-ovo'  → lista ovo no eggMarket (atómico, server-side)
-//    acao='vender-ovo'  → jogador vende ovo à pool
+//    acao='queimar-ovo' → jogador queima ovo e a pool paga (preço dinâmico)
 //    acao='botar-ovo'   → avatar bota ovo (relógio do servidor)
 // ═══════════════════════════════════════════════════════════════
 
@@ -202,7 +202,7 @@ module.exports = async function handler(req, res) {
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'listar-ovo')  return handleListarOvo(req, res, db, poolRef, uid);
-  if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
+  if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'retirar-ovo') return handleRetirarOvo(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
@@ -352,7 +352,19 @@ async function handleListarOvo(req, res, db, poolRef, uid) {
 }
 
 // ── Vender ovo à pool ───────────────────────────────────────────
-async function handleVenderOvo(req, res, db, poolRef, uid) {
+/* QUEIMAR UM OVO: a pool paga e o ovo desaparece.
+
+   Chamava-se handleVenderOvo, e o nome mentia. Não há comprador nenhum
+   nesta transação — o ovo é apagado do avatarSlots, a prova morre com
+   ele em ovosEmitidos, e a pool paga do seu saldo. Isso é queimar. A
+   venda a sério é o handleListarOvo, em que outro jogador paga e fica
+   com o ovo.
+
+   O preço é dinâmico de propósito: sobe com o ratio da pool e cai quando
+   ela esvazia, e cada queima conta para o limite semanal do jogador.
+   Havia um segundo handler, de preço fixo, que escapava às duas coisas;
+   saiu, e este ficou com o nome que era dele. */
+async function handleQueimarOvo(req, res, db, poolRef, uid) {
   const { raridade, ovoId } = req.body;
   if (!raridade || raridade === 'Comum') return res.status(400).json({ erro: 'Ovos Comuns não são aceites.' });
   if (!ovoId) return res.status(400).json({ erro: 'ovoId em falta' });
@@ -431,7 +443,7 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
       }, marcarSaque(poolData, preco, FieldValue)));
       const logRef = poolRef.collection('logs').doc();
       tx.set(logRef, {
-        tipo: 'saida', motivo: `Ovo ${raridade} vendido à pool`,
+        tipo: 'saida', motivo: `Ovo ${raridade} queimado na pool`,
         origem: uid, total: preco, pool: -preco,
         ts: FieldValue.serverTimestamp(),
       });
@@ -442,41 +454,40 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
     return res.status(200).json({ ok: true, preco: resultado.preco, novosCristais: resultado.novosCristais });
 
   } catch (err) {
-    console.error('[pool/vender-ovo]', err.message);
+    console.error('[pool/queimar-ovo]', err.message);
     return res.status(400).json({ erro: err.message });
   }
 }
 
-/* A QUEIMA DE OVOS RAROS E LENDÁRIOS SAIU DAQUI.
+/* A SEGUNDA PORTA PARA A POOL SAIU DAQUI.
 
-   Vivia aqui um handleQueimarOvo com o seu próprio preço fixo — 2 💎 o
-   Raro, 6 o Lendário, até 3 e 9 com o bónus do avatar activo.
+   Vivia aqui um segundo handler de queima, com preço FIXO — 2 💎 o Raro,
+   6 o Lendário, até 3 e 9 com o bónus do avatar activo.
 
-   O problema não era o preço, era serem dois caminhos para o mesmo
-   acto. A transação da queima e a do handleVenderOvo, aqui em cima,
-   eram iguais linha a linha: tiravam o ovo do avatarSlots, apagavam a
-   prova em ovosEmitidos, creditavam cristais ao jogador e debitavam a
-   pool com um log de saída. Em nenhuma das duas alguém recebia o ovo —
-   "vender à pool" nunca teve comprador, é destruir o ovo tal como
-   queimar.
+   O problema não era o preço, era serem dois caminhos para o mesmo acto.
+   A transação dele e a do handleQueimarOvo que ficou, acima, eram iguais
+   linha a linha: tiravam o ovo do avatarSlots, apagavam a prova em
+   ovosEmitidos, creditavam cristais e debitavam a pool com um log de
+   saída. Nenhuma delas tinha comprador — as duas destruíam o ovo.
 
-   Só que a queima escapava às duas defesas da pool:
+   Só que a do preço fixo escapava às duas defesas da pool:
 
-     o preço  ignorava o ratio da pool. Com a pool baixa pagava 2 💎
-              onde a venda pagava 0,50 — quatro vezes mais, justamente
-              quando a pool tinha menos para dar.
-     o limite não verificava o poolVendasLog. A venda conta para o
-              limite semanal (1/2/3/5 conforme a pool); a queima era
+     o preço  ignorava o ratio. Com a pool baixa pagava 2 💎 onde a
+              outra pagava 0,50 — quatro vezes mais, justamente quando
+              a pool tinha menos para dar.
+     o limite não verificava o poolVendasLog. A que ficou conta para o
+              limite semanal (1/2/3/5 conforme a pool); esta era
               ilimitada, travada só pelo tecto global de 100 💎/dia.
 
-   Com as duas portas abertas, ninguém tinha motivo para usar a da
-   venda, e o preço dinâmico e o limite semanal eram código morto.
+   Com as duas portas abertas ninguém tinha motivo para usar a de preço
+   dinâmico, e o limite semanal era código morto.
 
-   Fica uma porta só para a pool — o handleVenderOvo. A outra saída de
-   um ovo raro é o mercado, onde outro jogador paga e fica com ele.
+   Fica uma porta só para a pool — o handleQueimarOvo, dinâmico e com
+   limite. A outra saída de um ovo raro é o mercado, onde outro jogador
+   paga e fica com ele.
 
-   O Comum não passava por aqui: queima-se no cliente por 20 🪙 de
-   moedas internas, que não saem da pool. */
+   O Comum não passa por aqui: a pool não o aceita, e queima-se no
+   cliente por 20 🪙 de moedas internas, que não saem da pool. */
 
 /* Retirar um ovo do mercado.
    Isto era feito no cliente, num batch que apagava a listagem e devolvia

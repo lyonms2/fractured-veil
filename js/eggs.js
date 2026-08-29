@@ -135,27 +135,26 @@ function burnEgg(id) {
     return;
   }
 
-  // Raro e Lendário deixaram de se queimar por cristais.
+  // QUEIMAR É O NOME DO QUE ACONTECE.
   //
-  // Queimar e "vender à pool" eram o mesmo acto com dois nomes: as duas
-  // transações do servidor eram iguais linha a linha — tiravam o ovo do
-  // avatarSlots, apagavam a prova em ovosEmitidos, creditavam cristais e
-  // debitavam a pool. Em nenhuma delas alguém recebia o ovo.
+  // Havia aqui duas portas para o mesmo acto: uma "queima" que pagava
+  // valor fixo (2 e 6 💎, até 3 e 9 com bónus de avatar) e uma "venda à
+  // pool" que pagava preço dinâmico. As duas transações do servidor eram
+  // iguais linha a linha — tiravam o ovo do avatarSlots, apagavam a
+  // prova em ovosEmitidos, creditavam cristais e debitavam a pool. Em
+  // nenhuma delas alguém recebia o ovo: venda à pool nunca teve
+  // comprador.
   //
-  // Só que a queima pagava valor FIXO (2 e 6 💎, até 3 e 9 com bónus de
-  // avatar) e não verificava o limite semanal de vendas, enquanto a
-  // venda pagava o preço dinâmico e contava para o limite. Com a pool
-  // baixa a queima chegava a pagar 4× mais, sem limite de quantas por
-  // semana — ou seja, escapava exactamente às duas defesas que existem
-  // para a pool não secar, e ninguém teria motivo para usar o botão da
-  // venda.
+  // O valor fixo escapava às duas defesas da pool — ignorava o ratio e
+  // não contava para o limite semanal — e por isso saiu. Mas o nome que
+  // ficou foi o errado: não se VENDE nada à pool, destrói-se o ovo e ela
+  // paga por ele. Isso chama-se queimar.
   //
-  // Fica uma porta só para a pool, a dinâmica. A outra saída de um ovo
-  // raro é o mercado, onde outro jogador paga e fica com ele.
-  if(ovo.raridade !== 'Comum') {
-    addLog(t('egg.log.no_burn_rare', {rar: ovo.raridade}), 'bad');
-    return;
-  }
+  // Fica um botão só, o 🔥, e o que ele dá depende da raridade: o Comum
+  // dá moedas internas (a pool não aceita Comuns), o Raro e o Lendário
+  // dão cristais da pool a preço dinâmico, com limite semanal. Vender a
+  // sério é só no mercado, a outro jogador, pelo 🛒.
+  if(ovo.raridade !== 'Comum') { _queimarParaPool(id); return; }
 
   const bonus    = rarityBonus().burnBonus;
   const bonusPct = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
@@ -189,10 +188,14 @@ function _doBurnComum(id, moedas) {
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
-function sellEggToPool(id) {
+// Queimar um Raro ou Lendário: o ovo é destruído e a pool paga por ele,
+// a preço dinâmico. Chamada pelo burnEgg, que é a porta única.
+function _queimarParaPool(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) { addLog(t('egg.log.not_found'), 'bad'); return; }
   const ovo = eggsInInventory[idx];
+  // Guarda: o burnEgg já encaminha o Comum para as moedas, mas a pool
+  // não aceita Comuns e isto não pode depender de quem chama.
   if(ovo.raridade === 'Comum') { addLog(t('egg.log.common_no_pool'), 'bad'); return; }
   if(!firebase?.auth?.()?.currentUser) { addLog(t('egg.log.connect'), 'bad'); return; }
 
@@ -203,9 +206,9 @@ function sellEggToPool(id) {
   const minP   = ovo.raridade === 'Lendário' ? 0.25 : 0.10;
   const preco  = Math.max(minP, parseFloat((base * ratio).toFixed(2)));
 
-  const overlay = document.getElementById('eggSellOverlay');
-  const preview = document.getElementById('eggSellPreview');
-  const confirmBtn = document.getElementById('eggSellConfirmBtn');
+  const overlay = document.getElementById('eggBurnOverlay');
+  const preview = document.getElementById('eggBurnPreview');
+  const confirmBtn = document.getElementById('eggBurnConfirmBtn');
   if(!overlay || !preview || !confirmBtn) return;
 
   // Perguntava só se a pool tinha saldo, e o servidor pergunta duas
@@ -242,7 +245,7 @@ function sellEggToPool(id) {
       const resp = await fetch('/api/pool', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ acao: 'vender-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
+        body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
       });
       const json = await resp.json();
       if(!json.ok) throw new Error(json.erro || 'erro');
@@ -257,14 +260,14 @@ function sellEggToPool(id) {
       renderEggInventory();
       updateResourceUI();
       renderPoolWidget();
-      addLog(t('egg.log.sold', {rar: ovo.raridade, preco: json.preco}), 'good');
+      addLog(t('egg.log.burned_pool', {rar: ovo.raridade, preco: json.preco}), 'good');
       showFloat(`+${json.preco} 💎`, '#a78bfa');
-      showBubble(`+${json.preco} 💎 da pool!`);
+      showBubble(`+${json.preco} 💎 🔥`);
       scheduleSave();
     } catch(err) {
-      console.error('[sellEggToPool]', err);
-      showBubble(t('egg.bub.sell_error'));
-      addLog(`⚠️ ${err.message || t('egg.log.sell_error')}`, 'bad');
+      console.error('[_queimarParaPool]', err);
+      showBubble(t('egg.bub.burn_error'));
+      addLog(`⚠️ ${err.message || t('egg.log.burn_pool_error')}`, 'bad');
     }
   };
 }
@@ -673,8 +676,7 @@ function renderEggInventory() {
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="listEggOnMarket(${ovo.id})">🛒</button>` : ''}
-             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎</button>` : ''}
-             ${ovo.raridade === 'Comum' ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>` : ''}`
+             <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
         }
       </div>
     </div>`;
