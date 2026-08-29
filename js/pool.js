@@ -209,7 +209,6 @@ function renderPoolStatsCard() {
     </div>
     <div style="font-size:0.5rem;color:var(--muted);text-align:center;margin-top:0.625rem;line-height:1.8;">
       ${t('mkt.pool.fees')}<br>
-      ${t('mkt.pool.weekly_dist')} <strong style="color:var(--gem2);">${t('mkt.pool.estimated', {pct: _calcPctDisplay(saldo)})}</strong> ${t('mkt.pool.per_game')}<br>
       <span style="color:var(--gem2);font-weight:700;">
         ${saldo < 100
           ? t('mkt.pool.limit_1')
@@ -227,27 +226,23 @@ function renderPoolStatsCard() {
 // CÁLCULO DE % DINÂMICO (espelho do _pool-economia.js)
 // Usado apenas para exibição no frontend
 // ═══════════════════════════════════════════
-function _calcPctDisplay(saldo) {
-  const PCT_MIN = 0.05, PCT_MAX_JOGO = 0.20, PCT_MAX_TOTAL = 0.45, NUM_JOGOS = 3;
-  const ratio    = Math.min(1, saldo / POOL_ALVO);
-  const maxPJ    = Math.min(PCT_MAX_JOGO, PCT_MAX_TOTAL / NUM_JOGOS);
-  const pct      = PCT_MIN + (maxPJ - PCT_MIN) * ratio;
-  return (pct * 100).toFixed(1);
-}
-
-// Preenche os campos dinâmicos da aba de transparência
+// Preenche os campos dinâmicos da aba de transparência.
+//
+// Vivia aqui um _calcPctDisplay que calculava, a partir do saldo, a
+// fatia semanal da pool: 5% no mínimo, subindo até 15% com a pool no
+// alvo. Alimentava três sítios — o cartão da pool ("X% estimado esta
+// semana por jogo"), a linha da manutenção e a linha do "Pool retém".
+//
+// Essa distribuição já não existe: o dev passou a receber 1% de cada
+// resgate e a pool deixou de ser tocada. Os três sítios continuavam a
+// mostrar percentagens da pool, ao lado de um texto que jurava o
+// contrário. Saiu o cálculo e saíram os dois set().
+//
+// O que fica é o que ainda depende do saldo a sério: o preço de
+// recompra dos ovos, que sobe até 2× conforme a pool enche.
 function renderTranspDistribuicao() {
   if(!poolData) return;
-  const saldo = poolData.cristais || 0;
-  const pct   = parseFloat(_calcPctDisplay(saldo));
-  // Era pct * 4 — os três jogos PvP mais o dev. O ranking semanal saiu
-  // com os jogos, e agora só a manutenção tira da pool toda a semana.
-  const retencao = Math.max(0, 100 - pct).toFixed(1);
-
-  const fmt = v => t('mkt.transp.pct_of_pool', { pct: v.toFixed(1) });
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-  set('transPctDev',      fmt(pct));
-  set('transPctRetencao', t('mkt.transp.retained', { pct: retencao }));
   set('transPriceRaro',   t('mkt.transp.price_display', { price: fmtC(calcPoolPrice('Raro')),    max: fmtC(POOL_BASE_RARO * 2) }));
   set('transPriceLend',   t('mkt.transp.price_display', { price: fmtC(calcPoolPrice('Lendário')), max: fmtC(POOL_BASE_LEND * 2) }));
 }
