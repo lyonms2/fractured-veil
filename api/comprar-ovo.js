@@ -105,10 +105,18 @@ module.exports = async function handler(req, res) {
       };
       eggEntregue = newEgg;
 
+      /* O registo acompanha o ovo desde que ele entra.
+         Sem isto o ovo ficava inútil ao fim de um recarregamento: o
+         applyGameState() move os ovos do inboxEggs para o slot.eggs e
+         limpa o inbox, e a partir daí a única prova de que o ovo é
+         legítimo seria o inbox — que já não o tem. Chocar, queimar, vender
+         e listar passavam todos a dar OVO_NOT_FOUND.
+         O inbox é entrega; o ovosEmitidos é propriedade. */
       tx.update(buyerRef, {
         cristais:      novoSaldoComprador,
         'gs.cristais': novoSaldoComprador,
         inboxEggs:     FieldValue.arrayUnion(newEgg),
+        [`ovosEmitidos.o${newEgg.id}`]: newEgg.raridade,
       });
 
       const sellerRef  = db.collection('players').doc(egg.sellerId);

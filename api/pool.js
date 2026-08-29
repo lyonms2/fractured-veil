@@ -610,7 +610,17 @@ async function handleRetirarOvo(req, res, db, uid) {
         elemento: l.elemento || '',
         expiraEm: l.expiraEm || 0,
       };
-      tx.update(playerRef, { inboxEggs: FieldValue.arrayUnion(restaurado) });
+      /* O registo acompanha o ovo desde que ele entra.
+         Sem isto o ovo ficava inútil ao fim de um recarregamento: o
+         applyGameState() move os ovos do inboxEggs para o slot.eggs e
+         limpa o inbox, e a partir daí a única prova de que o ovo é
+         legítimo seria o inbox — que já não o tem. Chocar, queimar, vender
+         e listar passavam todos a dar OVO_NOT_FOUND.
+         O inbox é entrega; o ovosEmitidos é propriedade. */
+      tx.update(playerRef, {
+        inboxEggs: FieldValue.arrayUnion(restaurado),
+        [`ovosEmitidos.o${restaurado.id}`]: restaurado.raridade,
+      });
       tx.delete(listRef);
       return restaurado;
     });
