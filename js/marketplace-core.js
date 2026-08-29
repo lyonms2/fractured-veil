@@ -152,8 +152,45 @@ document.addEventListener('DOMContentLoaded', () => {
 // login duplicado (marketplace-auth.js) - o modal so e alcancavel estando
 // ja autenticado dentro de index.html.
 let _mktOpened = false;
+/* Preenche as listas de elemento a partir do ELEM_CFG.
+
+   Estavam escritas à mão no index.html e ficaram para trás: ofereciam
+   Eletricidade e Luz, que o jogo não tem — filtrar por elas dava sempre
+   lista vazia, sem explicação nenhuma. O jogo tem cinco: Fogo, Água,
+   Terra, Vento e Sombra.
+
+   Gerar daqui é o que impede a mesma deriva de acontecer outra vez:
+   acrescentar um elemento ao ELEM_CFG passa a chegar aos filtros
+   sozinho. Os nomes vão como estão — são identificadores, e é assim que
+   aparecem em todo o resto do jogo, incluindo em inglês. */
+function _mktEncherFiltrosDeElemento() {
+  if (typeof ELEM_CFG === 'undefined') return;
+  const nomes = Object.keys(ELEM_CFG);
+  for (const id of ['filterElem', 'eggFilterElem']) {
+    const sel = document.getElementById(id);
+    if (!sel || sel.tagName !== 'SELECT') continue;
+    const escolhido = sel.value;
+    // A primeira opção é o "Todos", que é traduzido e fica.
+    while (sel.options.length > 1) sel.remove(1);
+    for (const nome of nomes) {
+      const o = document.createElement('option');
+      o.value = nome;
+      // O emoji está no CARACTERISTICAS_ELEMENTAIS, não no ELEM_CFG (que
+      // guarda as cores). As chaves dos dois são as mesmas, mas convém
+      // não assumir: sem emoji, mostra-se só o nome.
+      const car = (typeof CARACTERISTICAS_ELEMENTAIS !== 'undefined')
+                    ? CARACTERISTICAS_ELEMENTAIS[nome] : null;
+      o.textContent = (car && car.emoji ? car.emoji + ' ' : '') + nome;
+      sel.appendChild(o);
+    }
+    // Preserva a escolha do jogador se ela ainda existir.
+    if (escolhido && nomes.includes(escolhido)) sel.value = escolhido;
+  }
+}
+
 async function openMarketplaceModal(section) {
   ModalManager.open('marketplaceModal');
+  _mktEncherFiltrosDeElemento();
   if(!_mktOpened) {
     _mktOpened = true;
     await loadPlayerData();
