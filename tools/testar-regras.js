@@ -3,7 +3,7 @@
 // CAMINHOS-FOLHA — 'gs.moedas', não 'gs'. É isso que faz o mapa encaixado
 // fundir-se em vez de ser substituído, e é disso que a regra depende.
 // Por isso o teste usa updateMask com folhas: reproduz o SDK de verdade.
-const HOST = 'http://127.0.0.1:8455';
+const HOST = 'http://127.0.0.1:8512';
 const PROJ = 'demo-teste';
 const BASE = `${HOST}/v1/projects/${PROJ}/databases/(default)/documents`;
 
@@ -82,6 +82,12 @@ async function ler(doc) {
   ok('EXPLOIT encher o inbox',        await arr({'inboxEggs':[ovo('Lendário'),ovo('Lendário'),ovo('Lendário')]}), 403);
   ok('esvaziar depois de consumir',   await arr({'inboxEggs':[]}), 200);
   ok('conta nova com inbox cheio',    await escrever('F','F',{'inboxEggs':[ovo('Lendário')]}), 403);
+
+  // ── ovosEmitidos: é a prova, o cliente não lhe toca ──
+  await escrever(null,'G',{'ovosEmitidos.o111':'Comum','gs.moedas':10}, true);
+  ok('EXPLOIT forjar ovosEmitidos',   await escrever('G','G',{'ovosEmitidos.o111':'Lendário'}), 403);
+  ok('EXPLOIT criar ovosEmitidos',    await escrever('G','G',{'ovosEmitidos.o222':'Lendário'}), 403);
+  ok('conta nova com ovosEmitidos',   await escrever('H','H',{'ovosEmitidos.o1':'Lendário'}), 403);
 
   // o saldo sobreviveu a tudo?
   const d = await ler('D');

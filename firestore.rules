@@ -41,7 +41,12 @@ service cloud.firestore {
     function camposDoServidor() {
       return ['cristais', 'resgateLog', 'ultimoResgate',
               'cambioLog', 'ultimoCambio',
-              'referralBonus', 'referralChain'];
+              'referralBonus', 'referralChain',
+              // O registo dos ovos que o servidor emitiu. É a prova que
+              // deixa vender um ovo posto pelo próprio avatar sem confiar
+              // no avatarSlots, que o cliente escreve. Ver handleBotarOvo
+              // e handleListarOvo em api/pool.js.
+              'ovosEmitidos'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do

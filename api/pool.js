@@ -260,20 +260,56 @@ async function handleListarOvo(req, res, db, poolRef, uid) {
       const inboxEggs = pData.inboxEggs || [];
       const cristais  = pData.gs?.cristais ?? pData.cristais ?? 0;
 
-      const ovoIdx = inboxEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
-      if (ovoIdx === -1) throw new Error('OVO_NOT_FOUND');
+      /* Um ovo pode estar em dois sítios, e cada um tem a sua prova.
 
-      const taxa         = EGG_LIST_FEE[raridade];
+         inboxEggs — ovos comprados, postos aqui pelo servidor
+         (api/comprar-ovo.js) e que o cliente já não pode encher.
+         Estar lá é prova bastante.
+
+         avatarSlots[].eggs — ovos que o próprio avatar pôs. Este array é
+         escrito pelo cliente por inteiro, portanto estar lá não prova
+         nada: qualquer um escrevia um Lendário e vendia-o. A prova é o
+         ovosEmitidos, que o handleBotarOvo escreve e o cliente não.
+
+         Antes só a primeira origem era aceite, e daí vinha o defeito: um
+         ovo posto pelo próprio avatar dava sempre OVO_NOT_FOUND. Punha-se
+         o ovo e não havia como o vender. */
+      const emitidos = pData.ovosEmitidos || {};
+      const slotIdx  = pData.activeSlotIdx ?? 0;
+      const slots    = [...(pData.avatarSlots || [])];
+      const slot     = slots[slotIdx];
+      const slotEggs = slot?.eggs || [];
+
+      const idxInbox = inboxEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+      const idxSlot  = slotEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
+
+      // A raridade que vale é a que o servidor emitiu, nunca a do pedido.
+      const emitidoComo = emitidos['o' + String(ovoId)];
+      const doProprioAvatar = idxSlot !== -1 && emitidoComo === raridade;
+
+      if (idxInbox === -1 && !doProprioAvatar) throw new Error('OVO_NOT_FOUND');
+
+      const taxa = EGG_LIST_FEE[raridade];
       if (cristais < taxa) throw new Error('INSUFFICIENT');
 
-      const ovoToRemove  = inboxEggs[ovoIdx];
+      const ovoToRemove   = idxInbox !== -1 ? inboxEggs[idxInbox] : slotEggs[idxSlot];
       const novosCristais = cristais - taxa;
 
-      tx.update(playerRef, {
-        inboxEggs:     FieldValue.arrayRemove(ovoToRemove),
+      const alteracoes = {
         cristais:      novosCristais,
         'gs.cristais': novosCristais,
-      });
+      };
+      if (idxInbox !== -1) {
+        alteracoes.inboxEggs = FieldValue.arrayRemove(inboxEggs[idxInbox]);
+      } else {
+        // Sai do slot e o registo é apagado — sem isto, o mesmo ovo podia
+        // ser listado outra vez depois de o cliente o repor no array.
+        const novosEggs = slotEggs.filter((_, i) => i !== idxSlot);
+        slots[slotIdx]  = { ...slot, eggs: novosEggs };
+        alteracoes.avatarSlots = slots;
+        alteracoes[`ovosEmitidos.o${ovoId}`] = FieldValue.delete();
+      }
+      tx.update(playerRef, alteracoes);
 
       const listRef = db.collection('eggMarket').doc();
       tx.set(listRef, {
@@ -368,11 +404,16 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
       const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
       const novosCristais  = cristaisAtuais + preco;
 
+      // O registo do ovo morre com ele. Sem isto, um ovo queimado deixava
+      // para trás a sua prova em ovosEmitidos, e o cliente — que escreve o
+      // avatarSlots — podia repô-lo no array e listá-lo à venda depois de
+      // já ter recebido os cristais por o queimar.
       tx.update(playerRef, {
         avatarSlots:   newSlots,
         'gs.cristais': novosCristais,
         cristais:      novosCristais,
         poolVendasLog: { semana, count: countSemana + 1 },
+        [`ovosEmitidos.o${ovoId}`]: FieldValue.delete(),
       });
       tx.update(poolRef, Object.assign({
         cristais:  FieldValue.increment(-preco),
@@ -636,9 +677,25 @@ async function handleBotarOvo(_req, res, db, uid) {
       const cdMs     = 24 * 3600000;
       const newReady = now + cdMs;
 
+      /* O servidor passa a lembrar-se do que emitiu.
+         Sem isto, o handleListarOvo não tinha como aceitar um ovo posto
+         pelo próprio avatar: ele vive em avatarSlots[].eggs, que o cliente
+         escreve por inteiro, e confiar nisso era deixar fabricar
+         Lendários. Só que a alternativa era não os deixar vender de todo —
+         que é o que acontecia, e é o defeito que isto corrige.
+         O registo é a resposta: guarda-se id → raridade num campo que só o
+         servidor escreve (ver camposDoServidor em firestore.rules). Na
+         listagem confere-se contra ele, e a entrada é apagada, para o
+         mesmo ovo não ser vendido duas vezes. */
+      // A chave leva um 'o' à frente porque um caminho de campo do
+      // Firestore não aceita segmentos só de dígitos, e os ids dos ovos
+      // são Date.now(). Sem o prefixo, a escrita vinha com 400.
+      const emitidos = {};
+      for (const o of novosOvos) emitidos[`ovosEmitidos.o${o.id}`] = o.raridade;
+
       const newSlots = [...slots];
       newSlots[slotIdx] = { ...slot, eggs: [...slotEggs, ...novosOvos], eggLayReadyAt: newReady, eggLayCooldown: Math.ceil(cdMs / 60000) };
-      tx.update(playerRef, { avatarSlots: newSlots, 'gs.moedas': moedas - 50 });
+      tx.update(playerRef, Object.assign({ avatarSlots: newSlots, 'gs.moedas': moedas - 50 }, emitidos));
 
       return { eggs: novosOvos, novasMoedas: moedas - 50, eggLayReadyAt: newReady };
     });
