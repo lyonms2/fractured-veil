@@ -296,7 +296,7 @@
 .pool-log-amount{font-family:'Cinzel',serif;font-weight:700;font-size:0.6875rem;white-space:nowrap;}
 .pool-log-row.entrada .pool-log-amount{color:var(--green);}
 .pool-log-row.saida .pool-log-amount{color:var(--gem);}
-.pool-log-time{font-size:0.4375rem;color:var(--muted);white-space:nowrap;}
+.pool-log-time{font-size:0.5rem;color:var(--muted);white-space:nowrap;}
 .pool-widget{background:var(--surface2);border:1px solid var(--border2);border-radius:0.75rem;padding:0.875rem 1rem;margin-bottom:1.25rem;}
 .pool-title{font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:var(--gem2);letter-spacing:0.0625rem;text-transform:uppercase;margin-bottom:0.625rem;}
 .pool-bar-wrap{height:0.25rem;background:var(--border);border-radius:0.125rem;margin-bottom:0.625rem;overflow:hidden;}
@@ -392,6 +392,27 @@
 .transp-limit-bar-wrap{background:rgba(255,255,255,.05);border-radius:1.25rem;height:0.5rem;margin:0.625rem 0 0.375rem;overflow:hidden;}
 .transp-limit-bar{height:100%;border-radius:1.25rem;background:linear-gradient(90deg,var(--gem),var(--gold));transition:width .4s;}
 .transp-limit-txt{font-size:0.6875rem;color:var(--muted);text-align:center;}
+
+/* Os rótulos, as notas e os sufixos desta página tinham o font-size
+   INLINE. Inline ganha a qualquer regra de folha de estilo, portanto o
+   bloco de desktop lá em baixo nunca lhes chegou: quando tudo o resto
+   encolheu para caber no modal, estes ficaram onde estavam e passaram a
+   ser MAIORES do que o corpo de texto que anotam. Medido: corpo a
+   10,5px, rótulos e notas a 12px.
+   Passam a classes para encolherem com os outros e a hierarquia voltar
+   ao sítio — corpo > rótulo > sufixo. */
+.transp-cap{
+  margin:0.75rem 0 0.375rem; font-size:0.5625rem;
+  color:var(--muted); letter-spacing:0.0625rem;
+}
+.transp-note{ margin-top:0.625rem; font-size:0.5625rem; color:var(--muted); }
+/* Em em, não em rem: acompanha o valor dentro do qual vive, nas duas
+   escalas, sem precisar de override nenhum. */
+.transp-sufixo{ font-size:0.875em; color:var(--muted); font-weight:400; }
+.transp-economia{
+  font-family:'Cinzel',serif; font-size:0.5625rem; color:var(--muted);
+  letter-spacing:0.125rem; margin-bottom:0.875rem;
+}
 
 /* OVOS */
 .egg-browse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.375rem,1fr));gap:0.75rem;}
@@ -601,8 +622,10 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   }
   #marketplaceModal .mkt-nav-btn .nav-icon { font-size: 0.5625rem; width: 0.875rem; }
 
-  #marketplaceModal .section-title { font-size: 0.5625rem; margin-bottom: 0.1875rem; }
-  #marketplaceModal .section-sub   { font-size: 0.40625rem; margin-bottom: 0.625rem; }
+  /* Valem para todas as secções do marketplace, não só esta: o
+     subtítulo dava 9,75px em qualquer uma delas. */
+  #marketplaceModal .section-title { font-size: 0.6875rem; margin-bottom: 0.1875rem; }
+  #marketplaceModal .section-sub   { font-size: 0.5rem;    margin-bottom: 0.625rem; }
 
   /* A alavanca principal: o proprio #marketplaceModal define
      font-size:0.875rem, que no desktop sao 21px, e TUDO o que nao tem
@@ -619,13 +642,24 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   #marketplaceModal .pkg-gem    { font-size: 1.25rem; }
   #marketplaceModal .pkg-amount { font-size: 0.8125rem; }
 
-  #marketplaceModal .transp-block-body { font-size: 0.4375rem; }
-  #marketplaceModal .empty-txt,
-  #marketplaceModal .loading           { font-size: 0.4375rem; }
   #marketplaceModal .empty-icon        { font-size: 1.5rem; }
 
+  /* A TRANSPARÊNCIA lia-se a 9,75-11,25px, medido no browser. É a página
+     onde o jogador vem conferir contas de dinheiro; era a última que
+     devia obrigar a apertar os olhos. Sobe para a escala do resto do
+     jogo, com a hierarquia explícita em vez de acidental. */
+  #marketplaceModal .transp-block-title { font-size: 0.625rem; }    /* 15px   */
+  #marketplaceModal .transp-block-body,
   #marketplaceModal .transp-taxa-row,
-  #marketplaceModal .transp-timelock-status { font-size: 0.4375rem; }
+  #marketplaceModal .transp-taxa-val,
+  #marketplaceModal .transp-link,
+  #marketplaceModal .transp-timelock-status,
+  #marketplaceModal .empty-txt,
+  #marketplaceModal .loading            { font-size: 0.5625rem; }   /* 13,5px */
+  #marketplaceModal .transp-cap,
+  #marketplaceModal .transp-note,
+  #marketplaceModal .transp-economia,
+  #marketplaceModal .transp-limit-txt   { font-size: 0.5rem; }      /* 12px   */
 
   /* O grupo dos 0.6875rem — titulos, botoes e valores das seccoes.
      Sao para ter mais peso que o corpo, e devem te-lo; mas 16,5px
@@ -635,11 +669,7 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   #marketplaceModal .pkg-matic,
   #marketplaceModal .btn-buy-pkg,
   #marketplaceModal .tx-hash-input,
-  #marketplaceModal .btn-verify,
-  #marketplaceModal .transp-block-title,
-  #marketplaceModal .transp-link,
-  #marketplaceModal .transp-taxa-val,
-  #marketplaceModal .transp-limit-txt { font-size: 0.46875rem; }
+  #marketplaceModal .btn-verify { font-size: 0.46875rem; }
 
   #marketplaceModal h3 { font-size: 0.5rem; }
 }
