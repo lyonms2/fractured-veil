@@ -33,6 +33,28 @@ const RATE                 = 10;
 // primeira dizia 'inválida (1 a 100)' e prometia o que não existe.
 // Igualados, a mensagem passa a dizer a verdade e a guarda continua a
 // servir para o que serve: recusar cedo, antes da transação.
+/* A TAXA DO DEV
+   ═══════════════════════════════════════════════════════════════════
+   1% do que se saca, e mais nada.
+
+   Antes o dev recebia por outro caminho: o api/pool-dev-payout.js, um
+   cron semanal que levava entre 5% e 9% do SALDO DA POOL — 90 💎 por
+   semana com a pool em 1000. Isso tinha dois problemas. Cobrava mesmo
+   sem ninguém jogar, porque incidia sobre o saldo e não sobre atividade.
+   E o saldo da pool é o que cobre os cristais que os jogadores têm: cada
+   distribuição encolhia a garantia de toda a gente.
+
+   O 1% do saque não toca na pool. Sai do que o jogador está a levantar,
+   como já acontece com os bónus de convite, e só existe quando alguém
+   converte cristais em MATIC de verdade.
+
+   Precisa de casas decimais: com o tecto diário em 50 💎, um 1%
+   arredondado a inteiro seria SEMPRE zero (Math.floor(50 * 0.01) = 0).
+   Os cristais já vivem com duas casas — o fmtC formata assim e os preços
+   do mercado usam-nas — portanto 50 💎 dão 0,50 💎 ao dev. */
+const DEV_FEE_RATE = 0.01;
+const DEV_WALLET   = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
+
 const MAX_GEMS_POR_RESGATE = 50;
 const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
@@ -188,6 +210,9 @@ module.exports = async function handler(req, res) {
 
     // Mapa de bônus calculado dentro da transação e usado depois
     let referralBonuses = null;
+    // Escapa da transação da mesma forma que os bónus: a transação decide
+    // o valor, o crédito acontece depois dela.
+    let devFeePago      = 0;
 
     // ── UMA AUTORIZAÇÃO PENDENTE É RETOMADA, NÃO SUBSTITUÍDA ──
     //
@@ -300,8 +325,14 @@ module.exports = async function handler(req, res) {
       }
       referralBonuses = Object.keys(bonusMap).length > 0 ? bonusMap : null;
 
+      // A taxa do dev sai daqui, como os bónus de convite: do que o
+      // jogador saca, nunca criada do nada. Duas casas, senão desaparece
+      // no arredondamento (ver DEV_FEE_RATE lá em cima).
+      const devFee = +(gemsNum * DEV_FEE_RATE).toFixed(2);
+
       // Quantidade efetiva que vai para o contrato (o que o jogador recebe em MATIC)
-      const gemsToSign  = gemsNum - totalBonus;
+      devFeePago = devFee;   // sai da transação para o crédito lá fora
+      const gemsToSign  = +(gemsNum - totalBonus - devFee).toFixed(2);
       const maticFinal  = gemsToSign / RATE;
 
       // Gerar nonce único
@@ -341,12 +372,21 @@ module.exports = async function handler(req, res) {
         status:        'autorizado',
       });
 
-      return { v, r, s, nonce, gemsToSign, maticFinal, totalBonus };
+      return { v, r, s, nonce, gemsToSign, maticFinal, totalBonus, devFee };
     });
 
     // ── Creditar bônus de referral (best-effort, não bloqueia o saque) ──
     // Os cristais creditados aqui são exatamente os que foram deduzidos
     // do jogador — nenhuma inflação, pool sempre coberta.
+    if (devFeePago > 0) {
+      db.collection('players').doc(DEV_WALLET).set({
+        'gs.cristais': FieldValue.increment(devFeePago),
+        cristais:      FieldValue.increment(devFeePago),
+        devFeeTotal:   FieldValue.increment(devFeePago),
+      }, { merge: true })
+        .catch(err => console.error('[dev-fee]', err.message));
+    }
+
     if (referralBonuses) {
       const batch = db.batch();
       for (const [refUid, bonus] of Object.entries(referralBonuses)) {

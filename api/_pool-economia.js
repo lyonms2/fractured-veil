@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // _pool-economia.js — As regras da pool que mais de um arquivo precisa
 //
-// Lido por: pool-dev-payout (a distribuição semanal), e por pool.js e
+// Lido por: pool.js e
 //           cambiar.js (o teto diário de saída).
 //
 // Citava três arquivos de reset por jogo que nunca existiram — tinham
@@ -73,32 +73,17 @@ async function carregarEconomia(db) {
   return { ...DEFAULTS };
 }
 
-/**
- * Calcula o % dinâmico a distribuir por jogo nesta semana.
- *
- * Fórmula:
- *   ratio        = clamp(poolTotal / poolAlvo, 0, 1)
- *   maxPorJogo   = min(pctMaxJogo, pctMaxTotal / jogosAtivos)
- *   pct          = pctMinJogo + (maxPorJogo - pctMinJogo) * ratio
- *
- * Exemplos com defaults (poolAlvo=1000, 3 jogos):
- *   pool =    0 →  5%  (mínimo garantido)
- *   pool =  500 → 10%
- *   pool = 1000 → 15%  (alvo)
- *   pool = 2000 → 15%  (cap — ratio clamped a 1)
- *
- * Com 5 jogos e pool = 1000:
- *   maxPorJogo = min(0.20, 0.45/5) = 0.09
- *   pct = 0.05 + (0.09 - 0.05) * 1 = 9%
- */
-function calcPctJogo(poolTotal, eco) {
-  const { jogosAtivos, pctMinJogo, pctMaxJogo, pctMaxTotal, poolAlvo } = eco;
-  const ratio      = Math.min(1, poolTotal / poolAlvo);
-  const maxPorJogo = Math.min(pctMaxJogo, pctMaxTotal / jogosAtivos);
-  return pctMinJogo + (maxPorJogo - pctMinJogo) * ratio;
-}
+/* Havia aqui o calcPctJogo, que dava a percentagem semanal da pool a
+   distribuir. Só o api/pool-dev-payout.js o usava, e esse saiu: o dev
+   passou a receber 1% de cada saque (DEV_FEE_RATE em api/resgatar.js) em
+   vez de uma fatia do saldo da pool todas as segundas-feiras.
+   Os campos pctMinJogo, pctMaxJogo, pctMaxTotal e poolAlvo do
+   config/economia ficam sem leitor. Deixei-os: são configuração gravada,
+   e apagá-los daqui não os apaga de lá — se a distribuição voltar um dia,
+   voltam a servir. */
+
 
 module.exports = {
-  carregarEconomia, calcPctJogo,
+  carregarEconomia,
   POOL_LIMITE_DIA, saqueDeHoje, marcarSaque,
 };

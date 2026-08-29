@@ -1,8 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/pool-dev-payout",
-      "schedule": "5 0 * * 1"
-    }
-  ]
+  "//": "Havia aqui um cron semanal para /api/pool-dev-payout, que levava entre 5% e 9% do SALDO da pool para o dev todas as segundas-feiras. Saiu junto com o endpoint: cobrava mesmo sem ninguém jogar, e o saldo da pool e o que cobre os cristais dos jogadores. O dev passa a receber 1% de cada saque, em api/resgatar.js — so quando alguem converte cristais em MATIC de verdade.",
+  "crons": []
 }
