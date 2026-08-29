@@ -281,10 +281,18 @@ module.exports = async function handler(req, res) {
       }
 
       const data     = userSnap.data();
+      // Só o balde com lastro. O gs.cristaisBonus nunca entra aqui: é
+      // essa a diferença entre os dois, e é o que impede que um bónus
+      // de compra se transforme em MATIC que ninguém depositou.
       const cristais = data?.gs?.cristais ?? data?.cristais ?? 0;
+      const bonus    = data?.gs?.cristaisBonus ?? data?.cristaisBonus ?? 0;
 
       if (cristais < gemsNum) {
-        throw new Error(`Saldo insuficiente: tens ${cristais} 💎, precisas de ${gemsNum} 💎`);
+        // Com bónus na conta, o saldo que a loja mostra é maior do que
+        // este — e sem o dizer a mensagem parecia um erro do jogo.
+        throw new Error(bonus > 0
+          ? `Saldo resgatável insuficiente: tens ${cristais} 💎 com lastro e precisas de ${gemsNum} 💎. Os teus ${bonus} 💎 de bónus valem dentro do jogo, mas não se resgatam.`
+          : `Saldo insuficiente: tens ${cristais} 💎, precisas de ${gemsNum} 💎`);
       }
 
       // ── Rate limit: mínimo 30 s entre resgates ──

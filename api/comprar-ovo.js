@@ -8,6 +8,7 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 const EGG_SALE_TAX = 0.10;
 // O mesmo tecto do inventario no cliente (js/eggs.js). Se o comprador ja
@@ -83,8 +84,9 @@ module.exports = async function handler(req, res) {
       if (egg.expiraEm && Date.now() >= egg.expiraEm) throw new Error('EXPIRED');
 
       const buyerData   = buyerSnap.data() || {};
-      const cristais    = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-      if (cristais < egg.price) throw new Error('INSUFFICIENT');
+      // Paga-se com os dois baldes, e o bónus vai primeiro.
+      const debitoOvo = CRIS.camposDebito(buyerData, egg.price);
+      if (!debitoOvo) throw new Error('INSUFFICIENT');
 
       // Quantos ovos o comprador ja tem: os do slot activo mais os que
       // estao a caminho e ainda nao foram consumidos.
@@ -95,7 +97,7 @@ module.exports = async function handler(req, res) {
 
       const taxa         = Math.round(egg.price * EGG_SALE_TAX);
       const sellerRecebe = egg.price - taxa;
-      novoSaldoComprador = cristais - egg.price;
+      novoSaldoComprador = debitoOvo.cristais + debitoOvo.cristaisBonus;
 
       const newEgg = {
         id:       egg.eggId || Date.now(),
@@ -112,12 +114,10 @@ module.exports = async function handler(req, res) {
          legítimo seria o inbox — que já não o tem. Chocar, queimar, vender
          e listar passavam todos a dar OVO_NOT_FOUND.
          O inbox é entrega; o ovosEmitidos é propriedade. */
-      tx.update(buyerRef, {
-        cristais:      novoSaldoComprador,
-        'gs.cristais': novoSaldoComprador,
-        inboxEggs:     FieldValue.arrayUnion(newEgg),
+      tx.update(buyerRef, Object.assign({
+        inboxEggs: FieldValue.arrayUnion(newEgg),
         [`ovosEmitidos.o${newEgg.id}`]: newEgg.raridade,
-      });
+      }, debitoOvo));
 
       const sellerRef  = db.collection('players').doc(egg.sellerId);
       const sellerSnap = await tx.get(sellerRef);

@@ -26,6 +26,25 @@ function getDB() {
 }
 
 const RATE             = 10;
+
+/* O BÓNUS DE COMPRA
+   ═══════════════════════════════════════════════════════════════════
+   10% sobre o que o contrato cunhou: deposita 100 💎, ganha +10.
+
+   Vai para gs.cristaisBonus e NÃO para gs.cristais, e é aí que está
+   tudo. Os cristais normais têm MATIC no cofre a cobri-los; os de
+   bónus não têm nenhum. Se fossem resgatáveis, quem depositasse 10
+   MATIC recebia 110 💎 e sacava 10,89 MATIC de volta — 0,89 de lucro
+   garantido por volta, repetível com contas novas, pago pelo cofre. E
+   a cobertura, que a página da Transparência promete em 100%, caía a
+   cada compra.
+
+   No balde do bónus servem para tudo dentro do jogo — comprar avatares
+   e ovos, listar, chocar, desbloquear slots — e gastam-se ANTES dos
+   normais, portanto o jogador nem dá por eles a não ser quando vai
+   sacar. Só não saem para MATIC, que é a única coisa que não podem
+   fazer sem alguém pagar a conta. */
+const BONUS_COMPRA     = 0.10;
 const MAX_GEMS_CREDITO = 1000;
 
 const CONTRACT_ABI = [
@@ -141,19 +160,24 @@ module.exports = async function handler(req, res) {
 
       const playerSnap = await tx.get(playerRef);
 
+      const bonus = +(gemsACreditar * BONUS_COMPRA).toFixed(2);
+
       if (playerSnap.exists) {
         tx.update(playerRef, {
-          'gs.cristais': FieldValue.increment(gemsACreditar),
-          cristais:      FieldValue.increment(gemsACreditar),
+          'gs.cristais':      FieldValue.increment(gemsACreditar),
+          cristais:           FieldValue.increment(gemsACreditar),
+          'gs.cristaisBonus': FieldValue.increment(bonus),
+          cristaisBonus:      FieldValue.increment(bonus),
           // Guarda a carteira vinculada se ainda não estiver registada
-          carteira:      carteiraAddr,
+          carteira:           carteiraAddr,
         });
       } else {
         tx.set(playerRef, {
-          gs:       { cristais: gemsACreditar },
-          cristais: gemsACreditar,
-          carteira: carteiraAddr,
-          criadoEm: new Date(),
+          gs:            { cristais: gemsACreditar, cristaisBonus: bonus },
+          cristais:      gemsACreditar,
+          cristaisBonus: bonus,
+          carteira:      carteiraAddr,
+          criadoEm:      new Date(),
         });
       }
 

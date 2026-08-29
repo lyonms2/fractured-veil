@@ -91,7 +91,23 @@ async function savePlayerData() {
 
    Esta função é a leitura única. O gs manda; a cópia é o recurso para
    quando o marketplace corre sem o jogo por baixo. */
+/* O saldo GASTÁVEL: os cristais com lastro mais os de bónus.
+
+   O bónus de compra vive em gs.cristaisBonus e serve para tudo aqui
+   dentro — comprar, listar, chocar, desbloquear slots. A única coisa
+   que não faz é sair para MATIC, e essa conta é do api/resgatar.js, que
+   olha só para o gs.cristais.
+
+   Por isso a loja soma os dois: era enganador mostrar 100 💎 a quem tem
+   90 de bónus e recusar-lhe uma compra de 95. */
 function mktCristais() {
+  const reais = playerData?.gs?.cristais      ?? playerData?.cristais      ?? 0;
+  const bonus = playerData?.gs?.cristaisBonus ?? playerData?.cristaisBonus ?? 0;
+  return +(reais + bonus).toFixed(2);
+}
+
+// O que se pode mesmo resgatar. Só o balde com lastro.
+function mktCristaisResgataveis() {
   return playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
 }
 

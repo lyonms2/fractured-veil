@@ -67,11 +67,21 @@ const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
    Três escolhas com três propósitos, em vez de cinco tamanhos do mesmo
    nada. Se estes números mudarem no jogo, isto tem de mudar com eles —
    por isso ficam aqui as constantes de onde saem. */
+/* Cada pacote dizia o que aquela quantia dava para pagar — "Desbloqueia
+   um slot", "Choca um ovo Raro", "Choca um ovo Lendário". Eram
+   descrições certas (o slot custa 15 💎, chocar um Raro custa 50 e um
+   Lendário 100), mas liam-se como se o depósito OFERECESSE o slot ou o
+   ovo. Saíram. */
 const CRYSTAL_PACKAGES = [
-  { matic:1.5, gems:15,  chave:'slot' },
-  { matic:5,   gems:50,  chave:'raro' },
-  { matic:10,  gems:100, chave:'lendario' },
+  { matic:1.5, gems:15  },
+  { matic:5,   gems:50  },
+  { matic:10,  gems:100 },
 ];
+
+// 10% em cristais de bónus. Tem de bater com o BONUS_COMPRA do
+// api/processar-compra.js, que é quem os credita de verdade — aqui é só
+// para o cartão dizer o que vai acontecer.
+const BONUS_COMPRA = 0.10;
 
 // ═══════════════════════════════════════════
 // TRANSPARÊNCIA
@@ -133,16 +143,19 @@ async function renderTransparencia() {
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
   if(!container) return;
-  // O destaque ia para o pacote do meio com um selo "POPULAR". Não havia
-  // nada que o tornasse popular — era um sinal inventado numa lista onde
-  // todos custavam o mesmo por cristal. Saiu. O que fica no lugar é o que
-  // cada quantia compra, que é informação a sério.
+  /* O destaque ia para o pacote do meio com um selo "POPULAR", que era
+     um sinal inventado numa lista onde todos custavam o mesmo por
+     cristal. Depois ficou uma linha a dizer o que cada quantia dava para
+     pagar — "Desbloqueia um slot", "Choca um ovo Raro" — e essa lia-se
+     como se o depósito OFERECESSE o slot ou o ovo.
+     Agora a linha diz o que o jogador ganha a mais, que é a única coisa
+     que separa mesmo um pacote do outro. */
   container.innerHTML = CRYSTAL_PACKAGES.map((pkg, i) => `
     <div class="crystal-pkg">
       <div class="pkg-gem">💎</div>
       <div class="pkg-amount">${pkg.gems}</div>
+      <div class="pkg-bonus">+${+(pkg.gems * BONUS_COMPRA).toFixed(2)} 💎 ${t('mkt.pkg.bonus')}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
-      <div class="pkg-vale">${t('mkt.pkg.vale.' + pkg.chave)}</div>
       <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">${t('mkt.crystals.buy_btn')}</button>
     </div>`).join('');
 }
@@ -298,8 +311,13 @@ async function resgatar() {
     status.innerHTML = `<span class="tx-err">${t('mkt.tx.min_gems')}</span>`;
     return;
   }
-  if(gems > mktCristais()) {
-    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(mktCristais())})}</span>`;
+  // O resgate mede-se pelo balde COM lastro, e não pelo saldo que a
+  // loja mostra: os cristais de bónus gastam-se dentro do jogo e não
+  // saem para MATIC. Com o mktCristais() aqui, quem tivesse bónus
+  // escrevia um número que passava nesta verificação e só rebentava
+  // do outro lado, no servidor.
+  if(gems > mktCristaisResgataveis()) {
+    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(mktCristaisResgataveis())})}</span>`;
     return;
   }
 

@@ -12,6 +12,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
+const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const LIST_COST        = 2;    // 💎 taxa de listagem de avatar
 const PRICE_MIN        = 1;
@@ -86,8 +87,9 @@ async function handleListarAvatar(req, res, db, uid) {
       if (!playerSnap.exists) throw new Error('Jogador não encontrado');
 
       const pData    = playerSnap.data();
-      const cristais = pData.gs?.cristais ?? pData.cristais ?? 0;
-      if (cristais < LIST_COST) throw new Error('INSUFFICIENT');
+      // O saldo é a soma dos dois baldes, e o débito come o bónus primeiro.
+      const debito = CRIS.camposDebito(pData, LIST_COST);
+      if (!debito) throw new Error('INSUFFICIENT');
 
       const slots = [...(pData.avatarSlots || [])];
       const s     = slots[slotIdxInt];
@@ -119,17 +121,13 @@ async function handleListarAvatar(req, res, db, uid) {
       if (!emitidoComo) throw new Error('AVATAR_SEM_REGISTO');
       if (emitidoComo !== s.raridade) throw new Error('RARIDADE_NAO_CONFERE');
 
-      const newCristais = cristais - LIST_COST;
+      const newCristais = debito.cristais + debito.cristaisBonus;
       slots[slotIdxInt] = { ...s, listed: true };
 
       const diasVida  = s.bornAt ? Math.floor((Date.now() - s.bornAt) / 86400000) : 0;
       const listingRef = db.collection('avatarMarket').doc();
 
-      tx.update(playerRef, {
-        avatarSlots:   slots,
-        cristais:      newCristais,
-        'gs.cristais': newCristais,
-      });
+      tx.update(playerRef, Object.assign({ avatarSlots: slots }, debito));
       tx.set(listingRef, {
         sellerId:   uid,
         slotIdx:    slotIdxInt,
@@ -243,24 +241,21 @@ async function handleDesbloquearSlot(_req, res, db, uid) {
       if (!snap.exists) throw new Error('NOT_FOUND');
 
       const data       = snap.data();
-      const cristais   = data.gs?.cristais ?? data.cristais ?? 0;
       const extraSlots = data.gs?.extraSlots ?? data.extraSlots ?? 0;
       const unlocked   = Math.min(MAX_SLOTS, BASE_SLOTS + extraSlots);
 
       if (unlocked >= MAX_SLOTS) throw new Error('MAX_SLOTS');
-      if (cristais < UNLOCK_COST) throw new Error('INSUFFICIENT');
+      const debitoSlot = CRIS.camposDebito(data, UNLOCK_COST);
+      if (!debitoSlot) throw new Error('INSUFFICIENT');
 
-      const newCristais   = cristais - UNLOCK_COST;
       const newExtraSlots = extraSlots + 1;
 
-      tx.update(playerRef, {
-        cristais:        newCristais,
-        'gs.cristais':   newCristais,
+      tx.update(playerRef, Object.assign({
         extraSlots:      newExtraSlots,
         'gs.extraSlots': newExtraSlots,
-      });
+      }, debitoSlot));
 
-      return { novoSaldo: newCristais, extraSlots: newExtraSlots };
+      return { novoSaldo: debitoSlot.cristais + debitoSlot.cristaisBonus, extraSlots: newExtraSlots };
     });
 
     return res.status(200).json({ ok: true, ...resultado });
@@ -307,16 +302,16 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       if (listing.sellerId === buyerUid) throw new Error('OWN_LISTING');
 
       const buyerData = buyerSnap.data() || {};
-      const cristais  = buyerData.gs?.cristais ?? buyerData.cristais ?? 0;
-      const price     = listing.price;
-      if (cristais < price) throw new Error('INSUFFICIENT');
+      const price      = listing.price;
+      const debitoCompra = CRIS.camposDebito(buyerData, price);
+      if (!debitoCompra) throw new Error('INSUFFICIENT');
 
       const slots         = [...(buyerData.avatarSlots || [])];
       const unlockedSlots = getUnlockedSlots(buyerData);
       const freeIdx       = slots.findIndex((s, i) => !s && i < unlockedSlots);
       if (freeIdx === -1) throw new Error('NO_SLOT');
 
-      novoSaldoComprador = cristais - price;
+      novoSaldoComprador = debitoCompra.cristais + debitoCompra.cristaisBonus;
       slots[freeIdx] = {
         nome:       listing.nome,
         elemento:   listing.elemento,
@@ -351,12 +346,10 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       // O registo de emissão segue o avatar. Sem isto, quem comprasse um
       // Lendário não o conseguia revender — o avataresEmitidos dele não
       // teria a entrada, e a listagem daria AVATAR_SEM_REGISTO.
-      tx.update(buyerRef, {
-        avatarSlots:   novosSlotsComprador,
-        cristais:      novoSaldoComprador,
-        'gs.cristais': novoSaldoComprador,
+      tx.update(buyerRef, Object.assign({
+        avatarSlots: novosSlotsComprador,
         [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
-      });
+      }, debitoCompra));
       tx.update(sellerRef, {
         avatarSlots:   sellerSlots,
         cristais:      sellerCris + sellerRecebe,

@@ -320,7 +320,13 @@
    o que cada quantia compra — informação diferente em cada cartão. */
 .pkg-gem{font-size:2.25rem;margin-bottom:0.5rem;}
 .pkg-amount{font-family:'Cinzel',serif;font-size:1.375rem;font-weight:700;color:var(--gem2);margin-bottom:0.25rem;}
-.pkg-matic{font-size:0.6875rem;color:var(--text2);margin-bottom:0.75rem;}
+.pkg-matic{font-size:0.6875rem;color:var(--text2);margin-bottom:0.375rem;}
+/* O que separa um pacote do outro. Verde porque é ganho, e discreto
+   porque o número grande continua a ser o que se compra. */
+.pkg-bonus{
+  font-size:0.625rem; color:var(--green2); font-weight:600;
+  margin-bottom:0.75rem; letter-spacing:0.02rem;
+}
 .btn-buy-pkg{width:100%;padding:0.5rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:0.5rem;color:#fff;font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;cursor:pointer;letter-spacing:0.03125rem;transition:all .2s;}
 .btn-buy-pkg:hover{opacity:.9;}
 

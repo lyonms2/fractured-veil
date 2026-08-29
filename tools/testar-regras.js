@@ -70,6 +70,13 @@ async function ler(doc) {
   ok('EXPLOIT apagar o resgateLog',    await escrever('D','D',{'resgateLog':null}), 403);
   ok('EXPLOIT zerar o cambioLog',      await escrever('D','D',{'cambioLog':null}), 403);
   ok('EXPLOIT forjar extraSlots',      await escrever('D','D',{'gs.extraSlots':10}), 403);
+  // O balde do bónus é do servidor tal como o dos cristais com lastro.
+  // Se o cliente lhe pudesse escrever, o bónus deixava de ser bónus e
+  // passava a um campo onde cada um escreve o que quer gastar — e como
+  // ele se gasta ANTES dos cristais reais, era a via mais curta para
+  // comprar avatares e ovos de graça.
+  ok('EXPLOIT forjar cristaisBonus',   await escrever('D','D',{'gs.cristaisBonus':9999}), 403);
+  ok('EXPLOIT bónus no topo',          await escrever('D','D',{'cristaisBonus':9999}), 403);
   ok('EXPLOIT recuar o ultimoResgate', await escrever('D','D',{'ultimoResgate':0}), 403);
   ok('EXPLOIT apagar e recriar',       await apagar('D','D'), 403);
   ok('EXPLOIT escrever noutro jogador',await escrever('A','D',{'gs.moedas':1}), 403);

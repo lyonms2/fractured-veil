@@ -17,6 +17,7 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 const { POOL_LIMITE_DIA, saqueDeHoje,
         marcarSaque }                  = require('./_pool-economia.js');
+const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 const POOL_ALVO       = 1000;
 // POOL_LIMITE_DIA e saqueDeHoje vêm do _pool-economia.js, para o câmbio
@@ -93,6 +94,9 @@ async function _calcularCobertura(db, poolRef, poolData) {
 
   // Cristais em maos de jogadores + os que a pool guarda
   let emJogadores = 0;
+  // Só o balde COM lastro. O gs.cristaisBonus fica de fora de
+  // propósito: bónus não se resgata, portanto não é dívida em MATIC, e
+  // somá-lo aqui derrubava a percentagem por uma obrigação inventada.
   const snap = await db.collection('players').select('gs', 'cristais').get();
   snap.forEach(doc => {
     const d = doc.data() || {};
@@ -257,7 +261,6 @@ async function handleListarOvo(req, res, db, poolRef, uid) {
 
       const pData     = playerSnap.data();
       const inboxEggs = pData.inboxEggs || [];
-      const cristais  = pData.gs?.cristais ?? pData.cristais ?? 0;
 
       /* Um ovo pode estar em dois sítios, e cada um tem a sua prova.
 
@@ -289,15 +292,13 @@ async function handleListarOvo(req, res, db, poolRef, uid) {
       if (idxInbox === -1 && !doProprioAvatar) throw new Error('OVO_NOT_FOUND');
 
       const taxa = EGG_LIST_FEE[raridade];
-      if (cristais < taxa) throw new Error('INSUFFICIENT');
+      const debitoTaxa = CRIS.camposDebito(pData, taxa);
+      if (!debitoTaxa) throw new Error('INSUFFICIENT');
 
       const ovoToRemove   = idxInbox !== -1 ? inboxEggs[idxInbox] : slotEggs[idxSlot];
-      const novosCristais = cristais - taxa;
+      const novosCristais = debitoTaxa.cristais + debitoTaxa.cristaisBonus;
 
-      const alteracoes = {
-        cristais:      novosCristais,
-        'gs.cristais': novosCristais,
-      };
+      const alteracoes = Object.assign({}, debitoTaxa);
       if (idxInbox !== -1) {
         alteracoes.inboxEggs = FieldValue.arrayRemove(inboxEggs[idxInbox]);
       } else {
@@ -574,8 +575,8 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       if (!raridade) throw new Error('OVO_NOT_FOUND');
 
       const taxa     = HATCH_FEE[raridade] || 0;
-      const cristais = pData.gs?.cristais ?? pData.cristais ?? 0;
-      if (cristais < taxa) throw new Error('INSUFFICIENT');
+      const debitoChoca = taxa > 0 ? CRIS.camposDebito(pData, taxa) : null;
+      if (taxa > 0 && !debitoChoca) throw new Error('INSUFFICIENT');
 
       const alteracoes = { [`avataresEmitidos.s${seedStr}`]: raridade };
 
@@ -590,8 +591,7 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       if (emitidoComo) alteracoes[`ovosEmitidos.o${ovoId}`] = FieldValue.delete();
 
       if (taxa > 0) {
-        alteracoes.cristais      = cristais - taxa;
-        alteracoes['gs.cristais'] = cristais - taxa;
+        Object.assign(alteracoes, debitoChoca);
         tx.update(poolRef, {
           cristais:    FieldValue.increment(taxa),
           totalEntrou: FieldValue.increment(taxa),

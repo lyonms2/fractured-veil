@@ -39,7 +39,7 @@ service cloud.firestore {
 
     // Campos de topo que só o servidor escreve.
     function camposDoServidor() {
-      return ['cristais', 'resgateLog', 'ultimoResgate',
+      return ['cristais', 'cristaisBonus', 'resgateLog', 'ultimoResgate',
               'cambioLog', 'ultimoCambio',
               // Estava aqui 'referralBonus', que NÃO é campo do jogador:
               // só existe no registo do resgate (subcoleção) e na resposta
@@ -89,7 +89,12 @@ service cloud.firestore {
     }
     // Dentro do mapa gs. As moedas não entram — ver acima.
     function gsDoServidor() {
-      return ['cristais', 'extraSlots'];
+      // O cristaisBonus entra aqui pela mesma razão que o cristais: é
+      // dinheiro do jogo. Só o api/processar-compra.js o credita e só
+      // os débitos do servidor lhe mexem — se o cliente o pudesse
+      // escrever, o bónus deixava de ser um bónus e passava a ser um
+      // campo de texto onde cada um escreve o que quer gastar.
+      return ['cristais', 'cristaisBonus', 'extraSlots'];
     }
 
     function topoIntacto() {
