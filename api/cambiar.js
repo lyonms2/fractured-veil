@@ -12,7 +12,55 @@ const { getAuth }                      = require('firebase-admin/auth');
 const { POOL_LIMITE_DIA, saqueDeHoje,
         marcarSaque }                  = require('./_pool-economia.js');
 
-const CAMBIO_POOL_MIN  = 100;
+/* O QUE A POOL PODE GASTAR EM PLAY-TO-EARN
+   ═══════════════════════════════════════════════════════════════════
+   Havia aqui um CAMBIO_POOL_MIN = 100: trocava-se enquanto a pool
+   tivesse mais de 100 💎. Número redondo e sem origem — não vinha de
+   nenhuma conta, e deixava o câmbio comer tudo até esse piso.
+
+   Passam a ser DUAS perguntas, e a resposta é a menor das duas.
+
+   1. SOLVÊNCIA — quanto sobra depois de todos poderem sacar.
+      Cada 💎 na mão de um jogador é um pedido de 0,1 MATIC que ele pode
+      fazer a qualquer momento. O cofre tem de os cobrir a todos antes
+      de o jogo dar um único cristal a quem não pagou por ele.
+
+        excedente = (MATIC no cofre × 10) − 💎 nas mãos dos jogadores
+
+      Vem da cobertura já calculada no api/pool.js, guardada no doc da
+      pool e refrescada de 10 em 10 minutos. Se não a conseguirmos ler,
+      o câmbio fecha: sem saber o lastro, não se emite.
+
+      Nota honesta sobre este número: enquanto a cobertura estiver nos
+      100% — e está, por construção, porque comprar, sacar, pagar taxas
+      e cambiar mexem no cofre e nas mãos dos jogadores na mesma medida
+      — este excedente dá exactamente o saldo da pool. Ou seja, sozinho
+      não trava dreno nenhum. O que ele faz é fechar o câmbio no dia em
+      que a cobertura partir por alguma razão que não previmos. É uma
+      rede, não um travão.
+
+   2. RESERVA — o que a pool guarda e não entrega ao Play-to-Earn.
+      Este é o travão a sério. A queima de ovos paga base × pool/1000,
+      portanto uma pool baixa não é só uma pool pobre: é uma pool onde
+      queimar um Lendário rende 0,10 💎. O câmbio é diário e sem limite
+      semanal, a queima é semanal e limitada a 1-5 — sem reserva, o
+      câmbio pousa a pool no piso e a queima fica a valer nada.
+
+      400 💎 são 40% do alvo de 1000. Nesse ponto a queima ainda paga
+      0,20 no Raro e 0,40 no Lendário. É UM número para mexer se a
+      preferência for outra. */
+const RATE_GEMS_POR_MATIC = 10;   // igual ao RATE do api/resgatar.js
+const RESERVA_P2E         = 400;  // 💎 que a pool guarda para a queima
+
+function orcamentoP2E(poolData) {
+  const saldo = poolData.cristais || 0;
+  const cob   = poolData.cobertura;
+  if (!cob || typeof cob.cofre !== 'number') return null;   // lastro desconhecido
+  const lastro     = cob.cofre * RATE_GEMS_POR_MATIC;
+  const solvencia  = lastro - (cob.emJogadores || 0);
+  const acimaDaReserva = saldo - RESERVA_P2E;
+  return Math.max(0, Math.min(acimaDaReserva, solvencia));
+}
 const CAMBIO_NIVEL_MIN = 20;
 const CAMBIO_TAXAS     = [
   { minPool: 1000, custo: 1000 },
@@ -84,8 +132,12 @@ module.exports = async function handler(req, res) {
     const poolSaldo = poolData.cristais || 0;
 
     // ── Validar pool ──
-    if (poolSaldo < CAMBIO_POOL_MIN) {
-      return res.status(400).json({ erro: 'Pool insuficiente. Tente mais tarde.' });
+    const orcamento = orcamentoP2E(poolData);
+    if (orcamento === null) {
+      return res.status(400).json({ erro: 'Não deu para confirmar o lastro da pool agora. Tente mais tarde.' });
+    }
+    if (orcamento < 1) {
+      return res.status(400).json({ erro: 'A pool não tem excedente para o Play-to-Earn de momento.' });
     }
 
     // ── Teto diário global ──
@@ -131,7 +183,12 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ erro: 'Limite diário de câmbio atingido. Volte amanhã.' });
     }
 
-    const qtdFinal   = Math.min(qtd, restante);
+    // O orçamento entra aqui ao lado do limite pessoal: nenhum dos dois
+    // pode ser ultrapassado, e o excedente é o do momento do pedido.
+    const qtdFinal   = Math.min(qtd, restante, Math.floor(orcamento));
+    if (qtdFinal < 1) {
+      return res.status(400).json({ erro: 'A pool não tem excedente para o Play-to-Earn de momento.' });
+    }
     const custoTotal = custo * qtdFinal;
 
     // ── Rate limit: mínimo 5 s entre câmbios ──

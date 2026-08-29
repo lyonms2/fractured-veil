@@ -28,6 +28,7 @@ window.registerStrings(
     'cambio.bloq.avatar':  'Sem avatar ativo.',
     'cambio.bloq.nivel':   'Avatar precisa de nível {n}+.',
     'cambio.bloq.pool':    'Pool insuficiente. Tente mais tarde.',
+    'cambio.bloq.excedente': 'A pool não tem excedente agora. O câmbio só usa o que sobra depois de todos os cristais estarem cobertos.',
     'cambio.carregando':   'Carregando câmbio...',
     'cambio.erro_dados':   'Erro ao carregar dados.',
 
@@ -90,6 +91,7 @@ window.registerStrings(
     'cambio.bloq.avatar':  'No active avatar.',
     'cambio.bloq.nivel':   'Avatar needs level {n}+.',
     'cambio.bloq.pool':    'Pool too low. Try again later.',
+    'cambio.bloq.excedente': 'The pool has no surplus right now. The exchange only spends what is left once every crystal is covered.',
     'cambio.carregando':   'Loading exchange...',
     'cambio.erro_dados':   'Could not load the data.',
 

@@ -14,7 +14,23 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // ── Configuração ──
-const CAMBIO_POOL_MIN     = 100;  // pool mínima para ativar câmbio
+// A pool guarda 400 💎 e só entrega ao Play-to-Earn o que passa disso.
+// Espelha o RESERVA_P2E do api/cambiar.js, que é quem manda — aqui
+// serve para a tela não prometer o que o servidor vai recusar.
+const RESERVA_P2E         = 400;
+const RATE_GEMS_POR_MATIC = 10;
+
+// O mesmo cálculo do servidor: o menor entre o que sobra acima da
+// reserva e o que o cofre cobre além do que os jogadores podem sacar.
+// Sem a cobertura carregada devolve null — aí não se afirma nada.
+function calcOrcamentoP2E() {
+  if(!poolData) return null;
+  const saldo = poolData.cristais || 0;
+  const cob   = poolData.cobertura;
+  if(!cob || typeof cob.cofre !== 'number') return null;
+  const solvencia = cob.cofre * RATE_GEMS_POR_MATIC - (cob.emJogadores || 0);
+  return Math.max(0, Math.min(saldo - RESERVA_P2E, solvencia));
+}
 const CAMBIO_NIVEL_MIN    = 20;   // nível mínimo do avatar
 
 const CAMBIO_TAXAS = [
@@ -71,6 +87,13 @@ function calcCambioEligivel() {
   if(!hatched || dead || !avatar) return { ok: false, codigo: 'avatar', motivo: t('cambio.bloq.avatar') };
   if(nivel < CAMBIO_NIVEL_MIN)    return { ok: false, codigo: 'nivel',  motivo: t('cambio.bloq.nivel', {n: CAMBIO_NIVEL_MIN}) };
   if(calcCambioTaxa() === null)   return { ok: false, codigo: 'pool',   motivo: t('cambio.bloq.pool') };
+  // O câmbio não come a reserva: só troca o que passa dela e o cofre
+  // cobre. Null = ainda não sabemos o lastro, e aí não se bloqueia com
+  // uma afirmação falsa — o servidor decide no pedido.
+  const orcamento = calcOrcamentoP2E();
+  if(orcamento !== null && orcamento < 1) {
+    return { ok: false, codigo: 'pool', motivo: t('cambio.bloq.excedente') };
+  }
   return { ok: true };
 }
 
