@@ -86,7 +86,9 @@ function renderEggBrowse() {
     // do inventário na entrada seguinte.
     const podre        = egg.expiraEm && now >= egg.expiraEm;
     const cheio        = _mktOvosDoJogador() >= 10;
-    const semSaldo     = !playerData || playerData.cristais < egg.price;
+    // mktCristais() e não playerData.cristais: aquela é uma cópia da
+    // primeira abertura do marketplace e envelhece. Ver marketplace-core.
+    const semSaldo     = !playerData || mktCristais() < egg.price;
     const canBuy       = !isOwn && !podre && !cheio && !semSaldo;
 
     const elemCar   = CARACTERISTICAS_ELEMENTAIS?.[egg.elemento];
@@ -96,8 +98,15 @@ function renderEggBrowse() {
       <div class="egg-mkt-stripe"></div>
       <div class="egg-mkt-inner">
         <div class="egg-mkt-icon">${icon}</div>
-        <div class="egg-mkt-pill">${elemEmoji} ${esc(egg.raridade)}</div>
-        <div class="egg-mkt-elem">${esc(egg.elemento) || '—'}</div>
+        <!-- A pastilha trazia o emoji do ELEMENTO com o texto da RARIDADE
+             — "🔥 Raro" — e o nome do elemento vinha numa linha à parte.
+             Cada coisa aparecia duas vezes e nenhuma junto do seu emoji:
+             o ícone grande já é a raridade, e o 🔥 estava a legendar a
+             palavra errada.
+             Agora é uma só, no formato da página dos avatares: emoji do
+             elemento, elemento, raridade. A cor da pastilha continua a
+             vir da raridade pelo CSS (.egg-mkt-card.raro .egg-mkt-pill). -->
+        <div class="egg-mkt-pill">${elemEmoji} ${esc(egg.elemento) || '—'} · ${esc(egg.raridade)}</div>
         <div class="egg-mkt-stats">
           <div class="egg-mkt-stat"><span>${t('mkt.eggs.expires')}</span><b class="${expiryUrgente ? 'urgente' : ''}">${expiryDias > 0 ? expiryDias+'d' : '⚠️'}</b></div>
           <div class="egg-mkt-stat"><span>${t('mkt.eggs.seller')}</span><b>${seller}</b></div>
@@ -153,7 +162,7 @@ async function confirmListEgg() {
   const taxa = EGG_LIST_FEE[listingEggData.raridade] || 0;
 
   // Verificar saldo local antes de chamar o servidor
-  if((playerData?.cristais || 0) < taxa) {
+  if(mktCristais() < taxa) {
     statusEl.textContent = t('mkt.eggs.list_cost', {cost: taxa});
     return;
   }

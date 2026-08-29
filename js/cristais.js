@@ -226,8 +226,8 @@ async function resgatar() {
     status.innerHTML = `<span class="tx-err">${t('mkt.tx.min_gems')}</span>`;
     return;
   }
-  if(gems > (playerData.cristais || 0)) {
-    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(playerData.cristais || 0)})}</span>`;
+  if(gems > mktCristais()) {
+    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(mktCristais())})}</span>`;
     return;
   }
 

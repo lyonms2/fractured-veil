@@ -403,10 +403,16 @@
 .egg-mkt-card.lendario .egg-mkt-stripe{background:linear-gradient(90deg,var(--legendary),#c87820);}
 .egg-mkt-inner{padding:0.75rem 0.625rem 0.625rem;display:flex;flex-direction:column;align-items:center;}
 .egg-mkt-icon{font-size:2.125rem;margin-bottom:0.375rem;line-height:1;}
-.egg-mkt-pill{font-size:0.4375rem;font-weight:700;letter-spacing:0.05rem;text-transform:uppercase;padding:0.125rem 0.5rem;border-radius:0.625rem;margin-bottom:0.375rem;}
+/* Era 0.4375rem: 7px no celular, e a pastilha passou a carregar o
+   elemento E a raridade — era o texto mais pequeno do cartão a dizer
+   a coisa mais importante dele. */
+.egg-mkt-pill{font-size:0.5625rem;font-weight:700;letter-spacing:0.05rem;text-transform:uppercase;padding:0.125rem 0.5rem;border-radius:0.625rem;margin-bottom:0.625rem;}
 .egg-mkt-card.raro .egg-mkt-pill{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.3);}
 .egg-mkt-card.lendario .egg-mkt-pill{background:rgba(232,160,48,.12);color:var(--legendary);border:1px solid rgba(232,160,48,.3);}
-.egg-mkt-elem{font-size:0.625rem;color:var(--text2);margin-bottom:0.5rem;font-weight:600;}
+/* Havia aqui a .egg-mkt-elem, a linha do nome do elemento. O nome passou
+   para dentro da pastilha, no formato da página dos avatares, e a linha
+   ficou sem uso. A margem de baixo da pastilha subiu de 0.375 para
+   0.625rem para o cartão não se fechar sobre as estatísticas. */
 .egg-mkt-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.1875rem;width:100%;margin-bottom:0.5rem;}
 .egg-mkt-stat{font-size:0.5rem;color:var(--text2);display:flex;justify-content:space-between;}
 .egg-mkt-stat b{color:var(--text);}

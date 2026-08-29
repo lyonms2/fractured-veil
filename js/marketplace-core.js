@@ -76,9 +76,28 @@ async function savePlayerData() {
   updateCristaisDisplay();
 }
 
+/* O SALDO DE CRISTAIS, A SÉRIO
+   ═══════════════════════════════════════════════════════════════════
+   O loadPlayerData() monta o playerData a partir do estado vivo do jogo,
+   mas com uma diferença que passava despercebida: o playerData.gs é uma
+   REFERÊNCIA ao objeto do jogo, enquanto o playerData.cristais é uma
+   CÓPIA tirada no momento. E o openMarketplaceModal só chama o
+   loadPlayerData na PRIMEIRA abertura (guarda _mktOpened).
+
+   Resultado: quem ganhasse cristais no jogo — queimar um ovo, um câmbio
+   — e voltasse ao marketplace via a cópia antiga. E o pior é que a TELA
+   mostrava o valor certo, porque o updateCristaisDisplay já lia o gs
+   primeiro: dizia 40 cristais enquanto o botão dizia "Sem saldo".
+
+   Esta função é a leitura única. O gs manda; a cópia é o recurso para
+   quando o marketplace corre sem o jogo por baixo. */
+function mktCristais() {
+  return playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
+}
+
 function updateCristaisDisplay() {
   if(typeof updateResourceUI === 'function') { updateResourceUI(); return; }
-  const v = playerData?.gs?.cristais ?? playerData?.cristais ?? 0;
+  const v = mktCristais();
   const el = document.getElementById('hdrCristais');
   if(el) el.textContent = fmtC(v);
 }

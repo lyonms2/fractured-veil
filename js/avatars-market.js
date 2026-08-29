@@ -182,7 +182,8 @@ async function openDetail(listingId) {
   const l = listings.find(x => x.id === listingId);
   if(!l) return;
   const isMine   = l.sellerId === walletAddress;
-  const canBuy   = !isMine && (playerData?.cristais||0) >= l.price;
+  // mktCristais() lê o saldo vivo; playerData.cristais é a cópia velha.
+  const canBuy   = !isMine && mktCristais() >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
   const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
   const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento] ? t('elem.bonus.' + l.elemento) : '';
@@ -225,7 +226,7 @@ function closeDetail() {
 // COMPRAR AVATAR
 // ═══════════════════════════════════════════
 async function buyAvatar(listingId, price) {
-  if(!playerData || playerData.cristais < price) { showToast(t('mkt.avatar.insufficient'),'err'); return; }
+  if(!playerData || mktCristais() < price) { showToast(t('mkt.avatar.insufficient'),'err'); return; }
   const freeIdx = playerData.avatarSlots.findIndex((s,i) => !s && i < getUnlockedSlots());
   if(freeIdx === -1) { showToast(t('mkt.avatar.no_slots'),'err'); return; }
 
@@ -292,7 +293,7 @@ function closeListModal() {
 async function confirmList() {
   const price = parseInt(document.getElementById('listPriceInput').value);
   if(!price || price < 1) { showToast(t('mkt.avatar.price_invalid'),'err'); return; }
-  if((playerData?.cristais || 0) < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
+  if(mktCristais() < LIST_COST) { showToast(t('mkt.avatar.list_cost', {cost: LIST_COST}),'err'); return; }
   if(listingSlotIdx === null) return;
 
   try {
