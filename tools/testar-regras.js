@@ -106,6 +106,13 @@ async function ler(doc) {
   ok('EXPLOIT listar avatar à mão',   await mercado('avatarMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
   ok('EXPLOIT listar ovo à mão',      await mercado('eggMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
 
+  // ── indicações: o que o servidor escreve, o cliente não toca ──
+  await escrever(null,'L',{'referralEarned':7,'referralCount':2,'gs.moedas':10}, true);
+  ok('EXPLOIT inflar ganhos de convite', await escrever('L','L',{'referralEarned':9999}), 403);
+  ok('EXPLOIT inflar nº de convidados',  await escrever('L','L',{'referralCount':500}), 403);
+  ok('EXPLOIT forjar a cadeia',          await escrever('L','L',{'referralChain':'x'}), 403);
+  ok('conta nova já com ganhos',         await escrever('M','M',{'referralEarned':100}), 403);
+
   // o saldo sobreviveu a tudo?
   const d = await ler('D');
   R.push(`\ncristais depois de tudo: ${d?.gs?.mapValue?.fields?.cristais?.integerValue}  (tem de ser 50)`);

@@ -41,7 +41,13 @@ service cloud.firestore {
     function camposDoServidor() {
       return ['cristais', 'resgateLog', 'ultimoResgate',
               'cambioLog', 'ultimoCambio',
-              'referralBonus', 'referralChain',
+              // Estava aqui 'referralBonus', que NÃO é campo do jogador:
+              // só existe no registo do resgate (subcoleção) e na resposta
+              // da API. Protegia um fantasma e deixava de fora os dois
+              // reais — o referralEarned, que a página de indicações
+              // mostra como "total ganho", e o referralCount. Sem eles,
+              // qualquer um inflava o próprio número de ganhos.
+              'referralChain', 'referralEarned', 'referralCount',
               // O registo dos ovos que o servidor emitiu. É a prova que
               // deixa vender um ovo posto pelo próprio avatar sem confiar
               // no avatarSlots, que o cliente escreve. Ver handleBotarOvo
