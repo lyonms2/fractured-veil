@@ -241,6 +241,100 @@ function _duracaoDaAnim(w) {
   return maior > 0 ? maior + 60 : 900;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   GESTOS POR PARTE NAS AÇÕES
+
+   Até aqui cada ação era um único transform no svg inteiro: o bicho
+   escalava, rodava e saltava como um bloco rígido. As partes existiam
+   (av-corpo, av-boca, av-asa, av-cauda, av-membro, av-olho-un, av-chifre)
+   e só o repouso as usava.
+
+   Cada entrada é [seletor, quadros, duração, atraso por índice, atraso
+   base]. Corre por WAAPI com composite:'add', que SOMA ao que o CSS já
+   está fazendo — sem isso a reação matava a animação de repouso da parte,
+   porque o `animation` do CSS só guarda um valor. Foi a parede em que
+   bati no mini-avatar e a saída é a mesma.
+
+   Nenhum gesto assume que a parte existe. Chifres vão de 0 a 4, asas só
+   da fase 3 para cima e com 70% de chance, cauda e tentáculos podem
+   faltar, olhos são 1 a 3 — o querySelectorAll devolve lista vazia e o
+   gesto simplesmente não acontece naquela parte.
+═══════════════════════════════════════════════════════════════════ */
+const _AV_ACAO_GESTOS = {
+  // Comer: a boca abria zero. O corpo saltava e a cara ficava parada.
+  // Duas mordidas, e os olhos apertam-se na segunda como quem gosta.
+  comer: [
+    ['.av-boca',    [{transform:'scaleY(1)'},{transform:'scaleY(0.35)'},{transform:'scaleY(1.15)'},
+                     {transform:'scaleY(0.45)'},{transform:'scaleY(1)'}], 640, 0, 0],
+    ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.55)'},{transform:'scaleY(1)'}], 640, 0, 180],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-8deg)'},{transform:'rotate(0)'}], 640, 45, 0],
+  ],
+
+  // Carinho: olhos em fenda de contentamento e rabo depressa.
+  carinho: [
+    ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.3)'},{transform:'scaleY(0.4)'},
+                     {transform:'scaleY(1)'}], 620, 0, 0],
+    ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(-14deg)'},{transform:'rotate(12deg)'},
+                     {transform:'rotate(-9deg)'},{transform:'rotate(0)'}], 620, 0, 0],
+    ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.16)'},{transform:'scaleY(1)'}], 620, 0, 0],
+  ],
+
+  // Curar: alívio. Os olhos arregalam-se, os braços largam a tensão.
+  curar: [
+    ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}], 900, 0, 0],
+    ['.av-membro',  [{transform:'rotate(6deg)'},{transform:'rotate(-4deg)'},{transform:'rotate(0)'}], 900, 50, 0],
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}], 900, 0, 0],
+  ],
+
+  // Antídoto: o efeito PERCORRE o corpo em vez de acender tudo junto.
+  // Peito aos 0ms, membros aos 140, asas aos 220, cauda aos 300,
+  // chifres aos 360 — de dentro para fora, que é como se lê uma cura
+  // a espalhar-se.
+  antidoto: [
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.07)'},{transform:'scale(1)'}], 520, 0,   0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-11deg)'},{transform:'rotate(0)'}], 520, 40, 140],
+    ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.24)'},{transform:'scaleY(1)'}], 520, 0, 220],
+    ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(13deg)'},{transform:'rotate(0)'}], 520, 0, 300],
+    ['.av-chifre',  [{transform:'scale(1)'},{transform:'scale(1.14)'},{transform:'scale(1)'}], 520, 0, 360],
+  ],
+
+  // Banho: sacudir a água. Rápido, curto e alternado — asas e cauda dão
+  // o estalo, os olhos fecham-se contra os salpicos.
+  banho: [
+    ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.3) rotate(-6deg)'},
+                     {transform:'scaleY(0.9) rotate(4deg)'},{transform:'scaleY(1)'}], 900, 0, 120],
+    ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(-18deg)'},{transform:'rotate(15deg)'},
+                     {transform:'rotate(-8deg)'},{transform:'rotate(0)'}], 900, 0, 0],
+    ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.2)'},{transform:'scaleY(0.2)'},
+                     {transform:'scaleY(1)'}], 900, 0, 0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(10deg)'},{transform:'rotate(-7deg)'},
+                     {transform:'rotate(0)'}], 900, 55, 60],
+  ],
+
+  // Brincar: energia. Tudo para cima ao mesmo tempo.
+  brincar: [
+    ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.4)'},{transform:'scale(1)'}], 760, 0, 0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-20deg)'},{transform:'rotate(14deg)'},
+                     {transform:'rotate(0)'}], 760, 60, 0],
+    ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(-16deg)'},{transform:'rotate(12deg)'},
+                     {transform:'rotate(0)'}], 760, 0, 0],
+    ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.3)'},{transform:'scaleY(1)'}], 760, 0, 0],
+  ],
+};
+
+/* Qual gesto acompanha qual classe. Fica aqui e não espalhado pelos
+   sítios que chamam o playAnim: uma ação nova ganha o gesto pondo uma
+   linha nesta tabela. As que não estão (poop, layegg, sad, dead) não
+   têm gesto de propósito. */
+const _GESTO_POR_ANIM = {
+  'anim-eat':      'comer',
+  'anim-pet':      'carinho',
+  'anim-play':     'brincar',
+  'anim-heal':     'curar',
+  'anim-antidote': 'antidoto',
+  'anim-clean':    'banho',
+};
+
 function playAnim(cls, persist = false) {
   const w = document.getElementById('creatureWrap');
   if(!w) return;
@@ -250,6 +344,17 @@ function playAnim(cls, persist = false) {
   _currentAnim = cls;
   _animTimeout = null;
   w.classList.add(cls);
+
+  // As partes reagem por cima do que o corpo inteiro está fazendo. Corre
+  // depois de pôr a classe para que o composite:'add' some sobre o estado
+  // certo, e num try porque um browser sem WAAPI deve perder o gesto, não
+  // a ação.
+  const gesto = _GESTO_POR_ANIM[cls];
+  if (gesto && typeof avatarPartesReagem === 'function') {
+    const svg = w.querySelector('svg');
+    if (svg) avatarPartesReagem(svg, _AV_ACAO_GESTOS[gesto]);
+  }
+
   if(!persist) {
     _animTimeout = setTimeout(() => {
       w.classList.remove(cls);

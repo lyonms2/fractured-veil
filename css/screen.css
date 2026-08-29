@@ -116,6 +116,46 @@
   60%     { transform:translate(-0.0625rem,0.125rem) rotate(-.5deg); }
   80%     { transform:translate(0.0625rem,-0.125rem) rotate(.5deg); }
 }
+
+/* ── Doente, parte a parte ──
+   O tremor e o sépia acima davam o aviso, mas tratavam o bicho como um
+   bloco: por baixo do filtro, as asas continuavam a bater com a mesma
+   energia de um bicho são.
+   As asas caem e quase param, a cauda perde a vontade, os braços ficam
+   lentos, o piscar espaça-se, e o peito respira raso e depressa — que é
+   o oposto do sono, onde respira fundo e devagar. A diferença entre os
+   dois estados lê-se só por aí, sem precisar de cor.
+
+   Isto vem ANTES do bloco de dormir de propósito: quando as duas classes
+   estão postas, o bicho está doente E a dormir, e quem deve mandar é o
+   sono. É a ordem no arquivo que decide, porque a especificidade é a
+   mesma. */
+.creature-wrap.diseased .av-asa { animation: av-asa-doente 5.5s ease-in-out infinite; }
+@keyframes av-asa-doente {
+  0%, 100% { transform: scaleY(0.88) rotate(1.5deg); }
+  50%      { transform: scaleY(0.86) rotate(0.8deg); }
+}
+
+.creature-wrap.diseased .av-cauda { animation: av-cauda-doente 6.5s ease-in-out infinite; }
+@keyframes av-cauda-doente {
+  0%, 100% { transform: rotate(4deg); }
+  50%      { transform: rotate(2.6deg); }
+}
+
+.creature-wrap.diseased .av-membro { animation-duration: 6.2s; }
+
+.creature-wrap.diseased .av-olho-un { animation: av-piscar-doente 3.1s ease-in-out infinite; }
+@keyframes av-piscar-doente {
+  0%, 70%, 100% { transform: scaleY(0.72); }
+  80%           { transform: scaleY(0.1); }
+  86%           { transform: scaleY(0.72); }
+}
+
+.creature-wrap.diseased .av-corpo { animation: av-respirar-raso 1.9s ease-in-out infinite; }
+@keyframes av-respirar-raso {
+  0%, 100% { transform: scale(1,     1); }
+  50%      { transform: scale(1.006, 0.994); }
+}
 .disease-badge {
   font-family:'Cinzel',serif; font-size:0.40625rem; font-weight:700;
   color:var(--d-cor,#e05050); border:1px solid var(--d-cor,#e05050);
@@ -520,6 +560,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .av-olho-un, .av-asa, .av-cauda, .av-membro, .av-corpo { animation: none; }
+  .creature-wrap.diseased .av-asa,
+  .creature-wrap.diseased .av-cauda,
+  .creature-wrap.diseased .av-olho-un,
+  .creature-wrap.diseased .av-corpo,
   .creature-wrap.sleeping .av-asa,
   .creature-wrap.sleeping .av-cauda,
   .creature-wrap.sleeping .av-corpo,

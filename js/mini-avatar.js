@@ -144,24 +144,34 @@ const _miniAvSuportaSoma = (() => {
   catch (_) { return false; }
 })();
 
-function _miniAvatarPartesReagem(raiz, tipo) {
+/* O executor é o mesmo para os dois avatares — o dos passatempos e o do
+   jogo. Recebe a lista de gestos já resolvida, em vez de ir buscá-la a
+   uma tabela sua, para que o avatar principal possa trazer a dele sem
+   duplicar isto tudo. Ver _AV_ACAO_GESTOS em js/ui.js.
+
+   O atraso extra existe para o antídoto, onde o efeito tem de PERCORRER
+   o corpo: o peito primeiro, depois os membros, as asas, a cauda. Sem
+   ele todas as partes acendiam ao mesmo tempo e não se lia viagem. */
+function avatarPartesReagem(raiz, gestos) {
   if (!_miniAvSuportaSoma) return;
+  if (!raiz || !gestos) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const gestos = _MINI_AV_GESTOS[tipo];
-  if (!gestos) return;
-
-  for (const [selector, quadros, duracao, passo] of gestos) {
+  for (const [selector, quadros, duracao, passo, atrasoBase] of gestos) {
     const partes = raiz.querySelectorAll(selector);
     partes.forEach((parte, i) => {
       try {
         parte.animate(quadros, {
           duration: duracao,
-          delay: i * passo,
+          delay: (atrasoBase || 0) + i * passo,
           easing: 'cubic-bezier(.34,1.4,.64,1)',
           composite: 'add',   // soma-se ao que o CSS já está fazendo
         });
       } catch (_) { /* browser sem WAAPI: fica só a animação do corpo */ }
     });
   }
+}
+
+function _miniAvatarPartesReagem(raiz, tipo) {
+  avatarPartesReagem(raiz, _MINI_AV_GESTOS[tipo]);
 }
