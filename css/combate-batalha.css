@@ -411,14 +411,14 @@
 .equipa-batalhar:active { transform: translateY(0.0625rem); }
 .equipa-batalhar .eb-icone { font-size: 0.75rem; line-height: 1; }
 .equipa-batalhar .eb-texto {
-  font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.15625rem;
+  font-family: 'Cinzel', serif; font-size: 0.5625rem; letter-spacing: 0.15625rem;
   color: var(--gold-light); font-weight: 700;
 }
-.equipa-batalhar .eb-custo { font-size: 0.34375rem; color: var(--muted); letter-spacing: 0.03125rem; }
+.equipa-batalhar .eb-custo { font-size: 0.4375rem; color: var(--muted); letter-spacing: 0.03125rem; }
 
 .equipa-batalhar-off {
   margin-top: 0.5rem; padding: 0.5rem 0.375rem; text-align: center;
-  font-size: 0.34375rem; line-height: 1.5; letter-spacing: 0.025rem; color: var(--muted);
+  font-size: 0.46875rem; line-height: 1.5; letter-spacing: 0.025rem; color: var(--muted);
   border: 1px dashed rgba(255,255,255,.12); border-radius: 0.5rem;
 }
 .equipa-batalhar-off.cansada { color: #e0a050; border-color: rgba(224,160,80,.3); }
