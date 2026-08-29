@@ -42,6 +42,20 @@ function calcPoolPrice(raridade) {
   return parseFloat((base * ratio).toFixed(2));
 }
 
+/* Quanto ainda pode SAIR da pool hoje.
+
+   Dizia só POOL_LIMITE_DIA menos o que já saiu, e o segundo dos dois
+   sítios tinha o 100 escrito à mão em vez da constante. O resultado era
+   uma pool com 0 cristais a anunciar "Disponível hoje: 100,00 💎" — o
+   tecto do dia apresentado como se fosse dinheiro que lá estivesse.
+
+   O tecto é um limite, não um saldo. O que pode sair é o MENOR dos
+   dois: o que a pool tem e o que o tecto ainda deixa. */
+function _podeSairHoje(saldo, saqueHoje) {
+  const restaDoTecto = Math.max(0, POOL_LIMITE_DIA - (saqueHoje || 0));
+  return Math.max(0, Math.min(saldo || 0, restaDoTecto));
+}
+
 function poolDisponivel() {
   if(!poolData) return false;
   // Lia o saqueHoje cru, sem a janela das 24h que o servidor aplica
@@ -87,7 +101,7 @@ function renderPoolWidget() {
   const precoLend  = calcPoolPrice('Lendário');
   const saldo      = poolData.cristais || 0;
   const saqueHoje  = poolData.saqueHoje || 0;
-  const restante   = Math.max(0, POOL_LIMITE_DIA - saqueHoje);
+  const restante   = _podeSairHoje(saldo, saqueHoje);
   const pct        = Math.min(100, Math.round(saldo / POOL_ALVO * 100));
   const barColor   = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red)';
   el.innerHTML = `
@@ -180,7 +194,7 @@ function renderPoolStatsCard() {
   const totalIn    = poolData.totalEntrou || 0;
   const totalOut   = poolData.totalSaiu   || 0;
   const saqueHoje  = poolData.saqueHoje   || 0;
-  const restante   = Math.max(0, 100 - saqueHoje);
+  const restante   = _podeSairHoje(saldo, saqueHoje);
   const pct        = Math.min(100, Math.round(saldo / POOL_ALVO * 100));
   const barColor   = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red2)';
   const precoRaro  = calcPoolPrice('Raro');
