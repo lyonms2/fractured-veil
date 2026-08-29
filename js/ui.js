@@ -259,15 +259,57 @@ function _duracaoDaAnim(w) {
    da fase 3 para cima e com 70% de chance, cauda e tentáculos podem
    faltar, olhos são 1 a 3 — o querySelectorAll devolve lista vazia e o
    gesto simplesmente não acontece naquela parte.
+
+   A AMPLITUDE MEDE-SE CONTRA O TAMANHO DA PEÇA, não se escolhe por
+   parecer um número razoável. Foi o erro da primeira versão: pus 7 graus
+   no braço e um scaleY de 0.35 na boca, e nenhum dos dois se via.
+   Medido numa criatura de 240px, com um Lendário de fase 4:
+
+     peça          tamanho na tela   10 graus rendem
+     av-asa        144x39            25px
+     av-cauda       23x65            11px
+     av-corpo       50x63            11px
+     av-chifre      56x30            10px
+     av-membro      41x34             7px
+     av-olho-un     26x26             5px
+     av-boca        46x7              8px
+
+   Um gesto precisa de mover 12 a 18px para se ler. Por isso o braço leva
+   20 graus e não 7, e a boca abre com scaleY até 2.6 — sete pixels de
+   altura só dão movimento visível multiplicando, não encolhendo.
 ═══════════════════════════════════════════════════════════════════ */
 const _AV_ACAO_GESTOS = {
-  // Comer: a boca abria zero. O corpo saltava e a cara ficava parada.
-  // Duas mordidas, e os olhos apertam-se na segunda como quem gosta.
+  // Comer: duas mordidas, e a boca ABRE. A primeira versão fechava-a, que
+  // é o contrário do gesto, e com uma amplitude que numa boca de 7px dava
+  // 2,5px — invisível.
+  //
+  // A boca é a peça mais chata de animar, por duas razões que só se veem
+  // ao olhar para o gerador:
+  //
+  //  1. O tamanho varia muito com o tipo sorteado. Medido em cinco seeds:
+  //     46x7, 46x5, 46x6, 28x9 e 33x22. Um scaleY fixo que abre bem um
+  //     traço de 5px transforma a elipse de 22 num disparate. Por isso os
+  //     quadros são calculados na hora a partir do bbox da própria peça,
+  //     com alvo de ~14px de abertura em qualquer caso.
+  //
+  //  2. A origem tem de ir para o topo. O .av-boca herda
+  //     transform-origin:center, e escalar a partir do centro faz a boca
+  //     crescer para cima E para baixo ao mesmo tempo — lê-se como um
+  //     traço a engordar, não como uma boca a abrir. Com a origem no topo
+  //     cai só o lábio de baixo, que é o que uma boca faz. A regra está
+  //     em css/screen.css, presa ao .anim-eat.
   comer: [
-    ['.av-boca',    [{transform:'scaleY(1)'},{transform:'scaleY(0.35)'},{transform:'scaleY(1.15)'},
-                     {transform:'scaleY(0.45)'},{transform:'scaleY(1)'}], 640, 0, 0],
-    ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.55)'},{transform:'scaleY(1)'}], 640, 0, 180],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-8deg)'},{transform:'rotate(0)'}], 640, 45, 0],
+    ['.av-boca', (el) => {
+      let alt = 7;
+      try { alt = el.getBBox().height || 7; } catch (_) {}
+      // k tal que a peça desça ~14px: alt*(k-1) = 14
+      const k = Math.min(3.4, Math.max(1.5, 1 + 14 / alt));
+      return [{transform:'scaleY(1)'}, {transform:`scaleY(${k.toFixed(2)})`},
+              {transform:'scaleY(0.8)'}, {transform:`scaleY(${(1 + (k-1)*0.75).toFixed(2)})`},
+              {transform:'scaleY(1)'}];
+    }, 640, 0, 0],
+    ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.5)'},{transform:'scaleY(1)'}], 640, 0, 180],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-18deg)'},{transform:'rotate(0)'}], 640, 45, 0],
   ],
 
   // Carinho: olhos em fenda de contentamento e rabo depressa.
@@ -282,8 +324,8 @@ const _AV_ACAO_GESTOS = {
   // Curar: alívio. Os olhos arregalam-se, os braços largam a tensão.
   curar: [
     ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}], 900, 0, 0],
-    ['.av-membro',  [{transform:'rotate(6deg)'},{transform:'rotate(-4deg)'},{transform:'rotate(0)'}], 900, 50, 0],
-    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}], 900, 0, 0],
+    ['.av-membro',  [{transform:'rotate(14deg)'},{transform:'rotate(-9deg)'},{transform:'rotate(0)'}], 900, 50, 0],
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.10)'},{transform:'scale(1)'}], 900, 0, 0],
   ],
 
   // Antídoto: o efeito PERCORRE o corpo em vez de acender tudo junto.
@@ -291,11 +333,11 @@ const _AV_ACAO_GESTOS = {
   // chifres aos 360 — de dentro para fora, que é como se lê uma cura
   // a espalhar-se.
   antidoto: [
-    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.07)'},{transform:'scale(1)'}], 520, 0,   0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-11deg)'},{transform:'rotate(0)'}], 520, 40, 140],
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.13)'},{transform:'scale(1)'}], 520, 0,   0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-20deg)'},{transform:'rotate(0)'}], 520, 40, 140],
     ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.24)'},{transform:'scaleY(1)'}], 520, 0, 220],
     ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(13deg)'},{transform:'rotate(0)'}], 520, 0, 300],
-    ['.av-chifre',  [{transform:'scale(1)'},{transform:'scale(1.14)'},{transform:'scale(1)'}], 520, 0, 360],
+    ['.av-chifre',  [{transform:'scale(1)'},{transform:'scale(1.28)'},{transform:'scale(1)'}], 520, 0, 360],
   ],
 
   // Banho: sacudir a água. Rápido, curto e alternado — asas e cauda dão
@@ -307,14 +349,14 @@ const _AV_ACAO_GESTOS = {
                      {transform:'rotate(-8deg)'},{transform:'rotate(0)'}], 900, 0, 0],
     ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.2)'},{transform:'scaleY(0.2)'},
                      {transform:'scaleY(1)'}], 900, 0, 0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(10deg)'},{transform:'rotate(-7deg)'},
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(20deg)'},{transform:'rotate(-14deg)'},
                      {transform:'rotate(0)'}], 900, 55, 60],
   ],
 
   // Brincar: energia. Tudo para cima ao mesmo tempo.
   brincar: [
     ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.4)'},{transform:'scale(1)'}], 760, 0, 0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-20deg)'},{transform:'rotate(14deg)'},
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-26deg)'},{transform:'rotate(18deg)'},
                      {transform:'rotate(0)'}], 760, 60, 0],
     ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(-16deg)'},{transform:'rotate(12deg)'},
                      {transform:'rotate(0)'}], 760, 0, 0],

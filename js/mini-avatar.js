@@ -161,7 +161,13 @@ function avatarPartesReagem(raiz, gestos) {
     const partes = raiz.querySelectorAll(selector);
     partes.forEach((parte, i) => {
       try {
-        parte.animate(quadros, {
+        // Os quadros podem vir como função em vez de lista. É o que
+        // permite medir a peça antes de a animar — a boca precisa disso,
+        // porque o mesmo scaleY que abre um traço de 5px rebenta uma
+        // elipse de 22, e os dois desenhos existem.
+        const q = typeof quadros === 'function' ? quadros(parte) : quadros;
+        if (!q) return;
+        parte.animate(q, {
           duration: duracao,
           delay: (atrasoBase || 0) + i * passo,
           easing: 'cubic-bezier(.34,1.4,.64,1)',
