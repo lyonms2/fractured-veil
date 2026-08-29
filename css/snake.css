@@ -312,17 +312,23 @@
   }
 
   /* Dica de teclado. Vive como ::after do modal, não do cartão, portanto
-     é um item flex da coluna: o que fica centrado na tela é o conjunto
-     cartão + dica, e não o cartão sozinho. Por isso o cartão do snake
-     assenta uns 10px acima do centro, ao contrário dos outros dois. É de
-     propósito — a dica pertence à janela e deve acompanhá-la.
-     Estava a 0.5rem, 12px, pequena demais para a janela de 552px. */
+     é um item flex da coluna e entrava na conta do centro: o que ficava
+     centrado era o conjunto cartão + dica, e o cartão do snake assentava
+     uns 17px acima do centro, ao contrário dos outros dois.
+     Com height:0 e margem zero deixa de pesar no layout — o cartão centra
+     como os outros — e o texto continua a pintar, porque uma caixa de
+     altura zero não corta o que transborda. O afastamento faz-se por
+     transform, que é a única forma de mover sem ocupar espaço.
+     O tamanho era 0.5rem, 12px, pequeno demais para a janela de 552px. */
   #snakeModal::after {
     content: '↑ ↓ ← →  ou  W A S D';
     font-family: 'Cinzel', serif;
     font-size: 0.625rem;
     color: rgba(255,255,255,.28);
     letter-spacing: 0.125rem;
-    margin-top: 0.25rem;
+    height: 0;
+    margin: 0;
+    overflow: visible;
+    transform: translateY(0.4375rem);
   }
 }
