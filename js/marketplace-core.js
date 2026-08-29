@@ -141,7 +141,7 @@ function showSection(id) {
 
 function renderSection() {
   if(currentSection === 'browse')        renderBrowse();
-  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); }
+  if(currentSection === 'buycrystals')   { renderCrystals(); renderMetaMaskCta(); renderLimiteResgate(); }
   if(currentSection === 'referral')      renderReferral();
   if(currentSection === 'eggs')          loadEggListings();
   if(currentSection === 'transparencia') { renderPoolSection(); renderTransparencia(); }

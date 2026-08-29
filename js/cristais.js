@@ -121,6 +121,50 @@ function renderCrystals() {
 
 // ═══════════════════════════════════════════
 // COMPRA DE CRISTAIS
+/* QUANTO AINDA DÁ PARA RESGATAR HOJE
+   ═══════════════════════════════════════════════════════════════════
+   O tecto diário é de 50 💎 e vive no api/resgatar.js. A tela não o
+   dizia em lado nenhum: escrevia-se um número, clicava-se, e só então
+   vinha "Limite diário atingido. Podes resgatar mais X hoje". O número
+   que interessava só aparecia depois de falhar.
+
+   Existe uma barra de limite, mas na página da Transparência — noutra
+   secção, e em MATIC em vez de 💎. Aqui, onde se resgata, não havia nada.
+
+   O resgateLog está no documento do jogador. O cliente não o escreve
+   (as regras não deixam, é o que impede zerar o próprio limite) mas
+   pode lê-lo, e é o que se faz aqui: uma leitura ao abrir a secção.
+   Falhando, mostra-se o tecto sem o gasto — melhor um número parcial do
+   que nenhum. */
+const RESGATE_MAX_DIA = 50;
+
+async function renderLimiteResgate() {
+  const el = document.getElementById('resgateLimite');
+  if (!el) return;
+  const input = document.getElementById('resgateGems');
+
+  let usadoHoje = 0;
+  try {
+    const snap = await db.collection('players').doc(walletAddress).get();
+    const log  = snap.data()?.resgateLog;
+    const hoje = new Date().toISOString().slice(0, 10);
+    if (log && log.data === hoje) usadoHoje = log.total || 0;
+  } catch (e) { /* fica em zero: mostra o tecto cheio */ }
+
+  const resta = Math.max(0, RESGATE_MAX_DIA - usadoHoje);
+  el.textContent = t('mkt.crystals.limit_left', { resta, max: RESGATE_MAX_DIA });
+  el.classList.toggle('esgotado', resta === 0);
+
+  // O campo deixa de aceitar o que vai ser recusado.
+  if (input) {
+    input.max = String(resta);
+    if (resta === 0) input.disabled = true;
+    else input.disabled = false;
+  }
+  const btn = document.getElementById('btnResgatar');
+  if (btn) btn.disabled = resta === 0;
+}
+
 // ═══════════════════════════════════════════
 async function comprarCristais(idx) {
   const pkg    = CRYSTAL_PACKAGES[idx];
@@ -290,6 +334,10 @@ async function resgatar() {
         if(typeof updateResourceUI === 'function') updateResourceUI();
       }
       updateCristaisDisplay();
+      // O tecto do dia acabou de encolher — o número em cima do campo tem
+      // de acompanhar, senão fica a prometer o que já não há até alguém
+      // reabrir a secção.
+      renderLimiteResgate();
       gemsInput.value = '';
       const refBonus = apiData.referralBonus || 0;
       const refNote  = refBonus > 0

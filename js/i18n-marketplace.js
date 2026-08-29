@@ -196,6 +196,7 @@ window.registerStrings({
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
   // Nomes dos pacotes de cristais
+  'mkt.crystals.limit_left':  'Podes resgatar {resta} de {max} 💎 hoje',
   'mkt.pkg.0':                'Punhado',
   'mkt.pkg.1':                'Bolsa',
   'mkt.pkg.2':                'Saco',
@@ -568,6 +569,7 @@ window.registerStrings({
   'mkt.crystals.redeem_ph':   'Amount of 💎 (min. 10)',
 
   // Package names
+  'mkt.crystals.limit_left':  'You can redeem {resta} of {max} 💎 today',
   'mkt.pkg.0':                'Handful',
   'mkt.pkg.1':                'Pouch',
   'mkt.pkg.2':                'Bag',

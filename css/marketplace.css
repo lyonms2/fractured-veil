@@ -641,3 +641,14 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
 
   #marketplaceModal h3 { font-size: 0.5rem; }
 }
+
+
+/* Quanto resta do tecto diário de resgate. Fica por cima do campo, para se
+   ler antes de escrever o número — era esse o problema: o limite só
+   aparecia na mensagem de erro, depois de o pedido falhar. */
+.resgate-limite{
+  font-size:0.5625rem; color:var(--text2); text-align:center;
+  margin-bottom:0.5rem; letter-spacing:0.02rem;
+}
+.resgate-limite.esgotado{ color:var(--red2); font-weight:600; }
+@media (min-width: 769px) { .resgate-limite{ font-size:0.46875rem; } }

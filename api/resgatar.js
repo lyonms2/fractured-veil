@@ -28,7 +28,12 @@ function initAdmin() {
 }
 
 const RATE                 = 10;
-const MAX_GEMS_POR_RESGATE = 100;
+// Os dois eram 100 e 50, e o de cima nunca se alcançava: pedir 80
+// passava esta guarda e morria na do dia, com outra mensagem. A
+// primeira dizia 'inválida (1 a 100)' e prometia o que não existe.
+// Igualados, a mensagem passa a dizer a verdade e a guarda continua a
+// servir para o que serve: recusar cedo, antes da transação.
+const MAX_GEMS_POR_RESGATE = 50;
 const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
 // ── O contrato já consumiu este nonce? ──────────────────────────
