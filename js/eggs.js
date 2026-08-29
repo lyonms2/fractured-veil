@@ -203,8 +203,8 @@ function _queimarParaPool(id) {
   const cristaisPool = poolData?.cristais || 0;
   const ratio  = Math.min(2, cristaisPool / 1000);
   const base   = ovo.raridade === 'Lendário' ? 1.0 : 0.5;
-  const minP   = ovo.raridade === 'Lendário' ? 0.25 : 0.10;
-  const preco  = Math.max(minP, parseFloat((base * ratio).toFixed(2)));
+  // Mesma conta do servidor, e sem piso: não há mínimo garantido.
+  const preco  = parseFloat((base * ratio).toFixed(2));
 
   const overlay = document.getElementById('eggBurnOverlay');
   const preview = document.getElementById('eggBurnPreview');
@@ -219,15 +219,20 @@ function _queimarParaPool(id) {
   // janela de 24h que o servidor usa; ficou sem quem o chamasse quando
   // a queima saiu, e é aqui que sempre fez falta.
   const temSaldo = cristaisPool > 0;
-  const poolOk   = poolDisponivel();
+  // Três razões distintas para não deixar queimar, e o jogador merece
+  // saber qual delas é: pool vazia, tecto diário atingido, ou pool tão
+  // baixa que o preço arredonda a zero — nesse caso o ovo valia nada.
+  const poolOk   = poolDisponivel() && preco > 0;
   preview.innerHTML = `
     Ovo <strong style="color:${ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8'}">${ovo.raridade}</strong><br>
     Elemento: <strong>${ovo.elemento}</strong><br><br>
     ${poolOk
       ? `Receberás <strong style="color:#a78bfa">${preco} 💎</strong> da pool<br><small style="opacity:.6">(pool: ${cristaisPool} 💎 disponíveis)</small>`
-      : temSaldo
-        ? `<span style="color:#f87171">Limite diário da pool atingido.<br>Tente amanhã.</span>`
-        : `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
+      : !temSaldo
+        ? `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
+        : !poolDisponivel()
+          ? `<span style="color:#f87171">Limite diário da pool atingido.<br>Tente amanhã.</span>`
+          : `<span style="color:#f87171">A pool está baixa de mais e este ovo<br>não vale nada agora. Guarde-o, ou venda no 🛒.</span>`
     }`;
 
   overlay.style.display = 'flex';

@@ -412,8 +412,16 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
       // Calcular preço
       const ratio = Math.min(2, poolData.cristais / POOL_ALVO);
       const base  = raridade === 'Lendário' ? 1.0 : 0.5;
-      const minP  = raridade === 'Lendário' ? 0.25 : 0.10;
-      const preco = Math.max(minP, parseFloat((base * ratio).toFixed(2)));
+      // Não há mínimo garantido. Havia um piso de 0,10 no Raro e 0,25
+      // no Lendário, e um piso é uma promessa que a pool faz sem saber
+      // se a pode cumprir: com a pool quase seca, pagava 0,10 onde o
+      // ratio pedia 0,0005 — 200× a mais, justamente no momento em que
+      // ela tinha menos. Se a pool não tem, não paga.
+      const preco = parseFloat((base * ratio).toFixed(2));
+      // Com a pool tão baixa que o preço arredonda a zero, recusa-se em
+      // vez de destruir o ovo por nada. O jogador fica com ele para
+      // quando a pool recuperar, ou vende-o a outro jogador.
+      if (preco <= 0) throw new Error('A pool está demasiado baixa para pagar este ovo. Guarda-o ou vende-o no mercado.');
 
       if (poolData.cristais < preco) throw new Error('Pool sem saldo suficiente.');
 
