@@ -260,23 +260,31 @@ function _duracaoDaAnim(w) {
    faltar, olhos são 1 a 3 — o querySelectorAll devolve lista vazia e o
    gesto simplesmente não acontece naquela parte.
 
-   A AMPLITUDE MEDE-SE CONTRA O TAMANHO DA PEÇA, não se escolhe por
-   parecer um número razoável. Foi o erro da primeira versão: pus 7 graus
-   no braço e um scaleY de 0.35 na boca, e nenhum dos dois se via.
-   Medido numa criatura de 240px, com um Lendário de fase 4:
+   A AMPLITUDE MEDE-SE CONTRA O TAMANHO DO BICHO, não se escolhe por
+   parecer um número razoável — e o tamanho do bicho MUDA com a fase.
 
-     peça          tamanho na tela   10 graus rendem
-     av-asa        144x39            25px
-     av-cauda       23x65            11px
-     av-corpo       50x63            11px
-     av-chifre      56x30            10px
-     av-membro      41x34             7px
-     av-olho-un     26x26             5px
-     av-boca        46x7              8px
+   FASE_SIZES = [75, 100, 120, 140] (js/state.js): o svg é desenhado
+   entre 75px em bebê e 140px em adulto. A primeira versão destes gestos
+   foi medida a 240px, quase o dobro do adulto e mais do triplo do bebê,
+   e por isso os números pareciam bons e no jogo não se via nada. Ao
+   tamanho real, o que eu julgava serem 14px eram 6.
 
-   Um gesto precisa de mover 12 a 18px para se ler. Por isso o braço leva
-   20 graus e não 7, e a boca abre com scaleY até 2.6 — sete pixels de
-   altura só dão movimento visível multiplicando, não encolhendo.
+   Ao tamanho verdadeiro, num Lendário:
+
+     peça          fase 0 (75px)   fase 3 (140px)
+     av-boca         19x3            27x4
+     av-membro       13x11           24x20
+     av-olho-un       8x8            15x15
+     av-asa          45x12           81x22
+
+   A boca tem TRÊS pixels de altura em bebê. É a razão de os gestos se
+   pensarem em unidades do viewBox e não em pixels: uma rotação é um
+   ângulo e já sai proporcional sozinha, e a boca calcula a abertura como
+   fração da altura do viewBox. Assim o gesto ocupa a mesma percentagem
+   do bicho em todas as fases — que é o que faz um bebê parecer um bebê
+   e não um adulto encolhido.
+
+   Alvo: o gesto move ~10% da altura do bicho. Abaixo de 6% não se vê.
 ═══════════════════════════════════════════════════════════════════ */
 const _AV_ACAO_GESTOS = {
   // Comer: duas mordidas, e a boca ABRE. A primeira versão fechava-a, que
@@ -300,16 +308,24 @@ const _AV_ACAO_GESTOS = {
   //     em css/screen.css, presa ao .anim-eat.
   comer: [
     ['.av-boca', (el) => {
-      let alt = 7;
-      try { alt = el.getBBox().height || 7; } catch (_) {}
-      // k tal que a peça desça ~14px: alt*(k-1) = 14
-      const k = Math.min(3.4, Math.max(1.5, 1 + 14 / alt));
+      let alt = 8, vbH = 220;
+      try {
+        alt = el.getBBox().height || 8;
+        const vb = el.ownerSVGElement && el.ownerSVGElement.viewBox.baseVal;
+        if (vb && vb.height) vbH = vb.height;   // 200 até à fase 1, 260 depois
+      } catch (_) {}
+      // Abre 11% da altura do viewBox. Em unidades, não em pixels: assim a
+      // boca do bebê abre a mesma fração da cara que a do adulto.
+      // O teto existe porque a boca é quase sempre um traço com contorno,
+      // e o contorno escala junto — passando de ~3.5x deixa de ser uma
+      // boca a abrir e passa a ser uma mancha.
+      const k = Math.min(3.5, Math.max(1.6, 1 + (vbH * 0.11) / alt));
       return [{transform:'scaleY(1)'}, {transform:`scaleY(${k.toFixed(2)})`},
               {transform:'scaleY(0.8)'}, {transform:`scaleY(${(1 + (k-1)*0.75).toFixed(2)})`},
               {transform:'scaleY(1)'}];
     }, 640, 0, 0],
     ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.5)'},{transform:'scaleY(1)'}], 640, 0, 180],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-18deg)'},{transform:'rotate(0)'}], 640, 45, 0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-26deg)'},{transform:'rotate(0)'}], 640, 45, 0],
   ],
 
   // Carinho: olhos em fenda de contentamento e rabo depressa.
@@ -324,8 +340,8 @@ const _AV_ACAO_GESTOS = {
   // Curar: alívio. Os olhos arregalam-se, os braços largam a tensão.
   curar: [
     ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}], 900, 0, 0],
-    ['.av-membro',  [{transform:'rotate(14deg)'},{transform:'rotate(-9deg)'},{transform:'rotate(0)'}], 900, 50, 0],
-    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.10)'},{transform:'scale(1)'}], 900, 0, 0],
+    ['.av-membro',  [{transform:'rotate(20deg)'},{transform:'rotate(-13deg)'},{transform:'rotate(0)'}], 900, 50, 0],
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}], 900, 0, 0],
   ],
 
   // Antídoto: o efeito PERCORRE o corpo em vez de acender tudo junto.
@@ -333,8 +349,8 @@ const _AV_ACAO_GESTOS = {
   // chifres aos 360 — de dentro para fora, que é como se lê uma cura
   // a espalhar-se.
   antidoto: [
-    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.13)'},{transform:'scale(1)'}], 520, 0,   0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-20deg)'},{transform:'rotate(0)'}], 520, 40, 140],
+    ['.av-corpo',   [{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}], 520, 0,   0],
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-30deg)'},{transform:'rotate(0)'}], 520, 40, 140],
     ['.av-asa',     [{transform:'scaleY(1)'},{transform:'scaleY(1.24)'},{transform:'scaleY(1)'}], 520, 0, 220],
     ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(13deg)'},{transform:'rotate(0)'}], 520, 0, 300],
     ['.av-chifre',  [{transform:'scale(1)'},{transform:'scale(1.28)'},{transform:'scale(1)'}], 520, 0, 360],
@@ -349,14 +365,14 @@ const _AV_ACAO_GESTOS = {
                      {transform:'rotate(-8deg)'},{transform:'rotate(0)'}], 900, 0, 0],
     ['.av-olho-un', [{transform:'scaleY(1)'},{transform:'scaleY(0.2)'},{transform:'scaleY(0.2)'},
                      {transform:'scaleY(1)'}], 900, 0, 0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(20deg)'},{transform:'rotate(-14deg)'},
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(29deg)'},{transform:'rotate(-20deg)'},
                      {transform:'rotate(0)'}], 900, 55, 60],
   ],
 
   // Brincar: energia. Tudo para cima ao mesmo tempo.
   brincar: [
     ['.av-olho-un', [{transform:'scale(1)'},{transform:'scale(1.4)'},{transform:'scale(1)'}], 760, 0, 0],
-    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-26deg)'},{transform:'rotate(18deg)'},
+    ['.av-membro',  [{transform:'rotate(0)'},{transform:'rotate(-36deg)'},{transform:'rotate(25deg)'},
                      {transform:'rotate(0)'}], 760, 60, 0],
     ['.av-cauda',   [{transform:'rotate(0)'},{transform:'rotate(-16deg)'},{transform:'rotate(12deg)'},
                      {transform:'rotate(0)'}], 760, 0, 0],
