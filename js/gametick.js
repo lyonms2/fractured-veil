@@ -26,7 +26,20 @@ const POOP_POSITIONS = [
    Dois cocós sobrepostos ao pixel, e o jogador só conseguia limpar um.
    Agora pergunta-se ao DOM quem está lá, que é a única fonte fiável —
    a contagem e os elementos podem divergir. */
+/* Varre os que ficaram a meio de sair.
+   O removePoop tira o elemento do DOM 200ms depois, por temporizador — e
+   um temporizador não é garantido: com a aba em segundo plano o browser
+   estrangula-os, e o elemento fica lá com dataset.saindo posto. Invisível
+   (está em scale(0)), a ocupar o lugar, e imune a cliques por causa da
+   guarda do clique duplo. Um cocó trancado.
+   Isto corre antes de procurar lugar e antes de restaurar: se algum ficou
+   pendurado, sai agora. */
+function _cocoLimparPendentes() {
+  document.querySelectorAll('#poopContainer .poop[data-saindo]').forEach(e => e.remove());
+}
+
 function _cocoSlotLivre() {
+  _cocoLimparPendentes();
   const postos = new Set(
     [...document.querySelectorAll('#poopContainer .poop')].map(e => e.dataset.slot)
   );
@@ -65,6 +78,7 @@ function _criarCoco(slot) {
 function restaurarCocos() {
   const container = document.getElementById('poopContainer');
   if(!container) return;
+  _cocoLimparPendentes();
   container.innerHTML = '';
   const quantos = Math.min(Math.max(0, poopCount|0), POOP_POSITIONS.length);
   for(let i = 0; i < quantos; i++) _criarCoco(i);
@@ -108,6 +122,11 @@ function removePoop(el) {
   if(el.dataset.saindo) return;
   el.dataset.saindo = '1';
   el.style.pointerEvents = 'none';
+  // O lugar liberta-se agora, não daqui a 200ms. Enquanto o elemento
+  // encolhia continuava a ocupar o slot, e um cocó que nascesse nessa
+  // janela era descartado sem aviso — o _cocoSlotLivre não achava lugar
+  // e o spawnPoop desistia em silêncio. Medido: acontecia mesmo.
+  delete el.dataset.slot;
 
   el.style.transform = 'scale(0)';
   el.style.transition = 'transform .2s';
