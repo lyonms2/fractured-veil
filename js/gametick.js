@@ -518,64 +518,11 @@ function autoSpeak() {
   else if(Math.random() < .3)  showBubble(Math.random() < .35 ? rnd(FALAS.elemento) : rnd(FALAS.happy));
 }
 
-function playPhaseUp(faseName) {
-  playSound('evolve');
-
-  // ── Animação no avatar ──────────────────────────────────────────
-  const wrap = document.getElementById('creatureWrap');
-  if(wrap) {
-    // Scale up e volta
-    wrap.style.transition = 'transform .15s ease';
-    wrap.style.transform  = 'scale(1.35)';
-    setTimeout(() => {
-      wrap.style.transform = 'scale(0.85)';
-      wrap.style.transition = 'transform .2s cubic-bezier(.34,1.7,.64,1)';
-    }, 150);
-    setTimeout(() => { wrap.style.transform = 'scale(1)'; }, 380);
-    setTimeout(() => { wrap.style.transition = ''; }, 600);
-  }
-
-  // Flash + partículas: fixos no centro da tela (visíveis acima de qualquer modal)
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:16.25rem;height:16.25rem;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85) 0%,rgba(180,130,255,.55) 50%,transparent 75%);pointer-events:none;z-index:10001;animation:evolve-flash .7s ease-out forwards;';
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 750);
-
-  const colors = ['#c4b5fd','#fff','#a78bfa','#e9d5ff'];
-  for(let i = 0; i < 16; i++) {
-    const p = document.createElement('div');
-    const angle = (i / 16) * 360;
-    const dist  = 80 + Math.random() * 60;
-    const size  = 5 + Math.random() * 6;
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const dur   = 0.5 + Math.random() * 0.5;
-    p.style.cssText = `position:fixed;left:50%;top:50%;width:${(size)/16}rem;height:${(size)/16}rem;border-radius:50%;background:${color};pointer-events:none;z-index:10001;
-      transform:translate(-50%,-50%);
-      animation:evolve-particle ${dur}s ease-out forwards;
-      --ex:${(Math.cos(angle*Math.PI/180)*dist)/16}rem;
-      --ey:${(Math.sin(angle*Math.PI/180)*dist)/16}rem;`;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), dur * 1000 + 50);
-  }
-
-  // ── Overlay de fase ─────────────────────────────────────────────
-  const ov = document.getElementById('phaseUpOverlay');
-  if(!ov) return;
-  document.getElementById('puFase').textContent = t('gt.phase.label', {fase: faseName});
-  const clone = ov.cloneNode(true);
-  ov.parentNode.replaceChild(clone, ov);
-  clone.style.opacity = '1';
-  setTimeout(() => {
-    clone.style.transition = 'opacity .6s ease';
-    clone.style.opacity = '0';
-  }, 2000);
-  setTimeout(() => {
-    clone.style.transition = '';
-    clone.style.opacity = '';
-  }, 2700);
-  showBubble(t('gt.phase.bub', {fase: faseName}));
-  addLog(t('gt.phase.log', {nome: avatar.nome.split(',')[0], fase: faseName}), 'leg');
-}
+/* A playPhaseUp vivia aqui: som, salto de escala no avatar, clarão fixo
+   no centro da tela, 16 partículas a explodir e o overlay #phaseUpOverlay
+   com o nome da fase. Corria sozinha assim que o nível subia.
+   Foi substituída pela cerimónia de js/evolucao.js, que espera o clique
+   do jogador e diz o que mudou. Já ninguém a chamava. */
 
 function killCreature() {
   dead = true;

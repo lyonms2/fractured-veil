@@ -100,17 +100,11 @@ async function layEgg() {
     const raridade = json.eggs[0].raridade;
     const numEggs  = json.eggs.length;
 
-    playAnim('anim-layegg');
-    playSound('egg_laid');
-    const wrap = document.getElementById('creatureWrap');
-    if(wrap) {
-      const ep = document.createElement('div');
-      ep.className  = 'egg-pop';
-      ep.textContent = raridade === 'Lendário' ? '🌟' : raridade === 'Raro' ? '🔵' : '🥚';
-      ep.style.cssText = 'left:50%;top:30%;';
-      wrap.appendChild(ep);
-      setTimeout(() => ep.remove(), 1500);
-    }
+    // A postura ganhou cerimónia, no mesmo palco da evolução: o jogador
+    // clicou e pagou, portanto merece ver o que saiu, um ovo de cada vez.
+    // O emoji solto que havia aqui (egg-pop a subir do avatar) mostrava
+    // só a raridade do PRIMEIRO ovo, e a postura dá dois.
+    abrirCerimoniaOvo(json.eggs, 50, json.eggLayReadyAt);
 
     const rarColor = raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good';
     const eggWord  = numEggs > 1 ? t('egg.inv.egg_word_multi', {n: numEggs}) : t('egg.inv.egg_word_one');
@@ -725,3 +719,139 @@ function petCreature() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════
+// A CERIMÓNIA DA POSTURA
+//
+// Mesmo palco da evolução (css/evolucao.css) e de propósito: é o mesmo
+// gesto do jogo — clicar e receber algo — e dar-lhe vocabulário visual
+// diferente faria parecer outro jogo.
+//
+// A diferença está no que acontece ao corpo. Na evolução ele TROCA, e o
+// clarão esconde a troca. Aqui ele não troca: faz força, e o clarão
+// revela o que saiu dele. Por isso o avatar é desenhado uma vez só.
+//
+//   0ms     a tela escurece
+//   700ms   o avatar faz força
+//   1600ms  CLARÃO, e os ovos aparecem por baixo
+//   1900ms  as cartas entram uma de cada vez, 220ms entre elas
+//   2600ms  a conta: o que se pagou e quando se pode outra vez
+//
+// As cartas entram escalonadas porque este é o momento de sorte do jogo:
+// sabe-se o preço antes, não se sabe o que sai. Mostrar os dois ao mesmo
+// tempo desperdiça a única surpresa que a postura tem.
+// ═══════════════════════════════════════════════════════════════════
+const _OVO_CORES = { 'Lendário': '#e8a030', 'Raro': '#5ab4e8', 'Comum': '#7ab87a' };
+const _OVO_EMOJI = { 'Lendário': '🌟', 'Raro': '🔵', 'Comum': '🥚' };
+
+function abrirCerimoniaOvo(ovos, custo, proximaEm) {
+  const ov = document.getElementById('ovoOverlay');
+  // Sem palco, cai-se na animação antiga em vez de não acontecer nada:
+  // o avatar do jogo faz o gesto de pôr e ouve-se o som. É o que corre
+  // se a marcação faltar por alguma razão.
+  if (!ov || !ovos || !ovos.length) {
+    if (typeof playAnim === 'function') playAnim('anim-layegg');
+    if (typeof playSound === 'function') playSound('egg_laid');
+    return;
+  }
+
+  if (typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
+
+  const palco  = ov.querySelector('.evo-palco');
+  const svgBox = ov.querySelector('#ovoAvatar');
+  const clarao = ov.querySelector('.evo-clarao');
+  const painel = ov.querySelector('.evo-painel');
+  const ninho  = ov.querySelector('#ovoNinho');
+
+  painel.classList.remove('mostra');
+  clarao.classList.remove('dispara');
+  palco.classList.remove('ovo-esforco');
+  ninho.innerHTML = '';
+  ov.classList.add('ativo');
+
+  if (avatar && typeof gerarSVG === 'function') {
+    const tam = Math.round((typeof getFaseSize === 'function' ? getFaseSize() : 140) * 1.5);
+    const fase = typeof getFaseVisual === 'function' ? getFaseVisual() : 3;
+    svgBox.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, tam, tam, fase);
+  }
+
+  const t1 = setTimeout(() => {
+    palco.classList.add('ovo-esforco');
+    if (typeof _evoParticulas === 'function') _evoParticulas(palco);
+  }, 700);
+
+  const t2 = setTimeout(() => {
+    clarao.classList.add('dispara');
+    if (typeof playSound === 'function') playSound('egg_laid');
+    setTimeout(() => {
+      ninho.innerHTML = ovos.map((o, i) => {
+        const cor = _OVO_CORES[o.raridade] || _OVO_CORES['Comum'];
+        return `<div class="ovo-carta" style="--i:${i};--cor-ovo:${cor}">
+                  <span class="ovo-emoji">${_OVO_EMOJI[o.raridade] || '🥚'}</span>
+                  <span class="ovo-rar">${o.raridade}</span>
+                </div>`;
+      }).join('');
+    }, 300);
+  }, 1600);
+
+  const t3 = setTimeout(() => {
+    const tit = ov.querySelector('#ovoTitulo');
+    const sub = ov.querySelector('#ovoSub');
+    const conta = ov.querySelector('#ovoConta');
+    if (tit) tit.textContent = ovos.length > 1 ? t('ovo.titulo_multi', { n: ovos.length })
+                                               : t('ovo.titulo_um');
+    // Só se anuncia raro ou lendário quando algum saiu — anunciar sempre
+    // gastaria a palavra e a próxima já não valeria nada.
+    const melhor = ovos.some(o => o.raridade === 'Lendário') ? 'Lendário'
+                 : ovos.some(o => o.raridade === 'Raro')     ? 'Raro' : null;
+    if (sub) sub.textContent = melhor ? t('ovo.sub_' + (melhor === 'Lendário' ? 'lendario' : 'raro'))
+                                      : t('ovo.sub_comum');
+    if (conta) {
+      const horas = proximaEm ? Math.max(1, Math.ceil((proximaEm - Date.now()) / 3600000)) : 0;
+      conta.innerHTML =
+        `<div class="ovo-conta gasto"><span>${t('ovo.custo')}</span><span class="val">−${custo} 🪙</span></div>` +
+        `<div class="ovo-conta"><span>${t('ovo.guardados')}</span><span class="val">${eggsInInventory.length} / 10</span></div>` +
+        (horas ? `<div class="ovo-conta"><span>${t('ovo.proxima')}</span><span class="val">${t('ovo.horas', { h: horas })}</span></div>` : '');
+    }
+    painel.classList.add('mostra');
+  }, 2600);
+
+  ov._temporizadores = [t1, t2, t3];
+}
+
+function fecharCerimoniaOvo() {
+  const ov = document.getElementById('ovoOverlay');
+  if (!ov) return;
+  (ov._temporizadores || []).forEach(clearTimeout);
+  ov.classList.remove('ativo');
+  setTimeout(() => {
+    const b = ov.querySelector('#ovoAvatar'); if (b) b.innerHTML = '';
+    const n = ov.querySelector('#ovoNinho');  if (n) n.innerHTML = '';
+  }, 600);
+}
+
+window.registerStrings(
+  {
+    'ovo.titulo_um':    'PUS UM OVO',
+    'ovo.titulo_multi': 'PUS {n} OVOS',
+    'ovo.sub_comum':    'A ninhada está segura',
+    'ovo.sub_raro':     '✦ UM DELES É RARO',
+    'ovo.sub_lendario': '✦ UM DELES É LENDÁRIO',
+    'ovo.custo':        'Custou',
+    'ovo.guardados':    'Guardados',
+    'ovo.proxima':      'Próxima postura',
+    'ovo.horas':        'em {h}h',
+  },
+  {
+    'ovo.titulo_um':    'I LAID AN EGG',
+    'ovo.titulo_multi': 'I LAID {n} EGGS',
+    'ovo.sub_comum':    'The clutch is safe',
+    'ovo.sub_raro':     '✦ ONE OF THEM IS RARE',
+    'ovo.sub_lendario': '✦ ONE OF THEM IS LEGENDARY',
+    'ovo.custo':        'Cost',
+    'ovo.guardados':    'Stored',
+    'ovo.proxima':      'Next clutch',
+    'ovo.horas':        'in {h}h',
+  }
+);

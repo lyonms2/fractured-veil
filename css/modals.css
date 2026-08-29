@@ -360,51 +360,12 @@
 }
 .shop-item-discount { font-size:0.375rem; color:#7ab87a; text-align:right; }
 
-/* ── PHASE UP OVERLAY ── */
-#phaseUpOverlay {
-  position:fixed; inset:0; z-index:10000;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  pointer-events:none; opacity:0;
-}
-.pu-bg {
-  position:absolute; inset:0;
-  background:radial-gradient(circle at center, rgba(90,180,232,.18) 0%, transparent 70%);
-  animation: pu-bg-flash .6s ease-out forwards;
-}
-@keyframes pu-bg-flash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
-.pu-text {
-  font-family:'Cinzel',serif; font-size:0.6875rem; font-weight:900; letter-spacing:0.25rem;
-  color:#fff; text-shadow:0 0 1.25rem rgba(90,180,232,.9), 0 0 2.5rem rgba(90,180,232,.5);
-  opacity:0; transform:scale(.5);
-  animation: pu-text-pop .5s cubic-bezier(.34,1.7,.64,1) .15s forwards;
-  z-index:1;
-}
-@keyframes pu-text-pop { to { opacity:1; transform:scale(1); } }
-.pu-fase {
-  font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.1875rem;
-  color:var(--raro); opacity:0;
-  animation: pu-sub-in .4s ease .4s forwards;
-  z-index:1; margin-top:0.25rem;
-}
-@keyframes pu-sub-in { to { opacity:1; } }
-.pu-ring {
-  position:absolute; width:7.5rem; height:7.5rem; border-radius:50%;
-  border:2px solid rgba(90,180,232,.6);
-  animation: pu-ring-expand .8s ease-out forwards;
-}
-@keyframes pu-ring-expand { 0%{transform:scale(0);opacity:.8} 100%{transform:scale(2.5);opacity:0} }
-.pu-ring:nth-child(3) { animation-delay:.15s; border-color:rgba(90,180,232,.4); }
-.pu-ring:nth-child(4) { animation-delay:.3s;  border-color:rgba(90,180,232,.2); }
-
-@keyframes evolve-flash {
-  0%   { opacity:0; transform:scale(.5); }
-  30%  { opacity:1; transform:scale(1.1); }
-  100% { opacity:0; transform:scale(1.4); }
-}
-@keyframes evolve-particle {
-  0%   { opacity:1; transform:translate(-50%,-50%) translate(0,0) scale(1); }
-  100% { opacity:0; transform:translate(-50%,-50%) translate(var(--ex),var(--ey)) scale(0); }
-}
+/* Havia aqui o PHASE UP OVERLAY — anéis a expandir, clarão de fundo e o
+   nome da fase — mais os @keyframes evolve-flash e evolve-particle, que
+   só a playPhaseUp usava. Tudo saiu com ela: a evolução passou a ser a
+   cerimónia de js/evolucao.js, que espera o clique do jogador em vez de
+   disparar sozinha. O palco novo tem os seus próprios efeitos em
+   css/evolucao.css, com as partículas a convergir em vez de explodir. */
 
 /* ── MARKET ── */
 .mkt-item {
