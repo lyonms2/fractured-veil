@@ -760,12 +760,12 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
 
   const palco  = ov.querySelector('.evo-palco');
   const svgBox = ov.querySelector('#ovoAvatar');
-  const clarao = ov.querySelector('.evo-clarao');
+  const brilho = ov.querySelector('.ovo-brilho');
   const painel = ov.querySelector('.evo-painel');
   const ninho  = ov.querySelector('#ovoNinho');
 
   painel.classList.remove('mostra');
-  clarao.classList.remove('dispara');
+  brilho.classList.remove('dispara');
   palco.classList.remove('ovo-esforco');
   ninho.innerHTML = '';
   ov.classList.add('ativo');
@@ -778,11 +778,11 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
 
   const t1 = setTimeout(() => {
     palco.classList.add('ovo-esforco');
-    if (typeof _evoParticulas === 'function') _evoParticulas(palco);
+    _ovoParticulas(palco);
   }, 700);
 
   const t2 = setTimeout(() => {
-    clarao.classList.add('dispara');
+    brilho.classList.add('dispara');
     if (typeof playSound === 'function') playSound('egg_laid');
     setTimeout(() => {
       ninho.innerHTML = ovos.map((o, i) => {
@@ -818,6 +818,24 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
   }, 2600);
 
   ov._temporizadores = [t1, t2, t3];
+}
+
+/* Partículas que caem em vez de convergirem. A evolução puxa tudo para o
+   centro porque é energia a acumular; aqui a luz desce e assenta, que é o
+   gesto de deixar alguma coisa no chão. Só variam em X — descer é o
+   assunto, e espalhá-las nas duas direções tirava-lhe a leitura. */
+function _ovoParticulas(palco) {
+  const cores = ['#ffeec8', '#e8a030', '#fff3d6', '#c9781e'];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'ovo-part';
+    p.style.cssText =
+      `--dx:${((Math.random() * 8 - 4)).toFixed(2)}rem;` +
+      `background:${cores[i % cores.length]};` +
+      `animation-delay:${(Math.random() * 0.55).toFixed(2)}s;`;
+    palco.appendChild(p);
+    setTimeout(() => p.remove(), 1700);
+  }
 }
 
 function fecharCerimoniaOvo() {

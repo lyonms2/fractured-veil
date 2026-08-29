@@ -573,7 +573,11 @@ function checkXP() {
       _pl.textContent = t('gt.phase.label', {fase: FASES[faseAfter]});
       _pl.className = 'phase-label fase-' + FASES[faseAfter].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace('ê','e').replace('ç','c');
     }
-    addLog(t('gt.levelup.log', {nivel}), 'leg');
+    // A frase era sempre "ficou mais forte". Só é verdade de quatro em
+    // quatro níveis: o FICHA_NIVEIS_POR_PONTO dá um ponto de ficha a cada
+    // quatro. Nos outros três prometia-se uma coisa que não acontecera.
+    addLog(t(_luSubiuPonto(nivel) ? 'gt.levelup.log' : 'gt.levelup.log_sem_ponto',
+             {nivel}), 'leg');
     playLevelUp(nivel);
     if(faseAfter !== faseBefore) {
       // A fase foi GANHA, mas o corpo não muda já. Antes mudava aqui, e o
@@ -586,6 +590,67 @@ function checkXP() {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE SE GANHA AO SUBIR DE NÍVEL
+
+   O overlay dizia "NÍVEL UP! / NÍVEL 7" e mais nada, e o registo dizia
+   sempre "seu avatar ficou mais forte". Fui verificar: o
+   FICHA_NIVEIS_POR_PONTO é 4, portanto o ponto de ficha vem de quatro em
+   quatro níveis. Em três de cada quatro subidas a frase prometia uma
+   coisa que não tinha acontecido.
+
+   Agora há duas mensagens e ambas são verdade. Quando o ponto vem, diz-se
+   qual característica subiu e de quanto, em verde. Quando não vem, diz-se
+   quantos níveis faltam — que transforma três subidas vazias em progresso
+   visível, em vez de três mentiras pequenas.
+
+   Isto NÃO é a cerimónia: o nível sobe muitas vezes e não deve pedir um
+   clique. É a mesma janela de 1,8s de sempre, com uma linha a mais.
+═══════════════════════════════════════════════════════════════════ */
+function _luSubiuPonto(nv) {
+  if (typeof pontosDoAvatar !== 'function' || !avatar) return false;
+  try {
+    return pontosDoAvatar(avatar.raridade, nv) > pontosDoAvatar(avatar.raridade, nv - 1);
+  } catch (_) { return false; }
+}
+
+// Quantos níveis faltam para o próximo ponto de ficha.
+function _luFaltamParaPonto(nv) {
+  const passo = (typeof FICHA_NIVEIS_POR_PONTO !== 'undefined') ? FICHA_NIVEIS_POR_PONTO : 4;
+  const proximo = passo * (Math.floor((nv - 1) / passo) + 1) + 1;
+  return Math.max(1, proximo - nv);
+}
+
+function _luGanho(nv) {
+  const el = document.getElementById('luGanho');
+  if (!el) return;
+  el.className = 'lu-ganho';
+  el.textContent = '';
+  if (!avatar || typeof fichaDeAvatar !== 'function') return;
+
+  if (!_luSubiuPonto(nv)) {
+    const faltam = _luFaltamParaPonto(nv);
+    el.textContent = t('gt.levelup.faltam', { n: faltam, p: t(faltam === 1 ? 'gt.nivel_um' : 'gt.nivel_varios') });
+    return;
+  }
+
+  // Subiu um ponto: descobre QUAL característica levou com ele.
+  let antes, agora;
+  try {
+    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv - 1);
+    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv);
+  } catch (_) { return; }
+
+  const nomes = { F: 'evo.f', H: 'evo.h', R: 'evo.r', A: 'evo.a', pv: 'evo.pv', pm: 'evo.pm' };
+  const subiu = Object.keys(nomes).filter(k => agora[k] > antes[k]);
+  if (!subiu.length) { el.textContent = t('gt.levelup.mais_forte'); return; }
+
+  el.classList.add('mostra');
+  el.innerHTML = subiu.map(k =>
+    `<span class="lu-g-item">${t(nomes[k])} <b>${antes[k]} → ${agora[k]}</b></span>`
+  ).join('');
+}
+
 function playLevelUp(newNivel) {
   playSound('levelup');
   const ov = document.getElementById('levelUpOverlay');
@@ -593,6 +658,7 @@ function playLevelUp(newNivel) {
 
   document.getElementById('luText').textContent = t('gt.levelup.title');
   document.getElementById('luNivel').textContent = t('gt.levelup.nivel', {nivel: newNivel});
+  _luGanho(newNivel);
 
   const starEmojis = ['✦','✧','★','✨','⭐'];
   const positions = [

@@ -43,6 +43,13 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Nível {nivel}! Seu avatar ficou mais forte!',
+    'gt.levelup.log_sem_ponto': 'Nível {nivel}!',
+    // O plural de nível é NÍVEIS, não nívels: o {s} genérico que serve o
+    // inglês não serve aqui, e a palavra tem de vir montada de fora.
+    'gt.levelup.faltam':   'Próximo ponto de ficha em {n} {p}',
+    'gt.levelup.mais_forte': 'Mais forte',
+    'gt.nivel_um':         'nível',
+    'gt.nivel_varios':     'níveis',
     'gt.levelup.title':    'NÍVEL UP!',
     'gt.levelup.nivel':    'NÍVEL {nivel}',
   },
@@ -86,6 +93,11 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Level {nivel}! Your avatar got stronger!',
+    'gt.levelup.log_sem_ponto': 'Level {nivel}!',
+    'gt.levelup.faltam':   'Next stat point in {n} {p}',
+    'gt.levelup.mais_forte': 'Stronger',
+    'gt.nivel_um':         'level',
+    'gt.nivel_varios':     'levels',
     'gt.levelup.title':    'LEVEL UP!',
     'gt.levelup.nivel':    'LEVEL {nivel}',
   }
