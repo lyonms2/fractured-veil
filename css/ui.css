@@ -248,9 +248,16 @@
 /* ══════════════════════════════════════
    POOP
 ══════════════════════════════════════ */
-.poop { position:absolute; bottom:1.4375rem; z-index:6; font-size:1.125rem; cursor:pointer; animation:poop-appear .5s cubic-bezier(.34,1.56,.64,1); filter:drop-shadow(0 0 0.25rem #4a2800); transition:transform .15s; }
-.poop:hover { transform:scale(1.2) !important; }
-@keyframes poop-appear { 0%{transform:scale(0) translateY(-1.25rem);opacity:0} 60%{transform:scale(1.15) translateY(0.1875rem);opacity:1} 80%{transform:scale(.92) translateY(-0.0625rem)} 100%{transform:scale(1) translateY(0);opacity:1} }
+/* O --esc e o tamanho sorteado de cada cocó, posto pelo _criarCoco. Tem
+   de aparecer nos quadros E no repouso: estava so em linha, e como uma
+   animacao ganha ao estilo em linha, o cocó crescia ate scale(1) e so
+   depois de a animacao acabar saltava para o tamanho certo. */
+.poop { position:absolute; bottom:1.4375rem; z-index:6; font-size:1.125rem; cursor:pointer; transform:scale(var(--esc,1)); animation:poop-appear .5s cubic-bezier(.34,1.56,.64,1); filter:drop-shadow(0 0 0.25rem #4a2800); transition:transform .15s; }
+/* Era scale(1.2)!important, que descartava o tamanho de cada um: ao
+   passar o rato todos ficavam do mesmo tamanho. Agora cresce 20% sobre
+   o proprio. */
+.poop:hover { transform:scale(calc(var(--esc,1) * 1.2)); }
+@keyframes poop-appear { 0%{transform:scale(0) translateY(-1.25rem);opacity:0} 60%{transform:scale(calc(var(--esc,1) * 1.15)) translateY(0.1875rem);opacity:1} 80%{transform:scale(calc(var(--esc,1) * .92)) translateY(-0.0625rem)} 100%{transform:scale(var(--esc,1)) translateY(0);opacity:1} }
 .creature-wrap.anim-poop svg { animation:poop-squat .8s ease-in-out; }
 @keyframes poop-squat { 0%{transform:scaleY(1) translateY(0)} 25%{transform:scaleY(.82) translateY(0.5rem) scaleX(1.12)} 55%{transform:scaleY(.78) translateY(0.625rem) scaleX(1.15)} 75%{transform:scaleY(1.06) translateY(-0.1875rem) scaleX(.96)} 100%{transform:scaleY(1) translateY(0)} }
 .poop-cloud { position:absolute; font-size:0.8125rem; pointer-events:none; z-index:22; animation:poop-cloud-rise 1.2s ease-out forwards; }

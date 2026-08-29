@@ -517,24 +517,10 @@ async function _onLoginSuccess(user) {
 
       if(sleeping) startSleep();
 
-      if(poopCount > 0) {
-        const container = document.getElementById('poopContainer');
-        if(container) {
-          container.innerHTML = '';
-          for(let _p = 0; _p < poopCount; _p++) {
-            const pos = POOP_POSITIONS[_p % POOP_POSITIONS.length];
-            const el  = document.createElement('div');
-            el.className = 'poop';
-            el.style.left = pos.left; el.style.bottom = pos.bottom;
-            el.style.zIndex = 6 + _p;
-            el.title = t('gt.poop.title');
-            el.style.transform = `scale(${(.8 + Math.random()*.4).toFixed(2)})`;
-            el.textContent = '💩';
-            el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
-            container.appendChild(el);
-          }
-        }
-      }
+      // Isto era uma cópia do spawnPoop escrita à mão, com a mesma escolha
+      // de lugar por contagem e o mesmo transform em linha. Duas cópias
+      // para manter a par, e a correção de uma não chegava à outra.
+      if(poopCount > 0) restaurarCocos();
       updateDirtyVisuals();
       updateEquippedDisplay();
 

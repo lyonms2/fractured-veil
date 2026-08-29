@@ -4,28 +4,78 @@
 // ═══════════════════════════════════════════
 // POOP & HYGIENE SYSTEM
 // ═══════════════════════════════════════════
+/* Seis lugares fixos no chão.
+   Tinham todos o mesmo `bottom`, o que punha os seis numa linha reta
+   perfeita — nada cai assim. Agora cada um tem a sua altura, entre
+   1.3125 e 1.75rem, e o `z` acompanha: quem está mais à frente (bottom
+   menor) tapa quem está atrás. É o que dá profundidade ao chão. */
 const POOP_POSITIONS = [
-  {left:'12%',bottom:'1.4375rem'}, {left:'25%',bottom:'1.4375rem'}, {left:'55%',bottom:'1.4375rem'},
-  {left:'68%',bottom:'1.4375rem'}, {left:'38%',bottom:'1.4375rem'}, {left:'80%',bottom:'1.4375rem'}
+  {left:'12%', bottom:'1.375rem',  z:10},
+  {left:'27%', bottom:'1.6875rem', z: 7},
+  {left:'41%', bottom:'1.3125rem', z:11},
+  {left:'56%', bottom:'1.75rem',   z: 6},
+  {left:'70%', bottom:'1.4375rem', z: 9},
+  {left:'83%', bottom:'1.625rem',  z: 8},
 ];
 
-function spawnPoop() {
-  if(poopCount >= 6) return;
-  const container = document.getElementById('poopContainer');
-  if(!container) return;
+/* Qual o primeiro lugar vago.
+   Antes era POOP_POSITIONS[poopCount % 6] — escolhia pela CONTAGEM, não
+   por lugar livre. Bastava limpar um do meio para o seguinte nascer
+   exatamente em cima de outro: com três no chão, limpar o primeiro punha
+   a contagem a 2 e o próximo ia para o lugar 2, que estava ocupado.
+   Dois cocós sobrepostos ao pixel, e o jogador só conseguia limpar um.
+   Agora pergunta-se ao DOM quem está lá, que é a única fonte fiável —
+   a contagem e os elementos podem divergir. */
+function _cocoSlotLivre() {
+  const postos = new Set(
+    [...document.querySelectorAll('#poopContainer .poop')].map(e => e.dataset.slot)
+  );
+  for(let i = 0; i < POOP_POSITIONS.length; i++) {
+    if(!postos.has(String(i))) return i;
+  }
+  return -1;
+}
 
-  const pos = POOP_POSITIONS[poopCount % POOP_POSITIONS.length];
+/* Só o elemento. Isto era escrito duas vezes — aqui e no js/auth.js, que
+   recria os cocós ao entrar — e as duas cópias tinham de andar a par. */
+function _criarCoco(slot) {
+  const container = document.getElementById('poopContainer');
+  if(!container || slot < 0) return null;
+  const pos = POOP_POSITIONS[slot];
   const el = document.createElement('div');
   el.className = 'poop';
-  el.style.left  = pos.left;
-  el.style.bottom= pos.bottom;
-  el.style.zIndex = 6 + poopCount;
+  el.dataset.slot = String(slot);
+  el.style.left   = pos.left;
+  el.style.bottom = pos.bottom;
+  el.style.zIndex = pos.z;
   el.title = t('gt.poop.title');
-  const scale = .8 + Math.random() * .4;
-  el.style.transform = `scale(${scale.toFixed(2)})`;
+  // O tamanho vai por variável e não por transform em linha. Em linha era
+  // ignorado: o .poop tem animation:poop-appear a animar o transform, e
+  // uma animação ganha ao estilo em linha. O cocó crescia até scale(1),
+  // a animação acabava, e só então saltava para o tamanho sorteado.
+  // Com a variável, os quadros e o repouso falam do mesmo número.
+  el.style.setProperty('--esc', (.8 + Math.random() * .4).toFixed(2));
   el.textContent = '💩';
   el.onclick = (e) => { e.stopPropagation(); removePoop(el); };
   container.appendChild(el);
+  return el;
+}
+
+/* Recria o chão a partir da contagem gravada, ao entrar no jogo. */
+function restaurarCocos() {
+  const container = document.getElementById('poopContainer');
+  if(!container) return;
+  container.innerHTML = '';
+  const quantos = Math.min(Math.max(0, poopCount|0), POOP_POSITIONS.length);
+  for(let i = 0; i < quantos; i++) _criarCoco(i);
+  poopCount = quantos;   // clamp: uma contagem gravada acima de 6 mentia
+}
+
+function spawnPoop() {
+  if(poopCount >= POOP_POSITIONS.length) return;
+  const slot = _cocoSlotLivre();
+  if(slot < 0) return;
+  if(!_criarCoco(slot)) return;
 
   poopCount++;
   dirtyLevel = Math.min(3, Math.floor(poopCount / 2));
@@ -52,7 +102,14 @@ function spawnPoop() {
 }
 
 function removePoop(el) {
-  el.style.transform += ' scale(0)';
+  // O elemento só sai do DOM 200ms depois, para se ver encolher. Nesses
+  // 200ms continuava clicável, e dois cliques no mesmo cocó tiravam dois
+  // da conta, davam vínculo a dobrar e disparavam a animação duas vezes.
+  if(el.dataset.saindo) return;
+  el.dataset.saindo = '1';
+  el.style.pointerEvents = 'none';
+
+  el.style.transform = 'scale(0)';
   el.style.transition = 'transform .2s';
   setTimeout(() => el.remove(), 200);
   poopCount = Math.max(0, poopCount - 1);
