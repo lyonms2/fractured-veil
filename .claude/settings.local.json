@@ -20,7 +20,18 @@
       "Bash(git rm *)",
       "Bash(ls api/*.js)",
       "Bash(grep -E \"\\\\.\\(js|html|json\\)$\")",
-      "Read(//c/Users/LeoPC/.claude/projects/c--Users-LeoPC-fractured-veil/memory/**)"
+      "Read(//c/Users/LeoPC/.claude/projects/c--Users-LeoPC-fractured-veil/memory/**)",
+      "WebFetch(domain:github.com)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git read-tree *)",
+      "Bash(git update-ref *)",
+      "Bash(git symbolic-ref *)",
+      "Bash(git branch *)",
+      "Bash(git restore *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LeoPC\\.claude\\projects\\c--Users-LeoPC-fractured-veil\\memory"

@@ -44,6 +44,12 @@ const RATE                 = 10;
    E o saldo da pool é o que cobre os cristais que os jogadores têm: cada
    distribuição encolhia a garantia de toda a gente.
 
+   Saiu com ele o vercel.json, que só existia para declarar esse cron.
+   Sem crons, o ficheiro fica vazio — e não dá para lá deixar uma nota a
+   explicar porquê: o esquema do Vercel recusa qualquer chave que não
+   conheça, incluindo "//". O mesmo vale para o database.rules.json.
+   É por isso que esta explicação está aqui e não lá.
+
    O 1% do saque não toca na pool. Sai do que o jogador está a levantar,
    como já acontece com os bónus de convite, e só existe quando alguém
    converte cristais em MATIC de verdade.

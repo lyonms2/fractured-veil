@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static-server-29",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "10210"],
+      "port": 10210
+    }
+  ]
+}
