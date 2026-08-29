@@ -280,6 +280,56 @@
   color: var(--muted); text-align: center; opacity: .8;
 }
 
+/* ── A EQUIPA NO TELEMÓVEL ──
+   Três slots lado a lado em 360px davam ~110px cada, e era esse aperto
+   que obrigava a letra a 7px: não havia largura para mais. A largura
+   existia — estava a ser dividida ao contrário.
+
+   Passam a uma coluna, cada slot uma linha inteira, que é o que os
+   cartões de avatar já fazem a esta mesma largura (o bloco de 640px do
+   marketplace.css). Com a linha toda para cada um, o texto sobe sem
+   apertar nada e a ordem lê-se de cima para baixo — que é como a fila
+   da batalha realmente funciona.
+
+   O número da posição sai de cima do avatar e passa à margem esquerda,
+   onde uma lista numerada o espera. */
+@media (max-width: 640px) {
+  .equipa-slots { flex-direction: column; gap: 0.3125rem; }
+
+  .equipa-slot {
+    /* flex:1 com base 0 numa coluna sem altura definida dá resultados
+       imprevisíveis — aqui cada linha vale o que o conteúdo pede. */
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0 0.5rem;
+    padding: 0.375rem 0.5rem 0.375rem 1.125rem;
+    text-align: left;
+  }
+  .equipa-slot svg  { grid-column: 1; grid-row: 1 / span 3; margin: 0; }
+  .equipa-slot-nome { grid-column: 2; grid-row: 1; font-size: 0.75rem; }
+  .equipa-slot-sub  { grid-column: 2; grid-row: 2; font-size: 0.625rem; }
+  .equipa-papel     { grid-column: 2; grid-row: 3; font-size: 0.5625rem; margin-top: 0.0625rem; }
+
+  .equipa-mover { grid-column: 3; grid-row: 1 / span 3; margin-top: 0; }
+  .equipa-mover button { font-size: 0.625rem; padding: 0.25rem 0.5rem; }
+
+  .equipa-pos {
+    top: 50%; left: 0.1875rem; transform: translateY(-50%);
+    font-size: 0.5625rem; width: 0.875rem; height: 0.875rem;
+  }
+
+  /* O vazio continua um flex centrado — só encolhe de altura, porque
+     numa lista vertical três caixas de 62px eram parede. */
+  .equipa-slot.vazio { min-height: 2.75rem; font-size: 0.875rem; }
+
+  .equipa-title      { font-size: 0.75rem; }
+  .equipa-count      { font-size: 0.625rem; }
+  .equipa-ordem-nota { font-size: 0.5625rem; }
+  .equipa-foot       { font-size: 0.625rem; }
+}
+
 /* ── BOTÕES NOS CARDS DE SLOT ── */
 .btn-slot-equipa {
   width: 100%;

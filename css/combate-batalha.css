@@ -423,6 +423,17 @@
 }
 .equipa-batalhar-off.cansada { color: #e0a050; border-color: rgba(224,160,80,.3); }
 
+/* Acompanha a barra da equipa, que a esta largura passa a lista
+   vertical (combate.css). O override tem de estar AQUI e não lá: os
+   dois ficheiros usam a mesma especificidade e este carrega depois,
+   portanto ganha sempre — uma regra escrita no combate.css não teria
+   efeito nenhum sobre estas três. */
+@media (max-width: 640px) {
+  .equipa-batalhar-off { font-size: 0.5625rem; }
+  .equipa-batalhar .eb-texto { font-size: 0.625rem; }
+  .equipa-batalhar .eb-custo { font-size: 0.5rem; }
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    O QUE FAZ CADA MAGIA
    Abre por cima da batalha. A barra de ações só tem espaço para o nome
