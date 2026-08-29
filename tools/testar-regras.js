@@ -89,6 +89,13 @@ async function ler(doc) {
   ok('EXPLOIT criar ovosEmitidos',    await escrever('G','G',{'ovosEmitidos.o222':'Lendário'}), 403);
   ok('conta nova com ovosEmitidos',   await escrever('H','H',{'ovosEmitidos.o1':'Lendário'}), 403);
 
+  // ── avataresEmitidos: a prova de que um avatar é legítimo ──
+  await escrever(null,'I',{'avataresEmitidos.s123':'Comum','gs.moedas':10}, true);
+  ok('EXPLOIT promover a Lendário',   await escrever('I','I',{'avataresEmitidos.s123':'Lendário'}), 403);
+  ok('EXPLOIT registar avatar novo',  await escrever('I','I',{'avataresEmitidos.s999':'Lendário'}), 403);
+  ok('conta nova com avatar emitido', await escrever('J','J',{'avataresEmitidos.s1':'Lendário'}), 403);
+  ok('gravar o avatarSlots continua', await escrever('I','I',{'avatarSlots':[]}), 200);
+
   // o saldo sobreviveu a tudo?
   const d = await ler('D');
   R.push(`\ncristais depois de tudo: ${d?.gs?.mapValue?.fields?.cristais?.integerValue}  (tem de ser 50)`);

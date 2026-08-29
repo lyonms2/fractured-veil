@@ -46,7 +46,12 @@ service cloud.firestore {
               // deixa vender um ovo posto pelo próprio avatar sem confiar
               // no avatarSlots, que o cliente escreve. Ver handleBotarOvo
               // e handleListarOvo em api/pool.js.
-              'ovosEmitidos'];
+              'ovosEmitidos',
+              // O registo dos avatares que o servidor emitiu, com a
+              // raridade do ovo que cada um consumiu. É a prova que o
+              // api/comprar-avatar.js exige para deixar listar, em vez
+              // de acreditar no avatarSlots que o cliente escreve.
+              'avataresEmitidos'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do

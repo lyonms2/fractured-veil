@@ -206,6 +206,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'retirar-ovo') return handleRetirarOvo(req, res, db, uid);
+  if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
@@ -469,6 +470,111 @@ function _valorDaQueima(raridadeOvo, raridadeAvatar) {
    a meio da compra, os dois mexiam no mesmo documento sem árbitro. Aqui é
    uma transação: ou a listagem ainda existe e o ovo volta, ou já foi
    vendida e a retirada falha. */
+const HATCH_FEE = { 'Comum': 0, 'Raro': 50, 'Lendário': 100 };
+
+/* CHOCAR — a partir daqui é o servidor que emite avatares.
+   ═══════════════════════════════════════════════════════════════════
+
+   O problema que isto resolve: o avatarSlots é escrito pelo cliente por
+   inteiro, e o api/comprar-avatar.js lia a raridade DESSE array para
+   decidir se um avatar podia ir à venda. Bastava escrever
+   raridade:'Lendário' num slot e listá-lo. Era o caminho mais curto para
+   cristais, que saem em MATIC.
+
+   Não havia nada com que comparar: a chocagem acontecia toda no cliente,
+   portanto o servidor nunca tinha visto avatar nenhum nascer.
+
+   Agora vê. E não precisa de acreditar em nada do que o cliente diz,
+   porque já sabe a raridade do OVO — ou porque foi ele que o pôs no
+   inboxEggs, ou porque o emitiu no ovosEmitidos ao ser posto. O avatar
+   herda a raridade do ovo que consumiu, e fica registado em
+   avataresEmitidos, que o cliente não escreve (firestore.rules).
+
+   O seed e o nome continuam a vir do cliente. O seed decide a aparência
+   e a ficha de combate, portanto quem insistir pode sortear até gostar —
+   isso já era possível e continua a ser. O que deixa de ser possível é
+   inventar a RARIDADE, que é o que vale cristais.
+
+   A taxa é cobrada aqui, e não no cliente: era o js/eggs.js a fazer
+   gs.cristais -= taxa e a avisar a pool depois, em duas escritas
+   separadas que podiam divergir. */
+async function handleChocarOvo(req, res, db, poolRef, uid) {
+  const { ovoId, seed } = req.body;
+  if (!ovoId || seed == null) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+  const seedStr = String(seed);
+  if (!/^[0-9]+$/.test(seedStr)) {
+    return res.status(400).json({ erro: 'Seed inválido.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const [playerSnap, poolSnap] = await Promise.all([tx.get(playerRef), tx.get(poolRef)]);
+      if (!playerSnap.exists) throw new Error('SEM_JOGADOR');
+
+      const pData     = playerSnap.data();
+      const inboxEggs = pData.inboxEggs || [];
+      const emitidos  = pData.ovosEmitidos || {};
+      const slotIdx   = pData.activeSlotIdx ?? 0;
+      const slots     = [...(pData.avatarSlots || [])];
+      const slot      = slots[slotIdx];
+      const slotEggs  = slot?.eggs || [];
+
+      // Duas origens, cada uma com a sua prova — o mesmo do listar-ovo.
+      const idxInbox = inboxEggs.findIndex(e => String(e.id) === String(ovoId));
+      const idxSlot  = slotEggs.findIndex(e => String(e.id) === String(ovoId));
+      const emitidoComo = emitidos['o' + String(ovoId)];
+
+      let raridade = null;
+      if (idxInbox !== -1)                       raridade = inboxEggs[idxInbox].raridade;
+      else if (idxSlot !== -1 && emitidoComo)    raridade = emitidoComo;
+      if (!raridade) throw new Error('OVO_NOT_FOUND');
+
+      const taxa     = HATCH_FEE[raridade] || 0;
+      const cristais = pData.gs?.cristais ?? pData.cristais ?? 0;
+      if (cristais < taxa) throw new Error('INSUFFICIENT');
+
+      const alteracoes = { [`avataresEmitidos.s${seedStr}`]: raridade };
+
+      // O ovo sai, e o registo dele com ele — senão ficava a valer para
+      // uma segunda chocagem ou para uma venda depois de já ter nascido.
+      if (idxInbox !== -1) {
+        alteracoes.inboxEggs = FieldValue.arrayRemove(inboxEggs[idxInbox]);
+      } else {
+        slots[slotIdx] = { ...slot, eggs: slotEggs.filter((_, i) => i !== idxSlot) };
+        alteracoes.avatarSlots = slots;
+      }
+      if (emitidoComo) alteracoes[`ovosEmitidos.o${ovoId}`] = FieldValue.delete();
+
+      if (taxa > 0) {
+        alteracoes.cristais      = cristais - taxa;
+        alteracoes['gs.cristais'] = cristais - taxa;
+        tx.update(poolRef, {
+          cristais:    FieldValue.increment(taxa),
+          totalEntrou: FieldValue.increment(taxa),
+        });
+      }
+
+      tx.update(playerRef, alteracoes);
+      return { raridade, taxa, novosCristais: cristais - taxa };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    const conhecido = {
+      SEM_JOGADOR:  [404, 'Jogador não encontrado.'],
+      OVO_NOT_FOUND:[404, 'Ovo não encontrado.'],
+      INSUFFICIENT: [400, 'Cristais insuficientes para a taxa de chocagem.'],
+    }[err.message];
+    if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
+    console.error('[pool/chocar-ovo]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
+}
+
 async function handleRetirarOvo(req, res, db, uid) {
   const { listingId } = req.body;
   if (!listingId) return res.status(400).json({ erro: 'Parâmetros inválidos.' });

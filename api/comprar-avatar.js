@@ -101,6 +101,24 @@ async function handleListarAvatar(req, res, db, uid) {
         throw new Error('RARIDADE_INVALIDA');
       }
 
+      /* E a raridade tem de ser a que o SERVIDOR emitiu, não a que está no
+         slot. Esta validação lia s.raridade — que vem de pData.avatarSlots,
+         um array que o cliente escreve por inteiro. Escrever
+         raridade:'Lendário' num slot e listá-lo era o caminho mais curto
+         para cristais, e a verificação acima não via diferença nenhuma.
+
+         O avataresEmitidos é escrito pelo handleChocarOvo do api/pool.js,
+         que dá ao avatar a raridade do OVO que ele consumiu — e essa o
+         servidor conhece. O cliente não lhe toca (firestore.rules).
+
+         Avatares nascidos antes disto não têm registo e não podem ser
+         listados. É o preço de fechar a porta; passa com uma chocagem
+         nova, e o tools/backfill-avatares.js resolve os antigos. */
+      const emitidos  = pData.avataresEmitidos || {};
+      const emitidoComo = emitidos['s' + String(s.seed)];
+      if (!emitidoComo) throw new Error('AVATAR_SEM_REGISTO');
+      if (emitidoComo !== s.raridade) throw new Error('RARIDADE_NAO_CONFERE');
+
       const newCristais = cristais - LIST_COST;
       slots[slotIdxInt] = { ...s, listed: true };
 
@@ -154,6 +172,8 @@ async function handleListarAvatar(req, res, db, uid) {
       INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
       SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
       RARIDADE_INVALIDA: [400, 'Apenas avatares Raros e Lendários podem ser listados.'],
+      AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registo de emissão e não pode ser listado. Choque um ovo novo.'],
+      RARIDADE_NAO_CONFERE: [403, 'A raridade não confere com a emitida.'],
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
     if (status === 500) console.error('[comprar-avatar/listar]', err);
@@ -328,10 +348,14 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const taxa         = Math.round(price * TAXA_MARKETPLACE);
       const sellerRecebe = price - taxa;
 
+      // O registo de emissão segue o avatar. Sem isto, quem comprasse um
+      // Lendário não o conseguia revender — o avataresEmitidos dele não
+      // teria a entrada, e a listagem daria AVATAR_SEM_REGISTO.
       tx.update(buyerRef, {
         avatarSlots:   novosSlotsComprador,
         cristais:      novoSaldoComprador,
         'gs.cristais': novoSaldoComprador,
+        [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
       });
       tx.update(sellerRef, {
         avatarSlots:   sellerSlots,

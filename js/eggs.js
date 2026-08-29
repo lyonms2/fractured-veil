@@ -380,14 +380,51 @@ async function confirmHatch() {
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
-  // Debitar taxa de chocagem
-  if(pendingHatchFee > 0) {
-    gs.cristais = Math.max(0, (gs.cristais || 0) - pendingHatchFee);
+  /* ── O SERVIDOR AUTORIZA A CHOCAGEM ──
+     Nasce aqui a identidade do avatar, e até agora nascia só aqui: o
+     servidor nunca via avatar nenhum nascer. Como o avatarSlots é escrito
+     pelo cliente por inteiro, bastava pôr raridade:'Lendário' num slot
+     para o api/comprar-avatar.js o aceitar à venda — ele lia a raridade
+     desse mesmo array.
+
+     Agora o servidor consome o ovo (que ele conhece, pelo inboxEggs ou
+     pelo ovosEmitidos), cobra a taxa e regista o avatar com a raridade do
+     OVO. É essa entrada que a listagem passa a exigir.
+
+     O seed é calculado antes e vai no pedido, porque é a chave do registo.
+     Continua a sair daqui — decide aparência e ficha — mas a raridade,
+     que é o que vale cristais, deixa de sair.
+
+     A taxa passou para o servidor: era feita em duas escritas separadas
+     (debitar aqui, avisar a pool depois) que podiam divergir. */
+  const _nomeProv = `${rnd(PREFIXOS[ovo.elemento]?.[ovo.raridade] || PREFIXOS[ovo.elemento]?.['Comum'] || ['Ser'])}, ${rnd(SUFIXOS[ovo.raridade])}`;
+  let _hp = 0; const _sp = _nomeProv + ovo.elemento + '#' + ovo.id;
+  for(let i=0;i<_sp.length;i++){const ch=_sp.charCodeAt(i);_hp=((_hp<<5)-_hp)+ch;_hp=_hp&_hp;}
+  const seedAutorizado = Math.abs(_hp);
+
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'chocar-ovo', idToken, ovoId: ovo.id, seed: seedAutorizado }),
+    });
+    const json = await resp.json();
+    if(!resp.ok || !json.ok) {
+      addLog(`⚠️ ${json.erro || t('egg.log.no_gems', {fee: pendingHatchFee})}`, 'bad');
+      showBubble(json.erro || '...');
+      pendingHatchFee = 0;
+      return;
+    }
+    // O saldo é o que o servidor diz, não a nossa conta.
+    if(json.novosCristais != null) gs.cristais = json.novosCristais;
     updateAllUI();
-    scheduleSave();
-    _payHatchFeeToPool(pendingHatchFee, ovo.raridade);
+  } catch(e) {
+    addLog('⚠️ ' + e.message, 'bad');
     pendingHatchFee = 0;
+    return;
   }
+  pendingHatchFee = 0;
 
   // Havia aqui um "backup" do ovo no inboxEggs antes de o tirar da
   // memória. Saiu por duas razões.
@@ -408,8 +445,9 @@ async function confirmHatch() {
 
   // Gerar dados do novo avatar
   const car      = CARACTERISTICAS_ELEMENTAIS[ovo.elemento] || null;
-  const prefPool = PREFIXOS[ovo.elemento]?.[ovo.raridade] || PREFIXOS[ovo.elemento]?.['Comum'] || ['Mistix'];
-  const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[ovo.raridade])}`;
+  // O nome e o seed são os que foram ao servidor — recalcular aqui daria
+  // outro seed e o registo de emissão não bateria certo na listagem.
+  const nome     = _nomeProv;
   const _descPool  = DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo'];
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
@@ -422,9 +460,7 @@ async function confirmHatch() {
   // O id do ovo é o carimbo de tempo da postura, e entra aqui para cada
   // chocagem dar um avatar seu. Os nomes continuam repetindo-se — isso é
   // sabor, não identidade.
-  let _h = 0; const _str = nome + ovo.elemento + '#' + ovo.id;
-  for(let i=0;i<_str.length;i++){const ch=_str.charCodeAt(i);_h=((_h<<5)-_h)+ch;_h=_h&_h;}
-  const seed = Math.abs(_h);
+  const seed = seedAutorizado;
 
   while(avatarSlots.length <= targetSlot) avatarSlots.push(null);
   avatarSlots[targetSlot] = {
@@ -681,16 +717,12 @@ function renderEggInventory() {
   }).join('');
 }
 
-async function _payHatchFeeToPool(fee, raridade) {
-  try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    await fetch('/api/pool', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'taxa', idToken, valor: fee, motivo: `chocar ovo ${raridade}` }),
-    });
-  } catch(e) { console.warn('[hatch fee pool]', e); }
-}
+/* Havia aqui a funcao que pagava a taxa de chocagem a pool: debitava-se
+   no cliente e avisava-se a pool a seguir, em duas escritas separadas que
+   podiam divergir — a primeira sem servidor nenhum a validar. A taxa
+   passou para dentro do handleChocarOvo (api/pool.js), na mesma transacao
+   que consome o ovo e emite o avatar. */
+
 
 async function listEggOnMarket(eggId) {
   const ovo = eggsInInventory.find(e => e.id === eggId);
