@@ -1,0 +1,18 @@
+# Configuração local do Claude Code — máquina de quem edita, não do projeto.
+.claude/
+
+# Restos de ferramentas
+__pycache__/
+*.pyc
+
+# Logs dos emuladores do Firebase, criados ao correr tools/testar-regras.js
+# e tools/testar-rtdb.js
+firestore-debug.log
+database-debug.log
+firebase-debug.log
+ui-debug.log
+
+# Segredos: as credenciais do Admin SDK nunca entram no repositório
+.env
+.env.*
+!.env.example
