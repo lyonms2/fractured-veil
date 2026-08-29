@@ -52,7 +52,27 @@
 /* ═══════════════════════════════════════════
    BASE
 ═══════════════════════════════════════════ */
-#marketplaceModal{
+/* ═══════════════════════════════════════════════════════════════════
+   A PALETA DO MARKETPLACE
+
+   Estava presa ao #marketplaceModal, e o "Meus Avatares" saiu de lá para
+   um #avataresModal próprio — levando consigo o CSS dos cartões de slot,
+   que continua a pedir estas variáveis.
+
+   Resultado: doze delas ficaram por definir naquela tela. Medido no
+   browser — --common, --rare e --legendary entre elas, que são
+   exatamente as cores de raridade das faixas e das pastilhas. Sem valor,
+   a faixa fica sem cor nenhuma e a pastilha sem fundo: era o "bugado em
+   questão de cores".
+   E outras quatro tinham valores diferentes dos do jogo (--border,
+   --muted, --surface, --text), portanto o mesmo cartão mudava de tom
+   conforme a tela onde aparecia.
+
+   A paleta passa a ser partilhada pelas duas. O que é do marketplace —
+   fundo, fonte, tamanho de letra — fica só nele: o #avataresModal é um
+   .mini-modal e tem a moldura do jogo, não a da loja.
+═══════════════════════════════════════════════════════════════════ */
+#marketplaceModal, #avataresModal {
   --bg:#04030a;--surface:#0d0b18;--surface2:#13101f;--surface3:#1a1628;
   --border:#2a2040;--border2:#3a3060;
   --gold:#c9a84c;--gold2:#e8c96a;
@@ -64,6 +84,9 @@
   --gem:#a78bfa;--gem2:#c4b5fd;
   --common:#7ab87a;--rare:#5ab4e8;--legendary:#e8a030;
   --radius:0.75rem;
+}
+
+#marketplaceModal{
   background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;font-size:0.875rem;
 }
 

@@ -586,8 +586,36 @@ async function activateSlot(idx) {
     if(!playerData.gs) playerData.gs = {};
     playerData.gs.activeSlotIdx = idx;
   }
+  /* ── E SAI DA LISTA ──
+     Antes ficava aqui: mostrava um toast, redesenhava a mesma lista, e o
+     jogador tinha de fechar o modal à mão para ver o que acabara de
+     escolher. Escolher um slot é dizer "quero jogar com este" — a lista
+     já cumpriu o seu papel.
+
+     Se o slot estiver vazio, o rebuildScreensParaSlot() já põe o painel
+     de invocar na tela. Quando a invocação é GRATUITA, dispara-se
+     também a geração: é o que o jogador ia fazer a seguir de qualquer
+     maneira, e poupa-lhe um clique num ecrã que só tem esse botão.
+
+     Quando custa moedas, não. Gastar sem perguntar é decidir pelo
+     jogador, e o painel fica à vista com o preço — que é a altura de ele
+     decidir.
+
+     O atraso espera o modal fechar: a animação de invocação mexe na tela
+     que está por baixo, e as duas coisas ao mesmo tempo dariam um salto. */
+  const vazio = !playerData.avatarSlots?.[idx]?.nome;
+  fecharMeusAvatares();
   showToast(t('mkt.avatar.activated'), 'ok');
   renderSlots();
+
+  if (vazio && typeof custoDaInvocacao === 'function'
+           && custoDaInvocacao() === 0
+           && typeof triggerSummon === 'function') {
+    setTimeout(() => {
+      const b = document.getElementById('btnSummon');
+      if (b && !b.disabled) triggerSummon();
+    }, 380);
+  }
 }
 
 // ═══════════════════════════════════════════
