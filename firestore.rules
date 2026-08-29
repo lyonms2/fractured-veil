@@ -134,23 +134,27 @@ service cloud.firestore {
     }
 
     // ── Marketplace de avatares ──
+    /* ── OS MERCADOS SÃO SÓ DE LEITURA PARA O CLIENTE ──
+       Deixavam criar e apagar listagens desde que o sellerId fosse o
+       próprio. Isso contornava as APIs por inteiro: escrever à mão um
+       documento com raridade 'Lendário' punha um avatar inventado à
+       venda, sem passar pela validação do api/comprar-avatar.js nem pelo
+       avataresEmitidos, e sem pagar a taxa de listagem. O comprador
+       pagava cristais a sério por ele.
+       O apagar tinha o seu próprio problema: o vendedor podia tirar a
+       listagem no instante em que alguém a comprava.
+       O cliente nunca precisou disto — lista e deslista sempre pela API
+       (js/avatars-market.js:303 e :347, js/eggs-market.js). O Admin SDK
+       não passa por regras, portanto os endpoints continuam a escrever. */
     match /avatarMarket/{listingId} {
-      allow read:   if request.auth != null;
-      allow create: if request.auth != null
-                 && request.resource.data.sellerId == request.auth.uid;
-      allow delete: if request.auth != null
-                 && resource.data.sellerId == request.auth.uid;
-      allow update: if false;
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
     }
 
     // ── Marketplace de ovos ──
     match /eggMarket/{listingId} {
-      allow read:   if request.auth != null;
-      allow create: if request.auth != null
-                 && request.resource.data.sellerId == request.auth.uid;
-      allow delete: if request.auth != null
-                 && resource.data.sellerId == request.auth.uid;
-      allow update: if false;
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
     }
 
     // ── Config (pool P2E, etc.) — read-only para clientes, escrita via Admin SDK ──

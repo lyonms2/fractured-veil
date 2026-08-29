@@ -3,7 +3,7 @@
 // CAMINHOS-FOLHA — 'gs.moedas', não 'gs'. É isso que faz o mapa encaixado
 // fundir-se em vez de ser substituído, e é disso que a regra depende.
 // Por isso o teste usa updateMask com folhas: reproduz o SDK de verdade.
-const HOST = 'http://127.0.0.1:8512';
+const HOST = 'http://127.0.0.1:8477';
 const PROJ = 'demo-teste';
 const BASE = `${HOST}/v1/projects/${PROJ}/databases/(default)/documents`;
 
@@ -95,6 +95,16 @@ async function ler(doc) {
   ok('EXPLOIT registar avatar novo',  await escrever('I','I',{'avataresEmitidos.s999':'Lendário'}), 403);
   ok('conta nova com avatar emitido', await escrever('J','J',{'avataresEmitidos.s1':'Lendário'}), 403);
   ok('gravar o avatarSlots continua', await escrever('I','I',{'avatarSlots':[]}), 200);
+
+  // ── os mercados: o cliente só lê ──
+  async function mercado(col, uid, campos) {
+    const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {
+      method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token(uid)}`},
+      body: JSON.stringify({fields: Object.fromEntries(Object.entries(campos).map(([k,x])=>[k,v(x)]))}) });
+    return r.status;
+  }
+  ok('EXPLOIT listar avatar à mão',   await mercado('avatarMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
+  ok('EXPLOIT listar ovo à mão',      await mercado('eggMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
 
   // o saldo sobreviveu a tudo?
   const d = await ler('D');
