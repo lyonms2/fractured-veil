@@ -389,16 +389,15 @@ async function confirmHatch() {
     pendingHatchFee = 0;
   }
 
-  // Backup do ovo no Firebase antes de remover da memória
-  if(walletAddress && fbDb()) {
-    try {
-      await fbDb().collection('players').doc(walletAddress).update({
-        inboxEggs: firebase.firestore.FieldValue.arrayUnion({...ovo})
-      });
-    } catch(e) {
-      console.warn('inboxEggs backup failed:', e);
-    }
-  }
+  // Havia aqui um "backup" do ovo no inboxEggs antes de o tirar da
+  // memória. Saiu por duas razões.
+  // A primeira é segurança: o inbox é a porta da venda de ovos — o
+  // servidor só deixa listar ovos que lá estejam — portanto qualquer
+  // escrita do cliente nele era uma forma de fabricar ovos. As regras já
+  // não a permitem.
+  // A segunda é que o backup duplicava: o ovo entrava no inbox, a
+  // chocagem seguia, e no carregamento seguinte o applyGameState()
+  // devolvia-o ao slot.eggs — o jogador chocava o ovo E ficava com ele.
 
   eggsInInventory.splice(idx, 1);
   window._cancelledEgg = {...ovo};

@@ -205,6 +205,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'listar-ovo')  return handleListarOvo(req, res, db, poolRef, uid);
   if (acao === 'vender-ovo')  return handleVenderOvo(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
+  if (acao === 'retirar-ovo') return handleRetirarOvo(req, res, db, uid);
   if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
@@ -412,6 +413,61 @@ function _valorDaQueima(raridadeOvo, raridadeAvatar) {
   if (!base) return 0;                       // Comum não se queima por cristais
   const bonus = QUEIMA_BONUS[raridadeAvatar] || 0;
   return Math.round(base * (1 + bonus));
+}
+
+/* Retirar um ovo do mercado.
+   Isto era feito no cliente, num batch que apagava a listagem e devolvia
+   o ovo ao inboxEggs. Duas coisas erradas nisso:
+
+   Primeira, o inboxEggs é a porta da venda — o handleListarOvo só aceita
+   listar ovos que lá estejam. Quem escrevesse no inbox fabricava ovos
+   Lendários e vendia-os. Agora as regras não deixam o cliente lá pôr
+   nada, e esta função é a única forma legítima de um ovo voltar.
+
+   Segunda, o cliente apagava a listagem sozinho. Se um comprador estivesse
+   a meio da compra, os dois mexiam no mesmo documento sem árbitro. Aqui é
+   uma transação: ou a listagem ainda existe e o ovo volta, ou já foi
+   vendida e a retirada falha. */
+async function handleRetirarOvo(req, res, db, uid) {
+  const { listingId } = req.body;
+  if (!listingId) return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+
+  const listRef   = db.collection('eggMarket').doc(String(listingId));
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const ovo = await db.runTransaction(async (tx) => {
+      const listSnap = await tx.get(listRef);
+      if (!listSnap.exists) throw new Error('LISTAGEM_NAO_EXISTE');
+
+      const l = listSnap.data();
+      if (l.sellerId !== uid) throw new Error('NOT_OWNER');
+      if (l.status && l.status !== 'listed') throw new Error('JA_VENDIDA');
+
+      // O ovo volta com os dados da LISTAGEM, não com os do pedido: o
+      // corpo do pedido vem do cliente e podia trazer outra raridade.
+      const restaurado = {
+        id:       l.eggId    || Date.now(),
+        raridade: l.raridade,
+        elemento: l.elemento || '',
+        expiraEm: l.expiraEm || 0,
+      };
+      tx.update(playerRef, { inboxEggs: FieldValue.arrayUnion(restaurado) });
+      tx.delete(listRef);
+      return restaurado;
+    });
+
+    return res.status(200).json({ ok: true, ovo });
+  } catch (err) {
+    const conhecido = {
+      LISTAGEM_NAO_EXISTE: [404, 'Essa listagem já não existe.'],
+      NOT_OWNER:           [403, 'Essa listagem não é tua.'],
+      JA_VENDIDA:          [409, 'Esse ovo já foi vendido.'],
+    }[err.message];
+    if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
+    console.error('[pool/retirar-ovo]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
 }
 
 async function handleQueimarOvo(req, res, db, poolRef, uid) {

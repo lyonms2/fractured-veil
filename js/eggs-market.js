@@ -272,25 +272,21 @@ function checkPendingEggListing() {
 // ═══════════════════════════════════════════
 async function unlistEgg(listingId) {
   try {
-    const listRef  = db.collection('eggMarket').doc(listingId);
-    const listSnap = await listRef.get();
-    if(!listSnap.exists) { showToast(t('mkt.avatar.unlist_404'),'err'); return; }
-    const egg = listSnap.data();
-    if(egg.sellerId !== walletAddress) { showToast(t('mkt.eggs.unauthorized'),'err'); return; }
-
-    // Devolve ovo ao inboxEggs e apaga listagem em batch atómico
-    const ovoRestaurado = {
-      id:       egg.eggId || Date.now(),
-      raridade: egg.raridade,
-      elemento: egg.elemento,
-      expiraEm: egg.expiraEm,
-    };
-    const unlistBatch = db.batch();
-    unlistBatch.update(db.collection('players').doc(walletAddress), {
-      inboxEggs: firebase.firestore.FieldValue.arrayUnion(ovoRestaurado)
+    // Isto era um batch do cliente: apagava a listagem e devolvia o ovo ao
+    // inboxEggs à mão. O inbox é a porta da venda — o servidor só deixa
+    // listar ovos que lá estejam — portanto escrever nele era fabricar
+    // ovos. As regras já não deixam, e quem devolve agora é o servidor,
+    // numa transação que também resolve a corrida com um comprador a meio
+    // da compra.
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'retirar-ovo', idToken, listingId }),
     });
-    unlistBatch.delete(listRef);
-    await unlistBatch.commit();
+    const respData = await resp.json();
+    if(!resp.ok) { showToast(respData.erro || t('mkt.avatar.unlist_404'), 'err'); return; }
+    const ovoRestaurado = respData.ovo;
 
     // Quando mesclado em index.html: reflecte o ovo restaurado no inventário
     // vivo imediatamente (mesma lógica de applyGameState() para inboxEggs),

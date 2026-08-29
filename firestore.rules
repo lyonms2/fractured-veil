@@ -43,6 +43,34 @@ service cloud.firestore {
               'cambioLog', 'ultimoCambio',
               'referralBonus', 'referralChain'];
     }
+
+    /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do
+       api/pool.js só aceita listar ovos que lá estejam, e devolve
+       OVO_NOT_FOUND para tudo o resto. Escrever nele era fabricar ovos
+       Lendários e vendê-los por cristais, que saem em MATIC.
+
+       Mas o cliente precisa de o ESVAZIAR: o applyGameState() passa os
+       ovos do inbox para o slot e depois limpa-o. Se não pudesse limpar,
+       os mesmos ovos voltavam a ser consumidos em cada carregamento — o
+       oposto do que se quer.
+
+       Por isso: pode encolher, nunca crescer. Encher está fechado, limpar
+       continua a funcionar.
+
+       O que isto NÃO apanha, dito com todas as letras: trocar um ovo por
+       outro no mesmo movimento mantém o tamanho e passa. Fechar isso
+       exigia comparar elemento a elemento, que as regras não sabem fazer
+       com mapas. Quem quiser fechá-lo de vez tem de tirar o campo do
+       documento do jogador e pô-lo numa subcoleção que o cliente não
+       escreve — e aí o esvaziar passa a ser um endpoint. */
+    function inboxNaoCresce() {
+      return !('inboxEggs' in request.resource.data)
+          || !('inboxEggs' in resource.data)
+             ? !('inboxEggs' in request.resource.data)
+               || request.resource.data.inboxEggs.size() == 0
+             : request.resource.data.inboxEggs.size()
+                 <= resource.data.inboxEggs.size();
+    }
     // Dentro do mapa gs. As moedas não entram — ver acima.
     function gsDoServidor() {
       return ['cristais', 'extraSlots'];
@@ -81,11 +109,14 @@ service cloud.firestore {
       allow create: if request.auth.uid == uid
                  && !request.resource.data.keys().hasAny(camposDoServidor())
                  && (!('gs' in request.resource.data)
-                     || !request.resource.data.gs.keys().hasAny(gsDoServidor()));
+                     || !request.resource.data.gs.keys().hasAny(gsDoServidor()))
+                 && (!('inboxEggs' in request.resource.data)
+                     || request.resource.data.inboxEggs.size() == 0);
 
       allow update: if request.auth.uid == uid
                  && topoIntacto()
-                 && gsIntacto();
+                 && gsIntacto()
+                 && inboxNaoCresce();
 
       // Sem isto, apagar e recriar o documento era um botão de reset — e
       // com o create acima, também uma forma de limpar um resgateLog.

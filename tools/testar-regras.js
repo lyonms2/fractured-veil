@@ -74,6 +74,15 @@ async function ler(doc) {
   ok('EXPLOIT apagar e recriar',       await apagar('D','D'), 403);
   ok('EXPLOIT escrever noutro jogador',await escrever('A','D',{'gs.moedas':1}), 403);
 
+  // ── inboxEggs: encher está fechado, esvaziar não ──
+  const ovo = r => ({id:'e1', raridade:r, elemento:'Fogo', expiraEm: Date.now()+9e8});
+  await escrever(null,'E',{'inboxEggs':[ovo('Comum')],'gs.moedas':10}, true);
+  const arr = campos => escrever('E','E',campos);
+  ok('EXPLOIT injetar ovo Lendário',  await arr({'inboxEggs':[ovo('Comum'),ovo('Lendário')]}), 403);
+  ok('EXPLOIT encher o inbox',        await arr({'inboxEggs':[ovo('Lendário'),ovo('Lendário'),ovo('Lendário')]}), 403);
+  ok('esvaziar depois de consumir',   await arr({'inboxEggs':[]}), 200);
+  ok('conta nova com inbox cheio',    await escrever('F','F',{'inboxEggs':[ovo('Lendário')]}), 403);
+
   // o saldo sobreviveu a tudo?
   const d = await ler('D');
   R.push(`\ncristais depois de tudo: ${d?.gs?.mapValue?.fields?.cristais?.integerValue}  (tem de ser 50)`);
