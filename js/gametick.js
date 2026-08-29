@@ -660,20 +660,34 @@ function playLevelUp(newNivel) {
   document.getElementById('luNivel').textContent = t('gt.levelup.nivel', {nivel: newNivel});
   _luGanho(newNivel);
 
-  const starEmojis = ['✦','✧','★','✨','⭐'];
-  const positions = [
-    {sx:'-4.375rem',sy:'-3.75rem'},{sx:'4.375rem',sy:'-3.4375rem'},{sx:'-5rem',sy:'1.25rem'},
-    {sx:'5rem',sy:'0.9375rem'},{sx:'-1.875rem',sy:'-5rem'},{sx:'1.875rem',sy:'-4.6875rem'},
-    {sx:'3.4375rem',sy:'3.75rem'},{sx:'-3.4375rem',sy:'3.4375rem'}
-  ];
-  ov.querySelectorAll('.lu-star').forEach(s => s.remove());
-  positions.forEach((pos, i) => {
-    const s = document.createElement('div');
-    s.className = 'lu-star';
-    s.textContent = starEmojis[i % starEmojis.length];
-    s.style.cssText = `--sx:${pos.sx};--sy:${pos.sy};top:50%;left:50%;animation-delay:${i*0.05}s;color:var(--gold-light)`;
-    ov.appendChild(s);
-  });
+  /* Aqui havia oito emojis de estrela (✦ ✧ ★ ✨ ⭐) a disparar para fora
+     em oito posições fixas, e no HTML três anéis dourados concêntricos a
+     expandir. Vocabulário de arcade, num jogo que é Cinzel, ouro e escuro
+     — destoavam de tudo o resto.
+
+     Ficam motas de luz a SUBIR. É a leitura certa para subir de nível, e
+     lê-se como brasa ou pó de ouro em vez de confete. São 16, com
+     tamanho, velocidade, atraso e desvio próprios: iguais entre si dariam
+     chuva ao contrário, e o que se quer é uma coisa desordenada e lenta.
+
+     Nascem espalhadas em largura mas todas em baixo, porque o movimento
+     único (para cima) é que dá a leitura — espalhá-las também na vertical
+     tirava-lhe o sentido. */
+  ov.querySelectorAll('.lu-mota').forEach(m => m.remove());
+  for (let i = 0; i < 16; i++) {
+    const m = document.createElement('div');
+    m.className = 'lu-mota';
+    const tam = (2 + Math.random() * 3).toFixed(1);
+    m.style.cssText =
+      `left:${(8 + Math.random() * 84).toFixed(1)}%;` +
+      `width:${tam}px;height:${tam}px;` +
+      `--sobe:${(9 + Math.random() * 7).toFixed(1)}rem;` +
+      `--desvio:${(Math.random() * 2.4 - 1.2).toFixed(2)}rem;` +
+      `animation-duration:${(1.9 + Math.random() * 1.6).toFixed(2)}s;` +
+      `animation-delay:${(Math.random() * 1.5).toFixed(2)}s;` +
+      `opacity:0;`;
+    ov.appendChild(m);
+  }
 
   const clone = ov.cloneNode(true);
   ov.parentNode.replaceChild(clone, ov);
