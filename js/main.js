@@ -205,7 +205,8 @@ function openAvatarZoom() {
   if(!hatched || !avatar || dead) return;
   const size = 260;
   const zoomEl = document.getElementById('avatarZoomSVG');
-  zoomEl.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFase());
+  // O zoom mostra o que o jogador vê, portanto a fase vista.
+  zoomEl.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFaseVisual());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});

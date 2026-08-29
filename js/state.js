@@ -243,7 +243,34 @@ const faseFromAge   = secs => { const s = secs||0; return s < FASE_MIN_SECS[1] ?
 // A fase real do avatar precisa de nível E idade suficientes — o menor dos dois.
 const getFase = () => Math.min(faseFromNivel(nivel), faseFromAge(totalSecs));
 const FASE_SIZES = [75, 100, 120, 140];
-const getFaseSize = () => FASE_SIZES[getFase()];
+
+/* ═══════════════════════════════════════════════════════════════════
+   A FASE GANHA E A FASE VISTA
+
+   getFase() é a fase que o avatar MERECEU: sai do nível e da idade, e
+   muda sozinha. Era também a que se desenhava, e por isso o bicho crescia
+   sem aviso enquanto o jogador olhava para outro lado.
+
+   A faseVista é a que ele já CELEBROU. O corpo desenha-se por esta, e
+   fica para trás até o jogador clicar em "pronto para evoluir". Entre as
+   duas fica o convite.
+
+   A mecânica NÃO espera: botar ovos, o combate e o resto continuam a
+   perguntar ao getFase(). É de propósito — a cerimónia é um prémio, não
+   uma tranca, e um jogador que nunca clicasse ficaria preso de outra
+   forma. O que espera é só o que se vê.
+
+   nivelVisto guarda o nível da última cerimónia, para a ficha poder
+   mostrar o antes e o depois. -1 significa "ainda não sei", e é resolvido
+   no primeiro carregamento para o valor atual — quem já jogava não recebe
+   uma cerimónia retroativa por uma fase que já tem há semanas.
+═══════════════════════════════════════════════════════════════════ */
+let faseVista  = -1;
+let nivelVisto = -1;
+
+const getFaseVisual = () => faseVista < 0 ? getFase() : Math.min(getFase(), faseVista);
+const getFaseSize   = () => FASE_SIZES[getFaseVisual()];
+const evolucaoPendente = () => faseVista >= 0 && getFase() > faseVista;
 function xpParaNivel(n) {
   if(n < 5)  return 400;
   if(n < 10) return 800;
@@ -334,6 +361,7 @@ function saveRuntimeToSlot(idx) {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
     bornAt, poopCount, dirtyLevel, poopPressure,
+    faseVista, nivelVisto,
     eggLayCooldown, petCooldown,
     eggLayReadyAt: window._eggLayReadyAt || 0,
     vitals:         {...vitals},
@@ -351,6 +379,7 @@ function loadRuntimeFromSlot(idx) {
     nivel = 1; xp = 0; vinculo = 0; totalSecs = 0;
     hatched = false; dead = false; sick = false; sleeping = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
+    faseVista = -1; nivelVisto = -1;
     eggLayCooldown = 0; petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
     eggsInInventory = s?.eggs  ? s.eggs.map(e => ({...e}))  : [];
@@ -371,6 +400,10 @@ function loadRuntimeFromSlot(idx) {
   poopCount      = s.poopCount      ?? 0;
   dirtyLevel     = s.dirtyLevel     ?? 0;
   poopPressure   = s.poopPressure   ?? 0;
+  // Quem já jogava não tem estes campos gravados: resolve-se para o que
+  // ele tem agora, senão abria uma cerimónia por uma fase antiga.
+  faseVista      = s.faseVista      ?? getFase();
+  nivelVisto     = s.nivelVisto     ?? nivel;
   petCooldown    = s.petCooldown    ?? 0;
   // Recalcula eggLayCooldown a partir do timestamp real (funciona com página fechada)
   if(s.eggLayReadyAt && s.eggLayReadyAt > Date.now()) {

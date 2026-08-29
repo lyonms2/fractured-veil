@@ -260,6 +260,7 @@ async function disconnectWallet() {
   eggsInInventory = [];
   itemInventory   = [];
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
+  faseVista = -1; nivelVisto = -1;
   window._cambioLog = null;
 
   // Reset UI
@@ -509,9 +510,9 @@ async function _onLoginSuccess(user) {
       document.getElementById('statusCard').style.display   = 'block';
       document.getElementById('actionBtns').style.opacity   = '1';
       document.getElementById('actionBtns').style.pointerEvents = 'all';
-      document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
+      document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFaseVisual());
       updateAvatarSize();
-      document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
+      document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFaseVisual()]}`;
       updateAllUI();
       updateResourceUI();
 

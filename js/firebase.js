@@ -54,6 +54,8 @@ function getGameState() {
       poopCount:      s.poopCount      ?? 0,
       dirtyLevel:     s.dirtyLevel     ?? 0,
       poopPressure:   s.poopPressure   ?? 0,
+      faseVista:      s.faseVista      ?? 0,
+      nivelVisto:     s.nivelVisto     ?? 1,
       eggLayCooldown: s.eggLayCooldown ?? 0,
       eggLayReadyAt:  s.eggLayReadyAt  || 0,
       petCooldown:    s.petCooldown    ?? 0,

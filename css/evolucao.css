@@ -1,0 +1,198 @@
+/* ═══════════════════════════════════════════════════════════════════
+   A CERIMÓNIA DA EVOLUÇÃO
+   Ver js/evolucao.js para a coreografia e os tempos.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── O convite, preso ao avatar ── */
+.chamada-evolucao {
+  position: absolute;
+  top: 0.5rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  display: flex; align-items: center; gap: 0.375rem;
+  padding: 0.3125rem 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--gold);
+  background: linear-gradient(135deg, rgba(201,168,76,.22), rgba(167,139,250,.18));
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem; font-weight: 700; letter-spacing: 0.09375rem;
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 0 0.75rem rgba(201,168,76,.35);
+  animation: ce-pulsa 1.9s ease-in-out infinite;
+}
+.chamada-evolucao:hover { background: linear-gradient(135deg, rgba(201,168,76,.35), rgba(167,139,250,.3)); }
+.ce-brilho {
+  width: 0.375rem; height: 0.375rem; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 0.5rem var(--gold);
+  animation: ce-ponto 1.2s ease-in-out infinite;
+}
+@keyframes ce-pulsa {
+  0%, 100% { transform: translateX(-50%) scale(1);    box-shadow: 0 0 0.75rem rgba(201,168,76,.35); }
+  50%      { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 1.5rem rgba(201,168,76,.6); }
+}
+@keyframes ce-ponto { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+
+/* ── O palco ── */
+#evolucaoOverlay {
+  position: fixed; inset: 0; z-index: 10050;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.25rem; padding: 1.25rem;
+  background: #04030a;
+  opacity: 0; pointer-events: none;
+  transition: opacity .5s ease;
+  overflow-y: auto;
+}
+#evolucaoOverlay.ativo { opacity: 1; pointer-events: auto; }
+
+.evo-palco {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 9rem;
+  transition: transform .45s cubic-bezier(.34,1.6,.64,1);
+}
+/* A carga: encolhe e vibra, como quem toma balanço. */
+.evo-palco.carrega { animation: evo-carrega .8s ease-in-out; }
+@keyframes evo-carrega {
+  0%   { transform: scale(1)    translateX(0); }
+  25%  { transform: scale(.94)  translateX(-0.125rem); }
+  50%  { transform: scale(.92)  translateX(0.125rem); }
+  75%  { transform: scale(.94)  translateX(-0.0625rem); }
+  100% { transform: scale(.9)   translateX(0); }
+}
+.evo-palco.revelado { animation: evo-revela .7s cubic-bezier(.34,1.7,.64,1); }
+@keyframes evo-revela {
+  0%   { transform: scale(.9); }
+  45%  { transform: scale(1.12); }
+  70%  { transform: scale(.98); }
+  100% { transform: scale(1); }
+}
+
+#evoAvatar svg { display: block; }
+
+/* O clarão que esconde a troca. Tem de cobrir o avatar inteiro e um
+   bocado à volta, senão vê-se o svg mudar pela beira. */
+.evo-clarao {
+  position: absolute; top: 50%; left: 50%;
+  width: 20rem; height: 20rem;
+  transform: translate(-50%,-50%) scale(0);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, rgba(233,213,255,.9) 35%, rgba(167,139,250,.5) 60%, transparent 75%);
+  pointer-events: none; opacity: 0;
+}
+.evo-clarao.dispara { animation: evo-clarao-anim .9s ease-out forwards; }
+@keyframes evo-clarao-anim {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.2); }
+  30%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  55%  { opacity: 1; transform: translate(-50%,-50%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.35); }
+}
+
+/* Partículas a convergir PARA o centro — carga, não explosão. */
+.evo-part {
+  position: absolute; top: 50%; left: 50%;
+  width: 0.3125rem; height: 0.3125rem; border-radius: 50%;
+  pointer-events: none;
+  animation: evo-part-entra .85s ease-in forwards;
+}
+@keyframes evo-part-entra {
+  0%   { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.5); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); }
+}
+
+/* ── A ficha ── */
+.evo-painel {
+  width: 100%; max-width: 20rem;
+  opacity: 0; transform: translateY(0.75rem);
+  transition: opacity .5s ease, transform .5s cubic-bezier(.34,1.5,.64,1);
+  pointer-events: none;
+}
+.evo-painel.mostra { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+#evoTitulo {
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: 0.9375rem; letter-spacing: 0.1875rem;
+  color: var(--gold-light); text-align: center;
+  text-shadow: 0 0 1rem rgba(201,168,76,.5);
+  margin-bottom: 0.25rem;
+}
+#evoNivel {
+  font-family: 'Cinzel', serif; font-size: 0.625rem;
+  letter-spacing: 0.125rem; color: var(--muted);
+  text-align: center; margin-bottom: 1rem;
+}
+
+.evo-sub {
+  font-family: 'Cinzel', serif; font-size: 0.5rem;
+  letter-spacing: 0.1875rem; color: var(--muted);
+  margin: 0.75rem 0 0.375rem;
+}
+
+.evo-linha {
+  display: grid;
+  grid-template-columns: 1fr auto 1rem auto;
+  align-items: center; gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.5625rem; color: var(--muted);
+}
+/* Só o que subiu ganha cor. Uma lista toda verde não diz nada. */
+.evo-linha.subiu {
+  background: rgba(122,184,122,.1);
+  border: 1px solid rgba(122,184,122,.25);
+  color: #9fd39f;
+}
+.evo-nome { font-family: 'Cinzel', serif; letter-spacing: 0.03125rem; }
+.evo-de   { opacity: .55; }
+.evo-seta { text-align: center; color: #7ab87a; }
+.evo-linha.subiu .evo-para {
+  color: #7ab87a; font-weight: 700; font-size: 0.6875rem;
+  text-shadow: 0 0 0.5rem rgba(122,184,122,.45);
+}
+
+#evoCorpo { list-style: none; padding: 0; margin: 0; }
+#evoCorpo li {
+  font-size: 0.5625rem; color: #b9a6e8;
+  padding: 0.1875rem 0 0.1875rem 0.875rem;
+  position: relative;
+}
+#evoCorpo li::before {
+  content: '✦'; position: absolute; left: 0;
+  color: var(--gem2); font-size: 0.5rem;
+}
+
+.evo-btn {
+  display: block; margin: 1.25rem auto 0;
+  padding: 0.5rem 1.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--gold);
+  background: transparent; color: var(--gold-light);
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: 0.5625rem; letter-spacing: 0.125rem;
+  cursor: pointer;
+}
+.evo-btn:hover { background: rgba(201,168,76,.15); }
+
+/* No desktop a raiz está a 24px e isto ficaria enorme: o painel é
+   moldura, como as janelas dos passatempos. */
+@media (min-width: 769px) {
+  .chamada-evolucao { font-size: 0.4375rem; padding: 0.25rem 0.625rem; }
+  .evo-painel  { max-width: 17rem; }
+  #evoTitulo   { font-size: 0.75rem; }
+  #evoNivel    { font-size: 0.5rem; }
+  .evo-sub     { font-size: 0.40625rem; }
+  .evo-linha   { font-size: 0.46875rem; }
+  .evo-linha.subiu .evo-para { font-size: 0.5625rem; }
+  #evoCorpo li { font-size: 0.46875rem; }
+  .evo-btn     { font-size: 0.46875rem; padding: 0.4375rem 1.5rem; }
+  .evo-clarao  { width: 15rem; height: 15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chamada-evolucao, .ce-brilho,
+  .evo-palco.carrega, .evo-palco.revelado,
+  .evo-clarao.dispara, .evo-part { animation: none; }
+  .evo-clarao.dispara { opacity: 0; }
+}

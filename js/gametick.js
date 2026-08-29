@@ -227,12 +227,28 @@ function spawnBathParticles() {
   });
 }
 
+/* Redesenha o avatar quando a fase VISTA muda.
+   Duas coisas foram corrigidas aqui.
+   Primeira: desenha pela getFaseVisual(), não pela getFase() — o corpo
+   espera pela cerimónia.
+   Segunda, e esta era um estrago diário: não havia guarda nenhuma, e o
+   tick chama isto de cinco em cinco minutos (linha ~458). Cada chamada
+   fazia innerHTML = gerarSVG(...), criando um svg novo. Medido: as dez
+   animações de repouso reiniciavam a zero — perdendo o escalonamento dos
+   membros, que voltavam todos a sincronizar — e seis gestos em curso eram
+   destruídos. Quem estivesse a comer ou a tomar banho quando o tick
+   calhasse via a animação morrer a meio.
+   Agora só regenera quando há de facto o que mudar. */
 function updateAvatarSize() {
   const wrap = document.getElementById('creatureSVG');
   if(!wrap || !hatched || dead) return;
-  const sz = getFaseSize();
+  const sz    = getFaseSize();
+  const fase  = getFaseVisual();
+  const marca = avatar ? `${avatar.seed}|${fase}|${sz}` : '';
+  if(avatar && wrap.dataset.marca === marca) return;   // nada mudou
   if(avatar) {
-    wrap.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, sz, sz, getFase());
+    wrap.dataset.marca = marca;
+    wrap.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, sz, sz, fase);
   } else {
     const svg = wrap.querySelector('svg');
     if(svg) { svg.setAttribute('width', sz); svg.setAttribute('height', sz); }
@@ -453,6 +469,7 @@ function gameTick() {
   if(vitals.saude <= 0) { killCreature(); return; }
 
   if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); }
+  if(tickCount % 5 === 0 && typeof atualizarChamadaEvolucao === 'function') atualizarChamadaEvolucao();
 
   // ── POSTURA DE OVOS (apenas fase Adulto) ──
   if(getFase() === 3) {
@@ -612,8 +629,12 @@ function checkXP() {
     addLog(t('gt.levelup.log', {nivel}), 'leg');
     playLevelUp(nivel);
     if(faseAfter !== faseBefore) {
-      setTimeout(() => playPhaseUp(FASES[faseAfter]), 600);
-      updateAvatarSize();
+      // A fase foi GANHA, mas o corpo não muda já. Antes mudava aqui, e o
+      // clarão que devia esconder a mudança só vinha 600ms depois — o
+      // jogador via o bicho crescer e só a seguir recebia a fanfarra.
+      // Agora aparece o convite no avatar e é ele que escolhe o momento.
+      // Ver js/evolucao.js.
+      if(typeof atualizarChamadaEvolucao === 'function') atualizarChamadaEvolucao();
     }
   }
 }

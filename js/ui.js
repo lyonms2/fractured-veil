@@ -734,10 +734,10 @@ function rebuildScreensParaSlot() {
   if(btns) { btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }
   const svg = $('creatureSVG');
   if(svg) svg.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed,
-                                   getFaseSize(), getFaseSize(), getFase());
+                                   getFaseSize(), getFaseSize(), getFaseVisual());
   if(typeof updateAvatarSize === 'function') updateAvatarSize();
   const pl = $('phaseLabel');
-  if(pl) pl.textContent = t('gt.phase.label', {fase: FASES[getFase()]});
+  if(pl) pl.textContent = t('gt.phase.label', {fase: FASES[getFaseVisual()]});
   const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
   if(typeof updateDirtyVisuals === 'function') updateDirtyVisuals();
   if(typeof updateEquippedDisplay === 'function') updateEquippedDisplay();
