@@ -189,7 +189,6 @@ window.registerStrings({
   'mkt.crystals.title':       '💎 Comprar Cristais',
   'mkt.crystals.sub':         '1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.',
   'mkt.crystals.buy_btn':     'Comprar',
-  'mkt.crystals.popular':     'Mais popular',
   'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
   'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: 5 MATIC/dia.',
   'mkt.crystals.redeem_btn':  'Resgatar',
@@ -197,11 +196,11 @@ window.registerStrings({
 
   // Nomes dos pacotes de cristais
   'mkt.crystals.limit_left':  'Podes resgatar {resta} de {max} 💎 hoje',
-  'mkt.pkg.0':                'Punhado',
-  'mkt.pkg.1':                'Bolsa',
-  'mkt.pkg.2':                'Saco',
-  'mkt.pkg.3':                'Baú',
-  'mkt.pkg.4':                'Tesouro',
+  // Os pacotes deixaram de ter nomes de tamanho (Punhado, Bolsa, Saco…)
+  // e passaram a dizer o que compram. Ver CRYSTAL_PACKAGES em cristais.js.
+  'mkt.pkg.vale.slot':        'Desbloqueia um slot de avatar',
+  'mkt.pkg.vale.raro':        'Choca um ovo Raro',
+  'mkt.pkg.vale.lendario':    'Choca um ovo Lendário',
 
   // ── MetaMask CTA ──────────────────────────────────────────────────
   'mkt.metamask.title':       '🦊 MetaMask necessária',
@@ -562,7 +561,6 @@ window.registerStrings({
   'mkt.crystals.title':       '💎 Buy Crystals',
   'mkt.crystals.sub':         '1 MATIC = 10 💎. Requires MetaMask to send the on-chain transaction.',
   'mkt.crystals.buy_btn':     'Buy',
-  'mkt.crystals.popular':     'Most popular',
   'mkt.crystals.redeem_title':'💸 Redeem Crystals → MATIC',
   'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: 5 MATIC/day.',
   'mkt.crystals.redeem_btn':  'Redeem',
@@ -570,11 +568,9 @@ window.registerStrings({
 
   // Package names
   'mkt.crystals.limit_left':  'You can redeem {resta} of {max} 💎 today',
-  'mkt.pkg.0':                'Handful',
-  'mkt.pkg.1':                'Pouch',
-  'mkt.pkg.2':                'Bag',
-  'mkt.pkg.3':                'Chest',
-  'mkt.pkg.4':                'Treasure',
+  'mkt.pkg.vale.slot':        'Unlocks one avatar slot',
+  'mkt.pkg.vale.raro':        'Hatches a Rare egg',
+  'mkt.pkg.vale.lendario':    'Hatches a Legendary egg',
 
   // MetaMask
   'mkt.metamask.title':       '🦊 MetaMask required',

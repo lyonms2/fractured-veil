@@ -40,12 +40,37 @@ function carregarEthers() {
 }
 const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
 
+/* OS PACOTES
+   ═══════════════════════════════════════════════════════════════════
+   Eram cinco — 5, 10, 30, 50 e 100 💎 — e não se distinguiam em nada
+   além do tamanho. A taxa é a mesma em todos (1 MATIC = 10 💎), portanto
+   não havia razão para escolher um em vez de outro: eram a mesma compra
+   repetida cinco vezes, com nomes diferentes.
+
+   E não dá para pôr bónus por volume, que seria a saída óbvia. Duas
+   razões, e a segunda é definitiva:
+
+   1. O resgate paga à MESMA taxa (maticFinal = gems / RATE, RATE = 10 em
+      api/resgatar.js). Sem margem entre comprar e vender, qualquer bónus
+      é arbitragem: compra-se com desconto e saca-se a preço cheio.
+   2. Quem calcula os cristais é o CONTRATO, não o servidor — o
+      api/processar-compra.js lê gemsACreditar do evento on-chain. A taxa
+      não se muda daqui de maneira nenhuma.
+
+   O que se pode mudar é o que os cartões DIZEM. Passam a ser três, e cada
+   um vale exatamente uma coisa que o jogo cobra:
+
+     15 💎  desbloquear um slot   (UNLOCK_SLOT_COST)
+     50 💎  chocar um Raro        (HATCH_FEE.Raro)
+    100 💎  chocar um Lendário    (HATCH_FEE['Lendário'])
+
+   Três escolhas com três propósitos, em vez de cinco tamanhos do mesmo
+   nada. Se estes números mudarem no jogo, isto tem de mudar com eles —
+   por isso ficam aqui as constantes de onde saem. */
 const CRYSTAL_PACKAGES = [
-  { matic:0.5,  gems:5,   label:'Punhado',   icon:'💎' },
-  { matic:1,    gems:10,  label:'Bolsa',      icon:'💎' },
-  { matic:3,    gems:30,  label:'Saco',       icon:'💎' },
-  { matic:5,    gems:50,  label:'Baú',        icon:'💎' },
-  { matic:10,   gems:100, label:'Tesouro',    icon:'💎' },
+  { matic:1.5, gems:15,  chave:'slot' },
+  { matic:5,   gems:50,  chave:'raro' },
+  { matic:10,  gems:100, chave:'lendario' },
 ];
 
 // ═══════════════════════════════════════════
@@ -108,13 +133,16 @@ async function renderTransparencia() {
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
   if(!container) return;
+  // O destaque ia para o pacote do meio com um selo "POPULAR". Não havia
+  // nada que o tornasse popular — era um sinal inventado numa lista onde
+  // todos custavam o mesmo por cristal. Saiu. O que fica no lugar é o que
+  // cada quantia compra, que é informação a sério.
   container.innerHTML = CRYSTAL_PACKAGES.map((pkg, i) => `
-    <div class="crystal-pkg ${i === 1 ? 'featured' : ''}">
+    <div class="crystal-pkg">
       <div class="pkg-gem">💎</div>
       <div class="pkg-amount">${pkg.gems}</div>
-      <div style="font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--text2);margin-bottom:0.25rem;">${t('mkt.pkg.'+i)}</div>
       <div class="pkg-matic">${pkg.matic} MATIC</div>
-      <div class="pkg-bonus">${i === 1 ? t('mkt.crystals.popular') : ''}</div>
+      <div class="pkg-vale">${t('mkt.pkg.vale.' + pkg.chave)}</div>
       <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">${t('mkt.crystals.buy_btn')}</button>
     </div>`).join('');
 }
