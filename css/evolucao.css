@@ -3,6 +3,14 @@
    Ver js/evolucao.js para a coreografia e os tempos.
 ═══════════════════════════════════════════════════════════════════ */
 
+/* O --muted do jogo (#6b5f8a) e escuro demais para estas duas telas: da
+   3,55 de contraste sobre o preto delas, quando texto normal pede 4,5 —
+   e aqui e tudo pequeno, entre 9 e 11px. Nas telas normais funciona
+   porque e rotulo ao lado de coisas maiores; numa tela cheia de escuro
+   com texto pequeno, nao.
+   Esta e a mesma tinta, aclarada ate passar: 9,14 sobre o preto. */
+:root { --cerim-fraco: #b2aac8; }
+
 /* ── O convite, preso ao avatar ── */
 .chamada-evolucao {
   position: absolute;
@@ -124,13 +132,15 @@
 }
 #evoNivel, #ovoSub {
   font-family: 'Cinzel', serif; font-size: 0.625rem;
-  letter-spacing: 0.125rem; color: var(--muted);
+  letter-spacing: 0.125rem; color: var(--cerim-fraco);
   text-align: center; margin-bottom: 1rem;
 }
 
 .evo-sub {
-  font-family: 'Cinzel', serif; font-size: 0.5rem;
-  letter-spacing: 0.1875rem; color: var(--muted);
+  /* 0.5rem dava 8px no celular. Os cabeçalhos "◆ FICHA" e "◆ O CORPO"
+     organizam a leitura do painel; ilegíveis, não organizam nada. */
+  font-family: 'Cinzel', serif; font-size: 0.5625rem;
+  letter-spacing: 0.1875rem; color: var(--cerim-fraco);
   margin: 0.75rem 0 0.375rem;
 }
 
@@ -140,7 +150,7 @@
   align-items: center; gap: 0.375rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  font-size: 0.5625rem; color: var(--muted);
+  font-size: 0.5625rem; color: var(--cerim-fraco);
 }
 /* Só o que subiu ganha cor. Uma lista toda verde não diz nada. */
 .evo-linha.subiu {
@@ -287,15 +297,17 @@
 @keyframes ovo-carta-entra { to { opacity: 1; transform: scale(1) translateY(0); } }
 .ovo-emoji { font-size: 1.5rem; line-height: 1; }
 .ovo-rar {
-  font-family: 'Cinzel', serif; font-size: 0.4375rem;
-  letter-spacing: 0.09375rem; color: var(--cor-ovo, var(--muted));
+  /* Era 0.4375rem: 7px no celular. É o rótulo da raridade — o prémio da
+     cerimónia inteira — e não pode ser a coisa mais pequena da tela. */
+  font-family: 'Cinzel', serif; font-size: 0.5625rem;
+  letter-spacing: 0.09375rem; color: var(--cor-ovo, var(--cerim-fraco));
   font-weight: 700;
 }
 
 .ovo-conta {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.25rem 0.5rem;
-  font-size: 0.5625rem; color: var(--muted);
+  font-size: 0.5625rem; color: var(--cerim-fraco);
 }
 .ovo-conta .val { font-family: 'Cinzel', serif; }
 .ovo-conta.gasto .val { color: #e0a050; }
@@ -331,7 +343,11 @@
   /* Era 0.4375rem, que no celular dá 7px — ilegível, a mesma armadilha
      das regras base que o desktop tapa com a sua própria media query. */
   font-size: 0.5625rem; letter-spacing: 0.09375rem;
-  color: var(--muted);
+  /* Era var(--muted), rgb(107,95,138): dava 3,5 de contraste sobre o
+     escuro liso e 2,15 quando havia algo claro por trás do overlay — bem
+     abaixo dos 4,5 que se pedem a texto normal, e ainda por cima a 9px.
+     Este dá 8,4 mesmo no pior caso. */
+  color: var(--cerim-fraco);
   text-align: center;
   display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;
 }
