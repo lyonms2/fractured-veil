@@ -188,13 +188,58 @@ function showFloat(txt, color = '#c9a84c') {
   if(!wrap) return;
   const el = document.createElement('div');
   el.className = 'float-text'; el.textContent = txt; el.style.color = color;
-  el.style.left = '50%'; el.style.top = '0';
+  // Era top:0, o topo do wrap — o texto nascia acima da cabeça. A 22%
+  // fica sobre a parte de cima do corpo, que é de onde faz sentido sair.
+  el.style.left = '50%'; el.style.top = '22%';
   wrap.appendChild(el);
   setTimeout(() => el.remove(), 1500);
 }
 
 let _currentAnim = null;
 let _animTimeout = null;
+
+/* Quanto tempo a classe fica posta.
+   Era um valor fixo de 900ms para todas, e quatro animações duravam mais
+   do que isso: curar 1s, antídoto e botar ovo 1,2s, banho 1,6s. A classe
+   saía antes do fim e a animação voltava ao princípio de um salto — no
+   banho perdiam-se 700ms, quase metade, e como ele tem `forwards` o
+   estrago era o mais visível dos quatro.
+   Agora pergunta-se ao próprio CSS. A animação pode estar no wrap (é o
+   caso do banho) ou no svg lá dentro (todas as outras), por isso lê-se
+   os dois e fica o maior. A margem de 60ms cobre o arredondamento e o
+   atraso entre pôr a classe e o primeiro fotograma. */
+function _paraMs(v) {
+  const n = parseFloat(v);
+  if (!isFinite(n)) return 0;
+  return v.indexOf('ms') > -1 ? n : n * 1000;
+}
+
+function _duracaoDaAnim(w) {
+  // Os ciclos infinitos (idle-float, av-respirar, av-bater…) não contam:
+  // são o repouso, não a ação. Sem esta exclusão o banho media 3s — o
+  // idle-float do svg, que continua a correr por baixo dele — em vez dos
+  // 1,6s do bath-wobble, e a classe ficava posta quase o dobro do tempo.
+  const naFila = [w, w.querySelector('svg'), ...w.querySelectorAll('[class*="av-"]')];
+  let maior = 0;
+  for (const el of naFila) {
+    if (!el) continue;
+    const cs = getComputedStyle(el);
+    if (cs.animationName === 'none') continue;
+    const durs   = cs.animationDuration.split(',');
+    const delays = cs.animationDelay.split(',');
+    const iters  = cs.animationIterationCount.split(',');
+    durs.forEach((d, i) => {
+      const rep = (iters[i] || iters[0] || '1').trim();
+      if (rep === 'infinite') return;
+      // O atraso conta: os membros escalonam pelo --i, e num Lendário de
+      // oito braços o último começa quase meio segundo depois do primeiro.
+      const total = _paraMs(d) * (parseFloat(rep) || 1)
+                  + Math.max(0, _paraMs(delays[i] || delays[0] || '0'));
+      if (isFinite(total)) maior = Math.max(maior, total);
+    });
+  }
+  return maior > 0 ? maior + 60 : 900;
+}
 
 function playAnim(cls, persist = false) {
   const w = document.getElementById('creatureWrap');
@@ -210,7 +255,7 @@ function playAnim(cls, persist = false) {
       w.classList.remove(cls);
       if(_currentAnim === cls) _currentAnim = null;
       _animTimeout = null;
-    }, 900);
+    }, _duracaoDaAnim(w));
   }
 }
 function resetAnim() {

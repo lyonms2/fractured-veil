@@ -286,6 +286,11 @@ function wakeUp(reason) {
   if(grp) grp.remove();
   document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.remove('sleeping'));
   resetAnim();
+  // Acordar não tinha animação nenhuma: o resetAnim tirava o sleep-sway e a
+  // criatura saltava para o idle-float num fotograma. Agora espreguiça-se.
+  // Tem de vir depois do resetAnim e depois de sair a classe .sleeping, senão
+  // as regras de sono ainda seguram as partes.
+  playAnim('anim-wake');
   document.getElementById('actionBtns').classList.remove('sleeping-mode');
   document.getElementById('sleepLabel').textContent = t('mg.sleep.sleep_btn');
   document.getElementById('btnSleep').classList.remove('active-sleep');
