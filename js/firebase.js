@@ -291,14 +291,14 @@ async function saveToFirebase() {
 
     const hasOrphans = window._orphanEggs && window._orphanEggs.length > 0;
     if(hasOrphans) {
-      const toAdd = window._orphanEggs.filter(e => e.id);
-      if(toAdd.length > 0) {
-        for(const egg of toAdd) {
-          await fbDb().collection('players').doc(walletAddress).update({
-            inboxEggs: firebase.firestore.FieldValue.arrayUnion(egg)
-          });
-        }
-      }
+      /* Havia aqui um ciclo que devolvia os ovos órfãos ao inboxEggs, um a
+         um. Era redundante e passou a rebentar.
+         Redundante porque eles nunca de lá saíram: o applyGameState() só
+         marca _inboxConsumed quando consegue pô-los num slot, e é essa
+         marca que manda limpar o inbox mais abaixo. Sem slot, não há
+         marca, não há limpeza — os ovos ficam onde estavam.
+         E passou a rebentar porque as regras já não deixam o cliente
+         fazer crescer o inboxEggs: era por aí que se fabricavam ovos. */
       window._orphanEggs  = null;
       window._orphanItems = null;
       window._inboxConsumed = false;

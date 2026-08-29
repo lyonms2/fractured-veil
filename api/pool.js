@@ -380,6 +380,17 @@ async function handleVenderOvo(req, res, db, poolRef, uid) {
       const eggs       = activeSlot?.eggs || [];
       const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
       if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
+      /* O ovo tem de ter sido emitido pelo servidor.
+         Isto lia os ovos de activeSlot.eggs e mais nada — e esse array vem
+         do avatarSlots, que o cliente escreve por inteiro. Escrever um ovo
+         Lendário num slot e queimá-lo era dinheiro da pool a sair por um ovo que
+         nunca existiu. O ovosEmitidos é a prova, escrito pelo
+         handleBotarOvo e fora do alcance do cliente (firestore.rules). */
+      const _emitidos = pData.ovosEmitidos || {};
+      if (_emitidos['o' + String(ovoId)] !== raridade) {
+        throw new Error('OVO_SEM_REGISTO');
+      }
+
 
       // Limite semanal por jogador
       const semana = semanaAtual();
@@ -648,6 +659,17 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
       const eggs       = activeSlot?.eggs || [];
       const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
       if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
+      /* O ovo tem de ter sido emitido pelo servidor.
+         Isto lia os ovos de activeSlot.eggs e mais nada — e esse array vem
+         do avatarSlots, que o cliente escreve por inteiro. Escrever um ovo
+         Lendário num slot e vendê-lo era dinheiro da pool a sair por um ovo que
+         nunca existiu. O ovosEmitidos é a prova, escrito pelo
+         handleBotarOvo e fora do alcance do cliente (firestore.rules). */
+      const _emitidos = pData.ovosEmitidos || {};
+      if (_emitidos['o' + String(ovoId)] !== raridade) {
+        throw new Error('OVO_SEM_REGISTO');
+      }
+
 
       // Ovo apodrecido não vale cristais — no jogo é descartado sem prémio.
       const ovoAlvo = eggs[ovoIdx];
@@ -674,6 +696,9 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
         avatarSlots:   newSlots,
         'gs.cristais': novosCristais,
         cristais:      novosCristais,
+        // O registo morre com o ovo, senão valia para uma segunda venda
+        // depois de o cliente o repor no avatarSlots.
+        [`ovosEmitidos.o${ovoId}`]: FieldValue.delete(),
       });
       tx.update(poolRef, Object.assign({
         cristais:  FieldValue.increment(-finalGems),
@@ -752,7 +777,16 @@ async function handleBotarOvo(_req, res, db, uid) {
       const moedas = pData.gs?.moedas ?? pData.moedas ?? 0;
       if (moedas < 50) throw new Error('Moedas insuficientes (precisa de 50 🪙)');
 
-      const raridade = slot.raridade || 'Comum';
+      /* A raridade do avatar decide a QUALIDADE dos ovos: o
+         _calcEggRarity dá ao Lendário 55% de chance de ovo lendário contra
+         2% do Comum. Vinha de slot.raridade — do avatarSlots, que o
+         cliente escreve. Escrever 'Lendário' num slot era fabricar ovos
+         lendários a 55%, e daí para cristais e MATIC.
+         Agora vem do avataresEmitidos, que o handleChocarOvo escreve com a
+         raridade do ovo consumido. Sem registo, vale Comum — que é o que
+         um avatar sem proveniência deve valer. */
+      const _avEmitidos = pData.avataresEmitidos || {};
+      const raridade = _avEmitidos['s' + String(slot.seed)] || 'Comum';
       // Dois ovos para todos, e 24h para todos. Antes eram 1/2/3 ovos com
       // esperas de 24h/48h/36h, e daí saíam duas coisas tortas: o Raro
       // produzia exatamente no mesmo ritmo que o Comum (2 em 48h = 1 em

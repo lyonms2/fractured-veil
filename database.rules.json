@@ -1,0 +1,49 @@
+{
+  "//": [
+    "REGRAS DO REALTIME DATABASE",
+    "",
+    "Havia aqui mais três blocos — arena, roubaMonte e batalhaNaval, os",
+    "jogos PvP. Saíram porque os jogos já não existem, e enquanto",
+    "existiram as regras eram largas demais: '.write': 'auth != null' no",
+    "nível da coleção deixava qualquer jogador autenticado escrever a",
+    "pontuação de qualquer outro, mexer numa sala a meio de um jogo alheio",
+    "e escrever nas notificações de prémios de terceiros.",
+    "",
+    "O que fica segue uma regra só: quem escreve é o dono, e o valor é",
+    "verificado. É a diferença entre 'está autenticado' e 'é ele'."
+  ],
+
+  "rules": {
+    "presence": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "snakeRanking": {
+      "$tier": {
+        ".read": "auth != null",
+        ".indexOn": ["score"],
+        "$uid": {
+          "//": [
+            "A escrita já era por dono — era a única regra bem feita do",
+            "ficheiro. Faltava olhar para o VALOR: aceitava score 999999.",
+            "Agora tem de ser um inteiro entre 0 e 100. A maior pontuação",
+            "possível é 30, no tier 3 (js/snake.js:258), portanto 100 dá",
+            "folga de sobra e continua longe do absurdo."
+          ],
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['score'])",
+          "score": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100 && newData.val() === newData.val().toFixed(0) * 1"
+          },
+          "nome":   { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "wallet": { ".validate": "newData.isString() && newData.val() === $uid" },
+          "ts":     { ".validate": "newData.isNumber()" },
+          "$outro": { ".validate": false }
+        }
+      }
+    }
+  }
+}

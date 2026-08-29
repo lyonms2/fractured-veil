@@ -112,7 +112,15 @@ module.exports = async function handler(req, res) {
     }
 
     // ── Validar limite diário ──
-    const raridade     = slot.raridade || 'Comum';
+    /* O tecto diário do câmbio depende da raridade: 1 comum, 2 raro, 4
+       lendário. Vinha de slot.raridade — do avatarSlots, que o cliente
+       escreve por inteiro — portanto escrever 'Lendário' num slot
+       quadruplicava o próprio tecto.
+       Agora vem do avataresEmitidos, que o servidor escreve ao emitir o
+       avatar. Sem registo vale Comum: um avatar sem proveniência troca ao
+       ritmo mais baixo, que é o certo. */
+    const _avEmitidos  = data.avataresEmitidos || {};
+    const raridade     = _avEmitidos['s' + String(slot.seed)] || 'Comum';
     const limite       = CAMBIO_LIMITES[raridade] || 1;
     const hoje         = new Date().toISOString().slice(0, 10);
     const cambioLog    = data.cambioLog || null;
