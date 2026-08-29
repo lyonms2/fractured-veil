@@ -6,12 +6,16 @@
 //
 // Citava três arquivos de reset por jogo que nunca existiram — tinham
 // sido unificados num pvp-reset-ranking.js, e esse saiu com os três
-// jogos PvP. Hoje só a manutenção tira da pool toda a semana.
+// jogos PvP.
 //
-// O jogosAtivos deixou de dividir o bolo por vários jogos e passa a
-// servir só de divisor da fatia do dev: com 3, ele leva 15% da pool
-// cheia; se um dia voltar a haver jogos a receber, é este número que
-// os põe todos dentro do teto do pctMaxTotal.
+// Hoje NADA tira da pool toda a semana. A distribuição semanal acabou:
+// o dev recebe 1% de cada resgate (DEV_FEE_RATE em api/resgatar.js) e a
+// pool só sai por câmbio e por venda/queima de ovos, ambos com o teto
+// diário aqui em baixo.
+//
+// O que fica deste ficheiro é esse teto. O bloco de config abaixo
+// descreve o modelo antigo e já não tem leitor nenhum — está mantido
+// como está explicado junto do módulo.
 //
 // Configuração dinâmica em Firestore: config/economia
 //   jogosAtivos  : número de jogos PvP ativos (default 3)

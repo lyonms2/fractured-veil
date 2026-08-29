@@ -309,7 +309,10 @@ async function loadPoolLogs(reset) {
 
 // ═══════════════════════════════════════════
 // ENTRADA NA POOL (taxas)
-// 100% das taxas vão para a pool — dev recebe via cron semanal separado
+// 100% das taxas vão para a pool, sem corte nenhum à entrada. O cron
+// semanal que dava uma fatia da pool ao dev já não existe: ele recebe
+// 1% de cada resgate (DEV_FEE_RATE em api/resgatar.js), e a pool nunca
+// é tocada.
 // ═══════════════════════════════════════════
 async function addToPool(totalTaxa, motivo) {
   if(totalTaxa <= 0) return;
