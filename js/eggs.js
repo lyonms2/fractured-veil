@@ -135,47 +135,47 @@ function burnEgg(id) {
     return;
   }
 
+  // Raro e Lendário deixaram de se queimar por cristais.
+  //
+  // Queimar e "vender à pool" eram o mesmo acto com dois nomes: as duas
+  // transações do servidor eram iguais linha a linha — tiravam o ovo do
+  // avatarSlots, apagavam a prova em ovosEmitidos, creditavam cristais e
+  // debitavam a pool. Em nenhuma delas alguém recebia o ovo.
+  //
+  // Só que a queima pagava valor FIXO (2 e 6 💎, até 3 e 9 com bónus de
+  // avatar) e não verificava o limite semanal de vendas, enquanto a
+  // venda pagava o preço dinâmico e contava para o limite. Com a pool
+  // baixa a queima chegava a pagar 4× mais, sem limite de quantas por
+  // semana — ou seja, escapava exactamente às duas defesas que existem
+  // para a pool não secar, e ninguém teria motivo para usar o botão da
+  // venda.
+  //
+  // Fica uma porta só para a pool, a dinâmica. A outra saída de um ovo
+  // raro é o mercado, onde outro jogador paga e fica com ele.
+  if(ovo.raridade !== 'Comum') {
+    addLog(t('egg.log.no_burn_rare', {rar: ovo.raridade}), 'bad');
+    return;
+  }
+
   const bonus    = rarityBonus().burnBonus;
   const bonusPct = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
 
-  if(ovo.raridade === 'Comum') {
-    const moedas = Math.round(20 * (1 + bonus));
-    const overlay = document.getElementById('eggBurnOverlay');
-    const preview = document.getElementById('eggBurnPreview');
-    if(overlay && preview) {
-      preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
-        Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
-        <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
-      document.getElementById('eggBurnConfirmBtn').onclick = () => {
-        overlay.style.display = 'none';
-        _doBurnComum(id, moedas);
-      };
-      overlay.style.display = 'flex';
-    } else {
+  // O Comum continua a queimar-se por moedas internas, que não saem da
+  // pool nem valem MATIC — é só uma forma de não ficar com ele parado.
+  const moedas = Math.round(20 * (1 + bonus));
+  const overlay = document.getElementById('eggBurnOverlay');
+  const preview = document.getElementById('eggBurnPreview');
+  if(overlay && preview) {
+    preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
+      Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
+      <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
+    document.getElementById('eggBurnConfirmBtn').onclick = () => {
+      overlay.style.display = 'none';
       _doBurnComum(id, moedas);
-    }
+    };
+    overlay.style.display = 'flex';
   } else {
-    const baseGems = ovo.raridade === 'Lendário' ? 6 : 2;
-    const finalGems = Math.round(baseGems * (1 + bonus));
-    const poolOk = poolData && (poolData.cristais || 0) >= finalGems && poolDisponivel();
-    const overlay = document.getElementById('eggBurnOverlay');
-    const preview = document.getElementById('eggBurnPreview');
-    if(overlay && preview) {
-      const rarColor = ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8';
-      preview.innerHTML = `Ovo <b style="color:${rarColor}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</b><br>
-        Receberás <b style="color:#a78bfa">${finalGems} 💎</b>${bonusPct}<br>
-        ${!poolOk ? `<span style="color:#f87171;font-size:0.5rem;">⚠️ Pool com saldo insuficiente — queima bloqueada.</span>` :
-          `<span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`}`;
-      const btn = document.getElementById('eggBurnConfirmBtn');
-      btn.disabled = !poolOk;
-      btn.style.opacity = poolOk ? '1' : '.4';
-      btn.onclick = poolOk ? () => { overlay.style.display = 'none'; _doBurnRaro(id, finalGems, bonus); } : null;
-      overlay.style.display = 'flex';
-    } else if(poolOk) {
-      _doBurnRaro(id, finalGems, bonus);
-    } else {
-      addLog(t('egg.log.pool_unavail', {rar: ovo.raridade}), 'bad');
-    }
+    _doBurnComum(id, moedas);
   }
 }
 
@@ -187,52 +187,6 @@ function _doBurnComum(id, moedas) {
   addLog(t('egg.log.burned_common', {moedas}), 'good');
   showFloat(`+${moedas}🪙`, '#c9a84c');
   renderEggInventory(); updateResourceUI(); scheduleSave();
-}
-
-async function _doBurnRaro(id, finalGems, bonus) {
-  const idx = eggsInInventory.findIndex(e => e.id === id);
-  if(idx === -1) return;
-  const ovo = eggsInInventory[idx];
-  const bonusTxt = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
-
-  if(!poolData || (poolData.cristais || 0) < finalGems || !poolDisponivel()) {
-    if(typeof showToast === 'function') showToast('Pool sem saldo suficiente — vende o ovo em vez de queimar.', 'warn');
-    addLog(t('egg.log.pool_unavail', {rar: ovo.raridade}), 'bad');
-    return;
-  }
-
-  try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp = await fetch('/api/pool', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // O `gems` deixou de ir no pedido: quem calcula o valor é o
-      // servidor. Ia daqui e era pago tal e qual, sem tecto nenhum.
-      body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: ovo.id }),
-    });
-    const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
-
-    // E o que se mostra é o que o servidor diz ter pago, não a nossa
-    // previsão — se as duas contas divergirem, quem manda é ele.
-    const pagos = (json.gems != null) ? json.gems : finalGems;
-
-    eggsInInventory.splice(idx, 1);
-    gs.cristais = json.novosCristais;
-    if(poolData) {
-      poolData.cristais  = (poolData.cristais  || 0) - pagos;
-      poolData.saqueHoje = (poolData.saqueHoje || 0) + pagos;
-      poolData.totalSaiu = (poolData.totalSaiu || 0) + pagos;
-    }
-    addLog(t('egg.log.burned_rare', {rar: ovo.raridade, gems: pagos, bonus: bonusTxt}), 'good');
-    showFloat(`+${pagos} 💎`, '#a78bfa');
-    showBubble(`+${pagos} 💎 🔥`);
-    renderEggInventory(); updateResourceUI(); renderPoolWidget();
-  } catch(err) {
-    console.warn('[_doBurnRaro]', err.message);
-    if(typeof showToast === 'function') showToast(err.message || 'Erro ao queimar ovo.', 'warn');
-    addLog(`⚠️ ${err.message}`, 'bad');
-  }
 }
 
 function sellEggToPool(id) {
@@ -254,13 +208,23 @@ function sellEggToPool(id) {
   const confirmBtn = document.getElementById('eggSellConfirmBtn');
   if(!overlay || !preview || !confirmBtn) return;
 
-  const poolOk = cristaisPool > 0;
+  // Perguntava só se a pool tinha saldo, e o servidor pergunta duas
+  // coisas: saldo E tecto diário. Com o tecto atingido, isto anunciava
+  // "Receberás 0,50 💎" e o pedido rebentava logo a seguir com "Limite
+  // diário global da pool atingido" — o jogador só sabia depois de
+  // confirmar. O poolDisponivel() faz as duas perguntas, com a mesma
+  // janela de 24h que o servidor usa; ficou sem quem o chamasse quando
+  // a queima saiu, e é aqui que sempre fez falta.
+  const temSaldo = cristaisPool > 0;
+  const poolOk   = poolDisponivel();
   preview.innerHTML = `
     Ovo <strong style="color:${ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8'}">${ovo.raridade}</strong><br>
     Elemento: <strong>${ovo.elemento}</strong><br><br>
     ${poolOk
       ? `Receberás <strong style="color:#a78bfa">${preco} 💎</strong> da pool<br><small style="opacity:.6">(pool: ${cristaisPool} 💎 disponíveis)</small>`
-      : `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
+      : temSaldo
+        ? `<span style="color:#f87171">Limite diário da pool atingido.<br>Tente amanhã.</span>`
+        : `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
     }`;
 
   overlay.style.display = 'flex';
@@ -710,7 +674,7 @@ function renderEggInventory() {
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="listEggOnMarket(${ovo.id})">🛒</button>` : ''}
              ${ovo.raridade !== 'Comum' ? `<button class="egg-btn pool" onclick="sellEggToPool(${ovo.id})">💎</button>` : ''}
-             <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
+             ${ovo.raridade === 'Comum' ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>` : ''}`
         }
       </div>
     </div>`;
