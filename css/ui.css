@@ -312,6 +312,21 @@
    o texto perdia-se. A .92 o pior caso é rgb(23,17,23), praticamente o
    escuro liso, e deixa de depender do que estiver por baixo. */
 #levelUpOverlay { position:fixed; inset:0; z-index:9999; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; background:rgba(8,4,18,.92); }
+/* Tudo o que se mexia acabava a 1,1s e o overlay ficava até 1,8s: quase
+   metade do tempo era imagem congelada. Com três linhas para ler agora, o
+   tempo teve de crescer — e tempo parado a mais lê-se como travamento.
+   Este brilho entra depois do estouro e respira devagar até ao fim, para
+   a tela continuar viva enquanto se lê. */
+#levelUpOverlay::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(circle at 50% 45%, rgba(201,168,76,.14) 0%, transparent 62%);
+  opacity:0; animation:lu-respira 2.6s ease-in-out .5s infinite;
+}
+@keyframes lu-respira {
+  0%,100% { opacity:.35; transform:scale(1); }
+  50%     { opacity:.85; transform:scale(1.06); }
+}
+
 .lu-burst { position:absolute; inset:0; background:radial-gradient(circle at 50% 50%,rgba(201,168,76,.18) 0%,transparent 70%); opacity:0; animation:lu-burst-in .35s ease-out forwards; }
 @keyframes lu-burst-in { 0%{opacity:0;transform:scale(.2)} 60%{opacity:1;transform:scale(1.15)} 100%{opacity:0;transform:scale(1.4)} }
 .lu-ring { position:absolute; border-radius:50%; border:2px solid var(--gold); opacity:0; animation:lu-ring-out .7s ease-out forwards; }
@@ -322,6 +337,23 @@
 .lu-nivel { position:relative; z-index:2; margin-top:0.375rem; font-family:'Cinzel',serif; font-size:0.5625rem; letter-spacing:0.25rem; color:var(--gold); opacity:0; animation:lu-sub-in .4s ease .45s forwards; }
 /* Acabava a .9: num fundo translúcido isso somava-se ao problema. */
 @keyframes lu-sub-in { from{opacity:0;transform:translateY(0.375rem)} to{opacity:1;transform:translateY(0)} }
+
+/* A linha do ganho aparecia de repente, enquanto tudo o resto entrava
+   animado. Entra agora por último — título, número, ganho — para o olho
+   descer pela ordem em que a informação importa. */
+.lu-ganho { opacity:0; animation:lu-ganho-in .45s ease .8s forwards; }
+@keyframes lu-ganho-in {
+  from { opacity:0; transform:translateY(0.5rem); }
+  to   { opacity:1; transform:translateY(0); }
+}
+/* O número é o prémio: aterra depois da linha, com um salto e um brilho
+   que se apaga. Sem isto era só mais texto a aparecer. */
+.lu-g-item b { display:inline-block; animation:lu-num-cai .5s cubic-bezier(.34,1.8,.64,1) 1.05s backwards; }
+@keyframes lu-num-cai {
+  0%   { transform:scale(2.1); opacity:0; text-shadow:0 0 1.5rem rgba(122,184,122,.9); }
+  55%  { transform:scale(.9);  opacity:1; }
+  100% { transform:scale(1);   opacity:1; }
+}
 .lu-star { position:absolute; font-size:0.875rem; opacity:0; animation:lu-star-fly .8s ease-out forwards; }
 @keyframes lu-star-fly { 0%{opacity:0;transform:translate(0,0) scale(.5)} 30%{opacity:1} 100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(1.3) rotate(180deg)} }
 /* Havia aqui o EVOLUÇÃO/FASE UP — um overlay com anéis, clarão e o nome

@@ -680,15 +680,38 @@ function playLevelUp(newNivel) {
 
   clone.classList.add('active');
   clone.style.opacity = '1';
-  setTimeout(() => {
-    clone.style.transition = 'opacity .5s ease';
+
+  /* Ficava 1,8s e desaparecia. Era pouco desde que passou a haver três
+     linhas: o título entra aos 0,15s, o número aos 0,45 e o ganho aos
+     0,8, portanto a última só assenta perto de 1,5 — sobrava meio segundo
+     para a ler. Agora fica 3,2s e sai em 0,6.
+
+     O overlay é pointer-events:none e nunca bloqueou nada, mas tapa a
+     tela, e o nível sobe muitas vezes. Por isso qualquer toque ou tecla
+     manda-o embora antes do tempo: quem quer ler, lê; quem já sabe o que
+     diz, segue. É o mesmo pacto do prólogo. */
+  let _luSaiu = false;
+  const _luSair = (ms) => {
+    if (_luSaiu) return;
+    _luSaiu = true;
+    document.removeEventListener('pointerdown', _luAtalho, true);
+    document.removeEventListener('keydown', _luAtalho, true);
+    clone.style.transition = `opacity ${ms}ms ease`;
     clone.style.opacity = '0';
-  }, 1800);
+    setTimeout(() => {
+      clone.style.transition = '';
+      clone.style.opacity = '';
+      clone.classList.remove('active');
+    }, ms + 60);
+  };
+  function _luAtalho() { _luSair(220); }   // saída rápida quando é a pedido
+
   setTimeout(() => {
-    clone.style.transition = '';
-    clone.style.opacity = '';
-    clone.classList.remove('active');
-  }, 2400);
+    document.addEventListener('pointerdown', _luAtalho, true);
+    document.addEventListener('keydown', _luAtalho, true);
+  }, 450);   // não apanha o clique que causou a subida de nível
+
+  setTimeout(() => _luSair(600), 3200);
 
   showBubble(rnd(FALAS.levelup));
 }
