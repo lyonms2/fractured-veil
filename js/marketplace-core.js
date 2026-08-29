@@ -51,7 +51,27 @@ async function savePlayerData() {
   if(typeof scheduleSave === 'function') {
     scheduleSave();
   } else {
-    await db.collection('players').doc(walletAddress).set(playerData, { merge: true });
+    // Caminho de recurso, de quando o marketplace era página à parte. Grava
+    // o playerData inteiro — e esse objeto traz cristais e extraSlots, que
+    // as regras já não deixam o cliente escrever. Sem esta limpeza a
+    // gravação seria recusada por inteiro, levando com ela o que era
+    // legítimo. Ver firestore.rules, match /players.
+    const semDinheiro = {};
+    for (const k of Object.keys(playerData)) {
+      if (k === 'cristais' || k === 'extraSlots' || k === 'resgateLog'
+       || k === 'ultimoResgate' || k === 'cambioLog' || k === 'ultimoCambio'
+       || k === 'referralBonus' || k === 'referralChain') continue;
+      if (k === 'gs' && playerData.gs) {
+        const gsLimpo = {};
+        for (const g of Object.keys(playerData.gs)) {
+          if (g !== 'cristais' && g !== 'extraSlots') gsLimpo[g] = playerData.gs[g];
+        }
+        semDinheiro.gs = gsLimpo;
+        continue;
+      }
+      semDinheiro[k] = playerData[k];
+    }
+    await db.collection('players').doc(walletAddress).set(semDinheiro, { merge: true });
   }
   updateCristaisDisplay();
 }

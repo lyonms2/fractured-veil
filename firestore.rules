@@ -2,12 +2,94 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Players ──
-    // Leitura por qualquer autenticado (marketplace precisa de ver dados do vendedor)
-    // Escrita só no próprio doc — transferências financeiras passam pela API (Admin SDK)
+    // ══════════════════════════════════════════════════════════════
+    //  PLAYERS
+    //
+    //  A regra era "allow write: if request.auth.uid == uid" — o dono
+    //  escrevia o que quisesse no próprio documento, sem validação de
+    //  campos. Isso era um caminho direto para MATIC real, porque o
+    //  api/resgatar.js lê DESTE documento tudo o que decide um saque:
+    //
+    //    linha 248   gs.cristais     o saldo que o autoriza
+    //    linha 255   ultimoResgate   a espera de 30 segundos
+    //    linha 263   resgateLog      o tecto de 50 gemas por dia
+    //
+    //  As três travas viviam no sítio que o atacante controlava, portanto
+    //  caíam juntas: escrever gs.cristais e apagar o resgateLog dava um
+    //  saque sem limite. O mesmo valia para o cambioLog, de onde o
+    //  api/cambiar.js tira o tecto diário do câmbio.
+    //
+    //  Agora esses campos são do SERVIDOR. O Admin SDK não passa por
+    //  regras, portanto os endpoints continuam a escrevê-los; o cliente
+    //  não. O js/firebase.js deixou de os enviar (ver _gsSemDinheiro) —
+    //  e isto aqui é o que o obriga, porque o console está aberto a
+    //  qualquer um e código educado não é segurança.
+    //
+    //  AS MOEDAS FICAM DE FORA, e é uma decisão, não um esquecimento: o
+    //  earnCoins() credita-as no cliente em doze sítios (minijogos, PvE,
+    //  ovos). Travá-las aqui parava o jogo. Fica em aberto forjar moedas
+    //  e trocá-las por cristais — mas o câmbio exige nível 20 e tem tecto
+    //  diário por raridade (1/2/4), que agora vive num cambioLog que o
+    //  cliente já não escreve, mais o tecto global de 100 da pool. De
+    //  dreno sem limite passa a fio de 4 cristais por dia.
+    //
+    //  Mover as recompensas para o servidor é o passo seguinte, e é outro
+    //  trabalho.
+    // ══════════════════════════════════════════════════════════════
+
+    // Campos de topo que só o servidor escreve.
+    function camposDoServidor() {
+      return ['cristais', 'resgateLog', 'ultimoResgate',
+              'cambioLog', 'ultimoCambio',
+              'referralBonus', 'referralChain'];
+    }
+    // Dentro do mapa gs. As moedas não entram — ver acima.
+    function gsDoServidor() {
+      return ['cristais', 'extraSlots'];
+    }
+
+    function topoIntacto() {
+      return !request.resource.data.diff(resource.data)
+               .affectedKeys().hasAny(camposDoServidor());
+    }
+
+    // Três casos, por ordem:
+    //   a escrita não traz gs           → nada que comparar
+    //   traz gs e o documento já o tem  → nenhum campo do servidor mudou
+    //   traz gs e o documento não tem   → não pode trazer campos do servidor
+    //
+    // O set(..., {merge:true}) do js/firebase.js funde mapas encaixados em
+    // vez de os substituir, portanto um campo omitido chega aqui com o
+    // valor que já lá estava e o diff não o vê mudar. É disso que depende
+    // esta regra deixar o jogo gravar normalmente.
+    function gsIntacto() {
+      return !('gs' in request.resource.data)
+          || ('gs' in resource.data
+                ? !request.resource.data.gs.diff(resource.data.gs)
+                     .affectedKeys().hasAny(gsDoServidor())
+                : !request.resource.data.gs.keys().hasAny(gsDoServidor()));
+    }
+
     match /players/{uid} {
-      allow read:  if request.auth != null;
-      allow write: if request.auth.uid == uid;
+      // Leitura por qualquer autenticado — o marketplace precisa de ver
+      // dados do vendedor. Vaza carteira e inventário de toda a gente, o
+      // que é problema de privacidade e fica para outra passagem.
+      allow read: if request.auth != null;
+
+      // Um documento novo não pode nascer com saldo. Os campos ausentes
+      // resolvem-se para 0 do lado do servidor, que é o correto.
+      allow create: if request.auth.uid == uid
+                 && !request.resource.data.keys().hasAny(camposDoServidor())
+                 && (!('gs' in request.resource.data)
+                     || !request.resource.data.gs.keys().hasAny(gsDoServidor()));
+
+      allow update: if request.auth.uid == uid
+                 && topoIntacto()
+                 && gsIntacto();
+
+      // Sem isto, apagar e recriar o documento era um botão de reset — e
+      // com o create acima, também uma forma de limpar um resgateLog.
+      allow delete: if false;
     }
 
     // ── Marketplace de avatares ──

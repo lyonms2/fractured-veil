@@ -8,6 +8,67 @@ let walletAddress = null;
 // ═══════════════════════════════════════════════════════════════════
 function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE O CLIENTE NÃO GRAVA
+
+   O documento players/{uid} guardava lado a lado duas coisas muito
+   diferentes: o estado do bicho (fome, humor, sujeira — inofensivo) e o
+   dinheiro. E o cliente gravava tudo.
+
+   Isso era um caminho direto para MATIC real. O api/resgatar.js, que
+   assina o saque, lê DESTE documento tudo o que decide o saque:
+
+     linha 248  gs.cristais     o saldo que o autoriza
+     linha 255  ultimoResgate   a espera de 30 segundos
+     linha 263  resgateLog      o limite de 50 gemas por dia
+     linha 271  carteira        para onde o MATIC vai
+
+   Quem escrevesse gs.cristais e apagasse o resgateLog no próprio
+   documento passava as quatro travas de uma vez, porque as quatro viviam
+   no sítio que ele controlava. O mesmo valia para o cambioLog, de onde o
+   api/cambiar.js tira o limite diário de câmbio: gravá-lo a null zerava
+   o limite.
+
+   Agora o cliente não envia nada disto. Com merge:true, um campo omitido
+   fica como está no servidor — portanto o saldo continua a ler-se e a
+   mostrar-se normalmente, só deixa de ser reescrito daqui.
+
+   Do lado das regras há a outra metade: a firestore.rules recusa
+   qualquer escrita que mexa nestes campos. As duas coisas juntas é que
+   fecham a porta — só o cliente educado não chegava, porque o console
+   está aberto a quem quiser.
+
+   O Admin SDK do servidor não passa por regras nenhumas, portanto os
+   endpoints continuam a escrever à vontade.
+═══════════════════════════════════════════════════════════════════ */
+/* As MOEDAS ficam de fora desta lista, e não por esquecimento.
+
+   O earnCoins() credita moedas no cliente em doze sítios — minijogos,
+   combate PvE, chocar ovos. A economia inteira das recompensas é
+   client-side. Travá-las aqui parava o jogo, e movê-las para o servidor é
+   outro trabalho, muito maior do que este.
+
+   O que isto deixa em aberto, dito com todas as letras: quem forjar
+   moedas ainda pode trocá-las por cristais no câmbio. Mas o câmbio tem
+   travas que o saque não tinha — nível 20 no mínimo, e um tecto diário
+   por raridade (1 comum, 2 raro, 4 lendário) que agora vive no cambioLog
+   que o cliente deixou de escrever, mais o tecto global de 100 da pool.
+   Passa-se de um dreno sem limite para um fio de 4 cristais por dia.
+
+   Os CRISTAIS podem travar-se porque só vêm de respostas do servidor. As
+   duas exceções — arena.js e batalha-naval.js, que os somam no cliente —
+   são o PvP, que está desligado. Se voltar, tem de passar pelo servidor
+   primeiro. */
+const _GS_DO_SERVIDOR = ['cristais', 'extraSlots'];
+
+function _gsSemDinheiro() {
+  const limpo = {};
+  for (const k of Object.keys(gs)) {
+    if (_GS_DO_SERVIDOR.indexOf(k) === -1) limpo[k] = gs[k];
+  }
+  return limpo;
+}
+
 function getGameState() {
   // Flush current runtime state into active slot before saving
   saveRuntimeToSlot(activeSlotIdx);
@@ -22,8 +83,8 @@ function getGameState() {
   const hasPendingEgg = avatarSlots.some(s => s && s.pendingEgg);
   if(hasPendingEgg) {
     return {
-      gs:        {...gs},
-      cambioLog: window._cambioLog || null,
+      gs:        _gsSemDinheiro(),
+      // cambioLog não vai: é do servidor (limite diário do câmbio)
       lastSeen:  Date.now()
       // avatarSlots deliberadamente omitido — merge:true preserva o valor atual no Firebase
     };
@@ -80,8 +141,8 @@ function getGameState() {
   return {
     avatarSlots:   slotsSafe,
     activeSlotIdx: activeSlotIdx,
-    gs:            {...gs},
-    cambioLog:     window._cambioLog || null,
+    gs:            _gsSemDinheiro(),
+    // cambioLog não vai: é do servidor (limite diário do câmbio)
     lastSeen:      Date.now(),
     nomeBusca,
   };
