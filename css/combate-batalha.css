@@ -271,6 +271,69 @@
    EFEITOS — os mesmos que o jogo já usava noutros sítios
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ── QUEM ATACA AVANÇA ──
+
+   Não existia. Um golpe via-se todo no cartão de quem o levava — o
+   tremor, o número, as partículas — e nada, absolutamente nada,
+   acontecia em quem batia. Com seis avatares em campo, percebia-se
+   onde tinha doído e não quem tinha agido.
+
+   A minha equipa está em baixo e a dele em cima, por isso o avanço é
+   para lados contrários: cada um investe CONTRA o outro. Duas
+   animações e não uma com sinal, porque uma keyframe não lê variáveis
+   a meio do percurso em todos os navegadores. */
+@keyframes cb-avanca-cima {
+  0%   { transform: none; }
+  30%  { transform: translateY(-0.5rem) scale(1.05); filter: brightness(1.35); }
+  55%  { transform: translateY(-0.375rem) scale(1.03); }
+  100% { transform: none; filter: none; }
+}
+@keyframes cb-avanca-baixo {
+  0%   { transform: none; }
+  30%  { transform: translateY(0.5rem) scale(1.05); filter: brightness(1.35); }
+  55%  { transform: translateY(0.375rem) scale(1.03); }
+  100% { transform: none; filter: none; }
+}
+.cb-avanca-cima  { animation: cb-avanca-cima  .5s cubic-bezier(.34,.8,.4,1); }
+.cb-avanca-baixo { animation: cb-avanca-baixo .5s cubic-bezier(.34,.8,.4,1); }
+
+/* ── E QUEM ESQUIVA SAI DA FRENTE ──
+
+   A esquiva era só uma palavra no registo: o cartão ficava quieto e o
+   golpe simplesmente não acontecia. Ficava a parecer que o ataque se
+   tinha esquecido de sair. */
+@keyframes cb-esquiva {
+  0%   { transform: none; opacity: 1; }
+  25%  { transform: translateX(-0.6875rem) skewX(7deg); opacity: .45; }
+  55%  { transform: translateX(0.3125rem) skewX(-2deg); opacity: .8; }
+  100% { transform: none; opacity: 1; }
+}
+.cb-esquiva { animation: cb-esquiva .6s cubic-bezier(.36,.07,.19,.97); }
+
+/* ── O QUE AINDA NÃO ACONTECEU ──
+
+   A linha do registo escreve-se inteira de uma vez, mas as partes que
+   pertencem a batidas seguintes nascem com esta classe e esperam a sua
+   vez. É `opacity` e não `display`, de propósito: assim a altura da
+   linha fica reservada desde o princípio e o registo não salta debaixo
+   dos olhos de quem está a ler. */
+.cb-log-linha .cb-conta,
+.cb-log-linha .cb-testes,
+.cb-log-linha .cb-extras { transition: opacity .3s ease, transform .3s ease; }
+.cb-conta { display: inline-block; }   /* senão o transform não pega num inline */
+.cb-por-vir { opacity: 0; transform: translateY(0.1875rem); }
+
+/* Quem prefere o ecrã quieto perde o movimento, não a ordem.
+
+   Desligar aqui também a revelação seria deitar fora aquilo para que
+   ela serve. As partes continuam a chegar cada uma na sua vez — só
+   aparecem sem deslizar, e um golpe continua a ler-se por batidas. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-avanca-cima, .cb-avanca-baixo, .cb-esquiva, .cb-bate { animation: none; }
+  .cb-particula, .cb-onda { display: none; }
+  .cb-por-vir { transform: none; }
+}
+
 /* Encaixe: o cartão salta para trás ao levar */
 @keyframes cb-bate {
   0%   { transform: none; filter: none; }

@@ -34,6 +34,17 @@ const PVE_FRATURA_CHANCE = 0.10;
 let _pveEstado = null;      // estado da batalha vindo do motor
 let _pveAcao   = null;      // o que o jogador escolheu neste turno
 let _pveAnim   = false;     // a bloquear enquanto uma animação corre
+/* Que batalha é esta.
+
+   A animação passou a ser uma cadeia de esperas: cada acontecimento
+   marca o seguinte para daqui a tantos milissegundos. Quem fechar a
+   batalha a meio deixa essa cadeia a dormir — e se abrir outra antes
+   de ela acordar, ela acorda dentro da batalha nova e mexe nos cartões
+   de uma luta que não é a dela.
+
+   Fechar e abrir muda este número; a cadeia guarda o que era quando
+   começou e cala-se assim que deixar de bater certo. */
+let _pveGeracao = 0;
 
 // ═══════════════════════════════════════════════════════════════════
 // O adversário: uma equipa gerada com o mesmo total de pontos.
@@ -244,6 +255,7 @@ function _pveDesistir() {
 
 function fecharCombatePvE() {
   _pveEstado = null; _pveAcao = null; _pveAnim = false;
+  _pveGeracao++;   // a animação em curso, se houver, deixa de ter dono
   ModalManager.close('combateModal');
 }
 
@@ -1013,35 +1025,62 @@ function _pveFecharContas() {
 // ═══════════════════════════════════════════════════════════════════
 // Animar — com os efeitos que o jogo já tinha
 // ═══════════════════════════════════════════════════════════════════
+/* ═══ O RELÓGIO DA BATALHA ═══
+
+   Antes havia uma tabela de tempos fixos aqui: um golpe valia 850ms,
+   uma troca 500, o fim de turno 220. E dentro de cada um desses
+   tempos NADA era encadeado — o cartão tremia, o número subia, as
+   partículas voavam, a vida caía e o registo escrevia a conta toda,
+   os efeitos todos e o desfecho, tudo no mesmo instante. Depois vinham
+   850ms de nada a olhar para o resultado já consumado.
+
+   Agora cada evento DIZ quanto tempo precisa, e o seguinte só começa
+   quando esse acaba. A tabela desaparece: não há como o tempo marcado
+   e o tempo gasto divergirem, porque são o mesmo número.
+
+   Um golpe esquivado não custa o mesmo que um golpe que acerta, e uma
+   magia de defesa não custa o mesmo que um crítico. Com a tabela
+   custavam. */
 function _pveAnimar(eventos) {
   _pveAnim = true;
   // O clique já era ignorado enquanto a animação corria, mas os botões
   // continuavam com ar de clicáveis — carregar e não acontecer nada
   // parece avaria. Agora apagam-se e deixam de receber o rato.
   _pveTravarAcoes(true);
-  // ── O RITMO ──
-  // Nem tudo merece o mesmo tempo. Um golpe precisa de respirar: há um
-  // número a subir, o cartão a tremer, partículas. Já o veneno a tirar
-  // 1 de vida ou uma magia a cobrar PM é escrituração — e são até seis
-  // por turno, um por avatar. A 850ms cada, um turno passava a demorar
-  // sete segundos e ninguém esperaria por isso.
-  const TEMPO = ev => ev.fimDeTurno ? 220
-                    : ev.entrada    ? 420
-                    : ev.troca      ? 500
-                    : ev.suporte    ? 600
-                    : 850;
-  let atraso = 0;
-  for (const ev of eventos) {
-    setTimeout(() => _pveMostrarEvento(ev), atraso);
-    atraso += TEMPO(ev);
-  }
-  setTimeout(() => {
-    _pveAnim = false;
-    _pveTravarAcoes(false);
-    if (_pveEstado.acabou) _pveFecharContas();
-    _pveDesenhar();
-    if (_pveEstado.acabou) _pveLog(_pveTextoFim(), 'info');
-  }, atraso + 150);
+
+  const minha = ++_pveGeracao;
+  const vivo  = () => minha === _pveGeracao && !!_pveEstado;
+  let i = 0;
+  (function proximo() {
+    if (!vivo()) { _pveAnim = false; return; }
+    if (i >= eventos.length) {
+      return setTimeout(() => {
+        if (!vivo()) return;
+        _pveAnim = false;
+        _pveTravarAcoes(false);
+        if (_pveEstado.acabou) _pveFecharContas();
+        _pveDesenhar();
+        if (_pveEstado.acabou) _pveLog(_pveTextoFim(), 'info');
+      }, 260);
+    }
+    const ms = _pveMostrarEvento(eventos[i++]);
+    setTimeout(proximo, ms == null ? 400 : ms);
+  })();
+}
+
+/* Um gesto no cartão: tira a classe, força o navegador a reconhecer a
+   ausência, e volta a pô-la. Sem o `offsetWidth` pelo meio, dois
+   golpes seguidos no mesmo avatar animavam uma vez só — a classe já lá
+   estava e o navegador não vê razão para recomeçar nada.
+
+   E tira-a no fim: uma classe de animação esquecida no cartão fica a
+   competir com o `transform` de quem está em campo. */
+function _pveGesto(el, classe, dura) {
+  if (!el) return;
+  el.classList.remove(classe);
+  void el.offsetWidth;
+  el.classList.add(classe);
+  setTimeout(() => el.classList.remove(classe), dura || 700);
 }
 
 /* UMA PARCELA DE TESTE, LIDA DE UMA STRING.
@@ -1107,6 +1146,31 @@ function _pveTesteHTML(x, ev) {
     </span>`;
 }
 
+/* ═══ AS BATIDAS DE UM ACONTECIMENTO ═══
+
+   Devolve os milissegundos que precisa. O _pveAnimar espera-os antes
+   de passar ao seguinte, e por isso este número não é uma estimativa
+   nem uma promessa: é o tempo mesmo.
+
+   Um golpe não é um instante. É uma sequência curta, e mostrá-la toda
+   ao mesmo tempo é o mesmo que não a mostrar — o olho não separa cinco
+   coisas simultâneas, vê um clarão e um resultado. Por ordem:
+
+     quem ataca avança e paga  →  a conta rola  →  o golpe chega
+     →  a vida cai  →  fica o que ficou
+
+   Os tempos vivem aqui em cima, juntos, porque é a relação ENTRE eles
+   que faz o ritmo — espalhados pelo código, ajustar um era descobrir
+   os outros por acidente. */
+const PVE_BATIDA = {
+  conta:   330,   // a rolagem aparece depois de se ver quem age
+  esquiva: 380,   // o alvo sai da frente
+  golpe:   540,   // o impacto
+  vida:    760,   // a barra só desce depois de se ver o golpe chegar
+  efeitos: 920,   // veneno, gelo, cegueira: o que sobrou do golpe
+  fim:    1150,   // o golpe inteiro
+};
+
 function _pveMostrarEvento(ev) {
   const souEu   = ev.lado === 'A';
   // O cartão em que o golpe caiu, pelo ÍNDICE do evento. Usar o ativo
@@ -1120,7 +1184,7 @@ function _pveMostrarEvento(ev) {
   if (ev.apanhouFoco) {
     _pveLog(t('pve.log.apanhou_foco', { quem: ev.quem }), souEu ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
-    return;
+    return 480;
   }
 
   // O que o fim do turno cobra: veneno, cura perpétua, sustentadas.
@@ -1133,7 +1197,7 @@ function _pveMostrarEvento(ev) {
     _pveLog(`<div class="cb-extras ${souEu ? 'de-eu' : 'de-ini'}">` +
             `<span class="quem">${ev.quem}</span><span>${t('pve.ev.preso')}</span></div>`,
             souEu ? 'bad' : 'good', ev.turno);
-    return;
+    return 440;
   }
 
   if (ev.fimDeTurno) {
@@ -1146,7 +1210,8 @@ function _pveMostrarEvento(ev) {
     if (ev.descongelou)its.push(t('pve.fim.descongelou'));
     if (ev.acalmou) its.push(t('pve.fim.acalmou'));
     if (ev.caiu)     its.push(t('pve.ev.caiu', { nome: ev.quem }));
-    if (!its.length) return;
+    // Nada a dizer, nada a esperar: um evento vazio não gasta tempo.
+    if (!its.length) return 0;
     // O gasto de PM sai a flutuar do cartão de quem pagou, como o dano
     const cartao = (ev.quemIdx != null)
       ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
@@ -1162,7 +1227,7 @@ function _pveMostrarEvento(ev) {
             its.map(x => `<span>${x}</span>`).join('') + `</div>`,
             souEu ? 'good' : 'bad', ev.turno);
     _pveAtualizarBarras();
-    return;
+    return 380;
   }
 
   // O roubo de vida acontece no fim do turno, sem ataque nenhum
@@ -1172,13 +1237,13 @@ function _pveMostrarEvento(ev) {
             (ev.caiu ? `<span>${t('pve.ev.caiu', { nome: ev.alvo })}</span>` : '') + `</div>`,
             souEu ? 'good' : 'bad', ev.turno);
     _pveAtualizarBarras();
-    return;
+    return 560;
   }
 
   if (ev.entrada) {
     _pveLog(t('pve.log.entra', { nome: ev.quem }), souEu ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
-    return;
+    return 480;
   }
 
   if (ev.troca) {
@@ -1199,7 +1264,7 @@ function _pveMostrarEvento(ev) {
             (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')) + conta,
             ev.limpa ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
-    return;
+    return 560;
   }
 
   // A CONTA, que é o ponto desta versão
@@ -1303,25 +1368,78 @@ function _pveMostrarEvento(ev) {
   if (ev.caiu)          dele.push(t('pve.ev.caiu', { nome: ev.alvo }));
   if (ev.matouAtacante) meus.push(t('pve.ev.caiu', { nome: ev.quem }));
 
-  _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
-          (conta ? `<br><span class="cb-conta">${conta}</span>` : '') +
-          (testes ? `<div class="cb-testes">${testes}</div>` : '') +
-          (meus.length ? `<div class="cb-extras">${meus.map(x => `<span>${x}</span>`).join('')}</div>` : '') +
-          (dele.length ? `<div class="cb-extras no-alvo">
+  /* A linha inteira escreve-se já, mas as partes que ainda não
+     aconteceram nascem com `cb-por-vir` e aparecem na sua vez.
+
+     Escrevê-la já, e não aos pedaços, tem uma razão prática: a altura
+     da linha fica reservada desde o início, e o registo não salta
+     debaixo dos olhos de quem está a ler enquanto os efeitos entram. */
+  const linha = _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
+          (conta ? `<br><span class="cb-conta cb-por-vir">${conta}</span>` : '') +
+          (testes ? `<div class="cb-testes cb-por-vir">${testes}</div>` : '') +
+          (meus.length ? `<div class="cb-extras cb-por-vir">${meus.map(x => `<span>${x}</span>`).join('')}</div>` : '') +
+          (dele.length ? `<div class="cb-extras no-alvo cb-por-vir">
               <span class="quem">→ ${ev.alvo}</span>
               ${dele.map(x => `<span>${x}</span>`).join('')}
             </div>` : ''),
           souEu ? 'good' : 'bad', ev.turno);
 
-  // Efeitos, reaproveitando os que já existiam
-  if (cartaoAlvo && ev.dano > 0) {
+  const revelar = (ms, sel) => setTimeout(() => {
+    if (linha) linha.querySelectorAll(sel).forEach(x => x.classList.remove('cb-por-vir'));
+  }, ms);
+  const temEfeitos = !!(testes || meus.length || dele.length);
+
+  // ── 1ª BATIDA · quem age avança, e paga ──
+  // Não havia nada aqui. O ataque via-se todo no cartão de QUEM O
+  // LEVAVA, e por isso num turno com seis avatares não se percebia
+  // quem tinha agido — só onde tinha doído.
+  const cartaoQuem = (ev.quemIdx != null)
+    ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
+  if (cartaoQuem) {
+    _pveGesto(cartaoQuem, souEu ? 'cb-avanca-cima' : 'cb-avanca-baixo', 520);
+    // O custo sai do cartão de quem lança, no momento em que lança. A
+    // conta do PM aparecia só no fim do turno, e apenas para as magias
+    // sustentadas — quem gastava 8 PM num golpe nunca via os 8 saírem.
+    if (ev.pm) _pveNumeroPM(cartaoQuem, ev.pm);
+  }
+
+  // ── 2ª BATIDA · a conta rola ──
+  if (conta) revelar(PVE_BATIDA.conta, '.cb-conta');
+
+  // ── 3ª BATIDA · o alvo sai da frente, e acabou ──
+  // Uma esquiva não tem impacto nem vida a cair. Fazê-la durar o mesmo
+  // que um golpe que acerta era tempo parado a olhar para nada.
+  if (ev.esquivou) {
+    setTimeout(() => _pveGesto(cartaoAlvo, 'cb-esquiva', 620), PVE_BATIDA.esquiva);
+    if (temEfeitos) revelar(PVE_BATIDA.vida, '.cb-testes, .cb-extras');
+    setTimeout(_pveAtualizarBarras, PVE_BATIDA.vida);
+    return 1000;
+  }
+
+  // ── 3ª BATIDA · o golpe chega ──
+  const bate = cartaoAlvo && ev.dano > 0;
+  if (bate) setTimeout(() => {
     _pveNumeroFlutuante(cartaoAlvo, ev.dano, ev.criticoAtk);
-    cartaoAlvo.classList.remove('cb-bate'); void cartaoAlvo.offsetWidth;
-    cartaoAlvo.classList.add('cb-bate');
+    _pveGesto(cartaoAlvo, 'cb-bate', 520);
     _pveParticulas(cartaoAlvo, ev.magia ? _pveElementoDe(ev) : null);
     if (ev.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
-  }
-  _pveAtualizarBarras();
+  }, PVE_BATIDA.golpe);
+
+  // ── 4ª BATIDA · a vida cai ──
+  // Depois do impacto, não com ele. O comentário antigo aqui já dizia
+  // "as barras descem com atraso, para se ver quanto caiu" — mas não
+  // havia atraso nenhum no código, e a barra descia no mesmo quadro em
+  // que o número do dano nascia.
+  const tVida = bate ? PVE_BATIDA.vida : PVE_BATIDA.conta;
+  setTimeout(_pveAtualizarBarras, tVida);
+
+  // ── 5ª BATIDA · o que ficou ──
+  const tEfeitos = bate ? PVE_BATIDA.efeitos : PVE_BATIDA.esquiva;
+  if (temEfeitos) revelar(tEfeitos, '.cb-testes, .cb-extras');
+
+  // Uma magia que não bate em ninguém — erguer uma barreira, curar-se —
+  // não precisa do tempo de um golpe que acerta.
+  return bate ? PVE_BATIDA.fim : (temEfeitos ? 820 : 620);
 }
 
 function _pveElementoDe(ev) {
@@ -1484,4 +1602,7 @@ function _pveLog(html, tipo, turno) {
   if (bloco) bloco.appendChild(d);             // dentro do turno, ordem natural
   else { el.insertBefore(d, el.firstChild); }
   el.scrollTop = 0;
+  // Devolve a linha: quem a escreveu pode precisar de a revelar por
+  // partes, em vez de a despejar toda de uma vez.
+  return d;
 }
