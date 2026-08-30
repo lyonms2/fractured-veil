@@ -1968,11 +1968,26 @@ function _pveTextoFim() {
    histórico punha a rolar os dados de uma luta já acabada. */
 function _pveDadoVivo(v, rot, i) {
   return '<b class="cb-dado cb-dado-vivo' + (v === 6 ? ' cb-dado-seis' : '')
-       + (rot === 'FD' ? ' cb-dado-def' : '') + '" style="--i:' + i + '"'
-       + ' title="' + rot + '">'
+       + (rot === 'FD' ? ' cb-dado-def' : '') + '" style="--i:' + i + '">'
        + '<span class="cb-dado-glifo">🎲</span>'
        + '<span class="cb-dado-n">' + v + '</span></b>';
 }
+
+/* ── DE QUEM É CADA DADO ──
+
+   Havia aqui um `title="FA"`, que num ecrã de toque não existe: metade
+   dos jogadores nunca o veria. Ficou a ordem — o do ataque vem sempre
+   primeiro — e um tom apagado no da defesa.
+
+   Só que nenhum dos dois aguenta o caso difícil. Uma magia rola vários
+   dados de ataque, e então o da defesa não é "o primeiro", é o último de
+   quatro; e se calhar um seis, a laranja do crítico come o tom apagado e
+   fica igual aos outros. Duas coisas ortogonais — QUEM rolou e SE foi
+   crítico — a disputar o mesmo canal, que é a cor.
+
+   O crítico fica com a cor. Quem rolou passa a ter um separador entre os
+   dados do ataque e o da defesa: não depende de cor nenhuma, lê-se aos
+   cinco pixels e aguenta quantos dados a magia rolar. */
 function _pveDadosVivos(ev) {
   const lista = [];
   (ev.faPartes || []).forEach(p => { if (p.dado) lista.push([p.v, 'FA']); });
@@ -1981,8 +1996,12 @@ function _pveDadosVivos(ev) {
   // rolagem que o motor nunca fez.
   if (!ev.esquivou) (ev.fdPartes || []).forEach(p => { if (p.dado) lista.push([p.v, 'FD']); });
   if (!lista.length) return '';
-  return '<span class="cb-dados cb-por-vir">'
-       + lista.map((d, i) => _pveDadoVivo(d[0], d[1], i)).join('') + '</span>';
+  const corpo = lista.map((d, i) => {
+    // O separador entra onde o ataque acaba e a defesa começa.
+    const virou = i > 0 && d[1] !== lista[i - 1][1];
+    return (virou ? '<span class="cb-dados-sep">·</span>' : '') + _pveDadoVivo(d[0], d[1], i);
+  }).join('');
+  return '<span class="cb-dados cb-por-vir">' + corpo + '</span>';
 }
 
 function _pveConta(rot, partes, total, critico) {

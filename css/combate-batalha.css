@@ -988,9 +988,13 @@
 .cb-dado-glifo,
 .cb-dado-n { display: inline-block; }
 .cb-dado-n { margin-left: 0.0625rem; }
-/* O dado da defesa distingue-se do do ataque: dois iguais lado a lado
-   e não se sabe qual é de quem. */
+/* O dado da defesa distingue-se do do ataque por duas vias, porque uma
+   só não chega. O tom apagado perde-se quando ele calha um seis — aí a
+   laranja do crítico ganha, e ganha bem: o crítico é a informação mais
+   urgente das duas. Quem rolou fica com o separador, que não usa cor
+   nenhuma e por isso não colide com nada. */
 .cb-dado-def { color: var(--text2); background: rgba(255,255,255,.07); }
+.cb-dados-sep { color: var(--muted); margin: 0 0.1875rem; opacity: .7; }
 
 @keyframes cb-dado-gira {
   0%   { transform: rotate(-40deg)  scale(.35); filter: blur(1.2px); }
