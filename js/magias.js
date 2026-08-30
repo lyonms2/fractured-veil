@@ -128,6 +128,18 @@ const MAGIAS = {
       // 1d Pontos de Vida". É a única cura de verdade do jogo, e é da
       // Água — é isto que faz dela o elemento que se aguenta.
       { id:'ag_d3', pm:2, pmMax:20, cura:{ dadosPorPM:0.5 } },
+      /* A mesma cura, mas para quem precisar.
+
+         A Maré Restauradora fecha o próprio corpo e mais nada, o que
+         a torna inútil no turno em que quem está mal é o companheiro
+         do banco. No manual a Cura Mágica não tem essa limitação:
+         cura quem se tocar.
+
+         Custa um PM a mais na entrada porque alcançar o banco vale
+         alguma coisa — dá para preparar quem vai entrar em vez de
+         esperar que ele apanhe os golpes primeiro. A conta dos dados
+         é a mesma: um por cada dois PM. */
+      { id:'ag_d4', pm:3, pmMax:20, cura:{ dadosPorPM:0.5 }, curaAliado:true },
     ],
   },
 
@@ -183,6 +195,26 @@ const MAGIAS = {
          tanto como uma moeda ao ar que tira do combate. A gaveta da
          Sombra deixa de ser uma escolha só no papel. */
       { id:'so_f2', pm:10, destroiAlma:true },
+      /* ── A PRIMEIRA MAGIA QUE ESCOLHE ALVO ──
+
+         Este combate sempre foi activo-contra-activo: bate-se em quem
+         está à frente e mais nada. Isso é uma simplificação NOSSA — no
+         3D&T uma magia atinge quem o lançador escolher dentro do
+         alcance, e quem está atrás não está a coberto por estar atrás.
+
+         A Sombra é o elemento certo para levantar essa simplificação:
+         é o que passa por baixo das portas. E resolve de caminho um
+         defeito velho — a gaveta forte da Sombra começava nos 10 PM,
+         a única acima dos 5, e por isso 158 avatares de Sombra em mil
+         chegavam ao nível 35 SEM golpe forte nenhum, porque o tecto
+         deles não chegava lá. A três, chegam todos.
+
+         O dano é modesto de propósito: o que se paga aqui é a
+         escolha, não a força. Escolher o alvo vale mais do que dois
+         dados — dá para acabar com o ferido antes de ele se
+         esconder, ou tirar o curandeiro antes de ele curar. */
+      { id:'so_f3', pm:3, pmMax:12, fa:{ H:1, dados:1, dadosPorPM:0.5 },
+        escolheAlvo:true },
     ],
     defesa: [
       { id:'so_d1', pm:4,  barreira:true },

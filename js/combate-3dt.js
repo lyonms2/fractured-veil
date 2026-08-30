@@ -445,7 +445,13 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
 // ═══════════════════════════════════════════════════════════════════
 // EFEITOS DE MAGIA que não são dano direto
 // ═══════════════════════════════════════════════════════════════════
-function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
+/* O `curado` é quem recebe a cura, e por omissão é quem lança.
+
+   Existe por causa da Maré Compartilhada: a cura sempre entrou no
+   próprio corpo porque nunca houve outro sítio para onde a mandar, e
+   agora há. Passa como argumento em vez de campo no evento para o
+   caminho antigo não mudar de forma nenhuma. */
+function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev, curado) {
   if (!magia) return;
 
   // Veneno: teste de R com penalidade; falhando, −1 em tudo e sangra
@@ -526,11 +532,15 @@ function _c3porDePe(atk, magia, pmGastos) {
   // ── CURA ──
   // A única cura do jogo, e é da Água: 1d de vida por cada 2 PMs.
   if (magia.cura) {
+    const quem = (magia.curaAliado && curado && curado.vivo) ? curado : atk;
     const dados = Math.max(1, Math.floor(pmGastos * (magia.cura.dadosPorPM || 0.5)));
     let v = 0; for (let i = 0; i < dados; i++) v += _d6(rng);
-    const antes = atk.pv;
-    atk.pv = Math.min(atk.pvMax, atk.pv + v);
-    ev.curou = atk.pv - antes; ev.curaDados = dados;
+    const antes = quem.pv;
+    quem.pv = Math.min(quem.pvMax, quem.pv + v);
+    ev.curou = quem.pv - antes; ev.curaDados = dados;
+    // Quem foi curado, para o registo poder dizê-lo e a animação
+    // saber em que cartão pôr o número verde.
+    if (quem !== atk) { ev.curado = quem.nome; ev.curadoIdx = curado.__idx; }
   }
 
   // Congelar por um turno: não tira de combate como a Prisão de Gelo,
@@ -732,7 +742,37 @@ function _c3valeTrocar(eu, inimigo, banco) {
   return (melhor >= 0 && melhorNota > minha + 0.3) ? melhor : -1;
 }
 
-function politica3dt(eu, inimigo) {
+/* ── ESCOLHER EM QUEM PEGAR ──
+
+   Duas contas simples, e nenhuma delas tenta ser esperta:
+
+     · para ferir, o mais perto de cair — é onde um golpe se
+       transforma em avatar a menos, e o resto é conversa;
+     · para curar, o mais longe do cheio, contado em PONTOS e não
+       em fracção. Curar 3 num que tem 30 de 40 vale mais do que
+       curar 3 num que tem 4 de 5, mesmo que o segundo pareça pior.
+
+   Devolvem null quando não há ninguém melhor do que o activo, e aí
+   o motor fica pelo caminho do costume. */
+function _c3alvoMaisFraco(equipa) {
+  let melhor = null, i = -1;
+  equipa.forEach((c, k) => {
+    if (!c || !c.vivo) return;
+    if (!melhor || c.pv < melhor.pv) { melhor = c; i = k; }
+  });
+  return i < 0 ? null : i;
+}
+function _c3aliadoMaisFerido(equipa) {
+  let melhor = null, i = -1, falta = 0;
+  equipa.forEach((c, k) => {
+    if (!c || !c.vivo) return;
+    const f = c.pvMax - c.pv;
+    if (f > falta) { falta = f; melhor = c; i = k; }
+  });
+  return i < 0 ? null : i;
+}
+
+function politica3dt(eu, inimigo, campo) {
   const m = eu.magias || {};
   const v = eu.vant;
 
@@ -790,6 +830,18 @@ function politica3dt(eu, inimigo) {
   if (podePagar(m.forte) && inimigo.pv <= inimigo.pvMax * 0.4) {
     return { magia: m.forte, pm: _c3pmIdeal(m.forte, eu, tecto) };
   }
+  /* A Maré Compartilhada, quando alguém do lado de cá está mal.
+
+     Entra antes da defesa comum de propósito: um escudo em quem
+     está inteiro vale menos do que fechar a ferida de quem está
+     quase a cair, e a magia só existe para isso. */
+  if (campo && m.defesa && m.defesa.curaAliado && podePagar(m.defesa)) {
+    const k = _c3aliadoMaisFerido(campo.meu);
+    if (k != null && campo.meu[k].pv < campo.meu[k].pvMax * 0.6) {
+      return { magia: m.defesa, pm: _c3pmIdeal(m.defesa, eu, tecto), aliadoIdx: k };
+    }
+  }
+
   // Erguer a defesa quando ainda não está de pé e há folga de PM
   if (podePagar(m.defesa) && !m.defesa.cura
       && !eu.bonusA && !eu.bonusFD && !eu.armaduraDobrada && !eu.vorpal && !eu.roubando
@@ -1015,7 +1067,44 @@ function combate3dtTurno(e) {
       l.c = meu[iMeu()];                           // saiu limpo: quem entra ainda age
       l.alvo = dele[iDele()];
     }
-  const acao = (opts.politica || politica3dt)(l.c, l.alvo);
+  const acao = (opts.politica || politica3dt)(l.c, l.alvo, { meu, dele });
+
+    /* ── O ALVO DEIXA DE SER SEMPRE QUEM ESTÁ EM CAMPO ──
+
+       Até aqui `l.alvo` era o activo do outro lado e ponto final. As
+       magias com `escolheAlvo` podem apontar a outro — e as com
+       `curaAliado` podem apontar para dentro da própria equipa.
+
+       A escolha é validada aqui e não onde ela é feita: uma acção que
+       aponte a um índice vazio, a um caído, ou a um número fora da
+       lista cai de volta no activo em vez de rebentar. A interface e
+       a política já escolhem bem; isto é para quando uma delas mudar. */
+    let alvoIdx = iDele();
+    if (acao.magia && acao.magia.escolheAlvo) {
+      /* Se quem decidiu não apontou a ninguém, aponta-se ao mais
+         perto de cair.
+
+         Isto esteve primeiro na política, num ramo só — o do golpe
+         forte — e por isso a mesma magia noutra gaveta saía sem alvo
+         escolhido e batia no activo em silêncio. A prova apanhou-o.
+         Vive aqui porque é aqui que a acção é LIDA, e é o único sítio
+         por onde todos os caminhos passam.
+
+         Não pisa a escolha de ninguém: só preenche o que vier vazio.
+         A interface do jogador manda sempre o alvo, portanto esta
+         linha nunca decide por ele. */
+      const pedido = (acao.alvoIdx != null) ? acao.alvoIdx : _c3alvoMaisFraco(dele);
+      const escolhido = (pedido != null) ? dele[pedido] : null;
+      if (escolhido && escolhido.vivo) { l.alvo = escolhido; alvoIdx = pedido; }
+    }
+    // E o destinatário da cura, do meu lado.
+    let curado = l.c, curadoIdx = iMeu();
+    if (acao.magia && acao.magia.curaAliado) {
+      const pedido = (acao.aliadoIdx != null) ? acao.aliadoIdx : _c3aliadoMaisFerido(meu);
+      const a = (pedido != null) ? meu[pedido] : null;
+      if (a && a.vivo) { curado = a; curadoIdx = pedido; }
+    }
+    curado.__idx = curadoIdx;
 
     // ── Apanhar o foco caído: gasta o turno inteiro e mais nada ──
     if (acao.apanharFoco && l.c.semFoco) {
@@ -1047,7 +1136,7 @@ function combate3dtTurno(e) {
     // avança no fim do turno, a animação do golpe caía no inimigo
     // seguinte enquanto o dano tinha sido no anterior.
     const ev = { turno: turnos, lado: l.lado, quem: l.c.nome, alvo: l.alvo.nome,
-                 quemIdx: iMeu(), alvoIdx: iDele(),
+                 quemIdx: iMeu(), alvoIdx,
                  magia: magia ? magia.id : null, pm };
 
     if (magia) {
@@ -1108,7 +1197,7 @@ function combate3dtTurno(e) {
 
     // Magias que não atacam (escudo, buff) não rolam FA
     if (magia && !magia.fa) {
-      _c3aplicarEfeitos(l.c, l.alvo, magia, pm, 0, rng, ev);
+      _c3aplicarEfeitos(l.c, l.alvo, magia, pm, 0, rng, ev, curado);
       ev.suporte = true;
     } else {
       // Uma magia de ondas dispara várias vezes, cada uma com a sua rolagem
@@ -1151,7 +1240,7 @@ function combate3dtTurno(e) {
       }
       ev.dano = total; ev.ondas = golpes;
       if (golpes > 1) ev.rolagens = rolagens;
-      _c3aplicarEfeitos(l.c, l.alvo, magia, pm, total, rng, ev);
+      _c3aplicarEfeitos(l.c, l.alvo, magia, pm, total, rng, ev, curado);
     }
     ev.pvAlvo = l.alvo.pv; ev.pvAlvoMax = l.alvo.pvMax;
     ev.pmProprio = l.c.pm;

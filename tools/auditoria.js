@@ -14,3 +14,6 @@ require('./auditoria-equipa.js');
 // As magias que defendem. Nasceram por olhar: as provas antigas
 // cresceram todas a partir do que ataca.
 require('./auditoria-defesas.js');
+// As duas magias que escolhem alvo — a primeira vez que este combate
+// olha para lá de quem está em campo.
+require('./auditoria-alvos.js');

@@ -891,8 +891,11 @@ A.ver('escala de 2 a 20 PM, e não é sustentada',
   for (const el of Object.keys(M.MAGIAS))
     for (const cat of ['ataque', 'forte', 'defesa'])
       for (const g of (M.MAGIAS[el][cat] || [])) if (g.cura) comCura++;
-  A.ver('é a única magia do catálogo que cura',
-        comCura === 1, `${comCura} magia(s) com cura em todo o catálogo`);
+  /* Era a única; passaram a duas quando a Maré Compartilhada nasceu.
+     A prova continua a valer a pena porque o que ela guarda não é o
+     número — é a Água ser o único elemento que cura. */
+  A.ver('a cura continua a ser só da Água',
+        comCura === 2, `${comCura} magia(s) com cura, ambas de Água`);
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -581,6 +581,7 @@ function _pveContaDefesa(g) {
   if (g.barreira)      p.push(t('mag.conta.barreira'));
   if (g.invulneravel)  p.push(t('mag.conta.invulneravel'));
   if (g.imuneEspiritual) p.push(t('mag.conta.imune'));
+  if (g.curaAliado)      p.push(t('mag.conta.cura_aliado'));
   if (g.cura) {
     // "1d por 2 PM" lê-se melhor do que "0.5 dados por PM", que é
     // como o catálogo a guarda.
@@ -618,6 +619,9 @@ function _pveFormula(g, eu) {
   let s = 'FA ' + p.join(' + ');
   if (f.dadosPorPM) s += ` (+${f.dadosPorPM === 0.5 ? '1d por 2' : f.dadosPorPM + 'd por'} PM)`;
   if (f.fixoPorPM)  s += ` (+${f.fixoPorPM} por PM)`;
+  // A escolha de alvo é o que esta magia tem de mais importante e não
+  // cabe numa soma de dados; vai a seguir, na mesma linha.
+  if (g.escolheAlvo) s += ' · ' + t('mag.conta.escolhe_alvo');
   return s;
 }
 
@@ -883,6 +887,10 @@ function _pveEscolher(tipo, arg) {
     const tecto = _c3(eu, 'H') * 5;
     const max = Math.min(g.pmMax || g.pm, tecto, _c3pmDisponivel(eu));
     if (g.pmMax && max > g.pm) { _pveEscolherPM(tipo, g, max); return; }
+    // Sem degraus de PM para escolher, o alvo é a única pergunta.
+    if (g.escolheAlvo || g.curaAliado) {
+      _pveEscolherAlvo(tipo, _c3pmIdeal(g, eu, tecto), !!g.curaAliado); return;
+    }
     _pveAcao = { magia: g, pm: _c3pmIdeal(g, eu, tecto) };
   }
   _pveJogarTurno();
@@ -995,10 +1003,75 @@ function _pveEscolherPM(tipo, g, max) {
     </div>`;
 }
 
+/* ═══ APONTAR ═══
+
+   Duas magias escolhem em quem pegam, e é a primeira vez que este ecrã
+   pergunta isso. Segue o molde do selector de PM: um passo à parte, um
+   botão por candidato, e o que interessa escrito em cada um.
+
+   Os caídos aparecem apagados em vez de desaparecerem. Um botão que
+   some muda a largura dos outros a meio da escolha e o dedo vai bater
+   ao lado — é a mesma razão por que as setas da equipa ficam
+   desactivadas em vez de ausentes.
+
+   E a vida vem escrita em cada um: mandar uma cura ou um golpe sem ver
+   quem está a cair é escolher às cegas.
+
+   O HTML sai por concatenação e não por template: a primeira versão
+   metia um template dentro de outro para o onclick e partiu-se no
+   escape das aspas. Lê-se pior e funciona. */
+function _pveEscolherAlvo(tipo, pm, curar) {
+  const eu = _pveEstado.A[_pveEstado.ativoA];
+  const g = eu.magias[tipo];
+  const equipa = curar ? _pveEstado.A : _pveEstado.B;
+  const caixa = document.getElementById('cbAcoes');
+  const fn = curar ? '_pveLancarEm' : '_pveLancarContra';
+
+  let botoes = '';
+  equipa.forEach((c, i) => {
+    if (!c) return;
+    const cheio = curar && c.pv >= c.pvMax;
+    const on = c.vivo && !cheio;
+    const sub = !c.vivo ? t('pve.alvo.caiu')
+              : cheio  ? t('pve.alvo.cheio')
+              : t('pve.alvo.vida', { pv: c.pv, max: c.pvMax });
+    const chamada = fn + "('" + tipo + "'," + pm + "," + i + ")";
+    botoes += '<button class="cb-btn' + (on ? '' : ' vazio') + '"'
+            + (on ? ' onclick="' + chamada + '"' : ' disabled') + '>'
+            + '<span class="cb-btn-rot">' + esc(c.nome) + '</span>'
+            + '<span class="cb-btn-sub">' + sub + '</span>'
+            + '</button>';
+  });
+
+  caixa.innerHTML = '<div class="cb-pm-cab">'
+    + t(curar ? 'pve.alvo.quem_curar' : 'pve.alvo.quem_bater',
+        { nome: t('mag.' + g.id + '.nome') })
+    + '</div>' + botoes
+    + '<div class="cb-trocas"><button class="cb-btn troca"'
+    + ' onclick="if(!_pveAnim)_pveDesenhar()">'
+    + '<span class="cb-btn-rot">' + t('pve.pm.voltar') + '</span></button></div>';
+}
+
+function _pveLancarContra(tipo, pm, idx) {
+  if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
+  _pveAcao = { magia: _pveEstado.A[_pveEstado.ativoA].magias[tipo], pm, alvoIdx: idx };
+  _pveJogarTurno();
+}
+function _pveLancarEm(tipo, pm, idx) {
+  if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
+  _pveAcao = { magia: _pveEstado.A[_pveEstado.ativoA].magias[tipo], pm, aliadoIdx: idx };
+  _pveJogarTurno();
+}
+
 function _pveLancarCom(tipo, pm) {
   if (_pveAnim || !_pveEstado || _pveEstado.acabou) return;
   const eu = _pveEstado.A[_pveEstado.ativoA];
-  _pveAcao = { magia: eu.magias[tipo], pm };
+  const g = eu.magias[tipo];
+  // Escolhidos os PM, ainda falta dizer em quem.
+  if (g && (g.escolheAlvo || g.curaAliado)) {
+    _pveEscolherAlvo(tipo, pm, !!g.curaAliado); return;
+  }
+  _pveAcao = { magia: g, pm };
   _pveJogarTurno();
 }
 
