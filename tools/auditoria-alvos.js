@@ -10,6 +10,19 @@
 // lado, e por isso o que aqui se prova não é só o efeito das duas: é
 // que a escolha CHEGA ao sítio certo. Um alvo mal encaminhado bate no
 // avatar errado sem dizer nada — nenhum número sai errado, só a pessoa.
+//
+/* Sobre quem são estas provas.
+
+   As afirmações aqui dentro não repetem o nome da magia em cada
+   linha — dizem "cada 2 PM valem 1 dado de cura", que se lê melhor
+   mas não diz de quem é. E os cabeçalhos com o nome saem quando o
+   ficheiro CORRE, enquanto as afirmações saem todas juntas no fim,
+   portanto nunca ficam ao lado umas das outras no relatório.
+
+   Esta linha é o que permite ao tools/inventario.js saber que estas
+   magias têm prova. Sem ela, ele lê o relatório, não encontra os
+   nomes, e declara-as por olhar. */
+// @cobre so_f3 ag_d4
 // ═══════════════════════════════════════════════════════════════════
 const A = require('./auditoria-base.js');
 const { M } = A;

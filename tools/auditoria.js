@@ -17,3 +17,7 @@ require('./auditoria-defesas.js');
 // As duas magias que escolhem alvo — a primeira vez que este combate
 // olha para lá de quem está em campo.
 require('./auditoria-alvos.js');
+// As duas que ninguém tinha olhado — o Toque Ardente e a Brecha
+// Conhecida. Só apareceram quando a ferramenta da cobertura deixou
+// de mentir sobre si própria.
+require('./auditoria-duas.js');

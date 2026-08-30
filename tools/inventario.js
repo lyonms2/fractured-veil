@@ -65,29 +65,93 @@ function efeitos(o) {
 
    Duas coisas diferentes, e vale a pena não as confundir:
 
-     · a FÓRMULA de ataque é verificada em TODAS as magias que atacam —
-       a auditoria-magias.js percorre o catálogo inteiro e compara a FA
-       que sai com a que o catálogo manda;
-     · o EFEITO PRÓPRIO — envenenar, congelar, dobrar armadura — só é
-       verificado nas que algum teste nomeia.
+     · a FÓRMULA de ataque é verificada em TODAS as magias que atacam;
+     · o EFEITO PRÓPRIO — envenenar, congelar, ignorar armadura — é
+       verificado só nalgumas.
 
-   Uma magia sem teste que a nomeie não está errada; está por olhar. É
-   por aí que se começa. */
-const TESTES = fs.readdirSync(path.join(RAIZ, 'tools'))
-  .filter(f => f.startsWith('auditoria-'))
-  .map(f => fs.readFileSync(path.join(RAIZ, 'tools', f), 'utf8')).join('\n');
-const temTestePróprio = id => TESTES.includes("'" + id + "'") || TESTES.includes('"' + id + '"');
+   A primeira versão disto procurava o id da magia no CÓDIGO dos
+   testes, e enganou-se em vinte e uma: as auditorias antigas percorrem
+   o catálogo em ciclo e afirmam "ignora Armadura · Aurora Branca" sem
+   escreverem "fg_f1" em lado nenhum. Vinte e uma magias apareciam como
+   "só a fórmula" quando o efeito delas estava provado desde sempre.
 
+   Agora corre a suíte e lê o que ela AFIRMA. É mais lento e é a única
+   forma de a resposta ser verdadeira: o que interessa não é quem foi
+   nomeado no código, é sobre quem existe uma prova.
+
+   Continua a ser texto a casar com texto — duas magias com nomes
+   parecidos podiam confundir-se — mas o erro passa a ser de nome
+   igual, e não de método. */
+let SAIDA = '';
+try {
+  SAIDA = require('child_process')
+    .execSync('node "' + path.join(RAIZ, 'tools/auditoria.js') + '"',
+              { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+} catch (err) {
+  // Uma suíte a falhar ainda escreve tudo o que correu; o que sai
+  // serve na mesma para dizer sobre quem há provas.
+  SAIDA = (err.stdout || '') + (err.stderr || '');
+}
+/* A QUEM PERTENCE CADA PROVA.
+
+   Duas fontes, porque as auditorias estão escritas de duas maneiras.
+
+   As antigas percorrem o catálogo em ciclo e nomeiam o alvo na
+   própria linha — "ignora Armadura · Aurora Branca". Essas leem-se
+   do relatório.
+
+   As novas escrevem blocos à mão com afirmações que não repetem o
+   nome — "cada 2 PM valem 1 dado de cura" — e um cabeçalho por
+   cima. Mas o cabeçalho sai quando o ficheiro CORRE e as afirmações
+   saem todas juntas no fim, portanto nunca ficam intercaladas e não
+   há como as ligar pelo relatório. Essas declaram-se com uma linha
+   "// @cobre id id id" no topo do ficheiro.
+
+   Errei esta pergunta duas vezes antes de chegar aqui: primeiro
+   procurando o id no código dos testes (21 magias dadas por provar
+   que estavam provadas), depois atribuindo pelo último cabeçalho
+   visto (que atribuía tudo ao último bloco do último ficheiro).
+   Quando a mesma pergunta erra duas vezes, o que falta é a fonte
+   dizer a verdade sobre si própria. */
+const LINHAS = SAIDA.split(/\r?\n/).filter(l => /^\s*(OK|FALHA)/.test(l));
+
+const DECLARADO = new Set();
+for (const nome of fs.readdirSync(path.join(RAIZ, 'tools'))) {
+  if (!/^auditoria/.test(nome)) continue;
+  const txt = fs.readFileSync(path.join(RAIZ, 'tools', nome), 'utf8');
+  const m = txt.match(/\/\/\s*@cobre\s+(.+)/);
+  if (m) for (const id of m[1].trim().split(/\s+/)) DECLARADO.add(id);
+}
+
+/* Uma linha da FÓRMULA tem a forma "Fogo/ataque Nome (id) @5PM"; tudo
+   o resto que nomeie a magia é prova de outra coisa. */
+const ehFormula = l => /\(\w+\)\s+@\d+PM/.test(l);
+
+// "Couraça de {elem}" procura-se por "Couraça".
+const radical = (nome) => (nome || '').split(/\s+de\s+\{|\{/)[0].trim();
+
+function provasDe(id, nome) {
+  const raiz = radical(nome);
+  const alvo = LINHAS.filter(l =>
+    l.includes(id) || (raiz.length > 3 && l.includes(raiz)));
+  return {
+    formula: alvo.some(ehFormula),
+    efeito:  DECLARADO.has(id) || alvo.some(l => !ehFormula(l)),
+    quantas: alvo.length + (DECLARADO.has(id) ? 1 : 0),
+  };
+}
 function despeja(o, tipoRot, extra) {
   const chave = extra.chaveTexto;
   const nome = t(chave + '.nome');
   const desc = t(chave + '.desc');
   const props = efeitos(o);
   const orfas = props.filter(p => motorLe(p) === 0);
+  const prova = provasDe(o.id, nome);
   dados.push({ id: o.id, tipo: tipoRot, ...extra, nome, desc,
                mecanica: props.map(p => p + '=' + JSON.stringify(o[p])), orfas,
-               formulaAuditada: !!o.fa,
-               testePróprio: temTestePróprio(o.id),
+               formulaAuditada: prova.formula,
+               testePróprio: prova.efeito,
+               nProvas: prova.quantas,
                semTexto: !nome || !desc });
 }
 
