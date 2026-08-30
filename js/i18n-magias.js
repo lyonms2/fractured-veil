@@ -41,6 +41,9 @@ window.registerStrings({
   'mag.rende.armadura':  'Armadura +{n}',
   'mag.rende.fd':        'FD +{n}',
   'mag.rende.esquiva':   'esquiva +{n}',
+  // O que a esquiva passa a valer de facto, contra o inimigo que está à
+  // frente. É o número que decide, e não o bónus cru.
+  'mag.rende.esquiva_pc': 'esquiva {pc} das vezes',
   'mag.rende.barreira':  'barreira {n}',
   'mag.conta.armadura_pm':   'A +{n} por PM, até +{max}',
   'mag.conta.armadura':      'A +{n}',
@@ -187,6 +190,7 @@ window.registerStrings({
   'mag.rende.armadura':  'Armour +{n}',
   'mag.rende.fd':        'DF +{n}',
   'mag.rende.esquiva':   'dodge +{n}',
+  'mag.rende.esquiva_pc': 'dodges {pc} of the time',
   'mag.rende.barreira':  'barrier {n}',
   'mag.conta.armadura_pm':   'A +{n} per MP, up to +{max}',
   'mag.conta.armadura':      'A +{n}',

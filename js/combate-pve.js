@@ -791,10 +791,15 @@ function _pveDesenharAcoes(eu, ini) {
   // Vantagem que gasta a ação
   const v = eu.vant;
   if (v && (v.curaTudo || v.subirCarac || v.paralisa)) {
-    const on = eu.pm >= v.pm;
+    // A Reserva Oculta tem um total para a luta toda. Gasto esse
+    // total, o botão continuava aceso e cobrava PM por nada.
+    const reservaAcabou = v.subirCarac && v.maxTotal != null
+                       && (eu.reservaGasta || 0) >= v.maxTotal;
+    const on = eu.pm >= v.pm && !reservaAcabou;
     html += btn(`_pveEscolher('vantagem')`,
                 t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
-                on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
+                reservaAcabou ? t('pve.reserva_no_fim')
+                  : on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
   }
 
   // ── As magias de pé, uma a uma ──
@@ -920,7 +925,26 @@ function _pveRendeSemAtaque(g, pm) {
   }
   if (g.bonusFDPorPM) { const v = pm * g.bonusFDPorPM;
     return { chave: 'fd' + v, rotulo: t('mag.rende.fd', { n: v }) }; }
-  if (g.esquivaBonus) return { chave: 'esq' + pm, rotulo: t('mag.rende.esquiva', { n: pm }) };
+  if (g.esquivaBonus) {
+    /* A esquiva não sobe para sempre: o teste passa com o dado igual
+       ou menor ao valor, e o 6 falha sempre — portanto a partir de 5
+       o teto é 5 em 6, e cada PM investido acima disso é PM deitado
+       fora. Medido: +10 dá 83,6% e +30 dá exactamente os mesmos
+       83,6%.
+
+       O tecto depende de quem está à frente — a Habilidade do
+       atacante desconta — e do que já se investiu antes, porque este
+       bónus acumula de propósito. Por isso a conta é feita aqui, com
+       os dois combatentes à mão, e não numa tabela. */
+    const eu2 = _pveEstado && _pveEstado.A[_pveEstado.ativoA];
+    const ini = _pveEstado && _pveEstado.B[_pveEstado.ativoB];
+    if (!eu2 || !ini) return { chave: 'esq' + pm, rotulo: t('mag.rende.esquiva', { n: pm }) };
+    const bruto = _c3(eu2, 'H') - (eu2.cegoEsquiva || 0)
+                + _c3bonusEsquiva(eu2) + pm - _c3hAtk(ini, eu2);
+    const util = Math.max(0, Math.min(5, bruto));
+    return { chave: 'esq' + util,
+             rotulo: t('mag.rende.esquiva_pc', { pc: Math.round(util / 6 * 100) + '%' }) };
+  }
   if (g.barreira)     return { chave: 'bar' + pm, rotulo: t('mag.rende.barreira', { n: pm * 2 }) };
   return null;
 }

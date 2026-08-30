@@ -1028,7 +1028,19 @@ function combate3dtTurno(e) {
 
     const magia = acao.magia;
     const pmBruto = magia ? acao.pm : 0;
-    const pm = magia ? Math.min(pmBruto, _c3pmDisponivel(l.c)) : 0;
+    /* O pmMax da magia entra aqui, e não entrava.
+
+       Só se limitava ao PM disponível: pedir 60 numa magia que aceita
+       20 cobrava os 60 e escalava o efeito na mesma proporção. Não era
+       poder de graça — pagava-se tudo — mas era o tecto declarado a
+       não valer nada, e o "4 a 20 PM" que o jogador lê passava a ser
+       decoração.
+
+       A interface já cortava no pmMax antes de chamar o motor. Era
+       mais um tecto guardado por quem PEDE em vez de por quem FAZ, e
+       esses cedem todos ao primeiro caminho novo. */
+    const tectoPM = magia ? (magia.pmMax || magia.pm) : 0;
+    const pm = magia ? Math.min(pmBruto, tectoPM, _c3pmDisponivel(l.c)) : 0;
 
     // Os índices, não só os nomes: a interface anima o cartão certo com
     // eles. Sem isto ela usava o ativo do momento — e como o ativo
@@ -1055,14 +1067,28 @@ function combate3dtTurno(e) {
       l.c.pm -= w.pm;
       if (w.curaTudo)    { l.c.pv = l.c.pvMax; ev.curou = true; }
       if (w.subirCarac)  {
-        // Sobe a característica que mais falta faz: a Força se não
-        // fere, a Armadura se está levando de mais.
-        const alvo = (l.c.pv < l.c.pvMax * 0.5) ? 'A' : 'F';
-        const campo = alvo === 'A' ? 'A' : 'F';
-        l.c['bonus' + campo] += w.subirCarac;
-        l.c.perm[campo]      += w.subirCarac;
-        l.c.reservaGasta = (l.c.reservaGasta || 0) + w.subirCarac;
-        ev.subiu = alvo;
+        /* O maxTotal é o tecto SOMADO da luta inteira, e só a política
+           do motor o vigiava — a interface do jogador acendia o botão
+           sempre que houvesse PM. Dois PM por turno compravam +1
+           permanente numa característica, sem fim: em dez turnos a
+           Força subia 10 numa vantagem que promete 5.
+
+           O tecto passa a ser cumprido onde o ponto é dado. Chegado
+           ao fim, a vantagem não faz nada e diz que não faz — em vez
+           de cobrar os PM e subir na mesma. */
+        const jaSubiu = l.c.reservaGasta || 0;
+        const podeAinda = Math.max(0, (w.maxTotal != null ? w.maxTotal : Infinity) - jaSubiu);
+        const sobe = Math.min(w.subirCarac, podeAinda);
+        if (sobe > 0) {
+          // Sobe a característica que mais falta faz: a Força se não
+          // fere, a Armadura se está levando de mais.
+          const alvo = (l.c.pv < l.c.pvMax * 0.5) ? 'A' : 'F';
+          const campo = alvo === 'A' ? 'A' : 'F';
+          l.c['bonus' + campo] += sobe;
+          l.c.perm[campo]      += sobe;
+          l.c.reservaGasta = jaSubiu + sobe;
+          ev.subiu = alvo;
+        } else ev.reservaNoFim = true;
       }
       if (w.paralisa) {
         const rp = _c3resistirDetalhe(l.alvo, l.c, false);
