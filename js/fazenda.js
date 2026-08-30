@@ -104,8 +104,18 @@ const FAZENDA_ACOES = {
    porque os cliques iam para o ecrã de cima.
 
    Com um estado explícito, quem reconstrói os ecrãs pergunta primeiro
-   onde é que o jogador está. */
-window._fzModoColonia = false;
+   onde é que o jogador está.
+
+   COMEÇA LIGADO de propósito. Estava a começar desligado e a depender
+   de o login chamar o abrirFazenda() no sítio certo — bastava um
+   caminho de carregamento que não passasse por lá e a consola abria
+   numa criatura, com a colónia a não aparecer de todo. A colónia é a
+   casa: quem quiser sair dela carrega em CUIDAR, e é o cuidarDe que
+   desliga isto.
+
+   Sem avatar nenhum não faz mal: os ramos "sem avatar" e "morto" do
+   rebuildScreensParaSlot saem antes de chegar à pergunta. */
+window._fzModoColonia = true;
 
 // Reafirma a colónia depois de alguém reconstruir os ecrãs por baixo
 // dela. Chamada no fim do rebuildScreensParaSlot.

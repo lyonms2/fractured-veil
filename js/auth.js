@@ -321,12 +321,13 @@ async function _onLoginSuccess(user) {
   const _glo = document.getElementById('gameLoadingOverlay');
   if(_glo) _glo.style.display = 'flex';
 
-  /* No header vai o NOME, não o endereço.
+  /* O email já não aparece em lado nenhum do cabeçalho.
 
-     Estava a mostrar o email cortado aos quinze caracteres, que continua
-     a ser um email à vista de quem passe ao lado do ecrã — e o pedaço
-     que sobrava não servia para nada a não ser confirmar a conta. Fica a
-     parte antes do @, que faz esse trabalho sem publicar o endereço. */
+     Este valor continua a ser escrito porque o elemento existe (mesmo
+     escondido) e porque outros sítios podem vir a querer saber quem
+     está ligado — mas o que se mostra ao lado do ✕ SAIR passa a ser
+     nada. Um email num cabeçalho é informação de quem está ao lado do
+     ecrã, não de quem joga. */
   const emailShort = user.email
     ? (u => u.length > 12 ? u.slice(0, 11) + '…' : u)(user.email.split('@')[0])
     : 'jogador';
