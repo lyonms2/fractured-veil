@@ -84,6 +84,23 @@ function renderMagiasHTML(f) {
     : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
     : t('mag.custo', { pm: g.pm });
 
+  /* O GOLPE COMUM ABRE A LISTA.
+
+     A ficha listava as três magias e mais nada, como se um avatar sem
+     PM não pudesse fazer nada. O golpe comum é o que sobra quando a
+     magia não chega ou não serve — está sempre disponível, não custa
+     nada, e é com ele que se joga a maior parte dos turnos. O painel
+     da batalha já o mostrava; aqui faltava. */
+  const golpe = `<div class="hab tipo-golpe">
+      <div class="hab-top">
+        <span class="hab-papel">${t('pve.ajuda.golpe')}</span>
+        <span class="hab-custo livre">${t('mag.custo.livre')}</span>
+      </div>
+      <div class="hab-nome">${t('pve.acao.comum')}</div>
+      <div class="hab-efeito">${t('pve.ajuda.golpe_desc')}</div>
+      <div class="hab-conta">FA H${f.H} + F${f.F} + 1d</div>
+    </div>`;
+
   const linhas = ['ataque', 'forte', 'defesa'].map(cat => {
     const g = m[cat];
     if (!g) return `<div class="hab vazia">
@@ -97,19 +114,31 @@ function renderMagiasHTML(f) {
     // que chegará lá (o sorteio só dá magias alcançáveis ao nível 35).
     const alcanca = (typeof magiaAoAlcance !== 'function') || magiaAoAlcance(f, g);
     const falta   = (typeof habilidadeParaMagia === 'function') ? habilidadeParaMagia(g) : '?';
-    return `<div class="hab${alcanca ? '' : ' trancada'}">
+    /* Quando o elemento não tem magia defensiva — o Fogo não tem, e é
+       de propósito — o slot cai num segundo ataque. Chamar-lhe
+       "Defesa" era mentira; a batalha já o diz assim e a ficha tem de
+       dizer o mesmo, senão a mesma magia tem dois nomes. */
+    const atacaMesmo = (cat === 'defesa' && g.fa);
+    const fam   = atacaMesmo ? 'ataque' : cat;
+    const papel = atacaMesmo ? t('mag.cat.defesa_atq') : t('mag.cat.' + cat);
+    // A conta que a magia rola. Estava só na batalha, e é a diferença
+    // entre "faz dano" e saber quanto.
+    const conta = (typeof _pveFormula === 'function') ? _pveFormula(g, f) : null;
+    return `<div class="hab tipo-${fam}${alcanca ? '' : ' trancada'}">
       <div class="hab-top">
-        <span class="hab-papel">${t('mag.cat.' + cat)}</span>
+        <span class="hab-papel">${papel}</span>
         <span class="hab-custo${g.pm === 0 ? ' livre' : ''}">${custo(g)}</span>
       </div>
       <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
       <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
+      ${conta ? `<div class="hab-conta">${conta}</div>` : ''}
       ${alcanca ? '' : `<div class="hab-tranca">🔒 ${t('mag.tecto', { h: falta })}</div>`}
     </div>`;
   }).join('');
 
   return `<div class="hab-bloco">
     <div class="hab-titulo">${t('hab.titulo')}</div>
+    ${golpe}
     ${linhas}
   </div>`;
 }
@@ -220,6 +249,30 @@ function renderBotaoBatalhar(cheia) {
   return '';
 }
 
+/* ── REDESENHAR O QUE SE MEXEU ──
+
+   As duas funções abaixo mudavam gs.equipa e depois pediam um
+   renderSlots() — que é o desenho da GRELHA do 🧬 Meus Avatares. A
+   barra da equipa vinha de borla no fim dele, e enquanto a barra vivia
+   dentro desse mesmo painel isso bastava.
+
+   A barra mudou-se para a página ⚔ BATALHA, e o renderSlots() tem um
+   `if (!playerData) return` logo no princípio. O playerData só é
+   carregado ao abrir o 🧬 ou o marketplace — portanto quem fosse
+   direto à batalha carregava nas setas, a ordem MUDAVA de verdade em
+   gs.equipa, e o ecrã não mexia um pixel. Fechar e reabrir mostrava a
+   ordem nova, o que é a pior forma de descobrir que afinal funcionava.
+
+   Cada uma passa a redesenhar aquilo que mexeu, e a grelha fica a
+   ser o extra e não o caminho. */
+function _equipaRedesenhar() {
+  if (typeof renderEquipaBar === 'function') renderEquipaBar();
+  // Entrar ou sair da equipa muda se o PvE está disponível; o cartão
+  // do modo tem de saber disso sem se fechar a página.
+  if (typeof _btSincronizarModos === 'function') _btSincronizarModos();
+  if (typeof renderSlots === 'function') renderSlots();
+}
+
 // Botão ⚔ de cada card. Só re-renderiza a barra e a grelha — a escolha
 // vai para gs.equipa, que o save normal do jogo já leva.
 function toggleEquipa(i) {
@@ -235,7 +288,7 @@ function toggleEquipa(i) {
   showToast(r === 'add' ? t('equipa.toast.add', { nome }) : t('equipa.toast.remove', { nome }), 'ok');
 
   if (typeof scheduleSave === 'function') scheduleSave();
-  if (typeof renderSlots === 'function') renderSlots();
+  _equipaRedesenhar();
 }
 
 // Trocar de lugar na fila. Não gasta nada e não tem consequência
@@ -244,7 +297,7 @@ function moverEquipa(i, dir) {
   if (typeof moverNaEquipa !== 'function') return;
   if (!moverNaEquipa(i, dir)) return;
   if (typeof scheduleSave === 'function') scheduleSave();
-  if (typeof renderSlots === 'function') renderSlots();
+  _equipaRedesenhar();
   const nome = (avatarSlots[i]?.nome || 'Avatar').split(',')[0].trim();
   const pos  = posicaoNaEquipa(i);
   showToast(pos === 1 ? t('equipa.toast.comeca', { nome })

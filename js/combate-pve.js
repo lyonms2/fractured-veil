@@ -556,11 +556,18 @@ function _pvePrognosticoHTML(pr) {
 }
 
 // A conta da Força de Ataque, em texto legível
+/* O `eu` tanto pode ser um combatente — em batalha, com os bónus do
+   turno já somados — como uma ficha crua, que é o que a ficha do
+   avatar tem para dar fora do combate.
+
+   Vale a pena aceitar os dois: a fórmula é a mesma frase nos dois
+   sítios, e duas cópias dela divergiriam ao primeiro ajuste. */
 function _pveFormula(g, eu) {
   if (!g || !g.fa) return null;
+  const car = k => (eu && eu.ficha) ? _c3(eu, k) : ((eu && eu[k]) || 0);
   const f = g.fa, p = [];
-  if (f.H) p.push(`H${_c3(eu, 'H')}`);
-  if (f.F) p.push(`F${_c3(eu, 'F')}`);
+  if (f.H) p.push(`H${car('H')}`);
+  if (f.F) p.push(`F${car('F')}`);
   if (f.fixo) p.push(String(f.fixo));
   const d = f.dados || 0;
   if (d) p.push(`${d}d`); else p.push('1d');

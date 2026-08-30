@@ -617,12 +617,15 @@
    diferença entre elas. A defesa é fria, a vantagem verde, a
    desvantagem rubra: as leituras que se fazem de relance a meio de um
    turno, sem tempo para ler nada. */
-.cb-ajuda-item.tipo-golpe       { --fam: #b9c3d6; }  /* aço: o golpe que todos têm */
-.cb-ajuda-item.tipo-ataque      { --fam: #f0913f; }  /* brasa */
-.cb-ajuda-item.tipo-forte       { --fam: #f0503f; }  /* brasa a sério */
-.cb-ajuda-item.tipo-defesa      { --fam: #4fb8e8; }  /* frio: aguentar */
-.cb-ajuda-item.tipo-vantagem    { --fam: #6fd08a; }
-.cb-ajuda-item.tipo-desvantagem { --fam: #d0576f; }
+/* As cores em si vivem no css/combate.css, que carrega primeiro: a
+   ficha do avatar usa as mesmas, e a mesma magia não pode ter uma cor
+   aqui e outra lá. */
+.cb-ajuda-item.tipo-golpe       { --fam: var(--fam-golpe); }
+.cb-ajuda-item.tipo-ataque      { --fam: var(--fam-ataque); }
+.cb-ajuda-item.tipo-forte       { --fam: var(--fam-forte); }
+.cb-ajuda-item.tipo-defesa      { --fam: var(--fam-defesa); }
+.cb-ajuda-item.tipo-vantagem    { --fam: var(--fam-vantagem); }
+.cb-ajuda-item.tipo-desvantagem { --fam: var(--fam-desvantagem); }
 .cb-ajuda-item .cb-ajuda-papel  { color: var(--fam, var(--muted)); opacity: .95; }
 
 .cb-ajuda-item.trancada { opacity: .5; --fam: #6b6478; }
