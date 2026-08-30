@@ -1964,7 +1964,7 @@ A.ver('custa 3 PM e não fere',
 const DEVORAR = M.MAGIAS['Sombra'].forte.find(g => g.id === 'so_f2');
 
 console.log('\n═══ DEVORAR ESSÊNCIA (so_f2) ═══');
-console.log('  "Não fere o corpo: desfaz o que havia dentro dele."   ·   40 PM\n');
+console.log('  "Não fere o corpo: desfaz o que havia dentro dele."   ·   10 PM\n');
 
 // A mesma sonda da Prisão de Gelo, servida a qualquer das três.
 function tirarDeCombate(magia, R, voltas, mexerAlvo) {
@@ -1991,8 +1991,8 @@ function tirarDeCombate(magia, R, voltas, mexerAlvo) {
 }
 
 // ── 1. O catálogo ──
-A.ver('custa 40 PM, não fere, e desfaz a alma',
-      DEVORAR.pm === 40 && !DEVORAR.fa && DEVORAR.destroiAlma === true && !DEVORAR.pmMax,
+A.ver('custa 10 PM, não fere, e desfaz a alma',
+      DEVORAR.pm === 10 && !DEVORAR.fa && DEVORAR.destroiAlma === true && !DEVORAR.pmMax,
       `pm=${DEVORAR.pm} fa=${DEVORAR.fa ? 'sim' : 'não'} destroiAlma=${DEVORAR.destroiAlma}`);
 
 // ── 2. Faz o que promete ──
@@ -2075,13 +2075,26 @@ A.ver('custa 40 PM, não fere, e desfaz a alma',
     linhas.push(`n${nivel} ${Math.round(podem / total * 100)}%`);
   }
   const noTecto = linhas[linhas.length - 1];
-  A.ver('quem a pode lançar, por nível (tecto H×5 ≥ 40 e reserva ≥ 40)',
+  A.ver('quem a pode lançar, por nível',
         true, linhas.join('  '));
-  A.ver('no nível máximo, alguém a alcança',
-        !noTecto.endsWith(' 0%'), `ao nível 35: ${noTecto}`);
+  /* Antes de o preço descer, a linha de cima lia
+     "n1 0% n5 0% n10 0% n15 0% n20 0% n25 1% n30 2% n35 4%" — no nível
+     máximo do jogo, quatro em cada cem. Fica escrito para não se
+     perder o antes e o depois. */
+  A.ver('a maioria alcança-a, e não uma minoria de sorte',
+        parseInt(noTecto.split(' ')[1], 10) >= 50,
+        `ao nível 35: ${noTecto}  (era 4% quando custava 40)`);
 }
 
-// ── 7. Gasta a reserva inteira de quem a lança ──
+/* ── 7. Custa o mesmo que as irmãs, e é por isso que existe ──
+
+   Custava 40 e fazia o que o Petrificar faz por 5. Ao nível 35, dos
+   avatares que a recebiam só 20% a conseguiam pagar — os outros
+   levavam para a vida um golpe forte que nunca usariam.
+
+   A dez, a gaveta forte da Sombra passa a ser uma escolha real entre
+   duas magias equivalentes: medido em 400 duelos, a Lança do Vazio
+   ganha 69% e esta 67%. */
 {
   const e = A.duelo({
     seed: 3,
@@ -2091,8 +2104,9 @@ A.ver('custa 40 PM, não fere, e desfaz a alma',
     b: { carac: { F: 2, H: 0, R: 5, A: 1 }, pv: 300, iniciativa: 0 },
   });
   M.combate3dtTurno(e);
-  A.ver('quem a lança fica sem um único PM',
-        e.A[0].pm === 0, `PM 40 → ${e.A[0].pm}  (e pode ter falhado o teste)`);
+  A.ver('custa os mesmos 10 PM das irmãs de outro elemento',
+        e.A[0].pm === 40 - DEVORAR.pm && DEVORAR.pm === 10,
+        `PM 40 → ${e.A[0].pm}  ·  Petrificar 5, Prisão de Gelo 10, esta ${DEVORAR.pm}`);
 }
 
 // ── Relatório ──

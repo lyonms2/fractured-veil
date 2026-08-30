@@ -167,7 +167,22 @@ const MAGIAS = {
     ],
     forte: [
       { id:'so_f1', pm:10, fa:{ dados:6 } },
-      { id:'so_f2', pm:40, destroiAlma:true },
+      /* Custava 40 e fazia o mesmo que o Petrificar da Terra por 5:
+         mesmo bloco do motor, mesma prova de Resistência, mesma Égide
+         a travá-la. Medido lado a lado contra o mesmo alvo, as três
+         davam 50%, 50% e 50%.
+
+         Quarenta PM pediam Resistência 8 E Habilidade 8 ao mesmo
+         tempo, e o gerador de fichas dá uma ou outra: ao nível 35, só
+         20% dos que a recebiam a conseguiam lançar. Os outros levavam
+         para a vida inteira um golpe forte que nunca usariam.
+
+         A dez fica ao lado da Lança do Vazio, que é o que ela sempre
+         devia ter sido. Medido em 400 duelos, as duas ganham o mesmo
+         — 69% com a Lança, 67% com esta: seis dados por 10 PM valem
+         tanto como uma moeda ao ar que tira do combate. A gaveta da
+         Sombra deixa de ser uma escolha só no papel. */
+      { id:'so_f2', pm:10, destroiAlma:true },
     ],
     defesa: [
       { id:'so_d1', pm:4,  barreira:true },
@@ -228,9 +243,23 @@ function magiasDoAvatar(ficha) {
   // O tecto do nível 35 é constante para um dado avatar, portanto não
   // muda nada ao subir de nível — e garante que tudo o que ele sabe é
   // alcançável se chegar lá.
-  const tectoFinal = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
-    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35).H * 5
-    : ficha.H * 5;
+  const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35)
+    : ficha;
+  const tectoFinal = _f35.H * 5;
+
+  /* ── E A RESERVA, QUE FALTAVA ──
+
+     O tecto diz o que o avatar CONSEGUE lançar; a reserva diz o que
+     ele PODE PAGAR. São duas condições e o filtro só tinha a
+     primeira, o que reabria em miniatura o mesmo buraco que o tecto
+     foi posto aqui para tapar: 1,42% dos avatares chegavam ao nível
+     35 com um golpe forte que nunca poderiam lançar, porque tinham
+     Habilidade 8 e Resistência 4.
+
+     Medido sobre 5000 fichas: 102 gavetas mudam, nenhuma fica vazia,
+     nenhuma troca por pior, e as 71 impagáveis passam a zero. */
+  const reservaFinal = _f35.pm;
 
   for (const cat of MAGIA_CATEGORIAS) {
     // O bolo, limitado ao que este avatar chegará a alcançar.
@@ -246,15 +275,29 @@ function magiasDoAvatar(ficha) {
     // decide outra coisa — se o avatar JÁ CONSEGUE LANÇAR o que sabe.
     // A ficha mostra "precisa de Habilidade 4" em vez de esconder a
     // magia, e subir de nível só pode destrancar, nunca tirar.
-    let pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])]
-                 .filter(m => m.pm <= tectoFinal);
+    const noTecto  = m => m.pm <= tectoFinal;
+    const pagavel  = m => m.pm <= tectoFinal && m.pm <= reservaFinal;
+    const doBolo   = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])];
+
+    /* Prefere o que ele pode pagar; se NADA no bolo couber na reserva,
+       volta ao filtro antigo em vez de o deixar sem magia nenhuma.
+
+       Hoje esta rede nunca dispara — a reserva mais baixa ao nível 35
+       é 15 PM e a gaveta mais cara começa nos 10. Fica na mesma: é
+       precisamente o tipo de garantia que depende dos números de hoje,
+       e um dia alguém acrescenta uma magia ou sobe um preço. Ficar sem
+       golpe forte é pior do que ter um caro. */
+    let pool = doBolo.filter(pagavel);
+    if (!pool.length) pool = doBolo.filter(noTecto);
 
     // Última saída, só para a defesa: um segundo ataque do elemento.
     // Acontece sempre ao Fogo, e não é acidente — o manual não tem uma
     // única magia de fogo defensiva, e o Fogo é o elemento que responde
     // a tudo batendo mais forte.
     if (!pool.length && cat === 'defesa') {
-      pool = (kit.ataque || []).filter(m => m !== fora.ataque && m.pm <= tectoFinal);
+      const sobra = (kit.ataque || []).filter(m => m !== fora.ataque);
+      pool = sobra.filter(pagavel);
+      if (!pool.length) pool = sobra.filter(noTecto);
     }
     fora[cat] = pool.length ? pool[rnd(0, pool.length - 1)] : null;
   }
