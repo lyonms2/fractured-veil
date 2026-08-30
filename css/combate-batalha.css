@@ -329,8 +329,9 @@
    ela serve. As partes continuam a chegar cada uma na sua vez — só
    aparecem sem deslizar, e um golpe continua a ler-se por batidas. */
 @media (prefers-reduced-motion: reduce) {
-  .cb-avanca-cima, .cb-avanca-baixo, .cb-esquiva, .cb-bate { animation: none; }
-  .cb-particula, .cb-onda { display: none; }
+  .cb-avanca-cima, .cb-avanca-baixo, .cb-esquiva, .cb-bate,
+  .cb-defende { animation: none; }
+  .cb-particula, .cb-onda, .cb-luz { display: none; }
   .cb-por-vir { transform: none; }
 }
 
@@ -346,21 +347,34 @@
 .cb-bate { animation: cb-bate .42s cubic-bezier(.36,.07,.19,.97); }
 
 /* Números que sobem — o mesmo gesto do float-up do jogo */
+/* O número sobe, PÁRA, e só depois se vai embora.
+
+   Antes desvanecia desde o princípio: aos 30% já ia a caminho de
+   sumir, e num crítico de 19 o número que mais importa era o que menos
+   se via. Agora tem meio segundo parado, opaco, à altura dos olhos. */
 @keyframes cb-dano-sobe {
   0%   { opacity: 0; transform: translate(-50%, 0) scale(.6); }
-  18%  { opacity: 1; transform: translate(-50%, -0.5rem) scale(1.15); }
-  30%  { transform: translate(-50%, -0.625rem) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -2.125rem) scale(.9); }
+  12%  { opacity: 1; transform: translate(-50%, -0.5rem) scale(1.2); }
+  20%  { opacity: 1; transform: translate(-50%, -0.625rem) scale(1); }
+  70%  { opacity: 1; transform: translate(-50%, -0.875rem) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -2.25rem) scale(.9); }
 }
 .cb-dano {
   position: absolute; left: 50%; top: 0.25rem; pointer-events: none; z-index: 5;
   font-family: 'Cinzel', serif; font-size: 0.8125rem; font-weight: 700;
   color: #ff6b5b; text-shadow: 0 0 0.375rem rgba(255,60,40,.9), 0 0.125rem 0.1875rem #000;
-  animation: cb-dano-sobe .9s ease-out forwards;
+  animation: cb-dano-sobe 1.5s cubic-bezier(.2,.7,.3,1) forwards;
 }
 .cb-dano.crit {
   font-size: 1.1875rem; color: #ffd76b;
   text-shadow: 0 0 0.625rem rgba(255,190,60,1), 0 0 1.25rem rgba(255,140,0,.7), 0 0.125rem 0.1875rem #000;
+}
+/* O que se ganha sobe do outro lado e em verde. Um "+7" e um "−7" no
+   mesmo sítio e da mesma cor eram o mesmo número com o sentido
+   trocado — e é o sentido que diz se a jogada valeu a pena. */
+.cb-dano.cura {
+  color: #8ce89a; top: auto; bottom: 1.25rem;
+  text-shadow: 0 0 0.375rem rgba(90,220,120,.9), 0 0.125rem 0.1875rem #000;
 }
 
 /* ── O PM a sair, em azul ──
@@ -392,6 +406,61 @@
   position: absolute; border-radius: 50%; pointer-events: none; z-index: 4;
   animation: cb-part-voa .7s ease-out forwards;
 }
+
+/* ═══ CADA ELEMENTO BATE À SUA MANEIRA ═══
+
+   A partícula base voa para --dx/--dy. O que muda de elemento para
+   elemento é a FORMA e o CAMINHO, não só a cor: num cartão pequeno, a
+   meio de um tremor, o que se lê é o gesto.
+
+   As gotas e as pedras caem, e por isso não podem usar a mesma curva
+   das chamas: uma coisa que cai ganha velocidade, uma que sobe
+   perde-a. */
+.cb-p-chamas   { border-radius: 50% 50% 45% 45%; animation-duration: .8s; }
+.cb-p-gotas    { border-radius: 50% 50% 60% 60%; animation-duration: .75s;
+                 animation-timing-function: cubic-bezier(.4,0,.9,.5); }
+.cb-p-pedras   { border-radius: 22%; animation-duration: .7s;
+                 animation-timing-function: cubic-bezier(.4,0,.9,.5); }
+.cb-p-espirais { border-radius: 0.0625rem; animation-duration: .42s;
+                 animation-timing-function: cubic-bezier(.1,.8,.2,1); }
+.cb-p-sombras  { border-radius: 50%; animation-duration: .65s; filter: blur(0.0625rem); }
+
+/* O clarão: a cor de quem bateu, no cartão inteiro. É o que se vê
+   antes de qualquer partícula. */
+.cb-luz {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+  animation: cb-luz-passa .6s ease-out forwards;
+}
+@keyframes cb-luz-passa {
+  0%   { opacity: .85; }
+  100% { opacity: 0; }
+}
+.cb-luz-chamas   { background: radial-gradient(circle at 50% 60%, var(--cor), transparent 68%);
+                   mix-blend-mode: screen; }
+.cb-luz-gotas    { background: radial-gradient(circle at 50% 35%, var(--cor), transparent 70%);
+                   mix-blend-mode: screen; }
+/* A terra não brilha: baça o cartão, como pó levantado. */
+.cb-luz-pedras   { background: var(--cor); opacity: .3; mix-blend-mode: multiply; }
+/* O vento é um corte de lado, não um brilho redondo. */
+.cb-luz-espirais { background: linear-gradient(100deg, transparent 38%, var(--cor) 50%, transparent 62%);
+                   mix-blend-mode: screen; }
+/* E a sombra faz o contrário de todas: escurece. */
+.cb-luz-sombras  { background: radial-gradient(circle at 50% 50%, transparent 18%, #05040a 82%); }
+.cb-luz-neutro   { background: radial-gradient(circle at 50% 50%, #fff, transparent 62%);
+                   mix-blend-mode: screen; opacity: .55; }
+
+/* ── QUEM SE DEFENDE RECOLHE ──
+   Erguer um escudo mandava o cartão investir contra o inimigo: o gesto
+   exactamente contrário ao que a magia faz. Agora encolhe e acende-se
+   por dentro. */
+@keyframes cb-defende {
+  0%   { transform: none; box-shadow: none; }
+  35%  { transform: scale(.94); box-shadow: 0 0 0.75rem rgba(120,200,255,.55) inset,
+                                            0 0 0.625rem rgba(120,200,255,.4); }
+  70%  { transform: scale(1.02); box-shadow: 0 0 0.5rem rgba(120,200,255,.3) inset; }
+  100% { transform: none; box-shadow: none; }
+}
+.cb-defende { animation: cb-defende .6s cubic-bezier(.34,.8,.4,1); }
 
 /* Anel de choque no crítico — o mesmo gesto da .ov-shockwave da invocação */
 .cb-onda {

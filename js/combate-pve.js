@@ -1163,12 +1163,13 @@ function _pveTesteHTML(x, ev) {
    que faz o ritmo — espalhados pelo código, ajustar um era descobrir
    os outros por acidente. */
 const PVE_BATIDA = {
-  conta:   330,   // a rolagem aparece depois de se ver quem age
-  esquiva: 380,   // o alvo sai da frente
-  golpe:   540,   // o impacto
-  vida:    760,   // a barra só desce depois de se ver o golpe chegar
-  efeitos: 920,   // veneno, gelo, cegueira: o que sobrou do golpe
-  fim:    1150,   // o golpe inteiro
+  conta:   360,   // a rolagem aparece depois de se ver quem age
+  esquiva: 400,   // o alvo sai da frente
+  golpe:   620,   // o impacto
+  vida:    980,   // a barra só desce depois de se LER o número
+  efeitos: 1180,  // veneno, gelo, cegueira: o que sobrou do golpe
+  fim:    1500,   // o golpe inteiro
+  onda:    300,   // entre as ondas de um ataque múltiplo
 };
 
 function _pveMostrarEvento(ev) {
@@ -1217,6 +1218,9 @@ function _pveMostrarEvento(ev) {
       ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
     if (cartao && ev.sustentouPor) _pveNumeroPM(cartao, ev.sustentouPor);
     if (cartao && ev.sangrou) _pveNumeroFlutuante(cartao, ev.sangrou, false);
+    // A Cura Perpétua fechava o corpo em silêncio: a barra crescia
+    // sozinha, sem uma palavra nem um número.
+    if (cartao && ev.regenerou) _pveNumeroFlutuante(cartao, ev.regenerou, false, 'cura');
     // O nome vai numa etiqueta da cor do lado, e não num <b> discreto.
     // Estas linhas não têm nome de magia a ancorá-las, e num turno podem
     // aparecer duas seguidas de avatares DIFERENTES — um a sangrar, outro
@@ -1395,8 +1399,16 @@ function _pveMostrarEvento(ev) {
   // quem tinha agido — só onde tinha doído.
   const cartaoQuem = (ev.quemIdx != null)
     ? document.getElementById((souEu ? 'cbLuteu' : 'cbLutini') + ev.quemIdx) : null;
+  /* Uma magia de escudo mandava o cartão INVESTIR contra o inimigo —
+     o gesto exactamente contrário ao que ela faz. Quem se protege
+     recolhe e acende-se; quem cura, também. O que decide é o evento:
+     se não há FA nem dano, não houve investida nenhuma. */
+  const defendeSe = !ev.fa && !ev.rolagens &&
+    (ev.barreira || ev.invulneravel || ev.curou || ev.bonusFD || ev.ocultou ||
+     ev.subiu || ev.armaduraDobrou || ev.esquivaMais || ev.imune);
   if (cartaoQuem) {
-    _pveGesto(cartaoQuem, souEu ? 'cb-avanca-cima' : 'cb-avanca-baixo', 520);
+    _pveGesto(cartaoQuem, defendeSe ? 'cb-defende'
+                        : souEu ? 'cb-avanca-cima' : 'cb-avanca-baixo', 620);
     // O custo sai do cartão de quem lança, no momento em que lança. A
     // conta do PM aparecia só no fim do turno, e apenas para as magias
     // sustentadas — quem gastava 8 PM num golpe nunca via os 8 saírem.
@@ -1417,29 +1429,84 @@ function _pveMostrarEvento(ev) {
   }
 
   // ── 3ª BATIDA · o golpe chega ──
-  const bate = cartaoAlvo && ev.dano > 0;
-  if (bate) setTimeout(() => {
+  // Só a magia tem elemento. Um soco é um soco, e as faíscas brancas
+  // são o que o distingue de uma magia à vista.
+  const elem  = (ev.magia || ev.vantagem) ? _pveElementoDe(ev) : null;
+  const bate  = cartaoAlvo && ev.dano > 0;
+
+  /* ── UM ATAQUE DE VÁRIAS ONDAS ANIMA VÁRIAS VEZES ──
+
+     As magias de onda rolam uma FA por cada onda, cada uma contra a
+     sua FD — o registo até as escreve uma a uma, "1ª ... 2ª ... 3ª".
+     A animação mostrava UM impacto com o total somado por cima. Três
+     ondas de 4 apareciam como uma pancada de 12, que é uma coisa
+     completamente diferente de sentir três.
+
+     As que não feriram também contam: uma onda esquivada ou aparada
+     salta o impacto mas gasta o seu tempo, senão as que acertam
+     colavam-se umas às outras e voltava tudo a parecer uma só. */
+  const ondas = (ev.rolagens && ev.rolagens.length > 1) ? ev.rolagens : null;
+  let extraOndas = 0;
+
+  if (ondas && cartaoAlvo) {
+    ondas.forEach((r, i) => {
+      if (!(r.dano > 0)) return;
+      setTimeout(() => {
+        _pveNumeroFlutuante(cartaoAlvo, r.dano, r.criticoAtk);
+        _pveGesto(cartaoAlvo, 'cb-bate', 520);
+        _pveImpacto(cartaoAlvo, elem);
+        if (r.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
+      }, PVE_BATIDA.golpe + i * PVE_BATIDA.onda);
+    });
+    extraOndas = (ondas.length - 1) * PVE_BATIDA.onda;
+  } else if (bate) setTimeout(() => {
     _pveNumeroFlutuante(cartaoAlvo, ev.dano, ev.criticoAtk);
     _pveGesto(cartaoAlvo, 'cb-bate', 520);
-    _pveParticulas(cartaoAlvo, ev.magia ? _pveElementoDe(ev) : null);
+    _pveImpacto(cartaoAlvo, elem);
     if (ev.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
   }, PVE_BATIDA.golpe);
+
+  /* ── O QUE VOLTA PARA QUEM AGIU ──
+
+     Curar, roubar vida, devolver o golpe: tudo isto mexia na vida e
+     não escrevia número nenhum. A barra crescia e o jogador ficava a
+     adivinhar quanto — logo na cura, que é a jogada que se faz
+     precisamente para ver um número.
+
+     Sai do cartão de quem agiu, em verde e com sinal de mais, no
+     mesmo instante do impacto: é a mesma troca vista dos dois lados. */
+  const meuGanho = ev.curou || ev.roubou || 0;
+  if (cartaoQuem && meuGanho) setTimeout(
+    () => _pveNumeroFlutuante(cartaoQuem, meuGanho, false, 'cura'),
+    PVE_BATIDA.golpe);
+
+  /* O Reflexo Espelhado manda o golpe de volta a QUEM O DEU. Isso é
+     dano em quem atacou — vermelho e com sinal de menos, no cartão
+     dele. Estava com os ganhos, a sair em verde com um mais à frente:
+     a dizer que levar o golpe de volta lhe tinha feito bem. */
+  if (cartaoQuem && ev.devolveu) setTimeout(() => {
+    _pveNumeroFlutuante(cartaoQuem, ev.devolveu, false);
+    _pveGesto(cartaoQuem, 'cb-bate', 520);
+  }, PVE_BATIDA.golpe + 160);
 
   // ── 4ª BATIDA · a vida cai ──
   // Depois do impacto, não com ele. O comentário antigo aqui já dizia
   // "as barras descem com atraso, para se ver quanto caiu" — mas não
   // havia atraso nenhum no código, e a barra descia no mesmo quadro em
   // que o número do dano nascia.
-  const tVida = bate ? PVE_BATIDA.vida : PVE_BATIDA.conta;
+  const tVida = (bate || ondas || meuGanho || ev.devolveu) ? PVE_BATIDA.vida + extraOndas
+                                            : PVE_BATIDA.conta;
   setTimeout(_pveAtualizarBarras, tVida);
 
   // ── 5ª BATIDA · o que ficou ──
-  const tEfeitos = bate ? PVE_BATIDA.efeitos : PVE_BATIDA.esquiva;
+  const tEfeitos = (bate || ondas) ? PVE_BATIDA.efeitos + extraOndas
+                                   : PVE_BATIDA.esquiva;
   if (temEfeitos) revelar(tEfeitos, '.cb-testes, .cb-extras');
 
   // Uma magia que não bate em ninguém — erguer uma barreira, curar-se —
   // não precisa do tempo de um golpe que acerta.
-  return bate ? PVE_BATIDA.fim : (temEfeitos ? 820 : 620);
+  return (bate || ondas) ? PVE_BATIDA.fim + extraOndas
+       : temEfeitos ? 900 : 660;
 }
 
 function _pveElementoDe(ev) {
@@ -1448,13 +1515,24 @@ function _pveElementoDe(ev) {
   return c ? c.elemento : null;
 }
 
-// Números que sobem — usa o float-up que já existia no jogo
-function _pveNumeroFlutuante(alvo, n, critico) {
+/* ── OS NÚMEROS QUE SOBEM ──
+
+   Só o dano tinha número. Curar-se, roubar vida, devolver o golpe,
+   regenerar — tudo isso mexia na vida e não escrevia nada em lado
+   nenhum: a barra encolhia ou crescia e o jogador tinha de adivinhar
+   quanto. A cura é o caso mais gritante, porque é a jogada que se
+   faz precisamente para ver um número.
+
+   O `tipo` dá a cor e o sinal. Um "+7" verde e um "−7" vermelho no
+   mesmo sítio são a mesma informação com o sentido trocado, e é o
+   sentido que decide se a jogada valeu a pena. */
+function _pveNumeroFlutuante(alvo, n, critico, tipo) {
+  if (!alvo || !n) return;
   const d = document.createElement('div');
-  d.className = 'cb-dano' + (critico ? ' crit' : '');
-  d.textContent = '−' + n;
+  d.className = 'cb-dano' + (critico ? ' crit' : '') + (tipo ? ' ' + tipo : '');
+  d.textContent = (tipo === 'cura' || tipo === 'roubo' ? '+' : '−') + n;
   alvo.appendChild(d);
-  setTimeout(() => d.remove(), 900);
+  setTimeout(() => d.remove(), 1500);
 }
 
 // O PM sai igual ao dano, mas em azul e do outro lado do cartão — se
@@ -1469,22 +1547,72 @@ function _pveNumeroPM(alvo, n) {
   setTimeout(() => d.remove(), 1000);
 }
 
-// Partículas da cor do elemento — o ELEM_CFG já as tinha
-function _pveParticulas(alvo, elemento) {
-  const cfg = elemento ? ELEM_CFG[elemento] : null;
-  const cor = cfg ? cfg.corBrilho : '#fff';
-  for (let i = 0; i < 8; i++) {
+/* ═══ CADA ELEMENTO BATE À SUA MANEIRA ═══
+
+   Antes era um efeito só, com a cor trocada: oito bolinhas a subir,
+   fosse fogo, água, terra, vento ou sombra. A cor sozinha não chega —
+   num cartão de 5rem, no meio de um tremor, o que se lê é o GESTO.
+
+   O ELEM_CFG já dava o nome a cada um destes gestos desde sempre:
+   chamas, gotas, pedras, espirais, sombras. Faltava fazê-los.
+
+     chamas   sobem, poucas e vivas, e o cartão aquece
+     gotas    espalham-se e CAEM, que é o que a água faz
+     pedras   poucas, grandes e pesadas, e o baque é mais fundo
+     espirais atravessam de lado, depressa, como um corte de ar
+     sombras  não voam: fecham-se para dentro e o cartão escurece
+
+   Sem elemento — o golpe físico — ficam faíscas brancas neutras, que
+   é o que um soco deve parecer ao lado de uma magia. */
+const PVE_GESTO_ELEM = {
+  chamas:   { n: 10, tam: [2, 5], dx: 26, dy: [-52, -18], sobe: true,  cai: false },
+  gotas:    { n: 12, tam: [2, 4], dx: 46, dy: [10, 46],   sobe: false, cai: true  },
+  pedras:   { n: 6,  tam: [4, 8], dx: 34, dy: [6, 40],    sobe: false, cai: true  },
+  espirais: { n: 9,  tam: [1, 3], dx: 78, dy: [-12, 12],  sobe: false, cai: false, risca: true },
+  sombras:  { n: 10, tam: [3, 6], dx: 30, dy: [-16, 16],  sobe: false, cai: false, dentro: true },
+  neutro:   { n: 8,  tam: [2, 4], dx: 30, dy: [-40, -14], sobe: true,  cai: false },
+};
+
+function _pveImpacto(alvo, elemento) {
+  if (!alvo) return;
+  const cfg  = elemento ? ELEM_CFG[elemento] : null;
+  const cor  = cfg ? cfg.corBrilho : '#fff';
+  const modo = (cfg && PVE_GESTO_ELEM[cfg.particulas]) || PVE_GESTO_ELEM.neutro;
+  const nome = (cfg && cfg.particulas) || 'neutro';
+
+  // O clarão dá ao cartão inteiro a cor de quem bateu. É o que se vê
+  // primeiro, antes de qualquer partícula: um golpe de sombra escurece,
+  // um de fogo aquece.
+  const luz = document.createElement('div');
+  luz.className = 'cb-luz cb-luz-' + nome;
+  luz.style.setProperty('--cor', cor);
+  alvo.appendChild(luz);
+  setTimeout(() => luz.remove(), 620);
+
+  const entre = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < modo.n; i++) {
     const p = document.createElement('div');
-    const sz = 2 + Math.random() * 4;
-    p.className = 'cb-particula';
-    p.style.cssText = `width:${(sz)/16}rem;height:${(sz)/16}rem;background:${cor};` +
-      `box-shadow:0 0 ${(sz * 2)/16}rem ${cor};left:${30 + Math.random() * 40}%;` +
-      `top:${30 + Math.random() * 40}%;--dx:${((Math.random() - .5) * 60)/16}rem;` +
-      `--dy:${(-20 - Math.random() * 40)/16}rem;animation-delay:${Math.random() * .1}s;`;
+    const sz = entre(modo.tam[0], modo.tam[1]);
+    // As sombras vêm de fora e fecham-se para dentro: nascem na
+    // periferia e o destino é o meio, ao contrário de todas as outras.
+    const x = modo.dentro ? (Math.random() < .5 ? entre(2, 18) : entre(82, 98)) : entre(28, 72);
+    const y = modo.dentro ? entre(10, 90) : entre(28, 72);
+    const dx = modo.dentro ? (50 - x) * 0.6 : entre(-modo.dx / 2, modo.dx / 2);
+    const dy = modo.dentro ? (50 - y) * 0.4 : entre(modo.dy[0], modo.dy[1]);
+    p.className = 'cb-particula cb-p-' + nome;
+    p.style.cssText =
+      `width:${(modo.risca ? sz * 6 : sz) / 16}rem;height:${sz / 16}rem;background:${cor};` +
+      `box-shadow:0 0 ${(sz * 2) / 16}rem ${cor};left:${x}%;top:${y}%;` +
+      `--dx:${dx / 16}rem;--dy:${dy / 16}rem;` +
+      `animation-delay:${Math.random() * (modo.risca ? .06 : .14)}s;`;
     alvo.appendChild(p);
-    setTimeout(() => p.remove(), 800);
+    setTimeout(() => p.remove(), 900);
   }
 }
+
+// O nome antigo continua a servir: havia chamadas espalhadas e não vale
+// a pena parti-las todas por causa de uma palavra.
+function _pveParticulas(alvo, elemento) { _pveImpacto(alvo, elemento); }
 
 function _pveOndaDeChoque(alvo) {
   const o = document.createElement('div');
