@@ -80,6 +80,7 @@ function renderMagiasHTML(f) {
   if (typeof magiasDoAvatar !== 'function') return '';
   const m = magiasDoAvatar(f);
   const custo = g => g.pm === 0 ? t('mag.custo.livre')
+    : (g.pmMax && g.porTurno) ? t('mag.custo.faixa_turno', { min: g.pm, max: g.pmMax })
     : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
     : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
     : t('mag.custo', { pm: g.pm });

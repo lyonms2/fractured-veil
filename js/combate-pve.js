@@ -638,6 +638,7 @@ function _pveAjudaDe(eu, lado, contra) {
     const trancada = g.pm > tecto;
     const custo = trancada ? t('mag.tecto', { h: Math.ceil(g.pm / 5) })
       : g.pm === 0 ? t('mag.custo.livre')
+      : (g.pmMax && g.porTurno) ? t('mag.custo.faixa_turno', { min: g.pm, max: g.pmMax })
       : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
       : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
       : t('mag.custo', { pm: g.pm });
@@ -736,6 +737,7 @@ function _pveDesenharAcoes(eu, ini) {
     const sub = !podeH  ? t('pve.precisa_h', { h: Math.ceil(g.pm / 5) })
               : trancada ? t('pve.trancada')
               : !podePM  ? t('pve.sem_pm', { pm: custo })
+              : (g.pmMax && g.porTurno) ? t('mag.custo.faixa_turno', { min: custo, max: Math.min(g.pmMax, eu.pm, tecto) })
               : g.pmMax  ? t('mag.custo.faixa', { min: custo, max: Math.min(g.pmMax, eu.pm, tecto) })
               : t('mag.custo', { pm: custo });
     html += btn(`_pveEscolher('${cat}')`, t('mag.' + g.id + '.nome'), sub,

@@ -401,6 +401,159 @@ A.ver('custa 10 PM e não tem fórmula de ataque',
 A.ver('só entra na ficha de quem tem Habilidade 2 ou mais',
       Math.ceil(GELO.pm / 5) === 2, `precisa de H${Math.ceil(GELO.pm / 5)}`);
 
+// ═══════════════════════════════════════════════════════════════════
+const CASULO = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d1');
+
+console.log('\n═══ CASULO DE MARÉS (ag_d1) ═══');
+console.log('  "Uma concha de água viva se fecha ao seu redor."   ·   1 a 5 PM por turno\n');
+
+/* Levanta o Casulo com os PM que eu mandar e devolve o combatente já
+   com o efeito de pé. É uma magia de escala: o que ela dá depende do
+   que se lhe deu, e é isso que há para medir. */
+function comCasulo(pm) {
+  const e = A.duelo({
+    seed: 3,
+    politica: () => ({ magia: CASULO, pm }),
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água', pm: 60, pmMax: 60,
+         magias: { ataque: CASULO, forte: CASULO, defesa: CASULO } },
+    b: { carac: { F: 1, H: 0, R: 99, A: 0 }, iniciativa: 0 },
+  });
+  M.combate3dtTurno(e);
+  return e.A[0];
+}
+
+// ── 1. O catálogo ──
+A.ver('escala de 1 a 5 PM, e cobra por turno',
+      CASULO.pm === 1 && CASULO.pmMax === 5 && CASULO.porTurno === true
+      && CASULO.armaduraPorPM === 1 && CASULO.armaduraMax === 5,
+      `pm=${CASULO.pm}–${CASULO.pmMax} porTurno=${CASULO.porTurno} ` +
+      `armaduraPorPM=${CASULO.armaduraPorPM} máx=${CASULO.armaduraMax}`);
+
+// ── 2. Um ponto de Armadura por cada PM ──
+{
+  const medidas = [1, 2, 3, 4, 5].map(pm => ({ pm, bonus: comCasulo(pm).bonusA }));
+  A.ver('cada PM investido vale exactamente 1 de Armadura',
+        medidas.every(m => m.bonus === m.pm),
+        medidas.map(m => `${m.pm}PM→+${m.bonus}`).join('  '));
+}
+
+// ── 3. O tecto dos 5 segura, mesmo forçando ──
+// O pmMax já limita pela porta da frente. Isto prova a outra tranca —
+// a que fica no motor — porque são duas e podem divergir.
+{
+  const c = comCasulo(9);
+  A.ver('não passa de +5 de Armadura, por mais PM que se dê',
+        c.bonusA <= 5, `9 PM → +${c.bonusA}`);
+}
+
+// ── 4. A Armadura extra aparece mesmo na Defesa ──
+{
+  const nu = comCasulo(0), grosso = comCasulo(4);
+  const a = armaduraNaFD(nu, null).A, b = armaduraNaFD(grosso, null).A;
+  A.ver('a concha entra na conta da Força de Defesa',
+        b === a + 4, `A ${a} → ${b}`);
+}
+
+/* ── 5. É Armadura de verdade, com o que isso traz de bom e de mau ──
+
+   Ao contrário da Casca de Helena, esta serve TAMBÉM contra magia: não
+   é uma dobra condicional, é Armadura a mais. Em troca, tudo o que
+   costuma passar por cima de Armadura passa por cima dela — e é assim
+   que deve ser, senão 5 PM compravam imunidade às magias que existem
+   precisamente para furar defesas. */
+{
+  const grosso = comCasulo(4);
+  const contraMagia = armaduraNaFD(grosso, 'Fogo').A;
+  const semConcha   = armaduraNaFD(comCasulo(0), 'Fogo').A;
+  A.ver('serve contra magia também (a Casca não servia)',
+        contraMagia === semConcha + 4, `A ${semConcha} → ${contraMagia} contra magia`);
+
+  const furada = armaduraNaFD(grosso, 'Fogo', { ignoraArmadura: true }).A;
+  A.ver('e uma magia que ignora Armadura fura-a na mesma',
+        furada === 0, `A = ${furada}`);
+}
+
+// ── 6. Com a Casca de Helena de pé, dobra também ──
+// A concha entra na Armadura antes da dobra, portanto 4 de concha valem
+// 8. As duas juntas são a defesa mais alta que o jogo permite montar, e
+// é bom que esteja medido antes de alguém a encontrar por acidente.
+{
+  const c = comCasulo(4);
+  const so = armaduraNaFD(c, null).A;
+  c.armaduraDobrada = true;
+  const dobrada = armaduraNaFD(c, null).A;
+  A.ver('debaixo da Casca de Helena, a concha dobra com o resto',
+        dobrada === so * 2, `A ${so} → ${dobrada}`);
+}
+
+// ── 7. Cobra todo o turno, e o que se paga é o que se pediu ──
+{
+  const bolsa = 30, investido = 3;
+  let lancou = false;
+  const e = A.duelo({
+    seed: 5,
+    politica: () => { if (lancou) return {}; lancou = true; return { magia: CASULO, pm: investido }; },
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água', pm: bolsa, pmMax: bolsa,
+         magias: { ataque: CASULO, forte: CASULO, defesa: CASULO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  const pms = [e.A[0].pm];
+  let turnosDePe = 0;
+  for (let i = 0; i < 15 && !e.acabou; i++) {
+    M.combate3dtTurno(e);
+    pms.push(e.A[0].pm);
+    if (e.A[0].bonusA > 0) turnosDePe++;
+  }
+  A.ver('cobra os mesmos PM todo o turno',
+        pms[1] - pms[2] === investido,
+        'PM: ' + pms.slice(0, 5).join(' → ') + ' …');
+  A.ver(`${bolsa} PM a ${investido} por turno dão cerca de ${Math.floor(bolsa / investido)} turnos`,
+        Math.abs(turnosDePe - Math.floor(bolsa / investido)) <= 1,
+        `ficou de pé ${turnosDePe} turnos`);
+}
+
+// ── 8. Quando cai, leva exactamente o que trouxe ──
+// O recalcular soma tudo do zero. Se levasse a mais, um avatar que
+// largasse a concha ficava mais fraco do que antes de a ter.
+{
+  let lancou = false;
+  const e = A.duelo({
+    seed: 5,
+    politica: () => { if (lancou) return {}; lancou = true; return { magia: CASULO, pm: 5 }; },
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água', pm: 5, pmMax: 5,
+         magias: { ataque: CASULO, forte: CASULO, defesa: CASULO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  e.A[0].perm.A = 2;                    // um bónus permanente, de outra origem
+  M.combate3dtRecalcularSeExistir = null;
+  const antes = e.A[0].perm.A;
+  for (let i = 0; i < 4 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('ao cair, devolve o avatar ao que era — nem menos',
+        e.A[0].bonusA === antes && e.A[0].sustentadas.length === 0,
+        `bonusA=${e.A[0].bonusA} (permanente ${antes}) sustentadas=${e.A[0].sustentadas.length}`);
+}
+
+// ── 9. Vale a pena? ──
+{
+  const golpes = 600;
+  const conta = (pmNaConcha) => {
+    const c = comCasulo(pmNaConcha);
+    let dano = 0;
+    for (let s = 1; s <= golpes; s++) {
+      const alvo = comCasulo(pmNaConcha);
+      const { atacante } = defensor();
+      Object.assign(atacante.ficha, { F: 4, H: 3, R: 4, A: 1 });
+      const rng = M._c3rng(s);
+      dano += M._c3resolver(atacante, alvo, null, 0, rng, {}, {}) || 0;
+    }
+    return dano / golpes;
+  };
+  const sem = conta(0), com = conta(5);
+  A.ver('na prática, 5 PM na concha travam dano a sério',
+        com < sem,
+        `dano médio por golpe: ${sem.toFixed(2)} sem → ${com.toFixed(2)} com  (${((1 - com / sem) * 100).toFixed(0)}% menos)`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');

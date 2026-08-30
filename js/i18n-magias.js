@@ -20,6 +20,9 @@ window.registerStrings({
   'mag.cat.defesa_atq': 'Segundo ataque',
   'mag.custo':        '{pm} PM',
   'mag.custo.faixa':  '{min} a {max} PM',
+  // Para as que escalam E cobram todo o turno. Sem esta, elas caíam na
+  // linha de cima e o "por turno" — que é metade do preço — sumia.
+  'mag.custo.faixa_turno': '{min} a {max} PM por turno',
   'mag.custo.turno':  '{pm} PM por turno',
   'mag.custo.livre':  'Sem custo',
   'mag.tecto':        'Precisa de Habilidade {h}',
@@ -76,7 +79,7 @@ window.registerStrings({
   'mag.ag_f2.nome':   'Lâmina Líquida',
   'mag.ag_f2.desc':   'Água sob pressão suficiente para cortar pedra.',
   'mag.ag_d1.nome':   'Casulo de Marés',
-  'mag.ag_d1.desc':   'Uma concha de água viva se fecha ao seu redor. Quanto mais você alimenta, mais grossa ela fica.',
+  'mag.ag_d1.desc':   'Uma concha de água viva se fecha ao seu redor. Cada PM investido vale 1 de Armadura, até 5 — e ela cobra esse mesmo tanto a cada turno para não se desfazer. Vale contra golpe e contra magia, mas não contra o que fura armadura.',
   'mag.ag_d2.nome':   'Névoa Densa',
   'mag.ag_d2.desc':   'Um nevoeiro que não deixa ver nem ser visto.',
 
@@ -94,7 +97,7 @@ window.registerStrings({
   'mag.ag_f3.nome':   'Prisão de Gelo',
   'mag.ag_f3.desc':   'Fios de gelo correm pelo chão e sobem pelo alvo. Quem não resistir vira estátua.',
   'mag.te_d1.nome':   'Muralha Primordial',
-  'mag.te_d1.desc':   'Madeira e cipó brotam do chão e se enrolam no corpo. Quanto mais você alimenta, mais espessa fica.',
+  'mag.te_d1.desc':   'Madeira e cipó brotam do chão e se enrolam no corpo. Cada PM investido vale 1 de Armadura, até 5 — e ela cobra esse mesmo tanto a cada turno para não se desfazer. Vale contra golpe e contra magia, mas não contra o que fura armadura.',
   'mag.te_d2.nome':   'Pele de Pedra',
   'mag.te_d2.desc':   'A pele ganha a dureza da rocha enquanto a magia durar.',
 
@@ -143,6 +146,7 @@ window.registerStrings({
   'mag.cat.defesa_atq': 'Second attack',
   'mag.custo':        '{pm} MP',
   'mag.custo.faixa':  '{min} to {max} MP',
+  'mag.custo.faixa_turno': '{min} to {max} MP per turn',
   'mag.custo.turno':  '{pm} MP per turn',
   'mag.custo.livre':  'Free',
   'mag.tecto':        'Requires Skill {h}',
@@ -197,7 +201,7 @@ window.registerStrings({
   'mag.ag_f2.nome':   'Liquid Blade',
   'mag.ag_f2.desc':   'Water under enough pressure to cut stone.',
   'mag.ag_d1.nome':   'Tidal Cocoon',
-  'mag.ag_d1.desc':   'A shell of living water closes around you. The more you feed it, the thicker it gets.',
+  'mag.ag_d1.desc':   'A shell of living water closes around you. Each MP spent is worth 1 Armour, up to 5 — and it charges that same amount every turn to hold. Works against blows and magic alike, but not against what pierces armour.',
   'mag.ag_d2.nome':   'Dense Mist',
   'mag.ag_d2.desc':   'A fog that lets you neither see nor be seen.',
 
@@ -214,7 +218,7 @@ window.registerStrings({
   'mag.ag_f3.nome':   'Ice Prison',
   'mag.ag_f3.desc':   'Threads of ice run along the ground and climb the target. Those who fail to resist become statues.',
   'mag.te_d1.nome':   'Primordial Wall',
-  'mag.te_d1.desc':   'Wood and vine sprout from the ground and wrap the body. The more you feed it, the thicker.',
+  'mag.te_d1.desc':   'Wood and vine sprout from the ground and wrap the body. Each MP spent is worth 1 Armour, up to 5 - and it charges that same amount every turn to hold. Works against blows and magic alike, but not against what pierces armour.',
   'mag.te_d2.nome':   'Stone Skin',
   'mag.te_d2.desc':   'The skin takes on the hardness of rock while the spell lasts.',
 
