@@ -284,7 +284,7 @@ async function disconnectWallet() {
   document.getElementById('resCristaisBtn').style.display   = 'none';
   document.getElementById('resOvosBtn').style.display       = 'none';
   document.getElementById('resItemsBtn').style.display      = 'none';
-  document.getElementById('resAvataresBtn').style.display    = 'none';
+  document.getElementById('resBatalhaBtn').style.display    = 'none';
 
   const ww = document.getElementById('walletWarning');
   const ss = document.getElementById('summonSection');
@@ -305,9 +305,11 @@ function updateHeaderButtons() {
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
   document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
   document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';
-  // Os avatares aparecem assim que existir um: e a porta do combate e
-  // da equipa, e nao ha razao para a esconder de quem ja tem bicho.
-  document.getElementById('resAvataresBtn').style.display = temAvatar ? '' : 'none';
+  // A batalha aparece assim que existir um avatar. O numero na
+  // pastilha e o tamanho da equipa montada, nao o total de bichos: a
+  // colonia ja diz quantos ha, e o que interessa aqui e se a equipa
+  // esta pronta para lutar.
+  document.getElementById('resBatalhaBtn').style.display = temAvatar ? '' : 'none';
 }
 
 // ─── Após autenticação bem-sucedida ──────────────────────────────

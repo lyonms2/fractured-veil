@@ -197,6 +197,17 @@ function renderEquipaBar() {
 // acaba de a montar. Diz sempre porque não dá, em vez de só ficar
 // apagado: falta gente na equipa, ou há alguém cansado de mais.
 // ═══════════════════════════════════════════════════════════════════
+/* O AVISO, e já não o botão.
+
+   Havia aqui um BATALHAR grande que entrava direto no PvE. Fazia
+   sentido quando esta barra vivia enterrada no 🧬 e era o único caminho
+   para lutar. Agora a barra está na página da batalha, com os cartões
+   dos modos logo por baixo — e dois botões para a mesma luta, à
+   distância de dois centímetros, é escolha inventada.
+
+   O que fica é a parte que os cartões não sabem dizer: PORQUE é que não
+   dá. Falta gente na equipa, ou há gente cansada de mais e com nome.
+   Com a equipa pronta isto some, e quem manda são os cartões. */
 function renderBotaoBatalhar(cheia) {
   if (!cheia) return `<div class="equipa-batalhar-off">${t('equipa.batalhar.incompleta')}</div>`;
 
@@ -206,11 +217,7 @@ function renderBotaoBatalhar(cheia) {
       ${t('equipa.batalhar.cansada', { nomes: cansados.map(c => c.nome).join(', ') })}
     </div>`;
   }
-  return `<button class="equipa-batalhar" onclick="abrirCombatePvE()">
-    <span class="eb-icone">⚔️</span>
-    <span class="eb-texto">${t('equipa.batalhar')}</span>
-    <span class="eb-custo">${t('equipa.batalhar.custo', { n: (typeof PVE_ENERGIA_CUSTO !== 'undefined' ? PVE_ENERGIA_CUSTO : 10) })}</span>
-  </button>`;
+  return '';
 }
 
 // Botão ⚔ de cada card. Só re-renderiza a barra e a grelha — a escolha

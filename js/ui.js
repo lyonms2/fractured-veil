@@ -152,16 +152,16 @@ function updateResourceUI() {
   document.getElementById('resOvos').textContent = eggsInInventory.length;
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
-  // Slots ocupados de slots disponíveis. As outras pastilhas mostram
-  // "quanto tenho"; esta mostra "quantos cabem", que é a pergunta que
-  // se faz sobre avatares.
-  const resAv = document.getElementById('resAvatares');
+  // Era a pastilha do 🧬 e contava slots ocupados de disponíveis. O 🧬
+  // saiu da fila de cima — a colónia mostra os avatares todos — e o
+  // lugar dele é agora o ⚔. Portanto o número muda de pergunta: deixa
+  // de ser "quantos bichos tenho" e passa a ser "quantos estão na
+  // equipa", que é o que decide se dá para lutar.
+  const resAv = document.getElementById('resEquipa');
   if(resAv) {
-    const disponiveis = Math.min(
-      typeof MAX_SLOTS === 'number' ? MAX_SLOTS : 9,
-      (typeof BASE_SLOTS === 'number' ? BASE_SLOTS : 3) + (gs.extraSlots || 0));
-    const ocupados = (avatarSlots || []).filter(s => s && !s.dead).length;
-    resAv.textContent = ocupados + '/' + disponiveis;
+    const naEquipa = (typeof equipaIdx === 'function') ? equipaIdx().length : 0;
+    const cabem    = (typeof COMBATE_EQUIPA_MAX === 'number') ? COMBATE_EQUIPA_MAX : 3;
+    resAv.textContent = naEquipa + '/' + cabem;
   }
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
