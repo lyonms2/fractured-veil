@@ -52,13 +52,25 @@ function fazendaVivos() {
 // O ECRÃ
 // ═══════════════════════════════════════════
 
-// Os cinco vitais na ordem em que se lêem no cartão.
+/* Os cinco vitais, na ordem em que se lêem no cartão.
+
+   SEM CORES AQUI. Estavam escritas à mão nesta lista e não batiam com
+   as da tela de cuidar: o humor era magenta aqui e amarelo lá, a
+   energia dourada aqui e azul lá, a higiene azul aqui e castanha lá.
+   Três dos cinco. Quem olhasse para a colónia e entrasse numa criatura
+   via a mesma barra mudar de cor, e não havia nada que explicasse
+   porquê.
+
+   A cor passa a vir das classes .fill-fome, .fill-humor e companhia,
+   do css/ui.css, que são as mesmas que a tela de cuidar usa — e que o
+   mobile-index.css repete para o telemóvel. Uma fonte só: mudar a cor
+   do humor passa a ser uma linha, não três ficheiros. */
 const FAZENDA_VITAIS = [
-  { chave: 'fome',    emoji: '🍖', cor: '#e74c3c' },
-  { chave: 'humor',   emoji: '😄', cor: '#e830c0' },
-  { chave: 'energia', emoji: '⚡', cor: '#c9a84c' },
-  { chave: 'saude',   emoji: '💚', cor: '#27ae60' },
-  { chave: 'higiene', emoji: '🛁', cor: '#5ab4e8' },
+  { chave: 'fome',    emoji: '🍖' },
+  { chave: 'humor',   emoji: '😄' },
+  { chave: 'energia', emoji: '⚡' },
+  { chave: 'saude',   emoji: '💚' },
+  { chave: 'higiene', emoji: '🛁' },
 ];
 
 // Abaixo disto a barra pisca: é o mesmo limiar a partir do qual o
@@ -81,8 +93,8 @@ function _fazendaBarra(v, cfg) {
   const baixo = val < FAZENDA_ALERTA;
   return `<div class="fz-vital" title="${cfg.emoji} ${val}">
     <div class="fz-bar">
-      <div class="fz-bar-fill${baixo ? ' fz-baixo' : ''}" data-vital="${cfg.chave}"
-           style="width:${val}%;background:${cfg.cor};"></div>
+      <div class="fz-bar-fill fill-${cfg.chave}${baixo ? ' fz-baixo' : ''}"
+           data-vital="${cfg.chave}" style="width:${val}%;"></div>
     </div>
     <span class="fz-num${baixo ? ' fz-num-baixo' : ''}" data-num="${cfg.chave}">${val}</span>
   </div>`;
