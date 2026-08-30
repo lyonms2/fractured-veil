@@ -172,7 +172,7 @@ window.registerStrings({
   'mag.so_f2.nome':   'Devorar Essência',
   'mag.so_f2.desc':   'Não fere o corpo: desfaz o que havia dentro dele. O alvo testa Resistência e, falhando, sai do combate de vez. Um 6 falha sempre, por mais Resistência que ele tenha — e só a alma fechada trava isto.',
   'mag.so_d1.nome':   'Manto de Penumbra',
-  'mag.so_d1.desc':   'Uma barreira invisível que nada atravessa.',
+  'mag.so_d1.desc':   'Um manto de penumbra fecha-se à sua volta e come os golpes antes de eles chegarem à carne: 8 pontos de dano, e o que passar disso fere na mesma. Enquanto a bolsa aguentar, o golpe não fere — e o que não fere não envenena, não congela nem decapita. Paga-se uma vez, dura até se gastar, e lançá-la outra vez enche-a mais.',
   'mag.so_d2.nome':   'Égide Mental',
   'mag.so_d2.desc':   'A mente se fecha por dentro. Nada que tire você do combate sem passar pela vida — virar pedra, virar estátua de gelo, ter a alma devorada — chega a pegar. Em troca não pára um único ponto de dano, e não impede o Inverno Súbito de o prender: fecha a alma, não o corpo. Paga-se uma vez e dura a luta inteira.',
 
@@ -320,7 +320,7 @@ window.registerStrings({
   'mag.so_f2.nome':   'Devour Essence',
   'mag.so_f2.desc':   'It does not wound the body: it unmakes what was inside it. The target tests Endurance and, on a failure, leaves combat for good. A 6 always fails, however much Endurance they have — and only a closed soul stops this.',
   'mag.so_d1.nome':   'Penumbra Mantle',
-  'mag.so_d1.desc':   'An invisible barrier that nothing crosses.',
+  'mag.so_d1.desc':   'A mantle of gloom closes around you and eats blows before they reach flesh: 8 points of damage, and whatever exceeds that wounds all the same. While the pouch holds, the blow does not wound - and what does not wound cannot poison, freeze or behead. Paid once, it lasts until spent, and casting it again fills it further.',
   'mag.so_d2.nome':   'Mental Aegis',
   'mag.so_d2.desc':   'The mind closes from within. Nothing that removes you from combat without going through your life - turning to stone, to a statue of ice, having your soul devoured - can take hold. In exchange it stops no damage at all, and does not prevent Sudden Winter from locking you in ice: it closes the soul, not the body. Paid once, it lasts the whole fight.',
 

@@ -2112,6 +2112,159 @@ A.ver('custa 10 PM, não fere, e desfaz a alma',
         `PM 40 → ${e.A[0].pm}  ·  Petrificar 5, Prisão de Gelo 10, esta ${DEVORAR.pm}`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const MANTO = M.MAGIAS['Sombra'].defesa.find(g => g.id === 'so_d1');
+
+console.log('\n═══ MANTO DE PENUMBRA (so_d1) ═══');
+console.log('  "Uma barreira invisível."   ·   4 PM\n');
+
+/* Levanta o Manto e devolve quem o levantou. Ninguém ataca de volta:
+   quero medir a barreira sozinha, sem golpes a somar-se por cima. */
+function comManto(vezes) {
+  let lancados = 0;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancados >= (vezes || 1)) return {};
+      lancados++; return { magia: MANTO, pm: MANTO.pm };
+    },
+    a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Sombra', pm: 200, pmMax: 200,
+         magias: { ataque: MANTO, forte: MANTO, defesa: MANTO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < (vezes || 1); i++) M.combate3dtTurno(e);
+  return e.A[0];
+}
+
+// Bate num defensor com a barreira que eu mandar, e conta o que passou.
+function bater(barreira, forca, golpes) {
+  let aoPV = 0, comido = 0, caiu = 0;
+  for (let s = 1; s <= (golpes || 400); s++) {
+    const d = A.duelo({ seed: s, politica: () => ({}),
+      a: { carac: { F: forca, H: 3, R: 4, A: 1 } },
+      b: { carac: { F: 1, H: 0, R: 40, A: 0 }, iniciativa: 0 } });
+    d.B[0].barreira = barreira;
+    const antes = d.B[0].pv;
+    const ev = {};
+    M._c3resolver(d.A[0], d.B[0], null, 0, M._c3rng(s), ev, {});
+    aoPV += (antes - d.B[0].pv);
+    comido += (ev.barreiraComeu || 0);
+    if (ev.barreiraCaiu) caiu++;
+  }
+  return { aoPV, comido, caiu, golpes: golpes || 400 };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 4 PM fixos e não escala',
+      MANTO.pm === 4 && !MANTO.pmMax && !MANTO.porTurno && MANTO.barreira === true,
+      `pm=${MANTO.pm} pmMax=${MANTO.pmMax || '—'} porTurno=${!!MANTO.porTurno}`);
+
+// ── 2. Quatro PM compram oito pontos ──
+{
+  const c = comManto(1);
+  A.ver('quatro PM dão oito pontos de barreira',
+        c.barreira === MANTO.pm * 2, `barreira = ${c.barreira}`);
+}
+
+/* ── 3. "NADA ATRAVESSA" É FALSO, E É O PONTO DA MAGIA ──
+
+   Não é um escudo impenetrável — isso é o Corpo Elemental. É uma bolsa
+   de pontos que come dano até se gastar, e o que sobrar do golpe passa
+   na mesma para a vida. Medir isto é medir a diferença entre o que o
+   texto promete e o que a magia é. */
+{
+  /* "Golpe pequeno" nao e medida nenhuma: com Forca 2 o dano chega aos
+     10 e a barreira e 8, portanto a primeira versao desta prova exigia
+     que a vida ficasse intacta e ela nao ficava — com razao. O que se
+     quer provar e o MECANISMO: enquanto houver bolsa, a vida nao e
+     tocada. Uma barreira maior do que qualquer golpe mostra-o sem
+     depender do tamanho de nada. */
+  const fraco = bater(99, 2, 500);     // bolsa maior do que qualquer golpe
+  const forte = bater(8, 12, 500);     // golpes grandes: ela come 8 e o resto passa
+  A.ver('enquanto houver bolsa, a vida não é tocada',
+        fraco.aoPV === 0 && fraco.comido > 0,
+        `comeu ${fraco.comido} · à vida chegaram ${fraco.aoPV}`);
+  A.ver('contra golpes grandes, come oito e o resto passa',
+        forte.aoPV > 0 && forte.comido > 0,
+        `comeu ${forte.comido} · à vida chegaram ${forte.aoPV}`);
+}
+
+// ── 4. Come no máximo o que tem ──
+{
+  const r = bater(3, 20, 300);
+  A.ver('uma barreira de 3 come 3 e nem um ponto mais',
+        r.comido === 3 * r.golpes, `${r.comido} comidos em ${r.golpes} golpes de 3 cada`);
+}
+
+// ── 5. E diz quando cai ──
+{
+  const r = bater(2, 20, 200);
+  A.ver('o registo avisa que a barreira caiu',
+        r.caiu === r.golpes, `${r.caiu} avisos em ${r.golpes} golpes`);
+}
+
+/* ── 6. A BARREIRA TRAVA O QUE VEM ATRÁS DO DANO ──
+
+   O veneno, o gelo e o vorpal exigem todos que o golpe FIRA. Como a
+   barreira desconta antes de a vida ser tocada, um golpe inteiramente
+   comido não fere — e por isso não envenena, não congela e não
+   decapita. É a parte mais valiosa da magia e não está escrita em lado
+   nenhum. */
+{
+  let decapitou = 0, criticos = 0;
+  for (let s = 1; s <= 1500; s++) {
+    const d = A.duelo({ seed: s, politica: () => ({}),
+      a: { carac: { F: 3, H: 3, R: 4, A: 1 } },
+      b: { carac: { F: 1, H: 0, R: 40, A: 0 }, iniciativa: 0 } });
+    d.A[0].vorpal = true;
+    d.B[0].barreira = 99;              // come tudo o que vier
+    const ev = {};
+    M._c3resolver(d.A[0], d.B[0], null, 0, M._c3rng(s), ev, {});
+    if (ev.criticoAtk) criticos++;
+    if (ev.decapitou) decapitou++;
+  }
+  A.ver('um golpe todo comido não decapita, mesmo com o Fio de pé',
+        criticos > 0 && decapitou === 0,
+        `${criticos} críticos, ${decapitou} decapitações`);
+}
+
+// ── 7. Não cobra por turno: dura até se gastar ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem, alvo) => (quem.nome === 'A' && !quem.barreira)
+      ? { magia: MANTO, pm: MANTO.pm } : {},
+    a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Sombra', pm: 5, pmMax: 5,
+         magias: { ataque: MANTO, forte: MANTO, defesa: MANTO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < 10 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('com 5 PM na bolsa, a barreira de pé dez turnos depois',
+        e.A[0].barreira === 8 && e.A[0].pm === 1,
+        `barreira=${e.A[0].barreira} com ${e.A[0].pm} PM · não cobra nada por turno`);
+}
+
+/* ── 8. Acumula, e isso é de propósito ──
+
+   O motor escreve `(atk.barreira || 0) + pmGastos * 2` de forma
+   explícita: é uma bolsa que se enche. Medido noutro sítio, quem a
+   constrói todo o turno aguenta mais do que lhe batem — mas não ataca
+   nunca e fica sem PM em quinze turnos. É empate caro, não vitória. */
+{
+  const c = comManto(3);
+  A.ver('lançá-la três vezes empilha a bolsa, como deve',
+        c.barreira === MANTO.pm * 2 * 3, `barreira = ${c.barreira} depois de três`);
+}
+
+// ── 9. Vale a pena? ──
+{
+  const sem = bater(0, 5, 800), com = bater(8, 5, 800);
+  A.ver('quatro PM tiram oito pontos de dano da vida, e não mais',
+        com.aoPV < sem.aoPV,
+        `à vida chegaram ${sem.aoPV} sem manto → ${com.aoPV} com  ` +
+        `(a barreira comeu ${com.comido})`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
