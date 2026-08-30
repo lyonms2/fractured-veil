@@ -11,3 +11,6 @@ require('./auditoria-papeis.js');
 require('./auditoria-persistentes.js');
 require('./auditoria-duracoes.js');
 require('./auditoria-equipa.js');
+// As magias que defendem. Nasceram por olhar: as provas antigas
+// cresceram todas a partir do que ataca.
+require('./auditoria-defesas.js');
