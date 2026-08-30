@@ -508,6 +508,7 @@ async function _onLoginSuccess(user) {
       document.getElementById('aliveScreen').style.display  = 'block';
       document.getElementById('deadScreen').style.display   = 'none';
       document.getElementById('statusCard').style.display   = 'block';
+      document.getElementById('actionBtns').style.display   = '';
       document.getElementById('actionBtns').style.opacity   = '1';
       document.getElementById('actionBtns').style.pointerEvents = 'all';
       document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFaseVisual());
@@ -524,6 +525,11 @@ async function _onLoginSuccess(user) {
       if(poopCount > 0) restaurarCocos();
       updateDirtyVisuals();
       updateEquippedDisplay();
+
+      // A consola abre na COLÓNIA, não numa criatura. O jogo tem até dez
+      // e o combate pede três; entrar por uma delas escondia o resto, que
+      // era o problema todo. Quem quiser tratar de uma entra por ali.
+      if(typeof abrirFazenda === 'function') abrirFazenda();
 
       if(gs.moedas < 30) {
         setTimeout(() => addLog(t('onboard.tip.coins'), 'bad'), 1200);

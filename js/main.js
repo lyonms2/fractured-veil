@@ -146,15 +146,30 @@ document.addEventListener('visibilitychange', async () => {
   if(_hiddenAt > 0 && typeof hatched !== 'undefined' && hatched && !dead) {
     const offlineSecs = Math.floor((Date.now() - _hiddenAt) / 1000);
     if(offlineSecs > 0) {
+      const offlineCycles = Math.floor(offlineSecs / 60);
       let status = t('log.offline_paused');
       if(sleeping && vitals.energia < 100) {
-        const offlineCycles = Math.floor(offlineSecs / 60);
         vitals.energia = Math.min(100, vitals.energia + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
         status = t('log.offline_slept');
         if(vitals.energia >= 100) {
           sleeping = false;
           addLog(t('log.woke_offline'), 'good');
         }
+      }
+
+      // Os outros avatares também dormiram. Isto tratava só do que está
+      // aberto na tela de cuidar, porque era o único que vivia; agora
+      // vivem todos, e quem adormeceu tinha de acordar descansado na
+      // mesma medida. Nada mais decai enquanto a aba está escondida —
+      // essa parte não mudou, só passou a valer para a coleção inteira.
+      if(typeof avatarSlots !== 'undefined' && offlineCycles > 0) {
+        avatarSlots.forEach((s, i) => {
+          if(!s || i === activeSlotIdx) return;
+          if(!s.hatched || s.dead || !s.vitals || !s.sleeping) return;
+          s.vitals.energia = Math.min(100,
+            (s.vitals.energia ?? 100) + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
+          if(s.vitals.energia >= 100) s.sleeping = false;
+        });
       }
       saveRuntimeToSlot(activeSlotIdx);
       scheduleSave();

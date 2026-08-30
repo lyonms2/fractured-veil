@@ -310,8 +310,8 @@ function updateDirtyVisuals() {
 // Multiplicador < 1.0 = decay mais lento (bônus positivo).
 // Multiplicador > 1.0 = recuperação mais rápida (bônus positivo).
 // ═══════════════════════════════════════════════════════════════════
-function getElementoBonus() {
-  const elem = avatar?.elemento;
+function getElementoBonus(quem) {
+  const elem = (quem || avatar)?.elemento;
   switch(elem) {
     case 'Fogo':
       // Espírito Ardente — metabolismo acelerado compensado por ânimo elevado
@@ -341,35 +341,109 @@ function getElementoBonus() {
   }
 }
 
-// Energia que um avatar recupera por ciclo enquanto está no banco.
-// Metade do ritmo de quem dorme ativo (4/ciclo), porque descansar não é
-// o mesmo que ser cuidado.
-const BANCO_ENERGIA_POR_CICLO = 2;
-// A saúde de quem está no banco nunca desce abaixo disto: doente sim,
-// morto sem o dono ver, não.
-const BANCO_SAUDE_MINIMA = 1;
+/* ═══════════════════════════════════════════════════════════════════
+   A FAZENDA — todos vivem ao mesmo tempo
 
-function recuperarEnergiaNoBanco() {
+   Havia aqui um recuperarEnergiaNoBanco. O jogo tinha um avatar ATIVO,
+   que decaía e crescia, e um banco onde os outros ficavam congelados —
+   só recuperavam energia, a metade do ritmo, e a sua saúde parava em 1
+   para nunca morrerem sem o dono ver.
+
+   Esse desenho discordava do combate. A batalha pede três avatares e
+   cobra energia aos três, mas só um envelhecia: a fase sai de
+   faseFromAge(totalSecs) e o totalSecs só avançava para o ativo,
+   portanto três adultos custavam sessenta horas em série, com troca
+   manual de slot entre cada um. E os cartões da coleção não mostravam
+   um único vital, por isso nem dava para saber como estavam os outros.
+
+   Agora não há banco. Todos os avatares chocados vivem: envelhecem,
+   têm fome, ficam sujos, adoecem. O que era "o ativo" passa a ser só
+   "o que estou a ver na tela de cuidar", e a escolha de quem luta
+   mudou-se para a página de batalha.
+
+   A ausência não mudou: enquanto o jogador está fora nada decai (o
+   gameTick não corre), e quem estiver a dormir recupera energia na
+   volta. O que era verdade para um passa a ser verdade para dez.
+
+   NOTA SOBRE A MORTE. A saúde continua a parar em MORTE_MINIMA para
+   quem não está aberto na tela de cuidar. O argumento antigo — "não
+   morre sem o dono ver" — enfraqueceu, porque agora vêem-se todos de
+   relance na tela principal; mas dez avatares a poder morrer de uma vez
+   é uma perda grande e irreversível, e eles valem dinheiro no mercado.
+   Fica no conservador, num sítio só, e é uma linha para mudar.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// A saúde de quem não está aberto na tela de cuidar não desce abaixo
+// disto. Põe a 0 para deixar morrer em qualquer lado.
+const MORTE_MINIMA = 1;
+
+// Um ciclo do gameTick são 60 segundos reais.
+const SEGUNDOS_POR_CICLO = 60;
+
+function viverTodos() {
   if (typeof avatarSlots === 'undefined') return;
   avatarSlots.forEach((s, i) => {
-    if (!s || i === activeSlotIdx) return;      // o ativo tem o seu próprio ciclo
-    if (!s.hatched || s.dead) return;
-    if (!s.vitals) return;
-    s.vitals.energia = Math.min(100, (s.vitals.energia ?? 100) + BANCO_ENERGIA_POR_CICLO);
+    // O que está aberto na tela de cuidar corre pelo caminho de baixo,
+    // com bolhas, cocó e animações. Este trata dos outros.
+    if (!s || i === activeSlotIdx) return;
+    if (!s.hatched || s.dead || !s.vitals) return;
 
-    // Uma doença apanhada em batalha (a fratura) tem de doer no banco
-    // também — se não doesse, bastava guardar o avatar para a curar de
-    // graça, e a fratura não seria ameaça nenhuma.
-    //
-    // Mas PÁRA EM 1 e nunca mata. Matar um avatar que o jogador nem
-    // está vendo, e que vale dinheiro no marketplace, é castigo a mais
-    // por uma coisa que ele nem viu acontecer. O bicho fica à beira,
-    // visivelmente doente, à espera do antídoto — e só morre mesmo se
-    // for posto em campo e continuar sem tratamento.
-    const doencas = (s.activeDiseases || []).length;
-    if (doencas > 0)
-      s.vitals.saude = Math.max(BANCO_SAUDE_MINIMA,
-        (s.vitals.saude ?? 100) - DISEASE_DECAY_PER_CYCLE * doencas);
+    // ── O TEMPO ──
+    // É isto que derruba a parede das sessenta horas: a idade passa a
+    // correr para a coleção toda, não só para um.
+    s.totalSecs = (s.totalSecs || 0) + SEGUNDOS_POR_CICLO;
+
+    // Cada um decai com a SUA raridade e o SEU elemento. Os efeitos de
+    // itens ficam de fora aqui de propósito: o getItemEffect lê o
+    // inventário do avatar aberto, e aplicá-lo aos outros dava a todos
+    // o amuleto de um só.
+    const d  = rarityBonus(s).decay;
+    const eb = getElementoBonus(s);
+    const v  = s.vitals;
+
+    if (s.sleeping) {
+      v.energia = Math.min(100, (v.energia ?? 100) + 4 * eb.sleepEnergy);
+      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.30 * d * eb.fomeDecay);
+      v.higiene = Math.max(0, (v.higiene ?? 100) - 0.05 * eb.higieneDecay);
+      if (v.energia >= 100) s.sleeping = false;
+    } else {
+      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.8  * d * GAME_SPEED * eb.fomeDecay);
+      v.humor   = Math.max(0, (v.humor   ?? 100) - 1.5  * d * GAME_SPEED * eb.humorDecay);
+      v.energia = Math.max(0, (v.energia ?? 100) - 0.6  * d * GAME_SPEED * eb.energiaDecay);
+      v.higiene = Math.max(0, (v.higiene ?? 100) - 0.12 * GAME_SPEED     * eb.higieneDecay);
+      // Adormece sozinho com a energia no fim, tal como o que está aberto.
+      if (v.energia < 5) s.sleeping = true;
+    }
+
+    // ── STRESS E DOENÇAS ──
+    // Mesmos limiares do ciclo de baixo. Sem isto, deixar um avatar
+    // fechado era imunidade: passava fome sem nunca adoecer.
+    if (!s.diseaseStress) {
+      s.diseaseStress = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
+    }
+    const st = s.diseaseStress;
+    if (!s.sleeping) {
+      st.exaustao    = v.energia < 20 ? (st.exaustao    || 0) + 1 : 0;
+      st.desnutricao = v.fome    < 15 ? (st.desnutricao || 0) + 1 : 0;
+      st.infeccao    = v.higiene < 15 ? (st.infeccao    || 0) + 1 : 0;
+      st.melancolia  = v.humor   < 20 ? (st.melancolia  || 0) + 1 : 0;
+    } else {
+      st.exaustao = 0;
+    }
+
+    if (!s.activeDiseases) s.activeDiseases = [];
+    for (const id of Object.keys(DISEASES)) {
+      if (DISEASES[id].limiar == null) continue;   // a fratura vem da batalha
+      if ((st[id] || 0) >= DISEASE_STRESS_THRESHOLD && !s.activeDiseases.includes(id)) {
+        s.activeDiseases.push(id);
+      }
+    }
+
+    if (s.activeDiseases.length > 0) {
+      v.saude = Math.max(MORTE_MINIMA,
+        (v.saude ?? 100) - DISEASE_DECAY_PER_CYCLE * s.activeDiseases.length);
+    }
+    s.sick = (v.saude ?? 100) < 20 || s.activeDiseases.length > 0;
   });
 }
 
@@ -390,17 +464,8 @@ function gameTick() {
 
   if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
 
-  // ── OS AVATARES NO BANCO DESCANSAM ──
-  // Só o slot ativo é que decai e recupera; os outros ficam congelados
-  // no estado em que foram guardados. Isso deixou de servir quando a
-  // batalha passou a cobrar energia aos TRÊS da equipa: sem descanso, ao
-  // fim de nove batalhas os do banco ficavam presos abaixo do limiar e a
-  // equipa nunca mais lutava.
-  //
-  // Descansam só ENERGIA, e mais devagar do que quem dorme a sério (2
-  // contra 4 por ciclo). A fome, o humor e a higiene continuam congeladas
-  // — quem não está sendo cuidado também não passa fome.
-  recuperarEnergiaNoBanco();
+  // ── TODOS OS OUTROS VIVEM TAMBÉM ──
+  viverTodos();
 
   const _d  = rarityBonus().decay;
   const _eb = getElementoBonus(); // bônus elementais passivos

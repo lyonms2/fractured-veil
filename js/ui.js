@@ -699,7 +699,7 @@ function rebuildScreensParaSlot() {
   if(!avatar) {
     // Slot vazio — volta à tela inicial com o painel de invocar
     set('idleScreen','flex'); set('eggScreen','none');
-    set('aliveScreen','none'); set('deadScreen','none');
+    set('aliveScreen','none'); set('deadScreen','none'); set('fazendaScreen','none');
     set('creatureCard','none'); set('statusCard','none');
     set('summonCard','block');
     if(walletAddress) set('summonSection','block');
@@ -712,7 +712,7 @@ function rebuildScreensParaSlot() {
 
   if(dead) {
     set('idleScreen','none'); set('eggScreen','none');
-    set('aliveScreen','none'); set('deadScreen','flex');
+    set('aliveScreen','none'); set('deadScreen','flex'); set('fazendaScreen','none');
     set('summonCard','none'); set('creatureCard','none'); set('statusCard','none');
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
     if(typeof updateResourceUI === 'function') updateResourceUI();
@@ -729,9 +729,11 @@ function rebuildScreensParaSlot() {
   // Avatar vivo
   if(typeof setupAvatar === 'function') setupAvatar();
   set('idleScreen','none'); set('eggScreen','none');
-  set('aliveScreen','block'); set('deadScreen','none');
+  set('aliveScreen','block'); set('deadScreen','none'); set('fazendaScreen','none');
   set('summonCard','none'); set('creatureCard','block'); set('statusCard','block');
-  if(btns) { btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }
+  // O display entra aqui porque a colonia o poe a none: sem o repor,
+  // quem entrasse numa criatura ficava sem os botoes de cuidar.
+  if(btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }
   const svg = $('creatureSVG');
   if(svg) svg.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed,
                                    getFaseSize(), getFaseSize(), getFaseVisual());
