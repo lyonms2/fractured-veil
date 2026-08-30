@@ -11,31 +11,32 @@
    sem uma única media query.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* O caminho de volta, no cabeçalho da consola. */
-.device-voltar {
-  margin-left: auto; margin-right: 0.5rem;
+/* O CAMINHO DE VOLTA.
+
+   Ao alto e à esquerda do ecrã, a espelhar o 🔍 do retrato do outro
+   lado. Absoluto dentro do .screen, que é relative — e por isso não
+   depende do .device-top, que o telemóvel esconde quando há
+   criatura. Era esse o problema: no telemóvel entrava-se numa
+   criatura e não havia saída.
+
+   z-index acima dos ecrãs, que são absolutos e inset:0: sem isso
+   ficava por baixo do próprio ecrã que o deve mostrar. */
+.btn-voltar-colonia {
+  position: absolute; top: 0.4375rem; left: 0.4375rem; z-index: 20;
   font-family: 'Cinzel', serif; font-size: 0.46875rem;
   letter-spacing: 0.075rem;
-  padding: 0.1875rem 0.4375rem;
-  background: rgba(201,168,76,.10);
-  border: 1px solid rgba(201,168,76,.35);
-  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(201,168,76,.12);
+  border: 1px solid rgba(201,168,76,.4);
+  border-radius: 0.3125rem;
   color: var(--gold); cursor: pointer;
   transition: background .15s, border-color .15s;
 }
-.device-voltar:hover { background: rgba(201,168,76,.22); border-color: var(--gold); }
-
-/* A consola cresce no modo colónia.
-
-   Nas outras telas a altura fixa faz sentido: há um bicho ao centro e
-   espaço à volta dele. Aqui não — o conteúdo é uma lista, e altura fixa
-   dava lista curta com um vazio por baixo, sobretudo no telemóvel, onde
-   a regra dos 380px encolhe o ecrã para 12.5rem.
-
-   Duas classes ganham a uma: isto passa por cima das regras do
-   mobile-index.css sem precisar de !important. */
-.screen.fz-modo { height: 20rem; }
-
+.btn-voltar-colonia:hover { background: rgba(201,168,76,.24); border-color: var(--gold); }
+/* No telemóvel o dedo precisa de mais alvo do que o rato. */
+@media (max-width: 680px) {
+  .btn-voltar-colonia { font-size: 0.5rem; padding: 0.375rem 0.625rem; }
+}
 #fazendaScreen {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
