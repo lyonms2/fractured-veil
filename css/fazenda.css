@@ -161,6 +161,26 @@
 }
 @keyframes fz-dorme { 0%,100% { opacity:.45; transform: translateY(0); } 50% { opacity:1; transform: translateY(-0.125rem); } }
 
+/* ── QUEM DEIXOU SUJEIRA ──
+
+   Fica no canto de BAIXO, do lado oposto ao 💤: um avatar pode estar a
+   dormir e ter cocó por limpar ao mesmo tempo, e as duas marcas
+   sobrepostas seriam duas informações a tapar-se uma à outra.
+
+   Não pisca. O sono é um estado que passa sozinho e o 💤 respira para
+   o dizer; isto é uma tarefa à espera, e uma tarefa que pisca no canto
+   do olho durante dez cartões cansa mais do que informa. */
+.fz-coco {
+  position: absolute; bottom: -0.125rem; left: -0.1875rem;
+  font-size: 0.4375rem; line-height: 1; font-weight: 700;
+  color: #e8c48a; text-shadow: 0 0.0625rem 0.125rem #000;
+  display: flex; align-items: center; gap: 0.0625rem;
+}
+
+@media (min-width: 681px) {
+  .fz-coco { font-size: 0.5rem; }
+}
+
 .fz-info { min-width: 0; }
 .fz-nome {
   font-family: 'Cinzel', serif; font-size: 0.5625rem;

@@ -115,12 +115,19 @@ function _fazendaCartao({ s, idx }) {
   const naEquipa = (typeof equipaIdx === 'function') && equipaIdx().includes(idx);
   const dorme  = !!s.sleeping;
   const doente = (s.activeDiseases || []).length > 0;
+  /* O cocó por limpar, à vista na lista.
+
+     Era preciso entrar em cada avatar para descobrir qual deles tinha
+     deixado sujeira no chão — e entrar em dez para saber de dez.
+     O poopCount já vivia gravado no slot; só não estava escrito em
+     lado nenhum fora do ecrã de cuidar. */
+  const cocos  = Math.max(0, s.poopCount | 0);
   const svg = (typeof gerarSVG === 'function')
     ? gerarSVG(s.elemento, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
     : '';
 
   return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}" data-slot="${idx}">
-    <button class="fz-av" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}</button>
+    <button class="fz-av" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}${cocos ? `<span class="fz-coco" title="${t('fazenda.coco', { n: cocos })}">💩${cocos > 1 ? cocos : ''}</span>` : ''}</button>
     <div class="fz-info">
       <div class="fz-nome">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>
@@ -212,6 +219,12 @@ function fzAtualizarVitais() {
     // O 💤 e a margem vermelha também mudam sozinhos com o tempo.
     const zzz = card.querySelector('.fz-zzz');
     if (!!s.sleeping !== !!zzz) { renderFazenda(); return; }
+    // O cocó aparece e desaparece sem se sair da lista: nasce sozinho
+    // com o tempo, e some quando se limpa lá dentro.
+    const coco = card.querySelector('.fz-coco');
+    const n = Math.max(0, s.poopCount | 0);
+    if (!!n !== !!coco) { renderFazenda(); return; }
+    if (coco) coco.textContent = '💩' + (n > 1 ? n : '');
     card.classList.toggle('fz-doente', (s.activeDiseases || []).length > 0);
   });
 }

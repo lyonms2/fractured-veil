@@ -668,6 +668,22 @@ function updatePhaseLabel() {
 // ═══════════════════════════════════════════
 // SICK VISUALS
 // ═══════════════════════════════════════════
+/* AS DOENÇAS, À VISTA.
+
+   Isto era chamado de um sítio só que interessasse: o gameTick — e
+   DEPOIS do `tickCount % 60`, portanto uma vez por minuto. Trocar de
+   avatar não o chamava, e o `tickCount` nunca reinicia: entrava-se
+   num avatar doente e as etiquetas eram as do avatar ANTERIOR até
+   calhar a próxima fronteira dos 60 — até 59 segundos depois.
+
+   O rebuildScreensParaSlot já refrescava a sujidade, os itens
+   equipados e o sono na troca. As doenças eram a única coisa por
+   avatar que ficava de fora da lista.
+
+   Agora corre a cada segundo, e a assinatura trata de que isso não
+   custe nada: só toca no DOM quando o que há para mostrar mudou. Sem
+   ela, reescrever as etiquetas 60 vezes por minuto reiniciava-lhes a
+   animação de entrada e elas piscavam para sempre. */
 function updateSickVisuals() {
   const wrap = document.getElementById('creatureWrap');
   if(!wrap) return;
@@ -686,9 +702,15 @@ function updateSickVisuals() {
   }
 
   if(!hatched || dead || (activeDiseases.length === 0 && !sick)) {
-    badgesEl.innerHTML = '';
+    if(badgesEl.innerHTML !== '') badgesEl.innerHTML = '';
+    badgesEl.dataset.assinatura = 'nenhuma';
     return;
   }
+
+  // O que está para mostrar, resumido: se não mudou, não se mexe.
+  const assinatura = activeDiseases.join(',') + '|' + (sick ? 1 : 0);
+  if(badgesEl.dataset.assinatura === assinatura) return;
+  badgesEl.dataset.assinatura = assinatura;
 
   const badges = [];
   if(sick && activeDiseases.length === 0) {
@@ -778,6 +800,9 @@ function rebuildScreensParaSlot() {
   // O sono é por avatar e a tela é uma só: sem isto, quem trocasse de
   // criatura levava as classes de sono da anterior atrás.
   if(typeof aplicarVisualDoSono === 'function') aplicarVisualDoSono(!!sleeping);
+  // A doença é por avatar como o sono é: sem isto, quem entrasse num
+  // avatar doente via as etiquetas do anterior até ao próximo ciclo.
+  if(typeof updateSickVisuals === 'function') updateSickVisuals();
   if(typeof updateAllUI === 'function') updateAllUI();
   if(typeof updateResourceUI === 'function') updateResourceUI();
   // Se o jogador estava na colónia, é para lá que se volta: este rebuild

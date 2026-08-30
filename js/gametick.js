@@ -460,6 +460,10 @@ function gameTick() {
   if(!hatched || dead || !avatar) return;
 
   updateAllUI();
+  // Fica ANTES do guarda dos 60. Atrás dele, uma doença apanhada numa
+  // batalha ou herdada de uma troca de avatar só aparecia na próxima
+  // fronteira do minuto. A função sai sozinha quando nada mudou.
+  if(typeof updateSickVisuals === 'function') updateSickVisuals();
   if(petCooldown > 0) petCooldown--;
 
   if(tickCount % 60 !== 0) return; // 1 ciclo = 60s reais
@@ -529,8 +533,6 @@ function gameTick() {
   if(activeDiseases.length > 0) {
     vitals.saude = Math.max(0, vitals.saude - DISEASE_DECAY_PER_CYCLE * activeDiseases.length);
   }
-  if(typeof updateSickVisuals === 'function') updateSickVisuals();
-
   // ── COCÔ — só no modo ativo ──
   if(!sleeping && poopPressure >= 100) {
     playSound('poop_alert');
