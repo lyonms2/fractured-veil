@@ -453,19 +453,51 @@ function addLog(msg, type = '') {
   let W, H, stars = [], rafId = null, paused = false;
 
   function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-  function init() {
-    stars = Array.from({length: STAR_COUNT}, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 1.1, a: Math.random(),
-      sp: .002 + Math.random() * .005
-    }));
+  /* AS ESTRELAS PISCAM.
+
+     Antes todas seguiam a mesma conta: alpha = .2 + .5·|sin(t·sp)|,
+     com sp entre .002 e .007. Em segundos, isso é um ciclo de 15 a 52
+     MINUTOS — na prática um céu parado, com brilhos fixos e diferentes.
+     Bonito, e imóvel.
+
+     Agora cada estrela tem o seu ciclo, a sua fase e a sua janela de
+     brilho. A janela é a fatia do ciclo em que ela acende: fora dela
+     está no brilho de repouso, dentro dela sobe e desce por um seno
+     meio, que dá um acender suave em vez de um interruptor.
+
+     Só uma em cada quatro é PISCADORA — repouso zero, portanto some
+     mesmo e volta. As outras ficam de fundo, com um brilho baixo e
+     constante. Um céu inteiro a piscar não é um céu, é ruído: são as
+     paradas que fazem as outras notar-se. */
+  function novaEstrela() {
+    const piscadora = Math.random() < 0.28;
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.1,
+      // Repouso: as piscadoras desaparecem, as de fundo ficam ténues.
+      base:   piscadora ? 0 : 0.16 + Math.random() * 0.26,
+      pico:   piscadora ? 0.60 + Math.random() * 0.40 : 0.38 + Math.random() * 0.22,
+      // Segundos por ciclo. Nada de números redondos e nada igual ao
+      // lado, senão o olho apanha o padrão e o céu vira relógio.
+      ciclo:  piscadora ? 2.5 + Math.random() * 8.5 : 5 + Math.random() * 11,
+      // Que fatia do ciclo passa acesa.
+      janela: piscadora ? 0.10 + Math.random() * 0.20 : 0.45 + Math.random() * 0.2,
+      fase:   Math.random(),
+    };
   }
+  function init() { stars = Array.from({length: STAR_COUNT}, novaEstrela); }
   function draw() {
     if(paused) return;
     ctx.clearRect(0, 0, W, H);
     const now = Date.now() / 1000;
     stars.forEach(s => {
-      const al = .2 + .5 * Math.abs(Math.sin(now * s.sp + s.a * 100));
+      const t = ((now / s.ciclo) + s.fase) % 1;
+      const k = t < s.janela ? Math.sin((t / s.janela) * Math.PI) : 0;
+      const al = s.base + (s.pico - s.base) * k;
+      // Apagada é apagada: poupa um arco e um fill por estrela e por
+      // quadro, que com 140 delas a 60fps não é nada de desprezar.
+      if(al <= 0.012) return;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,190,240,${al})`; ctx.fill();
     });
