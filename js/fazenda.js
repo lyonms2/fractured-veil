@@ -93,6 +93,26 @@ const FAZENDA_ACOES = {
   },
 };
 
+/* ESTAMOS NA COLÓNIA?
+
+   Não chega esconder o aliveScreen uma vez. Os dois ecrãs são
+   position:absolute com inset:0, portanto coexistem sem se empurrarem —
+   e há vários caminhos que repõem o da criatura depois: o
+   rebuildScreensParaSlot, a sincronização com a nuvem no fim do login, a
+   invocação. Quando isso acontecia, a criatura aparecia POR BAIXO da
+   lista, com o "FASE: BEBÊ" a atravessar os cartões, e nada respondia
+   porque os cliques iam para o ecrã de cima.
+
+   Com um estado explícito, quem reconstrói os ecrãs pergunta primeiro
+   onde é que o jogador está. */
+window._fzModoColonia = false;
+
+// Reafirma a colónia depois de alguém reconstruir os ecrãs por baixo
+// dela. Chamada no fim do rebuildScreensParaSlot.
+function fzReafirmar() {
+  if (window._fzModoColonia) abrirFazenda();
+}
+
 // Os avatares vivos, por ordem de slot.
 function fazendaVivos() {
   if (typeof avatarSlots === 'undefined') return [];
@@ -235,6 +255,7 @@ function renderFazenda() {
 
 // ── Trocar entre a colónia e o cuidado de um ──
 function abrirFazenda() {
+  window._fzModoColonia = true;
   ['aliveScreen', 'deadScreen', 'idleScreen', 'eggScreen'].forEach(id => {
     const e = document.getElementById(id); if (e) e.style.display = 'none';
   });
@@ -272,6 +293,10 @@ async function cuidarDe(idx) {
   // aqui criava uma corrida com o scheduleSave() do jogo — foi o que já
   // aconteceu no "usar este slot" do marketplace, e por isso ele também
   // passou a chamar esta função em vez de duplicá-la.
+  // Desliga ANTES do switchSlot: ele chama o rebuildScreensParaSlot,
+  // que reafirma a colónia se o estado ainda estiver ligado — e o
+  // jogador ficava preso na lista sem conseguir entrar em ninguém.
+  window._fzModoColonia = false;
   if (idx !== activeSlotIdx && typeof switchSlot === 'function') {
     await switchSlot(idx);
   }

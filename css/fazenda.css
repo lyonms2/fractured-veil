@@ -45,9 +45,14 @@
 
 /* ── O cabeçalho ── */
 .fz-topo {
-  display: flex; align-items: baseline; justify-content: space-between;
-  flex-shrink: 0; padding: 0 0.125rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.375rem; flex-shrink: 0; padding: 0 0.125rem;
 }
+/* O título cede espaço primeiro: a contagem e o botão são curtos e
+   fixos, e era o "3 de 5" que estava a ser comido. */
+.fz-titulo { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fz-topo-dir { flex-shrink: 0; }
+.fz-conta { white-space: nowrap; }
 .fz-titulo {
   font-family: 'Cinzel', serif; font-size: 0.5625rem;
   letter-spacing: 0.125rem; color: var(--gold);

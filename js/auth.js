@@ -321,9 +321,14 @@ async function _onLoginSuccess(user) {
   const _glo = document.getElementById('gameLoadingOverlay');
   if(_glo) _glo.style.display = 'flex';
 
-  // Mostra email curto no header
+  /* No header vai o NOME, não o endereço.
+
+     Estava a mostrar o email cortado aos quinze caracteres, que continua
+     a ser um email à vista de quem passe ao lado do ecrã — e o pedaço
+     que sobrava não servia para nada a não ser confirmar a conta. Fica a
+     parte antes do @, que faz esse trabalho sem publicar o endereço. */
   const emailShort = user.email
-    ? (user.email.length > 18 ? user.email.slice(0, 15) + '...' : user.email)
+    ? (u => u.length > 12 ? u.slice(0, 11) + '…' : u)(user.email.split('@')[0])
     : 'jogador';
   document.getElementById('walletShort').textContent = emailShort;
   document.getElementById('walletInfo').style.display = 'flex';

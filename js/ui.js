@@ -745,5 +745,8 @@ function rebuildScreensParaSlot() {
   if(typeof updateEquippedDisplay === 'function') updateEquippedDisplay();
   if(typeof updateAllUI === 'function') updateAllUI();
   if(typeof updateResourceUI === 'function') updateResourceUI();
+  // Se o jogador estava na colónia, é para lá que se volta: este rebuild
+  // acaba de pôr o aliveScreen por baixo dela.
+  if(typeof fzReafirmar === 'function') fzReafirmar();
   if(sleeping && typeof startSleep === 'function') startSleep();
 }
