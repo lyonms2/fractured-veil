@@ -524,7 +524,11 @@ function renderSlots() {
           <div class="slot-actions">
             ${_slotBtnEquipa(i, s)}
             ${!isActive && !isFrozen ? `
-            <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_activate')}</button>
+            <!-- O ATIVAR saiu. Escolher com quem se joga passou a ser o
+                 CUIDAR da colónia, na tela principal, ao lado dos vitais
+                 daquele bicho — que é onde a escolha faz sentido. Aqui
+                 ficava um segundo botão para a mesma coisa, num painel
+                 que é de vender e queimar. -->
             ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>` : ''}
             <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>` : ''}
             ${isFrozen ? `

@@ -27,101 +27,18 @@
 //  mesmo sítio; isto é a mesma coisa numa só, sem desconto nenhum.
 // ═══════════════════════════════════════════════════════════════════
 
-/* Cada acção diz a quem serve, quanto custa e o que faz. Ter isto numa
-   tabela em vez de cinco funções quase iguais é o que permite ao botão
-   e ao render lerem a MESMA regra — era assim que um botão acabava a
-   prometer um preço e a acção a cobrar outro. */
-const FAZENDA_ACOES = {
-  nutrir: {
-    emoji: '🍖', vital: 'fome', cor: '#e74c3c',
-    custo: () => CUSTO_NUTRIR,
-    precisa: (s, v) => v.fome < 100 && !s.sleeping,
-    aplica: (s, v) => {
-      const g = 20 + randInt(0, 15);
-      v.fome = Math.min(100, v.fome + g);
-      const base = 30 + Math.round(Math.random() * 10);
-      s.poopPressure = Math.min(100, (s.poopPressure || 0) + Math.round(base * rarityBonus(s).decay));
-      s.vinculo = Math.min(400, (s.vinculo || 0) + 2);
-      return g;
-    },
-  },
-  banho: {
-    emoji: '🛁', vital: 'higiene', cor: '#5ab4e8',
-    custo: () => 0,                       // custa energia, não moedas
-    precisa: (s, v) => v.higiene < 100 && v.energia >= BANHO_ENERGIA && !s.sleeping,
-    aplica: (s, v) => {
-      v.energia = Math.max(0, v.energia - BANHO_ENERGIA);
-      const g = Math.round(50 + Math.random() * 20);
-      v.higiene = Math.min(100, v.higiene + g);
-      v.humor   = Math.min(100, v.humor + 15);
-      s.dirtyLevel = 0;
-      s.vinculo = Math.min(400, (s.vinculo || 0) + 3);
-      return g;
-    },
-  },
-  medicar: {
-    emoji: '💊', vital: 'saude', cor: '#27ae60',
-    custo: () => CUSTO_MEDICAR,
-    precisa: (s, v) => v.saude < 100,
-    aplica: (s, v) => {
-      v.saude = Math.min(100, v.saude + 40);
-      s.sick = false;
-      s.vinculo = Math.min(400, (s.vinculo || 0) + 4);
-      return 40;
-    },
-  },
-  carinho: {
-    emoji: '💕', vital: 'humor', cor: '#e830c0',
-    custo: () => 0,
-    // O mesmo arrefecimento do carinho individual, por avatar: sem ele
-    // o botão dava humor infinito por zero moedas.
-    precisa: (s, v) => v.humor < 100 && (s.petCooldown || 0) <= 0 && !s.sleeping,
-    aplica: (s, v) => {
-      v.humor = Math.min(100, v.humor + 8);
-      s.vinculo = Math.min(400, (s.vinculo || 0) + 1);
-      s.petCooldown = 10;
-      return 8;
-    },
-  },
-  ninar: {
-    emoji: '😴', vital: 'energia', cor: '#c9a84c',
-    custo: () => 0,
-    // Dormir não se força a quem está bem desperto: abaixo de metade da
-    // energia é cansaço a sério, acima disso é tirar o bicho do jogo.
-    precisa: (s, v) => !s.sleeping && v.energia < 50,
-    aplica: (s) => { s.sleeping = true; return 0; },
-  },
-};
+/* AS ACÇÕES EM GRUPO SAÍRAM.
 
-/* ESTAMOS NA COLÓNIA?
+   Vivia aqui uma tabela com cinco delas — nutrir, banhar, medicar,
+   carinho e ninar — cada uma a servir todos os que precisassem, ao
+   preço individual vezes o número de candidatos.
 
-   Não chega esconder o aliveScreen uma vez. Os dois ecrãs são
-   position:absolute com inset:0, portanto coexistem sem se empurrarem —
-   e há vários caminhos que repõem o da criatura depois: o
-   rebuildScreensParaSlot, a sincronização com a nuvem no fim do login, a
-   invocação. Quando isso acontecia, a criatura aparecia POR BAIXO da
-   lista, com o "FASE: BEBÊ" a atravessar os cartões, e nada respondia
-   porque os cliques iam para o ecrã de cima.
-
-   Com um estado explícito, quem reconstrói os ecrãs pergunta primeiro
-   onde é que o jogador está.
-
-   COMEÇA LIGADO de propósito. Estava a começar desligado e a depender
-   de o login chamar o abrirFazenda() no sítio certo — bastava um
-   caminho de carregamento que não passasse por lá e a consola abria
-   numa criatura, com a colónia a não aparecer de todo. A colónia é a
-   casa: quem quiser sair dela carrega em CUIDAR, e é o cuidarDe que
-   desliga isto.
-
-   Sem avatar nenhum não faz mal: os ramos "sem avatar" e "morto" do
-   rebuildScreensParaSlot saem antes de chegar à pergunta. */
-window._fzModoColonia = true;
-
-// Reafirma a colónia depois de alguém reconstruir os ecrãs por baixo
-// dela. Chamada no fim do rebuildScreensParaSlot.
-function fzReafirmar() {
-  if (window._fzModoColonia) abrirFazenda();
-}
+   Funcionavam. O problema era outro: resolviam o jogo com um clique.
+   Cuidar de uma criatura é o jogo inteiro, e um botão que trata de
+   dez de uma vez transforma isso num imposto que se paga e esquece.
+   A colónia continua a servir para o que era preciso — ver quem está
+   mal sem ter de entrar em cada um — e tratar continua a ser um gesto
+   por criatura, no ecrã dela. */
 
 // Os avatares vivos, por ordem de slot.
 function fazendaVivos() {
@@ -129,54 +46,6 @@ function fazendaVivos() {
   return avatarSlots
     .map((s, idx) => ({ s, idx }))
     .filter(({ s }) => s && s.hatched && !s.dead && s.vitals);
-}
-
-/* Quem precisa de uma acção, e quanto custa servi-los a todos.
-
-   Corre sempre DEPOIS de gravar o avatar aberto no seu slot: os vitais
-   dele vivem em globais enquanto está aberto, e ler o slot sem gravar
-   primeiro dava o estado de há um minuto atrás. */
-function fazendaCandidatos(tipo) {
-  const acao = FAZENDA_ACOES[tipo];
-  if (!acao) return { lista: [], custo: 0 };
-  const lista = fazendaVivos().filter(({ s }) => acao.precisa(s, s.vitals));
-  return { lista, custo: acao.custo() * lista.length };
-}
-
-// ── A ACÇÃO DE GRUPO ──
-function cuidarDeTodos(tipo) {
-  const acao = FAZENDA_ACOES[tipo];
-  if (!acao) return;
-
-  // O avatar aberto tem os vitais em globais; grava-os antes de contar.
-  if (typeof saveRuntimeToSlot === 'function') saveRuntimeToSlot(activeSlotIdx);
-
-  const { lista, custo } = fazendaCandidatos(tipo);
-
-  if (lista.length === 0) {
-    showBubble(t('fazenda.ninguem.' + tipo));
-    return;
-  }
-  if (custo > 0 && gs.moedas < custo) {
-    if (typeof playSound === 'function') playSound('no_coins');
-    showBubble(t('fazenda.sem_moedas', { custo }));
-    addLog(t('fazenda.log.sem_moedas', { custo, n: lista.length }), 'bad');
-    return;
-  }
-  if (custo > 0 && !spendCoins(custo)) return;
-
-  lista.forEach(({ s }) => acao.aplica(s, s.vitals));
-
-  // O aberto recarrega dos slots para os globais não ficarem atrasados.
-  if (typeof loadRuntimeFromSlot === 'function') loadRuntimeFromSlot(activeSlotIdx);
-
-  if (typeof playSound === 'function') playSound(tipo === 'medicar' ? 'heal' : tipo === 'banho' ? 'bath' : 'feed');
-  showFloat(`${acao.emoji} ×${lista.length}`, acao.cor);
-  addLog(t('fazenda.log.' + tipo, { n: lista.length, custo }), 'good');
-
-  renderFazenda();
-  if (typeof updateAllUI === 'function') updateAllUI();
-  if (typeof scheduleSave === 'function') scheduleSave();
 }
 
 // ═══════════════════════════════════════════
@@ -204,23 +73,32 @@ function _fazendaBarra(v, cfg) {
   </div>`;
 }
 
+/* O dourado marca a EQUIPA, não quem está aberto.
+
+   Marcava o avatar que estava espelhado nos globais — uma informação
+   interna, que ao jogador não diz nada: ele sabe em quem carregou. O que
+   ele não vê em lado nenhum é quais são os três que entram na batalha,
+   e essa é a única distinção que a lista tem para dar.
+
+   Por isso o botão passa a dizer CUIDAR em todos. Antes dizia AQUI num
+   deles, e "aqui" respondia a uma pergunta que ninguém fazia. */
 function _fazendaCartao({ s, idx }) {
   const v     = s.vitals || {};
   const nome  = (s.nome || 'Avatar').split(',')[0].trim();
-  const aberto = idx === activeSlotIdx;
+  const naEquipa = (typeof equipaIdx === 'function') && equipaIdx().includes(idx);
   const dorme  = !!s.sleeping;
   const doente = (s.activeDiseases || []).length > 0;
   const svg = (typeof gerarSVG === 'function')
     ? gerarSVG(s.elemento, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
     : '';
 
-  return `<div class="fz-card${aberto ? ' fz-aberto' : ''}${doente ? ' fz-doente' : ''}">
+  return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}">
     <div class="fz-av">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}</div>
     <div class="fz-info">
       <div class="fz-nome">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>
     </div>
-    <button class="fz-cuidar" onclick="cuidarDe(${idx})">${t(aberto ? 'fazenda.aqui' : 'fazenda.cuidar')}</button>
+    <button class="fz-cuidar" onclick="cuidarDe(${idx})">${t('fazenda.cuidar')}</button>
   </div>`;
 }
 
@@ -245,22 +123,36 @@ function renderFazenda() {
     conta.textContent = t('fazenda.conta', { vivos: vivos.length, total });
   }
 
-  // Os botões dizem quantos servem e quanto custa, antes de se carregar.
-  const barra = document.getElementById('fazendaAcoes');
-  if (!barra) return;
-  barra.innerHTML = Object.entries(FAZENDA_ACOES).map(([tipo, acao]) => {
-    const { lista, custo } = fazendaCandidatos(tipo);
-    const n      = lista.length;
-    const sem    = n === 0;
-    const caro   = custo > 0 && gs.moedas < custo;
-    return `<button class="fz-acao${sem ? ' fz-off' : ''}${caro ? ' fz-caro' : ''}"
-      onclick="cuidarDeTodos('${tipo}')" ${sem ? 'disabled' : ''}
-      title="${t('fazenda.tip.' + tipo)}">
-      <span class="fz-acao-emoji">${acao.emoji}</span>
-      <span class="fz-acao-n">${n}</span>
-      ${custo > 0 ? `<span class="fz-acao-custo">${custo} 🪙</span>` : ''}
-    </button>`;
-  }).join('');
+}
+
+/* SAIR DA COLÓNIA, num sítio só.
+
+   O abrirFazenda esconde seis coisas para a lista ficar sozinha na
+   consola: os quatro ecrãs irmãos, a fila de botões de cuidar, a
+   ficha do avatar, a barra de vitais do telemóvel e o botão de
+   voltar. Quem sai da colónia tem de repor tudo isso.
+
+   O cuidarDe repunha. A invocação e a chocagem repunham metade — o
+   hatch() punha o statusCard de volta e mexia na opacidade dos
+   botões, mas não no display que o abrirFazenda lhes tinha posto a
+   none. Resultado: acabava a animação do ovo e ficava a criatura numa
+   tela sem botões e sem ficha. Era o "joga pra tela antiga".
+
+   Duas cópias de uma saída, e a segunda esquecia-se de metade. */
+function fzSairDaColonia() {
+  window._fzModoColonia = false;
+  const fz = document.getElementById('fazendaScreen');
+  if (fz) fz.style.display = 'none';
+  const tela = document.getElementById('mainScreen');
+  if (tela) tela.classList.remove('fz-modo');
+  const btns = document.getElementById('actionBtns');
+  if (btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'auto'; }
+  const volta = document.getElementById('btnColonia');
+  if (volta) volta.style.display = '';
+  const cc = document.getElementById('creatureCard'); if (cc) cc.style.display = 'block';
+  const sc = document.getElementById('statusCard');   if (sc) sc.style.display = 'block';
+  // A '' e não um valor fixo: quem manda neste é uma media query.
+  const ms = document.getElementById('mobileStatusInline'); if (ms) ms.style.display = '';
 }
 
 // ── Trocar entre a colónia e o cuidado de um ──
@@ -303,30 +195,15 @@ async function cuidarDe(idx) {
   // aqui criava uma corrida com o scheduleSave() do jogo — foi o que já
   // aconteceu no "usar este slot" do marketplace, e por isso ele também
   // passou a chamar esta função em vez de duplicá-la.
-  // Desliga ANTES do switchSlot: ele chama o rebuildScreensParaSlot,
-  // que reafirma a colónia se o estado ainda estiver ligado — e o
-  // jogador ficava preso na lista sem conseguir entrar em ninguém.
-  window._fzModoColonia = false;
+  // Sai ANTES do switchSlot: ele chama o rebuildScreensParaSlot, que
+  // reafirma a colónia se o estado ainda estiver ligado — e o jogador
+  // ficava preso na lista sem conseguir entrar em ninguém.
+  fzSairDaColonia();
   if (idx !== activeSlotIdx && typeof switchSlot === 'function') {
     await switchSlot(idx);
   }
-  const fz = document.getElementById('fazendaScreen');
-  if (fz) fz.style.display = 'none';
-  const tela = document.getElementById('mainScreen');
-  if (tela) tela.classList.remove('fz-modo');
-  const btns = document.getElementById('actionBtns');
-  if (btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'auto'; }
-  const volta = document.getElementById('btnColonia');
-  if (volta) volta.style.display = '';
-  const cc = document.getElementById('creatureCard'); if (cc) cc.style.display = 'block';
-  const sc = document.getElementById('statusCard');   if (sc) sc.style.display = 'block';
-  // Este volta a '' e nao a um valor fixo: quem manda nele e uma media
-  // query, e escrever 'block' aqui punha-o visivel tambem no desktop,
-  // onde ele nao pertence.
-  const ms = document.getElementById('mobileStatusInline'); if (ms) ms.style.display = '';
   // Quem decide QUAL ecrã abrir é o rebuildScreensParaSlot, que o
-  // switchSlot já chamou: um slot vazio abre o painel de invocar, um ovo
-  // por chocar abre o ovo. Só forçamos o aliveScreen quando não houve
+  // switchSlot já chamou. Só se força o aliveScreen quando não houve
   // troca nenhuma e portanto ninguém reconstruiu nada.
   if (idx === activeSlotIdx) {
     const alive = document.getElementById('aliveScreen');

@@ -354,8 +354,7 @@ function hatch() {
     document.getElementById('actionBtns').style.pointerEvents = 'all';
     loadRuntimeFromSlot(activeSlotIdx);
     // Sai da colónia: acabou de nascer um bicho e é para o ver.
-    window._fzModoColonia = false;
-    const _fz1 = document.getElementById('fazendaScreen'); if (_fz1) _fz1.style.display = 'none';
+    if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
     document.getElementById('aliveScreen').style.display = 'block';
     document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
     document.getElementById('phaseLabel').textContent = t('gt.phase.label', {fase: FASES[getFase()]});
@@ -403,8 +402,7 @@ function hatch() {
 
   document.getElementById('eggScreen').style.display = 'none';
 
-  window._fzModoColonia = false;
-  const _fz2 = document.getElementById('fazendaScreen'); if (_fz2) _fz2.style.display = 'none';
+  if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
   const alive = document.getElementById('aliveScreen');
   alive.style.display = 'block';
   alive.style.opacity = '0';

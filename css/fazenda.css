@@ -70,41 +70,6 @@
 
 .fz-conta { font-size: 0.5rem; color: var(--muted); letter-spacing: 0.05rem; }
 
-/* ── A fila de acções ──
-   Cinco botões, um por vital. Cada um diz quantos serve e quanto custa,
-   e apaga-se quando não há ninguém a precisar — um botão que não faz
-   nada não deve parecer clicável. */
-.fz-acoes {
-  display: flex; gap: 0.25rem; flex-shrink: 0;
-}
-.fz-acao {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 0.0625rem;
-  padding: 0.25rem 0.125rem;
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: background .15s, border-color .15s, transform .1s;
-}
-.fz-acao:hover:not(:disabled) {
-  background: rgba(201,168,76,.14);
-  border-color: var(--gold);
-  transform: translateY(-0.0625rem);
-}
-.fz-acao:active:not(:disabled) { transform: translateY(0); }
-.fz-acao-emoji { font-size: 0.6875rem; line-height: 1; }
-.fz-acao-n     { font-size: 0.5625rem; font-weight: 700; color: var(--text); line-height: 1; }
-.fz-acao-custo { font-size: 0.4375rem; color: var(--muted); line-height: 1; }
-
-/* Ninguém a precisar: fica visível mas claramente inerte. */
-.fz-acao.fz-off { opacity: .3; cursor: default; }
-.fz-acao.fz-off:hover { background: rgba(255,255,255,.04); border-color: var(--border); transform: none; }
-/* Há quem precise mas não há moedas: o número fica, o preço avisa. */
-.fz-acao.fz-caro .fz-acao-custo { color: var(--red2); }
-.fz-acao.fz-caro { border-color: rgba(248,113,113,.35); }
-
 /* ── A lista ── */
 .fz-lista {
   flex: 1; min-height: 0; overflow-y: auto;
@@ -132,8 +97,10 @@
   border-radius: 0.375rem;
   transition: border-color .2s, background .2s;
 }
-/* Aquele que está aberto na tela de cuidar. */
-.fz-card.fz-aberto {
+/* Os três que entram na batalha. Era o avatar aberto que levava
+   esta marca, o que não dizia nada a ninguém — o jogador sabe em
+   quem carregou. Quem luta, não sabe sem ir ao ⚔. */
+.fz-card.fz-equipa {
   border-left-color: var(--gold);
   background: rgba(201,168,76,.07);
 }
@@ -183,7 +150,7 @@
   transition: all .15s;
 }
 .fz-cuidar:hover { color: var(--gold); border-color: var(--gold); }
-.fz-card.fz-aberto .fz-cuidar { color: var(--gold); border-color: rgba(201,168,76,.4); }
+.fz-card.fz-equipa .fz-cuidar { color: var(--gold); border-color: rgba(201,168,76,.4); }
 
 
 /* ═══════════════════════════════════════════════════════════════════
