@@ -281,7 +281,6 @@ window.registerStrings({
   'mkt.modal.burn.confirm':    '🔥 Confirmar Queima',
 
   // ── Bottom nav ────────────────────────────────────────────────────
-  'mkt.bn.avatars':            'Avatares',
   'mkt.bn.market':             'Mercado',
   'mkt.bn.eggs':               'Ovos',
   'mkt.bn.crystals':           'Cristais',
@@ -638,7 +637,6 @@ window.registerStrings({
   'mkt.modal.burn.confirm':    '🔥 Confirm Burn',
 
   // Bottom nav
-  'mkt.bn.avatars':            'Avatars',
   'mkt.bn.market':             'Market',
   'mkt.bn.eggs':               'Eggs',
   'mkt.bn.crystals':           'Crystals',

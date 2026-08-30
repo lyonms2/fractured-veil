@@ -242,3 +242,20 @@ body.fz-colonia main {
   justify-content: center;
 }
 body.fz-colonia .right-panel { display: none; }
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE NÃO PERTENCE À COLÓNIA
+
+   O abrirFazenda escondia isto por style inline, e havia sempre mais
+   um caminho a repor: o rebuildScreensParaSlot, a sincronização com a
+   nuvem, o hatch. Andei a tapar buracos um a um e ainda ficava a fila
+   de botões de cuidar com 158px de altura por baixo da lista, no
+   telemóvel — um terço da consola em branco.
+
+   Uma regra de CSS não se desfaz com um style.display de ninguém, e
+   diz a mesma coisa uma vez em vez de em quatro sítios. O JS continua
+   a esconder por inline: é cinto e suspensórios, e não custa nada.
+   ═══════════════════════════════════════════════════════════════════ */
+body.fz-colonia #actionBtns,
+body.fz-colonia #mobileStatusInline,
+body.fz-colonia #creatureCard,
+body.fz-colonia #statusCard { display: none !important; }
