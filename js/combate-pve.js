@@ -556,6 +556,48 @@ function _pvePrognosticoHTML(pr) {
 }
 
 // A conta da Força de Ataque, em texto legível
+/* ═══ A CONTA DE UMA MAGIA QUE NÃO ATACA ═══
+
+   Vinte das quarenta e seis não rolam Força de Ataque, e esta função
+   devolvia null para todas elas: ficavam sem linha de conta na ficha
+   e no painel da batalha, com a descrição como único sítio onde os
+   números podiam viver — e a maioria das descrições não trazia
+   número nenhum.
+
+   Escolher entre erguer uma concha e lançar uma lança era comparar
+   "FA 4 + 2d (+1d por 2 PM)" com uma frase sobre conchas.
+
+   A ordem é a de quem lê: o que a magia FAZ primeiro, e o resto
+   depois. Uma magia pode ter mais do que um efeito. */
+function _pveContaDefesa(g) {
+  const p = [];
+  if (g.armaduraPorPM) p.push(t('mag.conta.armadura_pm', { n: g.armaduraPorPM, max: g.armaduraMax || 5 }));
+  if (g.armadura)      p.push(t('mag.conta.armadura', { n: g.armadura }));
+  if (g.armaduraDobra) p.push(t('mag.conta.armadura_dobra'));
+  if (g.bonusFD)       p.push(t('mag.conta.fd', { n: g.bonusFD }));
+  if (g.bonusFDPorPM)  p.push(t('mag.conta.fd_pm', { n: g.bonusFDPorPM }));
+  if (g.esquivaBonus)  p.push(t('mag.conta.esquiva_pm'));
+  if (g.ocultacao)     p.push(t('mag.conta.oculta'));
+  if (g.barreira)      p.push(t('mag.conta.barreira'));
+  if (g.invulneravel)  p.push(t('mag.conta.invulneravel'));
+  if (g.imuneEspiritual) p.push(t('mag.conta.imune'));
+  if (g.cura) {
+    // "1d por 2 PM" lê-se melhor do que "0.5 dados por PM", que é
+    // como o catálogo a guarda.
+    const porPM = g.cura.dadosPorPM || 0.5;
+    p.push(t('mag.conta.cura', { n: 1, pm: Math.round(1 / porPM) }));
+  }
+  if (g.petrifica || g.congela || g.destroiAlma) p.push(t('mag.conta.fora'));
+  if (g.buffForca)     p.push(t('mag.conta.forca', { n: g.buffForca }));
+  if (g.buffFuria)     p.push(t('mag.conta.furia'));
+  if (g.roubaVida)     p.push(t('mag.conta.rouba', { n: g.roubaVida.dados || 1 }));
+  if (g.vorpal)        p.push(t('mag.conta.vorpal'));
+  if (g.cegueira) {
+    p.push(t('mag.conta.cegueira', { a: g.cegueira.ataque, e: g.cegueira.esquiva }));
+  }
+  return p.length ? p.join(' · ') : null;
+}
+
 /* O `eu` tanto pode ser um combatente — em batalha, com os bónus do
    turno já somados — como uma ficha crua, que é o que a ficha do
    avatar tem para dar fora do combate.
@@ -563,7 +605,9 @@ function _pvePrognosticoHTML(pr) {
    Vale a pena aceitar os dois: a fórmula é a mesma frase nos dois
    sítios, e duas cópias dela divergiriam ao primeiro ajuste. */
 function _pveFormula(g, eu) {
-  if (!g || !g.fa) return null;
+  if (!g) return null;
+  // Sem Força de Ataque, o que há para contar é o efeito.
+  if (!g.fa) return _pveContaDefesa(g);
   const car = k => (eu && eu.ficha) ? _c3(eu, k) : ((eu && eu[k]) || 0);
   const f = g.fa, p = [];
   if (f.H) p.push(`H${car('H')}`);

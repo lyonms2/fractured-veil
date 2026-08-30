@@ -23,6 +23,34 @@ window.registerStrings({
   // Para as que escalam E cobram todo o turno. Sem esta, elas caíam na
   // linha de cima e o "por turno" — que é metade do preço — sumia.
   'mag.custo.faixa_turno': '{min} a {max} PM por turno',
+
+  /* ── A CONTA DAS QUE NÃO ATACAM ──
+
+     Vinte magias do catálogo não rolam Força de Ataque, e por isso
+     nunca tiveram linha de conta em lado nenhum: nem na ficha, nem
+     no painel da batalha. Quem as escolhia via só o nome, o preço e
+     uma frase — e a frase raramente trazia um número.
+
+     Isto é a mesma ideia do "FA H3 + F4 + 1d", do lado de cá: o que
+     a magia dá, em quatro ou cinco palavras, na mesma letra de
+     máquina de escrever. */
+  'mag.conta.armadura_pm':   'A +{n} por PM, até +{max}',
+  'mag.conta.armadura':      'A +{n}',
+  'mag.conta.armadura_dobra':'A ×2, excepto contra magia',
+  'mag.conta.fd':            'FD +{n}',
+  'mag.conta.fd_pm':         'FD +{n} por PM',
+  'mag.conta.esquiva_pm':    'esquiva +1 por PM',
+  'mag.conta.oculta':        'H ×2 na Defesa',
+  'mag.conta.barreira':      'absorve 2 de dano por PM',
+  'mag.conta.invulneravel':  'não entra dano nenhum',
+  'mag.conta.imune':         'imune a petrificar e congelar',
+  'mag.conta.cura':          'cura {n}d por {pm} PM',
+  'mag.conta.fora':          'teste de R do alvo, ou sai de combate',
+  'mag.conta.forca':         'F +{n}',
+  'mag.conta.furia':         'F +1 e H +1, sem esquiva nem magia',
+  'mag.conta.rouba':         'rouba {n}d de vida por turno',
+  'mag.conta.vorpal':        'crítico que vença a Defesa pode acabar a luta',
+  'mag.conta.cegueira':      'teste de R do alvo, ou −{a} no ataque e −{e} na esquiva',
   'mag.custo.turno':  '{pm} PM por turno',
   'mag.custo.livre':  'Sem custo',
   'mag.tecto':        'Precisa de Habilidade {h}',
@@ -95,7 +123,7 @@ window.registerStrings({
   'mag.fg_f3.nome':   'Fenda Vulcânica',
   'mag.fg_f3.desc':   'O chão racha e a rocha derretida sobe. Quanto mais você alimenta a fenda, mais longe ela abre.',
   'mag.ag_f3.nome':   'Prisão de Gelo',
-  'mag.ag_f3.desc':   'Fios de gelo correm pelo chão e sobem pelo alvo. Quem não resistir vira estátua.',
+  'mag.ag_f3.desc':   'Fios de gelo correm pelo chão e sobem pelo alvo. Não fere: o alvo testa Resistência e, falhando, sai do combate de vez. Um 6 falha sempre, por mais Resistência que ele tenha — e só a alma fechada trava isto.',
   'mag.te_d1.nome':   'Muralha Primordial',
   'mag.te_d1.desc':   'Madeira e cipó brotam do chão e se enrolam no corpo. Cada PM investido vale 1 de Armadura, até 5 — e ela cobra esse mesmo tanto a cada turno para não se desfazer. Vale contra golpe e contra magia, mas não contra o que fura armadura.',
   'mag.te_d2.nome':   'Pele de Pedra',
@@ -147,6 +175,23 @@ window.registerStrings({
   'mag.custo':        '{pm} MP',
   'mag.custo.faixa':  '{min} to {max} MP',
   'mag.custo.faixa_turno': '{min} to {max} MP per turn',
+  'mag.conta.armadura_pm':   'A +{n} per MP, up to +{max}',
+  'mag.conta.armadura':      'A +{n}',
+  'mag.conta.armadura_dobra':'A ×2, except against magic',
+  'mag.conta.fd':            'DF +{n}',
+  'mag.conta.fd_pm':         'DF +{n} per MP',
+  'mag.conta.esquiva_pm':    'dodge +1 per MP',
+  'mag.conta.oculta':        'S ×2 on Defence',
+  'mag.conta.barreira':      'absorbs 2 damage per MP',
+  'mag.conta.invulneravel':  'no damage gets through',
+  'mag.conta.imune':         'immune to petrify and freeze',
+  'mag.conta.cura':          'heals {n}d per {pm} MP',
+  'mag.conta.fora':          'target tests E, or leaves combat',
+  'mag.conta.forca':         'P +{n}',
+  'mag.conta.furia':         'P +1 and S +1, no dodge and no magic',
+  'mag.conta.rouba':         'steals {n}d of life per turn',
+  'mag.conta.vorpal':        'a critical that beats Defence can end the fight',
+  'mag.conta.cegueira':      'target tests E, or −{a} to attack and −{e} to dodge',
   'mag.custo.turno':  '{pm} MP per turn',
   'mag.custo.livre':  'Free',
   'mag.tecto':        'Requires Skill {h}',
@@ -216,7 +261,7 @@ window.registerStrings({
   'mag.fg_f3.nome':   'Volcanic Fissure',
   'mag.fg_f3.desc':   'The ground cracks and molten rock rises. The more you feed the fissure, the further it opens.',
   'mag.ag_f3.nome':   'Ice Prison',
-  'mag.ag_f3.desc':   'Threads of ice run along the ground and climb the target. Those who fail to resist become statues.',
+  'mag.ag_f3.desc':   'Threads of ice run along the ground and climb the target. It does not wound: the target tests Endurance and, on a failure, leaves combat for good. A 6 always fails, however much Endurance they have - and only a closed soul stops this.',
   'mag.te_d1.nome':   'Primordial Wall',
   'mag.te_d1.desc':   'Wood and vine sprout from the ground and wrap the body. Each MP spent is worth 1 Armour, up to 5 - and it charges that same amount every turn to hold. Works against blows and magic alike, but not against what pierces armour.',
   'mag.te_d2.nome':   'Stone Skin',
