@@ -719,3 +719,82 @@
   /* O registo era o que menos espaço tinha e o que mais texto recebe. */
   .cb-log { min-height: 12rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   A CONTA ABERTA, E O TURNO QUE AMPLIA
+
+   O registo mostra "FA 11★ − FD 4 = 7". A conta aberta — de onde vieram
+   os 11 e os 4 — vive por baixo, escondida, e aparece quando se toca no
+   cabeçalho do turno.
+
+   Escondida por omissão e não noutro sítio: quem só quer saber o
+   resultado lê a linha de sempre, e quem quer perceber o turno abre-o.
+   Mostrar as duas coisas ao mesmo tempo em todos os turnos era encher o
+   registo de contas que ninguém pediu.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* O cabeçalho passou de div a button. Volta a parecer o que era. */
+.cb-turno-cab {
+  display: block; width: 100%; text-align: left;
+  background: none; border: 0; cursor: pointer;
+  font: inherit; color: inherit; letter-spacing: inherit;
+  padding: 0;
+}
+.cb-turno-cab:hover { color: var(--gold-light, var(--gold)); }
+/* Uma seta que diz que aquilo abre — sem ela, um cabeçalho clicável é
+   um segredo. */
+.cb-turno-cab::before {
+  content: '▸'; display: inline-block; margin-right: 0.25rem;
+  transition: transform .18s;
+}
+.cb-turno-aberto > .cb-turno-cab::before { transform: rotate(90deg); }
+
+.cb-detalhe { display: none; }
+.cb-turno-aberto .cb-detalhe {
+  display: flex; flex-direction: column; gap: 0.1875rem;
+  margin-top: 0.3125rem; padding-top: 0.3125rem;
+  border-top: 1px solid rgba(201,168,76,.15);
+}
+.cb-conta-linha {
+  font-family: 'Courier New', monospace;
+  /* Tamanho próprio e não em em: em cascata acabava a 5,25px no
+     telemóvel, herdado de um pai que já era pequeno. Uma conta que não
+     se lê não é conta nenhuma — e ela só aparece com o turno aberto,
+     portanto não enche nada. */
+  font-size: 0.5625rem; line-height: 1.7; color: var(--text2);
+  letter-spacing: 0.01875rem;
+}
+.cb-parcela { color: var(--muted); }
+/* O valor afasta-se do rótulo. Colados, 'A' e '14' liam-se 'A14' e,
+   com o ×2 no rótulo, 'A×214' — que não é número nenhum. */
+.cb-parcela i { font-style: normal; color: var(--text); font-weight: 700; margin-left: 0.1875rem; }
+/* A dobra do crítico, como marca e não como parte do nome. */
+.cb-parcela sup { font-size: .8em; color: #ff9a4c; margin-left: 0.0625rem; }
+/* O dado é a única parcela que não vem da ficha: é a sorte, e destaca-se
+   dela. */
+.cb-dado {
+  color: var(--gold-light, var(--gold)); font-weight: 700;
+  background: rgba(201,168,76,.12); border-radius: 0.1875rem;
+  padding: 0 0.1875rem;
+}
+.cb-crit { color: #ff9a4c; font-weight: 700; letter-spacing: 0.05rem; }
+
+/* O turno aberto cresce. É o pedido: ampliar SÓ aquele, para se ver bem
+   o que aconteceu — os outros ficam onde estavam, que é o que faz a
+   ampliação valer alguma coisa. */
+.cb-turno-aberto {
+  background: rgba(201,168,76,.06);
+  border-radius: 0.5rem;
+  outline: 1px solid rgba(201,168,76,.22);
+  padding: 0.25rem 0.375rem;
+}
+.cb-turno-aberto > .cb-turno-cab { font-size: 1.25em; opacity: 1; }
+/* Ampliar a sério: 0.46875 sobre 0.4375 era 7% e não se notava.
+   Isto é metade outra vez maior do que a linha fechada. */
+.cb-turno-aberto .cb-log-linha { font-size: 0.625rem; line-height: 1.8; }
+.cb-turno-aberto .cb-onda-linha,
+.cb-turno-aberto .cb-onda-total { font-size: 0.4375rem; }
+
+@media (min-width: 681px) {
+  .cb-turno-aberto .cb-log-linha { font-size: 0.6875rem; }
+}

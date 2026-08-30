@@ -248,6 +248,17 @@ function _c3esquivou(def, atk, rng, ev) {
 // ═══════════════════════════════════════════════════════════════════
 // FORÇA DE ATAQUE
 // ═══════════════════════════════════════════════════════════════════
+/* A FA e a FD passam a dizer DE ONDE vem o total.
+
+   Devolviam só { total, dado, critico }, e o registo escrevia
+   "FA 11★ − FD 4 = 7". Quem lê isso não sabe se os 11 vieram de uma
+   Habilidade alta, de uma Força alta ou de um seis no dado — e num jogo
+   onde a ficha é a única coisa que o jogador controla, essa é a
+   pergunta que interessa.
+
+   Cada parcela é { r: rótulo, v: valor }, e a do dado leva dado:true
+   para o registo lhe poder dar outra cor: é a única que não depende de
+   nada que o jogador tenha feito. */
 function _c3fa(atk, magia, pmGastos, rng, opts) {
   opts = opts || {};
   const d = _d6(rng);
@@ -258,7 +269,11 @@ function _c3fa(atk, magia, pmGastos, rng, opts) {
   // que a torna útil a quem tem a Armadura alta e a Força baixa.
   if (opts.toque) {
     const A = critico ? _c3(atk, 'A') * 2 : _c3(atk, 'A');
-    return { total: A + d + (opts.toquePM || 0), dado: d, critico };
+    // O ×2 não entra no rótulo: 'A×2' com o valor 14 ao lado lê-se
+    // 'A×214', que não é número nenhum. Vai como bandeira à parte.
+    const partes = [{ r: 'A', v: A, x2: critico }, { r: 'd', v: d, dado: true }];
+    if (opts.toquePM) partes.push({ r: 'PM', v: opts.toquePM });
+    return { total: A + d + (opts.toquePM || 0), dado: d, critico, partes };
   }
 
   if (!magia) {
@@ -266,21 +281,42 @@ function _c3fa(atk, magia, pmGastos, rng, opts) {
     // o manual manda dobrar a Força, e neste golpe ela está aumentada.
     const base = _c3(atk, 'F') + (opts.bonusF || 0);
     const F = critico ? base * 2 : base;
-    return { total: _c3hAtk(atk, opts.alvo) + F + d, dado: d, critico };
+    const H = _c3hAtk(atk, opts.alvo);
+    const partes = [{ r: 'H', v: H }];
+    // A carga já está dentro do valor da F, e o nome da acção diz que
+    // foi um golpe carregado — não precisa de a repetir no rótulo.
+    partes.push({ r: 'F', v: F, x2: critico });
+    partes.push({ r: 'd', v: d, dado: true });
+    return { total: H + F + d, dado: d, critico, partes };
   }
   // Magia: a fórmula substitui o F, e o crítico não a dobra (o manual só
   // manda dobrar Força, Armadura ou PdF).
   const f = magia.fa || {};
   const extra = pmGastos - magia.pm;
   const dados = (f.dados || 0) + Math.floor(extra * (f.dadosPorPM || 0));
-  let soma = (f.F ? _c3(atk, 'F') : 0) + (f.H ? _c3hAtk(atk, opts.alvo) : 0)
-           + (f.fixo || 0) + Math.floor(extra * (f.fixoPorPM || 0));
+  const partes = [];
+  const _F = f.F ? _c3(atk, 'F') : 0;
+  const _H = f.H ? _c3hAtk(atk, opts.alvo) : 0;
+  const _fx = (f.fixo || 0) + Math.floor(extra * (f.fixoPorPM || 0));
+  if (_F)  partes.push({ r: 'F', v: _F });
+  if (_H)  partes.push({ r: 'H', v: _H });
+  if (_fx) partes.push({ r: 'fixo', v: _fx });
+  let soma = _F + _H + _fx;
   // Conjuro Desajeitado: a magia sai com Força de Ataque −1
-  if (atk.desv && atk.desv.faMagiaMenos) soma -= atk.desv.faMagiaMenos;
-  for (let i = 0; i < dados; i++) soma += _d6(rng);
+  if (atk.desv && atk.desv.faMagiaMenos) {
+    soma -= atk.desv.faMagiaMenos;
+    partes.push({ r: 'desajeitado', v: -atk.desv.faMagiaMenos });
+  }
+  // Cada dado da magia entra na conta pelo seu valor: dois dados que dão
+  // 3 e 6 não são "2d", são um 3 e um 6, e a diferença explica o turno.
+  for (let i = 0; i < dados; i++) {
+    const dd = _d6(rng);
+    soma += dd;
+    partes.push({ r: 'd', v: dd, dado: true });
+  }
   // Magias sem dados próprios usam o dado normal do ataque
-  if (!dados) soma += d;
-  return { total: soma, dado: d, critico: dados ? false : critico };
+  if (!dados) { soma += d; partes.push({ r: 'd', v: d, dado: true }); }
+  return { total: soma, dado: d, critico: dados ? false : critico, partes };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -306,7 +342,12 @@ function _c3fd(def, rng, opts) {
   // Alvo indefeso não usa a Habilidade na Defesa
   let H = (opts.indefeso || def.indefeso) ? 0 : _c3(def, 'H');
   if (def.ocultado) H *= 2;              // véu de água: some na Defesa
-  return { total: H + A + d + def.bonusFD, dado: d, critico };
+  const partes = [];
+  partes.push({ r: 'H', v: H, x2: !!def.ocultado && H > 0 });
+  partes.push({ r: 'A', v: A, x2: critico });
+  partes.push({ r: 'd', v: d, dado: true });
+  if (def.bonusFD) partes.push({ r: 'bónus', v: def.bonusFD });
+  return { total: H + A + d + def.bonusFD, dado: d, critico, partes };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -321,6 +362,7 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   if (_c3podeEsquivar(def, atk) && !(magia && magia.alvoIndefeso)) {
     if (_c3esquivou(def, atk, rng, ev)) {
       ev.esquivou = true; ev.fa = fa.total; ev.dano = 0;
+      ev.faPartes = fa.partes;
       return 0;
     }
   }
@@ -369,6 +411,8 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
 
   ev.fa = fa.total; ev.fd = totalFD; ev.dano = passou; ev.danoBruto = dano;
   ev.criticoAtk = fa.critico; ev.criticoDef = fd.critico;
+  // As parcelas seguem para o registo poder abrir a conta.
+  ev.faPartes = fa.partes; ev.fdPartes = fd.partes;
 
   // Ataque Vorpal: num crítico que vença a Defesa, o alvo testa a
   // Armadura. Falhando, acabou — não é dano, é o fim.

@@ -1117,6 +1117,10 @@ function _pveMostrarEvento(ev) {
       ? `${atk} → <i>${t('pve.ev.esquivou')}</i>`
       : `${atk} − FD ${ev.fd}${ev.criticoDef ? '★' : ''} = `
         + (ev.dano > 0 ? `<b>${ev.dano}</b>` : `<i>${t('pve.nada')}</i>`);
+    // A conta aberta vai junto, escondida até se abrir o turno.
+    const detalhe = _pveConta('FA', ev.faPartes, ev.fa, ev.criticoAtk)
+                  + (ev.esquivou ? '' : _pveConta('FD', ev.fdPartes, ev.fd, ev.criticoDef));
+    if (detalhe) conta += '<span class="cb-detalhe">' + detalhe + '</span>';
   }
   const nome = ev.vantagem ? t('vd.' + ev.vantagem + '.nome').replace('{elem}', '')
              : ev.magia    ? t('mag.' + ev.magia + '.nome')
@@ -1296,6 +1300,30 @@ function _pveTextoFim() {
 // princípio. Dentro do turno a ordem é a natural: quem agiu primeiro
 // aparece primeiro, senão a troca de golpes lia-se ao contrário.
 // ═══════════════════════════════════════════════════════════════════
+/* A CONTA ABERTA.
+
+   "FA 11★ − FD 4 = 7" diz o resultado e esconde tudo o resto. Quem lê
+   não sabe se os 11 vieram de uma Habilidade alta, de uma Força alta
+   ou de um seis no dado — e num jogo onde a ficha é a única coisa que
+   o jogador controla, é essa a pergunta que interessa.
+
+   Isto escreve as parcelas que o motor passou a devolver. O dado leva
+   classe própria porque é a única parcela que não depende de nada que
+   o jogador tenha feito: é o que separa a sorte da ficha. */
+function _pveConta(rot, partes, total, critico) {
+  if (!partes || !partes.length) return '';
+  const corpo = partes.map((p, i) => {
+    const sinal = i === 0 ? '' : (p.v < 0 ? ' − ' : ' + ');
+    const val   = Math.abs(p.v);
+    return p.dado
+      ? sinal + '<b class="cb-dado">🎲' + val + '</b>'
+      : sinal + '<span class="cb-parcela">' + esc(p.r) + '<i>' + val + '</i>'
+              + (p.x2 ? '<sup>×2</sup>' : '') + '</span>';
+  }).join('');
+  return '<span class="cb-conta-linha">' + rot + ' = ' + corpo
+       + ' = <b>' + total + '</b>' + (critico ? ' <span class="cb-crit">crítico</span>' : '')
+       + '</span>';
+}
 function _pveBlocoDoTurno(n) {
   const el = document.getElementById('cbLog'); if (!el) return null;
   const id = 'cbTurnoBloco' + n;
@@ -1304,11 +1332,40 @@ function _pveBlocoDoTurno(n) {
     bloco = document.createElement('div');
     bloco.className = 'cb-turno-bloco';
     bloco.id = id;
-    bloco.innerHTML = `<div class="cb-turno-cab">${t('pve.turno', { n })}</div>`;
+    /* O cabeçalho abre e fecha o turno.
+
+       Num registo que corre depressa, o que aconteceu num turno é uma
+       linha entre muitas e lê-se em letra pequena. Um toque no
+       cabeçalho amplia SÓ aquele turno e abre as contas — os outros
+       ficam como estavam, que é o ponto: se ampliasse tudo, não havia
+       ampliação nenhuma, só um registo maior. */
+    bloco.innerHTML = `<button class="cb-turno-cab" onclick="_pveAbrirTurno(${n})"
+            aria-expanded="false">${t('pve.turno', { n })}</button>`;
     el.insertBefore(bloco, el.firstChild);     // o mais recente à cabeça
     el.scrollTop = 0;
   }
   return bloco;
+}
+
+/* Abre um turno, e fecha o que estava aberto.
+
+   Um de cada vez de propósito: com dois abertos volta-se ao problema
+   de origem, que é ter tudo do mesmo tamanho e não saber onde olhar.
+   E rola-se para ele, senão ampliar um turno que está fora da vista
+   parece não ter feito nada. */
+function _pveAbrirTurno(n) {
+  const bloco = document.getElementById('cbTurnoBloco' + n);
+  if (!bloco) return;
+  const abrir = !bloco.classList.contains('cb-turno-aberto');
+  document.querySelectorAll('.cb-turno-bloco.cb-turno-aberto').forEach(b => {
+    b.classList.remove('cb-turno-aberto');
+    const c = b.querySelector('.cb-turno-cab'); if (c) c.setAttribute('aria-expanded', 'false');
+  });
+  if (abrir) {
+    bloco.classList.add('cb-turno-aberto');
+    const c = bloco.querySelector('.cb-turno-cab'); if (c) c.setAttribute('aria-expanded', 'true');
+    bloco.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
 }
 
 function _pveLog(html, tipo, turno) {
