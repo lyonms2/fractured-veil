@@ -1663,6 +1663,148 @@ A.ver('escala de 1 a 5 PM e cobra por turno',
         `(${((1 - com / sem) * 100).toFixed(0)}% menos)`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const MORDIDA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a3');
+
+console.log('\n═══ MORDIDA VAMPÍRICA (so_a3) ═══');
+console.log('  "Rouba 1d de vida por turno e passa direto para você."   ·   1 PM por turno\n');
+
+/* Levanta a Mordida e deixa correr. Ninguém ataca ninguém: quero medir
+   o roubo sozinho, sem o dano dos golpes a somar-se por cima. */
+function mordida(pvMeu, pvDele, turnos, bolsa) {
+  let lancou = false;
+  const e = A.duelo({
+    seed: 7,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: MORDIDA, pm: 1 };
+    },
+    a: { carac: { F: 0, H: 0, R: 8, A: 9 }, elemento: 'Sombra',
+         pm: bolsa == null ? 60 : bolsa, pmMax: bolsa == null ? 60 : bolsa, pv: pvMeu,
+         magias: { ataque: MORDIDA, forte: MORDIDA, defesa: MORDIDA } },
+    b: { carac: { F: 0, H: 0, R: 20, A: 9 }, pv: pvDele, iniciativa: 0 },
+  });
+  const roubos = [];
+  for (let i = 0; i < turnos && !e.acabou; i++) {
+    const antes = e.eventos.length;
+    M.combate3dtTurno(e);
+    for (const ev of e.eventos.slice(antes))
+      if (ev.roubou != null && ev.lado === 'A') roubos.push(ev.roubou);
+    if (!e.B[0].vivo) break;
+  }
+  return { e, roubos, eu: e.A[0], ele: e.B[0] };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 1 PM por turno e rouba um dado',
+      MORDIDA.pm === 1 && MORDIDA.porTurno === true && MORDIDA.roubaVida.dados === 1
+      && !MORDIDA.fa,
+      `pm=${MORDIDA.pm} porTurno=${MORDIDA.porTurno} dados=${MORDIDA.roubaVida.dados}`);
+
+// ── 2. Rouba todo o turno, e é um dado ──
+{
+  const r = mordida(5, 400, 12);
+  const media = r.roubos.reduce((a, b) => a + b, 0) / r.roubos.length;
+  A.ver('rouba uma vez por turno, e a média é a de um dado',
+        r.roubos.length >= 10 && Math.abs(media - 3.5) < 1.2,
+        `${r.roubos.length} roubos: ${r.roubos.join(',')} · média ${media.toFixed(2)}`);
+}
+
+// ── 3. O que ele perde é o que eu ganho ──
+{
+  const pvMeu = 5, pvDele = 400;
+  const r = mordida(pvMeu, pvDele, 6);
+  const somaRoubos = r.roubos.reduce((a, b) => a + b, 0);
+  A.ver('cada ponto que sai dele entra em mim',
+        (pvDele - r.ele.pv) === somaRoubos && (r.eu.pv - pvMeu) === somaRoubos,
+        `ele ${pvDele}→${r.ele.pv} · eu ${pvMeu}→${r.eu.pv} · somados ${somaRoubos}`);
+}
+
+/* ── 4. COM A VIDA CHEIA, ELE SANGRA E EU NÃO GANHO ──
+
+   O motor tira ao alvo primeiro e só depois soma a mim, com o meu
+   máximo a cortar o que sobra. Quem já está inteiro continua a drená-lo
+   na mesma — o dano não se perde, o ganho é que se perde.
+
+   É a leitura certa para uma magia que se chama mordida, e é a que o
+   texto não faz: "passa direto para você" promete que nada se perde
+   pelo caminho. */
+{
+  const r = mordida(40, 400, 6);       // R8 → 40 de vida: entro cheio
+  const somaRoubos = r.roubos.reduce((a, b) => a + b, 0);
+  A.ver('com a vida cheia, o alvo perde na mesma e eu não ganho nada',
+        somaRoubos > 0 && r.eu.pv === 40 && (400 - r.ele.pv) === somaRoubos,
+        `roubou ${somaRoubos} · ele 400→${r.ele.pv} · eu fiquei em ${r.eu.pv}/40`);
+}
+
+// ── 5. Não rouba mais do que ele tem ──
+{
+  const r = mordida(5, 2, 4);
+  A.ver('não tira mais vida do que ainda existe no alvo',
+        r.ele.pv === 0 && r.roubos.reduce((a, b) => a + b, 0) === 2,
+        `ele entrou com 2 e saiu com ${r.ele.pv} · roubado ${r.roubos.join('+')}`);
+}
+
+// ── 6. E pode matar ──
+{
+  const r = mordida(5, 3, 6);
+  A.ver('o roubo por si só derruba o alvo',
+        !r.ele.vivo && r.ele.pv === 0,
+        `vivo=${r.ele.vivo} pv=${r.ele.pv} · sem um único golpe trocado`);
+}
+
+// ── 7. Rouba sem precisar de atacar ──
+// O drenar vive no ciclo do turno, não no golpe: acontece mesmo em
+// turnos em que ninguém acerta em ninguém. É o que a torna barata a 1 PM.
+{
+  const r = mordida(5, 400, 5);
+  const houveGolpe = r.e.eventos.some(ev => ev.fa != null && ev.dano > 0);
+  A.ver('rouba mesmo sem trocar golpes',
+        r.roubos.length >= 4 && !houveGolpe,
+        `${r.roubos.length} roubos, ${houveGolpe ? 'com' : 'sem'} golpes pelo meio`);
+}
+
+// ── 8. Cai quando a bolsa seca ──
+{
+  const r = mordida(5, 400, 10, 4);
+  A.ver('sem PM para a sustentar, a mordida larga',
+        !r.eu.roubando && r.eu.sustentadas.length === 0,
+        `roubou ${r.roubos.length} turnos com 4 PM · roubando=${!!r.eu.roubando}`);
+}
+
+// ── 9. Relançá-la substitui ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: MORDIDA, pm: 1 } : {},
+    a: { carac: { F: 0, H: 0, R: 20, A: 9 }, elemento: 'Sombra', pm: 200, pmMax: 200, pv: 5,
+         magias: { ataque: MORDIDA, forte: MORDIDA, defesa: MORDIDA } },
+    b: { carac: { F: 0, H: 0, R: 999, A: 9 }, iniciativa: 0 },
+  });
+  const porTurno = [];
+  for (let i = 0; i < 4; i++) {
+    const antes = e.eventos.length;
+    M.combate3dtTurno(e);
+    porTurno.push(e.eventos.slice(antes).filter(ev => ev.roubou != null && ev.lado === 'A').length);
+  }
+  A.ver('quatro lançamentos continuam a roubar uma vez por turno',
+        porTurno.every(n => n === 1) && e.A[0].sustentadas.length === 1,
+        `roubos por turno: ${porTurno.join(',')}`);
+}
+
+// ── 10. Quanto vale, ao todo ──
+// Um dado por turno, por um PM. Fica escrito porque é o preço mais
+// barato do catálogo para o efeito mais completo — tira e dá ao mesmo
+// tempo — e é o número que a frase não põe em contexto.
+{
+  const r = mordida(5, 400, 20, 60);
+  const soma = r.roubos.reduce((a, b) => a + b, 0);
+  A.ver('vinte turnos de mordida, e o que isso move',
+        soma > 0,
+        `${r.roubos.length} turnos · ${soma} de vida trocada de lado · ` +
+        `${r.roubos.length} PM gastos`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');

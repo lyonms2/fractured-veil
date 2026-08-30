@@ -86,7 +86,7 @@ window.registerStrings({
   'mag.vt_d3.nome':   'Vento Contrário',
   'mag.vt_d3.desc':   'Uma ventania soprando na cara de quem vem. Cada PM investido é +1 na sua Força de Defesa — contra toda a gente, e não só contra quem está à frente agora. Cobra esse mesmo tanto a cada turno para não parar, e cai assim que faltar.',
   'mag.so_a3.nome':   'Mordida Vampírica',
-  'mag.so_a3.desc':   'Um toque que suga. Rouba 1d de vida por turno e passa direto para você.',
+  'mag.so_a3.desc':   'Um toque que suga, e continua sugando: enquanto durar, 1d de vida sai do adversário todo o turno e entra em você — sem precisar de acertar nele, e mesmo nos turnos em que ninguém encosta em ninguém. Se a sua vida já estiver cheia, ele sangra na mesma e a parte que lhe cabia perde-se.',
   'mag.so_a4.nome':   'Véu de Cegueira',
   'mag.so_a4.desc':   'Trevas nos olhos do alvo. Quem não resistir bate com −1 e esquiva com −3 até o fim da luta.',
 
@@ -233,7 +233,7 @@ window.registerStrings({
   'mag.vt_d3.nome':   'Headwind',
   'mag.vt_d3.desc':   'A gale blowing into the face of whoever comes. Each MP invested is +1 to your Defence Force - against everyone, not just whoever stands there now. It charges that same amount every turn to keep blowing, and drops the moment it cannot.',
   'mag.so_a3.nome':   'Vampiric Bite',
-  'mag.so_a3.desc':   'A touch that sucks. Steals 1d life per turn and passes it straight to you.',
+  'mag.so_a3.desc':   'A touch that sucks, and keeps sucking: while it lasts, 1d of life leaves your opponent every turn and enters you - without needing to hit them, and even on turns where nobody lands a blow. If your life is already full, they bleed all the same and the half that was yours is lost.',
   'mag.so_a4.nome':   'Veil of Blindness',
   'mag.so_a4.desc':   "Darkness over the target's eyes. Whoever fails to resist attacks at −1 and dodges at −3 for the rest of the fight.",
 
