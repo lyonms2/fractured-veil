@@ -735,6 +735,146 @@ A.ver('custa 1 PM por turno e é sustentada',
         `H5 corta ${(alta.pc * 100).toFixed(0)}% (${alta.s.toFixed(2)}→${alta.c.toFixed(2)})`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const MARE = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d3');
+
+console.log('\n═══ MARÉ RESTAURADORA (ag_d3) ═══');
+console.log('  "Cura 1d de vida a cada 2 PM que você investe."   ·   2 a 20 PM\n');
+
+/* Cura N vezes com os PM que eu mandar, partindo da vida que eu mandar,
+   e devolve o que aconteceu. A cura é a única magia do jogo cujo efeito
+   se mede em pontos de vida ganhos, e por isso é a única em que vale a
+   pena olhar para a média de perto: 1d é 3,5, e a soma de N dados
+   aproxima-se disso depressa. */
+function curar(pm, pvInicial, voltas) {
+  const curas = [], dados = [];
+  for (let s = 1; s <= (voltas || 400); s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: () => ({ magia: MARE, pm }),
+      a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Água', pm: 60, pmMax: 60,
+           pv: pvInicial, magias: { ataque: MARE, forte: MARE, defesa: MARE } },
+      b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+    });
+    const pvMax = e.A[0].pvMax, antes = e.A[0].pv;
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'A' && v.magia === 'ag_d3');
+    if (!ev) continue;
+    curas.push(ev.curou || 0);
+    dados.push(ev.curaDados);
+    // O que o evento diz tem de bater com o que a vida fez.
+    if (e.A[0].pv - antes !== (ev.curou || 0)) curas.push(-9999);
+    if (e.A[0].pv > pvMax) curas.push(-9999);
+  }
+  const soma = curas.reduce((a, b) => a + b, 0);
+  return { curas, dados, media: soma / curas.length, n: curas.length,
+           min: Math.min(...curas), max: Math.max(...curas) };
+}
+
+// ── 1. O catálogo ──
+A.ver('escala de 2 a 20 PM, e não é sustentada',
+      MARE.pm === 2 && MARE.pmMax === 20 && !MARE.porTurno && MARE.cura.dadosPorPM === 0.5,
+      `pm=${MARE.pm}–${MARE.pmMax} porTurno=${!!MARE.porTurno} dadosPorPM=${MARE.cura.dadosPorPM}`);
+
+// ── 2. Um dado a cada dois PM ──
+{
+  const medidas = [2, 4, 6, 10, 20].map(pm => ({ pm, d: curar(pm, 1, 40).dados[0] }));
+  A.ver('cada 2 PM investidos valem 1 dado de cura',
+        medidas.every(m => m.d === Math.floor(m.pm / 2)),
+        medidas.map(m => `${m.pm}PM→${m.d}d`).join('  '));
+}
+
+/* ── 3. A ARMADILHA DOS PM ÍMPARES ──
+
+   `floor(pm × 0,5)` quer dizer que 3 PM compram exactamente o mesmo que
+   2, e 5 o mesmo que 4. O PM ímpar evapora-se sem dar nada.
+
+   Não é defeito — é a consequência honesta de "1d a cada 2 PM", e a
+   descrição já o diz a quem ler com atenção. Fica medido porque é o
+   tipo de coisa que só se descobre a perder uma luta. */
+{
+  const par = curar(4, 1, 300), impar = curar(5, 1, 300);
+  A.ver('5 PM curam exactamente o mesmo que 4 — o ímpar perde-se',
+        impar.dados[0] === par.dados[0],
+        `4 PM → ${par.dados[0]}d · 5 PM → ${impar.dados[0]}d`);
+}
+
+// ── 4. A média bate com os dados ──
+// Um d6 vale 3,5. Com 5 dados a média fica perto de 17,5, e com 400
+// lançamentos o ruído já não chega para confundir.
+{
+  const r = curar(10, 1, 500);
+  const esperado = 5 * 3.5;
+  A.ver('a cura média é a que 5 dados dão',
+        Math.abs(r.media - esperado) < 1,
+        `média ${r.media.toFixed(2)} · esperado ${esperado} · entre ${r.min} e ${r.max}`);
+}
+
+/* ── 5. Não passa do tecto, e diz a verdade sobre isso ──
+
+   Quem está a um ponto do máximo e rola 18 curou UM. O `ev.curou` tem
+   de dizer 1 e não 18: é esse número que sai a flutuar no cartão e que
+   entra no registo, e um 18 ali seria uma mentira que o jogador não tem
+   como conferir. */
+{
+  const r = curar(20, 39, 300);            // R8 → 40 de vida, entra com 39
+  A.ver('nunca passa da vida máxima',
+        r.max <= 1, `maior cura registada: ${r.max} (faltava 1 ponto)`);
+  A.ver('e o número que mostra é o que curou mesmo, não o que rolou',
+        r.min >= 0 && r.curas.every(c => c >= 0 && c <= 1),
+        `curas registadas: ${[...new Set(r.curas)].join(', ')}`);
+}
+
+/* ── 6. Cura quem lança, não o adversário ──
+
+   A política do duelo é chamada para OS DOIS lados. A primeira versão
+   disto devolvia a Maré a quem quer que perguntasse, e por isso o
+   adversário também se curou dos 5 aos 40 — dando falha a acusar a
+   magia de curar o inimigo, quando quem lha tinha mandado lançar era
+   eu. Agora só quem tem a magia é que a lança. */
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: MARE, pm: 20 } : {},
+    a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Água', pm: 60, pmMax: 60, pv: 5,
+         magias: { ataque: MARE, forte: MARE, defesa: MARE } },
+    b: { carac: { F: 1, H: 0, R: 8, A: 0 }, pv: 5, iniciativa: 0 },
+  });
+  const pvBantes = e.B[0].pv;
+  M.combate3dtTurno(e);
+  A.ver('cura quem a lança, e não toca no adversário',
+        e.A[0].pv > 5 && e.B[0].pv <= pvBantes,
+        `eu 5 → ${e.A[0].pv} · ele ${pvBantes} → ${e.B[0].pv}`);
+}
+
+// ── 7. Custa os PM que se pediu ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: () => ({ magia: MARE, pm: 8 }),
+    a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Água', pm: 30, pmMax: 30, pv: 5,
+         magias: { ataque: MARE, forte: MARE, defesa: MARE } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  M.combate3dtTurno(e);
+  A.ver('paga os 8 PM que investiu',
+        e.A[0].pm === 22, `PM 30 → ${e.A[0].pm}`);
+}
+
+// ── 8. É a única cura de verdade do jogo ──
+// A Cura Perpétua da vantagem devolve 1 por turno e o Segundo Fôlego
+// enche tudo mas gasta o turno e existe uma vez. De magia que cure a
+// pedido, e escale, só há esta — e é isso que faz da Água o elemento
+// que se aguenta.
+{
+  let comCura = 0;
+  for (const el of Object.keys(M.MAGIAS))
+    for (const cat of ['ataque', 'forte', 'defesa'])
+      for (const g of (M.MAGIAS[el][cat] || [])) if (g.cura) comCura++;
+  A.ver('é a única magia do catálogo que cura',
+        comCura === 1, `${comCura} magia(s) com cura em todo o catálogo`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');

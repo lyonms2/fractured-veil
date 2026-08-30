@@ -894,6 +894,37 @@ function _pveEscolher(tipo, arg) {
 // Cada opção mostra a Força de Ataque que rende — a mesma regra do
 // resto da tela, mostrar a conta em vez de pedir fé.
 // ═══════════════════════════════════════════════════════════════════
+/* O QUE UM DEGRAU DE PM RENDE, NUMA MAGIA QUE NÃO ATACA.
+
+   O selector já podava os degraus inúteis — mas só sabia fazê-lo com
+   magias de ataque, porque perguntava ao valorDaMagia, e esse devolve
+   null a tudo o que não tenha Força de Ataque.
+
+   A Maré Restauradora cura `floor(pm ÷ 2)` dados. O selector oferecia
+   os dezanove degraus de 2 a 20, dos quais só dez dão coisas
+   diferentes: 3 PM curam o mesmo que 2, 5 o mesmo que 4, e assim por
+   diante. Nove botões que cobram um PM a mais por absolutamente nada.
+
+   Devolve a conta E o rótulo: a conta serve para podar, o rótulo para
+   o botão dizer o que dá. As outras quatro que escalam sem atacar não
+   têm degraus inúteis, mas mostravam botões mudos — "3 PM" e mais
+   nada. */
+function _pveRendeSemAtaque(g, pm) {
+  if (g.cura) {
+    const d = Math.max(1, Math.floor(pm * (g.cura.dadosPorPM || 0.5)));
+    return { chave: 'cura' + d, rotulo: t('mag.rende.cura', { n: d }) };
+  }
+  if (g.armaduraPorPM) {
+    const a = Math.min(pm, g.armaduraMax || 5);
+    return { chave: 'arm' + a, rotulo: t('mag.rende.armadura', { n: a }) };
+  }
+  if (g.bonusFDPorPM) { const v = pm * g.bonusFDPorPM;
+    return { chave: 'fd' + v, rotulo: t('mag.rende.fd', { n: v }) }; }
+  if (g.esquivaBonus) return { chave: 'esq' + pm, rotulo: t('mag.rende.esquiva', { n: pm }) };
+  if (g.barreira)     return { chave: 'bar' + pm, rotulo: t('mag.rende.barreira', { n: pm * 2 }) };
+  return null;
+}
+
 function _pveEscolherPM(tipo, g, max) {
   const eu = _pveEstado.A[_pveEstado.ativoA];
   const alvo = document.getElementById('cbAcoes');
@@ -905,7 +936,9 @@ function _pveEscolherPM(tipo, g, max) {
     // O "|| 1" é a regra do motor: uma magia sem dados próprios rola na
     // mesma o dado do ataque. Sem isto, 2 e 4 PMs pareciam diferentes na
     // conta e davam exatamente o mesmo em jogo.
-    return v ? v.caracs + '|' + (v.dados || 1) : String(pm);
+    if (v) return v.caracs + '|' + (v.dados || 1);
+    const r = _pveRendeSemAtaque(g, pm);
+    return r ? r.chave : String(pm);
   };
   const escolhas = [];
   let ultimo = null;
@@ -923,7 +956,11 @@ function _pveEscolherPM(tipo, g, max) {
     </div>` + podados.map(pm => {
     const v = (typeof valorDaMagia === 'function') ? valorDaMagia(g, eu.ficha, pm) : null;
     const custo = _c3custoMagia(eu, g, pm, _pveEstado.B[_pveEstado.ativoB]);
-    const conta = v ? `FA ${v.caracs}${v.dados ? ' + ' + v.dados + 'd' : ' + 1d'}` : '';
+    // Sem Força de Ataque o botão ficava mudo: só "3 PM", e o jogador
+    // escolhia às cegas quanto investir numa cura ou numa concha.
+    const semAtk = v ? null : _pveRendeSemAtaque(g, pm);
+    const conta = v ? `FA ${v.caracs}${v.dados ? ' + ' + v.dados + 'd' : ' + 1d'}`
+                : semAtk ? semAtk.rotulo : '';
     return `<button class="cb-btn" onclick="_pveLancarCom('${tipo}',${pm})">
         <span class="cb-btn-rot">${pm} PM</span>
         <span class="cb-btn-sub">${conta}${custo !== pm ? ` · ${t('pve.pm.paga', { n: custo })}` : ''}</span>

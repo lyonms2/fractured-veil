@@ -34,6 +34,14 @@ window.registerStrings({
      Isto é a mesma ideia do "FA H3 + F4 + 1d", do lado de cá: o que
      a magia dá, em quatro ou cinco palavras, na mesma letra de
      máquina de escrever. */
+  // O que UM degrau concreto do selector de PM rende. As de cima
+  // descrevem a regra ("+1 por PM"); estas dizem o número que sai de
+  // se carregar naquele botão.
+  'mag.rende.cura':      '{n}d de cura',
+  'mag.rende.armadura':  'Armadura +{n}',
+  'mag.rende.fd':        'FD +{n}',
+  'mag.rende.esquiva':   'esquiva +{n}',
+  'mag.rende.barreira':  'barreira {n}',
   'mag.conta.armadura_pm':   'A +{n} por PM, até +{max}',
   'mag.conta.armadura':      'A +{n}',
   'mag.conta.armadura_dobra':'A ×2, excepto contra magia',
@@ -175,6 +183,11 @@ window.registerStrings({
   'mag.custo':        '{pm} MP',
   'mag.custo.faixa':  '{min} to {max} MP',
   'mag.custo.faixa_turno': '{min} to {max} MP per turn',
+  'mag.rende.cura':      '{n}d healed',
+  'mag.rende.armadura':  'Armour +{n}',
+  'mag.rende.fd':        'DF +{n}',
+  'mag.rende.esquiva':   'dodge +{n}',
+  'mag.rende.barreira':  'barrier {n}',
   'mag.conta.armadura_pm':   'A +{n} per MP, up to +{max}',
   'mag.conta.armadura':      'A +{n}',
   'mag.conta.armadura_dobra':'A ×2, except against magic',
