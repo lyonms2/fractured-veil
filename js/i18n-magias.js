@@ -182,7 +182,7 @@ window.registerStrings({
   'mag.un_a2.nome':   'Punho Dimensional',
   'mag.un_a2.desc':   'Um único golpe que atravessa a distância e atira o alvo para trás.',
   'mag.un_d1.nome':   'Corpo Elemental',
-  'mag.un_d1.desc':   'Você deixa de ter carne e passa a ser o seu elemento. Quase nada consegue tocar em você.',
+  'mag.un_d1.desc':   'Você deixa de ter carne e passa a ser o seu elemento: nenhum ponto de dano entra enquanto durar, e o que precisa de ferir para pegar — veneno, gelo, decapitação — deixa de pegar junto. Não trava o que não passa pela vida: virar pedra ou estátua, a cegueira, e a mordida que suga por fora do golpe. Vinte PM a cada turno, e cada vinte compra um turno.',
 }, {
   // ── ENGLISH ───────────────────────────────────────────────────────
   'mag.cat.ataque':   'Attack',
@@ -329,5 +329,5 @@ window.registerStrings({
   'mag.un_a2.nome':   'Dimensional Fist',
   'mag.un_a2.desc':   'A single blow that crosses the distance and throws the target back.',
   'mag.un_d1.nome':   'Elemental Body',
-  'mag.un_d1.desc':   'You stop having flesh and become your element. Almost nothing touches you.',
+  'mag.un_d1.desc':   'You stop having flesh and become your element: not one point of damage gets in while it lasts, and whatever needs to wound in order to take hold — poison, ice, beheading — stops working along with it. It does not stop what bypasses life: turning to stone or ice, blindness, and the bite that drains outside the blow. Twenty MP every turn, and each twenty buys one turn.',
 });

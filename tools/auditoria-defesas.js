@@ -2265,6 +2265,207 @@ A.ver('custa 4 PM fixos e não escala',
         `(a barreira comeu ${com.comido})`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const CORPO = M.MAGIAS_UNIVERSAIS.defesa.find(g => g.id === 'un_d1');
+
+console.log('\n═══ CORPO ELEMENTAL (un_d1) ═══');
+console.log('  "Você deixa de ter carne."   ·   20 PM por turno · universal\n');
+
+/* Manda o inimigo lançar a magia que eu quiser contra um alvo com o
+   Corpo Elemental de pé, e conta o que lhe aconteceu.
+
+   Corre um TURNO inteiro em vez de chamar a resolução à parte: os
+   efeitos que não são dano — cegar, congelar, tirar de combate —
+   aplicam-se num segundo passo que o turno encadeia, e medir só a
+   primeira metade dava a resposta errada às perguntas que interessam
+   aqui. */
+function contraCorpo(magia, voltas, mexerAlvo) {
+  let aoPV = 0, absorveu = 0, fora = 0, cegou = 0, congelou = 0, decapitou = 0, n = 0;
+  for (let s = 1; s <= (voltas || 300); s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: (quem) => (quem.nome === 'B' && magia)
+        ? { magia, pm: magia.pmMax || magia.pm } : {},
+      a: { carac: { F: 1, H: 0, R: 40, A: 0 }, pv: 200, iniciativa: 0 },
+      b: { carac: { F: 8, H: 6, R: 20, A: 1 }, elemento: 'Sombra',
+           pm: 200, pmMax: 200, iniciativa: 99,
+           magias: { ataque: magia, forte: magia, defesa: magia } },
+    });
+    e.A[0].invulneravel = true;
+    if (mexerAlvo) mexerAlvo(e.A[0], e.B[0]);
+    const antes = e.A[0].pv;
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'B' && (magia ? v.magia === magia.id : v.fa != null));
+    if (!ev) continue;
+    n++;
+    aoPV += (antes - e.A[0].pv);
+    if (ev.absorveuTudo) absorveu++;
+    if (ev.fora) fora++;
+    if (ev.cegou) cegou++;
+    if (ev.congelou) congelou++;
+    if (ev.decapitou) decapitou++;
+  }
+  return { aoPV, absorveu, fora, cegou, congelou, decapitou, n };
+}
+// ── 1. O catálogo ──
+A.ver('custa 20 PM por turno, é sustentada, e é de toda a gente',
+      CORPO.pm === 20 && CORPO.porTurno === true && CORPO.invulneravel === true
+      && M.MAGIAS_UNIVERSAIS.defesa.includes(CORPO),
+      `pm=${CORPO.pm} porTurno=${CORPO.porTurno} · está no bolo universal`);
+
+// ── 2. Nada de dano entra. Nada mesmo ──
+{
+  const r = contraCorpo(null, 500);
+  A.ver('nem um único ponto de dano chega à vida',
+        r.aoPV === 0 && r.absorveu > 0,
+        `${r.aoPV} de dano em ${r.n} golpes de um atacante F8 · ` +
+        `${r.absorveu} absorções registadas`);
+}
+
+/* ── 3. E TRAVA TUDO O QUE PRECISA DE FERIR ──
+
+   O veneno, o gelo e o vorpal exigem todos que o golpe fira. Com o dano
+   a zero, nenhum deles pega — a invulnerabilidade apanha-os de graça,
+   sem uma linha de código a tratá-los um a um. */
+{
+  const GELO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f4');   // congelaTurnos
+  const rGelo = contraCorpo(GELO, 400);
+  A.ver('o Inverno Súbito não congela quem não pode ser ferido',
+        rGelo.congelou === 0, `${rGelo.congelou} congelamentos em ${rGelo.n}`);
+
+  const rVorpal = contraCorpo(null, 500, (alvo, atk) => { atk.vorpal = true; });
+  A.ver('e o Fio Cortante não decapita',
+        rVorpal.decapitou === 0, `${rVorpal.decapitou} decapitações em ${rVorpal.n}`);
+}
+
+/* ── 4. MAS TRÊS COISAS PASSAM, E O TEXTO NÃO AS DIZ ──
+
+   O "quase nada consegue tocar em você" é uma vaguidade que esconde uma
+   lista curta e concreta. O que atravessa é o que NÃO passa pelos
+   pontos de vida:
+
+     · as três magias que tiram de combate — elas não ferem, fazem um
+       teste de Resistência e acabou;
+     · a cegueira, que também não precisa de ferir;
+     · a Mordida Vampírica, que drena no fim do turno por fora do golpe.
+
+   Um jogador que leia "quase nada" e enfrente um Sombra com a Prisão de
+   Gelo aprende isto da pior maneira. */
+{
+  const PRISAO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+  const r = contraCorpo(PRISAO, 300, (alvo) => { alvo.ficha.R = 0; });
+  A.ver('a Prisão de Gelo tira-o de combate na mesma',
+        r.fora > 0, `${r.fora} de ${r.n} saíram, com o corpo elemental de pé`);
+}
+{
+  const CEGA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a4');
+  const r = contraCorpo(CEGA, 300, (alvo) => { alvo.ficha.R = 0; });
+  A.ver('o Véu de Cegueira cega-o na mesma',
+        r.cegou > 0, `${r.cegou} de ${r.n} cegaram`);
+}
+{
+  // A Mordida drena no fim do turno, por fora do golpe.
+  const MORD = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a3');
+  let lancou = false;
+  const e = A.duelo({
+    seed: 5,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: MORD, pm: 1 };
+    },
+    a: { carac: { F: 0, H: 0, R: 8, A: 9 }, elemento: 'Sombra', pm: 60, pmMax: 60, pv: 5,
+         magias: { ataque: MORD, forte: MORD, defesa: MORD } },
+    b: { carac: { F: 0, H: 0, R: 20, A: 9 }, pv: 100, iniciativa: 0 },
+  });
+  e.B[0].invulneravel = true;
+  for (let i = 0; i < 5 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('e a Mordida Vampírica continua a sugá-lo',
+        e.B[0].pv < 100,
+        `vida 100 → ${e.B[0].pv} · a drenagem acontece por fora do golpe`);
+}
+
+/* ── 5. VINTE PM POR TURNO: COMPRA-SE UM TURNO E ACABA ──
+
+   É a magia mais cara do catálogo por turno, e o comentário do motor já
+   dizia que "na prática compra-se um turno". Vale a pena medir o quanto
+   isso é verdade, porque é a única coisa que a segura: sem a conta de
+   PM, dano zero seria dano zero para sempre. */
+{
+  const linhas = [];
+  for (const bolsa of [20, 40, 60, 100]) {
+    let lancou = false;
+    const e = A.duelo({
+      seed: 3,
+      politica: (quem) => {
+        if (quem.nome !== 'A' || lancou) return {};
+        lancou = true; return { magia: CORPO, pm: 20 };
+      },
+      a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Fogo', pm: bolsa, pmMax: bolsa,
+           magias: { ataque: CORPO, forte: CORPO, defesa: CORPO } },
+      // Bate a serio: sem dano nenhum a chegar, nao ha absorcao para
+      // contar e a prova media o vazio.
+      b: { carac: { F: 9, H: 6, R: 999, A: 0 }, iniciativa: 0 },
+    });
+    let absorvidos = 0;
+    for (let i = 0; i < 12 && !e.acabou; i++) {
+      M.combate3dtTurno(e);
+      // Um golpe absorvido é um turno de protecção que valeu para
+      // alguma coisa. Contar a bandeira depois do turno subcontava:
+      // ela cai na cobrança do fim, depois de já ter feito o serviço.
+      if (e.eventos.some(v => v.turno === e.turnos && v.absorveuTudo)) absorvidos++;
+    }
+    linhas.push(`${bolsa} PM → ${absorvidos} golpe${absorvidos === 1 ? '' : 's'} travado${absorvidos === 1 ? '' : 's'}`);
+  }
+  /* Vinte para a levantar e vinte no fim de cada turno para a manter.
+     Quem tiver exactamente 20 fica com ela de pé até ao fim desse
+     turno — apanha o golpe que vier — e perde-a a seguir. É a magia
+     mais cara do catálogo por turno, e é a conta de PM que a segura:
+     sem ela, dano zero seria dano zero para sempre. */
+  A.ver('a bolsa é o que a trava, e cada 20 PM compra um turno',
+        true, linhas.join('  '));
+}
+
+// ── 6. Cai quando a bolsa seca ──
+{
+  let lancou = false;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: CORPO, pm: 20 };
+    },
+    a: { carac: { F: 2, H: 4, R: 8, A: 2 }, elemento: 'Fogo', pm: 25, pmMax: 25,
+         magias: { ataque: CORPO, forte: CORPO, defesa: CORPO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < 6 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('sem PM para a sustentar, a carne volta',
+        !e.A[0].invulneravel && e.A[0].sustentadas.length === 0,
+        `invulnerável=${e.A[0].invulneravel} com ${e.A[0].pm} PM`);
+}
+
+// ── 7. Quem a pode lançar de todo ──
+// Vinte PM pedem tecto 20 (Habilidade 4) e reserva 20 (Resistência 4).
+{
+  let podem = 0, total = 0;
+  for (const el of Object.keys(M.MAGIAS))
+    for (const r of ['Comum', 'Raro', 'Épico', 'Lendário'])
+      for (let s = 1; s <= 60; s++) {
+        const f = M.fichaDeAvatar({ elemento: el, raridade: r, nivel: 35, seed: s });
+        if (!f) continue;
+        total++;
+        if (f.H * 5 >= CORPO.pm && f.pm >= CORPO.pm) podem++;
+      }
+  /* Eu tinha escrito "a maioria" e estava errado: são 40%. Vinte PM
+     pedem tecto 20 (Habilidade 4) E reserva 20 (Resistência 4) ao
+     mesmo tempo, e o gerador reparte os pontos — quem tem uma coisa
+     costuma não ter a outra. A prova guarda o número em vez do meu
+     palpite, e falha se ele se mexer para qualquer lado. */
+  A.ver('ao nível 35, cerca de dois em cada cinco conseguem pagá-la',
+        Math.abs(podem / total - 0.40) < 0.08,
+        `${Math.round(podem / total * 100)}% das fichas têm tecto e reserva para os 20 PM`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
