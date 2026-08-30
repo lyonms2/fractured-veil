@@ -487,11 +487,36 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
     }
   }
 
+/* ── ERGUER OUTRA VEZ O QUE JÁ ESTÁ DE PÉ SUBSTITUI, NÃO SOMA ──
+
+   A lista das sustentadas foi feita para ter uma entrada por magia, e
+   o _c3recalcular soma tudo o que lá estiver. Empurrar uma segunda
+   entrada da MESMA magia fazia o bónus dela contar duas vezes: o
+   Casulo de Marés passava do tecto de +5 para +10 e +15, a Pele de
+   Pedra ia de +2 a +6, e o Véu de Correntes — que não cobra nada por
+   turno — subia +10 de Força de Defesa por cada vez que se carregasse
+   no botão, de graça e para sempre.
+
+   A política do motor já se protegia disto com um `!eu.bonusFD`, o que
+   diz que quem a escreveu sabia que relançar não devia render nada. O
+   jogador é que não tinha esse guarda: a interface acende o botão da
+   magia de defesa sempre que houver PM.
+
+   Substituir é a leitura certa e não tira nada a ninguém — quem ergueu
+   o Casulo com 2 PM e o quer com 5 volta a lançá-lo e fica com 5, em
+   vez de com um segundo casulo por cima do primeiro. */
+function _c3porDePe(atk, magia, pmGastos) {
+  const i = atk.sustentadas.findIndex(x => x.magia.id === magia.id);
+  if (i >= 0) atk.sustentadas.splice(i, 1);
+  atk.sustentadas.push({ magia, pm: pmGastos });
+  // Do zero: com uma entrada substituída, somar só a nova deixaria a
+  // antiga contada para sempre.
+  _c3recalcular(atk);
+}
+
   // Magias sustentadas: ficam pagando PM todo o turno
   if (magia.porTurno) {
-    const s = { magia, pm: pmGastos };
-    atk.sustentadas.push(s);
-    _c3efeitosSustentada(atk, s);
+    _c3porDePe(atk, magia, pmGastos);
     if (magia.armaduraDobra) ev.armaduraDobrou = true;
     if (magia.bonusFDPorPM)  ev.bonusFD = pmGastos;
     if (magia.vorpal)        ev.vorpal = true;
@@ -540,11 +565,9 @@ function _c3aplicarEfeitos(atk, def, magia, pmGastos, dano, rng, ev) {
       } else ev.resistiu = true;
     }
   }
-  if (magia.bonusFD) {
-    const s = { magia, pm: 0 };
-    atk.sustentadas.push(s);
-    _c3efeitosSustentada(atk, s);
-  }
+  // O Véu de Correntes não cobra por turno: paga-se uma vez e dura a
+  // luta. Por isso era o pior caso do empilhamento — subia sem custo.
+  if (magia.bonusFD) _c3porDePe(atk, magia, 0);
 
   // ── AS DEFENSIVAS ──
   // Estavam todas no catálogo e nenhuma existia no motor: gastavam PM e

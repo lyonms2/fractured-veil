@@ -437,13 +437,33 @@ A.ver('escala de 1 a 5 PM, e cobra por turno',
         medidas.map(m => `${m.pm}PM→+${m.bonus}`).join('  '));
 }
 
-// ── 3. O tecto dos 5 segura, mesmo forçando ──
-// O pmMax já limita pela porta da frente. Isto prova a outra tranca —
-// a que fica no motor — porque são duas e podem divergir.
+/* ── 3. O tecto dos 5 segura, mesmo forçando ──
+
+   O pmMax já limita pela porta da frente. Isto prova a outra tranca — a
+   que fica no motor — porque são duas e podem divergir.
+
+   A primeira versão desta prova só olhava para UM lançamento, e por isso
+   dizia uma meia-verdade: o tecto segurava por lançamento e não segurava
+   ao todo. Relançar a magia empilhava-a em cima de si própria e o Casulo
+   ia a +10, +15, +20. Está corrigido no motor, e a prova agora pergunta
+   as duas coisas. */
 {
   const c = comCasulo(9);
   A.ver('não passa de +5 de Armadura, por mais PM que se dê',
         c.bonusA <= 5, `9 PM → +${c.bonusA}`);
+
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: CASULO, pm: 5 } : {},
+    a: { carac: { F: 2, H: 4, R: 20, A: 2 }, elemento: 'Água', pm: 200, pmMax: 200,
+         magias: { ataque: CASULO, forte: CASULO, defesa: CASULO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  const trilho = [];
+  for (let i = 0; i < 4; i++) { M.combate3dtTurno(e); trilho.push('+' + e.A[0].bonusA); }
+  A.ver('e relançá-lo quatro vezes continua a dar +5, não +20',
+        e.A[0].bonusA === 5 && e.A[0].sustentadas.length === 1,
+        trilho.join(' → ') + `  ·  ${e.A[0].sustentadas.length} concha(s) de pé`);
 }
 
 // ── 4. A Armadura extra aparece mesmo na Defesa ──
@@ -1058,6 +1078,122 @@ A.ver('custa 1 PM por turno e é sustentada',
         r.decapitou > 0,
         `${(r.decapitou / r.golpes * 100).toFixed(1)}% dos golpes contra Armadura 2 ` +
         `(${r.criticos} críticos, ${r.decapitou + r.aguentou} chegaram ao teste)`);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+const VEU = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d1');
+
+console.log('\n═══ VÉU DE CORRENTES (vt_d1) ═══');
+console.log('  "Uma parede de vento ao seu redor."   ·   5 PM, uma vez\n');
+
+function comVeu(voltas) {
+  let lancou = false;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: VEU, pm: 5 };
+    },
+    a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento', pm: 6, pmMax: 6,
+         magias: { ataque: VEU, forte: VEU, defesa: VEU } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < (voltas || 1) && !e.acabou; i++) M.combate3dtTurno(e);
+  return e;
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 5 PM e não escala nem cobra por turno',
+      VEU.pm === 5 && !VEU.pmMax && !VEU.porTurno && VEU.bonusFD === 10,
+      `pm=${VEU.pm} pmMax=${VEU.pmMax || '—'} porTurno=${!!VEU.porTurno} bonusFD=${VEU.bonusFD}`);
+
+// ── 2. Dez pontos de Força de Defesa ──
+{
+  const nu = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento' },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+  const sem = M._c3fd(nu, M._c3rng(77), {}).total;
+  const com = M._c3fd(comVeu().A[0], M._c3rng(77), {}).total;
+  A.ver('soma exactamente 10 à Força de Defesa',
+        com - sem === 10, `FD ${sem} → ${com}`);
+}
+
+/* ── 3. Paga-se uma vez e dura a luta inteira ──
+
+   É a única defesa do catálogo assim. Todas as outras cobram por turno
+   e caem quando a bolsa seca; esta entra na lista das sustentadas com
+   custo zero, e por isso nunca é largada — o fim de turno só larga as
+   que cobram. Cinco PM e acabou.
+
+   Com 6 PM de bolsa, a magia leva 5 e sobra 1. Se cobrasse fosse o que
+   fosse por turno, caía no turno seguinte. */
+{
+  const e = comVeu(12);
+  A.ver('não cai nunca, nem com a bolsa quase vazia',
+        e.A[0].bonusFD === 10 && e.A[0].sustentadas.length === 1,
+        `depois de 12 turnos: FD+${e.A[0].bonusFD} com ${e.A[0].pm} PM na bolsa`);
+}
+
+/* ── 4. Relançá-lo não empilha ──
+
+   Era o pior caso do empilhamento, e é a razão de o motor ter mudado
+   junto com esta prova: como não cobra nada por turno, cada nova
+   carregadela no botão somava outros +10 de graça e para sempre. Quatro
+   toques davam FD +40 — mais do que a Força de Defesa inteira de um
+   avatar de nível alto.
+
+   A política do motor já se defendia com um `!eu.bonusFD`; a interface
+   do jogador não tinha guarda nenhuma. */
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: VEU, pm: 5 } : {},
+    a: { carac: { F: 2, H: 2, R: 20, A: 2 }, elemento: 'Vento', pm: 200, pmMax: 200,
+         magias: { ataque: VEU, forte: VEU, defesa: VEU } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  const trilho = [];
+  for (let i = 0; i < 4; i++) { M.combate3dtTurno(e); trilho.push('FD+' + e.A[0].bonusFD); }
+  A.ver('quatro toques no botão continuam a dar +10, não +40',
+        e.A[0].bonusFD === 10 && e.A[0].sustentadas.length === 1,
+        trilho.join(' → '));
+}
+
+// ── 5. O bónus vale em todas as defesas, não só na primeira ──
+{
+  const c = comVeu().A[0];
+  const tres = [11, 22, 33].map(sem => M._c3fd(c, M._c3rng(sem), {}).partes
+    .find(p => p.r === 'bónus'));
+  A.ver('aparece em toda a Força de Defesa que se rolar',
+        tres.every(p => p && p.v === 10),
+        tres.map(p => p ? 'bónus ' + p.v : 'ausente').join(' · '));
+}
+
+// ── 6. Vale a pena? ──
+{
+  const golpes = 800;
+  const conta = (comVeuDePe) => {
+    let dano = 0;
+    for (let s = 1; s <= golpes; s++) {
+      const alvo = comVeuDePe ? comVeu().A[0]
+        : A.duelo({ seed: 3, politica: () => ({}),
+            a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento' },
+            b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+      const { atacante } = defensor();
+      Object.assign(atacante.ficha, { F: 4, H: 3, R: 4, A: 1 });
+      dano += M._c3resolver(atacante, alvo, null, 0, M._c3rng(s), {}, {}) || 0;
+    }
+    return dano / golpes;
+  };
+  const sem = conta(false), com = conta(true);
+  // O 100% é contra ESTE atacante — F4 H3, que rola no máximo 12 de
+  // Força de Ataque contra uma Defesa que passa a valer 14 a 19. Contra
+  // um atacante forte passaria alguma coisa; o número sem a ficha ao
+  // lado seria uma promessa que a magia não faz.
+  A.ver('cinco PM uma vez, e o dano recebido desaba',
+        com < sem,
+        `contra um atacante F4 H3: ${sem.toFixed(2)} → ${com.toFixed(2)} por golpe ` +
+        `(${((1 - com / sem) * 100).toFixed(0)}% menos)`);
 }
 
 // ── Relatório ──

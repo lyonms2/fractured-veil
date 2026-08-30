@@ -149,7 +149,7 @@ window.registerStrings({
   'mag.vt_f2.nome':   'Ressonância',
   'mag.vt_f2.desc':   'Vibrações que atravessam o corpo do alvo e o desfazem por dentro.',
   'mag.vt_d1.nome':   'Véu de Correntes',
-  'mag.vt_d1.desc':   'Uma parede de vento ao seu redor. Acertar em você passa a ser um problema sério.',
+  'mag.vt_d1.desc':   'Uma parede de vento fecha-se ao seu redor. Soma 10 à sua Força de Defesa — e, ao contrário de todas as outras defesas, paga-se uma vez e dura a luta inteira, sem cobrar nada por turno.',
   'mag.vt_d2.nome':   'Correntes Desviantes',
   'mag.vt_d2.desc':   'O ar se dobra em torno do corpo e desvia o que vem de longe.',
 
@@ -291,7 +291,7 @@ window.registerStrings({
   'mag.vt_f2.nome':   'Resonance',
   'mag.vt_f2.desc':   'Vibrations that pass through the target and unmake it from within.',
   'mag.vt_d1.nome':   'Veil of Currents',
-  'mag.vt_d1.desc':   'A wall of wind around you. Hitting you becomes a serious problem.',
+  'mag.vt_d1.desc':   'A wall of wind closes around you. Adds 10 to your Defence Force - and, unlike every other defence, it is paid once and lasts the whole fight, charging nothing per turn.',
   'mag.vt_d2.nome':   'Deflecting Currents',
   'mag.vt_d2.desc':   'The air bends around the body and turns aside what comes from a distance.',
 
