@@ -333,6 +333,11 @@
   .cb-defende { animation: none; }
   .cb-particula, .cb-onda, .cb-luz { display: none; }
   .cb-por-vir { transform: none; }
+  /* O dado perde o salto e fica com o valor, que é o que ele diz. A
+     batida mantém-se: os dados continuam a chegar antes da conta. */
+  .cb-rolando .cb-dado-glifo,
+  .cb-rolando .cb-dado-n,
+  .cb-rolando.cb-dado-seis { animation: none; }
 }
 
 /* Encaixe: o cartão salta para trás ao levar */
@@ -941,6 +946,66 @@
   padding: 0 0.1875rem;
 }
 .cb-crit { color: #ff9a4c; font-weight: 700; letter-spacing: 0.05rem; }
+
+/* ═══ O DADO A ROLAR ═══
+
+   O mesmo dado do detalhe, mas ao vivo e uma batida antes da conta: a
+   conta não é feita, é rolada, e o instante em que o dado pousa é o
+   instante em que o turno se decide.
+
+   O que gira é o GLIFO; o número fica quieto e só pousa no fim. Girar
+   os dois punha o resultado de cabeça para baixo a meio caminho.
+
+   Nada aqui inventa faces. O número está no DOM desde que a linha
+   nasce e a base dele é opaca — se a animação não chegar a correr
+   (movimento reduzido, separador escondido, um temporizador comido),
+   o que sobra é o valor certo sem salto. Um dado que congela numa face
+   errada seria pior do que dado nenhum.
+
+   A duração tem de bater com o PVE_BATIDA.dado→conta do
+   js/combate-pve.js, que são 620ms: 520 de salto e 90 de atraso do
+   segundo dado. O CSS não lê o JS, portanto mexe-se nos dois. */
+.cb-dados { display: inline-block; margin-right: 0.25rem; }
+.cb-dado-vivo { display: inline-block; margin-right: 0.125rem; }
+.cb-dado-glifo,
+.cb-dado-n { display: inline-block; }
+.cb-dado-n { margin-left: 0.0625rem; }
+/* O dado da defesa distingue-se do do ataque: dois iguais lado a lado
+   e não se sabe qual é de quem. */
+.cb-dado-def { color: var(--text2); background: rgba(255,255,255,.07); }
+
+@keyframes cb-dado-gira {
+  0%   { transform: rotate(-40deg)  scale(.35); filter: blur(1.2px); }
+  55%  { transform: rotate(560deg)  scale(1.3);  filter: blur(.5px); }
+  78%  { transform: rotate(690deg)  scale(.9);   filter: none; }
+  100% { transform: rotate(720deg)  scale(1);    filter: none; }
+}
+/* steps(1) de propósito: o número não desliza para dentro, aparece —
+   é o gesto de pousar, não o de entrar. */
+@keyframes cb-dado-pousa {
+  0%, 68% { opacity: 0; transform: scale(.5); }
+  84%     { opacity: 1; transform: scale(1.45); }
+  100%    { opacity: 1; transform: scale(1); }
+}
+/* Um seis é o crítico. Ganha um anel, no instante em que pousa. */
+@keyframes cb-dado-brilha {
+  0%, 68% { box-shadow: none; }
+  84%     { box-shadow: 0 0 0 0.1875rem rgba(255,154,76,.5); }
+  100%    { box-shadow: 0 0 0 0 rgba(255,154,76,0); }
+}
+.cb-rolando .cb-dado-glifo {
+  animation: cb-dado-gira .52s cubic-bezier(.2,.7,.3,1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.cb-rolando .cb-dado-n {
+  animation: cb-dado-pousa .52s ease-out both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.cb-dado-seis { color: #ff9a4c; background: rgba(255,154,76,.16); }
+.cb-rolando.cb-dado-seis {
+  animation: cb-dado-brilha .62s ease-out both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
 
 /* O turno aberto cresce. É o pedido: ampliar SÓ aquele, para se ver bem
    o que aconteceu — os outros ficam onde estavam, que é o que faz a

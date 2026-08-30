@@ -1343,20 +1343,36 @@ function _pveTesteHTML(x, ev) {
    ao mesmo tempo é o mesmo que não a mostrar — o olho não separa cinco
    coisas simultâneas, vê um clarão e um resultado. Por ordem:
 
-     quem ataca avança e paga  →  a conta rola  →  o golpe chega
-     →  a vida cai  →  fica o que ficou
+     quem ataca avança e paga  →  os dados rolam  →  a conta fecha
+     →  o golpe chega  →  a vida cai  →  fica o que ficou
 
    Os tempos vivem aqui em cima, juntos, porque é a relação ENTRE eles
    que faz o ritmo — espalhados pelo código, ajustar um era descobrir
-   os outros por acidente. */
+   os outros por acidente.
+
+   ── O DADO ABRIU UMA BATIDA ──
+
+   A conta aparecia inteira de uma vez, feita. Mas ela não é feita: é
+   rolada, e o momento em que o dado pousa é o momento em que o turno
+   se decide. Agora os dados saltam primeiro e a conta fecha-se por
+   cima deles já parados.
+
+   Isso empurra tudo o que vem depois em 620ms — o golpe de um
+   acontecimento passa de 1500 para 2120. Com seis avatares em campo um
+   turno inteiro passa de nove para treze segundos. É o preço, e foi
+   pedido: o que se ganha é ver de onde veio o número. */
 const PVE_BATIDA = {
-  conta:   360,   // a rolagem aparece depois de se ver quem age
-  esquiva: 400,   // o alvo sai da frente
-  golpe:   620,   // o impacto
-  vida:    980,   // a barra só desce depois de se LER o número
-  efeitos: 1180,  // veneno, gelo, cegueira: o que sobrou do golpe
-  fim:    1500,   // o golpe inteiro
-  onda:    300,   // entre as ondas de um ataque múltiplo
+  dado:    360,   // os dados saltam, depois de se ver quem age
+  // 620 depois do salto: a animação leva 520ms e o segundo dado sai
+  // 90ms atrasado do primeiro. Se mexeres aqui, mexe no
+  // `cb-dado-gira` do css/combate-batalha.css — o CSS não lê isto.
+  conta:   980,   // a conta fecha, com os dados já pousados
+  esquiva: 1020,  // o alvo sai da frente
+  golpe:   1240,  // o impacto
+  vida:    1600,  // a barra só desce depois de se LER o número
+  efeitos: 1800,  // veneno, gelo, cegueira: o que sobrou do golpe
+  fim:     2120,  // o golpe inteiro
+  onda:     300,  // entre as ondas de um ataque múltiplo
 };
 
 function _pveMostrarEvento(ev) {
@@ -1460,6 +1476,7 @@ function _pveMostrarEvento(ev) {
 
   // A CONTA, que é o ponto desta versão
   let conta = '';
+  let dados = '';   // os dados dela, que saltam uma batida antes
   // Magia de ondas: cada onda rolou a sua própria FA contra a sua
   // própria FD. Mostrar só a última ao lado do dano somado dava uma
   // conta que não fecha — e a conta que não fecha é pior do que conta
@@ -1484,6 +1501,10 @@ function _pveMostrarEvento(ev) {
     const detalhe = _pveConta('FA', ev.faPartes, ev.fa, ev.criticoAtk)
                   + (ev.esquivou ? '' : _pveConta('FD', ev.fdPartes, ev.fd, ev.criticoDef));
     if (detalhe) conta += '<span class="cb-detalhe">' + detalhe + '</span>';
+    /* Só o ataque de uma rolagem só. As magias de onda rolam uma FA por
+       onda e já se mostram uma a uma, com um impacto cada — encher esse
+       bloco de dados era pôr seis a saltar onde já há três linhas. */
+    dados = _pveDadosVivos(ev);
   }
   const nome = ev.vantagem ? t('vd.' + ev.vantagem + '.nome').replace('{elem}', '')
              : ev.magia    ? t('mag.' + ev.magia + '.nome')
@@ -1566,7 +1587,8 @@ function _pveMostrarEvento(ev) {
      da linha fica reservada desde o início, e o registo não salta
      debaixo dos olhos de quem está a ler enquanto os efeitos entram. */
   const linha = _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
-          (conta ? `<br><span class="cb-conta cb-por-vir">${conta}</span>` : '') +
+          (dados || conta ? '<br>' : '') + dados +
+          (conta ? `<span class="cb-conta cb-por-vir">${conta}</span>` : '') +
           (testes ? `<div class="cb-testes cb-por-vir">${testes}</div>` : '') +
           (meus.length ? `<div class="cb-extras cb-por-vir">${meus.map(x => `<span>${x}</span>`).join('')}</div>` : '') +
           (dele.length ? `<div class="cb-extras no-alvo cb-por-vir">
@@ -1602,20 +1624,33 @@ function _pveMostrarEvento(ev) {
     if (ev.pm) _pveNumeroPM(cartaoQuem, ev.pm);
   }
 
-  // ── 2ª BATIDA · a conta rola ──
+  /* ── 2ª BATIDA · os dados rolam ──
+
+     Um só temporizador para os dois gestos: destapar e pôr a saltar
+     têm de acontecer no mesmo instante, e dois temporizadores para o
+     mesmo milissegundo é uma corrida à espera de acontecer. */
+  if (dados) setTimeout(() => {
+    if (!linha) return;
+    linha.querySelectorAll('.cb-dados').forEach(x => x.classList.remove('cb-por-vir'));
+    linha.querySelectorAll('.cb-dado-vivo').forEach(x => x.classList.add('cb-rolando'));
+  }, PVE_BATIDA.dado);
+
+  // ── 3ª BATIDA · a conta fecha-se, com os dados já pousados ──
   if (conta) revelar(PVE_BATIDA.conta, '.cb-conta');
 
-  // ── 3ª BATIDA · o alvo sai da frente, e acabou ──
+  // ── 4ª BATIDA · o alvo sai da frente, e acabou ──
   // Uma esquiva não tem impacto nem vida a cair. Fazê-la durar o mesmo
   // que um golpe que acerta era tempo parado a olhar para nada.
   if (ev.esquivou) {
     setTimeout(() => _pveGesto(cartaoAlvo, 'cb-esquiva', 620), PVE_BATIDA.esquiva);
     if (temEfeitos) revelar(PVE_BATIDA.vida, '.cb-testes, .cb-extras');
     setTimeout(_pveAtualizarBarras, PVE_BATIDA.vida);
-    return 1000;
+    // Derivado, e não um 1000 à mão: com a batida do dado pelo meio, o
+    // número fixo ficava a acabar a esquiva antes de ela se ver.
+    return PVE_BATIDA.esquiva + 600;
   }
 
-  // ── 3ª BATIDA · o golpe chega ──
+  // ── 5ª BATIDA · o golpe chega ──
   // Só a magia tem elemento. Um soco é um soco, e as faíscas brancas
   // são o que o distingue de uma magia à vista.
   const elem  = (ev.magia || ev.vantagem) ? _pveElementoDe(ev) : null;
@@ -1676,7 +1711,7 @@ function _pveMostrarEvento(ev) {
     _pveGesto(cartaoQuem, 'cb-bate', 520);
   }, PVE_BATIDA.golpe + 160);
 
-  // ── 4ª BATIDA · a vida cai ──
+  // ── 6ª BATIDA · a vida cai ──
   // Depois do impacto, não com ele. O comentário antigo aqui já dizia
   // "as barras descem com atraso, para se ver quanto caiu" — mas não
   // havia atraso nenhum no código, e a barra descia no mesmo quadro em
@@ -1685,7 +1720,7 @@ function _pveMostrarEvento(ev) {
                                             : PVE_BATIDA.conta;
   setTimeout(_pveAtualizarBarras, tVida);
 
-  // ── 5ª BATIDA · o que ficou ──
+  // ── 7ª BATIDA · o que ficou ──
   const tEfeitos = (bate || ondas) ? PVE_BATIDA.efeitos + extraOndas
                                    : PVE_BATIDA.esquiva;
   if (temEfeitos) revelar(tEfeitos, '.cb-testes, .cb-extras');
@@ -1850,6 +1885,46 @@ function _pveTextoFim() {
    Isto escreve as parcelas que o motor passou a devolver. O dado leva
    classe própria porque é a única parcela que não depende de nada que
    o jogador tenha feito: é o que separa a sorte da ficha. */
+/* ═══ OS DADOS QUE ROLAM, AO VIVO ═══
+
+   O valor não é inventado aqui: o motor guarda cada rolagem em
+   `ev.faPartes` e `ev.fdPartes`, marcada com `dado:true`, e é essa que
+   se mostra. O `_pveConta` já a desenhava — mas dentro do `.cb-detalhe`,
+   que está escondido até se abrir o turno. Ou seja: durante a luta, o
+   jogador via o resultado da rolagem e nunca a rolagem.
+
+   ── PORQUE É QUE O NÚMERO ESTÁ NO DOM DESDE O INÍCIO ──
+
+   O texto do dado já é o valor certo quando a linha nasce; a animação
+   só o TAPA e destapa. Com o painel escondido não há quadros nenhuns e
+   o `setTimeout` fica preso a cerca de um segundo — se o salto trocasse
+   dígitos de verdade, quem mudasse de separador a meio voltava e
+   encontrava o dado parado numa face que não é o resultado. Assim o
+   pior caso é o número certo sem salto, que é a falha que se quer.
+
+   Pela mesma razão o salto vive numa classe que só a animação põe: o
+   `_pveAbrirTurno` reabre turnos antigos, e uma animação CSS RECOMEÇA
+   quando o elemento deixa de estar escondido. Sem isto, abrir o
+   histórico punha a rolar os dados de uma luta já acabada. */
+function _pveDadoVivo(v, rot, i) {
+  return '<b class="cb-dado cb-dado-vivo' + (v === 6 ? ' cb-dado-seis' : '')
+       + (rot === 'FD' ? ' cb-dado-def' : '') + '" style="--i:' + i + '"'
+       + ' title="' + rot + '">'
+       + '<span class="cb-dado-glifo">🎲</span>'
+       + '<span class="cb-dado-n">' + v + '</span></b>';
+}
+function _pveDadosVivos(ev) {
+  const lista = [];
+  (ev.faPartes || []).forEach(p => { if (p.dado) lista.push([p.v, 'FA']); });
+  // Quem esquiva não rola Defesa nenhuma, e o registo já tem esse
+  // cuidado: um dado de FD a saltar numa esquiva seria mostrar a
+  // rolagem que o motor nunca fez.
+  if (!ev.esquivou) (ev.fdPartes || []).forEach(p => { if (p.dado) lista.push([p.v, 'FD']); });
+  if (!lista.length) return '';
+  return '<span class="cb-dados cb-por-vir">'
+       + lista.map((d, i) => _pveDadoVivo(d[0], d[1], i)).join('') + '</span>';
+}
+
 function _pveConta(rot, partes, total, critico) {
   if (!partes || !partes.length) return '';
   const corpo = partes.map((p, i) => {
