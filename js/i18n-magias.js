@@ -88,7 +88,7 @@ window.registerStrings({
   'mag.so_a3.nome':   'Mordida Vampírica',
   'mag.so_a3.desc':   'Um toque que suga, e continua sugando: enquanto durar, 1d de vida sai do adversário todo o turno e entra em você — sem precisar de acertar nele, e mesmo nos turnos em que ninguém encosta em ninguém. Se a sua vida já estiver cheia, ele sangra na mesma e a parte que lhe cabia perde-se.',
   'mag.so_a4.nome':   'Véu de Cegueira',
-  'mag.so_a4.desc':   'Trevas nos olhos do alvo. Quem não resistir bate com −1 e esquiva com −3 até o fim da luta.',
+  'mag.so_a4.desc':   'Trevas nos olhos do alvo. Quem não resistir passa a bater com −1 e a esquivar com −3 até ao fim da luta. O −1 é na pontaria e vale por dois: ele bate mais fraco E fica mais fácil de esquivar. E o −3 não enfraquece a esquiva de toda a gente — a muitos, tira-a por completo.',
 
   // ── 🔥 FOGO ───────────────────────────────────────────────────────
   'mag.fg_a1.nome':   'Chuva de Brasas',
@@ -235,7 +235,7 @@ window.registerStrings({
   'mag.so_a3.nome':   'Vampiric Bite',
   'mag.so_a3.desc':   'A touch that sucks, and keeps sucking: while it lasts, 1d of life leaves your opponent every turn and enters you - without needing to hit them, and even on turns where nobody lands a blow. If your life is already full, they bleed all the same and the half that was yours is lost.',
   'mag.so_a4.nome':   'Veil of Blindness',
-  'mag.so_a4.desc':   "Darkness over the target's eyes. Whoever fails to resist attacks at −1 and dodges at −3 for the rest of the fight.",
+  'mag.so_a4.desc':   "Darkness over the target's eyes. Whoever fails to resist attacks at −1 and dodges at −3 for the rest of the fight. The −1 is to their aim and counts twice: they hit weaker AND become easier to dodge. And the −3 does not merely weaken everyone's dodge — for many, it removes it entirely.",
 
   'mag.fg_a1.nome':   'Ember Rain',
   'mag.fg_a1.desc':   'Spheres of fire burst around the target. Great to watch, modest to feel.',

@@ -1805,6 +1805,161 @@ A.ver('custa 1 PM por turno e rouba um dado',
         `${r.roubos.length} PM gastos`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const CEGUEIRA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a4');
+
+console.log('\n═══ VÉU DE CEGUEIRA (so_a4) ═══');
+console.log('  "Quem não resistir bate com −1 e esquiva com −3 até o fim da luta."   ·   3 PM\n');
+
+/* Lança o Véu contra um alvo de Resistência escolhida e conta o que
+   aconteceu. Sem Resistência nenhuma, cega sempre — o que serve para
+   isolar os efeitos da cegueira do acaso do teste. */
+function cegar(R, voltas) {
+  let cegou = 0, resistiu = 0, jaCego = 0, danoTotal = 0;
+  for (let s = 1; s <= (voltas || 300); s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: (quem) => (quem.nome === 'A') ? { magia: CEGUEIRA, pm: 3 } : {},
+      a: { carac: { F: 2, H: 9, R: 4, A: 1 }, elemento: 'Sombra', pm: 60, pmMax: 60,
+           iniciativa: 99, magias: { ataque: CEGUEIRA, forte: CEGUEIRA, defesa: CEGUEIRA } },
+      b: { carac: { F: 2, H: 3, R, A: 1 }, pv: 300, iniciativa: 0 },
+    });
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'A' && v.magia === 'so_a4');
+    if (!ev) continue;
+    if (ev.cegou) cegou++;
+    if (ev.resistiu) resistiu++;
+    if (ev.jaCego) jaCego++;
+    danoTotal += (ev.dano || 0);
+  }
+  return { cegou, resistiu, jaCego, danoTotal, voltas: voltas || 300 };
+}
+
+// Um combatente com a cegueira posta à mão, para medir o efeito puro.
+function cego(carac) {
+  const c = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: carac || { F: 4, H: 4, R: 8, A: 1 } },
+    b: { carac: { F: 1, H: 0, R: 99, A: 0 } } }).A[0];
+  c.cegoAtaque = CEGUEIRA.cegueira.ataque;
+  c.cegoEsquiva = CEGUEIRA.cegueira.esquiva;
+  return c;
+}
+function vendo(carac) {
+  return A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: carac || { F: 4, H: 4, R: 8, A: 1 } },
+    b: { carac: { F: 1, H: 0, R: 99, A: 0 } } }).A[0];
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 3 PM e não fere',
+      CEGUEIRA.pm === 3 && !CEGUEIRA.fa && CEGUEIRA.cegueira.ataque === 1
+      && CEGUEIRA.cegueira.esquiva === 3,
+      `pm=${CEGUEIRA.pm} fa=${CEGUEIRA.fa ? 'sim' : 'não'} ` +
+      `ataque=−${CEGUEIRA.cegueira.ataque} esquiva=−${CEGUEIRA.cegueira.esquiva}`);
+
+// ── 2. Um teste de Resistência decide ──
+{
+  const nu = cegar(0, 300), duro = cegar(5, 400);
+  A.ver('sem Resistência cega sempre; com 5 escapa quase sempre',
+        nu.cegou === nu.voltas && duro.resistiu > duro.cegou,
+        `R0: ${nu.cegou} de ${nu.voltas} · R5: ${duro.cegou} cegos, ${duro.resistiu} resistiram`);
+  A.ver('e não tira um único ponto de vida',
+        nu.danoTotal === 0, `dano somado: ${nu.danoTotal}`);
+}
+
+/* ── 3. O "−3 NA ESQUIVA" é verdade, e dói ── */
+{
+  const conta = (quem) => {
+    let fugiu = 0;
+    for (let s = 1; s <= 1200; s++) {
+      const atacante = A.duelo({ seed: s, politica: () => ({}),
+        a: { carac: { F: 4, H: 2, R: 4, A: 1 } },
+        b: { carac: { F: 1, H: 0, R: 99, A: 0 } } }).A[0];
+      const d = quem();
+      const ev = {};
+      M._c3resolver(atacante, d, null, 0, M._c3rng(s), ev, {});
+      if (ev.esquivou) fugiu++;
+    }
+    return fugiu / 1200;
+  };
+  const vê = conta(() => vendo({ F: 4, H: 5, R: 8, A: 1 }));
+  const nãoVê = conta(() => cego({ F: 4, H: 5, R: 8, A: 1 }));
+  A.ver('quem está cego esquiva muito menos',
+        nãoVê < vê,
+        `${(vê * 100).toFixed(0)}% → ${(nãoVê * 100).toFixed(0)}% dos golpes esquivados`);
+}
+
+/* ── 4. O "BATE COM −1" É VERDADE, E VALE POR DOIS ──
+
+   Eu esperava que não fosse. O cegoAtaque aparece num sítio só quando
+   se procura pelo nome — o _c3hAtk — e daí concluí que só afectava a
+   esquiva de quem leva, deixando a Força de Ataque intacta. Escrevi a
+   prova a afirmar isso e ela deu falha: FA 9 a ver, 8 cego.
+
+   O que me escapou foi que o próprio _c3fa CHAMA o _c3hAtk para a
+   parcela da Habilidade. Portanto o −1 desce duas coisas ao mesmo
+   tempo, com uma linha só: a Força de Ataque de quem está cego, e a
+   dificuldade que ele impõe a quem tenta esquivá-lo.
+
+   É por isto que estas provas se escrevem a afirmar e não a perguntar.
+   Uma que só perguntasse "quanto vale?" tinha-me dado o número e eu
+   tinha-o escrito no texto sem reparar em nada. */
+{
+  const alvo = A.duelo({ seed: 1, politica: () => ({}),
+    a: { carac: { F: 1, H: 1, R: 99, A: 0 } },
+    b: { carac: { F: 1, H: 1, R: 99, A: 0 } } }).A[0];
+  const fa = (quem) => M._c3fa(quem, null, 0, M._c3rng(41), { alvo }).total;
+  A.ver('quem está cego bate com um ponto a menos, como o texto diz',
+        fa(cego()) === fa(vendo()) - 1,
+        `FA ${fa(vendo())} a ver → ${fa(cego())} cego`);
+
+  // E a mesma linha faz a segunda coisa: o cego dificulta menos a
+  // esquiva de quem tenta fugir-lhe.
+  const pen = (quem) => M._c3hAtk(quem, vendo());
+  A.ver('e o mesmo −1 deixa-o mais fácil de esquivar',
+        pen(cego()) === pen(vendo()) - 1,
+        `penalidade que ele impõe à esquiva alheia: ${pen(vendo())} → ${pen(cego())}`);
+}
+
+// ── 5. Cegar duas vezes não cega a dobrar ──
+// Há um guarda no motor com um comentário de quem lá bateu: "a cegueira
+// chegava a −27 na esquiva por acumular".
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: CEGUEIRA, pm: 3 } : {},
+    a: { carac: { F: 2, H: 9, R: 4, A: 1 }, elemento: 'Sombra', pm: 60, pmMax: 60,
+         iniciativa: 99, magias: { ataque: CEGUEIRA, forte: CEGUEIRA, defesa: CEGUEIRA } },
+    b: { carac: { F: 2, H: 3, R: 0, A: 1 }, pv: 900, iniciativa: 0 },
+  });
+  const trilho = [];
+  for (let i = 0; i < 5; i++) { M.combate3dtTurno(e); trilho.push('−' + e.B[0].cegoEsquiva); }
+  A.ver('quem já está cego não fica mais cego',
+        e.B[0].cegoEsquiva === 3 && e.B[0].cegoAtaque === 1, trilho.join(' → '));
+}
+
+// ── 6. Até ao fim da luta, e é mesmo até ao fim ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem, alvo) => (quem.nome === 'A' && !alvo.cegoEsquiva)
+      ? { magia: CEGUEIRA, pm: 3 } : {},
+    a: { carac: { F: 2, H: 9, R: 4, A: 1 }, elemento: 'Sombra', pm: 60, pmMax: 60,
+         iniciativa: 99, magias: { ataque: CEGUEIRA, forte: CEGUEIRA, defesa: CEGUEIRA } },
+    b: { carac: { F: 2, H: 3, R: 0, A: 1 }, pv: 900, iniciativa: 0 },
+  });
+  for (let i = 0; i < 15 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('quinze turnos depois, continua cego',
+        e.B[0].cegoEsquiva === 3,
+        `−${e.B[0].cegoEsquiva} na esquiva, sem nada a repor`);
+}
+
+/* A marca CEGO no cartão não se prova daqui: este arnês carrega o i18n
+   das magias e das vantagens, e o texto do combate vive noutro ficheiro
+   que ele não conhece. A prova que eu tinha escrito lia uma chave em
+   falta e dava falha a acusar o jogo de não ter a palavra — quando o
+   jogo a tem e era o teste que a procurava no sítio errado. */
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
