@@ -989,19 +989,66 @@ function _pveAnimar(eventos) {
   }, atraso + 150);
 }
 
-// Um teste de característica, escrito. Existe uma vez só porque a troca
-// desenhava o seu à parte e ficava sem o nome do dono nem o desfecho em
-// palavras — duas cópias da mesma coisa divergem sempre.
+/* UMA PARCELA DE TESTE, LIDA DE UMA STRING.
+
+   As parcelas dos testes chegam como texto — "H2", "−H1", "+1" —
+   montadas em onze sítios do motor. Convertê-las todas a objectos como
+   fiz na FA e na FD era mexer em onze chamadas para um ganho que é só
+   de apresentação; parto-as aqui, que é onde a apresentação vive.
+
+   O que não casar com o molde passa tal e qual: mais vale uma parcela
+   sem enfeite do que uma parcela comida por uma expressão regular. */
+/* O `i` é o índice na conta, e serve para uma coisa só: a primeira
+   parcela não leva sinal e as outras levam.
+
+   Sem isso, um bónus escrito "2" — sem sinal, como o motor o passa —
+   colava-se à parcela anterior: "H2 − H1" seguido de "2" lia-se
+   "H2 − H12". Um número inventado no meio de uma conta que existe
+   precisamente para se poder conferir. */
+function _pveParcelaTexto(txt, i) {
+  const m = String(txt).match(/^([+−-])?\s*([A-Za-zÀ-ſ]*)\s*(\d+)$/);
+  if (!m) return (i ? ' ' : '') + '<span class="cb-parcela">' + esc(String(txt)) + '</span>';
+  const menos = (m[1] === '−' || m[1] === '-');
+  const sinal = i ? (menos ? ' − ' : ' + ') : (menos ? '−' : '');
+  return sinal
+       + '<span class="cb-parcela">' + esc(m[2] || '') + '<i>' + m[3] + '</i></span>';
+}
+
+/* Um teste de característica, no mesmo padrão da FA e da FD.
+
+   A linha à vista diz o que interessa de relance: que teste foi, de
+   quem, e como acabou. A conta vai para o detalhe e só aparece com o
+   turno aberto — como a da Força de Ataque.
+
+   E escreve-se como se JOGA. A conta de um teste não é uma soma: o
+   dado não se soma ao alvo, compara-se com ele. Por isso as parcelas
+   dão o alvo de um lado e o dado passa ou não passa do outro. Um seis
+   falha sempre, por mais alto que o alvo seja, e leva palavra própria.
+
+   Existe uma vez só porque a troca já desenhou o seu à parte uma vez e
+   ficou sem o nome do dono nem o desfecho em palavras — duas cópias da
+   mesma coisa divergem sempre. */
 function _pveTesteHTML(x, ev) {
-  const soma = x.partes.length > 1 ? `${x.partes.join(' ')} = ${x.valor}` : x.partes[0];
   const chave = 'pve.teste.res.' + x.rotulo + '.' + (x.passou ? 'sim' : 'nao');
   const res = t(chave) === chave
     ? (x.passou ? t('pve.teste.passou') : t('pve.teste.falhou'))
     : t(chave);
   const dono = (x.de === 'quem' ? ev.quem : ev.alvo) || '';
+  const nome = t('pve.teste.' + x.rotulo);
+
+  const corpo = (x.partes || []).map(_pveParcelaTexto).join('');
+  const alvo  = (x.partes && x.partes.length > 1)
+    ? corpo + ' = <b>' + x.valor + '</b>'
+    : corpo;
+  const conta = '<span class="cb-detalhe"><span class="cb-conta-linha">'
+    + nome + ' = ' + alvo
+    + ' · <b class="cb-dado">🎲' + x.dado + '</b> '
+    + (x.passou ? '≤' : '>') + ' ' + x.valor
+    + (x.seis ? ' <span class="cb-crit">' + t('pve.teste.seis') + '</span>' : '')
+    + '</span></span>';
+
   return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
-      <b>${t('pve.teste.' + x.rotulo)}</b> <u>${dono}</u> ${soma} · 1d[<i>${x.dado}</i>] → ${res}
-      ${x.seis ? `<em>${t('pve.teste.seis')}</em>` : ''}
+      <b>${nome}</b> <u>${dono}</u> → ${res}${conta}
     </span>`;
 }
 
@@ -1084,9 +1131,14 @@ function _pveMostrarEvento(ev) {
     const conta = tst
       ? `<div class="cb-testes">${_pveTesteHTML(tst, ev)}</div>`
       : ev.semRolagem
+      // Aqui não houve dado nenhum: o mais lento nem chega a rolar. A
+      // conta mostra só as parcelas que decidiram isso.
       ? `<div class="cb-testes"><span class="cb-teste falhou">
-           <b>${t('pve.teste.troca')}</b> <u>${ev.quem}</u> ${ev.semRolagem.join(' ')}
-           → ${t('pve.teste.sem_rolagem')}</span></div>`
+           <b>${t('pve.teste.troca')}</b> <u>${ev.quem}</u>
+           → ${t('pve.teste.sem_rolagem')}
+           <span class="cb-detalhe"><span class="cb-conta-linha">${t('pve.teste.troca')} =
+             ${ev.semRolagem.map(_pveParcelaTexto).join('')}</span></span>
+         </span></div>`
       : '';
     _pveLog(t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
             (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')) + conta,
