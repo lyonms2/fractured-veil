@@ -1507,6 +1507,162 @@ A.ver('escala de 1 a 5 PM, uma vez, e não cobra por turno',
         e.A[0].bonusEsquiva === 15, trilho.join(' → ') + '  (o travão é o dado, não o motor)');
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const CONTRARIO = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d3');
+
+console.log('\n═══ VENTO CONTRÁRIO (vt_d3) ═══');
+console.log('  "Cada PM investido é +1 na sua Defesa."   ·   1 a 5 PM por turno\n');
+
+function comVento(pm, turnos, bolsa) {
+  let lancou = false;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: CONTRARIO, pm };
+    },
+    a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento',
+         pm: bolsa || 60, pmMax: bolsa || 60,
+         magias: { ataque: CONTRARIO, forte: CONTRARIO, defesa: CONTRARIO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < (turnos || 1) && !e.acabou; i++) M.combate3dtTurno(e);
+  return e;
+}
+
+// ── 1. O catálogo ──
+A.ver('escala de 1 a 5 PM e cobra por turno',
+      CONTRARIO.pm === 1 && CONTRARIO.pmMax === 5 && CONTRARIO.porTurno === true
+      && CONTRARIO.bonusFDPorPM === 1,
+      `pm=${CONTRARIO.pm}–${CONTRARIO.pmMax} porTurno=${CONTRARIO.porTurno} ` +
+      `bonusFDPorPM=${CONTRARIO.bonusFDPorPM}`);
+
+// ── 2. Um ponto de Defesa por cada PM ──
+{
+  const medidas = [1, 3, 5].map(pm => ({ pm, b: comVento(pm).A[0].bonusFD }));
+  A.ver('cada PM investido vale +1 na Força de Defesa',
+        medidas.every(m => m.b === m.pm),
+        medidas.map(m => `${m.pm}PM→+${m.b}`).join('  '));
+}
+
+// ── 3. E aparece mesmo na conta ──
+{
+  const nu = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento' },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+  const sem = M._c3fd(nu, M._c3rng(77), {}).total;
+  const com = M._c3fd(comVento(5).A[0], M._c3rng(77), {}).total;
+  A.ver('entra na Força de Defesa como parcela própria',
+        com - sem === 5, `FD ${sem} → ${com}`);
+}
+
+/* ── 4. "CONTRA ELE" é figura de estilo: vale contra toda a gente ──
+
+   O texto diz "uma ventania soprando na cara de quem vem... +1 na sua
+   Defesa contra ele", e o "ele" faz pensar num alvo escolhido. Não é: o
+   bónus vive num campo do defensor e aplica-se a qualquer atacante, do
+   primeiro ao último. É melhor do que o texto promete, mas quem o ler à
+   letra pode largar a magia ao ver o inimigo trocar. */
+{
+  const c = comVento(5).A[0];
+  const tres = ['Fogo', 'Terra', 'Sombra'].map(el => {
+    const outro = A.duelo({ seed: 9, politica: () => ({}),
+      a: { carac: { F: 5, H: 4, R: 8, A: 1 }, elemento: el },
+      b: { carac: { F: 1, H: 0, R: 99, A: 0 } } }).A[0];
+    return M._c3fd(c, M._c3rng(77), { atacante: outro }).partes.find(p => p.r === 'bónus');
+  });
+  A.ver('o bónus vale contra qualquer atacante, não só contra um',
+        tres.every(p => p && p.v === 5),
+        tres.map(p => p ? 'bónus ' + p.v : 'ausente').join(' · '));
+}
+
+// ── 5. O crítico não dobra este bónus ──
+// O crítico da Defesa dobra a ARMADURA e mais nada. Vale a pena estar
+// medido: quem vir um crítico e contar a dobrar tudo fica com a conta
+// errada, e a conta é aberta no registo para se poder conferir.
+{
+  const c = comVento(5).A[0];
+  let critico = null;
+  for (let s = 1; s < 400 && !critico; s++) {
+    const r = M._c3fd(c, M._c3rng(s), {});
+    if (r.critico) critico = r;
+  }
+  A.ver('num crítico, a Armadura dobra e este bónus não',
+        !!critico && critico.partes.find(p => p.r === 'bónus').v === 5,
+        critico ? `bónus ${critico.partes.find(p => p.r === 'bónus').v} · ` +
+                  `A ${critico.partes.find(p => p.r === 'A').v} (dobrada)` : 'sem crítico');
+}
+
+// ── 6. Cobra todo o turno, e cai quando a bolsa seca ──
+{
+  const bolsa = 12, investido = 3;
+  const e = comVento(investido, 8, bolsa);
+  A.ver('cai quando não há PM para a sustentar',
+        e.A[0].bonusFD === 0 && e.A[0].sustentadas.length === 0,
+        `depois de 8 turnos com ${bolsa} PM a ${investido}/turno: FD+${e.A[0].bonusFD}`);
+}
+
+// ── 7. Relançá-la substitui, não empilha ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: CONTRARIO, pm: 5 } : {},
+    a: { carac: { F: 2, H: 2, R: 20, A: 2 }, elemento: 'Vento', pm: 200, pmMax: 200,
+         magias: { ataque: CONTRARIO, forte: CONTRARIO, defesa: CONTRARIO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  const trilho = [];
+  for (let i = 0; i < 4; i++) { M.combate3dtTurno(e); trilho.push('+' + e.A[0].bonusFD); }
+  A.ver('quatro lançamentos continuam a dar +5, não +20',
+        e.A[0].bonusFD === 5 && e.A[0].sustentadas.length === 1, trilho.join(' → '));
+}
+
+/* ── 8. A COMPARAÇÃO QUE O JOGADOR NÃO PODE FAZER ──
+
+   O Vento tem três magias de defesa e cada avatar recebe UMA, sorteada
+   à nascença. Quem a recebe não escolhe — mas quem lê a ficha merece
+   saber onde é que ela fica.
+
+   O Véu de Correntes custa 5 PM UMA VEZ e dá +10 para a luta inteira. O
+   Vento Contrário custa 5 PM TODO O TURNO e dá +5. Ao fim de dois
+   turnos o Véu já saiu mais barato, e daí em diante a diferença só
+   cresce. Não é defeito de código — é o desenho — mas é grande o
+   suficiente para ficar escrito, e para ser a primeira coisa a rever se
+   um dia se mexer no balanceamento do Vento. */
+{
+  const VEU2 = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d1');
+  const turnos = 6;
+  const custoVeu = VEU2.pm;                       // uma vez
+  const custoVento = CONTRARIO.pmMax * turnos;    // todo o turno
+  A.ver(`em ${turnos} turnos, o Véu dá mais Defesa por menos PM`,
+        VEU2.bonusFD > CONTRARIO.pmMax * CONTRARIO.bonusFDPorPM && custoVeu < custoVento,
+        `Véu: +${VEU2.bonusFD} por ${custoVeu} PM  ·  ` +
+        `Vento Contrário: +${CONTRARIO.pmMax} por ${custoVento} PM`);
+}
+
+// ── 9. Vale a pena? ──
+{
+  const golpes = 700;
+  const conta = (pm) => {
+    let dano = 0;
+    for (let s = 1; s <= golpes; s++) {
+      const alvo = pm ? comVento(pm).A[0]
+        : A.duelo({ seed: 3, politica: () => ({}),
+            a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Vento' },
+            b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+      const { atacante } = defensor();
+      Object.assign(atacante.ficha, { F: 4, H: 3, R: 4, A: 1 });
+      dano += M._c3resolver(atacante, alvo, null, 0, M._c3rng(s), {}, {}) || 0;
+    }
+    return dano / golpes;
+  };
+  const sem = conta(0), com = conta(5);
+  A.ver('cinco PM por turno travam dano a sério',
+        com < sem,
+        `contra um atacante F4 H3: ${sem.toFixed(2)} → ${com.toFixed(2)} por golpe ` +
+        `(${((1 - com / sem) * 100).toFixed(0)}% menos)`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
