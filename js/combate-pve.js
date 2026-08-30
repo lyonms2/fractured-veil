@@ -1417,7 +1417,10 @@ const PVE_BATIDA = {
   vida:    1600,  // a barra só desce depois de se LER o número
   efeitos: 1800,  // veneno, gelo, cegueira: o que sobrou do golpe
   fim:     2120,  // o golpe inteiro
-  onda:     300,  // entre as ondas de um ataque múltiplo
+  // A respiração ENTRE ondas: do impacto de uma até os dados da
+  // seguinte começarem a saltar. Já não é o passo delas — cada onda
+  // repete a cadeia toda e mede-se pelos dados que rolou.
+  onda:     300,
   // Depois do dado de um teste pousar, sai o veredito. 40ms a mais que
   // os 520 do salto, para o número se ver pousado antes da resposta.
   veredito: 560,
@@ -1535,13 +1538,30 @@ function _pveMostrarEvento(ev) {
   // conta que não fecha — e a conta que não fecha é pior do que conta
   // nenhuma.
   if (ev.rolagens) {
+    /* Cada onda ganha os SEUS dados e a SUA vez.
+
+       As linhas apareciam as três de uma vez, com a conta feita, e os
+       impactos vinham a seguir espaçados — o texto adiantava-se ao que
+       se estava a ver. Agora cada onda repete a cadeia inteira por sua
+       conta: os dados saltam, a linha dela fecha-se, o golpe chega, e só
+       então começa a onda seguinte.
+
+       Cada `sub` que o motor empilha em ev.rolagens traz o seu faPartes
+       e fdPartes, tal como um golpe normal — os dados já lá estavam, só
+       não eram mostrados.
+
+       O grupo é `cb-onda-grupo` e não `cb-onda`: essa já é a onda de
+       choque que rebenta no cartão de quem leva. */
     conta = ev.rolagens.map((r, i) => {
       const atk = `FA ${r.fa}${r.criticoAtk ? '★' : ''}`;
-      return `<span class="cb-onda-linha">${i + 1}ª ` + (r.esquivou
+      const corpo = r.esquivou
         ? `${atk} → ${t('pve.ev.esquivou')}`
         : `${atk} − FD ${r.fd}${r.criticoDef ? '★' : ''} = ` +
-          (r.dano > 0 ? `<b>${r.dano}</b>` : t('pve.nada'))) + `</span>`;
-    }).join('') + `<span class="cb-onda-total">${t('pve.total', { n: ev.dano })}</span>`;
+          (r.dano > 0 ? `<b>${r.dano}</b>` : t('pve.nada'));
+      return `<span class="cb-onda-grupo" data-onda="${i}">`
+           + _pveDadosVivos(r)
+           + `<span class="cb-onda-linha cb-por-vir">${i + 1}ª ${corpo}</span></span>`;
+    }).join('') + `<span class="cb-onda-total cb-por-vir">${t('pve.total', { n: ev.dano })}</span>`;
   } else if (ev.fa != null) {
     const atk = `FA ${ev.fa}${ev.criticoAtk ? '★' : ''}`;
     // Quem esquiva não rola Defesa nenhuma — mostrar "FD undefined" seria
@@ -1641,7 +1661,12 @@ function _pveMostrarEvento(ev) {
      debaixo dos olhos de quem está a ler enquanto os efeitos entram. */
   const linha = _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
           (dados || conta ? '<br>' : '') + dados +
-          (conta ? `<span class="cb-conta cb-por-vir">${conta}</span>` : '') +
+          /* Nas ondas a moldura nasce já visível, e quem se esconde são
+             as linhas lá dentro, uma a uma. O `cb-por-vir` é opacidade
+             zero e a opacidade multiplica-se pelos filhos: com ela na
+             moldura, os dados da primeira onda ficavam invisíveis até à
+             batida da conta — que é precisamente depois de eles rolarem. */
+          (conta ? `<span class="cb-conta${ev.rolagens ? '' : ' cb-por-vir'}">${conta}</span>` : '') +
           (testes ? `<div class="cb-testes cb-por-vir">${testes}</div>` : '') +
           (meus.length ? `<div class="cb-extras cb-por-vir">${meus.map(x => `<span>${x}</span>`).join('')}</div>` : '') +
           (dele.length ? `<div class="cb-extras no-alvo cb-por-vir">
@@ -1726,20 +1751,65 @@ function _pveMostrarEvento(ev) {
      As que não feriram também contam: uma onda esquivada ou aparada
      salta o impacto mas gasta o seu tempo, senão as que acertam
      colavam-se umas às outras e voltava tudo a parecer uma só. */
-  const ondas = (ev.rolagens && ev.rolagens.length > 1) ? ev.rolagens : null;
+  /* Deixou de exigir `length > 1`. O motor só escreve rolagens quando há
+     mais de um golpe, mas se algum dia escrever uma só, esta é a via que
+     destapa as linhas — pela outra elas ficavam escondidas para sempre.
+
+     E deixou de exigir `cartaoAlvo`: sem cartão não há impacto para
+     animar, mas as linhas e os dados continuam a ser para mostrar. */
+  const ondas = ev.rolagens || null;
   let extraOndas = 0;
 
-  if (ondas && cartaoAlvo) {
+  if (ondas) {
+    /* ── CADA ONDA REPETE A BATIDA INTEIRA ──
+
+       Os tempos não são novos: são os mesmos do golpe normal, tirados do
+       PVE_BATIDA em vez de escritos outra vez. Uma onda é um golpe, e
+       portanto tem o mesmo compasso — o que muda é que há três seguidos.
+
+       O passo acompanha quantos dados a onda rolou. Uma magia de três
+       dados demora mais a pousar do que uma de um, e a linha não pode
+       fechar-se por cima de um dado ainda no ar. */
+    const SALTO    = 520;                                        // o giro do dado
+    const LER      = PVE_BATIDA.conta - PVE_BATIDA.dado - SALTO;  // pousar → fechar a conta
+    const BATER    = PVE_BATIDA.golpe - PVE_BATIDA.conta;         // conta → impacto
+    const quantosDados = (r) => (r.faPartes || []).filter(p => p.dado).length
+                              + (r.esquivou ? 0 : (r.fdPartes || []).filter(p => p.dado).length);
+
+    let t = PVE_BATIDA.dado;
+    let ultimoGolpe = PVE_BATIDA.golpe;
     ondas.forEach((r, i) => {
-      if (!(r.dano > 0)) return;
+      const sel    = '.cb-onda-grupo[data-onda="' + i + '"]';
+      const rolar  = SALTO + Math.max(0, quantosDados(r) - 1) * 90;
+      const tConta = t + rolar + LER;
+      const tGolpe = tConta + BATER;
+
       setTimeout(() => {
+        if (!linha) return;
+        const g = linha.querySelector(sel);
+        if (!g) return;
+        g.querySelectorAll('.cb-dados').forEach(x => x.classList.remove('cb-por-vir'));
+        g.querySelectorAll('.cb-dado-vivo').forEach(x => x.classList.add('cb-rolando'));
+      }, t);
+      revelar(tConta, sel + ' .cb-onda-linha');
+
+      // Uma onda esquivada ou aparada não bate, mas gasta a sua vez na
+      // mesma: sem isso as que acertam colavam-se e voltava a parecer
+      // uma pancada só.
+      if (r.dano > 0 && cartaoAlvo) setTimeout(() => {
         _pveNumeroFlutuante(cartaoAlvo, r.dano, r.criticoAtk);
         _pveGesto(cartaoAlvo, 'cb-bate', 520);
         _pveImpacto(cartaoAlvo, elem);
         if (r.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
-      }, PVE_BATIDA.golpe + i * PVE_BATIDA.onda);
+      }, tGolpe);
+
+      ultimoGolpe = tGolpe;
+      t = tGolpe + PVE_BATIDA.onda;
     });
-    extraOndas = (ondas.length - 1) * PVE_BATIDA.onda;
+    // O total só depois de a última onda ter batido: é a soma delas, e
+    // uma soma que aparece antes das parcelas não é uma soma.
+    revelar(ultimoGolpe + 200, '.cb-onda-total');
+    extraOndas = ultimoGolpe - PVE_BATIDA.golpe;
   } else if (bate) setTimeout(() => {
     _pveNumeroFlutuante(cartaoAlvo, ev.dano, ev.criticoAtk);
     _pveGesto(cartaoAlvo, 'cb-bate', 520);

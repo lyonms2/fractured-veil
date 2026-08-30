@@ -218,7 +218,21 @@
 }
 .cb-conta b { color: #ff7a6b; font-size: 0.4375rem; }
 .cb-conta i { color: var(--muted); font-style: normal; }
-.cb-onda-linha { display:block; }
+/* Cada onda é uma linha própria, e agora leva os seus dados à frente do
+   texto.
+
+   Flex, e não inline-block: um inline-block é uma caixa que não parte
+   por dentro, e por isso a onda mais comprida — "2ª FA 11 − FD 11 −
+   sem dano", 215px ao lado de 103 de dados — não cabia nos 340 e caía
+   inteira para a linha de baixo, deixando os dados sozinhos em cima.
+   Dependia do comprimento do texto, ou seja, do idioma.
+
+   Assim os dados nunca encolhem e o texto parte por dentro se precisar.
+   O `min-width:0` é o que lhe dá licença para partir; sem ele um item
+   de flex recusa-se a ficar menor do que o seu conteúdo. */
+.cb-onda-grupo { display:flex; align-items:baseline; gap:0.1875rem; }
+.cb-onda-linha { display:inline-block; min-width:0; }
+.cb-onda-grupo .cb-dados { flex:none; }
 .cb-onda-total { display:block; color:#ff7a6b; font-weight:700; margin-top:0.125rem; }
 @keyframes cb-log-in { from { opacity:0; transform: translateY(0.25rem); } to { opacity:1; transform:none; } }
 
