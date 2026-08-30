@@ -37,6 +37,43 @@
 @media (max-width: 680px) {
   .btn-voltar-colonia { font-size: 0.5rem; padding: 0.375rem 0.625rem; }
 }
+/* A COLÓNIA ESTICA ATÉ CABER.
+
+   Tinha altura fixa e a lista rolava lá dentro. Com duas criaturas
+   sobrava meia consola vazia; com dez, rolava-se dentro de uma caixa
+   pequena tendo o ecrã inteiro livre por baixo — no telemóvel eram 533
+   pixeis por usar debaixo de uma lista que não cabia.
+
+   Agora cresce com o conteúdo até ao tecto, e só depois é que a lista
+   rola. Duas criaturas dão uma consola baixa; dez enchem o ecrã.
+
+   O #fazendaScreen tem de voltar ao FLUXO para isto funcionar: era
+   position:absolute com inset:0, e um filho absoluto não dá altura
+   nenhuma ao pai — a consola ficava a zero e só a min-height a
+   segurava. Os outros ecrãs continuam absolutos, que é o que os deixa
+   sobrepor-se sem se empurrarem.
+
+   O tecto em rem e não em px: a raiz muda de 16 para 24 acima dos
+   681px, portanto a margem que se deixa por baixo cresce com o resto
+   da interface em vez de encolher em proporção. */
+.screen.fz-modo {
+  height: auto;
+  min-height: 9rem;
+  max-height: calc(100vh - 9rem);
+  /* Flex, e não bloco: é a cadeia que deixa a lista ENCOLHER quando o
+     tecto aperta. Sem ela, a consola parava nos 572px com a lista a
+     medir 881 lá dentro e o overflow:hidden a cortar os últimos
+     cartões — inalcançáveis, sem rolar nem nada. */
+  display: flex; flex-direction: column;
+}
+/* O min-height:0 em cada elo é o que quebra a regra do flex de nunca
+   encolher abaixo do conteúdo. Falta um, e o corte volta. */
+.screen.fz-modo #fazendaScreen {
+  position: relative; inset: auto;
+  flex: 1 1 auto; min-height: 0;
+}
+.screen.fz-modo .fz-lista { flex: 1 1 auto; min-height: 0; }
+
 #fazendaScreen {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
@@ -214,7 +251,10 @@
    A raiz já é 1,5× aqui (base.css); isto é por cima disso.
    ═══════════════════════════════════════════════════════════════════ */
 @media (min-width: 681px) {
-  .screen.fz-modo { height: 24rem; }
+  /* No computador o tecto é o mesmo cálculo — o que muda é a raiz, e
+     com ela a folga de 12rem por baixo. Nada de altura fixa aqui:
+     era ela que deixava a consola pequena com o ecrã todo livre. */
+  .screen.fz-modo { min-height: 12rem; }
   .fz-titulo { font-size: 0.6875rem; }
   .fz-conta  { font-size: 0.5625rem; }
   .fz-gerir  { font-size: 0.6875rem; padding: 0.1875rem 0.375rem; }
