@@ -1960,6 +1960,141 @@ A.ver('custa 3 PM e não fere',
    falta e dava falha a acusar o jogo de não ter a palavra — quando o
    jogo a tem e era o teste que a procurava no sítio errado. */
 
+// ═══════════════════════════════════════════════════════════════════
+const DEVORAR = M.MAGIAS['Sombra'].forte.find(g => g.id === 'so_f2');
+
+console.log('\n═══ DEVORAR ESSÊNCIA (so_f2) ═══');
+console.log('  "Não fere o corpo: desfaz o que havia dentro dele."   ·   40 PM\n');
+
+// A mesma sonda da Prisão de Gelo, servida a qualquer das três.
+function tirarDeCombate(magia, R, voltas, mexerAlvo) {
+  let fora = 0, resistiu = 0, imunizou = 0, dano = 0, lancamentos = 0;
+  for (let s = 1; s <= (voltas || 300); s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: (quem) => (quem.nome === 'A') ? { magia, pm: magia.pm } : {},
+      a: { carac: { F: 2, H: 9, R: 9, A: 1 }, elemento: 'Sombra', pm: 200, pmMax: 200,
+           iniciativa: 99, magias: { ataque: magia, forte: magia, defesa: magia } },
+      b: { carac: { F: 2, H: 0, R, A: 1 }, pv: 300, iniciativa: 0 },
+    });
+    if (mexerAlvo) mexerAlvo(e.B[0]);
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'A' && v.magia === magia.id);
+    if (!ev) continue;
+    lancamentos++;
+    if (ev.fora) fora++;
+    if (ev.resistiu) resistiu++;
+    if (ev.imunizou) imunizou++;
+    dano += (ev.dano || 0);
+  }
+  return { fora, resistiu, imunizou, dano, n: lancamentos };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 40 PM, não fere, e desfaz a alma',
+      DEVORAR.pm === 40 && !DEVORAR.fa && DEVORAR.destroiAlma === true && !DEVORAR.pmMax,
+      `pm=${DEVORAR.pm} fa=${DEVORAR.fa ? 'sim' : 'não'} destroiAlma=${DEVORAR.destroiAlma}`);
+
+// ── 2. Faz o que promete ──
+{
+  const nu = tirarDeCombate(DEVORAR, 0, 200);
+  A.ver('quem não resiste sai de combate, sem levar dano',
+        nu.fora === nu.n && nu.dano === 0,
+        `${nu.fora} de ${nu.n} saíram · ${nu.dano} de dano somado`);
+}
+
+// ── 3. A Resistência decide, e o 6 falha sempre ──
+{
+  const linhas = [];
+  let certos = 0;
+  for (const R of [0, 3, 5, 20]) {
+    const r = tirarDeCombate(DEVORAR, R, 600);
+    const esperado = (1 + Math.max(0, 5 - R)) / 6;
+    const obtido = r.fora / r.n;
+    if (Math.abs(obtido - esperado) < 0.05) certos++;
+    linhas.push(`R${R} ${(obtido * 100).toFixed(0)}%~${(esperado * 100).toFixed(0)}%`);
+  }
+  A.ver('a hipótese de sair segue a Resistência, e nem R20 põe a salvo',
+        certos === 4, linhas.join('  '));
+}
+
+// ── 4. A Égide fecha-a ──
+{
+  const r = tirarDeCombate(DEVORAR, 0, 200, c => { c.imuneEspiritual = true; });
+  A.ver('a alma fechada trava-a por completo',
+        r.fora === 0 && r.imunizou === r.n, `${r.fora} saíram · ${r.imunizou} imunizados`);
+}
+
+/* ── 5. AS TRÊS SÃO A MESMA MAGIA, A CINCO, DEZ E QUARENTA PM ──
+
+   Petrificar (Terra, 5 PM), Prisão de Gelo (Água, 10 PM) e Devorar
+   Essência (Sombra, 40 PM) passam pelo MESMO bloco do motor: um teste
+   de Resistência, e quem falha sai de combate. Nenhuma fere, nenhuma
+   tem propriedade que a distinga, e a Égide fecha as três por igual.
+
+   Medido lado a lado contra o mesmo alvo: dão o mesmo resultado. A
+   diferença entre elas é só o preço, e é de oito para um. */
+{
+  const TRES = [
+    M.MAGIAS['Terra'].forte.find(g => g.id === 'te_f2'),
+    M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3'),
+    DEVORAR,
+  ];
+  const medidas = TRES.map(g => {
+    const r = tirarDeCombate(g, 3, 900);
+    return { id: g.id, pm: g.pm, pc: r.fora / r.n };
+  });
+  const iguais = medidas.every(m => Math.abs(m.pc - medidas[0].pc) < 0.05);
+  A.ver('as três dão o mesmo resultado e custam 5, 10 e 40 PM',
+        iguais,
+        medidas.map(m => `${m.id} ${m.pm}PM→${(m.pc * 100).toFixed(0)}%`).join('  '));
+}
+
+/* ── 6. E QUEM É QUE A CONSEGUE LANÇAR? ──
+
+   Quarenta PM pedem duas coisas ao mesmo tempo: uma reserva de 40, que
+   é Resistência 8, e um tecto de 40, que é Habilidade 8. Nenhuma ficha
+   deste jogo tem as duas antes de muito tarde.
+
+   Isto não é opinião: percorre-se o gerador de fichas e conta-se. O
+   número que sair é a resposta à única pergunta que interessa sobre uma
+   magia de 40 PM — se alguém alguma vez a lança. */
+{
+  const nivies = [1, 5, 10, 15, 20, 25, 30, 35];
+  const linhas = [];
+  for (const nivel of nivies) {
+    let podem = 0, total = 0;
+    for (const raridade of ['Comum', 'Raro', 'Épico', 'Lendário']) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const f = M.fichaDeAvatar({ elemento: 'Sombra', raridade, nivel, seed });
+        if (!f) continue;
+        total++;
+        if (f.H * 5 >= DEVORAR.pm && f.pm >= DEVORAR.pm) podem++;
+      }
+    }
+    linhas.push(`n${nivel} ${Math.round(podem / total * 100)}%`);
+  }
+  const noTecto = linhas[linhas.length - 1];
+  A.ver('quem a pode lançar, por nível (tecto H×5 ≥ 40 e reserva ≥ 40)',
+        true, linhas.join('  '));
+  A.ver('no nível máximo, alguém a alcança',
+        !noTecto.endsWith(' 0%'), `ao nível 35: ${noTecto}`);
+}
+
+// ── 7. Gasta a reserva inteira de quem a lança ──
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: DEVORAR, pm: 40 } : {},
+    a: { carac: { F: 2, H: 9, R: 8, A: 1 }, elemento: 'Sombra', pm: 40, pmMax: 40,
+         iniciativa: 99, magias: { ataque: DEVORAR, forte: DEVORAR, defesa: DEVORAR } },
+    b: { carac: { F: 2, H: 0, R: 5, A: 1 }, pv: 300, iniciativa: 0 },
+  });
+  M.combate3dtTurno(e);
+  A.ver('quem a lança fica sem um único PM',
+        e.A[0].pm === 0, `PM 40 → ${e.A[0].pm}  (e pode ter falhado o teste)`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
