@@ -109,7 +109,7 @@ window.registerStrings({
   'mag.ag_d1.nome':   'Casulo de Marés',
   'mag.ag_d1.desc':   'Uma concha de água viva se fecha ao seu redor. Cada PM investido vale 1 de Armadura, até 5 — e ela cobra esse mesmo tanto a cada turno para não se desfazer. Vale contra golpe e contra magia, mas não contra o que fura armadura.',
   'mag.ag_d2.nome':   'Névoa Densa',
-  'mag.ag_d2.desc':   'Um nevoeiro que não deixa ver nem ser visto.',
+  'mag.ag_d2.desc':   'Um nevoeiro fechado sobe da água. Na Defesa a sua Habilidade conta em dobro — vale tanto quanto você já for ágil. Não atrapalha o seu próprio ataque, e não ajuda a esquivar: esconde, não desvia.',
 
   // ── 🌿 TERRA ──────────────────────────────────────────────────────
   'mag.te_a1.nome':   'Garras de Raiz',
@@ -248,7 +248,7 @@ window.registerStrings({
   'mag.ag_d1.nome':   'Tidal Cocoon',
   'mag.ag_d1.desc':   'A shell of living water closes around you. Each MP spent is worth 1 Armour, up to 5 — and it charges that same amount every turn to hold. Works against blows and magic alike, but not against what pierces armour.',
   'mag.ag_d2.nome':   'Dense Mist',
-  'mag.ag_d2.desc':   'A fog that lets you neither see nor be seen.',
+  'mag.ag_d2.desc':   'A closed fog rises off the water. On Defence your Skill counts double - it is worth as much as you are already nimble. It does not hamper your own attack, and it does not help you dodge: it hides, it does not sidestep.',
 
   'mag.te_a1.nome':   'Root Claws',
   'mag.te_a1.desc':   'Hardened roots grow from your hands and stay. Not a blow — it is hitting harder from now on.',

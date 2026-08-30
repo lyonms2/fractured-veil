@@ -554,6 +554,187 @@ A.ver('escala de 1 a 5 PM, e cobra por turno',
         `dano médio por golpe: ${sem.toFixed(2)} sem → ${com.toFixed(2)} com  (${((1 - com / sem) * 100).toFixed(0)}% menos)`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const NEVOA = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d2');
+
+console.log('\n═══ NÉVOA DENSA (ag_d2) ═══');
+console.log('  "Um nevoeiro que não deixa ver nem ser visto."   ·   1 PM por turno\n');
+
+// Levanta a névoa e devolve quem a levantou.
+function comNevoa(carac) {
+  const e = A.duelo({
+    seed: 3,
+    politica: () => ({ magia: NEVOA, pm: 1 }),
+    a: { carac: carac || { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água', pm: 40, pmMax: 40,
+         magias: { ataque: NEVOA, forte: NEVOA, defesa: NEVOA } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  M.combate3dtTurno(e);
+  return e.A[0];
+}
+// A Habilidade que aparece na Força de Defesa, com o dado preso.
+function habNaFD(c, opts) {
+  const r = M._c3fd(c, M._c3rng(77), Object.assign({ elemento: null }, opts || {}));
+  const h = r.partes.find(p => p.r === 'H');
+  return { H: h.v, x2: !!h.x2, total: r.total };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 1 PM por turno e é sustentada',
+      NEVOA.pm === 1 && NEVOA.porTurno === true && NEVOA.ocultacao === true && !NEVOA.pmMax,
+      `pm=${NEVOA.pm} porTurno=${NEVOA.porTurno} ocultacao=${NEVOA.ocultacao}`);
+
+// ── 2. A Habilidade conta a dobrar na Defesa ──
+{
+  const nu = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água' },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 } }).A[0];
+  const sem = habNaFD(nu), com = habNaFD(comNevoa());
+  A.ver('a Habilidade conta a dobrar na Força de Defesa',
+        com.H === sem.H * 2 && com.x2 === true,
+        `H ${sem.H} → ${com.H}  (marcada como ×2: ${com.x2})`);
+}
+
+// ── 3. Dobrar zero é zero ──
+{
+  const c = comNevoa({ F: 2, H: 0, R: 4, A: 2 });
+  A.ver('com Habilidade 0, a névoa não inventa nada',
+        habNaFD(c).H === 0, `H = ${habNaFD(c).H}`);
+}
+
+/* ── 4. A paralisia passa por cima da névoa ──
+
+   Quem está indefeso não usa a Habilidade na Defesa, e o zero entra
+   ANTES da dobra. É a ordem certa: dobrar primeiro e zerar depois dava
+   no mesmo, mas zerar primeiro e dobrar depois de um número já perdido
+   é o que garante que a névoa não ressuscita uma defesa que a paralisia
+   tinha tirado. */
+{
+  const c = comNevoa();
+  const r = habNaFD(c, { indefeso: true });
+  A.ver('quem está travado não se esconde na névoa',
+        r.H === 0, `H = ${r.H} com o alvo indefeso`);
+}
+
+/* ── 5. A névoa NÃO ajuda a esquivar ──
+
+   Parece que devia — esconder-se e sair da frente são a mesma ideia no
+   imaginário — mas a esquiva é um teste à Habilidade crua e a névoa
+   nunca lhe tocou. Fica medido para não se confundir uma coisa com a
+   outra ao ler o texto. */
+{
+  // Medido pelo caminho por onde a esquiva acontece de verdade: golpes
+  // resolvidos, a contar quantas vezes o defensor saiu da frente. Testar
+  // a função da esquiva à parte provaria menos — o que interessa é o que
+  // chega ao turno.
+  const conta = (comNev) => {
+    let esquivou = 0;
+    for (let s = 1; s <= 600; s++) {
+      const alvo = comNev ? comNevoa()
+        : A.duelo({ seed: 3, politica: () => ({}),
+            a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água' },
+            b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+      const { atacante } = defensor();
+      Object.assign(atacante.ficha, { F: 4, H: 1, R: 4, A: 1 });
+      const ev = {};
+      M._c3resolver(atacante, alvo, null, 0, M._c3rng(s), ev, {});
+      if (ev.esquivou) esquivou++;
+    }
+    return esquivou;
+  };
+  const com = conta(true), sem = conta(false);
+  A.ver('a névoa não muda a esquiva — é outra coisa',
+        com === sem, `com névoa ${com} · sem névoa ${sem} esquivas em 600 golpes`);
+}
+
+/* ── 6. E não estorva o próprio ataque ──
+
+   O texto diz "não deixa VER nem ser visto", e a primeira metade não
+   existe: a névoa não tira um único ponto à Força de Ataque de quem a
+   levantou. É bom para o jogador e mau para o texto — uma desvantagem
+   inventada faz evitar uma magia que só tem vantagens. */
+{
+  const c = comNevoa();
+  const alvo = A.duelo({ seed: 1, politica: () => ({}),
+    a: { carac: { F: 1, H: 1, R: 99, A: 0 } },
+    b: { carac: { F: 1, H: 1, R: 99, A: 0 } } }).A[0];
+  const fa = (quem) => M._c3fa(quem, null, 0, M._c3rng(41), { alvo }).total;
+  const nu = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água' },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+  A.ver('quem levanta a névoa ataca exactamente como antes',
+        fa(c) === fa(nu), `FA ${fa(nu)} sem névoa → ${fa(c)} com névoa`);
+}
+
+// ── 7. Cobra 1 PM por turno, e cai quando a bolsa seca ──
+{
+  const bolsa = 6;
+  let lancou = false;
+  const e = A.duelo({
+    seed: 5,
+    politica: () => { if (lancou) return {}; lancou = true; return { magia: NEVOA, pm: 1 }; },
+    a: { carac: { F: 2, H: 4, R: 4, A: 2 }, elemento: 'Água', pm: bolsa, pmMax: bolsa,
+         magias: { ataque: NEVOA, forte: NEVOA, defesa: NEVOA } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  let dePe = 0;
+  for (let i = 0; i < 12 && !e.acabou; i++) {
+    M.combate3dtTurno(e);
+    if (e.A[0].ocultado) dePe++;
+  }
+  A.ver(`${bolsa} PM a 1 por turno dão cerca de ${bolsa} turnos de névoa`,
+        Math.abs(dePe - bolsa) <= 1, `ficou de pé ${dePe} turnos`);
+  A.ver('e quando cai, deixa de esconder',
+        !e.A[0].ocultado && e.A[0].sustentadas.length === 0,
+        `ocultado=${e.A[0].ocultado} sustentadas=${e.A[0].sustentadas.length}`);
+}
+
+/* ── 8. O que a névoa acrescenta é a própria Habilidade ──
+
+   Dobrar a Habilidade é somar-lhe uma vez a Habilidade. Dito assim
+   parece trivial, mas é a forma inteira da magia: 1 PM por turno — o
+   preço mais barato do catálogo defensivo — compra tanto quanto o
+   avatar já for ágil. Num H1 vale +1; num H5 vale +5. */
+{
+  for (const H of [1, 3, 5]) {
+    const nu = A.duelo({ seed: 3, politica: () => ({}),
+      a: { carac: { F: 2, H, R: 4, A: 2 }, elemento: 'Água' },
+      b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+    const sem = habNaFD(nu).total, com = habNaFD(comNevoa({ F: 2, H, R: 4, A: 2 })).total;
+    A.ver(`com Habilidade ${H}, a névoa vale +${H} na Defesa`,
+          com - sem === H, `FD ${sem} → ${com}`);
+  }
+}
+
+/* ── 9. Vale a pena? ──
+
+   Em PROPORÇÃO, e não em pontos. A primeira versão desta prova exigia
+   que a névoa poupasse mais dano absoluto a quem tem Habilidade alta, e
+   deu falha — com razão: um avatar de H5 já só levava 0,34 por golpe,
+   portanto não havia lá 0,68 para tirar. A conta certa é a fatia. */
+{
+  const golpes = 600;
+  const conta = (H, comNev) => {
+    let dano = 0;
+    for (let s = 1; s <= golpes; s++) {
+      const alvo = comNev ? comNevoa({ F: 2, H, R: 4, A: 2 })
+        : A.duelo({ seed: 3, politica: () => ({}),
+            a: { carac: { F: 2, H, R: 4, A: 2 }, elemento: 'Água' },
+            b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+      const { atacante } = defensor();
+      Object.assign(atacante.ficha, { F: 4, H: 3, R: 4, A: 1 });
+      dano += M._c3resolver(atacante, alvo, null, 0, M._c3rng(s), {}, {}) || 0;
+    }
+    return dano / golpes;
+  };
+  const fatia = (H) => { const s = conta(H, false), c = conta(H, true); return { s, c, pc: 1 - c / s }; };
+  const baixa = fatia(1), alta = fatia(5);
+  A.ver('trava uma fatia maior do dano em quem já é ágil',
+        alta.pc > baixa.pc,
+        `H1 corta ${(baixa.pc * 100).toFixed(0)}% (${baixa.s.toFixed(2)}→${baixa.c.toFixed(2)})  ·  ` +
+        `H5 corta ${(alta.pc * 100).toFixed(0)}% (${alta.s.toFixed(2)}→${alta.c.toFixed(2)})`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
