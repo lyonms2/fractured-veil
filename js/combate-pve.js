@@ -1309,7 +1309,7 @@ function _pveParcelaTexto(txt, i) {
    Existe uma vez só porque a troca já desenhou o seu à parte uma vez e
    ficou sem o nome do dono nem o desfecho em palavras — duas cópias da
    mesma coisa divergem sempre. */
-function _pveTesteHTML(x, ev) {
+function _pveTesteHTML(x, ev, i) {
   const chave = 'pve.teste.res.' + x.rotulo + '.' + (x.passou ? 'sim' : 'nao');
   const res = t(chave) === chave
     ? (x.passou ? t('pve.teste.passou') : t('pve.teste.falhou'))
@@ -1328,9 +1328,54 @@ function _pveTesteHTML(x, ev) {
     + (x.seis ? ' <span class="cb-crit">' + t('pve.teste.seis') + '</span>' : '')
     + '</span></span>';
 
-  return `<span class="cb-teste ${x.passou ? 'passou' : 'falhou'}">
-      <b>${nome}</b> <u>${dono}</u> → ${res}${conta}
+  /* O dado do teste também rola à vista.
+
+     Ele já existia — o `conta` aqui em baixo escreve-o — mas dentro do
+     `.cb-detalhe`, que só abre se o jogador tocar no cabeçalho do turno.
+     Ou seja: a pergunta "o veneno pegou?" é respondida por um dado que
+     ninguém via. E é aqui que a regra do seis mais se sente, porque um
+     seis falha sempre por mais alta que a característica seja.
+
+     O VEREDITO ESPERA PELO DADO. A linha nascia já verde ou vermelha
+     (o .cb-teste.passou / .falhou pinta a borda e o texto), portanto um
+     dado a saltar ao lado de uma resposta já dada não seria uma rolagem,
+     era um enfeite. O `cb-teste-espera` segura a cor e o `→ resistiu`
+     até ele pousar. */
+  const dado = (x.dado != null) ? _pveDadoVivo(x.dado, nome, i || 0) : '';
+  const espera = dado ? ' cb-teste-espera' : '';
+  const desfecho = dado
+    ? `<span class="cb-teste-res cb-por-vir">→ ${res}</span>`
+    : `→ ${res}`;
+
+  return `<span class="cb-teste${espera} ${x.passou ? 'passou' : 'falhou'}">
+      <b>${nome}</b> <u>${dono}</u> ${dado}${desfecho}${conta}
     </span>`;
+}
+
+/* Põe os dados dos testes a rolar e destapa cada veredito quando o SEU
+   dado pousa — não todos no fim. O atraso de 90ms entre dados vem do
+   `--i` no CSS, e a conta aqui em baixo tem de o acompanhar.
+
+   Devolve quanto tempo pediu, para quem chama esticar o acontecimento.
+   Sem isto o turno seguinte começava por cima de um dado a meio do ar. */
+function _pveRolarTestes(linha, quando) {
+  if (!linha) return 0;
+  const comDado = [...linha.querySelectorAll('.cb-teste')]
+    .filter(l => l.querySelector('.cb-dado-vivo'));
+  if (!comDado.length) return 0;
+
+  setTimeout(() => {
+    linha.querySelectorAll('.cb-teste .cb-dado-vivo')
+         .forEach(d => d.classList.add('cb-rolando'));
+  }, quando);
+
+  comDado.forEach((l, i) => setTimeout(() => {
+    l.classList.remove('cb-teste-espera');
+    const r = l.querySelector('.cb-teste-res');
+    if (r) r.classList.remove('cb-por-vir');
+  }, quando + i * 90 + PVE_BATIDA.veredito));
+
+  return (comDado.length - 1) * 90 + PVE_BATIDA.veredito;
 }
 
 /* ═══ AS BATIDAS DE UM ACONTECIMENTO ═══
@@ -1373,6 +1418,9 @@ const PVE_BATIDA = {
   efeitos: 1800,  // veneno, gelo, cegueira: o que sobrou do golpe
   fim:     2120,  // o golpe inteiro
   onda:     300,  // entre as ondas de um ataque múltiplo
+  // Depois do dado de um teste pousar, sai o veredito. 40ms a mais que
+  // os 520 do salto, para o número se ver pousado antes da resposta.
+  veredito: 560,
 };
 
 function _pveMostrarEvento(ev) {
@@ -1467,11 +1515,16 @@ function _pveMostrarEvento(ev) {
              ${ev.semRolagem.map(_pveParcelaTexto).join('')}</span></span>
          </span></div>`
       : '';
-    _pveLog(t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
+    const linhaTroca = _pveLog(
+            t('pve.log.troca', { quem: ev.quem, entra: ev.troca }) + ' — ' +
             (ev.limpa ? t('pve.log.troca_limpa') : t('pve.log.troca_pressa')) + conta,
             ev.limpa ? 'good' : 'warn', ev.turno);
     _pveDesenhar();
-    return 560;
+    /* Este caminho mostra o teste já destapado, sem `cb-por-vir`, e por
+       isso precisa de mandar rolar por sua conta — senão o dado ficava
+       parado e o veredito nunca chegava a sair de trás do `cb-teste-espera`.
+       A troca sem rolagem nenhuma não tem dado, e isto devolve zero. */
+    return 560 + _pveRolarTestes(linhaTroca, 120);
   }
 
   // A CONTA, que é o ponto desta versão
@@ -1523,7 +1576,7 @@ function _pveMostrarEvento(ev) {
   // O manual manda passar com um valor IGUAL OU MENOR ao da
   // característica, e um 6 falha sempre por mais alta que ela seja —
   // por isso o 6 é marcado, senão parecia erro de conta.
-  const testes = (ev.testes || []).map(x => _pveTesteHTML(x, ev)).join('');
+  const testes = (ev.testes || []).map((x, i) => _pveTesteHTML(x, ev, i)).join('');
 
   // ── SEM REPETIR O QUE O TESTE JÁ DISSE ──
   // O teste escreve o desfecho em palavras: "→ foi envenenado". Uma
@@ -1645,9 +1698,15 @@ function _pveMostrarEvento(ev) {
     setTimeout(() => _pveGesto(cartaoAlvo, 'cb-esquiva', 620), PVE_BATIDA.esquiva);
     if (temEfeitos) revelar(PVE_BATIDA.vida, '.cb-testes, .cb-extras');
     setTimeout(_pveAtualizarBarras, PVE_BATIDA.vida);
-    // Derivado, e não um 1000 à mão: com a batida do dado pelo meio, o
-    // número fixo ficava a acabar a esquiva antes de ela se ver.
-    return PVE_BATIDA.esquiva + 600;
+    /* Derivado, e não um 1000 à mão: com a batida do dado pelo meio, o
+       número fixo ficava a acabar a esquiva antes de ela se ver.
+
+       O máximo porque são dois fins possíveis e o acontecimento acaba no
+       mais tarde. Uma esquiva com teste de veneno mostrava os testes ao
+       milissegundo 1600 e acabava ao 1620 — vinte milissegundos, que já
+       era pouco antes de haver dado nenhum para rolar. */
+    return Math.max(PVE_BATIDA.esquiva + 600,
+                    PVE_BATIDA.vida + _pveRolarTestes(linha, PVE_BATIDA.vida));
   }
 
   // ── 5ª BATIDA · o golpe chega ──
@@ -1720,15 +1779,16 @@ function _pveMostrarEvento(ev) {
                                             : PVE_BATIDA.conta;
   setTimeout(_pveAtualizarBarras, tVida);
 
-  // ── 7ª BATIDA · o que ficou ──
+  // ── 7ª BATIDA · o que ficou, e os testes rolam o seu dado ──
   const tEfeitos = (bate || ondas) ? PVE_BATIDA.efeitos + extraOndas
                                    : PVE_BATIDA.esquiva;
   if (temEfeitos) revelar(tEfeitos, '.cb-testes, .cb-extras');
+  const extraTeste = _pveRolarTestes(linha, tEfeitos);
 
   // Uma magia que não bate em ninguém — erguer uma barreira, curar-se —
   // não precisa do tempo de um golpe que acerta.
-  return (bate || ondas) ? PVE_BATIDA.fim + extraOndas
-       : temEfeitos ? 900 : 660;
+  return ((bate || ondas) ? PVE_BATIDA.fim + extraOndas
+       : temEfeitos ? 900 : 660) + extraTeste;
 }
 
 function _pveElementoDe(ev) {

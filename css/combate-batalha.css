@@ -783,6 +783,24 @@
 .cb-teste.passou { border-left-color: #7ab87a; color: #b8d8b8; }
 .cb-teste.falhou { border-left-color: #e05555; color: #e8b8b8; }
 
+/* ── O VEREDITO ESPERA PELO DADO ──
+
+   A cor da borda e do texto DIZ o resultado, e dizia-o no instante em
+   que a linha nascia. Com o dado a rolar ao lado, a resposta chegava
+   antes da pergunta acabar de ser feita.
+
+   Enquanto o dado salta, a linha fica neutra; quando ele pousa, o
+   `cb-teste-espera` sai e a cor entra com ele. Tem de vir DEPOIS do
+   .passou/.falhou: a especificidade é a mesma e quem ganha é o último.
+
+   O dado do teste leva tamanho próprio — a linha desenha a 5px e um
+   dado a 5px não é um dado, é um borrão. */
+.cb-teste.cb-teste-espera { border-left-color: var(--muted); color: var(--text2); }
+.cb-teste { transition: color .25s ease, border-left-color .25s ease; }
+.cb-teste .cb-dado-vivo { font-size: 0.375rem; }
+/* Inline não pega no transform do cb-por-vir, como no .cb-conta. */
+.cb-teste-res { display: inline-block; }
+
 /* ═══════════════════════════════════════════════════════════════════
    NO COMPUTADOR, MAIOR
    O jogo inteiro desenha em 4–7px na escala base, o que
