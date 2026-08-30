@@ -154,7 +154,7 @@ window.registerStrings({
   'mag.vt_d1.nome':   'Véu de Correntes',
   'mag.vt_d1.desc':   'Uma parede de vento fecha-se ao seu redor. Soma 10 à sua Força de Defesa — e, ao contrário de todas as outras defesas, paga-se uma vez e dura a luta inteira, sem cobrar nada por turno.',
   'mag.vt_d2.nome':   'Correntes Desviantes',
-  'mag.vt_d2.desc':   'O ar se dobra em torno do corpo e desvia o que vem de longe.',
+  'mag.vt_d2.desc':   'O ar se dobra em torno do corpo. Cada PM investido soma 1 ao seu teste de esquiva, paga-se uma vez e dura a luta inteira — lançá-la outra vez soma mais. Não ajuda a aparar, só a sair da frente: não vale nada enquanto estiver em fúria ou travado. E ninguém escapa a mais do que cinco golpes em seis, por mais que invista.',
 
   // ── 🌑 SOMBRA ─────────────────────────────────────────────────────
   'mag.so_a1.nome':   'Toque Umbral',
@@ -297,7 +297,7 @@ window.registerStrings({
   'mag.vt_d1.nome':   'Veil of Currents',
   'mag.vt_d1.desc':   'A wall of wind closes around you. Adds 10 to your Defence Force - and, unlike every other defence, it is paid once and lasts the whole fight, charging nothing per turn.',
   'mag.vt_d2.nome':   'Deflecting Currents',
-  'mag.vt_d2.desc':   'The air bends around the body and turns aside what comes from a distance.',
+  'mag.vt_d2.desc':   'The air bends around the body. Each MP spent adds 1 to your dodge test, is paid once and lasts the whole fight - casting it again adds more. It does not help you parry, only step aside: it is worth nothing while you are enraged or seized up. And nobody escapes more than five blows in six, however much they invest.',
 
   'mag.so_a1.nome':   'Umbral Touch',
   'mag.so_a1.desc':   'A dark wave that steals life and magic energy in the same bite.',

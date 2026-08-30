@@ -1354,6 +1354,159 @@ A.ver('custa 5 PM, uma vez, e não cobra por turno',
         ev ? `imunizou=${ev.imunizou} fora=${!!ev.fora} resistiu=${!!ev.resistiu}` : 'sem evento');
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const CORRENTES = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d2');
+
+console.log('\n═══ CORRENTES DESVIANTES (vt_d2) ═══');
+console.log('  "O ar se dobra em torno do corpo."   ·   1 a 5 PM, uma vez\n');
+
+/* Quantas vezes um defensor com este bónus escapa, em N golpes de
+   verdade. É a única forma de medir uma magia de esquiva: o que ela dá
+   não é um número na ficha, é uma fatia dos golpes que não chegam. */
+function esquivas(bonus, hMeu, hDele, golpes) {
+  let fugiu = 0, levou = 0;
+  for (let s = 1; s <= golpes; s++) {
+    const d = A.duelo({ seed: s, politica: () => ({}),
+      a: { carac: { F: 4, H: hDele, R: 4, A: 1 } },
+      b: { carac: { F: 1, H: hMeu, R: 999, A: 0 }, iniciativa: 0 } });
+    d.B[0].bonusEsquiva = bonus;
+    const ev = {};
+    M._c3resolver(d.A[0], d.B[0], null, 0, M._c3rng(s), ev, {});
+    if (ev.esquivou) fugiu++; else levou++;
+  }
+  return { fugiu, levou, pc: fugiu / golpes };
+}
+
+// Levanta as Correntes com os PM que eu mandar.
+function comCorrentes(pm, turnos) {
+  let lancou = false;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: CORRENTES, pm };
+    },
+    a: { carac: { F: 2, H: 3, R: 8, A: 2 }, elemento: 'Vento', pm: 6, pmMax: 6,
+         magias: { ataque: CORRENTES, forte: CORRENTES, defesa: CORRENTES } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < (turnos || 1) && !e.acabou; i++) M.combate3dtTurno(e);
+  return e;
+}
+
+// ── 1. O catálogo ──
+A.ver('escala de 1 a 5 PM, uma vez, e não cobra por turno',
+      CORRENTES.pm === 1 && CORRENTES.pmMax === 5 && !CORRENTES.porTurno
+      && CORRENTES.esquivaBonus === true,
+      `pm=${CORRENTES.pm}–${CORRENTES.pmMax} porTurno=${!!CORRENTES.porTurno}`);
+
+// ── 2. Cada PM vale um ponto no teste de esquiva ──
+{
+  const medidas = [1, 3, 5].map(pm => ({ pm, b: comCorrentes(pm).A[0].bonusEsquiva }));
+  A.ver('cada PM investido vale +1 na esquiva',
+        medidas.every(m => m.b === m.pm),
+        medidas.map(m => `${m.pm}PM→+${m.b}`).join('  '));
+}
+
+// ── 3. E esse ponto aparece mesmo nos golpes ──
+{
+  const sem = esquivas(0, 2, 3, 1200), com = esquivas(5, 2, 3, 1200);
+  A.ver('com as Correntes de pé, escapa-se de verdade',
+        com.pc > sem.pc,
+        `${(sem.pc * 100).toFixed(0)}% → ${(com.pc * 100).toFixed(0)}% dos golpes`);
+}
+
+/* ── 4. O TECTO: cinco em seis, e nem um ponto mais ──
+
+   O teste da esquiva passa com o dado igual ou menor ao valor, e o 6
+   falha sempre. Logo o melhor que existe é escapar a cinco dados em
+   seis — 83,3% — e tudo o que se invista depois de lá chegar é PM
+   deitado fora.
+
+   É por isto que o selector de PM passou a contar a Habilidade dos dois
+   lados e o que já foi investido: oferecer o sexto ponto é vender o que
+   não existe. */
+{
+  const medidas = [5, 10, 20, 30].map(b => ({ b, pc: esquivas(b, 2, 3, 1500).pc }));
+  const tecto = medidas[medidas.length - 1].pc;
+  A.ver('a esquiva satura nos cinco em seis, e não sobe mais',
+        Math.abs(tecto - 5 / 6) < 0.03
+        && Math.abs(medidas[1].pc - medidas[3].pc) < 0.02,
+        medidas.map(m => `+${m.b}→${(m.pc * 100).toFixed(1)}%`).join('  '));
+}
+
+// ── 5. Não é Força de Defesa: é sair da frente ──
+// Quem esquiva não rola Defesa nenhuma. São dois caminhos diferentes, e
+// as Correntes só tocam num deles.
+{
+  const c = comCorrentes(5).A[0];
+  const nu = A.duelo({ seed: 3, politica: () => ({}),
+    a: { carac: { F: 2, H: 3, R: 8, A: 2 }, elemento: 'Vento' },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 } } }).A[0];
+  A.ver('não soma nada à Força de Defesa',
+        M._c3fd(c, M._c3rng(77), {}).total === M._c3fd(nu, M._c3rng(77), {}).total,
+        `FD ${M._c3fd(nu, M._c3rng(77), {}).total} com e sem as Correntes`);
+}
+
+/* ── 6. De nada serve a quem não pode esquivar ──
+
+   A fúria e a paralisia proíbem a esquiva antes de se olhar para o
+   bónus. Cinco PM investidos numa magia que a fúria do Sangue Quente
+   depois anula é o tipo de coisa que se descobre a perder. */
+{
+  const conta = (mexer) => {
+    let fugiu = 0;
+    for (let s = 1; s <= 600; s++) {
+      const d = A.duelo({ seed: s, politica: () => ({}),
+        a: { carac: { F: 4, H: 3, R: 4, A: 1 } },
+        b: { carac: { F: 1, H: 2, R: 999, A: 0 }, iniciativa: 0 } });
+      d.B[0].bonusEsquiva = 5;
+      mexer(d.B[0]);
+      const ev = {};
+      M._c3resolver(d.A[0], d.B[0], null, 0, M._c3rng(s), ev, {});
+      if (ev.esquivou) fugiu++;
+    }
+    return fugiu;
+  };
+  A.ver('em fúria, o bónus não serve de nada',
+        conta(c => { c.furia = true; }) === 0, 'zero esquivas com fúria');
+  A.ver('travado pela paralisia, também não',
+        conta(c => { c.indefeso = true; }) === 0, 'zero esquivas indefeso');
+}
+
+/* ── 7. Paga-se uma vez e dura a luta ──
+
+   Não entra na cobrança do fim de turno e o recalcular não lhe toca —
+   há um comentário no motor a dizer exactamente isso, porque já foi
+   zerada por engano uma vez. */
+{
+  const e = comCorrentes(5, 12);
+  A.ver('doze turnos depois, com a bolsa quase vazia, continua de pé',
+        e.A[0].bonusEsquiva === 5,
+        `+${e.A[0].bonusEsquiva} com ${e.A[0].pm} PM na bolsa`);
+}
+
+/* ── 8. Acumula, e isso é de propósito ──
+
+   Ao contrário das sustentadas, esta soma-se a si própria: o motor
+   escreve `(atk.bonusEsquiva || 0) + pmGastos` de forma explícita. Não é
+   descuido — é uma magia que se vai reforçando. O travão não está no
+   motor, está na regra do dado: passados os cinco pontos úteis, mais
+   nada acontece. */
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: CORRENTES, pm: 5 } : {},
+    a: { carac: { F: 2, H: 3, R: 20, A: 2 }, elemento: 'Vento', pm: 200, pmMax: 200,
+         magias: { ataque: CORRENTES, forte: CORRENTES, defesa: CORRENTES } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  const trilho = [];
+  for (let i = 0; i < 3; i++) { M.combate3dtTurno(e); trilho.push('+' + e.A[0].bonusEsquiva); }
+  A.ver('relançá-la acumula, e é assim que deve ser',
+        e.A[0].bonusEsquiva === 15, trilho.join(' → ') + '  (o travão é o dado, não o motor)');
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
