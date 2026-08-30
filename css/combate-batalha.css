@@ -668,3 +668,54 @@
   .cb-fim              { font-size: 0.75rem; }
   .cb-fratura          { font-size: 0.4375rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   NO COMPUTADOR, AS ACÇÕES VÃO PARA O LADO
+
+   A arena era uma coluna só: inimigos, registo, equipa, botões. No
+   telemóvel é a única forma que cabe. No computador dava o pior dos dois
+   mundos — os botões ocupavam o terço de baixo, e o registo, que é onde
+   se lê o que aconteceu no turno, ficava com uma caixa larga e rasa.
+
+   Aqui há largura de sobra. Os botões passam para uma coluna à direita,
+   e o que sobra ao meio é do registo: o campo de batalha fica com os
+   dois lados a olhar um para o outro e o texto do turno entre eles, que
+   é como uma batalha por turnos se lê.
+
+   O .cb-ajuda não entra nesta grelha de propósito: é um painel
+   sobreposto (position:absolute, inset), não um irmão em fluxo.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width: 681px) {
+  .cb-arena {
+    max-width: 42rem;
+    display: grid;
+    grid-template-columns: 1fr 13rem;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "topo    topo"
+      "inimigo acoes"
+      "log     acoes"
+      "jogador acoes";
+    gap: 0.5rem;
+    align-content: stretch;
+  }
+  .cb-topo               { grid-area: topo; }
+  .cb-arena > #cbInimigo { grid-area: inimigo; }
+  .cb-log                { grid-area: log; }
+  .cb-arena > #cbJogador { grid-area: jogador; }
+
+  /* Uma coluna só, encostada ao topo: os botões devem começar à altura
+     dos inimigos, não flutuar no meio da coluna. */
+  .cb-acoes {
+    grid-area: acoes;
+    grid-template-columns: 1fr;
+    align-content: start;
+    overflow-y: auto;
+  }
+  /* As trocas empilham. Lado a lado numa coluna de 13rem, "Trocar por
+     Brama" partia-se em três linhas. */
+  .cb-trocas { flex-direction: column; }
+
+  /* O registo era o que menos espaço tinha e o que mais texto recebe. */
+  .cb-log { min-height: 12rem; }
+}
