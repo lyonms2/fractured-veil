@@ -165,7 +165,7 @@ window.registerStrings({
   'mag.so_d1.nome':   'Manto de Penumbra',
   'mag.so_d1.desc':   'Uma barreira invisível que nada atravessa.',
   'mag.so_d2.nome':   'Égide Mental',
-  'mag.so_d2.desc':   'A mente se fecha. Nenhuma magia de espírito entra ali.',
+  'mag.so_d2.desc':   'A mente se fecha por dentro. Nada que tire você do combate sem passar pela vida — virar pedra, virar estátua de gelo, ter a alma devorada — chega a pegar. Em troca não pára um único ponto de dano, e não impede o Inverno Súbito de o prender: fecha a alma, não o corpo. Paga-se uma vez e dura a luta inteira.',
 
   // ── ✦ UNIVERSAIS ──────────────────────────────────────────────────
   'mag.un_a1.nome':   'Descarga Elemental',
@@ -306,7 +306,7 @@ window.registerStrings({
   'mag.so_d1.nome':   'Penumbra Mantle',
   'mag.so_d1.desc':   'An invisible barrier that nothing crosses.',
   'mag.so_d2.nome':   'Mental Aegis',
-  'mag.so_d2.desc':   'The mind closes. No spirit magic gets in.',
+  'mag.so_d2.desc':   'The mind closes from within. Nothing that removes you from combat without going through your life - turning to stone, to a statue of ice, having your soul devoured - can take hold. In exchange it stops no damage at all, and does not prevent Sudden Winter from locking you in ice: it closes the soul, not the body. Paid once, it lasts the whole fight.',
 
   'mag.un_a1.nome':   'Elemental Discharge',
   'mag.un_a1.desc':   'Your element raw, thrown without shape. The more you give, the more it takes.',

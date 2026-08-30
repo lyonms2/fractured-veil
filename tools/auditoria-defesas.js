@@ -1196,6 +1196,164 @@ A.ver('custa 5 PM e não escala nem cobra por turno',
         `(${((1 - com / sem) * 100).toFixed(0)}% menos)`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const EGIDE = M.MAGIAS['Sombra'].defesa.find(g => g.id === 'so_d2');
+
+console.log('\n═══ ÉGIDE MENTAL (so_d2) ═══');
+console.log('  "A mente se fecha. Nenhuma magia de espírito entra ali."   ·   5 PM, uma vez\n');
+
+// Todas as magias do catálogo que tiram do combate sem passar pelos PV.
+const TIRAM_DE_COMBATE = [];
+for (const el of Object.keys(M.MAGIAS))
+  for (const cat of ['ataque', 'forte', 'defesa'])
+    for (const g of (M.MAGIAS[el][cat] || []))
+      if (g.petrifica || g.congela || g.destroiAlma) TIRAM_DE_COMBATE.push({ g, el });
+
+/* Manda uma magia contra um alvo, com ou sem a Égide de pé, e conta
+   quantas vezes ele saiu de combate. O alvo tem Resistência 0: sem a
+   Égide sai sempre, portanto qualquer sobrevivente é obra dela. */
+function contraEgide(magia, pm, comEgide, voltas) {
+  let fora = 0, imunizou = 0, presos = 0;
+  for (let s = 1; s <= (voltas || 200); s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: (quem) => (quem.nome === 'A') ? { magia, pm } : {},
+      a: { carac: { F: 2, H: 9, R: 4, A: 1 }, elemento: 'Sombra', pm: 60, pmMax: 60,
+           iniciativa: 99, magias: { ataque: magia, forte: magia, defesa: magia } },
+      b: { carac: { F: 2, H: 0, R: 0, A: 0 }, pv: 200, iniciativa: 0 },
+    });
+    if (comEgide) e.B[0].imuneEspiritual = true;
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'A' && v.magia === magia.id);
+    if (!ev) continue;
+    if (ev.fora) fora++;
+    if (ev.imunizou) imunizou++;
+    if (ev.congelou) presos++;
+  }
+  return { fora, imunizou, presos, voltas: voltas || 200 };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 5 PM, uma vez, e não cobra por turno',
+      EGIDE.pm === 5 && !EGIDE.porTurno && !EGIDE.pmMax && EGIDE.imuneEspiritual === true,
+      `pm=${EGIDE.pm} porTurno=${!!EGIDE.porTurno} imuneEspiritual=${EGIDE.imuneEspiritual}`);
+
+/* ── 2. As três que ela fecha, uma a uma ──
+
+   "Magia de espírito" não é uma família declarada em lado nenhum: é o
+   nome que o texto dá às três magias que tiram do combate sem passar
+   pelos pontos de vida. Vale a pena percorrê-las pelo catálogo em vez
+   de as escrever à mão — se um dia nascer uma quarta, esta prova
+   apanha-a sozinha. */
+{
+  const falhou = [];
+  for (const { g, el } of TIRAM_DE_COMBATE) {
+    const sem = contraEgide(g, g.pm, false, 150);
+    const com = contraEgide(g, g.pm, true, 150);
+    if (!(sem.fora > 100 && com.fora === 0 && com.imunizou > 100)) {
+      falhou.push(`${g.id} (sem ${sem.fora}, com ${com.fora})`);
+    }
+  }
+  A.ver(`fecha as ${TIRAM_DE_COMBATE.length} magias que tiram do combate`,
+        falhou.length === 0 && TIRAM_DE_COMBATE.length === 3,
+        TIRAM_DE_COMBATE.map(x => x.g.id).join(', ') +
+        (falhou.length ? '  ·  falharam: ' + falhou.join(' ') : ''));
+}
+
+/* ── 3. A FRONTEIRA: não fecha a prisão de gelo de dois turnos ──
+
+   O Inverno Súbito (ag_f4) congela por dois turnos e não é "magia de
+   espírito": fere, e o que faz depois é prender, não tirar. A Égide não
+   lhe toca — o motor só a consulta no bloco do petrificar/congelar/
+   destruir alma.
+
+   É a distinção mais fácil de confundir do catálogo inteiro, porque as
+   duas magias de gelo têm nomes de gelo e efeitos parecidos. Uma é
+   fechada pela Égide, a outra não. */
+{
+  const INVERNO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f4');
+  const com = contraEgide(INVERNO, INVERNO.pm, true, 400);
+  A.ver('mas NÃO fecha o Inverno Súbito, que prende em vez de tirar',
+        com.presos > 0 && com.fora === 0 && com.imunizou === 0,
+        `${com.presos} congelamentos passaram na mesma, em ${com.voltas} lançamentos`);
+}
+
+// ── 4. Não protege de dano nenhum ──
+{
+  const golpes = 500;
+  const conta = (comEg) => {
+    let dano = 0;
+    for (let s = 1; s <= golpes; s++) {
+      const d = A.duelo({ seed: s, politica: () => ({}),
+        a: { carac: { F: 4, H: 3, R: 4, A: 1 } },
+        b: { carac: { F: 1, H: 1, R: 20, A: 1 }, iniciativa: 0 } });
+      if (comEg) d.B[0].imuneEspiritual = true;
+      dano += M._c3resolver(d.A[0], d.B[0], null, 0, M._c3rng(s), {}, {}) || 0;
+    }
+    return dano;
+  };
+  A.ver('a alma fechada não pára um único ponto de dano',
+        conta(true) === conta(false),
+        `${conta(false)} de dano com e sem ela, em ${golpes} golpes`);
+}
+
+// ── 5. Paga-se uma vez e dura a luta ──
+// Como o Véu de Correntes: não entra na cobrança do fim de turno, e o
+// recalcular não lhe toca. Cinco PM e a alma fica fechada até ao fim.
+{
+  let lancou = false;
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: EGIDE, pm: 5 };
+    },
+    a: { carac: { F: 2, H: 2, R: 8, A: 2 }, elemento: 'Sombra', pm: 6, pmMax: 6,
+         magias: { ataque: EGIDE, forte: EGIDE, defesa: EGIDE } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < 12 && !e.acabou; i++) M.combate3dtTurno(e);
+  A.ver('doze turnos depois, com a bolsa quase vazia, continua fechada',
+        e.A[0].imuneEspiritual === true,
+        `imune=${e.A[0].imuneEspiritual} com ${e.A[0].pm} PM na bolsa`);
+}
+
+// ── 6. Relançá-la não acumula nada ──
+// É uma bandeira, não um número: ergue-se uma vez e não há segunda vez
+// que valha alguma coisa. Fica provado porque as vizinhas numéricas
+// acumulavam, e a diferença entre as duas famílias não é óbvia.
+{
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { magia: EGIDE, pm: 5 } : {},
+    a: { carac: { F: 2, H: 2, R: 20, A: 2 }, elemento: 'Sombra', pm: 60, pmMax: 60,
+         magias: { ataque: EGIDE, forte: EGIDE, defesa: EGIDE } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  for (let i = 0; i < 4; i++) M.combate3dtTurno(e);
+  A.ver('erguer a Égide quatro vezes é o mesmo que erguê-la uma',
+        e.A[0].imuneEspiritual === true,
+        'é uma bandeira, não um número — não há o que somar');
+}
+
+// ── 7. O registo diz que imunizou, e a quem ──
+{
+  const GELO2 = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+  const e = A.duelo({
+    seed: 4,
+    politica: (quem) => (quem.nome === 'A') ? { magia: GELO2, pm: 10 } : {},
+    a: { carac: { F: 2, H: 9, R: 4, A: 1 }, elemento: 'Água', pm: 40, pmMax: 40,
+         iniciativa: 99, magias: { ataque: GELO2, forte: GELO2, defesa: GELO2 } },
+    b: { carac: { F: 2, H: 0, R: 0, A: 0 }, pv: 200, iniciativa: 0 },
+  });
+  e.B[0].imuneEspiritual = true;
+  M.combate3dtTurno(e);
+  const ev = e.eventos.find(v => v.lado === 'A' && v.magia === 'ag_f3');
+  A.ver('o registo escreve que a magia bateu numa alma fechada',
+        !!ev && ev.imunizou === true && !ev.fora && !ev.resistiu,
+        ev ? `imunizou=${ev.imunizou} fora=${!!ev.fora} resistiu=${!!ev.resistiu}` : 'sem evento');
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
