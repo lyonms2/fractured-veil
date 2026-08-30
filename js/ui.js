@@ -775,6 +775,9 @@ function rebuildScreensParaSlot() {
   const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
   if(typeof updateDirtyVisuals === 'function') updateDirtyVisuals();
   if(typeof updateEquippedDisplay === 'function') updateEquippedDisplay();
+  // O sono é por avatar e a tela é uma só: sem isto, quem trocasse de
+  // criatura levava as classes de sono da anterior atrás.
+  if(typeof aplicarVisualDoSono === 'function') aplicarVisualDoSono(!!sleeping);
   if(typeof updateAllUI === 'function') updateAllUI();
   if(typeof updateResourceUI === 'function') updateResourceUI();
   // Se o jogador estava na colónia, é para lá que se volta: este rebuild

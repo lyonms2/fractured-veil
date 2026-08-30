@@ -260,19 +260,48 @@ function toggleSleep() {
   }
 }
 
+/* SÓ O VISUAL DO SONO.
+
+   O startSleep e o wakeUp faziam duas coisas ao mesmo tempo: mudavam o
+   estado da criatura E vestiam a tela — o véu escuro, a pose, os olhos
+   fechados, os botões apagados, o rótulo do botão a dizer "Acordar".
+   Ora o estado é POR AVATAR e a tela é UMA só.
+
+   Ao trocar de avatar, o loadRuntimeFromSlot punha o sleeping do novo
+   na variável e mais nada: as classes do anterior ficavam onde
+   estavam. Adormecia-se um, ia-se a outro, e o outro aparecia a dormir
+   sem estar — com o botão a oferecer "Acordar" a quem estava acordado.
+   Ao contrário também: quem estava mesmo a dormir aparecia desperto.
+
+   Isto veste a tela e nada mais: sem som, sem balão, sem registo e sem
+   gravar. É o que permite chamá-lo numa troca de slot, que não é um
+   acontecimento na vida do bicho — é só a tela a mudar de assunto. */
+function aplicarVisualDoSono(dormindo) {
+  const $ = id => document.getElementById(id);
+  const ov = $('sleepOverlay');   if (ov)   ov.classList.toggle('active', dormindo);
+  const wr = $('creatureWrap');   if (wr)   wr.classList.toggle('sleeping', dormindo);
+  const bt = $('actionBtns');     if (bt)   bt.classList.toggle('sleeping-mode', dormindo);
+  const bs = $('btnSleep');       if (bs)   bs.classList.toggle('active-sleep', dormindo);
+  const lb = $('sleepLabel');
+  if (lb) lb.textContent = t(dormindo ? 'mg.sleep.wake_btn' : 'mg.sleep.sleep_btn');
+  document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.toggle('sleeping', dormindo));
+
+  if (dormindo) {
+    renderSleepEyes();
+    playAnim('anim-sleep', true);
+  } else {
+    const grp = document.querySelector('#sleepEyesGroup');
+    if (grp) grp.remove();
+    resetAnim();
+  }
+}
+
 function startSleep() {
   sleeping = true;
   playSound('sleep');
   ModalManager.closeAll();
   // jkpPlaying removido — JKP solo foi descontinuado
-  document.getElementById('sleepOverlay').classList.add('active');
-  document.getElementById('creatureWrap').classList.add('sleeping');
-  renderSleepEyes();
-  document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.add('sleeping'));
-  playAnim('anim-sleep', true);
-  document.getElementById('actionBtns').classList.add('sleeping-mode');
-  document.getElementById('sleepLabel').textContent = t('mg.sleep.wake_btn');
-  document.getElementById('btnSleep').classList.add('active-sleep');
+  aplicarVisualDoSono(true);
   showBubble(t('mg.sleep.bub'));
   addLog(t('mg.sleep.log'), 'info'); saveToFirebase();
 }
@@ -280,20 +309,12 @@ function startSleep() {
 function wakeUp(reason) {
   sleeping = false;
   playSound('wakeup');
-  document.getElementById('sleepOverlay').classList.remove('active');
-  document.getElementById('creatureWrap').classList.remove('sleeping');
-  const grp = document.querySelector('#sleepEyesGroup');
-  if(grp) grp.remove();
-  document.querySelectorAll('.zzz-bubble').forEach(z => z.classList.remove('sleeping'));
-  resetAnim();
-  // Acordar não tinha animação nenhuma: o resetAnim tirava o sleep-sway e a
-  // criatura saltava para o idle-float num fotograma. Agora espreguiça-se.
-  // Tem de vir depois do resetAnim e depois de sair a classe .sleeping, senão
-  // as regras de sono ainda seguram as partes.
+  aplicarVisualDoSono(false);
+  // O espreguiçar é do acordar de verdade, não da troca de avatar: tem
+  // de vir depois do resetAnim que o aplicarVisualDoSono faz, e depois
+  // de sair a classe .sleeping, senão as regras do sono ainda seguram
+  // as partes do corpo.
   playAnim('anim-wake');
-  document.getElementById('actionBtns').classList.remove('sleeping-mode');
-  document.getElementById('sleepLabel').textContent = t('mg.sleep.sleep_btn');
-  document.getElementById('btnSleep').classList.remove('active-sleep');
   if(reason === 'full') {
     showBubble(rnd(FALAS.fullEnergy));
     addLog(t('mg.sleep.log.full'), 'good');
