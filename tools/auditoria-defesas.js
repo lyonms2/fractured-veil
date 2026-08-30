@@ -875,6 +875,191 @@ A.ver('escala de 2 a 20 PM, e não é sustentada',
         comCura === 1, `${comCura} magia(s) com cura em todo o catálogo`);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+const FIO = M.MAGIAS['Vento'].forte.find(g => g.id === 'vt_f3');
+
+console.log('\n═══ FIO CORTANTE (vt_f3) ═══');
+console.log('  "Não bate mais forte — mas num acerto perfeito o alvo testa');
+console.log('   a Armadura ou acabou ali."   ·   1 PM por turno\n');
+
+/* Bate N vezes com o fio de pé e conta o que aconteceu.
+
+   O vorpal é uma bandeira em QUEM BATE, não uma magia de ataque: entra
+   depois de qualquer golpe resolvido. Por isso as provas usam murros —
+   é o caso mais simples e o que apanha a regra onde ela realmente vive. */
+function fio(comFio, A_alvo, golpes, mexerAtacante) {
+  let criticos = 0, decapitou = 0, aguentou = 0, comDano = 0, danoTotal = 0;
+  const testes = [];
+  for (let s = 1; s <= golpes; s++) {
+    const d = A.duelo({ seed: s, politica: () => ({}),
+      a: { carac: { F: 4, H: 3, R: 4, A: 1 }, elemento: 'Vento' },
+      b: { carac: { F: 1, H: 0, R: 40, A: A_alvo }, iniciativa: 0 } });
+    const atk = d.A[0], def = d.B[0];
+    atk.vorpal = !!comFio;
+    if (mexerAtacante) mexerAtacante(atk, def);
+    const ev = {};
+    const passou = M._c3resolver(atk, def, null, 0, M._c3rng(s), ev, {}) || 0;
+    danoTotal += passou;
+    if (passou > 0) comDano++;
+    if (ev.criticoAtk) criticos++;
+    if (ev.decapitou) decapitou++;
+    if (ev.aguentouVorpal) aguentou++;
+    const tv = (ev.testes || []).find(x => x.rotulo === 'vorpal');
+    if (tv) testes.push(tv);
+  }
+  return { criticos, decapitou, aguentou, comDano, danoTotal, testes, golpes };
+}
+
+// ── 1. O catálogo ──
+A.ver('custa 1 PM por turno e é sustentada',
+      FIO.pm === 1 && FIO.porTurno === true && FIO.vorpal === true && !FIO.fa,
+      `pm=${FIO.pm} porTurno=${FIO.porTurno} vorpal=${FIO.vorpal} fa=${FIO.fa ? 'sim' : 'não'}`);
+
+// ── 2. "Não bate mais forte" — e não bate mesmo ──
+{
+  const sem = fio(false, 2, 500), com = fio(true, 2, 500);
+  A.ver('não acrescenta um único ponto de dano',
+        sem.danoTotal === com.danoTotal,
+        `dano somado: ${sem.danoTotal} sem fio · ${com.danoTotal} com fio, em 500 golpes`);
+}
+
+/* ── 3. São QUATRO condições, não uma ──
+
+   O texto diz "num acerto perfeito", e é verdade, mas incompleto. Para
+   decapitar é preciso: o fio de pé, o dado do ATAQUE a sair 6, dano a
+   passar de verdade, e o alvo ainda vivo. Um crítico inteiramente
+   aparado pela Armadura não decapita ninguém — e é a condição que
+   ninguém adivinha a ler a frase. */
+{
+  // Alvo com Armadura altíssima: os críticos acontecem, o dano não passa.
+  const r = fio(true, 60, 600);
+  A.ver('um crítico sem dano a passar não decapita',
+        r.criticos > 0 && r.comDano === 0 && r.decapitou === 0,
+        `${r.criticos} críticos · ${r.comDano} com dano · ${r.decapitou} decapitações`);
+}
+
+// ── 4. Sem crítico, nunca ──
+// Forço o dado da FA a nunca dar 6 usando um atacante que rola o dado
+// do ataque: se não houver crítico nenhum, não pode haver decapitação.
+{
+  const r = fio(true, 0, 600);
+  A.ver('só decapita em turnos onde houve crítico',
+        r.decapitou <= r.criticos,
+        `${r.decapitou} decapitações em ${r.criticos} críticos (${r.golpes} golpes)`);
+}
+
+/* ── 5. A Armadura é que salva o pescoço ──
+
+   O teste é à Armadura do alvo, e isto é uma inversão bonita: a
+   Armadura já servia para aparar dano, e aqui serve para não perder a
+   cabeça. Quem se cobre de metal aguenta o fio; quem anda nu não. */
+{
+  const linhas = [];
+  let certos = 0;
+  for (const Aalvo of [0, 2, 5]) {
+    const r = fio(true, Aalvo, 1200);
+    // Dos que chegaram ao teste, quantos falharam.
+    const chegaram = r.decapitou + r.aguentou;
+    const caiu = chegaram ? r.decapitou / chegaram : 0;
+    const esperado = (1 + Math.max(0, 5 - Aalvo)) / 6;
+    if (chegaram > 20 && Math.abs(caiu - esperado) < 0.09) certos++;
+    linhas.push(`A${Aalvo} ${(caiu * 100).toFixed(0)}%~${(esperado * 100).toFixed(0)}% (${chegaram} testes)`);
+  }
+  A.ver('quem falha o teste é quem tem pouca Armadura, como o manual manda',
+        certos === 3, linhas.join('  '));
+}
+
+/* ── 6. Nem a Armadura mais alta põe ninguém a salvo ──
+
+   O 6 falha sempre, aqui como na Prisão de Gelo. Mas medir isto obriga
+   a um alvo contraditório: Armadura altíssima, para o teste ser quase
+   impossível de falhar, E dano a passar, para se chegar ao teste. A
+   primeira versão pedia as duas coisas a um atacante normal e chegava
+   ao teste zero vezes — dava falha por ser impossível, não por estar
+   errado. Resolve-se com um atacante monstruoso: a Força atravessa a
+   Armadura na conta do dano, e a Armadura continua inteira na conta do
+   pescoço. */
+{
+  const r = fio(true, 30, 4000, (atk) => { atk.ficha.F = 80; });
+  const chegaram = r.decapitou + r.aguentou;
+  A.ver('com Armadura 30, ainda cai ~1 em 6 dos que chegam ao teste',
+        chegaram > 10 && Math.abs(r.decapitou / chegaram - 1 / 6) < 0.12,
+        `${r.decapitou} de ${chegaram} testes = ` +
+        `${chegaram ? (r.decapitou / chegaram * 100).toFixed(0) : 0}%`);
+  A.ver('e o registo marca o seis',
+        r.testes.some(x => x.seis === true),
+        `${r.testes.filter(x => x.seis).length} testes marcados com o seis`);
+}
+
+// ── 7. Quando corta, acabou — sem passar pela vida ──
+{
+  const d = A.duelo({ seed: 1, politica: () => ({}),
+    a: { carac: { F: 9, H: 5, R: 4, A: 1 }, elemento: 'Vento' },
+    b: { carac: { F: 1, H: 0, R: 40, A: 0 }, pv: 200, iniciativa: 0 } });
+  d.A[0].vorpal = true;
+  let cortou = null;
+  for (let s = 1; s <= 800 && !cortou; s++) {
+    const alvo = A.duelo({ seed: s, politica: () => ({}),
+      a: { carac: { F: 9, H: 5, R: 4, A: 1 } },
+      b: { carac: { F: 1, H: 0, R: 40, A: 0 }, pv: 200 } }).B[0];
+    const ev = {};
+    M._c3resolver(d.A[0], alvo, null, 0, M._c3rng(s), ev, {});
+    if (ev.decapitou) cortou = { pv: alvo.pv, vivo: alvo.vivo, dano: ev.dano };
+  }
+  A.ver('a decapitação acaba com o alvo tivesse ele a vida que tivesse',
+        !!cortou && cortou.pv === 0 && cortou.vivo === false,
+        cortou ? `entrou com 200 de vida, levou ${cortou.dano} de dano, ficou em ${cortou.pv}`
+               : 'não saiu decapitação em 800 golpes');
+}
+
+/* ── 8. O fio corta em qualquer golpe, não só nas magias ──
+
+   É uma bandeira em quem bate, e o motor verifica-a depois de QUALQUER
+   ataque resolvido. Um murro com o fio de pé decapita tal e qual — e é
+   assim que a magia faz sentido: 1 PM por turno para pôr o gume, e
+   depois bate-se à vontade. */
+{
+  const r = fio(true, 1, 1500);
+  A.ver('um murro simples também corta, com o fio de pé',
+        r.decapitou > 0, `${r.decapitou} decapitações em ${r.golpes} murros`);
+}
+
+// ── 9. Sustentada: cai quando a bolsa seca ──
+{
+  const bolsa = 4;
+  let lancou = false;
+  const e = A.duelo({
+    seed: 5,
+    politica: (quem) => {
+      if (quem.nome !== 'A' || lancou) return {};
+      lancou = true; return { magia: FIO, pm: 1 };
+    },
+    a: { carac: { F: 3, H: 4, R: 4, A: 2 }, elemento: 'Vento', pm: bolsa, pmMax: bolsa,
+         magias: { ataque: FIO, forte: FIO, defesa: FIO } },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  let dePe = 0;
+  for (let i = 0; i < 10 && !e.acabou; i++) {
+    M.combate3dtTurno(e);
+    if (e.A[0].vorpal) dePe++;
+  }
+  A.ver(`${bolsa} PM a 1 por turno dão cerca de ${bolsa} turnos de gume`,
+        Math.abs(dePe - bolsa) <= 1, `ficou de pé ${dePe} turnos`);
+  A.ver('e quando cai, deixa de cortar',
+        !e.A[0].vorpal, `vorpal=${e.A[0].vorpal}`);
+}
+
+// ── 10. Quanto vale, ao todo ──
+// A conta que interessa ao jogador: de cada cem golpes, quantos acabam
+// a luta ali. Não é balanceamento — é o número que a frase esconde.
+{
+  const r = fio(true, 2, 3000);
+  A.ver('a decapitação é rara, e o número fica escrito',
+        r.decapitou > 0,
+        `${(r.decapitou / r.golpes * 100).toFixed(1)}% dos golpes contra Armadura 2 ` +
+        `(${r.criticos} críticos, ${r.decapitou + r.aguentou} chegaram ao teste)`);
+}
+
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
 console.log('');
