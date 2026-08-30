@@ -442,7 +442,7 @@ function _pvePrognostico(eu, alvo, magia, pm, extra) {
   if (!alvo || !alvo.vivo || !eu.vivo) return null;
   if (magia && !PVE_MAGIA_OFENSIVA.some(k => magia[k])) return null;
   const rng = _c3rng(0x5EED);
-  let soma = 0, acertos = 0, esquivas = 0, criticos = 0, maior = 0;
+  let soma = 0, acertos = 0, esquivas = 0, criticos = 0, maior = 0, menor = Infinity;
   // Os efeitos que não são dano — envenenar, cegar, paralisar — medem-se
   // pelo teste que o alvo faz para lhes escapar. Uma magia pode não tirar
   // um único ponto de vida e continuar a ser a jogada certa.
@@ -465,7 +465,7 @@ function _pvePrognostico(eu, alvo, magia, pm, extra) {
       }
     } catch (err) { return null; }
     soma += passou;
-    if (passou > 0) { acertos++; if (passou > maior) maior = passou; }
+    if (passou > 0) { acertos++; if (passou > maior) maior = passou; if (passou < menor) menor = passou; }
     if (ev.esquivou) esquivas++;
     if (ev.criticoAtk) criticos++;
     for (const x of (ev.testes || [])) {
@@ -485,8 +485,20 @@ function _pvePrognostico(eu, alvo, magia, pm, extra) {
   // é a coisa mais importante a dizer. Antes devolvia null e o painel
   // ficava em branco, como se a magia não tivesse conta nenhuma.
   if (!soma && !acertos && !Object.keys(efeitos).length && !esquivas) return null;
-  return { media: soma / N, acerto: acertos / N, esquiva: esquivas / N,
-           critico: criticos / N, maior, efeitos, fere, alvo: alvo.nome };
+  const media = soma / N;
+  /* Quantos golpes destes derrubam o alvo.
+
+     É a pergunta a que "5,2 de dano" não responde: 5,2 é muito ou
+     pouco depende de o alvo ter 12 de vida ou 60. Com a média por
+     golpe e a vida que ele ainda tem, o número sai sozinho — e é o que
+     decide entre insistir e trocar de magia.
+
+     Só quando a média é digna disso: com 0,2 por golpe daria "60
+     golpes", um número certo e inútil. */
+  const turnos = (media >= 0.5 && alvo.pv > 0) ? Math.ceil(alvo.pv / media) : null;
+  return { media, acerto: acertos / N, esquiva: esquivas / N,
+           critico: criticos / N, maior, menor: menor === Infinity ? 0 : menor,
+           turnos, pvAlvo: alvo.pv, efeitos, fere, alvo: alvo.nome };
 }
 
 // O prognóstico em texto. Só diz o que é verdade para este par.
@@ -497,7 +509,24 @@ function _pvePrognosticoHTML(pr) {
   if (pr.fere || pr.media > 0 || pr.acerto > 0) {
     p.push(`<b>${pr.media.toFixed(1)}</b> ${t('pve.prog.dano')}`);
     p.push(t('pve.prog.passa', { pc: pc(pr.acerto) }));
-    if (pr.maior) p.push(t('pve.prog.maior', { n: pr.maior }));
+    /* A faixa, e não só o maior.
+
+       "média 5,2, maior 11" deixa o pior caso por dizer, e o pior caso
+       é metade da decisão: uma magia que faz entre 4 e 6 é outra coisa
+       do que uma que faz entre 0 e 11 com a mesma média.
+
+       Vem DEPOIS da percentagem, e diz "quando fere", porque é isso
+       que ela é: a faixa dos golpes que acertam. Antes da
+       percentagem, "média 1,2" seguido de "entre 1 e 9" parecia uma
+       contradição — e era só a média a incluir os golpes falhados. */
+    if (pr.maior && pr.menor) {
+      p.push(pr.menor === pr.maior
+        ? t('pve.prog.maior', { n: pr.maior })
+        : t('pve.prog.faixa', { min: pr.menor, max: pr.maior }));
+    }
+    // Quantos golpes destes o derrubam: é a escala que faltava.
+    if (pr.turnos) p.push(pr.turnos === 1 ? t('pve.prog.derruba1')
+                                        : t('pve.prog.derruba', { n: pr.turnos }));
   }
   // "foi envenenado 67%" diz mais do que "0.0 de dano" — e há magias em
   // que este é o número todo.
@@ -545,8 +574,15 @@ function _pveAjudaDe(eu, lado, contra) {
   const tecto = _c3(eu, 'H') * 5;
   const el = CARACTERISTICAS_ELEMENTAIS[eu.elemento];
 
-  const linha = (rot, nome, custo, desc, extra, trancada, prog) => `
-    <div class="cb-ajuda-item${trancada ? ' trancada' : ''}">
+  /* O `tipo` pinta o item.
+
+     Eram todos iguais: mesma moldura, mesma barra dourada à esquerda, e
+     o papel escrito em letra de 3,6px por cima. Ler o painel era ler
+     tudo. Com uma cor por família — golpe, magia de ataque, magia de
+     defesa, vantagem, desvantagem — sabe-se o que se está a ver antes
+     de se ler uma palavra. */
+  const linha = (rot, nome, custo, desc, extra, trancada, prog, tipo) => `
+    <div class="cb-ajuda-item tipo-${tipo || 'golpe'}${trancada ? ' trancada' : ''}">
       <div class="cb-ajuda-top">
         <span class="cb-ajuda-papel">${rot}</span>
         <span class="cb-ajuda-nome">${nome}</span>
@@ -560,10 +596,26 @@ function _pveAjudaDe(eu, lado, contra) {
   let html = linha(t('pve.ajuda.golpe'), t('pve.acao.comum'), t('mag.custo.livre'),
                    t('pve.ajuda.golpe_desc'),
                    `FA H${_c3(eu,'H')} + F${_c3(eu,'F')} + 1d`, false,
-                   _pvePrognosticoHTML(_pvePrognostico(eu, contra, null, 0)));
+                   _pvePrognosticoHTML(_pvePrognostico(eu, contra, null, 0)), 'golpe');
 
   for (const cat of ['ataque', 'forte', 'defesa']) {
     const g = eu.magias[cat]; if (!g) continue;
+    /* O slot da defesa nem sempre tem defesa lá dentro.
+
+       Quando o elemento não tem magia defensiva nenhuma — o Fogo não
+       tem, e é de propósito (magias.js) — o slot cai num segundo
+       ataque do elemento. Isso sempre foi assim e está certo; o que
+       não estava era chamar-lhe "Defesa".
+
+       Passava despercebido enquanto todos os itens eram dourados.
+       Agora que a defesa é azul, um rótulo azul a dizer DEFESA por
+       cima de "uma bola de fogo que nasce entre as mãos" é uma
+       contradição que o jogador vê antes de ler. Uma magia com FA é
+       um ataque, esteja no slot que estiver, e é assim que se
+       apresenta. */
+    const atacaMesmo = (cat === 'defesa' && g.fa);
+    const fam = atacaMesmo ? 'ataque' : cat;
+    const papel = atacaMesmo ? t('mag.cat.defesa_atq') : t('mag.cat.' + cat);
     const trancada = g.pm > tecto;
     const custo = trancada ? t('mag.tecto', { h: Math.ceil(g.pm / 5) })
       : g.pm === 0 ? t('mag.custo.livre')
@@ -574,18 +626,21 @@ function _pveAjudaDe(eu, lado, contra) {
     // faixa contam com o máximo que a Habilidade e a reserva deixam,
     // que é o que o jogador vai querer comparar.
     const pmProg = g.pmMax ? Math.min(g.pmMax, tecto, Math.max(g.pm, eu.pm)) : g.pm;
-    html += linha(t('mag.cat.' + cat), t('mag.' + g.id + '.nome'), custo,
+    html += linha(papel, t('mag.' + g.id + '.nome'), custo,
                   t('mag.' + g.id + '.desc'), _pveFormula(g, eu), trancada,
-                  trancada ? '' : _pvePrognosticoHTML(_pvePrognostico(eu, contra, g, pmProg)));
+                  trancada ? '' : _pvePrognosticoHTML(_pvePrognostico(eu, contra, g, pmProg)),
+                  fam);
   }
 
   const v = eu.vant;
   if (v) html += linha(t('vd.vantagem'), t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
                        v.pm ? t('mag.custo', { pm: v.pm }) : '',
-                       t('vd.' + v.id + '.desc').replace(/\{elem\}/g, v.elemento || ''), null, false);
+                       t('vd.' + v.id + '.desc').replace(/\{elem\}/g, v.elemento || ''),
+                       null, false, '', 'vantagem');
   const d = eu.desv;
   if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{elem}', d.elemento || ''),
-                       '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''), null, false);
+                       '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''),
+                       null, false, '', 'desvantagem');
 
   // Quanto o alvo aguenta e o que ele opõe. Sem isto o prognóstico dá
   // um número sem escala: 6 de dano é muito ou pouco? Depende de ele ter

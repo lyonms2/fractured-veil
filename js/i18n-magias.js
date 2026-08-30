@@ -15,6 +15,9 @@ window.registerStrings({
   'mag.cat.ataque':   'Ataque',
   'mag.cat.forte':    'Ataque forte',
   'mag.cat.defesa':   'Defesa',
+  // Quando o elemento não tem magia defensiva, o slot cai num segundo
+  // ataque. Dizê-lo, em vez de lhe chamar defesa.
+  'mag.cat.defesa_atq': 'Segundo ataque',
   'mag.custo':        '{pm} PM',
   'mag.custo.faixa':  '{min} a {max} PM',
   'mag.custo.turno':  '{pm} PM por turno',
@@ -137,6 +140,7 @@ window.registerStrings({
   'mag.cat.ataque':   'Attack',
   'mag.cat.forte':    'Heavy attack',
   'mag.cat.defesa':   'Defense',
+  'mag.cat.defesa_atq': 'Second attack',
   'mag.custo':        '{pm} MP',
   'mag.custo.faixa':  '{min} to {max} MP',
   'mag.custo.turno':  '{pm} MP per turn',
