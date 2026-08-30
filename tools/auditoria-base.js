@@ -15,7 +15,7 @@ require(path.join(RAIZ, 'js/i18n-vantagens.js'));
 
 const M = new Function('t',
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
-  `return { MAGIAS, MAGIAS_UNIVERSAIS, VANTAGENS, DESVANTAGENS, magiasDoAvatar, magiaAoAlcance, habilidadeParaMagia,
+  `return { MAGIAS, MAGIAS_UNIVERSAIS, VANTAGENS, DESVANTAGENS, magiasDoAvatar, magiaAoAlcance, habilidadeParaMagia, trancaDaMagia,
             combate3dtIniciar, combate3dtTurno, combate3dtResultado,
             _c3, _c3rng, _c3criar, _c3fa, _c3fd, _c3custoMagia, _c3podeMagiar,
             _c3trocaLimpa, _c3resolver, _c3fimTurno, _c3teste, _c3bonusEsquiva, _c3podeEsquivar,

@@ -1484,10 +1484,26 @@ A.ver('escala de 1 a 5 PM, uma vez, e não cobra por turno',
     }
     return fugiu;
   };
+  /* A fúria PROÍBE e a paralisia REDUZ — e a diferença entre as duas
+     é justamente o que estas Correntes compram.
+
+     A primeira versão desta prova exigia zero esquivas nos dois casos,
+     porque o motor tratava a paralisia como proibição. Deixou de o
+     fazer: agora ela tira a Habilidade das contas e deixa tentar com o
+     que sobrar, e os cinco pontos das Correntes são exactamente o que
+     sobra. O detalhe da prova antiga também era uma string fixa a
+     dizer "zero esquivas" — não media coisa nenhuma. */
   A.ver('em fúria, o bónus não serve de nada',
-        conta(c => { c.furia = true; }) === 0, 'zero esquivas com fúria');
-  A.ver('travado pela paralisia, também não',
-        conta(c => { c.indefeso = true; }) === 0, 'zero esquivas indefeso');
+        conta(c => { c.furia = true; }) === 0,
+        `${conta(c => { c.furia = true; })} esquivas em 600 golpes`);
+  A.ver('travado pela paralisia, o bónus ainda salva alguma coisa',
+        conta(c => { c.indefeso = true; }) > 0
+        && conta(c => { c.indefeso = true; }) < conta(() => {}),
+        `${conta(() => {})} esquivas inteiro → ${conta(c => { c.indefeso = true; })} travado`);
+  // E preso no gelo não há bónus que valha: o gelo proíbe.
+  A.ver('preso no gelo, o bónus não serve de nada',
+        conta(c => { c.congelado = true; }) === 0,
+        `${conta(c => { c.congelado = true; })} esquivas congelado`);
 }
 
 /* ── 7. Paga-se uma vez e dura a luta ──

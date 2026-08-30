@@ -341,6 +341,26 @@ function magiaAoAlcance(ficha, magia) {
   return !!magia && magia.pm <= ficha.H * 5;
 }
 
+/* ── O QUE TRANCA UMA MAGIA, E PORQUÊ ──
+
+   Lançar uma magia pede duas coisas ao mesmo tempo: a Habilidade
+   chega ao TECTO (H×5) e a Resistência enche a BOLSA (R×5). A ficha
+   só olhava para a primeira, e por isso mostrava sem cadeado nenhum
+   magias que o avatar nunca poderia pagar — medido, 1,3% dos casos:
+   um Fogo Comum com 15 de PM via o Corpo Elemental de 20 como
+   disponível.
+
+   As duas contas dão o mesmo número, porque as duas são vezes cinco.
+   O que muda é a palavra, e é a palavra que diz ao jogador em que
+   característica pôr o próximo ponto. */
+function trancaDaMagia(ficha, magia) {
+  if (!magia || !ficha) return null;
+  const precisa = Math.max(1, Math.ceil(magia.pm / 5));
+  if (magia.pm > ficha.H * 5) return { motivo: 'H', precisa };
+  if (magia.pm > (ficha.pm || 0)) return { motivo: 'R', precisa };
+  return null;
+}
+
 // A Habilidade que falta para alcançar esta magia.
 function habilidadeParaMagia(magia) {
   return magia ? Math.max(1, Math.ceil(magia.pm / 5)) : null;
@@ -373,5 +393,6 @@ function valorDaMagia(magia, ficha, pmGastos) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar,
-                   magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria };
+                   magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria,
+                   trancaDaMagia };
 }

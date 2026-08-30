@@ -113,8 +113,16 @@ function renderMagiasHTML(f) {
     // é Habilidade para a lançar — e isso mostra-se, em vez de esconder a
     // magia: é um objectivo concreto para subir de nível, e o avatar sabe
     // que chegará lá (o sorteio só dá magias alcançáveis ao nível 35).
-    const alcanca = (typeof magiaAoAlcance !== 'function') || magiaAoAlcance(f, g);
-    const falta   = (typeof habilidadeParaMagia === 'function') ? habilidadeParaMagia(g) : '?';
+    /* O cadeado passou a ter duas razões, e a ficha diz qual é.
+
+       Antes só sabia da Habilidade, e uma magia fora do alcance da
+       bolsa aparecia limpa — o jogador via-a na lista, escolhia-a em
+       combate, e o botão estava apagado sem lhe dizer porquê. */
+    const tranca = (typeof trancaDaMagia === 'function') ? trancaDaMagia(f, g) : null;
+    const alcanca = !tranca;
+    const porque  = tranca && tranca.motivo === 'R' ? 'mag.tranca.r' : 'mag.tecto';
+    const falta   = tranca ? tranca.precisa
+                  : (typeof habilidadeParaMagia === 'function' ? habilidadeParaMagia(g) : '?');
     /* Quando o elemento não tem magia defensiva — o Fogo não tem, e é
        de propósito — o slot cai num segundo ataque. Chamar-lhe
        "Defesa" era mentira; a batalha já o diz assim e a ficha tem de
@@ -133,7 +141,7 @@ function renderMagiasHTML(f) {
       <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
       <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
       ${conta ? `<div class="hab-conta">${conta}</div>` : ''}
-      ${alcanca ? '' : `<div class="hab-tranca">🔒 ${t('mag.tecto', { h: falta })}</div>`}
+      ${alcanca ? '' : `<div class="hab-tranca">🔒 ${t(porque, { h: falta, r: falta })}</div>`}
     </div>`;
   }).join('');
 

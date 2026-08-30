@@ -794,7 +794,15 @@ function rebuildScreensParaSlot() {
   if(typeof updateAvatarSize === 'function') updateAvatarSize();
   const pl = $('phaseLabel');
   if(pl) pl.textContent = t('gt.phase.label', {fase: FASES[getFaseVisual()]});
+  /* O cocó do avatar em que se entra tem de voltar ao chão.
+
+     O restaurarCocos() só era chamado no login. Enquanto apenas o
+     avatar aberto sujava a casa isso passava despercebido — quem
+     entrava noutro nunca tinha nada para lhe mostrar. Agora que a
+     colónia inteira suja, entrar num avatar sujo e ver o chão limpo
+     seria a interface a contradizer a própria lista. */
   const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
+  if(typeof restaurarCocos === 'function' && poopCount > 0) restaurarCocos();
   if(typeof updateDirtyVisuals === 'function') updateDirtyVisuals();
   if(typeof updateEquippedDisplay === 'function') updateEquippedDisplay();
   // O sono é por avatar e a tela é uma só: sem isto, quem trocasse de

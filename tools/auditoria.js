@@ -21,3 +21,9 @@ require('./auditoria-alvos.js');
 // Conhecida. Só apareceram quando a ferramenta da cobertura deixou
 // de mentir sobre si própria.
 require('./auditoria-duas.js');
+
+
+/* E a varredura ao padrão que rendeu quatro defeitos: um limite
+   guardado por quem PEDE a acção em vez de por quem a FAZ. Corre com o
+   resto porque é assim que se apanha o quinto. */
+require('./guardas.js');

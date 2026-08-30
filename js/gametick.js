@@ -444,6 +444,35 @@ function viverTodos() {
         (v.saude ?? 100) - DISEASE_DECAY_PER_CYCLE * s.activeDiseases.length);
     }
     s.sick = (v.saude ?? 100) < 20 || s.activeDiseases.length > 0;
+
+    /* ── E TAMBÉM FAZ COCÓ ──
+
+       Até aqui só sujava a casa o avatar que estava aberto, porque a
+       pressão só subia ao alimentar e ao jogar — duas coisas que só
+       se fazem a quem se está a ver. Os outros nove viviam, tinham
+       fome, adoeciam e morriam, mas a casa deles ficava limpa.
+
+       Aqui a pressão sobe com o TEMPO e não com a refeição, que é a
+       única coisa que um avatar fechado tem. E sobe só enquanto
+       houver comida lá dentro: quem está a passar fome não tem o que
+       digerir. Isso faz do descuido uma coisa coerente — deixa-se um
+       avatar à míngua e ele deixa de sujar, o que não é prémio
+       nenhum, é só o corpo dele a não ter nada para dar.
+
+       Quem dorme também não: é a mesma regra do ciclo de baixo. */
+    if (!s.sleeping && (v.fome ?? 100) > 20) {
+      s.poopPressure = (s.poopPressure || 0) + 1.5 * GAME_SPEED;
+    }
+    if (!s.sleeping && (s.poopPressure || 0) >= 100) {
+      s.poopPressure = 0;
+      // Seis é o que cabe no chão do ecrã (POOP_POSITIONS): passar
+      // disso guardava um número que a interface não sabe desenhar.
+      if ((s.poopCount || 0) < POOP_POSITIONS.length) {
+        s.poopCount = (s.poopCount || 0) + 1;
+        s.dirtyLevel = Math.min(3, Math.floor(s.poopCount / 2));
+        v.higiene = Math.max(0, (v.higiene ?? 100) - 18);
+      }
+    }
   });
 }
 

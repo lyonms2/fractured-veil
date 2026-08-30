@@ -67,6 +67,10 @@ window.registerStrings({
   'mag.custo.turno':  '{pm} PM por turno',
   'mag.custo.livre':  'Sem custo',
   'mag.tecto':        'Precisa de Habilidade {h}',
+  // A bolsa de PM é a Resistência vezes cinco: faltar PM é faltar
+  // Resistência, e é isso que se diz a quem tem de escolher onde pôr
+  // o ponto seguinte.
+  'mag.tranca.r':     'Precisa de Resistência {r} para a pagar',
   'hab.titulo':       '✦ MAGIAS',
   'ficha.title':      '⚔ FICHA DE COMBATE',
   'ficha.pontos':     'pontos',
@@ -220,6 +224,7 @@ window.registerStrings({
   'mag.custo.turno':  '{pm} MP per turn',
   'mag.custo.livre':  'Free',
   'mag.tecto':        'Requires Skill {h}',
+  'mag.tranca.r':     'Needs Endurance {r} to pay for it',
   'hab.titulo':       '✦ SPELLS',
   'ficha.title':      '⚔ COMBAT SHEET',
   'ficha.pontos':     'points',

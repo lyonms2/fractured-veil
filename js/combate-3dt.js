@@ -225,24 +225,50 @@ function _c3bonusEsquiva(def) {
        + (def.bonusEsquiva || 0);        // corrente de ar sustentada
 }
 
+/* ── O VALOR DE UMA ESQUIVA, NUM SÍTIO SÓ ──
+
+   A pergunta "posso esquivar?" e a conta "esquivei?" usavam a mesma
+   fórmula escrita duas vezes. Passam a partilhá-la: duas cópias de uma
+   conta acabam sempre por divergir, e esta ganhou agora uma condição a
+   mais.
+
+   Quem está INDEFESO não usa a Habilidade — nem para se defender, nem
+   para saltar para o lado. É o mesmo zero que o _c3fd já aplicava na
+   Força de Defesa, agora também aqui. */
+function _c3esquivaValor(def, atk) {
+  const h = def.indefeso ? 0 : _c3(def, 'H');
+  return h - def.cegoEsquiva + _c3bonusEsquiva(def) - _c3hAtk(atk, def);
+}
+
+/* ── QUEM PODE TENTAR ──
+
+   A fúria e o gelo PROÍBEM: um por não ouvir ninguém, o outro por não
+   se mexer de todo.
+
+   A paralisia não proíbe — REDUZ. Antes proibia, e era demais para o
+   que a vantagem promete: "retira pontos de defesa e reduz a esquiva".
+   Agora tira-lhe a Habilidade das duas contas e deixa-o tentar com o
+   que sobrar. Na prática um paralisado sem mais nada continua sem
+   escapar — zero menos a Habilidade de quem bate dá negativo — mas um
+   Passo Rápido ou umas Correntes Desviantes já o salvam, e é isso que
+   separa reduzir de proibir: fica contra-jogo. */
 function _c3podeEsquivar(def, atk) {
-  if (def.furia) return false;                       // quem está em fúria não esquiva
-  // Quem está indefeso também não. A magia que deixa o alvo indefeso já
-  // proibia a esquiva (ver _c3resolver); a paralisia usava a bandeira e
-  // ficava de fora, e um avatar paralisado saltava para o lado.
-  if (def.indefeso) return false;
+  if (def.furia) return false;                       // em fúria não se esquiva
+  if (def.congelado) return false;                   // preso no gelo: não reage
   if (def.esquivas >= _c3(def, 'H')) return false;   // já gastou as deste turno
-  return _c3(def, 'H') - def.cegoEsquiva + _c3bonusEsquiva(def) - _c3hAtk(atk, def) >= 1;
+  return _c3esquivaValor(def, atk) >= 1;
 }
 
 function _c3esquivou(def, atk, rng, ev) {
   def.esquivas++;
-  const h = _c3(def, 'H'), bonus = _c3bonusEsquiva(def), pen = _c3hAtk(atk, def);
+  const h = def.indefeso ? 0 : _c3(def, 'H');
+  const bonus = _c3bonusEsquiva(def), pen = _c3hAtk(atk, def);
   const partes = ['H' + h];
+  if (def.indefeso) partes.push('travado');
   if (def.cegoEsquiva) partes.push('−' + def.cegoEsquiva);
   if (bonus) partes.push('+' + bonus);
   partes.push('−H' + pen);
-  return _c3testeReg(h - def.cegoEsquiva + bonus - pen, rng, ev, 'esquiva', partes);
+  return _c3testeReg(_c3esquivaValor(def, atk), rng, ev, 'esquiva', partes);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1115,7 +1141,7 @@ function combate3dtTurno(e) {
       continue;
     }
 
-    const magia = acao.magia;
+    let magia = acao.magia;
     const pmBruto = magia ? acao.pm : 0;
     /* O pmMax da magia entra aqui, e não entrava.
 
@@ -1129,15 +1155,37 @@ function combate3dtTurno(e) {
        mais um tecto guardado por quem PEDE em vez de por quem FAZ, e
        esses cedem todos ao primeiro caminho novo. */
     const tectoPM = magia ? (magia.pmMax || magia.pm) : 0;
-    const pm = magia ? Math.min(pmBruto, tectoPM, _c3pmDisponivel(l.c)) : 0;
+    let pm = magia ? Math.min(pmBruto, tectoPM, _c3pmDisponivel(l.c)) : 0;
+
+    /* ── E UM CHÃO, QUE FALTAVA ──
+
+       O `pm` era limitado ao que a bolsa tinha e mais nada, e o custo
+       da magia é o próprio `pm`. Portanto lançar uma magia de 25 PM
+       com a bolsa vazia pagava zero e o efeito saía inteiro — medido,
+       39 de dano de graça.
+
+       Não era explorável: a interface apaga o botão e a política nunca
+       escolhe o que não pode pagar. Mas era o quarto limite desta
+       auditoria guardado só por quem PEDE, e os outros três já tinham
+       cedido a caminhos novos. Este cede ao próximo.
+
+       Uma magia sub-financiada não acontece: quem a tentou dá um golpe
+       comum, que é o que sempre houve para quando a magia não chega. */
+    let magiaSemPM = false;
+    if (magia && pm < magia.pm) { magiaSemPM = true; pm = 0; }
 
     // Os índices, não só os nomes: a interface anima o cartão certo com
     // eles. Sem isto ela usava o ativo do momento — e como o ativo
     // avança no fim do turno, a animação do golpe caía no inimigo
     // seguinte enquanto o dano tinha sido no anterior.
+    // Sem PM que chegue, a magia não existiu: o turno segue como golpe
+    // comum e o registo di-lo, em vez de mostrar uma magia que não saiu.
+    if (magiaSemPM) { magia = null; }
+
     const ev = { turno: turnos, lado: l.lado, quem: l.c.nome, alvo: l.alvo.nome,
                  quemIdx: iMeu(), alvoIdx,
                  magia: magia ? magia.id : null, pm };
+    if (magiaSemPM) ev.semPM = true;
 
     if (magia) {
       _c3pagar(l.c, _c3custoMagia(l.c, magia, pm, l.alvo), ev);
