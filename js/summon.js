@@ -285,7 +285,7 @@ function setupAvatar() {
   document.getElementById('summonCard').style.display  = 'none';
   document.getElementById('creatureCard').style.display = 'block';
   document.getElementById('idleScreen').style.display   = 'none';
-  document.getElementById('eggScreen').style.display    = 'flex';
+  document.getElementById('eggScreen').style.display    = hatched ? 'none' : 'flex';
   document.getElementById('aliveScreen').style.display  = 'none';
   document.getElementById('deadScreen').style.display   = 'none';
   fillCreatureCard();
@@ -293,7 +293,24 @@ function setupAvatar() {
   updateAllUI();
   scheduleSave();
 
-  if(typeof hatchWithAnimation === 'function') {
+  /* SÓ CHOCA QUEM AINDA NÃO NASCEU.
+
+     Isto corria sempre. O setupAvatar() é chamado em todo o arranque
+     com avatar vivo (auth.js) e em cada rebuildScreensParaSlot, e
+     disparava a animação do ovo mesmo para um bicho nascido há dias:
+     via-se o ovo, e 1,2 segundos depois o hatch() punha a criatura na
+     tela — o que passava por normal, porque acabava onde devia.
+
+     Com a colónia deixou de passar. O hatch() sai do modo colónia de
+     propósito (acabou de nascer um bicho e é para o ver), portanto a
+     consola abria certo, na lista, e um segundo depois saltava para
+     uma criatura e ficava lá. Era este o "abre certo e na sequência
+     vem essa tela".
+
+     A guarda é a que o comentário desta função sempre descreveu: isto
+     existe para quem fechou o jogo a meio da chocagem, não para quem
+     já a fez. */
+  if(!hatched && typeof hatchWithAnimation === 'function') {
     hatchWithAnimation(avatar.raridade, avatar.elemento,
                        (typeof activeSlotIdx === 'number') ? activeSlotIdx : 0);
   }
