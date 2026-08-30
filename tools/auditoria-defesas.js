@@ -6,12 +6,17 @@
 // provas de efeito próprio foram-se escrevendo à medida que cada magia
 // ofensiva dava problemas.
 //
-// Ficaram 15 por olhar, e quase todas defendem. Não estão erradas —
-// estão por medir, que é coisa diferente e mais desconfortável: uma
-// magia de defesa que não faz nada perde combates em silêncio, sem
-// nunca produzir um número errado que salte à vista.
+// Ficaram 15 por olhar. Não estão erradas — estão por medir, que é coisa
+// diferente e mais desconfortável: uma magia que não faz dano nenhum
+// ganha ou perde combates em silêncio, sem nunca produzir um número
+// errado que salte à vista.
 //
-// Esta é a casa delas. Uma a uma, e cada uma medida contra o que o seu
+// A maioria defende, e daí o nome. Entram aqui também as ofensivas que
+// não rolam Força de Ataque — a Prisão de Gelo tira do combate por um
+// teste de Resistência, e a auditoria das fórmulas nunca lhe pôde tocar
+// porque fórmula é coisa que ela não tem.
+//
+// Esta é a casa delas. Uma a uma, cada uma medida contra o que o seu
 // texto promete ao jogador, que é o contrato que interessa.
 // ═══════════════════════════════════════════════════════════════════
 const A = require('./auditoria-base.js');
@@ -211,6 +216,190 @@ A.ver('é sustentada e custa 2 PM por turno',
         com < sem,
         `dano médio por golpe: ${sem.toFixed(2)} sem → ${com.toFixed(2)} com  (${((1 - com / sem) * 100).toFixed(0)}% menos)`);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+const GELO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+
+console.log('\n═══ PRISÃO DE GELO (ag_f3) ═══');
+console.log('  "Fios de gelo correm pelo chão e sobem pelo alvo.');
+console.log('   Quem não resistir vira estátua."   ·   10 PM\n');
+
+/* Lança a Prisão contra um alvo com a Resistência que eu mandar, e conta
+   quantas vezes ele saiu de combate. É a única forma de medir uma magia
+   que não faz dano: o que ela produz é uma moeda ao ar.
+
+   O `n` que volta é o número de LANÇAMENTOS, não de voltas do ciclo. Nem
+   toda a volta produz um: o alvo também joga, e com iniciativa alta pode
+   derrubar quem ia lançar antes de a magia sair. A primeira versão disto
+   dividia pelas voltas e dava 49% onde a resposta era 100% — não porque
+   a magia falhasse, mas porque metade das vezes nem chegou a ser lançada.
+
+   O `mexer` é para o que o duelo não sabe montar: o `imuneEspiritual`
+   não vem da ficha nem de uma vantagem, é uma bandeira que outra magia
+   levanta no combatente. Pô-la em `b:` não fazia nada — o arruma da base
+   só copia os campos que conhece, e o meu ficava pelo caminho em
+   silêncio. */
+function prisao(R, voltas, mexer, carac) {
+  let fora = 0, resistiu = 0, imune = 0, danoTotal = 0, lancamentos = 0;
+  const testes = [];
+  for (let s = 1; s <= voltas; s++) {
+    const e = A.duelo({
+      seed: s,
+      politica: () => ({ magia: GELO, pm: 10 }),
+      a: { carac: { F: 2, H: 9, R: 3, A: 1 }, elemento: 'Água', pm: 40, pmMax: 40,
+           iniciativa: 99,           // quem lança age sempre primeiro
+           magias: { ataque: GELO, forte: GELO, defesa: GELO } },
+      b: { carac: carac || { F: 2, H: 0, R, A: 1 }, pv: 200, iniciativa: 0 },
+    });
+    if (mexer) mexer(e.B[0]);
+    M.combate3dtTurno(e);
+    const ev = e.eventos.find(v => v.lado === 'A' && v.magia === 'ag_f3');
+    if (!ev) continue;
+    lancamentos++;
+    if (ev.fora) fora++;
+    if (ev.resistiu) resistiu++;
+    if (ev.imunizou) imune++;
+    danoTotal += (ev.dano || 0);
+    const tf = (ev.testes || []).find(x => x.rotulo === 'fora');
+    if (tf) testes.push(tf);
+  }
+  return { fora, resistiu, imune, danoTotal, testes, n: lancamentos, voltas };
+}
+
+// ── 1. O que o catálogo declara ──
+A.ver('custa 10 PM e não tem fórmula de ataque',
+      GELO.pm === 10 && !GELO.fa && GELO.congela === true,
+      `pm=${GELO.pm} fa=${GELO.fa ? 'sim' : 'não'} congela=${GELO.congela}`);
+
+// ── 2. Não é dano: é um teste e acabou ──
+{
+  const r = prisao(3, 300);
+  A.ver('nunca tira um único ponto de vida',
+        r.danoTotal === 0, `dano somado em ${r.n} lançamentos: ${r.danoTotal}`);
+}
+
+// ── 3. Quem falha sai de combate — de verdade, não só no evento ──
+{
+  const e = A.duelo({
+    seed: 4,
+    politica: () => ({ magia: GELO, pm: 10 }),
+    a: { carac: { F: 2, H: 3, R: 3, A: 1 }, elemento: 'Água', pm: 40, pmMax: 40,
+         magias: { ataque: GELO, forte: GELO, defesa: GELO } },
+    b: { carac: { F: 2, H: 0, R: 0, A: 1 }, pv: 200, iniciativa: 0 },  // R 0: não resiste
+  });
+  M.combate3dtTurno(e);
+  const alvo = e.B[0];
+  /* A vida fica INTACTA: os 200 com que entrou. Comparar com o pvMax não
+     servia — um alvo de Resistência 0 tem pvMax 0, e eu dei-lhe os 200 à
+     mão precisamente para se ver que a magia não lhes toca. */
+  A.ver('quem não resiste sai de combate, sem perder um ponto de vida',
+        alvo.fora === true && alvo.vivo === false && alvo.pv === 200,
+        `fora=${alvo.fora} vivo=${alvo.vivo} pv=${alvo.pv} (entrou com 200)`);
+}
+
+// ── 4. Quem resiste não perde nada ──
+{
+  const r = prisao(5, 400);
+  A.ver('quem resiste fica exactamente como estava',
+        r.resistiu > 0 && r.fora >= 0 && r.resistiu + r.fora === r.n,
+        `${r.resistiu} resistiram · ${r.fora} saíram · ${r.n} lançamentos`);
+}
+
+/* ── 5. NENHUMA Resistência põe alguém a salvo ──
+
+   O manual manda que um 6 falhe sempre, por mais alta que seja a
+   característica. Numa magia que tira do combate sem passar pelos PV,
+   isso quer dizer que um avatar com Resistência 20 continua a ter uma
+   hipótese em seis de virar estátua a cada lançamento.
+
+   É a regra mais consequente do jogo inteiro e a mais fácil de perder
+   numa refactorização: basta alguém escrever `d <= valor` sem o `d !== 6`
+   e a magia deixa de funcionar contra metade do bestiário. */
+{
+  const r = prisao(20, 600);
+  const pc = r.fora / r.n;
+  A.ver('com Resistência 20, ainda sai de combate ~1 em 6',
+        Math.abs(pc - 1 / 6) < 0.05,
+        `saiu ${r.fora} de ${r.n} = ${(pc * 100).toFixed(1)}%  (o 6 falha sempre)`);
+  A.ver('e o registo marca esse 6 como sendo o 6',
+        r.testes.some(x => x.seis === true),
+        `${r.testes.filter(x => x.seis).length} testes marcados com o seis`);
+}
+
+// ── 6. Quanto mais Resistência, mais se escapa ──
+// A conta do manual: sai quem tirar 6, e quem tirar mais do que a R.
+{
+  const linhas = [];
+  let certos = 0;
+  for (const R of [1, 2, 3, 4, 5]) {
+    const r = prisao(R, 600);
+    const esperado = (1 + Math.max(0, 5 - R)) / 6;
+    const obtido = r.fora / r.n;
+    if (Math.abs(obtido - esperado) < 0.05) certos++;
+    linhas.push(`R${R} ${(obtido * 100).toFixed(0)}%~${(esperado * 100).toFixed(0)}%`);
+  }
+  A.ver('a hipótese de sair segue a Resistência, como o manual manda',
+        certos === 5, linhas.join('  '));
+}
+
+// ── 7. A Égide Mental fecha a porta ──
+// so_d2, imuneEspiritual: "petrificar/congelar não pega". É a única
+// defesa absoluta do jogo, e uma defesa absoluta que falhe é pior do
+// que não existir.
+{
+  const r = prisao(0, 200, c => { c.imuneEspiritual = true; });
+  A.ver('quem tem a alma fechada não vira estátua nunca',
+        r.fora === 0, `saiu ${r.fora} de ${r.n} · imunizou ${r.imune}`);
+}
+
+// ── 8. Não se esquiva de uma Prisão de Gelo ──
+// Ela não tem Força de Ataque: não passa pelo caminho do golpe, e por
+// isso não há reacção nenhuma a fazer. Um alvo com Habilidade alta não
+// pode ganhar de borla uma saída que a magia não lhe dá.
+{
+  const r = prisao(0, 300, null, { F: 2, H: 8, R: 0, A: 1 });
+  A.ver('Habilidade alta não dá esquiva contra ela',
+        r.fora === r.n, `saiu ${r.fora} de ${r.n} com Habilidade 8`);
+}
+
+// ── 9. Tirar o último ganha a batalha ──
+{
+  const e = A.duelo({
+    seed: 7,
+    politica: () => ({ magia: GELO, pm: 10 }),
+    a: { carac: { F: 2, H: 3, R: 3, A: 1 }, elemento: 'Água', pm: 40, pmMax: 40,
+         magias: { ataque: GELO, forte: GELO, defesa: GELO } },
+    b: { carac: { F: 2, H: 0, R: 0, A: 1 }, pv: 200 },
+    bBanco: { pv: 0 },
+  });
+  e.B.forEach((c, i) => { if (i > 0) { c.vivo = false; c.pv = 0; } });
+  M.combate3dtTurno(e);
+  const r = M.combate3dtResultado(e);
+  A.ver('tirar o último do outro lado ganha a batalha',
+        r.vencedor === 'A', `vencedor: ${r.vencedor}`);
+}
+
+// ── 10. Com banco, entra o seguinte ──
+{
+  const e = A.duelo({
+    seed: 9,
+    politica: () => ({ magia: GELO, pm: 10 }),
+    a: { carac: { F: 2, H: 3, R: 3, A: 1 }, elemento: 'Água', pm: 40, pmMax: 40,
+         magias: { ataque: GELO, forte: GELO, defesa: GELO } },
+    b: { carac: { F: 2, H: 0, R: 0, A: 1 }, pv: 200 },
+    bBanco: { carac: { F: 2, H: 2, R: 4, A: 1 }, pv: 200 },
+  });
+  M.combate3dtTurno(e);
+  A.ver('o companheiro do banco toma o lugar da estátua',
+        e.B[0].fora === true && e.B[e.ativoB] && e.B[e.ativoB].vivo,
+        `ativoB=${e.ativoB} vivo=${e.B[e.ativoB] ? e.B[e.ativoB].vivo : '—'}`);
+}
+
+// ── 11. Precisa de Habilidade 2 para caber no tecto ──
+// O tecto é H×5. Dez PM não são para toda a gente, e é isso que segura
+// uma magia que tira do combate por uma moeda ao ar.
+A.ver('só entra na ficha de quem tem Habilidade 2 ou mais',
+      Math.ceil(GELO.pm / 5) === 2, `precisa de H${Math.ceil(GELO.pm / 5)}`);
 
 // ── Relatório ──
 const { ok, mau, linhas } = A.relatorio();
