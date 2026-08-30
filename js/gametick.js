@@ -467,6 +467,9 @@ function gameTick() {
   // ── TODOS OS OUTROS VIVEM TAMBÉM ──
   viverTodos();
 
+  // E a colónia mostra isso ao vivo, se for ela que está aberta.
+  if (typeof fzAtualizarVitais === 'function') fzAtualizarVitais();
+
   const _d  = rarityBonus().decay;
   const _eb = getElementoBonus(); // bônus elementais passivos
 

@@ -65,11 +65,26 @@ const FAZENDA_VITAIS = [
 // gameTick começa a contar stress para doença.
 const FAZENDA_ALERTA = 20;
 
+/* A barra leva o número ao lado.
+
+   Cinco barras dizem "está mau" de relance, que era o que faltava.
+   Não dizem QUANTO mau — e a diferença entre 19 e 21 decide se o
+   contador de doença arranca. O número resolve isso sem tirar o
+   relance: lê-se a cor primeiro e o algarismo só quando interessa.
+
+   O data-vital serve à actualização ao vivo: com ele, o gameTick
+   mexe só na largura e no texto, sem redesenhar a lista — redesenhar
+   a cada segundo perdia o scroll e apagava o que estivesse sob o
+   dedo. */
 function _fazendaBarra(v, cfg) {
   const val = Math.max(0, Math.min(100, Math.round(v ?? 100)));
   const baixo = val < FAZENDA_ALERTA;
-  return `<div class="fz-bar" title="${cfg.emoji} ${val}">
-    <div class="fz-bar-fill${baixo ? ' fz-baixo' : ''}" style="width:${val}%;background:${cfg.cor};"></div>
+  return `<div class="fz-vital" title="${cfg.emoji} ${val}">
+    <div class="fz-bar">
+      <div class="fz-bar-fill${baixo ? ' fz-baixo' : ''}" data-vital="${cfg.chave}"
+           style="width:${val}%;background:${cfg.cor};"></div>
+    </div>
+    <span class="fz-num${baixo ? ' fz-num-baixo' : ''}" data-num="${cfg.chave}">${val}</span>
   </div>`;
 }
 
@@ -92,8 +107,8 @@ function _fazendaCartao({ s, idx }) {
     ? gerarSVG(s.elemento, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
     : '';
 
-  return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}">
-    <div class="fz-av">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}</div>
+  return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}" data-slot="${idx}">
+    <button class="fz-av" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}</button>
     <div class="fz-info">
       <div class="fz-nome">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>
@@ -145,6 +160,7 @@ function fzSairDaColonia() {
   if (fz) fz.style.display = 'none';
   const tela = document.getElementById('mainScreen');
   if (tela) tela.classList.remove('fz-modo');
+  document.body.classList.remove('fz-colonia');
   const btns = document.getElementById('actionBtns');
   if (btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'auto'; }
   const volta = document.getElementById('btnColonia');
@@ -153,6 +169,53 @@ function fzSairDaColonia() {
   const sc = document.getElementById('statusCard');   if (sc) sc.style.display = 'block';
   // A '' e não um valor fixo: quem manda neste é uma media query.
   const ms = document.getElementById('mobileStatusInline'); if (ms) ms.style.display = '';
+}
+
+/* ACTUALIZAR SEM REDESENHAR.
+
+   Chamada pelo gameTick a cada ciclo. Mexe na largura, no número e na
+   classe de alerta dos cartões que já lá estão, em vez de reconstruir
+   a lista: reconstruir perdia a posição do scroll a cada segundo e
+   apagava o botão que estivesse debaixo do dedo a meio do toque. */
+function fzAtualizarVitais() {
+  if (!window._fzModoColonia) return;
+  const lista = document.getElementById('fazendaLista');
+  if (!lista) return;
+  if (typeof saveRuntimeToSlot === 'function') saveRuntimeToSlot(activeSlotIdx);
+
+  lista.querySelectorAll('.fz-card[data-slot]').forEach(card => {
+    const idx = Number(card.dataset.slot);
+    const s   = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
+    if (!s || !s.vitals) return;
+
+    FAZENDA_VITAIS.forEach(cfg => {
+      const val   = Math.max(0, Math.min(100, Math.round(s.vitals[cfg.chave] ?? 100)));
+      const baixo = val < FAZENDA_ALERTA;
+      const fill  = card.querySelector('.fz-bar-fill[data-vital="' + cfg.chave + '"]');
+      if (fill) { fill.style.width = val + '%'; fill.classList.toggle('fz-baixo', baixo); }
+      const num = card.querySelector('.fz-num[data-num="' + cfg.chave + '"]');
+      if (num) { num.textContent = val; num.classList.toggle('fz-num-baixo', baixo); }
+    });
+
+    // O 💤 e a margem vermelha também mudam sozinhos com o tempo.
+    const zzz = card.querySelector('.fz-zzz');
+    if (!!s.sleeping !== !!zzz) { renderFazenda(); return; }
+    card.classList.toggle('fz-doente', (s.activeDiseases || []).length > 0);
+  });
+}
+
+/* O retrato em grande, a partir da lista.
+
+   Reaproveita o mesmo overlay do zoom que já existe no ecrã de cuidar
+   — o openAvatarZoomData do js/main.js — em vez de inventar um
+   segundo. Passa os dados DAQUELE slot, não os do avatar aberto: na
+   colónia o que se toca e o que está espelhado nos globais quase nunca
+   são o mesmo. */
+function fzZoom(idx) {
+  const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
+  if (!s || !s.hatched) return;
+  if (typeof openAvatarZoomData !== 'function') return;
+  openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || '');
 }
 
 // ── Trocar entre a colónia e o cuidado de um ──
@@ -165,6 +228,9 @@ function abrirFazenda() {
   if (fz) fz.style.display = 'flex';
   const tela = document.getElementById('mainScreen');
   if (tela) tela.classList.add('fz-modo');
+  // A classe no body é o que centra a consola: só na colónia é que a
+  // coluna da direita não tem nada para mostrar.
+  document.body.classList.add('fz-colonia');
   // display:none e nao so opacity:0 — invisivel mas presente, a fila
   // dos botoes de cuidar deixava uma faixa vazia por baixo da lista, que
   // no telemovel era quase um terco da consola.
