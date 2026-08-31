@@ -70,6 +70,7 @@ function _c3criar(slot, rng) {
     assombrado: !!(f.desvantagem && f.desvantagem.assombraEm
                    && _d6(rng) >= f.desvantagem.assombraEm),
     semFoco: false,       // Foco Frágil: o foco caiu, não há magia
+    folegoUsado: 0,       // Segundo Fôlego: quantas vezes já se curou
     golpesExtra: 0,       // Golpe Encadeado: golpes a mais neste turno
     esquivas: 0,          // tentativas gastas neste turno
     bonusA: 0,            // armadura extra de magia sustentada
@@ -821,7 +822,9 @@ function politica3dt(eu, inimigo, campo) {
   // O Segundo Fôlego só compensa quando já se perdeu muita vida: gasta
   // o turno inteiro, portanto usá-lo com a vida quase cheia é oferecer
   // um turno ao adversário.
-  if (v && v.curaTudo && eu.pm >= v.pm && eu.pv < eu.pvMax * 0.35) {
+  // E só há um por batalha: gasto, escolhê-lo era gastar o turno a olhar.
+  if (v && v.curaTudo && eu.pm >= v.pm && eu.pv < eu.pvMax * 0.35
+      && (eu.folegoUsado || 0) < ((v.maxUsos != null) ? v.maxUsos : Infinity)) {
     return { vantagem: v, pm: v.pm };
   }
   // A Reserva Oculta sobe uma característica; vale a pena cedo, para o
@@ -1201,8 +1204,31 @@ function combate3dtTurno(e) {
     // Vantagem usada como ação do turno
     if (acao.vantagem) {
       const w = acao.vantagem;
+      /* ── O SEGUNDO FÔLEGO GASTA-SE ──
+
+         Não tinha limite nenhum: 2 PM devolviam a vida toda, e a bolsa
+         dava para repetir dezenas de vezes. É o mesmo defeito da Reserva
+         Oculta aqui em baixo, mas sem sequer ter um tecto escrito para
+         alguém ignorar.
+
+         O limite vive onde a cura ACONTECE, e não onde ela é pedida:
+         a interface apaga o botão e a política deixa de a escolher, mas
+         nenhuma das duas é a última palavra — foi essa a lição dos
+         quatro defeitos desta auditoria.
+
+         Gasto o fôlego, não cura E NÃO COBRA. Cobrar por nada é a mesma
+         falha vista do outro lado; o turno perdido já é preço que chegue. */
+      const folegoNoFim = w.curaTudo
+        && (l.c.folegoUsado || 0) >= ((w.maxUsos != null) ? w.maxUsos : Infinity);
+      if (folegoNoFim) { ev.folegoNoFim = true; ev.vantagem = w.id; ev.suporte = true;
+        ev.pvAlvo = l.alvo.pv; ev.pvAlvoMax = l.alvo.pvMax; ev.pmProprio = l.c.pm;
+        if (eventos) eventos.push(ev);
+        continue; }
       l.c.pm -= w.pm;
-      if (w.curaTudo)    { l.c.pv = l.c.pvMax; ev.curou = true; }
+      if (w.curaTudo)    {
+        l.c.folegoUsado = (l.c.folegoUsado || 0) + 1;
+        l.c.pv = l.c.pvMax; ev.curou = true;
+      }
       if (w.subirCarac)  {
         /* O maxTotal é o tecto SOMADO da luta inteira, e só a política
            do motor o vigiava — a interface do jogador acendia o botão

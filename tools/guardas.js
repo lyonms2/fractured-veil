@@ -102,6 +102,29 @@ console.log('\n═══ O QUE O MOTOR ACEITA DE QUEM NÃO PASSA PELA INTERFACE 
       `subiu ${e.A[0].reservaGasta || 0} pontos ao todo`);
 }
 
+// ── 3b. Insistir no Segundo Fôlego depois de o gastar ──
+{
+  const v = { id: 'segundo_folego', ...M.VANTAGENS.segundo_folego };
+  const e = A.duelo({
+    seed: 3,
+    politica: (quem) => (quem.nome === 'A') ? { vantagem: v, pm: v.pm } : {},
+    a: { carac: { F: 2, H: 4, R: 20, A: 2 }, pm: 400, pmMax: 400, vant: v },
+    b: { carac: { F: 1, H: 0, R: 999, A: 0 }, iniciativa: 0 },
+  });
+  // Fica sempre ferido, para a cura ter sempre o que curar.
+  let curas = 0;
+  for (let i = 0; i < 8; i++) {
+    e.A[0].pv = 1;
+    const antes = e.eventos.length;
+    M.combate3dtTurno(e);
+    for (let k = antes; k < e.eventos.length; k++)
+      if (e.eventos[k].lado === 'A' && e.eventos[k].curou) curas++;
+  }
+  ver(`insistir no Segundo Fôlego oito turnos (dá para ${v.maxUsos})`,
+      curas <= v.maxUsos,
+      `curou-se ${curas} vez(es) · gastou ${400 - e.A[0].pm} PM`);
+}
+
 // ── 4. Pedir três vezes o pmMax de uma magia ──
 {
   const { g, el } = acha('fg_f3');                       // 4 a 20 PM

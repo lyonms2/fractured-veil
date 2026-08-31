@@ -25,7 +25,17 @@ const VANTAGENS = {
   // ── Recursos ──
   folego_extra:      { custo: 1, pvComoR: 2 },
   fonte_extra:       { custo: 1, pmComoR: 2 },
-  segundo_folego:    { custo: 2, pm: 2, curaTudo: true, gastaTurno: true },
+  /* Uma vez por batalha, e não uma vez por turno.
+     Custava 2 PM e devolvia a vida TODA, sem limite nenhum de usos: um
+     avatar com 30 PM curava-se quinze vezes, e a política do motor pega
+     nela sempre que cai abaixo de 35% da vida. Um inimigo usou-a três
+     vezes seguidas numa luta.
+     Uma cura completa é o efeito mais forte que há; sem limite não é uma
+     decisão, é uma torneira. Com uma só, a pergunta passa a ser QUANDO.
+     E ajuda o outro lado do problema: as lutas de nível alto já custam a
+     acabar dentro dos 60 turnos, e curas sem fim empurravam para o
+     empate. Para permitir duas, é este número. */
+  segundo_folego:    { custo: 2, pm: 2, curaTudo: true, gastaTurno: true, maxUsos: 1 },
   cura_perpetua:     { custo: 3, pvPorTurno: 1 },
 
   // ── Ofensivas e de manobra ──

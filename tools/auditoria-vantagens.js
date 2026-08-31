@@ -730,6 +730,9 @@ A.ver('as duas desvantagens de tamagotchi já não estão no sorteio',
   const tratadas = new Set(['custo','pm','elemento','id','contraElemento','armaduraDobra','armaduraZero',
     'habilidadeDobra','devolve','pvComoR','pmComoR','curaTudo','gastaTurno','pvPorTurno','bonusEsquiva',
     'subirCarac','maxTotal','paralisa','metadeCustoProprioElemento','danoPorMagia','furiaAoSofrerDano',
+    // Quantas vezes o Segundo Fôlego serve numa batalha. Provado em
+    // tools/guardas.js, que insiste nele oito turnos seguidos.
+    'maxUsos',
     'semMagiaAbaixoDeMetade',
     // as novas
     'bonusFGolpe','golpesMultiplos','pmPorGolpe','toqueEnergia','bonusTesteMagia',

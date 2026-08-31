@@ -423,6 +423,12 @@ function _pveEstadoDe(c, contra) {
       bom(n, t(pega ? 'pve.est.v_couraca_sim' : 'pve.est.v_couraca_nao', { elem: v.elemento || '' }));
     }
     if (v.bonusEsquiva) bom(n, t('pve.est.esquiva_desc', { n: v.bonusEsquiva }));
+    // Um recurso que se gasta tem de dizer quanto resta, senão o jogador
+    // conta com uma cura que já não tem.
+    if (v.curaTudo && v.maxUsos != null) {
+      const resta = Math.max(0, v.maxUsos - (c.folegoUsado || 0));
+      (resta ? bom : mau)(n, t(resta ? 'pve.est.v_folego' : 'pve.est.v_folego_fim', { n: resta }));
+    }
     if (v.pvComoPM) bom(n, t('pve.est.v_sangue'));
     if (v.pvPorTurno) bom(n, t('pve.est.v_cura', { n: v.pvPorTurno }));
     if (v.bonusTesteMagia) bom(n, t('pve.est.v_teste', { n: v.bonusTesteMagia }));
@@ -945,11 +951,21 @@ function _pveDesenharAcoes(eu, ini) {
     const podeH  = g.pm <= tecto;
     const podePM = custo <= eu.pm;
     const trancada = !_c3podeMagiar(eu);
+    /* O máximo é o que a magia aceita, limitado pela bolsa e pelo tecto
+       da Habilidade — e por isso encolhe até ao mínimo quando algum
+       deles aperta. Aí o botão escrevia "2 a 2 PM", uma faixa cujas duas
+       pontas são o mesmo número: lê-se como avaria, e não como "só dá
+       para dar 2". Doze magias faziam isto.
+
+       Sem escolha para fazer, não se mostra uma escolha. */
+    const teto = Math.min(g.pmMax || 0, eu.pm, tecto);
+    const faixa = g.pmMax && teto > custo;
     const sub = !podeH  ? t('pve.precisa_h', { h: Math.ceil(g.pm / 5) })
               : trancada ? t('pve.trancada')
               : !podePM  ? t('pve.sem_pm', { pm: custo })
-              : (g.pmMax && g.porTurno) ? t('mag.custo.faixa_turno', { min: custo, max: Math.min(g.pmMax, eu.pm, tecto) })
-              : g.pmMax  ? t('mag.custo.faixa', { min: custo, max: Math.min(g.pmMax, eu.pm, tecto) })
+              : (faixa && g.porTurno) ? t('mag.custo.faixa_turno', { min: custo, max: teto })
+              : faixa    ? t('mag.custo.faixa', { min: custo, max: teto })
+              : g.porTurno ? t('mag.custo.turno', { pm: custo })
               : t('mag.custo', { pm: custo });
     html += btn(`_pveEscolher('${cat}')`, t('mag.' + g.id + '.nome'), sub,
                 podeH && podePM && !trancada);
@@ -962,10 +978,15 @@ function _pveDesenharAcoes(eu, ini) {
     // total, o botão continuava aceso e cobrava PM por nada.
     const reservaAcabou = v.subirCarac && v.maxTotal != null
                        && (eu.reservaGasta || 0) >= v.maxTotal;
-    const on = eu.pm >= v.pm && !reservaAcabou;
+    // O Segundo Fôlego é um por batalha. Gasto, o botão continuava aceso
+    // e prometia uma cura que já não existia.
+    const folegoAcabou = v.curaTudo && v.maxUsos != null
+                       && (eu.folegoUsado || 0) >= v.maxUsos;
+    const on = eu.pm >= v.pm && !reservaAcabou && !folegoAcabou;
     html += btn(`_pveEscolher('vantagem')`,
                 t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
                 reservaAcabou ? t('pve.reserva_no_fim')
+                  : folegoAcabou ? t('pve.folego_no_fim')
                   : on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
   }
 
