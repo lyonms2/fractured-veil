@@ -571,15 +571,30 @@ function renderSlots() {
 }
 
 async function activateSlot(idx) {
+  /* ── DE ONDE ELE VEIO, PARA O CASO DE DESISTIR ──
+
+     Entrar num slot VAZIO é dizer "quero invocar aqui" — e isso pode ser
+     desfeito: o "Voltar à colônia" do painel de invocar é exatamente
+     dizer "afinal não". Para desfazer é preciso saber para onde voltar,
+     e a resposta certa é o avatar que ele estava a cuidar, não o
+     primeiro da lista.
+
+     Guarda-se só quando o destino está vazio e a origem tem alguém: nos
+     outros casos não há nada a desfazer. */
+  const _vazio = !(avatarSlots && avatarSlots[idx] && avatarSlots[idx].nome);
+  if(_vazio && typeof activeSlotIdx === 'number'
+     && avatarSlots[activeSlotIdx] && avatarSlots[activeSlotIdx].hatched
+     && !avatarSlots[activeSlotIdx].dead) {
+    window._slotAntesDeInvocar = activeSlotIdx;
+  }
+
   if(_mktGameStateDisponivel() && typeof switchSlot === 'function') {
     // Fonte única: usa o próprio switchSlot() do jogo (state.js) — evita a
     // race entre esta troca e o próximo scheduleSave() do jogo.
     await switchSlot(idx);
-    if(playerData) {
-      playerData.activeSlotIdx = activeSlotIdx;
-      if(!playerData.gs) playerData.gs = {};
-      playerData.gs.activeSlotIdx = activeSlotIdx;
-    }
+    // A copia no playerData e sincronizada la dentro, no state.js:
+    // estava aqui, e quando o "Voltar a colonia" passou a trocar de
+    // slot tambem ficou uma copia desactualizada.
     if(typeof updateAllUI === 'function') updateAllUI();
   } else {
     // Standalone (marketplace.html sem state.js) — comportamento original.

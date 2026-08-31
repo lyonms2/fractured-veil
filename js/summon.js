@@ -60,10 +60,35 @@ function jogadorTemCriatura() {
 
    Continua a precisar de haver alguém vivo — uma colônia vazia não é
    saída nenhuma, e quem está nesse caso tem a invocação de graça. */
-function voltarAColonia() {
+async function voltarAColonia() {
   if(primeiroSlotVivo() < 0) return;
   if(typeof closeMarketplaceModal === 'function') closeMarketplaceModal();
   if(typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
+
+  /* ── E LARGA O SLOT ──
+
+     Carregar aqui é desistir de invocar naquele slot, e desistir tem de
+     o devolver. Sem isto o slot vazio continuava a ser o ATIVO, e na
+     lista de avatares ele aparecia sem o "✦ Usar este slot" — porque
+     esse botão só se desenha em slots que não são o ativo. O jogador
+     desistia e ficava sem forma de voltar a tentar.
+
+     Volta para o avatar que ele estava a cuidar quando entrou no slot
+     vazio, que o activateSlot guardou. Se isso já não servir — foi
+     queimado, morreu, ou entrou-se aqui por outro caminho — vale o
+     primeiro vivo, que é melhor do que ficar onde não há nada. */
+  const guardado = window._slotAntesDeInvocar;
+  const bom = (i) => typeof i === 'number' && avatarSlots[i]
+                  && avatarSlots[i].hatched && !avatarSlots[i].dead;
+  const destino = bom(guardado) ? guardado : primeiroSlotVivo();
+  window._slotAntesDeInvocar = null;
+
+  if(destino !== activeSlotIdx && typeof switchSlot === 'function') {
+    await switchSlot(destino);
+  }
+  // Depois da troca, e não antes: o switchSlot chama o
+  // rebuildScreensParaSlot, que sai da colônia — abrir primeiro era
+  // abri-la para ela se fechar sozinha a seguir.
   if(typeof abrirFazenda === 'function') abrirFazenda();
 }
 

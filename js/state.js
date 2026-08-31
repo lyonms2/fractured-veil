@@ -434,6 +434,24 @@ async function switchSlot(newIdx) {
   saveRuntimeToSlot(activeSlotIdx);
   activeSlotIdx = newIdx;
   loadRuntimeFromSlot(newIdx);
+  /* O playerData tem a sua cópia deste índice, e é dela que a lista de
+     avatares decide qual slot é o ativo — e portanto qual NÃO leva o
+     "✦ Usar este slot".
+
+     A sincronização estava escrita à mão dentro do activateSlot, que era
+     o único a trocar de slot por ali. Quando o "Voltar à colônia" passou
+     a trocar também, ficou uma cópia desactualizada: o global dizia 1, o
+     playerData dizia 2, e o slot vazio continuava a parecer o ativo — sem
+     o botão para lá voltar a entrar, que é exactamente o que se queria
+     devolver.
+
+     Fica aqui, onde a troca acontece de facto, para não haver uma
+     terceira via que se esqueça outra vez. */
+  if(typeof playerData !== 'undefined' && playerData) {
+    playerData.activeSlotIdx = newIdx;
+    if(!playerData.gs) playerData.gs = {};
+    playerData.gs.activeSlotIdx = newIdx;
+  }
   // Sem isto a interface fica mostrando o avatar anterior até um refresh
   if(typeof rebuildScreensParaSlot === 'function') rebuildScreensParaSlot();
   scheduleSave();
