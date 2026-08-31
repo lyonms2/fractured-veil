@@ -750,6 +750,30 @@ function rebuildScreensParaSlot() {
   const set = (id, v) => { const el = $(id); if(el) el.style.display = v; };
   const btns = $('actionBtns');
 
+  /* ── SAIR DA COLÓNIA A SÉRIO, E NÃO PELA METADE ──
+
+     Cada ramo aqui em baixo punha o #fazendaScreen a none e dava-se por
+     satisfeito. Mas a colónia não é só esse elemento: o abrirFazenda
+     também põe a classe `fz-modo` no #mainScreen e `fz-colonia` no body,
+     e esconde a fila dos botões de cuidar.
+
+     O `fz-modo` faz do ecrã um flex de altura automática com um mínimo
+     de 9rem, para a lista da colónia poder encolher. Os outros ecrãs são
+     absolutos com inset:0 e não alimentam essa altura — portanto, com a
+     classe de pé e a colónia escondida, o que fica é uma caixa vazia.
+
+     Medido: queimar um avatar na colónia e carregar em "usar este slot"
+     dava um #summonCard de 0×0 dentro de um #mainScreen de 2×144. Um
+     ecrã sem nada, sem saída, e um refresh à página corrigia — porque aí
+     o modo colónia não é reposto.
+
+     O fzSairDaColonia já fazia esta limpeza toda, e o comentário dele
+     avisa: "duas cópias de uma saída, e a segunda esquecia-se de
+     metade". Esta era a terceira. Fica no topo e não em cada ramo, para
+     não haver uma quarta — e por isso os ramos que querem o cartão da
+     criatura escondido continuam a poder escondê-lo, que correm depois. */
+  if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
+
   if(!avatar) {
     // Slot vazio — volta à tela inicial com o painel de invocar
     set('idleScreen','flex'); set('eggScreen','none');

@@ -52,6 +52,30 @@ function updateSummonLockHint() {
   // Só interessa num slot vazio — é aí que o painel de invocação aparece
   const semSaldo = !avatar && custo > 0 && gs.moedas < custo;
 
+  /* ── A CONTA ANTES DA DECISÃO ──
+     O preço vivia dentro do rótulo do botão e o saldo não aparecia em
+     lado nenhum: para saber se dava, era preciso carregar e ver. */
+  const elCusto = document.getElementById('summonCusto');
+  const elSaldo = document.getElementById('summonSaldo');
+  if(elCusto) elCusto.textContent = custo > 0 ? custo + ' 🪙' : t('mag.custo.livre');
+  if(elSaldo) {
+    elSaldo.textContent = (gs.moedas || 0) + ' 🪙';
+    elSaldo.classList.toggle('falta', custo > 0 && (gs.moedas || 0) < custo);
+  }
+
+  /* ── E A SAÍDA, QUE SÓ EXISTIA PARA QUEM ESTAVA TESO ──
+     Voltar a um avatar que já se tem estava escondido dentro do aviso de
+     saldo insuficiente. Quem tinha as moedas e não as queria gastar
+     ficava num ecrã com um botão só, e esse botão gastava 500 — não
+     havia forma de dizer "afinal não". Agora o caminho de volta está lá
+     sempre que houver para onde voltar. */
+  const alvoVivo = primeiroSlotVivo();
+  const voltar = document.getElementById('btnSummonVoltar');
+  if(voltar) {
+    voltar.style.display = alvoVivo >= 0 ? '' : 'none';
+    voltar.textContent   = t('summon.voltar', { n: alvoVivo + 1 });
+  }
+
   if(!semSaldo) {
     box.style.display = 'none';
     if(btn) btn.disabled = false;
@@ -62,18 +86,13 @@ function updateSummonLockHint() {
   if(btn) btn.disabled = true;
 
   const falta = custo - gs.moedas;
-  const alvo  = primeiroSlotVivo();
   document.getElementById('summonLockTitle').textContent =
     t('summon.lock.title', { cost: custo });
+  // O botão de voltar saiu daqui para cima, onde está sempre. Este bloco
+  // ficou só com a explicação, que é o que ele sabe dizer.
   document.getElementById('summonLockDesc').textContent =
-    alvo >= 0 ? t('summon.lock.desc', { have: gs.moedas, cost: custo, missing: falta })
-              : t('summon.lock.desc_nofree', { cost: custo });
-
-  const b = document.getElementById('summonLockBtn');
-  if(b) {
-    b.style.display   = alvo >= 0 ? '' : 'none';
-    b.textContent     = t('summon.lock.btn', { n: alvo + 1 });
-  }
+    alvoVivo >= 0 ? t('summon.lock.desc', { have: gs.moedas, cost: custo, missing: falta })
+                  : t('summon.lock.desc_nofree', { cost: custo });
 }
 
 function triggerSummon() {

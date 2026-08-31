@@ -20,7 +20,11 @@ window.registerStrings(
     'summon.lock.title':     'INVOCAÇÕES GRÁTIS ESGOTADAS',
     'summon.lock.desc':      'A próxima invocação custa {cost} 🪙 e você tem {have} 🪙 — faltam {missing} 🪙. Volte para um avatar seu e jogue os minigames para ganhar moedas.',
     'summon.lock.desc_nofree':'A próxima invocação custa {cost} 🪙 e você ainda não tem o suficiente. Jogue os minigames para ganhar moedas.',
-    'summon.lock.btn':       '↩ VOLTAR AO SLOT {n}',
+    // A saida do painel de invocar. Fica sempre a vista quando ha um
+    // avatar para onde voltar, e nao so quando falta dinheiro.
+    'summon.voltar':         '↩ Voltar ao slot {n}',
+    'summon.custo':          'Custa',
+    'summon.saldo':          'Você tem',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
     'summon.log.legendary':  '🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!',
     'summon.log.rare':       '✨ Invocação Rara! Um guardião experiente surge!',
@@ -55,7 +59,9 @@ window.registerStrings(
     'summon.lock.title':     'FREE SUMMONS USED UP',
     'summon.lock.desc':      'The next summon costs {cost} 🪙 and you have {have} 🪙 — {missing} 🪙 short. Go back to one of your avatars and play the minigames to earn coins.',
     'summon.lock.desc_nofree':'The next summon costs {cost} 🪙 and you do not have enough yet. Play the minigames to earn coins.',
-    'summon.lock.btn':       '↩ BACK TO SLOT {n}',
+    'summon.voltar':         '↩ Back to slot {n}',
+    'summon.custo':          'Costs',
+    'summon.saldo':          'You have',
     'summon.bub.no_login':   'You need to log in! 🔑',
     'summon.log.legendary':  '🌟 LEGENDARY SUMMON! A primordial entity answered the call!',
     'summon.log.rare':       '✨ Rare Summon! An experienced guardian emerges!',
