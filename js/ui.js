@@ -141,8 +141,12 @@ function updateAllUI() {
   // Botões de inventário
   const _eggBtn  = document.getElementById('resOvosBtn');
   const _coinBtn = document.getElementById('resMoedasBtn');
-  if(_eggBtn)  { (eggsInInventory.length > 0 || (hatched && !dead)) ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
-  if(_coinBtn) { hatched && !dead ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
+  // A mesma pergunta do updateHeaderButtons, e pela mesma razao: estes
+  // botoes sao do JOGADOR. Uma copia escondia-os e esta desligava-os —
+  // corrigir so a outra deixava-os visiveis e mortos.
+  const _tem = (typeof jogadorTemCriatura === 'function') ? jogadorTemCriatura() : (hatched && !dead);
+  if(_eggBtn)  { (eggsInInventory.length > 0 || _tem) ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
+  if(_coinBtn) { _tem ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
 }
 
 function updateResourceUI() {

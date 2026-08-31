@@ -191,7 +191,24 @@ async function disconnectWallet() {
 // ─── Visibilidade do header ───────────────────────────────────────
 function updateHeaderButtons() {
   if(!walletAddress) return;
-  const temAvatar = hatched && !dead;
+  /* ── O TOPO É DO JOGADOR, NÃO DO SLOT ABERTO ──
+
+     Isto era `hatched && !dead`, que fala do avatar do slot ATIVO. Fazia
+     sentido quando havia um bicho de cada vez; desde que existe a
+     colônia, vivem todos ao mesmo tempo e o slot ativo só diz qual está
+     espelhado nos globais.
+
+     Deu de si quando o botão de voltar passou a levar à colônia em vez
+     de saltar para o primeiro slot vivo: o jogador chegava lá com o slot
+     ativo vazio — porque acabara de queimar aquele — e a fila de cima
+     desaparecia inteira. Moedas, ovos, itens e batalha escondidos, com
+     duas criaturas na lista à frente dos olhos.
+
+     Nenhum daqueles botões é do avatar aberto: as moedas são do jogador,
+     o inventário é do jogador, e a equipa de batalha monta-se com os
+     avatares todos. A pergunta certa é se ele TEM alguma criatura. */
+  const temAvatar = (typeof jogadorTemCriatura === 'function')
+    ? jogadorTemCriatura() : (hatched && !dead);
   const temOvos   = eggsInInventory.length > 0;
   document.getElementById('resCristaisBtn').style.display = '';
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';

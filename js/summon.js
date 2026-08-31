@@ -28,6 +28,27 @@ function primeiroSlotVivo() {
   return avatarSlots.findIndex(s => s && !s.dead);
 }
 
+/* O jogador tem alguma criatura? — em QUALQUER slot, não no que está
+   aberto.
+
+   Isto estava escrito duas vezes como `hatched && !dead`, no
+   updateHeaderButtons e no updateAllUI, e as duas falavam do avatar do
+   slot ATIVO. Fazia sentido quando havia um bicho de cada vez; desde
+   que existe a colônia vivem todos, e o slot ativo só diz qual está
+   espelhado nos globais.
+
+   Uma cópia esconde os botões do topo e a outra desliga-os — portanto
+   corrigir só uma deixava-os visíveis e mortos. Ficam as duas a
+   perguntar aqui.
+
+   O ovo por chocar não conta: ainda não é criatura. */
+function jogadorTemCriatura() {
+  if(typeof avatarSlots === 'undefined' || !Array.isArray(avatarSlots)) {
+    return typeof hatched !== 'undefined' && hatched && !dead;
+  }
+  return avatarSlots.some(s => s && s.hatched && !s.dead);
+}
+
 /* A saída do beco sem saída: num slot vazio os botões de ação estão
    desligados e o ícone das moedas escondido, portanto sem isto não havia
    forma de chegar aos minigames para ganhar as moedas da invocação.
