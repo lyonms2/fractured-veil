@@ -787,6 +787,19 @@ function rebuildScreensParaSlot() {
     if(walletAddress) set('summonSection','block');
     const b = $('btnSummon'); if(b) b.disabled = false;
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
+    /* O ◆ COLÔNIA da consola sai daqui.
+
+       Ele abre a colônia e mais nada — deixa o slot vazio como ativo. O
+       "Voltar à colônia" do painel faz a mesma viagem MAIS a parte que
+       interessa: larga o slot, para o "✦ Usar este slot" voltar a
+       aparecer nele. Dois botões para o mesmo sítio em que um deles
+       deixa o jogador a meio caminho é pior do que um só.
+
+       Foi o fzSairDaColonia que o trouxe para cá — ele repõe este botão,
+       e passou a correr no topo desta função. Nos outros ecrãs isso é o
+       que se quer; neste, não: a tela de invocar é uma decisão por
+       tomar, e só tem duas saídas. */
+    const volta = $('btnColonia'); if(volta) volta.style.display = 'none';
     const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
     if(typeof updateResourceUI === 'function') updateResourceUI();
     return;
