@@ -74,6 +74,37 @@ function _moverModaisParaOBody() {
   // e vivem dentro do ecrã: cairiam na mesma armadilha no dia em que
   // alguém lhes puser uma porta fora do ecrã de cuidar.
   ['amigosOverlay', 'visitaOverlay', 'loreModal'].forEach(id => alvos.add(id));
+
+  /* ── E A ARMADILHA APANHOU CINCO ──
+
+     O aviso escrito aqui em cima — "qualquer modal novo cairia na mesma
+     armadilha" — cumpriu-se. Cinco elementos fixos viviam dentro do
+     #marketplaceModal, que está display:none enquanto ele não estiver
+     aberto:
+
+       · burnOverlay    — a confirmação de queimar um avatar
+       · listOverlay    — a de pôr um à venda
+       · listEggOverlay, avatarDetailOverlay
+       · toast          — os avisos do JOGO INTEIRO
+
+     O botão de queimar chamava tudo o que devia: enchia o cartão de
+     pré-visualização, guardava o índice, punha a classe `open`. E não
+     aparecia nada, porque um pai estava escondido. Foi assim que isto
+     se descobriu.
+
+     O toast era o pior: `showToast` faz getElementById('toast'), e esse
+     elemento estava lá dentro. Todos os avisos do jogo — "faltam PM",
+     "doente não batalha", "não dá para pausar agora" — ficavam com
+     display:block e zero por zero pixels, a menos que o marketplace
+     estivesse aberto por acaso.
+
+     Uma lista à mão volta a ficar para trás. A regra é: o que é
+     sobreposição do jogo sai (os `*Overlay` e o toast); o que é mobília
+     do marketplace fica lá dentro e esconde-se com ele — a
+     .mkt-bottom-nav é fixa e é dele, e sair daqui punha-a a flutuar por
+     cima do jogo todo. Ela não tem id, e é por isso que não entra. */
+  document.querySelectorAll('[id$="Overlay"]').forEach(e => alvos.add(e.id));
+  alvos.add('toast');
   const movidos = [];
   alvos.forEach(id => {
     const el = document.getElementById(id);
