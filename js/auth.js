@@ -206,11 +206,27 @@ function updateHeaderButtons() {
 
      Nenhum daqueles botões é do avatar aberto: as moedas são do jogador,
      o inventário é do jogador, e a equipa de batalha monta-se com os
-     avatares todos. A pergunta certa é se ele TEM alguma criatura. */
-  const temAvatar = (typeof jogadorTemCriatura === 'function')
-    ? jogadorTemCriatura() : (hatched && !dead);
-  const temOvos   = eggsInInventory.length > 0;
-  document.getElementById('resCristaisBtn').style.display = '';
+     avatares todos. A pergunta certa é se ele TEM alguma criatura.
+
+     ── MAS NA TELA DE INVOCAR NÃO APARECE NADA ──
+
+     E esta é a segunda pergunta, que eu tinha juntado à primeira por
+     engano. O painel de invocar é uma decisão por tomar: invocar, ou
+     voltar. Qualquer botão lá em cima leva o jogador para fora dela e
+     deixa-o num slot vazio com meia interface — o marketplace incluído,
+     que era o único que aparecia sempre.
+
+     Escondê-los ali já estava certo antes; o que estava errado era a
+     colônia herdar a mesma escuridão, porque as duas partilhavam a
+     mesma conta. São duas coisas diferentes: "que ecrã é este" e "este
+     jogador tem criaturas". Voltam todos assim que ele decidir — ao
+     invocar (passa a haver avatar) ou ao voltar (passa a estar na
+     colônia). */
+  const naInvocacao = !avatar && !window._fzModoColonia;
+  const temAvatar = !naInvocacao && ((typeof jogadorTemCriatura === 'function')
+    ? jogadorTemCriatura() : (hatched && !dead));
+  const temOvos   = !naInvocacao && eggsInInventory.length > 0;
+  document.getElementById('resCristaisBtn').style.display = naInvocacao ? 'none' : '';
   document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
   document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
   document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';

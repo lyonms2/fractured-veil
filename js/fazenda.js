@@ -188,6 +188,10 @@ function fzSairDaColonia() {
   const sc = document.getElementById('statusCard');   if (sc) sc.style.display = 'block';
   // A '' e não um valor fixo: quem manda neste é uma media query.
   const ms = document.getElementById('mobileStatusInline'); if (ms) ms.style.display = '';
+
+  // Mesma razao ao contrario: quem sai para um slot vazio tem de ver
+  // o topo apagar-se ja, e nao um segundo depois.
+  if (typeof updateHeaderButtons === 'function') updateHeaderButtons();
 }
 
 /* ACTUALIZAR SEM REDESENHAR.
@@ -271,6 +275,10 @@ function abrirFazenda() {
     const e = document.getElementById(id); if (e) e.style.display = 'none';
   });
   renderFazenda();
+  // A fila de cima esconde-se na tela de invocar e volta na colonia.
+  // Sem esta chamada so voltava no tique seguinte, um segundo depois,
+  // e o jogador via a colonia aparecer com o topo ainda vazio.
+  if (typeof updateHeaderButtons === 'function') updateHeaderButtons();
 }
 
 /* Entrar no cuidado de um avatar.
