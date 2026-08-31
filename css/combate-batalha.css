@@ -691,6 +691,53 @@
 .cb-lutador:hover .cb-lutador-ver { opacity: 1; color: var(--gold); }
 .cb-lutador.caido .cb-lutador-ver { opacity: .25; }
 
+/* ── O QUE ESTÁ ACONTECENDO ──
+
+   As etiquetas do cartão cabem numa palavra de cinco pixels: dizem QUE
+   há veneno, não que ele custa −2 em tudo. E a vantagem e a desvantagem
+   apareciam só como o catálogo as descreve, nunca como o que estão a
+   fazer agora — um avatar com Brecha Conhecida entrega +1 de Habilidade
+   ao inimigo em todos os golpes da luta e isso não estava escrito em
+   sítio nenhum.
+
+   Fica no topo do painel, antes das magias: primeiro o que está a
+   acontecer, depois o que se pode fazer sobre isso.
+
+   Duas colunas com o nome à esquerda em largura fixa — assim os números
+   alinham-se e a lista lê-se de cima a baixo em vez de item a item. A
+   cor separa o que ajuda do que atrapalha, e é a mesma dos números que
+   sobem e descem nas características. */
+.cb-estado {
+  margin: 0 0.5rem 0.375rem; padding: 0.375rem 0.5rem; border-radius: 0.4375rem;
+  border: 1px solid rgba(201,168,76,.22); background: rgba(201,168,76,.06);
+}
+.cb-estado-cab {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem; letter-spacing: 0.075rem;
+  color: var(--gold); opacity: .85; margin-bottom: 0.25rem;
+}
+.cb-estado-linha {
+  display: flex; gap: 0.375rem; align-items: baseline;
+  font-family: 'Courier New', monospace; font-size: 0.5rem; line-height: 1.65;
+  letter-spacing: 0.01875rem;
+}
+.cb-estado-nome {
+  flex: 0 0 5.5rem; font-family: 'Cinzel', serif; letter-spacing: 0.025rem;
+  font-weight: 700; text-align: right;
+  /* Um nome comprido encolhe em vez de empurrar o número para fora. */
+  overflow-wrap: anywhere;
+}
+/* min-width:0 dá licença ao texto para partir dentro da sua coluna, em
+   vez de esticar a linha e pôr o painel a rolar de lado. */
+.cb-estado-efeito { flex: 1 1 auto; min-width: 0; color: var(--text2); }
+.cb-estado-linha.bom .cb-estado-nome { color: #8ede8e; }
+.cb-estado-linha.mau .cb-estado-nome { color: #ff8a8a; }
+
+@media (min-width: 900px) {
+  .cb-estado-cab    { font-size: 0.5625rem; }
+  .cb-estado-linha  { font-size: 0.5625rem; }
+  .cb-estado-nome   { flex-basis: 7rem; }
+}
+
 /* ── O ALVO, no cabeçalho do painel ──
    "6 de dano" não diz nada sem saber se ele tem 12 de vida ou 60. */
 .cb-ajuda-contra {

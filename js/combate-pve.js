@@ -317,6 +317,134 @@ function _pveCaracs(c) {
   }).join(' ');
 }
 
+/* ═══ O QUE ESTÁ ACONTECENDO A ESTE AVATAR ═══
+
+   As etiquetas do cartão dizem O QUE ele apanhou — VENENO, CEGO, PRESO —
+   em cinco pixels e uma palavra. Não dizem quanto custa nem até quando,
+   e há efeitos que não têm etiqueta nenhuma.
+
+   E havia um buraco maior: o que a vantagem e a desvantagem FAZEM em
+   combate não se via em parte nenhuma. O painel mostra-as como o
+   catálogo as descreve — o que elas são —, nunca o que estão a fazer
+   agora. Um avatar com Brecha Conhecida entrega +1 de Habilidade a quem
+   o enfrenta em todos os golpes da luta, e isso não estava escrito em
+   sítio nenhum do combate.
+
+   Este bloco diz as duas coisas na mesma lista: o que se apanhou e o que
+   se trouxe de nascença, cada um com o número que vale.
+
+   Alguns efeitos dependem de QUEM está do outro lado — a Veia Travada só
+   dobra o custo contra o seu elemento, a Couraça só dobra a Armadura
+   contra o dela. Esses recebem o adversário e dizem se estão a pegar
+   agora ou não, em vez de prometerem em abstrato. */
+function _pveEstadoDe(c, contra) {
+  const L = [];
+  const bom = (n, e) => L.push({ nome: n, efeito: e, tom: 'bom' });
+  const mau = (n, e) => L.push({ nome: n, efeito: e, tom: 'mau' });
+  const v = c.vant || {}, d = c.desv || {};
+  const nomeDe = (x) => t('vd.' + x.id + '.nome').replace(/\{elem\}/g, x.elemento || '');
+
+  // ── o que se apanhou na luta ──
+  if (c.congelado)
+    mau(t('pve.marca.preso'), t('pve.est.preso', { n: Math.max(1, c.congeladoTurnos) }));
+  if (c.furia)
+    mau(t('pve.marca.furia'), t('pve.est.furia', { n: c.bonusH || 0 }));
+  if (c.semFoco)
+    mau(t('pve.marca.sem_foco'), t('pve.est.sem_foco'));
+  if (c.veneno && c.penalidade)
+    mau(t('pve.marca.veneno'), t('pve.est.tudo_menos', { n: c.penalidade }));
+  else if (c.penalidade)
+    mau(t('pve.est.penalidade'), t('pve.est.tudo_menos', { n: c.penalidade }));
+  if (c.penalidadeR) mau(t('pve.est.penalidade'), t('pve.est.so_r', { n: c.penalidadeR }));
+  if (c.cegoAtaque || c.cegoEsquiva)
+    mau(t('pve.marca.cego'), t('pve.est.cego', { a: c.cegoAtaque || 0, e: c.cegoEsquiva || 0 }));
+  if (c.indefeso)
+    mau(t('pve.marca.indefeso'), t('pve.est.indefeso'));
+
+  // ── o que está de pé, e o que ele dá ──
+  for (const s of (c.sustentadas || []))
+    bom(t('mag.' + s.magia.id + '.nome'), s.pm ? t('pve.est.sustentada', { pm: s.pm })
+                                               : t('pve.est.sustentada_livre'));
+  if (c.invulneravel)    bom(t('pve.marca.invul'), t('pve.est.invul'));
+  if (c.barreira > 0)    bom(t('pve.marca.barreira'), t('pve.est.barreira', { n: c.barreira }));
+  if (c.ocultado)        bom(t('pve.marca.oculto'), t('pve.est.oculto'));
+  if (c.imuneEspiritual) bom(t('pve.marca.alma'), t('pve.est.alma'));
+  if (c.vorpal)          bom(t('pve.est.vorpal'), t('pve.est.vorpal_desc'));
+  if (c.roubando)        bom(t('pve.est.roubo'), t('pve.est.roubo_desc', { n: c.roubando.dados || 1 }));
+  if (c.bonusFD)         bom(t('pve.est.fd'), t('pve.est.fd_desc', { n: c.bonusFD }));
+  /* Vezes dois à mão porque o `_c3detalhe` não sabe desta duplicação: ela
+     acontece na conta da Defesa, e só contra o que NÃO é magia — um murro
+     é dano físico, e a Casca não trava a bola de fogo. Dizer "vale {A}"
+     sem dobrar mostrava o número por dobrar, que é o oposto do que a
+     linha promete. */
+  if (c.armaduraDobrada)
+    bom(t('pve.est.armadura2'), t('pve.est.armadura2_desc', { n: _c3(c, 'A') * 2 }));
+  /* A esquiva soma duas origens e só uma delas estava à vista: o
+     `c.bonusEsquiva` guarda a magia sustentada, e o +2 do Passo Rápido é
+     lido no momento do uso a partir da vantagem — nunca aparecia, nem
+     aqui nem na etiqueta do cartão.
+     Cada origem leva o seu nome. Somadas numa linha só, o jogador via um
+     número sem saber de onde vinha nem o que perdia ao largar o escudo. */
+  if (c.bonusEsquiva) bom(t('pve.marca.esquiva'), t('pve.est.esquiva_desc', { n: c.bonusEsquiva }));
+
+  // ── o que se trouxe de nascença: a vantagem ──
+  if (c.vant) {
+    const n = nomeDe(c.vant);
+    if (v.armaduraDobra && v.contraElemento) {
+      const pega = contra && contra.elemento === v.elemento;
+      bom(n, t(pega ? 'pve.est.v_couraca_sim' : 'pve.est.v_couraca_nao', { elem: v.elemento || '' }));
+    }
+    if (v.bonusEsquiva) bom(n, t('pve.est.esquiva_desc', { n: v.bonusEsquiva }));
+    if (v.pvComoPM) bom(n, t('pve.est.v_sangue'));
+    if (v.pvPorTurno) bom(n, t('pve.est.v_cura', { n: v.pvPorTurno }));
+    if (v.bonusTesteMagia) bom(n, t('pve.est.v_teste', { n: v.bonusTesteMagia }));
+    if (v.penalidadeTesteAlvo) bom(n, t('pve.est.v_perfura', { n: v.penalidadeTesteAlvo }));
+    if (v.metadeCustoProprioElemento) bom(n, t('pve.est.v_metade'));
+  }
+
+  // ── e a desvantagem, que é a metade que ninguém via ──
+  if (c.desv) {
+    const n = nomeDe(c.desv);
+    if (d.inimigoGanhaH) mau(n, t('pve.est.d_ganha_h', { n: d.inimigoGanhaH }));
+    if (d.inimigoGanhaA || d.inimigoGanhaR)
+      mau(n, t('pve.est.d_ganha_ar', { a: d.inimigoGanhaA || 0, r: d.inimigoGanhaR || 0 }));
+    if (d.faMagiaMenos) mau(n, t('pve.est.d_fa_magia', { n: d.faMagiaMenos }));
+    if (d.danoPorMagia) mau(n, t('pve.est.d_sangue', { n: d.danoPorMagia }));
+    if (d.armaduraZero && d.contraElemento) {
+      const pega = contra && contra.elemento === d.elemento;
+      mau(n, t(pega ? 'pve.est.d_ferida_sim' : 'pve.est.d_ferida_nao', { elem: d.elemento || '' }));
+    }
+    // O custo dobrado tem duas portas: a assombração, e o elemento de
+    // quem está à frente. Só se diz que pega quando pega mesmo.
+    if (d.dobraCustoMagia) {
+      const porSombra = c.assombrado && d.assombraEm;
+      const porElem = !d.assombraEm && contra && d.elemento === contra.elemento;
+      if (porSombra || porElem) mau(n, t('pve.est.d_dobro_sim'));
+      else if (!d.assombraEm) mau(n, t('pve.est.d_dobro_nao', { elem: d.elemento || '' }));
+    }
+    if (d.assombraEm && c.assombrado && d.penalidadeTudo)
+      mau(n, t('pve.est.d_assombrado', { n: d.penalidadeTudo }));
+    if (d.semMagiaAbaixoDeMetade) {
+      const pega = c.pv < c.pvMax / 2;
+      mau(n, t(pega ? 'pve.est.d_limiar_sim' : 'pve.est.d_limiar_nao',
+               { n: Math.ceil(c.pvMax / 2) }));
+    }
+    if (d.furiaAoSofrerDano && !c.furia) mau(n, t('pve.est.d_sangue_quente'));
+    if (d.perdeFocoAoSofrerDano && !c.semFoco) mau(n, t('pve.est.d_foco'));
+  }
+  return L;
+}
+
+function _pveEstadoHTML(c, contra) {
+  const L = _pveEstadoDe(c, contra);
+  if (!L.length) return '';
+  return '<div class="cb-estado"><div class="cb-estado-cab">' + t('pve.est.titulo') + '</div>'
+       + L.map(x => '<div class="cb-estado-linha ' + x.tom + '">'
+                  + '<span class="cb-estado-nome">' + x.nome + '</span>'
+                  + '<span class="cb-estado-efeito">' + x.efeito + '</span></div>').join('')
+       + '</div>';
+}
+
 function _pveLutador(c, i, lado, ativo) {
   const el = CARACTERISTICAS_ELEMENTAIS[c.elemento];
   const emCampo = i === ativo;
@@ -339,7 +467,13 @@ function _pveLutador(c, i, lado, ativo) {
   if (c.bonusA)         m(`A+${c.bonusA}`, 'escudo');
   if (c.bonusF)         m(`F+${c.bonusF}`, 'buff');
   if (c.bonusFD)        m(`FD+${c.bonusFD}`, 'escudo');
-  if (c.bonusEsquiva)   m(`${t('pve.marca.esquiva')}+${c.bonusEsquiva}`, 'escudo');
+  /* `c.bonusEsquiva` é só a parte que vem de magia sustentada. O +2 do
+     Passo Rápido vive na vantagem e é lido no momento de esquivar — a
+     etiqueta somava uma das duas origens e o jogador com Passo Rápido
+     não via bónus nenhum. O `_c3bonusEsquiva` é o mesmo que o motor usa
+     para decidir, portanto a etiqueta passa a dizer o número real. */
+  const _esq = _c3bonusEsquiva(c);
+  if (_esq)             m(`${t('pve.marca.esquiva')}+${_esq}`, 'escudo');
   if (c.cegoAtaque)     m(t('pve.marca.cego'), 'veneno');
   // As penalidades não levam etiqueta: já aparecem nos próprios
   // atributos, em "F2−1 H3−1 R2−1 A1−1". Uma etiqueta "TUDO−1" ao lado
@@ -728,6 +862,7 @@ function _pveAjudaDe(eu, lado, contra) {
       ${el ? el.emoji : '✦'} ${eu.nome}
       <span>${_pveCaracs(eu)} · ${t('pve.prog.vida')} ${eu.pv}/${eu.pvMax} · ${eu.pm}/${eu.pmMax} PM · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
+    ${_pveEstadoHTML(eu, contra)}
     ${contraHTML}
     ${html}
   </div>`;
