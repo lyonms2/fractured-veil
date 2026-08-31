@@ -11,7 +11,7 @@
 //  baixo estava a barra da equipa com o botão de batalhar. Um ícone com
 //  três trabalhos — quem tenho, quem luta, e lutar.
 //
-//  Agora a colónia mostra quem se tem, na tela principal, e este modal
+//  Agora a colônia mostra quem se tem, na tela principal, e este modal
 //  fica com os outros dois: montar a equipa, escolher a ordem, e entrar
 //  no combate. É o mesmo #equipaBar de sempre; só mudou de casa.
 // ═══════════════════════════════════════════════════════════════════
@@ -53,7 +53,7 @@ function escolherPvE() {
   abrirCombatePvE();
 }
 
-/* A colecção passa a abrir-se de dentro da colónia.
+/* A colecção passa a abrir-se de dentro da colônia.
 
    O 🧬 saiu da fila de cima para dar lugar ao ⚔, mas não desapareceu: o
    que lá se faz — vender, queimar, abrir slots — continua a ser preciso,

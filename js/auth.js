@@ -426,7 +426,7 @@ async function _onLoginSuccess(user) {
       updateDirtyVisuals();
       updateEquippedDisplay();
 
-      // A consola abre na COLÓNIA, não numa criatura. O jogo tem até dez
+      // A consola abre na COLÔNIA, não numa criatura. O jogo tem até dez
       // e o combate pede três; entrar por uma delas escondia o resto, que
       // era o problema todo. Quem quiser tratar de uma entra por ali.
       if(typeof abrirFazenda === 'function') abrirFazenda();

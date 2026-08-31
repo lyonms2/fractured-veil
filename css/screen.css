@@ -590,7 +590,7 @@
 
    Fixed e não absolute, ao contrário do #sleepOverlay: aquele escurece
    a moldura da consola de propósito, este tem de cobrir o ecrã inteiro
-   — a fila de cima, a colónia, os modais. Uma pausa que se vê pela
+   — a fila de cima, a colônia, os modais. Uma pausa que se vê pela
    metade não é uma pausa.
 
    O z-index fica acima dos modais (que vivem nos 100) porque a pausa é

@@ -22,7 +22,7 @@ window.registerStrings(
     'summon.lock.desc_nofree':'A próxima invocação custa {cost} 🪙 e você ainda não tem o suficiente. Jogue os minigames para ganhar moedas.',
     // A saida do painel de invocar. Fica sempre a vista quando ha um
     // avatar para onde voltar, e nao so quando falta dinheiro.
-    'summon.voltar':         '↩ Voltar ao slot {n}',
+    'summon.voltar':         '↩ Voltar à colônia',
     'summon.custo':          'Custa',
     'summon.saldo':          'Você tem',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
@@ -59,7 +59,7 @@ window.registerStrings(
     'summon.lock.title':     'FREE SUMMONS USED UP',
     'summon.lock.desc':      'The next summon costs {cost} 🪙 and you have {have} 🪙 — {missing} 🪙 short. Go back to one of your avatars and play the minigames to earn coins.',
     'summon.lock.desc_nofree':'The next summon costs {cost} 🪙 and you do not have enough yet. Play the minigames to earn coins.',
-    'summon.voltar':         '↩ Back to slot {n}',
+    'summon.voltar':         '↩ Back to the colony',
     'summon.custo':          'Costs',
     'summon.saldo':          'You have',
     'summon.bub.no_login':   'You need to log in! 🔑',

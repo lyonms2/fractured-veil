@@ -153,7 +153,7 @@ function updateResourceUI() {
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
   // Era a pastilha do 🧬 e contava slots ocupados de disponíveis. O 🧬
-  // saiu da fila de cima — a colónia mostra os avatares todos — e o
+  // saiu da fila de cima — a colônia mostra os avatares todos — e o
   // lugar dele é agora o ⚔. Portanto o número muda de pergunta: deixa
   // de ser "quantos bichos tenho" e passa a ser "quantos estão na
   // equipa", que é o que decide se dá para lutar.
@@ -750,22 +750,22 @@ function rebuildScreensParaSlot() {
   const set = (id, v) => { const el = $(id); if(el) el.style.display = v; };
   const btns = $('actionBtns');
 
-  /* ── SAIR DA COLÓNIA A SÉRIO, E NÃO PELA METADE ──
+  /* ── SAIR DA COLÔNIA A SÉRIO, E NÃO PELA METADE ──
 
      Cada ramo aqui em baixo punha o #fazendaScreen a none e dava-se por
-     satisfeito. Mas a colónia não é só esse elemento: o abrirFazenda
+     satisfeito. Mas a colônia não é só esse elemento: o abrirFazenda
      também põe a classe `fz-modo` no #mainScreen e `fz-colonia` no body,
      e esconde a fila dos botões de cuidar.
 
      O `fz-modo` faz do ecrã um flex de altura automática com um mínimo
-     de 9rem, para a lista da colónia poder encolher. Os outros ecrãs são
+     de 9rem, para a lista da colônia poder encolher. Os outros ecrãs são
      absolutos com inset:0 e não alimentam essa altura — portanto, com a
-     classe de pé e a colónia escondida, o que fica é uma caixa vazia.
+     classe de pé e a colônia escondida, o que fica é uma caixa vazia.
 
-     Medido: queimar um avatar na colónia e carregar em "usar este slot"
+     Medido: queimar um avatar na colônia e carregar em "usar este slot"
      dava um #summonCard de 0×0 dentro de um #mainScreen de 2×144. Um
      ecrã sem nada, sem saída, e um refresh à página corrigia — porque aí
-     o modo colónia não é reposto.
+     o modo colônia não é reposto.
 
      O fzSairDaColonia já fazia esta limpeza toda, e o comentário dele
      avisa: "duas cópias de uma saída, e a segunda esquecia-se de
@@ -823,7 +823,7 @@ function rebuildScreensParaSlot() {
      O restaurarCocos() só era chamado no login. Enquanto apenas o
      avatar aberto sujava a casa isso passava despercebido — quem
      entrava noutro nunca tinha nada para lhe mostrar. Agora que a
-     colónia inteira suja, entrar num avatar sujo e ver o chão limpo
+     colônia inteira suja, entrar num avatar sujo e ver o chão limpo
      seria a interface a contradizer a própria lista. */
   const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
   if(typeof restaurarCocos === 'function' && poopCount > 0) restaurarCocos();
@@ -837,7 +837,7 @@ function rebuildScreensParaSlot() {
   if(typeof updateSickVisuals === 'function') updateSickVisuals();
   if(typeof updateAllUI === 'function') updateAllUI();
   if(typeof updateResourceUI === 'function') updateResourceUI();
-  // Se o jogador estava na colónia, é para lá que se volta: este rebuild
+  // Se o jogador estava na colônia, é para lá que se volta: este rebuild
   // acaba de pôr o aliveScreen por baixo dela.
   if(typeof fzReafirmar === 'function') fzReafirmar();
   if(sleeping && typeof startSleep === 'function') startSleep();

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   A COLÓNIA — o ecrã de entrada da consola
+   A COLÔNIA — o ecrã de entrada da consola
 
    Vive dentro do .screen, que tem 17.5rem de altura: 280px no telemóvel
    e 420px no computador. Dez cartões não cabem lá, e não deviam caber —
@@ -37,7 +37,7 @@
 @media (max-width: 680px) {
   .btn-voltar-colonia { font-size: 0.5rem; padding: 0.375rem 0.625rem; }
 }
-/* A COLÓNIA ESTICA ATÉ CABER.
+/* A COLÔNIA ESTICA ATÉ CABER.
 
    Tinha altura fixa e a lista rolava lá dentro. Com duas criaturas
    sobrava meia consola vazia; com dez, rolava-se dentro de uma caixa
@@ -263,7 +263,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    NO COMPUTADOR, MAIOR
 
-   A colónia herdou as medidas de uma consola que mostrava um bicho
+   A colônia herdou as medidas de uma consola que mostrava um bicho
    grande ao centro. Como lista de dez, com nomes e dez números por
    linha, ficava apertada num ecrã onde há espaço de sobra — e a
    coluna da direita está vazia desde que o diário saiu.
@@ -287,9 +287,9 @@
   .fz-lista  { gap: 0.375rem; }
 }
 
-/* ── A COLÓNIA AO CENTRO ──
+/* ── A COLÔNIA AO CENTRO ──
    Enquanto ela está aberta não há nada na coluna da direita: os
-   painéis daquela coluna são todos de UMA criatura, e na colónia não
+   painéis daquela coluna são todos de UMA criatura, e na colônia não
    há uma criatura escolhida. Uma consola encostada à esquerda com
    metade do ecrã vazio ao lado lê-se como página partida, não como
    desenho.
@@ -304,7 +304,7 @@ body.fz-colonia main {
 }
 body.fz-colonia .right-panel { display: none; }
 /* ═══════════════════════════════════════════════════════════════════
-   O QUE NÃO PERTENCE À COLÓNIA
+   O QUE NÃO PERTENCE À COLÔNIA
 
    O abrirFazenda escondia isto por style inline, e havia sempre mais
    um caminho a repor: o rebuildScreensParaSlot, a sincronização com a

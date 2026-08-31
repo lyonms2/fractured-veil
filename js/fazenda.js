@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  fazenda.js — A COLÓNIA
+//  fazenda.js — A COLÔNIA
 //
 //  Depende de: avatarSlots, activeSlotIdx, gs (state.js), gerarSVG
 //              (mini-avatar.js), saveRuntimeToSlot/loadRuntimeFromSlot
@@ -12,7 +12,7 @@
 //  tempo, o combate pedia uma equipa de três. Quem jogava tinha de
 //  adivinhar como estavam dois terços do seu plantel.
 //
-//  Agora a consola abre na colónia: todos à vista, com os cinco vitais
+//  Agora a consola abre na colônia: todos à vista, com os cinco vitais
 //  de cada um. O "Cuidar" abre o ecrã de sempre — o bicho grande, as
 //  animações, o carinho — para aquele avatar. A intimidade não se
 //  perdeu, mudou de sítio: passou a ser um lugar onde se entra em vez
@@ -36,7 +36,7 @@
    Funcionavam. O problema era outro: resolviam o jogo com um clique.
    Cuidar de uma criatura é o jogo inteiro, e um botão que trata de
    dez de uma vez transforma isso num imposto que se paga e esquece.
-   A colónia continua a servir para o que era preciso — ver quem está
+   A colônia continua a servir para o que era preciso — ver quem está
    mal sem ter de entrar em cada um — e tratar continua a ser um gesto
    por criatura, no ecrã dela. */
 
@@ -57,7 +57,7 @@ function fazendaVivos() {
    SEM CORES AQUI. Estavam escritas à mão nesta lista e não batiam com
    as da tela de cuidar: o humor era magenta aqui e amarelo lá, a
    energia dourada aqui e azul lá, a higiene azul aqui e castanha lá.
-   Três dos cinco. Quem olhasse para a colónia e entrasse numa criatura
+   Três dos cinco. Quem olhasse para a colônia e entrasse numa criatura
    via a mesma barra mudar de cor, e não havia nada que explicasse
    porquê.
 
@@ -159,12 +159,12 @@ function renderFazenda() {
 
 }
 
-/* SAIR DA COLÓNIA, num sítio só.
+/* SAIR DA COLÔNIA, num sítio só.
 
    O abrirFazenda esconde seis coisas para a lista ficar sozinha na
    consola: os quatro ecrãs irmãos, a fila de botões de cuidar, a
    ficha do avatar, a barra de vitais do telemóvel e o botão de
-   voltar. Quem sai da colónia tem de repor tudo isso.
+   voltar. Quem sai da colônia tem de repor tudo isso.
 
    O cuidarDe repunha. A invocação e a chocagem repunham metade — o
    hatch() punha o statusCard de volta e mexia na opacidade dos
@@ -234,7 +234,7 @@ function fzAtualizarVitais() {
    Reaproveita o mesmo overlay do zoom que já existe no ecrã de cuidar
    — o openAvatarZoomData do js/main.js — em vez de inventar um
    segundo. Passa os dados DAQUELE slot, não os do avatar aberto: na
-   colónia o que se toca e o que está espelhado nos globais quase nunca
+   colônia o que se toca e o que está espelhado nos globais quase nunca
    são o mesmo. */
 function fzZoom(idx) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
@@ -243,7 +243,7 @@ function fzZoom(idx) {
   openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || '');
 }
 
-// ── Trocar entre a colónia e o cuidado de um ──
+// ── Trocar entre a colônia e o cuidado de um ──
 function abrirFazenda() {
   window._fzModoColonia = true;
   ['aliveScreen', 'deadScreen', 'idleScreen', 'eggScreen'].forEach(id => {
@@ -253,7 +253,7 @@ function abrirFazenda() {
   if (fz) fz.style.display = 'flex';
   const tela = document.getElementById('mainScreen');
   if (tela) tela.classList.add('fz-modo');
-  // A classe no body é o que centra a consola: só na colónia é que a
+  // A classe no body é o que centra a consola: só na colônia é que a
   // coluna da direita não tem nada para mostrar.
   document.body.classList.add('fz-colonia');
   // display:none e nao so opacity:0 — invisivel mas presente, a fila
@@ -276,7 +276,7 @@ function abrirFazenda() {
 /* Entrar no cuidado de um avatar.
 
    Isto mexe no activeSlotIdx, que já não decide quem VIVE — desde que a
-   colónia existe, vivem todos — mas continua a decidir quem está
+   colônia existe, vivem todos — mas continua a decidir quem está
    espelhado nos globais e portanto quem tem animações, cocó e bolhas.
    Trocar aqui é seguro: o que fica para trás continua a comer e a
    envelhecer no viverTodos(). */
@@ -287,7 +287,7 @@ async function cuidarDe(idx) {
   // aconteceu no "usar este slot" do marketplace, e por isso ele também
   // passou a chamar esta função em vez de duplicá-la.
   // Sai ANTES do switchSlot: ele chama o rebuildScreensParaSlot, que
-  // reafirma a colónia se o estado ainda estiver ligado — e o jogador
+  // reafirma a colônia se o estado ainda estiver ligado — e o jogador
   // ficava preso na lista sem conseguir entrar em ninguém.
   fzSairDaColonia();
   if (idx !== activeSlotIdx && typeof switchSlot === 'function') {

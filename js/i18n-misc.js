@@ -27,9 +27,9 @@ window.registerStrings(
     'cambio.nota2':        'Cristais obtidos por câmbio são cristais normais',
     'cambio.bloq.avatar':  'Sem avatar ativo.',
     'cambio.bloq.nivel':   'Avatar precisa de nível {n}+.',
-    // ── A COLÓNIA ──
-    'fazenda.titulo':        '◆ A COLÓNIA',
-    'fazenda.voltar':        '◆ COLÓNIA',
+    // ── A COLÔNIA ──
+    'fazenda.titulo':        '◆ A COLÔNIA',
+    'fazenda.voltar':        '◆ COLÔNIA',
     'fazenda.gerir':         'Gerir avatares — vender, queimar, abrir slots',
     'batalha.titulo':        '⚔ BATALHA',
     'batalha.sub':           'Monte a equipe e escolha o combate. A ordem manda: o primeiro abre a luta.',

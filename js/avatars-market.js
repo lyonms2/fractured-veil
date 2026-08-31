@@ -525,7 +525,7 @@ function renderSlots() {
             ${_slotBtnEquipa(i, s)}
             ${!isActive && !isFrozen ? `
             <!-- O ATIVAR saiu. Escolher com quem se joga passou a ser o
-                 CUIDAR da colónia, na tela principal, ao lado dos vitais
+                 CUIDAR da colônia, na tela principal, ao lado dos vitais
                  daquele bicho — que é onde a escolha faz sentido. Aqui
                  ficava um segundo botão para a mesma coisa, num painel
                  que é de vender e queimar. -->

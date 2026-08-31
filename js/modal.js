@@ -47,7 +47,7 @@ const MODAL_IDS = [
 
    Quase todos nasceram dentro do #aliveScreen, e durante muito tempo
    isso não teve consequência: a consola tinha um ecrã só e ele estava
-   sempre à vista. Quando a colónia passou a ser a casa, o
+   sempre à vista. Quando a colônia passou a ser a casa, o
    abrirFazenda começou a esconder o aliveScreen — e levava atrás dele
    tudo o que lá estava dentro. Os botões do topo respondiam, o modal
    ganhava a classe .open, e não aparecia nada: estava dentro de um pai

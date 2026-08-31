@@ -28,16 +28,22 @@ function primeiroSlotVivo() {
   return avatarSlots.findIndex(s => s && !s.dead);
 }
 
-// Leva o jogador de volta a um avatar que ele já tem. É a saída do beco sem
-// saída: num slot vazio os botões de ação estão desligados e o ícone das
-// moedas escondido, portanto sem isto não havia forma de chegar aos
-// minigames para ganhar as moedas da próxima invocação.
-function voltarAoAvatarVivo() {
-  const i = primeiroSlotVivo();
-  if(i < 0) return;
+/* A saída do beco sem saída: num slot vazio os botões de ação estão
+   desligados e o ícone das moedas escondido, portanto sem isto não havia
+   forma de chegar aos minigames para ganhar as moedas da invocação.
+
+   Ia para o primeiro slot com um avatar vivo — uma escolha que o jogo
+   fazia por quem tem três criaturas e não disse qual queria. Vai para a
+   COLÔNIA, que é a casa: a lista de todos, com os vitais de cada um, e
+   é lá que se escolhe em quem entrar. Era de lá que ele tinha vindo.
+
+   Continua a precisar de haver alguém vivo — uma colônia vazia não é
+   saída nenhuma, e quem está nesse caso tem a invocação de graça. */
+function voltarAColonia() {
+  if(primeiroSlotVivo() < 0) return;
   if(typeof closeMarketplaceModal === 'function') closeMarketplaceModal();
   if(typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
-  switchSlot(i);
+  if(typeof abrirFazenda === 'function') abrirFazenda();
 }
 
 // Mostra/esconde o aviso de bloqueio no painel de invocação.
@@ -73,7 +79,7 @@ function updateSummonLockHint() {
   const voltar = document.getElementById('btnSummonVoltar');
   if(voltar) {
     voltar.style.display = alvoVivo >= 0 ? '' : 'none';
-    voltar.textContent   = t('summon.voltar', { n: alvoVivo + 1 });
+    voltar.textContent   = t('summon.voltar');
   }
 
   if(!semSaldo) {
@@ -320,7 +326,7 @@ function setupAvatar() {
      via-se o ovo, e 1,2 segundos depois o hatch() punha a criatura na
      tela — o que passava por normal, porque acabava onde devia.
 
-     Com a colónia deixou de passar. O hatch() sai do modo colónia de
+     Com a colônia deixou de passar. O hatch() sai do modo colônia de
      propósito (acabou de nascer um bicho e é para o ver), portanto a
      consola abria certo, na lista, e um segundo depois saltava para
      uma criatura e ficava lá. Era este o "abre certo e na sequência
@@ -372,7 +378,7 @@ function hatch() {
     document.getElementById('actionBtns').style.opacity = '1';
     document.getElementById('actionBtns').style.pointerEvents = 'all';
     loadRuntimeFromSlot(activeSlotIdx);
-    // Sai da colónia: acabou de nascer um bicho e é para o ver.
+    // Sai da colônia: acabou de nascer um bicho e é para o ver.
     if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
     document.getElementById('aliveScreen').style.display = 'block';
     document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());

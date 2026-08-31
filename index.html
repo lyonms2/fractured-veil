@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-09-02h
+     VERSÃO DOS FICHEIROS — ?v=2026-09-02i
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-09-02h" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-09-02i" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -49,22 +49,22 @@
        decoracao. -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/screen.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/ui.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/modals.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/combate.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/arena.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/snake.css?v=2026-09-02h">
-<link rel="stylesheet" href="css/fazenda.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-02h">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-02h">
+  <link rel="stylesheet" href="css/base.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/screen.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/ui.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/modals.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/combate.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/arena.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/snake.css?v=2026-09-02i">
+<link rel="stylesheet" href="css/fazenda.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-02i">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-02i">
 
   <style>
 
@@ -208,7 +208,7 @@
 
      Viviam DENTRO do #aliveScreen. Funcionou enquanto a consola tinha
      um ecrã só, com um bicho ao centro; a partir do momento em que a
-     colónia passou a ser a casa, o abrirFazenda esconde o aliveScreen
+     colônia passou a ser a casa, o abrirFazenda esconde o aliveScreen
      e levava os três atrás dele — os botões do topo respondiam e não
      abria nada, porque o modal estava dentro de um pai a display:none.
 
@@ -391,10 +391,10 @@
 
            Os quatro são <button>: eram <div>, <a> e <button> misturados, e
            o teclado tratava cada um de sua maneira. -->
-          <!-- Era aqui o 🧬. Saiu porque a colónia, na tela principal, já
+          <!-- Era aqui o 🧬. Saiu porque a colônia, na tela principal, já
            mostra os avatares todos — e o que faltava na fila de cima era
            uma porta para a batalha, que estava enterrada dois níveis
-           abaixo. O 🧬 continua a existir: abre-se de dentro da colónia,
+           abaixo. O 🧬 continua a existir: abre-se de dentro da colônia,
            que é onde as criaturas estão. -->
       <button class="res res-clickable" id="resBatalhaBtn" onclick="abrirBatalha()" data-i18n-title="batalha.titulo" title="Batalha" style="display:none;">⚔ <b id="resEquipa">0</b></button>
       <button class="res res-clickable" id="resMoedasBtn" onclick="openCoinShop()" data-i18n-title="ui.coins_title" title="Moedas" style="display:none;">🪙 <b id="resMonedas">0</b></button>
@@ -435,7 +435,7 @@
       <!-- SCREEN -->
       <div class="screen" id="mainScreen">
 
-        <!-- ◆ COLÓNIA — o caminho de volta.
+        <!-- ◆ COLÔNIA — o caminho de volta.
 
              Estava no .device-top, ao pé do ponto de estado. No
              computador via-se; no telemóvel não, porque o
@@ -446,10 +446,10 @@
 
              Vive agora DENTRO do ecrã, ao alto e à esquerda, a espelhar
              o 🔍 que abre o retrato do outro lado. Só aparece quando se
-             está dentro de uma criatura — na colónia não há para onde
+             está dentro de uma criatura — na colônia não há para onde
              voltar. -->
         <button class="btn-voltar-colonia" id="btnColonia" onclick="abrirFazenda()"
-                data-i18n="fazenda.voltar" style="display:none;">◆ COLÓNIA</button>
+                data-i18n="fazenda.voltar" style="display:none;">◆ COLÔNIA</button>
 
         <!-- IDLE -->
         <div id="idleScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;">
@@ -472,13 +472,13 @@
           <div style="font-family:'Cinzel',serif;font-size:0.4375rem;letter-spacing:0.1875rem;color:var(--muted);text-align:center;"><span data-i18n="portal.waiting">PORTAL DIMENSIONAL</span><br><span data-i18n="portal.sub" style="opacity:.5">aguardando invocação</span></div>
         </div>
 
-        <!-- A COLÓNIA — o ecrã de entrada da consola.
+        <!-- A COLÔNIA — o ecrã de entrada da consola.
              Todos os avatares vivos com os cinco vitais à vista, e uma
              fila de acções que trata de quem precisa. O "Cuidar" abre o
              aliveScreen, que é o ecrã de sempre, para aquele bicho. -->
         <div id="fazendaScreen" style="display:none;">
           <div class="fz-topo">
-            <span class="fz-titulo" data-i18n="fazenda.titulo">◆ A COLÓNIA</span>
+            <span class="fz-titulo" data-i18n="fazenda.titulo">◆ A COLÔNIA</span>
             <span class="fz-topo-dir">
               <span class="fz-conta" id="fazendaConta"></span>
               <!-- A porta da colecção: vender, queimar, abrir slots.
@@ -890,7 +890,7 @@
           <!-- A saída. Aparece sempre que houver outro avatar vivo para
                onde voltar, e não só quando falta dinheiro. -->
           <button class="btn-summon-voltar" id="btnSummonVoltar" style="display:none;"
-                  onclick="voltarAoAvatarVivo()"></button>
+                  onclick="voltarAColonia()"></button>
           <!-- Sem moedas, o painel explica-se. O botão de voltar já está
                aqui em cima, portanto este bloco é só a explicação. -->
           <div id="summonLockHint" style="display:none;">
@@ -1044,24 +1044,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-09-02h"></script>
-<script src="js/i18n-pvp.js?v=2026-09-02h"></script>
-<script src="js/i18n-bn.js?v=2026-09-02h"></script>
-<script src="js/i18n-minigames.js?v=2026-09-02h"></script>
-<script src="js/i18n-eggs.js?v=2026-09-02h"></script>
-<script src="js/i18n-gametick.js?v=2026-09-02h"></script>
-<script src="js/i18n-items.js?v=2026-09-02h"></script>
-<script src="js/i18n-market.js?v=2026-09-02h"></script>
-<script src="js/i18n-mina.js?v=2026-09-02h"></script>
-<script src="js/i18n-arcade.js?v=2026-09-02h"></script>
-<script src="js/i18n-session.js?v=2026-09-02h"></script>
-<script src="js/i18n-misc.js?v=2026-09-02h"></script>
-<script src="js/i18n-lore.js?v=2026-09-02h"></script>
-<script src="js/i18n-prologo.js?v=2026-09-02h"></script>
-<script src="js/i18n-marketplace.js?v=2026-09-02h"></script>
-<script src="js/i18n-magias.js?v=2026-09-02h"></script>
-<script src="js/i18n-vantagens.js?v=2026-09-02h"></script>
-<script src="js/i18n-pve.js?v=2026-09-02h"></script>
+<script src="js/i18n.js?v=2026-09-02i"></script>
+<script src="js/i18n-pvp.js?v=2026-09-02i"></script>
+<script src="js/i18n-bn.js?v=2026-09-02i"></script>
+<script src="js/i18n-minigames.js?v=2026-09-02i"></script>
+<script src="js/i18n-eggs.js?v=2026-09-02i"></script>
+<script src="js/i18n-gametick.js?v=2026-09-02i"></script>
+<script src="js/i18n-items.js?v=2026-09-02i"></script>
+<script src="js/i18n-market.js?v=2026-09-02i"></script>
+<script src="js/i18n-mina.js?v=2026-09-02i"></script>
+<script src="js/i18n-arcade.js?v=2026-09-02i"></script>
+<script src="js/i18n-session.js?v=2026-09-02i"></script>
+<script src="js/i18n-misc.js?v=2026-09-02i"></script>
+<script src="js/i18n-lore.js?v=2026-09-02i"></script>
+<script src="js/i18n-prologo.js?v=2026-09-02i"></script>
+<script src="js/i18n-marketplace.js?v=2026-09-02i"></script>
+<script src="js/i18n-magias.js?v=2026-09-02i"></script>
+<script src="js/i18n-vantagens.js?v=2026-09-02i"></script>
+<script src="js/i18n-pve.js?v=2026-09-02i"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1070,56 +1070,56 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-09-02h"></script>
-<script src="js/data.js?v=2026-09-02h"></script>
-<script src="js/state.js?v=2026-09-02h"></script>
-<script src="js/vantagens.js?v=2026-09-02h"></script>
-<script src="js/ficha-3dt.js?v=2026-09-02h"></script>
-<script src="js/magias.js?v=2026-09-02h"></script>
-<script src="js/combate-3dt.js?v=2026-09-02h"></script>
-<script src="js/equipa.js?v=2026-09-02h"></script>
-<script src="js/combate-ui.js?v=2026-09-02h"></script>
-<script src="js/combate-pve.js?v=2026-09-02h"></script>
-<script src="js/ui.js?v=2026-09-02h"></script>
-<script src="js/modal.js?v=2026-09-02h"></script>
-<script src="js/firebase.js?v=2026-09-02h"></script>
-<script src="js/gametick.js?v=2026-09-02h"></script>
-<script src="js/evolucao.js?v=2026-09-02h"></script>
-<script src="js/actions.js?v=2026-09-02h"></script>
-<script src="js/mini-avatar.js?v=2026-09-02h"></script>
-<script src="js/minigames.js?v=2026-09-02h"></script>
-<script src="js/summon.js?v=2026-09-02h"></script>
-<script src="js/batalha.js?v=2026-09-02h"></script>
-<script src="js/fazenda.js?v=2026-09-02h"></script>
-<script src="js/eggs.js?v=2026-09-02h"></script>
-<script src="js/items.js?v=2026-09-02h"></script>
-<script src="js/market.js?v=2026-09-02h"></script>
-<script src="js/coinshop.js?v=2026-09-02h"></script>
-<script src="js/cards.js?v=2026-09-02h"></script>
-<script src="js/rouba-monte.js?v=2026-09-02h"></script>
-<script src="js/mina.js?v=2026-09-02h"></script>
-<script src="js/batalha-naval.js?v=2026-09-02h"></script>
-<script src="js/snake.js?v=2026-09-02h"></script>
-<script src="js/labirinto.js?v=2026-09-02h"></script>
-<script src="js/cambio.js?v=2026-09-02h"></script>
-<script src="js/arena.js?v=2026-09-02h"></script>
-<script src="js/lore.js?v=2026-09-02h"></script>
-<script src="js/prologo.js?v=2026-09-02h"></script>
-<script src="js/lore-caps/cap1.js?v=2026-09-02h"></script>
-<script src="js/lore-caps/cap2.js?v=2026-09-02h"></script>
-<script src="js/lore-caps/cap3.js?v=2026-09-02h"></script>
-<script src="js/lore-caps/cap4.js?v=2026-09-02h"></script>
-<script src="js/amigos.js?v=2026-09-02h"></script>
-<script src="js/auth.js?v=2026-09-02h"></script>
+<script src="js/audio.js?v=2026-09-02i"></script>
+<script src="js/data.js?v=2026-09-02i"></script>
+<script src="js/state.js?v=2026-09-02i"></script>
+<script src="js/vantagens.js?v=2026-09-02i"></script>
+<script src="js/ficha-3dt.js?v=2026-09-02i"></script>
+<script src="js/magias.js?v=2026-09-02i"></script>
+<script src="js/combate-3dt.js?v=2026-09-02i"></script>
+<script src="js/equipa.js?v=2026-09-02i"></script>
+<script src="js/combate-ui.js?v=2026-09-02i"></script>
+<script src="js/combate-pve.js?v=2026-09-02i"></script>
+<script src="js/ui.js?v=2026-09-02i"></script>
+<script src="js/modal.js?v=2026-09-02i"></script>
+<script src="js/firebase.js?v=2026-09-02i"></script>
+<script src="js/gametick.js?v=2026-09-02i"></script>
+<script src="js/evolucao.js?v=2026-09-02i"></script>
+<script src="js/actions.js?v=2026-09-02i"></script>
+<script src="js/mini-avatar.js?v=2026-09-02i"></script>
+<script src="js/minigames.js?v=2026-09-02i"></script>
+<script src="js/summon.js?v=2026-09-02i"></script>
+<script src="js/batalha.js?v=2026-09-02i"></script>
+<script src="js/fazenda.js?v=2026-09-02i"></script>
+<script src="js/eggs.js?v=2026-09-02i"></script>
+<script src="js/items.js?v=2026-09-02i"></script>
+<script src="js/market.js?v=2026-09-02i"></script>
+<script src="js/coinshop.js?v=2026-09-02i"></script>
+<script src="js/cards.js?v=2026-09-02i"></script>
+<script src="js/rouba-monte.js?v=2026-09-02i"></script>
+<script src="js/mina.js?v=2026-09-02i"></script>
+<script src="js/batalha-naval.js?v=2026-09-02i"></script>
+<script src="js/snake.js?v=2026-09-02i"></script>
+<script src="js/labirinto.js?v=2026-09-02i"></script>
+<script src="js/cambio.js?v=2026-09-02i"></script>
+<script src="js/arena.js?v=2026-09-02i"></script>
+<script src="js/lore.js?v=2026-09-02i"></script>
+<script src="js/prologo.js?v=2026-09-02i"></script>
+<script src="js/lore-caps/cap1.js?v=2026-09-02i"></script>
+<script src="js/lore-caps/cap2.js?v=2026-09-02i"></script>
+<script src="js/lore-caps/cap3.js?v=2026-09-02i"></script>
+<script src="js/lore-caps/cap4.js?v=2026-09-02i"></script>
+<script src="js/amigos.js?v=2026-09-02i"></script>
+<script src="js/auth.js?v=2026-09-02i"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-09-02h"></script>
-<script src="js/cristais.js?v=2026-09-02h"></script>
-<script src="js/avatars-market.js?v=2026-09-02h"></script>
-<script src="js/eggs-market.js?v=2026-09-02h"></script>
-<script src="js/marketplace-core.js?v=2026-09-02h"></script>
+<script src="js/pool.js?v=2026-09-02i"></script>
+<script src="js/cristais.js?v=2026-09-02i"></script>
+<script src="js/avatars-market.js?v=2026-09-02i"></script>
+<script src="js/eggs-market.js?v=2026-09-02i"></script>
+<script src="js/marketplace-core.js?v=2026-09-02i"></script>
 
-<script src="js/main.js?v=2026-09-02h"></script>
+<script src="js/main.js?v=2026-09-02i"></script>
 
 
 <script>
@@ -1204,8 +1204,8 @@
   function syncNav() {
     const alive = typeof hatched !== 'undefined' && hatched &&
                   typeof dead   !== 'undefined' && !dead;
-    /* Na COLÓNIA este bloco não entra. Ele mostra os cinco vitais de uma
-       criatura só — a que está aberta — e na colónia isso aparecia por
+    /* Na COLÔNIA este bloco não entra. Ele mostra os cinco vitais de uma
+       criatura só — a que está aberta — e na colônia isso aparecia por
        baixo de uma lista que já mostra os de todas, sem sequer dizer de
        quem era. Sem esta linha o abrirFazenda escondia-o e o primeiro
        updateAllUI punha-o de volta. */
@@ -1595,7 +1595,7 @@
   <div class="mkt-bottom-nav-inner">
     <!-- Era aqui o 🧬 Avatares, a apontar a uma secção 'slots' que já
          não existe: o "Meus Avatares" saiu do marketplace para porta
-         própria, aberta do cabeçalho da colónia. A aba ficou, morta, e
+         própria, aberta do cabeçalho da colônia. A aba ficou, morta, e
          ainda por cima marcada como activa — abria-se a loja e o que
          estava aceso lá em baixo era um separador que não levava a
          lado nenhum. -->
