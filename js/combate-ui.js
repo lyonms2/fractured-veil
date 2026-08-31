@@ -169,6 +169,10 @@ function renderEquipaBar() {
 
   const idx   = equipaIdx();
   const cheia = idx.length >= COMBATE_EQUIPA_MAX;
+  // Uma vez só, e serve o rodapé, os cartões e o aviso: três leituras
+  // separadas da mesma regra é como se chega a um "pronta para batalhar"
+  // por cima de um "não dá para batalhar".
+  const impedidos = (typeof _pveImpedidos === 'function') ? _pveImpedidos() : [];
 
   // ── A ORDEM À VISTA ──
   // O primeiro da fila abre a luta; os outros entram por ordem, à medida
@@ -197,13 +201,30 @@ function renderEquipaBar() {
       <button ${n >= idx.length - 1 ? 'disabled' : ''} onclick="moverEquipa(${i},1)"
               title="${t('equipa.ordem.descer')}">▶</button>
     </div>`;
-    cartoes += `<div class="equipa-slot${n === 0 ? ' primeiro' : ''}"
-         title="${t('mkt.slot.label', {n: i+1})}">
+    /* Quem não pode lutar diz-o no seu próprio cartão.
+
+       O aviso por baixo já nomeava os impedidos, mas obrigava a ler uma
+       frase e a procurar o nome entre três cartões. A marca vai onde o
+       olho já está: por cima do avatar, com o motivo escrito.
+
+       O cartão não desaparece nem se apaga a ponto de não se ver — é
+       preciso continuar a reconhecê-lo para o trocar por outro, que é
+       exatamente o que se quer que o jogador faça. */
+    const imp = (typeof _pveImpedimentoDe === 'function') ? _pveImpedimentoDe(i) : null;
+    const marca = imp ? `<div class="equipa-bloqueio ${imp.motivo}">
+        <span class="eb-selo">${t('equipa.bloqueio.' + imp.motivo)}</span>
+        <span class="eb-porque">${imp.etiqueta}</span>
+      </div>` : '';
+
+    cartoes += `<div class="equipa-slot${n === 0 ? ' primeiro' : ''}${imp ? ' bloqueado' : ''}"
+         title="${imp ? t('equipa.bloqueio.title.' + imp.motivo, { nome })
+                      : t('mkt.slot.label', {n: i+1})}">
       <span class="equipa-pos">${n + 1}</span>
       ${gerarSVG(s.elemento, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
       <div class="equipa-slot-nome">${nome}</div>
       <div class="equipa-slot-sub">${ec ? ec.emoji : '✦'} ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
       <div class="equipa-papel">${papel}</div>
+      ${marca}
       ${setas}
     </div>`;
   }
@@ -221,10 +242,17 @@ function renderEquipaBar() {
     <div class="equipa-slots">${cartoes}</div>
     ${idx.length ? `<div class="equipa-ordem-nota">${t('equipa.ordem.nota')}</div>` : ''}
     <div class="equipa-foot">
-      ${cheia ? t('equipa.pronta') : t(faltam === 1 ? 'equipa.incompleta_1' : 'equipa.incompleta', { faltam })}<br>
+      ${/* "Equipe pronta para batalhar" ficava a dizer isso mesmo por cima
+            do aviso a explicar que não dava — a contradição estava a dois
+            centímetros de si própria. Três de três continua a ser três de
+            três, e isso o contador em cima diz; o que não se pode é
+            chamar-lhe pronta. */''}
+      ${!cheia ? t(faltam === 1 ? 'equipa.incompleta_1' : 'equipa.incompleta', { faltam })
+        : impedidos.length ? t('equipa.bloqueio.nao_pronta')
+        : t('equipa.pronta')}<br>
       ${t('equipa.poder', { poder })}
     </div>
-    ${renderBotaoBatalhar(cheia)}
+    ${renderBotaoBatalhar(cheia, impedidos)}
   </div>`;
 }
 
@@ -246,13 +274,22 @@ function renderEquipaBar() {
    O que fica é a parte que os cartões não sabem dizer: PORQUE é que não
    dá. Falta gente na equipa, ou há gente cansada de mais e com nome.
    Com a equipa pronta isto some, e quem manda são os cartões. */
-function renderBotaoBatalhar(cheia) {
+function renderBotaoBatalhar(cheia, impedidos) {
   if (!cheia) return `<div class="equipa-batalhar-off">${t('equipa.batalhar.incompleta')}</div>`;
 
-  const cansados = (typeof _pveCansados === 'function') ? _pveCansados() : [];
-  if (cansados.length) {
+  /* O aviso diz três coisas, e a terceira é a que faltava: QUEM está de
+     fora, PORQUÊ, e que a equipa não fica presa por causa disso — basta
+     trocar por outro avatar. Sem a última linha, o jogador que só tem
+     três criaturas conclui que não pode lutar e fecha a página. */
+  if (impedidos && impedidos.length) {
+    const linhas = impedidos.map(x =>
+      `<li><b>${x.nome}</b> — ${t('equipa.bloqueio.motivo.' + x.motivo, {
+        etiqueta: x.etiqueta, min: PVE_ENERGIA_MINIMA,
+      })}</li>`).join('');
     return `<div class="equipa-batalhar-off cansada">
-      ${t('equipa.batalhar.cansada', { nomes: cansados.map(c => c.nome).join(', ') })}
+      <div class="eb-titulo">${t('equipa.bloqueio.titulo')}</div>
+      <ul class="eb-lista">${linhas}</ul>
+      <div class="eb-saida">${t('equipa.bloqueio.saida')}</div>
     </div>`;
   }
   return '';

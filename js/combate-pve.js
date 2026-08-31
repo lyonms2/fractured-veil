@@ -167,12 +167,59 @@ function _pveAdoecer(idx, doenca) {
   return true;
 }
 
-// Quem da equipa está cansado de mais para lutar
-function _pveCansados() {
+// As doenças deste avatar, venha ele das variáveis vivas ou do slot.
+// Mesmo encaminhamento da energia e do XP.
+function _pveDoencasDe(idx) {
+  if (typeof activeSlotIdx !== 'undefined' && idx === activeSlotIdx
+      && typeof activeDiseases !== 'undefined') return activeDiseases;
+  const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
+  return (s && s.activeDiseases) ? s.activeDiseases : [];
+}
+
+/* ═══ PORQUE É QUE ESTE AVATAR NÃO PODE LUTAR ═══
+
+   Uma função só, e é ela que manda. O motivo é pedido em quatro sítios
+   — o cartão do modo na página da batalha, os cartões da equipa, o
+   aviso por baixo deles, e a porta do próprio combate — e quatro cópias
+   da mesma regra divergem sempre: basta uma delas ficar para trás e o
+   jogador vê um botão aceso que não faz nada, ou um bloqueio sem razão.
+
+   A ordem importa. A doença vem primeiro porque é o bloqueio mais duro:
+   a energia volta sozinha com o tempo, a doença precisa de antídoto. Um
+   avatar doente E cansado tem de ouvir falar do antídoto, que é o que
+   ele não descobre sozinho. */
+function _pveImpedimentoDe(i) {
+  const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[i] : null;
+  const nome = ((s || {}).nome || 'Avatar').split(',')[0].trim();
+
+  const doencas = _pveDoencasDe(i);
+  if (doencas.length) {
+    const nomes = doencas.map(id => {
+      const d = (typeof DISEASES !== 'undefined') ? DISEASES[id] : null;
+      return d ? (d.emoji + ' ' + d.nome) : id;
+    });
+    return { i, nome, motivo: 'doenca', doencas: nomes, etiqueta: nomes[0] };
+  }
+
+  /* Menor que 20, e não menor ou igual.
+
+     O limiar é 20 porque é aí que a exaustão começa a acumular, e essa
+     conta é `v.energia < 20` (js/gametick.js): aos 20 certos o avatar
+     ainda está a salvo. A batalha bloqueava-o na mesma, exigindo 21 —
+     um ponto mais apertada do que a regra que diz copiar, e um número
+     que não se explica a ninguém. Agora os dois dizem 20. */
+  const energia = Math.floor(_pveEnergiaDe(i));
+  if (energia < PVE_ENERGIA_MINIMA)
+    return { i, nome, motivo: 'energia', energia,
+             etiqueta: '⚡ ' + energia + '/' + PVE_ENERGIA_MINIMA };
+
+  return null;
+}
+
+// Quem da equipa não pode entrar em campo, e porquê.
+function _pveImpedidos() {
   const idx = (typeof equipaIdx === 'function') ? equipaIdx() : [];
-  return idx.filter(i => _pveEnergiaDe(i) <= PVE_ENERGIA_MINIMA)
-            .map(i => ({ i, nome: ((avatarSlots[i] || {}).nome || 'Avatar').split(',')[0].trim(),
-                         energia: Math.floor(_pveEnergiaDe(i)) }));
+  return idx.map(_pveImpedimentoDe).filter(Boolean);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -182,12 +229,20 @@ function abrirCombatePvE() {
   const equipa = (typeof equipaDoJogador === 'function') ? equipaDoJogador() : [];
   if (!equipa.length) { showBubble(t('pve.sem_equipa')); return; }
 
-  // Avatar cansado não batalha. Dizer QUEM e com quanta energia, senão o
-  // jogador fica sem saber o que fazer para desbloquear.
-  const cansados = _pveCansados();
-  if (cansados.length) {
-    showToast(t(cansados.length === 1 ? 'pve.cansado' : 'pve.cansados', {
-      nomes: cansados.map(c => c.nome).join(', '),
+  /* A porta. Doente ou sem energia não entra em campo — e diz-se QUEM,
+     PORQUÊ e o que fazer, senão o jogador fica com um botão que não faz
+     nada e nenhuma pista.
+
+     Isto é a última palavra e não a primeira: a página da batalha já
+     apaga o cartão e os cartões da equipa já marcam quem está de fora.
+     Mas quem manda é esta linha, porque é aqui que a batalha começa. */
+  const impedidos = _pveImpedidos();
+  if (impedidos.length) {
+    const doentes = impedidos.filter(x => x.motivo === 'doenca');
+    const chave = doentes.length ? (doentes.length === impedidos.length ? 'pve.doente' : 'pve.impedidos')
+                                 : (impedidos.length === 1 ? 'pve.cansado' : 'pve.cansados');
+    showToast(t(chave, {
+      nomes: impedidos.map(c => c.nome).join(', '),
       min: PVE_ENERGIA_MINIMA,
     }), 'err');
     return;

@@ -38,11 +38,11 @@ function _btSincronizarModos() {
   if (!pve) return;
   const n = (typeof equipaIdx === 'function') ? equipaIdx().length : 0;
   const max = (typeof COMBATE_EQUIPA_MAX === 'number') ? COMBATE_EQUIPA_MAX : 3;
-  // Cansados contam como não-pronta: sem isto o cartão convidava a lutar
+  // Impedidos contam como não-pronta: sem isto o cartão convidava a lutar
   // ao lado de um aviso a dizer que não dava, e o clique morria lá
-  // dentro sem explicação.
-  const cansados = (typeof _pveCansados === 'function') ? _pveCansados() : [];
-  const pronta = n >= max && cansados.length === 0;
+  // dentro sem explicação. Doente conta tanto como cansado.
+  const impedidos = (typeof _pveImpedidos === 'function') ? _pveImpedidos() : [];
+  const pronta = n >= max && impedidos.length === 0;
   pve.classList.toggle('bt-modo-off', !pronta);
   pve.disabled = !pronta;
 }

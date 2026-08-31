@@ -132,7 +132,7 @@ window.registerStrings(
     'rm.stole':              '🔥 ROUBASTE O MONTE!',
     'rm.pile_stolen':        '💀 MONTE ROUBADO!',
     'rm.stole_sub':          '{card} bateu no topo do oponente',
-    'rm.stolen_sub':         'Oponente roubou o teu monte',
+    'rm.stolen_sub':         'Oponente roubou o seu monte',
     // Rouba Monte — bubbles/logs
     'rm.bub.sent':           'Desafio enviado! 🃏',
     'rm.bub.challenged':     'Desafio de Rouba Monte! 🃏',

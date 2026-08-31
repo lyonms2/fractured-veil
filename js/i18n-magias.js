@@ -86,7 +86,7 @@ window.registerStrings({
   'mag.te_d3.nome':   'Casca de Helena',
   'mag.te_d3.desc':   'A pele vira couraça de pedra viva: sua Armadura conta em dobro contra tudo que não seja magia.',
   'mag.ag_d4.nome':   'Maré Compartilhada',
-  'mag.ag_d4.desc':   'A água corre até onde for preciso. Cura 1d de vida a cada 2 PM, em si ou em qualquer companheiro de equipa — incluindo quem está no banco à espera de entrar. Não levanta quem já caiu.',
+  'mag.ag_d4.desc':   'A água corre até onde for preciso. Cura 1d de vida a cada 2 PM, em si ou em qualquer companheiro de equipe — incluindo quem está no banco à espera de entrar. Não levanta quem já caiu.',
   'mag.ag_d3.nome':   'Maré Restauradora',
   'mag.ag_d3.desc':   'A água corre por dentro e fecha o que estava aberto. Cura 1d de vida a cada 2 PM que você investe.',
   'mag.vt_f3.nome':   'Fio Cortante',
@@ -178,7 +178,7 @@ window.registerStrings({
   'mag.so_d1.nome':   'Manto de Penumbra',
   'mag.so_d1.desc':   'Um manto de penumbra fecha-se à sua volta e come os golpes antes de eles chegarem à carne: 8 pontos de dano, e o que passar disso fere na mesma. Enquanto a bolsa aguentar, o golpe não fere — e o que não fere não envenena, não congela nem decapita. Paga-se uma vez, dura até se gastar, e lançá-la outra vez enche-a mais.',
   'mag.so_d2.nome':   'Égide Mental',
-  'mag.so_d2.desc':   'A mente se fecha por dentro. Nada que tire você do combate sem passar pela vida — virar pedra, virar estátua de gelo, ter a alma devorada — chega a pegar. Em troca não pára um único ponto de dano, e não impede o Inverno Súbito de o prender: fecha a alma, não o corpo. Paga-se uma vez e dura a luta inteira.',
+  'mag.so_d2.desc':   'A mente se fecha por dentro. Nada que tire você do combate sem passar pela vida — virar pedra, virar estátua de gelo, ter a alma devorada — chega a pegar. Em troca não para um único ponto de dano, e não impede o Inverno Súbito de o prender: fecha a alma, não o corpo. Paga-se uma vez e dura a luta inteira.',
 
   // ── ✦ UNIVERSAIS ──────────────────────────────────────────────────
   'mag.un_a1.nome':   'Descarga Elemental',

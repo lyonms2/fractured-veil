@@ -581,6 +581,61 @@ b.cond {
 }
 .equipa-batalhar-off.cansada { color: #e0a050; border-color: rgba(224,160,80,.3); }
 
+/* ── QUEM ESTÁ DE FORA, E A SAÍDA ──
+
+   Três partes, e a terceira é a que evita que o jogador feche a página:
+   o título diz que não dá, a lista diz quem e porquê com o número à
+   vista, e a última linha diz que basta trocar. Ela é verde de
+   propósito — é a única boa notícia do bloco, e a cor separa-a do
+   aviso em vez de a deixar perder-se no fim dele. */
+.equipa-batalhar-off .eb-titulo {
+  font-family: 'Cinzel', serif; letter-spacing: 0.05rem; margin-bottom: 0.3125rem;
+}
+.equipa-batalhar-off .eb-lista {
+  list-style: none; margin: 0 0 0.375rem; padding: 0;
+  text-align: left; display: flex; flex-direction: column; gap: 0.1875rem;
+}
+.equipa-batalhar-off .eb-lista li { color: var(--text2); }
+.equipa-batalhar-off .eb-lista b { color: #e0a050; }
+.equipa-batalhar-off .eb-saida {
+  color: #8ede8e; border-top: 1px solid rgba(255,255,255,.1);
+  padding-top: 0.3125rem;
+}
+
+/* ── O SELO NO CARTÃO ──
+
+   Vai onde o olho já está, por cima do avatar, para não obrigar a ler a
+   lista e depois procurar o nome entre três cartões.
+
+   O cartão escurece mas NÃO desaparece: é preciso continuar a
+   reconhecê-lo para o trocar, que é exatamente o que se quer que o
+   jogador faça a seguir. Por isso também as setas de ordem continuam
+   vivas — só a cor é que muda. */
+.equipa-slot.bloqueado {
+  border-color: rgba(224,160,80,.45);
+  background: rgba(224,160,80,.07);
+}
+.equipa-slot.bloqueado svg { opacity: .45; filter: grayscale(.6); }
+.equipa-bloqueio {
+  margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.0625rem;
+  line-height: 1.35;
+}
+.equipa-bloqueio .eb-selo {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem; letter-spacing: 0.0625rem;
+  font-weight: 700;
+}
+.equipa-bloqueio.doenca  .eb-selo { color: #e05555; }
+.equipa-bloqueio.energia .eb-selo { color: #e0a050; }
+/* O motivo pode ser um nome de doença comprido; parte em vez de esticar
+   o cartão, que é um flex:1 com min-width:0 e cede sem se queixar. */
+.equipa-bloqueio .eb-porque {
+  font-size: 0.40625rem; color: var(--muted); overflow-wrap: anywhere;
+}
+@media (min-width: 900px) {
+  .equipa-bloqueio .eb-selo   { font-size: 0.5rem; }
+  .equipa-bloqueio .eb-porque { font-size: 0.46875rem; }
+}
+
 /* Acompanha a barra da equipa, que a esta largura passa a lista
    vertical (combate.css). O override tem de estar AQUI e não lá: os
    dois ficheiros usam a mesma especificidade e este carrega depois,
