@@ -1,7 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════
 // ITEM INVENTORY
 // ═══════════════════════════════════════════════════════════════════
+/* ═══ ESTES DOIS PAINÉIS SÃO DE UM AVATAR, NÃO DA CASA ═══
+
+   A loja vende amuletos e consumíveis que se equipam num avatar, e o
+   inventário mostra os que ESSE avatar tem equipados. Na colônia não há
+   "esse": há dez, e o painel não sabe de quem está a falar — equipava no
+   que por acaso estivesse espelhado nos globais, que é uma escolha
+   invisível para quem carregou no botão.
+
+   A recusa vive aqui, em quem ABRE, e não só na classe que pinta o botão
+   de apagado: um `pointer-events:none` engole o clique e não explica
+   nada, e explicar era metade do pedido. Assim o botão continua a
+   responder e diz porquê.
+
+   Está escrita uma vez e usada nos dois sítios, que é o que impede a
+   terceira porta de se esquecer da regra. */
+function painelDeUmAvatarDisponivel() {
+  if (window._fzModoColonia) return 'colonia';
+  if (typeof hatched === 'undefined' || !hatched || dead) return 'sem_avatar';
+  return null;
+}
+
+function avisarPainelDeUmAvatar(motivo) {
+  if (typeof showToast === 'function') showToast(t('painel.so_cuidando.' + motivo), 'err');
+}
+
 function openItemInventory() {
+  const motivo = painelDeUmAvatarDisponivel();
+  if (motivo) { avisarPainelDeUmAvatar(motivo); return; }
   renderItemInventory();
   ModalManager.open('itemInvModal');
 }

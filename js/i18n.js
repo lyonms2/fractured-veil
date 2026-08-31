@@ -13,6 +13,11 @@
       // -- A PAUSA --
       // A tela diz o que PARA, e nao so que esta parado: a pergunta a
       // seguir a “pausa” e sempre “e isso para o quê?”.
+      // -- POR QUE ESTES DOIS PAINEIS SO ABREM A CUIDAR DE UM --
+      // Diz o motivo E o caminho: uma recusa sem saida e so uma porta
+      // fechada.
+      'painel.so_cuidando.colonia':    'Estes itens são de um avatar de cada vez — os amuletos equipam nele, os consumíveis dão-se a ele. Na colônia não dá para saber em qual. Toque em CUIDAR de um avatar e abra outra vez.',
+      'painel.so_cuidando.sem_avatar': 'Estes itens usam-se num avatar. Entre em algum na colônia e abra outra vez.',
       'pausa.btn_pausar':   'Pausar o jogo',
       'pausa.btn_retomar':  'Continuar o jogo',
       'pausa.titulo':       'JOGO EM PAUSA',
@@ -317,6 +322,8 @@
     en: {
       // Auth — tabs and navigation
       'ui.avatars_title':        'My Avatars',
+      'painel.so_cuidando.colonia':    'These items belong to one avatar at a time — charms equip on it, consumables are given to it. In the colony there is no way to tell which. Tap CARE on an avatar and open this again.',
+      'painel.so_cuidando.sem_avatar': 'These items are used on an avatar. Enter one from the colony and open this again.',
       'pausa.btn_pausar':   'Pause the game',
       'pausa.btn_retomar':  'Resume the game',
       'pausa.titulo':       'GAME PAUSED',

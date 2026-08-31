@@ -147,6 +147,23 @@ function updateAllUI() {
   const _tem = (typeof jogadorTemCriatura === 'function') ? jogadorTemCriatura() : (hatched && !dead);
   if(_eggBtn)  { (eggsInInventory.length > 0 || _tem) ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
   if(_coinBtn) { _tem ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
+
+  /* ── E OS DOIS QUE SÃO DE UM AVATAR SÓ ──
+
+     A loja e o inventário de itens agem sobre o avatar aberto: os
+     amuletos equipam-se num, os consumíveis dão-se a um. Na colônia não
+     há esse um — há dez — e o painel acabava por escolher sozinho o que
+     estivesse espelhado nos globais.
+
+     `bloqueado` e não `disabled`: o segundo tem pointer-events:none e
+     engole o clique, e estes têm de poder explicar-se. A recusa a sério
+     está no openCoinShop e no openItemInventory. */
+  const _itemBtn = document.getElementById('resItemsBtn');
+  const _soDeUm  = (typeof painelDeUmAvatarDisponivel === 'function')
+    ? !painelDeUmAvatarDisponivel() : true;
+  [_coinBtn, _itemBtn].forEach(b => {
+    if(b) b.classList.toggle('bloqueado', !_soDeUm);
+  });
 }
 
 function updateResourceUI() {
