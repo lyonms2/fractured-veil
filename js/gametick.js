@@ -477,6 +477,28 @@ function viverTodos() {
 }
 
 function gameTick() {
+  /* ── O MUNDO PARADO ──
+
+     Duas coisas param aqui, e uma delas já se dizia por escrito sem
+     nunca ter sido feita.
+
+     O `document.hidden`: o auth.js e o main.js prometem os dois, em
+     comentário, que "nada decai enquanto a aba está escondida". Nada
+     no código o garantia — o setInterval continua a correr numa aba de
+     segundo plano, só estrangulado pelo navegador. Portanto o desgaste
+     continuava, mais devagar, e o quanto dependia de que navegador o
+     jogador usasse. A promessa passa a ser cumprida.
+
+     O `jogoPausado`: o botão. É a mesma paragem e não uma segunda —
+     duas noções de "o mundo está parado" divergem, e já vimos isso
+     acontecer quatro vezes neste projeto.
+
+     Sai antes do tickCount e antes do totalSecs de propósito: a idade
+     do avatar é tempo de JOGO, não tempo de relógio, e é ela que decide
+     a evolução. Se o contador andasse com o jogo parado, pausar passava
+     a ser uma forma de envelhecer de graça. */
+  if (jogoPausado || document.hidden) return;
+
   tickCount++;
   if(hatched && !dead) totalSecs++;
 

@@ -228,6 +228,12 @@ function checkVinculoTier(oldVal) {
     showBubble(rnd(FALAS.vinculo));
 }
 let totalSecs = 0;
+
+/* O jogo parado à mão. Não se guarda no servidor de propósito: sair com
+   o jogo em pausa e voltar já é uma pausa — nada decai com a aba
+   fechada — e um avatar que acordasse trancado numa tela preta que ele
+   não se lembra de ter ligado seria pior do que o problema. */
+let jogoPausado = false;
 let tickCount = 0;
 // Recuperação de energia dormindo enquanto ausente (offline/segundo plano) —
 // metade do ritmo ao vivo (4/ciclo em js/gametick.js). Nada mais decai/recupera

@@ -90,6 +90,88 @@ window.addEventListener('beforeunload', () => {
   // lastSeen é persistido server-side pelo RTDB onDisconnect (setupPresence)
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// A PAUSA À MÃO
+//
+// O jogo já parava sozinho em dois casos: com a aba fechada (auth.js) e
+// com a aba escondida (aqui em baixo, e agora garantido pela guarda do
+// gameTick). O que faltava era o caso do meio, que é o mais comum no
+// computador: a janela do jogo aberta e à vista, num segundo monitor ou
+// a um canto, enquanto o jogador faz outra coisa. Aí o mundo corria.
+//
+// O botão não é um poder novo — fechar a aba já pausava tudo, de graça.
+// É tornar isso descoberto: ninguém adivinha que a forma de pausar um
+// jogo é fechá-lo.
+//
+// Pausa TUDO, energia incluída. Dormir recupera energia mesmo com a aba
+// fechada; se a pausa também recuperasse, pausar era melhor do que
+// jogar, e a decisão certa passava a ser deixar o jogo em pausa a noite
+// toda. Assim a pausa não dá nada: só deixa de tirar.
+// ═══════════════════════════════════════════════════════════════════
+
+// Onde não se pausa: coisas com relógio a correr, algumas com o
+// servidor do outro lado. Pausar uma batalha PvP é ou inútil ou
+// batota, conforme quem está a perder.
+const PAUSA_PROIBIDA = ['combateModal', 'arenaModal', 'batalhaNavalModal',
+                        'roubaMontModal', 'minaModal', 'mazeModal',
+                        'memoriaModal', 'simonModal'];
+
+/* As cerimónias — evoluir, chocar um ovo, subir de nível — vivem acima
+   da tela da pausa (z-index 10050 e 9999 contra os 9000 dela) e não são
+   modais do ModalManager, cada uma com a sua classe. Por isso a pergunta
+   não é "que classe tem" mas "está à vista": assim uma cerimónia nova
+   fica coberta sem ninguém se lembrar de a vir inscrever aqui.
+
+   Pausar por trás de uma delas dava uma tela preta invisível, com o jogo
+   parado e sem forma de perceber porquê. */
+const PAUSA_CERIMONIAS = ['evolucaoOverlay', 'ovoOverlay', 'levelUpOverlay'];
+
+function _cerimoniaAberta() {
+  return PAUSA_CERIMONIAS.some(id => {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    const cs = getComputedStyle(el);
+    return cs.display !== 'none' && parseFloat(cs.opacity) > 0.05
+        && el.getBoundingClientRect().width > 0;
+  });
+}
+
+function alternarPausa() {
+  if (!jogoPausado) {
+    const aberto = (typeof ModalManager !== 'undefined') ? ModalManager.current : null;
+    if ((aberto && PAUSA_PROIBIDA.includes(aberto)) || _cerimoniaAberta()) {
+      if (typeof showToast === 'function') showToast(t('pausa.agora_nao'), 'err');
+      return;
+    }
+  }
+  jogoPausado = !jogoPausado;
+  _desenharPausa();
+}
+
+function _desenharPausa() {
+  const ov = document.getElementById('pausaOverlay');
+  if (ov) ov.classList.toggle('active', jogoPausado);
+  const btn = document.getElementById('btnPausa');
+  if (btn) {
+    btn.textContent = jogoPausado ? '▶' : '⏸';
+    btn.title = t(jogoPausado ? 'pausa.btn_retomar' : 'pausa.btn_pausar');
+  }
+  // A tela preta cobre tudo; o teclado não devia continuar a chegar ao
+  // que está por baixo dela.
+  document.body.classList.toggle('em-pausa', jogoPausado);
+}
+
+// Espaço pausa e retoma, que é o gesto que toda a gente experimenta
+// primeiro. Não rouba a barra a quem está a escrever num campo.
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' && e.key !== ' ') return;
+  const alvo = e.target;
+  if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.isContentEditable)) return;
+  if (typeof hatched === 'undefined' || !hatched) return;
+  e.preventDefault();
+  alternarPausa();
+});
+
 // ── DETECTOR DE INATIVIDADE — sugere dormir ──
 const INATIVIDADE_MS = 5 * 60 * 1000;
 let _inativoTimer = null;
@@ -143,7 +225,10 @@ document.addEventListener('visibilitychange', async () => {
   // avança enquanto a aba está escondida (idade = tempo de jogo real,
   // usado no card de venda no marketplace). Exceção: dormindo, a energia
   // continua subindo (mais devagar que ao vivo), o resto continua parado. ──
-  if(_hiddenAt > 0 && typeof hatched !== 'undefined' && hatched && !dead) {
+  // Em pausa não se recupera nada, nem a energia de quem dorme: quem
+  // pausou e escondeu a aba não pode sair a ganhar por ter feito as
+  // duas coisas.
+  if(_hiddenAt > 0 && !jogoPausado && typeof hatched !== 'undefined' && hatched && !dead) {
     const offlineSecs = Math.floor((Date.now() - _hiddenAt) / 1000);
     if(offlineSecs > 0) {
       const offlineCycles = Math.floor(offlineSecs / 60);

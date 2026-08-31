@@ -584,3 +584,77 @@
   .creature-wrap.anim-wake .av-olho-un,
   .creature-wrap.anim-wake .av-membro { animation: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   A TELA DA PAUSA
+
+   Fixed e não absolute, ao contrário do #sleepOverlay: aquele escurece
+   a moldura da consola de propósito, este tem de cobrir o ecrã inteiro
+   — a fila de cima, a colónia, os modais. Uma pausa que se vê pela
+   metade não é uma pausa.
+
+   O z-index fica acima dos modais (que vivem nos 100) porque a pausa é
+   a última palavra: com o jogo parado não há painel nenhum que faça
+   sentido continuar a mexer.
+   ═══════════════════════════════════════════════════════════════════ */
+#pausaOverlay {
+  position: fixed; inset: 0; z-index: 9000;
+  display: none; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: #05040a;
+}
+#pausaOverlay.active { display: flex; }
+
+.pausa-caixa {
+  max-width: 26rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.625rem;
+}
+/* Respira devagar, e é o único movimento na tela. Serve para dizer que
+   o jogo está vivo e à espera, e não que travou. */
+@keyframes pausa-respira {
+  0%, 100% { opacity: .35; transform: scale(1); }
+  50%      { opacity: .6;  transform: scale(1.04); }
+}
+.pausa-icone {
+  font-size: 2.5rem; line-height: 1;
+  animation: pausa-respira 3.2s ease-in-out infinite;
+}
+.pausa-titulo {
+  font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.1875rem;
+  color: var(--gold);
+}
+.pausa-lista {
+  list-style: none; margin: 0; padding: 0; text-align: left;
+  display: flex; flex-direction: column; gap: 0.4375rem;
+  font-size: 0.5625rem; line-height: 1.6; color: var(--text2);
+}
+/* O travessão em vez de um ponto: é uma lista de consequências, não de
+   opções, e um bullet redondo convida a escolher uma. */
+.pausa-lista li { padding-left: 0.75rem; position: relative; }
+.pausa-lista li::before {
+  content: '—'; position: absolute; left: 0; color: var(--gold); opacity: .6;
+}
+.pausa-nota {
+  font-size: 0.5rem; line-height: 1.6; color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,.1); padding-top: 0.5rem;
+}
+.pausa-btn {
+  margin-top: 0.25rem; padding: 0.5rem 1.5rem;
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.125rem;
+  color: #05040a; background: var(--gold); border: none; border-radius: 0.375rem;
+  cursor: pointer;
+}
+.pausa-btn:hover { background: var(--gold-light, var(--gold)); }
+.pausa-atalho { font-size: 0.4375rem; color: var(--muted); letter-spacing: 0.03125rem; }
+
+@media (min-width: 900px) {
+  .pausa-titulo { font-size: 1.25rem; }
+  .pausa-lista  { font-size: 0.625rem; }
+  .pausa-nota   { font-size: 0.5625rem; }
+  .pausa-atalho { font-size: 0.5rem; }
+}
+
+/* Quem prefere o ecrã quieto perde a respiração do ícone, não a tela. */
+@media (prefers-reduced-motion: reduce) {
+  .pausa-icone { animation: none; opacity: .5; }
+}
