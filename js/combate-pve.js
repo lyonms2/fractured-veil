@@ -304,16 +304,44 @@ function _pveBolinhas(atual, max, tipo) {
 // As quatro características, com o que o combate lhes somou ou tirou à
 // vista: "F2−1" em vez de "F1". Sem isto, um avatar envenenado parecia
 // ter nascido fraco — o número mudava e nada dizia porquê.
+/* Quais características têm alguma coisa a mexer nelas que NÃO vale em
+   todas as contas.
+
+   O número da característica só pode mostrar o que vale sempre. A
+   cegueira tira −1 para bater e −2 para esquivar; escrever "H3−2" ao
+   lado do H seria mentira em metade das contas, e escrever "H3−1" seria
+   mentira na outra metade. Mas deixar o H limpo também mente, por
+   omissão: o jogador não fica a saber que há ali alguma coisa.
+
+   Daí a marca. Ela não diz quanto — diz que há mais para ler, e o
+   quanto está por extenso no bloco de estado, com a condição escrita. */
+function _pveCaracCondicional(c) {
+  const v = c.vant || {}, d = c.desv || {};
+  return {
+    F: false,
+    // esquiva, defesa e ataque puxam a Habilidade cada um para seu lado
+    H: !!(c.cegoAtaque || c.cegoEsquiva || c.indefeso || c.ocultado
+          || c.congelado || c.furia || _c3bonusEsquiva(c)),
+    R: false,
+    // a Casca só dobra contra o que não é magia; a Couraça e a Ferida
+    // Antiga só valem contra magia do seu elemento
+    A: !!(c.armaduraDobrada || (v.armaduraDobra && v.contraElemento)
+          || (d.armaduraZero && d.contraElemento)),
+  };
+}
+
 function _pveCaracs(c) {
+  const cond = _pveCaracCondicional(c);
   return ['F', 'H', 'R', 'A'].map(k => {
     const d = _c3detalhe(c, k);
     // A Casca de Helena não soma à Armadura: dobra-a. Estava numa etiqueta
     // à parte ("A×2") longe do número que multiplica — e um multiplicador
     // longe do seu número não diz nada a ninguém.
     const dobra = (k === 'A' && c.armaduraDobrada) ? '<b class="sobe">×2</b>' : '';
-    if (!d.mod) return `<span>${k}${d.base}${dobra}</span>`;
+    const marca = cond[k] ? `<b class="cond" title="${t('pve.est.cond')}">*</b>` : '';
+    if (!d.mod) return `<span>${k}${d.base}${dobra}${marca}</span>`;
     const sinal = d.mod > 0 ? '+' : '−';
-    return `<span>${k}${d.base}<b class="${d.mod > 0 ? 'sobe' : 'desce'}">${sinal}${Math.abs(d.mod)}</b>${dobra}</span>`;
+    return `<span>${k}${d.base}<b class="${d.mod > 0 ? 'sobe' : 'desce'}">${sinal}${Math.abs(d.mod)}</b>${dobra}${marca}</span>`;
   }).join(' ');
 }
 

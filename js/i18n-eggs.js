@@ -101,7 +101,7 @@ window.registerStrings(
     'egg.log.rotten_hatch':      'This egg has rotted — it can no longer be hatched.',
     'egg.log.no_slots':          'No free slots. Free a slot in the Marketplace.',
     'egg.log.no_gems':           'Insufficient crystals to hatch (need {fee} 💎).',
-    'egg.log.cancelled':         'Hatching cancelled. Egg returned to inventory.',
+    'egg.log.cancelled':         'Hatching canceled. Egg returned to inventory.',
     'egg.log.ready':             '🥚 {rar} {elem} egg ready to hatch!',
 
     // Hatch confirm modal (HTML)

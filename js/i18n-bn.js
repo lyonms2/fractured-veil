@@ -120,7 +120,7 @@ window.registerStrings(
     'bn.log.joined':       'Joined the Naval Battle queue! 🚢',
     'bn.log.left':         'Left the Naval Battle queue.',
     'bn.log.sent':         'Naval Battle challenge sent!',
-    'bn.log.cancelled':    'Match cancelled.',
+    'bn.log.cancelled':    'Match canceled.',
     'bn.log.timeout':      "Time's up! Opponent wins. ⏳",
     'bn.log.hit':          'Naval Battle: 💥 Hit at {coord}',
     'bn.log.hit_sunk':     'Naval Battle: 💥 Hit at {coord} — {nome} sunk!',

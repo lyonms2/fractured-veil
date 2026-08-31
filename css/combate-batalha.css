@@ -117,6 +117,13 @@
 .cb-lutador-carac b.sobe  { color: #8ede8e; }
 .cb-ajuda-quem span b.desce { color: #ff8a8a; }
 .cb-ajuda-quem span b.sobe  { color: #8ede8e; }
+/* A marca do que só vale em certas contas. Dourada e não verde nem
+   vermelha, porque não é bom nem mau: é "há mais para ler". Sobe um
+   pouco para se ler como expoente e não como parte do número. */
+b.cond {
+  color: var(--gold); font-weight: 700; margin-left: 0.0625rem;
+  vertical-align: super; font-size: .85em; cursor: help;
+}
 
 /* ── Vida e magia em bolinhas ──
    Uma bolinha por cada 5 pontos. Como PV = R×5 e PM = R×5, o número de

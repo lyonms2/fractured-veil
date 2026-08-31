@@ -365,8 +365,8 @@ window.registerStrings({
   'mkt.transp.vault_active':   '✅ Cofre ativo na Polygon Mainnet.',
   'mkt.pool.system':           'sistema',
 }, {
-  // ── REFERRAL PROGRAMME ──
-  'ref.title':          '🔗 Invite Programme',
+  // ── REFERRAL PROGRAM ──
+  'ref.title':          '🔗 Invite Program',
   'ref.sub':            'Invite friends and earn 💎 crystals when they withdraw — up to 3 levels deep.',
   'ref.link_title':     'Your invite link',
   'ref.link_sub':       'Send this link to anyone you want to invite. When they sign up and withdraw crystals, you receive your share automatically — nothing to claim.',
@@ -590,8 +590,8 @@ window.registerStrings({
   'mkt.tx.open_mm_redeem':    '⏳ Open MetaMask to confirm the redeem...',
   'mkt.tx.redeemed':          '✅ Redeemed! You received {matic} MATIC in your wallet.',
   'mkt.tx.matic_sent':        '💸 {matic} MATIC sent!',
-  'mkt.tx.cancelled':         'Transaction cancelled.',
-  'mkt.tx.redeem_cancelled':  'Redeem cancelled. Your 💎 were restored by the server.',
+  'mkt.tx.cancelled':         'Transaction canceled.',
+  'mkt.tx.redeem_cancelled':  'Redeem canceled. Your 💎 were restored by the server.',
   'mkt.tx.redeem_err':        'Redeem error. Please try again.',
   'mkt.tx.failed':            '❌ Transaction failed. Please try again.',
   'mkt.tx.chain_fail':        '❌ Transaction failed on-chain. Contact support with the tx hash.',
@@ -611,7 +611,7 @@ window.registerStrings({
   'mkt.avatar.list_err':      'Error listing.',
   'mkt.avatar.unlist_404':    'Listing not found.',
   'mkt.avatar.unlist_err':    'Error removing listing.',
-  'mkt.avatar.unlisted':      'Listing cancelled. Avatar unlocked.',
+  'mkt.avatar.unlisted':      'Listing canceled. Avatar unlocked.',
   'mkt.avatar.activated':     '✅ Active slot changed! Return to the game to play with this avatar.',
   'mkt.avatar.unlock_cost':   'You need {cost} 💎.',
   'mkt.avatar.unlock_err':    'Error unlocking slot. Please try again.',
