@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-09-02c
+     VERSÃO DOS FICHEIROS — ?v=2026-09-02f
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-09-02c" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-09-02f" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -49,65 +49,27 @@
        decoracao. -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/screen.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/ui.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/modals.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/combate.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/arena.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/snake.css?v=2026-09-02c">
-<link rel="stylesheet" href="css/fazenda.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-02c">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-02c">
+  <link rel="stylesheet" href="css/base.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/screen.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/ui.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/modals.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/combate.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/arena.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/snake.css?v=2026-09-02f">
+<link rel="stylesheet" href="css/fazenda.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-02f">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-02f">
 
   <style>
-    .auth-tab {
-      flex: 1; background: none; border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--muted); font-family: 'Cinzel', serif;
-      font-size: 0.5625rem; letter-spacing: 0.125rem;
-      padding: 0.5rem 0; cursor: pointer; transition: all .2s;
-    }
-    .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-    .auth-tab:hover:not(.active) { color: var(--text); }
 
-    .auth-input {
-      width: 100%; box-sizing: border-box;
-      background: #0a0816; border: 1px solid #2a2040;
-      border-radius: 0.375rem; color: #e8e0f0;
-      font-family: 'Cinzel', serif; font-size: 0.625rem;
-      padding: 0.625rem 0.75rem; outline: none; letter-spacing: 0.03125rem;
-      transition: border-color .2s;
-    }
-    .auth-input:focus { border-color: #5a3a9a; }
 
-    .auth-btn-primary {
-      width: 100%; padding: 0.6875rem;
-      background: linear-gradient(135deg, #4c1d95, #7c3aed);
-      border: none; border-radius: 0.375rem; color: #fff;
-      font-family: 'Cinzel', serif; font-size: 0.625rem;
-      font-weight: 700; letter-spacing: 0.125rem; cursor: pointer;
-      transition: opacity .15s;
-    }
-    .auth-btn-primary:hover  { opacity: .9; }
-    .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
-    .auth-btn-green {
-      width: 100%; padding: 0.6875rem;
-      background: linear-gradient(135deg, #1a4a2a, #2d7a4a);
-      border: none; border-radius: 0.375rem; color: #fff;
-      font-family: 'Cinzel', serif; font-size: 0.625rem;
-      font-weight: 700; letter-spacing: 0.125rem; cursor: pointer;
-      transition: opacity .15s;
-    }
-    .auth-btn-green:hover  { opacity: .9; }
-    .auth-btn-green:disabled { opacity: .5; cursor: not-allowed; }
 
     .auth-btn-link {
       background: none; border: none; color: var(--muted);
@@ -132,43 +94,27 @@
     .auth-btn-google:disabled { opacity: .6; cursor: default; }
     .auth-btn-google svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
 
-    .auth-abas { margin: 0.875rem 0 1rem; }
+    /* A linha que explica que entrar e criar conta sao o mesmo clique.
+       Fica por baixo do botao e nao acima: primeiro o gesto, depois a
+       explicacao de quem parou para procurar o "criar conta". */
+    .auth-so-google {
+      margin-top: 0.625rem; font-size: 0.40625rem; line-height: 1.6;
+      color: var(--muted); text-align: center; letter-spacing: 0.01875rem;
+    }
 
-    .auth-ou {
-      display: flex; align-items: center; gap: 0.5rem;
-      width: 100%; margin: 0.75rem 0 0;
-      font-family: 'Cinzel', serif; font-size: 0.4375rem;
-      letter-spacing: 0.125rem; color: var(--muted);
-    }
-    .auth-ou::before, .auth-ou::after {
-      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.08);
-    }
+
 
     /* No desktop a raiz é 24px e o formulário inteiro vinha a 1,5x:
        campos de 53px de altura, botão de 66px, um cartão de 646px numa
        tela de 900. A tela de entrada não precisa da escala que existe
        para o texto de 5-7px do jogo ser legível. */
     @media(min-width:681px) {
-      .auth-tab   { font-size:0.4375rem; padding:0.3125rem 0; }
-      .auth-input { font-size:0.4375rem; padding:0.375rem 0.5rem; }
-      .auth-btn-primary { padding:0.4375rem; font-size:0.4375rem; }
       .auth-btn-link    { font-size:0.4375rem; }
       .auth-btn-google  { padding:0.4375rem; font-size:0.4375rem; }
       .auth-btn-google svg { width:0.625rem; height:0.625rem; }
-      .auth-ou { font-size:0.375rem; margin-top:0.5rem; }
-      .auth-abas { margin:0.5rem 0 0.625rem; }
+      .auth-so-google { font-size:0.375rem; }
     }
 
-    .auth-email-notice {
-      font-size: 0.5625rem;
-      color: #a89bc2;
-      text-align: center;
-      line-height: 1.7;
-      padding: 0.375rem 0.625rem;
-      background: rgba(90, 58, 154, .12);
-      border: 1px solid rgba(90, 58, 154, .25);
-      border-radius: 0.375rem;
-    }
 
     @keyframes auth-msg-in {
       from { opacity: 0; transform: translateY(-0.25rem); }
@@ -352,47 +298,28 @@
     <div id="loginLogo">Fractured Veil</div>
     <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
 
-    <!-- O Google fica acima das abas de propósito: é um clique contra
-         três campos e um email de confirmação, e a conta já vem
-         verificada do outro lado. -->
+    <!-- ── UMA PORTA SÓ ──
+
+         Havia três caminhos: Google, e-mail com senha, e ainda um fluxo
+         para LIGAR o Google a uma conta de senha que já existisse — que
+         só existia porque os dois primeiros colidiam.
+
+         Ficou o Google. Acaba com senhas guardadas, com recuperação de
+         senha e com senhas fracas, que é superfície de ataque a sério
+         num jogo com dinheiro dentro; e passa a haver um caminho em vez
+         de três. O momento é este: há um jogador de teste, e mais tarde
+         isto abandonava contas reais.
+
+         O provedor de e-mail continua ligado no Firebase de propósito —
+         voltar atrás é repor estes botões, não migrar contas. -->
     <button id="loginGoogleBtn" class="auth-btn-google" onclick="entrarComGoogle()">
       <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.6v5.5h7.1c4.1-3.8 6.6-9.5 6.6-16.1z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.6-3.9-12.3-9.1H4.4v5.7C8 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.7 28.1c-.4-1.3-.7-2.7-.7-4.1s.2-2.8.7-4.1v-5.7H4.4C2.9 17.1 2 20.4 2 24s.9 6.9 2.4 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.4c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 3.9 30 2 24 2 15.4 2 8 6.9 4.4 14.2l7.3 5.7c1.7-5.2 6.6-9.5 12.3-9.5z"/></svg>
       <span data-i18n="auth.google.btn"></span>
     </button>
-    <div class="auth-ou"><span data-i18n="auth.ou"></span></div>
-
-    <div class="auth-abas" style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);width:100%;">
-      <button id="authTabLogin"    class="auth-tab active" onclick="authShowTab('login')"    data-i18n="auth.tab.login"></button>
-      <button id="authTabRegister" class="auth-tab"        onclick="authShowTab('register')" data-i18n="auth.tab.register"></button>
-    </div>
-
-    <div id="authFormLogin" style="display:flex;flex-direction:column;gap:0.5rem;width:100%;">
-      <input id="loginEmail" type="email"    data-i18n-ph="auth.ph.email"    class="auth-input"
-        onkeydown="if(event.key==='Enter')document.getElementById('loginSenha').focus()"/>
-      <input id="loginSenha" type="password" data-i18n-ph="auth.ph.password" class="auth-input"
-        onkeydown="if(event.key==='Enter')loginComEmail()"/>
-      <button id="loginBtn" class="auth-btn-primary" onclick="loginComEmail()">
-        <span id="loginBtnText" data-i18n="auth.btn.login"></span>
-      </button>
-      <button class="auth-btn-link" onclick="authShowReset()" data-i18n="auth.link.forgot"></button>
-    </div>
-
-    <div id="authFormRegister" style="display:none;flex-direction:column;gap:0.5rem;width:100%;">
-      <input id="regEmail"  type="email"    data-i18n-ph="auth.ph.email"            class="auth-input"/>
-      <input id="regSenha"  type="password" data-i18n-ph="auth.ph.password_min"     class="auth-input"/>
-      <input id="regSenha2" type="password" data-i18n-ph="auth.ph.password_confirm" class="auth-input"
-        onkeydown="if(event.key==='Enter')registrarComEmail()"/>
-      <div class="auth-email-notice" data-i18n="auth.reg.email_notice"></div>
-      <button id="regBtn" class="auth-btn-green" onclick="registrarComEmail()" data-i18n="auth.tab.register"></button>
-    </div>
-
-    <div id="authFormReset" style="display:none;flex-direction:column;gap:0.5rem;width:100%;">
-      <div class="auth-email-notice" data-i18n="auth.reset.hint"></div>
-      <input id="resetEmail" type="email" data-i18n-ph="auth.ph.email" class="auth-input"
-        onkeydown="if(event.key==='Enter')enviarResetSenha()"/>
-      <button id="resetBtn" class="auth-btn-primary" onclick="enviarResetSenha()" data-i18n="auth.btn.send_email"></button>
-      <button class="auth-btn-link" onclick="authShowTab('login')" data-i18n="auth.link.back"></button>
-    </div>
+    <!-- Entrar E criar conta sao o mesmo gesto: quem nunca entrou
+         ganha a conta no primeiro clique. Dizer isso aqui evita a
+         pergunta de quem chega e procura um "criar conta". -->
+    <div class="auth-so-google" data-i18n="auth.so_google"></div>
 
     <div id="loginError"></div>
     <div id="loginFooter" style="font-size:0.4375rem;color:var(--muted);margin-top:0.5rem;letter-spacing:0.0625rem;display:flex;align-items:center;justify-content:space-between;width:100%;">
@@ -1094,24 +1021,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-09-02c"></script>
-<script src="js/i18n-pvp.js?v=2026-09-02c"></script>
-<script src="js/i18n-bn.js?v=2026-09-02c"></script>
-<script src="js/i18n-minigames.js?v=2026-09-02c"></script>
-<script src="js/i18n-eggs.js?v=2026-09-02c"></script>
-<script src="js/i18n-gametick.js?v=2026-09-02c"></script>
-<script src="js/i18n-items.js?v=2026-09-02c"></script>
-<script src="js/i18n-market.js?v=2026-09-02c"></script>
-<script src="js/i18n-mina.js?v=2026-09-02c"></script>
-<script src="js/i18n-arcade.js?v=2026-09-02c"></script>
-<script src="js/i18n-session.js?v=2026-09-02c"></script>
-<script src="js/i18n-misc.js?v=2026-09-02c"></script>
-<script src="js/i18n-lore.js?v=2026-09-02c"></script>
-<script src="js/i18n-prologo.js?v=2026-09-02c"></script>
-<script src="js/i18n-marketplace.js?v=2026-09-02c"></script>
-<script src="js/i18n-magias.js?v=2026-09-02c"></script>
-<script src="js/i18n-vantagens.js?v=2026-09-02c"></script>
-<script src="js/i18n-pve.js?v=2026-09-02c"></script>
+<script src="js/i18n.js?v=2026-09-02f"></script>
+<script src="js/i18n-pvp.js?v=2026-09-02f"></script>
+<script src="js/i18n-bn.js?v=2026-09-02f"></script>
+<script src="js/i18n-minigames.js?v=2026-09-02f"></script>
+<script src="js/i18n-eggs.js?v=2026-09-02f"></script>
+<script src="js/i18n-gametick.js?v=2026-09-02f"></script>
+<script src="js/i18n-items.js?v=2026-09-02f"></script>
+<script src="js/i18n-market.js?v=2026-09-02f"></script>
+<script src="js/i18n-mina.js?v=2026-09-02f"></script>
+<script src="js/i18n-arcade.js?v=2026-09-02f"></script>
+<script src="js/i18n-session.js?v=2026-09-02f"></script>
+<script src="js/i18n-misc.js?v=2026-09-02f"></script>
+<script src="js/i18n-lore.js?v=2026-09-02f"></script>
+<script src="js/i18n-prologo.js?v=2026-09-02f"></script>
+<script src="js/i18n-marketplace.js?v=2026-09-02f"></script>
+<script src="js/i18n-magias.js?v=2026-09-02f"></script>
+<script src="js/i18n-vantagens.js?v=2026-09-02f"></script>
+<script src="js/i18n-pve.js?v=2026-09-02f"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1120,56 +1047,56 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-09-02c"></script>
-<script src="js/data.js?v=2026-09-02c"></script>
-<script src="js/state.js?v=2026-09-02c"></script>
-<script src="js/vantagens.js?v=2026-09-02c"></script>
-<script src="js/ficha-3dt.js?v=2026-09-02c"></script>
-<script src="js/magias.js?v=2026-09-02c"></script>
-<script src="js/combate-3dt.js?v=2026-09-02c"></script>
-<script src="js/equipa.js?v=2026-09-02c"></script>
-<script src="js/combate-ui.js?v=2026-09-02c"></script>
-<script src="js/combate-pve.js?v=2026-09-02c"></script>
-<script src="js/ui.js?v=2026-09-02c"></script>
-<script src="js/modal.js?v=2026-09-02c"></script>
-<script src="js/firebase.js?v=2026-09-02c"></script>
-<script src="js/gametick.js?v=2026-09-02c"></script>
-<script src="js/evolucao.js?v=2026-09-02c"></script>
-<script src="js/actions.js?v=2026-09-02c"></script>
-<script src="js/mini-avatar.js?v=2026-09-02c"></script>
-<script src="js/minigames.js?v=2026-09-02c"></script>
-<script src="js/summon.js?v=2026-09-02c"></script>
-<script src="js/batalha.js?v=2026-09-02c"></script>
-<script src="js/fazenda.js?v=2026-09-02c"></script>
-<script src="js/eggs.js?v=2026-09-02c"></script>
-<script src="js/items.js?v=2026-09-02c"></script>
-<script src="js/market.js?v=2026-09-02c"></script>
-<script src="js/coinshop.js?v=2026-09-02c"></script>
-<script src="js/cards.js?v=2026-09-02c"></script>
-<script src="js/rouba-monte.js?v=2026-09-02c"></script>
-<script src="js/mina.js?v=2026-09-02c"></script>
-<script src="js/batalha-naval.js?v=2026-09-02c"></script>
-<script src="js/snake.js?v=2026-09-02c"></script>
-<script src="js/labirinto.js?v=2026-09-02c"></script>
-<script src="js/cambio.js?v=2026-09-02c"></script>
-<script src="js/arena.js?v=2026-09-02c"></script>
-<script src="js/lore.js?v=2026-09-02c"></script>
-<script src="js/prologo.js?v=2026-09-02c"></script>
-<script src="js/lore-caps/cap1.js?v=2026-09-02c"></script>
-<script src="js/lore-caps/cap2.js?v=2026-09-02c"></script>
-<script src="js/lore-caps/cap3.js?v=2026-09-02c"></script>
-<script src="js/lore-caps/cap4.js?v=2026-09-02c"></script>
-<script src="js/amigos.js?v=2026-09-02c"></script>
-<script src="js/auth.js?v=2026-09-02c"></script>
+<script src="js/audio.js?v=2026-09-02f"></script>
+<script src="js/data.js?v=2026-09-02f"></script>
+<script src="js/state.js?v=2026-09-02f"></script>
+<script src="js/vantagens.js?v=2026-09-02f"></script>
+<script src="js/ficha-3dt.js?v=2026-09-02f"></script>
+<script src="js/magias.js?v=2026-09-02f"></script>
+<script src="js/combate-3dt.js?v=2026-09-02f"></script>
+<script src="js/equipa.js?v=2026-09-02f"></script>
+<script src="js/combate-ui.js?v=2026-09-02f"></script>
+<script src="js/combate-pve.js?v=2026-09-02f"></script>
+<script src="js/ui.js?v=2026-09-02f"></script>
+<script src="js/modal.js?v=2026-09-02f"></script>
+<script src="js/firebase.js?v=2026-09-02f"></script>
+<script src="js/gametick.js?v=2026-09-02f"></script>
+<script src="js/evolucao.js?v=2026-09-02f"></script>
+<script src="js/actions.js?v=2026-09-02f"></script>
+<script src="js/mini-avatar.js?v=2026-09-02f"></script>
+<script src="js/minigames.js?v=2026-09-02f"></script>
+<script src="js/summon.js?v=2026-09-02f"></script>
+<script src="js/batalha.js?v=2026-09-02f"></script>
+<script src="js/fazenda.js?v=2026-09-02f"></script>
+<script src="js/eggs.js?v=2026-09-02f"></script>
+<script src="js/items.js?v=2026-09-02f"></script>
+<script src="js/market.js?v=2026-09-02f"></script>
+<script src="js/coinshop.js?v=2026-09-02f"></script>
+<script src="js/cards.js?v=2026-09-02f"></script>
+<script src="js/rouba-monte.js?v=2026-09-02f"></script>
+<script src="js/mina.js?v=2026-09-02f"></script>
+<script src="js/batalha-naval.js?v=2026-09-02f"></script>
+<script src="js/snake.js?v=2026-09-02f"></script>
+<script src="js/labirinto.js?v=2026-09-02f"></script>
+<script src="js/cambio.js?v=2026-09-02f"></script>
+<script src="js/arena.js?v=2026-09-02f"></script>
+<script src="js/lore.js?v=2026-09-02f"></script>
+<script src="js/prologo.js?v=2026-09-02f"></script>
+<script src="js/lore-caps/cap1.js?v=2026-09-02f"></script>
+<script src="js/lore-caps/cap2.js?v=2026-09-02f"></script>
+<script src="js/lore-caps/cap3.js?v=2026-09-02f"></script>
+<script src="js/lore-caps/cap4.js?v=2026-09-02f"></script>
+<script src="js/amigos.js?v=2026-09-02f"></script>
+<script src="js/auth.js?v=2026-09-02f"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-09-02c"></script>
-<script src="js/cristais.js?v=2026-09-02c"></script>
-<script src="js/avatars-market.js?v=2026-09-02c"></script>
-<script src="js/eggs-market.js?v=2026-09-02c"></script>
-<script src="js/marketplace-core.js?v=2026-09-02c"></script>
+<script src="js/pool.js?v=2026-09-02f"></script>
+<script src="js/cristais.js?v=2026-09-02f"></script>
+<script src="js/avatars-market.js?v=2026-09-02f"></script>
+<script src="js/eggs-market.js?v=2026-09-02f"></script>
+<script src="js/marketplace-core.js?v=2026-09-02f"></script>
 
-<script src="js/main.js?v=2026-09-02c"></script>
+<script src="js/main.js?v=2026-09-02f"></script>
 
 
 <script>

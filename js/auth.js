@@ -38,57 +38,11 @@ function _authMsg(msg, type = 'error') {
   }
 }
 
-function authShowTab(tab) {
-  document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('authTabRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('authFormLogin').style.display    = tab === 'login'    ? 'flex' : 'none';
-  document.getElementById('authFormRegister').style.display = tab === 'register' ? 'flex' : 'none';
-  document.getElementById('authFormReset').style.display    = 'none';
-  _authMsg('');
-}
-
-function authShowReset() {
-  document.getElementById('authFormLogin').style.display    = 'none';
-  document.getElementById('authFormRegister').style.display = 'none';
-  document.getElementById('authFormReset').style.display    = 'flex';
-  _authMsg('');
-}
-
-// ─── Login ────────────────────────────────────────────────────────
-async function loginComEmail() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const senha = document.getElementById('loginSenha').value;
-  const btn   = document.getElementById('loginBtn');
-
-  if(!email || !senha) { _authMsg(t('auth.fill_fields')); return; }
-
-  btn.disabled = true;
-  document.getElementById('loginBtnText').textContent = t('auth.btn.logging_in');
-  _authMsg('');
-
-  try {
-    const cred = await fbAuth().signInWithEmailAndPassword(email, senha);
-    if(!cred.user.emailVerified) {
-      await fbAuth().signOut();
-      btn.disabled = false;
-      document.getElementById('loginBtnText').textContent = t('auth.btn.login');
-      _authMsg(t('auth.error.not_verified'), 'warn');
-      return;
-    }
-    // onAuthStateChanged trata o resto
-  } catch(e) {
-    btn.disabled = false;
-    document.getElementById('loginBtnText').textContent = t('auth.btn.login');
-    const msgs = {
-      'auth/user-not-found':    t('auth.error.not_found'),
-      'auth/wrong-password':    t('auth.error.wrong_pass'),
-      'auth/invalid-email':     t('auth.error.invalid_email'),
-      'auth/too-many-requests': t('auth.error.too_many'),
-      'auth/invalid-credential':t('auth.error.invalid_cred'),
-    };
-    _authMsg(msgs[e.code] || t('auth.error.login'));
-  }
-}
+/* Aqui viviam o authShowTab e o authShowReset, que trocavam entre as
+   abas de entrar, criar conta e recuperar senha. Saíram com elas: a
+   entrada passou a ser só o Google, e as tabelas de erro de cada uma
+   dessas vias foram com o mesmo corte. Repor é reverter este commit,
+   e não migrar contas — o provedor de e-mail fica ligado no Firebase. */
 
 // ═══════════════════════════════════════════════════════════════════
 // MOSTRAR E ESCONDER O LOGIN
@@ -164,76 +118,13 @@ async function entrarComGoogle() {
     }
 
     const msgs = {
-      'auth/account-exists-with-different-credential': t('auth.google.ja_existe'),
+      'auth/account-exists-with-different-credential': t('auth.google.conta_antiga'),
       'auth/unauthorized-domain':                      t('auth.google.dominio'),
       'auth/operation-not-allowed':                    t('auth.google.desactivado'),
       'auth/network-request-failed':                   t('auth.error.login'),
     };
     _authMsg(msgs[e.code] || t('auth.google.erro'));
     console.warn('[google]', e.code, e.message);
-  }
-}
-
-// ─── Registro ─────────────────────────────────────────────────────
-async function registrarComEmail() {
-  const email  = document.getElementById('regEmail').value.trim();
-  const senha  = document.getElementById('regSenha').value;
-  const senha2 = document.getElementById('regSenha2').value;
-  const btn    = document.getElementById('regBtn');
-
-  if(!email || !senha) { _authMsg(t('auth.reg.fill_all')); return; }
-  if(senha !== senha2)  { _authMsg(t('auth.reg.pass_mismatch')); return; }
-  if(senha.length < 6)  { _authMsg(t('auth.reg.pass_short')); return; }
-
-  btn.disabled = true;
-  btn.textContent = t('auth.btn.creating');
-  _authMsg('');
-
-  try {
-    const cred = await fbAuth().createUserWithEmailAndPassword(email, senha);
-    await cred.user.sendEmailVerification();
-    // Faz logout imediato — só entra após verificar o email
-    await fbAuth().signOut();
-    btn.disabled = false;
-    btn.textContent = t('auth.btn.create');
-    authShowTab('login');
-    // authShowTab limpa a mensagem — escrever depois via microtask
-    Promise.resolve().then(() => _authMsg(t('auth.reg.success'), 'success'));
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = t('auth.btn.create');
-    const msgs = {
-      'auth/email-already-in-use': t('auth.reg.email_in_use'),
-      'auth/invalid-email':        t('auth.error.invalid_email'),
-      'auth/weak-password':        t('auth.reg.weak_pass'),
-    };
-    _authMsg(msgs[e.code] || t('auth.reg.error'));
-  }
-}
-
-// ─── Reset de senha ───────────────────────────────────────────────
-async function enviarResetSenha() {
-  const email = document.getElementById('resetEmail').value.trim();
-  const btn   = document.getElementById('resetBtn');
-
-  if(!email) { _authMsg(t('auth.reset.fill')); return; }
-
-  btn.disabled = true;
-  btn.textContent = t('auth.btn.sending');
-  _authMsg('');
-
-  try {
-    await fbAuth().sendPasswordResetEmail(email);
-    _authMsg(t('auth.reset.sent'), 'success');
-    btn.textContent = t('auth.btn.sent');
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = t('auth.btn.send_email');
-    const msgs = {
-      'auth/user-not-found': t('auth.reset.not_found'),
-      'auth/invalid-email':  t('auth.error.invalid_email'),
-    };
-    _authMsg(msgs[e.code] || t('auth.reset.error'));
   }
 }
 
@@ -264,8 +155,9 @@ async function disconnectWallet() {
   window._cambioLog = null;
 
   // Reset UI
+  // O authShowTab('login') que estava aqui repunha a aba de entrar. Já
+  // não há abas nenhumas: o login é um botão só.
   mostrarLoginScreen();
-  authShowTab('login');
 
   document.getElementById('idleScreen').style.display       = 'flex';
   document.getElementById('eggScreen').style.display        = 'none';
@@ -617,8 +509,8 @@ function iniciarAuthListener() {
   _authListenerIniciado = true;
 
   fbAuth().onAuthStateChanged(async user => {
-    // O emailVerified estava sendo verificado só dentro do
-    // loginComEmail(), depois do signInWithEmailAndPassword. Só que o
+    // O emailVerified estava sendo verificado só dentro do login por
+    // e-mail, depois do signInWithEmailAndPassword. Só que o
     // listener dispara com o usuário ainda autenticado, antes do
     // signOut que aquele código faz — e nessa janela um email por
     // confirmar entrava. Aqui o portão fecha para todos os caminhos, e
@@ -646,10 +538,5 @@ window.connectWallet = async function() {
 };
 
 // Exporta funções para inline handlers
-window.authShowTab       = authShowTab;
-window.authShowReset     = authShowReset;
-window.loginComEmail     = loginComEmail;
-window.registrarComEmail = registrarComEmail;
-window.enviarResetSenha  = enviarResetSenha;
 window.disconnectWallet  = disconnectWallet;
 window.iniciarAuthListener = iniciarAuthListener;

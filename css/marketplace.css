@@ -95,16 +95,10 @@
 #marketplaceModal ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:0.25rem;}
 
 /* ── AUTH ── */
-.auth-tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Cinzel',serif;font-size:0.625rem;letter-spacing:0.125rem;padding:0.5rem 0;cursor:pointer;transition:all .2s;}
-.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.auth-tab:hover:not(.active){color:var(--text);}
-.auth-input{width:100%;box-sizing:border-box;background:#0a0816;border:1px solid #2a2040;border-radius:0.375rem;color:#e8e0f0;font-family:'Cinzel',serif;font-size:0.6875rem;padding:0.625rem 0.75rem;outline:none;transition:border-color .2s;}
-.auth-input:focus{border-color:#5a3a9a;}
-.auth-btn-primary{width:100%;padding:0.6875rem;background:linear-gradient(135deg,#4c1d95,#7c3aed);border:none;border-radius:0.375rem;color:#fff;font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;letter-spacing:0.125rem;cursor:pointer;transition:opacity .15s;}
-.auth-btn-primary:hover{opacity:.9;}
-.auth-btn-primary:disabled{opacity:.5;cursor:not-allowed;}
-.auth-btn-green{width:100%;padding:0.6875rem;background:linear-gradient(135deg,#1a4a2a,#2d7a4a);border:none;border-radius:0.375rem;color:#fff;font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;letter-spacing:0.125rem;cursor:pointer;}
-.auth-btn-green:disabled{opacity:.5;cursor:not-allowed;}
+/* Aqui viviam as abas, os campos e os botoes do login por e-mail do
+   marketplace (js/marketplace-auth.js). O ficheiro nunca chegou a ser
+   carregado depois de o marketplace passar a modal de dentro do jogo,
+   e foi apagado; estas regras foram com ele. */
 .auth-btn-link{background:none;border:none;color:var(--muted);font-size:0.5625rem;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:0.0625rem;margin-top:0.125rem;transition:color .15s;}
 .auth-btn-link:hover{color:var(--gold);}
 

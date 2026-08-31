@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // CRISTAIS — Compra, resgate e transparência
-// Depende de: garantirCarteira() (marketplace-auth.js),
-//             playerData (global), walletAddress (global),
+// garantirCarteira() e vincularCarteira() vivem no fim deste ficheiro.
+// Depende de: playerData (global), walletAddress (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
 //             ethers (CDN carregado antes deste arquivo)
@@ -570,3 +570,72 @@ function _referralCopiarLink() {
       showToast(t('ref.copied'), 'ok');
     });
 }
+
+// ════════════════════════════════════════════════════════════════════
+// A CARTEIRA
+//
+// Estas duas viviam no js/marketplace-auth.js, que NAO era carregado
+// pelo index.html desde que o marketplace passou a ser um modal de
+// dentro do jogo. Ou seja: o cristais.js chamava garantirCarteira() e
+// o marketplace-core.js chamava vincularCarteira(), e as duas estavam
+// por definir — comprar ou resgatar cristais rebentava com
+// "garantirCarteira is not defined", no caminho onde ha dinheiro a
+// serio. Confirmado no browser antes de mexer: ambas undefined.
+//
+// Vieram para aqui, que e o ficheiro carregado e o que mais as usa. O
+// resto daquele ficheiro era um segundo login por e-mail e senha,
+// morto desde a mesma mudanca, e foi apagado com ele: uma porta de
+// entrada esquecida na arvore volta sempre a ser aberta por engano.
+// ════════════════════════════════════════════════════════════════════
+
+// ── Vincular MetaMask ao uid (para comprar/resgatar cristais) ─────
+async function vincularCarteira() {
+  if(typeof window.ethereum === 'undefined') {
+    showToast(t('mkt.metamask.not_found'), 'err'); return;
+  }
+  try {
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    const endereco = accounts[0].toLowerCase();
+
+    // Guarda no doc do jogador
+    await db.collection('players').doc(walletAddress).set({
+      carteira: endereco
+    }, { merge: true });
+
+    if(!playerData) playerData = {};
+    playerData.carteira = endereco;
+
+    // Atualiza header de cristais (MetaMask conectada para transações)
+    const dotEl = document.getElementById('walletDot');
+    if(dotEl) dotEl.style.background = 'var(--green)';
+
+    showToast(`✅ MetaMask vinculada: ${endereco.slice(0,6)}...${endereco.slice(-4)}`, 'ok');
+    return endereco;
+  } catch(e) {
+    if(e.code !== 4001) showToast(t('mkt.metamask.err'), 'err');
+    return null;
+  }
+}
+
+// ── Garante que MetaMask está vinculada antes de transações ───────
+async function garantirCarteira() {
+  // Se já temos o endereço em memória ou no playerData, usa-o
+  if(playerData?.carteira) return playerData.carteira;
+
+  // Tenta carregar do Firestore
+  try {
+    const snap = await db.collection('players').doc(walletAddress).get();
+    const carteira = snap.data()?.carteira;
+    if(carteira) {
+      playerData.carteira = carteira;
+      return carteira;
+    }
+  } catch(e) {}
+
+  // Não tem carteira vinculada — pede ao usuário
+  showToast(t('mkt.metamask.link_first'), 'err');
+  return null;
+}
+
+window.vincularCarteira = vincularCarteira;
+window.garantirCarteira = garantirCarteira;

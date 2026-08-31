@@ -10,8 +10,6 @@
     pt: {
       // Auth — abas e navegação
       'ui.avatars_title':        'Meus Avatares',
-      'auth.tab.login':          'ENTRAR',
-      'auth.ou':                 'ou',
       // -- A PAUSA --
       // A tela diz o que PARA, e nao so que esta parado: a pergunta a
       // seguir a “pausa” e sempre “e isso para o quê?”.
@@ -26,54 +24,25 @@
       'pausa.atalho':       'Barra de espaço pausa e continua.',
       'pausa.agora_nao':    'Não dá para pausar no meio de uma batalha ou de um minijogo. Termine ou desista primeiro.',
       'auth.google.btn':         'Entrar com Google',
+      // Entrar e criar conta sao o mesmo clique: o Firebase faz a conta
+      // na primeira entrada, e por isso nao ha “criar conta” nenhum.
+      'auth.so_google':          'Entrar cria a conta na primeira vez. Não há senha para guardar nem para esquecer.',
+      // Ja nao se pode mandar “entre com a senha e depois vincule”: nao
+      // ha senha. Uma conta antiga de e-mail precisa de quem administre.
+      'auth.google.conta_antiga':'Este e-mail tem uma conta antiga com senha. O jogo agora entra só pelo Google — fale com o administrador para migrar a conta.',
       'auth.google.erro':        'Não foi possível entrar com o Google. Tente novamente.',
-      'auth.google.ja_existe':   'Este e-mail já tem conta com senha. Entre com a senha e depois vincule o Google.',
       'auth.google.dominio':     'Este endereço não está autorizado no Firebase. Avise o administrador.',
       'auth.google.desactivado': 'O login com Google ainda não está ativado neste projeto.',
-      'auth.tab.register':       'CRIAR CONTA',
-      'auth.link.forgot':        'Esqueci a senha',
-      'auth.link.back':          '← Voltar',
 
       // Auth — placeholders
-      'auth.ph.email':           'E-mail',
-      'auth.ph.password':        'Senha',
-      'auth.ph.password_min':    'Senha (mín. 6 caracteres)',
-      'auth.ph.password_confirm':'Confirmar senha',
 
       // Auth — hint reset
-      'auth.reset.hint':         '📧 Envie um link de recuperação\npara seu e-mail.',
 
       // Auth — login
-      'auth.fill_fields':        'Preencha o e-mail e a senha.',
-      'auth.error.not_found':    'E-mail não encontrado.',
-      'auth.error.wrong_pass':   'Senha incorreta.',
-      'auth.error.invalid_email':'E-mail inválido.',
-      'auth.error.too_many':     'Muitas tentativas. Tente mais tarde.',
-      'auth.error.invalid_cred':   'E-mail ou senha incorretos.',
       'auth.error.login':          'Erro ao entrar. Tente novamente.',
-      'auth.error.not_verified':   '⚠️ E-mail não verificado. Verifique sua caixa de entrada (e spam).',
       // Auth — registo
-      'auth.reg.fill_all':       'Preencha todos os campos.',
-      'auth.reg.pass_mismatch':  'As senhas não coincidem.',
-      'auth.reg.pass_short':     'Senha deve ter pelo menos 6 caracteres.',
-      'auth.reg.email_in_use':   'Este e-mail já está em uso.',
-      'auth.reg.weak_pass':      'Senha muito fraca.',
-      'auth.reg.error':          'Erro ao criar conta. Tente novamente.',
-      'auth.reg.success':        '✓ Conta criada! Verifique seu e-mail antes de entrar.',
-      'auth.reg.email_notice':   '📧 Após criar a conta, você receberá um e-mail de confirmação.\nVerifique também a pasta de spam.',
       // Auth — reset
-      'auth.reset.fill':         'Insira seu e-mail.',
-      'auth.reset.sent':         '✓ E-mail de recuperação enviado!',
-      'auth.reset.not_found':    'E-mail não encontrado.',
-      'auth.reset.error':        'Erro ao enviar. Tente novamente.',
       // Auth — botões
-      'auth.btn.logging_in':     'ENTRANDO...',
-      'auth.btn.login':          'ENTRAR',
-      'auth.btn.creating':       'CRIANDO...',
-      'auth.btn.create':         'CRIAR CONTA',
-      'auth.btn.sending':        'ENVIANDO...',
-      'auth.btn.send_email':     'ENVIAR E-MAIL',
-      'auth.btn.sent':           'ENVIADO ✓',
 
       // Logs
       'log.session_ended':       'Sessão encerrada.',
@@ -348,8 +317,6 @@
     en: {
       // Auth — tabs and navigation
       'ui.avatars_title':        'My Avatars',
-      'auth.tab.login':          'SIGN IN',
-      'auth.ou':                 'or',
       'pausa.btn_pausar':   'Pause the game',
       'pausa.btn_retomar':  'Resume the game',
       'pausa.titulo':       'GAME PAUSED',
@@ -361,54 +328,21 @@
       'pausa.atalho':       'Spacebar pauses and resumes.',
       'pausa.agora_nao':    'You cannot pause in the middle of a battle or a minigame. Finish or withdraw first.',
       'auth.google.btn':         'Sign in with Google',
+      'auth.so_google':          'Signing in creates your account the first time. No password to store, none to forget.',
+      'auth.google.conta_antiga':'This e-mail has an older password account. The game now signs in with Google only — contact the administrator to migrate it.',
       'auth.google.erro':        'Could not sign in with Google. Please try again.',
-      'auth.google.ja_existe':   'This email already has a password account. Sign in with the password, then link Google.',
       'auth.google.dominio':     'This address is not authorized in Firebase. Let the administrator know.',
       'auth.google.desactivado': 'Google sign-in is not enabled on this project yet.',
-      'auth.tab.register':       'CREATE ACCOUNT',
-      'auth.link.forgot':        'Forgot password',
-      'auth.link.back':          '← Back',
 
       // Auth — placeholders
-      'auth.ph.email':           'Email',
-      'auth.ph.password':        'Password',
-      'auth.ph.password_min':    'Password (min. 6 characters)',
-      'auth.ph.password_confirm':'Confirm password',
 
       // Auth — reset hint
-      'auth.reset.hint':         '📧 We\'ll send a recovery link\nto your email.',
 
       // Auth — login
-      'auth.fill_fields':        'Please fill in your email and password.',
-      'auth.error.not_found':    'Email not found.',
-      'auth.error.wrong_pass':   'Incorrect password.',
-      'auth.error.invalid_email':'Invalid email address.',
-      'auth.error.too_many':     'Too many attempts. Please try again later.',
-      'auth.error.invalid_cred':   'Incorrect email or password.',
       'auth.error.login':          'Login error. Please try again.',
-      'auth.error.not_verified':   '⚠️ Email not verified. Check your inbox (and spam).',
       // Auth — register
-      'auth.reg.fill_all':       'Please fill in all fields.',
-      'auth.reg.pass_mismatch':  'Passwords do not match.',
-      'auth.reg.pass_short':     'Password must be at least 6 characters.',
-      'auth.reg.email_in_use':   'This email is already in use.',
-      'auth.reg.weak_pass':      'Password is too weak.',
-      'auth.reg.error':          'Account creation error. Please try again.',
-      'auth.reg.success':        '✓ Account created! Verify your email before signing in.',
-      'auth.reg.email_notice':   '📧 After creating your account, you\'ll receive a confirmation email.\nAlso check your spam folder.',
       // Auth — reset
-      'auth.reset.fill':         'Please enter your email.',
-      'auth.reset.sent':         '✓ Recovery email sent!',
-      'auth.reset.not_found':    'Email not found.',
-      'auth.reset.error':        'Send error. Please try again.',
       // Auth — buttons
-      'auth.btn.logging_in':     'SIGNING IN...',
-      'auth.btn.login':          'SIGN IN',
-      'auth.btn.creating':       'CREATING...',
-      'auth.btn.create':         'CREATE ACCOUNT',
-      'auth.btn.sending':        'SENDING...',
-      'auth.btn.send_email':     'SEND EMAIL',
-      'auth.btn.sent':           'SENT ✓',
 
       // Logs
       'log.session_ended':       'Session ended.',
