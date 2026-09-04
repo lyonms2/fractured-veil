@@ -117,6 +117,11 @@ function getGameState() {
       pai:         s.pai         || null,
       nascidoEm:   s.nascidoEm   || s.bornAt || 0,
       nomeTravado: s.nomeTravado ?? false,
+      /* Por quantas mãos já passou. Só o api/comprar-avatar.js lhe
+         acrescenta entradas — aqui apenas se guarda o que lá vem, e
+         guarda-se sempre, senão a próxima gravação do cliente apagava
+         uma história que o servidor tinha escrito. */
+      donos: Array.isArray(s.donos) ? s.donos : [],
       /* A CERTIDAO DE NASCIMENTO.
 
          Vai inteira e sem valor por omissao: um avatar sem certidao

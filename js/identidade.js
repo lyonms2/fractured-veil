@@ -86,6 +86,9 @@ function identidadeNova(opts) {
     criadorNome: o.criadorNome || nomeDoJogador(),
     mae:         o.mae || null,
     pai:         o.pai || null,
+    // Ainda não passou por mãos nenhumas além das de quem o fez.
+    // Só a venda escreve aqui (api/comprar-avatar.js).
+    donos:       [],
     nascidoEm:   Date.now(),
     // O nome vem sorteado. Fica um uso para o dono lhe pôr o seu.
     nomeTravado: false,
@@ -113,6 +116,10 @@ function garantirIdentidade(slot) {
   slot.criadorNome = null;
   slot.mae         = null;
   slot.pai         = null;
+  /* Lista vazia, e não inventada. Este avatar pode muito bem já ter
+     mudado de mãos antes de haver registo — mas escrever ali um nome
+     que eu não sei é pior do que dizer que não se sabe. */
+  slot.donos       = [];
   slot.nascidoEm   = slot.bornAt || Date.now();
   slot.nomeTravado = true;
   return true;
@@ -256,4 +263,73 @@ function confirmarNomeDoJogador() {
   const seguir = window._nomeJogadorAoFechar;
   window._nomeJogadorAoFechar = null;
   if (typeof seguir === 'function') seguir();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// A CERTIDÃO
+//
+// Tudo o que um avatar é para além dos números da ficha: o nome, o id,
+// quando nasceu, quem o fez, de quem nasceu, por que mãos passou.
+//
+// Não calcula nada. Lê o que está gravado e diz "—" onde não há nada —
+// e essa é a regra que interessa: um avatar do jogo antigo não tem
+// criador, e escrever ali o dono actual seria transformar uma compra em
+// autoria. A interface diz desconhecido, que é a verdade.
+// ═══════════════════════════════════════════════════════════════════
+function _certData(ms) {
+  if (!ms) return '—';
+  try {
+    const d = new Date(ms);
+    return d.toLocaleDateString(window._currentLang === 'en' ? 'en-GB' : 'pt-BR',
+                                { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (_) { return '—'; }
+}
+
+function _certLinha(rot, val, cls) {
+  return `<div class="cert-linha${cls ? ' ' + cls : ''}">
+    <span class="cert-rot">${rot}</span><span class="cert-val">${val}</span>
+  </div>`;
+}
+
+function renderCertidaoHTML(slot) {
+  if (!slot || typeof slot !== 'object') return '';
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const nada = t('cert.nada');
+
+  const nomeProprio = slot.nome ? String(slot.nome).split(',')[0].trim() : nada;
+  const dna = (slot.nascimento && typeof dnaLegivel === 'function')
+    ? dnaLegivel(slot.nascimento.dna) : '—';
+
+  /* Os donos anteriores, do mais antigo para o mais recente. O dono
+     ACTUAL não entra: é quem tem o avatar em mãos agora, e escrevê-lo
+     aqui era ter a mesma pessoa em dois sítios à espera de divergirem. */
+  const donos = Array.isArray(slot.donos) ? slot.donos : [];
+  const listaDonos = donos.length
+    ? `<div class="cert-donos">
+         <div class="cert-rot">${t('cert.donos')}</div>
+         <ol class="cert-donos-lista">${donos.map(d =>
+           `<li>${esc(d.nome || t('cert.anonimo'))}</li>`).join('')}</ol>
+       </div>`
+    : '';
+
+  return `<div class="certidao">
+    <div class="cert-titulo">${t('cert.titulo')}</div>
+    ${_certLinha(t('cert.nome'),     esc(nomeProprio))}
+    ${_certLinha(t('cert.id'),       esc(slot.id || nada), 'cert-mono')}
+    ${_certLinha(t('cert.nascimento'), _certData(slot.nascidoEm || slot.bornAt))}
+    ${_certLinha(t('cert.criador'),  esc(slot.criadorNome || nada))}
+    ${_certLinha(t('cert.mae'),      esc(slot.mae || nada))}
+    ${_certLinha(t('cert.pai'),      esc(slot.pai || nada))}
+    ${_certLinha('DNA',              esc(dna), 'cert-mono')}
+    ${listaDonos}
+  </div>`;
+}
+
+// Preenche a certidão dentro do overlay de zoom. Chamada por
+// openAvatarZoom() e openAvatarZoomData() em js/main.js.
+function preencherCertidaoZoom(slot) {
+  const el = document.getElementById('avatarZoomCertidao');
+  if (!el) return;
+  el.innerHTML = slot ? renderCertidaoHTML(slot) : '';
 }

@@ -155,6 +155,10 @@ async function handleListarAvatar(req, res, db, uid) {
         nascidoEm:   s.nascidoEm   || s.bornAt || Date.now(),
         nomeTravado: s.nomeTravado === true,
         nascimento:  s.nascimento  || null,
+        // Por quantas mãos já passou. Viaja com a listagem como tudo o
+        // resto da identidade — senão cada venda apagava a história
+        // anterior e o avatar chegava ao comprador com o passado limpo.
+        donos:       Array.isArray(s.donos) ? s.donos : [],
         nome:       s.nome,
         elemento:   s.elemento,
         raridade:   s.raridade,
@@ -335,6 +339,12 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const freeIdx       = slots.findIndex((s, i) => !s && i < unlockedSlots);
       if (freeIdx === -1) throw new Error('NO_SLOT');
 
+      /* O vendedor lê-se aqui, e não mais abaixo como era, porque o nome
+         dele entra no registo de proprietários que vai dentro do slot. */
+      const sellerRef  = db.collection('players').doc(listing.sellerId);
+      const sellerSnap = await tx.get(sellerRef);
+      const sellerData = sellerSnap.data() || {};
+
       novoSaldoComprador = debitoCompra.cristais + debitoCompra.cristaisBonus;
       slots[freeIdx] = {
         /* Chega intacta ao novo dono. O criador nao e o vendedor:
@@ -353,6 +363,19 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         nascidoEm:   listing.nascidoEm   || listing.bornAt || Date.now(),
         nomeTravado: listing.nomeTravado === true,
         nascimento:  listing.nascimento  || null,
+        /* ── O REGISTO DE PROPRIETÁRIOS ──
+
+           A venda é o único momento em que um avatar muda de mãos, e por
+           isso é aqui que a história se escreve: acrescenta-se o VENDEDOR
+           à lista, que é quem acabou de deixar de o ter. O comprador não
+           entra — ele é o dono ACTUAL, e isso lê-se de quem tem o slot.
+
+           O criador continua à parte e nunca muda: é quem o fez nascer,
+           e não o primeiro que o vendeu. */
+        donos: [...(Array.isArray(listing.donos) ? listing.donos : []),
+                { uid: listing.sellerId,
+                  nome: sellerData.nomeJogador || null,
+                  ate: Date.now() }],
         nome:       listing.nome,
         elemento:   listing.elemento,
         raridade:   listing.raridade,
@@ -372,9 +395,6 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       };
       novosSlotsComprador = slots;
 
-      const sellerRef  = db.collection('players').doc(listing.sellerId);
-      const sellerSnap = await tx.get(sellerRef);
-      const sellerData = sellerSnap.data() || {};
       const sellerCris = sellerData.gs?.cristais ?? sellerData.cristais ?? 0;
       const sellerSlots = [...(sellerData.avatarSlots || [])];
       if (listing.slotIdx !== undefined && sellerSlots[listing.slotIdx]) {
