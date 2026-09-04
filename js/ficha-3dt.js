@@ -34,10 +34,18 @@ const FICHA_NOMES = {
   A: 'Armadura',     // defesa passiva; entra na Força de Defesa
 };
 
-// ── ESCALÕES DE PODER (manual, pág. 13) ──
-// Todo o avatar começa Novato. Começava no escalão da raridade do ovo
-// — e a raridade era um sorteio, portanto o escalão também.
-const FICHA_PONTOS_BASE = 5;   // Novato
+/* ── UM BEBÊ VALE UM PONTO ──
+
+   Começava em CINCO, que é o escalão Novato do manual: um lutador
+   pequeno, mas já um lutador. Isso fazia do recém-nascido um adulto em
+   miniatura — quatro características repartidas, vida a dobrar do
+   mínimo — e o jogo diz que ele nasce POR FAZER: sem magia, sem
+   virtude, sem defeito, e agora também sem pontos para gastar.
+
+   Com um ponto, o bebé sai F1 H1 R1 A1, que é o piso do jogo. É pouco
+   de propósito: ele não vai a lado nenhum com isso, e não precisa —
+   bebê não luta (ver _pveImpedimentoDe, em js/combate-pve.js). */
+const FICHA_PONTOS_BASE = 1;
 
 /* A TABELA ANTIGA, E PORQUE SAIU DA CONTA.
    (Fica: o marketplace ainda a lê para mostrar o que cada degrau vale.)
@@ -59,11 +67,29 @@ const FICHA_PONTOS_RARIDADE = {
   'Lendário': 10,  // Campeão
 };
 
-// O nível compra pontos, como os Pontos de Experiência do manual.
-// Um ponto a cada quatro níveis: ao nível 35 são +8, o que leva um
-// Comum a 13 (acima de Lenda) e um Lendário a 18 (território das
-// Escalas de Poder). É a progressão mais lenta que ainda se sente.
-const FICHA_NIVEIS_POR_PONTO = 4;
+/* O nível compra pontos, como os Pontos de Experiência do manual.
+
+   Era um ponto a cada QUATRO níveis, e isso funcionava quando se partia
+   dos cinco. Partindo de um, a mesma cadência deixava o avatar em nove
+   pontos ao nível 35 — nunca chegaria a Lendário, que pede doze
+   (js/raridade.js), e o degrau mais alto do jogo ficava inalcançável.
+
+   Um a cada DOIS níveis resolve, e a escada fica:
+
+       nível  1    1 ponto    bebê, e não luta
+       nível 15    8 pontos   RARO
+       nível 23   12 pontos   LENDÁRIO
+       nível 35   18 pontos   o tecto
+
+   Os dezoito do tecto não são número novo: era exactamente o que um
+   Lendário tinha ao nível 35 antes de todos passarem a nascer Comuns
+   (dez de raridade mais oito de nível). O tecto do jogo volta ao que
+   era; o que mudou foi o princípio, que agora é um recém-nascido a
+   sério em vez de um adulto pequeno.
+
+   E ser Lendário ao 23 deixa doze níveis para o ser — é um estado em
+   que se vive, e não o último fotograma. */
+const FICHA_NIVEIS_POR_PONTO = 2;
 
 // Tecto por característica. O manual proíbe passar de 5 na criação, mas
 // autoriza explicitamente subir depois com experiência — por isso o
@@ -274,27 +300,43 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   // regressões depois da primeira correção.
   const sorteiosNoNv1 = pontosNoNv1 - _pisoDeR(pontosNoNv1);
 
-  // O piso da Resistência entra como ponto de partida e sai da bolsa,
-  // como sempre saiu — mas o tecto da R sobe com ele. Sem isso, um piso
-  // maior deixava menos espaço até ao tecto, a R transbordava um sorteio
-  // mais cedo e o resto da fila desalinhava: a segunda fonte da mesma
-  // regressão. Com o tecto a acompanhar, a folga da R é sempre a mesma
-  // que a das outras três, e subir o piso não desloca sorteio nenhum.
+  /* ── O PISO DA RESISTÊNCIA SAIU DO SORTEIO ──
+
+     Entrava como ponto de partida da R e o tecto dela subia junto, para
+     compensar. Funcionava enquanto o piso mudava pouco: com o orçamento
+     a ir de 5 a 13, ele cruzava dois degraus e ninguém dava por isso.
+
+     Com o bebé a valer um ponto, o orçamento passou a ir de 1 a 18 e o
+     piso a cruzar quatro. E cada vez que ele subia, o tecto da R subia
+     com ele — um sorteio que antes transbordava deixava de transbordar,
+     e a fila inteira desalinhava para trás. Resultado: 270 subidas de
+     nível em 204.000 BAIXAVAM uma característica, e 300 baixavam a vida.
+     O mesmo defeito que este ficheiro já tinha corrigido duas vezes,
+     por uma porta diferente.
+
+     Agora o piso não toca no sorteio: as quatro características correm a
+     fila em pé de igualdade, comecando as quatro em zero e com o mesmo
+     tecto, e o piso soma-se à R no fim — como o +1 já se somava a todas.
+
+     Assim a invariante é estrutural e não casual: subir de nível ou
+     acrescenta um sorteio ao fim da fila, ou sobe o piso e mais nada.
+     Nenhum dos dois mexe num sorteio já feito. */
   const piso = _pisoDeR(pontos);
-  const c = { F: 0, H: 0, R: piso, A: 0 };
+  const c = { F: 0, H: 0, R: 0, A: 0 };
   const porGastar = pontos - piso;
 
   for (let i = 1; i <= porGastar; i++) {
-    // Este é o i-ésimo ponto. Se veio da raridade, tecto 5; se veio de
-    // um nível, tecto 5 + quantos níveis já tinham passado.
+    // Este é o i-ésimo ponto. Se veio do orçamento de nascença, tecto 5;
+    // se veio de um nível, tecto 5 + quantos níveis já tinham passado.
     const tectoAqui = FICHA_MAX_INICIAL + Math.max(0, i - sorteiosNoNv1);
-    const disponiveis = FICHA_CARACS.filter(k => c[k] < tectoAqui + (k === 'R' ? piso : 0));
+    const disponiveis = FICHA_CARACS.filter(k => c[k] < tectoAqui);
     if (!disponiveis.length) break;                      // tudo no tecto
     const total = disponiveis.reduce((t, k) => t + peso(k), 0);
     let alvo = rnd(1, total), k = disponiveis[0];
     for (const cand of disponiveis) { alvo -= peso(cand); if (alvo <= 0) { k = cand; break; } }
     c[k]++;
   }
+  c.R += piso;
 
   const tecto = FICHA_MAX_INICIAL + pontosDeNivel;
 

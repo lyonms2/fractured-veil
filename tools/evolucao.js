@@ -80,10 +80,18 @@ ok(M.raridadeDosPontos(12) === 'Lendário' && M.raridadeDosPontos(99) === 'Lend�
   const primeiro = r => { for (let nv = 1; nv <= 35; nv++)
     if (M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv)) === r) return nv; return null; };
   const raro = primeiro('Raro'), lend = primeiro('Lendário');
-  ok(raro === 13 && lend === 29, 'Raro ao nível 13 e Lendário ao 29',
+  ok(raro === 15 && lend === 23, 'Raro ao nível 15 e Lendário ao 23',
      'Raro nv' + raro + ' · Lendário nv' + lend);
-  ok(lend > 17, 'ser Lendário é o fim da estrada, e não o meio dela',
-     'nv' + lend + ' de 35');
+  /* Duas pontas, e as duas importam. Cedo de mais e a raridade não é
+     conquista nenhuma; tarde de mais e ninguém chega a viver nela —
+     numa versão anterior o Lendário caía no nível 34 de 35, e era um
+     fotograma e não um estado. */
+  ok(lend > 17 && lend <= 25, 'e sobram níveis para se VIVER como Lendário',
+     'Lendário ao nv' + lend + ', com ' + (35 - lend) + ' níveis pela frente');
+
+  // O bebé vale um ponto, e é esse o princípio da escada.
+  ok(M.pontosDoAvatar('Comum', 1) === 1, 'e o bebé vale um ponto',
+     'nv1 → ' + M.pontosDoAvatar('Comum', 1) + ' ponto');
 }
 
 // A conquista não se perde.
@@ -269,6 +277,52 @@ titulo('O REPERTÓRIO CRESCE');
   }
   ok(quebrou === 0, 'o que a ficha promete ao nível 5 é o que chega ao 35',
      n.toLocaleString('pt-BR') + ' lugares comparados');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('O BEBÊ');
+
+{
+  const bebe = M.fichaDeAvatar(7, 'Comum', 'Fogo', 1);
+  const soma = ['F', 'H', 'R', 'A'].reduce((t, k) => t + bebe[k], 0);
+  console.log('       nv1: F' + bebe.F + ' H' + bebe.H + ' R' + bebe.R + ' A' + bebe.A +
+              '  · ' + bebe.pv + ' PV · ' + bebe.pm + ' PM · ' + bebe.escalao);
+
+  ok(bebe.pontos === 1, 'a ficha do bebê vale um ponto', bebe.pontos + ' ponto');
+  ok(soma === 5, 'e as quatro características ficam no piso',
+     'F1 H1 R2 A1 soma ' + soma + ' (o ponto mais o +1 de cada)');
+  ok(!bebe.vantagem && !bebe.desvantagem, 'sem virtude e sem defeito', 'as duas nulas');
+  ok(Object.keys(M.magiasDoAvatar(bebe)).length === 0, 'e sem magia nenhuma',
+     'só o golpe comum');
+
+  /* Um bebê de um ponto tinha de continuar a ter vida para existir na
+     tela — dez de vida e dez de magia é o mínimo que o piso da
+     Resistência garante, e não pode cair com a curva nova. */
+  ok(bebe.pv >= 10 && bebe.pm >= 10, 'mas com vida e magia para existir',
+     bebe.pv + ' PV · ' + bebe.pm + ' PM');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('A VIRTUDE E O DEFEITO NÃO TROCAM');
+
+/* Trocavam. A escolha era filtrada pelo orçamento de HOJE, o orçamento
+   cresce com o nível, e por isso o bolo crescia e o índice sorteado caía
+   noutro sítio — 1,7% das subidas trocavam de virtude, e com ela podiam
+   levar dez pontos de vida. É o mesmo defeito que as magias tiveram. */
+{
+  let trocou = 0, n = 0;
+  for (let seed = 1; seed <= 800; seed++) {
+    let antV = null, antD = null;
+    for (let nv = 5; nv <= 35; nv++) {
+      const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+      const v = f.vantagem ? f.vantagem.id : null;
+      const d = f.desvantagem ? f.desvantagem.id : null;
+      if (antV !== null) { n++; if (v !== antV || d !== antD) trocou++; }
+      antV = v; antD = d;
+    }
+  }
+  ok(trocou === 0, 'a virtude e o defeito são os mesmos do berço à lenda',
+     n.toLocaleString('pt-BR') + ' subidas');
 }
 
 console.log('');

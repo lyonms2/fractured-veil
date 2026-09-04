@@ -624,6 +624,10 @@ b.cond {
   font-family: 'Cinzel', serif; font-size: 0.4375rem; letter-spacing: 0.0625rem;
   font-weight: 700;
 }
+/* O bebê não é um problema a resolver como os outros dois — é só cedo.
+   Por isso o selo dele é roxo, a cor da primeira fase, e não vermelho
+   nem laranja, que são as de aviso. */
+.equipa-bloqueio.bebe    .eb-selo { color: #a78bfa; }
 .equipa-bloqueio.doenca  .eb-selo { color: #e05555; }
 .equipa-bloqueio.energia .eb-selo { color: #e0a050; }
 /* O motivo pode ser um nome de doença comprido; parte em vez de esticar

@@ -169,8 +169,13 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
      nenhum combatente da amostra tinha um — e a Lâmina que decapita,
      que vive numa magia forte, nunca acontecia. Não era um buraco do
      jogo: era a amostra a não conter ninguém que pudesse mostrá-la. */
-  const rarDoNivel = nv => { const p = 5 + Math.floor((nv - 1) / 4);
-    return p >= 12 ? 'Lendário' : p >= 8 ? 'Raro' : 'Comum'; };
+  /* A raridade sai das FUNÇÕES do jogo, e não de uma cópia da fórmula.
+
+     Estava aqui a conta escrita à mão — 5 + (nível-1)/4 — e quando a
+     curva mudou (o bebé passou a valer um ponto) esta amostra ficou a
+     medir um jogo que já não existe. Duas cópias de uma regra, e a
+     segunda a apodrecer sem ninguém dar por ela. */
+  const rarDoNivel = nv => M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv));
   const eq = () => [0,1,2].map((_, i) => {
     const nivel = 1 + Math.floor(rnd() * 35);
     return { nome: 'av' + i, elemento: esc(ELS), raridade: rarDoNivel(nivel),

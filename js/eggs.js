@@ -347,7 +347,7 @@ async function confirmHatch() {
   }
   window._pendingEggSlot = targetSlot;
 
-  hatchWithAnimation('Comum', ovo.elemento, targetSlot);
+  hatchWithAnimation(avatarSlots[targetSlot], targetSlot);
 }
 
 // Os temporizadores da chocagem, para se poderem cancelar. São dez em
@@ -360,10 +360,22 @@ function _pararAnimacaoDeChocar() {
   _hatchTimers = [];
 }
 
-function hatchWithAnimation(raridade, elemento, targetSlot) {
+/* A animação do choco.
+
+   Recebia a raridade e o elemento. A raridade escolhia a cor do ovo —
+   verde para o Comum, azul para o Raro, dourado para o Lendário — e o
+   elemento não era usado para nada, apesar de estar na assinatura.
+
+   Como todo o avatar nasce Comum, o ovo era SEMPRE o mesmo ovo verde.
+   Agora recebe o próprio avatar e pinta-se com as cores dele: o ovo tem
+   a cor de quem está lá dentro, e não há dois iguais. */
+function hatchWithAnimation(slot, targetSlot) {
   _pararAnimacaoDeChocar();
-  const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
-  const crackColor = rarColors[raridade] || '#c4b5fd';
+  const temCor = typeof corDoAvatar === 'function' && slot && slot.nascimento;
+  const corBase   = temCor ? corDoAvatar(slot)           : '#5a3a9a';
+  const corEscura = temCor ? corDoAvatar(slot, 'escura') : '#2d1a5e';
+  const corBrilho = temCor ? corDoAvatar(slot, 'brilho') : '#8060c0';
+  const crackColor = corBrilho;
 
   document.getElementById('aliveScreen').style.display = 'none';
   document.getElementById('deadScreen').style.display  = 'none';
@@ -372,7 +384,7 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
   document.getElementById('actionBtns').style.opacity      = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
 
-  applyEggVisual(raridade, crackColor);
+  applyEggVisual({ base: corBase, escura: corEscura, brilho: corBrilho }, crackColor);
 
   document.getElementById('eggHint').textContent = t('egg.hint.hatching');
   document.getElementById('eggProgress').textContent = '';
@@ -441,7 +453,22 @@ function hatchWithAnimation(raridade, elemento, targetSlot) {
 // chegava a ver — e mentia.
 // ═══════════════════════════════════════════════════════════════════
 
-function applyEggVisual(raridade, crackColor) {
+/* Pinta o ovo do ecrã.
+
+   Tinha três ramos escritos à mão — Lendário dourado, Raro azul, o
+   resto roxo — e com toda a gente a nascer Comum só o terceiro corria.
+   Passa a receber as cores já escolhidas: as do avatar que está lá
+   dentro, tiradas do DNA dele.
+
+   O brilho e a aura acendem-se sempre. Eram o prémio de ser Lendário,
+   e a raridade deixou de vir do ovo — conquista-se depois. Um ovo é um
+   ovo, e todos merecem a mesma cerimónia. */
+function applyEggVisual(cores, crackColor) {
+  const c = cores || {};
+  const base   = c.base   || '#5a3a9a';
+  const escura = c.escura || '#2d1a5e';
+  const brilho = c.brilho || '#8060c0';
+
   const stop1 = document.querySelector('#eggGrad stop:first-child');
   const stop2 = document.querySelector('#eggGrad stop:nth-child(2)');
   const stop3 = document.querySelector('#eggGrad stop:last-child');
@@ -451,40 +478,16 @@ function applyEggVisual(raridade, crackColor) {
   const shine  = document.getElementById('eggShine');
   const sparks = document.getElementById('eggSparkles');
 
-  if(raridade === 'Lendário') {
-    if(stop1) stop1.setAttribute('stop-color', '#c8860a');
-    if(stop2) stop2.setAttribute('stop-color', '#7a4400');
-    if(stop3) stop3.setAttribute('stop-color', '#1a0e00');
-    if(glowEl) { glowEl.setAttribute('fill','#8a5a00'); glowEl.setAttribute('opacity','.6'); }
-    if(shine)  shine.setAttribute('fill','#ffd700');
-    if(aura1)  { aura1.setAttribute('stroke','#e8a030'); aura1.style.opacity='0.7'; }
-    if(aura2)  { aura2.setAttribute('stroke','#ffd700'); aura2.style.opacity='0.4'; }
-    if(sparks) sparks.style.opacity='1';
-    if(aura1) aura1.style.animation='eggAuraPulse 1.8s ease-in-out infinite';
-    if(aura2) aura2.style.animation='eggAuraPulse 1.8s ease-in-out infinite 0.4s';
-  } else if(raridade === 'Raro') {
-    if(stop1) stop1.setAttribute('stop-color', '#1a6aaa');
-    if(stop2) stop2.setAttribute('stop-color', '#0d3560');
-    if(stop3) stop3.setAttribute('stop-color', '#0a0f1e');
-    if(glowEl) { glowEl.setAttribute('fill','#1a4a8a'); glowEl.setAttribute('opacity','.5'); }
-    if(shine)  shine.setAttribute('fill','#7dc8f0');
-    if(aura1)  { aura1.setAttribute('stroke','#5ab4e8'); aura1.style.opacity='0.6'; }
-    if(aura2)  { aura2.setAttribute('stroke','#a0d8f0'); aura2.style.opacity='0.3'; }
-    if(sparks) sparks.style.opacity='0';
-    if(aura1) aura1.style.animation='eggAuraPulse 2.2s ease-in-out infinite';
-    if(aura2) aura2.style.animation='eggAuraPulse 2.2s ease-in-out infinite 0.6s';
-  } else {
-    if(stop1) stop1.setAttribute('stop-color', '#5a3a9a');
-    if(stop2) stop2.setAttribute('stop-color', '#2d1a5e');
-    if(stop3) stop3.setAttribute('stop-color', '#0b0916');
-    if(glowEl) { glowEl.setAttribute('fill','#3d2a6e'); glowEl.setAttribute('opacity','.4'); }
-    if(shine)  shine.setAttribute('fill','#8060c0');
-    if(aura1)  aura1.style.opacity='0';
-    if(aura2)  aura2.style.opacity='0';
-    if(sparks) sparks.style.opacity='0';
-    if(aura1) aura1.style.animation='none';
-    if(aura2) aura2.style.animation='none';
-  }
+  if(stop1) stop1.setAttribute('stop-color', base);
+  if(stop2) stop2.setAttribute('stop-color', escura);
+  if(stop3) stop3.setAttribute('stop-color', '#0b0916');
+  if(glowEl) { glowEl.setAttribute('fill', escura); glowEl.setAttribute('opacity','.5'); }
+  if(shine)  shine.setAttribute('fill', brilho);
+  if(aura1)  { aura1.setAttribute('stroke', base);   aura1.style.opacity = '0.55';
+               aura1.style.animation = 'eggAuraPulse 1.8s ease-in-out infinite'; }
+  if(aura2)  { aura2.setAttribute('stroke', brilho); aura2.style.opacity = '0.3';
+               aura2.style.animation = 'eggAuraPulse 1.8s ease-in-out infinite 0.4s'; }
+  if(sparks) sparks.style.opacity = '0.7';
 
   if(crackColor) {
     document.querySelectorAll('#eggCracks line').forEach(l => {

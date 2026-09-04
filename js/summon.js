@@ -221,7 +221,14 @@ function triggerSummon() {
   const ovParts    = document.getElementById('ovParticles');
   const ovRarLbl   = document.getElementById('ovRarityLabel');
   const ovNamLbl   = document.getElementById('ovNameLabel');
-  const cor        = car ? car.cor : '#8b5cf6';
+  /* A cor do OVO é a de quem está lá dentro.
+
+     Era a do elemento — e os elementos já não pintam nada. O avatar já
+     nasceu neste ponto (o registarNascimento corre acima), portanto o
+     DNA dele já tem as duas cores. */
+  const _novo = avatarSlots[activeSlotIdx];
+  const cor = (typeof corDoAvatar === 'function' && _novo && _novo.nascimento)
+    ? corDoAvatar(_novo) : (car ? car.cor : '#8b5cf6');
 
   const rarColors  = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
   const rarNames   = { 'Comum':'◆ COMUM ◆', 'Raro':'◈ RARO ◈', 'Lendário':'✦ LENDÁRIO ✦' };
@@ -234,10 +241,15 @@ function triggerSummon() {
   ovParts.innerHTML  = '';
   ovBg.style.opacity = '0';
 
-  const elemEmoji = car ? car.emoji : '✦';
+  /* E o rótulo diz a COR, não o elemento. Era "🔥 FOGO"; passa a ser
+     "◆ AZUL", que é o que o jogador vai ver quando o bicho sair. */
   ovRarLbl.textContent = rarNames[raridade];
   ovRarLbl.style.color = rarColor;
-  ovNamLbl.textContent = `${elemEmoji} ${elemento.toUpperCase()}`;
+  const _cores = (typeof coresDoAvatar === 'function' && _novo) ? coresDoAvatar(_novo) : null;
+  ovNamLbl.textContent = (_cores && typeof nomeDaCor === 'function')
+    ? '◆ ' + nomeDaCor(_cores.principal).toUpperCase()
+    : `✦ ${String(elemento).toUpperCase()}`;
+  ovNamLbl.style.color = cor;
 
   const eggSVG = `<svg viewBox="0 0 120 140" width="120" height="140">
     <defs>
@@ -346,7 +358,7 @@ function triggerSummon() {
     updateAllUI();
     scheduleSave();
 
-    hatchWithAnimation(raridade, elemento, activeSlotIdx);
+    hatchWithAnimation(avatarSlots[activeSlotIdx], activeSlotIdx);
   }, 4300);
 
   const msg = raridade==='Lendário' ? t('summon.log.legendary') : raridade==='Raro' ? t('summon.log.rare') : t('summon.log.common');
@@ -392,8 +404,7 @@ function setupAvatar() {
      existe para quem fechou o jogo a meio da chocagem, não para quem
      já a fez. */
   if(!hatched && typeof hatchWithAnimation === 'function') {
-    hatchWithAnimation(avatar.raridade, avatar.elemento,
-                       (typeof activeSlotIdx === 'number') ? activeSlotIdx : 0);
+    hatchWithAnimation(avatar, (typeof activeSlotIdx === 'number') ? activeSlotIdx : 0);
   }
 }
 

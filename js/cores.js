@@ -199,6 +199,20 @@ function paletaDoAvatar(slot) {
   return paletaDeCores(c.principal, c.secundaria);
 }
 
+/* A cor de um avatar em hexadecimal, para quem quer pintar uma coisa
+   qualquer com ela — o ovo dele, um contorno, um clarão.
+
+   A cerimónia da invocação e a do choco pintavam-se com a cor do
+   ELEMENTO. Deixou de fazer sentido: a cor é a identidade do avatar e
+   vem do DNA dele, e o ovo devia ter a cor de quem está lá dentro. */
+function corDoAvatar(slot, qual) {
+  const cfg = paletaDoAvatar(slot);
+  if (!cfg) return '#8b5cf6';
+  if (qual === 'brilho') return cfg.corBrilho;
+  if (qual === 'escura') return (cfg.coresSec && cfg.coresSec[0]) || cfg.cores[0];
+  return cfg.cores[0];
+}
+
 // O nome da cor, para mostrar. Vem do i18n; sem ele, o id serve.
 function nomeDaCor(x) {
   const id = idDaCor(x);

@@ -192,6 +192,19 @@ function _pveImpedimentoDe(i) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[i] : null;
   const nome = ((s || {}).nome || 'Avatar').split(',')[0].trim();
 
+  /* UM BEBÉ NÃO LUTA.
+
+     É a primeira coisa que se pergunta, antes das doenças e da energia:
+     um recém-nascido não está doente nem cansado, está por fazer. Não
+     tem magia nenhuma, não tem virtude nem defeito, e a ficha dele é um
+     ponto — mandá-lo para a arena era mandá-lo morrer.
+
+     A guarda está aqui, com as outras, e não no botão: um limite
+     guardado por quem PEDE em vez de por quem FAZ já rendeu quatro
+     defeitos a este jogo. */
+  if (typeof ehBebe === 'function' && ehBebe(s))
+    return { i, nome, motivo: 'bebe', etiqueta: '🐣' };
+
   const doencas = _pveDoencasDe(i);
   if (doencas.length) {
     const nomes = doencas.map(id => {

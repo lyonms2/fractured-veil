@@ -156,6 +156,25 @@ function _vdEscolher(ids, tabela, pesos, rnd) {
   return ids[ids.length - 1];
 }
 
+/* O ORÇAMENTO QUE MANDA NA ESCOLHA É O DO FIM, E NÃO O DE HOJE.
+
+   A vantagem é escolhida entre as que o orçamento aguenta — e o
+   orçamento cresce com o nível. Filtrar pelo de HOJE fazia o bolo
+   crescer a cada nível, o índice sorteado cair noutro sítio, e o avatar
+   TROCAR de virtude ao subir: medido em 318 de 18.600 subidas, 1,7%.
+   Um avatar podia perder o Fôlego Extra e dez pontos de vida com ele.
+
+   É o mesmo defeito que as magias tiveram e que este ficheiro corrigiu
+   da mesma maneira: pergunta-se ao orçamento do NÍVEL 35, que é
+   constante para um dado avatar. A virtude e o defeito ficam decididos
+   ao nascer e não mudam mais, que é o que o jogo promete.
+
+   Consequência assumida: um avatar novo pode ter uma virtude que ainda
+   não "paga" — a bolsa dele fica em zero e as quatro características no
+   piso. É exactamente o que deve acontecer a quem é novo, e a ficha
+   dele não desce por isso: o que sobra é sempre zero ou mais. */
+const VD_ORCAMENTO_FINAL = 18;   // FICHA_PONTOS_BASE + os pontos do nível 35
+
 function sortearVantagens(seed, pontosBase, elemento, indole) {
   const rnd = _vdRng((seed || 0) ^ 0x9C);
 
@@ -175,8 +194,11 @@ function sortearVantagens(seed, pontosBase, elemento, indole) {
 
   // Quanto há para gastar depois de a desvantagem pagar
   const bolsa = pontosBase - desv.custo;          // custo é negativo
+  // O bolo sai do orçamento do fim, portanto é o mesmo em todos os
+  // níveis deste avatar — e a virtude dele nunca troca.
+  const bolsaFinal = VD_ORCAMENTO_FINAL - desv.custo;
   const idsV = Object.keys(VANTAGENS)
-    .filter(k => bolsa - VANTAGENS[k].custo >= VD_PONTOS_MINIMOS);
+    .filter(k => bolsaFinal - VANTAGENS[k].custo >= VD_PONTOS_MINIMOS);
   const idV  = _vdEscolher(idsV, VANTAGENS, indole, rnd) || 'passo_rapido';
   const vant = VANTAGENS[idV];
 
@@ -189,7 +211,16 @@ function sortearVantagens(seed, pontosBase, elemento, indole) {
   return {
     vantagem:    { id: idV, ...vant, elemento: elemV },
     desvantagem: { id: idD, ...desv, elemento: elemD },
-    pontos:      bolsa - vant.custo,
+    /* Nunca abaixo de UM, e o um não é arbitrário: é o piso da
+       Resistência (_pisoDeR, em js/ficha-3dt.js), que sai desta mesma
+       bolsa e não é oferecido por fora.
+
+       Pus zero primeiro, e a auditoria apanhou: com zero, a R ficava na
+       mesma com o piso e o avatar acabava com um ponto que o orçamento
+       não tinha dado — 2.520 pontos de graça ao todo. Um avatar novo com
+       uma virtude cara fica com o mínimo, e não com dívida nem com
+       presente. */
+    pontos:      Math.max(1, bolsa - vant.custo),
   };
 }
 
