@@ -155,8 +155,6 @@ function getGameState() {
       poopPressure:   s.poopPressure   ?? 0,
       faseVista:      s.faseVista      ?? 0,
       nivelVisto:     s.nivelVisto     ?? 1,
-      eggLayCooldown: s.eggLayCooldown ?? 0,
-      eggLayReadyAt:  s.eggLayReadyAt  || 0,
       petCooldown:    s.petCooldown    ?? 0,
       activeDiseases: s.activeDiseases ? [...s.activeDiseases] : [],
       diseaseStress:  s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 },

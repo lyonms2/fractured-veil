@@ -32,7 +32,8 @@ const M = new Function('t',
   `return { arvoreDe,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
-            podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar, REPR_INCUBACAO_MS,
+            podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
+            tempoDeChoco, _reprCuidado, REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS,
             fichaDeAvatar, magiasDoAvatar, faseDoSlot };`
 )(x => x);
 
@@ -307,8 +308,8 @@ titulo('O OVO');
 
   ok(!M.ovoPronto(o, Date.now()), 'não se choca no instante em que é posto',
      'faltam ' + Math.round(M.faltaParaChocar(o, Date.now()) / 3600000) + ' h');
-  ok(M.ovoPronto(o, Date.now() + M.REPR_INCUBACAO_MS + 1), 'e choca-se passado o tempo de choco',
-     (M.REPR_INCUBACAO_MS / 3600000) + ' h de incubação');
+  ok(M.ovoPronto(o, Date.now() + M.REPR_CHOCO_MAX_MS + 1), 'e choca-se passado o tempo de choco',
+     Math.round((o.chocaEm - Date.now()) / 3600000) + ' h para este par');
   ok(M.ovoPronto({ id: 1 }, Date.now()), 'um ovo dos antigos, sem tempo de choco, abre já',
      'sem chocaEm → pronto');
 
@@ -379,6 +380,54 @@ titulo('A ÁRVORE');
   ok(M.arvoreDe(kael, semPais).avos.length === 0,
      'aí já não dá para subir aos avós, e não se inventam',
      '0 avós');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('O TEMPO DE CHOCO');
+
+/* O sinal que o servidor media quando o avatar punha ovos sozinho — os
+   cinco medidores, o vínculo e o nível — mudou de casa para aqui. Se
+   deixasse de valer alguma coisa, o jogador perdia o motivo mais direto
+   que tem para cuidar do bicho, e ninguém dava por isso. */
+{
+  const par = (vitais, vinculo, nivel) => {
+    const s = adulto(50000 + vitais + vinculo);
+    s.vitals = { fome: vitais, humor: vitais, energia: vitais, saude: vitais, higiene: vitais };
+    s.vinculo = vinculo; s.nivel = nivel;
+    return s;
+  };
+  const horas = (v, b, n) => M.tempoDeChoco(par(v, b, n), par(v, b, n)) / 3600000;
+
+  const largado = horas(0, 0, 17);
+  const meio    = horas(60, 200, 26);
+  const mimado  = horas(100, 400, 35);
+  console.log('       pais largados      → ' + largado.toFixed(1) + ' h');
+  console.log('       pais a meio gás    → ' + meio.toFixed(1) + ' h');
+  console.log('       pais impecáveis    → ' + mimado.toFixed(1) + ' h');
+
+  ok(largado > meio && meio > mimado,
+     'cuidar dos pais encurta o choco, e cuidar mais encurta mais',
+     largado.toFixed(0) + ' h > ' + meio.toFixed(0) + ' h > ' + mimado.toFixed(0) + ' h');
+  ok(Math.abs(largado - 48) < 0.6 && Math.abs(mimado - 24) < 0.6,
+     'e o intervalo é mesmo de 24 a 48 horas',
+     'pior caso ' + largado.toFixed(0) + ' h · melhor caso ' + mimado.toFixed(0) + ' h');
+
+  // Nunca fora do intervalo, por muito estranhos que sejam os números.
+  let fora = 0;
+  for (const v of [-50, 0, 33, 77, 100, 500])
+    for (const b of [-10, 0, 150, 400, 9999])
+      for (const n of [1, 17, 35, 99]) {
+        const h = M.tempoDeChoco(par(v, b, n), par(v, b, n));
+        if (h < M.REPR_CHOCO_MIN_MS || h > M.REPR_CHOCO_MAX_MS) fora++;
+      }
+  ok(fora === 0, 'e não sai do intervalo nem com números absurdos',
+     '120 combinações, incluindo negativos e valores fora da escala');
+
+  // Um pai bem tratado e outro largado ficam pelo meio: contam os dois.
+  const misto = M.tempoDeChoco(par(100, 400, 35), par(0, 0, 17)) / 3600000;
+  ok(misto > mimado && misto < largado,
+     'e os dois pais contam — um só bem tratado não chega',
+     'um mimado com um largado dá ' + misto.toFixed(0) + ' h');
 }
 
 console.log('');

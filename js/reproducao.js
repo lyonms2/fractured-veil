@@ -30,11 +30,48 @@
 // e dois irmãos do mesmo par acabam diferentes. Ver tools/genetica.js.
 // ═══════════════════════════════════════════════════════════════════
 
-// Quanto tempo o ovo de um filho leva a poder ser chocado.
-const REPR_INCUBACAO_MS = 24 * 3600 * 1000;
+/* ── O TEMPO DE CHOCO: DE 24 A 48 HORAS ──
 
-// E quanto tempo ele dura antes de apodrecer, a contar de que é posto.
+   Duas noites no pior caso, uma no melhor. E não é ao acaso qual delas
+   calha: quem cuidou dos pais espera menos.
+
+   Isto não é regra nova — é uma regra antiga a mudar de casa. O
+   servidor media exactamente isto quando o avatar punha ovos sozinho
+   (o _validadeDoOvo, em api/pool.js): o nível, o vínculo e os cinco
+   medidores decidiam o quanto o ovo valia. A postura sozinha acabou, e
+   o sinal veio com ela para aqui, que é onde os ovos nascem agora.
+
+   É o motivo mais direto que o jogo tem para o jogador manter os
+   medidores em cima: um casal bem tratado dá filhos mais depressa. */
+const REPR_CHOCO_MAX_MS = 48 * 3600 * 1000;
+const REPR_CHOCO_MIN_MS = 24 * 3600 * 1000;
+
+// E quanto tempo o ovo dura antes de apodrecer, a contar de que é posto.
+// Um casal bem tratado também dá ovos que aguentam mais.
 const REPR_VALIDADE_DIAS = 14;
+const REPR_VALIDADE_BONUS = 7;
+
+/* Quanto os dois pais valem, de 0 (nenhum cuidado) a 1 (impecáveis).
+
+   Três coisas, com o mesmo peso cada: os cinco medidores, o vínculo, e
+   o nível. São as três que o servidor media, e ficam as três. */
+function _reprCuidado(a, b) {
+  const VITAIS = ['fome', 'humor', 'energia', 'saude', 'higiene'];
+  const de = s => {
+    const v = (s && s.vitals) || {};
+    const medidores = VITAIS.reduce((t, k) => t + Math.max(0, Math.min(100, v[k] == null ? 100 : v[k])), 0) / (VITAIS.length * 100);
+    const vinculo = Math.max(0, Math.min(1, (s && s.vinculo || 0) / 400));
+    const nivel   = Math.max(0, Math.min(1, ((s && s.nivel || 1) - 17) / 18));
+    return (medidores + vinculo + nivel) / 3;
+  };
+  return (de(a) + de(b)) / 2;
+}
+
+// O tempo de choco deste par: 48 h se ninguém cuidou, 24 h no melhor caso.
+function tempoDeChoco(a, b) {
+  const q = _reprCuidado(a, b);
+  return Math.round(REPR_CHOCO_MAX_MS - (REPR_CHOCO_MAX_MS - REPR_CHOCO_MIN_MS) * q);
+}
 
 /* Gerador próprio, com constante própria: se partilhasse a do DNA, dois
    pais com os mesmos seeds davam sempre o mesmo filho. */
@@ -123,9 +160,10 @@ function cruzarDna(dnaA, dnaB, seed) {
   // E o feitio.
   genes.indole = [_umDoPar(gA.indole || [0, 0], rnd), _umDoPar(gB.indole || [0, 0], rnd)];
 
-  /* O elemento vem de um dos pais, à sorte. Não é um par de alelos
-     como o resto porque nunca foi: vive no topo do DNA e é ele que
-     escolhe a gaveta de magias. Meia-mistura de gavetas não existe. */
+  /* O elemento vem de um dos pais, à sorte. Já não escolhe magia
+     nenhuma — as gavetas passaram a ser por papel — e o que dele resta
+     é nome e sabor. Herda-se na mesma: um filho puxar o elemento de um
+     dos pais é mais bonito do que sortear um do nada. */
   const elemento = rnd() < 0.5 ? (dnaA && dnaA.elemento) : (dnaB && dnaB.elemento);
 
   return { v: 2, elemento: elemento || (dnaA && dnaA.elemento) || 'Fogo', genes };
@@ -170,8 +208,9 @@ function cruzar(mae, pai, opts) {
       paiNome: macho.nome ? String(macho.nome).split(',')[0].trim() : null,
       postoEm: agora,
       // Tempo de choco: o ovo existe, mas ainda não se abre.
-      chocaEm: agora + REPR_INCUBACAO_MS,
-      expiraEm: agora + REPR_VALIDADE_DIAS * 86400000,
+      chocaEm: agora + tempoDeChoco(femea, macho),
+      expiraEm: agora + (REPR_VALIDADE_DIAS
+                 + Math.round(REPR_VALIDADE_BONUS * _reprCuidado(femea, macho))) * 86400000,
     },
   };
 }
@@ -189,5 +228,6 @@ function faltaParaChocar(ovo, agora) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { podeCruzar, cruzarDna, cruzar, ovoPronto, faltaParaChocar,
-                     REPR_INCUBACAO_MS, REPR_VALIDADE_DIAS };
+                     tempoDeChoco, _reprCuidado,
+                     REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS, REPR_VALIDADE_DIAS };
 }

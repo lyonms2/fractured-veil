@@ -4,7 +4,6 @@ const HATCH_FEE = 0;
 // Quantos ovos saem de cada postura. Tem de bater com o numEggs do
 // api/pool.js — é o servidor que bota, este número existe só para o
 // cliente saber se há espaço antes de cobrar.
-const OVOS_POR_POSTURA = 2;
 let pendingHatchFee = 0;
 
 async function goToMarketplace(e) {
@@ -47,77 +46,21 @@ function findTargetSlot() {
 // acreditava em duas regras que não valiam nada.
 //
 // As duas passaram para o servidor de verdade. Esta cópia saiu.
+/* O AVATAR DEIXOU DE PÔR OVOS SOZINHO.
 
-async function layEgg() {
-  if(getFase() < 3) { showBubble(t('egg.bub.not_grown')); return; }
-  if(!avatar || !hatched || dead) return;
-  if(eggLayCooldown > 0) {
-    const horasRestantes = Math.ceil(eggLayCooldown * 60 / 3600);
-    showBubble(t('egg.bub.cooldown', {h: horasRestantes}));
-    return;
-  }
-  if(gs.moedas < 50) { showBubble(t('egg.bub.no_coins')); addLog(t('egg.log.no_coins'), 'bad'); return; }
-  // O servidor bota DOIS ovos por postura e entrega só os que couberem,
-  // cobrando os 50🪙 na mesma. Com 9 ovos guardados, pagava-se o preço
-  // inteiro por um ovo só — e sem aviso nenhum.
-  const CABEM = 10 - eggsInInventory.length;
-  if(CABEM < OVOS_POR_POSTURA) {
-    showBubble(t('egg.bub.inv_full'));
-    addLog(t(CABEM <= 0 ? 'egg.log.inv_full' : 'egg.log.inv_quase_full',
-             { cabem: CABEM, ovos: OVOS_POR_POSTURA }), 'bad');
-    return;
-  }
-  if(!firebase?.auth?.()?.currentUser) { showBubble(t('egg.bub.connect')); return; }
+   Vivia aqui o layEgg: um adulto pagava 50 moedas, esperava 24 horas e
+   punha dois ovos por conta própria. Fazia sentido enquanto o ovo era
+   só um ovo — uma criatura nova, sem passado.
 
-  // Bloqueia clique duplo
-  eggLayCooldown = 1;
-  showBubble(t('egg.bub.laying'));
+   Deixou de fazer no dia em que o ovo passou a ser um FILHO. Um filho
+   tem mãe e pai, e o DNA dele sai do cruzamento dos dois
+   (js/reproducao.js). Um avatar a pôr ovos sozinho dava um filho sem
+   segundo progenitor, com metade da árvore em branco desde o primeiro
+   dia — e a genealogia inteira a fingir.
 
-  try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch('/api/pool', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'botar-ovo', idToken }),
-    });
-    const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'Erro ao botar ovo');
-
-    // Aplica estado retornado pelo servidor
-    json.eggs.forEach((ovo, i) => {
-      eggsInInventory.push(ovo);
-      if(avatar) {
-        avatar.totalOvos  = (avatar.totalOvos  || 0) + 1;
-      }
-    });
-    gs.moedas            = json.novasMoedas;
-    window._eggLayReadyAt = json.eggLayReadyAt;
-    if(avatar) avatar.eggLayReadyAt = json.eggLayReadyAt;
-    const msLeft = json.eggLayReadyAt - Date.now();
-    eggLayCooldown = Math.ceil(msLeft / 60000);
-    eggLayNotified = false;
-
-    const numEggs  = json.eggs.length;
-
-    // A postura ganhou cerimónia, no mesmo palco da evolução: o jogador
-    // clicou e pagou, portanto merece ver o que saiu, um ovo de cada vez.
-    abrirCerimoniaOvo(json.eggs, 50, json.eggLayReadyAt);
-
-    const eggWord  = numEggs > 1 ? t('egg.inv.egg_word_multi', {n: numEggs}) : t('egg.inv.egg_word_one');
-    showBubble(numEggs > 1 ? t('egg.bub.laid_multi', {n: numEggs}) : t('egg.bub.laid_common'));
-    addLog(t('egg.log.laid', {word: eggWord}), 'good');
-    showFloat(`🥚 ×${numEggs}`, '#7ab87a');
-    renderEggInventory();
-    updateResourceUI();
-    scheduleSave();
-
-  } catch(err) {
-    eggLayCooldown = 0; // libera botão se falhou
-    showBubble(`Erro: ${err.message}`);
-    addLog(`⚠️ ${err.message}`, 'bad');
-  }
-}
-
+   Com ele foram-se o cooldown de postura, o botão do canto e o aviso de
+   "pronto para botar". A cerimónia do ovo ficou: quem a usa agora é o
+   cruzamento. */
 function burnEgg(id) {
   const idx = eggsInInventory.findIndex(e => e.id === id);
   if(idx === -1) return;
@@ -366,7 +309,7 @@ async function confirmHatch() {
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
-    eggLayCooldown: 0, petCooldown: 0,
+    petCooldown: 0,
     vitals: {fome:100,humor:100,energia:100,saude:100,higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
     pendingEgg: true,   // protege o slot — firebase.js não salva avatarSlots enquanto pendingEgg existir

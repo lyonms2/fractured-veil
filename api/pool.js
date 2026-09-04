@@ -7,7 +7,6 @@
 //  POST /api/pool { acao, idToken, ... }
 //    acao='taxa'        → entrada na pool (taxa de listagem/venda)
 //    acao='queimar-ovo' → jogador queima ovo e a pool paga (preço dinâmico)
-//    acao='botar-ovo'   → avatar bota ovo (relógio do servidor)
 // ═══════════════════════════════════════════════════════════════
 
 const { ethers }                       = require('ethers');
@@ -205,7 +204,6 @@ module.exports = async function handler(req, res) {
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
-  if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -520,119 +518,27 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
 }
 
 
-// ── Botar ovo (server-side, relógio do servidor) ────────────────
-/* O SORTEIO DA RARIDADE DO OVO SAIU.
+/* ── A POSTURA SOZINHA ACABOU ──
 
-   Vivia aqui o _calcEggRarity: uma tabela que dava ao Lendário 55% de
-   probabilidade de pôr um ovo lendário contra 2% do Comum, com bónus por
-   vínculo e por bicho bem cuidado.
+   Vivia aqui o handleBotarOvo: um avatar adulto pagava 50 moedas e
+   punha dois ovos por conta própria, de 24 em 24 horas. Com ele vivia o
+   _calcEggRarity, que sorteava a raridade do ovo, e depois o
+   _validadeDoOvo, que lhe media a validade pelo nível, pelo vínculo e
+   pelos cinco medidores.
 
-   Deixou de existir porque o ovo deixou de ter raridade. Todo o avatar
-   nasce Comum e a raridade conquista-se a viver (js/raridade.js), portanto
-   um ovo lendário não significava nada: dava um bebé Comum como qualquer
-   outro. Era um rótulo caro sem nada por baixo.
+   Os três saíram, e a razão é uma só: o ovo passou a ser um FILHO. Tem
+   mãe e pai, e o DNA dele sai do cruzamento dos dois. Um avatar a pôr
+   ovos sozinho dava um filho com metade da árvore em branco desde o
+   primeiro dia — e a genealogia inteira a fingir.
 
-   O QUE ELE MEDIA NÃO SE PERDEU. Cuidar bem do bicho e ter vínculo alto
-   continuam a valer — agora em VALIDADE do ovo, que é tempo para o
-   chocar, em vez de num rótulo. Ver _validadeDoOvo, ali abaixo. */
-function _validadeDoOvo(nivel, vinculo, vitals) {
-  let dias = 7;
-  if (nivel >= 35) dias += 3;
-  else if (nivel >= 25) dias += 2;
-  if (vinculo >= 301) dias += 3;
-  else if (vinculo >= 151) dias += 1;
-  const v = vitals || {};
-  const bemCuidado = ['fome','humor','energia','saude','higiene']
-    .every(k => (v[k] ?? 0) > 80);
-  if (bemCuidado) dias += 2;
-  return dias;
-}
+   O QUE O _validadeDoOvo MEDIA NÃO SE PERDEU. Cuidar bem do bicho e ter
+   vínculo alto continuam a valer: passaram para o cruzamento
+   (js/reproducao.js), onde decidem quanto tempo o ovo leva a chocar e
+   quanto tempo dura. É o mesmo sinal, noutro sítio.
 
-async function handleBotarOvo(_req, res, db, uid) {
-  const playerRef = db.collection('players').doc(uid);
-  try {
-    const resultado = await db.runTransaction(async (tx) => {
-      const snap = await tx.get(playerRef);
-      if (!snap.exists) throw new Error('Jogador não encontrado');
-      const pData = snap.data();
-
-      const slotIdx = pData.activeSlotIdx ?? 0;
-      const slots   = pData.avatarSlots || [];
-      const slot    = slots[slotIdx];
-      if (!slot || !slot.hatched || slot.dead) throw new Error('Avatar não disponível');
-
-      const fase = slot.nivel >= 17 ? 3 : slot.nivel >= 10 ? 2 : slot.nivel >= 5 ? 1 : 0;
-      if (fase < 3) throw new Error('Avatar ainda não é adulto');
-
-      // Validar cooldown pelo relógio do servidor
-      const now           = Date.now();
-      const eggLayReadyAt = slot.eggLayReadyAt || 0;
-      if (eggLayReadyAt > now) {
-        const hLeft = Math.ceil((eggLayReadyAt - now) / 3600000);
-        throw new Error(`Cooldown ativo — pronto em ~${hLeft}h`);
-      }
-
-      const moedas = pData.gs?.moedas ?? pData.moedas ?? 0;
-      if (moedas < 50) throw new Error('Moedas insuficientes (precisa de 50 🪙)');
-
-      // Dois ovos para todos, e 24h para todos. Antes eram 1/2/3 ovos com
-      // esperas de 24h/48h/36h, e daí saíam duas coisas tortas: o Raro
-      // produzia exatamente no mesmo ritmo que o Comum (2 em 48h = 1 em
-      // 24h), e o Comum pagava 50🪙 por ovo contra 25🪙 do Raro — o avatar
-      // mais fraco pagando o dobro.
-      const numEggs  = 2;
-      const slotEggs = slot.eggs || [];
-      const canAdd   = Math.min(numEggs, 10 - slotEggs.length);
-      if (canAdd <= 0) throw new Error('Inventário de ovos cheio (máx 10)');
-
-      const novosOvos = [];
-      // O que o bicho é e como é tratado paga em VALIDADE: mais dias para
-      // chocar. Era aí que estava a raridade do ovo, e a raridade
-      // deixou de existir.
-      const baseDias = _validadeDoOvo(slot.nivel || 1, slot.vinculo || 0, slot.vitals);
-      for (let i = 0; i < canAdd; i++) {
-        // Alma Gêmea (vínculo 301+) dobra a validade. O getVinculoBonus()
-        // do cliente promete isto no campo eggDura desde sempre e ninguém
-        // o implementava — era o único benefício do último patamar que
-        // não valia nada.
-        const duraMult = (slot.vinculo || 0) >= 301 ? 2 : 1;
-        novosOvos.push({ elemento: slot.elemento || 'Terra',
-                         expiraEm: now + baseDias * duraMult * 86400000, id: now + i });
-      }
-
-      const cdMs     = 24 * 3600000;
-      const newReady = now + cdMs;
-
-      /* O servidor lembra-se do que emitiu.
-
-         O avatarSlots[].eggs é escrito pelo cliente por inteiro, portanto
-         um ovo que esteja lá não prova nada — qualquer um podia
-         acrescentar ovos à lista. Este registo é a prova, e vive num
-         campo que só o servidor escreve (ver camposDoServidor em
-         firestore.rules).
-
-         Guardava id → raridade, para o mercado de ovos poder conferir que
-         um ovo Lendário era mesmo Lendário. O mercado saiu e a raridade
-         também; fica id → 'Comum', que continua a servir para o que
-         importa — dizer que este ovo saiu daqui. O valor mantém-se com
-         esta forma para o handleChocarOvo, que o lê, não precisar de
-         migração nenhuma. */
-      // A chave leva um 'o' à frente porque um caminho de campo do
-      // Firestore não aceita segmentos só de dígitos, e os ids dos ovos
-      // são Date.now(). Sem o prefixo, a escrita vinha com 400.
-      const emitidos = {};
-      for (const o of novosOvos) emitidos[`ovosEmitidos.o${o.id}`] = 'Comum';
-
-      const newSlots = [...slots];
-      newSlots[slotIdx] = { ...slot, eggs: [...slotEggs, ...novosOvos], eggLayReadyAt: newReady, eggLayCooldown: Math.ceil(cdMs / 60000) };
-      tx.update(playerRef, Object.assign({ avatarSlots: newSlots, 'gs.moedas': moedas - 50 }, emitidos));
-
-      return { eggs: novosOvos, novasMoedas: moedas - 50, eggLayReadyAt: newReady };
-    });
-
-    return res.status(200).json({ ok: true, ...resultado });
-  } catch (err) {
-    console.error('[pool/botar-ovo]', err.message);
-    return res.status(400).json({ erro: err.message });
-  }
-}
+   Com isto o servidor deixa de emitir ovos. O ovosEmitidos, que era a
+   prova de que um ovo tinha saído daqui, deixa de receber entradas
+   novas — e o handleChocarOvo aceita um ovo que esteja no slot com
+   registo OU no inbox. Fica dito: hoje o ovo é posto pelo cliente, e a
+   prova de que ele é legítimo é mais fraca do que era. Quem decide se
+   isso volta ao servidor é a conversa da economia, com o resto. */

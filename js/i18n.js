@@ -300,7 +300,6 @@
       'btn.sleep':               'DORMIR',
       'btn.heal':                'MEDICAR',
       'btn.bath':                'BANHO',
-      'btn.lay_egg':             'BOTAR OVO',
       'btn.wake':                'ACORDAR',
       'btn.friends':             'AMIGOS',
       // A linha por baixo do nome nos botões de ação: ou o custo, ou a
@@ -628,7 +627,6 @@
       'btn.sleep':               'SLEEP',
       'btn.heal':                'HEAL',
       'btn.bath':                'BATH',
-      'btn.lay_egg':             'LAY EGG',
       'btn.wake':                'WAKE UP',
       'btn.friends':             'FRIENDS',
       'act.sub.cheio':           'full',

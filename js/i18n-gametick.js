@@ -27,9 +27,6 @@ window.registerStrings(
     'gt.disease.bub':      '{emoji} Sinto-me mal...',
 
     // Ovo pronto
-    'gt.egg_ready.corner':  'Pronto para botar!',
-    'gt.egg_ready.bub':     'Sinto algo... 🥚',
-    'gt.egg_ready.log':     'Seu avatar está pronto para botar um ovo!',
 
     // Evolução de fase
     'gt.phase.label':      'FASE: {fase}',
@@ -78,9 +75,6 @@ window.registerStrings(
     'gt.disease.bub':      '{emoji} Feeling sick...',
 
     // Egg ready
-    'gt.egg_ready.corner':  'Ready to lay!',
-    'gt.egg_ready.bub':     'Feeling something... 🥚',
-    'gt.egg_ready.log':     'Your avatar is ready to lay an egg!',
 
     // Phase evolution
     'gt.phase.label':      'PHASE: {fase}',

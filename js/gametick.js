@@ -611,42 +611,8 @@ function gameTick() {
   if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); }
   if(tickCount % 5 === 0 && typeof atualizarChamadaEvolucao === 'function') atualizarChamadaEvolucao();
 
-  // ── POSTURA DE OVOS (apenas fase Adulto) ──
-  if(getFase() === 3) {
-    // Recalcula a partir do timestamp real — imune a drift do setInterval
-    if(window._eggLayReadyAt && window._eggLayReadyAt > Date.now()) {
-      eggLayCooldown = Math.ceil((window._eggLayReadyAt - Date.now()) / 60000);
-    } else {
-      eggLayCooldown = 0;
-      window._eggLayReadyAt = 0;
-    }
-    const corner = document.getElementById('btnLayEggCorner');
-    if(eggLayCooldown > 0) {
-      const btn = document.getElementById('btnLayEgg');
-      if(btn) btn.style.display = 'none';
-      if(corner) corner.style.display = 'none';
-    } else {
-      const btn = document.getElementById('btnLayEgg');
-      if(btn) btn.style.display = '';
-      if(corner) {
-        corner.style.display = 'block';
-        corner.style.opacity = '1';
-        corner.style.animation = 'egg-ready-pulse 1.4s ease-in-out infinite';
-        corner.title = t('gt.egg_ready.corner');
-        corner.textContent = '🥚';
-      }
-      if(!eggLayNotified) {
-        eggLayNotified = true;
-        showBubble(t('gt.egg_ready.bub'));
-        addLog(t('gt.egg_ready.log'), 'leg');
-      }
-    }
-  } else {
-    const btn = document.getElementById('btnLayEgg');
-    if(btn) btn.style.display = 'none';
-  }
-
 }
+
 
 function autoSpeak() {
   if(sleeping) return;

@@ -5,7 +5,6 @@ let dirtyLevel    = 0;
 let poopPressure  = 0;
 let bornAt        = 0;
 let petCooldown   = 0;
-let eggLayCooldown = 0;
 let pendingHatchId = null;
 let eggsInInventory = [];
 const GAME_SPEED  = 1.0;
@@ -190,7 +189,6 @@ function getItemEffectDoSlot(idx, key) {
   }
   return val;
 }
-let eggLayNotified  = false;
 let sleeping    = false;
 let sick        = false;
 let dead        = false;
@@ -369,8 +367,7 @@ function saveRuntimeToSlot(idx) {
     hatched, dead, sick, sleeping,
     bornAt, poopCount, dirtyLevel, poopPressure,
     faseVista, nivelVisto,
-    eggLayCooldown, petCooldown,
-    eggLayReadyAt: window._eggLayReadyAt || 0,
+    petCooldown,
     vitals:         {...vitals},
     eggs:           eggsInInventory.map(e => ({...e})),
     items:          itemInventory.map(i => ({...i})),
@@ -387,7 +384,7 @@ function loadRuntimeFromSlot(idx) {
     hatched = false; dead = false; sick = false; sleeping = false;
     bornAt = 0; poopCount = 0; dirtyLevel = 0; poopPressure = 0;
     faseVista = -1; nivelVisto = -1;
-    eggLayCooldown = 0; petCooldown = 0;
+    petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
     eggsInInventory = s?.eggs  ? s.eggs.map(e => ({...e}))  : [];
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
@@ -412,15 +409,6 @@ function loadRuntimeFromSlot(idx) {
   faseVista      = s.faseVista      ?? getFase();
   nivelVisto     = s.nivelVisto     ?? nivel;
   petCooldown    = s.petCooldown    ?? 0;
-  // Recalcula eggLayCooldown a partir do timestamp real (funciona com página fechada)
-  if(s.eggLayReadyAt && s.eggLayReadyAt > Date.now()) {
-    const msLeft = s.eggLayReadyAt - Date.now();
-    eggLayCooldown = Math.ceil(msLeft / 60000); // converte ms → minutos (ticks)
-    window._eggLayReadyAt = s.eggLayReadyAt;
-  } else {
-    eggLayCooldown = 0;
-    window._eggLayReadyAt = 0;
-  }
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];

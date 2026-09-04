@@ -180,7 +180,6 @@ function triggerSummon() {
   dead = false; hatched = false; sick = false; sleeping = false;
   clearPresenceDead(walletAddress);
   nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
-  eggLayCooldown = 0;
   poopCount = 0; dirtyLevel = 0; poopPressure = 0;
   Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
   document.getElementById('poopContainer').innerHTML = '';
@@ -195,7 +194,7 @@ function triggerSummon() {
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
-    eggLayCooldown: 0, petCooldown: 0,
+    petCooldown: 0,
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
     pendingEgg: true,       // protege o slot durante a chocagem automática
@@ -494,16 +493,8 @@ function hatch() {
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
 
-  const btnLayEgg = document.getElementById('btnLayEgg');
-  const isAdult = getFase() === 3;
-  const eggReady = isAdult && eggLayCooldown === 0;
-  if(btnLayEgg) {
-    btnLayEgg.style.display = isAdult ? 'flex' : 'none';
-    btnLayEgg.style.opacity = eggReady ? '1' : '.4';
-    btnLayEgg.title = eggLayCooldown > 0 ? `Pronto em ~${Math.ceil(eggLayCooldown*60/3600)}h` : 'Pronto para botar!';
-  }
-  const btnLayEggCorner = document.getElementById('btnLayEggCorner');
-  if(btnLayEggCorner) btnLayEggCorner.style.display = eggReady ? 'block' : 'none';
+  // O botão de botar ovo vivia aqui. Foi-se com a postura sozinha:
+  // ovo é filho, e põe-se cruzando dois, na colónia.
 
   renderEggInventory();
   saveToFirebase();

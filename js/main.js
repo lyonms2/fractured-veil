@@ -29,7 +29,6 @@ window.setDifficulty   = typeof setDifficulty   !== "undefined" ? setDifficulty 
 window.openGameSelector= typeof openGameSelector !== "undefined" ? openGameSelector : ()=>{};
 window.velhaClick      = typeof velhaClick      !== "undefined" ? velhaClick      : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
-window.layEgg = typeof layEgg !== "undefined" ? layEgg : ()=>{};
 window.memFlip = typeof memFlip !== "undefined" ? memFlip : ()=>{};
 window.openCoinShop = typeof openCoinShop !== "undefined" ? openCoinShop : ()=>{};
 window.openEggInventory = typeof openEggInventory !== "undefined" ? openEggInventory : ()=>{};

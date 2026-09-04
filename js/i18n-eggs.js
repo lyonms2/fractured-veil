@@ -7,26 +7,14 @@ window.registerStrings(
   {
     // Bubbles
     'egg.bub.hatch_first':  'Choca o ovo primeiro! 🥚',
-    'egg.bub.not_grown':    'Ainda não cresci o suficiente... 🥚',
-    'egg.bub.cooldown':     'Preciso descansar... (~{h}h)',
-    'egg.bub.no_coins':     'Sem moedas para botar ovo... 😢',
-    'egg.bub.inv_full':     'Inventário cheio! (10 ovos máx) 🥚',
-    'egg.bub.connect':      'Conecte a conta primeiro!',
-    'egg.bub.laying':       'Botando o ovo... 🥚',
-    'egg.bub.laid_multi':   'Botei {n} ovos! 🥚',
-    'egg.bub.laid_common':  'Botei um ovo Comum! 🥚',
     'egg.bub.no_slots':     'Sem slots livres! 😢',
     'egg.bub.burn_error':   'Erro ao queimar ovo 😢',
 
     // Logs
     'egg.log.hatch_first':       'Termine a chocagem antes de ir ao Marketplace.',
-    'egg.log.no_coins':          'Precisa de 50 🪙 para botar um ovo!',
-    'egg.log.inv_full':          'Inventário cheio — descarte ou choque um ovo primeiro.',
-    'egg.log.inv_quase_full': 'Só cabe(m) {cabem} ovo(s) e a postura bota {ovos}. Choque ou venda algum antes.',
     'egg.log.apodreceu_1':   '🥚 Um ovo {raridade} apodreceu enquanto você esteve fora.',
     'egg.log.apodreceu_n':   '🥚 {n} ovos apodreceram enquanto você esteve fora.',
     'egg.toast.apodreceu_raro': 'Você perdeu {n} ovo(s) raro(s) por validade! Choque antes de vencer.',
-    'egg.log.laid':              '🥚 Botou {word}! Verifique o inventário.',
     'egg.log.rotten_discarded':  'Ovo apodrecido descartado.',
     'egg.log.burned_common':     '🔥 Ovo Comum queimado! +{moedas} 🪙',
     'egg.log.burn_pool_error':   'Erro ao queimar para a pool.',
@@ -52,8 +40,6 @@ window.registerStrings(
     'egg.inv.rotten':        '⚠️ APODRECIDO',
     'egg.inv.time_dh':       '{d}d {h}h restantes',
     'egg.inv.time_h':        '{h}h restantes',
-    'egg.inv.egg_word_multi':'{n} ovos',
-    'egg.inv.egg_word_one':  'um ovo',
 
     // Botões
     'egg.btn.discard':       'Descartar',
@@ -63,26 +49,14 @@ window.registerStrings(
   {
     // Bubbles
     'egg.bub.hatch_first':  'Hatch the egg first! 🥚',
-    'egg.bub.not_grown':    "Haven't grown enough yet... 🥚",
-    'egg.bub.cooldown':     'Need to rest... (~{h}h)',
-    'egg.bub.no_coins':     'Not enough coins to lay egg... 😢',
-    'egg.bub.inv_full':     'Inventory full! (10 eggs max) 🥚',
-    'egg.bub.connect':      'Connect your account first!',
-    'egg.bub.laying':       'Laying egg... 🥚',
-    'egg.bub.laid_multi':   'Laid {n} eggs! 🥚',
-    'egg.bub.laid_common':  'Laid a Common egg! 🥚',
     'egg.bub.no_slots':     'No free slots! 😢',
     'egg.bub.burn_error':   'Error burning egg 😢',
 
     // Logs
     'egg.log.hatch_first':       'Finish hatching before going to Marketplace.',
-    'egg.log.no_coins':          'Need 50 🪙 to lay an egg!',
-    'egg.log.inv_full':          'Inventory full — discard or hatch an egg first.',
-    'egg.log.inv_quase_full': 'Only {cabem} egg(s) fit and a laying gives {ovos}. Hatch or sell one first.',
     'egg.log.apodreceu_1':   '🥚 A {raridade} egg rotted while you were away.',
     'egg.log.apodreceu_n':   '🥚 {n} eggs rotted while you were away.',
     'egg.toast.apodreceu_raro': 'You lost {n} rare egg(s) to expiry! Hatch them before they turn.',
-    'egg.log.laid':              '🥚 Laid {word}! Check your inventory.',
     'egg.log.rotten_discarded':  'Rotten egg discarded.',
     'egg.log.burned_common':     '🔥 Common egg burned! +{moedas} 🪙',
     'egg.log.burn_pool_error':   'Error burning to the pool.',
@@ -108,8 +82,6 @@ window.registerStrings(
     'egg.inv.rotten':        '⚠️ ROTTEN',
     'egg.inv.time_dh':       '{d}d {h}h left',
     'egg.inv.time_h':        '{h}h left',
-    'egg.inv.egg_word_multi':'{n} eggs',
-    'egg.inv.egg_word_one':  'an egg',
 
     // Buttons
     'egg.btn.discard':       'Discard',

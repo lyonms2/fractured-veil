@@ -431,7 +431,12 @@ function confirmarCruzar() {
   if (typeof eggsInInventory !== 'undefined') eggsInInventory = dono.eggs;
 
   fecharCruzar();
-  const horas = Math.round(REPR_INCUBACAO_MS / 3600000);
+  // As horas são as DESTE par: quem cuidou bem dos pais espera menos.
+  const horas = Math.round((r.ovo.chocaEm - Date.now()) / 3600000);
+  /* A cerimónia do ovo ficou sem dono quando a postura sozinha saiu, e
+     é aqui que ela passa a fazer sentido: o jogador escolheu os pais e
+     merece ver o que saiu. */
+  if (typeof abrirCerimoniaOvo === 'function') abrirCerimoniaOvo([r.ovo], 0, r.ovo.chocaEm);
   if (typeof addLog === 'function') addLog(t('repr.feito', { h: horas }), 'leg');
   if (typeof showToast === 'function') showToast(t('repr.feito', { h: horas }), 'ok');
   if (typeof renderEggInventory === 'function') renderEggInventory();
