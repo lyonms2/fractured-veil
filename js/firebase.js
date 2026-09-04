@@ -284,6 +284,20 @@ function applyGameState(data) {
     if(_carimbados) console.log('[identidade] ' + _carimbados + ' avatar(es) sem id — carimbados agora.');
   }
 
+  /* A RARIDADE QUE JÁ FOI GANHA.
+
+     A raridade deixou de sair do ovo e passa a sair da fase (ver
+     js/raridade.js). Quem já estava a jogar tem nível e horas de sobra
+     e nunca subiu — porque a regra não existia quando ele subiu de
+     fase. Corre-se aqui, na LEITURA, uma vez por sessão.
+
+     Nunca desce: o sincronizarRaridade só sobe. Um Lendário comprado
+     no tempo dos ovos raros continua Lendário. */
+  if(typeof sincronizarRaridades === 'function') {
+    const _subiram = sincronizarRaridades(avatarSlots);
+    if(_subiram) console.log('[raridade] ' + _subiram + ' avatar(es) subiram para a raridade que a fase deles já dava.');
+  }
+
   // Limpa itens e ovos expirados em todos os slots ao carregar
   const _now = Date.now();
   avatarSlots.forEach(slot => {

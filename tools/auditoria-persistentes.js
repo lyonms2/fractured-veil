@@ -152,11 +152,22 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
   let s = 4242;
   const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
   const esc = a => a[Math.floor(rnd() * a.length)];
+  /* A FAIXA DE NÍVEIS É A DO JOGO INTEIRO, E NÃO UM PEDAÇO DELA.
+
+     Era 1 a 25, escolhido quando a raridade dava pontos à nascença: um
+     Lendário de nível baixo já tinha Resistência para sustentar as magias
+     caras, portanto 25 chegava. Desde que a raridade se conquista (ver
+     js/raridade.js) e deixou de pagar pontos, a força vem toda do
+     nível — e cortar a amostra a meio do caminho passou a esconder
+     metade da população.
+
+     A raridade sai do sorteio pela mesma razão: já não muda ficha
+     nenhuma, e sorteá-la era fingir que sim. */
   const eq = () => [0,1,2].map((_, i) => ({ nome: 'av' + i, elemento: esc(ELS),
-    raridade: esc(RARS), nivel: 1 + Math.floor(rnd() * 25), seed: Math.floor(rnd() * 1e6) }));
+    raridade: 'Comum', nivel: 1 + Math.floor(rnd() * 35), seed: Math.floor(rnd() * 1e6) }));
 
   const vistos = {};
-  for (let i = 0; i < 800; i++) {
+  for (let i = 0; i < 2000; i++) {
     const e = M.combate3dtIniciar(eq(), eq(), i, { historico: true });
     while (!e.acabou) {
       M.combate3dtTurno(e);
@@ -171,6 +182,18 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
         nunca.length === 0,
         nunca.length ? 'nunca vistos: ' + nunca.map(p => p.nome).join(', ')
                      : PERSISTENTES.map(p => p.campo + ' ' + vistos[p.campo]).join(' · '));
+
+  /* Existir não chega: um estado que aparece uma vez em mil batalhas
+     está vivo no papel e morto no jogo, e um visto verde em cima disso
+     esconde o problema em vez de o mostrar. Por isso conta-se à parte
+     quem anda no fio. */
+  const raros = PERSISTENTES.filter(p => vistos[p.campo] && vistos[p.campo] < 20);
+  if (raros.length) {
+    console.log('');
+    console.log('     ⚠ quase nunca acontecem, e valia a pena rever-lhes o preço:');
+    for (const p of raros)
+      console.log('       ' + p.nome + ': ' + vistos[p.campo] + ' vez(es) em 2.000 batalhas');
+  }
 }
 
 console.log('\n═══ 5. O QUE ACUMULA E O QUE NÃO ACUMULA ═══\n');

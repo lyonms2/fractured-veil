@@ -204,19 +204,70 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   const corBrilho = cfg.corBrilho;
   const corOlho   = cfg.corOlho;
 
-  const mult      = raridade === 'Lendário' ? 2 : raridade === 'Raro' ? 1.5 : 1;
-  const tipoCorpo = random(1, raridade === 'Lendário' ? 8 : raridade === 'Raro' ? 6 : 5);
-  const numOlhos  = random(raridade === 'Comum' ? 1 : 2, 3);
-  const tipoOlho  = random(1, 8);
-  const numBracos = random(2, Math.floor(4 * mult));
-  const numChifres= random(0, 4);
-  const temCauda  = raridade === 'Comum' ? random(0,1) > 0 : random(0,2) > 0;
-  const tipoCauda = random(1, raridade === 'Lendário' ? 4 : 3);
-  const temAsas   = raridade === 'Lendário' ? random(0,2) > 0 : raridade === 'Raro' ? random(0,4) > 2 : false;
-  const tipoAsas  = random(1, 3);
-  const temTent   = raridade !== 'Comum' && random(0,9) > 6;
-  const numEsp    = raridade === 'Lendário' ? random(0,4) : raridade === 'Raro' ? random(0,2) : 0;
-  const bocaTipo  = random(1, 8);
+  /* ── A FORMA ADULTA, E O QUE JÁ SE VÊ DELA ──
+
+     A raridade decidia o corpo inteiro, e isso funcionava enquanto ela
+     nascia com o avatar. Agora conquista-se (js/raridade.js) — e um
+     corpo que dependa dela mudava no dia da evolução.
+
+     Mudava mesmo: as gamas eram diferentes por raridade e algumas
+     linhas nem chegavam a sortear (um Comum saltava três sorteios de
+     uma vez, porque as asas, os tentáculos e os espinhos entravam em
+     curto-circuito). Como o sorteio é uma fila — cada número sai do
+     anterior —, saltar três desalinhava tudo o que vinha a seguir. O
+     bicho não ganhava asas ao evoluir: passava a ser OUTRO BICHO.
+
+     Por isso a fila passa a ser sempre a mesma, e sempre completa. O
+     seed decide de uma vez a forma ADULTA — a que este avatar terá se
+     lá chegar — e a raridade só decide QUANTO DELA já se vê. O que
+     identifica o bicho (o corpo, o tipo de olho, a boca, os chifres, a
+     cauda) está lá desde bebé e nunca muda. O que é acréscimo (braços
+     a mais, um terceiro olho, tentáculos, espinhos, asas) vai
+     aparecendo. É crescer, e não trocar. */
+  const grau = (typeof grauDaRaridade === 'function') ? grauDaRaridade(raridade)
+             : (raridade === 'Lendário' ? 2 : raridade === 'Raro' ? 1 : 0);
+
+  // A forma adulta. Doze sorteios, sempre os doze, sempre por esta ordem.
+  const tipoCorpo   = random(1, 8);
+  const numOlhosAd  = random(1, 3);
+  const tipoOlho    = random(1, 8);
+  const numBracosAd = random(2, 8);
+  const numChifres  = random(0, 4);
+  const temCauda    = random(0, 2) > 0;
+  const tipoCauda   = random(1, 4);
+  const temAsasAd   = random(0, 2) > 0;
+  const tipoAsas    = random(1, 3);
+  const temTentAd   = random(0, 9) > 6;
+  const numEspAd    = random(0, 4);
+  const bocaTipo    = random(1, 8);
+
+  // O que já cresceu. Um avatar que nasceu sem asas na forma adulta
+  // nunca as terá, por muito que suba — a raridade revela, não inventa.
+  const numOlhos  = Math.min(numOlhosAd,  [2, 3, 3][grau]);
+  const numBracos = Math.min(numBracosAd, [4, 6, 8][grau]);
+  const numEsp    = Math.min(numEspAd,    [0, 2, 4][grau]);
+  const temTent   = grau >= 1 && temTentAd;
+
+  /* ── E OS PORMENORES DE CADA PARTE, TAMBÉM AO MÁXIMO ──
+
+     Não chegava sortear as CONTAS aqui em cima: os laços que desenham
+     os braços, os espinhos, os olhos e os tentáculos sorteavam mais um
+     número por cada parte que desenhavam. Menos espinhos, menos
+     sorteios — e tudo o que vinha a seguir na fila mudava. O corpo
+     ficava igual (está desenhado antes) mas os chifres e os olhos
+     trocavam ao evoluir, que era o mesmo defeito um bocado mais abaixo.
+
+     Sorteiam-se aqui, sempre a contagem máxima, e os laços leem da
+     lista em vez de sortear. Assim um Comum e um Lendário com o mesmo
+     seed têm exactamente o mesmo primeiro braço — o Lendário tem é
+     mais. */
+  const ntAd      = random(2, 4);                                   // tentáculos
+  const bracoDet  = [];
+  for (let i = 0; i < 8; i++) bracoDet.push([random(5, 15), random(20, 35)]);
+  const espDet    = [];
+  for (let i = 0; i < 4; i++) espDet.push(random(12, 20));
+  const olhoDet   = [];
+  for (let i = 0; i < 3; i++) olhoDet.push(random(-1, 1));
   // ID único por render, não por seed. Se dois SVGs do mesmo avatar
   // coexistirem (por exemplo o do jogo e o do card no marketplace), IDs
   // iguais fazem o browser resolver url(#grad…) sempre para o primeiro —
@@ -284,13 +335,18 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     else s+=`<path d="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45};M 100 ${cy2} Q 72 ${cy2+22} 62 ${cy2+47};M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path><path d="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45};M 100 ${cy2} Q 128 ${cy2+22} 138 ${cy2+47};M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path>`;
   }
 
-  // (temAsas e tipoAsas mantidos como phantoms para preservar sequência do seed)
+  /* As asas do avatar são as da FASE (temAsasFase, mais acima), e não as
+     da raridade: temAsasAd e tipoAsas são sorteados e nunca desenhados.
+     Já era assim antes disto, e continua — ficam porque o sorteio é uma
+     fila e tirar dois números do meio dela mudava o aspecto de todos os
+     avatares que já existem. Como a raridade agora anda com a fase, as
+     asas chegam na mesma altura em que o avatar passa a Lendário. */
 
   s += `</g>`;
   // Tentáculos
   s += `<g class="av-tentaculo">`;
   if(temTent) {
-    const nt = random(2,4);
+    const nt = ntAd;
     for(let i=0;i<nt;i++){
       const a=(Math.PI*2*i)/nt, sx=100+Math.cos(a)*35, sy=100+Math.sin(a)*35, mx=100+Math.cos(a)*60, my=100+Math.sin(a)*60, ex=100+Math.cos(a)*80, ey=100+Math.sin(a)*80;
       s+=`<path d="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" stroke="${corSec}" stroke-width="6" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="d" values="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey};M ${sx} ${sy} Q ${mx+5} ${my-5} ${ex} ${ey};M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" dur="2s" repeatCount="indefinite"/></path>`;
@@ -303,7 +359,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   for(let i=0;i<numBracos;i++){
     s+=`<g class="av-membro" style="--i:${i}">`;
     const lado=i%2===0?-1:1, off=Math.floor(i/2)*15;
-    const sx=100+(lado*brAnchorR), sy=brAnchorY+off, mx=100+(lado*50), my=brAnchorY+off+random(5,15), ex=100+(lado*65), ey=brAnchorY+off+random(20,35);
+    const sx=100+(lado*brAnchorR), sy=brAnchorY+off, mx=100+(lado*50), my=brAnchorY+off+bracoDet[i][0], ex=100+(lado*65), ey=brAnchorY+off+bracoDet[i][1];
     s+=`<path d="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" stroke="${cor2}" stroke-width="${raridade==='Lendário'?8:6}" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="d" values="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey};M ${sx} ${sy} Q ${mx} ${my+3} ${ex} ${ey+2};M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" dur="3s" repeatCount="indefinite"/></path>`;
     if(raridade!=='Comum') s+=`<line x1="${ex}" y1="${ey}" x2="${ex+lado*8}" y2="${ey+6}" stroke="${corBrilho}" stroke-width="3" opacity=".8" stroke-linecap="round"><animate attributeName="opacity" values=".8;.5;.8" dur="2s" repeatCount="indefinite"/></line>`;
     s+=`</g>`;
@@ -327,7 +383,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   // Espinhos
   s += `<g class="av-espinho">`;
   for(let i=0;i<numEsp;i++){
-    const a=(Math.PI*2*i)/numEsp, r=48, x=100+Math.cos(a)*r, y=100+Math.sin(a)*r, h2=random(12,20), px=100+Math.cos(a)*(r+h2), py2=100+Math.sin(a)*(r+h2);
+    const a=(Math.PI*2*i)/numEsp, r=48, x=100+Math.cos(a)*r, y=100+Math.sin(a)*r, h2=espDet[i], px=100+Math.cos(a)*(r+h2), py2=100+Math.sin(a)*(r+h2);
     s+=`<polygon points="${x},${y} ${px},${py2} ${x+3},${y+3}" fill="${corBrilho}" opacity=".7" filter="url(#ig${sid})" stroke="${cor1}" stroke-width="1"><animate attributeName="opacity" values=".7;.9;.7" dur="2s" repeatCount="indefinite"/></polygon>`;
   }
 
@@ -347,7 +403,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
     s+=`<g class="av-olho-un" style="--i:${i}">`;
     const x = numOlhos===1 ? 100 : 70+(i*espac);
     const tb = raridade==='Lendário' ? 14 : raridade==='Raro' ? 12 : 10;
-    const t = tb + random(-1,1);
+    const t = tb + olhoDet[i];
     switch(tipoOlho){
       case 1: s+=`<circle cx="${x}" cy="95" r="${t}" fill="#0a0a0a"/><circle cx="${x}" cy="95" r="${t*.75}" fill="${corOlho}" filter="url(#glow${sid})"><animate attributeName="r" values="${t*.75};${t*.8};${t*.75}" dur="3s" repeatCount="indefinite"/></circle><circle cx="${x}" cy="95" r="${t*.4}" fill="#000"/><circle cx="${x+3}" cy="92" r="${t*.25}" fill="#fff" opacity=".9"/>`;break;
       case 2: s+=`<ellipse cx="${x}" cy="95" rx="${t}" ry="${t*1.2}" fill="#0a0a0a"/><ellipse cx="${x}" cy="95" rx="${t*.75}" ry="${t*.9}" fill="${corOlho}" filter="url(#glow${sid})"/><ellipse cx="${x}" cy="95" rx="${t*.2}" ry="${t*.8}" fill="#000"><animate attributeName="ry" values="${t*.8};${t*.9};${t*.8}" dur="2s" repeatCount="indefinite"/></ellipse><ellipse cx="${x+2}" cy="92" rx="${t*.15}" ry="${t*.3}" fill="#fff" opacity=".8"/>`;break;

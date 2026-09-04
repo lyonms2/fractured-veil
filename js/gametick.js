@@ -719,6 +719,21 @@ function checkXP() {
     addLog(t(_luSubiuPonto(nivel) ? 'gt.levelup.log' : 'gt.levelup.log_sem_ponto',
              {nivel}), 'leg');
     playLevelUp(nivel);
+
+    /* A raridade sobe com a fase, e por isso pergunta-se aqui.
+
+       Pergunta-se ao getFase(), que já sabe ler as variáveis vivas e
+       já exige nível E horas de jogo. O sincronizarRaridade lê o slot,
+       e o slot do avatar em campo tem o nível velho — só o recebe na
+       gravação — por isso aqui não serve. */
+    if(avatar && typeof raridadeDaFase === 'function') {
+      const _nova = raridadeDaFase(getFase());
+      if(grauDaRaridade(_nova) > grauDaRaridade(avatar.raridade)) {
+        avatar.raridade = _nova;
+        addLog(t('gt.raridade.subiu', { raridade: _nova }), 'leg');
+      }
+    }
+
     if(faseAfter !== faseBefore) {
       // A fase foi GANHA, mas o corpo não muda já. Antes mudava aqui, e o
       // clarão que devia esconder a mudança só vinha 600ms depois — o

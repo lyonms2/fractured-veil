@@ -409,12 +409,26 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
         max.ataque === 0 && max.forte === 0 && max.defesa === 0,
         `Lendário nv35: ataque ${max.ataque.toFixed(0)}% · forte ${max.forte.toFixed(0)}% · defesa ${max.defesa.toFixed(0)}%`);
 
-  // O que fica trancado tem de destrancar com a raridade e o nível
+  /* O que fica trancado tem de destrancar com o NÍVEL, e só com ele.
+
+     Este teste exigia também que um Lendário de nível 1 tivesse menos
+     golpes trancados que um Comum de nível 1 — verdade enquanto a
+     raridade nascia com o avatar e lhe pagava cinco pontos de ficha.
+     Deixou de ser: a raridade conquista-se ao mudar de fase e já não
+     entra na conta dos pontos (ver js/raridade.js). Um Lendário de
+     nível 1 não existe, e se existisse era tão fraco como qualquer
+     outro recém-nascido.
+
+     O que importa continua a ser verdade e continua a ser medido: o
+     cadeado abre-se subindo de nível. */
   const c1 = trancadas('Comum', 1).forte, c20 = trancadas('Comum', 20).forte;
   const l1 = trancadas('Lendário', 1).forte;
-  A.ver('O golpe forte trancado destranca com a raridade e com o nível',
-        l1 < c1 && c20 < c1,
-        `golpe forte trancado: Comum nv1 ${c1.toFixed(0)}% · Lendário nv1 ${l1.toFixed(0)}% · Comum nv20 ${c20.toFixed(0)}%`);
+  A.ver('O golpe forte trancado destranca com o nível',
+        c20 < c1,
+        `golpe forte trancado: nv1 ${c1.toFixed(0)}% · nv20 ${c20.toFixed(0)}%`);
+  A.ver('A raridade não abre cadeado nenhum — quem o abre é o nível',
+        Math.abs(l1 - c1) < 0.01,
+        `ao nível 1: Comum ${c1.toFixed(0)}% · Lendário ${l1.toFixed(0)}%`);
 }
 
 // ── SUBIR DE NÍVEL SÓ PODE SOMAR ──

@@ -43,6 +43,7 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Nível {nivel}! Seu avatar ficou mais forte!',
+    'gt.raridade.subiu':   '✦ Seu avatar agora é {raridade}! O corpo dele mudou.',
     'gt.levelup.log_sem_ponto': 'Nível {nivel}!',
     // O plural de nível é NÍVEIS, não nívels: o {s} genérico que serve o
     // inglês não serve aqui, e a palavra tem de vir montada de fora.
@@ -93,6 +94,7 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Level {nivel}! Your avatar got stronger!',
+    'gt.raridade.subiu':   '✦ Your avatar is now {raridade}! Its body has changed.',
     'gt.levelup.log_sem_ponto': 'Level {nivel}!',
     'gt.levelup.faltam':   'Next stat point in {n} {p}',
     'gt.levelup.mais_forte': 'Stronger',

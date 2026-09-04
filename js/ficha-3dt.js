@@ -35,7 +35,24 @@ const FICHA_NOMES = {
 };
 
 // ── ESCALÕES DE PODER (manual, pág. 13) ──
-// A raridade diz em que escalão o avatar nasce.
+// Todo o avatar começa Novato. Começava no escalão da raridade do ovo
+// — e a raridade era um sorteio, portanto o escalão também.
+const FICHA_PONTOS_BASE = 5;   // Novato
+
+/* A TABELA ANTIGA, E PORQUE SAIU DA CONTA.
+   (Fica: o marketplace ainda a lê para mostrar o que cada degrau vale.)
+
+   Enquanto a raridade nascia com o avatar e nunca mudava, dar-lhe
+   pontos era justo: um Lendário era um bicho raro e começava Campeão.
+   Agora a raridade CONQUISTA-SE ao mudar de fase (js/raridade.js), e se
+   continuasse a pagar pontos o avatar ganhava cinco de uma só vez ao
+   passar a Lendário — um nível 16 encontrava um nível 17 com quase o
+   dobro dos pontos, num degrau que nenhuma fila de emparelhamento
+   suaviza.
+
+   Por isso a força fica toda no nível, que sobe de quatro em quatro
+   pontos e não dá saltos. A raridade paga noutra moeda: corpo (asas,
+   espinhos, aura) e o direito de ser vendido. */
 const FICHA_PONTOS_RARIDADE = {
   'Comum':    5,   // Novato
   'Raro':     7,   // Lutador
@@ -126,10 +143,10 @@ function _fichaRng(seed) {
 }
 
 function pontosDoAvatar(raridade, nivel) {
-  const base = FICHA_PONTOS_RARIDADE[raridade] != null ? FICHA_PONTOS_RARIDADE[raridade]
-                                                       : FICHA_PONTOS_RARIDADE['Comum'];
+  // A raridade continua no argumento por causa dos muitos sítios que a
+  // passam, mas já não entra na conta — ver FICHA_PONTOS_RARIDADE.
   const nv = Math.max(1, nivel || 1);
-  return base + Math.floor((nv - 1) / FICHA_NIVEIS_POR_PONTO);
+  return FICHA_PONTOS_BASE + Math.floor((nv - 1) / FICHA_NIVEIS_POR_PONTO);
 }
 
 // ═══════════════════════════════════════════════════════════════════

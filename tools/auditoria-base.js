@@ -14,12 +14,14 @@ require(path.join(RAIZ, 'js/i18n-magias.js'));
 require(path.join(RAIZ, 'js/i18n-vantagens.js'));
 
 const M = new Function('t',
-  rd('cores.js') + rd('nascimento.js') +
+  rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
   `return { MAGIAS, MAGIAS_UNIVERSAIS, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
             nascer, gerarDna, tendenciaDoDna, vocacaoDoDna, sexoDoDna, sexoDe,
             tendenciaDe, registarNascimento, dnaLegivel, recessivosDoDna,
-            misturarCores, CORES_RODA, NASC_ALELOS, NASC_CARACS, magiaAoAlcance, habilidadeParaMagia, trancaDaMagia,
+            misturarCores, CORES_RODA, NASC_ALELOS, NASC_CARACS,
+            raridadeDaFase, grauDaRaridade, faseDoSlot, raridadeDoSlot,
+            sincronizarRaridade, podeSerVendido, RARIDADE_POR_FASE, magiaAoAlcance, habilidadeParaMagia, trancaDaMagia,
             combate3dtIniciar, combate3dtTurno, combate3dtResultado,
             _c3, _c3rng, _c3criar, _c3fa, _c3fd, _c3custoMagia, _c3podeMagiar,
             _c3trocaLimpa, _c3resolver, _c3fimTurno, _c3teste, _c3bonusEsquiva, _c3podeEsquivar,

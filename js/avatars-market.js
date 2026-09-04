@@ -535,7 +535,17 @@ function renderSlots() {
                  daquele bicho — que é onde a escolha faz sentido. Aqui
                  ficava um segundo botão para a mesma coisa, num painel
                  que é de vender e queimar. -->
-            ${(s.raridade === 'Raro' || s.raridade === 'Lendário') ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>` : ''}
+            <!-- O portão era "é Raro ou Lendário", e desde que toda a
+                 gente passou a nascer Comum ficou a barrar toda a gente:
+                 o mercado de avatares tinha zero oferta possível. Agora
+                 a raridade conquista-se ao mudar de fase, portanto a
+                 mesma pergunta já tem resposta — e quem ainda não
+                 chegou lá fica a saber porquê, em vez de ver um espaço
+                 vazio onde devia estar um botão. -->
+            ${(typeof podeSerVendido === 'function' ? podeSerVendido(s)
+                : (s.raridade === 'Raro' || s.raridade === 'Lendário'))
+              ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>`
+              : `<div class="slot-sem-venda">${t('mkt.slot.sem_venda')}</div>`}
             <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>` : ''}
             ${isFrozen ? `
             <div style="font-size:0.5rem;color:var(--gold);text-align:center;letter-spacing:0.03125rem;padding:0.25rem 0;">${t('mkt.slot.frozen_label')}</div>
