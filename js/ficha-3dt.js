@@ -178,7 +178,35 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   let apoio   = FICHA_CARACS[rnd(0, 3)];
   if (apoio === foco) apoio = FICHA_CARACS[(FICHA_CARACS.indexOf(foco) + 1) % 4];
 
-  const peso = k => k === foco ? 6 : k === apoio ? 3 : 1;
+  /* ── QUEM MANDA NOS PESOS ──
+
+     Os pesos eram do seed: um foco e um apoio sorteados, e mais nada
+     por trás deles. Passam a ser do DNA quando o avatar tem certidão —
+     é esta linha que faz do DNA uma tendência a sério em vez de um
+     número guardado que ninguém lê.
+
+     Repare no que NÃO muda: o orçamento de pontos é o mesmo, o sorteio
+     ponto-a-ponto é o mesmo, os tectos são os mesmos. O DNA carrega os
+     dados; não os substitui por uma resposta. Dois avatares com o mesmo
+     DNA e seeds diferentes crescem diferentes, e um avatar com vocação
+     para a Força pode na mesma acabar sem ela — só é pouco provável.
+
+     O foco e o apoio continuam a ser sorteados mesmo quando não servem,
+     para o resto da fila de sorteios cair sempre no mesmo sítio. Quem
+     não tem certidão — todo o avatar do jogo antigo — cresce como
+     sempre cresceu. */
+  const tend = (nascimento && nascimento.dna && typeof tendenciaDoDna === 'function')
+    ? tendenciaDoDna(nascimento.dna) : null;
+
+  const peso = tend ? (k => tend[k] || 1)
+                    : (k => k === foco ? 6 : k === apoio ? 3 : 1);
+
+  /* Para onde este avatar puxa, por ordem, seja qual for a fonte dos
+     pesos. Sai aqui e não na interface: quem desenha a ficha não tem de
+     saber se a vocação veio do DNA ou do seed, e assim não há duas
+     contas da mesma coisa à espera de divergirem. */
+  const vocacao = FICHA_CARACS.slice().sort(
+    (a, b) => peso(b) - peso(a) || FICHA_CARACS.indexOf(a) - FICHA_CARACS.indexOf(b));
 
   // ── SUBIR DE NÍVEL SÓ PODE SOMAR ──
   // A ficha é recalculada do zero a cada nível, e isso já lhe custou um
@@ -257,6 +285,11 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
     desvantagem: vd ? vd.desvantagem : null,
     elemento, raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
+    // Para onde puxa, e de que sexo é. Quem desenha a ficha lê daqui.
+    vocacao,
+    sexo: (typeof sexoDoDna === 'function' && nascimento && nascimento.dna)
+      ? sexoDoDna(nascimento.dna, seed)
+      : (typeof _sexoDoSeed === 'function' ? _sexoDoSeed(seed) : 'F'),
     // A certidao, para quem so tem a ficha em maos.
     nascimento: nascimento || null,
   };

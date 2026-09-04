@@ -47,7 +47,8 @@ function renderFichaHTML(seed, raridade, elemento, nivel, nascimento) {
 
   return `<div class="ficha">
     <div class="ficha-title">${t('ficha.title')}</div>
-    <div class="ficha-escalao">${f.escalao} · ${f.pontos} ${t('ficha.pontos')}</div>
+    <div class="ficha-escalao">${_fichaSexo(f)} · ${f.escalao} · ${f.pontos} ${t('ficha.pontos')}</div>
+    ${_fichaVocacaoHTML(f)}
     <div class="ficha-stats">${linhas}</div>
     <div class="ficha-bars">
       <div class="ficha-bar"><b style="color:#e05555;">${f.pv}</b><span>${t('ficha.pv')}</span></div>
@@ -56,6 +57,31 @@ function renderFichaHTML(seed, raridade, elemento, nivel, nascimento) {
     </div>
     ${renderVantagensHTML(f)}
     ${renderMagiasHTML(f)}
+  </div>`;
+}
+
+/* ── O SEXO E A VOCAÇÃO ──
+
+   Os dois vinham do DNA e não apareciam em lado nenhum — e uma
+   tendência que o jogador não vê é indistinguível de acaso.
+
+   A vocação mostra-se em nomes e não em números, de propósito. Um
+   "F: 6" ao lado de "Força: 2" lia-se como uma promessa de chegar a 6,
+   que é exactamente o que o DNA não promete. */
+function _fichaSexo(f) {
+  const sx = f.sexo || 'F';
+  return (sx === 'M' ? '♂ ' : '♀ ') + t('ficha.sexo.' + sx);
+}
+
+function _fichaVocacaoHTML(f) {
+  const v = f.vocacao;
+  if (!Array.isArray(v) || v.length < 2) return '';
+  const nome = k => t('carac.' + k);
+  /* Sem rótulo próprio: a frase já se explica ("tende a Força e
+     Armadura"), e um "VOCAÇÃO" ao lado partia a linha em duas na ficha
+     estreita do telemóvel. */
+  return `<div class="ficha-vocacao" title="${t('ficha.vocacao.ex')}">
+    ◆ ${t('ficha.vocacao', { a: nome(v[0]), b: nome(v[1]) })}
   </div>`;
 }
 

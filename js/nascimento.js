@@ -38,8 +38,27 @@
 // em vez de médias. A reprodução não existe ainda; o formato que ela vai
 // precisar, existe.
 //
-//   potencial = max(alelo1, alelo2)      o dominante decide o tecto
-//   recessivo = min(alelo1, alelo2)      viaja escondido
+//   dominante = max(alelo1, alelo2)      manda na tendência
+//   recessivo = min(alelo1, alelo2)      viaja escondido e pesa menos
+//
+// ── TENDÊNCIA, NÃO RESULTADO ──
+//
+// O DNA não diz "Força = 5". Não diz número nenhum: diz PARA ONDE este
+// avatar puxa. Os pontos que ele ganha ao longo da vida continuam a cair
+// um a um num sorteio — o DNA só carrega os dados. Um avatar com vocação
+// para a Força costuma ficar forte; não é garantido que fique, e dois
+// irmãos com o mesmo DNA acabam diferentes.
+//
+// Foi de propósito que se apagou o `potencial`. Ele era um tecto — um
+// resultado escrito na certidão antes de o avatar ter vivido — e um
+// tecto não é uma tendência. Ninguém o lia, e agora ninguém o escreve.
+//
+// ── O SEXO ──
+//
+// Também é um par de alelos, e não um campo à parte: XX é fêmea, XY é
+// macho. Assim o cruzamento não precisa de regra própria — a mãe só
+// tem X para dar, o pai dá X ou Y, e o sexo do filho sai do mesmo
+// mecanismo que tudo o resto.
 // ═══════════════════════════════════════════════════════════════════
 
 const NASC_CARACS = ['F', 'H', 'R', 'A'];
@@ -54,12 +73,33 @@ const NASC_ALELOS = {
   'Lendário': { min: 2, max: 5 },
 };
 
-/* Um bebé nasce com um terço do que pode vir a ser, arredondado para
-   baixo, e nunca abaixo de zero. Não é uma constante escolhida ao acaso:
-   com um terço, um recém-nascido fica claramente aquém de um avatar
-   crescido — que é o que "bebé" tem de querer dizer — sem ficar em zero
-   absoluto, que o tornaria impossível de jogar. */
-const NASC_FRACAO_INICIAL = 3;
+/* O SEXO É UM GENE.
+
+   Par de alelos como os outros. XX fêmea, XY macho, moeda ao ar — e o
+   par guarda-se inteiro para o dia em que houver cruzamento: a mãe só
+   pode dar X, o pai dá um dos dois, e o sexo do filho cai do mesmo
+   sorteio que as outras características. Sem regra à parte. */
+const NASC_SEXO_ALELOS = ['X', 'Y'];
+
+/* Do bruto de uma característica (0..15) para o peso no sorteio (1..6).
+
+   Seis é o peso que a característica de foco já tinha antes de o DNA
+   existir, e um é o mínimo: nenhuma característica fica impossível, por
+   pior que seja o gene. É assim que isto continua a ser uma tendência —
+   um avatar sem jeito nenhum para a Força ainda pode acabar forte, só
+   é pouco provável.
+
+   O tecto não é decoração. Sem ele, um DNA extremo dava pesos de 16
+   contra 1 e o avatar despejava tudo numa característica só — aí o
+   DNA deixava de inclinar e passava a mandar, que é exactamente o que
+   não se quer.
+
+   Sobre a distância entre os pesos: medi-a. Com um degrau mais suave
+   (dividir a diferença por três) o contraste médio da vocação caía para
+   1,6 e os avatares saíam todos parecidos — o achatamento que o foco
+   sorteado do seed tinha sido criado para evitar. Um por um dá 4,2, que
+   é a mesma pontaria que os pesos antigos (6/3/1/1) tinham. */
+const NASC_TENDENCIA_MAX = 6;
 
 /* O gerador do DNA.
 
@@ -96,27 +136,65 @@ function gerarDna(elemento, origem, seed) {
   const nCores = (typeof CORES_RODA !== 'undefined') ? CORES_RODA.length : 12;
   genes.cor = [Math.floor(rnd() * nCores), Math.floor(rnd() * nCores)];
 
-  return { v: 1, elemento: elemento || 'Fogo', genes };
+  /* O par sexual. O primeiro alelo é sempre X — é o que a mãe dá — e o
+     segundo decide. Guardar os dois em vez de guardar "macho" faz o
+     cruzamento sair de graça mais tarde. */
+  const [X, Y] = NASC_SEXO_ALELOS;
+  genes.sexo = [X, rnd() < 0.5 ? X : Y];
+
+  return { v: 2, elemento: elemento || 'Fogo', genes };
 }
 
-// O tecto que estes genes permitem. O alelo dominante decide; o outro
-// fica guardado no DNA para poder sair num filho.
-function potencialDoDna(dna) {
-  const p = {};
+/* A TENDÊNCIA.
+
+   O que estes genes puxam, e não o que garantem. Sai em pesos de sorteio
+   — quanto maior o peso de uma característica, mais vezes ela ganha os
+   pontos que o avatar vai recebendo ao longo da vida.
+
+   O dominante conta a dobrar e o recessivo conta uma vez. Isso é o que
+   faz um alelo escondido ainda inclinar alguma coisa em vez de não
+   servir para nada até ao dia em que sair num filho.
+
+   Os pesos são RELATIVOS: a característica mais fraca do avatar fica
+   sempre em 1 e as outras medem-se a partir dela. Assim a vocação de um
+   avatar é a mesma coisa venha ele de que ovo vier — a proveniência
+   não compra feitio, e um Comum pode ter uma vocação tão marcada como
+   um Lendário. */
+function tendenciaDoDna(dna) {
+  const bruto = {};
   for (const k of NASC_CARACS) {
     const par = (dna && dna.genes && dna.genes[k]) || [0, 0];
-    p[k] = Math.max(par[0], par[1]);
+    bruto[k] = 2 * Math.max(par[0], par[1]) + Math.min(par[0], par[1]);
   }
-  return p;
+  const menor = Math.min.apply(null, NASC_CARACS.map(k => bruto[k]));
+  const t = {};
+  for (const k of NASC_CARACS) {
+    t[k] = Math.min(NASC_TENDENCIA_MAX, 1 + (bruto[k] - menor));
+  }
+  return t;
 }
 
-// Com que atributos se começa. Longe do potencial, que é o ponto.
-function atributosIniciais(potencial) {
-  const a = {};
-  for (const k of NASC_CARACS) {
-    a[k] = Math.max(0, Math.floor((potencial[k] || 0) / NASC_FRACAO_INICIAL));
-  }
-  return a;
+/* Para onde este avatar puxa, por ordem. Só para mostrar — quem calcula
+   lê os pesos. Empates ficam pela ordem F H R A, que é estável. */
+function vocacaoDoDna(dna) {
+  const t = tendenciaDoDna(dna);
+  return NASC_CARACS.slice().sort((a, b) => t[b] - t[a] || NASC_CARACS.indexOf(a) - NASC_CARACS.indexOf(b));
+}
+
+/* O sexo, lido do par. Um DNA da primeira versão não tem o gene — e
+   nesse caso não se inventa nada ao acaso: tira-se do seed, que nunca
+   muda, para o avatar ter sempre o mesmo sexo em qualquer ecrã. */
+function sexoDoDna(dna, seed) {
+  const par = dna && dna.genes && dna.genes.sexo;
+  if (Array.isArray(par)) return (par[0] === 'Y' || par[1] === 'Y') ? 'M' : 'F';
+  return _sexoDoSeed(seed);
+}
+
+function _sexoDoSeed(seed) {
+  let x = ((Math.abs(seed | 0) ^ 0x5f37) >>> 0);
+  x = Math.imul(x ^ (x >>> 15), 0x2C1B3C6D) >>> 0;
+  x = (x ^ (x >>> 16)) >>> 0;
+  return (x & 1) ? 'M' : 'F';
 }
 
 // O que um alelo escondido carrega. Não é usado no combate — é o que a
@@ -131,8 +209,9 @@ function recessivosDoDna(dna) {
 }
 
 /* Uma forma curta e legível do DNA, para se poder mostrar e comparar.
-   Cada característica em dois dígitos: dominante e recessivo.
-      F31·H42·R20·A33 · Fogo
+   Cada característica em dois dígitos: dominante e recessivo, mais o
+   par sexual ao fim.
+      F31·H42·R20·A33·XY
    Não é o DNA — é como se lê. O que conta é o objecto. */
 function dnaLegivel(dna) {
   if (!dna || !dna.genes) return '—';
@@ -140,6 +219,8 @@ function dnaLegivel(dna) {
     const par = dna.genes[k] || [0, 0];
     return k + Math.max(par[0], par[1]) + Math.min(par[0], par[1]);
   });
+  const sx = dna.genes.sexo;
+  if (Array.isArray(sx)) partes.push(sx.join(''));
   return partes.join('·');
 }
 
@@ -157,9 +238,7 @@ function nascer(opts) {
   // não consome ovo nenhum.
   const origem = NASC_ALELOS[o.origem] ? o.origem : 'Comum';
 
-  const dna       = gerarDna(elemento, origem, o.seed);
-  const potencial = potencialDoDna(dna);
-  const inicial   = atributosIniciais(potencial);
+  const dna = gerarDna(elemento, origem, o.seed);
 
   return {
     v:         1,
@@ -169,8 +248,13 @@ function nascer(opts) {
     // porque toda a gente nasce Comum.
     origem,
     dna,
-    potencial,
-    inicial,
+    /* O sexo, expresso. Copiado do DNA para não ser preciso ir lá dentro
+       só para saber se é macho ou fêmea — e porque nunca muda.
+
+       A TENDÊNCIA NÃO SE COPIA PARA AQUI. É uma leitura dos genes, e uma
+       leitura guardada é uma segunda cópia à espera de divergir da
+       primeira. Quem a quiser chama tendenciaDoDna(dna). */
+    sexo: sexoDoDna(dna, o.seed),
     // As cores expressas, copiadas do DNA para não ser preciso ir lá
     // dentro só para saber de que cor ele nasceu.
     corPrincipal:  dna.genes.cor ? dna.genes.cor[0] : 0,
@@ -209,6 +293,29 @@ function registarNascimento(slot, opts) {
 function origemDe(slot) {
   if (!slot) return 'Comum';
   return (slot.nascimento && slot.nascimento.origem) || slot.raridade || 'Comum';
+}
+
+/* O sexo do avatar.
+
+   Quem nasceu antes disto existir não tem gene sexual nenhum — e não se
+   lhe sorteia um agora, que mudaria de sessão para sessão. Tira-se do
+   seed, que é dele desde sempre e nunca muda. */
+function sexoDe(slot) {
+  if (!slot) return 'F';
+  const n = slot.nascimento;
+  if (n && n.sexo) return n.sexo;
+  if (n && n.dna)  return sexoDoDna(n.dna, slot.seed);
+  return _sexoDoSeed(slot.seed);
+}
+
+/* A tendência do avatar, ou nada.
+
+   Devolve null para quem não tem certidão: esse cresce como sempre
+   cresceu, pelo seed, e não se lhe vai remexer a ficha por causa de
+   genes que ele nunca teve. */
+function tendenciaDe(slot) {
+  const dna = slot && slot.nascimento && slot.nascimento.dna;
+  return dna ? tendenciaDoDna(dna) : null;
 }
 
 /* Um bebé só tem o golpe comum.

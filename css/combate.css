@@ -417,6 +417,18 @@
   text-align: center;
   margin: -0.375rem 0 0.5625rem;
 }
+/* A vocação fica logo abaixo do escalão, na mesma escala miudinha —
+   é contexto do avatar, e não mais uma barra a competir com as quatro. */
+.ficha-vocacao {
+  text-align: center;
+  margin: -0.4375rem 0 0.5625rem;
+  font-size: 0.4375rem;
+  letter-spacing: 0.03rem;
+  color: var(--gold-light);
+  opacity: 0.85;
+  cursor: help;
+}
+
 .ficha-stat-lbl { width: 0.875rem; }
 
 .vd-bloco {

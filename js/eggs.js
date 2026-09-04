@@ -457,11 +457,19 @@ async function confirmHatch() {
      O avatar deixa de nascer com a raridade do ovo. Nasce Comum,
      como todos, e a raridade do ovo fica na certidao como ORIGEM.
 
-     O ovo Lendario continua a valer o que valia — paga alelos mais
-     altos (ver NASC_ALELOS) e continua a mandar na postura de ovos,
-     que o api/pool.js ja tirava do registo do servidor e nao da
-     raridade do avatar. O que ele deixa de dar e um Lendario feito:
-     da um bebe com genes de Lendario. */
+     O ovo Lendario continua a mandar na postura de ovos, que o
+     api/pool.js ja tirava do registo do servidor e nao da raridade
+     do avatar, e continua a pagar alelos mais altos (ver NASC_ALELOS).
+
+     MAS ATENCAO, que a frase anterior ja foi mais generosa do que a
+     realidade: os alelos altos hoje nao dao poder nenhum. A tendencia
+     lê-os em pesos RELATIVOS — a caracteristica mais fraca do proprio
+     avatar fica sempre em 1 — portanto alelos todos altos e alelos
+     todos baixos dao a mesma vocacao. Medido em tools/genetica.js:
+     24 pontos de gene a mais valem 0,00 caracteristicas ao nivel 35.
+
+     Quem decide o preco da proveniencia e a progressao. Fica dito
+     aqui para ninguem ler o comentario e acreditar no contrario. */
   if (typeof registarNascimento === 'function') {
     registarNascimento(avatarSlots[targetSlot], {
       elemento: ovo.elemento, origem: ovo.raridade, seed,
