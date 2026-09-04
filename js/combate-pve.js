@@ -888,7 +888,7 @@ function _pveAjudaDe(eu, lado, contra) {
                    `FA H${_c3(eu,'H')} + F${_c3(eu,'F')} + 1d`, false,
                    _pvePrognosticoHTML(_pvePrognostico(eu, contra, null, 0)), 'golpe');
 
-  for (const cat of ['ataque', 'forte', 'defesa']) {
+  for (const cat of MAGIA_SLOTS) {
     const g = eu.magias[cat]; if (!g) continue;
     /* O slot da defesa nem sempre tem defesa lá dentro.
 
@@ -999,9 +999,21 @@ function _pveDesenharAcoes(eu, ini) {
                 `FA ${_c3(eu,'A')}+1d+${pmT} · ${pmT} PM`, pmT > 0 || _c3(eu,'A') > 0);
   }
 
-  for (const cat of ['ataque', 'forte', 'defesa']) {
+  for (const cat of MAGIA_SLOTS) {
     const g = eu.magias[cat];
-    if (!g) { html += btn('', t('mag.cat.' + cat), t('pve.sem'), false, 'vazio'); continue; }
+    /* O lugar vazio diz PORQUÊ está vazio.
+
+       Um botão apagado com "—" ao lado deixava o jogador a pensar que
+       tinha perdido a magia. Agora diz quando ela chega: ao crescer ou
+       ao ficar Raro (MAGIA_ESCADA, em js/magias.js). */
+    if (!g) {
+      const d = (typeof degrauDoSlot === 'function') ? degrauDoSlot(cat) : null;
+      const quando = !d ? t('pve.sem')
+        : d.fase != null ? t('mag.chega.fase' + d.fase)
+        : t('mag.chega.grau' + d.grau);
+      html += btn('', t('mag.cat.' + cat), quando, false, 'vazio');
+      continue;
+    }
     const custo = _c3custoMagia(eu, g, g.pm);
     const podeH  = g.pm <= tecto;
     const podePM = custo <= eu.pm;

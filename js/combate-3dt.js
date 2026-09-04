@@ -881,7 +881,9 @@ function politica3dt(eu, inimigo, campo) {
   // É isto que quebra o empate entre duas fichas parecidas: com F+2 a
   // conta FA vs FD deixa de dar zero. Sem isto a política trocava
   // golpes que não faziam nada.
-  for (const cand of [m.ataque, m.forte, m.defesa]) {
+  // O m.forte2 entra aqui como qualquer outro: o Lendário tem dois
+  // golpes fortes, e esquecê-lo era deixar-lhe um lugar sem uso.
+  for (const cand of [m.ataque, m.forte, m.forte2, m.defesa]) {
     if (cand && (cand.vorpal || cand.roubaVida) && podePagar(cand)
         && !eu.vorpal && !eu.roubando) {
       return { magia: cand, pm: cand.pm };
@@ -1453,7 +1455,7 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
       L.push('  ' + s.nome + ' (' + s.elemento + ' ' + s.raridade + ' nv' + s.nivel + ')' +
              '  F' + f.F + ' H' + f.H + ' R' + f.R + ' A' + f.A +
              '  ' + f.pv + ' PV / ' + f.pm + ' PM');
-      L.push('     ' + ['ataque','forte','defesa']
+      L.push('     ' + (typeof MAGIA_SLOTS !== 'undefined' ? MAGIA_SLOTS : ['ataque','forte','defesa'])
         .map(c => mg[c] ? nm(mg[c].id) : '-').join(' | '));
       const nv2 = (id, el) => (typeof t === 'function' && id)
         ? t('vd.' + id + '.nome').replace('{elem}', el || '') : id;

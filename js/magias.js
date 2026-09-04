@@ -39,6 +39,51 @@
 // mesmo de fora.
 const MAGIA_CATEGORIAS = ['ataque', 'forte', 'defesa'];
 
+/* ── OS LUGARES QUE UM AVATAR PODE TER ──
+
+   São quatro, e não três: o Lendário carrega DOIS golpes fortes. O
+   segundo sai da mesma gaveta do primeiro, sem o repetir.
+
+   Repare que isto não é o mesmo que MAGIA_CATEGORIAS — essa é a lista
+   das GAVETAS de onde se sorteia, e continua a ser três. Um lugar e uma
+   gaveta não são a mesma coisa desde que há dois lugares a beber da
+   mesma gaveta. */
+const MAGIA_SLOTS = ['ataque', 'forte', 'forte2', 'defesa'];
+
+/* ── A ESCADA DO REPERTÓRIO ──
+
+   O avatar não nasce com as magias todas à espera de serem
+   destrancadas: nasce sem nenhuma e vai-as ganhando.
+
+     BEBÊ      níveis  1–4    só o golpe comum
+     CRIANÇA   níveis  5–9    + a magia de ataque
+     JOVEM     níveis 10–12    + a magia defensiva
+     RARO      8 pontos, nv13   + o golpe forte
+     LENDÁRIO  12 pontos, nv29  + o segundo golpe forte
+
+   As duas primeiras são crescer; as duas últimas são o que a raridade
+   paga. É por isso que a raridade importa em combate mesmo sem dar um
+   único ponto de ficha: dá opções, e não números.
+
+   O QUE SE GANHA É O LUGAR, NÃO A MAGIA. A magia é sorteada uma vez, do
+   seed, e é a mesma do nascimento à lenda — a escada só decide quando
+   ela aparece. Foi assim que o corpo ficou (js/data.js) e é assim que
+   isto tem de ficar: crescer nunca troca o que já lá estava. */
+const MAGIA_ESCADA = [
+  { slot: 'ataque', fase: 1 },
+  { slot: 'defesa', fase: 2 },
+  { slot: 'forte',  grau: 1 },   // Raro
+  { slot: 'forte2', grau: 2 },   // Lendário
+];
+
+// A fase pelo nível, para quando o js/state.js não está carregado
+// (as ferramentas de auditoria correm sem ele).
+function _magiaFase(nivel) {
+  if (typeof faseFromNivel === 'function') return faseFromNivel(nivel || 1);
+  const n = nivel || 1;
+  return n < 5 ? 0 : n < 10 ? 1 : n < 17 ? 2 : 3;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // OS CINCO PAPÉIS
 //
@@ -261,24 +306,6 @@ function _magiaRng(seed) {
 function magiasDoAvatar(ficha) {
   if (!ficha) return {};
 
-  /* ── UM BEBÉ SÓ TEM O GOLPE COMUM ──
-
-     É o último passo do nascimento: nasce sem magia nenhuma. Devolver um
-     objecto vazio é o que o resto do jogo já sabe tratar — o painel da
-     batalha desenha "sem magia" nos três lugares, e a barra de ações fica
-     com o golpe comum, que nunca esteve dependente disto.
-
-     Só se aplica a quem TEM certidão. Um avatar nascido antes disto
-     existir não é um bebé: é um avatar do jogo antigo, e tirar-lhe as
-     magias agora seria mudar-lhe a ficha por causa de uma regra que não
-     existia quando ele nasceu.
-
-     A fase 0 são os níveis 1 a 4, o mesmo limiar que o jogo já usa para
-     dizer que a criatura ainda é nova. É uma PONTE: a progressão é a
-     tarefa a seguir, e é ela que decide qual magia se ganha, quando, e a
-     troco de quê. Esta linha sai quando essa regra chegar. */
-  if (typeof ehBebe === 'function' && ehBebe(ficha)) return {};
-
   const kit = MAGIAS[ficha.elemento] || MAGIAS['Fogo'];
   const rnd = _magiaRng((ficha.seed || 0) ^ 0x51);
   const fora = {};
@@ -352,7 +379,61 @@ function magiasDoAvatar(ficha) {
     }
     fora[cat] = pool.length ? pool[rnd(0, pool.length - 1)] : null;
   }
-  return fora;
+
+  /* O SEGUNDO GOLPE FORTE, do Lendário.
+
+     Sai da mesma gaveta do primeiro e nunca o repete — dois lugares com
+     a mesma magia não eram duas opções, eram uma escrita duas vezes. Se
+     a gaveta do elemento só tiver uma magia que ele alcance, fica sem
+     segundo: é preferível a repetir. */
+  {
+    const bolo = [...(kit.forte || []), ...(MAGIAS_UNIVERSAIS.forte || [])]
+      .filter(m => m !== fora.forte && m.pm <= tectoFinal);
+    const pagaveis = bolo.filter(m => m.pm <= reservaFinal);
+    const pool = pagaveis.length ? pagaveis : bolo;
+    fora.forte2 = pool.length ? pool[rnd(0, pool.length - 1)] : null;
+  }
+
+  /* ── E AGORA, O QUE DELE JÁ SE VÊ ──
+
+     Tudo o que está acima decidiu o repertório COMPLETO deste avatar —
+     o que ele terá se chegar ao fim. Sai do seed e nunca muda.
+
+     Esta parte decide quanto dele já está desperto. O bebé sai daqui com
+     as mãos vazias, e é assim que deve ser: ele tem o golpe comum, que
+     nunca dependeu disto. */
+  const fase = _magiaFase(ficha.nivel);
+  const grau = (typeof grauDaRaridade === 'function')
+    ? grauDaRaridade(ficha.raridade)
+    : (ficha.raridade === 'Lendário' ? 2 : ficha.raridade === 'Raro' ? 1 : 0);
+
+  const vistas = {};
+  for (const degrau of MAGIA_ESCADA) {
+    const chegou = degrau.fase != null ? fase >= degrau.fase : grau >= degrau.grau;
+    if (chegou && fora[degrau.slot]) vistas[degrau.slot] = fora[degrau.slot];
+  }
+  return vistas;
+}
+
+/* O repertório COMPLETO, incluindo o que ainda não despertou.
+
+   A ficha usa isto para mostrar ao jogador o que o avatar vai ter —
+   uma magia que se sabe que vem é um objectivo; uma que ninguém menciona
+   é uma surpresa que ele nunca vai procurar. */
+function repertorioCompleto(ficha) {
+  if (!ficha) return {};
+  /* Pergunta-se à ficha do nível 35, e não a uma cópia desta com o nível
+     trocado à mão: o sorteio das magias filtra pelo tecto H×5 do nível
+     35, e uma cópia com nivel:35 mas com a Habilidade de hoje dava outro
+     tecto — e portanto outras magias. Seria uma promessa errada. */
+  if (typeof fichaDeAvatar !== 'function') return magiasDoAvatar(ficha);
+  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', ficha.elemento, 35));
+}
+
+/* Quando é que este lugar desperta? Devolve o degrau, para a ficha
+   poder dizer "chega ao ser Raro" em vez de deixar um espaço vazio. */
+function degrauDoSlot(slot) {
+  return MAGIA_ESCADA.find(d => d.slot === slot) || null;
 }
 
 // Esta magia já cabe no tecto H×5 deste avatar?
@@ -411,7 +492,8 @@ function valorDaMagia(magia, ficha, pmGastos) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, magiasDoAvatar,
+  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, MAGIA_SLOTS,
+                     MAGIA_ESCADA, repertorioCompleto, degrauDoSlot, magiasDoAvatar,
                    magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria,
                    trancaDaMagia };
 }

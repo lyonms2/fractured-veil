@@ -163,8 +163,19 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
 
      A raridade sai do sorteio pela mesma razão: já não muda ficha
      nenhuma, e sorteá-la era fingir que sim. */
-  const eq = () => [0,1,2].map((_, i) => ({ nome: 'av' + i, elemento: esc(ELS),
-    raridade: 'Comum', nivel: 1 + Math.floor(rnd() * 35), seed: Math.floor(rnd() * 1e6) }));
+  /* A raridade sai do nível, como sai no jogo (js/raridade.js).
+
+     Estava fixa em 'Comum', e como o golpe forte só chega com o Raro,
+     nenhum combatente da amostra tinha um — e a Lâmina que decapita,
+     que vive numa magia forte, nunca acontecia. Não era um buraco do
+     jogo: era a amostra a não conter ninguém que pudesse mostrá-la. */
+  const rarDoNivel = nv => { const p = 5 + Math.floor((nv - 1) / 4);
+    return p >= 12 ? 'Lendário' : p >= 8 ? 'Raro' : 'Comum'; };
+  const eq = () => [0,1,2].map((_, i) => {
+    const nivel = 1 + Math.floor(rnd() * 35);
+    return { nome: 'av' + i, elemento: esc(ELS), raridade: rarDoNivel(nivel),
+             nivel, seed: Math.floor(rnd() * 1e6) };
+  });
 
   const vistos = {};
   for (let i = 0; i < 2000; i++) {

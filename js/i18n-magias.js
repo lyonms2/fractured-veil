@@ -18,6 +18,12 @@ window.registerStrings({
   // Quando o elemento não tem magia defensiva, o slot cai num segundo
   // ataque. Dizê-lo, em vez de lhe chamar defesa.
   'mag.cat.defesa_atq': 'Segundo ataque',
+  'mag.cat.forte2':   'Segundo ataque forte',
+  'mag.chega.fase1':  'Chega quando deixar de ser bebê',
+  'mag.chega.fase2':  'Chega ao virar Jovem',
+  'mag.chega.grau1':  'Chega ao virar Raro',
+  'mag.chega.grau2':  'Chega ao virar Lendário',
+  'ficha.bebe.vd':    'Ainda não tem virtude nem defeito — eles aparecem ao crescer.',
   'mag.custo':        '{pm} PM',
   'mag.custo.faixa':  '{min} a {max} PM',
   // Para as que escalam E cobram todo o turno. Sem esta, elas caíam na
@@ -202,6 +208,12 @@ window.registerStrings({
   'mag.cat.forte':    'Heavy attack',
   'mag.cat.defesa':   'Defense',
   'mag.cat.defesa_atq': 'Second attack',
+  'mag.cat.forte2':   'Second heavy attack',
+  'mag.chega.fase1':  'Arrives when it stops being a baby',
+  'mag.chega.fase2':  'Arrives when it becomes a Youth',
+  'mag.chega.grau1':  'Arrives when it becomes Rare',
+  'mag.chega.grau2':  'Arrives when it becomes Legendary',
+  'ficha.bebe.vd':    'No virtue or flaw yet — they appear as it grows.',
   'mag.custo':        '{pm} MP',
   'mag.custo.faixa':  '{min} to {max} MP',
   'mag.custo.faixa_turno': '{min} to {max} MP per turn',

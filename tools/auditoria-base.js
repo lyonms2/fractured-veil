@@ -17,6 +17,7 @@ const M = new Function('t',
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
   `return { MAGIAS, MAGIAS_UNIVERSAIS, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
+            MAGIA_SLOTS, MAGIA_CATEGORIAS, MAGIA_ESCADA, repertorioCompleto, degrauDoSlot,
             nascer, gerarDna, tendenciaDoDna, vocacaoDoDna, sexoDoDna, sexoDe,
             tendenciaDe, registarNascimento, dnaLegivel, recessivosDoDna,
             misturarCores, CORES_RODA, NASC_ALELOS, NASC_CARACS,

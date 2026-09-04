@@ -38,8 +38,9 @@ if (LINHAS_DA_FASE.split(NL).length !== 3)
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
-  rd('vantagens.js') + rd('ficha-3dt.js') + rd('data.js') +
+  rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('data.js') +
   `return { gerarSVG, registarNascimento, fichaDeAvatar, pontosDoAvatar,
+            magiasDoAvatar, repertorioCompleto, degrauDoSlot, MAGIA_SLOTS, MAGIA_ESCADA,
             raridadeDaFase, raridadeDosPontos, grauDaRaridade, faseDoSlot, raridadeDoSlot,
             sincronizarRaridade, podeSerVendido, RARIDADE_POR_FASE };`
 )(x => x);
@@ -192,6 +193,83 @@ ok(encolheu === 0, 'nenhuma parte desaparece ao subir de raridade',
 ok(ganhou > avaliados * 0.5, 'e a maioria ganha mesmo alguma coisa visível',
    ganhou + ' ganhos em ' + (avaliados * CRESCEM.length) + ' comparações');
 for (const e of exemplos) console.log('       ' + e);
+
+// ════════════════════════════════════════════════════════════════
+titulo('O REPERTÓRIO CRESCE');
+
+// A escada do §8 do conceito, medida em vez de suposta.
+{
+  const linha = (nv, rar) => {
+    const f = M.fichaDeAvatar(7, rar, 'Água', nv);
+    const m = M.magiasDoAvatar(f);
+    return { nv, rar, tem: M.MAGIA_SLOTS.filter(c => m[c]), vd: !!f.vantagem };
+  };
+  const passos = [[1,'Comum'],[5,'Comum'],[10,'Comum'],[13,'Raro'],[29,'Lendário']].map(a => linha(a[0], a[1]));
+  for (const p of passos)
+    console.log('       nv' + String(p.nv).padStart(2) + ' ' + p.rar.padEnd(9) + ' · ' +
+                (p.tem.length ? p.tem.join(', ') : 'só o golpe comum') +
+                (p.vd ? '   + vantagem e desvantagem' : ''));
+
+  ok(passos[0].tem.length === 0 && !passos[0].vd,
+     'o bebé não tem magia, nem vantagem, nem desvantagem',
+     'nv1 → só o golpe comum');
+  ok(passos[1].tem.join() === 'ataque' && passos[1].vd,
+     'a CRIANÇA ganha a magia de ataque e o par de virtude e defeito',
+     'nv5 → ' + passos[1].tem.join(', '));
+  ok(passos[2].tem.join() === 'ataque,defesa',
+     'o JOVEM ganha a defensiva — e aí o quadro do Comum está completo',
+     'nv10 → ' + passos[2].tem.join(', '));
+  ok(passos[3].tem.join() === 'ataque,forte,defesa',
+     'o RARO ganha o golpe forte', 'nv13 → ' + passos[3].tem.join(', '));
+  ok(passos[4].tem.join() === 'ataque,forte,forte2,defesa',
+     'o LENDÁRIO ganha o segundo golpe forte', 'nv29 → ' + passos[4].tem.join(', '));
+}
+
+/* E o mais importante: o que se ganha é o LUGAR, e nunca a magia.
+   Um lugar que já tinha uma magia não pode passar a ter outra — era o
+   defeito que este jogo já apanhou uma vez (1,52% das subidas trocavam
+   de magia, e 36% dessas para pior). */
+{
+  let trocou = 0, perdeu = 0, n = 0;
+  for (let seed = 1; seed <= 800; seed++) {
+    let ant = null;
+    for (let nv = 1; nv <= 35; nv++) {
+      const rar = M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv));
+      const m = M.magiasDoAvatar(M.fichaDeAvatar(seed, rar, 'Sombra', nv));
+      const ids = M.MAGIA_SLOTS.map(c => m[c] ? m[c].id : null);
+      if (ant) {
+        n++;
+        for (let i = 0; i < ids.length; i++) {
+          if (ant[i] && ids[i] && ant[i] !== ids[i]) trocou++;
+          if (ant[i] && !ids[i]) perdeu++;
+        }
+      }
+      ant = ids;
+    }
+  }
+  ok(trocou === 0, 'nenhuma magia troca por outra ao subir de nível',
+     n.toLocaleString('pt-BR') + ' subidas');
+  ok(perdeu === 0, 'e nenhuma se perde depois de ganha',
+     n.toLocaleString('pt-BR') + ' subidas');
+}
+
+// A ficha promete o repertório completo, e a promessa tem de cumprir-se.
+{
+  let quebrou = 0, n = 0;
+  for (let seed = 1; seed <= 500; seed++) {
+    const cedo = M.fichaDeAvatar(seed, 'Comum', 'Vento', 5);
+    const prometido = M.repertorioCompleto(cedo);
+    const fim = M.magiasDoAvatar(M.fichaDeAvatar(seed, 'Lendário', 'Vento', 35));
+    for (const c of M.MAGIA_SLOTS) {
+      n++;
+      const a = prometido[c] ? prometido[c].id : null;
+      const b = fim[c] ? fim[c].id : null;
+      if (a !== b) quebrou++;
+    }
+  }
+  ok(quebrou === 0, 'o que a ficha promete ao nível 5 é o que chega ao 35',
+     n.toLocaleString('pt-BR') + ' lugares comparados');
+}
 
 console.log('');
 console.log('─────────────────────────────');

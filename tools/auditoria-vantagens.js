@@ -334,15 +334,25 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
   const vazias = { ataque: 0, forte: 0, defesa: 0 };
   for (const el of ['Fogo','Água','Terra','Vento','Sombra'])
     for (const rar of ['Comum','Raro','Lendário'])
-      for (const nv of [1, 10, 35])
+      /* Os níveis começam no 5 e não no 1.
+
+         O nível 1 é bebé, e o bebé não tem vantagem, desvantagem nem magia
+         nenhuma — ganha-as ao crescer (MAGIA_ESCADA, em js/magias.js).
+         Varrer o nível 1 à procura delas era procurar o que ainda não
+         existe, e contar como "gaveta vazia" o que é só infância. O nível
+         35 é Lendário e tem os quatro lugares; o 13 é Raro e tem três. */
+      for (const nv of [5, 13, 35])
         for (let s = 1; s <= 600; s++) {
-          const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
+          const rarAqui = nv >= 29 ? 'Lendário' : nv >= 13 ? 'Raro' : 'Comum';
+          const f = M.fichaDeAvatar(s, rarAqui, el, nv); if (!f) continue;
           n++;
           zeros += [f.F, f.H, f.R, f.A].filter(x => x === 0).length;
           minH = Math.min(minH, f.H);
           const g = M.magiasDoAvatar(f);
-          for (const cat of ['ataque', 'forte', 'defesa']) if (!g[cat]) vazias[cat]++;
-          if (f.vantagem.id === 'toque_ardente') { comToque++; if (f.A === 0) toqueMorto++; }
+          // Só se conta como vazio o lugar que este avatar JÁ devia ter.
+          for (const cat of ['ataque', 'defesa']) if (nv >= 10 && !g[cat]) vazias[cat]++;
+          if (nv >= 13 && !g.forte) vazias.forte++;
+          if (f.vantagem && f.vantagem.id === 'toque_ardente') { comToque++; if (f.A === 0) toqueMorto++; }
         }
   A.ver('Piso de 1 — nenhuma característica nasce a zero',
         zeros === 0, `${zeros} zeros em ${n.toLocaleString('pt-BR')} fichas`);
@@ -421,14 +431,24 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
 
      O que importa continua a ser verdade e continua a ser medido: o
      cadeado abre-se subindo de nível. */
-  const c1 = trancadas('Comum', 1).forte, c20 = trancadas('Comum', 20).forte;
-  const l1 = trancadas('Lendário', 1).forte;
+  /* Mede-se onde o golpe forte EXISTE.
+
+     Media ao nível 1, e ao nível 1 não há golpe forte nenhum para estar
+     trancado — ele chega com o Raro. Zero por cento de trancadas em
+     zero magias não é boa notícia, é uma divisão sem conta.
+
+     A pergunta continua a ser a mesma: quem abre o cadeado é o nível,
+     que sobe a Habilidade. */
+  const r13 = trancadas('Raro', 13).forte, r28 = trancadas('Raro', 28).forte;
   A.ver('O golpe forte trancado destranca com o nível',
-        c20 < c1,
-        `golpe forte trancado: nv1 ${c1.toFixed(0)}% · nv20 ${c20.toFixed(0)}%`);
+        r28 < r13,
+        `golpe forte trancado: nv13 ${r13.toFixed(0)}% · nv28 ${r28.toFixed(0)}%`);
+  // A raridade dá o LUGAR do golpe forte, mas não dá a Habilidade para o
+  // lançar: no mesmo nível, um Raro e um Lendário têm o mesmo cadeado.
+  const l13 = trancadas('Lendário', 13).forte;
   A.ver('A raridade não abre cadeado nenhum — quem o abre é o nível',
-        Math.abs(l1 - c1) < 0.01,
-        `ao nível 1: Comum ${c1.toFixed(0)}% · Lendário ${l1.toFixed(0)}%`);
+        Math.abs(l13 - r13) < 0.01,
+        `ao nível 13: Raro ${r13.toFixed(0)}% · Lendário ${l13.toFixed(0)}%`);
 }
 
 // ── SUBIR DE NÍVEL SÓ PODE SOMAR ──
@@ -446,15 +466,26 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
           const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
           const v = [f.F, f.H, f.R, f.A];
           const m = M.magiasDoAvatar(f);
-          const ids = ['ataque','forte','defesa'].map(c => m[c] ? m[c].id : null);
-          const alc = ['ataque','forte','defesa'].map(c => M.magiaAoAlcance(f, m[c]));
+          const ids = M.MAGIA_SLOTS.map(c => m[c] ? m[c].id : null);
+          const alc = M.MAGIA_SLOTS.map(c => M.magiaAoAlcance(f, m[c]));
           graca += v.reduce((x, y) => x + y, 0) - (f.pontos + 4);
           if (ant) {
             n++;
             if (v.some((x, i) => x < ant[i])) regrediu++;
             if (f.pv < antPV) pvCaiu++;
-            for (let i = 0; i < 3; i++) {
-              if (antIds[i] !== ids[i]) mudouMagia++;
+            /* GANHAR NÃO É TROCAR.
+
+               Isto contava qualquer diferença entre um nível e o
+               seguinte, e passou a apanhar 12.000 casos que são o
+               sistema a funcionar: um lugar vazio que se enche quando o
+               avatar cresce ou fica Raro (MAGIA_ESCADA, em js/magias.js).
+
+               O defeito que este teste existe para apanhar continua a
+               ser apanhado, e é só um: um lugar que TINHA uma magia
+               passar a ter OUTRA. Isso nunca pode acontecer. */
+            for (let i = 0; i < M.MAGIA_SLOTS.length; i++) {
+              if (antIds[i] && ids[i] && antIds[i] !== ids[i]) mudouMagia++;
+              if (antIds[i] && !ids[i]) mudouMagia++;   // e perder também não
               if (antAlc[i] && !alc[i]) trancou++;
             }
           }
@@ -464,7 +495,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
   const N = n.toLocaleString('pt-BR');
   A.ver('Subir de nível nunca baixa uma característica', regrediu === 0, `${regrediu} em ${N} subidas`);
   A.ver('Subir de nível nunca baixa a vida', pvCaiu === 0, `${pvCaiu} em ${N}`);
-  A.ver('Subir de nível nunca troca uma magia', mudouMagia === 0, `${mudouMagia} em ${N}`);
+  A.ver('Subir de nível nunca troca nem tira uma magia', mudouMagia === 0, `${mudouMagia} em ${N}`);
   A.ver('Subir de nível nunca tranca uma magia que já se lançava', trancou === 0, `${trancou} em ${N}`);
   A.ver('E o orçamento continua honesto: nenhum ponto de graça', graca === 0,
         `${graca} pontos a mais do que a bolsa dá`);

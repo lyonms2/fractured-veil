@@ -64,8 +64,14 @@ A.ver('custa de 3 a 12 PM e declara que escolhe alvo',
    bolo ficava vazio, e chegavam ao nível 35 SEM golpe forte nenhum.
    Eram 158 em mil. */
 {
+  /* Só se pergunta a quem JÁ tem o lugar do golpe forte.
+
+     A lista tinha 'Comum' e 'Épico' — e o Épico nem existe no jogo, era
+     um nome a mais que valia Comum. Como o golpe forte agora chega com
+     o Raro (MAGIA_ESCADA, em js/magias.js), metade da amostra vinha
+     sem ele por desenho e o teste lia isso como buraco. */
   let semForte = 0, total = 0;
-  for (const r of ['Comum', 'Raro', 'Épico', 'Lendário']) {
+  for (const r of ['Raro', 'Lendário']) {
     for (let s = 1; s <= 250; s++) {
       const f = M.fichaDeAvatar({ elemento: 'Sombra', raridade: r, nivel: 35, seed: s });
       if (!f) continue;

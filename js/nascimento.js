@@ -329,7 +329,13 @@ function tendenciaDe(slot) {
    substitui esta linha por uma regra a sério: qual magia, quando, e a
    troco de quê. */
 function ehBebe(slot) {
-  if (!slot || !slot.nascimento) return false;
+  if (!slot) return false;
   const nv = slot.nivel || 1;
+  /* Pedia certidão, para não mudar a ficha a quem nasceu antes de ela
+     existir. Já não pede: com o repertório a crescer por etapas
+     (MAGIA_ESCADA, em js/magias.js), ter duas regras — uma para os
+     avatares novos e outra para os antigos — era garantir que uma delas
+     apodrecia sem ninguém dar por isso. Ser bebé é estar na fase 0, e
+     mais nada. */
   return (typeof faseFromNivel === 'function') ? faseFromNivel(nv) === 0 : nv < 5;
 }

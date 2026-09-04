@@ -136,15 +136,28 @@ function renderMagiasHTML(f) {
       <div class="hab-titulo">${t('hab.titulo')}</div>
       ${golpe}
       <div class="hab vazia"><div class="hab-efeito">${t('ficha.bebe')}</div></div>
+      <div class="hab vazia"><div class="hab-efeito">${t('ficha.bebe.vd')}</div></div>
     </div>`;
   }
 
-  const linhas = ['ataque', 'forte', 'defesa'].map(cat => {
-    const g = m[cat];
+  /* O repertório COMPLETO, e não só o que já despertou.
+
+     A ficha mostra os quatro lugares sempre, com a magia que cada um
+     vai ter. Uma magia que se sabe que vem é um objectivo; uma que
+     ninguém menciona é uma surpresa que ele nunca vai procurar — e o
+     jogador merece saber que o segundo golpe forte existe muito antes
+     de chegar a Lendário. */
+  const todas = (typeof repertorioCompleto === 'function') ? repertorioCompleto(f) : m;
+  const slots = (typeof MAGIA_SLOTS !== 'undefined') ? MAGIA_SLOTS : ['ataque', 'forte', 'defesa'];
+
+  const linhas = slots.map(cat => {
+    const g = m[cat] || todas[cat];
+    const porChegar = !m[cat] && !!todas[cat];
+
     if (!g) return `<div class="hab vazia">
         <div class="hab-top"><span class="hab-papel">${t('mag.cat.' + cat)}</span></div>
         <div class="hab-efeito">${t('ficha.sem_magia', {
-          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(f.elemento, cat) : '?') })}</div>
+          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(f.elemento, cat === 'forte2' ? 'forte' : cat) : '?') })}</div>
       </div>`;
     // A magia é do avatar desde que nasce e nunca muda. O que pode faltar
     // é Habilidade para a lançar — e isso mostra-se, em vez de esconder a
@@ -165,12 +178,17 @@ function renderMagiasHTML(f) {
        "Defesa" era mentira; a batalha já o diz assim e a ficha tem de
        dizer o mesmo, senão a mesma magia tem dois nomes. */
     const atacaMesmo = (cat === 'defesa' && g.fa);
-    const fam   = atacaMesmo ? 'ataque' : cat;
+    const fam   = atacaMesmo ? 'ataque' : (cat === 'forte2' ? 'forte' : cat);
     const papel = atacaMesmo ? t('mag.cat.defesa_atq') : t('mag.cat.' + cat);
+    // Quando ainda não é dele, diz-se quando passa a ser — e o cadeado
+    // da Habilidade fica calado, que essa não é a razão de agora.
+    const degrau = porChegar && typeof degrauDoSlot === 'function' ? degrauDoSlot(cat) : null;
+    const aviso  = !degrau ? '' : (degrau.fase != null
+      ? t('mag.chega.fase' + degrau.fase) : t('mag.chega.grau' + degrau.grau));
     // A conta que a magia rola. Estava só na batalha, e é a diferença
     // entre "faz dano" e saber quanto.
     const conta = (typeof _pveFormula === 'function') ? _pveFormula(g, f) : null;
-    return `<div class="hab tipo-${fam}${alcanca ? '' : ' trancada'}">
+    return `<div class="hab tipo-${fam}${(alcanca && !porChegar) ? '' : ' trancada'}">
       <div class="hab-top">
         <span class="hab-papel">${papel}</span>
         <span class="hab-custo${g.pm === 0 ? ' livre' : ''}">${custo(g)}</span>
@@ -178,7 +196,8 @@ function renderMagiasHTML(f) {
       <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
       <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
       ${conta ? `<div class="hab-conta">${conta}</div>` : ''}
-      ${alcanca ? '' : `<div class="hab-tranca">🔒 ${t(porque, { h: falta, r: falta })}</div>`}
+      ${porChegar ? `<div class="hab-tranca">⏳ ${aviso}</div>`
+                  : alcanca ? '' : `<div class="hab-tranca">🔒 ${t(porque, { h: falta, r: falta })}</div>`}
     </div>`;
   }).join('');
 

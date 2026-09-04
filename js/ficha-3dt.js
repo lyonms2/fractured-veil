@@ -172,11 +172,35 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
 
   const pontosBase = pontosDoAvatar(raridade, nivel);
 
-  // Vantagem e desvantagem entram na MESMA bolsa: a desvantagem dá
-  // pontos, a vantagem custa, e o que sobra compra as características.
-  // É o que o manual faz — não são dois orçamentos separados.
+  /* Vantagem e desvantagem entram na MESMA bolsa: a desvantagem dá
+     pontos, a vantagem custa, e o que sobra compra as características.
+     É o que o manual faz — não são dois orçamentos separados.
+
+     MAS SÓ A PARTIR DA CRIANÇA. Um recém-nascido não tem virtudes nem
+     defeitos: tem-se de viver um bocado para os ganhar. Nasciam com ele
+     e apareciam na ficha do primeiro dia, o que fazia do bebé um adulto
+     pequeno em vez de um ser por fazer.
+
+     São as MESMAS que ele terá sempre — saem do seed, e o seed não muda.
+     A fase só decide quando aparecem. */
+  const _faseF = (typeof faseFromNivel === 'function')
+    ? faseFromNivel(nivel || 1)
+    : ((nivel || 1) < 5 ? 0 : (nivel || 1) < 10 ? 1 : (nivel || 1) < 17 ? 2 : 3);
   const vd = (typeof sortearVantagens === 'function')
     ? sortearVantagens(seed, pontosBase, elemento) : null;
+
+  /* O QUE A FASE ESCONDE É O PAR, E NÃO O ORÇAMENTO.
+
+     Primeiro não sorteei o par nenhum antes da CRIANÇA, e isso partiu
+     uma coisa que este ficheiro tinha custado a arranjar: a desvantagem
+     DÁ pontos e a vantagem CUSTA, portanto o orçamento mudava ao nível 5
+     e as características DESCIAM em 255 de 204.000 subidas.
+
+     O par sai do seed e é dele desde sempre — o que a infância esconde
+     é a virtude e o defeito, não o corpo com que ele nasceu. Por isso o
+     orçamento conta com eles desde o primeiro dia, e só o par fica
+     guardado até haver quem o mostre. */
+  const vdVisivel = _faseF >= 1 ? vd : null;
   const pontos = vd ? vd.pontos : pontosBase;
 
   const nv     = Math.max(1, nivel || 1);
@@ -288,8 +312,11 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
 
   // As vantagens de reserva dão PV ou PM como se a Resistência fosse
   // maior, sem mexer na R verdadeira.
-  const bonusPV = (vd && vd.vantagem.pvComoR) ? vd.vantagem.pvComoR : 0;
-  const bonusPM = (vd && vd.vantagem.pmComoR) ? vd.vantagem.pmComoR : 0;
+  // O bónus é da vantagem, e o bebé ainda não a tem — por isso lê-se do
+  // par visível. A vida sobe no dia em que ele a ganha, que é um ganho e
+  // não uma regressão.
+  const bonusPV = (vdVisivel && vdVisivel.vantagem.pvComoR) ? vdVisivel.vantagem.pvComoR : 0;
+  const bonusPM = (vdVisivel && vdVisivel.vantagem.pmComoR) ? vdVisivel.vantagem.pmComoR : 0;
   const pv = (c.R + bonusPV) * FICHA_PV_POR_R;
   const pm = (c.R + bonusPM) * FICHA_PM_POR_R;
 
@@ -298,8 +325,8 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
     F: c.F, H: c.H, R: c.R, A: c.A,
     pv, pvMax: pv, pm, pmMax: pm,
     pontos, pontosBase, tecto,
-    vantagem:    vd ? vd.vantagem    : null,
-    desvantagem: vd ? vd.desvantagem : null,
+    vantagem:    vdVisivel ? vdVisivel.vantagem    : null,
+    desvantagem: vdVisivel ? vdVisivel.desvantagem : null,
     elemento, raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
     // Para onde puxa, e de que sexo é. Quem desenha a ficha lê daqui.
