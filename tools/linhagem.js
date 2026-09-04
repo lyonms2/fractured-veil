@@ -29,7 +29,7 @@ const M = new Function('t',
   LINHAS_DA_FASE + NL +
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') + rd('reproducao.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('identidade.js') +
-  `return { arvoreDe,
+  `return { arvoreDe, vigorDe, vigorDoDna, NASC_VIGOR, NASC_VIGOR_FORTE, NASC_VIGOR_FRACO,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
@@ -134,7 +134,7 @@ titulo('CADA ALELO VEIO DE UM DOS PAIS');
     const gM = mae.nascimento.dna.genes, gP = pai.nascimento.dna.genes;
     for (let i = 0; i < 20; i++) {
       const d = M.cruzarDna(mae.nascimento.dna, pai.nascimento.dna, c * 1000 + i);
-      for (const k of M.NASC_CARACS.concat(['cor', 'indole'])) {
+      for (const k of M.NASC_CARACS.concat(['cor', 'indole', 'vigor'])) {
         n += 2;
         if (!(gM[k] || []).includes(d.genes[k][0])) forasteiros++;
         if (!(gP[k] || []).includes(d.genes[k][1])) forasteiros++;
@@ -428,6 +428,65 @@ titulo('O TEMPO DE CHOCO');
   ok(misto > mimado && misto < largado,
      'e os dois pais contam — um só bem tratado não chega',
      'um mimado com um largado dá ' + misto.toFixed(0) + ' h');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('O VIGOR');
+
+/* Era o passivo elemental: cinco tabelas escritas à mão. Passou a ser um
+   gene, e um gene tem de se herdar como os outros — e não mexer no ritmo
+   do jogo, que é o que ele ganhou e não o que ele mudou. */
+{
+  const conta = {};
+  let sem = 0;
+  for (let i = 0; i < 8000; i++) {
+    const a = adulto(60000 + i);
+    const v = M.vigorDe(a);
+    if (!v) { sem++; continue; }
+    conta[v.forte + '→' + v.fraco] = (conta[v.forte + '→' + v.fraco] || 0) + 1;
+  }
+  const pctSem = sem / 8000 * 100;
+  console.log('       ' + Object.keys(conta).length + ' combinações de forte→fraco, e ' +
+              pctSem.toFixed(0) + '% sem vigor nenhum');
+
+  const n = M.NASC_VIGOR.length;
+  ok(Object.keys(conta).length === n * (n - 1),
+     'todas as combinações de forte e fraco chegam a nascer',
+     Object.keys(conta).length + ' de ' + (n * (n - 1)));
+  /* Um quarto sai com os dois alelos iguais, e esses cancelam-se. Não é
+     desperdício: um avatar sem jeito nem defeito também tem de existir,
+     senão toda a colónia tem uma marca. */
+  ok(Math.abs(pctSem - 25) < 3, 'e um quarto nasce sem marca nenhuma',
+     pctSem.toFixed(1) + '% (esperado 25%, que é a hipótese dos dois alelos calharem iguais)');
+}
+
+// Os números são os das tabelas antigas: o ritmo do jogo não se mexeu.
+{
+  let fora = 0, n = 0;
+  for (let i = 0; i < 4000; i++) {
+    const a = adulto(70000 + i);
+    const p = M.vigorDoDna(a.nascimento.dna);
+    const v = M.vigorDe(a);
+    n++;
+    for (const k of ['fome', 'humor', 'energia', 'higiene']) {
+      const esperado = !v ? 1 : (k === v.forte ? M.NASC_VIGOR_FORTE
+                              : k === v.fraco ? M.NASC_VIGOR_FRACO : 1);
+      if (p[k + 'Decay'] !== esperado) fora++;
+    }
+  }
+  ok(fora === 0, 'o forte melhora 15% e o fraco piora 10%, e mais nada se mexe',
+     n.toLocaleString('pt-BR') + ' avatares × 4 medidores');
+
+  // E o que o gene não toca fica mesmo em um.
+  const p = M.vigorDoDna(adulto(70001).nascimento.dna);
+  ok(p.sleepEnergy === 1 && p.vinculoDecay === 1,
+     'o sono e o vínculo ficam de fora — não há gene que lhes pegue',
+     'sleepEnergy ' + p.sleepEnergy + ' · vinculoDecay ' + p.vinculoDecay);
+
+  // Sem certidão, nada: quem nasceu antes disto não tinha este gene.
+  const nu = M.vigorDoDna(null);
+  ok(Object.values(nu).every(x => x === 1),
+     'e um avatar sem DNA não recebe passivo nenhum', 'os seis a 1');
 }
 
 console.log('');

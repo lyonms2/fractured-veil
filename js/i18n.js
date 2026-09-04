@@ -138,12 +138,22 @@
       'falas.elem.Vento':        ['Livre como o vento! 💨','Ninguém me prende! 🌬️','Leve e veloz! 💨','Sou pura leveza! 🌬️'],
       'falas.elem.Sombra':       ['As sombras são minha morada... 🌑','Vejo o que os outros não veem! 🌑','Confortável na escuridão... 🌑','Mistério é meu dom! 🖤'],
 
-      // Passivos elementais
-      'elem.bonus.Fogo':         'Espírito Ardente: humor decai 15% mais devagar, fome 10% mais rápido',
-      'elem.bonus.Água':         'Serenidade das Marés: humor e higiene decaem 15% mais devagar',
-      'elem.bonus.Terra':        'Raízes Profundas: fome decai 15% mais devagar',
-      'elem.bonus.Vento':        'Leveza do Vento: energia decai 15% mais devagar',
-      'elem.bonus.Sombra':       'Ciclo Lunar: energia decai 10% mais devagar e recupera 15% mais rápido dormindo, mas o humor decai 10% mais rápido',
+      /* O VIGOR, que era o passivo elemental.
+
+         Eram cinco frases escritas à mão, uma por elemento. São quatro
+         nomes e uma frase montada: o nome vem do medidor em que ele se
+         aguenta, e a frase diz os dois lados da moeda. */
+      'vigor.titulo':            'Vigor',
+      'vigor.nome.fome':         'Raízes Fundas',
+      'vigor.nome.humor':        'Ânimo Constante',
+      'vigor.nome.energia':      'Fôlego Longo',
+      'vigor.nome.higiene':      'Casca Limpa',
+      'vigor.frase':             '{nome}: {forte} decai 15% mais devagar, {fraco} 10% mais depressa',
+      'vigor.nenhum':            'Sem vigor marcado — os medidores dele decaem todos por igual',
+      'vital.fome':              'a fome',
+      'vital.humor':             'o humor',
+      'vital.energia':           'a energia',
+      'vital.higiene':           'a higiene',
 
       // Fases
       'fases': ['BEBÊ','CRIANÇA','JOVEM','ADULTO'],
@@ -321,7 +331,7 @@
 
       // Misc UI
       'ui.cancel':               'Cancelar',
-      'ui.elem_passive':         'Passivo Elemental',
+      'ui.elem_passive':         'Vigor',
 
       // Egg actions
       'egg.burn.title':          '🔥 Queimar Ovo',
@@ -470,11 +480,17 @@
       'falas.elem.Sombra':       ["Shadows are my home... 🌑","I see what others can't! 🌑","Comfortable in the dark... 🌑","Mystery is my gift! 🖤"],
 
       // Elemental passives
-      'elem.bonus.Fogo':         'Burning Spirit: mood decays 15% slower, hunger 10% faster',
-      'elem.bonus.Água':         'Tidal Serenity: mood and hygiene decay 15% slower',
-      'elem.bonus.Terra':        'Deep Roots: hunger decays 15% slower',
-      'elem.bonus.Vento':        'Wind\'s Lightness: energy decays 15% slower',
-      'elem.bonus.Sombra':       'Lunar Cycle: energy decays 10% slower and recovers 15% faster while sleeping, but mood decays 10% faster',
+      'vigor.titulo':            'Vigor',
+      'vigor.nome.fome':         'Deep Roots',
+      'vigor.nome.humor':        'Steady Spirit',
+      'vigor.nome.energia':      'Long Wind',
+      'vigor.nome.higiene':      'Clean Shell',
+      'vigor.frase':             '{nome}: {forte} decays 15% slower, {fraco} 10% faster',
+      'vigor.nenhum':            'No marked vigor — all its meters decay alike',
+      'vital.fome':              'hunger',
+      'vital.humor':             'mood',
+      'vital.energia':           'energy',
+      'vital.higiene':           'hygiene',
 
       // Phases
       'fases': ['BABY','CHILD','YOUNG','ADULT'],
@@ -646,7 +662,7 @@
 
       // Misc UI
       'ui.cancel':               'Cancel',
-      'ui.elem_passive':         'Elemental Passive',
+      'ui.elem_passive':         'Vigor',
 
       // Egg actions
       'egg.burn.title':          '🔥 Burn Egg',

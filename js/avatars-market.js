@@ -187,7 +187,8 @@ async function openDetail(listingId) {
   const canBuy   = !isMine && mktCristais() >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
   const svgHtml  = gerarSVG(l, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
-  const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento] ? t('elem.bonus.' + l.elemento) : '';
+  // O passivo vem do DNA da listagem, e não do elemento dela.
+  const bonusText = (typeof frasedoVigor === 'function') ? frasedoVigor(l) : '';
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
     <div class="detail-header">

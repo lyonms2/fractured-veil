@@ -626,15 +626,24 @@ function fillCreatureCard() {
   const bonusBlock = document.getElementById('elemBonusBlock');
   const bonusTxt   = document.getElementById('elemBonusTxt');
   const bonusLabel = document.getElementById('elemBonusLabel');
-  // `car` sozinho basta como porteiro: um avatar antigo com um elemento
-  // que já não existe não tem entrada aqui, e o bloco não aparece — que
-  // era exatamente o que o antigo `car?.bonus` fazia.
-  if(bonusBlock && bonusTxt && car) {
-    bonusTxt.textContent              = t('elem.bonus.' + avatar.elemento);
-    bonusTxt.style.color              = car.cor + 'cc';
-    bonusLabel.style.color            = car.cor;
-    bonusBlock.style.borderColor      = car.cor + '33';
-    bonusBlock.style.backgroundColor  = car.cor + '0d';
+  /* O porteiro era o `car` — a entrada do elemento na tabela. Um avatar
+     com um elemento que já não existisse não tinha bloco.
+
+     Passa a ser a CERTIDÃO: o que este bloco mostra é o vigor, e o vigor
+     vem do DNA. Quem tem DNA tem vigor para mostrar (nem que seja "sem
+     marca nenhuma"); quem não tem nasceu antes disto e não tem nada que
+     dizer aqui. */
+  if(bonusBlock && bonusTxt && avatar && avatar.nascimento) {
+    bonusTxt.textContent = (typeof frasedoVigor === 'function')
+      ? frasedoVigor(avatar) : '';
+    // E a cor é a do bicho, e não a do elemento dele.
+    const _c = (typeof corDoAvatar === 'function') ? corDoAvatar(avatar)
+             : (car ? car.cor : '#8b5cf6');
+    bonusTxt.style.color              = _c;
+    bonusLabel.style.color            = _c;
+    bonusBlock.style.borderColor      = _c;
+    bonusBlock.style.backgroundColor  = 'rgba(255,255,255,.03)';
+    bonusBlock.style.opacity          = '.9';
     bonusBlock.style.display          = '';
   } else if(bonusBlock) {
     bonusBlock.style.display = 'none';

@@ -303,42 +303,29 @@ function updateDirtyVisuals() {
   screen.classList.toggle('dirty', dirtyLevel >= 1);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// BÔNUS ELEMENTAIS PASSIVOS
-// Retorna multiplicadores para cada stat baseado no elemento do avatar.
-// Todos os 9 elementos têm um bônus distinto.
-// Multiplicador < 1.0 = decay mais lento (bônus positivo).
-// Multiplicador > 1.0 = recuperação mais rápida (bônus positivo).
-// ═══════════════════════════════════════════════════════════════════
-function getElementoBonus(quem) {
-  const elem = (quem || avatar)?.elemento;
-  switch(elem) {
-    case 'Fogo':
-      // Espírito Ardente — metabolismo acelerado compensado por ânimo elevado
-      return { fomeDecay: 1.10, humorDecay: 0.85, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Água':
-      // Serenidade das Marés — humor se mantém, higiene melhor
-      return { fomeDecay: 1.0, humorDecay: 0.85, energiaDecay: 1.0, higieneDecay: 0.85, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Terra':
-      // Raízes Profundas — fome decai mais devagar
-      return { fomeDecay: 0.85, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Vento':
-      // Leveza do Vento — energia decai mais devagar
-      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 0.85, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-    case 'Sombra':
-      // Ciclo Lunar — dorme melhor e gasta menos energia acordada, mas o
-      // humor cai mais depressa: é o único elemento que paga por aquilo
-      // que ganha, tirando o Fogo.
-      //
-      // Havia aqui mais DOIS return por baixo deste, inalcançáveis, de
-      // versões anteriores — um deles dava higiene 0.90, que é o que o
-      // comentário antigo prometia com "higiene estável". Ficam os
-      // valores que estavam mesmo a correr: mexer nisto é rebalancear a
-      // Sombra, e isso é decisão de desenho, não limpeza de código.
-      return { fomeDecay: 1.0, humorDecay: 1.10, energiaDecay: 0.90, higieneDecay: 1.0, sleepEnergy: 1.15, vinculoDecay: 1.0 };
-    default:
-      return { fomeDecay: 1.0, humorDecay: 1.0, energiaDecay: 1.0, higieneDecay: 1.0, sleepEnergy: 1.0, vinculoDecay: 1.0 };
-  }
+// ════════════════════════════════════════════════════════════════
+// O PASSIVO — O QUE O CORPO DELE AGUENTA MELHOR
+//
+// Era o BÔNUS ELEMENTAL: cinco tabelas escritas à mão, uma por elemento,
+// a dizer que o de Terra tinha menos fome e o de Vento menos sono. Foi o
+// último sítio onde o elemento decidia alguma coisa a sério no jogo.
+//
+// Passou para o DNA (genes.vigor, em js/nascimento.js): cada avatar tem
+// um medidor em que se aguenta e outro em que não, e os dois viajam para
+// os filhos. Os números são os mesmos que as tabelas usavam — 15% mais
+// devagar num, 10% mais depressa noutro — portanto o ritmo do jogo não
+// se mexeu; mudou de quem ele depende.
+//
+// Um avatar sem certidão — nascido antes disto existir — recebe tudo a
+// um. Não tinha este gene, e inventar-lhe um agora era dar-lhe um corpo
+// que ele nunca teve.
+// ════════════════════════════════════════════════════════════════
+function passivoDe(quem) {
+  const s = quem || (typeof avatar !== 'undefined' ? avatar : null);
+  const dna = s && s.nascimento && s.nascimento.dna;
+  if (dna && typeof vigorDoDna === 'function') return vigorDoDna(dna);
+  return { fomeDecay: 1, humorDecay: 1, energiaDecay: 1,
+           higieneDecay: 1, sleepEnergy: 1, vinculoDecay: 1 };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -398,7 +385,7 @@ function viverTodos() {
     // inventário do avatar aberto, e aplicá-lo aos outros dava a todos
     // o amuleto de um só.
     const d  = rarityBonus(s).decay;
-    const eb = getElementoBonus(s);
+    const eb = passivoDe(s);
     const v  = s.vitals;
 
     if (s.sleeping) {
@@ -526,7 +513,7 @@ function gameTick() {
   if (typeof fzAtualizarVitais === 'function') fzAtualizarVitais();
 
   const _d  = rarityBonus().decay;
-  const _eb = getElementoBonus(); // bônus elementais passivos
+  const _eb = passivoDe();   // o passivo que vem do DNA dele
 
   // ── RECUPERAÇÃO / DECAY DE ENERGIA ──
   if(sleeping) {

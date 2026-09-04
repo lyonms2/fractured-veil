@@ -104,6 +104,31 @@ const NASC_SEXO_ALELOS = ['X', 'Y'];
    filhos. */
 const NASC_INDOLES = ['guarda', 'fonte', 'lamina'];
 
+/* ── O VIGOR ──
+
+   O que o corpo dele aguenta melhor, e o que aguenta pior.
+
+   Isto era o PASSIVO ELEMENTAL: cinco tabelas escritas à mão, uma por
+   elemento, a dizer que o de Terra tinha menos fome e o de Vento menos
+   sono. Os elementos saíram do jogo e a ideia não — um bicho aguentar-se
+   melhor numa coisa e pior noutra é do que o tamagotchi vive.
+
+   Par de alelos, como tudo o resto neste ficheiro: o primeiro diz onde
+   ele é forte, o segundo onde é fraco. Saírem iguais, cancelam-se — e
+   nasce um avatar sem jeito nem defeito nenhum, que também tem de
+   existir. E os dois viajam para os filhos.
+
+   São os quatro medidores que decaem sozinhos. A saúde fica de fora
+   porque não decai por si: cai por doença e por descuido dos outros
+   quatro, e um gene a mexer nela era um gene a mexer nas consequências
+   em vez de nas causas. */
+const NASC_VIGOR = ['fome', 'humor', 'energia', 'higiene'];
+
+// Quanto o forte melhora e o fraco piora. São os números que as tabelas
+// dos elementos já usavam: 15% mais devagar, 10% mais depressa.
+const NASC_VIGOR_FORTE = 0.85;
+const NASC_VIGOR_FRACO = 1.10;
+
 /* Do bruto de uma característica (0..15) para o peso no sorteio (1..6).
 
    Seis é o peso que a característica de foco já tinha antes de o DNA
@@ -168,6 +193,10 @@ function gerarDna(elemento, origem, seed) {
   // O feitio. Dois alelos, sorteados nas três índoles.
   const n = NASC_INDOLES.length;
   genes.indole = [Math.floor(rnd() * n), Math.floor(rnd() * n)];
+
+  // E o vigor: onde ele aguenta, e onde não aguenta.
+  const nv = NASC_VIGOR.length;
+  genes.vigor = [Math.floor(rnd() * nv), Math.floor(rnd() * nv)];
 
   return { v: 2, elemento: elemento || 'Fogo', genes };
 }
@@ -240,6 +269,57 @@ function indoleDominante(dna) {
 function indoleDe(slot) {
   const dna = slot && slot.nascimento && slot.nascimento.dna;
   return dna ? indoleDoDna(dna) : null;
+}
+
+/* O passivo deste avatar, na forma que o relógio do jogo espera.
+
+   Devolve sempre os seis multiplicadores, mesmo os que este gene não
+   mexe — quem consome não tem de saber quais são quais, e no dia em que
+   houver um gene para o sono a forma já lá está.
+
+   Sem DNA devolve tudo a um: um avatar nascido antes disto existir não
+   tinha este gene, e inventar-lhe um agora era dar-lhe um corpo que ele
+   nunca teve. */
+function vigorDoDna(dna) {
+  const base = { fomeDecay: 1, humorDecay: 1, energiaDecay: 1,
+                 higieneDecay: 1, sleepEnergy: 1, vinculoDecay: 1 };
+  const par = dna && dna.genes && dna.genes.vigor;
+  if (!Array.isArray(par)) return base;
+
+  const forte = NASC_VIGOR[par[0] % NASC_VIGOR.length];
+  const fraco = NASC_VIGOR[par[1] % NASC_VIGOR.length];
+  // Iguais anulam-se: não é forte nem fraco em nada.
+  if (forte === fraco) return base;
+
+  base[forte + 'Decay'] = NASC_VIGOR_FORTE;
+  base[fraco + 'Decay'] = NASC_VIGOR_FRACO;
+  return base;
+}
+
+/* Os dois medidores, por nome, para quem quer escrever a frase.
+   Devolve null quando o avatar não tem vigor nenhum. */
+function vigorDe(slot) {
+  const dna = slot && slot.nascimento && slot.nascimento.dna;
+  const par = dna && dna.genes && dna.genes.vigor;
+  if (!Array.isArray(par)) return null;
+  const forte = NASC_VIGOR[par[0] % NASC_VIGOR.length];
+  const fraco = NASC_VIGOR[par[1] % NASC_VIGOR.length];
+  return forte === fraco ? null : { forte, fraco };
+}
+
+/* A frase do vigor, para a interface. Vive aqui e não em cada ecrã que
+   a mostra: eram duas cópias antes (a ficha do avatar e o cartão do
+   marketplace), e duas cópias de uma frase divergem como qualquer
+   outra coisa. */
+function frasedoVigor(slot) {
+  const v = vigorDe(slot);
+  if (typeof t !== 'function') return '';
+  if (!v) return t('vigor.nenhum');
+  return t('vigor.frase', {
+    nome:  t('vigor.nome.' + v.forte),
+    forte: t('vital.' + v.forte),
+    fraco: t('vital.' + v.fraco),
+  });
 }
 
 /* O sexo, lido do par. Um DNA da primeira versão não tem o gene — e

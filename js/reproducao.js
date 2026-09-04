@@ -160,6 +160,13 @@ function cruzarDna(dnaA, dnaB, seed) {
   // E o feitio.
   genes.indole = [_umDoPar(gA.indole || [0, 0], rnd), _umDoPar(gB.indole || [0, 0], rnd)];
 
+  /* E o vigor — o que o corpo dele aguenta melhor e pior.
+
+     Um filho de mãe que se aguenta na fome com pai que se aguenta no
+     humor pode sair com qualquer das duas, ou com o defeito de um e a
+     virtude do outro. É a mesma regra de sempre: um alelo de cada lado. */
+  genes.vigor = [_umDoPar(gA.vigor || [0, 0], rnd), _umDoPar(gB.vigor || [0, 0], rnd)];
+
   /* O elemento vem de um dos pais, à sorte. Já não escolhe magia
      nenhuma — as gavetas passaram a ser por papel — e o que dele resta
      é nome e sabor. Herda-se na mesma: um filho puxar o elemento de um

@@ -12,11 +12,12 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-// O texto do passivo vive SÓ no i18n ('elem.bonus.<Elemento>'). Havia
-// aqui uma segunda cópia, num campo `bonus`, que ninguém chegava a
-// mostrar — a tela a usava apenas para decidir se desenhava o bloco e
-// tirava o texto do t(). Resultado: a cópia apodrecia sem se ver, e a
-// da Sombra já estava desatualizada em relação ao motor.
+/* O que sobrou do elemento: uma cor, um emoji e dois enfeites.
+
+   Já não decide nada. As magias saem por papel, as cores saem do DNA, e
+   o passivo — o último a sair — também: é hoje o genes.vigor
+   (js/nascimento.js). Isto fica para dar nome e sabor, e para pintar os
+   avatares nascidos antes de haver cores. */
 const CARACTERISTICAS_ELEMENTAIS = {
   'Fogo':         { cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
   'Água':         { cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
@@ -177,9 +178,10 @@ function determinarRaridade() {
 // Eletricidade (INT) ir para Água (INT) e não para Vento, que seria a
 // escolha temática óbvia.
 //
-// O vinculoDecay que anda pelo getElementoBonus, ligado mas a 1.0 em
-// todos os cinco, é resto de um destes quatro — ficou o campo e foi-se
-// quem o usava.
+// O vinculoDecay que anda pelo passivo, ligado mas a 1.0 em toda a
+// gente, é resto de um destes quatro — ficou o campo e foi-se quem o
+// usava. Fica na forma que o passivo devolve para o dia em que houver um
+// gene que lhe pegue.
 // ═══════════════════════════════════════════════════════════════════
 const ELEMENTO_LEGADO = {
   'Eletricidade': 'Água',    // INT primária → INT primária
