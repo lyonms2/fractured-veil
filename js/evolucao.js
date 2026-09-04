@@ -56,8 +56,10 @@ function _evoLinhasDaFicha() {
   const nvAntes = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
   let antes, agora;
   try {
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nvAntes);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nivel);
+    // A certidão vai nas duas: sem ela a ficha não tem índole, e a
+    // comparação do antes com o depois era entre dois avatares diferentes.
+    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nvAntes, avatar.nascimento);
+    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nivel, avatar.nascimento);
   } catch (_) { return []; }
 
   const carac = [['F', 'evo.f'], ['H', 'evo.h'], ['R', 'evo.r'], ['A', 'evo.a'],

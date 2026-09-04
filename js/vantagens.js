@@ -16,15 +16,29 @@
 // fez por ele, e paga-a nos números.
 // ═══════════════════════════════════════════════════════════════════
 
+/* ── A FAMÍLIA DE CADA UMA ──
+
+   Os três grupos já estavam aqui, em comentários: Defensivas, Recursos,
+   Ofensivas e de manobra. Passam a estar escritos em cada entrada,
+   porque agora alguém os lê — o gene da índole (js/nascimento.js)
+   inclina o sorteio para a família do feitio do avatar.
+
+   Um comentário não se pode ler em código, e um agrupamento que exista
+   só no comentário é o primeiro a divergir do que o código faz.
+
+   As desvantagens seguem a mesma divisão pelo avesso: guarda é o que
+   abre buracos na defesa, fonte é o que come recursos, lâmina é o que
+   estraga o golpe. Assim uma índole marcada traz consigo a virtude E o
+   defeito do mesmo terreno — o bruto bate mais e descontrola-se mais. */
 const VANTAGENS = {
   // ── Defensivas ──
-  couraca_elemental: { custo: 1, contraElemento: true, armaduraDobra: true },
-  reflexo_defensivo: { custo: 1, pm: 2, habilidadeDobra: true },
-  reflexo_espelhado: { custo: 2, pm: 2, habilidadeDobra: true, devolve: true },
+  couraca_elemental: { familia: 'guarda', custo: 1, contraElemento: true, armaduraDobra: true },
+  reflexo_defensivo: { familia: 'guarda', custo: 1, pm: 2, habilidadeDobra: true },
+  reflexo_espelhado: { familia: 'guarda', custo: 2, pm: 2, habilidadeDobra: true, devolve: true },
 
   // ── Recursos ──
-  folego_extra:      { custo: 1, pvComoR: 2 },
-  fonte_extra:       { custo: 1, pmComoR: 2 },
+  folego_extra:      { familia: 'fonte', custo: 1, pvComoR: 2 },
+  fonte_extra:       { familia: 'fonte', custo: 1, pmComoR: 2 },
   /* Uma vez por batalha, e não uma vez por turno.
      Custava 2 PM e devolvia a vida TODA, sem limite nenhum de usos: um
      avatar com 30 PM curava-se quinze vezes, e a política do motor pega
@@ -35,39 +49,39 @@ const VANTAGENS = {
      E ajuda o outro lado do problema: as lutas de nível alto já custam a
      acabar dentro dos 60 turnos, e curas sem fim empurravam para o
      empate. Para permitir duas, é este número. */
-  segundo_folego:    { custo: 2, pm: 2, curaTudo: true, gastaTurno: true, maxUsos: 1 },
-  cura_perpetua:     { custo: 3, pvPorTurno: 1 },
+  segundo_folego:    { familia: 'fonte', custo: 2, pm: 2, curaTudo: true, gastaTurno: true, maxUsos: 1 },
+  cura_perpetua:     { familia: 'fonte', custo: 3, pvPorTurno: 1 },
 
   // ── Ofensivas e de manobra ──
-  passo_rapido:      { custo: 1, bonusEsquiva: 1 },
-  reserva_oculta:    { custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
-  toque_paralisante: { custo: 1, pm: 2, paralisa: true },
-  afinidade_profunda:{ custo: 1, metadeCustoProprioElemento: true },
+  passo_rapido:      { familia: 'guarda', custo: 1, bonusEsquiva: 1 },
+  reserva_oculta:    { familia: 'fonte', custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
+  toque_paralisante: { familia: 'lamina', custo: 1, pm: 2, paralisa: true },
+  afinidade_profunda:{ familia: 'fonte', custo: 1, metadeCustoProprioElemento: true },
 
   // Ataque Especial: 1 PM compra F+2 num único golpe. É uma manobra,
   // não uma ação à parte — soma-se ao murro do turno.
-  golpe_carregado:   { custo: 1, pm: 1, bonusFGolpe: 2 },
+  golpe_carregado:   { familia: 'lamina', custo: 1, pm: 1, bonusFGolpe: 2 },
 
   // Ataque Múltiplo: vários golpes de Força na mesma rodada, 1 PM cada,
   // até ao limite da Habilidade. Cada um rola a sua própria FA contra a
   // FD do inimigo — não se somam, que é o que trava a vantagem.
-  golpe_encadeado:   { custo: 1, pmPorGolpe: 1, golpesMultiplos: true },
+  golpe_encadeado:   { familia: 'lamina', custo: 1, pmPorGolpe: 1, golpesMultiplos: true },
 
   // Toque de Energia: FA = Armadura + 1d + PMs gastos, e a Habilidade
   // NÃO entra. Um ataque para quem tem a Armadura alta e a Força baixa,
   // que de outra forma não teria como ferir ninguém.
-  toque_ardente:     { custo: 1, toqueEnergia: true },
+  toque_ardente:     { familia: 'lamina', custo: 1, toqueEnergia: true },
 
   // Resistência à Magia: +2 nos testes para ignorar efeitos de magia.
   // O manual exclui veneno de propósito — contra isso não vale.
-  alma_rija:         { custo: 1, bonusTesteMagia: 2, excetoVeneno: true },
+  alma_rija:         { familia: 'guarda', custo: 1, bonusTesteMagia: 2, excetoVeneno: true },
 
   // Magia Irresistível: quem tenta resistir às tuas magias leva −1.
-  magia_perfurante:  { custo: 1, penalidadeTesteAlvo: 1 },
+  magia_perfurante:  { familia: 'lamina', custo: 1, penalidadeTesteAlvo: 1 },
 
   // Energia Vital: 2 PV valem 1 PM. Continuas a lançar depois de os PM
   // acabarem, a pagar com o corpo.
-  sangue_por_magia:  { custo: 2, pvComoPM: 2 },
+  sangue_por_magia:  { familia: 'fonte', custo: 2, pvComoPM: 2 },
 };
 
 // As desvantagens são todas de COMBATE, e é de propósito. Houve duas
@@ -77,33 +91,33 @@ const VANTAGENS = {
 // seriam pagas numa moeda diferente daquela em que o ponto foi gasto.
 // Se um dia voltarem, será numa bolsa própria do tamagotchi.
 const DESVANTAGENS = {
-  ferida_antiga:  { custo: -2, contraElemento: true, armaduraZero: true },
-  sina_cobradora: { custo: -1, danoPorMagia: 1 },
-  sangue_quente:  { custo: -1, furiaAoSofrerDano: true },
-  limiar_baixo:   { custo: -2, semMagiaAbaixoDeMetade: true },
+  ferida_antiga:  { familia: 'guarda', custo: -2, contraElemento: true, armaduraZero: true },
+  sina_cobradora: { familia: 'fonte', custo: -1, danoPorMagia: 1 },
+  sangue_quente:  { familia: 'lamina', custo: -1, furiaAoSofrerDano: true },
+  limiar_baixo:   { familia: 'fonte', custo: -2, semMagiaAbaixoDeMetade: true },
 
   // Assombrado: no início de cada batalha rola-se 1d. Saindo 4, 5 ou 6,
   // a assombração apareceu: −1 em TUDO e magia ao dobro do preço, até
   // ao fim da luta. É a única que muda de batalha para batalha.
-  sombra_faminta: { custo: -2, assombraEm: 4, penalidadeTudo: 1, dobraCustoMagia: true },
+  sombra_faminta: { familia: 'fonte', custo: -2, assombraEm: 4, penalidadeTudo: 1, dobraCustoMagia: true },
 
   // Fetiche: ao sofrer dano faz-se um teste de Habilidade; falhando,
   // o foco cai e não há magia nenhuma até se gastar um turno a apanhá-lo.
-  foco_fragil:    { custo: -1, perdeFocoAoSofrerDano: true },
+  foco_fragil:    { familia: 'lamina', custo: -1, perdeFocoAoSofrerDano: true },
 
   // Ponto Fraco: quem já te viu lutar sabe onde bater. O adversário
   // ganha H+1 contra ti — na Força de Ataque dele e na tua esquiva.
-  brecha_conhecida: { custo: -1, inimigoGanhaH: 1 },
+  brecha_conhecida: { familia: 'guarda', custo: -1, inimigoGanhaH: 1 },
 
   // Restrição de Poder: contra um elemento, a magia custa o dobro.
-  veia_travada:   { custo: -1, contraElemento: true, dobraCustoMagia: true },
+  veia_travada:   { familia: 'fonte', custo: -1, contraElemento: true, dobraCustoMagia: true },
 
   // Poder Vergonhoso (Constrangedor): a magia sai com Força de Ataque −1.
-  conjuro_desajeitado: { custo: -1, faMagiaMenos: 1 },
+  conjuro_desajeitado: { familia: 'lamina', custo: -1, faMagiaMenos: 1 },
 
   // Poder Vergonhoso (Agradável): é tudo tão bonito que mal faz mal.
   // O adversário ganha A+1 e R+1 contra ti.
-  brilho_inofensivo: { custo: -1, inimigoGanhaA: 1, inimigoGanhaR: 1 },
+  brilho_inofensivo: { familia: 'guarda', custo: -1, inimigoGanhaA: 1, inimigoGanhaR: 1 },
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -127,18 +141,43 @@ function _vdRng(seed) {
   };
 }
 
-function sortearVantagens(seed, pontosBase, elemento) {
+/* Um sorteio com o dedo na balança.
+
+   Escolhe da lista, mas cada entrada leva o peso da sua família. Com
+   pesos todos iguais — um avatar sem gene de índole — isto é o sorteio
+   limpo de sempre, e é essa a razão de ser feito assim em vez de com
+   uma escolha à parte para cada caso. */
+function _vdEscolher(ids, tabela, pesos, rnd) {
+  if (!ids.length) return null;
+  const peso = k => (pesos && pesos[tabela[k].familia]) || 1;
+  const total = ids.reduce((t, k) => t + peso(k), 0);
+  let alvo = rnd(1, total);
+  for (const k of ids) { alvo -= peso(k); if (alvo <= 0) return k; }
+  return ids[ids.length - 1];
+}
+
+function sortearVantagens(seed, pontosBase, elemento, indole) {
   const rnd = _vdRng((seed || 0) ^ 0x9C);
 
+  /* A ÍNDOLE INCLINA, E NÃO DECIDE.
+
+     Vem do gene (indoleDoDna, em js/nascimento.js) e chega aqui em
+     pesos: um avatar de feitio lâmina tem quatro vezes mais hipóteses
+     de sair com uma vantagem ofensiva do que com uma de guarda — mas
+     sai com uma de guarda uma vez em cada tantas, e é isso que faz
+     dois irmãos do mesmo feitio não serem o mesmo avatar.
+
+     A desvantagem sai da MESMA família por peso, e não por regra: quem
+     nasce para bater tende a trazer os defeitos de quem bate. */
   const idsD = Object.keys(DESVANTAGENS);
-  const idD  = idsD[rnd(0, idsD.length - 1)];
+  const idD  = _vdEscolher(idsD, DESVANTAGENS, indole, rnd);
   const desv = DESVANTAGENS[idD];
 
   // Quanto há para gastar depois de a desvantagem pagar
   const bolsa = pontosBase - desv.custo;          // custo é negativo
   const idsV = Object.keys(VANTAGENS)
     .filter(k => bolsa - VANTAGENS[k].custo >= VD_PONTOS_MINIMOS);
-  const idV  = idsV.length ? idsV[rnd(0, idsV.length - 1)] : 'passo_rapido';
+  const idV  = _vdEscolher(idsV, VANTAGENS, indole, rnd) || 'passo_rapido';
   const vant = VANTAGENS[idV];
 
   // As que agem contra um elemento escolhem qual — nunca o próprio, que
@@ -155,5 +194,5 @@ function sortearVantagens(seed, pontosBase, elemento) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { VANTAGENS, DESVANTAGENS, sortearVantagens, VD_PONTOS_MINIMOS };
+  module.exports = { VANTAGENS, DESVANTAGENS, sortearVantagens, VD_PONTOS_MINIMOS, _vdEscolher };
 }

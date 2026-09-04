@@ -186,8 +186,12 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   const _faseF = (typeof faseFromNivel === 'function')
     ? faseFromNivel(nivel || 1)
     : ((nivel || 1) < 5 ? 0 : (nivel || 1) < 10 ? 1 : (nivel || 1) < 17 ? 2 : 3);
+  // O feitio do avatar inclina qual virtude e qual defeito lhe saem.
+  // Sem certidão vai nulo, e aí o sorteio é o limpo de sempre.
+  const _indole = (typeof indoleDoDna === 'function' && nascimento && nascimento.dna)
+    ? indoleDoDna(nascimento.dna) : null;
   const vd = (typeof sortearVantagens === 'function')
-    ? sortearVantagens(seed, pontosBase, elemento) : null;
+    ? sortearVantagens(seed, pontosBase, elemento, _indole) : null;
 
   /* O QUE A FASE ESCONDE É O PAR, E NÃO O ORÇAMENTO.
 
@@ -329,7 +333,10 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
     desvantagem: vdVisivel ? vdVisivel.desvantagem : null,
     elemento, raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
-    // Para onde puxa, e de que sexo é. Quem desenha a ficha lê daqui.
+    // Para onde puxa, de que sexo é, e com que feitio. Quem desenha a
+    // ficha lê daqui.
+    indole: (typeof indoleDominante === 'function' && nascimento && nascimento.dna)
+      ? indoleDominante(nascimento.dna) : null,
     vocacao,
     sexo: (typeof sexoDoDna === 'function' && nascimento && nascimento.dna)
       ? sexoDoDna(nascimento.dna, seed)

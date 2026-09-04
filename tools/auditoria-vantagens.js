@@ -772,7 +772,12 @@ A.ver('as duas desvantagens de tamagotchi já não estão no sorteio',
 
 // ── nenhuma propriedade por tratar ──
 {
-  const tratadas = new Set(['custo','pm','elemento','id','contraElemento','armaduraDobra','armaduraZero',
+  /* O 'familia' não é mecânica de combate e por isso entra aqui: nenhuma
+     linha do motor o lê, e não deve ler. Serve ao NASCIMENTO — o gene
+     da índole (js/nascimento.js) inclina o sorteio para a família do
+     feitio do avatar. Fica anotado para o próximo que passe por aqui
+     não o tomar por efeito esquecido. */
+  const tratadas = new Set(['custo','pm','elemento','id','familia','contraElemento','armaduraDobra','armaduraZero',
     'habilidadeDobra','devolve','pvComoR','pmComoR','curaTudo','gastaTurno','pvPorTurno','bonusEsquiva',
     'subirCarac','maxTotal','paralisa','metadeCustoProprioElemento','danoPorMagia','furiaAoSofrerDano',
     // Quantas vezes o Segundo Fôlego serve numa batalha. Provado em

@@ -792,8 +792,8 @@ function _luGanho(nv) {
   // Subiu um ponto: descobre QUAL característica levou com ele.
   let antes, agora;
   try {
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv - 1);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv);
+    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv - 1, avatar.nascimento);
+    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv, avatar.nascimento);
   } catch (_) { return; }
 
   const nomes = { F: 'evo.f', H: 'evo.h', R: 'evo.r', A: 'evo.a', pv: 'evo.pv', pm: 'evo.pm' };

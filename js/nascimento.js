@@ -81,6 +81,29 @@ const NASC_ALELOS = {
    sorteio que as outras características. Sem regra à parte. */
 const NASC_SEXO_ALELOS = ['X', 'Y'];
 
+/* ── A ÍNDOLE ──
+
+   O DNA inclinava as quatro características e mais nada. As magias, a
+   Vantagem e a Desvantagem saíam do seed — sorteio limpo, sem genética
+   por trás — e por isso dois irmãos nunca poderiam parecer-se em nada
+   além dos números.
+
+   A índole é o gene que trata disso. Três feitios:
+
+     GUARDA   aguenta e protege — defesas, escudos, o que segura o golpe
+     FONTE    dura e sustenta — cura, reservas, magia mantida ao turno
+     LÂMINA   bate — dano, e o que abre caminho para ele
+
+   Não são classes: um GUARDA não está proibido de nascer com a magia
+   mais violenta do elemento dele. É só menos provável — os pesos
+   inclinam o sorteio, como inclinam o dos atributos.
+
+   Par de alelos, como tudo o resto: o dominante conta a dobrar e o
+   recessivo conta uma vez, portanto um avatar de dois alelos iguais é
+   mais extremo que um de dois diferentes. E os dois viajam para os
+   filhos. */
+const NASC_INDOLES = ['guarda', 'fonte', 'lamina'];
+
 /* Do bruto de uma característica (0..15) para o peso no sorteio (1..6).
 
    Seis é o peso que a característica de foco já tinha antes de o DNA
@@ -142,6 +165,10 @@ function gerarDna(elemento, origem, seed) {
   const [X, Y] = NASC_SEXO_ALELOS;
   genes.sexo = [X, rnd() < 0.5 ? X : Y];
 
+  // O feitio. Dois alelos, sorteados nas três índoles.
+  const n = NASC_INDOLES.length;
+  genes.indole = [Math.floor(rnd() * n), Math.floor(rnd() * n)];
+
   return { v: 2, elemento: elemento || 'Fogo', genes };
 }
 
@@ -179,6 +206,40 @@ function tendenciaDoDna(dna) {
 function vocacaoDoDna(dna) {
   const t = tendenciaDoDna(dna);
   return NASC_CARACS.slice().sort((a, b) => t[b] - t[a] || NASC_CARACS.indexOf(a) - NASC_CARACS.indexOf(b));
+}
+
+/* Os pesos de cada índole, para o sorteio.
+
+   Cada índole começa em 1 — nenhuma fica impossível, por mais marcado
+   que seja o feitio — e o par acrescenta: o dominante vale dois e o
+   recessivo vale um. Um avatar [lâmina, lâmina] fica em 1/1/4; um
+   [lâmina, guarda] fica em 3/1/2. O primeiro é um bruto; o segundo é
+   sobretudo um guarda que também bate.
+
+   Sem gene — um avatar do jogo antigo — devolve pesos iguais, que é o
+   sorteio limpo de sempre. */
+function indoleDoDna(dna) {
+  const par = dna && dna.genes && dna.genes.indole;
+  const p = {};
+  for (const k of NASC_INDOLES) p[k] = 1;
+  if (!Array.isArray(par)) return p;
+  const dom = NASC_INDOLES[par[0] % NASC_INDOLES.length];
+  const rec = NASC_INDOLES[par[1] % NASC_INDOLES.length];
+  p[dom] += 2;
+  p[rec] += 1;
+  return p;
+}
+
+/* A índole que mais pesa, para se poder mostrar. Empates ficam pela
+   ordem guarda–fonte–lâmina, que é estável. */
+function indoleDominante(dna) {
+  const p = indoleDoDna(dna);
+  return NASC_INDOLES.reduce((a, b) => p[b] > p[a] ? b : a);
+}
+
+function indoleDe(slot) {
+  const dna = slot && slot.nascimento && slot.nascimento.dna;
+  return dna ? indoleDoDna(dna) : null;
 }
 
 /* O sexo, lido do par. Um DNA da primeira versão não tem o gene — e
@@ -255,6 +316,9 @@ function nascer(opts) {
        leitura guardada é uma segunda cópia à espera de divergir da
        primeira. Quem a quiser chama tendenciaDoDna(dna). */
     sexo: sexoDoDna(dna, o.seed),
+    // O feitio, expresso. Como o sexo: copia-se por ser um nome curto
+    // que a interface quer dizer, e não uma conta que possa divergir.
+    indole: indoleDominante(dna),
     // As cores expressas, copiadas do DNA para não ser preciso ir lá
     // dentro só para saber de que cor ele nasceu.
     corPrincipal:  dna.genes.cor ? dna.genes.cor[0] : 0,

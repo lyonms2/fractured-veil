@@ -148,23 +148,34 @@ titulo('O ORÇAMENTO NÃO SE MEXEU');
 
 // A tendência muda ONDE os pontos caem. Se mudasse quantos são, tinha
 // mexido no balanceamento do combate sem ninguém pedir.
-let orcamentoQuebrado = 0, somaComDna = 0, somaSemDna = 0, n2 = 0;
+/* O QUE O DNA NÃO PODE FAZER É PAGAR PONTOS.
+
+   Isto comparava o total FINAL, e passou a falhar quando a índole entrou:
+   o feitio inclina qual virtude e qual defeito saem, elas custam preços
+   diferentes, e portanto o total final mexe-se. Não é defeito — é a
+   mesma variação que o seed já dava, só que distribuída de outra maneira.
+
+   O que tem de ficar de pé é o ORÇAMENTO BASE: os pontos que o nível
+   dá, antes de virtude e defeito mexerem neles. Esse o DNA não toca, e
+   é dele que sai a raridade. */
+let baseQuebrada = 0, somaComDna = 0, somaSemDna = 0, n2 = 0;
 for (let i = 0; i < 5000; i++) {
   const s = nascido(i * 13 + 5);
   for (const nv of [1, 10, 20, 35]) {
     const com = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', nv, s.nascimento);
     const sem = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', nv, null);
-    if (com.pontos !== sem.pontos) orcamentoQuebrado++;
+    if (com.pontosBase !== sem.pontosBase) baseQuebrada++;
     somaComDna += CARACS.reduce((t, k) => t + com[k], 0);
     somaSemDna += CARACS.reduce((t, k) => t + sem[k], 0);
     n2++;
   }
 }
-ok(orcamentoQuebrado === 0, 'os pontos do avatar são os mesmos com DNA e sem ele',
+ok(baseQuebrada === 0, 'o orçamento base não depende do DNA — vem só do nível',
    n2.toLocaleString('pt-BR') + ' fichas comparadas');
 ok(Math.abs(somaComDna - somaSemDna) / n2 < 0.35,
-   'a soma das características quase não se move',
+   'e a soma das características quase não se move',
    (somaComDna / n2).toFixed(2) + ' com DNA · ' + (somaSemDna / n2).toFixed(2) + ' sem');
+
 
 // Subir de nível nunca pode baixar uma característica. Já custou um
 // defeito antes, e os pesos novos são a ocasião perfeita para o repetir.
@@ -223,5 +234,82 @@ console.log('         Não é desta tarefa: quem decide o preço da proveniênci
 console.log('         é a progressão. Fica medido para essa conversa.');
 
 console.log('\n─────────────────────────────');
+// ════════════════════════════════════════════════════════════════
+titulo('A ÍNDOLE');
+
+// Quantos nascem de cada feitio.
+{
+  const conta = {};
+  for (let i = 0; i < N; i++) {
+    const s = nascido(i * 41 + 5);
+    const d = M.indoleDominante(s.nascimento.dna);
+    conta[d] = (conta[d] || 0) + 1;
+  }
+  console.log('       ' + M.NASC_INDOLES.map(k =>
+    k + ' ' + ((conta[k] || 0) / N * 100).toFixed(1) + '%').join('  ·  '));
+  const menor = Math.min.apply(null, M.NASC_INDOLES.map(k => (conta[k] || 0) / N * 100));
+  ok(menor > 25, 'os três feitios nascem em proporções parecidas',
+     'o menos comum tem ' + menor.toFixed(1) + '%');
+}
+
+/* A índole inclina o que sai: magias, virtude e defeito.
+
+   Compara-se o feitio marcado (dois alelos iguais, o mais extremo que
+   há) com o sorteio limpo. Se o gene não servisse para nada, as três
+   linhas eram iguais. */
+{
+  const medir = (par) => {
+    const dna = { genes: { indole: par, F: [2,2], H: [2,2], R: [2,2], A: [2,2] } };
+    let magias = 0, vant = 0, desv = 0, nM = 0, nV = 0;
+    for (let seed = 1; seed <= 4000; seed++) {
+      const cert = par ? { dna } : null;
+      const f = M.fichaDeAvatar(seed, 'Lendário', 'Terra', 35, cert);
+      const m = M.magiasDoAvatar(f);
+      // O PREÇO é o que mede o eixo do feitio nas magias: dentro de uma
+      // gaveta a família mal varia, mas o preço varia sempre.
+      for (const c of M.MAGIA_SLOTS) if (m[c]) { nM++; magias += m[c].pm; }
+      nV++;
+      const fv = f.vantagem    && M.VANTAGENS[f.vantagem.id];
+      const fd = f.desvantagem && M.DESVANTAGENS[f.desvantagem.id];
+      if (fv && fv.familia === 'lamina') vant++;
+      if (fd && fd.familia === 'lamina') desv++;
+    }
+    return { magias: magias / nM, vant: vant / nV * 100, desv: desv / nV * 100 };
+  };
+  const limpo  = medir(null);
+  const guarda = medir([0, 0]);
+  const lamina = medir([2, 2]);
+
+  console.log('');
+  const fonte = medir([1, 1]);
+  console.log('                     PM médio  vantagem  desvantagem');
+  console.log('                     da magia   (% de família LÂMINA)');
+  const linha = (rot, r) => console.log('       ' + rot.padEnd(19) +
+    r.magias.toFixed(2).padStart(5) + '   ' + r.vant.toFixed(1).padStart(6) + '%  ' +
+    r.desv.toFixed(1).padStart(9) + '%');
+  linha('sem gene (limpo)', limpo);
+  linha('feitio FONTE', fonte);
+  linha('feitio GUARDA', guarda);
+  linha('feitio LÂMINA', lamina);
+
+  ok(lamina.magias > limpo.magias && fonte.magias < limpo.magias,
+     'o feitio inclina que magias saem — a lâmina puxa para as caras, a fonte para as baratas',
+     'fonte ' + fonte.magias.toFixed(2) + ' < limpo ' + limpo.magias.toFixed(2) +
+     ' < lâmina ' + lamina.magias.toFixed(2) + ' PM');
+  ok(lamina.vant > guarda.vant, 'e inclina a virtude',
+     'guarda ' + guarda.vant.toFixed(0) + '% · lâmina ' + lamina.vant.toFixed(0) + '%');
+  ok(lamina.desv > guarda.desv, 'e o defeito vem do mesmo terreno que a virtude',
+     'guarda ' + guarda.desv.toFixed(0) + '% · lâmina ' + lamina.desv.toFixed(0) + '%');
+
+  /* E NÃO DECIDE. O feitio mais extremo que existe tem de continuar a
+     sair com virtudes de outra família — se não pudesse, isto tinha
+     deixado de ser genética e passado a ser uma classe de personagem. */
+  ok(lamina.vant < 85 && guarda.vant > 5,
+     'mas nunca decide: até o mais bruto sai com virtudes de outro feitio',
+     'lâmina fica-se por ' + lamina.vant.toFixed(0) + '% · guarda ainda tem ' +
+     guarda.vant.toFixed(0) + '%');
+}
+
+
 console.log(passou + ' passaram · ' + falhou + ' falharam');
 process.exit(falhou ? 1 : 0);

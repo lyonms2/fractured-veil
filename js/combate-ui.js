@@ -80,9 +80,16 @@ function _fichaVocacaoHTML(f) {
   /* Sem rótulo próprio: a frase já se explica ("tende a Força e
      Armadura"), e um "VOCAÇÃO" ao lado partia a linha em duas na ficha
      estreita do telemóvel. */
+  /* Duas leituras do mesmo DNA, e são coisas diferentes: a VOCAÇÃO diz
+     para onde os pontos tendem a cair (Força, Armadura…) e a ÍNDOLE diz
+     que feitio ele tem — que magias e que virtudes lhe saem. Um avatar
+     pode tender à Força e ter índole de Guarda: forte e defensivo. */
+  const ind = f.indole
+    ? `<div class="ficha-vocacao ficha-indole" title="${t('indole.' + f.indole + '.ex')}">◇ ${t('ficha.indole', { i: t('indole.' + f.indole) })}</div>`
+    : '';
   return `<div class="ficha-vocacao" title="${t('ficha.vocacao.ex')}">
     ◆ ${t('ficha.vocacao', { a: nome(v[0]), b: nome(v[1]) })}
-  </div>`;
+  </div>${ind}`;
 }
 
 // ── Vantagem e desvantagem ──

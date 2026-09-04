@@ -419,6 +419,10 @@
 }
 /* A vocação fica logo abaixo do escalão, na mesma escala miudinha —
    é contexto do avatar, e não mais uma barra a competir com as quatro. */
+/* A índole vem logo a seguir à vocação e um degrau mais apagada: é a
+   segunda leitura do mesmo DNA, e não outra secção. */
+.ficha-indole { margin-top: -0.4375rem; opacity: 0.72; }
+
 .ficha-vocacao {
   text-align: center;
   margin: -0.4375rem 0 0.5625rem;

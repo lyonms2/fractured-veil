@@ -76,6 +76,58 @@ const MAGIA_ESCADA = [
   { slot: 'forte2', grau: 2 },   // Lendário
 ];
 
+/* ── O FEITIO INCLINA QUAL MAGIA SAI DA GAVETA ──
+
+   Tentei primeiro por FAMÍLIA — dar a cada magia um rótulo (guarda,
+   fonte, lâmina) tirado das propriedades dela e pesar por aí. Medi, e
+   não servia: as gavetas são quase todas de uma família só (a Água tem
+   três magias de ataque, as três de lâmina), portanto não havia nada
+   para inclinar. O feitio mexia dois por cento, que é um gene a fingir
+   que trabalha.
+
+   O que varia SEMPRE dentro de uma gaveta é o PREÇO, e o preço quer
+   dizer alguma coisa: a magia mais cara da gaveta bate mais e esvazia a
+   bolsa; a mais barata lança-se mais vezes na mesma batalha.
+
+     LÂMINA  puxa para o topo da gaveta   — quer bater
+     FONTE   puxa para o fundo            — quer durar
+     GUARDA  fica no sorteio limpo        — o feitio dele vê-se na
+                                            virtude, não na magia
+
+   Nenhum decide: a magia mais cara continua a poder sair a um avatar de
+   feitio fonte, só é menos provável.
+
+   (A família continua a pesar nas Vantagens e Desvantagens, em
+   js/vantagens.js — lá os três grupos têm cinco a sete entradas cada e
+   há mesmo por onde escolher.) */
+function _escolherComPeso(pool, pesos, rnd) {
+  if (!pool.length) return null;
+
+  let min = Infinity, max = -Infinity;
+  for (const m of pool) { if (m.pm < min) min = m.pm; if (m.pm > max) max = m.pm; }
+
+  /* UM SÓ CAMINHO, mesmo quando não há nada a inclinar.
+
+     Ao princípio o caso sem gene saía por um atalho — pool[rnd(0, n-1)]
+     — e o caso com gene pelo sorteio pesado. São duas chamadas
+     diferentes ao mesmo gerador, portanto davam magias diferentes: na
+     medição, um avatar de feitio GUARDA (que não inclina nada) escolhia
+     magias mais caras que um avatar sem gene nenhum. Não era o feitio a
+     trabalhar; era o atalho a mexer na fila do acaso.
+
+     Com pesos todos a um, o sorteio pesado É o sorteio limpo. */
+  const semEixo = !pesos || max === min;
+  const peso = semEixo ? () => 1 : m => {
+    const t = (m.pm - min) / (max - min);                  // 0 = a mais barata
+    return Math.max(1, Math.round(1 + (pesos.lamina - 1) * t + (pesos.fonte - 1) * (1 - t)));
+  };
+
+  const total = pool.reduce((t, m) => t + peso(m), 0);
+  let alvo = rnd(1, total);
+  for (const m of pool) { alvo -= peso(m); if (alvo <= 0) return m; }
+  return pool[pool.length - 1];
+}
+
 // A fase pelo nível, para quando o js/state.js não está carregado
 // (as ferramentas de auditoria correm sem ele).
 function _magiaFase(nivel) {
@@ -310,6 +362,11 @@ function magiasDoAvatar(ficha) {
   const rnd = _magiaRng((ficha.seed || 0) ^ 0x51);
   const fora = {};
 
+  /* O feitio do avatar, se ele tiver certidão. Inclina qual magia sai de
+     cada gaveta — nunca QUANTAS nem QUAIS gavetas. */
+  const indole = (typeof indoleDoDna === 'function' && ficha.nascimento && ficha.nascimento.dna)
+    ? indoleDoDna(ficha.nascimento.dna) : null;
+
   // ── O TECTO QUE ESTE AVATAR VAI TER ──
   // O bolo é filtrado por aquilo que ele ALCANÇARÁ no nível 35, e não
   // pelo que alcança hoje. São duas coisas diferentes e as duas importam:
@@ -322,7 +379,7 @@ function magiasDoAvatar(ficha) {
   // muda nada ao subir de nível — e garante que tudo o que ele sabe é
   // alcançável se chegar lá.
   const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
-    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35, ficha.nascimento)
     : ficha;
   const tectoFinal = _f35.H * 5;
 
@@ -377,7 +434,7 @@ function magiasDoAvatar(ficha) {
       pool = sobra.filter(pagavel);
       if (!pool.length) pool = sobra.filter(noTecto);
     }
-    fora[cat] = pool.length ? pool[rnd(0, pool.length - 1)] : null;
+    fora[cat] = _escolherComPeso(pool, indole, rnd);
   }
 
   /* O SEGUNDO GOLPE FORTE, do Lendário.
@@ -391,7 +448,7 @@ function magiasDoAvatar(ficha) {
       .filter(m => m !== fora.forte && m.pm <= tectoFinal);
     const pagaveis = bolo.filter(m => m.pm <= reservaFinal);
     const pool = pagaveis.length ? pagaveis : bolo;
-    fora.forte2 = pool.length ? pool[rnd(0, pool.length - 1)] : null;
+    fora.forte2 = _escolherComPeso(pool, indole, rnd);
   }
 
   /* ── E AGORA, O QUE DELE JÁ SE VÊ ──
@@ -427,7 +484,10 @@ function repertorioCompleto(ficha) {
      35, e uma cópia com nivel:35 mas com a Habilidade de hoje dava outro
      tecto — e portanto outras magias. Seria uma promessa errada. */
   if (typeof fichaDeAvatar !== 'function') return magiasDoAvatar(ficha);
-  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', ficha.elemento, 35));
+  /* A certidão viaja também nesta. Sem ela, a ficha do nível 35
+     construída aqui não teria índole — e a promessa que a ficha faz ao
+     jogador saía diferente das magias que ele vai mesmo ter. */
+  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', ficha.elemento, 35, ficha.nascimento));
 }
 
 /* Quando é que este lugar desperta? Devolve o degrau, para a ficha
@@ -494,6 +554,7 @@ function valorDaMagia(magia, ficha, pmGastos) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, MAGIA_SLOTS,
                      MAGIA_ESCADA, repertorioCompleto, degrauDoSlot, magiasDoAvatar,
+                     _escolherComPeso,
                    magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria,
                    trancaDaMagia };
 }
