@@ -131,6 +131,16 @@ async function handleListarAvatar(req, res, db, uid) {
       tx.set(listingRef, {
         sellerId:   uid,
         slotIdx:    slotIdxInt,
+        // A identidade viaja com a listagem. Sem isto, vender era
+        // apagar quem o criou e de quem ele nasceu — e o comprador
+        // recebia um avatar sem passado, com um id novo em folha.
+        id:          s.id          || null,
+        criadorUid:  s.criadorUid  || null,
+        criadorNome: s.criadorNome || null,
+        mae:         s.mae         || null,
+        pai:         s.pai         || null,
+        nascidoEm:   s.nascidoEm   || s.bornAt || Date.now(),
+        nomeTravado: s.nomeTravado === true,
         nome:       s.nome,
         elemento:   s.elemento,
         raridade:   s.raridade,
@@ -313,6 +323,21 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
 
       novoSaldoComprador = debitoCompra.cristais + debitoCompra.cristaisBonus;
       slots[freeIdx] = {
+        /* Chega intacta ao novo dono. O criador nao e o vendedor:
+           e quem o fez nascer, e continua a se-lo depois de o
+           avatar mudar de maos quantas vezes for.
+
+           O nomeTravado tambem viaja. Um avatar ja baptizado nao
+           volta a poder ser rebaptizado por quem o compra — e um
+           que ainda nao foi chega com esse uso por gastar, que e
+           o que o vendedor lhe deixou. */
+        id:          listing.id          || null,
+        criadorUid:  listing.criadorUid  || null,
+        criadorNome: listing.criadorNome || null,
+        mae:         listing.mae         || null,
+        pai:         listing.pai         || null,
+        nascidoEm:   listing.nascidoEm   || listing.bornAt || Date.now(),
+        nomeTravado: listing.nomeTravado === true,
         nome:       listing.nome,
         elemento:   listing.elemento,
         raridade:   listing.raridade,

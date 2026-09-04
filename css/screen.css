@@ -658,3 +658,73 @@
 @media (prefers-reduced-motion: reduce) {
   .pausa-icone { animation: none; opacity: .5; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMO TE CHAMAMOS
+
+   Aparece uma vez, antes do prólogo, e não tem fechar — sem um nome não
+   há a quem atribuir o avatar que se cria a seguir. Por isso a caixa
+   chega com uma sugestão já escrita: quem não quiser pensar carrega e
+   segue, e quem quiser apaga e escreve o seu.
+
+   z-index acima do prólogo (600) e do splash (500), abaixo da tela de
+   login (9999): perguntar o nome a quem ainda não entrou não faria
+   sentido nenhum.
+   ═══════════════════════════════════════════════════════════════════ */
+#nomeJogadorOverlay {
+  position: fixed; inset: 0; z-index: 700;
+  display: none; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: #05040a;
+}
+#nomeJogadorOverlay.open { display: flex; }
+
+.nj-caixa {
+  max-width: 22rem; width: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem; text-align: center;
+}
+.nj-marca {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem;
+  letter-spacing: 0.15rem; color: var(--gold); opacity: .8;
+}
+.nj-titulo {
+  font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.09375rem;
+  color: var(--gold-light, var(--gold)); margin: 0;
+}
+.nj-texto {
+  font-size: 0.5rem; line-height: 1.7; color: var(--text2);
+  margin: 0 0 0.375rem; max-width: 19rem;
+}
+.nj-campo {
+  width: 100%; box-sizing: border-box;
+  background: #0a0816; border: 1px solid var(--gold);
+  border-radius: 0.25rem; color: var(--gold-light, var(--gold));
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0625rem;
+  padding: 0.5rem 0.75rem; outline: none; text-align: center;
+}
+.nj-campo:focus { box-shadow: 0 0 0 0.125rem rgba(201,168,76,.25); }
+/* Reserva a linha desde o início: sem isto o botão saltava para baixo no
+   instante em que o erro aparecia, e o dedo batia ao lado. */
+.nj-erro {
+  min-height: 0.875rem; font-size: 0.4375rem; line-height: 1.5;
+  color: #ff8a8a; letter-spacing: 0.01875rem;
+}
+.nj-btn {
+  width: 100%; padding: 0.5625rem;
+  font-family: 'Cinzel', serif; font-size: 0.6875rem; letter-spacing: 0.125rem;
+  color: #05040a; background: var(--gold); border: none;
+  border-radius: 0.25rem; cursor: pointer;
+}
+.nj-btn:hover { background: var(--gold-light, var(--gold)); }
+.nj-nota {
+  font-size: 0.40625rem; line-height: 1.6; color: var(--muted);
+  margin-top: 0.25rem; max-width: 18rem;
+}
+
+@media (min-width: 900px) {
+  .nj-titulo { font-size: 1.25rem; }
+  .nj-texto  { font-size: 0.5625rem; }
+  .nj-nota   { font-size: 0.46875rem; }
+  .nj-erro   { font-size: 0.5rem; }
+}

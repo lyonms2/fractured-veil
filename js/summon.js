@@ -188,6 +188,10 @@ function triggerSummon() {
 
   while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
   avatarSlots[activeSlotIdx] = {
+    // A identidade primeiro: e ela que faz deste avatar UM avatar, e
+    // nao mais um com o mesmo seed. Invocado nao tem mae nem pai —
+    // e raiz de arvore por definicao.
+    ...identidadeNova(),
     nome, elemento, raridade, descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,

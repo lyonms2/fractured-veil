@@ -3,6 +3,12 @@
 // ═══════════════════════════════════════════════════════════════════
 let walletAddress = null;
 
+/* O nome de quem joga. Vive ao lado do walletAddress porque e da mesma
+   familia: identifica a PESSOA, nao o avatar aberto. E gravado no topo
+   do documento do jogador, como o nomeBusca, e e ele que fica carimbado
+   em cada avatar que ela cria. Ver js/identidade.js. */
+let nomeJogador = null;
+
 // ═══════════════════════════════════════════════════════════════════
 // FIREBASE HELPERS
 // ═══════════════════════════════════════════════════════════════════
@@ -94,6 +100,23 @@ function getGameState() {
   const slotsSafe = avatarSlots.map(s => {
     if(!s || s.pendingEgg) return null; // pendingEgg slots are never persisted
     return {
+      /* ── A IDENTIDADE PERMANENTE ──
+         Sete campos planos, e planos de proposito: o avatar e
+         reconstruido campo a campo aqui e mais duas vezes no
+         api/comprar-avatar.js, e um objecto encaixado sobrevive a
+         esses tres ate ao dia em que houver um quarto sitio.
+
+         O `id` nao leva valor por omissao. Um avatar sem id e um
+         avatar que o garantirIdentidades() ainda nao viu, e inventar
+         um aqui — no caminho da GRAVACAO — daria ids diferentes a
+         cada gravacao ate a migracao correr. Fica nulo e visivel. */
+      id:          s.id          || null,
+      criadorUid:  s.criadorUid  || null,
+      criadorNome: s.criadorNome || null,
+      mae:         s.mae         || null,
+      pai:         s.pai         || null,
+      nascidoEm:   s.nascidoEm   || s.bornAt || 0,
+      nomeTravado: s.nomeTravado ?? false,
       // Avatar identity
       nome:      s.nome      || '',
       elemento:  s.elemento  || 'Fogo',
@@ -145,12 +168,18 @@ function getGameState() {
     // cambioLog não vai: é do servidor (limite diário do câmbio)
     lastSeen:      Date.now(),
     nomeBusca,
+    // Quem joga. No topo e nao dentro do gs: o gs e o saldo e o
+    // progresso, e este e a pessoa. Ver js/identidade.js.
+    nomeJogador:   nomeJogador || null,
   };
 }
 
 function applyGameState(data) {
   if(!data) return false;
   window.loadedLastSeen = data.lastSeen || Date.now();
+
+  // Quem joga. Nulo na primeira entrada — e ai que lhe e pedido.
+  nomeJogador = data.nomeJogador || null;
 
   // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
@@ -228,6 +257,22 @@ function applyGameState(data) {
   // Garantir que o array cobre todos os slots desbloqueados restaurados
   const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
   while(avatarSlots.length < _neededApply) avatarSlots.push(null);
+
+  /* ── OS QUE NASCERAM ANTES DA IDENTIDADE EXISTIR ──
+
+     Ganham id aqui, ao entrar, e nao ao gravar: o id tem de ser o
+     MESMO em todas as gravacoes, e inventa-lo no caminho da escrita
+     dava um novo de cada vez ate a migracao correr.
+
+     Criador fica nulo. Ninguem sabe quem os fez, e escrever o dono
+     actual seria transformar uma venda em autoria — a interface diz
+     desconhecido, que e a verdade. O nome fica travado: um avatar
+     que ja viveu semanas com o nome que tem nao devia poder mudar
+     por causa de uma regra nova. */
+  if(typeof garantirIdentidades === 'function') {
+    const _carimbados = garantirIdentidades(avatarSlots);
+    if(_carimbados) console.log('[identidade] ' + _carimbados + ' avatar(es) sem id — carimbados agora.');
+  }
 
   // Limpa itens e ovos expirados em todos os slots ao carregar
   const _now = Date.now();

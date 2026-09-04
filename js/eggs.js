@@ -436,6 +436,12 @@ async function confirmHatch() {
 
   while(avatarSlots.length <= targetSlot) avatarSlots.push(null);
   avatarSlots[targetSlot] = {
+    /* Chocado de um ovo, e mesmo assim sem mae nem pai: o ovo nao
+       guarda de quem veio (sao quatro campos — id, raridade, elemento
+       e validade), e um ovo comprado no mercado nem sequer nasceu
+       aqui. Os campos ficam nulos e a reproducao preenche-os quando
+       existir; o que nao pode faltar desde ja e o id. */
+    ...identidadeNova(),
     nome, elemento: ovo.elemento, raridade: ovo.raridade, descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,

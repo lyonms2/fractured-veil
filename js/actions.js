@@ -93,9 +93,27 @@ function playCreature() {
   openGameSelector();
 }
 
-// ── RENAME AVATAR ──
+/* ── BAPTIZAR: UMA VEZ, E FICA ──
+
+   O renomear era ilimitado. Passa a ser um uso só: o avatar nasce com um
+   nome sorteado, o dono pode pôr-lhe o seu, e nessa altura o nome fica
+   permanente — é o que faz dele um nome e não uma etiqueta.
+
+   O uso não expira. "Uma vez durante o nascimento" podia ler-se como uma
+   janela que fecha, mas uma janela castiga quem esteve fora e não
+   acrescenta permanência nenhuma: ela cumpre-se no instante em que o uso
+   é gasto. Para a fechar, é o podeRenomear() em js/identidade.js que
+   passa a olhar também para a idade ou para o nível.
+
+   Quem já não pode não fica com um botão morto: o botão desaparece, e o
+   próprio nome passa a dizer que está selado ao ser tocado. */
 function startRename() {
   if(!avatar || dead) return;
+  if(typeof podeRenomear === 'function' && !podeRenomear(avatar)) {
+    playSound('error');
+    showBubble(t('rename.selado'));
+    return;
+  }
   const input = document.getElementById('renameInput');
   const currentName = avatar.nome.split(',')[0].trim();
   input.value = currentName;
@@ -117,9 +135,22 @@ function confirmRename() {
   const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
   if(!clean) { playSound('error'); showBubble(t('bubble.invalid_name')); return; }
 
+  // A segunda guarda, em quem FAZ. A de cima só apaga o caminho; esta é a
+  // que impede — um clique repetido, um estado antigo na tela, ou um
+  // caminho novo que ninguém previu.
+  if(typeof podeRenomear === 'function' && !podeRenomear(avatar)) {
+    cancelRename();
+    playSound('error');
+    showBubble(t('rename.selado'));
+    return;
+  }
+
   const parts  = avatar.nome.split(',');
   const suffix = parts.slice(1).join(',');
   avatar.nome  = clean + (suffix ? ',' + suffix : '');
+  // E fica. Daqui em diante este avatar chama-se isto, para quem o comprar
+  // e para qualquer árvore em que venha a aparecer.
+  if(typeof travarNome === 'function') travarNome(avatar);
 
   fillCreatureCard();
   cancelRename();
@@ -127,6 +158,6 @@ function confirmRename() {
   if(walletAddress) scheduleSave();
   playSound('rename');
   addLog(t('log.renamed', { name: clean }), 'good');
-  showBubble(t('bubble.renamed', { name: clean }));
+  showBubble(t('rename.feito', { name: clean }));
   updateAllUI();
 }

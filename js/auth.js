@@ -153,6 +153,10 @@ async function disconnectWallet() {
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   faseVista = -1; nivelVisto = -1;
   window._cambioLog = null;
+  // O nome de quem joga sai com a sessao. Ficar para tras dava o nome
+  // do anterior a quem entrasse a seguir no mesmo navegador — e esse
+  // nome vai carimbado em cada avatar que se cria.
+  nomeJogador = null;
 
   // Reset UI
   // O authShowTab('login') que estava aqui repunha a aba de entrar. Já
@@ -501,7 +505,17 @@ async function _onLoginSuccess(user) {
   // partir do segundo login o loadFromFirebase devolve sempre true e
   // aquele ramo nunca mais corre. Quem perdesse a primeira vez — um
   // index.html em cache chegava — perdia para sempre, sem aviso.
-  if (typeof talvezAbrirPrologo === 'function') talvezAbrirPrologo();
+  /* O nome de quem joga vem ANTES do prologo, e o prologo espera por
+     ele. O prologo termina no gesto de invocar, e invocar ja carimba
+     um criador no avatar — perguntar depois deixava sem autoria
+     justamente o primeiro. Ver js/identidade.js. */
+  const _seguirParaPrologo = () => { if (typeof talvezAbrirPrologo === 'function') talvezAbrirPrologo(); };
+  if (typeof jogadorTemNome === 'function' && !jogadorTemNome()
+      && typeof pedirNomeDoJogador === 'function') {
+    pedirNomeDoJogador(_seguirParaPrologo);
+  } else {
+    _seguirParaPrologo();
+  }
 
   if(typeof hideSplash === 'function') hideSplash();
 
