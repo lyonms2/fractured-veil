@@ -199,8 +199,7 @@ function paletaDoAvatar(slot) {
   return paletaDeCores(c.principal, c.secundaria);
 }
 
-/* A cor de um avatar em hexadecimal, para quem quer pintar uma coisa
-   qualquer com ela — o ovo dele, um contorno, um clarão.
+/* A cor de um avatar, para quem quer pintar uma coisa qualquer com ela.
 
    A cerimónia da invocação e a do choco pintavam-se com a cor do
    ELEMENTO. Deixou de fazer sentido: a cor é a identidade do avatar e
@@ -209,8 +208,32 @@ function corDoAvatar(slot, qual) {
   const cfg = paletaDoAvatar(slot);
   if (!cfg) return '#8b5cf6';
   if (qual === 'brilho') return cfg.corBrilho;
-  if (qual === 'escura') return (cfg.coresSec && cfg.coresSec[0]) || cfg.cores[0];
-  return cfg.cores[0];
+  return cfg.cores[1];
+}
+
+/* ── O GRADIENTE DO OVO ──
+
+   Primeiro tentei pôr no meio do gradiente a primeira cor de SOMBRA do
+   avatar. Foi um erro que se vê de longe: as sombras são feitas a
+   `luz - 30` e chegam a bater no chão dos 8% de luminosidade — são
+   para sombrear um corpo que já tem luz por cima, não para ser metade
+   de um ovo. O ovo saía um borrão preto com um rebordo colorido, e
+   parecia avariado.
+
+   Aqui os três degraus são do matiz principal, com a mesma queda de
+   luminosidade que o ovo antigo tinha (roxo 42% → 24% → 6%). A segunda
+   cor só tinge o fundo, que é onde ela não compete com nada. */
+function gradienteDoOvo(slot) {
+  const c = coresDoAvatar(slot) || coresDoElemento(slot && slot.elemento);
+  const p = corDaRoda(c.principal);
+  const s = corDaRoda(c.secundaria != null ? c.secundaria : c.principal);
+  return {
+    topo:   _hsl(p.matiz, p.sat, Math.min(62, p.luz + 6)),
+    meio:   _hsl(p.matiz, p.sat, Math.max(18, p.luz - 16)),
+    fundo:  _hsl(s.matiz, Math.min(100, s.sat + 10), 7),
+    brilho: _hsl(p.matiz, Math.min(100, p.sat + 12), Math.min(88, p.luz + 34)),
+    aura:   _hsl(p.matiz, p.sat, p.luz),
+  };
 }
 
 // O nome da cor, para mostrar. Vem do i18n; sem ele, o id serve.

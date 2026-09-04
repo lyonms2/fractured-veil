@@ -296,13 +296,6 @@
 }
 @keyframes ovo-carta-entra { to { opacity: 1; transform: scale(1) translateY(0); } }
 .ovo-emoji { font-size: 1.5rem; line-height: 1; }
-.ovo-rar {
-  /* Era 0.4375rem: 7px no celular. É o rótulo da raridade — o prémio da
-     cerimónia inteira — e não pode ser a coisa mais pequena da tela. */
-  font-family: 'Cinzel', serif; font-size: 0.5625rem;
-  letter-spacing: 0.09375rem; color: var(--cor-ovo, var(--cerim-fraco));
-  font-weight: 700;
-}
 
 .ovo-conta {
   display: flex; justify-content: space-between; align-items: center;
@@ -316,7 +309,6 @@
   #ovoTitulo { font-size: 0.75rem; }
   #ovoSub    { font-size: 0.5rem; }
   .ovo-emoji { font-size: 1.25rem; }
-  .ovo-rar   { font-size: 0.375rem; }
   .ovo-conta { font-size: 0.46875rem; }
   .ovo-carta { padding: 0.4375rem 0.625rem; }
 }

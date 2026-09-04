@@ -219,37 +219,25 @@ function triggerSummon() {
   const r3         = document.getElementById('ovRing3');
   const ovAv       = document.getElementById('ovAvatar');
   const ovParts    = document.getElementById('ovParticles');
-  const ovRarLbl   = document.getElementById('ovRarityLabel');
-  const ovNamLbl   = document.getElementById('ovNameLabel');
-  /* A cor do OVO é a de quem está lá dentro.
+  /* ── SEM RÓTULOS ──
 
-     Era a do elemento — e os elementos já não pintam nada. O avatar já
-     nasceu neste ponto (o registarNascimento corre acima), portanto o
-     DNA dele já tem as duas cores. */
+     A cerimónia escrevia duas coisas por cima do ovo: "◆ COMUM ◆" e
+     "🔥 FOGO". A primeira anunciava uma raridade que hoje é sempre
+     Comum — e portanto não anunciava nada. A segunda anunciava um
+     elemento que já não existe.
+
+     Não as substituí por outras. O ovo já diz o que tem a dizer pela
+     cor, e o bicho sai a seguir. */
   const _novo = avatarSlots[activeSlotIdx];
-  const cor = (typeof corDoAvatar === 'function' && _novo && _novo.nascimento)
-    ? corDoAvatar(_novo) : (car ? car.cor : '#8b5cf6');
-
-  const rarColors  = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
-  const rarNames   = { 'Comum':'◆ COMUM ◆', 'Raro':'◈ RARO ◈', 'Lendário':'✦ LENDÁRIO ✦' };
-  const rarColor   = rarColors[raridade] || '#ffffff';
+  const cor = (typeof gradienteDoOvo === 'function' && _novo && _novo.nascimento)
+    ? gradienteDoOvo(_novo).aura : (car ? car.cor : '#8b5cf6');
+  const rarColor = cor;   // a onda de choque acompanha o ovo
 
   ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05) rotate(-15deg);transition:none;display:flex;align-items:center;justify-content:center;';
   r1.style.cssText = r2.style.cssText = r3.style.cssText = 'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
-  ovRarLbl.classList.remove('show');
-  ovNamLbl.classList.remove('show');
   ovParts.innerHTML  = '';
   ovBg.style.opacity = '0';
 
-  /* E o rótulo diz a COR, não o elemento. Era "🔥 FOGO"; passa a ser
-     "◆ AZUL", que é o que o jogador vai ver quando o bicho sair. */
-  ovRarLbl.textContent = rarNames[raridade];
-  ovRarLbl.style.color = rarColor;
-  const _cores = (typeof coresDoAvatar === 'function' && _novo) ? coresDoAvatar(_novo) : null;
-  ovNamLbl.textContent = (_cores && typeof nomeDaCor === 'function')
-    ? '◆ ' + nomeDaCor(_cores.principal).toUpperCase()
-    : `✦ ${String(elemento).toUpperCase()}`;
-  ovNamLbl.style.color = cor;
 
   const eggSVG = `<svg viewBox="0 0 120 140" width="120" height="140">
     <defs>
@@ -321,18 +309,13 @@ function triggerSummon() {
     sw2.style.cssText = `border-color:${rarColor};position:absolute;top:50%;left:50%;`;
     document.getElementById('ovCircle').appendChild(sw2);
     setTimeout(() => sw2.remove(), 700);
-    ovRarLbl.classList.add('show');
   }, 1900);
-
-  setTimeout(() => { ovNamLbl.classList.add('show'); }, 2250);
 
   setTimeout(() => {
     ovAv.style.transition = 'all .6s ease-in';
     ovAv.style.opacity    = '0';
     ovAv.style.transform  = 'scale(1.15)';
     r1.style.opacity = r2.style.opacity = r3.style.opacity = '0';
-    ovRarLbl.classList.remove('show');
-    ovNamLbl.classList.remove('show');
     ovBg.style.opacity = '0';
   }, 3600);
 

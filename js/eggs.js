@@ -371,11 +371,10 @@ function _pararAnimacaoDeChocar() {
    a cor de quem está lá dentro, e não há dois iguais. */
 function hatchWithAnimation(slot, targetSlot) {
   _pararAnimacaoDeChocar();
-  const temCor = typeof corDoAvatar === 'function' && slot && slot.nascimento;
-  const corBase   = temCor ? corDoAvatar(slot)           : '#5a3a9a';
-  const corEscura = temCor ? corDoAvatar(slot, 'escura') : '#2d1a5e';
-  const corBrilho = temCor ? corDoAvatar(slot, 'brilho') : '#8060c0';
-  const crackColor = corBrilho;
+  const g = (typeof gradienteDoOvo === 'function' && slot && slot.nascimento)
+    ? gradienteDoOvo(slot)
+    : { topo: '#5a3a9a', meio: '#2d1a5e', fundo: '#0b0916', brilho: '#8060c0', aura: '#7a4fbb' };
+  const crackColor = g.brilho;
 
   document.getElementById('aliveScreen').style.display = 'none';
   document.getElementById('deadScreen').style.display  = 'none';
@@ -384,7 +383,7 @@ function hatchWithAnimation(slot, targetSlot) {
   document.getElementById('actionBtns').style.opacity      = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
 
-  applyEggVisual({ base: corBase, escura: corEscura, brilho: corBrilho }, crackColor);
+  applyEggVisual(g, crackColor);
 
   document.getElementById('eggHint').textContent = t('egg.hint.hatching');
   document.getElementById('eggProgress').textContent = '';
@@ -465,9 +464,11 @@ function hatchWithAnimation(slot, targetSlot) {
    ovo, e todos merecem a mesma cerimónia. */
 function applyEggVisual(cores, crackColor) {
   const c = cores || {};
-  const base   = c.base   || '#5a3a9a';
-  const escura = c.escura || '#2d1a5e';
+  const topo   = c.topo   || '#5a3a9a';
+  const meio   = c.meio   || '#2d1a5e';
+  const fundo  = c.fundo  || '#0b0916';
   const brilho = c.brilho || '#8060c0';
+  const aura   = c.aura   || topo;
 
   const stop1 = document.querySelector('#eggGrad stop:first-child');
   const stop2 = document.querySelector('#eggGrad stop:nth-child(2)');
@@ -478,12 +479,12 @@ function applyEggVisual(cores, crackColor) {
   const shine  = document.getElementById('eggShine');
   const sparks = document.getElementById('eggSparkles');
 
-  if(stop1) stop1.setAttribute('stop-color', base);
-  if(stop2) stop2.setAttribute('stop-color', escura);
-  if(stop3) stop3.setAttribute('stop-color', '#0b0916');
-  if(glowEl) { glowEl.setAttribute('fill', escura); glowEl.setAttribute('opacity','.5'); }
+  if(stop1) stop1.setAttribute('stop-color', topo);
+  if(stop2) stop2.setAttribute('stop-color', meio);
+  if(stop3) stop3.setAttribute('stop-color', fundo);
+  if(glowEl) { glowEl.setAttribute('fill', meio); glowEl.setAttribute('opacity','.5'); }
   if(shine)  shine.setAttribute('fill', brilho);
-  if(aura1)  { aura1.setAttribute('stroke', base);   aura1.style.opacity = '0.55';
+  if(aura1)  { aura1.setAttribute('stroke', aura);   aura1.style.opacity = '0.55';
                aura1.style.animation = 'eggAuraPulse 1.8s ease-in-out infinite'; }
   if(aura2)  { aura2.setAttribute('stroke', brilho); aura2.style.opacity = '0.3';
                aura2.style.animation = 'eggAuraPulse 1.8s ease-in-out infinite 0.4s'; }
@@ -649,10 +650,14 @@ function petCreature() {
 // sabe-se o preço antes, não se sabe o que sai. Mostrar os dois ao mesmo
 // tempo desperdiça a única surpresa que a postura tem.
 // ═══════════════════════════════════════════════════════════════════
-const _OVO_CORES = { 'Lendário': '#e8a030', 'Raro': '#5ab4e8', 'Comum': '#7ab87a' };
-const _OVO_EMOJI = { 'Lendário': '🌟', 'Raro': '🔵', 'Comum': '🥚' };
+/* As cartas do ninho eram pintadas pela raridade do ovo — dourado,
+   azul ou verde — e mostravam a palavra por baixo. Já não há raridade
+   no ovo: cada carta passa a ter a COR do filho que está lá dentro, e
+   nenhuma palavra. Um ovo verde é um ovo verde; escrever "Comum" por
+   baixo não dizia mais nada a ninguém. */
+const _OVO_COR_OMISSA = '#7a4fbb';
 
-function abrirCerimoniaOvo(ovos, custo, proximaEm) {
+function abrirCerimoniaOvo(ovos, _custoAntigo, chocaEm) {
   const ov = document.getElementById('ovoOverlay');
   // Sem palco, cai-se na animação antiga em vez de não acontecer nada:
   // o avatar do jogo faz o gesto de pôr e ouve-se o som. É o que corre
@@ -693,10 +698,11 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
     if (typeof playSound === 'function') playSound('egg_laid');
     setTimeout(() => {
       ninho.innerHTML = ovos.map((o, i) => {
-        const cor = _OVO_CORES[o.raridade] || _OVO_CORES['Comum'];
+        // A cor do ovo é a do filho: o DNA dele viaja dentro do ovo.
+        const cor = (typeof gradienteDoOvo === 'function' && o.dna)
+          ? gradienteDoOvo({ nascimento: { dna: o.dna } }).aura : _OVO_COR_OMISSA;
         return `<div class="ovo-carta" style="--i:${i};--cor-ovo:${cor}">
-                  <span class="ovo-emoji">${_OVO_EMOJI[o.raridade] || '🥚'}</span>
-                  <span class="ovo-rar">${o.raridade}</span>
+                  <span class="ovo-emoji">🥚</span>
                 </div>`;
       }).join('');
     }, 300);
@@ -708,18 +714,21 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
     const conta = ov.querySelector('#ovoConta');
     if (tit) tit.textContent = ovos.length > 1 ? t('ovo.titulo_multi', { n: ovos.length })
                                                : t('ovo.titulo_um');
-    // Só se anuncia raro ou lendário quando algum saiu — anunciar sempre
-    // gastaria a palavra e a próxima já não valeria nada.
-    const melhor = ovos.some(o => o.raridade === 'Lendário') ? 'Lendário'
-                 : ovos.some(o => o.raridade === 'Raro')     ? 'Raro' : null;
-    if (sub) sub.textContent = melhor ? t('ovo.sub_' + (melhor === 'Lendário' ? 'lendario' : 'raro'))
-                                      : t('ovo.sub_comum');
+    /* O subtítulo anunciava raro ou lendário quando algum saísse. Já não
+       há o que anunciar: diz de quem é filho, que é o que este ovo tem
+       de especial e o outro não tinha. */
+    const pais = ovos.find(o => o.maeNome || o.paiNome);
+    if (sub) sub.textContent = pais
+      ? t('egg.filho_de', { mae: pais.maeNome || '?', pai: pais.paiNome || '?' })
+      : t('ovo.sub_comum');
     if (conta) {
-      const horas = proximaEm ? Math.max(1, Math.ceil((proximaEm - Date.now()) / 3600000)) : 0;
+      // A conta era do custo em moedas e da próxima postura. Cruzar não
+      // custa moedas e não há próxima postura — o que interessa agora é
+      // quando é que este ovo abre.
+      const horas = chocaEm ? Math.max(1, Math.ceil((chocaEm - Date.now()) / 3600000)) : 0;
       conta.innerHTML =
-        `<div class="ovo-conta gasto"><span>${t('ovo.custo')}</span><span class="val">−${custo} 🪙</span></div>` +
         `<div class="ovo-conta"><span>${t('ovo.guardados')}</span><span class="val">${eggsInInventory.length} / 10</span></div>` +
-        (horas ? `<div class="ovo-conta"><span>${t('ovo.proxima')}</span><span class="val">${t('ovo.horas', { h: horas })}</span></div>` : '');
+        (horas ? `<div class="ovo-conta"><span>${t('egg.choca_em', { t: '' }).trim()}</span><span class="val">${t('ovo.horas', { h: horas })}</span></div>` : '');
     }
     painel.classList.add('mostra');
   }, 2600);
@@ -756,27 +765,22 @@ function fecharCerimoniaOvo() {
   }, 600);
 }
 
+/* Os títulos eram do avatar que punha o ovo sozinho — "PUS UM OVO" — e
+   anunciavam raro ou lendário. Quem põe agora são dois, e não há
+   raridade nenhuma para anunciar. */
 window.registerStrings(
   {
-    'ovo.titulo_um':    'PUS UM OVO',
-    'ovo.titulo_multi': 'PUS {n} OVOS',
-    'ovo.sub_comum':    'A ninhada está segura',
-    'ovo.sub_raro':     '✦ UM DELES É RARO',
-    'ovo.sub_lendario': '✦ UM DELES É LENDÁRIO',
-    'ovo.custo':        'Custou',
+    'ovo.titulo_um':    'NASCEU UM OVO',
+    'ovo.titulo_multi': 'NASCERAM {n} OVOS',
+    'ovo.sub_comum':    'O ovo está seguro',
     'ovo.guardados':    'Guardados',
-    'ovo.proxima':      'Próxima postura',
-    'ovo.horas':        'em {h}h',
+    'ovo.horas':        '{h}h',
   },
   {
-    'ovo.titulo_um':    'I LAID AN EGG',
-    'ovo.titulo_multi': 'I LAID {n} EGGS',
-    'ovo.sub_comum':    'The clutch is safe',
-    'ovo.sub_raro':     '✦ ONE OF THEM IS RARE',
-    'ovo.sub_lendario': '✦ ONE OF THEM IS LEGENDARY',
-    'ovo.custo':        'Cost',
+    'ovo.titulo_um':    'AN EGG WAS LAID',
+    'ovo.titulo_multi': '{n} EGGS WERE LAID',
+    'ovo.sub_comum':    'The egg is safe',
     'ovo.guardados':    'Stored',
-    'ovo.proxima':      'Next clutch',
-    'ovo.horas':        'in {h}h',
+    'ovo.horas':        '{h}h',
   }
 );
