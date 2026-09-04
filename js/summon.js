@@ -229,8 +229,11 @@ function triggerSummon() {
      Não as substituí por outras. O ovo já diz o que tem a dizer pela
      cor, e o bicho sai a seguir. */
   const _novo = avatarSlots[activeSlotIdx];
-  const cor = (typeof gradienteDoOvo === 'function' && _novo && _novo.nascimento)
-    ? gradienteDoOvo(_novo).aura : (car ? car.cor : '#8b5cf6');
+  const gradOvo = (typeof gradienteDoOvo === 'function' && _novo && _novo.nascimento)
+    ? gradienteDoOvo(_novo)
+    : { topo: '#5a3a9a', meio: '#2d1a5e', fundo: '#04030a',
+        brilho: '#8060c0', aura: (car ? car.cor : '#8b5cf6') };
+  const cor = gradOvo.aura;
   const rarColor = cor;   // a onda de choque acompanha o ovo
 
   ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05) rotate(-15deg);transition:none;display:flex;align-items:center;justify-content:center;';
@@ -239,19 +242,29 @@ function triggerSummon() {
   ovBg.style.opacity = '0';
 
 
+  /* O OVO DA CERIMÓNIA.
+
+     Tinha o emoji do elemento desenhado no meio — 🔥, 💧, 🍃 — e eu
+     levei a variável dele quando tirei os rótulos, sem reparar que era
+     usada aqui. O botão "estender a mão" rebentava com
+     "elemEmoji is not defined" e o avatar não chegava a nascer.
+
+     O emoji não volta: era o elemento outra vez. Fica o ovo, e o ovo
+     tem os três degraus de cor do bicho que está lá dentro — os mesmos
+     que a animação do choco usa, para as duas cerimónias mostrarem o
+     mesmo ovo. */
   const eggSVG = `<svg viewBox="0 0 120 140" width="120" height="140">
     <defs>
       <radialGradient id="ovEggG" cx="38%" cy="30%" r="72%">
-        <stop offset="0%" stop-color="${cor}" stop-opacity=".9"/>
-        <stop offset="55%" stop-color="${cor}" stop-opacity=".35"/>
-        <stop offset="100%" stop-color="#04030a" stop-opacity="1"/>
+        <stop offset="0%" stop-color="${gradOvo.topo}"/>
+        <stop offset="55%" stop-color="${gradOvo.meio}"/>
+        <stop offset="100%" stop-color="${gradOvo.fundo}"/>
       </radialGradient>
       <filter id="ovEggGlow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
     <ellipse cx="60" cy="74" rx="42" ry="52" fill="url(#ovEggG)" filter="url(#ovEggGlow)"/>
-    <ellipse cx="60" cy="74" rx="42" ry="52" fill="none" stroke="${cor}" stroke-width="1.5" opacity=".5"/>
-    <ellipse cx="48" cy="52" rx="10" ry="16" fill="${cor}" opacity=".15"/>
-    <text x="60" y="82" text-anchor="middle" font-size="32" opacity=".7">${elemEmoji}</text>
+    <ellipse cx="60" cy="74" rx="42" ry="52" fill="none" stroke="${gradOvo.aura}" stroke-width="1.5" opacity=".6"/>
+    <ellipse cx="48" cy="52" rx="10" ry="16" fill="${gradOvo.brilho}" opacity=".45" transform="rotate(-18 48 52)"/>
   </svg>`;
   ovAv.innerHTML = eggSVG;
 
