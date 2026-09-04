@@ -51,7 +51,7 @@ function miniAvatarMontar(id) {
   el.innerHTML =
     '<div class="mini-av-flutua">' +
       '<div class="mini-av-corpo">' +
-        gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 120, 120, fase) +
+        gerarSVG(avatar, avatar.raridade, avatar.seed, 120, 120, fase) +
       '</div>' +
     '</div>' +
     '<div class="mini-av-borbulha"></div>';

@@ -123,7 +123,7 @@ function _fazendaCartao({ s, idx }) {
      lado nenhum fora do ecrã de cuidar. */
   const cocos  = Math.max(0, s.poopCount | 0);
   const svg = (typeof gerarSVG === 'function')
-    ? gerarSVG(s.elemento, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
+    ? gerarSVG(s, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
     : '';
 
   return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}" data-slot="${idx}">
@@ -244,7 +244,7 @@ function fzZoom(idx) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
   if (!s || !s.hatched) return;
   if (typeof openAvatarZoomData !== 'function') return;
-  openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || '');
+  openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || '', s);
 }
 
 // ── Trocar entre a colônia e o cuidado de um ──

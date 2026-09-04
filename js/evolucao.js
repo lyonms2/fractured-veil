@@ -123,7 +123,7 @@ function abrirEvolucao() {
     if (!avatar || typeof gerarSVG !== 'function') return;
     // Um pouco maior do que no jogo: aqui o bicho é o assunto.
     const t2 = Math.round(tam * 1.5);
-    svgBox.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, t2, t2, fase);
+    svgBox.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, t2, t2, fase);
   };
   desenhar(faseAntiga, tamAntes);
 

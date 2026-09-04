@@ -179,7 +179,25 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   };
   const escolher = (arr) => arr[random(0, arr.length - 1)];
 
-  const cfg = ELEM_CFG[elemento] || ELEM_CFG['Fogo'];
+  /* ── A PALETA VEM DA COR, SE A HOUVER ──
+
+     O primeiro parametro chamava-se `elemento` e so sabia ser um dos
+     cinco. Passa a aceitar tambem um AVATAR — e ai a paleta sai das
+     cores que ele traz no DNA, que sao doze por doze em vez de cinco.
+
+     Continua a aceitar o nome do elemento, e e por isso que os 39
+     sitios que desenham avatares nao precisaram de mudar todos ao
+     mesmo tempo: quem passa o elemento recebe a paleta antiga, quem
+     passa o avatar recebe a nova. */
+  let cfg;
+  if (elemento && typeof elemento === 'object') {
+    const _av = elemento;
+    cfg = (typeof paletaDoAvatar === 'function') ? paletaDoAvatar(_av)
+        : (ELEM_CFG[_av.elemento] || ELEM_CFG['Fogo']);
+    elemento = _av.elemento;
+  } else {
+    cfg = ELEM_CFG[elemento] || ELEM_CFG['Fogo'];
+  }
   const cor1      = escolher(cfg.cores);
   const cor2      = escolher(cfg.cores);
   const corSec    = escolher(cfg.coresSec);

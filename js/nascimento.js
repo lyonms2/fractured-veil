@@ -82,6 +82,20 @@ function gerarDna(elemento, origem, seed) {
   const alelo = () => faixa.min + Math.floor(rnd() * (faixa.max - faixa.min + 1));
   const genes = {};
   for (const k of NASC_CARACS) genes[k] = [alelo(), alelo()];
+
+  /* ── A COR TAMBEM E UM GENE ──
+
+     Duas, na verdade: o primeiro alelo e a cor principal e o segundo
+     a secundaria. Podiam ser dois campos soltos na certidao, mas no
+     DNA e que servem para alguma coisa — um filho recebe um alelo de
+     cada lado e mostra uma mistura que nenhum dos pais tinha.
+
+     Sorteadas em toda a roda, sem olhar a origem: a raridade do ovo
+     paga forca e nao beleza. Um Comum pode nascer com um par de
+     cores que um Lendario nao teve. */
+  const nCores = (typeof CORES_RODA !== 'undefined') ? CORES_RODA.length : 12;
+  genes.cor = [Math.floor(rnd() * nCores), Math.floor(rnd() * nCores)];
+
   return { v: 1, elemento: elemento || 'Fogo', genes };
 }
 
@@ -157,6 +171,10 @@ function nascer(opts) {
     dna,
     potencial,
     inicial,
+    // As cores expressas, copiadas do DNA para não ser preciso ir lá
+    // dentro só para saber de que cor ele nasceu.
+    corPrincipal:  dna.genes.cor ? dna.genes.cor[0] : 0,
+    corSecundaria: dna.genes.cor ? dna.genes.cor[1] : 0,
     // O estado com que se começa, e que dá nome a este passo todo.
     raridade:  'Comum',
     nivel:     1,

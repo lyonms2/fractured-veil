@@ -1609,7 +1609,7 @@ async function _bnRenderResultado(sala, opWallet) {
 
       <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${euVenci ? 'arena-vencedor' : ''}">
-          <div class="arena-vs-svg">${gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, 44, 44, getFase())}</div>
+          <div class="arena-vs-svg">${gerarSVG(avatar, avatar.raridade, avatar.seed, 44, 44, getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
           <div class="arena-vs-pts" style="font-size:1.125rem;">💥 ${meusAc}</div>
         </div>

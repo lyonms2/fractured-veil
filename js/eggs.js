@@ -797,7 +797,7 @@ function abrirCerimoniaOvo(ovos, custo, proximaEm) {
   if (avatar && typeof gerarSVG === 'function') {
     const tam = Math.round((typeof getFaseSize === 'function' ? getFaseSize() : 140) * 1.5);
     const fase = typeof getFaseVisual === 'function' ? getFaseVisual() : 3;
-    svgBox.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, tam, tam, fase);
+    svgBox.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, tam, tam, fase);
   }
 
   const t1 = setTimeout(() => {

@@ -847,7 +847,7 @@ function rebuildScreensParaSlot() {
   // quem entrasse numa criatura ficava sem os botoes de cuidar.
   if(btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }
   const svg = $('creatureSVG');
-  if(svg) svg.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed,
+  if(svg) svg.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed,
                                    getFaseSize(), getFaseSize(), getFaseVisual());
   if(typeof updateAvatarSize === 'function') updateAvatarSize();
   const pl = $('phaseLabel');

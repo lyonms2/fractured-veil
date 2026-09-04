@@ -240,11 +240,17 @@ function closeMarketplaceModal() {
 
 // -- Zoom de avatar -- reaproveita o modal ja existente do jogo principal
 // (openAvatarZoomData, definido em js/main.js) em vez de duplicar overlay/CSS. --
-function mktOpenZoom(elemento, raridade, seed, nivelAv, nome) {
-  openAvatarZoomData(elemento, raridade, seed, nivelAv, nome);
+function mktOpenZoom(elemento, raridade, seed, nivelAv, nome, cores) {
+  openAvatarZoomData(elemento, raridade, seed, nivelAv, nome, cores);
 }
 function mktOpenZoomBtn(btn) {
-  mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome);
+  /* O cartao ja desenha o bicho com as cores dele; se a lupa nao as
+     levasse, a ampliacao mostrava outro bicho. So dois numeros viajam
+     no botao — chega, porque a paleta sai deles. */
+  const c = btn.dataset.cor === '' || btn.dataset.cor == null ? null
+          : { corPrincipal: parseInt(btn.dataset.cor) || 0,
+              corSecundaria: parseInt(btn.dataset.cor2) || 0 };
+  mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome, c);
 }
 
 // -- Bottom nav mobile (dentro do modal) --

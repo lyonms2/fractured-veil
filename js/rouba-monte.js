@@ -1405,7 +1405,7 @@ async function _rmRenderResultado(sala, opWallet) {
       <div class="arena-resultado-titulo" style="color:${cor};">${titulo}</div>
       <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${empate?'arena-empate':euVenci?'arena-vencedor':'arena-perdedor'}">
-          <div class="arena-vs-svg">${gerarSVG(avatar.elemento,avatar.raridade,avatar.seed,44,44,getFase())}</div>
+          <div class="arena-vs-svg">${gerarSVG(avatar,avatar.raridade,avatar.seed,44,44,getFase())}</div>
           <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
           <div class="arena-vs-pts" style="font-size:1.125rem;">🃏 ${meuMonte}</div>
         </div>

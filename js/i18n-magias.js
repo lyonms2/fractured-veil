@@ -78,6 +78,7 @@ window.registerStrings({
   'ficha.pm':         'MAGIA',
   'ficha.tecto':      'TETO',
   'ficha.sem_magia':  'Nenhuma ao alcance. A mais barata precisa de Habilidade {h}.',
+  'ficha.bebe':       'Recém-nascido. Por enquanto só o golpe comum — as magias despertam ao crescer.',
 
   'mag.ag_f4.nome':   'Inverno Súbito',
   'mag.ag_f4.desc':   'Lascas de gelo que passam por qualquer armadura. Quem levar testa Resistência ou fica preso no gelo por 2 turnos inteiros — sem atacar, sem esquivar e sem usar a Habilidade para se defender.',
@@ -232,6 +233,7 @@ window.registerStrings({
   'ficha.pm':         'MAGIC',
   'ficha.tecto':      'CEILING',
   'ficha.sem_magia':  'None within reach. The cheapest needs Skill {h}.',
+  'ficha.bebe':       'Newborn. For now only the basic strike — magic awakens with growth.',
 
   'mag.ag_f4.nome':   'Sudden Winter',
   'mag.ag_f4.desc':   'Ice shards that pass through any armor. Whoever is hit tests Endurance or is locked in ice for 2 whole turns — no attacking, no dodging, and no Skill on defense.',

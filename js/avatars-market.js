@@ -141,7 +141,7 @@ function renderBrowse() {
 
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
-  const svgHtml = gerarSVG(l.elemento, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
+  const svgHtml = gerarSVG(l, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
   const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
   const parts   = (l.nome||'Avatar').split(',');
   const nomeProp = parts[0].trim();
@@ -157,6 +157,7 @@ function buildListingCard(l) {
           <button class="mkt-avatar-zoom-btn" title="Ampliar"
             data-el="${l.elemento}" data-rar="${l.raridade}" data-seed="${l.seed||0}"
             data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
+            data-cor="${l.nascimento?l.nascimento.corPrincipal:''}" data-cor2="${l.nascimento?l.nascimento.corSecundaria:''}"
             onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
         </div>
       </div>
@@ -185,7 +186,7 @@ async function openDetail(listingId) {
   // mktCristais() lê o saldo vivo; playerData.cristais é a cópia velha.
   const canBuy   = !isMine && mktCristais() >= l.price;
   const rarCol   = { Comum:'var(--common)', Raro:'var(--rare)', 'Lendário':'var(--legendary)' }[l.raridade] || 'var(--text)';
-  const svgHtml  = gerarSVG(l.elemento, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
+  const svgHtml  = gerarSVG(l, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
   const bonusText= CARACTERISTICAS_ELEMENTAIS[l.elemento] ? t('elem.bonus.' + l.elemento) : '';
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
@@ -275,7 +276,7 @@ function openListModal(slotIdx) {
   const s = playerData.avatarSlots[slotIdx];
   document.getElementById('listAvatarPreview').innerHTML = `
     <div style="display:flex;align-items:center;gap:0.625rem;background:var(--surface2);padding:0.625rem;border-radius:0.5rem;">
-      ${gerarSVG(s.elemento,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
+      ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${s.nome}</div>
         <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
@@ -487,6 +488,10 @@ function renderSlots() {
       const _ps = (s.nome||'Avatar').split(',');
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
       const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
+      // O par de cores, pronto a viajar no onclick da moldura.
+      const _cor = s.nascimento
+        ? `{corPrincipal:${s.nascimento.corPrincipal||0},corSecundaria:${s.nascimento.corSecundaria||0}}`
+        : 'null';
       html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
         <div class="slot-stripe ${s.raridade}"></div>
         <div class="slot-header">
@@ -495,12 +500,13 @@ function renderSlots() {
           ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
-          onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}')">
+          onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}',${_cor})">
           <div class="av-zoom-wrap">
-            ${gerarSVG(s.elemento,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
+            ${gerarSVG(s,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
               data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
               data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
+            data-cor="${s.nascimento?s.nascimento.corPrincipal:''}" data-cor2="${s.nascimento?s.nascimento.corSecundaria:''}"
               onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
           </div>
         </div>
@@ -654,7 +660,7 @@ function burnAvatar(idx) {
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
-      ${gerarSVG(s.elemento, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
+      ${gerarSVG(s, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
       <div style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
       ${_ss ? `<div style="font-size:0.5625rem;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
       <div style="font-size:0.5625rem;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>

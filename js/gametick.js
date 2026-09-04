@@ -267,7 +267,7 @@ function updateAvatarSize() {
   if(avatar && wrap.dataset.marca === marca) return;   // nada mudou
   if(avatar) {
     wrap.dataset.marca = marca;
-    wrap.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, sz, sz, fase);
+    wrap.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, sz, sz, fase);
   } else {
     const svg = wrap.querySelector('svg');
     if(svg) { svg.setAttribute('width', sz); svg.setAttribute('height', sz); }

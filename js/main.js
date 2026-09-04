@@ -306,11 +306,11 @@ function openAvatarZoom() {
   const size = 260;
   const zoomEl = document.getElementById('avatarZoomSVG');
   // O zoom mostra o que o jogador vê, portanto a fase vista.
-  zoomEl.innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, size, size, getFaseVisual());
+  zoomEl.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, size, size, getFaseVisual());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, avatar.elemento, nivel);
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, avatar.elemento, nivel, avatar.nascimento);
   _lockZoomScroll();
   const ov = document.getElementById('avatarZoomOverlay');
   ov.style.display = 'flex';
@@ -322,15 +322,15 @@ function closeAvatarZoom() {
 }
 
 // Zoom genérico — usado no marketplace e meus avatares
-function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome) {
+function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome, slot) {
   const size  = 260;
   const fase  = faseFromNivel(nivelAv);
   const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
-  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(elemento, raridade, seed, size, size, fase);
+  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot || elemento, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: elemento, rar: raridade, fase: fases[fase], nivel: nivelAv||1});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, elemento, nivelAv||1);
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, elemento, nivelAv || 1, slot && slot.nascimento);
   _lockZoomScroll();
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }

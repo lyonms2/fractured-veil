@@ -577,7 +577,7 @@ function _pveLutador(c, i, lado, ativo) {
        role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
        title="${t('pve.ajuda.abrir', { nome: c.nome })}">
     <span class="cb-lutador-ver">${t('pve.ajuda.ver')}</span>
-    <div class="cb-lutador-svg">${gerarSVG(c.elemento, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
+    <div class="cb-lutador-svg">${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
     <div class="cb-lutador-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
     <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
     <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>

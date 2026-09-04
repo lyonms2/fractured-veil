@@ -439,7 +439,7 @@ function hatch() {
     // Sai da colônia: acabou de nascer um bicho e é para o ver.
     if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
     document.getElementById('aliveScreen').style.display = 'block';
-    document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
+    document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
     document.getElementById('phaseLabel').textContent = t('gt.phase.label', {fase: FASES[getFase()]});
     updateEquippedDisplay();
     renderEggInventory();
@@ -491,7 +491,7 @@ function hatch() {
   alive.style.opacity = '0';
   alive.style.transition = 'opacity .6s ease';
 
-  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar.elemento, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
+  document.getElementById('creatureSVG').innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, getFaseSize(), getFaseSize(), getFase());
   document.getElementById('phaseLabel').textContent = `FASE: ${FASES[getFase()]}`;
   updateEquippedDisplay();
 

@@ -30,9 +30,9 @@ const FICHA_COR = {
 // aos 8, senão as fichas normais apareciam todas vazias.
 const FICHA_ESCALA = 8;
 
-function renderFichaHTML(seed, raridade, elemento, nivel) {
+function renderFichaHTML(seed, raridade, elemento, nivel, nascimento) {
   if (typeof fichaDeAvatar !== 'function') return '';
-  const f = fichaDeAvatar(seed, raridade, elemento, nivel);
+  const f = fichaDeAvatar(seed, raridade, elemento, nivel, nascimento);
   if (!f) return '';
   f.seed = (seed && typeof seed === 'object') ? seed.seed : seed;
 
@@ -102,6 +102,17 @@ function renderMagiasHTML(f) {
       <div class="hab-conta">FA H${f.H} + F${f.F} + 1d</div>
     </div>`;
 
+  /* O bebé não tem magias, e a ficha tem de dizer porquê.
+     Sem isto apareciam três caixas vazias a pedir Habilidade, quando o
+     que falta é idade — e a batalha já lhe dá só o golpe comum. */
+  if (typeof ehBebe === 'function' && ehBebe(f)) {
+    return `<div class="hab-bloco">
+      <div class="hab-titulo">${t('hab.titulo')}</div>
+      ${golpe}
+      <div class="hab vazia"><div class="hab-efeito">${t('ficha.bebe')}</div></div>
+    </div>`;
+  }
+
   const linhas = ['ataque', 'forte', 'defesa'].map(cat => {
     const g = m[cat];
     if (!g) return `<div class="hab vazia">
@@ -154,10 +165,10 @@ function renderMagiasHTML(f) {
 
 // Preenche a ficha dentro do overlay de zoom do avatar.
 // Chamada por openAvatarZoom() e openAvatarZoomData() em js/main.js.
-function preencherFichaZoom(seed, raridade, elemento, nivel) {
+function preencherFichaZoom(seed, raridade, elemento, nivel, nascimento) {
   const el = document.getElementById('avatarZoomFicha');
   if (!el) return;
-  el.innerHTML = renderFichaHTML(seed, raridade, elemento, nivel);
+  el.innerHTML = renderFichaHTML(seed, raridade, elemento, nivel, nascimento);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -220,7 +231,7 @@ function renderEquipaBar() {
          title="${imp ? t('equipa.bloqueio.title.' + imp.motivo, { nome })
                       : t('mkt.slot.label', {n: i+1})}">
       <span class="equipa-pos">${n + 1}</span>
-      ${gerarSVG(s.elemento, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
+      ${gerarSVG(s, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
       <div class="equipa-slot-nome">${nome}</div>
       <div class="equipa-slot-sub">${ec ? ec.emoji : '✦'} ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
       <div class="equipa-papel">${papel}</div>
