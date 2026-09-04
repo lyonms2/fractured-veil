@@ -341,7 +341,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
          Varrer o nível 1 à procura delas era procurar o que ainda não
          existe, e contar como "gaveta vazia" o que é só infância. O nível
          35 é Lendário e tem os quatro lugares; o 13 é Raro e tem três. */
-      for (const nv of [5, 13, 35])
+      for (const nv of [13, 35])
         for (let s = 1; s <= 600; s++) {
           const rarAqui = nv >= 29 ? 'Lendário' : nv >= 13 ? 'Raro' : 'Comum';
           const f = M.fichaDeAvatar(s, rarAqui, el, nv); if (!f) continue;
@@ -358,11 +358,26 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
           if (nv >= 13 && !g.muito_forte) vazias.muito_forte++;
           if (f.vantagem && f.vantagem.id === 'toque_ardente') { comToque++; if (f.A === 0) toqueMorto++; }
         }
-  A.ver('Piso de 1 — nenhuma característica nasce a zero',
-        zeros === 0, `${zeros} zeros em ${n.toLocaleString('pt-BR')} fichas`);
-  A.ver('Piso de 1 — o crítico deixa de ser morto (dobrar zero dava zero)',
+  /* ── OS ZEROS, E QUANDO DEIXAM DE SER ACEITÁVEIS ──
+
+     Havia um +1 somado a todas as características, por fora do
+     orçamento, e estes testes guardavam-no. Saiu: com o bebê a valer um
+     ponto, quatro pontos oferecidos faziam a ficha mentir sobre si.
+
+     No lugar dele, as três primeiras unidades que sobram do orçamento
+     vão à Habilidade, à Força e à Armadura — pagas, e não oferecidas.
+     Portanto um avatar com pouco orçamento TEM zeros, e deve ter: quem
+     não tem, não dá.
+
+     A pergunta muda de "nunca há zeros" para "não há zeros a partir do
+     nível em que a bolsa chega para as quatro", que é o nível 7. Antes
+     disso o avatar está na CRIANÇA, e a CRIANÇA só tem a magia de
+     bater — as regras que um zero desliga ainda não o afectam. */
+  A.ver('Nenhuma característica fica a zero depois de a bolsa chegar para as quatro',
+        zeros === 0, `${zeros} zeros em ${n.toLocaleString('pt-BR')} fichas do nível 13 e 35`);
+  A.ver('E por isso o crítico nunca é morto — dobrar zero dava zero',
         zeros === 0, 'com F≥1 e A≥1, um 6 natural vale sempre alguma coisa');
-  A.ver('Piso de 1 — a Habilidade nunca é 0, logo o tecto H×5 nunca é 0',
+  A.ver('A Habilidade nunca é 0 aí, logo o tecto H×5 nunca é 0',
         minH >= 1, `a mais baixa encontrada foi H${minH}`);
   A.ver('Toque de Energia — nunca nasce com Armadura 0, que o tornaria inútil',
         comToque > 100 && toqueMorto === 0,
@@ -377,9 +392,15 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
         `defensiva ${vazias.defensiva} · muito forte ${vazias.muito_forte}`);
 }
 
-// Ninguém entra em combate com menos de 10 de vida e 10 de magia. Quem
-// garante isto é o "1 +" do piso da Resistência — não o +1 das
-// características, que só assegura R≥1 (ou seja, 5 PV e 5 PM).
+/* Ninguém entra em combate com ZERO de vida ou de magia.
+
+   Eram dez de cada, e vinham de duas coisas somadas: o "1 +" do piso da
+   Resistência e o +1 que todas as características levavam por fora do
+   orçamento. O segundo saiu, e o mínimo desceu para cinco.
+
+   Cinco é pouco, e é pouco de propósito: só acontece a quem tem um
+   ponto de orçamento, ou seja ao bebê — e bebê não luta. O que não
+   pode mesmo acontecer é zero, e essa é a pergunta que fica. */
 {
   let minPV = 9999, minPM = 9999, n = 0;
   for (const el of ['Fogo','Água','Terra','Vento','Sombra'])
@@ -389,8 +410,8 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
           const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
           n++; minPV = Math.min(minPV, f.pv); minPM = Math.min(minPM, f.pm);
         }
-  A.ver('Ninguém entra em combate com menos de 10 de vida e 10 de magia',
-        minPV >= 10 && minPM >= 10,
+  A.ver('Ninguém entra em combate com zero de vida ou de magia',
+        minPV >= 5 && minPM >= 5,
         `em ${n.toLocaleString('pt-BR')} fichas — PV mínimo ${minPV} · PM mínimo ${minPM}`);
 }
 
@@ -472,7 +493,11 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
           const m = M.magiasDoAvatar(f);
           const ids = M.MAGIA_SLOTS.map(c => m[c] ? m[c].id : null);
           const alc = M.MAGIA_SLOTS.map(c => M.magiaAoAlcance(f, m[c]));
-          graca += v.reduce((x, y) => x + y, 0) - (f.pontos + 4);
+          /* Era `f.pontos + 4`: os quatro pontos que o piso de 1 dava
+             por fora. Esse piso saiu e o que ficou é pago da bolsa,
+             portanto a soma das quatro tem de bater CERTO com o
+             orçamento, sem parcela nenhuma a mais. */
+          graca += v.reduce((x, y) => x + y, 0) - f.pontos;
           if (ant) {
             n++;
             if (v.some((x, i) => x < ant[i])) regrediu++;

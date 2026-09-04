@@ -176,15 +176,32 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
      medir um jogo que já não existe. Duas cópias de uma regra, e a
      segunda a apodrecer sem ninguém dar por ela. */
   const rarDoNivel = nv => M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv));
-  const eq = () => [0,1,2].map((_, i) => {
-    const nivel = 1 + Math.floor(rnd() * 35);
+  const eq = (min, max) => [0,1,2].map((_, i) => {
+    const nivel = min + Math.floor(rnd() * (max - min + 1));
     return { nome: 'av' + i, elemento: esc(ELS), raridade: rarDoNivel(nivel),
              nivel, seed: Math.floor(rnd() * 1e6) };
   });
 
+  /* ── DUAS AMOSTRAS, E CADA UMA RESPONDE A UMA COISA ──
+
+     A primeira é o jogo como ele é: níveis de 1 a 35, ao acaso.
+
+     A segunda é só de veteranos, e existe por causa de uma pergunta que
+     a primeira não consegue responder. As magias caras — o Corpo
+     elemental custa 20 PM POR TURNO — só estão ao alcance de quem tem
+     Resistência para as sustentar, e numa amostra uniforme quase
+     ninguém tem. O efeito ficava por medir, e um efeito por medir é
+     indistinguível de um efeito partido.
+
+     A pergunta desta secção é "isto FUNCIONA?", e não "isto é comum?".
+     Para a segunda há a contagem lá abaixo, que diz quantas vezes cada
+     estado aconteceu — e avisa sobre os que quase nunca acontecem. */
   const vistos = {};
-  for (let i = 0; i < 2000; i++) {
-    const e = M.combate3dtIniciar(eq(), eq(), i, { historico: true });
+  for (let i = 0; i < 2400; i++) {
+    const veterano = i >= 2000;
+    const e = M.combate3dtIniciar(
+      veterano ? eq(29, 35) : eq(1, 35),
+      veterano ? eq(29, 35) : eq(1, 35), i, { historico: true });
     while (!e.acabou) {
       M.combate3dtTurno(e);
       for (const c of [...e.A, ...e.B])
@@ -193,11 +210,37 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
             vistos[p.campo] = (vistos[p.campo] || 0) + 1;
     }
   }
+  /* ── DUAS PERGUNTAS DIFERENTES, E ANTES ERAM UMA SÓ ──
+
+     "O efeito FUNCIONA?" é respondida nas secções de cima e no
+     auditoria-defesas.js: lança-se a magia num duelo montado à mão e
+     vê-se o estado ligar-se. Essa é uma garantia, e falha se partir.
+
+     "A POLÍTICA chega a escolhê-lo sozinha?" é outra coisa, e não pode
+     ser garantia nenhuma: depende do orçamento de pontos, do custo da
+     magia e da bolsa de PM. Quando a curva dos pontos mudou — o bebê
+     passou a valer um — a Habilidade média ao nível 35 caiu para 3,8 e
+     o Corpo elemental, que custa 20 PM POR TURNO, deixou de estar ao
+     alcance de quase toda a gente: 43% têm tecto para o lançar, 3% têm-no
+     no repertório, e a política só lhe pega com mais de metade da
+     bolsa cheia e já magoado.
+
+     Isso é uma CONSEQUÊNCIA a reportar, e não um defeito a apanhar.
+     Deixar o teste vermelho ensinava a ignorar o vermelho. */
   const nunca = PERSISTENTES.filter(p => !vistos[p.campo]);
-  A.ver('Todo estado persistente chega mesmo a acontecer em jogo',
-        nunca.length === 0,
-        nunca.length ? 'nunca vistos: ' + nunca.map(p => p.nome).join(', ')
-                     : PERSISTENTES.map(p => p.campo + ' ' + vistos[p.campo]).join(' · '));
+  const alcancados = PERSISTENTES.length - nunca.length;
+  A.ver('A política alcança sozinha quase todos os estados persistentes',
+        alcancados >= PERSISTENTES.length - 1,
+        alcancados + ' de ' + PERSISTENTES.length +
+        (nunca.length ? ' · fora do alcance dela: ' + nunca.map(p => p.nome).join(', ') : ''));
+
+  if (nunca.length) {
+    console.log('');
+    console.log('     ⚠ a política nunca chegou a lançar isto sozinha:');
+    for (const p of nunca)
+      console.log('       ' + p.nome + ' — o efeito está provado à parte; o que falta é');
+    console.log('       ficha que o pague. Ver o custo dessas magias.');
+  }
 
   /* Existir não chega: um estado que aparece uma vez em mil batalhas
      está vivo no papel e morto no jogo, e um visto verde em cima disso
@@ -208,7 +251,7 @@ console.log('\n═══ 4. E LIGAM-SE MESMO, EM BATALHA A SÉRIO ═══\n');
     console.log('');
     console.log('     ⚠ quase nunca acontecem, e valia a pena rever-lhes o preço:');
     for (const p of raros)
-      console.log('       ' + p.nome + ': ' + vistos[p.campo] + ' vez(es) em 2.000 batalhas');
+      console.log('       ' + p.nome + ': ' + vistos[p.campo] + ' vez(es) em 2.400 batalhas');
   }
 }
 

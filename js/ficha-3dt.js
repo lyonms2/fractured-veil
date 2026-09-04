@@ -105,6 +105,10 @@ const FICHA_NIVEIS_POR_PONTO = 2;
 // ainda o +1 do piso, portanto um avatar de nível 1 chega a 6.
 const FICHA_MAX_INICIAL = 5;
 
+// Quantas características levam um primeiro ponto pago da bolsa, para
+// nenhuma ficar em zero quando o orçamento já dá para isso.
+const PISO_PAGO_N = 3;
+
 const FICHA_PV_POR_R = 5;
 const FICHA_PM_POR_R = 5;
 
@@ -116,12 +120,11 @@ const FICHA_PM_POR_R = 5;
 // garante R≥1 para toda a gente. O que este piso ainda faz são DUAS
 // coisas, e nenhuma delas é a original:
 //
-//   · o "1 +" garante um MÍNIMO DE 10 PV E 10 PM em combate. Sem ele o
-//     mínimo cairia para 5 de cada, e 2,5% dos avatares entrariam em
-//     luta com 5 pontos de magia — quase nada, quando a magia média
-//     custa 5. Ficou por decisão, não por inércia: tirá-lo não daria
-//     mais variedade nenhuma (a amplitude das fichas nem se mexe),
-//     só avatares mais frágeis.
+//   · o "1 +" garante um MÍNIMO DE 5 PV E 5 PM em combate. Eram dez
+//     enquanto havia o piso de 1 somado a todas as características —
+//     esse saiu, e o mínimo desceu para metade. Continua a não ser
+//     zero, que é o que interessa: com R0 o avatar entrava em campo sem
+//     vida nenhuma.
 //
 //   · o "floor(pontos/6)" faz o ESCALONAMENTO, e esse o +1 não dá por
 //     ser uma constante. Sem ele, um avatar com foco em Habilidade
@@ -298,7 +301,9 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   // da Resistência (que sobe de seis em seis pontos) deslocava o limiar
   // e voltava a desalinhar a fila. Foi assim que sobraram 1880
   // regressões depois da primeira correção.
-  const sorteiosNoNv1 = pontosNoNv1 - _pisoDeR(pontosNoNv1);
+  // Menos os pisos pagos, que não são sorteios: contam para o orçamento
+  // mas não para a fila, e somá-los aqui deslocava o tecto de cada ponto.
+  const sorteiosNoNv1 = Math.max(0, pontosNoNv1 - _pisoDeR(pontosNoNv1) - PISO_PAGO_N);
 
   /* ── O PISO DA RESISTÊNCIA SAIU DO SORTEIO ──
 
@@ -323,7 +328,46 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
      Nenhum dos dois mexe num sorteio já feito. */
   const piso = _pisoDeR(pontos);
   const c = { F: 0, H: 0, R: 0, A: 0 };
-  const porGastar = pontos - piso;
+
+  /* ── O PRIMEIRO PONTO DE CADA UMA, PAGO DA BOLSA ──
+
+     Havia um +1 somado a todas no fim, POR FORA do orçamento. Saiu —
+     com o bebé a valer um ponto, quatro pontos oferecidos faziam a
+     ficha mentir sobre si própria.
+
+     Só que apagar e mais nada partia o jogo em três sítios, e medi os
+     três: 14% dos avatares chegavam ao nível 35 com Habilidade 0 — e
+     com H0 o tecto H×5 é zero, portanto NENHUMA das quatro magias
+     podia alguma vez ser lançada; 2.460 fichas ficavam sem defensiva
+     alcançável; e 480 nasciam com o Toque Ardente e Armadura 0, que é
+     uma vantagem que não faz nada.
+
+     A saída é a que a Resistência já usava: um piso PAGO DA BOLSA. As
+     três primeiras unidades que sobram depois do piso da R vão, uma
+     cada, à Habilidade, à Força e à Armadura. Não é oferta: sai do
+     orçamento, e o total continua a bater certo ao ponto.
+
+     O bebé fica na mesma como o jogo diz que ele é — um ponto, e esse
+     vai todo para a Resistência: F0 H0 R1 A0. Quem não tem, não dá.
+     A partir do nível 7 a bolsa chega para as quatro, e aí acabam os
+     zeros que desligam regras.
+
+     A ordem é H, F, A e não é arbitrária: a Habilidade primeiro porque
+     é a única cujo zero tranca o jogo todo (sem tecto não há magia
+     nenhuma); depois a Força e a Armadura, que um zero só enfraquece.
+
+     E não quebra a subida: cada ponto novo ou preenche o próximo piso
+     por preencher, ou vai para o fim da fila do sorteio. Nunca mexe num
+     que já foi dado. */
+  const PISO_PAGO = ['H', 'F', 'A'];
+  let sobra = pontos - piso;
+  let pisosDados = 0;
+  for (const k of PISO_PAGO) {
+    if (sobra <= 0) break;
+    c[k] = 1; sobra--; pisosDados++;
+  }
+
+  const porGastar = sobra;
 
   for (let i = 1; i <= porGastar; i++) {
     // Este é o i-ésimo ponto. Se veio do orçamento de nascença, tecto 5;
@@ -340,21 +384,24 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
 
   const tecto = FICHA_MAX_INICIAL + pontosDeNivel;
 
-  // ── O PISO DE 1 ──
-  // Somado no FIM, depois de a bolsa estar distribuída, e não antes. A
-  // diferença é tudo: um piso pago da bolsa comeria 4 dos 5 pontos de um
-  // Comum de nível 1 e sairiam todos 1/1/1/1. Somado no fim, a distância
-  // entre as características fica intacta — a Tasha do manual (F0 H4 R3
-  // A2) passa a F1 H5 R4 A3, a mesma personagem um degrau acima.
-  //
-  // Existe porque um 0 desliga regras em silêncio:
-  //   · o crítico dobra a Força e a Armadura, e dobrar zero dá zero —
-  //     um 6 natural não valia nada para ~30% dos avatares
-  //   · a Habilidade manda no tecto H×5, e com H baixo havia gavetas de
-  //     magia que ficavam vazias por não caber lá nada
-  // Repare que os quatro sobem, portanto a FA e a FD sobem as duas: o
-  // dano por golpe fica onde estava.
-  c.F += 1; c.H += 1; c.R += 1; c.A += 1;
+  /* ── O PISO DE 1 SAIU ──
+
+     Somava-se um ponto a cada uma das quatro características, no fim,
+     por fora do orçamento. Existia porque um 0 desliga regras em
+     silêncio: o crítico dobra a Força e a Armadura, e dobrar zero dá
+     zero; a Habilidade manda no tecto H×5, e com H a zero não cabe
+     magia nenhuma.
+
+     Fazia sentido quando o orçamento começava nos cinco: quatro pontos
+     por fora eram um retoque. Deixou de fazer no dia em que o bebé
+     passou a valer UM — a ficha dizia um ponto e mostrava cinco, e a
+     ficha a mentir sobre o próprio orçamento é pior do que qualquer
+     regra que um zero desligue.
+
+     O que o bebé mostra agora é o que ele tem: F0 H0 R1 A0. A única
+     coisa que continua garantida é a Resistência, e essa é PAGA da
+     bolsa (ver _pisoDeR) — sem ela um avatar entrava em campo com zero
+     de vida, que não é uma ficha fraca, é uma ficha impossível. */
 
   // As vantagens de reserva dão PV ou PM como se a Resistência fosse
   // maior, sem mexer na R verdadeira.

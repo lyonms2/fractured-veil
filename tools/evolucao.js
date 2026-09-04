@@ -289,8 +289,14 @@ titulo('O BEBÊ');
               '  · ' + bebe.pv + ' PV · ' + bebe.pm + ' PM · ' + bebe.escalao);
 
   ok(bebe.pontos === 1, 'a ficha do bebê vale um ponto', bebe.pontos + ' ponto');
-  ok(soma === 5, 'e as quatro características ficam no piso',
-     'F1 H1 R2 A1 soma ' + soma + ' (o ponto mais o +1 de cada)');
+  /* A soma das quatro TEM de bater certo com o orçamento, sem parcela
+     nenhuma a mais. Era `1 + 4`: o piso de um ponto que todas levavam
+     por fora da bolsa. Esse piso saiu — fazia a ficha do bebê dizer um
+     ponto e mostrar cinco. */
+  ok(soma === bebe.pontos, 'e a soma das quatro bate certo com o orçamento',
+     'F' + bebe.F + ' H' + bebe.H + ' R' + bebe.R + ' A' + bebe.A + ' soma ' + soma);
+  ok(bebe.R >= 1, 'a Resistência é a única com piso, e esse é pago da bolsa',
+     'R' + bebe.R + ', que é o que o único ponto dele comprou');
   ok(!bebe.vantagem && !bebe.desvantagem, 'sem virtude e sem defeito', 'as duas nulas');
   ok(Object.keys(M.magiasDoAvatar(bebe)).length === 0, 'e sem magia nenhuma',
      'só o golpe comum');
@@ -298,8 +304,55 @@ titulo('O BEBÊ');
   /* Um bebê de um ponto tinha de continuar a ter vida para existir na
      tela — dez de vida e dez de magia é o mínimo que o piso da
      Resistência garante, e não pode cair com a curva nova. */
-  ok(bebe.pv >= 10 && bebe.pm >= 10, 'mas com vida e magia para existir',
+  /* Cinco e não dez: eram dez enquanto o piso de 1 somava à R. O que não
+     pode ser é zero — com R0 o avatar entrava em campo sem vida nenhuma,
+     e isso não é uma ficha fraca, é uma ficha impossível. */
+  ok(bebe.pv > 0 && bebe.pm > 0, 'mas com vida e magia para existir',
      bebe.pv + ' PV · ' + bebe.pm + ' PM');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('NENHUM PONTO OFERECIDO');
+
+/* Havia um +1 somado a cada característica, por fora do orçamento —
+   quatro pontos de graça em cada ficha do jogo. Com o bebê a valer um
+   ponto, isso fazia a ficha dizer um e mostrar cinco.
+
+   Saiu. O que ficou no lugar é pago da bolsa, e estas duas perguntas
+   guardam as duas metades da troca: o orçamento bate certo, E ninguém
+   fica com um zero que desligue uma regra depois de haver bolsa. */
+{
+  let errado = 0, n = 0;
+  for (let seed = 1; seed <= 1500; seed++) {
+    for (let nv = 1; nv <= 35; nv++) {
+      const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+      n++;
+      if (f.F + f.H + f.R + f.A !== f.pontos) errado++;
+    }
+  }
+  ok(errado === 0, 'a soma das quatro é sempre exactamente o orçamento',
+     n.toLocaleString('pt-BR') + ' fichas, do nível 1 ao 35');
+}
+
+/* E o custo da troca, medido: um zero na Habilidade tranca TODAS as
+   magias do avatar (o tecto é H×5), portanto tem de desaparecer assim
+   que a bolsa chegue para o pagar. Chega ao nível 7. */
+{
+  const primeiroSemZeros = (() => {
+    for (let nv = 1; nv <= 35; nv++) {
+      let temZero = false;
+      for (let seed = 1; seed <= 1200 && !temZero; seed++) {
+        const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+        if (f.F === 0 || f.H === 0 || f.A === 0 || f.R === 0) temZero = true;
+      }
+      if (!temZero) return nv;
+    }
+    return null;
+  })();
+  console.log('       primeiro nível sem zeros em ficha nenhuma: ' + primeiroSemZeros);
+  ok(primeiroSemZeros !== null && primeiroSemZeros <= 13,
+     'os zeros acabam cedo — antes de a magia defensiva sequer chegar',
+     'sem zeros a partir do nível ' + primeiroSemZeros + ', e a defensiva chega ao 10');
 }
 
 // ════════════════════════════════════════════════════════════════

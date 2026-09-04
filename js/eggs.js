@@ -367,14 +367,31 @@ function _pararAnimacaoDeChocar() {
    elemento não era usado para nada, apesar de estar na assinatura.
 
    Como todo o avatar nasce Comum, o ovo era SEMPRE o mesmo ovo verde.
-   Agora recebe o próprio avatar e pinta-se com as cores dele: o ovo tem
-   a cor de quem está lá dentro, e não há dois iguais. */
+   Agora recebe o próprio avatar e pinta-se com as cores dele.
+
+   ── AS RACHAS, QUE EU TINHA APAGADO SEM DAR CONTA ──
+
+   Pintei-as com o BRILHO da cor do ovo — e brilho da mesma cor sobre a
+   mesma cor não se vê. As cinco linhas continuavam a ser desenhadas e
+   nenhuma aparecia. Uma racha é luz a passar pela casca: é branca, seja
+   de que cor for o ovo, e por isso deixou de sair da paleta.
+
+   ── E DEVAGAR ──
+
+   Era 1,2 segundos para nascer um bicho, com as cinco rachas em três
+   momentos — duas, duas e uma, tudo em meio segundo. São 2,8 segundos:
+   cada racha tem o seu instante, há tempo de ver a casca ceder, e o
+   clarão só vem quando já se percebeu o que estava a acontecer. */
+const HATCH_RITMO = 340;     // o compasso; o resto são múltiplos dele
+
 function hatchWithAnimation(slot, targetSlot) {
   _pararAnimacaoDeChocar();
   const g = (typeof gradienteDoOvo === 'function' && slot && slot.nascimento)
     ? gradienteDoOvo(slot)
     : { topo: '#5a3a9a', meio: '#2d1a5e', fundo: '#0b0916', brilho: '#8060c0', aura: '#7a4fbb' };
-  const crackColor = g.brilho;
+
+  // A racha é a luz de dentro. Branca, e não da cor da casca.
+  const crackColor = '#fff6e0';
 
   document.getElementById('aliveScreen').style.display = 'none';
   document.getElementById('deadScreen').style.display  = 'none';
@@ -392,45 +409,56 @@ function hatchWithAnimation(slot, targetSlot) {
   const cracks = document.getElementById('eggCracks');
   const pulse  = document.getElementById('eggPulse');
   const flash  = document.getElementById('eggFlash');
-  pulse.setAttribute('stroke', crackColor);
+  pulse.setAttribute('stroke', g.brilho);
   svg.style.transform = ''; svg.style.transition = '';
+  svg.style.opacity = '1';
 
   const lines = document.querySelectorAll('#eggCracks line');
+  lines.forEach(l => { l.style.opacity = '0'; l.style.transition = 'opacity .18s ease'; });
+  cracks.style.opacity = '1';
 
-  _hatchTimers.push(setTimeout(() => {
-    svg.style.transition = 'transform .08s ease';
-    svg.style.transform  = 'rotate(-10deg) scale(1.05)';
-    cracks.style.opacity = '1';
-    if(lines[0]) lines[0].style.opacity = '1';
-    if(lines[1]) lines[1].style.opacity = '1';
-    playSound('egg_crack');
-  }, 0));
-  _hatchTimers.push(setTimeout(() => { svg.style.transform = 'rotate(8deg) scale(1.08)'; }, 120));
-  _hatchTimers.push(setTimeout(() => {
-    svg.style.transform = 'rotate(-6deg) scale(1.06)';
-    if(lines[2]) lines[2].style.opacity = '1';
-    if(lines[3]) lines[3].style.opacity = '1';
-  }, 250));
-  _hatchTimers.push(setTimeout(() => { svg.style.transform = 'rotate(4deg) scale(1.1)'; }, 380));
-  _hatchTimers.push(setTimeout(() => {
-    svg.style.transform = 'rotate(0deg) scale(1.12)';
-    if(lines[4]) lines[4].style.opacity = '1';
-    pulse.style.transition = 'opacity .15s';
-    pulse.style.opacity = '0.8';
+  const em = (ms, fn) => _hatchTimers.push(setTimeout(fn, ms));
+  const R = HATCH_RITMO;
+
+  /* Cada compasso é um esforço: o ovo estremece para um lado e abre mais
+     uma racha. Cinco esforços, cinco rachas, uma de cada vez. */
+  const balanco = ['rotate(-9deg) scale(1.04)', 'rotate(7deg) scale(1.07)',
+                   'rotate(-6deg) scale(1.05)', 'rotate(5deg) scale(1.08)',
+                   'rotate(-3deg) scale(1.1)'];
+  for (let i = 0; i < 5; i++) {
+    em(R * i, () => {
+      svg.style.transition = 'transform .16s ease';
+      svg.style.transform  = balanco[i];
+      if (lines[i]) lines[i].style.opacity = '1';
+      playSound('egg_crack');
+    });
+    /* Volta ao lugar a meio do compasso. É o descanso entre duas
+       investidas, e é o que faz isto ler-se como esforço e não como
+       tremor. */
+    em(R * i + R * 0.55, () => { svg.style.transform = 'rotate(0deg) scale(1.02)'; });
+  }
+
+  // Um compasso de silêncio antes do fim: a casca aguenta, e depois não.
+  em(R * 5.4, () => {
+    svg.style.transition = 'transform .3s ease';
+    svg.style.transform  = 'rotate(0deg) scale(1.14)';
+    pulse.style.transition = 'opacity .25s';
+    pulse.style.opacity = '0.85';
     playSound('summon_pulse');
-  }, 500));
-  _hatchTimers.push(setTimeout(() => { pulse.style.opacity = '0'; }, 680));
-  _hatchTimers.push(setTimeout(() => {
+  });
+  em(R * 6.4, () => { pulse.style.opacity = '0'; });
+
+  em(R * 7, () => {
     flash.style.opacity = '1';
-    svg.style.transition = 'transform .2s ease, opacity .2s ease';
-    svg.style.transform  = 'scale(1.4)';
+    svg.style.transition = 'transform .35s ease, opacity .35s ease';
+    svg.style.transform  = 'scale(1.5)';
     svg.style.opacity    = '0';
     playSound('summon_impact');
-  }, 900));
-  _hatchTimers.push(setTimeout(() => {
+  });
+  em(R * 8.2, () => {
     flash.style.opacity = '0';
     hatch();
-  }, 1200));
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
