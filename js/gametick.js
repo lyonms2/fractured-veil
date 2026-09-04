@@ -720,14 +720,14 @@ function checkXP() {
              {nivel}), 'leg');
     playLevelUp(nivel);
 
-    /* A raridade sobe com a fase, e por isso pergunta-se aqui.
+    /* A raridade sobe com os pontos, e por isso pergunta-se aqui.
 
-       Pergunta-se ao getFase(), que já sabe ler as variáveis vivas e
-       já exige nível E horas de jogo. O sincronizarRaridade lê o slot,
-       e o slot do avatar em campo tem o nível velho — só o recebe na
-       gravação — por isso aqui não serve. */
-    if(avatar && typeof raridadeDaFase === 'function') {
-      const _nova = raridadeDaFase(getFase());
+       Passa-se {nivel, totalSecs} à mão em vez do avatar: o slot do bicho
+       em campo tem o nível velho — só o recebe na gravação — e o
+       raridadeDoSlot leria um nível atrasado e concluiria que não houve
+       subida. */
+    if(avatar && typeof raridadeDoSlot === 'function') {
+      const _nova = raridadeDoSlot({ nivel, totalSecs });
       if(grauDaRaridade(_nova) > grauDaRaridade(avatar.raridade)) {
         avatar.raridade = _nova;
         addLog(t('gt.raridade.subiu', { raridade: _nova }), 'leg');

@@ -10,37 +10,51 @@
 //
 // ── A ESCADA ──
 //
-// Não inventei degrau nenhum: a raridade anda pelas FASES que o jogo já
-// tinha. Quem sobe de fase já tem cerimónia (js/evolucao.js), já tem
-// clarão e já escolhe o momento — e é nessa cerimónia que o avatar
-// passa a ficar mais raro. Uma coisa só, com um nome só.
+// Pelos PONTOS de personagem, que é a medida que o próprio 3D&T usa para
+// dizer o que uma criatura vale:
 //
-//   fase 0  BEBÊ      nível 1-4      Comum
-//   fase 1  CRIANÇA   nível 5-9      Comum
-//   fase 2  JOVEM     nível 10-16    Raro
-//   fase 3  ADULTO    nível 17+      Lendário
+//     0–7 pontos    Comum       níveis  1–12
+//     8–11 pontos    Raro        níveis 13–28
+//     12+ pontos     Lendário    níveis 29–35
 //
-// O bebé e a criança partilham o Comum de propósito: sair da primeira
-// fase é aprender a andar, e não ainda distinguir-se.
+// Andou pelas FASES durante um dia, e era depressa de mais: dava
+// Lendário ao nível 17, a meio do caminho, e depois havia dezoito níveis
+// sem nada para chegar. Pelos pontos, ser Lendário é o fim da estrada.
 //
-// ── A FASE PEDE NÍVEL E TEMPO ──
+// ── MAS O TEMPO DE JOGO CONTINUA A MANDAR ──
 //
-// getFase() é o menor entre o nível e as horas de jogo (FASE_MIN_SECS,
-// em js/state.js), para ninguém comprar XP e saltar para adulto numa
-// tarde. A raridade herda essa regra inteira: onde há totalSecs, conta;
-// onde não há — uma listagem do marketplace só leva o nível — usa-se o
-// nível, que é o que existe.
+// Os pontos vêm do nível, e o nível vem do XP — que se pode acumular
+// depressa. O jogo já tinha guarda para isso nas fases (FASE_MIN_SECS,
+// em js/state.js): ser adulto pede vinte horas de jogo, e não só
+// nível. A raridade fica com o menor dos dois, senão eu estaria a abrir
+// pela porta das traseiras uma porta que alguém já tinha fechado.
 //
-// ── O QUE A RARIDADE NÃO FAZ ──
+// Onde não há tempo de jogo na mão — uma listagem do marketplace traz o
+// nível e mais nada — responde-se pelos pontos, que é o que existe.
 //
-// Não dá pontos de ficha. O pontosDoAvatar deixou de a ler (ver
-// js/ficha-3dt.js): se a lesse, o avatar ganhava cinco pontos de uma
-// vez ao passar a Lendário e um nível 16 encontrava um nível 17 com o
-// dobro da força. A raridade paga em CORPO — asas, espinhos, aura — e
-// no direito de ser vendido. A força continua a vir do nível.
-// ═══════════════════════════════════════════════════════════════════
+// ── O QUE A RARIDADE FAZ E NÃO FAZ ──
+//
+// NÃO dá pontos de ficha: eles são a causa e não o efeito, e pô-la a
+// pagá-los seria um círculo. O pontosDoAvatar deixou de a ler.
+//
+// DÁ corpo — asas, espinhos, aura, que aparecem à medida (js/data.js) —
+// e dá REPERTÓRIO: o Comum luta com um ataque e uma defesa, o Raro
+// ganha um golpe forte, o Lendário ganha um segundo. E dá o direito de
+// ser vendido.
+// ════════════════════════════════════════════════════════════════════
 
-const RARIDADE_POR_FASE = ['Comum', 'Comum', 'Raro', 'Lendário'];
+/* Os degraus, em pontos. O primeiro elemento de cada par é o mínimo. */
+const RARIDADE_ESCADA = [
+  { min: 12, raridade: 'Lendário' },
+  { min:  8, raridade: 'Raro' },
+  { min:  0, raridade: 'Comum' },
+];
+
+/* O TECTO QUE O TEMPO DE JOGO IMPÕE.
+
+   Não é a escada — é o travão. A fase 3 pede vinte horas de jogo, e sem
+   elas o avatar não passa de Raro por muitos pontos que tenha. */
+const RARIDADE_POR_FASE = ['Comum', 'Raro', 'Raro', 'Lendário'];
 
 // Quantos degraus acima do Comum. É este número que o desenho lê para
 // saber que partes do corpo já se vêem.
@@ -49,6 +63,13 @@ const RARIDADE_GRAU = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
 function raridadeDaFase(fase) {
   const f = Math.max(0, Math.min(RARIDADE_POR_FASE.length - 1, fase | 0));
   return RARIDADE_POR_FASE[f];
+}
+
+// A raridade que estes pontos valem, sem olhar a mais nada.
+function raridadeDosPontos(pontos) {
+  const p = pontos || 0;
+  for (const degrau of RARIDADE_ESCADA) if (p >= degrau.min) return degrau.raridade;
+  return 'Comum';
 }
 
 function grauDaRaridade(raridade) {
@@ -72,7 +93,15 @@ function faseDoSlot(slot) {
 }
 
 function raridadeDoSlot(slot) {
-  return raridadeDaFase(faseDoSlot(slot));
+  if (!slot) return 'Comum';
+  const pontos = (typeof pontosDoAvatar === 'function')
+    ? pontosDoAvatar('Comum', slot.nivel || 1)
+    : 5 + Math.floor(((slot.nivel || 1) - 1) / 4);
+  const porPontos = raridadeDosPontos(pontos);
+  // Sem tempo de jogo na mão não há travão a aplicar.
+  if (slot.totalSecs == null || typeof faseFromAge !== 'function') return porPontos;
+  const tecto = raridadeDaFase(faseDoSlot(slot));
+  return grauDaRaridade(porPontos) <= grauDaRaridade(tecto) ? porPontos : tecto;
 }
 
 /* ── O ÚNICO ESCRITOR ──
@@ -115,7 +144,8 @@ function podeSerVendido(slot) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU, raridadeDaFase, grauDaRaridade,
+  module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU, RARIDADE_ESCADA,
+                     raridadeDaFase, raridadeDosPontos, grauDaRaridade,
                      faseDoSlot, raridadeDoSlot, sincronizarRaridade, sincronizarRaridades,
                      podeSerVendido };
 }

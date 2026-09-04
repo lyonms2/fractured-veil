@@ -40,7 +40,7 @@ const M = new Function('t',
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('data.js') +
   `return { gerarSVG, registarNascimento, fichaDeAvatar, pontosDoAvatar,
-            raridadeDaFase, grauDaRaridade, faseDoSlot, raridadeDoSlot,
+            raridadeDaFase, raridadeDosPontos, grauDaRaridade, faseDoSlot, raridadeDoSlot,
             sincronizarRaridade, podeSerVendido, RARIDADE_POR_FASE };`
 )(x => x);
 
@@ -56,45 +56,58 @@ const RARS = ['Comum', 'Raro', 'Lendário'];
 // ═══════════════════════════════════════════════════════════════════
 titulo('A ESCADA');
 
-const escada = [1, 4, 5, 9, 10, 16, 17, 25, 35].map(nv => ({
-  nv, r: M.raridadeDaFase(nv < 5 ? 0 : nv < 10 ? 1 : nv < 17 ? 2 : 3),
-}));
-console.log('       ' + escada.map(e => 'nv' + e.nv + ' ' + e.r).join('  ·  '));
+// A escada inteira, com os pontos que a decidem.
+{
+  let ant = null;
+  for (let nv = 1; nv <= 35; nv++) {
+    const pontos = M.pontosDoAvatar('Comum', nv);
+    const r = M.raridadeDosPontos(pontos);
+    if (r !== ant) { console.log('       nível ' + String(nv).padStart(2) + '  →  ' +
+      pontos + ' pontos  →  ' + r); ant = r; }
+  }
+}
 
-ok(M.raridadeDaFase(0) === 'Comum' && M.raridadeDaFase(1) === 'Comum',
-   'o bebé e a criança nascem e ficam Comuns', 'fase 0 e 1 → Comum');
-ok(M.raridadeDaFase(2) === 'Raro' && M.raridadeDaFase(3) === 'Lendário',
-   'o jovem é Raro e o adulto é Lendário', 'fase 2 → Raro · fase 3 → Lendário');
+ok(M.raridadeDosPontos(0) === 'Comum' && M.raridadeDosPontos(7) === 'Comum',
+   'até 7 pontos é Comum', '0 e 7 → Comum');
+ok(M.raridadeDosPontos(8) === 'Raro' && M.raridadeDosPontos(11) === 'Raro',
+   'de 8 a 11 é Raro', '8 e 11 → Raro');
+ok(M.raridadeDosPontos(12) === 'Lendário' && M.raridadeDosPontos(99) === 'Lendário',
+   'de 12 para cima é Lendário', '12 e 99 → Lendário');
 
-// A conquista não se perde. Um avatar que já é Lendário e por alguma
-// razão volta ao nível 1 continua Lendário — o que se ganhou fica.
+// Onde cai cada degrau, em níveis. É isto que o jogador sente.
+{
+  const primeiro = r => { for (let nv = 1; nv <= 35; nv++)
+    if (M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv)) === r) return nv; return null; };
+  const raro = primeiro('Raro'), lend = primeiro('Lendário');
+  ok(raro === 13 && lend === 29, 'Raro ao nível 13 e Lendário ao 29',
+     'Raro nv' + raro + ' · Lendário nv' + lend);
+  ok(lend > 17, 'ser Lendário é o fim da estrada, e não o meio dela',
+     'nv' + lend + ' de 35');
+}
+
+// A conquista não se perde.
 {
   const slot = { raridade: 'Lendário', nivel: 1 };
-  const mudou = M.sincronizarRaridade(slot);
-  ok(mudou === null && slot.raridade === 'Lendário',
-     'a raridade nunca desce, mesmo com a fase a descer',
-     'Lendário de nível 1 continua Lendário');
+  ok(M.sincronizarRaridade(slot) === null && slot.raridade === 'Lendário',
+     'a raridade nunca desce', 'Lendário de nível 1 continua Lendário');
 }
 {
-  const slot = { raridade: 'Comum', nivel: 20 };
-  const mudou = M.sincronizarRaridade(slot);
-  ok(mudou === 'Lendário' && slot.raridade === 'Lendário',
-     'quem já tinha a fase recebe a raridade na migração',
-     'Comum de nível 20 → Lendário');
+  const slot = { raridade: 'Comum', nivel: 30 };
+  ok(M.sincronizarRaridade(slot) === 'Lendário' && slot.raridade === 'Lendário',
+     'quem já tinha os pontos recebe a raridade na migração',
+     'Comum de nível 30 → Lendário');
 }
 
-// O tempo de jogo continua a mandar: nível não chega.
+// O tempo de jogo é o travão: pontos não chegam.
 {
-  const cru   = { raridade: 'Comum', nivel: 30, totalSecs: 60 };       // 1 minuto
+  const cru   = { raridade: 'Comum', nivel: 30, totalSecs: 60 };
   const feito = { raridade: 'Comum', nivel: 30, totalSecs: 25 * 3600 };
-  const semTempo = { raridade: 'Comum', nivel: 30 };                   // uma listagem
-  const a = M.raridadeDoSlot(cru), b = M.raridadeDoSlot(feito), c = M.raridadeDoSlot(semTempo);
-  ok(a === 'Comum' && b === 'Lendário',
-     'nível sem horas de jogo não compra raridade nenhuma',
+  const listagem = { raridade: 'Comum', nivel: 30 };
+  const a = M.raridadeDoSlot(cru), b = M.raridadeDoSlot(feito), c = M.raridadeDoSlot(listagem);
+  ok(M.grauDaRaridade(a) < M.grauDaRaridade(b),
+     'nível sem horas de jogo não compra a raridade toda',
      'nv30 com 1 min → ' + a + ' · nv30 com 25 h → ' + b);
-  // Uma listagem do marketplace traz o nível e mais nada. Recusar-me a
-  // responder aí obrigava-me a inventar uma segunda regra noutro sítio.
-  ok(c === 'Lendário', 'sem tempo de jogo na mão, responde-se pelo nível',
+  ok(c === 'Lendário', 'sem tempo de jogo na mão, responde-se pelos pontos',
      'nv30 sem totalSecs → ' + c);
 }
 
@@ -104,7 +117,6 @@ ok(!M.podeSerVendido({ raridade: 'Comum' }) &&
    'o mercado abre a partir de Raro, e não antes',
    'Comum não · Raro sim · Lendário sim');
 
-// ═══════════════════════════════════════════════════════════════════
 titulo('A RARIDADE NÃO PAGA PONTOS');
 
 let difPontos = 0, difFicha = 0, n = 0;
