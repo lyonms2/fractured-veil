@@ -6,7 +6,6 @@
 //  GET  /api/pool?cobertura=1  → o cofre chega para os cristais que existem
 //  POST /api/pool { acao, idToken, ... }
 //    acao='taxa'        → entrada na pool (taxa de listagem/venda)
-//    acao='listar-ovo'  → lista ovo no eggMarket (atómico, server-side)
 //    acao='queimar-ovo' → jogador queima ovo e a pool paga (preço dinâmico)
 //    acao='botar-ovo'   → avatar bota ovo (relógio do servidor)
 // ═══════════════════════════════════════════════════════════════
@@ -22,7 +21,6 @@ const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const POOL_ALVO       = 1000;
 // POOL_LIMITE_DIA e saqueDeHoje vêm do _pool-economia.js, para o câmbio
 // (em outro arquivo) poder usar exatamente a mesma regra.
-const EGG_LIST_FEE    = { 'Raro': 25, 'Lendário': 50 };
 const PRICE_MIN       = 1;
 const PRICE_MAX       = 10000;
 
@@ -205,9 +203,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
-  if (acao === 'listar-ovo')  return handleListarOvo(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
-  if (acao === 'retirar-ovo') return handleRetirarOvo(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'botar-ovo')   return handleBotarOvo(req, res, db, uid);
 
@@ -243,128 +239,22 @@ async function handleTaxa(req, res, db, poolRef, uid) {
   }
 }
 
-// ── Listar ovo no eggMarket (atómico, server-side) ─────────────
-async function handleListarOvo(req, res, db, poolRef, uid) {
-  const { ovoId, raridade, elemento, expiraEm, price } = req.body;
-  if (!ovoId)                          return res.status(400).json({ erro: 'ovoId em falta' });
-  if (!raridade || !EGG_LIST_FEE[raridade]) return res.status(400).json({ erro: 'Raridade inválida (Raro ou Lendário)' });
-  const priceInt = parseInt(price, 10);
-  if (!priceInt || priceInt < PRICE_MIN || priceInt > PRICE_MAX)
-    return res.status(400).json({ erro: `Preço inválido (${PRICE_MIN}–${PRICE_MAX})` });
+/* ⚠ FORA DE ALCANCE, DE PROPÓSITO.
 
-  const playerRef = db.collection('players').doc(uid);
+   Este handler queima um ovo Raro ou Lendário e a pool paga por ele em
+   cristais, a preço dinâmico. Como já não existem ovos Raros nem
+   Lendários, nenhum cliente o chama e a primeira linha recusa tudo o
+   resto — só aceita raridade diferente de Comum, e o registo do
+   servidor só escreve Comum. Não há por onde entrar.
 
-  try {
-    const resultado = await db.runTransaction(async (tx) => {
-      const playerSnap = await tx.get(playerRef);
-      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+   NÃO O APAGUEI porque era A ÚNICA SAÍDA DA POOL para o jogador: a
+   única forma de tirar valor de lá destruindo alguma coisa. Apagar um
+   caminho de dinheiro sem que ninguém o tenha pedido é pior do que o
+   deixar marcado.
 
-      const pData     = playerSnap.data();
-      const inboxEggs = pData.inboxEggs || [];
-
-      /* Um ovo pode estar em dois sítios, e cada um tem a sua prova.
-
-         inboxEggs — ovos comprados, postos aqui pelo servidor
-         (api/comprar-ovo.js) e que o cliente já não pode encher.
-         Estar lá é prova bastante.
-
-         avatarSlots[].eggs — ovos que o próprio avatar pôs. Este array é
-         escrito pelo cliente por inteiro, portanto estar lá não prova
-         nada: qualquer um escrevia um Lendário e vendia-o. A prova é o
-         ovosEmitidos, que o handleBotarOvo escreve e o cliente não.
-
-         Antes só a primeira origem era aceite, e daí vinha o defeito: um
-         ovo posto pelo próprio avatar dava sempre OVO_NOT_FOUND. Punha-se
-         o ovo e não havia como o vender. */
-      const emitidos = pData.ovosEmitidos || {};
-      const slotIdx  = pData.activeSlotIdx ?? 0;
-      const slots    = [...(pData.avatarSlots || [])];
-      const slot     = slots[slotIdx];
-      const slotEggs = slot?.eggs || [];
-
-      const idxInbox = inboxEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
-      const idxSlot  = slotEggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
-
-      // A raridade que vale é a que o servidor emitiu, nunca a do pedido.
-      const emitidoComo = emitidos['o' + String(ovoId)];
-      const doProprioAvatar = idxSlot !== -1 && emitidoComo === raridade;
-
-      if (idxInbox === -1 && !doProprioAvatar) throw new Error('OVO_NOT_FOUND');
-
-      const taxa = EGG_LIST_FEE[raridade];
-      const debitoTaxa = CRIS.camposDebito(pData, taxa);
-      if (!debitoTaxa) throw new Error('INSUFFICIENT');
-
-      const ovoToRemove   = idxInbox !== -1 ? inboxEggs[idxInbox] : slotEggs[idxSlot];
-      const novosCristais = debitoTaxa.cristais + debitoTaxa.cristaisBonus;
-
-      const alteracoes = Object.assign({}, debitoTaxa);
-      if (idxInbox !== -1) {
-        alteracoes.inboxEggs = FieldValue.arrayRemove(inboxEggs[idxInbox]);
-      } else {
-        // Sai do slot e o registo é apagado — sem isto, o mesmo ovo podia
-        // ser listado outra vez depois de o cliente o repor no array.
-        const novosEggs = slotEggs.filter((_, i) => i !== idxSlot);
-        slots[slotIdx]  = { ...slot, eggs: novosEggs };
-        alteracoes.avatarSlots = slots;
-        alteracoes[`ovosEmitidos.o${ovoId}`] = FieldValue.delete();
-      }
-      tx.update(playerRef, alteracoes);
-
-      const listRef = db.collection('eggMarket').doc();
-      tx.set(listRef, {
-        raridade: raridade,
-        elemento: elemento  || ovoToRemove.elemento || '',
-        expiraEm: expiraEm  || ovoToRemove.expiraEm || 0,
-        eggId:    ovoToRemove.id,
-        sellerId: uid,
-        price:    priceInt,
-        status:  'listed',
-        listedAt: Date.now(),
-      });
-
-      tx.update(poolRef, {
-        cristais:    FieldValue.increment(taxa),
-        totalEntrou: FieldValue.increment(taxa),
-      });
-      const logRef = poolRef.collection('logs').doc();
-      tx.set(logRef, {
-        tipo:   'entrada',
-        motivo: `listagem ovo ${raridade}`,
-        origem: uid,
-        total:  taxa,
-        pool:   taxa,
-        ts:     FieldValue.serverTimestamp(),
-      });
-
-      return { novoSaldo: novosCristais, taxa, raridade, elemento: ovoToRemove.elemento || elemento || '' };
-    });
-
-    return res.status(200).json({ ok: true, ...resultado });
-  } catch (err) {
-    const erros = {
-      OVO_NOT_FOUND: [400, 'Ovo não encontrado no inventário.'],
-      INSUFFICIENT:  [400, 'Cristais insuficientes para a taxa de listagem.'],
-    };
-    const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
-    if (status === 500) console.error('[pool/listar-ovo]', err);
-    return res.status(status).json({ erro: msg });
-  }
-}
-
-// ── Vender ovo à pool ───────────────────────────────────────────
-/* QUEIMAR UM OVO: a pool paga e o ovo desaparece.
-
-   Chamava-se handleVenderOvo, e o nome mentia. Não há comprador nenhum
-   nesta transação — o ovo é apagado do avatarSlots, a prova morre com
-   ele em ovosEmitidos, e a pool paga do seu saldo. Isso é queimar. A
-   venda a sério é o handleListarOvo, em que outro jogador paga e fica
-   com o ovo.
-
-   O preço é dinâmico de propósito: sobe com o ratio da pool e cai quando
-   ela esvazia, e cada queima conta para o limite semanal do jogador.
-   Havia um segundo handler, de preço fixo, que escapava às duas coisas;
-   saiu, e este ficou com o nome que era dele. */
+   O que provavelmente o substitui: queimar o AVATAR, agora que é ele
+   que conquista a raridade. Hoje queimar um avatar não paga nada — só
+   liberta o slot. Mas isso é economia, e a economia é conversa à parte. */
 async function handleQueimarOvo(req, res, db, poolRef, uid) {
   const { raridade, ovoId } = req.body;
   if (!raridade || raridade === 'Comum') return res.status(400).json({ erro: 'Ovos Comuns não são aceites.' });
@@ -511,7 +401,16 @@ async function handleQueimarOvo(req, res, db, poolRef, uid) {
    a meio da compra, os dois mexiam no mesmo documento sem árbitro. Aqui é
    uma transação: ou a listagem ainda existe e o ovo volta, ou já foi
    vendida e a retirada falha. */
-const HATCH_FEE = { 'Comum': 0, 'Raro': 50, 'Lendário': 100 };
+/* CHOCAR NÃO CUSTA NADA.
+
+   Custava 50 💎 por um ovo Raro e 100 por um Lendário, e nada pelo
+   Comum. Como já não há ovos Raros nem Lendários, a tabela só podia
+   devolver zero — e uma tabela cujas duas outras entradas nunca são
+   lidas é uma promessa falsa a quem a ler a seguir.
+
+   É uma entrada de cristais que a pool perde. Fica dito, e a decisão do
+   que a substitui é da conversa da economia. */
+const HATCH_FEE = 0;
 
 /* CHOCAR — a partir daqui é o servidor que emite avatares.
    ═══════════════════════════════════════════════════════════════════
@@ -569,12 +468,17 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       const idxSlot  = slotEggs.findIndex(e => String(e.id) === String(ovoId));
       const emitidoComo = emitidos['o' + String(ovoId)];
 
-      let raridade = null;
-      if (idxInbox !== -1)                       raridade = inboxEggs[idxInbox].raridade;
-      else if (idxSlot !== -1 && emitidoComo)    raridade = emitidoComo;
-      if (!raridade) throw new Error('OVO_NOT_FOUND');
+      /* O ovo tem de existir numa das duas listas E ter prova.
 
-      const taxa     = HATCH_FEE[raridade] || 0;
+         Guardava-se aqui a raridade dele; já não há nenhuma, e o que
+         interessa é apenas se o ovo é legítimo. O 'Comum' que fica é o
+         que o avataresEmitidos passa a registar para todos — a origem
+         de um avatar, que o api/comprar-avatar.js confere. */
+      const legitimo = (idxInbox !== -1) || (idxSlot !== -1 && emitidoComo);
+      if (!legitimo) throw new Error('OVO_NOT_FOUND');
+      const raridade = 'Comum';
+
+      const taxa     = HATCH_FEE;
       const debitoChoca = taxa > 0 ? CRIS.camposDebito(pData, taxa) : null;
       if (taxa > 0 && !debitoChoca) throw new Error('INSUFFICIENT');
 
@@ -615,84 +519,33 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
   }
 }
 
-async function handleRetirarOvo(req, res, db, uid) {
-  const { listingId } = req.body;
-  if (!listingId) return res.status(400).json({ erro: 'Parâmetros inválidos.' });
-
-  const listRef   = db.collection('eggMarket').doc(String(listingId));
-  const playerRef = db.collection('players').doc(uid);
-
-  try {
-    const ovo = await db.runTransaction(async (tx) => {
-      const listSnap = await tx.get(listRef);
-      if (!listSnap.exists) throw new Error('LISTAGEM_NAO_EXISTE');
-
-      const l = listSnap.data();
-      if (l.sellerId !== uid) throw new Error('NOT_OWNER');
-      if (l.status && l.status !== 'listed') throw new Error('JA_VENDIDA');
-
-      // O ovo volta com os dados da LISTAGEM, não com os do pedido: o
-      // corpo do pedido vem do cliente e podia trazer outra raridade.
-      const restaurado = {
-        id:       l.eggId    || Date.now(),
-        raridade: l.raridade,
-        elemento: l.elemento || '',
-        expiraEm: l.expiraEm || 0,
-      };
-      /* O registo acompanha o ovo desde que ele entra.
-         Sem isto o ovo ficava inútil ao fim de um recarregamento: o
-         applyGameState() move os ovos do inboxEggs para o slot.eggs e
-         limpa o inbox, e a partir daí a única prova de que o ovo é
-         legítimo seria o inbox — que já não o tem. Chocar, queimar, vender
-         e listar passavam todos a dar OVO_NOT_FOUND.
-         O inbox é entrega; o ovosEmitidos é propriedade. */
-      tx.update(playerRef, {
-        inboxEggs: FieldValue.arrayUnion(restaurado),
-        [`ovosEmitidos.o${restaurado.id}`]: restaurado.raridade,
-      });
-      tx.delete(listRef);
-      return restaurado;
-    });
-
-    return res.status(200).json({ ok: true, ovo });
-  } catch (err) {
-    const conhecido = {
-      LISTAGEM_NAO_EXISTE: [404, 'Essa listagem já não existe.'],
-      NOT_OWNER:           [403, 'Essa listagem não é tua.'],
-      JA_VENDIDA:          [409, 'Esse ovo já foi vendido.'],
-    }[err.message];
-    if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
-    console.error('[pool/retirar-ovo]', err.message);
-    return res.status(500).json({ erro: 'Erro interno.' });
-  }
-}
 
 // ── Botar ovo (server-side, relógio do servidor) ────────────────
-// A raridade do ovo. O cliente tinha uma cópia disto que estava morta —
-// quem decide é aqui, e é por isso que o bônus dos vitais que só existia
-// lá nunca aconteceu.
-function _calcEggRarity(raridade, nivel, vinculo, vitals) {
-  let c;
-  if (raridade === 'Comum') {
-    c = nivel < 25 ? [97,3,0] : nivel < 35 ? [94,5.5,0.5] : [90,8,2];
-  } else if (raridade === 'Raro') {
-    c = nivel < 25 ? [55,40,5] : nivel < 35 ? [40,50,10] : [25,55,20];
-  } else {
-    c = nivel < 25 ? [20,55,25] : nivel < 35 ? [10,50,40] : [5,40,55];
-  }
-  if (vinculo >= 301 && c[2] < 95) { c[1] = Math.max(0, c[1]-5); c[2] = Math.min(95, c[2]+10); }
-  else if (vinculo >= 151 && c[2] < 95) { c[1] = Math.max(0, c[1]-2.5); c[2] = Math.min(95, c[2]+5); }
-  // Bicho bem cuidado bota ovo melhor. Estava escrito na função morta do
-  // cliente e nunca chegou a valer nada — agora vale, e é o motivo mais
-  // direto que o jogo tem para você manter os medidores em cima.
+/* O SORTEIO DA RARIDADE DO OVO SAIU.
+
+   Vivia aqui o _calcEggRarity: uma tabela que dava ao Lendário 55% de
+   probabilidade de pôr um ovo lendário contra 2% do Comum, com bónus por
+   vínculo e por bicho bem cuidado.
+
+   Deixou de existir porque o ovo deixou de ter raridade. Todo o avatar
+   nasce Comum e a raridade conquista-se a viver (js/raridade.js), portanto
+   um ovo lendário não significava nada: dava um bebé Comum como qualquer
+   outro. Era um rótulo caro sem nada por baixo.
+
+   O QUE ELE MEDIA NÃO SE PERDEU. Cuidar bem do bicho e ter vínculo alto
+   continuam a valer — agora em VALIDADE do ovo, que é tempo para o
+   chocar, em vez de num rótulo. Ver _validadeDoOvo, ali abaixo. */
+function _validadeDoOvo(nivel, vinculo, vitals) {
+  let dias = 7;
+  if (nivel >= 35) dias += 3;
+  else if (nivel >= 25) dias += 2;
+  if (vinculo >= 301) dias += 3;
+  else if (vinculo >= 151) dias += 1;
   const v = vitals || {};
   const bemCuidado = ['fome','humor','energia','saude','higiene']
     .every(k => (v[k] ?? 0) > 80);
-  if (bemCuidado && c[2] < 95) { c[1] = Math.max(0, c[1]-5); c[2] = Math.min(95, c[2]+5); }
-  const roll = Math.random() * 100;
-  if (roll < c[0]) return 'Comum';
-  if (roll < c[0] + c[1]) return 'Raro';
-  return 'Lendário';
+  if (bemCuidado) dias += 2;
+  return dias;
 }
 
 async function handleBotarOvo(_req, res, db, uid) {
@@ -722,61 +575,53 @@ async function handleBotarOvo(_req, res, db, uid) {
       const moedas = pData.gs?.moedas ?? pData.moedas ?? 0;
       if (moedas < 50) throw new Error('Moedas insuficientes (precisa de 50 🪙)');
 
-      /* A raridade do avatar decide a QUALIDADE dos ovos: o
-         _calcEggRarity dá ao Lendário 55% de chance de ovo lendário contra
-         2% do Comum. Vinha de slot.raridade — do avatarSlots, que o
-         cliente escreve. Escrever 'Lendário' num slot era fabricar ovos
-         lendários a 55%, e daí para cristais e MATIC.
-         Agora vem do avataresEmitidos, que o handleChocarOvo escreve com a
-         raridade do ovo consumido. Sem registo, vale Comum — que é o que
-         um avatar sem proveniência deve valer. */
-      const _avEmitidos = pData.avataresEmitidos || {};
-      const raridade = _avEmitidos['s' + String(slot.seed)] || 'Comum';
       // Dois ovos para todos, e 24h para todos. Antes eram 1/2/3 ovos com
       // esperas de 24h/48h/36h, e daí saíam duas coisas tortas: o Raro
       // produzia exatamente no mesmo ritmo que o Comum (2 em 48h = 1 em
       // 24h), e o Comum pagava 50🪙 por ovo contra 25🪙 do Raro — o avatar
       // mais fraco pagando o dobro.
-      //
-      // Agora a raridade decide a QUALIDADE do ovo, não a quantidade: a
-      // tabela de _calcEggRarity já dá ao Lendário 55% de chance de ovo
-      // lendário contra 2% do Comum. Não precisa somar volume a isso.
       const numEggs  = 2;
       const slotEggs = slot.eggs || [];
       const canAdd   = Math.min(numEggs, 10 - slotEggs.length);
       if (canAdd <= 0) throw new Error('Inventário de ovos cheio (máx 10)');
 
       const novosOvos = [];
+      // O que o bicho é e como é tratado paga em VALIDADE: mais dias para
+      // chocar. Era aí que estava a raridade do ovo, e a raridade
+      // deixou de existir.
+      const baseDias = _validadeDoOvo(slot.nivel || 1, slot.vinculo || 0, slot.vitals);
       for (let i = 0; i < canAdd; i++) {
-        const r        = _calcEggRarity(raridade, slot.nivel || 1, slot.vinculo || 0, slot.vitals);
-        const baseDias = r === 'Lendário' ? 30 : r === 'Raro' ? 14 : 7;
         // Alma Gêmea (vínculo 301+) dobra a validade. O getVinculoBonus()
         // do cliente promete isto no campo eggDura desde sempre e ninguém
         // o implementava — era o único benefício do último patamar que
         // não valia nada.
         const duraMult = (slot.vinculo || 0) >= 301 ? 2 : 1;
-        novosOvos.push({ raridade: r, elemento: slot.elemento || 'Terra',
+        novosOvos.push({ elemento: slot.elemento || 'Terra',
                          expiraEm: now + baseDias * duraMult * 86400000, id: now + i });
       }
 
       const cdMs     = 24 * 3600000;
       const newReady = now + cdMs;
 
-      /* O servidor passa a lembrar-se do que emitiu.
-         Sem isto, o handleListarOvo não tinha como aceitar um ovo posto
-         pelo próprio avatar: ele vive em avatarSlots[].eggs, que o cliente
-         escreve por inteiro, e confiar nisso era deixar fabricar
-         Lendários. Só que a alternativa era não os deixar vender de todo —
-         que é o que acontecia, e é o defeito que isto corrige.
-         O registo é a resposta: guarda-se id → raridade num campo que só o
-         servidor escreve (ver camposDoServidor em firestore.rules). Na
-         listagem confere-se contra ele, e a entrada é apagada, para o
-         mesmo ovo não ser vendido duas vezes. */
+      /* O servidor lembra-se do que emitiu.
+
+         O avatarSlots[].eggs é escrito pelo cliente por inteiro, portanto
+         um ovo que esteja lá não prova nada — qualquer um podia
+         acrescentar ovos à lista. Este registo é a prova, e vive num
+         campo que só o servidor escreve (ver camposDoServidor em
+         firestore.rules).
+
+         Guardava id → raridade, para o mercado de ovos poder conferir que
+         um ovo Lendário era mesmo Lendário. O mercado saiu e a raridade
+         também; fica id → 'Comum', que continua a servir para o que
+         importa — dizer que este ovo saiu daqui. O valor mantém-se com
+         esta forma para o handleChocarOvo, que o lê, não precisar de
+         migração nenhuma. */
       // A chave leva um 'o' à frente porque um caminho de campo do
       // Firestore não aceita segmentos só de dígitos, e os ids dos ovos
       // são Date.now(). Sem o prefixo, a escrita vinha com 400.
       const emitidos = {};
-      for (const o of novosOvos) emitidos[`ovosEmitidos.o${o.id}`] = o.raridade;
+      for (const o of novosOvos) emitidos[`ovosEmitidos.o${o.id}`] = 'Comum';
 
       const newSlots = [...slots];
       newSlots[slotIdx] = { ...slot, eggs: [...slotEggs, ...novosOvos], eggLayReadyAt: newReady, eggLayCooldown: Math.ceil(cdMs / 60000) };

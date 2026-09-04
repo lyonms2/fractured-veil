@@ -41,7 +41,6 @@ window.registerStrings({
   'mkt.nav.market':           'Mercado',
   'mkt.nav.buy_avatars':      'Comprar Avatares',
   'mkt.nav.buy_crystals':     'Comprar Cristais',
-  'mkt.nav.buy_eggs':         'Comprar Ovos',
   'mkt.nav.community':        'Comunidade',
   'mkt.nav.info':             'Informação',
   'mkt.nav.pool':             'Pool & Transparência',
@@ -213,10 +212,7 @@ window.registerStrings({
   'mkt.metamask.limit_err':   'Não foi possível verificar o limite.',
 
   // ── Comprar Ovos ──────────────────────────────────────────────────
-  'mkt.eggs.title':           '🥚 Comprar Ovos',
-  'mkt.eggs.sub':             'Ovos Raros e Lendários listados por outros jogadores.',
   'mkt.eggs.filter_ph':       '🔍 Filtrar por elemento...',
-  'mkt.eggs.loading':         'Carregando ovos...',
 
   // ── Transações / status ───────────────────────────────────────────
   'mkt.tx.open_mm':           '⏳ Abre o MetaMask para confirmar...',
@@ -264,11 +260,6 @@ window.registerStrings({
   'mkt.avatar.unlocked':      '✅ Slot {n} desbloqueado!',
 
   // ── Modais ────────────────────────────────────────────────────────
-  'mkt.modal.list_egg.title':  '🥚 Listar Ovo à Venda',
-  'mkt.modal.list_egg.sub':    'Defina o preço em 💎 Cristais. O ovo será removido do seu inventário.',
-  'mkt.modal.list_egg.price':  'Preço em 💎 Cristais',
-  'mkt.modal.list_egg.cancel': 'Cancelar',
-  'mkt.modal.list_egg.confirm':'Listar',
 
   'mkt.modal.list_av.title':   '📋 Listar Avatar',
   'mkt.modal.list_av.sub':     'Defina o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.',
@@ -401,7 +392,6 @@ window.registerStrings({
   'mkt.nav.market':           'Market',
   'mkt.nav.buy_avatars':      'Buy Avatars',
   'mkt.nav.buy_crystals':     'Buy Crystals',
-  'mkt.nav.buy_eggs':         'Buy Eggs',
   'mkt.nav.community':        'Community',
   'mkt.nav.info':             'Information',
   'mkt.nav.pool':             'Pool & Transparency',
@@ -570,10 +560,7 @@ window.registerStrings({
   'mkt.metamask.limit_err':   'Could not verify your limit.',
 
   // Eggs section
-  'mkt.eggs.title':           '🥚 Buy Eggs',
-  'mkt.eggs.sub':             'Rare and Legendary eggs listed by other players.',
   'mkt.eggs.filter_ph':       '🔍 Filter by element...',
-  'mkt.eggs.loading':         'Loading eggs...',
 
   // TX status
   'mkt.tx.open_mm':           '⏳ Open MetaMask to confirm...',
@@ -621,11 +608,6 @@ window.registerStrings({
   'mkt.avatar.unlocked':      '✅ Slot {n} unlocked!',
 
   // Modals
-  'mkt.modal.list_egg.title':  '🥚 List Egg for Sale',
-  'mkt.modal.list_egg.sub':    'Set the price in 💎 Crystals. The egg will be removed from your inventory.',
-  'mkt.modal.list_egg.price':  'Price in 💎 Crystals',
-  'mkt.modal.list_egg.cancel': 'Cancel',
-  'mkt.modal.list_egg.confirm':'List',
 
   'mkt.modal.list_av.title':   '📋 List Avatar',
   'mkt.modal.list_av.sub':     'Set the price in 💎 Crystals. Listing costs 2 💎 and the avatar gets frozen.',

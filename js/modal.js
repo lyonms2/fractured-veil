@@ -84,7 +84,7 @@ function _moverModaisParaOBody() {
 
        · burnOverlay    — a confirmação de queimar um avatar
        · listOverlay    — a de pôr um à venda
-       · listEggOverlay, avatarDetailOverlay
+       · avatarDetailOverlay
        · toast          — os avisos do JOGO INTEIRO
 
      O botão de queimar chamava tudo o que devia: enchia o cartão de

@@ -58,6 +58,25 @@ const SUFIXOS = {
   'Lendário': ['o Eterno','o Primordial','o Transcendente','o Visionário','o Imorredouro','o Sempiterno','o Singular','o Majestoso',
                'o Infinito','o Inexorável','o Soberano','o Ancestral','o Insondável','o Absoluto','o Indômito','o Supremo']
 };
+/* O NOME DE NASCENÇA.
+
+   As gavetas de nomes eram três, uma por raridade: Ember para o Comum,
+   Ignis para o Raro, Prometheus para o Lendário. Fazia sentido enquanto
+   a raridade nascia com o avatar — deixou de fazer no dia em que todos
+   passaram a nascer Comuns, porque aí dois terços dos nomes do jogo
+   nunca mais sairiam a ninguém.
+
+   E o nome não pode acompanhar a raridade depois: é dado uma vez e fica
+   (ver js/identidade.js). Portanto sorteia-se das três gavetas ao
+   nascer, que é o que os pais fazem — dão um nome sem saber no que o
+   filho se vai tornar. */
+function nomeDeNascimento(elemento) {
+  const gavetas = PREFIXOS[elemento] || PREFIXOS['Fogo'];
+  const nomes = [].concat(gavetas['Comum'] || [], gavetas['Raro'] || [], gavetas['Lendário'] || []);
+  const alcunhas = [].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']);
+  return rnd(nomes.length ? nomes : ['Ser']) + ', ' + rnd(alcunhas);
+}
+
 const DESCRICOES = {
   'Comum': {
     'Fogo':['Uma centelha dimensional que encontrou forma própria. Curioso e impulsivo, aquece tudo ao redor sem perceber.','Nascido do calor residual de uma fissura entre mundos. Ainda aprendendo a controlar a intensidade do seu brilho.'],
@@ -106,10 +125,31 @@ const DESCRICOES_EN = {
   }
 };
 
+/* AS DESCRIÇÕES DEIXARAM DE DEPENDER DA RARIDADE, E É UM DEFEITO QUE
+   ISTO EVITA — não só conteúdo morto.
+
+   Guarda-se o ÍNDICE da descrição no avatar, e resolvia-se com
+   (raridade, elemento, índice). Enquanto a raridade nunca mudava, isso
+   dava sempre a mesma frase. Agora a raridade sobe com a fase — e o
+   mesmo índice passaria a apontar para outra gaveta: o avatar mudava de
+   descrição ao evoluir, sem ninguém ter pedido.
+
+   Uma gaveta só por elemento resolve as duas coisas de uma vez: o
+   índice é estável para sempre, e as descrições que estavam trancadas
+   atrás do Raro e do Lendário voltam a poder sair a qualquer avatar. */
+function descricoesDoElemento(elemento) {
+  const D = (typeof window !== 'undefined' && window._currentLang === 'en') ? DESCRICOES_EN : DESCRICOES;
+  const gavetas = ['Comum', 'Raro', 'Lendário'];
+  let pool = [];
+  for (const g of gavetas) pool = pool.concat((D[g] && (D[g][elemento] || D[g]['Fogo'])) || []);
+  return pool;
+}
+
 function getAvatarDesc(raridade, elemento, idx) {
-  const pool = (window._currentLang === 'en' ? DESCRICOES_EN : DESCRICOES)[raridade]?.[elemento]
-             || (window._currentLang === 'en' ? DESCRICOES_EN : DESCRICOES)[raridade]?.['Fogo'];
-  if(!pool) return '';
+  // A raridade fica no argumento porque muitos sítios a passam, mas já
+  // não entra na escolha — ver descricoesDoElemento.
+  const pool = descricoesDoElemento(elemento);
+  if(!pool.length) return '';
   return pool[Math.min(idx ?? 0, pool.length - 1)];
 }
 

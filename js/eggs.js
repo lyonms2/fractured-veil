@@ -1,5 +1,6 @@
-// Taxa de chocagem por raridade (💎 cristais)
-const HATCH_FEE = { 'Comum': 0, 'Raro': 50, 'Lendário': 100 };
+// Chocar não custa nada. Custava 50 💎 por um Raro e 100 por um
+// Lendário, e já não há nem uns nem outros — todo o ovo é só um ovo.
+const HATCH_FEE = 0;
 // Quantos ovos saem de cada postura. Tem de bater com o numEggs do
 // api/pool.js — é o servidor que bota, este número existe só para o
 // cliente saber se há espaço antes de cobrar.
@@ -87,7 +88,6 @@ async function layEgg() {
       eggsInInventory.push(ovo);
       if(avatar) {
         avatar.totalOvos  = (avatar.totalOvos  || 0) + 1;
-        if(ovo.raridade !== 'Comum') avatar.totalRaros = (avatar.totalRaros || 0) + 1;
       }
     });
     gs.moedas            = json.novasMoedas;
@@ -97,20 +97,16 @@ async function layEgg() {
     eggLayCooldown = Math.ceil(msLeft / 60000);
     eggLayNotified = false;
 
-    const raridade = json.eggs[0].raridade;
     const numEggs  = json.eggs.length;
 
     // A postura ganhou cerimónia, no mesmo palco da evolução: o jogador
     // clicou e pagou, portanto merece ver o que saiu, um ovo de cada vez.
-    // O emoji solto que havia aqui (egg-pop a subir do avatar) mostrava
-    // só a raridade do PRIMEIRO ovo, e a postura dá dois.
     abrirCerimoniaOvo(json.eggs, 50, json.eggLayReadyAt);
 
-    const rarColor = raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'info' : 'good';
     const eggWord  = numEggs > 1 ? t('egg.inv.egg_word_multi', {n: numEggs}) : t('egg.inv.egg_word_one');
-    showBubble(numEggs > 1 ? t('egg.bub.laid_multi', {n: numEggs}) : t(`egg.bub.laid_${raridade === 'Lendário' ? 'leg' : raridade === 'Raro' ? 'raro' : 'common'}`));
-    addLog(t('egg.log.laid', {word: eggWord}), rarColor);
-    showFloat(`🥚 ×${numEggs}`, raridade === 'Lendário' ? '#e8a030' : raridade === 'Raro' ? '#5ab4e8' : '#7ab87a');
+    showBubble(numEggs > 1 ? t('egg.bub.laid_multi', {n: numEggs}) : t('egg.bub.laid_common'));
+    addLog(t('egg.log.laid', {word: eggWord}), 'good');
+    showFloat(`🥚 ×${numEggs}`, '#7ab87a');
     renderEggInventory();
     updateResourceUI();
     scheduleSave();
@@ -135,26 +131,19 @@ function burnEgg(id) {
     return;
   }
 
-  // QUEIMAR É O NOME DO QUE ACONTECE.
-  //
-  // Havia aqui duas portas para o mesmo acto: uma "queima" que pagava
-  // valor fixo (2 e 6 💎, até 3 e 9 com bónus de avatar) e uma "venda à
-  // pool" que pagava preço dinâmico. As duas transações do servidor eram
-  // iguais linha a linha — tiravam o ovo do avatarSlots, apagavam a
-  // prova em ovosEmitidos, creditavam cristais e debitavam a pool. Em
-  // nenhuma delas alguém recebia o ovo: venda à pool nunca teve
-  // comprador.
-  //
-  // O valor fixo escapava às duas defesas da pool — ignorava o ratio e
-  // não contava para o limite semanal — e por isso saiu. Mas o nome que
-  // ficou foi o errado: não se VENDE nada à pool, destrói-se o ovo e ela
-  // paga por ele. Isso chama-se queimar.
-  //
-  // Fica um botão só, o 🔥, e o que ele dá depende da raridade: o Comum
-  // dá moedas internas (a pool não aceita Comuns), o Raro e o Lendário
-  // dão cristais da pool a preço dinâmico, com limite semanal. Vender a
-  // sério é só no mercado, a outro jogador, pelo 🛒.
-  if(ovo.raridade !== 'Comum') { _queimarParaPool(id); return; }
+  /* QUEIMAR É O NOME DO QUE ACONTECE, E AGORA É UM SÓ CAMINHO.
+
+     Havia dois: o ovo Comum dava moedas internas e o Raro ou Lendário
+     dava cristais da pool, a preço dinâmico e com limite semanal. Como
+     já não há ovos Raros nem Lendários, esse segundo caminho não tem
+     por onde ser chamado.
+
+     É uma SAÍDA DA POOL que desaparece — era a única forma de um
+     jogador tirar valor da pool a queimar alguma coisa. Fica dito aqui
+     e no api/pool.js, onde o handler continua de pé mas fora de
+     alcance: apagar código que mexe em dinheiro sem que ninguém o peça
+     é pior do que deixá-lo marcado. Quem decide o que o substitui é a
+     conversa da economia. */
 
   const bonus    = rarityBonus().burnBonus;
   const bonusPct = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
@@ -165,7 +154,7 @@ function burnEgg(id) {
   const overlay = document.getElementById('eggBurnOverlay');
   const preview = document.getElementById('eggBurnPreview');
   if(overlay && preview) {
-    preview.innerHTML = `Ovo <b style="color:#7ab87a">Comum · ${esc(ovo.elemento)}</b><br>
+    preview.innerHTML = `Ovo <b style="color:#7ab87a">${esc(ovo.elemento)}</b><br>
       Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
       <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
     document.getElementById('eggBurnConfirmBtn').onclick = () => {
@@ -188,94 +177,7 @@ function _doBurnComum(id, moedas) {
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
-// Queimar um Raro ou Lendário: o ovo é destruído e a pool paga por ele,
-// a preço dinâmico. Chamada pelo burnEgg, que é a porta única.
-function _queimarParaPool(id) {
-  const idx = eggsInInventory.findIndex(e => e.id === id);
-  if(idx === -1) { addLog(t('egg.log.not_found'), 'bad'); return; }
-  const ovo = eggsInInventory[idx];
-  // Guarda: o burnEgg já encaminha o Comum para as moedas, mas a pool
-  // não aceita Comuns e isto não pode depender de quem chama.
-  if(ovo.raridade === 'Comum') { addLog(t('egg.log.common_no_pool'), 'bad'); return; }
-  if(!firebase?.auth?.()?.currentUser) { addLog(t('egg.log.connect'), 'bad'); return; }
 
-  // Estima preço (mesmo cálculo do servidor)
-  const cristaisPool = poolData?.cristais || 0;
-  const ratio  = Math.min(2, cristaisPool / 1000);
-  const base   = ovo.raridade === 'Lendário' ? 1.0 : 0.5;
-  // Mesma conta do servidor, e sem piso: não há mínimo garantido.
-  const preco  = parseFloat((base * ratio).toFixed(2));
-
-  const overlay = document.getElementById('eggBurnOverlay');
-  const preview = document.getElementById('eggBurnPreview');
-  const confirmBtn = document.getElementById('eggBurnConfirmBtn');
-  if(!overlay || !preview || !confirmBtn) return;
-
-  // Perguntava só se a pool tinha saldo, e o servidor pergunta duas
-  // coisas: saldo E tecto diário. Com o tecto atingido, isto anunciava
-  // "Receberás 0,50 💎" e o pedido rebentava logo a seguir com "Limite
-  // diário global da pool atingido" — o jogador só sabia depois de
-  // confirmar. O poolDisponivel() faz as duas perguntas, com a mesma
-  // janela de 24h que o servidor usa; ficou sem quem o chamasse quando
-  // a queima saiu, e é aqui que sempre fez falta.
-  const temSaldo = cristaisPool > 0;
-  // Três razões distintas para não deixar queimar, e o jogador merece
-  // saber qual delas é: pool vazia, tecto diário atingido, ou pool tão
-  // baixa que o preço arredonda a zero — nesse caso o ovo valia nada.
-  const poolOk   = poolDisponivel() && preco > 0;
-  preview.innerHTML = `
-    Ovo <strong style="color:${ovo.raridade === 'Lendário' ? '#e8a030' : '#5ab4e8'}">${ovo.raridade}</strong><br>
-    Elemento: <strong>${ovo.elemento}</strong><br><br>
-    ${poolOk
-      ? `Receberás <strong style="color:#a78bfa">${preco} 💎</strong> da pool<br><small style="opacity:.6">(pool: ${cristaisPool} 💎 disponíveis)</small>`
-      : !temSaldo
-        ? `<span style="color:#f87171">Pool vazia de momento.<br>Tente mais tarde.</span>`
-        : !poolDisponivel()
-          ? `<span style="color:#f87171">Limite diário da pool atingido.<br>Tente amanhã.</span>`
-          : `<span style="color:#f87171">A pool está baixa de mais e este ovo<br>não vale nada agora. Guarde-o, ou venda no 🛒.</span>`
-    }`;
-
-  overlay.style.display = 'flex';
-
-  // Remove listener anterior e adiciona novo
-  const newBtn = confirmBtn.cloneNode(true);
-  confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-
-  if(!poolOk) { newBtn.disabled = true; newBtn.style.opacity = '.4'; return; }
-
-  newBtn.onclick = async () => {
-    overlay.style.display = 'none';
-    try {
-      const idToken = await firebase.auth().currentUser.getIdToken();
-      const resp = await fetch('/api/pool', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ acao: 'queimar-ovo', idToken, raridade: ovo.raridade, ovoId: String(ovo.id) }),
-      });
-      const json = await resp.json();
-      if(!json.ok) throw new Error(json.erro || 'erro');
-
-      eggsInInventory.splice(idx, 1);
-      gs.cristais = json.novosCristais;
-      if(poolData) {
-        poolData.cristais  = (poolData.cristais  || 0) - json.preco;
-        poolData.saqueHoje = (poolData.saqueHoje || 0) + json.preco;
-        poolData.totalSaiu = (poolData.totalSaiu || 0) + json.preco;
-      }
-      renderEggInventory();
-      updateResourceUI();
-      renderPoolWidget();
-      addLog(t('egg.log.burned_pool', {rar: ovo.raridade, preco: json.preco}), 'good');
-      showFloat(`+${json.preco} 💎`, '#a78bfa');
-      showBubble(`+${json.preco} 💎 🔥`);
-      scheduleSave();
-    } catch(err) {
-      console.error('[_queimarParaPool]', err);
-      showBubble(t('egg.bub.burn_error'));
-      addLog(`⚠️ ${err.message || t('egg.log.burn_pool_error')}`, 'bad');
-    }
-  };
-}
 
 function hatchEggFromInventory(id) {
   const ovo = eggsInInventory.find(e => e.id === id);
@@ -286,14 +188,13 @@ function hatchEggFromInventory(id) {
   }
 
   pendingHatchId  = id;
-  pendingHatchFee = HATCH_FEE[ovo.raridade] || 0;
-  const rarColors = { 'Comum':'#7ab87a', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
-  const rarEmoji  = { 'Comum':'🥚', 'Raro':'💙', 'Lendário':'🌟' };
-  const color = rarColors[ovo.raridade];
+  pendingHatchFee = HATCH_FEE;
 
-  document.getElementById('hatchConfirmEgg').textContent = rarEmoji[ovo.raridade];
+  // O ovo era mostrado pela raridade — 🥚, 💙 ou 🌟. Já não há
+  // raridade; o que há é o elemento, que é o que ele traz mesmo.
+  document.getElementById('hatchConfirmEgg').textContent = '🥚';
   document.getElementById('hatchConfirmRarity').innerHTML =
-    `<span style="color:${color};font-weight:700;font-family:'Cinzel',serif">${esc(ovo.raridade.toUpperCase())} · ${esc(ovo.elemento)}</span>`;
+    `<span style="color:#7ab87a;font-weight:700;font-family:'Cinzel',serif">${esc(ovo.elemento.toUpperCase())}</span>`;
 
   const targetPreview = findTargetSlot();
   const confirmBtn = document.getElementById('hatchConfirmYes');
@@ -369,7 +270,7 @@ async function confirmHatch() {
 
      A taxa passou para o servidor: era feita em duas escritas separadas
      (debitar aqui, avisar a pool depois) que podiam divergir. */
-  const _nomeProv = `${rnd(PREFIXOS[ovo.elemento]?.[ovo.raridade] || PREFIXOS[ovo.elemento]?.['Comum'] || ['Ser'])}, ${rnd(SUFIXOS[ovo.raridade])}`;
+  const _nomeProv = nomeDeNascimento(ovo.elemento);
   let _hp = 0; const _sp = _nomeProv + ovo.elemento + '#' + ovo.id;
   for(let i=0;i<_sp.length;i++){const ch=_sp.charCodeAt(i);_hp=((_hp<<5)-_hp)+ch;_hp=_hp&_hp;}
   const seedAutorizado = Math.abs(_hp);
@@ -420,7 +321,7 @@ async function confirmHatch() {
   // O nome e o seed são os que foram ao servidor — recalcular aqui daria
   // outro seed e o registo de emissão não bateria certo na listagem.
   const nome     = _nomeProv;
-  const _descPool  = DESCRICOES[ovo.raridade][ovo.elemento] || DESCRICOES[ovo.raridade]['Fogo'];
+  const _descPool  = descricoesDoElemento(ovo.elemento);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
   // O seed saía só do nome + elemento, e há 6 prefixos × 8 sufixos = 48
@@ -442,7 +343,7 @@ async function confirmHatch() {
        aqui. Os campos ficam nulos e a reproducao preenche-os quando
        existir; o que nao pode faltar desde ja e o id. */
     ...identidadeNova(),
-    nome, elemento: ovo.elemento, raridade: ovo.raridade, descricao, descricaoIdx, car, seed,
+    nome, elemento: ovo.elemento, raridade: 'Comum', descricao, descricaoIdx, car, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
@@ -457,28 +358,23 @@ async function confirmHatch() {
      O avatar deixa de nascer com a raridade do ovo. Nasce Comum,
      como todos, e a raridade do ovo fica na certidao como ORIGEM.
 
-     O ovo Lendario continua a mandar na postura de ovos, que o
-     api/pool.js ja tirava do registo do servidor e nao da raridade
-     do avatar, e continua a pagar alelos mais altos (ver NASC_ALELOS).
+     E ja nao ha ovos Raros nem Lendarios: um ovo e um ovo. A origem
+     que fica gravada e Comum para todos, e a raridade passou a ser
+     coisa que o avatar CONQUISTA a viver (js/raridade.js).
 
-     MAS ATENCAO, que a frase anterior ja foi mais generosa do que a
-     realidade: os alelos altos hoje nao dao poder nenhum. A tendencia
-     lê-os em pesos RELATIVOS — a caracteristica mais fraca do proprio
-     avatar fica sempre em 1 — portanto alelos todos altos e alelos
-     todos baixos dao a mesma vocacao. Medido em tools/genetica.js:
-     24 pontos de gene a mais valem 0,00 caracteristicas ao nivel 35.
-
-     Quem decide o preco da proveniencia e a progressao. Fica dito
-     aqui para ninguem ler o comentario e acreditar no contrario. */
+     Com isso a proveniencia deixou de comprar seja o que for. Era o
+     unico sitio onde o ovo caro valia alguma coisa, e ja nem la valia:
+     medido em tools/genetica.js, 24 pontos de gene a mais valiam 0,00
+     caracteristicas ao nivel 35. */
   if (typeof registarNascimento === 'function') {
     registarNascimento(avatarSlots[targetSlot], {
-      elemento: ovo.elemento, origem: ovo.raridade, seed,
+      elemento: ovo.elemento, origem: 'Comum', seed,
     });
     avatarSlots[targetSlot].raridade = 'Comum';
   }
   window._pendingEggSlot = targetSlot;
 
-  hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);
+  hatchWithAnimation('Comum', ovo.elemento, targetSlot);
 }
 
 // Os temporizadores da chocagem, para se poderem cancelar. São dez em
@@ -701,16 +597,15 @@ function renderEggInventory() {
     const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '');
 
     return `<div class="${cls}">
-      <div class="egg-mini-svg">${eggMiniSVG(expired ? 'Comum' : ovo.raridade, 38)}</div>
+      <div class="egg-mini-svg">${eggMiniSVG('Comum', 38)}</div>
       <div class="egg-info">
-        <div class="egg-name" style="color:${rarColor[ovo.raridade]}">${esc(ovo.raridade)} · ${esc(ovo.elemento)}</div>
+        <div class="egg-name" style="color:#7ab87a">${esc(ovo.elemento)}</div>
         <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>
       </div>
       <div class="egg-actions">
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`
           : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
-             ${ovo.raridade !== 'Comum' ? `<button class="egg-btn market" onclick="listEggOnMarket(${ovo.id})">🛒</button>` : ''}
              <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
         }
       </div>
@@ -725,16 +620,15 @@ function renderEggInventory() {
    que consome o ovo e emite o avatar. */
 
 
-async function listEggOnMarket(eggId) {
-  const ovo = eggsInInventory.find(e => e.id === eggId);
-  if(!ovo) return;
-  const data = { id: ovo.id, raridade: ovo.raridade, elemento: ovo.elemento, expiraEm: ovo.expiraEm };
-  // Marketplace agora é um modal in-game — abre direto na seção de ovos e
-  // chama openListEggModal() (js/eggs-market.js) com o payload já em mãos,
-  // sem precisar do roundtrip por query string em nova aba.
-  if(typeof openMarketplaceModal === 'function') await openMarketplaceModal('eggs');
-  if(typeof openListEggModal === 'function') openListEggModal(data);
-}
+/* O OVO DEIXOU DE SE VENDER.
+
+   Havia aqui um botão de carrinho no inventário e um mercado de ovos
+   inteiro por trás dele. Saiu: sem raridade, um ovo é igual a outro e
+   não há nada para negociar. O que se negoceia é o avatar, depois de
+   ele ter crescido e de ter chegado a alguma coisa.
+
+   O ovo continua a existir — é filho, e não mercadoria. Choca-se ou
+   queima-se. */
 
 function petCreature() {
   if(!canAct()) return;

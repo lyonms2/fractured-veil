@@ -168,9 +168,8 @@ function triggerSummon() {
   const raridade = 'Comum';
   const elemento = escolherElemento();
   const car      = CARACTERISTICAS_ELEMENTAIS[elemento];
-  const prefPool = PREFIXOS[elemento][raridade];
-  const nome     = `${rnd(prefPool)}, ${rnd(SUFIXOS[raridade])}`;
-  const _descPool    = DESCRICOES[raridade][elemento];
+  const nome     = nomeDeNascimento(elemento);
+  const _descPool    = descricoesDoElemento(elemento);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
   let _h = 0;
