@@ -345,5 +345,113 @@ function renderCertidaoHTML(slot) {
 function preencherCertidaoZoom(slot) {
   const el = document.getElementById('avatarZoomCertidao');
   if (!el) return;
-  el.innerHTML = slot ? renderCertidaoHTML(slot) : '';
+  if (!slot) { el.innerHTML = ''; return; }
+  // A árvore precisa da colónia inteira para achar filhos e avós.
+  const slots = (typeof avatarSlots !== 'undefined') ? avatarSlots : [];
+  el.innerHTML = renderCertidaoHTML(slot) + renderArvoreHTML(slot, slots);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// A ÁRVORE
+//
+// Cada avatar guarda o ID da mãe e do pai. Um id não é um ponteiro: o
+// progenitor pode ter sido vendido, queimado ou nunca ter estado nesta
+// colónia. Por isso a árvore tem dois níveis de certeza, e diz qual é
+// qual em vez de fingir que sabe tudo:
+//
+//   · o NOME dos pais está sempre lá — foi gravado na certidão no
+//     momento em que o ovo foi posto, e fica mesmo depois de eles
+//     desaparecerem. É história, e a história não se apaga com eles.
+//
+//   · o AVATAR dos pais só aparece se ainda estiver na colónia. Aí
+//     dá para subir mais um degrau e ver os avós.
+//
+// Os filhos não se guardam em lado nenhum, e é de propósito: uma lista
+// de filhos dentro do pai seria uma segunda cópia da mesma relação, à
+// espera de divergir da que os filhos já têm. Procuram-se.
+// ═══════════════════════════════════════════════════════════════════
+function _arvNome(slot) {
+  return slot && slot.nome ? String(slot.nome).split(',')[0].trim() : null;
+}
+
+function _arvPorId(id, slots) {
+  if (!id || !Array.isArray(slots)) return null;
+  return slots.find(s => s && s.id === id) || null;
+}
+
+/* Um progenitor: o nome que a certidão guardou, e o avatar se ele ainda
+   cá estiver. O nome vem primeiro porque é o que nunca falha. */
+function _arvProgenitor(slot, qual, slots) {
+  const n = slot && slot.nascimento;
+  const id   = (n && n[qual]) || (slot && slot[qual]) || null;
+  const nome = (n && n[qual + 'Nome']) || null;
+  if (!id && !nome) return null;
+  const vivo = _arvPorId(id, slots);
+  return { id, nome: nome || _arvNome(vivo), presente: !!vivo, slot: vivo };
+}
+
+function arvoreDe(slot, slots) {
+  if (!slot) return null;
+  const lista = Array.isArray(slots) ? slots.filter(Boolean) : [];
+
+  const mae = _arvProgenitor(slot, 'mae', lista);
+  const pai = _arvProgenitor(slot, 'pai', lista);
+
+  // Os avós, só pelo lado de quem ainda cá está.
+  const avos = [];
+  for (const p of [mae, pai]) {
+    if (!p || !p.slot) continue;
+    for (const q of ['mae', 'pai']) {
+      const av = _arvProgenitor(p.slot, q, lista);
+      if (av) avos.push({ ...av, por: p.nome });
+    }
+  }
+
+  /* Os filhos: quem tem este avatar como mãe ou pai. Só se acham os que
+     estão na colónia — um filho vendido continua a saber quem é o pai,
+     mas o pai não tem por onde saber dele. */
+  const filhos = lista.filter(s => {
+    if (!s || s === slot || !slot.id) return false;
+    const n = s.nascimento || {};
+    return n.mae === slot.id || n.pai === slot.id || s.mae === slot.id || s.pai === slot.id;
+  }).map(s => ({ id: s.id, nome: _arvNome(s) }));
+
+  return { mae, pai, avos, filhos };
+}
+
+function renderArvoreHTML(slot, slots) {
+  const a = arvoreDe(slot, slots);
+  if (!a) return '';
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Sem pais nem filhos não há árvore nenhuma para mostrar, e uma caixa
+  // vazia a dizer "Árvore" é pior do que caixa nenhuma.
+  if (!a.mae && !a.pai && !a.filhos.length) return '';
+
+  const nome = (p) => p
+    ? `<span class="arv-nome${p.presente ? ' presente' : ''}">${esc(p.nome || t('cert.anonimo'))}</span>`
+    : `<span class="arv-nome vazio">${t('cert.nada')}</span>`;
+
+  const avos = a.avos.length
+    ? `<div class="arv-linha arv-avos"><span class="arv-rot">${t('arv.avos')}</span>
+         <span class="arv-vals">${a.avos.map(v => nome(v)).join(' · ')}</span></div>`
+    : '';
+
+  const filhos = a.filhos.length
+    ? `<div class="arv-linha"><span class="arv-rot">${t('arv.filhos')}</span>
+         <span class="arv-vals">${a.filhos.map(f =>
+           `<span class="arv-nome presente">${esc(f.nome || t('cert.anonimo'))}</span>`).join(' · ')}</span></div>`
+    : '';
+
+  return `<div class="arvore">
+    <div class="arv-titulo">${t('arv.titulo')}</div>
+    ${avos}
+    <div class="arv-linha"><span class="arv-rot">${t('arv.pais')}</span>
+      <span class="arv-vals">${nome(a.mae)} <span class="arv-mais">+</span> ${nome(a.pai)}</span></div>
+    <div class="arv-linha arv-eu"><span class="arv-rot">${t('arv.este')}</span>
+      <span class="arv-vals"><b>${esc(_arvNome(slot) || '—')}</b></span></div>
+    ${filhos}
+    ${a.avos.length || a.filhos.length ? `<div class="arv-nota">${t('arv.nota')}</div>` : ''}
+  </div>`;
 }

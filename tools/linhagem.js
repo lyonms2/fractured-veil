@@ -28,8 +28,9 @@ const LINHAS_DA_FASE = fs.readFileSync(path.join(RAIZ, 'js/state.js'), 'utf8')
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') + rd('reproducao.js') +
-  rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') +
-  `return { nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
+  rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('identidade.js') +
+  `return { arvoreDe,
+            nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar, REPR_INCUBACAO_MS,
             fichaDeAvatar, magiasDoAvatar, faseDoSlot };`
@@ -320,6 +321,64 @@ titulo('O OVO');
      M.dnaLegivel(filho.nascimento.dna));
   ok(filho.nascimento.mae === mae.id && filho.nascimento.pai === pai.id,
      'com os pais gravados na certidão dele', 'mãe e pai presentes');
+}
+
+// ════════════════════════════════════════════════════════════════
+titulo('A ÁRVORE');
+
+{
+  // Três gerações, feitas como o jogo as faz.
+  const nascidoDe = (mae, pai, nome, seed) => {
+    const r = M.cruzar(mae, pai, { seed });
+    const f = { nome, seed, nivel: 30, totalSecs: ADULTO, raridade: 'Lendário',
+                elemento: r.ovo.elemento, id: 'av_' + nome };
+    M.registarNascimento(f, { elemento: r.ovo.elemento, origem: 'Comum', seed,
+      dna: r.ovo.dna, mae: r.ovo.mae, pai: r.ovo.pai,
+      maeNome: r.ovo.maeNome, paiNome: r.ovo.paiNome });
+    f.mae = r.ovo.mae; f.pai = r.ovo.pai;
+    return f;
+  };
+
+  const g1 = casal(40000);
+  g1.mae.nome = 'Lyra'; g1.pai.nome = 'Auron';
+  const kael = nascidoDe(g1.mae, g1.pai, 'Kael', 900);
+
+  // uma parceira para o Kael, do sexo que faltar
+  let par = null;
+  for (let i = 41000; i < 41400 && !par; i++) {
+    const a = adulto(i); if (M.sexoDe(a) !== M.sexoDe(kael)) { a.nome = 'Serena'; par = a; }
+  }
+  const nox = M.sexoDe(kael) === 'F' ? nascidoDe(kael, par, 'Nox', 1200)
+                                     : nascidoDe(par, kael, 'Nox', 1200);
+  const colonia = [g1.mae, g1.pai, kael, par, nox];
+
+  const aK = M.arvoreDe(kael, colonia);
+  ok(aK.mae && aK.pai && aK.mae.presente && aK.pai.presente,
+     'um filho vê os pais, e sabe que eles ainda cá estão',
+     aK.mae.nome + ' + ' + aK.pai.nome);
+  ok(aK.filhos.length === 1 && aK.filhos[0].nome === 'Nox',
+     'e vê os próprios filhos, procurados e não guardados',
+     aK.filhos.map(f => f.nome).join(', '));
+
+  const aN = M.arvoreDe(nox, colonia);
+  ok(aN.avos.length === 2, 'um neto vê os avós pelo lado que ainda cá está',
+     aN.avos.map(v => v.nome).join(' · '));
+
+  const aA = M.arvoreDe(g1.pai, colonia);
+  ok(!aA.mae && !aA.pai && aA.filhos.length === 1,
+     'o fundador não tem pais, e tem filho', 'filho: ' + aA.filhos[0].nome);
+
+  /* E o mais importante: um pai VENDIDO não apaga a história. O nome
+     dele ficou gravado na certidão do filho no dia em que o ovo foi
+     posto, e continua lá depois de ele sair da colónia. */
+  const semPais = colonia.filter(a => a !== g1.mae && a !== g1.pai);
+  const aK2 = M.arvoreDe(kael, semPais);
+  ok(aK2.mae && aK2.mae.nome === 'Lyra' && !aK2.mae.presente,
+     'e com os pais vendidos o nome deles fica — só deixa de estar em destaque',
+     aK2.mae.nome + ', presente: ' + aK2.mae.presente);
+  ok(M.arvoreDe(kael, semPais).avos.length === 0,
+     'aí já não dá para subir aos avós, e não se inventam',
+     '0 avós');
 }
 
 console.log('');
