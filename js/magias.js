@@ -260,6 +260,25 @@ function _magiaRng(seed) {
 
 function magiasDoAvatar(ficha) {
   if (!ficha) return {};
+
+  /* ── UM BEBÉ SÓ TEM O GOLPE COMUM ──
+
+     É o último passo do nascimento: nasce sem magia nenhuma. Devolver um
+     objecto vazio é o que o resto do jogo já sabe tratar — o painel da
+     batalha desenha "sem magia" nos três lugares, e a barra de ações fica
+     com o golpe comum, que nunca esteve dependente disto.
+
+     Só se aplica a quem TEM certidão. Um avatar nascido antes disto
+     existir não é um bebé: é um avatar do jogo antigo, e tirar-lhe as
+     magias agora seria mudar-lhe a ficha por causa de uma regra que não
+     existia quando ele nasceu.
+
+     A fase 0 são os níveis 1 a 4, o mesmo limiar que o jogo já usa para
+     dizer que a criatura ainda é nova. É uma PONTE: a progressão é a
+     tarefa a seguir, e é ela que decide qual magia se ganha, quando, e a
+     troco de quê. Esta linha sai quando essa regra chegar. */
+  if (typeof ehBebe === 'function' && ehBebe(ficha)) return {};
+
   const kit = MAGIAS[ficha.elemento] || MAGIAS['Fogo'];
   const rnd = _magiaRng((ficha.seed || 0) ^ 0x51);
   const fora = {};

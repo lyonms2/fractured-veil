@@ -119,7 +119,20 @@ async function handleListarAvatar(req, res, db, uid) {
       const emitidos  = pData.avataresEmitidos || {};
       const emitidoComo = emitidos['s' + String(s.seed)];
       if (!emitidoComo) throw new Error('AVATAR_SEM_REGISTO');
-      if (emitidoComo !== s.raridade) throw new Error('RARIDADE_NAO_CONFERE');
+      /* Confere com a ORIGEM, e nao com a raridade actual.
+
+         Desde que todo o avatar nasce Comum, a raridade que ele traz
+         hoje nao diz nada sobre o ovo que o gerou — e era isso que
+         esta linha comparava. Um avatar chocado de um ovo Lendario
+         nascia Comum, o registo dizia Lendario, e ele nunca mais
+         poderia ser vendido.
+
+         A origem esta na certidao, escreve-se uma vez e nao muda —
+         que e exactamente a propriedade que esta verificacao precisa.
+         Quem nasceu antes de haver certidao cai na raridade, que
+         nesses era mesmo a do ovo. */
+      const origemDoAvatar = (s.nascimento && s.nascimento.origem) || s.raridade;
+      if (emitidoComo !== origemDoAvatar) throw new Error('RARIDADE_NAO_CONFERE');
 
       const newCristais = debito.cristais + debito.cristaisBonus;
       slots[slotIdxInt] = { ...s, listed: true };
@@ -141,6 +154,7 @@ async function handleListarAvatar(req, res, db, uid) {
         pai:         s.pai         || null,
         nascidoEm:   s.nascidoEm   || s.bornAt || Date.now(),
         nomeTravado: s.nomeTravado === true,
+        nascimento:  s.nascimento  || null,
         nome:       s.nome,
         elemento:   s.elemento,
         raridade:   s.raridade,
@@ -338,6 +352,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         pai:         listing.pai         || null,
         nascidoEm:   listing.nascidoEm   || listing.bornAt || Date.now(),
         nomeTravado: listing.nomeTravado === true,
+        nascimento:  listing.nascimento  || null,
         nome:       listing.nome,
         elemento:   listing.elemento,
         raridade:   listing.raridade,

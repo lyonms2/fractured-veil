@@ -452,6 +452,22 @@ async function confirmHatch() {
     pendingEgg: true,   // protege o slot — firebase.js não salva avatarSlots enquanto pendingEgg existir
     pendingSlot: targetSlot,
   };
+  /* ── AQUI E QUE A ESSENCIA MUDA ──
+
+     O avatar deixa de nascer com a raridade do ovo. Nasce Comum,
+     como todos, e a raridade do ovo fica na certidao como ORIGEM.
+
+     O ovo Lendario continua a valer o que valia — paga alelos mais
+     altos (ver NASC_ALELOS) e continua a mandar na postura de ovos,
+     que o api/pool.js ja tirava do registo do servidor e nao da
+     raridade do avatar. O que ele deixa de dar e um Lendario feito:
+     da um bebe com genes de Lendario. */
+  if (typeof registarNascimento === 'function') {
+    registarNascimento(avatarSlots[targetSlot], {
+      elemento: ovo.elemento, origem: ovo.raridade, seed,
+    });
+    avatarSlots[targetSlot].raridade = 'Comum';
+  }
   window._pendingEggSlot = targetSlot;
 
   hatchWithAnimation(ovo.raridade, ovo.elemento, targetSlot);

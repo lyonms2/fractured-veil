@@ -140,10 +140,17 @@ function pontosDoAvatar(raridade, nivel) {
 //
 // Aceita também o objeto do slot:  fichaDeAvatar(avatarSlots[0])
 // ═══════════════════════════════════════════════════════════════════
-function fichaDeAvatar(seed, raridade, elemento, nivel) {
+function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   if (seed && typeof seed === 'object') {
     const s = seed;
-    return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum', s.elemento || 'Fogo', s.nivel || 1);
+    /* A certidao viaja com a ficha.
+
+       Sem isto, quem so recebe a ficha nao consegue distinguir um bebe
+       de um avatar do jogo antigo — e o magiasDoAvatar, que so recebe
+       a ficha, tirava as magias aos dois ou a nenhum. A certidao e o
+       que separa os dois casos, portanto tem de chegar la. */
+    return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum', s.elemento || 'Fogo',
+                         s.nivel || 1, s.nascimento || null);
   }
 
   const pontosBase = pontosDoAvatar(raridade, nivel);
@@ -250,6 +257,8 @@ function fichaDeAvatar(seed, raridade, elemento, nivel) {
     desvantagem: vd ? vd.desvantagem : null,
     elemento, raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
+    // A certidao, para quem so tem a ficha em maos.
+    nascimento: nascimento || null,
   };
 }
 

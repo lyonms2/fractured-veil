@@ -202,6 +202,14 @@ function triggerSummon() {
     pendingEgg: true,       // protege o slot durante a chocagem automática
     pendingSlot: activeSlotIdx,
   };
+  /* A certidao. Invocado nao consome ovo nenhum, portanto a origem e
+     Comum — que era ja a raridade com que a invocacao nascia. O que
+     e novo aqui e o DNA, o potencial e os atributos iniciais. */
+  if (typeof registarNascimento === 'function') {
+    registarNascimento(avatarSlots[activeSlotIdx], {
+      elemento, origem: 'Comum', seed,
+    });
+  }
   window._pendingEggSlot = activeSlotIdx;
   gs.totalInvocacoes = (gs.totalInvocacoes || 0) + 1;
 

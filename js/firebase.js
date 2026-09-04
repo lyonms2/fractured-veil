@@ -117,6 +117,16 @@ function getGameState() {
       pai:         s.pai         || null,
       nascidoEm:   s.nascidoEm   || s.bornAt || 0,
       nomeTravado: s.nomeTravado ?? false,
+      /* A CERTIDAO DE NASCIMENTO.
+
+         Vai inteira e sem valor por omissao: um avatar sem certidao
+         nasceu antes disto existir, e inventar-lhe uma aqui seria
+         escrever uma data de nascimento que ninguem observou.
+
+         E NAO se reescreve: quem grava so copia o que ja la esta. O
+         unico caminho de escrita e o registarNascimento, que recusa
+         se ja houver uma. */
+      nascimento: s.nascimento || null,
       // Avatar identity
       nome:      s.nome      || '',
       elemento:  s.elemento  || 'Fogo',
