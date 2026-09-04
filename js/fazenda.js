@@ -312,3 +312,129 @@ async function cuidarDe(idx) {
 }
 
 function voltarAFazenda() { abrirFazenda(); }
+
+// ═══════════════════════════════════════════════════════════════════
+// CRUZAR — escolher dois e pôr um ovo
+//
+// A escolha é aqui; a regra é no js/reproducao.js. Esta tela nunca
+// decide se um par pode ou não: pergunta ao podeCruzar() e mostra o
+// motivo que ele der. Um limite guardado por quem PEDE em vez de por
+// quem FAZ já rendeu quatro defeitos a este jogo, e não vai render o
+// quinto.
+// ═══════════════════════════════════════════════════════════════════
+let _fzEscolhidos = [];
+
+function _fzOvosNoInventario() {
+  const s = avatarSlots[activeSlotIdx];
+  return (s && s.eggs ? s.eggs.length : 0);
+}
+
+function abrirCruzar() {
+  _fzEscolhidos = [];
+  _fzRenderCruzar();
+  const ov = document.getElementById('cruzarOverlay');
+  if (ov) ov.style.display = 'flex';
+}
+
+function fecharCruzar() {
+  const ov = document.getElementById('cruzarOverlay');
+  if (ov) ov.style.display = 'none';
+  _fzEscolhidos = [];
+}
+
+function _fzRenderCruzar() {
+  const el = document.getElementById('cruzarLista');
+  if (!el) return;
+
+  if (typeof saveRuntimeToSlot === 'function') saveRuntimeToSlot(activeSlotIdx);
+
+  /* Só entram na lista os que PODEM cruzar. Mostrar os bebés apagados
+     dizia "este também podia" a quem olhasse depressa — e não podia,
+     falta-lhe crescer. A linha de baixo explica a ausência deles. */
+  const candidatos = fazendaVivos().filter(({ s }) =>
+    s && !s.dead && !s.listed && s.nascimento &&
+    (typeof faseDoSlot === 'function' ? faseDoSlot(s) : 0) >= 3);
+
+  if (!candidatos.length) {
+    el.innerHTML = `<div class="fz-vazio">${t('repr.sem_adultos')}</div>`;
+    _fzAvisoCruzar(null);
+    return;
+  }
+
+  el.innerHTML = candidatos.map(({ s, idx }) => {
+    const sexo = (typeof sexoDe === 'function') ? sexoDe(s) : 'F';
+    const nome = s.nome ? String(s.nome).split(',')[0].trim() : '—';
+    const svg  = (typeof gerarSVG === 'function')
+      ? gerarSVG(s, s.raridade, s.seed || 0, 34, 34,
+                 (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 3)) : '';
+    const on = _fzEscolhidos.includes(idx);
+    return `<button class="cruzar-item${on ? ' on' : ''}" onclick="fzEscolherPai(${idx})">
+      <span class="cruzar-svg">${svg}</span>
+      <span class="cruzar-nome">${esc(nome)}</span>
+      <span class="cruzar-sexo ${sexo === 'M' ? 'macho' : 'femea'}">${sexo === 'M' ? '♂' : '♀'}</span>
+    </button>`;
+  }).join('');
+
+  _fzAvisoCruzar(_fzParEscolhido());
+}
+
+function _fzParEscolhido() {
+  if (_fzEscolhidos.length !== 2) return null;
+  return [avatarSlots[_fzEscolhidos[0]], avatarSlots[_fzEscolhidos[1]]];
+}
+
+/* O aviso e o botão dizem sempre a mesma coisa, porque leem a mesma
+   resposta. Antes de haver isto, o botão apagado não dizia porquê. */
+function _fzAvisoCruzar(par) {
+  const aviso = document.getElementById('cruzarAviso');
+  const btn   = document.getElementById('cruzarBtn');
+  if (!aviso || !btn) return;
+
+  if (!par) {
+    aviso.textContent = t('repr.escolher');
+    btn.disabled = true;
+    return;
+  }
+  const r = podeCruzar(par[0], par[1], {
+    ovosNoInventario: _fzOvosNoInventario(), maxOvos: 10 });
+  aviso.textContent = r.ok ? '' : t(r.motivo);
+  btn.disabled = !r.ok;
+}
+
+function fzEscolherPai(idx) {
+  const i = _fzEscolhidos.indexOf(idx);
+  if (i !== -1) _fzEscolhidos.splice(i, 1);
+  else {
+    // Dois é o máximo: o terceiro empurra o primeiro para fora, em vez
+    // de não fazer nada — clicar e não acontecer nada lê-se como avaria.
+    _fzEscolhidos.push(idx);
+    if (_fzEscolhidos.length > 2) _fzEscolhidos.shift();
+  }
+  _fzRenderCruzar();
+}
+
+function confirmarCruzar() {
+  const par = _fzParEscolhido();
+  if (!par) return;
+
+  const r = cruzar(par[0], par[1], {
+    ovosNoInventario: _fzOvosNoInventario(), maxOvos: 10 });
+  if (!r.ok) { _fzAvisoCruzar(par); return; }
+
+  /* O ovo vai para o inventário do avatar ACTIVO, que é o único que a
+     tela dos ovos mostra. Pô-lo no slot de um dos pais escondia-o de
+     quem acabou de o pôr. */
+  const dono = avatarSlots[activeSlotIdx];
+  if (!dono) return;
+  if (!dono.eggs) dono.eggs = [];
+  dono.eggs.push(r.ovo);
+  if (typeof eggsInInventory !== 'undefined') eggsInInventory = dono.eggs;
+
+  fecharCruzar();
+  const horas = Math.round(REPR_INCUBACAO_MS / 3600000);
+  if (typeof addLog === 'function') addLog(t('repr.feito', { h: horas }), 'leg');
+  if (typeof showToast === 'function') showToast(t('repr.feito', { h: horas }), 'ok');
+  if (typeof renderEggInventory === 'function') renderEggInventory();
+  if (typeof updateResourceUI === 'function') updateResourceUI();
+  if (typeof scheduleSave === 'function') scheduleSave();
+}

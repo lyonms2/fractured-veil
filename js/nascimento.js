@@ -299,7 +299,16 @@ function nascer(opts) {
   // não consome ovo nenhum.
   const origem = NASC_ALELOS[o.origem] ? o.origem : 'Comum';
 
-  const dna = gerarDna(elemento, origem, o.seed);
+  /* O DNA pode vir FEITO.
+
+     Quando o ovo é filho de dois avatares, o DNA dele já foi cruzado
+     ao ser posto (js/reproducao.js) e viaja dentro do ovo. Sortear um
+     novo aqui era deitar fora a herança inteira e dar ao filho genes de
+     estranho.
+
+     Sem pais — invocação, ou postura de um avatar sozinho — sorteia-se
+     como sempre. */
+  const dna = o.dna || gerarDna(elemento, origem, o.seed);
 
   return {
     v:         1,
@@ -309,6 +318,15 @@ function nascer(opts) {
     // porque toda a gente nasce Comum.
     origem,
     dna,
+    /* De quem nasceu. Os ids dos pais, e não os nomes: um nome muda de
+       dono e repete-se; o id é único e permanente, e é dele que a
+       árvore genealógica vai viver. Os nomes guardam-se ao lado, para a
+       certidão os poder mostrar sem ter de ir procurar avatares que
+       podem já nem existir. */
+    mae:     o.mae     || null,
+    pai:     o.pai     || null,
+    maeNome: o.maeNome || null,
+    paiNome: o.paiNome || null,
     /* O sexo, expresso. Copiado do DNA para não ser preciso ir lá dentro
        só para saber se é macho ou fêmea — e porque nunca muda.
 

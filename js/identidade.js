@@ -285,6 +285,20 @@ function _certData(ms) {
   } catch (_) { return '—'; }
 }
 
+/* O nome do pai ou da mãe, se o houver.
+
+   O campo slot.mae guarda o ID do progenitor, que é o que serve para a
+   árvore: um id é único e permanente, um nome repete-se e muda de dono.
+   Mas mostrar "av_mtnq3x_8fj2ka" a um jogador não é dizer-lhe nada — e
+   por isso o nome viaja ao lado, gravado na certidão no momento em que
+   o ovo foi posto. Se o progenitor for vendido ou queimado, o nome
+   continua aqui: é história, e a história não desaparece com ele. */
+function _certPai(slot, qual) {
+  const n = slot.nascimento;
+  if (n && n[qual + 'Nome']) return n[qual + 'Nome'];
+  return slot[qual] || (n && n[qual]) || null;
+}
+
 function _certLinha(rot, val, cls) {
   return `<div class="cert-linha${cls ? ' ' + cls : ''}">
     <span class="cert-rot">${rot}</span><span class="cert-val">${val}</span>
@@ -319,8 +333,8 @@ function renderCertidaoHTML(slot) {
     ${_certLinha(t('cert.id'),       esc(slot.id || nada), 'cert-mono')}
     ${_certLinha(t('cert.nascimento'), _certData(slot.nascidoEm || slot.bornAt))}
     ${_certLinha(t('cert.criador'),  esc(slot.criadorNome || nada))}
-    ${_certLinha(t('cert.mae'),      esc(slot.mae || nada))}
-    ${_certLinha(t('cert.pai'),      esc(slot.pai || nada))}
+    ${_certLinha(t('cert.mae'),      esc(_certPai(slot, 'mae') || nada))}
+    ${_certLinha(t('cert.pai'),      esc(_certPai(slot, 'pai') || nada))}
     ${_certLinha('DNA',              esc(dna), 'cert-mono')}
     ${listaDonos}
   </div>`;

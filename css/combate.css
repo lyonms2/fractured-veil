@@ -516,3 +516,62 @@
   color: var(--text);
   line-height: 1.7;
 }
+
+/* ── O OVO QUE AINDA SE ESTÁ A FAZER ──
+   Um filho leva um dia a formar-se. Enquanto isso o ovo está lá, à
+   vista, mas o botão de chocar não responde — e a linha diz porquê,
+   que é a diferença entre esperar e achar que está partido. */
+.egg-item.por-chocar { opacity: 0.82; }
+.egg-item.por-chocar .egg-btn.hatch { opacity: 0.35; pointer-events: none; }
+.egg-choco { font-size: 0.4375rem; color: var(--gold-light); letter-spacing: 0.02rem; }
+.egg-pais  { font-size: 0.40625rem; color: var(--muted); font-style: italic; }
+
+/* ── CRUZAR ──
+   A lista dos adultos, para escolher dois. Cada item é um botão que
+   liga e desliga; o escolhido fica com a moldura dourada, que é a
+   mesma linguagem do resto do jogo para "este está selecionado". */
+.cruzar-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: center;
+  margin-bottom: 0.625rem;
+  max-height: 11rem;
+  overflow-y: auto;
+}
+.cruzar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  width: 3.75rem;
+  padding: 0.25rem 0.125rem;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.cruzar-item:hover { border-color: var(--gold2); }
+.cruzar-item.on {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.16);
+}
+.cruzar-nome {
+  font-size: 0.40625rem;
+  color: var(--text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cruzar-sexo { font-size: 0.5rem; line-height: 1; }
+.cruzar-sexo.macho { color: #5ab4e8; }
+.cruzar-sexo.femea { color: #e86ab4; }
+.cruzar-aviso {
+  min-height: 1rem;
+  font-size: 0.4375rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}

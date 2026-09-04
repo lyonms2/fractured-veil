@@ -161,7 +161,21 @@ function getGameState() {
       activeDiseases: s.activeDiseases ? [...s.activeDiseases] : [],
       diseaseStress:  s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0 },
       vitals:         s.vitals ? {...s.vitals} : {fome:100,humor:100,energia:100,saude:100,higiene:100},
-      eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({id:e.id, raridade:e.raridade, elemento:e.elemento, expiraEm:e.expiraEm})),
+      /* O ovo leva consigo o filho.
+
+         Guardava id, raridade, elemento e validade — e mais nada.
+         Um ovo de cruzamento traz o DNA do filho já feito e o
+         registo dos pais; sem isto, a primeira gravação apagava a
+         herança e o filho nascia de estranhos.
+
+         A raridade fica de fora: o ovo já não tem nenhuma. */
+      eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({
+        id: e.id, elemento: e.elemento, expiraEm: e.expiraEm,
+        chocaEm: e.chocaEm || null,
+        dna:     e.dna     || null,
+        mae:     e.mae     || null, pai:     e.pai     || null,
+        maeNome: e.maeNome || null, paiNome: e.paiNome || null,
+      })),
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats
       diasVida:   s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0,

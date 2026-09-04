@@ -179,11 +179,30 @@ function _doBurnComum(id, moedas) {
 
 
 
+// Quanto falta, em horas e minutos, dito curto.
+function _tempoCurto(ms) {
+  const m = Math.max(0, Math.ceil(ms / 60000));
+  const h = Math.floor(m / 60);
+  return h > 0 ? (h + 'h' + String(m % 60).padStart(2, '0')) : (m + 'min');
+}
+
 function hatchEggFromInventory(id) {
   const ovo = eggsInInventory.find(e => e.id === id);
   if(!ovo) return;
   if(Date.now() > ovo.expiraEm) {
     addLog(t('egg.log.rotten_hatch'), 'bad');
+    return;
+  }
+  /* O TEMPO DE CHOCO.
+
+     Um ovo de filho fica um dia a fazer-se antes de abrir. A guarda
+     está aqui e não só no botão — um limite guardado por quem PEDE em
+     vez de por quem FAZ já rendeu quatro defeitos a este jogo.
+
+     Os ovos sem chocaEm abrem já: são os de postura, e esses nunca
+     tiveram espera. */
+  if(typeof ovoPronto === 'function' && !ovoPronto(ovo)) {
+    addLog(t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo)) }), 'bad');
     return;
   }
 
@@ -367,9 +386,20 @@ async function confirmHatch() {
      medido em tools/genetica.js, 24 pontos de gene a mais valiam 0,00
      caracteristicas ao nivel 35. */
   if (typeof registarNascimento === 'function') {
+    /* O DNA e os pais viajam do ovo para a certidão.
+
+       Quando o ovo é filho de dois avatares, o DNA dele foi cruzado no
+       momento em que foi posto (js/reproducao.js). Sortear um novo aqui
+       era deitar fora a herança e dar ao filho genes de estranho. */
     registarNascimento(avatarSlots[targetSlot], {
       elemento: ovo.elemento, origem: 'Comum', seed,
+      dna: ovo.dna || null,
+      mae: ovo.mae || null, pai: ovo.pai || null,
+      maeNome: ovo.maeNome || null, paiNome: ovo.paiNome || null,
     });
+    // A identidade também guarda os pais — é dela que a árvore vai ler.
+    if (ovo.mae) avatarSlots[targetSlot].mae = ovo.mae;
+    if (ovo.pai) avatarSlots[targetSlot].pai = ovo.pai;
     avatarSlots[targetSlot].raridade = 'Comum';
   }
   window._pendingEggSlot = targetSlot;
@@ -594,18 +624,23 @@ function renderEggInventory() {
       ? t('egg.inv.rotten')
       : daysLeft > 0 ? t('egg.inv.time_dh', {d: daysLeft, h: hoursLeft})
       : t('egg.inv.time_h', {h: hoursLeft});
-    const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '');
+    // Ainda a fazer-se: não abre, e diz quanto falta.
+    const porChocar = typeof ovoPronto === 'function' && !ovoPronto(ovo);
+    const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '') + (porChocar ? ' por-chocar' : '');
 
     return `<div class="${cls}">
       <div class="egg-mini-svg">${eggMiniSVG('Comum', 38)}</div>
       <div class="egg-info">
         <div class="egg-name" style="color:#7ab87a">${esc(ovo.elemento)}</div>
+        ${ovo.maeNome || ovo.paiNome ? `<div class="egg-pais">${
+          t('egg.filho_de', { mae: esc(ovo.maeNome || '?'), pai: esc(ovo.paiNome || '?') })}</div>` : ''}
         <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>
+        ${porChocar ? `<div class="egg-choco">⏳ ${t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo)) })}</div>` : ''}
       </div>
       <div class="egg-actions">
         ${expired
           ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`
-          : `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
+          : `<button class="egg-btn hatch"${porChocar ? ' disabled' : ''} onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
              <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
         }
       </div>
