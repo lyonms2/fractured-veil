@@ -27,8 +27,8 @@
 const A = require('./auditoria-base.js');
 const { M } = A;
 
-const SOMBRA = M.MAGIAS['Sombra'].forte.find(g => g.id === 'so_f3');
-const MARE   = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d4');
+const SOMBRA = M.todasAsMagias().find(g => g.id === 'so_f3');
+const MARE   = M.todasAsMagias().find(g => g.id === 'ag_d4');
 
 /* Um duelo de três contra três, com todos vivos e com vidas diferentes,
    para se poder ver EM QUEM a magia pegou. Os do banco entram com vida

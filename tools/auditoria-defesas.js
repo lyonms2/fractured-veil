@@ -57,7 +57,7 @@ function defensor(extra) {
   return { d, atacante: e.B[0], e };
 }
 
-const CASCA = M.MAGIAS['Terra'].defesa.find(g => g.id === 'te_d3');
+const CASCA = M.todasAsMagias().find(g => g.id === 'te_d3');
 
 console.log('\n═══ CASCA DE HELENA (te_d3) ═══');
 console.log('  "A pele vira couraça de pedra viva: sua Armadura conta em');
@@ -231,7 +231,7 @@ A.ver('é sustentada e custa 2 PM por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const GELO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+const GELO = M.todasAsMagias().find(g => g.id === 'ag_f3');
 
 console.log('\n═══ PRISÃO DE GELO (ag_f3) ═══');
 console.log('  "Fios de gelo correm pelo chão e sobem pelo alvo.');
@@ -415,7 +415,7 @@ A.ver('só entra na ficha de quem tem Habilidade 2 ou mais',
       Math.ceil(GELO.pm / 5) === 2, `precisa de H${Math.ceil(GELO.pm / 5)}`);
 
 // ═══════════════════════════════════════════════════════════════════
-const CASULO = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d1');
+const CASULO = M.todasAsMagias().find(g => g.id === 'ag_d1');
 
 console.log('\n═══ CASULO DE MARÉS (ag_d1) ═══');
 console.log('  "Uma concha de água viva se fecha ao seu redor."   ·   1 a 5 PM por turno\n');
@@ -588,7 +588,7 @@ A.ver('escala de 1 a 5 PM, e cobra por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const NEVOA = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d2');
+const NEVOA = M.todasAsMagias().find(g => g.id === 'ag_d2');
 
 console.log('\n═══ NÉVOA DENSA (ag_d2) ═══');
 console.log('  "Um nevoeiro que não deixa ver nem ser visto."   ·   1 PM por turno\n');
@@ -769,7 +769,7 @@ A.ver('custa 1 PM por turno e é sustentada',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const MARE = M.MAGIAS['Água'].defesa.find(g => g.id === 'ag_d3');
+const MARE = M.todasAsMagias().find(g => g.id === 'ag_d3');
 
 console.log('\n═══ MARÉ RESTAURADORA (ag_d3) ═══');
 console.log('  "Cura 1d de vida a cada 2 PM que você investe."   ·   2 a 20 PM\n');
@@ -901,9 +901,7 @@ A.ver('escala de 2 a 20 PM, e não é sustentada',
 // que se aguenta.
 {
   let comCura = 0;
-  for (const el of Object.keys(M.MAGIAS))
-    for (const cat of ['ataque', 'forte', 'defesa'])
-      for (const g of (M.MAGIAS[el][cat] || [])) if (g.cura) comCura++;
+  for (const g of M.todasAsMagias()) if (g.cura) comCura++;
   /* Era a única; passaram a duas quando a Maré Compartilhada nasceu.
      A prova continua a valer a pena porque o que ela guarda não é o
      número — é a Água ser o único elemento que cura. */
@@ -912,7 +910,7 @@ A.ver('escala de 2 a 20 PM, e não é sustentada',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const FIO = M.MAGIAS['Vento'].forte.find(g => g.id === 'vt_f3');
+const FIO = M.todasAsMagias().find(g => g.id === 'vt_f3');
 
 console.log('\n═══ FIO CORTANTE (vt_f3) ═══');
 console.log('  "Não bate mais forte — mas num acerto perfeito o alvo testa');
@@ -1097,7 +1095,7 @@ A.ver('custa 1 PM por turno e é sustentada',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const VEU = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d1');
+const VEU = M.todasAsMagias().find(g => g.id === 'vt_d1');
 
 console.log('\n═══ VÉU DE CORRENTES (vt_d1) ═══');
 console.log('  "Uma parede de vento ao seu redor."   ·   5 PM, uma vez\n');
@@ -1213,17 +1211,16 @@ A.ver('custa 5 PM e não escala nem cobra por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const EGIDE = M.MAGIAS['Sombra'].defesa.find(g => g.id === 'so_d2');
+const EGIDE = M.todasAsMagias().find(g => g.id === 'so_d2');
 
 console.log('\n═══ ÉGIDE MENTAL (so_d2) ═══');
 console.log('  "A mente se fecha. Nenhuma magia de espírito entra ali."   ·   5 PM, uma vez\n');
 
 // Todas as magias do catálogo que tiram do combate sem passar pelos PV.
 const TIRAM_DE_COMBATE = [];
-for (const el of Object.keys(M.MAGIAS))
-  for (const cat of ['ataque', 'forte', 'defesa'])
-    for (const g of (M.MAGIAS[el][cat] || []))
-      if (g.petrifica || g.congela || g.destroiAlma) TIRAM_DE_COMBATE.push({ g, el });
+for (const g of M.todasAsMagias())
+  if (g.petrifica || g.congela || g.destroiAlma)
+    TIRAM_DE_COMBATE.push({ g, el: M.papelDaMagia(g) });
 
 /* Manda uma magia contra um alvo, com ou sem a Égide de pé, e conta
    quantas vezes ele saiu de combate. O alvo tem Resistência 0: sem a
@@ -1287,7 +1284,7 @@ A.ver('custa 5 PM, uma vez, e não cobra por turno',
    duas magias de gelo têm nomes de gelo e efeitos parecidos. Uma é
    fechada pela Égide, a outra não. */
 {
-  const INVERNO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f4');
+  const INVERNO = M.todasAsMagias().find(g => g.id === 'ag_f4');
   const com = contraEgide(INVERNO, INVERNO.pm, true, 400);
   A.ver('mas NÃO fecha o Inverno Súbito, que prende em vez de tirar',
         com.presos > 0 && com.fora === 0 && com.imunizou === 0,
@@ -1354,7 +1351,7 @@ A.ver('custa 5 PM, uma vez, e não cobra por turno',
 
 // ── 7. O registo diz que imunizou, e a quem ──
 {
-  const GELO2 = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+  const GELO2 = M.todasAsMagias().find(g => g.id === 'ag_f3');
   const e = A.duelo({
     seed: 4,
     politica: (quem) => (quem.nome === 'A') ? { magia: GELO2, pm: 10 } : {},
@@ -1371,7 +1368,7 @@ A.ver('custa 5 PM, uma vez, e não cobra por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const CORRENTES = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d2');
+const CORRENTES = M.todasAsMagias().find(g => g.id === 'vt_d2');
 
 console.log('\n═══ CORRENTES DESVIANTES (vt_d2) ═══');
 console.log('  "O ar se dobra em torno do corpo."   ·   1 a 5 PM, uma vez\n');
@@ -1540,7 +1537,7 @@ A.ver('escala de 1 a 5 PM, uma vez, e não cobra por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const CONTRARIO = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d3');
+const CONTRARIO = M.todasAsMagias().find(g => g.id === 'vt_d3');
 
 console.log('\n═══ VENTO CONTRÁRIO (vt_d3) ═══');
 console.log('  "Cada PM investido é +1 na sua Defesa."   ·   1 a 5 PM por turno\n');
@@ -1662,7 +1659,7 @@ A.ver('escala de 1 a 5 PM e cobra por turno',
    suficiente para ficar escrito, e para ser a primeira coisa a rever se
    um dia se mexer no balanceamento do Vento. */
 {
-  const VEU2 = M.MAGIAS['Vento'].defesa.find(g => g.id === 'vt_d1');
+  const VEU2 = M.todasAsMagias().find(g => g.id === 'vt_d1');
   const turnos = 6;
   const custoVeu = VEU2.pm;                       // uma vez
   const custoVento = CONTRARIO.pmMax * turnos;    // todo o turno
@@ -1696,7 +1693,7 @@ A.ver('escala de 1 a 5 PM e cobra por turno',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const MORDIDA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a3');
+const MORDIDA = M.todasAsMagias().find(g => g.id === 'so_a3');
 
 console.log('\n═══ MORDIDA VAMPÍRICA (so_a3) ═══');
 console.log('  "Rouba 1d de vida por turno e passa direto para você."   ·   1 PM por turno\n');
@@ -1838,7 +1835,7 @@ A.ver('custa 1 PM por turno e rouba um dado',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const CEGUEIRA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a4');
+const CEGUEIRA = M.todasAsMagias().find(g => g.id === 'so_a4');
 
 console.log('\n═══ VÉU DE CEGUEIRA (so_a4) ═══');
 console.log('  "Quem não resistir bate com −1 e esquiva com −3 até o fim da luta."   ·   3 PM\n');
@@ -1993,7 +1990,7 @@ A.ver('custa 3 PM e não fere',
    jogo a tem e era o teste que a procurava no sítio errado. */
 
 // ═══════════════════════════════════════════════════════════════════
-const DEVORAR = M.MAGIAS['Sombra'].forte.find(g => g.id === 'so_f2');
+const DEVORAR = M.todasAsMagias().find(g => g.id === 'so_f2');
 
 console.log('\n═══ DEVORAR ESSÊNCIA (so_f2) ═══');
 console.log('  "Não fere o corpo: desfaz o que havia dentro dele."   ·   10 PM\n');
@@ -2068,8 +2065,8 @@ A.ver('custa 10 PM, não fere, e desfaz a alma',
    diferença entre elas é só o preço, e é de oito para um. */
 {
   const TRES = [
-    M.MAGIAS['Terra'].forte.find(g => g.id === 'te_f2'),
-    M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3'),
+    M.todasAsMagias().find(g => g.id === 'te_f2'),
+    M.todasAsMagias().find(g => g.id === 'ag_f3'),
     DEVORAR,
   ];
   const medidas = TRES.map(g => {
@@ -2142,7 +2139,7 @@ A.ver('custa 10 PM, não fere, e desfaz a alma',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const MANTO = M.MAGIAS['Sombra'].defesa.find(g => g.id === 'so_d1');
+const MANTO = M.todasAsMagias().find(g => g.id === 'so_d1');
 
 console.log('\n═══ MANTO DE PENUMBRA (so_d1) ═══');
 console.log('  "Uma barreira invisível."   ·   4 PM\n');
@@ -2295,7 +2292,7 @@ A.ver('custa 4 PM fixos e não escala',
 }
 
 // ═══════════════════════════════════════════════════════════════════
-const CORPO = M.MAGIAS_UNIVERSAIS.defesa.find(g => g.id === 'un_d1');
+const CORPO = M.MAGIAS.defensiva.find(g => g.id === 'un_d1');
 
 console.log('\n═══ CORPO ELEMENTAL (un_d1) ═══');
 console.log('  "Você deixa de ter carne."   ·   20 PM por turno · universal\n');
@@ -2339,7 +2336,7 @@ function contraCorpo(magia, voltas, mexerAlvo) {
 // ── 1. O catálogo ──
 A.ver('custa 20 PM por turno, é sustentada, e é de toda a gente',
       CORPO.pm === 20 && CORPO.porTurno === true && CORPO.invulneravel === true
-      && M.MAGIAS_UNIVERSAIS.defesa.includes(CORPO),
+      && M.MAGIAS.defensiva.includes(CORPO),
       `pm=${CORPO.pm} porTurno=${CORPO.porTurno} · está no bolo universal`);
 
 // ── 2. Nada de dano entra. Nada mesmo ──
@@ -2357,7 +2354,7 @@ A.ver('custa 20 PM por turno, é sustentada, e é de toda a gente',
    a zero, nenhum deles pega — a invulnerabilidade apanha-os de graça,
    sem uma linha de código a tratá-los um a um. */
 {
-  const GELO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f4');   // congelaTurnos
+  const GELO = M.todasAsMagias().find(g => g.id === 'ag_f4');   // congelaTurnos
   const rGelo = contraCorpo(GELO, 400);
   A.ver('o Inverno Súbito não congela quem não pode ser ferido',
         rGelo.congelou === 0, `${rGelo.congelou} congelamentos em ${rGelo.n}`);
@@ -2381,20 +2378,20 @@ A.ver('custa 20 PM por turno, é sustentada, e é de toda a gente',
    Um jogador que leia "quase nada" e enfrente um Sombra com a Prisão de
    Gelo aprende isto da pior maneira. */
 {
-  const PRISAO = M.MAGIAS['Água'].forte.find(g => g.id === 'ag_f3');
+  const PRISAO = M.todasAsMagias().find(g => g.id === 'ag_f3');
   const r = contraCorpo(PRISAO, 300, (alvo) => { alvo.ficha.R = 0; });
   A.ver('a Prisão de Gelo tira-o de combate na mesma',
         r.fora > 0, `${r.fora} de ${r.n} saíram, com o corpo elemental de pé`);
 }
 {
-  const CEGA = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a4');
+  const CEGA = M.todasAsMagias().find(g => g.id === 'so_a4');
   const r = contraCorpo(CEGA, 300, (alvo) => { alvo.ficha.R = 0; });
   A.ver('o Véu de Cegueira cega-o na mesma',
         r.cegou > 0, `${r.cegou} de ${r.n} cegaram`);
 }
 {
   // A Mordida drena no fim do turno, por fora do golpe.
-  const MORD = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a3');
+  const MORD = M.todasAsMagias().find(g => g.id === 'so_a3');
   let lancou = false;
   const e = A.duelo({
     seed: 5,

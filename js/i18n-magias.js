@@ -12,13 +12,12 @@
 
 window.registerStrings({
   // ── Rótulos ───────────────────────────────────────────────────────
-  'mag.cat.ataque':   'Ataque',
-  'mag.cat.forte':    'Ataque forte',
-  'mag.cat.defesa':   'Defesa',
+  'mag.cat.forte':       'Forte',
+  'mag.cat.muito_forte': 'Muito forte',
+  'mag.cat.defensiva':   'Defensiva',
+  'mag.cat.suporte':     'Suporte',
   // Quando o elemento não tem magia defensiva, o slot cai num segundo
   // ataque. Dizê-lo, em vez de lhe chamar defesa.
-  'mag.cat.defesa_atq': 'Segundo ataque',
-  'mag.cat.forte2':   'Segundo ataque forte',
   'mag.chega.fase1':  'Chega quando deixar de ser bebê',
   'mag.chega.fase2':  'Chega ao virar Jovem',
   'mag.chega.grau1':  'Chega ao virar Raro',
@@ -243,11 +242,10 @@ window.registerStrings({
   'mag.un_d1.desc':   'Você deixa de ter carne e passa a ser o seu elemento: nenhum ponto de dano entra enquanto durar, e o que precisa de ferir para pegar — veneno, gelo, decapitação — deixa de pegar junto. Não trava o que não passa pela vida: virar pedra ou estátua, a cegueira, e a mordida que suga por fora do golpe. Vinte PM a cada turno, e cada vinte compra um turno.',
 }, {
   // ── ENGLISH ───────────────────────────────────────────────────────
-  'mag.cat.ataque':   'Attack',
-  'mag.cat.forte':    'Heavy attack',
-  'mag.cat.defesa':   'Defense',
-  'mag.cat.defesa_atq': 'Second attack',
-  'mag.cat.forte2':   'Second heavy attack',
+  'mag.cat.forte':       'Strong',
+  'mag.cat.muito_forte': 'Very strong',
+  'mag.cat.defensiva':   'Defensive',
+  'mag.cat.suporte':     'Support',
   'mag.chega.fase1':  'Arrives when it stops being a baby',
   'mag.chega.fase2':  'Arrives when it becomes a Youth',
   'mag.chega.grau1':  'Arrives when it becomes Rare',

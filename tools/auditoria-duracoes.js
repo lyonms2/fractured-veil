@@ -30,9 +30,9 @@ const arena = () => M.combate3dtIniciar(
    { nome: 'I2', elemento: 'Fogo', raridade: 'Comum', nivel: 1, seed: 6 }],
   3, { historico: true });
 
-const manto = M.MAGIAS['Terra'].defesa.find(g => g.id === 'te_d1');  // 1-5 PM/turno
-const punho = M.MAGIAS['Terra'].ataque.find(g => g.id === 'te_a1');  // 5 PM/turno
-const furia = M.MAGIAS['Sombra'].ataque.find(g => g.id === 'so_a2'); // 2 PM, uma vez
+const manto = M.todasAsMagias().find(g => g.id === 'te_d1');  // 1-5 PM/turno
+const punho = M.todasAsMagias().find(g => g.id === 'te_a1');  // 5 PM/turno
+const furia = M.todasAsMagias().find(g => g.id === 'so_a2'); // 2 PM, uma vez
 
 console.log('\n═══ AS DURAÇÕES ═══\n');
 
@@ -120,7 +120,7 @@ console.log('\n═══ AS DURAÇÕES ═══\n');
 // a bater todos os turnos como se nada fosse. E durava um turno, não
 // dois.
 {
-  const g = M.MAGIAS['Água'].forte.find(x => x.id === 'ag_f4');
+  const g = M.todasAsMagias().find(x => x.id === 'ag_f4');
   A.ver('o Inverno Súbito declara quantos turnos prende',
         g.congelaTurnos === 2, `congelaTurnos = ${g.congelaTurnos}`);
 

@@ -31,11 +31,7 @@ const ver = (rot, ok, det) => {
 };
 
 const acha = (id) => {
-  for (const el of Object.keys(M.MAGIAS))
-    for (const cat of ['ataque', 'forte', 'defesa'])
-      for (const g of (M.MAGIAS[el][cat] || [])) if (g.id === id) return { g, el };
-  for (const cat of ['ataque', 'forte', 'defesa'])
-    for (const g of (M.MAGIAS_UNIVERSAIS[cat] || [])) if (g.id === id) return { g, el: 'Fogo' };
+  for (const g of M.todasAsMagias()) if (g.id === id) return { g, el: M.papelDaMagia(g) };
   return null;
 };
 

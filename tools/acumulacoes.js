@@ -16,11 +16,9 @@ const A = require('./auditoria-base.js');
 const { M } = A;
 
 const acha = (id) => {
-  for (const el of Object.keys(M.MAGIAS))
-    for (const cat of ['ataque', 'forte', 'defesa'])
-      for (const g of (M.MAGIAS[el][cat] || [])) if (g.id === id) return { g, el };
-  for (const cat of ['ataque', 'forte', 'defesa'])
-    for (const g of (M.MAGIAS_UNIVERSAIS[cat] || [])) if (g.id === id) return { g, el: 'Universal' };
+  // Uma gaveta só, por papel. O 'el' que isto devolvia era o elemento;
+  // passa a ser o papel, que é a divisão que existe agora.
+  for (const g of M.todasAsMagias()) if (g.id === id) return { g, el: M.papelDaMagia(g) };
   return null;
 };
 const nome = (id) => global.__PT['mag.' + id + '.nome'] || id;

@@ -16,7 +16,7 @@ require(path.join(RAIZ, 'js/i18n-vantagens.js'));
 const M = new Function('t',
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
-  `return { MAGIAS, MAGIAS_UNIVERSAIS, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
+  `return { MAGIAS, MAGIA_PAPEIS, todasAsMagias, papelDaMagia, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
             MAGIA_SLOTS, MAGIA_CATEGORIAS, MAGIA_ESCADA, repertorioCompleto, degrauDoSlot,
             nascer, gerarDna, tendenciaDoDna, vocacaoDoDna, sexoDoDna, sexoDe,
             indoleDoDna, indoleDominante, indoleDe, NASC_INDOLES,

@@ -155,18 +155,12 @@ function despeja(o, tipoRot, extra) {
                semTexto: !nome || !desc });
 }
 
-// ── As magias, por elemento ──
-for (const el of Object.keys(M.MAGIAS)) {
-  for (const cat of ['ataque', 'forte', 'defesa']) {
-    for (const g of (M.MAGIAS[el][cat] || [])) {
-      despeja(g, 'magia', { elemento: el, categoria: cat, pm: g.pm,
-                            pmMax: g.pmMax || null, chaveTexto: 'mag.' + g.id });
-    }
-  }
-}
-for (const cat of ['ataque', 'forte', 'defesa']) {
-  for (const g of (M.MAGIAS_UNIVERSAIS[cat] || [])) {
-    despeja(g, 'magia', { elemento: 'Universal', categoria: cat, pm: g.pm,
+// ── As magias, por papel ──
+// Eram dois passeios — um pelos cinco elementos e outro pela lista
+// universal. É um só, porque há uma gaveta só.
+for (const papel of M.MAGIA_PAPEIS) {
+  for (const g of (M.MAGIAS[papel] || [])) {
+    despeja(g, 'magia', { papel, pm: g.pm,
                           pmMax: g.pmMax || null, chaveTexto: 'mag.' + g.id });
   }
 }
@@ -196,7 +190,7 @@ const bloco = (titulo, itens) => {
       : (d.custo > 0 ? 'custa ' + d.custo : 'rende ' + Math.abs(d.custo));
     console.log('\n' + String(n).padStart(2) + '. ' + (d.nome || '‹SEM NOME›') +
                 '   [' + d.id + ']   ' + custo);
-    if (d.categoria) console.log('    gaveta:   ' + d.elemento + ' · ' + d.categoria);
+    if (d.papel) console.log('    gaveta:   ' + d.papel);
     console.log('    mecânica: ' + (d.mecanica.join('  ') || '‹nenhuma›'));
     console.log('    texto:    ' + (d.desc || '‹SEM DESCRIÇÃO›'));
     const cob = [];
@@ -208,8 +202,10 @@ const bloco = (titulo, itens) => {
   }
 };
 
-for (const el of ['Fogo', 'Terra', 'Água', 'Vento', 'Sombra', 'Universal']) {
-  bloco('MAGIAS · ' + el.toUpperCase(), grupo(d => d.elemento === el));
+// Eram seis blocos, um por elemento mais o universal. São quatro, um
+// por papel — que é a divisão que o jogo tem agora.
+for (const papel of M.MAGIA_PAPEIS) {
+  bloco('MAGIAS · ' + papel.replace('_', ' ').toUpperCase(), grupo(d => d.papel === papel));
 }
 bloco('VANTAGENS', grupo(d => d.tipo === 'vantagem'));
 bloco('DESVANTAGENS', grupo(d => d.tipo === 'desvantagem'));

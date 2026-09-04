@@ -194,12 +194,10 @@ console.log('\n═══ O TECTO DE HABILIDADE (H×5) ═══\n');
     for (const H of [1, 2, 3, 5, 8]) {
       const eu = A.duelo({ a: { carac: { F: 2, H, R: 8, A: 1 }, pm: 200 } }).A[0];
       const tecto = M._c3(eu, 'H') * 5;
-      for (const el of Object.keys(M.MAGIAS))
-        for (const cat of ['ataque', 'forte', 'defesa'])
-          for (const g of M.MAGIAS[el][cat] || []) {
-            const pm = M._c3pmIdeal(g, eu, tecto);
-            if (g.pm <= tecto) { casos++; if (pm > tecto) acima++; }
-          }
+      for (const g of M.todasAsMagias()) {
+        const pm = M._c3pmIdeal(g, eu, tecto);
+        if (g.pm <= tecto) { casos++; if (pm > tecto) acima++; }
+      }
     }
   }
   A.ver('_c3pmIdeal nunca passa o tecto H×5', acima === 0, `${acima} de ${casos} casos passaram o tecto`);

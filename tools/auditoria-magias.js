@@ -9,11 +9,10 @@ const { M } = A;
 
 // Todas as magias, com o elemento e a gaveta de onde vêm
 const TODAS = [];
-for (const [el, kit] of Object.entries(M.MAGIAS))
-  for (const cat of ['ataque', 'forte', 'defesa'])
-    for (const g of kit[cat] || []) TODAS.push({ g, el, cat });
-for (const cat of ['ataque', 'forte', 'defesa'])
-  for (const g of M.MAGIAS_UNIVERSAIS[cat] || []) TODAS.push({ g, el: 'todas', cat });
+// Uma gaveta só, por papel: o `el` passa a ser o papel, e o `cat`
+// também — são a mesma coisa desde que os elementos saíram.
+for (const papel of M.MAGIA_PAPEIS)
+  for (const g of (M.MAGIAS[papel] || [])) TODAS.push({ g, el: papel, cat: papel });
 
 const F = 3, H = 4;   // atacante fixo, para a conta esperada ser previsível
 

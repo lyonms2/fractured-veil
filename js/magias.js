@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════
-// MAGIAS ELEMENTAIS
+// MAGIAS
 //
 // As regras são as do Manual 3D&T Alpha; os NOMES e os textos são
 // nossos. Mecânica não se protege, expressão sim — por isso nenhuma
 // magia aqui usa o nome do livro, e as descrições são escritas de raiz.
 //
-// Cada avatar sai com TRÊS magias do seu elemento: uma de ataque, uma
-// de ataque forte e uma de defesa, sorteadas pelo seed. A gaveta que um
-// elemento não tiver é preenchida pela lista universal.
+// Cada avatar ganha até QUATRO magias, uma de cada papel, e ganha-as ao
+// longo da vida (ver MAGIA_ESCADA). Quais lhe saem depende do seed e da
+// índole que ele traz no DNA — não de nenhum elemento, que já não há.
 //
 // ── O TECTO DE HABILIDADE ──
 // O manual proíbe lançar magia cujo custo exceda H×5. Isso torna a
@@ -37,18 +37,19 @@
 // para alvo único: fica a conta, cai o raio. As que só existem por
 // causa da área (empurrar tudo em volta, cobrir um corredor) ficaram
 // mesmo de fora.
-const MAGIA_CATEGORIAS = ['ataque', 'forte', 'defesa'];
+/* Os quatro papéis. Substituem as três gavetas que existiam DENTRO de
+   cada elemento (ataque, forte, defesa) — agora são a divisão toda, e
+   não há nada acima delas. */
+const MAGIA_PAPEIS = ['forte', 'muito_forte', 'defensiva', 'suporte'];
+const MAGIA_CATEGORIAS = MAGIA_PAPEIS;   // o nome antigo, mesma lista
 
 /* ── OS LUGARES QUE UM AVATAR PODE TER ──
 
-   São quatro, e não três: o Lendário carrega DOIS golpes fortes. O
-   segundo sai da mesma gaveta do primeiro, sem o repetir.
-
-   Repare que isto não é o mesmo que MAGIA_CATEGORIAS — essa é a lista
-   das GAVETAS de onde se sorteia, e continua a ser três. Um lugar e uma
-   gaveta não são a mesma coisa desde que há dois lugares a beber da
-   mesma gaveta. */
-const MAGIA_SLOTS = ['ataque', 'forte', 'forte2', 'defesa'];
+   Quatro, um por papel. Eram quatro antes também, mas dois deles eram
+   golpes fortes: o Lendário levava um SEGUNDO golpe forte porque não
+   havia mais nada para lhe dar. Agora há — o quarto lugar é o suporte,
+   que é uma opção a sério e não a repetição de uma que ele já tinha. */
+const MAGIA_SLOTS = MAGIA_PAPEIS;
 
 /* ── A ESCADA DO REPERTÓRIO ──
 
@@ -70,10 +71,10 @@ const MAGIA_SLOTS = ['ataque', 'forte', 'forte2', 'defesa'];
    ela aparece. Foi assim que o corpo ficou (js/data.js) e é assim que
    isto tem de ficar: crescer nunca troca o que já lá estava. */
 const MAGIA_ESCADA = [
-  { slot: 'ataque', fase: 1 },
-  { slot: 'defesa', fase: 2 },
-  { slot: 'forte',  grau: 1 },   // Raro
-  { slot: 'forte2', grau: 2 },   // Lendário
+  { slot: 'forte',       fase: 1 },   // CRIANÇA
+  { slot: 'defensiva',   fase: 2 },   // JOVEM
+  { slot: 'muito_forte', grau: 1 },   // RARO
+  { slot: 'suporte',     grau: 2 },   // LENDÁRIO
 ];
 
 /* ── O FEITIO INCLINA QUAL MAGIA SAI DA GAVETA ──
@@ -154,177 +155,78 @@ function _magiaFase(nivel) {
 //   SOMBRA  drena e atrapalha — o que incomoda
 // ═══════════════════════════════════════════════════════════════════
 
+/* ── O CATÁLOGO, POR PAPEL E NÃO POR ELEMENTO ──
+
+   Estava dividido pelos cinco elementos: cada avatar tirava as magias
+   da gaveta do elemento dele, e o que faltasse era tapado por uma lista
+   universal. O Fogo não tinha uma única magia defensiva — o slot de
+   defesa dele caía num segundo ataque disfarçado, e a ficha chamava-lhe
+   "Segundo ataque" para não mentir ao jogador.
+
+   Os elementos saíram do jogo. Cada avatar é único e as magias dele
+   saem do DNA, e não de uma família a que ele pertencesse. Uma gaveta
+   só, dividida pelo que a magia FAZ:
+
+     FORTE         bate, até 9 PM
+     MUITO FORTE   bate, 10 PM ou mais
+     DEFENSIVA     armadura, barreira, esquiva — não faz dano
+     SUPORTE       cura, rouba vida, drena PM, melhora quem a lança
+
+   Nenhuma magia foi reescrita: as mesmas 48, com as mesmas contas e os
+   mesmos ids, mudaram de gaveta. O id ainda leva o prefixo do elemento
+   de origem (fg_, te_, ag_, vt_, so_, un_) e fica assim de propósito —
+   é a chave da tradução de cada uma, e reescrever quarenta e oito
+   chaves para arrumar um prefixo era arriscar perder um nome por nada.
+
+   Os comentários que explicavam a MECÂNICA seguiram com a magia. Alguns
+   falam do elemento de onde ela veio; lê-se isso como história. */
 const MAGIAS = {
-  // ── FOGO ── o dano, sem rede ──────────────────────────────────────
-  'Fogo': {
-    ataque: [
-      { id:'fg_a1', pm:1,  fa:{ dados:1, fixo:2 } },
-      { id:'fg_a2', pm:0,  fa:{ fixo:2 } },
-      { id:'fg_a3', pm:1, pmMax:5, fa:{ H:1, fixoPorPM:1 } },
-      { id:'fg_a4', pm:1, pmMax:10, fa:{ H:1, dados:1, fixoPorPM:1 } },
-      { id:'fg_a5', pm:1, porTurno:true, fa:{ dados:1 }, ignoraArmadura:true },
-    ],
-    forte: [
-      { id:'fg_f1', pm:25, fa:{ dados:10 }, ignoraArmadura:true },
-      // "Essa lava mágica ignora a Armadura do alvo"
-      { id:'fg_f2', pm:10, fa:{ dados:1, fixo:10 }, ignoraArmadura:true },
-      // O Terremoto do manual: 2d+4 por cada 4 PMs. Escala como nenhuma
-      // outra, e é POR ISSO que ficou só com o Fogo — era o que fazia o
-      // Fogo e a Terra terem os dois o melhor ultimate do jogo.
-      { id:'fg_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
-    ],
-    // Vazia de propósito, e agora por duas razões. O manual não tem uma
-    // única magia de fogo defensiva — e o Fogo é o elemento que responde
-    // a tudo batendo mais forte. Continua defendendo-se pela Força de
-    // Defesa como toda a gente; só não tem magia que a melhore.
-    defesa: [],
-  },
 
-  // ── TERRA ── a muralha ────────────────────────────────────────────
-  'Terra': {
-    ataque: [
-      { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
-      { id:'te_a2', pm:5,  fa:{ fixo:16 } },
-      { id:'te_a3', pm:1,  fa:{ H:1, dados:1 } },
-    ],
-    forte: [
-      { id:'te_f1', pm:10, fa:{ H:1, fixo:15 } },
-      { id:'te_f2', pm:5,  petrifica:true },
-    ],
-    defesa: [
-      { id:'te_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
-      { id:'te_d2', pm:2, porTurno:true, armadura:2 },
-      // A Resistência de Helena: "concede Armadura Extra contra todos os
-      // ataques, excepto magia". Armadura Extra é a Armadura a contar a
-      // dobrar — é a defesa mais forte que existe, e é da Terra.
-      { id:'te_d3', pm:2, porTurno:true, armaduraDobra:true, excetoMagia:true },
-    ],
-  },
-
-  // ── ÁGUA ── quem aguenta ──────────────────────────────────────────
-  'Água': {
-    ataque: [
-      { id:'ag_a1', pm:5,  fa:{ H:1, dados:1 }, debuffR:1 },
-      { id:'ag_a2', pm:2, pmMax:10, fa:{ F:1, H:1, dadosPorPM:0.5 } },
-      { id:'ag_a3', pm:3,  fa:{ H:1, dados:2 }, veneno:{ testeR:-1, penalidade:1, pvPorTurno:1 } },
-    ],
-    forte: [
-      { id:'ag_f1', pm:30, fa:{ dados:10 } },
-      { id:'ag_f2', pm:10, fa:{ H:1, dados:1, fixo:10 } },
-      { id:'ag_f3', pm:10, congela:true },
-      // Inferno de Gelo: FA = H+2d, ignora a Armadura por completo, e
-      // quem levar dano testa Resistência ou fica congelado e indefeso
-      // um turno. É o golpe forte barato que faltava à Água.
-      { id:'ag_f4', pm:5, fa:{ H:1, dados:2 }, ignoraArmadura:true,
-        congelaTurnos:2 },
-    ],
-    defesa: [
-      { id:'ag_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
-      { id:'ag_d2', pm:1, porTurno:true, ocultacao:true },
-      // Cura Mágica do manual: "para cada 2 PMs gastos, você pode curar
-      // 1d Pontos de Vida". É a única cura de verdade do jogo, e é da
-      // Água — é isto que faz dela o elemento que se aguenta.
-      { id:'ag_d3', pm:2, pmMax:20, cura:{ dadosPorPM:0.5 } },
-      /* A mesma cura, mas para quem precisar.
-
-         A Maré Restauradora fecha o próprio corpo e mais nada, o que
-         a torna inútil no turno em que quem está mal é o companheiro
-         do banco. No manual a Cura Mágica não tem essa limitação:
-         cura quem se tocar.
-
-         Custa um PM a mais na entrada porque alcançar o banco vale
-         alguma coisa — dá para preparar quem vai entrar em vez de
-         esperar que ele apanhe os golpes primeiro. A conta dos dados
-         é a mesma: um por cada dois PM. */
-      { id:'ag_d4', pm:3, pmMax:20, cura:{ dadosPorPM:0.5 }, curaAliado:true },
-    ],
-  },
-
-  // ── VENTO ── depressa, e muitas vezes ─────────────────────────────
-  'Vento': {
-    ataque: [
-      { id:'vt_a1', pm:0,  fa:{ fixo:2 } },
-      { id:'vt_a2', pm:4,  fa:{ H:1, dados:2 }, ignoraArmadura:true },
-      { id:'vt_a3', pm:2, pmMax:10, fa:{ H:1, dados:1 }, ondasPor:2, ondasMax:5, alvoIndefeso:true },
-    ],
-    forte: [
-      { id:'vt_f1', pm:8,  fa:{ H:1, dados:4 } },
-      { id:'vt_f2', pm:10, fa:{ H:1, dados:5 } },
-      // Ataque Vorpal: não aumenta o dano. Num acerto crítico que vença a
-      // Defesa, o alvo testa a Armadura — falhando, acabou. É o Vento a
-      // não bater mais forte, mas a bater onde dói.
-      { id:'vt_f3', pm:1, porTurno:true, vorpal:true },
-    ],
-    defesa: [
-      { id:'vt_d1', pm:5,  bonusFD:10 },
-      { id:'vt_d2', pm:1, pmMax:5, esquivaBonus:true },
-      // Criar Vento: bónus na Defesa igual aos PMs gastos, enquanto durar
-      { id:'vt_d3', pm:1, pmMax:5, porTurno:true, bonusFDPorPM:1 },
-    ],
-  },
-
-  // ── SOMBRA ── o que incomoda ──────────────────────────────────────
-  'Sombra': {
-    ataque: [
-      { id:'so_a1', pm:10, fa:{ H:1, dados:3 }, drenaPM:true },
-      { id:'so_a2', pm:2,  buffFuria:true },
-      // Roubo de Vida: 1 PM por turno rouba 1d PV, que passam para si
-      { id:'so_a3', pm:1, porTurno:true, roubaVida:{ dados:1 } },
-      // Cegueira: o alvo testa Resistência ou fica vendo mal — H−1 para
-      // bater e H−3 para esquivar, até ao fim do combate
-      { id:'so_a4', pm:3, cegueira:{ ataque:1, esquiva:3 } },
-    ],
-    forte: [
-      { id:'so_f1', pm:10, fa:{ dados:6 } },
-      /* Custava 40 e fazia o mesmo que o Petrificar da Terra por 5:
-         mesmo bloco do motor, mesma prova de Resistência, mesma Égide
-         a travá-la. Medido lado a lado contra o mesmo alvo, as três
-         davam 50%, 50% e 50%.
-
-         Quarenta PM pediam Resistência 8 E Habilidade 8 ao mesmo
-         tempo, e o gerador de fichas dá uma ou outra: ao nível 35, só
-         20% dos que a recebiam a conseguiam lançar. Os outros levavam
-         para a vida inteira um golpe forte que nunca usariam.
-
-         A dez fica ao lado da Lança do Vazio, que é o que ela sempre
-         devia ter sido. Medido em 400 duelos, as duas ganham o mesmo
-         — 69% com a Lança, 67% com esta: seis dados por 10 PM valem
-         tanto como uma moeda ao ar que tira do combate. A gaveta da
-         Sombra deixa de ser uma escolha só no papel. */
-      { id:'so_f2', pm:10, destroiAlma:true },
-      /* ── A PRIMEIRA MAGIA QUE ESCOLHE ALVO ──
-
-         Este combate sempre foi activo-contra-activo: bate-se em quem
-         está à frente e mais nada. Isso é uma simplificação NOSSA — no
-         3D&T uma magia atinge quem o lançador escolher dentro do
-         alcance, e quem está atrás não está a coberto por estar atrás.
-
-         A Sombra é o elemento certo para levantar essa simplificação:
-         é o que passa por baixo das portas. E resolve de caminho um
-         defeito velho — a gaveta forte da Sombra começava nos 10 PM,
-         a única acima dos 5, e por isso 158 avatares de Sombra em mil
-         chegavam ao nível 35 SEM golpe forte nenhum, porque o tecto
-         deles não chegava lá. A três, chegam todos.
-
-         O dano é modesto de propósito: o que se paga aqui é a
-         escolha, não a força. Escolher o alvo vale mais do que dois
-         dados — dá para acabar com o ferido antes de ele se
-         esconder, ou tirar o curandeiro antes de ele curar. */
-      { id:'so_f3', pm:3, pmMax:12, fa:{ H:1, dados:1, dadosPorPM:0.5 },
-        escolheAlvo:true },
-    ],
-    defesa: [
-      { id:'so_d1', pm:4,  barreira:true },
-      { id:'so_d2', pm:5,  imuneEspiritual:true },
-    ],
-  },
-};
-
-// ── LISTA UNIVERSAL ──
-// A escola "todas" do manual: qualquer conjurador elemental as lança,
-// seja qual for o seu elemento. Entram no bolo de todos.
-const MAGIAS_UNIVERSAIS = {
-  ataque: [
+  // ── FORTE — bate, até 9 PM ────────────────────────────────
+  forte: [
+    { id:'fg_a1', pm:1,  fa:{ dados:1, fixo:2 } },
+    { id:'fg_a2', pm:0,  fa:{ fixo:2 } },
+    { id:'fg_a3', pm:1, pmMax:5, fa:{ H:1, fixoPorPM:1 } },
+    { id:'fg_a4', pm:1, pmMax:10, fa:{ H:1, dados:1, fixoPorPM:1 } },
+    { id:'fg_a5', pm:1, porTurno:true, fa:{ dados:1 }, ignoraArmadura:true },
+    // O Terremoto do manual: 2d+4 por cada 4 PMs. Escala como nenhuma
+    // outra, e é POR ISSO que ficou só com o Fogo — era o que fazia o
+    // Fogo e a Terra terem os dois o melhor ultimate do jogo.
+    { id:'fg_f3', pm:4, pmMax:20, fa:{ dados:2, fixo:4, dadosPorPM:0.5, fixoPorPM:1 } },
+    { id:'te_a2', pm:5,  fa:{ fixo:16 } },
+    { id:'te_a3', pm:1,  fa:{ H:1, dados:1 } },
+    { id:'ag_a1', pm:5,  fa:{ H:1, dados:1 }, debuffR:1 },
+    { id:'ag_a2', pm:2, pmMax:10, fa:{ F:1, H:1, dadosPorPM:0.5 } },
+    { id:'ag_a3', pm:3,  fa:{ H:1, dados:2 }, veneno:{ testeR:-1, penalidade:1, pvPorTurno:1 } },
+    // Inferno de Gelo: FA = H+2d, ignora a Armadura por completo, e
+    // quem levar dano testa Resistência ou fica congelado e indefeso
+    // um turno. É o golpe forte barato que faltava à Água.
+    { id:'ag_f4', pm:5, fa:{ H:1, dados:2 }, ignoraArmadura:true,
+      congelaTurnos:2 },
+    { id:'vt_a1', pm:0,  fa:{ fixo:2 } },
+    { id:'vt_a2', pm:4,  fa:{ H:1, dados:2 }, ignoraArmadura:true },
+    { id:'vt_a3', pm:2, pmMax:10, fa:{ H:1, dados:1 }, ondasPor:2, ondasMax:5, alvoIndefeso:true },
+    { id:'vt_f1', pm:8,  fa:{ H:1, dados:4 } },
+    /* ── A PRIMEIRA MAGIA QUE ESCOLHE ALVO ──
+    
+    Este combate sempre foi activo-contra-activo: bate-se em quem
+    está à frente e mais nada. Isso é uma simplificação NOSSA — no
+    3D&T uma magia atinge quem o lançador escolher dentro do
+    alcance, e quem está atrás não está a coberto por estar atrás.
+    
+    A Sombra é o elemento certo para levantar essa simplificação:
+    é o que passa por baixo das portas. E resolve de caminho um
+    defeito velho — a gaveta forte da Sombra começava nos 10 PM,
+    a única acima dos 5, e por isso 158 avatares de Sombra em mil
+    chegavam ao nível 35 SEM golpe forte nenhum, porque o tecto
+    deles não chegava lá. A três, chegam todos.
+    
+    O dano é modesto de propósito: o que se paga aqui é a
+    escolha, não a força. Escolher o alvo vale mais do que dois
+    dados — dá para acabar com o ferido antes de ele se
+    esconder, ou tirar o curandeiro antes de ele curar. */
+    { id:'so_f3', pm:3, pmMax:12, fa:{ H:1, dados:1, dadosPorPM:0.5 },
+      escolheAlvo:true },
     { id:'un_a1', pm:2, pmMax:10, fa:{ H:1, dadosPorPM:0.5 } },
     // "atira o alvo para trás" é imagem, não mecânica: este combate não
     // tem distâncias, e no manual o arremesso só muda a posição do alvo.
@@ -332,9 +234,90 @@ const MAGIAS_UNIVERSAIS = {
     // nenhum e fazia a magia prometer o que não cumpria.
     { id:'un_a2', pm:2, fa:{ F:1, H:1, dados:1, fixo:2 } },
   ],
-  forte: [],
-  defesa: [
+
+  // ── MUITO FORTE — bate, 10 PM ou mais ─────────────────────
+  muito_forte: [
+    { id:'fg_f1', pm:25, fa:{ dados:10 }, ignoraArmadura:true },
+    // "Essa lava mágica ignora a Armadura do alvo"
+    { id:'fg_f2', pm:10, fa:{ dados:1, fixo:10 }, ignoraArmadura:true },
+    { id:'te_f1', pm:10, fa:{ H:1, fixo:15 } },
+    { id:'ag_f1', pm:30, fa:{ dados:10 } },
+    { id:'ag_f2', pm:10, fa:{ H:1, dados:1, fixo:10 } },
+    { id:'vt_f2', pm:10, fa:{ H:1, dados:5 } },
+    { id:'so_f1', pm:10, fa:{ dados:6 } },
+  ],
+
+  // ── DEFENSIVA — segura o golpe, não faz dano ──────────────
+  defensiva: [
+    { id:'te_f2', pm:5,  petrifica:true },
+    { id:'te_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
+    { id:'te_d2', pm:2, porTurno:true, armadura:2 },
+    // A Resistência de Helena: "concede Armadura Extra contra todos os
+    // ataques, excepto magia". Armadura Extra é a Armadura a contar a
+    // dobrar — é a defesa mais forte que existe, e é da Terra.
+    { id:'te_d3', pm:2, porTurno:true, armaduraDobra:true, excetoMagia:true },
+    { id:'ag_f3', pm:10, congela:true },
+    { id:'ag_d1', pm:1, pmMax:5, porTurno:true, armaduraPorPM:1, armaduraMax:5 },
+    { id:'ag_d2', pm:1, porTurno:true, ocultacao:true },
+    { id:'vt_d1', pm:5,  bonusFD:10 },
+    { id:'vt_d2', pm:1, pmMax:5, esquivaBonus:true },
+    // Criar Vento: bónus na Defesa igual aos PMs gastos, enquanto durar
+    { id:'vt_d3', pm:1, pmMax:5, porTurno:true, bonusFDPorPM:1 },
+    // Cegueira: o alvo testa Resistência ou fica vendo mal — H−1 para
+    // bater e H−3 para esquivar, até ao fim do combate
+    { id:'so_a4', pm:3, cegueira:{ ataque:1, esquiva:3 } },
+    /* Custava 40 e fazia o mesmo que o Petrificar da Terra por 5:
+    mesmo bloco do motor, mesma prova de Resistência, mesma Égide
+    a travá-la. Medido lado a lado contra o mesmo alvo, as três
+    davam 50%, 50% e 50%.
+    
+    Quarenta PM pediam Resistência 8 E Habilidade 8 ao mesmo
+    tempo, e o gerador de fichas dá uma ou outra: ao nível 35, só
+    20% dos que a recebiam a conseguiam lançar. Os outros levavam
+    para a vida inteira um golpe forte que nunca usariam.
+    
+    A dez fica ao lado da Lança do Vazio, que é o que ela sempre
+    devia ter sido. Medido em 400 duelos, as duas ganham o mesmo
+    — 69% com a Lança, 67% com esta: seis dados por 10 PM valem
+    tanto como uma moeda ao ar que tira do combate. A gaveta da
+    Sombra deixa de ser uma escolha só no papel. */
+    { id:'so_f2', pm:10, destroiAlma:true },
+    { id:'so_d1', pm:4,  barreira:true },
+    { id:'so_d2', pm:5,  imuneEspiritual:true },
     { id:'un_d1', pm:20, porTurno:true, invulneravel:true },
+  ],
+
+  // ── SUPORTE — cura, drena, melhora ────────────────────────
+  suporte: [
+    { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
+    // Cura Mágica do manual: "para cada 2 PMs gastos, você pode curar
+    // 1d Pontos de Vida". É a única cura de verdade do jogo, e é da
+    // Água — é isto que faz dela o elemento que se aguenta.
+    { id:'ag_d3', pm:2, pmMax:20, cura:{ dadosPorPM:0.5 } },
+    /* A mesma cura, mas para quem precisar.
+    
+    A Maré Restauradora fecha o próprio corpo e mais nada, o que
+    a torna inútil no turno em que quem está mal é o companheiro
+    do banco. No manual a Cura Mágica não tem essa limitação:
+    cura quem se tocar.
+    
+    Custa um PM a mais na entrada porque alcançar o banco vale
+    alguma coisa — dá para preparar quem vai entrar em vez de
+    esperar que ele apanhe os golpes primeiro. A conta dos dados
+    é a mesma: um por cada dois PM. */
+    { id:'ag_d4', pm:3, pmMax:20, cura:{ dadosPorPM:0.5 }, curaAliado:true },
+    { id:'so_a1', pm:10, fa:{ H:1, dados:3 }, drenaPM:true },
+    { id:'so_a2', pm:2,  buffFuria:true },
+    // Roubo de Vida: 1 PM por turno rouba 1d PV, que passam para si
+    { id:'so_a3', pm:1, porTurno:true, roubaVida:{ dados:1 } },
+    // Estava na gaveta defensiva porque não faz dano nenhum — e a
+    // regra que arrumou as quarenta e oito leu isso como defesa.
+    // Não é: não segura golpe nenhum, MELHORA quem a lança, e isso
+    // é suporte. A auditoria dos papéis apanhou-a.
+    // Ataque Vorpal: não aumenta o dano. Num acerto crítico que vença a
+    // Defesa, o alvo testa a Armadura — falhando, acabou. É o Vento a
+    // não bater mais forte, mas a bater onde dói.
+    { id:'vt_f3', pm:1, porTurno:true, vorpal:true },
   ],
 };
 
@@ -358,7 +341,6 @@ function _magiaRng(seed) {
 function magiasDoAvatar(ficha) {
   if (!ficha) return {};
 
-  const kit = MAGIAS[ficha.elemento] || MAGIAS['Fogo'];
   const rnd = _magiaRng((ficha.seed || 0) ^ 0x51);
   const fora = {};
 
@@ -396,59 +378,34 @@ function magiasDoAvatar(ficha) {
      nenhuma troca por pior, e as 71 impagáveis passam a zero. */
   const reservaFinal = _f35.pm;
 
-  for (const cat of MAGIA_CATEGORIAS) {
-    // O bolo, limitado ao que este avatar chegará a alcançar.
-    //
-    // Filtrar aqui era um defeito sério: quando a Habilidade subia,
-    // entravam mais magias no bolo, o índice sorteado caía noutro sítio,
-    // e o avatar TROCAVA de magia ao subir de nível — em 1,52% das
-    // subidas, e 36% dessas trocas eram para pior. O pior caso trocava a
-    // Fenda Vulcânica (55 de dano médio) pela Erupção (14).
-    //
-    // Agora as três magias saem do seed e mais nada: são as mesmas do
-    // nascimento à lenda. O tecto H×5 do manual continua a valer, mas
-    // decide outra coisa — se o avatar JÁ CONSEGUE LANÇAR o que sabe.
-    // A ficha mostra "precisa de Habilidade 4" em vez de esconder a
-    // magia, e subir de nível só pode destrancar, nunca tirar.
-    const noTecto  = m => m.pm <= tectoFinal;
-    const pagavel  = m => m.pm <= tectoFinal && m.pm <= reservaFinal;
-    const doBolo   = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])];
+  for (const papel of MAGIA_PAPEIS) {
+    /* O bolo, limitado ao que este avatar chegará a alcançar.
+
+       Filtrar pelo tecto de HOJE era um defeito sério: quando a
+       Habilidade subia entravam mais magias no bolo, o índice sorteado
+       caía noutro sítio, e o avatar TROCAVA de magia ao subir de nível —
+       em 1,52% das subidas, e 36% dessas trocas eram para pior.
+
+       As magias saem do seed e do DNA, e são as mesmas do nascimento à
+       lenda. O tecto H×5 do manual continua a valer, mas decide outra
+       coisa: se o avatar JÁ CONSEGUE LANÇAR o que sabe. */
+    const noTecto = m => m.pm <= tectoFinal;
+    const pagavel = m => m.pm <= tectoFinal && m.pm <= reservaFinal;
+    const doBolo  = MAGIAS[papel] || [];
 
     /* Prefere o que ele pode pagar; se NADA no bolo couber na reserva,
-       volta ao filtro antigo em vez de o deixar sem magia nenhuma.
+       volta ao filtro do tecto em vez de o deixar sem magia nenhuma.
 
-       Hoje esta rede nunca dispara — a reserva mais baixa ao nível 35
-       é 15 PM e a gaveta mais cara começa nos 10. Fica na mesma: é
-       precisamente o tipo de garantia que depende dos números de hoje,
-       e um dia alguém acrescenta uma magia ou sobe um preço. Ficar sem
-       golpe forte é pior do que ter um caro. */
+       Saiu daqui um terceiro caso: quando a gaveta de defesa ficava
+       vazia, o lugar era tapado com um segundo ataque do elemento. Isso
+       acontecia SEMPRE ao Fogo, que não tinha uma única magia
+       defensiva, e obrigava a ficha a chamar "Segundo ataque" a um
+       lugar que dizia Defesa. Com uma gaveta só para toda a gente, o
+       buraco que aquilo tapava deixou de existir. */
     let pool = doBolo.filter(pagavel);
     if (!pool.length) pool = doBolo.filter(noTecto);
 
-    // Última saída, só para a defesa: um segundo ataque do elemento.
-    // Acontece sempre ao Fogo, e não é acidente — o manual não tem uma
-    // única magia de fogo defensiva, e o Fogo é o elemento que responde
-    // a tudo batendo mais forte.
-    if (!pool.length && cat === 'defesa') {
-      const sobra = (kit.ataque || []).filter(m => m !== fora.ataque);
-      pool = sobra.filter(pagavel);
-      if (!pool.length) pool = sobra.filter(noTecto);
-    }
-    fora[cat] = _escolherComPeso(pool, indole, rnd);
-  }
-
-  /* O SEGUNDO GOLPE FORTE, do Lendário.
-
-     Sai da mesma gaveta do primeiro e nunca o repete — dois lugares com
-     a mesma magia não eram duas opções, eram uma escrita duas vezes. Se
-     a gaveta do elemento só tiver uma magia que ele alcance, fica sem
-     segundo: é preferível a repetir. */
-  {
-    const bolo = [...(kit.forte || []), ...(MAGIAS_UNIVERSAIS.forte || [])]
-      .filter(m => m !== fora.forte && m.pm <= tectoFinal);
-    const pagaveis = bolo.filter(m => m.pm <= reservaFinal);
-    const pool = pagaveis.length ? pagaveis : bolo;
-    fora.forte2 = _escolherComPeso(pool, indole, rnd);
+    fora[papel] = _escolherComPeso(pool, indole, rnd);
   }
 
   /* ── E AGORA, O QUE DELE JÁ SE VÊ ──
@@ -496,6 +453,26 @@ function degrauDoSlot(slot) {
   return MAGIA_ESCADA.find(d => d.slot === slot) || null;
 }
 
+/* O catálogo inteiro, numa lista só.
+
+   Havia meia dúzia de sítios a percorrer os cinco elementos × três
+   gavetas e depois a lista universal por fora — seis cópias do mesmo
+   passeio, cada uma com a sua hipótese de esquecer uma gaveta. */
+function todasAsMagias() {
+  const r = [];
+  for (const papel of MAGIA_PAPEIS) for (const g of (MAGIAS[papel] || [])) r.push(g);
+  return r;
+}
+
+// O papel de uma magia, pelo id. Para quem tem a magia e quer saber de
+// que gaveta ela veio.
+function papelDaMagia(magia) {
+  if (!magia) return null;
+  for (const papel of MAGIA_PAPEIS)
+    if ((MAGIAS[papel] || []).some(g => g.id === magia.id)) return papel;
+  return null;
+}
+
 // Esta magia já cabe no tecto H×5 deste avatar?
 function magiaAoAlcance(ficha, magia) {
   return !!magia && magia.pm <= ficha.H * 5;
@@ -528,9 +505,8 @@ function habilidadeParaMagia(magia) {
 
 // A Habilidade mínima para alcançar alguma magia desta gaveta.
 // Serve para a ficha dizer quanto falta, em vez de só dizer que falta.
-function habilidadeNecessaria(elemento, cat) {
-  const kit = MAGIAS[elemento] || MAGIAS['Fogo'];
-  const pool = [...(kit[cat] || []), ...(MAGIAS_UNIVERSAIS[cat] || [])];
+function habilidadeNecessaria(papel) {
+  const pool = MAGIAS[papel] || [];
   if (!pool.length) return null;
   const maisBarata = pool.reduce((a, b) => b.pm < a.pm ? b : a);
   return Math.max(1, Math.ceil(maisBarata.pm / 5));
@@ -552,7 +528,8 @@ function valorDaMagia(magia, ficha, pmGastos) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MAGIAS, MAGIAS_UNIVERSAIS, MAGIA_CATEGORIAS, MAGIA_SLOTS,
+  module.exports = { MAGIAS, MAGIA_PAPEIS, MAGIA_CATEGORIAS, MAGIA_SLOTS,
+                     todasAsMagias, papelDaMagia,
                      MAGIA_ESCADA, repertorioCompleto, degrauDoSlot, magiasDoAvatar,
                      _escolherComPeso,
                    magiaAoAlcance, habilidadeParaMagia, valorDaMagia, habilidadeNecessaria,

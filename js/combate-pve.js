@@ -890,22 +890,19 @@ function _pveAjudaDe(eu, lado, contra) {
 
   for (const cat of MAGIA_SLOTS) {
     const g = eu.magias[cat]; if (!g) continue;
-    /* O slot da defesa nem sempre tem defesa lá dentro.
+    /* O SLOT DA DEFESA JÁ TEM SEMPRE DEFESA LÁ DENTRO.
 
-       Quando o elemento não tem magia defensiva nenhuma — o Fogo não
-       tem, e é de propósito (magias.js) — o slot cai num segundo
-       ataque do elemento. Isso sempre foi assim e está certo; o que
-       não estava era chamar-lhe "Defesa".
+       Havia aqui um caso especial: quando o elemento não tinha magia
+       defensiva nenhuma — o Fogo não tinha — o lugar era tapado com um
+       segundo ataque, e este código tinha de lhe chamar "Segundo
+       ataque" para não pôr um rótulo azul a dizer DEFESA por cima de
+       uma bola de fogo.
 
-       Passava despercebido enquanto todos os itens eram dourados.
-       Agora que a defesa é azul, um rótulo azul a dizer DEFESA por
-       cima de "uma bola de fogo que nasce entre as mãos" é uma
-       contradição que o jogador vê antes de ler. Uma magia com FA é
-       um ataque, esteja no slot que estiver, e é assim que se
-       apresenta. */
-    const atacaMesmo = (cat === 'defesa' && g.fa);
-    const fam = atacaMesmo ? 'ataque' : cat;
-    const papel = atacaMesmo ? t('mag.cat.defesa_atq') : t('mag.cat.' + cat);
+       Os elementos saíram e a gaveta defensiva passou a ser uma só,
+       para toda a gente. Nenhuma das dezasseis faz dano — conferido —
+       portanto a contradição deixou de poder acontecer. */
+    const fam = cat;
+    const papel = t('mag.cat.' + cat);
     const trancada = g.pm > tecto;
     const custo = trancada ? t('mag.tecto', { h: Math.ceil(g.pm / 5) })
       : g.pm === 0 ? t('mag.custo.livre')

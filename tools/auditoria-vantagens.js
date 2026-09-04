@@ -331,7 +331,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
 // regras que um zero matava a funcionar outra vez.
 {
   let n = 0, zeros = 0, minH = 99, comToque = 0, toqueMorto = 0;
-  const vazias = { ataque: 0, forte: 0, defesa: 0 };
+  const vazias = { forte: 0, muito_forte: 0, defensiva: 0, suporte: 0 };
   for (const el of ['Fogo','Água','Terra','Vento','Sombra'])
     for (const rar of ['Comum','Raro','Lendário'])
       /* Os níveis começam no 5 e não no 1.
@@ -350,8 +350,12 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
           minH = Math.min(minH, f.H);
           const g = M.magiasDoAvatar(f);
           // Só se conta como vazio o lugar que este avatar JÁ devia ter.
-          for (const cat of ['ataque', 'defesa']) if (nv >= 10 && !g[cat]) vazias[cat]++;
-          if (nv >= 13 && !g.forte) vazias.forte++;
+          // Os lugares mudaram de nome quando os elementos saíram: o
+          // 'ataque' é hoje 'forte' e a 'defesa' é 'defensiva'. O golpe
+          // caro passou a chamar-se 'muito_forte'.
+          if (nv >= 5  && !g.forte)     vazias.forte++;
+          if (nv >= 10 && !g.defensiva) vazias.defensiva++;
+          if (nv >= 13 && !g.muito_forte) vazias.muito_forte++;
           if (f.vantagem && f.vantagem.id === 'toque_ardente') { comToque++; if (f.A === 0) toqueMorto++; }
         }
   A.ver('Piso de 1 — nenhuma característica nasce a zero',
@@ -364,13 +368,13 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
         comToque > 100 && toqueMorto === 0,
         `${comToque} avatares com a vantagem · ${toqueMorto} com A0`);
 
-  // A Habilidade baixa custa o GOLPE FORTE e mais nada. Ficar sem ataque
-  // ou sem defesa seria um avatar quebrado; ficar sem o golpe forte é
-  // uma ficha mais fraca com uma razão concreta para subir de nível.
-  A.ver('Sem golpe forte é possível; sem ataque ou sem defesa, nunca',
-        vazias.ataque === 0 && vazias.defesa === 0,
-        `vazias em ${n.toLocaleString('pt-BR')} fichas — ataque ${vazias.ataque} · ` +
-        `defesa ${vazias.defesa} · golpe forte ${vazias.forte}`);
+  // A Habilidade baixa custa o MUITO FORTE e mais nada. Ficar sem a magia
+  // de bater ou sem a defensiva seria um avatar quebrado; ficar sem o
+  // golpe caro é uma ficha mais fraca com razão para subir de nível.
+  A.ver('Sem o golpe caro é possível; sem forte ou sem defensiva, nunca',
+        vazias.forte === 0 && vazias.defensiva === 0,
+        `vazias em ${n.toLocaleString('pt-BR')} fichas — forte ${vazias.forte} · ` +
+        `defensiva ${vazias.defensiva} · muito forte ${vazias.muito_forte}`);
 }
 
 // Ninguém entra em combate com menos de 10 de vida e 10 de magia. Quem

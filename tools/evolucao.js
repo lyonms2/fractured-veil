@@ -213,16 +213,16 @@ titulo('O REPERTÓRIO CRESCE');
   ok(passos[0].tem.length === 0 && !passos[0].vd,
      'o bebé não tem magia, nem vantagem, nem desvantagem',
      'nv1 → só o golpe comum');
-  ok(passos[1].tem.join() === 'ataque' && passos[1].vd,
-     'a CRIANÇA ganha a magia de ataque e o par de virtude e defeito',
+  ok(passos[1].tem.join() === 'forte' && passos[1].vd,
+     'a CRIANÇA ganha a magia de bater e o par de virtude e defeito',
      'nv5 → ' + passos[1].tem.join(', '));
-  ok(passos[2].tem.join() === 'ataque,defesa',
+  ok(passos[2].tem.join() === 'forte,defensiva',
      'o JOVEM ganha a defensiva — e aí o quadro do Comum está completo',
      'nv10 → ' + passos[2].tem.join(', '));
-  ok(passos[3].tem.join() === 'ataque,forte,defesa',
-     'o RARO ganha o golpe forte', 'nv13 → ' + passos[3].tem.join(', '));
-  ok(passos[4].tem.join() === 'ataque,forte,forte2,defesa',
-     'o LENDÁRIO ganha o segundo golpe forte', 'nv29 → ' + passos[4].tem.join(', '));
+  ok(passos[3].tem.join() === 'forte,muito_forte,defensiva',
+     'o RARO ganha o golpe caro', 'nv13 → ' + passos[3].tem.join(', '));
+  ok(passos[4].tem.join() === 'forte,muito_forte,defensiva,suporte',
+     'o LENDÁRIO ganha o suporte', 'nv29 → ' + passos[4].tem.join(', '));
 }
 
 /* E o mais importante: o que se ganha é o LUGAR, e nunca a magia.

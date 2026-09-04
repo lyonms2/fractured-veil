@@ -807,7 +807,7 @@ function politica3dt(eu, inimigo, campo) {
   // Só vale a pena para quem vive de magia; um avatar que bate melhor
   // do que lança fica batendo.
   if (eu.semFoco) {
-    const vivoDeMagia = m.ataque || m.forte;
+    const vivoDeMagia = m.forte || m.muito_forte;
     if (vivoDeMagia && _c3(eu, 'F') <= _c3(eu, 'H')) return { apanharFoco: true };
     return { magia: null, pm: 0, golpeSimples: false };
   }
@@ -847,56 +847,71 @@ function politica3dt(eu, inimigo, campo) {
       return { toque: true, toquePM: pmToque, magia: null, pm: 0 };
   }
 
-  // ── Curar-se ──
-  // Antes de qualquer outra coisa: com a vida por baixo de metade, uma
-  // cura vale mais do que um golpe que talvez nem passe a Defesa.
-  for (const cand of [m.defesa, m.ataque, m.forte]) {
+  /* ── Curar-se ──
+     Antes de qualquer outra coisa: com a vida por baixo de metade, uma
+     cura vale mais do que um golpe que talvez nem passe a Defesa.
+
+     Percorre os lugares TODOS. A lista estava escrita à mão com os
+     nomes das gavetas antigas, e quando elas mudaram de nome esta linha
+     passou a olhar para três lugares que já não existiam: a IA deixou de
+     se curar, e de lançar seja o que fosse, sem uma única excepção em
+     lado nenhum. Foi a auditoria dos estados persistentes que a
+     apanhou — nove estados deixaram de acontecer de uma vez. */
+  for (const cand of MAGIA_SLOTS.map(k => m[k])) {
     if (cand && cand.cura && podePagar(cand) && eu.pv < eu.pvMax * 0.55)
       return { magia: cand, pm: _c3pmIdeal(cand, eu, tecto) };
   }
 
-  // Rematar: se o ataque forte cabe e o inimigo está por um fio, usa-o
-  if (podePagar(m.forte) && inimigo.pv <= inimigo.pvMax * 0.4) {
-    return { magia: m.forte, pm: _c3pmIdeal(m.forte, eu, tecto) };
+  // Rematar: se o golpe caro cabe e o inimigo está por um fio, usa-o
+  const remate = m.muito_forte || m.forte;
+  if (podePagar(remate) && inimigo.pv <= inimigo.pvMax * 0.4) {
+    return { magia: remate, pm: _c3pmIdeal(remate, eu, tecto) };
   }
   /* A Maré Compartilhada, quando alguém do lado de cá está mal.
 
      Entra antes da defesa comum de propósito: um escudo em quem
      está inteiro vale menos do que fechar a ferida de quem está
      quase a cair, e a magia só existe para isso. */
-  if (campo && m.defesa && m.defesa.curaAliado && podePagar(m.defesa)) {
-    const k = _c3aliadoMaisFerido(campo.meu);
-    if (k != null && campo.meu[k].pv < campo.meu[k].pvMax * 0.6) {
-      return { magia: m.defesa, pm: _c3pmIdeal(m.defesa, eu, tecto), aliadoIdx: k };
+  {
+    // A cura de aliado vive no suporte desde que as gavetas passaram a
+    // ser por papel; procura-se em todos os lugares para não depender
+    // de onde ela está arrumada hoje.
+    const cura = MAGIA_SLOTS.map(k => m[k]).find(g => g && g.curaAliado && podePagar(g));
+    if (campo && cura) {
+      const k = _c3aliadoMaisFerido(campo.meu);
+      if (k != null && campo.meu[k].pv < campo.meu[k].pvMax * 0.6) {
+        return { magia: cura, pm: _c3pmIdeal(cura, eu, tecto), aliadoIdx: k };
+      }
     }
   }
 
   // Erguer a defesa quando ainda não está de pé e há folga de PM
-  if (podePagar(m.defesa) && !m.defesa.cura
+  if (podePagar(m.defensiva) && !m.defensiva.cura
       && !eu.bonusA && !eu.bonusFD && !eu.armaduraDobrada && !eu.vorpal && !eu.roubando
       && eu.pm > eu.pmMax * 0.5 && eu.pv < eu.pvMax * 0.7) {
-    return { magia: m.defesa, pm: _c3pmIdeal(m.defesa, eu, tecto) };
+    return { magia: m.defensiva, pm: _c3pmIdeal(m.defensiva, eu, tecto) };
   }
   // Abrir com um buff sustentado, se tiver um e ainda não estiver de pé.
   // É isto que quebra o empate entre duas fichas parecidas: com F+2 a
   // conta FA vs FD deixa de dar zero. Sem isto a política trocava
   // golpes que não faziam nada.
-  // O m.forte2 entra aqui como qualquer outro: o Lendário tem dois
-  // golpes fortes, e esquecê-lo era deixar-lhe um lugar sem uso.
-  for (const cand of [m.ataque, m.forte, m.forte2, m.defesa]) {
+  // Percorre os lugares todos, sejam quantos forem: escrevê-los à mão
+  // aqui foi o que deixou o quarto de fora quando ele apareceu.
+  for (const cand of MAGIA_SLOTS.map(k => m[k])) {
     if (cand && (cand.vorpal || cand.roubaVida) && podePagar(cand)
         && !eu.vorpal && !eu.roubando) {
       return { magia: cand, pm: cand.pm };
     }
   }
-  for (const cand of [m.ataque, m.defesa]) {
+  for (const cand of MAGIA_SLOTS.map(k => m[k])) {
     if (cand && (cand.buffForca || cand.buffFuria) && podePagar(cand)
         && !eu.bonusF && !eu.furia) {
       return { magia: cand, pm: cand.pm };
     }
   }
-  // Caso normal: a magia de ataque se der, senão o golpe comum (grátis)
-  if (podePagar(m.ataque)) return { magia: m.ataque, pm: _c3pmIdeal(m.ataque, eu, tecto) };
+  // Caso normal: a magia de bater se der, senão o golpe comum (grátis)
+  if (podePagar(m.forte)) return { magia: m.forte, pm: _c3pmIdeal(m.forte, eu, tecto) };
+  if (podePagar(m.muito_forte)) return { magia: m.muito_forte, pm: _c3pmIdeal(m.muito_forte, eu, tecto) };
 
   // Sem magia que dê, o murro. O Golpe Carregado e o Encadeado aplicam-se
   // sozinhos no turno — mas guarda-se um PM de reserva a quem paga as
@@ -1455,7 +1470,7 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
       L.push('  ' + s.nome + ' (' + s.elemento + ' ' + s.raridade + ' nv' + s.nivel + ')' +
              '  F' + f.F + ' H' + f.H + ' R' + f.R + ' A' + f.A +
              '  ' + f.pv + ' PV / ' + f.pm + ' PM');
-      L.push('     ' + (typeof MAGIA_SLOTS !== 'undefined' ? MAGIA_SLOTS : ['ataque','forte','defesa'])
+      L.push('     ' + MAGIA_SLOTS
         .map(c => mg[c] ? nm(mg[c].id) : '-').join(' | '));
       const nv2 = (id, el) => (typeof t === 'function' && id)
         ? t('vd.' + id + '.nome').replace('{elem}', el || '') : id;

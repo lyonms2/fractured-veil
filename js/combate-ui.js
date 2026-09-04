@@ -155,7 +155,7 @@ function renderMagiasHTML(f) {
      jogador merece saber que o segundo golpe forte existe muito antes
      de chegar a Lendário. */
   const todas = (typeof repertorioCompleto === 'function') ? repertorioCompleto(f) : m;
-  const slots = (typeof MAGIA_SLOTS !== 'undefined') ? MAGIA_SLOTS : ['ataque', 'forte', 'defesa'];
+  const slots = MAGIA_SLOTS;
 
   const linhas = slots.map(cat => {
     const g = m[cat] || todas[cat];
@@ -164,7 +164,7 @@ function renderMagiasHTML(f) {
     if (!g) return `<div class="hab vazia">
         <div class="hab-top"><span class="hab-papel">${t('mag.cat.' + cat)}</span></div>
         <div class="hab-efeito">${t('ficha.sem_magia', {
-          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(f.elemento, cat === 'forte2' ? 'forte' : cat) : '?') })}</div>
+          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(cat) : '?') })}</div>
       </div>`;
     // A magia é do avatar desde que nasce e nunca muda. O que pode faltar
     // é Habilidade para a lançar — e isso mostra-se, em vez de esconder a
@@ -184,9 +184,10 @@ function renderMagiasHTML(f) {
        de propósito — o slot cai num segundo ataque. Chamar-lhe
        "Defesa" era mentira; a batalha já o diz assim e a ficha tem de
        dizer o mesmo, senão a mesma magia tem dois nomes. */
-    const atacaMesmo = (cat === 'defesa' && g.fa);
-    const fam   = atacaMesmo ? 'ataque' : (cat === 'forte2' ? 'forte' : cat);
-    const papel = atacaMesmo ? t('mag.cat.defesa_atq') : t('mag.cat.' + cat);
+    // O caso "esta defesa é na verdade um ataque" saiu daqui: com uma
+    // gaveta defensiva só, nenhuma das dezasseis faz dano.
+    const fam   = cat;
+    const papel = t('mag.cat.' + cat);
     // Quando ainda não é dele, diz-se quando passa a ser — e o cadeado
     // da Habilidade fica calado, que essa não é a razão de agora.
     const degrau = porChegar && typeof degrauDoSlot === 'function' ? degrauDoSlot(cat) : null;
