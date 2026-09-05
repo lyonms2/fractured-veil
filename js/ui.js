@@ -541,56 +541,58 @@ function addLog(msg, type = '') {
 
 async function tryAutoReconnect() { /* desativado */ }
 
-// ═══════════════════════════════════════════
-// VIDA ESTIMADA
-// ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════
+   TEMPO DE VIDA
+
+   Aqui estava a VIDA RESTANTE: quanto faltava para o avatar morrer se o
+   jogador não fizesse nada. Era um palpite sobre o futuro, e um palpite
+   caro de manter — tinha de refazer, à mão e neste ficheiro, o cálculo
+   do decaimento de cada vital, o limiar de cada doença e o dreno da
+   saúde, tudo isso escrito em js/gametick.js. Duas cópias da mesma
+   conta, e a deste lado só se saberia errada quando alguém desse por
+   uma previsão absurda.
+
+   E dizia pouco: bastava o jogador estar a cuidar do bicho — que é o
+   estado normal — para responder "estável" e mais nada.
+
+   O que fica é o TEMPO DE VIDA, que é o oposto em tudo: olha para trás,
+   não adivinha nada, e não tem conta nenhuma própria.
+
+   O NÚMERO É O `totalSecs`, e é o certo por uma razão que não é
+   preferência: é o mesmo relógio que decide a FASE do avatar
+   (faseFromAge, em js/state.js — 2h para CRIANÇA, 8h para JOVEM, 20h
+   para ADULTO). O que se mostra aqui e o que o bicho é por dentro
+   passam a sair do mesmo sítio.
+
+   Não é a idade de calendário. Um avatar que ficou dois meses num save
+   fechado não viveu dois meses — o totalSecs conta o tempo em que ele
+   esteve mesmo a viver, e é esse que lhe dá as fases. A data de
+   nascimento, para quem a quiser, está na certidão.
+
+   E um avatar morto passa a mostrar a vida que TEVE, em vez do traço
+   que a versão antiga lhe punha. */
 function updateLifeEstimate() {
   const el = document.getElementById('lifeEstimateTxt');
   if(!el) return;
-  if(!hatched || dead || sleeping) { el.textContent = sleeping ? t('ui.sleeping') : '—'; el.style.color = 'var(--muted)'; return; }
+  if(!hatched) { el.textContent = '—'; el.style.color = 'var(--muted)'; return; }
 
-  // A saúde só cai por doença ativa (ver js/gametick.js), então o tempo de
-  // vida estimado é: ciclos até um vital ficar crítico + ciclos de descuido
-  // sustido até a doença ativar (DISEASE_STRESS_THRESHOLD) + ciclos até a
-  // saúde esgotar sob o dreno da doença (DISEASE_DECAY_PER_CYCLE).
-  if(activeDiseases.length > 0) {
-    const secsLeft = Math.round((vitals.saude / (DISEASE_DECAY_PER_CYCLE * activeDiseases.length)) * 60);
-    el.style.color  = secsLeft < 1800 ? '#e74c3c' : '#c9a84c';
-    el.textContent  = _fmtTime(secsLeft);
-    return;
-  }
-
-  const _d = rarityBonus().decay * GAME_SPEED;
-  const vitalDecay = {
-    energia: 0.6  * _d,
-    fome:    0.8  * _d * getItemEffect('fomeDecayMult'),
-    higiene: 0.12 * GAME_SPEED,
-    humor:   0.5  * _d,
-  };
-
-  let minCyclesUntilDisease = Infinity;
-  for(const id in DISEASES) {
-    const { vital, limiar } = DISEASES[id];
-    const current = vitals[vital];
-    const cyclesUntilCrit = current > limiar ? (current - limiar) / vitalDecay[vital] : 0;
-    const stressCyclesLeft = cyclesUntilCrit > 0
-      ? DISEASE_STRESS_THRESHOLD
-      : Math.max(0, DISEASE_STRESS_THRESHOLD - diseaseStress[id]);
-    minCyclesUntilDisease = Math.min(minCyclesUntilDisease, cyclesUntilCrit + stressCyclesLeft);
-  }
-
-  if(minCyclesUntilDisease === Infinity) { el.textContent = t('ui.stable'); el.style.color = '#7ab87a'; return; }
-
-  const cyclesAfterDisease = vitals.saude / DISEASE_DECAY_PER_CYCLE;
-  const totalSecs = Math.round((minCyclesUntilDisease + cyclesAfterDisease) * 60);
-  el.style.color  = totalSecs < 3600 ? '#e74c3c' : totalSecs < 7200 ? '#c9a84c' : '#7ab87a';
-  el.textContent  = _fmtTime(totalSecs);
+  el.textContent = _fmtTime(totalSecs || 0);
+  // O morto pára o relógio, e a cor diz que parou.
+  el.style.color = dead ? 'var(--muted)' : '#c9a84c';
 }
 
 function _fmtTime(secs) {
-  if(secs >= 86400) return Math.floor(secs/86400) + 'd ' + Math.floor((secs%86400)/3600) + 'h';
-  if(secs >= 3600)  return Math.floor(secs/3600)  + 'h ' + Math.floor((secs%3600)/60)    + 'min';
-  return Math.floor(secs/60) + 'min';
+  // A parte pequena só aparece quando tem alguma coisa a dizer: "9h 0min"
+  // e "3d 0h" são duas palavras para dizer uma.
+  if(secs >= 86400) { const h = Math.floor((secs%86400)/3600);
+    return Math.floor(secs/86400) + 'd' + (h ? ' ' + h + 'h' : ''); }
+  if(secs >= 3600)  { const m = Math.floor((secs%3600)/60);
+    return Math.floor(secs/3600) + 'h' + (m ? ' ' + m + 'min' : ''); }
+  // Os segundos passaram a contar: isto era uma previsão, e uma previsão
+  // ao segundo não dizia nada. É um contador de vida, e o primeiro minuto
+  // de um bicho recém-chocado a marcar "0min" é pior do que não marcar.
+  if(secs >= 60)    return Math.floor(secs/60) + 'min';
+  return Math.max(0, Math.floor(secs)) + 's';
 }
 
 // ═══════════════════════════════════════════
