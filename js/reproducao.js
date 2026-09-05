@@ -60,6 +60,12 @@ const REPR_CHOCO_MIN_MS = 24 * 3600 * 1000;
    Sete dias é o que o jogador tem para abrir espaço: vender um avatar,
    perder um, comprar um slot. É tempo que se usa a decidir, e não a
    correr. */
+/* A fase mínima para cruzar: 2, o ADULTO. Está num nome e não cravada na
+   comparação porque já mudou de significado uma vez sem ninguém dar por
+   isso — um número solto no meio de um `if` não se vê quando as fases
+   são renomeadas. */
+const REPR_FASE_MIN = 2;
+
 const REPR_SEM_NINHO_MS = 7 * 86400000;
 
 /* Quanto os dois pais valem, de 0 (nenhum cuidado) a 1 (impecáveis).
@@ -207,22 +213,20 @@ function podeCruzar(a, b, opts) {
   const sb = (typeof sexoDe === 'function') ? sexoDe(b) : null;
   if (sa === sb)                   return { ok: false, motivo: 'repr.erro.mesmo_sexo' };
 
-  /* Os dois na última fase.
+  /* Os dois ADULTOS — fase 2, que é onde a raridade chega a Raro, ao
+     nível 11.
 
-     ⚠ ISTO MUDOU SEM NINGUÉM DECIDIR. O comentário dizia "os dois
-     adultos" e estava certo enquanto a fase 3 era ADULTO — as fases
-     eram BEBÊ / CRIANÇA / JOVEM / ADULTO. Passaram a ser BEBÊ / JOVEM /
-     ADULTO / ANCIÃO, e a fase 3 é agora o ANCIÃO: cruzar deixou de pedir
-     nível 17 e passou a pedir nível 27, de raspão.
-
-     Fica como está até haver decisão — mudar o número aqui seria
-     escolher o ritmo da colónia sem o dizer. Para o ADULTO, basta `< 2`.
+     Esteve um tempo em `< 3` e ninguém decidiu isso: a fase 3 era o
+     ADULTO enquanto as fases foram BEBÊ / CRIANÇA / JOVEM / ADULTO, e
+     quando passaram a BEBÊ / JOVEM / ADULTO / ANCIÃO o mesmo número
+     passou a querer dizer ANCIÃO — cruzar saltou de nível 17 para 27 de
+     raspao. Volta ao ADULTO, que é a intenção de sempre.
 
      A fase pede nível (js/state.js), portanto isto não se compra numa
      tarde de qualquer maneira. */
   const fa = (typeof faseDoSlot === 'function') ? faseDoSlot(a) : 0;
   const fb = (typeof faseDoSlot === 'function') ? faseDoSlot(b) : 0;
-  if (fa < 3 || fb < 3)            return { ok: false, motivo: 'repr.erro.novo' };
+  if (fa < REPR_FASE_MIN || fb < REPR_FASE_MIN) return { ok: false, motivo: 'repr.erro.novo' };
 
   // E o ovo tem de ter onde ir.
   if (o.ovosNoInventario != null && o.maxOvos != null
@@ -234,7 +238,15 @@ function podeCruzar(a, b, opts) {
 /* ═══════════════════════════════════════════════════════════════════
    O DNA DO FILHO
    ═══════════════════════════════════════════════════════════════════ */
-function cruzarDna(dnaA, dnaB, seed) {
+/* O quarto e o quinto argumento são os PARES DO CORPO de cada
+   progenitor, e chegam de fora porque quem os sabe montar é o
+   corpoParesDeSlot (js/nascimento.js): um progenitor sem genes do corpo
+   — um primordial — tem na mesma um corpo, tirado da seed dele, e é esse
+   que passa ao filho.
+
+   São opcionais. Sem eles o filho nasce sem genes do corpo e cai na seed,
+   como toda a gente caía antes disto existir. */
+function cruzarDna(dnaA, dnaB, seed, corpoA, corpoB) {
   const rnd = _reprRng(seed || Date.now());
   const gA = (dnaA && dnaA.genes) || {};
   const gB = (dnaB && dnaB.genes) || {};
@@ -270,6 +282,21 @@ function cruzarDna(dnaA, dnaB, seed) {
      virtude do outro. É a mesma regra de sempre: um alelo de cada lado. */
   genes.vigor = _parDosPais(gA.vigor || [0, 0], gB.vigor || [0, 0], rnd);
 
+  /* ── E O CORPO ──
+
+     Traço a traço, cada um por si. É o que faz um filho poder sair com a
+     boca de um e os chifres do outro — se fosse o corpo inteiro de uma
+     vez, ele seria a cópia de um dos pais e a cruza não dava nada de
+     novo. */
+  const tracos = (typeof NASC_CORPO_TRACOS !== 'undefined') ? NASC_CORPO_TRACOS : null;
+  if (tracos && corpoA && corpoB) {
+    const corpo = {};
+    for (const k of tracos) {
+      corpo[k] = _parDosPais(corpoA[k] || [0, 0], corpoB[k] || [0, 0], rnd);
+    }
+    genes.corpo = corpo;
+  }
+
   return { v: 2, genes };
 }
 
@@ -296,7 +323,11 @@ function cruzar(mae, pai, opts) {
   const seed = o.seed != null ? o.seed
     : ((femea.seed || 0) * 31 + (macho.seed || 0) * 17 + agora) >>> 0;
 
-  const dna = cruzarDna(femea.nascimento.dna, macho.nascimento.dna, seed);
+  /* Os pares do corpo saem dos SLOTS e não do DNA: um primordial não tem
+     genes do corpo, e o corpo dele está na seed do slot. */
+  const cpF = (typeof corpoParesDeSlot === 'function') ? corpoParesDeSlot(femea) : null;
+  const cpM = (typeof corpoParesDeSlot === 'function') ? corpoParesDeSlot(macho) : null;
+  const dna = cruzarDna(femea.nascimento.dna, macho.nascimento.dna, seed, cpF, cpM);
 
   return {
     ok: true,

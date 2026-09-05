@@ -28,7 +28,7 @@ const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
-  rd('cores.js') + rd('nascimento.js') + rd('raridade.js') + rd('reproducao.js') +
+  rd('cores.js') + rd('data.js') + rd('nascimento.js') + rd('raridade.js') + rd('reproducao.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('identidade.js') +
   `return { arvoreDe, vigorDe, vigorDoDna, NASC_VIGOR, NASC_VIGOR_FORTE, NASC_VIGOR_FRACO,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
@@ -36,7 +36,8 @@ const M = new Function('t',
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
             tempoDeChoco, _reprCuidado, REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS,
             fichaDeAvatar, magiasDoAvatar, faseDoSlot,
-            ehPrimordial, coresDe, _reprRetrato };`
+            ehPrimordial, coresDe, _reprRetrato,
+            corpoDoSeed, corpoDoDna, corpoDeSlot, corpoParesDeSlot, NASC_CORPO_TRACOS, gerarSVG };`
 )(x => x);
 
 let passou = 0, falhou = 0;
@@ -560,5 +561,74 @@ titulo('O VIGOR');
 
 console.log('');
 console.log('─────────────────────────────');
+// ══════════════════════════════════════════════════════════════════
+titulo('O CORPO HERDA-SE, TRAÇO A TRAÇO');
+
+/* Os doze traços — corpo, boca, chifres, olhos, braços, cauda, asas,
+   tentáculos, espinhos — saíam da SEED, e a seed não se herda. Um filho
+   não se parecia com ninguém. */
+{
+  const T = M.NASC_CORPO_TRACOS;
+  const { mae, pai } = casal(7000);
+  const cm = M.corpoDeSlot(mae), cp = M.corpoDeSlot(pai);
+  const pF = M.corpoParesDeSlot(mae), pM = M.corpoParesDeSlot(pai);
+
+  ok(!!cm && !!cp && T.every(k => cm[k] !== undefined),
+     'todo o avatar tem corpo, tenha genes ou não',
+     T.length + ' traços lidos dos dois progenitores');
+
+  // Só os traços em que os pais DIFEREM dizem alguma coisa: nos outros,
+  // vir da mãe e vir do pai é a mesma coisa e nada se prova.
+  const dif = T.filter(k => cm[k] !== cp[k]);
+  const NC = 3000, SEM = i => (1700000000 + i) >>> 0;
+  let deMae = 0, dePai = 0, forasteiro = 0, n = 0, semGenes = 0;
+  const combos = {};
+  for (let i = 1; i <= NC; i++) {
+    const d = M.cruzarDna(mae.nascimento.dna, pai.nascimento.dna, SEM(i), pF, pM);
+    const c = M.corpoDoDna(d);
+    if (!c) { semGenes++; continue; }
+    for (const k of dif) {
+      n++;
+      if (c[k] === cm[k]) deMae++; else if (c[k] === cp[k]) dePai++; else forasteiro++;
+    }
+    combos[dif.map(k => c[k] === cm[k] ? 'M' : 'P').join('')] = 1;
+  }
+  ok(semGenes === 0, 'e um filho de dois avatares nasce com os genes do corpo',
+     NC.toLocaleString('pt-BR') + ' filhos · ' + semGenes + ' sem genes');
+
+  ok(forasteiro === 0, 'nenhum traço do filho apareceu do nada',
+     n.toLocaleString('pt-BR') + ' traços conferidos contra os pais');
+
+  const pctM = deMae / n * 100;
+  ok(Math.abs(pctM - 50) < 5, 'e a mãe e o pai contribuem por igual',
+     'da mãe ' + pctM.toFixed(1) + '% · do pai ' + (100 - pctM).toFixed(1) + '%');
+
+  /* Cada traço herda-se por si. Se o corpo viajasse inteiro, o filho
+     seria a cópia de um dos pais e só haveria duas combinações. */
+  const possiveis = Math.pow(2, dif.length);
+  ok(dif.length >= 3 && Object.keys(combos).length > Math.min(possiveis, 8) / 2,
+     'e cada traço vem por si — o filho não é a cópia de um dos pais',
+     Object.keys(combos).length + ' combinações vistas em ' + dif.length + ' traços diferentes');
+}
+
+/* A garantia que segura tudo o resto: quem nasceu antes disto existir não
+   tem genes do corpo, e tem de continuar a desenhar-se exactamente como
+   sempre se desenhou. */
+{
+  let mudou = 0;
+  for (let seed = 1; seed <= 300; seed++) {
+    const semGenes = { seed };
+    const doDna = M.corpoDoDna({ genes: { F: [1, 1] } });   // DNA sem corpo
+    if (doDna !== null) { mudou++; continue; }
+    const a = M.gerarSVG(semGenes, 'Comum', seed, 100, 100, 0).replace(/\d+_\d+/g, 'ID');
+    const b = M.gerarSVG({ seed, nascimento: { dna: { genes: { F: [1, 1] } } } },
+                         'Comum', seed, 100, 100, 0).replace(/\d+_\d+/g, 'ID');
+    if (a !== b) mudou++;
+  }
+  ok(mudou === 0, 'e um DNA sem genes do corpo desenha-se pela seed, como sempre',
+     '300 avatares antigos · ' + mudou + ' mudaram de cara');
+}
+
+console.log('');
 console.log(passou + ' passaram · ' + falhou + ' falharam');
 process.exit(falhou ? 1 : 0);

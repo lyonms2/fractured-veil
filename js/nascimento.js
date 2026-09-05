@@ -104,6 +104,87 @@ const NASC_SEXO_ALELOS = ['X', 'Y'];
    filhos. */
 const NASC_INDOLES = ['guarda', 'fonte', 'lamina'];
 
+/* ── O CORPO ──
+
+   Doze traços, e são eles que fazem a cara do bicho: o formato do corpo,
+   a boca, os chifres, os olhos, os braços, a cauda, as asas, os
+   tentáculos, os espinhos.
+
+   Saíam todos da SEED, e a seed não se herda — um filho podia ter os olhos
+   da mãe por acaso e nunca por descendência. Passam a ser genes como os
+   outros: par de alelos, um de cada progenitor, e o de par[0] é o que se
+   vê. O outro viaja escondido e pode reaparecer num neto.
+
+   NA POSIÇÃO E NÃO NO VALOR, como a cor, a índole e o vigor. Para uma
+   forma de corpo não há "maior": o tipo 7 não domina o tipo 3. E para as
+   contagens — braços, chifres, olhos — também se herda um ou o outro em
+   vez de a média dos dois, pela mesma razão que a cor não se mistura: a
+   média puxa a colónia inteira para o meio e ao fim de gerações ninguém
+   tem nada de extremo.
+
+   Os PORMENORES (o tremor de cada braço, de cada espinho, de cada olho)
+   ficam de fora e continuam a sair da seed. São ruído e não feitio; vinte
+   genes a mais não mudavam nada que se visse. */
+const NASC_CORPO_TRACOS = [
+  'tipoCorpo', 'numOlhos', 'tipoOlho', 'numBracos', 'numChifres',
+  'temCauda', 'tipoCauda', 'temAsas', 'tipoAsas', 'temTent',
+  'numEsp', 'bocaTipo',
+];
+
+/* O corpo que este DNA mostra — o alelo dominante de cada traço.
+
+   Devolve null quando não há genes do corpo, e é esse null que mantém
+   todos os avatares nascidos antes disto exactamente com a cara que
+   sempre tiveram: quem não tem genes cai na seed, como sempre caiu.
+
+   Um gene incompleto também devolve null, e não meio corpo: metade dos
+   traços do DNA e metade da seed dava um bicho que não é nenhum dos
+   dois. */
+function corpoDoDna(dna) {
+  const g = dna && dna.genes && dna.genes.corpo;
+  if (!g) return null;
+  const c = {};
+  for (const k of NASC_CORPO_TRACOS) {
+    const par = g[k];
+    if (!Array.isArray(par) || par.length < 2) return null;
+    c[k] = par[0];
+  }
+  return c;
+}
+
+/* O corpo de um avatar, venha ele de onde vier: do DNA se ele tiver
+   genes, e da seed se não tiver. É o que o cruzamento pergunta a cada
+   progenitor — um primordial não tem genes do corpo, mas tem corpo, e o
+   que ele passa ao filho é esse. */
+function corpoDeSlot(slot) {
+  if (!slot) return null;
+  const dna = slot.dna || (slot.nascimento && slot.nascimento.dna);
+  const doDna = dna ? corpoDoDna(dna) : null;
+  if (doDna) return doDna;
+  if (typeof corpoDoSeed !== 'function') return null;
+  return corpoDoSeed(slot, slot.seed || 0);
+}
+
+/* O par de alelos de cada traço, para o cruzamento ler.
+
+   Quem tem genes devolve-os como estão — com o alelo escondido incluído.
+   Quem não tem é PURO: os dois alelos iguais ao que ele mostra. Um
+   primordial saiu inteiro de uma ruptura e não traz ninguém escondido
+   dentro; a variedade escondida começa a existir quando dois se
+   misturam. */
+function corpoParesDeSlot(slot) {
+  const dna = slot && (slot.dna || (slot.nascimento && slot.nascimento.dna));
+  const g = dna && dna.genes && dna.genes.corpo;
+  const visivel = corpoDeSlot(slot);
+  if (!visivel) return null;
+  const pares = {};
+  for (const k of NASC_CORPO_TRACOS) {
+    const par = g && g[k];
+    pares[k] = (Array.isArray(par) && par.length >= 2) ? par : [visivel[k], visivel[k]];
+  }
+  return pares;
+}
+
 /* ── O VIGOR ──
 
    O que o corpo dele aguenta melhor, e o que aguenta pior.

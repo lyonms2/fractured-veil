@@ -167,12 +167,72 @@ function determinarRaridade() {
 
 // ─── SVG GENERATOR ───
 
-// Contador global para dar um ID irrepetível a cada SVG gerado
-let _svgUid = 0;
+/* ══════════════════════════════════════════════════════════════════
+   O CORPO — DOZE TRAÇOS E OS SEUS PORMENORES
 
-function gerarSVG(avatar, raridade, seed, w, h, fase) {
-  fase = (typeof fase === 'number') ? fase : 0;
-  // random determinístico
+   Estava tudo escrito dentro do gerarSVG, em fila, tirado da seed. E a
+   seed não se herda: um filho não se parecia com nenhum dos pais.
+
+   Sai agora daqui, para poder vir de dois sítios:
+
+     DO DNA    quando o avatar tem os genes do corpo — e aí a boca, os
+               chifres, os olhos e os braços herdam-se como tudo o resto
+     DA SEED   quando não tem, exactamente como sempre
+
+   A ordem dos sorteios da segunda forma É A DE SEMPRE, à letra. Cada
+   número sai do anterior, portanto trocar uma linha de sítio muda todos
+   os que vêm depois — e cada avatar já nascido mudaria de cara.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* A forma adulta tirada da fila de sorteios. O `random` vem de fora
+   porque a fila é a mesma que desenha o resto do bicho: o que aqui se
+   consome tem de sair de lá, e não de um gerador à parte. */
+function corpoDaFila(random) {
+  const c = {};
+  // Doze sorteios, sempre os doze, sempre por esta ordem.
+  c.tipoCorpo  = random(1, 8);
+  c.numOlhos   = random(1, 3);
+  c.tipoOlho   = random(1, 8);
+  c.numBracos  = random(2, 8);
+  c.numChifres = random(0, 4);
+  c.temCauda   = random(0, 2) > 0;
+  c.tipoCauda  = random(1, 4);
+  c.temAsas    = random(0, 2) > 0;
+  c.tipoAsas   = random(1, 3);
+  c.temTent    = random(0, 9) > 6;
+  c.numEsp     = random(0, 4);
+  c.bocaTipo   = random(1, 8);
+
+  /* E os pormenores de cada parte, sempre à contagem MÁXIMA.
+
+     Não chegava sortear as contas: os laços que desenham os braços, os
+     espinhos e os olhos sorteavam mais um número por cada parte que
+     desenhavam. Menos espinhos, menos sorteios — e tudo o que vinha a
+     seguir na fila mudava. Assim um Comum e um Lendário com a mesma
+     seed têm exactamente o mesmo primeiro braço; o Lendário tem é mais. */
+  c.nt = random(2, 4);
+  c.bracoDet = [];
+  for (let i = 0; i < 8; i++) c.bracoDet.push([random(5, 15), random(20, 35)]);
+  c.espDet = [];
+  for (let i = 0; i < 4; i++) c.espDet.push(random(12, 20));
+  c.olhoDet = [];
+  for (let i = 0; i < 3; i++) c.olhoDet.push(random(-1, 1));
+  return c;
+}
+
+/* ── O PREÂMBULO, NUMA FUNÇÃO SÓ ──
+
+   O gerador, a paleta, as três cores e o corpo. Está aqui e não solto
+   dentro do gerarSVG porque mais alguém precisa do corpo que uma seed dá
+   — o cruzamento, para saber o que um progenitor SEM genes tem a passar
+   ao filho.
+
+   E precisa dele exactamente igual: as três cores saem da mesma fila que
+   o corpo, portanto quem quiser o corpo tem de as sortear também. Escrever
+   isso duas vezes seria pedir que as duas cópias envelhecessem em
+   direcções diferentes — e a segunda só se usa no cruzamento, que é onde
+   ninguém olharia. */
+function _preludio(avatar, seed) {
   let _seed = seed;
   const random = (min, max) => {
     _seed = (_seed * 9301 + 49297) % 233280;
@@ -180,26 +240,58 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   };
   const escolher = (arr) => arr[random(0, arr.length - 1)];
 
-  /* ── A PALETA É A COR DO AVATAR, E MAIS NADA ──
-
-     O primeiro parâmetro chamava-se `elemento`, e havia aqui cinco
-     paletas escritas à mão — uma por elemento, sete cores cada. Dois
-     avatares da mesma família saíam do mesmo balde de vermelhos.
-
-     Agora sai tudo da cor que o avatar traz no DNA: doze por doze, e
-     a paleta é uma conta sobre o matiz (paletaDeCores, js/cores.js).
-
-     Quem passar outra coisa que não o avatar — um registo de lobby, um
-     nome antigo — recebe na mesma uma cor estável, tirada da SEED. A
-     seed já decide o corpo inteiro; tirar dela também a cor não inventa
-     nada, e nunca deixa um bicho sem cor nenhuma. */
   const cfg = (typeof paletaDoAvatar === 'function')
     ? paletaDoAvatar(avatar && typeof avatar === 'object' ? avatar : null, seed)
     : { cores:['#8b5cf6','#a78bfa','#c4b5fd','#ddd6fe'], coresSec:['#4c1d95','#5b21b6','#6d28d9'],
         corBrilho:'#ede9fe', corOlho:'#c4b5fd', particulas:'sombras' };
-  const cor1      = escolher(cfg.cores);
-  const cor2      = escolher(cfg.cores);
-  const corSec    = escolher(cfg.coresSec);
+
+  const cor1   = escolher(cfg.cores);
+  const cor2   = escolher(cfg.cores);
+  const corSec = escolher(cfg.coresSec);
+
+  /* A fila corre SEMPRE, mesmo quando o corpo vai vir do DNA, e o
+     resultado dela deita-se fora nesse caso. É de propósito: o que vem a
+     seguir na fila — as dimensões dos chifres, as partículas da aura —
+     tem de cair no mesmo sítio nos dois casos, senão um avatar com genes
+     e outro sem eles teriam auras diferentes pela mesma seed. */
+  const daFila = corpoDaFila(random);
+
+  return { random, escolher, cfg, cor1, cor2, corSec, daFila };
+}
+
+/* O corpo que uma seed dá, para quem não desenha nada — o cruzamento. */
+function corpoDoSeed(avatar, seed) {
+  return _preludio(avatar, seed).daFila;
+}
+
+/* De onde vem o corpo deste avatar: do DNA se ele o tiver, e da fila se
+   não. Os PORMENORES (as dimensões dos braços, dos espinhos, dos olhos)
+   vêm sempre da fila — são tremor e não feitio, e transformá-los em vinte
+   genes a mais não mudava nada que se visse. */
+function corpoDeQuem(avatar, daFila) {
+  const dna = avatar && typeof avatar === 'object'
+    && (avatar.dna || (avatar.nascimento && avatar.nascimento.dna));
+  const doDna = (dna && typeof corpoDoDna === 'function') ? corpoDoDna(dna) : null;
+  return doDna ? Object.assign({}, daFila, doDna) : daFila;
+}
+
+// Contador global para dar um ID irrepetível a cada SVG gerado
+let _svgUid = 0;
+
+function gerarSVG(avatar, raridade, seed, w, h, fase) {
+  fase = (typeof fase === 'number') ? fase : 0;
+  // O gerador, a paleta, as cores e o corpo — tudo do _preludio, para o
+  // cruzamento poder pedir o mesmo sem copiar nada.
+  const _pre = _preludio(avatar, seed);
+  const random = _pre.random;
+
+  /* A PALETA É A COR DO AVATAR, E MAIS NADA — ver o _preludio, acima.
+     O primeiro parâmetro chamava-se `elemento` e havia aqui cinco paletas
+     escritas à mão; agora sai tudo da cor que o avatar traz no DNA. */
+  const cfg       = _pre.cfg;
+  const cor1      = _pre.cor1;
+  const cor2      = _pre.cor2;
+  const corSec    = _pre.corSec;
   const corBrilho = cfg.corBrilho;
   const corOlho   = cfg.corOlho;
 
@@ -226,19 +318,22 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   const grau = (typeof grauDaRaridade === 'function') ? grauDaRaridade(raridade)
              : (raridade === 'Lendário' ? 2 : raridade === 'Raro' ? 1 : 0);
 
-  // A forma adulta. Doze sorteios, sempre os doze, sempre por esta ordem.
-  const tipoCorpo   = random(1, 8);
-  const numOlhosAd  = random(1, 3);
-  const tipoOlho    = random(1, 8);
-  const numBracosAd = random(2, 8);
-  const numChifres  = random(0, 4);
-  const temCauda    = random(0, 2) > 0;
-  const tipoCauda   = random(1, 4);
-  const temAsasAd   = random(0, 2) > 0;
-  const tipoAsas    = random(1, 3);
-  const temTentAd   = random(0, 9) > 6;
-  const numEspAd    = random(0, 4);
-  const bocaTipo    = random(1, 8);
+  /* Os doze traços e os pormenores saem do CORPO, e o corpo vem de um
+     sítio só — do DNA quando o avatar o tem, e da seed quando não tem.
+     Ver corpoDeQuem(), mais abaixo neste ficheiro. */
+  const _corpo      = corpoDeQuem(avatar, _pre.daFila);
+  const tipoCorpo   = _corpo.tipoCorpo;
+  const numOlhosAd  = _corpo.numOlhos;
+  const tipoOlho    = _corpo.tipoOlho;
+  const numBracosAd = _corpo.numBracos;
+  const numChifres  = _corpo.numChifres;
+  const temCauda    = _corpo.temCauda;
+  const tipoCauda   = _corpo.tipoCauda;
+  const temAsasAd   = _corpo.temAsas;
+  const tipoAsas    = _corpo.tipoAsas;
+  const temTentAd   = _corpo.temTent;
+  const numEspAd    = _corpo.numEsp;
+  const bocaTipo    = _corpo.bocaTipo;
 
   // O que já cresceu. Um avatar que nasceu sem asas na forma adulta
   // nunca as terá, por muito que suba — a raridade revela, não inventa.
@@ -269,13 +364,10 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
      lista em vez de sortear. Assim um Comum e um Lendário com o mesmo
      seed têm exactamente o mesmo primeiro braço — o Lendário tem é
      mais. */
-  const ntAd      = random(2, 4);                                   // tentáculos
-  const bracoDet  = [];
-  for (let i = 0; i < 8; i++) bracoDet.push([random(5, 15), random(20, 35)]);
-  const espDet    = [];
-  for (let i = 0; i < 4; i++) espDet.push(random(12, 20));
-  const olhoDet   = [];
-  for (let i = 0; i < 3; i++) olhoDet.push(random(-1, 1));
+  const ntAd      = _corpo.nt;
+  const bracoDet  = _corpo.bracoDet;
+  const espDet    = _corpo.espDet;
+  const olhoDet   = _corpo.olhoDet;
   // ID único por render, não por seed. Se dois SVGs do mesmo avatar
   // coexistirem (por exemplo o do jogo e o do card no marketplace), IDs
   // iguais fazem o browser resolver url(#grad…) sempre para o primeiro —
