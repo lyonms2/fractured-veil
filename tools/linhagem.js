@@ -34,7 +34,8 @@ const M = new Function('t',
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
             tempoDeChoco, _reprCuidado, REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS,
-            fichaDeAvatar, magiasDoAvatar, faseDoSlot };`
+            fichaDeAvatar, magiasDoAvatar, faseDoSlot,
+            ehPrimordial, coresDe, _reprRetrato };`
 )(x => x);
 
 let passou = 0, falhou = 0;
@@ -322,6 +323,59 @@ titulo('O OVO');
      M.dnaLegivel(filho.nascimento.dna));
   ok(filho.nascimento.mae === mae.id && filho.nascimento.pai === pai.id,
      'com os pais gravados na certidão dele', 'mãe e pai presentes');
+}
+
+// ═════════════════════════════════════════════════════════════
+titulo('O RETRATO DOS PAIS');
+
+/* Um pai vendido sai dos slots e o filho fica sem com que o desenhar —
+   a não ser que o ovo tenha guardado o retrato dele. Guarda; e estas
+   perguntas existem para o dia em que alguém mexer no cruzar e o deixar
+   cair sem dar por isso, que é exactamente como o gene do vigor quase se
+   perdeu. */
+{
+  const { mae, pai } = casal(31000);
+  const o = M.cruzar(mae, pai, { seed: 777 }).ovo;
+
+  ok(!!(o.maeRetrato && o.paiRetrato), 'o ovo leva o retrato dos dois pais',
+     o.maeRetrato ? 'seed ' + o.maeRetrato.seed + ' e ' + o.paiRetrato.seed : 'faltam');
+
+  const campos = ['seed', 'nivel', 'raridade', 'corPrincipal', 'corSecundaria', 'sexo'];
+  const faltam = campos.filter(k => o.paiRetrato[k] == null);
+  ok(faltam.length === 0, 'e o retrato traz com que desenhar o bicho',
+     faltam.length ? 'faltam ' + faltam.join(', ') : campos.join(' · '));
+
+  /* O RETRATO É UMA FOTOGRAFIA, NÃO UM PONTEIRO. Se copiasse a
+     referência do pai, o pai a subir de nível mudava a história do
+     filho — e uma certidão que muda não é uma certidão. */
+  const nivelAntes = o.paiRetrato.nivel;
+  pai.nivel = 35;
+  ok(o.paiRetrato.nivel === nivelAntes,
+     'e não muda quando o pai muda — é fotografia, não ponteiro',
+     'ficou no nível ' + nivelAntes + ', o pai vai em ' + pai.nivel);
+  pai.nivel = nivelAntes;
+
+  // A cor do retrato é a MESMA que o pai tem: senão a árvore desenhava
+  // um bicho de outra cor com o nome dele.
+  const c = M.coresDe(pai, pai.seed);
+  ok(o.paiRetrato.corPrincipal === c.principal && o.paiRetrato.corSecundaria === c.secundaria,
+     'e a cor guardada é a cor que ele tem',
+     c.principal + '/' + c.secundaria);
+
+  // E chega à certidão do filho, que é onde a árvore o vai buscar.
+  const f = { nome: 'f', seed: 91, nivel: 1, raridade: 'Comum' };
+  M.registarNascimento(f, { origem: 'Comum', seed: 91, dna: o.dna,
+    mae: o.mae, pai: o.pai, maeNome: o.maeNome, paiNome: o.paiNome,
+    maeRetrato: o.maeRetrato, paiRetrato: o.paiRetrato });
+  ok(!!(f.nascimento.maeRetrato && f.nascimento.paiRetrato),
+     'e viaja do ovo para a certidão do filho',
+     'os dois presentes');
+
+  // Um invocado não tem pais nem retratos, e não inventa nenhum.
+  const inv = { nome: 'i', seed: 92, nivel: 1, raridade: 'Comum' };
+  M.registarNascimento(inv, { origem: 'Comum', seed: 92 });
+  ok(!inv.nascimento.maeRetrato && !inv.nascimento.paiRetrato && M.ehPrimordial(inv),
+     'um primordial não inventa retratos que não tem', 'os dois a null');
 }
 
 // ════════════════════════════════════════════════════════════════

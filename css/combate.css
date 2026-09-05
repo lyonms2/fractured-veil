@@ -518,6 +518,18 @@
 .cert-val { color: var(--text); text-align: right; word-break: break-word; }
 .cert-mono .cert-val { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.5625rem; }
 .cert-donos { margin-top: 0.625rem; font-size: 0.625rem; }
+/* O aviso do cartão de um avatar que saiu. Explica porque a folha tem
+   quatro linhas em vez de oito — sem isso parecia avariada. */
+.cert-aviso {
+  margin-top: 0.75rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.5625rem;
+  line-height: 1.7;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
 .cert-donos-lista {
   margin: 0.25rem 0 0;
   padding-left: 1rem;

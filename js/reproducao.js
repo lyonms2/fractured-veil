@@ -73,6 +73,38 @@ function tempoDeChoco(a, b) {
   return Math.round(REPR_CHOCO_MAX_MS - (REPR_CHOCO_MAX_MS - REPR_CHOCO_MIN_MS) * q);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O RETRATO DOS PAIS
+
+   O ovo já guardava o NOME de cada progenitor, e guardava-o por uma
+   razão que está escrita no js/identidade.js: um pai pode ser vendido
+   ou morrer, e o nome dele continua a ser história do filho.
+
+   Só que um nome não se desenha. A árvore genealógica mostrava um pai
+   ausente como uma silhueta tracejada — não por escolha, mas porque
+   ninguém tinha guardado com que o desenhar.
+
+   Guarda-se agora, no mesmo momento e pela mesma razão: seis números
+   que chegam para o retrato. É uma FOTOGRAFIA e não um ponteiro — foi
+   tirada no dia em que o ovo foi posto e não muda mais, mesmo que o pai
+   suba de nível noutra colónia. É o que uma certidão faz.
+
+   Não substitui o avatar vivo: quando ele ainda cá está, é ele que se
+   desenha, com o nível de hoje. O retrato é para quando já não está.
+   ═══════════════════════════════════════════════════════════════════ */
+function _reprRetrato(s) {
+  if (!s) return null;
+  const c = (typeof coresDe === 'function') ? coresDe(s, s.seed) : null;
+  return {
+    seed:          s.seed  || 0,
+    nivel:         s.nivel || 1,
+    raridade:      s.raridade || 'Comum',
+    corPrincipal:  c ? c.principal  : 0,
+    corSecundaria: c ? c.secundaria : 0,
+    sexo: (typeof sexoDe === 'function') ? sexoDe(s) : null,
+  };
+}
+
 /* Gerador próprio, com constante própria: se partilhasse a do DNA, dois
    pais com os mesmos seeds davam sempre o mesmo filho. */
 function _reprRng(seed) {
@@ -206,6 +238,10 @@ function cruzar(mae, pai, opts) {
       pai: macho.id || null,
       maeNome: femea.nome ? String(femea.nome).split(',')[0].trim() : null,
       paiNome: macho.nome ? String(macho.nome).split(',')[0].trim() : null,
+      // E o retrato de cada um, para o filho os poder mostrar mesmo
+      // depois de eles saírem da colónia.
+      maeRetrato: _reprRetrato(femea),
+      paiRetrato: _reprRetrato(macho),
       postoEm: agora,
       // Tempo de choco: o ovo existe, mas ainda não se abre.
       chocaEm: agora + tempoDeChoco(femea, macho),
@@ -228,6 +264,6 @@ function faltaParaChocar(ovo, agora) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { podeCruzar, cruzarDna, cruzar, ovoPronto, faltaParaChocar,
-                     tempoDeChoco, _reprCuidado,
+                     tempoDeChoco, _reprCuidado, _reprRetrato,
                      REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS, REPR_VALIDADE_DIAS };
 }

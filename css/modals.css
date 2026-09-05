@@ -796,6 +796,13 @@
   outline:none;
 }
 .lin-cartao.historia { opacity:.55; }
+/* Saiu da colónia mas deixou retrato: desenha-se, mais apagado e sem a
+   moldura de ouro — a moldura é o que diz "este ainda é seu". */
+.lin-cartao.saiu { opacity:.72; border-color:rgba(255,255,255,.12); }
+/* E o morto continua no slot, portanto tem moldura. O que ele não pode
+   é ter a mesma cara de quem está vivo. */
+.lin-cartao.morto { border-color:rgba(180,80,80,.4); background:rgba(120,40,40,.06); }
+.lin-cartao.morto .lin-retrato { filter:grayscale(.75) brightness(.8); }
 .lin-cartao.vazio    { border-style:dashed; opacity:.35; }
 
 .lin-retrato {
@@ -822,6 +829,7 @@
   color:var(--muted); opacity:.75; white-space:nowrap;
 }
 .lin-marca.prim { color:var(--gold); opacity:.9; }
+.lin-marca.morto { color:#e08080; opacity:.95; }
 
 .lin-mais {
   align-self:center; font-family:'Cinzel',serif; font-size:0.75rem;
@@ -872,4 +880,6 @@
 #linCartaoSVG { display: flex; align-items: center; justify-content: center; }
 #linCartaoSVG svg { animation: idle-float 3s ease-in-out infinite; }
 #linCartaoCertidao { align-self: stretch; width: 100%; }
+#linCartaoInfo.morto { color:#e08080; }
+#linCartaoOverlay .avatar-zoom-modal:has(#linCartaoInfo.morto) #linCartaoSVG svg { filter:grayscale(.7) brightness(.85); }
 

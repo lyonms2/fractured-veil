@@ -381,15 +381,24 @@ function _arvPorId(id, slots) {
   return slots.find(s => s && s.id === id) || null;
 }
 
-/* Um progenitor: o nome que a certidão guardou, e o avatar se ele ainda
-   cá estiver. O nome vem primeiro porque é o que nunca falha. */
+/* Um progenitor, e o que se sabe dele. Três graus de certeza, e a
+   árvore diz qual é qual em vez de fingir que sabe tudo:
+
+     · ESTÁ CÁ      o avatar inteiro, com o nível de hoje
+     · SAIU         o retrato que ficou guardado quando o ovo foi posto
+                    (js/reproducao.js) — dá para desenhar, e é história
+                    fixa: não muda se ele subir de nível noutra colónia
+     · SÓ O NOME    os filhos nascidos antes de haver retrato
+
+   O nome vem sempre, porque é o que nunca falha. */
 function _arvProgenitor(slot, qual, slots) {
   const n = slot && slot.nascimento;
   const id   = (n && n[qual]) || (slot && slot[qual]) || null;
   const nome = (n && n[qual + 'Nome']) || null;
   if (!id && !nome) return null;
   const vivo = _arvPorId(id, slots);
-  return { id, nome: nome || _arvNome(vivo), presente: !!vivo, slot: vivo };
+  return { id, nome: nome || _arvNome(vivo), presente: !!vivo, slot: vivo,
+           retrato: vivo ? null : ((n && n[qual + 'Retrato']) || null) };
 }
 
 function arvoreDe(slot, slots) {
@@ -459,11 +468,24 @@ function _linFase(nivel) {
   return (typeof faseFromNivel === 'function') ? faseFromNivel(nivel || 1) : 0;
 }
 
-function _linSexo(slot) {
-  const sx = (typeof sexoDe === 'function') ? sexoDe(slot) : null;
+function _linSexoDe(sx) {
   if (!sx) return '';
   return sx === 'F' ? '<span class="lin-sexo f">\u2640</span>'
                     : '<span class="lin-sexo m">\u2642</span>';
+}
+
+function _linSexo(slot) {
+  return _linSexoDe((typeof sexoDe === 'function') ? sexoDe(slot) : null);
+}
+
+/* Os retratos de quem já saiu não estão em lado nenhum que se possa
+   indexar — não são slots. Guardam-se ao desenhar a árvore, e o clique
+   traz o número de volta. A lista limpa-se a cada desenho, portanto
+   nunca envelhece: a árvore é sempre redesenhada antes de se abrir. */
+let _linRetratos = [];
+function _linGuardarRetrato(r, nome) {
+  _linRetratos.push({ ...r, nome });
+  return _linRetratos.length - 1;
 }
 
 /* Um lugar da árvore. `p` é o que o arvoreDe devolve — {nome, presente,
@@ -480,6 +502,29 @@ function _linCartao(p, cls, slots) {
 
   const nome = esc(p.nome || t('cert.anonimo'));
 
+  /* SAIU DA COLÓNIA, MAS FICOU O RETRATO.
+
+     Vendido ou dado, o avatar deixou de estar nos slots — mas o ovo de
+     que este filho nasceu guardou com que o desenhar. Desenha-se, mais
+     apagado, e diz que já não está. O cartão dele abre: mostra o que
+     ficou registado, e diz que é só isso. */
+  if (!p.slot && p.retrato) {
+    const r = p.retrato;
+    const svg = (typeof gerarSVG === 'function')
+      ? gerarSVG(r, r.raridade || 'Comum', r.seed || 0, 64, 64, _linFase(r.nivel)) : '';
+    const n = _linGuardarRetrato(r, p.nome);
+    return `<div class="${cls} saiu clicavel" role="button" tabindex="0"
+         onclick="abrirCartaoRegisto(${n})" title="${t('lin.abrir_registo')}">
+      <div class="lin-retrato">${svg}</div>
+      <div class="lin-nome">${_linSexoDe(r.sexo)}${nome}</div>
+      <div class="lin-nv">${t('mkt.stat.nivel')} ${r.nivel || 1}</div>
+      <div class="lin-marca">${t('lin.saiu')}</div>
+    </div>`;
+  }
+
+  /* E QUANDO NEM ISSO. Os filhos nascidos antes de o retrato existir só
+     têm o nome do pai. Uma silhueta é o desenho honesto disso: sabe-se
+     que existiu, não se sabe que forma tinha. */
   if (!p.slot) {
     return `<div class="${cls} historia" title="${t('lin.historia')}">
       <div class="lin-retrato">${_LIN_SILHUETA}</div>
@@ -491,8 +536,12 @@ function _linCartao(p, cls, slots) {
   const s = p.slot;
   const svg = (typeof gerarSVG === 'function')
     ? gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 64, 64, _linFase(s.nivel)) : '';
-  const prim = (typeof ehPrimordial === 'function' && ehPrimordial(s))
-    ? `<div class="lin-marca prim">${t('lin.primordial_curto')}</div>` : '';
+  /* UM MORTO CONTINUA NO SLOT, e é por isso que ele estava a aparecer
+     aqui com o mesmo ar de quem está vivo. Numa árvore genealógica
+     isso é a informação que menos se pode omitir. */
+  const marca = s.dead ? `<div class="lin-marca morto">${t('lin.morto')}</div>`
+    : (typeof ehPrimordial === 'function' && ehPrimordial(s))
+      ? `<div class="lin-marca prim">${t('lin.primordial_curto')}</div>` : '';
 
   /* SÓ ABRE QUEM ESTÁ NA COLÓNIA, e é uma consequência e não uma
      escolha: um avatar ausente deixou o NOME na certidão do filho e
@@ -507,11 +556,11 @@ function _linCartao(p, cls, slots) {
   const clicavel = i >= 0
     ? ` role="button" tabindex="0" onclick="abrirCartaoLinhagem(${i})" title="${t('lin.abrir')}"`
     : '';
-  return `<div class="${cls} presente${i >= 0 ? ' clicavel' : ''}"${clicavel}>
+  return `<div class="${cls} presente${s.dead ? ' morto' : ''}${i >= 0 ? ' clicavel' : ''}"${clicavel}>
     <div class="lin-retrato">${svg}</div>
     <div class="lin-nome">${_linSexo(s)}${nome}</div>
     <div class="lin-nv">${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
-    ${prim}
+    ${marca}
   </div>`;
 }
 
@@ -531,6 +580,7 @@ function _linNivel(rotulo, conteudo, cls) {
 function renderLinhagemHTML(slot, slots) {
   if (!slot) return '';
   slots = Array.isArray(slots) ? slots : [];
+  _linRetratos = [];
   const a = arvoreDe(slot, slots);
   if (!a) return '';
 
@@ -616,14 +666,60 @@ function abrirCartaoLinhagem(idx) {
 
   document.getElementById('linCartaoNome').textContent =
     s.nome ? String(s.nome).split(',')[0].trim() : '';
-  document.getElementById('linCartaoInfo').textContent =
-    t('main.zoom.info', { rar: s.raridade || 'Comum',
+  /* O † também aqui, e não só no cartão pequeno. Era a mesma omissão
+     em dois sítios: um avatar morto abria uma folha igual à de um vivo. */
+  const info = document.getElementById('linCartaoInfo');
+  info.textContent = t('main.zoom.info', { rar: s.raridade || 'Comum',
                           fase: LIN_FASES[fase] || LIN_FASES[0],
-                          nivel: s.nivel || 1 });
+                          nivel: s.nivel || 1 })
+    + (s.dead ? '  ·  ' + t('lin.morto') : '');
+  info.classList.toggle('morto', !!s.dead);
   document.getElementById('linCartaoCertidao').innerHTML = renderCertidaoHTML(s);
 
   // O bloqueio do scroll conta: a árvore já o pôs, e este põe o
   // segundo. Cada um levanta o seu ao fechar.
+  if (ov.style.display !== 'flex' && typeof lockBodyScroll === 'function') lockBodyScroll();
+  ov.style.display = 'flex';
+}
+
+/* O CARTÃO DE QUEM JÁ SAIU.
+
+   O mesmo cartão, com menos dentro — e a dizer que é isso mesmo. Não há
+   certidão para mostrar: a certidão vive no avatar, e o avatar está com
+   outra pessoa. O que há é o retrato que o ovo guardou no dia em que
+   foi posto, e o que ele guardou é o que se mostra.
+
+   Dizê-lo por extenso é o ponto. Um cartão que mostrasse quatro linhas
+   sem explicar porque não tem mais parecia avariado. */
+function abrirCartaoRegisto(n) {
+  const r = _linRetratos[n];
+  if (!r) return;
+  const ov = document.getElementById('linCartaoOverlay');
+  if (!ov) return;
+
+  const fase = (typeof faseFromNivel === 'function') ? faseFromNivel(r.nivel || 1) : 0;
+  const svg = document.getElementById('linCartaoSVG');
+  if (svg && typeof gerarSVG === 'function')
+    svg.innerHTML = gerarSVG(r, r.raridade || 'Comum', r.seed || 0, 220, 220, fase);
+
+  document.getElementById('linCartaoNome').textContent = r.nome || t('cert.anonimo');
+  document.getElementById('linCartaoInfo').textContent =
+    t('main.zoom.info', { rar: r.raridade || 'Comum',
+                          fase: LIN_FASES[fase] || LIN_FASES[0],
+                          nivel: r.nivel || 1 });
+
+  const cor = (typeof frasedaCor === 'function') ? frasedaCor(r, r.seed) : '';
+  const esc = (x) => String(x == null ? '' : x)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  document.getElementById('linCartaoCertidao').innerHTML = `<div class="certidao">
+    <div class="cert-titulo">${t('lin.registo_titulo')}</div>
+    ${_certLinha(t('cert.nome'), esc(r.nome || t('cert.anonimo')))}
+    ${_certLinha(t('lin.sexo'), r.sexo === 'F' ? t('lin.femea') : t('lin.macho'))}
+    ${_certLinha(t('lin.cor'), esc(cor))}
+    ${_certLinha(t('lin.na_altura'), esc((r.raridade || 'Comum') + ' \u00b7 ' + t('mkt.stat.nivel') + ' ' + (r.nivel || 1)))}
+    <div class="cert-aviso">${t('lin.registo_aviso')}</div>
+  </div>`;
+
   if (ov.style.display !== 'flex' && typeof lockBodyScroll === 'function') lockBodyScroll();
   ov.style.display = 'flex';
 }

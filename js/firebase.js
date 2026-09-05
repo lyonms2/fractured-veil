@@ -172,6 +172,10 @@ function getGameState() {
         dna:     e.dna     || null,
         mae:     e.mae     || null, pai:     e.pai     || null,
         maeNome: e.maeNome || null, paiNome: e.paiNome || null,
+        // O retrato de cada progenitor, tirado quando o ovo foi posto.
+        // Sem isto, um pai vendido antes de o ovo chocar deixava de se
+        // poder desenhar — que e exactamente o caso para que ele existe.
+        maeRetrato: e.maeRetrato || null, paiRetrato: e.paiRetrato || null,
       })),
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats

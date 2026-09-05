@@ -406,6 +406,11 @@ function nascer(opts) {
     pai:     o.pai     || null,
     maeNome: o.maeNome || null,
     paiNome: o.paiNome || null,
+    /* E o retrato de cada um, tirado no dia em que o ovo foi posto
+       (js/reproducao.js). É o que permite à árvore desenhar um pai que
+       já foi vendido — do nome sozinho não sai desenho nenhum. */
+    maeRetrato: o.maeRetrato || null,
+    paiRetrato: o.paiRetrato || null,
     /* O sexo, expresso. Copiado do DNA para não ser preciso ir lá dentro
        só para saber se é macho ou fêmea — e porque nunca muda.
 
