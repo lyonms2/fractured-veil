@@ -667,24 +667,7 @@ function killCreature() {
   ModalManager.closeAll();
 
   const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
-  document.getElementById('deadAvatarName').textContent = name.toUpperCase();
-  const diasVividos = bornAt ? Math.floor((Date.now() - bornAt) / (1000*60*60*24)) + 1 : 1;
-  document.getElementById('deadStats').innerHTML =
-    t('gt.dead.stats1', {nivel, fase: FASES[getFase()], n: eggsInInventory.length, s: eggsInInventory.length !== 1 ? 's' : ''}) + '<br>' +
-    t('gt.dead.stats2', {dias: diasVividos, ds: diasVividos !== 1 ? 's' : '', vinculo: Math.floor(vinculo)});
-
-  const souls = ['👻','✦','💀','✧','🌑'];
-  const dp = document.getElementById('deadParticles');
-  if(dp) {
-    dp.innerHTML = '';
-    for(let i=0;i<6;i++) {
-      const s = document.createElement('div');
-      s.className = 'dead-float-soul';
-      s.textContent = souls[i%souls.length];
-      s.style.cssText = `left:${15+Math.random()*70}%;bottom:${10+Math.random()*30}%;animation-delay:${(Math.random()*3).toFixed(1)}s;animation-duration:${(3+Math.random()*2).toFixed(1)}s;`;
-      dp.appendChild(s);
-    }
-  }
+  preencherTelaDaMorte();
 
   document.getElementById('aliveScreen').style.display = 'none';
   document.getElementById('deadScreen').style.display  = 'flex';
@@ -692,6 +675,103 @@ function killCreature() {
   document.getElementById('actionBtns').style.pointerEvents = 'none';
   addLog(t('gt.dead.log', {nome: name}), 'bad');
   showBubble('...');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   A TELA DA MORTE, NUM SÍTIO SÓ
+
+   Havia duas: esta, para quem morre com o jogo aberto, e outra no
+   js/auth.js, para quem abre o jogo e encontra o avatar já morto. A
+   segunda tinha o texto em português cravado no código, o seu próprio
+   formato de tempo e a sua própria lista de emojis — já tinha
+   divergido, e ninguém dava por isso porque só se vê num arranque.
+
+   Uma função, dois sítios a chamá-la.
+   ═══════════════════════════════════════════════════════════════════ */
+function preencherTelaDaMorte() {
+  if (!avatar) return;
+  const name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
+  const el = (id) => document.getElementById(id);
+  if (el('deadAvatarName')) el('deadAvatarName').textContent = name.toUpperCase();
+
+  /* ── O BICHO, NO LUGAR DO EMOJI ──
+
+     Desenhado na fase em que morreu e com a cor que era dele. O
+     apagar-se é do CSS: aqui só se põe quem é. */
+  const corpo = el('deadCorpo');
+  if (corpo && typeof gerarSVG === 'function') {
+    const fase = (typeof getFaseVisual === 'function') ? getFaseVisual() : getFase();
+    corpo.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, 100, 100, fase);
+  }
+
+  /* ── O QUE O MATOU ──
+
+     A saúde só cai por doença activa (ver o ciclo, aqui em cima),
+     portanto a causa está no activeDiseases e o jogo sempre a soube —
+     só nunca a disse. Uma tela de morte que não diz de que se morreu
+     deixa o jogador sem a única coisa que ele podia aprender ali. */
+  const causaEl = el('deadCausa');
+  if (causaEl) {
+    const nomes = (activeDiseases || []).map(id => DISEASES[id] && DISEASES[id].nome).filter(Boolean);
+    causaEl.textContent = nomes.length ? t('dead.causa', { causa: nomes.join(' · ') })
+                                       : t('dead.causa_desconhecida');
+  }
+
+  /* ── O QUE FICA DELE ──
+
+     Dizia "sua essência persiste nos ovos". Era verdade quando o avatar
+     punha ovos sozinho; hoje os ovos saem do cruzamento de dois adultos,
+     e a linha logo abaixo dizia "0 ovos" — a frase contradizia-se a si
+     mesma no caso mais comum.
+
+     O que fica dele são os FILHOS, e por isso é isso que se diz. Quem
+     não teve nenhum ouve-o também: uma linhagem que acaba é o preço de
+     nunca ter cruzado, e escondê-lo tirava peso à única coisa que a
+     morte tem para ensinar. */
+  const subEl = el('deadSub');
+  if (subEl) {
+    let nf = 0;
+    try {
+      const arv = (typeof arvoreDe === 'function') ? arvoreDe(avatar, avatarSlots) : null;
+      nf = arv ? arv.filhos.length : 0;
+    } catch (_) { nf = 0; }
+    subEl.innerHTML = nf
+      ? t('dead.sub_filhos', { n: nf, s: nf !== 1 ? 's' : '' })
+      : t('dead.sub_sem_filhos');
+  }
+
+  /* O TEMPO DE VIDA, e não os dias de calendário.
+
+     Dizia "Viveu 4 dias" contando do bornAt. O resto do jogo passou a
+     medir a vida pelo totalSecs — que é o mesmo relógio que decide a
+     fase — e este avatar tinha 9 horas de vida a marcar quatro dias.
+     Dois relógios para a mesma coisa, e este era o que mentia mais. */
+  const vida = (typeof _fmtTime === 'function') ? _fmtTime(totalSecs || 0) : (totalSecs || 0) + 's';
+  if (el('deadStats')) el('deadStats').innerHTML =
+    t('gt.dead.stats1', {nivel, fase: FASES[getFase()], vida}) + '<br>' +
+    t('gt.dead.stats2', {vinculo: Math.floor(vinculo)});
+
+  /* ── AS MOTAS ──
+
+     Eram emojis a flutuar: 👻 ✦ 💀 ✧ 🌑, um crânio de desenho animado
+     incluído. Passam a ser pontos de luz DA COR DELE — o que sobe é o
+     que ele era, e não decoração de Halloween. */
+  const dp = el('deadParticles');
+  if(dp) {
+    dp.innerHTML = '';
+    const cor = (typeof corDoAvatar === 'function')
+      ? corDoAvatar(avatar, avatar.seed) : '#8b5cf6';
+    for(let i=0;i<14;i++) {
+      const s = document.createElement('div');
+      s.className = 'dead-mota';
+      const tam = (2 + Math.random() * 3).toFixed(1);
+      s.style.cssText = `left:${8+Math.random()*84}%;bottom:${2+Math.random()*22}%;` +
+        `width:${tam}px;height:${tam}px;background:${cor};box-shadow:0 0 ${tam*2}px ${cor};` +
+        `animation-delay:${(Math.random()*6).toFixed(1)}s;` +
+        `animation-duration:${(5+Math.random()*4).toFixed(1)}s;`;
+      dp.appendChild(s);
+    }
+  }
 }
 
 function checkXP() {

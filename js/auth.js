@@ -416,23 +416,14 @@ async function _onLoginSuccess(user) {
       document.getElementById('actionBtns').style.opacity   = '0';
       document.getElementById('actionBtns').style.pointerEvents = 'none';
       const _name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
-      document.getElementById('deadAvatarName').textContent = _name.toUpperCase();
-      const _h = Math.floor(totalSecs/3600), _m = Math.floor((totalSecs%3600)/60);
-      document.getElementById('deadStats').innerHTML =
-        `Nível ${nivel} · ${FASES[getFase()]} · ${eggsInInventory.length} ovo${eggsInInventory.length!==1?'s':''}<br>` +
-        `Viveu ${_h > 0 ? _h+'h ' : ''}${_m}min · Vínculo: ${Math.floor(vinculo)}`;
-      const dp = document.getElementById('deadParticles');
-      if(dp) {
-        dp.innerHTML = '';
-        const souls = ['👻','✦','💀','✧','🌑'];
-        for(let i=0;i<6;i++) {
-          const s = document.createElement('div');
-          s.className = 'dead-float-soul';
-          s.textContent = souls[i%souls.length];
-          s.style.cssText = `left:${15+Math.random()*70}%;bottom:${10+Math.random()*30}%;animation-delay:${(Math.random()*3).toFixed(1)}s;animation-duration:${(3+Math.random()*2).toFixed(1)}s;`;
-          dp.appendChild(s);
-        }
-      }
+      /* HAVIA AQUI UMA SEGUNDA TELA DA MORTE, e já tinha divergido: o
+         texto em português cravado no código (portanto sempre em
+         português), um formato de tempo próprio, e os emojis de alma
+         que a outra deixou de usar. Ninguém dava por isso porque esta
+         só aparece a quem abre o jogo e encontra o avatar já morto.
+
+         É a mesma tela; passa a ser o mesmo código. */
+      if (typeof preencherTelaDaMorte === 'function') preencherTelaDaMorte();
       document.getElementById('deadScreen').style.display = 'flex';
       updateResourceUI();
       addLog(t('log.died', { name: _name }), 'bad');

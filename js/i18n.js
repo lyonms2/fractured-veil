@@ -343,7 +343,10 @@
 
       // Dead screen
       'dead.title':              'ENTIDADE PERDIDA',
-      'dead.sub':                'partiu para outra dimensão...\nsua essência persiste nos ovos.',
+      'dead.causa':              'levou-o a {causa}',
+      'dead.causa_desconhecida': 'apagou-se',
+      'dead.sub_filhos':         'Deixou {n} filho{s}. O sangue dele segue neles.',
+      'dead.sub_sem_filhos':     'Não deixou filhos. A linhagem dele acaba aqui.',
       'dead.btn':                '✦ INVOCAR NOVO AVATAR',
 
       // Portal (idle)
@@ -676,7 +679,10 @@
 
       // Dead screen
       'dead.title':              'LOST ENTITY',
-      'dead.sub':                'departed to another dimension...\nyour essence lives on in the eggs.',
+      'dead.causa':              'taken by {causa}',
+      'dead.causa_desconhecida': 'faded away',
+      'dead.sub_filhos':         'It left {n} child{s}. Its blood carries on in them.',
+      'dead.sub_sem_filhos':     'It left no children. Its lineage ends here.',
       'dead.btn':                '✦ SUMMON NEW AVATAR',
 
       // Portal (idle)

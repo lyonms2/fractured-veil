@@ -34,8 +34,8 @@ window.registerStrings(
     'gt.phase.log':        '✨ EVOLUÇÃO! {nome} chegou à fase {fase}!',
 
     // Morte
-    'gt.dead.stats1':      'Nível {nivel} · {fase} · {n} ovo{s}',
-    'gt.dead.stats2':      'Viveu {dias} dia{ds} · Vínculo: {vinculo}',
+    'gt.dead.stats1':      'Nível {nivel} · {fase} · {vida} de vida',
+    'gt.dead.stats2':      'Vínculo {vinculo}',
     'gt.dead.log':         '{nome} partiu para outra dimensão... 💀',
 
     // Level up
@@ -82,8 +82,8 @@ window.registerStrings(
     'gt.phase.log':        '✨ EVOLUTION! {nome} reached phase {fase}!',
 
     // Death
-    'gt.dead.stats1':      'Level {nivel} · {fase} · {n} egg{s}',
-    'gt.dead.stats2':      'Lived {dias} day{ds} · Bond: {vinculo}',
+    'gt.dead.stats1':      'Level {nivel} · {fase} · {vida} lived',
+    'gt.dead.stats2':      'Bond {vinculo}',
     'gt.dead.log':         '{nome} departed to another dimension... 💀',
 
     // Level up
