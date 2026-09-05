@@ -469,7 +469,7 @@ function _linSexo(slot) {
 
 /* Um lugar da árvore. `p` é o que o arvoreDe devolve — {nome, presente,
    slot} — ou null quando não há ninguém para pôr ali. */
-function _linCartao(p, cls) {
+function _linCartao(p, cls, slots) {
   const esc = (x) => String(x == null ? '' : x)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   cls = 'lin-cartao' + (cls ? ' ' + cls : '');
@@ -494,12 +494,32 @@ function _linCartao(p, cls) {
     ? gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 64, 64, _linFase(s.nivel)) : '';
   const prim = (typeof ehPrimordial === 'function' && ehPrimordial(s))
     ? `<div class="lin-marca prim">${t('lin.primordial_curto')}</div>` : '';
-  return `<div class="${cls} presente">
+
+  /* SÓ ABRE QUEM ESTÁ NA COLÓNIA, e é uma consequência e não uma
+     escolha: um avatar ausente deixou o NOME na certidão do filho e
+     mais nada — não há seed, não há cor, não há certidão dele para
+     mostrar. Um cartão que abrisse vazio prometia mais do que a árvore
+     sabe.
+
+     Viaja o ÍNDICE e não o id: o modal precisa do avatar inteiro, e o
+     índice vai buscá-lo ao avatarSlots sem depender de o avatar ter id
+     — os antigos não têm. */
+  const i = _linIdx(s, slots);
+  const clicavel = i >= 0
+    ? ` role="button" tabindex="0" onclick="abrirCartaoLinhagem(${i})" title="${t('lin.abrir')}"`
+    : '';
+  return `<div class="${cls} presente${i >= 0 ? ' clicavel' : ''}"${clicavel}>
     <div class="lin-retrato">${svg}</div>
     <div class="lin-nome">${_linSexo(s)}${nome}</div>
     <div class="lin-nv">${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
     ${prim}
   </div>`;
+}
+
+// Onde este avatar mora na colónia. -1 se não morar lá.
+function _linIdx(slot, slots) {
+  if (!slot || !Array.isArray(slots)) return -1;
+  return slots.indexOf(slot);
 }
 
 function _linNivel(rotulo, conteudo, cls) {
@@ -511,6 +531,7 @@ function _linNivel(rotulo, conteudo, cls) {
 
 function renderLinhagemHTML(slot, slots) {
   if (!slot) return '';
+  slots = Array.isArray(slots) ? slots : [];
   const a = arvoreDe(slot, slots);
   if (!a) return '';
 
@@ -528,19 +549,19 @@ function renderLinhagemHTML(slot, slots) {
     </div>`);
   } else {
     if (a.avos.length) {
-      partes.push(_linNivel(t('arv.avos'), a.avos.map(v => _linCartao(v, 'pequeno')).join(''), 'lin-avos'));
+      partes.push(_linNivel(t('arv.avos'), a.avos.map(v => _linCartao(v, 'pequeno', slots)).join(''), 'lin-avos'));
       partes.push('<div class="lin-tronco"></div>');
     }
     partes.push(_linNivel(t('arv.pais'),
-      _linCartao(a.mae) + `<span class="lin-mais">+</span>` + _linCartao(a.pai)));
+      _linCartao(a.mae, '', slots) + `<span class="lin-mais">+</span>` + _linCartao(a.pai, '', slots)));
     partes.push('<div class="lin-tronco"></div>');
   }
 
-  partes.push(_linNivel(t('arv.este'), _linCartao({ nome: _arvNome(slot), presente: true, slot }, 'grande'), 'lin-este'));
+  partes.push(_linNivel(t('arv.este'), _linCartao({ nome: _arvNome(slot), presente: true, slot }, 'grande', slots), 'lin-este'));
 
   if (a.filhos.length) {
     partes.push('<div class="lin-tronco"></div>');
-    partes.push(_linNivel(t('arv.filhos'), a.filhos.map(f => _linCartao(f, 'pequeno')).join(''), 'lin-filhos'));
+    partes.push(_linNivel(t('arv.filhos'), a.filhos.map(f => _linCartao(f, 'pequeno', slots)).join(''), 'lin-filhos'));
   }
 
   /* A nota explica o que separa um cartão aceso de um apagado. Só se
@@ -565,4 +586,52 @@ function abrirLinhagem(slot) {
 
 function fecharLinhagem() {
   if (typeof ModalManager !== 'undefined') ModalManager.close('linhagemModal');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O CARTÃO DE UM AVATAR DA ÁRVORE
+
+   É o modal da lupa (openAvatarZoomData, em js/main.js) com uma troca:
+   onde ele põe a ficha de combate, este põe a CERTIDÃO. Numa árvore
+   genealógica a pergunta é quem é este e de quem nasceu, e não quantos
+   pontos de Armadura tem — a ficha responde à outra pergunta, e tem o
+   🔍 para isso.
+
+   Não reaproveita o overlay da lupa por uma razão prática: o cartão
+   abre-se POR CIMA da árvore, e o jogador quer voltar a ela. Se os dois
+   partilhassem o mesmo overlay, abrir um fechava o outro.
+   ═══════════════════════════════════════════════════════════════════ */
+const LIN_FASES = ['BEBÊ', 'CRIANÇA', 'JOVEM', 'ADULTO'];
+
+function abrirCartaoLinhagem(idx) {
+  const slots = (typeof avatarSlots !== 'undefined') ? avatarSlots : [];
+  const s = slots[idx];
+  if (!s) return;
+  const ov = document.getElementById('linCartaoOverlay');
+  if (!ov) return;
+
+  const fase = (typeof faseFromNivel === 'function') ? faseFromNivel(s.nivel || 1) : 0;
+  const svg  = document.getElementById('linCartaoSVG');
+  if (svg && typeof gerarSVG === 'function')
+    svg.innerHTML = gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 220, 220, fase);
+
+  document.getElementById('linCartaoNome').textContent =
+    s.nome ? String(s.nome).split(',')[0].trim() : '';
+  document.getElementById('linCartaoInfo').textContent =
+    t('main.zoom.info', { rar: s.raridade || 'Comum',
+                          fase: LIN_FASES[fase] || LIN_FASES[0],
+                          nivel: s.nivel || 1 });
+  document.getElementById('linCartaoCertidao').innerHTML = renderCertidaoHTML(s);
+
+  // O bloqueio do scroll conta: a árvore já o pôs, e este põe o
+  // segundo. Cada um levanta o seu ao fechar.
+  if (ov.style.display !== 'flex' && typeof lockBodyScroll === 'function') lockBodyScroll();
+  ov.style.display = 'flex';
+}
+
+function fecharCartaoLinhagem() {
+  const ov = document.getElementById('linCartaoOverlay');
+  if (!ov) return;
+  if (ov.style.display === 'flex' && typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  ov.style.display = 'none';
 }

@@ -785,6 +785,16 @@
 /* Quem está na colónia tem moldura de ouro: é a diferença que a árvore
    existe para mostrar. */
 .lin-cartao.presente { border-color:rgba(201,168,76,.3); background:rgba(201,168,76,.05); }
+/* Um cartão que abre tem de parecer que abre. Só os presentes abrem —
+   de um ausente só ficou o nome, e não há certidão para mostrar. */
+.lin-cartao.clicavel { cursor:pointer; transition:transform .15s, border-color .15s, background .15s; }
+.lin-cartao.clicavel:hover,
+.lin-cartao.clicavel:focus-visible {
+  transform:translateY(-2px);
+  border-color:rgba(201,168,76,.65);
+  background:rgba(201,168,76,.1);
+  outline:none;
+}
 .lin-cartao.historia { opacity:.55; }
 .lin-cartao.vazio    { border-style:dashed; opacity:.35; }
 
