@@ -842,3 +842,163 @@
   .nj-nota   { font-size: 0.46875rem; }
   .nj-erro   { font-size: 0.5rem; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   O BATIZADO
+
+   Um lapis que abria um campo de texto com SALVAR e CANCELAR — a
+   interface de editar. Isto nao se edita: faz-se uma vez e fica.
+
+   A caixa segue a do nome do jogador (.nj-*), que e a linguagem que
+   este jogo ja tem para "um campo, e uma decisao". O que ela acrescenta
+   e o BICHO, o nome de nascenca, e a previa do nome inteiro a formar-se
+   enquanto se escreve — as tres coisas que faltavam para o jogador
+   saber o que esta a decidir.
+   ════════════════════════════════════════════════════════════════ */
+
+/* O botao. Uma pena, e nao um lapis: nao se rasura o que se escreve
+   com ela. */
+.batismo-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.6875rem; color: var(--muted);
+  padding: 0.125rem; line-height: 1; flex-shrink: 0;
+  transition: color .15s, transform .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.batismo-btn:hover { color: var(--gold); transform: scale(1.15); }
+
+/* E ACENA, ENQUANTO HOUVER BATIZADO POR FAZER.
+
+   Um acto que se faz uma vez tem de se encontrar primeiro. Uma pena
+   discreta ao lado do nome não se vê, e no telemóvel nem há title para
+   a explicar — o jogador podia acabar o jogo sem saber que aquilo
+   existia.
+
+   O sinal e o mais contido que resolve isso: sete segundos de nada e um
+   brilho de meio. Nao salta, nao pisca, e ACABA SOZINHO — no instante
+   em que o nome fecha, o botao desaparece e leva a animacao com ele.
+   Nao ha estado nenhum a guardar, e nao ha nada para desligar. */
+.batismo-btn { animation: batismo-acena 7s ease-in-out infinite; }
+@keyframes batismo-acena {
+  0%, 88%, 100% { color: var(--muted); text-shadow: none; }
+  93%           { color: var(--gold);  text-shadow: 0 0 0.375rem rgba(201,168,76,.6); }
+}
+.batismo-btn:hover { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .batismo-btn { animation: none; }
+}
+
+/* E o selo de quem ja batizou. Nao e um botao — nao responde, e nao
+   deve parecer que responde. */
+.nome-selado {
+  font-size: 0.5625rem; opacity: .45; padding: 0.125rem;
+  line-height: 1; flex-shrink: 0; cursor: help;
+}
+
+#batismoOverlay {
+  position: fixed; inset: 0; z-index: 940;
+  display: none; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: rgba(5,4,10,.94);
+}
+#batismoOverlay.open { display: flex; }
+
+.bat-caixa {
+  max-width: 22rem; width: 100%; max-height: 100%; overflow-y: auto;
+  box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.4375rem; text-align: center;
+  padding: 1.25rem 1.125rem;
+  background: #0a0814;
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 0.875rem;
+  animation: bat-entrar .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes bat-entrar {
+  from { opacity: 0; transform: scale(.92) translateY(0.5rem); }
+  to   { opacity: 1; transform: none; }
+}
+
+.bat-marca {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem;
+  letter-spacing: 0.15rem; color: var(--gold); opacity: .85;
+}
+.bat-retrato {
+  width: 6rem; height: 6rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.bat-retrato svg { width: 100%; height: 100%; animation: idle-float 3s ease-in-out infinite; }
+
+.bat-nascido {
+  font-size: 0.4375rem; color: var(--muted); letter-spacing: 0.02rem;
+}
+.bat-nascido b {
+  display: block; margin-top: 0.125rem;
+  font-family: 'Cinzel', serif; font-size: 0.5rem;
+  font-weight: 400; font-style: italic; color: var(--text2);
+}
+
+.bat-campo {
+  width: 100%; box-sizing: border-box; margin-top: 0.25rem;
+  background: #0a0816; border: 1px solid var(--gold);
+  border-radius: 0.25rem; color: var(--gold-light, var(--gold));
+  font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0625rem;
+  padding: 0.5rem 0.75rem; outline: none; text-align: center;
+}
+.bat-campo:focus { box-shadow: 0 0 0 0.125rem rgba(201,168,76,.25); }
+
+/* A linha do erro existe desde o inicio, vazia. Sem isso o botao saltava
+   para baixo quando ela aparecia, e o dedo batia ao lado — a mesma
+   razao que ja esta escrita no .nj-erro. */
+.bat-erro {
+  min-height: 0.75rem; font-size: 0.4375rem; line-height: 1.5;
+  color: #ff8a8a; letter-spacing: 0.01875rem;
+}
+
+/* A PREVIA E A PECA CENTRAL desta caixa. O jogador escolhe o nome
+   proprio, mas o que fica gravado leva tambem a alcunha — e essa ele
+   nao escolhe. Mostrar so a parte que ele escreve escondia metade do
+   resultado de uma decisao que nao se repete. */
+.bat-previa {
+  width: 100%; box-sizing: border-box;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  background: rgba(201,168,76,.06);
+  border: 1px solid rgba(201,168,76,.18);
+}
+.bat-previa-rot {
+  font-size: 0.375rem; letter-spacing: 0.09375rem; text-transform: uppercase;
+  color: var(--muted); opacity: .8; margin-bottom: 0.1875rem;
+}
+.bat-previa-nome {
+  font-family: 'Cinzel', serif; font-size: 0.6875rem;
+  color: var(--gold-light, var(--gold)); line-height: 1.4;
+  word-break: break-word;
+}
+.bat-previa-nome.vazio { color: var(--muted); opacity: .5; }
+
+.bat-aviso {
+  font-size: 0.40625rem; line-height: 1.65; color: #d8b45a;
+  max-width: 18rem; margin-top: 0.125rem;
+}
+
+.bat-botoes { display: flex; gap: 0.4375rem; width: 100%; margin-top: 0.25rem; }
+.bat-btn {
+  flex: 1; padding: 0.5rem;
+  font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.09375rem;
+  color: #05040a; background: var(--gold); border: none;
+  border-radius: 0.25rem; cursor: pointer; transition: background .15s;
+}
+.bat-btn:hover { background: var(--gold-light, var(--gold)); }
+.bat-btn.fantasma {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+}
+.bat-btn.fantasma:hover { background: rgba(255,255,255,.04); color: var(--text2); }
+
+@media (min-width: 900px) {
+  .bat-previa-nome { font-size: 0.75rem; }
+  .bat-aviso       { font-size: 0.4375rem; }
+}
+

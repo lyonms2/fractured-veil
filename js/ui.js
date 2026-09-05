@@ -614,6 +614,17 @@ function fillCreatureCard() {
      inteira, e o crachá da raridade ficou com a fila para ele. */
   const corAv = (typeof corDoAvatar === 'function') ? corDoAvatar(avatar) : '#8b5cf6';
 
+  /* O BOTÃO DE BATIZAR SÓ EXISTE ENQUANTO HOUVER BATIZADO.
+
+     Quem já usou o seu fica com um selo no lugar dele, e o selo diz
+     porquê ao ser tocado. Um botão que continua lá e recusa é pior do
+     que botão nenhum: convida, e depois nega. */
+  const btnBat = document.getElementById('renameBtn');
+  const selo   = document.getElementById('nomeSelado');
+  const podeBat = (typeof podeRenomear === 'function') ? podeRenomear(avatar) : true;
+  if (btnBat) btnBat.style.display = podeBat ? '' : 'none';
+  if (selo)   selo.style.display   = podeBat ? 'none' : '';
+
   const badge = document.getElementById('idBadge');
   if(badge) {
     badge.textContent = avatar.raridade.toUpperCase();

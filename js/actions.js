@@ -105,8 +105,46 @@ function playCreature() {
    é gasto. Para a fechar, é o podeRenomear() em js/identidade.js que
    passa a olhar também para a idade ou para o nível.
 
-   Quem já não pode não fica com um botão morto: o botão desaparece, e o
-   próprio nome passa a dizer que está selado ao ser tocado. */
+   Quem já não pode não fica com um botão morto: fica um selo, que
+   explica porque não há botão.
+
+   ── E DEIXOU DE SER UM CAMPO DE TEXTO ──
+
+   Era um lápis que trocava o nome por um input com SALVAR e CANCELAR:
+   a interface de editar um campo. Um acto que se faz uma vez e fica
+   para sempre não pode ter essa cara — o jogador só descobria que era
+   definitivo depois de o ter feito.
+
+   Passa a ser uma cerimónia (#batismoOverlay): o bicho de quem se
+   fala, o nome com que ele nasceu, o nome que vai ficar a formar-se
+   enquanto se escreve, e o aviso ANTES e não depois. */
+function _batNomeLimpo(raw) {
+  return String(raw || '').replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
+}
+
+/* A prévia é o nome INTEIRO — o próprio e a alcunha que ele mantém.
+   Mostrar só a primeira metade escondia metade do que fica gravado, e
+   é a metade que o jogador não escolhe. */
+function _batPreVer() {
+  const input = document.getElementById('renameInput');
+  const alvo  = document.getElementById('batPrevia');
+  const erro  = document.getElementById('batErro');
+  if (!input || !alvo || !avatar) return;
+
+  const limpo  = _batNomeLimpo(input.value);
+  const sufixo = avatar.nome.split(',').slice(1).join(',').trim();
+
+  if (!limpo) {
+    alvo.textContent = '—';
+    alvo.classList.add('vazio');
+    if (erro) erro.textContent = input.value.trim() ? t('bubble.invalid_name') : '';
+    return;
+  }
+  alvo.classList.remove('vazio');
+  alvo.textContent = limpo + (sufixo ? ', ' + sufixo : '');
+  if (erro) erro.textContent = '';
+}
+
 function startRename() {
   if(!avatar || dead) return;
   if(typeof podeRenomear === 'function' && !podeRenomear(avatar)) {
@@ -114,26 +152,52 @@ function startRename() {
     showBubble(t('rename.selado'));
     return;
   }
+  const ov = document.getElementById('batismoOverlay');
+  if (!ov) return;
+
+  const nomeVelho = avatar.nome.split(',')[0].trim();
+  const velhoEl = document.getElementById('batNomeVelho');
+  if (velhoEl) velhoEl.textContent = avatar.nome;
+
+  // O bicho de quem se fala. Uma cerimónia sobre um avatar sem o avatar
+  // à vista é um formulário com outro nome.
+  const retrato = document.getElementById('batRetrato');
+  if (retrato && typeof gerarSVG === 'function') {
+    const fase = (typeof getFaseVisual === 'function') ? getFaseVisual() : 0;
+    retrato.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, 96, 96, fase);
+  }
+
   const input = document.getElementById('renameInput');
-  const currentName = avatar.nome.split(',')[0].trim();
-  input.value = currentName;
-  document.getElementById('renameForm').style.display = 'block';
-  document.getElementById('renameBtn').style.display  = 'none';
-  setTimeout(() => { input.focus(); input.select(); }, 50);
+  if (input) input.value = nomeVelho;
+  _batPreVer();
+
+  ov.classList.add('open');
+  if (typeof lockBodyScroll === 'function') lockBodyScroll();
+  setTimeout(() => { if (input) { input.focus(); input.select(); } }, 60);
 }
 
 function cancelRename() {
-  document.getElementById('renameForm').style.display = 'none';
-  document.getElementById('renameBtn').style.display  = '';
+  const ov = document.getElementById('batismoOverlay');
+  if (!ov) return;
+  if (ov.classList.contains('open') && typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  ov.classList.remove('open');
 }
 
 function confirmRename() {
   const input = document.getElementById('renameInput');
-  const raw   = input.value.trim();
-  if(!raw) { cancelRename(); return; }
+  const clean = _batNomeLimpo(input ? input.value : '');
 
-  const clean = raw.replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
-  if(!clean) { playSound('error'); showBubble(t('bubble.invalid_name')); return; }
+  /* Um nome que não sobrevive à limpeza não fecha a caixa em silêncio:
+     diz o que falta e fica onde está. Fechar era o que ela fazia, e
+     quem escrevesse só símbolos via a cerimónia desaparecer sem nada
+     ter acontecido — e sem saber se o gasto tinha sido gasto. */
+  if(!clean) {
+    playSound('error');
+    const erro = document.getElementById('batErro');
+    if (erro) erro.textContent = t('bubble.invalid_name');
+    if (input) input.focus();
+    return;
+  }
 
   // A segunda guarda, em quem FAZ. A de cima só apaga o caminho; esta é a
   // que impede — um clique repetido, um estado antigo na tela, ou um

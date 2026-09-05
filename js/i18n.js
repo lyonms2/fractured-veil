@@ -48,7 +48,6 @@
       // O baptismo do avatar
       'rename.selado':    'O nome dele já está selado. Só se batiza uma vez.',
       'rename.feito':     'Ele se chama {name} — agora e sempre.',
-      'rename.uma_vez':   'Batize-o. Só dá uma vez.',
       'ident.criador':    'Criado por',
       'ident.criador_nulo':'desconhecido',
       'ident.mae':        'Mãe',
@@ -354,9 +353,14 @@
       // Egg screen
 
       // Rename
-      'rename.placeholder':      'Novo nome...',
-      'rename.save':             '✓ SALVAR',
-      'rename.cancel':           '✕ CANCELAR',
+      'rename.placeholder':      'O nome dele...',
+      'rename.save':             '✒️ BATIZAR',
+      'rename.cancel':           'AGORA NÃO',
+      'rename.marca':            '◈ BATIZADO',
+      'rename.btn_title':        'Batizar — só uma vez',
+      'rename.nasceu_como':      'Nasceu como',
+      'rename.vai_chamar':       'Vai chamar-se',
+      'rename.aviso':            'Só se batiza uma vez. Depois disto o nome fica — na certidão dele, na árvore dos filhos, e para quem o comprar.',
 
       // Arena + Rouba Monte → js/i18n-pvp.js
     },
@@ -391,7 +395,6 @@
       'nomej.log':        'You cross the veil as {nome}.',
       'rename.selado':    'Its name is already sealed. You only name it once.',
       'rename.feito':     'It is called {name} — now and always.',
-      'rename.uma_vez':   'Name it. You only get one chance.',
       'ident.criador':    'Created by',
       'ident.criador_nulo':'unknown',
       'ident.mae':        'Mother',
@@ -683,9 +686,14 @@
       // Egg screen
 
       // Rename
-      'rename.placeholder':      'New name...',
-      'rename.save':             '✓ SAVE',
-      'rename.cancel':           '✕ CANCEL',
+      'rename.placeholder':      'Its name...',
+      'rename.save':             '✒️ NAME IT',
+      'rename.cancel':           'NOT NOW',
+      'rename.marca':            '◈ NAMING',
+      'rename.btn_title':        'Name it — only once',
+      'rename.nasceu_como':      'Born as',
+      'rename.vai_chamar':       'Will be called',
+      'rename.aviso':            'You only name it once. After this the name stays — on its certificate, on the family tree, and for whoever buys it.',
 
       // Arena + Rouba Monte → js/i18n-pvp.js
     },
