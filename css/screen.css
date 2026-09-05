@@ -104,58 +104,170 @@
 .creature-wrap.anim-dead svg { animation:dead-fall 1s ease-out forwards; }
 .creature-wrap.anim-heal svg { animation:heal-pulse 1s ease-in-out; }
 
-/* ── DOENTE ── */
-.creature-wrap.diseased svg {
-  animation:sick-tremor .45s ease-in-out infinite;
-  filter:drop-shadow(0 0 0.4375rem #7ab83066) sepia(.35) hue-rotate(55deg);
-}
-@keyframes sick-tremor {
-  0%,100% { transform:translate(0,0)     rotate(0deg); }
-  20%     { transform:translate(-0.125rem,0.0625rem) rotate(-1deg); }
-  40%     { transform:translate(0.125rem,-0.0625rem) rotate(1deg); }
-  60%     { transform:translate(-0.0625rem,0.125rem) rotate(-.5deg); }
-  80%     { transform:translate(0.0625rem,-0.125rem) rotate(.5deg); }
-}
+/* ═══════════════════════════════════════════════════════════════════
+   DOENTE
 
-/* ── Doente, parte a parte ──
-   O tremor e o sépia acima davam o aviso, mas tratavam o bicho como um
-   bloco: por baixo do filtro, as asas continuavam a bater com a mesma
-   energia de um bicho são.
-   As asas caem e quase param, a cauda perde a vontade, os braços ficam
-   lentos, o piscar espaça-se, e o peito respira raso e depressa — que é
-   o oposto do sono, onde respira fundo e devagar. A diferença entre os
-   dois estados lê-se só por aí, sem precisar de cor.
+   O que estava aqui eram duas coisas, e as duas trabalhavam contra o
+   que queriam dizer:
+
+     · um TREMOR do svg inteiro, a 0,45s, sempre igual e sem parar. Um
+       bicho vivo não vibra a frequência constante — isso é um monitor
+       avariado. E porque mexia o conjunto, tapava tudo o que as partes
+       faziam por baixo.
+
+     · uma POSE por partes que quase não se mexia. As asas iam de
+       scaleY 0,88 a 0,86 em cinco segundos e meio; a cauda, de 4 a 2,6
+       graus. São valores abaixo do que o olho vê num bicho de 100px.
+
+   Somadas: um boneco parado a abanar. Era exactamente o que se via.
+
+   ── O QUE UMA COISA DOENTE FAZ ──
+
+   Não treme sempre: está quieta demais, e de vez em quando estremece.
+   É a INTERMITÊNCIA que lê como corpo — um arrepio a cada sete segundos
+   diz mais do que sete segundos de vibração.
+
+   Não fica numa pose: pesa. Cai devagar, tenta levantar, não consegue,
+   e volta a cair. O ciclo é longo e a curva é assimétrica — desce
+   depressa e sobe a custo, que é a diferença entre pender e oscilar.
+
+   Não respira ao ritmo: respira curto e mal, e de vez em quando puxa um
+   fôlego fundo que não chega. É o contrário do sono, onde o peito sobe
+   fundo e devagar — e é por aí que os dois estados se distinguem sem
+   precisarem de cor nenhuma.
+
+   ── A COR ──
+
+   Era `sepia(.35) hue-rotate(55deg)`: pintava TODOS os bichos de verde,
+   fosse qual fosse a cor deles. Isso desfaz a única coisa que hoje lhes
+   dá identidade. Sai. Fica `saturate` e `brightness` — o bicho mantém a
+   cor que é, e essa cor perde o sangue. Um vermelho doente é um vermelho
+   apagado, não um verde.
 
    Isto vem ANTES do bloco de dormir de propósito: quando as duas classes
    estão postas, o bicho está doente E a dormir, e quem deve mandar é o
    sono. É a ordem no arquivo que decide, porque a especificidade é a
-   mesma. */
-.creature-wrap.diseased .av-asa { animation: av-asa-doente 5.5s ease-in-out infinite; }
+   mesma.
+═══════════════════════════════════════════════════════════════════ */
+.creature-wrap.diseased svg {
+  animation: sick-arrepio 7.3s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.5rem rgba(122,184,48,.28)) saturate(.42) brightness(.84);
+  transition: filter .8s ease;
+}
+
+/* O arrepio, e o peso, na mesma animação.
+
+   São duas coisas e cabem numa: o bicho AFUNDA devagar ao longo do
+   ciclo — a cabeça a pender, o corpo a não se aguentar —, puxa-se
+   um bocado para cima a custo, e aí vem o estremecimento.
+
+   O são flutua 10px a cada três segundos, alegre. Este afunda 3px em
+   sete, e a diferença entre os dois não é a amplitude, é o SENTIDO: um
+   sobe e desce, o outro desce e mal volta.
+
+   Os passos do tremor estão em percentagens muito juntas de propósito
+   — é isso que o faz rápido dentro de um ciclo lento, sem precisar de
+   uma segunda animação. E dura meio segundo em sete: um arrepio de vez
+   em quando diz mais do que sete segundos de vibração, que era o que
+   estava aqui e lia como monitor avariado. */
+@keyframes sick-arrepio {
+  0%           { transform: translate(0, 0.03125rem) rotate(0deg); }
+  45%          { transform: translate(0, 0.1875rem)  rotate(0.5deg); }
+  78%          { transform: translate(0, 0.0625rem)  rotate(-0.2deg); }
+  84%          { transform: translate(0, 0.09375rem) rotate(0deg); }
+  86%          { transform: translate(-0.0625rem, 0.09375rem) rotate(-1.1deg); }
+  88%          { transform: translate(0.0625rem,  0.125rem)   rotate(1.1deg); }
+  90%          { transform: translate(-0.05rem,   0.09375rem) rotate(-0.8deg); }
+  92%          { transform: translate(0.05rem,    0.125rem)   rotate(0.6deg); }
+  94%          { transform: translate(-0.03rem,   0.09375rem) rotate(-0.3deg); }
+  96%, 100%    { transform: translate(0, 0.03125rem) rotate(0deg); }
+}
+
+/* ── As asas: caem, tentam, não conseguem ──
+   Sobem depressa (o esforço) e caem devagar (o peso a ganhar). A curva
+   assimétrica é o que separa "pender" de "oscilar". */
+.creature-wrap.diseased .av-asa {
+  animation: av-asa-doente 4.6s cubic-bezier(.35,0,.7,1) infinite;
+}
 @keyframes av-asa-doente {
-  0%, 100% { transform: scaleY(0.88) rotate(1.5deg); }
-  50%      { transform: scaleY(0.86) rotate(0.8deg); }
+  0%       { transform: scaleY(0.74) rotate(5deg); }
+  12%      { transform: scaleY(0.88) rotate(1.5deg); }   /* o esforço */
+  55%      { transform: scaleY(0.72) rotate(6deg); }     /* e a queda */
+  100%     { transform: scaleY(0.74) rotate(5deg); }
 }
 
-.creature-wrap.diseased .av-cauda { animation: av-cauda-doente 6.5s ease-in-out infinite; }
+/* ── A cauda: arrasta ──
+   Ciclo longo, amplitude grande e assente do lado de baixo: uma cauda
+   doente não abana à volta do zero, pende para um lado e mal se levanta. */
+.creature-wrap.diseased .av-cauda {
+  animation: av-cauda-doente 5.9s cubic-bezier(.4,0,.6,1) infinite;
+}
 @keyframes av-cauda-doente {
-  0%, 100% { transform: rotate(4deg); }
-  50%      { transform: rotate(2.6deg); }
+  0%       { transform: rotate(9deg)  translateY(1px); }
+  18%      { transform: rotate(4deg)  translateY(0); }
+  70%      { transform: rotate(10deg) translateY(1.5px); }
+  100%     { transform: rotate(9deg)  translateY(1px); }
 }
 
-.creature-wrap.diseased .av-membro { animation-duration: 6.2s; }
+/* ── Os braços: pendem, e um deles mexe-se de cada vez ──
+   O --i que o gerador põe continua a servir: escalonados, o bicho
+   parece a mexer-se a custo em vez de a fazer ginástica sincronizada. */
+.creature-wrap.diseased .av-membro {
+  animation: av-membro-doente 5.4s cubic-bezier(.4,0,.65,1) infinite;
+  animation-delay: calc(var(--i, 0) * -0.9s);
+}
+@keyframes av-membro-doente {
+  0%       { transform: rotate(6deg); }
+  16%      { transform: rotate(1.5deg); }
+  72%      { transform: rotate(7deg); }
+  100%     { transform: rotate(6deg); }
+}
 
-.creature-wrap.diseased .av-olho-un { animation: av-piscar-doente 3.1s ease-in-out infinite; }
+/* ── Os olhos: a lutar para ficarem abertos ──
+   Pesados a maior parte do tempo, fecham-se sozinhos, e voltam a abrir
+   com esforço — e nunca de todo. O piscar de um bicho são é rápido e
+   raro; este é lento e constante, que é o oposto. */
+.creature-wrap.diseased .av-olho-un {
+  animation: av-piscar-doente 4.4s ease-in-out infinite;
+}
 @keyframes av-piscar-doente {
-  0%, 70%, 100% { transform: scaleY(0.72); }
-  80%           { transform: scaleY(0.1); }
-  86%           { transform: scaleY(0.72); }
+  0%, 100% { transform: scaleY(0.58); }
+  30%      { transform: scaleY(0.30); }   /* a cair */
+  44%      { transform: scaleY(0.06); }   /* fecha */
+  58%      { transform: scaleY(0.66); }   /* e reabre a custo */
+  72%      { transform: scaleY(0.48); }
 }
 
-.creature-wrap.diseased .av-corpo { animation: av-respirar-raso 1.9s ease-in-out infinite; }
-@keyframes av-respirar-raso {
-  0%, 100% { transform: scale(1,     1); }
-  50%      { transform: scale(1.006, 0.994); }
+/* ── O peito: curto, curto, e um fundo que não chega ──
+   Três respirações rápidas e rasas e uma quarta mais funda, que é o
+   corpo a tentar apanhar ar. Um ritmo regular lia-se como saúde. */
+.creature-wrap.diseased .av-corpo {
+  animation: av-respirar-doente 5.2s ease-in-out infinite;
 }
+@keyframes av-respirar-doente {
+  0%,  100% { transform: scale(1, 1); }
+  8%        { transform: scale(1.004, 0.996); }
+  16%       { transform: scale(1, 1); }
+  24%       { transform: scale(1.004, 0.996); }
+  32%       { transform: scale(1, 1); }
+  40%       { transform: scale(1.005, 0.995); }
+  48%       { transform: scale(1, 1); }
+  /* o fôlego fundo, mais lento e ainda assim curto */
+  66%       { transform: scale(1.017, 0.982) translateY(-0.5px); }
+  84%       { transform: scale(0.997, 1.003); }
+}
+
+/* ── A aura falha ──
+   As partículas que rodeiam o bicho são desenhadas com SMIL dentro do
+   SVG e não se travam por CSS — mas apagam-se. Um bicho doente com a
+   aura em pleno era a última coisa que ainda dizia "estou bem". */
+.creature-wrap.diseased .av-particula { opacity: .22; }
+/* A auréola por trás também encolhe. É o que se vê de mais longe, e um
+   halo em pleno à volta de um bicho encolhido dava sinais trocados. */
+.creature-wrap.diseased .av-aura { opacity: .4; }
+/* E os tentáculos deixam de ondular ao ritmo de quem está bem: o SVG
+   anima-os por dentro, portanto o que dá para fazer daqui é baixá-los. */
+.creature-wrap.diseased .av-tentaculo { opacity: .7; }
 .disease-badge {
   font-family:'Cinzel',serif; font-size:0.40625rem; font-weight:700;
   color:var(--d-cor,#e05050); border:1px solid var(--d-cor,#e05050);
@@ -572,8 +684,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .av-olho-un, .av-asa, .av-cauda, .av-membro, .av-corpo { animation: none; }
+  .creature-wrap.diseased svg,
   .creature-wrap.diseased .av-asa,
   .creature-wrap.diseased .av-cauda,
+  .creature-wrap.diseased .av-membro,
   .creature-wrap.diseased .av-olho-un,
   .creature-wrap.diseased .av-corpo,
   .creature-wrap.sleeping .av-asa,

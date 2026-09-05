@@ -332,7 +332,14 @@
 .avatar-zoom-close:hover { color:#fff; }
 #avatarZoomSVG { display:flex; align-items:center; justify-content:center; }
 #avatarZoomSVG svg { animation:idle-float 3s ease-in-out infinite; }
-#avatarZoomSVG.diseased svg { animation:sick-tremor .45s ease-in-out infinite; }
+/* O zoom mostra o MESMO bicho que a consola, portanto tem de o mostrar
+   no mesmo estado. Tinha aqui uma cópia do tremor antigo, e ficou para
+   trás quando a doença foi reescrita — o bicho doente vibrava no zoom e
+   arrastava-se na consola. Uma regra, os dois sítios. */
+#avatarZoomSVG.diseased svg {
+  animation: sick-arrepio 7.3s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.5rem rgba(122,184,48,.28)) saturate(.42) brightness(.84);
+}
 #avatarZoomSVG.sleeping svg { animation:sleep-sway 3s ease-in-out infinite; }
 .avatar-zoom-name { font-family:'Cinzel',serif; font-size:0.8125rem; font-weight:700; color:var(--gold-light); letter-spacing:0.125rem; text-align:center; }
 .avatar-zoom-info { font-family:'Cinzel',serif; font-size:0.5rem; color:var(--muted); letter-spacing:0.0625rem; text-align:center; }
