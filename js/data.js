@@ -401,56 +401,55 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
     <filter id="ig${sid}"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <radialGradient id="grad${sid}"><stop offset="0%" stop-color="${cor1}" stop-opacity="1"/><stop offset="50%" stop-color="${cor2}" stop-opacity=".9"/><stop offset="100%" stop-color="${corSec}" stop-opacity=".8"/></radialGradient>
     <linearGradient id="lg${sid}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${cor1}" stop-opacity="1"/><stop offset="100%" stop-color="${cor2}" stop-opacity="1"/></linearGradient>
-    <radialGradient id="halo${sid}"><stop offset="52%" stop-color="${cor1}" stop-opacity="0"/><stop offset="86%" stop-color="${cor1}" stop-opacity=".22"/><stop offset="100%" stop-color="${corBrilho}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo${sid}"><stop offset="60%" stop-color="${corBrilho}" stop-opacity="0"/><stop offset="84%" stop-color="${corBrilho}" stop-opacity="1"/><stop offset="100%" stop-color="${corBrilho}" stop-opacity="0"/></radialGradient>
   </defs>
   <g>`;
 
-  /* ── A AURA ABRAÇA O BICHO, NÃO O ATRAVESSA ──
+  /* ════════════════════════════════════════════════════════════════
+     A AURA É LUZ, E NÃO UM ANEL
 
-     Eram círculos de raio 95 e 85 centrados em (100,100) — o meio do
-     TRONCO. E o bicho não é o tronco: os braços chegam a x=165, os
-     chifres sobem a y=20, a cauda desce a y=195 e o corpo inferior do
-     ADULTO leva o conjunto até y=216. Medido com tudo ao máximo, ele
-     ocupa x 20–180 e y 20–268.
+     Eram círculos, e depois elipses, sempre com TRAÇO. Um traço tem de
+     caber por fora do bicho, e o bicho ocupa 160 dos 200 de largura: não
+     cabia. Ele cruzava-lhe os braços de cada lado e, no corpo inferior,
+     atravessava-o de lado a lado.
 
-     Um círculo assim cruzava-o pelo meio: passava por cima dos braços de
-     cada lado, e no corpo inferior atravessava-o de lado a lado. Está
-     desenhado ATRÁS de tudo, portanto quem ficava cortado era o anel —
-     mas uma linha que atravessa a silhueta lê-se como um corte de
-     qualquer maneira.
+     A luz não tem esse problema. É um gradiente sem contorno nenhum:
+     acende numa banda por fora da silhueta e apaga-se para os dois lados.
+     Não há linha para cortar seja o que for, e por isso pode ser tão
+     larga quanto for preciso — até sair da moldura, onde simplesmente se
+     desvanece.
 
-     Passam a ser ELIPSES, e têm de o ser: com o bicho a ocupar 160 dos
-     200 de largura, não há raio circular que caiba por fora dele dentro
-     da moldura. A elipse acompanha a forma — mais alta que larga, como
-     ele — e desce o centro para onde o corpo está mesmo.
+     ── DOIS DEGRAUS DA MESMA COISA ──
 
-     Em baixo ela sai da moldura de propósito, e isso é o desenho e não
-     um descuido: fica um arco que abre por cima e pelos lados, em vez de
-     um círculo fechado a apertar-lhe os pés. */
+       RARO      um halo
+       LENDÁRIO  dois, e mais forte
+
+     É de propósito que é a MESMA coisa duas vezes e não duas coisas
+     diferentes: assim o Lendário lê-se como "o mesmo, mas mais", que é o
+     que ele é. Duas linguagens diferentes obrigariam o jogador a
+     aprender duas, e nenhuma delas lhe diria qual vem primeiro.
+
+     O de fora do Lendário respira em CONTRATEMPO com o de dentro. Dois
+     pulsos iguais somam-se e dão um pisca-pisca; desencontrados dão
+     qualquer coisa que parece viva.
+     ════════════════════════════════════════════════════════════════ */
   const auCY = temCorpoInferior ? 135 : 105;
-  const auRX = 90;
-  const auRY = temCorpoInferior ? 132 : 100;
-  /* O respirar encolhe a elipse, e por isso a medida que conta é a do
-     instante MAIS APERTADO — rx-4, ry-4. Com a amplitude antiga (±5) os
-     espinhos mais largos, em x=20 e x=180, ficavam de fora no fundo do
-     respirar: o anel voltava a cruzá-los uma vez por segundo, que é pior
-     do que cruzar sempre, porque pisca. */
-  const auAnim = (rx, ry, d, dur) =>
-    `<animate attributeName="rx" values="${rx-d};${rx+d};${rx-d}" dur="${dur}" repeatCount="indefinite"/>` +
-    `<animate attributeName="ry" values="${ry-d};${ry+d};${ry-d}" dur="${dur}" repeatCount="indefinite"/>`;
+  const auRX = 104;
+  const auRY = temCorpoInferior ? 150 : 116;
+
+  /* A banda acesa do gradiente está aos 84% do raio. Com estes tamanhos
+     isso dá 87 de meia-largura, e o bicho mais largo que há chega a 80 —
+     a luz começa onde ele acaba. */
+  const halo = (rx, ry, op, pulso, dur) =>
+    `<ellipse cx="100" cy="${auCY}" rx="${rx}" ry="${ry}" fill="url(#halo${sid})" opacity="${op}">` +
+    `<animate attributeName="opacity" values="${pulso}" dur="${dur}" repeatCount="indefinite"/></ellipse>`;
 
   s += `<g class="av-aura">`;
-  /* O LENDÁRIO TINHA DOIS ANÉIS, e o de dentro não tem como não cortar:
-     com o bicho a encher a moldura, qualquer traço mais apertado que o de
-     fora passa-lhe por cima dos braços. Fica UM anel, por fora de tudo, e
-     em vez do segundo um halo de luz — preenchimento e não traço,
-     portanto não tem linha nenhuma para cortar seja o que for. Continuam
-     a ser duas camadas, e o Lendário continua a ler-se à distância. */
-  if(raridade === 'Lendário') s += `
-    <ellipse cx="100" cy="${auCY}" rx="${auRX+4}" ry="${auRY+4}" fill="url(#halo${sid})" opacity=".9"><animate attributeName="opacity" values=".9;.6;.9" dur="3s" repeatCount="indefinite"/></ellipse>
-    <ellipse cx="100" cy="${auCY}" rx="${auRX}" ry="${auRY}" fill="none" stroke="${corBrilho}" stroke-width="4" opacity=".6" filter="url(#glow${sid})">${auAnim(auRX, auRY, 4, '2s')}<animate attributeName="opacity" values=".6;.8;.6" dur="2s" repeatCount="indefinite"/></ellipse>`;
-  else if(raridade === 'Raro') s += `
-    <ellipse cx="100" cy="${auCY}" rx="${auRX-4}" ry="${auRY-4}" fill="none" stroke="${corBrilho}" stroke-width="2" opacity=".2" filter="url(#glow${sid})">${auAnim(auRX-4, auRY-4, 3, '2.5s')}</ellipse>`;
+  if(raridade === 'Lendário') s +=
+      halo(auRX + 24, auRY + 26, .20, '.20;.30;.20', '4.6s')   // o de fora, lento
+    + halo(auRX,      auRY,      .34, '.34;.22;.34', '2.8s');  // o de dentro, em contratempo
+  else if(raridade === 'Raro') s +=
+      halo(auRX, auRY, .20, '.20;.13;.20', '3.6s');
 
   s += `</g>`;
   // Asas de fase (fase 3+) — ancoradas no corpo inferior (wdy desloca de y=100 para y=163)
