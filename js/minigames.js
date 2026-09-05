@@ -460,6 +460,28 @@ function spawnHealParticles() {
   });
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   AS PÁLPEBRAS DE QUEM DORME
+
+   Isto punha um olho fechado por cima de cada olho aberto, e para saber
+   ONDE eles estavam refazia a conta do gerarSVG à mão: replicava a fila
+   de sorteios dele, número a número, e no fim tinha a sua própria
+   fórmula para quantos olhos havia —
+
+       numOlhos = rnd(raridade === 'Comum' ? 1 : 2, 3)
+
+   A do gerarSVG é outra: `Math.min(random(1,3), [2,3,3][grau])`. Foram
+   as duas verdadeiras no mesmo dia e deixaram de ser à primeira vez que
+   uma mudou. O bicho acordado tinha dois olhos e a dormir tinha três,
+   e nada no código dizia porquê — porque a resposta não estava num
+   sítio, estava na diferença entre dois.
+
+   Agora não há segunda conta. As pálpebras LEEM os olhos que estão
+   desenhados: cada um é um <g class="av-olho-un">, e o getBBox() diz
+   onde ele está e que tamanho tem, seja qual for o tipo de olho. Se o
+   gerarSVG mudar de ideias sobre olhos amanhã, isto acompanha sem
+   ninguém lhe tocar.
+   ═══════════════════════════════════════════════════════════════════ */
 function renderSleepEyes() {
   if(!avatar) return;
   const avatarSvg = document.querySelector('#creatureSVG svg');
@@ -468,40 +490,31 @@ function renderSleepEyes() {
   const old = avatarSvg.querySelector('#sleepEyesGroup');
   if(old) old.remove();
 
-  let _seed = avatar.seed;
-  const rnd = (min, max) => {
-    _seed = (_seed * 9301 + 49297) % 233280;
-    return Math.floor((_seed / 233280) * (max - min + 1)) + min;
-  };
+  const olhos = avatarSvg.querySelectorAll('.av-olho-un');
+  if(!olhos.length) return;
 
-  const cfg  = paletaDoAvatar(avatar, avatar && avatar.seed);
-  rnd(0, cfg.cores.length-1);
-  rnd(0, cfg.cores.length-1);
-  rnd(0, cfg.coresSec.length-1);
-  const mult     = avatar.raridade === 'Lendário' ? 2 : avatar.raridade === 'Raro' ? 1.5 : 1;
-  rnd(1, avatar.raridade === 'Lendário' ? 8 : avatar.raridade === 'Raro' ? 6 : 5);
-  const numOlhos = rnd(avatar.raridade === 'Comum' ? 1 : 2, 3);
-  rnd(1, 8);
-  rnd(2, Math.floor(4 * mult));
-  rnd(0, 4);
-
-  const espac = numOlhos === 1 ? 0 : 60 / (numOlhos - 1);
-  const eyeY  = 95;
-  const tb    = avatar.raridade === 'Lendário' ? 14 : avatar.raridade === 'Raro' ? 12 : 10;
-
+  const cfg = paletaDoAvatar(avatar, avatar && avatar.seed);
   const ns  = 'http://www.w3.org/2000/svg';
   const grp = document.createElementNS(ns, 'g');
   grp.id = 'sleepEyesGroup';
   grp.style.opacity = '0';
   grp.style.transition = 'opacity .6s ease';
 
-  for(let i = 0; i < numOlhos; i++) {
-    const x  = numOlhos === 1 ? 100 : 70 + (i * espac);
-    const hw = tb * 0.9;
+  olhos.forEach(olho => {
+    /* O getBBox mede o que está mesmo desenhado — e o brilho não conta,
+       que é o que faz a pálpebra caber no olho em vez de o inchar. */
+    let b;
+    try { b = olho.getBBox(); } catch(e) { return; }
+    if(!b || !b.width) return;
+
+    const x    = b.x + b.width / 2;
+    const eyeY = b.y + b.height / 2;
+    const hw   = b.width / 2;
+    const hh   = b.height / 2;
 
     const ellipse = document.createElementNS(ns, 'ellipse');
     ellipse.setAttribute('cx', x); ellipse.setAttribute('cy', eyeY);
-    ellipse.setAttribute('rx', hw + 2); ellipse.setAttribute('ry', tb + 3);
+    ellipse.setAttribute('rx', hw + 2); ellipse.setAttribute('ry', hh + 3);
     ellipse.setAttribute('fill', '#0a0816'); ellipse.setAttribute('opacity', '.95');
     grp.appendChild(ellipse);
 
@@ -518,7 +531,7 @@ function renderSleepEyes() {
       dot.setAttribute('r', '1.5'); dot.setAttribute('fill', cfg.corOlho); dot.setAttribute('opacity', '.6');
       grp.appendChild(dot);
     });
-  }
+  });
 
   avatarSvg.appendChild(grp);
   requestAnimationFrame(() => { grp.style.opacity = '1'; });

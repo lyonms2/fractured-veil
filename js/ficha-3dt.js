@@ -236,6 +236,43 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
   const vdVisivel = _faseF >= 1 ? vd : null;
   const pontos = vd ? vd.pontos : pontosBase;
 
+  /* ── ANTES DA CRIANÇA, O ORÇAMENTO É O DO NÍVEL E MAIS NADA ──
+
+     Este ficheiro diz em dois sítios que o bebé vale um ponto e sai
+     F0 H0 R1 A0. Não saía: 22,7% dos bebés nasciam com DOIS, e o
+     segundo aparecia na Habilidade — F0 H1 R1 A0, que foi o que se viu
+     em jogo.
+
+     A causa é a desvantagem. Ela DÁ pontos, e o par virtude/defeito é
+     sorteado desde o nível 1 mesmo quando ainda não se mostra — de
+     propósito, porque não o sortear fazia o orçamento mudar de forma ao
+     nível 5 e as características DESCEREM. O que faltava era separar
+     duas coisas que estavam a ser a mesma: quantos pontos este avatar
+     terá, e quantos deles JÁ TEM.
+
+     É a terceira vez que este jogo resolve um problema desta maneira, e
+     as três estão no mesmo sítio: o corpo é desenhado na forma adulta e
+     revelado pelo grau (gerarSVG), o repertório é escolhido inteiro e
+     acordado por etapas (magiasDoAvatar), e agora o orçamento é
+     calculado inteiro e gasto por níveis.
+
+     A fila não se toca: `pontos` continua a mandar no tecto de cada
+     sorteio, portanto o i-ésimo ponto vale hoje o que valia ontem.
+     Gasta-se é menos dela: nunca mais do que a escada do nível dá.
+
+     É O MÍNIMO DAS DUAS, e não a escada limpa. Tentei a escada limpa —
+     que seria o mais arrumado, o par não existe antes da CRIANÇA, logo
+     nem dá nem cobra — e a verificação nova mostrou o preço: 125
+     avatares PERDIAM um ponto de Habilidade ao passar do nível 4 para o
+     5, porque aí a virtude cara entrava a cobrar de uma vez. Uma
+     característica que desce é o defeito mais caro que esta ficha sabe
+     ter, e não se troca por arrumação.
+
+     Com o mínimo, quem tem uma virtude cara continua a tê-la a pesar
+     desde o berço — sai do nível 3 com um ponto em vez de dois, e
+     apanha-se no 5. É mais lento, e nunca desce. */
+  const pontosGastos = (_faseF >= 1) ? pontos : Math.min(pontos, pontosBase);
+
   const nv     = Math.max(1, nivel || 1);
   const rnd    = _fichaRng(seed || 0);
 
@@ -326,7 +363,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
      Assim a invariante é estrutural e não casual: subir de nível ou
      acrescenta um sorteio ao fim da fila, ou sobe o piso e mais nada.
      Nenhum dos dois mexe num sorteio já feito. */
-  const piso = _pisoDeR(pontos);
+  const piso = _pisoDeR(pontosGastos);
   const c = { F: 0, H: 0, R: 0, A: 0 };
 
   /* ── O PRIMEIRO PONTO DE CADA UMA, PAGO DA BOLSA ──
@@ -360,7 +397,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
      por preencher, ou vai para o fim da fila do sorteio. Nunca mexe num
      que já foi dado. */
   const PISO_PAGO = ['H', 'F', 'A'];
-  let sobra = pontos - piso;
+  let sobra = pontosGastos - piso;
   let pisosDados = 0;
   for (const k of PISO_PAGO) {
     if (sobra <= 0) break;
@@ -417,11 +454,13 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
     seed: seed || 0,
     F: c.F, H: c.H, R: c.R, A: c.A,
     pv, pvMax: pv, pm, pmMax: pm,
-    pontos, pontosBase, tecto,
+    // O que ele TEM, e não o que virá a ter: é o número que a ficha
+    // mostra, e mostrar um orçamento por gastar era a mentira original.
+    pontos: pontosGastos, pontosBase, tecto,
     vantagem:    vdVisivel ? vdVisivel.vantagem    : null,
     desvantagem: vdVisivel ? vdVisivel.desvantagem : null,
     raridade, nivel: Math.max(1, nivel || 1),
-    escalao: _escalaoDe(pontos),
+    escalao: _escalaoDe(pontosGastos),
     // Para onde puxa, de que sexo é, e com que feitio. Quem desenha a
     // ficha lê daqui.
     indole: (typeof indoleDominante === 'function' && nascimento && nascimento.dna)

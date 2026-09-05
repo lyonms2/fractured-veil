@@ -280,6 +280,45 @@ titulo('O REPERTÓRIO CRESCE');
 }
 
 // ════════════════════════════════════════════════════════════════
+titulo('SUBIR DE NÍVEL SÓ SOMA');
+
+/* O js/ficha-3dt.js promete isto em quatro comentários e já o corrigiu
+   três vezes por portas diferentes — e nunca teve uma verificação.
+   Tem agora. Uma característica que desce ao subir de nível é o defeito
+   mais caro que esta ficha sabe ter: o jogador viu o número ontem. */
+{
+  const CS = ['F', 'H', 'R', 'A'];
+  const quedas = [];
+  let subidas = 0;
+  for (let s = 1; s <= 1200; s++) {
+    let ant = M.fichaDeAvatar(s, 'Comum', 1);
+    for (let nv = 2; nv <= 35; nv++) {
+      const f = M.fichaDeAvatar(s, 'Comum', nv);
+      subidas++;
+      for (const k of CS)
+        if (f[k] < ant[k]) quedas.push('seed ' + s + ' nv' + (nv-1) + '→' + nv + ' ' + k + ' ' + ant[k] + '→' + f[k]);
+      if (f.pv < ant.pv) quedas.push('seed ' + s + ' nv' + nv + ' PV ' + ant.pv + '→' + f.pv);
+      if (f.pm < ant.pm) quedas.push('seed ' + s + ' nv' + nv + ' PM ' + ant.pm + '→' + f.pm);
+      ant = f;
+    }
+  }
+  ok(quedas.length === 0, 'nenhuma característica, PV ou PM desce ao subir de nível',
+     quedas.length ? quedas.length + ' quedas: ' + quedas.slice(0,3).join(' · ')
+                   : subidas + ' subidas, nenhuma queda');
+
+  /* E o degrau que esta mudança criou é o mais suspeito de todos: o
+     nv4→5 é onde o par virtude/defeito passa a contar para o
+     orçamento. Pergunta-se por ele em separado. */
+  const noDegrau = [];
+  for (let s = 1; s <= 3000; s++) {
+    const a = M.fichaDeAvatar(s, 'Comum', 4), b = M.fichaDeAvatar(s, 'Comum', 5);
+    for (const k of CS) if (b[k] < a[k]) noDegrau.push('seed ' + s + ' ' + k);
+  }
+  ok(noDegrau.length === 0, 'e o degrau do nv4 para o nv5, onde a virtude entra',
+     noDegrau.length ? noDegrau.length + ' quedas' : '3.000 avatares atravessam-no sem perder nada');
+}
+
+// ════════════════════════════════════════════════════════════════
 titulo('O BEBÊ');
 
 {
@@ -289,6 +328,43 @@ titulo('O BEBÊ');
               '  · ' + bebe.pv + ' PV · ' + bebe.pm + ' PM · ' + bebe.escalao);
 
   ok(bebe.pontos === 1, 'a ficha do bebê vale um ponto', bebe.pontos + ' ponto');
+
+  /* UMA SEED SÓ NÃO CHEGAVA, e isto é a prova disso.
+
+     Esta linha existia com a seed 7 e passava. Passava por SORTE: 22,7%
+     dos bebês nasciam com DOIS pontos, e o segundo ia para a Habilidade
+     — F0 H1 R1 A0, que foi o que apareceu em jogo. A causa era a
+     desvantagem, que dá pontos e é sorteada desde o nível 1 mesmo
+     quando ainda não se mostra.
+
+     Um número que depende do seed tem de ser perguntado a MUITOS seeds,
+     ou a verificação é uma opinião com sorte. */
+  {
+    const maus = [];
+    for (let s = 1; s <= 5000; s++) {
+      const f = M.fichaDeAvatar(s, 'Comum', 1);
+      const soma = ['F','H','R','A'].reduce((t,k) => t + f[k], 0);
+      if (f.pontos !== 1 || soma !== 1) maus.push('seed ' + s + ' → ' + f.pontos + ' pts, soma ' + soma);
+    }
+    ok(maus.length === 0, 'e vale um ponto em TODOS os bebês, e não só neste',
+       maus.length ? maus.length + ' fora: ' + maus.slice(0,3).join(' · ') : '5.000 seeds, todos F0 H0 R1 A0');
+
+    /* NUNCA MAIS DO QUE A ESCADA — e não "exactamente a escada", que é
+       o que eu tinha escrito primeiro e estava errado. Quem tem uma
+       virtude cara traz menos: ela custa mais do que o defeito dá, e
+       esse peso conta desde o berço. O que não pode acontecer é o
+       contrário — um bebê a mostrar pontos que o nível dele não deu. */
+    const aMais = [], aMenos = [];
+    for (let s = 1; s <= 1500; s++)
+      for (let nv = 1; nv <= 4; nv++) {
+        const f = M.fichaDeAvatar(s, 'Comum', nv), escada = M.pontosDoAvatar('Comum', nv);
+        if (f.pontos > escada) aMais.push('seed ' + s + ' nv' + nv + ' → ' + f.pontos + ' > ' + escada);
+        else if (f.pontos < escada) aMenos.push(1);
+      }
+    ok(aMais.length === 0, 'e do nível 1 ao 4 nunca mostra mais do que a escada dá',
+       aMais.length ? aMais.length + ' fora: ' + aMais.slice(0,3).join(' · ')
+                    : '6.000 fichas · ' + aMenos.length + ' trazem menos, por virtude cara');
+  }
   /* A soma das quatro TEM de bater certo com o orçamento, sem parcela
      nenhuma a mais. Era `1 + 4`: o piso de um ponto que todas levavam
      por fora da bolsa. Esse piso saiu — fazia a ficha do bebê dizer um
