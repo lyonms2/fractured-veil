@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-09-05s
+     VERSÃO DOS FICHEIROS — ?v=2026-09-05u
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-09-05s" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-09-05u" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -49,22 +49,22 @@
        decoracao. -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/screen.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/ui.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/modals.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/combate.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/arena.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/snake.css?v=2026-09-05s">
-<link rel="stylesheet" href="css/fazenda.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-05s">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-05s">
+  <link rel="stylesheet" href="css/base.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/screen.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/ui.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/modals.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/combate.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/arena.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/snake.css?v=2026-09-05u">
+<link rel="stylesheet" href="css/fazenda.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-05u">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-05u">
 
   <style>
 
@@ -510,7 +510,28 @@
         <!-- EGG -->
         <div id="eggScreen" class="egg-screen" style="display:none;">
           <div id="eggWrap" style="position:relative;width:6.25rem;height:6.875rem;">
-            <svg id="eggSvg" width="100" height="110" viewBox="0 0 100 110" style="transition:transform .12s ease;display:block;">
+            <!-- A MOLDURA E O DESENHO TÊM DE MEDIR O MESMO.
+
+                 O #eggWrap mede-se em rem (6.25 × 6.875) e este SVG
+                 media-se em píxeis fixos (100 × 110). No telemóvel a
+                 raiz é 16px e os dois davam 100 × 110 por coincidência;
+                 no PC a raiz é 24 e a moldura passava a 150 × 165 com o
+                 ovo encolhido a um canto dela.
+
+                 O brilho final é `inset:0` sobre a MOLDURA — logo saía
+                 25px à direita e 26,5px abaixo do ovo. Medido. Era isso
+                 que se via como desalinhamento, e só se via no PC.
+
+                 Com 100%/100% o viewBox faz o resto: o ovo cresce com a
+                 rem, como tudo o resto, e nunca mais pode desencontrar-se
+                 do que lhe é sobreposto.
+
+                 E o transform-origin nos 50,9% é a mesma razão vista de
+                 outro lado: o balanço e o scale(1.5) do fim rodavam em
+                 torno do centro da CAIXA (y=55) e não do centro do OVO
+                 (y=56). Sobrava 0,8px no pico do brilho — pouco, mas é
+                 medida e não opinião, e custa uma linha. -->
+            <svg id="eggSvg" viewBox="0 0 100 110" style="width:100%;height:100%;transform-origin:50% 50.9%;transition:transform .12s ease;display:block;">
               <defs>
                 <radialGradient id="eggGrad" cx="38%" cy="28%" r="72%">
                   <stop offset="0%" stop-color="#5a3a9a"/>
@@ -542,7 +563,19 @@
               </g>
               <ellipse id="eggPulse" cx="50" cy="56" rx="30" ry="38" fill="none" stroke="#c4b5fd" stroke-width="3" opacity="0"/>
             </svg>
-            <div id="eggFlash" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,#c4b5fd 40%,transparent 70%);opacity:0;pointer-events:none;transition:opacity .15s;"></div>
+            <!-- O BRILHO É UM CÍRCULO, E CENTRA-SE NO OVO.
+
+                 Era `inset:0` com `border-radius:50%`: uma máscara
+                 ELÍPTICA de 100×110 por cima de um `radial-gradient
+                 (circle)`, que é redondo. A máscara e o gradiente não
+                 concordavam, e o brilho saía achatado de um lado.
+
+                 E o centro estava na caixa, não no ovo: a casca tem o
+                 centro em y=56 de 110, ou seja 50,9% e não 50%. Fica
+                 nos 50,9%, e o `aspect-ratio:1` garante que é mesmo um
+                 círculo — um círculo dentro de uma máscara redonda,
+                 centrado onde o ovo está. -->
+            <div id="eggFlash" style="position:absolute;left:50%;top:50.9%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0%,#c4b5fd 40%,transparent 70%);opacity:0;pointer-events:none;transition:opacity .15s;"></div>
           </div>
           <!-- O texto é escrito pelo hatchWithAnimation(). Estava aqui
                "CLIQUE PARA CHOCAR" e um contador "0 / 5" de quando o ovo
@@ -1062,24 +1095,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-09-05s"></script>
-<script src="js/i18n-pvp.js?v=2026-09-05s"></script>
-<script src="js/i18n-bn.js?v=2026-09-05s"></script>
-<script src="js/i18n-minigames.js?v=2026-09-05s"></script>
-<script src="js/i18n-eggs.js?v=2026-09-05s"></script>
-<script src="js/i18n-gametick.js?v=2026-09-05s"></script>
-<script src="js/i18n-items.js?v=2026-09-05s"></script>
-<script src="js/i18n-market.js?v=2026-09-05s"></script>
-<script src="js/i18n-mina.js?v=2026-09-05s"></script>
-<script src="js/i18n-arcade.js?v=2026-09-05s"></script>
-<script src="js/i18n-session.js?v=2026-09-05s"></script>
-<script src="js/i18n-misc.js?v=2026-09-05s"></script>
-<script src="js/i18n-lore.js?v=2026-09-05s"></script>
-<script src="js/i18n-prologo.js?v=2026-09-05s"></script>
-<script src="js/i18n-marketplace.js?v=2026-09-05s"></script>
-<script src="js/i18n-magias.js?v=2026-09-05s"></script>
-<script src="js/i18n-vantagens.js?v=2026-09-05s"></script>
-<script src="js/i18n-pve.js?v=2026-09-05s"></script>
+<script src="js/i18n.js?v=2026-09-05u"></script>
+<script src="js/i18n-pvp.js?v=2026-09-05u"></script>
+<script src="js/i18n-bn.js?v=2026-09-05u"></script>
+<script src="js/i18n-minigames.js?v=2026-09-05u"></script>
+<script src="js/i18n-eggs.js?v=2026-09-05u"></script>
+<script src="js/i18n-gametick.js?v=2026-09-05u"></script>
+<script src="js/i18n-items.js?v=2026-09-05u"></script>
+<script src="js/i18n-market.js?v=2026-09-05u"></script>
+<script src="js/i18n-mina.js?v=2026-09-05u"></script>
+<script src="js/i18n-arcade.js?v=2026-09-05u"></script>
+<script src="js/i18n-session.js?v=2026-09-05u"></script>
+<script src="js/i18n-misc.js?v=2026-09-05u"></script>
+<script src="js/i18n-lore.js?v=2026-09-05u"></script>
+<script src="js/i18n-prologo.js?v=2026-09-05u"></script>
+<script src="js/i18n-marketplace.js?v=2026-09-05u"></script>
+<script src="js/i18n-magias.js?v=2026-09-05u"></script>
+<script src="js/i18n-vantagens.js?v=2026-09-05u"></script>
+<script src="js/i18n-pve.js?v=2026-09-05u"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1088,13 +1121,13 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-09-05s"></script>
-<script src="js/data.js?v=2026-09-05s"></script>
-<script src="js/state.js?v=2026-09-05s"></script>
+<script src="js/audio.js?v=2026-09-05u"></script>
+<script src="js/data.js?v=2026-09-05u"></script>
+<script src="js/state.js?v=2026-09-05u"></script>
 <!-- A identidade permanente do avatar e o nome de quem joga. Vem
      depois do state.js, que declara os globais que ela le, e antes
      do summon.js e do eggs.js, que a chamam ao criar um avatar. -->
-<script src="js/identidade.js?v=2026-09-05s"></script>
+<script src="js/identidade.js?v=2026-09-05u"></script>
 <!-- O acto de nascer: DNA (tendencia e sexo) e a certidao.
      Depois da identidade, que ele nao usa mas que nasce no mesmo gesto,
      e antes do ficha-3dt.js e do magias.js, que perguntam por ele. -->
@@ -1102,59 +1135,59 @@
      nascimento.js, que sorteia o gene da cor, e antes do data.js
      ...na verdade o data.js vem antes; a paleta e pedida em tempo de
      desenho, nao em tempo de carga, portanto a ordem nao aperta. -->
-<script src="js/cores.js?v=2026-09-05s"></script>
-<script src="js/nascimento.js?v=2026-09-05s"></script>
+<script src="js/cores.js?v=2026-09-05u"></script>
+<script src="js/nascimento.js?v=2026-09-05u"></script>
 <!-- A raridade conquistada. Antes do data.js, que desenha o corpo a
      partir dela, e antes do ficha-3dt.js. -->
-<script src="js/raridade.js?v=2026-09-05s"></script>
+<script src="js/raridade.js?v=2026-09-05u"></script>
 <!-- O cruzamento. Depois do nascimento e do raridade, que ele lê. -->
-<script src="js/reproducao.js?v=2026-09-05s"></script>
-<script src="js/vantagens.js?v=2026-09-05s"></script>
-<script src="js/ficha-3dt.js?v=2026-09-05s"></script>
-<script src="js/magias.js?v=2026-09-05s"></script>
-<script src="js/combate-3dt.js?v=2026-09-05s"></script>
-<script src="js/equipa.js?v=2026-09-05s"></script>
-<script src="js/combate-ui.js?v=2026-09-05s"></script>
-<script src="js/combate-pve.js?v=2026-09-05s"></script>
-<script src="js/ui.js?v=2026-09-05s"></script>
-<script src="js/modal.js?v=2026-09-05s"></script>
-<script src="js/firebase.js?v=2026-09-05s"></script>
-<script src="js/gametick.js?v=2026-09-05s"></script>
-<script src="js/evolucao.js?v=2026-09-05s"></script>
-<script src="js/actions.js?v=2026-09-05s"></script>
-<script src="js/mini-avatar.js?v=2026-09-05s"></script>
-<script src="js/minigames.js?v=2026-09-05s"></script>
-<script src="js/summon.js?v=2026-09-05s"></script>
-<script src="js/batalha.js?v=2026-09-05s"></script>
-<script src="js/fazenda.js?v=2026-09-05s"></script>
-<script src="js/eggs.js?v=2026-09-05s"></script>
-<script src="js/items.js?v=2026-09-05s"></script>
-<script src="js/market.js?v=2026-09-05s"></script>
-<script src="js/coinshop.js?v=2026-09-05s"></script>
-<script src="js/cards.js?v=2026-09-05s"></script>
-<script src="js/rouba-monte.js?v=2026-09-05s"></script>
-<script src="js/mina.js?v=2026-09-05s"></script>
-<script src="js/batalha-naval.js?v=2026-09-05s"></script>
-<script src="js/snake.js?v=2026-09-05s"></script>
-<script src="js/labirinto.js?v=2026-09-05s"></script>
-<script src="js/cambio.js?v=2026-09-05s"></script>
-<script src="js/arena.js?v=2026-09-05s"></script>
-<script src="js/lore.js?v=2026-09-05s"></script>
-<script src="js/prologo.js?v=2026-09-05s"></script>
-<script src="js/lore-caps/cap1.js?v=2026-09-05s"></script>
-<script src="js/lore-caps/cap2.js?v=2026-09-05s"></script>
-<script src="js/lore-caps/cap3.js?v=2026-09-05s"></script>
-<script src="js/lore-caps/cap4.js?v=2026-09-05s"></script>
-<script src="js/amigos.js?v=2026-09-05s"></script>
-<script src="js/auth.js?v=2026-09-05s"></script>
+<script src="js/reproducao.js?v=2026-09-05u"></script>
+<script src="js/vantagens.js?v=2026-09-05u"></script>
+<script src="js/ficha-3dt.js?v=2026-09-05u"></script>
+<script src="js/magias.js?v=2026-09-05u"></script>
+<script src="js/combate-3dt.js?v=2026-09-05u"></script>
+<script src="js/equipa.js?v=2026-09-05u"></script>
+<script src="js/combate-ui.js?v=2026-09-05u"></script>
+<script src="js/combate-pve.js?v=2026-09-05u"></script>
+<script src="js/ui.js?v=2026-09-05u"></script>
+<script src="js/modal.js?v=2026-09-05u"></script>
+<script src="js/firebase.js?v=2026-09-05u"></script>
+<script src="js/gametick.js?v=2026-09-05u"></script>
+<script src="js/evolucao.js?v=2026-09-05u"></script>
+<script src="js/actions.js?v=2026-09-05u"></script>
+<script src="js/mini-avatar.js?v=2026-09-05u"></script>
+<script src="js/minigames.js?v=2026-09-05u"></script>
+<script src="js/summon.js?v=2026-09-05u"></script>
+<script src="js/batalha.js?v=2026-09-05u"></script>
+<script src="js/fazenda.js?v=2026-09-05u"></script>
+<script src="js/eggs.js?v=2026-09-05u"></script>
+<script src="js/items.js?v=2026-09-05u"></script>
+<script src="js/market.js?v=2026-09-05u"></script>
+<script src="js/coinshop.js?v=2026-09-05u"></script>
+<script src="js/cards.js?v=2026-09-05u"></script>
+<script src="js/rouba-monte.js?v=2026-09-05u"></script>
+<script src="js/mina.js?v=2026-09-05u"></script>
+<script src="js/batalha-naval.js?v=2026-09-05u"></script>
+<script src="js/snake.js?v=2026-09-05u"></script>
+<script src="js/labirinto.js?v=2026-09-05u"></script>
+<script src="js/cambio.js?v=2026-09-05u"></script>
+<script src="js/arena.js?v=2026-09-05u"></script>
+<script src="js/lore.js?v=2026-09-05u"></script>
+<script src="js/prologo.js?v=2026-09-05u"></script>
+<script src="js/lore-caps/cap1.js?v=2026-09-05u"></script>
+<script src="js/lore-caps/cap2.js?v=2026-09-05u"></script>
+<script src="js/lore-caps/cap3.js?v=2026-09-05u"></script>
+<script src="js/lore-caps/cap4.js?v=2026-09-05u"></script>
+<script src="js/amigos.js?v=2026-09-05u"></script>
+<script src="js/auth.js?v=2026-09-05u"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-09-05s"></script>
-<script src="js/cristais.js?v=2026-09-05s"></script>
-<script src="js/avatars-market.js?v=2026-09-05s"></script>
-<script src="js/marketplace-core.js?v=2026-09-05s"></script>
+<script src="js/pool.js?v=2026-09-05u"></script>
+<script src="js/cristais.js?v=2026-09-05u"></script>
+<script src="js/avatars-market.js?v=2026-09-05u"></script>
+<script src="js/marketplace-core.js?v=2026-09-05u"></script>
 
-<script src="js/main.js?v=2026-09-05s"></script>
+<script src="js/main.js?v=2026-09-05u"></script>
 
 
 <script>

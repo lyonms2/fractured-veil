@@ -588,6 +588,17 @@ function applyEggVisual(cores, crackColor) {
                aura2.style.animation = 'eggAuraPulse 1.8s ease-in-out infinite 0.4s'; }
   if(sparks) sparks.style.opacity = '0.7';
 
+  /* O BRILHO FINAL TAMBÉM É DA COR DELE.
+
+     Era `#c4b5fd` escrito à mão — o roxo do tempo em que os ovos eram
+     roxos. Ficou para trás quando a casca passou a ser pintada pelo
+     DNA: o ovo era vermelho e rebentava numa luz lilás.
+
+     O branco do meio fica: é o clarão. O que muda é o halo. */
+  const flash = document.getElementById('eggFlash');
+  if(flash) flash.style.background =
+    `radial-gradient(circle, #fff 0%, ${brilho} 40%, transparent 70%)`;
+
   if(crackColor) {
     document.querySelectorAll('#eggCracks line').forEach(l => {
       l.setAttribute('stroke', crackColor);
