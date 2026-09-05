@@ -25,7 +25,7 @@ window.registerStrings(
     'egg.inv.sem_cor':           'Ovo',
 
     // Hatch confirm modal (HTML)
-    'egg.hatch.slots_full':  'Todos os slots estão ocupados.<br>Libere um slot no Marketplace antes de chocar.',
+    'egg.hatch.slots_full':  'Todos os slots estão ocupados.<br>O ovo espera — mas apodrece em 7 dias se continuar sem lugar.',
     'egg.hatch.multi_slot':  'O novo avatar nascerá no <b style="color:#7ab87a">Slot {slot}</b>.<br>Seu avatar ativo <b style="color:#e8a030">{nome}</b> continua no Slot {activeSlot}.<br><span style="font-size:0.4375rem;color:var(--muted);">Ative o novo avatar no Marketplace → Meus Avatares.</span>',
     'egg.hatch.same_slot':   'O ovo nascerá no Slot {slot}.',
     'egg.hatch.need_gems':   '<br><br><span style="color:#f87171;font-size:0.5rem;">⚠️ Você precisa de <b>{fee} 💎</b> para chocar.<br>Saldo atual: {saldo} 💎</span>',
@@ -36,7 +36,10 @@ window.registerStrings(
 
     // Inventário
     'egg.inv.count':         '{n} / {max} ovo{s}',
-    'egg.inv.empty':         'Nenhum ovo no inventário',
+    'egg.inv.empty':         'A chocadeira está vazia. Cruze dois adultos para pôr um ovo.',
+    'egg.inv.pronto':        'Pronto para chocar',
+    'egg.inv.sem_ninho':     '⚠️ Sem slot vago — não pode chocar',
+    'egg.inv.apodrece_em':   'apodrece em {t}',
     'egg.inv.rotten':        '⚠️ APODRECIDO',
     'egg.inv.time_dh':       '{d}d {h}h restantes',
     'egg.inv.time_h':        '{h}h restantes',
@@ -67,7 +70,7 @@ window.registerStrings(
     'egg.inv.sem_cor':           'Egg',
 
     // Hatch confirm modal (HTML)
-    'egg.hatch.slots_full':  'All slots are occupied.<br>Free a slot in the Marketplace before hatching.',
+    'egg.hatch.slots_full':  'All slots are occupied.<br>The egg waits — but rots in 7 days if it stays without a place.',
     'egg.hatch.multi_slot':  'New avatar will be born in <b style="color:#7ab87a">Slot {slot}</b>.<br>Your active avatar <b style="color:#e8a030">{nome}</b> stays in Slot {activeSlot}.<br><span style="font-size:0.4375rem;color:var(--muted);">Activate the new avatar in Marketplace → My Avatars.</span>',
     'egg.hatch.same_slot':   'Egg will hatch in Slot {slot}.',
     'egg.hatch.need_gems':   '<br><br><span style="color:#f87171;font-size:0.5rem;">⚠️ You need <b>{fee} 💎</b> to hatch.<br>Current balance: {saldo} 💎</span>',
@@ -78,7 +81,10 @@ window.registerStrings(
 
     // Inventory
     'egg.inv.count':         '{n} / {max} egg{s}',
-    'egg.inv.empty':         'No eggs in inventory',
+    'egg.inv.empty':         'The incubator is empty. Cross two adults to lay an egg.',
+    'egg.inv.pronto':        'Ready to hatch',
+    'egg.inv.sem_ninho':     '⚠️ No free slot — cannot hatch',
+    'egg.inv.apodrece_em':   'rots in {t}',
     'egg.inv.rotten':        '⚠️ ROTTEN',
     'egg.inv.time_dh':       '{d}d {h}h left',
     'egg.inv.time_h':        '{h}h left',

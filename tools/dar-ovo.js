@@ -37,8 +37,10 @@
 // do Vercel e pode não estar instalado aqui. Assim diz-se o que está
 // errado sem precisar de nada instalado.
 const RARIDADES = ['Comum', 'Raro', 'Lendário'];
-// Os mesmos dias do handleBotarOvo em api/pool.js.
-const DIAS = { 'Comum': 7, 'Raro': 14, 'Lendário': 30 };
+/* O ovo entregue à mão não leva validade nenhuma, e é de propósito: o
+   apodrecer deixou de contar da entrega e passou a contar de o ovo
+   ficar PRONTO E SEM SLOT (REPR_SEM_NINHO_MS, em js/reproducao.js).
+   Um ovo de serviço espera pelo teste o tempo que for preciso. */
 
 const [uid, raridade = 'Comum'] = process.argv.slice(2);
 
@@ -84,7 +86,6 @@ function iniciar() {
   const ovo = {
     id:       Date.now(),
     raridade,
-    expiraEm: Date.now() + DIAS[raridade] * 86400000,
   };
 
   await ref.update({
@@ -93,6 +94,6 @@ function iniciar() {
   });
 
   console.log(`Ovo ${raridade} entregue a ${uid}.`);
-  console.log(`  id ${ovo.id}, válido até ${new Date(ovo.expiraEm).toLocaleDateString('pt-BR')}`);
+  console.log(`  id ${ovo.id} — sem validade: só apodrece se ficar pronto sem slot vago.`);
   console.log('\nRecarregue o jogo: o ovo passa do inbox para o inventário do avatar ativo.');
 })().catch((e) => { console.error(e); process.exit(1); });

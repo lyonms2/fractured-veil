@@ -166,9 +166,16 @@ function getGameState() {
          herança e o filho nascia de estranhos.
 
          A raridade fica de fora: o ovo já não tem nenhuma. */
-      eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({
-        id: e.id, expiraEm: e.expiraEm,
+      /* O filtro era `Date.now() < e.expiraEm`: a validade contava da
+         postura, e um ovo por chocar podia apodrecer à espera. Agora o
+         relógio só anda quando o ovo está pronto e sem ninho, e é o
+         ovoPodre que sabe disso. */
+      eggs:           (s.eggs  || []).filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e))).map(e => ({
+        id: e.id,
         chocaEm: e.chocaEm || null,
+        // Desde quando está preso sem slot. Tem de sobreviver ao save:
+        // sem isto, fechar o jogo devolvia ao ovo os sete dias todos.
+        semNinhoDesde: e.semNinhoDesde || null,
         dna:     e.dna     || null,
         mae:     e.mae     || null, pai:     e.pai     || null,
         maeNome: e.maeNome || null, paiNome: e.paiNome || null,
@@ -255,7 +262,7 @@ function applyGameState(data) {
 
   // Consumir inboxEggs
   if(data.inboxEggs && data.inboxEggs.length > 0) {
-    data.inboxEggs = data.inboxEggs.filter(e => Date.now() < e.expiraEm);
+    data.inboxEggs = data.inboxEggs.filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e)));
     const slot = avatarSlots[activeSlotIdx];
     if(slot) {
       if(!slot.eggs) slot.eggs = [];
@@ -333,11 +340,11 @@ function applyGameState(data) {
       // Os ovos apodreciam em SILÊNCIO: iam para um console.log que só o
       // programador vê. Os itens sempre avisaram ("expirou após 30
       // dias") — quem perdia um ovo lendário nunca ficava sabendo.
-      const podres = slot.eggs.filter(e => _now > e.expiraEm);
-      slot.eggs = slot.eggs.filter(e => _now <= e.expiraEm);
+      const podres = slot.eggs.filter(e => typeof ovoPodre === 'function' && ovoPodre(e, _now));
+      slot.eggs = slot.eggs.filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e, _now)));
       if(podres.length) {
         window._ovosPodres = (window._ovosPodres || []).concat(
-          podres.map(e => ({ id: e.id, expiraEm: e.expiraEm })));
+          podres.map(e => ({ id: e.id, semNinhoDesde: e.semNinhoDesde })));
       }
     }
   });

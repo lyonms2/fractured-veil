@@ -542,8 +542,28 @@
    vista, mas o botão de chocar não responde — e a linha diz porquê,
    que é a diferença entre esperar e achar que está partido. */
 .egg-item.por-chocar { opacity: 0.82; }
-.egg-item.por-chocar .egg-btn.hatch { opacity: 0.35; pointer-events: none; }
 .egg-choco { font-size: 0.4375rem; color: var(--gold-light); letter-spacing: 0.02rem; }
+
+/* ── O OVO PRONTO E O OVO PRESO ──
+   São os dois estados que pedem alguma coisa ao jogador, e pedem coisas
+   diferentes: um pede um clique, o outro pede espaço. Por isso um é
+   verde e o outro âmbar — e o âmbar tem moldura, porque o cartão
+   inteiro é o aviso. */
+.egg-pronto {
+  font-size: 0.4375rem; color: #7ab87a; font-weight: 700;
+  letter-spacing: 0.02rem; margin-top: 0.0625rem;
+}
+.egg-sem-ninho {
+  font-size: 0.40625rem; color: #e8a030; font-weight: 700;
+  letter-spacing: 0.02rem; margin-top: 0.0625rem;
+}
+.egg-item.sem-ninho {
+  border-color: rgba(232,160,48,.35);
+  background: rgba(232,160,48,.05);
+}
+/* Um ovo por chocar já não tem botão nenhum para apagar — a lista
+   deixou de o desenhar. Fica o esbatido, que é o que diz "ainda não". */
+.egg-item.por-chocar .egg-btn.hatch { opacity: 0.35; pointer-events: none; }
 .egg-pais  { font-size: 0.40625rem; color: var(--muted); font-style: italic; }
 
 /* ── CRUZAR ──

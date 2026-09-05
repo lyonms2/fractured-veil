@@ -224,13 +224,13 @@
       // tinha o título escrito à mão no HTML e era o único que não
       // traduzia.
       'ui.coins_title':          'Moedas',
-      'ui.eggs_title':           'Inventário de ovos',
+      'ui.eggs_title':           'Chocadeira',
       'ui.items_title':          'Inventário de itens',
       'ui.marketplace_title':    'Marketplace',
 
       // Modais de inventário
       'inv.items_title':         '🎒 INVENTÁRIO DE ITENS',
-      'inv.eggs_title':          '🥚 INVENTÁRIO DE OVOS',
+      'inv.eggs_title':          '🥚 CHOCADEIRA',
       'inv.coins_title':         '🪙 MOEDAS',
       'inv.coins_sub':           'Compre itens e troque por cristais',
       'inv.exchange_label':      '◆ CÂMBIO 🪙 → 💎',
@@ -555,13 +555,13 @@
 
       // Header / nav
       'ui.coins_title':          'Coins',
-      'ui.eggs_title':           'Egg Inventory',
+      'ui.eggs_title':           'Incubator',
       'ui.items_title':          'Item Inventory',
       'ui.marketplace_title':    'Marketplace',
 
       // Inventory modals
       'inv.items_title':         '🎒 ITEM INVENTORY',
-      'inv.eggs_title':          '🥚 EGG INVENTORY',
+      'inv.eggs_title':          '🥚 INCUBATOR',
       'inv.coins_title':         '🪙 COINS',
       'inv.coins_sub':           'Buy items and trade for crystals',
       'inv.exchange_label':      '◆ EXCHANGE 🪙 → 💎',

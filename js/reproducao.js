@@ -46,10 +46,21 @@
 const REPR_CHOCO_MAX_MS = 48 * 3600 * 1000;
 const REPR_CHOCO_MIN_MS = 24 * 3600 * 1000;
 
-// E quanto tempo o ovo dura antes de apodrecer, a contar de que é posto.
-// Um casal bem tratado também dá ovos que aguentam mais.
-const REPR_VALIDADE_DIAS = 14;
-const REPR_VALIDADE_BONUS = 7;
+/* ── E QUANTO TEMPO O OVO AGUENTA SEM NINHO ──
+
+   Isto era uma validade a contar da POSTURA: 14 dias, mais 7 se os pais
+   estivessem bem tratados. O ovo apodrecia a olhar para o relógio, e o
+   jogador não podia fazer nada sobre isso a não ser chocá-lo depressa.
+
+   Passa a contar de outra coisa, e é a diferença entre um prazo e um
+   problema: o ovo só começa a morrer quando fica PRONTO E SEM SÍTIO
+   PARA IR. Enquanto está a chocar, não conta. Enquanto há um slot
+   vago, não conta — há um botão para carregar, e o ovo espera.
+
+   Sete dias é o que o jogador tem para abrir espaço: vender um avatar,
+   perder um, comprar um slot. É tempo que se usa a decidir, e não a
+   correr. */
+const REPR_SEM_NINHO_MS = 7 * 86400000;
 
 /* Quanto os dois pais valem, de 0 (nenhum cuidado) a 1 (impecáveis).
 
@@ -245,8 +256,10 @@ function cruzar(mae, pai, opts) {
       postoEm: agora,
       // Tempo de choco: o ovo existe, mas ainda não se abre.
       chocaEm: agora + tempoDeChoco(femea, macho),
-      expiraEm: agora + (REPR_VALIDADE_DIAS
-                 + Math.round(REPR_VALIDADE_BONUS * _reprCuidado(femea, macho))) * 86400000,
+      /* E mais nada sobre o fim dele. O apodrecer não se decide aqui
+         porque não depende deste momento: depende de haver ou não um
+         slot vago no dia em que ele ficar pronto, que é coisa que
+         ninguém sabe hoje. Ver ovoSemNinho, aqui em baixo. */
     },
   };
 }
@@ -262,8 +275,37 @@ function faltaParaChocar(ovo, agora) {
   return ovo.chocaEm - (agora || Date.now());
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O OVO SEM NINHO
+
+   `semNinhoDesde` é posto pelo relógio do jogo no instante em que o ovo
+   fica pronto e não há slot para ele (js/gametick.js), e é LIMPO assim
+   que houver um. Não se acumula: um ovo que esteve preso três dias e
+   volta a ter sítio recomeça do zero se voltar a ficar sem.
+
+   Podia ser derivado — sete dias a contar do chocaEm e pronto, sem
+   campo nenhum — e essa seria a versão mais arrumada. Não é a que foi
+   pedida, e a diferença importa: assim o ovo só corre perigo enquanto
+   está mesmo preso, e um jogador com espaço de sobra nunca vê um
+   relógio a andar contra ele.
+   ═══════════════════════════════════════════════════════════════════ */
+function ovoSemNinho(ovo) {
+  return !!(ovo && ovo.semNinhoDesde);
+}
+
+function ovoPodre(ovo, agora) {
+  if (!ovo || !ovo.semNinhoDesde) return false;
+  return (agora || Date.now()) >= ovo.semNinhoDesde + REPR_SEM_NINHO_MS;
+}
+
+function faltaParaApodrecer(ovo, agora) {
+  if (!ovo || !ovo.semNinhoDesde) return Infinity;
+  return Math.max(0, ovo.semNinhoDesde + REPR_SEM_NINHO_MS - (agora || Date.now()));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { podeCruzar, cruzarDna, cruzar, ovoPronto, faltaParaChocar,
+                     ovoSemNinho, ovoPodre, faltaParaApodrecer,
                      tempoDeChoco, _reprCuidado, _reprRetrato,
-                     REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS, REPR_VALIDADE_DIAS };
+                     REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS, REPR_SEM_NINHO_MS };
 }

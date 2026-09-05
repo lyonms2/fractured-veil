@@ -96,7 +96,7 @@ function burnEgg(id) {
   const ovo = eggsInInventory[idx];
 
   // Ovo apodrecido — descarta sem confirmação
-  if(Date.now() > ovo.expiraEm) {
+  if(typeof ovoPodre === 'function' && ovoPodre(ovo)) {
     eggsInInventory.splice(idx, 1);
     addLog(t('egg.log.rotten_discarded'), 'bad');
     renderEggInventory(); updateResourceUI(); scheduleSave();
@@ -149,19 +149,30 @@ function _doBurnComum(id, moedas) {
   renderEggInventory(); updateResourceUI(); scheduleSave();
 }
 
+/* O tempo curto, em duas escalas.
 
+   Servia só o choco, que é de 24 a 48 horas — e aí "30h00" é melhor do
+   que "1d 6h", porque quem espera por um ovo conta horas. Passou a
+   servir também o apodrecer, que é de sete dias, e "168h00" não é um
+   número que alguém leia.
 
-// Quanto falta, em horas e minutos, dito curto.
+   O corte está nas 48 horas: até lá horas, acima disso dias. É o mesmo
+   limite do choco, portanto nenhum ovo por chocar cai do outro lado. */
 function _tempoCurto(ms) {
-  const m = Math.max(0, Math.ceil(ms / 60000));
-  const h = Math.floor(m / 60);
-  return h > 0 ? (h + 'h' + String(m % 60).padStart(2, '0')) : (m + 'min');
+  const totalMin = Math.max(0, Math.round(ms / 60000));
+  const h = Math.floor(totalMin / 60);
+  if (h >= 48) {
+    const d = Math.floor(h / 24), resto = h % 24;
+    return d + 'd' + (resto ? ' ' + resto + 'h' : '');
+  }
+  return h > 0 ? (h + 'h' + String(totalMin % 60).padStart(2, '0')) : (totalMin + 'min');
 }
+
 
 function hatchEggFromInventory(id) {
   const ovo = eggsInInventory.find(e => e.id === id);
   if(!ovo) return;
-  if(Date.now() > ovo.expiraEm) {
+  if(typeof ovoPodre === 'function' && ovoPodre(ovo)) {
     addLog(t('egg.log.rotten_hatch'), 'bad');
     return;
   }
@@ -175,6 +186,15 @@ function hatchEggFromInventory(id) {
      tiveram espera. */
   if(typeof ovoPronto === 'function' && !ovoPronto(ovo)) {
     addLog(t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo)) }), 'bad');
+    return;
+  }
+
+  /* E O NINHO, pela mesma razão. A lista já não mostra o botão quando
+     não há slot, mas a lista é quem PEDE — e este jogo já pagou quatro
+     vezes por pôr o limite só desse lado. */
+  if(findTargetSlot() === -1) {
+    addLog(t('egg.hatch.slots_full'), 'bad');
+    if(typeof showToast === 'function') showToast(t('egg.hatch.slots_full'), 'bad');
     return;
   }
 
@@ -619,28 +639,73 @@ function renderEggInventory() {
     return;
   }
 
-  const rarColor = { 'Comum':'#a78bfa', 'Raro':'#5ab4e8', 'Lendário':'#e8a030' };
+  /* ── OS QUATRO ESTADOS DE UM OVO ──
+
+     A lista mostrava um só: um relógio a contar para a validade, igual
+     para todos, e um botão de chocar sempre aceso. Um ovo por fazer e
+     um ovo preso sem slot liam-se da mesma maneira.
+
+     São quatro, e cada um tem uma coisa diferente a dizer ao jogador:
+
+       A CHOCAR    falta tempo. Nada a fazer senão esperar.
+       PRONTO      há ninho: o botão abre, e é a única coisa que
+                   interessa naquele cartão.
+       SEM NINHO   está pronto e não tem para onde ir. Não choca, e o
+                   contador dos sete dias anda. O que se pede aqui não
+                   é um clique — é abrir espaço.
+       PODRE       acabou. Fica um botão só, e é o de deitar fora.
+
+     A ordem da lista segue a urgência e não a raridade — que já não
+     existe: primeiro os que estão a morrer, depois os prontos, e por
+     fim os que ainda se estão a fazer. */
+  const _agora = Date.now();
+  const _haNinho = findTargetSlot() !== -1;
+  const _estado = (ovo) => {
+    if (typeof ovoPodre === 'function' && ovoPodre(ovo, _agora)) return 'podre';
+    if (typeof ovoPronto === 'function' && !ovoPronto(ovo, _agora)) return 'chocando';
+    return _haNinho ? 'pronto' : 'sem-ninho';
+  };
+  const _ORDEM = { podre: 0, 'sem-ninho': 1, pronto: 2, chocando: 3 };
 
   const sorted = [...eggsInInventory].sort((a, b) => {
-    const rOrd = { 'Lendário':0, 'Raro':1, 'Comum':2 };
-    if(rOrd[a.raridade] !== rOrd[b.raridade]) return rOrd[a.raridade] - rOrd[b.raridade];
-    return a.expiraEm - b.expiraEm;
+    const ea = _estado(a), eb = _estado(b);
+    if (_ORDEM[ea] !== _ORDEM[eb]) return _ORDEM[ea] - _ORDEM[eb];
+    // Dentro do mesmo estado, o mais aflito primeiro.
+    if (ea === 'sem-ninho') return faltaParaApodrecer(a, _agora) - faltaParaApodrecer(b, _agora);
+    if (ea === 'chocando')  return faltaParaChocar(a, _agora)    - faltaParaChocar(b, _agora);
+    return (a.postoEm || a.id || 0) - (b.postoEm || b.id || 0);
   });
 
   list.innerHTML = sorted.map(ovo => {
-    const now      = Date.now();
-    const expired  = now > ovo.expiraEm;
-    const msLeft   = ovo.expiraEm - now;
-    const daysLeft = Math.max(0, Math.floor(msLeft / 86400000));
-    const hoursLeft= Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
-    const urgent   = !expired && msLeft < 86400000;
-    const timeStr  = expired
-      ? t('egg.inv.rotten')
-      : daysLeft > 0 ? t('egg.inv.time_dh', {d: daysLeft, h: hoursLeft})
-      : t('egg.inv.time_h', {h: hoursLeft});
-    // Ainda a fazer-se: não abre, e diz quanto falta.
-    const porChocar = typeof ovoPronto === 'function' && !ovoPronto(ovo);
-    const cls = 'egg-item' + (expired ? ' rotten' : '') + (urgent ? ' urgent' : '') + (porChocar ? ' por-chocar' : '');
+    const est = _estado(ovo);
+    // Menos de um dia para apodrecer é o único caso que grita.
+    const aflito = est === 'sem-ninho' && faltaParaApodrecer(ovo, _agora) < 86400000;
+    const cls = 'egg-item'
+      + (est === 'podre'      ? ' rotten'     : '')
+      + (est === 'sem-ninho'  ? ' sem-ninho'  : '')
+      + (aflito               ? ' urgent'     : '')
+      + (est === 'chocando'   ? ' por-chocar' : '');
+
+    let linhaEstado = '';
+    if (est === 'chocando')
+      linhaEstado = `<div class="egg-choco">⏳ ${t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo, _agora)) })}</div>`;
+    else if (est === 'pronto')
+      linhaEstado = `<div class="egg-pronto">🐣 ${t('egg.inv.pronto')}</div>`;
+    else if (est === 'sem-ninho')
+      linhaEstado = `<div class="egg-sem-ninho">${t('egg.inv.sem_ninho')}</div>
+        <div class="egg-time ${aflito ? 'egg-time-urgent' : ''}">${
+          t('egg.inv.apodrece_em', { t: _tempoCurto(faltaParaApodrecer(ovo, _agora)) })}</div>`;
+    else
+      linhaEstado = `<div class="egg-time egg-time-urgent">${t('egg.inv.rotten')}</div>`;
+
+    /* Um ovo que ainda não é seu não se queima por engano: o botão de
+       deitar fora só aparece quando ele está preso ou perdido. Nos
+       outros dois estados a única acção possível é esperar ou chocar. */
+    const acoes = est === 'pronto'
+      ? `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>`
+      : est === 'chocando'
+      ? ''
+      : `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`;
 
     return `<div class="${cls}">
       <div class="egg-mini-svg">${eggMiniSVG('Comum', 38)}</div>
@@ -648,16 +713,9 @@ function renderEggInventory() {
         <div class="egg-name" style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</div>
         ${ovo.maeNome || ovo.paiNome ? `<div class="egg-pais">${
           t('egg.filho_de', { mae: esc(ovo.maeNome || '?'), pai: esc(ovo.paiNome || '?') })}</div>` : ''}
-        <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>
-        ${porChocar ? `<div class="egg-choco">⏳ ${t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo)) })}</div>` : ''}
+        ${linhaEstado}
       </div>
-      <div class="egg-actions">
-        ${expired
-          ? `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`
-          : `<button class="egg-btn hatch"${porChocar ? ' disabled' : ''} onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>
-             <button class="egg-btn burn" onclick="burnEgg(${ovo.id})">🔥</button>`
-        }
-      </div>
+      <div class="egg-actions">${acoes}</div>
     </div>`;
   }).join('');
 }

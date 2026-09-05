@@ -277,6 +277,43 @@ function updateAvatarSize() {
   if(sleeping) positionSleepEyes();
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   A CHOCADEIRA
+
+   Um ovo pronto que não tem slot para onde ir começa a morrer, e são
+   sete dias (REPR_SEM_NINHO_MS, em js/reproducao.js). Quem carimba a
+   hora é este relógio e não a tela: se fosse a tela, o ovo só começava
+   a apodrecer quando o jogador abrisse a chocadeira — e um ovo que se
+   safa por ninguém olhar para ele não é uma regra, é um descuido.
+
+   O carimbo LIMPA-SE quando volta a haver ninho. É de propósito: o
+   contador existe para o ovo que está preso, e um ovo com sítio para
+   onde ir não está preso. Quem abrir espaço a tempo desfaz o problema
+   por inteiro, e não só o adia.
+
+   Escreve-se uma vez em cada transição, e não a cada segundo — daí o
+   `mudou`. Um scheduleSave por tick era um save por segundo.
+═══════════════════════════════════════════════════════════════════ */
+function _tickChocadeira() {
+  if (typeof eggsInInventory === 'undefined' || !eggsInInventory.length) return;
+  if (typeof ovoPronto !== 'function' || typeof findTargetSlot !== 'function') return;
+
+  const haNinho = findTargetSlot() !== -1;
+  const agora = Date.now();
+  let mudou = false;
+
+  for (const ovo of eggsInInventory) {
+    const preso = ovoPronto(ovo, agora) && !haNinho;
+    if (preso && !ovo.semNinhoDesde)  { ovo.semNinhoDesde = agora; mudou = true; }
+    if (!preso && ovo.semNinhoDesde)  { delete ovo.semNinhoDesde;  mudou = true; }
+  }
+
+  if (mudou) {
+    if (typeof renderEggInventory === 'function') renderEggInventory();
+    if (typeof scheduleSave === 'function') scheduleSave();
+  }
+}
+
 function updateDirtyVisuals() {
   const screen  = document.querySelector('.screen');
   const wrap    = document.getElementById('creatureWrap');
@@ -494,6 +531,8 @@ function gameTick() {
     if(avatar) avatar.bornAt = bornAt;
     scheduleSave();
   }
+
+  _tickChocadeira();
 
   if(!hatched || dead || !avatar) return;
 
