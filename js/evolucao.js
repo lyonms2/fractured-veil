@@ -63,8 +63,8 @@ function _evoFichas() {
   const nvAntes = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
   try {
     return {
-      antes: fichaDeAvatar(avatar.seed, avatar.raridade, nvAntes, avatar.nascimento),
-      agora: fichaDeAvatar(avatar.seed, avatar.raridade, nivel, avatar.nascimento),
+      antes: fichaDeAvatar({ ...avatar, nivel: nvAntes }),
+      agora: fichaDeAvatar({ ...avatar, nivel }),
     };
   } catch (_) { return null; }
 }
@@ -248,6 +248,11 @@ function _evoConcluir(faseNova) {
   if (typeof showBubble === 'function') showBubble(t('gt.phase.bub', { fase: FASES[faseNova] }));
   if (typeof saveToFirebase === 'function') saveToFirebase();
   atualizarChamadaEvolucao();
+  /* A evolução que acaba de terminar pode ter sido a que o fez ANCIÃO.
+     Sem esta linha o convite da escolha só aparecia no tick seguinte, e
+     entre um e outro havia um momento em que nada dizia ao jogador que
+     tinha uma decisão à espera. */
+  if (typeof atualizarChamadaEscolha === 'function') atualizarChamadaEscolha();
 }
 
 // Partículas a convergir para o centro. O playPhaseUp fazia-as explodir

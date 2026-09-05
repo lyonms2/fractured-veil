@@ -33,7 +33,8 @@ const M = new Function('t',
   `return { gerarSVG, registarNascimento, fichaDeAvatar, pontosDoAvatar,
             magiasDoAvatar, repertorioCompleto, degrauDoSlot, MAGIA_SLOTS, MAGIA_ESCADA,
             raridadeDaFase, raridadeDosPontos, grauDaRaridade, faseDoSlot, raridadeDoSlot,
-            sincronizarRaridade, podeSerVendido, RARIDADE_POR_FASE };`
+            sincronizarRaridade, podeSerVendido, RARIDADE_POR_FASE,
+            podeEscolherAnciao, FICHA_ESCOLHAS, FICHA_PONTOS_MAX, sortearVantagens };`
 )(x => x);
 
 let passou = 0, falhou = 0;
@@ -486,12 +487,100 @@ titulo('A VIRTUDE E O DEFEITO NÃO TROCAM');
       const f = M.fichaDeAvatar(seed, 'Comum', nv);
       const v = f.vantagem ? f.vantagem.id : null;
       const d = f.desvantagem ? f.desvantagem.id : null;
-      if (antV !== null) { n++; if (v !== antV || d !== antD) trocou++; }
-      antV = v; antD = d;
+      /* Compara-se com o nível anterior, mas só quando havia lá alguma
+         coisa. A carta que ainda NÃO apareceu é nula, e trocar de nulo
+         para a virtude do ADULTO é a fase a abrir e não uma troca — era
+         o que este teste tinha de saber distinguir. */
+      if (antV !== null && v !== null) { n++; if (v !== antV) trocou++; }
+      if (antD !== null && d !== null) { n++; if (d !== antD) trocou++; }
+      if (v !== null) antV = v;
+      if (d !== null) antD = d;
     }
   }
-  ok(trocou === 0, 'a virtude e o defeito são os mesmos do berço à lenda',
-     n.toLocaleString('pt-BR') + ' subidas');
+  ok(trocou === 0, 'a virtude e o defeito, uma vez vistos, nunca mais trocam',
+     n.toLocaleString('pt-BR') + ' comparações');
+}
+
+// ══════════════════════════════════════════════════════════════════
+titulo('A ESCOLHA DO ANCIÃO');
+
+/* A escolha custa nos dois lados, e essa é a afirmação que mais depressa
+   se perde: basta alguém achar que "tirar o defeito" devia ser de graça e
+   o jogo deixa de ter uma decisão para ter um prémio. */
+{
+  const NV_ANCIAO = 27, NV_ADULTO = 11;
+  const f = (nv, esc) => M.fichaDeAvatar(7, 'Comum', nv, null, esc);
+
+  const base = f(NV_ANCIAO, null);
+  const comV = f(NV_ANCIAO, 'vantagem');
+  const semD = f(NV_ANCIAO, 'semDefeito');
+
+  ok(!!base.vantagemOferta && base.vantagemOferta.id !== base.vantagem.id,
+     'há sempre uma segunda virtude à espera, e é outra',
+     base.vantagem.id + ' + ' + (base.vantagemOferta || {}).id);
+
+  ok(comV.vantagem2 && comV.vantagem2.id === base.vantagemOferta.id && !!comV.desvantagem,
+     'escolher a virtude dá a segunda e mantém o defeito',
+     (comV.vantagem2 || {}).id + ' · defeito ' + ((comV.desvantagem || {}).id || 'nenhum'));
+
+  ok(!semD.desvantagem && !semD.vantagem2,
+     'escolher sem defeito tira-o, e não dá a segunda virtude',
+     'defeito ' + ((semD.desvantagem || {}).id || 'nenhum'));
+
+  ok(comV.pontos === base.pontos - base.vantagemOferta.custo,
+     'a segunda virtude paga o preço dela',
+     base.pontos + ' − ' + base.vantagemOferta.custo + ' = ' + comV.pontos);
+
+  /* O custo de uma desvantagem é NEGATIVO porque ela dá pontos: somar esse
+     número é tirá-los. Já escrevi isto ao contrário uma vez. */
+  ok(semD.pontos === base.pontos + base.desvantagem.custo,
+     'e tirar o defeito abre mão dos pontos que ele dava',
+     base.pontos + ' + (' + base.desvantagem.custo + ') = ' + semD.pontos);
+
+  ok(comV.pontos < base.pontos && semD.pontos < base.pontos,
+     'as duas descem o orçamento — nenhuma é de graça',
+     'hoje ' + base.pontos + ' → virtude ' + comV.pontos + ' · sem defeito ' + semD.pontos);
+
+  // Antes do ANCIÃO não vale, mesmo que alguém a escreva no save.
+  const cedo = M.fichaDeAvatar(7, 'Comum', NV_ADULTO, null, 'vantagem');
+  const cedoLimpo = M.fichaDeAvatar(7, 'Comum', NV_ADULTO, null, null);
+  ok(!cedo.vantagem2 && cedo.pontos === cedoLimpo.pontos,
+     'antes do ANCIÃO a escolha não vale nada',
+     'nv' + NV_ADULTO + ' → ' + cedo.pontos + ' pontos, igual a quem não escolheu');
+
+  // Um valor estranho também não.
+  const lixo = M.fichaDeAvatar(7, 'Comum', NV_ANCIAO, null, 'as_duas');
+  ok(!lixo.vantagem2 && !!lixo.desvantagem && lixo.pontos === base.pontos,
+     'e um valor que não existe não abre porta nenhuma',
+     "'as_duas' → " + lixo.pontos + ' pontos, sem segunda virtude');
+
+  // A guarda de quem FAZ.
+  const slot = nv => ({ seed: 7, raridade: 'Comum', nivel: nv });
+  ok(!M.podeEscolherAnciao(slot(NV_ADULTO)) && M.podeEscolherAnciao(slot(NV_ANCIAO)),
+     'só pode escolher quem lá chegou',
+     'nv' + NV_ADULTO + ' não · nv' + NV_ANCIAO + ' sim');
+  ok(!M.podeEscolherAnciao({ ...slot(NV_ANCIAO), escolhaAnciao: 'vantagem' })
+  && !M.podeEscolherAnciao({ ...slot(NV_ANCIAO), dead: true }),
+     'e só uma vez, e nunca depois de morto',
+     'já escolheu: não · morto: não');
+}
+
+/* A segunda virtude sorteia-se SEMPRE, mesmo para quem nunca chegará a
+   ANCIÃO. Se só saísse ao chegar lá, a fila de sorteios mudava de
+   comprimento nesse dia e tudo o que vem depois dela caía noutro sítio —
+   o avatar mudava de virtude, de defeito e de magias ao subir de nível. */
+{
+  let semSegunda = 0, igualAPrimeira = 0, n = 0;
+  for (let seed = 1; seed <= 1200; seed++) {
+    const vd = M.sortearVantagens(seed, 12, null);
+    if (!vd) continue;
+    n++;
+    if (!vd.vantagem2) semSegunda++;
+    else if (vd.vantagem2.id === vd.vantagem.id) igualAPrimeira++;
+  }
+  ok(semSegunda === 0 && igualAPrimeira === 0,
+     'toda a gente traz a segunda virtude sorteada, e nunca repetida',
+     n.toLocaleString('pt-BR') + ' avatares · ' + semSegunda + ' sem · ' + igualAPrimeira + ' repetidas');
 }
 
 console.log('');

@@ -381,7 +381,7 @@ function magiasDoAvatar(ficha) {
      chegaria a alcançar. */
   const _NV_FIM = (typeof FICHA_NIVEL_FINAL !== 'undefined') ? FICHA_NIVEL_FINAL : 51;
   const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < _NV_FIM)
-    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, _NV_FIM, ficha.nascimento)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, _NV_FIM, ficha.nascimento, ficha.escolha)
     : ficha;
   const tectoFinal = _f35.H * 5;
 
@@ -457,15 +457,20 @@ function magiasDoAvatar(ficha) {
    é uma surpresa que ele nunca vai procurar. */
 function repertorioCompleto(ficha) {
   if (!ficha) return {};
-  /* Pergunta-se à ficha do nível 35, e não a uma cópia desta com o nível
-     trocado à mão: o sorteio das magias filtra pelo tecto H×5 do nível
-     35, e uma cópia com nivel:35 mas com a Habilidade de hoje dava outro
-     tecto — e portanto outras magias. Seria uma promessa errada. */
+  /* Pergunta-se à ficha do ÚLTIMO nível, e não a uma cópia desta com o
+     nível trocado à mão: o sorteio das magias filtra pelo tecto H×5 desse
+     nível, e uma cópia com o nível trocado mas com a Habilidade de hoje
+     dava outro tecto — e portanto outras magias. Seria uma promessa
+     errada.
+
+     O 35 estava cravado aqui como estava no tecto acima, e era o fim da
+     escada antiga. O fim agora é o nível 51. */
+  const _NV_MAX = (typeof FICHA_NIVEL_FINAL !== 'undefined') ? FICHA_NIVEL_FINAL : 51;
   if (typeof fichaDeAvatar !== 'function') return magiasDoAvatar(ficha);
   /* A certidão viaja também nesta. Sem ela, a ficha do nível 35
      construída aqui não teria índole — e a promessa que a ficha faz ao
      jogador saía diferente das magias que ele vai mesmo ter. */
-  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', 35, ficha.nascimento));
+  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', _NV_MAX, ficha.nascimento, ficha.escolha));
 }
 
 /* Quando é que este lugar desperta? Devolve o degrau, para a ficha

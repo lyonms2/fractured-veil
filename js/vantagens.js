@@ -242,12 +242,33 @@ function sortearVantagens(seed, pontosBase, indole) {
     const pool = c.papelQueBate ? VD_PAPEIS_QUE_BATEM : papeis;
     return pool[rnd(0, pool.length - 1)];
   };
+  /* ── A SEGUNDA VIRTUDE, PARA QUEM CHEGAR A ANCIÃO ──
+
+     Sorteia-se SEMPRE, e não só quando o avatar lá chega. É a mesma
+     razão pela qual o par de cima já se sorteia desde o berço: se
+     saísse só ao nível 27, a fila de sorteios mudava de comprimento
+     nesse dia e tudo o que vem a seguir dela caía noutro sítio.
+
+     Não é escolhida pelo jogador. Se fosse, todos escolhiam a mesma e o
+     avatar deixava de ser dele para ser uma build — o que se escolhe é
+     TER uma segunda ou não ter defeito, e não qual. O feitio do DNA
+     inclina esta como inclinou a primeira.
+
+     E é diferente da primeira, por construção: sai da lista sem ela. */
+  const idsV2 = idsV.filter(k => k !== idV);
+  const idV2  = _vdEscolher(idsV2, VANTAGENS, indole, rnd) || null;
+  const vant2 = idV2 ? VANTAGENS[idV2] : null;
+
   const papelV = sortearPapel(vant);
   const papelD = sortearPapel(desv);
+  const papelV2 = vant2 ? sortearPapel(vant2) : null;
 
   return {
     vantagem:    { id: idV, ...vant, papel: papelV },
     desvantagem: { id: idD, ...desv, papel: papelD },
+    // A segunda, à espera de que o ANCIÃO a queira. Fica aqui mesmo que
+    // ele nunca chegue lá — quem a lê é a ficha, e só se for escolhida.
+    vantagem2:   vant2 ? { id: idV2, ...vant2, papel: papelV2 } : null,
     /* Nunca abaixo de UM, e o um não é arbitrário: é o piso da
        Resistência (_pisoDeR, em js/ficha-3dt.js), que sai desta mesma
        bolsa e não é oferecido por fora.

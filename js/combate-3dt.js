@@ -57,6 +57,13 @@ function _c3criar(slot, rng) {
   return {
     ficha: f, magias: m,
     vant: f.vantagem || null, desv: f.desvantagem || null,
+    /* AS VIRTUDES PODEM SER DUAS. O ANCIÃO escolhe entre ganhar uma
+       segunda ou deixar de ter defeito (ver a escolha, em
+       js/ficha-3dt.js), e a partir daí este avatar traz duas.
+
+       O `vant` fica: as ferramentas montam combatentes à mão com ele, e
+       o _c3vant aceita as duas formas. */
+    vants: [f.vantagem, f.vantagem2].filter(Boolean),
     nome: (slot.nome || 'Avatar').split(',')[0].trim(),
     pv: f.pv, pvMax: f.pv,
     pm: f.pm, pmMax: f.pm,
@@ -106,6 +113,28 @@ function _c3criar(slot, rng) {
     cegoEsquiva: 0,       // cegueira: −N na Habilidade para esquivar
     vorpal: false,        // o crítico pode decapitar
   };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   A VIRTUDE QUE TEM ESTA PROPRIEDADE
+
+   Lia-se `c.vant.armaduraDobra`, e isso bastava enquanto a virtude era
+   uma. O ANCIÃO pode ter duas, e a segunda ficava invisível ao motor
+   inteiro — vinte e uma leituras a olhar sempre para a primeira.
+
+   Devolve a virtude QUE TEM a propriedade, e não a propriedade: metade
+   destas regras precisa do par junto — a Couraça precisa da bandeira E
+   do papel dela, o Reflexo precisa da bandeira E do preço em PM. Devolver
+   só o valor separava-os e deixava um a responder pelo outro.
+
+   Aceita as duas formas de combatente: a lista, e o `vant` solto que as
+   ferramentas montam à mão. Uma porta só, e as duas entram por ela.
+   ═══════════════════════════════════════════════════════════════════ */
+function _c3vant(c, chave) {
+  if (!c) return null;
+  const lista = (c.vants && c.vants.length) ? c.vants : (c.vant ? [c.vant] : []);
+  for (const v of lista) if (v && v[chave]) return v;
+  return null;
 }
 
 // Característica efetiva, já com penalidades
@@ -171,12 +200,14 @@ function _c3resistirDetalhe(def, atk, ehVeneno) {
     v += atk.desv.inimigoGanhaR; partes.push('+' + atk.desv.inimigoGanhaR);
   }
   // Alma Rija: +2 contra magia — mas o manual exclui veneno de propósito
-  if (def.vant && def.vant.bonusTesteMagia && !(ehVeneno && def.vant.excetoVeneno)) {
-    v += def.vant.bonusTesteMagia; partes.push('+' + def.vant.bonusTesteMagia);
+  const _vAlma = _c3vant(def, 'bonusTesteMagia');
+  if (_vAlma && !(ehVeneno && _vAlma.excetoVeneno)) {
+    v += _vAlma.bonusTesteMagia; partes.push('+' + _vAlma.bonusTesteMagia);
   }
   // Magia Perfurante: quem lança torna-a mais difícil de resistir
-  if (atk && atk.vant && atk.vant.penalidadeTesteAlvo) {
-    v -= atk.vant.penalidadeTesteAlvo; partes.push('−' + atk.vant.penalidadeTesteAlvo);
+  const _vPerf = _c3vant(atk, 'penalidadeTesteAlvo');
+  if (_vPerf) {
+    v -= _vPerf.penalidadeTesteAlvo; partes.push('−' + _vPerf.penalidadeTesteAlvo);
   }
   return { valor: v, partes };
 }
@@ -221,7 +252,8 @@ function _c3teste(valor, rng) {
 // ═══════════════════════════════════════════════════════════════════
 // O Passo Rápido soma 1 à Habilidade só para esquivar
 function _c3bonusEsquiva(def) {
-  return ((def.vant && def.vant.bonusEsquiva) ? def.vant.bonusEsquiva : 0)
+  const v = _c3vant(def, 'bonusEsquiva');
+  return (v ? v.bonusEsquiva : 0)
        + (def.bonusEsquiva || 0);        // corrente de ar sustentada
 }
 
@@ -365,7 +397,8 @@ function _c3fd(def, rng, opts) {
      de gaveta nenhuma, e a Casca de Helena precisa de saber se é magia
      sem lhe interessar de que gaveta veio. */
   if (opts.papel) {
-    if (def.vant && def.vant.armaduraDobra && def.vant.papel === opts.papel) A *= 2;
+    const _vCour = _c3vant(def, 'armaduraDobra');
+    if (_vCour && _vCour.papel === opts.papel) A *= 2;
     if (def.desv && def.desv.armaduraZero  && def.desv.papel === opts.papel) A = 0;
   }
   // A Casca de Helena dobra a Armadura contra tudo o que não seja magia
@@ -403,9 +436,10 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   // conta como esquiva — não se pode usar mais vezes por turno do que
   // a própria Habilidade permite.
   let reflexo = 0;
-  if (def.vant && def.vant.habilidadeDobra && def.pm >= def.vant.pm
+  const _vRefl = _c3vant(def, 'habilidadeDobra');
+  if (_vRefl && def.pm >= _vRefl.pm
       && def.esquivas <= _c3(def, 'H') && !def.furia) {
-    def.pm -= def.vant.pm; def.esquivas++;
+    def.pm -= _vRefl.pm; def.esquivas++;
     reflexo = _c3(def, 'H');            // a H a contar a dobrar
     ev.reflexo = true;
   }
@@ -424,7 +458,9 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   const dano = Math.max(0, fa.total - totalFD);
 
   // O Reflexo Espelhado devolve o golpe se a defesa o segurou por inteiro
-  if (reflexo && dano === 0 && def.vant.devolve) {
+  // O `devolve` é da MESMA virtude que deu o reflexo, e não de outra
+  // qualquer: é o Reflexo Espelhado a fazer as duas coisas.
+  if (reflexo && dano === 0 && _vRefl && _vRefl.devolve) {
     const volta = Math.max(0, fa.total - (_c3(atk, 'H') + _c3aDef(atk, def)));
     atk.pv = Math.max(0, atk.pv - volta);
     if (atk.pv === 0) { atk.vivo = false; ev.matouAtacante = true; }
@@ -708,7 +744,8 @@ function _c3custoMagia(c, magia, pm) {
   if (!magia) return 0;
   const papel = papelDaMagia(magia);
   let custo = pm;
-  if (c.vant && c.vant.metadeCustoPapel && papel && c.vant.papel === papel)
+  const _vAfin = _c3vant(c, 'metadeCustoPapel');
+  if (_vAfin && papel && _vAfin.papel === papel)
     custo = Math.ceil(custo / 2);
 
   /* O dobro: a assombração cobra sempre, a veia travada só na gaveta que
@@ -733,16 +770,18 @@ function _c3custoMagia(c, magia, pm) {
 // corpo continua precisando dele.
 // ═══════════════════════════════════════════════════════════════════
 function _c3pmDisponivel(c) {
-  if (!(c.vant && c.vant.pvComoPM)) return c.pm;
-  return c.pm + Math.floor(Math.max(0, c.pv - 1) / c.vant.pvComoPM);
+  const v = _c3vant(c, 'pvComoPM');
+  if (!v) return c.pm;
+  return c.pm + Math.floor(Math.max(0, c.pv - 1) / v.pvComoPM);
 }
 
 function _c3pagar(c, custo, ev) {
   const daBolsa = Math.min(c.pm, custo);
   c.pm -= daBolsa;
   const falta = custo - daBolsa;
-  if (falta > 0 && c.vant && c.vant.pvComoPM) {
-    const pv = Math.min(Math.max(0, c.pv - 1), falta * c.vant.pvComoPM);
+  const _vSang = _c3vant(c, 'pvComoPM');
+  if (falta > 0 && _vSang) {
+    const pv = Math.min(Math.max(0, c.pv - 1), falta * _vSang.pvComoPM);
     c.pv -= pv;
     if (ev) ev.pagouComSangue = pv;
   }
@@ -779,8 +818,8 @@ function _c3sabeDoPapel(c, papel) {
 function _c3valeTrocar(eu, inimigo, banco) {
   const feridoPelaGaveta = !!(eu.desv && eu.desv.armaduraZero
                               && _c3sabeDoPapel(inimigo, eu.desv.papel));
-  const eleResisteMe     = !!(inimigo.vant && inimigo.vant.armaduraDobra
-                              && _c3sabeDoPapel(eu, inimigo.vant.papel));
+  const _vDele = _c3vant(inimigo, 'armaduraDobra');
+  const eleResisteMe     = !!(_vDele && _c3sabeDoPapel(eu, _vDele.papel));
   const quaseACair       = eu.pv <= eu.pvMax * 0.25;
   if (!feridoPelaGaveta && !eleResisteMe && !quaseACair) return -1;
 
@@ -791,7 +830,8 @@ function _c3valeTrocar(eu, inimigo, banco) {
     const ferido = !!(o.desv && o.desv.armaduraZero && _c3sabeDoPapel(inimigo, o.desv.papel));
     // E a couraça DELE, se o inimigo souber lançar da gaveta que ela
     // trava: isso conta a favor de quem está no banco, não contra.
-    const resiste = !!(o.vant && o.vant.armaduraDobra && _c3sabeDoPapel(inimigo, o.vant.papel));
+    const _vSeu = _c3vant(o, 'armaduraDobra');
+    const resiste = !!(_vSeu && _c3sabeDoPapel(inimigo, _vSeu.papel));
     const nota = (o.pv / o.pvMax) + (ferido ? -1 : 0) + (resiste ? 0.6 : 0);
     if (nota > melhorNota) { melhorNota = nota; melhor = i; }
   });
@@ -832,7 +872,10 @@ function _c3aliadoMaisFerido(equipa) {
 
 function politica3dt(eu, inimigo, campo) {
   const m = eu.magias || {};
-  const v = eu.vant;
+  /* Cada regra pergunta pela virtude QUE FAZ AQUILO, e não pela
+     primeira. Um ancião com duas virtudes tinha a segunda invisível à
+     política — e a política é quem decide o que ele faz no turno. */
+  const vd = (chave) => _c3vant(eu, chave);
 
   // ── O foco caiu: apanhá-lo custa o turno, mas sem ele não há magia ──
   // Só vale a pena para quem vive de magia; um avatar que bate melhor
@@ -854,25 +897,29 @@ function politica3dt(eu, inimigo, campo) {
   // o turno inteiro, portanto usá-lo com a vida quase cheia é oferecer
   // um turno ao adversário.
   // E só há um por batalha: gasto, escolhê-lo era gastar o turno a olhar.
-  if (v && v.curaTudo && eu.pm >= v.pm && eu.pv < eu.pvMax * 0.35
-      && (eu.folegoUsado || 0) < ((v.maxUsos != null) ? v.maxUsos : Infinity)) {
-    return { vantagem: v, pm: v.pm };
+  const _vFol = vd('curaTudo');
+  if (_vFol && eu.pm >= _vFol.pm && eu.pv < eu.pvMax * 0.35
+      && (eu.folegoUsado || 0) < ((_vFol.maxUsos != null) ? _vFol.maxUsos : Infinity)) {
+    return { vantagem: _vFol, pm: _vFol.pm };
   }
   // A Reserva Oculta sobe uma característica; vale a pena cedo, para o
   // bónus durar o combate todo.
-  if (v && v.subirCarac && eu.pm >= v.pm && (eu.reservaGasta || 0) < v.maxTotal) {
-    return { vantagem: v, pm: v.pm };
+  const _vRes = vd('subirCarac');
+  if (_vRes && eu.pm >= _vRes.pm && (eu.reservaGasta || 0) < _vRes.maxTotal) {
+    return { vantagem: _vRes, pm: _vRes.pm };
   }
   // O Toque Paralisante não fere: tira o adversário de ação.
-  if (v && v.paralisa && eu.pm >= v.pm && !inimigo.indefeso) {
-    return { vantagem: v, pm: v.pm };
+  const _vPar = vd('paralisa');
+  if (_vPar && eu.pm >= _vPar.pm && !inimigo.indefeso) {
+    return { vantagem: _vPar, pm: _vPar.pm };
   }
 
   // ── Toque de Energia: só quando bate mais forte do que o murro ──
   // FA do toque = A + 1d + PM; FA do murro = H + F + 1d. Compara-se o
   // que é comparável e escolhe-se o maior, senão a vantagem ficava a
   // ser usada por avatares a quem não serve.
-  if (v && v.toqueEnergia) {
+  const _vToq = vd('toqueEnergia');
+  if (_vToq) {
     const pmToque = Math.min(_c3(eu, 'A'), Math.max(0, bolsa - 1));
     if (_c3(eu, 'A') + pmToque > _c3(eu, 'H') + _c3(eu, 'F'))
       return { toque: true, toquePM: pmToque, magia: null, pm: 0 };
@@ -1052,9 +1099,10 @@ function _c3fimTurno(c) {
     if (c.pv === 0) { c.vivo = false; fora.caiu = true; }
   }
   // A Cura Perpétua fecha o corpo sozinha, sem custo nenhum
-  if (c.vant && c.vant.pvPorTurno && c.vivo && c.pv < c.pvMax) {
+  const _vCura = _c3vant(c, 'pvPorTurno');
+  if (_vCura && c.vivo && c.pv < c.pvMax) {
     const antes = c.pv;
-    c.pv = Math.min(c.pvMax, c.pv + c.vant.pvPorTurno);
+    c.pv = Math.min(c.pvMax, c.pv + _vCura.pvPorTurno);
     fora.regenerou = c.pv - antes;
   }
   c.esquivas = 0;
@@ -1330,17 +1378,19 @@ function combate3dtTurno(e) {
       // a mesma ideia ao murro. Cada golpe rola a sua própria FA contra
       // a FD do inimigo — nunca se somam, que é o que trava a vantagem.
       let golpes = ondas, bonusF = 0, toquePM = 0;
-      const v = l.c.vant;
-      if (!magia && !acao.toque && v) {
-        if (v.golpesMultiplos && !acao.golpeSimples) {
-          const quer = Math.min(_c3(l.c, 'H'), Math.floor(_c3pmDisponivel(l.c) / v.pmPorGolpe));
-          if (quer > 1) { golpes = quer; _c3pagar(l.c, quer * v.pmPorGolpe, ev); ev.golpes = quer; }
-        } else if (v.bonusFGolpe && _c3pmDisponivel(l.c) >= v.pm) {
-          _c3pagar(l.c, v.pm, ev); bonusF = v.bonusFGolpe; ev.carregado = true;
+      const _vEnc = _c3vant(l.c, 'golpesMultiplos');
+      const _vCar = _c3vant(l.c, 'bonusFGolpe');
+      if (!magia && !acao.toque) {
+        if (_vEnc && !acao.golpeSimples) {
+          const quer = Math.min(_c3(l.c, 'H'), Math.floor(_c3pmDisponivel(l.c) / _vEnc.pmPorGolpe));
+          if (quer > 1) { golpes = quer; _c3pagar(l.c, quer * _vEnc.pmPorGolpe, ev); ev.golpes = quer; }
+        } else if (_vCar && _c3pmDisponivel(l.c) >= _vCar.pm) {
+          _c3pagar(l.c, _vCar.pm, ev); bonusF = _vCar.bonusFGolpe; ev.carregado = true;
         }
       }
       // ── Toque de Energia: o tecto de PM é a própria Armadura ──
-      if (acao.toque && v && v.toqueEnergia) {
+      const _vTq = _c3vant(l.c, 'toqueEnergia');
+      if (acao.toque && _vTq) {
         toquePM = Math.max(0, Math.min(acao.toquePM || 0, _c3(l.c, 'A'), _c3pmDisponivel(l.c)));
         _c3pagar(l.c, toquePM, ev);
         ev.toque = true; ev.pm = toquePM;
@@ -1352,7 +1402,7 @@ function combate3dtTurno(e) {
       for (let o = 0; o < golpes && l.alvo.vivo; o++) {
         const sub = {};
         total += _c3resolver(l.c, l.alvo, magia, pm, rng, sub,
-                             { bonusF, toque: acao.toque && v && v.toqueEnergia, toquePM });
+                             { bonusF, toque: !!(acao.toque && _vTq), toquePM });
         rolagens.push(sub);
         // A primeira onda escreve tudo, incluindo os zeros — senão um
         // dano de 0 desaparecia do evento em vez de ficar registado.

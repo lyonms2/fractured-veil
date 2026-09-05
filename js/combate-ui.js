@@ -30,6 +30,10 @@ const FICHA_COR = {
 // aos 8, senão as fichas normais apareciam todas vazias.
 const FICHA_ESCALA = 8;
 
+/* O primeiro argumento pode ser o SLOT inteiro, e é assim que se pede.
+   A forma de quatro campos soltos fica a funcionar para quem ainda a use,
+   mas não leva a certidão nem a escolha do ancião — e uma ficha sem elas
+   mostra outro avatar. */
 function renderFichaHTML(seed, raridade, nivel, nascimento) {
   if (typeof fichaDeAvatar !== 'function') return '';
   const f = fichaDeAvatar(seed, raridade, nivel, nascimento);
@@ -92,23 +96,41 @@ function _fichaVocacaoHTML(f) {
   </div>${ind}`;
 }
 
+/* ── O NOME E A DESCRIÇÃO DE UMA CARTA ──
+
+   Estavam dentro do renderVantagensHTML, e a tela da escolha do ancião
+   precisava exactamente dos mesmos dois. Duas cópias destas divergiriam
+   sem ninguém dar por isso: bastaria uma passar a tratar o {papel} e a
+   outra não, e a mesma carta teria dois nomes no mesmo jogo.
+
+   As cartas que agem contra uma gaveta trazem o papel cru —
+   'muito_forte'. O nome de mostrar vem do mesmo sítio de onde vem o
+   rótulo da gaveta na ficha, para dizerem a mesma palavra. */
+function _vdPapel(p) { return p ? t('mag.cat.' + p) : ''; }
+function vdNome(v) { return v ? t('vd.' + v.id + '.nome').replace('{papel}', _vdPapel(v.papel)) : ''; }
+function vdDesc(v) { return v ? t('vd.' + v.id + '.desc').replace(/\{papel\}/g, _vdPapel(v.papel)) : ''; }
+
 // ── Vantagem e desvantagem ──
 function renderVantagensHTML(f) {
-  if (!f.vantagem) return '';
-  /* As cartas que agem contra uma gaveta trazem o papel cru —
-     'muito_forte'. O nome de mostrar vem do mesmo sítio de onde vem
-     o rótulo da gaveta na ficha, para dizerem a mesma palavra. */
-  const pp = (p) => p ? t('mag.cat.' + p) : '';
-  const nm = (id, p) => t('vd.' + id + '.nome').replace('{papel}', pp(p));
-  const ds = (id, p) => t('vd.' + id + '.desc').replace(/\{papel\}/g, pp(p));
+  /* Perguntava-se `if (!f.vantagem) return ''`, e isso era verdade
+     enquanto os dois chegavam juntos. Chegam separados desde que o
+     JOVEM passou a descobrir primeiro o defeito — e durante essa fase
+     inteira o bloco desaparecia, defeito incluído. Agora mostra-se o
+     que houver: nenhum, um, ou os três do ancião. */
+  const cartas = [
+    [f.vantagem,    'boa', '−'],
+    [f.vantagem2,   'boa', '−'],
+    [f.desvantagem, 'ma',  '+'],
+  ].filter(c => c[0]);
+  if (!cartas.length) return '';
+
   const linha = (v, cls, sinal) => `<div class="vd ${cls}">
-      <div class="vd-top"><span class="vd-nome">${nm(v.id, v.papel)}</span>
+      <div class="vd-top"><span class="vd-nome">${vdNome(v)}</span>
         <span class="vd-custo">${sinal}${Math.abs(v.custo)}</span></div>
-      <div class="vd-desc">${ds(v.id, v.papel)}</div>
+      <div class="vd-desc">${vdDesc(v)}</div>
     </div>`;
   return `<div class="vd-bloco">
-    ${linha(f.vantagem, 'boa', '−')}
-    ${linha(f.desvantagem, 'ma', '+')}
+    ${cartas.map(c => linha(c[0], c[1], c[2])).join('')}
   </div>`;
 }
 
@@ -218,7 +240,7 @@ function renderMagiasHTML(f) {
 
 // Preenche a ficha dentro do overlay de zoom do avatar.
 // Chamada por openAvatarZoom() e openAvatarZoomData() em js/main.js.
-function preencherFichaZoom(seed, raridade, nivel, nascimento) {
+function preencherFichaZoom(seed, raridade, nivel, nascimento) {   // seed = o slot
   const el = document.getElementById('avatarZoomFicha');
   if (!el) return;
   el.innerHTML = renderFichaHTML(seed, raridade, nivel, nascimento);

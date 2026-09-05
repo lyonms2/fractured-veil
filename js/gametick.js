@@ -636,6 +636,7 @@ function gameTick() {
 
   if(tickCount % (60 * 5) === 0) { autoSpeak(); updateEquippedDisplay(); updateAvatarSize(); }
   if(tickCount % 5 === 0 && typeof atualizarChamadaEvolucao === 'function') atualizarChamadaEvolucao();
+  if(tickCount % 5 === 0 && typeof atualizarChamadaEscolha === 'function') atualizarChamadaEscolha();
 
 }
 
@@ -813,6 +814,7 @@ function checkXP() {
       // Agora aparece o convite no avatar e é ele que escolhe o momento.
       // Ver js/evolucao.js.
       if(typeof atualizarChamadaEvolucao === 'function') atualizarChamadaEvolucao();
+      if(typeof atualizarChamadaEscolha === 'function') atualizarChamadaEscolha();
     }
   }
 }
@@ -864,8 +866,8 @@ function _luGanho(nv) {
   // Subiu um ponto: descobre QUAL característica levou com ele.
   let antes, agora;
   try {
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, nv - 1, avatar.nascimento);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, nv, avatar.nascimento);
+    antes = fichaDeAvatar({ ...avatar, nivel: nv - 1 });
+    agora = fichaDeAvatar({ ...avatar, nivel: nv });
   } catch (_) { return; }
 
   const nomes = { F: 'evo.f', H: 'evo.h', R: 'evo.r', A: 'evo.a', pv: 'evo.pv', pm: 'evo.pm' };

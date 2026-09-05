@@ -13,7 +13,21 @@ global.window = { registerStrings: x => { global.__PT = { ...(global.__PT || {})
 require(path.join(RAIZ, 'js/i18n-magias.js'));
 require(path.join(RAIZ, 'js/i18n-vantagens.js'));
 
+/* AS REGRAS DA FASE TÊM DE VIR TAMBÉM.
+
+   Não vinham, e a ficha calhava no atalho que ela guardava para quando
+   o faseFromNivel não existisse — um atalho escrito na escada ANTIGA.
+   A auditoria inteira corria portanto noutro jogo: um avatar de nível 12
+   era ADULTO aqui e ANCIÃO no browser, com outras magias e outro par de
+   virtude e defeito.
+
+   Ficam num sítio só (tools/fase.js), como já acontece no evolucao e no
+   linhagem — duas cópias desta extração divergiram em silêncio uma vez. */
+const NL = String.fromCharCode(10);
+const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
+
 const M = new Function('t',
+  LINHAS_DA_FASE + NL +
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
   `return { MAGIAS, MAGIA_PAPEIS, todasAsMagias, papelDaMagia, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
@@ -31,7 +45,8 @@ const M = new Function('t',
             _c3, _c3rng, _c3criar, _c3fa, _c3fd, _c3custoMagia, _c3podeMagiar,
             _c3trocaLimpa, _c3resolver, _c3fimTurno, _c3teste, _c3bonusEsquiva, _c3podeEsquivar,
             _c3hAtk, _c3aDef, _c3rResistir, _c3pmDisponivel, _c3pagar, fichaDeAvatar, politica3dt, _c3pmIdeal, _d6,
-            _c3largarSustentadas, _c3custoSustentadas, _c3recalcular, _c3efeitosSustentada };`
+            _c3largarSustentadas, _c3custoSustentadas, _c3recalcular, _c3efeitosSustentada,
+            faseDePontos, faseFromNivel, podeEscolherAnciao, FICHA_ESCOLHAS, FICHA_PONTOS_MAX, FICHA_NIVEL_FINAL };`
 )(id => (global.__PT[id] || id));
 
 // ── Um duelo controlado ────────────────────────────────────────────

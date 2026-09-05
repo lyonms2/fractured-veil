@@ -1,0 +1,188 @@
+/* ═══════════════════════════════════════════════════════════════════
+   A ESCOLHA DO ANCIÃO
+   Ver js/escolha.js para o porquê das duas opções custarem as duas.
+
+   Não usa o palco da evolução de propósito. Lá há uma transformação a
+   acontecer e o avatar é o assunto; aqui não acontece nada até o jogador
+   decidir — o assunto são as duas opções, e o bicho é só quem as recebe.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── O convite, preso ao avatar ── */
+/* Herda a forma do .chamada-evolucao (css/evolucao.css) porque é o mesmo
+   gesto: o jogo tem algo e espera que o jogador venha. Muda a tinta —
+   ali é ouro de crescer, aqui é a púrpura de decidir. */
+.chamada-escolha {
+  position: absolute;
+  top: 0.5rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  display: flex; align-items: center; gap: 0.375rem;
+  padding: 0.3125rem 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid #a78bfa;
+  background: linear-gradient(135deg, rgba(167,139,250,.26), rgba(201,168,76,.16));
+  color: #d9ccff;
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem; font-weight: 700; letter-spacing: 0.09375rem;
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 0 0.75rem rgba(167,139,250,.4);
+  animation: esc-pulsa 1.9s ease-in-out infinite;
+}
+.chamada-escolha:hover { background: linear-gradient(135deg, rgba(167,139,250,.4), rgba(201,168,76,.26)); }
+.chamada-escolha .ce-brilho {
+  background: #a78bfa; box-shadow: 0 0 0.5rem #a78bfa;
+}
+@keyframes esc-pulsa {
+  0%, 100% { transform: translateX(-50%) scale(1);    box-shadow: 0 0 0.75rem rgba(167,139,250,.4); }
+  50%      { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 1.5rem rgba(167,139,250,.65); }
+}
+
+/* ── A tela ── */
+#escolhaOverlay {
+  position: fixed; inset: 0; z-index: 10050;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: #04030a;
+  opacity: 0; pointer-events: none;
+  transition: opacity .4s ease;
+  overflow-y: auto;
+}
+#escolhaOverlay.ativo { opacity: 1; pointer-events: auto; }
+
+.esc-caixa {
+  width: 100%; max-width: 26rem;
+  margin: auto;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.625rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,.02);
+  text-align: center;
+}
+
+.esc-marca {
+  font-family: 'Cinzel', serif;
+  font-size: 0.625rem; font-weight: 700; letter-spacing: 0.15625rem;
+  color: #c4b5fd;
+}
+.esc-retrato { line-height: 0; }
+.esc-intro {
+  font-size: 0.5rem; line-height: 1.7; font-style: italic;
+  color: var(--cerim-fraco, #b2aac8);
+  max-width: 20rem;
+}
+
+/* ── Os dois cartões ── */
+/* Lado a lado quando cabem, empilhados quando não — e nunca um mais
+   comprido do que o outro, que faria o maior parecer o certo. */
+.esc-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.625rem;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+.esc-cartao {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: rgba(255,255,255,.03);
+  text-align: left;
+}
+.esc-cartao.ganha  { border-color: rgba(110,231,183,.4); }
+.esc-cartao.perde  { border-color: rgba(201,168,76,.4); }
+
+.esc-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 0.375rem; }
+.esc-cab-tit {
+  font-family: 'Cinzel', serif;
+  font-size: 0.46875rem; font-weight: 700; letter-spacing: 0.0625rem;
+  color: var(--gold-light);
+}
+.esc-cab-preco {
+  font-size: 0.40625rem; white-space: nowrap;
+  color: var(--cerim-fraco, #b2aac8);
+}
+
+.esc-carta-nome {
+  font-size: 0.5rem; font-weight: 700; color: #e6dcff;
+  margin-bottom: 0.1875rem;
+}
+/* O cartão de tirar o defeito mostra a carta que SAI, e mostrava-a com o
+   mesmo ar da carta que entra no outro — dois nomes a brilhar lado a
+   lado, e o jogador a ter de deduzir pelo título qual deles ganha. O
+   risco di-lo sem ser preciso ler. */
+.esc-cartao.perde .esc-carta-nome {
+  text-decoration: line-through;
+  text-decoration-color: rgba(240,165,165,.8);
+  color: #b9aecd;
+}
+.esc-carta-desc {
+  font-size: 0.4375rem; line-height: 1.6;
+  color: var(--cerim-fraco, #b2aac8);
+}
+
+.esc-difs {
+  display: flex; flex-direction: column; gap: 0.125rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.esc-dif {
+  display: grid; grid-template-columns: 1fr auto auto auto;
+  align-items: baseline; gap: 0.25rem;
+  font-size: 0.4375rem;
+}
+.esc-dif-nome { color: var(--cerim-fraco, #b2aac8); }
+.esc-dif-de   { color: var(--cerim-fraco, #b2aac8); opacity: .7; }
+.esc-dif-seta { color: var(--cerim-fraco, #b2aac8); opacity: .5; }
+.esc-dif-para { font-weight: 700; }
+.esc-dif.sobe  .esc-dif-para { color: #6ee7b7; }
+.esc-dif.desce .esc-dif-para { color: #f0a5a5; }
+.esc-dif-nada {
+  font-size: 0.4375rem; font-style: italic; opacity: .7;
+  color: var(--cerim-fraco, #b2aac8);
+}
+
+.esc-btn {
+  margin-top: auto;
+  padding: 0.4375rem 0.75rem;
+  border: 1px solid var(--gold);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.46875rem; font-weight: 700; letter-spacing: 0.09375rem;
+  cursor: pointer;
+}
+.esc-btn:hover { background: rgba(201,168,76,.15); }
+.esc-btn.fantasma {
+  border-color: rgba(255,255,255,.14);
+  color: var(--cerim-fraco, #b2aac8);
+  margin-top: 0.25rem;
+}
+.esc-btn.fantasma:hover { background: rgba(255,255,255,.05); }
+
+.esc-nota {
+  font-size: 0.40625rem; line-height: 1.7;
+  color: var(--cerim-fraco, #b2aac8);
+  max-width: 22rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+/* No desktop a raiz está a 24px e isto ficaria enorme: a caixa é
+   moldura, como as das outras cerimónias. */
+@media (min-width: 769px) {
+  .chamada-escolha { font-size: 0.4375rem; padding: 0.25rem 0.625rem; }
+  .esc-caixa    { max-width: 20rem; }
+  .esc-marca    { font-size: 0.5625rem; }
+  .esc-intro    { font-size: 0.4375rem; }
+  .esc-cartoes  { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); }
+  .esc-cab-tit  { font-size: 0.40625rem; }
+  .esc-btn      { font-size: 0.40625rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chamada-escolha, .chamada-escolha .ce-brilho { animation: none; }
+}

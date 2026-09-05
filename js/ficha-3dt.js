@@ -220,7 +220,38 @@ function pontosDoAvatar(raridade, nivel) {
 //
 // Aceita também o objeto do slot:  fichaDeAvatar(avatarSlots[0])
 // ═══════════════════════════════════════════════════════════════════
-function fichaDeAvatar(seed, raridade, nivel, nascimento) {
+/* ── A ESCOLHA DO ANCIÃO ──
+
+   Ao chegar a ANCIÃO o dono escolhe uma vez: uma SEGUNDA virtude, ou
+   deixar de ter defeito. Chega aqui como um quinto argumento porque não
+   cabe na certidão — a certidão escreve-se ao nascer e congela-se, e
+   esta decisão toma-se vinte e seis níveis depois.
+
+   As duas opções CUSTAM, e é isso que faz delas uma escolha:
+
+     · a segunda virtude paga o preço dela
+     · tirar o defeito devolve os pontos que ele dava
+
+   Portanto o orçamento DESCE nos dois casos, e as características podem
+   descer com ele. Isso não quebra a promessa de "subir de nível só
+   soma": subir de nível continua a só somar. Isto não é subir de nível,
+   é uma troca que o jogador faz de olhos abertos — e a tela mostra-lhe
+   os dois lados antes de ele decidir. */
+const FICHA_ESCOLHAS = ['vantagem', 'semDefeito'];
+
+/* Escolhe-se uma vez, e só depois de lá chegar. A guarda vive aqui e não
+   na tela, porque a tela não é o único caminho — é a mesma lição do
+   nome: quem FAZ é que guarda. */
+function podeEscolherAnciao(slot) {
+  const s = slot || (typeof avatar !== 'undefined' ? avatar : null);
+  if (!s || s.dead) return false;
+  if (s.escolhaAnciao) return false;
+  const nv = (typeof nivel !== 'undefined' && typeof avatar !== 'undefined' && s === avatar)
+    ? nivel : (s.nivel || 1);
+  return pontosDoAvatar(s.raridade || 'Comum', nv) >= 12;
+}
+
+function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
   if (seed && typeof seed === 'object') {
     const s = seed;
     /* A certidao viaja com a ficha.
@@ -230,7 +261,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
        a ficha, tirava as magias aos dois ou a nenhum. A certidao e o
        que separa os dois casos, portanto tem de chegar la. */
     return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum',
-                         s.nivel || 1, s.nascimento || null);
+                         s.nivel || 1, s.nascimento || null, s.escolhaAnciao || null);
   }
 
   const pontosBase = pontosDoAvatar(raridade, nivel);
@@ -246,9 +277,15 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
 
      São as MESMAS que ele terá sempre — saem do seed, e o seed não muda.
      A fase só decide quando aparecem. */
-  const _faseF = (typeof faseFromNivel === 'function')
-    ? faseFromNivel(nivel || 1)
-    : ((nivel || 1) < 5 ? 0 : (nivel || 1) < 10 ? 1 : (nivel || 1) < 17 ? 2 : 3);
+  /* A fase vem do js/state.js e de mais lado nenhum.
+
+     Havia aqui um atalho para quando o faseFromNivel não existisse, com
+     a escada escrita à mão — e quando a escada mudou o atalho ficou na
+     antiga. Ninguém deu por isso porque no browser ele nunca corre; só
+     corria nas ferramentas, que passaram meses a auditar outro jogo.
+     Uma cópia que só corre onde ninguém olha é pior do que não haver
+     nenhuma: agora quem carregar esta ficha traz a regra com ela. */
+  const _faseF = faseFromNivel(nivel || 1);
   // O feitio do avatar inclina qual virtude e qual defeito lhe saem.
   // Sem certidão vai nulo, e aí o sorteio é o limpo de sempre.
   const _indole = (typeof indoleDoDna === 'function' && nascimento && nascimento.dna)
@@ -280,11 +317,34 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
      coisa que se lê; e como a desvantagem DÁ pontos e a vantagem CUSTA,
      o orçamento também sobe primeiro e aperta depois, em vez de as duas
      se anularem no mesmo instante e não se notar nenhuma. */
+  /* A escolha só vale a partir do ANCIÃO, e só se for uma das duas. Um
+     valor estranho vindo de um save antigo ou de mão alheia não muda
+     nada — é o mesmo princípio de sempre: quem FAZ é que guarda. */
+  const _esc = (_faseF >= 3 && FICHA_ESCOLHAS.indexOf(escolha) >= 0) ? escolha : null;
+
   const vdVisivel = vd ? {
-    desvantagem: _faseF >= 1 ? vd.desvantagem : null,
+    desvantagem: (_faseF >= 1 && _esc !== 'semDefeito') ? vd.desvantagem : null,
     vantagem:    _faseF >= 2 ? vd.vantagem    : null,
+    vantagem2:   (_esc === 'vantagem') ? vd.vantagem2 : null,
   } : null;
-  const pontos = vd ? vd.pontos : pontosBase;
+  /* ── O QUE A ESCOLHA CUSTA ──
+
+     As duas opções pagam, e é isso que faz delas uma escolha e não um
+     prémio:
+
+       a segunda virtude   paga o preço dela
+       tirar o defeito     devolve os pontos que ele dava
+
+     Nos dois casos o orçamento DESCE. Está dito por extenso na tela da
+     escolha, com os dois lados à vista antes de o jogador decidir — é
+     a diferença entre um custo e uma surpresa. */
+  let pontos = vd ? vd.pontos : pontosBase;
+  /* Atenção ao sinal: o custo de uma desvantagem é NEGATIVO, porque ela
+     dá pontos em vez de os cobrar. Somar um número negativo é portanto
+     tirar do orçamento exactamente o que ela dava — e não acrescentar. */
+  if (vd && _esc === 'vantagem' && vd.vantagem2) pontos -= vd.vantagem2.custo;
+  if (vd && _esc === 'semDefeito')               pontos += vd.desvantagem.custo;
+  pontos = Math.max(1, pontos);
 
   /* ── ANTES DA CRIANÇA, O ORÇAMENTO É O DO NÍVEL E MAIS NADA ──
 
@@ -495,8 +555,12 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
   // O bónus é da vantagem, e o bebé ainda não a tem — por isso lê-se do
   // par visível. A vida sobe no dia em que ele a ganha, que é um ganho e
   // não uma regressão.
-  const bonusPV = (vdVisivel && vdVisivel.vantagem && vdVisivel.vantagem.pvComoR) ? vdVisivel.vantagem.pvComoR : 0;
-  const bonusPM = (vdVisivel && vdVisivel.vantagem && vdVisivel.vantagem.pmComoR) ? vdVisivel.vantagem.pmComoR : 0;
+  /* As duas virtudes contam para a reserva. Perguntava-se só à primeira,
+     e um ancião que escolhesse a segunda com Fôlego Extra não via a vida
+     subir. */
+  const _vdAtivas = vdVisivel ? [vdVisivel.vantagem, vdVisivel.vantagem2].filter(Boolean) : [];
+  const bonusPV = _vdAtivas.reduce((t, v) => t + (v.pvComoR || 0), 0);
+  const bonusPM = _vdAtivas.reduce((t, v) => t + (v.pmComoR || 0), 0);
   const pv = (c.R + bonusPV) * FICHA_PV_POR_R;
   const pm = (c.R + bonusPM) * FICHA_PM_POR_R;
 
@@ -508,7 +572,13 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
     // mostra, e mostrar um orçamento por gastar era a mentira original.
     pontos: pontosGastos, pontosBase, tecto,
     vantagem:    vdVisivel ? vdVisivel.vantagem    : null,
+    vantagem2:   vdVisivel ? vdVisivel.vantagem2   : null,
     desvantagem: vdVisivel ? vdVisivel.desvantagem : null,
+    /* A que ainda NÃO foi escolhida, e a escolha feita. A tela da
+       escolha precisa de mostrar o que está em jogo antes de haver
+       escolha nenhuma, e nada mais no jogo tem por onde saber. */
+    vantagemOferta: vd ? vd.vantagem2 : null,
+    escolha: _esc,
     raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontosGastos),
     // Para onde puxa, de que sexo é, e com que feitio. Quem desenha a

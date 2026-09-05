@@ -117,6 +117,13 @@ function getGameState() {
       pai:         s.pai         || null,
       nascidoEm:   s.nascidoEm   || s.bornAt || 0,
       nomeTravado: s.nomeTravado ?? false,
+      /* A ESCOLHA DO ANCIÃO, que também se faz uma vez só.
+
+         Fica ao lado do nomeTravado por ser da mesma família: não é
+         estado que anda com o relógio, é uma decisão tomada e selada.
+         Sem esta linha a primeira gravação apagava-a e o avatar
+         acordava sem a segunda virtude que escolheu. */
+      escolhaAnciao: s.escolhaAnciao || null,
       /* Por quantas mãos já passou. Só o api/comprar-avatar.js lhe
          acrescenta entradas — aqui apenas se guarda o que lá vem, e
          guarda-se sempre, senão a próxima gravação do cliente apagava

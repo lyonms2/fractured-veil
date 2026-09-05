@@ -309,7 +309,12 @@ function openAvatarZoom() {
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: avatar.raridade, fase: FASES[getFase()], nivel});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, nivel, avatar.nascimento);
+  /* Vai o SLOT, e não quatro campos soltos. Eram quatro, e cada campo
+     novo da ficha — a certidão, agora a escolha do ancião — obrigava a
+     emendar a cadeia inteira, com um elo a esquecer-se de cada vez.
+     O nível sobrepõe-se: o global é o que está a correr, e o do slot só
+     apanha o valor certo na próxima gravação. */
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom({ ...avatar, nivel });
   _lockZoomScroll();
   const ov = document.getElementById('avatarZoomOverlay');
   ov.style.display = 'flex';
@@ -329,12 +334,19 @@ function closeAvatarZoom() {
 function openAvatarZoomData(raridade, seed, nivelAv, nome, slot) {
   const size  = 260;
   const fase  = faseFromNivel(nivelAv);
-  const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
+  /* Era uma lista à mão, e ficou com os nomes antigos quando as fases
+     mudaram — este zoom chamava CRIANÇA a um bicho que o resto do jogo
+     já tratava por JOVEM. A lista boa é uma só, e vem do idioma. */
+  const fases = (typeof FASES !== 'undefined') ? FASES : ['BEBÊ','JOVEM','ADULTO','ANCIÃO'];
   document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: raridade, fase: fases[fase], nivel: nivelAv||1});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, nivelAv || 1, slot && slot.nascimento);
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom({
+    seed, raridade, nivel: nivelAv || 1,
+    nascimento:    slot && slot.nascimento,
+    escolhaAnciao: slot && slot.escolhaAnciao,
+  });
   _lockZoomScroll();
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }

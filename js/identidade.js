@@ -650,7 +650,10 @@ function fecharLinhagem() {
    abre-se POR CIMA da árvore, e o jogador quer voltar a ela. Se os dois
    partilhassem o mesmo overlay, abrir um fechava o outro.
    ═══════════════════════════════════════════════════════════════════ */
-const LIN_FASES = ['BEBÊ', 'CRIANÇA', 'JOVEM', 'ADULTO'];
+/* Era uma lista à mão e ficou para trás quando as fases mudaram: a
+   árvore chamava CRIANÇA a quem o resto do jogo já tratava por JOVEM, e
+   não tinha nome nenhum para o ANCIÃO. A lista boa vem do idioma. */
+const LIN_FASES = (typeof FASES !== 'undefined') ? FASES : ['BEBÊ', 'JOVEM', 'ADULTO', 'ANCIÃO'];
 
 function abrirCartaoLinhagem(idx) {
   const slots = (typeof avatarSlots !== 'undefined') ? avatarSlots : [];
