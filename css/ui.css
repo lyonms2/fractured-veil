@@ -317,6 +317,10 @@
 .av-zoom-wrap { position:relative; display:inline-block; }
 .avatar-zoom-btn { position:absolute; top:0.5rem; right:0.5rem; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(255,255,255,.12); border-radius:0.5rem; padding:0.25rem 0.4375rem; font-size:0.8125rem; cursor:pointer; color:#fff; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; }
 .avatar-zoom-btn:hover { background:rgba(60,40,120,.7); transform:scale(1.1); }
+/* O segundo botão do canto. Encostado ao primeiro e não por baixo dele:
+   são as duas portas para a mesma coisa — olhar o bicho de perto — e
+   separá-los mandava procurar a segunda noutro sítio. */
+.avatar-arv-btn { right:2.625rem; }
 #btnLayEggCorner { position:absolute; bottom:0.5rem; left:0.5rem; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(201,168,76,.4); border-radius:0.625rem; padding:0.5rem 0.75rem; font-size:1.25rem; cursor:pointer; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; animation:egg-ready-pulse 1.4s ease-in-out infinite; }
 #btnLayEggCorner:hover { background:rgba(201,168,76,.15); transform:scale(1.1); }
 /* Usado no overlay de visita e marketplace — ancorado ao SVG e não ao container flex */

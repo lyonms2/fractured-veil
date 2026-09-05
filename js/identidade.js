@@ -340,15 +340,18 @@ function renderCertidaoHTML(slot) {
   </div>`;
 }
 
-// Preenche a certidão dentro do overlay de zoom. Chamada por
-// openAvatarZoom() e openAvatarZoomData() em js/main.js.
+/* Preenche a certidão dentro do overlay de zoom. Chamada por
+   openAvatarZoom() e openAvatarZoomData() em js/main.js.
+
+   A LINHAGEM SAIU DAQUI. Vivia colada ao fundo da certidão, e a
+   certidão vem depois da ficha de combate inteira — magias, vantagens,
+   os quatro medidores. Para chegar à árvore era preciso rolar por tudo
+   isso, e quem não soubesse que ela existia não a encontrava.
+   Passou a ter porta própria: o 🌳 ao lado do 🔍. */
 function preencherCertidaoZoom(slot) {
   const el = document.getElementById('avatarZoomCertidao');
   if (!el) return;
-  if (!slot) { el.innerHTML = ''; return; }
-  // A árvore precisa da colónia inteira para achar filhos e avós.
-  const slots = (typeof avatarSlots !== 'undefined') ? avatarSlots : [];
-  el.innerHTML = renderCertidaoHTML(slot) + renderArvoreHTML(slot, slots);
+  el.innerHTML = slot ? renderCertidaoHTML(slot) : '';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -414,44 +417,152 @@ function arvoreDe(slot, slots) {
     if (!s || s === slot || !slot.id) return false;
     const n = s.nascimento || {};
     return n.mae === slot.id || n.pai === slot.id || s.mae === slot.id || s.pai === slot.id;
-  }).map(s => ({ id: s.id, nome: _arvNome(s) }));
+    // O avatar inteiro vai junto: o modal desenha o bicho, e não só o
+    // nome dele.
+  }).map(s => ({ id: s.id, nome: _arvNome(s), presente: true, slot: s }));
 
   return { mae, pai, avos, filhos };
 }
 
-function renderArvoreHTML(slot, slots) {
+/* ═══════════════════════════════════════════════════════════════════
+   A SALA DA LINHAGEM
+
+   Havia aqui uma árvore de TEXTO — três linhas coladas ao fundo da
+   certidão. Serviu enquanto a linhagem não tinha casa; tem, e saiu.
+   Guardar as duas era guardar duas maneiras de desenhar a mesma árvore,
+   à espera de divergirem à primeira geração que se acrescentasse a uma
+   delas.
+
+   Esta desenha o BICHO em cada lugar, que é o que se quer ver quando se
+   abre uma genealogia de propósito — e é onde a herança se vê: uma
+   mãe rosa e um pai amarelo, e o filho a sair de uma das duas.
+
+   Três estados por lugar, e a diferença entre eles é a razão de a
+   árvore existir:
+
+     PRESENTE   está na colónia · desenha-se
+     HISTÓRIA   só o nome ficou na certidão · silhueta apagada
+     VAZIO      nunca houve · um lugar tracejado
+
+   O terceiro não é falta de dados: um avatar sem pais é um PRIMORDIAL,
+   e isso diz-se por extenso em vez de se mostrar dois quadrados vazios.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// A silhueta de quem já cá não está. É um ovo fechado de propósito —
+// sabe-se que existiu, não se sabe que forma tinha.
+const _LIN_SILHUETA =
+  '<svg viewBox="0 0 60 70" width="100%" height="100%" aria-hidden="true">' +
+  '<ellipse cx="30" cy="40" rx="21" ry="27" fill="rgba(255,255,255,.05)"' +
+  ' stroke="rgba(255,255,255,.14)" stroke-width="1.5" stroke-dasharray="4 3"/>' +
+  '<circle cx="30" cy="36" r="6" fill="rgba(255,255,255,.06)"/></svg>';
+
+function _linFase(nivel) {
+  return (typeof faseFromNivel === 'function') ? faseFromNivel(nivel || 1) : 0;
+}
+
+function _linSexo(slot) {
+  const sx = (typeof sexoDe === 'function') ? sexoDe(slot) : null;
+  if (!sx) return '';
+  return sx === 'F' ? '<span class="lin-sexo f">\u2640</span>'
+                    : '<span class="lin-sexo m">\u2642</span>';
+}
+
+/* Um lugar da árvore. `p` é o que o arvoreDe devolve — {nome, presente,
+   slot} — ou null quando não há ninguém para pôr ali. */
+function _linCartao(p, cls) {
+  const esc = (x) => String(x == null ? '' : x)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  cls = 'lin-cartao' + (cls ? ' ' + cls : '');
+
+  if (!p) {
+    return `<div class="${cls} vazio"><div class="lin-retrato"></div>
+      <div class="lin-nome">${t('cert.nada')}</div></div>`;
+  }
+
+  const nome = esc(p.nome || t('cert.anonimo'));
+
+  if (!p.slot) {
+    return `<div class="${cls} historia" title="${t('lin.historia')}">
+      <div class="lin-retrato">${_LIN_SILHUETA}</div>
+      <div class="lin-nome">${nome}</div>
+      <div class="lin-marca">${t('lin.historia')}</div>
+    </div>`;
+  }
+
+  const s = p.slot;
+  const svg = (typeof gerarSVG === 'function')
+    ? gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 64, 64, _linFase(s.nivel)) : '';
+  const prim = (typeof ehPrimordial === 'function' && ehPrimordial(s))
+    ? `<div class="lin-marca prim">${t('lin.primordial_curto')}</div>` : '';
+  return `<div class="${cls} presente">
+    <div class="lin-retrato">${svg}</div>
+    <div class="lin-nome">${_linSexo(s)}${nome}</div>
+    <div class="lin-nv">${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
+    ${prim}
+  </div>`;
+}
+
+function _linNivel(rotulo, conteudo, cls) {
+  return `<div class="lin-nivel ${cls || ''}">
+    <div class="lin-rot">${rotulo}</div>
+    <div class="lin-fila">${conteudo}</div>
+  </div>`;
+}
+
+function renderLinhagemHTML(slot, slots) {
+  if (!slot) return '';
   const a = arvoreDe(slot, slots);
   if (!a) return '';
-  const esc = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  // Sem pais nem filhos não há árvore nenhuma para mostrar, e uma caixa
-  // vazia a dizer "Árvore" é pior do que caixa nenhuma.
-  if (!a.mae && !a.pai && !a.filhos.length) return '';
+  const partes = [];
 
-  const nome = (p) => p
-    ? `<span class="arv-nome${p.presente ? ' presente' : ''}">${esc(p.nome || t('cert.anonimo'))}</span>`
-    : `<span class="arv-nome vazio">${t('cert.nada')}</span>`;
+  /* SEM PAIS NÃO SE MOSTRAM DOIS LUGARES VAZIOS.
 
-  const avos = a.avos.length
-    ? `<div class="arv-linha arv-avos"><span class="arv-rot">${t('arv.avos')}</span>
-         <span class="arv-vals">${a.avos.map(v => nome(v)).join(' · ')}</span></div>`
-    : '';
+     Um avatar sem pais não tem uma árvore incompleta: tem uma árvore
+     que começa nele. É a diferença entre "faltam dados" e "é isto", e
+     o jogador merece que se lhe diga qual das duas é. */
+  if (!a.mae && !a.pai) {
+    partes.push(`<div class="lin-primordial">
+      <div class="lin-prim-selo">${t('lin.primordial')}</div>
+      <div class="lin-prim-txt">${t('lin.primordial_desc')}</div>
+    </div>`);
+  } else {
+    if (a.avos.length) {
+      partes.push(_linNivel(t('arv.avos'), a.avos.map(v => _linCartao(v, 'pequeno')).join(''), 'lin-avos'));
+      partes.push('<div class="lin-tronco"></div>');
+    }
+    partes.push(_linNivel(t('arv.pais'),
+      _linCartao(a.mae) + `<span class="lin-mais">+</span>` + _linCartao(a.pai)));
+    partes.push('<div class="lin-tronco"></div>');
+  }
 
-  const filhos = a.filhos.length
-    ? `<div class="arv-linha"><span class="arv-rot">${t('arv.filhos')}</span>
-         <span class="arv-vals">${a.filhos.map(f =>
-           `<span class="arv-nome presente">${esc(f.nome || t('cert.anonimo'))}</span>`).join(' · ')}</span></div>`
-    : '';
+  partes.push(_linNivel(t('arv.este'), _linCartao({ nome: _arvNome(slot), presente: true, slot }, 'grande'), 'lin-este'));
 
-  return `<div class="arvore">
-    <div class="arv-titulo">${t('arv.titulo')}</div>
-    ${avos}
-    <div class="arv-linha"><span class="arv-rot">${t('arv.pais')}</span>
-      <span class="arv-vals">${nome(a.mae)} <span class="arv-mais">+</span> ${nome(a.pai)}</span></div>
-    <div class="arv-linha arv-eu"><span class="arv-rot">${t('arv.este')}</span>
-      <span class="arv-vals"><b>${esc(_arvNome(slot) || '—')}</b></span></div>
-    ${filhos}
-    ${a.avos.length || a.filhos.length ? `<div class="arv-nota">${t('arv.nota')}</div>` : ''}
-  </div>`;
+  if (a.filhos.length) {
+    partes.push('<div class="lin-tronco"></div>');
+    partes.push(_linNivel(t('arv.filhos'), a.filhos.map(f => _linCartao(f, 'pequeno')).join(''), 'lin-filhos'));
+  }
+
+  /* A nota explica o que separa um cartão aceso de um apagado. Só se
+     diz quando há um apagado — num primordial sozinho ela estava a
+     explicar uma distinção que não se via em lado nenhum. */
+  const haHistoria = [a.mae, a.pai, ...a.avos, ...a.filhos].some(p => p && !p.slot);
+  if (haHistoria) partes.push(`<div class="lin-nota">${t('arv.nota')}</div>`);
+  return `<div class="lin">${partes.join('')}</div>`;
+}
+
+// ── A porta ──
+function abrirLinhagem(slot) {
+  const alvo = slot || ((typeof avatar !== 'undefined') ? avatar : null);
+  const el = document.getElementById('linhagemCorpo');
+  if (!el) return;
+  const slots = (typeof avatarSlots !== 'undefined') ? avatarSlots : [];
+  el.innerHTML = alvo ? renderLinhagemHTML(alvo, slots) : '';
+  const sub = document.getElementById('linhagemSub');
+  if (sub) sub.textContent = alvo ? (_arvNome(alvo) || '') : '';
+  if (typeof ModalManager !== 'undefined') ModalManager.open('linhagemModal');
+}
+
+function fecharLinhagem() {
+  if (typeof ModalManager !== 'undefined') ModalManager.close('linhagemModal');
 }

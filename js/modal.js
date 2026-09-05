@@ -40,7 +40,8 @@ const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
   'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
-  'marketplaceModal','combateModal','avataresModal','batalhaModal'
+  'marketplaceModal','combateModal','avataresModal','batalhaModal',
+  'linhagemModal'
 ];
 
 /* OS MODAIS NÃO PODEM VIVER DENTRO DE UM ECRÃ.

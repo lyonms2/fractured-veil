@@ -456,6 +456,28 @@ function origemDe(slot) {
   return (slot.nascimento && slot.nascimento.origem) || slot.raridade || 'Comum';
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   OS PRIMORDIAIS
+
+   Um avatar que não tem mãe nem pai não nasceu aqui: veio de dentro de
+   uma ruptura. É o que a colónia inteira é hoje, e é a raiz de toda a
+   árvore que houver — porque só a partir de dois destes é que começa a
+   haver terceiros.
+
+   NÃO SE GUARDA NUM CAMPO, e é de propósito. A certidão já diz quem
+   são os pais, e "não tem pais" é uma leitura dessa mesma informação.
+   Um campo `primordial: true` ao lado seria uma segunda cópia da mesma
+   verdade, à espera de discordar dela — que é o defeito que este jogo
+   já apanhou meia dúzia de vezes.
+
+   Vale para os avatares antigos sem esforço nenhum: nenhum deles tem
+   pais, porque não havia com quem cruzar. */
+function ehPrimordial(slot) {
+  if (!slot) return false;
+  const n = slot.nascimento || {};
+  return !(n.mae || n.pai || slot.mae || slot.pai);
+}
+
 /* O sexo do avatar.
 
    Quem nasceu antes disto existir não tem gene sexual nenhum — e não se
