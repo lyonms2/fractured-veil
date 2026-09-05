@@ -136,15 +136,29 @@ titulo('CADA ALELO VEIO DE UM DOS PAIS');
     const gM = mae.nascimento.dna.genes, gP = pai.nascimento.dna.genes;
     for (let i = 0; i < 20; i++) {
       const d = M.cruzarDna(mae.nascimento.dna, pai.nascimento.dna, c * 1000 + i);
+      /* Um de cada lado, SEM dizer qual fica em que posição.
+
+         Esta verificação exigia o alelo da mãe em [0] e o do pai em [1],
+         e estava a afirmar um defeito em vez de uma regra: era o
+         cruzamento a pôr sempre a mãe primeiro, e três genes leem a
+         posição como dominância (ver js/reproducao.js). Com a ordem
+         corrigida, esta linha passou a falhar — o teste tinha ficado a
+         guardar o erro.
+
+         O que é mesmo verdade: o par tem um alelo de cada progenitor,
+         numa ordem ou na outra. */
       for (const k of M.NASC_CARACS.concat(['cor', 'indole', 'vigor'])) {
-        n += 2;
-        if (!(gM[k] || []).includes(d.genes[k][0])) forasteiros++;
-        if (!(gP[k] || []).includes(d.genes[k][1])) forasteiros++;
+        n++;
+        const daMae = gM[k] || [], doPai = gP[k] || [];
+        const [x, y] = d.genes[k];
+        const direita = daMae.includes(x) && doPai.includes(y);
+        const trocada = daMae.includes(y) && doPai.includes(x);
+        if (!direita && !trocada) forasteiros++;
       }
     }
   }
-  ok(forasteiros === 0, 'nenhum alelo do filho apareceu do nada',
-     n.toLocaleString('pt-BR') + ' alelos conferidos contra os pais');
+  ok(forasteiros === 0, 'cada par tem um alelo de cada progenitor',
+     n.toLocaleString('pt-BR') + ' pares conferidos contra os pais');
 }
 
 // ═══════════════════════════════════════════════════════════════════

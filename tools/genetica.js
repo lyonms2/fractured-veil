@@ -311,5 +311,76 @@ titulo('A ÍNDOLE');
 }
 
 
+// ══════════════════════════════════════════════════════════════════
+titulo('A HERANÇA NÃO TEM LADO PREFERIDO');
+
+/* Três genes leem a POSIÇÃO do alelo e não o valor — a índole (par[0]
+   domina), o vigor (par[0] é o forte) e a cor (par[0] é a principal). O
+   cruzamento punha sempre a mãe em par[0], e por isso o feitio do pai
+   nunca mandava, o vigor dele nunca era o forte e a cor dele nunca era a
+   principal. Medido antes da emenda: 2000 em 2000.
+
+   Isto nunca apareceria numa média — os números do filho ficavam certos,
+   só vinham todos do mesmo lado. Para o ver é preciso cruzar dois pais
+   OPOSTOS e trocar-lhes a ordem. */
+{
+  const I = M.NASC_INDOLES, L = I.indexOf('lamina'), G = I.indexOf('guarda');
+  const quem = (ind, vig, cor, sx) => ({ genes: {
+    F: [3, 0], H: [0, 0], R: [0, 0], A: [0, 0],
+    indole: ind, vigor: vig, cor: cor, sexo: sx } });
+  const mae = quem([L, L], [0, 1], [6, 6], ['X', 'X']);   // lâmina, cor 6
+  const pai = quem([G, G], [2, 3], [2, 2], ['X', 'Y']);   // guarda, cor 2
+
+  // Sementes como o jogo as faz: grandes, a andar com o relógio.
+  const SEM = s => (1700000000 + s) >>> 0;
+  const NC = 4000;
+  const conta = (a, b, ler) => {
+    const c = {};
+    for (let s = 1; s <= NC; s++) { const k = ler(M.cruzarDna(a, b, SEM(s))); c[k] = (c[k] || 0) + 1; }
+    return c;
+  };
+  const pct = (c, k) => ((c[k] || 0) / NC * 100);
+
+  const iMP = conta(mae, pai, d => M.indoleDominante(d));
+  const iPM = conta(pai, mae, d => M.indoleDominante(d));
+  ok(Math.abs(pct(iMP, 'lamina') - 50) < 4 && Math.abs(pct(iPM, 'lamina') - 50) < 4,
+     'o feitio do pai manda tanto como o da mãe',
+     'mãe lâmina → ' + pct(iMP, 'lamina').toFixed(1) + '% · pai lâmina → ' +
+     pct(iPM, 'lamina').toFixed(1) + '%');
+
+  const cMP = conta(mae, pai, d => M.coresDoAvatar({ dna: d }).principal);
+  ok(Math.abs(pct(cMP, 6) - 50) < 4,
+     'e a cor principal vem de qualquer um dos dois',
+     'da mãe ' + pct(cMP, 6).toFixed(1) + '% · do pai ' + pct(cMP, 2).toFixed(1) + '%');
+
+  const vMP = conta(mae, pai, d => {
+    const v = M.vigorDoDna(d);
+    return Object.keys(v).find(k => v[k] < 1) || 'nenhum';
+  });
+  const quatro = M.NASC_VIGOR.map(n => pct(vMP, n + 'Decay'));
+  ok(Math.min.apply(null, quatro) > 18,
+     'e o medidor forte pode sair de qualquer um dos quatro',
+     quatro.map(p => p.toFixed(0) + '%').join(' · '));
+}
+
+/* O gerador do cruzamento começava onde a semente o punha, e um xorshift
+   mal semeado dá as primeiras saídas quase iguais — as sementes 1, 2 e 3
+   davam 0.9048, 0.9050 e 0.9049. O primeiro sorteio é o que escolhe o
+   alelo de Força da mãe. */
+{
+  const N1 = 5000;
+  const medir = semente => {
+    let baixo = 0;
+    for (let i = 1; i <= N1; i++) { const r = M._reprRng(semente(i)); if (r() < 0.5) baixo++; }
+    return baixo / N1 * 100;
+  };
+  const grandes  = medir(i => (1700000000 + i) >>> 0);
+  const pequenas = medir(i => i);
+  ok(Math.abs(grandes - 50) < 3 && Math.abs(pequenas - 50) < 3,
+     'o primeiro sorteio do cruzamento já é uma moeda ao ar',
+     'sementes do jogo ' + grandes.toFixed(1) + '% · sementes pequenas ' + pequenas.toFixed(1) + '%');
+}
+
+console.log('');
 console.log(passou + ' passaram · ' + falhou + ' falharam');
 process.exit(falhou ? 1 : 0);

@@ -30,6 +30,7 @@ const M = new Function('t',
   LINHAS_DA_FASE + NL +
   rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
+  rd('reproducao.js') +
   `return { MAGIAS, MAGIA_PAPEIS, todasAsMagias, papelDaMagia, VANTAGENS, DESVANTAGENS, magiasDoAvatar,
             MAGIA_SLOTS, MAGIA_CATEGORIAS, MAGIA_ESCADA, repertorioCompleto, degrauDoSlot,
             nascer, gerarDna, tendenciaDoDna, vocacaoDoDna, sexoDoDna, sexoDe,
@@ -46,7 +47,8 @@ const M = new Function('t',
             _c3trocaLimpa, _c3resolver, _c3fimTurno, _c3teste, _c3bonusEsquiva, _c3podeEsquivar,
             _c3hAtk, _c3aDef, _c3rResistir, _c3pmDisponivel, _c3pagar, fichaDeAvatar, politica3dt, _c3pmIdeal, _d6,
             _c3largarSustentadas, _c3custoSustentadas, _c3recalcular, _c3efeitosSustentada,
-            faseDePontos, faseFromNivel, podeEscolherAnciao, FICHA_ESCOLHAS, FICHA_PONTOS_MAX, FICHA_NIVEL_FINAL };`
+            faseDePontos, faseFromNivel, podeEscolherAnciao, FICHA_ESCOLHAS, FICHA_PONTOS_MAX, FICHA_NIVEL_FINAL,
+            cruzarDna, _reprRng, coresDoAvatar, vigorDoDna, indoleDominante, NASC_VIGOR };`
 )(id => (global.__PT[id] || id));
 
 // ── Um duelo controlado ────────────────────────────────────────────

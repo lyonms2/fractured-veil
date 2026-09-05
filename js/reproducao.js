@@ -117,21 +117,70 @@ function _reprRetrato(s) {
 }
 
 /* Gerador próprio, com constante própria: se partilhasse a do DNA, dois
-   pais com os mesmos seeds davam sempre o mesmo filho. */
+   pais com os mesmos seeds davam sempre o mesmo filho.
+
+   ── O PRIMEIRO SORTEIO NÃO ERA SORTEIO ──
+
+   Um xorshift começa onde a semente o põe, e um `seed ^ 0x7A3B` deixa os
+   bits altos praticamente iguais de semente para semente. As primeiras
+   saídas são portanto quase a mesma:
+
+     semente 1 → 0.9048   semente 2 → 0.9050   semente 3 → 0.9049
+
+   Medido: em 5000 sementes pequenas o primeiro sorteio ficou 0.0% abaixo
+   de 0.5, e com as sementes reais do jogo (Date.now) 80%. Devia ser 50%.
+
+   E o primeiro sorteio é o que escolhe o alelo de FORÇA da mãe — logo o
+   primeiro alelo de Força dela quase nunca passava ao filho.
+
+   A emenda tem duas partes: misturar a semente com um finalizador antes
+   de começar (o mesmo do _sexoDoSeed, em js/nascimento.js), e queimar as
+   primeiras voltas. É barato e é uma vez por cruzamento. */
+const REPR_AQUECER = 8;
+
 function _reprRng(seed) {
   let x = ((seed | 0) ^ 0x7A3B) >>> 0;
-  return () => {
+  x = Math.imul(x ^ (x >>> 15), 0x2C1B3C6D) >>> 0;
+  x = ((x ^ (x >>> 16)) >>> 0) || 1;          // o xorshift morre no zero
+  const passo = () => {
     x ^= x << 13; x >>>= 0;
     x ^= x >> 17;
     x ^= x << 5;  x >>>= 0;
     return x / 4294967296;
   };
+  for (let i = 0; i < REPR_AQUECER; i++) passo();
+  return passo;
 }
 
 // Um alelo, à sorte, de um par.
 function _umDoPar(par, rnd) {
   if (!Array.isArray(par) || !par.length) return null;
   return par[rnd() < 0.5 ? 0 : 1];
+}
+
+/* ── O PAR DO FILHO, SEM LADO PREFERIDO ──
+
+   Era `[umDaMae, umDoPai]`, sempre nessa ordem. Parece inofensivo e não
+   é: TRÊS genes leem a posição e não o valor.
+
+     indole   par[0] é o dominante (vale 2), par[1] o recessivo (vale 1)
+     vigor    par[0] é o medidor forte, par[1] o fraco
+     cor      par[0] é a cor principal, par[1] a secundária
+
+   Com a mãe sempre em par[0], o feitio do pai nunca mandava, o vigor
+   dele nunca era o forte, e a cor dele nunca era a principal. Medido em
+   2000 cruzamentos: mãe lâmina × pai guarda deu lâmina 2000 vezes, e ao
+   contrário deu guarda 2000 vezes. A herança era matrilinear por
+   acidente de ordem.
+
+   Aqui os dois alelos entram na mesma, e a ORDEM é que se sorteia — uma
+   vez por gene, porque os genes herdam-se cada um por si. Para o F H R A
+   e para o sexo a ordem nunca contou (leem-se por maior/menor e por
+   procurar o Y), portanto não lhes custa nada e a regra fica uma só. */
+function _parDosPais(parA, parB, rnd) {
+  const a = _umDoPar(parA, rnd);
+  const b = _umDoPar(parB, rnd);
+  return rnd() < 0.5 ? [a, b] : [b, a];
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -158,8 +207,19 @@ function podeCruzar(a, b, opts) {
   const sb = (typeof sexoDe === 'function') ? sexoDe(b) : null;
   if (sa === sb)                   return { ok: false, motivo: 'repr.erro.mesmo_sexo' };
 
-  // Os dois adultos. A fase pede nível E horas de jogo (js/state.js),
-  // portanto isto não se compra com XP numa tarde.
+  /* Os dois na última fase.
+
+     ⚠ ISTO MUDOU SEM NINGUÉM DECIDIR. O comentário dizia "os dois
+     adultos" e estava certo enquanto a fase 3 era ADULTO — as fases
+     eram BEBÊ / CRIANÇA / JOVEM / ADULTO. Passaram a ser BEBÊ / JOVEM /
+     ADULTO / ANCIÃO, e a fase 3 é agora o ANCIÃO: cruzar deixou de pedir
+     nível 17 e passou a pedir nível 27, de raspão.
+
+     Fica como está até haver decisão — mudar o número aqui seria
+     escolher o ritmo da colónia sem o dizer. Para o ADULTO, basta `< 2`.
+
+     A fase pede nível (js/state.js), portanto isto não se compra numa
+     tarde de qualquer maneira. */
   const fa = (typeof faseDoSlot === 'function') ? faseDoSlot(a) : 0;
   const fb = (typeof faseDoSlot === 'function') ? faseDoSlot(b) : 0;
   if (fa < 3 || fb < 3)            return { ok: false, motivo: 'repr.erro.novo' };
@@ -183,7 +243,7 @@ function cruzarDna(dnaA, dnaB, seed) {
   // As quatro características: um alelo de cada lado.
   const caracs = (typeof NASC_CARACS !== 'undefined') ? NASC_CARACS : ['F', 'H', 'R', 'A'];
   for (const k of caracs) {
-    genes[k] = [_umDoPar(gA[k] || [0, 0], rnd), _umDoPar(gB[k] || [0, 0], rnd)];
+    genes[k] = _parDosPais(gA[k] || [0, 0], gB[k] || [0, 0], rnd);
   }
 
   /* A COR NÃO SE MISTURA AQUI.
@@ -194,21 +254,21 @@ function cruzarDna(dnaA, dnaB, seed) {
      Assim as pontas nunca se perdem, e uma cor que ninguém vê há três
      gerações pode reaparecer num neto — que é o que faz valer a pena
      olhar para a árvore. */
-  genes.cor = [_umDoPar(gA.cor || [0, 0], rnd), _umDoPar(gB.cor || [0, 0], rnd)];
+  genes.cor = _parDosPais(gA.cor || [0, 0], gB.cor || [0, 0], rnd);
 
   /* O SEXO, PELA MESMA REGRA E SEM REGRA PRÓPRIA.
      A mãe é XX e só tem X para dar; o pai é XY e dá um dos dois. */
-  genes.sexo = [_umDoPar(gA.sexo || ['X', 'X'], rnd), _umDoPar(gB.sexo || ['X', 'X'], rnd)];
+  genes.sexo = _parDosPais(gA.sexo || ['X', 'X'], gB.sexo || ['X', 'X'], rnd);
 
   // E o feitio.
-  genes.indole = [_umDoPar(gA.indole || [0, 0], rnd), _umDoPar(gB.indole || [0, 0], rnd)];
+  genes.indole = _parDosPais(gA.indole || [0, 0], gB.indole || [0, 0], rnd);
 
   /* E o vigor — o que o corpo dele aguenta melhor e pior.
 
      Um filho de mãe que se aguenta na fome com pai que se aguenta no
      humor pode sair com qualquer das duas, ou com o defeito de um e a
      virtude do outro. É a mesma regra de sempre: um alelo de cada lado. */
-  genes.vigor = [_umDoPar(gA.vigor || [0, 0], rnd), _umDoPar(gB.vigor || [0, 0], rnd)];
+  genes.vigor = _parDosPais(gA.vigor || [0, 0], gB.vigor || [0, 0], rnd);
 
   return { v: 2, genes };
 }
