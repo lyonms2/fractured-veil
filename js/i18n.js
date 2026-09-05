@@ -23,6 +23,8 @@
       // que tambem e uma vez so.
       // -- AS DOZE CORES DA RODA --
       // Nomes de tinta, nao de ecra: e a roda do pintor.
+      'cor.branco':            'Branco',
+      'cor.preto':             'Preto',
       'cor.vermelho':          'Vermelho',
       'cor.vermelho_laranja':  'Vermelho-alaranjado',
       'cor.laranja':           'Laranja',
@@ -374,6 +376,8 @@
       'ui.avatars_title':        'My Avatars',
       'painel.so_cuidando.colonia':    'These items belong to one avatar at a time — charms equip on it, consumables are given to it. In the colony there is no way to tell which. Tap CARE on an avatar and open this again.',
       'painel.so_cuidando.sem_avatar': 'These items are used on an avatar. Enter one from the colony and open this again.',
+      'cor.branco':            'White',
+      'cor.preto':             'Black',
       'cor.vermelho':          'Red',
       'cor.vermelho_laranja':  'Red-orange',
       'cor.laranja':           'Orange',

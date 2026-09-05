@@ -49,9 +49,32 @@ const CORES_RODA = [
   { id: 'azul_roxo',     matiz: 252, sat: 58, luz: 50 },
   { id: 'roxo',          matiz: 285, sat: 55, luz: 45 },
   { id: 'vermelho_roxo', matiz: 325, sat: 62, luz: 46 },
+
+  /* ── E DUAS QUE NÃO SÃO MATIZ NENHUM ──
+
+     Preto e branco não têm lugar numa roda de cores, porque uma roda é
+     feita de matizes e estes dois são a ausência deles. Ficam no fim da
+     lista e FORA da roda: entram no sorteio e na herança como as outras,
+     mas a mistura e a oposição — que são contas sobre a volta — saltam-
+     -nas.
+
+     Não são cinzentos mortos. Levam um resto de matiz, frio no branco e
+     arroxeado no preto, porque é isso que os faz parecer cor e não
+     ausência de tinta — e porque toda a maquinaria da paleta trabalha
+     sobre um matiz. */
+  { id: 'branco',        matiz: 210, sat:  8, luz: 88 },
+  { id: 'preto',         matiz: 265, sat: 14, luz: 17 },
 ];
 
+/* Quantas são ao todo — para sortear, indexar e herdar. */
 const CORES_N = CORES_RODA.length;
+
+/* E quantas estão na RODA — para as contas que dão a volta. As duas
+   últimas não dão volta nenhuma. */
+const CORES_RODA_N = 12;
+
+// Esta cor está fora da roda? (o preto e o branco)
+function corAcromatica(x) { return _corIdx(x) >= CORES_RODA_N; }
 
 // Um índice que possa vir de qualquer lado, trazido para a roda.
 function _corIdx(x) {
@@ -77,6 +100,16 @@ function misturarCores(a, b) {
   let i = _corIdx(a), j = _corIdx(b);
   if (i === j) return i;
 
+  /* Fora da roda não há meio caminho: entre o branco e o vermelho não
+     existe um ponto da roda a meio, porque o branco não está na roda. O
+     que sai é a outra cor — a que tem matiz. Com as duas fora (preto com
+     branco), fica a primeira, que é uma escolha arbitrária mas ESTAVEL,
+     que é o que aqui importa. */
+  const fi = i >= CORES_RODA_N, fj = j >= CORES_RODA_N;
+  if (fi && fj) return Math.min(i, j);
+  if (fi) return j;
+  if (fj) return i;
+
   /* ── ORDENAR PRIMEIRO, E É POR ISTO ──
 
      A primeira versão contava a partir de `a`, e por isso misturar
@@ -93,19 +126,29 @@ function misturarCores(a, b) {
      chamadas passam a percorrer exactamente o mesmo caminho. */
   if (i > j) { const troca = i; i = j; j = troca; }
 
+  /* A VOLTA É DE DOZE E NÃO DE CATORZE.
+
+     Estava `CORES_N`, e estava certo enquanto a lista era só a roda. Com
+     o preto e o branco no fim, o CORES_N passou a 14 e a volta passou a
+     dar mais dois passos: vermelho com azul deixou de dar roxo e passou
+     a dar vermelho-arroxeado, porque o caminho "de trás" encurtou por
+     cima de duas cores que não estão lá. */
   const frente = j - i;                  // agora é sempre positivo
-  const atras  = CORES_N - frente;
+  const atras  = CORES_RODA_N - frente;
 
   // Pelo lado curto. Em empate — opostas — vai-se pelo lado de frente.
   if (frente <= atras) return _corIdx(i + Math.round(frente / 2));
-  return _corIdx(j + Math.round(atras / 2));
+  return _corIdx((j + Math.round(atras / 2)) % CORES_RODA_N);
 }
 
 // Duas cores são opostas na roda? A mistura delas é a que tem menos a ver
 // com qualquer uma das duas — vale a pena poder dizê-lo.
 function coresOpostas(a, b) {
-  const d = Math.abs(_corIdx(a) - _corIdx(b));
-  return Math.min(d, CORES_N - d) === CORES_N / 2;
+  const i = _corIdx(a), j = _corIdx(b);
+  // Quem não está na roda não tem oposto nela.
+  if (i >= CORES_RODA_N || j >= CORES_RODA_N) return false;
+  const d = Math.abs(i - j);
+  return Math.min(d, CORES_RODA_N - d) === CORES_RODA_N / 2;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -126,28 +169,53 @@ function _hsl(h, s, l) {
          Math.round(Math.max(0, Math.min(100, l))) + '%)';
 }
 
+/* ── UMA RAMPA QUE SE DESLOCA EM VEZ DE SE ESMAGAR ──
+
+   Os quatro degraus do corpo eram luz−10, luz, luz+9 e luz+17, cada um
+   preso entre 0 e 100 à saída. Enquanto todas as cores viveram entre 40
+   e 55 de luz nunca houve problema.
+
+   O branco vive nos 88: os degraus dariam 78, 88, 97 e 105 — e os dois
+   últimos colavam-se ambos ao tecto. Metade da rampa desaparecia e o
+   corpo ficava chapado, que é exactamente o que os quatro degraus existem
+   para evitar.
+
+   Agora a rampa desloca-se inteira até caber. Perde-se o valor absoluto e
+   guarda-se a SEPARAÇÃO entre os degraus, que é o que dá volume ao
+   desenho. */
+function _rampa(matiz, sats, luz, passos) {
+  const lo = 4, hi = 97;
+  let d = 0;
+  const min = luz + passos[0], max = luz + passos[passos.length - 1];
+  if (max > hi) d = hi - max;
+  if (min + d < lo) d = lo - (min + d);
+  return passos.map((p, i) => _hsl(matiz, sats[i], luz + p + d));
+}
+
 function paletaDeCores(principal, secundaria) {
   const p = corDaRoda(principal);
   const s = corDaRoda(secundaria != null ? secundaria : principal);
+  /* Um corpo muito escuro não tem para onde escurecer: um contorno abaixo
+     dele desaparece contra ele. Nesse caso o contorno vai ao contrário e
+     sobe — continua a ser a borda, só que pelo lado que existe. */
+  const _escuro = p.luz < 28;
   return {
     // O corpo: o matiz principal, do escuro ao claro. Quatro degraus e
     // não um, porque o desenho escolhe entre eles e um corpo de uma cor
     // só fica chapado.
-    cores: [
-      _hsl(p.matiz, p.sat,      p.luz - 10),
-      _hsl(p.matiz, p.sat,      p.luz),
-      _hsl(p.matiz, p.sat - 8,  p.luz + 9),
-      _hsl(p.matiz, p.sat - 14, p.luz + 17),
-    ],
+    cores: _rampa(p.matiz, [p.sat, p.sat, p.sat - 8, p.sat - 14], p.luz,
+                  [-10, 0, 9, 17]),
     // As sombras vêm da SEGUNDA cor. É aqui que ela se vê — e é o que
     // faz um azul-de-sombras-roxas ser outro bicho que um azul-de-
     // sombras-verdes, com o mesmo azul.
-    coresSec: [
-      _hsl(s.matiz, s.sat + 6,  Math.max(8,  s.luz - 30)),
-      _hsl(s.matiz, s.sat,      Math.max(12, s.luz - 22)),
-      _hsl(s.matiz, s.sat - 10, Math.max(16, s.luz - 14)),
-    ],
-    corBrilho: _hsl(p.matiz, Math.min(100, p.sat + 12), Math.min(88, p.luz + 34)),
+    coresSec: _rampa(s.matiz, [s.sat + 6, s.sat, s.sat - 10], s.luz,
+                     [-30, -22, -14]),
+    /* O piso dos 58 é para o PRETO. Sem ele o brilho dele saía nos 51 e
+       a aura de um avatar preto quase não se via contra o fundo escuro do
+       jogo — a raridade dele deixava de se ler. Não toca em mais
+       ninguém: a cor mais escura da roda já dava 74. */
+    corBrilho: _hsl(p.matiz, Math.min(100, p.sat + 12),
+                    Math.min(88, Math.max(58, p.luz + 34))),
     /* ── O CONTORNO É OUTRA COISA QUE O BRILHO ──
 
        Eram o mesmo, e o brilho fazia os dois trabalhos: acender a aura, e
@@ -161,7 +229,9 @@ function paletaDeCores(principal, secundaria) {
        dessaturado, para ler como sombra do próprio bicho e não como um
        halo por cima dele. Continua a ser a cor do avatar; é só o outro
        lado dela. */
-    corContorno: _hsl(p.matiz, Math.max(0, p.sat - 35), Math.max(12, p.luz - 26)),
+    corContorno: _escuro
+      ? _hsl(p.matiz, Math.max(0, p.sat - 20), Math.min(70, p.luz + 26))
+      : _hsl(p.matiz, Math.max(0, p.sat - 35), Math.max(12, p.luz - 26)),
     // O olho pela segunda cor, e claro: é o ponto onde o olhar cai, e
     // é onde a segunda cor tem de ser inconfundível.
     corOlho:   _hsl(s.matiz, Math.min(100, s.sat + 18), Math.min(78, s.luz + 24)),
@@ -239,7 +309,23 @@ const _TOM_DA_COR = ['brasa', 'brasa', 'brasa',   // vermelho, verm-laranja, lar
                      'barro', 'barro',            // amarelo-laranja, amarelo
                      'folha', 'folha',            // amarelo-verde, verde
                      'mare',  'mare',             // azul-verde, azul
-                     'breu',  'breu',  'breu'];   // azul-roxo, roxo, verm-roxo
+                     'breu',  'breu',  'breu',    // azul-roxo, roxo, verm-roxo
+                     /* E as duas de fora da roda. Não ganham gaveta própria:
+                        cinco sacos de nomes são os que há, e inventar um
+                        sexto para duas cores era escrever um saco inteiro
+                        para as servir. O preto vai para o BREU, que é o
+                        nome que a língua já lhe dá; o branco vai para a
+                        MARE, pela espuma. */
+                     'mare',                      // branco
+                     'breu'];                     // preto
+
+/* Uma lista escrita à mão ao lado de outra lista escrita à mão: se
+   alguém acrescentar uma cor e esquecer o tom dela, o tomDaCor devolve
+   indefinido, a partícula fica indefinida e o bicho perde a aura sem
+   nada a dizer porquê. Grita aqui, ao carregar. */
+if (_TOM_DA_COR.length !== CORES_N) {
+  throw new Error('cores.js: são ' + CORES_N + ' cores e ' + _TOM_DA_COR.length + ' tons.');
+}
 
 /* E as particulas que rodeiam o bicho seguem o mesmo tom. Eram cinco
    desenhos, um por elemento, e sao os mesmos cinco: chamas para os
