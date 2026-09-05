@@ -186,45 +186,38 @@ document.addEventListener('DOMContentLoaded', () => {
 // login duplicado (marketplace-auth.js) - o modal so e alcancavel estando
 // ja autenticado dentro de index.html.
 let _mktOpened = false;
-/* Preenche as listas de elemento a partir do ELEM_CFG.
+/* Preenche o filtro de procura com as doze CORES da roda.
 
-   Estavam escritas à mão no index.html e ficaram para trás: ofereciam
-   Eletricidade e Luz, que o jogo não tem — filtrar por elas dava sempre
-   lista vazia, sem explicação nenhuma. O jogo tem cinco: Fogo, Água,
-   Terra, Vento e Sombra.
+   Filtrava-se por elemento. As opções estavam escritas à mão no
+   index.html e ficaram para trás: ofereciam Eletricidade e Luz, que o
+   jogo já não tinha — filtrar por elas dava lista vazia sem explicação.
+   A lição ficou, e é por isso que isto se gera daqui: uma cor nova na
+   roda chega aos filtros sozinha.
 
-   Gerar daqui é o que impede a mesma deriva de acontecer outra vez:
-   acrescentar um elemento ao ELEM_CFG passa a chegar aos filtros
-   sozinho. Os nomes vão como estão — são identificadores, e é assim que
-   aparecem em todo o resto do jogo, incluindo em inglês. */
-function _mktEncherFiltrosDeElemento() {
-  if (typeof ELEM_CFG === 'undefined') return;
-  const nomes = Object.keys(ELEM_CFG);
-  for (const id of ['filterElem', 'eggFilterElem']) {
+   Cada opção leva um quadrado da própria cor. É o filtro do jogo em que
+   a opção pode mostrar-se a si mesma, e seria pena não o fazer. */
+function _mktEncherFiltrosDeCor() {
+  if (typeof CORES_RODA === 'undefined') return;
+  for (const id of ['filterCor', 'eggFilterCor']) {
     const sel = document.getElementById(id);
     if (!sel || sel.tagName !== 'SELECT') continue;
     const escolhido = sel.value;
-    // A primeira opção é o "Todos", que é traduzido e fica.
+    // A primeira opção é o "Todas", que é traduzido e fica.
     while (sel.options.length > 1) sel.remove(1);
-    for (const nome of nomes) {
+    CORES_RODA.forEach((c, i) => {
       const o = document.createElement('option');
-      o.value = nome;
-      // O emoji está no CARACTERISTICAS_ELEMENTAIS, não no ELEM_CFG (que
-      // guarda as cores). As chaves dos dois são as mesmas, mas convém
-      // não assumir: sem emoji, mostra-se só o nome.
-      const car = (typeof CARACTERISTICAS_ELEMENTAIS !== 'undefined')
-                    ? CARACTERISTICAS_ELEMENTAIS[nome] : null;
-      o.textContent = (car && car.emoji ? car.emoji + ' ' : '') + nome;
+      o.value = String(i);
+      o.textContent = '\u25a0 ' + nomeDaCor(i);
+      o.style.color = corDaRodaHex(i);
       sel.appendChild(o);
-    }
-    // Preserva a escolha do jogador se ela ainda existir.
-    if (escolhido && nomes.includes(escolhido)) sel.value = escolhido;
+    });
+    if (escolhido !== '') sel.value = escolhido;
   }
 }
 
 async function openMarketplaceModal(section) {
   ModalManager.open('marketplaceModal');
-  _mktEncherFiltrosDeElemento();
+  _mktEncherFiltrosDeCor();
   if(!_mktOpened) {
     _mktOpened = true;
     await loadPlayerData();
@@ -239,8 +232,8 @@ function closeMarketplaceModal() {
 
 // -- Zoom de avatar -- reaproveita o modal ja existente do jogo principal
 // (openAvatarZoomData, definido em js/main.js) em vez de duplicar overlay/CSS. --
-function mktOpenZoom(elemento, raridade, seed, nivelAv, nome, cores) {
-  openAvatarZoomData(elemento, raridade, seed, nivelAv, nome, cores);
+function mktOpenZoom(raridade, seed, nivelAv, nome, cores) {
+  openAvatarZoomData(raridade, seed, nivelAv, nome, cores);
 }
 function mktOpenZoomBtn(btn) {
   /* O cartao ja desenha o bicho com as cores dele; se a lupa nao as
@@ -249,7 +242,7 @@ function mktOpenZoomBtn(btn) {
   const c = btn.dataset.cor === '' || btn.dataset.cor == null ? null
           : { corPrincipal: parseInt(btn.dataset.cor) || 0,
               corSecundaria: parseInt(btn.dataset.cor2) || 0 };
-  mktOpenZoom(btn.dataset.el, btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome, c);
+  mktOpenZoom(btn.dataset.rar, parseInt(btn.dataset.seed)||0, parseInt(btn.dataset.nivel)||1, btn.dataset.nome, c);
 }
 
 // -- Bottom nav mobile (dentro do modal) --

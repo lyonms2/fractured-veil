@@ -160,7 +160,6 @@ async function handleListarAvatar(req, res, db, uid) {
         // anterior e o avatar chegava ao comprador com o passado limpo.
         donos:       Array.isArray(s.donos) ? s.donos : [],
         nome:       s.nome,
-        elemento:   s.elemento,
         raridade:   s.raridade,
         descricao:  s.descricao  || '',
         seed:       s.seed       || 0,
@@ -377,7 +376,6 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
                   nome: sellerData.nomeJogador || null,
                   ate: Date.now() }],
         nome:       listing.nome,
-        elemento:   listing.elemento,
         raridade:   listing.raridade,
         descricao:  listing.descricao,
         seed:       listing.seed     || 0,

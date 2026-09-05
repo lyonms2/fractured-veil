@@ -58,8 +58,8 @@ function _evoLinhasDaFicha() {
   try {
     // A certidão vai nas duas: sem ela a ficha não tem índole, e a
     // comparação do antes com o depois era entre dois avatares diferentes.
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nvAntes, avatar.nascimento);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nivel, avatar.nascimento);
+    antes = fichaDeAvatar(avatar.seed, avatar.raridade, nvAntes, avatar.nascimento);
+    agora = fichaDeAvatar(avatar.seed, avatar.raridade, nivel, avatar.nascimento);
   } catch (_) { return []; }
 
   const carac = [['F', 'evo.f'], ['H', 'evo.h'], ['R', 'evo.r'], ['A', 'evo.a'],

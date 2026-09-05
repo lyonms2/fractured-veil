@@ -133,7 +133,7 @@ for (let seed = 1; seed <= 2000; seed++) {
   for (const nv of [1, 10, 17, 25, 35]) {
     const p = RARS.map(r => M.pontosDoAvatar(r, nv));
     if (p[0] !== p[1] || p[1] !== p[2]) difPontos++;
-    const f = RARS.map(r => M.fichaDeAvatar(seed, r, 'Fogo', nv));
+    const f = RARS.map(r => M.fichaDeAvatar(seed, r, nv));
     if (f[0].F !== f[2].F || f[0].H !== f[2].H || f[0].R !== f[2].R || f[0].A !== f[2].A) difFicha++;
     n++;
   }
@@ -208,7 +208,7 @@ titulo('O REPERTÓRIO CRESCE');
 // A escada do §8 do conceito, medida em vez de suposta.
 {
   const linha = (nv, rar) => {
-    const f = M.fichaDeAvatar(7, rar, 'Água', nv);
+    const f = M.fichaDeAvatar(7, rar, nv);
     const m = M.magiasDoAvatar(f);
     return { nv, rar, tem: M.MAGIA_SLOTS.filter(c => m[c]), vd: !!f.vantagem };
   };
@@ -243,7 +243,7 @@ titulo('O REPERTÓRIO CRESCE');
     let ant = null;
     for (let nv = 1; nv <= 35; nv++) {
       const rar = M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv));
-      const m = M.magiasDoAvatar(M.fichaDeAvatar(seed, rar, 'Sombra', nv));
+      const m = M.magiasDoAvatar(M.fichaDeAvatar(seed, rar, nv));
       const ids = M.MAGIA_SLOTS.map(c => m[c] ? m[c].id : null);
       if (ant) {
         n++;
@@ -265,9 +265,9 @@ titulo('O REPERTÓRIO CRESCE');
 {
   let quebrou = 0, n = 0;
   for (let seed = 1; seed <= 500; seed++) {
-    const cedo = M.fichaDeAvatar(seed, 'Comum', 'Vento', 5);
+    const cedo = M.fichaDeAvatar(seed, 'Comum', 5);
     const prometido = M.repertorioCompleto(cedo);
-    const fim = M.magiasDoAvatar(M.fichaDeAvatar(seed, 'Lendário', 'Vento', 35));
+    const fim = M.magiasDoAvatar(M.fichaDeAvatar(seed, 'Lendário', 35));
     for (const c of M.MAGIA_SLOTS) {
       n++;
       const a = prometido[c] ? prometido[c].id : null;
@@ -283,7 +283,7 @@ titulo('O REPERTÓRIO CRESCE');
 titulo('O BEBÊ');
 
 {
-  const bebe = M.fichaDeAvatar(7, 'Comum', 'Fogo', 1);
+  const bebe = M.fichaDeAvatar(7, 'Comum', 1);
   const soma = ['F', 'H', 'R', 'A'].reduce((t, k) => t + bebe[k], 0);
   console.log('       nv1: F' + bebe.F + ' H' + bebe.H + ' R' + bebe.R + ' A' + bebe.A +
               '  · ' + bebe.pv + ' PV · ' + bebe.pm + ' PM · ' + bebe.escalao);
@@ -325,7 +325,7 @@ titulo('NENHUM PONTO OFERECIDO');
   let errado = 0, n = 0;
   for (let seed = 1; seed <= 1500; seed++) {
     for (let nv = 1; nv <= 35; nv++) {
-      const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+      const f = M.fichaDeAvatar(seed, 'Comum', nv);
       n++;
       if (f.F + f.H + f.R + f.A !== f.pontos) errado++;
     }
@@ -342,7 +342,7 @@ titulo('NENHUM PONTO OFERECIDO');
     for (let nv = 1; nv <= 35; nv++) {
       let temZero = false;
       for (let seed = 1; seed <= 1200 && !temZero; seed++) {
-        const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+        const f = M.fichaDeAvatar(seed, 'Comum', nv);
         if (f.F === 0 || f.H === 0 || f.A === 0 || f.R === 0) temZero = true;
       }
       if (!temZero) return nv;
@@ -367,7 +367,7 @@ titulo('A VIRTUDE E O DEFEITO NÃO TROCAM');
   for (let seed = 1; seed <= 800; seed++) {
     let antV = null, antD = null;
     for (let nv = 5; nv <= 35; nv++) {
-      const f = M.fichaDeAvatar(seed, 'Comum', 'Fogo', nv);
+      const f = M.fichaDeAvatar(seed, 'Comum', nv);
       const v = f.vantagem ? f.vantagem.id : null;
       const d = f.desvantagem ? f.desvantagem.id : null;
       if (antV !== null) { n++; if (v !== antV || d !== antD) trocou++; }

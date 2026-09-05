@@ -11,7 +11,7 @@ window.registerStrings(
     'main.log.slot_changed': 'Slot ativo alterado para Slot {n} via Marketplace.',
     'main.log.inbox_eggs':   '🥚 Novos ovos recebidos!',
     'main.bub.inbox_eggs':   'Ovos chegaram! 🥚',
-    'main.zoom.info':        '{elem} · {rar} · {fase} · Nível {nivel}',
+    'main.zoom.info':        '{cor} · {rar} · {fase} · Nível {nivel}',
 
     // summon.js
     'summon.log.no_login':   'Faça login primeiro!',
@@ -50,7 +50,7 @@ window.registerStrings(
     'main.log.slot_changed': 'Active slot changed to Slot {n} via Marketplace.',
     'main.log.inbox_eggs':   '🥚 New eggs received!',
     'main.bub.inbox_eggs':   'Eggs arrived! 🥚',
-    'main.zoom.info':        '{elem} · {rar} · {fase} · Level {nivel}',
+    'main.zoom.info':        '{cor} · {rar} · {fase} · Level {nivel}',
 
     // summon.js
     'summon.log.no_login':   'Log in first!',

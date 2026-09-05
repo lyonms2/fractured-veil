@@ -12,7 +12,7 @@ window.registerStrings(
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
 
-    // Memória Elemental
+    // Memória
     'mg.mem.sub_pairs':      '{n} pares',
     'mg.mem.info':           'Pares: {matched}/{total} · Erros: {errors}',
     'mg.mem.perfect':        '🌟 PERFEITO!',
@@ -80,7 +80,7 @@ window.registerStrings(
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
 
-    // Elemental Memory
+    // Memory
     'mg.mem.sub_pairs':      '{n} pairs',
     'mg.mem.info':           'Pairs: {matched}/{total} · Errors: {errors}',
     'mg.mem.perfect':        '🌟 PERFECT!',

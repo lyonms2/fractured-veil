@@ -6,6 +6,35 @@ const HATCH_FEE = 0;
 // cliente saber se há espaço antes de cobrar.
 let pendingHatchFee = 0;
 
+/* ── O QUE UM OVO MOSTRA ──
+
+   Mostrava o ELEMENTO: "Ovo Fogo". Nao ha elementos, e o que um ovo tem
+   para dizer e de que cor e quem esta la dentro — que ele sabe, porque
+   o DNA do filho viaja dentro dele desde que foi posto
+   (js/reproducao.js).
+
+   Um ovo que NAO saiba nao inventa: um ovo comprado no mercado nao traz
+   DNA nenhum, e a cor dele so se decide ao chocar. Esse diz "Ovo", em
+   cinzento, e diz a verdade. Era o que faltava a versao antiga, que
+   dizia "Fogo" com a mesma certeza nos dois casos.
+
+   Ficam os dois numa funcao so porque tres sitios os mostram — o
+   inventario, o aviso de queimar e a confirmacao de chocar — e um
+   rotulo escrito em tres sitios diverge ao primeiro retoque. */
+function _ovoTemDna(ovo) {
+  return !!(ovo && ovo.dna && ovo.dna.genes && ovo.dna.genes.cor);
+}
+
+function _corDoOvo(ovo) {
+  if (!_ovoTemDna(ovo) || typeof corDoAvatar !== 'function') return '#7a7a8a';
+  return corDoAvatar(ovo);
+}
+
+function _rotuloDoOvo(ovo) {
+  if (!_ovoTemDna(ovo) || typeof frasedaCor !== 'function') return t('egg.inv.sem_cor');
+  return frasedaCor(ovo);
+}
+
 async function goToMarketplace(e) {
   if(e) e.preventDefault();
   if(window._pendingEggSlot !== null && window._pendingEggSlot !== undefined) {
@@ -97,7 +126,7 @@ function burnEgg(id) {
   const overlay = document.getElementById('eggBurnOverlay');
   const preview = document.getElementById('eggBurnPreview');
   if(overlay && preview) {
-    preview.innerHTML = `Ovo <b style="color:#7ab87a">${esc(ovo.elemento)}</b><br>
+    preview.innerHTML = `Ovo <b style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</b><br>
       Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
       <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
     document.getElementById('eggBurnConfirmBtn').onclick = () => {
@@ -152,11 +181,12 @@ function hatchEggFromInventory(id) {
   pendingHatchId  = id;
   pendingHatchFee = HATCH_FEE;
 
-  // O ovo era mostrado pela raridade — 🥚, 💙 ou 🌟. Já não há
-  // raridade; o que há é o elemento, que é o que ele traz mesmo.
+  // O ovo era mostrado pela raridade — 🥚, 💙 ou 🌟 — e depois pelo
+  // elemento. Já não há nem uma nem outro: o que ele traz mesmo é a
+  // COR de quem está lá dentro, quando já se sabe quem é.
   document.getElementById('hatchConfirmEgg').textContent = '🥚';
   document.getElementById('hatchConfirmRarity').innerHTML =
-    `<span style="color:#7ab87a;font-weight:700;font-family:'Cinzel',serif">${esc(ovo.elemento.toUpperCase())}</span>`;
+    `<span style="color:${_corDoOvo(ovo)};font-weight:700;font-family:'Cinzel',serif">${esc(_rotuloDoOvo(ovo).toUpperCase())}</span>`;
 
   const targetPreview = findTargetSlot();
   const confirmBtn = document.getElementById('hatchConfirmYes');
@@ -232,10 +262,23 @@ async function confirmHatch() {
 
      A taxa passou para o servidor: era feita em duas escritas separadas
      (debitar aqui, avisar a pool depois) que podiam divergir. */
-  const _nomeProv = nomeDeNascimento(ovo.elemento);
-  let _hp = 0; const _sp = _nomeProv + ovo.elemento + '#' + ovo.id;
-  for(let i=0;i<_sp.length;i++){const ch=_sp.charCodeAt(i);_hp=((_hp<<5)-_hp)+ch;_hp=_hp&_hp;}
-  const seedAutorizado = Math.abs(_hp);
+  /* ── O SEED PRIMEIRO, DEPOIS O DNA, DEPOIS O NOME ──
+
+     O seed saía do nome, e o nome saía do elemento do ovo. Sem
+     elemento, o nome passa a sair da COR — e a cor está no DNA. A
+     ordem inverteu-se: sorteia-se o seed, dele (ou do ovo) sai o DNA, e
+     dele sai a cor e o nome.
+
+     Um ovo de dois pais já traz o DNA feito (js/reproducao.js), e é
+     esse que vale: a herança não se sorteia outra vez. O que o seed
+     decide é o corpo e a ficha — que é o que faz dois irmãos do mesmo
+     par serem dois bichos e não um repetido. */
+  const seedAutorizado = Math.floor(Math.random() * 2147483647);
+  const dnaDoOvo = ovo.dna
+    || ((typeof gerarDna === 'function') ? gerarDna('Comum', seedAutorizado) : null);
+  const _tomOvo = (typeof tomDaCor === 'function' && dnaDoOvo && dnaDoOvo.genes && dnaDoOvo.genes.cor)
+    ? tomDaCor(dnaDoOvo.genes.cor[0]) : 'brasa';
+  const _nomeProv = nomeDeNascimento(_tomOvo);
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -279,33 +322,29 @@ async function confirmHatch() {
   }
 
   // Gerar dados do novo avatar
-  const car      = CARACTERISTICAS_ELEMENTAIS[ovo.elemento] || null;
   // O nome e o seed são os que foram ao servidor — recalcular aqui daria
   // outro seed e o registo de emissão não bateria certo na listagem.
   const nome     = _nomeProv;
-  const _descPool  = descricoesDoElemento(ovo.elemento);
+  const _descPool  = descricoesDoTom(_tomOvo);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
-  // O seed saía só do nome + elemento, e há 6 prefixos × 8 sufixos = 48
-  // nomes por elemento/raridade. Como a ficha de combate também deriva
-  // do seed, dois avatares com o mesmo nome eram IDÊNTICOS — mesmo
-  // desenho, mesmos F/H/R/A, mesmas magias. Ao chocar 20 ovos saíam ~3,5
-  // repetidos, e o jogo inteiro só conseguia 720 avatares diferentes.
-  //
-  // O id do ovo é o carimbo de tempo da postura, e entra aqui para cada
-  // chocagem dar um avatar seu. Os nomes continuam repetindo-se — isso é
-  // sabor, não identidade.
+  // O seed saía do NOME, e há um número contado de nomes. Como a ficha
+  // de combate também deriva do seed, dois avatares com o mesmo nome
+  // eram IDÊNTICOS — mesmo desenho, mesmos F/H/R/A, mesmas magias. Ao
+  // chocar 20 ovos saíam ~3,5 repetidos, e o jogo inteiro só conseguia
+  // 720 avatares diferentes. Hoje é ao contrário: o seed é a raiz e o
+  // nome é uma folha. Os nomes continuam a repetir-se — isso é sabor,
+  // não identidade.
   const seed = seedAutorizado;
 
   while(avatarSlots.length <= targetSlot) avatarSlots.push(null);
   avatarSlots[targetSlot] = {
-    /* Chocado de um ovo, e mesmo assim sem mae nem pai: o ovo nao
-       guarda de quem veio (sao quatro campos — id, raridade, elemento
-       e validade), e um ovo comprado no mercado nem sequer nasceu
-       aqui. Os campos ficam nulos e a reproducao preenche-os quando
-       existir; o que nao pode faltar desde ja e o id. */
+    /* Um ovo comprado no mercado nao nasceu aqui e nao tem pais; um
+       ovo de dois avatares tem-nos, e eles vem no proprio ovo. Os
+       campos ficam nulos quando nao ha; o que nao pode faltar desde
+       ja e o id. */
     ...identidadeNova(),
-    nome, elemento: ovo.elemento, raridade: 'Comum', descricao, descricaoIdx, car, seed,
+    nome, raridade: 'Comum', descricao, descricaoIdx, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
@@ -335,8 +374,8 @@ async function confirmHatch() {
        momento em que foi posto (js/reproducao.js). Sortear um novo aqui
        era deitar fora a herança e dar ao filho genes de estranho. */
     registarNascimento(avatarSlots[targetSlot], {
-      elemento: ovo.elemento, origem: 'Comum', seed,
-      dna: ovo.dna || null,
+      origem: 'Comum', seed,
+      dna: dnaDoOvo,
       mae: ovo.mae || null, pai: ovo.pai || null,
       maeNome: ovo.maeNome || null, paiNome: ovo.paiNome || null,
     });
@@ -606,7 +645,7 @@ function renderEggInventory() {
     return `<div class="${cls}">
       <div class="egg-mini-svg">${eggMiniSVG('Comum', 38)}</div>
       <div class="egg-info">
-        <div class="egg-name" style="color:#7ab87a">${esc(ovo.elemento)}</div>
+        <div class="egg-name" style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</div>
         ${ovo.maeNome || ovo.paiNome ? `<div class="egg-pais">${
           t('egg.filho_de', { mae: esc(ovo.maeNome || '?'), pai: esc(ovo.paiNome || '?') })}</div>` : ''}
         <div class="egg-time ${urgent && !expired ? 'egg-time-urgent' : ''}">${timeStr}</div>

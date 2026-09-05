@@ -22,7 +22,7 @@ window.registerStrings(
     'egg.log.no_slots':          'Sem slots livres. Libere um slot no Marketplace.',
     'egg.log.no_gems':           'Cristais insuficientes para chocar (você precisa de {fee} 💎).',
     'egg.log.cancelled':         'Chocagem cancelada. Ovo devolvido ao inventário.',
-    'egg.log.ready':             '🥚 Ovo {rar} de {elem} pronto para chocar!',
+    'egg.inv.sem_cor':           'Ovo',
 
     // Hatch confirm modal (HTML)
     'egg.hatch.slots_full':  'Todos os slots estão ocupados.<br>Libere um slot no Marketplace antes de chocar.',
@@ -64,7 +64,7 @@ window.registerStrings(
     'egg.log.no_slots':          'No free slots. Free a slot in the Marketplace.',
     'egg.log.no_gems':           'Insufficient crystals to hatch (need {fee} 💎).',
     'egg.log.cancelled':         'Hatching canceled. Egg returned to inventory.',
-    'egg.log.ready':             '🥚 {rar} {elem} egg ready to hatch!',
+    'egg.inv.sem_cor':           'Egg',
 
     // Hatch confirm modal (HTML)
     'egg.hatch.slots_full':  'All slots are occupied.<br>Free a slot in the Marketplace before hatching.',

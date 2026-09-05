@@ -6,12 +6,12 @@ window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     // Snake
-    'snake.info':           '{diff} · Nível {nivel} · Coma os elementos!',
-    'snake.score':          '🐍 {n} elemento{s}',
+    'snake.info':           '{diff} · Nível {nivel} · Coma os símbolos!',
+    'snake.score':          '🐍 {n} símbolo{s}',
     'snake.result.gameover':'💀 GAME OVER',
-    'snake.result.clear':   '🏆 CAMPO LIMPO! ({n} elementos)',
-    'snake.result.good':    '🎉 {n} elementos!',
-    'snake.result.ok':      '🐍 {n} elementos',
+    'snake.result.clear':   '🏆 CAMPO LIMPO! ({n} símbolos)',
+    'snake.result.good':    '🎉 {n} símbolos!',
+    'snake.result.ok':      '🐍 {n} símbolos',
     'snake.reward.clear':   '+{xp} XP · +{coins} 🪙  ({n}× bola + bônus conclusão!)',
     'snake.reward.normal':  '+{xp} XP · +{coins} 🪙  ({n}× bola)',
     'snake.record.title':   '✦ NOVO RECORDE ✦',
@@ -31,12 +31,12 @@ window.registerStrings(
   // ── ENGLISH ────────────────────────────────────────────────────
   {
     // Snake
-    'snake.info':           '{diff} · Level {nivel} · Eat the elements!',
-    'snake.score':          '🐍 {n} element{s}',
+    'snake.info':           '{diff} · Level {nivel} · Eat the symbols!',
+    'snake.score':          '🐍 {n} symbol{s}',
     'snake.result.gameover':'💀 GAME OVER',
-    'snake.result.clear':   '🏆 FIELD CLEAR! ({n} elements)',
-    'snake.result.good':    '🎉 {n} elements!',
-    'snake.result.ok':      '🐍 {n} elements',
+    'snake.result.clear':   '🏆 FIELD CLEAR! ({n} symbols)',
+    'snake.result.good':    '🎉 {n} symbols!',
+    'snake.result.ok':      '🐍 {n} symbols',
     'snake.reward.clear':   '+{xp} XP · +{coins} 🪙  ({n}× ball + clear bonus!)',
     'snake.reward.normal':  '+{xp} XP · +{coins} 🪙  ({n}× ball)',
     'snake.record.title':   '✦ NEW RECORD ✦',

@@ -49,7 +49,7 @@ const ADULTO = 20 * 3600 + 1;   // horas de jogo que a fase 3 pede
 // Um avatar adulto, pronto a cruzar.
 function adulto(seed, nome) {
   const s = { nome: nome || ('av' + seed), seed, nivel: 30, totalSecs: ADULTO,
-              raridade: 'Lendário', elemento: 'Terra', id: 'av_' + seed };
+              raridade: 'Lendário', id: 'av_' + seed };
   M.registarNascimento(s, { origem: 'Comum', seed });
   return s;
 }
@@ -314,8 +314,8 @@ titulo('O OVO');
      'sem chocaEm → pronto');
 
   /* E o filho que sai do ovo tem MESMO o DNA herdado, e não um novo. */
-  const filho = { nome: 'filho', seed: 555, nivel: 1, raridade: 'Comum', elemento: o.elemento };
-  M.registarNascimento(filho, { elemento: o.elemento, origem: 'Comum', seed: 555,
+  const filho = { nome: 'filho', seed: 555, nivel: 1, raridade: 'Comum' };
+  M.registarNascimento(filho, { origem: 'Comum', seed: 555,
                                 dna: o.dna, mae: o.mae, pai: o.pai });
   ok(M.dnaLegivel(filho.nascimento.dna) === M.dnaLegivel(o.dna),
      'e ao chocar o filho fica com o DNA do ovo, e não com um sorteado',
@@ -332,8 +332,8 @@ titulo('A ÁRVORE');
   const nascidoDe = (mae, pai, nome, seed) => {
     const r = M.cruzar(mae, pai, { seed });
     const f = { nome, seed, nivel: 30, totalSecs: ADULTO, raridade: 'Lendário',
-                elemento: r.ovo.elemento, id: 'av_' + nome };
-    M.registarNascimento(f, { elemento: r.ovo.elemento, origem: 'Comum', seed,
+                id: 'av_' + nome };
+    M.registarNascimento(f, { origem: 'Comum', seed,
       dna: r.ovo.dna, mae: r.ovo.mae, pai: r.ovo.pai,
       maeNome: r.ovo.maeNome, paiNome: r.ovo.paiNome });
     f.mae = r.ovo.mae; f.pai = r.ovo.pai;

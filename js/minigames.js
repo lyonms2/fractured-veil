@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
-// MEMÓRIA ELEMENTAL
+// MEMÓRIA
 // ═══════════════════════════════════════════════════════════════════
-const MEM_ELEMENTS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
+const MEM_SIMBOLOS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
 let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = false;
 
 function startMemoria() {
@@ -16,7 +16,7 @@ function startMemoria() {
   document.getElementById('memAgainBtn').style.display = 'none';
   document.getElementById('memSub').textContent = `${t(d.i18nKey)} · ${t('mg.mem.sub_pairs', {n: pairs})}`;
 
-  const elems = MEM_ELEMENTS.slice(0, pairs);
+  const elems = MEM_SIMBOLOS.slice(0, pairs);
   const deck  = [...elems, ...elems].sort(() => Math.random() - .5);
   memCards = deck; memFlipped = []; memMatched = 0; memErrors = 0; memLocked = false;
 
@@ -474,7 +474,7 @@ function renderSleepEyes() {
     return Math.floor((_seed / 233280) * (max - min + 1)) + min;
   };
 
-  const cfg  = ELEM_CFG[avatar.elemento] || ELEM_CFG['Fogo'];
+  const cfg  = paletaDoAvatar(avatar, avatar && avatar.seed);
   rnd(0, cfg.cores.length-1);
   rnd(0, cfg.cores.length-1);
   rnd(0, cfg.coresSec.length-1);

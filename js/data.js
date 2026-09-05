@@ -12,21 +12,7 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-/* O que sobrou do elemento: uma cor, um emoji e dois enfeites.
-
-   Já não decide nada. As magias saem por papel, as cores saem do DNA, e
-   o passivo — o último a sair — também: é hoje o genes.vigor
-   (js/nascimento.js). Isto fica para dar nome e sabor, e para pintar os
-   avatares nascidos antes de haver cores. */
-const CARACTERISTICAS_ELEMENTAIS = {
-  'Fogo':         { cor:'#FF4500', emoji:'🔥', decor:['🌋','🌶️'] },
-  'Água':         { cor:'#1E90FF', emoji:'💧', decor:['🌊','🐚'] },
-  'Terra':        { cor:'#8B4513', emoji:'🌿', decor:['🌿','🍄'] },
-  'Vento':        { cor:'#87CEEB', emoji:'🌪️', decor:['🍃','🌸'] },
-  'Sombra':       { cor:'#8B008B', emoji:'🌑', decor:['🌙','🦋'] }
-};
-
-// Doze nomes por elemento e raridade, e dezesseis sufixos por raridade —
+// Doze nomes por TOM e raridade, e dezesseis sufixos por raridade —
 // eram seis e oito. Com o seed do avatar já vindo do id do ovo, dois
 // bichos com o mesmo nome deixaram de ser o mesmo bicho, mas homônimos
 // entre jogadores apareciam cedo demais: 48 combinações por gaveta
@@ -35,19 +21,19 @@ const CARACTERISTICAS_ELEMENTAIS = {
 // O tom sobe com a raridade: palavras do dia a dia nos Comuns, formas
 // latinizadas nos Raros, e divindades de verdade nos Lendários.
 const PREFIXOS = {
-  'Fogo':         { 'Comum':['Ember','Spark','Cinder','Ash','Scorch','Char','Flicker','Smoke','Soot','Glow','Singe','Kindle'],
+  'brasa':         { 'Comum':['Ember','Spark','Cinder','Ash','Scorch','Char','Flicker','Smoke','Soot','Glow','Singe','Kindle'],
                     'Raro':['Ignis','Pyro','Vulcan','Blaze','Inferno','Magma','Ardor','Flare','Caldera','Solaris','Fornax','Ignifer'],
                     'Lendário':['Prometheus','Surtr','Hephaestus','Helios','Agni','Kagutsuchi','Ra','Pele','Logi','Vesta','Brigid','Chantico'] },
-  'Água':         { 'Comum':['Drip','Mist','Tide','Brook','Rain','Dew','Ripple','Puddle','Splash','Foam','Creek','Drizzle'],
+  'mare':         { 'Comum':['Drip','Mist','Tide','Brook','Rain','Dew','Ripple','Puddle','Splash','Foam','Creek','Drizzle'],
                     'Raro':['Aqua','Hydro','Oceanus','Torrent','Cascade','Glacier','Nereid','Maelstrom','Undine','Marina','Riptide','Fathom'],
                     'Lendário':['Poseidon','Leviathan','Tiamat','Ægir','Ryūjin','Sedna','Neptune','Varuna','Njord','Nammu','Mazu','Yam'] },
-  'Terra':        { 'Comum':['Pebble','Clay','Dust','Sand','Mud','Stone','Gravel','Loam','Moss','Root','Silt','Flint'],
+  'barro':        { 'Comum':['Pebble','Clay','Dust','Sand','Mud','Stone','Gravel','Loam','Moss','Root','Silt','Flint'],
                     'Raro':['Terra','Geo','Boulder','Titan','Granite','Bedrock','Obsidian','Basalt','Quartz','Monolith','Slate','Crag'],
                     'Lendário':['Atlas','Gaia','Cronus','Ymir','Nidhogg','Kū','Geb','Jörð','Pachamama','Prithvi','Tellus','Antaeus'] },
-  'Vento':        { 'Comum':['Breeze','Gust','Wisp','Draft','Waft','Puff','Whirl','Flutter','Swirl','Drift','Sigh','Feather'],
+  'folha':        { 'Comum':['Breeze','Gust','Wisp','Draft','Waft','Puff','Whirl','Flutter','Swirl','Drift','Sigh','Feather'],
                     'Raro':['Aero','Zephyr','Gale','Storm','Tempest','Cyclone','Vortex','Typhoon','Sirocco','Monsoon','Squall','Tornado'],
                     'Lendário':['Fujin','Boreas','Aeolus','Enlil','Stribog','Vayu','Notus','Eurus','Shu','Ehecatl','Tawhiri','Pazuzu'] },
-  'Sombra':       { 'Comum':['Shade','Dusk','Murk','Gloom','Haze','Dim','Twilight','Cloak','Veil','Blur','Grey','Hush'],
+  'breu':       { 'Comum':['Shade','Dusk','Murk','Gloom','Haze','Dim','Twilight','Cloak','Veil','Blur','Grey','Hush'],
                     'Raro':['Umbra','Nox','Eclipse','Void','Phantom','Abyss','Wraith','Specter','Penumbra','Obscura','Shroud','Requiem'],
                     'Lendário':['Erebus','Nyx','Tenebris','Moros','Kali','Apophis','Nott','Ratri','Ereshkigal','Hel','Achlys','Chernobog'] }
 };
@@ -70,9 +56,13 @@ const SUFIXOS = {
    E o nome não pode acompanhar a raridade depois: é dado uma vez e fica
    (ver js/identidade.js). Portanto sorteia-se das três gavetas ao
    nascer, que é o que os pais fazem — dão um nome sem saber no que o
-   filho se vai tornar. */
-function nomeDeNascimento(elemento) {
-  const gavetas = PREFIXOS[elemento] || PREFIXOS['Fogo'];
+   filho se vai tornar.
+
+   O que MANDA na gaveta é o TOM DA COR (js/cores.js). Era o elemento;
+   passou a ser a cor no dia em que o elemento saiu do jogo, e ficou
+   melhor do que estava — a cor vê-se, o elemento era uma palavra. */
+function nomeDeNascimento(tom) {
+  const gavetas = PREFIXOS[tom] || PREFIXOS['brasa'];
   const nomes = [].concat(gavetas['Comum'] || [], gavetas['Raro'] || [], gavetas['Lendário'] || []);
   const alcunhas = [].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']);
   return rnd(nomes.length ? nomes : ['Ser']) + ', ' + rnd(alcunhas);
@@ -80,49 +70,49 @@ function nomeDeNascimento(elemento) {
 
 const DESCRICOES = {
   'Comum': {
-    'Fogo':['Uma centelha dimensional que encontrou forma própria. Curioso e impulsivo, aquece tudo ao redor sem perceber.','Nascido do calor residual de uma fissura entre mundos. Ainda aprendendo a controlar a intensidade do seu brilho.'],
-    'Água':['Uma gotícula que se separou do grande oceano etéreo. Adaptável e sereno, flui para onde mais precisa de presença.','Espírito aquático jovem que ainda descobre a extensão do seu fluxo. Atento a cada detalhe ao redor.'],
-    'Terra':['Um fragmento de argila primordial que ganhou consciência. Paciente e estável, cresce devagar mas com raízes firmes.','Pedaço de solo antigo que aprendeu a sentir. Prefere a calma, mas guarda uma força silenciosa surpreendente.'],
-    'Vento':['Uma brisa que decidiu ter forma. Livre e inquieto, dificilmente fica parado por muito tempo.','Nascido de correntes de ar entre dimensões. Leve e curioso, tudo o entretém por igual.'],
-    'Sombra':['Uma sombra que aprendeu a existir por conta própria. Observador silencioso, prefere entender antes de agir.','Nascido da penumbra entre mundos. Contemplativo e introspectivo, guarda mais do que mostra.']
+    'brasa':['Uma centelha dimensional que encontrou forma própria. Curioso e impulsivo, aquece tudo ao redor sem perceber.','Nascido do calor residual de uma fissura entre mundos. Ainda aprendendo a controlar a intensidade do seu brilho.'],
+    'mare':['Uma gotícula que se separou do grande oceano etéreo. Adaptável e sereno, flui para onde mais precisa de presença.','Espírito aquático jovem que ainda descobre a extensão do seu fluxo. Atento a cada detalhe ao redor.'],
+    'barro':['Um fragmento de argila primordial que ganhou consciência. Paciente e estável, cresce devagar mas com raízes firmes.','Pedaço de solo antigo que aprendeu a sentir. Prefere a calma, mas guarda uma força silenciosa surpreendente.'],
+    'folha':['Uma brisa que decidiu ter forma. Livre e inquieto, dificilmente fica parado por muito tempo.','Nascido de correntes de ar entre dimensões. Leve e curioso, tudo o entretém por igual.'],
+    'breu':['Uma sombra que aprendeu a existir por conta própria. Observador silencioso, prefere entender antes de agir.','Nascido da penumbra entre mundos. Contemplativo e introspectivo, guarda mais do que mostra.']
   },
   'Raro': {
-    'Fogo':['Forjado no coração de uma fissura ígnea dimensional. Sua presença aquece o ambiente — às vezes demais.','Sobrevivente de um colapso de plano de fogo. Intenso e leal, a chama interior nunca diminui.'],
-    'Água':['Emergiu das profundezas de um oceano etéreo. Carrega a memória de marés que ninguém mais viu.','Espírito das correntes profundas. Calmo na superfície, mas com uma profundidade que surpreende quem se aproxima.'],
-    'Terra':['Talhado das camadas mais antigas de um plano mineral. Cada textura conta histórias de eras passadas.','Guardião silencioso de um território que já não existe. Estável como montanha, gentil como vale.'],
-    'Vento':['Nascido do olho de uma tempestade dimensional. Livre e imprevisível, mas sempre volta.','Corrente de ar que percorreu mil planos antes de se estabelecer. Viajante nato, nunca para de observar.'],
-    'Sombra':['Emergiu do silêncio entre estrelas. Sua presença é reconfortante para quem aprecia a quietude.','Um fragmento do escuro que aprendeu a sentir. Raramente fala, mas quando o faz, vale escutar.']
+    'brasa':['Forjado no coração de uma fissura ígnea dimensional. Sua presença aquece o ambiente — às vezes demais.','Sobrevivente de um colapso de plano de fogo. Intenso e leal, a chama interior nunca diminui.'],
+    'mare':['Emergiu das profundezas de um oceano etéreo. Carrega a memória de marés que ninguém mais viu.','Espírito das correntes profundas. Calmo na superfície, mas com uma profundidade que surpreende quem se aproxima.'],
+    'barro':['Talhado das camadas mais antigas de um plano mineral. Cada textura conta histórias de eras passadas.','Guardião silencioso de um território que já não existe. Estável como montanha, gentil como vale.'],
+    'folha':['Nascido do olho de uma tempestade dimensional. Livre e imprevisível, mas sempre volta.','Corrente de ar que percorreu mil planos antes de se estabelecer. Viajante nato, nunca para de observar.'],
+    'breu':['Emergiu do silêncio entre estrelas. Sua presença é reconfortante para quem aprecia a quietude.','Um fragmento do escuro que aprendeu a sentir. Raramente fala, mas quando o faz, vale escutar.']
   },
   'Lendário': {
-    'Fogo':['Dizem que este ser precedeu o fogo — ele não o controla, ele o é. Sua presença aquece memórias esquecidas e desperta paixões adormecidas em quem se aproxima.'],
-    'Água':['O próprio fluir personificado. Não segue caminhos — os cria. Quem o conhece aprende que resistir às mudanças cansa mais do que abraçá-las.'],
-    'Terra':['Testemunhou o nascimento de planos inteiros. Paciente além da compreensão, ensina pelo simples ato de existir. Sua presença faz o caos se assentar.'],
-    'Vento':['O primeiro movimento antes de qualquer forma. Estar com ele é sentir que o mundo tem mais dimensões do que os olhos percebem.'],
-    'Sombra':['Não é ausência de luz — é a profundidade que dá sentido a ela. Quem aprende a estar com ele descobre uma quietude que o mundo barulhento não oferece.']
+    'brasa':['Dizem que este ser precedeu o fogo — ele não o controla, ele o é. Sua presença aquece memórias esquecidas e desperta paixões adormecidas em quem se aproxima.'],
+    'mare':['O próprio fluir personificado. Não segue caminhos — os cria. Quem o conhece aprende que resistir às mudanças cansa mais do que abraçá-las.'],
+    'barro':['Testemunhou o nascimento de planos inteiros. Paciente além da compreensão, ensina pelo simples ato de existir. Sua presença faz o caos se assentar.'],
+    'folha':['O primeiro movimento antes de qualquer forma. Estar com ele é sentir que o mundo tem mais dimensões do que os olhos percebem.'],
+    'breu':['Não é ausência de luz — é a profundidade que dá sentido a ela. Quem aprende a estar com ele descobre uma quietude que o mundo barulhento não oferece.']
   }
 };
 
 const DESCRICOES_EN = {
   'Comum': {
-    'Fogo':['A dimensional spark that found its own form. Curious and impulsive, it warms everything around without realizing.','Born from the residual heat of a rift between worlds. Still learning to control the intensity of its glow.'],
-    'Água':['A droplet that broke away from the great ethereal ocean. Adaptable and serene, it flows to where presence is most needed.','A young aquatic spirit still discovering the extent of its flow. Attentive to every detail around.'],
-    'Terra':['A fragment of primordial clay that gained consciousness. Patient and stable, it grows slowly but with firm roots.','A piece of ancient soil that learned to feel. Prefers calm, but holds a surprisingly quiet strength.'],
-    'Vento':['A breeze that decided to take form. Free and restless, it hardly stays still for long.','Born from air currents between dimensions. Light and curious, everything captivates it equally.'],
-    'Sombra':['A shadow that learned to exist on its own. A silent observer, it prefers to understand before acting.','Born from the twilight between worlds. Contemplative and introspective, it holds more than it shows.']
+    'brasa':['A dimensional spark that found its own form. Curious and impulsive, it warms everything around without realizing.','Born from the residual heat of a rift between worlds. Still learning to control the intensity of its glow.'],
+    'mare':['A droplet that broke away from the great ethereal ocean. Adaptable and serene, it flows to where presence is most needed.','A young aquatic spirit still discovering the extent of its flow. Attentive to every detail around.'],
+    'barro':['A fragment of primordial clay that gained consciousness. Patient and stable, it grows slowly but with firm roots.','A piece of ancient soil that learned to feel. Prefers calm, but holds a surprisingly quiet strength.'],
+    'folha':['A breeze that decided to take form. Free and restless, it hardly stays still for long.','Born from air currents between dimensions. Light and curious, everything captivates it equally.'],
+    'breu':['A shadow that learned to exist on its own. A silent observer, it prefers to understand before acting.','Born from the twilight between worlds. Contemplative and introspective, it holds more than it shows.']
   },
   'Raro': {
-    'Fogo':['Forged in the heart of a dimensional igneous rift. Its presence warms the surroundings — sometimes too much.','Survivor of a fire-plane collapse. Intense and loyal, the inner flame never dims.'],
-    'Água':['Emerged from the depths of an ethereal ocean. It carries the memory of tides no one else has seen.','Spirit of the deep currents. Calm on the surface, but with a depth that surprises those who draw close.'],
-    'Terra':['Carved from the oldest layers of a mineral plane. Every texture tells stories of ages past.','Silent guardian of a territory that no longer exists. Steady as a mountain, gentle as a valley.'],
-    'Vento':['Born from the eye of a dimensional storm. Free and unpredictable, but always returns.','An air current that traversed a thousand planes before settling. A born traveler, never stops observing.'],
-    'Sombra':['Emerged from the silence between stars. Its presence is comforting to those who appreciate stillness.','A fragment of darkness that learned to feel. Rarely speaks, but when it does, it\'s worth listening.']
+    'brasa':['Forged in the heart of a dimensional igneous rift. Its presence warms the surroundings — sometimes too much.','Survivor of a fire-plane collapse. Intense and loyal, the inner flame never dims.'],
+    'mare':['Emerged from the depths of an ethereal ocean. It carries the memory of tides no one else has seen.','Spirit of the deep currents. Calm on the surface, but with a depth that surprises those who draw close.'],
+    'barro':['Carved from the oldest layers of a mineral plane. Every texture tells stories of ages past.','Silent guardian of a territory that no longer exists. Steady as a mountain, gentle as a valley.'],
+    'folha':['Born from the eye of a dimensional storm. Free and unpredictable, but always returns.','An air current that traversed a thousand planes before settling. A born traveler, never stops observing.'],
+    'breu':['Emerged from the silence between stars. Its presence is comforting to those who appreciate stillness.','A fragment of darkness that learned to feel. Rarely speaks, but when it does, it\'s worth listening.']
   },
   'Lendário': {
-    'Fogo':['They say this being preceded fire — it does not control it, it is fire. Its presence warms forgotten memories and awakens dormant passions in those who draw near.'],
-    'Água':['The very embodiment of flow. It does not follow paths — it creates them. Those who know it learn that resisting change is more tiring than embracing it.'],
-    'Terra':['Witnessed the birth of entire planes. Patient beyond comprehension, it teaches through the simple act of existing. Its presence makes chaos settle.'],
-    'Vento':['The first movement before any form. Being with it is feeling that the world has more dimensions than the eyes perceive.'],
-    'Sombra':['It is not the absence of light — it is the depth that gives meaning to it. Those who learn to be with it discover a stillness the noisy world cannot offer.']
+    'brasa':['They say this being preceded fire — it does not control it, it is fire. Its presence warms forgotten memories and awakens dormant passions in those who draw near.'],
+    'mare':['The very embodiment of flow. It does not follow paths — it creates them. Those who know it learn that resisting change is more tiring than embracing it.'],
+    'barro':['Witnessed the birth of entire planes. Patient beyond comprehension, it teaches through the simple act of existing. Its presence makes chaos settle.'],
+    'folha':['The first movement before any form. Being with it is feeling that the world has more dimensions than the eyes perceive.'],
+    'breu':['It is not the absence of light — it is the depth that gives meaning to it. Those who learn to be with it discover a stillness the noisy world cannot offer.']
   }
 };
 
@@ -130,26 +120,36 @@ const DESCRICOES_EN = {
    ISTO EVITA — não só conteúdo morto.
 
    Guarda-se o ÍNDICE da descrição no avatar, e resolvia-se com
-   (raridade, elemento, índice). Enquanto a raridade nunca mudava, isso
+   (raridade, gaveta, índice). Enquanto a raridade nunca mudava, isso
    dava sempre a mesma frase. Agora a raridade sobe com a fase — e o
    mesmo índice passaria a apontar para outra gaveta: o avatar mudava de
    descrição ao evoluir, sem ninguém ter pedido.
 
-   Uma gaveta só por elemento resolve as duas coisas de uma vez: o
-   índice é estável para sempre, e as descrições que estavam trancadas
-   atrás do Raro e do Lendário voltam a poder sair a qualquer avatar. */
-function descricoesDoElemento(elemento) {
+   Uma gaveta só por tom resolve as duas coisas de uma vez: o índice é
+   estável para sempre, e as descrições que estavam trancadas atrás do
+   Raro e do Lendário voltam a poder sair a qualquer avatar. */
+function descricoesDoTom(tom) {
   const D = (typeof window !== 'undefined' && window._currentLang === 'en') ? DESCRICOES_EN : DESCRICOES;
   const gavetas = ['Comum', 'Raro', 'Lendário'];
   let pool = [];
-  for (const g of gavetas) pool = pool.concat((D[g] && (D[g][elemento] || D[g]['Fogo'])) || []);
+  for (const g of gavetas) pool = pool.concat((D[g] && (D[g][tom] || D[g]['brasa'])) || []);
   return pool;
 }
 
-function getAvatarDesc(raridade, elemento, idx) {
+/* Aceita o TOM ou o AVATAR INTEIRO. Há sítios que têm um e sítios que
+   têm o outro, e obrigar cada um deles a converter era pedir que um se
+   enganasse — e nenhum deles daria erro ao enganar-se, só uma frase
+   errada por baixo do bicho. */
+function _tomDe(x) {
+  if (typeof x === 'string')
+    return (typeof CORES_TONS !== 'undefined' && CORES_TONS.indexOf(x) >= 0) ? x : 'brasa';
+  return (typeof tomDoAvatar === 'function') ? tomDoAvatar(x) : 'brasa';
+}
+
+function getAvatarDesc(raridade, alvo, idx) {
   // A raridade fica no argumento porque muitos sítios a passam, mas já
-  // não entra na escolha — ver descricoesDoElemento.
-  const pool = descricoesDoElemento(elemento);
+  // não entra na escolha — ver descricoesDoTom.
+  const pool = descricoesDoTom(_tomDe(alvo));
   if(!pool.length) return '';
   return pool[Math.min(idx ?? 0, pool.length - 1)];
 }
@@ -165,53 +165,12 @@ function determinarRaridade() {
   return 'Comum';
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ELEMENTOS QUE DEIXARAM DE EXISTIR
-//
-// O jogo começou com 9 elementos, passou a 7 e tem hoje CINCO: Fogo,
-// Água, Terra, Vento e Sombra. Avatares gerados antes disto continuam
-// gravados no Firestore com o elemento antigo — sem esta tabela ficariam
-// sem cores, sem ficha de combate e sem kit, e o SVG rebentava.
-//
-// O mapeamento é pelo ATRIBUTO PRIMÁRIO, não pelo tema: é o que faz o
-// avatar lutar de forma parecida com o que lutava antes. Daí a
-// Eletricidade (INT) ir para Água (INT) e não para Vento, que seria a
-// escolha temática óbvia.
-//
-// O vinculoDecay que anda pelo passivo, ligado mas a 1.0 em toda a
-// gente, é resto de um destes quatro — ficou o campo e foi-se quem o
-// usava. Fica na forma que o passivo devolve para o dia em que houver um
-// gene que lhe pegue.
-// ═══════════════════════════════════════════════════════════════════
-const ELEMENTO_LEGADO = {
-  'Eletricidade': 'Água',    // INT primária → INT primária
-  'Luz':          'Vento',   // HAB primária → HAB primária
-  'Void':         'Terra',   // removidos ainda antes, na passagem de 9 para 7
-  'Aether':       'Vento',
-};
-
-function normalizarElemento(el) {
-  return ELEMENTO_LEGADO[el] || el;
-}
-
-function escolherElemento() {
-  const todos = ['Fogo','Água','Terra','Vento','Sombra'];
-  return rnd(todos);
-}
-
 // ─── SVG GENERATOR ───
-const ELEM_CFG = {
-  'Fogo':         { cores:['#dc2626','#ef4444','#f97316','#fb923c'], coresSec:['#7c2d12','#991b1b','#9a3412'], corBrilho:'#fbbf24', corOlho:'#ff6b00', particulas:'chamas' },
-  'Água':         { cores:['#0891b2','#06b6d4','#3b82f6','#0284c7'], coresSec:['#075985','#0c4a6e','#1e40af'], corBrilho:'#67e8f9', corOlho:'#0ea5e9', particulas:'gotas' },
-  'Terra':        { cores:['#78350f','#92400e','#a16207','#854d0e'], coresSec:['#451a03','#57534e','#78716c'], corBrilho:'#d97706', corOlho:'#fbbf24', particulas:'pedras' },
-  'Vento':        { cores:['#e0f2fe','#bae6fd','#7dd3fc','#38bdf8'], coresSec:['#0c4a6e','#075985','#0369a1'], corBrilho:'#f0fdfa', corOlho:'#22d3ee', particulas:'espirais' },
-  'Sombra':       { cores:['#581c87','#6b21a8','#7c3aed','#8b5cf6'], coresSec:['#1e1b4b','#312e81','#3730a3'], corBrilho:'#c4b5fd', corOlho:'#a78bfa', particulas:'sombras' }
-};
 
 // Contador global para dar um ID irrepetível a cada SVG gerado
 let _svgUid = 0;
 
-function gerarSVG(elemento, raridade, seed, w, h, fase) {
+function gerarSVG(avatar, raridade, seed, w, h, fase) {
   fase = (typeof fase === 'number') ? fase : 0;
   // random determinístico
   let _seed = seed;
@@ -221,25 +180,23 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   };
   const escolher = (arr) => arr[random(0, arr.length - 1)];
 
-  /* ── A PALETA VEM DA COR, SE A HOUVER ──
+  /* ── A PALETA É A COR DO AVATAR, E MAIS NADA ──
 
-     O primeiro parametro chamava-se `elemento` e so sabia ser um dos
-     cinco. Passa a aceitar tambem um AVATAR — e ai a paleta sai das
-     cores que ele traz no DNA, que sao doze por doze em vez de cinco.
+     O primeiro parâmetro chamava-se `elemento`, e havia aqui cinco
+     paletas escritas à mão — uma por elemento, sete cores cada. Dois
+     avatares da mesma família saíam do mesmo balde de vermelhos.
 
-     Continua a aceitar o nome do elemento, e e por isso que os 39
-     sitios que desenham avatares nao precisaram de mudar todos ao
-     mesmo tempo: quem passa o elemento recebe a paleta antiga, quem
-     passa o avatar recebe a nova. */
-  let cfg;
-  if (elemento && typeof elemento === 'object') {
-    const _av = elemento;
-    cfg = (typeof paletaDoAvatar === 'function') ? paletaDoAvatar(_av)
-        : (ELEM_CFG[_av.elemento] || ELEM_CFG['Fogo']);
-    elemento = _av.elemento;
-  } else {
-    cfg = ELEM_CFG[elemento] || ELEM_CFG['Fogo'];
-  }
+     Agora sai tudo da cor que o avatar traz no DNA: doze por doze, e
+     a paleta é uma conta sobre o matiz (paletaDeCores, js/cores.js).
+
+     Quem passar outra coisa que não o avatar — um registo de lobby, um
+     nome antigo — recebe na mesma uma cor estável, tirada da SEED. A
+     seed já decide o corpo inteiro; tirar dela também a cor não inventa
+     nada, e nunca deixa um bicho sem cor nenhuma. */
+  const cfg = (typeof paletaDoAvatar === 'function')
+    ? paletaDoAvatar(avatar && typeof avatar === 'object' ? avatar : null, seed)
+    : { cores:['#8b5cf6','#a78bfa','#c4b5fd','#ddd6fe'], coresSec:['#4c1d95','#5b21b6','#6d28d9'],
+        corBrilho:'#ede9fe', corOlho:'#c4b5fd', particulas:'sombras' };
   const cor1      = escolher(cfg.cores);
   const cor2      = escolher(cfg.cores);
   const corSec    = escolher(cfg.coresSec);
@@ -484,7 +441,7 @@ function gerarSVG(elemento, raridade, seed, w, h, fase) {
   }
 
   s += `</g>`;
-  // Partículas por elemento
+  // As partículas, que seguem o tom da cor
   s += `<g class="av-particula">`;
   const np = raridade==='Lendário' ? 14 : raridade==='Raro' ? 9 : 5;
   for(let i=0;i<np;i++){

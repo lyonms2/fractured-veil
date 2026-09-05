@@ -35,11 +35,16 @@
 const A = require('./auditoria-base.js');
 const { M } = A;
 
-// A Armadura que o defensor mostra numa Força de Defesa, com o dado
-// preso pela semente. É o número que se quer ver dobrar — ou não.
-function armaduraNaFD(defensor, elementoDoAtaque, opts) {
+/* A Armadura que o defensor mostra numa Força de Defesa, com o dado
+   preso pela semente. É o número que se quer ver dobrar — ou não.
+
+   O segundo argumento era o ELEMENTO do ataque, e servia às duas
+   perguntas ao mesmo tempo: "é magia?" e "de que família?". São duas
+   perguntas, e o motor passou a recebê-las separadas — aqui basta a
+   primeira, que é a única que a Casca de Helena faz. */
+function armaduraNaFD(defensor, ehMagia, opts) {
   const rng = M._c3rng(77);
-  const r = M._c3fd(defensor, rng, Object.assign({ elemento: elementoDoAtaque || null }, opts || {}));
+  const r = M._c3fd(defensor, rng, Object.assign({ magica: !!ehMagia }, opts || {}));
   return { A: r.partes.find(p => p.r === 'A').v, total: r.total, critico: r.critico };
 }
 
@@ -80,12 +85,12 @@ A.ver('é sustentada e custa 2 PM por turno',
 // ── 3. Contra magia, NÃO dobra ──
 // Esta é a metade do texto que se perde com facilidade. O `excetoMagia`
 // do catálogo nunca é lido por ninguém: quem cumpre a promessa é o
-// guarda `!opts.elemento` no _c3fd, três ficheiros ao lado. Uma
+// guarda `!opts.magica` no _c3fd, três ficheiros ao lado. Uma
 // propriedade a dizer uma coisa e outra linha a fazê-la é exactamente o
 // sítio onde um dia alguém mexe numa e não na outra.
 {
-  const semCasca = armaduraNaFD(defensor().d, 'Fogo');
-  const comCasca = armaduraNaFD(defensor({ armaduraDobrada: true }).d, 'Fogo');
+  const semCasca = armaduraNaFD(defensor().d, true);
+  const comCasca = armaduraNaFD(defensor({ armaduraDobrada: true }).d, true);
   A.ver('contra MAGIA, a Armadura não dobra',
         comCasca.A === semCasca.A,
         `A ${semCasca.A} → ${comCasca.A} (o texto diz "tudo que não seja magia")`);
@@ -96,7 +101,7 @@ A.ver('é sustentada e custa 2 PM por turno',
 {
   const nu = defensor({ armaduraDobrada: true });
   nu.d.ficha.A = 0;
-  const r = armaduraNaFD(nu.d, null);
+  const r = armaduraNaFD(nu.d, false);
   A.ver('com Armadura 0, a Casca não inventa armadura nenhuma',
         r.A === 0, `A = ${r.A}`);
 }
@@ -105,7 +110,7 @@ A.ver('é sustentada e custa 2 PM por turno',
 // Metade do catálogo ofensivo tem `ignoraArmadura`. Se a Casca a
 // devolvesse, essas magias deixavam de servir para o que existem.
 {
-  const r = armaduraNaFD(defensor({ armaduraDobrada: true }).d, 'Fogo', { ignoraArmadura: true });
+  const r = armaduraNaFD(defensor({ armaduraDobrada: true }).d, true, { ignoraArmadura: true });
   A.ver('uma magia que ignora Armadura continua a ignorá-la',
         r.A === 0, `A = ${r.A}`);
 }
@@ -119,7 +124,7 @@ A.ver('é sustentada e custa 2 PM por turno',
   let semente = 1, r = null;
   for (; semente < 400; semente++) {
     const rng = M._c3rng(semente);
-    const t = M._c3fd(defensor({ armaduraDobrada: true }).d, rng, { elemento: null });
+    const t = M._c3fd(defensor({ armaduraDobrada: true }).d, rng, { magica: false });
     if (t.critico) { r = t; break; }
   }
   const base = 3;

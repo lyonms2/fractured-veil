@@ -309,7 +309,7 @@ function _arenaFiltrarLobby(query) {
   }
   lista.innerHTML = filtrados.map(([k, d]) => `
     <div class="arena-lobby-card">
-      <div class="arena-lobby-svg">${gerarSVG(d.elemento||'Fogo', d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
+      <div class="arena-lobby-svg">${gerarSVG(d, d.raridade||'Comum', d.seed||0, 44, 44, faseFromNivel(d.nivel))}</div>
       <div class="arena-lobby-info">
         <div class="arena-lobby-nome">${esc(d.nome) || '???'}</div>
         <div class="arena-lobby-meta">
@@ -341,7 +341,7 @@ async function entrarNoLobby() {
     wallet:    walletAddress,
     nome:      avatar.nome.split(',')[0],
     raridade:  avatar.raridade,
-    elemento:  avatar.elemento,
+    ...paresDeCor(avatar),
     nivel:     nivel   || 1,
     vinculo:   Math.floor(vinculo || 0),
     seed:      avatar.seed || 0,
@@ -401,7 +401,7 @@ async function desafiarJogador(walletOponente) {
         wallet:   walletAddress,
         nome:     avatar.nome.split(',')[0],
         raridade: avatar.raridade,
-        elemento: avatar.elemento,
+        ...paresDeCor(avatar),
         seed:     avatar.seed || 0,
         nivel:    nivel  || 1,
         escolha:  null,
@@ -411,7 +411,8 @@ async function desafiarJogador(walletOponente) {
         wallet:   walletOponente,
         nome:     null,
         raridade: null,
-        elemento: null,
+        corPrincipal: null,
+        corSecundaria: null,
         seed:     0,
         nivel:    1,
         escolha:  null,
@@ -560,7 +561,8 @@ async function aceitarDesafio(salaId) {
     status: 'em_jogo',
     [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
-    [`jogadores/${walletAddress}/elemento`]: avatar.elemento,
+    [`jogadores/${walletAddress}/corPrincipal`]:  paresDeCor(avatar).corPrincipal,
+    [`jogadores/${walletAddress}/corSecundaria`]: paresDeCor(avatar).corSecundaria,
     [`jogadores/${walletAddress}/seed`]:     avatar.seed || 0,
     [`jogadores/${walletAddress}/nivel`]:    nivel || 1,
   });
@@ -622,7 +624,7 @@ function _renderPartida(salaId, sala) {
 
       <div class="arena-vs-row">
         <div class="arena-vs-lado" id="vsEu">
-          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 38, 38, faseFromNivel(meu.nivel))}</div>
+          <div class="arena-vs-svg">${gerarSVG(meu, meu.raridade||'Comum', meu.seed||0, 38, 38, faseFromNivel(meu.nivel))}</div>
           <div class="arena-vs-nome">${meu.nome||t('arena.you')}</div>
           <div class="arena-vs-stars" id="starsEu">${_pv(placar[walletAddress]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaEu">❓</div>
@@ -637,7 +639,7 @@ function _renderPartida(salaId, sala) {
         </div>
 
         <div class="arena-vs-lado" id="vsOp">
-          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 38, 38, faseFromNivel(op.nivel))}</div>
+          <div class="arena-vs-svg">${gerarSVG(op, op.raridade||'Comum', op.seed||0, 38, 38, faseFromNivel(op.nivel))}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-stars" id="starsOp">${_pv(placar[opWallet]||0)}</div>
           <div class="arena-vs-escolha" id="escolhaOp">❓</div>
@@ -1089,13 +1091,13 @@ async function _renderResultado(sala, opWallet) {
 
       <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${euVenci?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(meu.elemento||'Fogo', meu.raridade||'Comum', meu.seed||0, 36, 36, faseFromNivel(meu.nivel))}</div>
+          <div class="arena-vs-svg">${gerarSVG(meu, meu.raridade||'Comum', meu.seed||0, 36, 36, faseFromNivel(meu.nivel))}</div>
           <div class="arena-vs-nome">${meu.nome||t('arena.you')}</div>
           <div class="arena-vs-pts" style="font-size:1.25rem;">${placar[walletAddress]||0}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci&&!empate?'arena-vencedor':''}">
-          <div class="arena-vs-svg">${gerarSVG(op.elemento||'Fogo', op.raridade||'Comum', op.seed||0, 36, 36, faseFromNivel(op.nivel))}</div>
+          <div class="arena-vs-svg">${gerarSVG(op, op.raridade||'Comum', op.seed||0, 36, 36, faseFromNivel(op.nivel))}</div>
           <div class="arena-vs-nome">${op.nome||opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:1.25rem;">${placar[opWallet]||0}</div>
         </div>

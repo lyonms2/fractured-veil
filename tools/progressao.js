@@ -74,7 +74,7 @@ console.log('\n═══ 1. O QUE UM NÍVEL COMPRA ═══\n');
   console.log('  pontos de ficha por raridade e nível:');
   console.log('    nível    ' + RARIDADES.map(r => r.padEnd(10)).join(''));
   for (const n of NIVEIS) {
-    const l = RARIDADES.map(r => String(M.fichaDeAvatar(1, r, 'Fogo', n).pontos).padEnd(10));
+    const l = RARIDADES.map(r => String(M.fichaDeAvatar(1, r, n).pontos).padEnd(10));
     console.log('    ' + String(n).padStart(5) + '    ' + l.join(''));
   }
   console.log('');
@@ -86,8 +86,8 @@ console.log('\n═══ 2. A RARIDADE DILUI-SE? ═══\n');
 {
   console.log('  a vantagem do Lendário sobre o Comum, em pontos:');
   for (const n of NIVEIS) {
-    const c = M.fichaDeAvatar(1, 'Comum', 'Fogo', n).pontos;
-    const l = M.fichaDeAvatar(1, 'Lendário', 'Fogo', n).pontos;
+    const c = M.fichaDeAvatar(1, 'Comum', n).pontos;
+    const l = M.fichaDeAvatar(1, 'Lendário', n).pontos;
     console.log(`    nível ${String(n).padStart(2)}  ${c} vs ${l}  ` +
                 `→ +${l - c} pontos, ${(l / c).toFixed(2)}× em proporção`);
   }

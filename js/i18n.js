@@ -132,11 +132,11 @@
       'falas.item':       ['Esse item fica incrível em mim! ✨','Que estilo! 😎','Agora sim! Equipado!','Me sinto mais poderoso! 💪','Isso combina comigo! 🌟','Que upgrade! ✨'],
 
       // FALAS por elemento
-      'falas.elem.Fogo':         ['Sinto o fogo dentro de mim! 🔥','Arder é minha natureza! 🔥','Minha chama nunca apaga! 🔥','Intenso e imparável! 🔥'],
-      'falas.elem.Água':         ['Fluindo com calma... 🌊','Como a água, me adapto a tudo! 💧','Sereno como o mar... 🌊','A água encontra sempre o caminho! 💧'],
-      'falas.elem.Terra':        ['Minhas raízes são profundas! 🌿','Firme como uma montanha! 🏔️','Sólido e inabalável! 🌱','Da terra vim, à terra pertenço! 🌍'],
-      'falas.elem.Vento':        ['Livre como o vento! 💨','Ninguém me prende! 🌬️','Leve e veloz! 💨','Sou pura leveza! 🌬️'],
-      'falas.elem.Sombra':       ['As sombras são minha morada... 🌑','Vejo o que os outros não veem! 🌑','Confortável na escuridão... 🌑','Mistério é meu dom! 🖤'],
+      'falas.tom.brasa':         ['Sinto o fogo dentro de mim! 🔥','Arder é minha natureza! 🔥','Minha chama nunca apaga! 🔥','Intenso e imparável! 🔥'],
+      'falas.tom.mare':         ['Fluindo com calma... 🌊','Como a água, me adapto a tudo! 💧','Sereno como o mar... 🌊','A água encontra sempre o caminho! 💧'],
+      'falas.tom.barro':        ['Minhas raízes são profundas! 🌿','Firme como uma montanha! 🏔️','Sólido e inabalável! 🌱','Da terra vim, à terra pertenço! 🌍'],
+      'falas.tom.folha':        ['Livre como o vento! 💨','Ninguém me prende! 🌬️','Leve e veloz! 💨','Sou pura leveza! 🌬️'],
+      'falas.tom.breu':       ['As sombras são minha morada... 🌑','Vejo o que os outros não veem! 🌑','Confortável na escuridão... 🌑','Mistério é meu dom! 🖤'],
 
       /* O VIGOR, que era o passivo elemental.
 
@@ -331,7 +331,7 @@
 
       // Misc UI
       'ui.cancel':               'Cancelar',
-      'ui.elem_passive':         'Vigor',
+      'ui.vigor_label':          'Vigor',
 
       // Egg actions
       'egg.burn.title':          '🔥 Queimar Ovo',
@@ -473,11 +473,11 @@
       'falas.item':       ["This item looks amazing on me! ✨","What style! 😎","Now we're talking! Equipped!","I feel more powerful! 💪","This suits me! 🌟","What an upgrade! ✨"],
 
       // Element speech
-      'falas.elem.Fogo':         ["I feel the fire within! 🔥","Burning is my nature! 🔥","My flame never dies! 🔥","Intense and unstoppable! 🔥"],
-      'falas.elem.Água':         ["Flowing calmly... 🌊","Like water, I adapt to everything! 💧","Serene as the sea... 🌊","Water always finds its way! 💧"],
-      'falas.elem.Terra':        ["My roots run deep! 🌿","Steady as a mountain! 🏔️","Solid and unshakeable! 🌱","From earth I came, to earth I belong! 🌍"],
-      'falas.elem.Vento':        ["Free as the wind! 💨","Nobody holds me back! 🌬️","Light and swift! 💨","I am pure lightness! 🌬️"],
-      'falas.elem.Sombra':       ["Shadows are my home... 🌑","I see what others can't! 🌑","Comfortable in the dark... 🌑","Mystery is my gift! 🖤"],
+      'falas.tom.brasa':         ["I feel the fire within! 🔥","Burning is my nature! 🔥","My flame never dies! 🔥","Intense and unstoppable! 🔥"],
+      'falas.tom.mare':         ["Flowing calmly... 🌊","Like water, I adapt to everything! 💧","Serene as the sea... 🌊","Water always finds its way! 💧"],
+      'falas.tom.barro':        ["My roots run deep! 🌿","Steady as a mountain! 🏔️","Solid and unshakeable! 🌱","From earth I came, to earth I belong! 🌍"],
+      'falas.tom.folha':        ["Free as the wind! 💨","Nobody holds me back! 🌬️","Light and swift! 💨","I am pure lightness! 🌬️"],
+      'falas.tom.breu':       ["Shadows are my home... 🌑","I see what others can't! 🌑","Comfortable in the dark... 🌑","Mystery is my gift! 🖤"],
 
       // Elemental passives
       'vigor.titulo':            'Vigor',
@@ -662,7 +662,7 @@
 
       // Misc UI
       'ui.cancel':               'Cancel',
-      'ui.elem_passive':         'Vigor',
+      'ui.vigor_label':          'Vigor',
 
       // Egg actions
       'egg.burn.title':          '🔥 Burn Egg',

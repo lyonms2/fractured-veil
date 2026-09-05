@@ -37,25 +37,17 @@
 // do Vercel e pode não estar instalado aqui. Assim diz-se o que está
 // errado sem precisar de nada instalado.
 const RARIDADES = ['Comum', 'Raro', 'Lendário'];
-// Os cinco do jogo, tal como estão no ELEM_CFG de js/data.js. Escrevi
-// oito de cabeça na primeira versão e metade não existia — 'Agua' sem
-// acento entre eles, que teria criado um ovo de um elemento sem cores.
-const ELEMENTOS = ['Fogo', 'Água', 'Terra', 'Vento', 'Sombra'];
 // Os mesmos dias do handleBotarOvo em api/pool.js.
 const DIAS = { 'Comum': 7, 'Raro': 14, 'Lendário': 30 };
 
-const [uid, raridade = 'Comum', elemento = 'Fogo'] = process.argv.slice(2);
+const [uid, raridade = 'Comum'] = process.argv.slice(2);
 
 if (!uid) {
-  console.error('Falta o uid. Uso: node tools/dar-ovo.js <uid> [raridade] [elemento]');
+  console.error('Falta o uid. Uso: node tools/dar-ovo.js <uid> [raridade]');
   process.exit(1);
 }
 if (!RARIDADES.includes(raridade)) {
   console.error(`Raridade inválida. Uma de: ${RARIDADES.join(', ')}`);
-  process.exit(1);
-}
-if (!ELEMENTOS.includes(elemento)) {
-  console.error(`Elemento inválido. Um de: ${ELEMENTOS.join(', ')}`);
   process.exit(1);
 }
 
@@ -92,7 +84,6 @@ function iniciar() {
   const ovo = {
     id:       Date.now(),
     raridade,
-    elemento,
     expiraEm: Date.now() + DIAS[raridade] * 86400000,
   };
 
@@ -101,7 +92,7 @@ function iniciar() {
     [`ovosEmitidos.o${ovo.id}`]: raridade,
   });
 
-  console.log(`Ovo ${raridade} de ${elemento} entregue a ${uid}.`);
+  console.log(`Ovo ${raridade} entregue a ${uid}.`);
   console.log(`  id ${ovo.id}, válido até ${new Date(ovo.expiraEm).toLocaleDateString('pt-BR')}`);
   console.log('\nRecarregue o jogo: o ovo passa do inbox para o inventário do avatar ativo.');
 })().catch((e) => { console.error(e); process.exit(1); });

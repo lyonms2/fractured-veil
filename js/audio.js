@@ -345,7 +345,7 @@ function playSound(id) {
     }
 
     // ── MINIGAMES — SIMON SAYS ────────────────────────────────────
-    // Notas distintas por elemento (usadas via playSimonTone(idx))
+    // Notas distintas por símbolo (usadas via playSimonTone(idx))
     case 'simon_0': _osc(261, 'sine', t, 0.30, 0.25, ctx); break; // Fogo — Dó
     case 'simon_1': _osc(329, 'sine', t, 0.30, 0.25, ctx); break; // Água — Mi
     case 'simon_2': _osc(392, 'sine', t, 0.30, 0.25, ctx); break; // Terra — Sol
@@ -473,7 +473,7 @@ function playSound(id) {
   }
 }
 
-// ── Simon Says: toca o tom pelo índice do elemento ───────────────
+// ── Simon Says: toca o tom pelo índice do símbolo ────────────────
 function playSimonTone(idx) {
   playSound('simon_' + idx);
 }

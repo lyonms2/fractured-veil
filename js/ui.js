@@ -598,7 +598,6 @@ function _fmtTime(secs) {
 // ═══════════════════════════════════════════
 function fillCreatureCard() {
   if(!avatar) return;
-  const car   = avatar.car || CARACTERISTICAS_ELEMENTAIS[avatar.elemento] || null;
   const parts = avatar.nome.split(',');
   const nome  = parts[0].trim();
   const sufixo = parts.slice(1).join(',').trim();
@@ -607,8 +606,14 @@ function fillCreatureCard() {
   const sfx = document.getElementById('idSufixo');
   if(sfx) sfx.textContent = sufixo || '';
 
+  /* Dizia "🔥 Fogo". Diz a cor, e pinta-se dela: é o mesmo bicho que
+     está desenhado ao lado, e agora as duas coisas concordam. */
   const meta = document.getElementById('idMeta');
-  if(meta) meta.textContent = car ? `${car.emoji} ${avatar.elemento}` : avatar.elemento;
+  const corAv = (typeof corDoAvatar === 'function') ? corDoAvatar(avatar) : '#8b5cf6';
+  if(meta) {
+    meta.textContent = (typeof frasedaCor === 'function') ? frasedaCor(avatar) : '';
+    meta.style.color = corAv;
+  }
 
   const badge = document.getElementById('idBadge');
   if(badge) {
@@ -618,16 +623,17 @@ function fillCreatureCard() {
 
   const descEl = document.getElementById('idDesc');
   if(descEl) {
-    descEl.textContent           = (avatar.descricaoIdx != null ? getAvatarDesc(avatar.raridade, avatar.elemento, avatar.descricaoIdx) : avatar.descricao) || '';
-    descEl.style.borderLeftColor = car ? car.cor : 'var(--border)';
-    descEl.style.color           = car ? car.cor + 'bb' : '#887799';
+    descEl.textContent           = (avatar.descricaoIdx != null ? getAvatarDesc(avatar.raridade, avatar, avatar.descricaoIdx) : avatar.descricao) || '';
+    descEl.style.borderLeftColor = corAv;
+    descEl.style.color           = corAv;
+    descEl.style.opacity         = '.75';
   }
 
-  const bonusBlock = document.getElementById('elemBonusBlock');
-  const bonusTxt   = document.getElementById('elemBonusTxt');
-  const bonusLabel = document.getElementById('elemBonusLabel');
-  /* O porteiro era o `car` — a entrada do elemento na tabela. Um avatar
-     com um elemento que já não existisse não tinha bloco.
+  const bonusBlock = document.getElementById('vigorBlock');
+  const bonusTxt   = document.getElementById('vigorTxt');
+  const bonusLabel = document.getElementById('vigorLabel');
+  /* O porteiro era a entrada do elemento numa tabela. Um avatar com um
+     elemento que já não existisse não tinha bloco.
 
      Passa a ser a CERTIDÃO: o que este bloco mostra é o vigor, e o vigor
      vem do DNA. Quem tem DNA tem vigor para mostrar (nem que seja "sem
@@ -637,11 +643,9 @@ function fillCreatureCard() {
     bonusTxt.textContent = (typeof frasedoVigor === 'function')
       ? frasedoVigor(avatar) : '';
     // E a cor é a do bicho, e não a do elemento dele.
-    const _c = (typeof corDoAvatar === 'function') ? corDoAvatar(avatar)
-             : (car ? car.cor : '#8b5cf6');
-    bonusTxt.style.color              = _c;
-    bonusLabel.style.color            = _c;
-    bonusBlock.style.borderColor      = _c;
+    bonusTxt.style.color              = corAv;
+    bonusLabel.style.color            = corAv;
+    bonusBlock.style.borderColor      = corAv;
     bonusBlock.style.backgroundColor  = 'rgba(255,255,255,.03)';
     bonusBlock.style.opacity          = '.9';
     bonusBlock.style.display          = '';

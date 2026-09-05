@@ -95,7 +95,7 @@ const NASC_SEXO_ALELOS = ['X', 'Y'];
      LÂMINA   bate — dano, e o que abre caminho para ele
 
    Não são classes: um GUARDA não está proibido de nascer com a magia
-   mais violenta do elemento dele. É só menos provável — os pesos
+   mais violenta de todas. É só menos provável — os pesos
    inclinam o sorteio, como inclinam o dos atributos.
 
    Par de alelos, como tudo o resto: o dominante conta a dobrar e o
@@ -164,7 +164,7 @@ function _nascRng(seed) {
   };
 }
 
-function gerarDna(elemento, origem, seed) {
+function gerarDna(origem, seed) {
   const faixa = NASC_ALELOS[origem] || NASC_ALELOS['Comum'];
   const rnd = _nascRng(seed);
   const alelo = () => faixa.min + Math.floor(rnd() * (faixa.max - faixa.min + 1));
@@ -198,7 +198,7 @@ function gerarDna(elemento, origem, seed) {
   const nv = NASC_VIGOR.length;
   genes.vigor = [Math.floor(rnd() * nv), Math.floor(rnd() * nv)];
 
-  return { v: 2, elemento: elemento || 'Fogo', genes };
+  return { v: 2, genes };
 }
 
 /* A TENDÊNCIA.
@@ -374,7 +374,6 @@ function dnaLegivel(dna) {
 // ═══════════════════════════════════════════════════════════════════
 function nascer(opts) {
   const o = opts || {};
-  const elemento = o.elemento || 'Fogo';
   // A origem é a raridade do ovo consumido — ou Comum, na invocação, que
   // não consome ovo nenhum.
   const origem = NASC_ALELOS[o.origem] ? o.origem : 'Comum';
@@ -388,7 +387,7 @@ function nascer(opts) {
 
      Sem pais — invocação, ou postura de um avatar sozinho — sorteia-se
      como sempre. */
-  const dna = o.dna || gerarDna(elemento, origem, o.seed);
+  const dna = o.dna || gerarDna(origem, o.seed);
 
   return {
     v:         1,

@@ -13,7 +13,7 @@ function avataresVivos() {
 //
 // Repare que conta INVOCAÇÕES TOTAIS, não avatares vivos. Um avatar
 // queimado ou morto continua contando, portanto invocar-queimar-invocar
-// à procura do elemento ou da ficha ideal gasta as tentativas grátis
+// à procura da cor ou da ficha ideal gasta as tentativas grátis
 // como qualquer outra. Só se pode queimar um slot que não seja o ativo
 // (ver avatars-market.js), logo também não dá para chegar a zero vivos
 // de propósito para reativar a rede de segurança.
@@ -166,16 +166,26 @@ function triggerSummon() {
   btn.disabled = true;
 
   const raridade = 'Comum';
-  const elemento = escolherElemento();
-  const car      = CARACTERISTICAS_ELEMENTAIS[elemento];
-  const nome     = nomeDeNascimento(elemento);
-  const _descPool    = descricoesDoElemento(elemento);
+
+  /* ── O SEED PRIMEIRO, E O DNA A SEGUIR ──
+
+     O seed saía do nome (nome + elemento) e o DNA saía do seed. Agora o
+     NOME sai da cor e a cor sai do DNA, portanto a ordem inverteu-se:
+     sorteia-se o seed, dele sai o DNA, dele sai a cor, e dela o nome.
+
+     É a ordem que o resto do jogo já supunha. O seed decide o corpo
+     inteiro do bicho (gerarSVG) e a ficha inteira (fichaDeAvatar); ser
+     ele a decidir também o nome é pôr tudo a sair da mesma raiz, em vez
+     de o nome ser a raiz de si próprio. */
+  const seed = Math.floor(Math.random() * 2147483647);
+  const dna  = (typeof gerarDna === 'function') ? gerarDna('Comum', seed) : null;
+  const tom  = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
+    ? tomDaCor(dna.genes.cor[0]) : 'brasa';
+
+  const nome         = nomeDeNascimento(tom);
+  const _descPool    = descricoesDoTom(tom);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
   const descricao    = _descPool[descricaoIdx];
-  let _h = 0;
-  const _str = nome + elemento;
-  for(let i=0;i<_str.length;i++){ const c=_str.charCodeAt(i); _h=((_h<<5)-_h)+c; _h=_h&_h; }
-  const seed = Math.abs(_h);
 
   dead = false; hatched = false; sick = false; sleeping = false;
   clearPresenceDead(walletAddress);
@@ -190,7 +200,7 @@ function triggerSummon() {
     // nao mais um com o mesmo seed. Invocado nao tem mae nem pai —
     // e raiz de arvore por definicao.
     ...identidadeNova(),
-    nome, elemento, raridade, descricao, descricaoIdx, car, seed,
+    nome, raridade, descricao, descricaoIdx, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
@@ -204,8 +214,10 @@ function triggerSummon() {
      Comum — que era ja a raridade com que a invocacao nascia. O que
      e novo aqui e o DNA: a tendencia de crescimento e o sexo. */
   if (typeof registarNascimento === 'function') {
+    // O DNA vai FEITO: foi dele que saíram a cor e o nome lá em cima,
+    // e sortear outro aqui era dar-lhe uma cor diferente da do nome.
     registarNascimento(avatarSlots[activeSlotIdx], {
-      elemento, origem: 'Comum', seed,
+      dna, origem: 'Comum', seed,
     });
   }
   window._pendingEggSlot = activeSlotIdx;
@@ -232,7 +244,7 @@ function triggerSummon() {
   const gradOvo = (typeof gradienteDoOvo === 'function' && _novo && _novo.nascimento)
     ? gradienteDoOvo(_novo)
     : { topo: '#5a3a9a', meio: '#2d1a5e', fundo: '#04030a',
-        brilho: '#8060c0', aura: (car ? car.cor : '#8b5cf6') };
+        brilho: '#8060c0', aura: '#8b5cf6' };
   const cor = gradOvo.aura;
   const rarColor = cor;   // a onda de choque acompanha o ovo
 

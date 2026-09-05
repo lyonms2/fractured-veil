@@ -167,13 +167,7 @@ function cruzarDna(dnaA, dnaB, seed) {
      virtude do outro. É a mesma regra de sempre: um alelo de cada lado. */
   genes.vigor = [_umDoPar(gA.vigor || [0, 0], rnd), _umDoPar(gB.vigor || [0, 0], rnd)];
 
-  /* O elemento vem de um dos pais, à sorte. Já não escolhe magia
-     nenhuma — as gavetas passaram a ser por papel — e o que dele resta
-     é nome e sabor. Herda-se na mesma: um filho puxar o elemento de um
-     dos pais é mais bonito do que sortear um do nada. */
-  const elemento = rnd() < 0.5 ? (dnaA && dnaA.elemento) : (dnaB && dnaB.elemento);
-
-  return { v: 2, elemento: elemento || (dnaA && dnaA.elemento) || 'Fogo', genes };
+  return { v: 2, genes };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -205,7 +199,6 @@ function cruzar(mae, pai, opts) {
     ok: true,
     ovo: {
       id: agora,
-      elemento: dna.elemento,
       // O DNA do filho viaja dentro do ovo. É a diferença entre um ovo
       // qualquer e o filho DESTES dois.
       dna,

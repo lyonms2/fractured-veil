@@ -32,7 +32,14 @@
    defeito do mesmo terreno — o bruto bate mais e descontrola-se mais. */
 const VANTAGENS = {
   // ── Defensivas ──
-  couraca_elemental: { familia: 'guarda', custo: 1, contraElemento: true, armaduraDobra: true },
+  /* Era a Couraça de Fogo, e agia contra um ELEMENTO. Os elementos
+     saíram do jogo e a carta não tinha contra o que agir.
+     Age contra um PAPEL de magia — que é a divisão que ficou no lugar
+     dos elementos (js/magias.js). E ficou melhor do que estava: antes
+     dependia de QUEM estava à frente e por isso morria em três lutas de
+     cada quatro; agora depende do que o outro LANÇA, e está sempre viva
+     contra quem lance daquela gaveta. */
+  couraca_firme:     { familia: 'guarda', custo: 1, contraPapel: true, papelQueBate: true, armaduraDobra: true },
   reflexo_defensivo: { familia: 'guarda', custo: 1, pm: 2, habilidadeDobra: true },
   reflexo_espelhado: { familia: 'guarda', custo: 2, pm: 2, habilidadeDobra: true, devolve: true },
 
@@ -56,7 +63,11 @@ const VANTAGENS = {
   passo_rapido:      { familia: 'guarda', custo: 1, bonusEsquiva: 1 },
   reserva_oculta:    { familia: 'fonte', custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
   toque_paralisante: { familia: 'lamina', custo: 1, pm: 2, paralisa: true },
-  afinidade_profunda:{ familia: 'fonte', custo: 1, metadeCustoProprioElemento: true },
+  /* Pagava metade nas magias do PRÓPRIO elemento, e sem elementos a
+     conta passou a ser "metade em tudo o que não comece por un_" — que
+     não quer dizer nada a ninguém. Paga metade numa gaveta, sorteada
+     como as outras três: é a língua materna dele. */
+  afinidade_profunda:{ familia: 'fonte', custo: 1, contraPapel: true, metadeCustoPapel: true },
 
   // Ataque Especial: 1 PM compra F+2 num único golpe. É uma manobra,
   // não uma ação à parte — soma-se ao murro do turno.
@@ -91,7 +102,7 @@ const VANTAGENS = {
 // seriam pagas numa moeda diferente daquela em que o ponto foi gasto.
 // Se um dia voltarem, será numa bolsa própria do tamagotchi.
 const DESVANTAGENS = {
-  ferida_antiga:  { familia: 'guarda', custo: -2, contraElemento: true, armaduraZero: true },
+  ferida_antiga:  { familia: 'guarda', custo: -2, contraPapel: true, papelQueBate: true, armaduraZero: true },
   sina_cobradora: { familia: 'fonte', custo: -1, danoPorMagia: 1 },
   sangue_quente:  { familia: 'lamina', custo: -1, furiaAoSofrerDano: true },
   limiar_baixo:   { familia: 'fonte', custo: -2, semMagiaAbaixoDeMetade: true },
@@ -109,8 +120,8 @@ const DESVANTAGENS = {
   // ganha H+1 contra ti — na Força de Ataque dele e na tua esquiva.
   brecha_conhecida: { familia: 'guarda', custo: -1, inimigoGanhaH: 1 },
 
-  // Restrição de Poder: contra um elemento, a magia custa o dobro.
-  veia_travada:   { familia: 'fonte', custo: -1, contraElemento: true, dobraCustoMagia: true },
+  // Restrição de Poder: uma gaveta de magia custa-lhe o dobro.
+  veia_travada:   { familia: 'fonte', custo: -1, contraPapel: true, dobraCustoMagia: true },
 
   // Poder Vergonhoso (Constrangedor): a magia sai com Força de Ataque −1.
   conjuro_desajeitado: { familia: 'lamina', custo: -1, faMagiaMenos: 1 },
@@ -175,7 +186,10 @@ function _vdEscolher(ids, tabela, pesos, rnd) {
    dele não desce por isso: o que sobra é sempre zero ou mais. */
 const VD_ORCAMENTO_FINAL = 18;   // FICHA_PONTOS_BASE + os pontos do nível 35
 
-function sortearVantagens(seed, pontosBase, elemento, indole) {
+// As duas gavetas que existem para bater. Ver o comentário do sorteio.
+const VD_PAPEIS_QUE_BATEM = ['forte', 'muito_forte'];
+
+function sortearVantagens(seed, pontosBase, indole) {
   const rnd = _vdRng((seed || 0) ^ 0x9C);
 
   /* A ÍNDOLE INCLINA, E NÃO DECIDE.
@@ -202,15 +216,28 @@ function sortearVantagens(seed, pontosBase, elemento, indole) {
   const idV  = _vdEscolher(idsV, VANTAGENS, indole, rnd) || 'passo_rapido';
   const vant = VANTAGENS[idV];
 
-  // As que agem contra um elemento escolhem qual — nunca o próprio, que
-  // seria resistir a si mesmo ou ser frágil ao que se é.
-  const outros = ['Fogo', 'Água', 'Terra', 'Vento', 'Sombra'].filter(e => e !== elemento);
-  const elemV = vant.contraElemento ? outros[rnd(0, outros.length - 1)] : null;
-  const elemD = desv.contraElemento ? outros[rnd(0, outros.length - 1)] : null;
+  /* AS QUE AGEM CONTRA UMA GAVETA ESCOLHEM QUAL.
+
+     Duas gavetas para as cartas de ARMADURA e quatro para as de CUSTO,
+     e a diferença não é capricho: a Couraça e a Ferida só se notam
+     quando levam um golpe, e só as magias FORTE e MUITO FORTE existem
+     para bater. Uma Couraça contra a gaveta defensiva seria uma carta
+     que nunca dispara — um ponto pago por nada, e ninguém saberia
+     porquê. As de custo agem sobre o que o PRÓPRIO lança, e aí as
+     quatro gavetas contam. */
+  const papeis = (typeof MAGIA_PAPEIS !== 'undefined')
+    ? MAGIA_PAPEIS : ['forte', 'muito_forte', 'defensiva', 'suporte'];
+  const sortearPapel = (c) => {
+    if (!c.contraPapel) return null;
+    const pool = c.papelQueBate ? VD_PAPEIS_QUE_BATEM : papeis;
+    return pool[rnd(0, pool.length - 1)];
+  };
+  const papelV = sortearPapel(vant);
+  const papelD = sortearPapel(desv);
 
   return {
-    vantagem:    { id: idV, ...vant, elemento: elemV },
-    desvantagem: { id: idD, ...desv, elemento: elemD },
+    vantagem:    { id: idV, ...vant, papel: papelV },
+    desvantagem: { id: idD, ...desv, papel: papelD },
     /* Nunca abaixo de UM, e o um não é arbitrário: é o piso da
        Resistência (_pisoDeR, em js/ficha-3dt.js), que sai desta mesma
        bolsa e não é oferecido por fora.

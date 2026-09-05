@@ -30,9 +30,9 @@ const FICHA_COR = {
 // aos 8, senão as fichas normais apareciam todas vazias.
 const FICHA_ESCALA = 8;
 
-function renderFichaHTML(seed, raridade, elemento, nivel, nascimento) {
+function renderFichaHTML(seed, raridade, nivel, nascimento) {
   if (typeof fichaDeAvatar !== 'function') return '';
-  const f = fichaDeAvatar(seed, raridade, elemento, nivel, nascimento);
+  const f = fichaDeAvatar(seed, raridade, nivel, nascimento);
   if (!f) return '';
   f.seed = (seed && typeof seed === 'object') ? seed.seed : seed;
 
@@ -95,12 +95,16 @@ function _fichaVocacaoHTML(f) {
 // ── Vantagem e desvantagem ──
 function renderVantagensHTML(f) {
   if (!f.vantagem) return '';
-  const nm = (id, el) => t('vd.' + id + '.nome').replace('{elem}', el || '');
-  const ds = (id, el) => t('vd.' + id + '.desc').replace(/\{elem\}/g, el || '');
+  /* As cartas que agem contra uma gaveta trazem o papel cru —
+     'muito_forte'. O nome de mostrar vem do mesmo sítio de onde vem
+     o rótulo da gaveta na ficha, para dizerem a mesma palavra. */
+  const pp = (p) => p ? t('mag.cat.' + p) : '';
+  const nm = (id, p) => t('vd.' + id + '.nome').replace('{papel}', pp(p));
+  const ds = (id, p) => t('vd.' + id + '.desc').replace(/\{papel\}/g, pp(p));
   const linha = (v, cls, sinal) => `<div class="vd ${cls}">
-      <div class="vd-top"><span class="vd-nome">${nm(v.id, v.elemento)}</span>
+      <div class="vd-top"><span class="vd-nome">${nm(v.id, v.papel)}</span>
         <span class="vd-custo">${sinal}${Math.abs(v.custo)}</span></div>
-      <div class="vd-desc">${ds(v.id, v.elemento)}</div>
+      <div class="vd-desc">${ds(v.id, v.papel)}</div>
     </div>`;
   return `<div class="vd-bloco">
     ${linha(f.vantagem, 'boa', '−')}
@@ -180,10 +184,6 @@ function renderMagiasHTML(f) {
     const porque  = tranca && tranca.motivo === 'R' ? 'mag.tranca.r' : 'mag.tecto';
     const falta   = tranca ? tranca.precisa
                   : (typeof habilidadeParaMagia === 'function' ? habilidadeParaMagia(g) : '?');
-    /* Quando o elemento não tem magia defensiva — o Fogo não tem, e é
-       de propósito — o slot cai num segundo ataque. Chamar-lhe
-       "Defesa" era mentira; a batalha já o diz assim e a ficha tem de
-       dizer o mesmo, senão a mesma magia tem dois nomes. */
     // O caso "esta defesa é na verdade um ataque" saiu daqui: com uma
     // gaveta defensiva só, nenhuma das dezasseis faz dano.
     const fam   = cat;
@@ -218,10 +218,10 @@ function renderMagiasHTML(f) {
 
 // Preenche a ficha dentro do overlay de zoom do avatar.
 // Chamada por openAvatarZoom() e openAvatarZoomData() em js/main.js.
-function preencherFichaZoom(seed, raridade, elemento, nivel, nascimento) {
+function preencherFichaZoom(seed, raridade, nivel, nascimento) {
   const el = document.getElementById('avatarZoomFicha');
   if (!el) return;
-  el.innerHTML = renderFichaHTML(seed, raridade, elemento, nivel, nascimento);
+  el.innerHTML = renderFichaHTML(seed, raridade, nivel, nascimento);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -252,7 +252,7 @@ function renderEquipaBar() {
       continue;
     }
     const nome = (s.nome || 'Avatar').split(',')[0].trim();
-    const ec   = (typeof CARACTERISTICAS_ELEMENTAIS !== 'undefined') ? CARACTERISTICAS_ELEMENTAIS[s.elemento] : null;
+    const corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
     const papel = n === 0 ? t('equipa.ordem.comeca')
                 : n === 1 ? t('equipa.ordem.segundo')
                           : t('equipa.ordem.terceiro');
@@ -286,7 +286,7 @@ function renderEquipaBar() {
       <span class="equipa-pos">${n + 1}</span>
       ${gerarSVG(s, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
       <div class="equipa-slot-nome">${nome}</div>
-      <div class="equipa-slot-sub">${ec ? ec.emoji : '✦'} ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
+      <div class="equipa-slot-sub"><span style="color:${corS}">■</span> ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
       <div class="equipa-papel">${papel}</div>
       ${marca}
       ${setas}

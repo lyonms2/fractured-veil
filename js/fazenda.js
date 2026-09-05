@@ -244,7 +244,7 @@ function fzZoom(idx) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;
   if (!s || !s.hatched) return;
   if (typeof openAvatarZoomData !== 'function') return;
-  openAvatarZoomData(s.elemento, s.raridade, s.seed || 0, s.nivel || 1, s.nome || '', s);
+  openAvatarZoomData(s.raridade, s.seed || 0, s.nivel || 1, s.nome || '', s);
 }
 
 // ── Trocar entre a colônia e o cuidado de um ──

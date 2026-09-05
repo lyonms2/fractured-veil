@@ -57,9 +57,9 @@ window.registerStrings({
   // ── Browse ────────────────────────────────────────────────────────
   'mkt.browse.title':         '🛒 Comprar Avatares',
   'mkt.browse.sub':           'Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.',
-  'mkt.browse.search_ph':     '🔍 Procurar nome ou elemento...',
+  'mkt.browse.search_ph':     '🔍 Procurar nome ou cor...',
   'mkt.browse.rarity_all':    'Raridade: Todas',
-  'mkt.browse.elem_all':      'Elemento: Todos',
+  'mkt.browse.cor_all':       'Cor: Todas',
   'mkt.browse.sort_recent':   'Mais recentes',
   'mkt.browse.sort_asc':      'Preço ↑',
   'mkt.browse.sort_desc':     'Preço ↓',
@@ -101,7 +101,6 @@ window.registerStrings({
   'ficha.hp':                 'HP',
   'ficha.energia':            'ENERGIA',
   'ficha.poder':              'PODER',
-  'ficha.afinidade':          '{elem}: ◆ {prim} primária · ◈ {sec} secundária',
   'ficha.ultimate':           'O golpe forte escala principalmente com <b>{stat}</b>',
   'equipa.title':             '⚔ EQUIPE DE COMBATE',
   'equipa.pronta':            'Equipe pronta para batalhar.',
@@ -212,7 +211,6 @@ window.registerStrings({
   'mkt.metamask.limit_err':   'Não foi possível verificar o limite.',
 
   // ── Comprar Ovos ──────────────────────────────────────────────────
-  'mkt.eggs.filter_ph':       '🔍 Filtrar por elemento...',
 
   // ── Transações / status ───────────────────────────────────────────
   'mkt.tx.open_mm':           '⏳ Abre o MetaMask para confirmar...',
@@ -296,7 +294,6 @@ window.registerStrings({
   'mkt.eggs.listed':         '✅ Ovo {rarity} listado por {price} 💎!',
   'mkt.eggs.list_err':       'Erro ao listar. Tente novamente.',
   'mkt.eggs.buy_err':        'Erro ao comprar ovo.',
-  'mkt.eggs.bought':         '✅ Ovo {rarity} {elem} adquirido! Vai para seu inventário no jogo.',
   'mkt.eggs.unavailable':    'Ovo já não disponível.',
   'mkt.eggs.own_egg':        'Você não pode comprar seu próprio ovo.',
   'mkt.eggs.buy_err2':       'Erro ao comprar ovo. Tenta novamente.',
@@ -408,9 +405,9 @@ window.registerStrings({
   // Browse
   'mkt.browse.title':         '🛒 Buy Avatars',
   'mkt.browse.sub':           'Rare and Legendary avatars listed by other players. Prices in 💎 Crystals.',
-  'mkt.browse.search_ph':     '🔍 Search name or element...',
+  'mkt.browse.search_ph':     '🔍 Search name or color...',
   'mkt.browse.rarity_all':    'Rarity: All',
-  'mkt.browse.elem_all':      'Element: All',
+  'mkt.browse.cor_all':       'Color: All',
   'mkt.browse.sort_recent':   'Most recent',
   'mkt.browse.sort_asc':      'Price ↑',
   'mkt.browse.sort_desc':     'Price ↓',
@@ -451,7 +448,6 @@ window.registerStrings({
   'ficha.hp':                 'HP',
   'ficha.energia':            'ENERGY',
   'ficha.poder':              'POWER',
-  'ficha.afinidade':          '{elem}: ◆ {prim} primary · ◈ {sec} secondary',
   'ficha.ultimate':           'The heavy attack scales mostly with <b>{stat}</b>',
   'equipa.title':             '⚔ BATTLE TEAM',
   'equipa.pronta':            'Team ready to battle.',
@@ -560,7 +556,6 @@ window.registerStrings({
   'mkt.metamask.limit_err':   'Could not verify your limit.',
 
   // Eggs section
-  'mkt.eggs.filter_ph':       '🔍 Filter by element...',
 
   // TX status
   'mkt.tx.open_mm':           '⏳ Open MetaMask to confirm...',
@@ -644,7 +639,6 @@ window.registerStrings({
   'mkt.eggs.listed':         '✅ {rarity} egg listed for {price} 💎!',
   'mkt.eggs.list_err':       'Error listing. Please try again.',
   'mkt.eggs.buy_err':        'Error buying egg.',
-  'mkt.eggs.bought':         '✅ {rarity} {elem} egg acquired! It will appear in your in-game inventory.',
   'mkt.eggs.unavailable':    'Egg no longer available.',
   'mkt.eggs.own_egg':        "You can't buy your own egg.",
   'mkt.eggs.buy_err2':       'Error buying egg. Please try again.',

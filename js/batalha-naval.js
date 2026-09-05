@@ -345,7 +345,7 @@ function _bnFiltrarLobby(query) {
   }
   lista.innerHTML = filtrados.map(([k,d]) => `
     <div class="arena-lobby-card">
-      <div class="arena-lobby-svg">${gerarSVG(d.elemento, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
+      <div class="arena-lobby-svg">${gerarSVG(d, d.raridade, d.seed, 44, 44, faseFromNivel(d.nivel))}</div>
       <div class="arena-lobby-info">
         <div class="arena-lobby-nome">${esc(d.nome)||'???'}</div>
         <div class="arena-lobby-meta">
@@ -371,7 +371,7 @@ async function bnEntrarNoLobby() {
   _bnLobbyRef = _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletAddress}`);
   await _bnLobbyRef.set({
     wallet: walletAddress, nome: avatar.nome.split(',')[0],
-    raridade: avatar.raridade, elemento: avatar.elemento,
+    raridade: avatar.raridade, ...paresDeCor(avatar),
     nivel: nivel||1, seed: avatar.seed||0,
     ts: firebase.database.ServerValue.TIMESTAMP, emPartida: false,
   });
@@ -423,8 +423,8 @@ async function bnDesafiar(walletOponente) {
     aposta,
     turno:    walletAddress, // criador atira primeiro
     jogadores: {
-      [walletAddress]:  { nome: avatar.nome.split(',')[0], raridade: avatar.raridade, elemento: avatar.elemento, seed: avatar.seed||0, pronto: false },
-      [walletOponente]: { nome: null, raridade: null, elemento: null, seed: 0, pronto: false },
+      [walletAddress]:  { nome: avatar.nome.split(',')[0], raridade: avatar.raridade, ...paresDeCor(avatar), seed: avatar.seed||0, pronto: false },
+      [walletOponente]: { nome: null, raridade: null, corPrincipal: null, corSecundaria: null, seed: 0, pronto: false },
     },
     // Tabuleiros públicos (só acertos/água) — sem revelar posição dos navios
     tabuleirosPublicos: {
@@ -546,7 +546,8 @@ async function bnAceitarDesafio(salaId) {
     status: 'colocacao',
     [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
-    [`jogadores/${walletAddress}/elemento`]: avatar.elemento,
+    [`jogadores/${walletAddress}/corPrincipal`]:  paresDeCor(avatar).corPrincipal,
+    [`jogadores/${walletAddress}/corSecundaria`]: paresDeCor(avatar).corSecundaria,
     [`jogadores/${walletAddress}/seed`]:     avatar.seed||0,
   });
 
@@ -1615,7 +1616,7 @@ async function _bnRenderResultado(sala, opWallet) {
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
         <div class="arena-vs-lado ${!euVenci && !empate ? 'arena-vencedor' : ''}">
-          <div class="arena-vs-svg">${gerarSVG(op_info.elemento||'Fogo', op_info.raridade||'Comum', op_info.seed||0, 44, 44, faseFromNivel(op_info.nivel))}</div>
+          <div class="arena-vs-svg">${gerarSVG(op_info, op_info.raridade||'Comum', op_info.seed||0, 44, 44, faseFromNivel(op_info.nivel))}</div>
           <div class="arena-vs-nome">${op_info.nome || opWallet.slice(0,8)+'...'}</div>
           <div class="arena-vs-pts" style="font-size:1.125rem;">💥 ${opAc}</div>
         </div>

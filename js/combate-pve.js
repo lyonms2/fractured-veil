@@ -52,7 +52,6 @@ let _pveGeracao = 0;
 // para dizer se dois personagens são páreo.
 // ═══════════════════════════════════════════════════════════════════
 function _pveGerarInimigo(pontosAlvo) {
-  const els  = Object.keys(CARACTERISTICAS_ELEMENTAIS);
   // Baralhados e consumidos sem repetição: dois nomes iguais na mesma
   // equipa davam linhas absurdas no registo — "Terra Caído sai, entra
   // Terra Caído".
@@ -71,11 +70,22 @@ function _pveGerarInimigo(pontosAlvo) {
         const dif = Math.abs(pontosDoAvatar(rar, nv) - alvo);
         if (dif < melhor.dif) melhor = { rar, nv, dif };
       }
-    const el = els[Math.floor(Math.random() * els.length)];
+    /* O inimigo passa a NASCER, em vez de ser montado à mão.
+
+       Tinha um elemento e um seed, e mais nada. Com a certidão ganha
+       cor — que é o que o desenha e o nomeia — e ganha DNA, e com o DNA
+       ganha um feitio que inclina as magias e o par virtude/defeito
+       dele. Deixa de haver dois tipos de avatar no jogo: um que nasce e
+       outro que se fabrica para servir de alvo. */
+    const seed = Math.floor(Math.random() * 1e6);
+    const cert = (typeof nascer === 'function')
+      ? nascer({ origem: 'Comum', seed }) : null;
+    const nomeCor = (cert && typeof nomeDaCor === 'function')
+      ? nomeDaCor(cert.corPrincipal) : '';
     equipa.push({
-      nome: `${el} ${sufs[i]}`,
-      elemento: el, raridade: melhor.rar, nivel: melhor.nv,
-      seed: Math.floor(Math.random() * 1e6),
+      nome: `${nomeCor} ${sufs[i]}`.trim(),
+      raridade: melhor.rar, nivel: melhor.nv, seed,
+      nascimento: cert,
     });
     restante -= pontosDoAvatar(melhor.rar, melhor.nv);
   }
@@ -392,9 +402,9 @@ function _pveCaracCondicional(c) {
           || c.congelado || c.furia || _c3bonusEsquiva(c)),
     R: false,
     // a Casca só dobra contra o que não é magia; a Couraça e a Ferida
-    // Antiga só valem contra magia do seu elemento
-    A: !!(c.armaduraDobrada || (v.armaduraDobra && v.contraElemento)
-          || (d.armaduraZero && d.contraElemento)),
+    // Antiga só valem contra magia da sua gaveta
+    A: !!(c.armaduraDobrada || (v.armaduraDobra && v.contraPapel)
+          || (d.armaduraZero && d.contraPapel)),
   };
 }
 
@@ -429,16 +439,22 @@ function _pveCaracs(c) {
    Este bloco diz as duas coisas na mesma lista: o que se apanhou e o que
    se trouxe de nascença, cada um com o número que vale.
 
-   Alguns efeitos dependem de QUEM está do outro lado — a Veia Travada só
-   dobra o custo contra o seu elemento, a Couraça só dobra a Armadura
-   contra o dela. Esses recebem o adversário e dizem se estão a pegar
-   agora ou não, em vez de prometerem em abstrato. */
+   Alguns efeitos dependem do que o outro SABE FAZER — a Couraça só
+   dobra a Armadura contra magia da sua gaveta, e só há gaveta dessas se
+   o adversário tiver lá alguma coisa. Esses recebem o adversário e
+   dizem se estão a pegar agora ou não, em vez de prometerem em
+   abstrato.
+
+   A Veia Travada saiu desta lista de dependentes: passou a emperrar uma
+   gaveta do PRÓPRIO, e um defeito de nascença que só existe quando o
+   inimigo é de certa maneira nunca foi bem um defeito de nascença. */
 function _pveEstadoDe(c, contra) {
   const L = [];
   const bom = (n, e) => L.push({ nome: n, efeito: e, tom: 'bom' });
   const mau = (n, e) => L.push({ nome: n, efeito: e, tom: 'mau' });
   const v = c.vant || {}, d = c.desv || {};
-  const nomeDe = (x) => t('vd.' + x.id + '.nome').replace(/\{elem\}/g, x.elemento || '');
+  const papelDe = (p) => p ? t('mag.cat.' + p) : '';
+  const nomeDe = (x) => t('vd.' + x.id + '.nome').replace(/\{papel\}/g, papelDe(x.papel));
 
   // ── o que se apanhou na luta ──
   if (c.congelado)
@@ -486,9 +502,9 @@ function _pveEstadoDe(c, contra) {
   // ── o que se trouxe de nascença: a vantagem ──
   if (c.vant) {
     const n = nomeDe(c.vant);
-    if (v.armaduraDobra && v.contraElemento) {
-      const pega = contra && contra.elemento === v.elemento;
-      bom(n, t(pega ? 'pve.est.v_couraca_sim' : 'pve.est.v_couraca_nao', { elem: v.elemento || '' }));
+    if (v.armaduraDobra && v.contraPapel) {
+      const pega = !!(contra && contra.magias && contra.magias[v.papel]);
+      bom(n, t(pega ? 'pve.est.v_couraca_sim' : 'pve.est.v_couraca_nao', { papel: papelDe(v.papel) }));
     }
     if (v.bonusEsquiva) bom(n, t('pve.est.esquiva_desc', { n: v.bonusEsquiva }));
     // Um recurso que se gasta tem de dizer quanto resta, senão o jogador
@@ -501,7 +517,7 @@ function _pveEstadoDe(c, contra) {
     if (v.pvPorTurno) bom(n, t('pve.est.v_cura', { n: v.pvPorTurno }));
     if (v.bonusTesteMagia) bom(n, t('pve.est.v_teste', { n: v.bonusTesteMagia }));
     if (v.penalidadeTesteAlvo) bom(n, t('pve.est.v_perfura', { n: v.penalidadeTesteAlvo }));
-    if (v.metadeCustoProprioElemento) bom(n, t('pve.est.v_metade'));
+    if (v.metadeCustoPapel) bom(n, t('pve.est.v_metade', { papel: papelDe(v.papel) }));
   }
 
   // ── e a desvantagem, que é a metade que ninguém via ──
@@ -512,17 +528,17 @@ function _pveEstadoDe(c, contra) {
       mau(n, t('pve.est.d_ganha_ar', { a: d.inimigoGanhaA || 0, r: d.inimigoGanhaR || 0 }));
     if (d.faMagiaMenos) mau(n, t('pve.est.d_fa_magia', { n: d.faMagiaMenos }));
     if (d.danoPorMagia) mau(n, t('pve.est.d_sangue', { n: d.danoPorMagia }));
-    if (d.armaduraZero && d.contraElemento) {
-      const pega = contra && contra.elemento === d.elemento;
-      mau(n, t(pega ? 'pve.est.d_ferida_sim' : 'pve.est.d_ferida_nao', { elem: d.elemento || '' }));
+    if (d.armaduraZero && d.contraPapel) {
+      const pega = !!(contra && contra.magias && contra.magias[d.papel]);
+      mau(n, t(pega ? 'pve.est.d_ferida_sim' : 'pve.est.d_ferida_nao', { papel: papelDe(d.papel) }));
     }
-    // O custo dobrado tem duas portas: a assombração, e o elemento de
-    // quem está à frente. Só se diz que pega quando pega mesmo.
+    /* O custo dobrado tem duas portas, e agora só uma delas depende do
+       momento: a assombração aparece ou não no início da luta. A Veia
+       cobra sempre, na gaveta dela — por isso diz-se qual, e não "está
+       a pegar". */
     if (d.dobraCustoMagia) {
-      const porSombra = c.assombrado && d.assombraEm;
-      const porElem = !d.assombraEm && contra && d.elemento === contra.elemento;
-      if (porSombra || porElem) mau(n, t('pve.est.d_dobro_sim'));
-      else if (!d.assombraEm) mau(n, t('pve.est.d_dobro_nao', { elem: d.elemento || '' }));
+      if (c.assombrado && d.assombraEm) mau(n, t('pve.est.d_dobro_sim'));
+      else if (!d.assombraEm) mau(n, t('pve.est.d_dobro_nao', { papel: papelDe(d.papel) }));
     }
     if (d.assombraEm && c.assombrado && d.penalidadeTudo)
       mau(n, t('pve.est.d_assombrado', { n: d.penalidadeTudo }));
@@ -547,8 +563,24 @@ function _pveEstadoHTML(c, contra) {
        + '</div>';
 }
 
+/* A paleta de um combatente. Sai da ficha dele, que é onde vive a
+   certidão — e é a MESMA conta que desenha o bicho, portanto o quadrado
+   ao lado do nome tem exactamente a cor do bicho que está por cima. */
+// O nome de uma gaveta, para os rótulos das cartas.
+function _pvePapel(p) { return p ? t('mag.cat.' + p) : ''; }
+
+function _pvePaletaDe(c) {
+  if (!c || typeof paletaDoAvatar !== 'function') return null;
+  const f = c.ficha || null;
+  return paletaDoAvatar(f, (f && f.seed) || c.seed || 0);
+}
+function _pveCorDe(c) {
+  const p = _pvePaletaDe(c);
+  return p ? p.cores[1] : '#8b5cf6';
+}
+
 function _pveLutador(c, i, lado, ativo) {
-  const el = CARACTERISTICAS_ELEMENTAIS[c.elemento];
+  const corC = _pveCorDe(c);
   const emCampo = i === ativo;
   const cls = ['cb-lutador', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
   const tam = emCampo ? 52 : 38;
@@ -591,7 +623,7 @@ function _pveLutador(c, i, lado, ativo) {
        title="${t('pve.ajuda.abrir', { nome: c.nome })}">
     <span class="cb-lutador-ver">${t('pve.ajuda.ver')}</span>
     <div class="cb-lutador-svg">${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
-    <div class="cb-lutador-nome">${el ? el.emoji : '✦'} ${c.nome}</div>
+    <div class="cb-lutador-nome"><span style="color:${corC}">\u25a0</span> ${c.nome}</div>
     <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
     <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
     <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
@@ -875,7 +907,7 @@ function _pveAjudaHTML(c, lado, contra) {
 function _pveAjudaDe(eu, lado, contra) {
   if (!eu) return '';
   const tecto = _c3(eu, 'H') * 5;
-  const el = CARACTERISTICAS_ELEMENTAIS[eu.elemento];
+  const corEu = _pveCorDe(eu);
 
   /* O `tipo` pinta o item.
 
@@ -934,13 +966,13 @@ function _pveAjudaDe(eu, lado, contra) {
   }
 
   const v = eu.vant;
-  if (v) html += linha(t('vd.vantagem'), t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
+  if (v) html += linha(t('vd.vantagem'), t('vd.' + v.id + '.nome').replace('{papel}', _pvePapel(v.papel)),
                        v.pm ? t('mag.custo', { pm: v.pm }) : '',
-                       t('vd.' + v.id + '.desc').replace(/\{elem\}/g, v.elemento || ''),
+                       t('vd.' + v.id + '.desc').replace(/\{papel\}/g, _pvePapel(v.papel)),
                        null, false, '', 'vantagem');
   const d = eu.desv;
-  if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{elem}', d.elemento || ''),
-                       '', t('vd.' + d.id + '.desc').replace(/\{elem\}/g, d.elemento || ''),
+  if (d) html += linha(t('vd.desvantagem'), t('vd.' + d.id + '.nome').replace('{papel}', _pvePapel(d.papel)),
+                       '', t('vd.' + d.id + '.desc').replace(/\{papel\}/g, _pvePapel(d.papel)),
                        null, false, '', 'desvantagem');
 
   // Quanto o alvo aguenta e o que ele opõe. Sem isto o prognóstico dá
@@ -958,7 +990,7 @@ function _pveAjudaDe(eu, lado, contra) {
 
   return `<div class="cb-ajuda-lado ${lado}">
     <div class="cb-ajuda-quem">
-      ${el ? el.emoji : '✦'} ${eu.nome}
+      <span style="color:${corEu}">\u25a0</span> ${eu.nome}
       <span>${_pveCaracs(eu)} · ${t('pve.prog.vida')} ${eu.pv}/${eu.pvMax} · ${eu.pm}/${eu.pmMax} PM · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
     ${_pveEstadoHTML(eu, contra)}
@@ -1061,7 +1093,7 @@ function _pveDesenharAcoes(eu, ini) {
                        && (eu.folegoUsado || 0) >= v.maxUsos;
     const on = eu.pm >= v.pm && !reservaAcabou && !folegoAcabou;
     html += btn(`_pveEscolher('vantagem')`,
-                t('vd.' + v.id + '.nome').replace('{elem}', v.elemento || ''),
+                t('vd.' + v.id + '.nome').replace('{papel}', _pvePapel(v.papel)),
                 reservaAcabou ? t('pve.reserva_no_fim')
                   : folegoAcabou ? t('pve.folego_no_fim')
                   : on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
@@ -1840,7 +1872,7 @@ function _pveMostrarEvento(ev) {
        bloco de dados era pôr seis a saltar onde já há três linhas. */
     dados = _pveDadosVivos(ev);
   }
-  const nome = ev.vantagem ? t('vd.' + ev.vantagem + '.nome').replace('{elem}', '')
+  const nome = ev.vantagem ? t('vd.' + ev.vantagem + '.nome').replace('{papel}', '')
              : ev.magia    ? t('mag.' + ev.magia + '.nome')
              : ev.toque    ? t('vd.toque_ardente.nome')
              : ev.golpes   ? t('pve.acao.encadeado', { n: ev.golpes })
@@ -1996,9 +2028,9 @@ function _pveMostrarEvento(ev) {
   }
 
   // ── 5ª BATIDA · o golpe chega ──
-  // Só a magia tem elemento. Um soco é um soco, e as faíscas brancas
-  // são o que o distingue de uma magia à vista.
-  const elem  = (ev.magia || ev.vantagem) ? _pveElementoDe(ev) : null;
+  // Só a magia se pinta. Um soco é um soco, e as faíscas brancas são o
+  // que o distingue de uma magia à vista.
+  const elem  = (ev.magia || ev.vantagem) ? _pvePaletaDe(_pveQuemBateu(ev)) : null;
   const bate  = cartaoAlvo && ev.dano > 0;
 
   /* ── UM ATAQUE DE VÁRIAS ONDAS ANIMA VÁRIAS VEZES ──
@@ -2122,10 +2154,10 @@ function _pveMostrarEvento(ev) {
        : temEfeitos ? 900 : 660) + extraTeste;
 }
 
-function _pveElementoDe(ev) {
+// De quem partiu o golpe — para o impacto ser da cor de quem bateu.
+function _pveQuemBateu(ev) {
   const e = _pveEstado;
-  const c = (ev.lado === 'A') ? e.A[e.ativoA] : e.B[e.ativoB];
-  return c ? c.elemento : null;
+  return (ev.lado === 'A') ? e.A[e.ativoA] : e.B[e.ativoB];
 }
 
 /* ── OS NÚMEROS QUE SOBEM ──
@@ -2160,14 +2192,16 @@ function _pveNumeroPM(alvo, n) {
   setTimeout(() => d.remove(), 1000);
 }
 
-/* ═══ CADA ELEMENTO BATE À SUA MANEIRA ═══
+/* ═══ CADA COR BATE À SUA MANEIRA ═══
 
    Antes era um efeito só, com a cor trocada: oito bolinhas a subir,
    fosse fogo, água, terra, vento ou sombra. A cor sozinha não chega —
    num cartão de 5rem, no meio de um tremor, o que se lê é o GESTO.
 
-   O ELEM_CFG já dava o nome a cada um destes gestos desde sempre:
-   chamas, gotas, pedras, espirais, sombras. Faltava fazê-los.
+   Os cinco gestos eram dos cinco elementos e são hoje dos cinco TONS da
+   roda (js/cores.js): quem é vermelho bate em chamas, quem é azul bate
+   em gotas. Nenhum se perdeu — mudaram de dono, e passaram a combinar
+   com o bicho, que é o que se vê ao lado.
 
      chamas   sobem, poucas e vivas, e o cartão aquece
      gotas    espalham-se e CAEM, que é o que a água faz
@@ -2175,8 +2209,8 @@ function _pveNumeroPM(alvo, n) {
      espirais atravessam de lado, depressa, como um corte de ar
      sombras  não voam: fecham-se para dentro e o cartão escurece
 
-   Sem elemento — o golpe físico — ficam faíscas brancas neutras, que
-   é o que um soco deve parecer ao lado de uma magia. */
+   Sem magia — o golpe físico — ficam faíscas brancas neutras, que é o
+   que um soco deve parecer ao lado de uma magia. */
 const PVE_GESTO_ELEM = {
   chamas:   { n: 10, tam: [2, 5], dx: 26, dy: [-52, -18], sobe: true,  cai: false },
   gotas:    { n: 12, tam: [2, 4], dx: 46, dy: [10, 46],   sobe: false, cai: true  },
@@ -2186,9 +2220,8 @@ const PVE_GESTO_ELEM = {
   neutro:   { n: 8,  tam: [2, 4], dx: 30, dy: [-40, -14], sobe: true,  cai: false },
 };
 
-function _pveImpacto(alvo, elemento) {
+function _pveImpacto(alvo, cfg) {
   if (!alvo) return;
-  const cfg  = elemento ? ELEM_CFG[elemento] : null;
   const cor  = cfg ? cfg.corBrilho : '#fff';
   const modo = (cfg && PVE_GESTO_ELEM[cfg.particulas]) || PVE_GESTO_ELEM.neutro;
   const nome = (cfg && cfg.particulas) || 'neutro';
@@ -2225,7 +2258,7 @@ function _pveImpacto(alvo, elemento) {
 
 // O nome antigo continua a servir: havia chamadas espalhadas e não vale
 // a pena parti-las todas por causa de uma palavra.
-function _pveParticulas(alvo, elemento) { _pveImpacto(alvo, elemento); }
+function _pveParticulas(alvo, cfg) { _pveImpacto(alvo, cfg); }
 
 function _pveOndaDeChoque(alvo) {
   const o = document.createElement('div');

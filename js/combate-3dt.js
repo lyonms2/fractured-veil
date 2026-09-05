@@ -58,7 +58,6 @@ function _c3criar(slot, rng) {
     ficha: f, magias: m,
     vant: f.vantagem || null, desv: f.desvantagem || null,
     nome: (slot.nome || 'Avatar').split(',')[0].trim(),
-    elemento: f.elemento,
     pv: f.pv, pvMax: f.pv,
     pm: f.pm, pmMax: f.pm,
     vivo: true,
@@ -355,16 +354,22 @@ function _c3fd(def, rng, opts) {
   const critico = d === 6;                 // o crítico dobra a ARMADURA
   let A = opts.ignoraArmadura ? 0 : _c3aDef(def, opts.atacante);
 
-  // Couraça e Ferida agem contra um elemento. Só valem contra MAGIA
-  // desse elemento — um murro de um elemental de fogo é dano físico, e
-  // uma Couraça de Fogo não o trava. É por isso que o golpe comum
-  // continua servindo contra quem tem couraça.
-  if (opts.elemento) {
-    if (def.vant && def.vant.armaduraDobra && def.vant.elemento === opts.elemento) A *= 2;
-    if (def.desv && def.desv.armaduraZero  && def.desv.elemento === opts.elemento) A = 0;
+  /* Couraça e Ferida agem contra uma GAVETA de magia. Só valem contra
+     magia dessa gaveta — um murro é dano físico e nenhuma das duas o
+     vê, e é por isso que o golpe comum continua a servir contra quem
+     tem couraça.
+
+     `magica` e `papel` entram separados de propósito. Eram a mesma
+     coisa — o elemento do atacante respondia às duas perguntas — e
+     isso escondia uma confusão: o Toque de Energia é magia mas não sai
+     de gaveta nenhuma, e a Casca de Helena precisa de saber se é magia
+     sem lhe interessar de que gaveta veio. */
+  if (opts.papel) {
+    if (def.vant && def.vant.armaduraDobra && def.vant.papel === opts.papel) A *= 2;
+    if (def.desv && def.desv.armaduraZero  && def.desv.papel === opts.papel) A = 0;
   }
   // A Casca de Helena dobra a Armadura contra tudo o que não seja magia
-  if (def.armaduraDobrada && !opts.elemento) A *= 2;
+  if (def.armaduraDobrada && !opts.magica) A *= 2;
   if (critico) A *= 2;
   // Alvo indefeso não usa a Habilidade na Defesa
   let H = (opts.indefeso || def.indefeso) ? 0 : _c3(def, 'H');
@@ -408,8 +413,10 @@ function _c3resolver(atk, def, magia, pmGastos, rng, ev, extra) {
   const fd = _c3fd(def, rng, {
     ignoraArmadura: !!(magia && magia.ignoraArmadura),
     indefeso: !!(magia && magia.alvoIndefeso),
-    // O Toque de Energia é magia elemental pela pele: carrega elemento
-    elemento: (magia || extra.toque) ? atk.elemento : null,
+    // O Toque de Energia é magia pela pele: conta como magia, mas não
+    // sai de gaveta nenhuma e por isso não traz papel.
+    magica: !!(magia || extra.toque),
+    papel: magia ? papelDaMagia(magia) : null,
     atacante: atk,
   });
 
@@ -689,22 +696,32 @@ function _c3trocaLimpa(quemSai, inimigo, rng, ev) {
 // ═══════════════════════════════════════════════════════════════════
 // O QUE UMA MAGIA CUSTA A ESTE AVATAR
 //
-// A Afinidade Profunda paga metade nas magias do próprio elemento
-// (arredondando para cima, como o manual manda). As universais não
-// contam: não são do elemento de ninguém.
+// A Afinidade Profunda paga metade numa GAVETA — a língua materna dele
+// —, arredondando para cima como o manual manda.
+//
+// Era "as magias do próprio elemento", e sem elementos essa conta
+// passou a ler o PREFIXO do id da magia (fg_, ag_, un_). O prefixo é
+// hoje só a chave da tradução e não quer dizer nada a ninguém: a
+// vantagem continuava a funcionar e já não se podia explicar.
 // ═══════════════════════════════════════════════════════════════════
-function _c3custoMagia(c, magia, pm, inimigo) {
+function _c3custoMagia(c, magia, pm) {
   if (!magia) return 0;
-  const propria = magia.id && magia.id.slice(0, 3) !== 'un_';
+  const papel = papelDaMagia(magia);
   let custo = pm;
-  if (c.vant && c.vant.metadeCustoProprioElemento && propria) custo = Math.ceil(custo / 2);
+  if (c.vant && c.vant.metadeCustoPapel && papel && c.vant.papel === papel)
+    custo = Math.ceil(custo / 2);
 
-  // O dobro: a assombração cobra sempre, a veia travada só contra o
-  // elemento que a tranca. Aplicam-se depois da Afinidade, senão metade
-  // de nada valia — e podem acumular, que é o pior dos mundos possíveis.
+  /* O dobro: a assombração cobra sempre, a veia travada só na gaveta que
+     a tranca. Aplicam-se depois da Afinidade, senão metade de nada
+     valia — e podem acumular, que é o pior dos mundos possíveis.
+
+     A Veia deixou de olhar para o inimigo. Dependia dele por ser
+     "contra o elemento dele", e isso fazia um defeito de nascença
+     comportar-se como se fosse do outro: agora é uma gaveta do PRÓPRIO
+     que emperra, e emperra sempre — o que é o que um defeito faz. */
   if (c.assombrado && c.desv && c.desv.dobraCustoMagia) custo *= 2;
   if (c.desv && c.desv.dobraCustoMagia && !c.desv.assombraEm
-      && inimigo && c.desv.elemento === inimigo.elemento) custo *= 2;
+      && papel && c.desv.papel === papel) custo *= 2;
   return custo;
 }
 
@@ -745,27 +762,41 @@ function _c3podeMagiar(c) {
 // Não é "a IA do jogo": é um jogador razoável de referência, para as
 // medições terem sentido. Um humano joga melhor do que isto.
 // ═══════════════════════════════════════════════════════════════════
-// Vale a pena trocar? Duas razões concretas, e nenhuma delas é palpite:
-//   · tenho Ferida do elemento dele — a minha Armadura conta zero
-//   · ele tem Couraça do meu elemento — a Armadura dele conta a dobrar
-// Mais a razão de sempre: estou quase a cair e há quem esteja inteiro.
+/* Vale a pena trocar? Duas razões concretas, e nenhuma delas é palpite:
+     · tenho Ferida da gaveta dele — a minha Armadura conta zero
+     · ele tem Couraça de uma gaveta minha — a dele conta a dobrar
+   Mais a razão de sempre: estou quase a cair e há quem esteja inteiro.
+
+   A pergunta mudou de forma com as gavetas, e ficou mais honesta. "Ele
+   é de Fogo?" respondia-se pelo rótulo dele. "Ele SABE alguma magia
+   desta gaveta?" responde-se pelo repertório, que é o que ele vai
+   mesmo lançar — e um avatar que ainda não acordou aquela gaveta
+   deixa de assustar quem não tem por que se assustar. */
+function _c3sabeDoPapel(c, papel) {
+  return !!(papel && c && c.magias && c.magias[papel]);
+}
+
 function _c3valeTrocar(eu, inimigo, banco) {
-  const feridoPeloElemento = eu.desv && eu.desv.armaduraZero && eu.desv.elemento === inimigo.elemento;
-  const eleResisteMe       = inimigo.vant && inimigo.vant.armaduraDobra && inimigo.vant.elemento === eu.elemento;
-  const quaseACair         = eu.pv <= eu.pvMax * 0.25;
-  if (!feridoPeloElemento && !eleResisteMe && !quaseACair) return -1;
+  const feridoPelaGaveta = !!(eu.desv && eu.desv.armaduraZero
+                              && _c3sabeDoPapel(inimigo, eu.desv.papel));
+  const eleResisteMe     = !!(inimigo.vant && inimigo.vant.armaduraDobra
+                              && _c3sabeDoPapel(eu, inimigo.vant.papel));
+  const quaseACair       = eu.pv <= eu.pvMax * 0.25;
+  if (!feridoPelaGaveta && !eleResisteMe && !quaseACair) return -1;
 
   // O melhor do banco: sem ferida contra este inimigo, e o mais inteiro
   let melhor = -1, melhorNota = -1;
   banco.forEach((o, i) => {
     if (!o || !o.vivo || o === eu) return;
-    const ferido = o.desv && o.desv.armaduraZero && o.desv.elemento === inimigo.elemento;
-    const resiste = o.vant && o.vant.armaduraDobra && o.vant.elemento === inimigo.elemento;
+    const ferido = !!(o.desv && o.desv.armaduraZero && _c3sabeDoPapel(inimigo, o.desv.papel));
+    // E a couraça DELE, se o inimigo souber lançar da gaveta que ela
+    // trava: isso conta a favor de quem está no banco, não contra.
+    const resiste = !!(o.vant && o.vant.armaduraDobra && _c3sabeDoPapel(inimigo, o.vant.papel));
     const nota = (o.pv / o.pvMax) + (ferido ? -1 : 0) + (resiste ? 0.6 : 0);
     if (nota > melhorNota) { melhorNota = nota; melhor = i; }
   });
   // Só troca se o outro estiver mesmo melhor do que quem está em campo
-  const minha = (eu.pv / eu.pvMax) + (feridoPeloElemento ? -1 : 0);
+  const minha = (eu.pv / eu.pvMax) + (feridoPelaGaveta ? -1 : 0);
   return (melhor >= 0 && melhorNota > minha + 0.3) ? melhor : -1;
 }
 
@@ -816,7 +847,7 @@ function politica3dt(eu, inimigo, campo) {
   const tecto = _c3(eu, 'H') * 5;
   const bolsa = _c3pmDisponivel(eu);
   const podePagar = g => g && g.pm <= tecto
-                      && _c3custoMagia(eu, g, g.pm, inimigo) <= bolsa;
+                      && _c3custoMagia(eu, g, g.pm) <= bolsa;
 
   // ── Vantagens que gastam a ação do turno ──
   // O Segundo Fôlego só compensa quando já se perdeu muita vida: gasta
@@ -1208,7 +1239,7 @@ function combate3dtTurno(e) {
     if (magiaSemPM) ev.semPM = true;
 
     if (magia) {
-      _c3pagar(l.c, _c3custoMagia(l.c, magia, pm, l.alvo), ev);
+      _c3pagar(l.c, _c3custoMagia(l.c, magia, pm), ev);
       if (l.c.pv === 0) l.c.vivo = false;
       // A Sina Cobradora tira vida a cada magia, sem direito a resistir
       if (l.c.desv && l.c.desv.danoPorMagia) {
@@ -1438,17 +1469,26 @@ function combate3dtSimular(equipaA, equipaB, seed, opts) {
 // Na consola do jogo:  combate3dtNarrar()
 // Existe para se poder julgar o combate antes de haver interface.
 // ═══════════════════════════════════════════════════════════════════
+/* O nome da gaveta, para mostrar. As cartas que agem contra um papel
+   trazem-no cru — 'muito_forte' — e há quatro sítios a escrevê-lo. */
+function _c3nomePapel(papel) {
+  if (!papel) return '';
+  return (typeof t === 'function') ? t('mag.cat.' + papel) : papel;
+}
+
 function _c3equipa(rng) {
-  const els = (typeof CARACTERISTICAS_ELEMENTAIS !== 'undefined')
-    ? Object.keys(CARACTERISTICAS_ELEMENTAIS)
-    : ['Fogo', 'Água', 'Terra', 'Vento', 'Sombra'];
   const rars = ['Comum', 'Comum', 'Raro', 'Lendário'];
   const suf = ['Bravo', 'Sombrio', 'Antigo', 'Veloz', 'Sereno', 'Rubro'];
+  const nCores = (typeof CORES_RODA !== 'undefined') ? CORES_RODA.length : 12;
   return [0, 1, 2].map(() => {
-    const el = els[Math.floor(rng() * els.length)];
-    return { nome: el + ' ' + suf[Math.floor(rng() * suf.length)], elemento: el,
+    const cor = Math.floor(rng() * nCores);
+    const nomeCor = (typeof idDaCor === 'function') ? idDaCor(cor) : String(cor);
+    return { nome: nomeCor + ' ' + suf[Math.floor(rng() * suf.length)],
              raridade: rars[Math.floor(rng() * rars.length)],
-             nivel: 5 + Math.floor(rng() * 12), seed: Math.floor(rng() * 1e6) };
+             nivel: 5 + Math.floor(rng() * 12), seed: Math.floor(rng() * 1e6),
+             // O que dá a cor ao bicho é o DNA; aqui vai a forma curta
+             // que a certidão também guarda (js/nascimento.js).
+             nascimento: { corPrincipal: cor, corSecundaria: (cor + 5) % nCores } };
   });
 }
 
@@ -1467,15 +1507,15 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
     L.push('- ' + rot + ' ' + '-'.repeat(54));
     eq.forEach(s => { const f = fichaDeAvatar(s); f.seed = s.seed;
       const mg = magiasDoAvatar(f);
-      L.push('  ' + s.nome + ' (' + s.elemento + ' ' + s.raridade + ' nv' + s.nivel + ')' +
+      L.push('  ' + s.nome + ' (' + s.raridade + ' nv' + s.nivel + ')' +
              '  F' + f.F + ' H' + f.H + ' R' + f.R + ' A' + f.A +
              '  ' + f.pv + ' PV / ' + f.pm + ' PM');
       L.push('     ' + MAGIA_SLOTS
         .map(c => mg[c] ? nm(mg[c].id) : '-').join(' | '));
-      const nv2 = (id, el) => (typeof t === 'function' && id)
-        ? t('vd.' + id + '.nome').replace('{elem}', el || '') : id;
-      if (f.vantagem) L.push('     + ' + nv2(f.vantagem.id, f.vantagem.elemento) +
-                             '   - ' + nv2(f.desvantagem.id, f.desvantagem.elemento));
+      const nv2 = (vd) => (typeof t === 'function' && vd && vd.id)
+        ? t('vd.' + vd.id + '.nome').replace('{papel}', _c3nomePapel(vd.papel)) : (vd && vd.id);
+      if (f.vantagem) L.push('     + ' + nv2(f.vantagem) +
+                             '   - ' + nv2(f.desvantagem));
     });
   }
   L.push('='.repeat(66));
@@ -1489,7 +1529,7 @@ function combate3dtNarrar(equipaA, equipaB, seed) {
       continue;
     }
     const nmv = id => (typeof t === 'function' && id)
-      ? t('vd.' + id + '.nome').replace('{elem}', '') : id;
+      ? t('vd.' + id + '.nome').replace('{papel}', '') : id;
     const acc = (ev.vantagem ? nmv(ev.vantagem) : nm(ev.magia)) + (ev.pm ? ' (' + ev.pm + ' PM)' : '');
     if (ev.suporte) {
       let sup = '  ' + ev.quem + ': ' + acc;

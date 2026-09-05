@@ -308,8 +308,8 @@ function openAvatarZoom() {
   zoomEl.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, size, size, getFaseVisual());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: avatar.elemento, rar: avatar.raridade, fase: FASES[getFase()], nivel});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, avatar.elemento, nivel, avatar.nascimento);
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {cor: frasedaCor(avatar), rar: avatar.raridade, fase: FASES[getFase()], nivel});
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, nivel, avatar.nascimento);
   if(typeof preencherCertidaoZoom === 'function') preencherCertidaoZoom(avatar);
   _lockZoomScroll();
   const ov = document.getElementById('avatarZoomOverlay');
@@ -321,16 +321,21 @@ function closeAvatarZoom() {
   ov.style.display = 'none';
 }
 
-// Zoom genérico — usado no marketplace e meus avatares
-function openAvatarZoomData(elemento, raridade, seed, nivelAv, nome, slot) {
+/* Zoom genérico — usado no marketplace e nos meus avatares.
+
+   O primeiro argumento era o ELEMENTO, e servia de duas maneiras: dava
+   a paleta ao desenho e o rótulo ao cabeçalho. Saiu, e o `slot` que já
+   vinha atrás dele faz as duas coisas melhor — traz a cor do bicho, e
+   é ela que agora rotula. */
+function openAvatarZoomData(raridade, seed, nivelAv, nome, slot) {
   const size  = 260;
   const fase  = faseFromNivel(nivelAv);
   const fases = ['BEBÊ','CRIANÇA','JOVEM','ADULTO'];
-  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot || elemento, raridade, seed, size, size, fase);
+  document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {elem: elemento, rar: raridade, fase: fases[fase], nivel: nivelAv||1});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, elemento, nivelAv || 1, slot && slot.nascimento);
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {cor: frasedaCor(slot, seed), rar: raridade, fase: fases[fase], nivel: nivelAv||1});
+  if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, nivelAv || 1, slot && slot.nascimento);
   // Só há certidão quando quem abriu o zoom tinha o avatar em mãos.
   // O cartão do marketplace não o tem, e inventar-lhe uma era pior.
   if(typeof preencherCertidaoZoom === 'function') preencherCertidaoZoom(slot || null);

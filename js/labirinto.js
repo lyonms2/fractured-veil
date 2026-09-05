@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// LABIRINTO ELEMENTAL
+// LABIRINTO
 // Navegação com fog of war, perseguidor e saídas múltiplas
 // ═══════════════════════════════════════════════════════════════════
 
@@ -62,16 +62,14 @@ function startLabirinto() {
   _mzSecs    = [120, 90, 75, 60][d.tier];
   _mzVisionR = [3, 2, 2, 1][d.tier];
 
-  const EL = {
-    'Fogo':         ['#f87171','239,113,113'],
-    'Água':         ['#60a5fa','96,165,250'],
-    'Terra':        ['#86efac','134,239,172'],
-    'Vento':        ['#fbbf24','251,191,36'],
-    'Sombra':       ['#c084fc','192,132,252'],
-  };
-  const ec   = (avatar && EL[avatar.elemento]) || EL['Terra'];
-  _mzElColor = ec[0];
-  _mzElRgb   = ec[1];
+  /* A cor do rasto no labirinto era uma de cinco, pela do elemento.
+     Passa a ser a do bicho que lá anda — e não há tabela nenhuma: sai
+     da mesma paleta que o desenha (js/cores.js), portanto qualquer cor
+     nova funciona sozinha. */
+  const _mzCor = (typeof coresDe === 'function')
+    ? coresDe(avatar, avatar && avatar.seed).principal : 6;
+  _mzElColor = corDaRodaHex(_mzCor);
+  _mzElRgb   = corDaRodaRgb(_mzCor);
 
   _mzPx = 0; _mzPy = 0;
   _mzWon  = false;

@@ -134,7 +134,6 @@ function getGameState() {
       nascimento: s.nascimento || null,
       // Avatar identity
       nome:      s.nome      || '',
-      elemento:  s.elemento  || 'Fogo',
       raridade:  s.raridade  || 'Comum',
       descricao:    s.descricao    || '',
       descricaoIdx: s.descricaoIdx ?? null,
@@ -168,7 +167,7 @@ function getGameState() {
 
          A raridade fica de fora: o ovo já não tem nenhuma. */
       eggs:           (s.eggs  || []).filter(e => Date.now() < e.expiraEm).map(e => ({
-        id: e.id, elemento: e.elemento, expiraEm: e.expiraEm,
+        id: e.id, expiraEm: e.expiraEm,
         chocaEm: e.chocaEm || null,
         dna:     e.dna     || null,
         mae:     e.mae     || null, pai:     e.pai     || null,
@@ -227,13 +226,15 @@ function applyGameState(data) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
       const restored = {...s};
-      // Avatares gravados quando o jogo tinha 9 ou 7 elementos passam
-      // aqui a ter um dos 4 actuais. A conversão é permanente: o próximo
-      // save já grava o elemento novo.
-      if(restored.elemento && typeof normalizarElemento === 'function') {
-        restored.elemento = normalizarElemento(restored.elemento);
-      }
-      if(restored.elemento) restored.car = CARACTERISTICAS_ELEMENTAIS[restored.elemento] || null;
+      /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
+         os elementos que o jogo já não tinha, outra reanexava ao avatar
+         a entrada da tabela de características.
+
+         Não sobrou nem a tabela nem quem a lesse. Um avatar gravado com
+         elemento continua a carregá-lo no Firestore e ninguém lhe pega:
+         a cor dele sai do DNA quando o tem, e da SEED quando não tem
+         (coresDe, em js/cores.js). O campo não se apaga — apagar dados
+         de quem já jogou não traz nada; só se deixa de o ler. */
       return restored;
     });
   }
@@ -332,7 +333,7 @@ function applyGameState(data) {
       slot.eggs = slot.eggs.filter(e => _now <= e.expiraEm);
       if(podres.length) {
         window._ovosPodres = (window._ovosPodres || []).concat(
-          podres.map(e => ({ raridade: e.raridade, elemento: e.elemento })));
+          podres.map(e => ({ id: e.id, expiraEm: e.expiraEm })));
       }
     }
   });

@@ -106,10 +106,14 @@ module.exports = async function handler(req, res) {
           resultados.push({
             uid:      doc.id,
             nome:     slot.nome?.split(',')[0] || '???',
-            elemento: slot.elemento || 'Fogo',
             raridade: slot.raridade || 'Comum',
             nivel:    slot.nivel    || 1,
             seed:     slot.seed     || 0,
+            // A cor, para o visitante desenhar o bicho como ele e. Vai
+            // resolvida em dois numeros e nao o DNA inteiro: e o que a
+            // certidao ja guarda, e nao expoe a heranca de ninguem.
+            corPrincipal:  slot.nascimento?.corPrincipal  ?? null,
+            corSecundaria: slot.nascimento?.corSecundaria ?? null,
           });
         });
         return res.status(200).json({ ok: true, resultados });
@@ -149,10 +153,11 @@ module.exports = async function handler(req, res) {
           perfil: {
             uid:      perfil,
             nome:     slot.nome?.split(',')[0] || '???',
-            elemento: slot.elemento || 'Fogo',
             raridade: slot.raridade || 'Comum',
             nivel:    slot.nivel    || 1,
             seed:     slot.seed     || 0,
+            corPrincipal:  slot.nascimento?.corPrincipal  ?? null,
+            corSecundaria: slot.nascimento?.corSecundaria ?? null,
             vitals:   slot.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
           },
           cooldowns: {

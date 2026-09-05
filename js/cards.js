@@ -41,30 +41,42 @@ const MANILHAS = [
   { label: '7', simbolo: '♦', poder: 15 },
 ];
 
-// ── AVATAR POR VALOR ──
-// Cada valor tem um elemento e raridade fixos
-// Os 4 naipes repetem o mesmo avatar — só muda a cor
+/* ── AVATAR POR VALOR ──
+
+   Cada valor tem um bicho fixo, e os quatro naipes repetem-no. Era
+   fixado por ELEMENTO e raridade; passa a ser fixado pela COR, que é o
+   que hoje o desenha. Os pares de cor estão escolhidos de forma a que
+   nenhum valor se pareça com o vizinho — num baralho aberto em leque, o
+   que distingue as cartas ao longe é isso mesmo.
+
+   Os índices são os da roda (js/cores.js): 0 vermelho, 4 amarelo, 8
+   azul, 10 roxo. */
 const AVATAR_POR_VALOR = {
-  'A':  { elemento: 'Fogo',  raridade: 'Lendário', seed: 1001 },
-  'K':  { elemento: 'Sombra', raridade: 'Raro',     seed: 1002 },
-  'Q':  { elemento: 'Água',  raridade: 'Raro',     seed: 1003 },
-  'J':  { elemento: 'Vento', raridade: 'Raro',     seed: 1004 },
-  '10': { elemento: 'Vento',        raridade: 'Comum',    seed: 1005 },
-  '9':  { elemento: 'Água',         raridade: 'Comum',    seed: 1006 },
-  '8':  { elemento: 'Terra',        raridade: 'Comum',    seed: 1007 },
-  '7':  { elemento: 'Fogo',         raridade: 'Comum',    seed: 1008 },
-  '6':  { elemento: 'Sombra', raridade: 'Comum',    seed: 1009 },
-  '5':  { elemento: 'Vento',        raridade: 'Comum',    seed: 1010 },
-  '4':  { elemento: 'Terra',        raridade: 'Raro',     seed: 1011 },
-  '3':  { elemento: 'Fogo',         raridade: 'Raro',     seed: 1012 },
-  '2':  { elemento: 'Água',         raridade: 'Raro',     seed: 1013 },
+  'A':  { cor: [0, 2],   raridade: 'Lendário', seed: 1001 },
+  'K':  { cor: [10, 9],  raridade: 'Raro',     seed: 1002 },
+  'Q':  { cor: [8, 7],   raridade: 'Raro',     seed: 1003 },
+  'J':  { cor: [6, 4],   raridade: 'Raro',     seed: 1004 },
+  '10': { cor: [5, 6],   raridade: 'Comum',    seed: 1005 },
+  '9':  { cor: [7, 8],   raridade: 'Comum',    seed: 1006 },
+  '8':  { cor: [2, 6],   raridade: 'Comum',    seed: 1007 },
+  '7':  { cor: [1, 0],   raridade: 'Comum',    seed: 1008 },
+  '6':  { cor: [11, 10], raridade: 'Comum',    seed: 1009 },
+  '5':  { cor: [3, 5],   raridade: 'Comum',    seed: 1010 },
+  '4':  { cor: [4, 2],   raridade: 'Raro',     seed: 1011 },
+  '3':  { cor: [0, 11],  raridade: 'Raro',     seed: 1012 },
+  '2':  { cor: [9, 8],   raridade: 'Raro',     seed: 1013 },
 };
 
 // Avatar do coringa
 const AVATAR_CORINGA = [
-  { elemento: 'Sombra', raridade: 'Lendário', seed: 9901 }, // coringa 1
-  { elemento: 'Vento', raridade: 'Lendário', seed: 9902 }, // coringa 2
+  { cor: [10, 0], raridade: 'Lendário', seed: 9901 }, // coringa 1
+  { cor: [4, 8],  raridade: 'Lendário', seed: 9902 }, // coringa 2
 ];
+
+// O par de cor de uma carta, na forma que o gerarSVG lê.
+function _cardCores(a) {
+  return { corPrincipal: a.cor[0], corSecundaria: a.cor[1] };
+}
 
 // ── GERAR BARALHO COMPLETO ──
 function generateDeck() {
@@ -82,7 +94,7 @@ function generateDeck() {
         naipe:     naipe.simbolo,
         nomeNaipe: naipe.nome,
         corNaipe:  naipe.cor,
-        elemento:  avatar.elemento,
+        cores:     _cardCores(avatar),
         raridade:  avatar.raridade,
         seed:      avatar.seed,      // ← mesmo seed para os 4 naipes do mesmo valor
         isManilha: !!manilha,
@@ -101,7 +113,7 @@ function generateDeck() {
       naipe:     i === 0 ? '★' : '✦',
       nomeNaipe: 'Coringa',
       corNaipe:  i === 0 ? '#a78bfa' : '#e8a030',
-      elemento:  av.elemento,
+      cores:     _cardCores(av),
       raridade:  av.raridade,
       seed:      av.seed,
       isManilha: false,
@@ -196,7 +208,7 @@ function _renderCardFront(card, w, h) {
   const naipeSz   = Math.round(w * 0.15);
 
   // Avatar gerado pelo seed do valor (mesmo nos 4 naipes)
-  const avatarSVG = gerarSVG(card.elemento, card.raridade, card.seed, avatarSz, avatarSz);
+  const avatarSVG = gerarSVG(card.cores, card.raridade, card.seed, avatarSz, avatarSz);
 
   // Cor de fundo subtil baseada no naipe
   const bgMap = {
@@ -267,7 +279,7 @@ function _renderCoringa(card, w, h) {
   const avatarSz = Math.round(w * 0.72);
   const avatarX  = Math.round((w - avatarSz) / 2);
   const avatarY  = Math.round(h * 0.14);
-  const avatarSVG = gerarSVG(card.elemento, card.raridade, card.seed, avatarSz, avatarSz);
+  const avatarSVG = gerarSVG(card.cores, card.raridade, card.seed, avatarSz, avatarSz);
   const cor      = card.corNaipe;
 
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">

@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════
-// FICHA DO AVATAR ELEMENTAL — regras do 3D&T Alpha
+// FICHA DO AVATAR — regras do 3D&T Alpha
 //
 // Substitui a ficha inventada (js/combate-ficha.js) pelas regras do
 // Manual 3D&T Alpha, Edição Revisada (Jambô, 2011).
 //
 // Continua sendo FUNÇÃO PURA: nada é gravado, tudo sai do que o avatar
-// já carrega — seed, raridade, elemento e nível. Um avatar que já existe
+// já carrega — seed, raridade e nível. Um avatar que já existe
 // ganha ficha nova no instante em que isto sobe, sem migração.
 //
 // ── O QUE VEM DO MANUAL ──
@@ -181,12 +181,12 @@ function pontosDoAvatar(raridade, nivel) {
 // ═══════════════════════════════════════════════════════════════════
 // fichaDeAvatar — a ficha completa
 //
-//   fichaDeAvatar(12345, 'Raro', 'Fogo', 10)
+//   fichaDeAvatar(12345, 'Raro', 10)
 //   → { F:2, H:3, R:2, A:2, pv:10, pm:10, pontos:9, ... }
 //
 // Aceita também o objeto do slot:  fichaDeAvatar(avatarSlots[0])
 // ═══════════════════════════════════════════════════════════════════
-function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
+function fichaDeAvatar(seed, raridade, nivel, nascimento) {
   if (seed && typeof seed === 'object') {
     const s = seed;
     /* A certidao viaja com a ficha.
@@ -195,7 +195,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
        de um avatar do jogo antigo — e o magiasDoAvatar, que so recebe
        a ficha, tirava as magias aos dois ou a nenhum. A certidao e o
        que separa os dois casos, portanto tem de chegar la. */
-    return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum', s.elemento || 'Fogo',
+    return fichaDeAvatar(s.seed || 0, s.raridade || 'Comum',
                          s.nivel || 1, s.nascimento || null);
   }
 
@@ -220,7 +220,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
   const _indole = (typeof indoleDoDna === 'function' && nascimento && nascimento.dna)
     ? indoleDoDna(nascimento.dna) : null;
   const vd = (typeof sortearVantagens === 'function')
-    ? sortearVantagens(seed, pontosBase, elemento, _indole) : null;
+    ? sortearVantagens(seed, pontosBase, _indole) : null;
 
   /* O QUE A FASE ESCONDE É O PAR, E NÃO O ORÇAMENTO.
 
@@ -420,7 +420,7 @@ function fichaDeAvatar(seed, raridade, elemento, nivel, nascimento) {
     pontos, pontosBase, tecto,
     vantagem:    vdVisivel ? vdVisivel.vantagem    : null,
     desvantagem: vdVisivel ? vdVisivel.desvantagem : null,
-    elemento, raridade, nivel: Math.max(1, nivel || 1),
+    raridade, nivel: Math.max(1, nivel || 1),
     escalao: _escalaoDe(pontos),
     // Para onde puxa, de que sexo é, e com que feitio. Quem desenha a
     // ficha lê daqui.

@@ -8,25 +8,29 @@ const { M } = A;
 const soco = () => ({ magia: null, pm: 0 });
 const media = a => a.reduce((x, y) => x + y, 0) / a.length;
 const base = { F: 2, H: 2, R: 6, A: 2 };
-// Uma magia de fogo simples, para testar o que reage a magia elemental
+/* Uma magia simples, para testar o que reage a magia. O id é o de uma
+   magia REAL da gaveta forte, e tem de ser: as cartas que agem contra
+   um papel perguntam ao catálogo de que gaveta a magia é
+   (papelDaMagia), e uma magia inventada não está em gaveta nenhuma. */
 const magiaFogo = { id: 'fg_a1', pm: 1, fa: { dados: 1, fixo: 2 } };
+const PAPEL_DA_MAGIA_TESTE = 'forte';
 
 console.log('\n═══ VANTAGENS ═══\n');
 
-// ── couraca_elemental: A a dobrar contra magia daquele elemento ──
+// ── couraca_firme: A a dobrar contra magia daquela gaveta ──
 {
-  const v = { ...M.VANTAGENS.couraca_elemental, id: 'couraca_elemental', elemento: 'Fogo' };
+  const v = { ...M.VANTAGENS.couraca_firme, id: 'couraca_firme', papel: PAPEL_DA_MAGIA_TESTE };
   const fd = (comVant, magia) => {
     const fs = [];
     for (let s = 1; s <= 300; s++) {
       const { evA } = A.lancar({ seed: s, politica: () => ({ magia, pm: magia ? magia.pm : 0 }),
-        a: { carac: base, elemento: 'Fogo' },
+        a: { carac: base },
         b: { carac: { F: 0, H: 0, R: 20, A: 4 }, vant: comVant ? v : null } }, 1);
       if (evA[0] && evA[0].fd != null) fs.push(evA[0].fd);
     }
     return Math.max(...fs);
   };
-  A.ver('Couraça — dobra a Armadura contra magia do elemento',
+  A.ver('Couraça — dobra a Armadura contra magia da sua gaveta',
         fd(true, magiaFogo) > fd(false, magiaFogo),
         `FD máxima com a couraça ${fd(true, magiaFogo)} · sem ela ${fd(false, magiaFogo)}`);
   A.ver('Couraça — NÃO trava um golpe físico',
@@ -34,17 +38,17 @@ console.log('\n═══ VANTAGENS ═══\n');
         `FD máxima com a couraça ${fd(true, null)} · sem ela ${fd(false, null)}`);
 }
 
-// ── ferida_antiga: A a zero contra magia daquele elemento ──
+// ── ferida_antiga: A a zero contra magia daquela gaveta ──
 {
-  const d = { ...M.DESVANTAGENS.ferida_antiga, id: 'ferida_antiga', elemento: 'Fogo' };
+  const d = { ...M.DESVANTAGENS.ferida_antiga, id: 'ferida_antiga', papel: PAPEL_DA_MAGIA_TESTE };
   const fds = [];
   for (let s = 1; s <= 300; s++) {
     const { evA } = A.lancar({ seed: s, politica: () => ({ magia: magiaFogo, pm: 1 }),
-      a: { carac: base, elemento: 'Fogo' },
+      a: { carac: base },
       b: { carac: { F: 0, H: 0, R: 20, A: 5 }, desv: d } }, 1);
     if (evA[0] && evA[0].fd != null) fds.push(evA[0].fd);
   }
-  A.ver('Ferida — a Armadura conta zero contra magia do elemento',
+  A.ver('Ferida — a Armadura conta zero contra magia da sua gaveta',
         Math.max(...fds) <= 6, `FD ficou em ${Math.min(...fds)}–${Math.max(...fds)} (alvo de A5)`);
 }
 
@@ -211,15 +215,21 @@ for (const [id, campo] of [['folego_extra', 'pv'], ['fonte_extra', 'pm']]) {
         `FD média do alvo: paralisado ${med(fdComPara)} · normal ${med(fdSemPara)} (alvo de H5)`);
 }
 
-// ── afinidade_profunda: metade do custo no próprio elemento ──
+/* ── afinidade_profunda: metade do custo numa gaveta ──
+
+   Pagava metade nas magias do PRÓPRIO ELEMENTO, e a conta era o prefixo
+   do id: tudo o que não começasse por un_. Sem elementos esse prefixo
+   deixou de querer dizer alguma coisa — é hoje só a chave da tradução —
+   e a vantagem passou a pagar metade numa gaveta sorteada. */
 {
-  const v = { ...M.VANTAGENS.afinidade_profunda, id: 'afinidade_profunda' };
+  const v = { ...M.VANTAGENS.afinidade_profunda, id: 'afinidade_profunda', papel: 'forte' };
   const c = A.duelo({ a: { carac: base, vant: v } }).A[0];
-  const propria = { id: 'fg_a1', pm: 10 }, universal = { id: 'un_a1', pm: 10 };
-  A.ver('Afinidade Profunda — metade no próprio elemento',
-        M._c3custoMagia(c, propria, 10) === 5, `10 PM → ${M._c3custoMagia(c, propria, 10)}`);
-  A.ver('Afinidade Profunda — preço cheio nas universais',
-        M._c3custoMagia(c, universal, 10) === 10, `10 PM → ${M._c3custoMagia(c, universal, 10)}`);
+  const daGaveta = { id: 'fg_a1', pm: 10 };     // é da gaveta forte
+  const de_outra = { id: 'un_d1', pm: 10 };     // é da defensiva
+  A.ver('Afinidade Profunda — metade na gaveta dela',
+        M._c3custoMagia(c, daGaveta, 10) === 5, `10 PM → ${M._c3custoMagia(c, daGaveta, 10)}`);
+  A.ver('Afinidade Profunda — preço cheio nas outras gavetas',
+        M._c3custoMagia(c, de_outra, 10) === 10, `10 PM → ${M._c3custoMagia(c, de_outra, 10)}`);
 }
 
 console.log('\n═══ DESVANTAGENS ═══\n');
@@ -344,7 +354,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
       for (const nv of [13, 35])
         for (let s = 1; s <= 600; s++) {
           const rarAqui = nv >= 29 ? 'Lendário' : nv >= 13 ? 'Raro' : 'Comum';
-          const f = M.fichaDeAvatar(s, rarAqui, el, nv); if (!f) continue;
+          const f = M.fichaDeAvatar(s, rarAqui, nv); if (!f) continue;
           n++;
           zeros += [f.F, f.H, f.R, f.A].filter(x => x === 0).length;
           minH = Math.min(minH, f.H);
@@ -407,7 +417,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
     for (const rar of ['Comum','Raro','Lendário'])
       for (const nv of [1, 10, 35])
         for (let s = 1; s <= 500; s++) {
-          const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
+          const f = M.fichaDeAvatar(s, rar, nv); if (!f) continue;
           n++; minPV = Math.min(minPV, f.pv); minPM = Math.min(minPM, f.pm);
         }
   A.ver('Ninguém entra em combate com zero de vida ou de magia',
@@ -424,7 +434,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
     const c = { ataque: 0, forte: 0, defesa: 0 }; let n = 0;
     for (const el of ['Fogo','Água','Terra','Vento','Sombra'])
       for (let s = 1; s <= 800; s++) {
-        const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
+        const f = M.fichaDeAvatar(s, rar, nv); if (!f) continue;
         n++; const m = M.magiasDoAvatar(f);
         for (const cat of ['ataque','forte','defesa'])
           if (m[cat] && !M.magiaAoAlcance(f, m[cat])) c[cat]++;
@@ -488,7 +498,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
       for (let s = 1; s <= 400; s++) {
         let ant = null, antPV = 0, antIds = null, antAlc = null;
         for (let nv = 1; nv <= 35; nv++) {
-          const f = M.fichaDeAvatar(s, rar, el, nv); if (!f) continue;
+          const f = M.fichaDeAvatar(s, rar, nv); if (!f) continue;
           const v = [f.F, f.H, f.R, f.A];
           const m = M.magiasDoAvatar(f);
           const ids = M.MAGIA_SLOTS.map(c => m[c] ? m[c].id : null);
@@ -538,7 +548,7 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
   let iguais = 0, n = 0;
   for (const el of ['Fogo','Água','Terra','Vento','Sombra'])
     for (let s = 1; s <= 800; s++) {
-      const f = M.fichaDeAvatar(s, 'Raro', el, 10); if (!f) continue;
+      const f = M.fichaDeAvatar(s, 'Raro', 10); if (!f) continue;
       const v = [f.F, f.H, f.R, f.A], c = semPiso(f);
       n++;
       if (Math.max(...v) - Math.min(...v) === Math.max(...c) - Math.min(...c)) iguais++;
@@ -629,7 +639,7 @@ console.log('\n═══ AS DESVANTAGENS NOVAS ═══\n');
   const d = { ...M.DESVANTAGENS.sombra_faminta, id: 'sombra_faminta' };
   let comDesv = 0, assombradas = 0;
   for (let s = 1; s <= 8000; s++) {
-    const f = M.fichaDeAvatar(s, 'Comum', 'Sombra', 5);
+    const f = M.fichaDeAvatar(s, 'Comum', 5);
     if (!f.desvantagem || f.desvantagem.id !== 'sombra_faminta') continue;
     comDesv++;
     const e = M.combate3dtIniciar([{ nome: 'x', elemento: 'Sombra', raridade: 'Comum', nivel: 5, seed: s }],
@@ -715,17 +725,23 @@ console.log('\n═══ AS DESVANTAGENS NOVAS ═══\n');
   A.ver('Ponto Fraco — esquiva-se pior', ce < se, `esquivou ${ce}/800 com · ${se}/800 sem`);
 }
 
-// ── veia_travada: contra um elemento, magia ao dobro ──
+/* ── veia_travada: uma gaveta custa o dobro ──
+
+   Era "contra um elemento": o preço dobrava conforme QUEM estivesse à
+   frente. Um defeito de nascença que só aparece diante de certos
+   adversários nunca foi bem um defeito de nascença — e o jogador não
+   tinha como o ver na ficha, porque dependia da luta.
+
+   Agora emperra uma gaveta do próprio, e emperra-a sempre. */
 {
-  const d = { ...M.DESVANTAGENS.veia_travada, id: 'veia_travada', elemento: 'Água' };
+  const d = { ...M.DESVANTAGENS.veia_travada, id: 'veia_travada', papel: 'forte' };
   const c = A.duelo({ a: { carac: base, desv: d } }).A[0];
-  const magia = { id: 'fg_a1', pm: 6 };
-  const agua  = A.duelo({ b: { carac: base, elemento: 'Água' } }).B[0];
-  const terra = A.duelo({ b: { carac: base, elemento: 'Terra' } }).B[0];
-  A.ver('Veia Travada — o dobro contra o elemento que a tranca',
-        M._c3custoMagia(c, magia, 6, agua) === 12, `→ ${M._c3custoMagia(c, magia, 6, agua)} PM`);
-  A.ver('Veia Travada — preço normal contra os outros',
-        M._c3custoMagia(c, magia, 6, terra) === 6, `→ ${M._c3custoMagia(c, magia, 6, terra)} PM`);
+  const travada = { id: 'fg_a1', pm: 6 };       // gaveta forte
+  const livre   = { id: 'un_d1', pm: 6 };       // gaveta defensiva
+  A.ver('Veia Travada — o dobro na gaveta que ela tranca',
+        M._c3custoMagia(c, travada, 6) === 12, `→ ${M._c3custoMagia(c, travada, 6)} PM`);
+  A.ver('Veia Travada — preço normal nas outras gavetas',
+        M._c3custoMagia(c, livre, 6) === 6, `→ ${M._c3custoMagia(c, livre, 6)} PM`);
 }
 
 // ── conjuro_desajeitado: a magia sai com FA −1 ──
@@ -806,9 +822,9 @@ A.ver('as duas desvantagens de tamagotchi já não estão no sorteio',
      da índole (js/nascimento.js) inclina o sorteio para a família do
      feitio do avatar. Fica anotado para o próximo que passe por aqui
      não o tomar por efeito esquecido. */
-  const tratadas = new Set(['custo','pm','elemento','id','familia','contraElemento','armaduraDobra','armaduraZero',
+  const tratadas = new Set(['custo','pm','papel','id','familia','contraPapel','papelQueBate','armaduraDobra','armaduraZero',
     'habilidadeDobra','devolve','pvComoR','pmComoR','curaTudo','gastaTurno','pvPorTurno','bonusEsquiva',
-    'subirCarac','maxTotal','paralisa','metadeCustoProprioElemento','danoPorMagia','furiaAoSofrerDano',
+    'subirCarac','maxTotal','paralisa','metadeCustoPapel','danoPorMagia','furiaAoSofrerDano',
     // Quantas vezes o Segundo Fôlego serve numa batalha. Provado em
     // tools/guardas.js, que insiste nele oito turnos seguidos.
     'maxUsos',

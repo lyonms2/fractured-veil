@@ -138,15 +138,15 @@ function _magiaFase(nivel) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// OS CINCO PAPÉIS
+// AS QUATRO GAVETAS
 //
-// Cada elemento faz uma coisa melhor do que os outros. As magias são
-// todas do manual e as regras são as dele, mas a REPARTIÇÃO por elemento
-// é nossa — e tinha de ser: os nossos cinco elementos não são as cinco
-// escolas do manual (não temos "espírito", temos Sombra), e lá a mesma
-// magia aparece muitas vezes em duas escolas ao mesmo tempo
-// ("Elemental (água ou terra)", "Branca ou Negra"). A escola nunca foi
-// uma parede.
+// As magias são todas do manual e as regras são as dele, mas a
+// REPARTIÇÃO é nossa — e tinha de ser: as escolas do manual não são
+// uma divisão utilizável, porque lá a mesma magia aparece muitas vezes
+// em duas escolas ao mesmo tempo ("Elemental (água ou terra)",
+// "Branca ou Negra"). A escola nunca foi uma parede.
+//
+// Aqui é: o que a magia FAZ decide em que gaveta ela está.
 //
 //   FOGO    bate mais forte que todos, e não tem defesa nenhuma
 //   TERRA   a maior defesa: a Armadura chega a contar a dobrar
@@ -214,7 +214,7 @@ const MAGIAS = {
     3D&T uma magia atinge quem o lançador escolher dentro do
     alcance, e quem está atrás não está a coberto por estar atrás.
     
-    A Sombra é o elemento certo para levantar essa simplificação:
+    Esta magia é a certa para levantar essa simplificação:
     é o que passa por baixo das portas. E resolve de caminho um
     defeito velho — a gaveta forte da Sombra começava nos 10 PM,
     a única acima dos 5, e por isso 158 avatares de Sombra em mil
@@ -292,7 +292,7 @@ const MAGIAS = {
     { id:'te_a1', pm:5,  buffForca:2, porTurno:true },
     // Cura Mágica do manual: "para cada 2 PMs gastos, você pode curar
     // 1d Pontos de Vida". É a única cura de verdade do jogo, e é da
-    // Água — é isto que faz dela o elemento que se aguenta.
+    // e por isso é a que aguenta uma luta longa.
     { id:'ag_d3', pm:2, pmMax:20, cura:{ dadosPorPM:0.5 } },
     /* A mesma cura, mas para quem precisar.
     
@@ -361,7 +361,7 @@ function magiasDoAvatar(ficha) {
   // muda nada ao subir de nível — e garante que tudo o que ele sabe é
   // alcançável se chegar lá.
   const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
-    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, ficha.elemento, 35, ficha.nascimento)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, 35, ficha.nascimento)
     : ficha;
   const tectoFinal = _f35.H * 5;
 
@@ -444,7 +444,7 @@ function repertorioCompleto(ficha) {
   /* A certidão viaja também nesta. Sem ela, a ficha do nível 35
      construída aqui não teria índole — e a promessa que a ficha faz ao
      jogador saía diferente das magias que ele vai mesmo ter. */
-  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', ficha.elemento, 35, ficha.nascimento));
+  return magiasDoAvatar(fichaDeAvatar(ficha.seed || 0, 'Lendário', 35, ficha.nascimento));
 }
 
 /* Quando é que este lugar desperta? Devolve o degrau, para a ficha

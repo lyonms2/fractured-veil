@@ -79,7 +79,7 @@ const ganhoPorPeso = {};   // peso → média da característica ao nível 35
 for (let i = 0; i < N; i++) {
   const s = nascido(i * 17 + 3);
   const t = M.tendenciaDoDna(s.nascimento.dna);
-  const f = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', 35, s.nascimento);
+  const f = M.fichaDeAvatar(s.seed, 'Comum', 35, s.nascimento);
 
   const voc = M.vocacaoDoDna(s.nascimento.dna)[0];
   // Só conta quando a vocação é clara: um empate no topo não tem
@@ -126,7 +126,7 @@ titulo('MAS NÃO GARANTE');
 // estes avatares seriam gémeos idênticos.
 const molde = nascido(12345).nascimento;
 const fichas = [];
-for (let i = 0; i < 2000; i++) fichas.push(M.fichaDeAvatar(i * 7 + 1, 'Comum', 'Fogo', 35, molde));
+for (let i = 0; i < 2000; i++) fichas.push(M.fichaDeAvatar(i * 7 + 1, 'Comum', 35, molde));
 
 const iguais = new Set(fichas.map(f => CARACS.map(k => f[k]).join('/')));
 ok(iguais.size > 10, 'o mesmo DNA dá fichas diferentes',
@@ -162,8 +162,8 @@ let baseQuebrada = 0, somaComDna = 0, somaSemDna = 0, n2 = 0;
 for (let i = 0; i < 5000; i++) {
   const s = nascido(i * 13 + 5);
   for (const nv of [1, 10, 20, 35]) {
-    const com = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', nv, s.nascimento);
-    const sem = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', nv, null);
+    const com = M.fichaDeAvatar(s.seed, 'Comum', nv, s.nascimento);
+    const sem = M.fichaDeAvatar(s.seed, 'Comum', nv, null);
     if (com.pontosBase !== sem.pontosBase) baseQuebrada++;
     somaComDna += CARACS.reduce((t, k) => t + com[k], 0);
     somaSemDna += CARACS.reduce((t, k) => t + sem[k], 0);
@@ -182,9 +182,9 @@ ok(Math.abs(somaComDna - somaSemDna) / n2 < 0.35,
 let regressoes = 0;
 for (let i = 0; i < 3000; i++) {
   const s = nascido(i * 29 + 11);
-  let ant = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', 1, s.nascimento);
+  let ant = M.fichaDeAvatar(s.seed, 'Comum', 1, s.nascimento);
   for (let nv = 2; nv <= 35; nv++) {
-    const f = M.fichaDeAvatar(s.seed, 'Comum', 'Fogo', nv, s.nascimento);
+    const f = M.fichaDeAvatar(s.seed, 'Comum', nv, s.nascimento);
     for (const k of CARACS) if (f[k] < ant[k]) regressoes++;
     ant = f;
   }
@@ -209,7 +209,7 @@ for (const origem of ['Comum', 'Raro', 'Lendário']) {
   for (let i = 0; i < 5000; i++) {
     const s = nascido(i * 23 + 3, origem);
     const t = M.tendenciaDoDna(s.nascimento.dna);
-    const f = M.fichaDeAvatar(s.seed, s.raridade, 'Fogo', 35, s.nascimento);
+    const f = M.fichaDeAvatar(s.seed, s.raridade, 35, s.nascimento);
     soma += CARACS.reduce((a, k) => a + f[k], 0);
     const ps = CARACS.map(k => t[k]);
     contraste += Math.max(...ps) - Math.min(...ps);
@@ -263,7 +263,7 @@ titulo('A ÍNDOLE');
     let magias = 0, vant = 0, desv = 0, nM = 0, nV = 0;
     for (let seed = 1; seed <= 4000; seed++) {
       const cert = par ? { dna } : null;
-      const f = M.fichaDeAvatar(seed, 'Lendário', 'Terra', 35, cert);
+      const f = M.fichaDeAvatar(seed, 'Lendário', 35, cert);
       const m = M.magiasDoAvatar(f);
       // O PREÇO é o que mede o eixo do feitio nas magias: dentro de uma
       // gaveta a família mal varia, mas o preço varia sempre.

@@ -140,10 +140,10 @@ async function _buscarJogador(query) {
       <div class="amigos-busca-lista">
         ${json.resultados.map(p => `
           <div class="amigos-busca-card">
-            <div class="amigos-busca-svg">${gerarSVG(p.elemento, p.raridade, p.seed, 38, 38, 1)}</div>
+            <div class="amigos-busca-svg">${gerarSVG(p, p.raridade, p.seed, 38, 38, 1)}</div>
             <div class="amigos-busca-info">
               <div class="amigos-busca-nome">${esc(p.nome)}</div>
-              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade), elemento: esc(p.elemento)})}</div>
+              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade), cor: esc(frasedaCor(p, p.seed))})}</div>
             </div>
             ${jaAmigo(p.uid)
               ? `<div class="amigos-busca-ja">${t('amigos.already_friend')}</div>`
@@ -328,15 +328,15 @@ function _renderVisitaOverlay() {
           <!-- A fase vem do _faseNum(), como em todo o resto do jogo.
                Estava em Math.ceil(nivel/5): errava em 8 de 10 níveis e a
                partir do 16 pedia uma fase que não existe (só há 0-3). -->
-          ${gerarSVG(perfil.elemento, perfil.raridade, perfil.seed, 80, 80, _faseNum(perfil.nivel || 1))}
+          ${gerarSVG(perfil, perfil.raridade, perfil.seed, 80, 80, _faseNum(perfil.nivel || 1))}
         </div>
         <button class="mkt-avatar-zoom-btn"
-          onclick="openAvatarZoomData('${esc(perfil.elemento)}','${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
+          onclick="openAvatarZoomData('${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
           title="Ampliar avatar">🔍</button>
       </div>
     </div>
     <div class="visita-nome">${esc(perfil.nome)}</div>
-    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade), elemento: esc(perfil.elemento)})}</div>
+    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade), cor: esc(frasedaCor(perfil, perfil.seed))})}</div>
 
     <div class="visita-vitals">
       ${acoes.map(a => {

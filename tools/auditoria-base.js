@@ -50,7 +50,6 @@ function duelo(cfg) {
     // um combatente ferido nascia com a vida cheia e nada podia curá-lo
     c.pvMax = c.ficha.R * 5; c.pv = p.pv != null ? p.pv : c.pvMax;
     c.pmMax = p.pmMax != null ? p.pmMax : 200; c.pm = p.pm != null ? p.pm : c.pmMax;
-    c.elemento = p.elemento || 'Fogo';
     c.vant = p.vant || null; c.desv = p.desv || null;
     c.magias = p.magias || { ataque: null, forte: null, defesa: null };
     c.nome = p.nome || c.nome;

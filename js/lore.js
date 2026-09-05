@@ -118,11 +118,12 @@ function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
   nextParagraph();
 }
 
-// ── Substitui [nome] e [elemento] pelo avatar atual ──────────────
+// ── Substitui [nome] e [cor] pelo avatar atual ───────────────────
 function _loreFmt(texto) {
   const nome = avatar?.nome?.split(',')[0]?.trim() || 'seu Avatar';
-  const elem = avatar?.elemento || 'Desconhecido';
-  return texto.replace(/\[nome\]/g, nome).replace(/\[elemento\]/g, elem);
+  const cor = (avatar && typeof frasedaCor === 'function')
+    ? frasedaCor(avatar) : 'Desconhecido';
+  return texto.replace(/\[nome\]/g, nome).replace(/\[(?:elemento|cor)\]/g, cor);
 }
 
 // ── Helpers de progresso ─────────────────────────────────────────

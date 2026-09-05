@@ -380,7 +380,7 @@ function viverTodos() {
     // correr para a coleção toda, não só para um.
     s.totalSecs = (s.totalSecs || 0) + SEGUNDOS_POR_CICLO;
 
-    // Cada um decai com a SUA raridade e o SEU elemento. Os efeitos de
+    // Cada um decai com a SUA raridade e o SEU vigor. Os efeitos de
     // itens ficam de fora aqui de propósito: o getItemEffect lê o
     // inventário do avatar aberto, e aplicá-lo aos outros dava a todos
     // o amuleto de um só.
@@ -608,7 +608,7 @@ function autoSpeak() {
   else if(vitals.energia < 20) showBubble(rnd(FALAS.tired));
   else if(sick)                showBubble(rnd(FALAS.sick));
   else if(vitals.humor < 30)   showBubble(rnd(FALAS.bored));
-  else if(Math.random() < .3)  showBubble(Math.random() < .35 ? rnd(FALAS.elemento) : rnd(FALAS.happy));
+  else if(Math.random() < .3)  showBubble(Math.random() < .35 ? rnd(FALAS.cor) : rnd(FALAS.happy));
 }
 
 /* A playPhaseUp vivia aqui: som, salto de escala no avatar, clarão fixo
@@ -745,8 +745,8 @@ function _luGanho(nv) {
   // Subiu um ponto: descobre QUAL característica levou com ele.
   let antes, agora;
   try {
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv - 1, avatar.nascimento);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, avatar.elemento, nv, avatar.nascimento);
+    antes = fichaDeAvatar(avatar.seed, avatar.raridade, nv - 1, avatar.nascimento);
+    agora = fichaDeAvatar(avatar.seed, avatar.raridade, nv, avatar.nascimento);
   } catch (_) { return; }
 
   const nomes = { F: 'evo.f', H: 'evo.h', R: 'evo.r', A: 'evo.a', pv: 'evo.pv', pm: 'evo.pm' };

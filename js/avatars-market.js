@@ -4,7 +4,7 @@
 //             updateCristaisDisplay() (marketplace.html inline),
 //             updateSlots() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
-//             gerarSVG() (data.js), CARACTERISTICAS_ELEMENTAIS (data.js),
+//             gerarSVG() (data.js), frasedaCor() (cores.js),
 //             LIST_COST, UNLOCK_SLOT_COST, TAXA_MARKETPLACE (marketplace.html inline)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -69,7 +69,7 @@ function _slotDoencas(i, s) {
 // ═══════════════════════════════════════════
 // A fase vem do faseFromNivel() do state.js, que é o dono da regra. Isto
 // era uma segunda cópia dos mesmos limiares — ainda não tinham divergido,
-// mas foi exatamente assim que o passivo elemental e as tabelas dos ovos
+// mas foi exatamente assim que o passivo antigo e as tabelas dos ovos
 // apodreceram: duas cópias, uma delas sem quem a corrigisse.
 //
 // A conta local fica só para o marketplace.html avulso, que corre sem o
@@ -109,6 +109,18 @@ function applyFilters() {
   renderBrowse();
 }
 
+/* A cor de uma listagem, e o nome dela. Cinco sítios deste ficheiro
+   pintam ou rotulam um avatar de mercado, e todos têm de dizer a mesma
+   coisa sobre o mesmo bicho — senão o cartão diz uma cor, o detalhe diz
+   outra, e nenhum deles está errado sozinho. */
+function _mktCorDe(l) {
+  const c = (typeof coresDe === 'function') ? coresDe(l, l && l.seed) : null;
+  return c ? c.principal : 0;
+}
+function _mktNomeDaCorDe(l) {
+  return (typeof frasedaCor === 'function') ? frasedaCor(l, l && l.seed) : '';
+}
+
 function renderBrowse() {
   // Limpar SVGs anteriores para evitar colisão de filter IDs
   const _bg = document.getElementById('browseGrid');
@@ -116,13 +128,19 @@ function renderBrowse() {
   const grid  = document.getElementById('browseGrid');
   const search= (document.getElementById('filterSearch')?.value||'').toLowerCase();
   const rar   = document.getElementById('filterRarity')?.value||'';
-  const elem  = document.getElementById('filterElem')?.value||'';
+  const cor   = document.getElementById('filterCor')?.value||'';
   const sort  = document.getElementById('filterSort')?.value||'recent';
 
+  /* Filtrava-se por elemento e procurava-se por nome OU elemento.
+     Filtra-se pela COR PRINCIPAL — que é a que se vê ao longe na
+     grelha — e a procura por texto passa a apanhar também o nome da
+     cor, para "azul" continuar a ser uma coisa que se pode escrever
+     na caixa e obter alguma coisa. */
   let filtered = listings.filter(l => {
-    if(rar  && l.raridade  !== rar)  return false;
-    if(elem && l.elemento  !== elem) return false;
-    if(search && !l.nome?.toLowerCase().includes(search) && !l.elemento?.toLowerCase().includes(search)) return false;
+    if(rar && l.raridade !== rar) return false;
+    if(cor !== '' && String(_mktCorDe(l)) !== cor) return false;
+    if(search && !l.nome?.toLowerCase().includes(search)
+              && !_mktNomeDaCorDe(l).toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -146,8 +164,7 @@ function buildListingCard(l) {
   const parts   = (l.nome||'Avatar').split(',');
   const nomeProp = parts[0].trim();
   const sufixo   = parts.slice(1).join(',').trim();
-  const elemCar  = CARACTERISTICAS_ELEMENTAIS[l.elemento];
-  const elemEmoji= elemCar ? elemCar.emoji : '✦';
+  const corAv    = (typeof corDoAvatar === 'function') ? corDoAvatar(l, l.seed) : '#8b5cf6';
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
@@ -155,7 +172,7 @@ function buildListingCard(l) {
         <div class="av-zoom-wrap">
           ${svgHtml}
           <button class="mkt-avatar-zoom-btn" title="Ampliar"
-            data-el="${l.elemento}" data-rar="${l.raridade}" data-seed="${l.seed||0}"
+            data-rar="${l.raridade}" data-seed="${l.seed||0}"
             data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
             data-cor="${l.nascimento?l.nascimento.corPrincipal:''}" data-cor2="${l.nascimento?l.nascimento.corSecundaria:''}"
             onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
@@ -163,7 +180,7 @@ function buildListingCard(l) {
       </div>
       <div class="av-name">${esc(nomeProp)}</div>
       ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
-      <div class="av-pill ${l.raridade}">${elemEmoji} ${esc(l.elemento)} · ${esc(l.raridade)}</div>
+      <div class="av-pill ${l.raridade}"><span style="color:${corAv}">\u25a0</span> ${esc(_mktNomeDaCorDe(l))} · ${esc(l.raridade)}</div>
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
@@ -195,8 +212,8 @@ async function openDetail(listingId) {
       <div class="detail-svg">${svgHtml}</div>
       <div class="detail-info">
         <div class="detail-name">${esc(l.nome||'Avatar')}</div>
-        <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(l.elemento)}</div>
-        <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l.elemento, l.descricaoIdx) : l.descricao)||'')}</div>
+        <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(_mktNomeDaCorDe(l))}</div>
+        <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
     </div>
     <div class="detail-stats-grid">
@@ -280,7 +297,7 @@ function openListModal(slotIdx) {
       ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${s.nome}</div>
-        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${s.elemento} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
+        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${esc(_mktNomeDaCorDe(s))} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
   document.getElementById('listPriceInput').value = '';
@@ -488,7 +505,7 @@ function renderSlots() {
       const isFrozen = !!s.listed;
       const _ps = (s.nome||'Avatar').split(',');
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
-      const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
+      const _corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
       // O par de cores, pronto a viajar no onclick da moldura.
       const _cor = s.nascimento
         ? `{corPrincipal:${s.nascimento.corPrincipal||0},corSecundaria:${s.nascimento.corSecundaria||0}}`
@@ -501,11 +518,11 @@ function renderSlots() {
           ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
-          onclick="mktOpenZoom('${s.elemento}','${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}',${_cor})">
+          onclick="mktOpenZoom('${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}',${_cor})">
           <div class="av-zoom-wrap">
             ${gerarSVG(s,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
-              data-el="${s.elemento}" data-rar="${s.raridade}" data-seed="${s.seed||0}"
+              data-rar="${s.raridade}" data-seed="${s.seed||0}"
               data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
             data-cor="${s.nascimento?s.nascimento.corPrincipal:''}" data-cor2="${s.nascimento?s.nascimento.corSecundaria:''}"
               onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
@@ -514,7 +531,7 @@ function renderSlots() {
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
           <div class="slot-av-sub">${_ss}</div>
-          <div class="slot-av-pill ${s.raridade}">${_ecs?_ecs.emoji:'✦'} ${s.elemento} · ${s.raridade}</div>
+          <div class="slot-av-pill ${s.raridade}"><span style="color:${_corS}">\u25a0</span> ${esc(_mktNomeDaCorDe(s))} · ${s.raridade}</div>
           <div class="slot-stats">
             <div class="slot-stat"><b>${s.nivel||1}</b><span>${t('mkt.stat.nivel')}</span></div>
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
@@ -667,14 +684,14 @@ function burnAvatar(idx) {
 
   const _ps = (s.nome||'Avatar').split(',');
   const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
-  const _ecs = CARACTERISTICAS_ELEMENTAIS[s.elemento];
+  const _corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
       ${gerarSVG(s, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
       <div style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
       ${_ss ? `<div style="font-size:0.5625rem;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
-      <div style="font-size:0.5625rem;color:var(--muted);">${_ecs?_ecs.emoji:'✦'} ${esc(s.elemento)} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
+      <div style="font-size:0.5625rem;color:var(--muted);"><span style="color:${_corS}">\u25a0</span> ${esc(_mktNomeDaCorDe(s))} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
     </div>`;
 
   document.getElementById('burnOverlay').classList.add('open');

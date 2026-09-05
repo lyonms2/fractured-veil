@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// I18N — MAGIAS ELEMENTAIS
+// I18N — MAGIAS
 //
 // Nomes e descrições próprios do Fractured Veil. As regras vêm do 3D&T
 // Alpha, mas nada aqui reproduz texto do manual: mecânica não se
@@ -16,7 +16,7 @@ window.registerStrings({
   'mag.cat.muito_forte': 'Muito forte',
   'mag.cat.defensiva':   'Defensiva',
   'mag.cat.suporte':     'Suporte',
-  // Quando o elemento não tem magia defensiva, o slot cai num segundo
+  // (o caso antigo do slot de defesa tapado por um segundo
   // ataque. Dizê-lo, em vez de lhe chamar defesa.
   'mag.chega.fase1':  'Chega quando deixar de ser bebê',
   'mag.chega.fase2':  'Chega ao virar Jovem',
@@ -234,12 +234,12 @@ window.registerStrings({
   'mag.so_d2.desc':   'A mente se fecha por dentro. Nada que tire você do combate sem passar pela vida — virar pedra, virar estátua de gelo, ter a alma devorada — chega a pegar. Em troca não para um único ponto de dano, e não impede o Inverno Súbito de o prender: fecha a alma, não o corpo. Paga-se uma vez e dura a luta inteira.',
 
   // ── ✦ UNIVERSAIS ──────────────────────────────────────────────────
-  'mag.un_a1.nome':   'Descarga Elemental',
-  'mag.un_a1.desc':   'O seu elemento em bruto, atirado sem forma. Quanto mais você dá, mais o alvo leva.',
+  'mag.un_a1.nome':   'Descarga Bruta',
+  'mag.un_a1.desc':   'O seu poder em bruto, atirado sem forma. Quanto mais você dá, mais o alvo leva.',
   'mag.un_a2.nome':   'Punho Dimensional',
   'mag.un_a2.desc':   'Um único golpe que atravessa a distância e atira o alvo para trás.',
-  'mag.un_d1.nome':   'Corpo Elemental',
-  'mag.un_d1.desc':   'Você deixa de ter carne e passa a ser o seu elemento: nenhum ponto de dano entra enquanto durar, e o que precisa de ferir para pegar — veneno, gelo, decapitação — deixa de pegar junto. Não trava o que não passa pela vida: virar pedra ou estátua, a cegueira, e a mordida que suga por fora do golpe. Vinte PM a cada turno, e cada vinte compra um turno.',
+  'mag.un_d1.nome':   'Corpo de Luz',
+  'mag.un_d1.desc':   'Você deixa de ter carne e passa a ser luz densa: nenhum ponto de dano entra enquanto durar, e o que precisa de ferir para pegar — veneno, gelo, decapitação — deixa de pegar junto. Não trava o que não passa pela vida: virar pedra ou estátua, a cegueira, e a mordida que suga por fora do golpe. Vinte PM a cada turno, e cada vinte compra um turno.',
 }, {
   // ── ENGLISH ───────────────────────────────────────────────────────
   'mag.cat.forte':       'Strong',
@@ -435,10 +435,10 @@ window.registerStrings({
   'mag.so_d2.nome':   'Mental Aegis',
   'mag.so_d2.desc':   'The mind closes from within. Nothing that removes you from combat without going through your life - turning to stone, to a statue of ice, having your soul devoured - can take hold. In exchange it stops no damage at all, and does not prevent Sudden Winter from locking you in ice: it closes the soul, not the body. Paid once, it lasts the whole fight.',
 
-  'mag.un_a1.nome':   'Elemental Discharge',
-  'mag.un_a1.desc':   'Your element raw, thrown without shape. The more you give, the more it takes.',
+  'mag.un_a1.nome':   'Raw Discharge',
+  'mag.un_a1.desc':   'Your power raw, thrown without shape. The more you give, the more it takes.',
   'mag.un_a2.nome':   'Dimensional Fist',
   'mag.un_a2.desc':   'A single blow that crosses the distance and throws the target back.',
-  'mag.un_d1.nome':   'Elemental Body',
-  'mag.un_d1.desc':   'You stop having flesh and become your element: not one point of damage gets in while it lasts, and whatever needs to wound in order to take hold — poison, ice, beheading — stops working along with it. It does not stop what bypasses life: turning to stone or ice, blindness, and the bite that drains outside the blow. Twenty MP every turn, and each twenty buys one turn.',
+  'mag.un_d1.nome':   'Body of Light',
+  'mag.un_d1.desc':   'You stop having flesh and become dense light: not one point of damage gets in while it lasts, and whatever needs to wound in order to take hold — poison, ice, beheading — stops working along with it. It does not stop what bypasses life: turning to stone or ice, blindness, and the bite that drains outside the blow. Twenty MP every turn, and each twenty buys one turn.',
 });

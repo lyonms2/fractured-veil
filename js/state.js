@@ -84,7 +84,7 @@ const ITEM_CATALOG = {
   },
   // ── OS TRÊS QUE FAZEM O EQUIPAR DECIDIR ALGUMA COISA ──
   // Havia 3 amuletos para 3 espaços: quem comprava tudo equipava tudo e
-  // não escolhia nada. Com seis, a escolha passa a depender do elemento
+  // não escolhia nada. Com seis, a escolha passa a depender do feitio
   // (o Fogo come mais, a Sombra entristece mais) e de como se joga.
   //
   // Nenhum toca em F/H/R/A. Os dois de combate mexem no CUSTO de jogar,
@@ -307,9 +307,13 @@ const FALAS = {
   get vinculo()     { return t('falas.vinculo');     },
   get fullEnergy()  { return t('falas.fullEnergy');  },
   get item()        { return t('falas.item');        },
-  get elemento() {
-    const el = avatar?.elemento;
-    const arr = el ? t(`falas.elem.${el}`) : null;
+  /* Eram cinco conjuntos de falas, um por elemento. São os mesmos
+     cinco, com a chave que ficou no lugar do elemento: o TOM da cor
+     (js/cores.js). Nenhuma fala se perdeu — mudaram de dono, como os
+     nomes de nascença e as descrições. */
+  get cor() {
+    const tom = (typeof tomDoAvatar === 'function' && avatar) ? tomDoAvatar(avatar) : null;
+    const arr = tom ? t(`falas.tom.${tom}`) : null;
     return (Array.isArray(arr) && arr.length) ? arr : t('falas.happy');
   },
 };
@@ -333,7 +337,7 @@ const SLOT_COST   = 15;
 //
 // O contador é do total de invocações, NÃO dos avatares vivos. Isso é o
 // que impede o jogador de invocar, queimar o que não gostou e invocar
-// outra vez à procura do elemento ou da ficha ideal: cada tentativa gasta
+// outra vez à procura da cor ou da ficha ideal: cada tentativa gasta
 // uma invocação, mesmo que o avatar acabe queimado.
 const INVOCACOES_GRATIS = 5;
 const SUMMON_CUSTO      = 500;

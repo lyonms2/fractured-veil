@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════
 // A RODA DE CORES
 //
-// O elemento decidia como o avatar era desenhado: cinco paletas fixas, e
-// dois avatares de Fogo saíam do mesmo balde de vermelhos. A cor passa a
-// ser o que se vê e o que se herda — e são doze, não cinco.
+// Havia cinco paletas fixas, uma por elemento, e dois avatares da mesma
+// família saíam do mesmo balde de vermelhos. A cor passa a ser o que se
+// vê e o que se herda — e são doze, não cinco.
 //
 // Cada avatar nasce com DUAS: a principal, que lhe dá o corpo, e a
 // secundária, que lhe dá as sombras e os detalhes. Doze por doze são 144
@@ -151,7 +151,7 @@ function paletaDeCores(principal, secundaria) {
     // O olho pela segunda cor, e claro: é o ponto onde o olhar cai, e
     // é onde a segunda cor tem de ser inconfundível.
     corOlho:   _hsl(s.matiz, Math.min(100, s.sat + 18), Math.min(78, s.luz + 24)),
-    particulas: 'neutro',
+    particulas: _PARTICULA_DO_TOM[tomDaCor(principal)],
   };
 }
 
@@ -164,8 +164,11 @@ function paletaDeCores(principal, secundaria) {
 // mistura que nenhum dos pais tinha.
 // ═══════════════════════════════════════════════════════════════════
 function coresDoAvatar(slot) {
-  const g = slot && slot.nascimento && slot.nascimento.dna
-         && slot.nascimento.dna.genes && slot.nascimento.dna.genes.cor;
+  /* Um OVO traz o DNA solto — não tem certidão, que só se passa a quem
+     nasce. Aceitar as duas formas aqui é o que deixa o inventário
+     mostrar a cor de quem está lá dentro antes de ele sair. */
+  const dna = slot && (slot.dna || (slot.nascimento && slot.nascimento.dna));
+  const g = dna && dna.genes && dna.genes.cor;
   if (Array.isArray(g)) return { principal: _corIdx(g[0]), secundaria: _corIdx(g[1]) };
   /* O par tambem viaja resolvido: a certidao guarda-o em corPrincipal/
      corSecundaria, e ha sitios (o zoom do marketplace) onde so chegam
@@ -176,26 +179,68 @@ function coresDoAvatar(slot) {
   return null;
 }
 
-/* Um avatar do jogo antigo não tem cores — tem um elemento. Em vez de
-   lhe inventar uma cor ao acaso, dá-se-lhe a que ele sempre teve: o
-   ponto da roda mais perto da paleta do seu elemento. Assim ninguém
-   chega ao jogo e vê o seu bicho de outra cor. */
-const CORES_DO_ELEMENTO = {
-  'Fogo':   [0, 2],    // vermelho com sombras de laranja
-  'Água':   [8, 7],    // azul com sombras de azul-esverdeado
-  'Terra':  [2, 6],    // laranja terroso com sombras verdes
-  'Vento':  [7, 8],    // azul-esverdeado claro com sombras azuis
-  'Sombra': [10, 9],   // roxo com sombras de azul-arroxeado
-};
+/* ── QUEM NAO TEM DNA ──
 
-function coresDoElemento(elemento) {
-  const c = CORES_DO_ELEMENTO[elemento] || CORES_DO_ELEMENTO['Fogo'];
-  return { principal: c[0], secundaria: c[1] };
+   Um avatar do jogo antigo nao tem cores no DNA. Tinha um ELEMENTO, e
+   durante um tempo houve aqui uma tabela que dizia a cor de cada um dos
+   cinco. O elemento saiu do jogo e a tabela com ele.
+
+   O que fica no lugar nao e uma tabela: e a SEED. Ela ja decide o corpo
+   inteiro do bicho (gerarSVG, em js/data.js), portanto tirar dela
+   tambem a cor nao inventa nada de novo — so le mais um numero de onde
+   ja se lia tudo o resto. E deterministico, e por isso um avatar antigo
+   tem sempre a mesma cor, hoje e daqui a um ano. */
+function coresDoSeed(seed) {
+  const s = Math.abs(seed | 0) || 1;
+  return { principal: _corIdx(s), secundaria: _corIdx(Math.floor(s / CORES_N) + 5) };
 }
 
+/* As cores deste avatar, venha ele de onde vier: do DNA se o tiver, da
+   seed se nao. Uma porta so, para nunca haver dois sitios a decidir a
+   cor do mesmo bicho e a decidirem coisas diferentes. */
+function coresDe(slot, seed) {
+  return coresDoAvatar(slot)
+      || coresDoSeed(seed != null ? seed : (slot && (slot.seed || slot.id)) || 0);
+}
+
+/* ── OS CINCO TONS DA RODA ──
+
+   O nome de nascenca e a descricao vinham em cinco gavetas, uma por
+   elemento. As gavetas nao tem culpa de o elemento ter saido: sao
+   sessenta nomes e vinte e cinco descricoes escritas a mao, e deitar
+   fora quatro quintos delas para ficar com um saco unico era perder
+   trabalho por nada.
+
+   Mudam de chave, e a chave nova e a COR — que e o que sobrou de
+   identidade visivel. Doze cores em cinco gavetas, por trechos
+   seguidos da roda: os vermelhos ficam com os nomes de brasa, os
+   amarelos com os de barro, os verdes com os de folha, os azuis com os
+   de mare, os roxos com os de breu.
+
+   Assim o nome continua a combinar com o bicho — e passa a combinar
+   melhor do que combinava, porque a cor VE-SE e o elemento era uma
+   palavra. */
+const CORES_TONS = ['brasa', 'barro', 'folha', 'mare', 'breu'];
+const _TOM_DA_COR = ['brasa', 'brasa', 'brasa',   // vermelho, verm-laranja, laranja
+                     'barro', 'barro',            // amarelo-laranja, amarelo
+                     'folha', 'folha',            // amarelo-verde, verde
+                     'mare',  'mare',             // azul-verde, azul
+                     'breu',  'breu',  'breu'];   // azul-roxo, roxo, verm-roxo
+
+/* E as particulas que rodeiam o bicho seguem o mesmo tom. Eram cinco
+   desenhos, um por elemento, e sao os mesmos cinco: chamas para os
+   vermelhos, pedras para os amarelos, espirais para os verdes, gotas
+   para os azuis, sombras para os roxos. Nenhum se perdeu — mudaram de
+   dono. */
+const _PARTICULA_DO_TOM = { brasa:'chamas', barro:'pedras', folha:'espirais',
+                            mare:'gotas',  breu:'sombras' };
+
+function tomDaCor(x)   { return _TOM_DA_COR[_corIdx(x)]; }
+function tomDoAvatar(slot, seed) { return tomDaCor(coresDe(slot, seed).principal); }
+
 // A paleta a usar para desenhar este avatar, venha ele de onde vier.
-function paletaDoAvatar(slot) {
-  const c = coresDoAvatar(slot) || coresDoElemento(slot && slot.elemento);
+function paletaDoAvatar(slot, seed) {
+  const c = coresDe(slot, seed);
   return paletaDeCores(c.principal, c.secundaria);
 }
 
@@ -224,7 +269,7 @@ function corDoAvatar(slot, qual) {
    luminosidade que o ovo antigo tinha (roxo 42% → 24% → 6%). A segunda
    cor só tinge o fundo, que é onde ela não compete com nada. */
 function gradienteDoOvo(slot) {
-  const c = coresDoAvatar(slot) || coresDoElemento(slot && slot.elemento);
+  const c = coresDe(slot);
   const p = corDaRoda(c.principal);
   const s = corDaRoda(c.secundaria != null ? c.secundaria : c.principal);
   return {
@@ -234,6 +279,58 @@ function gradienteDoOvo(slot) {
     brilho: _hsl(p.matiz, Math.min(100, p.sat + 12), Math.min(88, p.luz + 34)),
     aura:   _hsl(p.matiz, p.sat, p.luz),
   };
+}
+
+/* ── O RÓTULO DO AVATAR ──
+
+   Debaixo do nome, o cartão dizia "🔥 Fogo". Passa a dizer de que cor
+   ele é, que é a única coisa que sobrou de identidade e a única que se
+   confirma a olhar para o bicho.
+
+   Está aqui, e não nos oito sítios que o mostram, porque o rótulo do
+   marketplace e o rótulo da consola têm de dizer a MESMA palavra sobre
+   o mesmo avatar. Escrito em oito sítios, sete deles ficariam para trás
+   à primeira mudança — é a forma de defeito mais antiga deste jogo. */
+function frasedaCor(slot, seed) {
+  const c = coresDe(slot, seed);
+  const a = nomeDaCor(c.principal), b = nomeDaCor(c.secundaria);
+  const chave = (c.principal === c.secundaria) ? 'cor.pura' : 'cor.par';
+  return (typeof t === 'function') ? t(chave, { a, b }) : (a + (a === b ? '' : ' / ' + b));
+}
+
+/* ── A COR, PRONTA A VIAJAR ──
+
+   O lobby da arena, o rouba-monte e a batalha naval publicam uma ficha
+   curta de cada jogador na base em tempo real, para o outro lado poder
+   desenhar o bicho antes de a partida começar. Levava o ELEMENTO, que
+   era o que dava a paleta ao desenho.
+
+   Leva os dois números da cor. É o mesmo par que a certidão guarda, e
+   por isso o registo publicado é lido pelo coresDoAvatar sem tradução
+   nenhuma — chega passá-lo ao gerarSVG. */
+function paresDeCor(slot, seed) {
+  const c = coresDe(slot, seed);
+  return { corPrincipal: c.principal, corSecundaria: c.secundaria };
+}
+
+// A cor em si, para pintar uma amostra. É a mesma conta da paleta,
+// e por isso a amostra é mesmo a cor com que o bicho é desenhado.
+function corDaRodaHex(x) {
+  const c = corDaRoda(x);
+  return _hsl(c.matiz, c.sat, c.luz);
+}
+
+/* A mesma cor em r,g,b, para quem precisa de lhe pôr transparencia por
+   cima — o canvas do labirinto pinta o rasto com rgba(). Convem estar
+   aqui e nao la: e a mesma cor, e duas contas em dois ficheiros para a
+   mesma cor e o principio de duas cores diferentes. */
+function corDaRodaRgb(x) {
+  const c = corDaRoda(x);
+  const h = ((c.matiz % 360) + 360) % 360, sa = c.sat / 100, l = c.luz / 100;
+  const k = n => (n + h / 30) % 12;
+  const a = sa * Math.min(l, 1 - l);
+  const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))));
+  return f(0) + ',' + f(8) + ',' + f(4);
 }
 
 // O nome da cor, para mostrar. Vem do i18n; sem ele, o id serve.
