@@ -148,6 +148,20 @@ function paletaDeCores(principal, secundaria) {
       _hsl(s.matiz, s.sat - 10, Math.max(16, s.luz - 14)),
     ],
     corBrilho: _hsl(p.matiz, Math.min(100, p.sat + 12), Math.min(88, p.luz + 34)),
+    /* ── O CONTORNO É OUTRA COISA QUE O BRILHO ──
+
+       Eram o mesmo, e o brilho fazia os dois trabalhos: acender a aura, e
+       contornar o corpo, os chifres e as asas. Para acender está certo;
+       para contornar, não — ele é o matiz levado ao claro, e nos matizes
+       que já nascem claros bate no tecto dos 88 de luz. Um traço de dois
+       ou três píxeis a 88 de luz não tem cor nenhuma aos olhos de ninguém:
+       é branco. O amarelo era o pior, mas todos o tinham.
+
+       O contorno vai ao contrário — o mesmo matiz levado ao ESCURO, e
+       dessaturado, para ler como sombra do próprio bicho e não como um
+       halo por cima dele. Continua a ser a cor do avatar; é só o outro
+       lado dela. */
+    corContorno: _hsl(p.matiz, Math.max(0, p.sat - 35), Math.max(12, p.luz - 26)),
     // O olho pela segunda cor, e claro: é o ponto onde o olhar cai, e
     // é onde a segunda cor tem de ser inconfundível.
     corOlho:   _hsl(s.matiz, Math.min(100, s.sat + 18), Math.min(78, s.luz + 24)),
@@ -253,6 +267,7 @@ function corDoAvatar(slot, qual) {
   const cfg = paletaDoAvatar(slot);
   if (!cfg) return '#8b5cf6';
   if (qual === 'brilho') return cfg.corBrilho;
+  if (qual === 'contorno') return cfg.corContorno;
   return cfg.cores[1];
 }
 
