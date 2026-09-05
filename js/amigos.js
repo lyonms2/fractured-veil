@@ -143,7 +143,7 @@ async function _buscarJogador(query) {
             <div class="amigos-busca-svg">${gerarSVG(p, p.raridade, p.seed, 38, 38, 1)}</div>
             <div class="amigos-busca-info">
               <div class="amigos-busca-nome">${esc(p.nome)}</div>
-              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade), cor: esc(frasedaCor(p, p.seed))})}</div>
+              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade)})}</div>
             </div>
             ${jaAmigo(p.uid)
               ? `<div class="amigos-busca-ja">${t('amigos.already_friend')}</div>`
@@ -336,7 +336,7 @@ function _renderVisitaOverlay() {
       </div>
     </div>
     <div class="visita-nome">${esc(perfil.nome)}</div>
-    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade), cor: esc(frasedaCor(perfil, perfil.seed))})}</div>
+    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade)})}</div>
 
     <div class="visita-vitals">
       ${acoes.map(a => {

@@ -437,7 +437,8 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
 
 // O nome do escalão, para mostrar na ficha.
 function _escalaoDe(pontos) {
-  if (pontos <= 4)  return 'Pessoa Comum';
+  // O manual chama-lhe "Pessoa Comum". Aqui não há pessoas.
+  if (pontos <= 4)  return 'Comum';
   if (pontos <= 6)  return 'Novato';
   if (pontos <= 9)  return 'Lutador';
   if (pontos <= 11) return 'Campeão';

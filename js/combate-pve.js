@@ -563,24 +563,19 @@ function _pveEstadoHTML(c, contra) {
        + '</div>';
 }
 
-/* A paleta de um combatente. Sai da ficha dele, que é onde vive a
-   certidão — e é a MESMA conta que desenha o bicho, portanto o quadrado
-   ao lado do nome tem exactamente a cor do bicho que está por cima. */
 // O nome de uma gaveta, para os rótulos das cartas.
 function _pvePapel(p) { return p ? t('mag.cat.' + p) : ''; }
 
+/* A paleta de um combatente. Sai da ficha dele, que é onde vive a
+   certidão — e é a MESMA conta que desenha o bicho, portanto o clarão
+   do impacto tem exactamente a cor de quem bateu. */
 function _pvePaletaDe(c) {
   if (!c || typeof paletaDoAvatar !== 'function') return null;
   const f = c.ficha || null;
   return paletaDoAvatar(f, (f && f.seed) || c.seed || 0);
 }
-function _pveCorDe(c) {
-  const p = _pvePaletaDe(c);
-  return p ? p.cores[1] : '#8b5cf6';
-}
 
 function _pveLutador(c, i, lado, ativo) {
-  const corC = _pveCorDe(c);
   const emCampo = i === ativo;
   const cls = ['cb-lutador', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
   const tam = emCampo ? 52 : 38;
@@ -623,7 +618,7 @@ function _pveLutador(c, i, lado, ativo) {
        title="${t('pve.ajuda.abrir', { nome: c.nome })}">
     <span class="cb-lutador-ver">${t('pve.ajuda.ver')}</span>
     <div class="cb-lutador-svg">${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
-    <div class="cb-lutador-nome"><span style="color:${corC}">\u25a0</span> ${c.nome}</div>
+    <div class="cb-lutador-nome">${c.nome}</div>
     <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
     <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
     <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
@@ -907,7 +902,6 @@ function _pveAjudaHTML(c, lado, contra) {
 function _pveAjudaDe(eu, lado, contra) {
   if (!eu) return '';
   const tecto = _c3(eu, 'H') * 5;
-  const corEu = _pveCorDe(eu);
 
   /* O `tipo` pinta o item.
 
@@ -990,7 +984,7 @@ function _pveAjudaDe(eu, lado, contra) {
 
   return `<div class="cb-ajuda-lado ${lado}">
     <div class="cb-ajuda-quem">
-      <span style="color:${corEu}">\u25a0</span> ${eu.nome}
+      ${eu.nome}
       <span>${_pveCaracs(eu)} · ${t('pve.prog.vida')} ${eu.pv}/${eu.pvMax} · ${eu.pm}/${eu.pmMax} PM · ${t('ficha.tecto')} ${tecto} PM</span>
     </div>
     ${_pveEstadoHTML(eu, contra)}

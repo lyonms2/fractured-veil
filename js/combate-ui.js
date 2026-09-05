@@ -252,7 +252,6 @@ function renderEquipaBar() {
       continue;
     }
     const nome = (s.nome || 'Avatar').split(',')[0].trim();
-    const corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
     const papel = n === 0 ? t('equipa.ordem.comeca')
                 : n === 1 ? t('equipa.ordem.segundo')
                           : t('equipa.ordem.terceiro');
@@ -286,7 +285,7 @@ function renderEquipaBar() {
       <span class="equipa-pos">${n + 1}</span>
       ${gerarSVG(s, s.raridade, s.seed || 0, 42, 42, _faseNum(s.nivel))}
       <div class="equipa-slot-nome">${nome}</div>
-      <div class="equipa-slot-sub"><span style="color:${corS}">■</span> ${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
+      <div class="equipa-slot-sub">${t('mkt.stat.nivel')} ${s.nivel || 1}</div>
       <div class="equipa-papel">${papel}</div>
       ${marca}
       ${setas}

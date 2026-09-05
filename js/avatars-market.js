@@ -109,10 +109,15 @@ function applyFilters() {
   renderBrowse();
 }
 
-/* A cor de uma listagem, e o nome dela. Cinco sítios deste ficheiro
-   pintam ou rotulam um avatar de mercado, e todos têm de dizer a mesma
-   coisa sobre o mesmo bicho — senão o cartão diz uma cor, o detalhe diz
-   outra, e nenhum deles está errado sozinho. */
+/* A cor de uma listagem, para a PROCURA.
+
+   Cinco sítios deste ficheiro rotulavam o avatar com o nome da cor, e
+   isso saiu: o bicho está desenhado ao lado em todos eles, e escrever
+   "Roxo com Verde" por baixo de um bicho roxo não acrescenta nada.
+
+   Aqui fica, porque a procura não vê o desenho: o filtro compara a cor
+   principal, e a caixa de texto compara o nome dela — para "azul"
+   continuar a ser uma coisa que se escreve e devolve alguma coisa. */
 function _mktCorDe(l) {
   const c = (typeof coresDe === 'function') ? coresDe(l, l && l.seed) : null;
   return c ? c.principal : 0;
@@ -164,7 +169,6 @@ function buildListingCard(l) {
   const parts   = (l.nome||'Avatar').split(',');
   const nomeProp = parts[0].trim();
   const sufixo   = parts.slice(1).join(',').trim();
-  const corAv    = (typeof corDoAvatar === 'function') ? corDoAvatar(l, l.seed) : '#8b5cf6';
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
@@ -180,7 +184,7 @@ function buildListingCard(l) {
       </div>
       <div class="av-name">${esc(nomeProp)}</div>
       ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
-      <div class="av-pill ${l.raridade}"><span style="color:${corAv}">\u25a0</span> ${esc(_mktNomeDaCorDe(l))} · ${esc(l.raridade)}</div>
+      <div class="av-pill ${l.raridade}">${esc(l.raridade)}</div>
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
@@ -212,7 +216,7 @@ async function openDetail(listingId) {
       <div class="detail-svg">${svgHtml}</div>
       <div class="detail-info">
         <div class="detail-name">${esc(l.nome||'Avatar')}</div>
-        <div class="detail-rarity ${l.raridade}">${esc(l.raridade)} · ${esc(_mktNomeDaCorDe(l))}</div>
+        <div class="detail-rarity ${l.raridade}">${esc(l.raridade)}</div>
         <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
     </div>
@@ -297,7 +301,7 @@ function openListModal(slotIdx) {
       ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${s.nome}</div>
-        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${esc(_mktNomeDaCorDe(s))} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
+        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
   document.getElementById('listPriceInput').value = '';
@@ -505,7 +509,6 @@ function renderSlots() {
       const isFrozen = !!s.listed;
       const _ps = (s.nome||'Avatar').split(',');
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
-      const _corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
       // O par de cores, pronto a viajar no onclick da moldura.
       const _cor = s.nascimento
         ? `{corPrincipal:${s.nascimento.corPrincipal||0},corSecundaria:${s.nascimento.corSecundaria||0}}`
@@ -531,7 +534,7 @@ function renderSlots() {
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
           <div class="slot-av-sub">${_ss}</div>
-          <div class="slot-av-pill ${s.raridade}"><span style="color:${_corS}">\u25a0</span> ${esc(_mktNomeDaCorDe(s))} · ${s.raridade}</div>
+          <div class="slot-av-pill ${s.raridade}">${s.raridade}</div>
           <div class="slot-stats">
             <div class="slot-stat"><b>${s.nivel||1}</b><span>${t('mkt.stat.nivel')}</span></div>
             <div class="slot-stat"><b>${Math.floor(s.vinculo||0)}</b><span>${t('mkt.stat.vinculo')}</span></div>
@@ -684,14 +687,13 @@ function burnAvatar(idx) {
 
   const _ps = (s.nome||'Avatar').split(',');
   const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
-  const _corS = (typeof corDoAvatar === 'function') ? corDoAvatar(s, s.seed) : '#8b5cf6';
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
       ${gerarSVG(s, s.raridade, s.seed||0, 60, 60, _faseNum(s.nivel))}
       <div style="font-family:'Cinzel',serif;font-size:0.8125rem;font-weight:700;color:${RAR_COLOR[s.raridade]||'#ccc'}">${esc(_ns)}</div>
       ${_ss ? `<div style="font-size:0.5625rem;color:var(--text2);font-style:italic;">${esc(_ss)}</div>` : ''}
-      <div style="font-size:0.5625rem;color:var(--muted);"><span style="color:${_corS}">\u25a0</span> ${esc(_mktNomeDaCorDe(s))} · ${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
+      <div style="font-size:0.5625rem;color:var(--muted);">${esc(s.raridade)} · ${t('mkt.stat.nivel')} ${s.nivel||1}</div>
     </div>`;
 
   document.getElementById('burnOverlay').classList.add('open');

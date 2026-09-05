@@ -308,7 +308,7 @@ function openAvatarZoom() {
   zoomEl.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, size, size, getFaseVisual());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
   document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {cor: frasedaCor(avatar), rar: avatar.raridade, fase: FASES[getFase()], nivel});
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: avatar.raridade, fase: FASES[getFase()], nivel});
   if(typeof preencherFichaZoom === 'function') preencherFichaZoom(avatar.seed, avatar.raridade, nivel, avatar.nascimento);
   if(typeof preencherCertidaoZoom === 'function') preencherCertidaoZoom(avatar);
   _lockZoomScroll();
@@ -334,7 +334,7 @@ function openAvatarZoomData(raridade, seed, nivelAv, nome, slot) {
   document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
   document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
-  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {cor: frasedaCor(slot, seed), rar: raridade, fase: fases[fase], nivel: nivelAv||1});
+  document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: raridade, fase: fases[fase], nivel: nivelAv||1});
   if(typeof preencherFichaZoom === 'function') preencherFichaZoom(seed, raridade, nivelAv || 1, slot && slot.nascimento);
   // Só há certidão quando quem abriu o zoom tinha o avatar em mãos.
   // O cartão do marketplace não o tem, e inventar-lhe uma era pior.

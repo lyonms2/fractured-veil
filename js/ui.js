@@ -606,14 +606,11 @@ function fillCreatureCard() {
   const sfx = document.getElementById('idSufixo');
   if(sfx) sfx.textContent = sufixo || '';
 
-  /* Dizia "🔥 Fogo". Diz a cor, e pinta-se dela: é o mesmo bicho que
-     está desenhado ao lado, e agora as duas coisas concordam. */
-  const meta = document.getElementById('idMeta');
+  /* Aqui dizia "🔥 Fogo", e por um dia disse a cor. Não diz nada: o
+     bicho está desenhado dois centímetros acima, e escrever "Roxo com
+     Verde" por baixo de um bicho roxo é legendar o óbvio. A linha saiu
+     inteira, e o crachá da raridade ficou com a fila para ele. */
   const corAv = (typeof corDoAvatar === 'function') ? corDoAvatar(avatar) : '#8b5cf6';
-  if(meta) {
-    meta.textContent = (typeof frasedaCor === 'function') ? frasedaCor(avatar) : '';
-    meta.style.color = corAv;
-  }
 
   const badge = document.getElementById('idBadge');
   if(badge) {
