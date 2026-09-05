@@ -340,19 +340,18 @@ function renderCertidaoHTML(slot) {
   </div>`;
 }
 
-/* Preenche a certidão dentro do overlay de zoom. Chamada por
-   openAvatarZoom() e openAvatarZoomData() em js/main.js.
+/* A CERTIDÃO JÁ NÃO VIVE NO ZOOM.
 
-   A LINHAGEM SAIU DAQUI. Vivia colada ao fundo da certidão, e a
-   certidão vem depois da ficha de combate inteira — magias, vantagens,
-   os quatro medidores. Para chegar à árvore era preciso rolar por tudo
-   isso, e quem não soubesse que ela existia não a encontrava.
-   Passou a ter porta própria: o 🌳 ao lado do 🔍. */
-function preencherCertidaoZoom(slot) {
-  const el = document.getElementById('avatarZoomCertidao');
-  if (!el) return;
-  el.innerHTML = slot ? renderCertidaoHTML(slot) : '';
-}
+   Esteve lá por baixo da ficha de combate, e a ficha é comprida —
+   magias, vantagens, os quatro medidores. Para ler a certidão era
+   preciso rolar por tudo isso, e o mesmo tinha acontecido à linhagem
+   antes dela.
+
+   As duas mudaram-se para o 🌳, e as duas portas passaram a dizer o
+   que abrem: o 🔍 mostra o que o avatar SABE FAZER, o 🌳 mostra quem
+   ele É — de quem nasceu, por que mãos passou, quem são os filhos.
+
+   Quem a desenha é o abrirCartaoLinhagem, aqui em baixo. */
 
 // ═══════════════════════════════════════════════════════════════════
 // A ÁRVORE

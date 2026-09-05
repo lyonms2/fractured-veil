@@ -862,3 +862,14 @@
   .lin-cartao { width:4.75rem; }
   .lin-cartao.pequeno { width:3.875rem; }
 }
+
+/* O cartão de um avatar da árvore — o gémeo do zoom, com a certidão no
+   lugar da ficha. Ganha duas rem de largura sobre o zoom: a certidão é
+   feita de pares rótulo/valor numa linha só, e num cartão de 20rem o
+   "Primeiro dono" quebrava a meio. */
+#linCartaoOverlay { padding: 0.875rem; box-sizing: border-box; }
+#linCartaoOverlay .avatar-zoom-modal { max-width: 22rem; max-height: 100%; overflow-y: auto; }
+#linCartaoSVG { display: flex; align-items: center; justify-content: center; }
+#linCartaoSVG svg { animation: idle-float 3s ease-in-out infinite; }
+#linCartaoCertidao { align-self: stretch; width: 100%; }
+
