@@ -159,6 +159,61 @@
 .egg-item.rotten { opacity:.45; border-color:#5a2a2a; color:#886688; filter: grayscale(.6); }
 .egg-item.urgent { border-color:rgba(232,96,58,.4); background:rgba(232,96,58,.05); }
 .egg-mini-svg { flex-shrink:0; display:flex; align-items:center; }
+
+/* ── O OVO DA CHOCADEIRA, A MEXER ──
+
+   As três fases do choco não são só rachas desenhadas: cada uma tem o
+   seu movimento, e é o movimento que se vê numa lista antes de se ler
+   fosse o que fosse.
+
+     1  INTEIRO   parado. Ainda não começou.
+     2  A MEXER   respira devagar — alguma coisa lá dentro
+     3  QUASE     balança, e a aura pulsa com ele
+     ✓  PRONTO    empurra de dentro para fora, a pedir para sair
+
+   Os períodos são longos de propósito. Uma lista pode ter dez ovos, e
+   dez coisas a mexer depressa ao mesmo tempo não é vida, é ruído. */
+.ovo-mini { transform-box: fill-box; transform-origin: 50% 85%; }
+.ovo-mini .ovo-casca { transform-box: fill-box; transform-origin: 50% 85%; }
+.ovo-mini .ovo-aura  { transform-box: fill-box; transform-origin: center; }
+
+.ovo-f1 .ovo-casca { animation: ovo-respira 3.8s ease-in-out infinite; }
+@keyframes ovo-respira {
+  0%, 100% { transform: scale(1,     1); }
+  50%      { transform: scale(1.025, 0.985); }
+}
+
+.ovo-f2 { animation: ovo-balanca 2.6s ease-in-out infinite; }
+@keyframes ovo-balanca {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50%      { transform: rotate(2.5deg); }
+}
+.ovo-f2 .ovo-aura { animation: ovo-aura-pulsa 2.6s ease-in-out infinite; }
+@keyframes ovo-aura-pulsa {
+  0%, 100% { transform: scale(1);    opacity: .5; }
+  50%      { transform: scale(1.06); opacity: .85; }
+}
+
+/* O pronto não balança: EMPURRA. Sobe depressa e volta devagar, que é
+   o gesto de quem está a forçar a casca de dentro para fora. */
+.ovo-f3 .ovo-casca { animation: ovo-empurra 1.5s cubic-bezier(.3,0,.5,1) infinite; }
+@keyframes ovo-empurra {
+  0%    { transform: scale(1, 1); }
+  14%   { transform: scale(1.07, 0.95) translateY(-1px); }
+  40%   { transform: scale(0.99, 1.01); }
+  100%  { transform: scale(1, 1); }
+}
+.ovo-f3 .ovo-aura { animation: ovo-aura-pulsa 1.5s ease-in-out infinite; }
+
+/* Um ovo sem saída não se mexe, e um podre muito menos. É a diferença
+   entre "está a acontecer" e "acabou". */
+.egg-item.sem-ninho .ovo-mini *,
+.egg-item.rotten    .ovo-mini * { animation: none !important; }
+.egg-item.rotten    .ovo-mini   { filter: grayscale(.8) brightness(.7); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ovo-mini, .ovo-mini * { animation: none !important; }
+}
 .egg-item .egg-info { flex:1; min-width:0; }
 .egg-item .egg-name { font-weight:700; font-size:0.5625rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .egg-item .egg-time { font-size:0.40625rem; opacity:.65; margin-top:0.0625rem; }

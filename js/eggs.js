@@ -30,9 +30,20 @@ function _corDoOvo(ovo) {
   return corDoAvatar(ovo);
 }
 
+/* O ROTULO DEIXOU DE DIZER A COR.
+
+   Dizia "Vermelho-arroxeado com Amarelo", e dizia-o ao lado de um ovo
+   cinzento — a cor era escrita porque nao se via. O ovo passou a ser
+   pintado com ela (eggMiniSVG), e a partir daí a frase estava a
+   legendar o que esta desenhado dois centimetros a esquerda.
+
+   O que fica no lugar e a unica coisa que o desenho NAO diz: de quem
+   ele e filho. Um ovo sem pais — comprado, ou dos antigos — nao tem
+   nada a dizer, e diz "Ovo". */
 function _rotuloDoOvo(ovo) {
-  if (!_ovoTemDna(ovo) || typeof frasedaCor !== 'function') return t('egg.inv.sem_cor');
-  return frasedaCor(ovo);
+  if (ovo && (ovo.maeNome || ovo.paiNome))
+    return t('egg.filho_de', { mae: ovo.maeNome || '?', pai: ovo.paiNome || '?' });
+  return t('egg.inv.sem_cor');
 }
 
 async function goToMarketplace(e) {
@@ -595,32 +606,107 @@ function closeEggInventory() {
   ModalManager.close('eggInvModal');
 }
 
-function eggMiniSVG(raridade, size = 36) {
-  const cfg = {
-    'Comum':   { g1:'#7a4fbb', g2:'#3d2a6e', g3:'#0b0916', shine:'#9070d0', aura:'#a78bfa', glow:'#3d2a6e' },
-    'Raro':    { g1:'#3a8fd4', g2:'#1a4a7e', g3:'#060d1a', shine:'#60c0f0', aura:'#5ab4e8', glow:'#1a3a6e' },
-    'Lendário':{ g1:'#d4943a', g2:'#7a4a10', g3:'#120800', shine:'#f0c860', aura:'#e8a030', glow:'#6a3a00' },
-  };
-  const e = cfg[raridade] || cfg['Comum'];
-  const uid = raridade.replace('á','a').replace('ê','e') + '_' + Math.random().toString(36).slice(2,6);
-  return `<svg width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+/* ════════════════════════════════════════════════════════════════════
+   O OVO DA CHOCADEIRA
+
+   Eram tres ovos pintados a mao, um por raridade: roxo, azul e dourado.
+   Nao ha raridades ha muito, e por isso saiam todos roxos — a mesma cor
+   para o filho de dois vermelhos e para o filho de dois azuis.
+
+   Passa a ser pintado com a COR DE QUEM ESTA LA DENTRO, pela mesma
+   conta que pinta o ovo da cerimonia e o bicho que sai dele
+   (gradienteDoOvo, em js/cores.js). Sao os tres degraus todos do mesmo
+   sitio, portanto o ovo da lista, o ovo da cerimonia e o avatar
+   nascido nunca podem discordar.
+
+   ── AS TRES FASES ──
+
+   Um ovo parado durante trinta horas nao diz que esta a acontecer
+   alguma coisa la dentro. Divide-se o choco em tres:
+
+     1  INTEIRO    liso, aura fraca. Ainda e so um ovo.
+     2  A MEXER    a primeira racha fina, e a aura acende
+     3  QUASE      tres rachas, brilho por dentro, e o ovo balanca
+
+   Depois delas vem o PRONTO, que ja nao e uma fase do choco: e o fim
+   dele, e pulsa.
+
+   As rachas sao fixas e escritas a mao, e nao sorteadas: um ovo que
+   mudasse de rachas a cada vez que a lista se redesenha lia-se como
+   ruido, e a lista redesenha-se a cada segundo.
+   ════════════════════════════════════════════════════════════════════ */
+
+// As tres rachas, por ordem de aparecimento. Coordenadas do viewBox
+// 0 0 100 110, sobre a casca que vai de x 20 a 80 e y 18 a 94.
+const OVO_RACHAS = [
+  'M 50 26 L 46 38 L 53 46 L 48 58',
+  'M 36 44 L 44 50 L 38 60 L 45 68',
+  'M 64 40 L 57 52 L 63 62 L 56 72',
+];
+
+/* Em que fase do choco este ovo esta, de 0 a 3. O 3 e o pronto.
+   Sem chocaEm nem postoEm nao ha progresso que medir — sao os ovos dos
+   antigos, e esses estao prontos desde sempre. */
+function faseDoOvo(ovo, agora) {
+  agora = agora || Date.now();
+  if (typeof ovoPronto === 'function' && ovoPronto(ovo, agora)) return 3;
+  const fim = ovo.chocaEm, ini = ovo.postoEm || (fim - 36 * 3600000);
+  const total = Math.max(1, fim - ini);
+  const feito = Math.min(1, Math.max(0, (agora - ini) / total));
+  return feito < 1 / 3 ? 0 : feito < 2 / 3 ? 1 : 2;
+}
+
+function eggMiniSVG(ovo, size = 36) {
+  const fase = (ovo && typeof ovo === 'object') ? faseDoOvo(ovo) : 3;
+
+  /* A cor sai de quem esta la dentro. Um ovo sem DNA nao tem ninguem
+     conhecido dentro, e nesse a casca fica cinzenta — o que e a
+     verdade, e nao uma cor inventada. */
+  const temDna = _ovoTemDna(ovo);
+  const g = (temDna && typeof gradienteDoOvo === 'function') ? gradienteDoOvo(ovo)
+    : { topo:'#4a4658', meio:'#2a2836', fundo:'#0b0a12', brilho:'#8a8698', aura:'#5a5668' };
+
+  const uid = 'ov' + Math.random().toString(36).slice(2, 7);
+
+  /* Cada racha vai em DUAS passagens: uma escura e grossa por baixo, e a
+     clara por cima. Sem a de baixo, uma racha branca sobre uma casca
+     clara desaparece — e a lista desenha o ovo a 44px, onde meio pixel
+     de contraste é a diferença entre ver e não ver.
+
+     A espessura está medida aí e não em grande: em grande qualquer
+     valor serve, e o tamanho que interessa é o que o jogador tem
+     mesmo à frente. */
+  const rachas = OVO_RACHAS.slice(0, fase).map((d, k) => {
+    const w = 2.6 - k * 0.3;
+    return `<path d="${d}" stroke="#0a0812" stroke-width="${w + 1.6}" fill="none"
+              stroke-linecap="round" opacity=".55"/>
+            <path d="${d}" stroke="#fff6e0" stroke-width="${w}" fill="none"
+              stroke-linecap="round" opacity="${0.95 - k * 0.08}"/>`;
+  }).join('');
+
+  // A aura acende com a fase: e o sinal que se ve de mais longe na lista.
+  const auraOp = [0.28, 0.42, 0.6, 0.85][fase];
+  const brilhoOp = [0, 0.12, 0.28, 0.45][fase];
+
+  return `<svg class="ovo-mini ovo-f${fase}" width="${size}" height="${Math.round(size * 1.1)}"
+       viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="emg_${uid}" cx="38%" cy="28%" r="72%">
-        <stop offset="0%"   stop-color="${e.g1}"/>
-        <stop offset="60%"  stop-color="${e.g2}"/>
-        <stop offset="100%" stop-color="${e.g3}"/>
+        <stop offset="0%"   stop-color="${g.topo}"/>
+        <stop offset="60%"  stop-color="${g.meio}"/>
+        <stop offset="100%" stop-color="${g.fundo}"/>
       </radialGradient>
       <filter id="egl_${uid}"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
-    <ellipse cx="50" cy="58" rx="34" ry="42" fill="${e.glow}" opacity=".45" filter="url(#egl_${uid})"/>
-    <ellipse cx="50" cy="56" rx="38" ry="48" fill="none" stroke="${e.aura}" stroke-width="1.2" opacity=".5"/>
-    <ellipse cx="50" cy="56" rx="30" ry="38" fill="url(#emg_${uid})"/>
-    <ellipse cx="42" cy="40" rx="8"  ry="13" fill="${e.shine}" opacity=".22"/>
-    ${raridade === 'Lendário' ? `
-    <circle cx="22" cy="22" r="2"   fill="${e.aura}" opacity=".8"/>
-    <circle cx="78" cy="18" r="1.5" fill="${e.aura}" opacity=".7"/>
-    <circle cx="18" cy="76" r="1.5" fill="${e.aura}" opacity=".6"/>
-    <circle cx="82" cy="80" r="2"   fill="${e.aura}" opacity=".8"/>` : ''}
+    <ellipse cx="50" cy="58" rx="34" ry="42" fill="${g.meio}" opacity=".45" filter="url(#egl_${uid})"/>
+    <ellipse class="ovo-aura" cx="50" cy="56" rx="38" ry="48" fill="none"
+             stroke="${g.aura}" stroke-width="1.2" opacity="${auraOp}"/>
+    <g class="ovo-casca">
+      <ellipse cx="50" cy="56" rx="30" ry="38" fill="url(#emg_${uid})"/>
+      <ellipse cx="42" cy="40" rx="8" ry="13" fill="${g.brilho}" opacity=".22"/>
+      ${brilhoOp ? `<ellipse cx="50" cy="60" rx="14" ry="18" fill="${g.brilho}" opacity="${brilhoOp}" filter="url(#egl_${uid})"/>` : ''}
+      ${rachas}
+    </g>
   </svg>`;
 }
 
@@ -708,11 +794,9 @@ function renderEggInventory() {
       : `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`;
 
     return `<div class="${cls}">
-      <div class="egg-mini-svg">${eggMiniSVG('Comum', 38)}</div>
+      <div class="egg-mini-svg">${eggMiniSVG(ovo, 44)}</div>
       <div class="egg-info">
         <div class="egg-name" style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</div>
-        ${ovo.maeNome || ovo.paiNome ? `<div class="egg-pais">${
-          t('egg.filho_de', { mae: esc(ovo.maeNome || '?'), pai: esc(ovo.paiNome || '?') })}</div>` : ''}
         ${linhaEstado}
       </div>
       <div class="egg-actions">${acoes}</div>
