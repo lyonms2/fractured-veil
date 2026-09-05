@@ -155,7 +155,7 @@
       'vital.higiene':           'a higiene',
 
       // Fases
-      'fases': ['BEBÊ','CRIANÇA','JOVEM','ADULTO'],
+      'fases': ['BEBÊ','JOVEM','ADULTO','ANCIÃO'],
 
       // Vínculo
       'vinculo.distant':    'Distante',
@@ -497,7 +497,7 @@
       'vital.higiene':           'hygiene',
 
       // Phases
-      'fases': ['BABY','CHILD','YOUNG','ADULT'],
+      'fases': ['BABY','YOUNG','ADULT','ELDER'],
 
       // Bond
       'vinculo.distant':    'Distant',

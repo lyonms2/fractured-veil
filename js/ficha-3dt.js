@@ -89,6 +89,35 @@ const FICHA_PONTOS_RARIDADE = {
 
    E ser Lendário ao 23 deixa doze níveis para o ser — é um estado em
    que se vive, e não o último fotograma. */
+/* ═══════════════════════════════════════════════════════════════════
+   A CURVA DOS PONTOS
+
+   Era um ponto a cada dois níveis, sempre, e dava 18 ao nível 35 — uma
+   linha recta que nunca abrandava. Passa a abrandar em três degraus:
+
+     nv 1– 4   um ponto por nível          →  1, 2, 3, 4
+     nv 5–11   um ponto a cada dois        →  5 ao nv5, 8 ao nv11
+     nv12–27   um ponto a cada quatro      →  9, 10, 11, 12 ao nv27
+     nv28+     um ponto a cada oito        →  13 ao nv35, 15 ao nv51
+
+   As faixas são contínuas nas emendas — o último ponto de uma é o
+   primeiro da seguinte — portanto a curva nunca dá um salto nem uma
+   pausa dupla. Verificado em tools/evolucao.js.
+
+   O TECTO É 15, e não é arbitrário: é o degrau em que o manual passa a
+   chamar-lhe "Além da Lenda" (_escalaoDe, aqui em baixo). Assim todos os
+   escalões são alcançáveis e o último é mesmo raro — chega-se lá ao
+   nível 51, que é muito depois do fim da progressão normal. */
+const FICHA_PONTOS_MAX = 15;
+
+/* E o nível em que ele lá chega. Está escrito porque há código que
+   precisa de perguntar "o que este avatar terá NO FIM" — o filtro das
+   magias, e o orçamento que escolhe a virtude. Esse código tinha 35
+   cravado, que era o fim da escada antiga e deixou de o ser. */
+const FICHA_NIVEL_FINAL = 51;
+
+// Ficam por compatibilidade com quem ainda os lê. A curva já não é
+// linear, portanto o "níveis por ponto" só vale na primeira faixa.
 const FICHA_NIVEIS_POR_PONTO = 2;
 
 // Tecto por característica. O manual proíbe passar de 5 na criação, mas
@@ -175,7 +204,12 @@ function pontosDoAvatar(raridade, nivel) {
   // A raridade continua no argumento por causa dos muitos sítios que a
   // passam, mas já não entra na conta — ver FICHA_PONTOS_RARIDADE.
   const nv = Math.max(1, nivel || 1);
-  return FICHA_PONTOS_BASE + Math.floor((nv - 1) / FICHA_NIVEIS_POR_PONTO);
+  let p;
+  if      (nv <=  4) p = nv;                              // +1 por nível
+  else if (nv <= 11) p =  4 + Math.floor((nv -  3) / 2);  // +1 a cada 2
+  else if (nv <= 27) p =  8 + Math.floor((nv - 11) / 4);  // +1 a cada 4
+  else               p = 12 + Math.floor((nv - 27) / 8);  // +1 a cada 8
+  return Math.min(p, FICHA_PONTOS_MAX);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -233,7 +267,23 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
      é a virtude e o defeito, não o corpo com que ele nasceu. Por isso o
      orçamento conta com eles desde o primeiro dia, e só o par fica
      guardado até haver quem o mostre. */
-  const vdVisivel = _faseF >= 1 ? vd : null;
+  /* ── A VIRTUDE E O DEFEITO CHEGAM EM MOMENTOS DIFERENTES ──
+
+     Chegavam os dois ao mesmo tempo, na primeira fase depois do berço.
+     Passam a chegar separados, e a ordem tem sentido: primeiro
+     descobre-se o DEFEITO, e só na fase seguinte a VIRTUDE.
+
+       JOVEM   a desvantagem — o que lhe custa
+       ADULTO  a vantagem — o que ele tem de seu
+
+     Um bicho que passa uma fase inteira a saber só o seu defeito é uma
+     coisa que se lê; e como a desvantagem DÁ pontos e a vantagem CUSTA,
+     o orçamento também sobe primeiro e aperta depois, em vez de as duas
+     se anularem no mesmo instante e não se notar nenhuma. */
+  const vdVisivel = vd ? {
+    desvantagem: _faseF >= 1 ? vd.desvantagem : null,
+    vantagem:    _faseF >= 2 ? vd.vantagem    : null,
+  } : null;
   const pontos = vd ? vd.pontos : pontosBase;
 
   /* ── ANTES DA CRIANÇA, O ORÇAMENTO É O DO NÍVEL E MAIS NADA ──
@@ -445,8 +495,8 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento) {
   // O bónus é da vantagem, e o bebé ainda não a tem — por isso lê-se do
   // par visível. A vida sobe no dia em que ele a ganha, que é um ganho e
   // não uma regressão.
-  const bonusPV = (vdVisivel && vdVisivel.vantagem.pvComoR) ? vdVisivel.vantagem.pvComoR : 0;
-  const bonusPM = (vdVisivel && vdVisivel.vantagem.pmComoR) ? vdVisivel.vantagem.pmComoR : 0;
+  const bonusPV = (vdVisivel && vdVisivel.vantagem && vdVisivel.vantagem.pvComoR) ? vdVisivel.vantagem.pvComoR : 0;
+  const bonusPM = (vdVisivel && vdVisivel.vantagem && vdVisivel.vantagem.pmComoR) ? vdVisivel.vantagem.pmComoR : 0;
   const pv = (c.R + bonusPV) * FICHA_PV_POR_R;
   const pm = (c.R + bonusPM) * FICHA_PM_POR_R;
 

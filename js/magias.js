@@ -70,11 +70,22 @@ const MAGIA_SLOTS = MAGIA_PAPEIS;
    seed, e é a mesma do nascimento à lenda — a escada só decide quando
    ela aparece. Foi assim que o corpo ficou (js/data.js) e é assim que
    isto tem de ficar: crescer nunca troca o que já lá estava. */
+/* A escada era metade por FASE e metade por GRAU de raridade, porque as
+   duas coisas eram escadas diferentes: um avatar podia ser ADULTO e
+   Comum. Agora a fase sai dos pontos e a raridade também, e as duas
+   dizem sempre o mesmo — portanto a escada diz-se toda por fase, que é
+   a que o jogador vê escrita no ecrã.
+
+     JOVEM   abre DUAS de uma vez: a de bater e a de segurar. É a fase
+             em que ele passa a poder lutar, e entrar em combate só com
+             ataque e sem defesa era entrar pela metade.
+     ADULTO  o golpe caro
+     ANCIÃO  o suporte */
 const MAGIA_ESCADA = [
-  { slot: 'forte',       fase: 1 },   // CRIANÇA
-  { slot: 'defensiva',   fase: 2 },   // JOVEM
-  { slot: 'muito_forte', grau: 1 },   // RARO
-  { slot: 'suporte',     grau: 2 },   // LENDÁRIO
+  { slot: 'forte',       fase: 1 },   // JOVEM
+  { slot: 'defensiva',   fase: 1 },   // JOVEM, com a de cima
+  { slot: 'muito_forte', fase: 2 },   // ADULTO
+  { slot: 'suporte',     fase: 3 },   // ANCIÃO
 ];
 
 /* ── O FEITIO INCLINA QUAL MAGIA SAI DA GAVETA ──
@@ -133,8 +144,12 @@ function _escolherComPeso(pool, pesos, rnd) {
 // (as ferramentas de auditoria correm sem ele).
 function _magiaFase(nivel) {
   if (typeof faseFromNivel === 'function') return faseFromNivel(nivel || 1);
-  const n = nivel || 1;
-  return n < 5 ? 0 : n < 10 ? 1 : n < 17 ? 2 : 3;
+  /* A cópia de emergência, para quando este ficheiro corre sozinho nas
+     ferramentas. Tinha os cortes ANTIGOS (5, 10, 17) e ficou para trás
+     quando a escada mudou — uma segunda cópia de uma conta é sempre a
+     que envelhece. Agora sai dos pontos, como a verdadeira. */
+  const p = (typeof pontosDoAvatar === 'function') ? pontosDoAvatar('Comum', nivel || 1) : 1;
+  return p < 5 ? 0 : p < 8 ? 1 : p < 12 ? 2 : 3;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -360,8 +375,13 @@ function magiasDoAvatar(ficha) {
   // O tecto do nível 35 é constante para um dado avatar, portanto não
   // muda nada ao subir de nível — e garante que tudo o que ele sabe é
   // alcançável se chegar lá.
-  const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < 35)
-    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, 35, ficha.nascimento)
+  /* O 35 estava cravado, e era o fim da escada antiga. A curva nova só
+     pára nos 15 pontos ao nível 51 — medir o tecto no 35 dava um tecto
+     mais baixo do que o avatar vai mesmo ter, e trancava magias que ele
+     chegaria a alcançar. */
+  const _NV_FIM = (typeof FICHA_NIVEL_FINAL !== 'undefined') ? FICHA_NIVEL_FINAL : 51;
+  const _f35 = (typeof fichaDeAvatar === 'function' && ficha.nivel < _NV_FIM)
+    ? fichaDeAvatar(ficha.seed || 0, ficha.raridade, _NV_FIM, ficha.nascimento)
     : ficha;
   const tectoFinal = _f35.H * 5;
 
@@ -416,15 +436,16 @@ function magiasDoAvatar(ficha) {
      Esta parte decide quanto dele já está desperto. O bebé sai daqui com
      as mãos vazias, e é assim que deve ser: ele tem o golpe comum, que
      nunca dependeu disto. */
+  /* Lia-se a fase E o grau de raridade, porque metade da escada vinha de
+     um e metade do outro. A raridade passou a sair dos mesmos pontos que
+     a fase, portanto a segunda leitura dizia sempre o mesmo que a
+     primeira — e duas leituras que dizem o mesmo são uma à espera de
+     discordar da outra. Fica a fase. */
   const fase = _magiaFase(ficha.nivel);
-  const grau = (typeof grauDaRaridade === 'function')
-    ? grauDaRaridade(ficha.raridade)
-    : (ficha.raridade === 'Lendário' ? 2 : ficha.raridade === 'Raro' ? 1 : 0);
 
   const vistas = {};
   for (const degrau of MAGIA_ESCADA) {
-    const chegou = degrau.fase != null ? fase >= degrau.fase : grau >= degrau.grau;
-    if (chegou && fora[degrau.slot]) vistas[degrau.slot] = fora[degrau.slot];
+    if (fase >= degrau.fase && fora[degrau.slot]) vistas[degrau.slot] = fora[degrau.slot];
   }
   return vistas;
 }

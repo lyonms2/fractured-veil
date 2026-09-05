@@ -21,9 +21,10 @@ const rd = f => fs.readFileSync(path.join(RAIZ, 'js', f), 'utf8')
                   .replace(/if \(typeof module[\s\S]*$/m, '');
 
 const NL = String.fromCharCode(10);
-const RE_FASE = new RegExp('^const (FASE_MIN_SECS|faseFromNivel|faseFromAge)');
-const LINHAS_DA_FASE = fs.readFileSync(path.join(RAIZ, 'js/state.js'), 'utf8')
-  .split(NL).filter(l => RE_FASE.test(l)).join(NL);
+/* Tinha aqui a sua própria extração, com a sua lista de nomes. Quando a
+   escada da fase mudou, arranjei a do evolucao.js e esta ficou a rebentar
+   — e só se soube ao correr esta ferramenta. Passa a ser a mesma. */
+const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
   LINHAS_DA_FASE + NL +

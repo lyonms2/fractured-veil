@@ -2482,18 +2482,24 @@ A.ver('custa 20 PM por turno, é sustentada, e é de toda a gente',
   for (const el of Object.keys(M.MAGIAS))
     for (const r of ['Comum', 'Raro', 'Épico', 'Lendário'])
       for (let s = 1; s <= 60; s++) {
-        const f = M.fichaDeAvatar({ elemento: el, raridade: r, nivel: 35, seed: s });
+        const f = M.fichaDeAvatar({ raridade: r, nivel: 51, seed: s });
         if (!f) continue;
         total++;
         if (f.H * 5 >= CORPO.pm && f.pm >= CORPO.pm) podem++;
       }
-  /* Eu tinha escrito "a maioria" e estava errado: são 40%. Vinte PM
+  /* Eu tinha escrito "a maioria" e estava errado: eram 40%. Vinte PM
      pedem tecto 20 (Habilidade 4) E reserva 20 (Resistência 4) ao
      mesmo tempo, e o gerador reparte os pontos — quem tem uma coisa
      costuma não ter a outra. A prova guarda o número em vez do meu
-     palpite, e falha se ele se mexer para qualquer lado. */
-  A.ver('ao nível 35, cerca de dois em cada cinco conseguem pagá-la',
-        Math.abs(podem / total - 0.40) < 0.08,
+     palpite, e falha se ele se mexer para qualquer lado.
+
+     O NÚMERO MUDOU, e não por defeito nenhum: a curva dos pontos passou
+     de 18 no fim para 15, e o fim passou do nível 35 para o 51. Com
+     menos pontos para repartir, menos fichas conseguem ter Habilidade 4
+     E Resistência 4 ao mesmo tempo. É um em cada cinco, e fica dito
+     aqui em vez de se ajustar a margem até passar. */
+  A.ver('no fim da escada, cerca de um em cada cinco consegue pagá-la',
+        Math.abs(podem / total - 0.20) < 0.08,
         `${Math.round(podem / total * 100)}% das fichas têm tecto e reserva para os 20 PM`);
 }
 

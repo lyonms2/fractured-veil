@@ -54,7 +54,15 @@ const RARIDADE_ESCADA = [
 
    Não é a escada — é o travão. A fase 3 pede vinte horas de jogo, e sem
    elas o avatar não passa de Raro por muitos pontos que tenha. */
-const RARIDADE_POR_FASE = ['Comum', 'Raro', 'Raro', 'Lendário'];
+/* Era ['Comum','Raro','Raro','Lendário']: o tecto que o tempo de jogo
+   impunha, quando a fase vinha do nível e da idade e a raridade dos
+   pontos — duas escadas diferentes que este travão punha de acordo.
+
+   Agora a fase SAI dos pontos (faseDePontos, em js/state.js) e as duas
+   dizem a mesma coisa por construção. Este quadro deixa de travar nada
+   e passa a ser o que a fase vale, que é a mesma tabela vista do outro
+   lado: BEBÊ e JOVEM são Comuns, ADULTO é Raro, ANCIÃO é Lendário. */
+const RARIDADE_POR_FASE = ['Comum', 'Comum', 'Raro', 'Lendário'];
 
 // Quantos degraus acima do Comum. É este número que o desenho lê para
 // saber que partes do corpo já se vêem.
@@ -83,25 +91,34 @@ function grauDaRaridade(raridade) {
    aceita que o tempo de jogo não exista: uma listagem do marketplace
    traz o nível e mais nada, e recusar-me a responder aí só me obrigava
    a inventar uma segunda regra noutro sítio. */
+/* O TEMPO DE JOGO SAIU DAQUI TAMBÉM.
+
+   Pedia o menor entre a fase do nível e a da idade. A segunda metade
+   deixou de existir (ver getFase, em js/state.js): sem tempo de jogo o
+   avatar não sobe de nível, portanto o nível JÁ É tempo de jogo, e
+   contá-lo outra vez era travar duas vezes a mesma porta.
+
+   A cópia de emergência também saiu: tinha os cortes antigos (5, 10, 17)
+   cravados e teria ficado a responder a escada velha a quem chamasse
+   esta função sem o js/state.js carregado. */
 function faseDoSlot(slot) {
   if (!slot) return 0;
-  const porNivel = (typeof faseFromNivel === 'function')
-    ? faseFromNivel(slot.nivel || 1)
-    : ((slot.nivel || 1) < 5 ? 0 : (slot.nivel || 1) < 10 ? 1 : (slot.nivel || 1) < 17 ? 2 : 3);
-  if (slot.totalSecs == null || typeof faseFromAge !== 'function') return porNivel;
-  return Math.min(porNivel, faseFromAge(slot.totalSecs));
+  if (typeof faseFromNivel !== 'function') return 0;
+  return faseFromNivel(slot.nivel || 1);
 }
 
+/* A raridade sai dos pontos, e mais nada.
+
+   Havia um segundo termo — o tecto que a fase impunha — e ele existia
+   porque as duas escadas eram diferentes: um avatar podia ter pontos de
+   Lendário e ainda ser JOVEM. Agora a fase sai dos MESMOS pontos, e o
+   tecto diz sempre o mesmo que a conta que ele travava. Um travo que
+   nunca trava não é um travo: é uma linha à espera de discordar. */
 function raridadeDoSlot(slot) {
   if (!slot) return 'Comum';
   const pontos = (typeof pontosDoAvatar === 'function')
-    ? pontosDoAvatar('Comum', slot.nivel || 1)
-    : 5 + Math.floor(((slot.nivel || 1) - 1) / 4);
-  const porPontos = raridadeDosPontos(pontos);
-  // Sem tempo de jogo na mão não há travão a aplicar.
-  if (slot.totalSecs == null || typeof faseFromAge !== 'function') return porPontos;
-  const tecto = raridadeDaFase(faseDoSlot(slot));
-  return grauDaRaridade(porPontos) <= grauDaRaridade(tecto) ? porPontos : tecto;
+    ? pontosDoAvatar('Comum', slot.nivel || 1) : 1;
+  return raridadeDosPontos(pontos);
 }
 
 /* ── O ÚNICO ESCRITOR ──

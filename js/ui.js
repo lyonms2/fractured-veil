@@ -560,9 +560,11 @@ async function tryAutoReconnect() { /* desativado */ }
 
    O NÚMERO É O `totalSecs`, e é o certo por uma razão que não é
    preferência: é o mesmo relógio que decide a FASE do avatar
-   (faseFromAge, em js/state.js — 2h para CRIANÇA, 8h para JOVEM, 20h
-   para ADULTO). O que se mostra aqui e o que o bicho é por dentro
-   passam a sair do mesmo sítio.
+   Era o mesmo relógio que decidia a FASE, e por isso este número e o
+   que o bicho é por dentro saíam do mesmo sítio. A fase passou a sair
+   dos pontos (faseDePontos, em js/state.js) e o tempo deixou de a
+   travar — mas continua a ser esta a medida da vida dele, e a única
+   que conta o tempo em que ele esteve mesmo a viver.
 
    Não é a idade de calendário. Um avatar que ficou dois meses num save
    fechado não viveu dois meses — o totalSecs conta o tempo em que ele

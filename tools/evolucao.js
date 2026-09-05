@@ -21,19 +21,10 @@ const RAIZ = path.resolve(__dirname, '..');
 const rd = f => fs.readFileSync(path.join(RAIZ, 'js', f), 'utf8')
                   .replace(/if \(typeof module[\s\S]*$/m, '');
 
-/* AS REGRAS DA FASE VÊM DO js/state.js, E NÃO DE UMA CÓPIA.
-
-   O state.js inteiro não corre fora do browser — mexe no ecrã e em
-   vinte globais do jogo. Mas a fase são três linhas, e essas leem-se de
-   lá tal como estão. Copiar os números para aqui era criar a segunda
-   cópia que mais tarde diverge — já aconteceu com os limiares dos ovos
-   e com o passivo elemental. */
+// As regras da fase leem-se do js/state.js, num sítio só (tools/fase.js):
+// duas cópias desta extração divergiram em silêncio uma vez.
 const NL = String.fromCharCode(10);
-const RE_FASE = new RegExp('^const (FASE_MIN_SECS|faseFromNivel|faseFromAge)');
-const LINHAS_DA_FASE = fs.readFileSync(path.join(RAIZ, 'js/state.js'), 'utf8')
-  .split(NL).filter(l => RE_FASE.test(l)).join(NL);
-if (LINHAS_DA_FASE.split(NL).length !== 3)
-  throw new Error('js/state.js mudou: não encontrei as três linhas da fase.');
+const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
@@ -77,17 +68,45 @@ ok(M.raridadeDosPontos(12) === 'Lendário' && M.raridadeDosPontos(99) === 'Lend�
 
 // Onde cai cada degrau, em níveis. É isto que o jogador sente.
 {
-  const primeiro = r => { for (let nv = 1; nv <= 35; nv++)
+  const primeiro = r => { for (let nv = 1; nv <= 60; nv++)
     if (M.raridadeDosPontos(M.pontosDoAvatar('Comum', nv)) === r) return nv; return null; };
   const raro = primeiro('Raro'), lend = primeiro('Lendário');
-  ok(raro === 15 && lend === 23, 'Raro ao nível 15 e Lendário ao 23',
+  ok(raro === 11 && lend === 27, 'Raro ao nível 11 e Lendário ao 27',
      'Raro nv' + raro + ' · Lendário nv' + lend);
   /* Duas pontas, e as duas importam. Cedo de mais e a raridade não é
      conquista nenhuma; tarde de mais e ninguém chega a viver nela —
      numa versão anterior o Lendário caía no nível 34 de 35, e era um
-     fotograma e não um estado. */
-  ok(lend > 17 && lend <= 25, 'e sobram níveis para se VIVER como Lendário',
-     'Lendário ao nv' + lend + ', com ' + (35 - lend) + ' níveis pela frente');
+     fotograma e não um estado.
+
+     A escada deixou de acabar no 35: os pontos só param nos 15, ao
+     nível 51. O Lendário ao 27 tem portanto a segunda metade da vida
+     inteira pela frente. */
+  const NV_FIM = 51;
+  ok(lend > 20 && lend < NV_FIM * 0.6, 'e sobram níveis para se VIVER como Lendário',
+     'Lendário ao nv' + lend + ', com ' + (NV_FIM - lend) + ' níveis pela frente');
+
+  /* ── A CURVA, DEGRAU A DEGRAU ──
+     Está escrita no js/ficha-3dt.js e é a espinha de tudo o resto: a
+     fase sai dela, a raridade sai dela, e as magias saem da fase. */
+  const esperado = { 1:1, 4:4, 5:5, 7:6, 9:7, 11:8, 15:9, 19:10, 23:11,
+                     27:12, 35:13, 43:14, 51:15, 99:15 };
+  const fora = Object.entries(esperado)
+    .filter(([nv, p]) => M.pontosDoAvatar('Comum', +nv) !== p)
+    .map(([nv, p]) => 'nv' + nv + ' devia dar ' + p + ' e dá ' + M.pontosDoAvatar('Comum', +nv));
+  ok(fora.length === 0, 'a curva dos pontos bate certo em cada emenda',
+     fora.length ? fora.join(' · ') : '14 pontos de controlo, do nv1 ao tecto');
+
+  /* E nunca desce nem salta dois de uma vez: as faixas têm de emendar
+     umas nas outras, senão há um nível que dá dois pontos ou nenhum
+     durante muito tempo. */
+  let saltos = 0, descidas = 0;
+  for (let nv = 2; nv <= 60; nv++) {
+    const d = M.pontosDoAvatar('Comum', nv) - M.pontosDoAvatar('Comum', nv - 1);
+    if (d < 0) descidas++;
+    if (d > 1) saltos++;
+  }
+  ok(saltos === 0 && descidas === 0, 'e sobe de um em um, sem saltos nem descidas',
+     saltos + ' saltos · ' + descidas + ' descidas em 59 subidas');
 
   // O bebé vale um ponto, e é esse o princípio da escada.
   ok(M.pontosDoAvatar('Comum', 1) === 1, 'e o bebé vale um ponto',
@@ -107,17 +126,31 @@ ok(M.raridadeDosPontos(12) === 'Lendário' && M.raridadeDosPontos(99) === 'Lend�
      'Comum de nível 30 → Lendário');
 }
 
-// O tempo de jogo é o travão: pontos não chegam.
+/* O TEMPO DE JOGO DEIXOU DE SER UM TRAVÃO.
+
+   Era: os pontos não chegavam, e a raridade pedia também horas de jogo.
+   A regra saiu porque era redundante — sem tempo de jogo o avatar não
+   sobe de nível, e o nível é que dá os pontos. Contar as horas outra vez
+   era travar duas vezes a mesma porta.
+
+   A verificação fica, virada do avesso: agora o que se exige é que o
+   tempo NÃO mude a resposta. Se alguém reintroduzir um travão de horas
+   sem querer, isto apanha. */
 {
   const cru   = { raridade: 'Comum', nivel: 30, totalSecs: 60 };
   const feito = { raridade: 'Comum', nivel: 30, totalSecs: 25 * 3600 };
-  const listagem = { raridade: 'Comum', nivel: 30 };
-  const a = M.raridadeDoSlot(cru), b = M.raridadeDoSlot(feito), c = M.raridadeDoSlot(listagem);
-  ok(M.grauDaRaridade(a) < M.grauDaRaridade(b),
-     'nível sem horas de jogo não compra a raridade toda',
-     'nv30 com 1 min → ' + a + ' · nv30 com 25 h → ' + b);
-  ok(c === 'Lendário', 'sem tempo de jogo na mão, responde-se pelos pontos',
-     'nv30 sem totalSecs → ' + c);
+  const mudo  = { raridade: 'Comum', nivel: 30 };
+  const a = M.raridadeDoSlot(cru), b = M.raridadeDoSlot(feito), c = M.raridadeDoSlot(mudo);
+  ok(a === b && b === c, 'o tempo de jogo já não mexe na raridade',
+     'nv30 com 1 min → ' + a + ' · com 25 h → ' + b + ' · sem tempo → ' + c);
+  ok(c === 'Lendário', 'e o nível 30 chega para Lendário', 'nv30 → ' + c);
+
+  /* E o nível manda mesmo: um degrau abaixo do corte tem de dar menos. */
+  const antes = M.raridadeDoSlot({ raridade: 'Comum', nivel: 26 });
+  const depois = M.raridadeDoSlot({ raridade: 'Comum', nivel: 27 });
+  ok(antes === 'Raro' && depois === 'Lendário',
+     'e o corte do Lendário está mesmo no nível 27',
+     'nv26 → ' + antes + ' · nv27 → ' + depois);
 }
 
 ok(!M.podeSerVendido({ raridade: 'Comum' }) &&
@@ -212,7 +245,7 @@ titulo('O REPERTÓRIO CRESCE');
     const m = M.magiasDoAvatar(f);
     return { nv, rar, tem: M.MAGIA_SLOTS.filter(c => m[c]), vd: !!f.vantagem };
   };
-  const passos = [[1,'Comum'],[5,'Comum'],[10,'Comum'],[13,'Raro'],[29,'Lendário']].map(a => linha(a[0], a[1]));
+  const passos = [[1,'Comum'],[5,'Comum'],[10,'Comum'],[11,'Raro'],[27,'Lendário']].map(a => linha(a[0], a[1]));
   for (const p of passos)
     console.log('       nv' + String(p.nv).padStart(2) + ' ' + p.rar.padEnd(9) + ' · ' +
                 (p.tem.length ? p.tem.join(', ') : 'só o golpe comum') +
@@ -221,16 +254,23 @@ titulo('O REPERTÓRIO CRESCE');
   ok(passos[0].tem.length === 0 && !passos[0].vd,
      'o bebé não tem magia, nem vantagem, nem desvantagem',
      'nv1 → só o golpe comum');
-  ok(passos[1].tem.join() === 'forte' && passos[1].vd,
-     'a CRIANÇA ganha a magia de bater e o par de virtude e defeito',
+  /* O JOVEM abre DUAS de uma vez — a de bater e a de segurar. É a fase
+     em que ele passa a poder lutar, e entrar em combate só com ataque e
+     sem defesa era entrar pela metade. */
+  ok(passos[1].tem.join() === 'forte,defensiva',
+     'o JOVEM ganha a de bater E a de segurar, de uma vez',
      'nv5 → ' + passos[1].tem.join(', '));
+  /* E só o DEFEITO. A virtude fica para a fase seguinte: primeiro
+     descobre-se o que lhe custa, depois o que ele tem de seu. */
+  ok(!passos[1].vd, 'e o defeito sem a virtude — essa é do ADULTO',
+     'nv5 → virtude ' + (passos[1].vd ? 'presente' : 'ainda não'));
   ok(passos[2].tem.join() === 'forte,defensiva',
-     'o JOVEM ganha a defensiva — e aí o quadro do Comum está completo',
-     'nv10 → ' + passos[2].tem.join(', '));
-  ok(passos[3].tem.join() === 'forte,muito_forte,defensiva',
-     'o RARO ganha o golpe caro', 'nv13 → ' + passos[3].tem.join(', '));
+     'e nada de novo até ao fim do JOVEM', 'nv10 → ' + passos[2].tem.join(', '));
+  ok(passos[3].tem.join() === 'forte,muito_forte,defensiva' && passos[3].vd,
+     'o ADULTO ganha o golpe caro e a virtude',
+     'nv11 → ' + passos[3].tem.join(', ') + ' + virtude');
   ok(passos[4].tem.join() === 'forte,muito_forte,defensiva,suporte',
-     'o LENDÁRIO ganha o suporte', 'nv29 → ' + passos[4].tem.join(', '));
+     'o ANCIÃO ganha o suporte', 'nv27 → ' + passos[4].tem.join(', '));
 }
 
 /* E o mais importante: o que se ganha é o LUGAR, e nunca a magia.

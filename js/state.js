@@ -239,13 +239,50 @@ let tickCount = 0;
 const OFFLINE_SLEEP_ENERGY_PER_CYCLE = 2;
 const gs = { moedas:200, ovos:0, cristais:0, extraSlots:0, totalInvocacoes:0, equipa:null };
 const FASES = t('fases');
-const faseFromNivel = n => { const v = n||1; return v < 5 ? 0 : v < 10 ? 1 : v < 17 ? 2 : 3; };
+/* ═══════════════════════════════════════════════════════════════════
+   A FASE SAI DOS PONTOS
+
+   Eram duas escadas a decidir a mesma coisa por caminhos diferentes: a
+   fase vinha do NÍVEL (5, 10, 17) e a raridade vinha dos PONTOS (8, 12).
+   Um avatar podia ser ADULTO e Comum, ou Raro e ainda JOVEM, e nada
+   explicava porquê — eram só dois números que se cruzavam por acaso.
+
+   Passa a haver uma escada só, e é a dos pontos:
+
+       0– 4 pts   BEBÊ     Comum      nv  1– 4
+       5– 7 pts   JOVEM    Comum      nv  5–10
+       8–11 pts   ADULTO   Raro       nv 11–26
+      12+  pts    ANCIÃO   Lendário   nv 27+
+
+   Os cortes da raridade não mudaram: são os que o js/raridade.js já
+   tinha. O que mudou foi a fase passar a ler o mesmo sítio.
+
+   Lê o orçamento BASE (pontosDoAvatar) e não o da ficha: o da ficha já
+   traz a vantagem e a desvantagem descontadas, e como é a fase que
+   decide quando essas aparecem, ler dali seria a fase a depender de si
+   própria. */
+/* UMA LINHA CADA, e não é estilo: o tools/evolucao.js lê estas regras
+   deste ficheiro linha a linha, de propósito, para não haver uma segunda
+   cópia dos números. Escrevi o faseFromNivel em duas linhas e a
+   extração trouxe metade — e a guarda dela, que contava as linhas, nem
+   deu por isso porque o total continuava certo. */
+const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
+const faseFromNivel = n => faseDePontos((typeof pontosDoAvatar === 'function') ? pontosDoAvatar('Comum', n || 1) : 1);
 // Idade mínima (tempo de jogo real, em segundos) por fase — impede que
 // alguém compre/grinde XP e pule direto pra fase adulta sem tempo de jogo.
+/* O TEMPO DE JOGO SAIU DA CONTA.
+
+   A fase exigia nível E horas de jogo, e o menor dos dois mandava. A
+   segunda metade era redundante e o jogador disse-o melhor do que eu:
+   sem tempo de jogo o avatar não sobe de nível, ponto. O XP vem de
+   cuidar dele, portanto o nível JÁ É tempo de jogo — contá-lo outra vez
+   era travar duas vezes a mesma porta.
+
+   Os FASE_MIN_SECS ficam por serem lidos pelo tools/, e como registo de
+   quanto tempo cada fase custava quando o tempo era um requisito. */
 const FASE_MIN_SECS = [0, 2*3600, 8*3600, 20*3600];
 const faseFromAge   = secs => { const s = secs||0; return s < FASE_MIN_SECS[1] ? 0 : s < FASE_MIN_SECS[2] ? 1 : s < FASE_MIN_SECS[3] ? 2 : 3; };
-// A fase real do avatar precisa de nível E idade suficientes — o menor dos dois.
-const getFase = () => Math.min(faseFromNivel(nivel), faseFromAge(totalSecs));
+const getFase = () => faseFromNivel(nivel);
 const FASE_SIZES = [75, 100, 120, 140];
 
 /* ═══════════════════════════════════════════════════════════════════

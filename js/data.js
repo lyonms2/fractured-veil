@@ -242,7 +242,16 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
 
   // O que já cresceu. Um avatar que nasceu sem asas na forma adulta
   // nunca as terá, por muito que suba — a raridade revela, não inventa.
-  const numOlhos  = Math.min(numOlhosAd,  [2, 3, 3][grau]);
+  /* OS OLHOS NÃO SÃO UMA REVELAÇÃO — são com o que ele nasce.
+
+     Estavam travados em dois até o avatar chegar a Raro, e o terceiro
+     aparecia ao evoluir. Isso fazia do olho uma recompensa, e um olho
+     não é uma recompensa: é a cara do bicho. Um bebê de três olhos nasce
+     de três olhos e morre de três olhos.
+
+     O que continua a crescer com a fase é o resto — braços, espinhos,
+     tentáculos —, que são partes que se ACRESCENTAM a um corpo. */
+  const numOlhos  = numOlhosAd;
   const numBracos = Math.min(numBracosAd, [4, 6, 8][grau]);
   const numEsp    = Math.min(numEspAd,    [0, 2, 4][grau]);
   const temTent   = grau >= 1 && temTentAd;

@@ -441,7 +441,11 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
       }
     return { ataque: c.ataque / n * 100, forte: c.forte / n * 100, defesa: c.defesa / n * 100 };
   };
-  const nv1 = trancadas('Comum', 1), max = trancadas('Lendário', 35);
+  /* O 35 era o fim da escada e deixou de o ser: os pontos só param nos
+     15, ao nível 51. Perguntar no 35 é perguntar a meio, e a meio é
+     suposto ainda haver coisas por alcançar. */
+  const NV_FIM = 51;
+  const nv1 = trancadas('Comum', 1), max = trancadas('Lendário', NV_FIM);
 
   // O ataque nunca pode estar trancado: sem ele o avatar não tem magia
   // ofensiva nenhuma e fica reduzido ao murro.
@@ -450,9 +454,9 @@ console.log('\n═══ AS VANTAGENS NOVAS ═══\n');
 
   // E ao fim da linha tem de estar tudo destrancado — uma magia que
   // nunca se pudesse lançar seria um espaço morto na ficha para sempre.
-  A.ver('Ao nível 35 não sobra nenhuma magia trancada',
+  A.ver('No fim da escada não sobra nenhuma magia trancada',
         max.ataque === 0 && max.forte === 0 && max.defesa === 0,
-        `Lendário nv35: ataque ${max.ataque.toFixed(0)}% · forte ${max.forte.toFixed(0)}% · defesa ${max.defesa.toFixed(0)}%`);
+        `Lendário nv${NV_FIM}: ataque ${max.ataque.toFixed(0)}% · forte ${max.forte.toFixed(0)}% · defesa ${max.defesa.toFixed(0)}%`);
 
   /* O que fica trancado tem de destrancar com o NÍVEL, e só com ele.
 
