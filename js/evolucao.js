@@ -151,6 +151,11 @@ function abrirEvolucao() {
   painel.classList.remove('mostra');
   clarao.classList.remove('dispara');
   palco.classList.remove('revelado');
+  /* E a carga também. Ela agora segura o seu fim (o `forwards`, em
+     css/evolucao.css), e uma cerimónia fechada a meio deixava a classe
+     posta — na seguinte, voltar a pôr uma classe que já lá está não
+     reinicia animação nenhuma, e o palco ficava encolhido para sempre. */
+  palco.classList.remove('carrega');
   ov.classList.add('ativo');
 
   const tamAntes = FASE_SIZES[faseAntiga], tamDepois = FASE_SIZES[faseNova];
@@ -216,6 +221,27 @@ function abrirEvolucao() {
       nvLinha.textContent = de < nivel ? t('evo.nivel.de_para', { de, para: nivel })
                                        : t('evo.nivel.so', { nivel });
     }
+
+    /* A RARIDADE VEM PARA CÁ DENTRO.
+
+       Ela sobe com os pontos, tal como a fase — desde que as duas passaram
+       a sair da mesma escada, subir de fase É subir de raridade. Mas quem
+       a anunciava era uma linha de registo disparada no tick, e essa
+       linha chegava no instante em que a fase foi GANHA: minutos ou horas
+       antes de o jogador clicar. Dizia ainda "o corpo dele mudou", o que
+       era falso por construção — o corpo espera de propósito.
+
+       Aqui chega no momento certo, ao lado do nível, e só quando mudou
+       mesmo. */
+    const rarLinha = ov.querySelector('#evoRaridade');
+    if (rarLinha && typeof raridadeDosPontos === 'function' && typeof pontosDoAvatar === 'function') {
+      const deNv    = nivelVisto > 0 ? nivelVisto : nivel;
+      const rarAntes = raridadeDosPontos(pontosDoAvatar('Comum', deNv));
+      const rarAgora = raridadeDosPontos(pontosDoAvatar('Comum', nivel));
+      const subiu = rarAntes !== rarAgora;
+      rarLinha.textContent = subiu ? t('evo.raridade', { raridade: rarAgora }) : '';
+      rarLinha.style.display = subiu ? '' : 'none';
+    }
     painel.classList.add('mostra');
   }, 3000);
 
@@ -229,6 +255,11 @@ function fecharEvolucao() {
     (ov._temporizadores || []).forEach(clearTimeout);
     ov.classList.remove('ativo');
     setTimeout(() => {
+      /* Só se ainda estiver fechada. Este apagar estava a chegar tarde e
+         a levar o que não era dele: fechar uma cerimónia e começar outra
+         dentro destes 600ms deixava a segunda sem avatar nenhum no ecrã
+         — o palco vazio até à troca. */
+      if (ov.classList.contains('ativo')) return;
       const b = ov.querySelector('#evoAvatar'); if (b) b.innerHTML = '';
     }, 600);
   }
@@ -280,6 +311,7 @@ window.registerStrings(
     'evo.titulo':         'AGORA SOU {fase}',
     'evo.nivel.de_para':  'NÍVEL {de} → {para}',
     'evo.nivel.so':       'NÍVEL {nivel}',
+    'evo.raridade':       '✦ AGORA É {raridade}',
     'evo.continuar':      'CONTINUAR',
     'evo.ficha':          '◆ O QUE SUBIU',
     'evo.corpo':          '◆ O QUE APRENDEU',
@@ -292,6 +324,7 @@ window.registerStrings(
     'evo.titulo':         'I AM NOW {fase}',
     'evo.nivel.de_para':  'LEVEL {de} → {para}',
     'evo.nivel.so':       'LEVEL {nivel}',
+    'evo.raridade':       '✦ NOW {raridade}',
     'evo.continuar':      'CONTINUE',
     'evo.ficha':          '◆ WHAT ROSE',
     'evo.corpo':          '◆ WHAT IT LEARNED',

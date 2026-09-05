@@ -64,8 +64,18 @@
   min-height: 9rem;
   transition: transform .45s cubic-bezier(.34,1.6,.64,1);
 }
-/* A carga: encolhe e vibra, como quem toma balanço. */
-.evo-palco.carrega { animation: evo-carrega .8s ease-in-out; }
+/* A carga: encolhe e vibra, como quem toma balanço.
+
+   O `forwards` é o que segura o fim. A animação acaba aos 1700ms em
+   scale(.9), mas o palco só recebe a classe `revelado` — que começa
+   também em .9 — aos 1960ms, quando o corpo troca. Sem o `forwards` o
+   estilo caducava no fim da animação e o palco saltava de .9 para 1
+   durante esses 260ms: um esticao à vista, com o clarão ainda em
+   opacidade 0 e portanto sem nada a tapá-lo.
+
+   Com ele, o .9 mantém-se até o revelado o ir buscar, e as duas
+   animações emendam uma na outra sem degrau. */
+.evo-palco.carrega { animation: evo-carrega .8s ease-in-out forwards; }
 @keyframes evo-carrega {
   0%   { transform: scale(1)    translateX(0); }
   25%  { transform: scale(.94)  translateX(-0.125rem); }
@@ -130,6 +140,21 @@
   text-shadow: 0 0 1rem rgba(201,168,76,.5);
   margin-bottom: 0.25rem;
 }
+/* A raridade, quando subiu. Fica entre o título e a ficha, na tinta da
+   lenda, porque é a única linha da tela que não aparece sempre — e uma
+   linha que é rara tem de se ler como rara. */
+#evoRaridade {
+  font-family: 'Cinzel', serif; font-size: 0.5625rem; font-weight: 700;
+  letter-spacing: 0.125rem; color: var(--gold-light);
+  /* O nome da raridade vem 'Raro' e 'Lendário', porque é assim que o
+     resto do jogo o escreve. Aqui a caixa alta é do painel e não da
+     palavra — por isso faz-se no estilo, e não a mexer na string. */
+  text-transform: uppercase;
+  text-align: center; margin: -0.5rem 0 1rem;
+  text-shadow: 0 0 0.75rem rgba(201,168,76,.45);
+}
+@media (min-width: 769px) { #evoRaridade { font-size: 0.46875rem; } }
+
 #evoNivel, #ovoSub {
   font-family: 'Cinzel', serif; font-size: 0.625rem;
   letter-spacing: 0.125rem; color: var(--cerim-fraco);

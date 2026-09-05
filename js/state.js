@@ -407,7 +407,11 @@ function saveRuntimeToSlot(idx) {
     nivel, xp, vinculo, totalSecs,
     hatched, dead, sick, sleeping,
     bornAt, poopCount, dirtyLevel, poopPressure,
-    faseVista, nivelVisto,
+    /* Nunca se grava o -1. Ele quer dizer "ainda não carreguei nada", e
+       isso é estado de quem está a arrancar — não é nada que um avatar
+       tenha. Gravado, tornava-se permanente. */
+    faseVista:  faseVista  >= 0 ? faseVista  : getFase(),
+    nivelVisto: nivelVisto >= 1 ? nivelVisto : nivel,
     petCooldown,
     vitals:         {...vitals},
     eggs:           eggsInInventory.map(e => ({...e})),
@@ -447,8 +451,13 @@ function loadRuntimeFromSlot(idx) {
   poopPressure   = s.poopPressure   ?? 0;
   // Quem já jogava não tem estes campos gravados: resolve-se para o que
   // ele tem agora, senão abria uma cerimónia por uma fase antiga.
-  faseVista      = s.faseVista      ?? getFase();
-  nivelVisto     = s.nivelVisto     ?? nivel;
+  /* O `??` só apanha o campo em falta, e o campo GRAVADO podia trazer
+     -1 — os avatares nascidos antes de o hatch passar a marcar a fase
+     vista guardaram-no assim. Um -1 que sobrevive à gravação é um
+     avatar que nunca mais vê uma cerimónia de evolução, porque o
+     evolucaoPendente() exige faseVista >= 0. Aqui cura-se. */
+  faseVista      = (s.faseVista  >= 0) ? s.faseVista  : getFase();
+  nivelVisto     = (s.nivelVisto >= 1) ? s.nivelVisto : nivel;
   petCooldown    = s.petCooldown    ?? 0;
   if(s.vitals) Object.assign(vitals, s.vitals);
   eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];

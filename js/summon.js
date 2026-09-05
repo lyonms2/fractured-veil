@@ -439,6 +439,12 @@ function hatch() {
       pendingAv.vitals     = {fome:100,humor:100,energia:100,saude:100,higiene:100};
       pendingAv.eggs       = pendingAv.eggs  || [];
       pendingAv.items      = pendingAv.items || [];
+      /* Já celebrou ser BEBÊ: a cerimónia disso foi o próprio ovo a
+         abrir. Sem esta linha nasce com faseVista -1, e o -1 quer dizer
+         "ainda não sei" — que desliga o convite da evolução para sempre.
+         Ver a nota em js/state.js. */
+      pendingAv.faseVista  = 0;
+      pendingAv.nivelVisto = pendingAv.nivel;
     }
     window._pendingEggSlot = null;
 
@@ -485,6 +491,17 @@ function hatch() {
     avatar.listed    = false;
     avatar.vitals    = {...vitals};
   }
+  /* O bicho acaba de nascer, logo já celebrou ser BEBÊ — a cerimónia
+     disso foi o ovo a abrir, dois segundos atrás.
+
+     Isto faltava, e custava a cerimónia inteira: o faseVista ficava em
+     -1, o evolucaoPendente() pergunta por `faseVista >= 0` e respondia
+     sempre que não, e o convite "estou pronto para evoluir" nunca
+     chegava a aparecer. Como o getFaseVisual() também devolve a fase
+     real quando o faseVista é negativo, o corpo crescia sozinho no ecrã
+     — que é precisamente o que a cerimónia existe para impedir. */
+  faseVista  = getFase();
+  nivelVisto = nivel;
 
   if(walletAddress && fbDb() && window._cancelledEgg) {
     fbDb().collection('players').doc(walletAddress).update({
