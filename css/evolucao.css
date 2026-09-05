@@ -166,15 +166,36 @@
   text-shadow: 0 0 0.5rem rgba(122,184,122,.45);
 }
 
+/* ── A MAGIA QUE ABRIU ──
+
+   Esta lista descrevia o CORPO — "cresceu de 100 para 120 pixels" — e
+   isso saiu: o bicho novo está desenhado dois centímetros acima, e uma
+   cerimónia que descreve o que se vê está a duvidar do desenho.
+
+   O que fica é o que NÃO se vê. Cada linha tem três partes — a gaveta,
+   o nome e o preço — e as três em colunas, para duas magias novas se
+   lerem uma debaixo da outra em vez de duas frases seguidas. */
 #evoCorpo { list-style: none; padding: 0; margin: 0; }
 #evoCorpo li {
-  font-size: 0.5625rem; color: #b9a6e8;
-  padding: 0.1875rem 0 0.1875rem 0.875rem;
-  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline; gap: 0.5rem;
+  padding: 0.3125rem 0.5rem;
+  margin-bottom: 0.1875rem;
+  border-radius: 0.25rem;
+  background: rgba(167,139,250,.08);
+  border: 1px solid rgba(167,139,250,.2);
 }
-#evoCorpo li::before {
-  content: '✦'; position: absolute; left: 0;
-  color: var(--gem2); font-size: 0.5rem;
+.evo-mag-papel {
+  font-size: 0.375rem; letter-spacing: 0.075rem; text-transform: uppercase;
+  color: var(--gem2); opacity: .85;
+}
+.evo-mag-nome {
+  font-family: 'Cinzel', serif; font-size: 0.5625rem; color: #d8c8ff;
+}
+.evo-mag-pm {
+  font-size: 0.40625rem; color: var(--cerim-fraco); opacity: .8;
+  white-space: nowrap;
 }
 
 .evo-btn {

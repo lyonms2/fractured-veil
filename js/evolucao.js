@@ -51,42 +51,75 @@ function atualizarChamadaEvolucao() {
 // Compara o nível da última cerimónia com o de agora. Não é o nível
 // anterior: entre duas evoluções cabem vários níveis, e o jogador quer
 // ver tudo o que ganhou desde a última vez que olhou.
-function _evoLinhasDaFicha() {
-  if (typeof fichaDeAvatar !== 'function' || !avatar) return [];
+/* As duas fichas: a da última cerimónia e a de agora.
+
+   Não é o nível anterior: entre duas evoluções cabem vários níveis, e o
+   jogador quer ver tudo o que ganhou desde a última vez que olhou.
+
+   A certidão vai nas duas — sem ela a ficha não tem índole, e a
+   comparação do antes com o depois era entre dois avatares diferentes. */
+function _evoFichas() {
+  if (typeof fichaDeAvatar !== 'function' || !avatar) return null;
   const nvAntes = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
-  let antes, agora;
   try {
-    // A certidão vai nas duas: sem ela a ficha não tem índole, e a
-    // comparação do antes com o depois era entre dois avatares diferentes.
-    antes = fichaDeAvatar(avatar.seed, avatar.raridade, nvAntes, avatar.nascimento);
-    agora = fichaDeAvatar(avatar.seed, avatar.raridade, nivel, avatar.nascimento);
-  } catch (_) { return []; }
+    return {
+      antes: fichaDeAvatar(avatar.seed, avatar.raridade, nvAntes, avatar.nascimento),
+      agora: fichaDeAvatar(avatar.seed, avatar.raridade, nivel, avatar.nascimento),
+    };
+  } catch (_) { return null; }
+}
+
+/* ── SÓ O QUE MUDOU ──
+
+   O painel mostrava as seis linhas sempre, e as que não tinham subido
+   ficavam apagadas a ocupar metade dele — quatro linhas a dizer "aqui
+   não aconteceu nada" no meio de uma cerimónia que existe para dizer o
+   que aconteceu.
+
+   Ficam as que subiram. Se nenhuma subir — o que não devia acontecer,
+   porque entre duas cerimónias passam quatro níveis no mínimo — mostram-
+   se todas, que é melhor do que um painel vazio sem explicação. */
+function _evoLinhasDaFicha() {
+  const f = _evoFichas();
+  if (!f) return [];
 
   const carac = [['F', 'evo.f'], ['H', 'evo.h'], ['R', 'evo.r'], ['A', 'evo.a'],
                  ['pv', 'evo.pv'], ['pm', 'evo.pm']];
-  return carac.map(([k, chave]) => ({
-    nome: t(chave), de: antes[k], para: agora[k], subiu: agora[k] > antes[k],
+  const todas = carac.map(([k, chave]) => ({
+    nome: t(chave), de: f.antes[k], para: f.agora[k], subiu: f.agora[k] > f.antes[k],
   }));
+  const subiram = todas.filter(l => l.subiu);
+  return subiram.length ? subiram : todas;
 }
 
-// O que o CORPO ganhou nesta fase. Só o que é verdade: a fase 1 não
-// acrescenta parte nenhuma, e dizer que sim seria mentir ao jogador.
-function _evoGanhosDoCorpo(faseNova, faseAntiga) {
-  const g = [];
-  const tam = (typeof FASE_SIZES !== 'undefined') ? FASE_SIZES : [75, 100, 120, 140];
-  g.push(t('evo.ganho.tamanho', { de: tam[faseAntiga], para: tam[faseNova] }));
-  if (faseAntiga < 2 && faseNova >= 2) g.push(t('evo.ganho.corpo'));
-  if (faseAntiga < 3 && faseNova >= 3) {
-    // As asas são 70% por seed — não se promete o que pode não aparecer.
-    // Pergunta-se ao avatar DA CERIMÓNIA, não ao do jogo: este já trocou
-    // de fase dentro do clarão, enquanto o do jogo só muda ao fechar.
-    // Perguntar ao do jogo dava sempre "não tem asas", e o ganho mais
-    // vistoso da última evolução nunca seria anunciado.
-    const temAsas = !!document.querySelector('#evoAvatar .av-asa > *');
-    if (temAsas) g.push(t('evo.ganho.asas'));
-    g.push(t('evo.ganho.ovos'));
+/* ── O QUE ELE APRENDEU ──
+
+   Faltava, e era o ganho mais concreto que uma evolução dá. A escada das
+   magias (MAGIA_ESCADA, em js/magias.js) abre uma gaveta na fase 1 e
+   outra na fase 2; as outras duas vêm do grau de raridade. O painel
+   falava do corpo e dos números e nunca disto — o jogador chegava a
+   JOVEM e só descobria a magia nova ao abrir a ficha por acaso.
+
+   Não se lê da escada: lê-se do repertório ANTES e DEPOIS, e diz-se a
+   diferença. Assim vale para as gavetas que abrem por fase e para as que
+   abrem por raridade, sem esta função ter de saber qual é qual. */
+function _evoMagiasNovas() {
+  const f = _evoFichas();
+  if (!f || typeof magiasDoAvatar !== 'function') return [];
+  let antes, agora;
+  try { antes = magiasDoAvatar(f.antes); agora = magiasDoAvatar(f.agora); }
+  catch (_) { return []; }
+
+  const novas = [];
+  for (const papel of Object.keys(agora)) {
+    if (antes[papel] || !agora[papel]) continue;
+    novas.push({
+      papel: t('mag.cat.' + papel),
+      nome:  t('mag.' + agora[papel].id + '.nome'),
+      pm:    agora[papel].pm,
+    });
   }
-  return g;
+  return novas;
 }
 
 // ── A cerimónia ─────────────────────────────────────────────────────
@@ -158,8 +191,25 @@ function abrirEvolucao() {
         <span class="evo-seta">${l.subiu ? '→' : ''}</span>
         <span class="evo-para">${l.subiu ? l.para : ''}</span>
       </div>`).join('') : '';
-    const ganhos = _evoGanhosDoCorpo(faseNova, faseAntiga);
-    corpoUl.innerHTML = ganhos.map(g => `<li>${g}</li>`).join('');
+    /* O QUE O CORPO GANHOU SAIU DAQUI.
+
+       Eram três linhas a descrever o que o jogador estava a ver: "o
+       corpo cresceu de 100 para 120 pixels" — e píxeis, ainda por cima,
+       que é medida de dentro do desenho e não quer dizer nada a
+       ninguém. O bicho novo está no ecrã dois centímetros acima. Uma
+       cerimónia que descreve o que se vê está a duvidar do desenho.
+
+       No lugar fica o que NÃO se vê: a magia que abriu. */
+    const magias = _evoMagiasNovas();
+    corpoUl.innerHTML = magias.map(m =>
+      `<li><span class="evo-mag-papel">${m.papel}</span>` +
+      `<span class="evo-mag-nome">${m.nome}</span>` +
+      `<span class="evo-mag-pm">${t('mag.custo', { pm: m.pm })}</span></li>`).join('');
+    // A secção inteira desaparece quando não há magia nova — um título
+    // por cima de uma lista vazia lê-se como avaria.
+    const subMagias = ov.querySelector('#evoSubMagias');
+    if (subMagias) subMagias.style.display = magias.length ? '' : 'none';
+    corpoUl.style.display = magias.length ? '' : 'none';
     const nvLinha = ov.querySelector('#evoNivel');
     if (nvLinha) {
       const de = nivelVisto > 0 ? nivelVisto : nivel;
@@ -226,15 +276,11 @@ window.registerStrings(
     'evo.nivel.de_para':  'NÍVEL {de} → {para}',
     'evo.nivel.so':       'NÍVEL {nivel}',
     'evo.continuar':      'CONTINUAR',
-    'evo.ficha':          '◆ FICHA',
-    'evo.corpo':          '◆ O CORPO',
+    'evo.ficha':          '◆ O QUE SUBIU',
+    'evo.corpo':          '◆ O QUE APRENDEU',
     'evo.f':  'Força',       'evo.h':  'Habilidade',
     'evo.r':  'Resistência', 'evo.a':  'Armadura',
     'evo.pv': 'Pontos de Vida', 'evo.pm': 'Pontos de Magia',
-    'evo.ganho.tamanho':  'O corpo cresceu de {de} para {para} pixels',
-    'evo.ganho.corpo':    'Ganhou o corpo inferior — já não é só cabeça e braços',
-    'evo.ganho.asas':     'Nasceram asas',
-    'evo.ganho.ovos':     'Já pode botar ovos',
   },
   {
     'evo.chamada':        '✦ I AM READY TO EVOLVE',
@@ -242,14 +288,10 @@ window.registerStrings(
     'evo.nivel.de_para':  'LEVEL {de} → {para}',
     'evo.nivel.so':       'LEVEL {nivel}',
     'evo.continuar':      'CONTINUE',
-    'evo.ficha':          '◆ STATS',
-    'evo.corpo':          '◆ THE BODY',
+    'evo.ficha':          '◆ WHAT ROSE',
+    'evo.corpo':          '◆ WHAT IT LEARNED',
     'evo.f':  'Strength',  'evo.h':  'Skill',
     'evo.r':  'Endurance', 'evo.a':  'Armor',
     'evo.pv': 'Hit Points', 'evo.pm': 'Magic Points',
-    'evo.ganho.tamanho':  'The body grew from {de} to {para} pixels',
-    'evo.ganho.corpo':    'Gained a lower body — no longer just head and arms',
-    'evo.ganho.asas':     'Wings appeared',
-    'evo.ganho.ovos':     'Can now lay eggs',
   }
 );
