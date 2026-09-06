@@ -137,31 +137,26 @@ window.registerStrings({
   'arv.este':             'Este',
   'arv.filhos':           'Filhos',
   'arv.nota':             'Em destaque, os que ainda estão na sua colônia.',
-  /* A CHAVE CONTINUA A SER `fonte`, e a palavra mostrada é outra.
-
-     Não é desleixo: o nascer() copia a índole para a certidão
-     (js/nascimento.js), a certidão é congelada e vai para o servidor, e
-     todo o avatar que já existe tem lá dentro a palavra 'fonte'.
-     Renomear a chave deixava essas cópias a apontar para uma tradução
-     que já não existia.
-
-     ── E POR QUE A PALAVRA MUDOU ──
+  /* ── POR QUE A TERCEIRA MUDOU DE NOME ──
 
      Guarda lê-se como defesa e Lâmina como ataque, sozinhas. "Fonte" não
-     dizia o terceiro papel a ninguém: num contexto de software, em
-     português do Brasil, fonte é primeiro um tipo de letra. E colidia de
-     frente com a virtude "Fonte Profunda" — um avatar de índole Fonte
-     pode tirar essa virtude, e a mesma palavra passava a querer dizer
-     duas coisas na mesma tela.
+     dizia o terceiro papel a ninguém — e o terceiro papel existe:
+     aguentar, durar, ter com que pagar.
+
+     Duas razões, as duas verificáveis. Num contexto de software, em
+     português do Brasil, "fonte" lê-se primeiro como TIPO DE LETRA. E
+     colidia de frente com a virtude "Fonte Profunda": um avatar de
+     índole Fonte podia tirar essa virtude, e a mesma palavra passava a
+     querer dizer duas coisas na mesma tela.
 
      As palavras exactas para este papel já estavam todas tomadas no
-     jogo: Fôlego e Reserva são virtudes, Vigor é um gene, Resistência é
+     jogo — Fôlego e Reserva são virtudes, Vigor é um gene, Resistência é
      a característica R. Foi provavelmente por isso que sobrou "Fonte". */
   'indole.guarda':    'Guarda',
-  'indole.fonte':     'Sustentação',
+  'indole.sustentacao': 'Sustentação',
   'indole.lamina':    'Lâmina',
   'indole.guarda.ex': 'Guarda — nasce para aguentar. Tende a virtudes que seguram o golpe.',
-  'indole.fonte.ex':  'Sustentação — nasce para durar. Tende a magias baratas e a virtudes de reserva e cura.',
+  'indole.sustentacao.ex': 'Sustentação — nasce para durar. Tende a magias baratas e a virtudes de reserva e cura.',
   'indole.lamina.ex': 'Lâmina — nasce para bater. Tende às magias mais caras da gaveta e a virtudes ofensivas — e aos defeitos que vêm com elas.',
   'ficha.vocacao.ex': 'O que o DNA puxa. Não é garantia: os pontos de cada nível caem em sorteio, e a vocação só carrega os dados.',
   'carac.F':          'Força',
@@ -382,10 +377,10 @@ window.registerStrings({
   'arv.filhos':           'Children',
   'arv.nota':             'Highlighted: the ones still in your colony.',
   'indole.guarda':    'Warden',
-  'indole.fonte':     'Wellspring',
+  'indole.sustentacao': 'Sustain',
   'indole.lamina':    'Blade',
   'indole.guarda.ex': 'Warden — born to endure. Leans toward virtues that absorb the blow.',
-  'indole.fonte.ex':  'Wellspring — born to last. Leans toward cheap spells and virtues of reserve and healing.',
+  'indole.sustentacao.ex': 'Sustain — born to last. Leans toward cheap spells and virtues of reserve and healing.',
   'indole.lamina.ex': 'Blade — born to strike. Leans toward the costliest spells in the drawer and offensive virtues — and the flaws that come with them.',
   'ficha.vocacao.ex': 'What the DNA pulls toward. Not a promise: the points of each level fall by draw, and the calling only loads the dice.',
   'carac.F':          'Strength',

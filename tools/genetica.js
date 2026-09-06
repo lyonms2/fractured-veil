@@ -281,20 +281,20 @@ titulo('A ÍNDOLE');
   const lamina = medir([2, 2]);
 
   console.log('');
-  const fonte = medir([1, 1]);
+  const sustentacao = medir([1, 1]);
   console.log('                     PM médio  vantagem  desvantagem');
   console.log('                     da magia   (% de família LÂMINA)');
   const linha = (rot, r) => console.log('       ' + rot.padEnd(19) +
     r.magias.toFixed(2).padStart(5) + '   ' + r.vant.toFixed(1).padStart(6) + '%  ' +
     r.desv.toFixed(1).padStart(9) + '%');
   linha('sem gene (limpo)', limpo);
-  linha('feitio FONTE', fonte);
+  linha('feitio SUSTENTACAO', sustentacao);
   linha('feitio GUARDA', guarda);
   linha('feitio LÂMINA', lamina);
 
-  ok(lamina.magias > limpo.magias && fonte.magias < limpo.magias,
-     'o feitio inclina que magias saem — a lâmina puxa para as caras, a fonte para as baratas',
-     'fonte ' + fonte.magias.toFixed(2) + ' < limpo ' + limpo.magias.toFixed(2) +
+  ok(lamina.magias > limpo.magias && sustentacao.magias < limpo.magias,
+     'o feitio inclina que magias saem — a lâmina puxa para as caras, a sustentação para as baratas',
+     'sustentação ' + sustentacao.magias.toFixed(2) + ' < limpo ' + limpo.magias.toFixed(2) +
      ' < lâmina ' + lamina.magias.toFixed(2) + ' PM');
   ok(lamina.vant > guarda.vant, 'e inclina a virtude',
      'guarda ' + guarda.vant.toFixed(0) + '% · lâmina ' + lamina.vant.toFixed(0) + '%');

@@ -102,7 +102,10 @@ const NASC_SEXO_ALELOS = ['X', 'Y'];
    recessivo conta uma vez, portanto um avatar de dois alelos iguais é
    mais extremo que um de dois diferentes. E os dois viajam para os
    filhos. */
-const NASC_INDOLES = ['guarda', 'fonte', 'lamina'];
+/* A ORDEM É A DO GENE. O par de alelos guarda ÍNDICES nesta lista
+   (indoleDoDna), portanto trocar duas de posição trocaria o feitio de
+   toda a gente. Acrescentar ao fim é seguro; reordenar não é. */
+const NASC_INDOLES = ['guarda', 'sustentacao', 'lamina'];
 
 /* ── O CORPO ──
 

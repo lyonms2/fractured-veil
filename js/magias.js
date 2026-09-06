@@ -131,7 +131,7 @@ function _escolherComPeso(pool, pesos, rnd) {
   const semEixo = !pesos || max === min;
   const peso = semEixo ? () => 1 : m => {
     const t = (m.pm - min) / (max - min);                  // 0 = a mais barata
-    return Math.max(1, Math.round(1 + (pesos.lamina - 1) * t + (pesos.fonte - 1) * (1 - t)));
+    return Math.max(1, Math.round(1 + (pesos.lamina - 1) * t + (pesos.sustentacao - 1) * (1 - t)));
   };
 
   const total = pool.reduce((t, m) => t + peso(m), 0);

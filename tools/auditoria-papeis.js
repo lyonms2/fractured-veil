@@ -133,7 +133,7 @@ console.log('\n═══ OS QUATRO PAPÉIS ═══\n');
 // ── E o preço deixa a índole trabalhar ──
 {
   /* A índole do DNA inclina a escolha pelo PREÇO dentro da gaveta (ver
-     js/magias.js): a lâmina puxa para as caras, a fonte para as
+     js/magias.js): a lâmina puxa para as caras, a sustentação para as
      baratas. Se uma gaveta tivesse tudo ao mesmo preço, o feitio do
      avatar não teria por onde se exprimir ali. */
   const semEscolha = M.MAGIA_PAPEIS.filter(p => {

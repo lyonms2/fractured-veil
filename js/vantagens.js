@@ -44,8 +44,8 @@ const VANTAGENS = {
   reflexo_espelhado: { familia: 'guarda', custo: 2, pm: 2, habilidadeDobra: true, devolve: true },
 
   // ── Recursos ──
-  folego_extra:      { familia: 'fonte', custo: 1, pvComoR: 2 },
-  fonte_extra:       { familia: 'fonte', custo: 1, pmComoR: 2 },
+  folego_extra:      { familia: 'sustentacao', custo: 1, pvComoR: 2 },
+  fonte_extra:       { familia: 'sustentacao', custo: 1, pmComoR: 2 },
   /* Uma vez por batalha, e não uma vez por turno.
      Custava 2 PM e devolvia a vida TODA, sem limite nenhum de usos: um
      avatar com 30 PM curava-se quinze vezes, e a política do motor pega
@@ -56,18 +56,18 @@ const VANTAGENS = {
      E ajuda o outro lado do problema: as lutas de nível alto já custam a
      acabar dentro dos 60 turnos, e curas sem fim empurravam para o
      empate. Para permitir duas, é este número. */
-  segundo_folego:    { familia: 'fonte', custo: 2, pm: 2, curaTudo: true, gastaTurno: true, maxUsos: 1 },
-  cura_perpetua:     { familia: 'fonte', custo: 3, pvPorTurno: 1 },
+  segundo_folego:    { familia: 'sustentacao', custo: 2, pm: 2, curaTudo: true, gastaTurno: true, maxUsos: 1 },
+  cura_perpetua:     { familia: 'sustentacao', custo: 3, pvPorTurno: 1 },
 
   // ── Ofensivas e de manobra ──
   passo_rapido:      { familia: 'guarda', custo: 1, bonusEsquiva: 1 },
-  reserva_oculta:    { familia: 'fonte', custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
+  reserva_oculta:    { familia: 'sustentacao', custo: 1, pm: 2, subirCarac: 1, maxTotal: 5 },
   toque_paralisante: { familia: 'lamina', custo: 1, pm: 2, paralisa: true },
   /* Pagava metade nas magias do PRÓPRIO elemento, e sem elementos a
      conta passou a ser "metade em tudo o que não comece por un_" — que
      não quer dizer nada a ninguém. Paga metade numa gaveta, sorteada
      como as outras três: é a língua materna dele. */
-  afinidade_profunda:{ familia: 'fonte', custo: 1, contraPapel: true, metadeCustoPapel: true },
+  afinidade_profunda:{ familia: 'sustentacao', custo: 1, contraPapel: true, metadeCustoPapel: true },
 
   // Ataque Especial: 1 PM compra F+2 num único golpe. É uma manobra,
   // não uma ação à parte — soma-se ao murro do turno.
@@ -92,7 +92,7 @@ const VANTAGENS = {
 
   // Energia Vital: 2 PV valem 1 PM. Continuas a lançar depois de os PM
   // acabarem, a pagar com o corpo.
-  sangue_por_magia:  { familia: 'fonte', custo: 2, pvComoPM: 2 },
+  sangue_por_magia:  { familia: 'sustentacao', custo: 2, pvComoPM: 2 },
 };
 
 // As desvantagens são todas de COMBATE, e é de propósito. Houve duas
@@ -103,14 +103,14 @@ const VANTAGENS = {
 // Se um dia voltarem, será numa bolsa própria do tamagotchi.
 const DESVANTAGENS = {
   ferida_antiga:  { familia: 'guarda', custo: -2, contraPapel: true, papelQueBate: true, armaduraZero: true },
-  sina_cobradora: { familia: 'fonte', custo: -1, danoPorMagia: 1 },
+  sina_cobradora: { familia: 'sustentacao', custo: -1, danoPorMagia: 1 },
   sangue_quente:  { familia: 'lamina', custo: -1, furiaAoSofrerDano: true },
-  limiar_baixo:   { familia: 'fonte', custo: -2, semMagiaAbaixoDeMetade: true },
+  limiar_baixo:   { familia: 'sustentacao', custo: -2, semMagiaAbaixoDeMetade: true },
 
   // Assombrado: no início de cada batalha rola-se 1d. Saindo 4, 5 ou 6,
   // a assombração apareceu: −1 em TUDO e magia ao dobro do preço, até
   // ao fim da luta. É a única que muda de batalha para batalha.
-  sombra_faminta: { familia: 'fonte', custo: -2, assombraEm: 4, penalidadeTudo: 1, dobraCustoMagia: true },
+  sombra_faminta: { familia: 'sustentacao', custo: -2, assombraEm: 4, penalidadeTudo: 1, dobraCustoMagia: true },
 
   // Fetiche: ao sofrer dano faz-se um teste de Habilidade; falhando,
   // o foco cai e não há magia nenhuma até se gastar um turno a apanhá-lo.
@@ -121,7 +121,7 @@ const DESVANTAGENS = {
   brecha_conhecida: { familia: 'guarda', custo: -1, inimigoGanhaH: 1 },
 
   // Restrição de Poder: uma gaveta de magia custa-lhe o dobro.
-  veia_travada:   { familia: 'fonte', custo: -1, contraPapel: true, dobraCustoMagia: true },
+  veia_travada:   { familia: 'sustentacao', custo: -1, contraPapel: true, dobraCustoMagia: true },
 
   // Poder Vergonhoso (Constrangedor): a magia sai com Força de Ataque −1.
   conjuro_desajeitado: { familia: 'lamina', custo: -1, faMagiaMenos: 1 },
