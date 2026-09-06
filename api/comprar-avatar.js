@@ -95,27 +95,28 @@ async function handleListarAvatar(req, res, db, uid) {
       const s     = slots[slotIdxInt];
       if (!s || s.dead) throw new Error('SLOT_INVALID');
 
-      // Só Raro e Lendário se vendem. O cliente já esconde o botão para
-      // Comuns, mas isso é só interface — sem esta validação, um cliente
-      // modificado listava Comuns e trocava-os por cristais, que saem em
-      // MATIC. Tem de ser verificado aqui.
-      if (s.raridade !== 'Raro' && s.raridade !== 'Lendário') {
-        throw new Error('RARIDADE_INVALIDA');
-      }
+      /* ── QUALQUER AVATAR SE VENDE, AO PREÇO QUE O DONO QUISER ──
 
-      /* E a raridade tem de ser a que o SERVIDOR emitiu, não a que está no
-         slot. Esta validação lia s.raridade — que vem de pData.avatarSlots,
-         um array que o cliente escreve por inteiro. Escrever
-         raridade:'Lendário' num slot e listá-lo era o caminho mais curto
-         para cristais, e a verificação acima não via diferença nenhuma.
+         Havia aqui uma tranca de raridade: só Raro e Lendário passavam.
+         Fazia sentido quando a raridade vinha do ovo e o servidor a
+         conhecia. Deixou de fazer quando ela passou a CONQUISTAR-SE por
+         nível — e, pior, tinha-se tornado uma tranca de mentira: lia
+         s.raridade, que vem do avatarSlots, que o cliente escreve por
+         inteiro. Um cliente modificado escrevia 'Lendário' num Comum de
+         nível 1 e listava-o.
 
-         O avataresEmitidos é escrito pelo handleChocarOvo do api/pool.js,
-         que dá ao avatar a raridade do OVO que ele consumiu — e essa o
-         servidor conhece. O cliente não lhe toca (firestore.rules).
+         O que fica é a tranca que interessa e que continua verdadeira: o
+         avatar tem de ter NASCIDO por aqui.
 
-         Avatares nascidos antes disto não têm registo e não podem ser
-         listados. É o preço de fechar a porta; passa com uma chocagem
-         nova, e o tools/backfill-avatares.js resolve os antigos. */
+         O avataresEmitidos é escrito pelo handleChocarOvo do
+         api/pool.js quando o ovo choca, e o cliente não lhe toca
+         (firestore.rules). Sem registo, não se lista — é o que impede
+         alguém de inventar um avatar num slot e vendê-lo.
+
+         E a origem tem de bater com o registo. Hoje é 'Comum' dos dois
+         lados, porque os ovos deixaram de ter raridade; a comparação
+         parece vazia mas não é — é ela que apanha uma certidão forjada,
+         que é a outra maneira de mentir sobre a proveniência. */
       const emitidos  = pData.avataresEmitidos || {};
       const emitidoComo = emitidos['s' + String(s.seed)];
       if (!emitidoComo) throw new Error('AVATAR_SEM_REGISTO');
@@ -132,7 +133,7 @@ async function handleListarAvatar(req, res, db, uid) {
          Quem nasceu antes de haver certidao cai na raridade, que
          nesses era mesmo a do ovo. */
       const origemDoAvatar = (s.nascimento && s.nascimento.origem) || s.raridade;
-      if (emitidoComo !== origemDoAvatar) throw new Error('RARIDADE_NAO_CONFERE');
+      if (emitidoComo !== origemDoAvatar) throw new Error('ORIGEM_NAO_CONFERE');
 
       const newCristais = debito.cristais + debito.cristaisBonus;
       slots[slotIdxInt] = { ...s, listed: true };
@@ -196,9 +197,8 @@ async function handleListarAvatar(req, res, db, uid) {
     const erros = {
       INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
       SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
-      RARIDADE_INVALIDA: [400, 'Apenas avatares Raros e Lendários podem ser listados.'],
       AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registo de emissão e não pode ser listado. Choque um ovo novo.'],
-      RARIDADE_NAO_CONFERE: [403, 'A raridade não confere com a emitida.'],
+      ORIGEM_NAO_CONFERE: [403, 'A origem não confere com a emitida.'],
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
     if (status === 500) console.error('[comprar-avatar/listar]', err);
@@ -371,10 +371,24 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
 
            O criador continua à parte e nunca muda: é quem o fez nascer,
            e não o primeiro que o vendeu. */
+        /* ── E POR QUANTO ──
+
+           A cadeia já dizia por quantas mãos o avatar passou e até
+           quando; passa a dizer também por quanto cada uma o vendeu, e
+           em que nível ele ia na altura.
+
+           Fica AQUI e não numa coleção à parte porque a cadeia já viaja
+           com o avatar em cada venda: o histórico segue-o para o
+           comprador em vez de ficar num registo que só o servidor vê. E
+           é escrito só pelo servidor, dentro da transação que move os
+           cristais — o preço registado é, por construção, o preço que
+           foi mesmo pago. */
         donos: [...(Array.isArray(listing.donos) ? listing.donos : []),
                 { uid: listing.sellerId,
                   nome: sellerData.nomeJogador || null,
-                  ate: Date.now() }],
+                  ate: Date.now(),
+                  preco: price,
+                  nivel: listing.nivel || 1 }],
         nome:       listing.nome,
         raridade:   listing.raridade,
         descricao:  listing.descricao,

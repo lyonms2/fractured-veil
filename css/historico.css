@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════════
+   O HISTÓRICO DE VENDAS
+   Ver js/historico.js para de onde vêm os números e o que se desenha.
+
+   Uma série só, portanto sem legenda — o título já diz o que é. Uma cor
+   só, o ouro do jogo, que contra o fundo escuro passa os 3:1 de
+   contraste. O eixo e a linha de base ficam recessivos: o assunto são os
+   pontos e os números.
+═══════════════════════════════════════════════════════════════════ */
+
+#historicoOverlay {
+  position: fixed; inset: 0; z-index: 10070;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: rgba(4,3,10,.95);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+  overflow-y: auto;
+}
+#historicoOverlay.ativo { opacity: 1; pointer-events: auto; }
+
+.hist-caixa {
+  width: 100%; max-width: 22rem;
+  margin: auto;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.875rem 1.125rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  text-align: center;
+}
+
+.hist-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.125rem;
+  color: var(--gold-light);
+}
+.hist-nome {
+  font-size: 0.5rem; color: var(--text2, #cfc6e6);
+  margin-bottom: 0.125rem;
+}
+
+/* ── O gráfico ── */
+.hist-svg { width: 100%; height: auto; display: block; }
+.hist-base { stroke: rgba(255,255,255,.10); stroke-width: 1; }
+.hist-val {
+  fill: var(--gold-light, #f0d080);
+  font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
+}
+.hist-eixo {
+  fill: var(--muted, #6b5f8a);
+  font-family: system-ui, sans-serif; font-size: 8px;
+}
+
+/* ── Uma venda só: o número, sem gráfico ── */
+.hist-unico { padding: 0.75rem 0 0.375rem; }
+.hist-unico-val {
+  font-family: 'Cinzel', serif; font-size: 1.125rem; font-weight: 700;
+  color: var(--gold-light);
+  line-height: 1.2;
+}
+.hist-unico-rot {
+  font-size: 0.4375rem; color: var(--muted);
+  letter-spacing: 0.0625rem; text-transform: uppercase;
+  margin-top: 0.125rem;
+}
+
+/* ── A lista ── */
+.hist-lista {
+  list-style: none; margin: 0.5rem 0 0; padding: 0;
+  width: 100%;
+  display: flex; flex-direction: column; gap: 0.1875rem;
+}
+.hist-item {
+  display: grid;
+  grid-template-columns: 1.75rem 1fr auto auto;
+  align-items: baseline; gap: 0.375rem;
+  padding: 0.3125rem 0.4375rem;
+  border-radius: 0.25rem;
+  background: rgba(255,255,255,.03);
+  text-align: left;
+  font-size: 0.4375rem;
+}
+.hist-ord   { color: var(--muted); font-family: 'Cinzel', serif; }
+.hist-quem  { color: var(--text2, #cfc6e6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-nv    { color: var(--muted); white-space: nowrap; }
+.hist-preco { color: var(--gold-light); font-weight: 700; white-space: nowrap; }
+
+.hist-vazio, .hist-nota {
+  font-size: 0.4375rem; line-height: 1.7; color: var(--muted);
+  max-width: 18rem;
+}
+.hist-nota { margin-top: 0.375rem; font-style: italic; }
+
+.hist-btn {
+  margin-top: 0.5rem;
+  padding: 0.4375rem 1.25rem;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.4375rem; font-weight: 700; letter-spacing: 0.09375rem;
+  cursor: pointer;
+}
+.hist-btn:hover { background: rgba(255,255,255,.05); }
+
+/* O acesso, dentro da certidão. É uma linha de texto e não um botão
+   grande: a certidão é um documento, e um botão a meio dela partia a
+   leitura. */
+.cert-hist-link {
+  margin-top: 0.25rem;
+  font-size: 0.4375rem;
+  color: var(--gold);
+  background: none; border: none; padding: 0;
+  cursor: pointer; text-decoration: underline;
+  font-family: inherit;
+}
+.cert-hist-link:hover { color: var(--gold-light); }
+
+@media (min-width: 769px) {
+  .hist-caixa   { max-width: 17rem; }
+  .hist-titulo  { font-size: 0.46875rem; }
+  .hist-nome    { font-size: 0.4375rem; }
+  .hist-unico-val { font-size: 0.875rem; }
+  .hist-item    { font-size: 0.375rem; }
+  .hist-vazio, .hist-nota { font-size: 0.375rem; }
+  .hist-btn     { font-size: 0.375rem; }
+}

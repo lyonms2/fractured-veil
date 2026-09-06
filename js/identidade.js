@@ -319,11 +319,20 @@ function renderCertidaoHTML(slot) {
      ACTUAL não entra: é quem tem o avatar em mãos agora, e escrevê-lo
      aqui era ter a mesma pessoa em dois sítios à espera de divergirem. */
   const donos = Array.isArray(slot.donos) ? slot.donos : [];
+
+  /* O slot fica guardado para o histórico o poder ler. A certidão
+     desenha-se como texto, e um botão dentro de uma string não tem por
+     onde levar o objecto — ver js/historico.js. */
+  if (typeof historicoGuardarSlot === 'function') historicoGuardarSlot(slot);
+
   const listaDonos = donos.length
     ? `<div class="cert-donos">
          <div class="cert-rot">${t('cert.donos')}</div>
          <ol class="cert-donos-lista">${donos.map(d =>
            `<li>${esc(d.nome || t('cert.anonimo'))}</li>`).join('')}</ol>
+         ${typeof abrirHistorico === 'function'
+           ? `<button type="button" class="cert-hist-link"
+                      onclick="abrirHistorico()">${t('hist.abrir')}</button>` : ''}
        </div>`
     : '';
 

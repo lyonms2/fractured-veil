@@ -153,11 +153,20 @@ function sincronizarRaridades(slots) {
 
 /* Pode ser vendido?
 
-   Era "é Raro ou Lendário", e com toda a gente a nascer Comum isso
-   deixou o mercado sem oferta nenhuma. Continua a ser a mesma pergunta
-   — só que agora tem resposta possível: chega-se lá crescendo. */
+   Foi "é Raro ou Lendário", e depois "conquista-se crescendo". Deixa de
+   ser sobre raridade: QUALQUER avatar se vende, ao preço em cristais que
+   o dono quiser.
+
+   A tranca de raridade era, além do mais, uma tranca de mentira: do lado
+   do servidor lia s.raridade, que vem do avatarSlots, que o cliente
+   escreve por inteiro (ver api/comprar-avatar.js). Barrava quem jogava
+   às direitas e não barrava quem quisesse contornar.
+
+   O que continua a impedir uma venda é o que o servidor sabe: o avatar
+   tem de estar vivo, e tem de ter nascido por lá — e essa segunda parte
+   só o servidor pode responder. Daqui só se vê a primeira. */
 function podeSerVendido(slot) {
-  return grauDaRaridade(slot && slot.raridade) >= 1;
+  return !!slot && !slot.dead;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

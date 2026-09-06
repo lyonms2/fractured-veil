@@ -154,11 +154,11 @@ ok(M.raridadeDosPontos(12) === 'Lendário' && M.raridadeDosPontos(99) === 'Lend�
      'nv26 → ' + antes + ' · nv27 → ' + depois);
 }
 
-ok(!M.podeSerVendido({ raridade: 'Comum' }) &&
+ok(M.podeSerVendido({ raridade: 'Comum' }) &&
     M.podeSerVendido({ raridade: 'Raro' }) &&
-    M.podeSerVendido({ raridade: 'Lendário' }),
-   'o mercado abre a partir de Raro, e não antes',
-   'Comum não · Raro sim · Lendário sim');
+    !M.podeSerVendido({ raridade: 'Lendário', dead: true }),
+   'o mercado aceita qualquer avatar vivo, seja de que raridade for',
+   'Comum sim · Raro sim · morto não');
 
 titulo('A RARIDADE NÃO PAGA PONTOS');
 
