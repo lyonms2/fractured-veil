@@ -333,7 +333,17 @@ async function confirmHatch() {
   const dnaDoOvo = _emitido.nascimento && _emitido.nascimento.dna;
   const _tomOvo = (typeof tomDaCor === 'function' && dnaDoOvo && dnaDoOvo.genes && dnaDoOvo.genes.cor)
     ? tomDaCor(dnaDoOvo.genes.cor[0]) : 'brasa';
-  const _nomeProv = nomeDeNascimento(_tomOvo);
+  /* ── NASCE SEM NOME, COMO OS QUE ATRAVESSAM ──
+
+     Saía daqui um nome sorteado. Um filho de dois avatares tem ainda
+     menos razão para o receber do jogo do que um invocado: se há alguém
+     a quem o nome pertence dar, é a quem cuidou dos pais e esperou o
+     ovo abrir.
+
+     A ALCUNHA vem com ele, tirada da cor com que nasceu, e fica onde
+     sempre esteve — a seguir à vírgula do mesmo campo. Ver
+     alcunhaDeNascimento em js/data.js, e nomeCurto em js/identidade.js. */
+  const _nomeProv = ', ' + alcunhaDeNascimento();
 
   /* O ovo sai do inventário. Não se guarda cópia nenhuma: o servidor já
      o apagou do mapa `ovos` na mesma transação em que emitiu a certidão,

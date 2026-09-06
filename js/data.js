@@ -61,11 +61,22 @@ const SUFIXOS = {
    O que MANDA na gaveta é o TOM DA COR (js/cores.js). Era o elemento;
    passou a ser a cor no dia em que o elemento saiu do jogo, e ficou
    melhor do que estava — a cor vê-se, o elemento era uma palavra. */
-function nomeDeNascimento(tom) {
-  const gavetas = PREFIXOS[tom] || PREFIXOS['brasa'];
-  const nomes = [].concat(gavetas['Comum'] || [], gavetas['Raro'] || [], gavetas['Lendário'] || []);
-  return rnd(nomes.length ? nomes : ['Ser']) + ', ' + alcunhaDeNascimento();
-}
+/* ── UM NOME SUGERIDO, QUE NÃO É UM NOME DADO ──
+
+   Aqui vivia o nomeDeNascimento: sorteava um nome das gavetas dos
+   PREFIXOS e colava-lhe a alcunha. Nenhum avatar recebe hoje um nome do
+   jogo — nem os que atravessam a Fratura (js/summon.js) nem os que saem
+   do ovo (js/eggs.js). Quem dá o nome é o jogador, uma vez, na
+   cerimónia do batismo.
+
+   O que fica é isto, e a diferença não é pequena: o jogo já não nomeia
+   ninguém, mas sabe sugerir. Quem chega à cerimónia sem ideia carrega
+   no dado, vê um nome da gaveta da COR dele, e aceita-o ou escreve por
+   cima. Continua a ser ele a decidir.
+
+   Fez falta no dia em que os avatares passaram a chegar aos três de uma
+   vez: inventar três nomes de repente é trabalho, e o jogo não devia
+   começar com trabalho. */
 
 /* ── SÓ A ALCUNHA ──
 
@@ -79,6 +90,14 @@ function nomeDeNascimento(tom) {
    seguir à vírgula, no mesmo campo. Um avatar por batizar tem o nome
    vazio e a alcunha lá: ", o Curioso". O batismo escreve à frente da
    vírgula e não lhe toca (ver confirmRename, em js/actions.js). */
+/* Um nome da gaveta da cor deste avatar. Só uma sugestão: quem escreve
+   é o jogador, e o campo fica editável por cima dela. */
+function nomeSugerido(tom) {
+  const gavetas = PREFIXOS[tom] || PREFIXOS['brasa'];
+  const nomes = [].concat(gavetas['Comum'] || [], gavetas['Raro'] || [], gavetas['Lendário'] || []);
+  return rnd(nomes.length ? nomes : ['Ser']);
+}
+
 function alcunhaDeNascimento() {
   return rnd([].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']));
 }

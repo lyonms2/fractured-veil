@@ -969,6 +969,32 @@
 }
 .bat-campo:focus { box-shadow: 0 0 0 0.125rem rgba(201,168,76,.25); }
 
+/* O CAMPO E O DADO, NA MESMA LINHA.
+
+   O campo era largura inteira. Passa a partilhar a linha com o dado, que
+   sugere um nome da gaveta da cor deste avatar — o campo estica, o dado
+   fica com o que precisa.
+
+   A margem de cima passou para a linha: era do campo, e com ele dentro
+   de um flex o dado ficava desalinhado por esses quatro pixeis. */
+.bat-linha {
+  display: flex; align-items: stretch; gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+.bat-linha .bat-campo { margin-top: 0; flex: 1; min-width: 0; }
+
+.bat-dado {
+  flex-shrink: 0;
+  background: #0a0816; border: 1px solid var(--gold);
+  border-radius: 0.25rem; cursor: pointer;
+  font-size: 0.8125rem; line-height: 1;
+  padding: 0 0.625rem;
+  transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bat-dado:hover  { box-shadow: 0 0 0 0.125rem rgba(201,168,76,.25); }
+.bat-dado:active { transform: rotate(-18deg) scale(.92); }
+
 /* A linha do erro existe desde o inicio, vazia. Sem isso o botao saltava
    para baixo quando ela aparecia, e o dedo batia ao lado — a mesma
    razao que ja esta escrita no .nj-erro. */

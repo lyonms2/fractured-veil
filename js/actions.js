@@ -118,6 +118,21 @@ function playCreature() {
    Passa a ser uma cerimónia (#batismoOverlay): o bicho de quem se
    fala, o nome com que ele nasceu, o nome que vai ficar a formar-se
    enquanto se escreve, e o aviso ANTES e não depois. */
+/* ── DE QUEM FALA A CERIMÓNIA ──
+
+   Falava sempre do `avatar`, que é o do slot ATIVO. Chega para quem
+   carrega na pena, porque essa está no cartão de quem está aberto.
+
+   Não chega desde que o batismo se abre sozinho a seguir ao choco: um
+   ovo pode chocar num slot que não é o ativo (o findTargetSlot procura
+   o primeiro vago), e nesse caso o recém-nascido não é o `avatar`. A
+   cerimónia mostrava o bicho errado e batizava-o. */
+let _batAlvo = null;
+
+function _batQuem() {
+  return _batAlvo || (typeof avatar !== 'undefined' ? avatar : null);
+}
+
 function _batNomeLimpo(raw) {
   return String(raw || '').replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
 }
@@ -129,10 +144,11 @@ function _batPreVer() {
   const input = document.getElementById('renameInput');
   const alvo  = document.getElementById('batPrevia');
   const erro  = document.getElementById('batErro');
-  if (!input || !alvo || !avatar) return;
+  const quem  = _batQuem();
+  if (!input || !alvo || !quem) return;
 
   const limpo  = _batNomeLimpo(input.value);
-  const sufixo = alcunhaDe(avatar);
+  const sufixo = alcunhaDe(quem);
 
   if (!limpo) {
     alvo.textContent = '—';
@@ -145,8 +161,28 @@ function _batPreVer() {
   if (erro) erro.textContent = '';
 }
 
-function startRename() {
-  if(!avatar || dead) return;
+/* `slot` é opcional: sem ele, fala do avatar aberto — que é o que a
+   pena do cartão quer. Com ele, fala de quem se lhe der, e é assim que
+   o choco chama a cerimónia para um recém-nascido noutro slot. */
+/* O dado. Enche o campo com um nome da gaveta da cor deste avatar e
+   mostra logo como fica o nome inteiro. Carregar outra vez dá outro. */
+function _batSugerir() {
+  const quem  = _batQuem();
+  const input = document.getElementById('renameInput');
+  if (!quem || !input || typeof nomeSugerido !== 'function') return;
+  const dna = quem.nascimento && quem.nascimento.dna;
+  const tom = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
+    ? tomDaCor(dna.genes.cor[0])
+    : ((typeof tomDoAvatar === 'function') ? tomDoAvatar(quem) : 'brasa');
+  input.value = nomeSugerido(tom);
+  _batPreVer();
+  input.focus();
+}
+
+function startRename(slot) {
+  _batAlvo = (slot && typeof slot === 'object') ? slot : null;
+  const avatar = _batQuem();
+  if(!avatar || avatar.dead) return;
   if(typeof podeRenomear === 'function' && !podeRenomear(avatar)) {
     playSound('error');
     showBubble(t('rename.selado'));
@@ -171,8 +207,22 @@ function startRename() {
   const jaTemNome = (typeof temNome === 'function') && temNome(avatar);
   const nomeVelho = jaTemNome ? nomeCurto(avatar) : '';
 
+  /* Três frases, e cada uma para a sua situação.
+
+     Quem já tem nome vê o que tinha. Quem não tem vê como chegou — e
+     não chegam todos pela mesma porta: um invocado ATRAVESSOU a
+     Fratura, um filho de dois pais NASCEU de um ovo. Uma frase só
+     dizia a coisa errada a metade deles.
+
+     Quem são os primordiais é uma leitura da certidão, e já está
+     escrita: ehPrimordial(), em js/nascimento.js. */
   const rotuloEl = document.getElementById('batNascidoRot');
-  if (rotuloEl) rotuloEl.textContent = t(jaTemNome ? 'rename.nasceu_como' : 'rename.sem_nome');
+  if (rotuloEl) {
+    const daFratura = (typeof ehPrimordial === 'function') ? ehPrimordial(avatar) : true;
+    rotuloEl.textContent = t(jaTemNome ? 'rename.nasceu_como'
+                             : daFratura ? 'rename.sem_nome_fratura'
+                                         : 'rename.sem_nome_ovo');
+  }
   const velhoEl = document.getElementById('batNomeVelho');
   if (velhoEl) velhoEl.textContent = jaTemNome ? avatar.nome : alcunhaDe(avatar);
 
@@ -180,7 +230,10 @@ function startRename() {
   // à vista é um formulário com outro nome.
   const retrato = document.getElementById('batRetrato');
   if (retrato && typeof gerarSVG === 'function') {
-    const fase = (typeof getFaseVisual === 'function') ? getFaseVisual() : 0;
+    /* A fase é a DELE. Vinha do getFaseVisual(), que lê os globais do
+       slot ativo — com a cerimónia a falar de outro slot, o retrato
+       saía com o corpo do bicho errado. */
+    const fase = (typeof faseDoSlot === 'function') ? faseDoSlot(avatar) : 0;
     retrato.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, 96, 96, fase);
   }
 
@@ -194,6 +247,7 @@ function startRename() {
 }
 
 function cancelRename() {
+  _batAlvo = null;
   const ov = document.getElementById('batismoOverlay');
   if (!ov) return;
   if (ov.classList.contains('open') && typeof unlockBodyScroll === 'function') unlockBodyScroll();
@@ -201,6 +255,8 @@ function cancelRename() {
 }
 
 function confirmRename() {
+  const avatar = _batQuem();
+  if (!avatar) { cancelRename(); return; }
   const input = document.getElementById('renameInput');
   const clean = _batNomeLimpo(input ? input.value : '');
 
@@ -232,7 +288,9 @@ function confirmRename() {
   // e para qualquer árvore em que venha a aparecer.
   if(typeof travarNome === 'function') travarNome(avatar);
 
-  fillCreatureCard();
+  // O cartão é do slot ATIVO. Só se redesenha se for dele que se
+  // falou — senão escrevia o nome novo por cima de outro bicho.
+  if (avatar === (typeof window !== 'undefined' ? window.avatar : null)) fillCreatureCard();
   cancelRename();
 
   if(walletAddress) scheduleSave();

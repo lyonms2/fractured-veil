@@ -431,6 +431,31 @@ function setupAvatar() {
 // EGG HATCH
 // ═══════════════════════════════════════════
 
+/* ── E O PRIMEIRO ACTO, LOGO A SEGUIR ──
+
+   Quem sai do ovo sai sem nome, como quem atravessa a Fratura. A
+   diferença é o momento: os três da abertura chegam três de uma vez e
+   vão para a colónia, e prender o jogador a três cerimónias seguidas na
+   primeira meia hora era começar o jogo com trabalho. Um ovo abre-se um
+   de cada vez, e o jogador esperou um dia por ele — é o instante em que
+   dar-lhe um nome quer mesmo dizer alguma coisa.
+
+   Espera pela animação do nascimento (~1,2s) e mais um respiro: abrir a
+   cerimónia por cima do bicho a aparecer roubava as duas coisas.
+
+   E não obriga. A cerimónia tem "Agora não", e o batismo não expira —
+   quem fechar continua com a pena a acenar no cartão. */
+function _batizarORecemNascido(slot) {
+  if (!slot || typeof startRename !== 'function') return;
+  if (typeof temNome === 'function' && temNome(slot)) return;
+  if (typeof podeRenomear === 'function' && !podeRenomear(slot)) return;
+  setTimeout(() => {
+    // Entretanto pode ter sido batizado à mão, ou ter mudado de estado.
+    if (typeof temNome === 'function' && temNome(slot)) return;
+    startRename(slot);
+  }, 1400);
+}
+
 function hatch() {
   const pendingSlot = window._pendingEggSlot;
   const hatchingOtherSlot = typeof pendingSlot === 'number' && pendingSlot !== activeSlotIdx;
@@ -480,6 +505,7 @@ function hatch() {
     if(typeof updateHeaderButtons === 'function') updateHeaderButtons();
     showBubble(t('summon.bub.new_slot', {n: pendingSlot+1}));
     addLog(t('summon.log.born_slot', {nome: nomeCurto(pendingAv), n: pendingSlot+1}), 'good');
+    _batizarORecemNascido(pendingAv);
     return;
   }
 
@@ -561,6 +587,7 @@ function hatch() {
   else                     playSound('rarity_comum');
   showBubble(t('summon.bub.hello'));
   addLog(t('summon.log.born', {nome: nomeCurto(avatar)}), 'good');
+  _batizarORecemNascido(avatar);
 
   if(!localStorage.getItem('fv_first_hatch')) {
     localStorage.setItem('fv_first_hatch', '1');
