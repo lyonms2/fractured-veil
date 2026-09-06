@@ -339,7 +339,7 @@ async function entrarNoLobby() {
 
   await _arenaLobbyRef.set({
     wallet:    walletAddress,
-    nome:      avatar.nome.split(',')[0],
+    nome:      nomeCurto(avatar),
     raridade:  avatar.raridade,
     ...paresDeCor(avatar),
     nivel:     nivel   || 1,
@@ -399,7 +399,7 @@ async function desafiarJogador(walletOponente) {
     jogadores: {
       [walletAddress]: {
         wallet:   walletAddress,
-        nome:     avatar.nome.split(',')[0],
+        nome:     nomeCurto(avatar),
         raridade: avatar.raridade,
         ...paresDeCor(avatar),
         seed:     avatar.seed || 0,
@@ -559,7 +559,7 @@ async function aceitarDesafio(salaId) {
 
   await rtdb().ref(`arena/salas/${salaId}`).update({
     status: 'em_jogo',
-    [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
+    [`jogadores/${walletAddress}/nome`]:     nomeCurto(avatar),
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
     [`jogadores/${walletAddress}/corPrincipal`]:  paresDeCor(avatar).corPrincipal,
     [`jogadores/${walletAddress}/corSecundaria`]: paresDeCor(avatar).corSecundaria,
@@ -1135,7 +1135,7 @@ async function _atualizarRanking(sala, opWallet, euVenci, empate) {
   const cur  = snap.val() || { pontos:0, vitorias:0, derrotas:0, empates:0 };
   const pts  = empate ? 1 : euVenci ? ARENA_PONTOS.vitoria : ARENA_PONTOS.derrota;
   await ref.set({
-    nome:     avatar?.nome?.split(',')[0] || cur.nome || '',
+    nome:     avatar ? nomeCurto(avatar) : (cur.nome || ''),
     wallet:   walletAddress,
     pontos:   (cur.pontos  ||0) + pts,
     vitorias: (cur.vitorias||0) + (euVenci        ? 1 : 0),

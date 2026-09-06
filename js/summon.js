@@ -164,7 +164,25 @@ async function _emitirAvatar(slotIdx) {
   const dna = emitido.nascimento && emitido.nascimento.dna;
   const tom = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
     ? tomDaCor(dna.genes.cor[0]) : 'brasa';
-  const nome         = nomeDeNascimento(tom);
+  /* ── CHEGA SEM NOME ──
+
+     Saía daqui um nome sorteado, e o jogador ficava com o direito de o
+     trocar uma vez. Duas coisas erradas nisso.
+
+     A primeira é o prólogo: "Sem nome — nome é coisa que alguém dá, e
+     ninguém deu". O texto dizia uma coisa e o jogo fazia outra, e essa
+     era a última linha antes de eles chegarem.
+
+     A segunda é o que o batismo passa a valer. Trocar um nome que já lá
+     estava é uma opção; dar o primeiro é um acto — e é o primeiro que o
+     jogador tem neste mundo.
+
+     A ALCUNHA CHEGA COM ELE. Ela não é nome: é o que se vê nele,
+     tirado da cor com que nasceu, e ninguém lha deu. Fica guardada onde
+     sempre esteve, a seguir à vírgula do mesmo campo — um avatar por
+     baptizar tem ", o Curioso" e mais nada. Ver nomeCurto e alcunhaDe,
+     em js/identidade.js. */
+  const nome         = ', ' + alcunhaDeNascimento();
   const _descPool    = descricoesDoTom(tom);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
 
@@ -334,7 +352,7 @@ async function invocarOsTres() {
     if (!av) break;                            // o servidor recusou: pára aqui
     nascidos++;
     await cerimoniaDeChegada(av);
-    addLog(t('summon.log.chegou', { nome: av.nome.split(',')[0], n: idx + 1 }), 'good');
+    addLog(t('summon.log.chegou', { nome: alcunhaDe(av) || nomeCurto(av), n: idx + 1 }), 'good');
   }
 
   if (window._summonTravou && typeof unlockBodyScroll === 'function') {
@@ -351,6 +369,11 @@ async function invocarOsTres() {
 
        A colónia é a casa: os três lado a lado, com os medidores de cada
        um, e é lá que se decide em quem entrar. */
+    /* E o recado, uma vez. Eles chegam sem nome e a colónia mostra-os
+       como "Sem nome" — o que se vê, mas não o que há para fazer. Esta
+       linha diz onde se baptiza, e diz que é uma vez só. */
+    addLog(t('summon.log.batizar'), 'leg');
+
     activeSlotIdx = 0;
     loadRuntimeFromSlot(0);
     if (typeof updateAllUI === 'function') updateAllUI();
@@ -456,7 +479,7 @@ function hatch() {
     saveToFirebase();
     if(typeof updateHeaderButtons === 'function') updateHeaderButtons();
     showBubble(t('summon.bub.new_slot', {n: pendingSlot+1}));
-    addLog(t('summon.log.born_slot', {nome: pendingAv ? pendingAv.nome.split(',')[0] : 'Avatar', n: pendingSlot+1}), 'good');
+    addLog(t('summon.log.born_slot', {nome: nomeCurto(pendingAv), n: pendingSlot+1}), 'good');
     return;
   }
 
@@ -537,7 +560,7 @@ function hatch() {
   else if(_rar === 'Raro') playSound('rarity_raro');
   else                     playSound('rarity_comum');
   showBubble(t('summon.bub.hello'));
-  addLog(t('summon.log.born', {nome: avatar.nome.split(',')[0]}), 'good');
+  addLog(t('summon.log.born', {nome: nomeCurto(avatar)}), 'good');
 
   if(!localStorage.getItem('fv_first_hatch')) {
     localStorage.setItem('fv_first_hatch', '1');

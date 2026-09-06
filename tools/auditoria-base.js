@@ -28,7 +28,12 @@ const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
-  rd('cores.js') + rd('nascimento.js') + rd('raridade.js') +
+  /* O identidade.js vem tambem, e pela mesma razao das regras da fase:
+     o combate-3dt.js chama o nomeCurto() dele para nomear quem entra em
+     campo. Sem ele, a auditoria rebentava com ReferenceError — e antes
+     de rebentar teria sido pior, porque um remendo local aqui seria uma
+     segunda leitura do nome, a divergir da do jogo em silencio. */
+  rd('cores.js') + rd('nascimento.js') + rd('raridade.js') + rd('identidade.js') +
   rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('combate-3dt.js') +
   rd('reproducao.js') +
   `return { MAGIAS, MAGIA_PAPEIS, todasAsMagias, papelDaMagia, VANTAGENS, DESVANTAGENS, magiasDoAvatar,

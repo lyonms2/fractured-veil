@@ -356,7 +356,7 @@ async function _rmAtualizarRanking(salaId, euVenci, empate) {
   const cur  = snap.val() || { pontos:0, vitorias:0, derrotas:0, empates:0 };
   const pts  = empate ? RM_PONTOS.empate : euVenci ? RM_PONTOS.vitoria : RM_PONTOS.derrota;
   await ref.set({
-    nome:     avatar?.nome?.split(',')[0] || cur.nome || '',
+    nome:     avatar ? nomeCurto(avatar) : (cur.nome || ''),
     wallet:   walletAddress,
     pontos:   (cur.pontos  ||0) + pts,
     vitorias: (cur.vitorias||0) + (euVenci          ? 1 : 0),
@@ -493,7 +493,7 @@ async function rmEntrarNoLobby() {
   const fila = _rmRaridade();
   _rmLobbyRef = _rmRtdb().ref(`roubaMonte/lobby/${fila}/${walletAddress}`);
   await _rmLobbyRef.set({
-    wallet:walletAddress, nome:avatar.nome.split(',')[0],
+    wallet:walletAddress, nome:nomeCurto(avatar),
     raridade:avatar.raridade, ...paresDeCor(avatar),
     nivel:nivel||1, seed:avatar.seed||0,
     ts:firebase.database.ServerValue.TIMESTAMP, emPartida:false,
@@ -550,7 +550,7 @@ async function rmDesafiar(walletOponente) {
     maos:     { [walletAddress]: maoEu,  [walletOponente]: maoOp },
     montes:   { [walletAddress]: [],     [walletOponente]: [] },
     jogadores: {
-      [walletAddress]:  { nome:avatar.nome.split(',')[0], raridade:avatar.raridade, ...paresDeCor(avatar), seed:avatar.seed||0 },
+      [walletAddress]:  { nome:nomeCurto(avatar), raridade:avatar.raridade, ...paresDeCor(avatar), seed:avatar.seed||0 },
       [walletOponente]: { nome:null, raridade:null, corPrincipal:null, corSecundaria:null, seed:0 },
     },
     criadoEm: firebase.database.ServerValue.TIMESTAMP,
@@ -671,7 +671,7 @@ async function rmAceitarDesafio(salaId) {
 
   await _rmRtdb().ref(`roubaMonte/salas/${salaId}`).update({
     status: 'em_jogo',
-    [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
+    [`jogadores/${walletAddress}/nome`]:     nomeCurto(avatar),
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
     [`jogadores/${walletAddress}/corPrincipal`]:  paresDeCor(avatar).corPrincipal,
     [`jogadores/${walletAddress}/corSecundaria`]: paresDeCor(avatar).corSecundaria,
@@ -1407,7 +1407,7 @@ async function _rmRenderResultado(sala, opWallet) {
       <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${empate?'arena-empate':euVenci?'arena-vencedor':'arena-perdedor'}">
           <div class="arena-vs-svg">${gerarSVG(avatar,avatar.raridade,avatar.seed,44,44,getFase())}</div>
-          <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
+          <div class="arena-vs-nome">${nomeCurto(avatar)}</div>
           <div class="arena-vs-pts" style="font-size:1.125rem;">🃏 ${meuMonte}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>

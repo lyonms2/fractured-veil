@@ -694,7 +694,7 @@ function killCreature() {
   setPresenceDead(walletAddress, activeSlotIdx);
   ModalManager.closeAll();
 
-  const name = avatar ? avatar.nome.split(',')[0] : 'Avatar';
+  const name = nomeCurto(avatar);
   preencherTelaDaMorte();
 
   document.getElementById('aliveScreen').style.display = 'none';
@@ -718,7 +718,7 @@ function killCreature() {
    ═══════════════════════════════════════════════════════════════════ */
 function preencherTelaDaMorte() {
   if (!avatar) return;
-  const name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
+  const name = nomeCurto(avatar);
   const el = (id) => document.getElementById(id);
   if (el('deadAvatarName')) el('deadAvatarName').textContent = name.toUpperCase();
 

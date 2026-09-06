@@ -208,7 +208,7 @@ function _pveDoencasDe(idx) {
    ele não descobre sozinho. */
 function _pveImpedimentoDe(i) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[i] : null;
-  const nome = ((s || {}).nome || 'Avatar').split(',')[0].trim();
+  const nome = nomeCurto(s);
 
   /* UM BEBÉ NÃO LUTA.
 

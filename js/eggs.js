@@ -226,7 +226,7 @@ function hatchEggFromInventory(id) {
     msg = t('egg.hatch.slots_full');
     if(confirmBtn) confirmBtn.style.display = 'none';
   } else if(hatched && !dead && targetPreview !== activeSlotIdx) {
-    msg = t('egg.hatch.multi_slot', {slot: targetPreview+1, nome: avatar ? avatar.nome.split(',')[0] : '', activeSlot: activeSlotIdx+1});
+    msg = t('egg.hatch.multi_slot', {slot: targetPreview+1, nome: avatar ? nomeCurto(avatar) : '', activeSlot: activeSlotIdx+1});
     if(confirmBtn) confirmBtn.style.display = '';
   } else {
     msg = t('egg.hatch.same_slot', {slot: targetPreview+1});
@@ -980,8 +980,8 @@ function abrirCerimoniaCruza(ovo, femea, macho, chocaEm) {
     const conta = ov.querySelector('#ovoConta');
     if (tit) tit.textContent = t('ovo.titulo_um');
     if (sub) sub.textContent = t('egg.filho_de', {
-      mae: (ovo.maeNome || (femea && femea.nome && femea.nome.split(',')[0])) || '?',
-      pai: (ovo.paiNome || (macho && macho.nome && macho.nome.split(',')[0])) || '?',
+      mae: ovo.maeNome || (femea ? nomeCurto(femea) : '?'),
+      pai: ovo.paiNome || (macho ? nomeCurto(macho) : '?'),
     });
     if (conta) {
       const horas = chocaEm ? Math.max(1, Math.ceil((chocaEm - Date.now()) / 3600000)) : 0;

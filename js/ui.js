@@ -596,11 +596,16 @@ function _fmtTime(secs) {
 // ═══════════════════════════════════════════
 function fillCreatureCard() {
   if(!avatar) return;
-  const parts = avatar.nome.split(',');
-  const nome  = parts[0].trim();
-  const sufixo = parts.slice(1).join(',').trim();
+  /* O nome, ou o rótulo de quem ainda não tem. Um avatar que atravessou
+     a Fratura chega por baptizar — ver nomeCurto, em js/identidade.js. */
+  const nome   = nomeCurto(avatar);
+  const sufixo = alcunhaDe(avatar);
 
-  document.getElementById('idNome').textContent = nome;
+  const elNome = document.getElementById('idNome');
+  elNome.textContent = nome;
+  /* E o nome por dar mostra-se como o que é: uma coisa por fazer, e não
+     um nome esquisito. O botão do batismo está ao lado. */
+  elNome.classList.toggle('sem-nome', !(typeof temNome === 'function' && temNome(avatar)));
   const sfx = document.getElementById('idSufixo');
   if(sfx) sfx.textContent = sufixo || '';
 

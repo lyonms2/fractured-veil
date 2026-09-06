@@ -302,7 +302,7 @@ function openAvatarZoom() {
   // O zoom mostra o que o jogador vê, portanto a fase vista.
   zoomEl.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, size, size, getFaseVisual());
   zoomEl.className = (activeDiseases.length > 0 || sick) ? 'diseased' : sleeping ? 'sleeping' : '';
-  document.getElementById('avatarZoomName').textContent = avatar.nome ? avatar.nome.split(',')[0] : '';
+  document.getElementById('avatarZoomName').textContent = nomeCurto(avatar);
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: avatar.raridade, fase: FASES[getFase()], nivel});
   /* Vai o SLOT, e não quatro campos soltos. Eram quatro, e cada campo
      novo da ficha — a certidão, agora a escolha do ancião — obrigava a
@@ -335,7 +335,11 @@ function openAvatarZoomData(raridade, seed, nivelAv, nome, slot) {
   const fases = (typeof FASES !== 'undefined') ? FASES : ['BEBÊ','JOVEM','ADULTO','ANCIÃO'];
   document.getElementById('avatarZoomSVG').innerHTML = gerarSVG(slot, raridade, seed, size, size, fase);
   document.getElementById('avatarZoomSVG').className = '';
-  document.getElementById('avatarZoomName').textContent = nome ? nome.split(',')[0] : '';
+  /* Aqui chega o campo `nome` como texto, e não o slot — por isso não
+     se chama o nomeCurto. Um avatar por baptizar traz ", o Curioso", e
+     a primeira metade é vazia: cai no rótulo, como em todo o lado. */
+  const _n = nome ? String(nome).split(',')[0].trim() : '';
+  document.getElementById('avatarZoomName').textContent = _n || t('id.sem_nome');
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: raridade, fase: fases[fase], nivel: nivelAv||1});
   if(typeof preencherFichaZoom === 'function') preencherFichaZoom({
     seed, raridade, nivel: nivelAv || 1,

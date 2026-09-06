@@ -888,6 +888,24 @@
 }
 .batismo-btn:hover { animation: none; }
 
+/* ── O NOME QUE AINDA NÃO EXISTE ──
+
+   Um avatar que atravessa a Fratura chega por baptizar, e o cartão dele
+   mostra "Sem nome" onde os outros mostram um nome. Escrito com a mesma
+   letra dourada dos nomes a sério, isso lia-se como se o bicho SE
+   CHAMASSE assim.
+
+   Fica em itálico, na cor de texto secundário e sem o peso do nome:
+   passa a ler-se como o que é — um lugar por preencher, com a pena a
+   acenar dois centímetros ao lado. */
+#idNome.sem-nome,
+.fz-nome.sem-nome {
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 400;
+  opacity: .75;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .batismo-btn { animation: none; }
 }

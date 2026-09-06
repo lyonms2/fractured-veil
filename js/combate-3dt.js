@@ -64,7 +64,7 @@ function _c3criar(slot, rng) {
        O `vant` fica: as ferramentas montam combatentes à mão com ele, e
        o _c3vant aceita as duas formas. */
     vants: [f.vantagem, f.vantagem2].filter(Boolean),
-    nome: (slot.nome || 'Avatar').split(',')[0].trim(),
+    nome: nomeCurto(slot),
     pv: f.pv, pvMax: f.pv,
     pm: f.pm, pmMax: f.pm,
     vivo: true,

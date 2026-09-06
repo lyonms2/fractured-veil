@@ -166,7 +166,7 @@ function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
   const svgHtml = gerarSVG(l, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
   const sellerShort = l.sellerId ? l.sellerId.slice(0,6)+'...'+l.sellerId.slice(-4) : '—';
-  const parts   = (l.nome||'Avatar').split(',');
+  const parts   = [nomeCurto(l), alcunhaDe(l)];
   const nomeProp = parts[0].trim();
   const sufixo   = parts.slice(1).join(',').trim();
   return `<div class="av-card" onclick="openDetail('${l.id}')">
@@ -177,7 +177,7 @@ function buildListingCard(l) {
           ${svgHtml}
           <button class="mkt-avatar-zoom-btn" title="Ampliar"
             data-rar="${l.raridade}" data-seed="${l.seed||0}"
-            data-nivel="${l.nivel||1}" data-nome="${(l.nome||'Avatar').replace(/"/g,'&quot;')}"
+            data-nivel="${l.nivel||1}" data-nome="${nomeCurto(l).replace(/"/g,'&quot;')}"
             data-cor="${l.nascimento?l.nascimento.corPrincipal:''}" data-cor2="${l.nascimento?l.nascimento.corSecundaria:''}"
             onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
         </div>
@@ -215,7 +215,7 @@ async function openDetail(listingId) {
     <div class="detail-header">
       <div class="detail-svg">${svgHtml}</div>
       <div class="detail-info">
-        <div class="detail-name">${esc(l.nome||'Avatar')}</div>
+        <div class="detail-name">${esc(nomeCurto(l))}</div>
         <div class="detail-rarity ${l.raridade}">${esc(l.raridade)}</div>
         <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
@@ -478,7 +478,7 @@ function renderSlots() {
         </div>
         <div class="slot-empty-wrap">
           <div class="slot-empty-icon">💀</div>
-          <div class="slot-empty-title">${t('mkt.slot.dead_title') || (s.nome ? s.nome.split(',')[0] : 'Avatar')}</div>
+          <div class="slot-empty-title">${t('mkt.slot.dead_title') || nomeCurto(s)}</div>
           <div class="slot-empty-txt" style="color:var(--muted);">${t('mkt.slot.dead_sub') || 'Este avatar não sobreviveu.'}</div>
         </div>
         <div class="slot-actions">
@@ -507,7 +507,7 @@ function renderSlots() {
       </div>`;
     } else {
       const isFrozen = !!s.listed;
-      const _ps = (s.nome||'Avatar').split(',');
+      const _ps = [nomeCurto(s), alcunhaDe(s)];
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
       // O par de cores, pronto a viajar no onclick da moldura.
       const _cor = s.nascimento
@@ -526,7 +526,7 @@ function renderSlots() {
             ${gerarSVG(s,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
               data-rar="${s.raridade}" data-seed="${s.seed||0}"
-              data-nivel="${s.nivel||1}" data-nome="${(s.nome||'Avatar').replace(/"/g,'&quot;')}"
+              data-nivel="${s.nivel||1}" data-nome="${nomeCurto(s).replace(/"/g,'&quot;')}"
             data-cor="${s.nascimento?s.nascimento.corPrincipal:''}" data-cor2="${s.nascimento?s.nascimento.corSecundaria:''}"
               onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
           </div>
@@ -672,7 +672,7 @@ function burnAvatar(idx) {
   if(!s || !s.nome) return;
   _burnPendingIdx = idx;
 
-  const _ps = (s.nome||'Avatar').split(',');
+  const _ps = [nomeCurto(s), alcunhaDe(s)];
   const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
   const RAR_COLOR = {'Comum':'#7ab87a','Raro':'#5ab4e8','Lendário':'#e8a030'};
   document.getElementById('burnAvatarPreview').innerHTML = `
@@ -711,7 +711,7 @@ async function confirmBurnAvatar() {
   document.getElementById('burnOverlay').classList.remove('open');
   if(idx === null || idx === playerData.activeSlotIdx) return;
 
-  const name = playerData.avatarSlots[idx]?.nome?.split(',')[0] || 'Avatar';
+  const name = nomeCurto(playerData.avatarSlots[idx]);
 
   await _mktClearSlot(idx);
   showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
@@ -721,7 +721,7 @@ async function confirmBurnAvatar() {
 async function clearDeadSlot(idx) {
   const s = playerData.avatarSlots?.[idx];
   if(!s || !s.dead) return;
-  const name = s.nome?.split(',')[0] || 'Avatar';
+  const name = nomeCurto(s);
   await _mktClearSlot(idx);
   showToast(`💀 ${name} foi descansado. Slot ${idx+1} libertado.`, 'ok');
   renderSlots();

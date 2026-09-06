@@ -132,7 +132,7 @@ function _batPreVer() {
   if (!input || !alvo || !avatar) return;
 
   const limpo  = _batNomeLimpo(input.value);
-  const sufixo = avatar.nome.split(',').slice(1).join(',').trim();
+  const sufixo = alcunhaDe(avatar);
 
   if (!limpo) {
     alvo.textContent = '—';
@@ -155,9 +155,26 @@ function startRename() {
   const ov = document.getElementById('batismoOverlay');
   if (!ov) return;
 
-  const nomeVelho = avatar.nome.split(',')[0].trim();
+  /* ── QUEM CHEGA SEM NOME NÃO "NASCEU COMO" NADA ──
+
+     A cerimónia dizia sempre "Nasceu como <nome>" e mostrava o campo
+     `nome` cru. Um avatar que atravessou a Fratura tem esse campo a
+     começar por uma vírgula — ", o Curioso" — e a linha ficava a dizer
+     que ele nasceu como uma vírgula.
+
+     São duas situações e passam a ter duas linhas: quem já tem nome vê
+     o que tinha; quem não tem vê a alcunha, que é tudo o que se sabe
+     dele até alguém o baptizar.
+
+     E o campo abre VAZIO para esse: pôr lá o rótulo "Sem nome" era
+     dar-lhe trabalho a apagá-lo antes de escrever. */
+  const jaTemNome = (typeof temNome === 'function') && temNome(avatar);
+  const nomeVelho = jaTemNome ? nomeCurto(avatar) : '';
+
+  const rotuloEl = document.getElementById('batNascidoRot');
+  if (rotuloEl) rotuloEl.textContent = t(jaTemNome ? 'rename.nasceu_como' : 'rename.sem_nome');
   const velhoEl = document.getElementById('batNomeVelho');
-  if (velhoEl) velhoEl.textContent = avatar.nome;
+  if (velhoEl) velhoEl.textContent = jaTemNome ? avatar.nome : alcunhaDe(avatar);
 
   // O bicho de quem se fala. Uma cerimónia sobre um avatar sem o avatar
   // à vista é um formulário com outro nome.
@@ -209,9 +226,8 @@ function confirmRename() {
     return;
   }
 
-  const parts  = avatar.nome.split(',');
-  const suffix = parts.slice(1).join(',');
-  avatar.nome  = clean + (suffix ? ',' + suffix : '');
+  const alcunha = alcunhaDe(avatar);
+  avatar.nome   = clean + (alcunha ? ', ' + alcunha : '');
   // E fica. Daqui em diante este avatar chama-se isto, para quem o comprar
   // e para qualquer árvore em que venha a aparecer.
   if(typeof travarNome === 'function') travarNome(avatar);

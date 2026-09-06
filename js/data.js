@@ -64,8 +64,23 @@ const SUFIXOS = {
 function nomeDeNascimento(tom) {
   const gavetas = PREFIXOS[tom] || PREFIXOS['brasa'];
   const nomes = [].concat(gavetas['Comum'] || [], gavetas['Raro'] || [], gavetas['Lendário'] || []);
-  const alcunhas = [].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']);
-  return rnd(nomes.length ? nomes : ['Ser']) + ', ' + rnd(alcunhas);
+  return rnd(nomes.length ? nomes : ['Ser']) + ', ' + alcunhaDeNascimento();
+}
+
+/* ── SÓ A ALCUNHA ──
+
+   Um avatar que atravessa a Fratura chega SEM NOME — é o que o prólogo
+   diz, e passou a ser o que acontece: "nome é coisa que alguém dá, e
+   ninguém deu". Quem dá é o jogador, uma vez, na cerimónia do batismo
+   (ver js/identidade.js).
+
+   A alcunha não é nome: é o que se vê nele, tirado da cor com que
+   nasceu. Essa chega com ele, e fica guardada onde sempre esteve — a
+   seguir à vírgula, no mesmo campo. Um avatar por batizar tem o nome
+   vazio e a alcunha lá: ", o Curioso". O batismo escreve à frente da
+   vírgula e não lhe toca (ver confirmRename, em js/actions.js). */
+function alcunhaDeNascimento() {
+  return rnd([].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']));
 }
 
 const DESCRICOES = {

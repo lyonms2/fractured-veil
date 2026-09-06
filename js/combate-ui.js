@@ -273,7 +273,7 @@ function renderEquipaBar() {
       cartoes += `<div class="equipa-slot vazio"><span class="equipa-pos">${n + 1}</span>+</div>`;
       continue;
     }
-    const nome = (s.nome || 'Avatar').split(',')[0].trim();
+    const nome = nomeCurto(s);
     const papel = n === 0 ? t('equipa.ordem.comeca')
                 : n === 1 ? t('equipa.ordem.segundo')
                           : t('equipa.ordem.terceiro');
@@ -415,7 +415,7 @@ function toggleEquipa(i) {
   }
   if (r === 'inelegivel') { showToast(t('equipa.toast.inelegivel'), 'err'); return; }
 
-  const nome = (avatarSlots[i]?.nome || 'Avatar').split(',')[0].trim();
+  const nome = nomeCurto(avatarSlots[i]);
   showToast(r === 'add' ? t('equipa.toast.add', { nome }) : t('equipa.toast.remove', { nome }), 'ok');
 
   if (typeof scheduleSave === 'function') scheduleSave();
@@ -429,7 +429,7 @@ function moverEquipa(i, dir) {
   if (!moverNaEquipa(i, dir)) return;
   if (typeof scheduleSave === 'function') scheduleSave();
   _equipaRedesenhar();
-  const nome = (avatarSlots[i]?.nome || 'Avatar').split(',')[0].trim();
+  const nome = nomeCurto(avatarSlots[i]);
   const pos  = posicaoNaEquipa(i);
   showToast(pos === 1 ? t('equipa.toast.comeca', { nome })
                       : t('equipa.toast.posicao', { nome, n: pos }), 'ok');

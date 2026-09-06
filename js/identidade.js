@@ -195,6 +195,44 @@ function podeRenomear(slot) {
   return !s.nomeTravado;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O NOME QUE SE MOSTRA
+
+   O campo `nome` guarda "Nome, o Epíteto". Um avatar por batizar tem a
+   primeira metade vazia — ", o Curioso" — porque o nome é do jogador e
+   ele ainda não o deu.
+
+   Isto existe porque a mesma conta estava escrita em vinte e cinco
+   sítios, e cada um com o seu remendo: uns diziam 'Avatar', outros
+   '???', outros '?', e a maioria não tinha remendo nenhum e rebentava
+   num nome vazio. Uma conta escrita vinte e cinco vezes acaba sempre
+   por discordar de si própria — já rendeu meia dúzia de defeitos a este
+   jogo.
+
+   Fica uma, e devolve sempre uma coisa que se pode mostrar.
+
+   ATENÇÃO ao que NÃO deve usar isto: o `nomeBusca` do js/firebase.js,
+   que é o índice de procura de amigos. Lá, um avatar sem nome tem de
+   ficar com a busca VAZIA — escrever-lhe o rótulo punha toda a gente
+   encontrável por "sem nome". */
+function nomeCurto(slot) {
+  const cru = (slot && typeof slot.nome === 'string') ? slot.nome.split(',')[0].trim() : '';
+  if (cru) return cru;
+  return (typeof t === 'function') ? t('id.sem_nome') : 'Sem nome';
+}
+
+// A alcunha, sem o nome. Vazia quando não há.
+function alcunhaDe(slot) {
+  if (!slot || typeof slot.nome !== 'string') return '';
+  return slot.nome.split(',').slice(1).join(',').trim();
+}
+
+// Já foi batizado? Não é o mesmo que `nomeTravado`: um avatar comprado
+// pode ter nome e ter o uso do batismo ainda por gastar.
+function temNome(slot) {
+  return !!(slot && typeof slot.nome === 'string' && slot.nome.split(',')[0].trim());
+}
+
 function travarNome(slot) {
   const s = slot || (typeof avatar !== 'undefined' ? avatar : null);
   if (s) s.nomeTravado = true;
@@ -311,7 +349,10 @@ function renderCertidaoHTML(slot) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const nada = t('cert.nada');
 
-  const nomeProprio = slot.nome ? String(slot.nome).split(',')[0].trim() : nada;
+  /* Na certidão, quem ainda não tem nome mostra o rótulo e não o "—"
+     de campo em falta: o nome não falta por descuido, falta porque
+     ainda não foi dado. */
+  const nomeProprio = temNome(slot) ? nomeCurto(slot) : t('id.sem_nome');
   const dna = (slot.nascimento && typeof dnaLegivel === 'function')
     ? dnaLegivel(slot.nascimento.dna) : '—';
 
@@ -381,8 +422,15 @@ function renderCertidaoHTML(slot) {
 // de filhos dentro do pai seria uma segunda cópia da mesma relação, à
 // espera de divergir da que os filhos já têm. Procuram-se.
 // ═══════════════════════════════════════════════════════════════════
+/* Devolve NULO para quem não tem nome, e não o rótulo "Sem nome".
+
+   É a exceção ao nomeCurto, e é de propósito: a árvore genealógica usa
+   este nulo para decidir que desenha o RETRATO do progenitor em vez de
+   escrever o nome dele. Escrever "Sem nome" em três ramos seguidos
+   dizia menos do que três retratos. */
 function _arvNome(slot) {
-  return slot && slot.nome ? String(slot.nome).split(',')[0].trim() : null;
+  const cru = slot && typeof slot.nome === 'string' ? slot.nome.split(',')[0].trim() : '';
+  return cru || null;
 }
 
 function _arvPorId(id, slots) {
@@ -676,8 +724,7 @@ function abrirCartaoLinhagem(idx) {
   if (svg && typeof gerarSVG === 'function')
     svg.innerHTML = gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 220, 220, fase);
 
-  document.getElementById('linCartaoNome').textContent =
-    s.nome ? String(s.nome).split(',')[0].trim() : '';
+  document.getElementById('linCartaoNome').textContent = nomeCurto(s);
   /* O † também aqui, e não só no cartão pequeno. Era a mesma omissão
      em dois sítios: um avatar morto abria uma folha igual à de um vivo. */
   const info = document.getElementById('linCartaoInfo');

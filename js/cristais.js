@@ -532,7 +532,7 @@ function _referralLevelHtml(snap, lvl, pct, label) {
     const d       = doc.data();
     const slotIdx = d.gs?.activeSlotIdx ?? d.activeSlotIdx ?? 0;
     const slot    = (d.avatarSlots || [])[slotIdx];
-    const nome    = slot?.nome?.split(',')[0] || t('ref.no_avatar');
+    const nome    = slot ? nomeCurto(slot) : t('ref.no_avatar');
     const rarity  = slot?.raridade || '';
     const rColor  = rarity === 'Lendário' ? 'var(--gold)'
                   : rarity === 'Raro'     ? 'var(--gem2)'

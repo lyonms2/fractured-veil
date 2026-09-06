@@ -274,7 +274,7 @@ function _evoConcluir(faseNova) {
   const pl = document.getElementById('phaseLabel');
   if (pl) pl.textContent = t('gt.phase.label', { fase: FASES[faseNova] });
   if (typeof addLog === 'function') {
-    addLog(t('gt.phase.log', { nome: avatar ? avatar.nome.split(',')[0] : '', fase: FASES[faseNova] }), 'leg');
+    addLog(t('gt.phase.log', { nome: avatar ? nomeCurto(avatar) : '', fase: FASES[faseNova] }), 'leg');
   }
   if (typeof showBubble === 'function') showBubble(t('gt.phase.bub', { fase: FASES[faseNova] }));
   if (typeof saveToFirebase === 'function') saveToFirebase();

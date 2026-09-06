@@ -120,7 +120,10 @@ function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
 
 // ── Substitui [nome] e [cor] pelo avatar atual ───────────────────
 function _loreFmt(texto) {
-  const nome = avatar?.nome?.split(',')[0]?.trim() || 'seu Avatar';
+  /* O rótulo de quem ainda não foi batizado entra aqui como entra em
+     todo o lado. Estava um 'seu Avatar' cravado em português — e a lore
+     lê-se nas duas línguas. */
+  const nome = avatar ? nomeCurto(avatar) : t('id.sem_avatar');
   const cor = (avatar && typeof frasedaCor === 'function')
     ? frasedaCor(avatar) : 'Desconhecido';
   return texto.replace(/\[nome\]/g, nome).replace(/\[(?:elemento|cor)\]/g, cor);

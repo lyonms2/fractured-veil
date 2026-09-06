@@ -111,7 +111,7 @@ function _fazendaBarra(v, cfg) {
    deles, e "aqui" respondia a uma pergunta que ninguém fazia. */
 function _fazendaCartao({ s, idx }) {
   const v     = s.vitals || {};
-  const nome  = (s.nome || 'Avatar').split(',')[0].trim();
+  const nome  = nomeCurto(s);
   const naEquipa = (typeof equipaIdx === 'function') && equipaIdx().includes(idx);
   const dorme  = !!s.sleeping;
   const doente = (s.activeDiseases || []).length > 0;
@@ -129,7 +129,7 @@ function _fazendaCartao({ s, idx }) {
   return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}" data-slot="${idx}">
     <button class="fz-av" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}${cocos ? `<span class="fz-coco" title="${t('fazenda.coco', { n: cocos })}">💩${cocos > 1 ? cocos : ''}</span>` : ''}</button>
     <div class="fz-info">
-      <div class="fz-nome">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
+      <div class="fz-nome${temNome(s) ? '' : ' sem-nome'}">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>
     </div>
     <button class="fz-cuidar" onclick="cuidarDe(${idx})">${t('fazenda.cuidar')}</button>
@@ -363,7 +363,7 @@ function _fzRenderCruzar() {
 
   el.innerHTML = candidatos.map(({ s, idx }) => {
     const sexo = (typeof sexoDe === 'function') ? sexoDe(s) : 'F';
-    const nome = s.nome ? String(s.nome).split(',')[0].trim() : '—';
+    const nome = nomeCurto(s);
     const svg  = (typeof gerarSVG === 'function')
       ? gerarSVG(s, s.raridade, s.seed || 0, 34, 34,
                  (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 3)) : '';

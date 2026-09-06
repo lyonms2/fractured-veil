@@ -411,7 +411,7 @@ async function _onLoginSuccess(user) {
       document.getElementById('statusCard').style.display   = 'none';
       document.getElementById('actionBtns').style.opacity   = '0';
       document.getElementById('actionBtns').style.pointerEvents = 'none';
-      const _name = avatar.nome ? avatar.nome.split(',')[0] : 'Avatar';
+      const _name = nomeCurto(avatar);
       /* HAVIA AQUI UMA SEGUNDA TELA DA MORTE, e já tinha divergido: o
          texto em português cravado no código (portanto sempre em
          português), um formato de tempo próprio, e os emojis de alma

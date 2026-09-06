@@ -188,7 +188,7 @@ function confirmarEscolha(qual) {
   fecharEscolha();
 
   if (typeof playSound === 'function') playSound('evolve');
-  const nome = avatar.nome ? avatar.nome.split(',')[0] : '';
+  const nome = nomeCurto(avatar);
   if (typeof addLog === 'function')    addLog(t('esc.log.' + qual, { nome }), 'leg');
   if (typeof showBubble === 'function') showBubble(t('esc.bub.' + qual));
   if (typeof saveToFirebase === 'function') saveToFirebase();

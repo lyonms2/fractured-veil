@@ -370,7 +370,7 @@ async function bnEntrarNoLobby() {
   const fila = _bnRaridade();
   _bnLobbyRef = _bnRtdb().ref(`batalhaNaval/lobby/${fila}/${walletAddress}`);
   await _bnLobbyRef.set({
-    wallet: walletAddress, nome: avatar.nome.split(',')[0],
+    wallet: walletAddress, nome: nomeCurto(avatar),
     raridade: avatar.raridade, ...paresDeCor(avatar),
     nivel: nivel||1, seed: avatar.seed||0,
     ts: firebase.database.ServerValue.TIMESTAMP, emPartida: false,
@@ -423,7 +423,7 @@ async function bnDesafiar(walletOponente) {
     aposta,
     turno:    walletAddress, // criador atira primeiro
     jogadores: {
-      [walletAddress]:  { nome: avatar.nome.split(',')[0], raridade: avatar.raridade, ...paresDeCor(avatar), seed: avatar.seed||0, pronto: false },
+      [walletAddress]:  { nome: nomeCurto(avatar), raridade: avatar.raridade, ...paresDeCor(avatar), seed: avatar.seed||0, pronto: false },
       [walletOponente]: { nome: null, raridade: null, corPrincipal: null, corSecundaria: null, seed: 0, pronto: false },
     },
     // Tabuleiros públicos (só acertos/água) — sem revelar posição dos navios
@@ -544,7 +544,7 @@ async function bnAceitarDesafio(salaId) {
 
   await _bnRtdb().ref(`batalhaNaval/salas/${salaId}`).update({
     status: 'colocacao',
-    [`jogadores/${walletAddress}/nome`]:     avatar.nome.split(',')[0],
+    [`jogadores/${walletAddress}/nome`]:     nomeCurto(avatar),
     [`jogadores/${walletAddress}/raridade`]: avatar.raridade,
     [`jogadores/${walletAddress}/corPrincipal`]:  paresDeCor(avatar).corPrincipal,
     [`jogadores/${walletAddress}/corSecundaria`]: paresDeCor(avatar).corSecundaria,
@@ -1611,7 +1611,7 @@ async function _bnRenderResultado(sala, opWallet) {
       <div class="arena-vs-row" style="margin:0.75rem 0;">
         <div class="arena-vs-lado ${euVenci ? 'arena-vencedor' : ''}">
           <div class="arena-vs-svg">${gerarSVG(avatar, avatar.raridade, avatar.seed, 44, 44, getFase())}</div>
-          <div class="arena-vs-nome">${avatar.nome.split(',')[0]}</div>
+          <div class="arena-vs-nome">${nomeCurto(avatar)}</div>
           <div class="arena-vs-pts" style="font-size:1.125rem;">💥 ${meusAc}</div>
         </div>
         <div class="arena-vs-centro"><div class="arena-vs-label">VS</div></div>
@@ -1651,7 +1651,7 @@ async function _bnAtualizarRanking(euVenci, empate) {
   const cur  = snap.val() || { pontos:0, vitorias:0, derrotas:0, empates:0 };
   const pts  = empate ? BN_PONTOS.empate : euVenci ? BN_PONTOS.vitoria : BN_PONTOS.derrota;
   await ref.set({
-    nome:     avatar?.nome?.split(',')[0] || cur.nome || '',
+    nome:     avatar ? nomeCurto(avatar) : (cur.nome || ''),
     wallet:   walletAddress,
     pontos:   (cur.pontos  ||0) + pts,
     vitorias: (cur.vitorias||0) + (euVenci          ? 1 : 0),

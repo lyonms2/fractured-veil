@@ -391,7 +391,7 @@ document.addEventListener('keydown', e => {
 async function _snakeSaveRanking(score, tierKey) {
   if(!rtdb() || !walletAddress || !avatar) return;
   try {
-    const nome = avatar.nome ? avatar.nome.split(',')[0] : '???';
+    const nome = nomeCurto(avatar);
     await rtdb().ref(`snakeRanking/${tierKey}/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
   } catch(e) {}
 }
