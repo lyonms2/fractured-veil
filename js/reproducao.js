@@ -331,6 +331,11 @@ function cruzar(mae, pai, opts) {
 
   return {
     ok: true,
+    /* Quem foi mãe e quem foi pai. Sai daqui e não de quem chama: a
+       decisão é pelo sexo e já foi tomada acima — mandá-la refazer lá
+       fora era pôr duas leituras da mesma coisa à espera de discordarem,
+       e a cerimónia mostra os dois lado a lado com o rótulo trocado. */
+    femea, macho,
     ovo: {
       id: agora,
       // O DNA do filho viaja dentro do ovo. É a diferença entre um ovo

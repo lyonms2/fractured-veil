@@ -436,7 +436,10 @@ function confirmarCruzar() {
   /* A cerimónia do ovo ficou sem dono quando a postura sozinha saiu, e
      é aqui que ela passa a fazer sentido: o jogador escolheu os pais e
      merece ver o que saiu. */
-  if (typeof abrirCerimoniaOvo === 'function') abrirCerimoniaOvo([r.ovo], 0, r.ovo.chocaEm);
+  /* A cerimónia leva os DOIS pais. Levava só o ovo, e mostrava o avatar
+     ACTIVO a fazer força — que pode não ser nenhum dos dois. */
+  if (typeof abrirCerimoniaCruza === 'function')
+    abrirCerimoniaCruza(r.ovo, r.femea, r.macho, r.ovo.chocaEm);
   if (typeof addLog === 'function') addLog(t('repr.feito', { h: horas }), 'leg');
   if (typeof showToast === 'function') showToast(t('repr.feito', { h: horas }), 'ok');
   if (typeof renderEggInventory === 'function') renderEggInventory();

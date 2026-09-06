@@ -292,56 +292,16 @@
   100% { transform: translateY(0)         scale(1); }
 }
 
-/* O brilho da postura: âmbar, largo e baixo, a nascer do chão do palco.
-   Não é um disco centrado como o da evolução — é uma bacia de luz. */
-.ovo-brilho {
-  position: absolute; left: 50%; bottom: -1.25rem;
-  width: 16rem; height: 8rem;
-  transform: translateX(-50%) scaleY(0.4);
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center,
-              rgba(255,238,200,.95) 0%, rgba(232,160,48,.75) 35%,
-              rgba(201,120,30,.35) 60%, transparent 78%);
-  pointer-events: none; opacity: 0;
-}
-.ovo-brilho.dispara { animation: ovo-brilho-anim 1.1s ease-out forwards; }
-@keyframes ovo-brilho-anim {
-  0%   { opacity: 0; transform: translateX(-50%) scaleY(0.15) scaleX(0.5); }
-  35%  { opacity: 1; transform: translateX(-50%) scaleY(0.55) scaleX(1); }
-  60%  { opacity: .9; transform: translateX(-50%) scaleY(0.5)  scaleX(1.05); }
-  100% { opacity: 0; transform: translateX(-50%) scaleY(0.35) scaleX(1.15); }
-}
+/* O BRILHO DA POSTURA, O NINHO E AS CARTAS SAÍRAM DAQUI.
 
-/* Partículas que CAEM e assentam, ao contrário das da evolução, que
-   convergem para o centro. Descem, abrandam e apagam-se em baixo. */
-.ovo-part {
-  position: absolute; left: 50%; top: 30%;
-  width: 0.25rem; height: 0.25rem; border-radius: 50%;
-  pointer-events: none;
-  animation: ovo-part-cai 1s ease-in forwards;
-}
-@keyframes ovo-part-cai {
-  0%   { opacity: 0; transform: translate(var(--dx), -1.25rem) scale(.6); }
-  20%  { opacity: 1; }
-  100% { opacity: 0; transform: translate(var(--dx), 4.5rem) scale(1); }
-}
+   Eram de quando um avatar sozinho punha vários ovos de uma vez: uma
+   bacia de luz âmbar por baixo dele, e uma carta por ovo alinhada no
+   painel. A postura sozinha saiu do jogo, a cruza dá um ovo só, e o que
+   está no meio dos dois pais é um clarão e não uma bacia — está em
+   .cruz-clarao, mais abaixo.
 
-.ovo-ninho {
-  display: flex; justify-content: center; gap: 0.75rem;
-  margin-top: 0.5rem; min-height: 3.5rem;
-}
-.ovo-carta {
-  display: flex; flex-direction: column; align-items: center; gap: 0.1875rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--cor-ovo, var(--border));
-  background: color-mix(in srgb, var(--cor-ovo, #fff) 10%, transparent);
-  opacity: 0; transform: scale(.4) translateY(0.75rem);
-  animation: ovo-carta-entra .5s cubic-bezier(.34,1.7,.64,1) forwards;
-  animation-delay: calc(var(--i, 0) * 0.22s);
-}
-@keyframes ovo-carta-entra { to { opacity: 1; transform: scale(1) translateY(0); } }
-.ovo-emoji { font-size: 1.5rem; line-height: 1; }
+   O ESFORÇO ficou. É a única parte que continua a ser verdade: fazer um
+   ovo custa, e agora custa aos dois. */
 
 .ovo-conta {
   display: flex; justify-content: space-between; align-items: center;
@@ -354,14 +314,11 @@
 @media (min-width: 769px) {
   #ovoTitulo { font-size: 0.75rem; }
   #ovoSub    { font-size: 0.5rem; }
-  .ovo-emoji { font-size: 1.25rem; }
   .ovo-conta { font-size: 0.46875rem; }
-  .ovo-carta { padding: 0.4375rem 0.625rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ovo-esforco, .ovo-carta { animation: none; }
-  .ovo-carta { opacity: 1; transform: none; }
+  .cruz-corpo { animation: none; }
 }
 
 
@@ -397,4 +354,110 @@
 @media (min-width: 769px) {
   .lu-ganho { font-size: 0.375rem; }
   .lu-g-item b { font-size: 0.46875rem; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   A CERIMÓNIA DA CRUZA
+   Ver a coreografia e os tempos em js/eggs.js.
+
+   Os dois pais entram afastados, aproximam-se, acendem cada um com a SUA
+   cor, e do sítio onde as duas se tocam sai o ovo — com a cor do filho,
+   que é uma terceira.
+
+   Cada pai leva a sua cor numa variável posta em JS (--cor-pai), e não
+   numa classe por cor: são catorze cores e cento e noventa e seis pares,
+   e uma folha de estilo não tem como saber qual é qual.
+═══════════════════════════════════════════════════════════════════ */
+
+.cruz-palco {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0;
+  min-height: 10rem;
+  width: 100%;
+}
+
+.cruz-pai {
+  line-height: 0;
+  transition: transform 1.1s cubic-bezier(.4,0,.2,1);
+  filter: drop-shadow(0 0 0 transparent);
+}
+/* Começam afastados e virados um para o outro. O da direita é espelhado
+   para os dois se olharem, em vez de olharem os dois para o mesmo lado. */
+.cruz-pai.esq { transform: translateX(-3.5rem); }
+.cruz-pai.dir { transform: translateX(3.5rem) scaleX(-1); }
+
+.cruz-palco.junta .cruz-pai.esq { transform: translateX(-1.75rem); }
+.cruz-palco.junta .cruz-pai.dir { transform: translateX(1.75rem) scaleX(-1); }
+
+/* Acendem, cada um com a sua cor. */
+.cruz-palco.acende .cruz-pai {
+  animation: cruz-acende 1.6s ease-in-out;
+}
+/* E os dois fazem força. A animação é a mesma que o avatar sozinho fazia
+   quando punha um ovo — a única parte daquela cerimónia que continua a
+   ser verdade, porque fazer um ovo custa. Agora custa aos dois.
+
+   Vai no invólucro e não no .cruz-pai porque este último já está a usar
+   o `transform` para a aproximação. */
+.cruz-corpo { line-height: 0; }
+.cruz-palco.acende .cruz-corpo { animation: ovo-esforco-anim 1.2s ease-in-out; }
+@keyframes cruz-acende {
+  0%   { filter: drop-shadow(0 0 0        transparent); }
+  60%  { filter: drop-shadow(0 0 1.25rem  var(--cor-pai, #c4b5fd))
+                 drop-shadow(0 0 2.5rem   var(--cor-pai, #c4b5fd)); }
+  100% { filter: drop-shadow(0 0 0.5rem   var(--cor-pai, #c4b5fd)); }
+}
+
+/* E recuam quando o ovo já está posto: o assunto passa a ser ele. */
+.cruz-palco.feito .cruz-pai.esq { transform: translateX(-4.25rem) scale(.86); }
+.cruz-palco.feito .cruz-pai.dir { transform: translateX(4.25rem) scale(.86) scaleX(-1); }
+.cruz-palco.feito .cruz-pai { opacity: .55; transition: transform 1.1s cubic-bezier(.4,0,.2,1), opacity .9s ease; }
+
+/* ── O meio ── */
+.cruz-meio {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
+.cruz-clarao {
+  position: absolute; left: 50%; top: 50%;
+  width: 13rem; height: 13rem;
+  transform: translate(-50%,-50%) scale(0);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, rgba(255,247,224,.92) 32%, rgba(196,181,253,.5) 62%, transparent 76%);
+  opacity: 0;
+}
+.cruz-palco.clarao .cruz-clarao { animation: cruz-clarao-anim 1.1s ease-out forwards; }
+@keyframes cruz-clarao-anim {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.15); }
+  26%  { opacity: 1; transform: translate(-50%,-50%) scale(1);   }
+  48%  { opacity: 1; transform: translate(-50%,-50%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.35); }
+}
+
+/* O ovo. Entra já dentro do clarão, e por isso não se vê aparecer. */
+.cruz-ninho { line-height: 0; opacity: 0; transform: scale(.6); }
+.cruz-palco.feito .cruz-ninho {
+  animation: cruz-ovo-entra .7s cubic-bezier(.34,1.6,.64,1) forwards;
+}
+@keyframes cruz-ovo-entra {
+  0%   { opacity: 0; transform: scale(.6);  }
+  55%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1);   }
+}
+
+@media (min-width: 769px) {
+  .cruz-palco { min-height: 8rem; }
+  .cruz-clarao { width: 9rem; height: 9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cruz-pai, .cruz-palco.acende .cruz-pai,
+  .cruz-palco.clarao .cruz-clarao, .cruz-palco.feito .cruz-ninho { animation: none; transition: none; }
+  .cruz-ninho { opacity: 1; transform: none; }
+  .cruz-clarao { opacity: 0; }
 }

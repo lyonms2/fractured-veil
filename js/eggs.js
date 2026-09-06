@@ -877,12 +877,57 @@ function petCreature() {
    baixo não dizia mais nada a ninguém. */
 const _OVO_COR_OMISSA = '#7a4fbb';
 
-function abrirCerimoniaOvo(ovos, _custoAntigo, chocaEm) {
+/* ═══════════════════════════════════════════════════════════════════
+   A CERIMÓNIA DA CRUZA
+
+   Mostrava UM avatar a fazer força — o activo — porque nasceu quando pôr
+   um ovo era coisa de um bicho sozinho. A postura sozinha saiu do jogo e
+   a cerimónia ficou: o jogador escolhia dois pais e via um terceiro a
+   esforçar-se.
+
+   Agora são os dois, e o que acontece entre eles é verdade e não
+   enfeite: cada um acende com a SUA cor, as duas encontram-se no meio, e
+   do encontro sai um ovo com a cor do FILHO — que é uma terceira, tirada
+   de um alelo de cada lado (cruzarDna, em js/reproducao.js).
+
+     0ms     escurece; os dois entram afastados
+     600ms   aproximam-se
+     1200ms  acendem, cada um com a sua cor
+     1900ms  as duas luzes tocam-se no meio
+     2300ms  CLARÃO — e é dentro dele que o ovo aparece   · egg_laid
+     2600ms  os dois recuam, e o ovo fica
+     3200ms  o painel: de quem é filho, e quanto falta
+
+   O ovo aparece dentro do clarão pela mesma razão de sempre (ver a
+   evolução e a travessia): nunca se vê a coisa surgir, só o antes e o
+   depois.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// A cor com que cada pai acende: o brilho da paleta dele.
+function _cruzBrilho(slot) {
+  const p = (typeof paletaDoAvatar === 'function' && slot)
+    ? paletaDoAvatar(slot, slot.seed) : null;
+  return (p && p.corBrilho) || '#c4b5fd';
+}
+
+function _cruzRetrato(slot, box, tam) {
+  if (!box) return;
+  if (!slot || typeof gerarSVG !== 'function') { box.innerHTML = ''; return; }
+  const fase = (typeof faseFromNivel === 'function') ? faseFromNivel(slot.nivel || 1) : 2;
+  /* O desenho vai DENTRO de um invólucro, e não colado no box.
+     O box faz a aproximação (translateX) e o invólucro faz o esforço
+     (o squash), e `transform` é uma propriedade só: no mesmo elemento,
+     a segunda apagava a primeira e os dois pais ficavam parados no
+     meio. */
+  box.innerHTML = '<div class="cruz-corpo">'
+    + gerarSVG(slot, slot.raridade, slot.seed, tam, tam, fase) + '</div>';
+  box.style.setProperty('--cor-pai', _cruzBrilho(slot));
+}
+
+function abrirCerimoniaCruza(ovo, femea, macho, chocaEm) {
   const ov = document.getElementById('ovoOverlay');
-  // Sem palco, cai-se na animação antiga em vez de não acontecer nada:
-  // o avatar do jogo faz o gesto de pôr e ouve-se o som. É o que corre
-  // se a marcação faltar por alguma razão.
-  if (!ov || !ovos || !ovos.length) {
+  // Sem palco, cai-se no gesto antigo em vez de não acontecer nada.
+  if (!ov || !ovo) {
     if (typeof playAnim === 'function') playAnim('anim-layegg');
     if (typeof playSound === 'function') playSound('egg_laid');
     return;
@@ -890,70 +935,62 @@ function abrirCerimoniaOvo(ovos, _custoAntigo, chocaEm) {
 
   if (typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
 
-  const palco  = ov.querySelector('.evo-palco');
-  const svgBox = ov.querySelector('#ovoAvatar');
-  const brilho = ov.querySelector('.ovo-brilho');
+  const palco  = ov.querySelector('.cruz-palco');
   const painel = ov.querySelector('.evo-painel');
+  const boxMae = ov.querySelector('#ovoMae');
+  const boxPai = ov.querySelector('#ovoPai');
   const ninho  = ov.querySelector('#ovoNinho');
+  if (!palco || !painel) { if (typeof playSound === 'function') playSound('egg_laid'); return; }
 
+  // Estado limpo: uma cerimónia aberta em cima de outra herdava as
+  // classes da primeira e começava a meio.
+  (ov._temporizadores || []).forEach(clearTimeout);
   painel.classList.remove('mostra');
-  brilho.classList.remove('dispara');
-  palco.classList.remove('ovo-esforco');
+  palco.classList.remove('junta', 'acende', 'clarao', 'feito');
   ninho.innerHTML = '';
+  void palco.offsetWidth;
   ov.classList.add('ativo');
 
-  if (avatar && typeof gerarSVG === 'function') {
-    const tam = Math.round((typeof getFaseSize === 'function' ? getFaseSize() : 140) * 1.5);
-    const fase = typeof getFaseVisual === 'function' ? getFaseVisual() : 3;
-    svgBox.innerHTML = gerarSVG(avatar, avatar.raridade, avatar.seed, tam, tam, fase);
-  }
+  const TAM = 96;
+  _cruzRetrato(femea, boxMae, TAM);
+  _cruzRetrato(macho, boxPai, TAM);
 
-  const t1 = setTimeout(() => {
-    palco.classList.add('ovo-esforco');
-    _ovoParticulas(palco);
-  }, 700);
-
-  const t2 = setTimeout(() => {
-    brilho.classList.add('dispara');
-    if (typeof playSound === 'function') playSound('egg_laid');
-    setTimeout(() => {
-      ninho.innerHTML = ovos.map((o, i) => {
-        // A cor do ovo é a do filho: o DNA dele viaja dentro do ovo.
-        const cor = (typeof gradienteDoOvo === 'function' && o.dna)
-          ? gradienteDoOvo({ nascimento: { dna: o.dna } }).aura : _OVO_COR_OMISSA;
-        return `<div class="ovo-carta" style="--i:${i};--cor-ovo:${cor}">
-                  <span class="ovo-emoji">🥚</span>
-                </div>`;
-      }).join('');
-    }, 300);
-  }, 1600);
+  const t1 = setTimeout(() => palco.classList.add('junta'),   600);
+  const t2 = setTimeout(() => palco.classList.add('acende'), 1200);
 
   const t3 = setTimeout(() => {
+    palco.classList.add('clarao');
+    if (typeof playSound === 'function') playSound('egg_laid');
+    // A meio do clarão, quando está mais branco.
+    setTimeout(() => {
+      ninho.innerHTML = (typeof eggMiniSVG === 'function') ? eggMiniSVG(ovo, 76) : '';
+      palco.classList.add('feito');
+      // A luz desce e assenta, que é o gesto de deixar alguma coisa no
+      // chão — e é para isto que estas partículas foram feitas.
+      _ovoParticulas(palco);
+    }, 280);
+  }, 2300);
+
+  const t4 = setTimeout(() => {
     const tit = ov.querySelector('#ovoTitulo');
     const sub = ov.querySelector('#ovoSub');
     const conta = ov.querySelector('#ovoConta');
-    if (tit) tit.textContent = ovos.length > 1 ? t('ovo.titulo_multi', { n: ovos.length })
-                                               : t('ovo.titulo_um');
-    /* O subtítulo anunciava raro ou lendário quando algum saísse. Já não
-       há o que anunciar: diz de quem é filho, que é o que este ovo tem
-       de especial e o outro não tinha. */
-    const pais = ovos.find(o => o.maeNome || o.paiNome);
-    if (sub) sub.textContent = pais
-      ? t('egg.filho_de', { mae: pais.maeNome || '?', pai: pais.paiNome || '?' })
-      : t('ovo.sub_comum');
+    if (tit) tit.textContent = t('ovo.titulo_um');
+    if (sub) sub.textContent = t('egg.filho_de', {
+      mae: (ovo.maeNome || (femea && femea.nome && femea.nome.split(',')[0])) || '?',
+      pai: (ovo.paiNome || (macho && macho.nome && macho.nome.split(',')[0])) || '?',
+    });
     if (conta) {
-      // A conta era do custo em moedas e da próxima postura. Cruzar não
-      // custa moedas e não há próxima postura — o que interessa agora é
-      // quando é que este ovo abre.
       const horas = chocaEm ? Math.max(1, Math.ceil((chocaEm - Date.now()) / 3600000)) : 0;
+      const guardados = (typeof eggsInInventory !== 'undefined') ? eggsInInventory.length : 0;
       conta.innerHTML =
-        `<div class="ovo-conta"><span>${t('ovo.guardados')}</span><span class="val">${eggsInInventory.length} / 10</span></div>` +
+        `<div class="ovo-conta"><span>${t('ovo.guardados')}</span><span class="val">${guardados} / 10</span></div>` +
         (horas ? `<div class="ovo-conta"><span>${t('egg.choca_em', { t: '' }).trim()}</span><span class="val">${t('ovo.horas', { h: horas })}</span></div>` : '');
     }
     painel.classList.add('mostra');
-  }, 2600);
+  }, 3200);
 
-  ov._temporizadores = [t1, t2, t3];
+  ov._temporizadores = [t1, t2, t3, t4];
 }
 
 /* Partículas que caem em vez de convergirem. A evolução puxa tudo para o
@@ -980,8 +1017,10 @@ function fecharCerimoniaOvo() {
   (ov._temporizadores || []).forEach(clearTimeout);
   ov.classList.remove('ativo');
   setTimeout(() => {
-    const b = ov.querySelector('#ovoAvatar'); if (b) b.innerHTML = '';
-    const n = ov.querySelector('#ovoNinho');  if (n) n.innerHTML = '';
+    if (ov.classList.contains('ativo')) return;   // reabriu entretanto
+    ['#ovoMae', '#ovoPai', '#ovoNinho'].forEach(sel => {
+      const e = ov.querySelector(sel); if (e) e.innerHTML = '';
+    });
   }, 600);
 }
 
