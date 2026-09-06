@@ -99,12 +99,22 @@ module.exports = async function handler(req, res) {
         const resultados = [];
         snaps.forEach(doc => {
           if (doc.id === uid) return; // não mostrar a si mesmo
-          const d        = doc.data();
-          const slotIdx  = d.activeSlotIdx ?? d.gs?.activeSlotIdx ?? 0;
-          const slot     = (d.avatarSlots || [])[slotIdx];
-          if (!slot?.hatched || slot?.dead) return;
+          const d = doc.data();
+          /* ── A CARA É O PRIMEIRO VIVO, E NÃO O "ACTIVO" ──
+
+             Lia-se aqui o activeSlotIdx, e isso fazia da busca uma
+             janela para UM avatar — justamente o que o dono tivesse
+             aberto no momento. Quem procura um amigo procura a pessoa,
+             e a pessoa tem uma colónia.
+
+             Fica o primeiro vivo como retrato, e o número deles ao
+             lado. Quem quiser ver a colónia inteira abre o perfil. */
+          const vivos = (d.avatarSlots || []).filter(s => s && s.hatched && !s.dead);
+          const slot  = vivos[0];
+          if (!slot) return;
           resultados.push({
             uid:      doc.id,
+            quantos:  vivos.length,
             /* O nome, ou VAZIO. Punha-se aqui '???' quando não havia,
                e desde que os avatares chegam por baptizar isso passou a
                ser o caso comum — a procura de amigos ficava cheia de
@@ -149,26 +159,39 @@ module.exports = async function handler(req, res) {
           return res.status(403).json({ erro: 'Não são amigos.' });
         }
 
-        const slotIdx = targetData.activeSlotIdx ?? targetData.gs?.activeSlotIdx ?? 0;
-        const slot    = (targetData.avatarSlots || [])[slotIdx];
-        if (!slot?.hatched || slot?.dead) {
-          return res.status(200).json({ ok: true, semAvatar: true });
-        }
+        /* ── O PERFIL É A COLÓNIA ──
+
+           Devolvia UM avatar: o que o dono tivesse aberto. Visitava-se
+           esse e mais nenhum, e o visitante nem sabia que havia outros.
+
+           Vão todos os que estão vivos, cada um com o seu slot, e é o
+           visitante que escolhe a quem leva a comida. O `slot` de cada
+           um vai junto porque é por ele que a visita diz de quem fala —
+           ver o handleVisitar. */
+        const vivos = (targetData.avatarSlots || [])
+          .map((s, i) => ({ s, i }))
+          .filter(x => x.s && x.s.hatched && !x.s.dead)
+          .map(({ s, i }) => ({
+            slot:     i,
+            nome:     s.nome?.split(',')[0] || '',
+            alcunhaIdx: s.alcunhaIdx ?? null,
+            raridade: s.raridade || 'Comum',
+            nivel:    s.nivel    || 1,
+            seed:     s.seed     || 0,
+            sexo:     s.nascimento?.sexo ?? null,
+            corPrincipal:  s.nascimento?.corPrincipal  ?? null,
+            corSecundaria: s.nascimento?.corSecundaria ?? null,
+            vitals:   s.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
+          }));
+
+        if (!vivos.length) return res.status(200).json({ ok: true, semAvatar: true });
 
         const myCooldowns = (myData.visitasLog || {})[perfil] || {};
 
         return res.status(200).json({
-          ok:     true,
-          perfil: {
-            uid:      perfil,
-            nome:     slot.nome?.split(',')[0] || '???',
-            raridade: slot.raridade || 'Comum',
-            nivel:    slot.nivel    || 1,
-            seed:     slot.seed     || 0,
-            corPrincipal:  slot.nascimento?.corPrincipal  ?? null,
-            corSecundaria: slot.nascimento?.corSecundaria ?? null,
-            vitals:   slot.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
-          },
+          ok:      true,
+          colonia: vivos,
+          nomeJogador: targetData.nomeJogador || null,
           cooldowns: {
             alimentar: myCooldowns.alimentar || 0,
             brincar:   myCooldowns.brincar   || 0,
@@ -201,7 +224,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'aceitar') return handleAceitar(req, res, db, uid, alvoUid);
   if (acao === 'recusar') return handleRecusar(req, res, db, uid, alvoUid);
   if (acao === 'remover') return handleRemover(req, res, db, uid, alvoUid);
-  if (acao === 'visitar') return handleVisitar(req, res, db, uid, alvoUid, tipo);
+  if (acao === 'visitar') return handleVisitar(req, res, db, uid, alvoUid, tipo, req.body?.alvoSlot);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -226,10 +249,10 @@ async function handlePedir(req, res, db, uid, alvoUid) {
       return res.status(400).json({ erro: 'Este jogador tem muitos pedidos pendentes.' });
     }
 
-    // Obter nome do meu avatar activo
-    const mySlotIdx = myData.activeSlotIdx ?? myData.gs?.activeSlotIdx ?? 0;
-    const mySlot    = (myData.avatarSlots || [])[mySlotIdx];
-    const meuNome   = mySlot?.nome?.split(',')[0] || 'Viajante';
+    /* O pedido leva o nome de QUEM o faz, e quem o faz e uma pessoa.
+       Levava o nome do avatar que ele tivesse aberto — e desde que os
+       avatares chegam por baptizar, isso era quase sempre vazio. */
+    const meuNome = myData.nomeJogador || 'Viajante';
 
     await db.collection('players').doc(alvoUid).update({
       pedidosAmizade: FieldValue.arrayUnion({ de: uid, nome: meuNome, ts: Date.now() }),
@@ -262,14 +285,10 @@ async function handleAceitar(req, res, db, uid, alvoUid) {
       return res.status(400).json({ erro: 'Lista de amigos cheia.' });
     }
 
-    // Nomes dos avatares activos
-    const mySlotIdx     = myData.activeSlotIdx ?? myData.gs?.activeSlotIdx ?? 0;
-    const mySlot        = (myData.avatarSlots || [])[mySlotIdx];
-    const meuNome       = mySlot?.nome?.split(',')[0] || 'Viajante';
-
-    const targetSlotIdx = targetData.activeSlotIdx ?? targetData.gs?.activeSlotIdx ?? 0;
-    const targetSlot    = (targetData.avatarSlots || [])[targetSlotIdx];
-    const nomeAlvo      = targetSlot?.nome?.split(',')[0] || pedido.nome || 'Viajante';
+    // Os nomes das duas PESSOAS. Eram os dos avatares abertos: uma
+    // amizade entre bichos que mudam de nome e de dono.
+    const meuNome  = myData.nomeJogador     || 'Viajante';
+    const nomeAlvo = targetData.nomeJogador || pedido.nome || 'Viajante';
 
     const batch = db.batch();
 
@@ -319,7 +338,7 @@ async function handleRemover(req, res, db, uid, alvoUid) {
 }
 
 // ── Executar visita ───────────────────────────────────────────
-async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
+async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
   if (!TIPO_VITAL[tipo]) return res.status(400).json({ erro: 'tipo inválido' });
   const vitalField = TIPO_VITAL[tipo];
 
@@ -363,11 +382,26 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
 
       const moedas = myData.gs?.moedas ?? myData.moedas ?? 0;;
 
-      // Validar que o alvo tem avatar activo e vivo
-      const slotIdx = targetData.activeSlotIdx ?? targetData.gs?.activeSlotIdx ?? 0;
+      /* ── A QUEM SE LEVA ──
+
+         Era sempre o avatar "activo" do amigo. Agora é o que o
+         visitante escolheu, e o servidor só confirma que ele existe e
+         está vivo — quem escolhe é quem visita.
+
+         Sem escolha, vale o primeiro vivo: um cliente antigo continua a
+         funcionar, e leva a comida a alguém em vez de falhar.
+
+         O COOLDOWN NÃO MUDA: continua por amigo e por acção, e não por
+         avatar. Poder ajudar cada bicho de um amigo com dez seria
+         multiplicar por dez o que a visita rende, e isso é conversa da
+         economia — aqui só se mudou QUEM recebe, não quanto se dá. */
       const slots   = targetData.avatarSlots || [];
+      const pedido  = Number(alvoSlot);
+      const slotIdx = Number.isInteger(pedido) && pedido >= 0
+        ? pedido
+        : slots.findIndex(s => s && s.hatched && !s.dead);
       const slot    = slots[slotIdx];
-      if (!slot?.hatched || slot?.dead) throw new Error('O amigo não tem avatar activo.');
+      if (!slot?.hatched || slot?.dead) throw new Error('Esse avatar não está disponível.');
 
       // Validar que o vital não está já no máximo
       const vitalAtual = slot.vitals?.[vitalField] ?? 100;
@@ -390,8 +424,11 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo) {
       // visitado via um medidor subir sem nunca saber porquê nem por
       // quem. Agora leva vínculo e fica com o recado, que o jogo lhe
       // entrega quando voltar (ver inboxVisitas em js/firebase.js).
-      const mySlotIdx = myData.activeSlotIdx ?? myData.gs?.activeSlotIdx ?? 0;
-      const meuNome   = (myData.avatarSlots || [])[mySlotIdx]?.nome?.split(',')[0] || 'Viajante';
+      /* Quem visitou. Era o nome do avatar que o visitante tivesse
+         aberto — e desde que os avatares chegam por baptizar, isso era
+         quase sempre vazio. Quem visita é a PESSOA, e a pessoa tem
+         nome desde a primeira entrada (js/identidade.js). */
+      const meuNome = myData.nomeJogador || 'Viajante';
 
       const slotsComVinculo = newSlots.map((sl, i) => {
         if (i !== slotIdx || !sl) return sl;

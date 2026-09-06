@@ -142,8 +142,11 @@ async function _buscarJogador(query) {
           <div class="amigos-busca-card">
             <div class="amigos-busca-svg">${gerarSVG(p, p.raridade, p.seed, 38, 38, 1)}</div>
             <div class="amigos-busca-info">
-              <div class="amigos-busca-nome">${esc(p.nome)}</div>
-              <div class="amigos-busca-meta">${t('amigos.meta', {nivel: p.nivel, raridade: esc(p.raridade)})}</div>
+              <div class="amigos-busca-nome">${esc(p.nome || t('id.sem_nome'))}</div>
+              <!-- A cara é o primeiro avatar vivo, e ao lado quantos ele
+                   tem. Antes dizia o nível e a raridade de UM, o que
+                   fazia parecer que era só aquele. -->
+              <div class="amigos-busca-meta">${t(p.quantos > 1 ? 'amigos.colonia_n' : 'amigos.colonia_1', { n: p.quantos || 1 })}</div>
             </div>
             ${jaAmigo(p.uid)
               ? `<div class="amigos-busca-ja">${t('amigos.already_friend')}</div>`
@@ -275,7 +278,19 @@ async function amigoAbrirVisita(alvoUid) {
       return;
     }
 
-    _visitaAtual = { uid: alvoUid, perfil: json.perfil, cooldowns: json.cooldowns };
+    /* ── A COLÓNIA INTEIRA, E UM ESCOLHIDO ──
+
+       O servidor devolvia UM avatar — o que o amigo tivesse aberto — e
+       era esse que se visitava. Devolve todos os que estão vivos, e
+       quem escolhe a quem leva a comida é quem visita.
+
+       Começa no primeiro, para haver sempre alguém escolhido e os
+       botões nunca aparecerem à espera de uma escolha. */
+    _visitaAtual = {
+      uid: alvoUid, colonia: json.colonia || [],
+      nomeJogador: json.nomeJogador || null,
+      escolhido: 0, cooldowns: json.cooldowns,
+    };
     _renderVisitaOverlay();
   } catch(err) {
     body.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
@@ -290,11 +305,32 @@ function fecharVisita() {
 }
 window.fecharVisita = fecharVisita;
 
+/* O nome de um avatar do amigo. O servidor manda vazio quando ele
+   ainda não foi baptizado, e o rótulo é daqui porque tem tradução. */
+function _visitaNome(c) {
+  return (c && c.nome) ? c.nome : t('id.sem_nome');
+}
+
+// Quem está escolhido agora. Usado pelo render e pelo executarVisita.
+function _visitaAlvo() {
+  if(!_visitaAtual || !_visitaAtual.colonia) return null;
+  return _visitaAtual.colonia[_visitaAtual.escolhido] || _visitaAtual.colonia[0] || null;
+}
+
+function visitaEscolher(i) {
+  if(!_visitaAtual) return;
+  _visitaAtual.escolhido = i;
+  _renderVisitaOverlay();
+}
+window.visitaEscolher = visitaEscolher;
+
 function _renderVisitaOverlay() {
   const body = document.getElementById('visitaBody');
   if(!body || !_visitaAtual) return;
-  const { perfil, cooldowns } = _visitaAtual;
-  const { vitals } = perfil;
+  const { cooldowns, colonia } = _visitaAtual;
+  const perfil = _visitaAlvo();
+  if(!perfil) { body.innerHTML = `<div class="amigos-empty">${t('amigos.no_avatar')}</div>`; return; }
+  const vitals = perfil.vitals || {};
   const agora        = Date.now();
   const visitasFeitas = _contarVisitasGlobais();
   const limiteAtingido = visitasFeitas >= MAX_VISITAS_GLOBAL;
@@ -321,7 +357,20 @@ function _renderVisitaOverlay() {
     { tipo: 'limpar',    icon: '🧼', label: t('amigos.action.clean'), vital: 'higiene', cor: '#5ab4e8' },
   ];
 
-  body.innerHTML = `
+  /* A fila da colónia. Cada um com a sua cara e o seu nome; o
+     escolhido fica aceso. Com um avatar só a fila não aparece — não há
+     escolha nenhuma para oferecer. */
+  const fila = colonia.length > 1 ? `
+    <div class="visita-colonia">
+      ${colonia.map((c, i) => `
+        <button class="visita-colonia-item${i === _visitaAtual.escolhido ? ' on' : ''}"
+                onclick="visitaEscolher(${i})" title="${esc(_visitaNome(c))}">
+          ${gerarSVG(c, c.raridade, c.seed, 34, 34, _faseNum(c.nivel || 1))}
+          <span>${esc(_visitaNome(c))}</span>
+        </button>`).join('')}
+    </div>` : '';
+
+  body.innerHTML = fila + `
     <div class="visita-avatar">
       <div class="av-zoom-wrap" style="position:relative;display:inline-block;">
         <div id="visitaAvatarWrap" class="creature-wrap" style="width:5rem;height:5rem;">
@@ -331,11 +380,11 @@ function _renderVisitaOverlay() {
           ${gerarSVG(perfil, perfil.raridade, perfil.seed, 80, 80, _faseNum(perfil.nivel || 1))}
         </div>
         <button class="mkt-avatar-zoom-btn"
-          onclick="openAvatarZoomData('${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(perfil.nome)}')"
+          onclick="openAvatarZoomData('${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(_visitaNome(perfil))}')"
           title="Ampliar avatar">🔍</button>
       </div>
     </div>
-    <div class="visita-nome">${esc(perfil.nome)}</div>
+    <div class="visita-nome">${esc(_visitaNome(perfil))}</div>
     <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade)})}</div>
 
     <div class="visita-vitals">
@@ -382,7 +431,10 @@ async function executarVisita(tipo) {
     const resp    = await fetch('/api/amigos', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'visitar', idToken, alvoUid: _visitaAtual.uid, tipo }),
+      // O `alvoSlot` é o que faz da visita uma escolha: sem ele o
+      // servidor leva ao primeiro vivo, como levava ao "activo".
+      body:    JSON.stringify({ acao: 'visitar', idToken, alvoUid: _visitaAtual.uid,
+                                tipo, alvoSlot: (_visitaAlvo() || {}).slot }),
     });
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
@@ -395,9 +447,10 @@ async function executarVisita(tipo) {
 
     // Atualizar cooldown local + vital exibido
     if(_visitaAtual.cooldowns) _visitaAtual.cooldowns[tipo] = Date.now();
-    if(_visitaAtual.perfil?.vitals) {
+    const _alvo = _visitaAlvo();
+    if(_alvo && _alvo.vitals) {
       const vitalField = { alimentar:'fome', brincar:'humor', limpar:'higiene' }[tipo];
-      _visitaAtual.perfil.vitals[vitalField] = json.novoVital;
+      _alvo.vitals[vitalField] = json.novoVital;
     }
 
     // Atualizar visitasLog local
@@ -408,7 +461,9 @@ async function executarVisita(tipo) {
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
     if(typeof showFloat === 'function') showFloat(`+${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#7ab87a');
-    if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaAtual.perfil.nome), coins: CUSTO_VISITA, xp: XP_VISITA}), 'good');
+    // O recado diz a QUEM se levou, e agora isso é uma escolha: lê-se
+    // do escolhido, e não de um `perfil` que deixou de existir.
+    if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaNome(_alvo)), coins: CUSTO_VISITA, xp: XP_VISITA}), 'good');
 
     _renderVisitaOverlay();
     // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)

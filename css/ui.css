@@ -1038,6 +1038,38 @@
 .amigos-btn-remover:hover { opacity: .75; }
 
 /* Overlay de visita */
+/* ── A FILA DA COLÓNIA DO AMIGO ──
+
+   A visita mostrava um avatar só — o que o dono tivesse aberto — e era
+   esse que se ajudava. Mostra a colónia, e quem visita escolhe a quem
+   leva. O escolhido acende; os outros ficam à espera.
+
+   Só aparece com mais do que um: com um, não há escolha nenhuma para
+   oferecer e a fila seria uma linha a dizer o óbvio. */
+.visita-colonia {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 0.375rem; margin-bottom: 0.625rem;
+}
+.visita-colonia-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
+  padding: 0.25rem 0.375rem; cursor: pointer;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border); border-radius: 0.5rem;
+  transition: border-color .18s, background .18s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.visita-colonia-item span {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem;
+  color: var(--muted); max-width: 4rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.visita-colonia-item:hover { border-color: rgba(201,168,76,.45); }
+.visita-colonia-item.on {
+  border-color: var(--gold); background: rgba(201,168,76,.10);
+}
+.visita-colonia-item.on span { color: var(--gold); }
+.visita-colonia-item:active { transform: scale(.96); }
+
 .visita-avatar { display: flex; justify-content: center; margin-bottom: 0.375rem; }
 .visita-nome {
   text-align: center;

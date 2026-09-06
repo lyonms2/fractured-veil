@@ -214,10 +214,18 @@ function getGameState() {
     };
   });
 
-  // nomeBusca — campo de topo para pesquisa de amigos (nome do avatar ativo, minúsculas)
-  const _activeSlot = avatarSlots[activeSlotIdx];
-  const nomeBusca = (_activeSlot?.hatched && !_activeSlot?.dead && _activeSlot?.nome)
-    ? _activeSlot.nome.split(',')[0].toLowerCase().trim()
+  /* ── PROCURA-SE A PESSOA, NÃO O BICHO ──
+
+     Isto era o nome do avatar ABERTO, em minúsculas. Duas coisas
+     erradas: procurar um amigo é procurar quem joga, e a colónia dele
+     tem vários — qual deles indexar era arbitrário. E desde que os
+     avatares chegam por baptizar, o campo ficava quase sempre vazio, o
+     que é o mesmo que não estar na lista.
+
+     Passa a ser o nome do JOGADOR, que ele dá na primeira entrada e que
+     não muda (js/identidade.js). */
+  const nomeBusca = (typeof nomeJogador === 'string' && nomeJogador)
+    ? nomeJogador.toLowerCase().trim()
     : '';
 
   return {
