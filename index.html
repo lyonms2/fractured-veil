@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-09-07z
+     VERSÃO DOS FICHEIROS — ?v=2026-09-08a
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-09-07z" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-09-08a" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -21,12 +21,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Fractured Veil">
   <meta name="theme-color" content="#04030a">
-  <meta name="description" content="Fractured Veil — Dimensional Tamagotchi Web3. Invoca, cria e troca avatares na blockchain Polygon.">
+  <meta name="description" content="Fractured Veil — crie, cuide e troque criaturas dimensionais na blockchain Polygon.">
   <meta name="format-detection" content="telephone=no">
 
   <link rel="manifest" href="/manifest.json">
   <meta property="og:title" content="Fractured Veil">
-  <meta property="og:description" content="Dimensional Tamagotchi Web3 na Polygon">
+  <meta property="og:description" content="Criaturas dimensionais na Polygon">
   <meta property="og:type" content="website">
 
   <title>Fractured Veil</title>
@@ -49,25 +49,25 @@
        decoracao. -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/screen.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/ui.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/modals.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/combate.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/arena.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/snake.css?v=2026-09-07z">
-<link rel="stylesheet" href="css/fazenda.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/escolha.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/fratura.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/historico.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-07z">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-07z">
+  <link rel="stylesheet" href="css/base.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/screen.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/ui.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/modals.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/combate.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/arena.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/snake.css?v=2026-09-08a">
+<link rel="stylesheet" href="css/fazenda.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/escolha.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/fratura.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/historico.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-08a">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-08a">
 
   <style>
 
@@ -107,15 +107,15 @@
 
 
 
-    /* No desktop a raiz é 24px e o formulário inteiro vinha a 1,5x:
-       campos de 53px de altura, botão de 66px, um cartão de 646px numa
-       tela de 900. A tela de entrada não precisa da escala que existe
-       para o texto de 5-7px do jogo ser legível. */
+    /* O botão do Google e o que o rodeia, na mesma escala do cartão que
+       os contém — ver a nota grande no css/base.css. Estes valores eram
+       o freio que encolhia a entrada de volta ao tamanho do telemóvel;
+       são agora o dobro deles. */
     @media(min-width:681px) {
-      .auth-btn-link    { font-size:0.4375rem; }
-      .auth-btn-google  { padding:0.4375rem; font-size:0.4375rem; }
-      .auth-btn-google svg { width:0.625rem; height:0.625rem; }
-      .auth-so-google { font-size:0.375rem; }
+      .auth-btn-link    { font-size:0.875rem; }
+      .auth-btn-google  { padding:0.875rem; font-size:0.875rem; gap:0.75rem; }
+      .auth-btn-google svg { width:1.25rem; height:1.25rem; }
+      .auth-so-google { font-size:0.75rem; margin-top:0.875rem; }
     }
 
 
@@ -317,7 +317,13 @@
 <div id="loginScreen" style="display:none;">
   <div id="loginCard">
     <div id="loginLogo">Fractured Veil</div>
-    <div id="loginSub">◆ DIMENSIONAL TAMAGOTCHI ◆</div>
+    <!-- Dizia "◆ DIMENSIONAL TAMAGOTCHI ◆". Tamagotchi é marca
+         registada da Bandai, e isto não era uma comparação numa
+         conversa: era o subtítulo do produto, na tela de entrada, num
+         jogo que mexe em dinheiro real. Sai.
+
+         E passa a ter as duas línguas, que também lhe faltavam. -->
+    <div id="loginSub" data-i18n="ui.subtitulo">◆ CRIATURAS DO VÉU ◆</div>
 
     <!-- ── UMA PORTA SÓ ──
 
@@ -343,7 +349,9 @@
     <div class="auth-so-google" data-i18n="auth.so_google"></div>
 
     <div id="loginError"></div>
-    <div id="loginFooter" style="font-size:0.4375rem;color:var(--muted);margin-top:0.5rem;letter-spacing:0.0625rem;display:flex;align-items:center;justify-content:space-between;width:100%;">
+    <!-- O tamanho de letra saiu daqui para o CSS: em linha ganha sempre,
+         e nenhuma media query o conseguia dobrar no PC. -->
+    <div id="loginFooter" style="color:var(--muted);margin-top:0.5rem;letter-spacing:0.0625rem;display:flex;align-items:center;justify-content:space-between;width:100%;">
       <span>Fractured Veil v1.0</span>
       <button class="auth-btn-link" onclick="setLang(window._currentLang==='pt'?'en':'pt')" data-i18n="ui.lang_btn">🌐 EN</button>
     </div>
@@ -1090,24 +1098,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-09-07z"></script>
-<script src="js/i18n-pvp.js?v=2026-09-07z"></script>
-<script src="js/i18n-bn.js?v=2026-09-07z"></script>
-<script src="js/i18n-minigames.js?v=2026-09-07z"></script>
-<script src="js/i18n-eggs.js?v=2026-09-07z"></script>
-<script src="js/i18n-gametick.js?v=2026-09-07z"></script>
-<script src="js/i18n-items.js?v=2026-09-07z"></script>
-<script src="js/i18n-market.js?v=2026-09-07z"></script>
-<script src="js/i18n-mina.js?v=2026-09-07z"></script>
-<script src="js/i18n-arcade.js?v=2026-09-07z"></script>
-<script src="js/i18n-session.js?v=2026-09-07z"></script>
-<script src="js/i18n-misc.js?v=2026-09-07z"></script>
-<script src="js/i18n-lore.js?v=2026-09-07z"></script>
-<script src="js/i18n-prologo.js?v=2026-09-07z"></script>
-<script src="js/i18n-marketplace.js?v=2026-09-07z"></script>
-<script src="js/i18n-magias.js?v=2026-09-07z"></script>
-<script src="js/i18n-vantagens.js?v=2026-09-07z"></script>
-<script src="js/i18n-pve.js?v=2026-09-07z"></script>
+<script src="js/i18n.js?v=2026-09-08a"></script>
+<script src="js/i18n-pvp.js?v=2026-09-08a"></script>
+<script src="js/i18n-bn.js?v=2026-09-08a"></script>
+<script src="js/i18n-minigames.js?v=2026-09-08a"></script>
+<script src="js/i18n-eggs.js?v=2026-09-08a"></script>
+<script src="js/i18n-gametick.js?v=2026-09-08a"></script>
+<script src="js/i18n-items.js?v=2026-09-08a"></script>
+<script src="js/i18n-market.js?v=2026-09-08a"></script>
+<script src="js/i18n-mina.js?v=2026-09-08a"></script>
+<script src="js/i18n-arcade.js?v=2026-09-08a"></script>
+<script src="js/i18n-session.js?v=2026-09-08a"></script>
+<script src="js/i18n-misc.js?v=2026-09-08a"></script>
+<script src="js/i18n-lore.js?v=2026-09-08a"></script>
+<script src="js/i18n-prologo.js?v=2026-09-08a"></script>
+<script src="js/i18n-marketplace.js?v=2026-09-08a"></script>
+<script src="js/i18n-magias.js?v=2026-09-08a"></script>
+<script src="js/i18n-vantagens.js?v=2026-09-08a"></script>
+<script src="js/i18n-pve.js?v=2026-09-08a"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1116,13 +1124,13 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-09-07z"></script>
-<script src="js/data.js?v=2026-09-07z"></script>
-<script src="js/state.js?v=2026-09-07z"></script>
+<script src="js/audio.js?v=2026-09-08a"></script>
+<script src="js/data.js?v=2026-09-08a"></script>
+<script src="js/state.js?v=2026-09-08a"></script>
 <!-- A identidade permanente do avatar e o nome de quem joga. Vem
      depois do state.js, que declara os globais que ela le, e antes
      do summon.js e do eggs.js, que a chamam ao criar um avatar. -->
-<script src="js/identidade.js?v=2026-09-07z"></script>
+<script src="js/identidade.js?v=2026-09-08a"></script>
 <!-- O acto de nascer: DNA (tendencia e sexo) e a certidao.
      Depois da identidade, que ele nao usa mas que nasce no mesmo gesto,
      e antes do ficha-3dt.js e do magias.js, que perguntam por ele. -->
@@ -1130,62 +1138,62 @@
      nascimento.js, que sorteia o gene da cor, e antes do data.js
      ...na verdade o data.js vem antes; a paleta e pedida em tempo de
      desenho, nao em tempo de carga, portanto a ordem nao aperta. -->
-<script src="js/cores.js?v=2026-09-07z"></script>
-<script src="js/nascimento.js?v=2026-09-07z"></script>
+<script src="js/cores.js?v=2026-09-08a"></script>
+<script src="js/nascimento.js?v=2026-09-08a"></script>
 <!-- A raridade conquistada. Antes do data.js, que desenha o corpo a
      partir dela, e antes do ficha-3dt.js. -->
-<script src="js/raridade.js?v=2026-09-07z"></script>
+<script src="js/raridade.js?v=2026-09-08a"></script>
 <!-- O cruzamento. Depois do nascimento e do raridade, que ele lê. -->
-<script src="js/reproducao.js?v=2026-09-07z"></script>
-<script src="js/vantagens.js?v=2026-09-07z"></script>
-<script src="js/ficha-3dt.js?v=2026-09-07z"></script>
-<script src="js/magias.js?v=2026-09-07z"></script>
-<script src="js/combate-3dt.js?v=2026-09-07z"></script>
-<script src="js/equipa.js?v=2026-09-07z"></script>
-<script src="js/combate-ui.js?v=2026-09-07z"></script>
-<script src="js/combate-pve.js?v=2026-09-07z"></script>
-<script src="js/ui.js?v=2026-09-07z"></script>
-<script src="js/modal.js?v=2026-09-07z"></script>
-<script src="js/firebase.js?v=2026-09-07z"></script>
-<script src="js/gametick.js?v=2026-09-07z"></script>
-<script src="js/evolucao.js?v=2026-09-07z"></script>
-<script src="js/escolha.js?v=2026-09-07z"></script>
-<script src="js/fratura.js?v=2026-09-07z"></script>
-<script src="js/historico.js?v=2026-09-07z"></script>
-<script src="js/actions.js?v=2026-09-07z"></script>
-<script src="js/mini-avatar.js?v=2026-09-07z"></script>
-<script src="js/minigames.js?v=2026-09-07z"></script>
-<script src="js/summon.js?v=2026-09-07z"></script>
-<script src="js/batalha.js?v=2026-09-07z"></script>
-<script src="js/fazenda.js?v=2026-09-07z"></script>
-<script src="js/eggs.js?v=2026-09-07z"></script>
-<script src="js/items.js?v=2026-09-07z"></script>
-<script src="js/market.js?v=2026-09-07z"></script>
-<script src="js/coinshop.js?v=2026-09-07z"></script>
-<script src="js/cards.js?v=2026-09-07z"></script>
-<script src="js/rouba-monte.js?v=2026-09-07z"></script>
-<script src="js/mina.js?v=2026-09-07z"></script>
-<script src="js/batalha-naval.js?v=2026-09-07z"></script>
-<script src="js/snake.js?v=2026-09-07z"></script>
-<script src="js/labirinto.js?v=2026-09-07z"></script>
-<script src="js/cambio.js?v=2026-09-07z"></script>
-<script src="js/arena.js?v=2026-09-07z"></script>
-<script src="js/lore.js?v=2026-09-07z"></script>
-<script src="js/prologo.js?v=2026-09-07z"></script>
-<script src="js/lore-caps/cap1.js?v=2026-09-07z"></script>
-<script src="js/lore-caps/cap2.js?v=2026-09-07z"></script>
-<script src="js/lore-caps/cap3.js?v=2026-09-07z"></script>
-<script src="js/lore-caps/cap4.js?v=2026-09-07z"></script>
-<script src="js/amigos.js?v=2026-09-07z"></script>
-<script src="js/auth.js?v=2026-09-07z"></script>
+<script src="js/reproducao.js?v=2026-09-08a"></script>
+<script src="js/vantagens.js?v=2026-09-08a"></script>
+<script src="js/ficha-3dt.js?v=2026-09-08a"></script>
+<script src="js/magias.js?v=2026-09-08a"></script>
+<script src="js/combate-3dt.js?v=2026-09-08a"></script>
+<script src="js/equipa.js?v=2026-09-08a"></script>
+<script src="js/combate-ui.js?v=2026-09-08a"></script>
+<script src="js/combate-pve.js?v=2026-09-08a"></script>
+<script src="js/ui.js?v=2026-09-08a"></script>
+<script src="js/modal.js?v=2026-09-08a"></script>
+<script src="js/firebase.js?v=2026-09-08a"></script>
+<script src="js/gametick.js?v=2026-09-08a"></script>
+<script src="js/evolucao.js?v=2026-09-08a"></script>
+<script src="js/escolha.js?v=2026-09-08a"></script>
+<script src="js/fratura.js?v=2026-09-08a"></script>
+<script src="js/historico.js?v=2026-09-08a"></script>
+<script src="js/actions.js?v=2026-09-08a"></script>
+<script src="js/mini-avatar.js?v=2026-09-08a"></script>
+<script src="js/minigames.js?v=2026-09-08a"></script>
+<script src="js/summon.js?v=2026-09-08a"></script>
+<script src="js/batalha.js?v=2026-09-08a"></script>
+<script src="js/fazenda.js?v=2026-09-08a"></script>
+<script src="js/eggs.js?v=2026-09-08a"></script>
+<script src="js/items.js?v=2026-09-08a"></script>
+<script src="js/market.js?v=2026-09-08a"></script>
+<script src="js/coinshop.js?v=2026-09-08a"></script>
+<script src="js/cards.js?v=2026-09-08a"></script>
+<script src="js/rouba-monte.js?v=2026-09-08a"></script>
+<script src="js/mina.js?v=2026-09-08a"></script>
+<script src="js/batalha-naval.js?v=2026-09-08a"></script>
+<script src="js/snake.js?v=2026-09-08a"></script>
+<script src="js/labirinto.js?v=2026-09-08a"></script>
+<script src="js/cambio.js?v=2026-09-08a"></script>
+<script src="js/arena.js?v=2026-09-08a"></script>
+<script src="js/lore.js?v=2026-09-08a"></script>
+<script src="js/prologo.js?v=2026-09-08a"></script>
+<script src="js/lore-caps/cap1.js?v=2026-09-08a"></script>
+<script src="js/lore-caps/cap2.js?v=2026-09-08a"></script>
+<script src="js/lore-caps/cap3.js?v=2026-09-08a"></script>
+<script src="js/lore-caps/cap4.js?v=2026-09-08a"></script>
+<script src="js/amigos.js?v=2026-09-08a"></script>
+<script src="js/auth.js?v=2026-09-08a"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-09-07z"></script>
-<script src="js/cristais.js?v=2026-09-07z"></script>
-<script src="js/avatars-market.js?v=2026-09-07z"></script>
-<script src="js/marketplace-core.js?v=2026-09-07z"></script>
+<script src="js/pool.js?v=2026-09-08a"></script>
+<script src="js/cristais.js?v=2026-09-08a"></script>
+<script src="js/avatars-market.js?v=2026-09-08a"></script>
+<script src="js/marketplace-core.js?v=2026-09-08a"></script>
 
-<script src="js/main.js?v=2026-09-07z"></script>
+<script src="js/main.js?v=2026-09-08a"></script>
 
 
 <script>

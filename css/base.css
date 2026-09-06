@@ -182,35 +182,41 @@ body.jogo-pronto .device { opacity: 1; }
 #loginCard { margin:auto 0; display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:2.5rem 2rem; border:1px solid rgba(201,168,76,.25); border-radius:1rem; background:rgba(255,255,255,.02); box-shadow:0 0 3.75rem rgba(201,168,76,.08); max-width:17.5rem; width:90%; text-align:center; }
 #loginLogo { font-family:'Cinzel',serif; font-size:1.375rem; font-weight:700; color:var(--gold); letter-spacing:0.25rem; text-shadow:0 0 1.25rem rgba(201,168,76,.4); }
 #loginSub { font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.1875rem; color:var(--muted); }
-#loginDesc { font-size:0.6875rem; color:#887799; line-height:1.8; margin:0.5rem 0; }
-#loginBtn { display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.875rem; background:rgba(201,168,76,.08); border:1px solid rgba(201,168,76,.4); border-radius:0.5rem; color:var(--gold); font-family:'Cinzel',serif; font-size:0.6875rem; letter-spacing:0.125rem; cursor:pointer; transition:all .25s; }
-#loginBtn:hover { background:rgba(201,168,76,.18); box-shadow:0 0 1.25rem rgba(201,168,76,.2); }
-#loginBtn:active { transform:scale(.97); }
-#loginBtnIcon { font-size:1rem; }
+/* Aqui viviam o #loginDesc, o #loginBtn e o #loginBtnIcon. Nenhum dos
+   três existe no documento desde que a entrada passou a ser um botão
+   só, o do Google — o que se vê é a .auth-btn-google. Saíram, e com
+   eles as cópias que estavam na media query do PC: eram seis regras a
+   dimensionar coisa nenhuma, e a fazer parecer que a tela de entrada
+   estava afinada quando metade da afinação não chegava a lado nenhum. */
 #loginError { font-size:0.5625rem; color:#e74c3c; min-height:0.875rem; letter-spacing:0.03125rem; }
-#loginFooter { font-size:0.4375rem; color:#332244; letter-spacing:0.0625rem; margin-top:0.25rem; }
+#loginFooter { font-size:0.4375rem; color:var(--muted); letter-spacing:0.0625rem; margin-top:0.25rem; }
 
-/* No desktop a raiz é 24px, portanto o cartão inteiro vem 1,5x — dava
-   420px de largura e 650px de altura numa tela de 900, com 60px de
-   recheio. O login não é a interface do jogo: não precisa da escala que
-   existe para o texto de 5-7px ser legível. Aqui volta ao tamanho que
-   tem no celular, com uma folga. */
+/* ── A TELA DE ENTRADA NO PC ──
+
+   Esta media query começou por ser um FREIO. Com a raiz a 24px o cartão
+   vinha 1,5x, e na altura em que havia aba de cadastro — três campos, o
+   aviso e o botão — chegava aos 708px de altura, num portátil de
+   1366x768 onde a janela útil ronda os 660. Encolhia-se tudo de volta
+   ao tamanho do telemóvel.
+
+   O cadastro saiu, e ficou um cartão com seis linhas: o nome, o
+   subtítulo, um botão, a linha que o explica, o erro e o rodapé. O
+   freio ficou, e o que se via num monitor de 27" era um cartãozinho de
+   312px perdido no meio do preto.
+
+   Dobra. Cada valor aqui é o dobro do que era, e a altura medida com
+   tudo dentro fica em ~500px — cabe com folga nos 660 do portátil, que
+   era o número que mandava. A rolagem do #loginScreen continua lá para
+   o caso das telas muito baixas. */
 @media(min-width:681px) {
-  /* O recheio e o intervalo apertam mais do que a largura: é a altura
-     que estoura. Com a aba de cadastro — três campos, o aviso e o botão
-     — o cartão chegava aos 708px, e num portátil de 1366x768 a janela
-     útil ronda os 660. */
-  #loginCard { max-width:13rem; padding:1.125rem 1.5rem; gap:0.3125rem; }
-  #loginSub  { margin-bottom:0.125rem; }
+  #loginCard { max-width:26rem; padding:2.25rem 3rem; gap:0.625rem; }
 
-  /* Encolher a caixa não chegava: o conteúdo dentro dela também vinha
-     a 1,5x — logo de 33px, campos de 53px de altura, botão de 66px, e
-     um cartão de 646px numa tela de 900. Aqui cada peça volta a uma
-     escala de tela de entrada. */
-  #loginLogo  { font-size:0.9375rem; letter-spacing:0.1875rem; }
-  #loginDesc  { font-size:0.5rem; margin:0.25rem 0; }
-  #loginBtn   { padding:0.5rem; font-size:0.5rem; }
-  #loginBtnIcon { font-size:0.75rem; }}
+  #loginLogo { font-size:1.875rem; letter-spacing:0.375rem; }
+  #loginSub  { font-size:0.875rem; letter-spacing:0.375rem; margin-bottom:0.25rem; }
+
+  #loginError  { font-size:1rem; min-height:1.5rem; }
+  #loginFooter { font-size:0.875rem; }
+}
 
 
 /* ── SCROLLBARS ── */

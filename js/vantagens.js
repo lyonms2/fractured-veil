@@ -100,7 +100,7 @@ const VANTAGENS = {
 // vínculo crescia mais devagar) e saíram daqui por duas razões: nada no
 // jogo as lia — davam o ponto e não cobravam nada — e mesmo ligadas
 // seriam pagas numa moeda diferente daquela em que o ponto foi gasto.
-// Se um dia voltarem, será numa bolsa própria do tamagotchi.
+// Se um dia voltarem, será numa bolsa própria do cuidar.
 const DESVANTAGENS = {
   ferida_antiga:  { familia: 'guarda', custo: -2, contraPapel: true, papelQueBate: true, armaduraZero: true },
   sina_cobradora: { familia: 'sustentacao', custo: -1, danoPorMagia: 1 },

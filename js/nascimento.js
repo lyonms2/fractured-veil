@@ -195,7 +195,7 @@ function corpoParesDeSlot(slot) {
    Isto era o PASSIVO ELEMENTAL: cinco tabelas escritas à mão, uma por
    elemento, a dizer que o de Terra tinha menos fome e o de Vento menos
    sono. Os elementos saíram do jogo e a ideia não — um bicho aguentar-se
-   melhor numa coisa e pior noutra é do que o tamagotchi vive.
+   melhor numa coisa e pior noutra é do que este jogo vive.
 
    Par de alelos, como tudo o resto neste arquivo: o primeiro diz onde
    ele é forte, o segundo onde é fraco. Saírem iguais, cancelam-se — e
