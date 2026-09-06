@@ -248,13 +248,13 @@
       'gs.tab.lore':             'LORE',
       // PVE
       'gs.memoria.name':         'MEMÓRIA ELEMENTAL',
-      'gs.memoria.desc':         'Encontre todos os pares de elementos',
+      'gs.memoria.desc':         'Encontre todos os pares de símbolos',
       'gs.mina.name':            'CAMPO MINADO',
       'gs.mina.desc':            'Revele o campo sem explodir as minas',
       'gs.simon.name':           'SIMON SAYS',
-      'gs.simon.desc':           'Repita a sequência de elementos',
+      'gs.simon.desc':           'Repita a sequência de símbolos',
       'gs.snake.name':           'SNAKE ELEMENTAL',
-      'gs.snake.desc':           'Colete os elementos sem bater em si mesmo',
+      'gs.snake.desc':           'Colete a comida sem bater no próprio corpo',
       'gs.maze.name':            'LABIRINTO ELEMENTAL',
       'gs.maze.desc':            'Navegue na névoa e ache a saída',
       // Lore
@@ -588,13 +588,13 @@
       'gs.tab.lore':             'LORE',
       // PVE
       'gs.memoria.name':         'ELEMENTAL MEMORY',
-      'gs.memoria.desc':         'Find all pairs of elements',
+      'gs.memoria.desc':         'Find all the matching pairs',
       'gs.mina.name':            'MINESWEEPER',
       'gs.mina.desc':            'Clear the field without hitting mines',
       'gs.simon.name':           'SIMON SAYS',
-      'gs.simon.desc':           'Repeat the elemental sequence',
+      'gs.simon.desc':           'Repeat the sequence of symbols',
       'gs.snake.name':           'ELEMENTAL SNAKE',
-      'gs.snake.desc':           'Collect elements without hitting yourself',
+      'gs.snake.desc':           'Collect the food without running into yourself',
       'gs.maze.name':            'ELEMENTAL MAZE',
       'gs.maze.desc':            'Navigate the fog and find the exit',
       // Lore
