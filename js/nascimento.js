@@ -611,3 +611,25 @@ function ehBebe(slot) {
      mais nada. */
   return (typeof faseFromNivel === 'function') ? faseFromNivel(nv) === 0 : nv < 5;
 }
+
+/* ── PARA O SERVIDOR TAMBÉM ──
+
+   Este arquivo é um script de browser: declara tudo como global e não
+   exportava nada. Os api/ correm em Node e precisam da MESMA genética —
+   escrever uma segunda cópia lá era garantir que as duas divergiam, e
+   quando divergissem o servidor e o cliente discordariam sobre o que um
+   avatar é.
+
+   O guardo do `typeof module` é o mesmo que o js/raridade.js e os outros
+   já usam: no browser não faz nada. */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    NASC_CARACS, NASC_ALELOS, NASC_INDOLES, NASC_VIGOR,
+    NASC_VIGOR_FORTE, NASC_VIGOR_FRACO, NASC_CORPO_TRACOS,
+    gerarDna, nascer, registarNascimento,
+    tendenciaDoDna, vocacaoDoDna, indoleDoDna, indoleDominante, indoleDe,
+    vigorDoDna, vigorDe, sexoDoDna, sexoDe,
+    corpoDoDna, corpoDeSlot, corpoParesDeSlot,
+    dnaLegivel, recessivosDoDna, tendenciaDe, origemDe, ehPrimordial,
+  };
+}

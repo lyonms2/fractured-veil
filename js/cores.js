@@ -439,3 +439,23 @@ function nomeDaCor(x) {
   const id = idDaCor(x);
   return (typeof t === 'function') ? t('cor.' + id) : id;
 }
+
+/* ── PARA O SERVIDOR TAMBÉM ──
+
+   Este arquivo é um script de browser: declara tudo como global e não
+   exportava nada. Os api/ correm em Node e precisam da MESMA genética —
+   escrever uma segunda cópia lá era garantir que as duas divergiam, e
+   quando divergissem o servidor e o cliente discordariam sobre o que um
+   avatar é.
+
+   O guardo do `typeof module` é o mesmo que o js/raridade.js e os outros
+   já usam: no browser não faz nada. */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    CORES_RODA, CORES_N, CORES_RODA_N, CORES_TONS,
+    corDaRoda, idDaCor, nomeDaCor, corAcromatica,
+    misturarCores, coresOpostas,
+    paletaDeCores, paletaDoAvatar, coresDoAvatar, coresDe, coresDoSeed,
+    gradienteDoOvo, tomDaCor, tomDoAvatar, frasedaCor,
+  };
+}
