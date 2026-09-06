@@ -7,20 +7,33 @@ function avataresVivos() {
   return avatarSlots.filter(s => s && !s.dead).length;
 }
 
-// Grátis nas primeiras INVOCACOES_GRATIS, e sempre grátis se o jogador
-// ficou sem nenhum avatar vivo — essa é a rede de segurança para nunca
-// ficar preso sem forma de jogar.
-//
-// Repare que conta INVOCAÇÕES TOTAIS, não avatares vivos. Um avatar
-// queimado ou morto continua contando, portanto invocar-queimar-invocar
-// à procura da cor ou da ficha ideal gasta as tentativas grátis
-// como qualquer outra. Só se pode queimar um slot que não seja o ativo
-// (ver avatars-market.js), logo também não dá para chegar a zero vivos
-// de propósito para reativar a rede de segurança.
-function custoDaInvocacao() {
-  if(avataresVivos() === 0) return 0;
-  return (gs.totalInvocacoes || 0) < INVOCACOES_GRATIS ? 0 : SUMMON_CUSTO;
+/* ── QUANTAS AINDA PODE INVOCAR ──
+
+   Eram cinco grátis e depois 500 moedas cada. Passam a ser TRÊS na vida,
+   e depois nenhuma: quem quiser um quarto avatar compra-o na loja.
+
+   O número que manda é o do SERVIDOR (`invocacoesUsadas`), guardado num
+   campo que o cliente não escreve. O que está aqui é para a interface
+   saber o que mostrar — quem recusa é o handleInvocar do api/pool.js.
+   Perguntar ao gs.totalInvocacoes, que o cliente escreve, era pôr o
+   limite à guarda de quem o quer ultrapassar.
+
+   Conta INVOCAÇÕES, não avatares vivos: um avatar queimado ou morto
+   continua a contar, portanto invocar-queimar-invocar à procura da cor
+   ou da ficha ideal gasta as três na mesma.
+
+   E não há rede de segurança. Havia — invocar era grátis com zero
+   avatares vivos, para ninguém ficar preso sem poder jogar. Com um
+   limite de três na vida, essa rede seria uma quarta invocação por outro
+   nome. Quem perder os três compra na loja. */
+function invocacoesRestantes() {
+  const usadas = (typeof window !== 'undefined' && window._invocacoesUsadas) || 0;
+  return Math.max(0, INVOCACOES_GRATIS - usadas);
 }
+
+// Fica com o nome antigo para quem ainda o chame: hoje invocar não custa
+// moedas nenhumas — ou há vaga, ou não há.
+function custoDaInvocacao() { return 0; }
 
 // Índice do primeiro slot com um avatar vivo, ou -1 se não houver nenhum.
 function primeiroSlotVivo() {
@@ -100,19 +113,19 @@ function updateSummonLockHint() {
   if(!box) return;
   const btn = document.getElementById('btnSummon');
 
-  const custo    = custoDaInvocacao();
-  // Só interessa num slot vazio — é aí que o painel de invocação aparece
-  const semSaldo = !avatar && custo > 0 && gs.moedas < custo;
+  const restam   = invocacoesRestantes();
+  const semVagas = restam <= 0;
 
   /* ── A CONTA ANTES DA DECISÃO ──
-     O preço vivia dentro do rótulo do botão e o saldo não aparecia em
-     lado nenhum: para saber se dava, era preciso carregar e ver. */
+     Mostrava o preço e o saldo em moedas. Já não há preço: o que o
+     jogador precisa de saber antes de carregar é quantas lhe restam, e
+     de quantas partiu. */
   const elCusto = document.getElementById('summonCusto');
   const elSaldo = document.getElementById('summonSaldo');
-  if(elCusto) elCusto.textContent = custo > 0 ? custo + ' 🪙' : t('mag.custo.livre');
+  if(elCusto) elCusto.textContent = String(restam);
   if(elSaldo) {
-    elSaldo.textContent = (gs.moedas || 0) + ' 🪙';
-    elSaldo.classList.toggle('falta', custo > 0 && (gs.moedas || 0) < custo);
+    elSaldo.textContent = String(INVOCACOES_GRATIS);
+    elSaldo.classList.toggle('falta', semVagas);
   }
 
   /* ── E A SAÍDA, QUE SÓ EXISTIA PARA QUEM ESTAVA TESO ──
@@ -128,7 +141,7 @@ function updateSummonLockHint() {
     voltar.textContent   = t('summon.voltar');
   }
 
-  if(!semSaldo) {
+  if(!semVagas) {
     box.style.display = 'none';
     if(btn) btn.disabled = false;
     return;
@@ -137,14 +150,13 @@ function updateSummonLockHint() {
   box.style.display = 'block';
   if(btn) btn.disabled = true;
 
-  const falta = custo - gs.moedas;
-  document.getElementById('summonLockTitle').textContent =
-    t('summon.lock.title', { cost: custo });
-  // O botão de voltar saiu daqui para cima, onde está sempre. Este bloco
-  // ficou só com a explicação, que é o que ele sabe dizer.
+  document.getElementById('summonLockTitle').textContent = t('summon.lock.titulo_sem_vagas');
+  /* Duas explicações, porque são duas situações diferentes: quem ainda
+     tem avatares vivos só não pode invocar MAIS; quem não tem nenhum
+     está sem jogo até comprar, e merece que lho digam sem rodeios. */
   document.getElementById('summonLockDesc').textContent =
-    alvoVivo >= 0 ? t('summon.lock.desc', { have: gs.moedas, cost: custo, missing: falta })
-                  : t('summon.lock.desc_nofree', { cost: custo });
+    alvoVivo >= 0 ? t('summon.lock.desc_sem_vagas', { n: INVOCACOES_GRATIS })
+                  : t('summon.lock.desc_sem_nada',  { n: INVOCACOES_GRATIS });
 }
 
 async function triggerSummon() {

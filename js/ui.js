@@ -186,10 +186,11 @@ function updateResourceUI() {
   }
   const btn = document.getElementById('btnSummon');
   if(btn) btn.disabled = false;
-  // As primeiras INVOCACOES_GRATIS são grátis; a partir daí o botão mostra o preço
-  const _custoInv = typeof custoDaInvocacao === 'function' ? custoDaInvocacao() : 0;
+  /* O botão diz quantas restam. Dizia o preço em moedas, e já não há
+     preço: são três na vida e depois é a loja. */
+  const _restam = typeof invocacoesRestantes === 'function' ? invocacoesRestantes() : 0;
   document.getElementById('btnSummonLabel').textContent =
-    _custoInv > 0 ? t('ui.summon_btn_paid', { cost: _custoInv }) : t('ui.summon_btn');
+    t('ui.summon_btn_restam', { n: _restam });
   // Se o preço estiver fora do alcance, explica porquê e dá a saída
   if(typeof updateSummonLockHint === 'function') updateSummonLockHint();
   // FIX: atualiza visibilidade dos botões do header após qualquer mudança de estado

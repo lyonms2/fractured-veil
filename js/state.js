@@ -376,8 +376,18 @@ const SLOT_COST   = 15;
 // que impede o jogador de invocar, queimar o que não gostou e invocar
 // outra vez à procura da cor ou da ficha ideal: cada tentativa gasta
 // uma invocação, mesmo que o avatar acabe queimado.
-const INVOCACOES_GRATIS = 5;
-const SUMMON_CUSTO      = 500;
+/* TRÊS, E ACABOU. Não é "três antes de começar a pagar": é o total que
+   um jogador invoca na vida. A partir daí os avatares vêm da loja.
+
+   Quem CONTA é o servidor, num campo que o cliente não escreve (o
+   `invocacoesUsadas`, em firestore.rules) — este número está aqui para a
+   interface saber o que dizer, e o handleInvocar do api/pool.js é quem
+   recusa. Contar no cliente era pôr o limite à guarda de quem o quer
+   ultrapassar. */
+const INVOCACOES_GRATIS = 3;
+/* O SUMMON_CUSTO saiu. Invocar custava 500 moedas depois das grátis; hoje
+   não há invocação paga — são três na vida e depois os avatares vêm da
+   loja, comprados ou nascidos de uma cruza. */
 function getActiveSlot()  { return avatarSlots[activeSlotIdx]; }
 function getUnlockedSlots() {
   return Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));

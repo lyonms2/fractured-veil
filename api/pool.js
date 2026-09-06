@@ -471,6 +471,10 @@ const HATCH_FEE = 0;
    aqui não fecha nada e parava o jogo. O que se fecha é o que vale: os
    genes.
    ═══════════════════════════════════════════════════════════════════ */
+// Quantas invocações grátis tem um jogador na vida. O mesmo número está
+// no js/state.js para a interface saber o que dizer; quem RECUSA é este.
+const INVOCACOES_GRATIS = 3;
+
 async function handleInvocar(req, res, db, uid) {
   const GEN = require('./_genetica.js');
   const playerRef = db.collection('players').doc(uid);
@@ -493,6 +497,23 @@ async function handleInvocar(req, res, db, uid) {
         throw new Error('SLOT_OCUPADO');
       }
 
+      /* ── TRÊS NA VIDA, E ACABOU ──
+
+         Não são "três antes de começar a pagar": é o total que um jogador
+         invoca, e a partir daí os avatares vêm da loja.
+
+         A conta vive AQUI, num campo que o cliente não escreve
+         (`invocacoesUsadas`, em firestore.rules). Antes vivia no
+         gs.totalInvocacoes, dentro do documento que o cliente escreve
+         por inteiro — pôr o número a zero e invocar outra vez era uma
+         linha no console.
+
+         Conta INVOCAÇÕES e não avatares vivos: queimar um não devolve a
+         vaga, senão invocar-queimar-invocar dava tentativas infinitas
+         para caçar a cor ou a ficha ideal. */
+      const usadas = pData.invocacoesUsadas || 0;
+      if (usadas >= INVOCACOES_GRATIS) throw new Error('SEM_INVOCACOES');
+
       const { id, seed, nascimento } = GEN.certidaoDeInvocacao();
 
       /* A certidão vai para o mapa do servidor, e o registo de emissão
@@ -502,9 +523,10 @@ async function handleInvocar(req, res, db, uid) {
       tx.update(playerRef, {
         [`certidoes.${id}`]: nascimento,
         [`avataresEmitidos.s${String(seed)}`]: 'Comum',
+        invocacoesUsadas: usadas + 1,
       });
 
-      return { id, seed, nascimento };
+      return { id, seed, nascimento, invocacoesUsadas: usadas + 1 };
     });
 
     return res.status(200).json({ ok: true, ...saida });
@@ -513,6 +535,7 @@ async function handleInvocar(req, res, db, uid) {
       SEM_JOGADOR:   [404, 'Jogador não encontrado.'],
       SLOT_INVALIDO: [400, 'Slot inválido.'],
       SLOT_OCUPADO:  [409, 'Esse slot já tem um avatar.'],
+      SEM_INVOCACOES:[403, 'As invocações gratuitas acabaram. Os próximos avatares compram-se na loja.'],
     }[err.message];
     if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
     console.error('[pool/invocar]', err.message);

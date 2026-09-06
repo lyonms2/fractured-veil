@@ -118,6 +118,16 @@ async function ler(doc) {
   ok('EXPLOIT apagar uma certidão',   await escrever('K','K',{'certidoes':{}}), 403);
   ok('conta nova com certidão',       await escrever('L','L',{'certidoes.av1':{origem:'Lendário'}}), 403);
 
+  /* ── invocacoesUsadas: três na vida ──
+
+     Vivia no gs.totalInvocacoes, dentro do documento que o cliente
+     escreve por inteiro: pôr o número a zero e invocar outra vez era uma
+     linha no console. */
+  await escrever(null,'M',{'invocacoesUsadas':3,'gs.moedas':10}, true);
+  ok('EXPLOIT zerar as invocações',   await escrever('M','M',{'invocacoesUsadas':0}), 403);
+  ok('EXPLOIT recuar as invocações',  await escrever('M','M',{'invocacoesUsadas':2}), 403);
+  ok('conta nova já com invocações',  await escrever('N','N',{'invocacoesUsadas':0}), 403);
+
   // ── os mercados: o cliente só lê ──
   async function mercado(col, uid, campos) {
     const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {

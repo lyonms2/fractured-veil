@@ -228,6 +228,10 @@ function getGameState() {
 function applyGameState(data) {
   if(!data) return false;
   window.loadedLastSeen = data.lastSeen || Date.now();
+  /* Quantas invocações este jogador já gastou. Vem do servidor e o
+     cliente não lhe toca — aqui só se guarda para a interface saber
+     quantas restam. Quem recusa a quarta é o handleInvocar. */
+  window._invocacoesUsadas = data.invocacoesUsadas || 0;
 
   // Quem joga. Nulo na primeira entrada — e ai que lhe e pedido.
   nomeJogador = data.nomeJogador || null;

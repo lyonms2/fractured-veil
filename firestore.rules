@@ -73,7 +73,14 @@ service cloud.firestore {
 
                  Quem as escreve é o handleInvocar do api/pool.js, e vai
                  ser também o chocar e o cruzar. */
-              'certidoes'];
+              'certidoes',
+              /* Quantas invocações grátis o jogador já gastou. São três
+                 na vida, e depois os avatares compram-se na loja.
+
+                 Vivia no gs.totalInvocacoes, dentro do documento que o
+                 cliente escreve por inteiro: pôr o número a zero e
+                 invocar outra vez era uma linha no console. */
+              'invocacoesUsadas'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do
