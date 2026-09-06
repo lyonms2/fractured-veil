@@ -250,7 +250,7 @@ function fzZoom(idx) {
 // ── Trocar entre a colônia e o cuidado de um ──
 function abrirFazenda() {
   window._fzModoColonia = true;
-  ['aliveScreen', 'deadScreen', 'idleScreen', 'eggScreen'].forEach(id => {
+  ['aliveScreen', 'deadScreen', 'eggScreen'].forEach(id => {
     const e = document.getElementById(id); if (e) e.style.display = 'none';
   });
   const fz = document.getElementById('fazendaScreen');

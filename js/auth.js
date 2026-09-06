@@ -162,7 +162,6 @@ async function disconnectWallet() {
   // não há abas nenhumas: o login é um botão só.
   mostrarLoginScreen();
 
-  document.getElementById('idleScreen').style.display       = 'flex';
   document.getElementById('eggScreen').style.display        = 'none';
   document.getElementById('aliveScreen').style.display      = 'none';
   document.getElementById('deadScreen').style.display       = 'none';
@@ -404,7 +403,6 @@ async function _onLoginSuccess(user) {
 
     // ── Rebuild screens ──
     if(dead && avatar) {
-      document.getElementById('idleScreen').style.display   = 'none';
       document.getElementById('eggScreen').style.display    = 'none';
       document.getElementById('aliveScreen').style.display  = 'none';
       document.getElementById('creatureCard').style.display = 'none';
@@ -426,7 +424,6 @@ async function _onLoginSuccess(user) {
 
     } else if(hatched && avatar) {
       setupAvatar();
-      document.getElementById('idleScreen').style.display   = 'none';
       document.getElementById('eggScreen').style.display    = 'none';
       document.getElementById('aliveScreen').style.display  = 'block';
       document.getElementById('deadScreen').style.display   = 'none';
@@ -460,7 +457,6 @@ async function _onLoginSuccess(user) {
 
     } else if(avatar && !hatched) {
       setupAvatar();
-      document.getElementById('idleScreen').style.display    = 'none';
       document.getElementById('eggScreen').style.display     = 'flex';
       document.getElementById('aliveScreen').style.display   = 'none';
       document.getElementById('deadScreen').style.display    = 'none';

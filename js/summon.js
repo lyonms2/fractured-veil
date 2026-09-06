@@ -497,7 +497,6 @@ async function invocarOsTres() {
 // nenhum — um beco sem saída. Agora termina o que ficou por terminar.
 function setupAvatar() {
   document.getElementById('creatureCard').style.display = 'block';
-  document.getElementById('idleScreen').style.display   = 'none';
   document.getElementById('eggScreen').style.display    = hatched ? 'none' : 'flex';
   document.getElementById('aliveScreen').style.display  = 'none';
   document.getElementById('deadScreen').style.display   = 'none';

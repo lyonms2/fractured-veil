@@ -480,7 +480,6 @@ function hatchWithAnimation(slot, targetSlot) {
 
   document.getElementById('aliveScreen').style.display = 'none';
   document.getElementById('deadScreen').style.display  = 'none';
-  document.getElementById('idleScreen').style.display  = 'none';
   document.getElementById('eggScreen').style.display   = 'flex';
   document.getElementById('actionBtns').style.opacity      = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';

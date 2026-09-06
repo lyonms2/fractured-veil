@@ -346,8 +346,6 @@
       'dead.btn':                '✦ VOLTAR À COLÔNIA',
 
       // Portal (idle)
-      'portal.waiting':          'PORTAL DIMENSIONAL',
-      'portal.sub':              'aguardando invocação',
 
       // Egg screen
 
@@ -683,8 +681,6 @@
       'dead.btn':                '✦ BACK TO THE COLONY',
 
       // Portal (idle)
-      'portal.waiting':          'DIMENSIONAL PORTAL',
-      'portal.sub':              'awaiting invocation',
 
       // Egg screen
 

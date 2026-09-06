@@ -834,7 +834,7 @@ function rebuildScreensParaSlot() {
 
        O poopContainer limpa-se na mesma: ele é do avatar que aqui
        esteve, e ficava a sujar o chão de um slot sem ninguém. */
-    set('idleScreen','none'); set('eggScreen','none');
+    set('eggScreen','none');
     set('aliveScreen','none'); set('deadScreen','none');
     set('creatureCard','none'); set('statusCard','none');
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
@@ -859,7 +859,7 @@ function rebuildScreensParaSlot() {
   }
 
   if(dead) {
-    set('idleScreen','none'); set('eggScreen','none');
+    set('eggScreen','none');
     set('aliveScreen','none'); set('deadScreen','flex'); set('fazendaScreen','none');
     set('creatureCard','none'); set('statusCard','none');
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
@@ -876,7 +876,7 @@ function rebuildScreensParaSlot() {
 
   // Avatar vivo
   if(typeof setupAvatar === 'function') setupAvatar();
-  set('idleScreen','none'); set('eggScreen','none');
+  set('eggScreen','none');
   set('aliveScreen','block'); set('deadScreen','none'); set('fazendaScreen','none');
   set('creatureCard','block'); set('statusCard','block');
   // O display entra aqui porque a colonia o poe a none: sem o repor,
