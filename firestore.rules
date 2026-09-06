@@ -98,7 +98,36 @@ service cloud.firestore {
 
                  Quem os escreve é o handleCruzar do api/pool.js, e quem
                  os apaga é o handleChocarOvo. */
-              'ovos'];
+              'ovos',
+              /* A CADEIA DE DONOS. Por quantas mãos cada avatar passou,
+                 por quanto foi vendido de cada vez e em que nível ia.
+
+                 É o histórico de preços que o comprador vê antes de
+                 decidir quanto pagar (js/historico.js) — e vivia dentro
+                 do avatarSlots, que o VENDEDOR escreve por inteiro.
+                 Inventar três vendas anteriores a 5000 cristais cada era
+                 uma linha no console, e o que essa linha custava era o
+                 preço que o próximo pagava.
+
+                 Escrita só pelo api/comprar-avatar.js, dentro da
+                 transação que move os cristais: o preço registado é, por
+                 construção, o que foi mesmo pago. */
+              'donos',
+              /* OS QUE MORRERAM. O `dead` vive dentro do avatarSlots:
+                 pôr `false` num avatar morto devolvia-lhe a vida, e com
+                 ela o direito de lutar, de cruzar e de ser vendido.
+
+                 Aqui a morte, uma vez sabida, não se desfaz — o
+                 applyGameState força o `dead` a partir deste mapa, e a
+                 listagem no mercado recusa quem esteja nele.
+
+                 DITO COM TODAS AS LETRAS: isto estreita a porta, não a
+                 fecha. Quem a comunica é o próprio jogo (handleMorreu,
+                 em api/pool.js), portanto quem modificar o jogo para
+                 nunca a comunicar continua a poder ressuscitar o bicho.
+                 O que deixa de funcionar é editar o documento, que era o
+                 que estava ao alcance de qualquer um. */
+              'mortos'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do

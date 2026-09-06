@@ -336,6 +336,9 @@ async function _onLoginSuccess(user) {
       const _ds = _presData.deadSlot;
       if(avatarSlots[_ds]) avatarSlots[_ds].dead = true;
       if(_ds === activeSlotIdx) dead = true;
+      // E fica registada no servidor, como a que acontece com o jogo
+      // aberto. Ver _comunicarMorte, em js/gametick.js.
+      if(typeof _comunicarMorte === 'function') _comunicarMorte(_ds);
       // Persiste dead:true no Firestore antes de apagar o backup RTDB.
       // Sem isto, um segundo refresh apagava a morte (Firestore ainda tinha dead:false).
       await saveToFirebase();

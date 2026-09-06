@@ -481,6 +481,27 @@ function nascer(opts) {
     // porque toda a gente nasce Comum.
     origem,
     dna,
+    /* ── O SEED, QUE VALE TANTO COMO O DNA ──
+
+       Vivia só no slot, dentro do avatarSlots que o cliente escreve por
+       inteiro. E o seed não é enfeite: dele saem o corpo desenhado
+       (gerarSVG) e a FICHA DE COMBATE inteira — força, habilidade,
+       resistência, armadura, a vantagem e a desvantagem (fichaDeAvatar,
+       em js/ficha-3dt.js). Trocar o número no console era escolher os
+       atributos do bicho.
+
+       O DNA já tinha mudado de casa por esta razão exacta. O seed
+       ficou para trás, e era metade do problema.
+
+       Fica aqui porque é isso que uma certidão é: o que se decidiu no
+       dia em que ele nasceu e não se reescreve mais. */
+    seed:      o.seed || 0,
+    /* Quem o fez, e quando. Vivia no slot pela mesma razão histórica, e
+       é o que a certidão mostra ao comprador — "criado por Fulano" numa
+       linha que o próprio vendedor escrevia. */
+    criadorUid:  o.criadorUid  || null,
+    criadorNome: o.criadorNome || null,
+    nascidoEm:   o.nascidoEm   || Date.now(),
     /* De quem nasceu. Os ids dos pais, e não os nomes: um nome muda de
        dono e repete-se; o id é único e permanente, e é dele que a
        árvore genealógica vai viver. Os nomes guardam-se ao lado, para a

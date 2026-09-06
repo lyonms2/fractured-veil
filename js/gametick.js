@@ -657,12 +657,39 @@ function autoSpeak() {
    Foi substituída pela cerimónia de js/evolucao.js, que espera o clique
    do jogador e diz o que mudou. Já ninguém a chamava. */
 
+/* ── COMUNICAR A MORTE ──
+
+   O `dead` vive dentro do avatarSlots, que o cliente grava por inteiro:
+   pôr `false` num avatar morto devolvia-lhe a vida, e com ela o direito
+   de lutar, de cruzar e de ser vendido.
+
+   O servidor guarda-a num mapa que o cliente não escreve, e a partir daí
+   é ela que manda (applyGameState, em js/firebase.js).
+
+   Não se espera pela resposta nem se desfaz nada se falhar: o avatar
+   morreu, a tela da morte tem de aparecer agora, e um erro de rede não
+   pode ser motivo para o jogo fingir que ele está vivo. Se o pedido se
+   perder, fica-se com a garantia antiga — o `dead` gravado no slot. */
+function _comunicarMorte(idx) {
+  if (!walletAddress || typeof firebase === 'undefined') return;
+  const u = firebase.auth && firebase.auth().currentUser;
+  if (!u) return;
+  u.getIdToken()
+   .then(idToken => fetch('/api/pool', {
+     method:  'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body:    JSON.stringify({ acao: 'morreu', idToken, slotIdx: idx }),
+   }))
+   .catch(e => console.warn('[morte] não foi possível comunicar:', e.message));
+}
+
 function killCreature() {
   dead = true;
   playSound('death');
   // Cancela qualquer save agendado e persiste imediatamente — garante dead:true no Firebase
   clearTimeout(_saveTimeout); _saveTimeout = null;
   saveToFirebase();
+  _comunicarMorte(activeSlotIdx);
   // Backup server-side via RTDB onDisconnect — garante dead:true mesmo se browser fechar antes do Firestore salvar
   setPresenceDead(walletAddress, activeSlotIdx);
   ModalManager.closeAll();

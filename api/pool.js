@@ -203,6 +203,7 @@ module.exports = async function handler(req, res) {
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
+  if (acao === 'morreu')      return handleMorreu(req, res, db, uid);
   if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
@@ -515,7 +516,8 @@ async function handleInvocar(req, res, db, uid) {
       const usadas = pData.invocacoesUsadas || 0;
       if (usadas >= INVOCACOES_GRATIS) throw new Error('SEM_INVOCACOES');
 
-      const { id, seed, nascimento } = GEN.certidaoDeInvocacao();
+      const { id, seed, nascimento } = GEN.certidaoDeInvocacao(
+        { uid, nome: pData.nomeJogador || null });
 
       /* A certidão vai para o mapa do servidor, e o registo de emissão
          com ela — é o avataresEmitidos que o api/comprar-avatar.js exige
@@ -541,6 +543,65 @@ async function handleInvocar(req, res, db, uid) {
     if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
     console.error('[pool/invocar]', err.message);
     return res.status(500).json({ erro: 'Erro interno ao invocar.' });
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   MORREU — a morte fica registada fora do alcance do cliente
+
+   O `dead` vive dentro do avatarSlots, que o cliente escreve por
+   inteiro: pôr `false` num avatar morto devolvia-lhe a vida, e com ela
+   o direito de lutar, de cruzar e de ser vendido. Um avatar morto vale
+   zero; ressuscitá-lo era recuperar o que ele valia.
+
+   Aqui a morte, uma vez sabida, não se desfaz — o mapa `mortos` é do
+   servidor (firestore.rules) e o applyGameState força o `dead` a partir
+   dele.
+
+   ── PORQUE É QUE ISTO NÃO PRECISA DE VALIDAR NADA ──
+
+   O servidor não tem como confirmar que o bicho morreu: quem conta o
+   tempo e os medidores é o navegador. Aceita-se o que o jogador diz —
+   e pode-se, porque este pedido só sabe fazer mal a quem o faz. Um
+   jogador que declare a morte de um avatar seu está a destruir o seu
+   próprio bem, e não há nada a ganhar com isso. Um pedido que só
+   prejudica quem o envia dispensa guarda.
+
+   ── E O QUE ISTO NÃO FECHA, DITO COM TODAS AS LETRAS ──
+
+   Quem modificar o jogo para nunca chamar isto continua a poder
+   ressuscitar o bicho. O que deixa de funcionar é editar o documento,
+   que era o que estava ao alcance de qualquer um. Fechá-la de vez
+   exigia o servidor a contar o tempo e os medidores — a mesma conversa
+   do nível e do vínculo, que continua por ter.
+   ═══════════════════════════════════════════════════════════════════ */
+async function handleMorreu(req, res, db, uid) {
+  const { slotIdx } = req.body;
+  const i = Number(slotIdx);
+  if (!Number.isInteger(i) || i < 0) return res.status(400).json({ erro: 'Slot inválido.' });
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+
+      const slot = (snap.data().avatarSlots || [])[i];
+      // Sem id não há a quem prender a morte. Não é erro: é um avatar
+      // dos antigos, e esse continua como estava.
+      if (!slot || !slot.id) return { registado: false };
+
+      tx.update(playerRef, { [`mortos.${slot.id}`]: Date.now() });
+      return { registado: true, id: slot.id };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    console.error('[pool/morreu]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
   }
 }
 
@@ -694,7 +755,8 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
          decide o corpo inteiro do bicho e a ficha de combate — quem
          insistisse sorteava até gostar, e o ovo não se gastava enquanto
          não gostasse. */
-      const { id, seed, nascimento } = GEN.certidaoDeChoco(ovo);
+      const { id, seed, nascimento } = GEN.certidaoDeChoco(ovo,
+        { uid, nome: pData.nomeJogador || null });
 
       /* O ovo sai do mapa no mesmo movimento em que o avatar entra.
          Sem isto ele ficava a valer para uma segunda chocagem: um ovo,

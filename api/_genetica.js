@@ -79,10 +79,15 @@ function ovoIdNovo() {
 
    Devolve o objeto puro (o registarNascimento congela-o, e um objeto
    congelado não atravessa bem o Firestore). */
-function certidaoDeInvocacao() {
+function certidaoDeInvocacao(criador) {
+  const c    = criador || {};
   const seed = seedNovo();
   const dna  = nascimento.gerarDna('Comum', seed);
-  const cert = nascimento.nascer({ dna, origem: 'Comum', seed });
+  const cert = nascimento.nascer({
+    dna, origem: 'Comum', seed,
+    // Quem o fez vai na certidão e não no slot: o slot é do cliente.
+    criadorUid: c.uid || null, criadorNome: c.nome || null,
+  });
   return { id: idNovo(), seed, nascimento: JSON.parse(JSON.stringify(cert)) };
 }
 
@@ -116,13 +121,15 @@ function ovoDeCruza(mae, pai, opts) {
    O que se sorteia é o SEED, e só ele: é ele que decide o corpo e a
    ficha de combate, e é o que faz dois irmãos do mesmo par serem dois
    bichos e não um repetido. Saía do navegador, como tudo o resto. */
-function certidaoDeChoco(ovo) {
+function certidaoDeChoco(ovo, criador) {
+  const c    = criador || {};
   const seed = seedNovo();
   const cert = nascimento.nascer({
     dna: ovo.dna || null, origem: 'Comum', seed,
     mae: ovo.mae || null, pai: ovo.pai || null,
     maeNome: ovo.maeNome || null, paiNome: ovo.paiNome || null,
     maeRetrato: ovo.maeRetrato || null, paiRetrato: ovo.paiRetrato || null,
+    criadorUid: c.uid || null, criadorNome: c.nome || null,
   });
   return { id: idNovo(), seed, nascimento: JSON.parse(JSON.stringify(cert)) };
 }

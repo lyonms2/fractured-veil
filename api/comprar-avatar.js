@@ -93,7 +93,11 @@ async function handleListarAvatar(req, res, db, uid) {
 
       const slots = [...(pData.avatarSlots || [])];
       const s     = slots[slotIdxInt];
-      if (!s || s.dead) throw new Error('SLOT_INVALID');
+      /* O `s.dead` vem do avatarSlots, que o vendedor escreve por
+         inteiro — pôr `false` num avatar morto era pô-lo à venda. O mapa
+         `mortos` é do servidor, e é ele que decide. */
+      const _mortos = pData.mortos || {};
+      if (!s || s.dead || (s.id && _mortos[s.id])) throw new Error('SLOT_INVALID');
 
       /* ── QUALQUER AVATAR SE VENDE, AO PREÇO QUE O DONO QUISER ──
 
@@ -153,11 +157,21 @@ async function handleListarAvatar(req, res, db, uid) {
         // apagar quem o criou e de quem ele nasceu — e o comprador
         // recebia um avatar sem passado, com um id novo em folha.
         id:          s.id          || null,
-        criadorUid:  s.criadorUid  || null,
-        criadorNome: s.criadorNome || null,
-        mae:         s.mae         || null,
-        pai:         s.pai         || null,
-        nascidoEm:   s.nascidoEm   || s.bornAt || Date.now(),
+        /* ── A IDENTIDADE SAI DA CERTIDÃO, NÃO DO SLOT ──
+
+           O criador, os pais e a data de nascimento eram lidos do
+           avatarSlots — o array que o VENDEDOR escreve. A ficha que o
+           comprador lê dizia "criado por Fulano, filho de Beltrano"
+           com o que o vendedor lá tivesse escrito.
+
+           A certidão é do servidor, e é a mesma que já decide os genes.
+           O `|| s.` que fica é para os avatares nascidos antes de a
+           certidão guardar estes campos. */
+        criadorUid:  certidaoDoAvatar.criadorUid  || s.criadorUid  || null,
+        criadorNome: certidaoDoAvatar.criadorNome || s.criadorNome || null,
+        mae:         certidaoDoAvatar.mae         || s.mae         || null,
+        pai:         certidaoDoAvatar.pai         || s.pai         || null,
+        nascidoEm:   certidaoDoAvatar.nascidoEm   || s.nascidoEm   || s.bornAt || Date.now(),
         nomeTravado: s.nomeTravado === true,
         /* A CERTIDÃO VEM DO MAPA DO SERVIDOR, e não do slot.
 
@@ -169,14 +183,20 @@ async function handleListarAvatar(req, res, db, uid) {
            Um avatar sem certidão no mapa não se lista: é o mesmo
            princípio do avataresEmitidos — sem prova, não há venda. */
         nascimento:  certidaoDoAvatar,
-        // Por quantas mãos já passou. Viaja com a listagem como tudo o
-        // resto da identidade — senão cada venda apagava a história
-        // anterior e o avatar chegava ao comprador com o passado limpo.
-        donos:       Array.isArray(s.donos) ? s.donos : [],
+        /* Por quantas mãos já passou, e por quanto de cada vez. Vinha
+           do slot — o vendedor escrevia o seu próprio histórico de
+           preços, que é justamente o que o comprador olha para decidir
+           quanto vale. Vem do mapa `donos`, que só esta função escreve. */
+        donos:       (s.id && Array.isArray((pData.donos || {})[s.id]))
+                       ? pData.donos[s.id] : [],
         nome:       s.nome,
         raridade:   s.raridade,
         descricao:  s.descricao  || '',
-        seed:       s.seed       || 0,
+        /* O SEED sai da certidão pela razão mais cara de todas: dele
+           saem o corpo desenhado e a ficha de combate inteira. Vinha do
+           slot, e trocar o número era escolher os atributos do bicho
+           que se está a vender. */
+        seed:       certidaoDoAvatar.seed || s.seed || 0,
         nivel:      s.nivel      || 1,
         xp:         s.xp         || 0,
         vinculo:    s.vinculo    || 0,
@@ -358,6 +378,32 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const sellerSnap = await tx.get(sellerRef);
       const sellerData = sellerSnap.data() || {};
 
+      /* ── O REGISTO DE PROPRIETÁRIOS ──
+
+         A venda é o único momento em que um avatar muda de mãos, e por
+         isso é aqui que a história se escreve: acrescenta-se o VENDEDOR
+         à lista, que é quem acabou de deixar de o ter. O comprador não
+         entra — ele é o dono ACTUAL, e isso lê-se de quem tem o slot.
+
+         O criador continua à parte e nunca muda: é quem o fez nascer, e
+         não o primeiro que o vendeu.
+
+         A cadeia diz por quanto o avatar foi vendido de cada vez e em
+         que nível ia na altura. É escrita só aqui, dentro da transação
+         que move os cristais — o preço registado é, por construção, o
+         que foi mesmo pago, e não o que o vendedor gostaria que
+         constasse. Vivia no avatarSlots do vendedor, e inventar três
+         vendas anteriores a 5000 cristais cada era uma linha no
+         console. */
+      const cadeiaNova = [
+        ...(Array.isArray(listing.donos) ? listing.donos : []),
+        { uid:   listing.sellerId,
+          nome:  sellerData.nomeJogador || null,
+          ate:   Date.now(),
+          preco: price,
+          nivel: listing.nivel || 1 },
+      ];
+
       novoSaldoComprador = debitoCompra.cristais + debitoCompra.cristaisBonus;
       slots[freeIdx] = {
         /* Chega intacta ao novo dono. O criador nao e o vendedor:
@@ -376,33 +422,10 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         nascidoEm:   listing.nascidoEm   || listing.bornAt || Date.now(),
         nomeTravado: listing.nomeTravado === true,
         nascimento:  listing.nascimento  || null,
-        /* ── O REGISTO DE PROPRIETÁRIOS ──
-
-           A venda é o único momento em que um avatar muda de mãos, e por
-           isso é aqui que a história se escreve: acrescenta-se o VENDEDOR
-           à lista, que é quem acabou de deixar de o ter. O comprador não
-           entra — ele é o dono ACTUAL, e isso lê-se de quem tem o slot.
-
-           O criador continua à parte e nunca muda: é quem o fez nascer,
-           e não o primeiro que o vendeu. */
-        /* ── E POR QUANTO ──
-
-           A cadeia já dizia por quantas mãos o avatar passou e até
-           quando; passa a dizer também por quanto cada uma o vendeu, e
-           em que nível ele ia na altura.
-
-           Fica AQUI e não numa coleção à parte porque a cadeia já viaja
-           com o avatar em cada venda: o histórico segue-o para o
-           comprador em vez de ficar num registo que só o servidor vê. E
-           é escrito só pelo servidor, dentro da transação que move os
-           cristais — o preço registado é, por construção, o preço que
-           foi mesmo pago. */
-        donos: [...(Array.isArray(listing.donos) ? listing.donos : []),
-                { uid: listing.sellerId,
-                  nome: sellerData.nomeJogador || null,
-                  ate: Date.now(),
-                  preco: price,
-                  nivel: listing.nivel || 1 }],
+        // A cadeia entra no slot só para esta sessão ter o que mostrar;
+        // quem manda é o mapa `donos`, escrito mais abaixo. Ver a nota
+        // onde ela se compõe.
+        donos: cadeiaNova,
         nome:       listing.nome,
         raridade:   listing.raridade,
         descricao:  listing.descricao,
@@ -444,16 +467,24 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          mesma transação: ou as duas acontecem ou nenhuma. */
       const certVendida = listing.nascimento || null;
       const chaveCert   = listing.id ? `certidoes.${listing.id}` : null;
+      /* A cadeia de donos viaja com o avatar, e pelo mesmo caminho da
+         certidão: entra no mapa do comprador e sai do do vendedor, na
+         mesma transação que move os cristais. É por ser escrita aqui
+         dentro que o preço registado é, por construção, o que foi mesmo
+         pago — e não o que o vendedor gostaria que constasse. */
+      const chaveDonos = listing.id ? `donos.${listing.id}` : null;
 
       tx.update(buyerRef, Object.assign({
         avatarSlots: novosSlotsComprador,
         [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
-      }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {}, debitoCompra));
+      }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {},
+         chaveDonos ? { [chaveDonos]: cadeiaNova } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      sellerCris + sellerRecebe,
         'gs.cristais': sellerCris + sellerRecebe,
-      }, chaveCert ? { [chaveCert]: FieldValue.delete() } : {}));
+      }, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
+         chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       if (taxa > 0) {

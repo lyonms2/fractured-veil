@@ -263,6 +263,20 @@ async function triggerSummon() {
      mostrar — no carregamento seguinte é o mapa `certidoes` que manda,
      e o que estiver no slot é deitado fora. */
   avatarSlots[activeSlotIdx].nascimento = _emitido.nascimento;
+  /* E com ela o criador e a data de nascimento, que também são dela.
+
+     O identidadeNova() escreve-os aqui a partir do que o navegador sabe;
+     quem os guarda é o servidor, e é o que ele guardou que o
+     carregamento seguinte vai mostrar. Copiá-los agora é fazer com que a
+     sessão diga o mesmo — em vez de duas leituras da mesma coisa à
+     espera de discordarem. */
+  {
+    const _c = _emitido.nascimento || {};
+    if (_c.criadorUid  != null) avatarSlots[activeSlotIdx].criadorUid  = _c.criadorUid;
+    if (_c.criadorNome != null) avatarSlots[activeSlotIdx].criadorNome = _c.criadorNome;
+    if (_c.nascidoEm)           avatarSlots[activeSlotIdx].nascidoEm   = _c.nascidoEm;
+  }
+
   window._pendingEggSlot = activeSlotIdx;
   gs.totalInvocacoes = (gs.totalInvocacoes || 0) + 1;
 

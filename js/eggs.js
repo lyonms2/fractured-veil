@@ -400,6 +400,20 @@ async function confirmHatch() {
      para esta sessão ter o que mostrar — no carregamento seguinte é o
      mapa `certidoes` que manda, e o que estiver no slot é deitado fora. */
   avatarSlots[targetSlot].nascimento = _emitido.nascimento;
+  /* E com ela o criador e a data de nascimento, que também são dela.
+
+     O identidadeNova() escreve-os aqui a partir do que o navegador sabe;
+     quem os guarda é o servidor, e é o que ele guardou que o
+     carregamento seguinte vai mostrar. Copiá-los agora é fazer com que a
+     sessão diga o mesmo — em vez de duas leituras da mesma coisa à
+     espera de discordarem. */
+  {
+    const _c = _emitido.nascimento || {};
+    if (_c.criadorUid  != null) avatarSlots[targetSlot].criadorUid  = _c.criadorUid;
+    if (_c.criadorNome != null) avatarSlots[targetSlot].criadorNome = _c.criadorNome;
+    if (_c.nascidoEm)           avatarSlots[targetSlot].nascidoEm   = _c.nascidoEm;
+  }
+
   // A identidade também guarda os pais — é dela que a árvore vai ler.
   if (ovo.mae) avatarSlots[targetSlot].mae = ovo.mae;
   if (ovo.pai) avatarSlots[targetSlot].pai = ovo.pai;

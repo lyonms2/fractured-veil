@@ -142,6 +142,26 @@ async function ler(doc) {
   ok('EXPLOIT apagar os ovos',         await escrever('O','O',{'ovos':{}}), 403);
   ok('conta nova já com ovos',         await escrever('P','P',{'ovos.ov1':{dna:'y'}}), 403);
 
+  /* ── donos: o histórico de preços ──
+
+     É o que o comprador olha para decidir quanto pagar, e vivia dentro
+     do avatarSlots — o array que o VENDEDOR escreve por inteiro. */
+  await escrever(null,'Q',{'donos.av1':[{preco:10}],'gs.moedas':10}, true);
+  ok('EXPLOIT inflar o preço passado', await escrever('Q','Q',{'donos.av1':[{preco:9999}]}), 403);
+  ok('EXPLOIT inventar um histórico',  await escrever('Q','Q',{'donos.av2':[{preco:9999}]}), 403);
+  ok('EXPLOIT apagar o histórico',     await escrever('Q','Q',{'donos':{}}), 403);
+  ok('conta nova já com histórico',    await escrever('R','R',{'donos.av1':[{preco:9999}]}), 403);
+
+  /* ── mortos: a morte não anda para trás ──
+
+     O `dead` vive no avatarSlots; pôr `false` num avatar morto
+     devolvia-lhe a vida, e com ela o direito de lutar, cruzar e ser
+     vendido. */
+  await escrever(null,'S',{'mortos.av1':1000,'gs.moedas':10}, true);
+  ok('EXPLOIT ressuscitar um avatar',  await escrever('S','S',{'mortos':{}}), 403);
+  ok('EXPLOIT apagar uma morte',       await escrever('S','S',{'mortos.av1':null}), 403);
+  ok('EXPLOIT matar antes do tempo',   await escrever('S','S',{'mortos.av2':1000}), 403);
+
   // ── os mercados: o cliente só lê ──
   async function mercado(col, uid, campos) {
     const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {

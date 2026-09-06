@@ -111,11 +111,18 @@ function getGameState() {
          um aqui — no caminho da GRAVACAO — daria ids diferentes a
          cada gravacao ate a migracao correr. Fica nulo e visivel. */
       id:          s.id          || null,
-      criadorUid:  s.criadorUid  || null,
-      criadorNome: s.criadorNome || null,
-      mae:         s.mae         || null,
-      pai:         s.pai         || null,
-      nascidoEm:   s.nascidoEm   || s.bornAt || 0,
+      /* ── O QUE SE DECIDE UMA VEZ JÁ NÃO SAI DAQUI ──
+
+         Iam daqui o criador, os pais e a data de nascimento. São
+         exactamente o que uma certidão diz, e a certidão vive no mapa
+         `certidoes`, que o cliente não escreve — mandá-los no slot era
+         deixar o vendedor escrever "criado por Fulano" e "filho de
+         Beltrano" na ficha que o comprador lê.
+
+         O id fica: é a chave por onde a certidão se reata ao slot.
+
+         O applyGameState devolve os três ao slot em memória, e por isso
+         quem os lê continua a ler o mesmo. Ver a nota lá. */
       nomeTravado: s.nomeTravado ?? false,
       /* A ESCOLHA DO ANCIÃO, que também se faz uma vez só.
 
@@ -124,11 +131,18 @@ function getGameState() {
          Sem esta linha a primeira gravação apagava-a e o avatar
          acordava sem a segunda virtude que escolheu. */
       escolhaAnciao: s.escolhaAnciao || null,
-      /* Por quantas mãos já passou. Só o api/comprar-avatar.js lhe
-         acrescenta entradas — aqui apenas se guarda o que lá vem, e
-         guarda-se sempre, senão a próxima gravação do cliente apagava
-         uma história que o servidor tinha escrito. */
-      donos: Array.isArray(s.donos) ? s.donos : [],
+      /* ── A CADEIA DE DONOS TAMBÉM NÃO ──
+
+         Por quantas mãos o avatar passou, por quanto foi vendido de cada
+         vez e em que nível ia. É o histórico de preços que o comprador
+         vê antes de decidir (js/historico.js) — e ia num array que o
+         VENDEDOR escreve por inteiro. Inventar três vendas anteriores a
+         5000 cristais cada era uma linha no console, e a única coisa que
+         essa linha custava era o preço que o próximo pagava.
+
+         Mudou para o mapa `donos`, escrito só pelo api/comprar-avatar.js
+         dentro da transação que move os cristais — o preço registado é,
+         por construção, o que foi mesmo pago. */
       /* A CERTIDAO DE NASCIMENTO.
 
          Vai inteira e sem valor por omissao: um avatar sem certidao
@@ -277,6 +291,28 @@ function applyGameState(data) {
      e por que ordem. Aqui reata-se o conteúdo a cada id, e um ovo cujo
      id não esteja no mapa DESAPARECE: um ovo escrito à mão no
      avatarSlots deixa de ser um ovo. */
+  /* A cadeia de donos, pelo mesmo caminho da certidão: mapa do
+     servidor, reatado ao slot por id. Sem entrada, cadeia vazia — que é
+     a verdade de um avatar que nunca mudou de mãos. */
+  const _donos = (data.donos && typeof data.donos === 'object') ? data.donos : {};
+
+  /* E os que morreram. O `dead` vive dentro do avatarSlots e portanto
+     escreve-se no console: pôr `false` num avatar morto devolvia-lhe a
+     vida, e com ela o direito de lutar, cruzar e ser vendido.
+
+     Aqui a morte, uma vez sabida, não se desfaz. Quem a comunica é o
+     próprio jogo quando o bicho morre (killCreature, em js/gametick.js);
+     o servidor guarda-a num mapa que o cliente não escreve, e a partir
+     daí é ela que manda.
+
+     DITO COM TODAS AS LETRAS: isto não fecha a porta, estreita-a. Quem
+     modificar o jogo para nunca comunicar a morte continua a poder
+     ressuscitar o bicho. O que deixa de funcionar é editar o documento
+     — que era o que estava ao alcance de qualquer um. Fechá-la de vez
+     exige o servidor a contar o tempo e os medidores, que é outra
+     conversa. */
+  const _mortos = (data.mortos && typeof data.mortos === 'object') ? data.mortos : {};
+
   const _ovosSrv = (data.ovos && typeof data.ovos === 'object') ? data.ovos : {};
   const _reatarOvo = e => {
     if (!e || e.id == null) return null;
@@ -295,8 +331,26 @@ function applyGameState(data) {
       if(!s) return null;
       const restored = {...s};
       const _cert = s.id ? _certs[s.id] : null;
-      if (_cert) restored.nascimento = _cert;
-      else delete restored.nascimento;
+      if (_cert) {
+        restored.nascimento = _cert;
+        /* O que a certidão diz sobrepõe-se ao que está no slot. O SEED
+           é o mais importante deles: dele saem o corpo desenhado e a
+           ficha de combate inteira — trocar o número no slot era
+           escolher os atributos do bicho.
+
+           Os avatares antigos não têm seed na certidão; nesses fica o
+           do slot, que é o único que existe. */
+        if (_cert.seed) restored.seed = _cert.seed;
+        restored.criadorUid  = _cert.criadorUid  || null;
+        restored.criadorNome = _cert.criadorNome || null;
+        restored.nascidoEm   = _cert.nascidoEm   || s.bornAt || 0;
+        restored.mae = _cert.mae || null;
+        restored.pai = _cert.pai || null;
+      } else {
+        delete restored.nascimento;
+      }
+      restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
+      if (s.id && _mortos[s.id]) restored.dead = true;
       if (Array.isArray(s.eggs)) restored.eggs = s.eggs.map(_reatarOvo).filter(Boolean);
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
          os elementos que o jogo já não tinha, outra reanexava ao avatar
