@@ -249,7 +249,9 @@
      O scroll acontece na scroll-body, não no modal em si. */
   #itemInvModal,
   #coinShopModal,
-  #eggInvModal {
+  #eggInvModal,
+  #batalhaModal,
+  #linhagemModal {
     height: 100% !important;
     justify-content: flex-start !important;
     align-items: stretch !important;
@@ -257,7 +259,9 @@
   }
   #itemInvModal .modal-scroll-body,
   #coinShopModal .modal-scroll-body,
-  #eggInvModal .modal-scroll-body {
+  #eggInvModal .modal-scroll-body,
+  #batalhaModal .modal-scroll-body,
+  #linhagemModal .modal-scroll-body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;

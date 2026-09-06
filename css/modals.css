@@ -476,9 +476,21 @@
    serio precisa disto. O #avataresModal nasceu sem ela e o corpo
    crescia ate 4585px dentro de um cartao de 764 — via-se o topo e o
    resto ficava cortado, sem barra para la chegar. */
+/* O #batalhaModal e o #linhagemModal nasceram com o mesmo defeito e
+   ninguém os pôs aqui. Medido a 1280×720 com a raiz nos 24px: o cartão
+   do CONTRA OUTRO JOGADOR acabava 11px abaixo do fundo da tela, com o
+   subtítulo cortado ao meio, e não havia por onde chegar lá — nem o modal
+   nem o corpo rolavam.
+
+   A razão de o modal não rolar apesar do overflow-y:auto é a armadilha
+   clássica do flex centrado: com justify-content:center, o que transborda
+   sai para fora da caixa de rolagem em vez de a esticar. Quem tem de
+   rolar é o CORPO, e para isso precisa de flex:1 e min-height:0. */
 #coinShopModal .modal-scroll-body,
 #itemInvModal .modal-scroll-body,
 #eggInvModal .modal-scroll-body,
+#batalhaModal .modal-scroll-body,
+#linhagemModal .modal-scroll-body,
 #avataresModal .modal-scroll-body {
   flex:1; min-height:0; overflow-y:auto;
   width:100%; padding:0.625rem 1rem 1rem; box-sizing:border-box;
@@ -543,7 +555,10 @@
 .mkt-catalog-effect { font-size:0.4375rem; color:#5ab4e8; margin-bottom:0.75rem; padding:0.375rem 0.625rem; border-left:2px solid #1a6080; background:rgba(90,180,232,.05); border-radius:0 0.25rem 0.25rem 0; line-height:1.5; }
 .mkt-catalog-footer { display:flex; align-items:center; gap:0.5rem; }
 .mkt-owned-badge { flex:1; text-align:center; padding:0.375rem; font-size:0.375rem; font-family:'Cinzel',serif; letter-spacing:0.0625rem; color:#7ab87a; border:1px solid rgba(122,184,122,.3); border-radius:0.375rem; background:rgba(122,184,122,.05); }
-.mkt-duration-note { font-size:0.34375rem; color:var(--muted); }
+/* Eram 5,5px no celular — a segunda coisa mais pequena do jogo, e
+   aparece sete vezes na loja. Fica igual ao .mkt-catalog-type, que é a
+   linha logo ao lado dela. */
+.mkt-duration-note { font-size:0.40625rem; color:var(--muted); }
 .mkt-catalog-buy { flex:1; padding:0.4375rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.0625rem; font-weight:700; border:1px solid var(--gold); border-radius:0.375rem; background:rgba(201,168,76,.1); color:var(--gold); transition:all .2s; }
 .mkt-catalog-buy:hover { background:rgba(201,168,76,.25); }
 .mkt-catalog-buy:disabled { opacity:.35; cursor:not-allowed; }
@@ -824,8 +839,11 @@
 .lin-sexo.f { color:#e8a0c8; }
 .lin-sexo.m { color:#8ab4e8; }
 
+/* Era 0.3125rem, que dá CINCO píxeis num celular. O jogo inteiro não
+   desce dos seis, e ao lado desta marca está o .lin-nv nesses seis — ela
+   era a única coisa em todo o jogo abaixo do piso. */
 .lin-marca {
-  font-size:0.3125rem; letter-spacing:0.0625rem; text-transform:uppercase;
+  font-size:0.375rem; letter-spacing:0.0625rem; text-transform:uppercase;
   color:var(--muted); opacity:.75; white-space:nowrap;
 }
 .lin-marca.prim { color:var(--gold); opacity:.9; }

@@ -729,8 +729,11 @@
   0%, 100% { opacity: .35; transform: scale(1); }
   50%      { opacity: .6;  transform: scale(1.04); }
 }
+/* O line-height:1 cortava o emoji: a 2.5rem ele desenha-se com 69px de
+   altura dentro de uma caixa de 60. Media-se, e via-se — o ⏸ aparecia
+   com a base rapada. */
 .pausa-icone {
-  font-size: 2.5rem; line-height: 1;
+  font-size: 2.5rem; line-height: 1.2;
   animation: pausa-respira 3.2s ease-in-out infinite;
 }
 .pausa-titulo {
