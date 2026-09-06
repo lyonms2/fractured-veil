@@ -64,14 +64,25 @@ body.modal-scroll-lock {
    convertidas (1rem = 16px) e a escala passou a viver aqui.
 
      celular  16/16 = 1x     · igual ao que era
-     desktop    24/16 = 1,5x   · igual ao que era
+     desktop  26.4/16 = 1,65x
 
    As larguras de borda ficaram em px de propósito, para valerem 1px
-   de verdade nas duas escalas. */
+   de verdade nas duas escalas.
+
+   ── E O DESKTOP SUBIU 10% ──
+
+   Estava em 24px, que era 1,5x — a escala herdada de quando o jogo
+   corria com um zoom global. Num monitor de hoje ficava tudo pequeno, e
+   isso já se tinha visto peça a peça: a tela de entrada, o prólogo.
+
+   Sobe aqui, e não janela a janela: TUDO neste jogo está medido em rem,
+   portanto esta linha é o único sítio onde a escala existe. Mexer em
+   cada modal seria escrever quarenta vezes o que se escreve uma, e à
+   quadragésima já haveria duas em desacordo. */
 html { font-size: 16px; }
 
 @media(min-width:681px) {
-  html { font-size: 24px; }
+  html { font-size: 26.4px; }
   #btnLayEgg { display: none !important; }
 }
 
