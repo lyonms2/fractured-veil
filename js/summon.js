@@ -74,23 +74,16 @@ async function voltarAColonia() {
   if(typeof closeMarketplaceModal === 'function') closeMarketplaceModal();
   if(typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
 
-  /* ── E LARGA O SLOT ──
+  /* ── E VAI PARA O PRIMEIRO VIVO ──
 
-     Carregar aqui é desistir de invocar naquele slot, e desistir tem de
-     o devolver. Sem isto o slot vazio continuava a ser o ATIVO, e na
-     lista de avatares ele aparecia sem o "✦ Usar este slot" — porque
-     esse botão só se desenha em slots que não são o ativo. O jogador
-     desistia e ficava sem forma de voltar a tentar.
+     Havia aqui uma rede: guardava-se o slot de onde o jogador tinha
+     vindo ao entrar num slot vazio, para o "afinal não" o devolver ao
+     avatar certo. Essa rede era do painel de invocar, que saiu, e de um
+     botão "✦ Usar este slot", que saiu com ele.
 
-     Volta para o avatar que ele estava cuidando quando entrou no slot
-     vazio, que o activateSlot guardou. Se isso já não servir — foi
-     queimado, morreu, ou entrou-se aqui por outro caminho — vale o
-     primeiro vivo, que é melhor do que ficar onde não há nada. */
-  const guardado = window._slotAntesDeInvocar;
-  const bom = (i) => typeof i === 'number' && avatarSlots[i]
-                  && avatarSlots[i].hatched && !avatarSlots[i].dead;
-  const destino = bom(guardado) ? guardado : primeiroSlotVivo();
-  window._slotAntesDeInvocar = null;
+     Sem os dois não há de onde vir: chega-se aqui pela tela da morte,
+     e daí o destino certo é o primeiro que ainda esteja vivo. */
+  const destino = primeiroSlotVivo();
 
   if(destino !== activeSlotIdx && typeof switchSlot === 'function') {
     await switchSlot(destino);

@@ -500,10 +500,18 @@ function renderSlots() {
           <div class="slot-empty-txt">${isPending ? t('mkt.slot.hatching_sub').replace('\n','<br>')
             : (isActive ? t('mkt.slot.empty_active_sub') : t('mkt.slot.empty_sub')).replace('\n','<br>')}</div>
         </div>
-        ${!isPending && !isActive ? `
-        <div class="slot-actions">
-          <button class="btn-slot-activate" onclick="activateSlot(${i})">${t('mkt.slot.btn_use_empty')}</button>
-        </div>` : ''}
+        <!-- ── O "USAR ESTE SLOT" SAIU ──
+
+             Ele só aparecia em slots VAZIOS, e queria dizer uma coisa:
+             "quero invocar aqui". Carregar levava ao slot e o painel de
+             invocar aparecia lá.
+
+             Não há painel nem invocação: são três avatares, entregues no
+             prólogo, e depois compram-se ou nascem de uma cruza. O botão
+             passou a levar a um slot vazio, onde o jogo abre a colónia —
+             ou seja, ao mesmo sítio de onde se carregou nele.
+
+             Um slot vazio deixou de ser uma decisão. É só espaço. -->
       </div>`;
     } else {
       const isFrozen = !!s.listed;
@@ -517,11 +525,16 @@ function renderSlots() {
         <div class="slot-stripe ${s.raridade}"></div>
         <div class="slot-header">
           <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
-          ${isActive ? `<div class="slot-badge active">${t('mkt.slot.active')}</div>` : ''}
+          <!-- O crachá diz "Ativo" e nunca disse do quê. Ativo é o que
+               está ABERTO na consola — e, o que importa mais, é o que os
+               amigos veem na procura e o que eles visitam (api/amigos.js
+               lê o activeSlotIdx). Os outros vivem na mesma; só não são
+               a cara que se mostra. -->
+          ${isActive ? `<div class="slot-badge active" title="${t('mkt.slot.active_hint')}">${t('mkt.slot.active')}</div>` : ''}
           ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
-          onclick="mktOpenZoom('${s.raridade}',${s.seed||0},${s.nivel||1},'${(s.nome||'Avatar').replace(/'/g,"\\'")}',${_cor})">
+          onclick="mktOpenZoom('${s.raridade}',${s.seed||0},${s.nivel||1},'${nomeCurto(s).replace(/'/g,"\\'")}',${_cor})">
           <div class="av-zoom-wrap">
             ${gerarSVG(s,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
@@ -604,63 +617,18 @@ function renderSlots() {
   }
 }
 
-async function activateSlot(idx) {
-  /* ── DE ONDE ELE VEIO, PARA O CASO DE DESISTIR ──
+/* ── O activateSlot SAIU COM O BOTÃO QUE O CHAMAVA ──
 
-     Entrar num slot VAZIO é dizer "quero invocar aqui" — e isso pode ser
-     desfeito: o "Voltar à colônia" do painel de invocar é exatamente
-     dizer "afinal não". Para desfazer é preciso saber para onde voltar,
-     e a resposta certa é o avatar que ele estava cuidando, não o
-     primeiro da lista.
+   Ele era o "✦ Usar este slot" dos slots vazios: trocava o slot activo
+   e o painel de invocar aparecia por baixo. Não há painel nem invocação
+   — ver a nota onde o botão estava, no renderSlots.
 
-     Guarda-se só quando o destino está vazio e a origem tem alguém: nos
-     outros casos não há nada a desfazer. */
-  const _vazio = !(avatarSlots && avatarSlots[idx] && avatarSlots[idx].nome);
-  if(_vazio && typeof activeSlotIdx === 'number'
-     && avatarSlots[activeSlotIdx] && avatarSlots[activeSlotIdx].hatched
-     && !avatarSlots[activeSlotIdx].dead) {
-    window._slotAntesDeInvocar = activeSlotIdx;
-  }
+   Trocar de avatar continua a fazer-se, e sempre se fez melhor no
+   mesmo sítio: o CUIDAR da colónia (cuidarDe, em js/fazenda.js). Um
+   caminho, e não dois a fazer o mesmo com nomes diferentes.
 
-  if(_mktGameStateDisponivel() && typeof switchSlot === 'function') {
-    // Fonte única: usa o próprio switchSlot() do jogo (state.js) — evita a
-    // race entre esta troca e o próximo scheduleSave() do jogo.
-    await switchSlot(idx);
-    // A copia no playerData e sincronizada la dentro, no state.js:
-    // estava aqui, e quando o "Voltar a colonia" passou a trocar de
-    // slot tambem ficou uma copia desactualizada.
-    if(typeof updateAllUI === 'function') updateAllUI();
-  } else {
-    // Standalone (marketplace.html sem state.js) — comportamento original.
-    await db.collection('players').doc(walletAddress).update({
-      activeSlotIdx: idx,
-      'gs.activeSlotIdx': idx
-    });
-    playerData.activeSlotIdx = idx;
-    if(!playerData.gs) playerData.gs = {};
-    playerData.gs.activeSlotIdx = idx;
-  }
-  /* ── E SAI DA LISTA ──
-     Antes ficava aqui: mostrava um toast, redesenhava a mesma lista, e o
-     jogador tinha de fechar o modal à mão para ver o que acabara de
-     escolher. Escolher um slot é dizer "quero jogar com este" — a lista
-     já cumpriu o seu papel.
-
-     Se o slot estiver vazio, o rebuildScreensParaSlot() abre a colónia:
-     um slot sem ninguém não tem nada para mostrar nem decisão para
-     oferecer. Ver updateAllUI, em js/ui.js. */
-  fecharMeusAvatares();
-  showToast(t('mkt.avatar.activated'), 'ok');
-  renderSlots();
-
-  /* Aqui, ao activar um slot VAZIO, disparava-se uma invocação
-     automática — o painel de invocar aparecia por baixo e a cerimónia
-     seguia sozinha. Já não há invocar por decisão: são três, entregues
-     no prólogo. Um slot vazio abre a colónia (ver updateAllUI, em
-     js/ui.js), e o próximo avatar vem do mercado ou de uma cruza.
-
-     O `vazio` deixou de ser usado e saiu com ele. */
-}
+   Com ele foi a rede do `_slotAntesDeInvocar`, que existia para o
+   "afinal não" de um painel que já não existe. */
 
 // ═══════════════════════════════════════════
 // QUEIMAR AVATAR

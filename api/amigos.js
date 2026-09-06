@@ -105,7 +105,16 @@ module.exports = async function handler(req, res) {
           if (!slot?.hatched || slot?.dead) return;
           resultados.push({
             uid:      doc.id,
-            nome:     slot.nome?.split(',')[0] || '???',
+            /* O nome, ou VAZIO. Punha-se aqui '???' quando não havia,
+               e desde que os avatares chegam por baptizar isso passou a
+               ser o caso comum — a procura de amigos ficava cheia de
+               interrogações.
+
+               O rótulo de quem não tem nome é do cliente, porque tem
+               tradução (id.sem_nome, em js/i18n.js): daqui vai o que
+               existe, e quem escreve na tela é que decide como chamar o
+               que não existe. */
+            nome:     slot.nome?.split(',')[0] || '',
             raridade: slot.raridade || 'Comum',
             nivel:    slot.nivel    || 1,
             seed:     slot.seed     || 0,

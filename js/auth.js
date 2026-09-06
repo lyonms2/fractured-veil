@@ -394,7 +394,7 @@ async function _onLoginSuccess(user) {
       const ACCAO = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
       for(const v of visitas.slice(-8)) {
         addLog(t('amigos.log.recebida', {
-          icon: ACCAO[v.tipo] || '✦', nome: v.nome || '???',
+          icon: ACCAO[v.tipo] || '✦', nome: v.nome || t('id.sem_nome'),
           accao: t('amigos.recebida.' + v.tipo), vinculo: v.vinculo || 0,
         }), 'good');
       }

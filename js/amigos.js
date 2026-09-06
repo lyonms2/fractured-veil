@@ -105,7 +105,7 @@ function _renderAmigos() {
 function _renderAmigoCard(uid, info) {
   return `
     <div class="amigos-card" id="amigo-card-${uid}">
-      <div class="amigos-card-nome">${esc(info.nome || '???')}</div>
+      <div class="amigos-card-nome">${esc(info.nome || t('id.sem_nome'))}</div>
       <div class="amigos-card-btns">
         <button class="amigos-btn-visitar" onclick="amigoAbrirVisita('${uid}')">${t('amigos.btn.visit')}</button>
         <button class="amigos-btn-remover" onclick="amigoRemover('${uid}')">✕</button>
