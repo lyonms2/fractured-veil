@@ -454,15 +454,17 @@ async function invocarOsTres() {
     addLog(t('summon.log.chegou', { nome: alcunhaDe(av) || nomeCurto(av), n: idx + 1 }), 'good');
   }
 
-  await _fecharPalco();
+  /* ── A COLÓNIA MONTA-SE POR BAIXO, COM O PALCO AINDA PRETO ──
 
-  if (window._summonTravou && typeof unlockBodyScroll === 'function') {
-    window._summonTravou = false;
-    unlockBodyScroll();
-  }
+     Esta parte vinha DEPOIS do _fecharPalco, e o fechar leva 600ms a
+     desvanecer. Nesses 600ms o jogo já se via — e o que se via era a
+     consola vazia, porque a colónia só era desenhada a seguir. Era a
+     mesma moldura vazia de sempre, agora à saída em vez de à entrada.
 
+     Monta-se primeiro, com o preto ainda por cima a tapar tudo, e só
+     depois se levanta o pano. O que aparece já está lá. */
   if (nascidos > 0) {
-    /* ── E VAI PARA A COLÓNIA, NÃO PARA O CUIDAR ──
+    /* ── E É A COLÓNIA, NÃO O CUIDAR ──
 
        O jogo abria direto na tela de cuidar do primeiro. Com um avatar
        fazia sentido; com três, entrar num deles é escolher por quem
@@ -481,6 +483,13 @@ async function invocarOsTres() {
     saveToFirebase();
     if (typeof updateHeaderButtons === 'function') updateHeaderButtons();
     if (typeof abrirFazenda === 'function') abrirFazenda();
+  }
+
+  await _fecharPalco();
+
+  if (window._summonTravou && typeof unlockBodyScroll === 'function') {
+    window._summonTravou = false;
+    unlockBodyScroll();
   }
 
   return nascidos;

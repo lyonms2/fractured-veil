@@ -29,7 +29,7 @@
 
 // As cenas em si vivem no i18n, porque o prólogo é a primeira tela que
 // TODO o jogador vê — e um jogador inglês não pode receber português.
-const PROLOGO_PARAGRAFOS = 6;
+const PROLOGO_PARAGRAFOS = 7;
 
 let _prologoModoLeitura = false;
 let _prologoEtapa       = 0;
