@@ -33,8 +33,12 @@ window.registerStrings(
     'fazenda.gerir':         'Gerir avatares — vender, queimar, abrir slots',
     'batalha.titulo':        '⚔ BATALHA',
     'batalha.sub':           'Monte a equipe e escolha o combate. A ordem manda: o primeiro abre a luta.',
-    'batalha.pve.nome':      'CONTRA O VÉU',
-    'batalha.pve.sub':       'Inimigos gerados à medida da sua equipe',
+    /* Era "CONTRA O VÉU", e não se luta contra o Véu — o Véu é o que
+       rasga. Luta-se contra o que sai da fenda. E o subtítulo era uma
+       nota de versão ("gerados à medida"): descrevia o algoritmo em vez
+       de dizer onde o jogador vai parar. */
+    'batalha.pve.nome':      'ENTRAR NUMA FRATURA',
+    'batalha.pve.sub':       'Do outro lado está o que atravessou e não encontrou ninguém.',
     'batalha.pvp.nome':      'CONTRA OUTRO JOGADOR',
     'batalha.pvp.sub':       'Ainda não disponível',
     'fazenda.conta':         '{vivos} de {total}',
@@ -111,8 +115,8 @@ window.registerStrings(
     'fazenda.gerir':         'Manage avatars — sell, burn, unlock slots',
     'batalha.titulo':        '⚔ BATTLE',
     'batalha.sub':           'Build your team and pick a fight. Order matters: the first one opens the battle.',
-    'batalha.pve.nome':      'AGAINST THE VEIL',
-    'batalha.pve.sub':       'Enemies scaled to your team',
+    'batalha.pve.nome':      'ENTER A FRACTURE',
+    'batalha.pve.sub':       'On the other side is what crossed and found no one.',
     'batalha.pvp.nome':      'AGAINST ANOTHER PLAYER',
     'batalha.pvp.sub':       'Not available yet',
     'fazenda.conta':         '{vivos} of {total}',

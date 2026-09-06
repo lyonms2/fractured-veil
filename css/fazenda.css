@@ -249,7 +249,64 @@
   border-color: var(--gold);
   transform: translateY(-0.0625rem);
 }
-.bt-modo-icone { font-size: 1.125rem; line-height: 1; }
+/* ── A MARCA DOS DOIS MODOS ──
+
+   Eram dois emoji — um dragão e umas espadas — e os dois mentiam. Não há
+   dragões no jogo, e o ⚔ repetia o do título do modal, dois centímetros
+   acima.
+
+   A marca passa a ser a FENDA: o mesmo risco vertical da tela da Fratura
+   (css/fratura.css). Uma para o PvE, duas viradas uma para a outra no
+   PvP. Diz para onde o botão leva em vez de decorar, e no dia em que
+   houver mais um modo já há uma gramática para ele. */
+.bt-modo-marca {
+  height: 1.5rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.bt-fenda {
+  width: 0.1875rem; height: 1.375rem;
+  border-radius: 0.09375rem;
+  background: linear-gradient(180deg, transparent, #c4b5fd 20%, #fff 50%, #c4b5fd 80%, transparent);
+  box-shadow: 0 0 0.625rem rgba(196,181,253,.7);
+  animation: bt-fenda-respira 3.2s ease-in-out infinite;
+}
+.bt-fenda.ouro {
+  background: linear-gradient(180deg, transparent, var(--gold) 20%, #ffe9a8 50%, var(--gold) 80%, transparent);
+  box-shadow: 0 0 0.5rem rgba(201,168,76,.6);
+}
+/* Inclinadas uma para a outra: dois donos, cada um do seu lado.
+
+   A rotação vai DENTRO dos fotogramas e não numa regra à parte: o
+   `transform` é uma propriedade só, e a animação do respirar — que
+   também mexe no transform — apagava a inclinação assim que começasse.
+   As duas ficariam a prumo. */
+.bt-fenda.esq { animation-name: bt-fenda-esq; }
+.bt-fenda.dir { animation-name: bt-fenda-dir; }
+
+@keyframes bt-fenda-respira {
+  0%, 100% { opacity: .6; transform: scaleX(1);   }
+  50%      { opacity: 1;  transform: scaleX(1.7); }
+}
+/* O topo de cada uma inclina-se PARA DENTRO. Ao contrário fazia um V, e
+   um V abre — lia-se como duas coisas a afastarem-se, que é o oposto do
+   que um duelo é. */
+@keyframes bt-fenda-esq {
+  0%, 100% { opacity: .6; transform: rotate(13deg) scaleX(1);   }
+  50%      { opacity: 1;  transform: rotate(13deg) scaleX(1.7); }
+}
+@keyframes bt-fenda-dir {
+  0%, 100% { opacity: .6; transform: rotate(-13deg) scaleX(1);   }
+  50%      { opacity: 1;  transform: rotate(-13deg) scaleX(1.7); }
+}
+/* Ao passar por cima, a fenda abre — que é o que o clique vai fazer. */
+.bt-modo:hover:not(.bt-modo-off) .bt-fenda {
+  animation-duration: 1.4s;
+  box-shadow: 0 0 1rem rgba(196,181,253,.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-fenda { animation: none; }
+}
 .bt-modo-nome {
   font-family: 'Cinzel', serif; font-size: 0.5625rem;
   letter-spacing: 0.09375rem; color: var(--gold-light, var(--gold));
