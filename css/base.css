@@ -142,6 +142,19 @@ main {
 /* ══════════════════════════════════════
    DEVICE (left column)
 ══════════════════════════════════════ */
+/* ── A CONSOLA ACENDE-SE QUANDO TEM O QUE MOSTRAR ──
+
+   Ela existe no documento desde que a página carrega. Ficava à vista no
+   instante em que a cortina de carregamento saía, e nesse instante
+   podia ainda não haver tela nenhuma escolhida lá dentro — o jogador
+   via uma moldura vazia e só depois o jogo.
+
+   Quem acende é o _onLoginSuccess (js/auth.js), depois de tudo o que
+   desenha ter corrido. Não é `display`: assim ela ocupa o lugar desde o
+   princípio e nada salta quando aparece. */
+.device { opacity: 0; transition: opacity .45s ease; }
+body.jogo-pronto .device { opacity: 1; }
+
 .device {
   background:var(--surface);
   border:1px solid var(--border);

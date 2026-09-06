@@ -161,6 +161,9 @@ async function disconnectWallet() {
   // O authShowTab('login') que estava aqui repunha a aba de entrar. Já
   // não há abas nenhumas: o login é um botão só.
   mostrarLoginScreen();
+  // E a consola apaga-se com a sessão: quem entrar a seguir volta a
+  // vê-la só quando houver tela. Ver a nota no _onLoginSuccess.
+  document.body.classList.remove('jogo-pronto');
 
   document.getElementById('eggScreen').style.display        = 'none';
   document.getElementById('aliveScreen').style.display      = 'none';
@@ -462,6 +465,19 @@ async function _onLoginSuccess(user) {
       document.getElementById('deadScreen').style.display    = 'none';
       document.getElementById('creatureCard').style.display  = 'block';
       updateResourceUI();
+
+    } else if(typeof rebuildScreensParaSlot === 'function') {
+      /* ── O RAMO QUE FALTAVA ──
+
+         Três casos e nenhum `else`: morto, vivo, e por chocar. Com o
+         slot ATIVO vazio — quem vendeu o avatar que tinha aberto, quem
+         o perdeu, ou quem entrou num slot livre e fechou o jogo — não
+         se desenhava nada, e o que aparecia ao entrar era o invólucro
+         da consola vazio.
+
+         Não se repete aqui a decisão: pergunta-se ao único sítio que a
+         sabe tomar, que é o mesmo que decide em cada troca de slot. */
+      rebuildScreensParaSlot();
     }
 
   } else {
@@ -497,6 +513,18 @@ async function _onLoginSuccess(user) {
   } else {
     _seguirParaPrologo();
   }
+
+  /* ── E SÓ AGORA A CONSOLA SE ACENDE ──
+
+     Ela está no documento desde que a página carrega, e ficava à vista
+     mal a cortina de carregamento saísse — mesmo que ainda não houvesse
+     tela nenhuma escolhida lá dentro. O que o jogador via era uma
+     moldura vazia, e só depois o jogo.
+
+     A cortina sai depois de tudo o que desenha, portanto é aqui que se
+     sabe que há o que mostrar. Fica uma classe no body, e o CSS trata
+     do resto (css/base.css). */
+  document.body.classList.add('jogo-pronto');
 
   if(typeof hideSplash === 'function') hideSplash();
 
