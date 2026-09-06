@@ -491,12 +491,10 @@ function hatch() {
     }
     window._pendingEggSlot = null;
 
-    if(walletAddress && fbDb() && window._cancelledEgg) {
-      fbDb().collection('players').doc(walletAddress).update({
-        inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
-      }).catch(e => console.warn('inboxEggs cleanup failed:', e));
-      window._cancelledEgg = null;
-    }
+    // Aqui limpava-se do inboxEggs o ovo que acabou de chocar. A caixa
+    // acabou (ver applyGameState, em js/firebase.js) e quem consome o
+    // ovo hoje é o servidor, no mapa `ovos`, na mesma transação em que
+    // emite a certidão. Não sobra nada para limpar.
 
     document.getElementById('eggScreen').style.display  = 'none';
     document.getElementById('actionBtns').style.opacity = '1';
@@ -546,12 +544,8 @@ function hatch() {
   faseVista  = getFase();
   nivelVisto = nivel;
 
-  if(walletAddress && fbDb() && window._cancelledEgg) {
-    fbDb().collection('players').doc(walletAddress).update({
-      inboxEggs: firebase.firestore.FieldValue.arrayRemove(window._cancelledEgg)
-    }).catch(e => console.warn('inboxEggs cleanup failed:', e));
-    window._cancelledEgg = null;
-  }
+  // O mesmo do outro caminho de chocagem: o ovo sai do mapa `ovos` no
+  // servidor, e o inbox já não existe.
 
   scheduleSave();
   document.getElementById('statusCard').style.display = 'block';

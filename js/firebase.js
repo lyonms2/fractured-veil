@@ -184,19 +184,22 @@ function getGameState() {
          postura, e um ovo por chocar podia apodrecer à espera. Agora o
          relógio só anda quando o ovo está pronto e sem ninho, e é o
          ovoPodre que sabe disso. */
+      /* ── DAQUI VAI SÓ ONDE O OVO ESTÁ ──
+
+         Ia o ovo inteiro: o DNA do filho, os pais, os retratos, a hora
+         de chocar. Tudo isso é o que o ovo VALE, e ia num array que o
+         cliente escreve por inteiro — quem abrisse o console escrevia
+         os genes do próprio filho, ou inventava um ovo do nada.
+
+         Passou para o mapa `ovos`, que só o servidor escreve. O que
+         fica aqui é a colocação — em que slot está e por que ordem — e
+         o relógio do apodrecimento, que é do cliente. O applyGameState
+         reata o resto pelo id; ver a nota lá em cima. */
       eggs:           (s.eggs  || []).filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e))).map(e => ({
         id: e.id,
-        chocaEm: e.chocaEm || null,
         // Desde quando está preso sem slot. Tem de sobreviver ao save:
         // sem isto, fechar o jogo devolvia ao ovo os sete dias todos.
         semNinhoDesde: e.semNinhoDesde || null,
-        dna:     e.dna     || null,
-        mae:     e.mae     || null, pai:     e.pai     || null,
-        maeNome: e.maeNome || null, paiNome: e.paiNome || null,
-        // O retrato de cada progenitor, tirado quando o ovo foi posto.
-        // Sem isto, um pai vendido antes de o ovo chocar deixava de se
-        // poder desenhar — que e exactamente o caso para que ele existe.
-        maeRetrato: e.maeRetrato || null, paiRetrato: e.paiRetrato || null,
       })),
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats
@@ -264,6 +267,28 @@ function applyGameState(data) {
      estreita. */
   const _certs = (data.certidoes && typeof data.certidoes === 'object') ? data.certidoes : {};
 
+  /* ── E OS OVOS TAMBÉM ──
+
+     Mesma ideia, mesmo motivo. Um ovo É o DNA do filho que lá está
+     dentro, e esse DNA vive no mapa `ovos`, que só o handleCruzar
+     escreve (api/pool.js, firestore.rules).
+
+     O `slot.eggs` fica a dizer apenas ONDE está cada ovo — em que slot,
+     e por que ordem. Aqui reata-se o conteúdo a cada id, e um ovo cujo
+     id não esteja no mapa DESAPARECE: um ovo escrito à mão no
+     avatarSlots deixa de ser um ovo. */
+  const _ovosSrv = (data.ovos && typeof data.ovos === 'object') ? data.ovos : {};
+  const _reatarOvo = e => {
+    if (!e || e.id == null) return null;
+    const o = _ovosSrv[String(e.id)];
+    if (!o) return null;
+    /* O que o SERVIDOR sabe sobrepõe-se; o que ele não guarda — desde
+       quando o ovo está sem ninho — fica do lado do cliente, porque é o
+       relógio do jogo que o escreve (js/gametick.js) e não vale nada
+       para ninguém a não ser para o próprio ovo apodrecer. */
+    return Object.assign({}, o, { id: String(e.id), semNinhoDesde: e.semNinhoDesde || null });
+  };
+
   // Restore slots
   if(data.avatarSlots) {
     avatarSlots = data.avatarSlots.map(s => {
@@ -272,6 +297,7 @@ function applyGameState(data) {
       const _cert = s.id ? _certs[s.id] : null;
       if (_cert) restored.nascimento = _cert;
       else delete restored.nascimento;
+      if (Array.isArray(s.eggs)) restored.eggs = s.eggs.map(_reatarOvo).filter(Boolean);
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
          os elementos que o jogo já não tinha, outra reanexava ao avatar
          a entrada da tabela de características.
@@ -295,38 +321,23 @@ function applyGameState(data) {
     window._visitasRecebidas = data.inboxVisitas.slice();
   }
 
-  // Consumir inboxEggs
-  if(data.inboxEggs && data.inboxEggs.length > 0) {
-    data.inboxEggs = data.inboxEggs.filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e)));
-    const slot = avatarSlots[activeSlotIdx];
-    if(slot) {
-      if(!slot.eggs) slot.eggs = [];
-      const MAX_EGGS = 10;
-      const existingIds = new Set(slot.eggs.map(e => e.id));
-      const overflow = [];
-      data.inboxEggs.forEach(e => {
-        if(existingIds.has(e.id)) return;
-        if(slot.eggs.length < MAX_EGGS) {
-          slot.eggs.push({...e});
-          existingIds.add(e.id);
-        } else {
-          overflow.push(e);
-        }
-      });
-      if(overflow.length > 0) {
-        window._inboxOverflow = overflow;
-        console.warn(`inboxEggs: ${overflow.length} ovo(s) não cabem no inventário (limite ${MAX_EGGS})`);
-      }
-      window._inboxConsumed = true;
-    } else {
-      window._orphanEggs = (window._orphanEggs || []).concat(
-        data.inboxEggs.filter(e => {
-          const existing = window._orphanEggs || [];
-          return !existing.some(x => x.id === e.id);
-        }).map(e => ({...e}))
-      );
-    }
-  }
+  /* ── O INBOX DE OVOS ACABOU ──
+
+     Era a caixa de entrada da venda de ovos: um ovo comprado a outro
+     jogador chegava lá, escrito pelo servidor, e este bloco passava-o
+     para o inventário do slot activo.
+
+     A venda de ovos acabou há muito, e com ela quem escrevia no inbox —
+     não sobrou um único endpoint que lá ponha seja o que for. Ficou
+     código a consumir uma caixa que ninguém enche.
+
+     E a partir de hoje seria pior do que inútil: a prova de que um ovo
+     existe é ele estar no mapa `ovos` (handleChocarOvo, em api/pool.js),
+     e um ovo vindo do inbox não está lá. Apareceria no inventário e
+     recusava-se a chocar — uma avaria à espera de acontecer.
+
+     O campo não se apaga de quem já o tem no documento. Só se deixa de
+     o ler, como se fez com o elemento. */
 
   // Garantir que o array cobre todos os slots desbloqueados restaurados
   const _neededApply = Math.min(MAX_SLOTS, BASE_SLOTS + (gs.extraSlots || 0));
@@ -389,7 +400,10 @@ function applyGameState(data) {
 
   // Dead state vem do Firebase — fallback via RTDB presence (ver setupPresence/getPresenceData)
 
-  // Inject orphanEggs
+  /* Os ovos que ficaram sem slot em memória — o saveRuntimeToSlot
+     guarda-os aqui quando o slot activo é nulo (js/state.js) — voltam
+     ao inventário. Não são ovos novos: são os mesmos, e continuam no
+     mapa `ovos` do servidor, que é quem sabe o que eles são. */
   if(window._orphanEggs && window._orphanEggs.length > 0) {
     const existingIds = new Set(eggsInInventory.map(e => e.id));
     window._orphanEggs.forEach(e => {
@@ -403,7 +417,6 @@ function applyGameState(data) {
         if(!slotIds.has(e.id)) slot.eggs.push({...e});
       });
       window._orphanEggs = null;
-      window._inboxConsumed = true;
     }
   }
 
@@ -422,22 +435,13 @@ async function saveToFirebase() {
     const state = getGameState();
     await fbDb().collection('players').doc(walletAddress).set(state, { merge: true });
 
-    const hasOrphans = window._orphanEggs && window._orphanEggs.length > 0;
-    if(hasOrphans) {
-      /* Havia aqui um ciclo que devolvia os ovos órfãos ao inboxEggs, um a
-         um. Era redundante e passou a rebentar.
-         Redundante porque eles nunca de lá saíram: o applyGameState() só
-         marca _inboxConsumed quando consegue pô-los num slot, e é essa
-         marca que manda limpar o inbox mais abaixo. Sem slot, não há
-         marca, não há limpeza — os ovos ficam onde estavam.
-         E passou a rebentar porque as regras já não deixam o cliente
-         fazer crescer o inboxEggs: era por aí que se fabricavam ovos. */
+    /* Os órfãos largam-se depois de o estado ir gravado — eles já lá
+       estão dentro. Havia aqui um ciclo que os devolvia ao inboxEggs, e
+       a seguir uma limpeza que esvaziava essa caixa; as duas coisas
+       saíram com a própria caixa (ver applyGameState). */
+    if(window._orphanEggs || window._orphanItems) {
       window._orphanEggs  = null;
       window._orphanItems = null;
-      window._inboxConsumed = false;
-    } else if(window._inboxConsumed) {
-      window._inboxConsumed = false;
-      await fbDb().collection('players').doc(walletAddress).update({ inboxEggs: [] });
     }
     // Os recados de visita seguem o mesmo caminho dos ovos: lidos ao
     // entrar, limpos no primeiro save. Se falhar, ficam lá e aparecem da

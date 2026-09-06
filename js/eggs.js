@@ -276,47 +276,35 @@ async function confirmHatch() {
   pendingHatchId = null;
   ModalManager.close('hatchConfirmModal');
 
-  /* ── O SERVIDOR AUTORIZA A CHOCAGEM ──
-     Nasce aqui a identidade do avatar, e até agora nascia só aqui: o
-     servidor nunca via avatar nenhum nascer. Como o avatarSlots é escrito
-     pelo cliente por inteiro, bastava pôr raridade:'Lendário' num slot
-     para o api/comprar-avatar.js o aceitar à venda — ele lia a raridade
-     desse mesmo array.
+  /* ── QUEM NASCE, NASCE NO SERVIDOR ──
 
-     Agora o servidor consome o ovo (que ele conhece, pelo inboxEggs ou
-     pelo ovosEmitidos), cobra a taxa e regista o avatar com a raridade do
-     OVO. É essa entrada que a listagem passa a exigir.
+     Nascia aqui, e o servidor nunca via avatar nenhum nascer. Como o
+     avatarSlots é escrito pelo cliente por inteiro, saíam daqui três
+     coisas que decidem o que um avatar vale, e as três eram uma linha
+     no console:
 
-     O seed é calculado antes e vai no pedido, porque é a chave do registo.
-     Continua a sair daqui — decide aparência e ficha — mas a raridade,
-     que é o que vale cristais, deixa de sair.
+       · o DNA do filho — que hoje vem do ovo, e o ovo vinha do cliente
+       · o SEED, que decide o corpo inteiro e a ficha de combate
+       · a raridade, que já tinha passado para cá numa mudança anterior
 
-     A taxa passou para o servidor: era feita em duas escritas separadas
-     (debitar aqui, avisar a pool depois) que podiam divergir. */
-  /* ── O SEED PRIMEIRO, DEPOIS O DNA, DEPOIS O NOME ──
+     Agora o pedido leva só o id do ovo. O servidor procura-o no mapa
+     `ovos` (que só o handleCruzar escreve), sorteia o seed, compõe a
+     certidão com o DNA que ELE guardou e devolve-a feita — e o ovo sai
+     do mapa no mesmo movimento, para não chocar duas vezes.
 
-     O seed saía do nome, e o nome saía do elemento do ovo. Sem
-     elemento, o nome passa a sair da COR — e a cor está no DNA. A
-     ordem inverteu-se: sorteia-se o seed, dele (ou do ovo) sai o DNA, e
-     dele sai a cor e o nome.
+     A taxa é cobrada lá, e não aqui: era feita em duas escritas
+     separadas (debitar aqui, avisar a pool depois) que podiam divergir.
 
-     Um ovo de dois pais já traz o DNA feito (js/reproducao.js), e é
-     esse que vale: a herança não se sorteia outra vez. O que o seed
-     decide é o corpo e a ficha — que é o que faz dois irmãos do mesmo
-     par serem dois bichos e não um repetido. */
-  const seedAutorizado = Math.floor(Math.random() * 2147483647);
-  const dnaDoOvo = ovo.dna
-    || ((typeof gerarDna === 'function') ? gerarDna('Comum', seedAutorizado) : null);
-  const _tomOvo = (typeof tomDaCor === 'function' && dnaDoOvo && dnaDoOvo.genes && dnaDoOvo.genes.cor)
-    ? tomDaCor(dnaDoOvo.genes.cor[0]) : 'brasa';
-  const _nomeProv = nomeDeNascimento(_tomOvo);
-
+     Se o servidor recusar, não nasce ninguém. Falhar fechado: um erro
+     de rede não pode ser um caminho para um avatar com genes à
+     escolha. */
+  let _emitido;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'chocar-ovo', idToken, ovoId: ovo.id, seed: seedAutorizado }),
+      body:    JSON.stringify({ acao: 'chocar-ovo', idToken, ovoId: ovo.id }),
     });
     const json = await resp.json();
     if(!resp.ok || !json.ok) {
@@ -325,6 +313,7 @@ async function confirmHatch() {
       pendingHatchFee = 0;
       return;
     }
+    _emitido = json;
     // O saldo é o que o servidor diz, não a nossa conta.
     if(json.novosCristais != null) gs.cristais = json.novosCristais;
     updateAllUI();
@@ -335,18 +324,21 @@ async function confirmHatch() {
   }
   pendingHatchFee = 0;
 
-  // Havia aqui um "backup" do ovo no inboxEggs antes de o tirar da
-  // memória. Saiu por duas razões.
-  // A primeira é segurança: o inbox é a porta da venda de ovos — o
-  // servidor só deixa listar ovos que lá estejam — portanto qualquer
-  // escrita do cliente nele era uma forma de fabricar ovos. As regras já
-  // não a permitem.
-  // A segunda é que o backup duplicava: o ovo entrava no inbox, a
-  // chocagem seguia, e no carregamento seguinte o applyGameState()
-  // devolvia-o ao slot.eggs — o jogador chocava o ovo E ficava com ele.
+  /* O NOME SAI DA COR, E A COR SAI DO DNA que o servidor devolveu.
 
+     A ordem é a mesma de sempre — seed, DNA, cor, nome — só que as duas
+     primeiras já vêm decididas. Compor o nome a partir de um DNA
+     sorteado aqui dava-lhe uma cor diferente da do bicho que nasceu. */
+  const seedAutorizado = _emitido.seed;
+  const dnaDoOvo = _emitido.nascimento && _emitido.nascimento.dna;
+  const _tomOvo = (typeof tomDaCor === 'function' && dnaDoOvo && dnaDoOvo.genes && dnaDoOvo.genes.cor)
+    ? tomDaCor(dnaDoOvo.genes.cor[0]) : 'brasa';
+  const _nomeProv = nomeDeNascimento(_tomOvo);
+
+  /* O ovo sai do inventário. Não se guarda cópia nenhuma: o servidor já
+     o apagou do mapa `ovos` na mesma transação em que emitiu a certidão,
+     e uma cópia aqui seria um ovo que o jogo mostra e que já não existe. */
   eggsInInventory.splice(idx, 1);
-  window._cancelledEgg = {...ovo};
 
   if(targetSlot !== activeSlotIdx) {
     saveRuntimeToSlot(activeSlotIdx);
@@ -375,6 +367,11 @@ async function confirmHatch() {
        campos ficam nulos quando nao ha; o que nao pode faltar desde
        ja e o id. */
     ...identidadeNova(),
+    /* O id vem do SERVIDOR e sobrepõe-se ao que o identidadeNova()
+       sorteou: é por ele que a certidão se reata ao slot no
+       carregamento seguinte (applyGameState, em js/firebase.js). Um id
+       escolhido aqui não encontraria certidão nenhuma. */
+    id: _emitido.id,
     nome, raridade: 'Comum', descricao, descricaoIdx, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
@@ -398,23 +395,15 @@ async function confirmHatch() {
      unico sitio onde o ovo caro valia alguma coisa, e ja nem la valia:
      medido em tools/genetica.js, 24 pontos de gene a mais valiam 0,00
      caracteristicas ao nivel 35. */
-  if (typeof registarNascimento === 'function') {
-    /* O DNA e os pais viajam do ovo para a certidão.
-
-       Quando o ovo é filho de dois avatares, o DNA dele foi cruzado no
-       momento em que foi posto (js/reproducao.js). Sortear um novo aqui
-       era jogar fora a herança e dar ao filho genes de estranho. */
-    registarNascimento(avatarSlots[targetSlot], {
-      origem: 'Comum', seed,
-      dna: dnaDoOvo,
-      mae: ovo.mae || null, pai: ovo.pai || null,
-      maeNome: ovo.maeNome || null, paiNome: ovo.paiNome || null,
-    });
-    // A identidade também guarda os pais — é dela que a árvore vai ler.
-    if (ovo.mae) avatarSlots[targetSlot].mae = ovo.mae;
-    if (ovo.pai) avatarSlots[targetSlot].pai = ovo.pai;
-    avatarSlots[targetSlot].raridade = 'Comum';
-  }
+  /* A certidão não se compõe aqui: veio pronta do servidor, com o DNA
+     que ele guardou quando a cruza aconteceu. Escrevê-la no slot é só
+     para esta sessão ter o que mostrar — no carregamento seguinte é o
+     mapa `certidoes` que manda, e o que estiver no slot é deitado fora. */
+  avatarSlots[targetSlot].nascimento = _emitido.nascimento;
+  // A identidade também guarda os pais — é dela que a árvore vai ler.
+  if (ovo.mae) avatarSlots[targetSlot].mae = ovo.mae;
+  if (ovo.pai) avatarSlots[targetSlot].pai = ovo.pai;
+  avatarSlots[targetSlot].raridade = 'Comum';
   window._pendingEggSlot = targetSlot;
 
   hatchWithAnimation(avatarSlots[targetSlot], targetSlot);

@@ -9,8 +9,6 @@ window.registerStrings(
     'main.bub.inativo':      'Vai sair? Bota ele pra dormir! 🌙',
     'main.log.inativo':      'Inativo há 5min — clique em 💤 DORMIR antes de sair.',
     'main.log.slot_changed': 'Slot ativo alterado para Slot {n} via Marketplace.',
-    'main.log.inbox_eggs':   '🥚 Novos ovos recebidos!',
-    'main.bub.inbox_eggs':   'Ovos chegaram! 🥚',
     'main.zoom.info':        '{rar} · {fase} · Nível {nivel}',
 
     // summon.js
@@ -48,8 +46,6 @@ window.registerStrings(
     'main.bub.inativo':      'Going away? Put it to sleep! 🌙',
     'main.log.inativo':      'Inactive for 5min — click 💤 SLEEP before you go.',
     'main.log.slot_changed': 'Active slot changed to Slot {n} via Marketplace.',
-    'main.log.inbox_eggs':   '🥚 New eggs received!',
-    'main.bub.inbox_eggs':   'Eggs arrived! 🥚',
     'main.zoom.info':        '{rar} · {fase} · Level {nivel}',
 
     // summon.js

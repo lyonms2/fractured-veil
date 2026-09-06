@@ -413,33 +413,89 @@ function fzEscolherPai(idx) {
   _fzRenderCruzar();
 }
 
-function confirmarCruzar() {
+/* ── O OVO VEM DO SERVIDOR ──
+
+   Era composto aqui: o cruzar() do js/reproducao.js sorteava um seed,
+   dele saía de que lado vinha cada alelo, e o ovo entrava no slot. O
+   avatarSlots segue para o Firestore escrito pelo cliente por inteiro,
+   portanto o DNA do filho, o seed da cruza e a própria EXISTÊNCIA do
+   ovo eram três coisas que se escreviam no console.
+
+   Agora pede-se ao handleCruzar (api/pool.js), que lê os genes dos pais
+   do mapa `certidoes` — o que o cliente não escreve — e sorteia o seed
+   com o gerador criptográfico do Node.
+
+   O podeCruzar continua a correr aqui, e continua a ser ele a apagar o
+   botão e a dizer porquê. Quem RECUSA é o servidor; isto é só para o
+   jogador não carregar num botão que já se sabe que não vai dar. */
+async function confirmarCruzar() {
   const par = _fzParEscolhido();
   if (!par) return;
 
-  const r = cruzar(par[0], par[1], {
+  const r0 = podeCruzar(par[0], par[1], {
     ovosNoInventario: _fzOvosNoInventario(), maxOvos: 10 });
-  if (!r.ok) { _fzAvisoCruzar(par); return; }
+  if (!r0.ok) { _fzAvisoCruzar(par); return; }
+
+  const btn = document.getElementById('cruzarBtn');
+  if (btn) btn.disabled = true;
+
+  let ovo;
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'cruzar', idToken,
+                                maeIdx: _fzEscolhidos[0], paiIdx: _fzEscolhidos[1] }),
+    });
+    const json = await resp.json();
+    if (!resp.ok || !json.ok) {
+      /* O servidor manda o MOTIVO como chave de tradução, o mesmo que o
+         podeCruzar usa aqui. Assim uma recusa dele lê-se na língua do
+         jogador em vez de aparecer em português cru vindo da API. */
+      const aviso = document.getElementById('cruzarAviso');
+      if (aviso) aviso.textContent = json.motivo ? t(json.motivo) : (json.erro || '...');
+      if (btn) btn.disabled = false;
+      return;
+    }
+    ovo = json.ovo;
+  } catch (e) {
+    const aviso = document.getElementById('cruzarAviso');
+    if (aviso) aviso.textContent = e.message || '...';
+    if (btn) btn.disabled = false;
+    return;
+  }
+  if (btn) btn.disabled = false;
+
+  /* Quem foi mãe e quem foi pai decidiu-se no servidor, pelo sexo, e
+     vem escrito no ovo. Lê-se de lá em vez de o decidir outra vez aqui:
+     duas leituras da mesma coisa acabam por discordar, e a cerimónia
+     mostrava os dois lado a lado com o rótulo trocado. */
+  const femea = par.find(p => p.id === ovo.mae) || par[0];
+  const macho = par.find(p => p.id === ovo.pai) || par[1];
 
   /* O ovo vai para o inventário do avatar ACTIVO, que é o único que a
      tela dos ovos mostra. Pô-lo no slot de um dos pais escondia-o de
-     quem acabou de o pôr. */
+     quem acabou de o pôr.
+
+     O que fica no slot é só onde ele está: o que o ovo É vive no mapa
+     `ovos`, e é de lá que o carregamento seguinte o vai buscar. */
   const dono = avatarSlots[activeSlotIdx];
   if (!dono) return;
   if (!dono.eggs) dono.eggs = [];
-  dono.eggs.push(r.ovo);
+  dono.eggs.push(ovo);
   if (typeof eggsInInventory !== 'undefined') eggsInInventory = dono.eggs;
 
   fecharCruzar();
   // As horas são as DESTE par: quem cuidou bem dos pais espera menos.
-  const horas = Math.round((r.ovo.chocaEm - Date.now()) / 3600000);
+  const horas = Math.round((ovo.chocaEm - Date.now()) / 3600000);
   /* A cerimónia do ovo ficou sem dono quando a postura sozinha saiu, e
      é aqui que ela passa a fazer sentido: o jogador escolheu os pais e
      merece ver o que saiu. */
   /* A cerimónia leva os DOIS pais. Levava só o ovo, e mostrava o avatar
      ACTIVO a fazer força — que pode não ser nenhum dos dois. */
   if (typeof abrirCerimoniaCruza === 'function')
-    abrirCerimoniaCruza(r.ovo, r.femea, r.macho, r.ovo.chocaEm);
+    abrirCerimoniaCruza(ovo, femea, macho, ovo.chocaEm);
   if (typeof addLog === 'function') addLog(t('repr.feito', { h: horas }), 'leg');
   if (typeof showToast === 'function') showToast(t('repr.feito', { h: horas }), 'ok');
   if (typeof renderEggInventory === 'function') renderEggInventory();

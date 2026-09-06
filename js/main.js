@@ -274,19 +274,15 @@ document.addEventListener('visibilitychange', async () => {
     if(!snap.exists) return;
     const data = snap.data();
     const remoteSlotIdx = data.activeSlotIdx ?? activeSlotIdx;
-    const hasInbox = data.inboxEggs && data.inboxEggs.length > 0;
 
-    if(remoteSlotIdx !== activeSlotIdx || hasInbox) {
+    /* Havia aqui um segundo motivo para recarregar: ovos novos no
+       inboxEggs. Essa caixa era da venda de ovos, que acabou, e nada a
+       enche desde então — ver a nota no applyGameState. */
+    if(remoteSlotIdx !== activeSlotIdx) {
       applyGameState(data);
       updateAllUI();
       if(typeof renderEggInventory === 'function') renderEggInventory();
-      if(remoteSlotIdx !== activeSlotIdx) {
-        addLog(t('main.log.slot_changed', {n: remoteSlotIdx+1}), 'info');
-      }
-      if(hasInbox) {
-        addLog(t('main.log.inbox_eggs'), 'good');
-        showBubble(t('main.bub.inbox_eggs'));
-      }
+      addLog(t('main.log.slot_changed', {n: remoteSlotIdx+1}), 'info');
     }
   } catch(e) { console.warn('visibilitychange sync error:', e); }
 });

@@ -203,6 +203,7 @@ module.exports = async function handler(req, res) {
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
+  if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
 
@@ -544,15 +545,117 @@ async function handleInvocar(req, res, db, uid) {
 }
 
 
-async function handleChocarOvo(req, res, db, poolRef, uid) {
-  const { ovoId, seed } = req.body;
-  if (!ovoId || seed == null) {
+/* ═══════════════════════════════════════════════════════════════════
+   CRUZAR — o servidor compõe o filho
+
+   ── O QUE ISTO FECHA ──
+
+   O DNA de um filho saía do navegador. O confirmarCruzar (js/fazenda.js)
+   chamava o cruzar() do js/reproducao.js, punha o ovo no slot, e o
+   avatarSlots seguia para o Firestore com o ovo lá dentro — num array
+   que o cliente escreve por inteiro. Havia três formas de o forjar, e
+   nenhuma exigia mais do que o console:
+
+     · escrever o DNA do ovo à mão, gene a gene
+     · escolher o SEED da cruza, que decide de que lado vem cada alelo,
+       e repetir até sair o filho desejado
+     · pôr um ovo no slot sem ter cruzado coisa nenhuma
+
+   O terceiro era o mais caro: um ovo é um avatar, e um avatar vende-se
+   por cristais, que saem em MATIC.
+
+   ── ONDE O OVO PASSA A VIVER ──
+
+   Num mapa `ovos` no topo do documento, ao lado do `certidoes` e pela
+   mesma razão: o avatarSlots é um ARRAY e as regras do Firestore não
+   sabem percorrer arrays. Um campo de topo protege-se numa linha.
+
+   O `slot.eggs` continua a existir e o cliente continua a escrevê-lo —
+   mas só para dizer ONDE está cada ovo. O que o ovo É lê-se do mapa, e
+   um ovo que lá não esteja não existe (ver applyGameState, em
+   js/firebase.js, e o handleChocarOvo aqui em baixo).
+
+   ── O QUE ISTO NÃO FECHA ──
+
+   Os pais são lidos do avatarSlots, portanto o nível e o vínculo com
+   que o podeCruzar decide continuam a ser do cliente. Quem os forje
+   cruza mais cedo do que devia — mas o FILHO que sai dessa cruza é
+   composto aqui, dos genes que os pais têm mesmo (que vivem no
+   `certidoes`), com um seed que o servidor sorteia. Fecha-se o que vale.
+   ═══════════════════════════════════════════════════════════════════ */
+const OVOS_MAX = 10;
+
+async function handleCruzar(req, res, db, uid) {
+  const GEN = require('./_genetica.js');
+  const { maeIdx, paiIdx } = req.body;
+  const iA = Number(maeIdx), iB = Number(paiIdx);
+  if (!Number.isInteger(iA) || !Number.isInteger(iB) || iA < 0 || iB < 0 || iA === iB) {
     return res.status(400).json({ erro: 'Parâmetros inválidos.' });
   }
-  const seedStr = String(seed);
-  if (!/^[0-9]+$/.test(seedStr)) {
-    return res.status(400).json({ erro: 'Seed inválido.' });
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+
+      const pData     = snap.data();
+      const slots     = pData.avatarSlots || [];
+      const certidoes = pData.certidoes || {};
+      const ovos      = pData.ovos || {};
+
+      /* A certidão reata-se ao slot AQUI, e não se aceita a que venha
+         no slot: é do mapa que o cliente não escreve que saem os genes
+         com que este filho vai ser composto. Um slot com um
+         `nascimento` escrito à mão não traz gene nenhum para aqui. */
+      const doSlot = (i) => {
+        const s = slots[i];
+        if (!s) return null;
+        const cert = s.id ? certidoes[s.id] : null;
+        if (!cert) return null;
+        return Object.assign({}, s, { nascimento: cert });
+      };
+
+      const a = doSlot(iA), b = doSlot(iB);
+      if (!a || !b) throw new Error('SEM_CERTIDAO');
+
+      /* O limite conta os ovos que o jogador TEM, e não os do slot
+         activo como o cliente conta. É o mesmo número visto de mais
+         longe: o cliente pergunta "cabe aqui?", o servidor pergunta
+         "quantos é que este jogador já tem?" — e é essa a pergunta que
+         impede alguém de encher a colónia com ovos a saltar de slot. */
+      const r = GEN.ovoDeCruza(a, b, {
+        ovosNoInventario: Object.keys(ovos).length, maxOvos: OVOS_MAX,
+      });
+      // O motivo é uma chave de tradução, e vai como está: quem sabe
+      // dizê-la ao jogador na língua dele é o cliente.
+      if (!r.ok) throw new Error('RECUSA:' + r.motivo);
+
+      tx.update(playerRef, { [`ovos.${r.ovo.id}`]: r.ovo });
+      return { ovo: r.ovo };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    if (String(err.message).startsWith('RECUSA:')) {
+      return res.status(400).json({ erro: 'Não é possível cruzar.', motivo: err.message.slice(7) });
+    }
+    const conhecido = {
+      SEM_JOGADOR:  [404, 'Jogador não encontrado.'],
+      SEM_CERTIDAO: [400, 'Um dos avatares não tem certidão emitida pelo servidor.'],
+    }[err.message];
+    if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
+    console.error('[pool/cruzar]', err.message);
+    return res.status(500).json({ erro: 'Erro interno ao cruzar.' });
   }
+}
+
+
+async function handleChocarOvo(req, res, db, poolRef, uid) {
+  const GEN = require('./_genetica.js');
+  const { ovoId } = req.body;
+  if (!ovoId) return res.status(400).json({ erro: 'Parâmetros inválidos.' });
 
   const playerRef = db.collection('players').doc(uid);
 
@@ -561,44 +664,46 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       const [playerSnap, poolSnap] = await Promise.all([tx.get(playerRef), tx.get(poolRef)]);
       if (!playerSnap.exists) throw new Error('SEM_JOGADOR');
 
-      const pData     = playerSnap.data();
-      const inboxEggs = pData.inboxEggs || [];
-      const emitidos  = pData.ovosEmitidos || {};
-      const slotIdx   = pData.activeSlotIdx ?? 0;
-      const slots     = [...(pData.avatarSlots || [])];
-      const slot      = slots[slotIdx];
-      const slotEggs  = slot?.eggs || [];
+      const pData = playerSnap.data();
 
-      // Duas origens, cada uma com a sua prova — o mesmo do listar-ovo.
-      const idxInbox = inboxEggs.findIndex(e => String(e.id) === String(ovoId));
-      const idxSlot  = slotEggs.findIndex(e => String(e.id) === String(ovoId));
-      const emitidoComo = emitidos['o' + String(ovoId)];
+      /* ── A PROVA DE QUE O OVO EXISTE É ELE ESTAR NO MAPA ──
 
-      /* O ovo tem de existir numa das duas listas E ter prova.
+         Eram duas provas, uma por origem: estar no `inboxEggs` (que o
+         servidor enchia quando havia venda de ovos) ou ter registo no
+         `ovosEmitidos` (que o servidor escrevia quando um avatar punha
+         ovos sozinho). As duas coisas acabaram — a venda de ovos e a
+         postura sozinha — e com elas acabou quem escrevia essas provas.
 
-         Guardava-se aqui a raridade dele; já não há nenhuma, e o que
-         interessa é apenas se o ovo é legítimo. O 'Comum' que fica é o
-         que o avataresEmitidos passa a registar para todos — a origem
-         de um avatar, que o api/comprar-avatar.js confere. */
-      const legitimo = (idxInbox !== -1) || (idxSlot !== -1 && emitidoComo);
-      if (!legitimo) throw new Error('OVO_NOT_FOUND');
-      const raridade = 'Comum';
+         O resultado foi um bloqueio: o único ovo que o jogo produz hoje
+         é o de uma cruza, ele nasce no `slot.eggs` e não tem registo em
+         lado nenhum, portanto NENHUM ovo cruzado conseguia chocar.
 
-      const taxa     = HATCH_FEE;
+         Agora a prova é uma só, e é a mesma para todos: o ovo está no
+         mapa `ovos`, que só o handleCruzar escreve. */
+      const ovos = pData.ovos || {};
+      const ovo  = ovos[String(ovoId)];
+      if (!ovo) throw new Error('OVO_NOT_FOUND');
+
+      const taxa = HATCH_FEE;
       const debitoChoca = taxa > 0 ? CRIS.camposDebito(pData, taxa) : null;
       if (taxa > 0 && !debitoChoca) throw new Error('INSUFFICIENT');
 
-      const alteracoes = { [`avataresEmitidos.s${seedStr}`]: raridade };
+      /* O SEED sai daqui, e é a segunda metade do que a cruza já fechou.
 
-      // O ovo sai, e o registo dele com ele — senão ficava a valer para
-      // uma segunda chocagem ou para uma venda depois de já ter nascido.
-      if (idxInbox !== -1) {
-        alteracoes.inboxEggs = FieldValue.arrayRemove(inboxEggs[idxInbox]);
-      } else {
-        slots[slotIdx] = { ...slot, eggs: slotEggs.filter((_, i) => i !== idxSlot) };
-        alteracoes.avatarSlots = slots;
-      }
-      if (emitidoComo) alteracoes[`ovosEmitidos.o${ovoId}`] = FieldValue.delete();
+         Vinha no pedido, sorteado pelo Math.random do navegador. O seed
+         decide o corpo inteiro do bicho e a ficha de combate — quem
+         insistisse sorteava até gostar, e o ovo não se gastava enquanto
+         não gostasse. */
+      const { id, seed, nascimento } = GEN.certidaoDeChoco(ovo);
+
+      /* O ovo sai do mapa no mesmo movimento em que o avatar entra.
+         Sem isto ele ficava a valer para uma segunda chocagem: um ovo,
+         dois avatares. */
+      const alteracoes = {
+        [`certidoes.${id}`]: nascimento,
+        [`avataresEmitidos.s${String(seed)}`]: 'Comum',
+        [`ovos.${String(ovoId)}`]: FieldValue.delete(),
+      };
 
       if (taxa > 0) {
         Object.assign(alteracoes, debitoChoca);
@@ -609,7 +714,7 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       }
 
       tx.update(playerRef, alteracoes);
-      return { raridade, taxa, novosCristais: cristais - taxa };
+      return { id, seed, nascimento, raridade: 'Comum', taxa };
     });
 
     return res.status(200).json({ ok: true, ...saida });

@@ -80,7 +80,25 @@ service cloud.firestore {
                  Vivia no gs.totalInvocacoes, dentro do documento que o
                  cliente escreve por inteiro: pôr o número a zero e
                  invocar outra vez era uma linha no console. */
-              'invocacoesUsadas'];
+              'invocacoesUsadas',
+              /* OS OVOS. Um ovo É o DNA do filho que está lá dentro,
+                 e esse DNA vale o mesmo que o de um avatar — e um avatar
+                 vende-se por cristais, que saem em MATIC.
+
+                 Viviam dentro do avatarSlots, em slot.eggs, e portanto
+                 escreviam-se no console de três maneiras: os genes à
+                 mão, o seed da cruza sorteado até sair o filho desejado,
+                 ou um ovo inteiro do nada sem ter cruzado coisa nenhuma.
+
+                 Mudaram de casa pela razão de sempre: as regras não
+                 sabem percorrer arrays, e um campo de topo protege-se
+                 numa linha. O slot.eggs continua a existir e o cliente
+                 continua a escrevê-lo, mas só para dizer ONDE está cada
+                 ovo — o que o ovo É lê-se daqui.
+
+                 Quem os escreve é o handleCruzar do api/pool.js, e quem
+                 os apaga é o handleChocarOvo. */
+              'ovos'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do

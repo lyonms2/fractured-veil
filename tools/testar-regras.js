@@ -128,6 +128,20 @@ async function ler(doc) {
   ok('EXPLOIT recuar as invocações',  await escrever('M','M',{'invocacoesUsadas':2}), 403);
   ok('conta nova já com invocações',  await escrever('N','N',{'invocacoesUsadas':0}), 403);
 
+  /* ── ovos: o DNA do filho ──
+
+     Um ovo É o DNA de quem vai nascer dele, e vale o mesmo que um
+     avatar. Vivia dentro do avatarSlots, em slot.eggs: escrevia-se no
+     console um ovo do nada, ou os genes de um ovo real à mão.
+
+     O slot.eggs fica a dizer só ONDE está cada ovo — por isso a última
+     verificação, que continua a deixar o cliente gravar o avatarSlots. */
+  await escrever(null,'O',{'ovos.ov1':{dna:'x'},'gs.moedas':10}, true);
+  ok('EXPLOIT forjar o DNA de um ovo', await escrever('O','O',{'ovos.ov1':{dna:'y'}}), 403);
+  ok('EXPLOIT inventar um ovo',        await escrever('O','O',{'ovos.ov9':{dna:'y'}}), 403);
+  ok('EXPLOIT apagar os ovos',         await escrever('O','O',{'ovos':{}}), 403);
+  ok('conta nova já com ovos',         await escrever('P','P',{'ovos.ov1':{dna:'y'}}), 403);
+
   // ── os mercados: o cliente só lê ──
   async function mercado(col, uid, campos) {
     const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {
