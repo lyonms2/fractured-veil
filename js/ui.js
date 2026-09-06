@@ -840,7 +840,11 @@ function rebuildScreensParaSlot() {
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
     const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
     if(typeof updateResourceUI === 'function') updateResourceUI();
-    /* Abre-se SEMPRE, mesmo com a colónia inteiramente vazia.
+    /* Menos quando o prólogo vem a caminho: aí não se desenha nada, e a
+       história é a primeira coisa que o jogador vê. Ver prologoPendente,
+       em js/prologo.js. */
+    if(typeof prologoPendente === 'function' && prologoPendente()) return;
+    /* Fora isso abre-se SEMPRE, mesmo com a colónia inteiramente vazia.
 
        A primeira versão disto só a abria se houvesse alguém vivo, e o
        outro caso ficava com todas as telas escondidas — uma tela em

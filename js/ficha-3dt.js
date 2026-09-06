@@ -586,9 +586,21 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
     indole: (typeof indoleDominante === 'function' && nascimento && nascimento.dna)
       ? indoleDominante(nascimento.dna) : null,
     vocacao,
-    sexo: (typeof sexoDoDna === 'function' && nascimento && nascimento.dna)
-      ? sexoDoDna(nascimento.dna, seed)
-      : (typeof _sexoDoSeed === 'function' ? _sexoDoSeed(seed) : 'F'),
+    /* O sexo EXPRESSO, e não recontado.
+
+       Isto refazia a conta a partir do DNA e do seed. A certidão já traz
+       o resultado dela, escrito no dia em que o avatar nasceu
+       (nascer(), em js/nascimento.js) — e é dele que o resto do jogo
+       lê, pelo sexoDe(). Duas leituras da mesma coisa acabam por
+       discordar, e quando discordassem o jogo dizia "macho" na ficha e
+       tratava-o por "a Nobre" ao lado. Fica uma.
+
+       O recálculo continua a ser o caminho de quem não tem certidão —
+       os avatares antigos —, que é o mesmo que o sexoDe() faz. */
+    sexo: (nascimento && nascimento.sexo) ? nascimento.sexo
+      : (typeof sexoDoDna === 'function' && nascimento && nascimento.dna)
+        ? sexoDoDna(nascimento.dna, seed)
+        : (typeof _sexoDoSeed === 'function' ? _sexoDoSeed(seed) : 'F'),
     // A certidao, para quem so tem a ficha em maos.
     nascimento: nascimento || null,
   };

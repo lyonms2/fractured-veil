@@ -232,6 +232,22 @@ function fecharPrologo() {
 // espera o splash sair — abrir por cima dele mostrava o prólogo a
 // aparecer por baixo de uma cortina que ainda estava subindo.
 // ═══════════════════════════════════════════════════════════════════
+/* ── ESTÁ PARA VIR? ──
+
+   Quem pergunta é a tela: com um slot vazio ela abre a colónia, e num
+   jogador NOVO a colónia está vazia — portanto o que aparecia logo a
+   seguir ao login era "Nenhuma criatura por aqui", meio segundo antes
+   de o prólogo subir por cima. A primeira coisa que o jogo mostrava era
+   uma casa vazia com um recado a mandar ao mercado.
+
+   Com isto, quem sabe que o prólogo vem a caminho não desenha nada, e o
+   jogador vê a história e mais nada. */
+function prologoPendente() {
+  if (typeof gs === 'undefined' || gs.prologoVisto) return false;
+  if (typeof avatarSlots !== 'undefined' && avatarSlots.some(s => s)) return false;
+  return ((typeof window !== 'undefined' && window._invocacoesUsadas) || 0) === 0;
+}
+
 function talvezAbrirPrologo() {
   if (prologoJaVisto()) {
     /* ── E SE A CHEGADA FICOU A MEIO ──

@@ -266,6 +266,27 @@
 .ov-name-label { font-family:'EB Garamond',serif; font-style:italic; font-size:1rem; opacity:0; transform:translateY(0.5rem); transition:all .5s ease .15s; z-index:2; color:#d4c8f0; }
 .ov-rarity-label.show, .ov-name-label.show { opacity:1; transform:translateY(0); }
 
+/* O CLARÃO DA PASSAGEM.
+
+   A cerimónia mostrava o bicho a crescer do nada, e lia-se como um
+   desenho a aparecer e não como um ser a atravessar. Faltava-lhe o
+   instante: uma Fratura que larga alguém no mundo dá um sinal, e o
+   sinal é luz.
+
+   Acende debaixo dele e apaga-se em menos de um segundo — chega para se
+   ver de onde ele veio, e não chega para tapar o que ele é. */
+.ov-clarao {
+  position:absolute; top:50%; left:50%;
+  width:1.25rem; height:1.25rem; margin:-0.625rem 0 0 -0.625rem;
+  border-radius:50%; pointer-events:none; z-index:1;
+  animation:ov-clarao .85s ease-out forwards;
+}
+@keyframes ov-clarao {
+  0%   { width:1.25rem;  height:1.25rem;  margin:-0.625rem 0 0 -0.625rem; opacity:0; }
+  18%  { opacity:.92; }
+  100% { width:26rem; height:26rem; margin:-13rem 0 0 -13rem; opacity:0; }
+}
+
 /* ══════════════════════════════════════
    EGG SCREEN
 ══════════════════════════════════════ */

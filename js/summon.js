@@ -129,10 +129,6 @@ async function voltarAColonia() {
    é a do js/eggs.js. Invocado sai da Fratura; filho sai do ovo.
    ═══════════════════════════════════════════════════════════════════ */
 
-// Quanto dura uma chegada, do preto ao preto. Três seguidas são ~10s —
-// medido, e é o orçamento inteiro da abertura do jogo.
-const CHEGADA_MS = 3400;
-
 /* Pede um avatar ao servidor e escreve-o no slot. Sem interface
    nenhuma: quem mostra é a cerimónia, a seguir.
 
@@ -225,47 +221,140 @@ async function _emitirAvatar(slotIdx) {
     if (_c.nascidoEm)           avatarSlots[slotIdx].nascidoEm   = _c.nascidoEm;
   }
 
+  /* ── E OS GLOBAIS VÃO COM ELE ──
+
+     O jogo tem uma cópia do slot ATIVO em variáveis soltas (nivel, xp,
+     hatched, vitals...), e o getGameState() escreve-as de volta no slot
+     antes de cada gravação (saveRuntimeToSlot, em js/state.js).
+
+     Sem esta linha, o avatar nascia no slot 0 e o primeiro save que
+     calhasse durante a cerimónia — o relógio do jogo grava sozinho —
+     escrevia por cima dele os globais de ANTES, que dizem hatched:false
+     e faseVista:-1. O bicho ficava por chocar, a tela dos cuidados
+     abria vazia, e só um refresh o repunha.
+
+     Era isto que o `pendingEgg` protegia no caminho antigo: o
+     js/firebase.js não grava slots com essa marca. Sem ovo não há
+     pendingEgg, e a proteção passa a ser esta — que é mais direta:
+     em vez de proibir a gravação, põe-se o que se grava certo. */
+  if (slotIdx === activeSlotIdx) loadRuntimeFromSlot(slotIdx);
+
   return avatarSlots[slotIdx];
 }
 
 
-/* A cerimónia de UM. Devolve uma promessa que se cumpre quando a tela
-   volta ao preto — é assim que as três se encadeiam sem se pisarem. */
+/* ═══════════════════════════════════════════════════════════════════
+   O PALCO
+
+   ── PORQUE É UM SÓ, E NÃO TRÊS ──
+
+   Cada chegada abria e fechava o seu overlay. Entre a primeira e a
+   segunda, e outra vez entre a segunda e a terceira, o jogo aparecia
+   por baixo durante um instante — a colónia meio montada, o cartão
+   vazio. Três cerimónias com duas piscadelas no meio.
+
+   O palco abre uma vez, fica preto do princípio ao fim, e os três
+   atravessam-no um a seguir ao outro. Só fecha quando o último passou.
+   ═══════════════════════════════════════════════════════════════════ */
+function _abrirPalco() {
+  const ov = document.getElementById('summonOverlay');
+  const bg = document.getElementById('ovBg');
+  if (!ov || !bg) return Promise.resolve();
+
+  document.getElementById('ovAvatar').style.opacity = '0';
+  document.getElementById('ovRing1').style.opacity  = '0';
+  document.getElementById('ovRing2').style.opacity  = '0';
+  document.getElementById('ovParticles').innerHTML  = '';
+
+  ov.classList.add('active');
+
+  /* O PRETO ENTRA JA, SEM TRANSICAO.
+
+     Estava a subir de 0 a 1 nos 0,6s da transicao do .ov-bg, e num
+     arranque carregado — o gerarSVG de 200x200, as particulas, o
+     proprio prologo a sair — esses 0,6s nao tinham comecado quando a
+     primeira chegada ja ia a meio. Medido: 0,58 de opacidade quase dois
+     segundos depois de abrir, com a consola do jogo a ver-se por
+     baixo.
+
+     Aqui liga-se o preto no mesmo instante, e a entrada suave fica por
+     conta da transicao do proprio #summonOverlay, que ja existe. A
+     transicao do fundo devolve-se a seguir, para o fecho a poder usar. */
+  bg.style.transition = 'none';
+  bg.style.opacity    = '1';
+  void bg.offsetWidth;
+  bg.style.transition = '';
+
+  /* Espera o preto ficar mesmo preto antes de deixar começar.
+
+     O prólogo leva 1300ms a sair e é ele que está por cima. A cerimónia
+     arrancava já, portanto os anéis a abrir e o bicho a atravessar —
+     que são o melhor dela — aconteciam por baixo de um texto ainda
+     visível. O jogador só apanhava o fim, e o fim é o desvanecer.
+
+     Os dois fundos são pretos, portanto ninguém vê a troca: vê-se a
+     história desaparecer e a Fratura começar a abrir a seguir. */
+  return new Promise(r => setTimeout(r, 900));
+}
+
+function _fecharPalco() {
+  const ov = document.getElementById('summonOverlay');
+  const bg = document.getElementById('ovBg');
+  if (!ov || !bg) return Promise.resolve();
+  bg.style.opacity = '0';
+  return new Promise(r => setTimeout(() => {
+    ov.classList.remove('active');
+    document.getElementById('ovParticles').innerHTML = '';
+    r();
+  }, 600));
+}
+
+
+/* ── UMA CHEGADA ──
+
+   O palco já está aberto e preto. Aqui só se abre a Fratura, passa o
+   bicho, e fecha-se outra vez — a promessa cumpre-se quando o círculo
+   está vazio e pronto para o seguinte.
+
+   O que ela tem, e a versão anterior não tinha: um CLARÃO no instante
+   da passagem. Sem ele o bicho crescia do nada e a cena ficava morna —
+   uma Fratura que se abre e larga um ser inteiro no mundo tem de dar um
+   sinal, e o sinal é luz. */
+const CHEGADA_MS = 3600;
+
 function cerimoniaDeChegada(av) {
   return new Promise((resolve) => {
-    const ov      = document.getElementById('summonOverlay');
-    const ovBg    = document.getElementById('ovBg');
+    const ovAv    = document.getElementById('ovAvatar');
     const r1      = document.getElementById('ovRing1');
     const r2      = document.getElementById('ovRing2');
-    const ovAv    = document.getElementById('ovAvatar');
+    const circulo = document.getElementById('ovCircle');
     const ovParts = document.getElementById('ovParticles');
-    if (!ov || !ovAv) { resolve(); return; }
+    if (!ovAv || !circulo) { resolve(); return; }
 
-    /* A cor da Fratura é a do bicho que a atravessa. Sai do mesmo sítio
-       de onde saía a do ovo — os degraus de cor da criatura — porque é
-       a mesma pergunta: de que cor é este? */
+    /* A cor da Fratura é a do bicho que a atravessa: é a mesma pergunta
+       que o ovo fazia — de que cor é este? */
     const grad = (typeof gradienteDoOvo === 'function' && av && av.nascimento)
-      ? gradienteDoOvo(av)
-      : { aura: '#8b5cf6' };
-    const cor = grad.aura;
+      ? gradienteDoOvo(av) : { aura: '#8b5cf6', brilho: '#c0a0ff' };
+    const cor  = grad.aura;
+    const luz  = grad.brilho || cor;
 
-    ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05);transition:none;display:flex;align-items:center;justify-content:center;';
-    r1.style.cssText = r2.style.cssText = 'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
-    ovParts.innerHTML  = '';
-    ovBg.style.opacity = '0';
-
-    /* ── E AQUI ESTÁ O BICHO ──
-
-       Estava aqui um ovo desenhado à mão em SVG. É o mesmo desenho que
-       a colónia mostra, com a fase 0 — um bebé, que é o que ele é. */
+    ovAv.style.transition = 'none';
+    ovAv.style.opacity    = '0';
+    ovAv.style.transform  = 'scale(.06)';
+    ovAv.style.color      = cor;          // o drop-shadow do .ov-avatar usa currentColor
     ovAv.innerHTML = (typeof gerarSVG === 'function')
       ? gerarSVG(av, 'Comum', av.seed, 200, 200, 0) : '';
 
-    for (let i = 0; i < 14; i++) {
+    r1.style.cssText = r2.style.cssText =
+      'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
+
+    // As poeiras que sobem, na cor dele.
+    ovParts.innerHTML = '';
+    for (let i = 0; i < 16; i++) {
       const p  = document.createElement('div');
       const sz = 2 + Math.random() * 5;
       p.className = 'ov-particle';
-      p.style.cssText = `width:${sz/16}rem;height:${sz/16}rem;left:${10+Math.random()*80}%;bottom:-0.625rem;background:${cor};box-shadow:0 0 ${(sz*2)/16}rem ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+      p.style.cssText = `width:${sz/16}rem;height:${sz/16}rem;left:${8+Math.random()*84}%;bottom:-0.625rem;background:${cor};box-shadow:0 0 ${(sz*2)/16}rem ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*1.5}s;`;
       ovParts.appendChild(p);
     }
 
@@ -273,46 +362,53 @@ function cerimoniaDeChegada(av) {
       const sw = document.createElement('div');
       sw.className = 'ov-shockwave';
       sw.style.cssText = `border-color:${cor};position:absolute;top:50%;left:50%;`;
-      document.getElementById('ovCircle').appendChild(sw);
+      circulo.appendChild(sw);
       setTimeout(() => sw.remove(), 700);
     };
 
-    ov.classList.add('active');
-    setTimeout(() => { ovBg.style.opacity = '1'; }, 30);
+    // ── a Fratura abre ──
+    setTimeout(() => {
+      r1.style.cssText = `position:absolute;inset:0.625rem;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 1.5rem ${cor}66,inset 0 0 1.5rem ${cor}33;transition:opacity .55s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { r1.style.opacity = '.75'; }));
+    }, 120);
+    setTimeout(() => {
+      r2.style.cssText = `position:absolute;inset:2.5rem;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 1.125rem ${cor}55;transition:opacity .45s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { r2.style.opacity = '.55'; }));
+    }, 380);
+    setTimeout(onda, 650);
 
-    // A Fratura abre: dois anéis a girar em sentidos contrários.
+    /* ── E ATRAVESSA ──
+       O clarão primeiro, o bicho dentro dele. A ordem importa: a luz
+       tem de estar acesa quando ele aparece, senão vê-se o desenho a
+       crescer em vez de o ver a sair de algum lado. */
     setTimeout(() => {
-      r1.style.cssText = `position:absolute;inset:0.625rem;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 1.25rem ${cor}50,inset 0 0 20px ${cor}20;transition:opacity .5s`;
-      requestAnimationFrame(() => requestAnimationFrame(() => { r1.style.opacity = '.7'; }));
-    }, 250);
-    setTimeout(() => {
-      r2.style.cssText = `position:absolute;inset:2.5rem;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 0.9375rem ${cor}40;transition:opacity .4s`;
-      requestAnimationFrame(() => requestAnimationFrame(() => { r2.style.opacity = '.5'; }));
-    }, 500);
-    setTimeout(onda, 700);
+      const flash = document.createElement('div');
+      flash.className = 'ov-clarao';
+      /* Nucleo branco. So com a cor do bicho o clarao lia-se como mais
+         um anel colorido; o branco no meio e o que diz "abriu-se aqui". */
+      flash.style.cssText = `background:radial-gradient(circle, #ffffff 0%, ${luz} 22%, ${cor}99 45%, transparent 72%);`;
+      circulo.appendChild(flash);
+      setTimeout(() => flash.remove(), 900);
+    }, 900);
 
-    // E ele atravessa.
     setTimeout(() => {
-      ovAv.style.transition = 'all .8s cubic-bezier(.34,1.5,.64,1)';
+      ovAv.style.transition = 'opacity .5s ease-out, transform 1s cubic-bezier(.22,1.35,.5,1)';
       ovAv.style.opacity    = '1';
       ovAv.style.transform  = 'scale(1)';
-    }, 850);
-    setTimeout(onda, 1650);
+    }, 1000);
 
-    // A Fratura fecha-se atrás dele.
+    setTimeout(onda, 1750);
+
+    // ── e a Fratura fecha-se atrás dele ──
     setTimeout(() => {
-      ovAv.style.transition = 'all .55s ease-in';
+      ovAv.style.transition = 'opacity .6s ease-in, transform .6s ease-in';
       ovAv.style.opacity    = '0';
-      ovAv.style.transform  = 'scale(1.12)';
+      ovAv.style.transform  = 'scale(1.14)';
       r1.style.opacity = r2.style.opacity = '0';
-      ovBg.style.opacity = '0';
-    }, CHEGADA_MS - 600);
+    }, CHEGADA_MS - 700);
 
-    setTimeout(() => {
-      ov.classList.remove('active');
-      ovParts.innerHTML = '';
-      resolve();
-    }, CHEGADA_MS);
+    // O fundo NÃO se apaga entre chegadas — ver _abrirPalco.
+    setTimeout(resolve, CHEGADA_MS);
   });
 }
 
@@ -338,6 +434,8 @@ async function invocarOsTres() {
     lockBodyScroll();
   }
 
+  await _abrirPalco();
+
   let nascidos = 0;
   const livres = getUnlockedSlots();
 
@@ -355,6 +453,8 @@ async function invocarOsTres() {
     await cerimoniaDeChegada(av);
     addLog(t('summon.log.chegou', { nome: alcunhaDe(av) || nomeCurto(av), n: idx + 1 }), 'good');
   }
+
+  await _fecharPalco();
 
   if (window._summonTravou && typeof unlockBodyScroll === 'function') {
     window._summonTravou = false;

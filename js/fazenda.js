@@ -299,14 +299,23 @@ async function cuidarDe(idx) {
   // ficava preso na lista sem conseguir entrar em ninguém.
   fzSairDaColonia();
   if (idx !== activeSlotIdx && typeof switchSlot === 'function') {
+    // Ele grava o anterior, carrega o novo e chama o
+    // rebuildScreensParaSlot no fim.
     await switchSlot(idx);
-  }
-  // Quem decide QUAL tela abrir é o rebuildScreensParaSlot, que o
-  // switchSlot já chamou. Só se força o aliveScreen quando não houve
-  // troca nenhuma e portanto ninguém reconstruiu nada.
-  if (idx === activeSlotIdx) {
-    const alive = document.getElementById('aliveScreen');
-    if (alive && hatched && !dead) alive.style.display = 'flex';
+  } else if (typeof rebuildScreensParaSlot === 'function') {
+    /* ── ENTRAR NO QUE JÁ ESTÁ ABERTO TAMBÉM RECONSTRÓI ──
+
+       Aqui só se punha o aliveScreen a `flex` e mais nada. A tela
+       aparecia VAZIA: o desenho da criatura e o cartão dela são
+       escritos pelo rebuildScreensParaSlot, e ninguém o chamava neste
+       ramo.
+
+       Ninguém dava por isso enquanto o jogo levava o jogador direto
+       para os cuidados depois de invocar — chegava lá com tudo já
+       desenhado. Com a colónia a ser a primeira tela, o primeiro
+       CUIDAR do jogo cai exactamente aqui, porque o slot 0 já é o
+       activo. */
+    rebuildScreensParaSlot();
   }
   if (typeof updateAllUI === 'function') updateAllUI();
 }
