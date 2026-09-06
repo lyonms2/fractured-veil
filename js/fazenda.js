@@ -333,9 +333,10 @@ function voltarAFazenda() { abrirFazenda(); }
 // ═══════════════════════════════════════════════════════════════════
 let _fzEscolhidos = [];
 
+/* Quantos ovos há na CASA. Contava os do slot activo, que era onde
+   eles viviam; hoje a chocadeira é da colónia e a conta é uma só. */
 function _fzOvosNoInventario() {
-  const s = avatarSlots[activeSlotIdx];
-  return (s && s.eggs ? s.eggs.length : 0);
+  return (typeof eggsInInventory !== 'undefined' && eggsInInventory) ? eggsInInventory.length : 0;
 }
 
 function abrirCruzar() {
@@ -483,17 +484,16 @@ async function confirmarCruzar() {
   const femea = par.find(p => p.id === ovo.mae) || par[0];
   const macho = par.find(p => p.id === ovo.pai) || par[1];
 
-  /* O ovo vai para o inventário do avatar ACTIVO, que é o único que a
-     tela dos ovos mostra. Pô-lo no slot de um dos pais escondia-o de
-     quem acabou de o pôr.
+  /* ── O OVO VAI PARA A CHOCADEIRA ──
 
-     O que fica no slot é só onde ele está: o que o ovo É vive no mapa
-     `ovos`, e é de lá que o carregamento seguinte o vai buscar. */
-  const dono = avatarSlots[activeSlotIdx];
-  if (!dono) return;
-  if (!dono.eggs) dono.eggs = [];
-  dono.eggs.push(ovo);
-  if (typeof eggsInInventory !== 'undefined') eggsInInventory = dono.eggs;
+     Ia para o inventário do avatar ACTIVO, e quem trocasse de avatar
+     deixava de o ver. Um ovo não é de um avatar: é da casa, como a
+     própria cruza, que se faz na colónia com dois quaisquer.
+
+     A chocadeira é uma só (eggsInInventory), e o que o ovo É vive no
+     mapa `ovos` do servidor — de onde o carregamento seguinte o traz. */
+  if (typeof eggsInInventory === 'undefined') return;
+  eggsInInventory.push(ovo);
 
   fecharCruzar();
   // As horas são as DESTE par: quem cuidou bem dos pais espera menos.

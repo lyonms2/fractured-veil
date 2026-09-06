@@ -407,10 +407,10 @@ Object.defineProperty(window, 'avatar', {
 function saveRuntimeToSlot(idx) {
   if(idx === undefined) idx = activeSlotIdx;
   if(!avatarSlots[idx]) {
-    if(eggsInInventory.length > 0 || itemInventory.length > 0) {
-      window._orphanEggs  = eggsInInventory.map(e => ({...e}));
-      window._orphanItems = itemInventory.map(i => ({...i}));
-    }
+    /* Os ITENS ficam órfãos e são recuperados no carregamento seguinte;
+       os OVOS já não, porque deixaram de ser de um slot — a chocadeira
+       é da colónia (ver applyGameState, em js/firebase.js). */
+    if(itemInventory.length > 0) window._orphanItems = itemInventory.map(i => ({...i}));
     return;
   }
   Object.assign(avatarSlots[idx], {
@@ -424,7 +424,10 @@ function saveRuntimeToSlot(idx) {
     nivelVisto: nivelVisto >= 1 ? nivelVisto : nivel,
     petCooldown,
     vitals:         {...vitals},
-    eggs:           eggsInInventory.map(e => ({...e})),
+    /* Os ovos não entram: a chocadeira é da COLÓNIA e não deste slot.
+       Vive no mapa `ovos` do servidor e no eggsInInventory em memória —
+       ver applyGameState, em js/firebase.js. Copiá-los para o slot era
+       o que os prendia a um avatar. */
     items:          itemInventory.map(i => ({...i})),
     diseaseStress:  {...diseaseStress},
     activeDiseases: [...activeDiseases],
@@ -441,7 +444,9 @@ function loadRuntimeFromSlot(idx) {
     faseVista = -1; nivelVisto = -1;
     petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
-    eggsInInventory = s?.eggs  ? s.eggs.map(e => ({...e}))  : [];
+    // O eggsInInventory NÃO se toca: é a chocadeira da colónia, e não
+    // deste slot. Esvaziá-la aqui fazia os ovos sumirem ao entrar num
+    // slot vazio.
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
     diseaseStress   = { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
     activeDiseases  = [];
@@ -470,7 +475,7 @@ function loadRuntimeFromSlot(idx) {
   nivelVisto     = (s.nivelVisto >= 1) ? s.nivelVisto : nivel;
   petCooldown    = s.petCooldown    ?? 0;
   if(s.vitals) Object.assign(vitals, s.vitals);
-  eggsInInventory = s.eggs  ? s.eggs.map(e => ({...e}))  : [];
+  // Idem: a chocadeira atravessa as trocas de avatar, porque é da casa.
   itemInventory   = s.items ? s.items.map(i => ({...i})) : [];
   diseaseStress   = s.diseaseStress  ? {...s.diseaseStress}  : { exaustao:0, desnutricao:0, infeccao:0, melancolia:0, fratura:0 };
   activeDiseases  = s.activeDiseases ? [...s.activeDiseases] : [];

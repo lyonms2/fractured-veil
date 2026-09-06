@@ -201,23 +201,11 @@ function getGameState() {
          postura, e um ovo por chocar podia apodrecer à espera. Agora o
          relógio só anda quando o ovo está pronto e sem ninho, e é o
          ovoPodre que sabe disso. */
-      /* ── DAQUI VAI SÓ ONDE O OVO ESTÁ ──
-
-         Ia o ovo inteiro: o DNA do filho, os pais, os retratos, a hora
-         de chocar. Tudo isso é o que o ovo VALE, e ia num array que o
-         cliente escreve por inteiro — quem abrisse o console escrevia
-         os genes do próprio filho, ou inventava um ovo do nada.
-
-         Passou para o mapa `ovos`, que só o servidor escreve. O que
-         fica aqui é a colocação — em que slot está e por que ordem — e
-         o relógio do apodrecimento, que é do cliente. O applyGameState
-         reata o resto pelo id; ver a nota lá em cima. */
-      eggs:           (s.eggs  || []).filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e))).map(e => ({
-        id: e.id,
-        // Desde quando está preso sem slot. Tem de sobreviver ao save:
-        // sem isto, fechar o jogo devolvia ao ovo os sete dias todos.
-        semNinhoDesde: e.semNinhoDesde || null,
-      })),
+      /* Os ovos saíram daqui de vez. Iam inteiros — o DNA do filho, os
+         pais, os retratos — num array que o cliente escreve, e depois
+         só a colocação. Hoje não vai nem isso: a chocadeira é da
+         colónia e vive no mapa `ovos` do servidor, com o relógio de
+         apodrecer ao lado, no `ovosSemNinho`. Ver applyGameState. */
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats
       diasVida:   s.bornAt ? Math.floor((Date.now()-s.bornAt)/86400000) : 0,
@@ -234,6 +222,14 @@ function getGameState() {
 
   return {
     avatarSlots:   slotsSafe,
+    /* Desde quando cada ovo está pronto e sem sítio para ir. É o único
+       pedaço do ovo que é do cliente: quem o escreve é o relógio do
+       jogo (_tickChocadeira, em js/gametick.js), e ele só serve para o
+       ovo apodrecer — não decide o que o ovo É, que é o que o servidor
+       guarda. */
+    ovosSemNinho:  Object.fromEntries(
+      (eggsInInventory || []).filter(e => e && e.id != null && e.semNinhoDesde)
+                             .map(e => [String(e.id), e.semNinhoDesde])),
     activeSlotIdx: activeSlotIdx,
     gs:            _gsSemDinheiro(),
     // cambioLog não vai: é do servidor (limite diário do câmbio)
@@ -316,17 +312,26 @@ function applyGameState(data) {
      conversa. */
   const _mortos = (data.mortos && typeof data.mortos === 'object') ? data.mortos : {};
 
-  const _ovosSrv = (data.ovos && typeof data.ovos === 'object') ? data.ovos : {};
-  const _reatarOvo = e => {
-    if (!e || e.id == null) return null;
-    const o = _ovosSrv[String(e.id)];
-    if (!o) return null;
-    /* O que o SERVIDOR sabe sobrepõe-se; o que ele não guarda — desde
-       quando o ovo está sem ninho — fica do lado do cliente, porque é o
-       relógio do jogo que o escreve (js/gametick.js) e não vale nada
-       para ninguém a não ser para o próprio ovo apodrecer. */
-    return Object.assign({}, o, { id: String(e.id), semNinhoDesde: e.semNinhoDesde || null });
-  };
+  /* ── A CHOCADEIRA É DA COLÓNIA ──
+
+     Os ovos viviam dentro de um slot — `slot.eggs` — e a chocadeira
+     mostrava os do avatar ABERTO. Um ovo posto pela cruza ia para o
+     slot activo, e quem trocasse de avatar deixava de o ver.
+
+     Não faz sentido nenhum: um ovo não é de um avatar, é da casa. E o
+     servidor já os guardava assim desde que o mapa `ovos` existe — era
+     só o cliente que os espalhava.
+
+     Aqui montam-se numa lista só, a da colónia. O `semNinhoDesde` — o
+     relógio de apodrecer — é a única parte que o servidor não guarda,
+     porque quem o escreve é o relógio do jogo (js/gametick.js); vem do
+     mapa `ovosSemNinho`, ao lado. */
+  const _ovosSrv  = (data.ovos && typeof data.ovos === 'object') ? data.ovos : {};
+  const _semNinho = (data.ovosSemNinho && typeof data.ovosSemNinho === 'object') ? data.ovosSemNinho : {};
+
+  eggsInInventory = Object.keys(_ovosSrv).map(id => Object.assign({}, _ovosSrv[id], {
+    id, semNinhoDesde: _semNinho[id] || null,
+  })).sort((a, b) => (a.postoEm || 0) - (b.postoEm || 0));
 
   // Restore slots
   if(data.avatarSlots) {
@@ -354,7 +359,7 @@ function applyGameState(data) {
       }
       restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
       if (s.id && _mortos[s.id]) restored.dead = true;
-      if (Array.isArray(s.eggs)) restored.eggs = s.eggs.map(_reatarOvo).filter(Boolean);
+      delete restored.eggs;   // a chocadeira é da colónia — ver a nota acima
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
          os elementos que o jogo já não tinha, outra reanexava ao avatar
          a entrada da tabela de características.
@@ -439,43 +444,35 @@ function applyGameState(data) {
       slot.items = slot.items.filter(i => !i.expiraEm || _now <= i.expiraEm);
       if(slot.items.length < bi) console.log(`[applyGameState] ${bi - slot.items.length} item(s) expirado(s) removido(s).`);
     }
-    if(slot.eggs) {
-      // Os ovos apodreciam em SILÊNCIO: iam para um console.log que só o
-      // programador vê. Os itens sempre avisaram ("expirou após 30
-      // dias") — quem perdia um ovo lendário nunca ficava sabendo.
-      const podres = slot.eggs.filter(e => typeof ovoPodre === 'function' && ovoPodre(e, _now));
-      slot.eggs = slot.eggs.filter(e => !(typeof ovoPodre === 'function' && ovoPodre(e, _now)));
-      if(podres.length) {
-        window._ovosPodres = (window._ovosPodres || []).concat(
-          podres.map(e => ({ id: e.id, semNinhoDesde: e.semNinhoDesde })));
-      }
-    }
   });
+
+  /* ── OS QUE APODRECERAM ──
+
+     Isto corria slot a slot, porque os ovos viviam dentro dos slots.
+     A chocadeira é uma só, e a varredura também.
+
+     Os ovos apodreciam em SILÊNCIO: iam para um console.log que só o
+     programador vê. Os itens sempre avisaram ("expirou após 30 dias") —
+     quem perdia um ovo nunca ficava sabendo. O recado fica guardado
+     para quem o mostra. */
+  if (typeof ovoPodre === 'function' && eggsInInventory.length) {
+    const podres = eggsInInventory.filter(e => ovoPodre(e, _now));
+    if (podres.length) {
+      eggsInInventory = eggsInInventory.filter(e => !ovoPodre(e, _now));
+      window._ovosPodres = (window._ovosPodres || []).concat(
+        podres.map(e => ({ id: e.id, semNinhoDesde: e.semNinhoDesde })));
+    }
+  }
 
   // Load active slot into runtime variables
   loadRuntimeFromSlot(activeSlotIdx);
 
   // Dead state vem do Firebase — fallback via RTDB presence (ver setupPresence/getPresenceData)
 
-  /* Os ovos que ficaram sem slot em memória — o saveRuntimeToSlot
-     guarda-os aqui quando o slot activo é nulo (js/state.js) — voltam
-     ao inventário. Não são ovos novos: são os mesmos, e continuam no
-     mapa `ovos` do servidor, que é quem sabe o que eles são. */
-  if(window._orphanEggs && window._orphanEggs.length > 0) {
-    const existingIds = new Set(eggsInInventory.map(e => e.id));
-    window._orphanEggs.forEach(e => {
-      if(!existingIds.has(e.id)) eggsInInventory.push({...e});
-    });
-    const slot = avatarSlots[activeSlotIdx];
-    if(slot) {
-      if(!slot.eggs) slot.eggs = [];
-      const slotIds = new Set(slot.eggs.map(e => e.id));
-      window._orphanEggs.forEach(e => {
-        if(!slotIds.has(e.id)) slot.eggs.push({...e});
-      });
-      window._orphanEggs = null;
-    }
-  }
+  /* Aqui recolhiam-se os ovos que tinham ficado sem slot — o
+     saveRuntimeToSlot guardava-os quando o slot activo era nulo. Deixou
+     de haver ovos sem slot: eles não estão em slot nenhum, estão na
+     casa. Os ITENS continuam a precisar disso, e continuam a tê-lo. */
 
   return true;
 }
@@ -496,10 +493,10 @@ async function saveToFirebase() {
        estão dentro. Havia aqui um ciclo que os devolvia ao inboxEggs, e
        a seguir uma limpeza que esvaziava essa caixa; as duas coisas
        saíram com a própria caixa (ver applyGameState). */
-    if(window._orphanEggs || window._orphanItems) {
-      window._orphanEggs  = null;
-      window._orphanItems = null;
-    }
+    // Os itens que ficaram sem slot largam-se depois de o estado ir
+    // gravado — eles já lá estão dentro. Os OVOS deixaram de poder
+    // ficar sem slot: a chocadeira é da colónia.
+    if(window._orphanItems) window._orphanItems = null;
     // Os recados de visita seguem o mesmo caminho dos ovos: lidos ao
     // entrar, limpos no primeiro save. Se falhar, ficam lá e aparecem da
     // próxima — melhor repetidos do que perdidos.
