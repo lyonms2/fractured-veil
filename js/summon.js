@@ -147,7 +147,7 @@ function updateSummonLockHint() {
                   : t('summon.lock.desc_nofree', { cost: custo });
 }
 
-function triggerSummon() {
+async function triggerSummon() {
   if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
   const btn = document.getElementById('btnSummon');
   if(!btn || btn.disabled) return;
@@ -167,18 +167,46 @@ function triggerSummon() {
 
   const raridade = 'Comum';
 
-  /* ── O SEED PRIMEIRO, E O DNA A SEGUIR ──
+  /* ── O SEED E O DNA VÊM DO SERVIDOR ──
 
-     O seed saía do nome (nome + elemento) e o DNA saía do seed. Agora o
-     NOME sai da cor e a cor sai do DNA, portanto a ordem inverteu-se:
-     sorteia-se o seed, dele sai o DNA, dele sai a cor, e dela o nome.
+     Saíam daqui: um Math.random escolhia o seed e o gerarDna compunha os
+     genes. Os dois decidem o que um avatar VALE — o seed decide o corpo
+     inteiro e a ficha de combate, o DNA decide o corpo, a índole, a cor,
+     a tendência e o vigor — e quem abrisse o console escolhia ambos.
+     Sortear até gostar era um ciclo de três linhas.
 
-     É a ordem que o resto do jogo já supunha. O seed decide o corpo
-     inteiro do bicho (gerarSVG) e a ficha inteira (fichaDeAvatar); ser
-     ele a decidir também o nome é pôr tudo a sair da mesma raiz, em vez
-     de o nome ser a raiz de si próprio. */
-  const seed = Math.floor(Math.random() * 2147483647);
-  const dna  = (typeof gerarDna === 'function') ? gerarDna('Comum', seed) : null;
+     Agora pede-se ao servidor, que os gera com o gerador criptográfico
+     do Node e guarda a certidão num mapa que o cliente não escreve
+     (ver handleInvocar em api/pool.js, e o `certidoes` nas
+     firestore.rules).
+
+     A ORDEM mantém-se: o nome sai da cor e a cor sai do DNA. Só mudou
+     quem sorteia.
+
+     Se o servidor recusar, não se invoca — e devolve-se o custo. Falhar
+     fechado: um erro de rede não pode ser um caminho para um avatar com
+     genes escolhidos a dedo. */
+  let _emitido;
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'invocar', idToken, slotIdx: activeSlotIdx }),
+    });
+    const json = await resp.json();
+    if (!resp.ok || !json.ok) throw new Error(json.erro || 'sem resposta');
+    _emitido = json;
+  } catch (e) {
+    addLog('⚠️ ' + (e.message || t('summon.log.no_login')), 'bad');
+    showBubble(e.message || '...');
+    if (custo > 0 && typeof earnCoins === 'function') earnCoins(custo);   // devolve o gasto
+    btn.disabled = false;
+    return;
+  }
+
+  const seed = _emitido.seed;
+  const dna  = _emitido.nascimento && _emitido.nascimento.dna;
   const tom  = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
     ? tomDaCor(dna.genes.cor[0]) : 'brasa';
 
@@ -200,6 +228,11 @@ function triggerSummon() {
     // nao mais um com o mesmo seed. Invocado nao tem mae nem pai —
     // e raiz de arvore por definicao.
     ...identidadeNova(),
+    /* O id vem do SERVIDOR e sobrepõe-se ao que o identidadeNova()
+       sorteou: é por ele que a certidão se reata ao slot no
+       carregamento seguinte (applyGameState, em js/firebase.js). Um id
+       escolhido aqui não encontraria certidão nenhuma. */
+    id: _emitido.id,
     nome, raridade, descricao, descricaoIdx, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
@@ -213,13 +246,11 @@ function triggerSummon() {
   /* A certidao. Invocado nao consome ovo nenhum, portanto a origem e
      Comum — que era ja a raridade com que a invocacao nascia. O que
      e novo aqui e o DNA: a tendencia de crescimento e o sexo. */
-  if (typeof registarNascimento === 'function') {
-    // O DNA vai FEITO: foi dele que saíram a cor e o nome lá em cima,
-    // e sortear outro aqui era dar-lhe uma cor diferente da do nome.
-    registarNascimento(avatarSlots[activeSlotIdx], {
-      dna, origem: 'Comum', seed,
-    });
-  }
+  /* A certidão não se compõe aqui: veio pronta do servidor, e é a que
+     ele guardou. Escrevê-la no slot é só para esta sessão ter o que
+     mostrar — no carregamento seguinte é o mapa `certidoes` que manda,
+     e o que estiver no slot é deitado fora. */
+  avatarSlots[activeSlotIdx].nascimento = _emitido.nascimento;
   window._pendingEggSlot = activeSlotIdx;
   gs.totalInvocacoes = (gs.totalInvocacoes || 0) + 1;
 

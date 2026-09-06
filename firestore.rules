@@ -57,7 +57,23 @@ service cloud.firestore {
               // raridade do ovo que cada um consumiu. É a prova que o
               // api/comprar-avatar.js exige para deixar listar, em vez
               // de acreditar no avatarSlots que o cliente escreve.
-              'avataresEmitidos'];
+              'avataresEmitidos',
+              /* AS CERTIDÕES. É aqui que vive o DNA de cada avatar — o
+                 corpo, a índole, a cor, a tendência, o vigor — e é isso
+                 que dá valor a um avatar desde que há herança.
+
+                 Viviam DENTRO do avatarSlots, que o cliente escreve por
+                 inteiro: quem abrisse o console dava a si próprio os
+                 genes que quisesse. Mudaram de casa por causa do que
+                 estas regras conseguem exprimir — o avatarSlots é um
+                 array e as regras não sabem percorrer arrays, portanto
+                 não há como escrever "o cliente não mexe no nascimento
+                 de nenhum slot". Um campo de topo protege-se numa linha,
+                 e é esta.
+
+                 Quem as escreve é o handleInvocar do api/pool.js, e vai
+                 ser também o chocar e o cruzar. */
+              'certidoes'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do

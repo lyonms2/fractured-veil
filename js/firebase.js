@@ -138,7 +138,12 @@ function getGameState() {
          E NAO se reescreve: quem grava so copia o que ja la esta. O
          unico caminho de escrita e o registarNascimento, que recusa
          se ja houver uma. */
-      nascimento: s.nascimento || null,
+      /* A CERTIDÃO NÃO VAI DAQUI. Vive no mapa `certidoes`, que só o
+         servidor escreve — mandá-la no slot era reabrir a porta que a
+         mudança fechou: o cliente escreveria a sua versão, e no
+         carregamento seguinte seria ela a valer.
+
+         O applyGameState reata-a ao slot em memória. Ver a nota lá. */
       // Avatar identity
       nome:      s.nome      || '',
       raridade:  s.raridade  || 'Comum',
@@ -241,11 +246,28 @@ function applyGameState(data) {
     saveRuntimeToSlot(activeSlotIdx);
   }
 
+  /* ── A CERTIDÃO VEM DO SERVIDOR, E SOBREPÕE-SE AO QUE ESTIVER NO SLOT ──
+
+     Ela vive num mapa `certidoes` que o cliente não escreve
+     (firestore.rules), e é lá que estão os genes — o corpo, a índole, a
+     cor, a tendência, o vigor. Aqui reata-se cada uma ao seu slot, em
+     memória, para os quarenta sítios que leem slot.nascimento
+     continuarem a ler o mesmo.
+
+     Sobrepõe-se SEMPRE, e apaga quando não há: um `nascimento` deixado
+     dentro do slot por um cliente modificado deixa de valer o que quer
+     que seja. É por isto que a mudança fecha a porta, e não só a
+     estreita. */
+  const _certs = (data.certidoes && typeof data.certidoes === 'object') ? data.certidoes : {};
+
   // Restore slots
   if(data.avatarSlots) {
     avatarSlots = data.avatarSlots.map(s => {
       if(!s) return null;
       const restored = {...s};
+      const _cert = s.id ? _certs[s.id] : null;
+      if (_cert) restored.nascimento = _cert;
+      else delete restored.nascimento;
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
          os elementos que o jogo já não tinha, outra reanexava ao avatar
          a entrada da tabela de características.

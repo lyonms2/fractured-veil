@@ -204,6 +204,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
+  if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -436,6 +437,90 @@ const HATCH_FEE = 0;
    A taxa é cobrada aqui, e não no cliente: era o js/eggs.js a fazer
    gs.cristais -= taxa e a avisar a pool depois, em duas escritas
    separadas que podiam divergir. */
+/* ═══════════════════════════════════════════════════════════════════
+   INVOCAR — o servidor emite a certidão do primeiro avatar
+
+   ── O QUE ISTO FECHA ──
+
+   O DNA saía do navegador. O js/summon.js sorteava o seed, corria o
+   gerarDna e escrevia a certidão no slot; o servidor guardava o que
+   recebesse. Quem abrisse o console escolhia os genes — corpo, índole,
+   cor, tendência, vigor — e escolhia também o SEED, que decide o corpo
+   inteiro e a ficha de combate.
+
+   Agora os dois saem daqui, do gerador criptográfico do Node, e o
+   jogador vê o resultado depois de estar decidido.
+
+   ── ONDE A CERTIDÃO PASSA A VIVER ──
+
+   Num mapa `certidoes` no topo do documento, e não dentro do
+   avatarSlots. A razão é o que as regras conseguem exprimir: o
+   avatarSlots é um ARRAY, e as regras do Firestore não sabem percorrer
+   arrays — não há como escrever "o cliente não pode mexer no nascimento
+   de nenhum slot". Um campo de topo elas sabem proteger, e é o que o
+   camposDoServidor() já faz com o ovosEmitidos e o avataresEmitidos.
+
+   O cliente lê o mapa e reata cada certidão ao seu slot em memória (ver
+   applyGameState, em js/firebase.js), portanto os quarenta sítios que
+   leem slot.nascimento continuam a ler o mesmo.
+
+   ── O QUE ISTO NÃO FECHA ──
+
+   O custo em moedas. As moedas são creditadas no cliente em doze sítios
+   e ficaram deliberadamente forjáveis (ver firestore.rules); policiá-las
+   aqui não fecha nada e parava o jogo. O que se fecha é o que vale: os
+   genes.
+   ═══════════════════════════════════════════════════════════════════ */
+async function handleInvocar(req, res, db, uid) {
+  const GEN = require('./_genetica.js');
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const pData = snap.data();
+
+      const slots   = [...(pData.avatarSlots || [])];
+      const slotIdx = parseInt(req.body.slotIdx, 10);
+      if (isNaN(slotIdx) || slotIdx < 0 || slotIdx >= 10) throw new Error('SLOT_INVALIDO');
+
+      /* O slot tem de estar VAZIO. Sem isto, invocar por cima de um
+         avatar vivo era uma forma de trocar de bicho até sair um bom —
+         e de deitar fora o que lá estivesse sem o queimar. */
+      const ocupado = slots[slotIdx];
+      if (ocupado && (ocupado.hatched || ocupado.nascimento || ocupado.certidaoId)) {
+        throw new Error('SLOT_OCUPADO');
+      }
+
+      const { id, seed, nascimento } = GEN.certidaoDeInvocacao();
+
+      /* A certidão vai para o mapa do servidor, e o registo de emissão
+         com ela — é o avataresEmitidos que o api/comprar-avatar.js exige
+         para deixar listar. Sem esta linha, um avatar invocado nunca
+         poderia ser vendido. */
+      tx.update(playerRef, {
+        [`certidoes.${id}`]: nascimento,
+        [`avataresEmitidos.s${String(seed)}`]: 'Comum',
+      });
+
+      return { id, seed, nascimento };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    const conhecido = {
+      SEM_JOGADOR:   [404, 'Jogador não encontrado.'],
+      SLOT_INVALIDO: [400, 'Slot inválido.'],
+      SLOT_OCUPADO:  [409, 'Esse slot já tem um avatar.'],
+    }[err.message];
+    if (conhecido) return res.status(conhecido[0]).json({ erro: conhecido[1] });
+    console.error('[pool/invocar]', err.message);
+    return res.status(500).json({ erro: 'Erro interno ao invocar.' });
+  }
+}
+
+
 async function handleChocarOvo(req, res, db, poolRef, uid) {
   const { ovoId, seed } = req.body;
   if (!ovoId || seed == null) {

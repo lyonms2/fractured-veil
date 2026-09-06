@@ -103,6 +103,21 @@ async function ler(doc) {
   ok('conta nova com avatar emitido', await escrever('J','J',{'avataresEmitidos.s1':'Lendário'}), 403);
   ok('gravar o avatarSlots continua', await escrever('I','I',{'avatarSlots':[]}), 200);
 
+  /* ── certidoes: o DNA de cada avatar ──
+
+     É aqui que vivem o corpo, a índole, a cor, a tendência e o vigor —
+     tudo o que dá valor a um avatar. Vivia dentro do avatarSlots, que o
+     cliente escreve por inteiro: quem abrisse o console dava a si
+     próprio os genes que quisesse.
+
+     Mudou para um campo de topo porque é o que estas regras sabem
+     proteger — o avatarSlots é um array, e regras não percorrem arrays. */
+  await escrever(null,'K',{'certidoes.av1':{origem:'Comum'},'gs.moedas':10}, true);
+  ok('EXPLOIT forjar uma certidão',   await escrever('K','K',{'certidoes.av1':{origem:'Lendário'}}), 403);
+  ok('EXPLOIT criar uma certidão',    await escrever('K','K',{'certidoes.av2':{origem:'Lendário'}}), 403);
+  ok('EXPLOIT apagar uma certidão',   await escrever('K','K',{'certidoes':{}}), 403);
+  ok('conta nova com certidão',       await escrever('L','L',{'certidoes.av1':{origem:'Lendário'}}), 403);
+
   // ── os mercados: o cliente só lê ──
   async function mercado(col, uid, campos) {
     const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {

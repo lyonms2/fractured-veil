@@ -132,7 +132,11 @@ async function handleListarAvatar(req, res, db, uid) {
          que e exactamente a propriedade que esta verificacao precisa.
          Quem nasceu antes de haver certidao cai na raridade, que
          nesses era mesmo a do ovo. */
-      const origemDoAvatar = (s.nascimento && s.nascimento.origem) || s.raridade;
+      const certidoes = pData.certidoes || {};
+      const certidaoDoAvatar = (s.id && certidoes[s.id]) || null;
+      if (!certidaoDoAvatar) throw new Error('AVATAR_SEM_CERTIDAO');
+
+      const origemDoAvatar = certidaoDoAvatar.origem || s.raridade;
       if (emitidoComo !== origemDoAvatar) throw new Error('ORIGEM_NAO_CONFERE');
 
       const newCristais = debito.cristais + debito.cristaisBonus;
@@ -155,7 +159,16 @@ async function handleListarAvatar(req, res, db, uid) {
         pai:         s.pai         || null,
         nascidoEm:   s.nascidoEm   || s.bornAt || Date.now(),
         nomeTravado: s.nomeTravado === true,
-        nascimento:  s.nascimento  || null,
+        /* A CERTIDÃO VEM DO MAPA DO SERVIDOR, e não do slot.
+
+           O cliente deixou de a mandar dentro do avatarSlots — vive em
+           `certidoes`, que ele não escreve (firestore.rules). Ler daqui
+           o s.nascimento traria `null`, e o comprador receberia um
+           avatar sem genes, sem cor e sem árvore.
+
+           Um avatar sem certidão no mapa não se lista: é o mesmo
+           princípio do avataresEmitidos — sem prova, não há venda. */
+        nascimento:  certidaoDoAvatar,
         // Por quantas mãos já passou. Viaja com a listagem como tudo o
         // resto da identidade — senão cada venda apagava a história
         // anterior e o avatar chegava ao comprador com o passado limpo.
@@ -198,6 +211,7 @@ async function handleListarAvatar(req, res, db, uid) {
       INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
       SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
       AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registo de emissão e não pode ser listado. Choque um ovo novo.'],
+      AVATAR_SEM_CERTIDAO:  [400, 'Este avatar não tem certidão emitida pelo servidor e não pode ser listado.'],
       ORIGEM_NAO_CONFERE: [403, 'A origem não confere com a emitida.'],
     };
     const [status, msg] = erros[err.message] || [500, 'Erro interno ao processar listagem.'];
@@ -418,15 +432,28 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       // O registo de emissão segue o avatar. Sem isto, quem comprasse um
       // Lendário não o conseguia revender — o avataresEmitidos dele não
       // teria a entrada, e a listagem daria AVATAR_SEM_REGISTO.
+      /* A CERTIDÃO MUDA DE DONO COM O AVATAR.
+
+         Ela vive no mapa `certidoes` de cada jogador, e é esse mapa que
+         o cliente lê para saber os genes de cada bicho. Sem estas duas
+         linhas o comprador recebia o slot e nenhuma certidão — um
+         avatar sem cor, sem corpo e sem árvore — e o vendedor ficava
+         com a certidão de um avatar que já não tem.
+
+         Escreve-se no comprador ANTES de apagar no vendedor, dentro da
+         mesma transação: ou as duas acontecem ou nenhuma. */
+      const certVendida = listing.nascimento || null;
+      const chaveCert   = listing.id ? `certidoes.${listing.id}` : null;
+
       tx.update(buyerRef, Object.assign({
         avatarSlots: novosSlotsComprador,
         [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
-      }, debitoCompra));
-      tx.update(sellerRef, {
+      }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {}, debitoCompra));
+      tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      sellerCris + sellerRecebe,
         'gs.cristais': sellerCris + sellerRecebe,
-      });
+      }, chaveCert ? { [chaveCert]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       if (taxa > 0) {
