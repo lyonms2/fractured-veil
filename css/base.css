@@ -219,14 +219,33 @@ body.jogo-pronto .device { opacity: 1; }
    tudo dentro fica em ~500px — cabe com folga nos 660 do portátil, que
    era o número que mandava. A rolagem do #loginScreen continua lá para
    o caso das telas muito baixas. */
+/* ── E ESTAS DUAS NÃO ACOMPANHARAM O AUMENTO ──
+
+   A raiz do desktop subiu 10% (24 → 26.4px, ver css/base.css) para
+   crescer todas as janelas de uma vez. A tela de entrada e o prólogo
+   ficaram de fora: os tamanhos deles foram decididos e medidos um a um
+   — 200% para a entrada, 140% para o prólogo — e já estavam onde se
+   queria.
+
+   O `/1.1` de cada valor é isso, e não uma conta perdida: mantém os
+   NÚMEROS QUE FORAM DECIDIDOS à vista, e desconta a subida que a raiz
+   lhes deu por baixo. Quem quiser mudar o tamanho destas telas mexe no
+   número da esquerda; quem mudar a raiz outra vez muda o 1.1, num sítio
+   só por bloco.
+
+   Sem isto a entrada vinha 220% e o prólogo 154%, e o prólogo a 154%
+   volta a rolar num portátil de 768. */
 @media(min-width:681px) {
-  #loginCard { max-width:26rem; padding:2.25rem 3rem; gap:0.625rem; }
+  #loginCard { max-width:calc(26rem / 1.1);
+               padding:calc(2.25rem / 1.1) calc(3rem / 1.1);
+               gap:calc(0.625rem / 1.1); }
 
-  #loginLogo { font-size:1.875rem; letter-spacing:0.375rem; }
-  #loginSub  { font-size:0.875rem; letter-spacing:0.375rem; margin-bottom:0.25rem; }
+  #loginLogo { font-size:calc(1.875rem / 1.1); letter-spacing:calc(0.375rem / 1.1); }
+  #loginSub  { font-size:calc(0.875rem / 1.1); letter-spacing:calc(0.375rem / 1.1);
+               margin-bottom:calc(0.25rem / 1.1); }
 
-  #loginError  { font-size:1rem; min-height:1.5rem; }
-  #loginFooter { font-size:0.875rem; }
+  #loginError  { font-size:calc(1rem / 1.1); min-height:calc(1.5rem / 1.1); }
+  #loginFooter { font-size:calc(0.875rem / 1.1); }
 }
 
 
