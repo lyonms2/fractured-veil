@@ -203,8 +203,6 @@
       'ui.no_eggs':              'Nenhum ovo ainda',
       'ui.sick':                 '🤒 Doente',
       'ui.life_time':            '⏳ TEMPO DE VIDA',
-      'ui.summon_btn':           '▶ Invocar Avatar (Gratuito)',
-      'ui.summon_btn_restam':    '▶ Invocar Avatar ({n} restantes)',
       'ui.nivel':                'NÍVEL {n}',
       'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
       'ui.active_slot':          'ATIVO · SLOT {n}',
@@ -215,9 +213,7 @@
       'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
       'modal.reward_maze':       '+{xpMin}~{xpMax} XP · até {cMax} 🪙 (colete no labirinto!)',
 
-      'ui.login_required':       'LOGIN NECESSÁRIO',
       'ui.login_required_desc':  'Entre na sua conta para invocar seu avatar e guardar o progresso.',
-      'ui.do_login':             '🔑 FAZER LOGIN',
 
       // Header / nav
       // O que a dica diz por fora tem de ser o que o painel diz por
@@ -337,8 +333,6 @@
       'egg.burn.btn':            '🔥 Confirmar',
 
       // Panel / right side
-      'panel.summon_title':      '◆ INVOCAR AVATAR',
-      'panel.login_desc':        'Entre na sua conta para invocar seu avatar e guardar o progresso.',
       'panel.xp_label':          'XP',
       'panel.vinculo_label':     'VÍNCULO',
       'panel.diary_title':       '◆ DIÁRIO DIMENSIONAL',
@@ -349,7 +343,7 @@
       'dead.causa_desconhecida': 'apagou-se',
       'dead.sub_filhos':         'Deixou {n} filho{s}. O sangue dele segue neles.',
       'dead.sub_sem_filhos':     'Não deixou filhos. A linhagem dele acaba aqui.',
-      'dead.btn':                '✦ INVOCAR NOVO AVATAR',
+      'dead.btn':                '✦ VOLTAR À COLÔNIA',
 
       // Portal (idle)
       'portal.waiting':          'PORTAL DIMENSIONAL',
@@ -547,8 +541,6 @@
       'ui.no_eggs':              'No eggs yet',
       'ui.sick':                 '🤒 Sick',
       'ui.life_time':            '⏳ LIFETIME',
-      'ui.summon_btn':           '▶ Summon Avatar (Free)',
-      'ui.summon_btn_restam':    '▶ Summon Avatar ({n} left)',
       'ui.nivel':                'LEVEL {n}',
       'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
       'ui.active_slot':          'ACTIVE · SLOT {n}',
@@ -559,9 +551,7 @@
       'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
       'modal.reward_maze':       '+{xpMin}~{xpMax} XP · up to {cMax} 🪙 (collect in maze!)',
 
-      'ui.login_required':       'LOGIN REQUIRED',
       'ui.login_required_desc':  'Sign in to summon your avatar and save your progress.',
-      'ui.do_login':             '🔑 SIGN IN',
 
       // Header / nav
       'ui.coins_title':          'Coins',
@@ -675,8 +665,6 @@
       'egg.burn.btn':            '🔥 Confirm',
 
       // Panel / right side
-      'panel.summon_title':      '◆ SUMMON AVATAR',
-      'panel.login_desc':        'Sign in to summon your avatar and save your progress.',
       'panel.xp_label':          'XP',
       'panel.vinculo_label':     'BOND',
       'panel.diary_title':       '◆ DIMENSIONAL DIARY',
@@ -687,7 +675,7 @@
       'dead.causa_desconhecida': 'faded away',
       'dead.sub_filhos':         'It left {n} child{s}. Its blood carries on in them.',
       'dead.sub_sem_filhos':     'It left no children. Its lineage ends here.',
-      'dead.btn':                '✦ SUMMON NEW AVATAR',
+      'dead.btn':                '✦ BACK TO THE COLONY',
 
       // Portal (idle)
       'portal.waiting':          'DIMENSIONAL PORTAL',

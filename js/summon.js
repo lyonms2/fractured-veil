@@ -31,10 +31,6 @@ function invocacoesRestantes() {
   return Math.max(0, INVOCACOES_GRATIS - usadas);
 }
 
-// Fica com o nome antigo para quem ainda o chame: hoje invocar não custa
-// moedas nenhumas — ou há vaga, ou não há.
-function custoDaInvocacao() { return 0; }
-
 // Índice do primeiro slot com um avatar vivo, ou -1 se não houver nenhum.
 function primeiroSlotVivo() {
   if(typeof avatarSlots === 'undefined') return -1;
@@ -105,331 +101,267 @@ async function voltarAColonia() {
   if(typeof abrirFazenda === 'function') abrirFazenda();
 }
 
-// Mostra/esconde o aviso de bloqueio no painel de invocação.
-// Chamado por updateResourceUI(), ou seja, depois de qualquer mudança de
-// estado (trocar de slot, ganhar moedas num minigame, invocar).
-function updateSummonLockHint() {
-  const box = document.getElementById('summonLockHint');
-  if(!box) return;
-  const btn = document.getElementById('btnSummon');
+/* ═══════════════════════════════════════════════════════════════════
+   A CHEGADA — três saem da Fratura, um de cada vez
 
-  const restam   = invocacoesRestantes();
-  const semVagas = restam <= 0;
+   ── O QUE MUDOU, E PORQUÊ ──
 
-  /* ── A CONTA ANTES DA DECISÃO ──
-     Mostrava o preço e o saldo em moedas. Já não há preço: o que o
-     jogador precisa de saber antes de carregar é quantas lhe restam, e
-     de quantas partiu. */
-  const elCusto = document.getElementById('summonCusto');
-  const elSaldo = document.getElementById('summonSaldo');
-  if(elCusto) elCusto.textContent = String(restam);
-  if(elSaldo) {
-    elSaldo.textContent = String(INVOCACOES_GRATIS);
-    elSaldo.classList.toggle('falta', semVagas);
-  }
+   Havia uma TELA DE INVOCAR: um painel com um botão, que o jogador
+   carregava quando quisesse. Fazia sentido enquanto invocar era uma
+   decisão repetida — cinco grátis e depois 500 moedas cada.
 
-  /* ── E A SAÍDA, QUE SÓ EXISTIA PARA QUEM ESTAVA TESO ──
-     Voltar a um avatar que já se tem estava escondido dentro do aviso de
-     saldo insuficiente. Quem tinha as moedas e não as queria gastar
-     ficava numa tela com um botão só, e esse botão gastava 500 — não
-     havia forma de dizer "afinal não". Agora o caminho de volta está lá
-     sempre que houver para onde voltar. */
-  const alvoVivo = primeiroSlotVivo();
-  const voltar = document.getElementById('btnSummonVoltar');
-  if(voltar) {
-    voltar.style.display = alvoVivo >= 0 ? '' : 'none';
-    voltar.textContent   = t('summon.voltar');
-  }
+   Já não é. São três na vida, e a partir daí os avatares compram-se na
+   loja ou nascem de uma cruza. Um painel para uma decisão que se toma
+   uma vez, e cuja única resposta possível é sim, não é uma decisão: é
+   um passo a mais entre o jogador e o jogo. A tela saiu, e os três
+   chegam onde a história os anuncia — no fim do prólogo.
 
-  if(!semVagas) {
-    box.style.display = 'none';
-    if(btn) btn.disabled = false;
-    return;
-  }
+   ── E A CERIMÓNIA MOSTRAVA UM OVO ──
 
-  box.style.display = 'block';
-  if(btn) btn.disabled = true;
+   O prólogo conta que a Fratura se abre e que dela SAI a criatura. A
+   cerimónia a seguir mostrava um ovo a formar-se, e só depois, noutra
+   tela, o ovo abria. O texto dizia uma coisa e a imagem dizia outra.
 
-  document.getElementById('summonLockTitle').textContent = t('summon.lock.titulo_sem_vagas');
-  /* Duas explicações, porque são duas situações diferentes: quem ainda
-     tem avatares vivos só não pode invocar MAIS; quem não tem nenhum
-     está sem jogo até comprar, e merece que lho digam sem rodeios. */
-  document.getElementById('summonLockDesc').textContent =
-    alvoVivo >= 0 ? t('summon.lock.desc_sem_vagas', { n: INVOCACOES_GRATIS })
-                  : t('summon.lock.desc_sem_nada',  { n: INVOCACOES_GRATIS });
-}
+   Agora é o que estava escrito: a Fratura abre-se e o bicho atravessa.
 
-async function triggerSummon() {
-  if(!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); showBubble(t('summon.bub.no_login')); return; }
-  const btn = document.getElementById('btnSummon');
-  if(!btn || btn.disabled) return;
+   O ovo não desapareceu do jogo — mudou para onde lhe pertence. Um
+   avatar que nasce de dois pais VEM mesmo de um ovo, e essa cerimónia
+   é a do js/eggs.js. Invocado sai da Fratura; filho sai do ovo.
+   ═══════════════════════════════════════════════════════════════════ */
 
-  const custo = custoDaInvocacao();
-  if(custo > 0) {
-    if(gs.moedas < custo) {
-      addLog(t('summon.log.no_coins', { cost: custo }), 'bad');
-      showBubble(t('summon.bub.no_coins'));
-      playSound('no_coins');
-      return;
-    }
-    if(!spendCoins(custo)) return;
-  }
+// Quanto dura uma chegada, do preto ao preto. Três seguidas são ~10s —
+// medido, e é o orçamento inteiro da abertura do jogo.
+const CHEGADA_MS = 3400;
 
-  btn.disabled = true;
+/* Pede um avatar ao servidor e escreve-o no slot. Sem interface
+   nenhuma: quem mostra é a cerimónia, a seguir.
 
-  const raridade = 'Comum';
-
-  /* ── O SEED E O DNA VÊM DO SERVIDOR ──
-
-     Saíam daqui: um Math.random escolhia o seed e o gerarDna compunha os
-     genes. Os dois decidem o que um avatar VALE — o seed decide o corpo
-     inteiro e a ficha de combate, o DNA decide o corpo, a índole, a cor,
-     a tendência e o vigor — e quem abrisse o console escolhia ambos.
-     Sortear até gostar era um ciclo de três linhas.
-
-     Agora pede-se ao servidor, que os gera com o gerador criptográfico
-     do Node e guarda a certidão num mapa que o cliente não escreve
-     (ver handleInvocar em api/pool.js, e o `certidoes` nas
-     firestore.rules).
-
-     A ORDEM mantém-se: o nome sai da cor e a cor sai do DNA. Só mudou
-     quem sorteia.
-
-     Se o servidor recusar, não se invoca — e devolve-se o custo. Falhar
-     fechado: um erro de rede não pode ser um caminho para um avatar com
-     genes escolhidos a dedo. */
-  let _emitido;
+   Devolve o avatar, ou null se o servidor recusar. Falhar fechado — um
+   erro de rede não pode ser um caminho para um avatar com genes
+   escolhidos a dedo (ver handleInvocar, em api/pool.js). */
+async function _emitirAvatar(slotIdx) {
+  let emitido;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'invocar', idToken, slotIdx: activeSlotIdx }),
+      body:    JSON.stringify({ acao: 'invocar', idToken, slotIdx }),
     });
     const json = await resp.json();
     if (!resp.ok || !json.ok) throw new Error(json.erro || 'sem resposta');
-    _emitido = json;
+    emitido = json;
   } catch (e) {
     addLog('⚠️ ' + (e.message || t('summon.log.no_login')), 'bad');
-    showBubble(e.message || '...');
-    if (custo > 0 && typeof earnCoins === 'function') earnCoins(custo);   // devolve o gasto
-    btn.disabled = false;
-    return;
+    return null;
   }
 
-  const seed = _emitido.seed;
-  const dna  = _emitido.nascimento && _emitido.nascimento.dna;
-  const tom  = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
-    ? tomDaCor(dna.genes.cor[0]) : 'brasa';
+  // O servidor devolve a conta feita: sem isto o cliente ficava a
+  // pensar que ainda tinha as três, e a segunda chegada não sabia que
+  // era a segunda.
+  if (emitido.invocacoesUsadas != null) window._invocacoesUsadas = emitido.invocacoesUsadas;
 
+  const dna = emitido.nascimento && emitido.nascimento.dna;
+  const tom = (typeof tomDaCor === 'function' && dna && dna.genes && dna.genes.cor)
+    ? tomDaCor(dna.genes.cor[0]) : 'brasa';
   const nome         = nomeDeNascimento(tom);
   const _descPool    = descricoesDoTom(tom);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
-  const descricao    = _descPool[descricaoIdx];
 
-  dead = false; hatched = false; sick = false; sleeping = false;
-  clearPresenceDead(walletAddress);
-  nivel = 1; xp = 0; vinculo = 0; totalSecs = 0; tickCount = 0;
-  poopCount = 0; dirtyLevel = 0; poopPressure = 0;
-  Object.assign(vitals, { fome:100, humor:100, energia:100, saude:100, higiene:100 });
-  document.getElementById('poopContainer').innerHTML = '';
+  while (avatarSlots.length <= slotIdx) avatarSlots.push(null);
 
-  while(avatarSlots.length <= activeSlotIdx) avatarSlots.push(null);
-  avatarSlots[activeSlotIdx] = {
-    // A identidade primeiro: e ela que faz deste avatar UM avatar, e
-    // nao mais um com o mesmo seed. Invocado nao tem mae nem pai —
-    // e raiz de arvore por definicao.
+  /* NASCE JÁ VIVO, e não como ovo por chocar.
+
+     O invocado passava por `pendingEgg: true` e só ficava `hatched` no
+     fim da animação do ovo. Sem ovo, esse meio-termo não tem sentido —
+     e tinha um custo: quem fechasse a aba a meio da cerimónia ficava
+     com um slot num estado que só a animação sabia resolver. */
+  avatarSlots[slotIdx] = {
     ...identidadeNova(),
     /* O id vem do SERVIDOR e sobrepõe-se ao que o identidadeNova()
        sorteou: é por ele que a certidão se reata ao slot no
-       carregamento seguinte (applyGameState, em js/firebase.js). Um id
-       escolhido aqui não encontraria certidão nenhuma. */
-    id: _emitido.id,
-    nome, raridade, descricao, descricaoIdx, seed,
-    hatched: false, dead: false, sick: false, sleeping: false,
+       carregamento seguinte (applyGameState, em js/firebase.js). */
+    id: emitido.id,
+    nome, raridade: 'Comum', descricao: _descPool[descricaoIdx], descricaoIdx,
+    seed: emitido.seed,
+    hatched: true, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
-    bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,
+    bornAt: Date.now(), poopCount: 0, dirtyLevel: 0, poopPressure: 0,
     petCooldown: 0,
+    /* Já celebrou ser BEBÊ: a cerimónia disso foi esta. Sem isto nasce
+       com faseVista -1, e o -1 quer dizer "ainda não sei" — que desliga
+       o convite da evolução para sempre. Ver a nota em js/state.js. */
+    faseVista: 0, nivelVisto: 1,
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
-    pendingEgg: true,       // protege o slot durante a chocagem automática
-    pendingSlot: activeSlotIdx,
   };
-  /* A certidao. Invocado nao consome ovo nenhum, portanto a origem e
-     Comum — que era ja a raridade com que a invocacao nascia. O que
-     e novo aqui e o DNA: a tendencia de crescimento e o sexo. */
-  /* A certidão não se compõe aqui: veio pronta do servidor, e é a que
-     ele guardou. Escrevê-la no slot é só para esta sessão ter o que
-     mostrar — no carregamento seguinte é o mapa `certidoes` que manda,
-     e o que estiver no slot é deitado fora. */
-  avatarSlots[activeSlotIdx].nascimento = _emitido.nascimento;
-  /* E com ela o criador e a data de nascimento, que também são dela.
-
-     O identidadeNova() escreve-os aqui a partir do que o navegador sabe;
-     quem os guarda é o servidor, e é o que ele guardou que o
-     carregamento seguinte vai mostrar. Copiá-los agora é fazer com que a
-     sessão diga o mesmo — em vez de duas leituras da mesma coisa à
-     espera de discordarem. */
+  /* A certidão veio pronta do servidor. Escrevê-la no slot é só para
+     esta sessão ter o que mostrar — no carregamento seguinte é o mapa
+     `certidoes` que manda, e o que estiver no slot é deitado fora. */
+  avatarSlots[slotIdx].nascimento = emitido.nascimento;
   {
-    const _c = _emitido.nascimento || {};
-    if (_c.criadorUid  != null) avatarSlots[activeSlotIdx].criadorUid  = _c.criadorUid;
-    if (_c.criadorNome != null) avatarSlots[activeSlotIdx].criadorNome = _c.criadorNome;
-    if (_c.nascidoEm)           avatarSlots[activeSlotIdx].nascidoEm   = _c.nascidoEm;
+    const _c = emitido.nascimento || {};
+    if (_c.criadorUid  != null) avatarSlots[slotIdx].criadorUid  = _c.criadorUid;
+    if (_c.criadorNome != null) avatarSlots[slotIdx].criadorNome = _c.criadorNome;
+    if (_c.nascidoEm)           avatarSlots[slotIdx].nascidoEm   = _c.nascidoEm;
   }
 
-  window._pendingEggSlot = activeSlotIdx;
-  gs.totalInvocacoes = (gs.totalInvocacoes || 0) + 1;
-
-  // ── CINEMATIC SUMMON OVERLAY ──
-  const ov         = document.getElementById('summonOverlay');
-  const ovBg       = document.getElementById('ovBg');
-  const r1         = document.getElementById('ovRing1');
-  const r2         = document.getElementById('ovRing2');
-  const r3         = document.getElementById('ovRing3');
-  const ovAv       = document.getElementById('ovAvatar');
-  const ovParts    = document.getElementById('ovParticles');
-  /* ── SEM RÓTULOS ──
-
-     A cerimónia escrevia duas coisas por cima do ovo: "◆ COMUM ◆" e
-     "🔥 FOGO". A primeira anunciava uma raridade que hoje é sempre
-     Comum — e portanto não anunciava nada. A segunda anunciava um
-     elemento que já não existe.
-
-     Não as substituí por outras. O ovo já diz o que tem a dizer pela
-     cor, e o bicho sai a seguir. */
-  const _novo = avatarSlots[activeSlotIdx];
-  const gradOvo = (typeof gradienteDoOvo === 'function' && _novo && _novo.nascimento)
-    ? gradienteDoOvo(_novo)
-    : { topo: '#5a3a9a', meio: '#2d1a5e', fundo: '#04030a',
-        brilho: '#8060c0', aura: '#8b5cf6' };
-  const cor = gradOvo.aura;
-  const rarColor = cor;   // a onda de choque acompanha o ovo
-
-  ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05) rotate(-15deg);transition:none;display:flex;align-items:center;justify-content:center;';
-  r1.style.cssText = r2.style.cssText = r3.style.cssText = 'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
-  ovParts.innerHTML  = '';
-  ovBg.style.opacity = '0';
+  return avatarSlots[slotIdx];
+}
 
 
-  /* O OVO DA CERIMÓNIA.
+/* A cerimónia de UM. Devolve uma promessa que se cumpre quando a tela
+   volta ao preto — é assim que as três se encadeiam sem se pisarem. */
+function cerimoniaDeChegada(av) {
+  return new Promise((resolve) => {
+    const ov      = document.getElementById('summonOverlay');
+    const ovBg    = document.getElementById('ovBg');
+    const r1      = document.getElementById('ovRing1');
+    const r2      = document.getElementById('ovRing2');
+    const ovAv    = document.getElementById('ovAvatar');
+    const ovParts = document.getElementById('ovParticles');
+    if (!ov || !ovAv) { resolve(); return; }
 
-     Tinha o emoji do elemento desenhado no meio — 🔥, 💧, 🍃 — e eu
-     levei a variável dele quando tirei os rótulos, sem reparar que era
-     usada aqui. O botão "estender a mão" rebentava com
-     "elemEmoji is not defined" e o avatar não chegava a nascer.
+    /* A cor da Fratura é a do bicho que a atravessa. Sai do mesmo sítio
+       de onde saía a do ovo — os degraus de cor da criatura — porque é
+       a mesma pergunta: de que cor é este? */
+    const grad = (typeof gradienteDoOvo === 'function' && av && av.nascimento)
+      ? gradienteDoOvo(av)
+      : { aura: '#8b5cf6' };
+    const cor = grad.aura;
 
-     O emoji não volta: era o elemento outra vez. Fica o ovo, e o ovo
-     tem os três degraus de cor do bicho que está lá dentro — os mesmos
-     que a animação do choco usa, para as duas cerimónias mostrarem o
-     mesmo ovo. */
-  const eggSVG = `<svg viewBox="0 0 120 140" width="120" height="140">
-    <defs>
-      <radialGradient id="ovEggG" cx="38%" cy="30%" r="72%">
-        <stop offset="0%" stop-color="${gradOvo.topo}"/>
-        <stop offset="55%" stop-color="${gradOvo.meio}"/>
-        <stop offset="100%" stop-color="${gradOvo.fundo}"/>
-      </radialGradient>
-      <filter id="ovEggGlow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    </defs>
-    <ellipse cx="60" cy="74" rx="42" ry="52" fill="url(#ovEggG)" filter="url(#ovEggGlow)"/>
-    <ellipse cx="60" cy="74" rx="42" ry="52" fill="none" stroke="${gradOvo.aura}" stroke-width="1.5" opacity=".6"/>
-    <ellipse cx="48" cy="52" rx="10" ry="16" fill="${gradOvo.brilho}" opacity=".45" transform="rotate(-18 48 52)"/>
-  </svg>`;
-  ovAv.innerHTML = eggSVG;
+    ovAv.style.cssText = 'width:12.5rem;height:12.5rem;opacity:0;transform:scale(.05);transition:none;display:flex;align-items:center;justify-content:center;';
+    r1.style.cssText = r2.style.cssText = 'position:absolute;border-radius:50%;opacity:0;border:1px solid transparent;';
+    ovParts.innerHTML  = '';
+    ovBg.style.opacity = '0';
 
-  const numParts = raridade === 'Lendário' ? 30 : raridade === 'Raro' ? 18 : 10;
-  for(let i = 0; i < numParts; i++) {
-    const p  = document.createElement('div');
-    const sz = 2 + Math.random() * 5;
-    p.className = 'ov-particle';
-    p.style.cssText = `width:${(sz)/16}rem;height:${(sz)/16}rem;left:${10+Math.random()*80}%;bottom:-0.625rem;background:${cor};box-shadow:0 0 ${(sz*2)/16}rem ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
-    ovParts.appendChild(p);
-  }
+    /* ── E AQUI ESTÁ O BICHO ──
 
-  ov.classList.add('active');
-  // O overlay cobre tudo mas o jogo continua montado por baixo, e sem
-  // isto aparecia barra de rolagem a meio da invocação — e ainda um
-  // salto quando o prólogo destravasse a dele. A contagem de
-  // referências do lockBodyScroll trata da sobreposição dos dois.
+       Estava aqui um ovo desenhado à mão em SVG. É o mesmo desenho que
+       a colónia mostra, com a fase 0 — um bebé, que é o que ele é. */
+    ovAv.innerHTML = (typeof gerarSVG === 'function')
+      ? gerarSVG(av, 'Comum', av.seed, 200, 200, 0) : '';
+
+    for (let i = 0; i < 14; i++) {
+      const p  = document.createElement('div');
+      const sz = 2 + Math.random() * 5;
+      p.className = 'ov-particle';
+      p.style.cssText = `width:${sz/16}rem;height:${sz/16}rem;left:${10+Math.random()*80}%;bottom:-0.625rem;background:${cor};box-shadow:0 0 ${(sz*2)/16}rem ${cor};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+      ovParts.appendChild(p);
+    }
+
+    const onda = () => {
+      const sw = document.createElement('div');
+      sw.className = 'ov-shockwave';
+      sw.style.cssText = `border-color:${cor};position:absolute;top:50%;left:50%;`;
+      document.getElementById('ovCircle').appendChild(sw);
+      setTimeout(() => sw.remove(), 700);
+    };
+
+    ov.classList.add('active');
+    setTimeout(() => { ovBg.style.opacity = '1'; }, 30);
+
+    // A Fratura abre: dois anéis a girar em sentidos contrários.
+    setTimeout(() => {
+      r1.style.cssText = `position:absolute;inset:0.625rem;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 1.25rem ${cor}50,inset 0 0 20px ${cor}20;transition:opacity .5s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { r1.style.opacity = '.7'; }));
+    }, 250);
+    setTimeout(() => {
+      r2.style.cssText = `position:absolute;inset:2.5rem;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 0.9375rem ${cor}40;transition:opacity .4s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => { r2.style.opacity = '.5'; }));
+    }, 500);
+    setTimeout(onda, 700);
+
+    // E ele atravessa.
+    setTimeout(() => {
+      ovAv.style.transition = 'all .8s cubic-bezier(.34,1.5,.64,1)';
+      ovAv.style.opacity    = '1';
+      ovAv.style.transform  = 'scale(1)';
+    }, 850);
+    setTimeout(onda, 1650);
+
+    // A Fratura fecha-se atrás dele.
+    setTimeout(() => {
+      ovAv.style.transition = 'all .55s ease-in';
+      ovAv.style.opacity    = '0';
+      ovAv.style.transform  = 'scale(1.12)';
+      r1.style.opacity = r2.style.opacity = '0';
+      ovBg.style.opacity = '0';
+    }, CHEGADA_MS - 600);
+
+    setTimeout(() => {
+      ov.classList.remove('active');
+      ovParts.innerHTML = '';
+      resolve();
+    }, CHEGADA_MS);
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   OS TRÊS
+
+   Chamado pelo fim do prólogo, e mais nada — não há botão para isto.
+
+   Faz as que FALTAM, e não três às cegas. É a mesma função que
+   recupera de um erro: se a rede cair na segunda, o jogador entra no
+   dia seguinte e as duas em falta acontecem então. Sem isto, um soluço
+   de rede no pior momento custava um avatar para sempre — e ninguém
+   tinha como o recuperar, porque não há mais botão de invocar.
+
+   Quem conta é o servidor (`invocacoesUsadas`); aqui só se lê.
+   ═══════════════════════════════════════════════════════════════════ */
+async function invocarOsTres() {
+  if (!walletAddress) { addLog(t('summon.log.no_login'), 'bad'); return 0; }
+
   if (typeof lockBodyScroll === 'function' && !window._summonTravou) {
     window._summonTravou = true;
     lockBodyScroll();
   }
-  setTimeout(() => { ovBg.style.opacity = '1'; }, 50);
 
-  setTimeout(() => {
-    r1.style.cssText = `position:absolute;inset:0.625rem;border-radius:50%;border:2px solid ${cor};opacity:0;animation:pspin 3s linear infinite;box-shadow:0 0 1.25rem ${cor}50,inset 0 0 20px ${cor}20;transition:opacity .5s`;
-    requestAnimationFrame(() => requestAnimationFrame(() => { r1.style.opacity = '.7'; }));
-  }, 400);
+  let nascidos = 0;
+  const livres = getUnlockedSlots();
 
-  setTimeout(() => {
-    r2.style.cssText = `position:absolute;inset:2.5rem;border-radius:50%;border:1px solid ${cor};opacity:0;animation:pspin 2s linear infinite reverse;box-shadow:0 0 0.9375rem ${cor}40;transition:opacity .4s`;
-    requestAnimationFrame(() => requestAnimationFrame(() => { r2.style.opacity = '.5'; }));
-  }, 700);
-
-  setTimeout(() => {
-    const sw = document.createElement('div');
-    sw.className = 'ov-shockwave';
-    sw.style.cssText = `border-color:${cor};position:absolute;top:50%;left:50%;`;
-    document.getElementById('ovCircle').appendChild(sw);
-    setTimeout(() => sw.remove(), 700);
-  }, 900);
-
-  setTimeout(() => {
-    ovAv.style.transition = 'all .75s cubic-bezier(.34,1.5,.64,1)';
-    ovAv.style.opacity    = '1';
-    ovAv.style.transform  = 'scale(1) rotate(0deg)';
-    if(raridade !== 'Comum') {
-      r3.style.cssText = `position:absolute;inset:4.375rem;border-radius:50%;border:1px dashed ${cor};opacity:0;animation:pspin 1.5s linear infinite;transition:opacity .4s`;
-      requestAnimationFrame(() => requestAnimationFrame(() => { r3.style.opacity = '.4'; }));
+  while (invocacoesRestantes() > 0) {
+    // O primeiro slot vago, que na primeira vez são o 1, o 2 e o 3.
+    let idx = -1;
+    for (let i = 0; i < livres; i++) {
+      if (!avatarSlots[i]) { idx = i; break; }
     }
-  }, 1100);
+    if (idx === -1) break;                     // colónia cheia: pára aqui
 
-  setTimeout(() => {
-    const sw2 = document.createElement('div');
-    sw2.className = 'ov-shockwave';
-    sw2.style.cssText = `border-color:${rarColor};position:absolute;top:50%;left:50%;`;
-    document.getElementById('ovCircle').appendChild(sw2);
-    setTimeout(() => sw2.remove(), 700);
-  }, 1900);
+    const av = await _emitirAvatar(idx);
+    if (!av) break;                            // o servidor recusou: pára aqui
+    nascidos++;
+    await cerimoniaDeChegada(av);
+    addLog(t('summon.log.chegou', { nome: av.nome.split(',')[0], n: idx + 1 }), 'good');
+  }
 
-  setTimeout(() => {
-    ovAv.style.transition = 'all .6s ease-in';
-    ovAv.style.opacity    = '0';
-    ovAv.style.transform  = 'scale(1.15)';
-    r1.style.opacity = r2.style.opacity = r3.style.opacity = '0';
-    ovBg.style.opacity = '0';
-  }, 3600);
+  if (window._summonTravou && typeof unlockBodyScroll === 'function') {
+    window._summonTravou = false;
+    unlockBodyScroll();
+  }
 
-  // Quando o overlay fecha, dispara a animação de chocagem automaticamente
-  // O jogador não precisa de clicar nada — tudo acontece em sequência
-  setTimeout(() => {
-    ov.classList.remove('active');
-    ovParts.innerHTML = '';
-    btn.disabled = false;
-    if (window._summonTravou && typeof unlockBodyScroll === 'function') {
-      window._summonTravou = false;
-      unlockBodyScroll();
-    }
+  if (nascidos > 0) {
+    /* ── E VAI PARA A COLÓNIA, NÃO PARA O CUIDAR ──
 
-    // Mostra o eggScreen brevemente e inicia a animação de chocagem
-    // hatchWithAnimation() vai chamar hatch() no final (~1.2s depois)
-    document.getElementById('summonCard').style.display  = 'none';
-    document.getElementById('creatureCard').style.display = 'block';
-    document.getElementById('idleScreen').style.display   = 'none';
-    document.getElementById('deadScreen').style.display   = 'none';
-    document.getElementById('aliveScreen').style.display  = 'none';
-    fillCreatureCard();
-    updateAllUI();
-    scheduleSave();
+       O jogo abria direto na tela de cuidar do primeiro. Com um avatar
+       fazia sentido; com três, entrar num deles é escolher por quem
+       ainda não escolheu, e esconder os outros dois no mesmo gesto.
 
-    hatchWithAnimation(avatarSlots[activeSlotIdx], activeSlotIdx);
-  }, 4300);
+       A colónia é a casa: os três lado a lado, com os medidores de cada
+       um, e é lá que se decide em quem entrar. */
+    activeSlotIdx = 0;
+    loadRuntimeFromSlot(0);
+    if (typeof updateAllUI === 'function') updateAllUI();
+    saveToFirebase();
+    if (typeof updateHeaderButtons === 'function') updateHeaderButtons();
+    if (typeof abrirFazenda === 'function') abrirFazenda();
+  }
 
-  const msg = raridade==='Lendário' ? t('summon.log.legendary') : raridade==='Raro' ? t('summon.log.rare') : t('summon.log.common');
-  addLog(msg, raridade==='Lendário'?'leg':raridade==='Raro'?'info':'good');
-  updateResourceUI();
+  return nascidos;
 }
+
 
 // Chamado quando se volta ao jogo com um avatar que existe mas ainda não
 // nasceu (avatar && !hatched) — alguém que fechou a aba nos 1,2s da
@@ -440,7 +372,6 @@ async function triggerSummon() {
 // de ela sair, ficava um ovo que não respondia a nada e sem botão
 // nenhum — um beco sem saída. Agora termina o que ficou por terminar.
 function setupAvatar() {
-  document.getElementById('summonCard').style.display  = 'none';
   document.getElementById('creatureCard').style.display = 'block';
   document.getElementById('idleScreen').style.display   = 'none';
   document.getElementById('eggScreen').style.display    = hatched ? 'none' : 'flex';

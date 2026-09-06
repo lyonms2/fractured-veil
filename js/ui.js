@@ -184,15 +184,8 @@ function updateResourceUI() {
     const cabem    = (typeof COMBATE_EQUIPA_MAX === 'number') ? COMBATE_EQUIPA_MAX : 3;
     resAv.textContent = naEquipa + '/' + cabem;
   }
-  const btn = document.getElementById('btnSummon');
-  if(btn) btn.disabled = false;
-  /* O botão diz quantas restam. Dizia o preço em moedas, e já não há
-     preço: são três na vida e depois é a loja. */
-  const _restam = typeof invocacoesRestantes === 'function' ? invocacoesRestantes() : 0;
-  document.getElementById('btnSummonLabel').textContent =
-    t('ui.summon_btn_restam', { n: _restam });
-  // Se o preço estiver fora do alcance, explica porquê e dá a saída
-  if(typeof updateSummonLockHint === 'function') updateSummonLockHint();
+  // Aqui vivia o rótulo do botão de invocar e o aviso de bloqueio do
+  // painel. O painel saiu — ver a nota no index.html.
   // FIX: atualiza visibilidade dos botões do header após qualquer mudança de estado
   if(typeof updateHeaderButtons === 'function' && walletAddress) updateHeaderButtons();
 }
@@ -810,7 +803,7 @@ function rebuildScreensParaSlot() {
      classe de pé e a colônia escondida, o que fica é uma caixa vazia.
 
      Medido: queimar um avatar na colônia e clicar em "usar este slot"
-     dava um #summonCard de 0×0 dentro de um #mainScreen de 2×144. Um
+     dava um painel de 0×0 dentro de um #mainScreen de 2×144. Um
      tela sem nada, sem saída, e um refresh à página corrigia — porque aí
      o modo colônia não é reposto.
 
@@ -822,36 +815,44 @@ function rebuildScreensParaSlot() {
   if (typeof fzSairDaColonia === 'function') fzSairDaColonia();
 
   if(!avatar) {
-    // Slot vazio — volta à tela inicial com o painel de invocar
-    set('idleScreen','flex'); set('eggScreen','none');
-    set('aliveScreen','none'); set('deadScreen','none'); set('fazendaScreen','none');
+    /* ── UM SLOT VAZIO ABRE A COLÓNIA ──
+
+       Abria a tela de invocar: um painel com um botão que gastava uma
+       das invocações. Essa tela saiu — são três na vida, entregues no
+       prólogo, e depois os avatares vêm do mercado ou de uma cruza.
+
+       Sem ela, um slot vazio não tem nada para mostrar e não tem
+       decisão nenhuma para oferecer. O que ele tem é uma saída, e a
+       saída é a casa: a colónia, com os outros lá, e o mercado a um
+       toque. Deixar o jogador numa tela vazia com um slot vazio era o
+       beco sem saída que a tela de invocar existia para evitar.
+
+       O poopContainer limpa-se na mesma: ele é do avatar que aqui
+       esteve, e ficava a sujar o chão de um slot sem ninguém. */
+    set('idleScreen','none'); set('eggScreen','none');
+    set('aliveScreen','none'); set('deadScreen','none');
     set('creatureCard','none'); set('statusCard','none');
-    set('summonCard','block');
-    if(walletAddress) set('summonSection','block');
-    const b = $('btnSummon'); if(b) b.disabled = false;
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
-    /* O ◆ COLÔNIA da consola sai daqui.
-
-       Ele abre a colônia e mais nada — deixa o slot vazio como ativo. O
-       "Voltar à colônia" do painel faz a mesma viagem MAIS a parte que
-       interessa: larga o slot, para o "✦ Usar este slot" voltar a
-       aparecer nele. Dois botões para o mesmo sítio em que um deles
-       deixa o jogador a meio caminho é pior do que um só.
-
-       Foi o fzSairDaColonia que o trouxe para cá — ele repõe este botão,
-       e passou a correr no topo desta função. Nos outras telas isso é o
-       que se quer; neste, não: a tela de invocar é uma decisão por
-       tomar, e só tem duas saídas. */
-    const volta = $('btnColonia'); if(volta) volta.style.display = 'none';
     const pc = $('poopContainer'); if(pc) pc.innerHTML = '';
     if(typeof updateResourceUI === 'function') updateResourceUI();
+    /* Abre-se SEMPRE, mesmo com a colónia inteiramente vazia.
+
+       A primeira versão disto só a abria se houvesse alguém vivo, e o
+       outro caso ficava com todas as telas escondidas — uma tela em
+       branco, que é pior do que qualquer coisa que lá estivesse. A
+       colónia sabe dizer que está vazia, e o recado dela manda ao
+       mercado, que é para onde há mesmo que ir.
+
+       Durante o prólogo isto não chega a ver-se: o invocarOsTres entrega
+       os três e abre a colónia no fim. */
+    if(typeof abrirFazenda === 'function') abrirFazenda();
     return;
   }
 
   if(dead) {
     set('idleScreen','none'); set('eggScreen','none');
     set('aliveScreen','none'); set('deadScreen','flex'); set('fazendaScreen','none');
-    set('summonCard','none'); set('creatureCard','none'); set('statusCard','none');
+    set('creatureCard','none'); set('statusCard','none');
     if(btns) { btns.style.opacity = '0'; btns.style.pointerEvents = 'none'; }
     if(typeof updateResourceUI === 'function') updateResourceUI();
     return;
@@ -868,7 +869,7 @@ function rebuildScreensParaSlot() {
   if(typeof setupAvatar === 'function') setupAvatar();
   set('idleScreen','none'); set('eggScreen','none');
   set('aliveScreen','block'); set('deadScreen','none'); set('fazendaScreen','none');
-  set('summonCard','none'); set('creatureCard','block'); set('statusCard','block');
+  set('creatureCard','block'); set('statusCard','block');
   // O display entra aqui porque a colonia o poe a none: sem o repor,
   // quem entrasse numa criatura ficava sem os botoes de cuidar.
   if(btns) { btns.style.display = ''; btns.style.opacity = '1'; btns.style.pointerEvents = 'all'; }

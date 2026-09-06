@@ -21,12 +21,27 @@
 // poucos dias é também a razão de existir o resto do jogo: alimentar,
 // limpar, dormir, o vínculo. A lore deixa de ser decoração ao lado das
 // mecânicas e passa a dizer para que elas servem.
+//
+// ── POR QUE SÃO TRÊS ──
+//
+// O p6 terminava com UMA criatura a sair da Fratura, porque o jogo
+// dava um avatar e vendia os seguintes. Hoje dá três — são as três de
+// uma vida, e depois é o mercado ou uma cruza.
+//
+// O texto tinha de dizer o mesmo que o jogo faz a seguir. Um jogador
+// que lê "e dela sai algo" e vê chegar três não lê melhor por isso:
+// lê que o jogo não sabe o que está a contar.
+//
+// A terceira é a que muda o significado da cena. Uma criatura a
+// escolher um humano é sorte; três a atravessar pela mesma abertura,
+// juntas, é a Fratura a mandá-las — e é isso que faz do jogador um
+// guardião em vez de um dono.
 // ═══════════════════════════════════════════════════════════════════
 window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     'prologo.titulo':     'ANTES DE TUDO',
-    'prologo.btn.mao':        '🖐 Estender a mão',
+    'prologo.btn.mao':        '🖐 Estender a mão aos três',
     'prologo.btn.continuar':  'Continuar →',
     'prologo.btn.saltar':     '↓ Mostrar tudo',
     'prologo.btn.fechar': 'Fechar',
@@ -55,12 +70,12 @@ window.registerStrings(
     // "Esta não fica quieta: alarga, estabiliza" dizia uma coisa e a
     // contrária na mesma frase. O que a distingue não é agitação — é
     // não se fechar como as outras se fecharam.
-    'prologo.p6': 'Você ouviu essa parte de terceiros e a guardou junto com as outras histórias que não ajudam a comer.\n\nEntão, esta manhã, a cinquenta metros de onde você dormiu, o ar se abriu.\n\nVocê já passou por outras sem parar, e todas se fecharam sozinhas. Esta não: alarga, se firma, e a luz lá dentro tem cor de coisa viva.\n\nE dela sai algo.\n\nPequeno. Respirando. Sem nome — nome é coisa que alguém dá, e ninguém deu.\n\nOlha direto para você. Sem medo e sem pressa, com a calma de quem chegou ao lugar certo.',
+    'prologo.p6': 'Você ouviu essa parte de terceiros e a guardou junto com as outras histórias que não ajudam a comer.\n\nEntão, esta manhã, a cinquenta metros de onde você dormiu, o ar se abriu.\n\nVocê já passou por outras sem parar, e todas se fecharam sozinhas. Esta não: alarga, se firma, e a luz lá dentro tem cor de coisa viva.\n\nE dela sai algo.\n\nPequeno. Respirando. Sem nome — nome é coisa que alguém dá, e ninguém deu.\n\nOlha direto para você. Sem medo e sem pressa, com a calma de quem chegou ao lugar certo.\n\nAtrás dele vem o segundo. E depois o terceiro.\n\nA abertura se fecha. Os três ficam.\n\nNunca ninguém contou de três de uma vez. Você não sabe se isso é sorte ou se é a Fratura sabendo de alguma coisa que você não sabe — e nenhuma das duas respostas muda o que tem de ser feito agora.',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
     'prologo.titulo':     'BEFORE ANY OF THIS',
-    'prologo.btn.mao':        '🖐 Reach out',
+    'prologo.btn.mao':        '🖐 Reach out to all three',
     'prologo.btn.continuar':  'Continue →',
     'prologo.btn.saltar':     '↓ Show it all',
     'prologo.btn.fechar': 'Close',
@@ -82,6 +97,6 @@ window.registerStrings(
     'prologo.p5': 'Creatures the size of a dog, made of dense light and of a color that is theirs alone — and no two are alike. They cross with nothing: no pack, no territory, nothing of what held them together on the other side.\n\nAlone, they fade out within days. That is how it went for nearly all of them.\n\nUnless they find someone.\n\nNobody has explained yet why they need a human to stay whole, or why they choose the ones they choose. All anyone knows is that when it happens, the two halves come to be worth more than they were apart. People call that a bond. The creatures, they call Avatars.',
 
     // "will not settle: it widens, it steadies" — a mesma contradição.
-    'prologo.p6': 'You heard that part secondhand and filed it with the other stories that do not help you eat.\n\nThen, this morning, fifty meters from where you slept, the air opened.\n\nYou have walked past others without stopping, and every one of them closed on its own. This one does not: it widens, it steadies, and the light inside it has the color of something alive.\n\nAnd out of it comes something.\n\nSmall. Breathing. With no name — a name is something somebody gives, and nobody has.\n\nIt looks straight at you. Without fear and without hurry, with the calm of something that has arrived where it meant to.',
+    'prologo.p6': 'You heard that part secondhand and filed it with the other stories that do not help you eat.\n\nThen, this morning, fifty meters from where you slept, the air opened.\n\nYou have walked past others without stopping, and every one of them closed on its own. This one does not: it widens, it steadies, and the light inside it has the color of something alive.\n\nAnd out of it comes something.\n\nSmall. Breathing. With no name — a name is something somebody gives, and nobody has.\n\nIt looks straight at you. Without fear and without hurry, with the calm of something that has arrived where it meant to.\n\nBehind it comes the second. Then the third.\n\nThe opening closes. The three of them stay.\n\nNobody has ever told of three at once. You do not know whether that is luck or the Fracture knowing something you do not — and neither answer changes what has to be done now.',
   }
 );

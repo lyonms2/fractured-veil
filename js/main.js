@@ -41,7 +41,6 @@ window.simonPlayerClick = typeof simonPlayerClick !== "undefined" ? simonPlayerC
 window.startMemoria = typeof startMemoria !== "undefined" ? startMemoria : ()=>{};
 window.startSimon = typeof startSimon !== "undefined" ? startSimon : ()=>{};
 window.toggleSleep = typeof toggleSleep !== "undefined" ? toggleSleep : ()=>{};
-window.triggerSummon = typeof triggerSummon !== "undefined" ? triggerSummon : ()=>{};
 window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
 window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};

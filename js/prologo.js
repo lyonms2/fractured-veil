@@ -7,9 +7,14 @@
 // jogo exigia o vínculo para deixar ler como o vínculo nasceu.
 //
 // O prólogo desfaz esse nó. É a primeira coisa que um jogador novo vê,
-// antes de existir avatar, e termina no instante exato em que a
-// criatura sai da Fratura e olha para ele — que é o botão INVOCAR.
-// A história entrega a mecânica na mão; não é preciso dica nenhuma.
+// antes de existir avatar, e termina no instante exato em que as três
+// criaturas saem da Fratura e olham para ele.
+//
+// E é a única porta por onde elas entram. Havia uma tela de invocar,
+// com um botão que o jogador carregava quando quisesse; fazia sentido
+// enquanto invocar era uma decisão repetida. São três na vida, e a
+// partir daí os avatares compram-se ou nascem de uma cruza — portanto
+// a chegada acontece onde a história a anuncia, e mais lado nenhum.
 //
 // Regras que ele segue, e que valem para toda a lore daqui para a
 // frente: não custa nada e não dá nada. Sem preço, sem XP, sem moedas.
@@ -19,7 +24,7 @@
 // preencher — é a escrita certa. O nome é o primeiro acto do jogador
 // neste mundo, e ainda não aconteceu.
 //
-// Depende de: gs, saveToFirebase(), triggerSummon(), _loreTypewriter()
+// Depende de: gs, saveToFirebase(), invocarOsTres(), _loreTypewriter()
 // ═══════════════════════════════════════════════════════════════════
 
 // As cenas em si vivem no i18n, porque o prólogo é a primeira tela que
@@ -175,19 +180,19 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ── Estender a mão = invocar ─────────────────────────────────────
+// ── Estender a mão = os três atravessam ──────────────────────────
 //
-// A ordem aqui é tudo. Antes o prólogo fechava primeiro e a invocação
+// A ordem aqui é tudo. Antes o prólogo fechava primeiro e a chegada
 // vinha 420ms depois: nesse intervalo aparecia a tela de "invocar
-// avatar grátis", e o jogador via o jogo por um instante antes do ovo.
-// A piscada que tirava a imersão.
+// avatar grátis", e o jogador via o jogo por um instante antes da
+// cerimónia. A piscada que tirava a imersão.
 //
-// Agora a invocação arranca com o prólogo ainda por cima. O overlay do
-// ovo tem z-index 100 e o prólogo 600, portanto monta-se por baixo sem
-// se ver. Quando o fundo dele já está opaco — leva 50ms a arrancar e
+// Agora a chegada arranca com o prólogo ainda por cima. O overlay dela
+// tem z-index 100 e o prólogo 600, portanto monta-se por baixo sem se
+// ver. Quando o fundo dele já está opaco — leva 30ms a arrancar e
 // 600ms a fechar — é que o prólogo se desvanece. Como os dois fundos
 // são pretos, a passagem não tem costura: o texto some, fica preto, e
-// o ovo já lá está.
+// a Fratura já lá está a abrir.
 function prologoEstenderMao() {
   _prologoMarcarVisto();
 
@@ -195,9 +200,10 @@ function prologoEstenderMao() {
   // O conteúdo sai já, para o clique ter resposta imediata.
   if (modal) modal.classList.add('prologo-saindo');
 
-  if (typeof triggerSummon === 'function') triggerSummon();
+  // Não se espera por ela: são ~10s de cerimónia, e o prólogo tem de
+  // sair de cena nos primeiros 1,3s. Ela termina sozinha na colónia.
+  if (typeof invocarOsTres === 'function') invocarOsTres();
 
-  // O fundo só depois de o ovo estar desenhado por baixo.
   setTimeout(() => { if (modal) modal.classList.add('prologo-saindo-fundo'); }, 750);
   setTimeout(() => {
     if (modal) modal.classList.remove('prologo-saindo', 'prologo-saindo-fundo');
@@ -227,12 +233,35 @@ function fecharPrologo() {
 // aparecer por baixo de uma cortina que ainda estava subindo.
 // ═══════════════════════════════════════════════════════════════════
 function talvezAbrirPrologo() {
-  if (prologoJaVisto()) return;
+  if (prologoJaVisto()) {
+    /* ── E SE A CHEGADA FICOU A MEIO ──
 
-  // Só a quem ainda não começou. A cena é a criatura a sair da Fratura
-  // pela primeira vez — não se mostra isso a quem já tem três avatares
-  // em casa. Esses encontram-na no arquivo.
-  const jaInvocou = (gs.totalInvocacoes || 0) > 0
+       As três acontecem uma a seguir à outra, cada uma com um pedido ao
+       servidor. Se a rede cair na segunda, o jogador fica com uma — e
+       com duas invocações por gastar que nenhum botão sabe gastar,
+       porque a tela de invocar deixou de existir.
+
+       Era um avatar perdido para sempre por causa de um soluço. Aqui a
+       entrada seguinte completa o que faltou: quem conta é o servidor
+       (`invocacoesUsadas`), portanto isto não pode dar avatares a mais
+       — só recuperar os que ele já sabe que ficaram por entregar. */
+    if (typeof invocacoesRestantes === 'function' && invocacoesRestantes() > 0
+        && typeof invocarOsTres === 'function') {
+      setTimeout(() => invocarOsTres(), 0);
+    }
+    return;
+  }
+
+  /* Só a quem ainda não começou. A cena é a Fratura a abrir-se pela
+     primeira vez — não se mostra isso a quem já tem os três em casa.
+     Esses encontram-na no arquivo.
+
+     Quem responde é o SERVIDOR (`invocacoesUsadas`). Perguntava-se ao
+     gs.totalInvocacoes, que o cliente escreve por inteiro: pô-lo a zero
+     era ver o prólogo outra vez — e, agora que é ele quem entrega os
+     avatares, seria também uma forma de os pedir de novo. Quem recusa
+     de verdade é o handleInvocar, mas não há razão para o pôr à prova. */
+  const jaInvocou = (window._invocacoesUsadas || 0) > 0
                  || (typeof avatar !== 'undefined' && !!avatar)
                  || (typeof avatarSlots !== 'undefined' && avatarSlots.some(s => s));
   if (jaInvocou) return;

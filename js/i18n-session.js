@@ -13,20 +13,8 @@ window.registerStrings(
 
     // summon.js
     'summon.log.no_login':   'Faça login primeiro!',
-    'summon.log.no_coins':   'Você precisa de {cost} 🪙 para invocar outro avatar. Volte para um avatar seu e jogue os minigames para ganhar moedas.',
-    'summon.bub.no_coins':   'Moedas insuficientes... 😢',
-    // A saida do painel de invocar. Fica sempre a vista quando ha um
-    // avatar para onde voltar, e nao so quando falta dinheiro.
-    'summon.voltar':         '↩ Voltar à colônia',
-    'summon.custo':          'Restam',
-    'summon.total':          'De',
-    'summon.lock.titulo_sem_vagas': 'As invocações acabaram',
-    'summon.lock.desc_sem_vagas':   'Cada jogador invoca {n} avatares, e você já usou os {n}. Daqui em diante os avatares vêm da loja — comprados a outros jogadores, ou nascidos de uma cruza sua.',
-    'summon.lock.desc_sem_nada':    'Você usou as suas {n} invocações e não tem nenhum avatar vivo. Para voltar a jogar, compre um na loja.',
+    'summon.log.chegou':     '✦ {nome} atravessou a Fratura e ficou no slot {n}.',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
-    'summon.log.legendary':  '🌟 INVOCAÇÃO LENDÁRIA! Uma entidade primordial respondeu ao chamado!',
-    'summon.log.rare':       '✨ Invocação Rara! Um guardião experiente surge!',
-    'summon.log.common':     'Uma entidade dimensional foi invocada!',
     'summon.log.invoked':    '{nome} foi invocado!',
     'summon.bub.new_slot':   'Novo avatar no Slot {n}! 🐣',
     'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Ative-o no Marketplace.',
@@ -50,18 +38,8 @@ window.registerStrings(
 
     // summon.js
     'summon.log.no_login':   'Log in first!',
-    'summon.log.no_coins':   'You need {cost} 🪙 to summon another avatar. Go back to one of your avatars and play the minigames to earn coins.',
-    'summon.bub.no_coins':   'Not enough coins... 😢',
-    'summon.voltar':         '↩ Back to the colony',
-    'summon.custo':          'Left',
-    'summon.total':          'Of',
-    'summon.lock.titulo_sem_vagas': 'No summons left',
-    'summon.lock.desc_sem_vagas':   'Every player summons {n} avatars, and you have used all {n}. From here on avatars come from the market — bought from other players, or bred from your own.',
-    'summon.lock.desc_sem_nada':    'You have used your {n} summons and have no living avatar. To play again, buy one from the market.',
+    'summon.log.chegou':     '✦ {nome} crossed the Fracture and settled in slot {n}.',
     'summon.bub.no_login':   'You need to log in! 🔑',
-    'summon.log.legendary':  '🌟 LEGENDARY SUMMON! A primordial entity answered the call!',
-    'summon.log.rare':       '✨ Rare Summon! An experienced guardian emerges!',
-    'summon.log.common':     'A dimensional entity has been summoned!',
     'summon.log.invoked':    '{nome} was summoned!',
     'summon.bub.new_slot':   'New avatar in Slot {n}! 🐣',
     'summon.log.born_slot':  '{nome} was born in Slot {n}! Activate it in Marketplace.',

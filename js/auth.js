@@ -169,7 +169,6 @@ async function disconnectWallet() {
   document.getElementById('statusCard').style.display       = 'none';
   document.getElementById('actionBtns').style.opacity       = '0';
   document.getElementById('actionBtns').style.pointerEvents = 'none';
-  document.getElementById('summonCard').style.display       = 'block';
   document.getElementById('creatureCard').style.display     = 'none';
   document.getElementById('poopContainer').innerHTML        = '';
   document.getElementById('dirtLayer').className            = '';
@@ -181,10 +180,10 @@ async function disconnectWallet() {
   document.getElementById('resItemsBtn').style.display      = 'none';
   document.getElementById('resBatalhaBtn').style.display    = 'none';
 
-  const ww = document.getElementById('walletWarning');
-  const ss = document.getElementById('summonSection');
-  if(ww) ww.style.display = 'block';
-  if(ss) ss.style.display = 'none';
+  /* Aqui punha-se de pé o aviso de "login necessário" e escondia-se o
+     painel de invocar. Os dois viviam dentro do #summonCard, que saiu
+     (ver a nota no index.html): quem não tem sessão vê a tela de
+     entrada, que é o gate a sério. */
 
   clearTimeout(_saveTimeout);
   document.getElementById('logList').innerHTML = '';
@@ -316,12 +315,7 @@ async function _onLoginSuccess(user) {
 
   updateHeaderButtons();
 
-  const ww = document.getElementById('walletWarning');
-  const ss = document.getElementById('summonSection');
-  if(ww) ww.style.display = 'none';
-  if(ss) ss.style.display = 'block';
-  const _bs = document.getElementById('btnSummon');
-  if(_bs) _bs.disabled = false;
+  // O aviso de login e o painel de invocar saíram com o #summonCard.
   updateResourceUI();
   addLog(t('log.welcome_back'), 'good');
 
@@ -413,7 +407,6 @@ async function _onLoginSuccess(user) {
       document.getElementById('idleScreen').style.display   = 'none';
       document.getElementById('eggScreen').style.display    = 'none';
       document.getElementById('aliveScreen').style.display  = 'none';
-      document.getElementById('summonCard').style.display   = 'none';
       document.getElementById('creatureCard').style.display = 'none';
       document.getElementById('statusCard').style.display   = 'none';
       document.getElementById('actionBtns').style.opacity   = '0';
@@ -471,7 +464,6 @@ async function _onLoginSuccess(user) {
       document.getElementById('eggScreen').style.display     = 'flex';
       document.getElementById('aliveScreen').style.display   = 'none';
       document.getElementById('deadScreen').style.display    = 'none';
-      document.getElementById('summonCard').style.display    = 'none';
       document.getElementById('creatureCard').style.display  = 'block';
       updateResourceUI();
     }

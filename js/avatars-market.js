@@ -646,30 +646,20 @@ async function activateSlot(idx) {
      escolher. Escolher um slot é dizer "quero jogar com este" — a lista
      já cumpriu o seu papel.
 
-     Se o slot estiver vazio, o rebuildScreensParaSlot() já põe o painel
-     de invocar na tela. Quando a invocação é GRATUITA, dispara-se
-     também a geração: é o que o jogador ia fazer a seguir de qualquer
-     maneira, e poupa-lhe um clique numa tela que só tem esse botão.
-
-     Quando custa moedas, não. Gastar sem perguntar é decidir pelo
-     jogador, e o painel fica à vista com o preço — que é a altura de ele
-     decidir.
-
-     O atraso espera o modal fechar: a animação de invocação mexe na tela
-     que está por baixo, e as duas coisas ao mesmo tempo dariam um salto. */
-  const vazio = !playerData.avatarSlots?.[idx]?.nome;
+     Se o slot estiver vazio, o rebuildScreensParaSlot() abre a colónia:
+     um slot sem ninguém não tem nada para mostrar nem decisão para
+     oferecer. Ver updateAllUI, em js/ui.js. */
   fecharMeusAvatares();
   showToast(t('mkt.avatar.activated'), 'ok');
   renderSlots();
 
-  if (vazio && typeof custoDaInvocacao === 'function'
-           && custoDaInvocacao() === 0
-           && typeof triggerSummon === 'function') {
-    setTimeout(() => {
-      const b = document.getElementById('btnSummon');
-      if (b && !b.disabled) triggerSummon();
-    }, 380);
-  }
+  /* Aqui, ao activar um slot VAZIO, disparava-se uma invocação
+     automática — o painel de invocar aparecia por baixo e a cerimónia
+     seguia sozinha. Já não há invocar por decisão: são três, entregues
+     no prólogo. Um slot vazio abre a colónia (ver updateAllUI, em
+     js/ui.js), e o próximo avatar vem do mercado ou de uma cruza.
+
+     O `vazio` deixou de ser usado e saiu com ele. */
 }
 
 // ═══════════════════════════════════════════
