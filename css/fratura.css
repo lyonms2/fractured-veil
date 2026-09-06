@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════════════
+   A FRATURA — a tela antes da batalha
+   Ver js/fratura.js para o que ela diz e por quê.
+
+   Empresta a moldura das outras cerimônias (a caixa, o fundo, a tinta
+   fraca) de propósito: é o mesmo gesto do jogo — parar, ler, decidir —
+   e dar-lhe vocabulário próprio faria parecer que veio de outro jogo.
+
+   O que muda é a fenda no topo, que é só desta.
+═══════════════════════════════════════════════════════════════════ */
+
+#fraturaOverlay {
+  position: fixed; inset: 0; z-index: 10060;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  background: #04030a;
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s ease;
+  overflow-y: auto;
+}
+#fraturaOverlay.ativo { opacity: 1; pointer-events: auto; }
+
+.frat-caixa {
+  width: 100%; max-width: 24rem;
+  margin: auto;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.625rem;
+  padding: 1.125rem 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,.02);
+  text-align: center;
+}
+
+/* ── A fenda ──
+   Um risco vertical que respira. É o desenho que o prólogo descreve:
+   "rasgos verticais", "não projetam sombra". Fica no topo da caixa
+   porque é de lá que sai tudo o que a tela conta. */
+.frat-fenda {
+  width: 0.1875rem; height: 3rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(180deg, transparent, #c4b5fd 22%, #fff 50%, #c4b5fd 78%, transparent);
+  box-shadow: 0 0 0.9rem rgba(196,181,253,.75);
+  animation: frat-respira 3.2s ease-in-out infinite;
+}
+@keyframes frat-respira {
+  0%, 100% { opacity: .55; transform: scaleY(1)    scaleX(1); }
+  50%      { opacity: 1;   transform: scaleY(1.12) scaleX(1.6); }
+}
+
+.frat-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 0.625rem; font-weight: 700; letter-spacing: 0.15625rem;
+  color: #c4b5fd;
+  /* O nome traz o artigo em minusculas ("do Poco Seco"), porque o artigo
+     e do substantivo e quem sabe o genero e quem traduz. A caixa alta e
+     do painel, e por isso faz-se aqui — a Cinzel disfarcaria com
+     versaletes, mas so ela: com a serifa de recurso ficava "FRATURA do
+     Poco Seco". */
+  text-transform: uppercase;
+}
+
+.frat-corpo {
+  font-size: 0.46875rem; line-height: 1.75;
+  color: var(--cerim-fraco, #b2aac8);
+  max-width: 20rem;
+  white-space: pre-line;   /* o \n\n do texto separa os dois parágrafos */
+}
+
+/* ── Os três que estão do outro lado ── */
+.frat-lista {
+  list-style: none; margin: 0.25rem 0 0; padding: 0;
+  width: 100%;
+  display: flex; flex-direction: column; gap: 0.375rem;
+}
+.frat-item {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 0.375rem;
+  background: rgba(255,255,255,.02);
+  text-align: left;
+}
+.frat-retrato { line-height: 0; flex: none; }
+.frat-txt { min-width: 0; }
+.frat-nome {
+  font-size: 0.5rem; font-weight: 700; color: #e6dcff;
+  margin-bottom: 0.0625rem;
+}
+.frat-lore {
+  font-size: 0.4375rem; line-height: 1.55; font-style: italic;
+  color: var(--cerim-fraco, #b2aac8);
+}
+
+.frat-fecho {
+  font-size: 0.4375rem; line-height: 1.7;
+  color: var(--cerim-fraco, #b2aac8);
+  max-width: 20rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.frat-botoes { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.frat-btn {
+  padding: 0.4375rem 1.125rem;
+  border: 1px solid var(--gold);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.46875rem; font-weight: 700; letter-spacing: 0.09375rem;
+  cursor: pointer;
+}
+.frat-btn:hover { background: rgba(201,168,76,.15); }
+.frat-btn.fantasma {
+  border-color: rgba(255,255,255,.14);
+  color: var(--cerim-fraco, #b2aac8);
+}
+.frat-btn.fantasma:hover { background: rgba(255,255,255,.05); }
+
+/* No desktop a raiz está a 24px e isto ficaria enorme: a caixa é
+   moldura, como as das outras cerimônias. */
+@media (min-width: 769px) {
+  .frat-caixa  { max-width: 18rem; padding: 0.875rem 0.75rem 1rem; }
+  .frat-titulo { font-size: 0.5rem; }
+  .frat-corpo  { font-size: 0.40625rem; }
+  .frat-nome   { font-size: 0.4375rem; }
+  .frat-lore   { font-size: 0.375rem; }
+  .frat-fecho  { font-size: 0.375rem; }
+  .frat-btn    { font-size: 0.40625rem; }
+  .frat-fenda  { height: 2.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frat-fenda { animation: none; }
+}

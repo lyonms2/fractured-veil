@@ -55,7 +55,13 @@ function _pveGerarInimigo(pontosAlvo) {
   // Baralhados e consumidos sem repetição: dois nomes iguais na mesma
   // equipa davam linhas absurdas no registo — "Terra Caído sai, entra
   // Terra Caído".
-  const sufs = ['Errante', 'Esquecido', 'Faminto', 'Sem Nome', 'Caído', 'Antigo']
+  /* Os sufixos estavam cravados em português aqui, e um jogador inglês
+     via "Blue Errante". Passam a sair da tradução (FRAT_SUFIXOS, em
+     js/fratura.js), e o slot guarda a CHAVE — é por ela que a tela da
+     Fratura sabe o que dizer sobre cada um. */
+  const sufs = ((typeof FRAT_SUFIXOS !== 'undefined')
+      ? FRAT_SUFIXOS.slice()
+      : ['errante', 'esquecido', 'faminto', 'sem_nome', 'caido', 'antigo'])
     .sort(() => Math.random() - 0.5);
   const equipa = [];
   let restante = pontosAlvo;
@@ -82,8 +88,10 @@ function _pveGerarInimigo(pontosAlvo) {
       ? nascer({ origem: 'Comum', seed }) : null;
     const nomeCor = (cert && typeof nomeDaCor === 'function')
       ? nomeDaCor(cert.corPrincipal) : '';
+    const sufId = sufs[i];
     equipa.push({
-      nome: `${nomeCor} ${sufs[i]}`.trim(),
+      nome: `${nomeCor} ${t('frat.suf.' + sufId)}`.trim(),
+      sufId,
       raridade: melhor.rar, nivel: melhor.nv, seed,
       nascimento: cert,
     });
@@ -273,8 +281,25 @@ function abrirCombatePvE() {
 
   const pontos  = equipa.reduce((s, a) => s + pontosDoAvatar(a.raridade, a.nivel), 0);
   const inimigo = _pveGerarInimigo(pontos);
+  const semente = Math.floor(Math.random() * 1e6);
 
-  _pveEstado = combate3dtIniciar(equipa, inimigo, Math.floor(Math.random() * 1e6), {
+  /* A FRATURA VEM ANTES DA BATALHA.
+
+     Entrava-se direto, e a tela dizia BATALHA e mais nada — três
+     criaturas de nome estranho e nenhuma pista do que eram. A tela da
+     Fratura diz contra o que se vai lutar e por quê (ver js/fratura.js),
+     e só depois chama isto.
+
+     Se ela não existir — arquivo não carregado, caminho novo — o
+     abrirFratura entra direto. Uma tela de lore nunca pode ser a razão
+     de ninguém ficar sem poder lutar. */
+  const comecar = () => _pveComecar(equipa, inimigo, semente);
+  if (typeof abrirFratura === 'function') abrirFratura(inimigo, semente, comecar);
+  else comecar();
+}
+
+function _pveComecar(equipa, inimigo, semente) {
+  _pveEstado = combate3dtIniciar(equipa, inimigo, semente, {
     historico: true,
     // O lado A é o jogador: a política do motor não decide por ele.
     // Mas se a ação vier vazia — um turno que corra sem escolha, por um
