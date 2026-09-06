@@ -146,7 +146,73 @@ function entrarNaFratura() {
     ov.classList.remove('ativo');
     if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
   }
-  if (typeof ir === 'function') ir();
+  if (typeof ir !== 'function') return;
+  atravessar(ir);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ATRAVESSAR
+
+   A batalha aparecia de um fotograma para o outro: fechava o briefing e
+   a arena já lá estava. Nada acontecia entre os dois, e por isso entrar
+   numa Fratura não custava nada nem parecia nada.
+
+   Agora atravessa-se. É a MESMA fenda do botão e do briefing, e o que ela
+   faz aqui é o que ela é: abre, e engole quem entra.
+
+     0ms     o fundo escurece
+     120ms   a fenda rasga de alto a baixo          · summon_start
+     620ms   e alarga                               · summon_pulse
+     1050ms  BRANCO. A tela inteira é a passagem    · summon_impact
+     1150ms  a arena monta-se POR DENTRO do branco
+     1900ms  o branco esvai-se e ela já lá está
+
+   A arena monta-se dentro do clarão pela mesma razão que o corpo troca
+   dentro do clarão da evolução (js/evolucao.js): nunca se vê a mudança
+   acontecer, só o antes e o depois — e é isso que a faz parecer travessia
+   e não troca de tela.
+
+   O visual inteiro é UMA animação CSS e não cinco classes com cinco
+   temporizadores. Cinco temporizadores desencontram-se entre si num
+   celular com a aba em segundo plano; uma animação só não tem como se
+   desencontrar dela própria. O único relógio em JS é o que monta a
+   arena, e esse tem de ser em JS de qualquer maneira.
+   ══════════════════════════════════════════════════════════════════ */
+const PAS_MONTAR = 1150;   // quando a arena se monta, por dentro do branco
+const PAS_FIM    = 1980;   // quando a passagem se apaga e sai do caminho
+
+let _pasTimers = [];
+
+function atravessar(aoChegar) {
+  const ov = document.getElementById('passagemOverlay');
+  if (!ov) { aoChegar(); return; }
+
+  // Uma travessia de cada vez. Um clique repetido deixava duas a correr,
+  // e a segunda apagava o overlay a meio da primeira.
+  _pasTimers.forEach(clearTimeout);
+  _pasTimers = [];
+  ov.classList.remove('ativo');
+  // Reinicia a animação: sem isto, atravessar duas vezes seguidas não a
+  // recomeçava — a classe já lá estava.
+  void ov.offsetWidth;
+  ov.classList.add('ativo');
+
+  const som = n => { if (typeof playSound === 'function') playSound(n); };
+  som('summon_start');
+  _pasTimers.push(setTimeout(() => som('summon_pulse'),  620));
+  _pasTimers.push(setTimeout(() => som('summon_impact'), 1050));
+
+  let montou = false;
+  const montar = () => { if (!montou) { montou = true; aoChegar(); } };
+  _pasTimers.push(setTimeout(montar, PAS_MONTAR));
+
+  _pasTimers.push(setTimeout(() => {
+    ov.classList.remove('ativo');
+    // A rede: se o relógio de cima falhou por alguma razão, a arena monta-se
+    // aqui de qualquer maneira. Uma animação nunca pode ser o motivo de
+    // uma batalha não começar.
+    montar();
+  }, PAS_FIM));
 }
 
 window.registerStrings(

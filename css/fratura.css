@@ -134,3 +134,74 @@
 @media (prefers-reduced-motion: reduce) {
   .frat-fenda { animation: none; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   ATRAVESSAR — a fenda abre e engole a tela
+   Ver a coreografia e os tempos em js/fratura.js.
+
+   Tudo numa animação só, e não em classes encadeadas: cinco relógios
+   desencontram-se entre si num celular com a aba em segundo plano; uma
+   animação só não tem como se desencontrar dela própria.
+═══════════════════════════════════════════════════════════════════ */
+
+#passagemOverlay {
+  position: fixed; inset: 0; z-index: 10080;
+  pointer-events: none;
+  opacity: 0;
+  background: #04030a;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#passagemOverlay.ativo {
+  pointer-events: auto;   /* tranca o clique enquanto se atravessa */
+  animation: pas-fundo 1.98s linear forwards;
+}
+@keyframes pas-fundo {
+  0%   { opacity: 0;   }
+  8%   { opacity: .92; }
+  52%  { opacity: 1;   }
+  100% { opacity: 0;   }
+}
+
+/* A fenda. Nasce com a altura toda e largura nenhuma, rasga de alto a
+   baixo, e depois alarga até não haver mais tela para alargar. */
+.pas-fenda {
+  width: 0.25rem; height: 100vh;
+  border-radius: 0.125rem;
+  background: linear-gradient(180deg,
+              transparent 0%, #c4b5fd 14%, #fff 50%, #c4b5fd 86%, transparent 100%);
+  box-shadow: 0 0 2.5rem rgba(196,181,253,.9), 0 0 6rem rgba(255,255,255,.5);
+  transform: scaleY(0) scaleX(1);
+  opacity: 0;
+}
+#passagemOverlay.ativo .pas-fenda { animation: pas-rasga 1.98s cubic-bezier(.7,0,.3,1) forwards; }
+
+@keyframes pas-rasga {
+  /* 0 → 120ms: nada ainda, o fundo é que escurece */
+  0%   { transform: scaleY(0)    scaleX(1);   opacity: 0; }
+  6%   { transform: scaleY(0)    scaleX(1);   opacity: 1; }
+  /* 120 → 620ms: rasga de alto a baixo */
+  31%  { transform: scaleY(1)    scaleX(1);   opacity: 1; }
+  /* 620 → 1050ms: alarga, devagar primeiro e depois de repente */
+  38%  { transform: scaleY(1)    scaleX(6);   opacity: 1; }
+  53%  { transform: scaleY(1)    scaleX(420); opacity: 1; }
+  /* 1050 → 1150ms: branco parado. É aqui dentro que a arena se monta. */
+  58%  { transform: scaleY(1)    scaleX(420); opacity: 1; }
+  /* e esvai-se, deixando a arena já montada por baixo */
+  100% { transform: scaleY(1)    scaleX(420); opacity: 0; }
+}
+
+/* Quem pediu menos movimento não leva com a tela a rasgar: fica só o
+   escurecer e o clarear, que é o mesmo tempo e a mesma leitura sem o
+   susto. */
+@media (prefers-reduced-motion: reduce) {
+  #passagemOverlay.ativo .pas-fenda { animation: none; opacity: 0; }
+  #passagemOverlay.ativo { animation: pas-fundo-suave 1.98s linear forwards; }
+  @keyframes pas-fundo-suave {
+    0%   { opacity: 0; background: #04030a; }
+    20%  { opacity: 1; background: #04030a; }
+    55%  { opacity: 1; background: #fff;    }
+    100% { opacity: 0; background: #fff;    }
+  }
+}
