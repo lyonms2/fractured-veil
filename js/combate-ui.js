@@ -83,7 +83,7 @@ function _fichaVocacaoHTML(f) {
   const nome = k => t('carac.' + k);
   /* Sem rótulo próprio: a frase já se explica ("tende a Força e
      Armadura"), e um "VOCAÇÃO" ao lado partia a linha em duas na ficha
-     estreita do telemóvel. */
+     estreita do celular. */
   /* Duas leituras do mesmo DNA, e são coisas diferentes: a VOCAÇÃO diz
      para onde os pontos tendem a cair (Força, Armadura…) e a ÍNDOLE diz
      que feitio ele tem — que magias e que virtudes lhe saem. Um avatar
@@ -391,7 +391,7 @@ function renderBotaoBatalhar(cheia, impedidos) {
    `if (!playerData) return` logo no princípio. O playerData só é
    carregado ao abrir o 🧬 ou o marketplace — portanto quem fosse
    direto à batalha carregava nas setas, a ordem MUDAVA de verdade em
-   gs.equipa, e o ecrã não mexia um pixel. Fechar e reabrir mostrava a
+   gs.equipa, e a tela não mexia um pixel. Fechar e reabrir mostrava a
    ordem nova, o que é a pior forma de descobrir que afinal funcionava.
 
    Cada uma passa a redesenhar aquilo que mexeu, e a grelha fica a

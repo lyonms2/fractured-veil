@@ -16,7 +16,7 @@
    As afirmações aqui dentro não repetem o nome da magia em cada
    linha — dizem "cada 2 PM valem 1 dado de cura", que se lê melhor
    mas não diz de quem é. E os cabeçalhos com o nome saem quando o
-   ficheiro CORRE, enquanto as afirmações saem todas juntas no fim,
+   arquivo CORRE, enquanto as afirmações saem todas juntas no fim,
    portanto nunca ficam ao lado umas das outras no relatório.
 
    Esta linha é o que permite ao tools/inventario.js saber que estas

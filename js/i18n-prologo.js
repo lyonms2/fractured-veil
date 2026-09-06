@@ -9,7 +9,7 @@
 //
 // Sobre o que ele conta, e o que deliberadamente NÃO conta:
 //
-// A primeira versão repetia o Capítulo I quase à letra — o céu cor de
+// A primeira versão repetia o Capítulo I quase ao pé da letra — o céu cor de
 // ferrugem, a água para dois dias, "a quarta que você vê esta semana".
 // Quem lesse os dois lia a mesma coisa duas vezes, e nenhum dos dois
 // ganhava com isso. O prólogo passa a tratar do MUNDO (o que é uma

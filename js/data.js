@@ -179,7 +179,7 @@ function determinarRaridade() {
                chifres, os olhos e os braços herdam-se como tudo o resto
      DA SEED   quando não tem, exactamente como sempre
 
-   A ordem dos sorteios da segunda forma É A DE SEMPRE, à letra. Cada
+   A ordem dos sorteios da segunda forma É A DE SEMPRE, ao pé da letra. Cada
    número sai do anterior, portanto trocar uma linha de sítio muda todos
    os que vêm depois — e cada avatar já nascido mudaria de cara.
    ══════════════════════════════════════════════════════════════════ */
@@ -326,7 +326,7 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
 
   /* Os doze traços e os pormenores saem do CORPO, e o corpo vem de um
      sítio só — do DNA quando o avatar o tem, e da seed quando não tem.
-     Ver corpoDeQuem(), mais abaixo neste ficheiro. */
+     Ver corpoDeQuem(), mais abaixo neste arquivo. */
   const _corpo      = corpoDeQuem(avatar, _pre.daFila);
   const tipoCorpo   = _corpo.tipoCorpo;
   const numOlhosAd  = _corpo.numOlhos;

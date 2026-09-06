@@ -536,7 +536,7 @@ function _linCartao(p, cls, slots) {
   const s = p.slot;
   const svg = (typeof gerarSVG === 'function')
     ? gerarSVG(s, s.raridade || 'Comum', s.seed || 0, 64, 64, _linFase(s.nivel)) : '';
-  /* UM MORTO CONTINUA NO SLOT, e é por isso que ele estava a aparecer
+  /* UM MORTO CONTINUA NO SLOT, e é por isso que ele estava aparecendo
      aqui com o mesmo ar de quem está vivo. Numa árvore genealógica
      isso é a informação que menos se pode omitir. */
   const marca = s.dead ? `<div class="lin-marca morto">${t('lin.morto')}</div>`

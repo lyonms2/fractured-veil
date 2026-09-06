@@ -120,9 +120,9 @@
 
    Golpe, magia de ataque, magia forte, magia de defesa, vantagem e
    desvantagem. Estas cores nasceram no painel da batalha; vivem aqui
-   porque este ficheiro carrega primeiro, e porque a mesma magia tem
+   porque este arquivo carrega primeiro, e porque a mesma magia tem
    de ter a mesma cor na ficha e no combate — duas listas de hex em
-   dois ficheiros divergem ao primeiro ajuste. */
+   dois arquivos divergem ao primeiro ajuste. */
 :root {
   --fam-golpe:       #b9c3d6;   /* aço: o golpe que todos têm */
   --fam-ataque:      #f0913f;   /* brasa */
@@ -321,7 +321,7 @@
 /* ── A EQUIPA NO TELEMÓVEL ──
    Três slots lado a lado em 360px davam ~110px cada, e era esse aperto
    que obrigava a letra a 7px: não havia largura para mais. A largura
-   existia — estava a ser dividida ao contrário.
+   existia — estava sendo dividida ao contrário.
 
    Passam a uma coluna, cada slot uma linha inteira, que é o que os
    cartões de avatar já fazem a esta mesma largura (o bloco de 640px do
@@ -537,7 +537,7 @@
   line-height: 1.85;
 }
 
-/* ── O OVO QUE AINDA SE ESTÁ A FAZER ──
+/* ── O OVO QUE AINDA SE ESTÁ Fazendo ──
    Um filho leva um dia a formar-se. Enquanto isso o ovo está lá, à
    vista, mas o botão de chocar não responde — e a linha diz porquê,
    que é a diferença entre esperar e achar que está partido. */

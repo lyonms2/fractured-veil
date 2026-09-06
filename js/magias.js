@@ -74,7 +74,7 @@ const MAGIA_SLOTS = MAGIA_PAPEIS;
    duas coisas eram escadas diferentes: um avatar podia ser ADULTO e
    Comum. Agora a fase sai dos pontos e a raridade também, e as duas
    dizem sempre o mesmo — portanto a escada diz-se toda por fase, que é
-   a que o jogador vê escrita no ecrã.
+   a que o jogador vê escrita na tela.
 
      JOVEM   abre DUAS de uma vez: a de bater e a de segurar. É a fase
              em que ele passa a poder lutar, e entrar em combate só com
@@ -144,7 +144,7 @@ function _escolherComPeso(pool, pesos, rnd) {
 // (as ferramentas de auditoria correm sem ele).
 function _magiaFase(nivel) {
   if (typeof faseFromNivel === 'function') return faseFromNivel(nivel || 1);
-  /* A cópia de emergência, para quando este ficheiro corre sozinho nas
+  /* A cópia de emergência, para quando este arquivo corre sozinho nas
      ferramentas. Tinha os cortes ANTIGOS (5, 10, 17) e ficou para trás
      quando a escada mudou — uma segunda cópia de uma conta é sempre a
      que envelhece. Agora sai dos pontos, como a verdadeira. */

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // AS REGRAS DA FASE, LIDAS DO JOGO
 //
-// O js/state.js inteiro não corre fora do browser — mexe no ecrã e em
+// O js/state.js inteiro não corre fora do browser — mexe na tela e em
 // vinte globais. Mas as regras da fase são quatro linhas, e essas leem-se
 // de lá tal como estão.
 //

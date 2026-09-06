@@ -18,7 +18,7 @@
 // está mesmo a meio caminho, indo pelo lado curto.
 //
 // É a roda do pintor — vermelho, amarelo e azul como primárias — e não a
-// do ecrã, onde vermelho e azul dariam magenta. É a que toda a gente
+// da tela, onde vermelho e azul dariam magenta. É a que toda a gente
 // aprendeu na escola, e é a que faz a mistura parecer certa.
 //
 // ── AS DOZE ──
@@ -31,7 +31,7 @@
 //    5 Amarelo-esverdeado  11 Vermelho-arroxeado
 //
 // As primárias ficam em 0, 4 e 8; as secundárias em 2, 6 e 10; as seis
-// terciárias entre elas. Não são igualmente espaçadas em matiz de ecrã
+// terciárias entre elas. Não são igualmente espaçadas em matiz de tela
 // de propósito: o amarelo ocupa uma faixa estreita e o verde uma larga,
 // e distribuí-las por igual daria seis verdes e nenhum amarelo.
 // ═══════════════════════════════════════════════════════════════════
@@ -423,7 +423,7 @@ function corDaRodaHex(x) {
 
 /* A mesma cor em r,g,b, para quem precisa de lhe pôr transparencia por
    cima — o canvas do labirinto pinta o rasto com rgba(). Convem estar
-   aqui e nao la: e a mesma cor, e duas contas em dois ficheiros para a
+   aqui e nao la: e a mesma cor, e duas contas em dois arquivos para a
    mesma cor e o principio de duas cores diferentes. */
 function corDaRodaRgb(x) {
   const c = corDaRoda(x);

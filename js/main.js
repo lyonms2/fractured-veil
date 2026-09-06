@@ -110,7 +110,7 @@ window.addEventListener('beforeunload', () => {
 
 // Onde não se pausa: coisas com relógio a correr, algumas com o
 // servidor do outro lado. Pausar uma batalha PvP é ou inútil ou
-// batota, conforme quem está a perder.
+// batota, conforme quem está perdendo.
 const PAUSA_PROIBIDA = ['combateModal', 'arenaModal', 'batalhaNavalModal',
                         'roubaMontModal', 'minaModal', 'mazeModal',
                         'memoriaModal', 'simonModal'];
@@ -161,7 +161,7 @@ function _desenharPausa() {
 }
 
 // Espaço pausa e retoma, que é o gesto que toda a gente experimenta
-// primeiro. Não rouba a barra a quem está a escrever num campo.
+// primeiro. Não rouba a barra a quem está escrevendo num campo.
 document.addEventListener('keydown', (e) => {
   if (e.code !== 'Space' && e.key !== ' ') return;
   const alvo = e.target;
@@ -312,7 +312,7 @@ function openAvatarZoom() {
   /* Vai o SLOT, e não quatro campos soltos. Eram quatro, e cada campo
      novo da ficha — a certidão, agora a escolha do ancião — obrigava a
      emendar a cadeia inteira, com um elo a esquecer-se de cada vez.
-     O nível sobrepõe-se: o global é o que está a correr, e o do slot só
+     O nível sobrepõe-se: o global é o que está correndo, e o do slot só
      apanha o valor certo na próxima gravação. */
   if(typeof preencherFichaZoom === 'function') preencherFichaZoom({ ...avatar, nivel });
   _lockZoomScroll();

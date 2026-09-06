@@ -143,7 +143,7 @@ function sincronizarRaridade(slot) {
   return nova;
 }
 
-// Todos os slots de uma vez, para a migração de quem já estava a jogar.
+// Todos os slots de uma vez, para a migração de quem já estava jogando.
 function sincronizarRaridades(slots) {
   if (!Array.isArray(slots)) return 0;
   let n = 0;

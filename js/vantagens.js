@@ -175,7 +175,7 @@ function _vdEscolher(ids, tabela, pesos, rnd) {
    TROCAR de virtude ao subir: medido em 318 de 18.600 subidas, 1,7%.
    Um avatar podia perder o Fôlego Extra e dez pontos de vida com ele.
 
-   É o mesmo defeito que as magias tiveram e que este ficheiro corrigiu
+   É o mesmo defeito que as magias tiveram e que este arquivo corrigiu
    da mesma maneira: pergunta-se ao orçamento do NÍVEL 35, que é
    constante para um dado avatar. A virtude e o defeito ficam decididos
    ao nascer e não mudam mais, que é o que o jogo promete.
@@ -190,7 +190,7 @@ function _vdEscolher(ids, tabela, pesos, rnd) {
    js/ficha-3dt.js), e deixar 18 aqui deixava entrar no bolo virtudes que
    nenhum avatar poderia pagar. */
 /* Uma FUNÇÃO e não uma constante, e é a ordem de carga que manda: este
-   ficheiro carrega antes do js/ficha-3dt.js, e ler lá um `const` no
+   arquivo carrega antes do js/ficha-3dt.js, e ler lá um `const` no
    momento em que este é avaliado rebenta — o `typeof` não protege de uma
    const por inicializar, ao contrário do que protege de uma variável que
    não existe. Lida na altura de sortear, já está lá. */

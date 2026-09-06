@@ -195,7 +195,7 @@
 }
 
 /* O pronto não balança: EMPURRA. Sobe depressa e volta devagar, que é
-   o gesto de quem está a forçar a casca de dentro para fora. */
+   o gesto de quem está forçando a casca de dentro para fora. */
 .ovo-f3 .ovo-casca { animation: ovo-empurra 1.5s cubic-bezier(.3,0,.5,1) infinite; }
 @keyframes ovo-empurra {
   0%    { transform: scale(1, 1); }
@@ -206,7 +206,7 @@
 .ovo-f3 .ovo-aura { animation: ovo-aura-pulsa 1.5s ease-in-out infinite; }
 
 /* Um ovo sem saída não se mexe, e um podre muito menos. É a diferença
-   entre "está a acontecer" e "acabou". */
+   entre "está acontecendo" e "acabou". */
 .egg-item.sem-ninho .ovo-mini *,
 .egg-item.rotten    .ovo-mini * { animation: none !important; }
 .egg-item.rotten    .ovo-mini   { filter: grayscale(.8) brightness(.7); }

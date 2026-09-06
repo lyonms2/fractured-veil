@@ -546,7 +546,7 @@ async function tryAutoReconnect() { /* desativado */ }
 
    Aqui estava a VIDA RESTANTE: quanto faltava para o avatar morrer se o
    jogador não fizesse nada. Era um palpite sobre o futuro, e um palpite
-   caro de manter — tinha de refazer, à mão e neste ficheiro, o cálculo
+   caro de manter — tinha de refazer, à mão e neste arquivo, o cálculo
    do decaimento de cada vital, o limiar de cada doença e o dreno da
    saúde, tudo isso escrito em js/gametick.js. Duas cópias da mesma
    conta, e a deste lado só se saberia errada quando alguém desse por
@@ -803,14 +803,14 @@ function rebuildScreensParaSlot() {
      também põe a classe `fz-modo` no #mainScreen e `fz-colonia` no body,
      e esconde a fila dos botões de cuidar.
 
-     O `fz-modo` faz do ecrã um flex de altura automática com um mínimo
-     de 9rem, para a lista da colônia poder encolher. Os outros ecrãs são
+     O `fz-modo` faz da tela um flex de altura automática com um mínimo
+     de 9rem, para a lista da colônia poder encolher. Os outras telas são
      absolutos com inset:0 e não alimentam essa altura — portanto, com a
      classe de pé e a colônia escondida, o que fica é uma caixa vazia.
 
-     Medido: queimar um avatar na colônia e carregar em "usar este slot"
+     Medido: queimar um avatar na colônia e clicar em "usar este slot"
      dava um #summonCard de 0×0 dentro de um #mainScreen de 2×144. Um
-     ecrã sem nada, sem saída, e um refresh à página corrigia — porque aí
+     tela sem nada, sem saída, e um refresh à página corrigia — porque aí
      o modo colônia não é reposto.
 
      O fzSairDaColonia já fazia esta limpeza toda, e o comentário dele
@@ -838,7 +838,7 @@ function rebuildScreensParaSlot() {
        deixa o jogador a meio caminho é pior do que um só.
 
        Foi o fzSairDaColonia que o trouxe para cá — ele repõe este botão,
-       e passou a correr no topo desta função. Nos outros ecrãs isso é o
+       e passou a correr no topo desta função. Nos outras telas isso é o
        que se quer; neste, não: a tela de invocar é uma decisão por
        tomar, e só tem duas saídas. */
     const volta = $('btnColonia'); if(volta) volta.style.display = 'none';

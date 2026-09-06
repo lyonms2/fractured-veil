@@ -862,7 +862,7 @@
   color:var(--muted); opacity:.7; text-align:center;
 }
 
-/* No telemóvel o rem é 16px e não 24: os cartões de 5.25rem passariam a
+/* No celular o rem é 16px e não 24: os cartões de 5.25rem passariam a
    84px e cabiam três por linha em vez de dois. Aperta-se a fila e
    deixa-se quebrar, que é o que uma árvore larga tem de fazer. */
 @media (max-width: 500px) {

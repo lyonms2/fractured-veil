@@ -403,7 +403,7 @@ async function confirmHatch() {
 
        Quando o ovo é filho de dois avatares, o DNA dele foi cruzado no
        momento em que foi posto (js/reproducao.js). Sortear um novo aqui
-       era deitar fora a herança e dar ao filho genes de estranho. */
+       era jogar fora a herança e dar ao filho genes de estranho. */
     registarNascimento(avatarSlots[targetSlot], {
       origem: 'Comum', seed,
       dna: dnaDoOvo,
@@ -451,7 +451,7 @@ function _pararAnimacaoDeChocar() {
    Era 1,2 segundos para nascer um bicho, com as cinco rachas em três
    momentos — duas, duas e uma, tudo em meio segundo. São 2,8 segundos:
    cada racha tem o seu instante, há tempo de ver a casca ceder, e o
-   clarão só vem quando já se percebeu o que estava a acontecer. */
+   clarão só vem quando já se percebeu o que estava acontecendo. */
 const HATCH_RITMO = 340;     // o compasso; o resto são múltiplos dele
 
 function hatchWithAnimation(slot, targetSlot) {
@@ -550,7 +550,7 @@ function hatchWithAnimation(slot, targetSlot) {
 // chegava a ver — e mentia.
 // ═══════════════════════════════════════════════════════════════════
 
-/* Pinta o ovo do ecrã.
+/* Pinta o ovo da tela.
 
    Tinha três ramos escritos à mão — Lendário dourado, Raro azul, o
    resto roxo — e com toda a gente a nascer Comum só o terceiro corria.
@@ -750,11 +750,11 @@ function renderEggInventory() {
        SEM NINHO   está pronto e não tem para onde ir. Não choca, e o
                    contador dos sete dias anda. O que se pede aqui não
                    é um clique — é abrir espaço.
-       PODRE       acabou. Fica um botão só, e é o de deitar fora.
+       PODRE       acabou. Fica um botão só, e é o de jogar fora.
 
      A ordem da lista segue a urgência e não a raridade — que já não
-     existe: primeiro os que estão a morrer, depois os prontos, e por
-     fim os que ainda se estão a fazer. */
+     existe: primeiro os que estão morrendo, depois os prontos, e por
+     fim os que ainda se estão fazendo. */
   const _agora = Date.now();
   const _haNinho = findTargetSlot() !== -1;
   const _estado = (ovo) => {
@@ -796,7 +796,7 @@ function renderEggInventory() {
       linhaEstado = `<div class="egg-time egg-time-urgent">${t('egg.inv.rotten')}</div>`;
 
     /* Um ovo que ainda não é seu não se queima por engano: o botão de
-       deitar fora só aparece quando ele está preso ou perdido. Nos
+       jogar fora só aparece quando ele está preso ou perdido. Nos
        outros dois estados a única acção possível é esperar ou chocar. */
     const acoes = est === 'pronto'
       ? `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>`

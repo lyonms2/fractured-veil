@@ -111,7 +111,7 @@ function applyFilters() {
 
 /* A cor de uma listagem, para a PROCURA.
 
-   Cinco sítios deste ficheiro rotulavam o avatar com o nome da cor, e
+   Cinco sítios deste arquivo rotulavam o avatar com o nome da cor, e
    isso saiu: o bicho está desenhado ao lado em todos eles, e escrever
    "Roxo com Verde" por baixo de um bicho roxo não acrescenta nada.
 
@@ -613,7 +613,7 @@ async function activateSlot(idx) {
      Entrar num slot VAZIO é dizer "quero invocar aqui" — e isso pode ser
      desfeito: o "Voltar à colônia" do painel de invocar é exatamente
      dizer "afinal não". Para desfazer é preciso saber para onde voltar,
-     e a resposta certa é o avatar que ele estava a cuidar, não o
+     e a resposta certa é o avatar que ele estava cuidando, não o
      primeiro da lista.
 
      Guarda-se só quando o destino está vazio e a origem tem alguém: nos
@@ -652,7 +652,7 @@ async function activateSlot(idx) {
      Se o slot estiver vazio, o rebuildScreensParaSlot() já põe o painel
      de invocar na tela. Quando a invocação é GRATUITA, dispara-se
      também a geração: é o que o jogador ia fazer a seguir de qualquer
-     maneira, e poupa-lhe um clique num ecrã que só tem esse botão.
+     maneira, e poupa-lhe um clique numa tela que só tem esse botão.
 
      Quando custa moedas, não. Gastar sem perguntar é decidir pelo
      jogador, e o painel fica à vista com o preço — que é a altura de ele

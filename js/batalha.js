@@ -58,7 +58,7 @@ function escolherPvE() {
    O 🧬 saiu da fila de cima para dar lugar ao ⚔, mas não desapareceu: o
    que lá se faz — vender, queimar, abrir slots — continua a ser preciso,
    e o sítio natural para chegar lá é a lista das criaturas, não o topo
-   do ecrã ao lado das moedas. */
+   da tela ao lado das moedas. */
 function abrirColeccao() {
   if (typeof abrirMeusAvatares === 'function') abrirMeusAvatares();
 }

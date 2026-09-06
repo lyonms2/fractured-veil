@@ -255,7 +255,7 @@ function spawnBathParticles() {
    fazia innerHTML = gerarSVG(...), criando um svg novo. Medido: as dez
    animações de repouso reiniciavam a zero — perdendo o escalonamento dos
    membros, que voltavam todos a sincronizar — e seis gestos em curso eram
-   destruídos. Quem estivesse a comer ou a tomar banho quando o tick
+   destruídos. Quem estivesse comendo ou a tomar banho quando o tick
    calhasse via a animação morrer a meio.
    Agora só regenera quando há de facto o que mudar. */
 function updateAvatarSize() {
@@ -382,11 +382,11 @@ function passivoDe(quem) {
 
    Agora não há banco. Todos os avatares chocados vivem: envelhecem,
    têm fome, ficam sujos, adoecem. O que era "o ativo" passa a ser só
-   "o que estou a ver na tela de cuidar", e a escolha de quem luta
+   "o que estou vendo na tela de cuidar", e a escolha de quem luta
    mudou-se para a página de batalha.
 
    A ausência não mudou: enquanto o jogador está fora nada decai (o
-   gameTick não corre), e quem estiver a dormir recupera energia na
+   gameTick não corre), e quem estiver dormindo recupera energia na
    volta. O que era verdade para um passa a ser verdade para dez.
 
    NOTA SOBRE A MORTE. A saúde continua a parar em MORTE_MINIMA para
@@ -473,12 +473,12 @@ function viverTodos() {
 
        Até aqui só sujava a casa o avatar que estava aberto, porque a
        pressão só subia ao alimentar e ao jogar — duas coisas que só
-       se fazem a quem se está a ver. Os outros nove viviam, tinham
+       se fazem a quem se está vendo. Os outros nove viviam, tinham
        fome, adoeciam e morriam, mas a casa deles ficava limpa.
 
        Aqui a pressão sobe com o TEMPO e não com a refeição, que é a
        única coisa que um avatar fechado tem. E sobe só enquanto
-       houver comida lá dentro: quem está a passar fome não tem o que
+       houver comida lá dentro: quem está passando fome não tem o que
        digerir. Isso faz do descuido uma coisa coerente — deixa-se um
        avatar à míngua e ele deixa de sujar, o que não é prémio
        nenhum, é só o corpo dele a não ter nada para dar.
@@ -489,7 +489,7 @@ function viverTodos() {
     }
     if (!s.sleeping && (s.poopPressure || 0) >= 100) {
       s.poopPressure = 0;
-      // Seis é o que cabe no chão do ecrã (POOP_POSITIONS): passar
+      // Seis é o que cabe no chão da tela (POOP_POSITIONS): passar
       // disso guardava um número que a interface não sabe desenhar.
       if ((s.poopCount || 0) < POOP_POSITIONS.length) {
         s.poopCount = (s.poopCount || 0) + 1;

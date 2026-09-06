@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 // CRISTAIS — Compra, resgate e transparência
-// garantirCarteira() e vincularCarteira() vivem no fim deste ficheiro.
+// garantirCarteira() e vincularCarteira() vivem no fim deste arquivo.
 // Depende de: playerData (global), walletAddress (global),
 //             updateCristaisDisplay() (marketplace.html inline),
 //             showToast() (marketplace.html inline),
@@ -582,8 +582,8 @@ function _referralCopiarLink() {
 // "garantirCarteira is not defined", no caminho onde ha dinheiro a
 // serio. Confirmado no browser antes de mexer: ambas undefined.
 //
-// Vieram para aqui, que e o ficheiro carregado e o que mais as usa. O
-// resto daquele ficheiro era um segundo login por e-mail e senha,
+// Vieram para aqui, que e o arquivo carregado e o que mais as usa. O
+// resto daquele arquivo era um segundo login por e-mail e senha,
 // morto desde a mesma mudanca, e foi apagado com ele: uma porta de
 // entrada esquecida na arvore volta sempre a ser aberta por engano.
 // ════════════════════════════════════════════════════════════════════

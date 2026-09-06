@@ -12,7 +12,7 @@
 // numa fila — cada número sai do anterior — e basta alguém pôr um
 // random() dentro de um laço que conta partes para todos os avatares do
 // jogo mudarem de aspecto ao evoluir. Já aconteceu duas vezes neste
-// mesmo ficheiro.
+// mesmo arquivo.
 //
 // Correr:  node tools/evolucao.js
 // ═══════════════════════════════════════════════════════════════════

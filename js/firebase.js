@@ -325,7 +325,7 @@ function applyGameState(data) {
   /* A RARIDADE QUE JÁ FOI GANHA.
 
      A raridade deixou de sair do ovo e passa a sair da fase (ver
-     js/raridade.js). Quem já estava a jogar tem nível e horas de sobra
+     js/raridade.js). Quem já estava jogando tem nível e horas de sobra
      e nunca subiu — porque a regra não existia quando ele subiu de
      fase. Corre-se aqui, na LEITURA, uma vez por sessão.
 

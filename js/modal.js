@@ -47,7 +47,7 @@ const MODAL_IDS = [
 /* OS MODAIS NÃO PODEM VIVER DENTRO DE UM ECRÃ.
 
    Quase todos nasceram dentro do #aliveScreen, e durante muito tempo
-   isso não teve consequência: a consola tinha um ecrã só e ele estava
+   isso não teve consequência: a consola tinha uma tela só e ele estava
    sempre à vista. Quando a colônia passou a ser a casa, o
    abrirFazenda começou a esconder o aliveScreen — e levava atrás dele
    tudo o que lá estava dentro. Os botões do topo respondiam, o modal
@@ -55,25 +55,25 @@ const MODAL_IDS = [
    a display:none.
 
    Apanhou o 🪙, o 🥚 e o 🎒, que foram movidos no HTML. Mas ficavam
-   mais dois alcançáveis de fora do ecrã de cuidar — o
+   mais dois alcançáveis de fora da tela de cuidar — o
    hatchConfirmModal, que se abre a partir do inventário de ovos, e o
    combateModal, que se abre da página da batalha — e qualquer modal
    novo cairia na mesma armadilha.
 
    Por isso a correcção é aqui e não no HTML: ao carregar, tudo o que
-   for position:fixed e estiver enfiado num ecrã muda-se para o body.
+   for position:fixed e estiver enfiado numa tela muda-se para o body.
    Um elemento fixo não depende do pai para saber onde se desenha —
    depende dele só para saber se pode ser visto, que era o problema.
 
    Os absolutos ficam onde estão de propósito: o sleepOverlay, por
-   exemplo, é absolute e escurece a moldura da consola, não o ecrã
+   exemplo, é absolute e escurece a moldura da consola, não a tela
    todo. Movê-lo estragava-o. */
 function _moverModaisParaOBody() {
   const alvos = new Set(MODAL_IDS);
   document.querySelectorAll('.mini-modal').forEach(e => { if (e.id) alvos.add(e.id); });
   // Estes três não estão no MODAL_IDS nem são .mini-modal, mas são fixos
-  // e vivem dentro do ecrã: cairiam na mesma armadilha no dia em que
-  // alguém lhes puser uma porta fora do ecrã de cuidar.
+  // e vivem dentro da tela: cairiam na mesma armadilha no dia em que
+  // alguém lhes puser uma porta fora da tela de cuidar.
   ['amigosOverlay', 'visitaOverlay', 'loreModal'].forEach(id => alvos.add(id));
 
   /* ── E A ARMADILHA APANHOU CINCO ──

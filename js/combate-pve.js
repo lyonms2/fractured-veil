@@ -431,7 +431,7 @@ function _pveCaracs(c) {
 
    E havia um buraco maior: o que a vantagem e a desvantagem FAZEM em
    combate não se via em parte nenhuma. O painel mostra-as como o
-   catálogo as descreve — o que elas são —, nunca o que estão a fazer
+   catálogo as descreve — o que elas são —, nunca o que estão fazendo
    agora. Um avatar com Brecha Conhecida entrega +1 de Habilidade a quem
    o enfrenta em todos os golpes da luta, e isso não estava escrito em
    sítio nenhum do combate.
@@ -442,7 +442,7 @@ function _pveCaracs(c) {
    Alguns efeitos dependem do que o outro SABE FAZER — a Couraça só
    dobra a Armadura contra magia da sua gaveta, e só há gaveta dessas se
    o adversário tiver lá alguma coisa. Esses recebem o adversário e
-   dizem se estão a pegar agora ou não, em vez de prometerem em
+   dizem se estão pegando agora ou não, em vez de prometerem em
    abstrato.
 
    A Veia Travada saiu desta lista de dependentes: passou a emperrar uma
@@ -908,7 +908,7 @@ function _pveAjudaDe(eu, lado, contra) {
      Eram todos iguais: mesma moldura, mesma barra dourada à esquerda, e
      o papel escrito em letra de 3,6px por cima. Ler o painel era ler
      tudo. Com uma cor por família — golpe, magia de ataque, magia de
-     defesa, vantagem, desvantagem — sabe-se o que se está a ver antes
+     defesa, vantagem, desvantagem — sabe-se o que se está vendo antes
      de se ler uma palavra. */
   const linha = (rot, nome, custo, desc, extra, trancada, prog, tipo) => `
     <div class="cb-ajuda-item tipo-${tipo || 'golpe'}${trancada ? ' trancada' : ''}">
@@ -1292,7 +1292,7 @@ function _pveEscolherPM(tipo, g, max) {
 
 /* ═══ APONTAR ═══
 
-   Duas magias escolhem em quem pegam, e é a primeira vez que este ecrã
+   Duas magias escolhem em quem pegam, e é a primeira vez que esta tela
    pergunta isso. Segue o molde do selector de PM: um passo à parte, um
    botão por candidato, e o que interessa escrito em cada um.
 
@@ -1302,7 +1302,7 @@ function _pveEscolherPM(tipo, g, max) {
    desactivadas em vez de ausentes.
 
    E a vida vem escrita em cada um: mandar uma cura ou um golpe sem ver
-   quem está a cair é escolher às cegas.
+   quem está caindo é escolher às cegas.
 
    O HTML sai por concatenação e não por template: a primeira versão
    metia um template dentro de outro para o onclick e partiu-se no
@@ -1829,7 +1829,7 @@ function _pveMostrarEvento(ev) {
 
        As linhas apareciam as três de uma vez, com a conta feita, e os
        impactos vinham a seguir espaçados — o texto adiantava-se ao que
-       se estava a ver. Agora cada onda repete a cadeia inteira por sua
+       se estava vendo. Agora cada onda repete a cadeia inteira por sua
        conta: os dados saltam, a linha dela fecha-se, o golpe chega, e só
        então começa a onda seguinte.
 
@@ -1945,7 +1945,7 @@ function _pveMostrarEvento(ev) {
 
      Escrevê-la já, e não aos pedaços, tem uma razão prática: a altura
      da linha fica reservada desde o início, e o registo não salta
-     debaixo dos olhos de quem está a ler enquanto os efeitos entram. */
+     debaixo dos olhos de quem está lendo enquanto os efeitos entram. */
   const linha = _pveLog(`<b>${ev.quem}</b> · ${nome}${ev.pm ? ` (${ev.pm} PM)` : ''}` +
           (dados || conta ? '<br>' : '') + dados +
           /* Nas ondas a moldura nasce já visível, e quem se esconde são
@@ -2333,7 +2333,7 @@ function _pveDadoVivo(v, rot, i) {
 
 /* ── DE QUEM É CADA DADO ──
 
-   Havia aqui um `title="FA"`, que num ecrã de toque não existe: metade
+   Havia aqui um `title="FA"`, que numa tela de toque não existe: metade
    dos jogadores nunca o veria. Ficou a ordem — o do ataque vem sempre
    primeiro — e um tom apagado no da defesa.
 

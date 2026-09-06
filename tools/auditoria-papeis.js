@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // AUDITORIA DOS PAPÉIS
 //
-// Os outros ficheiros perguntam "esta magia funciona?". Este pergunta
+// Os outros arquivos perguntam "esta magia funciona?". Este pergunta
 // outra coisa: "a gaveta em que ela está diz a verdade sobre ela?".
 //
 //   FORTE         bate, e é barata — dá para lançar muitas vezes

@@ -337,16 +337,16 @@ b.cond {
    pertencem a batidas seguintes nascem com esta classe e esperam a sua
    vez. É `opacity` e não `display`, de propósito: assim a altura da
    linha fica reservada desde o princípio e o registo não salta debaixo
-   dos olhos de quem está a ler. */
+   dos olhos de quem está lendo. */
 .cb-log-linha .cb-conta,
 .cb-log-linha .cb-testes,
 .cb-log-linha .cb-extras { transition: opacity .3s ease, transform .3s ease; }
 .cb-conta { display: inline-block; }   /* senão o transform não pega num inline */
 .cb-por-vir { opacity: 0; transform: translateY(0.1875rem); }
 
-/* Quem prefere o ecrã quieto perde o movimento, não a ordem.
+/* Quem prefere a tela quieto perde o movimento, não a ordem.
 
-   Desligar aqui também a revelação seria deitar fora aquilo para que
+   Desligar aqui também a revelação seria jogar fora aquilo para que
    ela serve. As partes continuam a chegar cada uma na sua vez — só
    aparecem sem deslizar, e um golpe continua a ler-se por batidas. */
 @media (prefers-reduced-motion: reduce) {
@@ -642,7 +642,7 @@ b.cond {
 
 /* Acompanha a barra da equipa, que a esta largura passa a lista
    vertical (combate.css). O override tem de estar AQUI e não lá: os
-   dois ficheiros usam a mesma especificidade e este carrega depois,
+   dois arquivos usam a mesma especificidade e este carrega depois,
    portanto ganha sempre — uma regra escrita no combate.css não teria
    efeito nenhum sobre estas três. */
 @media (max-width: 640px) {
@@ -716,7 +716,7 @@ b.cond {
 .cb-ajuda-item.trancada { opacity: .5; --fam: #6b6478; }
 .cb-ajuda-top { display: flex; align-items: baseline; gap: 0.375rem; flex-wrap: wrap; }
 /* Este painel existe para ser LIDO, e estava escrito a 5,5px no
-   telemóvel — a família a 4,5px. As descrições sempre disseram ao certo
+   celular — a família a 4,5px. As descrições sempre disseram ao certo
    o que cada magia faz: quantos turnos o gelo prende, que teste o alvo
    faz para lhe escapar, o que a vantagem troca pelo quê. O que faltava
    era poder lê-las. */
@@ -986,7 +986,7 @@ b.cond {
    NO COMPUTADOR, AS ACÇÕES VÃO PARA O LADO
 
    A arena era uma coluna só: inimigos, registo, equipa, botões. No
-   telemóvel é a única forma que cabe. No computador dava o pior dos dois
+   celular é a única forma que cabe. No computador dava o pior dos dois
    mundos — os botões ocupavam o terço de baixo, e o registo, que é onde
    se lê o que aconteceu no turno, ficava com uma caixa larga e rasa.
 
@@ -1071,7 +1071,7 @@ b.cond {
 .cb-conta-linha {
   font-family: 'Courier New', monospace;
   /* Tamanho próprio e não em em: em cascata acabava a 5,25px no
-     telemóvel, herdado de um pai que já era pequeno. Uma conta que não
+     celular, herdado de um pai que já era pequeno. Uma conta que não
      se lê não é conta nenhuma — e ela só aparece com o turno aberto,
      portanto não enche nada. */
   font-size: 0.5625rem; line-height: 1.7; color: var(--text2);

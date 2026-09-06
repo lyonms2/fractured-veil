@@ -73,7 +73,7 @@ async function voltarAColonia() {
      esse botão só se desenha em slots que não são o ativo. O jogador
      desistia e ficava sem forma de voltar a tentar.
 
-     Volta para o avatar que ele estava a cuidar quando entrou no slot
+     Volta para o avatar que ele estava cuidando quando entrou no slot
      vazio, que o activateSlot guardou. Se isso já não servir — foi
      queimado, morreu, ou entrou-se aqui por outro caminho — vale o
      primeiro vivo, que é melhor do que ficar onde não há nada. */
@@ -118,7 +118,7 @@ function updateSummonLockHint() {
   /* ── E A SAÍDA, QUE SÓ EXISTIA PARA QUEM ESTAVA TESO ──
      Voltar a um avatar que já se tem estava escondido dentro do aviso de
      saldo insuficiente. Quem tinha as moedas e não as queria gastar
-     ficava num ecrã com um botão só, e esse botão gastava 500 — não
+     ficava numa tela com um botão só, e esse botão gastava 500 — não
      havia forma de dizer "afinal não". Agora o caminho de volta está lá
      sempre que houver para onde voltar. */
   const alvoVivo = primeiroSlotVivo();
@@ -498,7 +498,7 @@ function hatch() {
      -1, o evolucaoPendente() pergunta por `faseVista >= 0` e respondia
      sempre que não, e o convite "estou pronto para evoluir" nunca
      chegava a aparecer. Como o getFaseVisual() também devolve a fase
-     real quando o faseVista é negativo, o corpo crescia sozinho no ecrã
+     real quando o faseVista é negativo, o corpo crescia sozinho na tela
      — que é precisamente o que a cerimónia existe para impedir. */
   faseVista  = getFase();
   nivelVisto = nivel;

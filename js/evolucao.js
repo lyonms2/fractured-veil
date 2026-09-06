@@ -198,11 +198,11 @@ function abrirEvolucao() {
       </div>`).join('') : '';
     /* O QUE O CORPO GANHOU SAIU DAQUI.
 
-       Eram três linhas a descrever o que o jogador estava a ver: "o
+       Eram três linhas a descrever o que o jogador estava vendo: "o
        corpo cresceu de 100 para 120 pixels" — e píxeis, ainda por cima,
        que é medida de dentro do desenho e não quer dizer nada a
-       ninguém. O bicho novo está no ecrã dois centímetros acima. Uma
-       cerimónia que descreve o que se vê está a duvidar do desenho.
+       ninguém. O bicho novo está na tela dois centímetros acima. Uma
+       cerimónia que descreve o que se vê está duvidando do desenho.
 
        No lugar fica o que NÃO se vê: a magia que abriu. */
     const magias = _evoMagiasNovas();
@@ -255,9 +255,9 @@ function fecharEvolucao() {
     (ov._temporizadores || []).forEach(clearTimeout);
     ov.classList.remove('ativo');
     setTimeout(() => {
-      /* Só se ainda estiver fechada. Este apagar estava a chegar tarde e
+      /* Só se ainda estiver fechada. Este apagar estava chegando tarde e
          a levar o que não era dele: fechar uma cerimónia e começar outra
-         dentro destes 600ms deixava a segunda sem avatar nenhum no ecrã
+         dentro destes 600ms deixava a segunda sem avatar nenhum na tela
          — o palco vazio até à troca. */
       if (ov.classList.contains('ativo')) return;
       const b = ov.querySelector('#evoAvatar'); if (b) b.innerHTML = '';

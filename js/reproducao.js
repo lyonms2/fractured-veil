@@ -54,7 +54,7 @@ const REPR_CHOCO_MIN_MS = 24 * 3600 * 1000;
 
    Passa a contar de outra coisa, e é a diferença entre um prazo e um
    problema: o ovo só começa a morrer quando fica PRONTO E SEM SÍTIO
-   PARA IR. Enquanto está a chocar, não conta. Enquanto há um slot
+   PARA IR. Enquanto está chocando, não conta. Enquanto há um slot
    vago, não conta — há um botão para carregar, e o ovo espera.
 
    Sete dias é o que o jogador tem para abrir espaço: vender um avatar,

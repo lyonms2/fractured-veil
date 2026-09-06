@@ -1194,7 +1194,7 @@
 }
 
 /* ── As marcas de progresso do prólogo ──
-   Uma por etapa. A que está a ser lida acende; as já passadas ficam
+   Uma por etapa. A que está sendo lida acende; as já passadas ficam
    meio-acesas. Sem isto, um texto de abertura não tem fim à vista — e
    texto sem fim à vista é texto que se salta. */
 .prologo-marcas {

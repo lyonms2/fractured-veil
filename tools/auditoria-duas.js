@@ -7,7 +7,7 @@
 // De setenta e cinco itens do catálogo, estes dois não tinham uma única
 // menção em toda a suíte — nem no relatório, nem no código dos testes.
 // Não apareciam como buraco porque a ferramenta que conta a cobertura
-// estava a mentir sobre si própria; quando ela passou a dizer a verdade,
+// estava mentindo sobre si própria; quando ela passou a dizer a verdade,
 // sobraram estes.
 //
 // São os dois de famílias opostas e ambos mexem em contas que o resto do

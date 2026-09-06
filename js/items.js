@@ -5,7 +5,7 @@
 
    A loja vende amuletos e consumíveis que se equipam num avatar, e o
    inventário mostra os que ESSE avatar tem equipados. Na colônia não há
-   "esse": há dez, e o painel não sabe de quem está a falar — equipava no
+   "esse": há dez, e o painel não sabe de quem está falando — equipava no
    que por acaso estivesse espelhado nos globais, que é uma escolha
    invisível para quem carregou no botão.
 
@@ -117,7 +117,7 @@ function updateEquippedDisplay() {
   const el = document.getElementById('equippedItemsDisplay');
   if(!el) return;
 
-  // Expirar o que passou dos 30 dias, e deitar fora o que já não existe
+  // Expirar o que passou dos 30 dias, e jogar fora o que já não existe
   // no catálogo. Sem a segunda parte, um item retirado do jogo ficava no
   // inventário de quem o tinha comprado a fazer um grupo "◆ OUTRO" vazio,
   // porque o cartão não sabe desenhar o que não conhece.

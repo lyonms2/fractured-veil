@@ -24,7 +24,7 @@
    As afirmações aqui dentro não repetem o nome da magia em cada
    linha — dizem "cada 2 PM valem 1 dado de cura", que se lê melhor
    mas não diz de quem é. E os cabeçalhos com o nome saem quando o
-   ficheiro CORRE, enquanto as afirmações saem todas juntas no fim,
+   arquivo CORRE, enquanto as afirmações saem todas juntas no fim,
    portanto nunca ficam ao lado umas das outras no relatório.
 
    Esta linha é o que permite ao tools/inventario.js saber que estas
@@ -85,7 +85,7 @@ A.ver('é sustentada e custa 2 PM por turno',
 // ── 3. Contra magia, NÃO dobra ──
 // Esta é a metade do texto que se perde com facilidade. O `excetoMagia`
 // do catálogo nunca é lido por ninguém: quem cumpre a promessa é o
-// guarda `!opts.magica` no _c3fd, três ficheiros ao lado. Uma
+// guarda `!opts.magica` no _c3fd, três arquivos ao lado. Uma
 // propriedade a dizer uma coisa e outra linha a fazê-la é exactamente o
 // sítio onde um dia alguém mexe numa e não na outra.
 {
@@ -1989,7 +1989,7 @@ A.ver('custa 3 PM e não fere',
 }
 
 /* A marca CEGO no cartão não se prova daqui: este arnês carrega o i18n
-   das magias e das vantagens, e o texto do combate vive noutro ficheiro
+   das magias e das vantagens, e o texto do combate vive noutro arquivo
    que ele não conhece. A prova que eu tinha escrito lia uma chave em
    falta e dava falha a acusar o jogo de não ter a palavra — quando o
    jogo a tem e era o teste que a procurava no sítio errado. */

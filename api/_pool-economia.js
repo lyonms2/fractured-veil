@@ -13,7 +13,7 @@
 // pool só sai por câmbio e por venda/queima de ovos, ambos com o teto
 // diário aqui em baixo.
 //
-// O que fica deste ficheiro é esse teto. O bloco de config abaixo
+// O que fica deste arquivo é esse teto. O bloco de config abaixo
 // descreve o modelo antigo e já não tem leitor nenhum — está mantido
 // como está explicado junto do módulo.
 //

@@ -9,7 +9,7 @@
 //   3. VÊ-SE       — há uma marca no cartão ou uma linha no registo
 //
 // O veneno falhava a terceira: envenenava, tirava vida todo o turno, e
-// não dizia nada — parecia avariado quando não estava. Este ficheiro
+// não dizia nada — parecia avariado quando não estava. Este arquivo
 // existe para nenhum outro se esconder assim.
 // ═══════════════════════════════════════════════════════════════════
 const fs = require('fs');

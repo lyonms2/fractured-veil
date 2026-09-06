@@ -54,7 +54,7 @@ function semanaAtual() {
 // certo (10 💎 por MATIC a comprar, 10 por MATIC a resgatar), portanto a
 // cobertura e 1:1 por construcao.
 //
-// Mas ninguem estava a CONFIRMAR isso. Este numero e o unico que responde
+// Mas ninguem estava Confirmando isso. Este numero e o unico que responde
 // "o jogo consegue pagar toda a gente?" — e faltava na propria pagina de
 // transparencia, que mostrava os cristais da pool e o link do contrato
 // sem nunca dizer a razao entre os dois.

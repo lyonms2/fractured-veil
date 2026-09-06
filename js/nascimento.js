@@ -194,7 +194,7 @@ function corpoParesDeSlot(slot) {
    sono. Os elementos saíram do jogo e a ideia não — um bicho aguentar-se
    melhor numa coisa e pior noutra é do que o tamagotchi vive.
 
-   Par de alelos, como tudo o resto neste ficheiro: o primeiro diz onde
+   Par de alelos, como tudo o resto neste arquivo: o primeiro diz onde
    ele é forte, o segundo onde é fraco. Saírem iguais, cancelam-se — e
    nasce um avatar sem jeito nem defeito nenhum, que também tem de
    existir. E os dois viajam para os filhos.
@@ -388,7 +388,7 @@ function vigorDe(slot) {
   return forte === fraco ? null : { forte, fraco };
 }
 
-/* A frase do vigor, para a interface. Vive aqui e não em cada ecrã que
+/* A frase do vigor, para a interface. Vive aqui e não em cada tela que
    a mostra: eram duas cópias antes (a ficha do avatar e o cartão do
    marketplace), e duas cópias de uma frase divergem como qualquer
    outra coisa. */
@@ -405,7 +405,7 @@ function frasedoVigor(slot) {
 
 /* O sexo, lido do par. Um DNA da primeira versão não tem o gene — e
    nesse caso não se inventa nada ao acaso: tira-se do seed, que nunca
-   muda, para o avatar ter sempre o mesmo sexo em qualquer ecrã. */
+   muda, para o avatar ter sempre o mesmo sexo em qualquer tela. */
 function sexoDoDna(dna, seed) {
   const par = dna && dna.genes && dna.genes.sexo;
   if (Array.isArray(par)) return (par[0] === 'Y' || par[1] === 'Y') ? 'M' : 'F';
@@ -463,7 +463,7 @@ function nascer(opts) {
 
      Quando o ovo é filho de dois avatares, o DNA dele já foi cruzado
      ao ser posto (js/reproducao.js) e viaja dentro do ovo. Sortear um
-     novo aqui era deitar fora a herança inteira e dar ao filho genes de
+     novo aqui era jogar fora a herança inteira e dar ao filho genes de
      estranho.
 
      Sem pais — invocação, ou postura de um avatar sozinho — sorteia-se

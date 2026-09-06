@@ -296,7 +296,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
   /* O QUE A FASE ESCONDE É O PAR, E NÃO O ORÇAMENTO.
 
      Primeiro não sorteei o par nenhum antes da CRIANÇA, e isso partiu
-     uma coisa que este ficheiro tinha custado a arranjar: a desvantagem
+     uma coisa que este arquivo tinha custado a arranjar: a desvantagem
      DÁ pontos e a vantagem CUSTA, portanto o orçamento mudava ao nível 5
      e as características DESCIAM em 255 de 204.000 subidas.
 
@@ -348,7 +348,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
 
   /* ── ANTES DA CRIANÇA, O ORÇAMENTO É O DO NÍVEL E MAIS NADA ──
 
-     Este ficheiro diz em dois sítios que o bebé vale um ponto e sai
+     Este arquivo diz em dois sítios que o bebé vale um ponto e sai
      F0 H0 R1 A0. Não saía: 22,7% dos bebés nasciam com DOIS, e o
      segundo aparecia na Habilidade — F0 H1 R1 A0, que foi o que se viu
      em jogo.
@@ -357,7 +357,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
      sorteado desde o nível 1 mesmo quando ainda não se mostra — de
      propósito, porque não o sortear fazia o orçamento mudar de forma ao
      nível 5 e as características DESCEREM. O que faltava era separar
-     duas coisas que estavam a ser a mesma: quantos pontos este avatar
+     duas coisas que estavam sendo a mesma: quantos pontos este avatar
      terá, e quantos deles JÁ TEM.
 
      É a terceira vez que este jogo resolve um problema desta maneira, e
@@ -463,7 +463,7 @@ function fichaDeAvatar(seed, raridade, nivel, nascimento, escolha) {
      com ele — um sorteio que antes transbordava deixava de transbordar,
      e a fila inteira desalinhava para trás. Resultado: 270 subidas de
      nível em 204.000 BAIXAVAM uma característica, e 300 baixavam a vida.
-     O mesmo defeito que este ficheiro já tinha corrigido duas vezes,
+     O mesmo defeito que este arquivo já tinha corrigido duas vezes,
      por uma porta diferente.
 
      Agora o piso não toca no sorteio: as quatro características correm a

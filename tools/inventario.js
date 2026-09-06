@@ -102,15 +102,15 @@ try {
 
    As novas escrevem blocos à mão com afirmações que não repetem o
    nome — "cada 2 PM valem 1 dado de cura" — e um cabeçalho por
-   cima. Mas o cabeçalho sai quando o ficheiro CORRE e as afirmações
+   cima. Mas o cabeçalho sai quando o arquivo CORRE e as afirmações
    saem todas juntas no fim, portanto nunca ficam intercaladas e não
    há como as ligar pelo relatório. Essas declaram-se com uma linha
-   "// @cobre id id id" no topo do ficheiro.
+   "// @cobre id id id" no topo do arquivo.
 
    Errei esta pergunta duas vezes antes de chegar aqui: primeiro
    procurando o id no código dos testes (21 magias dadas por provar
    que estavam provadas), depois atribuindo pelo último cabeçalho
-   visto (que atribuía tudo ao último bloco do último ficheiro).
+   visto (que atribuía tudo ao último bloco do último arquivo).
    Quando a mesma pergunta erra duas vezes, o que falta é a fonte
    dizer a verdade sobre si própria. */
 const LINHAS = SAIDA.split(/\r?\n/).filter(l => /^\s*(OK|FALHA)/.test(l));

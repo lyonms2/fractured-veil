@@ -262,7 +262,7 @@ const FASES = t('fases');
    decide quando essas aparecem, ler dali seria a fase a depender de si
    própria. */
 /* UMA LINHA CADA, e não é estilo: o tools/evolucao.js lê estas regras
-   deste ficheiro linha a linha, de propósito, para não haver uma segunda
+   deste arquivo linha a linha, de propósito, para não haver uma segunda
    cópia dos números. Escrevi o faseFromNivel em duas linhas e a
    extração trouxe metade — e a guarda dela, que contava as linhas, nem
    deu por isso porque o total continuava certo. */
@@ -408,7 +408,7 @@ function saveRuntimeToSlot(idx) {
     hatched, dead, sick, sleeping,
     bornAt, poopCount, dirtyLevel, poopPressure,
     /* Nunca se grava o -1. Ele quer dizer "ainda não carreguei nada", e
-       isso é estado de quem está a arrancar — não é nada que um avatar
+       isso é estado de quem está arrancando — não é nada que um avatar
        tenha. Gravado, tornava-se permanente. */
     faseVista:  faseVista  >= 0 ? faseVista  : getFase(),
     nivelVisto: nivelVisto >= 1 ? nivelVisto : nivel,

@@ -13,7 +13,7 @@
 //  adivinhar como estavam dois terços do seu plantel.
 //
 //  Agora a consola abre na colônia: todos à vista, com os cinco vitais
-//  de cada um. O "Cuidar" abre o ecrã de sempre — o bicho grande, as
+//  de cada um. O "Cuidar" abre a tela de sempre — o bicho grande, as
 //  animações, o carinho — para aquele avatar. A intimidade não se
 //  perdeu, mudou de sítio: passou a ser um lugar onde se entra em vez
 //  de ser o único lugar que existe.
@@ -38,7 +38,7 @@
    dez de uma vez transforma isso num imposto que se paga e esquece.
    A colônia continua a servir para o que era preciso — ver quem está
    mal sem ter de entrar em cada um — e tratar continua a ser um gesto
-   por criatura, no ecrã dela. */
+   por criatura, na tela dela. */
 
 // Os avatares vivos, por ordem de slot.
 function fazendaVivos() {
@@ -63,8 +63,8 @@ function fazendaVivos() {
 
    A cor passa a vir das classes .fill-fome, .fill-humor e companhia,
    do css/ui.css, que são as mesmas que a tela de cuidar usa — e que o
-   mobile-index.css repete para o telemóvel. Uma fonte só: mudar a cor
-   do humor passa a ser uma linha, não três ficheiros. */
+   mobile-index.css repete para o celular. Uma fonte só: mudar a cor
+   do humor passa a ser uma linha, não três arquivos. */
 const FAZENDA_VITAIS = [
   { chave: 'fome',    emoji: '🍖' },
   { chave: 'humor',   emoji: '😄' },
@@ -120,7 +120,7 @@ function _fazendaCartao({ s, idx }) {
      Era preciso entrar em cada avatar para descobrir qual deles tinha
      deixado sujeira no chão — e entrar em dez para saber de dez.
      O poopCount já vivia gravado no slot; só não estava escrito em
-     lado nenhum fora do ecrã de cuidar. */
+     lado nenhum fora da tela de cuidar. */
   const cocos  = Math.max(0, s.poopCount | 0);
   const svg = (typeof gerarSVG === 'function')
     ? gerarSVG(s, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
@@ -162,8 +162,8 @@ function renderFazenda() {
 /* SAIR DA COLÔNIA, num sítio só.
 
    O abrirFazenda esconde seis coisas para a lista ficar sozinha na
-   consola: os quatro ecrãs irmãos, a fila de botões de cuidar, a
-   ficha do avatar, a barra de vitais do telemóvel e o botão de
+   consola: os quatra telas irmãos, a fila de botões de cuidar, a
+   ficha do avatar, a barra de vitais do celular e o botão de
    voltar. Quem sai da colônia tem de repor tudo isso.
 
    O cuidarDe repunha. A invocação e a chocagem repunham metade — o
@@ -235,7 +235,7 @@ function fzAtualizarVitais() {
 
 /* O retrato em grande, a partir da lista.
 
-   Reaproveita o mesmo overlay do zoom que já existe no ecrã de cuidar
+   Reaproveita o mesmo overlay do zoom que já existe na tela de cuidar
    — o openAvatarZoomData do js/main.js — em vez de inventar um
    segundo. Passa os dados DAQUELE slot, não os do avatar aberto: na
    colônia o que se toca e o que está espelhado nos globais quase nunca
@@ -290,7 +290,7 @@ function abrirFazenda() {
    envelhecer no viverTodos(). */
 async function cuidarDe(idx) {
   // O switchSlot() do state.js é a fonte única desta troca: grava o
-  // anterior, carrega o novo e reconstrói os ecrãs. Fazer isto à mão
+  // anterior, carrega o novo e reconstrói as telas. Fazer isto à mão
   // aqui criava uma corrida com o scheduleSave() do jogo — foi o que já
   // aconteceu no "usar este slot" do marketplace, e por isso ele também
   // passou a chamar esta função em vez de duplicá-la.
@@ -301,7 +301,7 @@ async function cuidarDe(idx) {
   if (idx !== activeSlotIdx && typeof switchSlot === 'function') {
     await switchSlot(idx);
   }
-  // Quem decide QUAL ecrã abrir é o rebuildScreensParaSlot, que o
+  // Quem decide QUAL tela abrir é o rebuildScreensParaSlot, que o
   // switchSlot já chamou. Só se força o aliveScreen quando não houve
   // troca nenhuma e portanto ninguém reconstruiu nada.
   if (idx === activeSlotIdx) {

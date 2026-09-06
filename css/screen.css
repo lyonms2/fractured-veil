@@ -703,7 +703,7 @@
    A TELA DA PAUSA
 
    Fixed e não absolute, ao contrário do #sleepOverlay: aquele escurece
-   a moldura da consola de propósito, este tem de cobrir o ecrã inteiro
+   a moldura da consola de propósito, este tem de cobrir a tela inteira
    — a fila de cima, a colônia, os modais. Uma pausa que se vê pela
    metade não é uma pausa.
 
@@ -768,7 +768,7 @@
   .pausa-atalho { font-size: 0.5rem; }
 }
 
-/* Quem prefere o ecrã quieto perde a respiração do ícone, não a tela. */
+/* Quem prefere a tela quieto perde a respiração do ícone, não a tela. */
 @media (prefers-reduced-motion: reduce) {
   .pausa-icone { animation: none; opacity: .5; }
 }
@@ -870,7 +870,7 @@
 /* E ACENA, ENQUANTO HOUVER BATIZADO POR FAZER.
 
    Um acto que se faz uma vez tem de se encontrar primeiro. Uma pena
-   discreta ao lado do nome não se vê, e no telemóvel nem há title para
+   discreta ao lado do nome não se vê, e no celular nem há title para
    a explicar — o jogador podia acabar o jogo sem saber que aquilo
    existia.
 

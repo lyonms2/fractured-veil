@@ -96,7 +96,7 @@
 
 /* ── AUTH ── */
 /* Aqui viviam as abas, os campos e os botoes do login por e-mail do
-   marketplace (js/marketplace-auth.js). O ficheiro nunca chegou a ser
+   marketplace (js/marketplace-auth.js). O arquivo nunca chegou a ser
    carregado depois de o marketplace passar a modal de dentro do jogo,
    e foi apagado; estas regras foram com ele. */
 .auth-btn-link{background:none;border:none;color:var(--muted);font-size:0.5625rem;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:0.0625rem;margin-top:0.125rem;transition:color .15s;}
@@ -508,7 +508,7 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
 /* EMPTY / LOADING */
 /* Atravessa a grelha inteira. Sem isto ficava na PRIMEIRA COLUNA de
    uma grelha de duas — o texto centrado dentro de meia largura, ou seja,
-   encostado à esquerda do ecrã. E o mesmo vale para o loading. */
+   encostado à esquerda da tela. E o mesmo vale para o loading. */
 .empty-state,
 .loading{grid-column:1 / -1;}
 .empty-state{text-align:center;padding:2.5rem 1.25rem;color:var(--muted);}
@@ -542,7 +542,7 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   .avatar-grid{grid-template-columns:repeat(2,1fr);gap:0.5rem;}
   /* Os filtros eram um scroller horizontal com a barra escondida:
      quatro campos a somar 479px numa fila de 366, e o quarto inteiro
-     fora do ecrã. Funcionava — arrastando — mas nada dizia que havia
+     fora da tela. Funcionava — arrastando — mas nada dizia que havia
      mais nada à direita, e o que se via era um campo cortado ao meio.
 
      Passam a partir a linha. A busca fica com a fila toda, que é o
@@ -603,7 +603,7 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
    precisa de saber do lado de fora qual precisa de antidoto. */
 /* Estas duas estavam presas ao #marketplaceModal, e os cartões de slot
    mudaram-se para o #avataresModal — o mesmo engano que tinha deixado a
-   paleta por definir, mais acima neste ficheiro. Sem regra nenhuma a
+   paleta por definir, mais acima neste arquivo. Sem regra nenhuma a
    apanhá-la, a pastilha perdia tamanho, fundo, borda e cantos: ficava
    texto solto a herdar o tamanho do modal, e "😔 Melancolia
    Dimensional" aparecia maior do que o nome do avatar.

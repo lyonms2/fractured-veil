@@ -221,7 +221,7 @@ function updateHeaderButtons() {
 
      Escondê-los ali já estava certo antes; o que estava errado era a
      colônia herdar a mesma escuridão, porque as duas partilhavam a
-     mesma conta. São duas coisas diferentes: "que ecrã é este" e "este
+     mesma conta. São duas coisas diferentes: "que tela é esta" e "este
      jogador tem criaturas". Voltam todos assim que ele decidir — ao
      invocar (passa a haver avatar) ou ao voltar (passa a estar na
      colônia). */
@@ -255,7 +255,7 @@ async function _onLoginSuccess(user) {
      escondido) e porque outros sítios podem vir a querer saber quem
      está ligado — mas o que se mostra ao lado do ✕ SAIR passa a ser
      nada. Um email num cabeçalho é informação de quem está ao lado do
-     ecrã, não de quem joga. */
+     tela, não de quem joga. */
   const emailShort = user.email
     ? (u => u.length > 12 ? u.slice(0, 11) + '…' : u)(user.email.split('@')[0])
     : 'jogador';

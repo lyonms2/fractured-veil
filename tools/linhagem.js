@@ -140,7 +140,7 @@ titulo('CADA ALELO VEIO DE UM DOS PAIS');
       /* Um de cada lado, SEM dizer qual fica em que posição.
 
          Esta verificação exigia o alelo da mãe em [0] e o do pai em [1],
-         e estava a afirmar um defeito em vez de uma regra: era o
+         e estava afirmando um defeito em vez de uma regra: era o
          cruzamento a pôr sempre a mãe primeiro, e três genes leem a
          posição como dominância (ver js/reproducao.js). Com a ordem
          corrigida, esta linha passou a falhar — o teste tinha ficado a
