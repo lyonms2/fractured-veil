@@ -163,6 +163,9 @@ function getGameState() {
       raridade:  s.raridade  || 'Comum',
       descricao:    s.descricao    || '',
       descricaoIdx: s.descricaoIdx ?? null,
+      // Qual alcunha lhe calhou. O índice, e não a palavra: ela sai da
+      // língua de quem lê (ver a nota grande no js/data.js).
+      alcunhaIdx:   s.alcunhaIdx   ?? null,
       seed:         s.seed         || 0,
       listed:    s.listed    || false,
       // Runtime state

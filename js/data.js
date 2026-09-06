@@ -37,13 +37,77 @@ const PREFIXOS = {
                     'Raro':['Umbra','Nox','Eclipse','Void','Phantom','Abyss','Wraith','Specter','Penumbra','Obscura','Shroud','Requiem'],
                     'Lendário':['Erebus','Nyx','Tenebris','Moros','Kali','Apophis','Nott','Ratri','Ereshkigal','Hel','Achlys','Chernobog'] }
 };
+/* ═══════════════════════════════════════════════════════════════════
+   AS ALCUNHAS
+
+   ── ESTAVAM SÓ EM PORTUGUÊS, E VIAJAVAM ASSIM ──
+
+   Eram uma lista de texto cravado, sorteada ao nascer e COLADA dentro do
+   campo `nome`. Um jogador inglês recebia "o Desastrado" — e pior: a
+   alcunha ia gravada no avatar, portanto seguia-o para o mercado e para
+   a árvore de quem o comprasse. Não era uma tradução em falta na tela;
+   era português a entrar nos dados de toda a gente.
+
+   Agora guarda-se o ÍNDICE (`alcunhaIdx`) e a palavra sai da língua de
+   quem está a ler. É o mesmo que as DESCRIÇÕES já faziam, e por isso
+   não é modelo novo — é o modelo da casa, aplicado onde faltava.
+
+   O índice é sobre a lista INTEIRA, na ordem em que estas três gavetas
+   se concatenam. As gavetas ficam por leitura: nenhuma delas tranca
+   nada, e qualquer avatar pode sair com qualquer alcunha.
+
+   ── E TÊM OS DOIS GÉNEROS ──
+
+   Os avatares têm sexo desde que há genética, e "Vesta, o Curioso" numa
+   fêmea é português errado. Cada entrada é um par: masculino primeiro,
+   feminino a seguir. O inglês não distingue, e é por isso que a lista
+   dele é de palavras soltas e não de pares.
+
+   As duas listas TÊM DE TER O MESMO COMPRIMENTO E A MESMA ORDEM: o que
+   liga uma à outra é a posição, e um avatar gravado com o índice 9
+   espera "o Desastrado" de um lado e "the Clumsy" do outro.
+   ═══════════════════════════════════════════════════════════════════ */
 const SUFIXOS = {
-  'Comum':    ['o Curioso','o Brincalhão','o Tímido','o Guloso','o Sonolento','o Teimoso','o Carinhoso','o Inquieto',
-               'o Bagunceiro','o Desastrado','o Manhoso','o Resmungão','o Saltitante','o Preguiçoso','o Xereta','o Chorão'],
-  'Raro':     ['o Sábio','o Misterioso','o Sereno','o Vibrante','o Contemplativo','o Peculiar','o Sensível','o Antigo',
-               'o Astuto','o Pensativo','o Silencioso','o Nobre','o Enigmático','o Constante','o Fiel','o Errante'],
-  'Lendário': ['o Eterno','o Primordial','o Transcendente','o Visionário','o Imorredouro','o Sempiterno','o Singular','o Majestoso',
-               'o Infinito','o Inexorável','o Soberano','o Ancestral','o Insondável','o Absoluto','o Indômito','o Supremo']
+  'Comum':    [['o Curioso','a Curiosa'],       ['o Brincalhão','a Brincalhona'],
+               ['o Tímido','a Tímida'],         ['o Guloso','a Gulosa'],
+               ['o Sonolento','a Sonolenta'],   ['o Teimoso','a Teimosa'],
+               ['o Carinhoso','a Carinhosa'],   ['o Inquieto','a Inquieta'],
+               ['o Bagunceiro','a Bagunceira'], ['o Desastrado','a Desastrada'],
+               ['o Manhoso','a Manhosa'],       ['o Resmungão','a Resmungona'],
+               ['o Saltitante','a Saltitante'], ['o Preguiçoso','a Preguiçosa'],
+               ['o Xereta','a Xereta'],         ['o Chorão','a Chorona']],
+  'Raro':     [['o Sábio','a Sábia'],           ['o Misterioso','a Misteriosa'],
+               ['o Sereno','a Serena'],         ['o Vibrante','a Vibrante'],
+               ['o Contemplativo','a Contemplativa'], ['o Peculiar','a Peculiar'],
+               ['o Sensível','a Sensível'],     ['o Antigo','a Antiga'],
+               ['o Astuto','a Astuta'],         ['o Pensativo','a Pensativa'],
+               ['o Silencioso','a Silenciosa'], ['o Nobre','a Nobre'],
+               ['o Enigmático','a Enigmática'], ['o Constante','a Constante'],
+               ['o Fiel','a Fiel'],             ['o Errante','a Errante']],
+  'Lendário': [['o Eterno','a Eterna'],         ['o Primordial','a Primordial'],
+               ['o Transcendente','a Transcendente'], ['o Visionário','a Visionária'],
+               ['o Imorredouro','a Imorredoura'], ['o Sempiterno','a Sempiterna'],
+               ['o Singular','a Singular'],     ['o Majestoso','a Majestosa'],
+               ['o Infinito','a Infinita'],     ['o Inexorável','a Inexorável'],
+               ['o Soberano','a Soberana'],     ['o Ancestral','a Ancestral'],
+               ['o Insondável','a Insondável'], ['o Absoluto','a Absoluta'],
+               ['o Indômito','a Indômita'],     ['o Supremo','a Suprema']]
+};
+
+// A mesma ordem, palavra a palavra. O inglês não flexiona em género.
+const SUFIXOS_EN = {
+  'Comum':    ['the Curious','the Playful','the Shy','the Gluttonous',
+               'the Drowsy','the Stubborn','the Affectionate','the Restless',
+               'the Messy','the Clumsy','the Sly','the Grumpy',
+               'the Bouncy','the Lazy','the Nosy','the Weepy'],
+  'Raro':     ['the Wise','the Mysterious','the Serene','the Vibrant',
+               'the Contemplative','the Peculiar','the Sensitive','the Timeworn',
+               'the Shrewd','the Thoughtful','the Silent','the Noble',
+               'the Enigmatic','the Steadfast','the Faithful','the Wandering'],
+  'Lendário': ['the Eternal','the Primordial','the Transcendent','the Visionary',
+               'the Undying','the Everlasting','the Singular','the Majestic',
+               'the Infinite','the Inexorable','the Sovereign','the Ancestral',
+               'the Unfathomable','the Absolute','the Untamed','the Supreme']
 };
 /* O NOME DE NASCENÇA.
 
@@ -90,6 +154,32 @@ const SUFIXOS = {
    seguir à vírgula, no mesmo campo. Um avatar por batizar tem o nome
    vazio e a alcunha lá: ", o Curioso". O batismo escreve à frente da
    vírgula e não lhe toca (ver confirmRename, em js/actions.js). */
+/* A lista inteira, na língua de quem lê. É sobre ESTA lista que o
+   `alcunhaIdx` de cada avatar aponta. */
+function _alcunhasTodas() {
+  const en = (typeof window !== 'undefined' && window._currentLang === 'en');
+  const S = en ? SUFIXOS_EN : SUFIXOS;
+  return [].concat(S['Comum'], S['Raro'], S['Lendário']);
+}
+
+/* A alcunha de um índice, no género certo.
+
+   O `sexo` só conta em português. Vem do avatar (sexoDe); sem ele fica
+   o masculino, que é o que os avatares antigos já traziam escrito. */
+function alcunhaPorIdx(idx, sexo) {
+  const lista = _alcunhasTodas();
+  if (!lista.length) return '';
+  const item = lista[Math.min(Math.max(0, idx | 0), lista.length - 1)];
+  if (Array.isArray(item)) return item[sexo === 'F' ? 1 : 0];
+  return item;
+}
+
+// Qual delas calha a quem nasce. Guarda-se o ÍNDICE e não a palavra —
+// ver a nota grande lá em cima.
+function alcunhaIdxDeNascimento() {
+  return Math.floor(Math.random() * _alcunhasTodas().length);
+}
+
 /* Um nome da gaveta da cor deste avatar. Só uma sugestão: quem escreve
    é o jogador, e o campo fica editável por cima dela. */
 function nomeSugerido(tom) {
@@ -98,9 +188,7 @@ function nomeSugerido(tom) {
   return rnd(nomes.length ? nomes : ['Ser']);
 }
 
-function alcunhaDeNascimento() {
-  return rnd([].concat(SUFIXOS['Comum'], SUFIXOS['Raro'], SUFIXOS['Lendário']));
-}
+
 
 const DESCRICOES = {
   'Comum': {

@@ -191,7 +191,22 @@ async function handleListarAvatar(req, res, db, uid) {
                        ? pData.donos[s.id] : [],
         nome:       s.nome,
         raridade:   s.raridade,
-        descricao:  s.descricao  || '',
+        /* ── OS DOIS ÍNDICES VÃO COM A LISTAGEM ──
+
+           A `descricao` ia como TEXTO, e a alcunha ia colada dentro do
+           nome. Os dois são escritos pelo jogo, não pelo jogador, e
+           portanto têm língua: um comprador inglês recebia um avatar
+           descrito em português e chamado "o Desastrado".
+
+           A tela do mercado já sabia disto — lê `l.descricaoIdx` e só
+           cai no texto quando ele falta (js/avatars-market.js). Só que
+           ninguém o mandava, portanto caía sempre.
+
+           Vão os índices. O texto continua a ir atrás deles, para os
+           avatares gravados antes disto terem o que mostrar. */
+        descricao:    s.descricao   || '',
+        descricaoIdx: s.descricaoIdx ?? null,
+        alcunhaIdx:   s.alcunhaIdx   ?? null,
         /* O SEED sai da certidão pela razão mais cara de todas: dele
            saem o corpo desenhado e a ficha de combate inteira. Vinha do
            slot, e trocar o número era escolher os atributos do bicho
@@ -428,7 +443,11 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         donos: cadeiaNova,
         nome:       listing.nome,
         raridade:   listing.raridade,
-        descricao:  listing.descricao,
+        descricao:    listing.descricao,
+        // Os dois índices seguem para o comprador: sem eles, o avatar
+        // mudava de dono e perdia a alcunha e a descrição.
+        descricaoIdx: listing.descricaoIdx ?? null,
+        alcunhaIdx:   listing.alcunhaIdx   ?? null,
         seed:       listing.seed     || 0,
         nivel:      listing.nivel    || 1,
         xp:         listing.xp       || 0,

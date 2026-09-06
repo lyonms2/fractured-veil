@@ -221,9 +221,22 @@ function nomeCurto(slot) {
   return (typeof t === 'function') ? t('id.sem_nome') : 'Sem nome';
 }
 
-// A alcunha, sem o nome. Vazia quando não há.
+/* A alcunha, sem o nome. Vazia quando não há.
+
+   Vem do ÍNDICE, e a palavra sai da língua de quem está a ler — a
+   alcunha era texto português colado dentro do campo `nome`, e viajava
+   assim para o mercado e para a árvore de quem comprasse (ver a nota
+   grande no js/data.js).
+
+   O `split` que fica é para os avatares gravados antes disto: neles a
+   alcunha ainda está dentro do nome, e é de lá que tem de sair. */
 function alcunhaDe(slot) {
-  if (!slot || typeof slot.nome !== 'string') return '';
+  if (!slot) return '';
+  if (slot.alcunhaIdx != null && typeof alcunhaPorIdx === 'function') {
+    const sexo = (typeof sexoDe === 'function') ? sexoDe(slot) : null;
+    return alcunhaPorIdx(slot.alcunhaIdx, sexo);
+  }
+  if (typeof slot.nome !== 'string') return '';
   return slot.nome.split(',').slice(1).join(',').trim();
 }
 

@@ -340,10 +340,11 @@ async function confirmHatch() {
      a quem o nome pertence dar, é a quem cuidou dos pais e esperou o
      ovo abrir.
 
-     A ALCUNHA vem com ele, tirada da cor com que nasceu, e fica onde
-     sempre esteve — a seguir à vírgula do mesmo campo. Ver
-     alcunhaDeNascimento em js/data.js, e nomeCurto em js/identidade.js. */
-  const _nomeProv = ', ' + alcunhaDeNascimento();
+     A ALCUNHA vem com ele. Guarda-se o ÍNDICE dela e não a palavra,
+     para sair na língua de quem lê e no género dele — ver a nota grande
+     no js/data.js. O campo do nome fica vazio até alguém o baptizar. */
+  const _nomeProv   = '';
+  const _alcunhaIdx = alcunhaIdxDeNascimento();
 
   /* O ovo sai do inventário. Não se guarda cópia nenhuma: o servidor já
      o apagou do mapa `ovos` na mesma transação em que emitiu a certidão,
@@ -382,7 +383,8 @@ async function confirmHatch() {
        carregamento seguinte (applyGameState, em js/firebase.js). Um id
        escolhido aqui não encontraria certidão nenhuma. */
     id: _emitido.id,
-    nome, raridade: 'Comum', descricao, descricaoIdx, seed,
+    nome, alcunhaIdx: _alcunhaIdx,
+    raridade: 'Comum', descricao, descricaoIdx, seed,
     hatched: false, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: 0, poopCount: 0, dirtyLevel: 0, poopPressure: 0,

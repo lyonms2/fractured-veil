@@ -177,12 +177,12 @@ async function _emitirAvatar(slotIdx) {
      estava é uma opção; dar o primeiro é um acto — e é o primeiro que o
      jogador tem neste mundo.
 
-     A ALCUNHA CHEGA COM ELE. Ela não é nome: é o que se vê nele,
-     tirado da cor com que nasceu, e ninguém lha deu. Fica guardada onde
-     sempre esteve, a seguir à vírgula do mesmo campo — um avatar por
-     baptizar tem ", o Curioso" e mais nada. Ver nomeCurto e alcunhaDe,
-     em js/identidade.js. */
-  const nome         = ', ' + alcunhaDeNascimento();
+     A ALCUNHA CHEGA COM ELE. Ela não é nome: é o que se vê nele, e
+     ninguém lha deu. Guarda-se o ÍNDICE dela e não a palavra, para ela
+     sair na língua de quem lê e no género dele — ver a nota grande no
+     js/data.js. O campo do nome fica VAZIO até alguém o baptizar. */
+  const nome         = '';
+  const alcunhaIdx   = alcunhaIdxDeNascimento();
   const _descPool    = descricoesDoTom(tom);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
 
@@ -200,7 +200,8 @@ async function _emitirAvatar(slotIdx) {
        sorteou: é por ele que a certidão se reata ao slot no
        carregamento seguinte (applyGameState, em js/firebase.js). */
     id: emitido.id,
-    nome, raridade: 'Comum', descricao: _descPool[descricaoIdx], descricaoIdx,
+    nome, alcunhaIdx,
+    raridade: 'Comum', descricao: _descPool[descricaoIdx], descricaoIdx,
     seed: emitido.seed,
     hatched: true, dead: false, sick: false, sleeping: false,
     nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,

@@ -282,8 +282,11 @@ function confirmRename() {
     return;
   }
 
-  const alcunha = alcunhaDe(avatar);
-  avatar.nome   = clean + (alcunha ? ', ' + alcunha : '');
+  /* O nome, e mais nada. Colava-se aqui a alcunha a seguir a uma
+     vírgula, porque era lá que ela vivia. Passou a viver num índice
+     (`alcunhaIdx`), e escrevê-la outra vez dentro do nome era gravar
+     português no campo de um jogador inglês. */
+  avatar.nome = clean;
   // E fica. Daqui em diante este avatar chama-se isto, para quem o comprar
   // e para qualquer árvore em que venha a aparecer.
   if(typeof travarNome === 'function') travarNome(avatar);
