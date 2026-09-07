@@ -122,6 +122,37 @@ async function voltarAColonia() {
    é a do js/eggs.js. Invocado sai da Fratura; filho sai do ovo.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════
+   O NÍVEL COM QUE ELES CHEGAM
+
+   Chegavam no 1, que é BEBÊ. E um bebé, neste jogo, quase não tem o que
+   fazer: o ehBebe() (js/nascimento.js) dá-lhe só o golpe comum — as
+   magias entram na fase JOVEM (MAGIA_ESCADA, em js/magias.js) —, o
+   selector de dificuldade só destranca o FÁCIL, e cruzar está a dez
+   níveis. A primeira hora do jogo era um bicho com um movimento só.
+
+   Cinco é o primeiro nível JOVEM, e é o número mais alto que ainda não
+   dá nada de graça:
+
+     fase       JOVEM      — entram a magia forte e a defensiva
+     raridade   Comum      — Raro só chega ao 11 (raridadeDoSlot)
+     cruzar     ainda não  — pede fase 2, que é o nível 11
+     câmbio     ainda não  — pede nível 20
+
+   Ou seja: destranca o que o avatar precisa para SER jogado, e nada do
+   que se ganha jogando.
+
+   E A FASE BEBÊ NÃO SE PERDE — muda de sítio. Quem nasce de um ovo
+   continua a nascer no 1 (js/eggs.js), portanto o bebé deixa de ser a
+   tela de abertura e passa a ser o que se encontra quando o primeiro
+   ovo choca. Isso assenta melhor no prólogo do que assentava: os três
+   vieram pela Fratura já crescidos, e o bebé é o filho.
+
+   Isto vale para os invocados e só para eles. Não há outro caminho de
+   invocação — o painel que gastava cristais saiu, e o invocarOsTres()
+   é o único que chega aqui. */
+const NIVEL_INICIAL = 5;
+
 /* Pede um avatar ao servidor e escreve-o no slot. Sem interface
    nenhuma: quem mostra é a cerimónia, a seguir.
 
@@ -193,13 +224,19 @@ async function _emitirAvatar(slotIdx) {
     raridade: 'Comum', descricao: _descPool[descricaoIdx], descricaoIdx,
     seed: emitido.seed,
     hatched: true, dead: false, sick: false, sleeping: false,
-    nivel: 1, xp: 0, vinculo: 0, totalSecs: 0,
+    nivel: NIVEL_INICIAL, xp: 0, vinculo: 0, totalSecs: 0,
     bornAt: Date.now(), poopCount: 0, dirtyLevel: 0, poopPressure: 0,
     petCooldown: 0,
-    /* Já celebrou ser BEBÊ: a cerimónia disso foi esta. Sem isto nasce
-       com faseVista -1, e o -1 quer dizer "ainda não sei" — que desliga
-       o convite da evolução para sempre. Ver a nota em js/state.js. */
-    faseVista: 0, nivelVisto: 1,
+    /* Já celebrou a fase com que chegou: a cerimónia disso foi esta.
+       Sem isto nasce com faseVista -1, e o -1 quer dizer "ainda não
+       sei" — que desliga o convite da evolução para sempre. Ver a nota
+       em js/state.js.
+
+       E SAI DO NÍVEL, não é um número escrito à mão. Com o zero fixo
+       que aqui estava, subir o NIVEL_INICIAL punha os três a abrir os
+       cuidados com um convite de evolução BEBÊ→JOVEM por celebrar — uma
+       cerimónia que ninguém tinha ganho, na primeira tela do jogo. */
+    faseVista: faseFromNivel(NIVEL_INICIAL), nivelVisto: NIVEL_INICIAL,
     vitals: {fome:100, humor:100, energia:100, saude:100, higiene:100},
     eggs: [], items: [], totalOvos: 0, totalRaros: 0, listed: false,
   };
