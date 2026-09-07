@@ -482,9 +482,28 @@ function spawnHealParticles() {
    gerarSVG mudar de ideias sobre olhos amanhã, isto acompanha sem
    ninguém lhe tocar.
    ═══════════════════════════════════════════════════════════════════ */
-function renderSleepEyes() {
-  if(!avatar) return;
-  const avatarSvg = document.querySelector('#creatureSVG svg');
+/* ── AS PÁLPEBRAS ──
+
+   Desenha uma pálpebra por cima de cada olho: um oval escuro do
+   tamanho do olho, a linha curva das pestanas fechadas na cor dele, e
+   três pontinhos por baixo.
+
+   Servia só a tela de cuidar — ia buscar o `#creatureSVG` e o `avatar`
+   por nome global. Os bichos da colónia dormiam de olhos abertos, o que
+   é a única coisa que um bicho a dormir não faz.
+
+   Passa a aceitar QUAL desenho e QUAL avatar. Sem argumentos continua a
+   fazer o que fazia, que é o que as vinte chamadas de dentro do sono
+   esperam.
+
+   O `comFade` existe porque os dois casos são diferentes: na tela de
+   cuidar o bicho adormece à vista e a pálpebra deve descer devagar; na
+   colónia o cartão é redesenhado inteiro e a pálpebra tem de já lá
+   estar quando ele aparece. */
+function renderSleepEyes(svgAlvo, slotAlvo, comFade) {
+  const alvo = slotAlvo || ((typeof avatar !== 'undefined') ? avatar : null);
+  if(!alvo) return;
+  const avatarSvg = svgAlvo || document.querySelector('#creatureSVG svg');
   if(!avatarSvg) return;
 
   const old = avatarSvg.querySelector('#sleepEyesGroup');
@@ -493,7 +512,7 @@ function renderSleepEyes() {
   const olhos = avatarSvg.querySelectorAll('.av-olho-un');
   if(!olhos.length) return;
 
-  const cfg = paletaDoAvatar(avatar, avatar && avatar.seed);
+  const cfg = paletaDoAvatar(alvo, alvo && alvo.seed);
   const ns  = 'http://www.w3.org/2000/svg';
   const grp = document.createElementNS(ns, 'g');
   grp.id = 'sleepEyesGroup';
@@ -534,7 +553,8 @@ function renderSleepEyes() {
   });
 
   avatarSvg.appendChild(grp);
-  requestAnimationFrame(() => { grp.style.opacity = '1'; });
+  if (comFade === false) { grp.style.transition = ''; grp.style.opacity = '1'; }
+  else requestAnimationFrame(() => { grp.style.opacity = '1'; });
 }
 
 function positionSleepEyes() { renderSleepEyes(); }

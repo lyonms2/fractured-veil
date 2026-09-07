@@ -160,6 +160,28 @@ function renderFazenda() {
     el.innerHTML = vivos.map(_fazendaCartao).join('');
   }
 
+  /* ── E QUEM DORME FECHA OS OLHOS ──
+
+     A criatura da colónia balança e encolhe quando dorme, mas ficava a
+     olhar em frente — e um bicho a dormir de olhos abertos é a única
+     coisa que um bicho a dormir não faz.
+
+     São as MESMAS pálpebras da tela de cuidar (renderSleepEyes, em
+     js/minigames.js): o mesmo oval, a mesma linha curva, os mesmos três
+     pontinhos. Não se desenha aqui uma segunda versão delas.
+
+     Tem de ser DEPOIS do innerHTML e com a lista à vista: a pálpebra é
+     medida com getBBox sobre o olho já desenhado, e um elemento
+     escondido mede zero. */
+  if (typeof renderSleepEyes === 'function') {
+    el.querySelectorAll('.fz-card[data-slot]').forEach(card => {
+      const s = avatarSlots[Number(card.dataset.slot)];
+      if (!s || !s.sleeping) return;
+      const svg = card.querySelector('.fz-av svg');
+      if (svg) renderSleepEyes(svg, s, false);
+    });
+  }
+
   // "3 de 5": quantos vivem, de quantos slots abertos. Diz de relance se
   // há espaço para invocar mais sem obrigar a contar cartões.
   const conta = document.getElementById('fazendaConta');
