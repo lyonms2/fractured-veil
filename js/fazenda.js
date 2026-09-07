@@ -126,8 +126,19 @@ function _fazendaCartao({ s, idx }) {
     ? gerarSVG(s, s.raridade, s.seed || 0, 38, 38, (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 0))
     : '';
 
-  return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}" data-slot="${idx}">
-    <button class="fz-av" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}${cocos ? `<span class="fz-coco" title="${t('fazenda.coco', { n: cocos })}">💩${cocos > 1 ? cocos : ''}</span>` : ''}</button>
+  /* ── CADA UM NO SEU COMPASSO ──
+
+     A criatura da colónia passou a respirar como a da tela de cuidar
+     (ver css/fazenda.css). Com o mesmo atraso, as três subiam e desciam
+     ao mesmo tempo, e três bichos em sincronia perfeita não parecem
+     vivos: parecem um relógio.
+
+     Meio segundo entre cada um chega para desfazer isso e é pouco para
+     se notar como truque. */
+  const compasso = (idx % 6) * 0.5;
+
+  return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}${dorme ? ' fz-dormindo' : ''}" data-slot="${idx}">
+    <button class="fz-av" style="--fz-compasso:${compasso}s" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}${cocos ? `<span class="fz-coco" title="${t('fazenda.coco', { n: cocos })}">💩${cocos > 1 ? cocos : ''}</span>` : ''}</button>
     <div class="fz-info">
       <div class="fz-nome${temNome(s) ? '' : ' sem-nome'}">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>

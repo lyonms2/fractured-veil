@@ -154,6 +154,40 @@
 }
 .fz-av:hover { transform: scale(1.12); box-shadow: 0 0 0.5rem rgba(201,168,76,.3); }
 .fz-av svg { display: block; width: 100%; height: 100%; }
+
+/* ── A COLÓNIA RESPIRA ──
+
+   O retrato era uma imagem parada. Na tela de cuidar o mesmo bicho
+   flutua devagar, e quando dorme balança e encolhe — e essa diferença é
+   informação: vê-se quem está a dormir sem ler nada.
+
+   São as mesmas duas animações do .creature-wrap (css/screen.css), com
+   uma diferença só: a DISTÂNCIA. Lá o bicho tem 10rem e sobe 0.4375;
+   aqui tem 2rem, e a mesma subida punha-o a sair da própria moldura.
+   A rotação e o encolher não se mexem — esses não dependem do tamanho.
+
+   O atraso vem do cartão (--fz-compasso, em js/fazenda.js): sem ele os
+   três subiam e desciam ao mesmo tempo. */
+.fz-av svg {
+  animation: fz-flutua 3s ease-in-out infinite;
+  animation-delay: var(--fz-compasso, 0s);
+}
+@keyframes fz-flutua {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-0.15625rem); }
+}
+
+.fz-card.fz-dormindo .fz-av svg { animation-name: fz-embala; }
+@keyframes fz-embala {
+  0%,100% { transform: translateY(0) rotate(-3deg) scaleY(.93); }
+  50%     { transform: translateY(0.09375rem) rotate(3deg) scaleY(.88); }
+}
+
+/* Quem pediu ao sistema para não haver movimento não o tem aqui. O
+   💤 continua, que é o que diz a mesma coisa sem se mexer. */
+@media (prefers-reduced-motion: reduce) {
+  .fz-av svg { animation: none; }
+}
 .fz-zzz {
   position: absolute; top: -0.125rem; right: -0.1875rem;
   font-size: 0.4375rem; line-height: 1;
