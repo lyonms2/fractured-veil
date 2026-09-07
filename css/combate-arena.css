@@ -1,0 +1,1091 @@
+/* ═══════════════════════════════════════════════════════════════════
+   A ARENA
+
+   A batalha era duas grelhas de cartões, uma em cima e outra em baixo,
+   com o registo entre elas. Lia-se — mas nada ali era um LUGAR: os
+   avatares estavam dentro de caixas, e duas caixas não se enfrentam.
+
+   Agora há um palco. Os seis estão sobre um chão, com profundidade, sob
+   a luz da Fratura, e a interface saiu de cima deles para as margens:
+   a fila à esquerda, os meus em baixo à esquerda, os dele em baixo à
+   direita. O meio fica para a batalha.
+
+   ── DE ONDE VEM A LUZ ──
+
+   De um sítio só: a Fratura, ao fundo. É ela que acende o horizonte,
+   que faz a poça de luz no chão, que dá o contorno aos corpos e que
+   decide a cor das sombras. Uma cena com uma fonte de luz assumida
+   parece desenhada; com três, parece montada.
+
+   Por isso quase tudo aqui é violeta e ouro sobre preto, e o único
+   verde e o único vermelho estão nas barras — onde são informação, e
+   não decoração.
+
+   ── PROFUNDIDADE SEM 3D ──
+
+   Não há transform 3D nem perspectiva de CSS. A profundidade sai de
+   quatro coisas que se combinam, e é sempre a MESMA variável a mandar
+   nas quatro (--z, de 0 = longe a 1 = perto):
+
+     tamanho    quem está atrás é menor
+     altura     quem está atrás está mais acima no ecrã
+     bruma      quem está atrás recebe um véu da cor do ar
+     sombra     quem está atrás tem sombra menor e mais difusa
+
+   Uma só variável a puxar quatro sinais é o que faz o olho aceitar a
+   distância. Mexer numa e esquecer as outras é o que faz uma cena
+   parecer recortada.
+
+   NOTA DE ESCALA: como em todo o jogo, as medidas são rem e a escala
+   vem do html{font-size} do base.css. Nada aqui usa vh.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cb-palco {
+  position: relative;
+  /* O 46rem do @media de 900px vivia na folha antiga e esta carrega
+     depois dela: o 40rem daqui ganhava sempre e o palco nunca crescia
+     no computador. A regra passa a ser uma só, aqui, com o max() a
+     fazer o trabalho das duas. */
+  width: 100%; max-width: 46rem; height: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex; flex-direction: column;
+  background: #06040e;
+  box-shadow: 0 0 0 1px rgba(201,168,76,.14), 0 1.5rem 4rem rgba(0,0,0,.7);
+
+  /* A cor da Fratura vive aqui em cima porque TUDO a lê: o céu, a poça
+     de luz, o contorno dos corpos, a fila, as molduras. Trocar este par
+     muda a cena inteira e nada fica a discordar. */
+  --fenda:      #b98cff;
+  --fenda-fund: #6d3fb5;
+  --fenda-quen: #ffd68a;
+  --ar:         #1a1130;   /* a cor do ar entre os planos */
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O CENÁRIO
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cb-cena { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+/* ── O céu ──
+   Três bandas, não um degradê só: o horizonte tem de ser mais claro que
+   o zénite E que o chão, senão a Fratura não parece estar ao longe —
+   parece colada ao ecrã. */
+.cb-ceu {
+  position: absolute; left: 0; right: 0; top: 0; height: 62%;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(185,140,255,.30), transparent 62%),
+    radial-gradient(70% 55% at 50% 96%,  rgba(255,214,138,.16), transparent 70%),
+    linear-gradient(180deg, #0a0618 0%, #150c2c 42%, #2a1550 78%, #3a1d60 100%);
+}
+
+/* As auroras. Duas faixas largas e lentíssimas, a desencontrarem-se —
+   o que dá vida ao céu é elas nunca coincidirem. */
+.cb-aurora {
+  position: absolute; left: -20%; right: -20%; top: 0; height: 62%;
+  mix-blend-mode: screen; opacity: .5;
+  background:
+    radial-gradient(45% 22% at 30% 34%, rgba(140,90,220,.55), transparent 70%),
+    radial-gradient(38% 16% at 72% 22%, rgba(90,180,232,.34), transparent 72%);
+  animation: cb-aurora 26s ease-in-out infinite alternate;
+}
+@keyframes cb-aurora {
+  0%   { transform: translateX(-3%) scaleY(1);    opacity: .38; }
+  100% { transform: translateX(3%)  scaleY(1.18); opacity: .62; }
+}
+
+/* ── A FRATURA ──
+   O rasgo. É a única coisa da cena com contorno duro, e é de propósito:
+   tudo o resto é névoa e degradê, portanto a fenda ganha o olhar sem
+   precisar de brilhar mais do que o resto.
+
+   São três peças sobrepostas: o halo (o que ela faz ao ar à volta), o
+   corpo (o rasgo em si) e o núcleo (a linha quente do meio). */
+/* Ia dos 6% aos 52% e o chão começa aos 58%: ficavam 6% de nada entre
+   a ponta do rasgo e o sítio de onde a luz dele sai. Uma fonte de luz
+   suspensa no ar, com a poça no chão a apontar para o vazio. Agora
+   toca no chão, que é o que a faz parecer uma fenda no mundo. */
+.cb-fenda {
+  position: absolute; left: 50%; top: 5%;
+  width: 8rem; height: 55%;
+  transform: translateX(-50%);
+}
+/* Era um halo de 740×679 sobre um palco de 698×665 — ou seja, um véu
+   lavanda sobre a cena INTEIRA, a achatar o chão, os montes e os
+   corpos, e a puxar contra a vinheta. Um halo é o que a luz faz ao ar
+   à volta DELA; à volta de tudo já não é halo, é uma folha de acetato
+   por cima do ecrã. */
+.cb-fenda-halo {
+  position: absolute; inset: -14% -55%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(185,140,255,.34), transparent 66%);
+  animation: cb-fenda-pulsa 5.2s ease-in-out infinite;
+}
+.cb-fenda-corpo {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 1.35rem;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, var(--fenda-fund) 12%, var(--fenda) 46%, var(--fenda-quen) 74%, transparent 99%);
+  /* O rasgo não é um retângulo: aperta em cima e em baixo e é irregular
+     ao meio, que é o que separa "fenda" de "poste de luz". */
+  clip-path: polygon(46% 0%, 56% 9%, 40% 22%, 62% 34%, 44% 47%, 66% 58%, 46% 71%, 58% 84%, 50% 100%, 43% 84%, 36% 71%, 46% 58%, 32% 47%, 48% 34%, 34% 22%, 44% 9%);
+  filter: blur(0.03125rem);
+  animation: cb-fenda-treme 3.4s ease-in-out infinite;
+}
+.cb-fenda-nucleo {
+  position: absolute; left: 50%; top: 8%; bottom: 8%; width: 0.125rem;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, #fff 30%, var(--fenda-quen) 70%, transparent);
+  filter: blur(0.09375rem);
+  opacity: .9;
+  animation: cb-fenda-pulsa 5.2s ease-in-out infinite reverse;
+}
+@keyframes cb-fenda-pulsa {
+  0%,100% { opacity: .58; transform: scale(1); }
+  50%     { opacity: 1;   transform: scale(1.06); }
+}
+@keyframes cb-fenda-treme {
+  0%,100% { transform: translateX(-50%) scaleX(1); }
+  37%     { transform: translateX(-50%) scaleX(1.22); }
+  61%     { transform: translateX(-50%) scaleX(.88); }
+}
+
+/* ── Os monólitos ──
+   Silhuetas, sem detalhe nenhum: o que faz um plano parecer distante é
+   ele PERDER informação, não ganhar. Levam a cor do ar, não preto. */
+/* ── Os monólitos ──
+   Silhuetas, sem detalhe: o que faz um plano parecer distante é ele
+   PERDER informação, não ganhar.
+
+   Eram doze triângulos quase iguais numa linha só — lia-se como uma
+   serra, não como uma serra de montes. Passam a ser dois planos: um
+   longe, pequeno, desfocado e quase da cor do céu, e outro à frente,
+   mais alto, mais escuro e mais irregular. Duas distâncias em vez de
+   uma, que é o que separa "montanhas" de "zigue-zague". */
+.cb-monolitos {
+  position: absolute; left: 0; right: 0; top: 26%; height: 28%;
+  background: color-mix(in srgb, var(--ar) 62%, #3a1d60);
+  opacity: .85; filter: blur(0.09375rem);
+  clip-path: polygon(
+    0% 100%, 0% 78%, 7% 62%, 12% 74%, 19% 48%, 27% 70%, 34% 58%, 41% 72%,
+    47% 44%, 53% 66%, 61% 52%, 68% 68%, 76% 40%, 83% 62%, 91% 56%, 100% 72%, 100% 100%);
+}
+.cb-monolitos-perto {
+  position: absolute; left: 0; right: 0; top: 32%; height: 22%;
+  background: var(--ar); opacity: .96;
+  clip-path: polygon(
+    0% 100%, 0% 84%, 4% 52%, 9% 88%, 15% 30%, 21% 76%, 24% 58%, 30% 92%,
+    36% 22%, 43% 80%, 50% 48%, 55% 86%, 62% 16%, 69% 74%, 74% 54%, 80% 90%,
+    86% 34%, 93% 82%, 100% 60%, 100% 100%);
+}
+/* O contraluz: os monólitos recebem a Fratura pelas costas, portanto
+   têm de acender no bordo de cima e só aí. Sem esta linha eram um
+   recorte preto colado ao céu. */
+.cb-monolitos::after, .cb-monolitos-perto::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(185,140,255,.55), transparent 22%);
+  mix-blend-mode: screen;
+}
+
+/* ── A bruma do horizonte ──
+   A costura entre o céu e o chão. Sem ela vê-se a linha onde um acaba e
+   o outro começa, e é essa linha que denuncia que são dois divs. */
+/* ── A bruma do horizonte ──
+   A costura entre o céu e o chão. Estava alta demais e o chão, que é
+   opaco e mais CLARO do que os montes, cortava-os numa linha a direito
+   de ponta a ponta — o degrau mais visível da cena inteira.
+
+   Agora cobre a linha (o chão começa aos 58%) e desfoca-a. */
+.cb-bruma {
+  position: absolute; left: 0; right: 0; top: 38%; height: 26%;
+  /* Estava com o dobro da carga e a desfocar 0,75rem: em vez de coser a
+     junta, lavava a cena inteira de violeta e tirava contraste aos
+     bichos. Uma névoa que se nota deixou de ser névoa. */
+  background: linear-gradient(180deg, transparent, rgba(64,34,104,.34) 44%,
+              rgba(40,20,68,.42) 60%, rgba(20,13,38,.22) 88%, transparent);
+  filter: blur(0.5rem);
+  z-index: 1;
+}
+
+/* ── O CHÃO ──
+   Pedra, com a poça de luz da Fratura a cair-lhe em cima. A
+   perspectiva vem do degradê e do tamanho da textura: as vetas são
+   apertadas ao fundo e largas à frente, que é o que o olho lê como
+   "isto afasta-se". */
+.cb-chao {
+  position: absolute; left: 0; right: 0; top: 50%; bottom: 0;
+  background:
+    /* a poça de luz, primeiro: fica por cima da pedra */
+    radial-gradient(52% 72% at 50% 0%, rgba(185,140,255,.20), transparent 66%),
+    radial-gradient(26% 36% at 50% 0%, rgba(255,214,138,.13), transparent 70%),
+    /* Mais escuro do que estava. O chão é pedra à noite com uma luz a
+       bater-lhe: o que ele tem de dar é a POÇA, e uma poça só se vê se
+       o resto for escuro. */
+    linear-gradient(180deg, #1e1436 0%, #150c26 34%, #0c0718 72%, #060409 100%);
+}
+/* As vetas da pedra. Duas camadas cruzadas em ângulos diferentes: uma
+   só lê-se como riscas, duas lêem-se como superfície. */
+/* ── As vetas da pedra ──
+
+   Eram duas grelhas de passo CONSTANTE até ao horizonte. Um plano que
+   se afasta tem de apertar as linhas ao longe — com o passo constante
+   aquilo lia-se como papel milimétrico inclinado, e o preto a .22 era
+   forte que baste para se ver a grelha em vez da pedra.
+
+   As linhas que recuam passam a ser explícitas, e a distância entre
+   elas cresce para a frente: 4%, 9%, 16%, 26%, 40%, 58%, 80%. É a
+   compressão que o olho procura. As vetas verticais ficam, mais
+   fracas, só para a superfície não ser lisa. */
+.cb-chao::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(97deg, rgba(255,255,255,.022) 0 1px, transparent 1px 0.625rem),
+    linear-gradient(180deg,
+      transparent 3.6%,  rgba(0,0,0,.16) 3.6%,  rgba(0,0,0,.16) 3.9%,  transparent 3.9%,
+      transparent 8.8%,  rgba(0,0,0,.16) 8.8%,  rgba(0,0,0,.16) 9.2%,  transparent 9.2%,
+      transparent 15.7%, rgba(0,0,0,.15) 15.7%, rgba(0,0,0,.15) 16.2%, transparent 16.2%,
+      transparent 25.6%, rgba(0,0,0,.14) 25.6%, rgba(0,0,0,.14) 26.2%, transparent 26.2%,
+      transparent 39.4%, rgba(0,0,0,.13) 39.4%, rgba(0,0,0,.13) 40.1%, transparent 40.1%,
+      transparent 57.6%, rgba(0,0,0,.12) 57.6%, rgba(0,0,0,.12) 58.4%, transparent 58.4%,
+      transparent 79.8%, rgba(0,0,0,.10) 79.8%, rgba(0,0,0,.10) 80.7%, transparent 80.7%);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 100%);
+}
+/* O brilho rasante: a luz da Fratura a lamber o chão molhado. */
+.cb-chao::after {
+  content: ''; position: absolute; left: 50%; top: 0; width: 60%; height: 46%;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 100% at 50% 0%, rgba(255,214,138,.13), transparent 72%);
+  filter: blur(0.375rem);
+}
+
+/* ── A poeira ──
+   Cinco motas que sobem devagar, cada uma no seu tempo. É o detalhe
+   mais barato que existe e o que mais faz uma cena parada parecer
+   viva — o ar deixa de ser vazio e passa a ter alguma coisa dentro. */
+.cb-poeira { position: absolute; inset: 0; overflow: hidden; }
+.cb-mota {
+  position: absolute; border-radius: 50%;
+  background: var(--fenda);
+  box-shadow: 0 0 0.375rem var(--fenda);
+  opacity: 0;
+  animation: cb-mota linear infinite;
+}
+@keyframes cb-mota {
+  0%   { transform: translateY(0) translateX(0);          opacity: 0; }
+  14%  {                                                  opacity: .75; }
+  86%  {                                                  opacity: .5; }
+  100% { transform: translateY(-9rem) translateX(1.25rem); opacity: 0; }
+}
+
+/* ── A vinheta ──
+   Escurece os cantos para o olho ir ao meio, que é onde estão os
+   bichos. Fica por cima de todo o cenário e por baixo de tudo o resto. */
+.cb-vinheta {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 90% at 50% 46%, transparent 42%, rgba(4,3,10,.55) 78%, rgba(4,3,10,.9));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O CAMPO — onde os seis estão
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── O CAMPO ──
+
+   Assenta no chão (a pedra começa aos 50%) e encosta ao rodapé. Começa
+   depois da fila, senão o avatar do fundo à esquerda nascia por baixo
+   dos retratos.
+
+   ALTURA LIMITADA, e é a correcção que mais custou a encontrar: as
+   etiquetas e as marcas ficam a uma distância FIXA da cabeça, em rem,
+   mas os três postos espalham-se por uma percentagem do campo. Num ecrã
+   alto o campo esticava, os três afastavam-se, e o nome do que está à
+   frente ia parar em cima da cara do que está atrás. Duas geometrias
+   diferentes a decidir a mesma distância.
+
+   Com o campo travado em 15rem, o espalhamento dos três é o mesmo em
+   qualquer ecrã e a distância em rem passa a ser sempre a certa. O que
+   sobra de chão fica por baixo — e chão a mais nunca fez mal a
+   ninguém. */
+.cb-palco { --rodape: 6.5rem; }
+.cb-campo {
+  position: absolute; left: 2.75rem; right: 0.5rem;
+  top: auto; bottom: var(--rodape);
+  height: min(15rem, 42%);
+  z-index: 2; pointer-events: none;
+}
+
+/* Um posto é um LUGAR no chão, não um cartão. Não tem fundo, não tem
+   moldura: tem uma sombra, um corpo e o que lhe está a acontecer.
+
+   O --z é a profundidade (0 longe, 1 perto) e manda em tudo o resto.
+   O --x e o --y são a posição, em percentagem do campo. */
+.cb-posto {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  width: 0; height: 0;                 /* o posto é um ponto; o corpo cresce dele */
+  pointer-events: auto; cursor: pointer;
+  transition: filter .35s, opacity .35s;
+  /* a escala sai da profundidade: 0.62 no fundo, 1 à frente */
+  /* A gama era 0.62–1.00, e 38% entre a frente e o fundo não chega:
+     os três liam-se como três bichos do mesmo tamanho, um por cima do
+     outro. Com 0.42–1.00 o do fundo tem menos de metade da área do da
+     frente, e aí o olho aceita que esteja longe. */
+  --escala: calc(0.42 + 0.58 * var(--z));
+}
+
+/* ── A sombra de contacto ──
+   É o que prega o bicho ao chão. Elíptica (a luz vem de cima e de trás),
+   mais pequena e mais difusa em quem está longe, e ENCOLHE quando o
+   corpo sobe no flutuar — é esse par que faz o flutuar parecer peso a
+   sair do chão em vez de uma imagem a subir. */
+.cb-sombra {
+  position: absolute; left: 50%; top: 0;
+  width: calc(3.4rem * var(--escala)); height: calc(0.85rem * var(--escala));
+  transform: translate(-50%, -0.15rem);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.72), transparent 70%);
+  filter: blur(calc(0.1875rem + 0.25rem * (1 - var(--z))));
+  animation: cb-sombra-respira 3.2s ease-in-out infinite;
+  animation-delay: var(--compasso, 0s);
+}
+@keyframes cb-sombra-respira {
+  0%,100% { transform: translate(-50%, -0.15rem) scale(1); opacity: .85; }
+  50%     { transform: translate(-50%, -0.15rem) scale(.86); opacity: .6; }
+}
+
+/* ── O anel de quem está em campo ──
+   A elipse acesa no chão, por baixo de quem joga agora. Diz "é este" sem
+   ocupar espaço nenhum acima da linha do chão, que é onde está o bicho. */
+.cb-anel {
+  position: absolute; left: 50%; top: 0;
+  width: calc(4.2rem * var(--escala)); height: calc(1.15rem * var(--escala));
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0; transition: opacity .3s;
+  background: radial-gradient(50% 50% at 50% 50%, transparent 52%, var(--anel) 72%, transparent 82%);
+  box-shadow: 0 0 0.75rem var(--anel);
+}
+/* A ANIMAÇÃO SÓ CORRE EM QUEM ESTÁ EM CAMPO.
+
+   Estava na base, e os fotogramas dela escrevem `opacity` — portanto
+   acendiam o anel dos seis, por cima do `opacity: 0` que devia
+   apagá-lo. Todos os bichos tinham a auréola de quem está a jogar, e o
+   sinal deixava de ser sinal. Uma animação que anima a mesma
+   propriedade que o estado controla tem de viver no estado. */
+.cb-posto.ativo .cb-anel { opacity: 1; animation: cb-anel-gira 4s linear infinite; }
+.cb-posto.eu  { --anel: rgba(122,184,122,.75); }
+.cb-posto.ini { --anel: rgba(224,85,85,.75); }
+@keyframes cb-anel-gira {
+  0%,100% { transform: translate(-50%,-50%) scale(1);    opacity: .75; }
+  50%     { transform: translate(-50%,-50%) scale(1.08); opacity: 1; }
+}
+
+/* ── O corpo ──
+   O avatar, apoiado no chão: o translate(-50%,-100%) põe-lhe os pés na
+   linha do posto, e é isso que o faz pertencer à cena em vez de pairar
+   sobre ela. */
+.cb-corpo {
+  position: absolute; left: 50%; top: 0;
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+  display: grid; place-items: center;
+}
+
+/* ── A CAIXA DOS EFEITOS ──
+
+   O clarão do impacto e as partículas eram anexados ao POSTO, e o posto
+   é um ponto: `width:0; height:0`. Um `inset:0` sobre zero é zero, e
+   `left:38%` de zero é zero — portanto o clarão nascia com 0×0 e as dez
+   partículas nasciam todas no mesmo pixel, aos pés. O efeito que o
+   código descreve como "o que se vê primeiro" não se via de todo.
+
+   Aqui está a caixa que faltava: do tamanho do corpo, no sítio do
+   corpo, e SEM as animações dele — se herdasse o recuo, as partículas
+   recuavam com o bicho em vez de saltarem dele. */
+/* O clarão do impacto é um degradê radial que chega a opaco aos 82%,
+   e o elemento é um retângulo: os quatro cantos ficam a cheio. Nas
+   outras cores isso não se nota porque elas vêm com `mix-blend-mode:
+   screen` e o preto dos cantos não pinta nada — mas o das SOMBRAS é
+   escuro e sem mistura nenhuma, e desenhava uma CAIXA PRETA de bordos
+   direitos por cima do inimigo, dos montes e do chão.
+
+   Aqui a caixa dos efeitos recorta tudo o que nasce dentro dela num
+   oval. O clarão volta a ser luz e deixa de ser uma janela. */
+.cb-efeitos > .cb-luz { border-radius: 50%; }
+.cb-efeitos > .cb-luz-sombras { mix-blend-mode: multiply; }
+
+.cb-efeitos {
+  position: absolute; left: 50%; top: 0;
+  width:  calc(5.6rem * var(--escala));
+  height: calc(7.28rem * var(--escala));
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  z-index: 6;
+}
+/* ── O TAMANHO DO CORPO ──
+
+   Duas armadilhas aqui, e as duas medidas.
+
+   A primeira: `height: auto` não serve. O SVG traz `width="200"
+   height="200"` nos atributos e um `viewBox` de 200×260 — os atributos
+   mentem sobre a proporção, e o auto acredita neles. O resultado era
+   uma caixa quadrada com o bicho encolhido 23% lá dentro e ar dos dois
+   lados. Portanto a altura diz-se, e diz-se na proporção do viewBox.
+
+   A segunda: o desenho SAI do próprio viewBox — o getBBox dá y de −15 a
+   285 numa caixa de 0 a 260 — e o `overflow` de um SVG corta por
+   omissão. Cortava 13% da figura, os pés incluídos. O `overflow:
+   visible` devolve-os.
+
+   Os inimigos têm viewBox de 200×200 e ficam com uma tira de ar em cima
+   e em baixo, centrada. É o preço de uma medida só para os dois, e é
+   preferível a dois números que um dia discordam. */
+.cb-corpo svg {
+  display: block; overflow: visible;
+  width:  calc(5.2rem  * var(--escala));
+  height: calc(6.76rem * var(--escala));
+  /* ── O CONTRALUZ ──
+     Duas sombras projetadas em vez de uma: a de baixo é a cor da
+     Fratura e sai por cima e por trás (o contorno), a de cima é preta e
+     cai para a frente (o volume). Um bicho sem contorno num fundo
+     escuro parece um autocolante. */
+  filter:
+    drop-shadow(0 -0.0625rem 0.1875rem rgba(185,140,255,.55))
+    drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.65));
+  animation: cb-flutua 3.2s ease-in-out infinite;
+  animation-delay: var(--compasso, 0s);
+}
+@keyframes cb-flutua {
+  0%,100% { transform: translateY(0)        scaleY(1);    }
+  50%     { transform: translateY(-0.28rem) scaleY(1.015); }
+}
+
+/* Quem não está em campo recua: perde saturação, ganha bruma e apaga.
+   É o mesmo sinal que a distância já dá, reforçado — o olho tem de
+   saber num relance quem é que está a jogar. */
+.cb-posto:not(.ativo) { opacity: .82; }
+
+
+/* ── A bruma aérea ──
+   O véu do ar por cima de quem está longe. É a peça que mais custa a
+   notar e a que mais falta faz: sem ela os três do fundo são os mesmos
+   bichos, só que menores.
+
+   Era um retângulo por cima da caixa do corpo, e a caixa é quase toda
+   ar à volta da figura — o véu tingia o cenário e não o bicho. Passa a
+   ser um filtro sobre a FIGURA, graduado pela mesma profundidade: quem
+   está longe perde cor e ganha o violeta do ar. */
+/* O contorno violeta baixou de .55 para .3: o avatar já traz uma
+   auréola desenhada dentro do próprio SVG, e com o halo da fenda por
+   cima eram TRÊS brilhos lavanda empilhados em cada bicho. O que fica
+   é o contorno, que é o que separa a figura do fundo escuro; o resto
+   era neblina. */
+.cb-posto:not(.caido) .cb-corpo svg {
+  filter:
+    drop-shadow(0 -0.0625rem 0.125rem rgba(185,140,255,.30))
+    drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.7))
+    saturate(calc(0.45 + 0.55 * var(--z)))
+    brightness(calc(0.62 + 0.38 * var(--z)));
+}
+
+/* ── Caído ──
+   Cai para o lado e fica no chão. Não desaparece e não vira um ✕: o
+   corpo continua lá, que é o que faz a baixa pesar. */
+.cb-posto.caido { opacity: .55; }
+/* Cai PARA DENTRO do campo, e não para fora. A 74° o corpo varria a
+   própria altura para o lado: o inimigo do fundo saía 36px fora do
+   palco e era cortado, e o meu caía por cima do companheiro. A 58°, com
+   o pivô nos pés e um passo para o centro, fica onde estava. */
+.cb-posto.caido .cb-corpo {
+  transform: translate(-50%, -42%) translateX(var(--lado, 0.9rem)) rotate(var(--tomba, -58deg));
+  transition: transform .5s cubic-bezier(.34,1.3,.64,1);
+}
+/* O corpo escurecia a 40% de brilho, sem cor, sobre um fundo já escuro:
+   desaparecia. O comentário dizia "o corpo continua lá" e ele não
+   continuava. A 68% ainda se lê como coisa apagada e continua a ser um
+   corpo no chão, que é o que faz a baixa pesar. */
+.cb-posto.caido .cb-corpo svg { filter: grayscale(1) brightness(.68); animation: none; }
+.cb-posto.caido .cb-sombra { animation: none; opacity: .5; transform: translate(-50%,-0.15rem) scaleX(1.25) scaleY(.6); }
+/* A etiqueta de quem caiu ficava a .5 — e como só os que estão em
+   campo a mostram, isto RESSUSCITAVA o nome dos que estão no banco: ao
+   cair, o nome do terceiro aparecia e colidia com o do primeiro. Quem
+   cai não ganha uma legenda que não tinha. */
+.cb-posto.ini.caido .cb-corpo { --tomba: 58deg; --lado: -0.9rem; }
+
+/* ── A etiqueta do nome ──
+   Só por cima de quem está em campo. Seis nomes ao mesmo tempo é uma
+   legenda, não uma batalha. */
+.cb-etiqueta {
+  position: absolute; left: 50%; top: 0;
+  /* O nome tem de ficar ACIMA da cabeça, e a cabeça está a
+     5.6rem×escala×(260/200) do chão — a ALTURA do desenho, não a
+     largura. Estava a usar a largura e caía-lhe em cima do peito. */
+  transform: translate(-50%, calc(-100% - 7.3rem * var(--escala)));
+  white-space: nowrap; pointer-events: none;
+  font-family: 'Cinzel', serif; font-size: 0.40625rem; letter-spacing: 0.0625rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 0.375rem rgba(0,0,0,.95), 0 0.0625rem 0.125rem #000;
+  opacity: 0; transition: opacity .3s;
+}
+.cb-posto.ativo .cb-etiqueta { opacity: 1; }
+
+/* ── As marcas de estado, por baixo dos pés ──
+   Vinham amontoadas dentro do cartão. Aqui ficam presas ao chão, junto
+   ao anel, e não tapam o bicho. */
+/* ── AS MARCAS FICAM POR CIMA, e não aos pés ──
+
+   Estavam meia polegada abaixo do ponto do posto — ou seja, dentro da
+   faixa de baixo, tapadas pelos painéis. O FÚRIA e o BARREIRA do
+   inimigo não se viam nunca; do meu lado viam-se as três letras que
+   calhavam na fresta entre dois painéis.
+
+   O chão é a parte mais disputada da cena. O céu, acima das cabeças,
+   está vazio — e é para lá que vai tudo o que não precisa de estar
+   colado ao bicho. */
+.cb-posto .cb-marcas {
+  position: absolute; left: 50%; top: 0;
+  transform: translate(-50%, calc(-100% - 8.4rem * var(--escala)));
+  display: flex; gap: 0.125rem; flex-wrap: wrap;
+  justify-content: center; width: 7rem;
+  pointer-events: none;
+}
+/* Estão sobre o céu, que é claro ao pé da fenda. Sem um fundo próprio
+   o F+2 vermelho dava 2,5:1 — o elemento menos legível da tela. */
+.cb-posto .cb-marca {
+  background: rgba(6,4,14,.82) !important;
+  backdrop-filter: blur(0.125rem); -webkit-backdrop-filter: blur(0.125rem);
+  text-shadow: 0 0.0625rem 0.125rem rgba(0,0,0,.95);
+  font-size: 0.3125rem; padding: 0.0625rem 0.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   A FÍSICA DO GOLPE
+
+   Bater tem de ter consequência no corpo, e não só no número. São
+   quatro coisas, e as quatro correm ao mesmo tempo:
+
+     o atacante  avança e volta, com o peso à frente
+     o alvo      é empurrado para trás e treme
+     o chão      levanta poeira sob os pés
+     o palco     estremece, mas só no crítico
+
+   O palco só treme no crítico de propósito: um ecrã que abana a cada
+   golpe deixa de dizer nada.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* O nome `bate` é de quem APANHA, e não de quem bate: é assim que o
+   motor o usa desde sempre (_pveGesto(cartaoAlvo, 'cb-bate')). Mudar-lhe
+   o sentido aqui era partir catorze chamadas para ganhar uma palavra.
+   Quem bate leva `avanca`, que é nome novo para gesto novo. */
+.cb-posto.avanca .cb-corpo     { animation: cb-avanca .34s cubic-bezier(.3,1.6,.5,1); }
+.cb-posto.ini.avanca .cb-corpo { animation-name: cb-avanca-ini; }
+@keyframes cb-avanca {
+  0%   { transform: translate(-50%,-100%) translateX(0); }
+  32%  { transform: translate(-50%,-100%) translateX(1.15rem) scaleX(1.06) scaleY(.95); }
+  100% { transform: translate(-50%,-100%) translateX(0); }
+}
+@keyframes cb-avanca-ini {
+  0%   { transform: translate(-50%,-100%) translateX(0); }
+  32%  { transform: translate(-50%,-100%) translateX(-1.15rem) scaleX(1.06) scaleY(.95); }
+  100% { transform: translate(-50%,-100%) translateX(0); }
+}
+
+.cb-posto.bate .cb-corpo     { animation: cb-recua .42s cubic-bezier(.2,.9,.3,1); }
+.cb-posto.ini.bate .cb-corpo { animation-name: cb-recua-ini; }
+/* O clarão do impacto. Vai no svg e não no corpo porque o corpo está
+   ocupado a recuar — e são as duas metades do mesmo golpe: a carne
+   recua, a luz estoura. Enquanto dura, o flutuar pára, que é o que
+   deve acontecer a quem acabou de levar um murro. */
+.cb-posto.bate .cb-corpo svg { animation: cb-clarao-corpo .42s cubic-bezier(.36,.07,.19,.97); }
+@keyframes cb-clarao-corpo {
+  0%   { filter: drop-shadow(0 -0.0625rem 0.1875rem rgba(185,140,255,.55)) drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.65)); }
+  8%   { filter: brightness(4) saturate(0) drop-shadow(0 0 0.75rem #fff); }
+  26%  { filter: brightness(1.7) drop-shadow(0 0 0.375rem rgba(255,180,180,.8)); }
+  100% { filter: drop-shadow(0 -0.0625rem 0.1875rem rgba(185,140,255,.55)) drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.65)); }
+}
+@keyframes cb-recua {
+  0%   { transform: translate(-50%,-100%) translateX(0)       rotate(0); }
+  18%  { transform: translate(-50%,-100%) translateX(-0.7rem) rotate(-7deg) scaleX(.94) scaleY(1.05); }
+  46%  { transform: translate(-50%,-100%) translateX(0.25rem) rotate(3deg); }
+  72%  { transform: translate(-50%,-100%) translateX(-0.12rem) rotate(-1.5deg); }
+  100% { transform: translate(-50%,-100%) translateX(0)       rotate(0); }
+}
+@keyframes cb-recua-ini {
+  0%   { transform: translate(-50%,-100%) translateX(0)       rotate(0); }
+  18%  { transform: translate(-50%,-100%) translateX(0.7rem)  rotate(7deg) scaleX(.94) scaleY(1.05); }
+  46%  { transform: translate(-50%,-100%) translateX(-0.25rem) rotate(-3deg); }
+  72%  { transform: translate(-50%,-100%) translateX(0.12rem) rotate(1.5deg); }
+  100% { transform: translate(-50%,-100%) translateX(0)       rotate(0); }
+}
+
+/* Esquivar não é apanhar ao contrário: é sair da linha e voltar, sem
+   deformação nenhuma. O corpo de quem esquiva não sofre. */
+.cb-posto.esquiva .cb-corpo { animation: cb-esquiva .4s ease-out; }
+@keyframes cb-esquiva {
+  0%   { transform: translate(-50%,-100%) translateX(0) skewX(0); }
+  40%  { transform: translate(-50%,-100%) translateX(1.4rem) skewX(-8deg); opacity: .55; }
+  100% { transform: translate(-50%,-100%) translateX(0) skewX(0); }
+}
+
+/* Defender: encolhe e enterra-se, e a sombra alarga — o peso desce. */
+.cb-posto.defende .cb-corpo { animation: cb-defende .5s ease-out; }
+@keyframes cb-defende {
+  0%,100% { transform: translate(-50%,-100%) scaleY(1)   scaleX(1); }
+  35%     { transform: translate(-50%,-100%) scaleY(.9)  scaleX(1.08); }
+}
+
+/* A poeira aos pés, no impacto. Nasce no chão e espalha-se para fora e
+   para cima — o oposto das partículas do golpe, que vêm do corpo. */
+.cb-po {
+  position: absolute; left: 50%; top: 0;
+  width: 0.25rem; height: 0.25rem; border-radius: 50%;
+  background: rgba(200,180,255,.5);
+  transform: translate(-50%,-50%);
+  animation: cb-po .55s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes cb-po {
+  0%   { opacity: .7; transform: translate(-50%,-50%) scale(.4); }
+  100% { opacity: 0;  transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(1.6); }
+}
+
+/* O palco estremece. Nunca no eixo Y sozinho: um tremor só vertical
+   parece um salto. */
+.cb-palco.treme { animation: cb-treme .34s cubic-bezier(.36,.07,.19,.97); }
+@keyframes cb-treme {
+  0%,100% { transform: translate(0,0); }
+  12%     { transform: translate(-0.28rem, 0.14rem); }
+  28%     { transform: translate(0.24rem, -0.1rem); }
+  46%     { transform: translate(-0.18rem, -0.14rem); }
+  64%     { transform: translate(0.14rem, 0.1rem); }
+  82%     { transform: translate(-0.07rem, 0); }
+}
+
+/* O clarão do palco no crítico: a Fratura reage ao golpe. */
+.cb-palco.clarao .cb-fenda-halo { animation: cb-clarao .5s ease-out; }
+@keyframes cb-clarao {
+  0%   { opacity: 1; transform: scale(1.5); }
+  100% { opacity: .58; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   OS NÚMEROS QUE SALTAM
+
+   Subiam a direito e desapareciam. Agora descrevem um arco: sobem
+   depressa, abrandam, e caem — a mesma curva de uma coisa atirada ao
+   ar. É a diferença entre um número a aparecer e um número a ser
+   CUSPIDO pelo golpe.
+
+   O arco faz-se com dois elementos encaixados, e é o único jeito de o
+   conseguir com uma curva de aceleração diferente em cada eixo: o de
+   fora trata do horizontal (linear, como uma coisa sem atrito), o de
+   dentro trata do vertical (com travagem, como a gravidade).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* O `top` vem de fora (--alto), sorteado por número: dois danos no
+   mesmo turno nasciam exactamente no mesmo pixel e só se separavam meio
+   segundo depois, quando já ninguém estava a olhar. */
+.cb-dano {
+  position: absolute; left: 50%; top: var(--alto, -2.2rem);
+  transform: translateX(-50%);
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: 0.6875rem; letter-spacing: 0.03125rem;
+  color: #ff8080;
+  /* CONTORNO, e não sombra: o número cai em cima do corpo do bicho, que
+     pode ser de qualquer cor — um vermelho sobre um bicho verde-água dá
+     1,5:1. Quatro sombras curtas nos quatro sentidos desenham uma
+     moldura preta à volta do glifo e ele passa a ler-se sobre tudo. */
+  text-shadow:
+    -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
+    0 0 0.375rem rgba(0,0,0,.95);
+  pointer-events: none; z-index: 8; white-space: nowrap;
+  animation: cb-dano-x 1.15s linear forwards;
+}
+.cb-dano > span { display: inline-block; animation: cb-dano-y 1.15s cubic-bezier(.15,.7,.4,1) forwards; }
+@keyframes cb-dano-x {
+  0%   { transform: translateX(-50%) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { transform: translateX(-50%) translateX(var(--arco, 1.1rem)); opacity: 0; }
+}
+@keyframes cb-dano-y {
+  0%   { transform: translateY(0)       scale(.6); }
+  22%  { transform: translateY(-1.5rem) scale(1.18); }
+  42%  { transform: translateY(-1.9rem) scale(1); }
+  100% { transform: translateY(0.5rem)  scale(.92); }
+}
+.cb-dano.cura  { color: #8ede8e; }
+.cb-dano.roubo { color: #e8a0e8; }
+.cb-dano.crit  { color: var(--gold-light); font-size: 0.9375rem; }
+.cb-dano.crit::before {
+  content: ''; position: absolute; left: 50%; top: 50%;
+  width: 3rem; height: 3rem; transform: translate(-50%,-50%);
+  background: radial-gradient(50% 50% at 50% 50%, rgba(240,208,128,.4), transparent 70%);
+  animation: cb-crit-halo .5s ease-out forwards; z-index: -1;
+}
+@keyframes cb-crit-halo {
+  0%   { opacity: 1; transform: translate(-50%,-50%) scale(.3); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.6); }
+}
+
+.cb-pm-flut {
+  position: absolute; left: 50%; top: -1rem;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace; font-weight: 700; font-size: 0.4375rem;
+  color: #7ac4ff; text-shadow: 0 0 0.3125rem rgba(0,0,0,.95);
+  pointer-events: none; z-index: 8; white-space: nowrap;
+  animation: cb-pm-sobe 1s ease-out forwards;
+}
+@keyframes cb-pm-sobe {
+  0%   { opacity: 0; transform: translateX(-50%) translate(-1.4rem, 0); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translate(-2.2rem, -1.6rem); }
+}
+
+/* A onda de choque, no chão e não no ar: é um anel achatado que se abre
+   a partir dos pés. Uma onda circular num plano em perspectiva
+   denuncia logo que não há perspectiva nenhuma. */
+/* O `margin: -1.25rem 0 0 -1.25rem` vem da folha antiga, onde a onda
+   se centrava assim. Aqui centra-se com o translate, e a margem que
+   sobrava atirava o anel 33px para fora dos pés. */
+.cb-onda {
+  position: absolute; left: 50%; top: 0; margin: 0;
+  width: 1rem; height: 0.34rem;
+  transform: translate(-50%,-50%);
+  border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
+  pointer-events: none;
+  animation: cb-onda-abre .65s cubic-bezier(.1,.8,.3,1) forwards;
+}
+@keyframes cb-onda-abre {
+  0%   { opacity: .95; transform: translate(-50%,-50%) scale(.3); }
+  100% { opacity: 0;   transform: translate(-50%,-50%) scale(7); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   A FILA, À ESQUERDA
+
+   Quem está em campo e quem está no banco, dos dois lados, na ordem dos
+   postos. É a única lista onde os seis aparecem ao mesmo tempo — e é
+   por isso que ela existe: no campo, quem está atrás fica pequeno de
+   propósito, e é preciso um sítio onde todos tenham o mesmo tamanho.
+
+   Tocar num abre a ficha, que é o que o cartão inteiro fazia antes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cb-fila {
+  position: absolute; left: 0.375rem; top: 2.1rem; bottom: var(--rodape);
+  z-index: 5;
+  display: flex; flex-direction: column; gap: 0.25rem;
+  align-items: center; justify-content: flex-start;
+  overflow: visible;
+}
+.cb-fila-sep {
+  width: 1.4rem; height: 1px; flex: 0 0 auto; margin: 0.1875rem 0;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,.45), transparent);
+}
+.cb-vez {
+  position: relative; flex: 0 0 auto;
+  width: 1.75rem; height: 1.75rem;
+  border-radius: 0.375rem; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(160deg, rgba(30,22,52,.95), rgba(10,7,20,.95));
+  display: grid; place-items: center;
+  transition: transform .25s, border-color .25s, box-shadow .25s, width .25s, height .25s;
+}
+.cb-vez svg { display: block; width: 1.4rem; height: 1.4rem; }
+/* O que está em campo é maior e tem o anel da sua cor — a mesma leitura
+   do anel no chão, para os dois sítios dizerem o mesmo. */
+.cb-vez.ativo { width: 2.25rem; height: 2.25rem; transform: translateX(0.1875rem); }
+.cb-vez.ativo svg { width: 1.85rem; height: 1.85rem; }
+.cb-vez.eu.ativo  { border-color: rgba(122,184,122,.85); box-shadow: 0 0 0.625rem rgba(122,184,122,.4); }
+.cb-vez.ini.ativo { border-color: rgba(224,85,85,.85);  box-shadow: 0 0 0.625rem rgba(224,85,85,.4); }
+.cb-vez.caido { filter: grayscale(1) brightness(.45); }
+.cb-vez.caido::after {
+  content: ''; position: absolute; left: 8%; right: 8%; top: 50%; height: 1px;
+  background: rgba(255,120,120,.8); transform: rotate(-28deg);
+}
+/* O fio de vida por baixo do retrato: sem número, só a proporção. O
+   número está no HUD; aqui basta o "quanto falta". */
+.cb-vez-vida {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0.125rem;
+  background: rgba(0,0,0,.6);
+}
+.cb-vez-vida i {
+  display: block; height: 100%; width: var(--f, 100%);
+  background: linear-gradient(90deg, #e05555, #ff8a6a);
+  transition: width .45s cubic-bezier(.22,1,.36,1);
+}
+.cb-vez.eu .cb-vez-vida i { background: linear-gradient(90deg, #4e9e4e, #8ede8e); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   OS PAINÉIS DE BAIXO
+
+   Os meus à esquerda com números, os dele à direita com barras. É a
+   assimetria da referência e ela tem razão de ser: dos meus preciso de
+   saber o número exato, porque é com ele que decido; dos dele basta-me
+   a proporção.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── A FAIXA DE BAIXO ──
+
+   Os meus à esquerda, as ações ao meio, os dele à direita. Era o que a
+   referência faz, e faz por uma razão: assim o CAMPO fica com tudo o
+   que está acima da faixa, e não há nada a flutuar por cima dos bichos.
+
+   Antes os painéis estavam soltos, a meio da altura, e caíam em cima
+   dos avatares do fundo. Uma barra de vida por cima de um bicho é a
+   interface a tapar aquilo que ela existe para descrever. */
+/* ALTURA FIXA, e não mínima. Com min-height a faixa crescia com o
+   conteúdo e passava a tapar aquilo que o --rodape tinha reservado para
+   o campo — os pés, a sombra e o anel dos dois que estão a jogar
+   ficavam por baixo dela. Duas medidas que tinham de bater certo e não
+   batiam. Agora é a mesma, e o conteúdo cabe nela. */
+.cb-rodape {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  height: var(--rodape);
+  display: flex; align-items: stretch; gap: 0.375rem;
+  padding: 0.375rem 0.5rem 0.5rem;
+  background: linear-gradient(180deg, transparent, rgba(4,3,10,.88) 26%, rgba(4,3,10,.98));
+  border-top: 1px solid rgba(201,168,76,.14);
+}
+.cb-hud {
+  flex: 0 0 auto; z-index: 5;
+  display: flex; flex-direction: column; gap: 0.1875rem;
+  justify-content: flex-end;
+}
+.cb-hud.eu  { align-items: flex-start; }
+.cb-hud.ini { align-items: flex-end; }
+
+.cb-ficha {
+  display: flex; align-items: center; gap: 0.3125rem;
+  padding: 0.1875rem; border-radius: 0.375rem;
+  background: linear-gradient(90deg, rgba(10,7,20,.88), rgba(10,7,20,.55));
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(0.1875rem); -webkit-backdrop-filter: blur(0.1875rem);
+  pointer-events: auto; cursor: pointer;
+  transition: border-color .25s, background .25s;
+}
+.cb-hud.ini .cb-ficha { flex-direction: row-reverse; background: linear-gradient(270deg, rgba(10,7,20,.88), rgba(10,7,20,.55)); }
+.cb-ficha.ativo { border-color: rgba(201,168,76,.5); background: linear-gradient(90deg, rgba(28,20,48,.95), rgba(14,10,26,.7)); }
+.cb-hud.ini .cb-ficha.ativo { background: linear-gradient(270deg, rgba(28,20,48,.95), rgba(14,10,26,.7)); }
+.cb-ficha.caido { opacity: .45; filter: grayscale(1); }
+
+.cb-ficha-cara {
+  position: relative; flex: 0 0 auto;
+  width: 1.5rem; height: 1.5rem; border-radius: 0.25rem;
+  background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.1);
+  display: grid; place-items: center; overflow: hidden;
+}
+.cb-ficha-cara svg { width: 1.25rem; height: 1.25rem; display: block; }
+
+/* As barras tinham 6,25rem de mínimo cada lado, e os dois painéis
+   ficavam com 59% da faixa — as ações apertavam-se nos 28% do meio e o
+   nome das magias não cabia. 5rem chega para "1342/1370". */
+.cb-ficha-barras { display: flex; flex-direction: column; gap: 0.09375rem; min-width: 5rem; }
+.cb-hud.ini .cb-ficha-barras { min-width: 5.25rem; align-items: flex-end; }
+
+.cb-ficha-nome {
+  font-family: 'Cinzel', serif; font-size: 0.34375rem; letter-spacing: 0.0375rem;
+  color: var(--text); line-height: 1.3;
+  max-width: 7.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cb-ficha.ativo .cb-ficha-nome { color: var(--gold-light); }
+
+/* ── A barra ──
+   Fundo escuro, enchimento com degradê, um brilho no topo (a barra tem
+   volume, não é um retângulo chapado) e um RASTRO: quando a vida cai, o
+   rastro fica onde ela estava e recolhe depois — é assim que se vê
+   QUANTO caiu, e não só que caiu. */
+.cb-barra {
+  position: relative; height: 0.4375rem; width: 100%;
+  border-radius: 0.21875rem; overflow: hidden;
+  background: rgba(0,0,0,.72);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
+}
+.cb-barra i, .cb-barra u {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: var(--f, 100%); border-radius: 0.21875rem;
+}
+.cb-barra u {                                   /* o rastro, por baixo */
+  background: rgba(255,255,255,.5);
+  transition: width .85s cubic-bezier(.22,1,.36,1) .28s;
+}
+.cb-barra i {
+  transition: width .3s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(180deg, rgba(255,255,255,.32), transparent 48%), var(--cor);
+}
+/* Os tons desceram. O número é branco e escreve-se POR CIMA do
+   enchimento: sobre o verde claro de antes dava 1,9:1 — a informação
+   mais lida do ecrã, "1342/1370", era a menos legível dele. Nestes
+   tons dá acima de 4,5:1, e a barra continua a ler-se como verde. */
+.cb-barra.pv i { --cor: linear-gradient(90deg, #245c24, #3f8f3f); }
+.cb-barra.pm i { --cor: linear-gradient(90deg, #1c4a70, #2f6fa8); }
+.cb-barra.pv.baixa i { --cor: linear-gradient(90deg, #7a1f1f, #b93a3a); }
+.cb-barra.pv.baixa   { animation: cb-perigo 1.1s ease-in-out infinite; }
+@keyframes cb-perigo {
+  0%,100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); }
+  50%     { box-shadow: inset 0 0 0 1px rgba(224,85,85,.85), 0 0 0.375rem rgba(224,85,85,.5); }
+}
+.cb-barra span {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace; font-size: 0.28125rem; font-weight: 700;
+  letter-spacing: 0.025rem; color: #fff;
+  text-shadow: 0 0.0625rem 0.125rem rgba(0,0,0,.95);
+}
+
+.cb-ficha-nivel {
+  position: absolute; left: -0.0625rem; bottom: -0.0625rem;
+  font-family: 'Cinzel', serif; font-size: 0.25rem; font-weight: 700;
+  padding: 0 0.125rem; border-radius: 0.125rem;
+  background: rgba(0,0,0,.85); color: var(--gold); z-index: 2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE SOBRA: topo, registo, ações
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cb-palco .cb-topo {
+  position: absolute; left: 0; right: 0; top: 0; z-index: 6;
+  padding: 0.3125rem 0.5rem;
+  background: linear-gradient(180deg, rgba(4,3,10,.9), transparent);
+  pointer-events: none;
+}
+.cb-palco .cb-topo > * { pointer-events: auto; }
+
+/* O registo passa a uma faixa fina e translúcida, colada ao rodapé das
+   ações: era uma caixa que roubava um terço da altura ao campo, e o
+   campo é o que esta mudança existe para dar. Continua a rolar, e
+   continua a ser onde a conta aparece por extenso. */
+/* ── O REGISTO VAI PARA O CÉU ──
+
+   Estava colado ao rodapé, e isso punha-o exactamente sobre a linha dos
+   pés dos dois que jogam — uma caixa invisível de 612px com
+   pointer-events, a apanhar os cliques que eram para os bichos.
+
+   O chão é a parte disputada da cena; o céu está vazio. O texto do
+   turno passa a ler-se lá em cima, onde não tapa nada e onde o olho já
+   vai buscar o número do turno. */
+.cb-palco .cb-log {
+  position: absolute; left: 2.75rem; right: 0.5rem; top: 2.2rem;
+  z-index: 4; max-height: 4.25rem; min-height: 0;
+  background: linear-gradient(180deg, rgba(4,3,10,.62), transparent);
+  border: none; border-radius: 0.375rem; padding: 0.1875rem 0.3125rem;
+}
+
+/* As ações ficam ao meio da faixa e crescem para os lados. O
+   grid-template-columns vem da folha antiga; aqui só se diz que ela
+   ocupa o que sobrar entre os dois painéis. */
+.cb-palco .cb-acoes {
+  flex: 1 1 auto; min-width: 0; align-content: end;
+  padding: 0; background: none; border: none;
+}
+/* As colunas vinham da folha antiga com largura de conteúdo, e numa
+   faixa estreita a segunda saía por fora e ia parar debaixo do painel
+   do inimigo — "MARÉ COMPARTILHAI", cortado a meio da palavra. O
+   minmax(0,1fr) obriga as duas a caber e a serem iguais. */
+.cb-palco .cb-acoes { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; }
+.cb-palco .cb-btn { padding: 0.3125rem 0.1875rem; min-width: 0; }
+/* O `max-width` é o que faltava: sem ele o `text-overflow` não tem
+   contra o que cortar e o texto sai por fora do botão — foi assim que
+   "Maré Compartilhada" apareceu por cima do painel do inimigo. */
+/* O NOME DA MAGIA PARTE-SE EM DUAS LINHAS em vez de ser cortado.
+   "Maré Compartilhada" ficava "MARÉ COMPART…", e o nome é justamente
+   por onde o jogador escolhe. O subtítulo esse continua numa linha: é
+   o custo, e um custo cortado não é ambíguo. */
+.cb-palco .cb-btn-rot {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  max-width: 100%; overflow: hidden; white-space: normal;
+  line-height: 1.15;
+}
+.cb-palco .cb-btn-sub {
+  display: block; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cb-palco .cb-btn-rot { font-size: 0.4375rem; }
+/* O --muted dava 3,5:1 sobre o preto do rodapé, a 8px. É a letra mais
+   pequena do ecrã e a que diz o custo da magia — a que menos podia
+   estar por baixo do mínimo. */
+.cb-palco .cb-btn-sub { font-size: 0.3125rem; color: rgba(212,200,240,.72); }
+
+.cb-palco .cb-ajuda { z-index: 20; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   TELAS ESTREITAS
+
+   O campo encolhe, a fila passa a uma linha por cima das ações e os
+   painéis de baixo empilham-se. Nada sai — muda de sítio.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 26rem) {
+  /* A faixa deixa de ser uma linha e passa a duas: os dois painéis lado
+     a lado em cima, as ações por baixo. Nada sai — muda de sítio. */
+  /* 10,5rem eram as que a faixa DIZIA ter; o conteúdo dela pedia 13,4.
+     A diferença saía por cima e caía sobre a fila e sobre os pés dos
+     dois que jogam. Agora a faixa mede o que precisa, e o que precisa
+     é menos: as linhas apertaram-se. */
+  /* O horizonte sobe. Num ecrã estreito e alto, um céu que ocupa 50%
+     da altura é metade da tela sem nada lá dentro — e o campo, que é o
+     que interessa, fica espremido em baixo. Sobe tudo: a pedra, a
+     névoa, os montes e a fenda. */
+  .cb-ceu             { height: 46%; }
+  .cb-aurora          { height: 46%; }
+  .cb-fenda           { top: 2%; height: 42%; }
+  .cb-monolitos       { top: 15%; height: 26%; }
+  .cb-monolitos-perto { top: 21%; height: 20%; }
+  .cb-bruma           { top: 27%; height: 24%; }
+  .cb-chao            { top: 40%; }
+
+  .cb-palco { --rodape: 13.5rem; }
+  .cb-ficha { padding: 0.125rem; gap: 0.1875rem; }
+  .cb-ficha-cara { width: 1.125rem; height: 1.125rem; }
+  .cb-ficha-cara svg { width: 0.9375rem; height: 0.9375rem; }
+  .cb-barra { height: 0.5rem; }
+  .cb-hud { gap: 0.125rem; }
+  /* No telemóvel a raiz é 16px, e todos os aumentos de letra viviam num
+     @media de 900px — a barra ficava com números de 4,5px e as marcas
+     com 4px. Aqui é onde a letra mais precisa de subir, não onde menos. */
+  .cb-barra span      { font-size: 0.4375rem; }
+  .cb-ficha-nome      { font-size: 0.5rem; }
+  .cb-ficha-nivel     { font-size: 0.375rem; }
+  .cb-posto .cb-marca { font-size: 0.4375rem; }
+  .cb-etiqueta        { font-size: 0.5625rem; }
+  .cb-palco .cb-btn-rot { font-size: 0.5rem; }
+  .cb-palco .cb-btn-sub { font-size: 0.4375rem; }
+  /* O `flex: 1 1 45%` não segurava nada: o min-width das barras e o
+     retrato empurravam cada painel para a largura toda, e os três
+     empilhavam-se em três linhas de 100% — a faixa passava de 9,5rem
+     medidas para 12 reais e engolia o campo inteiro, a fila incluída.
+     Com min-width:0 as duas metades encolhem e a linha fecha. */
+  .cb-rodape { flex-wrap: wrap; align-content: flex-end; }
+  .cb-hud { flex: 1 1 0; min-width: 0; }
+  .cb-hud .cb-ficha { width: 100%; }
+  .cb-palco .cb-acoes { flex: 1 1 100%; order: 2; }
+  .cb-fila {
+    flex-direction: row; left: 0.375rem; right: 0.375rem;
+    top: auto; bottom: var(--rodape); height: 1.875rem;
+    justify-content: center; gap: 0.1875rem;
+  }
+  .cb-fila-sep { width: 1px; height: 1.125rem; margin: 0 0.125rem;
+                 background: linear-gradient(180deg, transparent, rgba(201,168,76,.45), transparent); }
+  .cb-vez { width: 1.375rem; height: 1.375rem; }
+  .cb-vez svg { width: 1.125rem; height: 1.125rem; }
+  .cb-vez.ativo { width: 1.75rem; height: 1.75rem; transform: none; }
+  .cb-vez.ativo svg { width: 1.4375rem; height: 1.4375rem; }
+  .cb-ficha-barras { min-width: 4.75rem; }
+  .cb-hud.ini .cb-ficha-barras { min-width: 4.25rem; }
+  .cb-ficha-nome { max-width: 5rem; }
+  .cb-palco .cb-log { left: 0.375rem; bottom: calc(var(--rodape) + 1.875rem); max-height: 2.25rem; }
+}
+
+/* Quem pediu ao sistema para não haver movimento fica com a cena — a
+   luz, a profundidade, as sombras — e sem nada que se mexa sozinho. Os
+   golpes continuam a acontecer: esses são resposta a um gesto dele, e
+   é por eles que se percebe o que aconteceu. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-aurora, .cb-fenda-halo, .cb-fenda-corpo, .cb-fenda-nucleo,
+  .cb-mota, .cb-anel, .cb-corpo svg, .cb-sombra, .cb-barra.pv.baixa {
+    animation: none !important;
+  }
+  .cb-palco.treme { animation: none; }
+}

@@ -320,8 +320,46 @@ function _pveComecar(equipa, inimigo, semente) {
 
 // A moldura. Fica em JS e não no HTML porque nada aqui sobrevive ao
 // fecho da batalha — é tudo redesenhado do estado do motor.
+/* As motas de poeira do ar. Nascem uma vez, na casca, e não a cada
+   redesenho: são decoração e não estado, e refazê-las a cada turno
+   reiniciava-lhes a subida — cinco motas a saltar para o chão de cada
+   vez que alguém batia. */
+function _pveMotas(n) {
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const tam = 1 + Math.random() * 2.2;
+    h += `<span class="cb-mota" style="width:${tam / 16}rem;height:${tam / 16}rem;` +
+         `left:${4 + Math.random() * 92}%;top:${52 + Math.random() * 46}%;` +
+         `animation-duration:${9 + Math.random() * 11}s;` +
+         `animation-delay:-${Math.random() * 14}s;opacity:0"></span>`;
+  }
+  return h;
+}
+
 function _pveShell() {
-  document.getElementById('combateModal').innerHTML = `<div class="cb-arena">
+  document.getElementById('combateModal').innerHTML = `<div class="cb-palco" id="cbPalco">
+    <!-- ── O CENÁRIO ──
+         Sete camadas entre o fundo e o chão, e nenhuma delas é uma
+         imagem: são degradês, um recorte e uma névoa. A razão é a de
+         sempre neste jogo — um PNG de cenário são 300 kB que não se
+         adaptam ao ecrã nem à cor de nada. Isto adapta-se, pesa zero, e
+         a Fratura muda de cor mudando uma variável. -->
+    <div class="cb-cena" aria-hidden="true">
+      <div class="cb-ceu"></div>
+      <div class="cb-aurora"></div>
+      <div class="cb-fenda">
+        <div class="cb-fenda-halo"></div>
+        <div class="cb-fenda-corpo"></div>
+        <div class="cb-fenda-nucleo"></div>
+      </div>
+      <div class="cb-monolitos"></div>
+      <div class="cb-monolitos-perto"></div>
+      <div class="cb-bruma"></div>
+      <div class="cb-chao"></div>
+      <div class="cb-poeira">${_pveMotas(14)}</div>
+      <div class="cb-vinheta"></div>
+    </div>
+
     <div class="cb-topo">
       <span id="cbTurno"></span>
       <span class="cb-topo-nome">${t('pve.titulo')}</span>
@@ -331,10 +369,19 @@ function _pveShell() {
         <button onclick="fecharCombatePvE()">✕</button>
       </span>
     </div>
-    <div class="cb-lado" id="cbInimigo"></div>
+
+    <div class="cb-fila" id="cbFila"></div>
+    <div class="cb-campo" id="cbCampo"></div>
     <div class="cb-log" id="cbLog"></div>
-    <div class="cb-lado" id="cbJogador"></div>
-    <div class="cb-acoes" id="cbAcoes"></div>
+
+    <!-- A faixa de baixo: os meus, as ações, os dele. Numa linha só,
+         para que tudo o que está acima dela seja campo. -->
+    <div class="cb-rodape">
+      <div class="cb-hud eu"  id="cbHudEu"></div>
+      <div class="cb-acoes"   id="cbAcoes"></div>
+      <div class="cb-hud ini" id="cbHudIni"></div>
+    </div>
+
     <div class="cb-ajuda" id="cbAjuda"></div>
   </div>`;
 }
@@ -373,13 +420,22 @@ function _pveFase(c) {
        : nv < 5 ? 0 : nv < 10 ? 1 : nv < 17 ? 2 : 3;
 }
 
-// ── VIDA E MAGIA EM BOLINHAS ──
-// Uma bolinha por cada 5 pontos, que é exatamente o que a Resistência
-// vale: PV = R×5 e PM = R×5. Portanto o NÚMERO DE BOLINHAS É A
-// RESISTÊNCIA do avatar — lê-se a ficha só de olhar para o cartão.
-//
-// A bolinha da vez enche-se por fração, para um golpe de 3 num avatar
-// de 20 não desaparecer sem deixar rasto.
+/* ── AS BOLINHAS SAÍRAM ──
+
+   A vida vinha em bolinhas, uma por cada 5 pontos, e tinha uma virtude:
+   o número delas era a Resistência do avatar, portanto lia-se a ficha
+   só de olhar para o cartão.
+
+   Com o palco isso deixou de caber. Não há cartão, e vinte bolinhas
+   debaixo de um bicho no chão é ruído a tapar a cena — o painel de
+   baixo diz "1342/1370", que é a mesma informação com mais precisão e
+   sem ocupar o campo.
+
+   O que se PERDEU foi a leitura da Resistência de relance, e fica dito:
+   ela continua na ficha, que se abre tocando no retrato.
+
+   A função fica porque o painel dos dados ainda a chama para os PM
+   gastos por turno. Se um dia essa chamada sair, esta sai atrás. */
 const PVE_POR_BOLINHA = 5;
 
 function _pveBolinhas(atual, max, tipo) {
@@ -600,10 +656,35 @@ function _pvePaletaDe(c) {
   return paletaDoAvatar(f, (f && f.seed) || c.seed || 0);
 }
 
+/* ── OS PÉS TÊM DE ASSENTAR ──
+
+   O SVG do avatar vem com um viewBox que MUDA: uns são 200×260, outros
+   200×200. A caixa que o CSS lhe dá é sempre 200:260 — e o
+   `preserveAspectRatio` por omissão centra o desenho nela. Resultado: o
+   de 200×200 fica com 22px de ar em cima e 22px em baixo, e flutua 50px
+   acima do próprio anel, enquanto outro, com tinta a passar do viewBox,
+   enterra as pernas.
+
+   A sombra e o anel existem para dizer "isto está aqui, em pé". Meia
+   dúzia de vezes em cada dez estavam a mentir, e é isso que faz uns
+   recortes colados numa pintura em vez de bichos num sítio.
+
+   O xMidYMax encosta o desenho ao FUNDO da caixa. O ar que sobra vai
+   todo para cima, onde não há nada, e o pé fica onde o pé tem de estar
+   — qualquer que seja o viewBox que vier a seguir. */
+function _pveCorpo(c) {
+  const svg = gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 200, 200, _pveFase(c));
+  return svg.replace('<svg', '<svg preserveAspectRatio="xMidYMax meet"');
+}
+
 function _pveLutador(c, i, lado, ativo) {
   const emCampo = i === ativo;
-  const cls = ['cb-lutador', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
-  const tam = emCampo ? 52 : 38;
+  const cls = ['cb-posto', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
+  /* O tamanho saiu daqui. Era 52px em campo e 38px no banco — dois
+     números escritos à mão que diziam a mesma coisa que a profundidade
+     já diz. Hoje o SVG sai sempre grande e é o CSS que o encolhe pelo
+     --z, portanto o mesmo bicho serve os três postos e não perde
+     definição em nenhum. */
 
   const marcas = [];
   const m = (t, k) => marcas.push(`<span class="cb-marca ${k}">${t}</span>`);
@@ -634,36 +715,187 @@ function _pveLutador(c, i, lado, ativo) {
   // é a mesma informação escrita duas vezes.
   if (c.indefesoTurnos > 1) m(t('pve.marca.preso'), 'indefeso');
 
-  // O cartão inteiro abre a ficha deste avatar. Antes havia um "?" no
-  // topo que abria a de dois — o ativo meu e o ativo dele — e nunca a
-  // dos que estão no banco, que é justamente quem se precisa de conhecer
-  // antes de o mandar entrar.
+  /* ── ONDE CADA UM SE PÕE ──
+
+     Três lugares por lado, e não uma fila: quem joga fica à frente e ao
+     centro, e os dois do banco recuam em diagonal. É a formação da
+     referência e ela resolve dois problemas de uma vez — quem está em
+     campo é o maior e o mais abaixo (a leitura sai da posição, sem
+     precisar de moldura), e os três nunca se tapam.
+
+     O `z` é a profundidade e manda no tamanho, na bruma e na sombra
+     (ver .cb-posto, no css/combate-arena.css). O `y` é em percentagem
+     do campo, e é preciso que ande junto com o z: um bicho pequeno lá
+     em baixo lê-se como um bicho pequeno, não como um bicho longe. */
+  const POSTOS = [
+    /* 84% e não 94%: o anel do chão tem 30px de altura centrados no
+       ponto do posto, portanto os pés têm de ficar 15px acima da faixa
+       de baixo para o anel inteiro se ver. */
+    /* O x do fundo estava em 28% e o da frente em 36%: com o da frente
+       a medir 148px de largo, 8% de campo não chegam para os separar e
+       ele tapava 63% do que está atrás. A diagonal abriu-se. */
+    { x: 34, y: 84, z: 1.00 },   // em campo — à frente, grande
+    { x:  8, y: 56, z: 0.60 },   // banco — atrás e encostado ao lado
+    { x: 20, y: 26, z: 0.36 },   // banco — mais atrás, ao fundo da diagonal
+  ];
+
+  /* O posto 0 é de quem está em campo, sempre. Os outros dois ficam
+     pelos que sobram, na ordem em que estão na equipa — assim uma troca
+     move os bichos de lugar e vê-se quem entrou.
+
+     A ordem calcula-se aqui e não no _pveEquipa porque é o índice na
+     equipa que decide, e é ele que chega a esta função. */
+  const ordem = [ativo, ...[0, 1, 2].filter(k => k !== ativo)];
+  const pos   = POSTOS[Math.max(0, ordem.indexOf(i))];
+  // O lado direito é o espelho do esquerdo. 100 − x, e mais nada.
+  const x = lado === 'eu' ? pos.x : 100 - pos.x;
+
   return `<div class="${cls}" id="cbLut${lado}${i}"
        role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
-       title="${t('pve.ajuda.abrir', { nome: c.nome })}">
-    <span class="cb-lutador-ver">${t('pve.ajuda.ver')}</span>
-    <div class="cb-lutador-svg">${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, tam, tam, _pveFase(c))}</div>
-    <div class="cb-lutador-nome">${c.nome}</div>
-    <div class="cb-lutador-carac">${_pveCaracs(c)}</div>
-    <div class="cb-bolas pv">${_pveBolinhas(c.pv, c.pvMax, 'pv')}<b>${c.pv}</b></div>
-    <div class="cb-bolas pm">${_pveBolinhas(c.pm, c.pmMax, 'pm')}<b>${c.pm}</b></div>
+       title="${t('pve.ajuda.abrir', { nome: c.nome })}"
+       style="--x:${x}%;--y:${pos.y}%;--z:${pos.z};--compasso:${i * 0.42}s;z-index:${Math.round(pos.z * 10) + 1}">
+    <div class="cb-sombra"></div>
+    <div class="cb-anel"></div>
+    <div class="cb-corpo">${_pveCorpo(c)}</div>
+    <div class="cb-efeitos"></div>
+    <div class="cb-etiqueta">${esc(c.nome)}</div>
     ${marcas.length ? `<div class="cb-marcas">${marcas.join('')}</div>` : ''}
   </div>`;
 }
 
-function _pveEquipa(equipa, ativo, lado) {
-  return `<div class="cb-equipa ${lado}">
-    ${equipa.map((c, i) => _pveLutador(c, i, lado, ativo)).join('')}
+/* ── O CAMPO ──
+   Os seis num contentor só. Estavam em dois — um por lado — e isso
+   impedia o que a cena precisa: que um do fundo à esquerda passe por
+   trás de um da frente à direita. Com um contentor só, quem manda na
+   ordem é o z-index, que sai da profundidade. */
+function _pveCampo(e) {
+  return e.A.map((c, i) => _pveLutador(c, i, 'eu',  e.ativoA)).join('') +
+         e.B.map((c, i) => _pveLutador(c, i, 'ini', e.ativoB)).join('');
+}
+
+/* ── ASSENTAR OS CORPOS NO CHÃO ──
+
+   A sombra e o anel existem para dizer uma coisa só: ISTO ESTÁ AQUI, EM
+   PÉ. Quando mentem, o bicho deixa de estar num sítio e passa a ser um
+   recorte colado numa pintura — e é a diferença entre uma cena e uma
+   colagem.
+
+   E estavam a mentir metade das vezes. O SVG do avatar traz um viewBox
+   que muda de bicho para bicho (uns 200×260, outros 200×200), e dentro
+   dele a tinta acaba onde calha: medido, os pés caíam de 28px acima do
+   ponto do posto a 18px abaixo dele. O `preserveAspectRatio` encosta o
+   VIEWBOX ao fundo da caixa e resolve metade — a outra metade é a tinta
+   não chegar ao fundo do viewBox, e isso nenhum atributo resolve.
+
+   Portanto mede-se. O getBBox dá a caixa da tinta em coordenadas do
+   desenho, o getScreenCTM converte-a para o ecrã, e a diferença entre o
+   fundo dela e o ponto do posto é o desacerto. Escreve-se num `top`, e
+   não num transform: o transform do corpo está ocupado pelo flutuar e
+   pelos golpes, e um deles apagava a correcção a meio de cada murro.
+
+   Corre a cada desenho porque o avatar em campo muda com as trocas.
+   Seis medições por turno, sem layout forçado além do próprio getBBox. */
+function _pveAssentar() {
+  const campo = document.getElementById('cbCampo');
+  if (!campo) return;
+  for (const posto of campo.querySelectorAll('.cb-posto')) {
+    const corpo = posto.querySelector('.cb-corpo');
+    const svg   = corpo && corpo.querySelector('svg');
+    if (!svg || !svg.getBBox) continue;
+    let caixa;
+    try { caixa = svg.getBBox(); } catch (e) { continue; }
+    if (!caixa || !caixa.height) continue;
+    const m = svg.getScreenCTM();
+    if (!m) continue;
+
+    /* ── SOMA-SE AO QUE JÁ LÁ ESTÁ ──
+
+       O desacerto mede-se no ecrã, e a medida no ecrã JÁ INCLUI a
+       correcção anterior. Escrever aqui o desacerto como valor absoluto
+       só acerta enquanto o `top` for zero — ou seja, na primeira
+       passagem depois de refazer o HTML. À segunda chamada a conta
+       lia-se "o desvio agora é zero, logo o top é zero", apagava a
+       correcção, e os seis voltavam a flutuar; à terceira acertava
+       outra vez. Medido: 0,2px → 17,2px → 0,2px.
+
+       Somando, a função fica idempotente: chamá-la duas vezes dá o
+       mesmo que chamá-la uma. E isso importa porque ela corre a cada
+       desenho, e nem todos os caminhos de desenho refazem o HTML. */
+    const tinta  = m.f + (caixa.y + caixa.height) * m.d;
+    const chao   = posto.getBoundingClientRect().top;
+    const atual  = parseFloat(corpo.style.top) || 0;
+    corpo.style.top = Math.round(atual + (chao - tinta)) + 'px';
+  }
+}
+
+/* ── A FILA ──
+   Os seis retratos, todos do mesmo tamanho, na ordem dos postos. É o
+   contraponto do campo: lá o tamanho diz distância, aqui diz quem joga.
+
+   O fio de vida por baixo não leva número de propósito — o número está
+   no painel de baixo, e escrevê-lo duas vezes só dá duas hipóteses de
+   discordarem. */
+function _pveFilaHTML(e) {
+  const um = (c, i, lado, ativo) => {
+    const cls = ['cb-vez', lado, i === ativo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
+    const f = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.pvMax)) * 100));
+    return `<button class="${cls}" id="cbVez${lado}${i}"
+        onclick="_pveAbrirAjuda('${lado}',${i})"
+        title="${esc(c.nome)} · ${c.pv}/${c.pvMax}">
+      ${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 120, 120, _pveFase(c))}
+      <span class="cb-vez-vida"><i style="width:${f}%"></i></span>
+    </button>`;
+  };
+  return e.A.map((c, i) => um(c, i, 'eu', e.ativoA)).join('') +
+         '<span class="cb-fila-sep"></span>' +
+         e.B.map((c, i) => um(c, i, 'ini', e.ativoB)).join('');
+}
+
+/* ── OS PAINÉIS DE BAIXO ──
+   Uma linha por lutador: retrato, nome, vida, e — só do meu lado — os
+   PM. Do lado dele os PM não aparecem, e é uma decisão: saber quanta
+   magia o inimigo ainda tem por lançar daria ao jogador a certeza de
+   que ele não vai lançar nada, e a incerteza é metade do combate.
+
+   O `data-f` de cada barra guarda a percentagem anterior, que é o que o
+   rastro branco usa para mostrar QUANTO caiu. Ver _pveAtualizarBarras. */
+function _pveFichaHUD(c, i, lado, ativo) {
+  const cls = ['cb-ficha', lado, i === ativo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
+  const fPV = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.pvMax)) * 100));
+  const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.pmMax)) * 100));
+  const barra = (tipo, f, txt) =>
+    `<div class="cb-barra ${tipo}${tipo === 'pv' && f <= 25 ? ' baixa' : ''}">
+       <u style="width:${f}%"></u><i style="width:${f}%"></i><span>${txt}</span>
+     </div>`;
+  return `<div class="${cls}" id="cbHud${lado}${i}"
+       role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
+       title="${t('pve.ajuda.abrir', { nome: c.nome })}">
+    <div class="cb-ficha-cara">
+      ${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _pveFase(c))}
+      <span class="cb-ficha-nivel">${c.ficha && c.ficha.nivel || 1}</span>
+    </div>
+    <div class="cb-ficha-barras">
+      <div class="cb-ficha-nome">${esc(c.nome)}</div>
+      ${barra('pv', fPV, `${c.pv}/${c.pvMax}`)}
+      ${lado === 'eu' ? barra('pm', fPM, `${c.pm}/${c.pmMax}`) : ''}
+    </div>
   </div>`;
+}
+
+function _pveEquipa(equipa, ativo, lado) {
+  return equipa.map((c, i) => _pveFichaHUD(c, i, lado, ativo)).join('');
 }
 
 function _pveDesenhar() {
   const e = _pveEstado; if (!e) return;
   const eu = e.A[e.ativoA], ini = e.B[e.ativoB];
 
-  document.getElementById('cbInimigo').innerHTML = _pveEquipa(e.B, e.ativoB, 'ini');
-  document.getElementById('cbJogador').innerHTML = _pveEquipa(e.A, e.ativoA, 'eu');
+  document.getElementById('cbCampo').innerHTML  = _pveCampo(e);
+  document.getElementById('cbFila').innerHTML   = _pveFilaHTML(e);
+  document.getElementById('cbHudEu').innerHTML  = _pveEquipa(e.A, e.ativoA, 'eu');
+  document.getElementById('cbHudIni').innerHTML = _pveEquipa(e.B, e.ativoB, 'ini');
   document.getElementById('cbTurno').textContent = t('pve.turno', { n: e.turnos + 1 });
+  _pveAssentar();
   _pveDesenharAcoes(eu, ini);
 
   // Se a ficha estiver aberta, refaz-se. O prognóstico é contra quem
@@ -2110,9 +2342,11 @@ function _pveMostrarEvento(ev) {
       // uma pancada só.
       if (r.dano > 0 && cartaoAlvo) setTimeout(() => {
         _pveNumeroFlutuante(cartaoAlvo, r.dano, r.criticoAtk);
+        _pveGesto(cartaoQuem, 'cb-avanca', 400);
         _pveGesto(cartaoAlvo, 'cb-bate', 520);
         _pveImpacto(cartaoAlvo, elem);
-        if (r.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
+        _pvePoeiraDosPes(cartaoAlvo);
+        if (r.criticoAtk) { _pveOndaDeChoque(cartaoAlvo); _pveEstremecer(); }
       }, tGolpe);
 
       ultimoGolpe = tGolpe;
@@ -2124,9 +2358,11 @@ function _pveMostrarEvento(ev) {
     extraOndas = ultimoGolpe - PVE_BATIDA.golpe;
   } else if (bate) setTimeout(() => {
     _pveNumeroFlutuante(cartaoAlvo, ev.dano, ev.criticoAtk);
+    _pveGesto(cartaoQuem, 'cb-avanca', 400);
     _pveGesto(cartaoAlvo, 'cb-bate', 520);
     _pveImpacto(cartaoAlvo, elem);
-    if (ev.criticoAtk) _pveOndaDeChoque(cartaoAlvo);
+    _pvePoeiraDosPes(cartaoAlvo);
+    if (ev.criticoAtk) { _pveOndaDeChoque(cartaoAlvo); _pveEstremecer(); }
   }, PVE_BATIDA.golpe);
 
   /* ── O QUE VOLTA PARA QUEM AGIU ──
@@ -2192,9 +2428,27 @@ function _pveQuemBateu(ev) {
    sentido que decide se a jogada valeu a pena. */
 function _pveNumeroFlutuante(alvo, n, critico, tipo) {
   if (!alvo || !n) return;
+  /* ── O ARCO ──
+
+     O número subia a direito e desaparecia. Agora é cuspido: sobe
+     depressa, trava no alto e cai — a curva de uma coisa atirada ao ar.
+
+     São dois elementos encaixados porque os dois eixos têm curvas de
+     aceleração diferentes, e um só elemento não consegue duas. O de
+     fora leva o horizontal, que é constante como uma coisa sem atrito;
+     o de dentro leva o vertical, que trava e volta, como a gravidade.
+
+     O lado para onde voa é sorteado, senão dois números do mesmo turno
+     saíam pela mesma linha e o de baixo tapava o de cima. */
   const d = document.createElement('div');
   d.className = 'cb-dano' + (critico ? ' crit' : '') + (tipo ? ' ' + tipo : '');
-  d.textContent = (tipo === 'cura' || tipo === 'roubo' ? '+' : '−') + n;
+  // A altura de partida também é sorteada, senão dois números do mesmo
+  // turno nascem sobrepostos e só se separam a meio do voo.
+  d.style.setProperty('--alto', (-2.2 - Math.random() * 1.1).toFixed(2) + 'rem');
+  d.style.setProperty('--arco', ((Math.random() < .5 ? -1 : 1) * (0.6 + Math.random() * 0.9)).toFixed(2) + 'rem');
+  const txt = document.createElement('span');
+  txt.textContent = (tipo === 'cura' || tipo === 'roubo' ? '+' : '−') + n;
+  d.appendChild(txt);
   alvo.appendChild(d);
   setTimeout(() => d.remove(), 1500);
 }
@@ -2239,7 +2493,18 @@ const PVE_GESTO_ELEM = {
   neutro:   { n: 8,  tam: [2, 4], dx: 30, dy: [-40, -14], sobe: true,  cai: false },
 };
 
+/* Onde os efeitos se penduram.
+
+   O posto é um PONTO — `width:0; height:0` — e um efeito posicionado em
+   percentagem dentro de zero fica todo no mesmo pixel. A caixa dos
+   efeitos tem o tamanho do corpo e não leva as animações dele; é ela
+   que serve de moldura a tudo o que se mede em percentagem. */
+function _pveCaixaEfeitos(alvo) {
+  return (alvo && alvo.querySelector && alvo.querySelector('.cb-efeitos')) || alvo;
+}
+
 function _pveImpacto(alvo, cfg) {
+  alvo = _pveCaixaEfeitos(alvo);
   if (!alvo) return;
   const cor  = cfg ? cfg.corBrilho : '#fff';
   const modo = (cfg && PVE_GESTO_ELEM[cfg.particulas]) || PVE_GESTO_ELEM.neutro;
@@ -2286,19 +2551,98 @@ function _pveOndaDeChoque(alvo) {
   setTimeout(() => o.remove(), 700);
 }
 
-// As barras descem com atraso, para se ver quanto caiu
+/* ── A POEIRA AOS PÉS ──
+
+   As partículas do golpe saem do CORPO; esta sai do CHÃO. É a diferença
+   entre um efeito mágico e um impacto com peso — quem apanha um murro
+   levanta pó, e é o pó que diz que existe um chão por baixo.
+
+   Nasce no ponto do posto, que é onde estão os pés (ver .cb-posto, no
+   css/combate-arena.css), e espalha-se para fora e para cima. */
+function _pvePoeiraDosPes(alvo) {
+  if (!alvo) return;
+  for (let i = 0; i < 7; i++) {
+    const p = document.createElement('div');
+    p.className = 'cb-po';
+    const ang = (Math.random() - .5) * Math.PI;      // meia-volta, para cima
+    const raio = 0.5 + Math.random() * 1.4;
+    p.style.setProperty('--px', (Math.cos(ang) * raio).toFixed(2) + 'rem');
+    p.style.setProperty('--py', (-Math.abs(Math.sin(ang)) * raio * .55).toFixed(2) + 'rem');
+    p.style.animationDelay = (Math.random() * .08).toFixed(2) + 's';
+    alvo.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+/* O palco estremece, e a Fratura responde ao golpe.
+
+   SÓ NO CRÍTICO, e é uma decisão: um ecrã que abana a cada murro deixa
+   de dizer nada, e um jogo de turnos tem murros a cada dois segundos.
+   Guardado para o crítico, o tremor volta a significar alguma coisa. */
+function _pveEstremecer() {
+  const p = document.getElementById('cbPalco');
+  if (!p) return;
+  p.classList.remove('treme', 'clarao');
+  void p.offsetWidth;
+  p.classList.add('treme', 'clarao');
+  setTimeout(() => p.classList.remove('treme', 'clarao'), 620);
+}
+
+/* As barras não saltam para o valor novo: o enchimento desce depressa e
+   o RASTRO branco por baixo fica onde estava, e só o segue meio segundo
+   depois. É nesse intervalo que se lê quanto é que o golpe custou — sem
+   ele, uma barra que encolhe diz que houve dano e não diz que dano.
+
+   A subir é ao contrário: o rastro vai à frente, senão o verde novo
+   aparecia por cima de uma faixa branca que ainda não tinha crescido.
+
+   Os seis, e não só os dois em campo: o veneno e a cura perpétua mexem
+   na vida de quem está no banco também. */
 function _pveAtualizarBarras() {
   const e = _pveEstado; if (!e) return;
-  // Todos os seis, não só os dois em campo: o veneno e a cura perpétua
-  // mexem na vida de quem está no banco também.
-  const par = [...e.A.map((c, i) => [c, 'cbLuteu' + i]),
-               ...e.B.map((c, i) => [c, 'cbLutini' + i])];
-  for (const [c, id] of par) {
-    const el = document.getElementById(id); if (!el || !c) continue;
-    const pv = el.querySelector('.cb-bolas.pv');
-    const pm = el.querySelector('.cb-bolas.pm');
-    if (pv) pv.innerHTML = _pveBolinhas(c.pv, c.pvMax, 'pv') + `<b>${c.pv}</b>`;
-    if (pm) pm.innerHTML = _pveBolinhas(c.pm, c.pmMax, 'pm') + `<b>${c.pm}</b>`;
+  const par = [...e.A.map((c, i) => [c, 'eu' + i]),
+               ...e.B.map((c, i) => [c, 'ini' + i])];
+
+  for (const [c, chave] of par) {
+    if (!c) continue;
+    const fPV = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.pvMax)) * 100));
+    const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.pmMax)) * 100));
+
+    // o fio de vida por baixo do retrato, na fila
+    const vez = document.getElementById('cbVez' + chave);
+    if (vez) {
+      const fio = vez.querySelector('.cb-vez-vida i');
+      if (fio) fio.style.width = fPV + '%';
+      vez.classList.toggle('caido', !c.vivo);
+    }
+
+    // as barras do painel de baixo
+    const linha = document.getElementById('cbHud' + chave);
+    if (linha) {
+      const pv = linha.querySelector('.cb-barra.pv');
+      if (pv) {
+        const cheio = pv.querySelector('i'), rastro = pv.querySelector('u');
+        const antes = parseFloat(cheio.style.width) || 0;
+        if (fPV > antes) rastro.style.width = fPV + '%';   // a subir, o rastro vai à frente
+        cheio.style.width  = fPV + '%';
+        rastro.style.width = fPV + '%';                    // a descer, o CSS atrasa-o
+        pv.classList.toggle('baixa', c.vivo && fPV <= 25);
+        const txt = pv.querySelector('span');
+        if (txt) txt.textContent = c.pv + '/' + c.pvMax;
+      }
+      const pm = linha.querySelector('.cb-barra.pm');
+      if (pm) {
+        pm.querySelector('i').style.width = fPM + '%';
+        pm.querySelector('u').style.width = fPM + '%';
+        const txt = pm.querySelector('span');
+        if (txt) txt.textContent = c.pm + '/' + c.pmMax;
+      }
+      linha.classList.toggle('caido', !c.vivo);
+    }
+
+    // e o corpo no campo, que cai quando cai
+    const posto = document.getElementById('cbLut' + chave);
+    if (posto) posto.classList.toggle('caido', !c.vivo);
   }
 }
 

@@ -27,12 +27,6 @@
 /* A arena rola como último recurso. Não devia ser preciso — o registo
    encolhe primeiro — mas em telas muito baixas vale mais rolar do que
    ter o overflow:hidden do modal a cortar os botões pelo meio. */
-.cb-arena {
-  width: 100%; max-width: 30rem; height: 100%;
-  display: flex; flex-direction: column; gap: 0.375rem;
-  overflow-y: auto; overflow-x: hidden;
-}
-
 /* ── Cabeçalho ── */
 .cb-topo {
   display: flex; align-items: center; justify-content: space-between;
@@ -57,100 +51,24 @@
    Antes só quem estava em campo era legível; os outros dois eram
    quadrados de 30px sem vida nem magia à vista, e trocar era às cegas.
    ═══════════════════════════════════════════════════════════════════ */
-.cb-lado { flex: 0 0 auto; }
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE SAIU DAQUI
 
-.cb-equipa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3125rem; align-items: stretch; }
+   A DISPOSIÇÃO. Havia aqui uma coluna — inimigos em cima, registo ao
+   meio, os meus em baixo — e cada lutador era um CARTÃO: moldura,
+   fundo, nome, características, e a vida em bolinhas.
 
-.cb-lutador {
-  position: relative; display: flex; flex-direction: column; align-items: center;
-  gap: 0.125rem; padding: 0.375rem 0.25rem; border-radius: 0.5625rem; overflow: visible;
-  border: 1px solid rgba(255,255,255,.07);
-  background: linear-gradient(160deg, rgba(26,22,38,.9), rgba(13,11,22,.9));
-  transition: border-color .3s, box-shadow .3s, transform .3s, background .3s;
-}
+   Lia-se, e não era um lugar nenhum. Dois cartões não se enfrentam.
 
-/* Quem está em campo: maior, aceso, e com um fio de luz por cima.
-   O destaque é o tamanho e o brilho — não o fato de ser o único que
-   dá para ler. */
-.cb-lutador.ativo {
-  background: linear-gradient(160deg, rgba(42,34,60,.95), rgba(18,15,30,.95));
-  transform: translateY(-0.125rem);
-}
-.cb-lutador.ativo::before {
-  content: ''; position: absolute; left: 14%; right: 14%; top: -0.0625rem; height: 0.125rem;
-  border-radius: 0.125rem;
-}
-.cb-lutador.eu.ativo  { border-color: rgba(122,184,122,.75); box-shadow: 0 0 0.875rem rgba(122,184,122,.22); }
-.cb-lutador.eu.ativo::before  { background: linear-gradient(90deg, transparent, #7ab87a, transparent); }
-.cb-lutador.ini.ativo { border-color: rgba(224,85,85,.75);  box-shadow: 0 0 0.875rem rgba(224,85,85,.22); }
-.cb-lutador.ini.ativo::before { background: linear-gradient(90deg, transparent, #e05555, transparent); }
+   Passou a haver um palco, no css/combate-arena.css: os seis sobre um
+   chão, com profundidade, e a interface nas margens. Com ele saíram
+   daqui .cb-arena, .cb-lado, .cb-equipa, .cb-lutador e as .cb-bola, mais
+   os gestos de bater e de esquivar — que eram do cartão e agora são do
+   corpo, com o chão e a sombra a acompanhar.
 
-.cb-lutador:not(.ativo) { opacity: .72; }
-.cb-lutador.caido {
-  opacity: .3; filter: grayscale(1); transform: none;
-  border-color: rgba(255,255,255,.05); box-shadow: none;
-}
-.cb-lutador.caido::after {
-  content: '✕'; position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 1.25rem; color: rgba(255,255,255,.5); pointer-events: none;
-}
-
-.cb-lutador-svg { display: grid; place-items: center; }
-.cb-lutador.ativo .cb-lutador-svg { animation: idle-float 3.2s ease-in-out infinite; }
-.cb-lutador-svg svg { display: block; }
-
-.cb-lutador-nome {
-  font-family: 'Cinzel', serif; font-size: 0.34375rem; letter-spacing: 0.03125rem;
-  color: var(--text); text-align: center; line-height: 1.2;
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.cb-lutador.ativo .cb-lutador-nome { font-size: 0.40625rem; color: var(--gold-light); }
-.cb-lutador-carac {
-  font-size: 0.28125rem; letter-spacing: 0.05rem; color: var(--muted);
-  font-family: 'Courier New', monospace;
-  display: flex; gap: 0.25rem; justify-content: center; flex-wrap: wrap;
-}
-/* O que o combate somou ou tirou, colado ao número da ficha: "F2−1".
-   Sem isto o número mudava e nada dizia porquê. */
-.cb-lutador-carac b { font-weight: 700; margin-left: 0.03125rem; }
-.cb-lutador-carac b.desce { color: #ff8a8a; }
-.cb-lutador-carac b.sobe  { color: #8ede8e; }
-.cb-ajuda-quem span b.desce { color: #ff8a8a; }
-.cb-ajuda-quem span b.sobe  { color: #8ede8e; }
-/* A marca do que só vale em certas contas. Dourada e não verde nem
-   vermelha, porque não é bom nem mau: é "há mais para ler". Sobe um
-   pouco para se ler como expoente e não como parte do número. */
-b.cond {
-  color: var(--gold); font-weight: 700; margin-left: 0.0625rem;
-  vertical-align: super; font-size: .85em; cursor: help;
-}
-
-/* ── Vida e magia em bolinhas ──
-   Uma bolinha por cada 5 pontos. Como PV = R×5 e PM = R×5, o número de
-   bolinhas é a Resistência do avatar: lê-se a ficha de relance. A da vez
-   enche-se por fração (--f), para um golpe pequeno deixar rasto. */
-.cb-bolas {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.125rem; flex-wrap: wrap; min-height: 0.4375rem; max-width: 100%;
-}
-.cb-bolas b {
-  margin-left: 0.1875rem; font-size: 0.28125rem; font-family: 'Courier New', monospace;
-  font-weight: 700; letter-spacing: 0.01875rem; color: var(--muted);
-}
-.cb-bola {
-  width: 0.375rem; height: 0.375rem; border-radius: 50%; flex: 0 0 auto;
-  border: 1px solid; position: relative; overflow: hidden;
-}
-.cb-bola::after {
-  content: ''; position: absolute; inset: 0; background: var(--cor);
-  clip-path: inset(calc(100% - var(--f)) 0 0 0);
-  transition: clip-path .45s cubic-bezier(.22,1,.36,1);
-}
-.cb-bola.pv { --cor: #e05555; border-color: rgba(224,85,85,.55); background: rgba(224,85,85,.08); }
-.cb-bola.pm { --cor: #5ab4e8; border-color: rgba(90,180,232,.5);  background: rgba(90,180,232,.08); }
-.cb-lutador.ativo .cb-bola.pv:not(.vazia) { box-shadow: 0 0 0.1875rem rgba(224,85,85,.6); }
-.cb-lutador.ativo .cb-bola.pm:not(.vazia) { box-shadow: 0 0 0.1875rem rgba(90,180,232,.5); }
-.cb-bola.vazia { opacity: .4; }
+   O que FICA aqui é tudo o que não é a disposição: o registo, os dados
+   do 3D&T, a barra de ações, o painel da ficha, as marcas de estado e
+   as partículas do impacto. */
 
 /* ── Marcas de estado: é aqui que se vê o motor a funcionar ── */
 .cb-marcas { display: flex; flex-wrap: wrap; gap: 0.125rem; justify-content: center; }
@@ -323,13 +241,6 @@ b.cond {
    A esquiva era só uma palavra no registo: o cartão ficava quieto e o
    golpe simplesmente não acontecia. Ficava a parecer que o ataque se
    tinha esquecido de sair. */
-@keyframes cb-esquiva {
-  0%   { transform: none; opacity: 1; }
-  25%  { transform: translateX(-0.6875rem) skewX(7deg); opacity: .45; }
-  55%  { transform: translateX(0.3125rem) skewX(-2deg); opacity: .8; }
-  100% { transform: none; opacity: 1; }
-}
-.cb-esquiva { animation: cb-esquiva .6s cubic-bezier(.36,.07,.19,.97); }
 
 /* ── O QUE AINDA NÃO ACONTECEU ──
 
@@ -362,15 +273,6 @@ b.cond {
 }
 
 /* Encaixe: o cartão salta para trás ao levar */
-@keyframes cb-bate {
-  0%   { transform: none; filter: none; }
-  8%   { transform: translateX(0.375rem) scale(1.03); filter: brightness(3) saturate(0); }
-  18%  { transform: translateX(-0.3125rem); filter: brightness(1.6); }
-  32%  { transform: translateX(0.1875rem); filter: none; }
-  50%  { transform: translateX(-0.125rem); }
-  100% { transform: none; }
-}
-.cb-bate { animation: cb-bate .42s cubic-bezier(.36,.07,.19,.97); }
 
 /* Números que sobem — o mesmo gesto do float-up do jogo */
 /* O número sobe, PÁRA, e só depois se vai embora.
@@ -740,22 +642,10 @@ b.cond {
   letter-spacing: 0.01875rem; color: var(--gold); opacity: .9;
 }
 
-/* ── A FICHA ABRE-SE NO CARTÃO ──
-   Havia um "?" no topo que abria a ficha de dois avatares: o meu ativo
-   e o dele. Nunca a de quem está no banco — que é justamente quem se
-   precisa de conhecer ANTES de o mandar entrar. Agora cada cartão abre
-   a sua, e o "ficha" no canto diz que dá para tocar. */
-.cb-lutador { cursor: pointer; }
-.cb-lutador:hover      { border-color: rgba(201,168,76,.5); }
-.cb-lutador:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
-.cb-lutador-ver {
-  position: absolute; top: 0.1875rem; right: 0.25rem; z-index: 2;
-  font-family: 'Cinzel', serif; font-size: 0.225rem; letter-spacing: 0.05rem;
-  text-transform: uppercase; color: var(--muted); opacity: .5;
-  pointer-events: none; transition: opacity .25s, color .25s;
-}
-.cb-lutador:hover .cb-lutador-ver { opacity: 1; color: var(--gold); }
-.cb-lutador.caido .cb-lutador-ver { opacity: .25; }
+/* O "ficha" no canto do cartão saiu com o cartão. Quem abre a ficha
+   hoje é o retrato na fila e a linha no painel de baixo — e os dois
+   estão sempre à vista, que é mais do que um rótulo que só aparecia
+   ao passar o rato por cima. */
 
 /* ── O QUE ESTÁ ACONTECENDO ──
 
@@ -832,15 +722,8 @@ b.cond {
 .cb-prog span:first-child { color: #e6dff2; }
 .cb-prog b { font-size: 0.8125rem; font-weight: 700; color: #ffd98a; margin-right: 0.09375rem; }
 
-/* O modal precisa de ser o berço do painel, que é absoluto */
-#combateModal .cb-arena { position: relative; }
-
-@media (max-width: 560px) {
-  .cb-lutador-nome { font-size: 0.3125rem; }
-  .cb-lutador.ativo .cb-lutador-nome { font-size: 0.375rem; }
-  /* A base já é legível; estas três linhas só a voltavam a encolher. */
-  .cb-lutador-ver { font-size: 0.2625rem; }
-}
+/* O berço do painel da ficha, que é absoluto, é agora o .cb-palco —
+   e ele já é position:relative por definição (css/combate-arena.css). */
 
 /* ── O que aconteceu ao ALVO, separado do que aconteceu a quem agiu ──
    Estavam misturados na linha de quem agiu, e assim "envenenado"
@@ -935,7 +818,27 @@ b.cond {
    um braço de distância. Aqui há espaço de sobra em largura — usa-se.
    ═══════════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
-  .cb-arena { max-width: 40rem; }
+  /* No computador o palco cresce e o que está escrito nele cresce
+     com ele: os nomes por cima dos bichos, os números das barras e os
+     retratos da fila. Sem isto a cena ficava maior e a letra ficava
+     onde estava. */
+  /* O max-width do palco passou para o css/combate-arena.css, que
+     carrega depois desta e ganhava sempre. */
+  .cb-etiqueta         { font-size: 0.53125rem; }
+  .cb-ficha-nome       { font-size: 0.4375rem; max-width: 10rem; }
+  .cb-barra            { height: 0.5625rem; }
+  .cb-barra span       { font-size: 0.375rem; }
+  .cb-ficha-barras     { min-width: 9rem; }
+  .cb-hud.ini .cb-ficha-barras { min-width: 8rem; }
+  .cb-ficha-cara       { width: 1.875rem; height: 1.875rem; }
+  .cb-ficha-cara svg   { width: 1.5625rem; height: 1.5625rem; }
+  .cb-ficha-nivel      { font-size: 0.3125rem; }
+  .cb-vez              { width: 2.125rem; height: 2.125rem; }
+  .cb-vez svg          { width: 1.75rem; height: 1.75rem; }
+  .cb-vez.ativo        { width: 2.75rem; height: 2.75rem; }
+  .cb-vez.ativo svg    { width: 2.25rem; height: 2.25rem; }
+  .cb-dano             { font-size: 0.875rem; }
+  .cb-dano.crit        { font-size: 1.1875rem; }
 
   .cb-log-linha        { font-size: 0.46875rem; line-height: 1.7; padding: 0.3125rem 0.5rem; }
   .cb-conta            { font-size: 0.5rem; }
@@ -950,12 +853,7 @@ b.cond {
   .cb-turno-cab        { font-size: 0.40625rem; }
   .cb-onda-total       { font-size: 0.5rem; }
 
-  .cb-lutador-nome                 { font-size: 0.4375rem; }
-  .cb-lutador.ativo .cb-lutador-nome { font-size: 0.53125rem; }
-  .cb-lutador-carac    { font-size: 0.375rem; letter-spacing: 0.0625rem; }
   .cb-marca            { font-size: 0.34375rem; padding: 0.125rem 0.25rem; }
-  .cb-bolas b          { font-size: 0.375rem; }
-  .cb-bola             { width: 0.5rem; height: 0.5rem; }
 
   .cb-btn-rot          { font-size: 0.53125rem; }
   .cb-btn-sub          { font-size: 0.40625rem; }
@@ -975,7 +873,6 @@ b.cond {
   .cb-ajuda-contra span{ font-size: 0.4375rem; }
   .cb-prog             { font-size: 0.46875rem; gap: 0.25rem 0.625rem; }
   .cb-prog b           { font-size: 0.6875rem; }
-  .cb-lutador-ver      { font-size: 0.3125rem; }
 
   .cb-premio           { font-size: 0.5rem; }
   .cb-fim              { font-size: 0.75rem; }
@@ -983,55 +880,15 @@ b.cond {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   NO COMPUTADOR, AS ACÇÕES VÃO PARA O LADO
+   A GRELHA DE ECRÃ LARGO SAIU DAQUI
 
-   A arena era uma coluna só: inimigos, registo, equipa, botões. No
-   celular é a única forma que cabe. No computador dava o pior dos dois
-   mundos — os botões ocupavam o terço de baixo, e o registo, que é onde
-   se lê o que aconteceu no turno, ficava com uma caixa larga e rasa.
+   Havia aqui uma grelha que punha as ações numa coluna à direita e
+   empilhava inimigos, registo e equipa à esquerda. Fazia sentido
+   enquanto a arena era uma coluna de cartões em fluxo.
 
-   Aqui há largura de sobra. Os botões passam para uma coluna à direita,
-   e o que sobra ao meio é do registo: o campo de batalha fica com os
-   dois lados a olhar um para o outro e o texto do turno entre eles, que
-   é como uma batalha por turnos se lê.
-
-   O .cb-ajuda não entra nesta grelha de propósito: é um painel
-   sobreposto (position:absolute, inset), não um irmão em fluxo.
-   ═══════════════════════════════════════════════════════════════════ */
-@media (min-width: 681px) {
-  .cb-arena {
-    max-width: 42rem;
-    display: grid;
-    grid-template-columns: 1fr 13rem;
-    grid-template-rows: auto auto 1fr auto;
-    grid-template-areas:
-      "topo    topo"
-      "inimigo acoes"
-      "log     acoes"
-      "jogador acoes";
-    gap: 0.5rem;
-    align-content: stretch;
-  }
-  .cb-topo               { grid-area: topo; }
-  .cb-arena > #cbInimigo { grid-area: inimigo; }
-  .cb-log                { grid-area: log; }
-  .cb-arena > #cbJogador { grid-area: jogador; }
-
-  /* Uma coluna só, encostada ao topo: os botões devem começar à altura
-     dos inimigos, não flutuar no meio da coluna. */
-  .cb-acoes {
-    grid-area: acoes;
-    grid-template-columns: 1fr;
-    align-content: start;
-    overflow-y: auto;
-  }
-  /* As trocas empilham. Lado a lado numa coluna de 13rem, "Trocar por
-     Brama" partia-se em três linhas. */
-  .cb-trocas { flex-direction: column; }
-
-  /* O registo era o que menos espaço tinha e o que mais texto recebe. */
-  .cb-log { min-height: 12rem; }
-}
+   O palco não está em fluxo: cada peça sabe onde fica (css/combate-arena.css),
+   e a mesma disposição serve as duas larguras — o que muda com o ecrã é
+   o tamanho do campo e o sítio da fila, e isso está lá. */
 
 /* ═══════════════════════════════════════════════════════════════════
    A CONTA ABERTA, E O TURNO QUE AMPLIA

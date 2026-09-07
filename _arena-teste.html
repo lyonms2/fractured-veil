@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arena — banco de ensaio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/ui.css">
+<link rel="stylesheet" href="css/combate.css">
+<link rel="stylesheet" href="css/combate-batalha.css">
+<link rel="stylesheet" href="css/combate-arena.css">
+<style>
+  /* O banco de ensaio: mostra a arena sem login e sem motor de combate.
+     Existe só para se poder OLHAR para ela. */
+  /* NÃO se força o font-size aqui: a escala vem do css/base.css, que dá
+     16px no telemóvel e 26.4px a partir dos 681px. Forçar 26.4 fazia o
+     ensaio mentir justamente no caso que mais interessa medir. */
+  body { background: #04030a; margin: 0; height: 100vh; overflow: hidden; }
+  #combateModal { opacity: 1 !important; pointer-events: all !important; }
+  #ensaio {
+    position: fixed; right: 0.5rem; top: 0.5rem; z-index: 999;
+    display: flex; gap: 0.25rem; font-family: 'Cinzel', serif; font-size: 0.4375rem;
+  }
+  #ensaio button {
+    background: rgba(201,168,76,.15); color: #c9a84c; cursor: pointer;
+    border: 1px solid rgba(201,168,76,.4); border-radius: 0.25rem; padding: 0.25rem 0.5rem;
+    font-family: inherit; font-size: inherit;
+  }
+</style>
+</head><body>
+
+<div id="combateModal" class="open"></div>
+<div id="ensaio">
+  <button onclick="ensaioBater()">bater</button>
+  <button onclick="ensaioCritico()">crítico</button>
+  <button onclick="ensaioCurar()">curar</button>
+  <button onclick="ensaioCair()">derrubar</button>
+  <button onclick="ensaioRefazer()">refazer</button>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/i18n-misc.js"></script>
+<script src="js/i18n-magias.js"></script>
+<script src="js/i18n-vantagens.js"></script>
+<script src="js/i18n-pve.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/identidade.js"></script>
+<script src="js/cores.js"></script>
+<script src="js/nascimento.js"></script>
+<script src="js/raridade.js"></script>
+<script src="js/ficha-3dt.js"></script>
+<script src="js/magias.js"></script>
+
+<script src="js/vantagens.js"></script>
+<script src="js/combate-3dt.js"></script>
+<script src="js/combate-pve.js"></script>
+
+<script>
+/* O motor de combate verdadeiro precisa de um jogador, de energia e de
+   uma equipa gravada. Aqui só se quer OLHAR para o palco, portanto a
+   barra de ações leva uma cópia da forma dela — o que importa para a
+   vista é o peso que ela tem em baixo, e esse é o mesmo. */
+_pveDesenharAcoes = function () {
+  document.getElementById('cbAcoes').innerHTML = [
+    ['Golpe Comum', 'FA 3+4+1d'], ['Ferrões Salinos', '3 PM · envenena'],
+    ['Véu de Correntes', '2 PM · FD +10'], ['Maré Compartilhada', '5 PM · cura'],
+  ].map(([r, s]) => '<button class="cb-btn"><span class="cb-btn-rot">' + r +
+        '</span><span class="cb-btn-sub">' + s + '</span></button>').join('');
+};
+</script>
+
+<script>
+// ── Um estado de mentira, com a forma do verdadeiro ──
+function _fabricar(nome, nivel, pv, pvMax, pm, pmMax, vivo) {
+  const cert = nascer({ dna: null, origem: 'Comum', seed: Math.floor(Math.random() * 2e9) });
+  return {
+    nome, vivo, pv, pvMax, pm, pmMax,
+    ficha: { nivel, raridade: nivel >= 11 ? 'Raro' : 'Comum',
+             seed: cert.seed || Math.floor(Math.random() * 2e9), nascimento: cert },
+    magias: {}, vant: {},
+  };
+}
+const NOMES_EU  = ['Brama, a Nobre', 'Ísen, o Desastrado', 'Vurel'];
+const NOMES_INI = ['Lâmina Oca', 'Arauto da Cinza', 'Coisa sem Nome'];
+
+function ensaioRefazer() {
+  _pveEstado = {
+    turnos: 2, acabou: false, ativoA: 0, ativoB: 0,
+    A: NOMES_EU.map((n, i)  => _fabricar(n, 15, [1342, 816, 1137][i], [1370, 1130, 1170][i], [120, 235, 105][i], [120, 220, 90][i], true)),
+    B: NOMES_INI.map((n, i) => _fabricar(n, 9,  [402, 544, 180][i],   [520, 544, 300][i],   [40, 60, 20][i],    [60, 60, 40][i],   true)),
+  };
+  // marcas de estado, para se ver como ficam no chão
+  _pveEstado.A[0].veneno = 2; _pveEstado.A[0].bonusF = 2;
+  _pveEstado.B[0].furia = true; _pveEstado.B[0].barreira = 4;
+  _pveShell();
+  _pveDesenhar();
+}
+function _alvos() {
+  return [document.getElementById('cbLuteu0'), document.getElementById('cbLutini0')];
+}
+function ensaioBater() {
+  const [meu, dele] = _alvos();
+  _pveGesto(meu, 'cb-avanca', 400);
+  _pveNumeroFlutuante(dele, 47, false);
+  _pveGesto(dele, 'cb-bate', 520);
+  _pveImpacto(dele, { corBrilho: '#ff8a4c', particulas: 'chamas' });
+  _pvePoeiraDosPes(dele);
+  _pveEstado.B[0].pv = Math.max(0, _pveEstado.B[0].pv - 47);
+  _pveAtualizarBarras();
+}
+function ensaioCritico() {
+  const [meu, dele] = _alvos();
+  _pveGesto(meu, 'cb-avanca', 400);
+  _pveNumeroFlutuante(dele, 186, true);
+  _pveGesto(dele, 'cb-bate', 520);
+  _pveImpacto(dele, { corBrilho: '#c4b5fd', particulas: 'sombras' });
+  _pvePoeiraDosPes(dele);
+  _pveOndaDeChoque(dele);
+  _pveEstremecer();
+  _pveEstado.B[0].pv = Math.max(0, _pveEstado.B[0].pv - 186);
+  _pveAtualizarBarras();
+}
+function ensaioCurar() {
+  const [meu] = _alvos();
+  _pveNumeroFlutuante(meu, 120, false, 'cura');
+  _pveNumeroPM(meu, 5);
+  _pveEstado.A[0].pv = Math.min(_pveEstado.A[0].pvMax, _pveEstado.A[0].pv + 120);
+  _pveEstado.A[0].pm = Math.max(0, _pveEstado.A[0].pm - 5);
+  _pveAtualizarBarras();
+}
+function ensaioCair() {
+  _pveEstado.B[1].vivo = false; _pveEstado.B[1].pv = 0;
+  _pveEstado.A[2].vivo = false; _pveEstado.A[2].pv = 0;
+  _pveAtualizarBarras();
+}
+ensaioRefazer();
+</script>
+</body></html>
