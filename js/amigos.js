@@ -52,7 +52,8 @@ async function _carregarAmigos() {
     const resp    = await fetch(`/api/amigos?lista=1&idToken=${encodeURIComponent(idToken)}`);
     const json    = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
-    _amigosData = { amigos: json.amigos, pedidos: json.pedidos, visitasLog: json.visitasLog };
+    _amigosData = { amigos: json.amigos, pedidos: json.pedidos, visitasLog: json.visitasLog,
+                    meuCodigo: json.meuCodigo || null };
     _updateAmigosBadge(json.pedidos.length);
     _renderAmigos();
   } catch(err) {
@@ -70,12 +71,31 @@ function _renderAmigos() {
   const numPedidos = pedidos.length;
 
   el.innerHTML = `
-    <!-- Pesquisa -->
-    <div class="amigos-search-wrap">
-      <input id="amigosBusca" class="amigos-input" type="text" placeholder="${t('amigos.search.placeholder')}" maxlength="30"
-        oninput="amigoBuscarDebounce(this.value)">
+    <!-- ── O CÓDIGO, DOS DOIS LADOS ──
+
+         Aqui havia uma caixa de procura por nome. O nome não é único,
+         era escrito pelo cliente e a procura era por prefixo — ver a
+         nota no api/amigos.js.
+
+         Ficam duas caixas: o código que se dá, e o campo onde se põe o
+         que nos deram. -->
+    <div class="amigos-codigo-box">
+      <div class="amigos-codigo-rot">${t('amigos.meu_codigo')}</div>
+      <div class="amigos-codigo-linha">
+        <span class="amigos-codigo-valor" id="amigosMeuCodigo">${esc(_codigoBonito(_amigosData.meuCodigo))}</span>
+        <button class="amigos-codigo-copiar" onclick="amigoCopiarCodigo()">${t('amigos.copiar')}</button>
+      </div>
+      <div class="amigos-codigo-sub">${t('amigos.meu_codigo_sub')}</div>
     </div>
-    <div id="amigosBuscaResultados"></div>
+
+    <div class="amigos-search-wrap">
+      <input id="amigosCodigo" class="amigos-input amigos-input-codigo" type="text"
+             placeholder="${t('amigos.codigo_ph')}" maxlength="7" autocapitalize="characters"
+             autocomplete="off" spellcheck="false"
+             onkeydown="if(event.key==='Enter')amigoAdicionarPorCodigo()">
+      <button class="amigos-btn-add" onclick="amigoAdicionarPorCodigo()">${t('amigos.btn.add')}</button>
+    </div>
+    <div id="amigosCodigoAviso" class="amigos-codigo-aviso"></div>
 
     <!-- Pedidos pendentes -->
     ${numPedidos > 0 ? `
@@ -113,70 +133,84 @@ function _renderAmigoCard(uid, info) {
     </div>`;
 }
 
-// ── Pesquisa com debounce ────────────────────────────────────
-function amigoBuscarDebounce(query) {
-  clearTimeout(_buscaTimeout);
-  const el = document.getElementById('amigosBuscaResultados');
-  if(query.trim().length < 2) { if(el) el.innerHTML = ''; return; }
-  _buscaTimeout = setTimeout(() => _buscarJogador(query), 500);
+/* O código mostra-se partido a meio — ABC-123 — porque seis letras
+   seguidas leem-se mal e ditam-se pior. O hífen é só apresentação: o
+   servidor aceita-o e deita-o fora (ver _limparCodigo, em
+   api/amigos.js). */
+function _codigoBonito(c) {
+  if (!c) return '······';
+  const s = String(c).toUpperCase();
+  return s.length === 6 ? s.slice(0, 3) + '-' + s.slice(3) : s;
 }
-window.amigoBuscarDebounce = amigoBuscarDebounce;
 
-async function _buscarJogador(query) {
-  const el = document.getElementById('amigosBuscaResultados');
-  if(!el) return;
-  el.innerHTML = `<div class="amigos-loading">${t('amigos.searching')}</div>`;
+async function amigoCopiarCodigo() {
+  const c = _amigosData && _amigosData.meuCodigo;
+  if (!c) return;
+  const texto = _codigoBonito(c);
   try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch(`/api/amigos?buscar=${encodeURIComponent(query)}&idToken=${encodeURIComponent(idToken)}`);
-    const json    = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
-    if(!json.resultados.length) {
-      el.innerHTML = `<div class="amigos-empty">${t('amigos.no_results')}</div>`;
-      return;
+    await navigator.clipboard.writeText(texto);
+    if (typeof showToast === 'function') showToast(t('amigos.copiado'), 'ok');
+  } catch (e) {
+    /* Sem permissão para a área de transferência — acontece em contextos
+       não seguros e em alguns navegadores de telemóvel. Seleciona-se o
+       código para o jogador o copiar à mão, que é melhor do que um botão
+       que não faz nada. */
+    const el = document.getElementById('amigosMeuCodigo');
+    if (el && window.getSelection) {
+      const r = document.createRange(); r.selectNodeContents(el);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
     }
-    const jaAmigo = uid => _amigosData?.amigos?.[uid];
-    el.innerHTML = `
-      <div class="amigos-busca-lista">
-        ${json.resultados.map(p => `
-          <div class="amigos-busca-card">
-            <div class="amigos-busca-svg">${gerarSVG(p, p.raridade, p.seed, 38, 38, 1)}</div>
-            <div class="amigos-busca-info">
-              <div class="amigos-busca-nome">${esc(p.nome || t('id.sem_nome'))}</div>
-              <!-- A cara é o primeiro avatar vivo, e ao lado quantos ele
-                   tem. Antes dizia o nível e a raridade de UM, o que
-                   fazia parecer que era só aquele. -->
-              <div class="amigos-busca-meta">${t(p.quantos > 1 ? 'amigos.colonia_n' : 'amigos.colonia_1', { n: p.quantos || 1 })}</div>
-            </div>
-            ${jaAmigo(p.uid)
-              ? `<div class="amigos-busca-ja">${t('amigos.already_friend')}</div>`
-              : `<button class="amigos-btn-add" onclick="amigoEnviarPedido('${p.uid}', this)">${t('amigos.btn.add')}</button>`}
-          </div>`).join('')}
-      </div>`;
-  } catch(err) {
-    el.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
   }
 }
+window.amigoCopiarCodigo = amigoCopiarCodigo;
 
-// ── Enviar pedido ────────────────────────────────────────────
-async function amigoEnviarPedido(alvoUid, btn) {
-  if(btn) { btn.disabled = true; btn.textContent = '...'; }
+async function amigoAdicionarPorCodigo() {
+  const input = document.getElementById('amigosCodigo');
+  const aviso = document.getElementById('amigosCodigoAviso');
+  if (!input) return;
+  const bruto = input.value.trim();
+  if (!bruto) return;
+
+  if (aviso) { aviso.textContent = ''; aviso.classList.remove('erro'); }
+
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp    = await fetch('/api/amigos', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'pedir', idToken, alvoUid }),
+    const resp = await fetch('/api/amigos', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'pedir', idToken, codigo: bruto }),
     });
     const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
-    if(btn) { btn.textContent = t('amigos.btn.sent'); btn.classList.add('amigos-btn-enviado'); }
-  } catch(err) {
-    if(btn) { btn.disabled = false; btn.textContent = t('amigos.btn.add'); }
-    if(typeof showToast === 'function') showToast(err.message, 'warn');
+    /* O texto do erro vem do i18n pelo `motivo`, e não do `erro` que o
+       servidor manda: esse está numa língua só, e é para o log. Se
+       aparecer um motivo que ainda não tenha texto, fica o do servidor,
+       que é melhor do que uma caixa vazia. */
+    if (!json.ok) {
+      const chave = json.motivo ? ('amigos.err.' + json.motivo) : '';
+      const texto = chave ? t(chave) : '';
+      throw new Error((texto && texto !== chave) ? texto : (json.erro || t('amigos.err.invalido')));
+    }
+
+    input.value = '';
+    if (aviso) aviso.textContent = t('amigos.pedido_enviado');
+    if (typeof showToast === 'function') showToast(t('amigos.pedido_enviado'), 'ok');
+  } catch (err) {
+    /* O erro fica NA CAIXA e não só num toast: quem escreveu um código
+       errado precisa de o ver ao lado do que escreveu para o corrigir. */
+    if (aviso) { aviso.textContent = err.message; aviso.classList.add('erro'); }
+    if (typeof playSound === 'function') playSound('error');
   }
 }
-window.amigoEnviarPedido = amigoEnviarPedido;
+window.amigoAdicionarPorCodigo = amigoAdicionarPorCodigo;
+
+/* ── A PESQUISA POR NOME SAIU DAQUI ──
+
+   Eram três funções: o debounce, a chamada à API e o botão de enviar o
+   pedido a partir de um resultado. Nenhuma tem uso desde que não há
+   resultados para listar — o pedido faz-se pelo código, no
+   amigoAdicionarPorCodigo, aqui em cima.
+
+   A razão está escrita no api/amigos.js: o nome do jogador não é único
+   e é escrito pelo cliente. */
 
 // ── Aceitar pedido ───────────────────────────────────────────
 async function amigoAceitar(alvoUid) {

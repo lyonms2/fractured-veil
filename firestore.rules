@@ -127,7 +127,16 @@ service cloud.firestore {
                  nunca a comunicar continua a poder ressuscitar o bicho.
                  O que deixa de funcionar é editar o documento, que era o
                  que estava ao alcance de qualquer um. */
-              'mortos'];
+              'mortos',
+              /* O CÓDIGO DE AMIGO — as seis letras que se passam a
+                 alguém para ele nos adicionar.
+
+                 É emitido pelo servidor e é ÚNICO: cada um tem o seu
+                 documento na coleção `codigosAmigo`, criado numa
+                 transação que falha se já existir. Se o cliente o
+                 pudesse escrever, escrevia o do vizinho — e os pedidos
+                 de amizade do vizinho passavam a chegar-lhe a ele. */
+              'codigoAmigo'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do
@@ -230,6 +239,21 @@ service cloud.firestore {
     match /avatarMarket/{listingId} {
       allow read: if request.auth != null;
       allow create, update, delete: if false;
+    }
+
+    /* ── OS CÓDIGOS DE AMIGO ──
+
+       Um documento por código, com o uid de quem o tem. É o que garante
+       que dois jogadores não ficam com o mesmo: a criação corre numa
+       transação que falha se o documento já existir (ver _codigoDe, em
+       api/amigos.js).
+
+       FECHADA DOS DOIS LADOS, e a leitura é a que importa: esta coleção
+       é o índice inverso código → jogador, e quem a pudesse ler
+       percorria-a e ficava com o código de toda a gente. Quem traduz um
+       código é o servidor, e só quando alguém lho escreve. */
+    match /codigosAmigo/{codigo} {
+      allow read, write: if false;
     }
 
     // ── Config (pool P2E, etc.) — read-only para clientes, escrita via Admin SDK ──

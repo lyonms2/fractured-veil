@@ -211,10 +211,14 @@ function podeRenomear(slot) {
 
    Fica uma, e devolve sempre uma coisa que se pode mostrar.
 
-   ATENÇÃO ao que NÃO deve usar isto: o `nomeBusca` do js/firebase.js,
-   que é o índice de procura de amigos. Lá, um avatar sem nome tem de
-   ficar com a busca VAZIA — escrever-lhe o rótulo punha toda a gente
-   encontrável por "sem nome". */
+   ATENÇÃO a onde isto NÃO deve chegar: a nenhum campo que sirva de
+   CHAVE. É um rótulo para se ler, e um rótulo que se repete — se um
+   avatar por baptizar levasse "Sem nome" para um índice, ficava toda a
+   gente com a mesma entrada.
+
+   (Havia aqui um aviso sobre o `nomeBusca`, o índice da procura de
+   amigos. Esse campo saiu: hoje ninguém se procura pelo nome, passa-se
+   um código — ver api/amigos.js.) */
 function nomeCurto(slot) {
   const cru = (slot && typeof slot.nome === 'string') ? slot.nome.split(',')[0].trim() : '';
   if (cru) return cru;

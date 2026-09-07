@@ -44,6 +44,12 @@ async function apagar(uid, doc) {
     headers:{Authorization:`Bearer ${token(uid)}`}});
   return r.status;
 }
+/* O `ler` de cima entra como dono, para ver o que ficou gravado. Este
+   entra como jogador, que é o que a regra tem de recusar. */
+async function lerColeccao(col, uid) {
+  const r = await fetch(`${BASE}/${col}`, {headers:{Authorization:`Bearer ${token(uid)}`}});
+  return r.status;
+}
 async function ler(doc) {
   const r = await fetch(`${BASE}/players/${doc}`, {headers:{Authorization:'Bearer owner'}});
   return r.ok ? (await r.json()).fields : null;
@@ -171,6 +177,20 @@ async function ler(doc) {
   }
   ok('EXPLOIT listar avatar à mão',   await mercado('avatarMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
   ok('EXPLOIT listar ovo à mão',      await mercado('eggMarket','K',{sellerId:'K',raridade:'Lendário',price:9999}), 403);
+
+  /* ── o código de amigo: quem o escreve é o servidor ──
+
+     Escrever o código de outra pessoa no meu documento desviava-lhe os
+     pedidos de amizade: quem o ditasse ao amigo, o amigo adicionava-me
+     a mim. E a coleção dos códigos é o índice inverso — quem a pudesse
+     LER ficava com o código de toda a gente, e a única defesa do
+     sistema é o código não se adivinhar. */
+  await escrever(null,'T',{'codigoAmigo':'ABC234','gs.moedas':10}, true);
+  ok('EXPLOIT trocar o próprio código', await escrever('T','T',{'codigoAmigo':'XYZ789'}), 403);
+  ok('EXPLOIT apagar o próprio código', await escrever('T','T',{'codigoAmigo':null}), 403);
+  ok('conta nova já com código',        await escrever('U','U',{'codigoAmigo':'ABC234'}), 403);
+  ok('EXPLOIT criar um código à mão',   await mercado('codigosAmigo','T',{uid:'T'}), 403);
+  ok('EXPLOIT ler a lista de códigos',  await lerColeccao('codigosAmigo','T'), 403);
 
   // ── indicações: o que o servidor escreve, o cliente não toca ──
   await escrever(null,'L',{'referralEarned':7,'referralCount':2,'gs.moedas':10}, true);

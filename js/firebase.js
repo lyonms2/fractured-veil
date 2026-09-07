@@ -5,8 +5,12 @@ let walletAddress = null;
 
 /* O nome de quem joga. Vive ao lado do walletAddress porque e da mesma
    familia: identifica a PESSOA, nao o avatar aberto. E gravado no topo
-   do documento do jogador, como o nomeBusca, e e ele que fica carimbado
-   em cada avatar que ela cria. Ver js/identidade.js. */
+   do documento do jogador, e e ele que fica carimbado em cada avatar
+   que ela cria. Ver js/identidade.js.
+
+   Nao serve para ENCONTRAR ninguem: dois jogadores podem ter o mesmo
+   nome, e este campo e escrito pelo cliente. Para isso ha o codigo de
+   amigo, que o servidor emite (api/amigos.js). */
 let nomeJogador = null;
 
 // ═══════════════════════════════════════════════════════════════════
@@ -214,19 +218,16 @@ function getGameState() {
     };
   });
 
-  /* ── PROCURA-SE A PESSOA, NÃO O BICHO ──
+  /* ── O nomeBusca SAIU ──
 
-     Isto era o nome do avatar ABERTO, em minúsculas. Duas coisas
-     erradas: procurar um amigo é procurar quem joga, e a colónia dele
-     tem vários — qual deles indexar era arbitrário. E desde que os
-     avatares chegam por baptizar, o campo ficava quase sempre vazio, o
-     que é o mesmo que não estar na lista.
+     Era o índice da procura de amigos: primeiro o nome do avatar
+     aberto, depois o do jogador. Nenhum dos dois servia — o nome não é
+     único, e este campo é escrito pelo cliente, portanto qualquer um
+     podia pôr lá o nome de outra pessoa e aparecer no lugar dela.
 
-     Passa a ser o nome do JOGADOR, que ele dá na primeira entrada e que
-     não muda (js/identidade.js). */
-  const nomeBusca = (typeof nomeJogador === 'string' && nomeJogador)
-    ? nomeJogador.toLowerCase().trim()
-    : '';
+     Hoje não se procura ninguém: passa-se um código de seis letras, que
+     o servidor emite e garante único (api/amigos.js). Sem procura, não
+     há índice. */
 
   return {
     avatarSlots:   slotsSafe,
@@ -242,7 +243,6 @@ function getGameState() {
     gs:            _gsSemDinheiro(),
     // cambioLog não vai: é do servidor (limite diário do câmbio)
     lastSeen:      Date.now(),
-    nomeBusca,
     // Quem joga. No topo e nao dentro do gs: o gs e o saldo e o
     // progresso, e este e a pessoa. Ver js/identidade.js.
     nomeJogador:   nomeJogador || null,
