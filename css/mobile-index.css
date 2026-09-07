@@ -118,13 +118,36 @@
     overflow: visible;
   }
 
+  /* ── O BALAO DE FALA ESTAVA FORA DA TELA ──
+
+     O `top` e relativo ao .creature-wrap, e -2.25rem punha-o ACIMA
+     dele. No desktop ha espaco de sobra ali; no telemovel o wrap comeca
+     a 20px do topo da tela, portanto o balao saia 16px para fora e
+     aterrava em cima dos crachas do cartao. Medido: balao a 171, tela a
+     comecar em 187.
+
+     Passa a nascer DENTRO da tela, uma polegada abaixo do topo do wrap:
+     fica na faixa livre entre o botao da colonia (a esquerda) e o zoom
+     com a arvore (a direita), e acima da cabeca do bicho.
+
+     A LARGURA VOLTOU aos 78vw depois de medir. Estreitei-a primeiro
+     para nao encostar nesses dois botoes — e nao era preciso: a esta
+     altura o balao ja comeca ABAIXO deles. Estreito, a frase mais longa
+     do jogo quebrava em quatro linhas e descia por cima da cabeca do
+     bicho; larga, cabe em duas. */
   .bubble {
     position: absolute;
-    top: -2.25rem; left: 50%;
+    top: 1rem; left: 50%;
     transform: translateX(-50%);
     z-index: 30;
     white-space: normal;
-    max-width: 80vw;
+    /* O max-width sozinho nao chegava: um elemento absoluto com
+       left:50% encolhe ate ao que resta do PAI, e o pai e o
+       .creature-wrap de 10rem — sobravam 80px, e a frase mais longa
+       quebrava em quatro linhas. O max-content solta-o do pai; o
+       max-width e que o trava. */
+    width: max-content;
+    max-width: 78vw;
     text-align: center;
     font-size: 0.4375rem;
     padding: 0.25rem 0.625rem;
@@ -530,19 +553,26 @@
     border-bottom: none !important;
   }
 
-  /* ── XP e Vínculo ── */
-  body.fv-has-creature #idXpSection {
+  /* ── Vigor, XP e Vínculo ── */
+  /* O vigor entrou na conta: é um irmão dos outros dois e, sem ordem
+     própria, caía no zero e saltava para cima de tudo. Só aparece a
+     quem tem vigor marcado — o js/ui.js é que o mostra. */
+  body.fv-has-creature #vigorBlock {
     order: 5;
+    margin: 0.5rem 0.875rem 0 !important;
+  }
+  body.fv-has-creature #idXpSection {
+    order: 6;
     margin: 0.625rem 0.875rem 0 !important;
   }
   body.fv-has-creature #idVinculoSection {
-    order: 6;
+    order: 7;
     margin: 0.5rem 0.875rem 0.625rem !important;
   }
 
   /* ── Botões de ação ── */
   body.fv-has-creature #actionBtns {
-    order: 7;
+    order: 8;
     padding: 0.5rem 0.625rem 0.625rem !important;
     border-top: 1px solid var(--border) !important;
     margin-top: 0 !important;
@@ -553,10 +583,11 @@
   body.fv-has-creature #idDesc         { display: none !important; }
   body.fv-has-creature #statusCard     { display: none !important; }
   body.fv-has-creature #rarityBonusTxt { display: none !important; }
-  /* O div container do rarityBonusTxt */
-  body.fv-has-creature #creatureCard > div:last-of-type:not(#statusCard):not(#idVinculoSection):not(#idXpSection) {
-    display: none !important;
-  }
+  /* O contentor do bónus de raridade. Apanhava-se por "o último <div>
+     do cartão" — uma descrição do LUGAR e não da coisa, e o lugar mudou
+     assim que se fechou uma div que estava aberta no index.html. Agora
+     tem nome. */
+  body.fv-has-creature #rarityBonusRow { display: none !important; }
 
 } /* fim @media ≤ 768px */
 

@@ -369,9 +369,21 @@
   50%      { transform: scale(1.2) translateY(-0.25rem); opacity: .85; }
 }
 
-/* speech bubble */
+/* ── O BALAO DE FALA ──
+
+   Estava a -2.625rem do topo do .creature-wrap, e a essa altura passava
+   por cima do botao da colonia e do par zoom/arvore, que vivem no canto
+   de cima da tela. Medido a 1366x768: balao de 205 a 236, botoes de 187
+   a 225.
+
+   Ha 99px de folga entre o topo da tela e o do wrap, e os botoes gastam
+   50. A -1.5rem o balao nasce logo abaixo deles e ainda sobra espaco
+   ate a cabeca do bicho.
+
+   No telemovel a conta e outra — la o wrap comeca a 20px do topo, e a
+   regra de la e propria (css/mobile-index.css). */
 .bubble {
-  position:absolute; top:-2.625rem; left:50%; transform:translateX(-50%);
+  position:absolute; top:-1.5rem; left:50%; transform:translateX(-50%);
   background:var(--surface); border:1px solid var(--gold);
   border-radius:0.5rem; padding:0.3125rem 0.625rem;
   font-family:'Cinzel',serif; font-size:0.375rem; color:var(--gold);
