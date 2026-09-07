@@ -173,11 +173,7 @@ window.registerStrings({
   'mkt.pool.economy':         '◆ COMO FUNCIONA A ECONOMIA',
 
   // Pool widget stats
-  'mkt.pool.balance':         'Saldo',
-  'mkt.pool.rare_egg':        'Ovo Raro',
-  'mkt.pool.legendary_egg':   'Ovo Lendário',
   'mkt.pool.available':       'Disponível hoje',
-  'mkt.pool.empty_msg':       'Pool vazia — em breve! 🌱',
   'mkt.pool.state_title':     'Estado atual da pool',
   'mkt.cob.title':       '🛡️ COBERTURA DO COFRE',
   'mkt.cob.sub':         'do MATIC necessário para pagar todos os cristais que existem',
@@ -190,7 +186,6 @@ window.registerStrings({
   'mkt.cob.indisponivel':'Cálculo indisponível no momento.',
   'mkt.pool.total_in':        'Total entrou',
   'mkt.pool.total_out':       'Total saiu',
-  'mkt.pool.price_sub':       'preço atual de recompra',
 
   // ── Comprar Cristais ──────────────────────────────────────────────
   'mkt.crystals.title':       '💎 Comprar Cristais',
@@ -314,10 +309,6 @@ window.registerStrings({
   'mkt.limit.with_limit':      '{used} MATIC sacados hoje · {remaining} MATIC restantes (limite: 5 MATIC/dia)',
 
   // Pool limit tiers
-  'mkt.pool.limit_1':          '📊 Limite atual: 1 venda/semana · Cresce com a pool',
-  'mkt.pool.limit_2':          '📊 Limite atual: 2 vendas/semana · Pool em crescimento',
-  'mkt.pool.limit_3':          '📊 Limite atual: 3 vendas/semana · Pool saudável',
-  'mkt.pool.limit_5':          '📊 Limite atual: 5 vendas/semana · Pool forte 💪',
   'mkt.pool.fees':             '100% das taxas do jogo alimentam esta pool.',
 
   // Transparency block titles
@@ -340,22 +331,16 @@ window.registerStrings({
   'mkt.transp.feed_mkt':       'MERCADO',
   'mkt.transp.list_avatar':    'Listar avatar',
   'mkt.transp.sell_avatar':    'Venda de avatar',
-  'mkt.transp.sell_egg_mkt':   'Venda de ovo no mercado',
   'mkt.transp.weekly_body':    'O desenvolvedor recebe <strong style="color:var(--text);">1% de cada resgate</strong>, e mais nada. Sai do que é sacado, como os bônus de convite — nunca da pool.',
   'mkt.transp.from_where':     'DE ONDE SAI',
   'mkt.transp.on_withdraw':    'Resgate de 💎 → MATIC',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
   'mkt.transp.weekly_note':    'Sacar 50 💎 dá <strong style="color:var(--text);">0,50 💎</strong> ao desenvolvedor. A pool não é tocada.',
-  'mkt.transp.price_display':  '{price} 💎 atual · até {max} 💎',
-  'mkt.transp.eggs_body':      'Um ovo Raro ou Lendário tem duas saídas: <strong>queimar</strong>, e a pool paga por ele a preço dinâmico — mais alto quando está cheia — ou <strong>vender a outro jogador</strong> no mercado. Só a queima tira cristais da pool, e ela nunca paga o que não tem: <strong>com a pool vazia a queima não vale nada</strong> e fica bloqueada. O mercado não depende da pool.',
-  'mkt.transp.burn_label':     'QUEIMAR O COMUM (não toca na pool)',
-  'mkt.transp.egg_rare':       'Ovo Raro',
-  'mkt.transp.egg_legendary':  'Ovo Lendário',
-  'mkt.transp.egg_common':     'Ovo Comum',
+  'mkt.transp.eggs_body':      'Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lado nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.',
+  'mkt.transp.burn_label':     'QUEIMAR (não toca na pool)',
+  'mkt.transp.egg_burn':       'Queimar um ovo',
   'mkt.transp.coins_internal': '(moedas internas)',
-  'mkt.transp.sell_pool':      'QUEIMAR — A POOL PAGA (preço dinâmico)',
-  'mkt.transp.eggs_note':      'O preço da queima sobe até 2× quando a pool ultrapassa o alvo de <strong style="color:var(--text);">1000 💎</strong>.\nLimite de queimas por semana: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)',
   'mkt.transp.exchange_body':  'Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda conforme o estado da pool — quanto mais cheia, mais barato.',
   'mkt.transp.exchange_rate':  'COTAÇÃO DO CÂMBIO (por 1 💎)',
   'mkt.transp.exchange_note':  'Requisito: avatar nível ≥ 20\nO câmbio só gasta o EXCEDENTE da pool: o que sobra depois de o cofre cobrir todos os cristais que os jogadores já podem sacar, e acima de uma reserva de <strong style="color:var(--text);">400 💎</strong> que fica para a queima de ovos.\nLimite por conta: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong> por dia\nA pool inteira não entrega mais de <strong style="color:var(--text);">100 💎 por dia</strong>, somando o câmbio e a queima de ovos.',
@@ -519,11 +504,7 @@ window.registerStrings({
   'mkt.pool.economy':         '◆ HOW THE ECONOMY WORKS',
 
   // Pool widget stats
-  'mkt.pool.balance':         'Balance',
-  'mkt.pool.rare_egg':        'Rare Egg',
-  'mkt.pool.legendary_egg':   'Legendary Egg',
   'mkt.pool.available':       'Available today',
-  'mkt.pool.empty_msg':       'Empty pool — coming soon! 🌱',
   'mkt.pool.state_title':     'Current pool state',
   'mkt.cob.title':       '🛡️ VAULT COVERAGE',
   'mkt.cob.sub':         'of the MATIC needed to pay out every crystal in existence',
@@ -536,7 +517,6 @@ window.registerStrings({
   'mkt.cob.indisponivel':'Calculation unavailable right now.',
   'mkt.pool.total_in':        'Total in',
   'mkt.pool.total_out':       'Total out',
-  'mkt.pool.price_sub':       'current buyback price',
 
   // Crystals
   'mkt.crystals.title':       '💎 Buy Crystals',
@@ -658,10 +638,6 @@ window.registerStrings({
   'mkt.limit.with_limit':      '{used} MATIC redeemed today · {remaining} MATIC remaining (limit: 5 MATIC/day)',
 
   // Pool limit tiers
-  'mkt.pool.limit_1':          '📊 Current limit: 1 sale/week · Grows with the pool',
-  'mkt.pool.limit_2':          '📊 Current limit: 2 sales/week · Pool growing',
-  'mkt.pool.limit_3':          '📊 Current limit: 3 sales/week · Healthy pool',
-  'mkt.pool.limit_5':          '📊 Current limit: 5 sales/week · Strong pool 💪',
   'mkt.pool.fees':             '100% of game fees feed this pool.',
 
   // Transparency block titles
@@ -684,22 +660,16 @@ window.registerStrings({
   'mkt.transp.feed_mkt':       'MARKET',
   'mkt.transp.list_avatar':    'List avatar',
   'mkt.transp.sell_avatar':    'Avatar sale',
-  'mkt.transp.sell_egg_mkt':   'Egg marketplace sale',
   'mkt.transp.weekly_body':    'The developer takes <strong style="color:var(--text);">1% of every redemption</strong>, and nothing else. It comes out of what is withdrawn, like referral bonuses — never from the pool.',
   'mkt.transp.from_where':     'WHERE IT COMES FROM',
   'mkt.transp.on_withdraw':    'Withdrawing 💎 → MATIC',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — never touched',
   'mkt.transp.weekly_note':    'Redeeming 50 💎 gives <strong style="color:var(--text);">0.50 💎</strong> to the developer. The pool is untouched.',
-  'mkt.transp.price_display':  '{price} 💎 current · up to {max} 💎',
-  'mkt.transp.eggs_body':      'A Rare or Legendary egg has two exits: <strong>burn it</strong>, and the pool pays a dynamic price — higher when the pool is full — or <strong>sell it to another player</strong> on the market. Only burning takes crystals out of the pool, and it never pays what it does not have: <strong>with an empty pool a burn is worth nothing</strong> and is blocked. The market does not depend on the pool.',
-  'mkt.transp.burn_label':     'BURN A COMMON (pool untouched)',
-  'mkt.transp.egg_rare':       'Rare Egg',
-  'mkt.transp.egg_legendary':  'Legendary Egg',
-  'mkt.transp.egg_common':     'Common Egg',
+  'mkt.transp.eggs_body':      'An egg has two exits: <strong>hatch it</strong>, and the avatar is born from it, or <strong>burn it</strong>, which gives internal coins. Neither touches the pool — an egg is worth no crystals anywhere. What sells for crystals is the avatar, on the market, and there the sale fee goes to the pool.',
+  'mkt.transp.burn_label':     'BURN (pool untouched)',
+  'mkt.transp.egg_burn':       'Burn an egg',
   'mkt.transp.coins_internal': '(internal coins)',
-  'mkt.transp.sell_pool':      'BURN — THE POOL PAYS (dynamic price)',
-  'mkt.transp.eggs_note':      'Burn price rises up to 2× when the pool exceeds the target of <strong style="color:var(--text);">1000 💎</strong>.\nWeekly burn limit: <strong style="color:var(--text);">1×</strong> (pool &lt;100) · <strong style="color:var(--text);">2×</strong> (≥100) · <strong style="color:var(--text);">3×</strong> (≥500) · <strong style="color:var(--text);">5×</strong> (≥1000)',
   'mkt.transp.exchange_body':  'Active players can convert coins earned in the game into real 💎 crystals. The rate changes based on pool status — the fuller it is, the cheaper.',
   'mkt.transp.exchange_rate':  'EXCHANGE RATE (per 1 💎)',
   'mkt.transp.exchange_note':  'Requirement: avatar level ≥ 20\nThe exchange only spends the pool SURPLUS: what is left once the vault covers every crystal players can already withdraw, and above a <strong style="color:var(--text);">400 💎</strong> reserve kept for egg burning.\nPer-account limit: <strong style="color:var(--text);">Common 1💎 · Rare 2💎 · Legendary 4💎</strong> per day\nThe whole pool never pays out more than <strong style="color:var(--text);">100 💎 a day</strong>, counting the exchange and egg burning.',

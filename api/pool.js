@@ -6,20 +6,17 @@
 //  GET  /api/pool?cobertura=1  → o cofre chega para os cristais que existem
 //  POST /api/pool { acao, idToken, ... }
 //    acao='taxa'        → entrada na pool (taxa de listagem/venda)
-//    acao='queimar-ovo' → jogador queima ovo e a pool paga (preço dinâmico)
 // ═══════════════════════════════════════════════════════════════
 
 const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
-const { POOL_LIMITE_DIA, saqueDeHoje,
-        marcarSaque }                  = require('./_pool-economia.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
-const POOL_ALVO       = 1000;
-// POOL_LIMITE_DIA e saqueDeHoje vêm do _pool-economia.js, para o câmbio
-// (em outro arquivo) poder usar exatamente a mesma regra.
+/* O POOL_ALVO, o POOL_LIMITE_DIA, o saqueDeHoje e o marcarSaque saíram
+   daqui com a queima de ovos. Continuam vivos no _pool-economia.js, que
+   é quem os empresta ao api/cambiar.js — a saída da pool que restou. */
 const PRICE_MIN       = 1;
 const PRICE_MAX       = 10000;
 
@@ -37,13 +34,6 @@ function initAdmin() {
 }
 
 function getMesAtual() { return new Date().toISOString().slice(0, 7); }
-
-function semanaAtual() {
-  const now = new Date();
-  const ini = new Date(now.getFullYear(), 0, 1);
-  const sem = Math.ceil(((now - ini) / 86400000 + ini.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(sem).padStart(2, '0')}`;
-}
 
 // ═══════════════════════════════════════════════════════════════
 // COBERTURA — o cofre chega para os cristais que existem?
@@ -202,7 +192,6 @@ module.exports = async function handler(req, res) {
   }
 
   if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
-  if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, poolRef, uid);
   if (acao === 'morreu')      return handleMorreu(req, res, db, uid);
   if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
@@ -240,154 +229,38 @@ async function handleTaxa(req, res, db, poolRef, uid) {
   }
 }
 
-/* ⚠ FORA DE ALCANCE, DE PROPÓSITO.
+/* ── AS DUAS PORTAS DA POOL PARA O JOGADOR FECHARAM-SE ──
 
-   Este handler queima um ovo Raro ou Lendário e a pool paga por ele em
-   cristais, a preço dinâmico. Como já não existem ovos Raros nem
-   Lendários, nenhum cliente o chama e a primeira linha recusa tudo o
-   resto — só aceita raridade diferente de Comum, e o registo do
-   servidor só escreve Comum. Não há por onde entrar.
+   Viveram aqui dois handlers de queima de ovos, e nos dois o ovo era
+   destruído e a pool pagava em cristais — nunca houve comprador. Um a
+   preço fixo (2 💎 o Raro, 6 o Lendário), outro a preço dinâmico
+   conforme o saldo, com limite semanal de 1 a 5 conforme a pool.
 
-   NÃO O APAGUEI porque era A ÚNICA SAÍDA DA POOL para o jogador: a
-   única forma de tirar valor de lá destruindo alguma coisa. Apagar um
-   caminho de dinheiro sem que ninguém o tenha pedido é pior do que o
-   deixar marcado.
+   O de preço fixo saiu primeiro, por ser o mesmo acto com outro nome e
+   por escapar às duas defesas: ignorava o ratio, portanto pagava quatro
+   vezes mais justamente com a pool baixa, e não contava para o limite
+   semanal.
 
-   O que provavelmente o substitui: queimar o AVATAR, agora que é ele
-   que conquista a raridade. Hoje queimar um avatar não paga nada — só
-   liberta o slot. Mas isso é economia, e a economia é conversa à parte. */
-async function handleQueimarOvo(req, res, db, poolRef, uid) {
-  const { raridade, ovoId } = req.body;
-  if (!raridade || raridade === 'Comum') return res.status(400).json({ erro: 'Ovos Comuns não são aceites.' });
-  if (!ovoId) return res.status(400).json({ erro: 'ovoId em falta' });
+   O dinâmico ficou marcado, fora de alcance: os ovos deixaram de ter
+   raridade e a primeira linha dele só aceitava raridade diferente de
+   Comum. Sai agora, e com ele o semanaAtual, o POOL_ALVO e o
+   poolVendasLog, que só ele escrevia.
 
-  const playerRef = db.collection('players').doc(uid);
+   O QUE ISTO SIGNIFICA PARA A ECONOMIA, dito com todas as letras: o
+   jogador já não tem forma de tirar cristais da pool DESTRUINDO alguma
+   coisa. A saída que resta é o câmbio (api/cambiar.js), que troca
+   moedas por cristais com nível 20 à entrada, tecto diário por
+   raridade e o tecto global de 100 💎/dia da própria pool.
 
-  try {
-    const resultado = await db.runTransaction(async (tx) => {
-      const [playerSnap, poolSnap] = await Promise.all([tx.get(playerRef), tx.get(poolRef)]);
-      if (!playerSnap.exists) throw new Error('Jogador não encontrado');
+   O que provavelmente substitui isto: queimar o AVATAR, agora que é
+   ele que conquista a raridade. Hoje queimar um avatar não paga nada —
+   só liberta o slot. Mas isso é economia, e a economia é conversa à
+   parte.
 
-      const pData   = playerSnap.data();
-      const poolData = poolSnap.exists ? poolSnap.data() : { cristais: 0, saqueHoje: 0 };
-
-      // Validar pool
-      if ((poolData.cristais || 0) <= 0) throw new Error('Pool vazia de momento.');
-      if (saqueDeHoje(poolData) >= POOL_LIMITE_DIA) throw new Error('Limite diário global da pool atingido.');
-
-      // Validar ovo no inventário
-      // Campo correto no Firebase é activeSlotIdx (não activeSlot)
-      const slotIdx    = pData.activeSlotIdx ?? pData.gs?.activeSlot ?? pData.activeSlot ?? 0;
-      const activeSlot = (pData.avatarSlots || [])[slotIdx];
-      const eggs       = activeSlot?.eggs || [];
-      const ovoIdx     = eggs.findIndex(e => String(e.id) === String(ovoId) && e.raridade === raridade);
-      if (ovoIdx === -1) throw new Error('Ovo não encontrado no inventário.');
-      /* O ovo tem de ter sido emitido pelo servidor.
-         Isto lia os ovos de activeSlot.eggs e mais nada — e esse array vem
-         do avatarSlots, que o cliente escreve por inteiro. Escrever um ovo
-         Lendário num slot e queimá-lo era dinheiro da pool a sair por um ovo que
-         nunca existiu. O ovosEmitidos é a prova, escrito pelo
-         handleBotarOvo e fora do alcance do cliente (firestore.rules). */
-      const _emitidos = pData.ovosEmitidos || {};
-      if (_emitidos['o' + String(ovoId)] !== raridade) {
-        throw new Error('OVO_SEM_REGISTO');
-      }
-
-
-      // Limite semanal por jogador
-      const semana = semanaAtual();
-      const poolLog = pData.poolVendasLog || {};
-      const countSemana = poolLog.semana === semana ? (poolLog.count || 0) : 0;
-      const limiteSemanal = poolData.cristais >= 1000 ? 5 : poolData.cristais >= 500 ? 3 : poolData.cristais >= 100 ? 2 : 1;
-      if (countSemana >= limiteSemanal) throw new Error(`Limite semanal atingido (${limiteSemanal}x). Volta na próxima semana.`);
-
-      // Calcular preço
-      const ratio = Math.min(2, poolData.cristais / POOL_ALVO);
-      const base  = raridade === 'Lendário' ? 1.0 : 0.5;
-      // Não há mínimo garantido. Havia um piso de 0,10 no Raro e 0,25
-      // no Lendário, e um piso é uma promessa que a pool faz sem saber
-      // se a pode cumprir: com a pool quase seca, pagava 0,10 onde o
-      // ratio pedia 0,0005 — 200× a mais, justamente no momento em que
-      // ela tinha menos. Se a pool não tem, não paga.
-      const preco = parseFloat((base * ratio).toFixed(2));
-      // Com a pool tão baixa que o preço arredonda a zero, recusa-se em
-      // vez de destruir o ovo por nada. O jogador fica com ele para
-      // quando a pool recuperar, ou vende-o a outro jogador.
-      if (preco <= 0) throw new Error('A pool está demasiado baixa para pagar este ovo. Guarda-o ou vende-o no mercado.');
-
-      if (poolData.cristais < preco) throw new Error('Pool sem saldo suficiente.');
-
-      // Remover ovo do inventário
-      const newEggs  = [...eggs];
-      newEggs.splice(ovoIdx, 1);
-      const newSlots = [...(pData.avatarSlots || [])];
-      if (newSlots[slotIdx]) newSlots[slotIdx] = { ...newSlots[slotIdx], eggs: newEggs };
-
-      const cristaisAtuais = pData.gs?.cristais ?? pData.cristais ?? 0;
-      const novosCristais  = cristaisAtuais + preco;
-
-      // O registo do ovo morre com ele. Sem isto, um ovo queimado deixava
-      // para trás a sua prova em ovosEmitidos, e o cliente — que escreve o
-      // avatarSlots — podia repô-lo no array e listá-lo à venda depois de
-      // já ter recebido os cristais por o queimar.
-      tx.update(playerRef, {
-        avatarSlots:   newSlots,
-        'gs.cristais': novosCristais,
-        cristais:      novosCristais,
-        poolVendasLog: { semana, count: countSemana + 1 },
-        [`ovosEmitidos.o${ovoId}`]: FieldValue.delete(),
-      });
-      tx.update(poolRef, Object.assign({
-        cristais:  FieldValue.increment(-preco),
-        totalSaiu: FieldValue.increment(preco),
-      }, marcarSaque(poolData, preco, FieldValue)));
-      const logRef = poolRef.collection('logs').doc();
-      tx.set(logRef, {
-        tipo: 'saida', motivo: `Ovo ${raridade} queimado na pool`,
-        origem: uid, total: preco, pool: -preco,
-        ts: FieldValue.serverTimestamp(),
-      });
-
-      return { preco, novosCristais };
-    });
-
-    return res.status(200).json({ ok: true, preco: resultado.preco, novosCristais: resultado.novosCristais });
-
-  } catch (err) {
-    console.error('[pool/queimar-ovo]', err.message);
-    return res.status(400).json({ erro: err.message });
-  }
-}
-
-/* A SEGUNDA PORTA PARA A POOL SAIU DAQUI.
-
-   Vivia aqui um segundo handler de queima, com preço FIXO — 2 💎 o Raro,
-   6 o Lendário, até 3 e 9 com o bónus do avatar activo.
-
-   O problema não era o preço, era serem dois caminhos para o mesmo acto.
-   A transação dele e a do handleQueimarOvo que ficou, acima, eram iguais
-   linha a linha: tiravam o ovo do avatarSlots, apagavam a prova em
-   ovosEmitidos, creditavam cristais e debitavam a pool com um log de
-   saída. Nenhuma delas tinha comprador — as duas destruíam o ovo.
-
-   Só que a do preço fixo escapava às duas defesas da pool:
-
-     o preço  ignorava o ratio. Com a pool baixa pagava 2 💎 onde a
-              outra pagava 0,50 — quatro vezes mais, justamente quando
-              a pool tinha menos para dar.
-     o limite não verificava o poolVendasLog. A que ficou conta para o
-              limite semanal (1/2/3/5 conforme a pool); esta era
-              ilimitada, travada só pelo tecto global de 100 💎/dia.
-
-   Com as duas portas abertas ninguém tinha motivo para usar a de preço
-   dinâmico, e o limite semanal era código morto.
-
-   Fica uma porta só para a pool — o handleQueimarOvo, dinâmico e com
-   limite. A outra saída de um ovo raro é o mercado, onde outro jogador
-   paga e fica com ele.
-
-   O Comum não passa por aqui: a pool não o aceita, e queima-se no
-   cliente por 20 🪙 de moedas internas, que não saem da pool. */
+   O ovosEmitidos ficou sem ninguém que o leia: era a prova que este
+   handler exigia. Continua protegido nas firestore.rules, porque um
+   campo fechado que ninguém escreve não custa nada e reabri-lo custa
+   um deploy. */
 
 /* Retirar um ovo do mercado.
    Isto era feito no cliente, num batch que apagava a listagem e devolvia

@@ -593,6 +593,30 @@
   transition: border-color .15s, background .15s;
 }
 .cruzar-item:hover { border-color: var(--gold2); }
+
+/* ── O MESMO FÔLEGO DA COLÓNIA ──
+
+   Os fotogramas são os do css/fazenda.css e não se repetem aqui: as
+   duas listas mostram o mesmo bicho, e duas cópias da mesma animação
+   acabavam por discordar uma da outra. O atraso vem do cartão, como lá,
+   senão todos os pais sobem e descem em uníssono. */
+.cruzar-svg {
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+.cruzar-svg svg {
+  animation: fz-flutua 3s ease-in-out infinite;
+  animation-delay: var(--fz-compasso, 0s);
+}
+.cruzar-item.dormindo .cruzar-svg svg { animation-name: fz-embala; }
+.cruzar-zzz {
+  position: absolute; top: -0.125rem; right: -0.1875rem;
+  font-size: 0.4375rem; line-height: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cruzar-svg svg { animation: none; }
+}
 .cruzar-item.on {
   border-color: var(--gold);
   background: rgba(201,168,76,.16);

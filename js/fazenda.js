@@ -411,8 +411,21 @@ function _fzRenderCruzar() {
       ? gerarSVG(s, s.raridade, s.seed || 0, 34, 34,
                  (typeof _faseNum === 'function' ? _faseNum(s.nivel) : 3)) : '';
     const on = _fzEscolhidos.includes(idx);
-    return `<button class="cruzar-item${on ? ' on' : ''}" onclick="fzEscolherPai(${idx})">
-      <span class="cruzar-svg">${svg}</span>
+    /* ── OS PAIS RESPIRAM, COMO NA COLÓNIA ──
+
+       Esta lista era a única do jogo onde o bicho ficava parado. O
+       mesmo avatar flutua na tela de cuidar e no cartão da colónia, e
+       aqui — a três centímetros do cartão de onde se veio — estava uma
+       figura recortada.
+
+       São as mesmas duas animações e o mesmo compasso desencontrado
+       (ver css/fazenda.css e o _fazendaCartao, aqui em cima): a quem
+       dorme troca-se o flutuar pelo embalar, e o 💤 diz o mesmo sem se
+       mexer, para quem pediu ao sistema para não haver movimento. */
+    const dorme    = !!s.sleeping;
+    const compasso = (idx % 6) * 0.5;
+    return `<button class="cruzar-item${on ? ' on' : ''}${dorme ? ' dormindo' : ''}" onclick="fzEscolherPai(${idx})">
+      <span class="cruzar-svg" style="--fz-compasso:${compasso}s">${svg}${dorme ? '<span class="cruzar-zzz">💤</span>' : ''}</span>
       <span class="cruzar-nome">${esc(nome)}</span>
       <span class="cruzar-sexo ${sexo === 'M' ? 'macho' : 'femea'}">${sexo === 'M' ? '♂' : '♀'}</span>
     </button>`;
