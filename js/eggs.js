@@ -59,6 +59,23 @@ async function goToMarketplace(e) {
   if(typeof openMarketplaceModal === 'function') openMarketplaceModal();
 }
 
+/* ── ONDE O OVO PODE NASCER ──
+
+   Um slot está livre quando não tem lá ninguém. E "ninguém" media-se
+   pelo NOME: `!s.nome` queria dizer slot vazio.
+
+   Isso partiu-se no dia em que os avatares passaram a chegar sem nome.
+   Um bicho por baptizar tem o nome vazio, e este ciclo dava o slot dele
+   como livre — o ovo seguinte nascia POR CIMA de um avatar vivo.
+
+   A prova de que há alguém é o `id`, que todo o avatar tem desde que
+   nasce e que nunca fica vazio (identidadeNova, em js/identidade.js).
+   O `pendingEgg` continua a contar: um ovo a chocar já reservou o
+   lugar. */
+function _slotOcupado(s) {
+  return !!(s && (s.id || s.hatched || s.pendingEgg));
+}
+
 function findTargetSlot() {
   const unlocked = getUnlockedSlots();
   const activeS = avatarSlots[activeSlotIdx];
@@ -67,8 +84,7 @@ function findTargetSlot() {
   }
   for(let i = 0; i < unlocked; i++) {
     if(i === activeSlotIdx) continue;
-    const s = avatarSlots[i];
-    if(!s || (!s.nome && !s.pendingEgg)) return i;
+    if(!_slotOcupado(avatarSlots[i])) return i;
   }
   return -1;
 }

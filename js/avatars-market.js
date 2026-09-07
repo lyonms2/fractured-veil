@@ -300,7 +300,7 @@ function openListModal(slotIdx) {
     <div style="display:flex;align-items:center;gap:0.625rem;background:var(--surface2);padding:0.625rem;border-radius:0.5rem;">
       ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${s.nome}</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${esc(nomeCurto(s))}</div>
         <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
@@ -468,7 +468,21 @@ function renderSlots() {
 
   for(let i=0;i<unlocked;i++) {
     const s = slots[i];
-    const isActive = i === playerData.activeSlotIdx;
+    /* ── AQUI JÁ NÃO HÁ "ATIVO" ──
+
+       Este painel marcava com um crachá verde o avatar que estivesse
+       aberto na consola, e escondia-lhe os botões de VENDER e de
+       QUEIMAR.
+
+       Fazia sentido quando o activo era o que jogava e os outros
+       estavam em pausa. Hoje vivem todos ao mesmo tempo, e desde que as
+       visitas passaram a ser à colónia inteira o activo deixou de ter
+       consequência nenhuma para fora da consola: é só onde o jogador
+       está neste momento, e isso não é uma propriedade do bicho.
+
+       O que ficava por dizer é que, para vender o avatar que se tinha
+       aberto, era preciso primeiro ir cuidar de outro. Ninguém adivinha
+       isso — o botão simplesmente não estava lá. */
     if(s && s.dead) {
       html += `<div class="slot-card" style="border-style:solid;border-color:rgba(180,60,60,.4);opacity:.7;">
         <div class="slot-stripe" style="background:rgba(180,60,60,.5);"></div>
@@ -492,13 +506,12 @@ function renderSlots() {
         <div class="slot-header">
           <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
           ${isPending ? `<div class="slot-badge" style="background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);">${t('mkt.slot.hatching')}</div>` : ''}
-          ${isActive && !isPending ? `<div class="slot-badge active">${t('mkt.slot.active')}</div>` : ''}
         </div>
         <div class="slot-empty-wrap">
           <div class="slot-empty-icon">${isPending ? '🥚' : '🌀'}</div>
           <div class="slot-empty-title">${isPending ? t('mkt.slot.hatching_title') : t('mkt.slot.empty')}</div>
           <div class="slot-empty-txt">${isPending ? t('mkt.slot.hatching_sub').replace('\n','<br>')
-            : (isActive ? t('mkt.slot.empty_active_sub') : t('mkt.slot.empty_sub')).replace('\n','<br>')}</div>
+            : t('mkt.slot.empty_sub').replace('\n','<br>')}</div>
         </div>
         <!-- ── O "USAR ESTE SLOT" SAIU ──
 
@@ -521,16 +534,10 @@ function renderSlots() {
       const _cor = s.nascimento
         ? `{corPrincipal:${s.nascimento.corPrincipal||0},corSecundaria:${s.nascimento.corSecundaria||0}}`
         : 'null';
-      html += `<div class="slot-card ${isActive?'slot-active':''} ${isFrozen?'slot-frozen':''}">
+      html += `<div class="slot-card ${isFrozen?'slot-frozen':''}">
         <div class="slot-stripe ${s.raridade}"></div>
         <div class="slot-header">
           <div class="slot-label">${t('mkt.slot.label', {n: i+1})}</div>
-          <!-- O crachá diz "Ativo" e nunca disse do quê. Ativo é o que
-               está ABERTO na consola — e, o que importa mais, é o que os
-               amigos veem na procura e o que eles visitam (api/amigos.js
-               lê o activeSlotIdx). Os outros vivem na mesma; só não são
-               a cara que se mostra. -->
-          ${isActive ? `<div class="slot-badge active" title="${t('mkt.slot.active_hint')}">${t('mkt.slot.active')}</div>` : ''}
           ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
@@ -563,7 +570,7 @@ function renderSlots() {
                do Queimar. -->
           <div class="slot-actions">
             ${_slotBtnEquipa(i, s)}
-            ${!isActive && !isFrozen ? `
+            ${!isFrozen ? `
             <!-- O ATIVAR saiu. Escolher com quem se joga passou a ser o
                  CUIDAR da colônia, na tela principal, ao lado dos vitais
                  daquele bicho — que é onde a escolha faz sentido. Aqui
@@ -637,7 +644,10 @@ let _burnPendingIdx = null;
 
 function burnAvatar(idx) {
   const s = playerData.avatarSlots?.[idx];
-  if(!s || !s.nome) return;
+  /* Era `!s.nome`, e o nome deixou de ser prova de que há alguém: um
+     avatar por baptizar tem-no vazio, e o botão de queimar não fazia
+     nada — sem erro, sem aviso, sem nada. A prova é o `id`. */
+  if(!s || !(s.id || s.hatched)) return;
   _burnPendingIdx = idx;
 
   const _ps = [nomeCurto(s), alcunhaDe(s)];
@@ -667,6 +677,20 @@ async function _mktClearSlot(idx) {
   if(_mktGameStateDisponivel()) {
     avatarSlots[idx] = null;
     if(playerData) playerData.avatarSlots = avatarSlots;
+    /* ── E SE ERA O QUE ESTAVA ABERTO ──
+
+       Queimar ou vender o avatar aberto era proibido, e por isso isto
+       nunca fez falta. Agora pode-se, e o slot activo passa a apontar
+       para nada: sem esta reposição a consola ficava a mostrar um bicho
+       que já não existe até ao próximo refresh.
+
+       Quem decide o que mostrar é o rebuildScreensParaSlot — com o slot
+       vazio, ele abre a colónia. */
+    if(idx === activeSlotIdx) {
+      if(typeof loadRuntimeFromSlot === 'function') loadRuntimeFromSlot(activeSlotIdx);
+      if(typeof rebuildScreensParaSlot === 'function') rebuildScreensParaSlot();
+      if(typeof updateAllUI === 'function') updateAllUI();
+    }
     if(typeof scheduleSave === 'function') scheduleSave();
   } else {
     await updateSlots(slots => { slots[idx] = null; });
@@ -677,12 +701,13 @@ async function confirmBurnAvatar() {
   const idx = _burnPendingIdx;
   _burnPendingIdx = null;
   document.getElementById('burnOverlay').classList.remove('open');
-  if(idx === null || idx === playerData.activeSlotIdx) return;
+  if(idx === null) return;
 
   const name = nomeCurto(playerData.avatarSlots[idx]);
 
   await _mktClearSlot(idx);
-  showToast(`🔥 ${name} foi queimado. Slot ${idx+1} libertado.`, 'ok');
+  // Estava em português cravado, e este painel lê-se nas duas línguas.
+  showToast(t('mkt.burn.feito', { nome: name, n: idx + 1 }), 'ok');
   renderSlots();
 }
 
@@ -691,7 +716,7 @@ async function clearDeadSlot(idx) {
   if(!s || !s.dead) return;
   const name = nomeCurto(s);
   await _mktClearSlot(idx);
-  showToast(`💀 ${name} foi descansado. Slot ${idx+1} libertado.`, 'ok');
+  showToast(t('mkt.morto.limpo', { nome: name, n: idx + 1 }), 'ok');
   renderSlots();
 }
 

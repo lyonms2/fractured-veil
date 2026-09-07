@@ -191,7 +191,6 @@
 .slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(11.25rem,1fr));gap:1rem;margin-bottom:1.25rem;}
 .slot-card{background:var(--surface2);border:1px solid var(--border);border-radius:0.875rem;display:flex;flex-direction:column;align-items:stretch;position:relative;overflow:hidden;transition:all .25s;}
 .slot-card:hover{border-color:var(--border2);transform:translateY(-0.125rem);}
-.slot-card.slot-active{border-color:var(--green);box-shadow:0 0 1.25rem rgba(34,197,94,.15);}
 .slot-card.slot-frozen{border-color:var(--gold);box-shadow:0 0 0.875rem rgba(201,168,76,.12);}
 .slot-card.slot-locked{border-style:dashed;opacity:.4;}
 .slot-stripe{height:0.1875rem;width:100%;flex-shrink:0;}
@@ -201,7 +200,6 @@
 .slot-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem 0;}
 .slot-label{font-size:0.5rem;color:var(--muted);letter-spacing:0.09375rem;text-transform:uppercase;font-family:'Cinzel',serif;}
 .slot-badge{font-size:0.5rem;font-family:'Cinzel',serif;letter-spacing:0.03125rem;text-transform:uppercase;padding:0.125rem 0.4375rem;border-radius:1.25rem;font-weight:700;}
-.slot-badge.active{background:rgba(34,197,94,.15);color:var(--green2);border:1px solid rgba(34,197,94,.3);}
 .slot-badge.frozen{background:rgba(201,168,76,.15);color:var(--gold2);border:1px solid rgba(201,168,76,.3);}
 .slot-svg-wrap{width:6.25rem;height:6.25rem;margin:0.875rem auto 0.25rem;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 72%);border-radius:1rem;flex-shrink:0;position:relative;}
 .slot-svg-wrap svg{width:6rem;height:6rem;display:block;}

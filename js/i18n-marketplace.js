@@ -69,29 +69,28 @@ window.registerStrings({
 
   // ── Meus Avatares (slots) ─────────────────────────────────────────
   'mkt.slots.title':          '🧬 Meus Avatares',
-  /* Dizia "o slot ativo é o que você joga no jogo principal", e isso
-     deixou de ser verdade quando a colônia passou a ser a casa: os
-     avatares vivem TODOS ao mesmo tempo, envelhecem todos e adoecem
-     todos (viverTodos, em js/gametick.js). Nenhum fica em pausa.
+  /* Isto já mudou duas vezes, e a segunda foi por minha causa: escrevi
+     que o "ativo" era o que os amigos veem, e no commit seguinte as
+     visitas passaram a ser à colônia inteira. Deixou de haver ativo
+     nenhum a explicar.
 
-     O que o ativo é hoje: o que está aberto na tela — e é ele que os
-     amigos veem na busca e é ele que eles visitam (api/amigos.js).
-     Trocar faz-se no CUIDAR da colônia. */
-  'mkt.slots.sub':            'Todos os seus avatares vivem ao mesmo tempo. O ativo é o que está aberto na tela, e é ele que seus amigos veem e visitam — troque pelo Cuidar, na colônia.',
+     O que este painel é: a lista de todos, para ordenar a equipe de
+     combate, vender e queimar. Quem se cuida escolhe-se no CUIDAR da
+     colônia. */
+  'mkt.slots.sub':            'Todos os seus avatares vivem ao mesmo tempo. Aqui você ordena a equipe de combate, vende e queima. Para cuidar de um, use o Cuidar na colônia.',
 
   // Slot card labels
   'mkt.slot.label':           'Slot {n}',
-  'mkt.slot.active':          'Ativo',
   'mkt.slot.for_sale':        'À venda',
   'mkt.slot.hatching':        'Chocando',
   'mkt.slot.hatching_title':  'Chocando…',
   'mkt.slot.hatching_sub':    'Volte ao jogo\npara completar',
   'mkt.slot.empty':           'Vazio',
-  // Os dois diziam para invocar aqui, e já não há invocar. Um slot vazio
-  // é espaço à espera de um avatar comprado ou nascido de uma cruza.
+  // Dizia para invocar aqui, e já não há invocar. Um slot vazio é
+  // espaço à espera de um avatar comprado ou nascido de uma cruza.
   'mkt.slot.empty_sub':       'Espaço livre\npara um avatar',
-  'mkt.slot.empty_active_sub':'Espaço livre\npara um avatar',
-  'mkt.slot.active_hint':     'É este que está aberto na consola, e é este que os seus amigos veem e visitam.',
+  'mkt.burn.feito':           '🔥 {nome} foi queimado. Slot {n} liberado.',
+  'mkt.morto.limpo':          '💀 {nome} foi descansado. Slot {n} liberado.',
   'mkt.slot.locked':          'Bloqueado',
   'mkt.slot.locked_cost':     '{cost} 💎 para desbloquear',
   'mkt.slot.btn_list':        '✦ Listar à Venda',
@@ -427,18 +426,17 @@ window.registerStrings({
 
   // Slots
   'mkt.slots.title':          '🧬 My Avatars',
-  'mkt.slots.sub':            'All your avatars live at the same time. The active one is the one open on screen, and the one your friends see and visit — switch with Care, in the colony.',
+  'mkt.slots.sub':            'All your avatars live at the same time. Here you order the combat team, sell and burn. To care for one, use Care in the colony.',
 
   'mkt.slot.label':           'Slot {n}',
-  'mkt.slot.active':          'Active',
   'mkt.slot.for_sale':        'For Sale',
   'mkt.slot.hatching':        'Hatching',
   'mkt.slot.hatching_title':  'Hatching…',
   'mkt.slot.hatching_sub':    'Return to game\nto complete',
   'mkt.slot.empty':           'Empty',
   'mkt.slot.empty_sub':       'Free room\nfor an avatar',
-  'mkt.slot.empty_active_sub':'Free room\nfor an avatar',
-  'mkt.slot.active_hint':     'This is the one open in the console, and the one your friends see and visit.',
+  'mkt.burn.feito':           '🔥 {nome} was burned. Slot {n} freed.',
+  'mkt.morto.limpo':          '💀 {nome} was laid to rest. Slot {n} freed.',
   'mkt.slot.locked':          'Locked',
   'mkt.slot.locked_cost':     '{cost} 💎 to unlock',
   'mkt.slot.btn_list':        '✦ List for Sale',
