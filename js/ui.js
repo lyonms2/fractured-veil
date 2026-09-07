@@ -681,12 +681,6 @@ function fillCreatureCard() {
     stripe.className = `creature-card-stripe stripe-${avatar.raridade}`;
   }
 
-  // Badge "ATIVO · SLOT X"
-  const badge2 = document.getElementById('idBadge2');
-  if(badge2) {
-    badge2.textContent = t('ui.active_slot', {n: activeSlotIdx + 1});
-  }
-
   // Badge ⚖️ JURADO
   let _jb = document.getElementById('idBadgeJurado');
   if(gs?.jurado) {

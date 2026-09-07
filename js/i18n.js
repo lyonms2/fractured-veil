@@ -205,7 +205,6 @@
       'ui.life_time':            '⏳ TEMPO DE VIDA',
       'ui.nivel':                'NÍVEL {n}',
       'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
-      'ui.active_slot':          'ATIVO · SLOT {n}',
       'ui.sleep_btn':            'DORMIR',
       'ui.sleep_btn_mobile':     'Dormir',
 
@@ -547,7 +546,6 @@
       'ui.life_time':            '⏳ LIFETIME',
       'ui.nivel':                'LEVEL {n}',
       'ui.rarity_bonus':         '🥚×{eggs} · ⚡×{xp} XP · 💚-{decay}% decay',
-      'ui.active_slot':          'ACTIVE · SLOT {n}',
       'ui.sleep_btn':            'SLEEP',
       'ui.sleep_btn_mobile':     'Sleep',
 
