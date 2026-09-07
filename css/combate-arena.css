@@ -1126,9 +1126,30 @@
      ponto: o lance lê-se onde o golpe acontece. */
   position: absolute; left: 50%; top: 29%;
   transform: translate(-50%, -50%);
-  width: min(22rem, 72%); max-height: 7rem; min-height: 0;
+  /* ── A ALTURA ──
+     7rem cortavam a conta a meio: um turno com a magia, os dois dados e
+     a linha da FA contra a FD já passa disso, e o que se via era uma
+     frase decapitada — que num painel chamado "detalhes" é o contrário
+     do que ele existe para fazer.
+
+     Sobe para 12,5rem, que chega para um turno inteiro, e o que passar
+     disso ESBATE-SE em vez de ser cortado a direito. Um texto que se
+     desvanece diz "há mais"; um texto cortado diz "avariou". */
+  width: min(22rem, 72%); max-height: 12.5rem; min-height: 0;
+  /* O esbatimento tem de morder o ENCHIMENTO e não o texto. Sem o
+     padding, a máscara apagava a última linha e meia de qualquer lance,
+     mesmo dos curtos que cabiam à vontade — arranjava o corte e criava
+     um pior, porque um texto meio apagado parece um defeito de
+     desenho. Com 1,25rem de folga em baixo, um lance que cabe nunca é
+     tocado, e só o que transborda é que se desvanece. */
+  mask-image: linear-gradient(180deg, #000 calc(100% - 1.25rem), transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 1.25rem), transparent);
   z-index: 7; cursor: pointer;
-  background: none; border: none; padding: 0;
+  /* O `padding: 0` que aqui estava vinha DEPOIS do padding-bottom da
+     folga e apagava-o — a máscara voltava a morder o texto. A abreviada
+     ganha sempre à detalhada quando vem a seguir, mesmo dentro da mesma
+     regra. */
+  background: none; border: none; padding: 0 0 1.25rem;
   text-align: center;
   opacity: 0; pointer-events: none;
   transition: opacity .45s ease-out;
@@ -1138,6 +1159,11 @@
 .cb-palco .cb-log.viva { opacity: 1; pointer-events: auto; }
 /* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
 .cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
+/* E fechado mostra-se UM turno: o que acabou de acontecer. Os
+   anteriores estão a um toque de distância, no histórico, e empilhá-los
+   aqui era garantir que o de cima ficava cortado. O mais recente é o
+   primeiro (ver _pveLog). */
+.cb-palco .cb-log:not(.aberto) > *:not(:first-child) { display: none; }
 .cb-palco .cb-log:not(.aberto) .cb-detalhe { display: none; }
 /* O cabeçalho do turno não entra no lance: o número do turno já está
    escrito no canto de cima, e um "TURNO 3" em Cinzel grande por cima da
@@ -1156,6 +1182,7 @@
    Passa a ocupar o palco, opaco e a rolar, com a conta de cada turno a
    abrir onde antes não cabia. */
 .cb-palco .cb-log.aberto {
+  mask-image: none; -webkit-mask-image: none; padding-bottom: 0.5rem;
   left: 0.5rem; right: 0.5rem; top: 2.2rem;
   transform: none; width: auto;
   max-height: calc(100% - var(--rodape) - 3rem);

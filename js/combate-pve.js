@@ -311,6 +311,9 @@ function _pveComecar(equipa, inimigo, semente) {
                       : _c3valeTrocar(eu, alvo, banco),
   });
   _pveEstado.A.forEach(c => c._ladoJogador = true);
+  // Cada batalha começa com a cena limpa, seja qual for o estado em que
+  // a anterior ficou.
+  _pveMenuAberto = false;
 
   _pveShell();
   ModalManager.open('combateModal');
@@ -366,7 +369,7 @@ function _pveShell() {
       <span class="cb-topo-dir">
         <button id="cbDesistir" class="desistir" onclick="_pveDesistir()"
                 title="${t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR })}">${t('pve.acao.desistir')}</button>
-        <button onclick="fecharCombatePvE()">✕</button>
+        <button onclick="_pveSairOuDesistir()">✕</button>
       </span>
     </div>
 
@@ -413,10 +416,51 @@ function _pveDesistir() {
   _pveLog(t('pve.log.desistiu'), 'warn');
 }
 
+/* ── O ✕ NÃO PODE SER UMA SAÍDA DE GRAÇA ──
+
+   Fechava a batalha a meio sem cobrar nada: nem a energia, nem a
+   fratura de quem tinha caído, nem prémio nenhum. Ao lado dele estava o
+   DESISTIR, que cobra 4 de energia para fazer exactamente a mesma
+   coisa — portanto quem desse pelo ✕ nunca mais carregava no outro, e a
+   batalha perdida passava a custar zero.
+
+   Não é um exploit de dinheiro; é pior do que isso para o jogo. Uma
+   luta que se pode desfazer sem custo deixa de ser uma decisão: entra-se
+   em qualquer batalha, e se correr mal fecha-se a janela.
+
+   Agora o ✕ a meio da batalha É o desistir — com a mesma pergunta antes,
+   portanto ninguém sai por engano. Acabada a batalha, fecha e pronto:
+   aí já não há nada a cobrar. */
+function _pveSairOuDesistir() {
+  if (_pveEstado && !_pveEstado.acabou && !_pveAnim) return _pveDesistir();
+  fecharCombatePvE();
+}
+
 function fecharCombatePvE() {
   _pveEstado = null; _pveAcao = null; _pveAnim = false;
+  _pveMenuAberto = false;
   _pveGeracao++;   // a animação em curso, se houver, deixa de ter dono
   ModalManager.close('combateModal');
+
+  /* ── A COLÓNIA TEM DE SABER O QUE ACONTECEU ──
+
+     Isto fechava o modal e mais nada, e o jogador caía numa colónia
+     desactualizada: os três tinham gasto 10 de energia cada, ganho XP,
+     subido de nível e talvez apanhado uma fratura — e os cartões
+     continuavam a mostrar as barras de antes da batalha, com o aviso da
+     doença por aparecer.
+
+     Não era um erro de contas: o prémio estava entregue e gravado. Era
+     a tela a mostrar o mundo de há dois minutos, que é a pior espécie
+     de erro visual — não há nada para corrigir, e o jogador não tem
+     como saber se a batalha contou.
+
+     O `updateAllUI` trata das barras de quem está em campo; o
+     `renderFazenda` trata dos cartões dos seis. Faltavam os dois. */
+  if (typeof updateAllUI === 'function') updateAllUI();
+  if (typeof renderFazenda === 'function') renderFazenda();
+  if (typeof renderEquipaBar === 'function') renderEquipaBar();
+  if (typeof scheduleSave === 'function') scheduleSave();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1361,7 +1405,11 @@ function _pveSelo(nome) {
    O toque no avatar existe para o REABRIR: para desfazer uma escolha a
    meio, ou só para voltar a ver o que se pode fazer.
    ═══════════════════════════════════════════════════════════════════ */
-let _pveMenuAberto = true;
+/* COMEÇA FECHADO. A batalha abre-se com a arena à vista e mais nada:
+   quem entra quer primeiro ver contra o que vai lutar. O menu vem ao
+   primeiro toque no avatar — e a partir daí reabre-se sozinho no fim de
+   cada turno, que é quando volta a haver uma decisão para tomar. */
+let _pveMenuAberto = false;
 
 function _pveMenuAlternar() {
   if (_pveEstado && _pveEstado.acabou) return;

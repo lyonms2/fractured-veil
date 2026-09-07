@@ -41,6 +41,7 @@
   <button onclick="ensaioLance()">lance</button>
   <button onclick="_pveMenuAlternar()">menu</button>
   <button onclick="ensaioPM()">pm</button>
+  <button onclick="ensaioFim()">fim</button>
   <button onclick="ensaioRefazer()">refazer</button>
 </div>
 
@@ -68,6 +69,11 @@
    barra de ações leva uma cópia da forma dela — o que importa para a
    vista é o peso que ela tem em baixo, e esse é o mesmo. */
 _pveDesenharAcoes = function () {
+  // O fim da batalha usa o painel de verdade, que é o que se quer ver.
+  if (_pveEstado && _pveEstado.acabou) {
+    document.getElementById('cbAcoes').innerHTML = _pveBotaoFim();
+    return;
+  }
   const orbe = (selo, nome, sub, on, custo) =>
     '<button class="cb-orbe"' + (on ? '' : ' disabled') +
     ' title="' + nome + ' · ' + sub + '">' +
@@ -177,6 +183,14 @@ function ensaioLance() {
     'FA = H2 + F1 + 🎲3 = 6 · FD = A4 + H3 + 🎲3 = 10 → 6 − 10 ≤ 0' +
     '</span></div>',
     'info', _pveEstado.turnos + 1);
+}
+function ensaioFim() {
+  _pveEstado.B.forEach(c => { c.vivo = false; c.pv = 0; });
+  _pveEstado.acabou = true;
+  _pveEstado._premio = { coinGain: 240, xpGain: 86, vinculo: 3, energia: 10,
+                         quantos: 3, desistiu: false };
+  _pveEstado._fraturados = ['Vurel'];
+  _pveDesenhar();
 }
 ensaioRefazer();
 </script>
