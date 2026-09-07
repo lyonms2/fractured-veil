@@ -6,6 +6,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/ui.css">
+<!-- O screen.css traz os fotogramas do piscar (av-piscar), que a
+     arena reaproveita com um atraso por avatar. -->
+<link rel="stylesheet" href="css/screen.css">
 <link rel="stylesheet" href="css/combate.css">
 <link rel="stylesheet" href="css/combate-batalha.css">
 <link rel="stylesheet" href="css/combate-arena.css">
@@ -35,6 +38,8 @@
   <button onclick="ensaioCritico()">crítico</button>
   <button onclick="ensaioCurar()">curar</button>
   <button onclick="ensaioCair()">derrubar</button>
+  <button onclick="ensaioLance()">lance</button>
+  <button onclick="_pveMenuAlternar()">menu</button>
   <button onclick="ensaioRefazer()">refazer</button>
 </div>
 
@@ -62,11 +67,23 @@
    barra de ações leva uma cópia da forma dela — o que importa para a
    vista é o peso que ela tem em baixo, e esse é o mesmo. */
 _pveDesenharAcoes = function () {
-  document.getElementById('cbAcoes').innerHTML = [
-    ['Golpe Comum', 'FA 3+4+1d'], ['Ferrões Salinos', '3 PM · envenena'],
-    ['Véu de Correntes', '2 PM · FD +10'], ['Maré Compartilhada', '5 PM · cura'],
-  ].map(([r, s]) => '<button class="cb-btn"><span class="cb-btn-rot">' + r +
-        '</span><span class="cb-btn-sub">' + s + '</span></button>').join('');
+  const linhas = [
+    ['Golpe Básico',        'Murro',              'FA 3+4+1d',        true ],
+    ['Ataque Forte',        'Ferrões Salinos',    '3 PM · envenena',  true ],
+    ['Ataque Muito Forte',  'Sombra Longa',       'Precisa de H 3',   false],
+    ['Defesa',              'Véu de Correntes',   '2 a 6 PM · FD +10',true ],
+    ['Suporte',             'Maré Compartilhada', '5 PM · cura 1d',   true ],
+  ];
+  let h = linhas.map(([p, r, s, on]) =>
+    '<button class="cb-btn"' + (on ? '' : ' disabled') + '>' +
+    '<span class="cb-btn-papel">' + p + '</span>' +
+    '<span class="cb-btn-rot">' + r + '</span>' +
+    '<span class="cb-btn-sub">' + s + '</span></button>').join('');
+  h += '<button class="cb-btn ficha" onclick="_pveAbrirAjuda(&quot;eu&quot;,0)">' +
+       '<span class="cb-btn-papel">Saber</span>' +
+       '<span class="cb-btn-rot">⚔ FICHA DE COMBATE</span>' +
+       '<span class="cb-btn-sub">o que este avatar sabe fazer</span></button>';
+  document.getElementById('cbAcoes').innerHTML = h;
 };
 </script>
 
@@ -133,6 +150,23 @@ function ensaioCair() {
   _pveEstado.B[1].vivo = false; _pveEstado.B[1].pv = 0;
   _pveEstado.A[2].vivo = false; _pveEstado.A[2].pv = 0;
   _pveAtualizarBarras();
+}
+/* Um turno escrito à mão, com a forma do verdadeiro: o cabeçalho do
+   turno, a magia, os dados a rolar e a conta da FA contra a FD. */
+function ensaioLance() {
+  const t3 = (n, i) => '<b class="cb-dado cb-dado-vivo' + (n === 6 ? ' cb-dado-seis' : '') +
+    '" style="--i:' + i + '"><span class="cb-dado-glifo">🎲</span>' +
+    '<span class="cb-dado-n">' + n + '</span></b>';
+  _pveLog(
+    '<div class="cb-onda-grupo"><span class="quem">Brama, a Nobre</span> · ' +
+    '<b>Bola de Lama</b> <span class="cb-parcela">(1 PM)</span></div>' +
+    '<div class="cb-conta">' + t3(3, 0) + t3(3, 1) +
+    ' <span class="cb-parcela">FA 4</span> − <span class="cb-parcela">FD 10</span>' +
+    ' = <b>sem dano</b></div>' +
+    '<div class="cb-detalhe"><span class="cb-conta-linha">' +
+    'FA = H2 + F1 + 🎲3 = 6 · FD = A4 + H3 + 🎲3 = 10 → 6 − 10 ≤ 0' +
+    '</span></div>',
+    'info', _pveEstado.turnos + 1);
 }
 ensaioRefazer();
 </script>

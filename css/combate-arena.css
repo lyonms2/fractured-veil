@@ -309,7 +309,7 @@
    ninguém. */
 .cb-palco { --rodape: 6.5rem; }
 .cb-campo {
-  position: absolute; left: 2.75rem; right: 0.5rem;
+  position: absolute; left: 0.5rem; right: 0.5rem;
   top: auto; bottom: var(--rodape);
   height: min(15rem, 42%);
   z-index: 2; pointer-events: none;
@@ -460,6 +460,29 @@
   0%,100% { transform: translateY(0)        scaleY(1);    }
   50%     { transform: translateY(-0.28rem) scaleY(1.015); }
 }
+
+/* ── OS OLHOS PISCAM, E CADA UM NO SEU TEMPO ──
+
+   O piscar já existia: o `.av-olho-un` do css/screen.css fecha as
+   pálpebras num passo de 0,3s a cada 5,2 segundos, e todos os olhos do
+   mesmo bicho ao mesmo tempo — que é o que uma pálpebra faz, mesmo
+   quando são três.
+
+   O que não existia era ele valer para os SEIS ao mesmo tempo sem
+   parecerem um relógio. Seis bichos a piscar em uníssono não é uma
+   arena viva, é um pisca-pisca. O --compasso, que já desencontra o
+   flutuar e a sombra, desencontra também isto — e multiplicado por
+   1,7 para os dois lados não ficarem em fase entre si.
+
+   O ciclo é mais lento aqui do que na tela de cuidar (6,4s contra 5,2):
+   ali há um bicho e o piscar é companhia; aqui há seis e o mesmo ritmo
+   passa a ser agitação. */
+.cb-corpo .av-olho-un {
+  animation: av-piscar 6.4s ease-in-out infinite;
+  animation-delay: calc(var(--compasso, 0s) * 1.7);
+}
+/* Um morto não pisca. */
+.cb-posto.caido .cb-corpo .av-olho-un { animation: none; }
 
 /* Quem não está em campo recua: perde saturação, ganha bruma e apaga.
    É o mesmo sinal que a distância já dá, reforçado — o olho tem de
@@ -762,61 +785,11 @@
   100% { opacity: 0;   transform: translate(-50%,-50%) scale(7); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   A FILA, À ESQUERDA
-
-   Quem está em campo e quem está no banco, dos dois lados, na ordem dos
-   postos. É a única lista onde os seis aparecem ao mesmo tempo — e é
-   por isso que ela existe: no campo, quem está atrás fica pequeno de
-   propósito, e é preciso um sítio onde todos tenham o mesmo tamanho.
-
-   Tocar num abre a ficha, que é o que o cartão inteiro fazia antes.
-   ═══════════════════════════════════════════════════════════════════ */
-
-.cb-fila {
-  position: absolute; left: 0.375rem; top: 2.1rem; bottom: var(--rodape);
-  z-index: 5;
-  display: flex; flex-direction: column; gap: 0.25rem;
-  align-items: center; justify-content: flex-start;
-  overflow: visible;
-}
-.cb-fila-sep {
-  width: 1.4rem; height: 1px; flex: 0 0 auto; margin: 0.1875rem 0;
-  background: linear-gradient(90deg, transparent, rgba(201,168,76,.45), transparent);
-}
-.cb-vez {
-  position: relative; flex: 0 0 auto;
-  width: 1.75rem; height: 1.75rem;
-  border-radius: 0.375rem; overflow: hidden; cursor: pointer;
-  border: 1px solid rgba(255,255,255,.12);
-  background: linear-gradient(160deg, rgba(30,22,52,.95), rgba(10,7,20,.95));
-  display: grid; place-items: center;
-  transition: transform .25s, border-color .25s, box-shadow .25s, width .25s, height .25s;
-}
-.cb-vez svg { display: block; width: 1.4rem; height: 1.4rem; }
-/* O que está em campo é maior e tem o anel da sua cor — a mesma leitura
-   do anel no chão, para os dois sítios dizerem o mesmo. */
-.cb-vez.ativo { width: 2.25rem; height: 2.25rem; transform: translateX(0.1875rem); }
-.cb-vez.ativo svg { width: 1.85rem; height: 1.85rem; }
-.cb-vez.eu.ativo  { border-color: rgba(122,184,122,.85); box-shadow: 0 0 0.625rem rgba(122,184,122,.4); }
-.cb-vez.ini.ativo { border-color: rgba(224,85,85,.85);  box-shadow: 0 0 0.625rem rgba(224,85,85,.4); }
-.cb-vez.caido { filter: grayscale(1) brightness(.45); }
-.cb-vez.caido::after {
-  content: ''; position: absolute; left: 8%; right: 8%; top: 50%; height: 1px;
-  background: rgba(255,120,120,.8); transform: rotate(-28deg);
-}
-/* O fio de vida por baixo do retrato: sem número, só a proporção. O
-   número está no HUD; aqui basta o "quanto falta". */
-.cb-vez-vida {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 0.125rem;
-  background: rgba(0,0,0,.6);
-}
-.cb-vez-vida i {
-  display: block; height: 100%; width: var(--f, 100%);
-  background: linear-gradient(90deg, #e05555, #ff8a6a);
-  transition: width .45s cubic-bezier(.22,1,.36,1);
-}
-.cb-vez.eu .cb-vez-vida i { background: linear-gradient(90deg, #4e9e4e, #8ede8e); }
+/* A FILA DE RETRATOS SAIU. Era uma coluna com os seis à esquerda,
+   copiada da referência — onde ela é a ORDEM DOS TURNOS. Esta batalha
+   não tem ordem: os dois lados agem no mesmo turno. Sem essa pergunta
+   para responder, a fila repetia os cartões de baixo e ficava com um
+   terço da altura do palco. Ver a nota no js/combate-pve.js. */
 
 /* ═══════════════════════════════════════════════════════════════════
    OS PAINÉIS DE BAIXO
@@ -841,10 +814,12 @@
    o campo — os pés, a sombra e o anel dos dois que estão a jogar
    ficavam por baixo dela. Duas medidas que tinham de bater certo e não
    batiam. Agora é a mesma, e o conteúdo cabe nela. */
+/* O rodapé ficou só com os cartões, um lado em cada ponta. As ações
+   saíram para o menu, ao lado do avatar — era isso que o enchia. */
 .cb-rodape {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
   height: var(--rodape);
-  display: flex; align-items: stretch; gap: 0.375rem;
+  display: flex; align-items: stretch; justify-content: space-between; gap: 0.375rem;
   padding: 0.375rem 0.5rem 0.5rem;
   background: linear-gradient(180deg, transparent, rgba(4,3,10,.88) 26%, rgba(4,3,10,.98));
   border-top: 1px solid rgba(201,168,76,.14);
@@ -856,6 +831,9 @@
 }
 .cb-hud.eu  { align-items: flex-start; }
 .cb-hud.ini { align-items: flex-end; }
+/* O retrato do inimigo é o último elemento da linha e encostava à
+   margem: sem isto o palco cortava-lhe a moldura. */
+.cb-hud.ini .cb-ficha { padding-right: 0.25rem; }
 
 .cb-ficha {
   display: flex; align-items: center; gap: 0.3125rem;
@@ -870,6 +848,17 @@
 .cb-ficha.ativo { border-color: rgba(201,168,76,.5); background: linear-gradient(90deg, rgba(28,20,48,.95), rgba(14,10,26,.7)); }
 .cb-hud.ini .cb-ficha.ativo { background: linear-gradient(270deg, rgba(28,20,48,.95), rgba(14,10,26,.7)); }
 .cb-ficha.caido { opacity: .45; filter: grayscale(1); }
+/* O cartão de quem está no banco e pode entrar acende ao toque: é o
+   botão de troca, e um botão tem de parecer um. */
+.cb-ficha.entra { border-color: rgba(122,184,122,.28); }
+.cb-ficha.entra:hover {
+  border-color: rgba(122,184,122,.7);
+  background: linear-gradient(90deg, rgba(24,44,24,.95), rgba(14,26,14,.7));
+}
+.cb-ficha.entra::after {
+  content: '▲'; align-self: center; flex: 0 0 auto;
+  font-size: 0.375rem; color: rgba(122,184,122,.55); padding: 0 0.125rem;
+}
 
 .cb-ficha-cara {
   position: relative; flex: 0 0 auto;
@@ -943,7 +932,89 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   O QUE SOBRA: topo, registo, ações
+   O MENU DE AÇÕES — ao lado de quem joga
+
+   O left/top vêm do JS, que lê a posição do posto (ver _pveMenuMover).
+   Aqui trata-se do resto: o menu cresce para CIMA e para a ESQUERDA a
+   partir desse ponto, porque o ponto são os pés do avatar do lado
+   esquerdo — para cima fica o céu vazio, para a esquerda fica a margem.
+   Para o outro lado ficaria em cima do caminho do golpe.
+   ═══════════════════════════════════════════════════════════════════ */
+.cb-menu {
+  position: absolute; z-index: 8;
+  width: 8.75rem;
+  /* ── ONDE ELE ABRE ──
+
+     Do lado de fora do avatar e A PARTIR DO PEITO DELE PARA CIMA — os
+     -6.5rem são a altura do corpo. Aberto a partir dos pés, como estava,
+     o painel caía em cima dos dois companheiros do banco, que vivem
+     exactamente ali: à esquerda e um pouco acima. Para cima está o céu,
+     e o céu está vazio.
+
+     Nunca para o lado de dentro: é por lá que o golpe passa, e é lá que
+     o lance aparece. */
+  transform: translate(-100%, -100%) translate(-0.5rem, -5.25rem);
+  transform-origin: 100% 100%;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s cubic-bezier(.34,1.3,.64,1);
+}
+.cb-menu.aberto {
+  opacity: 1; pointer-events: auto;
+  transform: translate(-100%, -100%) translate(-0.5rem, -6.5rem);
+}
+/* No fim da batalha não há avatar a quem se encostar: o painel do
+   resultado fica ao meio, como qualquer conclusão. */
+.cb-menu.fim {
+  left: 50% !important; top: 50% !important;
+  width: min(20rem, 84%);
+  transform: translate(-50%, -50%);
+}
+
+/* TRANSLÚCIDO, e com desfoque por trás. Um painel opaco no meio da
+   arena é um buraco na cena; com o desfoque continua a ler-se e o que
+   está atrás continua a existir. */
+.cb-menu .cb-acoes {
+  display: flex; flex-direction: column; gap: 0.125rem;
+  padding: 0.25rem; border-radius: 0.5rem;
+  border: 1px solid rgba(201,168,76,.34);
+  background: linear-gradient(180deg, rgba(16,11,30,.82), rgba(6,4,14,.88));
+  backdrop-filter: blur(0.5rem); -webkit-backdrop-filter: blur(0.5rem);
+  box-shadow: 0 0.75rem 2rem rgba(0,0,0,.6);
+  max-height: 15rem; overflow-y: auto;
+}
+.cb-menu.fim .cb-acoes { max-height: none; }
+
+/* Cada linha é: o papel em cima, pequeno e em ouro; o nome a seguir; o
+   custo por baixo. É a ordem por que se decide. */
+.cb-menu .cb-btn {
+  display: block; width: 100%; text-align: left;
+  padding: 0.25rem 0.375rem; min-width: 0;
+  border-radius: 0.375rem;
+}
+.cb-btn-papel {
+  display: block;
+  font-family: 'Cinzel', serif; font-size: 0.34375rem;
+  letter-spacing: 0.075rem; text-transform: uppercase;
+  color: var(--gold); line-height: 1.4;
+}
+.cb-btn:disabled .cb-btn-papel { color: var(--muted); }
+.cb-menu .cb-btn-rot {
+  display: block; font-size: 0.4375rem; line-height: 1.2;
+  white-space: normal;
+}
+.cb-menu .cb-btn-sub {
+  display: block; font-size: 0.34375rem; line-height: 1.4;
+  color: rgba(212,200,240,.72);
+}
+/* A ficha é a última e não é uma jogada: separa-se com um fio. */
+.cb-menu .cb-btn.ficha {
+  margin-top: 0.1875rem; padding-top: 0.375rem;
+  border-top: 1px solid rgba(201,168,76,.2);
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE SOBRA: topo e rodapé
    ═══════════════════════════════════════════════════════════════════ */
 
 .cb-palco .cb-topo {
@@ -964,28 +1035,91 @@
    pés dos dois que jogam — uma caixa invisível de 612px com
    pointer-events, a apanhar os cliques que eram para os bichos.
 
-   O chão é a parte disputada da cena; o céu está vazio. O texto do
-   turno passa a ler-se lá em cima, onde não tapa nada e onde o olho já
-   vai buscar o número do turno. */
+   O chão é a parte disputada da cena; o céu está vazio.
+
+   E TEM DE SER GRANDE. Numa primeira versão ficou uma tira de 4,25rem,
+   e isso era perder o que esta batalha tem de melhor: a conta aberta.
+   Um turno traz a Força de Ataque parcela a parcela, a Força de Defesa
+   do outro, os dados a rolar à vista e o teste de resistência com a
+   regra do seis. É por aí que se percebe porque é que um golpe deu 7 e
+   não 19 — e num jogo de 3D&T isso não é um extra, é o jogo.
+
+   Nove rem e meio chegam para um turno inteiro com o detalhe fechado, e
+   rola para os anteriores. O fundo esbate-se para baixo em vez de ter
+   bordo: assim é texto sobre o céu e não uma janela por cima da cena. */
+/* ═══════════════════════════════════════════════════════════════════
+   O LANCE — a conta, ao meio, a apagar-se
+
+   A conta do turno aparece entre os dois bichos, que é onde o olho já
+   está quando o golpe acontece, e some passados cinco segundos. Entre
+   turnos não há nada para ler, e uma caixa de texto permanente no meio
+   de uma arena é uma caixa de texto no meio de uma arena.
+
+   Translúcida e sem moldura: é texto sobre a cena, não uma janela
+   sobre ela. Os dados rolam aqui dentro, à vista.
+
+   Um toque abre-a em modal — e é por isso que fechada ela não deixa os
+   filhos receberem toques: assim qualquer ponto dela abre o histórico,
+   e o cabeçalho de cada turno só volta a ser clicável lá dentro, onde
+   há espaço para o detalhe abrir.
+   ═══════════════════════════════════════════════════════════════════ */
 .cb-palco .cb-log {
-  position: absolute; left: 2.75rem; right: 0.5rem; top: 2.2rem;
-  z-index: 4; max-height: 4.25rem; min-height: 0;
-  background: linear-gradient(180deg, rgba(4,3,10,.62), transparent);
-  border: none; border-radius: 0.375rem; padding: 0.1875rem 0.3125rem;
+  /* Aos 42% caía em cima dos nomes dos dois que jogam. Sobe para os
+     29%, onde só há céu — e continua entre os dois lados, que é o
+     ponto: o lance lê-se onde o golpe acontece. */
+  position: absolute; left: 50%; top: 29%;
+  transform: translate(-50%, -50%);
+  width: min(22rem, 72%); max-height: 7rem; min-height: 0;
+  z-index: 7; cursor: pointer;
+  background: none; border: none; padding: 0;
+  text-align: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .45s ease-out;
+  overflow: hidden;
+  text-shadow: 0 0.0625rem 0.1875rem rgba(0,0,0,.95);
+}
+.cb-palco .cb-log.viva { opacity: 1; pointer-events: auto; }
+/* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
+.cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
+.cb-palco .cb-log:not(.aberto) .cb-detalhe { display: none; }
+/* O cabeçalho do turno não entra no lance: o número do turno já está
+   escrito no canto de cima, e um "TURNO 3" em Cinzel grande por cima da
+   conta rouba-lhe o lugar. Dentro do modal volta, que é onde ele serve
+   para separar um turno do anterior. */
+.cb-palco .cb-log:not(.aberto) .cb-turno-cab { display: none; }
+
+.cb-palco .cb-log-linha {
+  background: rgba(4,3,10,.62);
+  backdrop-filter: blur(0.1875rem); -webkit-backdrop-filter: blur(0.1875rem);
+  border-radius: 0.3125rem;
+}
+.cb-palco .cb-turno-bloco { background: none; border: none; }
+
+/* ── ABERTO: o histórico inteiro ──
+   Passa a ocupar o palco, opaco e a rolar, com a conta de cada turno a
+   abrir onde antes não cabia. */
+.cb-palco .cb-log.aberto {
+  left: 0.5rem; right: 0.5rem; top: 2.2rem;
+  transform: none; width: auto;
+  max-height: calc(100% - var(--rodape) - 3rem);
+  z-index: 21; cursor: default; text-align: left;
+  overflow-y: auto;
+  padding: 1.75rem 0.5rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(201,168,76,.28);
+  background: linear-gradient(180deg, rgba(12,8,24,.98), rgba(4,3,10,.98));
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.7);
+  text-shadow: none;
+}
+.cb-palco .cb-log.aberto .cb-log-linha { backdrop-filter: none; background: rgba(255,255,255,.02); }
+/* O X vive no elemento, e não numa marcação que o _pveLog teria de
+   preservar a cada linha que escreve. */
+.cb-palco .cb-log.aberto::before {
+  content: '✕'; position: absolute; right: 0.625rem; top: 0.5rem;
+  font-family: 'Cinzel', serif; font-size: 0.625rem; color: var(--gold);
+  cursor: pointer; pointer-events: auto; z-index: 2;
 }
 
-/* As ações ficam ao meio da faixa e crescem para os lados. O
-   grid-template-columns vem da folha antiga; aqui só se diz que ela
-   ocupa o que sobrar entre os dois painéis. */
-.cb-palco .cb-acoes {
-  flex: 1 1 auto; min-width: 0; align-content: end;
-  padding: 0; background: none; border: none;
-}
-/* As colunas vinham da folha antiga com largura de conteúdo, e numa
-   faixa estreita a segunda saía por fora e ia parar debaixo do painel
-   do inimigo — "MARÉ COMPARTILHAI", cortado a meio da palavra. O
-   minmax(0,1fr) obriga as duas a caber e a serem iguais. */
-.cb-palco .cb-acoes { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; }
 .cb-palco .cb-btn { padding: 0.3125rem 0.1875rem; min-width: 0; }
 /* O `max-width` é o que faltava: sem ele o `text-overflow` não tem
    contra o que cortar e o texto sai por fora do botão — foi assim que
@@ -1036,7 +1170,19 @@
   .cb-bruma           { top: 27%; height: 24%; }
   .cb-chao            { top: 40%; }
 
-  .cb-palco { --rodape: 13.5rem; }
+  /* No telemóvel não há margem para um menu ao lado de um avatar: ele
+     encosta ao rodapé e ocupa a largura, que é o único sítio onde uma
+     lista de seis linhas cabe sem tapar a batalha. */
+  .cb-menu {
+    left: 0.375rem !important; right: 0.375rem;
+    top: auto !important; bottom: var(--rodape);
+    width: auto; transform: translateY(0.75rem);
+  }
+  .cb-menu.aberto { transform: translateY(0); }
+  .cb-menu .cb-acoes { max-height: 11rem; }
+  .cb-palco .cb-log { top: 34%; width: 88%; }
+
+  .cb-palco { --rodape: 10.5rem; }
   .cb-ficha { padding: 0.125rem; gap: 0.1875rem; }
   .cb-ficha-cara { width: 1.125rem; height: 1.125rem; }
   .cb-ficha-cara svg { width: 0.9375rem; height: 0.9375rem; }
@@ -1075,7 +1221,10 @@
   .cb-ficha-barras { min-width: 4.75rem; }
   .cb-hud.ini .cb-ficha-barras { min-width: 4.25rem; }
   .cb-ficha-nome { max-width: 5rem; }
-  .cb-palco .cb-log { left: 0.375rem; bottom: calc(var(--rodape) + 1.875rem); max-height: 2.25rem; }
+  /* No telemóvel o céu é menor e as cabeças estão mais acima: o
+     registo encolhe para não lhes cair em cima. Continua a rolar, e o
+     detalhe do turno abre na mesma. */
+  .cb-palco .cb-log { left: 0.375rem; max-height: 6rem; }
 }
 
 /* Quem pediu ao sistema para não haver movimento fica com a cena — a

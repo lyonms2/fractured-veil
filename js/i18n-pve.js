@@ -24,6 +24,21 @@ window.registerStrings({
   'pve.ajuda.golpe':   'Golpe comum',
   'pve.ajuda.golpe_desc':'Um ataque físico, sem magia nenhuma. Não custa PM e está sempre disponível — é o que sobra quando a magia não chega ou não serve.',
   'pve.titulo':        'BATALHA',
+  /* ── OS PAPÉIS DO MENU ──
+     O menu de ações diz primeiro o PAPEL da jogada e só depois o nome
+     da magia. Os rótulos são estes e não os do `mag.cat.*`: aqueles
+     classificam a magia no catálogo ("Forte"), estes convidam a uma
+     jogada ("Ataque Forte"). É a mesma coisa dita para outro fim. */
+  'pve.papel.basico':      'Golpe Básico',
+  'pve.papel.forte':       'Ataque Forte',
+  'pve.papel.muito_forte': 'Ataque Muito Forte',
+  'pve.papel.defensiva':   'Defesa',
+  'pve.papel.suporte':     'Suporte',
+  'pve.papel.ficha':       'Saber',
+  'pve.papel.ficha_sub':   'o que este avatar sabe fazer',
+  'pve.sem_magia':         '—',
+  'pve.menu.abrir':        'O que fazer neste turno',
+  'pve.historico':         'A conta, turno a turno',
   'pve.turno':         'Turno {n}',
   'pve.sem_equipa':    'Escolha 3 avatares para a equipe antes de batalhar.',
   // -- QUEM NAO PODE ENTRAR EM CAMPO --
@@ -279,6 +294,16 @@ window.registerStrings({
   'pve.ajuda.golpe':   'Basic strike',
   'pve.ajuda.golpe_desc':'A physical attack, no magic at all. Costs no MP and is always available — it is what is left when magic will not reach or will not serve.',
   'pve.titulo':        'BATTLE',
+  'pve.papel.basico':      'Basic Strike',
+  'pve.papel.forte':       'Strong Attack',
+  'pve.papel.muito_forte': 'Very Strong Attack',
+  'pve.papel.defensiva':   'Defence',
+  'pve.papel.suporte':     'Support',
+  'pve.papel.ficha':       'Know',
+  'pve.papel.ficha_sub':   'what this avatar can do',
+  'pve.sem_magia':         '—',
+  'pve.menu.abrir':        'What to do this turn',
+  'pve.historico':         'The maths, turn by turn',
   'pve.turno':         'Turn {n}',
   'pve.sem_equipa':    'Pick 3 avatars for your team before battling.',
   'pve.doente':        'The sick cannot battle: {nomes}. Treat them with the antidote, or swap in another avatar.',

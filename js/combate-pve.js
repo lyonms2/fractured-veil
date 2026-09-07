@@ -370,15 +370,25 @@ function _pveShell() {
       </span>
     </div>
 
-    <div class="cb-fila" id="cbFila"></div>
     <div class="cb-campo" id="cbCampo"></div>
-    <div class="cb-log" id="cbLog"></div>
 
-    <!-- A faixa de baixo: os meus, as ações, os dele. Numa linha só,
-         para que tudo o que está acima dela seja campo. -->
+    <!-- ── O MENU DE AÇÕES ──
+         Vive ao lado do avatar que está a jogar, e não numa barra em
+         baixo. Ver _pveMenuMover. -->
+    <div class="cb-menu" id="cbMenu">
+      <div class="cb-acoes" id="cbAcoes"></div>
+    </div>
+
+    <!-- ── O LANCE ──
+         O que acabou de acontecer, ao meio, translúcido, a apagar-se
+         sozinho. Um toque abre-o em modal com a conta toda. -->
+    <div class="cb-log" id="cbLog" role="button" tabindex="0"
+         onclick="_pveAbrirHistorico(event)"></div>
+
+    <!-- A faixa de baixo é só dos cartões: os meus à esquerda, os dele
+         à direita. Tocar num meu põe-no em campo. -->
     <div class="cb-rodape">
       <div class="cb-hud eu"  id="cbHudEu"></div>
-      <div class="cb-acoes"   id="cbAcoes"></div>
       <div class="cb-hud ini" id="cbHudIni"></div>
     </div>
 
@@ -750,9 +760,14 @@ function _pveLutador(c, i, lado, ativo) {
   // O lado direito é o espelho do esquerdo. 100 − x, e mais nada.
   const x = lado === 'eu' ? pos.x : 100 - pos.x;
 
+  /* Tocar no bicho que está a jogar abre o MENU de ações; nos outros,
+     abre a ficha. É a diferença entre "o que faço agora" e "quem é
+     este", e cada um deles quer-se num sítio diferente. */
+  const gesto = (emCampo && lado === 'eu') ? '_pveMenuAlternar()'
+              : `_pveAbrirAjuda('${lado}',${i})`;
   return `<div class="${cls}" id="cbLut${lado}${i}"
-       role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
-       title="${t('pve.ajuda.abrir', { nome: c.nome })}"
+       role="button" tabindex="0" onclick="${gesto}"
+       title="${(emCampo && lado === 'eu') ? esc(t('pve.menu.abrir')) : t('pve.ajuda.abrir', { nome: c.nome })}"
        style="--x:${x}%;--y:${pos.y}%;--z:${pos.z};--compasso:${i * 0.42}s;z-index:${Math.round(pos.z * 10) + 1}">
     <div class="cb-sombra"></div>
     <div class="cb-anel"></div>
@@ -828,28 +843,19 @@ function _pveAssentar() {
   }
 }
 
-/* ── A FILA ──
-   Os seis retratos, todos do mesmo tamanho, na ordem dos postos. É o
-   contraponto do campo: lá o tamanho diz distância, aqui diz quem joga.
+/* ── A FILA DE RETRATOS SAIU ──
 
-   O fio de vida por baixo não leva número de propósito — o número está
-   no painel de baixo, e escrevê-lo duas vezes só dá duas hipóteses de
-   discordarem. */
-function _pveFilaHTML(e) {
-  const um = (c, i, lado, ativo) => {
-    const cls = ['cb-vez', lado, i === ativo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
-    const f = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.pvMax)) * 100));
-    return `<button class="${cls}" id="cbVez${lado}${i}"
-        onclick="_pveAbrirAjuda('${lado}',${i})"
-        title="${esc(c.nome)} · ${c.pv}/${c.pvMax}">
-      ${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 120, 120, _pveFase(c))}
-      <span class="cb-vez-vida"><i style="width:${f}%"></i></span>
-    </button>`;
-  };
-  return e.A.map((c, i) => um(c, i, 'eu', e.ativoA)).join('') +
-         '<span class="cb-fila-sep"></span>' +
-         e.B.map((c, i) => um(c, i, 'ini', e.ativoB)).join('');
-}
+   Era uma coluna com os seis, à esquerda, com o de cada lado que está
+   em campo maior e com anel. Copiei-a da referência sem reparar que lá
+   ela é a ORDEM DOS TURNOS — quem joga a seguir, e a seguir a esse.
+
+   Esta batalha não tem ordem nenhuma: os dois lados agem no mesmo
+   turno. Sem essa pergunta para responder, a fila só repetia o que os
+   cartões de baixo já dizem, e ficava com um terço da altura do palco
+   por causa disso.
+
+   O que ela fazia e não se perdeu: ver quem está no banco (está nos
+   cartões) e abrir a ficha (está no menu, em "o que sabe fazer"). */
 
 /* ── OS PAINÉIS DE BAIXO ──
    Uma linha por lutador: retrato, nome, vida, e — só do meu lado — os
@@ -859,17 +865,39 @@ function _pveFilaHTML(e) {
 
    O `data-f` de cada barra guarda a percentagem anterior, que é o que o
    rastro branco usa para mostrar QUANTO caiu. Ver _pveAtualizarBarras. */
+/* ── O CARTÃO PÕE O AVATAR EM CAMPO ──
+
+   A troca era um botão na barra de ações, com o nome do avatar escrito
+   dentro: "Trocar por Brama". Havia dois sítios a falar do mesmo
+   avatar — o cartão, que mostra a vida dele, e um botão noutro sítio,
+   que o chamava — e o jogador tinha de os ligar pelo nome.
+
+   Agora toca-se NELE. O cartão já é o avatar; pô-lo em campo é a coisa
+   mais óbvia que se pode querer fazer a um cartão de um avatar que está
+   no banco.
+
+   Os do inimigo continuam a abrir a ficha: não há nada a trocar do lado
+   dele, e saber o que ele sabe fazer é metade da decisão. */
 function _pveFichaHUD(c, i, lado, ativo) {
-  const cls = ['cb-ficha', lado, i === ativo ? 'ativo' : '', c.vivo ? '' : 'caido'].join(' ');
+  const emCampo = i === ativo;
+  const podeEntrar = lado === 'eu' && !emCampo && c.vivo;
+  const cls = ['cb-ficha', lado, emCampo ? 'ativo' : '', c.vivo ? '' : 'caido',
+               podeEntrar ? 'entra' : ''].join(' ');
   const fPV = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.pvMax)) * 100));
   const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.pmMax)) * 100));
   const barra = (tipo, f, txt) =>
     `<div class="cb-barra ${tipo}${tipo === 'pv' && f <= 25 ? ' baixa' : ''}">
        <u style="width:${f}%"></u><i style="width:${f}%"></i><span>${txt}</span>
      </div>`;
+  const gesto = podeEntrar ? `_pveEscolher('troca',${i})`
+              : emCampo && lado === 'eu' ? '_pveMenuAlternar()'
+              : `_pveAbrirAjuda('${lado}',${i})`;
+  const dica   = podeEntrar ? t('pve.acao.trocar', { nome: c.nome })
+               : emCampo && lado === 'eu' ? t('pve.menu.abrir')
+               : t('pve.ajuda.abrir', { nome: c.nome });
   return `<div class="${cls}" id="cbHud${lado}${i}"
-       role="button" tabindex="0" onclick="_pveAbrirAjuda('${lado}',${i})"
-       title="${t('pve.ajuda.abrir', { nome: c.nome })}">
+       role="button" tabindex="0" onclick="${gesto}"
+       title="${esc(dica)}">
     <div class="cb-ficha-cara">
       ${gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _pveFase(c))}
       <span class="cb-ficha-nivel">${c.ficha && c.ficha.nivel || 1}</span>
@@ -891,12 +919,12 @@ function _pveDesenhar() {
   const eu = e.A[e.ativoA], ini = e.B[e.ativoB];
 
   document.getElementById('cbCampo').innerHTML  = _pveCampo(e);
-  document.getElementById('cbFila').innerHTML   = _pveFilaHTML(e);
   document.getElementById('cbHudEu').innerHTML  = _pveEquipa(e.A, e.ativoA, 'eu');
   document.getElementById('cbHudIni').innerHTML = _pveEquipa(e.B, e.ativoB, 'ini');
   document.getElementById('cbTurno').textContent = t('pve.turno', { n: e.turnos + 1 });
   _pveAssentar();
   _pveDesenharAcoes(eu, ini);
+  _pveMenuMover();
 
   // Se a ficha estiver aberta, refaz-se. O prognóstico é contra quem
   // está do outro lado AGORA — deixá-lo do turno passado seria mostrar
@@ -1251,6 +1279,65 @@ function _pveAjudaDe(eu, lado, contra) {
 }
 
 // ── A barra de ações ──
+/* ═══════════════════════════════════════════════════════════════════
+   O MENU DE AÇÕES
+
+   As ações viviam numa barra ao fundo do palco, larga e sempre aberta.
+   Isso custava um terço da altura ao campo e afastava a decisão do
+   bicho que a toma: escolhia-se um golpe num canto do ecrã e ele
+   acontecia noutro.
+
+   Agora o menu abre AO LADO de quem está a jogar. Fica em cima do chão,
+   à altura do peito dele, e do lado de fora — nunca entre os dois
+   lados, que é por onde o golpe vai passar.
+
+   ── PORQUE É QUE ABRE SOZINHO ──
+
+   Abre-se no turno do jogador e fecha-se quando ele escolhe. Se ficasse
+   fechado à espera, cada turno passava a custar dois toques em vez de
+   um — e um jogo de turnos com um toque a mais por turno é um jogo com
+   o dobro dos toques.
+
+   O toque no avatar existe para o REABRIR: para desfazer uma escolha a
+   meio, ou só para voltar a ver o que se pode fazer.
+   ═══════════════════════════════════════════════════════════════════ */
+let _pveMenuAberto = true;
+
+function _pveMenuAlternar() {
+  if (_pveEstado && _pveEstado.acabou) return;
+  _pveMenuAberto = !_pveMenuAberto;
+  _pveMenuMover();
+}
+
+function _pveMenuFechar() { _pveMenuAberto = false; _pveMenuMover(); }
+function _pveMenuAbrir()  { _pveMenuAberto = true;  _pveMenuMover(); }
+
+/* Põe o menu ao lado do avatar em campo.
+
+   Lê a posição do posto e não a escreve à mão: o posto muda de sítio
+   com a largura do ecrã, e um menu com coordenadas próprias havia de
+   discordar dele ao primeiro telemóvel.
+
+   O lado é sempre o de FORA — à esquerda de quem está do lado esquerdo.
+   Ao centro ficaria por cima do caminho do golpe e do lance. */
+function _pveMenuMover() {
+  const menu = document.getElementById('cbMenu');
+  if (!menu) return;
+  const acabou = _pveEstado && _pveEstado.acabou;
+  menu.classList.toggle('aberto', !!_pveMenuAberto || !!acabou);
+  // No fim da batalha o menu é o botão de sair: fica ao meio.
+  menu.classList.toggle('fim', !!acabou);
+  if (acabou) { menu.style.left = ''; menu.style.top = ''; return; }
+
+  const palco = document.getElementById('cbPalco');
+  const posto = _pveEstado ? document.getElementById('cbLuteu' + _pveEstado.ativoA) : null;
+  if (!palco || !posto) return;
+  const p = palco.getBoundingClientRect(), a = posto.getBoundingClientRect();
+  // O ponto do posto são os PÉS; o menu quer ficar à altura do peito.
+  menu.style.left = Math.round(a.left - p.left) + 'px';
+  menu.style.top  = Math.round(a.top  - p.top)  + 'px';
+}
+
 function _pveDesenharAcoes(eu, ini) {
   const alvo = document.getElementById('cbAcoes');
   const bd = document.getElementById('cbDesistir');
@@ -1258,8 +1345,20 @@ function _pveDesenharAcoes(eu, ini) {
   if (_pveEstado.acabou) { alvo.innerHTML = _pveBotaoFim(); return; }
 
   const tecto = _c3(eu, 'H') * 5;
-  const btn = (id, rot, sub, on, extra) => `<button class="cb-btn ${extra || ''}"
+  /* ── O QUE O BOTÃO DIZ ──
+
+     Dizia o nome da magia e o custo: "Ferrões Salinos · 3 PM". O nome
+     é bonito e não diz nada a quem está a escolher — para saber que
+     aquilo era o ataque forte havia que saber de cor a ordem dos
+     lugares.
+
+     Passa a dizer o PAPEL em primeiro (Golpe Básico, Ataque Forte,
+     Ataque Muito Forte, Defesa, Suporte), que é a pergunta que se faz
+     ao escolher, e o nome com o custo por baixo, que é o que se lê
+     depois de já se ter decidido o género da jogada. */
+  const btn = (id, rot, sub, on, extra, papel) => `<button class="cb-btn ${extra || ''}"
       ${on ? '' : 'disabled'} onclick="${on ? id : ''}">
+      ${papel ? `<span class="cb-btn-papel">${papel}</span>` : ''}
       <span class="cb-btn-rot">${rot}</span>
       <span class="cb-btn-sub">${sub}</span>
     </button>`;
@@ -1283,7 +1382,7 @@ function _pveDesenharAcoes(eu, ini) {
     socoRot = t('pve.acao.carregado');
     socoSub = `FA ${_c3(eu,'H')}+${_c3(eu,'F')}+${vv.bonusFGolpe}+1d · ${vv.pm} PM`;
   }
-  let html = btn(`_pveEscolher('comum')`, socoRot, socoSub, true);
+  let html = btn(`_pveEscolher('comum')`, socoRot, socoSub, true, '', t('pve.papel.basico'));
 
   // ── Toque Ardente: um ataque com outra conta ──
   if (vv.toqueEnergia) {
@@ -1304,7 +1403,7 @@ function _pveDesenharAcoes(eu, ini) {
       const quando = !d ? t('pve.sem')
         : d.fase != null ? t('mag.chega.fase' + d.fase)
         : t('mag.chega.grau' + d.grau);
-      html += btn('', t('mag.cat.' + cat), quando, false, 'vazio');
+      html += btn('', t('pve.sem_magia'), quando, false, 'vazio', t('pve.papel.' + cat));
       continue;
     }
     const custo = _c3custoMagia(eu, g, g.pm);
@@ -1328,7 +1427,7 @@ function _pveDesenharAcoes(eu, ini) {
               : g.porTurno ? t('mag.custo.turno', { pm: custo })
               : t('mag.custo', { pm: custo });
     html += btn(`_pveEscolher('${cat}')`, t('mag.' + g.id + '.nome'), sub,
-                podeH && podePM && !trancada);
+                podeH && podePM && !trancada, '', t('pve.papel.' + cat));
   }
 
   // Vantagem que gasta a ação
@@ -1383,6 +1482,16 @@ function _pveDesenharAcoes(eu, ini) {
          <span class="cb-btn-sub">${sub}</span>
        </button>`).join('')}</div>`;
   }
+  /* A última entrada do menu abre a ficha de combate. Era o que o
+     toque no avatar fazia antes — e o toque no avatar passou a abrir
+     este menu, portanto a ficha tinha de ficar dentro dele, senão
+     perdia-se a única porta para ela. */
+  html += `<button class="cb-btn ficha" onclick="_pveAbrirAjuda('eu',${_pveEstado.ativoA})">
+      <span class="cb-btn-papel">${t('pve.papel.ficha')}</span>
+      <span class="cb-btn-rot">${t('ficha.title')}</span>
+      <span class="cb-btn-sub">${t('pve.papel.ficha_sub')}</span>
+    </button>`;
+
   alvo.innerHTML = html;
 }
 
@@ -1643,6 +1752,9 @@ function _pveLargarSustentada(id) {
 }
 
 function _pveJogarTurno() {
+  // Escolhido o que fazer, o menu sai da frente: o que vem a seguir é
+  // para se ver, não para se decidir.
+  _pveMenuFechar();
   const e = _pveEstado;
   const antes = e.eventos.length;
   const eraA = e.A[e.ativoA], eraB = e.B[e.ativoB];
@@ -2789,8 +2901,65 @@ function _pveAbrirTurno(n) {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O LANCE
+
+   A conta do turno — "Bola de Lama (1 PM) · 🎲3·🎲3 · FA 4 − FD 10 =
+   sem dano" — aparece ao MEIO do palco, translúcida, e apaga-se
+   sozinha passados uns segundos. É onde o olho já está: entre os dois
+   bichos, que é onde o golpe acontece.
+
+   Era uma caixa fixa que ocupava espaço a toda a hora, mesmo entre
+   turnos, quando não há nada para ler.
+
+   Um toque nela abre-a em modal, com o histórico todo e a conta aberta
+   turno a turno. Fechada, os filhos não recebem toques (é o CSS que o
+   faz) — assim qualquer sítio dela abre o modal, e o cabeçalho de cada
+   turno só volta a ser clicável lá dentro, onde há espaço para o
+   detalhe abrir.
+   ═══════════════════════════════════════════════════════════════════ */
+let _pveLanceTimer = null;
+
+function _pveLanceViva() {
+  const el = document.getElementById('cbLog'); if (!el) return;
+  el.classList.add('viva');
+  clearTimeout(_pveLanceTimer);
+  // Só se apaga quando ninguém está a lê-lo em modal.
+  _pveLanceTimer = setTimeout(() => {
+    if (!el.classList.contains('aberto')) el.classList.remove('viva');
+  }, 5200);
+}
+
+function _pveAbrirHistorico(ev) {
+  const el = document.getElementById('cbLog'); if (!el) return;
+
+  /* Aberto, os toques lá dentro são para os cabeçalhos dos turnos — e
+     um toque no PRÓPRIO painel (a moldura, o espaço à volta, o ✕ que
+     vive num ::before dele) fecha-o.
+
+     O ✕ é um pseudo-elemento e não um botão a sério de propósito: o
+     _pveLog escreve dentro deste elemento a cada linha, e um botão a
+     sério andaria sempre a ser empurrado pelas linhas novas ou a ter de
+     ser reposto. Um ::before não está no DOM e ninguém lhe mexe. */
+  if (el.classList.contains('aberto')) {
+    if (ev && ev.target === el) _pveFecharHistorico(ev);
+    return;
+  }
+  if (ev) ev.stopPropagation();
+  el.classList.add('aberto', 'viva');
+  clearTimeout(_pveLanceTimer);
+}
+
+function _pveFecharHistorico(ev) {
+  if (ev) ev.stopPropagation();
+  const el = document.getElementById('cbLog'); if (!el) return;
+  el.classList.remove('aberto');
+  _pveLanceViva();
+}
+
 function _pveLog(html, tipo, turno) {
   const el = document.getElementById('cbLog'); if (!el) return;
+  _pveLanceViva();
   const d = document.createElement('div');
   d.className = 'cb-log-linha ' + (tipo || '');
   d.innerHTML = html;
