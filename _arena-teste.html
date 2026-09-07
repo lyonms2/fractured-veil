@@ -40,6 +40,7 @@
   <button onclick="ensaioCair()">derrubar</button>
   <button onclick="ensaioLance()">lance</button>
   <button onclick="_pveMenuAlternar()">menu</button>
+  <button onclick="ensaioPM()">pm</button>
   <button onclick="ensaioRefazer()">refazer</button>
 </div>
 
@@ -67,24 +68,33 @@
    barra de ações leva uma cópia da forma dela — o que importa para a
    vista é o peso que ela tem em baixo, e esse é o mesmo. */
 _pveDesenharAcoes = function () {
-  const linhas = [
-    ['Golpe Básico',        'Murro',              'FA 3+4+1d',        true ],
-    ['Ataque Forte',        'Ferrões Salinos',    '3 PM · envenena',  true ],
-    ['Ataque Muito Forte',  'Sombra Longa',       'Precisa de H 3',   false],
-    ['Defesa',              'Véu de Correntes',   '2 a 6 PM · FD +10',true ],
-    ['Suporte',             'Maré Compartilhada', '5 PM · cura 1d',   true ],
-  ];
-  let h = linhas.map(([p, r, s, on]) =>
-    '<button class="cb-btn"' + (on ? '' : ' disabled') + '>' +
-    '<span class="cb-btn-papel">' + p + '</span>' +
-    '<span class="cb-btn-rot">' + r + '</span>' +
-    '<span class="cb-btn-sub">' + s + '</span></button>').join('');
-  h += '<button class="cb-btn ficha" onclick="_pveAbrirAjuda(&quot;eu&quot;,0)">' +
-       '<span class="cb-btn-papel">Saber</span>' +
-       '<span class="cb-btn-rot">⚔ FICHA DE COMBATE</span>' +
-       '<span class="cb-btn-sub">o que este avatar sabe fazer</span></button>';
-  document.getElementById('cbAcoes').innerHTML = h;
+  const orbe = (selo, nome, sub, on, custo) =>
+    '<button class="cb-orbe"' + (on ? '' : ' disabled') +
+    ' title="' + nome + ' · ' + sub + '">' +
+    '<span class="cb-orbe-disco">' + _pveSelo(selo) +
+    (custo != null ? '<span class="cb-orbe-custo">' + custo + '</span>' : '') +
+    '</span><span class="cb-orbe-nome">' + nome + '<i>' + sub + '</i></span></button>';
+  document.getElementById('cbAcoes').innerHTML =
+    orbe('basico',      'Murro',              'FA 3+4+1d',     true,  null) +
+    orbe('forte',       'Ferrões Salinos',    'envenena',      true,  3) +
+    orbe('muito_forte', '—',                  'chega no Raro', false, null) +
+    orbe('defensiva',   'Véu de Correntes',   'FD +10',        true,  2) +
+    orbe('suporte',     'Maré Compartilhada', 'cura 1d',       true,  5) +
+    orbe('ficha',       'Saber',              'o que sabe fazer', true, null);
 };
+
+// os passos: quanto de PM gastar, em orbes
+function ensaioPM() {
+  document.getElementById('cbAcoes').innerHTML =
+    '<div class="cb-pm-cab">Quanto pôr em Ferrões Salinos?</div>' +
+    [3,4,5,6].map(pm =>
+      '<button class="cb-orbe"><span class="cb-orbe-disco">' +
+      '<span class="cb-orbe-txt">' + pm + '</span></span>' +
+      '<span class="cb-orbe-nome">' + pm + ' PM<i>FA 3 + ' + pm + 'd</i></span></button>').join('') +
+    '<button class="cb-orbe voltar"><span class="cb-orbe-disco">' + _pveSelo('voltar') +
+    '</span><span class="cb-orbe-nome">Voltar</span></button>';
+  _pveMenuAbrir();
+}
 </script>
 
 <script>

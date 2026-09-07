@@ -1280,6 +1280,66 @@ function _pveAjudaDe(eu, lado, contra) {
 
 // ── A barra de ações ──
 /* ═══════════════════════════════════════════════════════════════════
+   OS SELOS DAS AÇÕES
+
+   Desenhados, e não emoji. Três razões, e as três valem mais do que a
+   meia hora que custaram:
+
+     um emoji muda de forma em cada sistema — o ⚔️ da Apple não é o do
+     Android, e nenhum dos dois combina com uma arena de traço fino a
+     ouro sobre violeta;
+
+     um emoji tem cor própria e não obedece ao estado. Estes são traço
+     em `currentColor`: apagam com o botão, aquecem ao passar por cima,
+     e o desligado fica cinzento sem que ninguém tenha de o pintar;
+
+     e a linguagem da casa é a FRATURA — um rasgo vertical de luz. Os
+     dois ataques mágicos são isso mesmo, com uma barra e com duas. Sai
+     de graça uma escada que se lê sem legenda: um risco é forte, dois
+     riscos é muito forte.
+
+   Todos no mesmo viewBox de 24 e com a mesma espessura de traço, senão
+   um parece mais gordo do que o outro na mesma fila. */
+const PVE_SELOS = {
+  // três garras: o golpe que não precisa de magia nenhuma
+  basico: '<path d="M7 4.5 13 12 7 19.5M12 4.5 18 12l-6 7.5"/>',
+  // a fenda, com uma barra
+  forte: '<path d="M12 3 10.5 9.5 13.5 14.5 12 21"/><path d="M7.5 11.5h9"/>',
+  // a fenda, com duas
+  muito_forte: '<path d="M12 3 10.5 9.5 13.5 14.5 12 21"/><path d="M7.5 9.5h9M7.5 14.5h9"/>',
+  // o véu: dois arcos, um dentro do outro
+  defensiva: '<path d="M12 3.5c-3 1.6-5.5 2-5.5 2V12c0 4 3 6.6 5.5 8.5 2.5-1.9 5.5-4.5 5.5-8.5V5.5s-2.5-.4-5.5-2Z"/>'
+             + '<path d="M12 7.5c-1.6.9-3 1.1-3 1.1V12c0 2.2 1.6 3.6 3 4.6 1.4-1 3-2.4 3-4.6V8.6s-1.4-.2-3-1.1Z"/>',
+  // a gota que sobe: o que se dá a quem precisa
+  suporte: '<path d="M12 3.5c3.2 3.8 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 1.8-5.2 5-9Z"/>'
+           + '<path d="M12 16.5V9.5M9.5 12 12 9.5l2.5 2.5"/>',
+  // o olho: a ficha é olhar para dentro do bicho, e os bichos têm olhos
+  ficha: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>'
+         + '<circle cx="12" cy="12" r="3"/>',
+  // a estrela de quatro pontas: a vantagem com que se nasce
+  vantagem: '<path d="M12 2.5 13.8 10.2 21.5 12 13.8 13.8 12 21.5 10.2 13.8 2.5 12 10.2 10.2Z"/>',
+  // a chama do toque
+  toque: '<path d="M12 3s5 4.4 5 9a5 5 0 0 1-10 0c0-2 1.2-3.6 2.4-5C10.6 5.6 12 3 12 3Z"/>'
+         + '<path d="M12 20a2.4 2.4 0 0 1-2.4-2.4c0-1.4 2.4-3.6 2.4-3.6s2.4 2.2 2.4 3.6A2.4 2.4 0 0 1 12 20Z"/>',
+  // o anel fechado: apanhar o foco
+  foco: '<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/>',
+  // o anel partido: largar o que se tinha de pé
+  largar: '<path d="M16.5 6.4A7.5 7.5 0 1 0 19.2 14"/><path d="M20.5 5 15 10.5"/>',
+  // e a seta de voltar atrás
+  voltar: '<path d="M14.5 6 8.5 12l6 6"/>',
+};
+
+/* O selo, pronto a pôr num orbe. O `currentColor` é o que faz a cor
+   vir do estado do botão em vez de vir daqui. */
+function _pveSelo(nome) {
+  const d = PVE_SELOS[nome];
+  if (!d) return '';
+  return '<svg class="cb-selo" viewBox="0 0 24 24" aria-hidden="true" fill="none" '
+       + 'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" '
+       + 'stroke-linejoin="round">' + d + '</svg>';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    O MENU DE AÇÕES
 
    As ações viviam numa barra ao fundo do palco, larga e sempre aberta.
@@ -1310,7 +1370,24 @@ function _pveMenuAlternar() {
 }
 
 function _pveMenuFechar() { _pveMenuAberto = false; _pveMenuMover(); }
-function _pveMenuAbrir()  { _pveMenuAberto = true;  _pveMenuMover(); }
+
+/* ── UM DE CADA VEZ ──
+
+   O menu e o lance ocupam o mesmo pedaço de céu, e é de propósito: os
+   dois querem estar à frente do bicho, que é onde o olho está.
+
+   Nunca se pisam porque se revezam — o menu fecha-se quando a jogada é
+   feita, e o lance nasce aí; o lance apaga-se quando o menu volta a
+   abrir, e nessa altura já é a conta do turno ANTERIOR, que quem está a
+   decidir o próximo já não precisa de ler. Quem a quiser rever toca
+   nela e abre o histórico, e aí o menu não estorva porque o histórico é
+   um modal por cima de tudo. */
+function _pveMenuAbrir() {
+  _pveMenuAberto = true;
+  const log = document.getElementById('cbLog');
+  if (log && !log.classList.contains('aberto')) log.classList.remove('viva');
+  _pveMenuMover();
+}
 
 /* Põe o menu ao lado do avatar em campo.
 
@@ -1356,18 +1433,32 @@ function _pveDesenharAcoes(eu, ini) {
      Ataque Muito Forte, Defesa, Suporte), que é a pergunta que se faz
      ao escolher, e o nome com o custo por baixo, que é o que se lê
      depois de já se ter decidido o género da jogada. */
-  const btn = (id, rot, sub, on, extra, papel) => `<button class="cb-btn ${extra || ''}"
-      ${on ? '' : 'disabled'} onclick="${on ? id : ''}">
-      ${papel ? `<span class="cb-btn-papel">${papel}</span>` : ''}
-      <span class="cb-btn-rot">${rot}</span>
-      <span class="cb-btn-sub">${sub}</span>
+/* ── O QUE UM ORBE TEM ──
+
+     O selo ao meio, o custo numa pastilha ao canto, e o nome ao lado —
+     texto solto, sem caixa nenhuma por baixo. O `papel` (Golpe Básico,
+     Ataque Forte…) é o que o selo já diz, portanto vai para a dica do
+     rato e para os leitores de ecrã, e não ocupa espaço na cena.
+
+     Era uma lista de botões retangulares num painel. Um painel no meio
+     de uma arena é uma janela por cima dela; seis orbes a flutuar à
+     frente do bicho são parte da cena. */
+  const btn = (id, rot, sub, on, extra, papel, selo, custo) => `<button
+      class="cb-orbe ${extra || ''}" ${on ? '' : 'disabled'}
+      onclick="${on ? id : ''}" title="${esc((papel ? papel + ' · ' : '') + rot + ' · ' + sub)}"
+      aria-label="${esc((papel ? papel + ': ' : '') + rot + '. ' + sub)}">
+      <span class="cb-orbe-disco">
+        ${selo ? _pveSelo(selo) : `<span class="cb-orbe-txt">${rot}</span>`}
+        ${custo != null ? `<span class="cb-orbe-custo">${custo}</span>` : ''}
+      </span>
+      <span class="cb-orbe-nome">${rot}<i>${sub}</i></span>
     </button>`;
 
   // ── O foco caiu: enquanto não for apanhado não há magia nenhuma ──
   if (eu.semFoco) {
     alvo.innerHTML =
-      btn(`_pveEscolher('foco')`, t('pve.acao.apanhar_foco'), t('pve.acao.apanhar_foco_sub'), true, 'vant') +
-      btn(`_pveEscolher('comum')`, t('pve.acao.comum'), `FA ${_c3(eu,'H')}+${_c3(eu,'F')}+1d`, true);
+      btn(`_pveEscolher('foco')`, t('pve.acao.apanhar_foco'), t('pve.acao.apanhar_foco_sub'), true, 'vant', '', 'foco') +
+      btn(`_pveEscolher('comum')`, t('pve.acao.comum'), `FA ${_c3(eu,'H')}+${_c3(eu,'F')}+1d`, true, '', t('pve.papel.basico'), 'basico');
     return;
   }
 
@@ -1382,13 +1473,14 @@ function _pveDesenharAcoes(eu, ini) {
     socoRot = t('pve.acao.carregado');
     socoSub = `FA ${_c3(eu,'H')}+${_c3(eu,'F')}+${vv.bonusFGolpe}+1d · ${vv.pm} PM`;
   }
-  let html = btn(`_pveEscolher('comum')`, socoRot, socoSub, true, '', t('pve.papel.basico'));
+  let html = btn(`_pveEscolher('comum')`, socoRot, socoSub, true, '', t('pve.papel.basico'), 'basico');
 
   // ── Toque Ardente: um ataque com outra conta ──
   if (vv.toqueEnergia) {
     const pmT = Math.min(_c3(eu, 'A'), Math.max(0, _c3pmDisponivel(eu)));
     html += btn(`_pveEscolher('toque')`, t('vd.toque_ardente.nome'),
-                `FA ${_c3(eu,'A')}+1d+${pmT} · ${pmT} PM`, pmT > 0 || _c3(eu,'A') > 0);
+                `FA ${_c3(eu,'A')}+1d+${pmT} · ${pmT} PM`, pmT > 0 || _c3(eu,'A') > 0,
+                '', t('pve.papel.forte'), 'toque', pmT);
   }
 
   for (const cat of MAGIA_SLOTS) {
@@ -1403,7 +1495,7 @@ function _pveDesenharAcoes(eu, ini) {
       const quando = !d ? t('pve.sem')
         : d.fase != null ? t('mag.chega.fase' + d.fase)
         : t('mag.chega.grau' + d.grau);
-      html += btn('', t('pve.sem_magia'), quando, false, 'vazio', t('pve.papel.' + cat));
+      html += btn('', t('pve.sem_magia'), quando, false, 'vazio', t('pve.papel.' + cat), cat);
       continue;
     }
     const custo = _c3custoMagia(eu, g, g.pm);
@@ -1427,7 +1519,8 @@ function _pveDesenharAcoes(eu, ini) {
               : g.porTurno ? t('mag.custo.turno', { pm: custo })
               : t('mag.custo', { pm: custo });
     html += btn(`_pveEscolher('${cat}')`, t('mag.' + g.id + '.nome'), sub,
-                podeH && podePM && !trancada, '', t('pve.papel.' + cat));
+                podeH && podePM && !trancada, '', t('pve.papel.' + cat), cat,
+                (podeH && podePM && !trancada) ? custo : null);
   }
 
   // Vantagem que gasta a ação
@@ -1446,7 +1539,8 @@ function _pveDesenharAcoes(eu, ini) {
                 t('vd.' + v.id + '.nome').replace('{papel}', _pvePapel(v.papel)),
                 reservaAcabou ? t('pve.reserva_no_fim')
                   : folegoAcabou ? t('pve.folego_no_fim')
-                  : on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant');
+                  : on ? t('mag.custo', { pm: v.pm }) : t('pve.sem_pm', { pm: v.pm }), on, 'vant',
+                _pvePapel(v.papel), 'vantagem', on ? v.pm : null);
   }
 
   // ── As magias de pé, uma a uma ──
@@ -1462,35 +1556,24 @@ function _pveDesenharAcoes(eu, ini) {
   const dePe = eu.sustentadas.filter(x => x.magia.porTurno || x.magia.buffFuria);
   if (dePe.length) {
     html += `<div class="cb-trocas">${dePe.map(x =>
-      `<button class="cb-btn largar" onclick="_pveLargarSustentada('${x.magia.id}')">
-         <span class="cb-btn-rot">${t('pve.acao.largar_uma', { nome: t('mag.' + x.magia.id + '.nome') })}</span>
-         <span class="cb-btn-sub">${x.magia.porTurno
-            ? t('pve.acao.largar_sub', { pm: x.pm })
-            : t('pve.acao.largar_furia')}</span>
-       </button>`).join('')}</div>`;
+      btn(`_pveLargarSustentada('${x.magia.id}')`,
+          t('pve.acao.largar_uma', { nome: t('mag.' + x.magia.id + '.nome') }),
+          x.magia.porTurno ? t('pve.acao.largar_sub', { pm: x.pm }) : t('pve.acao.largar_furia'),
+          true, 'largar', '', 'largar')).join('')}</div>`;
   }
 
-  // Trocar
-  const banco = _pveEstado.A.map((c, i) => ({ c, i }))
-    .filter(x => x.i !== _pveEstado.ativoA && x.c.vivo);
-  if (banco.length) {
-    const margem = _c3(eu, 'H') - _c3(ini, 'H');
-    const sub = margem >= 1 ? t('pve.troca.talvez') : t('pve.troca.perde');
-    html += `<div class="cb-trocas">${banco.map(x =>
-      `<button class="cb-btn troca" onclick="_pveEscolher('troca',${x.i})">
-         <span class="cb-btn-rot">${t('pve.acao.trocar', { nome: x.c.nome })}</span>
-         <span class="cb-btn-sub">${sub}</span>
-       </button>`).join('')}</div>`;
-  }
+  /* OS BOTÕES DE TROCA SAÍRAM DAQUI.
+
+     Eram um por companheiro de banco, com o nome dele escrito dentro:
+     "Trocar por Brama". Hoje toca-se no CARTÃO dele, em baixo — ver o
+     _pveFichaHUD. Dois sítios a chamar o mesmo avatar era um a mais, e
+     o que ficou é o que já mostra a vida dele. */
   /* A última entrada do menu abre a ficha de combate. Era o que o
      toque no avatar fazia antes — e o toque no avatar passou a abrir
      este menu, portanto a ficha tinha de ficar dentro dele, senão
      perdia-se a única porta para ela. */
-  html += `<button class="cb-btn ficha" onclick="_pveAbrirAjuda('eu',${_pveEstado.ativoA})">
-      <span class="cb-btn-papel">${t('pve.papel.ficha')}</span>
-      <span class="cb-btn-rot">${t('ficha.title')}</span>
-      <span class="cb-btn-sub">${t('pve.papel.ficha_sub')}</span>
-    </button>`;
+  html += btn(`_pveAbrirAjuda('eu',${_pveEstado.ativoA})`, t('pve.papel.ficha'),
+              t('pve.papel.ficha_sub'), true, 'ficha', '', 'ficha');
 
   alvo.innerHTML = html;
 }
@@ -1646,14 +1729,20 @@ function _pveEscolherPM(tipo, g, max) {
     const semAtk = v ? null : _pveRendeSemAtaque(g, pm);
     const conta = v ? `FA ${v.caracs}${v.dados ? ' + ' + v.dados + 'd' : ' + 1d'}`
                 : semAtk ? semAtk.rotulo : '';
-    return `<button class="cb-btn" onclick="_pveLancarCom('${tipo}',${pm})">
-        <span class="cb-btn-rot">${pm} PM</span>
-        <span class="cb-btn-sub">${conta}${custo !== pm ? ` · ${t('pve.pm.paga', { n: custo })}` : ''}</span>
+    /* Sem selo: aqui o desenho é o próprio número. Sete orbes com o
+       mesmo símbolo e um algarismo por baixo não diziam nada; o
+       algarismo grande no disco é a escolha inteira. */
+    const sub2 = conta + (custo !== pm ? ` · ${t('pve.pm.paga', { n: custo })}` : '');
+    return `<button class="cb-orbe" onclick="_pveLancarCom('${tipo}',${pm})"
+        title="${esc(pm + ' PM · ' + sub2)}" aria-label="${esc(pm + ' PM. ' + sub2)}">
+        <span class="cb-orbe-disco"><span class="cb-orbe-txt">${pm}</span></span>
+        <span class="cb-orbe-nome">${pm} PM<i>${sub2}</i></span>
       </button>`;
-  }).join('') + `<div class="cb-trocas">
-      <button class="cb-btn troca" onclick="if(!_pveAnim)_pveDesenhar()">
-        <span class="cb-btn-rot">${t('pve.pm.voltar')}</span></button>
-    </div>`;
+  }).join('') + `<button class="cb-orbe voltar" onclick="if(!_pveAnim)_pveDesenhar()"
+        title="${esc(t('pve.pm.voltar'))}">
+        <span class="cb-orbe-disco">${_pveSelo('voltar')}</span>
+        <span class="cb-orbe-nome">${t('pve.pm.voltar')}</span>
+      </button>`;
 }
 
 /* ═══ APONTAR ═══
@@ -1689,10 +1778,16 @@ function _pveEscolherAlvo(tipo, pm, curar) {
               : cheio  ? t('pve.alvo.cheio')
               : t('pve.alvo.vida', { pv: c.pv, max: c.pvMax });
     const chamada = fn + "('" + tipo + "'," + pm + "," + i + ")";
-    botoes += '<button class="cb-btn' + (on ? '' : ' vazio') + '"'
-            + (on ? ' onclick="' + chamada + '"' : ' disabled') + '>'
-            + '<span class="cb-btn-rot">' + esc(c.nome) + '</span>'
-            + '<span class="cb-btn-sub">' + sub + '</span>'
+    /* O alvo escolhe-se pela CARA. Um nome dentro de um disco não cabe
+       e não se lê; o retrato do bicho é a coisa mais reconhecível que
+       este jogo tem, e é a mesma figura que está no campo. */
+    botoes += '<button class="cb-orbe alvo' + (on ? '' : ' vazio') + '"'
+            + (on ? ' onclick="' + chamada + '"' : ' disabled')
+            + ' title="' + esc(c.nome + ' · ' + sub) + '">'
+            + '<span class="cb-orbe-disco">'
+            +   gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 80, 80, _pveFase(c))
+            + '</span>'
+            + '<span class="cb-orbe-nome">' + esc(c.nome) + '<i>' + sub + '</i></span>'
             + '</button>';
   });
 
@@ -1700,9 +1795,10 @@ function _pveEscolherAlvo(tipo, pm, curar) {
     + t(curar ? 'pve.alvo.quem_curar' : 'pve.alvo.quem_bater',
         { nome: t('mag.' + g.id + '.nome') })
     + '</div>' + botoes
-    + '<div class="cb-trocas"><button class="cb-btn troca"'
-    + ' onclick="if(!_pveAnim)_pveDesenhar()">'
-    + '<span class="cb-btn-rot">' + t('pve.pm.voltar') + '</span></button></div>';
+    + '<button class="cb-orbe voltar" onclick="if(!_pveAnim)_pveDesenhar()"'
+    + ' title="' + esc(t('pve.pm.voltar')) + '">'
+    + '<span class="cb-orbe-disco">' + _pveSelo('voltar') + '</span>'
+    + '<span class="cb-orbe-nome">' + t('pve.pm.voltar') + '</span></button>';
 }
 
 function _pveLancarContra(tipo, pm, idx) {
@@ -1902,6 +1998,8 @@ function _pveAnimar(eventos) {
         _pveAnim = false;
         _pveTravarAcoes(false);
         if (_pveEstado.acabou) _pveFecharContas();
+        // Acabou de se ver o que aconteceu; volta a poder-se decidir.
+        if (!_pveEstado.acabou) _pveMenuAbrir();
         _pveDesenhar();
         if (_pveEstado.acabou) _pveLog(_pveTextoFim(), 'info');
       }, 260);

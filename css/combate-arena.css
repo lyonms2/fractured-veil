@@ -932,86 +932,143 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   O MENU DE AÇÕES — ao lado de quem joga
+   O MENU — ORBES À FRENTE DO AVATAR
 
-   O left/top vêm do JS, que lê a posição do posto (ver _pveMenuMover).
-   Aqui trata-se do resto: o menu cresce para CIMA e para a ESQUERDA a
-   partir desse ponto, porque o ponto são os pés do avatar do lado
-   esquerdo — para cima fica o céu vazio, para a esquerda fica a margem.
-   Para o outro lado ficaria em cima do caminho do golpe.
+   Foi uma lista de botões dentro de um painel, e ficou feia por uma
+   razão simples: um painel retangular com moldura no meio de uma arena
+   pintada é uma JANELA por cima dela. Não importa quão translúcido
+   seja — a forma denuncia-o.
+
+   Agora são orbes. Um selo dentro de um disco, uma pastilha com o
+   custo, e o nome ao lado em texto solto. Sem caixa, sem fundo, sem
+   moldura à volta do conjunto: flutuam à frente do bicho, que é onde a
+   decisão dele acontece.
+
+   ── PORQUE À FRENTE E NÃO AO LADO ──
+
+   À frente é para onde ele olha e para onde o golpe vai. Ao lado ficava
+   por cima dos dois companheiros do banco, e por trás não faz sentido
+   nenhum. A coluna sobe a partir do peito, que é onde o corpo é mais
+   largo — abaixo disso ficam as pernas e o anel do chão.
+
+   O left/top vêm do JS, que lê a posição do posto (_pveMenuMover).
    ═══════════════════════════════════════════════════════════════════ */
 .cb-menu {
   position: absolute; z-index: 8;
-  width: 8.75rem;
-  /* ── ONDE ELE ABRE ──
-
-     Do lado de fora do avatar e A PARTIR DO PEITO DELE PARA CIMA — os
-     -6.5rem são a altura do corpo. Aberto a partir dos pés, como estava,
-     o painel caía em cima dos dois companheiros do banco, que vivem
-     exactamente ali: à esquerda e um pouco acima. Para cima está o céu,
-     e o céu está vazio.
-
-     Nunca para o lado de dentro: é por lá que o golpe passa, e é lá que
-     o lance aparece. */
-  transform: translate(-100%, -100%) translate(-0.5rem, -5.25rem);
-  transform-origin: 100% 100%;
+  /* A partir dos pés do avatar: um passo para a frente (para o meio do
+     palco) e a coluna a subir daí. */
+  transform: translate(2.6rem, -100%) translateY(-1.75rem);
   opacity: 0; pointer-events: none;
-  transition: opacity .2s, transform .2s cubic-bezier(.34,1.3,.64,1);
+  transition: opacity .22s, transform .22s cubic-bezier(.34,1.3,.64,1);
 }
 .cb-menu.aberto {
   opacity: 1; pointer-events: auto;
-  transform: translate(-100%, -100%) translate(-0.5rem, -6.5rem);
+  transform: translate(2.6rem, -100%) translateY(-2.6rem);
 }
-/* No fim da batalha não há avatar a quem se encostar: o painel do
-   resultado fica ao meio, como qualquer conclusão. */
+/* No fim da batalha não há avatar a quem se encostar, e o que aparece
+   não é uma escolha: é o resultado. Volta a ser um painel, ao meio. */
 .cb-menu.fim {
   left: 50% !important; top: 50% !important;
   width: min(20rem, 84%);
   transform: translate(-50%, -50%);
 }
 
-/* TRANSLÚCIDO, e com desfoque por trás. Um painel opaco no meio da
-   arena é um buraco na cena; com o desfoque continua a ler-se e o que
-   está atrás continua a existir. */
 .cb-menu .cb-acoes {
-  display: flex; flex-direction: column; gap: 0.125rem;
-  padding: 0.25rem; border-radius: 0.5rem;
-  border: 1px solid rgba(201,168,76,.34);
-  background: linear-gradient(180deg, rgba(16,11,30,.82), rgba(6,4,14,.88));
-  backdrop-filter: blur(0.5rem); -webkit-backdrop-filter: blur(0.5rem);
-  box-shadow: 0 0.75rem 2rem rgba(0,0,0,.6);
-  max-height: 15rem; overflow-y: auto;
+  display: flex; flex-direction: column-reverse; align-items: flex-start;
+  gap: 0.3125rem;
+  /* SEM FUNDO. É esta linha que faz a diferença toda. */
+  padding: 0; background: none; border: none; box-shadow: none;
+  max-height: none; overflow: visible;
 }
-.cb-menu.fim .cb-acoes { max-height: none; }
-
-/* Cada linha é: o papel em cima, pequeno e em ouro; o nome a seguir; o
-   custo por baixo. É a ordem por que se decide. */
-.cb-menu .cb-btn {
-  display: block; width: 100%; text-align: left;
-  padding: 0.25rem 0.375rem; min-width: 0;
-  border-radius: 0.375rem;
-}
-.cb-btn-papel {
+.cb-menu.fim .cb-acoes {
   display: block;
-  font-family: 'Cinzel', serif; font-size: 0.34375rem;
-  letter-spacing: 0.075rem; text-transform: uppercase;
-  color: var(--gold); line-height: 1.4;
+  padding: 0.625rem; border-radius: 0.5rem;
+  border: 1px solid rgba(201,168,76,.3);
+  background: linear-gradient(180deg, rgba(16,11,30,.96), rgba(6,4,14,.98));
+  box-shadow: 0 0.75rem 2rem rgba(0,0,0,.72);
 }
-.cb-btn:disabled .cb-btn-papel { color: var(--muted); }
-.cb-menu .cb-btn-rot {
-  display: block; font-size: 0.4375rem; line-height: 1.2;
-  white-space: normal;
+
+/* ── O ORBE ── */
+.cb-orbe {
+  display: flex; align-items: center; gap: 0.375rem;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: inherit; color: var(--gold);
+  transition: transform .16s, color .16s;
 }
-.cb-menu .cb-btn-sub {
-  display: block; font-size: 0.34375rem; line-height: 1.4;
-  color: rgba(212,200,240,.72);
+.cb-orbe:disabled { cursor: default; color: var(--muted); }
+
+.cb-orbe-disco {
+  position: relative; flex: 0 0 auto;
+  width: 2rem; height: 2rem; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 1px solid currentColor;
+  background: radial-gradient(60% 60% at 50% 35%, rgba(30,20,54,.92), rgba(6,4,14,.94));
+  box-shadow: 0 0 0.5rem rgba(0,0,0,.7), inset 0 0 0.625rem rgba(185,140,255,.16);
+  transition: box-shadow .18s, border-color .18s, background .18s;
 }
-/* A ficha é a última e não é uma jogada: separa-se com um fio. */
-.cb-menu .cb-btn.ficha {
-  margin-top: 0.1875rem; padding-top: 0.375rem;
-  border-top: 1px solid rgba(201,168,76,.2);
-  border-radius: 0 0 0.375rem 0.375rem;
+.cb-selo { width: 1.125rem; height: 1.125rem; display: block; }
+
+.cb-orbe:not(:disabled):hover                { transform: translateX(0.1875rem); color: var(--gold-light); }
+.cb-orbe:not(:disabled):hover .cb-orbe-disco { box-shadow: 0 0 0.875rem rgba(240,208,128,.55), inset 0 0 0.75rem rgba(240,208,128,.22); }
+.cb-orbe:focus-visible .cb-orbe-disco        { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+/* O desligado perde o traço cheio: um anel a tracejado lê-se como
+   "ainda não" sem precisar de o dizer. */
+.cb-orbe:disabled .cb-orbe-disco {
+  border-style: dashed; opacity: .55;
+  box-shadow: none; background: rgba(6,4,14,.6);
 }
+
+/* A pastilha do custo, no canto de baixo. É o número que decide se a
+   jogada cabe na bolsa, e por isso está no orbe e não na etiqueta. */
+.cb-orbe-custo {
+  position: absolute; right: -0.125rem; bottom: -0.125rem;
+  min-width: 0.75rem; height: 0.75rem; padding: 0 0.125rem;
+  border-radius: 0.375rem;
+  display: grid; place-items: center;
+  font-family: 'Courier New', monospace; font-size: 0.34375rem; font-weight: 700;
+  color: #bfe4ff; background: rgba(8,20,34,.96);
+  border: 1px solid rgba(90,180,232,.6);
+}
+/* Quando o orbe não leva selo — os passos do PM e a volta atrás — o
+   próprio texto é o desenho. */
+.cb-orbe-txt {
+  font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700;
+  letter-spacing: 0.01875rem; line-height: 1;
+  max-width: 1.625rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── O NOME, AO LADO, SEM CAIXA ──
+   Texto solto sobre a cena. O contorno preto é o que o faz ler-se por
+   cima de um céu claro ou de um bicho de qualquer cor — uma caixa
+   resolvia isso e trazia de volta o problema que este menu existe para
+   resolver. */
+.cb-orbe-nome {
+  font-family: 'Cinzel', serif; font-size: 0.40625rem; line-height: 1.25;
+  letter-spacing: 0.03125rem; text-align: left; white-space: nowrap;
+  color: var(--text);
+  text-shadow: -1px -1px 0 rgba(0,0,0,.9), 1px -1px 0 rgba(0,0,0,.9),
+               -1px 1px 0 rgba(0,0,0,.9), 1px 1px 0 rgba(0,0,0,.9),
+               0 0 0.375rem rgba(0,0,0,.95);
+  opacity: .82; transition: opacity .16s;
+}
+.cb-orbe:hover .cb-orbe-nome { opacity: 1; }
+.cb-orbe:disabled .cb-orbe-nome { opacity: .5; }
+.cb-orbe-nome i {
+  display: block; font-style: normal;
+  font-family: 'EB Garamond', serif; font-size: 0.34375rem;
+  color: rgba(212,200,240,.7);
+}
+
+/* O cabeçalho dos passos ("quanto queres gastar?") também perde a
+   caixa: é uma pergunta, e uma pergunta é uma linha de texto. */
+.cb-menu .cb-pm-cab {
+  background: none; border: none; padding: 0 0 0.125rem;
+  font-family: 'Cinzel', serif; font-size: 0.375rem;
+  letter-spacing: 0.05rem; color: var(--gold);
+  text-shadow: 0 0 0.375rem rgba(0,0,0,.95);
+  order: 99;                      /* com o column-reverse, fica em cima */
+}
+.cb-menu .cb-trocas { display: contents; }
 
 /* ═══════════════════════════════════════════════════════════════════
    O QUE SOBRA: topo e rodapé
@@ -1170,16 +1227,17 @@
   .cb-bruma           { top: 27%; height: 24%; }
   .cb-chao            { top: 40%; }
 
-  /* No telemóvel não há margem para um menu ao lado de um avatar: ele
-     encosta ao rodapé e ocupa a largura, que é o único sítio onde uma
-     lista de seis linhas cabe sem tapar a batalha. */
+  /* No telemóvel a coluna encosta ao rodapé e alinha à esquerda: o
+     avatar em campo está mesmo por cima dela, e uma coluna a subir do
+     peito dele sairia pelo topo do ecrã. Continuam a ser orbes. */
   .cb-menu {
-    left: 0.375rem !important; right: 0.375rem;
-    top: auto !important; bottom: var(--rodape);
-    width: auto; transform: translateY(0.75rem);
+    left: 0.5rem !important; top: auto !important;
+    bottom: calc(var(--rodape) + 0.25rem);
+    transform: translateY(0.5rem);
   }
   .cb-menu.aberto { transform: translateY(0); }
-  .cb-menu .cb-acoes { max-height: 11rem; }
+  .cb-orbe-disco { width: 1.75rem; height: 1.75rem; }
+  .cb-selo { width: 1rem; height: 1rem; }
   .cb-palco .cb-log { top: 34%; width: 88%; }
 
   .cb-palco { --rodape: 10.5rem; }
