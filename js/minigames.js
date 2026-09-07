@@ -290,7 +290,21 @@ function aplicarVisualDoSono(dormindo) {
     renderSleepEyes();
     playAnim('anim-sleep', true);
   } else {
-    const grp = document.querySelector('#sleepEyesGroup');
+    /* ── AS PÁLPEBRAS DESTE, E NÃO AS DO PRIMEIRO QUE APAREÇA ──
+
+       Isto era `document.querySelector('#sleepEyesGroup')`, e funcionou
+       enquanto só havia um bicho desenhado na página. Desde que a
+       colónia fecha os olhos aos que dormem, há um grupo desses por
+       cada cartão — e um id repetido não é um id: o querySelector
+       devolve o PRIMEIRO do documento, e a colónia vem antes da tela de
+       cuidar.
+
+       Resultado: acordar o bicho tirava as pálpebras a um cartão da
+       colónia e deixava as deste. Ele acordava de olhos fechados.
+
+       Passa a procurar dentro do desenho de quem se está a acordar. */
+    const svgAtivo = document.querySelector('#creatureSVG svg');
+    const grp = svgAtivo && svgAtivo.querySelector('.sleep-eyes');
     if (grp) grp.remove();
     resetAnim();
   }
@@ -506,7 +520,10 @@ function renderSleepEyes(svgAlvo, slotAlvo, comFade) {
   const avatarSvg = svgAlvo || document.querySelector('#creatureSVG svg');
   if(!avatarSvg) return;
 
-  const old = avatarSvg.querySelector('#sleepEyesGroup');
+  // Classe e não id: há um destes por cada bicho desenhado na página —
+  // o da tela de cuidar e um por cartão da colónia. Ver a nota no
+  // aplicarVisualDoSono.
+  const old = avatarSvg.querySelector('.sleep-eyes');
   if(old) old.remove();
 
   const olhos = avatarSvg.querySelectorAll('.av-olho-un');
@@ -515,7 +532,7 @@ function renderSleepEyes(svgAlvo, slotAlvo, comFade) {
   const cfg = paletaDoAvatar(alvo, alvo && alvo.seed);
   const ns  = 'http://www.w3.org/2000/svg';
   const grp = document.createElementNS(ns, 'g');
-  grp.id = 'sleepEyesGroup';
+  grp.setAttribute('class', 'sleep-eyes');
   grp.style.opacity = '0';
   grp.style.transition = 'opacity .6s ease';
 
