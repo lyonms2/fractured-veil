@@ -41,6 +41,12 @@ const fichaDT     = require('../js/ficha-3dt.js');
 // vez só. Ela chama o sexoDe, o faseDoSlot e o coresDe por nome global —
 // que os `Object.assign` abaixo põem lá.
 const reproducao  = require('../js/reproducao.js');
+/* A ficha entra pela mesma porta e pela mesma razão de sempre: ela
+   decide quanto dano um avatar dá e aguenta, e ele vende-se por
+   cristais que saem em MATIC. Duas cópias da mesma conta — uma no
+   navegador, outra aqui — acabariam por discordar em silêncio, e a
+   primeira pessoa a dar por isso seria alguém a ser roubado. */
+const fichaFU     = require('../js/ficha-fu.js');
 
 // A fase sai do nível, e o js/state.js não corre fora do navegador (mexe
 // no ecrã e em vinte globais). São duas linhas e leem-se de lá tal como
@@ -48,7 +54,7 @@ const reproducao  = require('../js/reproducao.js');
 const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
 const faseFromNivel = n => faseDePontos(fichaDT.pontosDoAvatar('Comum', n || 1));
 
-Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao,
+Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU,
               { faseDePontos, faseFromNivel });
 
 /* Um seed que o jogador não escolhe.
@@ -135,7 +141,7 @@ function certidaoDeChoco(ovo, criador) {
 }
 
 module.exports = {
-  cores, nascimento, raridade, fichaDT, reproducao,
+  cores, nascimento, raridade, fichaDT, reproducao, fichaFU,
   faseFromNivel, seedNovo, idNovo, ovoIdNovo,
   certidaoDeInvocacao, ovoDeCruza, certidaoDeChoco,
 };
