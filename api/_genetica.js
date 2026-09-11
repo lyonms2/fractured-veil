@@ -47,6 +47,10 @@ const reproducao  = require('../js/reproducao.js');
    navegador, outra aqui — acabariam por discordar em silêncio, e a
    primeira pessoa a dar por isso seria alguém a ser roubado. */
 const fichaFU     = require('../js/ficha-fu.js');
+/* E o motor, pela mesma razão: no dia do PvP é aqui que o servidor
+   confere uma luta que o cliente diz ter ganho. Ele repete-se a partir
+   do seed, portanto conferir é voltar a jogá-la. */
+const motorFU     = require('../js/combate-fu.js');
 
 // A fase sai do nível, e o js/state.js não corre fora do navegador (mexe
 // no ecrã e em vinte globais). São duas linhas e leem-se de lá tal como
@@ -54,7 +58,7 @@ const fichaFU     = require('../js/ficha-fu.js');
 const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
 const faseFromNivel = n => faseDePontos(fichaDT.pontosDoAvatar('Comum', n || 1));
 
-Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU,
+Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU, motorFU,
               { faseDePontos, faseFromNivel });
 
 /* Um seed que o jogador não escolhe.
@@ -141,7 +145,7 @@ function certidaoDeChoco(ovo, criador) {
 }
 
 module.exports = {
-  cores, nascimento, raridade, fichaDT, reproducao, fichaFU,
+  cores, nascimento, raridade, fichaDT, reproducao, fichaFU, motorFU,
   faseFromNivel, seedNovo, idNovo, ovoIdNovo,
   certidaoDeInvocacao, ovoDeCruza, certidaoDeChoco,
 };
