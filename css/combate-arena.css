@@ -103,14 +103,28 @@
 
    São três peças sobrepostas: o halo (o que ela faz ao ar à volta), o
    corpo (o rasgo em si) e o núcleo (a linha quente do meio). */
-/* Ia dos 6% aos 52% e o chão começa aos 58%: ficavam 6% de nada entre
-   a ponta do rasgo e o sítio de onde a luz dele sai. Uma fonte de luz
-   suspensa no ar, com a poça no chão a apontar para o vazio. Agora
-   toca no chão, que é o que a faz parecer uma fenda no mundo. */
+/* ═══════════════════════════════════════════════════════════════════
+   A FRATURA — E O QUE FALTAVA PARA ELA SER UMA LUZ
+
+   Duas coisas estavam a desfazer a única ideia que a cena tem.
+
+   A PRIMEIRA ERA A ORDEM DE PINTURA. O rasgo é declarado antes dos
+   montes e nenhuma camada tinha z-index, portanto os montes pintavam
+   POR CIMA dele: medido, a fenda morria 179px acima do chão que devia
+   tocar. Ficava uma poça de luz violeta e dourada no chão sem nada por
+   cima que a explicasse. O comentário que aqui estava defendia o
+   contrário do que se via, porque a geometria tinha sido esticada e a
+   ordem de pintura tinha ganho à mesma.
+
+   A SEGUNDA ERA O TAMANHO. 1,35rem de corpo num palco de 46rem são 2,9%
+   da largura — uma arranhadela. A coisa que dá nome ao mundo e que
+   acende todas as superfícies não pode ser um fio.
+   ═══════════════════════════════════════════════════════════════════ */
 .cb-fenda {
-  position: absolute; left: 50%; top: 5%;
-  width: 8rem; height: 55%;
+  position: absolute; left: 50%; top: 3%;
+  width: 12rem; height: 60%;
   transform: translateX(-50%);
+  z-index: 2;                   /* à frente dos montes e da bruma */
 }
 /* Era um halo de 740×679 sobre um palco de 698×665 — ou seja, um véu
    lavanda sobre a cena INTEIRA, a achatar o chão, os montes e os
@@ -123,7 +137,7 @@
   animation: cb-fenda-pulsa 5.2s ease-in-out infinite;
 }
 .cb-fenda-corpo {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 1.35rem;
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 2.6rem;
   transform: translateX(-50%);
   background: linear-gradient(180deg, transparent, var(--fenda-fund) 12%, var(--fenda) 46%, var(--fenda-quen) 74%, transparent 99%);
   /* O rasgo não é um retângulo: aperta em cima e em baixo e é irregular
@@ -133,7 +147,7 @@
   animation: cb-fenda-treme 3.4s ease-in-out infinite;
 }
 .cb-fenda-nucleo {
-  position: absolute; left: 50%; top: 8%; bottom: 8%; width: 0.125rem;
+  position: absolute; left: 50%; top: 8%; bottom: 8%; width: 0.3125rem;
   transform: translateX(-50%);
   background: linear-gradient(180deg, transparent, #fff 30%, var(--fenda-quen) 70%, transparent);
   filter: blur(0.09375rem);
@@ -181,9 +195,24 @@
 /* O contraluz: os monólitos recebem a Fratura pelas costas, portanto
    têm de acender no bordo de cima e só aí. Sem esta linha eram um
    recorte preto colado ao céu. */
+/* ── O CONTRALUZ ──
+
+   Era um degradê VERTICAL sobre a caixa inteira, o que quer dizer que o
+   brilho de um pico dependia da altura dele dentro do div e não da
+   distância à luz. Os picos altos acendiam, os baixos não acendiam
+   nada, e um pico na berma do quadro recebia exactamente o mesmo que o
+   pico plantado à frente da fenda.
+
+   Agora é radial e está ancorado ao sítio onde a Fratura está — 50%, em
+   cima. Os montes ao pé dela ardem, os das pontas ficam quase pretos, e
+   a máscara limita tudo ao bordo de cima, que é onde um contraluz bate.
+   É a mesma luz a decidir as duas coisas. */
 .cb-monolitos::after, .cb-monolitos-perto::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(185,140,255,.55), transparent 22%);
+  background: radial-gradient(42% 130% at 50% 0%,
+              rgba(185,140,255,.6), rgba(185,140,255,.1) 55%, transparent 80%);
+  mask-image: linear-gradient(180deg, #000, transparent 26%);
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 26%);
   mix-blend-mode: screen;
 }
 
@@ -278,6 +307,50 @@
   100% { transform: translateY(-9rem) translateX(1.25rem); opacity: 0; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O PRIMEIRO PLANO
+
+   Todas as camadas da cena estavam ATRÁS dos bichos: céu, auroras,
+   fenda, montes, bruma, chão, poeira. Uma cena pintada deste género
+   monta-se como um palco de teatro — há qualquer coisa escura e
+   desfocada À FRENTE, e a acção passa-se lá dentro. Sem isso quem faz o
+   enquadramento é a vinheta, e uma vinheta é um filtro, não uma
+   composição.
+
+   São duas cristas de pedra, uma em cada canto de baixo, da cor do ar e
+   desfocadas — perto da lente, portanto fora de foco, portanto sem
+   detalhe nenhum. Não tapam os bichos: mordem os cantos, que é onde não
+   há nada, e fecham o quadro por baixo.
+   ═══════════════════════════════════════════════════════════════════ */
+.cb-frente {
+  /* Encostado ao RODAPÉ e não ao fundo do palco. Medido: ao fundo, das
+     347px que ele tinha, 224 ficavam escondidas atrás da faixa de baixo
+     — estava lá e não se via. As cristas têm de morder o canto da CENA,
+     que acaba onde a faixa começa. */
+  position: absolute; left: 0; right: 0; bottom: var(--rodape);
+  height: 7rem; pointer-events: none; z-index: 3;
+}
+.cb-frente i {
+  position: absolute; bottom: 0; height: 100%; width: 34%;
+  /* QUASE PRETAS e bem desfocadas. Ao mesmo valor dos monólitos liam-se
+     como mais uma fila de montes ao longe, o que é o contrário do que
+     um primeiro plano faz. Perto da lente é escuro e é fora de foco —
+     são essas duas coisas que dizem ao olho onde está o vidro. */
+  background: linear-gradient(180deg, #0a0616, #040209);
+  filter: blur(0.4375rem);
+  opacity: 1;
+}
+.cb-frente i:first-child {
+  left: -4%;
+  clip-path: polygon(0% 100%, 0% 34%, 14% 46%, 26% 26%, 38% 52%, 52% 38%,
+                     63% 64%, 74% 54%, 86% 78%, 100% 70%, 100% 100%);
+}
+.cb-frente i:last-child {
+  right: -4%;
+  clip-path: polygon(100% 100%, 100% 30%, 86% 48%, 73% 24%, 61% 56%, 48% 40%,
+                     36% 68%, 25% 56%, 12% 80%, 0% 72%, 0% 100%);
+}
+
 /* ── A vinheta ──
    Escurece os cantos para o olho ir ao meio, que é onde estão os
    bichos. Fica por cima de todo o cenário e por baixo de tudo o resto. */
@@ -289,6 +362,24 @@
 /* ═══════════════════════════════════════════════════════════════════
    O CAMPO — onde os seis estão
    ═══════════════════════════════════════════════════════════════════ */
+
+/* ── O AR QUE OS SEIS PARTILHAM ──
+
+   Uma folha de luz por cima de TODOS os corpos, do mesmo violeta da
+   Fratura e vinda de onde ela está. É a peça que os põe no mesmo sítio:
+   sem ela cada bicho tem a sua própria luz e a cena são seis recortes;
+   com ela há um ar entre a fenda e eles, e todos o respiram.
+
+   Fica por cima do campo e não toca em nada mais — o `mix-blend-mode`
+   de tela só clareia, portanto não suja as cores, só as banha. */
+.cb-campo::after {
+  content: ''; position: absolute; inset: -20% -5% 0;
+  pointer-events: none; z-index: 20;
+  background:
+    radial-gradient(46% 62% at 50% 0%, rgba(185,140,255,.16), transparent 72%),
+    radial-gradient(30% 40% at 50% 0%, rgba(255,214,138,.09), transparent 70%);
+  mix-blend-mode: screen;
+}
 
 /* ── O CAMPO ──
 
@@ -374,8 +465,11 @@
    sinal deixava de ser sinal. Uma animação que anima a mesma
    propriedade que o estado controla tem de viver no estado. */
 .cb-posto.ativo .cb-anel { opacity: 1; animation: cb-anel-gira 4s linear infinite; }
-.cb-posto.eu  { --anel: rgba(122,184,122,.75); }
-.cb-posto.ini { --anel: rgba(224,85,85,.75); }
+/* Eram as únicas cores puras do plano do chão e liam-se como decalques
+   de alvo. Puxados para o ouro e para o cobre da casa, e com metade da
+   força: continuam a dizer quem joga e deixam de ser adesivos. */
+.cb-posto.eu  { --anel: rgba(201,168,76,.55); }
+.cb-posto.ini { --anel: rgba(196,92,70,.55); }
 @keyframes cb-anel-gira {
   0%,100% { transform: translate(-50%,-50%) scale(1);    opacity: .75; }
   50%     { transform: translate(-50%,-50%) scale(1.08); opacity: 1; }
@@ -484,6 +578,33 @@
 /* Um morto não pisca. */
 .cb-posto.caido .cb-corpo .av-olho-un { animation: none; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   A AURÉOLA DO AVATAR SAI DA ARENA
+
+   Cada avatar traz uma elipse desenhada dentro do próprio SVG (a
+   `av-aura`, no js/data.js) e ela não é um brilho: o alfa dela PICA aos
+   84% do raio, portanto é um ANEL — um contorno em forma de ovo, na cor
+   do bicho, a 80% de claridade.
+
+   Na tela de cuidar e na colecção isso é bonito: o bicho está sozinho
+   contra um fundo neutro e a auréola destaca-o. Na arena é o que mais
+   faz parecerem autocolantes colados numa pintura — e contradiz a única
+   regra que a cena tem, que é haver uma luz só: com ela, cada criatura
+   emite luz própria, de uma cor diferente, em seis sítios ao mesmo
+   tempo.
+
+   Sai só AQUI. O contorno violeta que o css já põe por drop-shadow faz
+   o trabalho de separar a figura do fundo, e fá-lo com a cor da
+   Fratura, que é de onde a luz vem.
+   ═══════════════════════════════════════════════════════════════════ */
+.cb-corpo .av-aura { display: none; }
+
+/* ── E A SATURAÇÃO TEM TECTO ──
+   Ia a 1,0 no posto da frente, e os avatares são coloridos por DNA: os
+   dois bichos para onde o olho vai primeiro eram os dois objectos mais
+   saturados de um quadro violeta e ouro. A 0,82 continuam a ser a cor
+   deles e deixam de gritar. */
+
 /* Quem não está em campo recua: perde saturação, ganha bruma e apaga.
    É o mesmo sinal que a distância já dá, reforçado — o olho tem de
    saber num relance quem é que está a jogar. */
@@ -508,14 +629,14 @@
   filter:
     drop-shadow(0 -0.0625rem 0.125rem rgba(185,140,255,.30))
     drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.7))
-    saturate(calc(0.45 + 0.55 * var(--z)))
+    saturate(calc(0.45 + 0.37 * var(--z)))
     brightness(calc(0.62 + 0.38 * var(--z)));
 }
 
 /* ── Caído ──
    Cai para o lado e fica no chão. Não desaparece e não vira um ✕: o
    corpo continua lá, que é o que faz a baixa pesar. */
-.cb-posto.caido { opacity: .55; }
+.cb-posto.caido { opacity: .78; }
 /* Cai PARA DENTRO do campo, e não para fora. A 74° o corpo varria a
    própria altura para o lado: o inimigo do fundo saía 36px fora do
    palco e era cortado, e o meu caía por cima do companheiro. A 58°, com
@@ -528,7 +649,18 @@
    desaparecia. O comentário dizia "o corpo continua lá" e ele não
    continuava. A 68% ainda se lê como coisa apagada e continua a ser um
    corpo no chão, que é o que faz a baixa pesar. */
-.cb-posto.caido .cb-corpo svg { filter: grayscale(1) brightness(.68); animation: none; }
+/* .55 de opacidade no posto vezes .68 de brilho no corpo davam 0,37 de
+   luminância sobre um chão quase preto: o corpo dissolvia-se, e o
+   comentário que promete que ele "continua lá" ficava a mentir. A
+   greyscale sai — um corpo sem cor nenhuma sobre violeta escuro não tem
+   por onde se ver — e fica uma dessaturação forte com brilho a 1,05,
+   que é o que faz uma coisa pálida ressaltar do escuro em vez de se
+   afundar nele. */
+.cb-posto.caido .cb-corpo svg {
+  filter: saturate(.18) brightness(1.05) contrast(.85)
+          drop-shadow(0 0.125rem 0.25rem rgba(0,0,0,.8));
+  animation: none;
+}
 .cb-posto.caido .cb-sombra { animation: none; opacity: .5; transform: translate(-50%,-0.15rem) scaleX(1.25) scaleY(.6); }
 /* A etiqueta de quem caiu ficava a .5 — e como só os que estão em
    campo a mostram, isto RESSUSCITAVA o nome dos que estão no banco: ao
@@ -1310,6 +1442,75 @@
      registo encolhe para não lhes cair em cima. Continua a rolar, e o
      detalhe do turno abre na mesma. */
   .cb-palco .cb-log { left: 0.375rem; max-height: 6rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   A LETRA TEM DE CRESCER COM O PALCO, NÃO COM A RAIZ
+
+   Medido: no telemóvel o nome de um avatar ocupa 2,54% da largura do
+   palco; no computador ocupa 0,88%. A mesma letra, três vezes mais
+   pequena em relação ao que a rodeia.
+
+   A causa é aritmética e não é um descuido de nenhuma regra em
+   particular: a raiz vai de 16px para 26,4px (×1,65) enquanto o palco
+   vai de 355px para 1214px (×3,4). Tudo o que está em `rem` fica para
+   trás exactamente nessa razão — 3,4 ÷ 1,65 ≈ 2,1.
+
+   Portanto a versão certa é a do TELEMÓVEL, e é ela que se copia. Aqui
+   repõe-se a proporção, e nenhuma letra da arena desce dos 12px — a
+   Cinzel é uma capital romana de contraste alto e abaixo disso as
+   serifas desfazem-se em textura.
+
+   O rodapé cresce com ela: com letra maior as linhas dos cartões ficam
+   mais altas, e a faixa tem de as caber ou volta a tapar os pés.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width: 681px) {
+  .cb-palco          { --rodape: 8.5rem; }
+
+  .cb-etiqueta       { font-size: 0.78rem; letter-spacing: 0.075rem; }
+  .cb-posto .cb-marca{ font-size: 0.5rem; padding: 0.125rem 0.3125rem; }
+
+  .cb-ficha          { padding: 0.3125rem; gap: 0.4375rem; }
+  .cb-ficha-nome     { font-size: 0.5625rem; max-width: 11rem; }
+  .cb-ficha-cara     { width: 2.125rem; height: 2.125rem; }
+  .cb-ficha-cara svg { width: 1.75rem; height: 1.75rem; }
+  .cb-ficha-nivel    { font-size: 0.4375rem; padding: 0 0.1875rem; }
+  .cb-barra          { height: 0.6875rem; }
+  .cb-barra span     { font-size: 0.46875rem; }
+  .cb-ficha-barras   { min-width: 8.5rem; }
+  .cb-hud.ini .cb-ficha-barras { min-width: 8.5rem; }
+
+  .cb-orbe-disco     { width: 2.75rem; height: 2.75rem; }
+  .cb-selo           { width: 1.5rem; height: 1.5rem; }
+  .cb-orbe-custo     { min-width: 1rem; height: 1rem; font-size: 0.4375rem; }
+  .cb-orbe-nome      { font-size: 0.625rem; }
+  .cb-orbe-nome i    { font-size: 0.5rem; }
+  .cb-menu           { width: 13rem; }
+  .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
+
+  .cb-palco .cb-log-linha { font-size: 0.5625rem; }
+  .cb-palco .cb-log  { width: min(30rem, 70%); max-height: 15rem; }
+
+  /* ── E OS BICHOS CRESCEM COM O PALCO ──
+     A mesma conta da letra, e o mesmo defeito: medido, o corpo da
+     frente ocupava 11% da largura do palco no computador contra 38% no
+     telemóvel. Um avatar a um terço do tamanho relativo não é a mesma
+     cena maior, é outra cena — e é por isso que a versão larga se lia
+     como um diagrama e a estreita como um sítio.
+     Com o campo mais alto há onde os pôr: 32% do palco eram céu vazio
+     antes de o chão começar. */
+  .cb-corpo svg {
+    width:  calc(7rem * var(--escala));
+    height: calc(9.1rem * var(--escala));
+  }
+  .cb-efeitos { width: calc(7rem * var(--escala)); height: calc(9.1rem * var(--escala)); }
+  .cb-campo   { height: min(22rem, 46%); }
+  .cb-sombra  { width: calc(5rem * var(--escala)); height: calc(1.25rem * var(--escala)); }
+  .cb-anel    { width: calc(6rem * var(--escala)); height: calc(1.7rem * var(--escala)); }
+  .cb-etiqueta{ transform: translate(-50%, calc(-100% - 9.6rem * var(--escala))); }
+  .cb-posto .cb-marcas { transform: translate(-50%, calc(-100% - 10.9rem * var(--escala))); width: 11rem; }
+  .cb-menu    { transform: translate(-100%, -100%) translate(-0.5rem, -8rem); }
+  .cb-menu.aberto { transform: translate(-100%, -100%) translate(-0.5rem, -9.5rem); }
 }
 
 /* Quem pediu ao sistema para não haver movimento fica com a cena — a

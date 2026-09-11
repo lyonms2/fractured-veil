@@ -360,6 +360,9 @@ function _pveShell() {
       <div class="cb-bruma"></div>
       <div class="cb-chao"></div>
       <div class="cb-poeira">${_pveMotas(14)}</div>
+      <!-- O primeiro plano: duas cristas de pedra desfocadas nos cantos
+           de baixo. É o que transforma um fundo num palco. -->
+      <div class="cb-frente"><i></i><i></i></div>
       <div class="cb-vinheta"></div>
     </div>
 
@@ -785,12 +788,22 @@ function _pveLutador(c, i, lado, ativo) {
     /* 84% e não 94%: o anel do chão tem 30px de altura centrados no
        ponto do posto, portanto os pés têm de ficar 15px acima da faixa
        de baixo para o anel inteiro se ver. */
-    /* O x do fundo estava em 28% e o da frente em 36%: com o da frente
-       a medir 148px de largo, 8% de campo não chegam para os separar e
-       ele tapava 63% do que está atrás. A diagonal abriu-se. */
-    { x: 34, y: 84, z: 1.00 },   // em campo — à frente, grande
-    { x:  8, y: 56, z: 0.60 },   // banco — atrás e encostado ao lado
-    { x: 20, y: 26, z: 0.36 },   // banco — mais atrás, ao fundo da diagonal
+    /* ── UMA DIAGONAL, E NÃO UM ZIGUEZAGUE ──
+
+       Estavam em 34%, 8% e 20%: indo para trás no espaço, a formação
+       saltava para a esquerda e voltava para a direita. Três bichos
+       espalhados, não três bichos a afastar-se — e o olho não lê
+       profundidade num caminho que muda de sentido.
+
+       Agora recuam sempre para o mesmo lado, cada um um pouco mais para
+       fora, que é como uma fila em perspectiva se desenha.
+
+       E o do fundo subiu de 26% para 34%: a 26% os pés dele caíam em
+       cima da linha do horizonte — e uma figura no horizonte está no
+       infinito, o que discorda de ela ainda medir 63% da da frente. */
+    { x: 36, y: 84, z: 1.00 },   // em campo — à frente e ao centro
+    { x: 22, y: 58, z: 0.60 },   // banco — um passo atrás e para fora
+    { x: 10, y: 34, z: 0.36 },   // banco — mais atrás, na mesma direcção
   ];
 
   /* O posto 0 é de quem está em campo, sempre. Os outros dois ficam
@@ -1345,8 +1358,14 @@ function _pveAjudaDe(eu, lado, contra) {
    Todos no mesmo viewBox de 24 e com a mesma espessura de traço, senão
    um parece mais gordo do que o outro na mesma fila. */
 const PVE_SELOS = {
-  // três garras: o golpe que não precisa de magia nenhuma
-  basico: '<path d="M7 4.5 13 12 7 19.5M12 4.5 18 12l-6 7.5"/>',
+  /* Três garras. Estava a desenhar DUAS divisas — que é o símbolo
+     universal de avanço rápido — e portanto a acção mais usada do jogo
+     estava assinada com um controlo de leitor de vídeo.
+     Agora são três riscos curvos e desencontrados, que é o que uma
+     garrada deixa. */
+  basico: '<path d="M6.5 4.2C9 8 10.2 12 10 19.4"/>'
+        + '<path d="M11.8 3.6C14.6 7.6 15.8 11.8 15.4 19.8"/>'
+        + '<path d="M17 5.4C19.2 8.8 20 12.2 19.6 18.4"/>',
   // a fenda, com uma barra
   forte: '<path d="M12 3 10.5 9.5 13.5 14.5 12 21"/><path d="M7.5 11.5h9"/>',
   // a fenda, com duas

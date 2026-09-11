@@ -4,14 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>arena — banco de ensaio</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/ui.css">
 <!-- O screen.css traz os fotogramas do piscar (av-piscar), que a
      arena reaproveita com um atraso por avatar. -->
-<link rel="stylesheet" href="css/screen.css">
-<link rel="stylesheet" href="css/combate.css">
-<link rel="stylesheet" href="css/combate-batalha.css">
-<link rel="stylesheet" href="css/combate-arena.css">
 <style>
   /* O banco de ensaio: mostra a arena sem login e sem motor de combate.
      Existe só para se poder OLHAR para ela. */
@@ -45,23 +39,20 @@
   <button onclick="ensaioRefazer()">refazer</button>
 </div>
 
-<script src="js/i18n.js"></script>
-<script src="js/i18n-misc.js"></script>
-<script src="js/i18n-magias.js"></script>
-<script src="js/i18n-vantagens.js"></script>
-<script src="js/i18n-pve.js"></script>
-<script src="js/data.js"></script>
-<script src="js/state.js"></script>
-<script src="js/identidade.js"></script>
-<script src="js/cores.js"></script>
-<script src="js/nascimento.js"></script>
-<script src="js/raridade.js"></script>
-<script src="js/ficha-3dt.js"></script>
-<script src="js/magias.js"></script>
+<script>
+/* O BANCO DE ENSAIO CARREGA SEMPRE FRESCO.
+   Sem versao nos <script>, o navegador servia a copia guardada e eu
+   passei a olhar para codigo de ha dez minutos a pensar que era o de
+   agora. Num banco de ensaio isso nao e uma optimizacao, e uma
+   armadilha: a unica coisa que ele existe para fazer e mostrar o que
+   esta em disco. */
+var _z = Date.now();
+for (const f of ["css/base.css", "css/ui.css", "css/screen.css", "css/combate.css", "css/combate-batalha.css", "css/combate-arena.css"])
+  document.write('<link rel="stylesheet" href="' + f + '?z=' + _z + '">');
+for (const f of ["js/i18n.js", "js/i18n-misc.js", "js/i18n-magias.js", "js/i18n-vantagens.js", "js/i18n-pve.js", "js/data.js", "js/state.js", "js/identidade.js", "js/cores.js", "js/nascimento.js", "js/raridade.js", "js/ficha-3dt.js", "js/magias.js", "js/vantagens.js", "js/combate-3dt.js", "js/combate-pve.js"])
+  document.write('<scr' + 'ipt src="' + f + '?z=' + _z + '"><\/scr' + 'ipt>');
+</script>
 
-<script src="js/vantagens.js"></script>
-<script src="js/combate-3dt.js"></script>
-<script src="js/combate-pve.js"></script>
 
 <script>
 /* O motor de combate verdadeiro precisa de um jogador, de energia e de
