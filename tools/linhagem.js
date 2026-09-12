@@ -27,13 +27,17 @@ const NL = String.fromCharCode(10);
 const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
-  LINHAS_DA_FASE + NL +
   /* O vantagens.js, o ficha-3dt.js e o magias.js saíram daqui com o 3D&T.
      Estavam na lista como contexto — esta ferramenta audita linhagem,
      corpo e cores, e nunca lhes chamou nada. O ficha-fu.js entra no
-     lugar deles porque o faseDoSlot do raridade.js lhe pede a raridade. */
+     lugar deles porque o faseDoSlot do raridade.js lhe pede a raridade,
+     e porque é nele que vive a escada da fase. */
   rd('cores.js') + rd('data.js') + rd('nascimento.js') + rd('ficha-fu.js') +
   rd('raridade.js') + rd('reproducao.js') + rd('identidade.js') +
+  /* E as linhas da fase DEPOIS do ficha-fu.js, e não antes: o
+     faseFromNivel do js/state.js chama o fuFaseDoNivel, e vir primeiro
+     dava "não consigo aceder a FU_FASES antes de inicializar". */
+  LINHAS_DA_FASE + NL +
   `return { arvoreDe, vigorDe, vigorDoDna, NASC_VIGOR, NASC_VIGOR_FORTE, NASC_VIGOR_FRACO,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,

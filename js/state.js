@@ -268,13 +268,29 @@ const FASES = t('fases');
    níveis. São também os degraus da raridade do motor novo
    (FU_NIVEL_RARO, FU_NIVEL_LENDARIO) — a fase é a escada da raridade
    com um degrau a mais no fundo, e sempre foi, através dos pontos. */
-/* UMA LINHA CADA, e não é estilo: as ferramentas leem estas regras deste
-   arquivo linha a linha (tools/fase.js), de propósito, para não haver uma
-   segunda cópia dos números. Escrevi o faseFromNivel em duas linhas e a
-   extração trouxe metade — e a guarda dela, que contava as linhas, nem
-   deu por isso porque o total continuava certo. */
-const FASE_DEGRAUS  = [5, 11, 27];
-const faseFromNivel = n => FASE_DEGRAUS.filter(d => (n || 1) >= d).length;
+/* ── OS NÚMEROS SAÍRAM DAQUI ──
+
+   A escada vive no js/ficha-fu.js (FU_FASES, fuFaseDoNivel) e esta linha
+   é só a porta por onde o jogo lhe chama. A razão está escrita lá: este
+   arquivo não corre fora do navegador, e quem precisava da fase sem o
+   poder carregar escrevia a sua própria cópia — uma delas apodreceu.
+
+   ── E DELEGA EM TEMPO DE CHAMADA, NÃO DE CARGA ──
+
+   Escrevi primeiro `const FASE_DEGRAUS = FU_FASES` com um `typeof` a
+   guardar, e rebentou: o js/state.js carrega ANTES do js/ficha-fu.js, e
+   o `typeof` NÃO protege de um `const` por inicializar — só protege de
+   uma variável que não existe de todo. É a mesma pedra em que o
+   _vdOrcamentoFinal do motor antigo já tinha tropeçado, e está escrita lá
+   com todas as letras.
+
+   Assim não há ordem de carga que a parta: quando alguém chama, o
+   fuFaseDoNivel já lá está. E se não estiver, isto grita em vez de
+   devolver uma fase errada em silêncio.
+
+   UMA LINHA, e não é estilo: as ferramentas leem esta regra deste arquivo
+   linha a linha (tools/fase.js). */
+const faseFromNivel = n => fuFaseDoNivel(n);
 // Idade mínima (tempo de jogo real, em segundos) por fase — impede que
 // alguém compre/grinde XP e pule direto pra fase adulta sem tempo de jogo.
 /* O TEMPO DE JOGO SAIU DA CONTA.

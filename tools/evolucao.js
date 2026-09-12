@@ -40,16 +40,19 @@ const NL = String.fromCharCode(10);
    (tools/fase.js). O arquivo inteiro não corre fora do browser — mexe na
    tela e em vinte globais — mas as regras da fase são quatro linhas, e
    uma segunda cópia delas aqui divergiria da do jogo em silêncio. */
-const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
-const FASE = new Function(LINHAS_DA_FASE + NL
-  + 'return { FASE_DEGRAUS, faseFromNivel, FASE_MIN_SECS, faseFromAge };')();
-
-/* E o resto vem do carregador do SERVIDOR, que é o mesmo que o
-   navegador usa. Auditar pelo carregador de produção em vez de por um
-   montado à mão tem uma vantagem que não é pequena: se um dia um arquivo
-   deixar de ser carregado lá, esta ferramenta dá por isso. */
+/* O resto vem do carregador do SERVIDOR, que é o mesmo que o navegador
+   usa. Auditar pelo carregador de produção em vez de por um montado à
+   mão tem uma vantagem que não é pequena: se um dia um arquivo deixar de
+   ser carregado lá, esta ferramenta dá por isso. */
 const GEN = require('../api/_genetica.js');
 const M = global;
+
+/* As linhas da fase do js/state.js, corridas com o fuFaseDoNivel
+   verdadeiro na mão. É assim que se confere que a porta do state.js
+   chama mesmo a escada da ficha, em vez de ter uma cópia dos números. */
+const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
+const FASE = new Function('fuFaseDoNivel', LINHAS_DA_FASE + NL
+  + 'return { faseFromNivel, FASE_MIN_SECS, faseFromAge };')(M.fuFaseDoNivel);
 
 let passou = 0, falhou = 0;
 function ok(cond, titulo, detalhe) {

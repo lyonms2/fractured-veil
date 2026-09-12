@@ -28,8 +28,13 @@ const path = require('path');
 
 const NL = String.fromCharCode(10);
 
-// O faseDePontos saiu com o 3D&T: a fase lê o nível directamente.
-const NOMES_DA_FASE = ['FASE_MIN_SECS', 'FASE_DEGRAUS', 'faseFromNivel', 'faseFromAge'];
+/* O FASE_DEGRAUS saiu do js/state.js: a escada vive no js/ficha-fu.js e
+   o faseFromNivel é só a porta.
+
+   Quem extrair estas linhas tem de dar o `fuFaseDoNivel` ao Function que
+   as corre — elas já não se bastam a si próprias, e é esse o preço de a
+   escada existir uma vez só. */
+const NOMES_DA_FASE = ['FASE_MIN_SECS', 'faseFromNivel', 'faseFromAge'];
 
 function linhasDaFase(raiz) {
   const re = new RegExp('^const +(' + NOMES_DA_FASE.join('|') + ') *=');

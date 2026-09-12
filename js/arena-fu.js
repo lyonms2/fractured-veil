@@ -158,9 +158,23 @@ const AF_POSTOS = [
 
 function _afNome(c) { return (c && c.nome) || (c && c.id) || '—'; }
 
+/* ── A FASE VEM DO NÍVEL ──
+
+   Estava fixa em 3 — ancião — e portanto um bebé de nível 1 entrava na
+   arena com corpo de velho. O desenho é a única coisa na batalha que
+   dizia a idade do bicho, e dizia-a errada em todos os casos menos um.
+
+   O número fixo não foi descuido de um dia: escrevi-o ao montar o palco,
+   quando ainda não havia ficha nova para lhe perguntar o nível, e nunca
+   voltei a ele. */
+function _afFase(c) {
+  const nv = (c && c.ficha && c.ficha.nivel) || 1;
+  return (typeof fuFaseDoNivel === 'function') ? fuFaseDoNivel(nv) : 0;
+}
+
 function _afCorpo(c) {
   if (typeof gerarSVG !== 'function') return '';
-  const svg = gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 200, 200, 3);
+  const svg = gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 200, 200, _afFase(c));
   return svg.replace('<svg', '<svg preserveAspectRatio="xMidYMax meet"');
 }
 
@@ -278,7 +292,7 @@ function _afCartao(c) {
        role="button" tabindex="0" onclick="${gesto}"
        title="${esc(meu && podeAgir ? t('af.menu.abrir') : t('af.ficha.abrir', { nome: _afNome(c) }))}">
     <div class="cb-ficha-cara">
-      ${typeof gerarSVG === 'function' ? gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, 3) : ''}
+      ${typeof gerarSVG === 'function' ? gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _afFase(c)) : ''}
       <span class="cb-ficha-nivel">${c.posto + 1}</span>
     </div>
     <div class="cb-ficha-barras">
@@ -488,6 +502,12 @@ function _afMenuMover() {
        é um trabalho à parte e com os seus próprios riscos. */
     const palcoFim = document.getElementById('cbPalco');
     const por = (k, v) => menu.style.setProperty(k, v, 'important');
+    /* Com a transição desligada durante a conta, pela mesma razão do outro
+       ramo: o `transform: none` que se acaba de escrever demora 0,22s a
+       chegar, e medir antes disso dá a caixa onde ela ESTAVA. Mediu, e o
+       painel do fim ficou 198px à esquerda e 94 acima do palco. */
+    const transFim = menu.style.transition;
+    menu.style.transition = 'none';
     por('transform', 'none');
     por('left', '0px');
     por('top', '0px');
@@ -497,6 +517,8 @@ function _afMenuMover() {
       por('left', Math.round((pf.width  - mf.width)  / 2) + 'px');
       por('top',  Math.round((pf.height - mf.height) / 2) + 'px');
     }
+    void menu.offsetWidth;
+    menu.style.transition = transFim;
     return;
   }
   // fora do fim, tudo volta a ser do CSS
@@ -561,6 +583,33 @@ function _afMenuMover() {
     const topo = parseFloat(menu.style.top) || 0;
     menu.style.top = Math.round(topo + ((p.top + folga) - r.top)) + 'px';
   }
+
+  /* ── E TAMBÉM NA HORIZONTAL ──
+
+     Faltava, e era a queixa maior. O CSS põe a coluna do lado de FORA do
+     avatar — à esquerda de quem está do lado esquerdo — para não tapar o
+     caminho do golpe nem o lance. Funciona para o da frente, que está a
+     36% da largura; mas o do fundo está a 10%, e uma coluna de 343px à
+     esquerda de um ponto a 132px sai 224px fora do palco.
+
+     Medido nos três postos, a 1214px de palco:  frente +85  ·  meio −81
+     ·  fundo −224. Os dois de trás estavam cortados, e o do fundo perdia
+     dois terços dos orbes.
+
+     A trava é a mesma do eixo vertical, e de propósito: uma regra só para
+     os dois eixos. Se a borda esquerda sair, empurra-se para dentro; se
+     for a direita, puxa-se — e a esquerda ganha quando o menu é mais
+     largo do que o palco, porque é por onde se começa a ler.
+
+     Empurrar em vez de trocar de lado: os orbes não têm fundo, portanto
+     passar por cima do campo lê-se como uma camada e não como um painel
+     a tapar a cena. */
+  const r2 = menu.getBoundingClientRect();
+  const esq = parseFloat(menu.style.left) || 0;
+  if (r2.left < p.left + folga)
+    menu.style.left = Math.round(esq + ((p.left + folga) - r2.left)) + 'px';
+  else if (r2.right > p.right - folga)
+    menu.style.left = Math.round(esq - (r2.right - (p.right - folga))) + 'px';
 
   void menu.offsetWidth;
   menu.style.transition = transicao;

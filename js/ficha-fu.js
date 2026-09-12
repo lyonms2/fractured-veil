@@ -319,8 +319,40 @@ function fuAfinidades(tipo, costura, raridade) {
    Os dois degraus são estes e não mudam: 11 e 27. Escritos aqui, a
    ficha passa a responder sempre o mesmo, venha de onde vier. */
 const FU_NIVEL_MAX      = 60;   // o tecto do manual (p. 302)
+const FU_NIVEL_JOVEM    = 5;
 const FU_NIVEL_RARO     = 11;
 const FU_NIVEL_LENDARIO = 27;
+
+/* ══════════════════════════════════════════════════════════════════
+   A ESCADA DA VIDA
+
+     nv  1– 4   BEBÊ      nv 11–26   ADULTO
+     nv  5–10   JOVEM     nv 27+     ANCIÃO
+
+   É a escada da RARIDADE com um degrau a mais no fundo — os números 11 e
+   27 são os mesmos dois, e sempre foram.
+
+   ── PORQUE É QUE VIVE AQUI E NÃO NO js/state.js ──
+
+   Vivia lá, e o js/state.js não corre fora do navegador: mexe na tela e
+   em vinte globais. Quem precisasse da fase e não o pudesse carregar — o
+   banco de ensaio, uma ferramenta, o servidor — escrevia a sua própria
+   cópia da escada.
+
+   E uma delas apodreceu sem ninguém dar por isso: a arena antiga tinha um
+   atalho `nv < 5 ? 0 : nv < 10 ? 1 : nv < 17 ? 2 : 3`, com 10 e 17 onde
+   deviam estar 11 e 27. Um avatar de nível 20 era desenhado com corpo de
+   ancião em combate e corpo de adulto na colónia, e nada gritava.
+
+   Aqui chega a toda a gente: a ficha é o único arquivo que o jogo, o
+   banco, as ferramentas e o servidor carregam todos. O js/state.js passa
+   a chamar isto, e a escada existe uma vez só.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_FASES = [FU_NIVEL_JOVEM, FU_NIVEL_RARO, FU_NIVEL_LENDARIO];
+
+function fuFaseDoNivel(nivel) {
+  return FU_FASES.filter(d => (nivel || 1) >= d).length;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    AS SUBIDAS DE DADO
@@ -620,6 +652,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_SUBIDAS_NIVEL, FU_SUBIDA_DA_ORIGEM,
     fuOrigemDoSlot, fuSubidasDe, fuAplicarSubidas,
     fuPoderDoAvatar, fuPoderDaEquipa,
-    FU_NIVEL_MAX, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
+    FU_NIVEL_MAX, FU_NIVEL_JOVEM, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
+    FU_FASES, fuFaseDoNivel,
   };
 }
