@@ -964,9 +964,10 @@
    o que sobra é o valor certo sem salto. Um dado que congela numa face
    errada seria pior do que dado nenhum.
 
-   A duração tem de bater com o PVE_BATIDA.dado→conta do
-   js/combate-pve.js, que são 620ms: 520 de salto e 90 de atraso do
-   segundo dado. O CSS não lê o JS, portanto mexe-se nos dois. */
+   A duração são 620ms: 520 de salto e 90 de atraso do segundo dado.
+   Batia com uma tabela de tempos da arena antiga (PVE_BATIDA), que saiu
+   com ela — a arena nova deixa cada evento dizer quanto tempo precisa.
+   O número fica porque é o tempo de ler um dado, e esse não mudou. */
 .cb-dados { display: inline-block; margin-right: 0.25rem; }
 .cb-dado-vivo { display: inline-block; margin-right: 0.125rem; }
 .cb-dado-glifo,

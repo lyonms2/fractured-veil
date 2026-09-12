@@ -486,9 +486,11 @@ function nascer(opts) {
        Vivia só no slot, dentro do avatarSlots que o cliente escreve por
        inteiro. E o seed não é enfeite: dele saem o corpo desenhado
        (gerarSVG) e a FICHA DE COMBATE inteira — força, habilidade,
-       resistência, armadura, a vantagem e a desvantagem (a ficha antiga,
-       em js/ficha-3dt.js). Trocar o número no console era escolher os
-       atributos do bicho.
+       resistência, armadura, a vantagem e a desvantagem. Trocar o número
+       no console era escolher os atributos do bicho.
+
+       Hoje são outros quatro — os DADOS do js/ficha-fu.js — e a razão
+       não mudou com eles.
 
        O DNA já tinha mudado de casa por esta razão exacta. O seed
        ficou para trás, e era metade do problema.

@@ -20,7 +20,7 @@ const DISEASES = {
   melancolia:  { id:'melancolia',  get nome(){ return t('disease.melancholy');   }, emoji:'😔', cor:'#8b5cf6', vital:'humor',   limiar:20 },
   // A fratura é a única que não vem de um vital em baixo — vem de cair em
   // combate. Por isso não tem 'vital' nem 'limiar': o ciclo do jogo nunca
-  // a liga sozinho, quem a liga é a batalha (ver js/combate-pve.js).
+  // a liga sozinho, quem a liga é a batalha (ver js/pve-fu.js).
   // Depois disso comporta-se como as outras: come saúde todo o ciclo e
   // mata se não for tratada. Cura-se no mesmo sítio, com o antídoto.
   fratura:     { id:'fratura',     get nome(){ return t('disease.fracture');     }, emoji:'🦴', cor:'#c9a84c', vital:null,      limiar:null },

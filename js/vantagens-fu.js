@@ -29,8 +29,8 @@
 //   'semDefeito'  fecha a costura e fica só com a vantagem
 //   'vantagem'    fica com a costura e ganha uma SEGUNDA
 //
-// São os dois valores que o jogo já usava (FICHA_ESCOLHAS, em
-// js/ficha-3dt.js) e a tela da escolha já sabe mostrar. Um Lendário que
+// São os dois valores que o jogo já usava e a tela da escolha já sabe
+// mostrar — o FICHA_ESCOLHAS, mais abaixo neste arquivo. Um Lendário que
 // ainda não escolheu fica com a costura e sem a segunda — está à espera
 // dele, e não se decide por ele.
 // ═══════════════════════════════════════════════════════════════════

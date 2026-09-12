@@ -13,7 +13,7 @@
 //  E a resposta já estava no código, sem nunca ter sido dita: os inimigos
 //  do PvE não são monstros fabricados. Eles NASCEM — têm certidão, cor,
 //  DNA e um feitio que inclina as magias deles, igual aos do jogador
-//  (ver _pveGerarInimigo, em js/combate-pve.js). São avatares.
+//  (ver _pveGerarInimigo, em js/pve-fu.js). São avatares.
 //
 //  Avatares que atravessaram e não encontraram ninguém.
 //
@@ -85,7 +85,7 @@ let _fratEntrar = null;   // o que fazer quando ele decidir entrar
 /* Mostra o briefing e SÓ chama o combate se o jogador entrar.
 
    O `aoEntrar` chega de fora em vez de esta tela conhecer o combate:
-   quem sabe começar uma batalha é o combate-pve.js, e uma tela que
+   quem sabe começar uma batalha é o pve-fu.js, e uma tela que
    soubesse abrir combates seria uma segunda porta a manter alinhada com
    a primeira. */
 function abrirFratura(inimigo, seed, aoEntrar) {

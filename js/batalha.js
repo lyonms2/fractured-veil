@@ -2,7 +2,7 @@
 //  batalha.js — A PORTA DO COMBATE
 //
 //  Depende de: ModalManager (modal.js), renderEquipaBar (combate-ui.js),
-//              abrirCombatePvE (combate-pve.js), equipaIdx (equipa.js)
+//              abrirCombatePvE (pve-fu.js), equipaIdx (equipa.js)
 //
 //  ── PORQUE É QUE ISTO EXISTE ──
 //

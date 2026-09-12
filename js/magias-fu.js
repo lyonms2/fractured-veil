@@ -66,8 +66,8 @@ const FU_ELEMENTAL = {
    separa à vista da linha latina. O de fogo deixa de se chamar Flare e
    passa a Lança de Brasa; é o preço de os oito falarem a mesma língua.
 
-   PROPOSTA, e não decisão fechada: os números são do manual e não se
-   discutem, os nomes são para si aprovar. */
+   Os números são do manual e não se discutem; os nomes foram aprovados
+   pelo dono do jogo em 12/09/2026, e passam a ser os nomes. */
 const FU_CONCENTRADO = {
   fogo:   { nome: 'Lança de Brasa',   en: 'Emberlance'   },
   terra:  { nome: 'Peso do Mundo',    en: 'Worldweight',  nosso: true },

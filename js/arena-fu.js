@@ -1,28 +1,27 @@
 // ═══════════════════════════════════════════════════════════════════
 // A ARENA — motor Fabula Ultima
 //
-// ── PORQUE É UM ARQUIVO NOVO E NÃO UMA REESCRITA DO js/combate-pve.js ──
+// ── DE ONDE VEIO ──
 //
-// O js/combate-pve.js são 3138 linhas agarradas ao motor 3D&T: F/H/R/A,
-// armadura, esquiva, papéis de magia, o prognóstico, o banco com um
-// activo. Reescrevê-lo de uma assentada deixava o jogo — que está no ar
-// — sem arena nenhuma durante o tempo que isso demorasse.
+// Do js/combate-pve.js, que foram 3138 linhas agarradas ao motor 3D&T:
+// F/H/R/A, armadura, esquiva, o prognóstico, o banco com um activo.
 //
-// Então os dois convivem. Este corre o motor novo no banco de ensaio,
-// onde se prova; aquele continua a correr o jogo até este estar pronto
-// para o substituir. No dia da troca, o outro apaga-se inteiro — não
-// fica metade de cada, que era a única forma de isto correr mal.
+// Os dois conviveram durante um dia — este a correr o motor novo no
+// banco de ensaio, aquele a correr o jogo — porque reescrevê-lo de uma
+// assentada deixava o jogo, que está no ar, sem arena nenhuma enquanto
+// isso durasse. Quando este ficou pronto, o outro apagou-se inteiro: não
+// ficou metade de cada, que era a única forma de aquilo correr mal.
 //
-// O CSS é o MESMO (css/combate-arena.css). As classes .cb-* descrevem um
-// palco e não um motor: céu, fenda, monólitos, postos, orbes, barras,
-// lance. Nada disso muda com as regras, e duplicá-lo era garantir que os
-// dois palcos divergiam à primeira correcção.
+// O CSS é partilhado com o palco antigo (css/combate-arena.css). As
+// classes .cb-* descrevem um palco e não um motor: céu, fenda,
+// monólitos, postos, orbes, barras, lance. Nada disso muda com as
+// regras, e duplicá-lo era garantir que os dois palcos divergiam à
+// primeira correcção.
 //
 // ── O QUE ESTE ARQUIVO NÃO FAZ ──
 //
 // Energia, doenças, fratura, prémios, XP. Isso é a moldura do jogo à
-// volta da batalha, vive no js/combate-pve.js e não muda de motor. Entra
-// no dia da troca, e entra tal como está.
+// volta da batalha e não muda de motor: vive no js/pve-fu.js.
 // ═══════════════════════════════════════════════════════════════════
 
 let _afE     = null;    // o estado da batalha, vindo do motor
@@ -484,8 +483,9 @@ function _afMenuMover() {
 
        O CSS não se corrige porque ainda é o da arena ANTIGA, que depende
        daquele !important para vencer as coordenadas que o
-       js/combate-pve.js lhe escreve. Corrigi-lo partia a arena que está
-       no ar para arranjar a que ainda não está. No dia da troca, sai. */
+       arena antiga lhe escrevia. Ela já saiu, portanto o !important do
+       CSS também pode sair — fica para o dia em que se varrer o CSS, que
+       é um trabalho à parte e com os seus próprios riscos. */
     const palcoFim = document.getElementById('cbPalco');
     const por = (k, v) => menu.style.setProperty(k, v, 'important');
     por('transform', 'none');
