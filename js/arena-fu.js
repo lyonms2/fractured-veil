@@ -639,7 +639,31 @@ function _afMenuMover() {
      Empurrar em vez de trocar de lado: os orbes não têm fundo, portanto
      passar por cima do campo lê-se como uma camada e não como um painel
      a tapar a cena. */
-  const r2 = menu.getBoundingClientRect();
+  /* ── PRIMEIRO VIRAR, SÓ DEPOIS EMPURRAR ──
+
+     Empurrar uma coluna que não cabe do lado de fora arrasta-a por cima
+     dos companheiros TODOS — e no posto do fundo tapava o próprio avatar
+     que estava a jogar, a 100%.
+
+     Vira-se para o lado de dentro, que é para o meio do palco: lá só há
+     céu e a fenda. Tapa o companheiro da frente, e é um preço aceite —
+     o que se está a ler é o menu.
+
+     E só se nem assim couber é que se empurra. */
+  menu.classList.remove('dentro');
+  let r2 = menu.getBoundingClientRect();
+  if (r2.left < p.left + folga || r2.right > p.right - folga) {
+    menu.classList.add('dentro');
+    r2 = menu.getBoundingClientRect();
+    // se o lado de dentro também não serve, fica o que menos transborda
+    const foraDentro = Math.max(p.left + folga - r2.left, r2.right - (p.right - folga), 0);
+    menu.classList.remove('dentro');
+    const rFora = menu.getBoundingClientRect();
+    const foraFora = Math.max(p.left + folga - rFora.left, rFora.right - (p.right - folga), 0);
+    if (foraDentro <= foraFora) menu.classList.add('dentro');
+    r2 = menu.getBoundingClientRect();
+  }
+
   const esq = parseFloat(menu.style.left) || 0;
   if (r2.left < p.left + folga)
     menu.style.left = Math.round(esq + ((p.left + folga) - r2.left)) + 'px';
@@ -1301,13 +1325,21 @@ function _afAbrirHistorico() {
    assunto acabam a mostrar dois avatares.
 
    O que este sítio acrescenta é o LUTADOR: aqui há batalha a correr, e
-   os dados encolhidos pelos estados aparecem ao lado dos de nascença. */
+   os dados encolhidos pelos estados aparecem ao lado dos de nascença.
+
+   ── E O NOME SAIU DAQUI ──
+
+   Havia um <h3> com o nome do bicho por cima do bloco. O bloco passou a
+   ter faixa própria, com o nome de um lado e o "Nv 12 • ESPECIALISTA •
+   RARO" do outro — e o <h3> ficou a dizer a mesma palavra duas vezes,
+   uma por cima da outra, com dois tamanhos de letra diferentes.
+
+   O lutador leva o nome consigo, e é ele que a faixa lê. */
 function _afFicha(id) {
   const c = _afPorId(id);
   const el = document.getElementById('cbAjuda');
   if (!c || !el || typeof renderFichaFU !== 'function') return;
   el.innerHTML = `<div class="cb-ajuda-cx" onclick="event.stopPropagation()">
-    <h3>${esc(_afNome(c))}</h3>
     ${renderFichaFU(null, c)}
   </div>`;
   el.classList.add('aberta');

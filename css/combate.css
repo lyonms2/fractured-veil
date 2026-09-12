@@ -26,73 +26,20 @@
   background: rgba(255,255,255,.02);
   text-align: left;
 }
-.ficha-title {
-  font-family: 'Cinzel', serif;
-  font-size: 0.5rem;
-  letter-spacing: 0.09375rem;
-  color: var(--gold);
-  text-align: center;
-  margin-bottom: 0.625rem;
-}
-.ficha-stats { display: flex; flex-direction: column; gap: 0.375rem; }
-.ficha-stat  { display: flex; align-items: center; gap: 0.5rem; }
-.ficha-stat-lbl {
-  font-family: 'Cinzel', serif;
-  font-size: 0.5rem;
-  letter-spacing: 0.03125rem;
-  color: var(--muted);
-  width: 1.875rem;
-  flex-shrink: 0;
-}
-.ficha-stat-bar {
-  flex: 1;
-  height: 0.4375rem;
-  border-radius: 0.25rem;
-  background: rgba(255,255,255,.05);
-  overflow: hidden;
-}
-.ficha-stat-fill { height: 100%; border-radius: 0.25rem; transition: width .3s ease; }
-.ficha-stat-val {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  color: var(--text);
-  width: 1.375rem;
-  text-align: right;
-  flex-shrink: 0;
-}
-/* Marca o atributo que o elemento favorece */
-.ficha-stat.prim  .ficha-stat-lbl { color: var(--gold-light); }
-.ficha-stat.sec   .ficha-stat-lbl { color: var(--gold); }
-.ficha-stat-tag {
-  font-size: 0.375rem;
-  letter-spacing: 0.03125rem;
-  color: var(--muted);
-  width: 0.875rem;
-  flex-shrink: 0;
-}
+/* ── AS BARRAS E OS MEDIDORES SAÍRAM ──
 
-.ficha-bars {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
-  border-top: 1px solid var(--border);
-}
-.ficha-bar {
-  flex: 1;
-  text-align: center;
-  padding: 0.375rem 0.25rem;
-  border-radius: 0.375rem;
-  background: rgba(255,255,255,.03);
-}
-.ficha-bar b { display: block; font-size: 0.75rem; line-height: 1.2; }
-.ficha-bar span {
-  display: block;
-  font-size: 0.375rem;
-  letter-spacing: 0.05rem;
-  color: var(--muted);
-  margin-top: 0.125rem;
-}
+   Eram quatro `.ficha-stat` (rótulo, barra proporcional, valor) e três
+   `.ficha-bar` (vida, magia, crise), mais o `.ficha-title` por cima de
+   tudo. Doze regras, e nenhuma tinha para onde ir: o bloco do manual põe
+   os mesmos sete números numa fila só, separados por ✦, e uma barra
+   proporcional não cabe numa fila.
+
+   A barra dizia uma coisa verdadeira — que um d6 é o pior dos quatro e
+   não "metade de um d12" — e essa leitura perdeu-se. Ganhou-se uma linha
+   que se lê de uma vez, com a vida, a magia e a iniciativa ao lado dos
+   dados, que é como o manual a escreve e como se compara um bicho com
+   outro.
+   ── */
 .ficha-foot {
   margin-top: 0.5rem;
   font-size: 0.4375rem;
@@ -101,6 +48,173 @@
   text-align: center;
 }
 .ficha-foot b { color: var(--gold2, var(--gold-light)); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   O BLOCO DE FICHA, NO PADRÃO DO MANUAL
+
+   O manual escreve cada criatura sempre com as mesmas linhas pela mesma
+   ordem, e cada acção como uma fila de campos separados por ✦ com o
+   efeito em prosa por baixo. Quem sabe ler o manual sabe ler isto.
+
+   ── A PALETA É A DO JOGO E NÃO A DO MANUAL ──
+
+   As faixas do manual são bordô sobre creme, porque é um livro impresso.
+   Aqui são douradas sobre violeta escuro, que é o que o resto do jogo
+   fala. O que se copiou foi a ESTRUTURA — a ordem das linhas, os campos
+   com ✦, o efeito por baixo — porque é ela que faz a ficha legível, e
+   não a cor da tinta.
+
+   ── OS SEPARADORES SÃO DO CSS E NÃO DO TEXTO ──
+
+   O ✦ entre campos nasce de um `::before`, e por isso uma linha que dê a
+   volta não começa nunca por um ✦ órfão, e um campo que não se aplique
+   (a Devastação não rola, a Concha não custa turno) desaparece com o seu
+   separador atrás. Escrevê-lo no texto obrigava cada função a saber se
+   era a primeira — e era assim que apareciam os "✦ ✦" a dobrar.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── A FAIXA DE CIMA ── */
+.fb-faixa {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.5rem; flex-wrap: wrap;
+  margin: -0.125rem -0.25rem 0.5rem;
+  padding: 0.3125rem 0.5rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(90deg, rgba(201,168,76,.18), rgba(201,168,76,.04));
+  border-left: 3px solid var(--gold);
+}
+.fb-nome {
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: 0.8125rem; color: #ffe6a8; letter-spacing: 0.025rem;
+}
+/* ── O TAMANHO DA LETRA, NAS DUAS ESCALAS ──
+
+   A raiz é 16px no telemóvel e 26,4px no computador (css/base.css), e
+   estes números são para os 16: nada aqui desce de 0,625rem, que são dez
+   píxeis. O bloco tem prosa a sério — a descrição, o efeito de cada
+   magia, a descrição de cada vantagem — e prosa a oito píxeis não se lê,
+   olha-se.
+
+   Escrevi-os a oito e a nove à primeira, pela mesma razão de sempre:
+   copiei a escala da ficha antiga, que era de rótulos e números soltos.
+   Um rótulo de três letras aguenta ser pequeno; uma frase não.
+
+   O painel da arena aperta-os outra vez no css/combate-arena.css, para
+   a raiz de 26,4px, e lá o chão são doze píxeis. */
+.fb-tag {
+  font-family: 'Cinzel', serif; font-size: 0.625rem;
+  letter-spacing: 0.05rem; color: var(--gold-light); text-transform: uppercase;
+}
+.fb-tag i { font-style: normal; opacity: .5; margin: 0 0.125rem; }
+
+.fb-desc {
+  margin: 0 0 0.375rem; font-size: 0.6875rem; line-height: 1.5;
+  color: #d6cfe2; font-style: italic;
+}
+.fb-tracos {
+  margin: 0 0 0.5rem; font-size: 0.625rem; line-height: 1.5;
+  color: var(--muted);
+}
+.fb-tracos i { font-style: normal; color: var(--gold); font-weight: 700; }
+
+/* ── AS DUAS LINHAS DE NÚMEROS ──
+   Envolvem quando não cabem, e é por isso que os campos são inline: numa
+   coluna estreita a linha parte-se entre campos e nunca a meio de um. */
+.fb-linha {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 0.125rem 0.375rem;
+  padding: 0.3125rem 0.125rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.6875rem; color: var(--text); font-weight: 600;
+}
+.fb-defs { border-bottom: 1px solid var(--border); }
+.fb-campo { white-space: nowrap; }
+.fb-campo i {
+  font-family: 'Cinzel', serif; font-style: normal; font-weight: 700;
+  font-size: 0.625rem; letter-spacing: 0.03rem;
+  color: var(--muted); margin-right: 0.1875rem;
+}
+.fb-campo u { text-decoration: none; }
+.fb-campo + .fb-campo::before {
+  content: '✦'; color: var(--gold); opacity: .45;
+  margin-right: 0.375rem; font-weight: 400;
+}
+/* A crise vale metade da vida, e por isso anda agarrada a ela e não num
+   medidor à parte: é o número em que este bicho passa a ser outro. */
+.fb-crise { color: var(--gold-light); }
+.fb-campo u.sobe  { color: var(--gold-light); margin-left: 0.125rem; }
+.fb-campo u.desce { color: #e07a7a;          margin-left: 0.125rem; }
+/* As afinidades entram na linha das defesas, a seguir aos dois números.
+   Sem ✦ à frente: são pastilhas, e já se distinguem por si. */
+.fb-defs .cb-f-af { margin-left: 0.1875rem; }
+
+.fb-nota {
+  margin: 0.3125rem 0 0; font-size: 0.625rem; line-height: 1.5;
+  color: var(--gold-light); opacity: .82;
+}
+
+/* ── A FAIXA DE UMA SECÇÃO ── */
+.fb-sec {
+  margin: 0.625rem 0 0.375rem;
+  padding: 0.1875rem 0.5rem;
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: 0.625rem; letter-spacing: 0.09375rem;
+  color: #1a1226;
+  background: linear-gradient(90deg, var(--gold), rgba(201,168,76,.45));
+  border-radius: 0.1875rem;
+}
+
+/* ── UMA ACÇÃO ── */
+.fb-acao  { margin: 0 0 0.4375rem; padding-left: 0.125rem; }
+.fb-campos {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 0.125rem 0.375rem; font-size: 0.625rem; color: var(--muted);
+}
+.fb-campos b {
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  color: var(--text); font-weight: 700;
+}
+.fb-campos > * + *::before {
+  content: '✦'; color: var(--gold); opacity: .45; margin-right: 0.375rem;
+}
+/* Os dois dados que se rolam. Cada atributo leva a cor da linha de cima:
+   é a mesma leitura vista de duas distâncias, e o olho liga-as pela cor
+   sem ter de voltar atrás. */
+.fb-rolagem { color: var(--text); font-weight: 600; }
+.fb-rolagem i { font-style: normal; font-weight: 700; }
+.fb-semrol { color: var(--gold-light); font-style: italic; }
+
+.fb-ef {
+  margin-top: 0.125rem; font-size: 0.6875rem; line-height: 1.5;
+  color: #d6cfe2;
+}
+
+/* ── UMA REGRA ESPECIAL ──
+   A vantagem custa uma costura, e a costura rende a vantagem — daí o
+   verde e o vermelho estarem ao contrário do que se esperaria de "bom" e
+   "mau". É a mesma convenção que as cartas antigas usavam. */
+.fb-regra {
+  margin: 0 0 0.3125rem; padding: 0.3125rem 0.4375rem;
+  border-left: 3px solid var(--border); border-radius: 0.25rem;
+  background: rgba(255,255,255,.03);
+}
+.fb-regra.boa { border-left-color: var(--fam-vantagem); }
+.fb-regra.ma  { border-left-color: var(--fam-desvantagem); }
+/* A que ele ganharia e ainda não ganhou. Apagada: está ali para se poder
+   decidir, não para se contar como dele. */
+.fb-regra.porvir { opacity: .72; border-left-color: rgba(201,168,76,.45); }
+.fb-regra-top {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.375rem;
+}
+.fb-regra-top b {
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  color: var(--text); letter-spacing: 0.025rem;
+}
+.fb-regra-top span { font-size: 0.625rem; font-weight: 700; flex-shrink: 0; }
+.fb-regra.boa .fb-regra-top span { color: #7ab87a; }
+.fb-regra.ma  .fb-regra-top span { color: #e05555; }
+.fb-regra.porvir .fb-regra-top b { color: var(--gold); font-style: italic; }
 
 /* ── HABILIDADES ── */
 .hab-bloco {
@@ -409,79 +523,32 @@
   color: #ffe6a8;
 }
 
-/* ── FICHA 3D&T: escalão, vantagens e desvantagens ── */
-.ficha-escalao {
-  font-size: 0.4375rem;
-  letter-spacing: 0.05rem;
-  color: var(--muted);
-  text-align: center;
-  margin: -0.375rem 0 0.5625rem;
-}
-/* A vocação fica logo abaixo do escalão, na mesma escala miudinha —
-   é contexto do avatar, e não mais uma barra a competir com as quatro. */
-/* A índole vem logo a seguir à vocação e um degrau mais apagada: é a
-   segunda leitura do mesmo DNA, e não outra secção. */
-.ficha-indole { margin-top: -0.4375rem; opacity: 0.72; }
+/* ── O QUE O BLOCO LEVOU CONSIGO ──
 
-.ficha-vocacao {
-  text-align: center;
-  margin: -0.4375rem 0 0.5625rem;
-  font-size: 0.4375rem;
-  letter-spacing: 0.03rem;
-  color: var(--gold-light);
-  opacity: 0.85;
-  cursor: help;
-}
+   Saíram daqui o `.ficha-escalao`, o `.ficha-vocacao`, o `.ficha-indole`,
+   as quatro `.ficha-stat` com barra, os três `.ficha-bar` e a
+   `.ficha-lugares`. Eram a ficha à nossa maneira: uma linha por assunto,
+   cada uma com o seu tamanho de letra e o seu alinhamento.
 
-/* ── O RÓTULO TEM DE CABER ──
-   Apertava a 0,875rem e "VON" pedia 34px numa caixa de 23 — transbordava
-   48%. Os três de três letras (DES, PER, VIG) também, por 3 e 4px. */
-.ficha-stat-lbl { min-width: 1.875rem; width: auto; }
+   O bloco diz as mesmas coisas em duas linhas de números e quatro
+   secções, e nenhuma dessas regras tinha para onde ir — uma barra
+   proporcional não cabe numa fila de campos separados por ✦.
 
-.vd-bloco {
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.3125rem;
-}
-.vd {
-  padding: 0.5rem 0.5625rem;
-  border-radius: 0.375rem;
-  border-left: 3px solid var(--border);
-  background: rgba(255,255,255,.03);
-}
-/* A vantagem custa pontos, a desvantagem rende — daí o verde e o vermelho
-   estarem ao contrário do que se esperaria de "bom" e "mau". */
-.vd.boa { border-left-color: var(--fam-vantagem); }
-.vd.ma  { border-left-color: var(--fam-desvantagem); }
-.vd-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.375rem;
-}
-.vd-nome {
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.025rem;
-}
-.vd-custo {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.vd.boa .vd-custo { color: #e05555; }
-.vd.ma  .vd-custo { color: #7ab87a; }
-.vd-desc {
-  font-size: 0.6875rem;
-  line-height: 1.5;
-  color: #d6cfe2;
-  margin-top: 0.3125rem;
-}
+   Ficam as três que o bloco continua a usar: o aviso do DNA ilegível, as
+   pastilhas das afinidades (que vivem no css/combate-arena.css, porque a
+   arena também as desenha) e as cartas de vantagem, que se tornaram
+   `.fb-regra`.
+   ── */
+
+/* ── AS CARTAS `.vd` SAÍRAM ──
+
+   Eram a vantagem, a costura e a segunda por vir, e agora são
+   `.fb-regra` dentro da secção REGRAS ESPECIAIS. A carta é a mesma coisa
+   — um traço de cor à esquerda, o nome, o que faz — e mudou de nome
+   porque mudou de dono.
+
+   A tela do Ancião (js/escolha.js) desenha cartas parecidas e NÃO usava
+   estas: tem as `.esc-carta`, escritas para o tamanho dela. */
 .hab.vazia { opacity: .5; }
 
 /* ── A CERTIDÃO ──
@@ -661,20 +728,15 @@
      · o dado de AGORA ao lado do de nascença, quando há batalha a
        correr e um estado o encolheu ou o Despertar o subiu;
      · o aviso de uma ficha de recurso, quando o DNA não deu para ler;
-     · os cinco lugares de magia;
+     · o que cada magia FAZ, e não só como se chama;
      · e a segunda vantagem que o Lendário ainda não escolheu, que se
        mostra apagada porque ainda não é dele.
 
-   O resto — .ficha, .ficha-stat, .vd, .cb-f-* — é o que já existia, e é
-   partilhado de propósito: a ficha da colónia e a da arena têm de se
-   parecer uma com a outra porque são a mesma.
+   As `.fb-*` são partilhadas de propósito: a ficha da colónia e a da
+   arena têm de se parecer uma com a outra porque são a mesma. O que a
+   arena muda é só o TAMANHO da letra, e num bloco só — a raiz lá é
+   26,4px e aqui 16.
    ═══════════════════════════════════════════════════════════════════ */
-
-/* O dado de agora. Sobe em dourado e desce em vermelho, que é a mesma
-   convenção das barras e das diferenças da evolução. */
-.ficha-dado-agora { margin-left: .25rem; font-weight: 700; }
-.ficha-dado-agora.sobe  { color: var(--gold-light); }
-.ficha-dado-agora.desce { color: #e07a7a; }
 
 .ficha-aviso {
   margin: .25rem 0; padding: .25rem .375rem; border-radius: .25rem;
@@ -682,22 +744,6 @@
   color: #f0c0bc; font-size: .6875rem; line-height: 1.35;
 }
 
-.ficha-lugares { display: flex; flex-direction: column; gap: .125rem; }
-
-/* A que ele ganharia e ainda não ganhou. Apagada e com um traço à
-   esquerda: está ali para se poder decidir, não para se contar como
-   dele. */
-.vd.porvir {
-  opacity: .72; border-left: 2px solid rgba(201,168,76,.45);
-}
-.vd.porvir .vd-nome { color: var(--gold); font-style: italic; }
-
-/* ── De onde vieram os dados a mais ──
-   A linha das subidas lê-se ao lado do arranjo e do feitio, e com o mesmo
-   peso: são as três coisas que explicam porque é que este avatar tem
-   estes números e não outros. */
-.ficha-subidas { color: var(--gold-light); }
-.ficha-subida-tecto { color: var(--muted); font-style: italic; }
 /* O dado que subiu vem à frente das outras linhas do nível: é o maior
    ganho que uma subida dá, e vinha sem uma palavra. */
 .lu-g-item.lu-g-dado { color: var(--gold-light); font-weight: 700; }

@@ -1439,37 +1439,35 @@
   background: linear-gradient(180deg, rgba(16,11,30,.97), rgba(6,4,14,.99));
   box-shadow: 0 0.75rem 2rem rgba(0,0,0,.72);
 }
-.cb-ajuda-cx h3 {
-  margin: 0 0 0.125rem; font-family: 'Cinzel', serif;
-  font-size: 0.5625rem; color: var(--gold-light); letter-spacing: 0.05rem;
-}
-.cb-ajuda-cx h4 {
-  margin: 0.5rem 0 0.25rem; font-family: 'Cinzel', serif;
-  font-size: 0.40625rem; color: var(--gold); letter-spacing: 0.04rem;
-}
-.cb-f-sub { margin: 0 0 0.375rem; font-size: 0.34375rem; color: var(--muted); }
-.cb-f-linha {
-  display: flex; justify-content: space-between; gap: 0.5rem;
-  margin: 0.09375rem 0; font-size: 0.375rem;
-}
-.cb-f-linha i { color: var(--muted); font-style: normal; }
-.cb-f-linha b { color: var(--text); font-weight: 600; }
-.cb-f-linha u { color: var(--gold-light); text-decoration: none; }
-.cb-f-afs { display: flex; flex-wrap: wrap; gap: 0.1875rem; margin: 0.375rem 0 0; }
+/* O <h3> era o nome do avatar por cima da ficha e o <h4> os títulos
+   "Afinidades" e "O que sabe fazer" dentro dela. O bloco do manual tem
+   faixa própria para o nome e faixas douradas para as secções, e nem um
+   nem outro sobreviveram — não há um único <h3> ou <h4> na arena. */
+/* ── AS PASTILHAS DAS AFINIDADES ──
+
+   É tudo o que sobrou daqui. As `.cb-f-linha` (rótulo à esquerda, valor à
+   direita), a `.cb-f-sub` e a `.cb-f-magia` desenhavam a ficha antiga, e
+   o bloco do manual não tem nenhuma das três: os números foram para duas
+   filas de campos separados por ✦, e as magias passaram a ter o efeito
+   escrito por baixo em vez do custo à direita.
+
+   Estas ficam aqui e não no css/combate.css por onde nasceram, e o
+   css/combate.css usa-as — é a única regra partilhada entre os dois, e
+   mudá-la de casa agora só mudava o lado de que a dívida se vê. */
+/* Cinco píxeis. A regra é de quando as pastilhas só existiam dentro do
+   painel da arena, onde a raiz é 26,4px e isto dava 8,25 — já pouco. O
+   bloco da ficha desenha-as também na colónia e no telemóvel, onde a raiz
+   é 16, e "gelo VU" saía a cinco píxeis: a única linha da ficha que diz
+   contra quem este bicho é bom, ilegível.
+   Dez píxeis aqui, doze no aperto da arena — o mesmo chão do resto. */
 .cb-f-af {
-  font-size: 0.3125rem; padding: 0.0625rem 0.25rem; border-radius: 0.1875rem;
+  font-size: 0.625rem; padding: 0.0625rem 0.25rem; border-radius: 0.1875rem;
   border: 1px solid rgba(255,255,255,.12); color: var(--text);
 }
 .cb-f-af.RS { background: rgba(90,140,200,.22); }
 .cb-f-af.VU { background: rgba(200,80,70,.24); }
 .cb-f-af.IM { background: rgba(150,150,160,.22); }
 .cb-f-af.AB { background: rgba(120,190,120,.22); }
-.cb-f-magia {
-  display: flex; justify-content: space-between; gap: 0.5rem;
-  margin: 0.09375rem 0; font-size: 0.34375rem;
-}
-.cb-f-magia b { color: var(--text); }
-.cb-f-magia i { color: var(--muted); font-style: normal; }
 .cb-hist {
   margin: 0 0 0.25rem; padding-bottom: 0.25rem; font-size: 0.34375rem;
   color: var(--text); border-bottom: 1px solid rgba(255,255,255,.06);
@@ -1658,29 +1656,47 @@
      palco, e como cada linha é rótulo à esquerda e valor à direita, o
      "Defesa" ficava a 1056px do "6" — dois textos sem nada a ligá-los.
      Vinte e seis rem é a largura de uma coluna que se lê. */
-  /* Dezoito rem e não vinte e seis: cada linha é rótulo à esquerda e
-     valor à direita, e a 26rem ficavam 548px de vazio entre "Defesa" e o
-     "6". Uma coluna que se lê de uma ponta à outra sem perder a linha
-     tem umas doze palavras — é isso que dezoito rem dão. */
+  /* Dezoito rem, que era a largura de uma coluna de texto que se lê de
+     uma ponta à outra sem perder a linha — umas doze palavras. O bloco
+     tem prosa a sério (a descrição, o efeito de cada magia) e é essa
+     medida que o serve; sem ela esticava aos 1181px do palco.
+
+     A razão de fundo mudou: era para os dois lados de uma linha
+     rótulo/valor não se afastarem 548px um do outro. Essas linhas já não
+     existem — e a medida continua a ser a mesma, agora por causa da
+     prosa. */
   .cb-ajuda-cx       { max-width: 18rem; margin: 0 auto; }
-  /* ── O RÓTULO TEM COLUNA, O VALOR VEM A SEGUIR ──
+  /* ── O BLOCO DA FICHA, NO ECRÃ LARGO ──
 
-     A linha era `space-between`, portanto o rótulo colava à esquerda e o
-     valor à direita com todo o vazio no meio — 548px numa coluna de 26rem,
-     339 numa de 18. Dois textos que se pertencem, sem nada a ligá-los, e
-     o olho tem de fazer a viagem em cada linha.
+     A raiz aqui é 26,4px e a do telemóvel 16, e os tamanhos do bloco
+     estão escritos para os 16: sem este aperto o nome do avatar saía a
+     21px dentro de um painel de 18rem.
 
-     Com o rótulo a ocupar uma coluna fixa, o valor fica logo a seguir E os
-     valores continuam alinhados uns por baixo dos outros, que era a única
-     coisa que o `space-between` dava de bom. */
-  .cb-f-linha        { justify-content: flex-start; gap: 0.375rem; }
-  .cb-f-linha i      { min-width: 6.5rem; }
-  .cb-ajuda-cx h3    { font-size: 0.75rem; }
-  .cb-ajuda-cx h4    { font-size: 0.5625rem; }
-  .cb-f-linha        { font-size: 0.5rem; }
-  .cb-f-magia        { font-size: 0.46875rem; }
-  .cb-f-af           { font-size: 0.4375rem; }
-  .cb-f-sub          { font-size: 0.46875rem; }
+     ── E O CHÃO SÃO DOZE PÍXEIS, COMO O RESTO DA ARENA ──
+
+     À primeira converti-os por 16/26,4, para dar os MESMOS píxeis que o
+     telemóvel. Parecia a coisa certa — o mesmo desenho nas duas escalas —
+     e dava letra a 9,1px num painel que já promete, três blocos acima,
+     que "nenhuma letra da arena desce dos 12px".
+
+     Píxeis iguais nas duas escalas é a conta errada: o telemóvel está a
+     um palmo dos olhos e o monitor a um braço, e é por isso que a raiz
+     lá é 16 e aqui 26,4. Doze é o chão, e o que estiver acima dele
+     mantém as proporções entre si. */
+  .cb-ajuda-cx .fb-nome     { font-size: 0.625rem;   }  /* 16,5px */
+  .cb-ajuda-cx .fb-tag      { font-size: 0.46875rem; }  /* 12,4   */
+  .cb-ajuda-cx .fb-desc     { font-size: 0.5rem;     }  /* 13,2   */
+  .cb-ajuda-cx .fb-tracos   { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-linha    { font-size: 0.5rem;     }
+  .cb-ajuda-cx .fb-campo i  { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-nota     { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-sec      { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-campos   { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-campos b { font-size: 0.53125rem; }  /* 14     */
+  .cb-ajuda-cx .fb-ef       { font-size: 0.5rem;     }
+  .cb-ajuda-cx .fb-regra-top b    { font-size: 0.53125rem; }
+  .cb-ajuda-cx .fb-regra-top span { font-size: 0.46875rem; }
+  .cb-f-af           { font-size: 0.46875rem; }
   .cb-hist           { font-size: 0.46875rem; }
 
   .cb-palco .cb-log-linha { font-size: 0.5625rem; }
@@ -1706,6 +1722,22 @@
   .cb-posto .cb-marcas { transform: translate(-50%, calc(-100% - 10.9rem * var(--escala))); width: 11rem; }
   .cb-menu    { transform: translate(-100%, -100%) translate(-0.5rem, -8rem); }
   .cb-menu.aberto { transform: translate(-100%, -100%) translate(-0.5rem, -9.5rem); }
+  /* ── E O LADO DE DENTRO, PARA QUEM NÃO CABE NO DE FORA ──
+
+     A coluna sai por omissão para o lado de FORA — à esquerda de quem
+     está do lado esquerdo — para não tapar o caminho do golpe. Mas os
+     postos de trás estão a 22% e a 10% da largura, e uma coluna de 13rem
+     à esquerda deles sai fora do palco: medido, 81px no do meio e 224 no
+     do fundo.
+
+     Quem não couber vira-se para dentro, para o meio do palco, onde só
+     há céu e a fenda. Tapa o companheiro da frente, e é um preço
+     aceite: o que se está a ler é o menu, e o companheiro volta a
+     aparecer assim que se escolha.
+
+     Quem decide é o js/arena-fu.js, que é quem mede. */
+  .cb-menu.dentro        { transform: translate(0, -100%) translate(0.5rem, -8rem); }
+  .cb-menu.dentro.aberto { transform: translate(0, -100%) translate(0.5rem, -9.5rem); }
 }
 
 /* Quem pediu ao sistema para não haver movimento fica com a cena — a

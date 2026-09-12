@@ -74,17 +74,12 @@ window.registerStrings({
   'af.fim.sair':      'Voltar',
 
   // ── a ficha ──
-  'af.f.dados':       'Dados',
   'af.f.vida':        'Vida',
   'af.f.magia':       'Magia',
   'af.f.crise':       'Crise',
   'af.f.defesa':      'Defesa',
   'af.f.defmag':      'Def. Mágica',
-  'af.f.tipo':        'Tipo de dano',
   'af.f.costura':     'Costura',
-  'af.f.vantagem':    'Vantagem',
-  'af.f.lugares':     'O que sabe fazer',
-  'af.f.sem_costura': 'fechada',
 
   // ── os seis estados ──
   'af.est.atordoado':  'atordoado',
@@ -121,19 +116,85 @@ window.registerStrings({
   'af.m.curar':          'Curar',
   'af.m.despertar':      'Despertar',
 
+  /* ══ O BLOCO, NO PADRÃO DO MANUAL ══
+
+     O manual escreve cada criatura sempre com as mesmas linhas pela
+     mesma ordem: cabeçalho, descrição, traços, atributos, defesas e
+     afinidades, e depois as secções — ataques básicos, magias, outras
+     acções, regras especiais. Cada acção é uma linha de campos separados
+     por ✦, com o efeito por baixo.
+
+     Seguir esse padrão tem um ganho que não é arrumação: quem sabe ler
+     o manual sabe ler a ficha, e quem aprende a ficha sabe ler o
+     manual. */
+  'af.b.nv':            'Nv {n}',
+  'af.b.tracos':        'Traços típicos',
+  'af.b.init':          'Init.',
+  'af.b.def':           'DEF',
+  'af.b.mdef':          'M.DEF',
+  'af.b.pv':            'PV',
+  'af.b.pm':            'PM',
+  'af.b.tr.tipo':       'golpeia com {tipo}',
+  /* "ao" e não "a": dos nove tipos de dano três são femininos (terra,
+     luz, treva) e saía "costurado ao terra". Sem artigo nenhum serve os
+     nove, e lê-se como "alérgico a pólen". */
+  'af.b.tr.costura':    'costurado a {tipo}',
+  'af.b.tr.origem':     'saído de ovo {origem}',
+  'af.sec.basicos':     'ATAQUES BÁSICOS',
+  'af.sec.magias':      'MAGIAS',
+  'af.sec.outras':      'OUTRAS AÇÕES',
+  'af.sec.especiais':   'REGRAS ESPECIAIS',
+
+  'af.b.instantaneo':   'Instantâneo',
+  'af.b.cena':          'Dura a batalha',
+  /* Guardar NÃO dura a batalha: dura até ao começo do turno seguinte de
+     quem guardou, e o motor levanta-o lá (ver o fuNovaRonda). Dizia "dura
+     a batalha" porque copiei o campo das magias de cena — e prometer
+     metade do dano durante a batalha toda é prometer o dobro do que ela
+     dá. */
+  'af.b.ate_turno':     'Até ao próximo turno',
+  'af.b.pm_alvo':       '{n} PM × alvo',
+  'af.b.sem_rolagem':   'sem rolagem',
+  'af.b.alvo.inimigo1': 'Um inimigo',
+  'af.b.alvo.inimigo3': 'Até três inimigos',
+  'af.b.alvo.inimigoT': 'Todos os inimigos',
+  'af.b.alvo.proprio':  'O próprio',
+  'af.b.alvo.aliado1':  'Um companheiro',
+  'af.b.alvo.aliado3':  'Até três companheiros',
+
+  'af.b.ef.dano':        'O alvo sofre 【HR + {n}】 de dano de {tipo}.',
+  'af.b.ef.dano_cada':   'Cada alvo sofre 【HR + {n}】 de dano de {tipo}.',
+  'af.b.ef.dano_fixo':   'Cada alvo sofre {n} de dano de {tipo}, sem rolagem e sem Defesa que valha.',
+  'af.b.ef.estado':      'O alvo fica {e}.',
+  'af.b.ef.estado_cada': 'Cada alvo fica {e}.',
+  'af.b.ef.oportunidade':'Oportunidade: o alvo fica {e}.',
+  'af.b.ef.oportunidade_cada':'Oportunidade: cada alvo fica {e}.',
+  'af.b.ef.ignora':      'Ignora resistências — mas não a imunidade nem a absorção.',
+  'af.b.ef.corpo':       'Corpo a corpo: só alcança quem estiver à frente.',
+  'af.b.ef.cura':        'O alvo recupera {n} de vida.',
+  'af.b.ef.cura_proprio':'Recupera {n} de vida.',
+  'af.b.ef.cura_cada':   'Cada alvo recupera {n} de vida.',
+  'af.b.ef.resisteFisico':'Passa a resistir a dano físico.',
+  'af.b.ef.defesaMinima':'A Defesa do alvo passa a ser, no mínimo, {n}.',
+  'af.b.ef.defesaMinima_cada':'A Defesa de cada alvo passa a ser, no mínimo, {n}.',
+  'af.b.ef.misericordia':'O golpe que o derrubaria deixa-o com um ponto de vida. Acontece uma vez, e desfaz-se.',
+  'af.b.ef.subirDado':   'O maior atributo do alvo sobe um tamanho de dado, até ao d12.',
+
+  'af.b.guardar':       'Guardar',
+  'af.b.guardar.ef':    'Metade do dano que receber, até ao começo do próximo turno dele.',
+  'af.b.mover':         'Trocar de lugar',
+  'af.b.mover.alvo':    'Um companheiro',
+  'af.b.mover.ef':      'Troca de posto com um companheiro. Gasta o turno de quem se mexe, e não o dos dois.',
+  'af.b.turno':         'Gasta o turno',
+
   // ── A FICHA, o que ela mostra ──
-  'af.f.arranjo':     'Arranjo',
-  'af.f.indole':      'Feitio',
   'af.f.sexo.F':      'fêmea',
   'af.f.sexo.M':      'macho',
-  'af.f.nivel':       'Nível {n}',
-  'af.f.afinidades':  'O que lhe dói e o que não',
   'af.f.sem_dna':     'DNA ilegível — esta ficha é de recurso',
-  'af.f.segunda':     'Se ficar com a costura, ganha:',
+  'af.f.segunda':     'se ficar com a costura',
   'af.f.costura_desc': 'O tipo de dano a que ele é vulnerável: leva o dobro. É o preço da vantagem, e o inimigo tem de o descobrir.',
   'af.f.precisao':    'Precisão',
   'af.f.dano_extra':  'Dano extra',
-  'af.f.origem':      'Ovo de origem',
   'af.f.subidas':     '{n} subida de dado',
   'af.f.subidas_p':   '{n} subidas de dado',
   'af.f.subida_de':   'do ovo {origem}',
@@ -152,6 +213,17 @@ window.registerStrings({
   'af.at.PER': 'Perspicácia',
   'af.at.VIG': 'Vigor',
   'af.at.VON': 'Vontade',
+
+  /* ── AS TRÊS LETRAS ──
+     O motor chama-lhes DES, PER, VIG e VON em toda a parte, e essas são
+     chaves e não texto — mudar-lhes o nome era mudar o motor. Mas o bloco
+     mostra-as em letra grande, quatro vezes por ficha e outra vez dentro
+     de cada 【 】, e um leitor de inglês via quatro siglas portuguesas
+     onde o manual dele escreve DEX, INS, MIG e WLP. */
+  'af.ab.DES': 'DES',
+  'af.ab.PER': 'PER',
+  'af.ab.VIG': 'VIG',
+  'af.ab.VON': 'VON',
 
   // ── AS DOZE VANTAGENS ──
   // O nome é nosso; a habilidade é do manual, e o `manual` de cada
@@ -184,10 +256,13 @@ window.registerStrings({
   'afv.golpe_certeiro.desc': 'O golpe comum mira a Defesa Mágica em vez da Defesa.',
 
   /* ── O QUE VEIO DO js/i18n-magias.js ──
-     O título da ficha e os três feitios. Saíram de lá e vieram para aqui
-     porque já nada do 3D&T os usa — o feitio é do DNA e não das regras,
-     e ia desaparecer com um arquivo que não tem nada a ver com ele. */
-  'af.f.titulo':      '⚔ FICHA DE COMBATE',
+     Os três feitios. Saíram de lá e vieram para aqui porque já nada do
+     3D&T os usa — o feitio é do DNA e não das regras, e ia desaparecer
+     com um arquivo que não tem nada a ver com ele.
+
+     A frase de cada um (`.ex`) era o `title` de uma linha dourada, e
+     passou a ser a DESCRIÇÃO do bloco: a primeira coisa que se lê, como
+     no manual. */
   'af.f.feitio':      'feitio de {i}',
   'af.indole.guarda':      'Guarda',
   'af.indole.sustentacao': 'Sustentação',
@@ -255,17 +330,12 @@ window.registerStrings({
   'af.fim.empate':    'No one was left standing.',
   'af.fim.sair':      'Back',
 
-  'af.f.dados':       'Dice',
   'af.f.vida':        'Hit Points',
   'af.f.magia':       'Mind Points',
   'af.f.crise':       'Crisis',
   'af.f.defesa':      'Defence',
   'af.f.defmag':      'Magic Defence',
-  'af.f.tipo':        'Damage type',
   'af.f.costura':     'Seam',
-  'af.f.vantagem':    'Advantage',
-  'af.f.lugares':     'What it can do',
-  'af.f.sem_costura': 'closed',
 
   'af.est.atordoado':  'dazed',
   'af.est.enfurecido': 'enraged',
@@ -295,18 +365,65 @@ window.registerStrings({
   'af.m.curar':          'Heal',
   'af.m.despertar':      'Awaken',
 
-  'af.f.arranjo':     'Spread',
-  'af.f.indole':      'Bent',
+  'af.b.nv':            'Lv {n}',
+  'af.b.tracos':        'Typical traits',
+  'af.b.init':          'Init.',
+  'af.b.def':           'DEF',
+  'af.b.mdef':          'M.DEF',
+  'af.b.pv':            'HP',
+  'af.b.pm':            'MP',
+  'af.b.tr.tipo':       'strikes with {tipo}',
+  'af.b.tr.costura':    'seamed to {tipo}',
+  'af.b.tr.origem':     'hatched from a {origem} egg',
+  'af.sec.basicos':     'BASIC ATTACKS',
+  'af.sec.magias':      'SPELLS',
+  'af.sec.outras':      'OTHER ACTIONS',
+  'af.sec.especiais':   'SPECIAL RULES',
+
+  'af.b.instantaneo':   'Instantaneous',
+  'af.b.cena':          'Lasts the battle',
+  'af.b.ate_turno':     'Until their next turn',
+  'af.b.pm_alvo':       '{n} MP × target',
+  'af.b.sem_rolagem':   'no roll',
+  'af.b.alvo.inimigo1': 'One enemy',
+  'af.b.alvo.inimigo3': 'Up to three enemies',
+  'af.b.alvo.inimigoT': 'All enemies',
+  'af.b.alvo.proprio':  'Self',
+  'af.b.alvo.aliado1':  'One ally',
+  'af.b.alvo.aliado3':  'Up to three allies',
+
+  'af.b.ef.dano':        'The target suffers 【HR + {n}】 {tipo} damage.',
+  'af.b.ef.dano_cada':   'Each target suffers 【HR + {n}】 {tipo} damage.',
+  'af.b.ef.dano_fixo':   'Each target suffers {n} {tipo} damage, with no roll and no Defence to stop it.',
+  'af.b.ef.estado':      'The target becomes {e}.',
+  'af.b.ef.estado_cada': 'Each target becomes {e}.',
+  'af.b.ef.oportunidade':'Opportunity: the target becomes {e}.',
+  'af.b.ef.oportunidade_cada':'Opportunity: each target becomes {e}.',
+  'af.b.ef.ignora':      'Ignores Resistances — but not Immunity or Absorption.',
+  'af.b.ef.corpo':       'Melee: only reaches whoever stands in front.',
+  'af.b.ef.cura':        'The target recovers {n} HP.',
+  'af.b.ef.cura_proprio':'Recovers {n} HP.',
+  'af.b.ef.cura_cada':   'Each target recovers {n} HP.',
+  'af.b.ef.resisteFisico':'Gains Resistance to physical damage.',
+  'af.b.ef.defesaMinima':"The target's Defence becomes at least {n}.",
+  'af.b.ef.defesaMinima_cada':"Each target's Defence becomes at least {n}.",
+  'af.b.ef.misericordia':'The blow that would fell them leaves them at one hit point. Once, then it is spent.',
+  'af.b.ef.subirDado':   "The target's highest Attribute grows by one die size, up to d12.",
+
+  'af.b.guardar':       'Guard',
+  'af.b.guardar.ef':    'Half of any damage taken, until the start of their next turn.',
+  'af.b.mover':         'Swap places',
+  'af.b.mover.alvo':    'One ally',
+  'af.b.mover.ef':      'Swaps place with an ally. Costs the turn of whoever moves, not both.',
+  'af.b.turno':         'Costs the turn',
+
   'af.f.sexo.F':      'female',
   'af.f.sexo.M':      'male',
-  'af.f.nivel':       'Level {n}',
-  'af.f.afinidades':  'What hurts it and what does not',
   'af.f.sem_dna':     'Unreadable DNA — this sheet is a fallback',
-  'af.f.segunda':     'Keep the seam and it gains:',
+  'af.f.segunda':     'if it keeps the seam',
   'af.f.costura_desc': 'The damage type it is vulnerable to: double damage. It is what the advantage costs, and the enemy has to find it.',
   'af.f.precisao':    'Accuracy',
   'af.f.dano_extra':  'Extra damage',
-  'af.f.origem':      'Egg of origin',
   'af.f.subidas':     '{n} die-size upgrade',
   'af.f.subidas_p':   '{n} die-size upgrades',
   'af.f.subida_de':   'from the {origem} egg',
@@ -325,6 +442,10 @@ window.registerStrings({
   'af.at.PER': 'Insight',
   'af.at.VIG': 'Might',
   'af.at.VON': 'Willpower',
+  'af.ab.DES': 'DEX',
+  'af.ab.PER': 'INS',
+  'af.ab.VIG': 'MIG',
+  'af.ab.VON': 'WLP',
 
   'afv.guarda_cerrada.nome': 'Closed Guard',
   'afv.guarda_cerrada.desc': 'Adds {a} to Defence and {b} to Magic Defence. The DNA picks which one gets the two: it reinforces the side it is already better at.',
@@ -353,7 +474,6 @@ window.registerStrings({
   'afv.golpe_certeiro.nome': 'True Strike',
   'afv.golpe_certeiro.desc': 'The basic strike targets Magic Defence instead of Defence.',
 
-  'af.f.titulo':      '⚔ COMBAT SHEET',
   'af.f.feitio':      '{i} bent',
   'af.indole.guarda':      'Ward',
   'af.indole.sustentacao': 'Endurance',
