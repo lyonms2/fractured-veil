@@ -53,7 +53,7 @@ for (const f of ["js/i18n.js", "js/i18n-misc.js", "js/i18n-arena-fu.js",
                  "js/data.js", "js/identidade.js", "js/cores.js", "js/nascimento.js",
                  "js/raridade.js",
                  "js/ficha-fu.js", "js/vantagens-fu.js", "js/combate-fu.js",
-                 "js/magias-fu.js", "js/arena-fu.js"])
+                 "js/magias-fu.js", "js/ficha-fu-ui.js", "js/arena-fu.js"])
   document.write('<scr' + 'ipt src="' + f + '?z=' + _z + '"><\/scr' + 'ipt>');
 </script>
 
@@ -66,11 +66,12 @@ const NOMES_INI = ['Lâmina Oca', 'Arauto da Cinza', 'Coisa sem Nome'];
    distinguir este de um do jogo, e é por isso que o ensaio vale. */
 function _bicho(nome, nivel, i) {
   const seed = Math.floor(Math.random() * 2e9);
-  return {
-    id: 'e' + i + '_' + seed,
-    nome, seed, nivel,
-    nascimento: { seed, dna: gerarDna('Comum', seed) },
-  };
+  /* Pelo nascer() e não à mão: a certidão leva o sexo e o feitio, que a
+     ficha mostra e que um `{ seed, dna }` montado aqui não tem. O banco
+     dava avatares sem feitio e a linha desaparecia — e eu podia ter
+     concluido que ela estava partida. */
+  const cert = nascer({ origem: 'Comum', seed });
+  return { id: 'e' + i + '_' + seed, nome, seed, nivel, nascimento: cert };
 }
 
 let _nivelEu = 15, _nivelIni = 12;

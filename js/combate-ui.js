@@ -10,236 +10,30 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
-// ═══════════════════════════════════════════════════════════════════
-// renderFichaHTML — a ficha 3D&T do avatar
-//
-// Quatro características de 0 a 5, as duas barras (PV = R×5, PM = R×5),
-// a vantagem e a desvantagem com que nasceu, e as três magias que
-// conhece. Não calcula nada: tudo vem de js/ficha-3dt.js, js/magias.js
-// e js/vantagens.js.
-// ═══════════════════════════════════════════════════════════════════
-const FICHA_COR = {
-  F: '#e05555',   // Força — dano
-  H: '#5ab4e8',   // Habilidade — iniciativa, esquiva, tecto de magia
-  R: '#7ab87a',   // Resistência — vida e magia
-  A: '#c9a84c',   // Armadura — defesa
-};
-
-// Escala das barrinhas. Um avatar de nível 35 chega a 13 num atributo,
-// mas a esmagadora maioria vive entre 0 e 6 — por isso a barra satura
-// aos 8, senão as fichas normais apareciam todas vazias.
-const FICHA_ESCALA = 8;
-
+// ═════════════════════════════════════════════════════════════════
+// A FICHA — duas portas para o js/ficha-fu-ui.js
+// ═════════════════════════════════════════════════════════════════
 /* O primeiro argumento pode ser o SLOT inteiro, e é assim que se pede.
    A forma de quatro campos soltos fica a funcionar para quem ainda a use,
    mas não leva a certidão nem a escolha do ancião — e uma ficha sem elas
    mostra outro avatar. */
-function renderFichaHTML(seed, raridade, nivel, nascimento) {
-  if (typeof fichaDeAvatar !== 'function') return '';
-  const f = fichaDeAvatar(seed, raridade, nivel, nascimento);
-  if (!f) return '';
-  f.seed = (seed && typeof seed === 'object') ? seed.seed : seed;
+/* ── A FICHA MUDOU DE DONO ──
 
-  const linhas = ['F', 'H', 'R', 'A'].map(k => {
-    const pct = Math.min(100, Math.round(f[k] / FICHA_ESCALA * 100));
-    return `<div class="ficha-stat">
-      <div class="ficha-stat-lbl">${k}</div>
-      <div class="ficha-stat-bar"><div class="ficha-stat-fill" style="width:${pct}%;background:${FICHA_COR[k]};"></div></div>
-      <div class="ficha-stat-val">${f[k]}</div>
-    </div>`;
-  }).join('');
+   Aqui desenhavam-se as quatro características de 0 a 5, as três magias
+   do 3D&T e o par vantagem/desvantagem com os custos em pontos. Nada
+   disso existe no motor novo: são quatro DADOS, cinco lugares de magia e
+   uma vantagem paga por uma costura.
 
-  return `<div class="ficha">
-    <div class="ficha-title">${t('ficha.title')}</div>
-    <div class="ficha-escalao">${_fichaSexo(f)} · ${f.escalao} · ${f.pontos} ${t('ficha.pontos')}</div>
-    ${_fichaVocacaoHTML(f)}
-    <div class="ficha-stats">${linhas}</div>
-    <div class="ficha-bars">
-      <div class="ficha-bar"><b style="color:#e05555;">${f.pv}</b><span>${t('ficha.pv')}</span></div>
-      <div class="ficha-bar"><b style="color:#5ab4e8;">${f.pm}</b><span>${t('ficha.pm')}</span></div>
-      <div class="ficha-bar"><b style="color:var(--gold-light);">${f.H * 5}</b><span>${t('ficha.tecto')}</span></div>
-    </div>
-    ${renderVantagensHTML(f)}
-    ${renderMagiasHTML(f)}
-  </div>`;
+   O desenho passou para o js/ficha-fu-ui.js, e está lá por uma razão que
+   não é arrumação: a ARENA precisa da mesma ficha, e ter duas cópias era
+   garantir que um dia mostravam avatares diferentes.
+
+   Esta continua a existir porque é o contrato com o js/main.js — quem a
+   chama não tem de saber que o motor mudou por baixo. */
+function renderFichaHTML(slot) {
+  return (typeof renderFichaFU === 'function') ? renderFichaFU(slot) : '';
 }
 
-/* ── O SEXO E A VOCAÇÃO ──
-
-   Os dois vinham do DNA e não apareciam em lado nenhum — e uma
-   tendência que o jogador não vê é indistinguível de acaso.
-
-   A vocação mostra-se em nomes e não em números, de propósito. Um
-   "F: 6" ao lado de "Força: 2" lia-se como uma promessa de chegar a 6,
-   que é exactamente o que o DNA não promete. */
-function _fichaSexo(f) {
-  const sx = f.sexo || 'F';
-  return (sx === 'M' ? '♂ ' : '♀ ') + t('ficha.sexo.' + sx);
-}
-
-function _fichaVocacaoHTML(f) {
-  const v = f.vocacao;
-  if (!Array.isArray(v) || v.length < 2) return '';
-  const nome = k => t('carac.' + k);
-  /* Sem rótulo próprio: a frase já se explica ("tende a Força e
-     Armadura"), e um "VOCAÇÃO" ao lado partia a linha em duas na ficha
-     estreita do celular. */
-  /* Duas leituras do mesmo DNA, e são coisas diferentes: a VOCAÇÃO diz
-     para onde os pontos tendem a cair (Força, Armadura…) e a ÍNDOLE diz
-     que feitio ele tem — que magias e que virtudes lhe saem. Um avatar
-     pode tender à Força e ter índole de Guarda: forte e defensivo. */
-  const ind = f.indole
-    ? `<div class="ficha-vocacao ficha-indole" title="${t('indole.' + f.indole + '.ex')}">◇ ${t('ficha.indole', { i: t('indole.' + f.indole) })}</div>`
-    : '';
-  return `<div class="ficha-vocacao" title="${t('ficha.vocacao.ex')}">
-    ◆ ${t('ficha.vocacao', { a: nome(v[0]), b: nome(v[1]) })}
-  </div>${ind}`;
-}
-
-/* ── O NOME E A DESCRIÇÃO DE UMA CARTA ──
-
-   Estavam dentro do renderVantagensHTML, e a tela da escolha do ancião
-   precisava exactamente dos mesmos dois. Duas cópias destas divergiriam
-   sem ninguém dar por isso: bastaria uma passar a tratar o {papel} e a
-   outra não, e a mesma carta teria dois nomes no mesmo jogo.
-
-   As cartas que agem contra uma gaveta trazem o papel cru —
-   'muito_forte'. O nome de mostrar vem do mesmo sítio de onde vem o
-   rótulo da gaveta na ficha, para dizerem a mesma palavra. */
-function _vdPapel(p) { return p ? t('mag.cat.' + p) : ''; }
-function vdNome(v) { return v ? t('vd.' + v.id + '.nome').replace('{papel}', _vdPapel(v.papel)) : ''; }
-function vdDesc(v) { return v ? t('vd.' + v.id + '.desc').replace(/\{papel\}/g, _vdPapel(v.papel)) : ''; }
-
-// ── Vantagem e desvantagem ──
-function renderVantagensHTML(f) {
-  /* Perguntava-se `if (!f.vantagem) return ''`, e isso era verdade
-     enquanto os dois chegavam juntos. Chegam separados desde que o
-     JOVEM passou a descobrir primeiro o defeito — e durante essa fase
-     inteira o bloco desaparecia, defeito incluído. Agora mostra-se o
-     que houver: nenhum, um, ou os três do ancião. */
-  const cartas = [
-    [f.vantagem,    'boa', '−'],
-    [f.vantagem2,   'boa', '−'],
-    [f.desvantagem, 'ma',  '+'],
-  ].filter(c => c[0]);
-  if (!cartas.length) return '';
-
-  const linha = (v, cls, sinal) => `<div class="vd ${cls}">
-      <div class="vd-top"><span class="vd-nome">${vdNome(v)}</span>
-        <span class="vd-custo">${sinal}${Math.abs(v.custo)}</span></div>
-      <div class="vd-desc">${vdDesc(v)}</div>
-    </div>`;
-  return `<div class="vd-bloco">
-    ${cartas.map(c => linha(c[0], c[1], c[2])).join('')}
-  </div>`;
-}
-
-// ── As três magias ──
-function renderMagiasHTML(f) {
-  if (typeof magiasDoAvatar !== 'function') return '';
-  const m = magiasDoAvatar(f);
-  const custo = g => g.pm === 0 ? t('mag.custo.livre')
-    : (g.pmMax && g.porTurno) ? t('mag.custo.faixa_turno', { min: g.pm, max: g.pmMax })
-    : g.pmMax ? t('mag.custo.faixa', { min: g.pm, max: g.pmMax })
-    : g.porTurno ? t('mag.custo.turno', { pm: g.pm })
-    : t('mag.custo', { pm: g.pm });
-
-  /* O GOLPE COMUM ABRE A LISTA.
-
-     A ficha listava as três magias e mais nada, como se um avatar sem
-     PM não pudesse fazer nada. O golpe comum é o que sobra quando a
-     magia não chega ou não serve — está sempre disponível, não custa
-     nada, e é com ele que se joga a maior parte dos turnos. O painel
-     da batalha já o mostrava; aqui faltava. */
-  const golpe = `<div class="hab tipo-golpe">
-      <div class="hab-top">
-        <span class="hab-papel">${t('pve.ajuda.golpe')}</span>
-        <span class="hab-custo livre">${t('mag.custo.livre')}</span>
-      </div>
-      <div class="hab-nome">${t('pve.acao.comum')}</div>
-      <div class="hab-efeito">${t('pve.ajuda.golpe_desc')}</div>
-      <div class="hab-conta">FA H${f.H} + F${f.F} + 1d</div>
-    </div>`;
-
-  /* O bebé não tem magias, e a ficha tem de dizer porquê.
-     Sem isto apareciam três caixas vazias a pedir Habilidade, quando o
-     que falta é idade — e a batalha já lhe dá só o golpe comum. */
-  if (typeof ehBebe === 'function' && ehBebe(f)) {
-    return `<div class="hab-bloco">
-      <div class="hab-titulo">${t('hab.titulo')}</div>
-      ${golpe}
-      <div class="hab vazia"><div class="hab-efeito">${t('ficha.bebe')}</div></div>
-      <div class="hab vazia"><div class="hab-efeito">${t('ficha.bebe.vd')}</div></div>
-    </div>`;
-  }
-
-  /* O repertório COMPLETO, e não só o que já despertou.
-
-     A ficha mostra os quatro lugares sempre, com a magia que cada um
-     vai ter. Uma magia que se sabe que vem é um objectivo; uma que
-     ninguém menciona é uma surpresa que ele nunca vai procurar — e o
-     jogador merece saber que o segundo golpe forte existe muito antes
-     de chegar a Lendário. */
-  const todas = (typeof repertorioCompleto === 'function') ? repertorioCompleto(f) : m;
-  const slots = MAGIA_SLOTS;
-
-  const linhas = slots.map(cat => {
-    const g = m[cat] || todas[cat];
-    const porChegar = !m[cat] && !!todas[cat];
-
-    if (!g) return `<div class="hab vazia">
-        <div class="hab-top"><span class="hab-papel">${t('mag.cat.' + cat)}</span></div>
-        <div class="hab-efeito">${t('ficha.sem_magia', {
-          h: (typeof habilidadeNecessaria === 'function' ? habilidadeNecessaria(cat) : '?') })}</div>
-      </div>`;
-    // A magia é do avatar desde que nasce e nunca muda. O que pode faltar
-    // é Habilidade para a lançar — e isso mostra-se, em vez de esconder a
-    // magia: é um objectivo concreto para subir de nível, e o avatar sabe
-    // que chegará lá (o sorteio só dá magias alcançáveis ao nível 35).
-    /* O cadeado passou a ter duas razões, e a ficha diz qual é.
-
-       Antes só sabia da Habilidade, e uma magia fora do alcance da
-       bolsa aparecia limpa — o jogador via-a na lista, escolhia-a em
-       combate, e o botão estava apagado sem lhe dizer porquê. */
-    const tranca = (typeof trancaDaMagia === 'function') ? trancaDaMagia(f, g) : null;
-    const alcanca = !tranca;
-    const porque  = tranca && tranca.motivo === 'R' ? 'mag.tranca.r' : 'mag.tecto';
-    const falta   = tranca ? tranca.precisa
-                  : (typeof habilidadeParaMagia === 'function' ? habilidadeParaMagia(g) : '?');
-    // O caso "esta defesa é na verdade um ataque" saiu daqui: com uma
-    // gaveta defensiva só, nenhuma das dezasseis faz dano.
-    const fam   = cat;
-    const papel = t('mag.cat.' + cat);
-    // Quando ainda não é dele, diz-se quando passa a ser — e o cadeado
-    // da Habilidade fica calado, que essa não é a razão de agora.
-    const degrau = porChegar && typeof degrauDoSlot === 'function' ? degrauDoSlot(cat) : null;
-    const aviso  = !degrau ? '' : (degrau.fase != null
-      ? t('mag.chega.fase' + degrau.fase) : t('mag.chega.grau' + degrau.grau));
-    // A conta que a magia rola. Estava só na batalha, e é a diferença
-    // entre "faz dano" e saber quanto.
-    const conta = (typeof _pveFormula === 'function') ? _pveFormula(g, f) : null;
-    return `<div class="hab tipo-${fam}${(alcanca && !porChegar) ? '' : ' trancada'}">
-      <div class="hab-top">
-        <span class="hab-papel">${papel}</span>
-        <span class="hab-custo${g.pm === 0 ? ' livre' : ''}">${custo(g)}</span>
-      </div>
-      <div class="hab-nome">${t('mag.' + g.id + '.nome')}</div>
-      <div class="hab-efeito">${t('mag.' + g.id + '.desc')}</div>
-      ${conta ? `<div class="hab-conta">${conta}</div>` : ''}
-      ${porChegar ? `<div class="hab-tranca">⏳ ${aviso}</div>`
-                  : alcanca ? '' : `<div class="hab-tranca">🔒 ${t(porque, { h: falta, r: falta })}</div>`}
-    </div>`;
-  }).join('');
-
-  return `<div class="hab-bloco">
-    <div class="hab-titulo">${t('hab.titulo')}</div>
-    ${golpe}
-    ${linhas}
-  </div>`;
-}
-
-// Preenche a ficha dentro do overlay de zoom do avatar.
-// Chamada por openAvatarZoom() e openAvatarZoomData() em js/main.js.
 function preencherFichaZoom(seed, raridade, nivel, nascimento) {   // seed = o slot
   const el = document.getElementById('avatarZoomFicha');
   if (!el) return;

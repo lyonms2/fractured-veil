@@ -650,3 +650,41 @@
    Não se guardaram as duas. Duas maneiras de desenhar a mesma árvore
    divergem à primeira vez que se acrescenta uma geração a uma delas —
    e este jogo já pagou essa conta meia dúzia de vezes. */
+/* ═══════════════════════════════════════════════════════════════════
+   A FICHA DO MOTOR NOVO                          (js/ficha-fu-ui.js)
+
+   O que a ficha antiga não precisava de dizer, e esta precisa:
+
+     · o dado de AGORA ao lado do de nascença, quando há batalha a
+       correr e um estado o encolheu ou o Despertar o subiu;
+     · o aviso de uma ficha de recurso, quando o DNA não deu para ler;
+     · os cinco lugares de magia;
+     · e a segunda vantagem que o Lendário ainda não escolheu, que se
+       mostra apagada porque ainda não é dele.
+
+   O resto — .ficha, .ficha-stat, .vd, .cb-f-* — é o que já existia, e é
+   partilhado de propósito: a ficha da colónia e a da arena têm de se
+   parecer uma com a outra porque são a mesma.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* O dado de agora. Sobe em dourado e desce em vermelho, que é a mesma
+   convenção das barras e das diferenças da evolução. */
+.ficha-dado-agora { margin-left: .25rem; font-weight: 700; }
+.ficha-dado-agora.sobe  { color: var(--gold-light); }
+.ficha-dado-agora.desce { color: #e07a7a; }
+
+.ficha-aviso {
+  margin: .25rem 0; padding: .25rem .375rem; border-radius: .25rem;
+  background: rgba(200,80,70,.16); border: 1px solid rgba(200,80,70,.4);
+  color: #f0c0bc; font-size: .6875rem; line-height: 1.35;
+}
+
+.ficha-lugares { display: flex; flex-direction: column; gap: .125rem; }
+
+/* A que ele ganharia e ainda não ganhou. Apagada e com um traço à
+   esquerda: está ali para se poder decidir, não para se contar como
+   dele. */
+.vd.porvir {
+  opacity: .72; border-left: 2px solid rgba(201,168,76,.45);
+}
+.vd.porvir .vd-nome { color: var(--gold); font-style: italic; }

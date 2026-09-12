@@ -59,12 +59,12 @@ function atualizarChamadaEvolucao() {
    A certidão vai nas duas — sem ela a ficha não tem índole, e a
    comparação do antes com o depois era entre dois avatares diferentes. */
 function _evoFichas() {
-  if (typeof fichaDeAvatar !== 'function' || !avatar) return null;
+  if (typeof fuFicha !== 'function' || !avatar) return null;
   const nvAntes = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
   try {
     return {
-      antes: fichaDeAvatar({ ...avatar, nivel: nvAntes }),
-      agora: fichaDeAvatar({ ...avatar, nivel }),
+      antes: fuFicha({ ...avatar, nivel: nvAntes }),
+      agora: fuFicha({ ...avatar, nivel }),
     };
   } catch (_) { return null; }
 }
@@ -83,8 +83,15 @@ function _evoLinhasDaFicha() {
   const f = _evoFichas();
   if (!f) return [];
 
-  const carac = [['F', 'evo.f'], ['H', 'evo.h'], ['R', 'evo.r'], ['A', 'evo.a'],
-                 ['pv', 'evo.pv'], ['pm', 'evo.pm']];
+  /* Os quatro DADOS não estão aqui, e é de propósito: no motor novo eles
+     saem do arranjo que o DNA escolheu e não mudam com o nível. Pô-los
+     numa cerimónia de evolução era prometer uma subida que nunca chega.
+
+     O que sobe é isto: a vida e a magia, todo o nível; a precisão, de dez
+     em dez; e o dano extra, nos degraus de raridade (11 e 27). */
+  const carac = [['pvMax', 'af.f.vida'], ['pmMax', 'af.f.magia'],
+                 ['crise', 'af.f.crise'], ['bonusPrecisao', 'af.f.precisao'],
+                 ['danoExtra', 'af.f.dano_extra']];
   const todas = carac.map(([k, chave]) => ({
     nome: t(chave), de: f.antes[k], para: f.agora[k], subiu: f.agora[k] > f.antes[k],
   }));
@@ -103,20 +110,30 @@ function _evoLinhasDaFicha() {
    Não se lê da escada: lê-se do repertório ANTES e DEPOIS, e diz-se a
    diferença. Assim vale para as gavetas que abrem por fase e para as que
    abrem por raridade, sem esta função ter de saber qual é qual. */
+/* No motor novo os cinco lugares estão TODOS abertos desde o nível 5: o
+   que muda com a raridade é o DEGRAU de cada um. Um Comum lança o Sopro
+   no lugar forte; aos onze passa a lançar a Barragem no mesmo lugar.
+
+   Portanto não se procuram lugares NOVOS — nunca haveria nenhum. Compara-
+   se a magia de cada lugar antes e depois, e diz-se a que trocou. */
 function _evoMagiasNovas() {
   const f = _evoFichas();
-  if (!f || typeof magiasDoAvatar !== 'function') return [];
+  if (!f || typeof fuMagiasDe !== 'function') return [];
   let antes, agora;
-  try { antes = magiasDoAvatar(f.antes); agora = magiasDoAvatar(f.agora); }
+  try { antes = fuMagiasDe(f.antes); agora = fuMagiasDe(f.agora); }
   catch (_) { return []; }
 
+  const nome = m => (window._currentLang === 'en' && m.nomeEn)
+    ? m.nomeEn : (m.nome || t('af.m.' + m.id));
+
   const novas = [];
-  for (const papel of Object.keys(agora)) {
-    if (antes[papel] || !agora[papel]) continue;
+  for (const lugar of FU_LUGARES) {
+    if (!agora[lugar] || !antes[lugar]) continue;
+    if (agora[lugar].id === antes[lugar].id) continue;
     novas.push({
-      papel: t('mag.cat.' + papel),
-      nome:  t('mag.' + agora[papel].id + '.nome'),
-      pm:    agora[papel].pm,
+      papel: t('af.lugar.' + lugar),
+      nome:  nome(agora[lugar]),
+      pm:    fuCusto(agora[lugar], agora[lugar].porAlvo ? (agora[lugar].alvos || 1) : 1),
     });
   }
   return novas;

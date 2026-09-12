@@ -1194,44 +1194,21 @@ function _afAbrirHistorico() {
 // ═══════════════════════════════════════════════════════════════════
 // A FICHA
 // ═══════════════════════════════════════════════════════════════════
+/* A ficha é a MESMA que a colónia mostra — js/ficha-fu-ui.js. Havia aqui
+   uma segunda versão, escrita à mão, e as duas liam a mesma ficha para
+   mostrar coisas ligeiramente diferentes: esta não dizia o feitio nem o
+   arranjo, aquela não dizia os dados de agora. Duas telas do mesmo
+   assunto acabam a mostrar dois avatares.
+
+   O que este sítio acrescenta é o LUTADOR: aqui há batalha a correr, e
+   os dados encolhidos pelos estados aparecem ao lado dos de nascença. */
 function _afFicha(id) {
   const c = _afPorId(id);
-  if (!c) return;
-  const f = c.ficha;
   const el = document.getElementById('cbAjuda');
-  if (!el) return;
-
-  const linha = (r, v) => `<p class="cb-f-linha"><i>${esc(r)}</i><b>${v}</b></p>`;
-  const dado = a => `d${f[a]}` + (fuDado(c, a) !== f[a] ? ` → <u>d${fuDado(c, a)}</u>` : '');
-
-  const magias = fuMagiasDe(f);
-  const lugares = FU_LUGARES.map(l => {
-    const m = magias[l];
-    const custo = fuCusto(m, m.porAlvo ? (m.alvos || 1) : 1);
-    return `<p class="cb-f-magia"><b>${esc(_afMagiaNome(m))}</b>
-      <i>${esc(t('af.lugar.' + l))} · ${custo ? t('af.pm', { n: custo }) : t('af.gratis')}</i></p>`;
-  }).join('');
-
-  const afins = Object.keys(f.afinidades || {})
-    .filter(k => f.afinidades[k])
-    .map(k => `<span class="cb-f-af ${f.afinidades[k]}">${esc(t('af.tipo.' + k))} ${f.afinidades[k]}</span>`)
-    .join(' ');
-
+  if (!c || !el || typeof renderFichaFU !== 'function') return;
   el.innerHTML = `<div class="cb-ajuda-cx" onclick="event.stopPropagation()">
     <h3>${esc(_afNome(c))}</h3>
-    <p class="cb-f-sub">${esc(f.raridade)} · ${t('af.ronda', { n: f.nivel })}</p>
-    ${linha(t('af.f.dados'), `DES ${dado('DES')} · PER ${dado('PER')} · VIG ${dado('VIG')} · VON ${dado('VON')}`)}
-    ${linha(t('af.f.vida'),   `${c.pv} / ${f.pvMax}`)}
-    ${linha(t('af.f.magia'),  `${c.pm} / ${f.pmMax}`)}
-    ${linha(t('af.f.crise'),  f.crise)}
-    ${linha(t('af.f.defesa'), fuDefesa(c))}
-    ${linha(t('af.f.defmag'), fuDefesaMag(c))}
-    ${linha(t('af.f.tipo'),   esc(t('af.tipo.' + f.tipo)))}
-    ${linha(t('af.f.costura'), f.costura ? esc(t('af.tipo.' + f.costura)) : t('af.f.sem_costura'))}
-    ${linha(t('af.f.vantagem'), f.vantagens.map(v => esc(v.id)).join(' · '))}
-    <p class="cb-f-afs">${afins}</p>
-    <h4>${t('af.f.lugares')}</h4>
-    ${lugares}
+    ${renderFichaFU(null, c)}
   </div>`;
   el.classList.add('aberta');
   el.onclick = () => { el.classList.remove('aberta'); el.innerHTML = ''; };

@@ -65,30 +65,59 @@ function atualizarChamadaEscolha() {
 // números: nada aqui é calculado à mão, senão a tela prometia uma coisa
 // e a ficha entregava outra.
 function _escFicha(qual) {
-  if (typeof fichaDeAvatar !== 'function' || !avatar) return null;
-  try { return fichaDeAvatar({ ...avatar, nivel, escolhaAnciao: qual }); }
+  if (typeof fuFicha !== 'function' || !avatar) return null;
+  try { return fuFicha({ ...avatar, nivel, escolhaAnciao: qual }); }
   catch (_) { return null; }
 }
 
-/* Os pontos vêm à frente porque são a CAUSA: as outras linhas descem
-   porque esta desceu. Sem ela o cartão mostrava seis consequências e
-   nenhum motivo, e a queda parecia um castigo em vez de um preço. */
+/* ── O QUE PODE MUDAR COM A ESCOLHA ──
+
+   No motor antigo mudavam sete números, porque as duas opções mexiam na
+   bolsa de pontos que comprava as características: uma virtude nova
+   custava pontos e o defeito que saía levava consigo os que dava, e por
+   isso alguns números DESCIAM nos dois lados.
+
+   Aqui não há bolsa nenhuma. Os quatro dados saem do arranjo que o DNA
+   escolheu e não se compram — e por isso não mudam com a escolha, e não
+   estão nesta lista.
+
+   O que pode mudar é o que a SEGUNDA VANTAGEM trouxer consigo: dez de
+   vida (Carne Teimosa), dez de magia (Fonte Funda), dois de Defesa
+   (Guarda Cerrada). Nas outras nove não muda número nenhum — e nesse
+   caso o cartão di-lo, em vez de mostrar sete linhas iguais dos dois
+   lados. */
 const ESC_LINHAS = [
-  { k: 'pontos', rot: 'esc.pontos' },
-  { k: 'F',  rot: 'evo.f'  }, { k: 'H',  rot: 'evo.h'  },
-  { k: 'R',  rot: 'evo.r'  }, { k: 'A',  rot: 'evo.a'  },
-  { k: 'pv', rot: 'evo.pv' }, { k: 'pm', rot: 'evo.pm' },
+  { k: 'pvMax',      rot: 'af.f.vida'   },
+  { k: 'pmMax',      rot: 'af.f.magia'  },
+  { k: 'crise',      rot: 'af.f.crise'  },
+  { k: 'defesaBase', rot: 'af.f.defesa' },
+  { k: 'defMagBase', rot: 'af.f.defmag' },
 ];
 
 /* Só o que MUDA. As seis linhas sempre visíveis enchiam o cartão de
    valores iguais dos dois lados, e a diferença — que é o assunto todo —
    ficava a competir com quatro linhas que não diziam nada. */
+/* A Defesa da ficha é a BASE — o dado — e a Guarda Cerrada soma-se por
+   cima dela, no motor. Para o cartão não mentir, soma-se aqui o que os
+   dons acrescentam: quem lê "Defesa 8 → 8" com uma Guarda Cerrada em
+   cima acha que a vantagem não fez nada. */
+function _escValor(f, k) {
+  const v = f[k];
+  const d = f.dons || {};
+  if (k === 'defesaBase') return v + (d.defesaMais | 0);
+  if (k === 'defMagBase') return v + (d.defMagMais | 0);
+  return v;
+}
+
+/* Só o que MUDA. As linhas sempre visíveis enchiam o cartão de valores
+   iguais dos dois lados, e a diferença — que é o assunto todo — ficava a
+   competir com quatro linhas que não diziam nada. */
 function _escDiferencas(base, depois) {
   if (!base || !depois) return [];
   return ESC_LINHAS
-    .filter(l => depois[l.k] !== base[l.k])
-    .map(l => ({ nome: t(l.rot), de: base[l.k], para: depois[l.k],
-                 sobe: depois[l.k] > base[l.k] }));
+    .filter(l => _escValor(depois, l.k) !== _escValor(base, l.k))
+    .map(l => ({ nome: t(l.rot), de: _escValor(base, l.k), para: _escValor(depois, l.k),
+                 sobe: _escValor(depois, l.k) > _escValor(base, l.k) }));
 }
 
 // ── Um cartão ───────────────────────────────────────────────────────
@@ -96,11 +125,14 @@ function _escCartao(qual, base) {
   const f = _escFicha(qual);
   if (!f) return '';
 
-  /* A carta de que a opção fala: a virtude oferecida, ou o defeito que
-     sai. Vêm da ficha SEM escolha feita — é ela que sabe o que está em
-     jogo antes de haver escolha nenhuma. */
-  const carta = (qual === 'vantagem') ? base.vantagemOferta : base.desvantagem;
-  if (!carta) return '';
+  /* De que é que cada opção fala. Vêm da ficha SEM escolha feita — é ela
+     que sabe o que está em jogo antes de haver escolha nenhuma:
+
+       vantagem     a segunda virtude que ele ganharia
+       semDefeito   a costura que se fecharia */
+  const segunda = base.segundaPossivel;
+  const costura = base.costura;
+  if (qual === 'vantagem' ? !segunda : !costura) return '';
 
   const dif = _escDiferencas(base, f);
   const linhas = dif.length
@@ -112,14 +144,21 @@ function _escCartao(qual, base) {
        </div>`).join('')
     : `<div class="esc-dif-nada">${t('esc.sem_mudanca')}</div>`;
 
-  /* O preço, dito na direção certa. Escrevi primeiro "devolve 1" para o
-     defeito que sai, e lia-se ao contrário do que acontece: quem devolve
-     é o AVATAR, que abre mão dos pontos que o defeito lhe dava. Um
-     jogador a ler "devolve" entende que recebe. As duas opções tiram, e
-     por isso as duas se dizem a tirar. */
-  const preco = (qual === 'vantagem')
-    ? t('esc.preco.paga',   { n: Math.abs(carta.custo) })
-    : t('esc.preco.abre_mao', { n: Math.abs(carta.custo) });
+  /* O PREÇO DE CADA UMA É A OUTRA.
+
+     Não há pontos para pagar nada. O que se paga por ficar com a segunda
+     virtude é ficar com a costura; o que se paga por fechar a costura é
+     não ter a segunda virtude. As duas tiram, e por isso as duas se
+     dizem a tirar — ler "custa 2" onde nada custa 2 era o que a tela
+     dizia antes de o motor mudar. */
+  const preco = t('esc.preco.' + qual);
+
+  const nome = (qual === 'vantagem')
+    ? fuVantagemNome(segunda)
+    : t('esc.costura.nome', { tipo: t('af.tipo.' + costura) });
+  const desc = (qual === 'vantagem')
+    ? fuVantagemDesc(segunda)
+    : t('esc.costura.desc', { tipo: t('af.tipo.' + costura) });
 
   return `<div class="esc-cartao ${qual === 'vantagem' ? 'ganha' : 'perde'}">
     <div class="esc-cab">
@@ -127,8 +166,8 @@ function _escCartao(qual, base) {
       <span class="esc-cab-preco">${preco}</span>
     </div>
     <div class="esc-carta">
-      <div class="esc-carta-nome">${vdNome(carta)}</div>
-      <div class="esc-carta-desc">${vdDesc(carta)}</div>
+      <div class="esc-carta-nome">${esc(nome)}</div>
+      <div class="esc-carta-desc">${esc(desc)}</div>
     </div>
     <div class="esc-difs">${linhas}</div>
     <button type="button" class="esc-btn" onclick="confirmarEscolha('${qual}')">
@@ -144,7 +183,7 @@ function abrirEscolha() {
   if (!ov) return;
 
   const base = _escFicha(null);
-  if (!base || !base.vantagemOferta || !base.desvantagem) return;
+  if (!base || !base.segundaPossivel || !base.costura) return;
 
   if (typeof ModalManager !== 'undefined' && ModalManager.closeAll) ModalManager.closeAll();
 
@@ -203,13 +242,14 @@ window.registerStrings(
     'esc.intro':       'Ele chegou ao fim do caminho. Daqui em diante é uma coisa só, e é para sempre.',
     'esc.vantagem.titulo':   'MAIS UMA VIRTUDE',
     'esc.semDefeito.titulo': 'SEM O DEFEITO',
-    'esc.pontos':         'Pontos',
-    'esc.preco.paga':     'custa {n}',
-    'esc.preco.abre_mao': 'abre mão de {n}',
+    'esc.preco.vantagem':   'fica com a costura',
+    'esc.preco.semDefeito': 'abre mão da segunda virtude',
+    'esc.costura.nome':     'A costura de {tipo} fecha-se',
+    'esc.costura.desc':     'Deixa de levar o dobro do dano de {tipo}. O Véu fechou por onde ele entrou, e ninguém mais lhe encontra ali uma brecha.',
     'esc.escolher':    'ESCOLHER',
     'esc.depois':      'DECIDIR DEPOIS',
     'esc.sem_mudanca': 'nada muda nos números',
-    'esc.nota':        'As duas se pagam: uma virtude nova custa pontos, e o defeito que sai leva com ele os pontos que dava. Por isso alguns números descem nos dois lados — o que muda é aquilo em que ele se torna. Só se escolhe uma vez.',
+    'esc.nota':        'As duas se pagam uma à outra: ficar com a segunda virtude é ficar com a costura, e fechar a costura é abrir mão da virtude. Os dados não mudam com isto — o que muda é aquilo em que ele se torna. Só se escolhe uma vez.',
     'esc.log.vantagem':   '{nome} despertou uma segunda virtude.',
     'esc.log.semDefeito': '{nome} deixou para trás o defeito com que nasceu.',
     'esc.bub.vantagem':   'Sinto uma força nova acordar.',
@@ -221,13 +261,14 @@ window.registerStrings(
     'esc.intro':       'It has reached the end of the road. From here on it is one thing only, and it is forever.',
     'esc.vantagem.titulo':   'ONE MORE VIRTUE',
     'esc.semDefeito.titulo': 'NO MORE FLAW',
-    'esc.pontos':         'Points',
-    'esc.preco.paga':     'costs {n}',
-    'esc.preco.abre_mao': 'gives up {n}',
+    'esc.preco.vantagem':   'keeps the seam',
+    'esc.preco.semDefeito': 'gives up the second virtue',
+    'esc.costura.nome':     'The {tipo} seam closes',
+    'esc.costura.desc':     'It no longer takes double damage from {tipo}. The Veil sealed where it came through, and nobody finds a gap there again.',
     'esc.escolher':    'CHOOSE',
     'esc.depois':      'DECIDE LATER',
     'esc.sem_mudanca': 'the numbers stay the same',
-    'esc.nota':        'Both are paid for: a new virtue costs points, and the flaw takes with it the points it granted. That is why some numbers fall on both sides — what changes is what it becomes. You only choose once.',
+    'esc.nota':        'Each pays for the other: keeping the second virtue means keeping the seam, and closing the seam means giving up the virtue. The dice do not change — what changes is what it becomes. You only choose once.',
     'esc.log.vantagem':   '{nome} awakened a second virtue.',
     'esc.log.semDefeito': '{nome} left behind the flaw it was born with.',
     'esc.bub.vantagem':   'I feel a new strength waking.',
