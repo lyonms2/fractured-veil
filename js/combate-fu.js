@@ -124,6 +124,11 @@ function fuLutador(slot, lado, posto) {
        para o estado continuar a caber num JSON. */
     efeitos: {},
     guardando: false,
+    /* No chão só enquanto durar a ronda; o suspiro dá-se uma vez só. Os
+       dois vivem aqui e não num saco à parte porque são estado de
+       batalha e não ficha — quem os lê é o motor e mais ninguém. */
+    derrubado: false,
+    suspirou: false,
     vivo: true,
   };
 }
@@ -152,11 +157,31 @@ function fuDado(c, atrib) {
    Destreza ganha muito, quem já tem d12 não perde nada — o manual
    escreve-as assim de propósito, e é isso que as torna magias de quem
    precisa em vez de magias de quem já está bem. */
+/* E a Guarda Cerrada soma-se DEPOIS do piso, porque é um bónus e não um
+   piso: o manual diz que os efeitos dela acumulam com tudo o resto.
+   Quem tem a Barreira (piso 12) e a Guarda Cerrada (+2) fica em 14. */
 function fuDefesa(c) {
-  return Math.max(fuDado(c, 'DES'), (c.efeitos && c.efeitos.defesaMinima) | 0);
+  return Math.max(fuDado(c, 'DES'), (c.efeitos && c.efeitos.defesaMinima) | 0)
+       + (fuDonsDe(c).defesaMais | 0);
 }
 function fuDefesaMag(c) {
-  return Math.max(fuDado(c, 'PER'), (c.efeitos && c.efeitos.defMagMinima) | 0);
+  return Math.max(fuDado(c, 'PER'), (c.efeitos && c.efeitos.defMagMinima) | 0)
+       + (fuDonsDe(c).defMagMais | 0);
+}
+
+/* ── OS DONS DE QUEM LUTA ──
+
+   Uma porta só, e nunca `c.ficha.dons` escrito à mão pelo caminho. A
+   ficha de um lutador feito à mão numa auditoria pode não os ter, e um
+   `undefined.voo` rebenta a meio de uma batalha — que é o pior sítio
+   para descobrir uma coisa destas. */
+const FU_SEM_DONS = { defesaMais: 0, defMagMais: 0, pvMais: 0, pmMais: 0,
+                      precisaoMais: 0, magiaMais: 0, danoMaisGolpe: 0,
+                      pmAoSofrer: 0, actoFinal: 0,
+                      voo: false, criseIgnoraRS: false, dreno: false,
+                      golpeNaDefMag: false, imunes: [] };
+function fuDonsDe(c) {
+  return (c && c.ficha && c.ficha.dons) || FU_SEM_DONS;
 }
 
 /* Em crise quando a vida está em metade ou menos. É o gatilho de meia
@@ -223,6 +248,18 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
   const antes = c.pv;
   c.pv = Math.max(0, c.pv - perda);
 
+  /* A Veia Ávida bebe do golpe que apanha. Só de um golpe que DOA — um
+     ataque aparado pela imunidade não lhe dá nada, senão a vantagem
+     premiava o avatar por ser invulnerável, que é o contrário do que a
+     habilidade do manual faz. */
+  const ganho = fuDonsDe(c).pmAoSofrer | 0;
+  let pmGanho = 0;
+  if (ganho && perda > 0) {
+    const pmAntes = c.pm;
+    c.pm = Math.min(c.ficha.pmMax, c.pm + ganho);
+    pmGanho = c.pm - pmAntes;
+  }
+
   /* ── A MISERICÓRDIA ──
      Salva uma vez e desfaz-se. Fica a UM ponto de vida, e não a zero —
      e o efeito acaba aí, portanto o golpe seguinte leva-o na mesma.
@@ -235,7 +272,7 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
 
   const caiu = antes > 0 && c.pv === 0;
   if (caiu) { c.vivo = false; c.guardando = false; }
-  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu, salvou };
+  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu, salvou, pmGanho };
 }
 
 /* ── GUARDAR ──
@@ -255,6 +292,9 @@ function fuDanoComGuarda(c, bruto, tipo, opcoes) {
    lento, e quem contava com isso desperdiçou o turno. */
 function fuDarEstado(c, estado) {
   if (!FU_ESTADOS[estado] || !c.vivo || c.estados[estado]) return false;
+  // A Pele Calada. Devolve falso como se ele já o tivesse: quem contava
+  // com o estado desperdiçou o turno na mesma, e é isso que se quer.
+  if (fuDonsDe(c).imunes.indexOf(estado) !== -1) return false;
   c.estados[estado] = true;
   return true;
 }
@@ -275,13 +315,50 @@ function fuTirarEstado(c, estado) {
    metade o defensor era invencível e o suporte não corria risco nenhum
    — a formação deixava de ser uma decisão e passava a ser um escudo.
    ═══════════════════════════════════════════════════════════════════ */
+/* No ar enquanto tiver o Voo Baixo, não estiver em crise e não tiver
+   sido derrubado nesta ronda. São as três condições do manual, por esta
+   ordem. */
+function fuNoAr(c) {
+  return !!fuDonsDe(c).voo && c.vivo && !c.derrubado && !fuEmCrise(c);
+}
+
 function fuAlvosPossiveis(equipa, corpoACorpo) {
   const vivos = equipa.filter(c => c.vivo);
   if (!vivos.length) return [];
   if (!corpoACorpo) return vivos;
-  // o mais à frente é o de posto mais baixo que ainda está de pé
-  const frente = vivos.reduce((m, c) => (c.posto < m.posto ? c : m), vivos[0]);
+
+  /* Quem voa não se alcança com a mão — mas se for o ÚNICO que resta no
+     ar e não houver mais ninguém no chão, alcança-se na mesma.
+
+     Não é uma excepção de conveniência, é a regra a fechar-se: para
+     atacar, ele tem de descer. Enquanto houver companheiros no chão
+     ninguém o vê descer, porque são eles que estão à frente; quando não
+     houver, a única forma de a luta continuar é ele próprio vir ao
+     alcance — e aí apanha.
+
+     Sem esta metade, três inimigos a voar e um atacante sem PM davam
+     uma batalha que não acabava nunca. */
+  const noChao = vivos.filter(c => !fuNoAr(c));
+  const podem = noChao.length ? noChao : vivos;
+  const frente = podem.reduce((m, c) => (c.posto < m.posto ? c : m), podem[0]);
   return [frente];
+}
+
+/* ── O ÚLTIMO SUSPIRO ──
+   Dispara depois de o dono estar no chão, e é a única coisa no motor que
+   age com o dono já fora da luta. */
+function fuActoFinal(estado, caido, eventos) {
+  const quanto = fuDonsDe(caido).actoFinal | 0;
+  if (!quanto) return;
+  const inimiga = caido.lado === 'A' ? estado.B : estado.A;
+  const tipo = caido.ficha.tipo;
+  for (const alvo of inimiga.filter(c => c.vivo)) {
+    const d = fuAplicarDano(alvo, quanto, tipo);
+    eventos.push({ tipo: 'actoFinal', quem: caido.id, alvo: alvo.id,
+                   bruto: quanto, tipo_dano: tipo, afinidade: d.afinidade,
+                   perda: d.perda, curou: d.curou, pvAlvo: d.pv,
+                   caiu: d.caiu, salvou: d.salvou });
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -303,10 +380,18 @@ function fuAtacar(estado, quem, alvo, opcoes) {
   const o = opcoes || {};
   const a1 = o.atrib1 || 'DES', a2 = o.atrib2 || 'VIG';
   const mag = !!o.magico;
+  const dq = fuDonsDe(quem);
 
+  /* A Mira Treinada soma-se à precisão, e só do lado em que se treinou:
+     +3 a bater OU +3 a lançar, nunca os dois. Quem escolheu qual foi o
+     DNA, no js/vantagens-fu.js. */
   const r = fuRolagem(estado.rng, fuDado(quem, a1), fuDado(quem, a2),
-                      (quem.ficha.bonusPrecisao | 0) + (o.bonus | 0));
-  const dl = mag ? fuDefesaMag(alvo) : fuDefesa(alvo);
+                      (quem.ficha.bonusPrecisao | 0) + (o.bonus | 0)
+                      + ((mag ? dq.magiaMais : dq.precisaoMais) | 0));
+  /* O Golpe Certeiro mira a Defesa Mágica com o murro. Só com o murro —
+     uma magia já mira lá, e somar as duas coisas não queria dizer nada. */
+  const naMente = mag || !!dq.golpeNaDefMag;
+  const dl = naMente ? fuDefesaMag(alvo) : fuDefesa(alvo);
   const acertou = r.critico || (!r.pifao && r.resultado >= dl);
 
   const ev = {
@@ -315,19 +400,50 @@ function fuAtacar(estado, quem, alvo, opcoes) {
     nome: o.nome || null,
     dados: r.dados, hr: r.hr, resultado: r.resultado, modificador: r.modificador,
     dl, acertou, critico: r.critico, pifao: r.pifao,
-    atribs: [a1, a2],
+    atribs: [a1, a2], naMente,
   };
   if (!acertou) return ev;
 
-  const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0);
-  const dano = fuDanoComGuarda(alvo, bruto, o.tipo || quem.ficha.tipo,
-                               { ignoraResistencias: !!o.ignoraResistencias });
+  /* O Golpe Pesado engorda o MURRO e não as magias: o manual manda
+     escolher uma fonte de dano, e a escolhida é a que não custa PM. */
+  const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0)
+              + (mag ? 0 : (dq.danoMaisGolpe | 0));
+  /* A Fúria da Crise: com a vida em metade ou menos, o dano dele passa a
+     ignorar resistências — as dele, não as do alvo, e é do ATACANTE que
+     a crise se lê. */
+  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem));
+  const tipoDano = o.tipo || quem.ficha.tipo;
+  const dano = fuDanoComGuarda(alvo, bruto, tipoDano,
+                               { ignoraResistencias: semRS });
   Object.assign(ev, {
     bruto, tipo_dano: o.tipo || quem.ficha.tipo,
     afinidade: dano.afinidade, perda: dano.perda, curou: dano.curou,
     pvAlvo: dano.pv, caiu: dano.caiu, salvou: dano.salvou,
-    ignorouResistencias: !!o.ignoraResistencias,
+    pmAlvo: dano.pmGanho || 0,
+    ignorouResistencias: semRS,
   });
+
+  /* ── O QUE O GOLPE DEIXA ATRÁS ──
+
+     Por esta ordem, e a ordem importa: primeiro o que o alvo sofre,
+     depois o que o atacante ganha, e só no fim quem caiu.
+
+     A Sede Funda bebe METADE do que tirou, e do que tirou MESMO — um
+     golpe absorvido pelo inimigo não alimenta ninguém. */
+  if (!mag && dq.dreno && dano.perda > 0) {
+    const pvAntes = quem.pv;
+    quem.pv = Math.min(quem.ficha.pvMax, quem.pv + Math.floor(dano.perda / 2));
+    ev.drenou = quem.pv - pvAntes;
+    ev.pvQuem = quem.pv;
+  }
+
+  /* O Voo Baixo cai quando apanha do tipo a que é vulnerável — que neste
+     jogo é a costura dele, e mais nada. Fica no chão até ao fim da
+     ronda, que é quando o fuNovaRonda o levanta. */
+  if (fuDonsDe(alvo).voo && dano.perda > 0 && tipoDano === alvo.ficha.costura) {
+    alvo.derrubado = true;
+    ev.derrubou = true;
+  }
 
   /* O estado que a magia impõe. No crítico o manual deixa gastar uma
      OPORTUNIDADE, e a oportunidade destas magias é sempre a mesma: o
@@ -337,6 +453,34 @@ function fuAtacar(estado, quem, alvo, opcoes) {
   if (est && fuDarEstado(alvo, est)) ev.estadoDado = est;
 
   return ev;
+}
+
+/* O acto final de quem caiu, com o evento do golpe já na mão. Vive numa
+   função porque há DOIS sítios onde alguém pode cair — o golpe e a
+   Devastação — e dois sítios a fazer a mesma coisa à mão acabam por
+   fazê-la de duas maneiras.
+
+   ── A CADEIA ──
+
+   Um suspiro pode derrubar quem também o tem, e esse suspira também. O
+   manual diz "ao ser reduzido a 0 PV" e não abre excepção para a causa,
+   portanto a cadeia é a regra a ser coerente consigo mesma.
+
+   Por VOLTAS e não numa passagem só, e é aí que está o cuidado. Uma
+   passagem única sobre uma lista fixa disparava o suspiro de quem viesse
+   DEPOIS do morto nessa lista e saltava o de quem viesse antes: a cadeia
+   ficava a depender da ordem dos postos, e o mesmo cenário espelhado dava
+   contas diferentes conforme o lado. Isso é pior do que não haver cadeia
+   nenhuma — uma regra que ninguém consegue prever.
+
+   Acaba sempre: cada um suspira uma vez (`suspirou`), são seis no máximo,
+   e uma volta sem quedas novas fecha o ciclo. */
+function fuColherQuedas(estado, eventos) {
+  for (let volta = 0; volta < 12; volta++) {
+    const caidos = estado.A.concat(estado.B).filter(c => !c.vivo && !c.suspirou);
+    if (!caidos.length) return;
+    for (const c of caidos) { c.suspirou = true; fuActoFinal(estado, c, eventos); }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -475,6 +619,10 @@ function fuAgir(estado, acao) {
   }
 
   estado.jaAgiu.push(quem.id);
+  /* Os suspiros ANTES de se ver o fim: quem cai a levar os últimos dois
+     inimigos consigo ganha a batalha, e ver o fim primeiro dava-a ao
+     outro lado. */
+  fuColherQuedas(estado, eventos);
   fuVerFim(estado, eventos);
   return eventos;
 }
@@ -554,7 +702,9 @@ function fuVez(estado) {
 function fuNovaRonda(estado) {
   estado.jaAgiu = [];
   estado.ronda++;
-  for (const c of estado.A.concat(estado.B)) c.guardando = false;
+  /* E levanta quem foi derrubado do ar: o manual diz que ele volta a
+     voar automaticamente no fim da ronda. */
+  for (const c of estado.A.concat(estado.B)) { c.guardando = false; c.derrubado = false; }
   return { tipo: 'ronda', n: estado.ronda };
 }
 
@@ -597,6 +747,18 @@ function fuIniciar(equipaA, equipaB, semente) {
    Pela mesma razão da ficha: no dia do PvP é aqui que o servidor
    confere uma luta que o cliente diz ter ganho, e duas cópias do motor
    acabariam por discordar. */
+/* O js/vantagens-fu.js tem de escrever os seis estados outra vez, porque
+   carrega antes deste arquivo e a Pele Calada precisa deles. Escrever
+   uma lista duas vezes é o começo de as duas divergirem — a não ser que
+   alguém confira. Confere-se aqui, ao carregar. */
+if (typeof FU_ESTADOS_QUE_PEGAM !== 'undefined') {
+  const meus = FU_ESTADOS_LISTA.slice().sort().join(',');
+  const deles = FU_ESTADOS_QUE_PEGAM.slice().sort().join(',');
+  if (meus !== deles)
+    throw new Error('combate-fu.js: os estados não batem certo com o '
+                  + 'js/vantagens-fu.js.\n  motor: ' + meus + '\n  vantagens: ' + deles);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_ESTADOS, FU_ESTADOS_LISTA,
@@ -604,5 +766,6 @@ if (typeof module !== 'undefined' && module.exports) {
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
     fuAfinidadeDe, fuPorDePe, fuCurar,
+    fuDonsDe, fuNoAr, fuActoFinal, fuColherQuedas,
   };
 }

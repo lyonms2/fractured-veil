@@ -185,7 +185,11 @@ titulo('Cada forma faz o que diz');
     verificar('a Barreira põe a Defesa em 12', M.fuDefesa(amigo) === 12);
     const forte = e.A[2];
     forte.ficha.DES = 12; forte.efeitos.defesaMinima = 12;
-    verificar('e quem já tem d12 não perde nada', M.fuDefesa(forte) === 12);
+    /* O piso não lhe tira nada — mas a Guarda Cerrada soma-se por cima,
+       e este avatar pode tê-la. A conta é "o piso não mordeu", e não
+       "a Defesa é doze". */
+    verificar('e quem já tem d12 não perde nada',
+      M.fuDefesa(forte) === 12 + (forte.ficha.dons.defesaMais | 0));
   }
 
   // ── a Misericórdia: salva uma vez ──
@@ -278,6 +282,11 @@ titulo('Cada forma faz o que diz');
       const b = luta(15, s * 7);
       const at = b.A[0], al = b.B[0];
       const m = G.fuMagiaDe(Object.assign({}, at.ficha, { raridade: 'Lendário' }), 'forte');
+      /* A Pele Calada recusa dois estados, e recusa em silêncio — de
+         propósito, para quem contava com o estado perder o turno na
+         mesma. Portanto a promessa do degrau 3 é "todo o acerto dá o
+         estado A QUEM O POSSA APANHAR", e é essa que se confere. */
+      if (M.fuDonsDe(al).imunes.indexOf(m.estado) !== -1) continue;
       const ev = M.fuAtacar(b, at, al, { magico: true, fixo: m.fixo, tipo: m.tipo,
         estado: m.estado, estadoSempre: true, atrib1: 'PER', atrib2: 'VON' });
       if (ev.acertou) { acertos++; if (ev.estadoDado) deu++; }

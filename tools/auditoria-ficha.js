@@ -63,11 +63,15 @@ titulo('As seis contas do manual');
     for (let s = 1; s <= 40; s++) {
       const a = avatar(s * 7919, nivel);
       const f = F.fuFicha(a);
-      verificar(`PV = nível×2 + VIG×5 (nv ${nivel}, seed ${a.seed})`,
-        f.pvMax === nivel * 2 + f.VIG * 5,
-        `deu ${f.pvMax}, esperava ${nivel * 2 + f.VIG * 5}`);
-      verificar(`PM = nível + VON×5 (nv ${nivel})`,
-        f.pmMax === nivel + f.VON * 5);
+      /* A Carne Teimosa e a Fonte Funda entram na conta, e têm de entrar
+         aqui também: a fórmula do manual mais o que a vantagem acrescenta.
+         Somar `dons` à espera nao é fazer a conta bater à força — é dizer
+         onde é que os dez pontos podem entrar, que é num sítio só. */
+      verificar(`PV = nível×2 + VIG×5 + dom (nv ${nivel}, seed ${a.seed})`,
+        f.pvMax === nivel * 2 + f.VIG * 5 + f.dons.pvMais,
+        `deu ${f.pvMax}, esperava ${nivel * 2 + f.VIG * 5 + f.dons.pvMais}`);
+      verificar(`PM = nível + VON×5 + dom (nv ${nivel})`,
+        f.pmMax === nivel + f.VON * 5 + f.dons.pmMais);
       verificar('Crise = metade dos PV',
         f.crise === Math.floor(f.pvMax / 2));
       verificar('Defesa base = dado de DES',

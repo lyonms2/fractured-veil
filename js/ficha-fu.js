@@ -380,6 +380,20 @@ function fuFicha(slot) {
   const fechou  = raridade === 'Lendário' && slot.escolhaAnciao === 'semDefeito';
   const costura = fechou ? null : fuCosturaDoDna(dna, seed);
 
+  /* ── A VANTAGEM ──
+
+     Uma, e só duas para o Lendário que trocar a costura por ela.
+
+     Rebenta alto se o catálogo não estiver carregado, e não devolve uma
+     ficha sem vantagem nenhuma. É a lição do `semDna`, a segunda vez:
+     uma ficha incompleta que passa por completa vale-se no mercado por
+     um preço que ninguém sabe estar errado. Uma página que se esqueça do
+     <script> descobre-o no primeiro segundo. */
+  if (typeof fuVantagensDoDna !== 'function')
+    throw new Error('ficha-fu.js: falta o js/vantagens-fu.js.');
+  const vant = fuVantagensDoDna(dna, seed, base, raridade, slot.escolhaAnciao || null);
+  const dons = fuDons(vant.vantagens);
+
   /* ── AS SEIS CONTAS ──
 
      São as do NPC e não as do jogador, e é uma decisão: os nossos
@@ -390,8 +404,8 @@ function fuFicha(slot) {
 
      A do NPC é a mais generosa das duas (nível × 2 em vez de nível), e
      é a certa para um jogo onde o combate é o que se faz. */
-  const pvMax = nivel * 2 + base.VIG * 5;
-  const pmMax = nivel     + base.VON * 5;
+  const pvMax = nivel * 2 + base.VIG * 5 + dons.pvMais;
+  const pmMax = nivel     + base.VON * 5 + dons.pmMais;
 
   return {
     // de onde veio
@@ -425,6 +439,14 @@ function fuFicha(slot) {
     tipo,
     costura,
     afinidades: fuAfinidades(tipo, costura, raridade),
+
+    /* A lista, para quem a mostra; o saco, para quem a usa. Ver o
+       comentário dos dons no js/vantagens-fu.js. */
+    vantagens: vant.vantagens,
+    dons,
+    /* A que o Lendário ganharia se não fechasse a costura. Sai sempre,
+       mesmo para um Comum — a tela da escolha é que decide se a mostra. */
+    segundaPossivel: vant.segundaPossivel,
 
     /* O bónus de precisão do manual: nível a dividir por dez. Ao nível
        5 é zero, e é suposto ser — um avatar novo não acerta melhor por

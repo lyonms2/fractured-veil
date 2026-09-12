@@ -50,6 +50,14 @@ const fichaFU     = require('../js/ficha-fu.js');
 /* E o motor, pela mesma razão: no dia do PvP é aqui que o servidor
    confere uma luta que o cliente diz ter ganho. Ele repete-se a partir
    do seed, portanto conferir é voltar a jogá-la. */
+/* AS VANTAGENS ANTES DO MOTOR, e a ordem não é estética: o motor confere
+   ao carregar que a lista dos seis estados bate certo com a que as
+   vantagens têm de escrever outra vez. Requerido depois, a conferência
+   não encontrava a lista e passava ao lado em silêncio — uma guarda que
+   não corre é pior do que guarda nenhuma, porque dá sossego. */
+const vantagensFU = require('../js/vantagens-fu.js');
+Object.assign(global, vantagensFU);
+
 const motorFU     = require('../js/combate-fu.js');
 /* E o catalogo das magias, porque o motor sozinho nao sabe quanto custa
    uma Barragem nem o que ela faz: o numero esta aqui, e e este numero
@@ -62,7 +70,7 @@ const magiasFU    = require('../js/magias-fu.js');
 const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
 const faseFromNivel = n => faseDePontos(fichaDT.pontosDoAvatar('Comum', n || 1));
 
-Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU, motorFU, magiasFU,
+Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU, vantagensFU, motorFU, magiasFU,
               { faseDePontos, faseFromNivel });
 
 /* Um seed que o jogador não escolhe.
