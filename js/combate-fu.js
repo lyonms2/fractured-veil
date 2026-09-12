@@ -115,6 +115,14 @@ function fuLutador(slot, lado, posto) {
     ficha: f,
     pv: f.pvMax, pm: f.pmMax,
     estados: {},
+    /* ── O QUE DURA A CENA ──
+       As magias de defesa e de suporte não gastam o turno e vão-se
+       embora: põem qualquer coisa de pé que dura até a luta acabar. O
+       saco vive aqui, ao lado dos estados, e é lido pelo fuDado, pela
+       Defesa e pelo dano.
+       Nunca é uma função nem uma referência: só números e verdades,
+       para o estado continuar a caber num JSON. */
+    efeitos: {},
     guardando: false,
     vivo: true,
   };
@@ -130,14 +138,26 @@ function fuLutador(slot, lado, posto) {
    que o manual quer é o dado actual, e o actual só se sabe aqui. */
 function fuDado(c, atrib) {
   let d = c.ficha[atrib];
+  /* O Despertar sobe um tamanho e dura a cena. Entra ANTES dos estados
+     porque o manual conta os dois a partir do dado base — e porque um
+     avatar despertado e envenenado deve ficar onde começou, não abaixo. */
+  if (c.efeitos && c.efeitos.subirDado === atrib) d = fuSubirDado(d);
   for (const e of FU_ESTADOS_LISTA) {
     if (c.estados[e] && FU_ESTADOS[e].morde.indexOf(atrib) !== -1) d = fuDescerDado(d);
   }
   return d;
 }
 
-function fuDefesa(c)    { return fuDado(c, 'DES'); }
-function fuDefesaMag(c) { return fuDado(c, 'PER'); }
+/* A Barreira e a Aura não dão bónus: põem um PISO. Quem tem d6 de
+   Destreza ganha muito, quem já tem d12 não perde nada — o manual
+   escreve-as assim de propósito, e é isso que as torna magias de quem
+   precisa em vez de magias de quem já está bem. */
+function fuDefesa(c) {
+  return Math.max(fuDado(c, 'DES'), (c.efeitos && c.efeitos.defesaMinima) | 0);
+}
+function fuDefesaMag(c) {
+  return Math.max(fuDado(c, 'PER'), (c.efeitos && c.efeitos.defMagMinima) | 0);
+}
 
 /* Em crise quando a vida está em metade ou menos. É o gatilho de meia
    dúzia de efeitos e é o número que a arena pinta de vermelho. */
@@ -158,12 +178,40 @@ function fuEmCrise(c) { return c.vivo && c.pv <= c.ficha.crise; }
    de a mostrar de outra cor: um número vermelho a curar o inimigo é a
    pior leitura possível.
    ═══════════════════════════════════════════════════════════════════ */
-function fuAplicarDano(c, bruto, tipo) {
-  const af = c.ficha.afinidades[tipo] || null;
+/* ── A AFINIDADE DE AGORA ──
+
+   A ficha diz a de nascença; a cena pode acrescentar-lhe. A Concha dá
+   resistência ao físico, e um dia uma magia dará imunidade a outra
+   coisa qualquer.
+
+   Juntam-se pela MESMA regra do manual que a ficha usa, e não por
+   sobreposição: a absorção ganha a tudo, a imunidade vem a seguir, e
+   resistência com vulnerabilidade anulam-se. Foi por escrever isto como
+   última-a-escrever-ganha que a ficha esteve errada em 14% dos Raros —
+   o erro não se repete aqui. */
+function fuAfinidadeDe(c, tipo) {
+  const daFicha = (c.ficha.afinidades && c.ficha.afinidades[tipo]) || null;
+  const ef = c.efeitos || {};
+  const extraRS = (tipo === 'fisico' && ef.resisteFisico) || (ef.resiste === tipo);
+
+  if (daFicha === 'AB') return 'AB';
+  if (daFicha === 'IM') return 'IM';
+  if (daFicha === 'VU') return extraRS ? null : 'VU';
+  if (daFicha === 'RS' || extraRS) return 'RS';
+  return null;
+}
+
+function fuAplicarDano(c, bruto, tipo, opcoes) {
+  const o = opcoes || {};
+  const af = fuAfinidadeDe(c, tipo);
   let perda = Math.max(0, bruto | 0);
 
+  /* "Ignora resistências" e mais nada. O manual (p. 188) diz RESISTÊNCIAS
+     — a imunidade e a absorção continuam a valer, e é isso que impede o
+     golpe concentrado de ser a resposta a tudo: contra um Lendário do
+     seu próprio tipo, continua a curá-lo. */
   if      (af === 'IM') perda = 0;
-  else if (af === 'RS') perda = Math.floor(perda / 2);
+  else if (af === 'RS') perda = o.ignoraResistencias ? perda : Math.floor(perda / 2);
   else if (af === 'VU') perda = perda * 2;
 
   if (af === 'AB') {
@@ -174,9 +222,20 @@ function fuAplicarDano(c, bruto, tipo) {
 
   const antes = c.pv;
   c.pv = Math.max(0, c.pv - perda);
+
+  /* ── A MISERICÓRDIA ──
+     Salva uma vez e desfaz-se. Fica a UM ponto de vida, e não a zero —
+     e o efeito acaba aí, portanto o golpe seguinte leva-o na mesma.
+     É a única coisa no motor que impede uma queda. */
+  let salvou = false;
+  if (c.pv === 0 && antes > 0 && c.efeitos && c.efeitos.misericordia) {
+    c.pv = 1; salvou = true;
+    delete c.efeitos.misericordia;
+  }
+
   const caiu = antes > 0 && c.pv === 0;
   if (caiu) { c.vivo = false; c.guardando = false; }
-  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu };
+  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu, salvou };
 }
 
 /* ── GUARDAR ──
@@ -184,10 +243,10 @@ function fuAplicarDano(c, bruto, tipo) {
    linha: quem guarda apanha metade de tudo, mesmo do que absorveria.
    A absorção continua a ganhar, porque o manual diz que ela ganha a
    tudo — guardar não impede um bicho de fogo de se alimentar de fogo. */
-function fuDanoComGuarda(c, bruto, tipo) {
-  const b = c.guardando && (c.ficha.afinidades[tipo] !== 'AB')
+function fuDanoComGuarda(c, bruto, tipo, opcoes) {
+  const b = c.guardando && (fuAfinidadeDe(c, tipo) !== 'AB')
     ? Math.floor(bruto / 2) : bruto;
-  return fuAplicarDano(c, b, tipo);
+  return fuAplicarDano(c, b, tipo, opcoes);
 }
 
 /* ── OS ESTADOS ──
@@ -261,11 +320,13 @@ function fuAtacar(estado, quem, alvo, opcoes) {
   if (!acertou) return ev;
 
   const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0);
-  const dano = fuDanoComGuarda(alvo, bruto, o.tipo || quem.ficha.tipo);
+  const dano = fuDanoComGuarda(alvo, bruto, o.tipo || quem.ficha.tipo,
+                               { ignoraResistencias: !!o.ignoraResistencias });
   Object.assign(ev, {
     bruto, tipo_dano: o.tipo || quem.ficha.tipo,
     afinidade: dano.afinidade, perda: dano.perda, curou: dano.curou,
-    pvAlvo: dano.pv, caiu: dano.caiu,
+    pvAlvo: dano.pv, caiu: dano.caiu, salvou: dano.salvou,
+    ignorouResistencias: !!o.ignoraResistencias,
   });
 
   /* O estado que a magia impõe. No crítico o manual deixa gastar uma
@@ -314,27 +375,75 @@ function fuAgir(estado, acao) {
     }
 
   } else {
+    /* ── AS CINCO FORMAS DE UMA MAGIA ──
+
+       Sem magia é o golpe comum: corpo-a-corpo, um alvo, e o defensor
+       do outro lado cobre os companheiros.
+
+       Com magia há quatro caminhos, e a ordem em que se testam importa
+       — o primeiro que couber é o que vale:
+
+         propria    não aponta a ninguém: põe-se de pé em si mesmo
+         aliada     aponta para dentro (curar, escudar, despertar)
+         todos      não pergunta nem rola: cai em tudo o que está de pé
+         inimiga    o caso normal — rola contra a Defesa de quem apanha
+    */
     const magia = acao.magia || null;
     const inimiga = quem.lado === 'A' ? estado.B : estado.A;
     const aliada  = quem.lado === 'A' ? estado.A : estado.B;
 
-    if (magia && magia.cura) {
-      // curar é o único caso que aponta para dentro
-      const alvos = (acao.alvos || []).map(id => fuPorId(estado, id))
-        .filter(c => c && c.vivo && aliada.indexOf(c) !== -1)
-        .slice(0, magia.alvos || 1);
-      if (quem.pm < (magia.pm | 0)) return [];
-      quem.pm -= magia.pm | 0;
-      for (const alvo of alvos) {
-        const antes = alvo.pv;
-        alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + (magia.cura | 0));
-        eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id,
-                       nome: magia.id || null, curou: alvo.pv - antes, pvAlvo: alvo.pv });
-      }
-      if (!alvos.length) return [];
+    /* Quanto custa, antes de mais: uma magia que não se pode pagar não
+       gasta o turno. Recusar em silêncio é melhor do que cobrar o turno
+       e não fazer nada — o jogador reescolhe. */
+    const escolhidos = (acao.alvos || []).map(id => fuPorId(estado, id)).filter(Boolean);
+    const nAlvos = magia && magia.porAlvo
+      ? Math.max(1, Math.min(magia.alvos || 1, escolhidos.length || 1)) : 1;
+    const custo = magia ? (magia.pm | 0) * nAlvos : 0;
+    if (custo > quem.pm) return [];
 
+    // ── própria: Concha, Lamber Feridas ──
+    if (magia && magia.proprio) {
+      quem.pm -= custo;
+      if (custo) eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
+      if (magia.cena) fuPorDePe(quem, magia, eventos);
+      if (magia.cura) fuCurar(quem, quem, magia, eventos);
+
+    // ── aliada: Barreira, Misericórdia, Curar, Despertar ──
+    } else if (magia && (magia.aliado || magia.cura)) {
+      let alvos = escolhidos.filter(c => c.vivo && aliada.indexOf(c) !== -1);
+      if (!alvos.length) alvos = [quem];              // sem escolha, é em si
+      alvos = alvos.slice(0, magia.alvos || 1);
+      quem.pm -= (magia.pm | 0) * (magia.porAlvo ? alvos.length : 1);
+      eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
+      for (const alvo of alvos) {
+        if (magia.cena) fuPorDePe(alvo, magia, eventos, quem);
+        if (magia.cura) fuCurar(quem, alvo, magia, eventos);
+      }
+
+    // ── todos: a Devastação ──
+    } else if (magia && magia.todos) {
+      /* Sem rolagem e sem Defesa que valha. É a única coisa no motor que
+         não pergunta nada a ninguém — e é por isso que custa 30 PM e só
+         um Lendário a tem.
+         As afinidades CONTINUAM a valer: quem absorve o tipo dela
+         cura-se com ela, e isso é uma armadilha a sério para quem a
+         lança sem olhar. */
+      const alvos = inimiga.filter(c => c.vivo);
+      if (!alvos.length) return [];
+      quem.pm -= custo;
+      eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
+      for (const alvo of alvos) {
+        const d = fuDanoComGuarda(alvo, magia.danoFixo | 0, magia.tipo || quem.ficha.tipo);
+        eventos.push({ tipo: 'devastacao', quem: quem.id, alvo: alvo.id,
+                       nome: magia.id, bruto: magia.danoFixo | 0,
+                       tipo_dano: magia.tipo || quem.ficha.tipo,
+                       afinidade: d.afinidade, perda: d.perda, curou: d.curou,
+                       pvAlvo: d.pv, caiu: d.caiu, salvou: d.salvou });
+      }
+
+    // ── inimiga: o golpe comum e as duas de ataque ──
     } else {
-      const corpoACorpo = !magia;
+      const corpoACorpo = !magia || !!magia.corpoACorpo;
       const possiveis = fuAlvosPossiveis(inimiga, corpoACorpo);
       if (!possiveis.length) return [];
 
@@ -342,23 +451,23 @@ function fuAgir(estado, acao) {
          Um pedido para bater no de trás com o defensor de pé não é um
          erro do jogador — é o defensor a fazer o seu trabalho — e
          resolve-se batendo em quem está à frente, não recusando. */
-      let alvos = (acao.alvos || []).map(id => fuPorId(estado, id))
-        .filter(c => c && possiveis.indexOf(c) !== -1);
+      let alvos = escolhidos.filter(c => possiveis.indexOf(c) !== -1);
       if (!alvos.length) alvos = [possiveis[0]];
-      if (magia) alvos = alvos.slice(0, magia.alvos || 1);
-      else       alvos = alvos.slice(0, 1);
+      alvos = alvos.slice(0, magia ? (magia.alvos || 1) : 1);
 
       if (magia) {
-        const custo = (magia.pm | 0) * (magia.porAlvo ? alvos.length : 1);
-        if (quem.pm < custo) return [];
-        quem.pm -= custo;
-        eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
+        const pago = (magia.pm | 0) * (magia.porAlvo ? alvos.length : 1);
+        if (pago > quem.pm) return [];
+        quem.pm -= pago;
+        eventos.push({ tipo: 'gasto', quem: quem.id, pm: pago, pmDepois: quem.pm });
       }
 
       for (const alvo of alvos) {
         eventos.push(fuAtacar(estado, quem, alvo, magia ? {
-          magico: true, nome: magia.id, fixo: magia.fixo, tipo: magia.tipo || quem.ficha.tipo,
+          magico: true, nome: magia.id, fixo: magia.fixo,
+          tipo: magia.tipo || quem.ficha.tipo,
           estado: magia.estado, estadoSempre: magia.estadoSempre,
+          ignoraResistencias: magia.ignoraResistencias,
           atrib1: 'PER', atrib2: 'VON',
         } : { fixo: 5 }));
       }
@@ -368,6 +477,42 @@ function fuAgir(estado, acao) {
   estado.jaAgiu.push(quem.id);
   fuVerFim(estado, eventos);
   return eventos;
+}
+
+/* ── PÔR UMA COISA DE PÉ ──
+
+   O manual (p. 115): a mesma magia lançada outra vez no mesmo alvo NÃO
+   se soma — a última substitui a anterior. Como cada efeito aqui é uma
+   chave própria no saco, escrever por cima é exactamente isso.
+
+   O Despertar é o único que precisa de saber QUAL atributo sobe, e a
+   escolha é de quem lança: sobe o mais alto do alvo, que é o que ele
+   faz melhor. Subir o mais fraco parece generoso e é desperdício — d6
+   para d8 vale menos do que d10 para d12 em tudo o que esse atributo
+   toca. */
+function fuPorDePe(alvo, magia, eventos, quemLanca) {
+  const antes = JSON.stringify(alvo.efeitos);
+  for (const k of Object.keys(magia.cena)) {
+    if (k === 'subirDado') {
+      const melhor = ['DES', 'PER', 'VIG', 'VON']
+        .reduce((m, a) => (alvo.ficha[a] > alvo.ficha[m] ? a : m), 'DES');
+      alvo.efeitos.subirDado = melhor;
+    } else {
+      alvo.efeitos[k] = magia.cena[k];
+    }
+  }
+  eventos.push({ tipo: 'cena', quem: (quemLanca || alvo).id, alvo: alvo.id,
+                 nome: magia.id, efeitos: Object.assign({}, alvo.efeitos),
+                 mudou: antes !== JSON.stringify(alvo.efeitos) });
+}
+
+/* Curar não passa do máximo, e diz quanto curou MESMO e não quanto
+   prometia — quem está com a vida cheia vê um zero, que é a verdade. */
+function fuCurar(quem, alvo, magia, eventos) {
+  const antes = alvo.pv;
+  alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + (magia.cura | 0));
+  eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id, nome: magia.id,
+                 curou: alvo.pv - antes, pvAlvo: alvo.pv });
 }
 
 function fuPorId(estado, id) {
@@ -458,5 +603,6 @@ if (typeof module !== 'undefined' && module.exports) {
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
+    fuAfinidadeDe, fuPorDePe, fuCurar,
   };
 }
