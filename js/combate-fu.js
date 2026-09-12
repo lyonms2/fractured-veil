@@ -307,13 +307,35 @@ function fuTirarEstado(c, estado) {
 /* ═══════════════════════════════════════════════════════════════════
    QUEM SE PODE ATINGIR
 
-   É aqui que a formação vale alguma coisa. O da frente cobre os outros
-   dois: enquanto ele estiver de pé, um golpe CORPO-A-CORPO não passa
-   dele.
+   O da frente cobre os outros dois. É a regra do dono do jogo, e é esta
+   função que a cumpre.
 
-   E magia e ataques à distância PASSAM POR CIMA. Sem essa segunda
-   metade o defensor era invencível e o suporte não corria risco nenhum
-   — a formação deixava de ser uma decisão e passava a ser um escudo.
+   ── DE QUÊ É QUE ELE COBRE ──
+
+   De tudo o que aponte a UM alvo. Não do que varre a linha inteira.
+
+   A primeira versão disto dizia outra coisa — cobria do corpo-a-corpo e
+   a magia passava por cima — e estava errada por duas razões.
+
+   A primeira é que não era a regra que me deram: "o da frente protege os
+   outros", sem qualificativo nenhum. A segunda é que, das cinco acções
+   que um avatar tem, só UMA é corpo-a-corpo — o golpe comum. A formação
+   decidia um quinto do jogo, e reordenar custava um turno inteiro por
+   quase nada.
+
+   Com um alvo só de um lado e a linha toda do outro, a formação passa a
+   decidir muito — e decide nos dois sentidos:
+
+     um alvo só   golpe comum, Sopro, Sopro Maldito, Concentrado
+                  vão todos ao da frente, sempre
+
+     a linha      Barragem (três alvos), Devastação
+                  chegam a qualquer um, e é para isso que existem
+
+   O defensor não fica invencível nem o suporte fica seguro: quem encontra
+   uma frente que aguenta abre a Barragem, e quem quer o suporte paga
+   trinta PM pela Devastação. A formação deixa de ser um escudo e passa a
+   ser uma pergunta com resposta.
    ═══════════════════════════════════════════════════════════════════ */
 /* No ar enquanto tiver o Voo Baixo, não estiver em crise e não tiver
    sido derrubado nesta ronda. São as três condições do manual, por esta
@@ -322,10 +344,10 @@ function fuNoAr(c) {
   return !!fuDonsDe(c).voo && c.vivo && !c.derrubado && !fuEmCrise(c);
 }
 
-function fuAlvosPossiveis(equipa, corpoACorpo) {
+function fuAlvosPossiveis(equipa, mira) {
   const vivos = equipa.filter(c => c.vivo);
   if (!vivos.length) return [];
-  if (!corpoACorpo) return vivos;
+  if (!mira) return vivos;
 
   /* Quem voa não se alcança com a mão — mas se for o ÚNICO que resta no
      ar e não houver mais ninguém no chão, alcança-se na mesma.
@@ -337,11 +359,35 @@ function fuAlvosPossiveis(equipa, corpoACorpo) {
      alcance — e aí apanha.
 
      Sem esta metade, três inimigos a voar e um atacante sem PM davam
-     uma batalha que não acabava nunca. */
-  const noChao = vivos.filter(c => !fuNoAr(c));
+     uma batalha que não acabava nunca.
+
+     E vale só para quem ataca com as MÃOS — `mira` vem a 'mao'. Uma magia
+     de alvo único alcança quem voa como alcança os outros: a cobertura da
+     frente e o voo são duas coisas diferentes, e só a primeira olha ao
+     número de alvos. */
+  const noChao = (mira === 'mao') ? vivos.filter(c => !fuNoAr(c)) : vivos;
   const podem = noChao.length ? noChao : vivos;
   const frente = podem.reduce((m, c) => (c.posto < m.posto ? c : m), podem[0]);
   return [frente];
+}
+
+/* Os três de um lado por ordem de posto — vivos e caídos, porque a arena
+   desenha os dois. O motor não guarda a equipa ordenada: guarda-a pela
+   ordem em que entrou, e o posto é um campo que se troca. Ordenar aqui,
+   uma vez, poupa toda a gente de ordenar por sua conta — e de o fazer de
+   seis maneiras ligeiramente diferentes. */
+function fuFormacao(estado, lado) {
+  return estado[lado].slice().sort((a, b) => a.posto - b.posto);
+}
+
+/* Quem está à frente AGORA: o de posto mais baixo que ainda está de pé.
+   Quando o defensor cai, o do meio passa a ser a frente sem ninguém ter
+   de gastar um turno a mexer-se — e é de propósito, senão perder o
+   defensor custava a vida dele E o turno de quem o substituísse. */
+function fuFrente(equipa) {
+  const vivos = equipa.filter(c => c.vivo);
+  if (!vivos.length) return null;
+  return vivos.reduce((m, c) => (c.posto < m.posto ? c : m), vivos[0]);
 }
 
 /* ── O ÚLTIMO SUSPIRO ──
@@ -511,12 +557,29 @@ function fuAgir(estado, acao) {
     eventos.push({ tipo: 'guardar', quem: quem.id });
 
   } else if (acao.tipo === 'mover') {
+    /* ── REORDENAR CUSTA O TURNO ──
+
+       O turno de quem se mexe, e não o dos dois: os postos trocam aos
+       pares, mas quem decidiu foi um só, e cobrar dois turnos por uma
+       decisão fazia da reordenação uma coisa que ninguém pagaria.
+
+       Uma troca que NÃO acontece não custa nada. É a mesma regra das
+       magias que não se podem pagar: recusar e devolver o turno é melhor
+       do que cobrar e não fazer nada — o jogador reescolhe em vez de
+       descobrir que perdeu a vez.
+
+       Com um companheiro CAÍDO não se troca, e não é mesquinhez: o lugar
+       de um caído já não cobre ninguém — a frente é o de posto mais baixo
+       que está DE PÉ — portanto a troca não mudava nada e só gastava o
+       turno. */
     const outro = fuPorId(estado, acao.com);
-    if (outro && outro.lado === quem.lado && outro.vivo) {
-      const p = quem.posto; quem.posto = outro.posto; outro.posto = p;
-      eventos.push({ tipo: 'mover', quem: quem.id, com: outro.id,
-                     postos: [quem.posto, outro.posto] });
-    }
+    if (!outro || outro === quem || outro.lado !== quem.lado || !outro.vivo)
+      return [];
+    const p = quem.posto; quem.posto = outro.posto; outro.posto = p;
+    const frente = fuFrente(quem.lado === 'A' ? estado.A : estado.B);
+    eventos.push({ tipo: 'mover', quem: quem.id, com: outro.id,
+                   postos: [quem.posto, outro.posto],
+                   frente: frente ? frente.id : null });
 
   } else {
     /* ── AS CINCO FORMAS DE UMA MAGIA ──
@@ -587,8 +650,12 @@ function fuAgir(estado, acao) {
 
     // ── inimiga: o golpe comum e as duas de ataque ──
     } else {
-      const corpoACorpo = !magia || !!magia.corpoACorpo;
-      const possiveis = fuAlvosPossiveis(inimiga, corpoACorpo);
+      /* Três casos e não dois: 'mao' para o golpe comum, verdadeiro para
+         uma magia de alvo único, falso para a que varre a linha. A frente
+         cobre nos dois primeiros; o Voo Baixo só vale contra o primeiro. */
+      const mira = (!magia || magia.corpoACorpo) ? 'mao'
+                 : ((magia.alvos || 1) === 1);
+      const possiveis = fuAlvosPossiveis(inimiga, mira);
       if (!possiveis.length) return [];
 
       /* O alvo pedido só vale se estiver entre os que se podem atingir.
@@ -766,6 +833,6 @@ if (typeof module !== 'undefined' && module.exports) {
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
     fuAfinidadeDe, fuPorDePe, fuCurar,
-    fuDonsDe, fuNoAr, fuActoFinal, fuColherQuedas,
+    fuDonsDe, fuNoAr, fuActoFinal, fuColherQuedas, fuFormacao, fuFrente,
   };
 }

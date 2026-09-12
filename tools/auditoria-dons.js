@@ -360,23 +360,31 @@ titulo('Cada uma faz o que diz, medida no motor');
     const [f1, f2, f3] = e.B;
     calcar(f1, 'voo_baixo');
     verificar('quem voa está no ar', M.fuNoAr(f1) === true);
+    /* 'mao' é o golpe comum; `true` é uma magia de alvo único. São
+       diferentes de propósito: a frente cobre das duas, o voo só da
+       primeira. */
     verificar('e o corpo-a-corpo passa-lhe ao lado',
-      M.fuAlvosPossiveis(e.B, true)[0] === f2,
+      M.fuAlvosPossiveis(e.B, 'mao')[0] === f2,
+      'apanhou ' + M.fuAlvosPossiveis(e.B, 'mao')[0].id);
+    verificar('mas uma magia de alvo único alcança-o',
+      M.fuAlvosPossiveis(e.B, true)[0] === f1,
       'apanhou ' + M.fuAlvosPossiveis(e.B, true)[0].id);
-    verificar('mas a magia alcança-o', M.fuAlvosPossiveis(e.B, false).indexOf(f1) !== -1);
+    verificar('e a que varre a linha também',
+      M.fuAlvosPossiveis(e.B, false).indexOf(f1) !== -1);
 
     f2.vivo = false; f3.vivo = false;
     verificar('sozinho no ar, tem de descer para atacar — e apanha',
-      M.fuAlvosPossiveis(e.B, true)[0] === f1);
+      M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
 
     f2.vivo = true; f3.vivo = true;
     f1.pv = f1.ficha.crise;
     verificar('em crise, cai', M.fuNoAr(f1) === false);
-    verificar('e o corpo-a-corpo chega-lhe', M.fuAlvosPossiveis(e.B, true)[0] === f1);
+    verificar('e o corpo-a-corpo chega-lhe', M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
 
     f1.pv = f1.ficha.pvMax;
     f1.derrubado = true;
     verificar('derrubado, fica no chão', M.fuNoAr(f1) === false);
+    verificar('e o murro chega-lhe', M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
     M.fuNovaRonda(e);
     verificar('e a ronda seguinte levanta-o', M.fuNoAr(f1) === true && !f1.derrubado);
   }
