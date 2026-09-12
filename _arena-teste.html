@@ -2,15 +2,20 @@
 <html lang="pt-BR"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>arena — banco de ensaio</title>
+<title>arena — banco de ensaio (motor Fabula Ultima)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond&display=swap" rel="stylesheet">
-<!-- O screen.css traz os fotogramas do piscar (av-piscar), que a
-     arena reaproveita com um atraso por avatar. -->
 <style>
-  /* O banco de ensaio: mostra a arena sem login e sem motor de combate.
-     Existe só para se poder OLHAR para ela. */
-  /* NÃO se força o font-size aqui: a escala vem do css/base.css, que dá
-     16px no telemóvel e 26.4px a partir dos 681px. Forçar 26.4 fazia o
+  /* O banco de ensaio corre a arena NOVA sem login, sem energia e sem
+     nada gravado: seis avatares feitos na hora e o motor verdadeiro a
+     resolver a batalha.
+
+     Deixou de fingir. A versão anterior deste arquivo desenhava orbes
+     escritos à mão ("Ferrões Salinos · envenena") e um lance de mentira
+     para se poder OLHAR para o palco. Servia enquanto não havia motor
+     novo; agora há, e um banco que finge não prova nada.
+
+     NÃO se força o font-size: a escala vem do css/base.css, que dá 16px
+     no telemóvel e 26,4px a partir dos 681px. Forçar a segunda fazia o
      ensaio mentir justamente no caso que mais interessa medir. */
   body { background: #04030a; margin: 0; height: 100vh; overflow: hidden; }
   #combateModal { opacity: 1 !important; pointer-events: all !important; }
@@ -28,161 +33,84 @@
 
 <div id="combateModal" class="open"></div>
 <div id="ensaio">
-  <button onclick="ensaioBater()">bater</button>
-  <button onclick="ensaioCritico()">crítico</button>
-  <button onclick="ensaioCurar()">curar</button>
-  <button onclick="ensaioCair()">derrubar</button>
-  <button onclick="ensaioLance()">lance</button>
-  <button onclick="_pveMenuAlternar()">menu</button>
-  <button onclick="ensaioPM()">pm</button>
-  <button onclick="ensaioFim()">fim</button>
-  <button onclick="ensaioRefazer()">refazer</button>
+  <button onclick="ensaioNova()">nova batalha</button>
+  <button onclick="ensaioLendaria()">lendários</button>
+  <button onclick="ensaioPM()">encher PM</button>
+  <button onclick="ensaioFerir()">ferir</button>
+  <button onclick="ensaioFim()">acabar</button>
 </div>
 
 <script>
-/* O BANCO DE ENSAIO CARREGA SEMPRE FRESCO.
-   Sem versao nos <script>, o navegador servia a copia guardada e eu
-   passei a olhar para codigo de ha dez minutos a pensar que era o de
-   agora. Num banco de ensaio isso nao e uma optimizacao, e uma
-   armadilha: a unica coisa que ele existe para fazer e mostrar o que
-   esta em disco. */
 var _z = Date.now();
-for (const f of ["css/base.css", "css/ui.css", "css/screen.css", "css/combate.css", "css/combate-batalha.css", "css/combate-arena.css"])
+for (const f of ["css/base.css", "css/ui.css", "css/screen.css", "css/combate.css",
+                 "css/combate-batalha.css", "css/combate-arena.css"])
   document.write('<link rel="stylesheet" href="' + f + '?z=' + _z + '">');
-for (const f of ["js/i18n.js", "js/i18n-misc.js", "js/i18n-magias.js", "js/i18n-vantagens.js", "js/i18n-pve.js", "js/data.js", "js/state.js", "js/identidade.js", "js/cores.js", "js/nascimento.js", "js/raridade.js", "js/ficha-3dt.js", "js/magias.js", "js/vantagens.js", "js/combate-3dt.js", "js/combate-pve.js"])
+/* A pilha NOVA e só ela: nada de ficha-3dt, magias, vantagens ou
+   combate-3dt. Se alguma coisa da arena nova precisar de um deles, é
+   porque ficou agarrada ao motor antigo — e é melhor rebentar aqui do
+   que descobri-lo no dia da troca. */
+for (const f of ["js/i18n.js", "js/i18n-misc.js", "js/i18n-arena-fu.js",
+                 "js/data.js", "js/identidade.js", "js/cores.js", "js/nascimento.js",
+                 "js/raridade.js",
+                 "js/ficha-fu.js", "js/vantagens-fu.js", "js/combate-fu.js",
+                 "js/magias-fu.js", "js/arena-fu.js"])
   document.write('<scr' + 'ipt src="' + f + '?z=' + _z + '"><\/scr' + 'ipt>');
 </script>
 
-
 <script>
-/* O motor de combate verdadeiro precisa de um jogador, de energia e de
-   uma equipa gravada. Aqui só se quer OLHAR para o palco, portanto a
-   barra de ações leva uma cópia da forma dela — o que importa para a
-   vista é o peso que ela tem em baixo, e esse é o mesmo. */
-_pveDesenharAcoes = function () {
-  // O fim da batalha usa o painel de verdade, que é o que se quer ver.
-  if (_pveEstado && _pveEstado.acabou) {
-    document.getElementById('cbAcoes').innerHTML = _pveBotaoFim();
-    return;
-  }
-  const orbe = (selo, nome, sub, on, custo) =>
-    '<button class="cb-orbe"' + (on ? '' : ' disabled') +
-    ' title="' + nome + ' · ' + sub + '">' +
-    '<span class="cb-orbe-disco">' + _pveSelo(selo) +
-    (custo != null ? '<span class="cb-orbe-custo">' + custo + '</span>' : '') +
-    '</span><span class="cb-orbe-nome">' + nome + '<i>' + sub + '</i></span></button>';
-  document.getElementById('cbAcoes').innerHTML =
-    orbe('basico',      'Murro',              'FA 3+4+1d',     true,  null) +
-    orbe('forte',       'Ferrões Salinos',    'envenena',      true,  3) +
-    orbe('muito_forte', '—',                  'chega no Raro', false, null) +
-    orbe('defensiva',   'Véu de Correntes',   'FD +10',        true,  2) +
-    orbe('suporte',     'Maré Compartilhada', 'cura 1d',       true,  5) +
-    orbe('ficha',       'Saber',              'o que sabe fazer', true, null);
-};
-
-// os passos: quanto de PM gastar, em orbes
-function ensaioPM() {
-  document.getElementById('cbAcoes').innerHTML =
-    '<div class="cb-pm-cab">Quanto pôr em Ferrões Salinos?</div>' +
-    [3,4,5,6].map(pm =>
-      '<button class="cb-orbe"><span class="cb-orbe-disco">' +
-      '<span class="cb-orbe-txt">' + pm + '</span></span>' +
-      '<span class="cb-orbe-nome">' + pm + ' PM<i>FA 3 + ' + pm + 'd</i></span></button>').join('') +
-    '<button class="cb-orbe voltar"><span class="cb-orbe-disco">' + _pveSelo('voltar') +
-    '</span><span class="cb-orbe-nome">Voltar</span></button>';
-  _pveMenuAbrir();
-}
-</script>
-
-<script>
-// ── Um estado de mentira, com a forma do verdadeiro ──
-function _fabricar(nome, nivel, pv, pvMax, pm, pmMax, vivo) {
-  const cert = nascer({ dna: null, origem: 'Comum', seed: Math.floor(Math.random() * 2e9) });
-  return {
-    nome, vivo, pv, pvMax, pm, pmMax,
-    ficha: { nivel, raridade: nivel >= 11 ? 'Raro' : 'Comum',
-             seed: cert.seed || Math.floor(Math.random() * 2e9), nascimento: cert },
-    magias: {}, vant: {},
-  };
-}
 const NOMES_EU  = ['Brama, a Nobre', 'Ísen, o Desastrado', 'Vurel'];
 const NOMES_INI = ['Lâmina Oca', 'Arauto da Cinza', 'Coisa sem Nome'];
 
-function ensaioRefazer() {
-  _pveEstado = {
-    turnos: 2, acabou: false, ativoA: 0, ativoB: 0,
-    A: NOMES_EU.map((n, i)  => _fabricar(n, 15, [1342, 816, 1137][i], [1370, 1130, 1170][i], [120, 235, 105][i], [120, 220, 90][i], true)),
-    B: NOMES_INI.map((n, i) => _fabricar(n, 9,  [402, 544, 180][i],   [520, 544, 300][i],   [40, 60, 20][i],    [60, 60, 40][i],   true)),
+/* Um avatar com a forma que o fuFicha espera: seed, nível e a certidão
+   com o DNA. É a mesma forma que o slot gravado tem — o motor não sabe
+   distinguir este de um do jogo, e é por isso que o ensaio vale. */
+function _bicho(nome, nivel, i) {
+  const seed = Math.floor(Math.random() * 2e9);
+  return {
+    id: 'e' + i + '_' + seed,
+    nome, seed, nivel,
+    nascimento: { seed, dna: gerarDna('Comum', seed) },
   };
-  // marcas de estado, para se ver como ficam no chão
-  _pveEstado.A[0].veneno = 2; _pveEstado.A[0].bonusF = 2;
-  _pveEstado.B[0].furia = true; _pveEstado.B[0].barreira = 4;
-  _pveShell();
-  _pveDesenhar();
 }
-function _alvos() {
-  return [document.getElementById('cbLuteu0'), document.getElementById('cbLutini0')];
+
+let _nivelEu = 15, _nivelIni = 12;
+
+function ensaioNova() {
+  afAbrir(
+    NOMES_EU.map((n, i)  => _bicho(n, _nivelEu, i)),
+    NOMES_INI.map((n, i) => _bicho(n, _nivelIni, i + 3)),
+    Math.floor(Math.random() * 2e9)
+  );
 }
-function ensaioBater() {
-  const [meu, dele] = _alvos();
-  _pveGesto(meu, 'cb-avanca', 400);
-  _pveNumeroFlutuante(dele, 47, false);
-  _pveGesto(dele, 'cb-bate', 520);
-  _pveImpacto(dele, { corBrilho: '#ff8a4c', particulas: 'chamas' });
-  _pvePoeiraDosPes(dele);
-  _pveEstado.B[0].pv = Math.max(0, _pveEstado.B[0].pv - 47);
-  _pveAtualizarBarras();
+
+/* Nível 30 dos dois lados: é aí que as magias abrem todas (Lendário =
+   degrau 3) e que a Devastação e o Despertar aparecem no menu. */
+function ensaioLendaria() {
+  _nivelEu = 30; _nivelIni = 30;
+  ensaioNova();
 }
-function ensaioCritico() {
-  const [meu, dele] = _alvos();
-  _pveGesto(meu, 'cb-avanca', 400);
-  _pveNumeroFlutuante(dele, 186, true);
-  _pveGesto(dele, 'cb-bate', 520);
-  _pveImpacto(dele, { corBrilho: '#c4b5fd', particulas: 'sombras' });
-  _pvePoeiraDosPes(dele);
-  _pveOndaDeChoque(dele);
-  _pveEstremecer();
-  _pveEstado.B[0].pv = Math.max(0, _pveEstado.B[0].pv - 186);
-  _pveAtualizarBarras();
+
+function ensaioPM() {
+  if (!_afE) return;
+  _afE.A.concat(_afE.B).forEach(c => { c.pm = c.ficha.pmMax; });
+  _afDesenhar();
 }
-function ensaioCurar() {
-  const [meu] = _alvos();
-  _pveNumeroFlutuante(meu, 120, false, 'cura');
-  _pveNumeroPM(meu, 5);
-  _pveEstado.A[0].pv = Math.min(_pveEstado.A[0].pvMax, _pveEstado.A[0].pv + 120);
-  _pveEstado.A[0].pm = Math.max(0, _pveEstado.A[0].pm - 5);
-  _pveAtualizarBarras();
+
+/* Metade da vida a toda a gente: é a forma mais rápida de ver a crise,
+   a Misericórdia, a Fúria da Crise e o Voo Baixo a cair. */
+function ensaioFerir() {
+  if (!_afE) return;
+  _afE.A.concat(_afE.B).forEach(c => { c.pv = Math.max(1, Math.floor(c.ficha.crise * 0.9)); });
+  _afDesenhar();
 }
-function ensaioCair() {
-  _pveEstado.B[1].vivo = false; _pveEstado.B[1].pv = 0;
-  _pveEstado.A[2].vivo = false; _pveEstado.A[2].pv = 0;
-  _pveAtualizarBarras();
-}
-/* Um turno escrito à mão, com a forma do verdadeiro: o cabeçalho do
-   turno, a magia, os dados a rolar e a conta da FA contra a FD. */
-function ensaioLance() {
-  const t3 = (n, i) => '<b class="cb-dado cb-dado-vivo' + (n === 6 ? ' cb-dado-seis' : '') +
-    '" style="--i:' + i + '"><span class="cb-dado-glifo">🎲</span>' +
-    '<span class="cb-dado-n">' + n + '</span></b>';
-  _pveLog(
-    '<div class="cb-onda-grupo"><span class="quem">Brama, a Nobre</span> · ' +
-    '<b>Bola de Lama</b> <span class="cb-parcela">(1 PM)</span></div>' +
-    '<div class="cb-conta">' + t3(3, 0) + t3(3, 1) +
-    ' <span class="cb-parcela">FA 4</span> − <span class="cb-parcela">FD 10</span>' +
-    ' = <b>sem dano</b></div>' +
-    '<div class="cb-detalhe"><span class="cb-conta-linha">' +
-    'FA = H2 + F1 + 🎲3 = 6 · FD = A4 + H3 + 🎲3 = 10 → 6 − 10 ≤ 0' +
-    '</span></div>',
-    'info', _pveEstado.turnos + 1);
-}
+
 function ensaioFim() {
-  _pveEstado.B.forEach(c => { c.vivo = false; c.pv = 0; });
-  _pveEstado.acabou = true;
-  _pveEstado._premio = { coinGain: 240, xpGain: 86, vinculo: 3, energia: 10,
-                         quantos: 3, desistiu: false };
-  _pveEstado._fraturados = ['Vurel'];
-  _pveDesenhar();
+  if (!_afE) return;
+  _afE.B.forEach(c => { c.pv = 0; c.vivo = false; });
+  _afE.acabou = true; _afE.vencedor = 'A';
+  _afDesenhar();
 }
-ensaioRefazer();
+
+window.addEventListener('load', ensaioNova);
 </script>
 </body></html>

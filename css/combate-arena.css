@@ -1361,6 +1361,105 @@
 
 .cb-palco .cb-ajuda { z-index: 20; }
 
+
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   QUEM PODE JOGAR, E EM QUEM SE PODE TOCAR      (motor Fabula Ultima)
+
+   Duas perguntas que o motor antigo n\u00e3o tinha e o novo tem:
+
+     .pode   ainda n\u00e3o jogou nesta rodada \u2014 s\u00e3o at\u00e9 tr\u00eas ao mesmo tempo,
+             e sem uma marca o jogador n\u00e3o sabe em qual pode tocar
+     .alvo   est\u00e1 a ser apontado pela ac\u00e7\u00e3o que se est\u00e1 a escolher
+
+   S\u00e3o duas luzes e n\u00e3o duas molduras, de prop\u00f3sito: o palco \u00e9 escuro e
+   uma moldura leria como interface por cima de uma pintura. Uma luz no
+   ch\u00e3o pertence \u00e0 cena.
+   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+.cb-posto.pode:not(.ativo) .cb-anel {
+  opacity: .55;
+  animation: cb-anel-gira 7s linear infinite;
+}
+.cb-posto.pode:not(.ativo):hover .cb-anel { opacity: .9; }
+
+/* O alvo: o anel acende na cor de quem o est\u00e1 a apontar e pulsa. */
+.cb-posto.alvo { cursor: crosshair; }
+.cb-posto.alvo .cb-anel {
+  opacity: 1; --anel: rgba(232,196,110,.9);
+  animation: cb-anel-gira 3s linear infinite, cb-alvo-pulsa 1.1s ease-in-out infinite;
+}
+.cb-posto.alvo .cb-corpo { filter: drop-shadow(0 0 0.5rem rgba(232,196,110,.5)); }
+@keyframes cb-alvo-pulsa {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.12); }
+}
+
+/* \u2500\u2500 A FICHA E O HIST\u00d3RICO, NO PAINEL DE AJUDA \u2500\u2500
+   O painel j\u00e1 existia; o que muda \u00e9 o que se p\u00f5e l\u00e1 dentro, porque a
+   ficha nova tem dados e afinidades em vez de F/H/R/A. */
+.cb-ajuda-cx {
+  max-height: 80vh; overflow-y: auto;
+  padding: 0.75rem; border-radius: 0.5rem;
+  border: 1px solid rgba(201,168,76,.3);
+  background: linear-gradient(180deg, rgba(16,11,30,.97), rgba(6,4,14,.99));
+  box-shadow: 0 0.75rem 2rem rgba(0,0,0,.72);
+}
+.cb-ajuda-cx h3 {
+  margin: 0 0 0.125rem; font-family: 'Cinzel', serif;
+  font-size: 0.5625rem; color: var(--gold-light); letter-spacing: 0.05rem;
+}
+.cb-ajuda-cx h4 {
+  margin: 0.5rem 0 0.25rem; font-family: 'Cinzel', serif;
+  font-size: 0.40625rem; color: var(--gold); letter-spacing: 0.04rem;
+}
+.cb-f-sub { margin: 0 0 0.375rem; font-size: 0.34375rem; color: var(--muted); }
+.cb-f-linha {
+  display: flex; justify-content: space-between; gap: 0.5rem;
+  margin: 0.09375rem 0; font-size: 0.375rem;
+}
+.cb-f-linha i { color: var(--muted); font-style: normal; }
+.cb-f-linha b { color: var(--text); font-weight: 600; }
+.cb-f-linha u { color: var(--gold-light); text-decoration: none; }
+.cb-f-afs { display: flex; flex-wrap: wrap; gap: 0.1875rem; margin: 0.375rem 0 0; }
+.cb-f-af {
+  font-size: 0.3125rem; padding: 0.0625rem 0.25rem; border-radius: 0.1875rem;
+  border: 1px solid rgba(255,255,255,.12); color: var(--text);
+}
+.cb-f-af.RS { background: rgba(90,140,200,.22); }
+.cb-f-af.VU { background: rgba(200,80,70,.24); }
+.cb-f-af.IM { background: rgba(150,150,160,.22); }
+.cb-f-af.AB { background: rgba(120,190,120,.22); }
+.cb-f-magia {
+  display: flex; justify-content: space-between; gap: 0.5rem;
+  margin: 0.09375rem 0; font-size: 0.34375rem;
+}
+.cb-f-magia b { color: var(--text); }
+.cb-f-magia i { color: var(--muted); font-style: normal; }
+.cb-hist {
+  margin: 0 0 0.25rem; padding-bottom: 0.25rem; font-size: 0.34375rem;
+  color: var(--text); border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.cb-hist i {
+  display: inline-block; min-width: 0.75rem; color: var(--gold);
+  font-style: normal; opacity: .7;
+}
+
+
+/* ── O MENU APERTADO ──
+   Sete orbes não cabem entre a borda de cima e os cartões de baixo num
+   ecrã baixo. Quando não cabem, encolhem — o disco, a folga e a letra.
+   É o js/arena-fu.js que decide, porque é ele que sabe a altura livre;
+   aqui só se diz o que "apertado" quer dizer.
+
+   Encolher e não rolar: uma coluna de orbes com barra de rolagem é um
+   menu que esconde metade das opções a quem não adivinhar que rola. */
+.cb-menu.apertado .cb-acoes    { gap: 0.15625rem; }
+.cb-menu.apertado .cb-orbe-disco {
+  width: 1.125rem; height: 1.125rem;
+}
+.cb-menu.apertado .cb-orbe-nome { font-size: 0.34375rem; }
+.cb-menu.apertado .cb-orbe-nome i { font-size: 0.28125rem; }
+.cb-menu.apertado .cb-orbe-custo { font-size: 0.25rem; }
+
 /* ═══════════════════════════════════════════════════════════════════
    TELAS ESTREITAS
 
