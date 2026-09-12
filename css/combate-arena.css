@@ -372,12 +372,25 @@
 
    Fica por cima do campo e não toca em nada mais — o `mix-blend-mode`
    de tela só clareia, portanto não suja as cores, só as banha. */
+/* ── O HALO NÃO PODE SER CORTADO NO PONTO MAIS CLARO ──
+
+   Os dois gradientes estavam ancorados em `at 50% 0%` — o topo da caixa
+   — e a caixa acabava ali. Um gradiente cortado onde é mais forte não dá
+   um halo: dá um BORDO DURO, e era uma linha recta a atravessar o céu de
+   ponta a ponta do palco. A 19% da altura, de `x:67` a `x:1373`.
+
+   Foi a primeira coisa que saltou à vista de quem inspeccionou, e eu
+   nunca a tinha visto — porque olhei sempre para os bichos.
+
+   O centro desce para dentro da caixa (`at 50% 18%`) e o raio cresce: o
+   ponto mais claro passa a estar rodeado de gradiente dos dois lados, e
+   o que chega à borda de cima já é quase transparente. */
 .cb-campo::after {
   content: ''; position: absolute; inset: -20% -5% 0;
   pointer-events: none; z-index: 20;
   background:
-    radial-gradient(46% 62% at 50% 0%, rgba(185,140,255,.16), transparent 72%),
-    radial-gradient(30% 40% at 50% 0%, rgba(255,214,138,.09), transparent 70%);
+    radial-gradient(58% 78% at 50% 18%, rgba(185,140,255,.16), transparent 72%),
+    radial-gradient(38% 52% at 50% 16%, rgba(255,214,138,.09), transparent 70%);
   mix-blend-mode: screen;
 }
 
@@ -638,11 +651,21 @@
    corpo continua lá, que é o que faz a baixa pesar. */
 .cb-posto.caido { opacity: .78; }
 /* Cai PARA DENTRO do campo, e não para fora. A 74° o corpo varria a
-   própria altura para o lado: o inimigo do fundo saía 36px fora do
-   palco e era cortado, e o meu caía por cima do companheiro. A 58°, com
-   o pivô nos pés e um passo para o centro, fica onde estava. */
+   própria altura para o lado: o inimigo do fundo saía 36px fora do palco
+   e era cortado, e o meu caía por cima do companheiro. A 58°, com um
+   passo para o centro, fica onde estava.
+
+   ── E OS PÉS FICAM NO CHÃO ──
+
+   O `-42%` deixava 58% do corpo ABAIXO do ponto dos pés: os dois caídos
+   afundavam-se 160px e desapareciam por trás do painel dos cartões.
+   Medido: fundo do corpo a +219 do ponto, com o rodapé a começar aos +57.
+
+   O `-100%` é o mesmo de quem está de pé, e o `transform-origin: 50% 100%`
+   que a regra base já tem põe o pivô exactamente nos pés. O corpo roda em
+   vez de escorregar — como uma árvore a cair, que é o que a queda é. */
 .cb-posto.caido .cb-corpo {
-  transform: translate(-50%, -42%) translateX(var(--lado, 0.9rem)) rotate(var(--tomba, -58deg));
+  transform: translate(-50%, -100%) translateX(var(--lado, 0.9rem)) rotate(var(--tomba, -58deg));
   transition: transform .5s cubic-bezier(.34,1.3,.64,1);
 }
 /* O corpo escurecia a 40% de brilho, sem cor, sobre um fundo já escuro:
@@ -677,6 +700,19 @@
      5.6rem×escala×(260/200) do chão — a ALTURA do desenho, não a
      largura. Estava a usar a largura e caía-lhe em cima do peito. */
   transform: translate(-50%, calc(-100% - 7.3rem * var(--escala)));
+  /* ── E CORTA, EM VEZ DE SAIR DO PALCO ──
+
+     Era `nowrap` sem largura máxima, portanto um nome comprido crescia
+     para os dois lados a partir do centro do corpo. Medido com nomes de
+     26 a 38 letras: "Crisântemo Vermelho do Véu" no posto do fundo saía
+     58px pela esquerda do palco, e o mesmo do lado inimigo 70px pela
+     direita — e com o menu aberto caía por cima do nome de um orbe.
+
+     Nove rem e não onze: os cartões do rodapé cortam aos onze e têm a
+     faixa toda para si, mas esta flutua sobre o campo e centra-se no
+     corpo. Com onze, o posto do fundo — a 10% da largura — ainda saía
+     13px, e o do inimigo 14 do outro lado. Com nove cabe nos seis. */
+  max-width: 9rem; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; pointer-events: none;
   font-family: 'Cinzel', serif; font-size: 0.40625rem; letter-spacing: 0.0625rem;
   color: var(--gold-light);
@@ -1507,10 +1543,22 @@
   /* No telemóvel a raiz é 16px, e todos os aumentos de letra viviam num
      @media de 900px — a barra ficava com números de 4,5px e as marcas
      com 4px. Aqui é onde a letra mais precisa de subir, não onde menos. */
-  .cb-barra span      { font-size: 0.4375rem; }
-  .cb-ficha-nome      { font-size: 0.5rem; }
-  .cb-ficha-nivel     { font-size: 0.375rem; }
-  .cb-posto .cb-marca { font-size: 0.4375rem; }
+  /* ── NADA ABAIXO DOS DEZ PÍXEIS ──
+
+     A raiz no telemóvel é 16px e estes valores davam 7, 8, 6 e 7 píxeis.
+     Os mesmos elementos no computador dão 12,4 · 14,9 · 11,6 · 13,2 — a
+     correcção de escala foi feita só do lado largo, e este ficou com os
+     números de quando a raiz era outra.
+
+     Sete píxeis de branco sobre verde, monoespaçado, é o "80/80" da barra
+     de vida: o número que se olha mais vezes na batalha inteira.
+
+     Há onde: o rodapé no telemóvel tem 50px vazios acima do meu primeiro
+     cartão e 78 acima do dele. */
+  .cb-barra span      { font-size: 0.6875rem; }
+  .cb-ficha-nome      { font-size: 0.6875rem; }
+  .cb-ficha-nivel     { font-size: 0.625rem; }
+  .cb-posto .cb-marca { font-size: 0.625rem; }
   .cb-etiqueta        { font-size: 0.5625rem; }
   .cb-palco .cb-btn-rot { font-size: 0.5rem; }
   .cb-palco .cb-btn-sub { font-size: 0.4375rem; }
@@ -1540,7 +1588,18 @@
   /* No telemóvel o céu é menor e as cabeças estão mais acima: o
      registo encolhe para não lhes cair em cima. Continua a rolar, e o
      detalhe do turno abre na mesma. */
-  .cb-palco .cb-log { left: 0.375rem; max-height: 6rem; }
+  /* O `translate(-50%)` da regra base TEM de sair com o `left`.
+     Ficava, e recuava meia caixa a partir de uma berma que já era a
+     berma: medido a 375px, 150 dos 312 do lance (48%) caíam fora do
+     palco e eram cortados. Lia-se "começa / contra 8" em vez de
+     "Vurel começa · 4·4 · 8 contra 8".
+
+     Com `right` em vez de largura: assim o lance ocupa a faixa toda
+     entre as duas bermas e a conta não precisa de adivinhar. */
+  .cb-palco .cb-log {
+    left: 0.375rem; right: 0.375rem; width: auto; max-height: 6rem;
+    transform: translateY(-50%);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1586,6 +1645,43 @@
   .cb-orbe-nome i    { font-size: 0.5rem; }
   .cb-menu           { width: 13rem; }
   .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
+
+  /* ── O MODAL DA FICHA CRESCE COM O RESTO ──
+
+     Este bloco sobe a etiqueta, o nome do cartão, os números da barra e
+     os orbes — e não tocava em NENHUMA regra do painel da ficha nem do
+     histórico. Medido a 1440px: as linhas da ficha a 9,9px, o histórico a
+     9,1 e as afinidades a 8,25. O comentário deste bloco promete que
+     "nenhuma letra da arena desce dos 12px".
+
+     E o painel ganha largura máxima. Sem ela esticava aos 1181px do
+     palco, e como cada linha é rótulo à esquerda e valor à direita, o
+     "Defesa" ficava a 1056px do "6" — dois textos sem nada a ligá-los.
+     Vinte e seis rem é a largura de uma coluna que se lê. */
+  /* Dezoito rem e não vinte e seis: cada linha é rótulo à esquerda e
+     valor à direita, e a 26rem ficavam 548px de vazio entre "Defesa" e o
+     "6". Uma coluna que se lê de uma ponta à outra sem perder a linha
+     tem umas doze palavras — é isso que dezoito rem dão. */
+  .cb-ajuda-cx       { max-width: 18rem; margin: 0 auto; }
+  /* ── O RÓTULO TEM COLUNA, O VALOR VEM A SEGUIR ──
+
+     A linha era `space-between`, portanto o rótulo colava à esquerda e o
+     valor à direita com todo o vazio no meio — 548px numa coluna de 26rem,
+     339 numa de 18. Dois textos que se pertencem, sem nada a ligá-los, e
+     o olho tem de fazer a viagem em cada linha.
+
+     Com o rótulo a ocupar uma coluna fixa, o valor fica logo a seguir E os
+     valores continuam alinhados uns por baixo dos outros, que era a única
+     coisa que o `space-between` dava de bom. */
+  .cb-f-linha        { justify-content: flex-start; gap: 0.375rem; }
+  .cb-f-linha i      { min-width: 6.5rem; }
+  .cb-ajuda-cx h3    { font-size: 0.75rem; }
+  .cb-ajuda-cx h4    { font-size: 0.5625rem; }
+  .cb-f-linha        { font-size: 0.5rem; }
+  .cb-f-magia        { font-size: 0.46875rem; }
+  .cb-f-af           { font-size: 0.4375rem; }
+  .cb-f-sub          { font-size: 0.46875rem; }
+  .cb-hist           { font-size: 0.46875rem; }
 
   .cb-palco .cb-log-linha { font-size: 0.5625rem; }
   .cb-palco .cb-log  { width: min(30rem, 70%); max-height: 15rem; }

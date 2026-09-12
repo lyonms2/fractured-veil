@@ -241,15 +241,41 @@ function _afAssentar() {
     const corpo = posto.querySelector('.cb-corpo');
     const svg   = corpo && corpo.querySelector('svg');
     if (!svg || !svg.getBBox) continue;
-    let caixa;
-    try { caixa = svg.getBBox(); } catch (e) { continue; }
-    if (!caixa || !caixa.height) continue;
-    const mm = svg.getScreenCTM();
-    if (!mm) continue;
-    const tinta = mm.f + (caixa.y + caixa.height) * mm.d;
-    const chao  = posto.getBoundingClientRect().top;
-    const atual = parseFloat(corpo.style.top) || 0;
-    corpo.style.top = Math.round(atual + (chao - tinta)) + 'px';
+
+    /* ── MEDE-SE DE PÉ, MESMO QUEM JÁ CAIU ──
+
+       A conta usa a matriz do ecrã (`getScreenCTM`) e lê dela só a
+       escala vertical. Num corpo CAÍDO essa matriz tem uma rotação lá
+       dentro, portanto `m.f + y*m.d` deixa de ser o fundo da tinta — é
+       outro ponto qualquer.
+
+       Medido: o meu caído ficava com o fundo exactamente na linha do
+       chão, e o do inimigo 156px mais abaixo, com 92px do corpo
+       escondidos por baixo do painel dos cartões. Os dois lados têm
+       ângulos simétricos (−58° e +58°) e a diferença vinha daqui.
+
+       Tira-se a classe para medir e volta a pôr-se. O que a conta corrige
+       é o viewBox do desenho, que não muda por ele estar deitado — e a
+       correcção passa a ser a mesma quer ele caia agora quer a tela se
+       refaça com ele já no chão. */
+    const caido = posto.classList.contains('caido');
+    const transicao = corpo.style.transition;
+    if (caido) { corpo.style.transition = 'none'; posto.classList.remove('caido'); }
+
+    let caixa = null, mm = null;
+    try { caixa = svg.getBBox(); mm = svg.getScreenCTM(); } catch (e) { caixa = null; }
+    if (caixa && caixa.height && mm) {
+      const tinta = mm.f + (caixa.y + caixa.height) * mm.d;
+      const chao  = posto.getBoundingClientRect().top;
+      const atual = parseFloat(corpo.style.top) || 0;
+      corpo.style.top = Math.round(atual + (chao - tinta)) + 'px';
+    }
+
+    if (caido) {
+      posto.classList.add('caido');
+      void corpo.offsetWidth;
+      corpo.style.transition = transicao;
+    }
   }
 }
 
@@ -573,15 +599,24 @@ function _afMenuMover() {
   const transicao = menu.style.transition;
   menu.style.transition = 'none';
 
+  const topoParaAltura = palco.querySelector('.cb-topo');
+  const deOnde = topoParaAltura ? topoParaAltura.getBoundingClientRect().bottom : p.top;
   menu.classList.remove('apertado');
-  if (menu.getBoundingClientRect().height > (tecto - p.top) - 16)
+  if (menu.getBoundingClientRect().height > (tecto - deOnde) - 16)
     menu.classList.add('apertado');
 
+  /* O tecto não é o palco: é o fundo da faixa de topo, onde estão a
+     rodada e o botão de desistir. Era o palco, e o primeiro orbe
+     escrevia por cima de "Rodada 1 · Sua vez" — 104×19px sobrepostos,
+     a ler-se "RODAD⊙VEZ". */
   const folga = 8;
+  const topoDaCena = palco.querySelector('.cb-topo');
+  const tectoY = topoDaCena ? topoDaCena.getBoundingClientRect().bottom : p.top;
+
   const r = menu.getBoundingClientRect();
-  if (r.top < p.top + folga) {
+  if (r.top < tectoY + folga) {
     const topo = parseFloat(menu.style.top) || 0;
-    menu.style.top = Math.round(topo + ((p.top + folga) - r.top)) + 'px';
+    menu.style.top = Math.round(topo + ((tectoY + folga) - r.top)) + 'px';
   }
 
   /* ── E TAMBÉM NA HORIZONTAL ──
@@ -974,8 +1009,17 @@ function _afImpacto(el, tipo) {
   }
 }
 
+/* ── A ONDA NASCE NOS PÉS, E POR ISSO NÃO VAI NA CAIXA DOS EFEITOS ──
+
+   Ia, e a caixa dos efeitos tem `translate(-50%,-100%)`: o `top: 0` dela
+   é o topo da CABEÇA. O anel abria-se no ar, 241px acima dos pés no da
+   frente e 152 no do fundo.
+
+   O posto é um ponto, e esse ponto são os pés — é de lá que a poeira já
+   nascia, e é por isso que ela sempre acertou. A onda passa a pendurar-se
+   no mesmo sítio, e o comentário do CSS ("no chão e não no ar") deixa de
+   ser uma promessa por cumprir. */
 function _afOnda(el) {
-  el = _afCaixa(el);
   if (!el) return;
   const o = document.createElement('div');
   o.className = 'cb-onda';

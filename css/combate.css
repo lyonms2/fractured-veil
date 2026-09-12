@@ -433,7 +433,10 @@
   cursor: help;
 }
 
-.ficha-stat-lbl { width: 0.875rem; }
+/* ── O RÓTULO TEM DE CABER ──
+   Apertava a 0,875rem e "VON" pedia 34px numa caixa de 23 — transbordava
+   48%. Os três de três letras (DES, PER, VIG) também, por 3 e 4px. */
+.ficha-stat-lbl { min-width: 1.875rem; width: auto; }
 
 .vd-bloco {
   margin-top: 0.625rem;
