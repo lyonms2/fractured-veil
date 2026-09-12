@@ -109,9 +109,11 @@ function renderEquipaBar() {
   }
 
   const faltam = COMBATE_EQUIPA_MAX - idx.length;
-  // O poder passa a ser o total de pontos, que é a medida do manual
-  const poder = (typeof poderDaEquipa3dt === 'function')
-    ? poderDaEquipa3dt(equipaDoJogador()) : 0;
+  /* O poder é a soma dos NÍVEIS, que é a medida deste motor — e é a mesma
+     conta que escolhe o inimigo no js/pve-fu.js. Era a soma dos pontos de
+     ficha do 3D&T, que já não existem. */
+  const poder = (typeof fuPoderDaEquipa === 'function')
+    ? fuPoderDaEquipa(equipaDoJogador()) : 0;
 
   box.innerHTML = `<div class="equipa-bar">
     <div class="equipa-head">

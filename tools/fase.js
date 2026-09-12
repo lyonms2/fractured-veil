@@ -28,8 +28,8 @@ const path = require('path');
 
 const NL = String.fromCharCode(10);
 
-// Por ordem de dependência: o faseFromNivel chama o faseDePontos.
-const NOMES_DA_FASE = ['FASE_MIN_SECS', 'faseDePontos', 'faseFromNivel', 'faseFromAge'];
+// O faseDePontos saiu com o 3D&T: a fase lê o nível directamente.
+const NOMES_DA_FASE = ['FASE_MIN_SECS', 'FASE_DEGRAUS', 'faseFromNivel', 'faseFromAge'];
 
 function linhasDaFase(raiz) {
   const re = new RegExp('^const +(' + NOMES_DA_FASE.join('|') + ') *=');

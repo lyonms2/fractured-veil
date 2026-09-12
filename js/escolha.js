@@ -25,7 +25,7 @@
 // Escolhe TER uma segunda, não qual. Se escolhesse qual, todos
 // escolheriam a mesma e o avatar deixava de ser dele para ser uma
 // receita. A segunda vem sorteada do feitio do DNA, como veio a
-// primeira (ver sortearVantagens, em js/vantagens.js).
+// primeira (ver fuVantagensDoDna, em js/vantagens-fu.js).
 // ═══════════════════════════════════════════════════════════════════
 
 // ── O convite, preso ao avatar ──────────────────────────────────────

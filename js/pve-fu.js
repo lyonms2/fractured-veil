@@ -265,7 +265,9 @@ function abrirCombatePvE() {
     return;
   }
 
-  const nivelTotal = equipa.reduce((s, a) => s + (a.nivel || 1), 0);
+  // A MESMA conta que a barra da equipa mostra (fuPoderDaEquipa, em
+  // js/ficha-fu.js): o número que o jogador vê é o que escolhe o inimigo.
+  const nivelTotal = fuPoderDaEquipa(equipa);
   const inimigo = _pveGerarInimigo(nivelTotal);
   const semente = Math.floor(Math.random() * 1e6);
 

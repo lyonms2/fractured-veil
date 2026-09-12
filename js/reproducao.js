@@ -400,8 +400,18 @@ function faltaParaApodrecer(ovo, agora) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
+  /* O _reprRng sai também, e é o único interno nesta lista.
+
+     O tools/genetica.js confere que o acaso do cruzamento não tem lado
+     preferido — que a herança não puxa para a mãe nem para o pai. Para
+     isso tem de lhe chamar directamente.
+
+     Chegava-lhe antes porque o carregador das auditorias colava este
+     arquivo inteiro num `new Function`, e lá dentro tudo era visível.
+     Esse carregador saiu com o 3D&T, e o que era acidente passa a ser
+     declarado. */
   module.exports = { podeCruzar, cruzarDna, cruzar, ovoPronto, faltaParaChocar,
                      ovoSemNinho, ovoPodre, faltaParaApodrecer,
-                     tempoDeChoco, _reprCuidado, _reprRetrato,
+                     tempoDeChoco, _reprCuidado, _reprRetrato, _reprRng,
                      REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS, REPR_SEM_NINHO_MS };
 }

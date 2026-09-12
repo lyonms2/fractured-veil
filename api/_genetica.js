@@ -35,7 +35,6 @@
 const cores       = require('../js/cores.js');
 const nascimento  = require('../js/nascimento.js');
 const raridade    = require('../js/raridade.js');
-const fichaDT     = require('../js/ficha-3dt.js');
 // A reprodução entra pela mesma porta e pela mesma razão: o DNA de um
 // filho é o cruzamento de dois pais, e essa conta tem de ser feita uma
 // vez só. Ela chama o sexoDe, o faseDoSlot e o coresDe por nome global —
@@ -67,11 +66,11 @@ const magiasFU    = require('../js/magias-fu.js');
 // A fase sai do nível, e o js/state.js não corre fora do navegador (mexe
 // no ecrã e em vinte globais). São duas linhas e leem-se de lá tal como
 // estão — a mesma escada, escrita uma vez, em js/state.js.
-const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
-const faseFromNivel = n => faseDePontos(fichaDT.pontosDoAvatar('Comum', n || 1));
+const FASE_DEGRAUS  = [5, 11, 27];
+const faseFromNivel = n => FASE_DEGRAUS.filter(d => (n || 1) >= d).length;
 
-Object.assign(global, cores, nascimento, raridade, fichaDT, reproducao, fichaFU, vantagensFU, motorFU, magiasFU,
-              { faseDePontos, faseFromNivel });
+Object.assign(global, cores, nascimento, raridade, reproducao, fichaFU, vantagensFU, motorFU, magiasFU,
+              { FASE_DEGRAUS, faseFromNivel });
 
 /* Um seed que o jogador não escolhe.
 
@@ -157,7 +156,7 @@ function certidaoDeChoco(ovo, criador) {
 }
 
 module.exports = {
-  cores, nascimento, raridade, fichaDT, reproducao, fichaFU, motorFU,
+  cores, nascimento, raridade, reproducao, fichaFU, motorFU,
   faseFromNivel, seedNovo, idNovo, ovoIdNovo,
   certidaoDeInvocacao, ovoDeCruza, certidaoDeChoco,
 };

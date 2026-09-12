@@ -35,7 +35,8 @@
 // ── O QUE A RARIDADE FAZ E NÃO FAZ ──
 //
 // NÃO dá pontos de ficha: eles são a causa e não o efeito, e pô-la a
-// pagá-los seria um círculo. O pontosDoAvatar deixou de a ler.
+// pagá-los seria um círculo. A escada dos pontos deixou de a ler, e
+// depois saiu de vez com o 3D&T.
 //
 // DÁ corpo — asas, espinhos, aura, que aparecem à medida (js/data.js) —
 // e dá REPERTÓRIO: o Comum luta com um ataque e uma defesa, o Raro
@@ -44,11 +45,12 @@
 // ════════════════════════════════════════════════════════════════════
 
 /* Os degraus, em pontos. O primeiro elemento de cada par é o mínimo. */
-const RARIDADE_ESCADA = [
-  { min: 12, raridade: 'Lendário' },
-  { min:  8, raridade: 'Raro' },
-  { min:  0, raridade: 'Comum' },
-];
+/* A ESCADA DA RARIDADE SAIU DAQUI.
+
+   Era uma lista de degraus em PONTOS de ficha — a medida do 3D&T. A
+   raridade passa a sair do nível, e a conta vive no fuRaridadeDoNivel
+   (js/ficha-fu.js), que é quem a dá à ficha. Uma só, onde havia duas
+   que por acaso concordavam. */
 
 /* O TECTO QUE O TEMPO DE JOGO IMPÕE.
 
@@ -73,11 +75,18 @@ function raridadeDaFase(fase) {
   return RARIDADE_POR_FASE[f];
 }
 
-// A raridade que estes pontos valem, sem olhar a mais nada.
-function raridadeDosPontos(pontos) {
-  const p = pontos || 0;
-  for (const degrau of RARIDADE_ESCADA) if (p >= degrau.min) return degrau.raridade;
-  return 'Comum';
+/* A raridade que este nível vale, sem olhar a mais nada.
+
+   Passou a ser uma porta para o fuRaridadeDoNivel (js/ficha-fu.js), que
+   é quem a decide para a ficha. A conta era feita aqui em pontos e lá em
+   níveis, e as duas davam o mesmo em todos os sessenta níveis — mas eram
+   duas contas, e duas contas do mesmo número acabam por discordar.
+
+   A que ficou é a da ficha, porque é a que decide dinheiro: a raridade
+   põe preço no avatar. */
+function raridadeDoNivel(nivel) {
+  return (typeof fuRaridadeDoNivel === 'function')
+    ? fuRaridadeDoNivel(nivel || 1) : 'Comum';
 }
 
 function grauDaRaridade(raridade) {
@@ -116,9 +125,7 @@ function faseDoSlot(slot) {
    nunca trava não é um travo: é uma linha à espera de discordar. */
 function raridadeDoSlot(slot) {
   if (!slot) return 'Comum';
-  const pontos = (typeof pontosDoAvatar === 'function')
-    ? pontosDoAvatar('Comum', slot.nivel || 1) : 1;
-  return raridadeDosPontos(pontos);
+  return raridadeDoNivel(slot.nivel || 1);
 }
 
 /* ── O ÚNICO ESCRITOR ──
@@ -170,8 +177,8 @@ function podeSerVendido(slot) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU, RARIDADE_ESCADA,
-                     raridadeDaFase, raridadeDosPontos, grauDaRaridade,
+  module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU,
+                     raridadeDaFase, raridadeDoNivel, grauDaRaridade,
                      faseDoSlot, raridadeDoSlot, sincronizarRaridade, sincronizarRaridades,
                      podeSerVendido };
 }

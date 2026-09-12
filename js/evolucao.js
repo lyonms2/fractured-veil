@@ -101,11 +101,9 @@ function _evoLinhasDaFicha() {
 
 /* ── O QUE ELE APRENDEU ──
 
-   Faltava, e era o ganho mais concreto que uma evolução dá. A escada das
-   magias (MAGIA_ESCADA, em js/magias.js) abre uma gaveta na fase 1 e
-   outra na fase 2; as outras duas vêm do grau de raridade. O painel
-   falava do corpo e dos números e nunca disto — o jogador chegava a
-   JOVEM e só descobria a magia nova ao abrir a ficha por acaso.
+   Faltava, e era o ganho mais concreto que uma evolução dá. O painel
+   falava do corpo e dos números e nunca disto — o jogador subia de
+   raridade e só descobria a magia nova ao abrir a ficha por acaso.
 
    Não se lê da escada: lê-se do repertório ANTES e DEPOIS, e diz-se a
    diferença. Assim vale para as gavetas que abrem por fase e para as que
@@ -226,7 +224,7 @@ function abrirEvolucao() {
     corpoUl.innerHTML = magias.map(m =>
       `<li><span class="evo-mag-papel">${m.papel}</span>` +
       `<span class="evo-mag-nome">${m.nome}</span>` +
-      `<span class="evo-mag-pm">${t('mag.custo', { pm: m.pm })}</span></li>`).join('');
+      `<span class="evo-mag-pm">${t('af.pm', { n: m.pm })}</span></li>`).join('');
     // A secção inteira desaparece quando não há magia nova — um título
     // por cima de uma lista vazia lê-se como avaria.
     const subMagias = ov.querySelector('#evoSubMagias');
@@ -251,10 +249,10 @@ function abrirEvolucao() {
        Aqui chega no momento certo, ao lado do nível, e só quando mudou
        mesmo. */
     const rarLinha = ov.querySelector('#evoRaridade');
-    if (rarLinha && typeof raridadeDosPontos === 'function' && typeof pontosDoAvatar === 'function') {
-      const deNv    = nivelVisto > 0 ? nivelVisto : nivel;
-      const rarAntes = raridadeDosPontos(pontosDoAvatar('Comum', deNv));
-      const rarAgora = raridadeDosPontos(pontosDoAvatar('Comum', nivel));
+    if (rarLinha && typeof fuRaridadeDoNivel === 'function') {
+      const deNv = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
+      const rarAntes = fuRaridadeDoNivel(deNv);
+      const rarAgora = fuRaridadeDoNivel(nivel);
       const subiu = rarAntes !== rarAgora;
       rarLinha.textContent = subiu ? t('evo.raridade', { raridade: rarAgora }) : '';
       rarLinha.style.display = subiu ? '' : 'none';

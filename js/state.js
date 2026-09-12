@@ -247,27 +247,34 @@ const FASES = t('fases');
    Um avatar podia ser ADULTO e Comum, ou Raro e ainda JOVEM, e nada
    explicava porquê — eram só dois números que se cruzavam por acaso.
 
-   Passa a haver uma escada só, e é a dos pontos:
+   Passa a haver uma escada só, e é a do NÍVEL:
 
-       0– 4 pts   BEBÊ     Comum      nv  1– 4
-       5– 7 pts   JOVEM    Comum      nv  5–10
-       8–11 pts   ADULTO   Raro       nv 11–26
-      12+  pts    ANCIÃO   Lendário   nv 27+
+       nv  1– 4   BEBÊ     Comum
+       nv  5–10   JOVEM    Comum
+       nv 11–26   ADULTO   Raro
+       nv 27+     ANCIÃO   Lendário
 
-   Os cortes da raridade não mudaram: são os que o js/raridade.js já
-   tinha. O que mudou foi a fase passar a ler o mesmo sítio.
+   ── ANTES PASSAVA PELOS PONTOS ──
 
-   Lê o orçamento BASE (pontosDoAvatar) e não o da ficha: o da ficha já
-   traz a vantagem e a desvantagem descontadas, e como é a fase que
-   decide quando essas aparecem, ler dali seria a fase a depender de si
-   própria. */
-/* UMA LINHA CADA, e não é estilo: o tools/evolucao.js lê estas regras
-   deste arquivo linha a linha, de propósito, para não haver uma segunda
-   cópia dos números. Escrevi o faseFromNivel em duas linhas e a
+   A fase lia-se do orçamento de pontos do 3D&T (pontosDoAvatar), e os
+   pontos liam-se do nível. Eram dois degraus para descer um: o nível dava
+   os pontos e os pontos davam a fase.
+
+   O motor novo não tem pontos — os quatro dados saem do arranjo que o
+   DNA escolhe e não se compram. Sem o primeiro degrau, a conta é directa.
+
+   E não mudou um único avatar: os números 5, 11 e 27 são exactamente os
+   mesmos cortes que a escada dos pontos dava, conferidos nos sessenta
+   níveis. São também os degraus da raridade do motor novo
+   (FU_NIVEL_RARO, FU_NIVEL_LENDARIO) — a fase é a escada da raridade
+   com um degrau a mais no fundo, e sempre foi, através dos pontos. */
+/* UMA LINHA CADA, e não é estilo: as ferramentas leem estas regras deste
+   arquivo linha a linha (tools/fase.js), de propósito, para não haver uma
+   segunda cópia dos números. Escrevi o faseFromNivel em duas linhas e a
    extração trouxe metade — e a guarda dela, que contava as linhas, nem
    deu por isso porque o total continuava certo. */
-const faseDePontos  = p => { const v = p || 0; return v < 5 ? 0 : v < 8 ? 1 : v < 12 ? 2 : 3; };
-const faseFromNivel = n => faseDePontos((typeof pontosDoAvatar === 'function') ? pontosDoAvatar('Comum', n || 1) : 1);
+const FASE_DEGRAUS  = [5, 11, 27];
+const faseFromNivel = n => FASE_DEGRAUS.filter(d => (n || 1) >= d).length;
 // Idade mínima (tempo de jogo real, em segundos) por fase — impede que
 // alguém compre/grinde XP e pule direto pra fase adulta sem tempo de jogo.
 /* O TEMPO DE JOGO SAIU DA CONTA.

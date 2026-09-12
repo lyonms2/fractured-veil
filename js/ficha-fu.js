@@ -469,6 +469,29 @@ function fuFicha(slot) {
 
    Uma porta só, e lê sempre a escolha. */
 
+/* ══════════════════════════════════════════════════════════════════
+   QUANTO VALE UM AVATAR NUMA LUTA
+
+   O NÍVEL, e mais nada. É a medida deste motor: a vida, a magia, a
+   precisão, o dano extra e as afinidades saem todos dele, e os quatro
+   dados não saem de lado nenhum que cresça.
+
+   Vive aqui e não em quem a mostra porque tem DOIS leitores que têm de
+   concordar: a barra da equipa, que diz ao jogador quanto ele vale, e o
+   emparelhamento do PvE, que escolhe o inimigo. Se um somasse níveis e o
+   outro somasse outra coisa, o número na tela deixava de explicar contra
+   quem se vai lutar — e era a tela a mentir, não o emparelhamento.
+   ══════════════════════════════════════════════════════════════════ */
+function fuPoderDoAvatar(slot) {
+  if (!slot || slot.dead) return 0;
+  return Math.min(FU_NIVEL_MAX, Math.max(1, slot.nivel | 0 || 1));
+}
+
+function fuPoderDaEquipa(membros) {
+  if (!Array.isArray(membros)) return 0;
+  return membros.reduce((t, m) => t + fuPoderDoAvatar(m), 0);
+}
+
 /* Uma lista escrita à mão ao lado de outra: se alguém acrescentar uma
    cor ao js/cores.js e esquecer o tipo dela aqui, o avatar nasce sem
    tipo de dano e ninguém percebe porquê. Grita ao carregar. */
@@ -488,6 +511,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fuSubirDado, fuDescerDado, fuSomaDoGene, fuArranjoDoDna,
     fuOrdemDosAtributos, fuTipoDaCor, fuTipoDoDna, fuCosturaDoDna,
     fuVizinhoDoTipo, fuAfinidades, fuRaridadeDoNivel, fuFicha,
+    fuPoderDoAvatar, fuPoderDaEquipa,
     FU_NIVEL_MAX, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
   };
 }

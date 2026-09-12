@@ -13,9 +13,22 @@
 //
 // Correr:  node tools/genetica.js
 // ═══════════════════════════════════════════════════════════════════
-const { M } = require('./auditoria-base.js');
+/* ── DE ONDE VEM O QUE SE MEDE ──
 
-const CARACS = ['F', 'H', 'R', 'A'];
+   Era o tools/auditoria-base.js, que colava oito arquivos do 3D&T num
+   `new Function` e devolvia tudo. Saiu com o motor.
+
+   Agora é o api/_genetica.js, que é o carregador do SERVIDOR: carrega os
+   mesmos módulos que o navegador carrega e põe-nos no global. Auditar
+   pelo carregador de produção em vez de por um montado à mão tem uma
+   vantagem que não é pequena — se um dia um arquivo deixar de ser
+   carregado lá, esta ferramenta dá por isso. */
+require('../api/_genetica.js');
+const M = global;
+
+// Os quatro do motor novo. Eram F, H, R e A; o DNA guarda-os com esses
+// nomes ainda (FU_GENE_DO_ATRIB, em js/ficha-fu.js) e só a leitura mudou.
+const ATRIBS = M.FU_ATRIBS;
 const N = 20000;
 
 let passou = 0, falhou = 0;
@@ -68,248 +81,205 @@ const comPar = nascido(99).nascimento.dna.genes.sexo;
 ok(Array.isArray(comPar) && comPar[0] === 'X' && (comPar[1] === 'X' || comPar[1] === 'Y'),
    'o par sexual fica guardado, e não só o resultado', comPar.join(''));
 
-// ═══════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 titulo('A TENDÊNCIA INCLINA');
 
-// Para cada avatar: qual característica o DNA puxa mais, e onde ele
-// acabou ao nível 35. Se a tendência não servir para nada, a vocação
-// acerta em 25% dos casos — o acaso puro entre quatro.
-let acertos = 0, total = 0;
-const ganhoPorPeso = {};   // peso → média da característica ao nível 35
+/* ── A MESMA PERGUNTA, OUTRA ENGRENAGEM ──
+
+   Antes: o DNA inclinava para onde caíam os PONTOS de ficha, e media-se
+   se quem tinha vocação para a Força acabava mais forte.
+
+   Agora não há pontos. O DNA decide qual dos quatro atributos leva o
+   dado MAIOR (fuOrdemDosAtributos, em js/ficha-fu.js), e a pergunta é a
+   mesma dita noutra língua: o gene com a soma mais alta fica com o maior
+   dado?
+
+   Aqui não é "em média" — é sempre, por construção, e por isso a barra
+   é alta. O acaso só entra nos EMPATES, e é a secção seguinte que o
+   mede. */
+let coroou = 0, empates = 0, nTend = 0;
 for (let i = 0; i < N; i++) {
   const s = nascido(i * 17 + 3);
-  const t = M.tendenciaDoDna(s.nascimento.dna);
-  const f = M.fichaDeAvatar(s.seed, 'Comum', 35, s.nascimento);
+  const dna = s.nascimento.dna;
+  const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
 
-  const voc = M.vocacaoDoDna(s.nascimento.dna)[0];
-  // Só conta quando a vocação é clara: um empate no topo não tem
-  // resposta certa, e contá-lo seria inventar um erro.
-  const pesos = CARACS.map(k => t[k]).sort((a, b) => b - a);
-  if (pesos[0] > pesos[1]) {
-    total++;
-    const maior = CARACS.reduce((a, b) => f[b] > f[a] ? b : a);
-    if (maior === voc) acertos++;
-  }
+  const somas = ATRIBS.map(a => [a, M.fuSomaDoGene(dna, M.FU_GENE_DO_ATRIB[a])]);
+  const ordenadas = somas.slice().sort((x, y) => y[1] - x[1]);
+  nTend++;
+  // Um empate no topo não tem resposta certa, e contá-lo seria inventar
+  // um erro. Conta-se à parte.
+  if (ordenadas[0][1] === ordenadas[1][1]) { empates++; continue; }
 
-  for (const k of CARACS) {
-    (ganhoPorPeso[t[k]] = ganhoPorPeso[t[k]] || []).push(f[k]);
-  }
+  /* PELA ORDEM, e não pelo maior dado.
+
+     Medi primeiro "qual atributo tem o dado maior" e deu 75%. Não era o
+     motor: 44% dos arranjos têm EMPATE no topo dos dados — o
+     especialista é 10·10·6·6 e o equilibrado é 8·8·8·8 — e nesses o meu
+     `reduce` devolvia o primeiro da lista FU_ATRIBS em vez do primeiro da
+     ordem. Estava a medir a ordem do meu array.
+
+     A pergunta certa é sobre a ORDEM, que é onde a decisão mora: o gene
+     de soma mais alta fica em primeiro lugar, e é o primeiro lugar que
+     recebe o maior dado do arranjo. */
+  if (f.ordem[0] === ordenadas[0][0]) coroou++;
 }
-/* O intervalo é largo de propósito, e as duas pontas são o que importa:
-   abaixo de 40% o DNA não estaria a inclinar nada de útil, e acima de
-   85% teria deixado de ser tendência para passar a ser destino. Um
-   número apertado aqui seria eu a afinar o jogo para bater na minha
-   própria expectativa em vez de verificar a propriedade. */
-const taxa = acertos / total * 100;
-ok(taxa > 40 && taxa < 85, 'a vocação costuma ganhar, mas está longe de ser certa',
-   taxa.toFixed(1) + '% (acaso puro 25%, destino seria 100%) em ' + total.toLocaleString('pt-BR') + ' casos');
+const semEmpate = nTend - empates;
+const pctCoroa = coroou / Math.max(1, semEmpate) * 100;
+ok(pctCoroa > 99.9, 'o gene mais forte fica em primeiro lugar',
+   pctCoroa.toFixed(1) + '% de ' + semEmpate.toLocaleString('pt-BR') + ' sem empate');
 
-const escada = Object.keys(ganhoPorPeso).map(Number).sort((a, b) => a - b)
-  .map(p => {
-    const v = ganhoPorPeso[p];
-    return { peso: p, media: v.reduce((a, b) => a + b, 0) / v.length, n: v.length };
-  });
-console.log('\n       peso do gene → característica média ao nível 35');
-for (const e of escada) {
-  console.log('       peso ' + e.peso + '  →  ' + e.media.toFixed(2).padStart(5) +
-              '   (' + e.n.toLocaleString('pt-BR') + ' amostras)');
+// e o primeiro lugar recebe mesmo o maior dado que o arranjo tem
+let primeiroMenor = 0;
+for (let i = 0; i < 3000; i++) {
+  const s = nascido(i * 41 + 9);
+  const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
+  const maior = Math.max.apply(null, ATRIBS.map(a => f[a]));
+  if (f[f.ordem[0]] !== maior) primeiroMenor++;
 }
-let monotona = true;
-for (let i = 1; i < escada.length; i++) if (escada[i].media <= escada[i - 1].media) monotona = false;
-ok(monotona, 'mais peso dá sempre mais característica, sem degrau ao contrário',
-   escada[0].media.toFixed(2) + ' → ' + escada[escada.length - 1].media.toFixed(2));
+ok(primeiroMenor === 0, 'e o primeiro lugar leva o maior dado do arranjo',
+   '3.000 avatares · ' + primeiroMenor + ' fora');
+ok(empates / nTend < 0.5, 'e há empates, mas não são a regra',
+   (empates / nTend * 100).toFixed(1) + '% com empate no topo');
 
-// ═══════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 titulo('MAS NÃO GARANTE');
 
-// O mesmo DNA, seeds diferentes. Se o DNA determinasse o resultado,
-// estes avatares seriam gémeos idênticos.
+/* Dois avatares com o MESMO DNA e seeds diferentes têm de acabar
+   diferentes — senão o seed não serve para nada e dois irmãos são
+   gémeos idênticos.
+
+   No motor novo a diferença entra por dois sítios: o desempate da ORDEM
+   dos atributos, e a COSTURA, que se sorteia pelo seed. O arranjo, esse,
+   sai só do DNA — e é suposto: é a parte que se herda. */
 const molde = nascido(12345).nascimento;
 const fichas = [];
-for (let i = 0; i < 2000; i++) fichas.push(M.fichaDeAvatar(i * 7 + 1, 'Comum', 35, molde));
+for (let i = 0; i < 2000; i++)
+  fichas.push(M.fuFicha({ seed: i * 7 + 1, nivel: 35, nascimento: molde }));
 
-const iguais = new Set(fichas.map(f => CARACS.map(k => f[k]).join('/')));
-ok(iguais.size > 10, 'o mesmo DNA dá fichas diferentes',
-   iguais.size + ' fichas distintas em 2.000 irmãos');
+/* O seed só desempata. Um DNA sem empates nas somas dá sempre a mesma
+   ordem — e é suposto: a ordem é herança, não acaso.
 
-const vocDoMolde = M.vocacaoDoDna(molde.dna)[0];
-const falhaVocacao = fichas.filter(f => CARACS.reduce((a, b) => f[b] > f[a] ? b : a) !== vocDoMolde).length;
-ok(falhaVocacao > 0, 'um avatar pode falhar a própria vocação',
-   falhaVocacao + ' dos 2.000 não acabaram com ' + vocDoMolde + ' à frente');
+   Afirmei primeiro que ela variava, e falhou com 1 ordem em 2.000. Era a
+   afirmação que estava errada: este molde não tem empate nenhum. O que
+   se confere é o que o seed FAZ — desempatar quando há empate. */
+const ordens = new Set(fichas.map(f => f.ordem.join('/')));
+const somasDoMolde = ATRIBS.map(a => M.fuSomaDoGene(molde.dna, M.FU_GENE_DO_ATRIB[a]));
+const temEmpate = new Set(somasDoMolde).size < ATRIBS.length;
+ok(ordens.size === (temEmpate ? ordens.size : 1),
+   temEmpate ? 'com empate nas somas, o seed decide a ordem'
+             : 'sem empate nas somas, a ordem é só do DNA',
+   ordens.size + ' ordem(ns) em 2.000 irmãos · somas ' + somasDoMolde.join('/'));
 
-const espalha = CARACS.map(k => {
-  const v = fichas.map(f => f[k]);
-  return k + ' ' + Math.min(...v) + '–' + Math.max(...v);
-}).join('  ');
-ok(true, 'amplitude de cada característica entre irmãos', espalha);
+/* E um molde COM empate, fabricado de propósito: aí o seed tem de mexer.
+   Sem esta metade, a linha acima passava com o desempate avariado. */
+const gemeo = JSON.parse(JSON.stringify(molde));
+for (const a of ATRIBS) gemeo.dna.genes[M.FU_GENE_DO_ATRIB[a]] = [3, 3];
+const ordensGemeo = new Set();
+for (let i = 0; i < 500; i++)
+  ordensGemeo.add(M.fuFicha({ seed: i * 7 + 1, nivel: 35, nascimento: gemeo }).ordem.join('/'));
+ok(ordensGemeo.size > 4, 'com as quatro somas iguais, o seed decide tudo',
+   ordensGemeo.size + ' ordens distintas em 500 seeds');
 
-// ═══════════════════════════════════════════════════════════════════
+const costuras = new Set(fichas.map(f => f.costura));
+ok(costuras.size > 3, 'e costuras diferentes', costuras.size + ' costuras distintas');
+
+const arranjos = new Set(fichas.map(f => f.arranjo));
+ok(arranjos.size === 1, 'mas o arranjo é do DNA, e não do seed',
+   'os 2.000 irmãos são todos ' + [...arranjos][0]);
+
+// ═════════════════════════════════════════════════════════════════
 titulo('O ORÇAMENTO NÃO SE MEXEU');
 
-// A tendência muda ONDE os pontos caem. Se mudasse quantos são, tinha
-// mexido no balanceamento do combate sem ninguém pedir.
-/* O QUE O DNA NÃO PODE FAZER É PAGAR PONTOS.
+/* A pergunta sobreviveu à troca de motor quase intacta: o DNA DISTRIBUI,
+   e nunca cria nem destrói.
 
-   Isto comparava o total FINAL, e passou a falhar quando a índole entrou:
-   o feitio inclina qual virtude e qual defeito saem, elas custam preços
-   diferentes, e portanto o total final mexe-se. Não é defeito — é a
-   mesma variação que o seed já dava, só que distribuída de outra maneira.
+   Antes media-se em pontos de ficha. Agora mede-se nos dados: os quatro
+   arranjos possíveis somam todos o mesmo número de faces. Um DNA que
+   desse um arranjo mais gordo do que outro seria um DNA a dar força de
+   graça — e a escolha do arranjo deixaria de ser uma escolha. */
+const somasDosArranjos = M.FU_ARRANJOS.map(a => a.dados.reduce((t, d) => t + d, 0));
+ok(new Set(somasDosArranjos).size === 1,
+   'os quatro arranjos somam todos o mesmo',
+   M.FU_ARRANJOS.map((a, k) => a.id + ' ' + somasDosArranjos[k]).join(' · '));
 
-   O que tem de ficar de pé é o ORÇAMENTO BASE: os pontos que o nível
-   dá, antes de virtude e defeito mexerem neles. Esse o DNA não toca, e
-   é dele que sai a raridade. */
-let baseQuebrada = 0, somaComDna = 0, somaSemDna = 0, n2 = 0;
+let fora = 0, nArr = 0;
 for (let i = 0; i < 5000; i++) {
   const s = nascido(i * 13 + 5);
-  for (const nv of [1, 10, 20, 35]) {
-    const com = M.fichaDeAvatar(s.seed, 'Comum', nv, s.nascimento);
-    const sem = M.fichaDeAvatar(s.seed, 'Comum', nv, null);
-    if (com.pontosBase !== sem.pontosBase) baseQuebrada++;
-    somaComDna += CARACS.reduce((t, k) => t + com[k], 0);
-    somaSemDna += CARACS.reduce((t, k) => t + sem[k], 0);
-    n2++;
-  }
+  const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
+  const soma = ATRIBS.reduce((t, a) => t + f[a], 0);
+  if (soma !== somasDosArranjos[0]) fora++;
+  nArr++;
 }
-ok(baseQuebrada === 0, 'o orçamento base não depende do DNA — vem só do nível',
-   n2.toLocaleString('pt-BR') + ' fichas comparadas');
-ok(Math.abs(somaComDna - somaSemDna) / n2 < 0.35,
-   'e a soma das características quase não se move',
-   (somaComDna / n2).toFixed(2) + ' com DNA · ' + (somaSemDna / n2).toFixed(2) + ' sem');
+ok(fora === 0, 'e nenhum avatar sai com mais faces do que isso',
+   nArr.toLocaleString('pt-BR') + ' avatares, todos com ' + somasDosArranjos[0]);
 
-
-// Subir de nível nunca pode baixar uma característica. Já custou um
-// defeito antes, e os pesos novos são a ocasião perfeita para o repetir.
-let regressoes = 0;
-for (let i = 0; i < 3000; i++) {
-  const s = nascido(i * 29 + 11);
-  let ant = M.fichaDeAvatar(s.seed, 'Comum', 1, s.nascimento);
-  for (let nv = 2; nv <= 35; nv++) {
-    const f = M.fichaDeAvatar(s.seed, 'Comum', nv, s.nascimento);
-    for (const k of CARACS) if (f[k] < ant[k]) regressoes++;
-    ant = f;
-  }
-}
-ok(regressoes === 0, 'nenhuma característica desce ao subir de nível',
-   '3.000 avatares × 34 subidas');
-
-// ═══════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 titulo('A PROVENIÊNCIA');
 
-/* O que o ovo Lendário compra, medido em vez de suposto.
+/* ── E AQUI ESTÁ UMA DECISÃO POR TOMAR ──
 
-   Desde que todos passaram a nascer Comuns (o slot fica mesmo em
-   'Comum', ver js/eggs.js), a proveniência só podia pagar pelos genes.
-   E os genes só dão FEITIO: os pesos são relativos à característica mais
-   fraca do próprio avatar, portanto alelos todos altos e alelos todos
-   baixos dão a mesma vocação. É por isso que as três linhas abaixo saem
-   iguais — e não por acaso da amostra. */
-const proven = [];
+   A raridade do OVO de onde o avatar veio — Comum, Raro, Lendário —
+   escolhe as faixas dos alelos (gerarDna, em js/nascimento.js). No motor
+   antigo isso mexia nos pontos.
+
+   Neste, não mexe em NADA, e esta secção existe para o dizer alto em vez
+   de o deixar escondido. A razão é aritmética: as faixas têm a mesma
+   largura nas três origens, o arranjo lê o ESPALHO das somas (máximo
+   menos mínimo), e uma constante somada aos dois lados cancela-se.
+
+   A verificação afirma o que É verdade hoje. No dia em que a origem
+   passar a pesar — o manual tem o degrau de +1 tamanho de dado para
+   isso — esta linha falha, e é exactamente assim que ela deve avisar. */
+const porOrigem = {};
 for (const origem of ['Comum', 'Raro', 'Lendário']) {
-  let soma = 0, contraste = 0, bruto = 0;
-  for (let i = 0; i < 5000; i++) {
+  const contas = { arranjos: {}, soma: 0, n: 0 };
+  for (let i = 0; i < 4000; i++) {
     const s = nascido(i * 23 + 3, origem);
-    const t = M.tendenciaDoDna(s.nascimento.dna);
-    const f = M.fichaDeAvatar(s.seed, s.raridade, 35, s.nascimento);
-    soma += CARACS.reduce((a, k) => a + f[k], 0);
-    const ps = CARACS.map(k => t[k]);
-    contraste += Math.max(...ps) - Math.min(...ps);
-    for (const k of CARACS) {
-      const par = s.nascimento.dna.genes[k];
-      bruto += 2 * Math.max(par[0], par[1]) + Math.min(par[0], par[1]);
-    }
+    const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
+    contas.arranjos[f.arranjo] = (contas.arranjos[f.arranjo] || 0) + 1;
+    contas.soma += ATRIBS.reduce((t, a) => t + f[a], 0);
+    contas.n++;
   }
-  proven.push({ origem, soma: soma / 5000, contraste: contraste / 5000, bruto: bruto / 5000 });
-  console.log('       ' + origem.padEnd(9) +
-              'genes: ' + (bruto / 5000).toFixed(1).padStart(5) +
-              '   vocação: ' + (contraste / 5000).toFixed(2) +
-              '   características ao nv35: ' + (soma / 5000).toFixed(2));
+  porOrigem[origem] = contas;
+  console.log('        ' + origem.padEnd(10)
+    + Object.entries(contas.arranjos).map(([k, v]) =>
+        k + ' ' + Math.round(v / contas.n * 100) + '%').join('  '));
 }
-const dif = proven[2].soma - proven[0].soma;
-console.log('');
-console.log('       ⚠ O ovo Lendário dá ' + (proven[2].bruto - proven[0].bruto).toFixed(1) +
-            ' pontos de gene a mais que o Comum');
-console.log('         e isso vale ' + dif.toFixed(2) + ' características ao nível 35.');
-console.log('         Antes de todos nascerem Comuns valia +5 pontos (10 contra 5).');
-console.log('         Não é desta tarefa: quem decide o preço da proveniência');
-console.log('         é a progressão. Fica medido para essa conversa.');
+const assinaturas = Object.values(porOrigem).map(c =>
+  Object.keys(c.arranjos).sort().map(k => k + ':' + c.arranjos[k]).join(','));
+ok(new Set(assinaturas).size === 1,
+   'a origem do ovo NÃO muda a ficha — nem um arranjo',
+   'as três origens dão exactamente a mesma distribuição');
 
-console.log('\n─────────────────────────────');
-// ════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 titulo('A ÍNDOLE');
 
-// Quantos nascem de cada feitio.
-{
-  const conta = {};
-  for (let i = 0; i < N; i++) {
-    const s = nascido(i * 41 + 5);
-    const d = M.indoleDominante(s.nascimento.dna);
-    conta[d] = (conta[d] || 0) + 1;
-  }
-  console.log('       ' + M.NASC_INDOLES.map(k =>
-    k + ' ' + ((conta[k] || 0) / N * 100).toFixed(1) + '%').join('  ·  '));
-  const menor = Math.min.apply(null, M.NASC_INDOLES.map(k => (conta[k] || 0) / N * 100));
-  ok(menor > 25, 'os três feitios nascem em proporções parecidas',
-     'o menos comum tem ' + menor.toFixed(1) + '%');
+/* O feitio do DNA inclina a VANTAGEM, e o js/vantagens-fu.js diz que
+   inclina sem decidir. Aqui mede-se o efeito visto de fora: um avatar de
+   feitio lâmina sai mais vezes com uma vantagem de lâmina do que um de
+   feitio guarda.
+
+   É uma segunda opinião sobre o que o tools/auditoria-dons.js já mede —
+   e de propósito: aquele pergunta ao sorteio, este pergunta ao AVATAR
+   NASCIDO, passando pelo nascimento, pela certidão e pela ficha. Se
+   alguma dessas pontes se partir, aquele continua verde e este não. */
+const porIndole = {};
+for (let seed = 1; seed <= 12000; seed++) {
+  const s = nascido(seed * 3 + 1);
+  const ind = M.indoleDominante(s.nascimento.dna);
+  const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
+  const fam = M.FU_VANTAGENS[f.vantagens[0].id].familia;
+  porIndole[ind] = porIndole[ind] || { n: 0, propria: 0 };
+  porIndole[ind].n++;
+  if (fam === ind) porIndole[ind].propria++;
 }
-
-/* A índole inclina o que sai: magias, virtude e defeito.
-
-   Compara-se o feitio marcado (dois alelos iguais, o mais extremo que
-   há) com o sorteio limpo. Se o gene não servisse para nada, as três
-   linhas eram iguais. */
-{
-  const medir = (par) => {
-    const dna = { genes: { indole: par, F: [2,2], H: [2,2], R: [2,2], A: [2,2] } };
-    let magias = 0, vant = 0, desv = 0, nM = 0, nV = 0;
-    for (let seed = 1; seed <= 4000; seed++) {
-      const cert = par ? { dna } : null;
-      const f = M.fichaDeAvatar(seed, 'Lendário', 35, cert);
-      const m = M.magiasDoAvatar(f);
-      // O PREÇO é o que mede o eixo do feitio nas magias: dentro de uma
-      // gaveta a família mal varia, mas o preço varia sempre.
-      for (const c of M.MAGIA_SLOTS) if (m[c]) { nM++; magias += m[c].pm; }
-      nV++;
-      const fv = f.vantagem    && M.VANTAGENS[f.vantagem.id];
-      const fd = f.desvantagem && M.DESVANTAGENS[f.desvantagem.id];
-      if (fv && fv.familia === 'lamina') vant++;
-      if (fd && fd.familia === 'lamina') desv++;
-    }
-    return { magias: magias / nM, vant: vant / nV * 100, desv: desv / nV * 100 };
-  };
-  const limpo  = medir(null);
-  const guarda = medir([0, 0]);
-  const lamina = medir([2, 2]);
-
-  console.log('');
-  const sustentacao = medir([1, 1]);
-  console.log('                     PM médio  vantagem  desvantagem');
-  console.log('                     da magia   (% de família LÂMINA)');
-  const linha = (rot, r) => console.log('       ' + rot.padEnd(19) +
-    r.magias.toFixed(2).padStart(5) + '   ' + r.vant.toFixed(1).padStart(6) + '%  ' +
-    r.desv.toFixed(1).padStart(9) + '%');
-  linha('sem gene (limpo)', limpo);
-  linha('feitio SUSTENTACAO', sustentacao);
-  linha('feitio GUARDA', guarda);
-  linha('feitio LÂMINA', lamina);
-
-  ok(lamina.magias > limpo.magias && sustentacao.magias < limpo.magias,
-     'o feitio inclina que magias saem — a lâmina puxa para as caras, a sustentação para as baratas',
-     'sustentação ' + sustentacao.magias.toFixed(2) + ' < limpo ' + limpo.magias.toFixed(2) +
-     ' < lâmina ' + lamina.magias.toFixed(2) + ' PM');
-  ok(lamina.vant > guarda.vant, 'e inclina a virtude',
-     'guarda ' + guarda.vant.toFixed(0) + '% · lâmina ' + lamina.vant.toFixed(0) + '%');
-  ok(lamina.desv > guarda.desv, 'e o defeito vem do mesmo terreno que a virtude',
-     'guarda ' + guarda.desv.toFixed(0) + '% · lâmina ' + lamina.desv.toFixed(0) + '%');
-
-  /* E NÃO DECIDE. O feitio mais extremo que existe tem de continuar a
-     sair com virtudes de outra família — se não pudesse, isto tinha
-     deixado de ser genética e passado a ser uma classe de personagem. */
-  ok(lamina.vant < 85 && guarda.vant > 5,
-     'mas nunca decide: até o mais bruto sai com virtudes de outro feitio',
-     'lâmina fica-se por ' + lamina.vant.toFixed(0) + '% · guarda ainda tem ' +
-     guarda.vant.toFixed(0) + '%');
+for (const [ind, c] of Object.entries(porIndole)) {
+  const p = c.propria / c.n * 100;
+  ok(p > 40 && p < 90, 'o feitio ' + ind + ' inclina, e não decide',
+     p.toFixed(0) + '% de vantagens da própria família em ' + c.n.toLocaleString('pt-BR'));
 }
-
+ok(Object.keys(porIndole).length === 3, 'os três feitios aparecem',
+   Object.keys(porIndole).join(', '));
 
 // ══════════════════════════════════════════════════════════════════
 titulo('A HERANÇA NÃO TEM LADO PREFERIDO');

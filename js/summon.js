@@ -127,7 +127,7 @@ async function voltarAColonia() {
 
    Chegavam no 1, que é BEBÊ. E um bebé, neste jogo, quase não tem o que
    fazer: o ehBebe() (js/nascimento.js) dá-lhe só o golpe comum — as
-   magias entram na fase JOVEM (MAGIA_ESCADA, em js/magias.js) —, o
+   magias abrem-se todas na fase JOVEM (js/magias-fu.js) —, o
    selector de dificuldade só destranca o FÁCIL, e cruzar está a dez
    níveis. A primeira hora do jogo era um bicho com um movimento só.
 

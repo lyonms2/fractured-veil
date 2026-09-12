@@ -486,7 +486,7 @@ function nascer(opts) {
        Vivia só no slot, dentro do avatarSlots que o cliente escreve por
        inteiro. E o seed não é enfeite: dele saem o corpo desenhado
        (gerarSVG) e a FICHA DE COMBATE inteira — força, habilidade,
-       resistência, armadura, a vantagem e a desvantagem (fichaDeAvatar,
+       resistência, armadura, a vantagem e a desvantagem (a ficha antiga,
        em js/ficha-3dt.js). Trocar o número no console era escolher os
        atributos do bicho.
 
@@ -626,7 +626,7 @@ function ehBebe(slot) {
   const nv = slot.nivel || 1;
   /* Pedia certidão, para não mudar a ficha a quem nasceu antes de ela
      existir. Já não pede: com o repertório a crescer por etapas
-     (MAGIA_ESCADA, em js/magias.js), ter duas regras — uma para os
+     por raridade (js/magias-fu.js), ter duas regras — uma para os
      avatares novos e outra para os antigos — era garantir que uma delas
      apodrecia sem ninguém dar por isso. Ser bebé é estar na fase 0, e
      mais nada. */
@@ -652,5 +652,8 @@ if (typeof module !== 'undefined' && module.exports) {
     vigorDoDna, vigorDe, sexoDoDna, sexoDe,
     corpoDoDna, corpoDeSlot, corpoParesDeSlot,
     dnaLegivel, recessivosDoDna, tendenciaDe, origemDe, ehPrimordial,
+    /* O ehBebe sai também: o tools/evolucao.js confere que ele e a escada
+       da fase dizem a mesma coisa, e para isso tem de lhe chamar. */
+    ehBebe,
   };
 }

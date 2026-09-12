@@ -260,9 +260,38 @@ function fuDons(vantagens) {
   return d;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   QUEM PODE ESCOLHER, E ENTRE O QUÊ
+
+   Vieram do js/ficha-3dt.js e ficam aqui porque é aqui que a escolha
+   MORA: as duas opções são sobre vantagens, e era o único arquivo do
+   motor antigo que ainda as guardava.
+
+   A condição era "doze pontos de ficha ou mais". Passa a ser o nível 27,
+   que é exactamente o mesmo avatar — conferido nos sessenta níveis — e
+   que é o degrau do Lendário. Ser Ancião e ser Lendário sempre foram a
+   mesma coisa; agora dizem-no com o mesmo número.
+
+   A guarda vive AQUI e não na tela porque a tela não é o único caminho
+   — é a mesma lição do nome: quem FAZ é que guarda. */
+const FICHA_ESCOLHAS = ['vantagem', 'semDefeito'];
+
+function podeEscolherAnciao(slot) {
+  const s = slot || (typeof avatar !== 'undefined' ? avatar : null);
+  if (!s || s.dead) return false;
+  if (s.escolhaAnciao) return false;      // escolhe-se uma vez
+  /* O avatar activo tem o nível numa variável viva; os outros têm-no no
+     slot. É a mesma distância de sempre entre quem está em campo e quem
+     está guardado. */
+  const nv = (typeof nivel !== 'undefined' && typeof avatar !== 'undefined' && s === avatar)
+    ? nivel : (s.nivel || 1);
+  return nv >= FU_NIVEL_LENDARIO;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_VANTAGENS, FU_VANTAGENS_IDS, FU_ESTADOS_QUE_PEGAM,
+    FICHA_ESCOLHAS, podeEscolherAnciao,
     FU_DONS_SOMA, FU_DONS_VERDADE,
     fuVantagensDoDna, fuDons,
   };

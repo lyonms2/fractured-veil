@@ -28,14 +28,18 @@ const LINHAS_DA_FASE = require('./fase.js').linhasDaFase(RAIZ);
 
 const M = new Function('t',
   LINHAS_DA_FASE + NL +
-  rd('cores.js') + rd('data.js') + rd('nascimento.js') + rd('raridade.js') + rd('reproducao.js') +
-  rd('vantagens.js') + rd('ficha-3dt.js') + rd('magias.js') + rd('identidade.js') +
+  /* O vantagens.js, o ficha-3dt.js e o magias.js saíram daqui com o 3D&T.
+     Estavam na lista como contexto — esta ferramenta audita linhagem,
+     corpo e cores, e nunca lhes chamou nada. O ficha-fu.js entra no
+     lugar deles porque o faseDoSlot do raridade.js lhe pede a raridade. */
+  rd('cores.js') + rd('data.js') + rd('nascimento.js') + rd('ficha-fu.js') +
+  rd('raridade.js') + rd('reproducao.js') + rd('identidade.js') +
   `return { arvoreDe, vigorDe, vigorDoDna, NASC_VIGOR, NASC_VIGOR_FORTE, NASC_VIGOR_FRACO,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
             tempoDeChoco, _reprCuidado, REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS,
-            fichaDeAvatar, magiasDoAvatar, faseDoSlot,
+            fuFicha, fuRaridadeDoNivel, faseDoSlot,
             ehPrimordial, coresDe, _reprRetrato,
             corpoDoSeed, corpoDoDna, corpoDeSlot, corpoParesDeSlot, NASC_CORPO_TRACOS, gerarSVG };`
 )(x => x);

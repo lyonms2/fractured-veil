@@ -813,11 +813,11 @@ function checkXP() {
       _pl.textContent = t('gt.phase.label', {fase: FASES[faseAfter]});
       _pl.className = 'phase-label fase-' + FASES[faseAfter].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace('ê','e').replace('ç','c');
     }
-    // A frase era sempre "ficou mais forte". Só é verdade de quatro em
-    // quatro níveis: o FICHA_NIVEIS_POR_PONTO dá um ponto de ficha a cada
-    // quatro. Nos outros três prometia-se uma coisa que não acontecera.
-    addLog(t(_luSubiuPonto(nivel) ? 'gt.levelup.log' : 'gt.levelup.log_sem_ponto',
-             {nivel}), 'leg');
+    /* "Ficou mais forte", e agora é sempre verdade. No motor antigo só o
+       era de quatro em quatro níveis — o ponto de ficha vinha de quatro em
+       quatro — e havia uma segunda frase para os outros três. Neste, todo
+       o nível dá vida e magia: a frase de espera não tem caso. */
+    addLog(t('gt.levelup.log', { nivel }), 'leg');
     playLevelUp(nivel);
 
     /* A raridade sobe com os pontos, e por isso pergunta-se aqui.
@@ -846,64 +846,55 @@ function checkXP() {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   O QUE SE GANHA AO SUBIR DE NÍVEL
+/* ═══ O QUE SE GANHA AO SUBIR DE NÍVEL ══════════════════════════════
 
-   O overlay dizia "NÍVEL UP! / NÍVEL 7" e mais nada, e o registo dizia
-   sempre "seu avatar ficou mais forte". Fui verificar: o
-   FICHA_NIVEIS_POR_PONTO é 4, portanto o ponto de ficha vem de quatro em
-   quatro níveis. Em três de cada quatro subidas a frase prometia uma
-   coisa que não tinha acontecido.
+   ── AGORA GANHA-SE SEMPRE ──
 
-   Agora há duas mensagens e ambas são verdade. Quando o ponto vem, diz-se
-   qual característica subiu e de quanto, em verde. Quando não vem, diz-se
-   quantos níveis faltam — que transforma três subidas vazias em progresso
-   visível, em vez de três mentiras pequenas.
+   Havia aqui duas mensagens, e a segunda existia por causa do motor
+   antigo: o ponto de ficha vinha de dois em dois níveis, portanto em
+   metade das subidas não acontecia nada e dizia-se "faltam N níveis" —
+   que era a forma honesta de não mentir.
+
+   Neste motor todo o nível dá alguma coisa: dois de vida e um de magia,
+   sempre. A mensagem de espera deixou de ter caso, e saem com ela o
+   _luSubiuPonto e o _luFaltamParaPonto.
+
+   O que sobe, e quando:
+
+     vida, magia     todo o nível
+     precisão        de dez em dez
+     dano extra      nos degraus da raridade, 11 e 27
 
    Isto NÃO é a cerimónia: o nível sobe muitas vezes e não deve pedir um
-   clique. É a mesma janela de 1,8s de sempre, com uma linha a mais.
-═══════════════════════════════════════════════════════════════════ */
-function _luSubiuPonto(nv) {
-  if (typeof pontosDoAvatar !== 'function' || !avatar) return false;
-  try {
-    return pontosDoAvatar(avatar.raridade, nv) > pontosDoAvatar(avatar.raridade, nv - 1);
-  } catch (_) { return false; }
-}
-
-// Quantos níveis faltam para o próximo ponto de ficha.
-function _luFaltamParaPonto(nv) {
-  const passo = (typeof FICHA_NIVEIS_POR_PONTO !== 'undefined') ? FICHA_NIVEIS_POR_PONTO : 4;
-  const proximo = passo * (Math.floor((nv - 1) / passo) + 1) + 1;
-  return Math.max(1, proximo - nv);
-}
+   clique. É a mesma janela de 1,8s de sempre, com uma linha a mais. */
+const LU_LINHAS = [
+  ['pvMax',         'af.f.vida'],
+  ['pmMax',         'af.f.magia'],
+  ['bonusPrecisao', 'af.f.precisao'],
+  ['danoExtra',     'af.f.dano_extra'],
+];
 
 function _luGanho(nv) {
   const el = document.getElementById('luGanho');
   if (!el) return;
   el.className = 'lu-ganho';
   el.textContent = '';
-  if (!avatar || typeof fichaDeAvatar !== 'function') return;
+  if (!avatar || typeof fuFicha !== 'function') return;
 
-  if (!_luSubiuPonto(nv)) {
-    const faltam = _luFaltamParaPonto(nv);
-    el.textContent = t('gt.levelup.faltam', { n: faltam, p: t(faltam === 1 ? 'gt.nivel_um' : 'gt.nivel_varios') });
-    return;
-  }
-
-  // Subiu um ponto: descobre QUAL característica levou com ele.
   let antes, agora;
   try {
-    antes = fichaDeAvatar({ ...avatar, nivel: nv - 1 });
-    agora = fichaDeAvatar({ ...avatar, nivel: nv });
+    antes = fuFicha({ ...avatar, nivel: nv - 1 });
+    agora = fuFicha({ ...avatar, nivel: nv });
   } catch (_) { return; }
 
-  const nomes = { F: 'evo.f', H: 'evo.h', R: 'evo.r', A: 'evo.a', pv: 'evo.pv', pm: 'evo.pm' };
-  const subiu = Object.keys(nomes).filter(k => agora[k] > antes[k]);
+  const subiu = LU_LINHAS.filter(([k]) => agora[k] > antes[k]);
+  /* Se nada subir — o que só pode acontecer no tecto dos 60 — fica a
+     frase antiga, que é vaga mas não é falsa. */
   if (!subiu.length) { el.textContent = t('gt.levelup.mais_forte'); return; }
 
   el.classList.add('mostra');
-  el.innerHTML = subiu.map(k =>
-    `<span class="lu-g-item">${t(nomes[k])} <b>${antes[k]} → ${agora[k]}</b></span>`
+  el.innerHTML = subiu.map(([k, rot]) =>
+    `<span class="lu-g-item">${t(rot)} <b>${antes[k]} → ${agora[k]}</b></span>`
   ).join('');
 }
 
