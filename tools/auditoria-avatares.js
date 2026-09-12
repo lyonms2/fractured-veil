@@ -149,8 +149,14 @@ titulo('Um avatar sem DNA sai marcado, e sem números impossíveis');
     verificar(nome + ': com quatro dados verdadeiros',
       F.FU_ATRIBS.every(a => F.FU_DADOS.indexOf(f[a]) !== -1),
       F.FU_ATRIBS.map(a => f[a]).join(','));
-    verificar(nome + ': e com as cinco magias',
-      F.FU_ATRIBS.length === 4 && Object.keys(G.fuMagiasDe(f)).length === 5);
+    /* Três lugares e não cinco. Sem DNA legível o feitio cai no Guarda
+       (fuLugaresDe, em js/magias-fu.js) — é o que menos promete e o que
+       mais o aguenta de pé. Dar-lhe os cinco seria premiar a ficha
+       partida. */
+    verificar(nome + ': e com os três lugares do Guarda',
+      Object.keys(G.fuMagiasDe(f)).join(',')
+        === G.FU_LUGARES_DO_FEITIO.guarda.join(','),
+      Object.keys(G.fuMagiasDe(f)).join(','));
   }
 
   // e um avatar inteiro NÃO sai marcado — senão a marca não distinguia nada
@@ -252,7 +258,50 @@ titulo('Subir de nível não troca o avatar por outro');
     G.fuMagiaDe(r10, 'forte').id + ' → ' + G.fuMagiaDe(r11, 'forte').id);
 }
 
-/* ═══ 6 · O SERVIDOR VÊ O MESMO QUE O NAVEGADOR ═══════════════════ */
+/* ═══ 6 · OS TRÊS PRIMEIROS ═══════════════════════════════ */
+titulo('Os três primeiros saem um de cada feitio');
+{
+  /* É a ÚNICA vez em todo o jogo que o feitio não é sorteado, e vale a
+     pena dizer porquê: o feitio decide o repertório, e três sorteados ao
+     acaso podiam dar três Lâminas — uma primeira equipa sem cura nem
+     defesa, a perder sem que o jogador perceba porquê.
+
+     Do primeiro ovo em diante volta a sair do DNA e a herdar-se. */
+  const ORDEM = ['guarda', 'lamina', 'sustentacao'];
+  for (let volta = 1; volta <= 60; volta++) {
+    const feitios = [];
+    for (let i = 0; i < 3; i++) {
+      const c = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' }, ORDEM[i]);
+      const f = F.fuFicha({ seed: c.seed, nivel: 5, nascimento: c.nascimento });
+      feitios.push(f.feitio);
+      verificar('a invocação ' + (i + 1) + ' é ' + ORDEM[i] + ' (volta ' + volta + ')',
+        f.feitio === ORDEM[i], 'saiu ' + f.feitio);
+      verificar('e traz os três lugares dele (' + ORDEM[i] + ')',
+        Object.keys(G.fuMagiasDe(f)).join(',') === G.FU_LUGARES_DO_FEITIO[ORDEM[i]].join(','),
+        Object.keys(G.fuMagiasDe(f)).join(','));
+      /* E o RECESSIVO fica intacto: sobrescrever os dois dava três
+         linhagens puras à nascença, e a reprodução começava o jogo mais
+         pobre do que é. */
+      verificar('e o recessivo não foi tocado (' + ORDEM[i] + ')',
+        Array.isArray(c.nascimento.dna.genes.indole)
+        && c.nascimento.dna.genes.indole.length === 2);
+    }
+    verificar('a primeira equipa tem os três papéis (volta ' + volta + ')',
+      new Set(feitios).size === 3, feitios.join(','));
+  }
+
+  // e sem feitio pedido, volta a ser o DNA a decidir
+  const soltos = {};
+  for (let i = 0; i < 300; i++) {
+    const c = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
+    const f = F.fuFicha({ seed: c.seed, nivel: 5, nascimento: c.nascimento });
+    soltos[f.feitio] = (soltos[f.feitio] || 0) + 1;
+  }
+  verificar('sem feitio pedido, saem os três ao acaso',
+    Object.keys(soltos).length === 3, JSON.stringify(soltos));
+}
+
+/* ═══ 7 · O SERVIDOR VÊ O MESMO QUE O NAVEGADOR ═══════════════════ */
 titulo('O servidor compõe a mesma ficha que o navegador');
 {
   /* O api/_genetica.js carrega os mesmos arquivos e globaliza-os. Se um

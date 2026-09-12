@@ -140,9 +140,16 @@ titulo('O BEBÊ');
   ok(bebe.pvMax > 0 && bebe.pmMax > 0 && bebe.crise > 0,
      'e vida, magia e crise a sério',
      bebe.pvMax + ' PV · ' + bebe.pmMax + ' PM · crise ' + bebe.crise);
-  ok(Object.keys(M.fuMagiasDe(bebe)).length === 5,
-     'e os cinco lugares de magia, todos no primeiro degrau',
-     M.FU_LUGARES.map(l => M.fuMagiaDe(bebe, l).id).join(' '));
+  /* Três lugares e não cinco: o feitio decide quais. Um bebê já tem os
+     três dele, todos no primeiro degrau — o que cresce com a raridade é a
+     força de cada um, não quantos são. */
+  const magiasDoBebe = M.fuMagiasDe(bebe);
+  ok(Object.keys(magiasDoBebe).length === 3,
+     'e três lugares de magia, todos no primeiro degrau',
+     Object.values(magiasDoBebe).map(m => m.id).join(' '));
+  ok(Object.keys(magiasDoBebe).join(',') === M.FU_LUGARES_DO_FEITIO[bebe.feitio].join(','),
+     'e são os do feitio dele (' + bebe.feitio + ')',
+     Object.keys(magiasDoBebe).join(','));
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -30,12 +30,21 @@ function _ffuSexo(slot) {
   return (sx === 'M' ? '♂ ' : '♀ ') + t('af.f.sexo.' + sx);
 }
 
-function _ffuIndole(slot) {
-  const c = _ffuCertidao(slot);
-  const i = c && c.indole;
+/* O feitio, e o que ele lhe dá.
+
+   Vem da FICHA e já não da certidão: é ela que o lê do DNA, e uma
+   certidão velha a que falte o campo continua a dar o feitio certo.
+
+   E diz-se o lugar que ele abre, porque é essa a consequência que
+   interessa — sem isso o feitio era uma palavra bonita sem efeito
+   visível, que é o que ele foi até hoje. */
+function _ffuIndole(slot, f) {
+  const i = (f && f.feitio) || (_ffuCertidao(slot) || {}).indole;
   if (!i) return '';
+  const lugar = (typeof FU_LUGAR_DO_FEITIO !== 'undefined') ? FU_LUGAR_DO_FEITIO[i] : null;
+  const abre = lugar ? ` · ${esc(t('af.lugar.' + lugar))}` : '';
   return `<div class="ficha-vocacao ficha-indole" title="${esc(t('af.indole.' + i + '.ex'))}">◇ ${
-    esc(t('af.f.feitio', { i: t('af.indole.' + i) }))}</div>`;
+    esc(t('af.f.feitio', { i: t('af.indole.' + i) }))}${abre}</div>`;
 }
 
 /* ── O NOME E A DESCRIÇÃO DE UMA VANTAGEM ──
@@ -153,7 +162,7 @@ function _ffuLugares(f) {
   if (typeof fuMagiasDe !== 'function') return '';
   const magias = fuMagiasDe(f);
   const nome = m => (window._currentLang === 'en' && m.nomeEn) ? m.nomeEn : (m.nome || t('af.m.' + m.id));
-  return `<div class="ficha-lugares">${FU_LUGARES.map(l => {
+  return `<div class="ficha-lugares">${Object.keys(magias).map(l => {
     const m = magias[l];
     const custo = fuCusto(m, m.porAlvo ? (m.alvos || 1) : 1);
     return `<div class="cb-f-magia"><b>${esc(nome(m))}</b>
@@ -224,7 +233,7 @@ function renderFichaFU(slot, lutador) {
     ${aviso}
     <div class="ficha-vocacao" title="${esc(t('af.f.arranjo'))}">◆ ${
       esc(t('af.arr.' + f.arranjo))} · ${f.ordem.map(a => 'd' + f[a]).join(' ')}</div>
-    ${_ffuIndole(slot)}
+    ${_ffuIndole(slot, f)}
     ${_ffuSubidas(f)}
 
     <div class="ficha-stats">${_ffuDados(f, lutador)}</div>

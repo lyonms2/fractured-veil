@@ -389,8 +389,26 @@ async function handleInvocar(req, res, db, uid) {
       const usadas = pData.invocacoesUsadas || 0;
       if (usadas >= INVOCACOES_GRATIS) throw new Error('SEM_INVOCACOES');
 
+      /* ── UM DE CADA FEITIO ──
+
+         As três invocações grátis saem Guarda, Lâmina e Sustentação, por
+         esta ordem. O feitio decide o que um avatar sabe fazer
+         (FU_LUGARES_DO_FEITIO, em js/magias-fu.js), e três sorteados ao
+         acaso podiam dar três Lâminas — uma primeira equipa sem cura nem
+         defesa, a perder sem que o jogador perceba porquê.
+
+         É a ÚNICA vez que o feitio não é sorteado. Do primeiro ovo em
+         diante volta a sair do DNA e a herdar-se dos pais, e aí uma
+         equipa desequilibrada passa a ser uma escolha de quem cruzou.
+
+         Pelo `usadas` e não por um contador à parte: ele já vive no
+         documento que o cliente não escreve, e já é ele que diz quantas
+         invocações restam. Dois contadores da mesma coisa acabam por
+         discordar. */
+      const ORDEM_DOS_FEITIOS = ['guarda', 'lamina', 'sustentacao'];
       const { id, seed, nascimento } = GEN.certidaoDeInvocacao(
-        { uid, nome: pData.nomeJogador || null });
+        { uid, nome: pData.nomeJogador || null },
+        ORDEM_DOS_FEITIOS[usadas] || null);
 
       /* A certidão vai para o mapa do servidor, e o registo de emissão
          com ela — é o avataresEmitidos que o api/comprar-avatar.js exige

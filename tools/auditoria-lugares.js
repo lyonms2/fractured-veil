@@ -51,7 +51,20 @@ function avatar(seed, nivel, nome) {
 const equipa = (p, nv, sem) =>
   [1, 2, 3].map(i => avatar((sem || 1) * 1000003 + p * 7919 + i * 104729, nv, p + '' + i));
 const luta = (nv, sem) => M.fuIniciar(equipa(1, nv, sem), equipa(2, nv, sem), sem || 1);
-const fichaDe = (tipo, raridade) => ({ tipo, raridade, DES: 8, PER: 8, VIG: 8, VON: 8 });
+/* Uma ficha de mão cheia, para se perguntar ao catálogo sem passar por um
+   avatar inteiro. O FEITIO faz parte dela desde que passou a decidir o
+   repertório: sem ele, `fuMagiaDe` devolvia nulo para quatro dos cinco
+   lugares e meia auditoria rebentava com "não consigo ler 'nome' de
+   nulo" — que é o motor a dizer, correctamente, que aquele avatar não
+   sabe aquilo. */
+const fichaDe = (tipo, raridade, feitio) =>
+  ({ tipo, raridade, feitio: feitio || 'guarda', DES: 8, PER: 8, VIG: 8, VON: 8 });
+
+// De que feitio é preciso ser para ter cada lugar.
+const FEITIO_DE = { comum: 'guarda', forte: 'guarda', defesa: 'guarda',
+                    muito_forte: 'lamina', suporte: 'sustentacao' };
+const fichaCom = (lugar, tipo, raridade) =>
+  fichaDe(tipo || 'fogo', raridade || 'Comum', FEITIO_DE[lugar]);
 
 /* ═══ 1 · AS DEZOITO CASAS ═══════════════════════════════════════ */
 titulo('As dezoito casas');
@@ -99,17 +112,50 @@ titulo('Os oito tipos têm magia');
     nomes.filter((n, i) => nomes.indexOf(n) !== i).join(', '));
 
   for (const tipo of F.FU_TIPOS) {
-    const m = G.fuMagiaDe(fichaDe(tipo, 'Raro'), 'forte');
+    const m = G.fuMagiaDe(fichaCom('forte', tipo, 'Raro'), 'forte');
     verificar('um avatar de ' + tipo + ' leva a barragem dele',
       m.tipo === tipo && m.nome === G.FU_ELEMENTAL[tipo].nome);
     verificar('e o estado dela (' + tipo + ')', m.estado === G.FU_ELEMENTAL[tipo].estado);
     verificar('e o concentrado dele (' + tipo + ')',
-      G.fuMagiaDe(fichaDe(tipo, 'Raro'), 'muito_forte').nome === G.FU_CONCENTRADO[tipo].nome);
+      G.fuMagiaDe(fichaCom('muito_forte', tipo, 'Raro'), 'muito_forte').nome
+        === G.FU_CONCENTRADO[tipo].nome);
   }
-  // os cinco lugares de um avatar saem todos preenchidos
-  const cinco = G.fuMagiasDe(fichaDe('fogo', 'Comum'));
-  verificar('fuMagiasDe devolve os cinco lugares',
-    G.FU_LUGARES.every(l => !!cinco[l]), Object.keys(cinco).join(','));
+  /* ── TRÊS LUGARES, E SÃO OS DO FEITIO ──
+
+     Eram cinco em toda a gente, e o feitio não decidia nada. Agora cada
+     um tem o golpe comum, a magia forte e o seu — e é isso que dá chão
+     aos papéis da formação. */
+  for (const feitio of ['guarda', 'lamina', 'sustentacao']) {
+    const meus = G.fuMagiasDe(fichaDe('fogo', 'Comum', feitio));
+    const esperados = G.FU_LUGARES_DO_FEITIO[feitio];
+    verificar('o ' + feitio + ' tem três lugares', Object.keys(meus).length === 3,
+      Object.keys(meus).join(','));
+    verificar('e são os dele', esperados.every(l => !!meus[l]),
+      Object.keys(meus).join(',') + ' contra ' + esperados.join(','));
+    verificar('o golpe comum está em todos (' + feitio + ')', !!meus.comum);
+    verificar('e a magia forte também (' + feitio + ')', !!meus.forte);
+    verificar('o ' + feitio + ' tem o lugar que o distingue',
+      meus[G.FU_LUGAR_DO_FEITIO[feitio]] != null, G.FU_LUGAR_DO_FEITIO[feitio]);
+    // e os dos outros dois não existem para ele
+    for (const outro of ['guarda', 'lamina', 'sustentacao']) {
+      if (outro === feitio) continue;
+      verificar('e não tem o lugar do ' + outro,
+        meus[G.FU_LUGAR_DO_FEITIO[outro]] == null);
+      verificar('nem pela porta directa (' + feitio + '/' + outro + ')',
+        G.fuMagiaDe(fichaDe('fogo', 'Lendário', feitio),
+                    G.FU_LUGAR_DO_FEITIO[outro]) === null);
+    }
+  }
+
+  /* E os Lendários deixam de ser todos iguais: cada feitio traz UMA das
+     magias de topo, em vez de as quatro. */
+  const topo = {};
+  for (const feitio of ['guarda', 'lamina', 'sustentacao']) {
+    const m = G.fuMagiasDe(fichaDe('fogo', 'Lendário', feitio));
+    topo[feitio] = m[G.FU_LUGAR_DO_FEITIO[feitio]].id;
+  }
+  verificar('cada feitio Lendário traz uma magia de topo diferente',
+    new Set(Object.values(topo)).size === 3, JSON.stringify(topo));
 }
 
 /* ═══ 3 · OS NÚMEROS DO MANUAL ═══════════════════════════════════ */
@@ -151,7 +197,7 @@ titulo('Cada forma faz o que diz');
   // ── a própria: Concha ──
   {
     const e = luta(10, 3), q = e.A[0];
-    const m = G.fuMagiaDe(q.ficha, 'defesa');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { feitio: 'guarda' }), 'defesa');
     const antesPM = q.pm;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m });
     verificar('a Concha põe-se em si mesmo', q.efeitos.resisteFisico === true);
@@ -165,7 +211,7 @@ titulo('Cada forma faz o que diz');
   // ── a aliada: Curar ──
   {
     const e = luta(10, 4), q = e.A[0], amigo = e.A[1];
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro' }), 'suporte');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro', feitio: 'sustentacao' }), 'suporte');
     amigo.pv = 5;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('Curar aponta para dentro',
@@ -180,7 +226,7 @@ titulo('Cada forma faz o que diz');
   {
     const e = luta(10, 5), q = e.A[0], amigo = e.A[1];
     amigo.ficha.DES = 6;
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro' }), 'defesa');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro', feitio: 'guarda' }), 'defesa');
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('a Barreira põe a Defesa em 12', M.fuDefesa(amigo) === 12);
     const forte = e.A[2];
@@ -207,7 +253,7 @@ titulo('Cada forma faz o que diz');
   {
     const e = luta(30, 7), q = e.A[0], amigo = e.A[1];
     amigo.ficha.DES = 10; amigo.ficha.PER = 6; amigo.ficha.VIG = 6; amigo.ficha.VON = 6;
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário' }), 'suporte');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário', feitio: 'sustentacao' }), 'suporte');
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('o Despertar sobe o atributo mais alto', amigo.efeitos.subirDado === 'DES');
     verificar('e o dado sobe mesmo', M.fuDado(amigo, 'DES') === 12);
@@ -308,7 +354,7 @@ titulo('O que não pode acontecer');
   verificar('e os PM ficam onde estavam', q.pm === 5);
 
   const e2 = luta(10, 12), q2 = e2.A[0];
-  const concha = G.fuMagiaDe(q2.ficha, 'defesa');
+  const concha = G.fuMagiaDe(Object.assign({}, q2.ficha, { feitio: 'guarda' }), 'defesa');
   M.fuAgir(e2, { quem: q2.id, tipo: 'magia', magia: concha });
   const depois1 = JSON.stringify(q2.efeitos);
   M.fuNovaRonda(e2);
@@ -327,7 +373,7 @@ titulo('O que não pode acontecer');
   const e4 = luta(10, 14), q4 = e4.A[0];
   q4.pv = 10;
   M.fuAgir(e4, { quem: q4.id, tipo: 'magia',
-                 magia: G.fuMagiaDe(Object.assign({}, q4.ficha, { raridade: 'Raro' }), 'suporte') });
+                 magia: G.fuMagiaDe(Object.assign({}, q4.ficha, { raridade: 'Raro', feitio: 'sustentacao' }), 'suporte') });
   verificar('curar sem alvo escolhido cura quem lançou', q4.pv > 10, 'ficou com ' + q4.pv);
 
   /* E a prova de fogo: sessenta batalhas a usar os cinco lugares à vez,
@@ -339,7 +385,11 @@ titulo('O que não pode acontecer');
       const vez = M.fuVez(b);
       if (!vez) { M.fuNovaRonda(b); continue; }
       const quem = M.fuPorId(b, vez.podem[0]);
-      const lugar = G.FU_LUGARES[guarda % G.FU_LUGARES.length];
+      /* Os lugares DELE, e não os cinco: pedir-lhe um que o feitio não tem
+         devolvia nulo, e a prova de fogo passava a bater sem magia nenhuma
+         sem se dar por isso. */
+      const meus = G.fuLugaresDe(quem.ficha);
+      const lugar = meus[guarda % meus.length];
       const mg = G.fuMagiaDe(quem.ficha, lugar);
       const paraDentro = lugar === 'defesa' || lugar === 'suporte';
       M.fuAgir(b, {
@@ -376,7 +426,12 @@ titulo('O ritmo, contra o terço que o manual pede');
       alvo.ficha.afinidades = {};          // sem afinidade, para medir o cru
       alvo.pv = alvo.ficha.pvMax;
       pvAlvo += alvo.ficha.pvMax; n++;
-      const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade }), lugar);
+      /* Com o FEITIO do lugar que se está a medir: o avatar sorteado pode
+         ser Guarda, e pedir-lhe o muito_forte devolvia nulo. Aqui não se
+         está a medir quem tem o quê — isso é a secção 2 — está-se a medir
+         quanto dói cada magia a quem a tem. */
+      const m = G.fuMagiaDe(
+        Object.assign({}, q.ficha, { raridade, feitio: FEITIO_DE[lugar] }), lugar);
       q.pm = 999; tentativas++;
       if (lugar === 'comum') {
         const ev = M.fuAtacar(e, q, alvo, { fixo: 5 });

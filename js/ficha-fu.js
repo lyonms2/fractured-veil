@@ -454,6 +454,18 @@ function fuFicha(slot) {
   const subiram = fuAplicarSubidas(base, ordem, subidas);
 
   const tipo = fuTipoDoDna(dna);
+
+  /* ── O FEITIO ──
+
+     Vinha na certidão e só a interface o lia. Passa a estar na ficha
+     porque agora decide o REPERTÓRIO (fuLugaresDe, em js/magias-fu.js), e
+     quem pergunta pelas magias tem a ficha na mão e não a certidão.
+
+     Lê-se do DNA e não do campo `indole` da certidão, que é uma cópia
+     por comodidade: a fonte é o gene, e uma certidão velha a que falte o
+     campo continua a dar o feitio certo. */
+  const feitio = (dna && typeof indoleDominante === 'function')
+    ? indoleDominante(dna) : 'guarda';
   /* A escolha do Lendário: fechar a costura, ou uma segunda vantagem.
      É a mesma decisão que o jogo já tinha com o nome de escolha do
      Ancião, e o gatilho é o mesmo número — Ancião e Lendário são os
@@ -529,6 +541,9 @@ function fuFicha(slot) {
     // o que ele dá e o que lhe dói
     tipo,
     costura,
+    /* O feitio, que diz o que ele sabe fazer. Ver o FU_LUGARES_DO_FEITIO
+       no js/magias-fu.js. */
+    feitio,
     afinidades: fuAfinidades(tipo, costura, raridade),
 
     /* A lista, para quem a mostra; o saco, para quem a usa. Ver o

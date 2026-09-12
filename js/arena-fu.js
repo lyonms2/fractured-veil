@@ -638,9 +638,12 @@ function _afAcoes() {
   // ── o passo de escolher alvo ──
   if (_afPasso) { alvo.innerHTML = _afAlvosHTML(eu); return; }
 
+  /* Os lugares DELE, e não os cinco. O feitio decide quais são
+     (FU_LUGARES_DO_FEITIO, em js/magias-fu.js) e o menu desenha o que
+     houver — três orbes, mais o trocar de lugar e a ficha. */
   const magias = fuMagiasDe(eu.ficha);
   let h = '';
-  for (const lugar of FU_LUGARES) {
+  for (const lugar of Object.keys(magias)) {
     const m = magias[lugar];
     const custo = fuCusto(m, m.porAlvo ? (m.alvos || 1) : 1);
     /* O nome em cima, o lugar em baixo — excepto quando são o mesmo. O
@@ -673,7 +676,11 @@ function _afEscolher(lugar) {
   const eu = _afPorId(_afQuem);
   if (!_afPodeAgir(eu)) return;
 
+  /* Um lugar que o feitio dele não tem devolve nulo. O menu nunca o
+     oferece, mas a guarda fica: quem chama isto de outro sítio um dia
+     não tem de saber das regras do feitio. */
   const magia = fuMagiaDe(eu.ficha, lugar);
+  if (!magia) return;
   const custo = fuCusto(magia, magia.porAlvo ? (magia.alvos || 1) : 1);
   if (custo > eu.pm) return;
 

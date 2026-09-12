@@ -172,7 +172,12 @@ titulo('E não cobre do que varre a linha');
     const e = luta(30, 7);
     e.B.forEach(boneco);
     const quem = e.A[0]; quem.pm = 99999;
-    const magia = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Lendário' }), 'muito_forte');
+    /* Com o FEITIO forcado: a Devastação é o lugar da Lâmina, e um avatar
+       sorteado pode ser Guarda. Pedir-lhe o muito_forte devolvia nulo — e
+       bem, porque ele não sabe aquilo. */
+    const magia = G.fuMagiaDe(
+      Object.assign({}, quem.ficha, { raridade: 'Lendário', feitio: 'lamina' }),
+      'muito_forte');
     const ev = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia });
     verificar('a Devastação não pergunta pela formação',
       ev.filter(x => x.tipo === 'devastacao').length === 3);
@@ -184,7 +189,10 @@ titulo('E não cobre do que varre a linha');
     const quem = e.A[0]; quem.pm = 99999;
     const tras = M.fuFormacao(e, 'A')[2];
     tras.pv = 1;
-    const cura = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Raro' }), 'suporte');
+    // Curar é o lugar da Sustentação; o feitio vai forçado pela mesma razão.
+    const cura = G.fuMagiaDe(
+      Object.assign({}, quem.ficha, { raridade: 'Raro', feitio: 'sustentacao' }),
+      'suporte');
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: cura, alvos: [tras.id] });
     verificar('curar o suporte não esbarra na própria frente', tras.pv > 1,
       tras.pv + '');

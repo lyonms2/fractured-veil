@@ -345,6 +345,27 @@ function indoleDoDna(dna) {
 
 /* A índole que mais pesa, para se poder mostrar. Empates ficam pela
    ordem guarda–fonte–lâmina, que é estável. */
+/* ══════════════════════════════════════════════════════════════════
+   ESCREVER O FEITIO NUM DNA JÁ FEITO
+
+   Serve UMA coisa: os três primeiros avatares do jogo saem um de cada
+   feitio, para a primeira equipa estar completa e ensinar os três
+   papéis da formação. Dos ovos em diante, o feitio é sorteado e herdado
+   como tudo o resto.
+
+   Mexe no DOMINANTE e deixa o recessivo onde estava. Assim o avatar tem
+   o feitio que se quer e continua a carregar o outro escondido — que é
+   o que faz um neto sair diferente do avô. Sobrescrever os dois dava
+   três linhagens puras à nascença, e a reprodução começava o jogo mais
+   pobre do que é.
+   ══════════════════════════════════════════════════════════════════ */
+function porFeitio(dna, feitio) {
+  const i = NASC_INDOLES.indexOf(feitio);
+  if (i < 0 || !dna || !dna.genes || !Array.isArray(dna.genes.indole)) return dna;
+  dna.genes.indole[0] = i;
+  return dna;
+}
+
 function indoleDominante(dna) {
   const p = indoleDoDna(dna);
   return NASC_INDOLES.reduce((a, b) => p[b] > p[a] ? b : a);
@@ -654,6 +675,7 @@ if (typeof module !== 'undefined' && module.exports) {
     vigorDoDna, vigorDe, sexoDoDna, sexoDe,
     corpoDoDna, corpoDeSlot, corpoParesDeSlot,
     dnaLegivel, recessivosDoDna, tendenciaDe, origemDe, ehPrimordial,
+    porFeitio,
     /* O ehBebe sai também: o tools/evolucao.js confere que ele e a escada
        da fase dizem a mesma coisa, e para isso tem de lhe chamar. */
     ehBebe,

@@ -100,10 +100,21 @@ function ovoIdNovo() {
 
    Devolve o objeto puro (o registarNascimento congela-o, e um objeto
    congelado não atravessa bem o Firestore). */
-function certidaoDeInvocacao(criador) {
+function certidaoDeInvocacao(criador, feitio) {
   const c    = criador || {};
   const seed = seedNovo();
   const dna  = nascimento.gerarDna('Comum', seed);
+  /* O FEITIO PEDIDO, quando há um.
+
+     Só as três invocações grátis o pedem, e pedem um de cada: a primeira
+     equipa do jogo tem de ter um defensor, um atacante e um curandeiro,
+     senão a formação não tem o que ensinar e a primeira hora pode sair
+     sem cura nenhuma.
+
+     Escrito AQUI e não no cliente, pela razão de sempre: o feitio decide
+     o repertório, e um repertório escolhido pelo jogador era escolher a
+     ficha. */
+  if (feitio) nascimento.porFeitio(dna, feitio);
   const cert = nascimento.nascer({
     dna, origem: 'Comum', seed,
     // Quem o fez vai na certidão e não no slot: o slot é do cliente.

@@ -159,6 +159,67 @@ function fuDegrau(raridade) {
   return raridade === 'Lendário' ? 3 : raridade === 'Raro' ? 2 : 1;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   DE QUEM É CADA LUGAR
+
+   Trs lugares por avatar, e não cinco. Cada feitio tem o golpe comum, a
+   magia forte, e o SEU.
+
+     Guarda        comum · forte · defesa
+     Lâmina        comum · forte · muito forte
+     Sustentação   comum · forte · suporte
+
+   ── PORQUE É QUE ISTO MUDOU ──
+
+   Todos tinham os cinco. O feitio herdava-se dos pais, aparecia na ficha
+   em letra dourada, e decidia UMA coisa: inclinava o sorteio da
+   vantagem. Um avatar chamava-se Lâmina e curava tão bem como uma
+   Sustentação.
+
+   Pior do que isso: a formação tem papéis — o da frente defende, o de
+   trás dá suporte — e nada os sustentava. Pôr um avatar atrás era
+   geometria, porque qualquer um curava igual. Os postos eram um desenho
+   sem regra por baixo.
+
+   ── PORQUE É QUE DOIS FICAM EM TODOS ──
+
+   O GOLPE COMUM é o chão: não custa PM e está sempre lá. Sem ele, um
+   avatar sem magia não teria o que fazer no seu turno — e um turno em
+   que não há nada a fazer não é uma decisão, é uma espera.
+
+   A MAGIA FORTE é a Barragem, que varre a linha inteira. É a resposta a
+   uma formação fechada (ver o fuAlvosPossiveis, em js/combate-fu.js):
+   tirá-la a alguém deixava-o sem nada contra três inimigos em fila, e a
+   formação passava a ser um muro em vez de uma pergunta.
+
+   ── O QUE ISTO FAZ AOS LENDÁRIOS ──
+
+   Antes, TODO o Lendário tinha a Devastação, o Despertar, a Misericórdia
+   e a Barragem Certa — as quatro magias de topo do jogo, todas, sempre.
+   Agora cada um tem UMA delas, e é o feitio que diz qual. A magia mais
+   cara do jogo passa a ser coisa que se encontra num tipo de avatar, e
+   não um carimbo que se recebe ao nível 27.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_LUGARES_DO_FEITIO = {
+  guarda:      ['comum', 'forte', 'defesa'],
+  lamina:      ['comum', 'forte', 'muito_forte'],
+  sustentacao: ['comum', 'forte', 'suporte'],
+};
+
+/* O lugar que é DELE, e só dele — o que o distingue dos outros dois.
+   Serve a ficha, que o quer dizer numa linha. */
+const FU_LUGAR_DO_FEITIO = {
+  guarda: 'defesa', lamina: 'muito_forte', sustentacao: 'suporte',
+};
+
+/* Os lugares de uma ficha. Sem feitio — um avatar sem DNA legível — vale
+   o do Guarda: é o que menos promete e o que mais o aguenta de pé.
+   Dar-lhe os cinco seria premiar a ficha partida. */
+function fuLugaresDe(ficha) {
+  const f = ficha && ficha.feitio;
+  return FU_LUGARES_DO_FEITIO[f] || FU_LUGARES_DO_FEITIO.guarda;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    A MAGIA DE UM AVATAR, NUM LUGAR
 
@@ -169,6 +230,8 @@ function fuDegrau(raridade) {
    lugar. O motor recebe o objecto pronto e não sabe de tabelas.
    ═══════════════════════════════════════════════════════════════════ */
 function fuMagiaDe(ficha, lugar) {
+  // O feitio manda: um lugar que não é dele não existe para ele.
+  if (fuLugaresDe(ficha).indexOf(lugar) === -1) return null;
   const casa = FU_MAGIAS[lugar] && FU_MAGIAS[lugar][fuDegrau(ficha.raridade)];
   if (!casa) return null;
 
@@ -186,10 +249,17 @@ function fuMagiaDe(ficha, lugar) {
   return m;
 }
 
-/* Os cinco lugares de um avatar, prontos a desenhar no menu. */
+/* Os lugares DESTE avatar, prontos a desenhar no menu.
+
+   Devolve só os que ele tem — e não os cinco com buracos. Quem percorre
+   isto desenha o menu, e um menu com entradas vazias é pior do que um
+   menu curto: o jogador fica a olhar para uma opção que não é opção. */
 function fuMagiasDe(ficha) {
   const out = {};
-  for (const l of FU_LUGARES) out[l] = fuMagiaDe(ficha, l);
+  for (const l of fuLugaresDe(ficha)) {
+    const m = fuMagiaDe(ficha, l);
+    if (m) out[l] = m;
+  }
   return out;
 }
 
@@ -203,6 +273,7 @@ function fuCusto(magia, nAlvos) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS,
-    fuDegrau, fuMagiaDe, fuMagiasDe, fuCusto,
+    FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
+    fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto,
   };
 }
