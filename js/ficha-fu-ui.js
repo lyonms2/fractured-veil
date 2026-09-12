@@ -104,6 +104,31 @@ function _ffuDados(f, c) {
   }).join('');
 }
 
+/* ── A LINHA DO ARRANJO ──
+
+   Dizia só os quatro tamanhos: "◆ Especialista · d10 d10 d6 d6". E era
+   por aí que dois avatares diferentes se liam como gémeos — porque essa
+   linha mostra os dados por ORDEM DE FORÇA e não diz a quem pertencem.
+
+   Um com o d10 no Vigor é um muro de vida; outro com o d10 na Vontade é
+   um lançador com o dobro da magia. A ficha já dizia isso nas quatro
+   barras logo abaixo, mas a linha de cima é a que se compara de relance,
+   e era ela que mentia.
+
+   Cada atributo leva a COR da sua barra. As duas leituras — a linha e as
+   barras — passam a ser a mesma informação vista de duas distâncias, e o
+   olho liga-as pela cor sem ter de as ler duas vezes.
+
+   Pela ordem de força e não por DES/PER/VIG/VON: o que interessa é em que
+   é que ele é bom, e isso lê-se da esquerda para a direita. */
+function _ffuArranjo(f) {
+  const dados = f.ordem.map(a =>
+    `<span class="ficha-arr-at" style="color:${FFU_COR[a]}">${a}</span> d${f[a]}`
+  ).join(' <i>·</i> ');
+  return `<div class="ficha-vocacao ficha-arranjo" title="${esc(t('af.f.arranjo'))}">◆ ${
+    esc(t('af.arr.' + f.arranjo))} · ${dados}</div>`;
+}
+
 /* ── O QUE LHE DÓI E O QUE NÃO ──
 
    As nove, e só as que têm alguma coisa. Um avatar médio tem duas ou
@@ -231,8 +256,7 @@ function renderFichaFU(slot, lutador) {
     <div class="ficha-title">${esc(t('af.f.titulo'))}</div>
     <div class="ficha-escalao">${_ffuSexo(slot)} · ${esc(t('af.f.nivel', { n: f.nivel }))} · ${esc(f.raridade)}</div>
     ${aviso}
-    <div class="ficha-vocacao" title="${esc(t('af.f.arranjo'))}">◆ ${
-      esc(t('af.arr.' + f.arranjo))} · ${f.ordem.map(a => 'd' + f[a]).join(' ')}</div>
+    ${_ffuArranjo(f)}
     ${_ffuIndole(slot, f)}
     ${_ffuSubidas(f)}
 

@@ -698,3 +698,11 @@
 /* O dado que subiu vem à frente das outras linhas do nível: é o maior
    ganho que uma subida dá, e vinha sem uma palavra. */
 .lu-g-item.lu-g-dado { color: var(--gold-light); font-weight: 700; }
+
+/* ── A linha do arranjo ──
+   Quebra em vez de transbordar: no telemóvel são quatro pares e o painel
+   é estreito, e uma linha que sai da caixa é pior do que uma que dobra.
+   O ponto entre eles fica apagado — separa sem competir com os nomes. */
+.ficha-arranjo { display: flex; flex-wrap: wrap; gap: 0 .25rem; align-items: baseline; }
+.ficha-arranjo i { opacity: .45; font-style: normal; }
+.ficha-arr-at { font-weight: 700; }
