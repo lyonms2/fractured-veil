@@ -8,7 +8,15 @@ require('./auditoria-magias.js');
 require('./auditoria-vantagens.js');
 require('./auditoria-regras.js');
 require('./auditoria-papeis.js');
-require('./auditoria-persistentes.js');
+/* O auditoria-persistentes.js saiu com o js/combate-pve.js.
+
+   Ele lia o CARTAO daquela arena como texto, para conferir que todo o
+   estado que dura mais do que um turno tem marca visivel. Com a arena
+   apagada ficou sem assunto: os estados que enumerava — veneno, furia,
+   armaduraDobrada, ocultado — sao do motor 3D&T e nenhum existe no novo.
+
+   A pergunta dele continua a valer e volta, feita aos seis estados do
+   Fabula Ultima, quando o resto do 3D&T sair. */
 require('./auditoria-duracoes.js');
 require('./auditoria-equipa.js');
 // As magias que defendem. Nasceram por olhar: as provas antigas

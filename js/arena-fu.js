@@ -68,10 +68,23 @@ function afFechar() {
 // desenha, e o CSS é partilhado. O que muda aqui é só o que lá dentro
 // se põe.
 // ═══════════════════════════════════════════════════════════════════
+/* As motas de poeira do ar. Nascem uma vez, na casca, e não a cada
+   redesenho: são decoração e não estado, e refazê-las a cada turno
+   reiniciava-lhes a subida.
+
+   `.cb-mota` com estilo em linha, que é o que o css/combate-arena.css
+   conhece. Escrevi-as com `<i style="--mx…">` à primeira, inventado, e
+   saíram invisíveis — a terceira vez neste arquivo que marcação que o
+   CSS não conhece desaparece sem se queixar. */
 function _afMotas(n) {
   let h = '';
-  for (let i = 0; i < n; i++)
-    h += `<i style="--mx:${(i * 137) % 100}%;--md:${(i * 0.73) % 6}s;--mt:${6 + (i % 5)}s"></i>`;
+  for (let i = 0; i < n; i++) {
+    const tam = 1 + Math.random() * 2.2;
+    h += `<span class="cb-mota" style="width:${tam / 16}rem;height:${tam / 16}rem;`
+       + `left:${4 + Math.random() * 92}%;top:${52 + Math.random() * 46}%;`
+       + `animation-duration:${9 + Math.random() * 11}s;`
+       + `animation-delay:-${Math.random() * 14}s;opacity:0"></span>`;
+  }
   return h;
 }
 
@@ -97,7 +110,12 @@ function _afShell() {
     <div class="cb-topo">
       <span id="cbTurno"></span>
       <span class="cb-topo-nome">${t('af.titulo')}</span>
-      <span class="cb-topo-dir"><button onclick="afFechar()">✕</button></span>
+      <span class="cb-topo-dir">
+        <button id="cbDesistir" class="desistir" onclick="_afDesistir()"
+                title="${esc(_afTemMoldura() ? t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR }) : '')}"
+                >${_afTemMoldura() ? t('pve.acao.desistir') : ''}</button>
+        <button onclick="_afDesistir()">✕</button>
+      </span>
     </div>
 
     <div class="cb-campo" id="cbCampo"></div>
@@ -279,18 +297,93 @@ function _afHud(lado) {
 // ═══════════════════════════════════════════════════════════════════
 // DESENHAR
 // ═══════════════════════════════════════════════════════════════════
+/* ── REFAZER SÓ O QUE MUDOU ──
+
+   A primeira versão reescrevia o innerHTML do campo e dos dois painéis a
+   cada desenho, e o desenho corre a cada turno. Custava caro de trs
+   maneiras, e nenhuma delas era a velocidade:
+
+     · os avatares recomeçavam a respirar e a piscar do zero, todos ao
+       mesmo tempo, portanto os seis piscavam em uíssono — e o desencontro
+       era o que os fazia parecer vivos;
+     · o rastro branco das barras nunca chegava a ver-se, porque a barra
+       nascia já no valor novo e não havia de onde descer;
+     · e o _afAssentar tinha de voltar a medir seis SVGs.
+
+   Agora há uma CHAVE DE ESTRUTURA: quem está vivo, em que posto, quem
+   pode agir, quem está escolhido. Só quando ela muda é que o HTML se
+   refaz; no resto do tempo mexem-se as barras e as classes, em cima do
+   que já lá está. */
+function _afChaveEstrutura() {
+  const vez = _afE.acabou ? null : fuVez(_afE);
+  return _afE.A.concat(_afE.B)
+    .map(c => c.id + c.posto + (c.vivo ? 'v' : 'x'))
+    .join('|') + '#' + (_afQuem || '') + '#' + (_afPasso ? 'p' : '')
+    + '#' + (vez ? vez.lado + vez.podem.join(',') : 'fim');
+}
+
+let _afChave = null;
+
 function _afDesenhar() {
   if (!_afE) return;
-  document.getElementById('cbCampo').innerHTML = _afCampo();
-  document.getElementById('cbHudEu').innerHTML  = _afHud('A');
-  document.getElementById('cbHudIni').innerHTML = _afHud('B');
+  const chave = _afChaveEstrutura();
+  if (chave !== _afChave) {
+    _afChave = chave;
+    document.getElementById('cbCampo').innerHTML = _afCampo();
+    document.getElementById('cbHudEu').innerHTML  = _afHud('A');
+    document.getElementById('cbHudIni').innerHTML = _afHud('B');
+    _afAssentar();
+  }
+  _afBarras();
   const vez = _afE.acabou ? null : fuVez(_afE);
   document.getElementById('cbTurno').textContent =
     t('af.ronda', { n: _afE.ronda })
     + (vez ? ' · ' + t(vez.lado === 'A' ? 'af.vez' : 'af.vez_dele') : '');
-  _afAssentar();
+  const bd = document.getElementById('cbDesistir');
+  if (bd) bd.style.display = _afE.acabou ? 'none' : '';
   _afAcoes();
   _afMenuMover();
+}
+
+/* ── AS BARRAS ──
+
+   Não saltam para o valor novo: o enchimento desce depressa e o RASTRO
+   branco por baixo fica onde estava, e só o segue meio segundo depois. É
+   nesse intervalo que se lê QUANTO é que o golpe custou — sem ele, uma
+   barra que encolhe diz que houve dano e não diz que dano.
+
+   A subir é ao contrário: o rastro vai à frente, senão o verde novo
+   aparecia por cima de uma faixa branca que ainda não tinha crescido. */
+function _afBarras() {
+  if (!_afE) return;
+  for (const c of _afE.A.concat(_afE.B)) {
+    const linha = document.getElementById('cbCart' + c.id);
+    if (linha) {
+      const fPV = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.ficha.pvMax)) * 100));
+      const pv = linha.querySelector('.cb-barra.pv');
+      if (pv) {
+        const cheio = pv.querySelector('i'), rastro = pv.querySelector('u');
+        const antes = parseFloat(cheio.style.width) || 0;
+        if (fPV > antes) rastro.style.width = fPV + '%';   // a subir, vai à frente
+        cheio.style.width  = fPV + '%';
+        rastro.style.width = fPV + '%';                    // a descer, o CSS atrasa-o
+        pv.classList.toggle('baixa', c.vivo && fPV <= 25);
+        const txt = pv.querySelector('span');
+        if (txt) txt.textContent = c.pv + '/' + c.ficha.pvMax;
+      }
+      const pm = linha.querySelector('.cb-barra.pm');
+      if (pm) {
+        const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.ficha.pmMax)) * 100));
+        pm.querySelector('i').style.width = fPM + '%';
+        pm.querySelector('u').style.width = fPM + '%';
+        const txt = pm.querySelector('span');
+        if (txt) txt.textContent = c.pm + '/' + c.ficha.pmMax;
+      }
+      linha.classList.toggle('caido', !c.vivo);
+    }
+    const posto = document.getElementById('cbLut' + c.id);
+    if (posto) posto.classList.toggle('caido', !c.vivo);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -688,23 +781,226 @@ function _afMostrar(eventos) {
   _afOcupado = true;
   _afLance(eventos.map(_afLanceDe).filter(Boolean).join('<br>'));
   _afDesenhar();
-  _afSacudir(eventos);
+  _afEncenar(eventos);
   setTimeout(() => { _afOcupado = false; _afAndar(); }, AF_PAUSA);
 }
 
-/* Um empurrão em quem apanhou. O resto dos efeitos (impactos,
-   partículas, números a subir) fica para a etapa em que este arquivo
-   substituir o antigo — lá estão feitos e é de lá que vêm. */
-function _afSacudir(eventos) {
+// ══════════════════════════════════════════════════════════════════
+// OS EFEITOS
+//
+// Vieram inteiros do js/combate-pve.js — o gesto, o clarão, as
+// partículas, a poeira dos pés, a onda de choque, o tremor e os números
+// que sobem. O CSS deles já existe e não muda de motor.
+//
+// ── CADA TIPO BATE À SUA MANEIRA ──
+//
+// O motor antigo tinha cinco tons de cor e cinco gestos, um por tom.
+// Este tem NOVE tipos de dano, e o CSS tem seis gestos. Não se inventam
+// três gestos novos: o GESTO diz a família (sobe, cai, atravessa,
+// fecha-se) e a COR diz o tipo. Dois tipos que partilham o gesto nunca
+// partilham a cor.
+//
+//   fogo / luz        chamas      sobem, poucas e vivas
+//   gelo / veneno     gotas       espalham-se e CAEM
+//   terra             pedras      poucas, grandes, e o baque é fundo
+//   raio / ar         espirais    atravessam de lado, depressa
+//   treva             sombras     não voam: fecham-se para dentro
+//   físico            neutro      faíscas brancas, que é o que um murro é
+// ══════════════════════════════════════════════════════════════════
+const AF_GESTO = {
+  chamas:   { n: 10, tam: [2, 5], dx: 26, dy: [-52, -18] },
+  gotas:    { n: 12, tam: [2, 4], dx: 46, dy: [10, 46] },
+  pedras:   { n: 6,  tam: [4, 8], dx: 34, dy: [6, 40] },
+  espirais: { n: 9,  tam: [1, 3], dx: 78, dy: [-12, 12], risca: true },
+  sombras:  { n: 10, tam: [3, 6], dx: 30, dy: [-16, 16], dentro: true },
+  neutro:   { n: 8,  tam: [2, 4], dx: 30, dy: [-40, -14] },
+};
+
+const AF_TIPO_EFEITO = {
+  fisico: { gesto: 'neutro',   cor: '#e8e2f5' },
+  fogo:   { gesto: 'chamas',   cor: '#ff8a4c' },
+  luz:    { gesto: 'chamas',   cor: '#ffe9a8' },
+  gelo:   { gesto: 'gotas',    cor: '#9fdcff' },
+  veneno: { gesto: 'gotas',    cor: '#9ad46a' },
+  terra:  { gesto: 'pedras',   cor: '#c9a06a' },
+  raio:   { gesto: 'espirais', cor: '#ffe14c' },
+  ar:     { gesto: 'espirais', cor: '#cfe9f0' },
+  treva:  { gesto: 'sombras',  cor: '#c4b5fd' },
+};
+
+function _afEfeitoDe(tipo) { return AF_TIPO_EFEITO[tipo] || AF_TIPO_EFEITO.fisico; }
+
+function _afEl(id) { return document.getElementById('cbLut' + id); }
+
+function _afGesto(el, classe, dura) {
+  if (!el) return;
+  el.classList.remove(classe);
+  void el.offsetWidth;
+  el.classList.add(classe);
+  setTimeout(() => el.classList.remove(classe), dura || 700);
+}
+
+/* Onde os efeitos se penduram. O posto é um PONTO — `width:0;height:0` —
+   e um efeito posicionado em percentagem dentro de zero fica todo no
+   mesmo pixel. A caixa dos efeitos tem o tamanho do corpo e não leva as
+   animações dele. */
+function _afCaixa(el) {
+  return (el && el.querySelector && el.querySelector('.cb-efeitos')) || el;
+}
+
+/* ── OS NÚMEROS QUE SOBEM ──
+   São cuspidos e não levantados: sobem depressa, travam no alto e caem.
+   Dois elementos encaixados porque os dois eixos têm curvas diferentes, e
+   um só elemento não consegue duas. O lado é sorteado, senão dois números
+   do mesmo turno saem pela mesma linha e o de baixo tapa o de cima. */
+function _afNumero(el, n, critico, tipo) {
+  el = _afCaixa(el);
+  if (!el || !n) return;
+  const d = document.createElement('div');
+  d.className = 'cb-dano' + (critico ? ' crit' : '') + (tipo ? ' ' + tipo : '');
+  d.style.setProperty('--alto', (-2.2 - Math.random() * 1.1).toFixed(2) + 'rem');
+  d.style.setProperty('--arco',
+    ((Math.random() < .5 ? -1 : 1) * (0.6 + Math.random() * 0.9)).toFixed(2) + 'rem');
+  const txt = document.createElement('span');
+  txt.textContent = (tipo === 'cura' || tipo === 'roubo' ? '+' : '−') + n;
+  d.appendChild(txt);
+  el.appendChild(d);
+  setTimeout(() => d.remove(), 1500);
+}
+
+// O PM sai igual ao dano, mas em azul e do outro lado — se saísse do
+// mesmo sítio, o custo da magia e o golpe recebido escreviam-se um por
+// cima do outro no mesmo turno.
+function _afNumeroPM(el, n) {
+  el = _afCaixa(el);
+  if (!el || !n) return;
+  const d = document.createElement('div');
+  d.className = 'cb-pm-flut';
+  d.textContent = '−' + n + ' PM';
+  el.appendChild(d);
+  setTimeout(() => d.remove(), 1000);
+}
+
+function _afImpacto(el, tipo) {
+  el = _afCaixa(el);
+  if (!el) return;
+  const cfg = _afEfeitoDe(tipo);
+  const modo = AF_GESTO[cfg.gesto] || AF_GESTO.neutro;
+  const cor = cfg.cor;
+
+  /* O clarão dá ao corpo inteiro a cor de quem bateu. É o que se vê
+     primeiro, antes de qualquer partícula: um golpe de treva escurece, um
+     de fogo aquece. */
+  const luz = document.createElement('div');
+  luz.className = 'cb-luz cb-luz-' + cfg.gesto;
+  luz.style.setProperty('--cor', cor);
+  el.appendChild(luz);
+  setTimeout(() => luz.remove(), 620);
+
+  const entre = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < modo.n; i++) {
+    const p = document.createElement('div');
+    const sz = entre(modo.tam[0], modo.tam[1]);
+    // As sombras vêm de fora e fecham-se para dentro: nascem na periferia
+    // e o destino é o meio, ao contrário de todas as outras.
+    const x = modo.dentro ? (Math.random() < .5 ? entre(2, 18) : entre(82, 98)) : entre(28, 72);
+    const y = modo.dentro ? entre(10, 90) : entre(28, 72);
+    const dx = modo.dentro ? (50 - x) * 0.6 : entre(-modo.dx / 2, modo.dx / 2);
+    const dy = modo.dentro ? (50 - y) * 0.4 : entre(modo.dy[0], modo.dy[1]);
+    p.className = 'cb-particula cb-p-' + cfg.gesto;
+    p.style.cssText =
+      `width:${(modo.risca ? sz * 6 : sz) / 16}rem;height:${sz / 16}rem;background:${cor};`
+      + `box-shadow:0 0 ${(sz * 2) / 16}rem ${cor};left:${x}%;top:${y}%;`
+      + `--dx:${dx / 16}rem;--dy:${dy / 16}rem;`
+      + `animation-delay:${Math.random() * (modo.risca ? .06 : .14)}s;`;
+    el.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+function _afOnda(el) {
+  el = _afCaixa(el);
+  if (!el) return;
+  const o = document.createElement('div');
+  o.className = 'cb-onda';
+  el.appendChild(o);
+  setTimeout(() => o.remove(), 700);
+}
+
+/* ── A POEIRA AOS PÉS ──
+   As partículas do golpe saem do CORPO; esta sai do CHÃO. É a diferença
+   entre um efeito mágico e um impacto com peso — quem apanha um murro
+   levanta pó, e é o pó que diz que existe um chão por baixo. Nasce no
+   ponto do posto, que é onde estão os pés. */
+function _afPoeira(el) {
+  if (!el) return;
+  for (let i = 0; i < 7; i++) {
+    const p = document.createElement('div');
+    p.className = 'cb-po';
+    const ang = (Math.random() - .5) * Math.PI;      // meia-volta, para cima
+    const raio = 0.5 + Math.random() * 1.4;
+    p.style.setProperty('--px', (Math.cos(ang) * raio).toFixed(2) + 'rem');
+    p.style.setProperty('--py', (-Math.abs(Math.sin(ang)) * raio * .55).toFixed(2) + 'rem');
+    p.style.animationDelay = (Math.random() * .08).toFixed(2) + 's';
+    el.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+/* O palco estremece, e a Fratura responde ao golpe. SÓ NO CRÍTICO, e é
+   uma decisão: um ecrã que abana a cada murro deixa de dizer nada, e um
+   jogo de turnos tem murros a cada dois segundos. */
+function _afEstremecer() {
+  const p = document.getElementById('cbPalco');
+  if (!p) return;
+  p.classList.remove('treme', 'clarao');
+  void p.offsetWidth;
+  p.classList.add('treme', 'clarao');
+  setTimeout(() => p.classList.remove('treme', 'clarao'), 620);
+}
+
+/* ── O QUE CADA EVENTO FAZ VER ──
+
+   Um por um, pela ordem em que o motor os devolveu. O desenho segue o
+   evento e não o contrário: se o motor não disse que alguém apanhou,
+   ninguém tem de tremer. */
+function _afEncenar(eventos) {
   for (const ev of eventos) {
-    if (!ev.alvo || !(ev.perda > 0)) continue;
-    const el = document.getElementById('cbLut' + ev.alvo);
-    if (!el) continue;
-    // 'bate' e não 'bateu': é a classe que o CSS anima (.cb-posto.bate)
-    el.classList.remove('bate');
-    void el.offsetWidth;
-    el.classList.add('bate');
-    setTimeout(() => el.classList.remove('bate'), 700);
+    const deQuem = _afEl(ev.quem);
+    const noAlvo = _afEl(ev.alvo);
+
+    if (ev.tipo === 'gasto') { _afNumeroPM(deQuem, ev.pm); continue; }
+
+    if (ev.tipo === 'guardar') { _afGesto(deQuem, 'defende', 500); continue; }
+
+    if (ev.tipo === 'cura') {
+      if (ev.curou) _afNumero(noAlvo, ev.curou, false, 'cura');
+      continue;
+    }
+
+    if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); continue; }
+
+    if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
+      _afGesto(deQuem, 'avanca', 400);
+      if (!ev.acertou) { _afGesto(noAlvo, 'esquiva', 420); continue; }
+    }
+
+    if (ev.perda > 0 || ev.curou > 0 || ev.tipo === 'devastacao' || ev.tipo === 'actoFinal') {
+      const tipo = ev.tipo_dano || 'fisico';
+      if (ev.curou > 0) {
+        // absorveu: cura-se com o golpe, e o número sobe em vez de descer
+        _afNumero(noAlvo, ev.curou, false, 'cura');
+      } else {
+        _afGesto(noAlvo, 'bate', 520);
+        _afNumero(noAlvo, ev.perda, !!ev.critico);
+        _afPoeira(noAlvo);
+      }
+      _afImpacto(noAlvo, tipo);
+      if (ev.pmAlvo) _afNumero(noAlvo, ev.pmAlvo, false, 'roubo');
+      if (ev.critico) { _afOnda(noAlvo); _afEstremecer(); }
+    }
+
+    if (ev.drenou) _afNumero(deQuem, ev.drenou, false, 'cura');
   }
 }
 
@@ -944,16 +1240,53 @@ function _afFicha(id) {
 // ═══════════════════════════════════════════════════════════════════
 // O FIM
 // ═══════════════════════════════════════════════════════════════════
+/* É este arquivo que desenha a batalha; quem sabe o que ela custa e
+   rende é o js/pve-fu.js. No banco de ensaio ele não está carregado, e
+   não devia estar — um banco que cobra energia e dá prémios precisa de um
+   jogador com conta. */
+function _afTemMoldura() { return typeof _pveFecharContas === 'function'; }
+
+/* O ✕ a meio da batalha É o desistir, com a pergunta antes. Acabada a
+   batalha, fecha e pronto — aí já não há nada a cobrar. Sem moldura
+   (banco de ensaio) fecha sempre, que é o que lá faz sentido. */
+function _afDesistir() {
+  if (_afTemMoldura() && _afE && !_afE.acabou) { _pveDesistir(); return; }
+  afFechar();
+}
+
 function _afFimHTML() {
   const v = _afE.vencedor;
-  const txt = v === 'A' ? t('af.fim.ganhou') : v === 'B' ? t('af.fim.perdeu') : t('af.fim.empate');
+  const txt = _afE._desistiu ? t('pve.desistiu.titulo')
+            : v === 'A' ? t('af.fim.ganhou')
+            : v === 'B' ? t('af.fim.perdeu') : t('af.fim.empate');
+
+  /* O prémio e a fratura, quando há moldura que os tenha calculado. São
+     a única coisa que este painel diz e que não veio do motor. */
+  const g = _afE._premio;
+  const fr = _afE._fraturados || [];
+  const aviso = fr.length
+    ? `<div class="cb-fratura">🦴 ${t('pve.fratura', { nomes: fr.join(', ') })}</div>` : '';
+  const premio = g ? `<div class="cb-premio">
+      ${g.desistiu ? `<span class="cada">${t('pve.desistiu')}</span>`
+        : `<span>+${g.coinGain} 🪙</span>
+           <span class="cada">${t('pve.premio.cada', { n: g.quantos })}</span>
+           <span>+${g.xpGain} XP</span><span>+${g.vinculo} 💜</span>`}
+      <span class="gasto">−${g.energia} ⚡ ${g.desistiu ? '' : t('pve.premio.cadaUm')}</span>
+    </div>` : '';
+
   return `<div class="cb-fim ${v === 'A' ? 'bom' : 'mau'}">${esc(txt)}</div>
+    ${aviso}${premio}
     <button class="cb-btn sair" onclick="afFechar()">
-      <span class="cb-btn-rot">${t('af.fim.sair')}</span></button>`;
+      <span class="cb-btn-rot">${_afTemMoldura() ? t('pve.sair') : t('af.fim.sair')}</span></button>`;
 }
 
 function _afFim() {
   _afQuem = null; _afMenu = false; _afPasso = null;
+  // As contas fecham-se ANTES de o painel se desenhar: é ele que mostra o
+  // prémio, e um painel desenhado primeiro mostrava a batalha sem ganho
+  // nenhum e nunca mais se refazia.
+  if (_afTemMoldura()) _pveFecharContas(_afE);
+  _afChave = null;      // o fim muda a estrutura toda
   _afDesenhar();
 }
 
