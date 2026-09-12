@@ -1028,6 +1028,30 @@
   font-size: 0.375rem; color: rgba(122,184,122,.55); padding: 0 0.125rem;
 }
 
+/* ── A SETA DO CARTÃO INIMIGO ──
+
+   Enquanto um dos meus está escolhido, diz o que o dano DELE faz àquele
+   inimigo. As cores são as mesmas das pastilhas da ficha — vermelho é
+   vulnerável, azul resiste, cinzento imune, verde absorve — e querem
+   dizer exactamente o mesmo: falam sempre de quem as tem vestidas. Numa
+   ficha minha o vermelho é mau; num cartão inimigo é bom, e é a mesma
+   frase nos dois sítios.
+
+   O `nada` fica sem fundo e sem borda: é a ausência de afinidade, e
+   vesti-la de pastilha dava-lhe um peso que ela não tem. */
+.cb-vs {
+  flex: 0 0 auto; align-self: center;
+  min-width: 0.875rem; padding: 0.0625rem 0.1875rem;
+  border-radius: 0.1875rem; text-align: center;
+  font-size: 0.625rem; line-height: 1.2; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.12);
+}
+.cb-vs.VU   { color: #ffb4ac; background: rgba(200,80,70,.28); }
+.cb-vs.RS   { color: #a8c8f0; background: rgba(90,140,200,.24); }
+.cb-vs.IM   { color: #c8c8d0; background: rgba(150,150,160,.22); }
+.cb-vs.AB   { color: #a8dca8; background: rgba(120,190,120,.24); }
+.cb-vs.nada { color: var(--muted); background: none; border-color: transparent; }
+
 .cb-ficha-cara {
   position: relative; flex: 0 0 auto;
   width: 1.5rem; height: 1.5rem; border-radius: 0.25rem;
@@ -1121,18 +1145,40 @@
 
    O left/top vêm do JS, que lê a posição do posto (_pveMenuMover).
    ═══════════════════════════════════════════════════════════════════ */
+/* ── PARA FORA, E PARA DENTRO SÓ O DO FUNDO ──
+
+   A coluna sobe a partir dos pés do avatar a que se encosta, e sai para
+   FORA — à esquerda de quem está do lado esquerdo — para não tapar o
+   caminho do golpe nem o lance.
+
+   O `dentro` é a excepção, e é sempre a mesma: o posto do fundo está a
+   10% da largura, e uma coluna à esquerda dele sai fora do palco. Vira
+   para o meio, onde só há céu e a fenda, e tapa o companheiro do meio.
+
+   Quem decide é o js/arena-fu.js, pelo POSTO e não por medição: a
+   coluna tem de estar sempre no mesmo sítio para o mesmo avatar.
+
+   ── E ISTO VALE EM TODAS AS LARGURAS ──
+
+   Estas quatro linhas viviam só dentro do @media de 681px, e a regra
+   base mandava a coluna para DENTRO em toda a gente. Entre os 417 e os
+   680px — que é onde não há nem o painel encostado ao rodapé nem o
+   palco largo — os três postos abriam para o mesmo lado e o do fundo
+   não tinha nada de especial. Agora os três sítios são os três em
+   qualquer largura; o que o @media muda é só a distância, porque lá os
+   avatares são maiores. */
 .cb-menu {
   position: absolute; z-index: 8;
-  /* A partir dos pés do avatar: um passo para a frente (para o meio do
-     palco) e a coluna a subir daí. */
-  transform: translate(2.6rem, -100%) translateY(-1.75rem);
+  transform: translate(-100%, -100%) translate(-0.5rem, -1.75rem);
   opacity: 0; pointer-events: none;
   transition: opacity .22s, transform .22s cubic-bezier(.34,1.3,.64,1);
 }
 .cb-menu.aberto {
   opacity: 1; pointer-events: auto;
-  transform: translate(2.6rem, -100%) translateY(-2.6rem);
+  transform: translate(-100%, -100%) translate(-0.5rem, -2.6rem);
 }
+.cb-menu.dentro        { transform: translate(0, -100%) translate(0.5rem, -1.75rem); }
+.cb-menu.dentro.aberto { transform: translate(0, -100%) translate(0.5rem, -2.6rem); }
 /* No fim da batalha não há avatar a quem se encostar, e o que aparece
    não é uma escolha: é o resultado. Volta a ser um painel, ao meio. */
 .cb-menu.fim {
@@ -1720,24 +1766,14 @@
   .cb-anel    { width: calc(6rem * var(--escala)); height: calc(1.7rem * var(--escala)); }
   .cb-etiqueta{ transform: translate(-50%, calc(-100% - 9.6rem * var(--escala))); }
   .cb-posto .cb-marcas { transform: translate(-50%, calc(-100% - 10.9rem * var(--escala))); width: 11rem; }
+  /* Só a distância: os avatares aqui têm 9,1rem de altura contra 3, e a
+     coluna tem de subir de mais alto para não lhes ficar em cima. O lado
+     — fora, e dentro para o do fundo — é o da regra base. */
   .cb-menu    { transform: translate(-100%, -100%) translate(-0.5rem, -8rem); }
   .cb-menu.aberto { transform: translate(-100%, -100%) translate(-0.5rem, -9.5rem); }
-  /* ── E O LADO DE DENTRO, PARA QUEM NÃO CABE NO DE FORA ──
-
-     A coluna sai por omissão para o lado de FORA — à esquerda de quem
-     está do lado esquerdo — para não tapar o caminho do golpe. Mas os
-     postos de trás estão a 22% e a 10% da largura, e uma coluna de 13rem
-     à esquerda deles sai fora do palco: medido, 81px no do meio e 224 no
-     do fundo.
-
-     Quem não couber vira-se para dentro, para o meio do palco, onde só
-     há céu e a fenda. Tapa o companheiro da frente, e é um preço
-     aceite: o que se está a ler é o menu, e o companheiro volta a
-     aparecer assim que se escolha.
-
-     Quem decide é o js/arena-fu.js, que é quem mede. */
   .cb-menu.dentro        { transform: translate(0, -100%) translate(0.5rem, -8rem); }
   .cb-menu.dentro.aberto { transform: translate(0, -100%) translate(0.5rem, -9.5rem); }
+  .cb-vs      { font-size: 0.46875rem; }
 }
 
 /* Quem pediu ao sistema para não haver movimento fica com a cena — a

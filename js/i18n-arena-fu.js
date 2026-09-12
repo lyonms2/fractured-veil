@@ -23,7 +23,6 @@ window.registerStrings({
   'af.lugar.muito_forte': 'Magia Muito Forte',
   'af.lugar.defesa':      'Defesa',
   'af.lugar.suporte':     'Suporte',
-  'af.orbe.ficha':    'Ficha',
   'af.orbe.mover':    'Trocar de lugar',
   'af.orbe.voltar':   'Voltar',
   'af.orbe.todos':    'Todos',
@@ -60,6 +59,18 @@ window.registerStrings({
   'af.lance.devasta': 'Devastação em {nome}',
   'af.lance.ronda':   '— rodada {n} —',
   'af.lance.comeca':  '{nome} começa',
+
+  /* ── O QUE O MEU GOLPE LHE FAZ ──
+     Estas são a pergunta ANTES do golpe, e as `af.af.*` logo abaixo são
+     a resposta DEPOIS dele. São quatro e quatro, e dizem a mesma
+     afinidade nos dois tempos — por isso não podem partilhar chave: um
+     "resistiu" numa seta que ainda não bateu em ninguém seria o passado
+     a fazer-se de futuro. */
+  'af.vs.VU':   'vulnerável a {tipo}: leva o DOBRO do golpe de {nome}',
+  'af.vs.RS':   'resiste a {tipo}: leva METADE do golpe de {nome}',
+  'af.vs.IM':   'imune a {tipo}: o golpe de {nome} não lhe faz nada',
+  'af.vs.AB':   'absorve {tipo}: o golpe de {nome} CURA-O',
+  'af.vs.nada': 'leva o {tipo} de {nome} por inteiro',
 
   // ── as afinidades, ditas em palavras ──
   'af.af.RS':         'resistiu',
@@ -284,7 +295,6 @@ window.registerStrings({
   'af.lugar.muito_forte': 'Very Strong Spell',
   'af.lugar.defesa':      'Defence',
   'af.lugar.suporte':     'Support',
-  'af.orbe.ficha':    'Sheet',
   'af.orbe.mover':    'Swap places',
   'af.orbe.voltar':   'Back',
   'af.orbe.todos':    'All',
@@ -319,6 +329,12 @@ window.registerStrings({
   'af.lance.devasta': 'Devastation on {nome}',
   'af.lance.ronda':   '— round {n} —',
   'af.lance.comeca':  '{nome} goes first',
+
+  'af.vs.VU':   'vulnerable to {tipo}: takes DOUBLE from {nome}',
+  'af.vs.RS':   'resists {tipo}: takes HALF from {nome}',
+  'af.vs.IM':   'immune to {tipo}: {nome} cannot hurt it',
+  'af.vs.AB':   'absorbs {tipo}: {nome} HEALS it',
+  'af.vs.nada': 'takes the full {tipo} of {nome}',
 
   'af.af.RS':         'resisted',
   'af.af.VU':         'vulnerable!',

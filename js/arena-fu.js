@@ -202,17 +202,32 @@ function _afLutador(c) {
   const pos = AF_POSTOS[Math.max(0, Math.min(2, c.posto))];
   const x = meu ? pos.x : 100 - pos.x;
 
-  /* Tocar num meu que ainda pode agir escolhe-o e abre o menu. Em
-     qualquer outro, abre a ficha. É a diferença entre "é a este que dou
-     ordens" e "quem é este", e cada uma quer um sítio diferente. */
-  const gesto = (meu && podeAgir && !_afPasso) ? `_afEscolherQuem('${c.id}')`
-              : (_afPasso ? `_afAlvo('${c.id}')` : `_afFicha('${c.id}')`);
+  /* ── O CORPO MOSTRA, O CARTÃO MANDA ──
+
+     Tocar num meu que pudesse agir abria-lhe o menu, e tocar em qualquer
+     outro abria a ficha. Duas respostas diferentes ao mesmo gesto,
+     decididas por uma condição que o jogador não vê — de quem é a vez, e
+     se já agiu nesta rodada. O mesmo toque no mesmo bicho fazia coisas
+     diferentes conforme o momento.
+
+     Agora o campo responde sempre o mesmo: quem és tu. As ordens dão-se
+     nos cartões de baixo, que é onde está a fila toda e onde já se
+     escolhia quem joga.
+
+     E há uma razão de espaço por baixo da de coerência: o menu abria
+     POR CIMA do avatar em que se tinha acabado de tocar. Abrir a partir
+     do cartão deixa o campo livre para mostrar o que a escolha faz — que
+     é o que as setas nos cartões inimigos passaram a fazer.
+
+     A única excepção é o passo de escolher alvo: aí o campo é a lista de
+     alvos, e tocar num deles é apontá-lo. */
+  const gesto = _afPasso ? `_afAlvo('${c.id}')` : `_afFicha('${c.id}')`;
 
   const alvejavel = _afPasso && _afEhAlvo(c);
 
   return `<div class="${cls} ${alvejavel ? 'alvo' : ''}" id="cbLut${c.id}"
        role="button" tabindex="0" onclick="${gesto}"
-       title="${esc(meu && podeAgir ? t('af.menu.abrir') : t('af.ficha.abrir', { nome: _afNome(c) }))}"
+       title="${esc(t('af.ficha.abrir', { nome: _afNome(c) }))}"
        style="--x:${x}%;--y:${pos.y}%;--z:${pos.z};--compasso:${c.posto * 0.42}s;z-index:${Math.round(pos.z * 10) + 1}">
     <div class="cb-sombra"></div>
     <div class="cb-anel"></div>
@@ -298,6 +313,43 @@ function _afBarra(atual, max, tipo) {
     <span>${atual}/${max}</span></div>`;
 }
 
+/* ── O QUE O MEU GOLPE LHE FAZ ──
+
+   Enquanto um dos meus está escolhido, cada cartão inimigo diz numa seta
+   o que o dano DELE faz àquele bicho. É a pergunta do turno — em quem
+   bato? — e a resposta estava enterrada em três fichas que era preciso
+   abrir uma a uma.
+
+   O tipo é o do avatar escolhido, e é o mesmo tipo para tudo o que ele
+   lança: o golpe comum, a barragem, o concentrado e a Devastação usam
+   todos o `ficha.tipo` dele (ver o js/combate-fu.js). Uma seta só chega
+   porque não há segunda resposta possível.
+
+   ── E APARECE NOS TRÊS, SEMPRE ──
+
+   Mostrar a seta só a quem tem afinidade deixava os outros dois cartões
+   em branco, e um branco quer dizer duas coisas ao mesmo tempo: "leva o
+   dano normal" e "ainda não escolheste ninguém". O traço do `nada` custa
+   um caractere e fecha essa ambiguidade.
+
+   ── AS QUATRO MARCAS ──
+
+   Para cima e para baixo nas duas que são mais e menos do mesmo. As
+   outras duas não são: a imunidade não é "muito menos", é NADA, e a
+   absorção não é menos nenhum — é ao contrário, e uma seta para baixo
+   diria a um jogador apressado que ainda valia a pena bater. */
+const AF_SETAS = { VU: '▲', RS: '▼', IM: '⊘', AB: '✚', nada: '–' };
+
+function _afSetaVs(c, meu) {
+  if (meu || !_afE) return '';
+  const eu = _afPorId(_afQuem);
+  if (!eu || eu.lado === c.lado || !eu.ficha) return '';
+  const tipo = eu.ficha.tipo;
+  const af = ((c.ficha.afinidades || {})[tipo]) || 'nada';
+  return `<span class="cb-vs ${af}" title="${esc(t('af.vs.' + af, {
+    tipo: t('af.tipo.' + tipo), nome: _afNome(eu) }))}">${AF_SETAS[af]}</span>`;
+}
+
 /* O cartão. A classe `entra` é a que o CSS acende — lá era "este pode
    entrar em campo", aqui é "este ainda pode agir nesta rodada". É a
    mesma pergunta debaixo dos dois motores: em qual destes posso tocar
@@ -326,6 +378,7 @@ function _afCartao(c) {
       ${_afBarra(c.pv, c.ficha.pvMax, 'pv')}
       ${meu ? _afBarra(c.pm, c.ficha.pmMax, 'pm') : ''}
     </div>
+    ${_afSetaVs(c, meu)}
   </div>`;
 }
 
@@ -497,6 +550,11 @@ function _afMenuMover() {
   const acabou = _afE && _afE.acabou;
   menu.classList.toggle('aberto', (!!_afMenu && !!_afQuem) || !!_afPasso || !!acabou);
   menu.classList.toggle('fim', !!acabou);
+  /* O lado de dentro é de um posto, e no fim não há posto nenhum. O
+     painel do fim está a salvo porque escreve `transform` em linha e com
+     !important — mas deixar a classe pendurada é deixar uma armadilha
+     para o dia em que esse !important sair. */
+  if (acabou) menu.classList.remove('dentro');
 
   /* ── O PAINEL DO FIM, AO MEIO, EM PÍXEIS ──
 
@@ -550,9 +608,45 @@ function _afMenuMover() {
   // fora do fim, tudo volta a ser do CSS
   menu.style.removeProperty('transform');
 
+  /* ══ DE ONDE SAI A COLUNA ══
+
+     Não é sempre o posto de quem está a jogar, e não é medido: é dito.
+
+       posto 0 (frente)   do seu, para fora        ← o sítio de sempre
+       posto 1 (meio)     do posto 0, para fora    ← o MESMO sítio
+       posto 2 (fundo)    do seu, para DENTRO      ← por cima do do meio
+
+     ── PORQUE É QUE DEIXOU DE SER MEDIDO ──
+
+     Havia aqui uma heurística: abria-se para fora, media-se, e se não
+     coubesse virava-se para dentro e media-se outra vez, ficando o lado
+     que menos transbordasse. Funcionava — mas a coluna aparecia num de
+     dois sítios conforme a largura da janela, o número de orbes daquele
+     avatar e o comprimento dos nomes das magias dele.
+
+     Um menu que muda de lado sozinho obriga a PROCURÁ-LO a cada turno.
+     E os três avatares são três sítios diferentes num palco onde só há
+     dois cantos livres: o do meio não precisa de sítio próprio, porque
+     nunca está aberto ao mesmo tempo que o da frente.
+
+     O do fundo é o único que tem de ir para dentro: está a 10% da
+     largura, e uma coluna à esquerda dele sai 224px fora do palco. Para
+     dentro tapa o companheiro do meio, e isso foi aceite — o que se está
+     a ler é o menu.
+
+     A trava horizontal lá em baixo fica, como rede: se nem assim couber,
+     empurra. Mas passa a ser o caso raro e não a regra. */
   const palco = document.getElementById('cbPalco');
-  const posto = _afQuem ? document.getElementById('cbLut' + _afQuem) : null;
-  if (!palco || !posto) return;
+  const quem = _afPorId(_afQuem);
+  if (!palco || !quem) return;
+
+  const irmaos = (quem.lado === 'A' ? _afE.A : _afE.B);
+  const ancora = (quem.posto === 1)
+    ? (irmaos.filter(c => c.posto === 0)[0] || quem) : quem;
+  const posto = document.getElementById('cbLut' + ancora.id);
+  if (!posto) return;
+
+  menu.classList.toggle('dentro', quem.posto === 2);
   /* E tira-se o `important` que o painel do fim possa ter deixado: uma
      prioridade esquecida prendia o menu ao centro para o resto da
      sessão, e a batalha seguinte abria com os orbes no meio do palco. */
@@ -639,31 +733,9 @@ function _afMenuMover() {
      Empurrar em vez de trocar de lado: os orbes não têm fundo, portanto
      passar por cima do campo lê-se como uma camada e não como um painel
      a tapar a cena. */
-  /* ── PRIMEIRO VIRAR, SÓ DEPOIS EMPURRAR ──
-
-     Empurrar uma coluna que não cabe do lado de fora arrasta-a por cima
-     dos companheiros TODOS — e no posto do fundo tapava o próprio avatar
-     que estava a jogar, a 100%.
-
-     Vira-se para o lado de dentro, que é para o meio do palco: lá só há
-     céu e a fenda. Tapa o companheiro da frente, e é um preço aceite —
-     o que se está a ler é o menu.
-
-     E só se nem assim couber é que se empurra. */
-  menu.classList.remove('dentro');
-  let r2 = menu.getBoundingClientRect();
-  if (r2.left < p.left + folga || r2.right > p.right - folga) {
-    menu.classList.add('dentro');
-    r2 = menu.getBoundingClientRect();
-    // se o lado de dentro também não serve, fica o que menos transborda
-    const foraDentro = Math.max(p.left + folga - r2.left, r2.right - (p.right - folga), 0);
-    menu.classList.remove('dentro');
-    const rFora = menu.getBoundingClientRect();
-    const foraFora = Math.max(p.left + folga - rFora.left, rFora.right - (p.right - folga), 0);
-    if (foraDentro <= foraFora) menu.classList.add('dentro');
-    r2 = menu.getBoundingClientRect();
-  }
-
+  /* O lado já foi decidido lá em cima, pelo posto. Isto é só a rede:
+     empurra para dentro do palco o que tenha ficado de fora. */
+  const r2 = menu.getBoundingClientRect();
   const esq = parseFloat(menu.style.left) || 0;
   if (r2.left < p.left + folga)
     menu.style.left = Math.round(esq + ((p.left + folga) - r2.left)) + 'px';
@@ -688,8 +760,6 @@ const AF_SELOS = {
         + '<path d="M12 7.5c-1.6.9-3 1.1-3 1.1V12c0 2.2 1.6 3.6 3 4.6 1.4-1 3-2.4 3-4.6V8.6s-1.4-.2-3-1.1Z"/>',
   suporte: '<path d="M12 3.5c3.2 3.8 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 1.8-5.2 5-9Z"/>'
          + '<path d="M12 16.5V9.5M9.5 12 12 9.5l2.5 2.5"/>',
-  ficha: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>'
-       + '<circle cx="12" cy="12" r="3"/>',
   // duas setas que se cruzam: trocar de lugar
   mover: '<path d="M4 8.5h12l-3.5-3.5M20 15.5H8l3.5 3.5"/>',
   voltar: '<path d="M14.5 6 8.5 12l6 6"/>',
@@ -748,7 +818,7 @@ function _afAcoes() {
 
   /* Os lugares DELE, e não os cinco. O feitio decide quais são
      (FU_LUGARES_DO_FEITIO, em js/magias-fu.js) e o menu desenha o que
-     houver — três orbes, mais o trocar de lugar e a ficha. */
+     houver — três orbes, mais o trocar de lugar. */
   const magias = fuMagiasDe(eu.ficha);
   let h = '';
   for (const lugar of Object.keys(magias)) {
@@ -765,8 +835,10 @@ function _afAcoes() {
 
   // reordenar: só se houver com quem
   const meus = (eu.lado === 'A' ? _afE.A : _afE.B).filter(c => c.vivo && c !== eu);
+  /* Sem o orbe da ficha: o corpo em campo abre-a, e é onde ela se pede.
+     Ocupava um lugar na coluna para repetir um gesto que já existe — e a
+     coluna é o que tapa o palco enquanto está aberta. */
   h += _afOrbe('mover', t('af.orbe.mover'), '', `_afPedirMover()`, null, meus.length > 0);
-  h += _afOrbe('ficha', t('af.orbe.ficha'), '', `_afFicha('${eu.id}')`, null, true);
   alvo.innerHTML = h;
 }
 
