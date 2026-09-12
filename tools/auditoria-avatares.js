@@ -206,12 +206,20 @@ titulo('Subir de nível não troca o avatar por outro');
     let trocou = null;
     for (let nv = 2; nv <= 60; nv++) {
       const f = F.fuFicha(slotGravado(seed, nv));
-      const mesmo = F.FU_ATRIBS.every(a => f[a] === um[a])
-        && f.tipo === um.tipo
+      /* Os DADOS mudam nos níveis 20, 40 e 60 — é a regra do manual
+         (p. 302), e é de propósito. O que não pode mudar é aquilo que faz
+         dele ELE: o arranjo, a ordem, o tom, a costura e a vantagem.
+
+         Esta linha dizia que os dados também eram fixos, e falhou em 200
+         avatares no dia em que a regra entrou. Era a linha que estava
+         desactualizada, e não o avatar. */
+      const mesmo = f.tipo === um.tipo
         && f.arranjo === um.arranjo
         && f.ordem.join() === um.ordem.join()
         && f.costura === um.costura
-        && f.vantagens[0].id === um.vantagens[0].id;
+        && f.vantagens[0].id === um.vantagens[0].id
+        // e os dados nunca descem
+        && F.FU_ATRIBS.every(a => f[a] >= um[a]);
       if (!mesmo) { trocou = nv; break; }
     }
     verificar('o seed ' + seed + ' é o mesmo avatar do 1 ao 60', trocou === null,

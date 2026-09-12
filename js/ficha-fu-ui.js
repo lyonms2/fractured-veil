@@ -99,6 +99,44 @@ function _ffuDados(f, c) {
 
    As nove, e só as que têm alguma coisa. Um avatar médio tem duas ou
    três linhas aqui, e são elas que decidem contra quem ele é bom. */
+/* ── DE ONDE VIERAM OS DADOS A MAIS ──
+
+   Os quatro dados que a ficha mostra já têm as subidas dentro. Sem esta
+   linha, dois avatares do mesmo arranjo apareciam com dados diferentes e
+   não havia nada na tela que explicasse porquê — parecia acaso, e o
+   jogador que pagou por um ovo Lendário não via o que comprou.
+
+   Diz as duas fontes em separado porque são duas decisões diferentes: o
+   ovo foi escolhido, o nível foi ganho. */
+function _ffuSubidas(f) {
+  if (!f.subidas) return '';
+  const partes = [];
+  const doOvo = (typeof FU_SUBIDA_DA_ORIGEM !== 'undefined')
+    ? (FU_SUBIDA_DA_ORIGEM[f.origem] | 0) : 0;
+  if (doOvo) partes.push(t('af.f.subida_de', { origem: f.origem }));
+  const doNivel = f.subidas - doOvo;
+  if (doNivel) {
+    const degraus = (typeof FU_SUBIDAS_NIVEL !== 'undefined')
+      ? FU_SUBIDAS_NIVEL.filter(d => f.nivel >= d) : [];
+    /* Um nível diz-se no singular, vários numa lista com "e" no fim. A
+       primeira versão encadeava tudo com vírgulas depois de um "e", e
+       saiu "do ovo Lendário e do nível 20, do nível 40, do nível 60". */
+    partes.push(degraus.length === 1
+      ? t('af.f.subida_nv', { n: degraus[0] })
+      : t('af.f.subida_nvs', {
+          lista: degraus.slice(0, -1).join(', ')
+                 + t('af.f.subida_e') + degraus[degraus.length - 1] }));
+  }
+  /* E as que não couberam, quando as há: um avatar com tudo em d12 que
+     chega ao nível 60 não ganha nada, e tem o direito de saber porquê. */
+  const perdidas = f.subidas - f.subidasUsadas;
+  const aviso = perdidas
+    ? ` <i class="ficha-subida-tecto">${esc(t('af.f.subida_tecto', { n: perdidas }))}</i>` : '';
+  return `<div class="ficha-vocacao ficha-subidas">◈ ${
+    esc(t(f.subidas === 1 ? 'af.f.subidas' : 'af.f.subidas_p', { n: f.subidas }))} · ${
+    esc(partes.join(t('af.f.subida_e')))}${aviso}</div>`;
+}
+
 function _ffuAfinidades(f) {
   const chaves = Object.keys(f.afinidades || {}).filter(k => f.afinidades[k]);
   if (!chaves.length) return '';
@@ -187,6 +225,7 @@ function renderFichaFU(slot, lutador) {
     <div class="ficha-vocacao" title="${esc(t('af.f.arranjo'))}">◆ ${
       esc(t('af.arr.' + f.arranjo))} · ${f.ordem.map(a => 'd' + f[a]).join(' ')}</div>
     ${_ffuIndole(slot)}
+    ${_ffuSubidas(f)}
 
     <div class="ficha-stats">${_ffuDados(f, lutador)}</div>
 

@@ -887,15 +887,26 @@ function _luGanho(nv) {
     agora = fuFicha({ ...avatar, nivel: nv });
   } catch (_) { return; }
 
+  /* ── E O DADO, QUANDO SOBE ──
+
+     Nos níveis 20, 40 e 60 um dos quatro atributos ganha um tamanho de
+     dado (o manual, p. 302). É o maior ganho que uma subida de nível dá
+     neste motor — mexe na vida, na magia, na defesa e em todas as
+     rolagens desse atributo — e vinha sem uma palavra. */
+  const dado = FU_ATRIBS
+    .filter(a => agora[a] > antes[a])
+    .map(a => t('gt.subiu_dado', { a: t('af.at.' + a), de: antes[a], para: agora[a] }));
+
   const subiu = LU_LINHAS.filter(([k]) => agora[k] > antes[k]);
   /* Se nada subir — o que só pode acontecer no tecto dos 60 — fica a
      frase antiga, que é vaga mas não é falsa. */
-  if (!subiu.length) { el.textContent = t('gt.levelup.mais_forte'); return; }
+  if (!subiu.length && !dado.length) { el.textContent = t('gt.levelup.mais_forte'); return; }
 
   el.classList.add('mostra');
-  el.innerHTML = subiu.map(([k, rot]) =>
-    `<span class="lu-g-item">${t(rot)} <b>${antes[k]} → ${agora[k]}</b></span>`
-  ).join('');
+  el.innerHTML = dado.map(d => `<span class="lu-g-item lu-g-dado">${d}</span>`).join('')
+    + subiu.map(([k, rot]) =>
+        `<span class="lu-g-item">${t(rot)} <b>${antes[k]} → ${agora[k]}</b></span>`
+      ).join('');
 }
 
 function playLevelUp(newNivel) {

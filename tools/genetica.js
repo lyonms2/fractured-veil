@@ -202,34 +202,61 @@ ok(new Set(somasDosArranjos).size === 1,
    'os quatro arranjos somam todos o mesmo',
    M.FU_ARRANJOS.map((a, k) => a.id + ' ' + somasDosArranjos[k]).join(' · '));
 
+/* AO NASCER, e de um ovo Comum: é aí que o arranjo é tudo o que há.
+
+   A partir do nível 20, e num ovo melhor, entram as SUBIDAS DE DADO do
+   manual — e essas são um ganho declarado, não uma fuga do arranjo.
+   Medir no nível 35 e chamar-lhe "ninguém tem mais faces" era confundir
+   as duas coisas: esta linha falhou no dia em que a origem passou a
+   pesar, e a culpa era da medição. */
 let fora = 0, nArr = 0;
 for (let i = 0; i < 5000; i++) {
   const s = nascido(i * 13 + 5);
-  const f = M.fuFicha({ seed: s.seed, nivel: 35, nascimento: s.nascimento });
+  const f = M.fuFicha({ seed: s.seed, nivel: 1, nascimento: s.nascimento });
   const soma = ATRIBS.reduce((t, a) => t + f[a], 0);
   if (soma !== somasDosArranjos[0]) fora++;
   nArr++;
 }
-ok(fora === 0, 'e nenhum avatar sai com mais faces do que isso',
+ok(fora === 0, 'e ao nascer ninguém tem mais faces do que isso',
    nArr.toLocaleString('pt-BR') + ' avatares, todos com ' + somasDosArranjos[0]);
+
+/* E o que as subidas acrescentam é exactamente o que prometem: uma face
+   por cada duas de tamanho de dado, e nunca mais do que isso. */
+let somaErrada = 0;
+for (let i = 0; i < 2000; i++) {
+  const s = nascido(i * 19 + 7);
+  for (const [origem, nv] of [['Comum', 1], ['Raro', 1], ['Lendário', 1],
+                              ['Comum', 20], ['Comum', 60], ['Lendário', 60]]) {
+    const cert = Object.assign({}, s.nascimento, { origem });
+    const f = M.fuFicha({ seed: s.seed, nivel: nv, nascimento: cert });
+    const soma = ATRIBS.reduce((t, a) => t + f[a], 0);
+    if (soma !== somasDosArranjos[0] + f.subidasUsadas * 2) somaErrada++;
+  }
+}
+ok(somaErrada === 0, 'e cada subida vale duas faces, nem mais nem menos',
+   '12.000 fichas · ' + somaErrada + ' fora');
 
 // ═════════════════════════════════════════════════════════════════
 titulo('A PROVENIÊNCIA');
 
-/* ── E AQUI ESTÁ UMA DECISÃO POR TOMAR ──
+/* ── A DECISÃO FOI TOMADA ──
 
-   A raridade do OVO de onde o avatar veio — Comum, Raro, Lendário —
-   escolhe as faixas dos alelos (gerarDna, em js/nascimento.js). No motor
-   antigo isso mexia nos pontos.
+   A raridade do OVO — Comum, Raro, Lendário — escolhe as faixas dos
+   alelos (gerarDna, em js/nascimento.js), e durante um tempo isso não
+   mexia em NADA na ficha. Esta secção dizia-o alto, e o quadro abaixo
+   mostrava as três origens com a mesma distribuição ao ponto percentual.
 
-   Neste, não mexe em NADA, e esta secção existe para o dizer alto em vez
-   de o deixar escondido. A razão é aritmética: as faixas têm a mesma
-   largura nas três origens, o arranjo lê o ESPALHO das somas (máximo
-   menos mínimo), e uma constante somada aos dois lados cancela-se.
+   A razão era aritmética: as faixas têm a mesma largura nas três
+   origens, o arranjo lê o ESPALHO das somas, e uma constante somada aos
+   dois lados cancela-se.
 
-   A verificação afirma o que É verdade hoje. No dia em que a origem
-   passar a pesar — o manual tem o degrau de +1 tamanho de dado para
-   isso — esta linha falha, e é exactamente assim que ela deve avisar. */
+   O ARRANJO continua a não mudar — e é suposto: ele diz que FORMA o
+   avatar tem, e a forma é do DNA. O que a origem passou a dar são as
+   SUBIDAS DE DADO do manual (p. 302): uma no Raro, duas no Lendário.
+
+   Portanto o quadro continua igual nas três linhas, e isso continua a
+   estar certo; o que mudou é a soma das faces, que se mede logo a
+   seguir. */
 const porOrigem = {};
 for (const origem of ['Comum', 'Raro', 'Lendário']) {
   const contas = { arranjos: {}, soma: 0, n: 0 };
@@ -248,8 +275,18 @@ for (const origem of ['Comum', 'Raro', 'Lendário']) {
 const assinaturas = Object.values(porOrigem).map(c =>
   Object.keys(c.arranjos).sort().map(k => k + ':' + c.arranjos[k]).join(','));
 ok(new Set(assinaturas).size === 1,
-   'a origem do ovo NÃO muda a ficha — nem um arranjo',
+   'a origem não muda a FORMA — o arranjo é do DNA',
    'as três origens dão exactamente a mesma distribuição');
+
+/* Mas muda a força, e é isso que faz um ovo caro valer o que custa. */
+const medias = ['Comum', 'Raro', 'Lendário'].map(o => porOrigem[o].soma / porOrigem[o].n);
+ok(medias[1] > medias[0] && medias[2] > medias[1],
+   'mas muda a FORÇA — o ovo melhor dá dados maiores',
+   medias.map((m, k) => ['Comum', 'Raro', 'Lendário'][k] + ' ' + m.toFixed(1)).join('  ·  '));
+ok(Math.abs((medias[1] - medias[0]) - 2) < 0.25
+   && Math.abs((medias[2] - medias[1]) - 2) < 0.25,
+   'e cada degrau de origem vale duas faces',
+   '+' + (medias[1] - medias[0]).toFixed(2) + '  +' + (medias[2] - medias[1]).toFixed(2));
 
 // ═════════════════════════════════════════════════════════════════
 titulo('A ÍNDOLE');

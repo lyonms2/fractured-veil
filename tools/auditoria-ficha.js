@@ -99,19 +99,110 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
     verificar('ficha estável ao longo de dez leituras (seed ' + a.seed + ')', igual);
   }
 
-  /* E estável ao SUBIR DE NÍVEL: os dados, o tipo e a costura são de
-     nascença e não podem mudar porque o avatar cresceu. Foi este o
-     defeito que as magias e as vantagens já tiveram no motor antigo. */
+  /* ── O QUE MUDA AO SUBIR, E O QUE NÃO ──
+
+     O tipo, a costura, o arranjo e a ordem são de nascença e não podem
+     mudar porque o avatar cresceu. Foi este o defeito que as magias e as
+     vantagens já tiveram no motor antigo.
+
+     Os DADOS mudam, e só em três sítios: nos níveis 20, 40 e 60, que é a
+     regra do manual (p. 302). Esta verificação dizia que os dados eram
+     imutáveis, e passou a falhar em 40 avatares no dia em que a regra
+     entrou — que é exactamente o que ela devia fazer.
+
+     Continua a ser apertada: os dados não só mudam nos três degraus como
+     NÃO mudam em mais lado nenhum, e nunca descem. */
   for (let s = 1; s <= 40; s++) {
-    const base = avatar(s * 65537, 5);
-    const f5 = F.fuFicha(base);
-    let mesmo = true;
-    for (const nv of [6, 10, 11, 20, 27, 40, 50]) {
+    const base = avatar(s * 65537, 1);
+    let quebras = 0, degrausVistos = [];
+    let ant = F.fuFicha(base);
+    for (let nv = 2; nv <= 60; nv++) {
       const f = F.fuFicha(Object.assign({}, base, { nivel: nv }));
-      if (f.DES !== f5.DES || f.PER !== f5.PER || f.VIG !== f5.VIG || f.VON !== f5.VON
-       || f.tipo !== f5.tipo || f.costura !== f5.costura || f.arranjo !== f5.arranjo) mesmo = false;
+      const mudou = F.FU_ATRIBS.some(a => f[a] !== ant[a]);
+      const desceu = F.FU_ATRIBS.some(a => f[a] < ant[a]);
+      const degrau = F.FU_SUBIDAS_NIVEL.indexOf(nv) !== -1;
+
+      if (desceu) quebras++;                      // nunca desce
+      if (mudou && !degrau) quebras++;            // e só mexe nos degraus
+      if (mudou) degrausVistos.push(nv);
+      // o que é de nascença não se mexe nunca
+      if (f.tipo !== ant.tipo || f.costura !== ant.costura
+       || f.arranjo !== ant.arranjo || f.ordem.join() !== ant.ordem.join()) quebras++;
+      ant = f;
     }
-    verificar('dados, tipo e costura não mudam ao subir de nível (seed ' + base.seed + ')', mesmo);
+    verificar('o tipo, a costura e o arranjo não mudam, e os dados só sobem '
+      + 'nos degraus (seed ' + base.seed + ')', quebras === 0,
+      'mudou em ' + (degrausVistos.join(',') || 'nenhum'));
+  }
+
+  /* E os degraus são mesmo três, e estão mesmo onde o manual os põe. */
+  verificar('os degraus do manual são o 20, o 40 e o 60',
+    F.FU_SUBIDAS_NIVEL.join(',') === '20,40,60', F.FU_SUBIDAS_NIVEL.join(','));
+
+  /* ── A ORIGEM DO OVO ──
+
+     Um ovo Lendário dá duas subidas de dado à nascença, um Raro dá uma, um
+     Comum não dá nenhuma. Durante um tempo a origem não mudava NADA na
+     ficha — medido em 0 de 2000 sementes — e um ovo caro dava um avatar
+     indistinguível de um barato. */
+  for (let s = 1; s <= 60; s++) {
+    const seed = s * 7919;
+    const fichas = {};
+    for (const origem of ['Comum', 'Raro', 'Lendário']) {
+      const a = avatar(seed, 5);
+      a.nascimento.origem = origem;
+      fichas[origem] = F.fuFicha(a);
+    }
+    const soma = f => F.FU_ATRIBS.reduce((t, x) => t + f[x], 0);
+    verificar('o ovo Raro dá um dado a mais do que o Comum (' + seed + ')',
+      soma(fichas.Raro) > soma(fichas.Comum),
+      soma(fichas.Comum) + ' → ' + soma(fichas.Raro));
+    verificar('e o Lendário dá dois (' + seed + ')',
+      soma(fichas['Lendário']) > soma(fichas.Raro),
+      soma(fichas.Raro) + ' → ' + soma(fichas['Lendário']));
+    verificar('mas nenhum lhe troca o arranjo (' + seed + ')',
+      fichas.Comum.arranjo === fichas['Lendário'].arranjo
+      && fichas.Comum.ordem.join() === fichas['Lendário'].ordem.join());
+    verificar('nem o tipo nem a costura (' + seed + ')',
+      fichas.Comum.tipo === fichas['Lendário'].tipo
+      && fichas.Comum.costura === fichas['Lendário'].costura);
+  }
+
+  /* E a origem lê-se da CERTIDÃO, nunca do campo `raridade` do slot —
+     que o cliente escreve. Dois tamanhos de dado por uma linha no console
+     é o mesmo buraco que a raridade da ficha já teve uma vez. */
+  {
+    const forjado = avatar(31337, 5);
+    const limpo = F.fuFicha(forjado);
+    for (const mentira of ['Lendário', 'Raro', 'Divino']) {
+      const f = F.fuFicha(Object.assign({}, forjado, { raridade: mentira }));
+      verificar('escrever raridade "' + mentira + '" no slot não dá dados',
+        F.FU_ATRIBS.every(a => f[a] === limpo[a]));
+    }
+    const semCert = Object.assign({}, forjado, { raridade: 'Lendário' });
+    delete semCert.nascimento;
+    verificar('e sem certidão a origem é Comum, mesmo com raridade escrita',
+      F.fuFicha(semCert).subidas === 0);
+  }
+
+  /* Um tecto que se atinge: cinco subidas (Lendário + os três níveis) num
+     arranjo extremo. As que não couberem perdem-se, e a ficha diz quantas
+     couberam — senão um jogador com tudo em d12 não percebia porque é que
+     o nível 60 não lhe deu nada. */
+  {
+    const tectoMax = F.FU_DADOS[F.FU_DADOS.length - 1];
+    let apanhou = 0;
+    for (let s = 1; s <= 400; s++) {
+      const a = avatar(s * 104729, 60);
+      a.nascimento.origem = 'Lendário';
+      const f = F.fuFicha(a);
+      verificar('nenhum dado passa do d12 (' + a.seed + ')',
+        F.FU_ATRIBS.every(x => f[x] <= tectoMax), F.FU_ATRIBS.map(x => f[x]).join(','));
+      verificar('e as subidas usadas nunca passam as ganhas (' + a.seed + ')',
+        f.subidasUsadas <= f.subidas, f.subidasUsadas + ' de ' + f.subidas);
+      if (f.subidasUsadas < f.subidas) apanhou++;
+    }
+    console.log('   subidas desperdiçadas pelo tecto: ' + apanhou + ' de 400 Lendários nv60');
   }
 }
 

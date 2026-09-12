@@ -322,6 +322,81 @@ const FU_NIVEL_MAX      = 60;   // o tecto do manual (p. 302)
 const FU_NIVEL_RARO     = 11;
 const FU_NIVEL_LENDARIO = 27;
 
+/* ══════════════════════════════════════════════════════════════════
+   AS SUBIDAS DE DADO
+
+   O manual, na criação de NPCs (p. 302):
+
+     "Ao chegar aos níveis 20, 40 e 60, o NPC escolhe um dos seus
+      Atributos e aumenta-o em um tamanho de dado (até ao máximo de d12)."
+
+   São três subidas, e o jogo usa-as duas vezes:
+
+     pelo NÍVEL     aos 20, 40 e 60, como o manual manda
+     pela ORIGEM    o ovo de onde ele saiu dá-lhe um avanço
+
+   ── PORQUE É QUE A ORIGEM PRECISAVA DISTO ──
+
+   A raridade do ovo — Comum, Raro, Lendário — escolhe as faixas dos
+   alelos (gerarDna, em js/nascimento.js), e durante um tempo isso não
+   mudou absolutamente nada na ficha. Medido e impresso pelo
+   tools/genetica.js: as três origens davam a MESMA distribuição de
+   arranjos, ao ponto percentual.
+
+   A razão era aritmética e não um descuido: as faixas têm a mesma
+   largura nas três origens, o arranjo lê o ESPALHO das somas (máximo
+   menos mínimo), e uma constante somada aos dois lados cancela-se. Um
+   ovo Lendário custava caro e dava um avatar indistinguível.
+
+   ── QUAL ATRIBUTO SOBE ──
+
+   O manual diz "o NPC escolhe". Aqui escolhe o DNA: sobe o mais forte
+   que ainda não seja d12, pela ordem que o DNA já decidiu.
+
+   Subir o mais fraco parece generoso e é desperdício — é a mesma razão
+   da Guarda Cerrada. E saltar os que já estão no tecto é o que impede
+   uma subida de se perder: um arranjo `extremo` começa com um d12, e sem
+   este cuidado a primeira subida dele não fazia nada.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_SUBIDAS_NIVEL = [20, 40, 60];
+const FU_SUBIDA_DA_ORIGEM = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
+
+/* A origem lê-se da CERTIDÃO e só de lá.
+
+   O origemDe() do js/nascimento.js cai para `slot.raridade` quando não há
+   certidão — e faz bem, porque quem o chama quer saber de que ovo o
+   bicho veio para o mostrar. Aqui não serve: `slot.raridade` é um campo
+   que o cliente escreve, e dois tamanhos de dado por uma linha no
+   console é exactamente o buraco que a raridade da ficha já teve uma vez.
+
+   Sem certidão é Comum, que é também a resposta honesta: um avatar de
+   antes do DNA não saiu de ovo nenhum que se conheça. */
+function fuOrigemDoSlot(slot) {
+  const o = slot && slot.nascimento && slot.nascimento.origem;
+  return (FU_SUBIDA_DA_ORIGEM[o] != null) ? o : 'Comum';
+}
+
+function fuSubidasDe(nivel, origem) {
+  const porNivel = FU_SUBIDAS_NIVEL.filter(d => (nivel | 0) >= d).length;
+  return (FU_SUBIDA_DA_ORIGEM[origem] | 0) + porNivel;
+}
+
+/* Aplica as subidas ao saco dos dados, no sítio. Devolve QUANTAS foram
+   mesmo usadas — pode haver menos do que as pedidas se tudo chegar ao
+   tecto, e quem mostra a ficha tem o direito de saber isso. */
+function fuAplicarSubidas(base, ordem, quantas) {
+  const tecto = FU_DADOS[FU_DADOS.length - 1];
+  let usadas = 0;
+  for (let i = 0; i < quantas; i++) {
+    let alvo = null;
+    for (const a of ordem) if (base[a] < tecto) { alvo = a; break; }
+    if (!alvo) break;
+    base[alvo] = fuSubirDado(base[alvo]);
+    usadas++;
+  }
+  return usadas;
+}
+
 function fuRaridadeDoNivel(nivel) {
   const n = Math.max(1, nivel | 0);
   return n >= FU_NIVEL_LENDARIO ? 'Lendário' : n >= FU_NIVEL_RARO ? 'Raro' : 'Comum';
@@ -371,6 +446,13 @@ function fuFicha(slot) {
   const base = {};
   ordem.forEach((a, i) => { base[a] = arranjo.dados[i]; });
 
+  /* E as subidas de dado, antes de tudo o que as lê: a vida sai do VIG,
+     a magia do VON, a Defesa do DES e a Defesa Mágica do PER. Aplicá-las
+     depois seria ter dois conjuntos de dados no mesmo avatar. */
+  const origem  = fuOrigemDoSlot(slot);
+  const subidas = fuSubidasDe(nivel, origem);
+  const subiram = fuAplicarSubidas(base, ordem, subidas);
+
   const tipo = fuTipoDoDna(dna);
   /* A escolha do Lendário: fechar a costura, ou uma segunda vantagem.
      É a mesma decisão que o jogo já tinha com o nome de escolha do
@@ -415,6 +497,15 @@ function fuFicha(slot) {
     semDna,
     arranjo: arranjo.id,
     ordem,
+
+    /* De que ovo saiu, e quantos tamanhos de dado isso lhe valeu. Vai na
+       ficha porque é a única forma de o jogador saber porque é que dois
+       avatares do mesmo arranjo têm dados diferentes — sem isto pareceria
+       acaso. `subidas` é o que se ganhou, `subidasUsadas` o que coube:
+       são diferentes quando os quatro dados chegam ao d12. */
+    origem,
+    subidas,
+    subidasUsadas: subiram,
 
     // os quatro dados, no tamanho BASE — o actual sai daqui menos os
     // estados, e quem os aplica é o motor, não a ficha
@@ -511,6 +602,8 @@ if (typeof module !== 'undefined' && module.exports) {
     fuSubirDado, fuDescerDado, fuSomaDoGene, fuArranjoDoDna,
     fuOrdemDosAtributos, fuTipoDaCor, fuTipoDoDna, fuCosturaDoDna,
     fuVizinhoDoTipo, fuAfinidades, fuRaridadeDoNivel, fuFicha,
+    FU_SUBIDAS_NIVEL, FU_SUBIDA_DA_ORIGEM,
+    fuOrigemDoSlot, fuSubidasDe, fuAplicarSubidas,
     fuPoderDoAvatar, fuPoderDaEquipa,
     FU_NIVEL_MAX, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
   };

@@ -688,3 +688,13 @@
   opacity: .72; border-left: 2px solid rgba(201,168,76,.45);
 }
 .vd.porvir .vd-nome { color: var(--gold); font-style: italic; }
+
+/* ── De onde vieram os dados a mais ──
+   A linha das subidas lê-se ao lado do arranjo e do feitio, e com o mesmo
+   peso: são as três coisas que explicam porque é que este avatar tem
+   estes números e não outros. */
+.ficha-subidas { color: var(--gold-light); }
+.ficha-subida-tecto { color: var(--muted); font-style: italic; }
+/* O dado que subiu vem à frente das outras linhas do nível: é o maior
+   ganho que uma subida dá, e vinha sem uma palavra. */
+.lu-g-item.lu-g-dado { color: var(--gold-light); font-weight: 700; }
