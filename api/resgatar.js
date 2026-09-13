@@ -328,7 +328,7 @@ module.exports = async function handler(req, res) {
 
   // ── Validar carteira Ethereum ──
   if (!carteira || !ethers.isAddress(carteira)) {
-    return res.status(400).json({ erro: 'Endereço de carteira Ethereum inválido. Vincula a MetaMask primeiro.' });
+    return res.status(400).json({ erro: 'Endereço de carteira Ethereum inválido. Vincule a MetaMask primeiro.' });
   }
 
   // ── Validar quantidade ──
@@ -367,13 +367,21 @@ module.exports = async function handler(req, res) {
     // duplo saque: o valor passa a viver na ASSINATURA, que o contrato só
     // aceita uma vez (o nonce). O jogador pode tentar as vezes que
     // precisar; a segunda tentativa não volta a debitar.
-    const pendentes = await userRef.collection('resgates')
-      .where('status', '==', 'autorizado')
-      .orderBy('ts', 'desc').limit(1).get();
+    //
+    // A consulta filtra só pelo `status` e a mais recente é escolhida aqui.
+    // Com o orderBy('ts') junto, o Firestore exigia um índice composto que
+    // não existia, e todo saque morria com FAILED_PRECONDITION. Autorizações
+    // pendentes são poucas por jogador (em regra, uma), então ordenar em
+    // memória não custa nada.
+    const pendentesSnap = await userRef.collection('resgates')
+      .where('status', '==', 'autorizado').get();
+    const _msDe = (ts) => (ts && typeof ts.toMillis === 'function') ? ts.toMillis() : (+new Date(ts) || 0);
+    const maisRecente = pendentesSnap.docs
+      .sort((a, b) => _msDe(b.data().ts) - _msDe(a.data().ts))[0] || null;
 
-    if (!pendentes.empty) {
-      const pendRef = pendentes.docs[0].ref;
-      const pend    = pendentes.docs[0].data();
+    if (maisRecente) {
+      const pendRef = maisRecente.ref;
+      const pend    = maisRecente.data();
 
       // Antes de a devolver, perguntar à blockchain se ela já foi usada.
       // Sem isto ficava um beco: quem completasse o saque on-chain mas
@@ -422,18 +430,28 @@ module.exports = async function handler(req, res) {
       const cristais = data?.gs?.cristais ?? data?.cristais ?? 0;
       const bonus    = data?.gs?.cristaisBonus ?? data?.cristaisBonus ?? 0;
 
-      if (cristais < gemsNum) {
+      /* A TAXA DO DEV VAI POR CIMA, NÃO POR DENTRO.
+         Era tirada do valor sacado, e o que sobrava ia para a assinatura:
+         50 💎 viravam 49,5. Mas o contrato conta os 💎 em uint256, inteiro
+         — e o ethers recusa 49,5 ("underflow") e o BigInt do cliente
+         também. Todo saque morria antes de chegar à MetaMask.
+         Agora a assinatura leva o valor inteiro que o jogador pediu (menos
+         os convites, que já são inteiros), e o 1% sai do saldo junto. */
+      const devFee      = +(gemsNum * DEV_FEE_RATE).toFixed(2);
+      const aDebitar    = +(gemsNum + devFee).toFixed(2);
+
+      if (cristais < aDebitar) {
         // Com bónus na conta, o saldo que a loja mostra é maior do que
         // este — e sem o dizer a mensagem parecia um erro do jogo.
         throw new Error(bonus > 0
-          ? `Saldo resgatável insuficiente: tens ${cristais} 💎 com lastro e precisas de ${gemsNum} 💎. Os teus ${bonus} 💎 de bónus valem dentro do jogo, mas não se resgatam.`
-          : `Saldo insuficiente: tens ${cristais} 💎, precisas de ${gemsNum} 💎`);
+          ? `Saldo resgatável insuficiente: você tem ${cristais} 💎 com lastro e precisa de ${gemsNum} 💎. Seus ${bonus} 💎 de bônus valem dentro do jogo, mas não podem ser resgatados.`
+          : `Saldo insuficiente: você tem ${cristais} 💎 e precisa de ${gemsNum} 💎.`);
       }
 
       // ── Rate limit: mínimo 30 s entre resgates ──
       const ultimoResgate = data?.ultimoResgate || 0;
       if (Date.now() - ultimoResgate < 30000) {
-        throw new Error('Aguarda 30 segundos entre resgates.');
+        throw new Error('Aguarde 30 segundos entre resgates.');
       }
 
       // ── Limite diário de resgate ──
@@ -443,16 +461,16 @@ module.exports = async function handler(req, res) {
       const resgateHoje = (resgateLog?.data === hoje) ? (resgateLog.total || 0) : 0;
       if (resgateHoje + gemsNum > MAX_GEMS_POR_DIA) {
         const restante = Math.max(0, MAX_GEMS_POR_DIA - resgateHoje);
-        throw new Error(`Limite diário atingido. Podes resgatar mais ${restante} 💎 hoje.`);
+        throw new Error(`Limite diário atingido. Você pode resgatar mais ${restante} 💎 hoje.`);
       }
 
       // ── Validar carteira (obrigatória) ──
       const carteiraGuardada = data?.carteira;
       if (!carteiraGuardada) {
-        throw new Error('Vincula a MetaMask primeiro para poder resgatar.');
+        throw new Error('Vincule a MetaMask primeiro para poder resgatar.');
       }
       if (carteiraGuardada.toLowerCase() !== carteira.toLowerCase()) {
-        throw new Error('Carteira não corresponde à conta. Vincula a carteira correcta.');
+        throw new Error('Carteira não corresponde à conta. Vincule a carteira correta.');
       }
 
       // ── Calcular bônus de referral ──
@@ -474,14 +492,14 @@ module.exports = async function handler(req, res) {
       }
       referralBonuses = Object.keys(bonusMap).length > 0 ? bonusMap : null;
 
-      // A taxa do dev sai daqui, como os bónus de convite: do que o
-      // jogador saca, nunca criada do nada. Duas casas, senão desaparece
-      // no arredondamento (ver DEV_FEE_RATE lá em cima).
-      const devFee = +(gemsNum * DEV_FEE_RATE).toFixed(2);
-
-      // Quantidade efetiva que vai para o contrato (o que o jogador recebe em MATIC)
+      // A taxa do dev (devFee, calculada lá em cima) é cobrada por cima do
+      // saque: nunca criada do nada, e fora da assinatura, que precisa
+      // de um número inteiro.
       devFeePago = devFee;   // sai da transação para o crédito lá fora
-      const gemsToSign  = +(gemsNum - totalBonus - devFee).toFixed(2);
+
+      // Quantidade efetiva que vai para o contrato (o que o jogador recebe
+      // em MATIC). Inteira: gemsNum é inteiro e os convites também.
+      const gemsToSign  = gemsNum - totalBonus;
       const maticFinal  = gemsToSign / RATE;
 
       // Gerar nonce único
@@ -496,11 +514,13 @@ module.exports = async function handler(req, res) {
       const sig         = await wallet.signMessage(ethers.getBytes(msgHash));
       const { v, r, s } = ethers.Signature.from(sig);
 
-      // Debitar gemsNum do jogador (o total — inclui a parte dos convidadores)
+      // Debitar do jogador o valor pedido mais a taxa do dev (o valor pedido
+      // já inclui a parte dos convidadores). O limite do dia conta só o
+      // valor pedido.
       const novoResgateHoje = resgateHoje + gemsNum;
       tx.update(userRef, {
-        'gs.cristais': FieldValue.increment(-gemsNum),
-        cristais:      FieldValue.increment(-gemsNum),
+        'gs.cristais': FieldValue.increment(-aDebitar),
+        cristais:      FieldValue.increment(-aDebitar),
         resgateLog:    { data: hoje, total: novoResgateHoje },
         ultimoResgate: Date.now(),
       });
@@ -521,7 +541,7 @@ module.exports = async function handler(req, res) {
         status:        'autorizado',
       });
 
-      return { v, r, s, nonce, gemsToSign, maticFinal, totalBonus, devFee };
+      return { v, r, s, nonce, gemsToSign, maticFinal, totalBonus, devFee, aDebitar };
     });
 
     // ── Creditar bônus de referral (best-effort, não bloqueia o saque) ──
@@ -553,6 +573,7 @@ module.exports = async function handler(req, res) {
       gems:         resultado.gemsToSign,   // o que o contrato vai liberar
       matic:        resultado.maticFinal,
       referralBonus: resultado.totalBonus,  // info para o cliente mostrar
+      debitado:     resultado.aDebitar,     // o que saiu do saldo, com a taxa
       nonce:        resultado.nonce,
       v:            resultado.v,
       r:            resultado.r,

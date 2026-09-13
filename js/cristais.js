@@ -398,8 +398,11 @@ async function resgatar() {
   // saem para MATIC. Com o mktCristais() aqui, quem tivesse bónus
   // escrevia um número que passava nesta verificação e só rebentava
   // do outro lado, no servidor.
-  if(gems > mktCristaisResgataveis()) {
-    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient', {balance: fmtC(mktCristaisResgataveis())})}</span>`;
+  // A taxa de 1% do dev é cobrada por cima do valor sacado (ver
+  // api/resgatar.js): 50 💎 pedem 50,50 💎 de saldo.
+  const taxaDev = +(gems * 0.01).toFixed(2);
+  if(gems + taxaDev > mktCristaisResgataveis()) {
+    status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_taxa', {balance: fmtC(mktCristaisResgataveis()), total: fmtC(gems + taxaDev), taxa: fmtC(taxaDev)})}</span>`;
     return;
   }
 
@@ -456,7 +459,7 @@ async function resgatar() {
 
       // Num saque retomado o débito já aconteceu na primeira tentativa —
       // descontar outra vez aqui tirava cristais que já não existiam.
-      if(!apiData.retomado) playerData.cristais = (playerData.cristais || 0) - gems;
+      if(!apiData.retomado) playerData.cristais = +((playerData.cristais || 0) - (apiData.debitado ?? gems)).toFixed(2);
       if(typeof gs !== 'undefined') {
         gs.cristais = playerData.cristais;
         if(typeof updateResourceUI === 'function') updateResourceUI();
