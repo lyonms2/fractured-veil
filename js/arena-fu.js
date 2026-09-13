@@ -631,7 +631,7 @@ function _afDesenhar() {
   _afBarras();
   const vez = _afE.acabou ? null : fuVez(_afE);
   document.getElementById('cbTurno').textContent =
-    t('af.ronda', { n: _afE.ronda })
+    t('af.ronda', { n: _afRondaVisivel() })
     + (vez ? ' · ' + t(vez.lado === 'A' ? 'af.vez' : 'af.vez_dele') : '');
   const bd = document.getElementById('cbDesistir');
   if (bd) bd.style.display = _afE.acabou ? 'none' : '';
@@ -776,6 +776,11 @@ function _afBarras() {
 // (fuVez), e ter aqui uma segunda ideia de quem joga a seguir era
 // garantir que as duas discordavam um dia.
 // ═══════════════════════════════════════════════════════════════════
+function _afRondaVisivel() {
+  const max = (typeof FU_RONDAS_MAX === 'number') ? FU_RONDAS_MAX : Infinity;
+  return Math.min(_afE.ronda, max);
+}
+
 function _afAndar() {
   if (!_afE) return;
   if (_afE.acabou) { _afFim(); return; }
@@ -783,7 +788,12 @@ function _afAndar() {
   const vez = fuVez(_afE);
   if (!vez) {
     const ev = fuNovaRonda(_afE);
-    _afLance('<i>' + t('af.lance.ronda', { n: ev.n }) + '</i>');
+    /* A rodada 50 avisa que é a última, e a que passaria dela não começa:
+       o motor já fechou a batalha em empate (FU_RONDAS_MAX). */
+    const max = (typeof FU_RONDAS_MAX === 'number') ? FU_RONDAS_MAX : 50;
+    const chave = ev.limite ? 'af.lance.limite'
+                : ev.n === max ? 'af.lance.ultima' : 'af.lance.ronda';
+    _afLance('<i>' + t(chave, { n: ev.n, max }) + '</i>');
     _afDesenhar();
     setTimeout(_afAndar, AF_PAUSA / 2);
     return;
@@ -1965,7 +1975,7 @@ let _afHistorico = [];
    linha mais velha, e a mais nova fica sempre à vista. */
 function _afLance(html, acrescenta) {
   if (!html) return;
-  _afHistorico.push({ ronda: _afE ? _afE.ronda : 0, html });
+  _afHistorico.push({ ronda: _afE ? _afRondaVisivel() : 0, html });
   const el = document.getElementById('cbLog');
   if (!el) return;
   /* Por DOM, e não reescrevendo o innerHTML com as linhas antigas: uma
@@ -2083,7 +2093,9 @@ function _afFimHTML() {
   const v = _afE.vencedor;
   const txt = _afE._desistiu ? t('pve.desistiu.titulo')
             : v === 'A' ? t('af.fim.ganhou')
-            : v === 'B' ? t('af.fim.perdeu') : t('af.fim.empate');
+            : v === 'B' ? t('af.fim.perdeu')
+            : _afE.porLimite ? t('af.fim.limite', { n: (typeof FU_RONDAS_MAX === 'number') ? FU_RONDAS_MAX : 50 })
+            : t('af.fim.empate');
 
   /* O prémio e a fratura, quando há moldura que os tenha calculado. São
      a única coisa que este painel diz e que não veio do motor. */

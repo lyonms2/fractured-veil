@@ -364,6 +364,21 @@ titulo('O que chega torto');
     M.fuAgir(e4, { quem: e4.A[0].id, tipo: 'atacar' }).length === 0);
 }
 
+/* ═══ 9b · O LIMITE DE RODADAS ═══════════════════════════════════ */
+titulo('O limite de rodadas');
+{
+  const e = M.fuIniciar(equipa(1, 10), equipa(2, 10), 55);
+  let ev = null;
+  for (let i = 0; i < M.FU_RONDAS_MAX - 1; i++) ev = M.fuNovaRonda(e);
+  verificar('a rodada ' + M.FU_RONDAS_MAX + ' ainda se joga',
+    !e.acabou && e.ronda === M.FU_RONDAS_MAX && !ev.limite, 'ronda ' + e.ronda);
+  ev = M.fuNovaRonda(e);
+  verificar('passar dela acaba a batalha', e.acabou === true && ev.limite === true);
+  verificar('em empate, sem vencedor', e.vencedor === null && e.porLimite === true);
+  verificar('e ninguém age depois',
+    M.fuAgir(e, { quem: e.A[0].id, tipo: 'atacar' }).length === 0);
+}
+
 /* ═══ 10 · UMA BATALHA INTEIRA ═══════════════════════════════════ */
 titulo('Cem batalhas do princípio ao fim');
 {
@@ -380,6 +395,8 @@ titulo('Cem batalhas do princípio ao fim');
     if (e.acabou && !e.vencedor) semVencedor++;
     rondas.push(e.ronda);
     verificar('a batalha ' + s + ' acaba', e.acabou, 'parou na ronda ' + e.ronda);
+    verificar('e não passa do limite de rodadas', e.ronda <= M.FU_RONDAS_MAX + 1,
+              'ronda ' + e.ronda);
     verificar('e o vencedor tem alguém de pé',
       !e.vencedor || e[e.vencedor].some(c => c.vivo));
     verificar('o perdedor não tem ninguém de pé',

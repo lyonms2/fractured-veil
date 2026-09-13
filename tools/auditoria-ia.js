@@ -6,11 +6,10 @@
 
      1. Não mexe no estado da batalha ao decidir, e a mesma situação dá
         sempre a mesma decisão.
-     2. Só decide coisas que o motor aceita, e as batalhas terminam —
-        menos as TRAVADAS, em que nenhum lutador vivo consegue ferir
-        ninguém (dois que absorvem o próprio tipo e estão sem PM). Isso
-        é regra do jogo e não da IA: o motor não tem limite de rodadas.
-        As travadas aparecem contadas, sem falhar.
+     2. Só decide coisas que o motor aceita, e todas as batalhas
+        terminam — pelo limite de rodadas (FU_RONDAS_MAX), se for
+        preciso. As que acabam empatadas pelo limite aparecem contadas
+        por nível, sem falhar.
      3. O Fácil é exatamente a IA de antes, decisão a decisão.
      4. Cada nível só usa o que é dele: magias de cena a partir do
         Difícil, troca de posto só no Mestre, e só o Fácil deixa de
@@ -92,9 +91,10 @@ titulo('Batalhas inteiras, nos quatro níveis');
   const c = {
     decisoes: 0, mexeu: 0, variou: 0, ilegal: 0, semFim: 0, foraDaVez: 0,
     legadoDiferente: 0, guardaCedo: 0, cenaCedo: 0, moverCedo: 0,
-    absorvido: 0, casosDeAbsorcao: 0, curaInutil: 0, travadas: 0, semFimFacil: 0,
+    absorvido: 0, casosDeAbsorcao: 0, curaInutil: 0,
   };
   const usos = [0, 1, 2, 3].map(() => ({}));
+  const porLimite = [0, 0, 0, 0];
   let exemplo = '';
 
   for (const nv of NIVEIS_AV) {
@@ -105,13 +105,7 @@ titulo('Batalhas inteiras, nos quatro níveis');
         let passos = 0;
         while (!e.acabou && passos++ < 600) {
           const vez = M.fuVez(e);
-          if (!vez) {
-            // Travada: ninguém vivo consegue tirar vida de ninguém. Para aqui,
-            // senão ela enche as contas de uso com centenas de guardas.
-            if (e.A.concat(e.B).filter(x => x.vivo).every(x => IA._iaForca(e, x) <= 0)) break;
-            M.fuNovaRonda(e);
-            continue;
-          }
+          if (!vez) { M.fuNovaRonda(e); continue; }
           c.decisoes++;
 
           const antes = JSON.stringify(e);
@@ -165,20 +159,15 @@ titulo('Batalhas inteiras, nos quatro níveis');
               M.fuAgir(e, { quem: d.quem, tipo: 'guardar' });
           }
         }
-        if (!e.acabou) {
-          // Travada: ninguém vivo consegue tirar vida de ninguém.
-          const vivos = e.A.concat(e.B).filter(x => x.vivo);
-          if (vivos.every(x => IA._iaForca(e, x) <= 0)) c.travadas++;
-          else if (nivel === 0) c.semFimFacil++;   // a IA de antes, como era
-          else c.semFim++;
-        }
+        if (!e.acabou) c.semFim++;
+        else if (e.porLimite) porLimite[nivel]++;
       }
     }
   }
 
   console.log(`  ${c.decisoes} decisões em ${NIVEIS_AV.length * 4 * SEMENTES} batalhas`);
-  console.log(`  ${c.travadas} travadas — ninguém vivo consegue ferir ninguém (regra do jogo)`);
-  console.log(`  ${c.semFimFacil} sem fim no Fácil com alguém ainda capaz de ferir (a IA de antes)`);
+  console.log('  empates pelo limite de rodadas: ' + ['Fácil', 'Médio', 'Difícil', 'Mestre']
+    .map((n, i) => n + ' ' + porLimite[i]).join(' · '));
   ['Fácil', 'Médio', 'Difícil', 'Mestre'].forEach((n, i) => {
     const u = usos[i];
     const total = Object.values(u).reduce((s, x) => s + x, 0) || 1;
@@ -191,7 +180,7 @@ titulo('Batalhas inteiras, nos quatro níveis');
   verificar('a mesma situação dá a mesma decisão', c.variou === 0, c.variou + ' vezes');
   verificar('quem age é sempre alguém que pode agir', c.foraDaVez === 0, c.foraDaVez + ' vezes');
   verificar('o motor aceita todas as decisões', c.ilegal === 0, c.ilegal + ' recusadas');
-  verificar('do Médio para cima, as batalhas terminam', c.semFim === 0, c.semFim + ' sem fim');
+  verificar('todas as batalhas terminam', c.semFim === 0, c.semFim + ' sem fim');
   verificar('o Fácil é a IA de antes', c.legadoDiferente === 0, c.legadoDiferente + ' diferentes');
   verificar('no Médio, guarda só quando o resto piora', c.guardaCedo === 0, c.guardaCedo + ' vezes');
   verificar('magia de cena só a partir do Difícil', c.cenaCedo === 0, c.cenaCedo + ' vezes');

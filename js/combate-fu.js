@@ -779,12 +779,32 @@ function fuVez(estado) {
 /* ── O FIM DA RONDA ──
    Limpa quem já jogou e tira a guarda, que dura "até ao início do teu
    próximo turno". */
+/* ── O LIMITE DE RODADAS ──
+
+   Cinquenta. Passou disso sem nenhum lado cair, a batalha acaba em
+   empate — e o empate já tem prêmio próprio no PvE.
+
+   Havia dois jeitos de uma luta não terminar nunca: dois sobreviventes
+   que absorvem o próprio tipo e estão sem PM, que não conseguem se ferir;
+   e uma Sustentação sozinha que alterna guarda e Curar e cura mais do que
+   apanha. O limite fecha os dois, e qualquer outro que apareça quando as
+   magias mudarem.
+
+   A rodada 50 ainda se joga inteira. A 51 não começa. */
+const FU_RONDAS_MAX = 50;
+
 function fuNovaRonda(estado) {
   estado.jaAgiu = [];
   estado.ronda++;
   /* E levanta quem foi derrubado do ar: o manual diz que ele volta a
      voar automaticamente no fim da ronda. */
   for (const c of estado.A.concat(estado.B)) { c.guardando = false; c.derrubado = false; }
+  if (estado.ronda > FU_RONDAS_MAX && !estado.acabou) {
+    estado.acabou = true;
+    estado.vencedor = null;
+    estado.porLimite = true;
+    return { tipo: 'ronda', n: estado.ronda, limite: true };
+  }
   return { tipo: 'ronda', n: estado.ronda };
 }
 
@@ -841,7 +861,7 @@ if (typeof FU_ESTADOS_QUE_PEGAM !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    FU_ESTADOS, FU_ESTADOS_LISTA,
+    FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,

@@ -59,6 +59,8 @@ window.registerStrings({
   'af.lance.suspiro': 'o Último Suspiro de {nome}',
   'af.lance.devasta': 'Devastação em {nome}',
   'af.lance.ronda':   '— rodada {n} —',
+  'af.lance.ultima':  '— rodada {n}, a última —',
+  'af.lance.limite':  '— {max} rodadas sem vencedor —',
   'af.lance.comeca':  '{nome} começa',
 
   /* ── O QUE O MEU GOLPE LHE FAZ ──
@@ -83,6 +85,7 @@ window.registerStrings({
   'af.fim.ganhou':    'A colônia resistiu.',
   'af.fim.perdeu':    'A Fratura levou a melhor.',
   'af.fim.empate':    'Não sobrou ninguém.',
+  'af.fim.limite':    'Empate: ninguém venceu em {n} rodadas.',
   'af.fim.sair':      'Voltar',
 
   // ── a ficha ──
@@ -380,6 +383,8 @@ window.registerStrings({
   'af.lance.suspiro': "{nome}'s Final Act",
   'af.lance.devasta': 'Devastation on {nome}',
   'af.lance.ronda':   '— round {n} —',
+  'af.lance.ultima':  '— round {n}, the last one —',
+  'af.lance.limite':  '— {max} rounds with no winner —',
   'af.lance.comeca':  '{nome} goes first',
 
   'af.vs.VU':   'vulnerable to {tipo}: takes DOUBLE from {nome}',
@@ -396,6 +401,7 @@ window.registerStrings({
   'af.fim.ganhou':    'The colony held.',
   'af.fim.perdeu':    'The Rift won this one.',
   'af.fim.empate':    'No one was left standing.',
+  'af.fim.limite':    'Draw: no one won in {n} rounds.',
   'af.fim.sair':      'Back',
 
   'af.f.vida':        'Hit Points',
