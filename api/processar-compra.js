@@ -2,15 +2,18 @@
 //  api/processar-compra.js — Vercel Serverless Function
 //
 //  Body esperado:
-//    { jogador: "<uid Firebase>", carteira: "0x...", txHash: "0x..." }
+//    { idToken: "<token do Firebase Auth>", txHash: "0x..." }
 //
-//  jogador = uid do Firebase Auth (doc ID no Firestore)
-//  carteira = endereço Ethereum (para verificar a tx on-chain)
+//  A conta sai do idToken, e a carteira sai do documento da conta — a
+//  que foi vinculada com assinatura (vincular-carteira, api/resgatar.js).
+//  Nenhuma das duas vem do corpo do pedido: vinham, e quem visse uma
+//  compra na blockchain podia pedir o crédito dela para a própria conta.
 // ═══════════════════════════════════════════════════════════════
 
 const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
+const { getAuth }                      = require('firebase-admin/auth');
 
 function getDB() {
   if (!getApps().length) {
@@ -24,6 +27,7 @@ function getDB() {
   }
   return getFirestore();
 }
+function getAuthAdmin() { getDB(); return getAuth(); }
 
 const RATE             = 10;
 
@@ -63,21 +67,22 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ erro: 'Método não permitido' });
   }
 
-  // jogador = uid Firebase, carteira = endereço Ethereum
-  const { jogador, carteira, txHash } = req.body;
+  const { idToken, txHash } = req.body;
 
   // ── Validar inputs ──
-  if (!jogador || typeof jogador !== 'string' || jogador.length < 10) {
-    return res.status(400).json({ erro: 'Identificador de jogador inválido' });
-  }
-  if (!carteira || !ethers.isAddress(carteira)) {
-    return res.status(400).json({ erro: 'Endereço de carteira inválido' });
-  }
   if (!txHash || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
     return res.status(400).json({ erro: 'Hash de transação inválido' });
   }
+  if (!idToken || typeof idToken !== 'string') {
+    return res.status(401).json({ erro: 'Sessão em falta. Entre de novo.' });
+  }
+  let jogador;
+  try {
+    jogador = (await getAuthAdmin().verifyIdToken(idToken)).uid;
+  } catch {
+    return res.status(401).json({ erro: 'Sessão inválida ou expirada. Entre de novo.' });
+  }
 
-  const carteiraAddr    = carteira.toLowerCase();
   const contractAddress = process.env.CONTRACT_ADDRESS;
 
   if (!contractAddress || contractAddress === 'PENDENTE_DEPLOY') {
@@ -94,6 +99,15 @@ module.exports = async function handler(req, res) {
       return res.status(409).json({ erro: 'Transação já processada' });
     }
 
+    // ── A carteira da conta ──
+    // A vinculada, e só ela. É o `jogador` do evento que tem de bater com
+    // esta, e é o que amarra o crédito a quem pagou.
+    const playerRef = db.collection('players').doc(jogador);
+    const carteiraAddr = String((await playerRef.get()).data()?.carteira || '').toLowerCase();
+    if (!ethers.isAddress(carteiraAddr)) {
+      return res.status(400).json({ erro: 'Vincule a MetaMask primeiro.' });
+    }
+
     // ── Verificar tx on-chain ──
     let recibo = null;
     for (const rpc of POLYGON_RPCS) {
@@ -106,26 +120,31 @@ module.exports = async function handler(req, res) {
       }
     }
     if (recibo === null) {
-      return res.status(503).json({ erro: 'Blockchain inacessível. Tenta novamente em instantes.' });
+      return res.status(503).json({ erro: 'Blockchain inacessível. Tente novamente em instantes.', tentarDeNovo: true });
     }
     if (!recibo) {
-      return res.status(400).json({ erro: 'Transação ainda não confirmada na blockchain' });
+      return res.status(400).json({ erro: 'Transação ainda não confirmada na blockchain', tentarDeNovo: true });
     }
     if (recibo.status !== 1) {
       return res.status(400).json({ erro: 'Transação falhou on-chain' });
     }
 
-    // Verifica que foi para o nosso contrato
-    if (recibo.to?.toLowerCase() !== contractAddress.toLowerCase()) {
-      return res.status(400).json({ erro: 'Transação não dirigida ao contrato correcto' });
-    }
+    /* ── A PROVA DA COMPRA É O EVENTO DO COFRE ──
 
-    // Verifica que foi enviada pela carteira do jogador
-    if (recibo.from?.toLowerCase() !== carteiraAddr) {
-      return res.status(400).json({ erro: 'Transação não foi enviada pela tua carteira' });
-    }
+       O servidor conferia o `to` e o `from` da transação: tinha de ir direto ao
+       cofre, e sair da carteira do jogador. Com a MetaMask em conta
+       inteligente (EIP-7702) ou com o gás patrocinado, a transação vai
+       para o contrato de delegação DELA, e o POL chega ao cofre numa
+       chamada interna; o `from` pode até ser o retransmissor que pagou o
+       gás. Uma compra legítima era recusada — e o POL ficava no cofre sem
+       os cristais.
 
-    // ── Ler evento CristaisComprados ──
+       O que prova a compra é o CristaisComprados emitido pelo NOSSO
+       contrato: só ele o emite, e o `jogador` do evento é quem mandou o
+       POL ao cofre. O servidor confere quem emitiu o log (o cofre) e o jogador do
+       evento (a carteira vinculada à conta do idToken). Se uma transação
+       tiver mais de uma compra, elas são somadas; o anti-duplo continua pelo
+       hash. */
     const iface = new ethers.Interface(CONTRACT_ABI);
     let gemsACreditar = 0;
     let maticEnviado  = 0n;
@@ -134,13 +153,11 @@ module.exports = async function handler(req, res) {
       if (log.address?.toLowerCase() !== contractAddress.toLowerCase()) continue;
       try {
         const parsed = iface.parseLog(log);
-        if (parsed?.name === 'CristaisComprados') {
-          if (parsed.args.jogador?.toLowerCase() !== carteiraAddr) continue;
-          maticEnviado  = parsed.args.maticEnviado;
-          gemsACreditar = Number(parsed.args.gems);
-          break;
-        }
-      } catch { /* log de outro contrato */ }
+        if (parsed?.name !== 'CristaisComprados') continue;
+        if (parsed.args.jogador?.toLowerCase() !== carteiraAddr) continue;
+        maticEnviado  += parsed.args.maticEnviado;
+        gemsACreditar += Number(parsed.args.gems);
+      } catch { /* log do cofre que não é este evento */ }
     }
 
     if (gemsACreditar <= 0) {
@@ -151,8 +168,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ erro: 'Quantidade de 💎 fora dos limites esperados' });
     }
 
-    // ── Creditar no Firestore usando uid como doc ID ──
-    const playerRef = db.collection('players').doc(jogador);
+    // ── Creditar no Firestore, na conta do idToken ──
 
     await db.runTransaction(async (tx) => {
       const compraCheck = await tx.get(compraRef);
@@ -210,6 +226,6 @@ module.exports = async function handler(req, res) {
       return res.status(409).json({ erro: 'Transação já processada' });
     }
     console.error('[processar-compra] erro:', err.message);
-    return res.status(500).json({ erro: 'Erro interno ao processar compra' });
+    return res.status(500).json({ erro: 'Erro interno ao processar compra', tentarDeNovo: true });
   }
 };

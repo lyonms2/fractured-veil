@@ -207,6 +207,90 @@ async function renderLimiteResgate() {
 }
 
 // ═══════════════════════════════════════════
+/* ── O CRÉDITO DE UMA COMPRA ──
+
+   O POL vai para o cofre numa transação, e os cristais chegam num segundo
+   passo, pedido ao servidor. Se esse segundo passo falhar — a rede caiu,
+   o RPC não respondeu, a transação ainda não estava confirmada — o POL
+   já está no cofre e os cristais não.
+
+   Por isso o hash é guardado ANTES de pedir o crédito, e só sai da lista
+   quando o servidor responde de vez (creditou, já tinha creditado, ou a
+   compra é inválida). O que ficar é tentado de novo ao abrir a seção dos
+   cristais (tentarComprasPendentes, chamado pelo renderMetaMaskCta).
+
+   E há o reprocessarCompra(hash), para chamar à mão uma compra que ficou
+   para trás antes de esta lista existir. */
+const COMPRAS_PENDENTES_KEY = 'fv_compras_pendentes';
+
+function _comprasPendentes() {
+  try { return JSON.parse(localStorage.getItem(COMPRAS_PENDENTES_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function _marcarCompraPendente(hash, pendente) {
+  try {
+    const lista = _comprasPendentes().filter(h => h !== hash);
+    if(pendente) lista.push(hash);
+    localStorage.setItem(COMPRAS_PENDENTES_KEY, JSON.stringify(lista.slice(-20)));
+  } catch(e) {}
+}
+
+async function _pedirCredito(txHash) {
+  const idToken = await firebase.auth().currentUser.getIdToken();
+  const apiRes  = await fetch('/api/processar-compra', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ idToken, txHash }),
+  });
+  const apiData = await apiRes.json();
+  if(!apiData.tentarDeNovo) _marcarCompraPendente(txHash, false);
+  return apiData;
+}
+
+function _creditarNaTela(apiData) {
+  playerData.cristais = (playerData.cristais || 0) + apiData.gems;
+  if(!playerData.gs) playerData.gs = {};
+  playerData.gs.cristais = playerData.cristais;
+  // Sincroniza com o estado vivo do jogo (index.html mesclado) — sem
+  // isto o próximo scheduleSave() reverteria o crédito já persistido
+  // no servidor com o saldo antigo em memória.
+  if(typeof gs !== 'undefined') {
+    gs.cristais = playerData.cristais;
+    if(typeof updateResourceUI === 'function') updateResourceUI();
+  }
+  updateCristaisDisplay();
+}
+
+async function reprocessarCompra(txHash) {
+  const apiData = await _pedirCredito(txHash);
+  if(apiData.ok) {
+    _creditarNaTela(apiData);
+    showToast(t('mkt.tx.gems_added', {gems: fmtC(apiData.gems)}), 'ok');
+  } else {
+    showToast(t('mkt.tx.not_credited', {err: apiData.erro}), 'err');
+  }
+  return apiData;
+}
+
+let _pendentesTentadas = false;
+async function tentarComprasPendentes() {
+  if(_pendentesTentadas || !firebase.auth().currentUser) return;
+  _pendentesTentadas = true;
+  for(const hash of _comprasPendentes()) {
+    try {
+      const apiData = await _pedirCredito(hash);
+      if(apiData.ok) {
+        _creditarNaTela(apiData);
+        showToast(t('mkt.tx.gems_added', {gems: fmtC(apiData.gems)}), 'ok');
+      }
+    } catch(e) { /* a rede: fica para a próxima */ }
+  }
+}
+
+window.reprocessarCompra      = reprocessarCompra;
+window.tentarComprasPendentes = tentarComprasPendentes;
+
 async function comprarCristais(idx) {
   const pkg    = CRYSTAL_PACKAGES[idx];
   const status = document.getElementById('buyStatus');
@@ -227,6 +311,18 @@ async function comprarCristais(idx) {
     await carregarEthers();
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer   = await provider.getSigner();
+
+    /* A compra é creditada à conta cuja carteira VINCULADA é quem pagou.
+       Com outra conta aberta na MetaMask, o POL ia para o cofre e o
+       crédito era recusado depois. Por isso a compra para aqui, antes de pagar. */
+    const pagador    = (await signer.getAddress()).toLowerCase();
+    const vinculada  = String(carteiraEth).toLowerCase();
+    if(pagador !== vinculada) {
+      const curto = a => a.slice(0, 6) + '…' + a.slice(-4);
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.carteira_diferente', {atual: curto(pagador), vinculada: curto(vinculada)})}</span>`;
+      return;
+    }
+
     const maticWei = ethers.parseEther(pkg.matic.toString());
 
     const tx = await signer.sendTransaction({
@@ -239,27 +335,13 @@ async function comprarCristais(idx) {
 
     if(receipt.status === 1) {
       status.innerHTML = `<span class="tx-pending">${t('mkt.tx.crediting')}</span>`;
+      // O hash fica guardado até o servidor responder de vez (ver acima).
+      _marcarCompraPendente(tx.hash, true);
       try {
-        // Usa o uid (walletAddress) como identificador do jogador no servidor
-        const apiRes  = await fetch('/api/processar-compra', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ jogador: walletAddress, carteira: carteiraEth, txHash: tx.hash }),
-        });
-        const apiData = await apiRes.json();
+        const apiData = await _pedirCredito(tx.hash);
 
         if(apiData.ok) {
-          playerData.cristais = (playerData.cristais || 0) + apiData.gems;
-          if(!playerData.gs) playerData.gs = {};
-          playerData.gs.cristais = playerData.cristais;
-          // Sincroniza com o estado vivo do jogo (index.html mesclado) — sem
-          // isto o próximo scheduleSave() reverteria o crédito já persistido
-          // no servidor com o saldo antigo em memória.
-          if(typeof gs !== 'undefined') {
-            gs.cristais = playerData.cristais;
-            if(typeof updateResourceUI === 'function') updateResourceUI();
-          }
-          updateCristaisDisplay();
+          _creditarNaTela(apiData);
           status.innerHTML = `<span class="tx-ok">${t('mkt.tx.credited', {gems: fmtC(apiData.gems), balance: fmtC(playerData.cristais)})}</span>`;
           showToast(t('mkt.tx.gems_added', {gems: fmtC(apiData.gems)}), 'ok');
         } else {
@@ -589,6 +671,18 @@ function _referralCopiarLink() {
 // ════════════════════════════════════════════════════════════════════
 
 // ── Vincular MetaMask ao uid (para comprar/resgatar cristais) ─────
+/* ── VINCULAR COM PROVA DE POSSE ──
+
+   A `carteira` era gravada direto no documento, sem prova de que era
+   desta pessoa — e é por ela que o servidor decide de quem é uma compra.
+   Agora a carteira assina uma mensagem com a conta dentro, e é o servidor
+   que confere e grava (vincular-carteira, em api/resgatar.js).
+
+   A mensagem tem de ser IGUAL à do servidor (mensagemDeVinculo). */
+function _mensagemDeVinculo(uid, endereco) {
+  return 'Fractured Veil\n\nVincular a carteira ' + String(endereco).toLowerCase() + ' à conta ' + uid + '.';
+}
+
 async function vincularCarteira() {
   if(typeof window.ethereum === 'undefined') {
     showToast(t('mkt.metamask.not_found'), 'err'); return;
@@ -596,23 +690,35 @@ async function vincularCarteira() {
   try {
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     const endereco = accounts[0].toLowerCase();
+    const usuario  = firebase.auth().currentUser;
+    if(!usuario) { showToast(t('mkt.metamask.err'), 'err'); return null; }
 
-    // Guarda no doc do jogador
-    await db.collection('players').doc(walletAddress).set({
-      carteira: endereco
-    }, { merge: true });
+    await carregarEthers();
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer   = await provider.getSigner(endereco);
+    showToast(t('mkt.metamask.assinar'), 'ok');
+    const assinatura = await signer.signMessage(_mensagemDeVinculo(usuario.uid, endereco));
+
+    const idToken = await usuario.getIdToken();
+    const resp = await fetch('/api/resgatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'vincular-carteira', idToken, endereco, assinatura }),
+    });
+    const data = await resp.json();
+    if(!data.ok) { showToast(data.erro || t('mkt.metamask.err'), 'err'); return null; }
 
     if(!playerData) playerData = {};
-    playerData.carteira = endereco;
+    playerData.carteira = data.carteira;
 
     // Atualiza header de cristais (MetaMask conectada para transações)
     const dotEl = document.getElementById('walletDot');
     if(dotEl) dotEl.style.background = 'var(--green)';
 
-    showToast(`✅ MetaMask vinculada: ${endereco.slice(0,6)}...${endereco.slice(-4)}`, 'ok');
-    return endereco;
+    showToast(`✅ MetaMask vinculada: ${data.carteira.slice(0,6)}...${data.carteira.slice(-4)}`, 'ok');
+    return data.carteira;
   } catch(e) {
-    if(e.code !== 4001) showToast(t('mkt.metamask.err'), 'err');
+    if(e.code !== 4001 && e.code !== 'ACTION_REJECTED') showToast(t('mkt.metamask.err'), 'err');
     return null;
   }
 }

@@ -215,6 +215,8 @@ window.registerStrings({
   'mkt.metamask.link_first':  'Vincule sua MetaMask primeiro.',
   'mkt.metamask.limit_missing':'Vincule a MetaMask na seção de Cristais para ver seu limite.',
   'mkt.metamask.limit_err':   'Não foi possível verificar o limite.',
+  'mkt.metamask.assinar':     'Assine a mensagem na MetaMask para provar que a carteira é sua.',
+  'mkt.tx.carteira_diferente':'A conta aberta na MetaMask ({atual}) não é a carteira vinculada ({vinculada}). Troque de conta na MetaMask ou vincule esta.',
 
   // ── Comprar Ovos ──────────────────────────────────────────────────
 
@@ -520,6 +522,8 @@ window.registerStrings({
   'mkt.metamask.link_first':  'Link your MetaMask first.',
   'mkt.metamask.limit_missing':'Link MetaMask in the Crystals section to see your limit.',
   'mkt.metamask.limit_err':   'Could not verify your limit.',
+  'mkt.metamask.assinar':     'Sign the message in MetaMask to prove the wallet is yours.',
+  'mkt.tx.carteira_diferente':'The account open in MetaMask ({atual}) is not the linked wallet ({vinculada}). Switch accounts in MetaMask or link this one.',
 
   // Eggs section
 

@@ -75,6 +75,8 @@ async function ler(doc) {
   ok('EXPLOIT forjar cristais',        await escrever('D','D',{'gs.cristais':999999}), 403);
   ok('EXPLOIT apagar o resgateLog',    await escrever('D','D',{'resgateLog':null}), 403);
   ok('EXPLOIT zerar o cambioLog',      await escrever('D','D',{'cambioLog':null}), 403);
+  // A carteira decide de quem é uma compra; só o servidor a grava.
+  ok('EXPLOIT forjar a carteira',      await escrever('D','D',{'carteira':'0xoutra'}), 403);
   ok('EXPLOIT forjar extraSlots',      await escrever('D','D',{'gs.extraSlots':10}), 403);
   // O balde do bónus é do servidor tal como o dos cristais com lastro.
   // Se o cliente lhe pudesse escrever, o bónus deixava de ser bónus e

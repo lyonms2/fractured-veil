@@ -47,6 +47,13 @@ service cloud.firestore {
               // mostra como "total ganho", e o referralCount. Sem eles,
               // qualquer um inflava o próprio número de ganhos.
               'referralChain', 'referralEarned', 'referralCount',
+              // A carteira de MATIC da conta. Quem a gravava era o cliente,
+              // sem prova de posse, e o api/processar-compra.js dá a compra
+              // à conta cuja carteira é a do evento — gravar a carteira de
+              // outra pessoa era receber as compras dela. Agora só o
+              // servidor a grava, depois de conferir uma assinatura
+              // (vincular-carteira, em api/resgatar.js).
+              'carteira',
               // O registo dos ovos que o servidor emitiu. É a prova que
               // deixa vender um ovo posto pelo próprio avatar sem confiar
               // no avatarSlots, que o cliente escreve. Ver handleBotarOvo

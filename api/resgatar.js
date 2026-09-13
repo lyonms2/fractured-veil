@@ -4,6 +4,7 @@
 //  Ações disponíveis (campo "action" no body):
 //    (sem action)        → saque de cristais: { idToken, carteira, gems }
 //    "salvar-referral"   → registar convite:  { idToken, action, refUid }
+//    "vincular-carteira" → vincular MetaMask: { idToken, action, endereco, assinatura }
 //
 //  Consolidado num único endpoint para respeitar o limite de 12
 //  Serverless Functions do plano Hobby do Vercel.
@@ -137,6 +138,83 @@ async function handleSalvarReferral(req, res, db, auth) {
   return res.status(200).json({ ok: true, chain });
 }
 
+/* ── VINCULAR A CARTEIRA, COM PROVA DE POSSE ──
+
+   O cliente gravava a `carteira` no próprio documento, sem provar que a
+   carteira era dele. E é por ela que o api/processar-compra.js decide de
+   quem é uma compra: quem gravasse a carteira de outra pessoa passava a
+   receber os cristais que ela comprasse.
+
+   Agora a carteira assina uma mensagem com a conta dentro, o servidor
+   confere a assinatura e só então grava — e as firestore.rules deixam de
+   aceitar a `carteira` escrita pelo cliente.
+
+   A coleção `carteiras` guarda de que conta é cada endereço: cada carteira
+   fica vinculada a uma conta só. Ao trocar de carteira, a antiga fica livre.
+
+   A mensagem tem de ser IGUAL à do cliente (_mensagemDeVinculo, em
+   js/cristais.js). */
+function mensagemDeVinculo(uid, endereco) {
+  return 'Fractured Veil\n\nVincular a carteira ' + String(endereco).toLowerCase() + ' à conta ' + uid + '.';
+}
+
+async function handleVincularCarteira(req, res, db, auth) {
+  const { idToken, endereco, assinatura } = req.body;
+
+  let uid;
+  try {
+    uid = (await auth.verifyIdToken(idToken)).uid;
+  } catch {
+    return res.status(401).json({ erro: 'Sessão inválida ou expirada. Entre de novo.' });
+  }
+  if (!endereco || !ethers.isAddress(endereco)) {
+    return res.status(400).json({ erro: 'Endereço de carteira inválido.' });
+  }
+  if (!assinatura || typeof assinatura !== 'string') {
+    return res.status(400).json({ erro: 'Assinatura em falta.' });
+  }
+
+  let assinou;
+  try {
+    assinou = ethers.verifyMessage(mensagemDeVinculo(uid, endereco), assinatura);
+  } catch {
+    return res.status(400).json({ erro: 'Assinatura inválida.' });
+  }
+  const addr = endereco.toLowerCase();
+  if (assinou.toLowerCase() !== addr) {
+    return res.status(403).json({ erro: 'A assinatura não é desta carteira.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  const novaRef   = db.collection('carteiras').doc(addr);
+  try {
+    await db.runTransaction(async (tx) => {
+      const nova   = await tx.get(novaRef);
+      const player = await tx.get(playerRef);
+      if (nova.exists && nova.data().uid !== uid) throw new Error('CARTEIRA_DE_OUTRO');
+
+      const antiga = String(player.data()?.carteira || '').toLowerCase();
+      let antigaRef = null;
+      if (antiga && antiga !== addr) {
+        const ref  = db.collection('carteiras').doc(antiga);
+        const snap = await tx.get(ref);
+        if (snap.exists && snap.data().uid === uid) antigaRef = ref;
+      }
+
+      if (antigaRef) tx.delete(antigaRef);
+      tx.set(novaRef, { uid, vinculadaEm: new Date() });
+      tx.set(playerRef, { carteira: addr }, { merge: true });
+    });
+  } catch (err) {
+    if (err.message === 'CARTEIRA_DE_OUTRO') {
+      return res.status(409).json({ erro: 'Esta carteira já está vinculada a outra conta.' });
+    }
+    throw err;
+  }
+
+  return res.status(200).json({ ok: true, carteira: addr });
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
@@ -168,6 +246,15 @@ module.exports = async function handler(req, res) {
     } catch (err) {
       console.error('[confirmar-resgate]', err.message);
       return res.status(400).json({ erro: 'Não foi possível confirmar o resgate.' });
+    }
+  }
+
+  if (action === 'vincular-carteira') {
+    try {
+      return await handleVincularCarteira(req, res, db, auth);
+    } catch (err) {
+      console.error('[vincular-carteira]', err.message);
+      return res.status(500).json({ erro: 'Erro interno ao vincular a carteira.' });
     }
   }
 

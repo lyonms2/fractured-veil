@@ -124,6 +124,8 @@ function renderMetaMaskCta() {
   if(!wrap) return;
   const carteira = playerData?.carteira;
   if(carteira) {
+    // Compras pagas cujo crédito ficou para trás (ver js/cristais.js).
+    if(typeof tentarComprasPendentes === 'function') tentarComprasPendentes();
     wrap.innerHTML = `
       <div class="metamask-linked">
         <div class="metamask-linked-dot"></div>
