@@ -178,6 +178,29 @@ function renderBrowse() {
   grid.innerHTML = filtered.map(l => buildListingCard(l)).join('');
 }
 
+/* ── DE ONDE ELE VEIO ──
+
+   Pela certidão da listagem, que é a do servidor (handleListarAvatar
+   copia-a do mapa `certidoes`, que o vendedor não escreve). O comprador
+   vê se leva um dos três fundadores grátis de uma conta, o filho de um
+   par, ou um chocado de ovo — e decide quanto isso vale para ele.
+
+   Certidão antiga, sem `via`: com pais diz-se "filho de"; sem pais não
+   se diz nada, porque não há como saber se veio da invocação ou de um
+   ovo, e um rótulo errado seria pior do que nenhum. */
+function origemDoAnuncio(l) {
+  const c = l && l.nascimento;
+  if (!c) return null;
+  const via = c.via || ((c.mae || c.pai) ? 'cruza' : null);
+  if (via === 'invocacao') return { icone: '🌀', texto: t('mkt.origem.invocacao') };
+  if (via === 'cruza') {
+    const mae = c.maeNome || '?', pai = c.paiNome || '?';
+    return { icone: '🧬', texto: t('mkt.origem.cruza', { mae: esc(mae), pai: esc(pai) }) };
+  }
+  if (via === 'ovo') return { icone: '🥚', texto: t('mkt.origem.ovo') };
+  return null;
+}
+
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
   const svgHtml = gerarSVG(l, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
@@ -202,6 +225,7 @@ function buildListingCard(l) {
       <div class="av-name">${esc(nomeProp)}</div>
       ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
       <div class="av-pill ${l.raridade}">${esc(l.raridade)}</div>
+      ${(o => o ? `<div class="av-origem">${o.icone} ${o.texto}</div>` : '')(origemDoAnuncio(l))}
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
@@ -234,6 +258,7 @@ async function openDetail(listingId) {
       <div class="detail-info">
         <div class="detail-name">${esc(nomeCurto(l))}</div>
         <div class="detail-rarity ${l.raridade}">${esc(l.raridade)}</div>
+        ${(o => o ? `<div class="detail-origem">${o.icone} ${o.texto}</div>` : '')(origemDoAnuncio(l))}
         <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l, l.descricaoIdx) : l.descricao)||'')}</div>
       </div>
     </div>

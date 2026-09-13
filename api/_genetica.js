@@ -116,7 +116,7 @@ function certidaoDeInvocacao(criador, feitio) {
      ficha. */
   if (feitio) nascimento.porFeitio(dna, feitio);
   const cert = nascimento.nascer({
-    dna, origem: 'Comum', seed,
+    dna, origem: 'Comum', seed, via: 'invocacao',
     // Quem o fez vai na certidão e não no slot: o slot é do cliente.
     criadorUid: c.uid || null, criadorNome: c.nome || null,
   });
@@ -158,6 +158,7 @@ function certidaoDeChoco(ovo, criador) {
   const seed = seedNovo();
   const cert = nascimento.nascer({
     dna: ovo.dna || null, origem: 'Comum', seed,
+    via: (ovo.mae || ovo.pai) ? 'cruza' : 'ovo',
     mae: ovo.mae || null, pai: ovo.pai || null,
     maeNome: ovo.maeNome || null, paiNome: ovo.paiNome || null,
     maeRetrato: ovo.maeRetrato || null, paiRetrato: ovo.paiRetrato || null,

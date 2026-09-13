@@ -524,6 +524,12 @@ function nascer(opts) {
        linha que o próprio vendedor escrevia. */
     criadorUid:  o.criadorUid  || null,
     criadorNome: o.criadorNome || null,
+    /* POR ONDE VEIO: 'invocacao' (os três grátis do começo), 'cruza'
+       (chocado do ovo de um par) ou 'ovo' (chocado de um ovo sem pais).
+       Quem escreve é o servidor (api/_genetica.js), e o anúncio do
+       mercado mostra-o ao comprador. Nulo nas certidões de antes deste
+       campo: aí o mercado só sabe dizer "filho de" quando há pais. */
+    via:         o.via         || null,
     nascidoEm:   o.nascidoEm   || Date.now(),
     /* De quem nasceu. Os ids dos pais, e não os nomes: um nome muda de
        dono e repete-se; o id é único e permanente, e é dele que a
