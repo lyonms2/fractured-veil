@@ -229,9 +229,6 @@
       'inv.eggs_title':          '🥚 CHOCADEIRA',
       'inv.coins_title':         '🪙 MOEDAS',
       'inv.coins_sub':           'Compram os itens da loja',
-      'inv.crystals_cta':        '💎 Precisa de mais Cristais?',
-      'inv.crystals_desc':       'Compre cristais com MATIC ou venda ovos no Marketplace.',
-      'inv.crystals_btn':        'Ir ao Marketplace →',
       'inv.items_store':         '◆ LOJA DE ITENS',
 
       // Game selector
@@ -564,9 +561,6 @@
       'inv.eggs_title':          '🥚 INCUBATOR',
       'inv.coins_title':         '🪙 COINS',
       'inv.coins_sub':           'Spent on shop items',
-      'inv.crystals_cta':        '💎 Need more Crystals?',
-      'inv.crystals_desc':       'Buy crystals with MATIC or sell eggs on the Marketplace.',
-      'inv.crystals_btn':        'Go to Marketplace →',
       'inv.items_store':         '◆ ITEM SHOP',
 
       // Game selector
