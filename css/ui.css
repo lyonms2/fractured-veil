@@ -33,9 +33,12 @@
 #btnAmigos { overflow:visible; }
 #btnAmigos::before { display:none; }
 
-/* ── Desktop: 6 botões numa linha, mais compactos ── */
+/* ── Desktop: 5 botões numa linha, mais compactos ──
+   Eram 6 colunas do tempo em que o Amigos morava nesta fila. Ele subiu
+   para o cabeçalho, e a sexta coluna ficou vazia à direita, empurrando
+   os cinco para a esquerda. */
 @media(min-width:681px) {
-  .btns { grid-template-columns:repeat(6,1fr); gap:0.25rem; }
+  .btns { grid-template-columns:repeat(5,1fr); gap:0.25rem; }
   .btn-action { padding:0.4375rem 0.125rem; min-height:2.875rem; font-size:0.3125rem; border-radius:0.4375rem; }
   .btn-action .icon { font-size:0.9375rem; }
 }
