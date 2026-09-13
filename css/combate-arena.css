@@ -666,7 +666,104 @@
    vez de escorregar — como uma árvore a cair, que é o que a queda é. */
 .cb-posto.caido .cb-corpo {
   transform: translate(-50%, -100%) translateX(var(--lado, 0.9rem)) rotate(var(--tomba, -58deg));
-  transition: transform .5s cubic-bezier(.34,1.3,.64,1);
+}
+
+/* ── E A QUEDA TEM PESO ──
+
+   Havia aqui uma `transition` de meio segundo, e nunca disparou uma vez.
+   O campo refaz-se por innerHTML quando alguém morre — a chave de
+   estrutura tem o `vivo` lá dentro — portanto o corpo nascia já deitado,
+   num elemento novo, sem estado anterior de onde transitar. Meio segundo
+   prometido e zero entregues: o bicho passava de pé a deitado entre dois
+   fotogramas.
+
+   Uma `animation` corre em elementos novos, e é por isso que isto é uma
+   e não uma transição. Quem dispara é o `_afTombar` do js/arena-fu.js,
+   que compara com a fotografia de antes para saber quem acabou de cair.
+
+   ── O QUE A CURVA DESENHA ──
+
+     0–12%    o RECUO. Leva o golpe e vai para trás meio grau, e é este
+              pedaço que faz a queda parecer consequência de alguma coisa
+              em vez de uma decisão do corpo.
+     12–70%   o TOMBO, a acelerar. Uma árvore não cai a velocidade
+              constante, e o pivô está nos pés (o `transform-origin` da
+              regra base), portanto é mesmo uma queda e não um
+              escorregar.
+     70%      o CHÃO, passado seis por cento — é a carne a ceder. É neste
+              instante que o js atira o pó e o anel.
+     70–100%  o RESSALTO e o assentar.
+
+   Cada troço tem a sua curva própria: acelerar a cair e travar a
+   assentar com a mesma curva daria uma queda de borracha. */
+@keyframes cb-tomba {
+  0% {
+    transform: translate(-50%, -100%) translateX(0) rotate(0deg);
+    animation-timing-function: cubic-bezier(.2,.8,.4,1);
+  }
+  12% {
+    transform: translate(-50%, -100%)
+               translateX(calc(var(--lado, 0.9rem) * -0.22))
+               rotate(calc(var(--tomba, -58deg) * -0.1));
+    animation-timing-function: cubic-bezier(.5,0,.82,.5);
+  }
+  70% {
+    transform: translate(-50%, -100%)
+               translateX(calc(var(--lado, 0.9rem) * 1.06))
+               rotate(calc(var(--tomba, -58deg) * 1.06));
+    animation-timing-function: cubic-bezier(.2,.7,.4,1);
+  }
+  84% {
+    transform: translate(-50%, -100%)
+               translateX(calc(var(--lado, 0.9rem) * 0.94))
+               rotate(calc(var(--tomba, -58deg) * 0.92));
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    transform: translate(-50%, -100%)
+               translateX(var(--lado, 0.9rem))
+               rotate(var(--tomba, -58deg));
+  }
+}
+.cb-posto.tombando .cb-corpo { animation: cb-tomba .66s both; }
+
+/* ── E A COR SÓ SE VAI DEPOIS DE ELE BATER NO CHÃO ──
+
+   O apagar era instantâneo: o corpo perdia a cor no primeiro fotograma e
+   caía já pálido, o que se lê como um fantasma a desvanecer-se e não
+   como uma coisa que caiu.
+
+   Tentei-o primeiro com `transition` e um atraso, e foi a mesma
+   armadilha da queda: o elemento é NOVO (o campo refez-se), portanto não
+   há estado anterior de onde sair e a transição nunca dispara. Escrever
+   uma transição num elemento acabado de nascer é escrever uma promessa
+   que ninguém vai cumprir — e eu tinha acabado de tirar uma dessas
+   daqui mesmo.
+
+   São animações, e correm em paralelo com a queda, com o mesmo tempo e a
+   mesma cesura: nada muda até aos 62%, e a partir daí — que é quando o
+   corpo chega ao chão — a cor sai, a opacidade desce e a sombra espalma.
+
+   O `both` prende o último fotograma até a classe sair, e o último
+   fotograma é igual ao que as regras do `.caido` já dizem; por isso a
+   passagem de uma coisa para a outra não se vê. */
+@keyframes cb-tomba-cor {
+  0%, 62% {
+    filter: saturate(1) brightness(1) contrast(1)
+            drop-shadow(0 0.125rem 0.25rem rgba(0,0,0,.8));
+  }
+  100% {
+    filter: saturate(.18) brightness(1.05) contrast(.85)
+            drop-shadow(0 0.125rem 0.25rem rgba(0,0,0,.8));
+  }
+}
+@keyframes cb-tomba-apaga { 0%, 62% { opacity: 1; } 100% { opacity: .78; } }
+/* A sombra abre de repente quando o corpo bate — é o ar a sair debaixo
+   dele — e volta a fechar-se para a forma de quem está deitado. */
+@keyframes cb-tomba-sombra {
+  0%, 58% { transform: translate(-50%, -0.15rem) scale(1);                  opacity: 1; }
+  72%     { transform: translate(-50%, -0.15rem) scaleX(1.55) scaleY(.46);  opacity: .72; }
+  100%    { transform: translate(-50%, -0.15rem) scaleX(1.25) scaleY(.6);   opacity: .5; }
 }
 /* O corpo escurecia a 40% de brilho, sem cor, sobre um fundo já escuro:
    desaparecia. O comentário dizia "o corpo continua lá" e ele não
@@ -685,11 +782,52 @@
   animation: none;
 }
 .cb-posto.caido .cb-sombra { animation: none; opacity: .5; transform: translate(-50%,-0.15rem) scaleX(1.25) scaleY(.6); }
+
+/* ── E VÊM DEPOIS DAS DO `caido`, DE PROPÓSITO ──
+
+   As duas regras aqui em cima escrevem `animation: none` no corpo e na
+   sombra de quem está no chão — param a respiração e o flutuar, que é o
+   que se quer de um morto. Mas têm a MESMA especificidade que estas, e
+   por isso quem ganha é quem vier depois: escritas antes, as três
+   animações da queda eram desligadas pelo `none` e não acontecia nada.
+
+   Ficam depois. Enquanto o `tombando` dura, a queda manda; quando ele
+   sai, o `none` volta a mandar e o corpo fica quieto. */
+.cb-posto.tombando            { animation: cb-tomba-apaga .66s both; }
+.cb-posto.tombando .cb-corpo svg { animation: cb-tomba-cor .66s both; }
+.cb-posto.tombando .cb-sombra    { animation: cb-tomba-sombra .66s both; }
 /* A etiqueta de quem caiu ficava a .5 — e como só os que estão em
    campo a mostram, isto RESSUSCITAVA o nome dos que estão no banco: ao
    cair, o nome do terceiro aparecia e colidia com o do primeiro. Quem
    cai não ganha uma legenda que não tinha. */
 .cb-posto.ini.caido .cb-corpo { --tomba: 58deg; --lado: -0.9rem; }
+/* As variáveis vivem no `.cb-corpo`, e a animação também — mas o lado
+   inimigo declara-as numa regra com `.caido` no meio, portanto o corpo
+   que está a tombar já as tem: o `--lado` e o `--tomba` que a keyframe lê
+   são os certos para cada lado desde o primeiro fotograma. */
+
+/* ── OS OLHOS DE QUEM CAIU ──
+
+   O olho apaga-se e ficam dois traços cruzados no lugar dele. Os traços
+   são desenhados pelo js/arena-fu.js, que mede cada olho com `getBBox`
+   — os oito tipos de olho do gerador têm formas diferentes e só a
+   medição serve os oito.
+
+   Creme e não branco: o branco puro é a única cor que não existe em
+   lado nenhum nesta cena, e um X branco-papel sobre um corpo
+   dessaturado saltava como um autocolante. */
+.cb-posto.caido .cb-corpo .av-olho-un { opacity: 0; }
+.cb-olho-x {
+  fill: none; stroke: #efe3cd; stroke-width: 3.5;
+  stroke-linecap: round; opacity: .92;
+}
+/* Chegam com a queda e não antes dela: aos 70% o corpo bate no chão, e é
+   aí que os olhos se fecham. */
+.cb-posto.tombando .cb-olho-x { animation: cb-olho-x-vem .66s both; }
+@keyframes cb-olho-x-vem {
+  0%, 62% { opacity: 0; transform: scale(.4); }
+  100%    { opacity: .92; transform: scale(1); }
+}
 
 /* ── A etiqueta do nome ──
    Só por cima de quem está em campo. Seis nomes ao mesmo tempo é uma

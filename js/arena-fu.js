@@ -290,7 +290,111 @@ function _afAssentar() {
       posto.classList.add('caido');
       void corpo.offsetWidth;
       corpo.style.transition = transicao;
+      /* Aqui, e não no _afTombar: o campo refaz-se muitas vezes com o
+         mesmo morto lá dentro (uma jogada qualquer muda a chave), e o X
+         tem de voltar em todas elas. O _afTombar só corre na tela em que
+         ele cai. */
+      _afOlhosEmX(posto);
     }
+  }
+}
+
+/* ══ A TROCA DE POSTO, DESLIZADA ══
+
+   Primeiro-Último-Inverter-Soltar: mediu-se onde estavam (a fotografia),
+   deixou-se o navegador pô-los onde vão ficar, e agora empurram-se de
+   volta ao sítio antigo com a transição desligada — para, no instante
+   seguinte, se soltar o empurrão e eles viajarem sozinhos.
+
+   O TAMANHO viaja com a posição. Os postos de trás são menores (o
+   `--escala` do css/combate-arena.css sai da profundidade), e sem isto o
+   bicho que vem para a frente mudava de tamanho num fotograma e depois
+   deslizava — um salto e uma viagem, em vez de uma coisa a aproximar-se.
+   O `scale` da razão entre as duas escalas resolve-o, e o posto é um
+   PONTO com origem nos pés: o corpo cresce do chão, como cresceria
+   quem se aproxima.
+
+   Quem não se mexeu não leva nada: um píxel de diferença é ruído de
+   arredondamento e não uma viagem. */
+function _afDeslizar(antes) {
+  const campo = document.getElementById('cbCampo');
+  if (!campo) return;
+  const esc = z => 0.42 + 0.58 * z;
+  for (const el of campo.querySelectorAll('.cb-posto')) {
+    const a = antes[el.id];
+    if (!a) continue;
+    const r = el.getBoundingClientRect();
+    const dx = a.x - r.left, dy = a.y - r.top;
+    const z = parseFloat(el.style.getPropertyValue('--z')) || 1;
+    const k = esc(a.z) / esc(z);
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(k - 1) < 0.01) continue;
+
+    el.style.transition = 'none';
+    el.style.transform = `translate(${Math.round(dx)}px, ${Math.round(dy)}px) scale(${k.toFixed(3)})`;
+    void el.offsetWidth;
+    el.style.transition = 'transform .46s cubic-bezier(.33,.86,.32,1)';
+    el.style.transform = '';
+    setTimeout(() => { el.style.transition = ''; el.style.transform = ''; }, 500);
+  }
+}
+
+/* ══ A QUEDA ══
+
+   Quem está no chão agora e não estava na fotografia acabou de cair. O
+   corpo vem do desenho já deitado (é uma tela nova), portanto a animação
+   corre ao contrário do que parece: começa de pé e acaba onde o CSS já
+   o pôs — e por isso não precisa de `forwards`.
+
+   O pó e o anel saem a meio da queda e não no fim: o corpo bate no chão
+   aos 70% do tempo, e é aí que o chão responde. Pô-los no fim dava uma
+   poeira que nascia depois de o bicho já estar quieto. */
+function _afTombar(antes) {
+  const campo = document.getElementById('cbCampo');
+  if (!campo) return;
+  for (const el of campo.querySelectorAll('.cb-posto.caido')) {
+    const a = antes[el.id];
+    if (a && a.caido) continue;            // já lá estava
+    if (!a) continue;                      // primeira tela: não caiu, apareceu
+    el.classList.add('tombando');
+    setTimeout(() => { _afPoeira(el); _afOnda(el); }, 380);
+    setTimeout(() => el.classList.remove('tombando'), 720);
+  }
+}
+
+/* ══ OS OLHOS DE QUEM CAIU ══
+
+   Dois traços cruzados por cima de cada olho. Não se desenham no
+   js/data.js — o gerador do avatar serve a colónia, o mercado, a
+   linhagem e a árvore, e nenhum desses tem o conceito de "caído"; um
+   olho cruzado escondido em todos eles seria marcação a viajar por seis
+   telas à espera de uma classe que só existe aqui.
+
+   Desenha-se aqui, e MEDINDO: o `getBBox` de cada `.av-olho-un` dá o
+   centro e o tamanho do olho, sejam eles os oito tipos que o gerador
+   sabe fazer — do círculo ao losango ao triângulo. Repetir a conta do
+   `cx` do gerador era escrever a mesma geometria duas vezes, e a segunda
+   cópia ficaria para trás no dia em que se acrescentasse um nono tipo.
+
+   É o mesmo truque que o js/minigames.js já usa para saber onde estão os
+   olhos. */
+function _afOlhosEmX(el) {
+  const svg = el.querySelector('.cb-corpo svg');
+  if (!svg || svg.querySelector('.cb-olho-x')) return;
+  for (const olho of svg.querySelectorAll('.av-olho-un')) {
+    let b = null;
+    try { b = olho.getBBox(); } catch (e) { b = null; }
+    if (!b || !b.width || !b.height) continue;
+    const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+    const r = Math.max(b.width, b.height) * 0.38;
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('class', 'cb-olho-x');
+    p.setAttribute('d', `M${(cx - r).toFixed(1)} ${(cy - r).toFixed(1)}`
+                      + `L${(cx + r).toFixed(1)} ${(cy + r).toFixed(1)}`
+                      + `M${(cx + r).toFixed(1)} ${(cy - r).toFixed(1)}`
+                      + `L${(cx - r).toFixed(1)} ${(cy + r).toFixed(1)}`);
+    /* Irmão do olho e não filho: o CSS apaga o olho inteiro, e um X lá
+       dentro desaparecia com ele. */
+    olho.parentNode.appendChild(p);
   }
 }
 
@@ -355,9 +459,22 @@ function _afSetaVs(c, meu) {
    mesma pergunta debaixo dos dois motores: em qual destes posso tocar
    agora?
 
-   Os PM do inimigo não aparecem, e é uma decisão herdada e mantida:
-   saber quanta magia ele ainda tem daria a certeza de que ele não vai
-   lançar nada, e a incerteza é metade do combate. */
+   ── OS PM DO INIMIGO PASSARAM A APARECER ──
+
+   Não apareciam, e a razão escrita era que a incerteza é metade do
+   combate: saber quanta magia lhe resta é saber que ele não vai lançar
+   nada.
+
+   O argumento não sobreviveu ao motor novo. A magia mais cara do jogo
+   custa 30 PM e um inimigo de nível médio tem 50 ou 60 — a barra dele
+   quase nunca chega perto do fundo, portanto a "certeza" que ela dava
+   era rara. E o que ela tirava era constante: os dois lados da tela
+   passaram a ser dois cartões com o mesmo desenho, e um deles tinha uma
+   barra a menos sem nada que dissesse porquê. Lia-se como defeito, que
+   foi como o dono do jogo a leu.
+
+   Com os PM à vista, a decisão de aguentar mais uma rodada em vez de
+   gastar tudo passa a ter dados dos dois lados. */
 function _afCartao(c) {
   const meu = c.lado === 'A';
   const podeAgir = _afPodeAgir(c);
@@ -376,7 +493,7 @@ function _afCartao(c) {
     <div class="cb-ficha-barras">
       <div class="cb-ficha-nome">${esc(_afNome(c))}</div>
       ${_afBarra(c.pv, c.ficha.pvMax, 'pv')}
-      ${meu ? _afBarra(c.pm, c.ficha.pmMax, 'pm') : ''}
+      ${_afBarra(c.pm, c.ficha.pmMax, 'pm')}
     </div>
     ${_afSetaVs(c, meu)}
   </div>`;
@@ -416,15 +533,50 @@ function _afChaveEstrutura() {
 
 let _afChave = null;
 
+/* ══ A FOTOGRAFIA DE ANTES ══
+
+   Onde estava cada posto, e quem já estava no chão, no instante ANTES de
+   o campo se refazer.
+
+   É disto que vivem as duas animações desta tela, e por uma razão que
+   não é óbvia: o campo refaz-se por innerHTML sempre que a ESTRUTURA
+   muda — quem está vivo, em que posto — e uma troca de postos e uma
+   morte são exactamente isso. Os elementos são outros, novos, já na
+   posição final e já com a classe `caido`.
+
+   Um elemento novo não tem de onde transitar. Era por isso que a queda
+   não tinha animação nenhuma (o corpo aparecia deitado) e a troca de
+   lugar era um salto instantâneo: o CSS prometia meio segundo de
+   rotação numa `transition` que nunca chegava a disparar, porque não
+   havia estado anterior para sair.
+
+   Com a fotografia há: sabe-se de onde cada um veio e quem acabou de
+   cair, e as duas animações passam a ser possíveis. */
+function _afFotografia() {
+  const campo = document.getElementById('cbCampo');
+  const f = {};
+  if (!campo) return f;
+  for (const el of campo.querySelectorAll('.cb-posto')) {
+    const r = el.getBoundingClientRect();
+    f[el.id] = { x: r.left, y: r.top,
+                 z: parseFloat(el.style.getPropertyValue('--z')) || 1,
+                 caido: el.classList.contains('caido') };
+  }
+  return f;
+}
+
 function _afDesenhar() {
   if (!_afE) return;
   const chave = _afChaveEstrutura();
   if (chave !== _afChave) {
+    const antes = _afFotografia();
     _afChave = chave;
     document.getElementById('cbCampo').innerHTML = _afCampo();
     document.getElementById('cbHudEu').innerHTML  = _afHud('A');
     document.getElementById('cbHudIni').innerHTML = _afHud('B');
     _afAssentar();
+    _afDeslizar(antes);
+    _afTombar(antes);
   }
   _afBarras();
   const vez = _afE.acabou ? null : fuVez(_afE);
@@ -463,6 +615,7 @@ function _afBarras() {
         const txt = pv.querySelector('span');
         if (txt) txt.textContent = c.pv + '/' + c.ficha.pvMax;
       }
+      // dos dois lados agora: o inimigo também mostra a magia dele
       const pm = linha.querySelector('.cb-barra.pm');
       if (pm) {
         const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.ficha.pmMax)) * 100));
@@ -1211,7 +1364,24 @@ function _afEncenar(eventos) {
         // absorveu: cura-se com o golpe, e o número sobe em vez de descer
         _afNumero(noAlvo, ev.curou, false, 'cura');
       } else {
-        _afGesto(noAlvo, 'bate', 520);
+        /* ── QUEM CAI NÃO SE ENCOLHE ──
+
+           O golpe manda o corpo recuar (a classe bate, 0,42s) e a morte
+           manda-o tombar (a classe tombando, 0,66s), e as duas são
+           animações no MESMO .cb-corpo: a segunda a ser declarada no CSS
+           ganha, e é o recuo. Medido: a queda só começava aos 450ms e corria 180 dos
+           660 que tem — via-se o bicho encolher-se e depois aparecer
+           deitado.
+
+           Podia resolver-se trocando a ordem das regras, mas a ordem das
+           regras é a resposta errada a uma pergunta de encenação: um
+           corpo que recua do golpe e só depois cai leva DOIS golpes, e
+           houve um. A queda já começa com o recuo dentro dela (os
+           primeiros 12% da keyframe são isso mesmo).
+
+           O número e a poeira ficam: esses dizem o dano, e o dano
+           aconteceu. */
+        if (!ev.caiu) _afGesto(noAlvo, 'bate', 520);
         _afNumero(noAlvo, ev.perda, !!ev.critico);
         _afPoeira(noAlvo);
       }
