@@ -207,6 +207,18 @@
 .fb-ag span { flex: 1 1 auto; min-width: 0; color: #d6cfe2; }
 .fb-ag.bom b { color: #8ede8e; }
 .fb-ag.mau b { color: #ff8a8a; }
+/* As vantagens em dourado: não são boas nem más para o momento, são dele. */
+.fb-ag.fixo b { color: var(--gold-light); }
+/* O que é de nascença começa depois de uma linha tracejada. */
+.fb-ag.separa {
+  margin-top: 0.375rem; padding-top: 0.375rem;
+  border-top: 1px dashed rgba(201,168,76,.28);
+}
+/* As setas dos dados: vermelha quando o estado encolhe, verde quando o
+   Despertar faz crescer. */
+.fb-seta        { font-size: 0.85em; }
+.fb-seta.desce  { color: #ff6b6b; }
+.fb-seta.sobe   { color: #6ee07a; }
 
 /* ── UMA REGRA ESPECIAL ──
    A vantagem custa uma costura, e a costura rende a vantagem — daí o

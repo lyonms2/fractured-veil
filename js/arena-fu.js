@@ -214,42 +214,19 @@ function _afLutador(c) {
      Ficam duas, e dizem o que são: `mal` para o que o prejudica, `bem`
      para o que o ajuda. A crise leva a sua, porque não é nem uma coisa
      nem outra — é o sítio onde ele está. */
-  const marcas = [];
-  const m = (txt, k, ajuda) => marcas.push(
-    `<span class="cb-marca ${k}" title="${esc(ajuda || txt)}">${esc(txt)}</span>`);
-  const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
-  /* O mesmo texto da ficha, com o mesmo tamanho medido: a etiqueta e a
-     explicação têm de dizer a mesma coisa, e duas frases escritas em dois
-     sítios acabam por dizer duas. */
-  const dado = k => (typeof fuDado === 'function') ? ('d' + fuDado(c, k)) : '—';
-  for (const e of Object.keys(c.estados)) {
-    const mo = (EST[e] && EST[e].morde) || [];
-    const at = mo.map(k => t('af.ab.' + k));
-    m(t('af.est.' + e), 'mal', t('af.est.' + e) + ' — ' + (mo.length > 1
-      ? t('af.ag.morde2', { a: at[0], b: at[1], d: dado(mo[0]), e: dado(mo[1]) })
-      : t('af.ag.morde1', { a: at[0] || '—', d: mo[0] ? dado(mo[0]) : '—' })));
-  }
-  if (c.guardando) m('▲', 'bem', t('af.ag.guarda') + ' — ' + t('af.ag.guarda.ef'));
-  if (c.efeitos.resisteFisico)
-    m(t('af.m.concha'), 'bem', t('af.m.concha') + ' — ' + t('af.ag.concha.ef'));
-  if (c.efeitos.defesaMinima)
-    m(t('af.m.barreira'), 'bem', t('af.m.barreira') + ' — '
-      + t('af.ag.barreira.ef', { n: c.efeitos.defesaMinima }));
-  if (c.efeitos.misericordia)
-    m(t('af.m.misericordia'), 'bem', t('af.m.misericordia') + ' — ' + t('af.ag.mercy.ef'));
-  if (c.efeitos.subirDado)
-    m(t('af.ab.' + c.efeitos.subirDado) + '▴', 'bem', t('af.m.despertar') + ' — '
-      + t('af.ag.desperta.ef', { a: t('af.ab.' + c.efeitos.subirDado),
-                                 d: dado(c.efeitos.subirDado) }));
-  if (typeof fuNoAr === 'function' && fuNoAr(c))
-    m('✧', 'bem', t('af.ag.voo') + ' — ' + t('af.ag.voo.ef'));
-  if (c.derrubado) m('▾', 'mal', t('af.ag.chao') + ' — ' + t('af.ag.chao.ef'));
-  if (fuEmCrise(c)) m('!', 'crise', t('af.ag.crise') + ' — ' + t('af.ag.crise.ef'));
+  /* As marcas vêm do mesmo resumo que a ficha desenha (fuResumoAgora, em
+     js/ficha-fu-ui.js): um rótulo curto no céu e a frase inteira no
+     `title`. Só os itens que passam têm marca — as vantagens e a costura
+     são de nascença, e no céu seriam ruído em todos os turnos.
 
-  /* Quem caiu não carrega marca nenhuma. "Atordoado", "Concha" e a crise
-     em cima de um corpo deitado não dizem nada — ele não joga mais — e
-     ficavam penduradas no ar, sobre o companheiro de trás. */
-  if (!_afVivoVisivel(c)) marcas.length = 0;
+     Quem caiu não carrega marca nenhuma: "Atordoado", "Concha" e a crise
+     em cima de um corpo deitado não dizem nada, e ficavam penduradas no
+     ar sobre o companheiro de trás. */
+  const marcas = (_afVivoVisivel(c) && typeof fuResumoAgora === 'function')
+    ? fuResumoAgora(c).filter(x => x.marca).map(x =>
+        `<span class="cb-marca ${x.classe}" title="${esc(x.nome + ' — ' + x.texto)}">${
+          esc(x.marca)}</span>`)
+    : [];
 
   const pos = AF_POSTOS[Math.max(0, Math.min(2, c.posto))];
   const x = meu ? pos.x : 100 - pos.x;

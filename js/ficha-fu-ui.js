@@ -415,54 +415,136 @@ function _fbOutras() {
    dado sai do FU_ESTADOS (js/combate-fu.js) e não de uma lista escrita
    aqui: são a mesma tabela que o motor usa para encolher o dado, e a
    frase não pode discordar da conta. */
-function _fbAgora(c) {
-  if (!c) return '';
+/* ══ O RESUMO, EM DADOS ══
+
+   Uma lista só, com tudo o que está mexendo neste avatar agora. A ficha
+   desenha a lista inteira; as marcas do palco usam os itens que têm
+   marca (os passageiros) e o mesmo texto no `title`. Eram duas montagens
+   da mesma frase, uma em cada arquivo, e elas já tinham começado a dizer
+   coisas diferentes.
+
+   Cada item traz:
+     nome, texto   o que se lê (texto em texto puro, para o `title`)
+     html          o mesmo texto com as setas coloridas, para a ficha
+     tom           'mau' (vermelho), 'bom' (verde) ou 'fixo' (dourado)
+     fixo          true nas vantagens e na costura, que não passam
+     marca, classe o rótulo curto que vai para o céu do palco
+
+   ── A ORDEM ──
+
+   Primeiro o que passa: os estados, os efeitos a favor, no ar ou no
+   chão, e a crise. Depois o que é dele de nascença: as vantagens e a
+   costura. É a ordem em que a pergunta "o que está acontecendo?" se
+   responde. */
+function fuResumoAgora(c) {
+  if (!c || !c.ficha) return [];
+  const f = c.ficha;
   const L = [];
-  const mau = (n, e) => L.push({ n, e, tom: 'mau' });
-  const bom = (n, e) => L.push({ n, e, tom: 'bom' });
-
-  /* Os seis estados primeiro: são o que muda os dados, e os dados são a
-     primeira linha do bloco.
-
-     ── E O TAMANHO VEM DITO ──
-
-     A frase era "o dado de PER desce um tamanho", e a pergunta seguinte
-     é sempre a mesma: desce para quanto? A escada tem quatro degraus
-     (d6 · d8 · d10 · d12), quem chega ao jogo não a conhece, e mesmo
-     quem a conhece não sabe de cor em que degrau está este bicho —
-     porque os estados se somam e o piso é d6.
-
-     O tamanho de AGORA sai do fuDado, que é a mesma função que o motor
-     usa para rolar. Escrever a conta aqui era ter duas contas. */
-  const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
+  const item = o => L.push(o);
   const dado = k => (typeof fuDado === 'function') ? ('d' + fuDado(c, k)) : '—';
+  const seta = (sobe, k) => ({
+    txt: (sobe ? '▲ ' : '▼ ') + t('af.ag.dado', { a: t('af.ab.' + k), d: dado(k) }),
+    html: `<span class="fb-seta ${sobe ? 'sobe' : 'desce'}">${sobe ? '▲' : '▼'}</span> ${
+      esc(t('af.ag.dado', { a: t('af.ab.' + k), d: dado(k) }))}`,
+  });
+  const simples = (id, nome, texto, tom, marca, classe) =>
+    item({ id, nome, texto, html: esc(texto), tom, fixo: false, marca, classe });
+
+  // ── os seis estados: seta vermelha e o tamanho em que o dado ficou ──
+  const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
   for (const e of Object.keys(c.estados || {})) {
-    const m = (EST[e] && EST[e].morde) || [];
-    const at = m.map(k => t('af.ab.' + k));
-    mau(t('af.est.' + e), m.length > 1
-      ? t('af.ag.morde2', { a: at[0], b: at[1], d: dado(m[0]), e: dado(m[1]) })
-      : t('af.ag.morde1', { a: at[0] || '—', d: m[0] ? dado(m[0]) : '—' }));
+    const partes = ((EST[e] && EST[e].morde) || []).map(k => seta(false, k));
+    item({ id: 'est:' + e, nome: t('af.est.' + e),
+           texto: partes.map(p => p.txt).join(' · '),
+           html: partes.map(p => p.html).join(' · '),
+           tom: 'mau', fixo: false, marca: t('af.est.' + e), classe: 'mal' });
   }
 
-  if (c.guardando) bom(t('af.ag.guarda'), t('af.ag.guarda.ef'));
-
+  // ── o que o ajuda, e passa ──
   const ef = c.efeitos || {};
-  if (ef.resisteFisico) bom(t('af.m.concha'), t('af.ag.concha.ef'));
-  if (ef.defesaMinima)  bom(t('af.m.barreira'), t('af.ag.barreira.ef', { n: ef.defesaMinima }));
-  if (ef.misericordia)  bom(t('af.m.misericordia'), t('af.ag.mercy.ef'));
-  if (ef.subirDado)     bom(t('af.m.despertar'),
-                            t('af.ag.desperta.ef', { a: t('af.ab.' + ef.subirDado),
-                                                     d: dado(ef.subirDado) }));
+  if (c.guardando)
+    simples('guarda', t('af.ag.guarda'), t('af.ag.guarda.ef'), 'bom', '▲', 'bem');
+  if (ef.resisteFisico)
+    simples('concha', t('af.m.concha'), t('af.ag.concha.ef'), 'bom', t('af.m.concha'), 'bem');
+  if (ef.defesaMinima)
+    simples('barreira', t('af.m.barreira'), t('af.ag.barreira.ef', { n: ef.defesaMinima }),
+            'bom', t('af.m.barreira'), 'bem');
+  if (ef.misericordia)
+    simples('misericordia', t('af.m.misericordia'), t('af.ag.mercy.ef'),
+            'bom', t('af.m.misericordia'), 'bem');
+  if (ef.subirDado) {
+    const p = seta(true, ef.subirDado);
+    item({ id: 'despertar', nome: t('af.m.despertar'), texto: p.txt, html: p.html,
+           tom: 'bom', fixo: false, marca: t('af.ab.' + ef.subirDado) + '▴', classe: 'bem' });
+  }
+  if (typeof fuNoAr === 'function' && fuNoAr(c))
+    simples('voo', t('af.ag.voo'), t('af.ag.voo.ef'), 'bom', '✧', 'bem');
+  if (c.derrubado)
+    simples('chao', t('af.ag.chao'), t('af.ag.chao.ef'), 'mau', '▾', 'mal');
 
-  if (typeof fuNoAr === 'function' && fuNoAr(c)) bom(t('af.ag.voo'), t('af.ag.voo.ef'));
-  if (c.derrubado) mau(t('af.ag.chao'), t('af.ag.chao.ef'));
-  /* A crise em último: não é uma coisa que lhe fizeram, é o sítio onde
-     ele está — e lê-se melhor depois de se saber o resto. */
-  if (typeof fuEmCrise === 'function' && fuEmCrise(c)) mau(t('af.ag.crise'), t('af.ag.crise.ef'));
+  // ── a crise, dita para ESTE avatar ──
+  const vs = f.vantagens || [];
+  const tem = id => vs.some(v => v && v.id === id);
+  if (typeof fuEmCrise === 'function' && fuEmCrise(c)) {
+    /* Só duas vantagens mudam em crise, e é o motor que diz quais
+       (js/combate-fu.js): a Fúria da Crise liga a quebra de resistências
+       e o Voo Baixo desliga o voo. A frase diz quais delas este avatar
+       tem — ou que nenhuma, que também é uma resposta. */
+    const efeitos = [];
+    if (tem('furia_da_crise')) efeitos.push(t('af.ag.crise.furia'));
+    if (tem('voo_baixo'))      efeitos.push(t('af.ag.crise.voo'));
+    const texto = t('af.ag.crise.ef', { pv: c.pv, max: f.pvMax })
+      + ' — ' + (efeitos.length ? efeitos.join(' · ') : t('af.ag.crise.nada'));
+    simples('crise', t('af.ag.crise'), texto, 'mau', '!', 'crise');
+  }
 
+  // ── o que é dele de nascença ──
+  const base = id => (typeof FU_VANTAGENS !== 'undefined' && FU_VANTAGENS[id]) || {};
+  const num = (v, k) => (v[k] != null ? v[k] : base(v.id)[k]);
+  for (const v of vs) {
+    if (!v) continue;
+    const vars = {};
+    if (v.id === 'guarda_cerrada') { vars.a = v.defesaMais; vars.b = v.defMagMais; }
+    if (v.id === 'pele_calada' && Array.isArray(v.imunes)) {
+      vars.a = t('af.est.' + v.imunes[0]); vars.b = t('af.est.' + v.imunes[1]);
+    }
+    if (v.id === 'carne_teimosa')  vars.n = num(v, 'pvMais');
+    if (v.id === 'fonte_funda')    vars.n = num(v, 'pmMais');
+    if (v.id === 'veia_avida')     vars.n = num(v, 'pmAoSofrer');
+    if (v.id === 'golpe_pesado')   vars.n = num(v, 'danoMaisGolpe');
+    if (v.id === 'ultimo_suspiro') { vars.n = num(v, 'actoFinal'); vars.tipo = t('af.tipo.' + f.tipo); }
+    if (v.id === 'mira_treinada') {
+      vars.n = v.precisaoMais || v.magiaMais;
+      vars.lado = t(v.precisaoMais ? 'afv.mira.golpe' : 'afv.mira.magia');
+    }
+    let chave = 'afv.' + v.id + '.curto';
+    if (v.id === 'voo_baixo') {
+      if (f.costura) vars.tipo = t('af.tipo.' + f.costura);
+      else chave = 'afv.voo_baixo.curto_sem';
+    }
+    const texto = t(chave, vars);
+    item({ id: 'vant:' + v.id, nome: fuVantagemNome(v), texto, html: esc(texto),
+           tom: 'fixo', fixo: true });
+  }
+  if (f.costura) {
+    const texto = t('af.ag.costura.ef', { tipo: t('af.tipo.' + f.costura) });
+    item({ id: 'costura', nome: t('af.f.costura'), texto, html: esc(texto),
+           tom: 'mau', fixo: true });
+  }
+  return L;
+}
+
+function _fbAgora(c) {
+  const L = fuResumoAgora(c);
   if (!L.length) return '';
-  return L.map(x => `<div class="fb-ag ${x.tom}">
-    <b>${esc(x.n)}</b><span>${esc(x.e)}</span></div>`).join('');
+  let jaFixo = false;
+  return L.map(x => {
+    /* Uma linha tracejada separa o que passa do que é dele de nascença. */
+    const separa = x.fixo && !jaFixo && L[0] !== x;
+    if (x.fixo) jaFixo = true;
+    return `<div class="fb-ag ${x.tom}${separa ? ' separa' : ''}">
+    <b>${esc(x.nome)}</b><span>${x.html}</span></div>`;
+  }).join('');
 }
 
 /* ── AS REGRAS ESPECIAIS ──
