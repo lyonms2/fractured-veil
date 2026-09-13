@@ -60,7 +60,9 @@ async function savePlayerData() {
     for (const k of Object.keys(playerData)) {
       if (k === 'cristais' || k === 'extraSlots' || k === 'resgateLog'
        || k === 'ultimoResgate' || k === 'cambioLog' || k === 'ultimoCambio'
-       || k === 'referralBonus' || k === 'referralChain') continue;
+       || k === 'referralBonus' || k === 'referralChain'
+       // A carteira também é do servidor: só o vincular-carteira a grava.
+       || k === 'carteira') continue;
       if (k === 'gs' && playerData.gs) {
         const gsLimpo = {};
         for (const g of Object.keys(playerData.gs)) {
