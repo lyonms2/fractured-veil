@@ -410,11 +410,12 @@ async function _snakeSyncBest() {
   }
 }
 
-const _SNAKE_DIFF_LABELS = ['EASY','NORMAL','HARD','EXTREME'];
 
 async function snakeLoadRanking(tierKey) {
   const wrap = document.getElementById('snakeRankingList');
-  if(!wrap || !rtdb()) return;
+  if(!wrap) return;
+  // Sem ligação ao banco o painel ficava só com o título. Diz-se porquê.
+  if(!rtdb()) { wrap.innerHTML = `<div class="snake-rank-loading">${t('snake.rank.erro')}</div>`; return; }
   wrap.innerHTML = `<div class="snake-rank-loading">${t('ui.loading')}</div>`;
 
   try {
@@ -423,15 +424,15 @@ async function snakeLoadRanking(tierKey) {
     const medalhas = ['🥇','🥈','🥉'];
 
     wrap.innerHTML = lista.length === 0
-      ? `<div class="snake-rank-loading">—</div>`
+      ? `<div class="snake-rank-loading">${t('snake.rank.vazio')}</div>`
       : lista.map((d, i) => `
           <div class="snake-rank-row${(d.wallet||'') === walletAddress ? ' snake-rank-meu' : ''}">
             <span class="snake-rank-pos">${medalhas[i] || `#${i+1}`}</span>
-            <span class="snake-rank-nome">${d.nome || '???'}</span>
+            <span class="snake-rank-nome">${esc(d.nome || '???')}</span>
             <span class="snake-rank-pts">${d.score} 🐍</span>
           </div>`).join('');
   } catch(e) {
-    wrap.innerHTML = `<div class="snake-rank-loading">—</div>`;
+    wrap.innerHTML = `<div class="snake-rank-loading">${t('snake.rank.erro')}</div>`;
   }
 }
 
@@ -490,8 +491,10 @@ function snakeToggleRanking() {
   backdrop.style.display = _snakeRankOpen ? 'block' : 'none';
   if(_snakeRankOpen) {
     const tierKey = `t${_snakeLastTier}`;
+    // A dificuldade com o nome do jogo (FÁCIL, MÉDIO...), e não em inglês.
+    const dt = (typeof DIFF_TIERS !== 'undefined' && DIFF_TIERS[_snakeLastTier]) || null;
     document.getElementById('snakeRankingTitle').textContent =
-      _SNAKE_DIFF_LABELS[_snakeLastTier] || 'EASY';
+      t('snake.rank.titulo', { diff: dt ? t(dt.i18nKey) : '' });
     snakeLoadRanking(tierKey);
   }
 }

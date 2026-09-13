@@ -215,7 +215,12 @@
   font-family:'Cinzel',serif; font-size:0.4375rem; font-weight:700; letter-spacing:0.0625rem;
   padding:0.375rem 0.875rem; border-radius:0.25rem; cursor:pointer; border:1px solid;
   transition:all .15s;
+  /* Só o .primary e o .close tinham cor. O botão comum — o 🏆 RANKING do
+     Snake — caía no estilo do navegador: fundo branco e letra preta no
+     meio de uma janela escura. */
+  border-color:rgba(255,255,255,.2); color:var(--text); background:rgba(255,255,255,.04);
 }
+.mini-btn:hover { border-color:var(--gold-light); color:var(--gold-light); }
 .mini-btn.primary { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.1); }
 .mini-btn.primary:hover { background:rgba(201,168,76,.25); }
 .mini-btn.close   { border-color:var(--muted); color:var(--muted); background:transparent; }
