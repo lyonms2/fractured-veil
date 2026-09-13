@@ -137,6 +137,7 @@ async function voltarAColonia() {
      fase       JOVEM      — entram a magia forte e a defensiva
      raridade   Comum      — Raro só chega ao 11 (raridadeDoSlot)
      cruzar     ainda não  — pede fase 2, que é o nível 11
+     dificuldade  até o Médio — que abre com a fase JOVEM (DIFF_TIERS)
 
    Ou seja: destranca o que o avatar precisa para SER jogado, e nada do
    que se ganha jogando.

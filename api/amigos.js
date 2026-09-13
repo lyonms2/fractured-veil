@@ -30,7 +30,12 @@ const { getAuth }                      = require('firebase-admin/auth');
 
    O js/amigos.js mostra este número (CUSTO_VISITA) e tem de mudar junto. */
 const MOEDAS_VISITA = 5;
-const XP_VISITA     = 15;
+/* E o XP, na mesma linha das moedas. Eram 15: com 30 visitas por dia,
+   450 XP de graça para o avatar aberto — mais do que 25 minijogos
+   perfeitos no Fácil (DIFF_TIERS, em js/modal.js). Agora são 5, 150 por
+   dia: um empurrão, e não um atalho para subir de nível.
+   O js/amigos.js mostra este número (XP_VISITA) e tem de mudar junto. */
+const XP_VISITA     = 5;
 const VITAL_BOOST   = 20;
 // O que fica para QUEM É VISITADO. Vínculo e não moedas de propósito:
 // duas contas a visitarem-se uma à outra já se pagam como visitantes, e

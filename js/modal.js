@@ -331,6 +331,13 @@ function closeMiniModal(id) {
    Fora dos jogos, a visita a um amigo paga 5 (MOEDAS_VISITA, em
    api/amigos.js), até 30 por dia.
 
+   `minNivel` segue as FASES (FU_NIVEL_JOVEM, FU_NIVEL_RARO e
+   FU_NIVEL_LENDARIO, em js/ficha-fu.js): o Médio abre no 5, com o
+   Jovem; o Difícil no 11, com o Adulto e o Raro; o Mestre no 27, com o
+   Ancião e o Lendário. Eram 6, 13 e 21, números que não coincidiam com
+   nada — a dificuldade abria um ou dois níveis depois da fase, e o Mestre
+   seis níveis antes do Lendário.
+
    `inimigo` é quanto os inimigos do PvE somam de nível em relação à
    equipe. Antes a dificuldade só mudava o prêmio, e o Mestre era o
    mesmo combate do Fácil pagando seis vezes mais.
@@ -338,9 +345,9 @@ function closeMiniModal(id) {
    O XP ficou como estava. */
 const DIFF_TIERS = [
   { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:12, inimigo:0.8, minNivel:1  },
-  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:24, inimigo:1.0, minNivel:6  },
-  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:40, inimigo:1.2, minNivel:13 },
-  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:60, inimigo:1.4, minNivel:21 },
+  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:24, inimigo:1.0, minNivel:5  },
+  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:40, inimigo:1.2, minNivel:11 },
+  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:60, inimigo:1.4, minNivel:27 },
 ];
 
 function maxUnlockedTier() {

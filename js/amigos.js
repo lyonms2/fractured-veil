@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const COOLDOWN_VISITA_MS = 8 * 60 * 60 * 1000; // 8h
-const XP_VISITA          = 15;
+const XP_VISITA          = 5;    // o XP_VISITA do api/amigos.js
 const CUSTO_VISITA       = 5;   // o MOEDAS_VISITA do api/amigos.js
 const MAX_VISITAS_GLOBAL = 10;
 
