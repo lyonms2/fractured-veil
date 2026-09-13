@@ -558,16 +558,37 @@
    Abre por cima da batalha. A barra de ações só tem espaço para o nome
    e o custo, e "Ferrões Salinos, 3 PM" não diz a ninguém que envenena.
    ═══════════════════════════════════════════════════════════════════ */
+/* ── UM FUNDO, E NÃO UMA MOLDURA ──
+
+   Isto tinha borda dourada, degradê e sombra própria — era um painel. E
+   dentro dele punha-se o `.cb-ajuda-cx`, que também é um painel com
+   borda, degradê e sombra; e dentro DESSE a `.ficha`, que também tinha
+   borda, fundo e cantos redondos.
+
+   Três molduras encaixadas umas nas outras, cada uma com o seu escuro e
+   a sua borda. O olho conta as caixas antes de chegar ao texto, e a
+   pergunta "onde acaba isto e começa aquilo" não tem resposta útil,
+   porque as três são a mesma coisa: a ficha de um bicho.
+
+   Fica uma. Este passa a ser o que sempre devia ter sido — o fundo que
+   escurece a batalha para se ler o que está à frente — e o painel é o
+   `.cb-ajuda-cx`, um só. A `.ficha` perde a moldura aqui dentro (fica
+   com ela na colónia, onde É a única).
+
+   E cobre o palco INTEIRO, do topo ao rodapé: era `inset: 0.625rem` e
+   deixava uma faixa de batalha à volta, o que dava a um fundo o ar de
+   mais uma caixa. O movimento passou para o painel — animar uma camada
+   desfocada de ponta a ponta arrasta a imagem toda com ela. */
 .cb-ajuda {
-  position: absolute; inset: 0.625rem; z-index: 5;
-  display: flex; flex-direction: column;
-  border-radius: 0.625rem; border: 1px solid rgba(201,168,76,.3);
-  background: linear-gradient(160deg, rgba(28,20,44,.99), rgba(8,6,16,1));
-  box-shadow: 0 0.5rem 2.5rem rgba(0,0,0,.6);
-  opacity: 0; pointer-events: none; transform: translateY(0.5rem) scale(.99);
-  transition: opacity .22s ease, transform .22s ease;
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0.625rem; box-sizing: border-box;
+  background: rgba(4,3,10,.74);
+  backdrop-filter: blur(0.1875rem); -webkit-backdrop-filter: blur(0.1875rem);
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s ease;
 }
-.cb-ajuda.aberta { opacity: 1; pointer-events: all; transform: none; }
+.cb-ajuda.aberta { opacity: 1; pointer-events: all; }
 
 .cb-ajuda-cab {
   flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;

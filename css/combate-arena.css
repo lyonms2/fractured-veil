@@ -1511,12 +1511,31 @@
 /* \u2500\u2500 A FICHA E O HIST\u00d3RICO, NO PAINEL DE AJUDA \u2500\u2500
    O painel j\u00e1 existia; o que muda \u00e9 o que se p\u00f5e l\u00e1 dentro, porque a
    ficha nova tem dados e afinidades em vez de F/H/R/A. */
+/* ── E É ESTE O PAINEL ──
+
+   O `max-height` era 80vh e passa a 100%: o pai é o palco inteiro e a
+   janela não é. Numa janela baixa, 80vh dava um painel mais alto do que
+   o sítio onde ele vive, e o fim da ficha ficava por baixo do rodapé,
+   sem barra que lá chegasse.
+
+   O movimento de entrada é daqui e já não do fundo: é este que se vê
+   chegar. */
 .cb-ajuda-cx {
-  max-height: 80vh; overflow-y: auto;
+  max-height: 100%; overflow-y: auto;
   padding: 0.75rem; border-radius: 0.5rem;
   border: 1px solid rgba(201,168,76,.3);
   background: linear-gradient(180deg, rgba(16,11,30,.97), rgba(6,4,14,.99));
   box-shadow: 0 0.75rem 2rem rgba(0,0,0,.72);
+  transform: translateY(0.5rem) scale(.99);
+  transition: transform .22s ease;
+}
+.cb-ajuda.aberta .cb-ajuda-cx { transform: none; }
+
+/* A terceira moldura. A `.ficha` traz a sua do css/combate.css, onde ela
+   é a única caixa do zoom da colónia — aqui dentro seria a segunda a
+   dizer a mesma coisa. */
+.cb-ajuda-cx .ficha {
+  margin: 0; padding: 0; border: none; border-radius: 0; background: none;
 }
 /* O <h3> era o nome do avatar por cima da ficha e o <h4> os títulos
    "Afinidades" e "O que sabe fazer" dentro dela. O bloco do manual tem
