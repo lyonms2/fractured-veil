@@ -102,19 +102,22 @@ function _pveGerarInimigo(nivelTotal) {
     restante -= nivel;
 
     /* O inimigo NASCE, em vez de ser montado à mão. Com a certidão ganha
-       cor — que é o que o desenha e o nomeia — e ganha DNA, e com o DNA
+       cor — que é o que o desenha — e ganha DNA, e com o DNA
        ganha o arranjo dos dados, o tipo de dano, a costura e a vantagem.
        Não há dois tipos de avatar no jogo: um que nasce e outro que se
        fabrica para servir de alvo. */
     const seed = Math.floor(Math.random() * 1e6);
     const cert = (typeof nascer === 'function')
       ? nascer({ origem: 'Comum', seed }) : null;
-    const nomeCor = (cert && typeof nomeDaCor === 'function')
-      ? nomeDaCor(cert.corPrincipal) : '';
+    /* O nome é só o sufixo: Errante, Faminto, Sem Nome. Levava a cor na
+       frente ("Vermelho-arroxeado Esquecido"), e isso não cabia no cartão
+       nem na linha do registro. Os sufixos saem sem repetição, portanto
+       os três continuam com nomes diferentes, e a cor continua no
+       desenho. */
     const sufId = sufs[i];
     equipa.push({
       id: 'ini' + i,
-      nome: `${nomeCor} ${t('frat.suf.' + sufId)}`.trim(),
+      nome: t('frat.suf.' + sufId),
       sufId, nivel, seed,
       nascimento: cert,
     });

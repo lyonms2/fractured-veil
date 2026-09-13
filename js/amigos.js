@@ -7,7 +7,7 @@
 
 const COOLDOWN_VISITA_MS = 8 * 60 * 60 * 1000; // 8h
 const XP_VISITA          = 15;
-const CUSTO_VISITA       = 50;
+const CUSTO_VISITA       = 5;   // o MOEDAS_VISITA do api/amigos.js
 const MAX_VISITAS_GLOBAL = 10;
 
 let _amigosData    = null; // { amigos, pedidos, visitasLog }

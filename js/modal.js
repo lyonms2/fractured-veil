@@ -328,6 +328,9 @@ function closeMiniModal(id) {
    A raridade do avatar ainda multiplica por cima (rarityBonus, em
    js/state.js): 1,2 no Raro e 1,5 no Lendário.
 
+   Fora dos jogos, a visita a um amigo paga 5 (MOEDAS_VISITA, em
+   api/amigos.js), até 30 por dia.
+
    `inimigo` é quanto os inimigos do PvE somam de nível em relação à
    equipe. Antes a dificuldade só mudava o prêmio, e o Mestre era o
    mesmo combate do Fácil pagando seis vezes mais.

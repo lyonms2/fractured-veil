@@ -17,7 +17,19 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
-const MOEDAS_VISITA = 50;
+/* ── QUANTO A VISITA PAGA EM MOEDAS ──
+
+   Pagava 50, e com 10 visitas a cada 8h isso chegava a 1500 moedas por
+   dia com um clique cada, sem gastar energia — mais do que qualquer
+   jogo. Um Snake perfeito no Mestre paga 60 (DIFF_TIERS, em
+   js/modal.js).
+
+   Agora paga 5, menos que meio minijogo no Fácil. As 30 visitas de um
+   dia rendem 150, o mesmo que uns seis minijogos no Médio: um agrado
+   por cuidar do bicho de um amigo, e não um jeito de encher o bolso.
+
+   O js/amigos.js mostra este número (CUSTO_VISITA) e tem de mudar junto. */
+const MOEDAS_VISITA = 5;
 const XP_VISITA     = 15;
 const VITAL_BOOST   = 20;
 // O que fica para QUEM É VISITADO. Vínculo e não moedas de propósito:
