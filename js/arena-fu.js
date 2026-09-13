@@ -1090,6 +1090,8 @@ const AF_SELOS = {
         + '<path d="M12 7.5c-1.6.9-3 1.1-3 1.1V12c0 2.2 1.6 3.6 3 4.6 1.4-1 3-2.4 3-4.6V8.6s-1.4-.2-3-1.1Z"/>',
   suporte: '<path d="M12 3.5c3.2 3.8 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 1.8-5.2 5-9Z"/>'
          + '<path d="M12 16.5V9.5M9.5 12 12 9.5l2.5 2.5"/>',
+  // dois braços erguidos, em guarda
+  guardar: '<path d="M5 12.5 12 7l7 5.5"/><path d="M5 17.5 12 12l7 5.5"/>',
   // duas setas que se cruzam: trocar de lugar
   mover: '<path d="M4 8.5h12l-3.5-3.5M20 15.5H8l3.5 3.5"/>',
   voltar: '<path d="M14.5 6 8.5 12l6 6"/>',
@@ -1168,6 +1170,15 @@ function _afAcoes() {
   /* Sem o orbe da ficha: o corpo em campo abre-a, e é onde ela se pede.
      Ocupava um lugar na coluna para repetir um gesto que já existe — e a
      coluna é o que tapa o palco enquanto está aberta. */
+  /* ── GUARDAR ──
+     Metade do dano até o começo do próximo turno dele, e recupera PM pelo
+     dado de VON (o fuAgir, em js/combate-fu.js). Estava no motor e na IA
+     dos inimigos, e faltava aqui: o jogador não tinha como guardar. O
+     pormenor diz quanto PM volta agora — nada, com o PM cheio. */
+  const pmVolta = Math.max(0, Math.min(eu.ficha.pmMax - eu.pm, fuDado(eu, 'VON')));
+  h += _afOrbe('guardar', t('af.orbe.guardar'),
+    pmVolta ? t('af.orbe.guardar.pm', { n: pmVolta }) : t('af.orbe.guardar.cheio'),
+    `_afGuardar()`, null, true);
   h += _afOrbe('mover', t('af.orbe.mover'), '', `_afPedirMover()`, null, meus.length > 0);
   alvo.innerHTML = h;
 }
@@ -1214,6 +1225,13 @@ function _afEscolher(lugar) {
   // as que varrem a linha: aí sim, escolhe-se quantos e quais
   _afPasso = { lugar, magia, aliado: false };
   _afDesenhar();
+}
+
+function _afGuardar() {
+  if (_afOcupado) return;
+  const eu = _afPorId(_afQuem);
+  if (!_afPodeAgir(eu)) return;
+  _afAgir({ tipo: 'guardar' });
 }
 
 function _afPedirMover() {

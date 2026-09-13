@@ -2086,11 +2086,14 @@
   .cb-ficha-barras   { min-width: 8.5rem; }
   .cb-hud.ini .cb-ficha-barras { min-width: 8.5rem; }
 
-  .cb-orbe-disco     { width: 2.75rem; height: 2.75rem; }
-  .cb-selo           { width: 1.5rem; height: 1.5rem; }
-  .cb-orbe-custo     { min-width: 1rem; height: 1rem; font-size: 0.4375rem; }
-  .cb-orbe-nome      { font-size: 0.625rem; }
-  .cb-orbe-nome i    { font-size: 0.5rem; }
+  /* Um pouco menores do que eram (2,75rem de disco), porque o menu ganhou
+     o quinto orbe, o Guardar, e a coluna crescia por cima do palco. O
+     celular tem regra própria e continua do tamanho do dedo. */
+  .cb-orbe-disco     { width: 2.25rem; height: 2.25rem; }
+  .cb-selo           { width: 1.25rem; height: 1.25rem; }
+  .cb-orbe-custo     { min-width: 0.875rem; height: 0.875rem; font-size: 0.40625rem; }
+  .cb-orbe-nome      { font-size: 0.5625rem; }
+  .cb-orbe-nome i    { font-size: 0.46875rem; }
   .cb-menu           { width: 13rem; }
   .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
 
