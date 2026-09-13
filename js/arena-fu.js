@@ -647,6 +647,30 @@ function _afMenuMover() {
   if (!posto) return;
 
   menu.classList.toggle('dentro', quem.posto === 2);
+
+  /* ── E AFASTA-SE O BASTANTE PARA NÃO LHE FICAR EM CIMA ──
+
+     O posto é um PONTO — os pés do avatar — e o corpo está centrado
+     nele: metade da tinta fica à direita desse ponto. A coluna saía a
+     meia rem do ponto, ou seja, por dentro do próprio bicho que estava a
+     jogar. Medido: corpo de 74 a 190, coluna a começar em 145 — 45px de
+     sobreposição, e é o bicho que se está a comandar.
+
+     Meia largura de corpo é o que é preciso, e essa largura muda: o
+     `--escala` do css/combate-arena.css encolhe os postos de trás, e
+     encolhe-os de forma diferente no telemóvel e no computador. Por isso
+     mede-se em vez de se escrever um número — um número certo hoje seria
+     o número errado à primeira mudança de escala.
+
+     Sai em `--afasta`, e o CSS usa-o no lugar da meia rem. */
+  const corpoAncora = posto.querySelector('.cb-corpo');
+  if (quem.posto === 2 && corpoAncora) {
+    const cr = corpoAncora.getBoundingClientRect();
+    const pr = posto.getBoundingClientRect();
+    menu.style.setProperty('--afasta', Math.round((cr.right - pr.left) + 12) + 'px');
+  } else {
+    menu.style.removeProperty('--afasta');
+  }
   /* E tira-se o `important` que o painel do fim possa ter deixado: uma
      prioridade esquecida prendia o menu ao centro para o resto da
      sessão, e a batalha seguinte abria com os orbes no meio do palco. */

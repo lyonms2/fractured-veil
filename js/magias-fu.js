@@ -144,7 +144,29 @@ const FU_MAGIAS = {
   /* ── SUPORTE ──
      Curar, limpar, levantar. */
   suporte: {
-    1: { id: 'lamber', pm: 5, proprio: true, cura: 20, manual: 'p.311' },
+    /* ── E CHEGA A UM COMPANHEIRO, E NÃO SÓ A SI ──
+
+       O manual (p.311) escreve o Lick Wounds em si mesmo: é um bicho a
+       lamber as próprias feridas, e faz sentido numa criatura sozinha.
+
+       Aqui não faz. O lugar do Suporte é o que distingue a Sustentação
+       dos outros dois feitios (FU_LUGARES_DO_FEITIO), e o que ele dava
+       a um avatar de Sustentação Comum era a capacidade de se curar a
+       si próprio — exactamente a mesma coisa que qualquer um dos outros
+       consegue fazendo nada e esperando. Punha-se um avatar atrás para
+       ele cuidar da equipa, e ele só sabia cuidar de si.
+
+       Passa a escolher um companheiro. A ESCOLHA INCLUI ELE PRÓPRIO,
+       portanto não se perde nada do que o manual dava: ganha-se o que
+       faltava. Os números não mexem — 5 PM, 20 de vida — e o degrau
+       seguinte (Curar, 10 PM por alvo e 40 de vida em três) continua a
+       ser claramente melhor.
+
+       É o segundo desvio do manual neste arquivo, e o `nosso: true` das
+       outras entradas marca os que são só de tipo de dano. Este é de
+       regra, e por isso leva explicação e não uma etiqueta. */
+    1: { id: 'lamber', pm: 5, alvos: 1, aliado: true, cura: 20,
+         manual: 'p.311 (adaptada: alvo aliado, não só o próprio)' },
     2: { id: 'curar', pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, manual: 'p.209' },
     /* Despertar mexe na FICHA e não nos pontos: um d8 vira d10, e com
        ele sobem a defesa, a precisão e o dano. É a única magia do jogo

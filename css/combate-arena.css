@@ -1177,8 +1177,12 @@
   opacity: 1; pointer-events: auto;
   transform: translate(-100%, -100%) translate(-0.5rem, -2.6rem);
 }
-.cb-menu.dentro        { transform: translate(0, -100%) translate(0.5rem, -1.75rem); }
-.cb-menu.dentro.aberto { transform: translate(0, -100%) translate(0.5rem, -2.6rem); }
+/* O `--afasta` vem do js/arena-fu.js, que mede metade do corpo do avatar
+   e soma uma folga: o posto é um ponto e o bicho está centrado nele,
+   portanto meia rem punha a coluna por dentro dele. A meia rem fica de
+   reserva para o caso de a medição não acontecer. */
+.cb-menu.dentro        { transform: translate(0, -100%) translate(var(--afasta, 0.5rem), -1.75rem); }
+.cb-menu.dentro.aberto { transform: translate(0, -100%) translate(var(--afasta, 0.5rem), -2.6rem); }
 /* No fim da batalha não há avatar a quem se encostar, e o que aparece
    não é uma escolha: é o resultado. Volta a ser um painel, ao meio. */
 .cb-menu.fim {
@@ -1187,11 +1191,40 @@
   transform: translate(-50%, -50%);
 }
 
+/* ── E AGORA COM CHÃO ──
+
+   Esteve sem fundo nenhum de propósito, e a linha que o dizia chamava-se
+   a si própria "a diferença toda": a ideia era que os orbes flutuassem
+   sobre a cena em vez de a taparem com um painel.
+
+   Não resistiu ao uso. Os orbes são discos com o interior quase
+   transparente por cima de um céu que tem aurora, fenda, montanhas e
+   bruma — e o nome de cada magia é letra clara sobre o que calhar estar
+   por trás. Um "Golpe Comum" por cima da fenda branca não se lê.
+
+   O painel é escuro e translúcido, com o mesmo desfoque dos cartões de
+   baixo: continua a ver-se que há cena por trás, e a letra passa a ter
+   um fundo constante. É a mesma linguagem dos cartões, e os dois sítios
+   onde se toca durante um turno passam a parecer-se um com o outro. */
 .cb-menu .cb-acoes {
   display: flex; flex-direction: column-reverse; align-items: flex-start;
   gap: 0.3125rem;
-  /* SEM FUNDO. É esta linha que faz a diferença toda. */
-  padding: 0; background: none; border: none; box-shadow: none;
+  padding: 0.4375rem 0.5rem;
+  border-radius: 0.5rem;
+  /* ── ESCURO, MAS NÃO OPACO ──
+
+     A 90% de tinta o painel lia-se melhor do que tudo — e apagava dois
+     avatares do palco: com o da frente a jogar, os dois de trás ficavam
+     debaixo dele e deixavam de existir enquanto o menu estivesse aberto.
+
+     A 62% com o desfoque ao dobro, o texto tem o mesmo fundo constante
+     (é o BORRÃO que dá a legibilidade, e não a tinta) e as silhuetas
+     continuam a ver-se por trás. Subir os dois números de .62/.72 para
+     .9/.95 volta a dar o painel sólido, se um dia for preciso. */
+  background: linear-gradient(180deg, rgba(13,9,26,.62), rgba(6,4,14,.72));
+  border: 1px solid rgba(201,168,76,.22);
+  box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,.62);
+  backdrop-filter: blur(0.5rem); -webkit-backdrop-filter: blur(0.5rem);
   max-height: none; overflow: visible;
 }
 .cb-menu.fim .cb-acoes {
@@ -1574,6 +1607,21 @@
     transform: translateY(0.5rem);
   }
   .cb-menu.aberto { transform: translateY(0); }
+  /* ── E O `dentro` NÃO MANDA AQUI ──
+
+     O lado de dentro é uma regra do palco largo: a coluna encosta-se aos
+     pés de um avatar e tem de escolher um lado. Aqui não se encosta a
+     ninguém — vive no canto, por cima do rodapé — e não há lado nenhum
+     a escolher.
+
+     Estas duas linhas existem porque o `.cb-menu.dentro.aberto` da regra
+     base tem MAIS especificidade do que o `.cb-menu.aberto` aqui de
+     cima, e um @media não acrescenta especificidade nenhuma: sem elas, a
+     coluna do posto do fundo saltava do canto para o meio do palco, com
+     o `--afasta` a empurrá-la ainda mais. Foi o que aconteceu no commit
+     que trouxe o `dentro` para fora do @media dos 681px. */
+  .cb-menu.dentro        { transform: translateY(0.5rem); }
+  .cb-menu.dentro.aberto { transform: translateY(0); }
   .cb-orbe-disco { width: 1.75rem; height: 1.75rem; }
   .cb-selo { width: 1rem; height: 1rem; }
   .cb-palco .cb-log { top: 34%; width: 88%; }
@@ -1771,8 +1819,8 @@
      — fora, e dentro para o do fundo — é o da regra base. */
   .cb-menu    { transform: translate(-100%, -100%) translate(-0.5rem, -8rem); }
   .cb-menu.aberto { transform: translate(-100%, -100%) translate(-0.5rem, -9.5rem); }
-  .cb-menu.dentro        { transform: translate(0, -100%) translate(0.5rem, -8rem); }
-  .cb-menu.dentro.aberto { transform: translate(0, -100%) translate(0.5rem, -9.5rem); }
+  .cb-menu.dentro        { transform: translate(0, -100%) translate(var(--afasta, 0.5rem), -8rem); }
+  .cb-menu.dentro.aberto { transform: translate(0, -100%) translate(var(--afasta, 0.5rem), -9.5rem); }
   .cb-vs      { font-size: 0.46875rem; }
 }
 

@@ -171,7 +171,11 @@ titulo('Os números, casa a casa');
     ['defesa', 1, { pm: 10, proprio: true }],
     ['defesa', 2, { pm: 5,  alvos: 3, porAlvo: true, aliado: true }],
     ['defesa', 3, { pm: 20, alvos: 1, aliado: true }],
-    ['suporte', 1, { pm: 5,  proprio: true, cura: 20 }],
+    /* O Lamber Feridas é o desvio de regra do catálogo: o manual escreve-o
+       em si próprio e aqui escolhe um companheiro — a escolha inclui-o a
+       ele, portanto não perde o que o manual dava. A razão está escrita
+       por cima da casa, em js/magias-fu.js. */
+    ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 20 }],
     ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40 }],
     ['suporte', 3, { pm: 20, alvos: 1, aliado: true }],
   ];
