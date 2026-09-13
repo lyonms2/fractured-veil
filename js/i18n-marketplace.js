@@ -192,8 +192,8 @@ window.registerStrings({
   // ── Comprar Cristais ──────────────────────────────────────────────
   'mkt.crystals.title':       '💎 Comprar Cristais',
   'mkt.crystals.sub':         '1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.',
-  'mkt.pkg.bonus':            'de bónus',
-  'mkt.pkg.bonus_nota':       'Os cristais de bónus valem em tudo dentro do jogo — comprar, listar, chocar, desbloquear slots — e gastam-se antes dos outros. Não se resgatam para MATIC.',
+  'mkt.pkg.bonus':            'de bônus',
+  'mkt.pkg.bonus_nota':       'Os cristais de bônus valem para tudo dentro do jogo — comprar, listar, chocar, desbloquear slots — e são gastos antes dos outros. Não podem ser resgatados em MATIC.',
   'mkt.crystals.buy_btn':     'Comprar',
   'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
   'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: 5 MATIC/dia.',
@@ -201,7 +201,7 @@ window.registerStrings({
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
   // Nomes dos pacotes de cristais
-  'mkt.crystals.limit_left':  'Podes resgatar {resta} de {max} 💎 hoje',
+  'mkt.crystals.limit_left':  'Você pode resgatar {resta} de {max} 💎 hoje',
   // Os pacotes deixaram de ter nomes de tamanho (Punhado, Bolsa, Saco…)
   // e passaram a dizer o que compram. Ver CRYSTAL_PACKAGES em cristais.js.
 
@@ -219,7 +219,7 @@ window.registerStrings({
   // ── Comprar Ovos ──────────────────────────────────────────────────
 
   // ── Transações / status ───────────────────────────────────────────
-  'mkt.tx.open_mm':           '⏳ Abre o MetaMask para confirmar...',
+  'mkt.tx.open_mm':           '⏳ Abra o MetaMask para confirmar...',
   'mkt.tx.sent':              '⏳ Transação enviada. A aguardar confirmação...',
   'mkt.tx.crediting':         '⏳ Creditando seus 💎...',
   'mkt.tx.credited':          '✅ +{gems} 💎 creditados! Saldo: {balance} 💎',
@@ -232,7 +232,7 @@ window.registerStrings({
   'mkt.tx.exchange_hint':     'Você pode comprar MATIC em uma exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.',
   'mkt.tx.insufficient_toast':'Saldo insuficiente — você precisa de {matic} MATIC',
   'mkt.tx.requesting':        '⏳ A pedir autorização ao servidor...',
-  'mkt.tx.open_mm_redeem':    '⏳ Abre o MetaMask para confirmar o resgate...',
+  'mkt.tx.open_mm_redeem':    '⏳ Abra o MetaMask para confirmar o resgate...',
   'mkt.tx.redeemed':          '✅ Resgatado! Você recebeu {matic} MATIC na sua carteira.',
   'mkt.tx.matic_sent':        '💸 {matic} MATIC enviados!',
   'mkt.tx.cancelled':         'Transação cancelada.',
@@ -283,28 +283,6 @@ window.registerStrings({
   'mkt.bn.pool':               'Pool',
 
   // ── Ovos — strings dinâmicas (eggs-market.js) ────────────────────
-  'mkt.eggs.empty':          'Nenhum ovo à venda de momento.\nAvatares Raros e Lendários adultos botam ovos que podes listar aqui.',
-  'mkt.eggs.own':            'Teu',
-  'mkt.eggs.expires':        'Expira',
-  'mkt.eggs.seller':         'Vendedor',
-  'mkt.eggs.no_balance':     'Sem saldo',
-  'mkt.eggs.rotten':          'Apodreceu',
-  'mkt.eggs.full':            'Inventário cheio',
-  'mkt.eggs.buy_btn':        '💎 Comprar',
-  'mkt.eggs.unlist_btn':     '✕ Retirar listagem',
-  'mkt.eggs.list_fee':       'Taxa de listagem: {fee} 💎 · 10% da venda → pool',
-  'mkt.eggs.price_invalid':  'Defina um preço válido (mínimo 1 💎).',
-  'mkt.eggs.list_cost':      'Você precisa de {cost} 💎 para listar este ovo.',
-  'mkt.eggs.listing':        'A listar...',
-  'mkt.eggs.not_in_inv':     'Ovo não encontrado no inventário.',
-  'mkt.eggs.listed':         '✅ Ovo {rarity} listado por {price} 💎!',
-  'mkt.eggs.list_err':       'Erro ao listar. Tente novamente.',
-  'mkt.eggs.buy_err':        'Erro ao comprar ovo.',
-  'mkt.eggs.unavailable':    'Ovo já não disponível.',
-  'mkt.eggs.own_egg':        'Você não pode comprar seu próprio ovo.',
-  'mkt.eggs.buy_err2':       'Erro ao comprar ovo. Tenta novamente.',
-  'mkt.eggs.unauthorized':   'Não autorizado.',
-  'mkt.eggs.unlisted':       'Ovo retirado da venda e devolvido ao inventário.',
 
   // Limit bar info
   'mkt.limit.no_limit':        '{used} MATIC sacados hoje · Sem limite diário',
@@ -338,7 +316,7 @@ window.registerStrings({
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
   'mkt.transp.weekly_note':    'Sacar 50 💎 dá <strong style="color:var(--text);">0,50 💎</strong> ao desenvolvedor. A pool não é tocada.',
-  'mkt.transp.eggs_body':      'Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lado nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.',
+  'mkt.transp.eggs_body':      'Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lugar nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.',
   'mkt.transp.burn_label':     'QUEIMAR (não toca na pool)',
   'mkt.transp.egg_burn':       'Queimar um ovo',
   'mkt.transp.coins_internal': '(moedas internas)',
@@ -610,28 +588,6 @@ window.registerStrings({
   'mkt.bn.pool':               'Pool',
 
   // Eggs — dynamic strings (eggs-market.js)
-  'mkt.eggs.empty':          'No eggs for sale right now.\nRare and Legendary adult avatars lay eggs you can list here.',
-  'mkt.eggs.own':            'Yours',
-  'mkt.eggs.expires':        'Expires',
-  'mkt.eggs.seller':         'Seller',
-  'mkt.eggs.no_balance':     'No balance',
-  'mkt.eggs.rotten':          'Rotten',
-  'mkt.eggs.full':            'Inventory full',
-  'mkt.eggs.buy_btn':        '💎 Buy',
-  'mkt.eggs.unlist_btn':     '✕ Remove listing',
-  'mkt.eggs.list_fee':       'Listing fee: {fee} 💎 · 10% of sale → pool',
-  'mkt.eggs.price_invalid':  'Set a valid price (minimum 1 💎).',
-  'mkt.eggs.list_cost':      'You need {cost} 💎 to list this egg.',
-  'mkt.eggs.listing':        'Listing...',
-  'mkt.eggs.not_in_inv':     'Egg not found in inventory.',
-  'mkt.eggs.listed':         '✅ {rarity} egg listed for {price} 💎!',
-  'mkt.eggs.list_err':       'Error listing. Please try again.',
-  'mkt.eggs.buy_err':        'Error buying egg.',
-  'mkt.eggs.unavailable':    'Egg no longer available.',
-  'mkt.eggs.own_egg':        "You can't buy your own egg.",
-  'mkt.eggs.buy_err2':       'Error buying egg. Please try again.',
-  'mkt.eggs.unauthorized':   'Not authorized.',
-  'mkt.eggs.unlisted':       'Egg removed from sale and returned to inventory.',
 
   // Limit bar
   'mkt.limit.no_limit':        '{used} MATIC redeemed today · No daily limit',
