@@ -23,6 +23,11 @@
   padding: 0.625rem; overflow: hidden;
 }
 #combateModal.open { opacity: 1; pointer-events: all; }
+/* Arrastar para rolar continua; a pinça e o toque duplo de zoom saem.
+   O `manipulation` que o base.css põe em tudo inclui a pinça, e o
+   touch-action de um filho é o que sobra em comum com o do pai — então
+   basta tirá-la aqui. Ver o _afTravarZoom, em js/arena-fu.js. */
+#combateModal { touch-action: pan-x pan-y; }
 
 /* A arena rola como último recurso. Não devia ser preciso — o registo
    encolhe primeiro — mas em telas muito baixas vale mais rolar do que

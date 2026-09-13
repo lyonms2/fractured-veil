@@ -40,7 +40,53 @@ const AF_PAUSA = 900;
 // ═══════════════════════════════════════════════════════════════════
 // COMEÇAR
 // ═══════════════════════════════════════════════════════════════════
+/* ── SEM ZOOM NA BATALHA ──
+
+   No celular, tocando rápido nos cartões e nos orbes, dava para abrir um
+   zoom de pinça sem querer — e depois não havia como sair dele: a batalha
+   ocupa a tela inteira e não tem onde apoiar dois dedos para desfazer.
+
+   A meta viewport do index.html já pede maximum-scale=1, mas o Safari do
+   iPhone ignora isso desde o iOS 10, e o Chrome ignora com o "forçar zoom"
+   de acessibilidade ligado. Por isso, só enquanto a batalha está aberta:
+
+     · o CSS tira a pinça do palco (touch-action em #combateModal);
+     · dois dedos se mexendo não fazem nada (touchmove);
+     · os gestos de zoom do Safari são cancelados (gesturestart/change).
+
+   E abrir ou fechar a batalha reescreve a meta viewport, o que faz o
+   navegador voltar ao zoom normal se ele tiver ficado preso.
+
+   Fora da batalha nada disso vale: quem precisa ampliar o texto do resto
+   do jogo continua podendo. */
+const _AF_ZOOM_OPC = { passive: false };
+function _afSemGesto(e) { e.preventDefault(); }
+function _afSemPinca(e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }
+
+/* O conteúdo ORIGINAL da meta é guardado uma vez só. Lido a cada chamada,
+   duas batalhas abertas com menos de 300ms de diferença quebravam tudo: a
+   segunda lia a meta já alterada como se fosse a original e devolvia essa,
+   e a trava ficava para sempre. */
+let _afViewportOrig = null, _afViewportTimer = null;
+function _afZoomNormal() {
+  const m = document.querySelector('meta[name="viewport"]');
+  if (!m) return;
+  if (_afViewportOrig == null) _afViewportOrig = m.getAttribute('content') || '';
+  clearTimeout(_afViewportTimer);
+  m.setAttribute('content', _afViewportOrig.replace(/,\s*user-scalable=[^,]*/g, '') + ', user-scalable=no');
+  _afViewportTimer = setTimeout(() => m.setAttribute('content', _afViewportOrig), 300);
+}
+
+function _afTravarZoom(liga) {
+  const acao = liga ? 'addEventListener' : 'removeEventListener';
+  document[acao]('gesturestart',  _afSemGesto, _AF_ZOOM_OPC);
+  document[acao]('gesturechange', _afSemGesto, _AF_ZOOM_OPC);
+  document[acao]('touchmove',     _afSemPinca, _AF_ZOOM_OPC);
+  _afZoomNormal();
+}
+
 function afAbrir(equipaA, equipaB, semente, aoSair) {
+  _afTravarZoom(true);
   _afE = fuIniciar(equipaA, equipaB, semente);
   _afQuem = null; _afPasso = null; _afMenu = false; _afOcupado = false;
   _afSegredo = null; _afMorreAinda = null;
@@ -62,6 +108,7 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
 }
 
 function afFechar() {
+  _afTravarZoom(false);
   const m = document.getElementById('combateModal');
   if (m) m.innerHTML = '';
   _afE = null;
