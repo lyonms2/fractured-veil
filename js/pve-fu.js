@@ -200,7 +200,7 @@ function _pveAdoecer(idx, doenca) {
     activeDiseases.push(doenca);
     const d = (typeof DISEASES !== 'undefined') ? DISEASES[doenca] : null;
     if (d && typeof addLog === 'function')
-      addLog(t('gt.disease.log', { emoji: d.emoji, nome: d.nome }), 'bad');
+      addLog(t('gt.disease.log', { emoji: d.emoji, nome: d.nome, preco: (typeof precoItem === 'function' && typeof ITEM_CATALOG !== 'undefined') ? precoItem(ITEM_CATALOG.antidoto_dimensional) : 250 }), 'bad');
     return true;
   }
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[idx] : null;

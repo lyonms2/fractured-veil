@@ -23,7 +23,7 @@ window.registerStrings(
 
     // Doença
     'gt.sick.log':         'Ficou doente! Use medicar!',
-    'gt.disease.log':      '⚠️ {emoji} {nome} desenvolvida! Usa o Antídoto Dimensional (300 🪙).',
+    'gt.disease.log':      '⚠️ {emoji} {nome} desenvolvida! Use o Antídoto Dimensional ({preco} 🪙).',
     'gt.disease.bub':      '{emoji} Sinto-me mal...',
 
     // Ovo pronto
@@ -71,7 +71,7 @@ window.registerStrings(
 
     // Disease
     'gt.sick.log':         'Got sick! Use Heal!',
-    'gt.disease.log':      '⚠️ {emoji} {nome} developed! Use the Dimensional Antidote (300 🪙).',
+    'gt.disease.log':      '⚠️ {emoji} {nome} developed! Use the Dimensional Antidote ({preco} 🪙).',
     'gt.disease.bub':      '{emoji} Feeling sick...',
 
     // Egg ready

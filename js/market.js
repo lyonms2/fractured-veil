@@ -12,7 +12,7 @@ function renderMarketItems() {
   const list = document.getElementById('mktItemsList');
   if(!list) return;
 
-  const owned = new Set(itemInventory.map(i => i.catalogId));
+  const donos = new Map(itemInventory.map(i => [i.catalogId, i]));
   const disc  = rarityBonus().shopDiscount || 0;
 
   function renderCard(item) {
@@ -30,11 +30,25 @@ function renderMarketItems() {
       footerBtn = `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${disabled?'disabled':''}>${label}</button>
                    <div class="mkt-duration-note" style="color:#a855f7;">${t('mkt.label.consumable')}</div>`;
     } else {
-      const alreadyOwned = owned.has(item.id);
-      footerBtn = alreadyOwned
-        ? `<div class="mkt-owned-badge">${t('mkt.label.owned')}</div><div class="mkt-duration-note">${t('mkt.label.duration')}</div>`
-        : `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${!canAfford?'disabled':''}>${!canAfford ? t('mkt.btn.no_coins') : t('mkt.btn.buy')}</button>
-           <div class="mkt-duration-note">${t('mkt.label.duration')}</div>`;
+      /* Dois botões, cada um com o seu preço: 30 dias e 7 dias. Quem já
+         tem o item vê quanto falta para ele acabar, em vez de um "30 dias"
+         que era o que durava na compra e não o que resta. */
+      const entry = donos.get(item.id);
+      if (entry) {
+        const dias = entry.expiraEm
+          ? Math.max(0, Math.ceil((entry.expiraEm - Date.now()) / 86400000)) : null;
+        const resta = dias == null ? t('mkt.label.duration')
+                    : dias === 0   ? t('mkt.label.hoje')
+                    : dias === 1   ? t('mkt.label.resta1')
+                    : t('mkt.label.restam', { n: dias });
+        footerBtn = `<div class="mkt-owned-badge">${t('mkt.label.owned')}</div><div class="mkt-duration-note">${resta}</div>`;
+      } else {
+        const botao = (dias, cls) => {
+          const p = precoItem(item, dias);
+          return `<button class="mkt-catalog-buy ${cls}" onclick="buyItem('${item.id}', ${dias})" ${gs.moedas < p ? 'disabled' : ''}>${t('mkt.btn.buy_dias', { n: dias, preco: p })}</button>`;
+        };
+        footerBtn = botao(30, '') + botao(ITEM_DIAS_CURTO, 'curto');
+      }
     }
 
     return `<div class="mkt-catalog-card">
@@ -84,7 +98,8 @@ function renderMarketItems() {
   `).join('');
 }
 
-function buyItem(catalogId) {
+// `dias` vem do botão: 30 ou ITEM_DIAS_CURTO. Sem ele, 30.
+function buyItem(catalogId, dias) {
   const item = ITEM_CATALOG[catalogId];
   if(!item) return;
 
@@ -98,13 +113,14 @@ function buyItem(catalogId) {
   }
 
   const discount = rarityBonus().shopDiscount || 0;
-  const preco = precoItem(item);
+  const duracao = dias === ITEM_DIAS_CURTO ? ITEM_DIAS_CURTO : 30;
+  const preco = precoItem(item, duracao);
   if(gs.moedas < preco) { showBubble(t('mkt.bub.no_coins')); return; }
   if(itemInventory.find(i => i.catalogId === catalogId)) {
     addLog(t('mkt.log.already_owned'), 'info'); return;
   }
   spendCoins(preco);
-  const entry = { id: Date.now(), catalogId, equipped: false, expiraEm: Date.now() + 2592000000 };
+  const entry = { id: Date.now(), catalogId, equipped: false, expiraEm: Date.now() + duracao * 86400000 };
   itemInventory.push(entry);
   updateResourceUI();
   scheduleSave();

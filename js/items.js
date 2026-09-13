@@ -76,7 +76,7 @@ function renderItemInventory() {
     const isEquipped = entry.equipped;
     const isCenario  = item.tipo === 'Cenário';
     const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
-    const diasRest   = entry.expiraEm ? Math.max(0, Math.floor((entry.expiraEm - Date.now()) / 86400000)) : null;
+    const diasRest   = entry.expiraEm ? Math.max(0, Math.ceil((entry.expiraEm - Date.now()) / 86400000)) : null;
     return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:0.5rem;padding:0.6875rem 0.8125rem;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 0.625rem ${item.cor}28;` : ''}">
       <div style="display:flex;align-items:center;gap:0.625rem;">
         <span style="font-size:1.25rem;flex-shrink:0;">${item.emoji}</span>

@@ -417,22 +417,31 @@ function viverTodos() {
     // correr para a coleção toda, não só para um.
     s.totalSecs = (s.totalSecs || 0) + SEGUNDOS_POR_CICLO;
 
-    // Cada um decai com a SUA raridade e o SEU vigor. Os efeitos de
-    // itens ficam de fora aqui de propósito: o getItemEffect lê o
-    // inventário do avatar aberto, e aplicá-lo aos outros dava a todos
-    // o amuleto de um só.
+    // Cada um decai com a SUA raridade, o SEU vigor e os SEUS itens.
+    //
+    // Os itens ficavam de fora: o getItemEffect lê o inventário do avatar
+    // aberto, e aplicá-lo aos outros dava a todos o amuleto de um só. Mas
+    // deixá-los de fora fazia pior — o Amuleto da Saciedade, a Máscara da
+    // Alegria e o Amuleto do Sono só agiam enquanto o dono estava aberto
+    // na tela de cuidar, e na colônia, que é onde o jogo começa, não
+    // faziam nada. Pagava-se 30 dias por um efeito de meio período.
+    //
+    // O getItemEffectDoSlot lê o inventário DESTE avatar (s.items), que é
+    // o que a batalha já usava para o Fôlego e a Tala. O Pano das Marés
+    // continua só no aberto: cocô só existe lá.
     const d  = rarityBonus(s).decay;
     const eb = passivoDe(s);
     const v  = s.vitals;
+    const it = key => (typeof getItemEffectDoSlot === 'function') ? getItemEffectDoSlot(i, key) : 1;
 
     if (s.sleeping) {
-      v.energia = Math.min(100, (v.energia ?? 100) + 4 * eb.sleepEnergy);
-      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.30 * d * eb.fomeDecay);
+      v.energia = Math.min(100, (v.energia ?? 100) + 4 * eb.sleepEnergy * it('sleepEnergyMult'));
+      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.30 * d * eb.fomeDecay * it('fomeDecayMult'));
       v.higiene = Math.max(0, (v.higiene ?? 100) - 0.05 * eb.higieneDecay);
       if (v.energia >= 100) s.sleeping = false;
     } else {
-      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.8  * d * GAME_SPEED * eb.fomeDecay);
-      v.humor   = Math.max(0, (v.humor   ?? 100) - 1.5  * d * GAME_SPEED * eb.humorDecay);
+      v.fome    = Math.max(0, (v.fome    ?? 100) - 0.8  * d * GAME_SPEED * eb.fomeDecay * it('fomeDecayMult'));
+      v.humor   = Math.max(0, (v.humor   ?? 100) - 1.5  * d * GAME_SPEED * eb.humorDecay * it('humorDecayMult'));
       v.energia = Math.max(0, (v.energia ?? 100) - 0.6  * d * GAME_SPEED * eb.energiaDecay);
       v.higiene = Math.max(0, (v.higiene ?? 100) - 0.12 * GAME_SPEED     * eb.higieneDecay);
       // Adormece sozinho com a energia no fim, tal como o que está aberto.
@@ -600,7 +609,9 @@ function gameTick() {
     if(diseaseStress[id] >= DISEASE_STRESS_THRESHOLD && !activeDiseases.includes(id)) {
       activeDiseases.push(id);
       const d = DISEASES[id];
-      addLog(t('gt.disease.log', {emoji: d.emoji, nome: d.nome}), 'bad');
+      // O preço vem do catálogo: estava escrito 300 no texto, e o antídoto
+      // mudou de preço sem o aviso saber.
+      addLog(t('gt.disease.log', {emoji: d.emoji, nome: d.nome, preco: (typeof precoItem === 'function' && typeof ITEM_CATALOG !== 'undefined') ? precoItem(ITEM_CATALOG.antidoto_dimensional) : 250}), 'bad');
       showBubble(t('gt.disease.bub', {emoji: d.emoji}));
     }
   }

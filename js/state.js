@@ -45,6 +45,26 @@ const BANHO_ENERGIA  = 15;   // energia
 // ═══════════════════════════════════════════════════════════════════
 let itemInventory   = [];
 const MAX_EQUIPPED  = 3;
+/* ── O PREÇO DOS ITENS ──
+
+   Pelo que o item FAZ, e medido em dias de jogo. Um minijogo perfeito no
+   Médio paga 24 moedas (DIFF_TIERS, em js/modal.js), e uma vitória no
+   PvE Médio paga 144; quem joga uns 20 minutos por dia faz de 300 a 500.
+   Cada item de 30 dias custa de 1 a 2 dias disso.
+
+     conforto   Pano das Marés 700 · Saciedade 800 · Máscara 800 · Sono 900
+     batalha    Tala de Osso 1000 · Fôlego de Combate 1200
+     remédio    Antídoto 250, de uso único
+
+   Antes a Máscara da Alegria era o mais caro (1600) e só dá conforto, e
+   a Saciedade, a única que devolve moedas, era o mais barato. Os de
+   batalha ficam em cima porque protegem o que custa caro: energia e
+   fraturas, e o antídoto que as cura.
+
+   Cada item é de UM avatar. Quem quer o Fôlego na equipe inteira compra
+   três, e é para isso que existe a versão curta: 7 dias por um quarto do
+   preço (ITEM_DIAS_CURTO). É também a porta de quem está começando — no
+   Fácil um minijogo perfeito paga 12. */
 const ITEM_CATALOG = {
   'amuleto_saciedade': {
     id:       'amuleto_saciedade',
@@ -66,7 +86,7 @@ const ITEM_CATALOG = {
     emoji:    '🎭',
     tipo:     'Amuleto',
     raridade: 'Raro',
-    preco:    1600,
+    preco:    800,
     cor:      '#e8c870',
     efeitos:  { humorDecayMult: 0.60 }
   },
@@ -78,7 +98,7 @@ const ITEM_CATALOG = {
     emoji:    '🌙',
     tipo:     'Amuleto',
     raridade: 'Comum',
-    preco:    1200,
+    preco:    900,
     cor:      '#7b68ee',
     efeitos:  { sleepEnergyMult: 2.0 }
   },
@@ -98,7 +118,7 @@ const ITEM_CATALOG = {
     emoji:    '🫧',
     tipo:     'Amuleto',
     raridade: 'Comum',
-    preco:    900,
+    preco:    700,
     cor:      '#5ab4e8',
     // A higiene decai devagar (0,12/s, 14 min para esvaziar), mas leva
     // −18 de rajada a cada cocô, que chega a cada ~3 refeições. A
@@ -113,7 +133,7 @@ const ITEM_CATALOG = {
     emoji:    '⚡',
     tipo:     'Amuleto',
     raridade: 'Raro',
-    preco:    1400,
+    preco:    1200,
     cor:      '#e8c870',
     efeitos:  { battleEnergyMult: 0.6 }      // 10 → 6 de energia
   },
@@ -125,7 +145,7 @@ const ITEM_CATALOG = {
     emoji:    '🦴',
     tipo:     'Amuleto',
     raridade: 'Raro',
-    preco:    1100,
+    preco:    1000,
     cor:      '#d8cfc0',
     efeitos:  { fraturaMult: 0.4 }           // 10% → 4%
   },
@@ -137,7 +157,7 @@ const ITEM_CATALOG = {
     emoji:      '🧪',
     tipo:       'Consumível',
     raridade:   'Especial',
-    preco:      300,
+    preco:      250,
     cor:        '#a855f7',
     efeitos:    {},
     consumivel: true,
@@ -150,10 +170,21 @@ const ITEM_CATALOG = {
 // do desconto: o cartão do Antídoto mostrava 240 a um Lendário e o
 // useAntidote() cobrava os 300 do catálogo. Pior, o botão ficava ativo
 // com 250 moedas, a loja fechava e o jogador levava com um erro.
-function precoItem(item) {
+/* A versão curta: 7 dias por um quarto do preço, arredondado de 10 em 10.
+   Por dia sai um pouco mais caro que a de 30 (um quarto em 7 dias contra
+   o preço inteiro em 30), que é o justo para quem não se compromete. */
+const ITEM_DIAS_CURTO   = 7;
+const ITEM_FRACAO_CURTO = 0.25;
+
+// `dias` é 30 ou ITEM_DIAS_CURTO; sem ele, é o de 30. O desconto da
+// raridade vale para os dois.
+function precoItem(item, dias) {
   if(!item) return 0;
   const desconto = (typeof rarityBonus === 'function' ? rarityBonus().shopDiscount : 0) || 0;
-  return Math.round(item.preco * (1 - desconto));
+  const base = (dias === ITEM_DIAS_CURTO && !item.consumivel)
+    ? Math.round(item.preco * ITEM_FRACAO_CURTO / 10) * 10
+    : item.preco;
+  return Math.round(base * (1 - desconto));
 }
 
 function getEquippedItems() {
