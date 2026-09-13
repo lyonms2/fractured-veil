@@ -156,8 +156,10 @@ function _fbCampo(rot, val, cor) {
 
 /* ── A LINHA DOS ATRIBUTOS ──
 
-   Quatro dados, vida, magia e iniciativa, tudo numa linha, tal como o
-   manual escreve. O ◆ separa a vida da crise: é o símbolo dele, e quer
+   Duas linhas: os quatro dados numa, e a vida, a magia e a iniciativa
+   na de baixo. O manual escreve tudo numa linha só, mas aqui essa linha
+   quebrava em lugares diferentes conforme a largura, e a vida ia parar
+   no meio dos dados. O ◆ separa a vida da crise: é o símbolo dele, e quer
    dizer "e a metade em que isto vira outra coisa".
 
    Durante a batalha o dado de AGORA aparece ao lado do de nascença, e só
@@ -176,10 +178,11 @@ function _fbAtributos(f, lutador) {
              + ` <u class="fb-crise">◆ ${f.crise}</u>`;
   const magia = lutador ? `${lutador.pm} / ${f.pmMax}` : f.pmMax;
 
-  return `<div class="fb-linha">${dados}${
-    _fbCampo(t('af.b.pv'), vida)}${
-    _fbCampo(t('af.b.pm'), magia)}${
-    _fbCampo(t('af.b.init'), f.iniciativa)}</div>`;
+  return `<div class="fb-linha fb-atribs">
+    <div class="fb-sub">${dados}</div>
+    <div class="fb-sub">${_fbCampo(t('af.b.pv'), vida)}${
+      _fbCampo(t('af.b.pm'), magia)}${_fbCampo(t('af.b.init'), f.iniciativa)}</div>
+  </div>`;
 }
 
 /* ── A LINHA DAS DEFESAS E DAS AFINIDADES ──

@@ -529,9 +529,16 @@ function _afCartao(c) {
   return `<div class="${cls}" id="cbCart${c.id}"
        role="button" tabindex="0" onclick="${gesto}"
        title="${esc(meu && podeAgir ? t('af.menu.abrir') : t('af.ficha.abrir', { nome: _afNome(c) }))}">
-    <div class="cb-ficha-cara">
-      ${typeof gerarSVG === 'function' ? gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _afFase(c)) : ''}
+    <!-- O número do posto fica AO LADO do retrato, à esquerda, e não em
+         cima dele: no canto da figura ele cobria justamente a cara do
+         bicho. O número e o retrato vão num contêiner próprio porque os
+         cartões do inimigo são espelhados (row-reverse), e só assim o
+         número fica à esquerda da figura nos dois lados. -->
+    <div class="cb-ficha-rosto">
       <span class="cb-ficha-nivel">${c.posto + 1}</span>
+      <div class="cb-ficha-cara">
+        ${typeof gerarSVG === 'function' ? gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _afFase(c)) : ''}
+      </div>
     </div>
     <div class="cb-ficha-barras">
       <div class="cb-ficha-nome">${esc(_afNome(c))}</div>
