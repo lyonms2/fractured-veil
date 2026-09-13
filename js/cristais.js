@@ -743,5 +743,34 @@ async function garantirCarteira() {
   return null;
 }
 
+// ── Desvincular a MetaMask ────────────────────────────────────────
+// Só o servidor mexe na `carteira` (firestore.rules), então soltar
+// também passa por ele (desvincular-carteira, em api/resgatar.js).
+async function desvincularCarteira() {
+  if(!playerData?.carteira) return;
+  if(!confirm(t('mkt.metamask.desvincular_confirmar'))) return;
+  try {
+    const usuario = firebase.auth().currentUser;
+    if(!usuario) { showToast(t('mkt.metamask.desvincular_err'), 'err'); return; }
+    const idToken = await usuario.getIdToken();
+    const resp = await fetch('/api/resgatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'desvincular-carteira', idToken }),
+    });
+    const data = await resp.json();
+    if(!data.ok) { showToast(data.erro || t('mkt.metamask.desvincular_err'), 'err'); return; }
+
+    playerData.carteira    = null;
+    window._playerCarteira = null;
+    showToast(t('mkt.metamask.desvinculada'), 'ok');
+  } catch(e) {
+    showToast(t('mkt.metamask.desvincular_err'), 'err');
+  }
+  if(typeof renderMetaMaskCta   === 'function') renderMetaMaskCta();
+  if(typeof renderLimiteResgate === 'function') renderLimiteResgate();
+}
+
 window.vincularCarteira = vincularCarteira;
+window.desvincularCarteira = desvincularCarteira;
 window.garantirCarteira = garantirCarteira;

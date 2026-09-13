@@ -216,6 +216,10 @@ window.registerStrings({
   'mkt.metamask.limit_missing':'Vincule a MetaMask na seção de Cristais para ver seu limite.',
   'mkt.metamask.limit_err':   'Não foi possível verificar o limite.',
   'mkt.metamask.assinar':     'Assine a mensagem na MetaMask para provar que a carteira é sua.',
+  'mkt.metamask.desvincular': 'Desvincular',
+  'mkt.metamask.desvincular_confirmar': 'Desvincular esta carteira? Para comprar ou resgatar Cristais de novo, você vai precisar vincular uma carteira e assinar outra vez.',
+  'mkt.metamask.desvinculada':'Carteira desvinculada.',
+  'mkt.metamask.desvincular_err':'Não foi possível desvincular a carteira.',
   'mkt.tx.carteira_diferente':'A conta aberta na MetaMask ({atual}) não é a carteira vinculada ({vinculada}). Troque de conta na MetaMask ou vincule esta.',
 
   // ── Comprar Ovos ──────────────────────────────────────────────────
@@ -523,6 +527,10 @@ window.registerStrings({
   'mkt.metamask.limit_missing':'Link MetaMask in the Crystals section to see your limit.',
   'mkt.metamask.limit_err':   'Could not verify your limit.',
   'mkt.metamask.assinar':     'Sign the message in MetaMask to prove the wallet is yours.',
+  'mkt.metamask.desvincular': 'Unlink',
+  'mkt.metamask.desvincular_confirmar': 'Unlink this wallet? To buy or redeem Crystals again, you will need to link a wallet and sign again.',
+  'mkt.metamask.desvinculada':'Wallet unlinked.',
+  'mkt.metamask.desvincular_err':'Could not unlink the wallet.',
   'mkt.tx.carteira_diferente':'The account open in MetaMask ({atual}) is not the linked wallet ({vinculada}). Switch accounts in MetaMask or link this one.',
 
   // Eggs section

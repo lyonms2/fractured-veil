@@ -105,7 +105,9 @@ module.exports = async function handler(req, res) {
     const playerRef = db.collection('players').doc(jogador);
     const carteiraAddr = String((await playerRef.get()).data()?.carteira || '').toLowerCase();
     if (!ethers.isAddress(carteiraAddr)) {
-      return res.status(400).json({ erro: 'Vincule a MetaMask primeiro.' });
+      // `tentarDeNovo`: quem desvinculou com uma compra ainda sem crédito
+      // não a perde — o cliente guarda o hash até a carteira voltar.
+      return res.status(400).json({ erro: 'Vincule a MetaMask primeiro.', tentarDeNovo: true });
     }
 
     // ── Verificar tx on-chain ──

@@ -5,6 +5,7 @@
 //    (sem action)        → saque de cristais: { idToken, carteira, gems }
 //    "salvar-referral"   → registar convite:  { idToken, action, refUid }
 //    "vincular-carteira" → vincular MetaMask: { idToken, action, endereco, assinatura }
+//    "desvincular-carteira" → soltar a MetaMask: { idToken, action }
 //
 //  Consolidado num único endpoint para respeitar o limite de 12
 //  Serverless Functions do plano Hobby do Vercel.
@@ -215,6 +216,44 @@ async function handleVincularCarteira(req, res, db, auth) {
   return res.status(200).json({ ok: true, carteira: addr });
 }
 
+/* ── DESVINCULAR A CARTEIRA ──
+
+   Tira a `carteira` do documento e libera o endereço na coleção
+   `carteiras`, para que ele possa ser vinculado de novo (a esta conta ou
+   a outra). Não pede assinatura: quem está logado já é o dono da conta,
+   e soltar a carteira não dá nada a ninguém — para voltar a comprar é
+   preciso vincular de novo, e isso pede a assinatura.
+
+   Uma compra paga e ainda sem crédito não se perde: o
+   api/processar-compra.js responde `tentarDeNovo` enquanto não houver
+   carteira, e o cliente guarda o hash até ela voltar. */
+async function handleDesvincularCarteira(req, res, db, auth) {
+  const { idToken } = req.body;
+
+  let uid;
+  try {
+    uid = (await auth.verifyIdToken(idToken)).uid;
+  } catch {
+    return res.status(401).json({ erro: 'Sessão inválida ou expirada. Entre de novo.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  await db.runTransaction(async (tx) => {
+    const player = await tx.get(playerRef);
+    const antiga = String(player.data()?.carteira || '').toLowerCase();
+    let antigaRef = null;
+    if (antiga) {
+      const ref  = db.collection('carteiras').doc(antiga);
+      const snap = await tx.get(ref);
+      if (snap.exists && snap.data().uid === uid) antigaRef = ref;
+    }
+    if (antigaRef) tx.delete(antigaRef);
+    tx.set(playerRef, { carteira: FieldValue.delete() }, { merge: true });
+  });
+
+  return res.status(200).json({ ok: true });
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: 'Método não permitido' });
@@ -255,6 +294,15 @@ module.exports = async function handler(req, res) {
     } catch (err) {
       console.error('[vincular-carteira]', err.message);
       return res.status(500).json({ erro: 'Erro interno ao vincular a carteira.' });
+    }
+  }
+
+  if (action === 'desvincular-carteira') {
+    try {
+      return await handleDesvincularCarteira(req, res, db, auth);
+    } catch (err) {
+      console.error('[desvincular-carteira]', err.message);
+      return res.status(500).json({ erro: 'Erro interno ao desvincular a carteira.' });
     }
   }
 
