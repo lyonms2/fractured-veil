@@ -112,10 +112,13 @@ function _fbNome(slot, lutador) {
 
 function _fbFaixa(slot, lutador, f) {
   const nome = _fbNome(slot, lutador);
+  // O título do nível 50, logo por baixo do nome (tituloDe, js/identidade.js).
+  const titulo = (typeof tituloDe === 'function') ? tituloDe(slot || lutador, f.nivel) : '';
   const tag = [t('af.b.nv', { n: f.nivel }), t('af.arr.' + f.arranjo), f.raridade]
     .map(x => esc(String(x))).join(' <i>•</i> ');
   return `<div class="fb-faixa">
     ${nome ? `<div class="fb-nome">${esc(nome)}</div>` : ''}
+    ${titulo ? `<div class="fb-titulo">✦ ${esc(titulo)}</div>` : ''}
     <div class="fb-tag">${tag}</div>
   </div>`;
 }

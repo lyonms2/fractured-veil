@@ -244,6 +244,22 @@ function alcunhaDe(slot) {
   return slot.nome.split(',').slice(1).join(',').trim();
 }
 
+/* ── O TÍTULO DO NÍVEL 50 ──
+
+   Guardião da Fenda, ou Guardiã, pelo sexo do avatar. É um dos marcos do
+   fim da escada (o outro é o espaço de item do 40, em js/state.js) e não
+   dá números: diz a quem olha que aquele bicho chegou longe.
+
+   `nivelAgora` serve ao avatar aberto, cujo nível corre na global e só
+   chega ao slot na gravação. Vazio abaixo do 50. */
+const NIVEL_TITULO = 50;
+function tituloDe(slot, nivelAgora) {
+  const nv = (nivelAgora != null) ? nivelAgora : ((slot && slot.nivel) || 1);
+  if (nv < NIVEL_TITULO) return '';
+  const sexo = (typeof sexoDe === 'function' && slot) ? sexoDe(slot) : null;
+  return t(sexo === 'F' ? 'id.titulo.f' : 'id.titulo.m');
+}
+
 // Já foi batizado? Não é o mesmo que `nomeTravado`: um avatar comprado
 // pode ter nome e ter o uso do batismo ainda por gastar.
 function temNome(slot) {

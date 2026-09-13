@@ -90,7 +90,7 @@ function _slotDoencas(i, s) {
 function _faseNum(nivel) {
   if(typeof faseFromNivel === 'function') return faseFromNivel(nivel);
   const n = nivel || 1;
-  return n < 5 ? 0 : n < 10 ? 1 : n < 17 ? 2 : 3;
+  return n < 5 ? 0 : n < 11 ? 1 : n < 27 ? 2 : 3;   // as fases de hoje: 5, 11, 27
 }
 
 function getFaseNome(nivel) {
@@ -206,6 +206,7 @@ function buildListingCard(l) {
   const parts   = [nomeCurto(l), alcunhaDe(l)];
   const nomeProp = parts[0].trim();
   const sufixo   = parts.slice(1).join(',').trim();
+  const linhaSub = [sufixo, tituloDe(l) && ('✦ ' + tituloDe(l))].filter(Boolean).join(' · ');
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
@@ -221,7 +222,7 @@ function buildListingCard(l) {
         </div>
       </div>
       <div class="av-name">${esc(nomeProp)}</div>
-      ${sufixo ? `<div class="av-sufixo">${esc(sufixo)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
+      ${linhaSub ? `<div class="av-sufixo">${esc(linhaSub)}</div>` : '<div class="av-sufixo" style="margin-bottom:0.375rem;"></div>'}
       <div class="av-pill ${l.raridade}">${esc(l.raridade)}</div>
       ${(o => o ? `<div class="av-origem">${o.icone} ${o.texto}</div>` : '')(origemDoAnuncio(l))}
       <div class="av-stats">
@@ -255,6 +256,7 @@ async function openDetail(listingId) {
       <div class="detail-svg">${svgHtml}</div>
       <div class="detail-info">
         <div class="detail-name">${esc(nomeCurto(l))}</div>
+        ${tituloDe(l) ? `<div class="detail-titulo">✦ ${esc(tituloDe(l))}</div>` : ''}
         <div class="detail-rarity ${l.raridade}">${esc(l.raridade)}</div>
         ${(o => o ? `<div class="detail-origem">${o.icone} ${o.texto}</div>` : '')(origemDoAnuncio(l))}
         <div style="font-size:0.5625rem;color:var(--text2);">${esc((l.descricaoIdx != null ? getAvatarDesc(l.raridade, l, l.descricaoIdx) : l.descricao)||'')}</div>
@@ -594,7 +596,7 @@ function renderSlots() {
         </div>
         <div class="slot-body">
           <div class="slot-av-name">${_ns}</div>
-          <div class="slot-av-sub">${_ss}</div>
+          <div class="slot-av-sub">${[esc(_ss), tituloDe(s) && ('✦ ' + esc(tituloDe(s)))].filter(Boolean).join(' · ')}</div>
           <div class="slot-av-pill ${s.raridade}">${s.raridade}</div>
           <div class="slot-stats">
             <div class="slot-stat"><b>${s.nivel||1}</b><span>${t('mkt.stat.nivel')}</span></div>

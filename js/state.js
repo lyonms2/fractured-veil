@@ -45,6 +45,14 @@ const BANHO_ENERGIA  = 15;   // energia
 // ═══════════════════════════════════════════════════════════════════
 let itemInventory   = [];
 const MAX_EQUIPPED  = 3;
+/* ── +1 ESPAÇO DE ITEM NO NÍVEL 40 ──
+   Um dos marcos do fim da escada, entre o Lendário (27) e o teto (60):
+   quem chega ao 40 equipa quatro itens em vez de três. O título do 50 é
+   o outro (tituloDe, em js/identidade.js). */
+const NIVEL_ITEM_EXTRA = 40;
+function maxEquipadosDe(nv) {
+  return MAX_EQUIPPED + ((nv | 0) >= NIVEL_ITEM_EXTRA ? 1 : 0);
+}
 /* ── O PREÇO DOS ITENS ──
 
    Pelo que o item FAZ, e medido em dias de jogo. Um minijogo perfeito no
@@ -407,7 +415,7 @@ function xpParaNivel(n) {
    startSleep, em js/minigames.js). Sem isto, dar banho num bicho limpo
    era um botão de XP.
 
-   A raridade multiplica como em todo o resto do XP (rarityBonus). */
+   A raridade já não multiplica o XP (rarityBonus). */
 const XP_CUIDADO = { nutrir: 6, banho: 8, medicar: 10, acordar: 12 };
 const XP_CUIDADO_BEBE    = 5;
 const XP_CUIDADO_PRECISA = 70;
@@ -417,12 +425,16 @@ function xpDeCuidado(acao) {
   const bebe = typeof getFase === 'function' && getFase() === 0;
   return Math.round(base * (bebe ? XP_CUIDADO_BEBE : 1) * rarityBonus().xp);
 }
+/* O `xp` fica em 1 para as três raridades. Era 1,3 no Raro e 1,6 no
+   Lendário, e acelerava justamente o trecho mais caro da escada (27 → 60)
+   para quem já é Lendário — o contrário do que se quer, com o nível alto
+   a ser o diferencial do PvP. As outras colunas continuam. */
 function rarityBonus(quem) {
   const av = quem || avatar;
   if(!av) return { xp:1, moedas:1, decay:1, eggs:1, cooldown:1, burnBonus:0, shopDiscount:0 };
   switch(av.raridade) {
-    case 'Lendário': return { xp:1.6, moedas:1.5, decay:0.6, eggs:3, cooldown:1.5,  burnBonus:0.5,  shopDiscount:0.20 };
-    case 'Raro':     return { xp:1.3, moedas:1.2, decay:0.8, eggs:2, cooldown:2.0,  burnBonus:0.25, shopDiscount:0.10 };
+    case 'Lendário': return { xp:1,   moedas:1.5, decay:0.6, eggs:3, cooldown:1.5,  burnBonus:0.5,  shopDiscount:0.20 };
+    case 'Raro':     return { xp:1,   moedas:1.2, decay:0.8, eggs:2, cooldown:2.0,  burnBonus:0.25, shopDiscount:0.10 };
     default:         return { xp:1.0, moedas:1.0, decay:1.0, eggs:1, cooldown:1.0,  burnBonus:0,    shopDiscount:0    };
   }
 }

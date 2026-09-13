@@ -140,7 +140,7 @@ function _fazendaCartao({ s, idx }) {
   return `<div class="fz-card${naEquipa ? ' fz-equipa' : ''}${doente ? ' fz-doente' : ''}${dorme ? ' fz-dormindo' : ''}" data-slot="${idx}">
     <button class="fz-av" style="--fz-compasso:${compasso}s" onclick="fzZoom(${idx})" title="${t('fazenda.zoom')}">${svg}${dorme ? '<span class="fz-zzz">💤</span>' : ''}${cocos ? `<span class="fz-coco" title="${t('fazenda.coco', { n: cocos })}">💩${cocos > 1 ? cocos : ''}</span>` : ''}</button>
     <div class="fz-info">
-      <div class="fz-nome${temNome(s) ? '' : ' sem-nome'}">${esc(nome)}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
+      <div class="fz-nome${temNome(s) ? '' : ' sem-nome'}">${esc(nome)}${tituloDe(s) ? ` <span class="fz-titulo" title="${esc(tituloDe(s))}">✦</span>` : ''}${doente ? ' <span class="fz-alerta">⚠</span>' : ''}</div>
       <div class="fz-barras">${FAZENDA_VITAIS.map(c => _fazendaBarra(v[c.chave], c)).join('')}</div>
     </div>
     <button class="fz-cuidar" onclick="cuidarDe(${idx})">${t('fazenda.cuidar')}</button>

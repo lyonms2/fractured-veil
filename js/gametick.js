@@ -850,6 +850,12 @@ function checkXP() {
       }
     }
 
+    // Os marcos do fim da escada: o espaço de item do 40 e o título do 50.
+    if(typeof NIVEL_ITEM_EXTRA !== 'undefined' && nivel === NIVEL_ITEM_EXTRA)
+      addLog(t('gt.marco.item', { n: maxEquipadosDe(nivel) }), 'leg');
+    if(typeof NIVEL_TITULO !== 'undefined' && nivel === NIVEL_TITULO && typeof tituloDe === 'function')
+      addLog(t('gt.marco.titulo', { titulo: tituloDe(avatar, nivel) }), 'leg');
+
     if(faseAfter !== faseBefore) {
       // A fase foi GANHA, mas o corpo não muda já. Antes mudava aqui, e o
       // clarão que devia esconder a mudança só vinha 600ms depois — o

@@ -47,7 +47,7 @@ function renderItemInventory() {
 
   const equippedNormal  = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
   const equippedCenario = displayItems.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo === 'Cenário').length;
-  if(countEl) countEl.innerHTML = t('item.inv.count', {n: displayItems.length, word: t(displayItems.length !== 1 ? 'item.inv.word_multi' : 'item.inv.word_one'), eq: equippedNormal, max: MAX_EQUIPPED});
+  if(countEl) countEl.innerHTML = t('item.inv.count', {n: displayItems.length, word: t(displayItems.length !== 1 ? 'item.inv.word_multi' : 'item.inv.word_one'), eq: equippedNormal, max: maxEquipadosDe(nivel)});
 
   const resEl = document.getElementById('resItems');
   if(resEl) resEl.textContent = displayItems.length;
@@ -75,7 +75,7 @@ function renderItemInventory() {
     if(!item) return '';
     const isEquipped = entry.equipped;
     const isCenario  = item.tipo === 'Cenário';
-    const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < MAX_EQUIPPED);
+    const canEquip   = !isEquipped && (isCenario ? equippedCenario < 1 : equippedNormal < maxEquipadosDe(nivel));
     const diasRest   = entry.expiraEm ? Math.max(0, Math.ceil((entry.expiraEm - Date.now()) / 86400000)) : null;
     return `<div style="background:rgba(255,255,255,.03);border:1px solid ${isEquipped ? item.cor : 'rgba(255,255,255,.08)'};border-radius:0.5rem;padding:0.6875rem 0.8125rem;box-sizing:border-box;${isEquipped ? `box-shadow:0 0 0.625rem ${item.cor}28;` : ''}">
       <div style="display:flex;align-items:center;gap:0.625rem;">
@@ -185,7 +185,7 @@ function equipItem(id) {
     if(cCount >= 1) { addLog(t('item.log.cenario_full'), 'info'); return; }
   } else {
     const nCount = itemInventory.filter(i => i.equipped && ITEM_CATALOG[i.catalogId]?.tipo !== 'Cenário').length;
-    if(nCount >= MAX_EQUIPPED) { addLog(t('item.log.max_equipped', {max: MAX_EQUIPPED}), 'info'); return; }
+    if(nCount >= maxEquipadosDe(nivel)) { addLog(t('item.log.max_equipped', {max: maxEquipadosDe(nivel)}), 'info'); return; }
   }
   entry.equipped = true;
   const item = ITEM_CATALOG[entry.catalogId];

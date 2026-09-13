@@ -216,6 +216,8 @@
 }
 
 .fz-info { min-width: 0; }
+/* O ✦ do título do nível 50, ao lado do nome; o título em si vai no tooltip. */
+.fz-titulo { color: var(--gold, #c9a84c); font-size: 0.8em; cursor: help; }
 .fz-nome {
   font-family: 'Cinzel', serif; font-size: 0.5625rem;
   color: var(--text); letter-spacing: 0.03rem;

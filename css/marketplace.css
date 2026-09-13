@@ -217,6 +217,8 @@
 .slot-actions{display:flex;flex-direction:column;gap:0.3125rem;width:100%;margin-top:0.25rem;}
 /* No lugar do botão de vender, quando o avatar ainda é Comum. Um
    espaço vazio deixava o jogador a pensar que o botão falhou. */
+/* O título do nível 50 no detalhe do anúncio. */
+.detail-titulo{font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.0625rem;color:var(--gold,#c9a84c);margin:0 0 0.125rem;}
 /* A origem no anúncio: primordial, ou filho de um par. */
 .av-origem{font-size:0.4375rem;line-height:1.4;color:var(--text2,var(--muted));text-align:center;margin:0.1875rem 0 0.25rem;}
 .detail-origem{font-size:0.5625rem;line-height:1.4;color:var(--text2,var(--muted));margin:0.125rem 0 0.25rem;}

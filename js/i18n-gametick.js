@@ -40,6 +40,8 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Nível {nivel}! Seu avatar ficou mais forte!',
+    'gt.marco.item':       '✦ Nível 40: mais um espaço de item — agora são {n} equipados.',
+    'gt.marco.titulo':     '✦ Nível 50: recebeu o título {titulo}.',
     'gt.raridade.subiu':   '✦ Seu avatar agora é {raridade}.',
     'gt.levelup.log_sem_ponto': 'Nível {nivel}!',
     // O plural de nível é NÍVEIS, não nívels: o {s} genérico que serve o
@@ -88,6 +90,8 @@ window.registerStrings(
 
     // Level up
     'gt.levelup.log':      'Level {nivel}! Your avatar got stronger!',
+    'gt.marco.item':       '✦ Level 40: one more item slot — {n} can be equipped now.',
+    'gt.marco.titulo':     '✦ Level 50: earned the title {titulo}.',
     'gt.raridade.subiu':   '✦ Your avatar is now {raridade}.',
     'gt.levelup.log_sem_ponto': 'Level {nivel}!',
     'gt.levelup.faltam':   'Next stat point in {n} {p}',

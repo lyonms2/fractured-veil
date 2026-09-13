@@ -83,6 +83,8 @@
   background: linear-gradient(90deg, rgba(201,168,76,.18), rgba(201,168,76,.04));
   border-left: 3px solid var(--gold);
 }
+/* O título do nível 50, por baixo do nome. */
+.fb-titulo { font-family: 'Cinzel', serif; font-size: 0.4375rem; letter-spacing: 0.0625rem; color: var(--gold, #c9a84c); margin: -0.0625rem 0 0.125rem; }
 .fb-nome {
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: 0.8125rem; color: #ffe6a8; letter-spacing: 0.025rem;

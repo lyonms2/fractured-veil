@@ -607,7 +607,9 @@ function fillCreatureCard() {
      um nome esquisito. O botão do batismo está ao lado. */
   elNome.classList.toggle('sem-nome', !(typeof temNome === 'function' && temNome(avatar)));
   const sfx = document.getElementById('idSufixo');
-  if(sfx) sfx.textContent = sufixo || '';
+  // A alcunha e, do nível 50 em diante, o título (tituloDe, js/identidade.js).
+  const titulo = (typeof tituloDe === 'function') ? tituloDe(avatar, nivel) : '';
+  if(sfx) sfx.textContent = [sufixo, titulo && ('✦ ' + titulo)].filter(Boolean).join(' · ');
 
   /* Aqui dizia "🔥 Fogo", e por um dia disse a cor. Não diz nada: o
      bicho está desenhado dois centímetros acima, e escrever "Roxo com
