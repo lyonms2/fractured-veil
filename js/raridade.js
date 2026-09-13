@@ -172,13 +172,28 @@ function sincronizarRaridades(slots) {
    O que continua a impedir uma venda é o que o servidor sabe: o avatar
    tem de estar vivo, e tem de ter nascido por lá — e essa segunda parte
    só o servidor pode responder. Daqui só se vê a primeira. */
+/* ── MORTO E DOENTE NÃO SE VENDEM ──
+
+   Devolve o motivo — 'morto' ou 'doente' — ou nulo quando pode ir ao
+   mercado. Doente é ter alguma doença ativa ou estar marcado `sick` (a
+   saúde abaixo de 20, que o Medicar resolve). Bicho doente não vai para
+   a vitrine: quem compra levava junto uma doença que come a saúde.
+
+   O servidor faz a mesma pergunta ao listar (handleListarAvatar, em
+   api/comprar-avatar.js), com o erro AVATAR_DOENTE. */
+function motivoSemVenda(slot) {
+  if (!slot || slot.dead) return 'morto';
+  if (slot.sick || (Array.isArray(slot.activeDiseases) && slot.activeDiseases.length)) return 'doente';
+  return null;
+}
+
 function podeSerVendido(slot) {
-  return !!slot && !slot.dead;
+  return motivoSemVenda(slot) === null;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU,
                      raridadeDaFase, raridadeDoNivel, grauDaRaridade,
                      faseDoSlot, raridadeDoSlot, sincronizarRaridade, sincronizarRaridades,
-                     podeSerVendido };
+                     podeSerVendido, motivoSemVenda };
 }

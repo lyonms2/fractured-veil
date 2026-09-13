@@ -52,6 +52,19 @@ function _mktSyncSlots(newSlots) {
 //
 // A do avatar ativo vive nas variáveis vivas; a dos outros no slot.
 // ═══════════════════════════════════════════════════════════════════
+/* O motivo de este avatar não poder ir ao mercado, ou nulo. O avatar
+   ABERTO tem as doenças e o `sick` nas variáveis vivas, e não no slot —
+   o slot só as recebe na gravação —, por isso é a mesma troca que o
+   _slotDoencas faz logo abaixo. */
+function _slotMotivoSemVenda(i, s) {
+  if (typeof motivoSemVenda !== 'function') return (!s || s.dead) ? 'morto' : null;
+  const aberto = typeof activeSlotIdx !== 'undefined' && i === activeSlotIdx
+              && typeof activeDiseases !== 'undefined';
+  return motivoSemVenda(aberto
+    ? Object.assign({}, s, { sick: (typeof sick !== 'undefined') ? sick : s.sick, activeDiseases })
+    : s);
+}
+
 function _slotDoencas(i, s) {
   const lista = (typeof activeSlotIdx !== 'undefined' && i === activeSlotIdx
                  && typeof activeDiseases !== 'undefined')
@@ -298,6 +311,10 @@ async function buyAvatar(listingId, price) {
 // LISTAR AVATAR À VENDA
 // ═══════════════════════════════════════════
 function openListModal(slotIdx) {
+  // A mesma pergunta da lista, outra vez: entre desenhar o botão e tocar
+  // nele o avatar pode ter adoecido.
+  const motivo = _slotMotivoSemVenda(slotIdx, playerData.avatarSlots[slotIdx]);
+  if (motivo) { showToast(t('mkt.slot.sem_venda.' + motivo), 'err'); return; }
   listingSlotIdx = slotIdx;
   const s = playerData.avatarSlots[slotIdx];
   document.getElementById('listAvatarPreview').innerHTML = `
@@ -580,11 +597,11 @@ function renderSlots() {
             <!-- O portão de raridade saiu. Foi "é Raro ou Lendário" e
                  depois "conquista-se crescendo"; agora qualquer avatar
                  se vende, ao preço que o dono quiser. O que sobra é o
-                 podeSerVendido, que hoje pergunta só se ele está vivo —
-                 ver js/raridade.js. -->
-            ${(typeof podeSerVendido !== 'function' || podeSerVendido(s))
+                 motivoSemVenda, que pergunta se ele está vivo e sem
+                 doença — ver js/raridade.js. -->
+            ${!_slotMotivoSemVenda(i, s)
               ? `<button class="btn-slot-list" onclick="openListModal(${i})">${t('mkt.slot.btn_list')}</button>`
-              : `<div class="slot-sem-venda">${t('mkt.slot.sem_venda')}</div>`}
+              : `<div class="slot-sem-venda">${t('mkt.slot.sem_venda.' + _slotMotivoSemVenda(i, s))}</div>`}
             <button class="btn-slot-burn" onclick="burnAvatar(${i})">${t('mkt.slot.btn_burn')}</button>` : ''}
             ${isFrozen ? `
             <div style="font-size:0.5rem;color:var(--gold);text-align:center;letter-spacing:0.03125rem;padding:0.25rem 0;">${t('mkt.slot.frozen_label')}</div>

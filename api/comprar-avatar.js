@@ -99,6 +99,15 @@ async function handleListarAvatar(req, res, db, uid) {
       const _mortos = pData.mortos || {};
       if (!s || s.dead || (s.id && _mortos[s.id])) throw new Error('SLOT_INVALID');
 
+      /* E doente também não (motivoSemVenda, em js/raridade.js). As doenças
+         e o `sick` vêm do avatarSlots, que o cliente escreve: quem forjar
+         isto consegue listar um avatar doente, e é só isso que ganha. A
+         regra é do jogo e não de dinheiro — bicho doente não vai para a
+         vitrine. */
+      if (s.sick || (Array.isArray(s.activeDiseases) && s.activeDiseases.length)) {
+        throw new Error('AVATAR_DOENTE');
+      }
+
       /* ── QUALQUER AVATAR SE VENDE, AO PREÇO QUE O DONO QUISER ──
 
          Havia aqui uma tranca de raridade: só Raro e Lendário passavam.
@@ -245,6 +254,7 @@ async function handleListarAvatar(req, res, db, uid) {
     const erros = {
       INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
       SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
+      AVATAR_DOENTE:     [400, 'Um avatar doente não pode ser vendido. Trate a doença antes de vender.'],
       AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registo de emissão e não pode ser listado. Choque um ovo novo.'],
       AVATAR_SEM_CERTIDAO:  [400, 'Este avatar não tem certidão emitida pelo servidor e não pode ser listado.'],
       ORIGEM_NAO_CONFERE: [403, 'A origem não confere com a emitida.'],
