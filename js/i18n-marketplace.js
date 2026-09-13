@@ -56,7 +56,7 @@ window.registerStrings({
 
   // ── Browse ────────────────────────────────────────────────────────
   'mkt.browse.title':         '🛒 Comprar Avatares',
-  'mkt.browse.sub':           'Avatares Raros e Lendários listados por outros jogadores. Preços em 💎 Cristais.',
+  'mkt.browse.sub':           'Avatares listados por outros jogadores. Preços em 💎 Cristais.',
   'mkt.browse.search_ph':     '🔍 Procurar nome ou cor...',
   'mkt.browse.rarity_all':    'Raridade: Todas',
   'mkt.browse.cor_all':       'Cor: Todas',
@@ -145,12 +145,11 @@ window.registerStrings({
 
   // Avatar stat labels
   'mkt.stat.nivel':           'Nível',
-  'mkt.stat.xp':              'XP',
   'mkt.stat.vinculo':         'Vínculo',
   'mkt.stat.fase':            'Fase',
-  'mkt.stat.ovos':            'Ovos',
-  'mkt.stat.ovos_total':      'Ovos botados',
-  'mkt.stat.raros':           'Raros/Lendários',
+  'mkt.stat.feitio':          'Feitio',
+  'mkt.stat.tipo':            'Dano',
+  'mkt.stat.sexo':            'Sexo',
   'mkt.stat.nivel_abbr':      'Nv.{n}',
 
   // Avatar card
@@ -397,7 +396,7 @@ window.registerStrings({
 
   // Browse
   'mkt.browse.title':         '🛒 Buy Avatars',
-  'mkt.browse.sub':           'Rare and Legendary avatars listed by other players. Prices in 💎 Crystals.',
+  'mkt.browse.sub':           'Avatars listed by other players. Prices in 💎 Crystals.',
   'mkt.browse.search_ph':     '🔍 Search name or color...',
   'mkt.browse.rarity_all':    'Rarity: All',
   'mkt.browse.cor_all':       'Color: All',
@@ -475,12 +474,11 @@ window.registerStrings({
 
   // Stat labels
   'mkt.stat.nivel':           'Level',
-  'mkt.stat.xp':              'XP',
   'mkt.stat.vinculo':         'Bond',
   'mkt.stat.fase':            'Phase',
-  'mkt.stat.ovos':            'Eggs',
-  'mkt.stat.ovos_total':      'Eggs laid',
-  'mkt.stat.raros':           'Rare/Legendary',
+  'mkt.stat.feitio':          'Temperament',
+  'mkt.stat.tipo':            'Damage',
+  'mkt.stat.sexo':            'Sex',
   'mkt.stat.nivel_abbr':      'Lv.{n}',
 
   // Avatar card

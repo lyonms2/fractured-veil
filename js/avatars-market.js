@@ -171,7 +171,7 @@ function renderBrowse() {
   if(sort === 'recent')     filtered.sort((a,b) => (b.listedAt?.seconds||0) - (a.listedAt?.seconds||0));
 
   if(filtered.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌌</div><div class="empty-txt">${t('mkt.browse.empty').replace('\n','<br>')}</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-txt">${t('mkt.browse.empty').replace('\n','<br>')}</div></div>`;
     return;
   }
 
@@ -199,6 +199,28 @@ function origemDoAnuncio(l) {
   return { icone: '🌀', texto: t('mkt.origem.primordial') };
 }
 
+/* ── O QUE O COMPRADOR PRECISA DE SABER ──
+
+   O feitio (Guarda, Lâmina ou Sustentação), o tipo de dano e o sexo,
+   lidos da ficha e da certidão do anúncio. Estavam no lugar deles três
+   contadores — ovos botados, ovos raros, XP — que ninguém incrementa
+   desde que os ovos deixaram de ter raridade: o anúncio mostrava sempre
+   "0", e o XP era só o que faltava dentro do nível.
+
+   O feitio diz que papel o avatar faz na equipe, e o sexo importa a quem
+   compra para cruzar. Sem ficha legível (a página avulsa, sem o motor
+   carregado), fica "—". */
+function _mktSobreAnuncio(l) {
+  const r = { feitio: '—', tipo: '—', sexo: '—' };
+  try {
+    const f = (typeof fuFicha === 'function' && l && l.nascimento) ? fuFicha(l) : null;
+    if (f && f.feitio) r.feitio = t('af.indole.' + f.feitio);
+    if (f && f.tipo)   r.tipo   = t('af.tipo.' + f.tipo);
+  } catch (e) {}
+  if (typeof sexoDe === 'function' && l && l.nascimento) r.sexo = sexoDe(l) === 'F' ? '♀' : '♂';
+  return r;
+}
+
 function buildListingCard(l) {
   const isMine = l.sellerId === walletAddress;
   const svgHtml = gerarSVG(l, l.raridade, l.seed||0, 72, 72, _faseNum(l.nivel));
@@ -207,6 +229,7 @@ function buildListingCard(l) {
   const nomeProp = parts[0].trim();
   const sufixo   = parts.slice(1).join(',').trim();
   const linhaSub = [sufixo, tituloDe(l) && ('✦ ' + tituloDe(l))].filter(Boolean).join(' · ');
+  const sobre    = _mktSobreAnuncio(l);
   return `<div class="av-card" onclick="openDetail('${l.id}')">
     <div class="av-card-stripe ${l.raridade}"></div>
     <div class="av-card-inner">
@@ -229,7 +252,7 @@ function buildListingCard(l) {
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
         <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
         <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>${t('mkt.stat.fase')}</div>
-        <div class="av-stat"><b>${l.totalOvos||0}</b>${t('mkt.stat.ovos')}</div>
+        <div class="av-stat"><b>${esc(sobre.feitio)}</b>${t('mkt.stat.feitio')}</div>
       </div>
       <div class="av-price">💎 ${fmtC(l.price)}</div>
       <div class="av-seller">${isMine ? t('mkt.card.mine') : t('mkt.card.by', {addr: sellerShort})}</div>
@@ -250,6 +273,7 @@ async function openDetail(listingId) {
   const svgHtml  = gerarSVG(l, l.raridade, l.seed||0, 90, 90, _faseNum(l.nivel));
   // O passivo vem do DNA da listagem, e não do elemento dela.
   const bonusText = (typeof frasedoVigor === 'function') ? frasedoVigor(l) : '';
+  const sobre     = _mktSobreAnuncio(l);
   const box = document.getElementById('avatarDetailBox');
   box.innerHTML = `
     <div class="detail-header">
@@ -264,11 +288,11 @@ async function openDetail(listingId) {
     </div>
     <div class="detail-stats-grid">
       <div class="detail-stat">${t('mkt.stat.nivel')} <b>${l.nivel||1}</b></div>
-      <div class="detail-stat">${t('mkt.stat.xp')} <b>${Math.floor(l.xp||0)}</b></div>
       <div class="detail-stat">${t('mkt.stat.vinculo')} <b>${Math.floor(l.vinculo||0)}</b></div>
       <div class="detail-stat">${t('mkt.stat.fase')} <b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b></div>
-      <div class="detail-stat">${t('mkt.stat.ovos_total')} <b>${l.totalOvos||0}</b></div>
-      <div class="detail-stat">${t('mkt.stat.raros')} <b>${l.totalRaros||0}</b></div>
+      <div class="detail-stat">${t('mkt.stat.feitio')} <b>${esc(sobre.feitio)}</b></div>
+      <div class="detail-stat">${t('mkt.stat.tipo')} <b class="detail-tipo">${esc(sobre.tipo)}</b></div>
+      <div class="detail-stat">${t('mkt.stat.sexo')} <b>${sobre.sexo}</b></div>
     </div>
     ${bonusText ? `<div class="detail-bonus">✨ ${bonusText}</div>` : ''}
     <div class="detail-price-row">

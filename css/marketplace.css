@@ -479,6 +479,8 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
 .detail-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.25rem;margin-bottom:0.75rem;}
 .detail-stat{font-size:0.5625rem;color:var(--text2);display:flex;justify-content:space-between;background:var(--surface2);padding:0.25rem 0.5rem;border-radius:0.25rem;}
 .detail-stat b{color:var(--text);}
+/* O tipo de dano vem em minúsculas do i18n ("fogo"). */
+.detail-tipo{text-transform:capitalize;}
 .detail-bonus{font-size:0.5625rem;color:var(--gem2);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:0.375rem;padding:0.4375rem 0.625rem;margin-bottom:0.75rem;}
 .detail-price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
 .detail-price{font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:0.375rem;}
