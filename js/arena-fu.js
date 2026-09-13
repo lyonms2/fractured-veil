@@ -77,11 +77,62 @@ function _afZoomNormal() {
   _afViewportTimer = setTimeout(() => m.setAttribute('content', _afViewportOrig), 300);
 }
 
+/* ── E O TOQUE DUPLO ──
+
+   A pinça estava travada, mas o zoom continuava a abrir com dois toques
+   rápidos. O `touch-action` que devia impedir isso não é respeitado em
+   todo lugar — o Safari do iPhone, sobretudo, dá zoom no toque duplo
+   mesmo com ele.
+
+   Então é pelo toque: se um toque termina a menos de 350ms do anterior,
+   no mesmo lugar, o fim dele é cancelado. Cancelar o fim do toque cancela
+   o zoom, mas cancela também o clique que o navegador ia gerar — e o
+   segundo toque num orbe ou num cartão tem de continuar a valer. Por isso
+   o clique é refeito à mão, no mesmo elemento.
+
+   Um toque que arrastou (rolar o registro, por exemplo) não conta: não é
+   toque duplo, e refazer um clique no fim de um arrasto seria clicar onde
+   o dedo parou sem querer. */
+const AF_TOQUE_DUPLO_MS = 350;
+const AF_TOQUE_FOLGA_PX = 12;
+let _afToque = { fim: 0, x: 0, y: 0, ix: 0, iy: 0 };
+
+function _afToqueComeca(e) {
+  const p = e.changedTouches && e.changedTouches[0];
+  if (p) { _afToque.ix = p.clientX; _afToque.iy = p.clientY; }
+}
+
+function _afSemToqueDuplo(e) {
+  const p = e.changedTouches && e.changedTouches[0];
+  if (!p || e.changedTouches.length > 1) return;
+  const arrastou = Math.abs(p.clientX - _afToque.ix) > AF_TOQUE_FOLGA_PX
+                || Math.abs(p.clientY - _afToque.iy) > AF_TOQUE_FOLGA_PX;
+  const agora = Date.now();
+  const duplo = !arrastou
+    && agora - _afToque.fim < AF_TOQUE_DUPLO_MS
+    && Math.abs(p.clientX - _afToque.x) < AF_TOQUE_FOLGA_PX * 3
+    && Math.abs(p.clientY - _afToque.y) < AF_TOQUE_FOLGA_PX * 3;
+  _afToque.fim = agora; _afToque.x = p.clientX; _afToque.y = p.clientY;
+  if (!duplo) return;
+
+  e.preventDefault();
+  const alvo = e.target;
+  if (alvo && typeof alvo.dispatchEvent === 'function') {
+    alvo.dispatchEvent(new MouseEvent('click', {
+      bubbles: true, cancelable: true, view: window,
+      clientX: p.clientX, clientY: p.clientY,
+    }));
+  }
+}
+
 function _afTravarZoom(liga) {
   const acao = liga ? 'addEventListener' : 'removeEventListener';
   document[acao]('gesturestart',  _afSemGesto, _AF_ZOOM_OPC);
   document[acao]('gesturechange', _afSemGesto, _AF_ZOOM_OPC);
   document[acao]('touchmove',     _afSemPinca, _AF_ZOOM_OPC);
+  document[acao]('touchstart',    _afToqueComeca, _AF_ZOOM_OPC);
+  document[acao]('touchend',      _afSemToqueDuplo, _AF_ZOOM_OPC);
+  _afToque = { fim: 0, x: 0, y: 0, ix: 0, iy: 0 };
   _afZoomNormal();
 }
 
