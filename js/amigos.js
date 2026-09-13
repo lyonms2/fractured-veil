@@ -358,6 +358,20 @@ function visitaEscolher(i) {
 }
 window.visitaEscolher = visitaEscolher;
 
+/* ── A LUPA DA VISITA ──
+
+   Passava para o zoom só a raridade, a semente, o nível e o nome — sem o
+   avatar — e o zoom não tinha certidão de onde calcular a ficha. Agora
+   vai o avatar escolhido inteiro, como o servidor o mandou, com a
+   certidão enxuta que a ficha usa. Uma resposta antiga, sem certidão,
+   continua abrindo o zoom só com a figura. */
+function visitaZoom() {
+  const perfil = _visitaAlvo();
+  if (!perfil || typeof openAvatarZoomData !== 'function') return;
+  openAvatarZoomData(perfil.raridade, perfil.seed, perfil.nivel, _visitaNome(perfil), perfil);
+}
+window.visitaZoom = visitaZoom;
+
 function _renderVisitaOverlay() {
   const body = document.getElementById('visitaBody');
   if(!body || !_visitaAtual) return;
@@ -414,7 +428,7 @@ function _renderVisitaOverlay() {
           ${gerarSVG(perfil, perfil.raridade, perfil.seed, 80, 80, _faseNum(perfil.nivel || 1))}
         </div>
         <button class="mkt-avatar-zoom-btn"
-          onclick="openAvatarZoomData('${esc(perfil.raridade)}',${perfil.seed},${perfil.nivel},'${esc(_visitaNome(perfil))}')"
+          onclick="visitaZoom()"
           title="Ampliar avatar">🔍</button>
       </div>
     </div>

@@ -152,6 +152,35 @@ async function _uidDoCodigo(db, codigo) {
 }
 
 
+/* ── A CERTIDÃO QUE A FICHA PRECISA, E SÓ ELA ──
+
+   A visita mostra a ficha de combate dos avatares do amigo, e a ficha é
+   calculada a partir do DNA. Sem a certidão, o zoom da visita não tinha
+   de onde tirar os dados e ficava vazio.
+
+   Vai uma certidão ENXUTA, e não a inteira: o DNA, a semente, o ovo de
+   origem (que dá subidas de dado), o sexo, o feitio e as cores. Ficam de
+   fora o criador, os pais, os nomes e retratos deles e a data de
+   nascimento — são a história do avatar e do dono, e a ficha não usa
+   nenhum deles.
+
+   Conferido antes de mandar: 7 560 fichas (três origens, 120 sementes,
+   sete níveis, as três escolhas do ancião) calculadas com a certidão
+   inteira e com esta — iguais em todos os campos. */
+function _certidaoParaFicha(c) {
+  if (!c || !c.dna) return null;
+  return {
+    v:             c.v ?? null,
+    dna:           c.dna,
+    seed:          c.seed ?? null,
+    origem:        c.origem ?? null,
+    sexo:          c.sexo ?? null,
+    indole:        c.indole ?? null,
+    corPrincipal:  c.corPrincipal ?? null,
+    corSecundaria: c.corSecundaria ?? null,
+  };
+}
+
 module.exports = async function handler(req, res) {
   const { db, auth } = initAdmin();
 
@@ -236,6 +265,9 @@ module.exports = async function handler(req, res) {
             sexo:     s.nascimento?.sexo ?? null,
             corPrincipal:  s.nascimento?.corPrincipal  ?? null,
             corSecundaria: s.nascimento?.corSecundaria ?? null,
+            // o que a ficha de combate precisa (ver _certidaoParaFicha)
+            nascimento:    _certidaoParaFicha(s.nascimento),
+            escolhaAnciao: s.escolhaAnciao ?? null,
             vitals:   s.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
           }));
 
