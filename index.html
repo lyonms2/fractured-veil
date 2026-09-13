@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ═══════════════════════════════════════════════════════════════
-     VERSÃO DOS FICHEIROS — ?v=2026-09-13g
+     VERSÃO DOS FICHEIROS — ?v=2026-09-13h
 
      Todos os js/ e css/ locais levam esta marca. Serve para uma
      coisa só: o browser dos jogadores não continuar a servir a
@@ -9,7 +9,7 @@
      que já não existem.
 
      >>> MUDE ESTE NÚMERO A CADA DEPLOY <<<
-     Basta um procurar-e-substituir de "?v=2026-09-13g" pelo novo.
+     Basta um procurar-e-substituir de "?v=2026-09-13h" pelo novo.
      ═══════════════════════════════════════════════════════════ -->
 <html lang="pt-BR">
 <head>
@@ -49,26 +49,26 @@
        decoracao. -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/base.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/screen.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/ui.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/minigames.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/modals.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/combate.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/arena.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-13g">
-<link rel="stylesheet" href="css/combate-arena.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/snake.css?v=2026-09-13g">
-<link rel="stylesheet" href="css/fazenda.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/escolha.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/fratura.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/historico.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-13g">
-  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-13g">
+  <link rel="stylesheet" href="css/base.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/screen.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/ui.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/minigames.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/modals.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/marketplace.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/combate.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/arena.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/combate-batalha.css?v=2026-09-13h">
+<link rel="stylesheet" href="css/combate-arena.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/rouba-monte.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/batalha-naval.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/snake.css?v=2026-09-13h">
+<link rel="stylesheet" href="css/fazenda.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/evolucao.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/escolha.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/fratura.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/historico.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/labirinto.css?v=2026-09-13h">
+  <link rel="stylesheet" href="css/mobile-index.css?v=2026-09-13h">
 
   <style>
 
@@ -196,6 +196,7 @@
   <div class="modal-scroll-body">
     <div data-i18n="batalha.sub" class="section-sub">Monte a equipa e escolha o combate. A ordem manda: o primeiro abre a luta.</div>
     <div id="equipaBar"></div>
+    <div id="btDificuldade" class="bt-dificuldade"></div>
     <div class="bt-modos">
       <!-- A marca é a FENDA, e não um emoji: é o mesmo risco vertical da
            tela que este botão abre (css/fratura.css), e por isso diz para
@@ -276,30 +277,21 @@
   <div class="modal-header">
     <div>
       <div data-i18n="inv.coins_title" class="mini-title">🪙 MOEDAS</div>
-      <div data-i18n="inv.coins_sub" class="mini-sub" style="margin:0;">Moeda interna do jogo</div>
+      <div data-i18n="inv.coins_sub" class="mini-sub" style="margin:0;">Compram os itens da loja</div>
     </div>
     <button class="gs-x-btn" style="position:static;transform:none;" onclick="closeCoinShop()">✕</button>
   </div>
   <div class="modal-scroll-body" id="mktItemsSection">
-    <!-- A LOJA VEM PRIMEIRO, e o câmbio depois. Não é arbitrário:
-         calcCambioEligivel (js/cambio.js) exige avatar vivo, nível
-         mínimo e pool com saldo, portanto para quem está começando
-         o câmbio aparece com um cadeado — e abrir o painel das
-         moedas num cadeado é a pior primeira impressão possível.
-         A loja funciona sempre; o câmbio é o passo avançado. -->
+    <!-- As moedas servem para uma coisa só: comprar os itens da loja.
+         Havia embaixo uma segunda seção, o câmbio de moedas por
+         cristais, que saiu do jogo. -->
     <div data-i18n="inv.items_store" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.125rem;margin-bottom:0.5rem;">◆ LOJA DE ITENS</div>
     <div id="mktItemsList" style="display:flex;flex-direction:column;gap:0.5rem;width:100%;"></div>
 
-    <div style="border-top:1px solid rgba(255,255,255,.06);margin:0.875rem -0.25rem;"></div>
-
-    <div data-i18n="inv.exchange_label" style="font-family:'Cinzel',serif;font-size:0.4375rem;color:var(--gold);letter-spacing:0.125rem;margin-bottom:0.5rem;">◆ CÂMBIO 🪙 → 💎</div>
-    <div id="cambioPanel" style="width:100%;">
-      <div data-i18n="inv.exchange_empty" style="font-size:0.4375rem;color:var(--muted);text-align:center;padding:0.5rem 0;">Abre a loja para ver o câmbio.</div>
-    </div>
     <div style="border-top:1px solid rgba(255,255,255,.06);margin:0.75rem -0.25rem;"></div>
     <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:0.5rem;padding:0.625rem;text-align:center;">
-      <div data-i18n="inv.crystals_cta" style="font-size:0.5rem;color:var(--gem2);font-weight:700;margin-bottom:0.375rem;">💎 Precisas de mais Cristais?</div>
-      <div data-i18n="inv.crystals_desc" style="font-size:0.4375rem;color:var(--muted);margin-bottom:0.625rem;line-height:1.6;">Compra cristais com MATIC ou vende ovos no Marketplace.</div>
+      <div data-i18n="inv.crystals_cta" style="font-size:0.5rem;color:var(--gem2);font-weight:700;margin-bottom:0.375rem;">💎 Precisa de mais Cristais?</div>
+      <div data-i18n="inv.crystals_desc" style="font-size:0.4375rem;color:var(--muted);margin-bottom:0.625rem;line-height:1.6;">Compre cristais com MATIC ou venda ovos no Marketplace.</div>
       <a href="#" onclick="openMarketplaceModal('buycrystals');return false;" data-i18n="inv.crystals_btn" style="display:inline-block;padding:0.4375rem 1rem;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:0.375rem;color:#fff;font-size:0.5rem;font-family:'Cinzel',serif;font-weight:700;text-decoration:none;letter-spacing:0.03125rem;">Ir ao Marketplace →</a>
     </div>
   </div>
@@ -628,7 +620,7 @@
                 <div class="gs-btn-info">
                   <div data-i18n="gs.memoria.name" class="gs-btn-name">MEMÓRIA ELEMENTAL</div>
                   <div data-i18n="gs.memoria.desc" class="gs-btn-desc">Encontre todos os pares de símbolos</div>
-                  <div class="gs-btn-reward" id="rewardMemoria">+5~90 XP · +3~130 🪙</div>
+                  <div class="gs-btn-reward" id="rewardMemoria">+7~21 XP · +5~12 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('simon')">
@@ -636,7 +628,7 @@
                 <div class="gs-btn-info">
                   <div data-i18n="gs.simon.name" class="gs-btn-name">SIMON SAYS</div>
                   <div data-i18n="gs.simon.desc" class="gs-btn-desc">Repita a sequência de símbolos</div>
-                  <div class="gs-btn-reward" id="rewardSimon">+5~90 XP · +5~338 🪙</div>
+                  <div class="gs-btn-reward" id="rewardSimon">+0~18 XP · +0~12 🪙</div>
                 </div>
               </div>
               <div class="gs-btn" onclick="openMinigame('snake')">
@@ -644,7 +636,7 @@
                 <div class="gs-btn-info">
                   <div data-i18n="gs.snake.name" class="gs-btn-name">SNAKE ELEMENTAL</div>
                   <div data-i18n="gs.snake.desc" class="gs-btn-desc">Colete os símbolos sem bater em si mesmo</div>
-                  <div class="gs-btn-reward" id="rewardSnake">+0~130 XP · +0~380 🪙</div>
+                  <div class="gs-btn-reward" id="rewardSnake">+0~18 XP · +0~12 🪙</div>
                 </div>
               </div>
             </div>
@@ -1149,24 +1141,24 @@
   window.db = _fbDb;
 </script>
 
-<script src="js/i18n.js?v=2026-09-13g"></script>
-<script src="js/i18n-pvp.js?v=2026-09-13g"></script>
-<script src="js/i18n-bn.js?v=2026-09-13g"></script>
-<script src="js/i18n-minigames.js?v=2026-09-13g"></script>
-<script src="js/i18n-eggs.js?v=2026-09-13g"></script>
-<script src="js/i18n-gametick.js?v=2026-09-13g"></script>
-<script src="js/i18n-items.js?v=2026-09-13g"></script>
-<script src="js/i18n-market.js?v=2026-09-13g"></script>
-<script src="js/i18n-mina.js?v=2026-09-13g"></script>
-<script src="js/i18n-arcade.js?v=2026-09-13g"></script>
-<script src="js/i18n-session.js?v=2026-09-13g"></script>
-<script src="js/i18n-misc.js?v=2026-09-13g"></script>
-<script src="js/i18n-lore.js?v=2026-09-13g"></script>
-<script src="js/i18n-prologo.js?v=2026-09-13g"></script>
-<script src="js/i18n-marketplace.js?v=2026-09-13g"></script>
-<script src="js/i18n-pve.js?v=2026-09-13g"></script>
-<script src="js/i18n-arena-fu.js?v=2026-09-13g"></script>
-<script src="js/i18n-linhagem.js?v=2026-09-13g"></script>
+<script src="js/i18n.js?v=2026-09-13h"></script>
+<script src="js/i18n-pvp.js?v=2026-09-13h"></script>
+<script src="js/i18n-bn.js?v=2026-09-13h"></script>
+<script src="js/i18n-minigames.js?v=2026-09-13h"></script>
+<script src="js/i18n-eggs.js?v=2026-09-13h"></script>
+<script src="js/i18n-gametick.js?v=2026-09-13h"></script>
+<script src="js/i18n-items.js?v=2026-09-13h"></script>
+<script src="js/i18n-market.js?v=2026-09-13h"></script>
+<script src="js/i18n-mina.js?v=2026-09-13h"></script>
+<script src="js/i18n-arcade.js?v=2026-09-13h"></script>
+<script src="js/i18n-session.js?v=2026-09-13h"></script>
+<script src="js/i18n-misc.js?v=2026-09-13h"></script>
+<script src="js/i18n-lore.js?v=2026-09-13h"></script>
+<script src="js/i18n-prologo.js?v=2026-09-13h"></script>
+<script src="js/i18n-marketplace.js?v=2026-09-13h"></script>
+<script src="js/i18n-pve.js?v=2026-09-13h"></script>
+<script src="js/i18n-arena-fu.js?v=2026-09-13h"></script>
+<script src="js/i18n-linhagem.js?v=2026-09-13h"></script>
 <script>
   // Aplica traduções estáticas e atualiza label do botão de idioma
   document.addEventListener('DOMContentLoaded', () => {
@@ -1175,13 +1167,13 @@
     if(btn) btn.textContent = window._currentLang === 'pt' ? '🌐 EN' : '🌐 PT';
   });
 </script>
-<script src="js/audio.js?v=2026-09-13g"></script>
-<script src="js/data.js?v=2026-09-13g"></script>
-<script src="js/state.js?v=2026-09-13g"></script>
+<script src="js/audio.js?v=2026-09-13h"></script>
+<script src="js/data.js?v=2026-09-13h"></script>
+<script src="js/state.js?v=2026-09-13h"></script>
 <!-- A identidade permanente do avatar e o nome de quem joga. Vem
      depois do state.js, que declara os globais que ela le, e antes
      do summon.js e do eggs.js, que a chamam ao criar um avatar. -->
-<script src="js/identidade.js?v=2026-09-13g"></script>
+<script src="js/identidade.js?v=2026-09-13h"></script>
 <!-- O acto de nascer: DNA (tendencia e sexo) e a certidao.
      Depois da identidade, que ele nao usa mas que nasce no mesmo gesto,
      e antes do ficha-fu.js, que le o DNA para montar a ficha. -->
@@ -1189,67 +1181,66 @@
      nascimento.js, que sorteia o gene da cor, e antes do data.js
      ...na verdade o data.js vem antes; a paleta e pedida em tempo de
      desenho, nao em tempo de carga, portanto a ordem nao aperta. -->
-<script src="js/cores.js?v=2026-09-13g"></script>
-<script src="js/nascimento.js?v=2026-09-13g"></script>
+<script src="js/cores.js?v=2026-09-13h"></script>
+<script src="js/nascimento.js?v=2026-09-13h"></script>
 <!-- A raridade conquistada. Antes do data.js, que desenha o corpo a
      partir dela. A conta dela vive hoje no ficha-fu.js
      (fuRaridadeDoNivel); este arquivo e a porta por onde o jogo a pede. -->
-<script src="js/raridade.js?v=2026-09-13g"></script>
+<script src="js/raridade.js?v=2026-09-13h"></script>
 <!-- O cruzamento. Depois do nascimento e do raridade, que ele lê. -->
-<script src="js/reproducao.js?v=2026-09-13g"></script>
+<script src="js/reproducao.js?v=2026-09-13h"></script>
 <!-- A ficha do motor novo. Entra ao lado da antiga enquanto a troca
      decorre: os dois motores coexistem ate o velho sair. -->
-<script src="js/ficha-fu.js?v=2026-09-13g"></script>
-<script src="js/vantagens-fu.js?v=2026-09-13g"></script>
-<script src="js/combate-fu.js?v=2026-09-13g"></script>
-<script src="js/magias-fu.js?v=2026-09-13g"></script>
-<script src="js/ficha-fu-ui.js?v=2026-09-13g"></script>
-<script src="js/arena-fu.js?v=2026-09-13g"></script>
-<script src="js/equipa.js?v=2026-09-13g"></script>
-<script src="js/combate-ui.js?v=2026-09-13g"></script>
-<script src="js/pve-fu.js?v=2026-09-13g"></script>
-<script src="js/ui.js?v=2026-09-13g"></script>
-<script src="js/modal.js?v=2026-09-13g"></script>
-<script src="js/firebase.js?v=2026-09-13g"></script>
-<script src="js/gametick.js?v=2026-09-13g"></script>
-<script src="js/evolucao.js?v=2026-09-13g"></script>
-<script src="js/escolha.js?v=2026-09-13g"></script>
-<script src="js/fratura.js?v=2026-09-13g"></script>
-<script src="js/historico.js?v=2026-09-13g"></script>
-<script src="js/actions.js?v=2026-09-13g"></script>
-<script src="js/mini-avatar.js?v=2026-09-13g"></script>
-<script src="js/minigames.js?v=2026-09-13g"></script>
-<script src="js/summon.js?v=2026-09-13g"></script>
-<script src="js/batalha.js?v=2026-09-13g"></script>
-<script src="js/fazenda.js?v=2026-09-13g"></script>
-<script src="js/eggs.js?v=2026-09-13g"></script>
-<script src="js/items.js?v=2026-09-13g"></script>
-<script src="js/market.js?v=2026-09-13g"></script>
-<script src="js/coinshop.js?v=2026-09-13g"></script>
-<script src="js/cards.js?v=2026-09-13g"></script>
-<script src="js/rouba-monte.js?v=2026-09-13g"></script>
-<script src="js/mina.js?v=2026-09-13g"></script>
-<script src="js/batalha-naval.js?v=2026-09-13g"></script>
-<script src="js/snake.js?v=2026-09-13g"></script>
-<script src="js/labirinto.js?v=2026-09-13g"></script>
-<script src="js/cambio.js?v=2026-09-13g"></script>
-<script src="js/arena.js?v=2026-09-13g"></script>
-<script src="js/lore.js?v=2026-09-13g"></script>
-<script src="js/prologo.js?v=2026-09-13g"></script>
-<script src="js/lore-caps/cap1.js?v=2026-09-13g"></script>
-<script src="js/lore-caps/cap2.js?v=2026-09-13g"></script>
-<script src="js/lore-caps/cap3.js?v=2026-09-13g"></script>
-<script src="js/lore-caps/cap4.js?v=2026-09-13g"></script>
-<script src="js/amigos.js?v=2026-09-13g"></script>
-<script src="js/auth.js?v=2026-09-13g"></script>
+<script src="js/ficha-fu.js?v=2026-09-13h"></script>
+<script src="js/vantagens-fu.js?v=2026-09-13h"></script>
+<script src="js/combate-fu.js?v=2026-09-13h"></script>
+<script src="js/magias-fu.js?v=2026-09-13h"></script>
+<script src="js/ficha-fu-ui.js?v=2026-09-13h"></script>
+<script src="js/arena-fu.js?v=2026-09-13h"></script>
+<script src="js/equipa.js?v=2026-09-13h"></script>
+<script src="js/combate-ui.js?v=2026-09-13h"></script>
+<script src="js/pve-fu.js?v=2026-09-13h"></script>
+<script src="js/ui.js?v=2026-09-13h"></script>
+<script src="js/modal.js?v=2026-09-13h"></script>
+<script src="js/firebase.js?v=2026-09-13h"></script>
+<script src="js/gametick.js?v=2026-09-13h"></script>
+<script src="js/evolucao.js?v=2026-09-13h"></script>
+<script src="js/escolha.js?v=2026-09-13h"></script>
+<script src="js/fratura.js?v=2026-09-13h"></script>
+<script src="js/historico.js?v=2026-09-13h"></script>
+<script src="js/actions.js?v=2026-09-13h"></script>
+<script src="js/mini-avatar.js?v=2026-09-13h"></script>
+<script src="js/minigames.js?v=2026-09-13h"></script>
+<script src="js/summon.js?v=2026-09-13h"></script>
+<script src="js/batalha.js?v=2026-09-13h"></script>
+<script src="js/fazenda.js?v=2026-09-13h"></script>
+<script src="js/eggs.js?v=2026-09-13h"></script>
+<script src="js/items.js?v=2026-09-13h"></script>
+<script src="js/market.js?v=2026-09-13h"></script>
+<script src="js/coinshop.js?v=2026-09-13h"></script>
+<script src="js/cards.js?v=2026-09-13h"></script>
+<script src="js/rouba-monte.js?v=2026-09-13h"></script>
+<script src="js/mina.js?v=2026-09-13h"></script>
+<script src="js/batalha-naval.js?v=2026-09-13h"></script>
+<script src="js/snake.js?v=2026-09-13h"></script>
+<script src="js/labirinto.js?v=2026-09-13h"></script>
+<script src="js/arena.js?v=2026-09-13h"></script>
+<script src="js/lore.js?v=2026-09-13h"></script>
+<script src="js/prologo.js?v=2026-09-13h"></script>
+<script src="js/lore-caps/cap1.js?v=2026-09-13h"></script>
+<script src="js/lore-caps/cap2.js?v=2026-09-13h"></script>
+<script src="js/lore-caps/cap3.js?v=2026-09-13h"></script>
+<script src="js/lore-caps/cap4.js?v=2026-09-13h"></script>
+<script src="js/amigos.js?v=2026-09-13h"></script>
+<script src="js/auth.js?v=2026-09-13h"></script>
 
 <!-- Marketplace — mesclado como modal in-game (ver #marketplaceModal e js/marketplace-core.js) -->
-<script src="js/pool.js?v=2026-09-13g"></script>
-<script src="js/cristais.js?v=2026-09-13g"></script>
-<script src="js/avatars-market.js?v=2026-09-13g"></script>
-<script src="js/marketplace-core.js?v=2026-09-13g"></script>
+<script src="js/pool.js?v=2026-09-13h"></script>
+<script src="js/cristais.js?v=2026-09-13h"></script>
+<script src="js/avatars-market.js?v=2026-09-13h"></script>
+<script src="js/marketplace-core.js?v=2026-09-13h"></script>
 
-<script src="js/main.js?v=2026-09-13g"></script>
+<script src="js/main.js?v=2026-09-13h"></script>
 
 
 <script>
@@ -1532,9 +1523,9 @@
                Numa página de transparência, anunciar receita que não
                entra é o pior tipo de número errado.
 
-               Ficam as três taxas reais, todas do mercado. O câmbio e a
-               venda de ovos à pool são SAÍDAS e têm bloco próprio mais
-               abaixo — não entram aqui. -->
+               Ficam as três taxas reais, todas do mercado. Hoje a pool não
+               tem saída nenhuma para o jogador: o câmbio de moedas por
+               cristais saiu, como antes tinha saído a venda de ovos. -->
         </div>
       </div>
 
@@ -1578,23 +1569,6 @@
           <span data-i18n="mkt.transp.eggs_body">Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lado nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.</span>
           <div class="transp-cap" data-i18n="mkt.transp.burn_label">QUEIMAR (não toca na pool)</div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.egg_burn">Queimar um ovo</span><span class="transp-taxa-val">20 🪙 <span class="transp-sufixo" data-i18n="mkt.transp.coins_internal">(moedas internas)</span></span></div>
-        </div>
-      </div>
-
-      <!-- CÂMBIO / PLAY-TO-EARN -->
-      <div class="transp-block">
-        <div class="transp-block-title" data-i18n="mkt.transp.exchange_title">🔄 Câmbio Moedas → Cristais (Play-to-Earn)</div>
-        <div class="transp-block-body">
-          <span data-i18n="mkt.transp.exchange_body">Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda consoante o estado da pool — quanto mais cheia, mais barato.</span>
-          <div class="transp-cap" data-i18n="mkt.transp.exchange_rate">COTAÇÃO DO CÂMBIO (por 1 💎)</div>
-          <div class="transp-taxa-row"><span>Pool ≥ 1000 💎</span><span class="transp-taxa-val">1 000 🪙</span></div>
-          <div class="transp-taxa-row"><span>Pool ≥ 500 💎</span><span class="transp-taxa-val">1 500 🪙</span></div>
-          <div class="transp-taxa-row"><span>Pool ≥ 100 💎</span><span class="transp-taxa-val">2 000 🪙</span></div>
-          <div class="transp-note" data-i18n="mkt.transp.exchange_note">
-            Requisito: avatar nível ≥ 20<br>
-            O câmbio só gasta o EXCEDENTE da pool: o que sobra depois de o cofre cobrir todos os cristais que os jogadores já têm, e acima de uma reserva de <strong style="color:var(--text);">400 💎</strong> que fica para a queima de ovos.<br>
-            Limite diário: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong>
-          </div>
         </div>
       </div>
 

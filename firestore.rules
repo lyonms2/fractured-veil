@@ -16,8 +16,7 @@ service cloud.firestore {
     //
     //  As três travas viviam no sítio que o atacante controlava, portanto
     //  caíam juntas: escrever gs.cristais e apagar o resgateLog dava um
-    //  saque sem limite. O mesmo valia para o cambioLog, de onde o
-    //  api/cambiar.js tira o tecto diário do câmbio.
+    //  saque sem limite.
     //
     //  Agora esses campos são do SERVIDOR. O Admin SDK não passa por
     //  regras, portanto os endpoints continuam a escrevê-los; o cliente
@@ -27,11 +26,11 @@ service cloud.firestore {
     //
     //  AS MOEDAS FICAM DE FORA, e é uma decisão, não um esquecimento: o
     //  earnCoins() credita-as no cliente em doze sítios (minijogos, PvE,
-    //  ovos). Travá-las aqui parava o jogo. Fica em aberto forjar moedas
-    //  e trocá-las por cristais — mas o câmbio exige nível 20 e tem tecto
-    //  diário por raridade (1/2/4), que agora vive num cambioLog que o
-    //  cliente já não escreve, mais o tecto global de 100 da pool. De
-    //  dreno sem limite passa a fio de 4 cristais por dia.
+    //  ovos). Travá-las aqui parava o jogo. Fica em aberto forjar moedas,
+    //  mas elas só compram itens da loja: o câmbio de moedas por cristais
+    //  saiu do jogo. O cambioLog e o ultimoCambio, que eram dele,
+    //  continuam fechados aqui embaixo — ninguém os escreve, e um campo
+    //  fechado não custa nada.
     //
     //  Mover as recompensas para o servidor é o passo seguinte, e é outro
     //  trabalho.

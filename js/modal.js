@@ -201,48 +201,61 @@ const ModalManager = {
   }
 };
 
-function openGameSelector() {
-  const rb  = rarityBonus();
+/* As pastilhas das dificuldades. Servem o seletor de jogos e a batalha,
+   que usam a MESMA dificuldade: escolher o Mestre num lugar escolhe no
+   outro. */
+function diffPillsHTML() {
   const d   = miniDifficulty();
   const max = maxUnlockedTier();
-  const r   = n => Math.round(n);
+  return DIFF_TIERS.map((dt, i) => {
+    const unlocked  = i <= max;
+    const active    = dt.tier === d.tier;
+    const label     = t(dt.i18nKey);
+    const tipLocked = t('diff.locked_tip') + ' ' + dt.minNivel;
+    return `<button class="diff-pill ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
+      data-tier="${i}"
+      onclick="${unlocked ? 'setDifficulty('+i+')' : ''}"
+      title="${!unlocked ? tipLocked : label}">
+      ${!unlocked
+        ? '<span class="dp-lock">🔒</span>'
+        : `<span class="dp-icon">${dt.icon}</span>`}
+      <span>${label}</span>
+    </button>`;
+  }).join('');
+}
 
-  // ── Difficulty pills ──
+function renderGameSelector() {
+  const rb = rarityBonus();
+  const d  = miniDifficulty();
+  const r  = n => Math.round(n);
+
   const pillsEl = document.getElementById('diffPills');
-  if(pillsEl) {
-    pillsEl.innerHTML = DIFF_TIERS.map((dt, i) => {
-      const unlocked  = i <= max;
-      const active    = dt.tier === d.tier;
-      const label     = t(dt.i18nKey);
-      const tipLocked = t('diff.locked_tip') + ' ' + dt.minNivel;
-      return `<button class="diff-pill ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
-        data-tier="${i}"
-        onclick="${unlocked ? 'setDifficulty('+i+')' : ''}"
-        title="${!unlocked ? tipLocked : label}">
-        ${!unlocked
-          ? '<span class="dp-lock">🔒</span>'
-          : `<span class="dp-icon">${dt.icon}</span>`}
-        <span>${label}</span>
-      </button>`;
-    }).join('');
-  }
+  if(pillsEl) pillsEl.innerHTML = diffPillsHTML();
 
-  // ── Reward labels ──
-  const memEl = document.getElementById('rewardMemoria');
-  if(memEl) {
-    const xpMin = r(d.xp*1.0*rb.xp); const xpMax = r(d.xp*1.6*rb.xp);
-    const cMin  = r(d.coins*1.0*rb.moedas); const cMax = r(d.coins*1.6*rb.moedas);
-    memEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
-  }
-  const simEl = document.getElementById('rewardSimon');
-  if(simEl) {
-    const xpMin = r(d.xp*0.5*rb.xp); const xpMax = r(d.xp*1.5*rb.xp);
-    const cMin  = r(d.coins*0.5*rb.moedas); const cMax = r(d.coins*1.5*rb.moedas);
-    simEl.textContent = t('modal.reward_range', {xpMin, xpMax, cMin, cMax});
-  }
-  // Os rotulos de premio do Campo Minado e do Labirinto viviam aqui.
-  // Os dois sairam do seletor e os elementos ja nao existem.
+  /* ── Os rótulos de prêmio ──
+     Com as mesmas frações que cada jogo usa ao pagar. Os de antes tinham
+     sido escritos à parte e não batiam: a Memória prometia de 1,0 a 1,6
+     vezes a base e pagava de 0,15 a 1,0, e o Snake nem tinha rótulo —
+     ficava o texto fixo do HTML.
 
+     As moedas vão sempre até o perfeito; o piso é o que muda. A Memória
+     termina sempre o tabuleiro e nunca paga menos que MEM_MOEDA_MIN; o
+     Simon e o Snake podem acabar sem nada. */
+  const rotulo = (id, xpMin, xpMax, cMin) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = t('modal.reward_range', {
+      xpMin: r(d.xp * xpMin * rb.xp),      xpMax: r(d.xp * xpMax * rb.xp),
+      cMin:  r(d.coins * cMin * rb.moedas), cMax:  r(d.coins * rb.moedas),
+    });
+  };
+  rotulo('rewardMemoria', 0.5, 1.5, (typeof MEM_MOEDA_MIN === 'number') ? MEM_MOEDA_MIN : 0);
+  rotulo('rewardSimon',   0,   1.3, 0);
+  rotulo('rewardSnake',   0,   (typeof SNAKE_XP_MULT !== 'undefined') ? SNAKE_XP_MULT[d.tier] : 2, 0);
+}
+
+function openGameSelector() {
+  renderGameSelector();
   ModalManager.open('gameSelector');
 }
 
@@ -285,11 +298,46 @@ function closeMiniModal(id) {
 }
 
 // ── Dificuldades ──
+/* ── AS DIFICULDADES, E O QUE CADA UMA PAGA EM MOEDAS ──
+
+   As moedas servem para uma coisa só: comprar os itens da loja. Até
+   aqui também se trocavam por cristais, e cada jogo tinha inventado a
+   própria conta em cima dessa troca: o Snake e o Simon somavam bônus
+   por fora do multiplicador, e no Mestre um Snake perfeito pagava 380
+   moedas contra 130 da Memória, pelos mesmos 5 de energia.
+
+   Agora a regra é uma só:
+
+     `coins` é o que paga UM MINIJOGO PERFEITO nessa dificuldade.
+
+   Cada jogo diz que fração do perfeito o jogador fez, de 0 a 1, e o
+   miniReward multiplica. Nenhum jogo paga acima do perfeito, e nenhum
+   soma bônus por fora. A batalha PvE gasta 30 de energia (10 de cada
+   um dos três), o mesmo que seis minijogos, e por isso a vitória paga
+   seis minijogos perfeitos — ver PVE_PREMIO em js/pve-fu.js.
+
+   Os números saem da loja: um amuleto custa de 800 a 1600 e dura 30
+   dias, e o antídoto custa 300.
+
+     dificuldade   minijogo   vitória PvE   amuleto de 800
+     Fácil            12          72          ~67 jogos
+     Médio            24         144          ~33 jogos
+     Difícil          40         240          ~20 jogos
+     Mestre           60         360          ~13 jogos
+
+   A raridade do avatar ainda multiplica por cima (rarityBonus, em
+   js/state.js): 1,2 no Raro e 1,5 no Lendário.
+
+   `inimigo` é quanto os inimigos do PvE somam de nível em relação à
+   equipe. Antes a dificuldade só mudava o prêmio, e o Mestre era o
+   mesmo combate do Fácil pagando seis vezes mais.
+
+   O XP ficou como estava. */
 const DIFF_TIERS = [
-  { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:22,  minNivel:1  },
-  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:50,  minNivel:6  },
-  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:85,  minNivel:13 },
-  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:130, minNivel:21 },
+  { tier:0, i18nKey:'diff.easy',   icon:'🌿', label:'FÁCIL',   xp:14,  coins:12, inimigo:0.8, minNivel:1  },
+  { tier:1, i18nKey:'diff.medium', icon:'💧', label:'MÉDIO',   xp:28,  coins:24, inimigo:1.0, minNivel:6  },
+  { tier:2, i18nKey:'diff.hard',   icon:'🔥', label:'DIFÍCIL', xp:55,  coins:40, inimigo:1.2, minNivel:13 },
+  { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:60, inimigo:1.4, minNivel:21 },
 ];
 
 function maxUnlockedTier() {
@@ -309,7 +357,10 @@ function miniDifficulty() {
 function setDifficulty(tier) {
   if(tier > maxUnlockedTier()) return;
   selectedDifficulty = tier;
-  openGameSelector();
+  // Redesenha no lugar, sem abrir nada: as pastilhas também vivem no
+  // modal da batalha, e reabrir o seletor de jogos fechava a batalha.
+  renderGameSelector();
+  if (typeof btRenderDificuldade === 'function') btRenderDificuldade();
 }
 
 function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
@@ -317,7 +368,9 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
-  const coinGain = Math.round(d.coins * coinMult * rb.moedas);
+  // A fração do jogo perfeito, nunca acima dele — ver DIFF_TIERS.
+  const coinFrac = Math.max(0, Math.min(1, coinMult));
+  const coinGain = Math.round(d.coins * coinFrac * rb.moedas);
   xp      += xpGain;
   earnCoins(coinGain);
   const _oldVinculo = vinculo;

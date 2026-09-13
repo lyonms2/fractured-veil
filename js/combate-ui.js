@@ -46,6 +46,8 @@ function preencherFichaZoom(seed, raridade, nivel, nascimento) {   // seed = o s
 function renderEquipaBar() {
   const box = document.getElementById('equipaBar');
   if (!box || typeof equipaIdx !== 'function') return;
+  // O nível dos inimigos, no modal da batalha, é a soma desta equipe.
+  if (typeof btRenderDificuldade === 'function') btRenderDificuldade();
 
   const idx   = equipaIdx();
   const cheia = idx.length >= COMBATE_EQUIPA_MAX;

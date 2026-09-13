@@ -246,6 +246,10 @@ function _snakeRender() {
 }
 
 // ── Fim de jogo ────────────────────────────────────────────────────
+/* O XP da meta cumprida, por dificuldade. Mora aqui fora porque o rótulo
+   do seletor de jogos (js/modal.js) lê o mesmo número. */
+const SNAKE_XP_MULT = [1.3, 1.6, 1.8, 2.0];
+
 function _snakeEnd() {
   clearInterval(_snakeInterval);
   _snakeRunning = false;
@@ -268,14 +272,11 @@ function _snakeEnd() {
     } else {
       const cleared = frac >= 1.0;
       playSound && playSound(cleared || frac >= 0.8 ? 'win' : 'lose');
-      const xpMult = d.tier === 0 ? 1.3 : d.tier === 1 ? 1.6 : d.tier === 2 ? 1.8 : 2.0;
-      const _snCoinMults = [1.0, 1.4, 1.7, 2.0];
-      const _snBallBonus = [1, 2, 3, 4];
-      const _cappedScore = Math.min(_snakeScore, maxScore);
-      const _ballBonus   = Math.round(_cappedScore * _snBallBonus[d.tier] * rarityBonus().moedas);
+      const xpMult = SNAKE_XP_MULT[d.tier];
       if (typeof miniAvatarReagir === 'function') miniAvatarReagir(cleared ? 'festa' : 'mau');
-      const r = miniReward(frac * xpMult, frac * _snCoinMults[d.tier], cleared ? 3 : 1, cleared);
-      if(_ballBonus > 0) earnCoins(_ballBonus);
+      // Moedas: a fração da meta, e só. O bônus por símbolo e o
+      // multiplicador por dificuldade saíram — ver DIFF_TIERS em js/modal.js.
+      const r = miniReward(frac * xpMult, frac, cleared ? 3 : 1, cleared);
 
       document.getElementById('snakeResult').textContent =
         cleared          ? t('snake.result.clear', {n: _snakeScore}) :
@@ -284,7 +285,7 @@ function _snakeEnd() {
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
       document.getElementById('snakeReward').textContent =
-        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain + _ballBonus});
+        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
       scheduleSave();
 

@@ -36,10 +36,17 @@ const PVE_ENERGIA_DESISTIR = 4;   // desistir a meio sai mais barato
 // matar, se não for tratada com o antídoto.
 const PVE_FRATURA_CHANCE = 0.10;
 
+/* ── O PRÊMIO ──
+   `moedas` conta em MINIJOGOS PERFEITOS da dificuldade escolhida (o
+   `coins` do DIFF_TIERS, em js/modal.js). A batalha gasta 10 de energia
+   de cada um dos três — 30, o mesmo que seis minijogos —, e por isso a
+   vitória paga seis. A derrota paga um e meio: a energia foi gasta do
+   mesmo jeito, e sair sem nada de uma luta perdida no Mestre empurrava
+   todo mundo de volta para o Fácil. */
 const PVE_PREMIO = {
-  vitoria: { xp: 2.2, moedas: 2.0, vinculo: 5 },
-  derrota: { xp: 0.6, moedas: 0.5, vinculo: 1 },
-  empate:  { xp: 1.0, moedas: 0.9, vinculo: 2 },
+  vitoria: { xp: 2.2, moedas: 6,   vinculo: 5 },
+  derrota: { xp: 0.6, moedas: 1.5, vinculo: 1 },
+  empate:  { xp: 1.0, moedas: 3,   vinculo: 2 },
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -61,6 +68,21 @@ const PVE_PREMIO = {
 // três inimigos de nível 12 contra três de 12 é um par justo, e é o que
 // se vê.
 // ═══════════════════════════════════════════════════════════════════
+/* ── A DIFICULDADE MUDA O INIMIGO ──
+
+   O nível somado dos inimigos é o da equipe vezes o `inimigo` da
+   dificuldade (DIFF_TIERS, em js/modal.js): 0,8 no Fácil, 1,0 no Médio,
+   1,2 no Difícil e 1,4 no Mestre. Antes o inimigo era sempre do tamanho
+   da equipe e só o prêmio subia, portanto a dificuldade maior era só um
+   botão de ganhar mais.
+
+   O modal da batalha mostra este mesmo número antes de entrar
+   (btRenderDificuldade, em js/batalha.js). */
+function pveNivelInimigo(nivelEquipe) {
+  const d = (typeof miniDifficulty === 'function') ? miniDifficulty() : { inimigo: 1 };
+  return Math.max(3, Math.round((nivelEquipe | 0) * (d.inimigo || 1)));
+}
+
 function _pveGerarInimigo(nivelTotal) {
   /* Baralhados e consumidos sem repetição: dois nomes iguais na mesma
      equipa davam linhas absurdas no registo. Os sufixos saem da tradução
@@ -265,10 +287,11 @@ function abrirCombatePvE() {
     return;
   }
 
-  // A MESMA conta que a barra da equipa mostra (fuPoderDaEquipa, em
-  // js/ficha-fu.js): o número que o jogador vê é o que escolhe o inimigo.
+  // A MESMA conta que a barra da equipe mostra (fuPoderDaEquipa, em
+  // js/ficha-fu.js), vezes a dificuldade: o número que o jogador vê no
+  // modal da batalha é o que escolhe o inimigo.
   const nivelTotal = fuPoderDaEquipa(equipa);
-  const inimigo = _pveGerarInimigo(nivelTotal);
+  const inimigo = _pveGerarInimigo(pveNivelInimigo(nivelTotal));
   const semente = Math.floor(Math.random() * 1e6);
 
   /* A FRATURA VEM ANTES DA BATALHA. Entrava-se direto e a tela dizia
@@ -392,8 +415,8 @@ function _pveFecharContas(e) {
   e._fraturados = fraturados;
 
   // ── O prémio ──
-  // Os multiplicadores são os mesmos dos minijogos, para a batalha não
-  // ser um atalho para fora do sistema de progressão que já existe.
+  // A base é a mesma dos minijogos (DIFF_TIERS), para a batalha não ser
+  // um atalho para fora da progressão que já existe.
   const p = PVE_PREMIO[e.vencedor === 'A' ? 'vitoria'
                      : e.vencedor === 'B' ? 'derrota' : 'empate'];
 

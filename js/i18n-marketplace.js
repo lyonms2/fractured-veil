@@ -317,7 +317,6 @@ window.registerStrings({
   'mkt.transp.feed_title':     '⬆️ Como a Pool é Alimentada',
   'mkt.transp.weekly_title':   '🛠️ A Parte do Desenvolvedor',
   'mkt.transp.eggs_title':     '🥚 Ovos — Para Onde Podem Ir',
-  'mkt.transp.exchange_title': '🔄 Câmbio Moedas → Cristais (Play-to-Earn)',
 
   // Transparency block — body content & labels
   'mkt.transp.vault_body':     'Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.',
@@ -341,9 +340,6 @@ window.registerStrings({
   'mkt.transp.burn_label':     'QUEIMAR (não toca na pool)',
   'mkt.transp.egg_burn':       'Queimar um ovo',
   'mkt.transp.coins_internal': '(moedas internas)',
-  'mkt.transp.exchange_body':  'Jogadores ativos podem converter moedas ganhas no jogo em 💎 cristais reais. A taxa muda conforme o estado da pool — quanto mais cheia, mais barato.',
-  'mkt.transp.exchange_rate':  'COTAÇÃO DO CÂMBIO (por 1 💎)',
-  'mkt.transp.exchange_note':  'Requisito: avatar nível ≥ 20\nO câmbio só gasta o EXCEDENTE da pool: o que sobra depois de o cofre cobrir todos os cristais que os jogadores já podem sacar, e acima de uma reserva de <strong style="color:var(--text);">400 💎</strong> que fica para a queima de ovos.\nLimite por conta: <strong style="color:var(--text);">Comum 1💎 · Raro 2💎 · Lendário 4💎</strong> por dia\nA pool inteira não entrega mais de <strong style="color:var(--text);">100 💎 por dia</strong>, somando o câmbio e a queima de ovos.',
   'mkt.transp.polygonscan':    '— Ver no Polygonscan ↗',
   'mkt.transp.vault_active':   '✅ Cofre ativo na Polygon Mainnet.',
   'mkt.pool.system':           'sistema',
@@ -646,7 +642,6 @@ window.registerStrings({
   'mkt.transp.feed_title':     '⬆️ How the Pool is Fed',
   'mkt.transp.weekly_title':   '🛠️ The Developer',
   'mkt.transp.eggs_title':     '🥚 Eggs — Where They Can Go',
-  'mkt.transp.exchange_title': '🔄 Coins → Crystals Exchange (Play-to-Earn)',
 
   // Transparency block — body content & labels
   'mkt.transp.vault_body':     'All 💎 purchases with MATIC go into a <strong>smart contract</strong> on the Polygon blockchain — public code that no one can alter. Redemptions are paid directly from this vault.',
@@ -670,9 +665,6 @@ window.registerStrings({
   'mkt.transp.burn_label':     'BURN (pool untouched)',
   'mkt.transp.egg_burn':       'Burn an egg',
   'mkt.transp.coins_internal': '(internal coins)',
-  'mkt.transp.exchange_body':  'Active players can convert coins earned in the game into real 💎 crystals. The rate changes based on pool status — the fuller it is, the cheaper.',
-  'mkt.transp.exchange_rate':  'EXCHANGE RATE (per 1 💎)',
-  'mkt.transp.exchange_note':  'Requirement: avatar level ≥ 20\nThe exchange only spends the pool SURPLUS: what is left once the vault covers every crystal players can already withdraw, and above a <strong style="color:var(--text);">400 💎</strong> reserve kept for egg burning.\nPer-account limit: <strong style="color:var(--text);">Common 1💎 · Rare 2💎 · Legendary 4💎</strong> per day\nThe whole pool never pays out more than <strong style="color:var(--text);">100 💎 a day</strong>, counting the exchange and egg burning.',
   'mkt.transp.polygonscan':    '— View on Polygonscan ↗',
   'mkt.transp.vault_active':   '✅ Vault active on Polygon Mainnet.',
   'mkt.pool.system':           'system',

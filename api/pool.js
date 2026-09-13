@@ -15,8 +15,8 @@ const { getAuth }                      = require('firebase-admin/auth');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 /* O POOL_ALVO, o POOL_LIMITE_DIA, o saqueDeHoje e o marcarSaque saíram
-   daqui com a queima de ovos. Continuam vivos no _pool-economia.js, que
-   é quem os empresta ao api/cambiar.js — a saída da pool que restou. */
+   daqui com a queima de ovos, e do projeto com o câmbio de moedas por
+   cristais, que era o último a usá-los (no api/_pool-economia.js). */
 const PRICE_MIN       = 1;
 const PRICE_MAX       = 10000;
 
@@ -38,8 +38,8 @@ function getMesAtual() { return new Date().toISOString().slice(0, 7); }
 // ═══════════════════════════════════════════════════════════════
 // COBERTURA — o cofre chega para os cristais que existem?
 //
-// A pool nunca CRIA cristais: o cambio tira-lhe exactamente o que da ao
-// jogador, o PvP paga com as apostas dos dois, e os convites saem do que
+// A pool nunca CRIA cristais: o PvP paga com as apostas dos dois, e os
+// convites saem do que
 // se saca. A unica emissao e a compra em MATIC, e as duas taxas batem
 // certo (10 💎 por MATIC a comprar, 10 por MATIC a resgatar), portanto a
 // cobertura e 1:1 por construcao.
@@ -248,9 +248,8 @@ async function handleTaxa(req, res, db, poolRef, uid) {
 
    O QUE ISTO SIGNIFICA PARA A ECONOMIA, dito com todas as letras: o
    jogador já não tem forma de tirar cristais da pool DESTRUINDO alguma
-   coisa. A saída que resta é o câmbio (api/cambiar.js), que troca
-   moedas por cristais com nível 20 à entrada, tecto diário por
-   raridade e o tecto global de 100 💎/dia da própria pool.
+   coisa. A última saída, o câmbio de moedas por cristais, também saiu:
+   as moedas passaram a servir só para a loja de itens.
 
    O que provavelmente substitui isto: queimar o AVATAR, agora que é
    ele que conquista a raridade. Hoje queimar um avatar não paga nada —

@@ -35,9 +35,7 @@ function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
 
    Quem escrevesse gs.cristais e apagasse o resgateLog no próprio
    documento passava as quatro travas de uma vez, porque as quatro viviam
-   no sítio que ele controlava. O mesmo valia para o cambioLog, de onde o
-   api/cambiar.js tira o limite diário de câmbio: gravá-lo a null zerava
-   o limite.
+   no lugar que ele controlava.
 
    Agora o cliente não envia nada disto. Com merge:true, um campo omitido
    fica como está no servidor — portanto o saldo continua a ler-se e a
@@ -58,12 +56,10 @@ function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
    client-side. Travá-las aqui parava o jogo, e movê-las para o servidor é
    outro trabalho, muito maior do que este.
 
-   O que isto deixa em aberto, dito com todas as letras: quem forjar
-   moedas ainda pode trocá-las por cristais no câmbio. Mas o câmbio tem
-   travas que o saque não tinha — nível 20 no mínimo, e um tecto diário
-   por raridade (1 comum, 2 raro, 4 lendário) que agora vive no cambioLog
-   que o cliente deixou de escrever, mais o tecto global de 100 da pool.
-   Passa-se de um dreno sem limite para um fio de 4 cristais por dia.
+   O que isto deixa em aberto é pouco: moedas forjadas compram itens da
+   loja e mais nada. Havia um câmbio de moedas por cristais, e com ele
+   uma moeda forjada virava dinheiro de verdade. O câmbio saiu, e as
+   moedas deixaram de tocar em cristais.
 
    Os CRISTAIS podem travar-se porque só vêm de respostas do servidor. As
    duas exceções — arena.js e batalha-naval.js, que os somam no cliente —
@@ -94,7 +90,6 @@ function getGameState() {
   if(hasPendingEgg) {
     return {
       gs:        _gsSemDinheiro(),
-      // cambioLog não vai: é do servidor (limite diário do câmbio)
       lastSeen:  Date.now()
       // avatarSlots deliberadamente omitido — merge:true preserva o valor atual no Firebase
     };
@@ -241,7 +236,6 @@ function getGameState() {
                              .map(e => [String(e.id), e.semNinhoDesde])),
     activeSlotIdx: activeSlotIdx,
     gs:            _gsSemDinheiro(),
-    // cambioLog não vai: é do servidor (limite diário do câmbio)
     lastSeen:      Date.now(),
     // Quem joga. No topo e nao dentro do gs: o gs e o saldo e o
     // progresso, e este e a pessoa. Ver js/identidade.js.
@@ -262,7 +256,6 @@ function applyGameState(data) {
 
   // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
-  if(data.cambioLog !== undefined) window._cambioLog = data.cambioLog;
   if(data.gs?.cristais   !== undefined) gs.cristais   = data.gs.cristais;
   else if(data.cristais  !== undefined) gs.cristais   = data.cristais;
   if(data.gs?.extraSlots !== undefined) gs.extraSlots = data.gs.extraSlots;

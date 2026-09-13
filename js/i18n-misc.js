@@ -1,32 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════
-// I18N — Misc (cambio.js + amigos.js)
+// I18N — Misc (colônia, batalha e amigos.js)
 // Carregado após i18n.js · usa registerStrings()
 // ═══════════════════════════════════════════════════════════════════
 window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
-    // cambio.js
-    'cambio.bub.error':    'Erro no câmbio.',
-    'cambio.log.error':    'Câmbio: {msg}',
-    'cambio.bub.success':  '+{cristais} 💎 obtidos! ✨',
-    'cambio.log.success':  'Câmbio: {moedas} 🪙 → +{cristais} 💎',
-    'cambio.bub.conn_err': 'Erro de conexão. Tente novamente.',
-    'cambio.taxa':         'TAXA ATUAL',
-    'cambio.taxa_sub':     'por 💎',
-    'cambio.pool':         'POOL',
-    'cambio.pool.cheia':   '🟢 Cheia',
-    'cambio.pool.media':   '🟡 Média',
-    'cambio.pool.baixa':   '🟠 Baixa',
-    'cambio.pool.insuf':   '🔴 Insuficiente',
-    'cambio.limite':       'Seu limite ({raridade})',
-    'cambio.saldo':        'Seu saldo',
-    'cambio.esgotado':     'Limite diário atingido · Volte amanhã 🌙',
-    'cambio.teto_global':  'Teto da pool hoje',
-    'cambio.teto_cheio':   'A pool já entregou o máximo de hoje · Volte amanhã 🌙',
-    'cambio.nota':         'A taxa sobe quando a pool está baixa · Tudo reinicia à meia-noite UTC (21h de Brasília)',
-    'cambio.nota2':        'Cristais obtidos por câmbio são cristais normais',
-    'cambio.bloq.avatar':  'Sem avatar ativo.',
-    'cambio.bloq.nivel':   'Avatar precisa de nível {n}+.',
     // ── A COLÔNIA ──
     'fazenda.titulo':        '◆ A COLÔNIA',
     'fazenda.voltar':        '◆ COLÔNIA',
@@ -46,10 +24,6 @@ window.registerStrings(
     'fazenda.cuidar':        'CUIDAR',
     'fazenda.zoom':          'Ver de perto',
     'fazenda.coco':          '{n} cocô por limpar',
-    'cambio.bloq.pool':    'Pool insuficiente. Tente mais tarde.',
-    'cambio.bloq.excedente': 'A pool não tem excedente agora. O câmbio só usa o que sobra depois de todos os cristais estarem cobertos.',
-    'cambio.carregando':   'Carregando câmbio...',
-    'cambio.erro_dados':   'Erro ao carregar dados.',
 
     // amigos.js
     'amigos.log.visited':    '{icon} Visitaste {nome}! +{coins} 🪙 +{xp} XP',
@@ -97,28 +71,6 @@ window.registerStrings(
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
-    // cambio.js
-    'cambio.bub.error':    'Exchange error.',
-    'cambio.log.error':    'Exchange: {msg}',
-    'cambio.bub.success':  '+{cristais} 💎 obtained! ✨',
-    'cambio.log.success':  'Exchange: {moedas} 🪙 → +{cristais} 💎',
-    'cambio.bub.conn_err': 'Connection error. Try again.',
-    'cambio.taxa':         'CURRENT RATE',
-    'cambio.taxa_sub':     'per 💎',
-    'cambio.pool':         'POOL',
-    'cambio.pool.cheia':   '🟢 Full',
-    'cambio.pool.media':   '🟡 Medium',
-    'cambio.pool.baixa':   '🟠 Low',
-    'cambio.pool.insuf':   '🔴 Insufficient',
-    'cambio.limite':       'Your limit ({raridade})',
-    'cambio.saldo':        'Your balance',
-    'cambio.esgotado':     'Daily limit reached · Come back tomorrow 🌙',
-    'cambio.teto_global':  "Pool's cap today",
-    'cambio.teto_cheio':   'The pool already paid out its daily maximum · Come back tomorrow 🌙',
-    'cambio.nota':         'The rate rises when the pool is low · Everything resets at midnight UTC',
-    'cambio.nota2':        'Crystals from the exchange are ordinary crystals',
-    'cambio.bloq.avatar':  'No active avatar.',
-    'cambio.bloq.nivel':   'Avatar needs level {n}+.',
     // ── THE COLONY ──
     'fazenda.titulo':        '◆ THE COLONY',
     'fazenda.voltar':        '◆ COLONY',
@@ -134,10 +86,6 @@ window.registerStrings(
     'fazenda.cuidar':        'TEND',
     'fazenda.zoom':          'Take a closer look',
     'fazenda.coco':          '{n} poop to clean up',
-    'cambio.bloq.pool':    'Pool too low. Try again later.',
-    'cambio.bloq.excedente': 'The pool has no surplus right now. The exchange only spends what is left once every crystal is covered.',
-    'cambio.carregando':   'Loading exchange...',
-    'cambio.erro_dados':   'Could not load the data.',
 
     // amigos.js
     'amigos.log.visited':    '{icon} Visited {nome}! +{coins} 🪙 +{xp} XP',

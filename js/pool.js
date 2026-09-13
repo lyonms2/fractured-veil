@@ -42,10 +42,11 @@ function _podeSairHoje(saldo, saqueHoje) {
 
 function poolDisponivel() {
   if(!poolData) return false;
-  // Lia o saqueHoje cru, sem a janela das 24h que o servidor aplica
-  // (marcarSaque, no api/_pool-economia.js): um contador de ontem
-  // dizia "pool indisponível" para uma pool que o servidor deixaria
-  // sacar. É a mesma pergunta, tem de ter a mesma resposta.
+  // Lia o saqueHoje cru, sem a janela das 24h que o servidor aplicava
+  // (marcarSaque, no api/_pool-economia.js, que saiu com o câmbio): um
+  // contador de ontem dizia "pool indisponível" para uma pool que o
+  // servidor deixaria sacar. É a mesma pergunta, tem de ter a mesma
+  // resposta.
   const expirou = (Date.now() - (poolData.ultimoReset || 0)) > 86400000;
   const hoje    = expirou ? 0 : (poolData.saqueHoje || 0);
   return poolData.cristais > 0 && hoje < POOL_LIMITE_DIA;
@@ -194,8 +195,7 @@ function renderPoolStatsCard() {
 }
 
 // ═══════════════════════════════════════════
-// CÁLCULO DE % DINÂMICO (espelho do _pool-economia.js)
-// Usado apenas para exibição no frontend
+// CÁLCULO DE % DINÂMICO (espelhava o api/_pool-economia.js, que saiu)
 // ═══════════════════════════════════════════
 // Preenche os campos dinâmicos da aba de transparência.
 //

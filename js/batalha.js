@@ -23,7 +23,32 @@ function abrirBatalha() {
   // do último acesso mostrava gente que já lá não está.
   if (typeof renderEquipaBar === 'function') renderEquipaBar();
   _btSincronizarModos();
+  btRenderDificuldade();
 }
+
+/* ── A DIFICULDADE DA BATALHA ──
+
+   É a mesma do seletor de jogos (DIFF_TIERS, em js/modal.js), com as
+   mesmas pastilhas e os mesmos cadeados por nível. Na batalha ela muda
+   duas coisas: o nível somado dos inimigos e o prêmio. As duas ficam
+   escritas embaixo das pastilhas, para ninguém escolher o Mestre sem
+   saber que o outro lado cresce junto. */
+function btRenderDificuldade() {
+  const box = document.getElementById('btDificuldade');
+  if (!box || typeof DIFF_TIERS === 'undefined' || typeof PVE_PREMIO === 'undefined') return;
+  const d  = miniDifficulty();
+  const rb = (typeof rarityBonus === 'function') ? rarityBonus() : { moedas: 1 };
+  const equipa = (typeof equipaDoJogador === 'function') ? equipaDoJogador() : [];
+  const eq  = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(equipa) : 0;
+  const ini = (typeof pveNivelInimigo === 'function') ? pveNivelInimigo(eq) : eq;
+  const moedas = k => Math.round(d.coins * PVE_PREMIO[k].moedas * rb.moedas);
+  box.innerHTML = `<div class="diff-pills-row">${diffPillsHTML()}</div>
+    <div class="bt-dif-info">
+      ${equipa.length ? `<div>${t('pve.dif.nivel', { ini, eq })}</div>` : ''}
+      <div>${t('pve.dif.premio', { v: moedas('vitoria'), e: moedas('empate'), d: moedas('derrota') })}</div>
+    </div>`;
+}
+window.btRenderDificuldade = btRenderDificuldade;
 
 function fecharBatalha() { ModalManager.close('batalhaModal'); }
 

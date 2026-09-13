@@ -151,7 +151,6 @@ async function disconnectWallet() {
   itemInventory   = [];
   dirtyLevel = 0; poopCount = 0; poopPressure = 0;
   faseVista = -1; nivelVisto = -1;
-  window._cambioLog = null;
   // O nome de quem joga sai com a sessao. Ficar para tras dava o nome
   // do anterior a quem entrasse a seguir no mesmo navegador — e esse
   // nome vai carimbado em cada avatar que se cria.

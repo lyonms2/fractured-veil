@@ -4,6 +4,11 @@
 const MEM_SIMBOLOS = ['🔥','💧','🌿','⚡','🪨','🌪️','🌑','✨'];
 let memCards = [], memFlipped = [], memMatched = 0, memErrors = 0, memLocked = false;
 
+/* O pior que a Memória paga, em fração do jogo perfeito. Ela termina
+   sempre o tabuleiro — não há derrota —, e por isso nunca sai de mãos
+   vazias. */
+const MEM_MOEDA_MIN = 0.4;
+
 function startMemoria() {
   if(vitals.energia < 10) { showBubble(t('mg.bub.tired')); ModalManager.close('memoriaModal'); return; }
   const d = miniDifficulty();
@@ -81,10 +86,13 @@ function updateMemInfo() {
 function memVictory() {
   if (typeof miniAvatarReagir === 'function') miniAvatarReagir('festa');
   playSound('win');
-  const _dMem    = miniDifficulty();
-  const _baseMem = [0.65, 0.75, 0.85, 1.0][_dMem.tier];
   const xpMult   = Math.max(0.5,  1.5 - memErrors * 0.08);
-  const coinMult = Math.max(0.15, _baseMem - memErrors * 0.12);
+  /* As moedas contam só os erros ALÉM de uma folga, e a folga cresce com
+     o tabuleiro: metade dos pares (2 no Fácil, 5 no Mestre). Achar 10
+     pares sem errar nenhum é quase sorte, e cobrar cada erro igual em 4
+     pares e em 10 punia justamente quem joga a dificuldade maior. */
+  const _folgaMem = Math.floor(memCards.length / 4);
+  const coinMult  = Math.max(MEM_MOEDA_MIN, 1 - Math.max(0, memErrors - _folgaMem) * 0.1);
   const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : memErrors <= 5 ? 10 : 5;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
@@ -203,17 +211,17 @@ function simonVictory() {
   // Total de acertos possíveis = 1+2+...+maxRounds
   const maxHits  = maxRounds * (maxRounds + 1) / 2;
   const frac     = maxHits > 0 ? simonCorrectHits / maxHits : 1;
-  const _simonTierF = [1.0, 1.2, 1.4, 1.8][d.tier];
-  const coinMult  = frac * _simonTierF + 0.4;
+  // Chegou ao fim da sequência: é o jogo perfeito, e paga o perfeito. O
+  // bônus que se somava no Difícil e no Mestre saiu — ver DIFF_TIERS em
+  // js/modal.js.
+  const coinMult  = 1;
   const xpMult    = frac + 0.3;
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
-  const _simonBonus = d.tier >= 2 ? Math.round(d.coins * (d.tier === 2 ? 0.2 : 0.4) * rarityBonus().moedas) : 0;
-  if(_simonBonus > 0) earnCoins(_simonBonus);
   document.getElementById('simonResult').textContent = t('mg.simon.master');
   document.getElementById('simonResult').className   = 'mini-result-box win';
-  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain + _simonBonus});
+  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain});
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   document.getElementById('simonSeqDisplay').textContent = '';
   showBubble(t('mg.simon.bub.master'));
