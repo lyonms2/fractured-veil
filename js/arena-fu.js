@@ -1827,15 +1827,45 @@ function _afLance(html, acrescenta) {
   _afLanceTimer = setTimeout(() => el.classList.remove('viva'), AF_PAUSA * 6);
 }
 
-function _afAbrirHistorico() {
+/* ══ O PAINEL POR CIMA DA BATALHA ══
+
+   A ficha e o histórico abrem no mesmo painel, e cada um montava a casca
+   à mão — a caixa, o `stopPropagation`, o clique no fundo para fechar. Duas
+   cópias da mesma casca; o botão de fechar teria de ser escrito nas duas
+   e, um dia, só uma o teria.
+
+   ── O ✕ ──
+
+   Fechar era tocar FORA do painel. No celular o painel ocupa quase a tela
+   inteira (335 de 355px de largura, 772 de 792 de altura), e o que sobra
+   de fundo são dez píxeis em volta: tocar ali é mirar numa fresta, e quem
+   não sabe que o fundo fecha não tem como adivinhar.
+
+   O botão fica grudado no canto de cima enquanto a ficha rola, e o toque
+   no fundo continua fechando, para quem já estava acostumado. */
+function _afAbrirPainel(html) {
   const el = document.getElementById('cbAjuda');
   if (!el) return;
+  const rot = esc(t('af.fechar'));
   el.innerHTML = `<div class="cb-ajuda-cx" onclick="event.stopPropagation()">
-    ${_afHistorico.slice(-40).map(x =>
-      `<p class="cb-hist"><i>${x.ronda}</i> ${x.html}</p>`).join('')}
+    <button type="button" class="cb-ajuda-fechar" onclick="_afFecharPainel()"
+            title="${rot}" aria-label="${rot}">✕</button>
+    ${html}
   </div>`;
   el.classList.add('aberta');
-  el.onclick = () => { el.classList.remove('aberta'); el.innerHTML = ''; };
+  el.onclick = _afFecharPainel;
+}
+
+function _afFecharPainel() {
+  const el = document.getElementById('cbAjuda');
+  if (!el) return;
+  el.classList.remove('aberta');
+  el.innerHTML = '';
+}
+
+function _afAbrirHistorico() {
+  _afAbrirPainel(_afHistorico.slice(-40).map(x =>
+    `<p class="cb-hist"><i>${x.ronda}</i> ${x.html}</p>`).join(''));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1860,13 +1890,8 @@ function _afAbrirHistorico() {
    O lutador leva o nome consigo, e é ele que a faixa lê. */
 function _afFicha(id) {
   const c = _afPorId(id);
-  const el = document.getElementById('cbAjuda');
-  if (!c || !el || typeof renderFichaFU !== 'function') return;
-  el.innerHTML = `<div class="cb-ajuda-cx" onclick="event.stopPropagation()">
-    ${renderFichaFU(null, c)}
-  </div>`;
-  el.classList.add('aberta');
-  el.onclick = () => { el.classList.remove('aberta'); el.innerHTML = ''; };
+  if (!c || typeof renderFichaFU !== 'function') return;
+  _afAbrirPainel(renderFichaFU(null, c));
 }
 
 // ═══════════════════════════════════════════════════════════════════
