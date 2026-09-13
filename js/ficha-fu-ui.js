@@ -392,6 +392,66 @@ function _fbOutras() {
                t('af.b.mover.ef'));
 }
 
+/* ══ O QUE ESTÁ ACONTECENDO ══
+
+   Só com batalha a correr, e só quando há alguma coisa: uma linha por
+   efeito que está a mexer nos números deste avatar NESTE momento.
+
+   ── PORQUE É QUE ISTO EXISTE ──
+
+   Estas coisas já se viam — em etiquetas a flutuar por cima da cabeça,
+   no céu do palco. Mas uma etiqueta que diz "Atordoado" não diz o que
+   Atordoado faz, e não há espaço no céu para o dizer. O jogador via
+   quatro palavras e não sabia porque é que o dado dele tinha encolhido.
+
+   As duas coisas separam-se e cada uma fica onde serve: a MARCA no
+   palco, para se ver de longe quem está como; a EXPLICAÇÃO aqui, na
+   ficha que já se abre a tocar no bicho.
+
+   ── DE ONDE SAI CADA LINHA ──
+
+   Do lutador, que é o que a batalha tem na mão — nunca da ficha, que é
+   o que ele é de nascença. Os seis estados dizem QUE DADO mordem, e esse
+   dado sai do FU_ESTADOS (js/combate-fu.js) e não de uma lista escrita
+   aqui: são a mesma tabela que o motor usa para encolher o dado, e a
+   frase não pode discordar da conta. */
+function _fbAgora(c) {
+  if (!c) return '';
+  const L = [];
+  const mau = (n, e) => L.push({ n, e, tom: 'mau' });
+  const bom = (n, e) => L.push({ n, e, tom: 'bom' });
+
+  /* Os seis estados primeiro: são o que muda os dados, e os dados são a
+     primeira linha do bloco. */
+  const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
+  for (const e of Object.keys(c.estados || {})) {
+    const m = (EST[e] && EST[e].morde) || [];
+    const at = m.map(k => t('af.ab.' + k));
+    mau(t('af.est.' + e), at.length > 1
+      ? t('af.ag.morde2', { a: at[0], b: at[1] })
+      : t('af.ag.morde1', { a: at[0] || '—' }));
+  }
+
+  if (c.guardando) bom(t('af.ag.guarda'), t('af.ag.guarda.ef'));
+
+  const ef = c.efeitos || {};
+  if (ef.resisteFisico) bom(t('af.m.concha'), t('af.ag.concha.ef'));
+  if (ef.defesaMinima)  bom(t('af.m.barreira'), t('af.ag.barreira.ef', { n: ef.defesaMinima }));
+  if (ef.misericordia)  bom(t('af.m.misericordia'), t('af.ag.mercy.ef'));
+  if (ef.subirDado)     bom(t('af.m.despertar'),
+                            t('af.ag.desperta.ef', { a: t('af.ab.' + ef.subirDado) }));
+
+  if (typeof fuNoAr === 'function' && fuNoAr(c)) bom(t('af.ag.voo'), t('af.ag.voo.ef'));
+  if (c.derrubado) mau(t('af.ag.chao'), t('af.ag.chao.ef'));
+  /* A crise em último: não é uma coisa que lhe fizeram, é o sítio onde
+     ele está — e lê-se melhor depois de se saber o resto. */
+  if (typeof fuEmCrise === 'function' && fuEmCrise(c)) mau(t('af.ag.crise'), t('af.ag.crise.ef'));
+
+  if (!L.length) return '';
+  return L.map(x => `<div class="fb-ag ${x.tom}">
+    <b>${esc(x.n)}</b><span>${esc(x.e)}</span></div>`).join('');
+}
+
 /* ── AS REGRAS ESPECIAIS ──
    As vantagens, a costura que as paga, e a que ele ainda pode vir a ter. */
 function _fbEspeciais(f) {
@@ -467,6 +527,7 @@ function renderFichaFU(slot, lutador) {
     ${_fbAtributos(f, lutador)}
     ${_fbDefesas(f, lutador)}
     ${_fbSubidas(f)}
+    ${_fbSeccao('af.sec.agora', _fbAgora(lutador))}
     ${_fbSeccao('af.sec.basicos', basicos)}
     ${_fbSeccao('af.sec.magias', feitico)}
     ${_fbSeccao('af.sec.outras', _fbOutras())}

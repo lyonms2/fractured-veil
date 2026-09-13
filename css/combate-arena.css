@@ -886,6 +886,24 @@
   backdrop-filter: blur(0.125rem); -webkit-backdrop-filter: blur(0.125rem);
   text-shadow: 0 0.0625rem 0.125rem rgba(0,0,0,.95);
   font-size: 0.3125rem; padding: 0.0625rem 0.25rem;
+  cursor: help;
+}
+/* ── E A COR DIZ DE QUE LADO ESTÁ ──
+
+   Eram as classes da arena antiga com os significados de lá agarrados:
+   os seis estados pintavam-se de VERDE (a classe chamava-se `veneno`, e
+   no motor antigo o veneno era uma coisa que se lançava) e o Despertar
+   — um dado a subir — pintava-se de VERMELHO. O jogador via um
+   "Atordoado" verde ao lado de um "PER▴" vermelho.
+
+   Duas classes, e dizem o que são. O vermelho e o verde nunca mais
+   trocam de lado porque o nome da classe não os deixa. */
+.cb-posto .cb-marca.mal   { color: #ff9b93; border-color: rgba(224,85,85,.45); }
+.cb-posto .cb-marca.bem   { color: #9fdc9f; border-color: rgba(122,184,122,.45); }
+/* A crise não é nem uma coisa nem outra: é o sítio onde ele está, e é o
+   gatilho de meia dúzia de efeitos dos dois lados. Leva o ouro da cena. */
+.cb-posto .cb-marca.crise {
+  color: #ffd08a; border-color: rgba(232,196,110,.6); font-weight: 700;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1536,25 +1554,83 @@
      regra. */
   background: none; border: none; padding: 0 0 1.25rem;
   text-align: center;
+  /* ── E NÃO É UMA COLUNA DE CAIXAS ──
+
+     A regra base do css/combate-batalha.css dá-lhe `display: flex` com
+     `flex-direction: column`, porque no desenho antigo o lance era uma
+     PILHA: uma caixa por turno, empilhadas de cima para baixo.
+
+     O lance de agora é uma frase, feita de elementos em linha — o nome
+     em negrito, os dois dados, o dano. Num contentor flex cada um deles
+     vira um item, e um item flex é sempre um bloco: as caixinhas dos
+     dados saíam com a largura toda do painel, uma por linha, com o nome
+     do atributo centrado por cima do número.
+
+     Volta a ser texto. */
+  display: block;
   opacity: 0; pointer-events: none;
   transition: opacity .45s ease-out;
   overflow: hidden;
   text-shadow: 0 0.0625rem 0.1875rem rgba(0,0,0,.95);
 }
 .cb-palco .cb-log.viva { opacity: 1; pointer-events: auto; }
+
+/* ── OS DOIS DADOS DE UM TESTE ──
+
+   Cada um na sua caixa, com o nome do atributo por cima em letra
+   minúscula. A do MAIOR acende: é o Resultado Alto, o que vai somar-se
+   ao dano, e era a única coisa importante da linha que não se via.
+
+   Quando os dois são iguais acendem ambas — e duas caixas acesas com
+   seis ou mais é a condição de crítico do manual, que a linha já
+   anuncia ao lado por palavras. */
+.cb-dado {
+  display: inline-block; min-width: 1rem; padding: 0 0.1875rem;
+  margin-right: 0.09375rem; border-radius: 0.1875rem;
+  border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.07);
+  font-style: normal; font-weight: 700; text-align: center; line-height: 1.35;
+  vertical-align: middle;
+}
+.cb-dado u {
+  display: block; text-decoration: none; font-weight: 400;
+  font-size: .62em; letter-spacing: .02em; opacity: .6;
+}
+.cb-dado.alto {
+  border-color: rgba(201,168,76,.65); background: rgba(201,168,76,.2);
+  color: var(--gold-light);
+}
+.cb-dado.critico {
+  border-color: rgba(255,154,76,.8); background: rgba(255,154,76,.26);
+  color: #ffc890; box-shadow: 0 0 0.375rem rgba(255,154,76,.45);
+}
+.cb-dado-mod {
+  font-style: normal; font-weight: 700; color: var(--gold-light);
+  margin-right: 0.09375rem; vertical-align: middle;
+}
+
 /* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
 .cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
-/* E fechado mostra-se UM turno: o que acabou de acontecer. Os
-   anteriores estão a um toque de distância, no histórico, e empilhá-los
-   aqui era garantir que o de cima ficava cortado. O mais recente é o
-   primeiro (ver _pveLog). */
-.cb-palco .cb-log:not(.aberto) > *:not(:first-child) { display: none; }
-.cb-palco .cb-log:not(.aberto) .cb-detalhe { display: none; }
-/* O cabeçalho do turno não entra no lance: o número do turno já está
-   escrito no canto de cima, e um "TURNO 3" em Cinzel grande por cima da
-   conta rouba-lhe o lugar. Dentro do modal volta, que é onde ele serve
-   para separar um turno do anterior. */
-.cb-palco .cb-log:not(.aberto) .cb-turno-cab { display: none; }
+/* ══ AQUI ESCONDIA-SE O LANCE INTEIRO ══
+
+   Havia três regras a esconder coisas dentro do lance, e vinham da arena
+   ANTIGA, onde o lance era uma pilha de `.cb-log-linha` — uma por turno —
+   e fechado mostrava-se só a primeira. As outras duas escondiam um
+   cabeçalho de turno e um detalhe que aquele desenho tinha.
+
+   O lance de agora não é uma pilha de turnos: é UMA linha por teste,
+   escrita com elementos em linha — o nome de quem bate em negrito, os
+   dados, o nome de quem apanha, o dano. E a regra dizia
+   `> *:not(:first-child) { display: none }`.
+
+   Ou seja: de cada linha via-se o PRIMEIRO elemento e mais nada. O nome
+   do atacante aparecia; o nome de quem apanhou, o "CRÍTICO", o "PIFÃO" e
+   o número do dano estavam lá, no HTML, invisíveis. Ficavam os pontos de
+   separação entre eles, e lia-se "Brama, a Nobre ·· 7 contra 8 ·" — que
+   é exactamente a queixa de que os turnos estavam confusos.
+
+   Nada nesta arena põe `aberto` no lance (o histórico abre noutro
+   painel, o `#cbAjuda`), portanto as três regras estavam sempre ligadas
+   e nenhuma delas tinha já um dono. Saem as três. */
 
 .cb-palco .cb-log-linha {
   background: rgba(4,3,10,.62);
@@ -1945,6 +2021,8 @@
   .cb-ajuda-cx .fb-campos   { font-size: 0.46875rem; }
   .cb-ajuda-cx .fb-campos b { font-size: 0.53125rem; }  /* 14     */
   .cb-ajuda-cx .fb-ef       { font-size: 0.5rem;     }
+  .cb-ajuda-cx .fb-ag       { font-size: 0.46875rem; }
+  .cb-ajuda-cx .fb-ag b     { flex-basis: 4.5rem; }
   .cb-ajuda-cx .fb-regra-top b    { font-size: 0.53125rem; }
   .cb-ajuda-cx .fb-regra-top span { font-size: 0.46875rem; }
   .cb-f-af           { font-size: 0.46875rem; }

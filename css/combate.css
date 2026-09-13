@@ -189,6 +189,25 @@
   color: #d6cfe2;
 }
 
+/* ── UMA LINHA DO "QUE ESTÁ ACONTECENDO" ──
+   Nome à esquerda numa coluna própria e a explicação ao lado, para os
+   nomes ficarem alinhados uns por baixo dos outros e a vista descer pela
+   coluna sem ter de procurar onde cada um começa. */
+.fb-ag {
+  display: flex; gap: 0.375rem; align-items: baseline;
+  margin: 0 0 0.1875rem; font-size: 0.625rem; line-height: 1.45;
+}
+.fb-ag b {
+  flex: 0 0 5.5rem; text-align: right;
+  font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.02rem;
+  overflow-wrap: anywhere;
+}
+/* min-width:0 dá licença ao texto para partir dentro da sua coluna em
+   vez de esticar a linha e pôr o painel a rolar de lado. */
+.fb-ag span { flex: 1 1 auto; min-width: 0; color: #d6cfe2; }
+.fb-ag.bom b { color: #8ede8e; }
+.fb-ag.mau b { color: #ff8a8a; }
+
 /* ── UMA REGRA ESPECIAL ──
    A vantagem custa uma costura, e a costura rende a vantagem — daí o
    verde e o vermelho estarem ao contrário do que se esperaria de "bom" e

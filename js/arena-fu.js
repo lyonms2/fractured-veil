@@ -187,17 +187,50 @@ function _afLutador(c) {
   const cls = ['cb-posto', lado, escolhido ? 'ativo' : '',
                c.vivo ? '' : 'caido', podeAgir ? 'pode' : ''].join(' ');
 
-  // as marcas: os estados, a guarda, o que dura a cena
+  /* ── AS MARCAS DO CÉU ──
+
+     Uma por coisa que está a mexer nos números dele. São a etiqueta, e
+     não a explicação: quem quiser saber o que "Atordoado" faz toca no
+     bicho e lê a secção O QUE ESTÁ ACONTECENDO da ficha, onde cabe a
+     frase inteira. Aqui cabe uma palavra, e o que ela serve é ver de
+     longe quem está como.
+
+     ── AS CORES ESTAVAM AO CONTRÁRIO ──
+
+     Havia três classes, e vinham da arena antiga com outros significados
+     agarrados: os seis estados levavam `veneno`, que o CSS pinta de
+     VERDE; e o Despertar — que é um dado a SUBIR — levava `buff`, que o
+     CSS pinta de VERMELHO. Um "Atordoado" verde ao lado de um "PER+"
+     vermelho diz ao jogador exactamente o contrário do que aconteceu.
+
+     Ficam duas, e dizem o que são: `mal` para o que o prejudica, `bem`
+     para o que o ajuda. A crise leva a sua, porque não é nem uma coisa
+     nem outra — é o sítio onde ele está. */
   const marcas = [];
-  const m = (txt, k) => marcas.push(`<span class="cb-marca ${k}">${txt}</span>`);
-  for (const e of Object.keys(c.estados)) m(t('af.est.' + e), 'veneno');
-  if (c.guardando) m('▲', 'escudo');
-  if (c.efeitos.resisteFisico)  m(t('af.m.concha'), 'escudo');
-  if (c.efeitos.defesaMinima)   m(t('af.m.barreira'), 'escudo');
-  if (c.efeitos.misericordia)   m(t('af.m.misericordia'), 'escudo');
-  if (c.efeitos.subirDado)      m(c.efeitos.subirDado + '+', 'buff');
-  if (typeof fuNoAr === 'function' && fuNoAr(c)) m('✧', 'escudo');
-  if (fuEmCrise(c)) m('!', 'veneno');
+  const m = (txt, k, ajuda) => marcas.push(
+    `<span class="cb-marca ${k}" title="${esc(ajuda || txt)}">${esc(txt)}</span>`);
+  const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
+  for (const e of Object.keys(c.estados)) {
+    const at = ((EST[e] && EST[e].morde) || []).map(k => t('af.ab.' + k));
+    m(t('af.est.' + e), 'mal', t('af.est.' + e) + ' — ' + (at.length > 1
+      ? t('af.ag.morde2', { a: at[0], b: at[1] })
+      : t('af.ag.morde1', { a: at[0] || '—' })));
+  }
+  if (c.guardando) m('▲', 'bem', t('af.ag.guarda') + ' — ' + t('af.ag.guarda.ef'));
+  if (c.efeitos.resisteFisico)
+    m(t('af.m.concha'), 'bem', t('af.m.concha') + ' — ' + t('af.ag.concha.ef'));
+  if (c.efeitos.defesaMinima)
+    m(t('af.m.barreira'), 'bem', t('af.m.barreira') + ' — '
+      + t('af.ag.barreira.ef', { n: c.efeitos.defesaMinima }));
+  if (c.efeitos.misericordia)
+    m(t('af.m.misericordia'), 'bem', t('af.m.misericordia') + ' — ' + t('af.ag.mercy.ef'));
+  if (c.efeitos.subirDado)
+    m(t('af.ab.' + c.efeitos.subirDado) + '▴', 'bem', t('af.m.despertar') + ' — '
+      + t('af.ag.desperta.ef', { a: t('af.ab.' + c.efeitos.subirDado) }));
+  if (typeof fuNoAr === 'function' && fuNoAr(c))
+    m('✧', 'bem', t('af.ag.voo') + ' — ' + t('af.ag.voo.ef'));
+  if (c.derrubado) m('▾', 'mal', t('af.ag.chao') + ' — ' + t('af.ag.chao.ef'));
+  if (fuEmCrise(c)) m('!', 'crise', t('af.ag.crise') + ' — ' + t('af.ag.crise.ef'));
 
   const pos = AF_POSTOS[Math.max(0, Math.min(2, c.posto))];
   const x = meu ? pos.x : 100 - pos.x;
@@ -492,8 +525,8 @@ function _afCartao(c) {
     </div>
     <div class="cb-ficha-barras">
       <div class="cb-ficha-nome">${esc(_afNome(c))}</div>
-      ${_afBarra(c.pv, c.ficha.pvMax, 'pv')}
-      ${_afBarra(c.pm, c.ficha.pmMax, 'pm')}
+      ${_afBarra(_afPvVisivel(c), c.ficha.pvMax, 'pv')}
+      ${_afBarra(_afPmVisivel(c), c.ficha.pmMax, 'pm')}
     </div>
     ${_afSetaVs(c, meu)}
   </div>`;
@@ -598,12 +631,83 @@ function _afDesenhar() {
 
    A subir é ao contrário: o rastro vai à frente, senão o verde novo
    aparecia por cima de uma faixa branca que ainda não tinha crescido. */
+/* ══ O QUE AINDA NÃO FOI REVELADO ══
+
+   Durante um turno cadenciado o MODELO já está no fim: o motor resolve o
+   turno inteiro antes de se desenhar o que quer que seja. Se as barras
+   lessem o modelo, a vida dos três alvos de uma barragem caía toda no
+   primeiro fotograma, e as batidas seguintes eram números a flutuar
+   sobre barras que já tinham descido.
+
+   Este mapa guarda, para quem ainda tem batida por tocar, o valor que
+   ele tinha ANTES do turno. Cada um sai daqui quando a sua batida toca.
+
+   ── PORQUE É UM VALOR E NÃO UMA LISTA DE NOMES ──
+
+   À primeira era um conjunto de ids, e o _afBarras saltava-os. Não
+   chegou: o campo e os cartões refazem-se por innerHTML sempre que a
+   chave de estrutura muda — e ela muda em todos os turnos, porque tem o
+   `_afQuem` lá dentro. O _afCartao escrevia a barra com `c.pv`, que já
+   é o valor final, e o salto voltava a entrar pela porta do lado.
+
+   Com o valor guardado, quem desenha o cartão tem o que mostrar. O de
+   ANTES sai da conta do próprio evento (o que ficou, mais o que perdeu,
+   menos o que a absorção lhe deu) — é a única fonte que sabe o meio do
+   turno, porque o modelo já não sabe. */
+let _afSegredo = null;
+
+/* A vida a mostrar para este lutador: a de antes enquanto a batida dele
+   não tocou, a do modelo em todo o resto do tempo. Uma porta só, e as
+   duas telas que desenham barras passam por ela. */
+function _afPvVisivel(c) {
+  const g = _afSegredo && _afSegredo.get(c.id);
+  return (g && g.pv != null) ? g.pv : c.pv;
+}
+function _afPmVisivel(c) {
+  const g = _afSegredo && _afSegredo.get(c.id);
+  return (g && g.pm != null) ? g.pm : c.pm;
+}
+
+/* Uma barra, com valores DITOS em vez de lidos do modelo. É por aqui que
+   a cadência escreve o meio do turno, e é a mesma função que o _afBarras
+   usa no fim — para não haver duas maneiras de pintar a mesma barra. */
+function _afBarraDe(id, pv, pm) {
+  const c = _afPorId(id);
+  const linha = id ? document.getElementById('cbCart' + id) : null;
+  if (!c || !linha) return;
+  if (pv != null) {
+    const f = Math.max(0, Math.min(100, (pv / Math.max(1, c.ficha.pvMax)) * 100));
+    const b = linha.querySelector('.cb-barra.pv');
+    if (b) {
+      const cheio = b.querySelector('i'), rastro = b.querySelector('u');
+      const antes = parseFloat(cheio.style.width) || 0;
+      if (f > antes) rastro.style.width = f + '%';   // a subir, vai à frente
+      cheio.style.width  = f + '%';
+      rastro.style.width = f + '%';                  // a descer, o CSS atrasa-o
+      b.classList.toggle('baixa', c.vivo && f <= 25);
+      const txt = b.querySelector('span');
+      if (txt) txt.textContent = pv + '/' + c.ficha.pvMax;
+    }
+  }
+  if (pm != null) {
+    const f = Math.max(0, Math.min(100, (pm / Math.max(1, c.ficha.pmMax)) * 100));
+    const b = linha.querySelector('.cb-barra.pm');
+    if (b) {
+      b.querySelector('i').style.width = f + '%';
+      b.querySelector('u').style.width = f + '%';
+      const txt = b.querySelector('span');
+      if (txt) txt.textContent = pm + '/' + c.ficha.pmMax;
+    }
+  }
+}
+
 function _afBarras() {
   if (!_afE) return;
   for (const c of _afE.A.concat(_afE.B)) {
     const linha = document.getElementById('cbCart' + c.id);
     if (linha) {
-      const fPV = Math.max(0, Math.min(100, (c.pv / Math.max(1, c.ficha.pvMax)) * 100));
+      const pvV = _afPvVisivel(c), pmV = _afPmVisivel(c);
+      const fPV = Math.max(0, Math.min(100, (pvV / Math.max(1, c.ficha.pvMax)) * 100));
       const pv = linha.querySelector('.cb-barra.pv');
       if (pv) {
         const cheio = pv.querySelector('i'), rastro = pv.querySelector('u');
@@ -613,16 +717,16 @@ function _afBarras() {
         rastro.style.width = fPV + '%';                    // a descer, o CSS atrasa-o
         pv.classList.toggle('baixa', c.vivo && fPV <= 25);
         const txt = pv.querySelector('span');
-        if (txt) txt.textContent = c.pv + '/' + c.ficha.pvMax;
+        if (txt) txt.textContent = pvV + '/' + c.ficha.pvMax;
       }
       // dos dois lados agora: o inimigo também mostra a magia dele
       const pm = linha.querySelector('.cb-barra.pm');
       if (pm) {
-        const fPM = Math.max(0, Math.min(100, (c.pm / Math.max(1, c.ficha.pmMax)) * 100));
+        const fPM = Math.max(0, Math.min(100, (pmV / Math.max(1, c.ficha.pmMax)) * 100));
         pm.querySelector('i').style.width = fPM + '%';
         pm.querySelector('u').style.width = fPM + '%';
         const txt = pm.querySelector('span');
-        if (txt) txt.textContent = c.pm + '/' + c.ficha.pmMax;
+        if (txt) txt.textContent = pmV + '/' + c.ficha.pmMax;
       }
       linha.classList.toggle('caido', !c.vivo);
     }
@@ -1141,12 +1245,81 @@ function _afAgir(acao) {
   _afMostrar(eventos);
 }
 
+/* ══ UM TURNO É UMA SEQUÊNCIA, E CONTA-SE ASSIM ══
+
+   Tudo acontecia de uma vez: a linha inteira do turno escrita no lance
+   com <br> entre os testes, os números a flutuarem todos ao mesmo tempo,
+   e as barras dos três alvos de uma barragem a descerem no mesmo
+   fotograma. Uma batalha inteira num instante, e depois novecentos
+   milissegundos de nada.
+
+   Isso é o motor a falar, e não a batalha a acontecer. O motor resolve
+   um turno de uma vez porque é o que um motor faz; a tela tem de o
+   contar por partes, porque é assim que se percebe qual foi o teste que
+   falhou e em quem é que caiu o quê.
+
+   ── AS BATIDAS ──
+
+   Uma batida é um teste com a sua consequência. Os eventos sem linha
+   própria — o gasto de PM, o fim da batalha — não são batidas: viajam
+   com a batida seguinte, porque o PM sai no mesmo instante em que a
+   magia se lança.
+
+   ── O COMPASSO ──
+
+   Cinco décimos de segundo entre batidas, e encurta quando são muitas:
+   uma Devastação em seis inimigos com meio segundo cada seriam três
+   segundos de espera. O teto de 1,9s no total mantém um turno longo
+   dentro do que se aguenta, e o piso de 0,24s garante que nem a mais
+   cheia das jogadas fica ilegível. */
 function _afMostrar(eventos) {
   _afOcupado = true;
-  _afLance(eventos.map(_afLanceDe).filter(Boolean).join('<br>'));
+
+  const batidas = [];
+  let pendentes = [];
+  for (const ev of eventos) {
+    const html = _afLanceDe(ev);
+    pendentes.push(ev);
+    if (html) { batidas.push({ evs: pendentes, html }); pendentes = []; }
+  }
+  // o que sobrou sem linha (o `fim`) vai com a última batida
+  if (pendentes.length) {
+    if (batidas.length) batidas[batidas.length - 1].evs.push(...pendentes);
+    else batidas.push({ evs: pendentes, html: null });
+  }
+
+  /* Quem só aparece numa batida por tocar guarda aqui o valor de ANTES,
+     e é esse que as barras mostram até a batida dele chegar. */
+  _afSegredo = new Map();
+  const guardar = (id, campo, valor) => {
+    if (!id || valor == null) return;
+    const g = _afSegredo.get(id) || {};
+    if (g[campo] == null) { g[campo] = valor; _afSegredo.set(id, g); }
+  };
+  for (const b of batidas) for (const ev of b.evs) {
+    if (ev.pvAlvo != null)
+      guardar(ev.alvo, 'pv', ev.pvAlvo + (ev.perda | 0) - (ev.curou | 0));
+    if (ev.tipo === 'gasto') guardar(ev.quem, 'pm', (ev.pmDepois | 0) + (ev.pm | 0));
+    if (ev.pvQuem != null)   guardar(ev.quem, 'pv', ev.pvQuem - (ev.drenou | 0));
+  }
+
   _afDesenhar();
-  _afEncenar(eventos);
-  setTimeout(() => { _afOcupado = false; _afAndar(); }, AF_PAUSA);
+
+  const passo = Math.max(240, Math.min(520, 1900 / Math.max(1, batidas.length)));
+  let i = 0;
+  const tocar = () => {
+    if (i >= batidas.length) {
+      _afSegredo = null;
+      _afBarras();                       // acerta o que a cadência deixou
+      setTimeout(() => { _afOcupado = false; _afAndar(); }, Math.round(passo * 0.7));
+      return;
+    }
+    const b = batidas[i++];
+    for (const ev of b.evs) _afEncenarUm(ev);
+    if (b.html) _afLance(b.html, i > 1);
+    setTimeout(tocar, passo);
+  };
+  tocar();
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1337,25 +1510,41 @@ function _afEstremecer() {
    Um por um, pela ordem em que o motor os devolveu. O desenho segue o
    evento e não o contrário: se o motor não disse que alguém apanhou,
    ninguém tem de tremer. */
-function _afEncenar(eventos) {
-  for (const ev of eventos) {
+function _afEncenarUm(ev) {
+  /* O que se VÊ vive numa função à parte: lá dentro cada caso sai mal se
+     resolva, e as barras têm de ser tocadas em TODOS eles. Com as duas
+     coisas na mesma função, o primeiro `return` levava a barra consigo. */
+  _afEncenarCorpo(ev);
+
+  /* A barra do alvo desce NESTA batida e não no fim do turno. O valor não
+     se vai buscar ao modelo — o modelo já está no fim de tudo — vem do
+     próprio evento, que guarda como ficou o alvo no instante em que o
+     golpe caiu. É a única fonte que sabe o meio do turno. */
+  if (_afSegredo) { _afSegredo.delete(ev.alvo); _afSegredo.delete(ev.quem); }
+  if (ev.pvAlvo != null) _afBarraDe(ev.alvo, ev.pvAlvo, null);
+  if (ev.tipo === 'gasto') _afBarraDe(ev.quem, null, ev.pmDepois);
+  if (ev.pvQuem != null)   _afBarraDe(ev.quem, ev.pvQuem, null);
+}
+
+function _afEncenarCorpo(ev) {
+  {
     const deQuem = _afEl(ev.quem);
     const noAlvo = _afEl(ev.alvo);
 
-    if (ev.tipo === 'gasto') { _afNumeroPM(deQuem, ev.pm); continue; }
+    if (ev.tipo === 'gasto') { _afNumeroPM(deQuem, ev.pm); return; }
 
-    if (ev.tipo === 'guardar') { _afGesto(deQuem, 'defende', 500); continue; }
+    if (ev.tipo === 'guardar') { _afGesto(deQuem, 'defende', 500); return; }
 
     if (ev.tipo === 'cura') {
       if (ev.curou) _afNumero(noAlvo, ev.curou, false, 'cura');
-      continue;
+      return;
     }
 
-    if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); continue; }
+    if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); return; }
 
     if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
       _afGesto(deQuem, 'avanca', 400);
-      if (!ev.acertou) { _afGesto(noAlvo, 'esquiva', 420); continue; }
+      if (!ev.acertou) { _afGesto(noAlvo, 'esquiva', 420); return; }
     }
 
     if (ev.perda > 0 || ev.curou > 0 || ev.tipo === 'devastacao' || ev.tipo === 'actoFinal') {
@@ -1494,6 +1683,37 @@ function _afJogarPor(quem, acao) {
 // regras — quem vê "🎲5·🎲5 = 10 contra 8" percebe porque acertou, e
 // quem vê só "acertou" fica a achar que o computador decidiu.
 // ═══════════════════════════════════════════════════════════════════
+/* ── OS DOIS DADOS DE UM TESTE ──
+
+   Era uma cadeia de texto — "4·7+1" — e nela perdia-se a coisa que faz
+   este sistema ser este sistema: dos dois dados, o MAIOR é o Resultado
+   Alto, e é ele que vai somar-se ao dano. O par ficava com o ar de um
+   número só, escrito de maneira estranha.
+
+   Cada dado passa a ter a sua caixa, e a do maior acende: a linha diz,
+   sem uma palavra, qual dos dois vai doer. Quando são iguais acendem as
+   duas — e duas caixas acesas com seis ou mais é exactamente a condição
+   de crítico do manual, que a linha já anunciava ao lado.
+
+   Os atributos vêm com eles: `DES 4 · VIG 7` diz QUE dados se rolaram, e
+   é a mesma informação que a ficha mostra na linha dos atributos. Sem
+   isso o jogador via dois números sem saber de onde vinham. */
+function _afDadosHTML(ev) {
+  const d = ev.dados || [];
+  const at = ev.atribs || [];
+  const alto = Math.max(d[0] | 0, d[1] | 0);
+  /* O crítico marca-se NOS DADOS e não só na palavra ao lado: dois dados
+     iguais acendem os dois (ambos são o Resultado Alto), e sem isto um
+     3·3 ficava com o mesmo aspecto de um 6·6 — que é crítico. A diferença
+     entre os dois é a regra inteira, e tem de se ver. */
+  const cls = v => 'cb-dado' + (v === alto ? ' alto' : '') + (ev.critico ? ' critico' : '');
+  const cx = (v, k) => `<i class="${cls(v)}">${
+    k ? `<u>${esc(t('af.ab.' + k))}</u>` : ''}${v}</i>`;
+  const mod = ev.modificador
+    ? `<i class="cb-dado-mod">${ev.modificador > 0 ? '+' : ''}${ev.modificador}</i>` : '';
+  return cx(d[0], at[0]) + cx(d[1], at[1]) + mod;
+}
+
 function _afLanceDe(ev) {
   const nome = n => esc(_afNome(_afPorId(n)));
   const p = [];
@@ -1522,8 +1742,7 @@ function _afLanceDe(ev) {
 
   if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
     p.push('<b>' + nome(ev.quem) + '</b>');
-    p.push(t('af.lance.dados', { a: ev.dados[0], b: ev.dados[1] })
-      + (ev.modificador ? (ev.modificador > 0 ? '+' : '') + ev.modificador : ''));
+    p.push(_afDadosHTML(ev));
     p.push(t('af.lance.acerta', { r: ev.resultado, dl: ev.dl }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
@@ -1553,12 +1772,21 @@ function _afDanoTexto(ev) {
 let _afLanceTimer = null;
 let _afHistorico = [];
 
-function _afLance(html) {
+/* Com `acrescenta`, a linha nova junta-se às do mesmo turno em vez de as
+   apagar: um turno é uma sequência de testes, e lê-se de cima para baixo
+   como uma. As quatro últimas chegam — acima disso a caixa cresceria por
+   cima do palco, e o que interessa é sempre o fim. */
+function _afLance(html, acrescenta) {
   if (!html) return;
   _afHistorico.push({ ronda: _afE ? _afE.ronda : 0, html });
   const el = document.getElementById('cbLog');
   if (!el) return;
-  el.innerHTML = html;
+  if (acrescenta && el.classList.contains('viva')) {
+    const linhas = el.innerHTML.split('<br>').concat(html).slice(-4);
+    el.innerHTML = linhas.join('<br>');
+  } else {
+    el.innerHTML = html;
+  }
   el.classList.add('viva');
   clearTimeout(_afLanceTimer);
   /* Apaga-se sozinho, mas só depois de haver tempo para o ler — e o

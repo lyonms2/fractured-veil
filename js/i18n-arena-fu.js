@@ -37,7 +37,6 @@ window.registerStrings({
   'af.alvo.frente':   'o da frente cobre os outros',
 
   // ── o lance ──
-  'af.lance.dados':   '{a}·{b}',
   'af.lance.acerta':  '{r} contra {dl}',
   'af.lance.critico': 'CRÍTICO',
   'af.lance.pifao':   'PIFÃO',
@@ -155,6 +154,33 @@ window.registerStrings({
   'af.sec.magias':      'MAGIAS',
   'af.sec.outras':      'OUTRAS AÇÕES',
   'af.sec.especiais':   'REGRAS ESPECIAIS',
+
+  /* ── O QUE ESTÁ ACONTECENDO ──
+
+     Uma linha por coisa que está a mexer nos números DESTE avatar, agora.
+     Vive no bloco da ficha, e não flutua por cima da cabeça: o céu do
+     palco leva a MARCA (uma palavra, para se ver de longe quem está
+     como) e a ficha leva a explicação.
+
+     Separar as duas coisas é o ponto. Uma etiqueta a dizer "Atordoado"
+     por cima de um bicho não diz o que isso faz, e uma etiqueta que
+     dissesse "o dado de Perspicácia desce um tamanho" não caberia no
+     céu nem se leria a correr. */
+  'af.sec.agora':      'O QUE ESTÁ ACONTECENDO',
+  'af.ag.morde1':      'o dado de {a} desce um tamanho',
+  'af.ag.morde2':      'os dados de {a} e {b} descem um tamanho',
+  'af.ag.guarda':      'Em guarda',
+  'af.ag.guarda.ef':   'metade do dano que receber, até ao começo do próximo turno dele',
+  'af.ag.crise':       'Em crise',
+  'af.ag.crise.ef':    'metade da vida ou menos — e há efeitos que só acordam aqui',
+  'af.ag.voo':         'No ar',
+  'af.ag.voo.ef':      'um golpe corpo a corpo não lhe chega; a magia chega',
+  'af.ag.chao':        'No chão',
+  'af.ag.chao.ef':     'foi derrubado do ar; levanta-se no fim da rodada',
+  'af.ag.concha.ef':   'resiste a dano físico',
+  'af.ag.barreira.ef': 'a Defesa dele é, no mínimo, {n}',
+  'af.ag.mercy.ef':    'o golpe que o derrubaria deixa-o com um ponto de vida',
+  'af.ag.desperta.ef': 'o dado de {a} subiu um tamanho',
 
   'af.b.instantaneo':   'Instantâneo',
   'af.b.cena':          'Dura a batalha',
@@ -307,7 +333,6 @@ window.registerStrings({
   'af.mover.com':     'Swap with whom?',
   'af.alvo.frente':   'the one in front covers the others',
 
-  'af.lance.dados':   '{a}·{b}',
   'af.lance.acerta':  '{r} against {dl}',
   'af.lance.critico': 'CRITICAL',
   'af.lance.pifao':   'FUMBLE',
@@ -395,6 +420,22 @@ window.registerStrings({
   'af.sec.magias':      'SPELLS',
   'af.sec.outras':      'OTHER ACTIONS',
   'af.sec.especiais':   'SPECIAL RULES',
+
+  'af.sec.agora':      'WHAT IS HAPPENING',
+  'af.ag.morde1':      'the {a} die drops one size',
+  'af.ag.morde2':      'the {a} and {b} dice drop one size',
+  'af.ag.guarda':      'Guarding',
+  'af.ag.guarda.ef':   'half of any damage taken, until the start of their next turn',
+  'af.ag.crise':       'In Crisis',
+  'af.ag.crise.ef':    'half health or less — and some effects only wake up here',
+  'af.ag.voo':         'Airborne',
+  'af.ag.voo.ef':      'a melee blow cannot reach them; magic can',
+  'af.ag.chao':        'Grounded',
+  'af.ag.chao.ef':     'forced to land; gets up at the end of the round',
+  'af.ag.concha.ef':   'resists physical damage',
+  'af.ag.barreira.ef': 'their Defence is at least {n}',
+  'af.ag.mercy.ef':    'the blow that would fell them leaves them at one hit point',
+  'af.ag.desperta.ef': 'the {a} die has grown one size',
 
   'af.b.instantaneo':   'Instantaneous',
   'af.b.cena':          'Lasts the battle',
