@@ -48,4 +48,33 @@ function linhasDaFase(raiz) {
   return linhas;
 }
 
-module.exports = { NOMES_DA_FASE, linhasDaFase };
+/* ── E OUTROS TRECHOS DOS ARQUIVOS DO BROWSER ──
+
+   A mesma ideia para as regras da progressão: a tabela de XP, o XP de
+   cuidar e o espaço de item vivem no js/state.js; o título, no
+   js/identidade.js. Nenhum dos dois corre fora do navegador.
+
+   Tira-se cada nome pelo que ele é:
+     `const NOME = ...`   uma linha só
+     `function NOME(`     até à primeira linha que seja só `}`
+
+   E grita se não encontrar um nome, ou se uma função não fechar — pela
+   mesma razão da guarda de cima: uma extração que apanha metade em
+   silêncio é pior do que uma que rebenta. */
+function trechosDe(raiz, arquivo, nomes) {
+  const linhas = fs.readFileSync(path.join(raiz, arquivo), 'utf8').split(/\r?\n/);
+  const partes = [];
+  for (const nome of nomes) {
+    const reConst = new RegExp('^const +' + nome + ' *=');
+    const reFunc  = new RegExp('^function +' + nome + ' *\\(');
+    const i = linhas.findIndex(l => reConst.test(l) || reFunc.test(l));
+    if (i < 0) throw new Error(arquivo + ' mudou: não encontrei o ' + nome + '.');
+    if (reConst.test(linhas[i])) { partes.push(linhas[i]); continue; }
+    const fim = linhas.findIndex((l, j) => j > i && l === '}');
+    if (fim < 0) throw new Error(arquivo + ': a função ' + nome + ' não fecha numa linha só com }.');
+    partes.push(linhas.slice(i, fim + 1).join(NL));
+  }
+  return partes.join(NL);
+}
+
+module.exports = { NOMES_DA_FASE, linhasDaFase, trechosDe };

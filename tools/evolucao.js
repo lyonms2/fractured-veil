@@ -30,6 +30,12 @@
      a raridade não paga pontos   → sem assunto, pela mesma razão
      o corpo cresce, não troca    → tools/linhagem.js, que já o desenha
 
+   ── E O QUE SE GANHA PELO CAMINHO ──
+
+   A última secção guarda as regras da progressão que não são a escada:
+   a tabela de XP por fase, o XP de cuidar (e o do bebê), o fim do bônus
+   de XP por raridade, o espaço de item do nível 40 e o título do 50.
+
    node tools/evolucao.js
    ═══════════════════════════════════════════════════════════════════ */
 const path = require('path');
@@ -201,6 +207,99 @@ titulo('A ESCOLHA DO ANCIÃO');
   ok(cedo.vantagens.length === 1 && !!cedo.costura,
      'e antes dos 27 escrever a escolha não vale nada',
      cedo.vantagens.length + ' vantagem(ns), costura ' + cedo.costura);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+titulo('O QUE SE GANHA PELO CAMINHO');
+
+{
+  const fs = require('fs');
+  const { trechosDe } = require('./fase.js');
+
+  /* O código do jogo, tal como está, corrido com o que ele precisa à
+     volta: a fase (para dizer se é bebê), o sexo (para o título), o t()
+     (devolve a chave, para se ver qual escolheu) e o avatar em campo
+     (que o rarityBonus lê quando não lhe dão ninguém). */
+  const codigo = trechosDe(RAIZ, 'js/state.js', [
+    'xpParaNivel', 'MAX_EQUIPPED', 'NIVEL_ITEM_EXTRA', 'maxEquipadosDe',
+    'rarityBonus', 'XP_CUIDADO', 'XP_CUIDADO_BEBE', 'XP_CUIDADO_PRECISA', 'xpDeCuidado',
+  ]) + NL + trechosDe(RAIZ, 'js/identidade.js', ['NIVEL_TITULO', 'tituloDe']);
+  const montar = (faseAgora, raridadeEmCampo) => new Function(
+    'getFase', 'sexoDe', 't', 'avatar',
+    codigo + NL + 'return { xpParaNivel, maxEquipadosDe, rarityBonus, xpDeCuidado, tituloDe, '
+         + 'XP_CUIDADO, XP_CUIDADO_BEBE, XP_CUIDADO_PRECISA, NIVEL_ITEM_EXTRA, NIVEL_TITULO };'
+  )(() => faseAgora, M.sexoDe, chave => chave, { raridade: raridadeEmCampo || 'Comum' });
+  const P = montar(2);
+
+  /* ── A TABELA DE XP ──
+     Pelas fases: 250 no bebê, 700 no jovem, de 1.200 a 3.000 no adulto,
+     3.000 fixo no ancião. E sem degrau entre o adulto e o ancião. */
+  const esperado = n => n < 5 ? 250 : n < 11 ? 700 : n < 27 ? 1200 + (n - 11) * 120 : 3000;
+  let foraTabela = 0;
+  for (let n = 1; n < 60; n++) if (P.xpParaNivel(n) !== esperado(n)) foraTabela++;
+  ok(foraTabela === 0, 'a tabela de XP segue as fases, nível a nível', foraTabela + ' fora');
+
+  const total = ate => { let t = 0; for (let n = 1; n < ate; n++) t += P.xpParaNivel(n); return t; };
+  ok(total(5) === 1000 && total(11) === 5200 && total(27) === 38800 && total(60) === 137800,
+     'e os totais são 1.000, 5.200, 38.800 e 137.800',
+     [5, 11, 27, 60].map(n => 'até ' + n + ' ' + total(n)).join(' · '));
+
+  let desceu = 0;
+  for (let n = 2; n < 60; n++) if (P.xpParaNivel(n) < P.xpParaNivel(n - 1)) desceu++;
+  ok(desceu === 0 && P.xpParaNivel(26) === P.xpParaNivel(27),
+     'nunca fica mais barato, e o 26 já custa o que o ancião custa',
+     'nv26 ' + P.xpParaNivel(26) + ' · nv27 ' + P.xpParaNivel(27));
+
+  /* ── O BÔNUS DE XP POR RARIDADE SAIU ── */
+  const xps = ['Comum', 'Raro', 'Lendário'].map(r => P.rarityBonus({ raridade: r }).xp);
+  ok(xps.every(x => x === 1), 'o XP é igual nas três raridades', xps.join(' · '));
+
+  /* ── O XP DE CUIDAR ──
+     6, 8, 10 e 12 fora da fase bebê; cinco vezes isso nela. E a raridade
+     não mexe, tal como no resto do XP. */
+  const ACOES = ['nutrir', 'banho', 'medicar', 'acordar'];
+  const adulto = montar(2), bebe = montar(0), lendario = montar(2, 'Lendário');
+  const valores = ACOES.map(a => adulto.xpDeCuidado(a));
+  ok(valores.join(',') === '6,8,10,12', 'cuidar dá 6, 8, 10 e 12 de XP', valores.join(' · '));
+  ok(ACOES.every(a => bebe.xpDeCuidado(a) === 5 * adulto.xpDeCuidado(a)),
+     'e o bebê ganha cinco vezes isso',
+     ACOES.map(a => a + ' ' + bebe.xpDeCuidado(a)).join(' · '));
+  ok(ACOES.every(a => lendario.xpDeCuidado(a) === adulto.xpDeCuidado(a)),
+     'e ser Lendário não muda nada');
+  ok(P.XP_CUIDADO_PRECISA === 70, 'só conta o cuidado de que ele precisava (70 ou menos)',
+     'limiar ' + P.XP_CUIDADO_PRECISA);
+
+  /* ── O ESPAÇO DE ITEM DO 40 ── */
+  let foraItem = 0;
+  for (let n = 1; n <= 60; n++) if (P.maxEquipadosDe(n) !== (n >= 40 ? 4 : 3)) foraItem++;
+  ok(foraItem === 0 && P.NIVEL_ITEM_EXTRA === 40,
+     'três itens equipados até o 39, quatro do 40 em diante', foraItem + ' fora');
+
+  /* ── O TÍTULO DO 50 ── */
+  const av = (nivel, sexo) => {
+    const a = slot(nivel);
+    a.nascimento = Object.assign({}, a.nascimento, { sexo });
+    return a;
+  };
+  ok(P.tituloDe(av(49, 'F')) === '' && P.tituloDe(av(49, 'M')) === '',
+     'antes do 50 não há título');
+  ok(P.tituloDe(av(50, 'F')) === 'id.titulo.f' && P.tituloDe(av(50, 'M')) === 'id.titulo.m',
+     'no 50 vem o título, com o gênero do avatar',
+     P.tituloDe(av(50, 'F')) + ' · ' + P.tituloDe(av(50, 'M')));
+  ok(P.tituloDe(av(3, 'F'), 50) === 'id.titulo.f' && P.tituloDe(av(60, 'F'), 10) === '',
+     'e o nível de agora manda sobre o do slot (o avatar aberto)');
+
+  /* ── E OS TEXTOS EXISTEM NAS DUAS LÍNGUAS ──
+     Uma chave que falta mostra-se crua na tela: "id.titulo.f" no lugar do
+     título, e ninguém dá por isso até abrir o jogo no nível 50. */
+  const conta = (arquivo, chave) =>
+    (fs.readFileSync(require('path').join(RAIZ, arquivo), 'utf8')
+      .match(new RegExp("'" + chave.replace(/\./g, '\\.') + "'\\s*:", 'g')) || []).length;
+  const chaves = [['js/i18n.js', 'id.titulo.m'], ['js/i18n.js', 'id.titulo.f'],
+                  ['js/i18n-gametick.js', 'gt.marco.item'], ['js/i18n-gametick.js', 'gt.marco.titulo']];
+  const faltam = chaves.filter(([a, c]) => conta(a, c) !== 2).map(([, c]) => c);
+  ok(faltam.length === 0, 'os textos dos marcos estão em português e em inglês',
+     faltam.length ? 'faltam: ' + faltam.join(', ') : chaves.length + ' chaves × 2 línguas');
 }
 
 console.log('\n' + '─'.repeat(62));
