@@ -1679,39 +1679,24 @@ function _afInimigoAge() {
      duas ideias sobre isso acabam por discordar. */
   const vez = fuVez(_afE);
   if (!vez || vez.lado !== 'B') { _afOcupado = false; _afAndar(); return; }
-  const quem = _afPorId(vez.podem[0]);
+  /* Quem age e o que faz, decide a IA (js/ia-fu.js). A dificuldade que
+     escolhe o tamanho dos inimigos escolhe também o quanto eles pensam:
+     o Fácil é a IA de sempre, e o Mestre olha afinidades, defende,
+     economiza PM e troca de posto. */
+  const d = (typeof fuIaDecidir === 'function')
+    ? fuIaDecidir(_afE, 'B', vez.podem, _afIaNivel())
+    : { quem: vez.podem[0], acao: { tipo: 'atacar' } };
+  const quem = d && _afPorId(d.quem);
   if (!quem) { _afOcupado = false; _afAndar(); return; }
+  _afJogarPor(quem, d.acao);
+}
 
-  const meus = _afE.B.filter(c => c.vivo);
-  const deles = _afE.A.filter(c => c.vivo);
-  const magias = fuMagiasDe(quem.ficha);
-  const paga = (m, n) => fuCusto(m, n) <= quem.pm;
-
-  // 1 · curar quem está em crise
-  const ferido = meus.filter(fuEmCrise).sort((a, b) => a.pv - b.pv)[0];
-  if (ferido) {
-    const sup = magias.suporte;
-    if (sup && paga(sup, 1)) {
-      const acao = sup.proprio
-        ? (ferido === quem ? { tipo: 'magia', magia: sup } : null)
-        : { tipo: 'magia', magia: sup, alvos: [ferido.id] };
-      if (acao) { _afJogarPor(quem, acao); return; }
-    }
-  }
-
-  // 2 · a mais cara que consiga pagar
-  for (const lugar of ['muito_forte', 'forte']) {
-    const m = magias[lugar];
-    if (!m) continue;
-    const n = m.porAlvo ? Math.min(m.alvos || 1, deles.length) : 1;
-    if (!paga(m, n)) continue;
-    _afJogarPor(quem, { tipo: 'magia', magia: m,
-                        alvos: deles.slice(0, n).map(c => c.id) });
-    return;
-  }
-
-  // 3 · o murro
-  _afJogarPor(quem, { tipo: 'atacar' });
+/* O nível da IA é o da dificuldade escolhida (DIFF_TIERS, em js/modal.js).
+   A bancada (_arena-teste.html) não carrega o modal.js e escolhe à mão
+   com `_afIaNivelFixo`; sem nenhum dos dois, pensa como no Médio. */
+function _afIaNivel() {
+  if (typeof _afIaNivelFixo === 'number') return _afIaNivelFixo;
+  return (typeof miniDifficulty === 'function') ? miniDifficulty().tier : 1;
 }
 
 /* ── NADA DE EVENTOS INVENTADOS ──

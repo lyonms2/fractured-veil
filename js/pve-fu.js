@@ -77,7 +77,10 @@ const PVE_PREMIO = {
    botão de ganhar mais.
 
    O modal da batalha mostra este mesmo número antes de entrar
-   (btRenderDificuldade, em js/batalha.js). */
+   (btRenderDificuldade, em js/batalha.js).
+
+   E a mesma dificuldade decide o quanto os inimigos pensam
+   (FU_IA_NIVEIS, em js/ia-fu.js). */
 function pveNivelInimigo(nivelEquipe) {
   const d = (typeof miniDifficulty === 'function') ? miniDifficulty() : { inimigo: 1 };
   return Math.max(3, Math.round((nivelEquipe | 0) * (d.inimigo || 1)));
