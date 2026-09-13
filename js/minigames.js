@@ -318,7 +318,15 @@ function aplicarVisualDoSono(dormindo) {
   }
 }
 
+/* A energia com que foi dormir. Acordar descansado só dá XP a quem foi
+   dormir cansado (abaixo de 50): sem isto, dormir com 95 e acordar com
+   100 minuto e meio depois era um botão de XP. Fica nulo quando o sono
+   não começou por aqui — uma troca de avatar, um recarregar da página —
+   e aí não se sabe, portanto não conta. */
+let _sonoEnergiaInicio = null;
+
 function startSleep() {
+  _sonoEnergiaInicio = vitals.energia;
   sleeping = true;
   playSound('sleep');
   ModalManager.closeAll();
@@ -340,10 +348,18 @@ function wakeUp(reason) {
   if(reason === 'full') {
     showBubble(rnd(FALAS.fullEnergy));
     addLog(t('mg.sleep.log.full'), 'good');
+    // XP de cuidar (xpDeCuidado, js/state.js): dormiu o sono que precisava.
+    if(_sonoEnergiaInicio != null && _sonoEnergiaInicio < 50) {
+      const xpCuidar = xpDeCuidado('acordar');
+      xp += xpCuidar;
+      setTimeout(() => showFloat(`+${xpCuidar} XP`, '#a78bfa'), 400);
+      checkXP(); updateAllUI();
+    }
   } else {
     showBubble(rnd(FALAS.fullEnergy));
     addLog(t('mg.sleep.log.rested'), 'good');
   }
+  _sonoEnergiaInicio = null;
   scheduleSave();
 }
 
@@ -375,13 +391,18 @@ function healCreature() {
   vitals.saude = Math.min(100, vitals.saude + 40);
   sick = false;
   vinculo += 4;
+  // XP de cuidar (xpDeCuidado, js/state.js). O Medicar já só chega aqui
+  // com a saúde em baixo, portanto é sempre um cuidado de que precisava.
+  const xpCuidar = xpDeCuidado('medicar');
+  xp += xpCuidar;
+  setTimeout(() => showFloat(`+${xpCuidar} XP`, '#a78bfa'), 450);
   playSound('heal');
   playAnim('anim-heal');
   spawnHealParticles();
   showFloat('+40 💚','#27ae60');
   showBubble(t('mg.heal.bub.better'));
   addLog(t('mg.heal.log.healed'), 'good');
-  updateAllUI(); scheduleSave();
+  checkXP(); updateAllUI(); scheduleSave();
 }
 
 function spawnFoodParticles() {

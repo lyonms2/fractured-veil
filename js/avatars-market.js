@@ -84,11 +84,14 @@ function getFaseNome(nivel) {
   return t('fases')[_faseNum(nivel)];
 }
 
+// A cor de cada fase, nos cortes das fases de hoje (5, 11, 27). Estava
+// nos do motor antigo (5, 10, 17): um Jovem de nível 10 saía com a cor de
+// Adulto, e um Adulto de 17 já com a de Ancião.
 function getFaseCor(nivel) {
   const n = nivel || 1;
   if(n < 5)  return '#a78bfa';
-  if(n < 10) return '#60d4f0';
-  if(n < 17) return '#4ade80';
+  if(n < 11) return '#60d4f0';
+  if(n < 27) return '#4ade80';
   return '#f0b840';
 }
 

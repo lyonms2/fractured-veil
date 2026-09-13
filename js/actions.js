@@ -67,12 +67,15 @@ function feedCreature() {
   if(gs.moedas < COST) { playSound('no_coins'); showBubble(t('bubble.no_coins')); addLog(t('log.feed_no_coins', { cost: COST }),'bad'); return; }
   if(!spendCoins(COST)) return;
   const g = 20 + randInt(0,15);
+  const fomeAntes = vitals.fome;
   vitals.fome = Math.min(100, vitals.fome + g);
   const pressaoBase = 30 + Math.round(Math.random() * 10);
   const pressaoGain = Math.round(pressaoBase * rarityBonus().decay * getItemEffect('fomeDecayMult'));
   poopPressure = Math.min(100, poopPressure + pressaoGain);
   const _rb = rarityBonus();
-  xp += Math.round(5 * _rb.xp); vinculo += 2;
+  // XP de cuidar: só se ele estava com fome de verdade (xpDeCuidado, js/state.js).
+  const xpCuidar = fomeAntes <= XP_CUIDADO_PRECISA ? xpDeCuidado('nutrir') : 0;
+  xp += xpCuidar; vinculo += 2;
   const coinBonus = Math.round(2 * _rb.moedas);
   if(_rb.moedas > 1) setTimeout(() => earnCoins(coinBonus), 650);
   playSound('feed');
@@ -80,6 +83,7 @@ function feedCreature() {
   spawnFoodParticles();
   showBubble(rnd(FALAS.happy));
   showFloat(`+${g} 🍖`,'#e74c3c');
+  if(xpCuidar) setTimeout(() => showFloat(`+${xpCuidar} XP`, '#a78bfa'), 450);
   addLog(t('log.fed', { gain: g, cost: COST }), 'good');
   checkXP(); updateAllUI(); scheduleSave();
 }

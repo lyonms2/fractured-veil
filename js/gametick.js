@@ -150,6 +150,9 @@ function cleanCreature() {
 
   const higieneGain = Math.round(50 + Math.random() * 20);
   const humorGain   = 15;
+  // XP de cuidar: só se ele estava sujo de verdade (xpDeCuidado, js/state.js).
+  const xpCuidar = vitals.higiene <= XP_CUIDADO_PRECISA ? xpDeCuidado('banho') : 0;
+  xp += xpCuidar;
   vitals.higiene = Math.min(100, vitals.higiene + higieneGain);
   vitals.humor   = Math.min(100, vitals.humor   + humorGain);
   vinculo += 3;
@@ -161,6 +164,7 @@ function cleanCreature() {
   showBubble(rnd([t('gt.bath.bub_0'), t('gt.bath.bub_1'), t('gt.bath.bub_2'), t('gt.bath.bub_3')]));
   showFloat(`+${higieneGain} 🛁`, '#5ab4e8');
   setTimeout(() => showFloat(`+${humorGain} 😄`, '#a78bfa'), 500);
+  if(xpCuidar) setTimeout(() => showFloat(`+${xpCuidar} XP`, '#a78bfa'), 1000);
   addLog(t('gt.bath.log', {hygiene: higieneGain, humor: humorGain}), 'good');
 
   // Havia aqui um decaimento de vínculo — somava 3 acima e tirava 0,02
@@ -168,6 +172,7 @@ function cleanCreature() {
   // humorBad era avaliado DEPOIS do +15 que o próprio banho dá, portanto
   // quase nunca disparava. O vínculo decai no tick, que é o sítio dele.
   updateDirtyVisuals();
+  checkXP();
   updateAllUI();          // as outras ações já o faziam; esta esperava pelo tick
   scheduleSave();
 }

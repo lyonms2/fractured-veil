@@ -366,13 +366,56 @@ let nivelVisto = -1;
 const getFaseVisual = () => faseVista < 0 ? getFase() : Math.min(getFase(), faseVista);
 const getFaseSize   = () => FASE_SIZES[getFaseVisual()];
 const evolucaoPendente = () => faseVista >= 0 && getFase() > faseVista;
+/* ── QUANTO XP CADA NÍVEL PEDE ──
+
+   Pelas FASES, que são os marcos do jogo (FU_NIVEL_JOVEM, FU_NIVEL_RARO e
+   FU_NIVEL_LENDARIO, em js/ficha-fu.js):
+
+     BEBÊ     nv  1– 4   250 por nível         1.000 para chegar ao 5
+     JOVEM    nv  5–10   700 por nível         5.200 para chegar ao 11
+     ADULTO   nv 11–26   de 1.200 a 3.000     38.800 para chegar ao 27
+     ANCIÃO   nv 27–59   3.000 por nível     137.800 para chegar ao 60
+
+   A tabela antiga (400 / 800 / 1.500 / 2.500 / 4.000 / 6.000) veio do
+   motor 3D&T, e os saltos dela (10, 17, 25, 35) não coincidiam com nada
+   do jogo de hoje: o custo subia sem acontecer coisa nenhuma, e no 11 e
+   no 27 — onde tudo acontece — não mudava. Chegar ao 60 custava 226 mil.
+
+   O bebê fica barato porque não pode batalhar e cresce de ser cuidado
+   (xpDeCuidado, abaixo). O Adulto sobe aos poucos até encostar no custo
+   do Ancião, sem degrau. E o Ancião tem custo fixo: continua a ser a
+   maior parte do caminho, e é de propósito — um Lendário de nível alto é
+   o que vai valer no PvP, e não pode sair numa semana. */
 function xpParaNivel(n) {
-  if(n < 5)  return 400;
-  if(n < 10) return 800;
-  if(n < 17) return 1500;
-  if(n < 25) return 2500;
-  if(n < 35) return 4000;
-  return 6000;
+  if(n < 5)  return 250;                        // bebê
+  if(n < 11) return 700;                        // jovem
+  if(n < 27) return 1200 + (n - 11) * 120;      // adulto: 1.200 no 11, 3.000 no 26
+  return 3000;                                  // ancião
+}
+
+/* ── O XP DE CUIDAR ──
+
+   Nutrir, Banho, Medicar e acordar descansado dão XP ao avatar aberto, e
+   na fase BEBÊ valem cinco vezes mais. É o espírito do tamagotchi: bem
+   cuidado, cresce. Antes só o Nutrir dava XP (5), e um bebê — que não
+   pode batalhar — levava umas duas horas de minijogos para chegar ao
+   nível 5.
+
+   Só conta o cuidado de que ele PRECISAVA: Nutrir e Banho com o medidor
+   em XP_CUIDADO_PRECISA ou menos; Medicar já só funciona com a saúde em
+   baixo; e acordar descansado só depois de ir dormir cansado (ver o
+   startSleep, em js/minigames.js). Sem isto, dar banho num bicho limpo
+   era um botão de XP.
+
+   A raridade multiplica como em todo o resto do XP (rarityBonus). */
+const XP_CUIDADO = { nutrir: 6, banho: 8, medicar: 10, acordar: 12 };
+const XP_CUIDADO_BEBE    = 5;
+const XP_CUIDADO_PRECISA = 70;
+
+function xpDeCuidado(acao) {
+  const base = XP_CUIDADO[acao] || 0;
+  const bebe = typeof getFase === 'function' && getFase() === 0;
+  return Math.round(base * (bebe ? XP_CUIDADO_BEBE : 1) * rarityBonus().xp);
 }
 function rarityBonus(quem) {
   const av = quem || avatar;
