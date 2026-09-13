@@ -53,6 +53,7 @@ window.registerStrings({
   'af.lance.dreno':   'bebeu {n} de vida',
   'af.lance.derrubou':'foi derrubado do ar',
   'af.lance.guardar': '{nome} se pôs em guarda',
+  'af.lance.guardar_pm': '{nome} se pôs em guarda e recuperou {n} PM',
   'af.lance.mover':   '{nome} trocou de lugar com {com}',
   'af.lance.cena':    '{nome} lançou {magia}',
   'af.lance.suspiro': 'o Último Suspiro de {nome}',
@@ -227,7 +228,7 @@ window.registerStrings({
   'af.b.ef.subirDado':   'O maior atributo do alvo sobe um degrau na escada dos dados (d6 · d8 · d10 · d12), até o teto de d12.',
 
   'af.b.guardar':       'Guardar',
-  'af.b.guardar.ef':    'Metade do dano que receber, até o começo do próximo turno dele.',
+  'af.b.guardar.ef':    'Metade do dano que receber, até o começo do próximo turno dele, e recupera PM igual ao dado de VON.',
   'af.b.mover':         'Trocar de lugar',
   'af.b.mover.alvo':    'Um companheiro',
   'af.b.mover.ef':      'Troca de posto com um companheiro. Gasta o turno de quem se mexe, e não o dos dois.',
@@ -373,6 +374,7 @@ window.registerStrings({
   'af.lance.dreno':   'drank {n} HP',
   'af.lance.derrubou':'was forced to land',
   'af.lance.guardar': '{nome} took guard',
+  'af.lance.guardar_pm': '{nome} took guard and recovered {n} MP',
   'af.lance.mover':   '{nome} swapped places with {com}',
   'af.lance.cena':    '{nome} cast {magia}',
   'af.lance.suspiro': "{nome}'s Final Act",
@@ -495,7 +497,7 @@ window.registerStrings({
   'af.b.ef.subirDado':   "The target's highest Attribute climbs one step of the die ladder (d6 · d8 · d10 · d12), up to the d12 cap.",
 
   'af.b.guardar':       'Guard',
-  'af.b.guardar.ef':    'Half of any damage taken, until the start of their next turn.',
+  'af.b.guardar.ef':    'Half of any damage taken, until the start of their next turn, and recovers MP equal to their WLP die.',
   'af.b.mover':         'Swap places',
   'af.b.mover.alvo':    'One ally',
   'af.b.mover.ef':      'Swaps places with an ally. Costs the turn of whoever moves, not both.',

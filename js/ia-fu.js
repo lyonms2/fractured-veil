@@ -17,7 +17,8 @@
 //             quem precisa; quando tudo piora a situação, guarda em
 //             vez de bater em quem absorve e curar o inimigo
 //   Difícil   mais as magias de cena (Concha, Barreira, Misericórdia,
-//             Despertar), a guarda, e passa a economizar PM
+//             Despertar), a guarda — que corta o dano e recupera PM pelo
+//             dado de VON —, e passa a economizar PM
 //   Mestre    mais a troca de posto, e caça com mais vontade quem está
 //             para cair
 //
@@ -56,6 +57,8 @@ const IA_DURACAO   = 2;    // quantas rodadas se conta que um efeito de cena val
 const IA_GUARDA    = 0.6;  // a guarda só vence um ataque que renda bem pouco
 const IA_MOVER_MIN = 5;    // trocar de posto só compensa acima disto
 const IA_CURA      = 0.6;  // cada ponto de vida curado, antes do risco
+const IA_PM        = 0.5;  // cada PM recuperado, quando falta PM para alguma magia
+const IA_PM_SOBRA  = 0.1;  // cada PM recuperado, quando já dá para todas
 
 // ═══════════════════════════════════════════════════════════════════
 // FÁCIL — A IA DE SEMPRE
@@ -265,6 +268,18 @@ function _iaComCena(alvo, cena) {
   return c;
 }
 
+/* O PM que a guarda devolve (o dado de VON de agora, até o máximo), e o
+   que ele vale. Vale muito quando falta PM para alguma magia que o
+   lutador tem, e quase nada quando já dá para todas — senão a IA ficaria
+   guardando só para encher uma barra que não vai usar. */
+function _iaValorPmDaGuarda(quem) {
+  const volta = Math.max(0, Math.min(quem.ficha.pmMax - quem.pm, fuDado(quem, 'VON')));
+  if (!volta) return 0;
+  const mg = fuMagiasDe(quem.ficha);
+  const falta = Object.keys(mg).some(l => fuCusto(mg[l], 1) > quem.pm);
+  return volta * (falta ? IA_PM : IA_PM_SOBRA);
+}
+
 // O que uma magia de apoio (cura, cena) rende num aliado.
 function _iaValorApoio(estado, m, alvo) {
   let v = 0;
@@ -352,7 +367,12 @@ function _iaOpcoes(estado, quem, p) {
   // absorve e que cura o inimigo.
   if (p.guarda) {
     const guardado = Object.assign({}, quem, { guardando: true });
-    ops.push({ v: (_iaRisco(estado, quem) - _iaRisco(estado, quem, guardado)) * IA_GUARDA,
+    // Guardar para cortar dano pesa mais em quem já está ferido: com a
+    // vida cheia, bater quase sempre rende mais do que se encolher. O peso
+    // vai de 0,25 (vida cheia) a 1,25 (quase caindo).
+    const ferido = 1.25 - quem.pv / quem.ficha.pvMax;
+    ops.push({ v: (_iaRisco(estado, quem) - _iaRisco(estado, quem, guardado)) * IA_GUARDA * ferido
+                  + _iaValorPmDaGuarda(quem),
                acao: { tipo: 'guardar' } });
   } else {
     ops.push({ v: 0, acao: { tipo: 'guardar' } });

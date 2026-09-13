@@ -172,6 +172,39 @@ titulo('As quatro afinidades, e a guarda');
   }
 }
 
+/* ═══ 4b · A GUARDA RECUPERA PM ═══════════════════════════════════ */
+titulo('A guarda recupera PM pelo dado de VON');
+{
+  const quemGuarda = (semente, prepara) => {
+    const e = M.fuIniciar(equipa(1, 10), equipa(2, 10), semente);
+    const c = M.fuPorId(e, M.fuVez(e).podem[0]);
+    prepara(c);
+    const ev = M.fuAgir(e, { quem: c.id, tipo: 'guardar' });
+    return { c, ev: ev[0] };
+  };
+  {
+    const { c, ev } = quemGuarda(77, c => { c.pm = 0; });
+    const d = M.fuDado(c, 'VON');
+    verificar('sem PM, recupera o tamanho do dado de VON', c.pm === d && ev.pmGanho === d,
+              `dado d${d}, ficou com ${c.pm}`);
+    verificar('o evento diz com quanto ficou', ev.pmDepois === c.pm && ev.tipo === 'guardar');
+  }
+  {
+    const { c, ev } = quemGuarda(78, c => { c.pm = c.ficha.pmMax - 1; });
+    verificar('não passa do máximo', c.pm === c.ficha.pmMax && ev.pmGanho === 1,
+              `ficou com ${c.pm} de ${c.ficha.pmMax}, ganhou ${ev.pmGanho}`);
+  }
+  {
+    const { c, ev } = quemGuarda(79, c => { c.pm = c.ficha.pmMax; });
+    verificar('com o PM cheio, não ganha nada', ev.pmGanho === 0 && c.pm === c.ficha.pmMax);
+  }
+  {
+    const { c } = quemGuarda(80, c => { c.pm = 0; c.estados.abalado = true; });
+    verificar('abalado, recupera um tamanho a menos', c.pm === F.fuDescerDado(c.ficha.VON),
+              `VON d${c.ficha.VON}, recuperou ${c.pm}`);
+  }
+}
+
 /* ═══ 5 · OS ESTADOS ═════════════════════════════════════════════ */
 titulo('Os seis estados');
 {

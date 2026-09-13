@@ -1339,6 +1339,7 @@ function _afMostrar(eventos) {
     if (ev.pvAlvo != null)
       guardar(ev.alvo, 'pv', ev.pvAlvo + (ev.perda | 0) - (ev.curou | 0));
     if (ev.tipo === 'gasto') guardar(ev.quem, 'pm', (ev.pmDepois | 0) + (ev.pm | 0));
+    if (ev.tipo === 'guardar' && ev.pmGanho) guardar(ev.quem, 'pm', (ev.pmDepois | 0) - ev.pmGanho);
     if (ev.pvQuem != null)   guardar(ev.quem, 'pv', ev.pvQuem - (ev.drenou | 0));
   }
 
@@ -1478,12 +1479,13 @@ function _afNumero(el, n, critico, tipo) {
 // O PM sai igual ao dano, mas em azul e do outro lado — se saísse do
 // mesmo sítio, o custo da magia e o golpe recebido escreviam-se um por
 // cima do outro no mesmo turno.
-function _afNumeroPM(el, n) {
+// `ganho` para o PM que volta (a guarda); sem ele, é o que se gasta.
+function _afNumeroPM(el, n, ganho) {
   el = _afCaixa(el);
   if (!el || !n) return;
   const d = document.createElement('div');
   d.className = 'cb-pm-flut';
-  d.textContent = '−' + n + ' PM';
+  d.textContent = ganho ? t('af.lance.pmGanho', { n }) : t('af.lance.pm', { n });
   el.appendChild(d);
   setTimeout(() => d.remove(), 1000);
 }
@@ -1593,6 +1595,7 @@ function _afEncenarUm(ev) {
   if (_afSegredo) { _afSegredo.delete(ev.alvo); _afSegredo.delete(ev.quem); }
   if (ev.pvAlvo != null) _afBarraDe(ev.alvo, ev.pvAlvo, null);
   if (ev.tipo === 'gasto') _afBarraDe(ev.quem, null, ev.pmDepois);
+  if (ev.tipo === 'guardar' && ev.pmGanho) _afBarraDe(ev.quem, null, ev.pmDepois);
   if (ev.pvQuem != null)   _afBarraDe(ev.quem, ev.pvQuem, null);
 }
 
@@ -1603,7 +1606,11 @@ function _afEncenarCorpo(ev) {
 
     if (ev.tipo === 'gasto') { _afNumeroPM(deQuem, ev.pm); return; }
 
-    if (ev.tipo === 'guardar') { _afGesto(deQuem, 'defende', 500); return; }
+    if (ev.tipo === 'guardar') {
+      _afGesto(deQuem, 'defende', 500);
+      if (ev.pmGanho) _afNumeroPM(deQuem, ev.pmGanho, true);
+      return;
+    }
 
     if (ev.tipo === 'cura') {
       if (ev.curou) _afNumero(noAlvo, ev.curou, false, 'cura');
@@ -1886,7 +1893,9 @@ function _afLanceDe(ev) {
   const nome = n => esc(_afNome(_afPorId(n)));
   const p = [];
 
-  if (ev.tipo === 'guardar') return t('af.lance.guardar', { nome: nome(ev.quem) });
+  if (ev.tipo === 'guardar') return ev.pmGanho
+    ? t('af.lance.guardar_pm', { nome: nome(ev.quem), n: ev.pmGanho })
+    : t('af.lance.guardar', { nome: nome(ev.quem) });
   if (ev.tipo === 'mover')
     return t('af.lance.mover', { nome: nome(ev.quem), com: nome(ev.com) });
   if (ev.tipo === 'gasto')  return null;   // vai colado ao golpe

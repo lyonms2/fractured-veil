@@ -554,7 +554,20 @@ function fuAgir(estado, acao) {
 
   if (acao.tipo === 'guardar') {
     quem.guardando = true;
-    eventos.push({ tipo: 'guardar', quem: quem.id });
+    /* ── E RECUPERA PM ──
+
+       Quem guarda recupera tanto PM quanto o tamanho do dado de VON:
+       6 no d6, 12 no d12. É o dado de AGORA, pelo fuDado — quem está
+       abalado ou envenenado recupera um tamanho a menos. Nunca passa do
+       máximo.
+
+       Sem isto o PM não voltava de jeito nenhum durante a luta (só pela
+       Veia Ávida), e toda batalha longa terminava em golpes comuns. A
+       guarda, que só cortava metade do dano, passa a ser também a hora
+       de recuperar o fôlego. */
+    const pmGanho = Math.max(0, Math.min(quem.ficha.pmMax - quem.pm, fuDado(quem, 'VON')));
+    quem.pm += pmGanho;
+    eventos.push({ tipo: 'guardar', quem: quem.id, pmGanho, pmDepois: quem.pm });
 
   } else if (acao.tipo === 'mover') {
     /* ── REORDENAR CUSTA O TURNO ──
