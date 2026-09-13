@@ -53,7 +53,18 @@ window.registerStrings({
   'lin.sexo':             'Sexo',
   'repr.escolher':        'Escolha dois',
   'repr.feito':           '🥚 Ovo posto! Choca em {h} h.',
-  'repr.sem_adultos':     'Nenhum avatar seu é adulto ainda. Cruzar pede a última fase.',
+  // Cruzar pede a fase ADULTA (nível 11), e não a última — a última é a
+  // do Ancião (27). Ver podeCruzar, em js/reproducao.js.
+  'repr.sem_adultos':     'Nenhum avatar seu é adulto ainda. Cruzar pede a fase Adulta, no nível 11.',
+  /* Os títulos da janela da linhagem e da de cruzar, e o botão da árvore.
+     Saíram no commit "O 3D&T sai inteiro" junto com o js/i18n-magias.js e
+     não voltaram com o resto — o index.html continuou a pedi-los, e o
+     console enchia-se de "chave ausente". Voltam com as mesmas palavras. */
+  'lin.titulo':           '🌳 LINHAGEM',
+  'lin.btn':              'Ver a linhagem',
+  'repr.titulo':          '❦ CRUZAR',
+  'repr.sub':             'Dois adultos, um macho e uma fêmea. O filho herda um alelo de cada.',
+  'repr.botao':           '❦ Cruzar',
 }, {
   'arv.avos':             'Grandparents',
   'arv.este':             'This one',
@@ -89,5 +100,10 @@ window.registerStrings({
   'lin.sexo':             'Sex',
   'repr.escolher':        'Pick two',
   'repr.feito':           '🥚 Egg laid! Hatches in {h} h.',
-  'repr.sem_adultos':     'None of your avatars is an adult yet. Breeding needs the last phase.',
+  'repr.sem_adultos':     'None of your avatars is an adult yet. Breeding needs the Adult phase, at level 11.',
+  'lin.titulo':           '🌳 LINEAGE',
+  'lin.btn':              'See the lineage',
+  'repr.titulo':          '❦ BREED',
+  'repr.sub':             'Two adults, one male and one female. The child inherits one allele from each.',
+  'repr.botao':           '❦ Breed',
 });
