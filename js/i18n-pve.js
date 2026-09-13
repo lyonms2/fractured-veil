@@ -275,6 +275,7 @@ window.registerStrings({
   'pve.est.d_sangue_quente':'entra em fúria ao sofrer dano',
   'pve.est.d_foco':        'pode perder o foco ao sofrer dano',
   'pve.sair':          'Sair',
+  'pve.voltar':        'Voltar à colônia',
 }, {
   'gs.batalha.name':   'BATTLE',
   'gs.batalha.desc':   'Your team of 3 against a trio from the ruins',
@@ -534,4 +535,5 @@ window.registerStrings({
   'pve.est.d_sangue_quente':'flies into a rage when hurt',
   'pve.est.d_foco':        'may lose focus when hurt',
   'pve.sair':          'Leave',
+  'pve.voltar':        'Back to the colony',
 });

@@ -83,10 +83,10 @@ window.registerStrings({
 
   // ── o fim ──
   'af.fim.ganhou':    'A colônia resistiu.',
-  'af.fim.perdeu':    'A Fratura levou a melhor.',
+  'af.fim.perdeu':    'A Fratura\nlevou a melhor.',
   'af.fim.empate':    'Não sobrou ninguém.',
-  'af.fim.limite':    'Empate: ninguém venceu em {n} rodadas.',
-  'af.fim.sair':      'Voltar',
+  'af.fim.limite':    'Empate\nninguém venceu\nem {n} rodadas',
+  'af.fim.sair':      'Fechar',
 
   // ── a ficha ──
   'af.f.vida':        'Vida',
@@ -399,10 +399,10 @@ window.registerStrings({
   'af.af.AB':         'absorbed',
 
   'af.fim.ganhou':    'The colony held.',
-  'af.fim.perdeu':    'The Rift won this one.',
+  'af.fim.perdeu':    'The Rift\nwon this one.',
   'af.fim.empate':    'No one was left standing.',
-  'af.fim.limite':    'Draw: no one won in {n} rounds.',
-  'af.fim.sair':      'Back',
+  'af.fim.limite':    'Draw\nno one won\nin {n} rounds',
+  'af.fim.sair':      'Close',
 
   'af.f.vida':        'Hit Points',
   'af.f.magia':       'Mind Points',

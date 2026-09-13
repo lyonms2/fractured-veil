@@ -2103,18 +2103,21 @@ function _afFimHTML() {
   const fr = _afE._fraturados || [];
   const aviso = fr.length
     ? `<div class="cb-fratura">🦴 ${t('pve.fratura', { nomes: fr.join(', ') })}</div>` : '';
+  /* Em linhas: as moedas, que são do jogador, em cima e maiores; embaixo
+     o que vai para cada um dos três — XP, vínculo e a energia gasta. */
   const premio = g ? `<div class="cb-premio">
-      ${g.desistiu ? `<span class="cada">${t('pve.desistiu')}</span>`
-        : `<span>+${g.coinGain} 🪙</span>
+      ${g.desistiu
+        ? `<span class="cada">${t('pve.desistiu')}</span>
+           <div class="cb-premio-linha"><span class="gasto">−${g.energia} ⚡</span></div>`
+        : `<div class="cb-premio-linha moedas"><span>+${g.coinGain} 🪙</span></div>
            <span class="cada">${t('pve.premio.cada', { n: g.quantos })}</span>
-           <span>+${g.xpGain} XP</span><span>+${g.vinculo} 💜</span>`}
-      <span class="gasto">−${g.energia} ⚡ ${g.desistiu ? '' : t('pve.premio.cadaUm')}</span>
+           <div class="cb-premio-linha"><span>+${g.xpGain} XP</span><span>+${g.vinculo} 💜</span><span class="gasto">−${g.energia} ⚡</span></div>`}
     </div>` : '';
 
   return `<div class="cb-fim ${v === 'A' ? 'bom' : 'mau'}">${esc(txt)}</div>
     ${aviso}${premio}
     <button class="cb-btn sair" onclick="afFechar()">
-      <span class="cb-btn-rot">${_afTemMoldura() ? t('pve.sair') : t('af.fim.sair')}</span></button>`;
+      <span class="cb-btn-rot">${_afTemMoldura() ? t('pve.voltar') : t('af.fim.sair')}</span></button>`;
 }
 
 function _afFim() {
