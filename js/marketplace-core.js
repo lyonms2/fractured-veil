@@ -235,7 +235,40 @@ function closeMarketplaceModal() {
 function mktOpenZoom(raridade, seed, nivelAv, nome, cores) {
   openAvatarZoomData(raridade, seed, nivelAv, nome, cores);
 }
+
+/* ── O AVATAR INTEIRO, E NÃO SÓ AS CORES ──
+
+   A lupa passava para o zoom um objeto com as duas cores do bicho, no
+   lugar onde o zoom espera o SLOT. As cores bastavam para desenhar a
+   figura, mas a ficha de combate lê a certidão (`nascimento`) desse mesmo
+   objeto — e ali não havia certidão nenhuma. Sem DNA, a ficha saía na
+   versão de emergência: 8/8/8/8, fogo, números que não são do avatar, e o
+   aviso "DNA ilegível" em cima de um avatar perfeitamente saudável.
+
+   Agora o botão diz QUAL avatar é (o índice do slot, ou o id do anúncio)
+   e o objeto completo é buscado aqui. Se por algum motivo ele não for
+   encontrado, fica o caminho antigo, só com as cores. */
+function _mktZoomDe(obj) {
+  if (!obj) return false;
+  openAvatarZoomData(obj.raridade, obj.seed || 0, obj.nivel || 1,
+                     (typeof nomeCurto === 'function') ? nomeCurto(obj) : (obj.nome || ''), obj);
+  return true;
+}
+
+function mktOpenZoomSlot(i) {
+  const slots = (typeof playerData !== 'undefined' && playerData && playerData.avatarSlots) || [];
+  _mktZoomDe(slots[i]);
+}
+
 function mktOpenZoomBtn(btn) {
+  if (btn.dataset.slot != null && btn.dataset.slot !== '') {
+    const slots = (typeof playerData !== 'undefined' && playerData && playerData.avatarSlots) || [];
+    if (_mktZoomDe(slots[parseInt(btn.dataset.slot, 10)])) return;
+  }
+  if (btn.dataset.listing) {
+    const l = (typeof listings !== 'undefined' ? listings : []).find(x => x.id === btn.dataset.listing);
+    if (_mktZoomDe(l)) return;
+  }
   /* O cartao ja desenha o bicho com as cores dele; se a lupa nao as
      levasse, a ampliacao mostrava outro bicho. So dois numeros viajam
      no botao — chega, porque a paleta sai deles. */

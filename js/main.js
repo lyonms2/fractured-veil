@@ -341,11 +341,23 @@ function openAvatarZoomData(raridade, seed, nivelAv, nome, slot) {
   const _n = nome ? String(nome).split(',')[0].trim() : '';
   document.getElementById('avatarZoomName').textContent = _n || t('id.sem_nome');
   document.getElementById('avatarZoomInfo').textContent = t('main.zoom.info', {rar: raridade, fase: fases[fase], nivel: nivelAv||1});
-  if(typeof preencherFichaZoom === 'function') preencherFichaZoom({
-    seed, raridade, nivel: nivelAv || 1,
-    nascimento:    slot && slot.nascimento,
-    escolhaAnciao: slot && slot.escolhaAnciao,
-  });
+  /* ── SEM CERTIDÃO, SEM FICHA ──
+
+     Há zooms que chegam aqui sem o avatar inteiro — a visita a um amigo
+     só recebe da API a cor e o sexo dos bichos dele, e não o DNA. A ficha
+     montada sem DNA é a de emergência, com números que não são do
+     avatar; mostrar isso a um jogador é pior do que não mostrar nada.
+     Sem certidão, o espaço da ficha fica vazio. */
+  const _fichaZoom = document.getElementById('avatarZoomFicha');
+  if (slot && slot.nascimento) {
+    if(typeof preencherFichaZoom === 'function') preencherFichaZoom({
+      seed, raridade, nivel: nivelAv || 1,
+      nascimento:    slot.nascimento,
+      escolhaAnciao: slot.escolhaAnciao,
+    });
+  } else if (_fichaZoom) {
+    _fichaZoom.innerHTML = '';
+  }
   _lockZoomScroll();
   document.getElementById('avatarZoomOverlay').style.display = 'flex';
 }

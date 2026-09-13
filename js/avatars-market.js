@@ -179,6 +179,7 @@ function buildListingCard(l) {
             data-rar="${l.raridade}" data-seed="${l.seed||0}"
             data-nivel="${l.nivel||1}" data-nome="${nomeCurto(l).replace(/"/g,'&quot;')}"
             data-cor="${l.nascimento?l.nascimento.corPrincipal:''}" data-cor2="${l.nascimento?l.nascimento.corSecundaria:''}"
+            data-listing="${l.id}"
             onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
         </div>
       </div>
@@ -530,10 +531,6 @@ function renderSlots() {
       const isFrozen = !!s.listed;
       const _ps = [nomeCurto(s), alcunhaDe(s)];
       const _ns = _ps[0].trim(), _ss = _ps.slice(1).join(',').trim();
-      // O par de cores, pronto a viajar no onclick da moldura.
-      const _cor = s.nascimento
-        ? `{corPrincipal:${s.nascimento.corPrincipal||0},corSecundaria:${s.nascimento.corSecundaria||0}}`
-        : 'null';
       html += `<div class="slot-card ${isFrozen?'slot-frozen':''}">
         <div class="slot-stripe ${s.raridade}"></div>
         <div class="slot-header">
@@ -541,13 +538,14 @@ function renderSlots() {
           ${isFrozen ? `<div class="slot-badge frozen">${t('mkt.slot.for_sale')}</div>` : ''}
         </div>
         <div class="slot-svg-wrap" style="cursor:pointer;"
-          onclick="mktOpenZoom('${s.raridade}',${s.seed||0},${s.nivel||1},'${nomeCurto(s).replace(/'/g,"\\'")}',${_cor})">
+          onclick="mktOpenZoomSlot(${i})">
           <div class="av-zoom-wrap">
             ${gerarSVG(s,s.raridade,s.seed||0,96,96,_faseNum(s.nivel))}
             <button class="mkt-avatar-zoom-btn" title="Ampliar"
               data-rar="${s.raridade}" data-seed="${s.seed||0}"
               data-nivel="${s.nivel||1}" data-nome="${nomeCurto(s).replace(/"/g,'&quot;')}"
             data-cor="${s.nascimento?s.nascimento.corPrincipal:''}" data-cor2="${s.nascimento?s.nascimento.corSecundaria:''}"
+            data-slot="${i}"
               onclick="event.stopPropagation();mktOpenZoomBtn(this)">🔍</button>
           </div>
         </div>
