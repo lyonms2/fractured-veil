@@ -436,6 +436,10 @@
      outro. Com 0.42–1.00 o do fundo tem menos de metade da área do da
      frente, e aí o olho aceita que esteja longe. */
   --escala: calc(0.42 + 0.58 * var(--z));
+  /* A altura da cabeça acima dos pés. O js/arena-fu.js mede a tinta de
+     cada desenho e escreve o valor aqui em px; este é só o palpite para o
+     instante antes da medida, e é a altura da caixa inteira. */
+  --cabeca: calc(6.76rem * var(--escala));
 }
 
 /* ── A sombra de contacto ──
@@ -837,7 +841,7 @@
   /* O nome tem de ficar ACIMA da cabeça, e a cabeça está a
      5.6rem×escala×(260/200) do chão — a ALTURA do desenho, não a
      largura. Estava a usar a largura e caía-lhe em cima do peito. */
-  transform: translate(-50%, calc(-100% - 7.3rem * var(--escala)));
+  transform: translate(-50%, calc(-100% - var(--cabeca) - 0.3125rem));
   /* ── E CORTA, EM VEZ DE SAIR DO PALCO ──
 
      Era `nowrap` sem largura máxima, portanto um nome comprido crescia
@@ -874,7 +878,7 @@
    colado ao bicho. */
 .cb-posto .cb-marcas {
   position: absolute; left: 50%; top: 0;
-  transform: translate(-50%, calc(-100% - 8.4rem * var(--escala)));
+  transform: translate(-50%, calc(-100% - var(--cabeca) - 1.375rem));
   display: flex; gap: 0.125rem; flex-wrap: wrap;
   justify-content: center; width: 7rem;
   pointer-events: none;
@@ -1608,6 +1612,81 @@
   margin-right: 0.09375rem; vertical-align: middle;
 }
 
+/* ══ OS DADOS ROLAM ══
+
+   O desenho da rolagem. O relógio mora no js/arena-fu.js (_afRolarDados):
+   ele sorteia as faces, pousa cada dado no valor certo e tira o
+   `.rolando` da linha quando os dois estão no chão.
+
+     .rolando            os dados giram e caem; a cor ainda não diz nada
+     .pousou             o impacto de cada dado ao chegar
+     .revelado           o Resultado Alto acende; crítico e pifão estouram
+     .cb-lance-resto     o resultado e o dano, que só aparecem no fim
+
+   Enquanto rola, nenhum dado pode estar dourado, laranja ou vermelho: a
+   cor É o resultado, e mostrá-la antes era contar o fim. */
+.cb-dado {
+  transform-origin: 50% 70%;
+  transition: background-color .3s, border-color .3s, color .3s;
+}
+.cb-dado-n { display: block; font-variant-numeric: tabular-nums; }
+
+.cb-lance.rolando .cb-dado {
+  animation: cb-dado-rola .46s cubic-bezier(.25,.8,.35,1) both;
+  filter: blur(0.6px);
+}
+.cb-lance.rolando .cb-dado.alto,
+.cb-lance.rolando .cb-dado.critico,
+.cb-lance.rolando .cb-dado.pifao {
+  border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.07);
+  color: var(--text); box-shadow: none;
+}
+.cb-lance.rolando .cb-dado.pousou { animation: cb-dado-pousa .2s ease-out both; filter: none; }
+
+@keyframes cb-dado-rola {
+  0%   { transform: translateY(-1.1em) rotate(-240deg) scale(.55); opacity: 0; }
+  30%  { opacity: 1; }
+  62%  { transform: translateY(0.18em) rotate(22deg) scale(1.06); }
+  80%  { transform: translateY(-0.08em) rotate(-8deg) scale(.97); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+}
+@keyframes cb-dado-pousa {
+  0%   { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+/* O pifão pinta os dois 1 de vermelho. Vem depois do `.alto` de propósito:
+   dois 1 são os dois o Resultado Alto, e sem isto acendiam em dourado. */
+.cb-dado.pifao {
+  border-color: rgba(224,85,85,.7); background: rgba(224,85,85,.18); color: #ff9b93;
+}
+
+.cb-dado.alto.revelado    { animation: cb-dado-acende .7s ease-out; }
+.cb-dado.critico.revelado { animation: cb-dado-critico .8s ease-out; }
+.cb-dado.pifao.revelado   { animation: cb-dado-pifao .7s ease-out; }
+
+@keyframes cb-dado-acende {
+  0%   { box-shadow: 0 0 0 0 rgba(240,208,128,.85); }
+  100% { box-shadow: 0 0 0 0.55rem rgba(240,208,128,0); }
+}
+@keyframes cb-dado-critico {
+  0%   { transform: scale(1);                 box-shadow: 0 0 0 0 rgba(255,154,76,.95); }
+  18%  { transform: scale(1.28) rotate(-6deg); }
+  36%  { transform: scale(1.12) rotate(5deg); }
+  54%  { transform: scale(1.18) rotate(-3deg); }
+  100% { transform: scale(1);                 box-shadow: 0 0 0 0.9rem rgba(255,154,76,0); }
+}
+@keyframes cb-dado-pifao {
+  0%   { transform: translateY(0) rotate(0deg); }
+  30%  { transform: translateY(0.25em) rotate(14deg); }
+  60%  { transform: translateY(0.12em) rotate(-6deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.cb-lance-resto, .cb-dado-mod { transition: opacity .28s ease-out; }
+.cb-lance.rolando .cb-lance-resto,
+.cb-lance.rolando .cb-dado-mod { opacity: 0; }
+
 /* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
 .cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
 /* ══ AQUI ESCONDIA-SE O LANCE INTEIRO ══
@@ -2047,8 +2126,8 @@
   .cb-campo   { height: min(22rem, 46%); }
   .cb-sombra  { width: calc(5rem * var(--escala)); height: calc(1.25rem * var(--escala)); }
   .cb-anel    { width: calc(6rem * var(--escala)); height: calc(1.7rem * var(--escala)); }
-  .cb-etiqueta{ transform: translate(-50%, calc(-100% - 9.6rem * var(--escala))); }
-  .cb-posto .cb-marcas { transform: translate(-50%, calc(-100% - 10.9rem * var(--escala))); width: 11rem; }
+  .cb-posto   { --cabeca: calc(9.1rem * var(--escala)); }
+  .cb-posto .cb-marcas { width: 11rem; }
   /* Só a distância: os avatares aqui têm 9,1rem de altura contra 3, e a
      coluna tem de subir de mais alto para não lhes ficar em cima. O lado
      — fora, e dentro para o do fundo — é o da regra base. */
@@ -2231,8 +2310,14 @@
   .cb-efeitos   { width: calc(6rem * var(--escala));   height: calc(7.84rem * var(--escala)); }
   .cb-sombra    { width: calc(3.65rem * var(--escala)); height: calc(0.92rem * var(--escala)); }
   .cb-anel      { width: calc(4.5rem * var(--escala));  height: calc(1.24rem * var(--escala)); }
-  .cb-etiqueta  { transform: translate(-50%, calc(-100% - 7.85rem * var(--escala))); }
-  .cb-posto .cb-marcas { transform: translate(-50%, calc(-100% - 9.05rem * var(--escala))); }
+  .cb-posto     { --cabeca: calc(min(7.28rem, 30.55vw) * var(--escala)); }
+}
+
+/* Sem o nome por cima (o nome só aparece em quem está ativo), as marcas
+   descem para junto da cabeça em vez de guardar o lugar de uma linha que
+   não está lá. */
+.cb-posto:not(.ativo) .cb-marcas {
+  transform: translate(-50%, calc(-100% - var(--cabeca) - 0.3125rem));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2241,4 +2326,6 @@
     animation: none !important;
   }
   .cb-palco.treme { animation: none; }
+  .cb-dado, .cb-lance.rolando .cb-dado { animation: none !important; filter: none !important; }
+  .cb-lance-resto, .cb-dado-mod { transition: none !important; }
 }

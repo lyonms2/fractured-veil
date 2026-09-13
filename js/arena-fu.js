@@ -43,6 +43,7 @@ const AF_PAUSA = 900;
 function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afE = fuIniciar(equipaA, equipaB, semente);
   _afQuem = null; _afPasso = null; _afMenu = false; _afOcupado = false;
+  _afSegredo = null; _afMorreAinda = null;
   _afSair = aoSair || null;
   _afShell();
   _afDesenhar();
@@ -53,8 +54,10 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
        a primeira linha de toda batalha passou a mostrar o nome cru da
        chave. Os atributos são DES e PER porque é isso que o motor rola
        para a iniciativa (fuIniciar, em js/combate-fu.js). */
-    + _afDadosHTML({ dados: _afE.iniciativa.dados, atribs: ['DES', 'PER'], modificador: 0 })
-    + ' · ' + t('af.lance.acerta', { r: _afE.iniciativa.resultado, dl: _afE.iniciativa.dl }));
+    + _afDadosHTML({ dados: _afE.iniciativa.dados, atribs: ['DES', 'PER'], modificador: 0,
+                     quem: _afE.iniciativa.quem })
+    + '<span class="cb-lance-resto"> · '
+    + t('af.lance.acerta', { r: _afE.iniciativa.resultado, dl: _afE.iniciativa.dl }) + '</span>');
   setTimeout(_afAndar, AF_PAUSA);
 }
 
@@ -190,7 +193,7 @@ function _afLutador(c) {
   const escolhido = _afQuem === c.id;
 
   const cls = ['cb-posto', lado, escolhido ? 'ativo' : '',
-               c.vivo ? '' : 'caido', podeAgir ? 'pode' : ''].join(' ');
+               _afVivoVisivel(c) ? '' : 'caido', podeAgir ? 'pode' : ''].join(' ');
 
   /* ── AS MARCAS DO CÉU ──
 
@@ -242,6 +245,11 @@ function _afLutador(c) {
     m('✧', 'bem', t('af.ag.voo') + ' — ' + t('af.ag.voo.ef'));
   if (c.derrubado) m('▾', 'mal', t('af.ag.chao') + ' — ' + t('af.ag.chao.ef'));
   if (fuEmCrise(c)) m('!', 'crise', t('af.ag.crise') + ' — ' + t('af.ag.crise.ef'));
+
+  /* Quem caiu não carrega marca nenhuma. "Atordoado", "Concha" e a crise
+     em cima de um corpo deitado não dizem nada — ele não joga mais — e
+     ficavam penduradas no ar, sobre o companheiro de trás. */
+  if (!_afVivoVisivel(c)) marcas.length = 0;
 
   const pos = AF_POSTOS[Math.max(0, Math.min(2, c.posto))];
   const x = meu ? pos.x : 100 - pos.x;
@@ -328,6 +336,20 @@ function _afAssentar() {
       const chao  = posto.getBoundingClientRect().top;
       const atual = parseFloat(corpo.style.top) || 0;
       corpo.style.top = Math.round(atual + (chao - tinta)) + 'px';
+
+      /* ── A ALTURA DA CABEÇA, MEDIDA ──
+
+         O nome e as marcas ficavam a uma altura CALCULADA a partir da
+         caixa do desenho — como se todo bicho enchesse a caixa. Não
+         enche: um jovem usa um desenho de 200×200 dentro de uma caixa
+         feita para 200×260, e a tinta dele ocupa 157 unidades de altura
+         contra as 204 de um ancião. As marcas ficavam no ar, esperando um
+         corpo adulto que não estava lá.
+
+         A medida já estava aqui, para assentar os pés: a altura da tinta
+         vezes a escala do desenho na tela. Passa a ir também para o
+         `--cabeca` do posto, e o CSS pendura o nome e as marcas nela. */
+      posto.style.setProperty('--cabeca', Math.round(caixa.height * Math.abs(mm.d)) + 'px');
     }
 
     if (caido) {
@@ -524,7 +546,7 @@ function _afCartao(c) {
   const podeAgir = _afPodeAgir(c);
   const lado = meu ? 'eu' : 'ini';
   const cls = ['cb-ficha', lado, _afQuem === c.id ? 'ativo' : '',
-               c.vivo ? '' : 'caido', (meu && podeAgir) ? 'entra' : ''].join(' ');
+               _afVivoVisivel(c) ? '' : 'caido', (meu && podeAgir) ? 'entra' : ''].join(' ');
   const gesto = (meu && podeAgir && !_afPasso)
     ? `_afEscolherQuem('${c.id}')` : `_afFicha('${c.id}')`;
   return `<div class="${cls}" id="cbCart${c.id}"
@@ -570,7 +592,7 @@ function _afHud(lado) {
 function _afChaveEstrutura() {
   const vez = _afE.acabou ? null : fuVez(_afE);
   return _afE.A.concat(_afE.B)
-    .map(c => c.id + c.posto + (c.vivo ? 'v' : 'x'))
+    .map(c => c.id + c.posto + (_afVivoVisivel(c) ? 'v' : 'x'))
     .join('|') + '#' + (_afQuem || '') + '#' + (_afPasso ? 'p' : '')
     + '#' + (vez ? vez.lado + vez.podem.join(',') : 'fim');
 }
@@ -667,6 +689,22 @@ function _afDesenhar() {
    turno, porque o modelo já não sabe. */
 let _afSegredo = null;
 
+/* ── E QUEM MORRE SÓ CAI NA BATIDA EM QUE MORRE ──
+
+   O modelo já sabe, antes da primeira batida, quem vai cair no turno. O
+   campo se refazia no começo da sequência com o corpo já deitado — e a
+   queda, as marcas sumindo e o cartão cinzento aconteciam antes de os
+   dados do golpe fatal sequer rolarem.
+
+   Este conjunto guarda quem cai neste turno e ainda não levou o golpe.
+   Para o desenho, esses continuam vivos; a batida do golpe tira o id
+   daqui, refaz o campo, e é aí que a queda anima. */
+let _afMorreAinda = null;
+
+function _afVivoVisivel(c) {
+  return !!c && (c.vivo || !!(_afMorreAinda && _afMorreAinda.has(c.id)));
+}
+
 /* A vida a mostrar para este lutador: a de antes enquanto a batida dele
    não tocou, a do modelo em todo o resto do tempo. Uma porta só, e as
    duas telas que desenham barras passam por ela. */
@@ -695,7 +733,7 @@ function _afBarraDe(id, pv, pm) {
       if (f > antes) rastro.style.width = f + '%';   // a subir, vai à frente
       cheio.style.width  = f + '%';
       rastro.style.width = f + '%';                  // a descer, o CSS atrasa-o
-      b.classList.toggle('baixa', c.vivo && f <= 25);
+      b.classList.toggle('baixa', _afVivoVisivel(c) && f <= 25);
       const txt = b.querySelector('span');
       if (txt) txt.textContent = pv + '/' + c.ficha.pvMax;
     }
@@ -726,7 +764,7 @@ function _afBarras() {
         if (fPV > antes) rastro.style.width = fPV + '%';   // a subir, vai à frente
         cheio.style.width  = fPV + '%';
         rastro.style.width = fPV + '%';                    // a descer, o CSS atrasa-o
-        pv.classList.toggle('baixa', c.vivo && fPV <= 25);
+        pv.classList.toggle('baixa', _afVivoVisivel(c) && fPV <= 25);
         const txt = pv.querySelector('span');
         if (txt) txt.textContent = pvV + '/' + c.ficha.pvMax;
       }
@@ -739,10 +777,10 @@ function _afBarras() {
         const txt = pm.querySelector('span');
         if (txt) txt.textContent = pmV + '/' + c.ficha.pmMax;
       }
-      linha.classList.toggle('caido', !c.vivo);
+      linha.classList.toggle('caido', !_afVivoVisivel(c));
     }
     const posto = document.getElementById('cbLut' + c.id);
-    if (posto) posto.classList.toggle('caido', !c.vivo);
+    if (posto) posto.classList.toggle('caido', !_afVivoVisivel(c));
   }
 }
 
@@ -1320,20 +1358,51 @@ function _afMostrar(eventos) {
     if (ev.pvQuem != null)   guardar(ev.quem, 'pv', ev.pvQuem - (ev.drenou | 0));
   }
 
+  // quem cai neste turno continua de pé, para o desenho, até a sua batida
+  _afMorreAinda = new Set();
+  for (const b of batidas) for (const ev of b.evs) if (ev.caiu && ev.alvo) _afMorreAinda.add(ev.alvo);
+
   _afDesenhar();
 
-  const passo = Math.max(240, Math.min(520, 1900 / Math.max(1, batidas.length)));
+  /* ── O COMPASSO COM DADOS ──
+
+     Uma batida com dados precisa de tempo para os dados rolarem, pousarem
+     e o Resultado Alto acender — e só DEPOIS acontece o golpe: o avanço
+     de quem bate, o número, a barra, a queda. Antes o golpe e os dados
+     saíam juntos e o dano aparecia enquanto os dados ainda nem existiam.
+
+     Sem dados na sequência (uma cura, a Devastação) o compasso é o de
+     antes. */
+  const temDados = !_afMovimentoReduzido()
+    && batidas.some(b => b.html && b.html.indexOf('cb-dado') !== -1);
+  const passo = temDados
+    ? Math.max(AF_ROLA_TOTAL + 70, Math.min(820, 2400 / Math.max(1, batidas.length)))
+    : Math.max(240, Math.min(520, 1900 / Math.max(1, batidas.length)));
   let i = 0;
   const tocar = () => {
     if (i >= batidas.length) {
+      const sobrou = _afMorreAinda && _afMorreAinda.size;
       _afSegredo = null;
-      _afBarras();                       // acerta o que a cadência deixou
+      _afMorreAinda = null;
+      if (sobrou) _afDesenhar(); else _afBarras();   // acerta o que a cadência deixou
       setTimeout(() => { _afOcupado = false; _afAndar(); }, Math.round(passo * 0.7));
       return;
     }
     const b = batidas[i++];
-    for (const ev of b.evs) _afEncenarUm(ev);
     if (b.html) _afLance(b.html, i > 1);
+    const rola = temDados && b.html && b.html.indexOf('cb-dado') !== -1;
+    const encenar = () => {
+      /* O campo se refaz ANTES da encenação quando alguém cai nesta
+         batida: refazê-lo depois apagaria o número e o clarão do golpe,
+         que moram dentro do posto que está sendo substituído. */
+      const caem = b.evs.filter(ev => ev.caiu && _afMorreAinda && _afMorreAinda.has(ev.alvo));
+      if (caem.length) {
+        caem.forEach(ev => _afMorreAinda.delete(ev.alvo));
+        _afDesenhar();
+      }
+      for (const ev of b.evs) _afEncenarUm(ev);
+    };
+    if (rola) setTimeout(encenar, AF_ROLA_MS + AF_ROLA_DEFASAGEM); else encenar();
     setTimeout(tocar, passo);
   };
   tocar();
@@ -1700,6 +1769,99 @@ function _afJogarPor(quem, acao) {
 // regras — quem vê "🎲5·🎲5 = 10 contra 8" percebe porque acertou, e
 // quem vê só "acertou" fica a achar que o computador decidiu.
 // ═══════════════════════════════════════════════════════════════════
+/* ══ OS DADOS ROLAM ══
+
+   Cada dado entra girando de cima, passa por faces sorteadas cada vez
+   mais devagar — como um dado de verdade perdendo força — e pousa com um
+   pequeno impacto no valor que saiu. O segundo pousa um instante depois
+   do primeiro. Com os dois no lugar, o Resultado Alto acende, e só então
+   aparece o resto da frase: o resultado, o alvo e o dano.
+
+   No crítico os dois dados estouram em laranja e tremem; no pifão caem
+   vermelhos, meio tortos.
+
+   ── O VALOR ESTÁ NO HTML DESDE O INÍCIO ──
+
+   A linha nasce com o número certo (é essa que vai para o histórico), e
+   a rolagem troca o texto por faces sorteadas ANTES de o navegador
+   pintar pela primeira vez — portanto o resultado nunca aparece antes da
+   hora, e o histórico nunca guarda um número do meio da rolagem.
+
+   ── E UMA REDE ──
+
+   A rolagem anda por `requestAnimationFrame`, que o navegador para
+   quando a aba não está sendo pintada. Um `setTimeout` pousa os dados no
+   tempo certo de qualquer jeito: sem ele, uma aba em segundo plano
+   deixaria linhas com dados sorteados e o resultado escondido para
+   sempre.
+
+   Quem pediu ao sistema menos movimento vê os dados já pousados. */
+const AF_ROLA_MS = 460;          // quanto o primeiro dado gira
+const AF_ROLA_DEFASAGEM = 110;   // o segundo pousa depois
+const AF_ROLA_ACENDE = 160;      // o Resultado Alto acende, e a frase aparece
+const AF_ROLA_TOTAL = AF_ROLA_MS + AF_ROLA_DEFASAGEM + AF_ROLA_ACENDE;
+
+function _afMovimentoReduzido() {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  catch (e) { return false; }
+}
+
+function _afRolarDados(linha) {
+  const dados = [...linha.querySelectorAll('.cb-dado[data-v]')];
+  if (!dados.length || _afMovimentoReduzido()) return;
+
+  const face = d => d.querySelector('.cb-dado-n');
+  const lados = d => Math.max(2, parseInt(d.dataset.l, 10) || 6);
+  const sortear = d => {
+    const L = lados(d), atual = face(d).textContent;
+    let v;
+    do { v = String(1 + Math.floor(Math.random() * L)); } while (v === atual);
+    face(d).textContent = v;
+  };
+
+  linha.classList.add('rolando');
+  dados.forEach((d, i) => {
+    d.style.animationDelay = (i * AF_ROLA_DEFASAGEM) + 'ms';
+    d._troca = 0;
+    sortear(d);
+  });
+
+  let fechou = false;
+  const pousar = d => {
+    if (d.classList.contains('pousou')) return;
+    face(d).textContent = d.dataset.v;
+    d.style.animationDelay = '';
+    d.classList.add('pousou');
+  };
+  const fechar = () => {
+    if (fechou) return;
+    fechou = true;
+    dados.forEach(pousar);
+    setTimeout(() => {
+      linha.classList.remove('rolando');
+      dados.forEach(d => d.classList.add('revelado'));
+    }, AF_ROLA_ACENDE);
+  };
+
+  const inicio = performance.now();
+  const quadro = agora => {
+    if (fechou || !linha.isConnected) return;
+    const tempo = agora - inicio;
+    let falta = false;
+    dados.forEach((d, i) => {
+      const fim = AF_ROLA_MS + i * AF_ROLA_DEFASAGEM;
+      if (tempo >= fim) { pousar(d); return; }
+      falta = true;
+      // 0 → 1 ao longo do giro deste dado; as trocas ficam mais espaçadas
+      const p = Math.max(0, tempo - i * AF_ROLA_DEFASAGEM) / AF_ROLA_MS;
+      if (agora - d._troca >= 45 + 115 * p * p) { sortear(d); d._troca = agora; }
+    });
+    if (falta) requestAnimationFrame(quadro); else fechar();
+  };
+  requestAnimationFrame(quadro);
+  setTimeout(fechar, AF_ROLA_MS + (dados.length - 1) * AF_ROLA_DEFASAGEM + 60);
+}
+
 /* ── OS DOIS DADOS DE UM TESTE ──
 
    Era uma cadeia de texto — "4·7+1" — e nela perdia-se a coisa que faz
@@ -1723,12 +1885,32 @@ function _afDadosHTML(ev) {
      iguais acendem os dois (ambos são o Resultado Alto), e sem isto um
      3·3 ficava com o mesmo aspecto de um 6·6 — que é crítico. A diferença
      entre os dois é a regra inteira, e tem de se ver. */
-  const cls = v => 'cb-dado' + (v === alto ? ' alto' : '') + (ev.critico ? ' critico' : '');
-  const cx = (v, k) => `<i class="${cls(v)}">${
-    k ? `<u>${esc(t('af.ab.' + k))}</u>` : ''}${v}</i>`;
+  /* O pifão (dois 1) também se marca nos dados, em vermelho: sem isso os
+     dois 1 acendiam em dourado, como Resultado Alto, e o pior lance
+     possível tinha a cor do melhor. */
+  const cls = v => 'cb-dado' + (v === alto ? ' alto' : '')
+                 + (ev.critico ? ' critico' : '') + (ev.pifao ? ' pifao' : '');
+  /* `data-v` é o valor que sai; `data-l` é quantos lados o dado tem, para
+     a rolagem só mostrar faces que ele tem de verdade (um d6 não passa
+     por um 9 enquanto gira). Os lados são os de AGORA, e nunca menos do
+     que o valor que saiu. */
+  const q = ev.quem ? _afPorId(ev.quem) : null;
+  const lados = (k, v) => Math.max(v | 0,
+    (q && k && typeof fuDado === 'function') ? fuDado(q, k) : 12);
+  const cx = (v, k) => `<i class="${cls(v)}" data-v="${v}" data-l="${lados(k, v)}">${
+    k ? `<u>${esc(t('af.ab.' + k))}</u>` : ''}<span class="cb-dado-n">${v}</span></i>`;
   const mod = ev.modificador
     ? `<i class="cb-dado-mod">${ev.modificador > 0 ? '+' : ''}${ev.modificador}</i>` : '';
   return cx(d[0], at[0]) + cx(d[1], at[1]) + mod;
+}
+
+/* O nome e os dados à vista; o resto da frase — o resultado, o alvo, o
+   dano — num invólucro que fica apagado enquanto os dados rolam. Mostrar
+   "13 contra 8 · −25 de vida" ao lado de dados que ainda estão girando é
+   contar o fim antes do meio. */
+function _afComResto(p) {
+  if (p.length <= 2) return p.join(' · ');
+  return p[0] + ' · ' + p[1] + '<span class="cb-lance-resto"> · ' + p.slice(2).join(' · ') + '</span>';
 }
 
 function _afLanceDe(ev) {
@@ -1763,13 +1945,13 @@ function _afLanceDe(ev) {
     p.push(t('af.lance.acerta', { r: ev.resultado, dl: ev.dl }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
-    if (!ev.acertou) { p.push(t('af.lance.falhou')); return p.join(' · '); }
+    if (!ev.acertou) { p.push(t('af.lance.falhou')); return _afComResto(p); }
     p.push('<b>' + nome(ev.alvo) + '</b>');
     p.push(_afDanoTexto(ev));
     if (ev.estadoDado) p.push(t('af.lance.estado', { e: t('af.est.' + ev.estadoDado) }));
     if (ev.drenou)     p.push(t('af.lance.dreno', { n: ev.drenou }));
     if (ev.derrubou)   p.push(t('af.lance.derrubou'));
-    return p.join(' · ');
+    return _afComResto(p);
   }
   return null;
 }
@@ -1808,14 +1990,22 @@ function _afLance(html, acrescenta) {
   _afHistorico.push({ ronda: _afE ? _afE.ronda : 0, html });
   const el = document.getElementById('cbLog');
   if (!el) return;
-  const linha = `<div class="cb-lance">${html}</div>`;
+  /* Por DOM, e não reescrevendo o innerHTML com as linhas antigas: uma
+     linha antiga pode estar com os dados ainda girando, e recriá-la a
+     partir do HTML copiava o número sorteado do meio da rolagem e a
+     deixava presa assim — o relógio da animação ficava agarrado ao nó
+     velho, que já não estava na tela. */
+  const linha = document.createElement('div');
+  linha.className = 'cb-lance';
+  linha.innerHTML = html;
   if (acrescenta && el.classList.contains('viva')) {
-    const antigas = [...el.querySelectorAll(':scope > .cb-lance')]
-      .slice(-3).map(d => d.outerHTML);
-    el.innerHTML = antigas.join('') + linha;
+    el.appendChild(linha);
+    const todas = el.querySelectorAll(':scope > .cb-lance');
+    for (let k = 0; k < todas.length - 4; k++) todas[k].remove();
   } else {
-    el.innerHTML = linha;
+    el.replaceChildren(linha);
   }
+  _afRolarDados(linha);
   el.classList.add('viva');
   clearTimeout(_afLanceTimer);
   /* Apaga-se sozinho, mas só depois de haver tempo para o ler — e o
