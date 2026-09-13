@@ -48,7 +48,12 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afDesenhar();
   _afLance('<b>' + t('af.lance.comeca', {
     nome: esc(_afNome(_afPorId(_afE.iniciativa.quem))) }) + '</b> · '
-    + t('af.lance.dados', { a: _afE.iniciativa.dados[0], b: _afE.iniciativa.dados[1] })
+    /* Com as mesmas caixas de dados dos testes. Pedia a chave
+       `af.lance.dados`, que saiu quando os dados ganharam caixa própria — e
+       a primeira linha de toda batalha passou a mostrar o nome cru da
+       chave. Os atributos são DES e PER porque é isso que o motor rola
+       para a iniciativa (fuIniciar, em js/combate-fu.js). */
+    + _afDadosHTML({ dados: _afE.iniciativa.dados, atribs: ['DES', 'PER'], modificador: 0 })
     + ' · ' + t('af.lance.acerta', { r: _afE.iniciativa.resultado, dl: _afE.iniciativa.dl }));
   setTimeout(_afAndar, AF_PAUSA);
 }
@@ -813,6 +818,12 @@ function _afMenuMover() {
   const acabou = _afE && _afE.acabou;
   menu.classList.toggle('aberto', (!!_afMenu && !!_afQuem) || !!_afPasso || !!acabou);
   menu.classList.toggle('fim', !!acabou);
+  /* O palco fica sabendo que o menu está aberto. No celular o menu é uma
+     coluna presa no canto de baixo e sobe por cima do céu — que é onde o
+     lance mora — e o CSS apaga o lance enquanto se escolhe. */
+  const palcoMenu = document.getElementById('cbPalco');
+  if (palcoMenu) palcoMenu.classList.toggle('menu-aberto',
+    !acabou && ((!!_afMenu && !!_afQuem) || !!_afPasso));
   /* O lado de dentro é de um posto, e no fim não há posto nenhum. O
      painel do fim está a salvo porque escreve `transform` em linha e com
      !important — mas deixar a classe pendurada é deixar uma armadilha
@@ -1778,20 +1789,32 @@ function _afDanoTexto(ev) {
 let _afLanceTimer = null;
 let _afHistorico = [];
 
-/* Com `acrescenta`, a linha nova junta-se às do mesmo turno em vez de as
-   apagar: um turno é uma sequência de testes, e lê-se de cima para baixo
-   como uma. As quatro últimas chegam — acima disso a caixa cresceria por
-   cima do palco, e o que interessa é sempre o fim. */
+/* Com `acrescenta`, a linha nova se junta às do mesmo turno em vez de
+   apagar as anteriores: um turno é uma sequência de testes, e se lê de
+   cima para baixo como uma.
+
+   ── CADA BATIDA NUMA LINHA PRÓPRIA ──
+
+   Eram frases coladas com <br> dentro de uma caixa só, e a caixa tem
+   altura máxima. No celular essa altura é 6rem (96px): três batidas
+   davam 157px de texto, e o que passava do limite era cortado EMBAIXO —
+   ou seja, o golpe mais recente, justamente o que acabou de acontecer.
+
+   Com uma <div> por batida, o CSS empilha as linhas a partir do fundo
+   (`justify-content: flex-end`), e o que não cabe sai por CIMA: some a
+   linha mais velha, e a mais nova fica sempre à vista. */
 function _afLance(html, acrescenta) {
   if (!html) return;
   _afHistorico.push({ ronda: _afE ? _afE.ronda : 0, html });
   const el = document.getElementById('cbLog');
   if (!el) return;
+  const linha = `<div class="cb-lance">${html}</div>`;
   if (acrescenta && el.classList.contains('viva')) {
-    const linhas = el.innerHTML.split('<br>').concat(html).slice(-4);
-    el.innerHTML = linhas.join('<br>');
+    const antigas = [...el.querySelectorAll(':scope > .cb-lance')]
+      .slice(-3).map(d => d.outerHTML);
+    el.innerHTML = antigas.join('') + linha;
   } else {
-    el.innerHTML = html;
+    el.innerHTML = linha;
   }
   el.classList.add('viva');
   clearTimeout(_afLanceTimer);
@@ -1897,6 +1920,16 @@ function _afFim() {
   if (_afTemMoldura()) _pveFecharContas(_afE);
   _afChave = null;      // o fim muda a estrutura toda
   _afDesenhar();
+
+  /* ── E O ÚLTIMO LANCE SAI DE CENA ──
+
+     Ele continuava aceso por trás do painel do fim: no celular, o painel
+     e o lance ocupam a mesma faixa do céu, e o "13 contra 8 · resistiu"
+     do último golpe aparecia atravessado debaixo de "A colônia resistiu".
+     O lance ainda está no histórico, que é onde se vai buscar o que já
+     aconteceu. */
+  const log = document.getElementById('cbLog');
+  if (log) { clearTimeout(_afLanceTimer); log.classList.remove('viva'); }
 }
 
 // Para o banco de ensaio e, um dia, para o servidor conferir uma luta.

@@ -1539,35 +1539,35 @@
      disso ESBATE-SE em vez de ser cortado a direito. Um texto que se
      desvanece diz "há mais"; um texto cortado diz "avariou". */
   width: min(22rem, 72%); max-height: 12.5rem; min-height: 0;
-  /* O esbatimento tem de morder o ENCHIMENTO e não o texto. Sem o
-     padding, a máscara apagava a última linha e meia de qualquer lance,
-     mesmo dos curtos que cabiam à vontade — arranjava o corte e criava
-     um pior, porque um texto meio apagado parece um defeito de
-     desenho. Com 1,25rem de folga em baixo, um lance que cabe nunca é
-     tocado, e só o que transborda é que se desvanece. */
-  mask-image: linear-gradient(180deg, #000 calc(100% - 1.25rem), transparent);
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 1.25rem), transparent);
+  /* O esbatimento morde o ENCHIMENTO, e não o texto: a folga de 1,25rem
+     existe só para ele. Fica em CIMA porque é por cima que a pilha
+     transborda — a linha mais velha se desfaz em vez de ser cortada a
+     régua, e um texto que se desfaz diz "há mais antes", que é verdade
+     (está no histórico). Uma linha que cabe nunca é tocada. */
+  mask-image: linear-gradient(180deg, transparent 0, #000 1.25rem);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 1.25rem);
   z-index: 7; cursor: pointer;
-  /* O `padding: 0` que aqui estava vinha DEPOIS do padding-bottom da
-     folga e apagava-o — a máscara voltava a morder o texto. A abreviada
-     ganha sempre à detalhada quando vem a seguir, mesmo dentro da mesma
-     regra. */
-  background: none; border: none; padding: 0 0 1.25rem;
+  /* A folga do esbatimento, em cima. Na mesma linha do resto do
+     `padding` de propósito: uma abreviada escrita depois de uma detalhada
+     apaga a detalhada, e foi assim que a folga já sumiu uma vez. */
+  background: none; border: none; padding: 1.25rem 0 0;
   text-align: center;
-  /* ── E NÃO É UMA COLUNA DE CAIXAS ──
+  /* ── UMA PILHA DE LINHAS, QUE CRESCE A PARTIR DO FUNDO ──
 
-     A regra base do css/combate-batalha.css dá-lhe `display: flex` com
-     `flex-direction: column`, porque no desenho antigo o lance era uma
-     PILHA: uma caixa por turno, empilhadas de cima para baixo.
+     Cada batida é uma <div class="cb-lance"> (ver _afLance), e dentro
+     dela o texto corre em linha normalmente — o nome em negrito, as
+     caixas dos dados, o dano.
 
-     O lance de agora é uma frase, feita de elementos em linha — o nome
-     em negrito, os dois dados, o dano. Num contentor flex cada um deles
-     vira um item, e um item flex é sempre um bloco: as caixinhas dos
-     dados saíam com a largura toda do painel, uma por linha, com o nome
-     do atributo centrado por cima do número.
+     A pilha é encostada no fundo. Quando as linhas passam da altura
+     máxima, quem sai é a de CIMA, a mais velha. Era o contrário: a caixa
+     era texto corrido e cortava embaixo, e no celular (6rem de altura) a
+     terceira batida de uma barragem — a mais recente — ficava invisível.
 
-     Volta a ser texto. */
-  display: block;
+     Já foi `display: flex` antes, e deu errado por outro motivo: os
+     filhos eram os próprios elementos em linha, e um item flex vira
+     sempre um bloco. Agora os filhos são as linhas, e é exatamente isso
+     que se quer que eles sejam. */
+  display: flex; flex-direction: column; justify-content: flex-end;
   opacity: 0; pointer-events: none;
   transition: opacity .45s ease-out;
   overflow: hidden;
@@ -2063,6 +2063,88 @@
    luz, a profundidade, as sombras — e sem nada que se mexa sozinho. Os
    golpes continuam a acontecer: esses são resposta a um gesto dele, e
    é por eles que se percebe o que aconteceu. */
+/* ══════════════════════════════════════════════════════════════════
+   O CELULAR: LETRA QUE SE LÊ E BOTÃO QUE O DEDO ACERTA
+
+   Medido a 375×812 e a 360×640, com a raiz em 16px:
+
+     menu de ações     nome 6,5px · detalhe 5,5px · custo 5,5px · disco 28px
+     "Em quem cai?"    6px
+     topo              "Rodada 1 · Sua vez" 7px · "BATALHA" 7px · ✕ 8px
+     nome do avatar    9px
+     tela de fim       "Voltar" 8px
+
+   A causa é a mesma de sempre nesta folha: os tamanhos base foram
+   escritos para a raiz de 26,4px do computador, e o bloco que os corrige
+   só existe do lado largo (681px ou mais). Do lado estreito ficaram os
+   números crus — e o menu de ações, que é o que se toca em TODOS os
+   turnos, era a coisa mais ilegível da tela.
+
+   E o disco de 28px fica abaixo do que um dedo acerta sem mirar. As
+   diretrizes das duas lojas pedem 44 a 48; aqui a linha inteira do orbe
+   é o alvo (disco mais nome), e com o disco em 40px e a linha em 44 o
+   toque deixa de cair no orbe do lado.
+
+   Vale para toda a faixa estreita, até 680px, e não só para os 416 do
+   bloco de 26rem: entre 417 e 680 também vigorava a raiz de 16px com os
+   números crus.
+
+   ── O "APERTADO" TEM CHÃO ──
+
+   Quando a coluna não cabe, o js/arena-fu.js liga `.apertado` e o CSS
+   encolhia TUDO — no celular a letra iria para 5,5 · 4,5 · 4px. Aqui
+   ele encolhe o disco e o espaço entre orbes, e a letra para nos dez
+   píxeis. Uma coluna um pouco mais alta ainda se usa; uma coluna
+   ilegível, não.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 680px) {
+  .cb-orbe            { gap: 0.5rem; min-height: 2.75rem; }
+  .cb-orbe-disco      { width: 2.5rem; height: 2.5rem; }
+  .cb-selo            { width: 1.375rem; height: 1.375rem; }
+  .cb-orbe-custo      { min-width: 1.125rem; height: 1.125rem; font-size: 0.625rem; }
+  .cb-orbe-nome       { font-size: 0.75rem; }      /* 12px */
+  .cb-orbe-nome i     { font-size: 0.625rem; }     /* 10px */
+  .cb-menu .cb-acoes  { gap: 0.25rem; }
+  .cb-menu .cb-pm-cab { font-size: 0.6875rem; }    /* 11px */
+
+  .cb-menu.apertado .cb-acoes       { gap: 0.125rem; }
+  .cb-menu.apertado .cb-orbe        { min-height: 2.25rem; }
+  .cb-menu.apertado .cb-orbe-disco  { width: 2rem; height: 2rem; }
+  .cb-menu.apertado .cb-orbe-nome   { font-size: 0.6875rem; }
+  .cb-menu.apertado .cb-orbe-nome i { font-size: 0.625rem; }
+  .cb-menu.apertado .cb-orbe-custo  { font-size: 0.625rem; }
+
+  /* O topo: a rodada e de quem é a vez são a primeira pergunta de cada
+     turno, e o ✕ é a única saída da batalha. */
+  .cb-palco .cb-topo                 { font-size: 0.6875rem; letter-spacing: 0.06rem; }
+  .cb-palco .cb-topo button          { font-size: 0.75rem; min-width: 2.5rem; min-height: 2.25rem; }
+  .cb-palco .cb-topo button.desistir { font-size: 0.6875rem; }
+  /* Sem moldura (o banco de ensaio) o botão de desistir fica sem texto,
+     e sobrava uma caixa vazia de borda vermelha ao lado do ✕. */
+  .cb-palco .cb-topo button:empty    { display: none; }
+
+  .cb-etiqueta { font-size: 0.6875rem; }            /* 11px */
+  .cb-dado u   { font-size: 0.625rem; }             /* 10px */
+
+  /* Com o menu aberto, o lance sai de cena. A coluna do menu fica presa
+     no canto de baixo e, na escolha de alvo (cinco orbes), sobe até o
+     meio do céu: a 360×640 ela ia de 175 a 448px, e o lance morava entre
+     163 e 259. As duas coisas se atravessavam, e as caixas dos dados
+     apareciam pela metade atrás do painel.
+
+     O lance continua lendo-se até o toque no cartão, e continua no
+     histórico depois. */
+  .cb-palco.menu-aberto .cb-log { opacity: 0; pointer-events: none; }
+
+  /* A tela de fim: o resultado, o prêmio e o botão de sair. */
+  .cb-palco .cb-fim                  { font-size: 0.8125rem; }
+  .cb-palco .cb-premio               { font-size: 0.6875rem; }
+  .cb-palco .cb-premio .cada         { font-size: 0.625rem; }
+  .cb-palco .cb-fratura              { font-size: 0.625rem; }
+  .cb-palco .cb-btn.sair             { min-height: 2.75rem; }
+  .cb-palco .cb-btn.sair .cb-btn-rot { font-size: 0.75rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cb-aurora, .cb-fenda-halo, .cb-fenda-corpo, .cb-fenda-nucleo,
   .cb-mota, .cb-anel, .cb-corpo svg, .cb-sombra, .cb-barra.pv.baixa {
