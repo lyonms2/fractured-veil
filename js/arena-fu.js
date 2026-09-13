@@ -210,11 +210,16 @@ function _afLutador(c) {
   const m = (txt, k, ajuda) => marcas.push(
     `<span class="cb-marca ${k}" title="${esc(ajuda || txt)}">${esc(txt)}</span>`);
   const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
+  /* O mesmo texto da ficha, com o mesmo tamanho medido: a etiqueta e a
+     explicação têm de dizer a mesma coisa, e duas frases escritas em dois
+     sítios acabam por dizer duas. */
+  const dado = k => (typeof fuDado === 'function') ? ('d' + fuDado(c, k)) : '—';
   for (const e of Object.keys(c.estados)) {
-    const at = ((EST[e] && EST[e].morde) || []).map(k => t('af.ab.' + k));
-    m(t('af.est.' + e), 'mal', t('af.est.' + e) + ' — ' + (at.length > 1
-      ? t('af.ag.morde2', { a: at[0], b: at[1] })
-      : t('af.ag.morde1', { a: at[0] || '—' })));
+    const mo = (EST[e] && EST[e].morde) || [];
+    const at = mo.map(k => t('af.ab.' + k));
+    m(t('af.est.' + e), 'mal', t('af.est.' + e) + ' — ' + (mo.length > 1
+      ? t('af.ag.morde2', { a: at[0], b: at[1], d: dado(mo[0]), e: dado(mo[1]) })
+      : t('af.ag.morde1', { a: at[0] || '—', d: mo[0] ? dado(mo[0]) : '—' })));
   }
   if (c.guardando) m('▲', 'bem', t('af.ag.guarda') + ' — ' + t('af.ag.guarda.ef'));
   if (c.efeitos.resisteFisico)
@@ -226,7 +231,8 @@ function _afLutador(c) {
     m(t('af.m.misericordia'), 'bem', t('af.m.misericordia') + ' — ' + t('af.ag.mercy.ef'));
   if (c.efeitos.subirDado)
     m(t('af.ab.' + c.efeitos.subirDado) + '▴', 'bem', t('af.m.despertar') + ' — '
-      + t('af.ag.desperta.ef', { a: t('af.ab.' + c.efeitos.subirDado) }));
+      + t('af.ag.desperta.ef', { a: t('af.ab.' + c.efeitos.subirDado),
+                                 d: dado(c.efeitos.subirDado) }));
   if (typeof fuNoAr === 'function' && fuNoAr(c))
     m('✧', 'bem', t('af.ag.voo') + ' — ' + t('af.ag.voo.ef'));
   if (c.derrubado) m('▾', 'mal', t('af.ag.chao') + ' — ' + t('af.ag.chao.ef'));

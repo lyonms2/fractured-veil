@@ -297,7 +297,7 @@ window.registerStrings({
   'pve.papel.basico':      'Basic Strike',
   'pve.papel.forte':       'Strong Attack',
   'pve.papel.muito_forte': 'Very Strong Attack',
-  'pve.papel.defensiva':   'Defence',
+  'pve.papel.defensiva':   'Defense',
   'pve.papel.suporte':     'Support',
   'pve.papel.ficha':       'Know',
   'pve.papel.ficha_sub':   'what this avatar can do',

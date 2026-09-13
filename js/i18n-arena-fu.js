@@ -48,10 +48,10 @@ window.registerStrings({
   'af.lance.pmGanho': '+{n} PM',
   'af.lance.estado':  'ficou {e}',
   'af.lance.caiu':    '{nome} caiu',
-  'af.lance.salvou':  'a Misericórdia segurou-o num ponto de vida',
+  'af.lance.salvou':  'a Misericórdia o segurou em um ponto de vida',
   'af.lance.dreno':   'bebeu {n} de vida',
   'af.lance.derrubou':'foi derrubado do ar',
-  'af.lance.guardar': '{nome} pôs-se em guarda',
+  'af.lance.guardar': '{nome} se pôs em guarda',
   'af.lance.mover':   '{nome} trocou de lugar com {com}',
   'af.lance.cena':    '{nome} lançou {magia}',
   'af.lance.suspiro': 'o Último Suspiro de {nome}',
@@ -78,7 +78,7 @@ window.registerStrings({
   'af.af.AB':         'absorveu',
 
   // ── o fim ──
-  'af.fim.ganhou':    'A colónia resistiu.',
+  'af.fim.ganhou':    'A colônia resistiu.',
   'af.fim.perdeu':    'A Fratura levou a melhor.',
   'af.fim.empate':    'Não sobrou ninguém.',
   'af.fim.sair':      'Voltar',
@@ -130,8 +130,8 @@ window.registerStrings({
 
      O manual escreve cada criatura sempre com as mesmas linhas pela
      mesma ordem: cabeçalho, descrição, traços, atributos, defesas e
-     afinidades, e depois as secções — ataques básicos, magias, outras
-     acções, regras especiais. Cada acção é uma linha de campos separados
+     afinidades, e depois as seções — ataques básicos, magias, outras
+     ações, regras especiais. Cada ação é uma linha de campos separados
      por ✦, com o efeito por baixo.
 
      Seguir esse padrão tem um ganho que não é arrumação: quem sabe ler
@@ -157,7 +157,7 @@ window.registerStrings({
 
   /* ── O QUE ESTÁ ACONTECENDO ──
 
-     Uma linha por coisa que está a mexer nos números DESTE avatar, agora.
+     Uma linha por coisa que está mexendo nos números DESTE avatar, agora.
      Vive no bloco da ficha, e não flutua por cima da cabeça: o céu do
      palco leva a MARCA (uma palavra, para se ver de longe quem está
      como) e a ficha leva a explicação.
@@ -165,31 +165,37 @@ window.registerStrings({
      Separar as duas coisas é o ponto. Uma etiqueta a dizer "Atordoado"
      por cima de um bicho não diz o que isso faz, e uma etiqueta que
      dissesse "o dado de Perspicácia desce um tamanho" não caberia no
-     céu nem se leria a correr. */
+     céu nem se leria correndo. */
   'af.sec.agora':      'O QUE ESTÁ ACONTECENDO',
-  'af.ag.morde1':      'o dado de {a} desce um tamanho',
-  'af.ag.morde2':      'os dados de {a} e {b} descem um tamanho',
+  /* O TAMANHO tem de vir dito. "Desce um tamanho" é a regra, e a regra
+     não responde à pergunta que o jogador faz ao ler: desce para quanto?
+     A escada tem quatro degraus (d6 · d8 · d10 · d12) e quem chega ao jogo
+     não a conhece — e mesmo quem a conhece não sabe de cor em que degrau
+     está este bicho, porque os estados somam-se.
+     O {d} vem medido do lutador, que é quem sabe. */
+  'af.ag.morde1':      'o dado de {a} desce um tamanho: está em {d}',
+  'af.ag.morde2':      'os dados de {a} e {b} descem um tamanho: estão em {d} e {e}',
   'af.ag.guarda':      'Em guarda',
-  'af.ag.guarda.ef':   'metade do dano que receber, até ao começo do próximo turno dele',
+  'af.ag.guarda.ef':   'metade do dano que receber, até o começo do próximo turno dele',
   'af.ag.crise':       'Em crise',
   'af.ag.crise.ef':    'metade da vida ou menos — e há efeitos que só acordam aqui',
   'af.ag.voo':         'No ar',
-  'af.ag.voo.ef':      'um golpe corpo a corpo não lhe chega; a magia chega',
+  'af.ag.voo.ef':      'um golpe corpo a corpo não alcança ele; a magia alcança',
   'af.ag.chao':        'No chão',
-  'af.ag.chao.ef':     'foi derrubado do ar; levanta-se no fim da rodada',
+  'af.ag.chao.ef':     'foi derrubado do ar; se levanta no fim da rodada',
   'af.ag.concha.ef':   'resiste a dano físico',
   'af.ag.barreira.ef': 'a Defesa dele é, no mínimo, {n}',
-  'af.ag.mercy.ef':    'o golpe que o derrubaria deixa-o com um ponto de vida',
-  'af.ag.desperta.ef': 'o dado de {a} subiu um tamanho',
+  'af.ag.mercy.ef':    'o golpe que o derrubaria para em um ponto de vida',
+  'af.ag.desperta.ef': 'o dado de {a} subiu um tamanho: está em {d}',
 
   'af.b.instantaneo':   'Instantâneo',
   'af.b.cena':          'Dura a batalha',
-  /* Guardar NÃO dura a batalha: dura até ao começo do turno seguinte de
+  /* Guardar NÃO dura a batalha: dura até o começo do turno seguinte de
      quem guardou, e o motor levanta-o lá (ver o fuNovaRonda). Dizia "dura
      a batalha" porque copiei o campo das magias de cena — e prometer
      metade do dano durante a batalha toda é prometer o dobro do que ela
      dá. */
-  'af.b.ate_turno':     'Até ao próximo turno',
+  'af.b.ate_turno':     'Até o próximo turno',
   'af.b.pm_alvo':       '{n} PM × alvo',
   'af.b.sem_rolagem':   'sem rolagem',
   'af.b.alvo.inimigo1': 'Um inimigo',
@@ -214,11 +220,11 @@ window.registerStrings({
   'af.b.ef.resisteFisico':'Passa a resistir a dano físico.',
   'af.b.ef.defesaMinima':'A Defesa do alvo passa a ser, no mínimo, {n}.',
   'af.b.ef.defesaMinima_cada':'A Defesa de cada alvo passa a ser, no mínimo, {n}.',
-  'af.b.ef.misericordia':'O golpe que o derrubaria deixa-o com um ponto de vida. Acontece uma vez, e desfaz-se.',
-  'af.b.ef.subirDado':   'O maior atributo do alvo sobe um tamanho de dado, até ao d12.',
+  'af.b.ef.misericordia':'O golpe que o derrubaria para em um ponto de vida. Acontece uma vez, e depois se desfaz.',
+  'af.b.ef.subirDado':   'O maior atributo do alvo sobe um degrau na escada dos dados (d6 · d8 · d10 · d12), até o teto de d12.',
 
   'af.b.guardar':       'Guardar',
-  'af.b.guardar.ef':    'Metade do dano que receber, até ao começo do próximo turno dele.',
+  'af.b.guardar.ef':    'Metade do dano que receber, até o começo do próximo turno dele.',
   'af.b.mover':         'Trocar de lugar',
   'af.b.mover.alvo':    'Um companheiro',
   'af.b.mover.ef':      'Troca de posto com um companheiro. Gasta o turno de quem se mexe, e não o dos dois.',
@@ -227,9 +233,9 @@ window.registerStrings({
   // ── A FICHA, o que ela mostra ──
   'af.f.sexo.F':      'fêmea',
   'af.f.sexo.M':      'macho',
-  'af.f.sem_dna':     'DNA ilegível — esta ficha é de recurso',
+  'af.f.sem_dna':     'DNA ilegível — esta ficha é de emergência',
   'af.f.segunda':     'se ficar com a costura',
-  'af.f.costura_desc': 'O tipo de dano a que ele é vulnerável: leva o dobro. É o preço da vantagem, e o inimigo tem de o descobrir.',
+  'af.f.costura_desc': 'O tipo de dano a que ele é vulnerável: leva o dobro. É o preço da vantagem, e o inimigo tem que descobrir qual é.',
   'af.f.precisao':    'Precisão',
   'af.f.dano_extra':  'Dano extra',
   'af.f.subidas':     '{n} subida de dado',
@@ -238,7 +244,7 @@ window.registerStrings({
   'af.f.subida_nv':   'do nível {n}',
   'af.f.subida_nvs':  'dos níveis {lista}',
   'af.f.subida_e':    ' e ',
-  'af.f.subida_tecto': '{n} sem sítio onde caber — os dados estão no tecto',
+  'af.f.subida_tecto': '{n} sem lugar onde caber — os dados estão no teto',
   'gt.subiu_dado':    'Um dado subiu: {a} d{de} → d{para}',
 
   'af.arr.equilibrado':  'Equilibrado',
@@ -266,29 +272,29 @@ window.registerStrings({
   // O nome é nosso; a habilidade é do manual, e o `manual` de cada
   // entrada no js/vantagens-fu.js diz de qual veio.
   'afv.guarda_cerrada.nome': 'Guarda Cerrada',
-  'afv.guarda_cerrada.desc': 'Soma {a} à Defesa e {b} à Defesa Mágica. O DNA escolhe qual dos dois leva o dois: reforça-se o lado em que ele já é melhor.',
+  'afv.guarda_cerrada.desc': 'Soma {a} à Defesa e {b} à Defesa Mágica. O DNA escolhe qual dos dois leva o dois: reforça o lado em que ele já é melhor.',
   'afv.carne_teimosa.nome':  'Carne Teimosa',
-  'afv.carne_teimosa.desc':  'Dez pontos de vida a mais. Ao nível 5 são um sexto do total; ao nível 60 são pouco mais do que um golpe.',
+  'afv.carne_teimosa.desc':  'Dez pontos de vida a mais. No nível 5 são um sexto do total; no nível 60 são pouco mais que um golpe.',
   'afv.pele_calada.nome':    'Pele Calada',
-  'afv.pele_calada.desc':    'Não apanha {a} nem {b}. Quem tentar impor-lhe um dos dois gasta o turno e não acontece nada.',
+  'afv.pele_calada.desc':    'Nunca fica {a} nem {b}. Quem tentar impor um dos dois gasta o turno e não acontece nada.',
   'afv.voo_baixo.nome':      'Voo Baixo',
-  'afv.voo_baixo.desc':      'Um golpe corpo-a-corpo não lhe chega — mas a magia chega. Vem ao chão em crise, e quando apanha dano da própria costura.',
+  'afv.voo_baixo.desc':      'Um golpe corpo a corpo não alcança ele — mas a magia alcança. Desce ao chão em crise, e quando sofre dano da própria costura.',
   'afv.fonte_funda.nome':    'Fonte Funda',
   'afv.fonte_funda.desc':    'Dez pontos de magia a mais.',
   'afv.veia_avida.nome':     'Veia Ávida',
-  'afv.veia_avida.desc':     'Recupera 5 de magia sempre que um golpe lhe dói. Um golpe aparado pela imunidade não lhe dá nada.',
+  'afv.veia_avida.desc':     'Recupera 5 de magia sempre que um golpe dói nele. Um golpe barrado pela imunidade não dá nada.',
   'afv.furia_da_crise.nome': 'Fúria da Crise',
-  'afv.furia_da_crise.desc': 'Com a vida em metade ou menos, o dano dele passa a ignorar resistências. A imunidade e a absorção continuam a valer.',
+  'afv.furia_da_crise.desc': 'Com a vida pela metade ou menos, o dano dele passa a ignorar resistências. A imunidade e a absorção continuam a valer.',
   'afv.ultimo_suspiro.nome': 'Último Suspiro',
   'afv.ultimo_suspiro.desc': 'Ao cair, leva 10 de vida a cada inimigo de pé, do seu próprio tipo.',
   'afv.golpe_pesado.nome':   'Golpe Pesado',
   'afv.golpe_pesado.desc':   'Cinco de dano a mais no golpe comum — o que não custa magia nenhuma.',
   'afv.mira_treinada.nome':  'Mira Treinada',
-  'afv.mira_treinada.desc':  'Mais três na precisão {lado}. O DNA escolhe: quem tem os dados do corpo maiores treina-se a bater, quem tem os da mente treina-se a lançar.',
+  'afv.mira_treinada.desc':  'Mais três na precisão {lado}. O DNA escolhe: quem tem os dados do corpo maiores treina para bater, quem tem os da mente treina para lançar.',
   'afv.mira.golpe':          'do golpe',
   'afv.mira.magia':          'das magias',
   'afv.sede_funda.nome':     'Sede Funda',
-  'afv.sede_funda.desc':     'O golpe comum devolve-lhe metade do que tirou. Só ferindo, e nunca de um golpe que o inimigo absorveu.',
+  'afv.sede_funda.desc':     'O golpe comum devolve para ele metade do que tirou. Só ferindo, e nunca de um golpe que o inimigo absorveu.',
   'afv.golpe_certeiro.nome': 'Golpe Certeiro',
   'afv.golpe_certeiro.desc': 'O golpe comum mira a Defesa Mágica em vez da Defesa.',
 
@@ -306,7 +312,7 @@ window.registerStrings({
   'af.indole.lamina':      'Lâmina',
   'af.indole.guarda.ex':      'Guarda — nasce para aguentar. Tende a vantagens que seguram o golpe.',
   'af.indole.sustentacao.ex': 'Sustentação — nasce para durar. Tende a vantagens de reserva e de fôlego.',
-  'af.indole.lamina.ex':      'Lâmina — nasce para bater. Tende às vantagens que fazem o golpe doer.',
+  'af.indole.lamina.ex':      'Lâmina — nasce para bater. Tende a vantagens que fazem o golpe doer.',
 }, {
   'af.titulo':        'BATTLE',
   'af.ronda':         'Round {n}',
@@ -319,7 +325,7 @@ window.registerStrings({
   'af.lugar.comum':       'Basic Strike',
   'af.lugar.forte':       'Strong Spell',
   'af.lugar.muito_forte': 'Very Strong Spell',
-  'af.lugar.defesa':      'Defence',
+  'af.lugar.defesa':      'Defense',
   'af.lugar.suporte':     'Support',
   'af.orbe.mover':    'Swap places',
   'af.orbe.voltar':   'Back',
@@ -359,7 +365,7 @@ window.registerStrings({
   'af.vs.RS':   'resists {tipo}: takes HALF from {nome}',
   'af.vs.IM':   'immune to {tipo}: {nome} cannot hurt it',
   'af.vs.AB':   'absorbs {tipo}: {nome} HEALS it',
-  'af.vs.nada': 'takes the full {tipo} of {nome}',
+  'af.vs.nada': "takes {nome}'s {tipo} in full",
 
   'af.af.RS':         'resisted',
   'af.af.VU':         'vulnerable!',
@@ -374,8 +380,8 @@ window.registerStrings({
   'af.f.vida':        'Hit Points',
   'af.f.magia':       'Mind Points',
   'af.f.crise':       'Crisis',
-  'af.f.defesa':      'Defence',
-  'af.f.defmag':      'Magic Defence',
+  'af.f.defesa':      'Defense',
+  'af.f.defmag':      'Magic Defense',
   'af.f.costura':     'Seam',
 
   'af.est.atordoado':  'dazed',
@@ -422,8 +428,8 @@ window.registerStrings({
   'af.sec.especiais':   'SPECIAL RULES',
 
   'af.sec.agora':      'WHAT IS HAPPENING',
-  'af.ag.morde1':      'the {a} die drops one size',
-  'af.ag.morde2':      'the {a} and {b} dice drop one size',
+  'af.ag.morde1':      'the {a} die drops one size: it is now {d}',
+  'af.ag.morde2':      'the {a} and {b} dice drop one size: now {d} and {e}',
   'af.ag.guarda':      'Guarding',
   'af.ag.guarda.ef':   'half of any damage taken, until the start of their next turn',
   'af.ag.crise':       'In Crisis',
@@ -433,9 +439,9 @@ window.registerStrings({
   'af.ag.chao':        'Grounded',
   'af.ag.chao.ef':     'forced to land; gets up at the end of the round',
   'af.ag.concha.ef':   'resists physical damage',
-  'af.ag.barreira.ef': 'their Defence is at least {n}',
+  'af.ag.barreira.ef': 'their Defense is at least {n}',
   'af.ag.mercy.ef':    'the blow that would fell them leaves them at one hit point',
-  'af.ag.desperta.ef': 'the {a} die has grown one size',
+  'af.ag.desperta.ef': 'the {a} die has grown one size: it is now {d}',
 
   'af.b.instantaneo':   'Instantaneous',
   'af.b.cena':          'Lasts the battle',
@@ -451,7 +457,7 @@ window.registerStrings({
 
   'af.b.ef.dano':        'The target suffers 【HR + {n}】 {tipo} damage.',
   'af.b.ef.dano_cada':   'Each target suffers 【HR + {n}】 {tipo} damage.',
-  'af.b.ef.dano_fixo':   'Each target suffers {n} {tipo} damage, with no roll and no Defence to stop it.',
+  'af.b.ef.dano_fixo':   'Each target suffers {n} {tipo} damage, with no roll and no Defense to stop it.',
   'af.b.ef.estado':      'The target becomes {e}.',
   'af.b.ef.estado_cada': 'Each target becomes {e}.',
   'af.b.ef.oportunidade':'Opportunity: the target becomes {e}.',
@@ -462,16 +468,16 @@ window.registerStrings({
   'af.b.ef.cura_proprio':'Recovers {n} HP.',
   'af.b.ef.cura_cada':   'Each target recovers {n} HP.',
   'af.b.ef.resisteFisico':'Gains Resistance to physical damage.',
-  'af.b.ef.defesaMinima':"The target's Defence becomes at least {n}.",
-  'af.b.ef.defesaMinima_cada':"Each target's Defence becomes at least {n}.",
+  'af.b.ef.defesaMinima':"The target's Defense becomes at least {n}.",
+  'af.b.ef.defesaMinima_cada':"Each target's Defense becomes at least {n}.",
   'af.b.ef.misericordia':'The blow that would fell them leaves them at one hit point. Once, then it is spent.',
-  'af.b.ef.subirDado':   "The target's highest Attribute grows by one die size, up to d12.",
+  'af.b.ef.subirDado':   "The target's highest Attribute climbs one step of the die ladder (d6 · d8 · d10 · d12), up to the d12 cap.",
 
   'af.b.guardar':       'Guard',
   'af.b.guardar.ef':    'Half of any damage taken, until the start of their next turn.',
   'af.b.mover':         'Swap places',
   'af.b.mover.alvo':    'One ally',
-  'af.b.mover.ef':      'Swaps place with an ally. Costs the turn of whoever moves, not both.',
+  'af.b.mover.ef':      'Swaps places with an ally. Costs the turn of whoever moves, not both.',
   'af.b.turno':         'Costs the turn',
 
   'af.f.sexo.F':      'female',
@@ -505,7 +511,7 @@ window.registerStrings({
   'af.ab.VON': 'WLP',
 
   'afv.guarda_cerrada.nome': 'Closed Guard',
-  'afv.guarda_cerrada.desc': 'Adds {a} to Defence and {b} to Magic Defence. The DNA picks which one gets the two: it reinforces the side it is already better at.',
+  'afv.guarda_cerrada.desc': 'Adds {a} to Defense and {b} to Magic Defense. The DNA picks which one gets the two: it reinforces the side it is already better at.',
   'afv.carne_teimosa.nome':  'Stubborn Flesh',
   'afv.carne_teimosa.desc':  'Ten more hit points. At level 5 that is a sixth of the total; at level 60 it is little more than one blow.',
   'afv.pele_calada.nome':    'Quiet Skin',
@@ -513,7 +519,7 @@ window.registerStrings({
   'afv.voo_baixo.nome':      'Low Flight',
   'afv.voo_baixo.desc':      'A melee blow cannot reach it — but magic can. It comes down in Crisis, and when struck by its own seam.',
   'afv.fonte_funda.nome':    'Deep Well',
-  'afv.fonte_funda.desc':    'Ten more mind points.',
+  'afv.fonte_funda.desc':    'Ten more MP.',
   'afv.veia_avida.nome':     'Greedy Vein',
   'afv.veia_avida.desc':     'Recovers 5 MP whenever a blow actually hurts. A blow stopped by immunity gives it nothing.',
   'afv.furia_da_crise.nome': 'Crisis Fury',
@@ -529,13 +535,13 @@ window.registerStrings({
   'afv.sede_funda.nome':     'Deep Thirst',
   'afv.sede_funda.desc':     'The basic strike returns half of what it took. Only when it wounds, and never from a blow the enemy absorbed.',
   'afv.golpe_certeiro.nome': 'True Strike',
-  'afv.golpe_certeiro.desc': 'The basic strike targets Magic Defence instead of Defence.',
+  'afv.golpe_certeiro.desc': 'The basic strike targets Magic Defense instead of Defense.',
 
   'af.f.feitio':      '{i} bent',
   'af.indole.guarda':      'Ward',
   'af.indole.sustentacao': 'Endurance',
   'af.indole.lamina':      'Blade',
-  'af.indole.guarda.ex':      'Ward — born to hold. Leans to advantages that absorb the blow.',
-  'af.indole.sustentacao.ex': 'Endurance — born to last. Leans to advantages of reserve and second wind.',
-  'af.indole.lamina.ex':      'Blade — born to strike. Leans to advantages that make the blow hurt.',
+  'af.indole.guarda.ex':      'Ward — born to hold. Leans toward advantages that absorb the blow.',
+  'af.indole.sustentacao.ex': 'Endurance — born to last. Leans toward advantages of reserve and second wind.',
+  'af.indole.lamina.ex':      'Blade — born to strike. Leans toward advantages that make the blow hurt.',
 });

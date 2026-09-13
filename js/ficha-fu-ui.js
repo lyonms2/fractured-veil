@@ -422,14 +422,26 @@ function _fbAgora(c) {
   const bom = (n, e) => L.push({ n, e, tom: 'bom' });
 
   /* Os seis estados primeiro: são o que muda os dados, e os dados são a
-     primeira linha do bloco. */
+     primeira linha do bloco.
+
+     ── E O TAMANHO VEM DITO ──
+
+     A frase era "o dado de PER desce um tamanho", e a pergunta seguinte
+     é sempre a mesma: desce para quanto? A escada tem quatro degraus
+     (d6 · d8 · d10 · d12), quem chega ao jogo não a conhece, e mesmo
+     quem a conhece não sabe de cor em que degrau está este bicho —
+     porque os estados se somam e o piso é d6.
+
+     O tamanho de AGORA sai do fuDado, que é a mesma função que o motor
+     usa para rolar. Escrever a conta aqui era ter duas contas. */
   const EST = (typeof FU_ESTADOS !== 'undefined') ? FU_ESTADOS : {};
+  const dado = k => (typeof fuDado === 'function') ? ('d' + fuDado(c, k)) : '—';
   for (const e of Object.keys(c.estados || {})) {
     const m = (EST[e] && EST[e].morde) || [];
     const at = m.map(k => t('af.ab.' + k));
-    mau(t('af.est.' + e), at.length > 1
-      ? t('af.ag.morde2', { a: at[0], b: at[1] })
-      : t('af.ag.morde1', { a: at[0] || '—' }));
+    mau(t('af.est.' + e), m.length > 1
+      ? t('af.ag.morde2', { a: at[0], b: at[1], d: dado(m[0]), e: dado(m[1]) })
+      : t('af.ag.morde1', { a: at[0] || '—', d: m[0] ? dado(m[0]) : '—' }));
   }
 
   if (c.guardando) bom(t('af.ag.guarda'), t('af.ag.guarda.ef'));
@@ -439,7 +451,8 @@ function _fbAgora(c) {
   if (ef.defesaMinima)  bom(t('af.m.barreira'), t('af.ag.barreira.ef', { n: ef.defesaMinima }));
   if (ef.misericordia)  bom(t('af.m.misericordia'), t('af.ag.mercy.ef'));
   if (ef.subirDado)     bom(t('af.m.despertar'),
-                            t('af.ag.desperta.ef', { a: t('af.ab.' + ef.subirDado) }));
+                            t('af.ag.desperta.ef', { a: t('af.ab.' + ef.subirDado),
+                                                     d: dado(ef.subirDado) }));
 
   if (typeof fuNoAr === 'function' && fuNoAr(c)) bom(t('af.ag.voo'), t('af.ag.voo.ef'));
   if (c.derrubado) mau(t('af.ag.chao'), t('af.ag.chao.ef'));
