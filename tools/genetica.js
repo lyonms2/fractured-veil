@@ -239,24 +239,16 @@ ok(somaErrada === 0, 'e cada subida vale duas faces, nem mais nem menos',
 // ═════════════════════════════════════════════════════════════════
 titulo('A PROVENIÊNCIA');
 
-/* ── A DECISÃO FOI TOMADA ──
+/* ── A ORIGEM JÁ NÃO MUDA NADA ──
 
-   A raridade do OVO — Comum, Raro, Lendário — escolhe as faixas dos
-   alelos (gerarDna, em js/nascimento.js), e durante um tempo isso não
-   mexia em NADA na ficha. Esta secção dizia-o alto, e o quadro abaixo
-   mostrava as três origens com a mesma distribuição ao ponto percentual.
+   A raridade do ovo — Comum, Raro, Lendário — escolhia as faixas dos
+   alelos e dava subidas de dado (uma no Raro, duas no Lendário). Os ovos
+   deixaram de ter raridade, e os dois saíram: fica só a faixa Comum, e
+   as subidas vêm só do nível.
 
-   A razão era aritmética: as faixas têm a mesma largura nas três
-   origens, o arranjo lê o ESPALHO das somas, e uma constante somada aos
-   dois lados cancela-se.
-
-   O ARRANJO continua a não mudar — e é suposto: ele diz que FORMA o
-   avatar tem, e a forma é do DNA. O que a origem passou a dar são as
-   SUBIDAS DE DADO do manual (p. 302): uma no Raro, duas no Lendário.
-
-   Portanto o quadro continua igual nas três linhas, e isso continua a
-   estar certo; o que mudou é a soma das faces, que se mede logo a
-   seguir. */
+   O quadro abaixo continua a medir as três, e as três têm de dar
+   exatamente o mesmo — na forma e na força. Uma certidão antiga que diga
+   Raro ou Lendário é uma certidão Comum. */
 const porOrigem = {};
 for (const origem of ['Comum', 'Raro', 'Lendário']) {
   const contas = { arranjos: {}, soma: 0, n: 0 };
@@ -278,15 +270,11 @@ ok(new Set(assinaturas).size === 1,
    'a origem não muda a FORMA — o arranjo é do DNA',
    'as três origens dão exactamente a mesma distribuição');
 
-/* Mas muda a força, e é isso que faz um ovo caro valer o que custa. */
+/* E não muda a força. */
 const medias = ['Comum', 'Raro', 'Lendário'].map(o => porOrigem[o].soma / porOrigem[o].n);
-ok(medias[1] > medias[0] && medias[2] > medias[1],
-   'mas muda a FORÇA — o ovo melhor dá dados maiores',
+ok(medias.every(m => m === medias[0]),
+   'nem a FORÇA — as subidas vêm só do nível',
    medias.map((m, k) => ['Comum', 'Raro', 'Lendário'][k] + ' ' + m.toFixed(1)).join('  ·  '));
-ok(Math.abs((medias[1] - medias[0]) - 2) < 0.25
-   && Math.abs((medias[2] - medias[1]) - 2) < 0.25,
-   'e cada degrau de origem vale duas faces',
-   '+' + (medias[1] - medias[0]).toFixed(2) + '  +' + (medias[2] - medias[1]).toFixed(2));
 
 // ═════════════════════════════════════════════════════════════════
 titulo('A ÍNDOLE');

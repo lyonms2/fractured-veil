@@ -135,7 +135,7 @@ function _fbDescricao(slot, f) {
    O manual põe aqui os adjectivos que não têm regra agarrada. Os nossos
    têm-na toda — mas são na mesma as coisas que se dizem de um bicho
    antes de se abrir a conta: o sexo, o feitio, com que tipo bate, a que
-   tipo é vulnerável, e de que ovo saiu. */
+   tipo é vulnerável. */
 function _fbTracos(slot, f) {
   /* Sem o feitio: a descrição logo acima começa por dizer o nome dele
      ("Guarda — nasce para aguentar…"), e repeti-lo duas linhas abaixo
@@ -144,7 +144,6 @@ function _fbTracos(slot, f) {
   const p = [_ffuSexo(slot)];
   p.push(t('af.b.tr.tipo', { tipo: t('af.tipo.' + f.tipo) }));
   if (f.costura) p.push(t('af.b.tr.costura', { tipo: t('af.tipo.' + f.costura) }));
-  if (f.origem && f.origem !== 'Comum') p.push(t('af.b.tr.origem', { origem: f.origem }));
   return `<p class="fb-tracos"><i>${esc(t('af.b.tracos'))}:</i> ${esc(p.join(', '))}.</p>`;
 }
 
@@ -205,18 +204,15 @@ function _fbDefesas(f, lutador) {
 /* De onde vieram os dados a mais. Fica logo por baixo da linha que os
    mostra, porque é a linha que ela explica: sem isto, dois avatares do
    mesmo arranjo apareciam com dados diferentes e nada na tela dizia
-   porquê — parecia acaso, e quem pagou por um ovo Lendário não via o que
-   comprou.
+   porquê — parecia acaso.
 
-   Diz as duas fontes em separado porque são duas decisões diferentes: o
-   ovo foi escolhido, o nível foi ganho. */
+   As subidas vêm só do nível (20, 40 e 60). Houve uma segunda fonte, o
+   ovo Raro ou Lendário, que saiu quando os ovos deixaram de ter
+   raridade (ver js/ficha-fu.js). */
 function _fbSubidas(f) {
   if (!f.subidas) return '';
   const partes = [];
-  const doOvo = (typeof FU_SUBIDA_DA_ORIGEM !== 'undefined')
-    ? (FU_SUBIDA_DA_ORIGEM[f.origem] | 0) : 0;
-  if (doOvo) partes.push(t('af.f.subida_de', { origem: f.origem }));
-  const doNivel = f.subidas - doOvo;
+  const doNivel = f.subidas;
   if (doNivel) {
     const degraus = (typeof FU_SUBIDAS_NIVEL !== 'undefined')
       ? FU_SUBIDAS_NIVEL.filter(d => f.nivel >= d) : [];

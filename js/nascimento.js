@@ -63,14 +63,16 @@
 
 const NASC_CARACS = ['F', 'H', 'R', 'A'];
 
-/* Quantos pontos de alelo a origem paga.
-   O ovo Lendário não dá um avatar Lendário — dá genes melhores, e o que
-   se faz com eles é do dono. É aqui que a proveniência continua a valer
-   alguma coisa depois de todos passarem a nascer Comuns. */
+/* Quantos pontos de alelo um avatar recebe ao nascer.
+
+   Havia três faixas, uma por raridade do ovo (Comum 0–3, Raro 1–4,
+   Lendário 2–5). Os ovos deixaram de ter raridade — todo avatar nasce
+   Comum, e a raridade conquista-se por nível —, e as outras duas faixas
+   ficaram sem ninguém que as usasse. Fica a Comum. O mapa continua a ser
+   um mapa para o gerarDna(origem, seed) não mudar de assinatura: uma
+   origem que não esteja aqui cai na Comum. */
 const NASC_ALELOS = {
   'Comum':    { min: 0, max: 3 },
-  'Raro':     { min: 1, max: 4 },
-  'Lendário': { min: 2, max: 5 },
 };
 
 /* O SEXO É UM GENE.
@@ -479,8 +481,9 @@ function dnaLegivel(dna) {
 // ═══════════════════════════════════════════════════════════════════
 function nascer(opts) {
   const o = opts || {};
-  // A origem é a raridade do ovo consumido — ou Comum, na invocação, que
-  // não consome ovo nenhum.
+  // A origem é sempre Comum: os ovos deixaram de ter raridade. O campo
+  // continua na certidão porque o servidor o confere ao listar
+  // (api/comprar-avatar.js).
   const origem = NASC_ALELOS[o.origem] ? o.origem : 'Comum';
 
   /* O DNA pode vir FEITO.
@@ -524,12 +527,6 @@ function nascer(opts) {
        linha que o próprio vendedor escrevia. */
     criadorUid:  o.criadorUid  || null,
     criadorNome: o.criadorNome || null,
-    /* POR ONDE VEIO: 'invocacao' (os três grátis do começo), 'cruza'
-       (chocado do ovo de um par) ou 'ovo' (chocado de um ovo sem pais).
-       Quem escreve é o servidor (api/_genetica.js), e o anúncio do
-       mercado mostra-o ao comprador. Nulo nas certidões de antes deste
-       campo: aí o mercado só sabe dizer "filho de" quando há pais. */
-    via:         o.via         || null,
     nascidoEm:   o.nascidoEm   || Date.now(),
     /* De quem nasceu. Os ids dos pais, e não os nomes: um nome muda de
        dono e repete-se; o id é único e permanente, e é dele que a
@@ -586,14 +583,6 @@ function registarNascimento(slot, opts) {
 // ═══════════════════════════════════════════════════════════════════
 // O QUE A CERTIDÃO PASSA A MANDAR
 // ═══════════════════════════════════════════════════════════════════
-
-// A proveniência, para quem tenha nascido depois disto existir. Quem
-// nasceu antes não tem certidão, e aí a raridade que traz é a origem —
-// era assim que o jogo funcionava.
-function origemDe(slot) {
-  if (!slot) return 'Comum';
-  return (slot.nascimento && slot.nascimento.origem) || slot.raridade || 'Comum';
-}
 
 /* ═══════════════════════════════════════════════════════════════════
    OS PRIMORDIAIS
@@ -680,7 +669,7 @@ if (typeof module !== 'undefined' && module.exports) {
     tendenciaDoDna, vocacaoDoDna, indoleDoDna, indoleDominante, indoleDe,
     vigorDoDna, vigorDe, sexoDoDna, sexoDe,
     corpoDoDna, corpoDeSlot, corpoParesDeSlot,
-    dnaLegivel, recessivosDoDna, tendenciaDe, origemDe, ehPrimordial,
+    dnaLegivel, recessivosDoDna, tendenciaDe, ehPrimordial,
     porFeitio,
     /* O ehBebe sai também: o tools/evolucao.js confere que ele e a escada
        da fase dizem a mesma coisa, e para isso tem de lhe chamar. */

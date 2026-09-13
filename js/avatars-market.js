@@ -181,24 +181,22 @@ function renderBrowse() {
 /* ── DE ONDE ELE VEIO ──
 
    Pela certidão da listagem, que é a do servidor (handleListarAvatar
-   copia-a do mapa `certidoes`, que o vendedor não escreve). O comprador
-   vê se leva um dos três fundadores grátis de uma conta, o filho de um
-   par, ou um chocado de ovo — e decide quanto isso vale para ele.
+   copia-a do mapa `certidoes`, que o vendedor não escreve).
 
-   Certidão antiga, sem `via`: com pais diz-se "filho de"; sem pais não
-   se diz nada, porque não há como saber se veio da invocação ou de um
-   ovo, e um rótulo errado seria pior do que nenhum. */
+   Sem mãe nem pai é PRIMORDIAL: veio de dentro da Fenda — os três da
+   invocação inicial são primordiais. Com pais, é filho deles. É a mesma
+   leitura do ehPrimordial (js/nascimento.js), e pelo mesmo motivo não há
+   campo guardado para isto: a certidão já diz quem são os pais, e um
+   segundo campo seria uma cópia da mesma verdade à espera de discordar.
+   Vale também para as certidões antigas, sem esforço nenhum. */
 function origemDoAnuncio(l) {
   const c = l && l.nascimento;
   if (!c) return null;
-  const via = c.via || ((c.mae || c.pai) ? 'cruza' : null);
-  if (via === 'invocacao') return { icone: '🌀', texto: t('mkt.origem.invocacao') };
-  if (via === 'cruza') {
-    const mae = c.maeNome || '?', pai = c.paiNome || '?';
-    return { icone: '🧬', texto: t('mkt.origem.cruza', { mae: esc(mae), pai: esc(pai) }) };
+  if (c.mae || c.pai) {
+    return { icone: '🧬', texto: t('mkt.origem.cruza', {
+      mae: esc(c.maeNome || '?'), pai: esc(c.paiNome || '?') }) };
   }
-  if (via === 'ovo') return { icone: '🥚', texto: t('mkt.origem.ovo') };
-  return null;
+  return { icone: '🌀', texto: t('mkt.origem.primordial') };
 }
 
 function buildListingCard(l) {

@@ -157,7 +157,6 @@ window.registerStrings({
      luz, treva) e saía "costurado ao terra". Sem artigo nenhum serve os
      nove, e lê-se como "alérgico a pólen". */
   'af.b.tr.costura':    'costurado a {tipo}',
-  'af.b.tr.origem':     'saído de ovo {origem}',
   'af.sec.basicos':     'ATAQUES BÁSICOS',
   'af.sec.magias':      'MAGIAS',
   'af.sec.outras':      'OUTRAS AÇÕES',
@@ -250,7 +249,6 @@ window.registerStrings({
   'af.f.dano_extra':  'Dano extra',
   'af.f.subidas':     '{n} subida de dado',
   'af.f.subidas_p':   '{n} subidas de dado',
-  'af.f.subida_de':   'do ovo {origem}',
   'af.f.subida_nv':   'do nível {n}',
   'af.f.subida_nvs':  'dos níveis {lista}',
   'af.f.subida_e':    ' e ',
@@ -454,7 +452,6 @@ window.registerStrings({
   'af.b.pm':            'MP',
   'af.b.tr.tipo':       'strikes with {tipo}',
   'af.b.tr.costura':    'seamed to {tipo}',
-  'af.b.tr.origem':     'hatched from a {origem} egg',
   'af.sec.basicos':     'BASIC ATTACKS',
   'af.sec.magias':      'SPELLS',
   'af.sec.outras':      'OTHER ACTIONS',
@@ -524,7 +521,6 @@ window.registerStrings({
   'af.f.dano_extra':  'Extra damage',
   'af.f.subidas':     '{n} die-size upgrade',
   'af.f.subidas_p':   '{n} die-size upgrades',
-  'af.f.subida_de':   'from the {origem} egg',
   'af.f.subida_nv':   'from level {n}',
   'af.f.subida_nvs':  'from levels {lista}',
   'af.f.subida_e':    ' and ',

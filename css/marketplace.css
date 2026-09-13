@@ -217,7 +217,7 @@
 .slot-actions{display:flex;flex-direction:column;gap:0.3125rem;width:100%;margin-top:0.25rem;}
 /* No lugar do botão de vender, quando o avatar ainda é Comum. Um
    espaço vazio deixava o jogador a pensar que o botão falhou. */
-/* A origem no anúncio: fundador, filho de um par ou chocado de ovo. */
+/* A origem no anúncio: primordial, ou filho de um par. */
 .av-origem{font-size:0.4375rem;line-height:1.4;color:var(--text2,var(--muted));text-align:center;margin:0.1875rem 0 0.25rem;}
 .detail-origem{font-size:0.5625rem;line-height:1.4;color:var(--text2,var(--muted));margin:0.125rem 0 0.25rem;}
 .slot-sem-venda{font-size:0.4375rem;line-height:1.4;color:var(--muted);text-align:center;padding:0.25rem 0.125rem;border:1px dashed var(--border);border-radius:0.25rem;}

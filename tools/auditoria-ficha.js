@@ -139,33 +139,24 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
   verificar('os degraus do manual são o 20, o 40 e o 60',
     F.FU_SUBIDAS_NIVEL.join(',') === '20,40,60', F.FU_SUBIDAS_NIVEL.join(','));
 
-  /* ── A ORIGEM DO OVO ──
+  /* ── A ORIGEM DO OVO JÁ NÃO DÁ DADOS ──
 
-     Um ovo Lendário dá duas subidas de dado à nascença, um Raro dá uma, um
-     Comum não dá nenhuma. Durante um tempo a origem não mudava NADA na
-     ficha — medido em 0 de 2000 sementes — e um ovo caro dava um avatar
-     indistinguível de um barato. */
+     Dava: um ovo Raro dava uma subida à nascença e um Lendário duas. Os
+     ovos deixaram de ter raridade e esse bônus saiu, e as subidas vêm só
+     do nível. Uma certidão que ainda diga 'Raro' ou 'Lendário' tem de dar
+     exatamente a ficha de uma Comum — é o que prova que o resto saiu
+     mesmo, e não ficou meio ligado. */
   for (let s = 1; s <= 60; s++) {
     const seed = s * 7919;
-    const fichas = {};
-    for (const origem of ['Comum', 'Raro', 'Lendário']) {
+    const comum = F.fuFicha(avatar(seed, 5));
+    for (const origem of ['Raro', 'Lendário']) {
       const a = avatar(seed, 5);
       a.nascimento.origem = origem;
-      fichas[origem] = F.fuFicha(a);
+      const f = F.fuFicha(a);
+      verificar('a origem ' + origem + ' não dá dados (' + seed + ')',
+        F.FU_ATRIBS.every(x => f[x] === comum[x]) && f.subidas === comum.subidas,
+        F.FU_ATRIBS.map(x => comum[x] + '→' + f[x]).join(','));
     }
-    const soma = f => F.FU_ATRIBS.reduce((t, x) => t + f[x], 0);
-    verificar('o ovo Raro dá um dado a mais do que o Comum (' + seed + ')',
-      soma(fichas.Raro) > soma(fichas.Comum),
-      soma(fichas.Comum) + ' → ' + soma(fichas.Raro));
-    verificar('e o Lendário dá dois (' + seed + ')',
-      soma(fichas['Lendário']) > soma(fichas.Raro),
-      soma(fichas.Raro) + ' → ' + soma(fichas['Lendário']));
-    verificar('mas nenhum lhe troca o arranjo (' + seed + ')',
-      fichas.Comum.arranjo === fichas['Lendário'].arranjo
-      && fichas.Comum.ordem.join() === fichas['Lendário'].ordem.join());
-    verificar('nem o tipo nem a costura (' + seed + ')',
-      fichas.Comum.tipo === fichas['Lendário'].tipo
-      && fichas.Comum.costura === fichas['Lendário'].costura);
   }
 
   /* E a origem lê-se da CERTIDÃO, nunca do campo `raridade` do slot —
@@ -185,7 +176,7 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
       F.fuFicha(semCert).subidas === 0);
   }
 
-  /* Um tecto que se atinge: cinco subidas (Lendário + os três níveis) num
+  /* Um tecto que se atinge: as três subidas do nível num
      arranjo extremo. As que não couberem perdem-se, e a ficha diz quantas
      couberam — senão um jogador com tudo em d12 não percebia porque é que
      o nível 60 não lhe deu nada. */
@@ -194,7 +185,6 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
     let apanhou = 0;
     for (let s = 1; s <= 400; s++) {
       const a = avatar(s * 104729, 60);
-      a.nascimento.origem = 'Lendário';
       const f = F.fuFicha(a);
       verificar('nenhum dado passa do d12 (' + a.seed + ')',
         F.FU_ATRIBS.every(x => f[x] <= tectoMax), F.FU_ATRIBS.map(x => f[x]).join(','));
@@ -202,7 +192,7 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
         f.subidasUsadas <= f.subidas, f.subidasUsadas + ' de ' + f.subidas);
       if (f.subidasUsadas < f.subidas) apanhou++;
     }
-    console.log('   subidas desperdiçadas pelo tecto: ' + apanhou + ' de 400 Lendários nv60');
+    console.log('   subidas desperdiçadas pelo tecto: ' + apanhou + ' de 400 avatares nv60');
   }
 }
 

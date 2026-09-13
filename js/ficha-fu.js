@@ -362,23 +362,16 @@ function fuFaseDoNivel(nivel) {
      "Ao chegar aos níveis 20, 40 e 60, o NPC escolhe um dos seus
       Atributos e aumenta-o em um tamanho de dado (até ao máximo de d12)."
 
-   São três subidas, e o jogo usa-as duas vezes:
+   São três subidas, aos 20, 40 e 60, como o manual manda, e são as
+   únicas.
 
-     pelo NÍVEL     aos 20, 40 e 60, como o manual manda
-     pela ORIGEM    o ovo de onde ele saiu dá-lhe um avanço
+   ── A SUBIDA DA ORIGEM SAIU ──
 
-   ── PORQUE É QUE A ORIGEM PRECISAVA DISTO ──
-
-   A raridade do ovo — Comum, Raro, Lendário — escolhe as faixas dos
-   alelos (gerarDna, em js/nascimento.js), e durante um tempo isso não
-   mudou absolutamente nada na ficha. Medido e impresso pelo
-   tools/genetica.js: as três origens davam a MESMA distribuição de
-   arranjos, ao ponto percentual.
-
-   A razão era aritmética e não um descuido: as faixas têm a mesma
-   largura nas três origens, o arranjo lê o ESPALHO das somas (máximo
-   menos mínimo), e uma constante somada aos dois lados cancela-se. Um
-   ovo Lendário custava caro e dava um avatar indistinguível.
+   Houve uma segunda fonte: o ovo de onde o avatar saiu dava um avanço à
+   nascença, um tamanho no ovo Raro e dois no Lendário. Existia para um
+   ovo caro valer o que custava. Os ovos deixaram de ter raridade — todo
+   avatar nasce Comum —, e essa fonte ficou sem ninguém que a usasse, com
+   a ficha a prometer "subida do ovo" a um bicho que não a podia ter.
 
    ── QUAL ATRIBUTO SOBE ──
 
@@ -391,26 +384,9 @@ function fuFaseDoNivel(nivel) {
    este cuidado a primeira subida dele não fazia nada.
    ══════════════════════════════════════════════════════════════════ */
 const FU_SUBIDAS_NIVEL = [20, 40, 60];
-const FU_SUBIDA_DA_ORIGEM = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
 
-/* A origem lê-se da CERTIDÃO e só de lá.
-
-   O origemDe() do js/nascimento.js cai para `slot.raridade` quando não há
-   certidão — e faz bem, porque quem o chama quer saber de que ovo o
-   bicho veio para o mostrar. Aqui não serve: `slot.raridade` é um campo
-   que o cliente escreve, e dois tamanhos de dado por uma linha no
-   console é exactamente o buraco que a raridade da ficha já teve uma vez.
-
-   Sem certidão é Comum, que é também a resposta honesta: um avatar de
-   antes do DNA não saiu de ovo nenhum que se conheça. */
-function fuOrigemDoSlot(slot) {
-  const o = slot && slot.nascimento && slot.nascimento.origem;
-  return (FU_SUBIDA_DA_ORIGEM[o] != null) ? o : 'Comum';
-}
-
-function fuSubidasDe(nivel, origem) {
-  const porNivel = FU_SUBIDAS_NIVEL.filter(d => (nivel | 0) >= d).length;
-  return (FU_SUBIDA_DA_ORIGEM[origem] | 0) + porNivel;
+function fuSubidasDe(nivel) {
+  return FU_SUBIDAS_NIVEL.filter(d => (nivel | 0) >= d).length;
 }
 
 /* Aplica as subidas ao saco dos dados, no sítio. Devolve QUANTAS foram
@@ -481,8 +457,7 @@ function fuFicha(slot) {
   /* E as subidas de dado, antes de tudo o que as lê: a vida sai do VIG,
      a magia do VON, a Defesa do DES e a Defesa Mágica do PER. Aplicá-las
      depois seria ter dois conjuntos de dados no mesmo avatar. */
-  const origem  = fuOrigemDoSlot(slot);
-  const subidas = fuSubidasDe(nivel, origem);
+  const subidas = fuSubidasDe(nivel);
   const subiram = fuAplicarSubidas(base, ordem, subidas);
 
   const tipo = fuTipoDoDna(dna);
@@ -547,7 +522,6 @@ function fuFicha(slot) {
        avatares do mesmo arranjo têm dados diferentes — sem isto pareceria
        acaso. `subidas` é o que se ganhou, `subidasUsadas` o que coube:
        são diferentes quando os quatro dados chegam ao d12. */
-    origem,
     subidas,
     subidasUsadas: subiram,
 
@@ -649,8 +623,8 @@ if (typeof module !== 'undefined' && module.exports) {
     fuSubirDado, fuDescerDado, fuSomaDoGene, fuArranjoDoDna,
     fuOrdemDosAtributos, fuTipoDaCor, fuTipoDoDna, fuCosturaDoDna,
     fuVizinhoDoTipo, fuAfinidades, fuRaridadeDoNivel, fuFicha,
-    FU_SUBIDAS_NIVEL, FU_SUBIDA_DA_ORIGEM,
-    fuOrigemDoSlot, fuSubidasDe, fuAplicarSubidas,
+    FU_SUBIDAS_NIVEL,
+    fuSubidasDe, fuAplicarSubidas,
     fuPoderDoAvatar, fuPoderDaEquipa,
     FU_NIVEL_MAX, FU_NIVEL_JOVEM, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
     FU_FASES, fuFaseDoNivel,
