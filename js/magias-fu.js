@@ -180,19 +180,25 @@ const FU_MAGIAS = {
    O ATAQUE FORTE MUDA COM O FEITIO
 
    Todos têm o ataque forte, porque é ele que alcança os de trás (ver o
-   fuAlvosPossiveis, em js/combate-fu.js). O dano, o custo e os alvos são
-   os mesmos para os três. O que muda é o que acontece DEPOIS do golpe, e
-   é isso que dá a cada feitio um jeito próprio de usar a mesma magia:
+   fuAlvosPossiveis, em js/combate-fu.js). O custo e os alvos são os
+   mesmos para os três. O que muda é o dano e o que acontece DEPOIS do
+   golpe, e é isso que dá a cada feitio um jeito próprio de usar a mesma
+   magia:
 
      Guarda        ataca e se protege: fica guardando até o próximo turno,
-                   sem recuperar PM. No Lendário, põe em guarda também o
-                   aliado mais ferido.
+                   sem recuperar PM. No Raro, põe em guarda também o
+                   aliado mais ferido; no Lendário, a equipe inteira.
+                   Troca dano por proteção: −3 no Sopro, −5 na Barragem.
      Lâmina        fura a guarda: o dano não é cortado pela metade. No
                    Raro, ignora também a resistência de quem está
                    guardando; no Lendário, a resistência de todos.
+                   É quem bate: +3 no Sopro, +5 na Barragem.
      Sustentação   fere e cuida: cura o aliado mais ferido com metade do
                    dano causado. No Raro, a cura se divide entre os
                    feridos; no Lendário, tira também um estado.
+
+   A Sustentação fica com o dano do manual de propósito: a cura dela é
+   metade do dano causado, e cortar o dano cortaria a cura junto.
 
    Nenhuma das três reforça a luta que não acaba: a guarda do Guarda só
    vem atacando e sem PM, a Lâmina é o que desmonta quem só guarda, e a
@@ -203,14 +209,14 @@ const FU_MAGIAS = {
    ══════════════════════════════════════════════════════════════════ */
 const FU_ESTILO_FORTE = {
   guarda: {
-    1: { guardaAoAtacar: 'proprio' },
-    2: { guardaAoAtacar: 'proprio' },
-    3: { guardaAoAtacar: 'proprio_e_ferido' },
+    1: { fixoMais: -3, guardaAoAtacar: 'proprio' },
+    2: { fixoMais: -5, guardaAoAtacar: 'proprio_e_ferido' },
+    3: { fixoMais: -5, guardaAoAtacar: 'equipa' },
   },
   lamina: {
-    1: { furaGuarda: true },
-    2: { furaGuarda: true, semRSnaGuarda: true },
-    3: { furaGuarda: true, semRSnaGuarda: true, ignoraResistencias: true },
+    1: { fixoMais: 3, furaGuarda: true },
+    2: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true },
+    3: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true, ignoraResistencias: true },
   },
   sustentacao: {
     1: { curaPorDano: 0.5 },
@@ -320,6 +326,9 @@ function fuMagiaDe(ficha, lugar) {
     if (est) {
       m.estilo = Object.assign({ feitio: FU_ESTILO_FORTE[ficha.feitio] ? ficha.feitio : 'guarda' }, est);
       if (est.ignoraResistencias) m.ignoraResistencias = true;
+      // O dano do feitio entra no próprio `fixo`: a ficha, o menu, a IA e o
+      // motor leem o número já com a diferença.
+      if (est.fixoMais) m.fixo = (casa.fixo | 0) + est.fixoMais;
     }
   }
   return m;

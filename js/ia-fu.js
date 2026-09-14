@@ -294,8 +294,20 @@ function _iaValorEstilo(estado, quem, at, alvosIds) {
   let v = 0;
   const aliados = estado[quem.lado].filter(c => c.vivo);
   if (es.guardaAoAtacar) {
-    const g = Object.assign({}, quem, { guardando: true });
-    v += (_iaRisco(estado, quem) - _iaRisco(estado, quem, g)) * IA_GUARDA;
+    // Os mesmos protegidos do fuEstiloDoForte, e o perigo que cai em cada um.
+    let protegidos = [quem];
+    if (es.guardaAoAtacar === 'equipa') {
+      protegidos = aliados;
+    } else if (es.guardaAoAtacar === 'proprio_e_ferido') {
+      const outro = aliados.filter(c => c !== quem && c.pv < c.ficha.pvMax)
+        .sort((a, b) => a.pv / a.ficha.pvMax - b.pv / b.ficha.pvMax)[0];
+      if (outro) protegidos.push(outro);
+    }
+    for (const c of protegidos) {
+      if (c.guardando) continue;
+      const g = Object.assign({}, c, { guardando: true });
+      v += (_iaRisco(estado, c) - _iaRisco(estado, c, g)) * IA_GUARDA;
+    }
   }
   if (es.curaPorDano) {
     const dano = (alvosIds || []).reduce((s, id) => {

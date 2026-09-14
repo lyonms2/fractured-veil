@@ -490,8 +490,10 @@ titulo('O ataque forte muda com o feitio');
 {
   const forte = (feitio, raridade) => G.fuMagiaDe(fichaDe('fogo', raridade, feitio), 'forte');
   verificar('Guarda Comum guarda ao atacar', forte('guarda', 'Comum').estilo.guardaAoAtacar === 'proprio');
-  verificar('Guarda Lendário guarda também o mais ferido',
-    forte('guarda', 'Lendário').estilo.guardaAoAtacar === 'proprio_e_ferido');
+  verificar('Guarda Raro guarda também o mais ferido',
+    forte('guarda', 'Raro').estilo.guardaAoAtacar === 'proprio_e_ferido');
+  verificar('Guarda Lendário guarda a equipe inteira',
+    forte('guarda', 'Lendário').estilo.guardaAoAtacar === 'equipa');
   verificar('Lâmina Comum fura a guarda', forte('lamina', 'Comum').estilo.furaGuarda === true);
   verificar('Lâmina Rara ignora a resistência só de quem guarda',
     forte('lamina', 'Raro').estilo.semRSnaGuarda === true && !forte('lamina', 'Raro').ignoraResistencias);
@@ -499,11 +501,18 @@ titulo('O ataque forte muda com o feitio');
   verificar('Sustentação Comum cura com metade do dano, sem dividir',
     forte('sustentacao', 'Comum').estilo.curaPorDano === 0.5 && !forte('sustentacao', 'Comum').estilo.curaDividida);
   verificar('Sustentação Lendária limpa um estado', forte('sustentacao', 'Lendário').estilo.limpaEstado === true);
-  verificar('o custo, o dano e os alvos não mudam com o feitio',
+  verificar('o custo e os alvos não mudam com o feitio',
     ['guarda', 'lamina', 'sustentacao'].every(f => {
       const m = forte(f, 'Raro');
-      return m.pm === 10 && m.fixo === 15 && m.alvos === 3;
+      return m.pm === 10 && m.alvos === 3;
     }));
+  // O dano sim: a Lâmina bate mais, o Guarda troca dano por proteção, e a
+  // Sustentação fica com o do manual, porque a cura dela sai do dano.
+  const danos = r => ['lamina', 'guarda', 'sustentacao'].map(f => forte(f, r).fixo).join('/');
+  verificar('o Sopro: Lâmina 13, Guarda 7, Sustentação 10', danos('Comum') === '13/7/10', danos('Comum'));
+  verificar('a Barragem: Lâmina 20, Guarda 10, Sustentação 15', danos('Raro') === '20/10/15', danos('Raro'));
+  verificar('a Barragem Certa: Lâmina 20, Guarda 10, Sustentação 15', danos('Lendário') === '20/10/15', danos('Lendário'));
+  verificar('a tabela do manual não muda', G.FU_MAGIAS.forte[2].fixo === 15 && G.FU_MAGIAS.forte[1].fixo === 10);
   verificar('o ataque muito forte não ganha jeito de feitio',
     !G.fuMagiaDe(fichaDe('fogo', 'Raro', 'lamina'), 'muito_forte').estilo);
 
@@ -537,10 +546,16 @@ titulo('O ataque forte muda com o feitio');
     verificar('e sem recuperar PM', !!r && !r.evs.some(x => x.tipo === 'guardar'));
   }
   {
-    const r = lance('guarda', 'Lendário', e => {
+    const r = lance('guarda', 'Raro', e => {
       const o = e.A[1]; o.pv = Math.max(1, Math.floor(o.ficha.pvMax / 3)); return { o };
     });
-    verificar('o Guarda Lendário põe em guarda o aliado mais ferido', !!r && r.ctx.o.guardando === true);
+    verificar('o Guarda Raro põe em guarda o aliado mais ferido', !!r && r.ctx.o.guardando === true);
+    verificar('e só ele', !!r && r.e.A[2].guardando !== true);
+  }
+  {
+    const r = lance('guarda', 'Lendário');
+    verificar('o Guarda Lendário põe a equipe inteira em guarda',
+      !!r && r.e.A.filter(c => c.vivo).every(c => c.guardando === true));
   }
 
   // ── Lâmina ──

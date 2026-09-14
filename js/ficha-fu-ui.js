@@ -352,7 +352,9 @@ function _fbEfeito(f, m) {
   // O jeito do feitio no ataque forte (FU_ESTILO_FORTE, em js/magias-fu.js).
   const es = m.estilo || {};
   if (es.guardaAoAtacar)
-    fr.push(t(es.guardaAoAtacar === 'proprio_e_ferido' ? 'af.b.ef.estilo_guarda2' : 'af.b.ef.estilo_guarda'));
+    fr.push(t(es.guardaAoAtacar === 'equipa' ? 'af.b.ef.estilo_guarda3'
+            : es.guardaAoAtacar === 'proprio_e_ferido' ? 'af.b.ef.estilo_guarda2'
+            : 'af.b.ef.estilo_guarda'));
   if (es.furaGuarda)    fr.push(t('af.b.ef.estilo_fura'));
   if (es.semRSnaGuarda && !m.ignoraResistencias) fr.push(t('af.b.ef.estilo_fura_rs'));
   if (es.curaPorDano)

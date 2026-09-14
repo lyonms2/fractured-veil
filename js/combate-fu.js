@@ -742,14 +742,18 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
 
   // ── Guarda: ataca e se protege ──
   if (es.guardaAoAtacar) {
-    quem.guardando = true;
-    eventos.push({ tipo: 'estiloGuarda', quem: quem.id, alvo: quem.id });
-    if (es.guardaAoAtacar === 'proprio_e_ferido') {
+    /* Comum: ele. Raro: ele e o aliado mais ferido. Lendário: a equipe
+       inteira de pé. A guarda de cada um dura até ele mesmo agir de novo. */
+    let protegidos = [quem];
+    if (es.guardaAoAtacar === 'equipa') {
+      protegidos = [quem].concat(aliados.filter(c => c !== quem));
+    } else if (es.guardaAoAtacar === 'proprio_e_ferido') {
       const outro = porFerida(aliados.filter(c => c !== quem && c.pv < c.ficha.pvMax))[0];
-      if (outro) {
-        outro.guardando = true;
-        eventos.push({ tipo: 'estiloGuarda', quem: quem.id, alvo: outro.id });
-      }
+      if (outro) protegidos.push(outro);
+    }
+    for (const c of protegidos) {
+      c.guardando = true;
+      eventos.push({ tipo: 'estiloGuarda', quem: quem.id, alvo: c.id });
     }
   }
 
