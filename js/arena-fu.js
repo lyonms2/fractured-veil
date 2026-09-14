@@ -1314,8 +1314,10 @@ function _afEscolher(lugar) {
     return;
   }
 
-  // as de fora, com um alvo só: o da frente cobre, não há o que escolher
-  if ((magia.alvos || 1) === 1 || lugar === 'comum') {
+  /* as de fora, com um alvo só: o da frente cobre, não há o que escolher.
+     Menos o muito forte do Lâmina, que alcança qualquer inimigo — aí se
+     escolhe em quem. */
+  if (lugar === 'comum' || ((magia.alvos || 1) === 1 && lugar !== 'muito_forte')) {
     _afAgir({ tipo: lugar === 'comum' ? 'atacar' : 'magia',
               magia: lugar === 'comum' ? null : magia });
     return;
@@ -1350,7 +1352,9 @@ function _afEhAlvo(c) {
   const eu = _afPorId(_afQuem);
   if (!eu) return false;
   if (_afPasso.mover)  return c.lado === eu.lado && c !== eu;
-  if (_afPasso.aliado) return c.lado === eu.lado;
+  // O Proteger escolhe outro aliado: o Guarda não se protege a si mesmo.
+  if (_afPasso.aliado) return c.lado === eu.lado
+    && !(_afPasso.magia && _afPasso.magia.proteger && c === eu);
   return c.lado !== eu.lado;
 }
 
@@ -1362,7 +1366,7 @@ function _afAlvosHTML(eu) {
 
   let h = `<div class="cb-pm-cab">${esc(rot)}</div>`;
   // varrer a linha: a opção de os apanhar a todos de uma vez
-  if (!_afPasso.mover && !_afPasso.aliado) {
+  if (!_afPasso.mover && !_afPasso.aliado && (_afPasso.magia.alvos || 1) > 1) {
     const custo = fuCusto(_afPasso.magia, lista.length);
     h += _afOrbe('todos', t('af.orbe.todos'), lista.length + '',
       `_afAlvo('*')`, custo || null, custo <= eu.pm);
@@ -1468,6 +1472,10 @@ function _afMostrar(eventos) {
     if (ev.tipo === 'gasto') guardar(ev.quem, 'pm', (ev.pmDepois | 0) + (ev.pm | 0));
     if (ev.tipo === 'guardar' && ev.pmGanho) guardar(ev.quem, 'pm', (ev.pmDepois | 0) - ev.pmGanho);
     if (ev.pvQuem != null)   guardar(ev.quem, 'pv', ev.pvQuem - (ev.drenou | 0));
+    if (ev.tipo === 'roubouPM') {
+      guardar(ev.alvo, 'pm', ev.pmAlvo + ev.n);
+      guardar(ev.quem, 'pm', ev.pmQuem - ev.n);
+    }
   }
 
   // quem cai neste turno continua de pé, para o desenho, até a sua batida
@@ -1724,6 +1732,10 @@ function _afEncenarUm(ev) {
   if (ev.tipo === 'gasto') _afBarraDe(ev.quem, null, ev.pmDepois);
   if (ev.tipo === 'guardar' && ev.pmGanho) _afBarraDe(ev.quem, null, ev.pmDepois);
   if (ev.pvQuem != null)   _afBarraDe(ev.quem, ev.pvQuem, null);
+  if (ev.tipo === 'roubouPM') {
+    _afBarraDe(ev.alvo, null, ev.pmAlvo);
+    _afBarraDe(ev.quem, null, ev.pmQuem);
+  }
 }
 
 function _afEncenarCorpo(ev) {
@@ -1747,6 +1759,14 @@ function _afEncenarCorpo(ev) {
     // O jeito do feitio no ataque forte (ver fuEstiloDoForte).
     if (ev.tipo === 'estiloGuarda') { _afGesto(noAlvo, 'defende', 500); return; }
     if (ev.tipo === 'estiloLimpa')  { _afImpacto(noAlvo, 'luz'); return; }
+
+    // O Guarda que protege, a Muralha e o PM roubado pela Sustentação.
+    if (ev.tipo === 'proteger' || ev.tipo === 'protegeu' || ev.tipo === 'muralha') {
+      _afGesto(deQuem, 'defende', 500); return;
+    }
+    if (ev.tipo === 'roubouPM') {
+      _afNumeroPM(noAlvo, ev.n); _afNumeroPM(deQuem, ev.n, true); return;
+    }
 
     if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); return; }
 
@@ -2039,14 +2059,25 @@ function _afLanceDe(ev) {
   // A cura do ataque forte da Sustentação não tem nome de magia próprio.
   if (ev.tipo === 'cura' && ev.estilo)
     return t('af.lance.estilo_cura', { nome: '<b>' + nome(ev.quem) + '</b>', alvo: '<b>' + nome(ev.alvo) + '</b>' })
-         + ` <span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`;
+         + ` <span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`
+         + (ev.frente ? ' · ' + t('af.lance.frente') : '');
   if (ev.tipo === 'cura')
     return `<b>${nome(ev.quem)}</b> · ${t('af.m.' + ev.nome)} · <b>${nome(ev.alvo)}</b> `
-         + `<span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`;
+         + `<span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`
+         + (ev.frente ? ' · ' + t('af.lance.frente') : '');
   if (ev.tipo === 'estiloGuarda')
     return t('af.lance.estilo_guarda', { nome: '<b>' + nome(ev.alvo) + '</b>' });
   if (ev.tipo === 'estiloLimpa')
     return t('af.lance.estilo_limpa', { nome: '<b>' + nome(ev.alvo) + '</b>', e: t('af.est.' + ev.estado) });
+
+  // As regras dos feitios e as magias novas (ver js/combate-fu.js).
+  const b = id => '<b>' + nome(id) + '</b>';
+  if (ev.tipo === 'proteger')   return t('af.lance.proteger', { nome: b(ev.quem), alvo: b(ev.alvo) });
+  if (ev.tipo === 'protegeu')   return t('af.lance.protegeu', { nome: b(ev.quem), alvo: b(ev.alvo) });
+  if (ev.tipo === 'muralha')    return t('af.lance.muralha',  { nome: b(ev.quem) });
+  if (ev.tipo === 'roubouPM')   return t('af.lance.roubou',   { nome: b(ev.quem), alvo: b(ev.alvo), n: ev.n });
+  if (ev.tipo === 'represalia')
+    return t('af.lance.represalia', { nome: b(ev.quem), alvo: b(ev.alvo) }) + ' · ' + _afDanoTexto(ev);
 
   if (ev.tipo === 'actoFinal' || ev.tipo === 'devastacao') {
     p.push(ev.tipo === 'actoFinal'
@@ -2068,10 +2099,11 @@ function _afLanceDe(ev) {
     // por que ele entra por inteiro em quem resiste ou absorve o elemento.
     if (ev.tipo_dano === 'fisico') p.push('<i>' + t('af.lance.fisico') + '</i>');
     if (ev.furouGuarda) p.push('<b>' + t('af.lance.furou') + '</b>');
+    if (ev.execucao)    p.push('<b>' + t('af.lance.execucao', { n: ev.execucao }) + '</b>');
     p.push(_afDanoTexto(ev));
     if (ev.estadoDado) p.push(t('af.lance.estado', { e: t('af.est.' + ev.estadoDado) }));
+    if (ev.envenenou)  p.push(t('af.lance.estado', { e: t('af.est.envenenado') }));
     if (ev.drenou)     p.push(t('af.lance.dreno', { n: ev.drenou }));
-    if (ev.derrubou)   p.push(t('af.lance.derrubou'));
     return _afComResto(p);
   }
   return null;
@@ -2085,6 +2117,7 @@ function _afDanoTexto(ev) {
   else               p.push(t('af.lance.nada'));
   if (ev.pmAlvo)  p.push(t('af.lance.pmGanho', { n: ev.pmAlvo }));
   if (ev.salvou)  p.push(t('af.lance.salvou'));
+  if (ev.resiliu) p.push(t('af.lance.resiliu'));
   if (ev.caiu)    p.push('<b>' + t('af.lance.caiu', { nome: esc(_afNome(_afPorId(ev.alvo))) }) + '</b>');
   return p.join(' · ');
 }

@@ -72,11 +72,16 @@ const FU_VANTAGENS = {
   /* Status Effect Immunity. Dois estados à escolha, e escolhe o DNA. */
   pele_calada:    { familia: 'guarda', manual: 'Status Effect Immunity', imunes: 2 },
 
-  /* Flying. Um golpe CORPO-A-CORPO não lhe chega — mas a magia chega, e
-     o manual prende-a ao chão em duas situações: em crise, e quando
-     apanha dano do tipo a que é vulnerável. Aqui isso é a costura, e é
-     o que impede esta vantagem de ser um escudo permanente. */
-  voo_baixo:      { familia: 'guarda', manual: 'Flying', voo: true },
+  /* MURALHA, no lugar do Voo Baixo (14/09/2026). Guardando na frente, as
+     Barragens inimigas acertam só ele: os de trás ficam de fora. O Voo
+     Baixo saiu porque quase todos atacam com magia, e ela só desviava o
+     golpe comum.
+
+     TEM de ficar neste lugar e nesta família. O sorteio percorre a lista
+     em ordem, com peso por família: apagar uma chave ou mudá-la de lugar
+     mudava a vantagem de avatares que já existem. Assim, só quem tinha
+     Voo Baixo passa a ter Muralha. */
+  muralha:        { familia: 'guarda', manual: 'nosso (no lugar de Flying)', muralha: true },
 
   // ═══ SUSTENTAÇÃO — o que lhe dá com que continuar ═══
 
@@ -90,11 +95,14 @@ const FU_VANTAGENS = {
      rondas a apanhar. */
   veia_avida:     { familia: 'sustentacao', manual: 'Reaction', pmAoSofrer: 5 },
 
-  /* Crisis Effect, o segundo exemplo: com a vida em metade ou menos, o
-     dano dele passa a ignorar RESISTÊNCIAS. O manual diz que os efeitos
-     de crise podem ser fortes porque só disparam quando a criatura já
-     está mal — e este é. */
-  furia_da_crise: { familia: 'sustentacao', manual: 'Crisis Effect', criseIgnoraRS: true },
+  /* TOQUE PÚTRIDO, no lugar da Fúria da Crise (14/09/2026): no crítico,
+     todo ataque que fere deixa o alvo envenenado. A Fúria (em crise,
+     ignorar resistências) era uma vantagem de quem bate, e esta é a
+     família de quem cuida — envenenar tira um dado de Vigor e de Vontade,
+     e a vítima erra mais e recupera menos PM ao guardar.
+
+     Mesmo lugar e mesma família, pela razão da Muralha. */
+  toque_putrido:  { familia: 'sustentacao', manual: 'nosso (no lugar de Crisis Effect)', putrido: true },
 
   /* Final Act. Ao cair, leva dez pontos de vida de cada inimigo de pé,
      do seu tipo. O manual pede que o dano seja MENOR (p. 93) e dez é o
@@ -104,10 +112,13 @@ const FU_VANTAGENS = {
 
   // ═══ LÂMINA — o que faz o golpe doer ═══
 
-  /* Improved Damage. Cinco a mais, e no GOLPE COMUM e não nas magias: o
-     manual manda escolher uma fonte de dano, e escolher o golpe que não
-     custa nada é o que dá alguma coisa a um avatar de magia fraca. */
-  golpe_pesado:   { familia: 'lamina', manual: 'Improved Damage', danoMaisGolpe: 5 },
+  /* Improved Damage. O manual manda escolher uma fonte de dano, e quem
+     escolhe é o DNA, como na Mira Treinada: quem tem os dados do corpo
+     maiores ganha +5 no golpe comum, quem tem os da mente ganha +3 nas
+     magias. Era só no golpe comum, e o ataque que define o Lâmina é o
+     muito forte, que é magia. Nas magias é menor porque a Barragem acerta
+     até três alvos. */
+  golpe_pesado:   { familia: 'lamina', manual: 'Improved Damage', espelha: 'dano' },
 
   /* Specialized. +3 na precisão, e o DNA escolhe em qual: quem tem os
      dados do corpo maiores especializa-se a bater, quem tem os da mente
@@ -179,6 +190,13 @@ function _fvResolver(id, base, rnd) {
     v.lado = corpo ? 'golpe' : 'magia';
   }
 
+  if (v.espelha === 'dano') {
+    // o Golpe Pesado: a mesma conta da Mira Treinada decide o lado
+    const corpo = (base.DES + base.VIG) >= (base.PER + base.VON);
+    if (corpo) v.danoMaisGolpe = 5; else v.danoMaisMagia = 3;
+    v.lado = corpo ? 'golpe' : 'magia';
+  }
+
   if (v.imunes) {
     /* Dois estados distintos. Tirar do saco em vez de sortear duas vezes
        — sortear duas vezes dava o mesmo estado uma vez em cada seis, e
@@ -241,9 +259,9 @@ function fuVantagensDoDna(dna, seed, base, raridade, escolha) {
    que a lista.
    ═══════════════════════════════════════════════════════════════════ */
 const FU_DONS_SOMA = ['defesaMais', 'defMagMais', 'pvMais', 'pmMais',
-                      'precisaoMais', 'magiaMais', 'danoMaisGolpe',
+                      'precisaoMais', 'magiaMais', 'danoMaisGolpe', 'danoMaisMagia',
                       'pmAoSofrer', 'actoFinal'];
-const FU_DONS_VERDADE = ['voo', 'criseIgnoraRS', 'dreno', 'golpeNaDefMag'];
+const FU_DONS_VERDADE = ['muralha', 'putrido', 'dreno', 'golpeNaDefMag'];
 
 function fuDons(vantagens) {
   const d = {};

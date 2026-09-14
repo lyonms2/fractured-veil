@@ -131,14 +131,26 @@ const FU_MAGIAS = {
   /* ── DEFESA ──
      Aguentar. E é o lugar do da frente, que cobre os outros dois. */
   defesa: {
-    1: { id: 'concha', pm: 10, proprio: true, cena: { resisteFisico: true }, manual: 'p.311' },
+    /* A CONCHA resiste aos elementos dos inimigos em campo, e não ao
+       físico. Resistia a físico, que só o golpe comum causa: protegia o
+       Guarda justamente do ataque mais fraco. Agora protege do que machuca
+       — as magias — e o golpe comum físico vira a resposta do inimigo. */
+    1: { id: 'concha', pm: 10, proprio: true, cena: { resisteInimigos: true },
+         manual: 'p.311 (adaptada: os elementos dos inimigos, não o físico)' },
     /* Piso fixo e não bónus: quem tem dado pequeno de Destreza ganha
        muito, quem já tem d12 não perde nada — o manual escreve-a assim
        de propósito, e é o que a torna uma magia de quem precisa. */
+    /* A Barreira põe o piso na Defesa E na Defesa Mágica. Só na Defesa, só
+       protegia do golpe comum: as magias miram a Defesa Mágica. */
     2: { id: 'barreira', pm: 5, alvos: 3, porAlvo: true, aliado: true,
-         cena: { defesaMinima: 12 }, manual: 'p.208' },
-    3: { id: 'misericordia', pm: 20, alvos: 1, aliado: true,
-         cena: { misericordia: true }, manual: 'p.209' },
+         cena: { defesaMinima: 12, defMagMinima: 12 }, manual: 'p.208 (adaptada: as duas Defesas)' },
+    /* PROTEGER, no lugar da Misericórdia (decidido pelo dono do jogo em
+       14/09/2026). A Misericórdia custava 20 PM por um aliado e salvava com
+       1 PV — adiava a queda um golpe. O Proteger faz do Guarda o que ele é:
+       até o próximo turno dele, todo ataque contra o aliado escolhido cai
+       nele, e com a Represália quem bate paga. A Devastação passa por cima. */
+    3: { id: 'proteger', pm: 10, alvos: 1, aliado: true, proteger: true,
+         manual: 'nosso (no lugar da Misericórdia, p.209)' },
   },
 
   /* ── SUPORTE ──
@@ -220,8 +232,9 @@ const FU_ESTILO_FORTE = {
   },
   sustentacao: {
     1: { curaPorDano: 0.5 },
-    2: { curaPorDano: 0.5, curaDividida: true },
-    3: { curaPorDano: 0.5, curaDividida: true, limpaEstado: true },
+    // E rouba PM de cada alvo ferido (aprovado em 14/09/2026).
+    2: { curaPorDano: 0.5, curaDividida: true, roubaPM: 3 },
+    3: { curaPorDano: 0.5, curaDividida: true, limpaEstado: true, roubaPM: 5 },
   },
 };
 
@@ -341,6 +354,10 @@ function fuMagiaDe(ficha, lugar) {
     const c = FU_CONCENTRADO[ficha.tipo] || FU_CONCENTRADO.fogo;
     m.nome = c.nome;
     m.nomeEn = c.en;
+    /* O estado do elemento, no crítico. O Sopro Maldito do Comum sempre o
+       aplica, e o golpe concentrado do Raro não aplicava nunca: subir de
+       degrau tirava uma coisa. Aprovado em 14/09/2026. */
+    m.estado = (FU_ELEMENTAL[ficha.tipo] || FU_ELEMENTAL.fogo).estado;
   }
 
   // O jeito do feitio no ataque forte (ver FU_ESTILO_FORTE). Sem feitio

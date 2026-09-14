@@ -117,6 +117,7 @@ titulo('Nenhum campo que o motor não leia');
     for (const k of Object.keys(v)) usados[k] = true;
     if (v.espelha === 'defesa')   { usados.defesaMais = true; usados.defMagMais = true; }
     if (v.espelha === 'precisao') { usados.precisaoMais = true; usados.magiaMais = true; }
+    if (v.espelha === 'dano')     { usados.danoMaisGolpe = true; usados.danoMaisMagia = true; }
   }
   for (const k of V.FU_DONS_SOMA.concat(V.FU_DONS_VERDADE))
     verificar('o dom "' + k + '" tem quem o dê', !!usados[k],
@@ -264,13 +265,13 @@ titulo('Os dons dizem o mesmo que a lista');
 
   // e o motor sabe ler um lutador sem dons nenhuns
   verificar('fuDonsDe aguenta uma ficha sem dons',
-    M.fuDonsDe({ ficha: {} }).voo === false && M.fuDonsDe(null).imunes.length === 0);
+    M.fuDonsDe({ ficha: {} }).muralha === false && M.fuDonsDe(null).imunes.length === 0);
 }
 
 /* ═══ 7 · AS QUE O DNA ACABA DE ESCREVER ═════════════════════════ */
 titulo('As que o DNA acaba de escrever');
 {
-  let cerrada = 0, mira = 0, pele = 0;
+  let cerrada = 0, mira = 0, pele = 0, pesado = 0;
   for (let s = 1; s <= 4000; s++) {
     const f = F.fuFicha(avatar(s * 7919, 30, 'vantagem'));
     for (const v of f.vantagens) {
@@ -288,6 +289,12 @@ titulo('As que o DNA acaba de escrever');
         verificar('a Mira Treinada dá +3 de um lado só', (p === 3) !== (m === 3),
           p + ' e ' + m);
       }
+      if (v.id === 'golpe_pesado') {
+        pesado++;
+        const g = v.danoMaisGolpe | 0, m = v.danoMaisMagia | 0;
+        verificar('o Golpe Pesado dá +5 no golpe OU +3 nas magias',
+          (g === 5 && m === 0) || (g === 0 && m === 3), g + ' e ' + m);
+      }
       if (v.id === 'pele_calada') {
         pele++;
         verificar('a Pele Calada cala DOIS estados', v.imunes.length === 2,
@@ -298,9 +305,9 @@ titulo('As que o DNA acaba de escrever');
       }
     }
   }
-  verificar('as três apareceram para se poderem medir',
-    cerrada > 50 && mira > 50 && pele > 50,
-    cerrada + ' / ' + mira + ' / ' + pele);
+  verificar('as quatro apareceram para se poderem medir',
+    cerrada > 50 && mira > 50 && pele > 50 && pesado > 50,
+    cerrada + ' / ' + mira + ' / ' + pele + ' / ' + pesado);
 }
 
 /* ═══ 8 · CADA UMA FAZ O QUE DIZ ═════════════════════════════════ */
@@ -354,65 +361,27 @@ titulo('Cada uma faz o que diz, medida no motor');
     verificar('e o dado desce com o que apanhou', M.fuDado(c, 'VON') < c.ficha.VON);
   }
 
-  // ── Voo Baixo ──
+  // ── Muralha ──
   {
-    const e = luta(20, 5);
-    const [f1, f2, f3] = e.B;
-    calcar(f1, 'voo_baixo');
-    verificar('quem voa está no ar', M.fuNoAr(f1) === true);
-    /* 'mao' é o golpe comum; `true` é uma magia de alvo único. São
-       diferentes de propósito: a frente cobre das duas, o voo só da
-       primeira. */
-    verificar('e o corpo-a-corpo passa-lhe ao lado',
-      M.fuAlvosPossiveis(e.B, 'mao')[0] === f2,
-      'apanhou ' + M.fuAlvosPossiveis(e.B, 'mao')[0].id);
-    verificar('mas uma magia de alvo único alcança-o',
-      M.fuAlvosPossiveis(e.B, true)[0] === f1,
-      'apanhou ' + M.fuAlvosPossiveis(e.B, true)[0].id);
-    verificar('e a que varre a linha também',
-      M.fuAlvosPossiveis(e.B, false).indexOf(f1) !== -1);
+    /* Guardando na frente, a Barragem inimiga acerta só ele. Uma Barragem
+       feita à mão, sem jeito de feitio, para medir só a Muralha. */
+    const barragem = { id: 'barragem', pm: 10, alvos: 3, porAlvo: true, fixo: 15, lugar: 'forte' };
+    const e = luta(20, 5), quem = e.A[0], frente = M.fuFrente(e.B);
+    calcar(frente, 'muralha');
+    frente.guardando = true;
+    quem.pm = 99;
+    const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: barragem, alvos: e.B.map(c => c.id) });
+    const atingidos = evs.filter(x => x.tipo === 'magia').map(x => x.alvo);
+    verificar('a Muralha: guardando na frente, a Barragem acerta só ele',
+      atingidos.length === 1 && atingidos[0] === frente.id, atingidos.join(','));
+    verificar('e o registro diz que foi a Muralha', evs.some(x => x.tipo === 'muralha'));
 
-    f2.vivo = false; f3.vivo = false;
-    verificar('sozinho no ar, tem de descer para atacar — e apanha',
-      M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
-
-    f2.vivo = true; f3.vivo = true;
-    f1.pv = f1.ficha.crise;
-    verificar('em crise, cai', M.fuNoAr(f1) === false);
-    verificar('e o corpo-a-corpo chega-lhe', M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
-
-    f1.pv = f1.ficha.pvMax;
-    f1.derrubado = true;
-    verificar('derrubado, fica no chão', M.fuNoAr(f1) === false);
-    verificar('e o murro chega-lhe', M.fuAlvosPossiveis(e.B, 'mao')[0] === f1);
-    M.fuNovaRonda(e);
-    verificar('e a ronda seguinte levanta-o', M.fuNoAr(f1) === true && !f1.derrubado);
-  }
-
-  // ── o voo cai com a costura ──
-  {
-    const e = luta(20, 6), quem = e.A[0], alvo = e.B[0];
-    calcar(alvo, 'voo_baixo');
-    alvo.ficha.costura = 'fogo';
-    alvo.ficha.afinidades = { fogo: null };
-    alvo.pv = alvo.ficha.pvMax;
-    let derrubou = false;
-    for (let i = 0; i < 40 && !derrubou; i++) {
-      alvo.pv = alvo.ficha.pvMax; alvo.derrubado = false;
-      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5, tipo: 'fogo' });
-      if (ev.acertou && ev.perda > 0) derrubou = !!ev.derrubou;
-    }
-    verificar('o dano da costura derruba quem voa', derrubou === true);
-
-    // e um tipo que não é a costura não o derruba
-    alvo.derrubado = false; alvo.pv = alvo.ficha.pvMax;
-    let caiuAtoa = false;
-    for (let i = 0; i < 40; i++) {
-      alvo.pv = alvo.ficha.pvMax;
-      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5, tipo: 'gelo' });
-      if (ev.derrubou) caiuAtoa = true;
-    }
-    verificar('e um tipo qualquer não o derruba', caiuAtoa === false);
+    const e2 = luta(20, 5), q2 = e2.A[0], f2 = M.fuFrente(e2.B);
+    calcar(f2, 'muralha');
+    q2.pm = 99;
+    const evs2 = M.fuAgir(e2, { quem: q2.id, tipo: 'magia', magia: barragem, alvos: e2.B.map(c => c.id) });
+    verificar('sem guardar, a Muralha não segura nada',
+      evs2.filter(x => x.tipo === 'magia').length === 3);
   }
 
   // ── Veia Ávida ──
@@ -436,39 +405,23 @@ titulo('Cada uma faz o que diz, medida no motor');
     verificar('e nunca passa do máximo', c.pm === c.ficha.pmMax);
   }
 
-  // ── Fúria da Crise ──
+  // ── Toque Pútrido ──
   {
     const e = luta(20, 8), quem = e.A[0], alvo = e.B[0];
-    calcar(quem, 'furia_da_crise');
-    alvo.ficha.afinidades = { fogo: 'RS' };
-    alvo.ficha.pvMax = 500; alvo.ficha.crise = 250;
-
-    quem.pv = quem.ficha.pvMax;
-    let fora = 0, dentro = 0;
-    for (let i = 0; i < 60; i++) {
-      alvo.pv = 500;
-      const ev = M.fuAtacar(e, quem, alvo, { fixo: 20, tipo: 'fogo' });
-      if (ev.acertou) { fora++; if (ev.ignorouResistencias) dentro++; }
+    calcar(quem, 'toque_putrido');
+    alvo.ficha.afinidades = {}; alvo.ficha.pvMax = 900; alvo.ficha.crise = 450;
+    let criticos = 0, envenenou = 0, foraDoCritico = 0;
+    for (let i = 0; i < 600; i++) {
+      alvo.pv = 900; alvo.estados = {};
+      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (!ev.acertou || !(ev.perda > 0)) continue;
+      if (ev.critico) { criticos++; if (ev.envenenou && alvo.estados.envenenado) envenenou++; }
+      else if (ev.envenenou || alvo.estados.envenenado) foraDoCritico++;
     }
-    verificar('fora de crise, a resistência vale', fora > 0 && dentro === 0,
-      dentro + ' de ' + fora);
-
-    quem.pv = quem.ficha.crise;
-    verificar('e ele está mesmo em crise', M.fuEmCrise(quem) === true);
-    let fora2 = 0, dentro2 = 0;
-    for (let i = 0; i < 60; i++) {
-      alvo.pv = 500;
-      const ev = M.fuAtacar(e, quem, alvo, { fixo: 20, tipo: 'fogo' });
-      if (ev.acertou) { fora2++; if (ev.ignorouResistencias) dentro2++; }
-    }
-    verificar('em crise, o golpe dele ignora resistências', fora2 > 0 && dentro2 === fora2,
-      dentro2 + ' de ' + fora2);
-
-    // mas não a imunidade nem a absorção
-    alvo.ficha.afinidades = { fogo: 'IM' };
-    alvo.pv = 500;
-    for (let i = 0; i < 30; i++) { alvo.pv = 500; M.fuAtacar(e, quem, alvo, { fixo: 20, tipo: 'fogo' }); }
-    verificar('e continua a não passar a imunidade', alvo.pv === 500, alvo.pv + '');
+    verificar('houve críticos para medir o Toque Pútrido', criticos > 0, criticos + '');
+    verificar('o Toque Pútrido envenena no crítico', envenenou === criticos,
+      envenenou + ' de ' + criticos);
+    verificar('e só no crítico', foraDoCritico === 0, foraDoCritico + '');
   }
 
   // ── Último Suspiro ──
@@ -546,7 +499,7 @@ titulo('Cada uma faz o que diz, medida no motor');
       if (em.acertou) { magSem += em.bruto; nMagSem++; }
     }
 
-    calcar(quem, 'golpe_pesado');
+    calcar(quem, 'golpe_pesado', { danoMaisGolpe: 5 });
     let comDom = 0, nCom = 0, magico = 0, nMag = 0;
     for (let i = 0; i < 80; i++) {
       alvo.pv = 900;
@@ -564,6 +517,25 @@ titulo('Cada uma faz o que diz, medida no motor');
       medSem.toFixed(1) + ' → ' + medCom.toFixed(1));
     verificar('e não toca nas magias', Math.abs(magB - magA) < 1.6,
       magA.toFixed(1) + ' → ' + magB.toFixed(1));
+  }
+
+  // ── Golpe Pesado de mente ──
+  {
+    const e = luta(20, 12), quem = e.A[0], alvo = e.B[0];
+    alvo.ficha.afinidades = {}; alvo.ficha.pvMax = 900; alvo.ficha.crise = 450;
+    calcar(quem, 'golpe_pesado', { danoMaisMagia: 3 });
+    const extra = quem.ficha.danoExtra | 0;
+    let magOk = true, golpeOk = true, nMag = 0, nGolpe = 0;
+    for (let i = 0; i < 80; i++) {
+      alvo.pv = 900;
+      const em = M.fuAtacar(e, quem, alvo, { magico: true, fixo: 5, atrib1: 'PER', atrib2: 'VON' });
+      if (em.acertou) { nMag++; if (em.bruto !== em.hr + 5 + extra + 3) magOk = false; }
+      alvo.pv = 900;
+      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (ev.acertou) { nGolpe++; if (ev.bruto !== ev.hr + 5 + extra) golpeOk = false; }
+    }
+    verificar('o Golpe Pesado de mente soma três nas magias', nMag > 0 && magOk);
+    verificar('e nada no golpe comum', nGolpe > 0 && golpeOk);
   }
 
   // ── Mira Treinada ──
@@ -637,9 +609,7 @@ titulo('Cada uma faz o que diz, medida no motor');
 titulo('O que não pode acontecer');
 {
   /* Sessenta batalhas inteiras com as vantagens que o sorteio deu, a
-     conferir que nada sai dos limites e que todas acabam. É aqui que o
-     Voo Baixo se prova: três inimigos a voar contra um atacante sem PM
-     era a forma óbvia de fazer uma batalha que não acabava nunca. */
+     conferir que nada sai dos limites e que todas acabam. */
   for (let s = 1; s <= 60; s++) {
     const b = luta(20, s * 17);
     let guarda = 0;
@@ -660,20 +630,6 @@ titulo('O que não pode acontecer');
       b.A.concat(b.B).every(c => !c.suspirou || !c.vivo));
   }
 
-  // três a voar, e o atacante só com as mãos
-  {
-    const b = luta(20, 999);
-    b.B.forEach(c => calcar(c, 'voo_baixo'));
-    b.A.forEach(c => { c.pm = 0; });
-    let guarda = 0;
-    while (!b.acabou && guarda++ < 500) {
-      const vez = M.fuVez(b);
-      if (!vez) { M.fuNovaRonda(b); continue; }
-      M.fuAgir(b, { quem: vez.podem[0], tipo: 'atacar' });
-    }
-    verificar('três a voar contra mãos nuas — e a batalha acaba', b.acabou,
-      'parou na ronda ' + b.ronda);
-  }
 }
 
 console.log('\n' + '─'.repeat(62));

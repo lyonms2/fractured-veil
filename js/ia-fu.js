@@ -119,8 +119,11 @@ function _iaPerda(alvo, bruto, af, semRS) {
   const b = Math.max(0, bruto | 0);
   if (af === 'IM') return 0;
   if (af === 'AB') return -Math.min(b, alvo.ficha.pvMax - alvo.pv);
-  const p = af === 'RS' ? (semRS ? b : Math.floor(b / 2))
-          : af === 'VU' ? b * 2 : b;
+  let p = af === 'RS' ? (semRS ? b : Math.floor(b / 2))
+        : af === 'VU' ? b * 2 : b;
+  // A Resiliência da Sustentação, como no fuAplicarDano.
+  if (alvo.ficha.feitio === 'sustentacao')
+    p = Math.min(p, Math.floor(alvo.ficha.pvMax * FU_RESILIENCIA[fuGrauDe(alvo)]));
   return Math.min(p, alvo.pv);
 }
 
@@ -142,12 +145,14 @@ function _iaGolpe(quem, alvo, o) {
   const dl  = (mag || dq.golpeNaDefMag) ? fuDefesaMag(alvo) : fuDefesa(alvo);
   // O golpe comum é físico, como no fuAtacar; só a magia leva o elemento.
   const tipo = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
-  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem))
-             || (!!o.semRSnaGuarda && alvo.guardando);
+  const semRS = !!o.ignoraResistencias || (!!o.semRSnaGuarda && alvo.guardando);
   const af = fuAfinidadeDe(alvo, tipo);
-  // A Lâmina fura a guarda, como no fuAtacar.
-  const guarda = alvo.guardando && af !== 'AB' && !o.furaGuarda;
-  const extra = (o.fixo | 0) + (quem.ficha.danoExtra | 0) + (mag ? 0 : (dq.danoMaisGolpe | 0));
+  // A Lâmina fura a guarda, e a guarda não se soma à resistência (fuDanoComGuarda).
+  const guarda = alvo.guardando && af !== 'AB' && !o.furaGuarda && !(af === 'RS' && !semRS);
+  // A Execução do Lâmina e o Golpe Pesado de cada lado, como no fuAtacar.
+  const exec = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
+  const extra = (o.fixo | 0) + (quem.ficha.danoExtra | 0)
+              + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0)) + exec;
 
   let acertos = 0, criticos = 0, dano = 0, abates = 0;
   for (let a = 1; a <= f1; a++) {
@@ -182,7 +187,8 @@ function _iaAtaquesDe(q) {
     if (m.todos) { lista.push({ magia: m, todos: true, custo: m.pm | 0 }); continue; }
     lista.push({
       magia: m,
-      mira: m.corpoACorpo ? 'mao' : ((m.alvos || 1) === 1),
+      // O muito forte alcança qualquer inimigo, como no fuAgir.
+      mira: m.corpoACorpo ? 'mao' : (l === 'muito_forte' ? false : ((m.alvos || 1) === 1)),
       o: { magico: true, fixo: m.fixo, tipo: m.tipo || q.ficha.tipo,
            estado: m.estado, estadoSempre: m.estadoSempre,
            ignoraResistencias: m.ignoraResistencias,
@@ -200,21 +206,33 @@ function _iaEfeito(q, alvo, at) {
   if (at.todos) {
     const m = at.magia;
     const af = fuAfinidadeDe(alvo, m.tipo || q.ficha.tipo);
-    let bruto = m.danoFixo | 0;
-    if (alvo.guardando && af !== 'AB') bruto = Math.floor(bruto / 2);
+    let bruto = (m.danoFixo | 0)
+              + ((q.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(q)] : 0);
+    // A guarda não se soma à resistência.
+    if (alvo.guardando && af !== 'AB' && af !== 'RS') bruto = Math.floor(bruto / 2);
     const dano = _iaPerda(alvo, bruto, af, false);
     return { dano, pAbate: _iaCai(alvo, dano) ? 1 : 0, pEstado: 0 };
   }
   const g = _iaGolpe(q, alvo, at.o);
   const e = at.o.estado;
   const pega = e && !alvo.estados[e] && fuDonsDe(alvo).imunes.indexOf(e) === -1;
+  // O Toque Pútrido envenena no crítico.
+  const podre = (fuDonsDe(q).putrido && !alvo.estados.envenenado
+                 && fuDonsDe(alvo).imunes.indexOf('envenenado') === -1) ? g.pCritico : 0;
   return { dano: g.dano, pAbate: g.pAbate,
-           pEstado: pega ? (at.o.estadoSempre ? g.pAcerto : g.pCritico) : 0 };
+           pEstado: (pega ? (at.o.estadoSempre ? g.pAcerto : g.pCritico) : 0) + podre };
 }
 
 // Se esta forma de ferir chega a este alvo, com a regra da frente.
 function _iaAlcanca(equipa, alvo, at) {
   if (at.todos) return true;
+  // A Muralha: a Barragem contra um Guarda guardando na frente acerta só ele.
+  if (at.magia && (at.magia.alvos || 1) > 1) {
+    const frente = fuFrente(equipa);
+    if (frente && frente.guardando && fuDonsDe(frente).muralha) return alvo === frente;
+  }
+  // O Proteger: um aliado protegido não se alcança — o golpe cai no Guarda.
+  if (equipa.some(c => c.vivo && c !== alvo && c.protegendo === alvo.id)) return false;
   return fuAlvosPossiveis(equipa, at.mira).indexOf(alvo) !== -1;
 }
 
@@ -260,12 +278,17 @@ function _iaForca(estado, sob) {
 
 /* Uma cópia do alvo com a cena de pé. A escolha do atributo que o
    Despertar sobe é a mesma do fuPorDePe: o maior da ficha. */
-function _iaComCena(alvo, cena) {
+function _iaComCena(alvo, cena, estado) {
   const c = Object.assign({}, alvo, { efeitos: Object.assign({}, alvo.efeitos) });
   for (const k of Object.keys(cena)) {
     if (k === 'subirDado') {
       c.efeitos.subirDado = ['DES', 'PER', 'VIG', 'VON']
         .reduce((m, a) => (alvo.ficha[a] > alvo.ficha[m] ? a : m), 'DES');
+    } else if (k === 'resisteInimigos') {
+      // A Concha, como no fuPorDePe: os elementos dos inimigos de pé.
+      const tipos = {};
+      for (const x of (estado ? _iaOutroLado(estado, alvo) : [])) tipos[x.ficha.tipo] = true;
+      c.efeitos.resisteTipos = tipos;
     } else {
       c.efeitos[k] = cena[k];
     }
@@ -318,22 +341,37 @@ function _iaValorEstilo(estado, quem, at, alvosIds) {
     const cabe = es.curaDividida ? faltas.reduce((s, x) => s + x, 0) : Math.max(0, ...faltas);
     v += Math.min(dano * es.curaPorDano, cabe) * IA_CURA;
     if (es.limpaEstado && aliados.some(c => Object.keys(c.estados || {}).length)) v += IA_ESTADO;
+    // O PM roubado de cada alvo, como no fuEstiloDoForte.
+    if (es.roubaPM) {
+      for (const id of (alvosIds || [])) {
+        const t = fuPorId(estado, id);
+        if (t) v += Math.min(t.pm, es.roubaPM) * IA_PM;
+      }
+    }
   }
   return v;
 }
 
 // O que uma magia de apoio (cura, cena) rende num aliado.
-function _iaValorApoio(estado, m, alvo) {
+function _iaValorApoio(estado, m, alvo, quem) {
   let v = 0;
+  // O Proteger vale o perigo que sai do aliado, menos metade do que cai no Guarda.
+  if (m.proteger) {
+    if (!quem || alvo === quem) return 0;
+    return Math.max(0, _iaRisco(estado, alvo) - _iaRisco(estado, quem) * 0.5) * IA_GUARDA;
+  }
   if (m.cura) {
-    const volta = Math.min(m.cura | 0, alvo.ficha.pvMax - alvo.pv);
+    // Cuidar da frente, como no fuCurar.
+    const mult = (quem && quem.ficha.feitio === 'sustentacao'
+                  && fuFrente(estado[alvo.lado]) === alvo) ? FU_CUIDAR_FRENTE : 1;
+    const volta = Math.min(Math.floor((m.cura | 0) * mult), alvo.ficha.pvMax - alvo.pv);
     if (volta > 0) {
       const curado = Object.assign({}, alvo, { pv: alvo.pv + volta });
       v += volta * IA_CURA + (_iaRisco(estado, alvo) - _iaRisco(estado, alvo, curado));
     }
   }
   if (m.cena) {
-    const sob = _iaComCena(alvo, m.cena);
+    const sob = _iaComCena(alvo, m.cena, estado);
     // A mesma magia de novo no mesmo alvo não soma nada (manual, p. 115).
     if (JSON.stringify(sob.efeitos) !== JSON.stringify(alvo.efeitos)) {
       v += (_iaRisco(estado, alvo) - _iaRisco(estado, alvo, sob)) * IA_DURACAO;
@@ -391,10 +429,10 @@ function _iaOpcoes(estado, quem, p) {
   for (const l of Object.keys(mg)) {
     const m = mg[l];
     if (!(m.proprio || m.aliado || m.cura)) continue;
-    if (m.cena && !p.cena) continue;
+    if ((m.cena || m.proteger) && !p.cena) continue;
     if (fuCusto(m, 1) > quem.pm) continue;
     const quais = m.proprio ? [quem] : aliados;
-    const vals = quais.map(t => ({ t, v: _iaValorApoio(estado, m, t) }))
+    const vals = quais.map(t => ({ t, v: _iaValorApoio(estado, m, t, quem) }))
                       .filter(x => x.v > 0).sort((a, b) => b.v - a.v);
     if (!vals.length) continue;
     const op = m.proprio

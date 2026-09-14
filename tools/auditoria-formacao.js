@@ -317,7 +317,7 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
      existe para fazer. */
   function medir(politica) {
     const sofrido = [0, 0, 0];
-    let total = 0, unicos = 0, naFrente = 0, peloVoo = 0;
+    let total = 0, unicos = 0, naFrente = 0;
     for (let s = 1; s <= 60; s++) {
       const b = luta(20, s * 29);
       const postoDe = {}, pvAntes = {};
@@ -334,20 +334,12 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
         // quem estava à frente ANTES do golpe sair
         const frente = M.fuFrente(quem.lado === 'A' ? b.B : b.A);
         const umAlvoSo = !acao.magia || (acao.magia.alvos || 1) === 1;
-        const comAsMaos = !acao.magia;
-        /* O Voo Baixo desvia o MURRO de quem está à frente, e só o murro.
-           Contado à parte: é a única excepção à cobertura que existe no
-           motor, e misturá-la com o resto transformava um "cem por cento
-           menos uma vantagem" num "noventa por cento" que não explicava
-           nada. */
-        const voou = comAsMaos && frente && M.fuNoAr(frente);
 
         for (const ev of M.fuAgir(b, acao)) {
           if (ev.tipo !== 'ataque' && ev.tipo !== 'magia') continue;
           if (!umAlvoSo) continue;
           unicos++;
-          if (voou && frente && ev.alvo !== frente.id) peloVoo++;
-          else if (frente && ev.alvo === frente.id) naFrente++;
+          if (frente && ev.alvo === frente.id) naFrente++;
         }
       }
       for (const c of b.A.concat(b.B)) {
@@ -358,7 +350,7 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
     }
     return {
       pct: sofrido.map(x => x / Math.max(1, total) * 100),
-      unicos, naFrente, peloVoo,
+      unicos, naFrente,
       cobertura: unicos ? naFrente / unicos * 100 : 0,
     };
   }
@@ -392,7 +384,6 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
     console.log('   ' + (nome + '              ').slice(0, 15) +
       'na frente ' + r.cobertura.toFixed(0).padStart(3) + '% de ' +
       (r.unicos + '').padStart(4) + ' de alvo único' +
-      ' (+' + (r.peloVoo + '').padStart(3) + ' desviados pelo voo)' +
       '  ·  lugar inicial ' +
       r.pct.map(x => x.toFixed(0).padStart(2) + '%').join('/'));
 
@@ -400,10 +391,8 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
   for (const [nome, r] of tabela) {
     verificar('houve golpes de alvo único para medir (' + nome + ')', r.unicos > 100,
       r.unicos + '');
-    verificar('TODO o golpe de alvo único caiu na frente, tirando o que o voo desviou ('
-      + nome + ')',
-      r.naFrente + r.peloVoo === r.unicos,
-      r.naFrente + ' + ' + r.peloVoo + ' de ' + r.unicos);
+    verificar('TODO o golpe de alvo único caiu na frente (' + nome + ')',
+      r.naFrente === r.unicos, r.naFrente + ' de ' + r.unicos);
   }
 
   /* E o desnível do acumulado, só onde ele tem de existir: a murro, a

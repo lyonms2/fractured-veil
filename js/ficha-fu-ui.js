@@ -83,6 +83,8 @@ function fuVantagemDesc(v) {
   }
   if (v.id === 'mira_treinada')
     vars.lado = t(v.precisaoMais ? 'afv.mira.golpe' : 'afv.mira.magia');
+  if (v.id === 'golpe_pesado')
+    vars.lado = t(v.danoMaisMagia ? 'afv.dano.magia' : 'afv.dano.golpe');
   return t('afv.' + v.id + '.desc', vars);
 }
 
@@ -276,7 +278,8 @@ function _fbMod(f, m) {
    o Golpe Pesado — que engorda o murro e só o murro. */
 function _fbDanoFixo(f, m) {
   return (m.fixo | 0) + (f.danoExtra | 0)
-       + ((m.lugar === 'comum') ? ((f.dons && f.dons.danoMaisGolpe) | 0) : 0);
+       + ((m.lugar === 'comum') ? ((f.dons && f.dons.danoMaisGolpe) | 0)
+                                : ((f.dons && f.dons.danoMaisMagia) | 0));
 }
 
 function _fbAlvo(m) {
@@ -360,6 +363,10 @@ function _fbEfeito(f, m) {
   if (es.curaPorDano)
     fr.push(t(es.curaDividida ? 'af.b.ef.estilo_cura_div' : 'af.b.ef.estilo_cura'));
   if (es.limpaEstado)   fr.push(t('af.b.ef.estilo_limpa'));
+  if (es.roubaPM)       fr.push(t('af.b.ef.estilo_rouba', { n: es.roubaPM }));
+  if (m.proteger)       fr.push(t('af.b.ef.proteger'));
+  // Cuidar da frente: toda cura da Sustentação vale mais em quem está na frente.
+  if (f.feitio === 'sustentacao' && (m.cura || es.curaPorDano)) fr.push(t('af.b.ef.cuidar_frente'));
 
   if (m.ignoraResistencias) fr.push(t('af.b.ef.ignora'));
   if (m.corpoACorpo) fr.push(t('af.b.ef.corpo'));
@@ -381,7 +388,7 @@ function _fbAccao(f, m) {
 
   campos.push(`<span>${esc(_fbCusto(m))}</span>`);
   campos.push(`<span>${esc(_fbAlvo(m))}</span>`);
-  campos.push(`<span>${esc(t(m.cena ? 'af.b.cena' : 'af.b.instantaneo'))}</span>`);
+  campos.push(`<span>${esc(t(m.cena ? 'af.b.cena' : m.proteger ? 'af.b.ate_turno' : 'af.b.instantaneo'))}</span>`);
 
   return `<div class="fb-acao">
     <div class="fb-campos">${campos.join('')}</div>
@@ -479,10 +486,13 @@ function fuResumoAgora(c) {
   const ef = c.efeitos || {};
   if (c.guardando)
     simples('guarda', t('af.ag.guarda'), t('af.ag.guarda.ef'), 'bom', '▲', 'bem');
-  if (ef.resisteFisico)
-    simples('concha', t('af.m.concha'), t('af.ag.concha.ef'), 'bom', t('af.m.concha'), 'bem');
+  if (ef.resisteTipos && Object.keys(ef.resisteTipos).length) {
+    const tipos = Object.keys(ef.resisteTipos).map(k => t('af.tipo.' + k)).join(', ');
+    simples('concha', t('af.m.concha'), t('af.ag.concha.ef', { tipos }), 'bom', t('af.m.concha'), 'bem');
+  }
   if (ef.defesaMinima)
-    simples('barreira', t('af.m.barreira'), t('af.ag.barreira.ef', { n: ef.defesaMinima }),
+    simples('barreira', t('af.m.barreira'),
+            t(ef.defMagMinima ? 'af.ag.barreira2.ef' : 'af.ag.barreira.ef', { n: ef.defesaMinima }),
             'bom', t('af.m.barreira'), 'bem');
   if (ef.misericordia)
     simples('misericordia', t('af.m.misericordia'), t('af.ag.mercy.ef'),
@@ -492,22 +502,18 @@ function fuResumoAgora(c) {
     item({ id: 'despertar', nome: t('af.m.despertar'), texto: p.txt, html: p.html,
            tom: 'bom', fixo: false, marca: t('af.ab.' + ef.subirDado) + '▴', classe: 'bem' });
   }
-  if (typeof fuNoAr === 'function' && fuNoAr(c))
-    simples('voo', t('af.ag.voo'), t('af.ag.voo.ef'), 'bom', '✧', 'bem');
-  if (c.derrubado)
-    simples('chao', t('af.ag.chao'), t('af.ag.chao.ef'), 'mau', '▾', 'mal');
+  if (c.protegendo)
+    simples('protegendo', t('af.ag.protegendo'), t('af.ag.protegendo.ef'), 'bom', '⛨', 'bem');
 
   // ── a crise, dita para ESTE avatar ──
   const vs = f.vantagens || [];
   const tem = id => vs.some(v => v && v.id === id);
   if (typeof fuEmCrise === 'function' && fuEmCrise(c)) {
-    /* Só duas vantagens mudam em crise, e é o motor que diz quais
-       (js/combate-fu.js): a Fúria da Crise liga a quebra de resistências
-       e o Voo Baixo desliga o voo. A frase diz quais delas este avatar
-       tem — ou que nenhuma, que também é uma resposta. */
+    /* Nenhuma vantagem muda em crise desde que a Fúria da Crise e o Voo
+       Baixo saíram (14/09/2026). O que muda é contra ele: a Execução do
+       Lâmina inimigo bate mais em quem está em crise, e a frase diz isso. */
     const efeitos = [];
-    if (tem('furia_da_crise')) efeitos.push(t('af.ag.crise.furia'));
-    if (tem('voo_baixo'))      efeitos.push(t('af.ag.crise.voo'));
+    void tem;
     const texto = t('af.ag.crise.ef', { pv: c.pv, max: f.pvMax })
       + ' — ' + (efeitos.length ? efeitos.join(' · ') : t('af.ag.crise.nada'));
     simples('crise', t('af.ag.crise'), texto, 'mau', '!', 'crise');
@@ -526,17 +532,16 @@ function fuResumoAgora(c) {
     if (v.id === 'carne_teimosa')  vars.n = num(v, 'pvMais');
     if (v.id === 'fonte_funda')    vars.n = num(v, 'pmMais');
     if (v.id === 'veia_avida')     vars.n = num(v, 'pmAoSofrer');
-    if (v.id === 'golpe_pesado')   vars.n = num(v, 'danoMaisGolpe');
+    if (v.id === 'golpe_pesado') {
+      vars.n = v.danoMaisGolpe || v.danoMaisMagia || 0;
+      vars.lado = t(v.danoMaisMagia ? 'afv.dano.magia' : 'afv.dano.golpe');
+    }
     if (v.id === 'ultimo_suspiro') { vars.n = num(v, 'actoFinal'); vars.tipo = t('af.tipo.' + f.tipo); }
     if (v.id === 'mira_treinada') {
       vars.n = v.precisaoMais || v.magiaMais;
       vars.lado = t(v.precisaoMais ? 'afv.mira.golpe' : 'afv.mira.magia');
     }
-    let chave = 'afv.' + v.id + '.curto';
-    if (v.id === 'voo_baixo') {
-      if (f.costura) vars.tipo = t('af.tipo.' + f.costura);
-      else chave = 'afv.voo_baixo.curto_sem';
-    }
+    const chave = 'afv.' + v.id + '.curto';
     const texto = t(chave, vars);
     item({ id: 'vant:' + v.id, nome: fuVantagemNome(v), texto, html: esc(texto),
            tom: 'fixo', fixo: true });
@@ -571,7 +576,18 @@ function _fbEspeciais(f) {
     <div class="fb-ef">${esc(desc)}</div>
   </div>`;
 
-  let h = (f.vantagens || []).map(v =>
+  /* A regra do feitio vem primeiro: é de todo avatar do feitio, e não do
+     sorteio — Represália, Execução ou Resiliência, com o número do degrau
+     (FU_REPRESALIA e as outras, em js/combate-fu.js). */
+  const grau = f.raridade === 'Lendário' ? 3 : f.raridade === 'Raro' ? 2 : 1;
+  const REGRA = {
+    guarda:      ['af.regra.guarda',      typeof FU_REPRESALIA  !== 'undefined' ? FU_REPRESALIA[grau] : ''],
+    lamina:      ['af.regra.lamina',      typeof FU_EXECUCAO    !== 'undefined' ? FU_EXECUCAO[grau] : ''],
+    sustentacao: ['af.regra.sustentacao', typeof FU_RESILIENCIA !== 'undefined' ? Math.round(FU_RESILIENCIA[grau] * 100) : ''],
+  }[f.feitio];
+  let h = REGRA ? carta('boa', t(REGRA[0] + '.nome'), t('af.indole.' + f.feitio),
+                        t(REGRA[0] + '.desc', { n: REGRA[1] })) : '';
+  h += (f.vantagens || []).map(v =>
     carta('boa', fuVantagemNome(v), '', fuVantagemDesc(v))).join('');
 
   /* A costura é a desvantagem, e diz-se assim. Não é uma carta: é o tipo

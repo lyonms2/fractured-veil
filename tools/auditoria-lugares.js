@@ -78,7 +78,8 @@ titulo('As dezoito casas');
       verificar(lugar + ' nv' + grau + ' tem id', typeof casa.id === 'string' && !!casa.id);
       verificar(lugar + ' nv' + grau + ' diz de onde vem', typeof casa.manual === 'string');
       verificar(lugar + ' nv' + grau + ' faz alguma coisa',
-        casa.fixo != null || casa.cura != null || casa.cena != null || casa.danoFixo != null,
+        casa.fixo != null || casa.cura != null || casa.cena != null || casa.danoFixo != null
+          || casa.proteger === true,
         'não tem dano, nem cura, nem efeito de cena');
     }
   }
@@ -171,7 +172,8 @@ titulo('Os números, casa a casa');
     ['muito_forte', 3, { pm: 30, danoFixo: 30, todos: true }],
     ['defesa', 1, { pm: 10, proprio: true }],
     ['defesa', 2, { pm: 5,  alvos: 3, porAlvo: true, aliado: true }],
-    ['defesa', 3, { pm: 20, alvos: 1, aliado: true }],
+    // O Proteger, no lugar da Misericórdia (14/09/2026).
+    ['defesa', 3, { pm: 10, alvos: 1, aliado: true, proteger: true }],
     /* O Lamber Feridas é o desvio de regra do catálogo: o manual escreve-o
        em si próprio e aqui escolhe um companheiro — a escolha inclui-o a
        ele, portanto não perde o que o manual dava. A razão está escrita
@@ -205,12 +207,19 @@ titulo('Cada forma faz o que diz');
     const m = G.fuMagiaDe(Object.assign({}, q.ficha, { feitio: 'guarda' }), 'defesa');
     const antesPM = q.pm;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m });
-    verificar('a Concha põe-se em si mesmo', q.efeitos.resisteFisico === true);
+    // A Concha resiste aos elementos dos inimigos de pé, e não ao físico.
+    const deles = [...new Set(e.B.filter(c => c.vivo).map(c => c.ficha.tipo))];
+    verificar('a Concha põe-se em si mesmo, com os elementos dos inimigos',
+      !!q.efeitos.resisteTipos && deles.every(t => q.efeitos.resisteTipos[t] === true),
+      JSON.stringify(q.efeitos.resisteTipos));
     verificar('e cobra os PM', q.pm === antesPM - m.pm);
     verificar('e gasta o turno', e.jaAgiu.indexOf(q.id) !== -1);
-    q.pv = 100; q.ficha.pvMax = 100;
-    verificar('com Concha, o físico dói metade',
-      M.fuAplicarDano(q, 40, 'fisico').perda === 20);
+    q.ficha.pvMax = 100; q.ficha.afinidades = {};
+    q.pv = 100;
+    verificar('com Concha, o elemento do inimigo dói metade',
+      M.fuAplicarDano(q, 40, deles[0]).perda === 20);
+    q.pv = 100;
+    verificar('e o físico entra inteiro', M.fuAplicarDano(q, 40, 'fisico').perda === 40);
   }
 
   // ── a aliada: Curar ──
@@ -230,10 +239,13 @@ titulo('Cada forma faz o que diz');
   // ── a Barreira: piso e não bónus ──
   {
     const e = luta(10, 5), q = e.A[0], amigo = e.A[1];
-    amigo.ficha.DES = 6;
+    amigo.ficha.DES = 6; amigo.ficha.PER = 6;
     const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro', feitio: 'guarda' }), 'defesa');
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('a Barreira põe a Defesa em 12', M.fuDefesa(amigo) === 12);
+    // e a Defesa Mágica também: é ela que as magias miram
+    verificar('e a Defesa Mágica também',
+      M.fuDefesaMag(amigo) === 12 + (amigo.ficha.dons.defMagMais | 0), M.fuDefesaMag(amigo) + '');
     const forte = e.A[2];
     forte.ficha.DES = 12; forte.efeitos.defesaMinima = 12;
     /* O piso não lhe tira nada — mas a Guarda Cerrada soma-se por cima,
@@ -291,7 +303,11 @@ titulo('Cada forma faz o que diz');
 
     const e2 = luta(30, 9), q2 = e2.A[0];
     const m2 = G.fuMagiaDe(Object.assign({}, q2.ficha, { raridade: 'Lendário' }), 'muito_forte');
-    e2.B.forEach(c => { c.pv = 50; c.ficha.pvMax = 200;
+    /* A crise abaixo da vida que eles têm: senão, um Lâmina lançando a
+       Devastação somava a Execução (quem está em crise leva mais), e a
+       absorção devolvia mais do que os 30 da magia. Aqui mede-se só a
+       absorção. */
+    e2.B.forEach(c => { c.pv = 50; c.ficha.pvMax = 200; c.ficha.crise = 40;
                         c.ficha.afinidades = { [m2.tipo]: 'AB' }; });
     M.fuAgir(e2, { quem: q2.id, tipo: 'magia', magia: m2 });
     verificar('quem ABSORVE o tipo dela cura-se com ela',
@@ -644,6 +660,183 @@ titulo('O ataque forte muda com o feitio');
     });
     verificar('a Sustentação Lendária tira um estado do mais ferido',
       !!r && !r.ctx.o.estados.lento && r.evs.some(x => x.tipo === 'estiloLimpa'));
+  }
+}
+
+/* ═══ 8 · OS PACOTES DOS FEITIOS ═════════════════════════════════
+   Aprovados pelo dono do jogo em 14/09/2026: as regras de cada feitio
+   (Represália, Execução, Resiliência), o cuidar da frente, o Proteger, o
+   alcance do muito forte e o que a guarda NÃO soma. */
+titulo('Os pacotes dos feitios');
+{
+  // Um lutador da luta, com a ficha trocada pelo que o teste pede.
+  const com = (c, extra) => {
+    c.ficha = Object.assign({}, c.ficha, extra);
+    if (extra.pvMax) c.pv = extra.pvMax;
+    return c;
+  };
+
+  // ── a guarda não se soma à resistência ──
+  {
+    const e = luta(15, 900);
+    const c = com(e.A[0], { feitio: 'guarda', afinidades: { fogo: 'RS' }, pvMax: 500, crise: 250 });
+    c.guardando = true;
+    verificar('guarda e resistência não se somam: metade, e não um quarto',
+      M.fuDanoComGuarda(c, 40, 'fogo').perda === 20);
+    c.pv = 500;
+    verificar('se o golpe ignora a resistência, a guarda volta a cortar',
+      M.fuDanoComGuarda(c, 40, 'fogo', { ignoraResistencias: true }).perda === 20);
+    c.pv = 500;
+    verificar('e sem resistência, a guarda corta sozinha',
+      M.fuDanoComGuarda(c, 40, 'gelo').perda === 20);
+  }
+
+  // ── Represália ──
+  {
+    const e = luta(15, 901);
+    const quem = com(e.A[0], { pvMax: 500, crise: 250, afinidades: {} });
+    const alvo = com(e.B[0], { feitio: 'guarda', raridade: 'Raro', pvMax: 900, crise: 450, afinidades: {} });
+    let rp = null;
+    for (let i = 0; i < 60 && !rp; i++) {
+      alvo.pv = 900; alvo.guardando = true; quem.pv = 500;
+      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (ev.acertou) rp = ev.represalia || 'nada';
+    }
+    verificar('a Represália do Guarda Raro devolve 8 de dano físico',
+      rp && rp !== 'nada' && rp.bruto === 8 && rp.tipo_dano === 'fisico' && quem.pv === 500 - rp.perda,
+      JSON.stringify(rp));
+    let semGuarda = null;
+    for (let i = 0; i < 60 && !semGuarda; i++) {
+      alvo.pv = 900; alvo.guardando = false;
+      const ev = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (ev.acertou) semGuarda = ev;
+    }
+    verificar('e sem guardar não devolve nada', !!semGuarda && !semGuarda.represalia);
+  }
+
+  // ── Execução ──
+  {
+    const e = luta(15, 902);
+    const quem = com(e.A[0], { feitio: 'lamina', raridade: 'Lendário' });
+    const alvo = com(e.B[0], { feitio: 'guarda', pvMax: 900, crise: 450, afinidades: {} });
+    let emCrise = null, fora = null;
+    for (let i = 0; i < 60 && !(emCrise && fora); i++) {
+      alvo.pv = 400;
+      const a = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (a.acertou && !emCrise) emCrise = a;
+      alvo.pv = 900;
+      const b = M.fuAtacar(e, quem, alvo, { fixo: 5 });
+      if (b.acertou && !fora) fora = b;
+    }
+    verificar('a Execução do Lâmina Lendário soma 8 contra quem está em crise',
+      !!emCrise && emCrise.execucao === 8);
+    verificar('e nada contra quem não está', !!fora && fora.execucao === 0);
+  }
+
+  // ── Resiliência ──
+  {
+    const e = luta(15, 903);
+    const c = com(e.A[0], { feitio: 'sustentacao', raridade: 'Comum', pvMax: 100, crise: 50, afinidades: {} });
+    const d = M.fuAplicarDano(c, 80, 'fisico');
+    verificar('a Resiliência da Sustentação Comum segura em metade da vida',
+      d.perda === 50 && d.resiliu === true, d.perda + '');
+    com(c, { raridade: 'Lendário', pvMax: 100 });
+    verificar('e em 40% no Lendário', M.fuAplicarDano(c, 80, 'fisico').perda === 40);
+    c.pv = 100;
+    verificar('e um golpe pequeno entra inteiro', M.fuAplicarDano(c, 30, 'fisico').perda === 30);
+  }
+
+  // ── cuidar da frente ──
+  {
+    const e = luta(15, 904);
+    const frente = M.fuFrente(e.A);
+    const quem = com(e.A.find(c => c !== frente), { feitio: 'sustentacao', raridade: 'Raro' });
+    const outro = e.A.find(c => c !== frente && c !== quem);
+    quem.pm = 99;
+    const curar = G.fuMagiaDe(quem.ficha, 'suporte');
+    frente.pv = 1;
+    M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [frente.id] });
+    verificar('a cura da Sustentação vale 50% a mais em quem está na frente',
+      frente.pv === Math.min(frente.ficha.pvMax, 1 + 60), frente.pv + '');
+    M.fuNovaRonda(e);
+    outro.pv = 1; quem.pm = 99;
+    M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [outro.id] });
+    verificar('e o normal em quem está atrás',
+      outro.pv === Math.min(outro.ficha.pvMax, 1 + 40), outro.pv + '');
+  }
+
+  // ── Proteger ──
+  {
+    const e = luta(15, 905);
+    const g = com(e.A[0], { feitio: 'guarda', raridade: 'Lendário' });
+    const aliado = e.A[1];
+    const proteger = G.fuMagiaDe(g.ficha, 'defesa');
+    verificar('a defesa do Guarda Lendário é o Proteger', proteger && proteger.proteger === true);
+    g.pm = 99;
+    M.fuAgir(e, { quem: g.id, tipo: 'magia', magia: proteger, alvos: [aliado.id] });
+    verificar('o Proteger marca o aliado', g.protegendo === aliado.id);
+
+    const atq = com(e.B[0], { feitio: 'lamina', raridade: 'Raro' });
+    atq.pm = 99;
+    const mf = G.fuMagiaDe(atq.ficha, 'muito_forte');
+    const evs = M.fuAgir(e, { quem: atq.id, tipo: 'magia', magia: mf, alvos: [aliado.id] });
+    const golpe = evs.find(x => x.tipo === 'magia');
+    verificar('o golpe contra o protegido cai no Guarda',
+      !!golpe && golpe.alvo === g.id && evs.some(x => x.tipo === 'protegeu'),
+      golpe && golpe.alvo);
+
+    M.fuNovaRonda(e);
+    M.fuAgir(e, { quem: g.id, tipo: 'guardar' });
+    verificar('e o Proteger acaba quando o Guarda age de novo', g.protegendo === null);
+    M.fuNovaRonda(e);
+    g.pm = 99;
+    verificar('o Guarda não se protege a si mesmo',
+      M.fuAgir(e, { quem: g.id, tipo: 'magia', magia: proteger, alvos: [g.id] }).length === 0);
+  }
+
+  // ── o muito forte do Lâmina alcança o de trás ──
+  {
+    const e = luta(15, 906);
+    const atq = com(e.A[0], { feitio: 'lamina', raridade: 'Raro' });
+    const tras = M.fuFormacao(e, 'B')[2];
+    atq.pm = 99;
+    const mf = G.fuMagiaDe(atq.ficha, 'muito_forte');
+    const evs = M.fuAgir(e, { quem: atq.id, tipo: 'magia', magia: mf, alvos: [tras.id] });
+    const golpe = evs.find(x => x.tipo === 'magia');
+    verificar('o golpe concentrado alcança o inimigo da posição 3', !!golpe && golpe.alvo === tras.id,
+      golpe && golpe.alvo);
+
+    const e2 = luta(15, 906);
+    const a2 = com(e2.A[0], { feitio: 'lamina', raridade: 'Comum' });
+    const t2 = M.fuFormacao(e2, 'B')[2];
+    a2.pm = 99;
+    const sopro = G.fuMagiaDe(a2.ficha, 'forte');
+    const evs2 = M.fuAgir(e2, { quem: a2.id, tipo: 'magia', magia: sopro, alvos: [t2.id] });
+    const g2 = evs2.find(x => x.tipo === 'magia');
+    verificar('mas o Sopro do ataque forte continua indo na frente',
+      !!g2 && g2.alvo === M.fuFrente(e2.B).id);
+    verificar('o golpe concentrado aplica o estado do elemento no crítico',
+      mf.estado === (G.FU_ELEMENTAL[atq.ficha.tipo] || G.FU_ELEMENTAL.fogo).estado && !mf.estadoSempre);
+  }
+
+  // ── o Salus rouba PM ──
+  {
+    let achou = null;
+    for (let s = 1; s <= 80 && !achou; s++) {
+      const e = luta(15, 950 + s);
+      const quem = com(e.A[0], { feitio: 'sustentacao', raridade: 'Raro' });
+      quem.pm = 99;
+      for (const c of e.B) { com(c, { afinidades: {}, pvMax: 900, crise: 450 }); c.pm = 20; }
+      const m = G.fuMagiaDe(quem.ficha, 'forte');
+      const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: m, alvos: e.B.map(c => c.id) });
+      const feridos = evs.filter(x => x.tipo === 'magia' && x.perda > 0).map(x => x.alvo);
+      if (feridos.length) achou = { e, evs, feridos };
+    }
+    const roubos = achou ? achou.evs.filter(x => x.tipo === 'roubouPM') : [];
+    verificar('o Salus Raro rouba 3 PM de cada alvo ferido',
+      !!achou && roubos.length === achou.feridos.length && roubos.every(r => r.n === 3)
+        && achou.feridos.every(id => M.fuPorId(achou.e, id).pm === 17),
+      achou && (roubos.length + ' roubos, ' + achou.feridos.length + ' feridos'));
   }
 }
 

@@ -124,10 +124,10 @@ function fuLutador(slot, lado, posto) {
        para o estado continuar a caber num JSON. */
     efeitos: {},
     guardando: false,
-    /* No chão só enquanto durar a ronda; o suspiro dá-se uma vez só. Os
-       dois vivem aqui e não num saco à parte porque são estado de
-       batalha e não ficha — quem os lê é o motor e mais ninguém. */
-    derrubado: false,
+    /* Quem o Guarda protege até o próximo turno dele (a magia Proteger), e
+       o suspiro, que se dá uma vez só. Os dois vivem aqui e não num saco à
+       parte porque são estado de batalha e não ficha. */
+    protegendo: null,
     suspirou: false,
     vivo: true,
   };
@@ -173,13 +173,39 @@ function fuDefesaMag(c) {
 
    Uma porta só, e nunca `c.ficha.dons` escrito à mão pelo caminho. A
    ficha de um lutador feito à mão numa auditoria pode não os ter, e um
-   `undefined.voo` rebenta a meio de uma batalha — que é o pior sítio
+   `undefined.muralha` rebenta a meio de uma batalha — que é o pior sítio
    para descobrir uma coisa destas. */
 const FU_SEM_DONS = { defesaMais: 0, defMagMais: 0, pvMais: 0, pmMais: 0,
                       precisaoMais: 0, magiaMais: 0, danoMaisGolpe: 0,
-                      pmAoSofrer: 0, actoFinal: 0,
-                      voo: false, criseIgnoraRS: false, dreno: false,
+                      danoMaisMagia: 0, pmAoSofrer: 0, actoFinal: 0,
+                      muralha: false, putrido: false, dreno: false,
                       golpeNaDefMag: false, imunes: [] };
+
+/* ══════════════════════════════════════════════════════════════════
+   AS REGRAS DE CADA FEITIO
+
+   Uma por feitio, de todo avatar do feitio (não sai do sorteio), e com o
+   número do degrau. Aprovadas pelo dono do jogo em 14/09/2026:
+
+     Guarda        REPRESÁLIA   guardando, quem o acerta leva dano
+                                físico de volta
+     Lâmina        EXECUÇÃO     mais dano contra quem está em crise
+     Sustentação   RESILIÊNCIA  nenhum golpe tira dela mais que uma parte
+                                da vida máxima de uma vez
+
+   E o CUIDAR DA FRENTE: toda cura da Sustentação vale 50% a mais em quem
+   está na frente — é assim que ela mantém o Guarda de pé.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_REPRESALIA   = { 1: 5,   2: 8,    3: 10  };
+const FU_EXECUCAO     = { 1: 3,   2: 5,    3: 8   };
+const FU_RESILIENCIA  = { 1: 0.5, 2: 0.45, 3: 0.4 };
+const FU_CUIDAR_FRENTE = 1.5;
+
+// O degrau de um lutador, pela raridade da ficha: Comum 1, Raro 2, Lendário 3.
+function fuGrauDe(c) {
+  const r = c && c.ficha && c.ficha.raridade;
+  return r === 'Lendário' ? 3 : r === 'Raro' ? 2 : 1;
+}
 function fuDonsDe(c) {
   return (c && c.ficha && c.ficha.dons) || FU_SEM_DONS;
 }
@@ -217,7 +243,9 @@ function fuEmCrise(c) { return c.vivo && c.pv <= c.ficha.crise; }
 function fuAfinidadeDe(c, tipo) {
   const daFicha = (c.ficha.afinidades && c.ficha.afinidades[tipo]) || null;
   const ef = c.efeitos || {};
-  const extraRS = (tipo === 'fisico' && ef.resisteFisico) || (ef.resiste === tipo);
+  const extraRS = (tipo === 'fisico' && ef.resisteFisico) || (ef.resiste === tipo)
+               // A Concha: os elementos dos inimigos de pé quando foi lançada.
+               || !!(ef.resisteTipos && ef.resisteTipos[tipo]);
 
   if (daFicha === 'AB') return 'AB';
   if (daFicha === 'IM') return 'IM';
@@ -243,6 +271,17 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
     const antes = c.pv;
     c.pv = Math.min(c.ficha.pvMax, c.pv + perda);
     return { afinidade: af, perda: 0, curou: c.pv - antes, pv: c.pv, caiu: false };
+  }
+
+  /* ── A RESILIÊNCIA DA SUSTENTAÇÃO ──
+     Nenhum golpe tira mais que uma parte da vida máxima de uma vez: metade
+     no Comum, 45% no Raro, 40% no Lendário. É o que impede a Sustentação
+     de cair num golpe só no começo da luta; vários golpes ainda a
+     derrubam. Vale contra qualquer dano. */
+  let resiliu = false;
+  if (c.ficha.feitio === 'sustentacao') {
+    const teto = Math.floor(c.ficha.pvMax * FU_RESILIENCIA[fuGrauDe(c)]);
+    if (perda > teto) { perda = teto; resiliu = true; }
   }
 
   const antes = c.pv;
@@ -271,8 +310,8 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
   }
 
   const caiu = antes > 0 && c.pv === 0;
-  if (caiu) { c.vivo = false; c.guardando = false; }
-  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu, salvou, pmGanho };
+  if (caiu) { c.vivo = false; c.guardando = false; c.protegendo = null; }
+  return { afinidade: af, perda: antes - c.pv, curou: 0, pv: c.pv, caiu, salvou, pmGanho, resiliu };
 }
 
 /* ── GUARDAR ──
@@ -281,8 +320,14 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
    A absorção continua a ganhar, porque o manual diz que ela ganha a
    tudo — guardar não impede um bicho de fogo de se alimentar de fogo. */
 function fuDanoComGuarda(c, bruto, tipo, opcoes) {
-  const b = c.guardando && (fuAfinidadeDe(c, tipo) !== 'AB')
-    ? Math.floor(bruto / 2) : bruto;
+  /* A guarda NÃO se soma à resistência. No manual, guardar dá resistência
+     a todos os tipos, e resistente duas vezes continua sendo só resistente:
+     metade do dano, e não um quarto. Então a guarda só corta quando a
+     resistência não cortou — e se o golpe ignora a resistência, a guarda
+     volta a valer. */
+  const af = fuAfinidadeDe(c, tipo);
+  const rsCorta = af === 'RS' && !(opcoes && opcoes.ignoraResistencias);
+  const b = c.guardando && af !== 'AB' && !rsCorta ? Math.floor(bruto / 2) : bruto;
   return fuAplicarDano(c, b, tipo, opcoes);
 }
 
@@ -337,37 +382,13 @@ function fuTirarEstado(c, estado) {
    trinta PM pela Devastação. A formação deixa de ser um escudo e passa a
    ser uma pergunta com resposta.
    ═══════════════════════════════════════════════════════════════════ */
-/* No ar enquanto tiver o Voo Baixo, não estiver em crise e não tiver
-   sido derrubado nesta ronda. São as três condições do manual, por esta
-   ordem. */
-function fuNoAr(c) {
-  return !!fuDonsDe(c).voo && c.vivo && !c.derrubado && !fuEmCrise(c);
-}
-
+/* O Voo Baixo saiu do jogo (14/09/2026): quase todos atacam com magia, e
+   a exceção que ele abria no alcance do golpe comum quase nunca valia. */
 function fuAlvosPossiveis(equipa, mira) {
   const vivos = equipa.filter(c => c.vivo);
   if (!vivos.length) return [];
   if (!mira) return vivos;
-
-  /* Quem voa não se alcança com a mão — mas se for o ÚNICO que resta no
-     ar e não houver mais ninguém no chão, alcança-se na mesma.
-
-     Não é uma excepção de conveniência, é a regra a fechar-se: para
-     atacar, ele tem de descer. Enquanto houver companheiros no chão
-     ninguém o vê descer, porque são eles que estão à frente; quando não
-     houver, a única forma de a luta continuar é ele próprio vir ao
-     alcance — e aí apanha.
-
-     Sem esta metade, três inimigos a voar e um atacante sem PM davam
-     uma batalha que não acabava nunca.
-
-     E vale só para quem ataca com as MÃOS — `mira` vem a 'mao'. Uma magia
-     de alvo único alcança quem voa como alcança os outros: a cobertura da
-     frente e o voo são duas coisas diferentes, e só a primeira olha ao
-     número de alvos. */
-  const noChao = (mira === 'mao') ? vivos.filter(c => !fuNoAr(c)) : vivos;
-  const podem = noChao.length ? noChao : vivos;
-  const frente = podem.reduce((m, c) => (c.posto < m.posto ? c : m), podem[0]);
+  const frente = vivos.reduce((m, c) => (c.posto < m.posto ? c : m), vivos[0]);
   return [frente];
 }
 
@@ -452,14 +473,14 @@ function fuAtacar(estado, quem, alvo, opcoes) {
 
   /* O Golpe Pesado engorda o MURRO e não as magias: o manual manda
      escolher uma fonte de dano, e a escolhida é a que não custa PM. */
+  /* A Execução do Lâmina: mais dano contra quem está em crise. E o Golpe
+     Pesado vale no golpe comum OU nas magias, conforme o DNA escolheu. */
+  const execucao = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo))
+    ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
   const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0)
-              + (mag ? 0 : (dq.danoMaisGolpe | 0));
-  /* A Fúria da Crise: com a vida em metade ou menos, o dano dele passa a
-     ignorar resistências — as dele, não as do alvo, e é do ATACANTE que
-     a crise se lê. */
-  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem))
-             // A Lâmina Rara: em quem está guardando, a resistência também cai.
-             || (!!o.semRSnaGuarda && alvo.guardando);
+              + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0)) + execucao;
+  // A Lâmina Rara: em quem está guardando, a resistência também cai.
+  const semRS = !!o.ignoraResistencias || (!!o.semRSnaGuarda && alvo.guardando);
   /* ── O GOLPE COMUM É FÍSICO ──
      A magia sai no elemento do avatar; o golpe comum, não. Era do elemento
      também, e isso deixava duas coisas quebradas: a Concha resistia a um
@@ -468,6 +489,7 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      Físico é neutro: ninguém nasce resistente, fraco ou absorvendo ele
      (ver FU_TIPOS, em js/ficha-fu.js). */
   const tipoDano = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
+  const guardava = alvo.guardando;   // para a Represália, antes de o golpe cair
   // A Lâmina fura a guarda: o dano não é cortado pela metade.
   const furou = !!o.furaGuarda && alvo.guardando;
   const dano = (furou ? fuAplicarDano : fuDanoComGuarda)(alvo, bruto, tipoDano,
@@ -478,6 +500,7 @@ function fuAtacar(estado, quem, alvo, opcoes) {
     pvAlvo: dano.pv, caiu: dano.caiu, salvou: dano.salvou,
     pmAlvo: dano.pmGanho || 0,
     ignorouResistencias: semRS,
+    resiliu: !!dano.resiliu, execucao,
   });
 
   /* ── O QUE O GOLPE DEIXA ATRÁS ──
@@ -494,20 +517,31 @@ function fuAtacar(estado, quem, alvo, opcoes) {
     ev.pvQuem = quem.pv;
   }
 
-  /* O Voo Baixo cai quando apanha do tipo a que é vulnerável — que neste
-     jogo é a costura dele, e mais nada. Fica no chão até ao fim da
-     ronda, que é quando o fuNovaRonda o levanta. */
-  if (fuDonsDe(alvo).voo && dano.perda > 0 && tipoDano === alvo.ficha.costura) {
-    alvo.derrubado = true;
-    ev.derrubou = true;
-  }
-
   /* O estado que a magia impõe. No crítico o manual deixa gastar uma
      OPORTUNIDADE, e a oportunidade destas magias é sempre a mesma: o
      estado acontece. Fora do crítico só acontece se a magia o der de
      origem — é a diferença entre o nível 2 e o nível 3 de um lugar. */
   const est = o.estado && (o.estadoSempre || r.critico) ? o.estado : null;
   if (est && fuDarEstado(alvo, est)) ev.estadoDado = est;
+
+  // O Toque Pútrido: no crítico, o golpe que fere envenena.
+  if (dq.putrido && r.critico && dano.perda > 0 && fuDarEstado(alvo, 'envenenado'))
+    ev.envenenou = true;
+
+  /* ── A REPRESÁLIA DO GUARDA ──
+     Quem acerta um Guarda que está guardando leva dano físico de volta: 5
+     no Comum, 8 no Raro, 10 no Lendário. Furar a guarda não evita — o
+     furar tira o corte do dano, não os espinhos. A Devastação não passa
+     por aqui (não rola nem acerta ninguém), e por isso não a dispara. O
+     fuAgir põe o evento logo depois do golpe. */
+  if (guardava && alvo.ficha.feitio === 'guarda' && quem.vivo) {
+    const n = FU_REPRESALIA[fuGrauDe(alvo)];
+    const d = fuDanoComGuarda(quem, n, 'fisico');
+    ev.represalia = { tipo: 'represalia', quem: alvo.id, alvo: quem.id, bruto: n,
+                      tipo_dano: 'fisico', afinidade: d.afinidade, perda: d.perda,
+                      curou: d.curou, pvAlvo: d.pv, caiu: d.caiu, salvou: d.salvou,
+                      resiliu: !!d.resiliu };
+  }
 
   return ev;
 }
@@ -562,6 +596,7 @@ function fuAgir(estado, acao) {
 
   const eventos = [];
   quem.guardando = false;
+  quem.protegendo = null;   // o Proteger também dura só até ele agir de novo
 
   if (acao.tipo === 'guardar') {
     quem.guardando = true;
@@ -636,10 +671,21 @@ function fuAgir(estado, acao) {
     if (magia && magia.proprio) {
       quem.pm -= custo;
       if (custo) eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
-      if (magia.cena) fuPorDePe(quem, magia, eventos);
-      if (magia.cura) fuCurar(quem, quem, magia, eventos);
+      if (magia.cena) fuPorDePe(quem, magia, eventos, null, estado);
+      if (magia.cura) fuCurar(quem, quem, magia, eventos, estado);
 
-    // ── aliada: Barreira, Misericórdia, Curar, Despertar ──
+    /* ── Proteger: o Guarda puxa os ataques contra um aliado ──
+       Até o próximo turno dele, todo ataque contra o aliado escolhido cai
+       nele (ver o redirecionamento, mais abaixo). Não se protege a si. */
+    } else if (magia && magia.proteger) {
+      const alvo = escolhidos.find(c => c.vivo && c !== quem && aliada.indexOf(c) !== -1);
+      if (!alvo) return [];
+      quem.pm -= custo;
+      eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
+      quem.protegendo = alvo.id;
+      eventos.push({ tipo: 'proteger', quem: quem.id, alvo: alvo.id });
+
+    // ── aliada: Barreira, Curar, Despertar ──
     } else if (magia && (magia.aliado || magia.cura)) {
       let alvos = escolhidos.filter(c => c.vivo && aliada.indexOf(c) !== -1);
       if (!alvos.length) alvos = [quem];              // sem escolha, é em si
@@ -647,8 +693,8 @@ function fuAgir(estado, acao) {
       quem.pm -= (magia.pm | 0) * (magia.porAlvo ? alvos.length : 1);
       eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
       for (const alvo of alvos) {
-        if (magia.cena) fuPorDePe(alvo, magia, eventos, quem);
-        if (magia.cura) fuCurar(quem, alvo, magia, eventos);
+        if (magia.cena) fuPorDePe(alvo, magia, eventos, quem, estado);
+        if (magia.cura) fuCurar(quem, alvo, magia, eventos, estado);
       }
 
     // ── todos: a Devastação ──
@@ -664,9 +710,13 @@ function fuAgir(estado, acao) {
       quem.pm -= custo;
       eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
       for (const alvo of alvos) {
-        const d = fuDanoComGuarda(alvo, magia.danoFixo | 0, magia.tipo || quem.ficha.tipo);
+        // A Execução vale aqui também: é o Lâmina, e o alvo está em crise.
+        const exec = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo))
+          ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
+        const bruto = (magia.danoFixo | 0) + exec;
+        const d = fuDanoComGuarda(alvo, bruto, magia.tipo || quem.ficha.tipo);
         eventos.push({ tipo: 'devastacao', quem: quem.id, alvo: alvo.id,
-                       nome: magia.id, bruto: magia.danoFixo | 0,
+                       nome: magia.id, bruto, execucao: exec, resiliu: !!d.resiliu,
                        tipo_dano: magia.tipo || quem.ficha.tipo,
                        afinidade: d.afinidade, perda: d.perda, curou: d.curou,
                        pvAlvo: d.pv, caiu: d.caiu, salvou: d.salvou });
@@ -677,7 +727,11 @@ function fuAgir(estado, acao) {
       /* Três casos e não dois: 'mao' para o golpe comum, verdadeiro para
          uma magia de alvo único, falso para a que varre a linha. A frente
          cobre nos dois primeiros; o Voo Baixo só vale contra o primeiro. */
+      /* O muito forte do Lâmina (Sopro Maldito, golpe concentrado) alcança
+         qualquer inimigo, inclusive o de trás: é o caçador. O golpe comum
+         continua só na frente, e o Sopro do ataque forte também. */
       const mira = (!magia || magia.corpoACorpo) ? 'mao'
+                 : (magia.lugar === 'muito_forte') ? false
                  : ((magia.alvos || 1) === 1);
       const possiveis = fuAlvosPossiveis(inimiga, mira);
       if (!possiveis.length) return [];
@@ -689,6 +743,26 @@ function fuAgir(estado, acao) {
       let alvos = escolhidos.filter(c => possiveis.indexOf(c) !== -1);
       if (!alvos.length) alvos = [possiveis[0]];
       alvos = alvos.slice(0, magia ? (magia.alvos || 1) : 1);
+
+      /* A Muralha: com o Guarda guardando na frente, a Barragem que varre a
+         linha acerta só ele. */
+      if (magia && (magia.alvos || 1) > 1) {
+        const frente = fuFrente(inimiga);
+        if (frente && frente.guardando && fuDonsDe(frente).muralha) {
+          alvos = [frente];
+          eventos.push({ tipo: 'muralha', quem: frente.id });
+        }
+      }
+
+      /* O Proteger: o ataque contra o aliado protegido cai no Guarda. Um
+         Guarda que já era alvo não apanha duas vezes do mesmo golpe. A
+         Devastação não passa por aqui. */
+      alvos = alvos.map(a => {
+        const g = inimiga.find(c => c.vivo && c !== a && c.protegendo === a.id);
+        if (!g) return a;
+        eventos.push({ tipo: 'protegeu', quem: g.id, alvo: a.id });
+        return g;
+      }).filter((c, i, l) => l.indexOf(c) === i);
 
       if (magia) {
         const pago = (magia.pm | 0) * (magia.porAlvo ? alvos.length : 1);
@@ -708,8 +782,11 @@ function fuAgir(estado, acao) {
           furaGuarda: es.furaGuarda, semRSnaGuarda: es.semRSnaGuarda,
           atrib1: 'PER', atrib2: 'VON',
         } : { fixo: 5 });
+        const rp = ev.represalia;
+        delete ev.represalia;
         golpes.push(ev);
         eventos.push(ev);
+        if (rp) eventos.push(rp);
       }
       if (magia && magia.estilo) fuEstiloDoForte(estado, quem, magia, golpes, eventos);
     }
@@ -761,15 +838,31 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
   if (es.curaPorDano) {
     const causado = golpes.reduce((s, ev) => s + (ev.perda | 0), 0);
     let resta = Math.floor(causado * es.curaPorDano);
+    const frente = fuFrente(aliados);
     for (const alvo of porFerida(aliados.filter(c => c.pv < c.ficha.pvMax))) {
       if (resta <= 0) break;
+      // Cuidar da frente: em quem está na frente a cura vale 50% a mais.
+      const mult = alvo === frente ? FU_CUIDAR_FRENTE : 1;
       const antes = alvo.pv;
-      alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + resta);
+      alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + Math.floor(resta * mult));
       const curou = alvo.pv - antes;
-      resta -= curou;
+      resta -= Math.ceil(curou / mult);
       eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id, nome: magia.id,
-                     curou, pvAlvo: alvo.pv, estilo: true });
+                     curou, pvAlvo: alvo.pv, estilo: true, frente: mult > 1 });
       if (!es.curaDividida) break;
+    }
+    // O Salus rouba PM de cada alvo que feriu, e passa para ela.
+    if (es.roubaPM) {
+      for (const ev of golpes) {
+        if (!(ev.perda > 0)) continue;
+        const alvo = fuPorId(estado, ev.alvo);
+        const n = alvo ? Math.min(alvo.pm, es.roubaPM) : 0;
+        if (!n) continue;
+        alvo.pm -= n;
+        quem.pm = Math.min(quem.ficha.pmMax, quem.pm + n);
+        eventos.push({ tipo: 'roubouPM', quem: quem.id, alvo: alvo.id, n,
+                       pmAlvo: alvo.pm, pmQuem: quem.pm });
+      }
     }
     // A limpeza também só vem ferindo: é o mesmo "cuida quando ataca".
     if (es.limpaEstado && causado > 0) {
@@ -793,13 +886,20 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
    faz melhor. Subir o mais fraco parece generoso e é desperdício — d6
    para d8 vale menos do que d10 para d12 em tudo o que esse atributo
    toca. */
-function fuPorDePe(alvo, magia, eventos, quemLanca) {
+function fuPorDePe(alvo, magia, eventos, quemLanca, estado) {
   const antes = JSON.stringify(alvo.efeitos);
   for (const k of Object.keys(magia.cena)) {
     if (k === 'subirDado') {
       const melhor = ['DES', 'PER', 'VIG', 'VON']
         .reduce((m, a) => (alvo.ficha[a] > alvo.ficha[m] ? a : m), 'DES');
       alvo.efeitos.subirDado = melhor;
+    } else if (k === 'resisteInimigos') {
+      /* A Concha: resiste aos elementos dos inimigos de pé NA HORA em que é
+         lançada. Uma lista de verdades por tipo, para caber num JSON. */
+      const deles = estado ? (alvo.lado === 'A' ? estado.B : estado.A).filter(c => c.vivo) : [];
+      const tipos = {};
+      for (const c of deles) if (c.ficha && c.ficha.tipo) tipos[c.ficha.tipo] = true;
+      alvo.efeitos.resisteTipos = tipos;
     } else {
       alvo.efeitos[k] = magia.cena[k];
     }
@@ -811,11 +911,15 @@ function fuPorDePe(alvo, magia, eventos, quemLanca) {
 
 /* Curar não passa do máximo, e diz quanto curou MESMO e não quanto
    prometia — quem está com a vida cheia vê um zero, que é a verdade. */
-function fuCurar(quem, alvo, magia, eventos) {
+function fuCurar(quem, alvo, magia, eventos, estado) {
+  // Cuidar da frente: a cura da Sustentação vale 50% a mais em quem está na frente.
+  const naFrente = !!estado && quem.ficha.feitio === 'sustentacao'
+    && fuFrente(alvo.lado === 'A' ? estado.A : estado.B) === alvo;
+  const cura = Math.floor((magia.cura | 0) * (naFrente ? FU_CUIDAR_FRENTE : 1));
   const antes = alvo.pv;
-  alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + (magia.cura | 0));
+  alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + cura);
   eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id, nome: magia.id,
-                 curou: alvo.pv - antes, pvAlvo: alvo.pv });
+                 curou: alvo.pv - antes, pvAlvo: alvo.pv, frente: naFrente });
 }
 
 function fuPorId(estado, id) {
@@ -877,9 +981,6 @@ const FU_RONDAS_MAX = 50;
 function fuNovaRonda(estado) {
   estado.jaAgiu = [];
   estado.ronda++;
-  /* E levanta quem foi derrubado do ar: o manual diz que ele volta a
-     voar automaticamente no fim da ronda. */
-  for (const c of estado.A.concat(estado.B)) { c.derrubado = false; }
   if (estado.ronda > FU_RONDAS_MAX && !estado.acabou) {
     estado.acabou = true;
     estado.vencedor = null;
@@ -943,10 +1044,11 @@ if (typeof FU_ESTADOS_QUE_PEGAM !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
+    FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
     fuAfinidadeDe, fuPorDePe, fuCurar, fuEstiloDoForte,
-    fuDonsDe, fuNoAr, fuActoFinal, fuColherQuedas, fuFormacao, fuFrente,
+    fuDonsDe, fuActoFinal, fuColherQuedas, fuFormacao, fuFrente,
   };
 }
