@@ -40,48 +40,20 @@ function carregarEthers() {
 }
 const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
 
-/* OS PACOTES
+/* A COMPRA É POR QUANTIDADE
    ═══════════════════════════════════════════════════════════════════
-   Eram cinco — 5, 10, 30, 50 e 100 💎 — e não se distinguiam em nada
-   além do tamanho. A taxa é a mesma em todos (1 MATIC = 10 💎), portanto
-   não havia razão para escolher um em vez de outro: eram a mesma compra
-   repetida cinco vezes, com nomes diferentes.
+   Eram três pacotes fixos (15, 50 e 100 💎), com 10% de bônus em cada.
+   O bônus saiu (ver api/processar-compra.js), e sem ele os pacotes eram
+   só três tamanhos da mesma compra. Agora o jogador digita quantos
+   cristais quer: 10 💎 = 1 MATIC, sem arredondamento.
 
-   E não dá para pôr bónus por volume, que seria a saída óbvia. Duas
-   razões, e a segunda é definitiva:
-
-   1. O resgate paga à MESMA taxa (maticFinal = gems / RATE, RATE = 10 em
-      api/resgatar.js). Sem margem entre comprar e vender, qualquer bónus
-      é arbitragem: compra-se com desconto e saca-se a preço cheio.
-   2. Quem calcula os cristais é o CONTRATO, não o servidor — o
-      api/processar-compra.js lê gemsACreditar do evento on-chain. A taxa
-      não se muda daqui de maneira nenhuma.
-
-   O que se pode mudar é o que os cartões DIZEM. Passam a ser três, e cada
-   um vale exatamente uma coisa que o jogo cobra:
-
-     15 💎  desbloquear um slot   (UNLOCK_SLOT_COST)
-     50 💎  chocar um Raro        (HATCH_FEE.Raro)
-    100 💎  chocar um Lendário    (HATCH_FEE['Lendário'])
-
-   Três escolhas com três propósitos, em vez de cinco tamanhos do mesmo
-   nada. Se estes números mudarem no jogo, isto tem de mudar com eles —
-   por isso ficam aqui as constantes de onde saem. */
-/* Cada pacote dizia o que aquela quantia dava para pagar — "Desbloqueia
-   um slot", "Choca um ovo Raro", "Choca um ovo Lendário". Eram
-   descrições certas (o slot custa 15 💎, chocar um Raro custa 50 e um
-   Lendário 100), mas liam-se como se o depósito OFERECESSE o slot ou o
-   ovo. Saíram. */
-const CRYSTAL_PACKAGES = [
-  { matic:1.5, gems:15  },
-  { matic:5,   gems:50  },
-  { matic:10,  gems:100 },
-];
-
-// 10% em cristais de bónus. Tem de bater com o BONUS_COMPRA do
-// api/processar-compra.js, que é quem os credita de verdade — aqui é só
-// para o cartão dizer o que vai acontecer.
-const BONUS_COMPRA = 0.10;
+   Os limites vêm de fora deste arquivo:
+     mínimo 1 💎    o contrato recusa menos de 0,1 MATIC
+                    ("Valor insuficiente (minimo 0.1 MATIC)")
+     máximo 1000 💎 o MAX_GEMS_CREDITO do api/processar-compra.js, que
+                    recusa creditar mais do que isso numa transação */
+const COMPRA_MIN_GEMS = 1;
+const COMPRA_MAX_GEMS = 1000;
 
 // ═══════════════════════════════════════════
 // TRANSPARÊNCIA
@@ -143,21 +115,36 @@ async function renderTransparencia() {
 function renderCrystals() {
   const container = document.getElementById('crystalPackages');
   if(!container) return;
-  /* O destaque ia para o pacote do meio com um selo "POPULAR", que era
-     um sinal inventado numa lista onde todos custavam o mesmo por
-     cristal. Depois ficou uma linha a dizer o que cada quantia dava para
-     pagar — "Desbloqueia um slot", "Choca um ovo Raro" — e essa lia-se
-     como se o depósito OFERECESSE o slot ou o ovo.
-     Agora a linha diz o que o jogador ganha a mais, que é a única coisa
-     que separa mesmo um pacote do outro. */
-  container.innerHTML = CRYSTAL_PACKAGES.map((pkg, i) => `
-    <div class="crystal-pkg">
-      <div class="pkg-gem">💎</div>
-      <div class="pkg-amount">${pkg.gems}</div>
-      <div class="pkg-bonus">+${+(pkg.gems * BONUS_COMPRA).toFixed(2)} 💎 ${t('mkt.pkg.bonus')}</div>
-      <div class="pkg-matic">${pkg.matic} MATIC</div>
-      <button class="btn-buy-pkg" id="btnPkg${i}" onclick="comprarCristais(${i})">${t('mkt.crystals.buy_btn')}</button>
-    </div>`).join('');
+  container.innerHTML = `
+    <div class="tx-input-row">
+      <input class="tx-hash-input" id="compraGems" type="number" inputmode="numeric"
+        min="${COMPRA_MIN_GEMS}" max="${COMPRA_MAX_GEMS}" step="1"
+        placeholder="${t('mkt.crystals.buy_ph', {min: COMPRA_MIN_GEMS, max: COMPRA_MAX_GEMS})}"
+        oninput="_atualizarTotalCompra()"/>
+      <button class="btn-verify" id="btnComprarCristais" onclick="comprarCristais()">${t('mkt.crystals.buy_btn')}</button>
+    </div>
+    <div class="compra-total" id="compraTotal"></div>`;
+  _atualizarTotalCompra();
+}
+
+// A quantidade digitada, ou null se não for um inteiro dentro dos limites.
+function _gemsDaCompra() {
+  const v = Number(document.getElementById('compraGems')?.value);
+  return (Number.isInteger(v) && v >= COMPRA_MIN_GEMS && v <= COMPRA_MAX_GEMS) ? v : null;
+}
+
+// 10 💎 = 1 MATIC. Um inteiro dividido por 10 tem no máximo uma casa.
+function _maticDeGems(gems) {
+  return String(+(gems / MATIC_TO_GEMS).toFixed(1));
+}
+
+function _atualizarTotalCompra() {
+  const el = document.getElementById('compraTotal');
+  if(!el) return;
+  const gems = _gemsDaCompra();
+  el.textContent = gems
+    ? t('mkt.crystals.buy_total', {gems, matic: _maticDeGems(gems)})
+    : t('mkt.crystals.buy_total_vazio');
 }
 
 // ═══════════════════════════════════════════
@@ -291,9 +278,14 @@ async function tentarComprasPendentes() {
 window.reprocessarCompra      = reprocessarCompra;
 window.tentarComprasPendentes = tentarComprasPendentes;
 
-async function comprarCristais(idx) {
-  const pkg    = CRYSTAL_PACKAGES[idx];
+async function comprarCristais() {
   const status = document.getElementById('buyStatus');
+  const gems   = _gemsDaCompra();
+  if(!gems) {
+    status.innerHTML = `<span class="tx-err">${t('mkt.crystals.buy_invalid', {min: COMPRA_MIN_GEMS, max: COMPRA_MAX_GEMS})}</span>`;
+    return;
+  }
+  const matic  = _maticDeGems(gems);
 
   // Garante que MetaMask está vinculada
   const carteiraEth = await garantirCarteira();
@@ -302,7 +294,7 @@ async function comprarCristais(idx) {
     return;
   }
 
-  const allBtns = document.querySelectorAll('.btn-buy-pkg');
+  const allBtns = document.querySelectorAll('#btnComprarCristais');
   allBtns.forEach(b => { b.disabled = true; b.style.opacity = '.5'; });
 
   try {
@@ -323,7 +315,19 @@ async function comprarCristais(idx) {
       return;
     }
 
-    const maticWei = ethers.parseEther(pkg.matic.toString());
+    /* Um vínculo feito antes da assinatura não recebe mais crédito (ver
+       api/processar-compra.js). Conferir ANTES de pagar: depois, o POL já
+       estaria no cofre e os cristais presos até vincular de novo. */
+    const st = await _statusCarteira();
+    if(st && st.ok && !st.assinada) {
+      status.innerHTML = `<span class="tx-err">${t('mkt.metamask.revincular')}</span>`;
+      if(typeof renderMetaMaskCta === 'function') renderMetaMaskCta();
+      return;
+    }
+
+    // 1 💎 = 0,1 MATIC = 10^17 wei. Em unidades inteiras, sem ponto
+    // flutuante no meio do caminho.
+    const maticWei = ethers.parseUnits(String(gems), 17);
 
     const tx = await signer.sendTransaction({
       to:    CONTRACT_ADDRESS,
@@ -363,8 +367,8 @@ async function comprarCristais(idx) {
     } else if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.cancelled')}</span>`;
     } else if(e.code === 'INSUFFICIENT_FUNDS' || e?.message?.includes('insufficient funds')) {
-      status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${pkg.matic} MATIC</b>`})}<br><small>${t('mkt.tx.exchange_hint')}</small></span>`;
-      showToast(t('mkt.tx.insufficient_toast', {matic: pkg.matic}), 'err');
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${matic} MATIC</b>`})}<br><small>${t('mkt.tx.exchange_hint')}</small></span>`;
+      showToast(t('mkt.tx.insufficient_toast', {matic}), 'err');
     } else {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.general_err')}</span>`;
     }
@@ -713,6 +717,9 @@ async function vincularCarteira() {
 
     if(!playerData) playerData = {};
     playerData.carteira = data.carteira;
+    // Com o vínculo assinado, as compras que ficaram presas podem ser
+    // creditadas agora, e não só na próxima sessão.
+    _pendentesTentadas = false;
 
     // Atualiza header de cristais (MetaMask conectada para transações)
     const dotEl = document.getElementById('walletDot');
@@ -772,6 +779,25 @@ async function desvincularCarteira() {
   }
   if(typeof renderMetaMaskCta   === 'function') renderMetaMaskCta();
   if(typeof renderLimiteResgate === 'function') renderLimiteResgate();
+}
+
+/* O vínculo desta conta foi assinado? O cliente não lê a coleção
+   `carteiras` (firestore.rules), então quem responde é o servidor.
+   Devolve null se não der para perguntar (sem login, sem rede, ou o
+   servidor local, que não tem as /api). */
+async function _statusCarteira() {
+  try {
+    const usuario = firebase.auth().currentUser;
+    if(!usuario) return null;
+    const idToken = await usuario.getIdToken();
+    const resp = await fetch('/api/resgatar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'status-carteira', idToken }),
+    });
+    if(!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { return null; }
 }
 
 window.vincularCarteira = vincularCarteira;

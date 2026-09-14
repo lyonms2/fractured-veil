@@ -273,28 +273,6 @@ async function loadPoolLogs(reset) {
   }
 }
 
-// ═══════════════════════════════════════════
-// ENTRADA NA POOL (taxas)
-// 100% das taxas vão para a pool, sem corte nenhum à entrada. O cron
-// semanal que dava uma fatia da pool ao dev já não existe: ele recebe
-// 1% de cada resgate (DEV_FEE_RATE em api/resgatar.js), e a pool nunca
-// é tocada.
-// ═══════════════════════════════════════════
-async function addToPool(totalTaxa, motivo) {
-  if(totalTaxa <= 0) return;
-  try {
-    const idToken = await firebase.auth().currentUser.getIdToken();
-    const resp = await fetch('/api/pool', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ acao: 'taxa', idToken, valor: totalTaxa, motivo }),
-    });
-    const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
-    if(poolData) {
-      poolData.cristais    = (poolData.cristais    || 0) + totalTaxa;
-      poolData.totalEntrou = (poolData.totalEntrou || 0) + totalTaxa;
-    }
-    renderPoolStatsCard();
-  } catch(e) { console.warn('addToPool error:', e); }
-}
+// O addToPool saiu junto com a ação 'taxa' do api/pool.js, que deixava
+// qualquer um somar à pool sem pagar nada. As taxas entram na pool no
+// servidor, dentro da transação que debita quem paga.

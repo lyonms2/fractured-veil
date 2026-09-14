@@ -93,12 +93,13 @@ async function savePlayerData() {
 
    Esta função é a leitura única. O gs manda; a cópia é o recurso para
    quando o marketplace corre sem o jogo por baixo. */
-/* O saldo GASTÁVEL: os cristais com lastro mais os de bónus.
+/* O saldo GASTÁVEL: os cristais com lastro mais os de bônus.
 
-   O bónus de compra vive em gs.cristaisBonus e serve para tudo aqui
-   dentro — comprar, listar, chocar, desbloquear slots. A única coisa
-   que não faz é sair para MATIC, e essa conta é do api/resgatar.js, que
-   olha só para o gs.cristais.
+   O bônus de compra saiu (api/processar-compra.js), mas quem já tinha
+   saldo em gs.cristaisBonus continua podendo gastá-lo aqui dentro —
+   comprar, listar, desbloquear slots. A única coisa que ele não faz é
+   sair para MATIC, e essa conta é do api/resgatar.js, que olha só para o
+   gs.cristais.
 
    Por isso a loja soma os dois: era enganador mostrar 100 💎 a quem tem
    90 de bónus e recusar-lhe uma compra de 95. */
@@ -137,6 +138,17 @@ function renderMetaMaskCta() {
         </div>
         <button class="btn-desvincular" onclick="desvincularCarteira()">${t('mkt.metamask.desvincular')}</button>
       </div>`;
+    // Vínculo feito antes da assinatura: o servidor não credita nem paga
+    // mais nada nele. Pede para vincular de novo, assinando.
+    if(typeof _statusCarteira === 'function') _statusCarteira().then(st => {
+      if(!st || !st.ok || st.assinada || !playerData?.carteira) return;
+      wrap.innerHTML = `
+        <div class="metamask-cta">
+          <div class="metamask-cta-title">${t('mkt.metamask.revincular_titulo')}</div>
+          <div class="metamask-cta-sub">${t('mkt.metamask.revincular')}</div>
+          <button class="btn-metamask" onclick="vincularCarteira().then(renderMetaMaskCta)">${t('mkt.metamask.btn')}</button>
+        </div>`;
+    });
   } else {
     wrap.innerHTML = `
       <div class="metamask-cta">

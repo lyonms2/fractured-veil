@@ -201,6 +201,21 @@ async function ler(doc) {
   ok('EXPLOIT forjar a cadeia',          await escrever('L','L',{'referralChain':'x'}), 403);
   ok('conta nova já com ganhos',         await escrever('M','M',{'referralEarned':100}), 403);
 
+  /* ── leitura: só o dono, e quem convidou ──
+     Qualquer autenticado lia o documento inteiro de qualquer outro:
+     carteira, saldo, certidões. A página de Indicações é a única que lê
+     documentos alheios — os dos jogadores que o leitor convidou. */
+  async function lerComo(uid, doc) {
+    const r = await fetch(`${BASE}/players/${doc}`, {headers:{Authorization:`Bearer ${token(uid)}`}});
+    return r.status;
+  }
+  await escrever(null,'V',{'referralChain.l1':'W','referralChain.l2':'X','gs.moedas':10}, true);
+  ok('ler o próprio documento',          await lerComo('V','V'), 200);
+  ok('EXPLOIT ler o documento de outro', await lerComo('A','D'), 403);
+  ok('quem convidou (L1) lê o convidado', await lerComo('W','V'), 200);
+  ok('quem convidou (L2) lê o convidado', await lerComo('X','V'), 200);
+  ok('EXPLOIT ler quem não convidou',    await lerComo('A','V'), 403);
+
   // o saldo sobreviveu a tudo?
   const d = await ler('D');
   R.push(`\ncristais depois de tudo: ${d?.gs?.mapValue?.fields?.cristais?.integerValue}  (tem de ser 50)`);

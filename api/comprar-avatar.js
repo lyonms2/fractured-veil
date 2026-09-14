@@ -479,7 +479,23 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         sellerSlots[listing.slotIdx] = null;
       }
       const taxa         = Math.round(price * TAXA_MARKETPLACE);
-      const sellerRecebe = price - taxa;
+
+      /* O BÔNUS PAGO CHEGA COMO BÔNUS.
+         O comprador gasta primeiro os cristais de bônus (api/_cristais.js),
+         e o vendedor recebia o preço inteiro em cristais RESGATÁVEIS. Com
+         duas contas, o bônus — que não tem MATIC nenhum no cofre — virava
+         MATIC: A comprava com bônus o avatar que B listou, e B sacava.
+
+         Agora o pagamento chega separado. A taxa sai primeiro da parte de
+         bônus, que é queimada; o resto da taxa sai da parte com lastro e
+         vai para a pool. O vendedor recebe no mesmo balde em que o
+         comprador pagou. O total do vendedor continua preço − taxa. */
+      const pagoBonus    = +(CRIS.deBonus(buyerData) - debitoCompra.cristaisBonus).toFixed(2);
+      const pagoReal     = +(price - pagoBonus).toFixed(2);
+      const taxaDoBonus  = Math.min(taxa, pagoBonus);
+      const taxaReal     = +(taxa - taxaDoBonus).toFixed(2);
+      const sellerReal   = +(pagoReal - taxaReal).toFixed(2);
+      const sellerBonus  = +(pagoBonus - taxaDoBonus).toFixed(2);
 
       // O registo de emissão segue o avatar. Sem isto, quem comprasse um
       // Lendário não o conseguia revender — o avataresEmitidos dele não
@@ -510,24 +526,28 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          chaveDonos ? { [chaveDonos]: cadeiaNova } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
-        cristais:      sellerCris + sellerRecebe,
-        'gs.cristais': sellerCris + sellerRecebe,
-      }, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
+        cristais:      +(sellerCris + sellerReal).toFixed(2),
+        'gs.cristais': +(sellerCris + sellerReal).toFixed(2),
+      }, sellerBonus > 0 ? {
+        cristaisBonus:      +(CRIS.deBonus(sellerData) + sellerBonus).toFixed(2),
+        'gs.cristaisBonus': +(CRIS.deBonus(sellerData) + sellerBonus).toFixed(2),
+      } : {}, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
          chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
-      if (taxa > 0) {
+      // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.
+      if (taxaReal > 0) {
         tx.update(poolRef, {
-          cristais:    FieldValue.increment(taxa),
-          totalEntrou: FieldValue.increment(taxa),
+          cristais:    FieldValue.increment(taxaReal),
+          totalEntrou: FieldValue.increment(taxaReal),
         });
         const logRef = poolRef.collection('logs').doc();
         tx.set(logRef, {
           tipo:   'entrada',
           motivo: `venda avatar ${listing.nome}`,
           origem: listing.sellerId,
-          total:  taxa,
-          pool:   taxa,
+          total:  taxaReal,
+          pool:   taxaReal,
           ts:     FieldValue.serverTimestamp(),
         });
       }

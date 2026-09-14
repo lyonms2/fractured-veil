@@ -294,25 +294,11 @@
 /* ═══════════════════════════════════════════
    CRISTAIS
 ═══════════════════════════════════════════ */
-.crystal-packages{display:grid;grid-template-columns:repeat(auto-fill,minmax(11.25rem,1fr));gap:0.75rem;margin-bottom:1.5rem;}
-.crystal-pkg{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1rem;text-align:center;transition:all .25s;cursor:pointer;}
-.crystal-pkg:hover{border-color:var(--purple);transform:translateY(-0.125rem);}
-/* Havia aqui o .crystal-pkg.featured (o realce dourado do pacote do meio)
-   e o .pkg-bonus (o selo "Mais popular"). Os dois eram sinais inventados:
-   os pacotes custavam todos o mesmo por cristal, portanto nenhum era mais
-   popular nem melhor negócio. O que ficou no lugar é o .pkg-vale, que diz
-   o que cada quantia compra — informação diferente em cada cartão. */
-.pkg-gem{font-size:2.25rem;margin-bottom:0.5rem;}
-.pkg-amount{font-family:'Cinzel',serif;font-size:1.375rem;font-weight:700;color:var(--gem2);margin-bottom:0.25rem;}
-.pkg-matic{font-size:0.6875rem;color:var(--text2);margin-bottom:0.375rem;}
-/* O que separa um pacote do outro. Verde porque é ganho, e discreto
-   porque o número grande continua a ser o que se compra. */
-.pkg-bonus{
-  font-size:0.625rem; color:var(--green2); font-weight:600;
-  margin-bottom:0.75rem; letter-spacing:0.02rem;
-}
-.btn-buy-pkg{width:100%;padding:0.5rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:0.5rem;color:#fff;font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;cursor:pointer;letter-spacing:0.03125rem;transition:all .2s;}
-.btn-buy-pkg:hover{opacity:.9;}
+/* A compra por quantidade: o campo e o botão usam os mesmos estilos do
+   resgate (.tx-input-row), e o total em MATIC fica logo abaixo. */
+#crystalPackages{max-width:31.25rem;margin-bottom:1.5rem;}
+.compra-total{font-size:0.625rem;color:var(--text2);text-align:center;margin-top:0.25rem;letter-spacing:0.02rem;}
+@media (min-width: 769px) { .compra-total{ font-size:0.46875rem; } }
 
 /* ── MetaMask CTA na seção de cristais ── */
 .metamask-cta{padding:0.875rem 1rem;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:0.625rem;margin-bottom:1.25rem;}
@@ -568,13 +554,6 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   .slot-empty-icon{font-size:1.375rem;margin-bottom:0;}
   .slot-empty-title{font-size:0.5625rem;}
   .slot-empty-txt{font-size:0.5rem;text-align:left;}
-  .crystal-packages{display:flex;flex-direction:column;gap:0.5rem;}
-  .crystal-pkg{display:flex;flex-direction:row;align-items:center;gap:0.625rem;padding:0.75rem 0.875rem;text-align:left;border-radius:0.625rem;}
-  .pkg-gem{font-size:1.625rem;margin-bottom:0;order:1;flex-shrink:0;}
-  .pkg-amount{font-size:1.125rem;margin-bottom:0;order:2;flex-shrink:0;line-height:1;}
-  .crystal-pkg > div:nth-child(3){order:3;flex:1;font-size:0.625rem !important;margin-bottom:0 !important;}
-  .pkg-matic{font-size:0.625rem;margin-bottom:0;order:4;flex-shrink:0;color:var(--gold);font-weight:700;}
-  .btn-buy-pkg{width:auto;padding:0.5rem 0.875rem;flex-shrink:0;white-space:nowrap;order:5;}
   .pool-sc-grid{grid-template-columns:1fr 1fr;gap:0.375rem;}
   .pool-sc-balance{font-size:1.625rem;}
   .pool-log-time{display:none;}
@@ -655,11 +634,6 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
   #marketplaceModal .search-input,
   #marketplaceModal .filter-select { font-size: 0.4375rem; padding: 0.375rem 0.5rem; }
 
-  /* O simbolo e o valor de cada pacote vinham a 54 e 33px. Sao para
-     dar destaque, mas nao a esse ponto. */
-  #marketplaceModal .pkg-gem    { font-size: 1.25rem; }
-  #marketplaceModal .pkg-amount { font-size: 0.8125rem; }
-
   #marketplaceModal .empty-icon        { font-size: 1.5rem; }
 
   /* A TRANSPARÊNCIA lia-se a 9,75-11,25px, medido no browser. É a página
@@ -684,8 +658,6 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
      contra uma base de 13,5 destoava do resto do jogo, onde a
      interface anda entre os 10 e os 13. */
   #marketplaceModal .metamask-cta-title,
-  #marketplaceModal .pkg-matic,
-  #marketplaceModal .btn-buy-pkg,
   #marketplaceModal .tx-hash-input,
   #marketplaceModal .btn-verify { font-size: 0.46875rem; }
 
@@ -703,14 +675,3 @@ input[type=number].modal-input::-webkit-outer-spin-button{-webkit-appearance:non
 .resgate-limite.esgotado{ color:var(--red2); font-weight:600; }
 @media (min-width: 769px) { .resgate-limite{ font-size:0.46875rem; } }
 
-
-/* O que cada pacote compra. Substitui o selo "POPULAR", que era um sinal
-   inventado: os pacotes custavam todos o mesmo por cristal, portanto não
-   havia nenhum mais popular nem melhor negócio. Esta linha diz uma coisa
-   verdadeira e diferente em cada cartão, que é o que faltava. */
-.pkg-vale{
-  font-size:0.5625rem; color:var(--text2); line-height:1.35;
-  margin:0.375rem 0 0.625rem; min-height:2.4em;
-  display:flex; align-items:center; justify-content:center; text-align:center;
-}
-@media (min-width: 769px) { .pkg-vale{ font-size:0.46875rem; } }

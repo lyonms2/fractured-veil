@@ -31,25 +31,18 @@ function getAuthAdmin() { getDB(); return getAuth(); }
 
 const RATE             = 10;
 
-/* O BÓNUS DE COMPRA
+/* SEM BÔNUS DE COMPRA
    ═══════════════════════════════════════════════════════════════════
-   10% sobre o que o contrato cunhou: deposita 100 💎, ganha +10.
+   Havia 10% em cristais de bônus sobre cada compra, num balde próprio que
+   não podia ser resgatado. Não bastou: o bônus podia ser gasto no mercado,
+   e o vendedor recebia o valor em cristais RESGATÁVEIS. Com duas contas,
+   o bônus virava MATIC que ninguém tinha depositado.
 
-   Vai para gs.cristaisBonus e NÃO para gs.cristais, e é aí que está
-   tudo. Os cristais normais têm MATIC no cofre a cobri-los; os de
-   bónus não têm nenhum. Se fossem resgatáveis, quem depositasse 10
-   MATIC recebia 110 💎 e sacava 10,89 MATIC de volta — 0,89 de lucro
-   garantido por volta, repetível com contas novas, pago pelo cofre. E
-   a cobertura, que a página da Transparência promete em 100%, caía a
-   cada compra.
-
-   No balde do bónus servem para tudo dentro do jogo — comprar avatares
-   e ovos, listar, chocar, desbloquear slots — e gastam-se ANTES dos
-   normais, portanto o jogador nem dá por eles a não ser quando vai
-   sacar. Só não saem para MATIC, que é a única coisa que não podem
-   fazer sem alguém pagar a conta. */
-const BONUS_COMPRA     = 0.10;
+   Saiu. Cada 💎 creditado aqui é exatamente o que o contrato cunhou
+   contra MATIC no cofre: 10 💎 = 1 MATIC. O balde `cristaisBonus` continua
+   existindo para quem já tinha saldo nele (ver api/_cristais.js). */
 const MAX_GEMS_CREDITO = 1000;
+const ERRO_SEM_ASSINATURA = 'Vincule a MetaMask de novo, assinando a mensagem, para receber os cristais.';
 
 const CONTRACT_ABI = [
   'event CristaisComprados(address indexed jogador, uint256 maticEnviado, uint256 gems)',
@@ -100,14 +93,22 @@ module.exports = async function handler(req, res) {
     }
 
     // ── A carteira da conta ──
-    // A vinculada, e só ela. É o `jogador` do evento que tem de bater com
-    // esta, e é o que amarra o crédito a quem pagou.
-    const playerRef = db.collection('players').doc(jogador);
+    // A vinculada COM ASSINATURA, e só ela. O campo `carteira` do jogador
+    // não basta: antes das firestore.rules protegerem esse campo, qualquer
+    // um podia gravar ali a carteira de outra pessoa — e essa gravação
+    // ficou. Quem manda é a coleção `carteiras`, escrita só pelo
+    // vincular-carteira (api/resgatar.js) depois de conferir a assinatura.
+    const playerRef   = db.collection('players').doc(jogador);
     const carteiraAddr = String((await playerRef.get()).data()?.carteira || '').toLowerCase();
     if (!ethers.isAddress(carteiraAddr)) {
       // `tentarDeNovo`: quem desvinculou com uma compra ainda sem crédito
       // não a perde — o cliente guarda o hash até a carteira voltar.
       return res.status(400).json({ erro: 'Vincule a MetaMask primeiro.', tentarDeNovo: true });
+    }
+    const carteiraRef = db.collection('carteiras').doc(carteiraAddr);
+    const vinculo     = await carteiraRef.get();
+    if (!vinculo.exists || vinculo.data()?.uid !== jogador) {
+      return res.status(403).json({ erro: ERRO_SEM_ASSINATURA, codigo: 'VINCULO_SEM_ASSINATURA', tentarDeNovo: true });
     }
 
     // ── Verificar tx on-chain ──
@@ -177,25 +178,21 @@ module.exports = async function handler(req, res) {
       if (compraCheck.exists) throw new Error('ALREADY_PROCESSED');
 
       const playerSnap = await tx.get(playerRef);
-
-      const bonus = +(gemsACreditar * BONUS_COMPRA).toFixed(2);
+      // O vínculo é conferido de novo aqui dentro: entre a leitura lá de
+      // cima e este ponto, a carteira pode ter sido desvinculada.
+      const vinculoTx  = await tx.get(carteiraRef);
+      if (!vinculoTx.exists || vinculoTx.data()?.uid !== jogador) throw new Error('VINCULO_SEM_ASSINATURA');
 
       if (playerSnap.exists) {
         tx.update(playerRef, {
-          'gs.cristais':      FieldValue.increment(gemsACreditar),
-          cristais:           FieldValue.increment(gemsACreditar),
-          'gs.cristaisBonus': FieldValue.increment(bonus),
-          cristaisBonus:      FieldValue.increment(bonus),
-          // Guarda a carteira vinculada se ainda não estiver registada
-          carteira:           carteiraAddr,
+          'gs.cristais': FieldValue.increment(gemsACreditar),
+          cristais:      FieldValue.increment(gemsACreditar),
         });
       } else {
         tx.set(playerRef, {
-          gs:            { cristais: gemsACreditar, cristaisBonus: bonus },
-          cristais:      gemsACreditar,
-          cristaisBonus: bonus,
-          carteira:      carteiraAddr,
-          criadoEm:      new Date(),
+          gs:       { cristais: gemsACreditar },
+          cristais: gemsACreditar,
+          criadoEm: new Date(),
         });
       }
 
@@ -226,6 +223,9 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     if (err.message === 'ALREADY_PROCESSED') {
       return res.status(409).json({ erro: 'Transação já processada' });
+    }
+    if (err.message === 'VINCULO_SEM_ASSINATURA') {
+      return res.status(403).json({ erro: ERRO_SEM_ASSINATURA, codigo: 'VINCULO_SEM_ASSINATURA', tentarDeNovo: true });
     }
     console.error('[processar-compra] erro:', err.message);
     return res.status(500).json({ erro: 'Erro interno ao processar compra', tentarDeNovo: true });

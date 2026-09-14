@@ -6,6 +6,7 @@
 //    "salvar-referral"   → registar convite:  { idToken, action, refUid }
 //    "vincular-carteira" → vincular MetaMask: { idToken, action, endereco, assinatura }
 //    "desvincular-carteira" → soltar a MetaMask: { idToken, action }
+//    "status-carteira"   → o vínculo foi assinado?: { idToken, action }
 //
 //  Consolidado num único endpoint para respeitar o limite de 12
 //  Serverless Functions do plano Hobby do Vercel.
@@ -63,16 +64,14 @@ const RATE                 = 10;
 const DEV_FEE_RATE = 0.01;
 const DEV_WALLET   = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
 
-// De que conta (uid) é uma carteira. A coleção `carteiras` é a fonte
-// certa (vínculo com assinatura); vínculos anteriores a ela só existem no
-// campo `carteira` do jogador. Mais de um jogador com a mesma carteira
-// antiga é ambíguo, e aí não se escolhe nenhum.
+// De que conta (uid) é uma carteira. Só pela coleção `carteiras`, o
+// vínculo com assinatura. O campo `carteira` do jogador não serve de
+// prova: antes das firestore.rules o protegerem, qualquer um podia gravar
+// ali a carteira de outra pessoa.
 async function _uidDaCarteira(db, carteira) {
   const addr = String(carteira).toLowerCase();
   const snap = await db.collection('carteiras').doc(addr).get();
-  if (snap.exists && snap.data()?.uid) return snap.data().uid;
-  const q = await db.collection('players').where('carteira', '==', addr).limit(2).get();
-  return q.size === 1 ? q.docs[0].id : null;
+  return (snap.exists && snap.data()?.uid) ? snap.data().uid : null;
 }
 
 const MAX_GEMS_POR_RESGATE = 50;
@@ -318,6 +317,29 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // O vínculo desta conta foi assinado? O cliente não lê a coleção
+  // `carteiras`, e precisa saber ANTES de pagar uma compra.
+  if (action === 'status-carteira') {
+    let uid;
+    try {
+      uid = (await auth.verifyIdToken(idToken)).uid;
+    } catch {
+      return res.status(401).json({ erro: 'Sessão inválida ou expirada. Entre de novo.' });
+    }
+    try {
+      const carteira = String((await db.collection('players').doc(uid).get()).data()?.carteira || '').toLowerCase() || null;
+      let assinada = false;
+      if (carteira) {
+        const v = await db.collection('carteiras').doc(carteira).get();
+        assinada = v.exists && v.data()?.uid === uid;
+      }
+      return res.status(200).json({ ok: true, carteira, assinada });
+    } catch (err) {
+      console.error('[status-carteira]', err.message);
+      return res.status(500).json({ erro: 'Erro interno ao consultar a carteira.' });
+    }
+  }
+
   if (action === 'salvar-referral') {
     try {
       return await handleSalvarReferral(req, res, db, auth);
@@ -484,6 +506,11 @@ module.exports = async function handler(req, res) {
       if (carteiraGuardada.toLowerCase() !== carteira.toLowerCase()) {
         throw new Error('Carteira não corresponde à conta. Vincule a carteira correta.');
       }
+      // O vínculo tem de ter sido assinado (ver _uidDaCarteira).
+      const vinculo = await tx.get(db.collection('carteiras').doc(carteiraGuardada.toLowerCase()));
+      if (!vinculo.exists || vinculo.data()?.uid !== jogador) {
+        throw new Error('Vincule a MetaMask de novo, assinando a mensagem, para poder resgatar.');
+      }
 
       // ── Calcular bônus de referral ──
       // Os bônus saem do valor sacado — não são criados do nada.
@@ -565,10 +592,9 @@ module.exports = async function handler(req, res) {
        nele. E o set() com a chave 'gs.cristais' gravava um campo com ponto
        no nome, não o gs.cristais de verdade.
 
-       Agora a conta é achada pela carteira do dev: primeiro na coleção
-       `carteiras` (vínculo com assinatura), senão no jogador cuja
-       `carteira` é essa (vínculo antigo). Sem conta vinculada, a taxa
-       não é creditada e fica no log — o saque segue do mesmo jeito.
+       Agora a conta é achada pela carteira do dev, na coleção `carteiras`
+       (vínculo com assinatura). Sem conta vinculada assim, a taxa não é
+       creditada e fica no log — o saque segue do mesmo jeito.
 
        Os créditos esperam terminar antes da resposta: no Vercel a função
        pode congelar assim que responde, e uma escrita solta se perde. */

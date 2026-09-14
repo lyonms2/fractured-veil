@@ -191,7 +191,6 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 
-  if (acao === 'taxa')        return handleTaxa(req, res, db, poolRef, uid);
   if (acao === 'morreu')      return handleMorreu(req, res, db, uid);
   if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
@@ -200,34 +199,13 @@ module.exports = async function handler(req, res) {
   return res.status(400).json({ erro: 'acao inválida' });
 };
 
-// ── Taxa: entrada na pool (listagem, venda, etc.) ───────────────
-// Taxa máxima legítima: 50 💎 (listagem ovo Lendário) ou 10% de uma venda de avatar
-const TAXA_MAX = 50;
-
-async function handleTaxa(req, res, db, poolRef, uid) {
-  const { valor, motivo } = req.body;
-  const v = parseFloat(valor);
-  if (!v || v <= 0 || v > TAXA_MAX) return res.status(400).json({ erro: 'Valor inválido' });
-
-  try {
-    const batch  = db.batch();
-    const logRef = poolRef.collection('logs').doc();
-    batch.update(poolRef, {
-      cristais:    FieldValue.increment(v),
-      totalEntrou: FieldValue.increment(v),
-    });
-    batch.set(logRef, {
-      tipo: 'entrada', motivo: motivo || 'taxa',
-      origem: uid, total: v, pool: v,
-      ts: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    console.error('[pool/taxa]', err);
-    return res.status(500).json({ erro: 'Erro ao registar taxa.' });
-  }
-}
+/* A AÇÃO 'taxa' SAIU.
+   Somava à pool o valor que o cliente dissesse (até 50 💎 por chamada),
+   sem debitar ninguém: qualquer um inflava o saldo da pool, o "total que
+   entrou" e o histórico da página de Transparência, quantas vezes
+   quisesse. Ninguém a chamava mais — as taxas de verdade (listagem e
+   venda de avatar) já entram na pool dentro das transações do
+   api/comprar-avatar.js, junto com o débito de quem paga. */
 
 /* ── AS DUAS PORTAS DA POOL PARA O JOGADOR FECHARAM-SE ──
 

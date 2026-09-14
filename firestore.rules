@@ -174,8 +174,9 @@ service cloud.firestore {
     // Dentro do mapa gs. As moedas não entram — ver acima.
     function gsDoServidor() {
       // O cristaisBonus entra aqui pela mesma razão que o cristais: é
-      // dinheiro do jogo. Só o api/processar-compra.js o credita e só
-      // os débitos do servidor mexem nele — se o cliente pudesse
+      // dinheiro do jogo. O bônus de compra saiu, então ninguém cria mais
+      // bônus novo; só os débitos do servidor e a venda no mercado
+      // (api/comprar-avatar.js) mexem nele — se o cliente pudesse
       // escrevê-lo, o bônus deixaria de ser bônus e viraria um campo de
       // texto onde cada um escreve quanto quer gastar.
       return ['cristais', 'cristaisBonus', 'extraSlots'];
@@ -204,10 +205,22 @@ service cloud.firestore {
     }
 
     match /players/{uid} {
-      // Leitura por qualquer autenticado — o marketplace precisa ver
-      // dados do vendedor. Expõe carteira e inventário de todo mundo, o
-      // que é um problema de privacidade e fica para outra passada.
-      allow read: if request.auth != null;
+      /* LEITURA: SÓ O DONO, E QUEM O CONVIDOU.
+         Era "qualquer autenticado": qualquer jogador lia o documento
+         inteiro de qualquer outro — carteira, saldo, convites, certidões.
+
+         O cliente só lê o próprio documento, e mais uma coisa: a página de
+         Indicações lista os jogadores que ELE convidou (L1, L2 e L3), com
+         três consultas where('referralChain.lN', '==', uid). Por isso a
+         leitura também vale quando o documento aponta para quem lê na
+         cadeia de convites. O mercado não lê documentos de jogadores: o
+         que o comprador vê vem do anúncio (avatarMarket), e os amigos
+         passam pelo servidor (api/amigos.js). */
+      allow read: if request.auth != null
+                  && (request.auth.uid == uid
+                      || resource.data.referralChain.l1 == request.auth.uid
+                      || resource.data.referralChain.l2 == request.auth.uid
+                      || resource.data.referralChain.l3 == request.auth.uid);
 
       // Um documento novo não pode nascer com saldo. Os campos ausentes
       // viram 0 do lado do servidor, que é o correto.

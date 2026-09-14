@@ -192,18 +192,17 @@ window.registerStrings({
   // ── Comprar Cristais ──────────────────────────────────────────────
   'mkt.crystals.title':       '💎 Comprar Cristais',
   'mkt.crystals.sub':         '1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.',
-  'mkt.pkg.bonus':            'de bônus',
-  'mkt.pkg.bonus_nota':       'Os cristais de bônus valem para tudo dentro do jogo — comprar, listar, chocar, desbloquear slots — e são gastos antes dos outros. Não podem ser resgatados em MATIC.',
   'mkt.crystals.buy_btn':     'Comprar',
+  'mkt.crystals.buy_ph':      'Quantos 💎? ({min} a {max})',
+  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} MATIC',
+  'mkt.crystals.buy_total_vazio':'Digite quantos cristais quer comprar. 10 💎 = 1 MATIC.',
+  'mkt.crystals.buy_invalid': 'Digite um número inteiro de {min} a {max} 💎.',
   'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
   'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: 5 MATIC/dia. Taxa de 1% cobrada à parte: resgatar 50 💎 usa 50,50 💎 do saldo.',
   'mkt.crystals.redeem_btn':  'Resgatar',
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
-  // Nomes dos pacotes de cristais
   'mkt.crystals.limit_left':  'Você pode resgatar {resta} de {max} 💎 hoje',
-  // Os pacotes deixaram de ter nomes de tamanho (Punhado, Bolsa, Saco…)
-  // e passaram a dizer o que compram. Ver CRYSTAL_PACKAGES em cristais.js.
 
   // ── MetaMask CTA ──────────────────────────────────────────────────
   'mkt.metamask.title':       '🦊 MetaMask necessária',
@@ -220,6 +219,8 @@ window.registerStrings({
   'mkt.metamask.desvincular_confirmar': 'Desvincular esta carteira? Para comprar ou resgatar Cristais de novo, você vai precisar vincular uma carteira e assinar outra vez.',
   'mkt.metamask.desvinculada':'Carteira desvinculada.',
   'mkt.metamask.desvincular_err':'Não foi possível desvincular a carteira.',
+  'mkt.metamask.revincular_titulo':'🦊 Vincule a MetaMask de novo',
+  'mkt.metamask.revincular':  'Sua carteira foi vinculada antes de o jogo pedir assinatura. Para comprar ou resgatar cristais, vincule de novo e assine a mensagem na MetaMask. Não custa nada.',
   'mkt.tx.carteira_diferente':'A conta aberta na MetaMask ({atual}) não é a carteira vinculada ({vinculada}). Troque de conta na MetaMask ou vincule esta.',
 
   // ── Comprar Ovos ──────────────────────────────────────────────────
@@ -506,9 +507,11 @@ window.registerStrings({
   // Crystals
   'mkt.crystals.title':       '💎 Buy Crystals',
   'mkt.crystals.sub':         '1 MATIC = 10 💎. Requires MetaMask to send the on-chain transaction.',
-  'mkt.pkg.bonus':            'bonus',
-  'mkt.pkg.bonus_nota':       'Bonus crystals work for everything inside the game — buying, listing, hatching, unlocking slots — and are spent before the others. They cannot be redeemed for MATIC.',
   'mkt.crystals.buy_btn':     'Buy',
+  'mkt.crystals.buy_ph':      'How many 💎? ({min} to {max})',
+  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} MATIC',
+  'mkt.crystals.buy_total_vazio':'Enter how many crystals you want to buy. 10 💎 = 1 MATIC.',
+  'mkt.crystals.buy_invalid': 'Enter a whole number from {min} to {max} 💎.',
   'mkt.crystals.redeem_title':'💸 Redeem Crystals → MATIC',
   'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: 5 MATIC/day. A 1% fee is charged on top: redeeming 50 💎 uses 50.50 💎 of your balance.',
   'mkt.crystals.redeem_btn':  'Redeem',
@@ -532,6 +535,8 @@ window.registerStrings({
   'mkt.metamask.desvincular_confirmar': 'Unlink this wallet? To buy or redeem Crystals again, you will need to link a wallet and sign again.',
   'mkt.metamask.desvinculada':'Wallet unlinked.',
   'mkt.metamask.desvincular_err':'Could not unlink the wallet.',
+  'mkt.metamask.revincular_titulo':'🦊 Link MetaMask again',
+  'mkt.metamask.revincular':  'Your wallet was linked before the game asked for a signature. To buy or redeem crystals, link it again and sign the message in MetaMask. It costs nothing.',
   'mkt.tx.carteira_diferente':'The account open in MetaMask ({atual}) is not the linked wallet ({vinculada}). Switch accounts in MetaMask or link this one.',
 
   // Eggs section
