@@ -413,7 +413,10 @@ function _fbOutras() {
                t('af.b.guardar.ef'))
        + linha(t('af.b.mover'),
                [t('af.b.turno'), t('af.b.mover.alvo'), t('af.b.instantaneo')],
-               t('af.b.mover.ef'));
+               t('af.b.mover.ef'))
+       + linha(t('af.b.examinar'),
+               [t('af.b.turno'), t('af.b.alvo.inimigo1'), t('af.b.instantaneo')],
+               t('af.b.examinar.ef'));
 }
 
 /* ══ O QUE ESTÁ ACONTECENDO ══
@@ -556,8 +559,13 @@ function fuResumoAgora(c) {
   return L;
 }
 
-function _fbAgora(c) {
-  const L = fuResumoAgora(c);
+function _fbAgora(c, nivel) {
+  /* Na ficha de um inimigo por examinar (`nivel` de 0 a 2): a fraqueza só
+     aparece com 10+, e as vantagens com 13+. Os estados, que todos veem no
+     palco, aparecem sempre. */
+  const L = fuResumoAgora(c).filter(x => nivel == null
+    || (x.id === 'costura' ? nivel >= 2
+        : String(x.id).indexOf('vant:') === 0 ? nivel >= 3 : true));
   if (!L.length) return '';
   let jaFixo = false;
   return L.map(x => {
@@ -625,7 +633,42 @@ function _fbSeccao(chave, corpo) {
 //   slot      o avatar, como está guardado (seed, nível, certidão)
 //   lutador   opcional: o que a batalha lhe está a fazer agora
 // ═══════════════════════════════════════════════════════════════════
-function renderFichaFU(slot, lutador) {
+/* ── A FICHA DE UM INIMIGO AINDA POR EXAMINAR ──
+   Mostra só o que o jogador já descobriu (fuConhece, em js/combate-fu.js):
+   nível 0 o nome e o nível; nível 1 o feitio, os traços sem a fraqueza e
+   os atributos com a vida e o PM exatos; nível 2 as defesas, as afinidades
+   e a fraqueza. As magias e as regras especiais só com o nível 3, e aí a
+   ficha inteira volta a ser a de sempre. Antes do nível 2, as afinidades
+   que os golpes já revelaram aparecem numa linha própria. */
+function _fbFichaParcial(slot, lutador, f, conhece, aviso) {
+  const n = conhece.nivel | 0;
+  const af = conhece.af || {};
+  const faixa = n >= 1 ? _fbFaixa(slot, lutador, f)
+    : `<div class="fb-faixa"><div class="fb-nome">${esc(_fbNome(slot, lutador) || '')}</div>
+       <div class="fb-tag">${esc(t('af.b.nv', { n: f.nivel }))}</div></div>`;
+  const faixas = [1, 2, 3].map(k =>
+    `<li class="${n >= k ? 'sabido' : ''}">${n >= k ? '✓' : '·'} ${esc(t('af.oculto.faixa.' + k))}</li>`).join('');
+  const quadro = `<div class="fb-oculto"><b>${esc(t('af.oculto.titulo'))}</b>
+    <ul>${faixas}</ul><p>${esc(t('af.oculto.como'))}</p></div>`;
+  const soube = n < 2 ? Object.keys(af).map(k =>
+    `<span class="cb-f-af ${af[k] === 'nada' ? '' : af[k]}">${esc(t('af.tipo.' + k))} ${
+      af[k] === 'nada' ? '–' : af[k]}</span>`).join('') : '';
+  const descobertas = soube
+    ? `<div class="fb-linha fb-defs"><i>${esc(t('af.oculto.descobertas'))}</i> ${soube}</div>` : '';
+  return `<div class="ficha fb">
+    ${faixa}
+    ${aviso}
+    ${quadro}
+    ${n >= 1 ? _fbDescricao(slot, f) : ''}
+    ${n >= 1 ? _fbTracos(slot, n >= 2 ? f : Object.assign({}, f, { costura: null })) : ''}
+    ${n >= 1 ? _fbAtributos(f, lutador) : ''}
+    ${n >= 2 ? _fbDefesas(f, lutador) : descobertas}
+    ${n >= 1 ? _fbSubidas(f) : ''}
+    ${_fbSeccao('af.sec.agora', _fbAgora(lutador, n))}
+  </div>`;
+}
+
+function renderFichaFU(slot, lutador, conhece) {
   if (typeof fuFicha !== 'function') return '';
   const f = lutador ? lutador.ficha : fuFicha(slot);
   if (!f) return '';
@@ -637,6 +680,9 @@ function renderFichaFU(slot, lutador) {
      números não são dele. */
   const aviso = f.semDna
     ? `<div class="ficha-aviso">⚠ ${esc(t('af.f.sem_dna'))}</div>` : '';
+
+  // A ficha do inimigo, até onde se sabe (a ação Examinar).
+  if (conhece && conhece.nivel < 3) return _fbFichaParcial(slot, lutador, f, conhece, aviso);
 
   /* As magias, separadas pelo que o manual separa: o golpe comum é um
      ataque básico, e os outros dois lugares são magias. O feitio decide

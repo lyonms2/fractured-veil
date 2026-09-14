@@ -418,6 +418,48 @@ titulo('Cem batalhas do princípio ao fim');
   verificar('as cem acabaram', acabaram === 100, acabaram + ' de 100');
 }
 
+/* ═══ EXAMINAR ═══════════════════════════════════════════════════
+   A ficha do inimigo começa escondida; o exame e os golpes a revelam
+   (aprovado em 14/09/2026). */
+titulo('Examinar: o que se descobre de um inimigo');
+{
+  verificar('abaixo de 7 não descobre nada', M.fuNivelDoExame(6, false, false) === 0);
+  verificar('7 descobre o primeiro degrau', M.fuNivelDoExame(7, false, false) === 1);
+  verificar('10 descobre o segundo', M.fuNivelDoExame(10, false, false) === 2);
+  verificar('13 descobre tudo', M.fuNivelDoExame(13, false, false) === 3);
+  verificar('o crítico descobre tudo', M.fuNivelDoExame(4, true, false) === 3);
+  verificar('o pifão não descobre nada', M.fuNivelDoExame(2, false, true) === 0);
+
+  const e = M.fuIniciar(equipa(1, 15), equipa(2, 15), 77);
+  const quem = e.A[0], alvo = e.B[0];
+  verificar('a batalha começa sem saber nada do inimigo', M.fuConhece(e, 'A', alvo.id).nivel === 0);
+  const evs = M.fuAgir(e, { quem: quem.id, tipo: 'examinar', alvo: alvo.id });
+  const ex = evs.find(x => x.tipo === 'examinar');
+  verificar('examinar rola PER + PER e gasta o turno',
+    !!ex && ex.atribs.join() === 'PER,PER' && e.jaAgiu.indexOf(quem.id) !== -1);
+  verificar('e guarda o que descobriu',
+    !!ex && M.fuConhece(e, 'A', alvo.id).nivel === M.fuNivelDoExame(ex.resultado, ex.critico, ex.pifao));
+  verificar('não se examina um aliado',
+    M.fuAgir(e, { quem: e.A[1].id, tipo: 'examinar', alvo: e.A[2].id }).length === 0);
+
+  M.fuConhece(e, 'A', alvo.id).nivel = 3;
+  M.fuNovaRonda(e);
+  M.fuAgir(e, { quem: quem.id, tipo: 'examinar', alvo: alvo.id });
+  verificar('um exame pior não apaga o que já se sabia', M.fuConhece(e, 'A', alvo.id).nivel === 3);
+
+  const e2 = M.fuIniciar(equipa(1, 15), equipa(2, 15), 78);
+  const a2 = e2.A[0], b2 = e2.B[0];
+  let ev = null;
+  for (let i = 0; i < 80 && !(ev && ev.acertou); i++) {
+    b2.pv = b2.ficha.pvMax;
+    ev = M.fuAtacar(e2, a2, b2, { magico: true, fixo: 5, tipo: 'gelo', atrib1: 'PER', atrib2: 'VON' });
+  }
+  const sabe = M.fuConhece(e2, 'A', b2.id).af.gelo;
+  verificar('um golpe que acerta revela a afinidade daquele tipo',
+    !!ev && ev.acertou && sabe === (ev.afinidade || 'nada'), String(sabe));
+  verificar('e o outro lado não fica sabendo de nada', !M.fuConhece(e2, 'B', a2.id).af.gelo);
+}
+
 console.log('\n' + '─'.repeat(62));
 if (falhas.length) {
   console.log(falhas.slice(0, 20).join('\n'));

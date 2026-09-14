@@ -507,6 +507,7 @@ function fuAtacar(estado, quem, alvo, opcoes) {
     ignorouResistencias: semRS,
     resiliu: !!dano.resiliu, execucao,
   });
+  _fuDescobrir(estado, quem, alvo, tipoDano, dano.afinidade);
 
   /* ── O QUE O GOLPE DEIXA ATRÁS ──
 
@@ -645,6 +646,22 @@ function fuAgir(estado, acao) {
                    postos: [quem.posto, outro.posto],
                    frente: frente ? frente.id : null });
 
+  } else if (acao.tipo === 'examinar') {
+    /* ── EXAMINAR ──
+       Um inimigo de pé. Rola PER + PER, sem modificador, e o que se
+       descobre é o maior entre o que já se sabia e o que saiu agora. */
+    const alvo = fuPorId(estado, acao.alvo);
+    if (!alvo || !alvo.vivo || alvo.lado === quem.lado) return [];
+    const r = fuRolagem(estado.rng, fuDado(quem, 'PER'), fuDado(quem, 'PER'), 0);
+    const sabe = fuConhece(estado, quem.lado, alvo.id);
+    const antes = sabe.nivel;
+    const obtido = fuNivelDoExame(r.resultado, r.critico, r.pifao);
+    sabe.nivel = Math.max(antes, obtido);
+    eventos.push({ tipo: 'examinar', quem: quem.id, alvo: alvo.id,
+                   dados: r.dados, resultado: r.resultado, modificador: r.modificador,
+                   critico: r.critico, pifao: r.pifao, atribs: ['PER', 'PER'],
+                   obtido, nivel: sabe.nivel, antes });
+
   } else {
     /* ── AS CINCO FORMAS DE UMA MAGIA ──
 
@@ -722,6 +739,7 @@ function fuAgir(estado, acao) {
           ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
         const bruto = (magia.danoFixo | 0) + exec;
         const d = fuDanoComGuarda(alvo, bruto, magia.tipo || quem.ficha.tipo);
+        _fuDescobrir(estado, quem, alvo, magia.tipo || quem.ficha.tipo, d.afinidade);
         eventos.push({ tipo: 'devastacao', quem: quem.id, alvo: alvo.id,
                        nome: magia.id, bruto, execucao: exec, resiliu: !!d.resiliu,
                        tipo_dano: magia.tipo || quem.ficha.tipo,
@@ -1026,12 +1044,52 @@ function fuVerFim(estado, eventos) {
    O manual: o líder rola DES + PER contra a maior Iniciativa do outro
    lado.
    ═══════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   EXAMINAR (aprovado pelo dono do jogo em 14/09/2026)
+
+   A ficha do inimigo começa escondida. A ação Examinar gasta o turno, rola
+   Perspicácia + Perspicácia e revela conforme o resultado:
+
+     7 ou mais    vida e PM exatos, feitio, degrau e atributos   (nível 1)
+     10 ou mais   afinidades, fraqueza e defesas                 (nível 2)
+     13 ou mais   magias e regras especiais                      (nível 3)
+     crítico      tudo · pifão: nada
+
+   E cada golpe que acerta revela a afinidade daquele tipo, sem precisar
+   examinar. O que se sabe fica até o fim da batalha e nunca diminui.
+
+   Vive no estado, por lado e por inimigo, para caber num JSON e para o
+   PvP: cada lado sabe o que descobriu. A IA não usa isto — no PvE ela
+   continua sabendo tudo. */
+const FU_EXAME_FAIXAS = [7, 10, 13];
+
+function fuNivelDoExame(resultado, critico, pifao) {
+  if (pifao) return 0;
+  if (critico) return 3;
+  return FU_EXAME_FAIXAS.filter(x => (resultado | 0) >= x).length;
+}
+
+// O que o lado `lado` sabe do inimigo `alvoId`: { nivel 0–3, af: {tipo: afinidade} }.
+function fuConhece(estado, lado, alvoId) {
+  if (!estado.conhece) estado.conhece = { A: {}, B: {} };
+  const deste = estado.conhece[lado] || (estado.conhece[lado] = {});
+  return deste[alvoId] || (deste[alvoId] = { nivel: 0, af: {} });
+}
+
+// Um golpe que acerta revela ao lado de quem bateu a afinidade daquele tipo.
+function _fuDescobrir(estado, quem, alvo, tipo, afinidade) {
+  if (!estado || !quem || !alvo || quem.lado === alvo.lado || !tipo) return;
+  fuConhece(estado, quem.lado, alvo.id).af[tipo] = afinidade || 'nada';
+}
+
 function fuIniciar(equipaA, equipaB, semente) {
   const estado = {
     rng: { semente: (semente | 0) || 1, passo: 0 },
     A: equipaA.map((s, i) => fuLutador(s, 'A', i)).filter(Boolean),
     B: equipaB.map((s, i) => fuLutador(s, 'B', i)).filter(Boolean),
     ronda: 1, jaAgiu: [], acabou: false, vencedor: null,
+    // O que cada lado já sabe de cada inimigo (a ação Examinar e os golpes).
+    conhece: { A: {}, B: {} },
   };
 
   const lider = estado.A.reduce((m, c) =>
@@ -1065,6 +1123,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
+    FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,

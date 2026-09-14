@@ -1439,6 +1439,20 @@
   margin-top: 0.25rem; padding: 0.625rem 1rem; justify-content: center;
 }
 
+/* ── EXAMINAR ──
+   A seta de um inimigo ainda por descobrir, e o quadro na ficha dele. */
+.cb-vs.oculto { color: var(--muted); opacity: .75; }
+.fb-oculto {
+  border: 1px dashed rgba(240,208,128,.35); border-radius: 0.375rem;
+  padding: 0.375rem 0.5rem; margin: 0.375rem 0;
+  font-size: 0.5625rem; color: var(--text2, #b9b0cc);
+}
+.fb-oculto b  { color: var(--gold-light, #f0d080); font-family: 'Cinzel', serif; letter-spacing: 0.03rem; }
+.fb-oculto ul { list-style: none; margin: 0.25rem 0; padding: 0; }
+.fb-oculto li { opacity: .6; }
+.fb-oculto li.sabido { opacity: 1; color: var(--gold-light, #f0d080); }
+.fb-oculto p  { margin: 0.25rem 0 0; font-style: italic; opacity: .8; }
+
 /* ── O ORBE ── */
 .cb-orbe {
   display: flex; align-items: center; gap: 0.375rem;
@@ -2086,14 +2100,15 @@
   .cb-ficha-barras   { min-width: 8.5rem; }
   .cb-hud.ini .cb-ficha-barras { min-width: 8.5rem; }
 
-  /* Um pouco menores do que eram (2,75rem de disco), porque o menu ganhou
-     o quinto orbe, o Guardar, e a coluna crescia por cima do palco. O
+  /* Menores de novo (eram 2,25rem de disco): o menu ganhou o sexto orbe, o
+     Examinar, e a coluna tem de caber sem crescer por cima do palco. O
      celular tem regra própria e continua do tamanho do dedo. */
-  .cb-orbe-disco     { width: 2.25rem; height: 2.25rem; }
-  .cb-selo           { width: 1.25rem; height: 1.25rem; }
-  .cb-orbe-custo     { min-width: 0.875rem; height: 0.875rem; font-size: 0.40625rem; }
-  .cb-orbe-nome      { font-size: 0.5625rem; }
-  .cb-orbe-nome i    { font-size: 0.46875rem; }
+  .cb-orbe-disco     { width: 2rem; height: 2rem; }
+  .cb-selo           { width: 1.125rem; height: 1.125rem; }
+  .cb-orbe-custo     { min-width: 0.8125rem; height: 0.8125rem; font-size: 0.375rem; }
+  .cb-orbe-nome      { font-size: 0.5rem; }
+  .cb-orbe-nome i    { font-size: 0.4375rem; }
+  .cb-menu .cb-acoes { gap: 0.25rem; }
   .cb-menu           { width: 13rem; }
   .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
 

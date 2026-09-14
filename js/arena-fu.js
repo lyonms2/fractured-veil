@@ -550,12 +550,25 @@ function _afOlhosEmX(el) {
    a vida estava, o <i> é o enchimento, o <span> é o número. É a mesma
    marcação do js/combate-pve.js porque é o mesmo CSS — inventar aqui uma
    estrutura própria dava uma barra sem rastro e ninguém saberia porquê. */
-function _afBarra(atual, max, tipo) {
+/* ── O QUE O JOGADOR JÁ SABE DE UM INIMIGO ──
+   Os avatares do jogador (lado A) mostram tudo. Os inimigos só o que o
+   jogador descobriu examinando ou acertando golpes (fuConhece, em
+   js/combate-fu.js). A barra continua a descer à vista de todos; o número
+   exato só aparece a partir do primeiro degrau do exame. */
+function _afConhece(c) {
+  if (!c || c.lado === 'A' || !_afE || typeof fuConhece !== 'function') return { nivel: 3, af: {} };
+  return fuConhece(_afE, 'A', c.id);
+}
+function _afNumeros(c, atual, max) {
+  return (!c || _afConhece(c).nivel >= 1) ? atual + '/' + max : '?';
+}
+
+function _afBarra(atual, max, tipo, c) {
   const f = Math.max(0, Math.min(100, (atual / Math.max(1, max)) * 100));
   const baixa = (tipo === 'pv' && f <= 25) ? ' baixa' : '';
   return `<div class="cb-barra ${tipo}${baixa}">
     <u style="width:${f}%"></u><i style="width:${f}%"></i>
-    <span>${atual}/${max}</span></div>`;
+    <span>${_afNumeros(c, atual, max)}</span></div>`;
 }
 
 /* ── O QUE O MEU GOLPE LHE FAZ ──
@@ -591,7 +604,12 @@ function _afSetaVs(c, meu) {
   const eu = _afPorId(_afQuem);
   if (!eu || eu.lado === c.lado || !eu.ficha) return '';
   const tipo = eu.ficha.tipo;
-  const af = ((c.ficha.afinidades || {})[tipo]) || 'nada';
+  /* A seta só diz o que o jogador já sabe: tudo a partir do degrau 2 do
+     exame, ou a afinidade que um golpe daquele tipo já revelou. */
+  const sabe = _afConhece(c);
+  const af = sabe.nivel >= 2 ? (((c.ficha.afinidades || {})[tipo]) || 'nada') : (sabe.af[tipo] || null);
+  if (!af) return `<span class="cb-vs oculto" title="${esc(t('af.vs.oculto', {
+    tipo: t('af.tipo.' + tipo), nome: _afNome(eu) }))}">?</span>`;
   return `<span class="cb-vs ${af}" title="${esc(t('af.vs.' + af, {
     tipo: t('af.tipo.' + tipo), nome: _afNome(eu) }))}">${AF_SETAS[af]}</span>`;
 }
@@ -641,8 +659,8 @@ function _afCartao(c) {
     </div>
     <div class="cb-ficha-barras">
       <div class="cb-ficha-nome">${esc(_afNome(c))}</div>
-      ${_afBarra(_afPvVisivel(c), c.ficha.pvMax, 'pv')}
-      ${_afBarra(_afPmVisivel(c), c.ficha.pmMax, 'pm')}
+      ${_afBarra(_afPvVisivel(c), c.ficha.pvMax, 'pv', c)}
+      ${_afBarra(_afPmVisivel(c), c.ficha.pmMax, 'pm', c)}
     </div>
     ${_afSetaVs(c, meu)}
   </div>`;
@@ -677,7 +695,9 @@ function _afChaveEstrutura() {
   return _afE.A.concat(_afE.B)
     .map(c => c.id + c.posto + (_afVivoVisivel(c) ? 'v' : 'x'))
     .join('|') + '#' + (_afQuem || '') + '#' + (_afPasso ? 'p' : '')
-    + '#' + (vez ? vez.lado + vez.podem.join(',') : 'fim');
+    + '#' + (vez ? vez.lado + vez.podem.join(',') : 'fim')
+    // e o que o jogador sabe dos inimigos: um exame novo redesenha as setas
+    + '#' + (_afE.conhece ? JSON.stringify(_afE.conhece.A) : '');
 }
 
 let _afChave = null;
@@ -818,7 +838,7 @@ function _afBarraDe(id, pv, pm) {
       rastro.style.width = f + '%';                  // a descer, o CSS atrasa-o
       b.classList.toggle('baixa', _afVivoVisivel(c) && f <= 25);
       const txt = b.querySelector('span');
-      if (txt) txt.textContent = pv + '/' + c.ficha.pvMax;
+      if (txt) txt.textContent = _afNumeros(c, pv, c.ficha.pvMax);
     }
   }
   if (pm != null) {
@@ -828,7 +848,7 @@ function _afBarraDe(id, pv, pm) {
       b.querySelector('i').style.width = f + '%';
       b.querySelector('u').style.width = f + '%';
       const txt = b.querySelector('span');
-      if (txt) txt.textContent = pm + '/' + c.ficha.pmMax;
+      if (txt) txt.textContent = _afNumeros(c, pm, c.ficha.pmMax);
     }
   }
 }
@@ -849,7 +869,7 @@ function _afBarras() {
         rastro.style.width = fPV + '%';                    // a descer, o CSS atrasa-o
         pv.classList.toggle('baixa', _afVivoVisivel(c) && fPV <= 25);
         const txt = pv.querySelector('span');
-        if (txt) txt.textContent = pvV + '/' + c.ficha.pvMax;
+        if (txt) txt.textContent = _afNumeros(c, pvV, c.ficha.pvMax);
       }
       // dos dois lados agora: o inimigo também mostra a magia dele
       const pm = linha.querySelector('.cb-barra.pm');
@@ -858,7 +878,7 @@ function _afBarras() {
         pm.querySelector('i').style.width = fPM + '%';
         pm.querySelector('u').style.width = fPM + '%';
         const txt = pm.querySelector('span');
-        if (txt) txt.textContent = pmV + '/' + c.ficha.pmMax;
+        if (txt) txt.textContent = _afNumeros(c, pmV, c.ficha.pmMax);
       }
       linha.classList.toggle('caido', !_afVivoVisivel(c));
     }
@@ -1191,6 +1211,8 @@ const AF_SELOS = {
          + '<path d="M12 16.5V9.5M9.5 12 12 9.5l2.5 2.5"/>',
   // dois braços erguidos, em guarda
   guardar: '<path d="M5 12.5 12 7l7 5.5"/><path d="M5 17.5 12 12l7 5.5"/>',
+  // uma lupa: examinar o inimigo
+  examinar: '<circle cx="10.5" cy="10.5" r="5.5"/><path d="M14.5 14.5 20 20"/>',
   // duas setas que se cruzam: trocar de lugar
   mover: '<path d="M4 8.5h12l-3.5-3.5M20 15.5H8l3.5 3.5"/>',
   voltar: '<path d="M14.5 6 8.5 12l6 6"/>',
@@ -1278,6 +1300,8 @@ function _afAcoes() {
   h += _afOrbe('guardar', t('af.orbe.guardar'),
     pmVolta ? t('af.orbe.guardar.pm', { n: pmVolta }) : t('af.orbe.guardar.cheio'),
     `_afGuardar()`, null, true);
+  // Examinar: gasta o turno e revela a ficha de um inimigo.
+  h += _afOrbe('examinar', t('af.orbe.examinar'), '', `_afPedirExaminar()`, null, true);
   h += _afOrbe('mover', t('af.orbe.mover'), '', `_afPedirMover()`, null, meus.length > 0);
   alvo.innerHTML = h;
 }
@@ -1341,6 +1365,12 @@ function _afPedirMover() {
   _afDesenhar();
 }
 
+function _afPedirExaminar() {
+  if (_afOcupado) return;
+  _afPasso = { examinar: true };
+  _afDesenhar();
+}
+
 function _afVoltar() { _afPasso = null; _afDesenhar(); }
 
 /* Quem pode ser apontado no passo em curso. É esta função e mais
@@ -1352,6 +1382,7 @@ function _afEhAlvo(c) {
   const eu = _afPorId(_afQuem);
   if (!eu) return false;
   if (_afPasso.mover)  return c.lado === eu.lado && c !== eu;
+  if (_afPasso.examinar) return c.lado !== eu.lado;
   // O Proteger escolhe outro aliado: o Guarda não se protege a si mesmo.
   if (_afPasso.aliado) return c.lado === eu.lado
     && !(_afPasso.magia && _afPasso.magia.proteger && c === eu);
@@ -1362,19 +1393,22 @@ function _afAlvosHTML(eu) {
   const lista = _afE.A.concat(_afE.B).filter(_afEhAlvo)
     .sort((a, b) => a.posto - b.posto);
   const rot = _afPasso.mover ? t('af.mover.com')
+            : _afPasso.examinar ? t('af.alvo.examinar')
             : _afPasso.aliado ? t('af.alvo.aliado') : t('af.alvo.inimigo');
 
   let h = `<div class="cb-pm-cab">${esc(rot)}</div>`;
   // varrer a linha: a opção de os apanhar a todos de uma vez
-  if (!_afPasso.mover && !_afPasso.aliado && (_afPasso.magia.alvos || 1) > 1) {
+  if (!_afPasso.mover && !_afPasso.examinar && !_afPasso.aliado && (_afPasso.magia.alvos || 1) > 1) {
     const custo = fuCusto(_afPasso.magia, lista.length);
     h += _afOrbe('todos', t('af.orbe.todos'), lista.length + '',
       `_afAlvo('*')`, custo || null, custo <= eu.pm);
   }
   for (const c of lista) {
-    const custo = _afPasso.mover ? 0 : fuCusto(_afPasso.magia, 1);
-    h += _afOrbe(_afPasso.mover ? 'mover' : (_afPasso.aliado ? 'suporte' : 'forte'),
-      _afNome(c), `${c.pv}/${c.ficha.pvMax}`,
+    const custo = (_afPasso.mover || _afPasso.examinar) ? 0 : fuCusto(_afPasso.magia, 1);
+    h += _afOrbe(_afPasso.mover ? 'mover' : _afPasso.examinar ? 'examinar'
+                 : (_afPasso.aliado ? 'suporte' : 'forte'),
+      // a vida do inimigo só com o número se o jogador já a descobriu
+      _afNome(c), _afNumeros(c, c.pv, c.ficha.pvMax),
       `_afAlvo('${c.id}')`, custo || null, custo <= eu.pm);
   }
   h += _afOrbe('voltar', t('af.orbe.voltar'), '', `_afVoltar()`, null, true);
@@ -1395,6 +1429,7 @@ function _afAlvo(id) {
   if (!c || !_afEhAlvo(c)) return;
 
   if (_afPasso.mover) { _afAgir({ tipo: 'mover', com: c.id }); return; }
+  if (_afPasso.examinar) { _afAgir({ tipo: 'examinar', alvo: c.id }); return; }
   _afAgir({ tipo: 'magia', magia: _afPasso.magia, alvos: [c.id] });
 }
 
@@ -1767,6 +1802,7 @@ function _afEncenarCorpo(ev) {
     if (ev.tipo === 'roubouPM') {
       _afNumeroPM(noAlvo, ev.n); _afNumeroPM(deQuem, ev.n, true); return;
     }
+    if (ev.tipo === 'examinar') { _afImpacto(noAlvo, 'luz'); return; }
 
     if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); return; }
 
@@ -2087,6 +2123,16 @@ function _afLanceDe(ev) {
     return p.join(' · ');
   }
 
+  if (ev.tipo === 'examinar') {
+    p.push('<b>' + nome(ev.quem) + '</b>');
+    p.push(_afDadosHTML(ev));
+    p.push(t('af.lance.examina', { alvo: '<b>' + nome(ev.alvo) + '</b>', r: ev.resultado }));
+    if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
+    if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
+    p.push(ev.nivel > ev.antes ? t('af.lance.exame.' + ev.nivel) : t('af.lance.exame.nada'));
+    return _afComResto(p);
+  }
+
   if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
     p.push('<b>' + nome(ev.quem) + '</b>');
     p.push(_afDadosHTML(ev));
@@ -2235,7 +2281,8 @@ function _afAbrirHistorico() {
 function _afFicha(id) {
   const c = _afPorId(id);
   if (!c || typeof renderFichaFU !== 'function') return;
-  _afAbrirPainel(renderFichaFU(null, c));
+  // A ficha do inimigo, só até onde o jogador já descobriu (Examinar).
+  _afAbrirPainel(renderFichaFU(null, c, c.lado === 'A' ? null : _afConhece(c)));
 }
 
 // ═══════════════════════════════════════════════════════════════════
