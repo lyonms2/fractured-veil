@@ -59,6 +59,7 @@ const IA_MOVER_MIN = 5;    // trocar de posto só compensa acima disto
 const IA_CURA      = 0.6;  // cada ponto de vida curado, antes do risco
 const IA_PM        = 0.5;  // cada PM recuperado, quando falta PM para alguma magia
 const IA_PM_SOBRA  = 0.1;  // cada PM recuperado, quando já dá para todas
+const IA_REPRESALIA = 0.8; // cada ponto de dano que a Represália do Guarda deve devolver
 
 // ═══════════════════════════════════════════════════════════════════
 // FÁCIL — A IA DE SEMPRE
@@ -308,6 +309,30 @@ function _iaValorPmDaGuarda(quem) {
   return volta * (falta ? IA_PM : IA_PM_SOBRA);
 }
 
+/* ── O QUE A REPRESÁLIA RENDE ──
+   Sem isto a IA não via razão para um Guarda guardar além do dano evitado
+   e do PM, e guardava 4% das vezes: a Represália quase nunca disparava.
+
+   Conta, para cada inimigo que alcança o Guarda, a chance de acertar do
+   golpe que ele tem de melhor contra ele — é o número de golpes que devem
+   cair nele até o próximo turno — e multiplica pelo dano que cada um
+   devolve (FU_REPRESALIA, pelo degrau). A Devastação fica de fora, porque
+   não dispara a Represália. Só vale para quem é Guarda. */
+function _iaValorRepresalia(estado, c) {
+  if (!c || !c.ficha || c.ficha.feitio !== 'guarda') return 0;
+  const equipa = estado[c.lado];
+  let golpes = 0;
+  for (const e of _iaOutroLado(estado, c)) {
+    let p = 0;
+    for (const at of _iaAtaquesDe(e)) {
+      if (at.todos || at.custo > e.pm || !_iaAlcanca(equipa, c, at)) continue;
+      p = Math.max(p, _iaGolpe(e, c, at.o).pAcerto);
+    }
+    golpes += p;
+  }
+  return golpes * FU_REPRESALIA[fuGrauDe(c)] * IA_REPRESALIA;
+}
+
 /* O que o jeito do feitio acrescenta ao ataque forte (FU_ESTILO_FORTE):
    a guarda que o Guarda ganha, a cura e a limpeza da Sustentação. O furar
    da Lâmina já entra no dano esperado, pelo _iaGolpe. */
@@ -329,7 +354,9 @@ function _iaValorEstilo(estado, quem, at, alvosIds) {
     for (const c of protegidos) {
       if (c.guardando) continue;
       const g = Object.assign({}, c, { guardando: true });
-      v += (_iaRisco(estado, c) - _iaRisco(estado, c, g)) * IA_GUARDA;
+      // o dano evitado, e a Represália de quem é Guarda
+      v += (_iaRisco(estado, c) - _iaRisco(estado, c, g)) * IA_GUARDA
+         + _iaValorRepresalia(estado, c);
     }
   }
   if (es.curaPorDano) {
@@ -455,7 +482,9 @@ function _iaOpcoes(estado, quem, p) {
     // vai de 0,25 (vida cheia) a 1,25 (quase caindo).
     const ferido = 1.25 - quem.pv / quem.ficha.pvMax;
     ops.push({ v: (_iaRisco(estado, quem) - _iaRisco(estado, quem, guardado)) * IA_GUARDA * ferido
-                  + _iaValorPmDaGuarda(quem),
+                  + _iaValorPmDaGuarda(quem)
+                  // e a Represália, que só dispara com o Guarda guardando
+                  + _iaValorRepresalia(estado, quem),
                acao: { tipo: 'guardar' } });
   } else {
     ops.push({ v: 0, acao: { tipo: 'guardar' } });
