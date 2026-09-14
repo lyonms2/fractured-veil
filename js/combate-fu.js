@@ -160,13 +160,16 @@ function fuDado(c, atrib) {
 /* E a Guarda Cerrada soma-se DEPOIS do piso, porque é um bónus e não um
    piso: o manual diz que os efeitos dela acumulam com tudo o resto.
    Quem tem a Barreira (piso 12) e a Guarda Cerrada (+2) fica em 14. */
+/* E o bônus do degrau (`defesaDegrau`, da ficha): +2 nas duas Defesas no
+   Lendário, desde a calibragem de 14/09/2026. No nível 30 quase todo golpe
+   acertava (88%) e as lutas acabavam em três rodadas. */
 function fuDefesa(c) {
   return Math.max(fuDado(c, 'DES'), (c.efeitos && c.efeitos.defesaMinima) | 0)
-       + (fuDonsDe(c).defesaMais | 0);
+       + (fuDonsDe(c).defesaMais | 0) + (c.ficha.defesaDegrau | 0);
 }
 function fuDefesaMag(c) {
   return Math.max(fuDado(c, 'PER'), (c.efeitos && c.efeitos.defMagMinima) | 0)
-       + (fuDonsDe(c).defMagMais | 0);
+       + (fuDonsDe(c).defMagMais | 0) + (c.ficha.defesaDegrau | 0);
 }
 
 /* ── OS DONS DE QUEM LUTA ──
@@ -198,7 +201,9 @@ const FU_SEM_DONS = { defesaMais: 0, defMagMais: 0, pvMais: 0, pmMais: 0,
    ══════════════════════════════════════════════════════════════════ */
 const FU_REPRESALIA   = { 1: 5,   2: 8,    3: 10  };
 const FU_EXECUCAO     = { 1: 3,   2: 5,    3: 8   };
-const FU_RESILIENCIA  = { 1: 0.5, 2: 0.45, 3: 0.4 };
+// 60/55/50 desde a calibragem de 14/09/2026 (era 50/45/40): com o teto mais
+// baixo, a Sustentação ganhava 68% das lutas no nível 8.
+const FU_RESILIENCIA  = { 1: 0.6, 2: 0.55, 3: 0.5 };
 const FU_CUIDAR_FRENTE = 1.5;
 
 // O degrau de um lutador, pela raridade da ficha: Comum 1, Raro 2, Lendário 3.

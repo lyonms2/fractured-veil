@@ -68,8 +68,9 @@ titulo('As seis contas do manual');
          Somar `dons` à espera nao é fazer a conta bater à força — é dizer
          onde é que os dez pontos podem entrar, que é num sítio só. */
       verificar(`PV = nível×2 + VIG×5 + dom (nv ${nivel}, seed ${a.seed})`,
-        f.pvMax === nivel * 2 + f.VIG * 5 + f.dons.pvMais,
-        `deu ${f.pvMax}, esperava ${nivel * 2 + f.VIG * 5 + f.dons.pvMais}`);
+        // +80 no Lendário desde a calibragem de 14/09/2026
+        f.pvMax === nivel * 2 + f.VIG * 5 + f.dons.pvMais + (f.raridade === 'Lendário' ? 80 : 0),
+        `deu ${f.pvMax}, esperava ${nivel * 2 + f.VIG * 5 + f.dons.pvMais + (f.raridade === 'Lendário' ? 80 : 0)}`);
       verificar(`PM = nível + VON×5 + dom (nv ${nivel})`,
         f.pmMax === nivel + f.VON * 5 + f.dons.pmMais);
       verificar('Crise = metade dos PV',

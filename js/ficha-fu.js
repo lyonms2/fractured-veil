@@ -505,7 +505,11 @@ function fuFicha(slot) {
 
      A do NPC é a mais generosa das duas (nível × 2 em vez de nível), e
      é a certa para um jogo onde o combate é o que se faz. */
-  const pvMax = nivel * 2 + base.VIG * 5 + dons.pvMais;
+  /* E +80 de vida no Lendário (calibragem de 14/09/2026). No nível 30 as
+     lutas acabavam em três rodadas; vida por NÍVEL não resolvia e estragava
+     os níveis baixos, então o bônus vem por degrau. O Raro não ganha: com
+     vida extra no 15, as lutas dobravam e os empates disparavam. */
+  const pvMax = nivel * 2 + base.VIG * 5 + dons.pvMais + (raridade === 'Lendário' ? 80 : 0);
   const pmMax = nivel     + base.VON * 5 + dons.pmMais;
 
   return {
@@ -542,6 +546,10 @@ function fuFicha(slot) {
        estados entrassem. */
     defesaBase: base.DES,
     defMagBase: base.PER,
+    /* +2 nas duas Defesas no Lendário (calibragem de 14/09/2026): no nível
+       30 quase todo golpe acertava. O motor soma isto no fuDefesa e no
+       fuDefesaMag. */
+    defesaDegrau: raridade === 'Lendário' ? 2 : 0,
     iniciativa: Math.floor((base.DES + base.PER) / 2),
 
     // o que ele dá e o que lhe dói
@@ -568,7 +576,9 @@ function fuFicha(slot) {
     /* E o dano extra, que no manual sobe aos níveis 20 e 40 e aqui sobe
        com a RARIDADE, nos mesmos degraus que tudo o resto: 11 e 27. É a
        mesma regra, cronometrada pelo relógio deste jogo. */
-    danoExtra: raridade === 'Lendário' ? 10 : raridade === 'Raro' ? 5 : 0,
+    /* O Comum ganha 3 desde a calibragem de 14/09/2026 (era 0): as lutas
+       dos níveis baixos passavam de 18 rodadas. */
+    danoExtra: raridade === 'Lendário' ? 10 : raridade === 'Raro' ? 5 : 3,
   };
 }
 

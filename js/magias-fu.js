@@ -114,7 +114,9 @@ const FU_MAGIAS = {
     /* O degrau do Lendário não traz números novos: traz o estado a
        acontecer SEMPRE, em vez de só no crítico. É o degrau mais barato
        da tabela inteira e provavelmente o mais sentido em jogo. */
-    3: { id: 'barragem_certa', pm: 10, alvos: 3, porAlvo: true, fixo: 15,
+    /* 15 PM por alvo (era 10) desde a calibragem de 14/09/2026: no nível 30
+       a IA a lançava 75% das vezes e as lutas acabavam em três rodadas. */
+    3: { id: 'barragem_certa', pm: 15, alvos: 3, porAlvo: true, fixo: 15,
          porTipo: 'elemental', estadoSempre: true, manual: 'p.188 (adaptada)' },
   },
 
@@ -185,9 +187,11 @@ const FU_MAGIAS = {
        regra, e por isso leva explicação e não uma etiqueta. */
     /* E as duas tiram um estado de cada alvo (14/09/2026). Até então só a
        Sustentação Lendária limpava estados, e um estado durava a luta. */
-    1: { id: 'lamber', pm: 5, alvos: 1, aliado: true, cura: 20, limpa: 1,
+    /* Curas 15 e 30 (eram 20 e 40) desde a calibragem de 14/09/2026: com
+       elas, as lutas dos níveis baixos passavam de 18 rodadas. */
+    1: { id: 'lamber', pm: 5, alvos: 1, aliado: true, cura: 15, limpa: 1,
          manual: 'p.311 (adaptada: alvo aliado, não só o próprio; tira um estado)' },
-    2: { id: 'curar', pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, limpa: 1,
+    2: { id: 'curar', pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 30, limpa: 1,
          manual: 'p.209 (tira um estado)' },
     /* Despertar mexe na FICHA e não nos pontos: um d8 vira d10, e com
        ele sobem a defesa, a precisão e o dano. É a única magia do jogo

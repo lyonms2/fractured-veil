@@ -166,7 +166,7 @@ titulo('Os números, casa a casa');
   const esperado = [
     ['forte', 1, { pm: 5,  alvos: 1, fixo: 10 }],
     ['forte', 2, { pm: 10, alvos: 3, fixo: 15, porAlvo: true }],
-    ['forte', 3, { pm: 10, alvos: 3, fixo: 15, porAlvo: true, estadoSempre: true }],
+    ['forte', 3, { pm: 15, alvos: 3, fixo: 15, porAlvo: true, estadoSempre: true }],
     ['muito_forte', 1, { pm: 10, alvos: 1, fixo: 15, estadoSempre: true }],
     ['muito_forte', 2, { pm: 20, alvos: 1, fixo: 25, ignoraResistencias: true }],
     ['muito_forte', 3, { pm: 30, danoFixo: 30, todos: true }],
@@ -178,8 +178,9 @@ titulo('Os números, casa a casa');
        em si próprio e aqui escolhe um companheiro — a escolha inclui-o a
        ele, portanto não perde o que o manual dava. A razão está escrita
        por cima da casa, em js/magias-fu.js. */
-    ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 20, limpa: 1 }],
-    ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, limpa: 1 }],
+    // As curas e a Barragem Certa são as da calibragem de 14/09/2026.
+    ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 15, limpa: 1 }],
+    ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 30, limpa: 1 }],
     ['suporte', 3, { pm: 20, alvos: 1, aliado: true }],
   ];
   for (const [lugar, grau, campos] of esperado)
@@ -229,7 +230,7 @@ titulo('Cada forma faz o que diz');
     amigo.pv = 5;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('Curar aponta para dentro',
-      amigo.pv === Math.min(amigo.ficha.pvMax, 45), 'ficou com ' + amigo.pv);
+      amigo.pv === Math.min(amigo.ficha.pvMax, 35), 'ficou com ' + amigo.pv);
     amigo.pv = amigo.ficha.pvMax - 2;
     M.fuNovaRonda(e);
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
@@ -274,7 +275,9 @@ titulo('Cada forma faz o que diz');
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('o Despertar sobe o atributo mais alto', amigo.efeitos.subirDado === 'DES');
     verificar('e o dado sobe mesmo', M.fuDado(amigo, 'DES') === 12);
-    verificar('e a Defesa sobe com ele', M.fuDefesa(amigo) === 12);
+    // mais o bônus do degrau (Lendário +2) e o da Guarda Cerrada, se tiver
+    verificar('e a Defesa sobe com ele', M.fuDefesa(amigo)
+      === 12 + (amigo.ficha.dons.defesaMais | 0) + (amigo.ficha.defesaDegrau | 0), M.fuDefesa(amigo) + '');
 
     // e nunca passa do d12
     amigo.ficha.DES = 12;
@@ -738,10 +741,10 @@ titulo('Os pacotes dos feitios');
     const e = luta(15, 903);
     const c = com(e.A[0], { feitio: 'sustentacao', raridade: 'Comum', pvMax: 100, crise: 50, afinidades: {} });
     const d = M.fuAplicarDano(c, 80, 'fisico');
-    verificar('a Resiliência da Sustentação Comum segura em metade da vida',
-      d.perda === 50 && d.resiliu === true, d.perda + '');
+    verificar('a Resiliência da Sustentação Comum segura em 60% da vida',
+      d.perda === 60 && d.resiliu === true, d.perda + '');
     com(c, { raridade: 'Lendário', pvMax: 100 });
-    verificar('e em 40% no Lendário', M.fuAplicarDano(c, 80, 'fisico').perda === 40);
+    verificar('e em 50% no Lendário', M.fuAplicarDano(c, 80, 'fisico').perda === 50);
     c.pv = 100;
     verificar('e um golpe pequeno entra inteiro', M.fuAplicarDano(c, 30, 'fisico').perda === 30);
   }
@@ -757,12 +760,12 @@ titulo('Os pacotes dos feitios');
     frente.pv = 1;
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [frente.id] });
     verificar('a cura da Sustentação vale 50% a mais em quem está na frente',
-      frente.pv === Math.min(frente.ficha.pvMax, 1 + 60), frente.pv + '');
+      frente.pv === Math.min(frente.ficha.pvMax, 1 + 45), frente.pv + '');
     M.fuNovaRonda(e);
     outro.pv = 1; quem.pm = 99;
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [outro.id] });
     verificar('e o normal em quem está atrás',
-      outro.pv === Math.min(outro.ficha.pvMax, 1 + 40), outro.pv + '');
+      outro.pv === Math.min(outro.ficha.pvMax, 1 + 30), outro.pv + '');
   }
 
   // ── Proteger ──

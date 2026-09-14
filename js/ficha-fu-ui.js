@@ -195,8 +195,9 @@ function _fbAtributos(f, lutador) {
    mostram-se só as que têm alguma coisa: um avatar médio tem duas ou
    três, e nove casas com sete vazias diziam menos do que três cheias. */
 function _fbDefesas(f, lutador) {
-  const def = lutador ? fuDefesa(lutador) : f.defesaBase;
-  const defM = lutador ? fuDefesaMag(lutador) : f.defMagBase;
+  // Fora da luta: o dado e o bônus do degrau (Lendário +2).
+  const def = lutador ? fuDefesa(lutador) : f.defesaBase + (f.defesaDegrau | 0);
+  const defM = lutador ? fuDefesaMag(lutador) : f.defMagBase + (f.defesaDegrau | 0);
   const chaves = Object.keys(f.afinidades || {}).filter(k => f.afinidades[k]);
   const afs = chaves.map(k =>
     `<span class="cb-f-af ${f.afinidades[k]}" title="${esc(t('af.af.' + f.afinidades[k]))}">${
