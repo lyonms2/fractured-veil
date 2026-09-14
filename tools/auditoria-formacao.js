@@ -224,6 +224,8 @@ titulo('Reordenar custa o turno — e só quando acontece');
     M.fuAgir(e, { quem: a.id, tipo: 'guardar' });
     verificar('guardar levanta a guarda', a.guardando === true);
     M.fuNovaRonda(e);
+    // Dura até o próximo turno DELE, e não até o fim da ronda.
+    verificar('a guarda atravessa a virada da ronda', a.guardando === true);
     M.fuAgir(e, { quem: a.id, tipo: 'guardar' });
     M.fuNovaRonda(e);
     M.fuAgir(e, { quem: a.id, tipo: 'mover', com: c.id });

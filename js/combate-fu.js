@@ -777,8 +777,14 @@ function fuVez(estado) {
 }
 
 /* ── O FIM DA RONDA ──
-   Limpa quem já jogou e tira a guarda, que dura "até ao início do teu
-   próximo turno". */
+   Limpa quem já jogou. A guarda NÃO sai aqui: ela dura "até o início do
+   seu próximo turno", e quem a tira é o fuAgir, quando o dono age de novo
+   (ou o fuAplicarDano, quando ele cai).
+
+   Saía aqui, e com os lados alternando isso fazia a guarda valer conforme
+   a ordem: quem guardava cedo na ronda ficava protegido contra quase
+   todos os inimigos; o último a jogar guardava contra ninguém, porque a
+   ronda acabava antes de qualquer inimigo agir, e só levava o PM. */
 /* ── O LIMITE DE RODADAS ──
 
    Cinquenta. Passou disso sem nenhum lado cair, a batalha acaba em
@@ -798,7 +804,7 @@ function fuNovaRonda(estado) {
   estado.ronda++;
   /* E levanta quem foi derrubado do ar: o manual diz que ele volta a
      voar automaticamente no fim da ronda. */
-  for (const c of estado.A.concat(estado.B)) { c.guardando = false; c.derrubado = false; }
+  for (const c of estado.A.concat(estado.B)) { c.derrubado = false; }
   if (estado.ronda > FU_RONDAS_MAX && !estado.acabou) {
     estado.acabou = true;
     estado.vencedor = null;

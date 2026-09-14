@@ -301,8 +301,13 @@ titulo('Um turno por lutador, os lados a alternar');
 
   M.fuNovaRonda(e);
   verificar('a ronda nova limpa quem jogou', e.jaAgiu.length === 0);
-  verificar('e tira a guarda a todos',
-    e.A.concat(e.B).every(c => !c.guardando));
+  // A guarda dura até o próximo turno de quem guardou, e não até o fim da
+  // ronda: quem jogava por último guardava contra ninguém.
+  verificar('e a guarda continua de pé',
+    e.A.concat(e.B).every(c => c.guardando));
+  M.fuAgir(e, { quem: M.fuVez(e).podem[0], tipo: 'atacar' });
+  verificar('até o dono agir de novo',
+    e.A.concat(e.B).filter(c => !c.guardando).length === 1);
 
   /* Com um lado desfalcado, o outro joga os turnos que sobram — é o que
      o manual manda quando um lado tem mais criaturas. */
