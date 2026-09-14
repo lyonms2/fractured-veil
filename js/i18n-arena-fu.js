@@ -264,6 +264,8 @@ window.registerStrings({
   'af.b.ef.proteger':    'Até o próximo turno dele, todo ataque contra o aliado escolhido cai nele. A Devastação passa por cima.',
   'af.b.ef.cuidar_frente':'Cuidar da frente: em quem está na frente, a cura vale 50% a mais.',
   'af.b.ef.estilo_rouba':'Rouba {n} PM de cada alvo que ferir.',
+  'af.b.ef.limpa':       'Tira um estado do alvo.',
+  'af.b.ef.limpa_cada':  'Tira um estado de cada alvo.',
   'af.b.ef.misericordia':'O golpe que o derrubaria para em um ponto de vida. Acontece uma vez, e depois se desfaz.',
   'af.b.ef.subirDado':   'O maior atributo do alvo sobe um degrau na escada dos dados (d6 · d8 · d10 · d12), até o teto de d12.',
 
@@ -569,6 +571,8 @@ window.registerStrings({
   'af.b.ef.proteger':    'Until their next turn, every attack against the chosen ally hits them instead. Devastation goes over it.',
   'af.b.ef.cuidar_frente':'Tend the front: healing is worth 50% more on whoever stands in front.',
   'af.b.ef.estilo_rouba':'Steals {n} MP from each target it wounds.',
+  'af.b.ef.limpa':       'Removes one status from the target.',
+  'af.b.ef.limpa_cada':  'Removes one status from each target.',
   'af.b.ef.misericordia':'The blow that would fell them leaves them at one hit point. Once, then it is spent.',
   'af.b.ef.subirDado':   "The target's highest Attribute climbs one step of the die ladder (d6 · d8 · d10 · d12), up to the d12 cap.",
 

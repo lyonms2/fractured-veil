@@ -360,6 +360,8 @@ function _iaValorApoio(estado, m, alvo, quem) {
     if (!quem || alvo === quem) return 0;
     return Math.max(0, _iaRisco(estado, alvo) - _iaRisco(estado, quem) * 0.5) * IA_GUARDA;
   }
+  // A limpeza vale um estado a menos no aliado (fuLimpar).
+  if (m.limpa && Object.keys(alvo.estados || {}).length) v += IA_ESTADO;
   if (m.cura) {
     // Cuidar da frente, como no fuCurar.
     const mult = (quem && quem.ficha.feitio === 'sustentacao'

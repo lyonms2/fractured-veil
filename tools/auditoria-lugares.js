@@ -178,8 +178,8 @@ titulo('Os números, casa a casa');
        em si próprio e aqui escolhe um companheiro — a escolha inclui-o a
        ele, portanto não perde o que o manual dava. A razão está escrita
        por cima da casa, em js/magias-fu.js. */
-    ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 20 }],
-    ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40 }],
+    ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 20, limpa: 1 }],
+    ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, limpa: 1 }],
     ['suporte', 3, { pm: 20, alvos: 1, aliado: true }],
   ];
   for (const [lugar, grau, campos] of esperado)
@@ -837,6 +837,25 @@ titulo('Os pacotes dos feitios');
       !!achou && roubos.length === achou.feridos.length && roubos.every(r => r.n === 3)
         && achou.feridos.every(id => M.fuPorId(achou.e, id).pm === 17),
       achou && (roubos.length + ' roubos, ' + achou.feridos.length + ' feridos'));
+  }
+
+  // ── limpar estados, e os estados por elemento ──
+  {
+    const e = luta(15, 907);
+    const quem = com(e.A[0], { feitio: 'sustentacao', raridade: 'Comum' });
+    const amigo = e.A[1];
+    quem.pm = 99;
+    amigo.estados.lento = true; amigo.estados.abalado = true;
+    const lamber = G.fuMagiaDe(quem.ficha, 'suporte');
+    const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: lamber, alvos: [amigo.id] });
+    verificar('o Lamber Feridas tira um estado do alvo',
+      Object.keys(amigo.estados).length === 1 && evs.some(x => x.tipo === 'estiloLimpa'),
+      Object.keys(amigo.estados).join(','));
+    verificar('fogo deixa enfurecido e terra deixa fraco',
+      G.FU_ELEMENTAL.fogo.estado === 'enfurecido' && G.FU_ELEMENTAL.terra.estado === 'fraco');
+    const estados = Object.values(G.FU_ELEMENTAL).map(x => x.estado);
+    verificar('os oito elementos usam os seis estados do motor',
+      new Set(estados).size === 6, estados.join(','));
   }
 }
 

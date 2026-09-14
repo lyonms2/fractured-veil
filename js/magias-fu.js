@@ -39,9 +39,15 @@ const FU_LUGARES = ['comum', 'forte', 'muito_forte', 'defesa', 'suporte'];
    próximo: o Ventus derruba quem voa e aqui ninguém voa, portanto fica
    lento; o Terra tira uma acção e aqui um turno é uma acção, portanto
    também. */
+/* ── MENOS ESTADOS REPETIDOS (14/09/2026) ──
+   Eram só quatro estados para oito elementos: terra, ar e gelo davam todos
+   Lento. O motor tem seis, e dois não eram usados por magia nenhuma. Fogo
+   passa a Enfurecido (a raiva do fogo: −1 dado em Destreza e Percepção) e
+   Terra passa a Fraco (o peso da terra: −1 dado em Vigor). Os oito
+   elementos usam agora os seis estados. */
 const FU_ELEMENTAL = {
-  fogo:   { nome: 'Ignis',    estado: 'abalado'    },
-  terra:  { nome: 'Terra',    estado: 'lento'      },
+  fogo:   { nome: 'Ignis',    estado: 'enfurecido' },
+  terra:  { nome: 'Terra',    estado: 'fraco'      },
   raio:   { nome: 'Fulgur',   estado: 'atordoado'  },
   ar:     { nome: 'Ventus',   estado: 'lento'      },
   gelo:   { nome: 'Glacies',  estado: 'lento'      },
@@ -177,9 +183,12 @@ const FU_MAGIAS = {
        É o segundo desvio do manual neste arquivo, e o `nosso: true` das
        outras entradas marca os que são só de tipo de dano. Este é de
        regra, e por isso leva explicação e não uma etiqueta. */
-    1: { id: 'lamber', pm: 5, alvos: 1, aliado: true, cura: 20,
-         manual: 'p.311 (adaptada: alvo aliado, não só o próprio)' },
-    2: { id: 'curar', pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, manual: 'p.209' },
+    /* E as duas tiram um estado de cada alvo (14/09/2026). Até então só a
+       Sustentação Lendária limpava estados, e um estado durava a luta. */
+    1: { id: 'lamber', pm: 5, alvos: 1, aliado: true, cura: 20, limpa: 1,
+         manual: 'p.311 (adaptada: alvo aliado, não só o próprio; tira um estado)' },
+    2: { id: 'curar', pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 40, limpa: 1,
+         manual: 'p.209 (tira um estado)' },
     /* Despertar mexe na FICHA e não nos pontos: um d8 vira d10, e com
        ele sobem a defesa, a precisão e o dano. É a única magia do jogo
        que muda um atributo. */

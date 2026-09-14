@@ -365,6 +365,7 @@ function _fbEfeito(f, m) {
   if (es.limpaEstado)   fr.push(t('af.b.ef.estilo_limpa'));
   if (es.roubaPM)       fr.push(t('af.b.ef.estilo_rouba', { n: es.roubaPM }));
   if (m.proteger)       fr.push(t('af.b.ef.proteger'));
+  if (m.limpa)          fr.push(t((m.alvos || 1) > 1 ? 'af.b.ef.limpa_cada' : 'af.b.ef.limpa'));
   // Cuidar da frente: toda cura da Sustentação vale mais em quem está na frente.
   if (f.feitio === 'sustentacao' && (m.cura || es.curaPorDano)) fr.push(t('af.b.ef.cuidar_frente'));
 

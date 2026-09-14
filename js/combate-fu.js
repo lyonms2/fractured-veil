@@ -673,6 +673,7 @@ function fuAgir(estado, acao) {
       if (custo) eventos.push({ tipo: 'gasto', quem: quem.id, pm: custo, pmDepois: quem.pm });
       if (magia.cena) fuPorDePe(quem, magia, eventos, null, estado);
       if (magia.cura) fuCurar(quem, quem, magia, eventos, estado);
+      if (magia.limpa) fuLimpar(quem, quem, magia, eventos);
 
     /* ── Proteger: o Guarda puxa os ataques contra um aliado ──
        Até o próximo turno dele, todo ataque contra o aliado escolhido cai
@@ -695,6 +696,7 @@ function fuAgir(estado, acao) {
       for (const alvo of alvos) {
         if (magia.cena) fuPorDePe(alvo, magia, eventos, quem, estado);
         if (magia.cura) fuCurar(quem, alvo, magia, eventos, estado);
+        if (magia.limpa) fuLimpar(quem, alvo, magia, eventos);
       }
 
     // ── todos: a Devastação ──
@@ -922,6 +924,19 @@ function fuCurar(quem, alvo, magia, eventos, estado) {
                  curou: alvo.pv - antes, pvAlvo: alvo.pv, frente: naFrente });
 }
 
+/* ── TIRAR ESTADOS ──
+   O Lamber Feridas e o Curar tiram um estado de cada alvo (14/09/2026).
+   Até então só a Sustentação Lendária limpava, e um estado durava a luta
+   inteira. Tira na ordem da lista do motor, e usa o mesmo evento da
+   limpeza do ataque forte, que a arena já sabe contar. */
+function fuLimpar(quem, alvo, magia, eventos) {
+  for (let i = 0; i < (magia.limpa | 0); i++) {
+    const qual = FU_ESTADOS_LISTA.find(e => alvo.estados[e]);
+    if (!qual || !fuTirarEstado(alvo, qual)) break;
+    eventos.push({ tipo: 'estiloLimpa', quem: quem.id, alvo: alvo.id, estado: qual });
+  }
+}
+
 function fuPorId(estado, id) {
   return estado.A.concat(estado.B).find(c => c.id === id) || null;
 }
@@ -1048,7 +1063,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
-    fuAfinidadeDe, fuPorDePe, fuCurar, fuEstiloDoForte,
+    fuAfinidadeDe, fuPorDePe, fuCurar, fuEstiloDoForte, fuLimpar,
     fuDonsDe, fuActoFinal, fuColherQuedas, fuFormacao, fuFrente,
   };
 }
