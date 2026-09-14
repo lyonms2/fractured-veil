@@ -576,9 +576,10 @@ function fuFicha(slot) {
     /* E o dano extra, que no manual sobe aos níveis 20 e 40 e aqui sobe
        com a RARIDADE, nos mesmos degraus que tudo o resto: 11 e 27. É a
        mesma regra, cronometrada pelo relógio deste jogo. */
-    /* O Comum ganha 3 desde a calibragem de 14/09/2026 (era 0): as lutas
-       dos níveis baixos passavam de 18 rodadas. */
-    danoExtra: raridade === 'Lendário' ? 10 : raridade === 'Raro' ? 5 : 3,
+    /* O Comum ganha 3 (era 0) e o Raro 7 (era 5) desde a calibragem de
+       14/09/2026: as lutas dos níveis baixos passavam de 18 rodadas, e as do
+       nível 15 de 12. */
+    danoExtra: raridade === 'Lendário' ? 10 : raridade === 'Raro' ? 7 : 3,
   };
 }
 

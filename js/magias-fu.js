@@ -127,7 +127,9 @@ const FU_MAGIAS = {
   muito_forte: {
     1: { id: 'sopro_maldito', pm: 10, alvos: 1, fixo: 15,
          porTipo: 'elemental', estadoSempre: true, manual: 'p.310' },
-    2: { id: 'concentrado', pm: 20, alvos: 1, fixo: 25,
+    /* 15 PM (era 20) desde a calibragem de 14/09/2026: pelo mesmo PM a
+       Barragem rendia o triplo, e a IA usava o concentrado 1% das vezes. */
+    2: { id: 'concentrado', pm: 15, alvos: 1, fixo: 25,
          ignoraResistencias: true, porTipo: 'concentrado', manual: 'p.188' },
     /* Devastação: sem rolagem e sem defesa que valha. É a única magia
        do jogo que não pergunta nada a ninguém — o manual reserva-a para
@@ -213,7 +215,7 @@ const FU_MAGIAS = {
      Guarda        ataca e se protege: fica guardando até o próximo turno,
                    sem recuperar PM. No Raro, põe em guarda também o
                    aliado mais ferido; no Lendário, a equipe inteira.
-                   Troca dano por proteção: −3 no Sopro, −5 na Barragem.
+                   Troca dano por proteção: −2 no Sopro, −5 na Barragem.
      Lâmina        fura a guarda: o dano não é cortado pela metade. No
                    Raro, ignora também a resistência de quem está
                    guardando; no Lendário, a resistência de todos.
@@ -234,7 +236,7 @@ const FU_MAGIAS = {
    ══════════════════════════════════════════════════════════════════ */
 const FU_ESTILO_FORTE = {
   guarda: {
-    1: { fixoMais: -3, guardaAoAtacar: 'proprio' },
+    1: { fixoMais: -2, guardaAoAtacar: 'proprio' },   // era −3 (calibragem de 14/09/2026)
     2: { fixoMais: -5, guardaAoAtacar: 'proprio_e_ferido' },
     3: { fixoMais: -5, guardaAoAtacar: 'equipa' },
   },

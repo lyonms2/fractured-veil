@@ -168,7 +168,7 @@ titulo('Os números, casa a casa');
     ['forte', 2, { pm: 10, alvos: 3, fixo: 15, porAlvo: true }],
     ['forte', 3, { pm: 15, alvos: 3, fixo: 15, porAlvo: true, estadoSempre: true }],
     ['muito_forte', 1, { pm: 10, alvos: 1, fixo: 15, estadoSempre: true }],
-    ['muito_forte', 2, { pm: 20, alvos: 1, fixo: 25, ignoraResistencias: true }],
+    ['muito_forte', 2, { pm: 15, alvos: 1, fixo: 25, ignoraResistencias: true }],
     ['muito_forte', 3, { pm: 30, danoFixo: 30, todos: true }],
     ['defesa', 1, { pm: 10, proprio: true }],
     ['defesa', 2, { pm: 5,  alvos: 3, porAlvo: true, aliado: true }],
@@ -194,7 +194,7 @@ titulo('Os números, casa a casa');
     G.FU_MAGIAS.comum[1].fixo === G.FU_MAGIAS.comum[3].fixo);
 
   verificar('uma magia por alvo cobra por cada um', G.fuCusto(G.FU_MAGIAS.forte[2], 3) === 30);
-  verificar('uma de custo fixo cobra uma vez', G.fuCusto(G.FU_MAGIAS.muito_forte[2], 3) === 20);
+  verificar('uma de custo fixo cobra uma vez', G.fuCusto(G.FU_MAGIAS.muito_forte[2], 3) === 15);
   verificar('zero alvos continua a custar um', G.fuCusto(G.FU_MAGIAS.forte[2], 0) === 10);
   verificar('sem magia o custo é zero', G.fuCusto(null, 3) === 0);
 }
@@ -359,7 +359,10 @@ titulo('Cada forma faz o que diz');
       if (M.fuDonsDe(al).imunes.indexOf(m.estado) !== -1) continue;
       const ev = M.fuAtacar(b, at, al, { magico: true, fixo: m.fixo, tipo: m.tipo,
         estado: m.estado, estadoSempre: true, atrib1: 'PER', atrib2: 'VON' });
-      if (ev.acertou) { acertos++; if (ev.estadoDado) deu++; }
+      /* E a quem continua de pé: um golpe que derruba o alvo (possível
+         desde que o Raro tem dano extra 7, contra quem é fraco ao tipo)
+         não tem em quem pôr o estado. */
+      if (ev.acertou && !ev.caiu) { acertos++; if (ev.estadoDado) deu++; }
     }
     verificar('com estadoSempre, todo o acerto dá o estado', deu === acertos,
       deu + ' de ' + acertos);
@@ -529,7 +532,7 @@ titulo('O ataque forte muda com o feitio');
   // O dano sim: a Lâmina bate mais, o Guarda troca dano por proteção, e a
   // Sustentação fica com o do manual, porque a cura dela sai do dano.
   const danos = r => ['lamina', 'guarda', 'sustentacao'].map(f => forte(f, r).fixo).join('/');
-  verificar('o Sopro: Lâmina 13, Guarda 7, Sustentação 10', danos('Comum') === '13/7/10', danos('Comum'));
+  verificar('o Sopro: Lâmina 13, Guarda 8, Sustentação 10', danos('Comum') === '13/8/10', danos('Comum'));
   verificar('a Barragem: Lâmina 20, Guarda 10, Sustentação 15', danos('Raro') === '20/10/15', danos('Raro'));
   verificar('a Barragem Certa: Lâmina 20, Guarda 10, Sustentação 15', danos('Lendário') === '20/10/15', danos('Lendário'));
   verificar('a tabela do manual não muda', G.FU_MAGIAS.forte[2].fixo === 15 && G.FU_MAGIAS.forte[1].fixo === 10);
