@@ -63,6 +63,18 @@ const RATE                 = 10;
 const DEV_FEE_RATE = 0.01;
 const DEV_WALLET   = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
 
+// De que conta (uid) é uma carteira. A coleção `carteiras` é a fonte
+// certa (vínculo com assinatura); vínculos anteriores a ela só existem no
+// campo `carteira` do jogador. Mais de um jogador com a mesma carteira
+// antiga é ambíguo, e aí não se escolhe nenhum.
+async function _uidDaCarteira(db, carteira) {
+  const addr = String(carteira).toLowerCase();
+  const snap = await db.collection('carteiras').doc(addr).get();
+  if (snap.exists && snap.data()?.uid) return snap.data().uid;
+  const q = await db.collection('players').where('carteira', '==', addr).limit(2).get();
+  return q.size === 1 ? q.docs[0].id : null;
+}
+
 const MAX_GEMS_POR_RESGATE = 50;
 const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
 
@@ -547,13 +559,34 @@ module.exports = async function handler(req, res) {
     // ── Creditar bônus de referral (best-effort, não bloqueia o saque) ──
     // Os cristais creditados aqui são exatamente os que foram deduzidos
     // do jogador — nenhuma inflação, pool sempre coberta.
+    /* A TAXA DO DEV VAI PARA A CONTA DO DEV.
+       Ia para players/{DEV_WALLET} — um documento com o nome do endereço,
+       mas as contas do jogo são pelo uid do login, então ninguém entrava
+       nele. E o set() com a chave 'gs.cristais' gravava um campo com ponto
+       no nome, não o gs.cristais de verdade.
+
+       Agora a conta é achada pela carteira do dev: primeiro na coleção
+       `carteiras` (vínculo com assinatura), senão no jogador cuja
+       `carteira` é essa (vínculo antigo). Sem conta vinculada, a taxa
+       não é creditada e fica no log — o saque segue do mesmo jeito.
+
+       Os créditos esperam terminar antes da resposta: no Vercel a função
+       pode congelar assim que responde, e uma escrita solta se perde. */
     if (devFeePago > 0) {
-      db.collection('players').doc(DEV_WALLET).set({
-        'gs.cristais': FieldValue.increment(devFeePago),
-        cristais:      FieldValue.increment(devFeePago),
-        devFeeTotal:   FieldValue.increment(devFeePago),
-      }, { merge: true })
-        .catch(err => console.error('[dev-fee]', err.message));
+      try {
+        const devUid = await _uidDaCarteira(db, DEV_WALLET);
+        if (!devUid) {
+          console.error('[dev-fee] nenhuma conta vinculada à carteira do dev; taxa não creditada:', devFeePago);
+        } else {
+          await db.collection('players').doc(devUid).set({
+            gs:          { cristais: FieldValue.increment(devFeePago) },
+            cristais:    FieldValue.increment(devFeePago),
+            devFeeTotal: FieldValue.increment(devFeePago),
+          }, { merge: true });
+        }
+      } catch (err) {
+        console.error('[dev-fee]', err.message);
+      }
     }
 
     if (referralBonuses) {
@@ -565,7 +598,7 @@ module.exports = async function handler(req, res) {
           referralEarned: FieldValue.increment(bonus),
         });
       }
-      batch.commit().catch(err => console.error('[referral-bonus]', err.message));
+      await batch.commit().catch(err => console.error('[referral-bonus]', err.message));
     }
 
     return res.status(200).json({
