@@ -142,9 +142,11 @@ function _iaGolpe(quem, alvo, o) {
   const dl  = (mag || dq.golpeNaDefMag) ? fuDefesaMag(alvo) : fuDefesa(alvo);
   // O golpe comum é físico, como no fuAtacar; só a magia leva o elemento.
   const tipo = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
-  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem));
+  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem))
+             || (!!o.semRSnaGuarda && alvo.guardando);
   const af = fuAfinidadeDe(alvo, tipo);
-  const guarda = alvo.guardando && af !== 'AB';
+  // A Lâmina fura a guarda, como no fuAtacar.
+  const guarda = alvo.guardando && af !== 'AB' && !o.furaGuarda;
   const extra = (o.fixo | 0) + (quem.ficha.danoExtra | 0) + (mag ? 0 : (dq.danoMaisGolpe | 0));
 
   let acertos = 0, criticos = 0, dano = 0, abates = 0;
@@ -183,7 +185,9 @@ function _iaAtaquesDe(q) {
       mira: m.corpoACorpo ? 'mao' : ((m.alvos || 1) === 1),
       o: { magico: true, fixo: m.fixo, tipo: m.tipo || q.ficha.tipo,
            estado: m.estado, estadoSempre: m.estadoSempre,
-           ignoraResistencias: m.ignoraResistencias },
+           ignoraResistencias: m.ignoraResistencias,
+           furaGuarda: (m.estilo || {}).furaGuarda,
+           semRSnaGuarda: (m.estilo || {}).semRSnaGuarda },
       custo: m.pm | 0,
     });
   }
@@ -281,6 +285,31 @@ function _iaValorPmDaGuarda(quem) {
   return volta * (falta ? IA_PM : IA_PM_SOBRA);
 }
 
+/* O que o jeito do feitio acrescenta ao ataque forte (FU_ESTILO_FORTE):
+   a guarda que o Guarda ganha, a cura e a limpeza da Sustentação. O furar
+   da Lâmina já entra no dano esperado, pelo _iaGolpe. */
+function _iaValorEstilo(estado, quem, at, alvosIds) {
+  const es = at.magia && at.magia.estilo;
+  if (!es) return 0;
+  let v = 0;
+  const aliados = estado[quem.lado].filter(c => c.vivo);
+  if (es.guardaAoAtacar) {
+    const g = Object.assign({}, quem, { guardando: true });
+    v += (_iaRisco(estado, quem) - _iaRisco(estado, quem, g)) * IA_GUARDA;
+  }
+  if (es.curaPorDano) {
+    const dano = (alvosIds || []).reduce((s, id) => {
+      const t = fuPorId(estado, id);
+      return s + (t ? Math.max(0, _iaEfeito(quem, t, at).dano) : 0);
+    }, 0);
+    const faltas = aliados.map(c => c.ficha.pvMax - c.pv);
+    const cabe = es.curaDividida ? faltas.reduce((s, x) => s + x, 0) : Math.max(0, ...faltas);
+    v += Math.min(dano * es.curaPorDano, cabe) * IA_CURA;
+    if (es.limpaEstado && aliados.some(c => Object.keys(c.estados || {}).length)) v += IA_ESTADO;
+  }
+  return v;
+}
+
 // O que uma magia de apoio (cura, cena) rende num aliado.
 function _iaValorApoio(estado, m, alvo) {
   let v = 0;
@@ -340,6 +369,7 @@ function _iaOpcoes(estado, quem, p) {
                  acao: { tipo: 'magia', magia: at.magia } });
     } else {
       const op = _iaComAlvos(at.magia, vals, quem, p);
+      if (op && at.magia.estilo) op.v += _iaValorEstilo(estado, quem, at, op.acao.alvos);
       if (op) ops.push(op);
     }
   }

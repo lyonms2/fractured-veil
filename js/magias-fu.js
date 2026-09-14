@@ -176,6 +176,49 @@ const FU_MAGIAS = {
   },
 };
 
+/* ══════════════════════════════════════════════════════════════════
+   O ATAQUE FORTE MUDA COM O FEITIO
+
+   Todos têm o ataque forte, porque é ele que alcança os de trás (ver o
+   fuAlvosPossiveis, em js/combate-fu.js). O dano, o custo e os alvos são
+   os mesmos para os três. O que muda é o que acontece DEPOIS do golpe, e
+   é isso que dá a cada feitio um jeito próprio de usar a mesma magia:
+
+     Guarda        ataca e se protege: fica guardando até o próximo turno,
+                   sem recuperar PM. No Lendário, põe em guarda também o
+                   aliado mais ferido.
+     Lâmina        fura a guarda: o dano não é cortado pela metade. No
+                   Raro, ignora também a resistência de quem está
+                   guardando; no Lendário, a resistência de todos.
+     Sustentação   fere e cuida: cura o aliado mais ferido com metade do
+                   dano causado. No Raro, a cura se divide entre os
+                   feridos; no Lendário, tira também um estado.
+
+   Nenhuma das três reforça a luta que não acaba: a guarda do Guarda só
+   vem atacando e sem PM, a Lâmina é o que desmonta quem só guarda, e a
+   cura da Sustentação só existe quando ela fere.
+
+   Aprovadas pelo dono do jogo em 14/09/2026. Uma variação por feitio; se
+   fizerem falta mais, entram como escolha do jogador no nível 11.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_ESTILO_FORTE = {
+  guarda: {
+    1: { guardaAoAtacar: 'proprio' },
+    2: { guardaAoAtacar: 'proprio' },
+    3: { guardaAoAtacar: 'proprio_e_ferido' },
+  },
+  lamina: {
+    1: { furaGuarda: true },
+    2: { furaGuarda: true, semRSnaGuarda: true },
+    3: { furaGuarda: true, semRSnaGuarda: true, ignoraResistencias: true },
+  },
+  sustentacao: {
+    1: { curaPorDano: 0.5 },
+    2: { curaPorDano: 0.5, curaDividida: true },
+    3: { curaPorDano: 0.5, curaDividida: true, limpaEstado: true },
+  },
+};
+
 /* ── O DEGRAU DE UMA RARIDADE ── */
 function fuDegrau(raridade) {
   return raridade === 'Lendário' ? 3 : raridade === 'Raro' ? 2 : 1;
@@ -268,6 +311,17 @@ function fuMagiaDe(ficha, lugar) {
     m.nome = c.nome;
     m.nomeEn = c.en;
   }
+
+  // O jeito do feitio no ataque forte (ver FU_ESTILO_FORTE). Sem feitio
+  // legível vale o do Guarda, como no fuLugaresDe.
+  if (lugar === 'forte') {
+    const doFeitio = FU_ESTILO_FORTE[ficha.feitio] || FU_ESTILO_FORTE.guarda;
+    const est = doFeitio[fuDegrau(ficha.raridade)];
+    if (est) {
+      m.estilo = Object.assign({ feitio: FU_ESTILO_FORTE[ficha.feitio] ? ficha.feitio : 'guarda' }, est);
+      if (est.ignoraResistencias) m.ignoraResistencias = true;
+    }
+  }
   return m;
 }
 
@@ -294,7 +348,7 @@ function fuCusto(magia, nAlvos) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS,
+    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_ESTILO_FORTE,
     FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
     fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto,
   };

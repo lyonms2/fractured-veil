@@ -483,6 +483,137 @@ titulo('O ritmo, contra o terço que o manual pede');
     conc.dano.toFixed(1) + ' contra ' + forte.dano.toFixed(1));
 }
 
+/* ═══ 7 · O ATAQUE FORTE MUDA COM O FEITIO ═══════════════════════
+   A mesma magia para os três, com o que acontece depois do golpe mudando
+   (FU_ESTILO_FORTE, em js/magias-fu.js). */
+titulo('O ataque forte muda com o feitio');
+{
+  const forte = (feitio, raridade) => G.fuMagiaDe(fichaDe('fogo', raridade, feitio), 'forte');
+  verificar('Guarda Comum guarda ao atacar', forte('guarda', 'Comum').estilo.guardaAoAtacar === 'proprio');
+  verificar('Guarda Lendário guarda também o mais ferido',
+    forte('guarda', 'Lendário').estilo.guardaAoAtacar === 'proprio_e_ferido');
+  verificar('Lâmina Comum fura a guarda', forte('lamina', 'Comum').estilo.furaGuarda === true);
+  verificar('Lâmina Rara ignora a resistência só de quem guarda',
+    forte('lamina', 'Raro').estilo.semRSnaGuarda === true && !forte('lamina', 'Raro').ignoraResistencias);
+  verificar('Lâmina Lendária ignora a resistência de todos', forte('lamina', 'Lendário').ignoraResistencias === true);
+  verificar('Sustentação Comum cura com metade do dano, sem dividir',
+    forte('sustentacao', 'Comum').estilo.curaPorDano === 0.5 && !forte('sustentacao', 'Comum').estilo.curaDividida);
+  verificar('Sustentação Lendária limpa um estado', forte('sustentacao', 'Lendário').estilo.limpaEstado === true);
+  verificar('o custo, o dano e os alvos não mudam com o feitio',
+    ['guarda', 'lamina', 'sustentacao'].every(f => {
+      const m = forte(f, 'Raro');
+      return m.pm === 10 && m.fixo === 15 && m.alvos === 3;
+    }));
+  verificar('o ataque muito forte não ganha jeito de feitio',
+    !G.fuMagiaDe(fichaDe('fogo', 'Raro', 'lamina'), 'muito_forte').estilo);
+
+  /* Um ataque forte de verdade: o atacante ganha o feitio e a raridade
+     pedidos, os inimigos ficam sem afinidades e com vida de sobra, e
+     repete-se com outra semente até algum golpe ferir. */
+  const lance = (feitio, raridade, prepara) => {
+    for (let s = 1; s <= 80; s++) {
+      const e = luta(15, 500 + s);
+      const quem = e.A[0];
+      quem.ficha = Object.assign({}, quem.ficha, { feitio, raridade });
+      quem.pm = 99;
+      for (const c of e.B) {
+        c.ficha = Object.assign({}, c.ficha, { afinidades: {}, pvMax: 900, crise: 450 });
+        c.pv = 900;
+      }
+      const ctx = (prepara && prepara(e, quem)) || {};
+      const magia = G.fuMagiaDe(quem.ficha, 'forte');
+      const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia, alvos: e.B.map(c => c.id) });
+      const golpes = evs.filter(x => x.tipo === 'magia');
+      if (golpes.some(x => x.acertou && x.perda > 0)) return { e, quem, evs, golpes, ctx };
+    }
+    return null;
+  };
+  const causado = r => r.golpes.reduce((s, x) => s + (x.perda | 0), 0);
+
+  // ── Guarda ──
+  {
+    const r = lance('guarda', 'Raro');
+    verificar('o Guarda fica em guarda depois do ataque forte', !!r && r.quem.guardando === true);
+    verificar('e sem recuperar PM', !!r && !r.evs.some(x => x.tipo === 'guardar'));
+  }
+  {
+    const r = lance('guarda', 'Lendário', e => {
+      const o = e.A[1]; o.pv = Math.max(1, Math.floor(o.ficha.pvMax / 3)); return { o };
+    });
+    verificar('o Guarda Lendário põe em guarda o aliado mais ferido', !!r && r.ctx.o.guardando === true);
+  }
+
+  // ── Lâmina ──
+  {
+    const r = lance('lamina', 'Comum', e => { for (const c of e.B) c.guardando = true; });
+    const g = r && r.golpes.find(x => x.acertou && x.perda > 0);
+    verificar('a Lâmina fura a guarda: o dano entra inteiro',
+      !!g && g.furouGuarda === true && g.perda === g.bruto, g && (g.bruto + ' → ' + g.perda));
+  }
+  {
+    const r = lance('guarda', 'Comum', e => { for (const c of e.B) c.guardando = true; });
+    const g = r && r.golpes.find(x => x.acertou && x.perda > 0);
+    verificar('sem ser Lâmina, a guarda corta pela metade',
+      !!g && !g.furouGuarda && g.perda === Math.floor(g.bruto / 2), g && (g.bruto + ' → ' + g.perda));
+  }
+  {
+    const r = lance('lamina', 'Raro', (e, quem) => {
+      for (const c of e.B) { c.guardando = true; c.ficha.afinidades = { [quem.ficha.tipo]: 'RS' }; }
+    });
+    const g = r && r.golpes.find(x => x.acertou && x.perda > 0);
+    verificar('a Lâmina Rara ignora a resistência de quem guarda',
+      !!g && g.perda === g.bruto, g && (g.bruto + ' → ' + g.perda));
+  }
+  {
+    const r = lance('lamina', 'Raro', (e, quem) => {
+      for (const c of e.B) c.ficha.afinidades = { [quem.ficha.tipo]: 'RS' };
+    });
+    const g = r && r.golpes.find(x => x.acertou && x.perda > 0);
+    verificar('mas não de quem não guarda',
+      !!g && g.perda === Math.floor(g.bruto / 2), g && (g.bruto + ' → ' + g.perda));
+  }
+
+  // ── Sustentação ──
+  {
+    const r = lance('sustentacao', 'Comum', e => { e.A[1].pv = 1; return { o: e.A[1] }; });
+    const esperado = r && Math.min(r.ctx.o.ficha.pvMax, 1 + Math.floor(causado(r) / 2));
+    verificar('a Sustentação cura o mais ferido com metade do dano',
+      !!r && r.ctx.o.pv === esperado, r && (r.ctx.o.pv + ' em vez de ' + esperado));
+    verificar('e, na Comum, cura um só',
+      !!r && r.evs.filter(x => x.tipo === 'cura' && x.estilo).length <= 1);
+  }
+  {
+    const r = lance('sustentacao', 'Raro', e => {
+      e.A[1].pv = e.A[1].ficha.pvMax - 3; e.A[2].pv = e.A[2].ficha.pvMax - 3;
+    });
+    const curas = r ? r.evs.filter(x => x.tipo === 'cura' && x.estilo) : [];
+    const metade = r ? Math.floor(causado(r) / 2) : 0;
+    const total = curas.reduce((s, x) => s + x.curou, 0);
+    verificar('a Sustentação Rara divide a cura entre os feridos',
+      !!r && total === Math.min(metade, 6) && (metade < 4 || curas.length === 2),
+      `metade ${metade} · curou ${total} em ${curas.length}`);
+    verificar('e ninguém passa do máximo', !!r && r.e.A.every(c => c.pv <= c.ficha.pvMax));
+  }
+  {
+    const e = luta(15, 77);
+    const quem = e.A[0];
+    quem.ficha = Object.assign({}, quem.ficha, { feitio: 'sustentacao', raridade: 'Raro' });
+    quem.pm = 99; e.A[1].pv = 1;
+    for (const c of e.B) c.ficha = Object.assign({}, c.ficha, { afinidades: { [quem.ficha.tipo]: 'IM' } });
+    const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia',
+                              magia: G.fuMagiaDe(quem.ficha, 'forte'), alvos: e.B.map(c => c.id) });
+    verificar('sem ferir, a Sustentação não cura ninguém',
+      !evs.some(x => x.tipo === 'cura') && e.A[1].pv === 1);
+  }
+  {
+    const r = lance('sustentacao', 'Lendário', e => {
+      e.A[1].estados.lento = true; e.A[1].pv = 5; return { o: e.A[1] };
+    });
+    verificar('a Sustentação Lendária tira um estado do mais ferido',
+      !!r && !r.ctx.o.estados.lento && r.evs.some(x => x.tipo === 'estiloLimpa'));
+  }
+}
+
 console.log('\n' + '─'.repeat(62));
 if (falhas.length) {
   console.log(falhas.slice(0, 20).join('\n'));

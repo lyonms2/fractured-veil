@@ -457,7 +457,9 @@ function fuAtacar(estado, quem, alvo, opcoes) {
   /* A Fúria da Crise: com a vida em metade ou menos, o dano dele passa a
      ignorar resistências — as dele, não as do alvo, e é do ATACANTE que
      a crise se lê. */
-  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem));
+  const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem))
+             // A Lâmina Rara: em quem está guardando, a resistência também cai.
+             || (!!o.semRSnaGuarda && alvo.guardando);
   /* ── O GOLPE COMUM É FÍSICO ──
      A magia sai no elemento do avatar; o golpe comum, não. Era do elemento
      também, e isso deixava duas coisas quebradas: a Concha resistia a um
@@ -466,10 +468,12 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      Físico é neutro: ninguém nasce resistente, fraco ou absorvendo ele
      (ver FU_TIPOS, em js/ficha-fu.js). */
   const tipoDano = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
-  const dano = fuDanoComGuarda(alvo, bruto, tipoDano,
+  // A Lâmina fura a guarda: o dano não é cortado pela metade.
+  const furou = !!o.furaGuarda && alvo.guardando;
+  const dano = (furou ? fuAplicarDano : fuDanoComGuarda)(alvo, bruto, tipoDano,
                                { ignoraResistencias: semRS });
   Object.assign(ev, {
-    bruto, tipo_dano: tipoDano,
+    bruto, tipo_dano: tipoDano, furouGuarda: furou,
     afinidade: dano.afinidade, perda: dano.perda, curou: dano.curou,
     pvAlvo: dano.pv, caiu: dano.caiu, salvou: dano.salvou,
     pmAlvo: dano.pmGanho || 0,
@@ -693,15 +697,21 @@ function fuAgir(estado, acao) {
         eventos.push({ tipo: 'gasto', quem: quem.id, pm: pago, pmDepois: quem.pm });
       }
 
+      const es = (magia && magia.estilo) || {};
+      const golpes = [];
       for (const alvo of alvos) {
-        eventos.push(fuAtacar(estado, quem, alvo, magia ? {
+        const ev = fuAtacar(estado, quem, alvo, magia ? {
           magico: true, nome: magia.id, fixo: magia.fixo,
           tipo: magia.tipo || quem.ficha.tipo,
           estado: magia.estado, estadoSempre: magia.estadoSempre,
           ignoraResistencias: magia.ignoraResistencias,
+          furaGuarda: es.furaGuarda, semRSnaGuarda: es.semRSnaGuarda,
           atrib1: 'PER', atrib2: 'VON',
-        } : { fixo: 5 }));
+        } : { fixo: 5 });
+        golpes.push(ev);
+        eventos.push(ev);
       }
+      if (magia && magia.estilo) fuEstiloDoForte(estado, quem, magia, golpes, eventos);
     }
   }
 
@@ -712,6 +722,60 @@ function fuAgir(estado, acao) {
   fuColherQuedas(estado, eventos);
   fuVerFim(estado, eventos);
   return eventos;
+}
+
+/* ── O QUE O FEITIO FAZ DEPOIS DO ATAQUE FORTE ──
+
+   A guarda do Guarda, a cura e a limpeza da Sustentação. O furar da
+   Lâmina acontece dentro do fuAtacar, porque muda o dano de cada golpe;
+   estes três acontecem uma vez, depois de todos os golpes (ver
+   FU_ESTILO_FORTE, em js/magias-fu.js).
+
+   "O mais ferido" é o de menor vida em proporção do máximo, e só entre
+   os que estão de pé e ainda têm vida para recuperar. */
+function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
+  const es = magia.estilo;
+  if (!es || !quem.vivo) return;
+  const aliados = (quem.lado === 'A' ? estado.A : estado.B).filter(c => c.vivo);
+  const porFerida = lista => lista.slice()
+    .sort((a, b) => a.pv / a.ficha.pvMax - b.pv / b.ficha.pvMax);
+
+  // ── Guarda: ataca e se protege ──
+  if (es.guardaAoAtacar) {
+    quem.guardando = true;
+    eventos.push({ tipo: 'estiloGuarda', quem: quem.id, alvo: quem.id });
+    if (es.guardaAoAtacar === 'proprio_e_ferido') {
+      const outro = porFerida(aliados.filter(c => c !== quem && c.pv < c.ficha.pvMax))[0];
+      if (outro) {
+        outro.guardando = true;
+        eventos.push({ tipo: 'estiloGuarda', quem: quem.id, alvo: outro.id });
+      }
+    }
+  }
+
+  // ── Sustentação: fere e cuida ──
+  if (es.curaPorDano) {
+    const causado = golpes.reduce((s, ev) => s + (ev.perda | 0), 0);
+    let resta = Math.floor(causado * es.curaPorDano);
+    for (const alvo of porFerida(aliados.filter(c => c.pv < c.ficha.pvMax))) {
+      if (resta <= 0) break;
+      const antes = alvo.pv;
+      alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + resta);
+      const curou = alvo.pv - antes;
+      resta -= curou;
+      eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id, nome: magia.id,
+                     curou, pvAlvo: alvo.pv, estilo: true });
+      if (!es.curaDividida) break;
+    }
+    // A limpeza também só vem ferindo: é o mesmo "cuida quando ataca".
+    if (es.limpaEstado && causado > 0) {
+      const comEstado = porFerida(aliados.filter(c => FU_ESTADOS_LISTA.some(e => c.estados[e])))[0];
+      const qual = comEstado && FU_ESTADOS_LISTA.find(e => comEstado.estados[e]);
+      if (qual && fuTirarEstado(comEstado, qual)) {
+        eventos.push({ tipo: 'estiloLimpa', quem: quem.id, alvo: comEstado.id, estado: qual });
+      }
+    }
+  }
 }
 
 /* ── PÔR UMA COISA DE PÉ ──
@@ -878,7 +942,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,
-    fuAfinidadeDe, fuPorDePe, fuCurar,
+    fuAfinidadeDe, fuPorDePe, fuCurar, fuEstiloDoForte,
     fuDonsDe, fuNoAr, fuActoFinal, fuColherQuedas, fuFormacao, fuFrente,
   };
 }

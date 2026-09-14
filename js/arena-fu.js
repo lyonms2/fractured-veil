@@ -1744,6 +1744,10 @@ function _afEncenarCorpo(ev) {
       return;
     }
 
+    // O jeito do feitio no ataque forte (ver fuEstiloDoForte).
+    if (ev.tipo === 'estiloGuarda') { _afGesto(noAlvo, 'defende', 500); return; }
+    if (ev.tipo === 'estiloLimpa')  { _afImpacto(noAlvo, 'luz'); return; }
+
     if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); return; }
 
     if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
@@ -2032,9 +2036,17 @@ function _afLanceDe(ev) {
     return t('af.lance.cena', { nome: nome(ev.quem), magia: t('af.m.' + ev.nome) })
          + ' · <b>' + nome(ev.alvo) + '</b>';
 
+  // A cura do ataque forte da Sustentação não tem nome de magia próprio.
+  if (ev.tipo === 'cura' && ev.estilo)
+    return t('af.lance.estilo_cura', { nome: '<b>' + nome(ev.quem) + '</b>', alvo: '<b>' + nome(ev.alvo) + '</b>' })
+         + ` <span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`;
   if (ev.tipo === 'cura')
     return `<b>${nome(ev.quem)}</b> · ${t('af.m.' + ev.nome)} · <b>${nome(ev.alvo)}</b> `
          + `<span class="sobe">${t('af.lance.cura', { n: ev.curou })}</span>`;
+  if (ev.tipo === 'estiloGuarda')
+    return t('af.lance.estilo_guarda', { nome: '<b>' + nome(ev.alvo) + '</b>' });
+  if (ev.tipo === 'estiloLimpa')
+    return t('af.lance.estilo_limpa', { nome: '<b>' + nome(ev.alvo) + '</b>', e: t('af.est.' + ev.estado) });
 
   if (ev.tipo === 'actoFinal' || ev.tipo === 'devastacao') {
     p.push(ev.tipo === 'actoFinal'
@@ -2055,6 +2067,7 @@ function _afLanceDe(ev) {
     // O golpe comum é físico: diz isso na linha, para o jogador entender
     // por que ele entra por inteiro em quem resiste ou absorve o elemento.
     if (ev.tipo_dano === 'fisico') p.push('<i>' + t('af.lance.fisico') + '</i>');
+    if (ev.furouGuarda) p.push('<b>' + t('af.lance.furou') + '</b>');
     p.push(_afDanoTexto(ev));
     if (ev.estadoDado) p.push(t('af.lance.estado', { e: t('af.est.' + ev.estadoDado) }));
     if (ev.drenou)     p.push(t('af.lance.dreno', { n: ev.drenou }));
