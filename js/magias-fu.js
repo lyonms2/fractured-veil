@@ -225,6 +225,31 @@ const FU_ESTILO_FORTE = {
   },
 };
 
+/* ── O NOME DO ATAQUE FORTE, POR FEITIO ──
+
+   Os três feitios lançavam a mesma magia com o mesmo nome: um Guarda, um
+   Lâmina e uma Sustentação de fogo diziam todos "Ignis", e a diferença
+   só aparecia na descrição.
+
+   A linha latina das barragens ganha uma segunda palavra, também latina,
+   que serve as duas línguas sem tradução:
+
+     Guarda        Scutum   escudo            Ignis Scutum
+     Lâmina        Acies    gume              Ignis Acies
+     Sustentação   Salus    saúde, salvação   Ignis Salus
+
+   O Lendário acrescenta "grande", concordando com a palavra do feitio:
+   Scutum é neutro (Magnum), Acies e Salus são femininas (Magna).
+
+   O Sopro do Comum não é latino, e ganha um adjetivo nas duas línguas.
+
+   Aprovados pelo dono do jogo em 14/09/2026. */
+const FU_NOME_FORTE = {
+  guarda:      { latim: 'Scutum', magno: 'Magnum', sopro: 'Sopro Protetor', soproEn: 'Guarding Breath' },
+  lamina:      { latim: 'Acies',  magno: 'Magna',  sopro: 'Sopro Cortante', soproEn: 'Cutting Breath' },
+  sustentacao: { latim: 'Salus',  magno: 'Magna',  sopro: 'Sopro Vital',    soproEn: 'Vital Breath' },
+};
+
 /* ── O DEGRAU DE UMA RARIDADE ── */
 function fuDegrau(raridade) {
   return raridade === 'Lendário' ? 3 : raridade === 'Raro' ? 2 : 1;
@@ -330,6 +355,18 @@ function fuMagiaDe(ficha, lugar) {
       // motor leem o número já com a diferença.
       if (est.fixoMais) m.fixo = (casa.fixo | 0) + est.fixoMais;
     }
+
+    // E o nome do feitio (ver FU_NOME_FORTE).
+    const nf = FU_NOME_FORTE[ficha.feitio] || FU_NOME_FORTE.guarda;
+    const grau = fuDegrau(ficha.raridade);
+    if (grau === 1) {
+      m.nome = nf.sopro;
+      m.nomeEn = nf.soproEn;
+    } else {
+      const base = (FU_ELEMENTAL[ficha.tipo] || FU_ELEMENTAL.fogo).nome;
+      m.nome = base + ' ' + nf.latim + (grau === 3 ? ' ' + nf.magno : '');
+      m.nomeEn = m.nome;
+    }
   }
   return m;
 }
@@ -357,7 +394,7 @@ function fuCusto(magia, nAlvos) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_ESTILO_FORTE,
+    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_ESTILO_FORTE, FU_NOME_FORTE,
     FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
     fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto,
   };

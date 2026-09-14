@@ -113,8 +113,9 @@ titulo('Os oito tipos têm magia');
 
   for (const tipo of F.FU_TIPOS) {
     const m = G.fuMagiaDe(fichaCom('forte', tipo, 'Raro'), 'forte');
+    // O nome é o do elemento seguido da palavra do feitio (FU_NOME_FORTE).
     verificar('um avatar de ' + tipo + ' leva a barragem dele',
-      m.tipo === tipo && m.nome === G.FU_ELEMENTAL[tipo].nome);
+      m.tipo === tipo && m.nome.indexOf(G.FU_ELEMENTAL[tipo].nome + ' ') === 0, m.nome);
     verificar('e o estado dela (' + tipo + ')', m.estado === G.FU_ELEMENTAL[tipo].estado);
     verificar('e o concentrado dele (' + tipo + ')',
       G.fuMagiaDe(fichaCom('muito_forte', tipo, 'Raro'), 'muito_forte').nome
@@ -515,6 +516,23 @@ titulo('O ataque forte muda com o feitio');
   verificar('a tabela do manual não muda', G.FU_MAGIAS.forte[2].fixo === 15 && G.FU_MAGIAS.forte[1].fixo === 10);
   verificar('o ataque muito forte não ganha jeito de feitio',
     !G.fuMagiaDe(fichaDe('fogo', 'Raro', 'lamina'), 'muito_forte').estilo);
+
+  // ── os nomes: o feitio aparece no nome ──
+  const nome = (feitio, raridade, tipo) => G.fuMagiaDe(fichaDe(tipo || 'fogo', raridade, feitio), 'forte');
+  verificar('Sopro Protetor, Sopro Cortante, Sopro Vital',
+    ['guarda', 'lamina', 'sustentacao'].map(f => nome(f, 'Comum').nome).join('/')
+      === 'Sopro Protetor/Sopro Cortante/Sopro Vital');
+  verificar('e em inglês',
+    ['guarda', 'lamina', 'sustentacao'].map(f => nome(f, 'Comum').nomeEn).join('/')
+      === 'Guarding Breath/Cutting Breath/Vital Breath');
+  verificar('Ignis Scutum, Ignis Acies, Ignis Salus',
+    ['guarda', 'lamina', 'sustentacao'].map(f => nome(f, 'Raro').nome).join('/')
+      === 'Ignis Scutum/Ignis Acies/Ignis Salus');
+  verificar('o Lendário concorda o "grande" com a palavra do feitio',
+    ['guarda', 'lamina', 'sustentacao'].map(f => nome(f, 'Lendário', 'gelo').nome).join('/')
+      === 'Glacies Scutum Magnum/Glacies Acies Magna/Glacies Salus Magna');
+  verificar('o nome latino é o mesmo nas duas línguas',
+    nome('lamina', 'Raro', 'treva').nomeEn === nome('lamina', 'Raro', 'treva').nome);
 
   /* Um ataque forte de verdade: o atacante ganha o feitio e a raridade
      pedidos, os inimigos ficam sem afinidades e com vida de sobra, e
