@@ -605,9 +605,10 @@ titulo('Cada uma faz o que diz, medida no motor');
     verificar('a Sede Funda bebe metade do que tirou', bebeu === true);
     verificar('e bebe exactamente metade, sem passar do máximo', errado === false);
 
-    // nada quando o inimigo absorve
+    // nada quando o inimigo absorve. O golpe comum é físico, então é o
+    // físico que o alvo tem de absorver para o teste valer.
     quem.pv = 10;
-    alvo.ficha.afinidades = { [quem.ficha.tipo]: 'AB' };
+    alvo.ficha.afinidades = { fisico: 'AB' };
     const antes2 = quem.pv;
     for (let i = 0; i < 30; i++) { alvo.pv = 900; M.fuAtacar(e, quem, alvo, { fixo: 5 }); }
     verificar('e não bebe de um golpe que curou o inimigo', quem.pv === antes2,

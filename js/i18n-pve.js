@@ -22,7 +22,7 @@ window.registerStrings({
   'pve.alvo.cheio':       'está com a vida cheia',
   'pve.pm.voltar':     'Voltar',
   'pve.ajuda.golpe':   'Golpe comum',
-  'pve.ajuda.golpe_desc':'Um ataque físico, sem magia nenhuma. Não custa PM e está sempre disponível — é o que sobra quando a magia não chega ou não serve.',
+  'pve.ajuda.golpe_desc':'Um ataque físico, sem magia nenhuma. Não custa PM e está sempre disponível. O dano é físico e não tem elemento: ninguém resiste, absorve ou é fraco a ele — por isso fere até quem absorve o seu elemento.',
   'pve.titulo':        'BATALHA',
   /* ── OS PAPÉIS DO MENU ──
      O menu de ações diz primeiro o PAPEL da jogada e só depois o nome
@@ -295,7 +295,7 @@ window.registerStrings({
   'pve.alvo.cheio':       'already at full life',
   'pve.pm.voltar':     'Back',
   'pve.ajuda.golpe':   'Basic strike',
-  'pve.ajuda.golpe_desc':'A physical attack, no magic at all. Costs no MP and is always available — it is what is left when magic will not reach or will not serve.',
+  'pve.ajuda.golpe_desc':'A physical attack, no magic at all. Costs no MP and is always available. The damage is physical and has no element: no one resists, absorbs or is weak to it — so it hurts even foes that absorb your element.',
   'pve.titulo':        'BATTLE',
   'pve.papel.basico':      'Basic Strike',
   'pve.papel.forte':       'Strong Attack',

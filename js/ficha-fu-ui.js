@@ -308,7 +308,8 @@ function _fbMagiaNome(m) {
 function _fbEfeito(f, m) {
   const fr = [];
   const varios = (m.alvos || 1) > 1 || m.todos;
-  const tipo = t('af.tipo.' + (m.tipo || f.tipo));
+  // O golpe comum é físico (ver fuAtacar); só as magias levam o elemento.
+  const tipo = t('af.tipo.' + (m.lugar === 'comum' ? 'fisico' : (m.tipo || f.tipo)));
 
   if (m.danoFixo) {
     fr.push(t('af.b.ef.dano_fixo', { n: m.danoFixo, tipo }));

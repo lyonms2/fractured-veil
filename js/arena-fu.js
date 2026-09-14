@@ -565,10 +565,11 @@ function _afBarra(atual, max, tipo) {
    bato? — e a resposta estava enterrada em três fichas que era preciso
    abrir uma a uma.
 
-   O tipo é o do avatar escolhido, e é o mesmo tipo para tudo o que ele
-   lança: o golpe comum, a barragem, o concentrado e a Devastação usam
-   todos o `ficha.tipo` dele (ver o js/combate-fu.js). Uma seta só chega
-   porque não há segunda resposta possível.
+   O tipo é o do avatar escolhido, e é o mesmo tipo para todas as MAGIAS
+   dele: o sopro, a barragem, o concentrado e a Devastação usam o
+   `ficha.tipo` (ver o js/combate-fu.js). O golpe comum ficou de fora: é
+   físico, e físico ninguém resiste nem absorve — então a seta fala só das
+   magias, e o texto dela diz isso.
 
    ── E APARECE NOS TRÊS, SEMPRE ──
 
@@ -2051,6 +2052,9 @@ function _afLanceDe(ev) {
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
     if (!ev.acertou) { p.push(t('af.lance.falhou')); return _afComResto(p); }
     p.push('<b>' + nome(ev.alvo) + '</b>');
+    // O golpe comum é físico: diz isso na linha, para o jogador entender
+    // por que ele entra por inteiro em quem resiste ou absorve o elemento.
+    if (ev.tipo_dano === 'fisico') p.push('<i>' + t('af.lance.fisico') + '</i>');
     p.push(_afDanoTexto(ev));
     if (ev.estadoDado) p.push(t('af.lance.estado', { e: t('af.est.' + ev.estadoDado) }));
     if (ev.drenou)     p.push(t('af.lance.dreno', { n: ev.drenou }));

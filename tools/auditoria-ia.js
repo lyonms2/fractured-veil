@@ -214,7 +214,8 @@ titulo('A frente absorve o tipo do atacante');
       const d = IA.fuIaDecidir(e, 'B', [quem.id], nivel);
       const a = d.acao;
       const temTipo = !a.magia || (a.magia.tipo || tipo) === tipo;
-      const naFrente = a.tipo === 'atacar' ||
+      // O golpe comum é físico e a frente não o absorve: atacar não conta.
+      const naFrente =
         (a.tipo === 'magia' && !(a.magia.aliado || a.magia.cura || a.magia.proprio) &&
          temTipo && (a.magia.todos || (a.alvos || []).indexOf(frente.id) !== -1));
       if (naFrente) { bateu++; detalhe = detalhe || `nível ${nivel}: ${JSON.stringify({ t: a.tipo, m: a.magia && a.magia.id, alvos: a.alvos })}`; }

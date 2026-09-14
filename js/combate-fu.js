@@ -458,11 +458,18 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      ignorar resistências — as dele, não as do alvo, e é do ATACANTE que
      a crise se lê. */
   const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem));
-  const tipoDano = o.tipo || quem.ficha.tipo;
+  /* ── O GOLPE COMUM É FÍSICO ──
+     A magia sai no elemento do avatar; o golpe comum, não. Era do elemento
+     também, e isso deixava duas coisas quebradas: a Concha resistia a um
+     dano físico que ninguém causava, e contra um inimigo que absorve o seu
+     elemento não havia ataque nenhum que ferisse — até o murro o curava.
+     Físico é neutro: ninguém nasce resistente, fraco ou absorvendo ele
+     (ver FU_TIPOS, em js/ficha-fu.js). */
+  const tipoDano = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
   const dano = fuDanoComGuarda(alvo, bruto, tipoDano,
                                { ignoraResistencias: semRS });
   Object.assign(ev, {
-    bruto, tipo_dano: o.tipo || quem.ficha.tipo,
+    bruto, tipo_dano: tipoDano,
     afinidade: dano.afinidade, perda: dano.perda, curou: dano.curou,
     pvAlvo: dano.pv, caiu: dano.caiu, salvou: dano.salvou,
     pmAlvo: dano.pmGanho || 0,

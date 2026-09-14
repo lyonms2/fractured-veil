@@ -140,7 +140,8 @@ function _iaGolpe(quem, alvo, o) {
   const f2  = fuDado(quem, mag ? 'VON' : 'VIG');
   const mod = (quem.ficha.bonusPrecisao | 0) + ((mag ? dq.magiaMais : dq.precisaoMais) | 0);
   const dl  = (mag || dq.golpeNaDefMag) ? fuDefesaMag(alvo) : fuDefesa(alvo);
-  const tipo = o.tipo || quem.ficha.tipo;
+  // O golpe comum é físico, como no fuAtacar; só a magia leva o elemento.
+  const tipo = o.tipo || (mag ? quem.ficha.tipo : 'fisico');
   const semRS = !!o.ignoraResistencias || (!!dq.criseIgnoraRS && fuEmCrise(quem));
   const af = fuAfinidadeDe(alvo, tipo);
   const guarda = alvo.guardando && af !== 'AB';

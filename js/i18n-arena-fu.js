@@ -72,11 +72,13 @@ window.registerStrings({
      afinidade nos dois tempos — por isso não podem partilhar chave: um
      "resistiu" numa seta que ainda não bateu em ninguém seria o passado
      a fazer-se de futuro. */
-  'af.vs.VU':   'vulnerável a {tipo}: leva o DOBRO do golpe de {nome}',
-  'af.vs.RS':   'resiste a {tipo}: leva METADE do golpe de {nome}',
-  'af.vs.IM':   'imune a {tipo}: o golpe de {nome} não lhe faz nada',
-  'af.vs.AB':   'absorve {tipo}: o golpe de {nome} CURA-O',
-  'af.vs.nada': 'leva o {tipo} de {nome} por inteiro',
+  // Falam das MAGIAS: o golpe comum é físico e entra por inteiro em todos.
+  'af.vs.VU':   'vulnerável a {tipo}: leva o DOBRO das magias de {nome}. O golpe comum é físico e entra normal.',
+  'af.vs.RS':   'resiste a {tipo}: leva METADE das magias de {nome}. O golpe comum é físico e entra normal.',
+  'af.vs.IM':   'imune a {tipo}: as magias de {nome} não fazem nada nele. O golpe comum é físico e fere.',
+  'af.vs.AB':   'absorve {tipo}: as magias de {nome} CURAM ele. Use o golpe comum, que é físico e fere.',
+  'af.vs.nada': 'leva as magias de {tipo} de {nome} por inteiro, e o golpe comum também',
+  'af.lance.fisico': 'golpe físico, sem elemento',
 
   // ── as afinidades, ditas em palavras ──
   'af.af.RS':         'resistiu',
@@ -391,11 +393,12 @@ window.registerStrings({
   'af.lance.limite':  '— {max} rounds with no winner —',
   'af.lance.comeca':  '{nome} goes first',
 
-  'af.vs.VU':   'vulnerable to {tipo}: takes DOUBLE from {nome}',
-  'af.vs.RS':   'resists {tipo}: takes HALF from {nome}',
-  'af.vs.IM':   'immune to {tipo}: {nome} cannot hurt it',
-  'af.vs.AB':   'absorbs {tipo}: {nome} HEALS it',
-  'af.vs.nada': "takes {nome}'s {tipo} in full",
+  'af.vs.VU':   "vulnerable to {tipo}: takes DOUBLE from {nome}'s spells. The basic strike is physical and lands normally.",
+  'af.vs.RS':   "resists {tipo}: takes HALF from {nome}'s spells. The basic strike is physical and lands normally.",
+  'af.vs.IM':   "immune to {tipo}: {nome}'s spells cannot hurt it. The basic strike is physical and does.",
+  'af.vs.AB':   "absorbs {tipo}: {nome}'s spells HEAL it. Use the basic strike, which is physical and hurts.",
+  'af.vs.nada': "takes {nome}'s {tipo} spells in full, and the basic strike too",
+  'af.lance.fisico': 'physical strike, no element',
 
   'af.af.RS':         'resisted',
   'af.af.VU':         'vulnerable!',
