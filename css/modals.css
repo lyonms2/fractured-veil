@@ -226,6 +226,29 @@
 .mini-btn.close   { border-color:var(--muted); color:var(--muted); background:transparent; }
 .mini-btn.close:hover { border-color:var(--gold-light); color:var(--gold-light); }
 
+/* ── ACHE O DIFERENTE e FUSÃO DE ESFERAS ──
+   O tabuleiro do primeiro é quadrado, como o do labirinto; a tigela do
+   segundo é alta, porque as esferas caem. Os dois medem-se em rem e
+   nunca passam da largura da tela. */
+#oddCanvas {
+  display:block;
+  width:  min(17.5rem, calc(100vw - 1.75rem));
+  height: min(17.5rem, calc(100vw - 1.75rem));
+  border-radius:0.75rem; border:1px solid rgba(212,175,55,.18);
+  box-shadow:inset 0 0 3.75rem rgba(0,0,0,.7);
+  touch-action:none; user-select:none;
+}
+#fusaoCanvas {
+  display:block;
+  width:  min(14rem, calc(100vw - 3rem));
+  aspect-ratio:5 / 7;
+  height:auto;
+  border-radius:0.75rem 0.75rem 1.25rem 1.25rem;
+  border:1px solid rgba(212,175,55,.22);
+  box-shadow:inset 0 0 3.75rem rgba(0,0,0,.75), 0 0 2rem rgba(120,80,200,.12);
+  touch-action:none; user-select:none; cursor:pointer;
+}
+
 /* ── MEMÓRIA ELEMENTAL ── */
 /* Modal com scroll para acomodar grades grandes (tier Mestre = 20 cartas) */
 #memoriaModal { padding:0.75rem; }

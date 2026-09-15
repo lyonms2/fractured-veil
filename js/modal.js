@@ -40,6 +40,7 @@ const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
   'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
+  'oddModal','fusaoModal',
   'marketplaceModal','combateModal','avataresModal','batalhaModal',
   'linhagemModal'
 ];
@@ -126,7 +127,7 @@ const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketplaceModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','combateModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','oddModal','fusaoModal','combateModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -276,6 +277,8 @@ function openMinigame(type) {
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { comAvatar('snakeModal',   'snakeAvatar', startSnake); return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
+  if(type === 'odd')     { comAvatar('oddModal',   'oddAvatar',   startOddOne); return; }
+  if(type === 'fusao')   { comAvatar('fusaoModal', 'fusaoAvatar', startFusao);  return; }
 }
 
 function openMiniModal(id) {
@@ -283,13 +286,14 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
-const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal'];
+const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','oddModal','fusaoModal'];
 function closeMiniModal(id) {
   // Tira o painel da lista de quem recebe reações. Sem isto, um jogo
   // fechado continuava a ser notificado pelo jogo seguinte.
   if (typeof miniAvatarDesmontar === 'function') {
     miniAvatarDesmontar({ memoriaModal:'memAvatar', simonModal:'simonAvatar',
-                          snakeModal:'snakeAvatar' }[id] || '');
+                          snakeModal:'snakeAvatar', oddModal:'oddAvatar',
+                          fusaoModal:'fusaoAvatar' }[id] || '');
   }
   ModalManager.close(id);
   if(_PVE_MODALS.includes(id) && typeof openGameSelector === 'function') {

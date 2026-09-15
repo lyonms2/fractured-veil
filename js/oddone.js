@@ -49,7 +49,7 @@ function startOddOne() {
   _oddHoverIdx  = -1;
 
   const info = document.getElementById('oddInfo');
-  if(info) info.textContent = `${d.label} · ${_oddCols}×${_oddCols} · Toque no diferente!`;
+  if(info) info.textContent = t('mg.odd.info', { diff: t(d.i18nKey), n: _oddCols });
 
   // Buffer = tamanho CSS real × DPR → sem stretch, sem corte
   const canvas = document.getElementById('oddCanvas');
@@ -68,7 +68,7 @@ function startOddOne() {
 
 function _oddSetScore() {
   const el = document.getElementById('oddScore');
-  if(el) el.textContent = `🔍 Rodada ${_oddScore + 1}`;
+  if(el) el.textContent = t('mg.odd.round', { n: _oddScore + 1 });
 }
 
 function _oddClearResult() {
@@ -289,15 +289,15 @@ function _oddEnd() {
   applyGameCost();
 
   if(_oddScore === 0) {
-    if(result) { result.textContent = '⏰ TEMPO ESGOTADO'; result.className = 'mini-result-box lose'; }
+    if(result) { result.textContent = t('mg.odd.timeout'); result.className = 'mini-result-box lose'; }
     if(reward) reward.textContent = '';
   } else {
     const r = miniReward(frac * 1.5, frac * 1.5, Math.min(4, _oddScore));
     if(result) {
-      result.textContent = `🔍 ${_oddScore} rodada${_oddScore !== 1 ? 's' : ''}!`;
+      result.textContent = _oddScore === 1 ? t('mg.odd.round_one') : t('mg.odd.rounds', { n: _oddScore });
       result.className = 'mini-result-box ' + (frac >= 0.6 ? 'win' : '');
     }
-    if(reward && frac > 0) reward.textContent = `+${r.xpGain} XP · +${r.coinGain} 🪙`;
+    if(reward && frac > 0) reward.textContent = t('mg.reward_xp', { xp: r.xpGain, coins: r.coinGain });
     vitals.humor = Math.min(100, vitals.humor + Math.round(8 * frac));
     scheduleSave();
   }

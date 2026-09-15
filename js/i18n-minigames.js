@@ -12,6 +12,21 @@ window.registerStrings(
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
 
+    // Ache o diferente (js/oddone.js)
+    'mg.odd.info':           '{diff} · {n}×{n} · Toque no diferente!',
+    'mg.odd.round':          '🔍 Rodada {n}',
+    'mg.odd.timeout':        '⏰ TEMPO ESGOTADO',
+    'mg.odd.rounds':         '🔍 {n} rodadas!',
+    'mg.odd.round_one':      '🔍 1 rodada!',
+
+    // Fusão de esferas (js/fusao.js)
+    'mg.fus.info':           '{diff} · Junte duas iguais!',
+    'mg.fus.placar':         '🔮 {p} pontos · {n} fusões',
+    'mg.fus.vazio':          '💤 NENHUMA FUSÃO',
+    'mg.fus.fim':            '🔮 {p} pontos · maior: {tipo}',
+    'mg.fus.bub.novo':       'Uma esfera de {tipo}! ✨',
+    'mg.fus.bub.come':       'Nham! 😋',
+
     // Memória
     'mg.mem.sub_pairs':      '{n} pares',
     'mg.mem.info':           'Pares: {matched}/{total} · Erros: {errors}',
@@ -79,6 +94,21 @@ window.registerStrings(
     'mg.bub.not_tired':      "I'm not tired!",
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
+
+    // Spot the odd one (js/oddone.js)
+    'mg.odd.info':           '{diff} · {n}×{n} · Tap the odd one!',
+    'mg.odd.round':          '🔍 Round {n}',
+    'mg.odd.timeout':        '⏰ TIME UP',
+    'mg.odd.rounds':         '🔍 {n} rounds!',
+    'mg.odd.round_one':      '🔍 1 round!',
+
+    // Orb merge (js/fusao.js)
+    'mg.fus.info':           '{diff} · Merge two of a kind!',
+    'mg.fus.placar':         '🔮 {p} points · {n} merges',
+    'mg.fus.vazio':          '💤 NO MERGES',
+    'mg.fus.fim':            '🔮 {p} points · best: {tipo}',
+    'mg.fus.bub.novo':       'An orb of {tipo}! ✨',
+    'mg.fus.bub.come':       'Yum! 😋',
 
     // Memory
     'mg.mem.sub_pairs':      '{n} pairs',
