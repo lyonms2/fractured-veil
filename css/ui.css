@@ -1176,6 +1176,8 @@
   padding:1rem; box-sizing:border-box;
 }
 .prologo-caixa {
+  /* Por cima da imagem de fundo (.prologo-fundo). */
+  position:relative; z-index:1;
   width:100%; max-width:27.5rem;
   /* Era max-height:92vh, e com o antigo html{zoom:1.5} isso dava 138%
      da tela real — o rodapé (o botão) ficava fora da tela. O zoom já
@@ -1193,75 +1195,76 @@
 }
 .prologo-titulo {
   font-family:'Cinzel',serif; font-size:0.5625rem; letter-spacing:0.1875rem;
-  color:var(--gold); opacity:.75;
+  color:var(--gold); opacity:.95;
+  /* Sem painel: a sombra é o que o separa das nuvens da imagem. */
+  text-shadow:0 0 0.75rem rgba(0,0,0,.9), 0 0.0625rem 0.125rem rgba(0,0,0,.9);
 }
 
-/* ── A IMAGEM DO PRÓLOGO ──
+/* ── A IMAGEM DE FUNDO ──
 
-   Um recorte panorâmico da estrada e dos pilares da Fratura, entre o
-   título e o texto. As bordas se dissolvem no fundo em vez de terminar
-   num retângulo: a imagem é o lugar onde a história acontece, não uma
-   moldura em volta dela.
-
-   A ALTURA É O QUE PAGA A CONTA. Cada etapa tem de caber sem rolar
-   (ver o comentário do PC mais abaixo), portanto a imagem cresce com a
-   altura da tela e tem teto: 22% da altura, entre 5 e 9rem. E nas
-   etapas longas ela encolhe ou se recolhe: quem decide é o
-   _prologoAjustarArte (js/prologo.js), que mede o texto antes de
-   escrever e põe o max-height. A .prologo-arte-medida é a sonda que ele
-   usa para saber a altura cheia.
+   A estrada rachada e os pilares da Fratura ocupam a tela inteira, por
+   trás da caixa do prólogo. Escurecida nas bordas, em cima e embaixo,
+   para o título, as marcas e o botão continuarem legíveis sem painel
+   próprio; no meio ela aparece quase inteira.
 
    Entra devagar a cada abertura e depois respira num zoom lento — que
    para para quem pediu menos movimento no sistema. */
-.prologo-arte-medida { height:clamp(5rem, 22vh, 9rem); }
-.prologo-arte {
-  flex-shrink:0; position:relative; overflow:hidden;
-  height:clamp(5rem, 22vh, 9rem);
-  transition:max-height .6s ease, opacity .6s ease;
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 22%, #000 68%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  -webkit-mask-composite:source-in;
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 22%, #000 68%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  mask-composite:intersect;
+.prologo-fundo {
+  position:absolute; inset:0; z-index:0;
+  overflow:hidden; pointer-events:none;
 }
-.prologo-arte img {
+.prologo-fundo img {
   display:block; width:100%; height:100%;
-  object-fit:cover; object-position:62% 46%;
-  animation:prologoArteEntra 1.8s ease-out both,
-            prologoArteRespira 38s ease-in-out 1.8s infinite alternate;
+  object-fit:cover; object-position:62% 50%;
+  animation:prologoFundoEntra 2.2s ease-out both,
+            prologoFundoRespira 40s ease-in-out 2.2s infinite alternate;
 }
-.prologo-arte.recolhida { opacity:0; }
-@keyframes prologoArteEntra {
-  from { opacity:0; filter:brightness(.4); }
-  to   { opacity:.95; filter:brightness(1); }
+.prologo-fundo::after {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(4,3,10,.1) 0%, rgba(4,3,10,.5) 70%, rgba(4,3,10,.85) 100%),
+    linear-gradient(to bottom, rgba(4,3,10,.6) 0%, rgba(4,3,10,0) 20%, rgba(4,3,10,0) 62%, rgba(4,3,10,.85) 100%);
 }
-@keyframes prologoArteRespira {
+@keyframes prologoFundoEntra {
+  from { opacity:0; transform:scale(1.06); }
+  to   { opacity:1; transform:scale(1.02); }
+}
+@keyframes prologoFundoRespira {
   from { transform:scale(1.02); }
   to   { transform:scale(1.1) translateX(-1.5%); }
 }
 @media (prefers-reduced-motion:reduce) {
-  .prologo-arte img { animation:prologoArteEntra .01s both; }
+  .prologo-fundo img { animation:none; transform:scale(1.02); }
 }
 
-/* EB Garamond, que passou a ser a serifada do jogo inteiro.
-   A Cinzel dos títulos vem das capitais romanas gravadas em pedra; a
-   Garamond, dos tipos de Claude Garamond do século XVI. As duas saem da
-   mesma linhagem humanista, e por isso combinam por parentesco e não por
-   acaso. E ouro sobre quase-preto pede uma letra com contraste de traço,
-   que pareça gravada em vez de impressa.
+/* ── O TEXTO: CINZEL, NUM PAINEL QUASE OPACO ──
 
-   Com o tamanho maior de propósito: isto é superfície de leitura, não
-   interface de jogo, e a Garamond tem altura-de-x pequena — miúda ela
-   fecha. 12px no celular e 16 no desktop dão-lhe ar. */
+   A Cinzel, que é a letra do jogo inteiro — títulos, botões, recursos —
+   e não a Garamond, que só o prólogo e a lore usavam. Um pouco menor do
+   que a Garamond era, porque a Cinzel é larga e desenha as minúsculas
+   como versaletes; e com entrelinha folgada, que é o que a deixa ler em
+   parágrafo.
+
+   Na frente da imagem, o texto vai num painel escuro quase opaco, com o
+   filete dourado dos outros painéis. O painel tem a altura do texto e
+   fica centrado entre o título e as marcas: numa etapa curta a imagem
+   aparece quase inteira em volta dele, numa longa ele cresce até onde a
+   caixa deixa e rola por dentro. A largura é sempre a da coluna — sem o
+   width:100%, as margens automáticas do PC o encolheriam até o conteúdo,
+   e ele cresceria de lado enquanto a escrita acontece. */
 .prologo-texto {
-  flex:1; min-height:0; overflow-y:auto;
-  font-family:'EB Garamond',serif;
-  font-size:0.75rem; line-height:1.75; color:var(--text);
-  padding:0.125rem 0.125rem 0.25rem;
+  flex:0 1 auto; min-height:0; overflow-y:auto;
+  width:100%; box-sizing:border-box; margin-top:auto;
+  font-family:'Cinzel',serif;
+  font-size:0.6875rem; line-height:1.75; letter-spacing:0.01rem;
+  color:var(--text);
+  padding:0.75rem 0.875rem;
+  background:rgba(8,6,16,.86);
+  border:1px solid rgba(212,175,55,.24); border-radius:0.5rem;
+  box-shadow:0 0.5rem 2rem rgba(0,0,0,.6);
+  -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
 }
+
 /* Havia aqui uma regra a tratar o PRIMEIRO parágrafo como cartela de
    filme — Cinzel dourado, centrado, entrelinha larga. Fazia sentido
    quando o texto era uma coluna só e o primeiro parágrafo era mesmo a
@@ -1279,6 +1282,8 @@
    cada linha; centrar obriga-o a procurar o início de cada uma. Centrar
    serve para uma linha curta e solta, que é o que isto deixou de ter. */
 .prologo-texto .lore-p { margin-bottom:0.8125rem; text-align:left; }
+/* O último sem margem: dentro do painel ela virava uma faixa vazia embaixo. */
+.prologo-texto .lore-p:last-child { margin-bottom:0; }
 
 .prologo-rodape { flex-shrink:0; text-align:center; padding-top:0.125rem; }
 .prologo-btn {
@@ -1289,7 +1294,8 @@
   font-family:'Cinzel',serif; font-size:0.5625rem; letter-spacing:0.125rem;
   color:var(--gold); border-radius:0.5rem;
   border:1px solid rgba(212,175,55,.45);
-  background:linear-gradient(160deg, rgba(212,175,55,.14) 0%, rgba(11,9,22,.6) 100%);
+  /* Mais opaco do que era: agora está na frente da imagem. */
+  background:linear-gradient(160deg, rgba(40,30,12,.9) 0%, rgba(11,9,22,.92) 100%);
   transition:border-color .2s, box-shadow .2s, transform .1s;
 }
 .prologo-btn:hover {
@@ -1345,7 +1351,8 @@
    texto sem fim à vista é texto que se salta. */
 .prologo-marcas {
   display:flex; justify-content:center; gap:0.375rem;
-  flex-shrink:0; padding:0.5rem 0 0.25rem;
+  /* O margin-top:auto divide a sobra com o do texto: o painel fica no meio. */
+  flex-shrink:0; padding:0.5rem 0 0.25rem; margin-top:auto;
 }
 .prologo-marca {
   width:0.3125rem; height:0.3125rem; border-radius:50%;
@@ -1399,8 +1406,9 @@
   .prologo-titulo { font-size:calc(0.7875rem / 1.1); letter-spacing:calc(0.2625rem / 1.1); }
 
   .prologo-texto  {
-    font-size:calc(0.93333rem / 1.1); line-height:1.8;
+    font-size:calc(0.74rem / 1.1); line-height:1.72;
     max-width:calc(30.33333rem / 1.1); margin-left:auto; margin-right:auto;
+    padding:calc(1rem / 1.1) calc(1.25rem / 1.1);
   }
   .prologo-texto .lore-p { margin-bottom:calc(0.95rem / 1.1); }
 
