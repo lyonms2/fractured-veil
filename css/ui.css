@@ -1277,11 +1277,14 @@
    tipografia própria: já se destaca por estar sozinha na primeira
    página, que é o que a paginação lhe deu.
 
-   E à esquerda, não centrado. Os parágrafos têm de trinta a cem
-   palavras, e em texto corrido a margem esquerda é onde o olho volta a
-   cada linha; centrar obriga-o a procurar o início de cada uma. Centrar
-   serve para uma linha curta e solta, que é o que isto deixou de ter. */
-.prologo-texto .lore-p { margin-bottom:0.8125rem; text-align:left; }
+   CENTRALIZADO, uma linha de cada vez. O texto foi reescrito pelo dono
+   do jogo com as quebras que ele quer ver (js/i18n-prologo.js): cada
+   linha é um parágrafo curto, e centrar é o que uma linha curta e solta
+   pede. O espaço entre elas é menor do que entre parágrafos de verdade,
+   para a página ler como estrofes e não como uma lista. */
+.prologo-texto .lore-p { margin-bottom:0.5rem; text-align:center; }
+/* As Fraturas do Véu, marcadas com **asteriscos** no texto. */
+.prologo-texto strong { color:var(--gold); font-weight:700; }
 /* O último sem margem: dentro do painel ela virava uma faixa vazia embaixo. */
 .prologo-texto .lore-p:last-child { margin-bottom:0; }
 
@@ -1406,11 +1409,11 @@
   .prologo-titulo { font-size:calc(0.7875rem / 1.1); letter-spacing:calc(0.2625rem / 1.1); }
 
   .prologo-texto  {
-    font-size:calc(0.74rem / 1.1); line-height:1.72;
+    font-size:calc(0.74rem / 1.1); line-height:1.66;
     max-width:calc(30.33333rem / 1.1); margin-left:auto; margin-right:auto;
     padding:calc(1rem / 1.1) calc(1.25rem / 1.1);
   }
-  .prologo-texto .lore-p { margin-bottom:calc(0.95rem / 1.1); }
+  .prologo-texto .lore-p { margin-bottom:calc(0.4rem / 1.1); }
 
   .prologo-btn { font-size:calc(0.7875rem / 1.1); letter-spacing:calc(0.175rem / 1.1);
                  min-width:calc(15.4rem / 1.1); padding:calc(0.85rem / 1.1) calc(2.45rem / 1.1); }

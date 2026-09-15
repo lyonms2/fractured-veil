@@ -51,6 +51,25 @@ function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
   const paragraphs = rawText.split('\n\n').map(p => p.trim()).filter(Boolean);
   container.innerHTML = '';
 
+  /* **Negrito**: um trecho entre dois pares de asteriscos sai em
+     <strong> (as Fraturas do Véu, no prólogo). A escrita conta só as
+     letras, sem os asteriscos, e o trecho já nasce em negrito desde a
+     primeira letra. Um parágrafo sem asteriscos sai igual ao de antes:
+     o texto é escapado, nunca lido como HTML. */
+  const partes  = paragraphs.map(p => p.split('**').map((txt, i) => ({ txt, negrito: i % 2 === 1 })));
+  const tamanho = partes.map(ps => ps.reduce((n, x) => n + x.txt.length, 0));
+  const escapar = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function desenhar(el, pi, ate) {
+    let resto = ate, html = '';
+    for (const x of partes[pi]) {
+      if (resto <= 0) break;
+      const pedaco = escapar(x.txt.slice(0, resto));
+      resto -= x.txt.length;
+      html += x.negrito ? '<strong>' + pedaco + '</strong>' : pedaco;
+    }
+    el.innerHTML = html;
+  }
+
   let dead    = false;
   let timerId = null;
   let pIdx    = 0;
@@ -70,10 +89,10 @@ function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
     if(dead) return;
     kill();
     container.innerHTML = '';
-    paragraphs.forEach(txt => {
+    paragraphs.forEach((txt, i) => {
       const p = document.createElement('p');
       p.className = 'lore-p';
-      p.textContent = txt;
+      desenhar(p, i, Infinity);
       container.appendChild(p);
     });
     _loreTwHandle = null;
@@ -103,9 +122,8 @@ function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {
 
   function typeChar() {
     if(dead) return;
-    const text = paragraphs[pIdx];
-    if(charIdx <= text.length) {
-      curEl.textContent = text.slice(0, charIdx);
+    if(charIdx <= tamanho[pIdx]) {
+      desenhar(curEl, pIdx, charIdx);
       charIdx++;
     } else {
       clearInterval(timerId); timerId = null;
