@@ -8,11 +8,9 @@
 //
 // ── O QUE É NOSSO NISTO ──
 //
-// A ideia de fundir iguais é velha e corre em muitos jogos. O que faz
-// deste o jogo DELE é o avatar: de tempos em tempos ele se debruça e
-// come uma esfera, o que abre espaço e lhe dá humor. E a bomba, que se
-// ganha jogando ou se compra com moedas, para tirar do monte aquela que
-// ficou no lugar errado.
+// A ideia de fundir iguais é velha e corre em muitos jogos. O que é
+// nosso é a bomba, que se ganha jogando ou se compra com moedas, para
+// tirar do monte a esfera que ficou no lugar errado.
 //
 // ── NADA SOME SOZINHO ──
 //
@@ -23,9 +21,10 @@
 //     há teto e as velocidades têm limite: o que entra na tigela fica
 //     na tigela, e o monte alto acaba a partida em vez de vazar.
 //
-//   · O avatar comia sem avisar, e uma esfera sumia do nada. Agora ele
-//     AVISA: a escolhida pisca dourada por um segundo e meio, com a
-//     fala dele por cima, e só então ele come.
+//   · O AVATAR COMIA a maior esfera de tempos em tempos. Saiu, e por
+//     dois motivos: uma esfera sumindo é o jogo mexendo no tabuleiro do
+//     jogador, e com ela o jogo não acabava quase nunca. Quem abre
+//     espaço agora é a bomba, que é do jogador e custa alguma coisa.
 //
 // ── A FÍSICA ──
 //
@@ -58,10 +57,9 @@ const FUS_ATRITO       = 0.992;
 const FUS_QUIQUE       = 0.18;   // quanto devolve ao bater
 const FUS_VEL_MAX      = 14;     // trava contra atravessar paredes
 const FUS_TOPO         = 46;     // a linha da borda, em px lógicos
-const FUS_ESTOURO_MS   = 1500;   // parado acima da linha até acabar
+const FUS_ESTOURO_MS   = 1500;   // acima da linha até a partida acabar
+const FUS_ESTOURO_IDADE = 1000;  // idade mínima da esfera para ela contar
 const FUS_ESPERA_SOLTA = 260;    // ms entre uma solta e a seguinte
-const FUS_AVISO_MS     = 1500;   // o aviso antes de o avatar comer
-const FUS_COMER_MS     = 420;    // a esfera encolhendo na boca dele
 const FUS_FILA         = 3;      // quantas próximas se mostram
 
 // A bomba: quantos pontos custa ganhar uma, quantas cabem na mão, e
@@ -73,8 +71,6 @@ const FUS_BOMBA_PRECO  = 15;
 // Quantos tipos podem nascer na mão, por dificuldade: com mais tipos,
 // custa mais juntar duas iguais.
 const FUS_TIPOS_INICIAIS = [3, 3, 4, 5];
-// De quanto em quanto tempo o avatar quer comer (ms).
-const FUS_COME_CADA      = [11000, 14000, 18000, 23000];
 // Quantos pontos valem uma partida cheia, por dificuldade.
 const FUS_ALVO           = [260, 420, 640, 900];
 
@@ -90,9 +86,6 @@ let _fusTier      = 0;
 let _fusMira      = null;
 let _fusUltimaSolta  = 0;
 let _fusEstouroDesde = null;
-let _fusComeEm    = 0;    // quando o avatar pede a próxima
-let _fusAviso     = null; // { id, inicio } — ele avisou, ainda não comeu
-let _fusComendo   = null; // { id, inicio } — está engolindo
 let _fusBombas    = 0;
 let _fusBombaProx = 0;    // pontos para ganhar a seguinte
 let _fusArmado    = false;
@@ -129,12 +122,9 @@ function startFusao() {
   _fusMira    = (canvas.clientWidth || 224) / 2;
   _fusUltimaSolta  = 0;
   _fusEstouroDesde = null;
-  _fusAviso   = null;
-  _fusComendo = null;
   _fusArmado  = false;
   _fusBombas  = 1;                       // uma de graça, para ensinar o gesto
   _fusBombaProx = FUS_BOMBA_CADA[_fusTier];
-  _fusComeEm  = performance.now() + FUS_COME_CADA[_fusTier];
   _fusFila    = Array.from({ length: FUS_FILA + 1 }, _fusSorteia);
 
   const info = document.getElementById('fusaoInfo');
@@ -285,7 +275,6 @@ function _fusExplodir(alvo) {
   _fusArmado = false;
   _fusEsferas = _fusEsferas.filter(e => e !== alvo);
   _fusFaiscar(alvo.x, alvo.y, FUS_NIVEIS[alvo.n].cor, 16);
-  if (_fusAviso && _fusAviso.id === alvo.id) _fusAviso = null;
   if (typeof playSound === 'function') playSound('mine_explode');
   _fusPainel();
 }
@@ -401,8 +390,6 @@ function _fusFundir(W) {
         vx: (a.vx + b.vx) / 2, vy: (a.vy + b.vy) / 2 - 1.2,
         n, r: _fusRaio(n, W), nascida: agora, fundidaEm: agora,
       };
-      // O aviso do avatar morre com a esfera que ele tinha escolhido.
-      if (_fusAviso && (_fusAviso.id === a.id || _fusAviso.id === b.id)) _fusAviso = null;
       _fusEsferas.splice(j, 1);
       _fusEsferas.splice(i, 1);
       _fusEsferas.push(nova);
@@ -434,33 +421,6 @@ function _fusGanhar(pontos) {
       showBubble(t('mg.fus.bomba.ganhou'));
     }
   }
-}
-
-/* ── O AVATAR COME ──
-   É a parte que faz disto uma brincadeira com o bicho: de tempos em
-   tempos ele escolhe uma esfera, AVISA (ela pisca dourada por um
-   segundo e meio, com a fala dele por cima) e só então come. O aviso
-   existe para nada sumir do nada — e para dar tempo de estourar aquela
-   com a bomba, se o jogador quiser guardá-la. */
-function _fusAvatarQuer(agora) {
-  if (_fusAviso || _fusComendo || !_fusEsferas.length) return;
-  let maior = _fusEsferas[0];
-  for (const e of _fusEsferas) if (e.n > maior.n || (e.n === maior.n && e.y < maior.y)) maior = e;
-  _fusAviso = { id: maior.id, inicio: agora };
-  _fusComeEm = agora + FUS_COME_CADA[_fusTier] + FUS_AVISO_MS;
-  showBubble(t('mg.fus.bub.vou_comer'));
-}
-
-function _fusAvatarCome(agora) {
-  const alvo = _fusEsferas.find(e => e.id === _fusAviso.id);
-  _fusAviso = null;
-  if (!alvo) return;                       // fundiu ou estourou no meio do aviso
-  _fusComendo = { id: alvo.id, inicio: agora };
-  _fusGanhar((alvo.n + 1) * 3);
-  vitals.humor = Math.min(100, vitals.humor + 2);
-  showBubble(t('mg.fus.bub.come'));
-  if (typeof playSound === 'function') playSound('feed');
-  _fusPlacar();
 }
 
 // ── Fim ────────────────────────────────────────────────────────────
@@ -501,21 +461,14 @@ function _fusEsfera(ctx, e, agora) {
   const nv = FUS_NIVEIS[e.n];
   // A recém-fundida dá um estalo: cresce e volta.
   const salto = e.fundidaEm ? Math.max(0, 1 - (agora - e.fundidaEm) / 260) : 0;
-  let r = e.r * (1 + 0.22 * salto);
-  // E a que está sendo comida encolhe até sumir.
-  if (_fusComendo && _fusComendo.id === e.id) {
-    r *= Math.max(0, 1 - (agora - _fusComendo.inicio) / FUS_COMER_MS);
-  }
+  const r = e.r * (1 + 0.22 * salto);
   if (r <= 0.5) return;
 
   ctx.save();
 
-  // A sombra no fundo da tigela dá peso ao monte.
-  ctx.fillStyle = 'rgba(0,0,0,0.28)';
-  ctx.beginPath();
-  ctx.ellipse(e.x, e.y + r * 0.82, r * 0.78, r * 0.26, 0, 0, Math.PI * 2);
-  ctx.fill();
-
+  /* Havia aqui uma sombra elíptica debaixo de cada esfera. Ela só faz
+     sentido quando a esfera está pousada em alguma coisa — no ar, a
+     mancha cai junto com ela e parece sujeira colada no vidro. */
   ctx.shadowColor = nv.cor;
   ctx.shadowBlur  = r * 0.8;
   const grd = ctx.createRadialGradient(e.x - r * 0.34, e.y - r * 0.38, r * 0.08, e.x, e.y, r);
@@ -541,19 +494,7 @@ function _fusEsfera(ctx, e, agora) {
   ctx.ellipse(e.x - r * 0.3, e.y - r * 0.36, r * 0.24, r * 0.17, -0.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // O aviso do avatar: anel dourado a pulsar em volta da escolhida.
-  if (_fusAviso && _fusAviso.id === e.id) {
-    const p = 0.5 + 0.5 * Math.sin((agora - _fusAviso.inicio) / 90);
-    ctx.strokeStyle = `rgba(240,208,128,${(0.45 + 0.45 * p).toFixed(2)})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, r + 4 + p * 3, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // E com a bomba armada, todas piscam de leve: são todas alvo.
+  // Com a bomba armada, todas piscam de leve: são todas alvo.
   if (_fusArmado) {
     const p = 0.5 + 0.5 * Math.sin(agora / 140);
     ctx.strokeStyle = `rgba(248,113,113,${(0.25 + 0.4 * p).toFixed(2)})`;
@@ -578,21 +519,18 @@ function _fusDesenhar() {
     _fusFisica(W, H);
     _fusFundir(W);
 
-    // O avatar pede, avisa e come.
-    if (!_fusAviso && !_fusComendo && agora >= _fusComeEm) _fusAvatarQuer(agora);
-    if (_fusAviso && agora - _fusAviso.inicio > FUS_AVISO_MS) _fusAvatarCome(agora);
-    if (_fusComendo && agora - _fusComendo.inicio > FUS_COMER_MS) {
-      const comida = _fusEsferas.find(e => e.id === _fusComendo.id);
-      if (comida) _fusFaiscar(comida.x, comida.y, FUS_NIVEIS[comida.n].cor, 8);
-      _fusEsferas = _fusEsferas.filter(e => e.id !== _fusComendo.id);
-      _fusComendo = null;
-    }
+    /* ── TRANSBORDOU? ──
 
-    /* Transbordou? Só conta a esfera PARADA acima da linha: uma que
-       acabou de ser solta está sempre lá em cima, e acabar por isso
-       seria acabar por jogar. */
+       Conta a esfera que está acima da linha há mais de um segundo: a
+       que acabou de ser solta nasce lá em cima e cai antes disso, e por
+       isso não conta.
+
+       Havia aqui também uma condição de VELOCIDADE — só contava a
+       esfera parada — e era ela o defeito: num monte apertado as
+       esferas nunca param de tremer, portanto a partida não acabava
+       nunca, por mais alto que o monte ficasse. */
     const estourando = _fusEsferas.some(e =>
-      e.y - e.r < FUS_TOPO && agora - e.nascida > 900 && Math.abs(e.vy) < 0.6);
+      e.y - e.r < FUS_TOPO && agora - e.nascida > FUS_ESTOURO_IDADE);
     if (estourando) {
       if (_fusEstouroDesde == null) _fusEstouroDesde = agora;
       else if (agora - _fusEstouroDesde > FUS_ESTOURO_MS) _fusFim();
