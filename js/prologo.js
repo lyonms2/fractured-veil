@@ -92,6 +92,8 @@ function abrirPrologo(releitura) {
 
   _prologoEtapa = 0;
   _prologoMostrarEtapa();
+  // A Garamond pode chegar depois da primeira medida, e ela muda a altura do texto.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(_prologoAjustarArte);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -128,6 +130,8 @@ function _prologoMostrarEtapa() {
 
   _prologoEscrevendo = true;
   _prologoDesenharBotao();
+  // Antes de escrever: a imagem já fica do tamanho que esta etapa deixa.
+  _prologoAjustarArte();
 
   const modal = document.getElementById('prologoModal');
   _loreTypewriter(
@@ -138,6 +142,76 @@ function _prologoMostrarEtapa() {
     true   // sem clique global: quem acelera é o botão
   );
 }
+
+/* ── A IMAGEM CEDE O LUGAR AO TEXTO ──
+
+   A imagem da Fratura fica entre o título e o texto, e cada etapa tem de
+   caber sem rolar. As curtas deixam espaço de sobra; as duas mais longas
+   não deixam espaço nenhum numa tela baixa (1366x768 no PC, 360x560 no
+   celular — medido).
+
+   Por isso a altura da imagem se decide por etapa, ANTES de a escrita
+   começar: o texto inteiro é montado numa cópia invisível, com a mesma
+   largura, e o que sobra da caixa é o que a imagem pode ter. Cheia se
+   couber, menor se sobrar ao menos metade dela, e recolhida se não — com
+   transição, para a troca de página parecer de propósito. Decidir no fim
+   da escrita faria a imagem pular a meio da leitura. */
+function _prologoAjustarArte() {
+  const modal = document.getElementById('prologoModal');
+  const caixa = modal && modal.querySelector('.prologo-caixa');
+  const arte  = caixa && caixa.querySelector('.prologo-arte');
+  const corpo = document.getElementById('prologoTexto');
+  if (!arte || !corpo || getComputedStyle(modal).display === 'none') return;
+
+  const sonda = (classe) => {
+    const d = document.createElement('div');
+    d.className = classe;
+    d.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;';
+    caixa.appendChild(d);
+    return d;
+  };
+
+  // A altura cheia da imagem é a da regra do CSS, que depende da tela.
+  const medida = sonda('prologo-arte-medida');
+  const cheia = medida.offsetHeight;
+  medida.remove();
+
+  /* A altura do texto desta etapa, já escrito por inteiro. A largura é a
+     da caixa, e o max-width da própria classe corta como corta o texto
+     de verdade. Não se lê a largura do texto de agora: no PC ele tem
+     margens automáticas, e numa coluna flex isso o encolhe até o
+     conteúdo — no começo da etapa, vazio, são 22px. */
+  const copia = sonda('prologo-texto');
+  Object.assign(copia.style, {
+    width: caixa.clientWidth + 'px', height: 'auto', flex: 'none', overflow: 'visible',
+  });
+  t('prologo.p' + (_prologoEtapa + 1)).split('\n\n').map(p => p.trim()).filter(Boolean)
+    .forEach(txt => {
+      const p = document.createElement('p');
+      p.className = 'lore-p';
+      p.textContent = txt;
+      copia.appendChild(p);
+    });
+  const precisa = copia.scrollHeight + 2;
+  copia.remove();
+
+  const filhos = Array.from(caixa.children);
+  const gap = parseFloat(getComputedStyle(caixa).rowGap) || 0;
+  const fixos = filhos.filter(el => el !== arte && el !== corpo)
+                      .reduce((s, el) => s + el.offsetHeight, 0);
+  const sobra = caixa.clientHeight - fixos - gap * (filhos.length - 1) - precisa;
+
+  const h = sobra >= cheia ? cheia : (sobra >= cheia * 0.5 ? Math.floor(sobra) : 0);
+  arte.style.maxHeight = h + 'px';
+  arte.classList.toggle('recolhida', h === 0);
+}
+
+// Uma tela que muda de tamanho refaz a conta da etapa que está aberta.
+let _prologoArteTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_prologoArteTimer);
+  _prologoArteTimer = setTimeout(_prologoAjustarArte, 150);
+});
 
 function _prologoDesenharBotao() {
   const rodape = document.getElementById('prologoRodape');

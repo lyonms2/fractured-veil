@@ -1196,6 +1196,56 @@
   color:var(--gold); opacity:.75;
 }
 
+/* ── A IMAGEM DO PRÓLOGO ──
+
+   Um recorte panorâmico da estrada e dos pilares da Fratura, entre o
+   título e o texto. As bordas se dissolvem no fundo em vez de terminar
+   num retângulo: a imagem é o lugar onde a história acontece, não uma
+   moldura em volta dela.
+
+   A ALTURA É O QUE PAGA A CONTA. Cada etapa tem de caber sem rolar
+   (ver o comentário do PC mais abaixo), portanto a imagem cresce com a
+   altura da tela e tem teto: 22% da altura, entre 5 e 9rem. E nas
+   etapas longas ela encolhe ou se recolhe: quem decide é o
+   _prologoAjustarArte (js/prologo.js), que mede o texto antes de
+   escrever e põe o max-height. A .prologo-arte-medida é a sonda que ele
+   usa para saber a altura cheia.
+
+   Entra devagar a cada abertura e depois respira num zoom lento — que
+   para para quem pediu menos movimento no sistema. */
+.prologo-arte-medida { height:clamp(5rem, 22vh, 9rem); }
+.prologo-arte {
+  flex-shrink:0; position:relative; overflow:hidden;
+  height:clamp(5rem, 22vh, 9rem);
+  transition:max-height .6s ease, opacity .6s ease;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 22%, #000 68%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 22%, #000 68%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-composite:intersect;
+}
+.prologo-arte img {
+  display:block; width:100%; height:100%;
+  object-fit:cover; object-position:62% 46%;
+  animation:prologoArteEntra 1.8s ease-out both,
+            prologoArteRespira 38s ease-in-out 1.8s infinite alternate;
+}
+.prologo-arte.recolhida { opacity:0; }
+@keyframes prologoArteEntra {
+  from { opacity:0; filter:brightness(.4); }
+  to   { opacity:.95; filter:brightness(1); }
+}
+@keyframes prologoArteRespira {
+  from { transform:scale(1.02); }
+  to   { transform:scale(1.1) translateX(-1.5%); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .prologo-arte img { animation:prologoArteEntra .01s both; }
+}
+
 /* EB Garamond, que passou a ser a serifada do jogo inteiro.
    A Cinzel dos títulos vem das capitais romanas gravadas em pedra; a
    Garamond, dos tipos de Claude Garamond do século XVI. As duas saem da
