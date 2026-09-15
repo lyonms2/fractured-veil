@@ -249,6 +249,45 @@
   touch-action:none; user-select:none; cursor:pointer;
 }
 
+/* ── O PAINEL DA FUSÃO ──
+   A fila, a escada dos oito tipos e a bomba, debaixo da tigela. */
+#fusaoPainel {
+  display:flex; flex-direction:column; align-items:center; gap:0.25rem;
+  margin:0.375rem 0 0.125rem; width:min(14rem, calc(100vw - 3rem));
+}
+.fus-linha {
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
+  gap:0.25rem; width:100%;
+}
+.fus-rot {
+  font-family:'Cinzel',serif; font-size:0.375rem; letter-spacing:0.0625rem;
+  color:var(--muted); margin-right:0.125rem;
+}
+.fus-bola, .fus-passo {
+  display:inline-block; border-radius:50%; flex-shrink:0;
+}
+/* Os degraus apagados são só o desenho do que ainda não veio. */
+.fus-passo { opacity:.22; transition:opacity .35s, box-shadow .35s; }
+.fus-passo.feito { opacity:1; box-shadow:0 0 0.3125rem currentColor; }
+.fus-bomba {
+  font-family:'Cinzel',serif; font-size:0.4375rem; padding:0.25rem 0.625rem;
+}
+.fus-bomba.armada {
+  border-color:#f87171; color:#fca5a5; background:rgba(248,113,113,.16);
+  animation:fus-bomba-pisca 1s ease-in-out infinite;
+}
+@keyframes fus-bomba-pisca {
+  50% { box-shadow:0 0 0.75rem rgba(248,113,113,.45); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .fus-bomba.armada { animation:none; }
+}
+@media (min-width:681px) {
+  #fusaoPainel { gap:0.3125rem; }
+  .fus-rot     { font-size:0.5rem; }
+  .fus-bomba   { font-size:0.5625rem; padding:0.375rem 0.875rem; }
+}
+
 /* ── MEMÓRIA ELEMENTAL ── */
 /* Modal com scroll para acomodar grades grandes (tier Mestre = 20 cartas) */
 #memoriaModal { padding:0.75rem; }

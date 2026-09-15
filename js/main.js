@@ -54,6 +54,7 @@ window.startOddOne    = typeof startOddOne    !== "undefined" ? startOddOne    :
 window.oddClick       = typeof oddClick       !== "undefined" ? oddClick       : ()=>{};
 window.startFusao     = typeof startFusao     !== "undefined" ? startFusao     : ()=>{};
 window.fusaoClick     = typeof fusaoClick     !== "undefined" ? fusaoClick     : ()=>{};
+window.fusaoBomba     = typeof fusaoBomba     !== "undefined" ? fusaoBomba     : ()=>{};
 window.startLabirinto = typeof startLabirinto !== "undefined" ? startLabirinto : ()=>{};
 window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       : ()=>{};
 window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};

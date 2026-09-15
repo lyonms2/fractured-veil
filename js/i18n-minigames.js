@@ -26,6 +26,14 @@ window.registerStrings(
     'mg.fus.fim':            '🔮 {p} pontos · maior: {tipo}',
     'mg.fus.bub.novo':       'Uma esfera de {tipo}! ✨',
     'mg.fus.bub.come':       'Nham! 😋',
+    'mg.fus.bub.vou_comer':  'Essa aí eu quero! 👀',
+    'mg.fus.fila':           'VÊM AÍ',
+    'mg.fus.escada':         'ESCADA',
+    'mg.fus.bomba.usar':     '💣 BOMBA ×{n}',
+    'mg.fus.bomba.mire':     '💣 TOQUE NUMA ESFERA',
+    'mg.fus.bomba.comprar':  '💣 COMPRAR · {preco} 🪙',
+    'mg.fus.bomba.ganhou':   'Uma bomba! 💣',
+    'mg.fus.bomba.sem':      'Moedas de menos... 🪙',
 
     // Memória
     'mg.mem.sub_pairs':      '{n} pares',
@@ -109,6 +117,14 @@ window.registerStrings(
     'mg.fus.fim':            '🔮 {p} points · best: {tipo}',
     'mg.fus.bub.novo':       'An orb of {tipo}! ✨',
     'mg.fus.bub.come':       'Yum! 😋',
+    'mg.fus.bub.vou_comer':  'I want that one! 👀',
+    'mg.fus.fila':           'UP NEXT',
+    'mg.fus.escada':         'LADDER',
+    'mg.fus.bomba.usar':     '💣 BOMB ×{n}',
+    'mg.fus.bomba.mire':     '💣 TAP AN ORB',
+    'mg.fus.bomba.comprar':  '💣 BUY · {preco} 🪙',
+    'mg.fus.bomba.ganhou':   'A bomb! 💣',
+    'mg.fus.bomba.sem':      'Not enough coins... 🪙',
 
     // Memory
     'mg.mem.sub_pairs':      '{n} pairs',
