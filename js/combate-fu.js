@@ -130,7 +130,32 @@ function fuLutador(slot, lado, posto) {
     protegendo: null,
     suspirou: false,
     vivo: true,
+    /* O LAÇO com os aliados desta batalha: { idDoAliado: 1 a 3 }, montado
+       por quem abre a batalha (js/lacos.js e js/pve-fu.js). Lutar pelo
+       Laço gasta-se uma vez por batalha. */
+    lacoCom: (slot.lacoCom && typeof slot.lacoCom === 'object') ? Object.assign({}, slot.lacoCom) : null,
+    lacoUsado: false,
   };
+}
+
+/* ── LUTAR PELO LAÇO ──
+
+   Uma vez por batalha, cada avatar soma à precisão de UMA ação o nível do
+   maior laço com um aliado que esteja de pé (+1 a +3). Vale para o que
+   rola dado: o golpe comum, as magias de ataque e o Examinar. Pedido numa
+   ação que não rola (guardar, trocar de lugar, curar), não se gasta.
+
+   Devolve { com, bonus } ou null. */
+function fuLacoDisponivel(estado, quem) {
+  if (!quem || !quem.vivo || quem.lacoUsado || !quem.lacoCom) return null;
+  let melhor = null;
+  for (const id of Object.keys(quem.lacoCom)) {
+    const outro = fuPorId(estado, id);
+    const n = Math.max(0, Math.min(3, quem.lacoCom[id] | 0));
+    if (!outro || !outro.vivo || outro === quem || outro.lado !== quem.lado || !n) continue;
+    if (!melhor || n > melhor.bonus) melhor = { com: outro.id, bonus: n };
+  }
+  return melhor;
 }
 
 /* ── O DADO DE AGORA ──
@@ -601,6 +626,8 @@ function fuAgir(estado, acao) {
   if (estado.jaAgiu.indexOf(quem.id) !== -1) return [];
 
   const eventos = [];
+  // Lutar pelo Laço: só se foi pedido e se há com quem (fuLacoDisponivel).
+  const laco = acao.laco ? fuLacoDisponivel(estado, quem) : null;
   quem.guardando = false;
   quem.protegendo = null;   // o Proteger também dura só até ele agir de novo
 
@@ -652,7 +679,8 @@ function fuAgir(estado, acao) {
        descobre é o maior entre o que já se sabia e o que saiu agora. */
     const alvo = fuPorId(estado, acao.alvo);
     if (!alvo || !alvo.vivo || alvo.lado === quem.lado) return [];
-    const r = fuRolagem(estado.rng, fuDado(quem, 'PER'), fuDado(quem, 'PER'), 0);
+    const r = fuRolagem(estado.rng, fuDado(quem, 'PER'), fuDado(quem, 'PER'), laco ? laco.bonus : 0);
+    if (laco) quem.lacoUsado = true;
     const sabe = fuConhece(estado, quem.lado, alvo.id);
     const antes = sabe.nivel;
     const obtido = fuNivelDoExame(r.resultado, r.critico, r.pifao);
@@ -660,7 +688,7 @@ function fuAgir(estado, acao) {
     eventos.push({ tipo: 'examinar', quem: quem.id, alvo: alvo.id,
                    dados: r.dados, resultado: r.resultado, modificador: r.modificador,
                    critico: r.critico, pifao: r.pifao, atribs: ['PER', 'PER'],
-                   obtido, nivel: sabe.nivel, antes });
+                   obtido, nivel: sabe.nivel, antes, laco });
 
   } else {
     /* ── AS CINCO FORMAS DE UMA MAGIA ──
@@ -798,6 +826,8 @@ function fuAgir(estado, acao) {
 
       const es = (magia && magia.estilo) || {};
       const golpes = [];
+      // O laço vale para todos os alvos desta ação, e gasta-se uma vez.
+      if (laco) quem.lacoUsado = true;
       for (const alvo of alvos) {
         const ev = fuAtacar(estado, quem, alvo, magia ? {
           magico: true, nome: magia.id, fixo: magia.fixo,
@@ -806,7 +836,9 @@ function fuAgir(estado, acao) {
           ignoraResistencias: magia.ignoraResistencias,
           furaGuarda: es.furaGuarda, semRSnaGuarda: es.semRSnaGuarda,
           atrib1: 'PER', atrib2: 'VON',
-        } : { fixo: 5 });
+          bonus: laco ? laco.bonus : 0,
+        } : { fixo: 5, bonus: laco ? laco.bonus : 0 });
+        if (laco) ev.laco = laco;
         const rp = ev.represalia;
         delete ev.represalia;
         golpes.push(ev);
@@ -1123,7 +1155,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
-    FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece,
+    FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece, fuLacoDisponivel,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
     fuAlvosPossiveis, fuAtacar, fuAgir, fuPorId, fuVez, fuNovaRonda, fuIniciar,

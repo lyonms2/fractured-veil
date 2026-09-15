@@ -27,6 +27,7 @@
 let _afE     = null;    // o estado da batalha, vindo do motor
 let _afQuem  = null;    // qual dos meus está a decidir
 let _afPasso = null;    // null | { lugar, magia, aliado } enquanto escolhe alvo
+let _afLaco = null;     // o id de quem pediu Lutar pelo Laço para a próxima ação
 let _afMenu  = false;
 let _afOcupado = false; // a travar enquanto o lance corre
 let _afSair  = null;    // o que fazer ao sair
@@ -1303,6 +1304,19 @@ function _afAcoes() {
   // Examinar: gasta o turno e revela a ficha de um inimigo.
   h += _afOrbe('examinar', t('af.orbe.examinar'), '', `_afPedirExaminar()`, null, true);
   h += _afOrbe('mover', t('af.orbe.mover'), '', `_afPedirMover()`, null, meus.length > 0);
+
+  /* ── LUTAR PELO LAÇO ──
+     Só aparece quando há com quem: um aliado de pé com laço, e o laço
+     ainda por gastar nesta batalha (fuLacoDisponivel). Ligado, vale para a
+     próxima ação que rolar dado. */
+  const laco = (typeof fuLacoDisponivel === 'function') ? fuLacoDisponivel(_afE, eu) : null;
+  if (laco) {
+    const ligado = _afLaco === eu.id;
+    // Curto, para caber numa linha na coluna do PC; o nome do aliado vai na dica.
+    h += `<button class="cb-laco${ligado ? ' ativo' : ''}" aria-pressed="${ligado}"
+      title="${esc(t('af.laco.botao.dica', { n: laco.bonus, nome: _afNome(_afPorId(laco.com)) }))}"
+      onclick="_afAlternarLaco()">💞 ${esc(t('af.laco.botao', { n: laco.bonus }))}</button>`;
+  }
   alvo.innerHTML = h;
 }
 
@@ -1368,6 +1382,12 @@ function _afPedirMover() {
 function _afPedirExaminar() {
   if (_afOcupado) return;
   _afPasso = { examinar: true };
+  _afDesenhar();
+}
+
+function _afAlternarLaco() {
+  if (_afOcupado || !_afQuem) return;
+  _afLaco = (_afLaco === _afQuem) ? null : _afQuem;
   _afDesenhar();
 }
 
@@ -1439,14 +1459,16 @@ function _afAlvo(id) {
 function _afAgir(acao) {
   const eu = _afPorId(_afQuem);
   if (!eu) return;
-  const eventos = fuAgir(_afE, Object.assign({ quem: eu.id }, acao));
+  // Com o Lutar pelo Laço ligado para este avatar, a ação vai pedindo-o.
+  const eventos = fuAgir(_afE, Object.assign({ quem: eu.id }, acao,
+    _afLaco === eu.id ? { laco: true } : {}));
 
   /* Uma acção que o motor recusou não gasta nada e não fecha o menu: o
      jogador continua exactamente onde estava, a escolher outra coisa.
      Sem isto, uma recusa parecia um clique que não funcionou. */
   if (!eventos.length) { _afPasso = null; _afDesenhar(); return; }
 
-  _afPasso = null; _afMenu = false; _afQuem = null;
+  _afPasso = null; _afMenu = false; _afQuem = null; _afLaco = null;
   _afMostrar(eventos);
 }
 
@@ -2126,6 +2148,7 @@ function _afLanceDe(ev) {
   if (ev.tipo === 'examinar') {
     p.push('<b>' + nome(ev.quem) + '</b>');
     p.push(_afDadosHTML(ev));
+    if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
     p.push(t('af.lance.examina', { alvo: '<b>' + nome(ev.alvo) + '</b>', r: ev.resultado }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
@@ -2136,6 +2159,7 @@ function _afLanceDe(ev) {
   if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
     p.push('<b>' + nome(ev.quem) + '</b>');
     p.push(_afDadosHTML(ev));
+    if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
     p.push(t('af.lance.acerta', { r: ev.resultado, dl: ev.dl }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
@@ -2324,7 +2348,7 @@ function _afFimHTML() {
            <div class="cb-premio-linha"><span class="gasto">−${g.energia} ⚡</span></div>`
         : `<div class="cb-premio-linha moedas"><span>+${g.coinGain} 🪙</span></div>
            <span class="cada">${t('pve.premio.cada', { n: g.quantos })}</span>
-           <div class="cb-premio-linha"><span>+${g.xpGain} XP</span><span>+${g.vinculo} 💜</span><span class="gasto">−${g.energia} ⚡</span></div>`}
+           <div class="cb-premio-linha"><span>+${g.xpGain} XP</span><span>+${g.vinculo} 💜</span>${g.laco ? `<span>+${g.laco} 💞</span>` : ''}<span class="gasto">−${g.energia} ⚡</span></div>`}
     </div>` : '';
 
   return `<div class="cb-fim ${v === 'A' ? 'bom' : 'mau'}">${esc(txt)}</div>

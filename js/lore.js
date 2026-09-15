@@ -431,7 +431,8 @@ function _loreAplicarRecompensa(r) {
   if(r.humor)   { vitals.humor   = Math.min(100, Math.max(0, (vitals.humor   || 0) + r.humor));  }
   if(r.saude)   { vitals.saude   = Math.min(100, Math.max(0, (vitals.saude   || 0) + r.saude));  }
   if(r.energia) { vitals.energia = Math.min(100, Math.max(0, (vitals.energia || 0) + r.energia)); }
-  if(r.vinculo) { vinculo        = Math.min(100, Math.max(0, (vinculo        || 0) + r.vinculo)); }
+  // O vínculo vai até 400 (js/eggs.js); o teto de 100 aqui cortava o de quem já passou dele.
+  if(r.vinculo) { vinculo        = Math.min(400, Math.max(0, (vinculo        || 0) + r.vinculo)); }
 
   updateResourceUI();
   if(typeof updateAllUI === 'function') updateAllUI();

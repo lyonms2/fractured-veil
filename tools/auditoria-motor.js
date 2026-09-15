@@ -460,6 +460,67 @@ titulo('Examinar: o que se descobre de um inimigo');
   verificar('e o outro lado não fica sabendo de nada', !M.fuConhece(e2, 'B', a2.id).af.gelo);
 }
 
+/* ═══ LAÇO ════════════════════════════════════════════════════════
+   As regras do js/lacos.js e o Lutar pelo Laço no motor (aprovado em
+   14/09/2026). */
+titulo('Laço: pontos, teto do dia, parentes e Lutar pelo Laço');
+{
+  const L = require('../js/lacos.js');
+  verificar('9 pontos ainda não é laço', L.lacoNivel(9) === 0);
+  verificar('10, 30 e 60 são as três estrelas',
+    L.lacoNivel(10) === 1 && L.lacoNivel(30) === 2 && L.lacoNivel(60) === 3 && L.lacoNivel(999) === 3);
+  let r = L.lacoSomarBatalha(null, 'vitoria', { dia: '2026-09-14', nome: 'B' });
+  verificar('a vitória vale 2 e guarda o nome', r.ganho === 2 && r.entrada.p === 2 && r.entrada.nome === 'B');
+  for (let i = 0; i < 5; i++) r = L.lacoSomarBatalha(r.entrada, 'vitoria', { dia: '2026-09-14' });
+  verificar('no máximo 6 pontos por dia para o par',
+    r.entrada.p === 6 && r.ganho === 0 && r.entrada.hoje === 6 && r.entrada.nome === 'B');
+  r = L.lacoSomarBatalha(r.entrada, 'derrota', { dia: '2026-09-15' });
+  verificar('no dia seguinte o teto recomeça', r.entrada.p === 7 && r.entrada.hoje === 1);
+
+  const mae = { id: 'm', lacos: {} }, filho = { id: 'f', nascimento: { mae: 'm' }, lacos: {} };
+  verificar('pais e filhos têm ★ sem ter lutado',
+    L.lacoPontosEntre(filho, mae) === 10 && L.lacoPontosEntre(mae, filho) === 10
+    && L.lacoParentesco(filho, mae) === 'pai' && L.lacoParentesco(mae, filho) === 'filho');
+  verificar('a batalha dos parentes soma a partir do piso',
+    L.lacoSomarBatalha(null, 'empate', { dia: 'x', parentes: true }).entrada.p === 11);
+
+  const eqL = equipa(3, 15);
+  eqL[0].lacos = { [eqL[1].id]: { p: 35 } };
+  eqL[1].lacos = { [eqL[0].id]: { p: 35 } };
+  const niv = L.lacoNiveisDaEquipa(eqL);
+  verificar('a equipe sabe o nível de cada par', niv[0][1] === 2 && niv[1][0] === 2 && !niv[0][2] && !niv[2][0]);
+
+  // No motor: o primeiro da equipe tem laço ★★ com o segundo.
+  const comLaco = () => equipa(4, 15).map((a, i) => Object.assign(a, { lacoCom: i === 0 ? { '42': 2 } : null }));
+  const e = M.fuIniciar(comLaco(), equipa(5, 15), 91);
+  const eu = e.A[0];
+  verificar('o laço aparece com um aliado de pé',
+    JSON.stringify(M.fuLacoDisponivel(e, eu)) === JSON.stringify({ com: '42', bonus: 2 }));
+  M.fuAgir(e, { quem: eu.id, tipo: 'guardar', laco: true });
+  verificar('guardar não gasta o laço', !eu.lacoUsado);
+  e.jaAgiu = [];
+  const alvoB = e.B.find(c => c.vivo);
+  const ex = M.fuAgir(e, { quem: eu.id, tipo: 'examinar', alvo: alvoB.id, laco: true }).find(x => x.tipo === 'examinar');
+  verificar('o exame pelo laço soma o nível à rolagem',
+    !!ex && ex.modificador === 2 && ex.laco && ex.laco.bonus === 2 && eu.lacoUsado);
+  e.jaAgiu = [];
+  const ex2 = M.fuAgir(e, { quem: eu.id, tipo: 'examinar', alvo: alvoB.id, laco: true }).find(x => x.tipo === 'examinar');
+  verificar('e só uma vez por batalha', !!ex2 && ex2.modificador === 0 && !ex2.laco);
+
+  const e2 = M.fuIniciar(comLaco(), equipa(5, 15), 92);
+  e2.A[1].vivo = false; e2.A[1].pv = 0;
+  verificar('sem o aliado de pé não há laço', M.fuLacoDisponivel(e2, e2.A[0]) === null);
+
+  const e3 = M.fuIniciar(comLaco(), equipa(5, 15), 93);
+  const q3 = e3.A[0];
+  const at = M.fuAgir(e3, { quem: q3.id, tipo: 'golpe', laco: true }).find(x => x.tipo === 'ataque');
+  const esperado = (q3.ficha.bonusPrecisao | 0) + 2 + (M.fuDonsDe(q3).precisaoMais | 0);
+  verificar('o golpe pelo laço soma o nível à precisão',
+    !!at && !!at.laco && at.modificador === esperado, at ? at.modificador + ' ≠ ' + esperado : 'sem ataque');
+  verificar('quem não pede não gasta',
+    M.fuAgir(M.fuIniciar(comLaco(), equipa(5, 15), 94), { quem: '41', tipo: 'golpe' }).every(x => !x.laco));
+}
+
 console.log('\n' + '─'.repeat(62));
 if (falhas.length) {
   console.log(falhas.slice(0, 20).join('\n'));

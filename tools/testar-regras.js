@@ -170,6 +170,14 @@ async function ler(doc) {
   ok('EXPLOIT apagar uma morte',       await escrever('S','S',{'mortos.av1':null}), 403);
   ok('EXPLOIT matar antes do tempo',   await escrever('S','S',{'mortos.av2':1000}), 403);
 
+  /* ── lacos: os pontos que dois avatares ganham lutando juntos ──
+     Dão precisão na batalha e acompanham o avatar na venda. */
+  await escrever(null,'T',{'lacos.av1':{av2:{p:10}},'gs.moedas':10}, true);
+  ok('EXPLOIT inflar um laço',         await escrever('T','T',{'lacos.av1':{av2:{p:60}}}), 403);
+  ok('EXPLOIT inventar um laço',       await escrever('T','T',{'lacos.av3':{av4:{p:60}}}), 403);
+  ok('EXPLOIT zerar o teto do dia',    await escrever('T','T',{'ultimoLaco':0}), 403);
+  ok('conta nova já com laços',        await escrever('U','U',{'lacos.av1':{av2:{p:60}}}), 403);
+
   // ── os mercados: o cliente só lê ──
   async function mercado(col, uid, campos) {
     const r = await fetch(`${BASE}/${col}?documentId=teste_${col}_${uid}`, {

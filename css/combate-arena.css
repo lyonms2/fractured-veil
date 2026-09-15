@@ -1453,6 +1453,32 @@
 .fb-oculto li.sabido { opacity: 1; color: var(--gold-light, #f0d080); }
 .fb-oculto p  { margin: 0.25rem 0 0; font-style: italic; opacity: .8; }
 
+/* ── O LAÇO ──
+   O botão Lutar pelo Laço no menu de ações, a marca no registro e a
+   seção de laços na ficha (js/lacos.js). */
+.cb-laco {
+  display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+  width: 100%; margin-bottom: 0.1875rem; padding: 0.125rem 0.375rem;
+  background: rgba(240,120,170,.08); border: 1px solid rgba(240,140,180,.35);
+  border-radius: 999px; cursor: pointer;
+  font-family: 'Cinzel', serif; font-size: 0.375rem; letter-spacing: 0.02rem;
+  color: var(--text2, #d9cfe6);
+}
+.cb-laco.ativo {
+  background: rgba(240,120,170,.28); border-color: #f09ac0; color: #ffd6e8;
+  box-shadow: 0 0 0.375rem rgba(240,120,170,.45);
+}
+b.laco { color: #f5a3c7; }
+.fb-laco {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.125rem 0.3125rem;
+  padding: 0.125rem 0; font-size: 0.5625rem;
+}
+.fb-laco-est  { color: #f5a3c7; min-width: 1.75rem; letter-spacing: 0.03rem; }
+.fb-laco i    { opacity: .75; }
+.fb-laco-onde { font-style: italic; opacity: .6; }
+.fb-laco-p    { margin-left: auto; opacity: .7; }
+.fb-laco-vazio { font-style: italic; opacity: .75; }
+
 /* ── O ORBE ── */
 .cb-orbe {
   display: flex; align-items: center; gap: 0.375rem;
@@ -2111,6 +2137,7 @@
   .cb-menu .cb-acoes { gap: 0.25rem; }
   .cb-menu           { width: 13rem; }
   .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
+  .cb-laco           { font-size: 0.5rem; }
 
   /* ── O MODAL DA FICHA CRESCE COM O RESTO ──
 
@@ -2247,6 +2274,7 @@
   .cb-orbe-nome i     { font-size: 0.625rem; }     /* 10px */
   .cb-menu .cb-acoes  { gap: 0.25rem; }
   .cb-menu .cb-pm-cab { font-size: 0.6875rem; }    /* 11px */
+  .cb-laco            { font-size: 0.6875rem; padding: 0.25rem 0.5rem; }
 
   .cb-menu.apertado .cb-acoes       { gap: 0.125rem; }
   .cb-menu.apertado .cb-orbe        { min-height: 2.25rem; }

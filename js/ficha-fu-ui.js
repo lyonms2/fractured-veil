@@ -416,7 +416,55 @@ function _fbOutras() {
                t('af.b.mover.ef'))
        + linha(t('af.b.examinar'),
                [t('af.b.turno'), t('af.b.alvo.inimigo1'), t('af.b.instantaneo')],
-               t('af.b.examinar.ef'));
+               t('af.b.examinar.ef'))
+       + linha(t('af.b.laco'),
+               [t('af.b.laco.uma'), t('af.b.laco.alvo')],
+               t('af.b.laco.ef'));
+}
+
+/* ══ OS LAÇOS ══
+
+   Com quem este avatar já lutou junto, e quanto (js/lacos.js). Os pontos
+   vêm do mapa do servidor, reatado ao slot pelo js/firebase.js; os pais e
+   os filhotes que estão na colônia aparecem com ★ mesmo sem entrada, que
+   é o piso deles.
+
+   O nome é o de agora quando o outro está na colônia, e o guardado na
+   última batalha juntos quando não está — vendido, ou de outra pessoa
+   desde sempre. */
+function _fbLacos(slot) {
+  if (!slot || !slot.id || typeof lacoNivel !== 'function') return '';
+  const colonia = (typeof avatarSlots !== 'undefined' && Array.isArray(avatarSlots))
+    ? avatarSlots.filter(Boolean) : [];
+  const ids = new Set(Object.keys(slot.lacos || {}));
+  colonia.forEach(o => { if (o.id && o.id !== slot.id && lacoParentesco(slot, o)) ids.add(o.id); });
+
+  const n = slot.nascimento || {};
+  const linhas = [...ids].map(id => {
+    const outro = colonia.find(o => o.id === id) || null;
+    const e = (slot.lacos || {})[id] || {};
+    const p = outro ? lacoPontosEntre(slot, outro) : (+e.p || 0);
+    let par = null;
+    if (id === slot.mae || id === n.mae) par = 'mae';
+    else if (id === slot.pai || id === n.pai) par = 'pai';
+    else if (outro && lacoParentesco(slot, outro) === 'filho') par = 'filho';
+    return { outro, e, p, par };
+  }).filter(x => x.p > 0).sort((a, b) => b.p - a.p);
+
+  if (!linhas.length) return `<div class="fb-ef fb-laco-vazio">${esc(t('af.laco.vazio'))}</div>`;
+
+  return linhas.map(x => {
+    const nivel = lacoNivel(x.p), prox = lacoProximo(x.p);
+    const nome = x.outro ? (x.outro.nome || t('af.laco.sem_nome')) : (x.e.nome || t('af.laco.sem_nome'));
+    const onde = !x.outro ? t('af.laco.longe') : (x.outro.dead ? t('af.laco.lembranca') : '');
+    return `<div class="fb-laco">
+      <span class="fb-laco-est">${nivel ? '★'.repeat(nivel) : '☆'}</span>
+      <b>${esc(nome)}</b>
+      ${x.par ? `<i>${esc(t('af.laco.par.' + x.par))}</i>` : ''}
+      ${onde ? `<span class="fb-laco-onde">${esc(onde)}</span>` : ''}
+      <span class="fb-laco-p">${esc(t('af.laco.pontos', { p: x.p, prox: prox == null ? '' : ' / ' + prox }))}</span>
+    </div>`;
+  }).join('');
 }
 
 /* ══ O QUE ESTÁ ACONTECENDO ══
@@ -706,5 +754,6 @@ function renderFichaFU(slot, lutador, conhece) {
     ${_fbSeccao('af.sec.magias', feitico)}
     ${_fbSeccao('af.sec.outras', _fbOutras())}
     ${_fbSeccao('af.sec.especiais', _fbEspeciais(f))}
+    ${slot ? _fbSeccao('af.sec.lacos', _fbLacos(slot)) : ''}
   </div>`;
 }

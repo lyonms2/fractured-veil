@@ -195,6 +195,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
+  if (acao === 'laco')        return handleLaco(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -475,6 +476,101 @@ async function handleMorreu(req, res, db, uid) {
 
 
 /* ═══════════════════════════════════════════════════════════════════
+   LAÇO — a batalha terminada soma pontos entre quem lutou junto
+
+   As regras estão no js/lacos.js, que o navegador também carrega: 2
+   pontos pela vitória, 1 pelo resto, no máximo 6 por dia para cada par,
+   e pais e filhos com piso de 10.
+
+   ── O QUE ISTO FECHA ──
+
+   Os pontos vivem num mapa `lacos` que o cliente não escreve
+   (firestore.rules). O cliente só diz QUEM lutou e COMO acabou; quem
+   decide quanto isso vale, e se o par já chegou ao teto do dia, é
+   daqui. Conferido: os avatares são deste jogador, têm certidão e não
+   estão mortos, e entre dois pedidos passa pelo menos um minuto.
+
+   ── O QUE ISTO NÃO FECHA ──
+
+   A batalha do PvE corre no navegador, como o XP e as moedas que ela dá.
+   Quem modificar o jogo pode pedir laço sem ter lutado — mas não mais do
+   que 6 pontos por par por dia, que é o que um jogador de verdade ganha
+   jogando. Fechar de vez é conferir a luta no servidor, que é o PvP.
+   ═══════════════════════════════════════════════════════════════════ */
+const LACO_ESPERA_MS = 60 * 1000;
+const LACO_ID_VALIDO = /^[A-Za-z0-9_-]{1,64}$/;
+
+async function handleLaco(req, res, db, uid) {
+  const L = require('../js/lacos.js');
+  const { slots: pedidos, resultado } = req.body;
+  if (!Array.isArray(pedidos) || pedidos.length < 2 || pedidos.length > 3
+      || !Object.prototype.hasOwnProperty.call(L.LACO_PONTOS, resultado)) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+  const idx = pedidos.map(Number);
+  if (idx.some(i => !Number.isInteger(i) || i < 0) || new Set(idx).size !== idx.length) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const pData = snap.data();
+      const agora = Date.now();
+
+      // Um pedido por minuto: uma batalha leva mais do que isso.
+      if (agora - (+pData.ultimoLaco || 0) < LACO_ESPERA_MS) return { lacos: {}, ganhos: [], cedo: true };
+
+      const slots = pData.avatarSlots || [];
+      const certidoes = pData.certidoes || {};
+      const mortos = pData.mortos || {};
+      const lacos = pData.lacos || {};
+
+      /* Cada avatar como o js/lacos.js o quer ler: o id, o nome, os pais
+         da CERTIDÃO (e não do slot, que o cliente escreve) e os laços do
+         mapa do servidor. */
+      const avs = idx.map(i => {
+        const s = slots[i];
+        if (!s || !s.id || !LACO_ID_VALIDO.test(s.id) || !certidoes[s.id] || mortos[s.id]) return null;
+        return { id: s.id, nome: s.nome || null, nascimento: certidoes[s.id], lacos: lacos[s.id] || {} };
+      }).filter(Boolean);
+      if (avs.length < 2) return { lacos: {}, ganhos: [] };
+
+      const dia = L.lacoDia(agora);
+      const alteracoes = { ultimoLaco: agora };
+      const novos = {};
+      const ganhos = [];
+      for (let i = 0; i < avs.length; i++) {
+        for (let j = 0; j < avs.length; j++) {
+          if (i === j) continue;
+          const a = avs[i], b = avs[j];
+          const r = L.lacoSomarBatalha(a.lacos[b.id], resultado,
+            { dia, nome: b.nome, parentes: !!L.lacoParentesco(a, b) });
+          alteracoes[`lacos.${a.id}.${b.id}`] = r.entrada;
+          (novos[a.id] = novos[a.id] || {})[b.id] = r.entrada;
+          if (i < j) {
+            const antes = L.lacoPontosEntre(a, b);
+            ganhos.push({ a: a.id, b: b.id, ganho: r.ganho, p: r.entrada.p,
+                          subiu: L.lacoNivel(r.entrada.p) > L.lacoNivel(antes) });
+          }
+        }
+      }
+      tx.update(playerRef, alteracoes);
+      return { lacos: novos, ganhos };
+    });
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    console.error('[pool/laco]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
    CRUZAR — o servidor compõe o filho
 
    ── O QUE ISTO FECHA ──
@@ -634,6 +730,21 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
         [`avataresEmitidos.s${String(seed)}`]: 'Comum',
         [`ovos.${String(ovoId)}`]: FieldValue.delete(),
       };
+
+      /* PAIS E FILHOS JÁ NASCEM COM LAÇO ★ (js/lacos.js). O do filho com
+         cada um dos pais sempre; o dos pais com o filho só se o pai ainda
+         estiver nesta colônia — um pai vendido depois da cruza não é
+         escrito no documento de outra pessoa. O nome do filho ainda não
+         existe: a ficha mostra o nome de agora enquanto os dois estiverem
+         juntos, e a primeira batalha juntos grava o nome. */
+      const L = require('../js/lacos.js');
+      const slotsDoJogador = pData.avatarSlots || [];
+      [nascimento.mae, nascimento.pai].forEach(paiId => {
+        if (!paiId || typeof paiId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(paiId)) return;
+        const slotPai = slotsDoJogador.find(s => s && s.id === paiId);
+        alteracoes[`lacos.${id}.${paiId}`] = { p: L.LACO_PARENTE, nome: slotPai ? (slotPai.nome || null) : null, dia: null, hoje: 0 };
+        if (slotPai) alteracoes[`lacos.${paiId}.${id}`] = { p: L.LACO_PARENTE, nome: null, dia: null, hoje: 0 };
+      });
 
       if (taxa > 0) {
         Object.assign(alteracoes, debitoChoca);

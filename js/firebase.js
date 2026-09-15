@@ -313,6 +313,11 @@ function applyGameState(data) {
      conversa. */
   const _mortos = (data.mortos && typeof data.mortos === 'object') ? data.mortos : {};
 
+  /* Os laços entre avatares (js/lacos.js), pelo mesmo caminho: mapa do
+     servidor, reatado ao slot por id. O save não os manda de volta — o
+     slot é gravado campo a campo, e `lacos` não está na lista. */
+  const _lacos = (data.lacos && typeof data.lacos === 'object') ? data.lacos : {};
+
   /* ── A CHOCADEIRA É DA COLÓNIA ──
 
      Os ovos viviam dentro de um slot — `slot.eggs` — e a chocadeira
@@ -359,6 +364,7 @@ function applyGameState(data) {
         delete restored.nascimento;
       }
       restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
+      restored.lacos = (s.id && _lacos[s.id] && typeof _lacos[s.id] === 'object') ? _lacos[s.id] : {};
       if (s.id && _mortos[s.id]) restored.dead = true;
       delete restored.eggs;   // a chocadeira é da colónia — ver a nota acima
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia

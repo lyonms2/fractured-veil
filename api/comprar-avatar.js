@@ -198,6 +198,10 @@ async function handleListarAvatar(req, res, db, uid) {
            quanto vale. Vem do mapa `donos`, que só esta função escreve. */
         donos:       (s.id && Array.isArray((pData.donos || {})[s.id]))
                        ? pData.donos[s.id] : [],
+        /* Os laços dele com os outros avatares (js/lacos.js), do mapa do
+           servidor. Vão no anúncio para o comprador ver; na compra, quem
+           manda é o mapa do vendedor naquela hora (ver mais abaixo). */
+        lacos:       (s.id && (pData.lacos || {})[s.id]) || {},
         nome:       s.nome,
         raridade:   s.raridade,
         /* ── OS DOIS ÍNDICES VÃO COM A LISTAGEM ──
@@ -451,6 +455,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         // quem manda é o mapa `donos`, escrito mais abaixo. Ver a nota
         // onde ela se compõe.
         donos: cadeiaNova,
+        lacos: ((sellerData.lacos || {})[listing.id]) || listing.lacos || {},
         nome:       listing.nome,
         raridade:   listing.raridade,
         descricao:    listing.descricao,
@@ -518,12 +523,21 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          dentro que o preço registado é, por construção, o que foi mesmo
          pago — e não o que o vendedor gostaria que constasse. */
       const chaveDonos = listing.id ? `donos.${listing.id}` : null;
+      /* OS LAÇOS também vão com ele (js/lacos.js). Do mapa do vendedor
+         AGORA, e não do anúncio: o avatar pode ter lutado e ganho pontos
+         depois de anunciado. Os laços que os outros avatares do vendedor
+         têm com ele ficam onde estão — os dois continuam se lembrando. */
+      const chaveLacos = listing.id ? `lacos.${listing.id}` : null;
+      const lacosVendidos = listing.id
+        ? (((sellerData.lacos || {})[listing.id]) || listing.lacos || null) : null;
 
       tx.update(buyerRef, Object.assign({
         avatarSlots: novosSlotsComprador,
         [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
       }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {},
-         chaveDonos ? { [chaveDonos]: cadeiaNova } : {}, debitoCompra));
+         chaveDonos ? { [chaveDonos]: cadeiaNova } : {},
+         chaveLacos && lacosVendidos && Object.keys(lacosVendidos).length
+           ? { [chaveLacos]: lacosVendidos } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      +(sellerCris + sellerReal).toFixed(2),
@@ -532,7 +546,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         cristaisBonus:      +(CRIS.deBonus(sellerData) + sellerBonus).toFixed(2),
         'gs.cristaisBonus': +(CRIS.deBonus(sellerData) + sellerBonus).toFixed(2),
       } : {}, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
-         chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {}));
+         chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {},
+         chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.

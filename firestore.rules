@@ -133,6 +133,13 @@ service cloud.firestore {
                  de funcionar é editar o documento, que estava ao alcance
                  de qualquer um. */
               'mortos',
+              /* OS LAÇOS entre avatares, e a hora do último pedido.
+
+                 Dão precisão na batalha e acompanham o avatar na venda,
+                 portanto têm valor. Quem os grava é a acao 'laco' do
+                 api/pool.js, com teto por dia e por par, os parentes no
+                 chocar-ovo e a venda no api/comprar-avatar.js. */
+              'lacos', 'ultimoLaco',
               /* O CÓDIGO DE AMIGO — as seis letras que se passam a
                  alguém para ele nos adicionar.
 

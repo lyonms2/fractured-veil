@@ -318,7 +318,14 @@ function _pveComecar(equipa, inimigo, semente) {
      por ele e o slot não tem nenhum. `eu0..eu2` casa com a ordem da
      equipa, que é a mesma que o equipaIdx() devolve — e é por essa
      ordem que as contas se fecham no fim. */
-  const meus = equipa.map((a, i) => Object.assign({}, a, { id: 'eu' + i }));
+  /* E o LAÇO de cada um com os outros dois (js/lacos.js), já com os ids
+     da batalha: é o que o Lutar pelo Laço soma à precisão. */
+  const niveis = (typeof lacoNiveisDaEquipa === 'function') ? lacoNiveisDaEquipa(equipa) : [];
+  const meus = equipa.map((a, i) => {
+    const lacoCom = {};
+    Object.keys(niveis[i] || {}).forEach(j => { lacoCom['eu' + j] = niveis[i][j]; });
+    return Object.assign({}, a, { id: 'eu' + i, lacoCom });
+  });
   ModalManager.open('combateModal');
   afAbrir(meus, inimigo, semente, fecharCombatePvE);
 }
@@ -442,6 +449,53 @@ function _pveFecharContas(e) {
   }
   e._premio = { ...ganho, vinculo: e._desistiu ? 0 : p.vinculo,
                 energia: custo, quantos: idx.length, desistiu: !!e._desistiu };
+  _pveComunicarLaco(e, idx);
   if (typeof scheduleSave === 'function') scheduleSave();
   if (typeof updateAllUI === 'function') updateAllUI();
+}
+
+/* ── O LAÇO DE QUEM LUTOU JUNTO ──
+
+   Quem conta os pontos é o servidor (acao 'laco' do api/pool.js): aqui só
+   se diz quem lutou e como acabou. A resposta traz as entradas novas, que
+   se reatam aos slots, e o painel do fim ganha o 💞 se ainda estiver
+   aberto. Quem desiste não ganha laço, como não ganha prêmio.
+
+   Não se espera pela resposta para fechar a batalha: um erro de rede
+   perde os pontos desta luta e mais nada. */
+function _pveComunicarLaco(e, idx) {
+  if (!e || e._desistiu || !idx || idx.length < 2) return;
+  if (typeof firebase === 'undefined' || !firebase.auth) return;
+  const u = firebase.auth().currentUser;
+  if (!u) return;
+  const resultado = e.vencedor === 'A' ? 'vitoria' : e.vencedor === 'B' ? 'derrota' : 'empate';
+  u.getIdToken()
+   .then(idToken => fetch('/api/pool', {
+     method:  'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body:    JSON.stringify({ acao: 'laco', idToken, slots: idx, resultado }),
+   }))
+   .then(r => r.json())
+   .then(d => {
+     if (!d || !d.ok || !d.lacos || typeof avatarSlots === 'undefined') return;
+     const slotDe = id => avatarSlots.find(s => s && s.id === id) || null;
+     Object.keys(d.lacos).forEach(id => {
+       const s = slotDe(id);
+       if (s) s.lacos = Object.assign({}, s.lacos || {}, d.lacos[id]);
+     });
+     const ganhos = d.ganhos || [];
+     const maior = ganhos.reduce((m, g) => Math.max(m, g.ganho | 0), 0);
+     if (e._premio) e._premio.laco = maior;
+     ganhos.filter(g => g.subiu).forEach(g => {
+       if (typeof showToast !== 'function' || typeof lacoNivel !== 'function') return;
+       showToast(t('af.laco.subiu', {
+         estrelas: '★'.repeat(lacoNivel(g.p)),
+         a: (slotDe(g.a) || {}).nome || '?', b: (slotDe(g.b) || {}).nome || '?',
+       }));
+     });
+     if (typeof _afE !== 'undefined' && _afE === e && typeof _afDesenhar === 'function') {
+       _afChave = null; _afDesenhar();
+     }
+   })
+   .catch(err => console.warn('[laço] não foi possível comunicar:', err.message));
 }
