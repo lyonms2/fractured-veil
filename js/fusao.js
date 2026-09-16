@@ -77,9 +77,20 @@ const FUS_PASSOS       = 3;      // passos de física por quadro
 const FUS_ATRITO       = 0.992;
 const FUS_QUIQUE       = 0.18;   // quanto devolve ao bater
 const FUS_VEL_MAX      = 14;     // trava contra atravessar paredes
-const FUS_TOPO         = 46;     // a linha da borda, em px lógicos
-const FUS_ESTOURO_MS   = 1500;   // acima da linha até a partida acabar
-const FUS_ESTOURO_IDADE = 1000;  // idade mínima da esfera para ela contar
+/* ── A LINHA DE PERIGO ──
+
+   Era fixa em 46px, e isso fazia a PARTIDA NÃO ACABAR NUNCA: num prato
+   alto de 670px, 46px é uma fatia mínima lá em cima, e o monte quase
+   nunca chegava lá. Agora ela é uma fração da altura do prato, com piso
+   e teto — um prato grande tem uma boca proporcionalmente grande, e o
+   fim chega quando tem de chegar. O valor de agora vive em `_fusTopo`,
+   escrito pelo _fusMedirPrato. */
+const FUS_TOPO_FRACAO  = 0.15;   // da altura do prato
+const FUS_TOPO_MIN     = 42;
+const FUS_TOPO_MAX     = 110;
+let   _fusTopo         = 46;     // a linha de agora, em px lógicos
+const FUS_ESTOURO_MS   = 1100;   // acima da linha até a partida acabar
+const FUS_ESTOURO_IDADE = 800;   // idade mínima da esfera para ela contar
 const FUS_ESPERA_SOLTA = 260;    // ms entre uma solta e a seguinte
 const FUS_FILA         = 3;      // quantas próximas se mostram
 
@@ -115,10 +126,28 @@ const FUS_TIPOS_INICIAIS = [5, 5, 6, 6];
    Agora sai do menor lado, e o número é escolhido para a MAIOR caber:
    nível 7 = 1,3^7 = 6,27 raios, ou seja 12,5 diâmetros da menor. Com
    0,07 do menor lado, a maior ocupa 88% dele. */
-const FUS_BASE   = 1 / 30;   // raio da menor = metade de 1/15 do menor lado
+// 1/23 do menor lado: trinta por cento maior do que o 1/30 de antes.
+const FUS_BASE   = 1 / 23;   // raio da menor esfera
 const FUS_CRESCE = 1.15;     // quanto cada degrau cresce
 // Quantos pontos valem uma partida cheia, por dificuldade.
-const FUS_ALVO           = [420, 680, 980, 1350];
+/* A meta de pontos de uma partida cheia. Subiu junto com o limite de
+   esferas: com sessenta por partida, uma partida boa no Facil passa dos
+   1400, e uma meta baixa fazia o desleixado receber o mesmo que o
+   caprichoso — medido: 1012 e 1426 pontos, ambos no teto do premio. */
+const FUS_ALVO           = [1400, 1900, 2500, 3200];
+
+/* ── QUANTAS ESFERAS A PARTIDA TEM ──
+
+   Sem isto a partida podia não acabar NUNCA: quem joga bem funde tanto
+   quanto solta, o monte não sobe, e o prêmio — que só sai no fim —
+   nunca chegava. O transbordo continua valendo, e é o fim de quem joga
+   mal; isto é o fim de quem joga bem.
+
+   O número é o orçamento da partida, e é ele que dá a estratégia: com
+   sessenta esferas, cada uma solta no lugar errado é uma a menos para
+   chegar ao Avatar. */
+const FUS_SOLTAS         = [60, 70, 80, 90];
+const FUS_FIM_ESPERA     = 1700;   // ms depois da última, para ela assentar
 
 // ── Estado ─────────────────────────────────────────────────────────
 let _fusEsferas   = [];   // [{id,x,y,vx,vy,n,r,nascida,fundidaEm}]
@@ -136,6 +165,8 @@ let _fusBombas    = 0;
 let _fusBombaProx = 0;    // pontos para ganhar a seguinte
 let _fusArmado    = false;
 let _fusFaiscas   = [];   // { x, y, vx, vy, cor, nasceu }
+let _fusRestam    = 0;    // esferas que ainda há para soltar
+let _fusFimEm     = null; // quando a última assentou e a partida fecha
 let _fusRankAberto = false;
 let _fusIdSeq     = 1;
 
@@ -166,6 +197,8 @@ function startFusao() {
   _fusArmado  = false;
   _fusBombas  = 1;                       // uma de graça, para ensinar o gesto
   _fusBombaProx = FUS_BOMBA_CADA[_fusTier];
+  _fusRestam  = FUS_SOLTAS[_fusTier];
+  _fusFimEm   = null;
   _fusFila    = Array.from({ length: FUS_FILA + 1 }, _fusSorteia);
 
   const info = document.getElementById('fusaoInfo');
@@ -297,6 +330,7 @@ function _fusMedirPrato() {
   canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
 
   _fusR0 = Math.min(W, H) * FUS_BASE;
+  _fusTopo = Math.round(Math.max(FUS_TOPO_MIN, Math.min(H * FUS_TOPO_FRACAO, FUS_TOPO_MAX)));
 
   /* Com a partida a correr, o que está no prato acompanha a mudança de
      tamanho: sem isto, mudar a janela no meio do jogo deixava as esferas
@@ -309,7 +343,7 @@ function _fusMedirPrato() {
 
 function _fusPlacar() {
   const el = document.getElementById('fusaoScore');
-  if (el) el.textContent = t('mg.fus.placar', { p: _fusPontos, n: _fusFusoes });
+  if (el) el.textContent = t('mg.fus.placar', { p: _fusPontos, n: _fusFusoes, r: Math.max(0, _fusRestam) });
 }
 
 function _fusLimparResultado() {
@@ -467,7 +501,9 @@ function _fusSoltar(x) {
   if (!canvas || !_fusRodando || _fusAcabou) return;
   const agora = performance.now();
   if (agora - _fusUltimaSolta < FUS_ESPERA_SOLTA) return;
+  if (_fusRestam <= 0) return;        // acabaram as esferas da partida
   _fusUltimaSolta = agora;
+  _fusRestam--;
 
   const W = canvas.clientWidth || 224;
   const n = _fusFila[0];
@@ -475,12 +511,13 @@ function _fusSoltar(x) {
   _fusEsferas.push({
     id: _fusIdSeq++,
     x: Math.max(r + 2, Math.min(W - r - 2, x)),
-    y: FUS_TOPO - r - 2,
+    y: _fusTopo - r - 2,
     vx: 0, vy: 0, n, r,
     nascida: agora, fundidaEm: 0,
   });
   _fusFila.shift();
   _fusFila.push(_fusSorteia());
+  _fusPlacar();
   _fusPainel();
 }
 
@@ -707,6 +744,7 @@ function _fusFim() {
   const reward = document.getElementById('fusaoReward');
   const again  = document.getElementById('fusaoAgainBtn');
 
+  _fusRestam = 0;
   if (_fusFusoes === 0) {
     if (result) { result.textContent = t('mg.fus.vazio'); result.className = 'mini-result-box lose'; }
   } else {
@@ -794,6 +832,13 @@ function _fusDesenhar() {
     _fusFisica(W, H);
     _fusFundir(W, H);
 
+    /* Acabaram as esferas? Espera a última assentar e fecha — as fusões
+       que ela provocar ainda contam, que é o justo. */
+    if (_fusRestam <= 0) {
+      if (_fusFimEm == null) _fusFimEm = agora + FUS_FIM_ESPERA;
+      else if (agora >= _fusFimEm) { _fusFim(); }
+    }
+
     /* ── TRANSBORDOU? ──
 
        Conta a esfera que está acima da linha há mais de um segundo: a
@@ -805,7 +850,7 @@ function _fusDesenhar() {
        esferas nunca param de tremer, portanto a partida não acabava
        nunca, por mais alto que o monte ficasse. */
     const estourando = _fusEsferas.some(e =>
-      e.y - e.r < FUS_TOPO && agora - e.nascida > FUS_ESTOURO_IDADE);
+      e.y - e.r < _fusTopo && agora - e.nascida > FUS_ESTOURO_IDADE);
     if (estourando) {
       if (_fusEstouroDesde == null) _fusEstouroDesde = agora;
       else if (agora - _fusEstouroDesde > FUS_ESTOURO_MS) _fusFim();
@@ -833,7 +878,7 @@ function _fusDesenhar() {
   ctx.strokeStyle = 'rgba(212,175,55,0.16)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(1, FUS_TOPO - 14); ctx.lineTo(1, H - 1); ctx.lineTo(W - 1, H - 1); ctx.lineTo(W - 1, FUS_TOPO - 14);
+  ctx.moveTo(1, _fusTopo - 14); ctx.lineTo(1, H - 1); ctx.lineTo(W - 1, H - 1); ctx.lineTo(W - 1, _fusTopo - 14);
   ctx.stroke();
 
   // A linha da borda, que pisca quando está prestes a transbordar.
@@ -844,7 +889,7 @@ function _fusDesenhar() {
   ctx.lineWidth = 1;
   ctx.setLineDash([5, 5]);
   ctx.beginPath();
-  ctx.moveTo(0, FUS_TOPO); ctx.lineTo(W, FUS_TOPO);
+  ctx.moveTo(0, _fusTopo); ctx.lineTo(W, _fusTopo);
   ctx.stroke();
   ctx.setLineDash([]);
 
@@ -852,15 +897,15 @@ function _fusDesenhar() {
   if (_fusRodando && !_fusAcabou && !_fusArmado) {
     const n = _fusFila[0] || 0;
     const r = _fusRaio(n);
-    const g = ctx.createLinearGradient(0, FUS_TOPO, 0, H);
+    const g = ctx.createLinearGradient(0, _fusTopo, 0, H);
     g.addColorStop(0, 'rgba(255,255,255,0.14)');
     g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.strokeStyle = g;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(_fusMira, FUS_TOPO); ctx.lineTo(_fusMira, H);
+    ctx.moveTo(_fusMira, _fusTopo); ctx.lineTo(_fusMira, H);
     ctx.stroke();
-    _fusEsfera(ctx, { id: -1, x: _fusMira, y: FUS_TOPO - r - 2, r, n, fundidaEm: 0 }, agora);
+    _fusEsfera(ctx, { id: -1, x: _fusMira, y: _fusTopo - r - 2, r, n, fundidaEm: 0 }, agora);
   }
 
   // ── As esferas ──
