@@ -249,8 +249,6 @@
       'gs.maze.desc':            'Navegue na névoa e ache a saída',
       'gs.fusao.name':           'FUSÃO DE ESFERAS',
       'gs.fusao.desc':           'Junte esferas iguais na tigela do avatar',
-      'gs.odd.name':             'ACHE O DIFERENTE',
-      'gs.odd.desc':             'Uma forma da grade não é como as outras',
       // Lore
       'gs.lore1.name':           'HISTÓRIAS DO VÉU',
       'gs.lore1.desc':           'A saga pós-guerra — Fraturas, Avatares e O Vácuo',
@@ -284,7 +282,6 @@
       'mini.mina.title':         '💣 CAMPO MINADO',
       'mini.snake.title':        '🐍 SNAKE ELEMENTAL',
       'mini.maze.title':         '🌀 LABIRINTO ELEMENTAL',
-      'mini.odd.title':          '🔍 ACHE O DIFERENTE',
       'mini.fusao.title':        '🔮 FUSÃO DE ESFERAS',
       'mini.maze.info':          'Navegue na névoa e ache a saída!',
       // Hatch confirm
@@ -589,8 +586,6 @@
       'gs.maze.desc':            'Navigate the fog and find the exit',
       'gs.fusao.name':           'ORB MERGE',
       'gs.fusao.desc':           'Merge matching orbs in your avatar\'s bowl',
-      'gs.odd.name':             'SPOT THE ODD ONE',
-      'gs.odd.desc':             'One shape in the grid is not like the others',
       // Lore
       'gs.lore1.name':           'TALES OF THE VEIL',
       'gs.lore1.desc':           'The post-war saga — Fractures, Avatars and The Void',
@@ -624,7 +619,6 @@
       'mini.mina.title':         '💣 MINESWEEPER',
       'mini.snake.title':        '🐍 ELEMENTAL SNAKE',
       'mini.maze.title':         '🌀 ELEMENTAL MAZE',
-      'mini.odd.title':          '🔍 SPOT THE ODD ONE',
       'mini.fusao.title':        '🔮 ORB MERGE',
       'mini.maze.info':          'Navigate the fog and find the exit!',
       // Hatch confirm

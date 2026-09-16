@@ -50,8 +50,6 @@ window.minaFlag  = typeof minaFlag  !== "undefined" ? minaFlag  : ()=>{};
 window.startMina  = typeof startMina  !== "undefined" ? startMina  : ()=>{};
 window.startSnake  = typeof startSnake  !== "undefined" ? startSnake  : ()=>{};
 window.snakeDpad   = typeof snakeDpad   !== "undefined" ? snakeDpad   : ()=>{};
-window.startOddOne    = typeof startOddOne    !== "undefined" ? startOddOne    : ()=>{};
-window.oddClick       = typeof oddClick       !== "undefined" ? oddClick       : ()=>{};
 window.startFusao     = typeof startFusao     !== "undefined" ? startFusao     : ()=>{};
 window.fusaoClick     = typeof fusaoClick     !== "undefined" ? fusaoClick     : ()=>{};
 window.fusaoBomba     = typeof fusaoBomba     !== "undefined" ? fusaoBomba     : ()=>{};

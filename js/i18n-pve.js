@@ -45,6 +45,8 @@ window.registerStrings({
   // O selo vai no cartao do avatar; o motivo vai na lista por baixo; e a
   // ultima linha diz que a equipa nao fica presa, que e o que evita que
   // o jogador feche a pagina a pensar que nao pode lutar.
+  'pve.sem_nome':      'Um avatar sem nome não batalha. Dê um nome a ele primeiro — é uma vez só, e fica para sempre.',
+  'pve.sem_nomes':     'Avatares sem nome não batalham. Dê um nome a eles primeiro — é uma vez só, e fica para sempre.',
   'pve.doente':        'Doente não batalha: {nomes}. Trate com o antídoto, ou troque por outro avatar.',
   'pve.impedidos':     'Estes não podem batalhar: {nomes}. Uns são bebês, outros estão doentes ou sem energia — trate, descanse, cresça ou troque.',
   'equipa.bloqueio.titulo':  'Não dá para batalhar assim:',
@@ -309,6 +311,8 @@ window.registerStrings({
   'pve.historico':         'The maths, turn by turn',
   'pve.turno':         'Turn {n}',
   'pve.sem_equipa':    'Pick 3 avatars for your team before battling.',
+  'pve.sem_nome':      'An avatar with no name does not battle. Give it a name first — once only, and it is forever.',
+  'pve.sem_nomes':     'Avatars with no name do not battle. Give them a name first — once only, and it is forever.',
   'pve.doente':        'The sick cannot battle: {nomes}. Treat them with the antidote, or swap in another avatar.',
   'pve.impedidos':     'These cannot battle: {nomes}. Some are babies, some are sick or out of energy — treat, rest, grow or swap.',
   'equipa.bloqueio.titulo':  'You cannot battle like this:',

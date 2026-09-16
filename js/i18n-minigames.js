@@ -6,18 +6,12 @@ window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     // Genérico
+    'mg.sem_nome':           'Primeiro me dê um nome! ✎',
     'mg.bub.tired':          'Cansado demais... 😴',
     'mg.bub.almost':         'Quase... 😔',
     'mg.bub.not_tired':      'Não estou cansado!',
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
-
-    // Ache o diferente (js/oddone.js)
-    'mg.odd.info':           '{diff} · {n}×{n} · Toque no diferente!',
-    'mg.odd.round':          '🔍 Rodada {n}',
-    'mg.odd.timeout':        '⏰ TEMPO ESGOTADO',
-    'mg.odd.rounds':         '🔍 {n} rodadas!',
-    'mg.odd.round_one':      '🔍 1 rodada!',
 
     // Fusão de esferas (js/fusao.js)
     'mg.fus.info':           '{diff} · Junte duas iguais!',
@@ -103,18 +97,12 @@ window.registerStrings(
   // ── ENGLISH ────────────────────────────────────────────────────
   {
     // Generic
+    'mg.sem_nome':           'Give me a name first! ✎',
     'mg.bub.tired':          'Too tired... 😴',
     'mg.bub.almost':         'So close... 😔',
     'mg.bub.not_tired':      "I'm not tired!",
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
-
-    // Spot the odd one (js/oddone.js)
-    'mg.odd.info':           '{diff} · {n}×{n} · Tap the odd one!',
-    'mg.odd.round':          '🔍 Round {n}',
-    'mg.odd.timeout':        '⏰ TIME UP',
-    'mg.odd.rounds':         '🔍 {n} rounds!',
-    'mg.odd.round_one':      '🔍 1 round!',
 
     // Orb merge (js/fusao.js)
     'mg.fus.info':           '{diff} · Merge two of a kind!',

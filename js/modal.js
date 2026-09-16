@@ -40,7 +40,7 @@ const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
   'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
-  'oddModal','fusaoModal',
+  'fusaoModal',
   'marketplaceModal','combateModal','avataresModal','batalhaModal',
   'linhagemModal'
 ];
@@ -127,7 +127,7 @@ const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketplaceModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','oddModal','fusaoModal','combateModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','fusaoModal','combateModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -265,6 +265,25 @@ function closeGameSelector() {
 }
 
 function openMinigame(type) {
+  /* ── SEM NOME NÃO JOGA ──
+
+     A mesma regra da batalha (ver _pveImpedimentoDe, em js/pve-fu.js):
+     o nome é o primeiro ato do jogador sobre a criatura, e antes dele
+     não há brincadeira. Fica aqui porque este é o caminho único de
+     todos os minijogos — guardar cada um deles seria a mesma regra
+     escrita cinco vezes.
+
+     E não se recusa em silêncio: a tela do batismo abre logo a seguir,
+     que é o que o jogador tem de fazer. */
+  if (typeof temNome === 'function' && typeof avatar !== 'undefined'
+      && avatar && !temNome(avatar)) {
+    showBubble(t('mg.sem_nome'));
+    if (typeof startRename === 'function' && typeof podeRenomear === 'function'
+        && podeRenomear(avatar)) {
+      setTimeout(() => startRename(avatar), 700);
+    }
+    return;
+  }
   ModalManager.close('gameSelector');
   // O avatar entra com o jogo. Ver js/mini-avatar.js.
   const comAvatar = (modalId, avId, arranque) => {
@@ -277,7 +296,6 @@ function openMinigame(type) {
   if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { comAvatar('snakeModal',   'snakeAvatar', startSnake); return; }
   if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
-  if(type === 'odd')     { comAvatar('oddModal',   'oddAvatar',   startOddOne); return; }
   if(type === 'fusao')   { comAvatar('fusaoModal', 'fusaoAvatar', startFusao);  return; }
 }
 
@@ -286,13 +304,13 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
-const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','oddModal','fusaoModal'];
+const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','fusaoModal'];
 function closeMiniModal(id) {
   // Tira o painel da lista de quem recebe reações. Sem isto, um jogo
   // fechado continuava a ser notificado pelo jogo seguinte.
   if (typeof miniAvatarDesmontar === 'function') {
     miniAvatarDesmontar({ memoriaModal:'memAvatar', simonModal:'simonAvatar',
-                          snakeModal:'snakeAvatar', oddModal:'oddAvatar',
+                          snakeModal:'snakeAvatar',
                           fusaoModal:'fusaoAvatar' }[id] || '');
   }
   ModalManager.close(id);

@@ -226,18 +226,8 @@
 .mini-btn.close   { border-color:var(--muted); color:var(--muted); background:transparent; }
 .mini-btn.close:hover { border-color:var(--gold-light); color:var(--gold-light); }
 
-/* ── ACHE O DIFERENTE e FUSÃO DE ESFERAS ──
-   O tabuleiro do primeiro é quadrado, como o do labirinto; a tigela do
-   segundo é alta, porque as esferas caem. Os dois medem-se em rem e
-   nunca passam da largura da tela. */
-#oddCanvas {
-  display:block;
-  width:  min(17.5rem, calc(100vw - 1.75rem));
-  height: min(17.5rem, calc(100vw - 1.75rem));
-  border-radius:0.75rem; border:1px solid rgba(212,175,55,.18);
-  box-shadow:inset 0 0 3.75rem rgba(0,0,0,.7);
-  touch-action:none; user-select:none;
-}
+/* ── FUSÃO DE ESFERAS ──
+   O prato é alto, porque as esferas caem, e mede-se em rem. */
 /* ── A TIGELA ENCOLHE COM A TELA ──
    Ela era alta e fixa, e numa janela baixa empurrava o resultado e o
    JOGAR DE NOVO para fora: a premiação aparecia cortada. Agora manda a

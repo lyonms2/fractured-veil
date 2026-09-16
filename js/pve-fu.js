@@ -232,6 +232,19 @@ function _pveImpedimentoDe(i) {
   const s = (typeof avatarSlots !== 'undefined') ? avatarSlots[i] : null;
   const nome = nomeCurto(s);
 
+  /* ── SEM NOME NÃO LUTA ──
+
+     Regra do dono do jogo: o nome é o primeiro ato do jogador sobre a
+     criatura, e antes dele ela não entra em campo. Vem antes de tudo o
+     resto porque não é um estado que passa — é uma coisa por fazer, e
+     quem a faz é o jogador, em dois toques.
+
+     A pergunta é o `temNome` (js/identidade.js), a mesma que o resto do
+     jogo usa: um avatar por batizar tem a primeira metade do nome
+     vazia. */
+  if (typeof temNome === 'function' && !temNome(s))
+    return { i, nome, motivo: 'sem_nome', etiqueta: '✎' };
+
   /* UM BEBÉ NÃO LUTA. É a primeira pergunta, antes das doenças e da
      energia: um recém-nascido não está doente nem cansado, está por
      fazer. A guarda está aqui, com as outras, e não no botão — um limite
@@ -282,8 +295,12 @@ function abrirCombatePvE() {
      Mas quem manda é esta linha, porque é aqui que a batalha começa. */
   const impedidos = _pveImpedidos();
   if (impedidos.length) {
+    const semNome = impedidos.filter(x => x.motivo === 'sem_nome');
     const doentes = impedidos.filter(x => x.motivo === 'doenca');
-    const chave = doentes.length
+    // Sem nome primeiro: é o único que o jogador resolve em dois toques.
+    const chave = semNome.length === impedidos.length
+      ? (semNome.length === 1 ? 'pve.sem_nome' : 'pve.sem_nomes')
+      : doentes.length
       ? (doentes.length === impedidos.length ? 'pve.doente' : 'pve.impedidos')
       : (impedidos.length === 1 ? 'pve.cansado' : 'pve.cansados');
     showToast(t(chave, {
