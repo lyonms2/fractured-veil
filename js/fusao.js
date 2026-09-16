@@ -37,19 +37,40 @@
 //             spendCoins(), showBubble(), playSound(), vitals, t()
 // ═══════════════════════════════════════════════════════════════════
 
-/* A escada das esferas. São os oito tipos do combate, do menor ao
-   maior: quem chega ao fim juntou luz e treva, que é o topo. As cores
-   são as mesmas famílias da arena, para o jogo parecer do mesmo mundo. */
+/* A ESCADA DAS ESFERAS — doze degraus.
+
+   Eram oito, e com o crescimento de um terço por degrau a quinta já
+   tomava o prato: não dava para chegar ao fim, que é o que se joga num
+   jogo de fundir. Doze, como as frutas dos jogos do gênero, com passos
+   curtos — a maior tem menos de um terço do prato.
+
+   Os oito primeiros são os tipos do combate, na ordem da arena. Os
+   quatro últimos são do mundo, e contam uma história: a Fratura abre,
+   o Véu é o que ela rasga, o Vácuo é o que vem do outro lado, e o
+   Avatar é o que sai de tudo isso — o fim da escada é a criatura que o
+   jogador cuida. Esses quatro têm nome próprio (`proprio: true`),
+   porque não são tipos de dano. */
 const FUS_NIVEIS = [
-  { cor: '#f87171', brilho: '#fecaca', chave: 'fogo'   },
-  { cor: '#86efac', brilho: '#dcfce7', chave: 'terra'  },
-  { cor: '#fbbf24', brilho: '#fef3c7', chave: 'raio'   },
-  { cor: '#67e8f9', brilho: '#cffafe', chave: 'ar'     },
-  { cor: '#60a5fa', brilho: '#dbeafe', chave: 'gelo'   },
-  { cor: '#a78bfa', brilho: '#ede9fe', chave: 'veneno' },
-  { cor: '#fde68a', brilho: '#ffffff', chave: 'luz'    },
-  { cor: '#7c3aed', brilho: '#c4b5fd', chave: 'treva'  },
+  { cor: '#f87171', brilho: '#fecaca', chave: 'fogo'    },
+  { cor: '#86efac', brilho: '#dcfce7', chave: 'terra'   },
+  { cor: '#fbbf24', brilho: '#fef3c7', chave: 'raio'    },
+  { cor: '#67e8f9', brilho: '#cffafe', chave: 'ar'      },
+  { cor: '#60a5fa', brilho: '#dbeafe', chave: 'gelo'    },
+  { cor: '#a78bfa', brilho: '#ede9fe', chave: 'veneno'  },
+  { cor: '#fde68a', brilho: '#ffffff', chave: 'luz'     },
+  { cor: '#7c3aed', brilho: '#c4b5fd', chave: 'treva'   },
+  { cor: '#38bdf8', brilho: '#e0f2fe', chave: 'fratura', proprio: true },
+  { cor: '#e879f9', brilho: '#fae8ff', chave: 'veu',     proprio: true },
+  { cor: '#4338ca', brilho: '#a5b4fc', chave: 'vacuo',   proprio: true },
+  { cor: '#f0d080', brilho: '#fffbeb', chave: 'avatar',  proprio: true },
 ];
+
+/* O nome de um degrau: os oito primeiros são tipos de dano e já têm
+   nome na arena; os quatro últimos têm o seu. */
+function _fusNome(n) {
+  const nv = FUS_NIVEIS[n];
+  return nv.proprio ? t('mg.fus.nv.' + nv.chave) : t('af.tipo.' + nv.chave);
+}
 
 const FUS_GRAVIDADE    = 0.42;   // por quadro, dividida pelos passos
 const FUS_PASSOS       = 3;      // passos de física por quadro
@@ -64,27 +85,40 @@ const FUS_FILA         = 3;      // quantas próximas se mostram
 
 // A bomba: quantos pontos custa ganhar uma, quantas cabem na mão, e
 // quanto custa comprar a mais.
-const FUS_BOMBA_CADA   = [90, 130, 180, 240];
+const FUS_BOMBA_CADA   = [140, 200, 280, 380];
 const FUS_BOMBA_MAX    = 3;
 const FUS_BOMBA_PRECO  = 15;
 
-// Quantos tipos podem nascer na mão, por dificuldade: com mais tipos,
-// custa mais juntar duas iguais.
-const FUS_TIPOS_INICIAIS = [3, 3, 4, 5];
-/* O RAIO DA MENOR ESFERA, em fração do menor lado do prato.
+/* Quantos degraus podem nascer na mão, por dificuldade. Com doze
+   degraus, nascerem só os três primeiros tornava o fim da escada
+   inalcançavel: um Avatar custaria centenas de fusoes. Nascem os
+   primeiros quatro a seis, com PESO DECRESCENTE — a menor sai mais
+   vezes —, que e o que os jogos do genero fazem. */
+const FUS_TIPOS_INICIAIS = [5, 5, 6, 6];
+/* O TAMANHO DAS ESFERAS, em fração do menor lado do prato.
 
-   Era `largura / 13` — e `13` estava escrito como "cabe treze vezes na
-   largura", mas o que a conta dava era o RAIO: cabiam seis e meia. Pior:
-   só olhava a largura, portanto num prato baixo a esfera de nível 6
-   tinha 430px de diâmetro contra 342 de altura e ficava para sempre
-   cortada, vazando pelo fundo.
+   Estavam gigantes: a menor tinha um sétimo do prato de diâmetro e cada
+   degrau crescia um terço, portanto a quinta já o tomava inteiro e não
+   havia como chegar ao fim da escada.
+
+   Agora a menor tem UM QUINZE AVOS do menor lado, e cada degrau cresce
+   15%. Nos doze degraus isso multiplica o diâmetro por 4,65: a maior
+   fica com 31% do menor lado do prato — grande o suficiente para ser
+   um acontecimento, pequena o suficiente para caber e para o jogo
+   continuar depois dela.
+
+   A conta antiga dizia `largura / 13` com o comentário "cabe treze
+   vezes na largura", mas o que ela dava era o RAIO: cabiam seis e meia.
+   E só olhava a largura, portanto num prato baixo a esfera grande
+   ficava para sempre cortada, vazando pelo fundo.
 
    Agora sai do menor lado, e o número é escolhido para a MAIOR caber:
    nível 7 = 1,3^7 = 6,27 raios, ou seja 12,5 diâmetros da menor. Com
    0,07 do menor lado, a maior ocupa 88% dele. */
-const FUS_BASE = 0.07;
+const FUS_BASE   = 1 / 30;   // raio da menor = metade de 1/15 do menor lado
+const FUS_CRESCE = 1.15;     // quanto cada degrau cresce
 // Quantos pontos valem uma partida cheia, por dificuldade.
-const FUS_ALVO           = [260, 420, 640, 900];
+const FUS_ALVO           = [420, 680, 980, 1350];
 
 // ── Estado ─────────────────────────────────────────────────────────
 let _fusEsferas   = [];   // [{id,x,y,vx,vy,n,r,nascida,fundidaEm}]
@@ -136,6 +170,8 @@ function startFusao() {
 
   const info = document.getElementById('fusaoInfo');
   if (info) info.textContent = t('mg.fus.info', { diff: t(d.i18nKey) });
+  const parar = document.getElementById('fusaoPararBtn');
+  if (parar) parar.textContent = t('mg.fus.parar');
 
   _fusLimparResultado();
   _fusPlacar();
@@ -156,14 +192,22 @@ window.addEventListener('resize', () => {
 });
 
 function _fusSorteia() {
-  return Math.floor(Math.random() * FUS_TIPOS_INICIAIS[_fusTier]);
+  const quantos = FUS_TIPOS_INICIAIS[_fusTier];
+  // Pesos quantos, quantos-1, ... 1: a menor sai mais vezes que a maior.
+  const total = quantos * (quantos + 1) / 2;
+  let x = Math.random() * total;
+  for (let i = 0; i < quantos; i++) {
+    x -= (quantos - i);
+    if (x <= 0) return i;
+  }
+  return 0;
 }
 
 // O raio da menor esfera do prato de agora — recalculado a cada medida.
 let _fusR0 = 12;
 
 function _fusRaio(n) {
-  return _fusR0 * Math.pow(1.3, n);
+  return _fusR0 * Math.pow(FUS_CRESCE, n);
 }
 
 /* ── O PRATO PEDE O ESPAÇO QUE SOBRA ──
@@ -278,6 +322,9 @@ function _fusLimparResultado() {
   // O ranking é coisa do fim da partida: fecha-se ao recomeçar.
   const rk = document.getElementById('fusaoRankingBtn');
   if (rk) rk.style.display = 'none';
+  // E o ENCERRAR é o contrário: só serve com a partida a correr.
+  const parar = document.getElementById('fusaoPararBtn');
+  if (parar) parar.style.display = 'inline-block';
   const painel = document.getElementById('fusaoRankingPanel');
   const fundo  = document.getElementById('fusaoRankingBackdrop');
   if (painel) painel.style.display = 'none';
@@ -351,6 +398,17 @@ async function fusaoCarregarRanking(chave) {
   }
 }
 
+/* ── ENCERRAR E RECEBER ──
+
+   Com doze degraus e esferas pequenas, uma partida bem jogada demora, e
+   pode nunca transbordar. Como o prêmio só sai no fim, jogar bem era
+   ficar sem prêmio — bastava o jogador fechar a janela e perder tudo.
+   Este botão termina a partida quando ele quiser, com o que já fez. */
+function fusaoParar() {
+  if (!_fusRodando || _fusAcabou) return;
+  _fusFim();
+}
+
 function fusaoToggleRanking() {
   _fusRankAberto = !_fusRankAberto;
   const painel = document.getElementById('fusaoRankingPanel');
@@ -388,8 +446,8 @@ function _fusPainel() {
   if (escada) {
     escada.innerHTML = `<span class="fus-rot">${t('mg.fus.escada')}</span>` +
       FUS_NIVEIS.map((nv, n) => {
-        const d = 7 + n * 1.5;
-        return `<i class="fus-passo${n <= _fusMaior ? ' feito' : ''}" title="${t('af.tipo.' + nv.chave)}"` +
+        const d = 5 + n * 1.15;
+        return `<i class="fus-passo${n <= _fusMaior ? ' feito' : ''}" title="${_fusNome(n)}"` +
                ` style="width:${d}px;height:${d}px;background:${nv.cor}"></i>`;
       }).join('');
   }
@@ -610,7 +668,7 @@ function _fusFundir(W, H) {
       _fusFusoes++;
       if (n > _fusMaior) {
         _fusMaior = n;
-        showBubble(t('mg.fus.bub.novo', { tipo: t('af.tipo.' + FUS_NIVEIS[n].chave) }));
+        showBubble(t('mg.fus.bub.novo', { tipo: _fusNome(n) }));
       }
       if (typeof playSound === 'function') playSound('feed');
       _fusPlacar();
@@ -655,7 +713,7 @@ function _fusFim() {
     const r = miniReward(frac * 1.5, frac * 1.5, Math.min(4, 1 + Math.floor(_fusMaior / 2)));
     if (result) {
       result.textContent = t('mg.fus.fim', {
-        p: _fusPontos, tipo: t('af.tipo.' + FUS_NIVEIS[_fusMaior].chave),
+        p: _fusPontos, tipo: _fusNome(_fusMaior),
       });
       result.className = 'mini-result-box ' + (frac >= 0.6 ? 'win' : '');
     }
@@ -663,6 +721,9 @@ function _fusFim() {
     vitals.humor = Math.min(100, vitals.humor + Math.round(10 * frac));
     scheduleSave();
   }
+  const parar = document.getElementById('fusaoPararBtn');
+  if (parar) parar.style.display = 'none';
+
   // O recorde da dificuldade, e a porta do ranking.
   _fusGuardarRecorde();
   const rank = document.getElementById('fusaoRankingBtn');
