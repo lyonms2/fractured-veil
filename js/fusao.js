@@ -71,6 +71,18 @@ const FUS_BOMBA_PRECO  = 15;
 // Quantos tipos podem nascer na mão, por dificuldade: com mais tipos,
 // custa mais juntar duas iguais.
 const FUS_TIPOS_INICIAIS = [3, 3, 4, 5];
+/* O RAIO DA MENOR ESFERA, em fração do menor lado do prato.
+
+   Era `largura / 13` — e `13` estava escrito como "cabe treze vezes na
+   largura", mas o que a conta dava era o RAIO: cabiam seis e meia. Pior:
+   só olhava a largura, portanto num prato baixo a esfera de nível 6
+   tinha 430px de diâmetro contra 342 de altura e ficava para sempre
+   cortada, vazando pelo fundo.
+
+   Agora sai do menor lado, e o número é escolhido para a MAIOR caber:
+   nível 7 = 1,3^7 = 6,27 raios, ou seja 12,5 diâmetros da menor. Com
+   0,07 do menor lado, a maior ocupa 88% dele. */
+const FUS_BASE = 0.07;
 // Quantos pontos valem uma partida cheia, por dificuldade.
 const FUS_ALVO           = [260, 420, 640, 900];
 
@@ -90,6 +102,7 @@ let _fusBombas    = 0;
 let _fusBombaProx = 0;    // pontos para ganhar a seguinte
 let _fusArmado    = false;
 let _fusFaiscas   = [];   // { x, y, vx, vy, cor, nasceu }
+let _fusRankAberto = false;
 let _fusIdSeq     = 1;
 
 // ── Iniciar ────────────────────────────────────────────────────────
@@ -105,12 +118,6 @@ function startFusao() {
 
   const canvas = document.getElementById('fusaoCanvas');
   if (!canvas) return;
-  /* Buffer no tamanho real vezes a densidade da tela: sem esticar e sem
-     cortar. O jogo inteiro pensa em px lógicos (clientWidth). */
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  canvas.width  = (canvas.clientWidth  || 224) * dpr;
-  canvas.height = (canvas.clientHeight || 314) * dpr;
-  canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
 
   _fusEsferas = [];
   _fusFaiscas = [];
@@ -133,15 +140,127 @@ function startFusao() {
   _fusLimparResultado();
   _fusPlacar();
   _fusPainel();
+  // Depois do painel: a medida do prato conta com ele no cartão.
+  _fusMedirPrato();
+  _fusMira = (canvas.clientWidth || 224) / 2;
+  _fusSincronizarRecorde();
 }
+
+// A janela muda de tamanho, o prato acompanha.
+let _fusMedirTimer = null;
+window.addEventListener('resize', () => {
+  const canvas = document.getElementById('fusaoCanvas');
+  if (!canvas || canvas.offsetParent === null) return;
+  clearTimeout(_fusMedirTimer);
+  _fusMedirTimer = setTimeout(_fusMedirPrato, 150);
+});
 
 function _fusSorteia() {
   return Math.floor(Math.random() * FUS_TIPOS_INICIAIS[_fusTier]);
 }
 
-function _fusRaio(n, W) {
-  // A menor cabe treze vezes na largura; cada nível cresce um terço.
-  return (W / 13) * Math.pow(1.3, n);
+// O raio da menor esfera do prato de agora — recalculado a cada medida.
+let _fusR0 = 12;
+
+function _fusRaio(n) {
+  return _fusR0 * Math.pow(1.3, n);
+}
+
+/* ── O PRATO PEDE O ESPAÇO QUE SOBRA ──
+
+   A altura dele vinha do CSS, por um desconto adivinhado, e as duas
+   pontas saíam erradas: num monitor grande o prato ficava parado no
+   meio do vazio, e numa janela baixa as linhas do fim — resultado,
+   prêmio, JOGAR DE NOVO, RANKING — caíam abaixo da dobra.
+
+   ── A CONTA TEM DE PARTIR DA JANELA, E NÃO DO CARTÃO ──
+
+   A primeira versão desta função media `cartao.clientHeight`, e isso é
+   uma cobra a morder o próprio rabo: o cartão é `flex:0 0 auto` e a
+   altura dele vem do conteúdo — que inclui o prato. Cada medida
+   descontava o prato de um total que já continha o prato, e em duas
+   chamadas a conta caía no piso. Resultado: o prato encolhia sozinho a
+   cada partida nova e a cada mudança de janela.
+
+   Agora parte da JANELA (o modal é fixed, inset:0), desconta o recheio
+   do modal e do cartão, o que os outros filhos ocupam e uma RESERVA
+   para as linhas do fim — que não existem quando a partida começa,
+   porque nascem quando ela acaba. Nada disso depende do prato, e por
+   isso a conta dá o mesmo número quantas vezes se refaça. */
+/* A reserva em rem serve o desktop, onde a raiz é 26,4px. No telemóvel
+   ela vale 99px, e isso ficava 25px curto quando o resultado quebra em
+   duas linhas — a borda de baixo dos dois botões saía raspada pela
+   borda do cartão. Por isso o piso em pixels, medido a 360x640. */
+const FUS_RESERVA_REM = 6.2;   // resultado + prêmio + os dois botões
+
+// Os filhos que NÃO entram na conta: o próprio prato, as linhas do fim
+// (que a reserva já paga) e o que flutua fora do fluxo — o painel do
+// ranking é fixed e mediria 168px de nada.
+function _fusForaDaConta(el, canvas) {
+  if (el === canvas) return true;
+  if (el.id === 'fusaoResult' || el.id === 'fusaoReward') return true;
+  if (el.classList && el.classList.contains('mini-btns')) return true;
+  const pos = getComputedStyle(el).position;
+  return pos === 'fixed' || pos === 'absolute';
+}
+
+function _fusMedirPrato() {
+  const canvas = document.getElementById('fusaoCanvas');
+  if (!canvas) return;
+  const cartao = canvas.closest('.modal-card') || canvas.parentElement;
+  const modal  = document.getElementById('fusaoModal');
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const recheio = (el, a, b) => {
+    if (!el) return 0;
+    const cs = getComputedStyle(el);
+    return parseFloat(cs[a]) + parseFloat(cs[b]);
+  };
+
+  const janela = (modal && modal.clientHeight) || window.innerHeight;
+  const outros = cartao
+    ? Array.from(cartao.children)
+        .filter(el => !_fusForaDaConta(el, canvas))
+        .reduce((soma, el) => soma + el.getBoundingClientRect().height, 0)
+    : 0;
+
+  let alto = janela
+    - recheio(modal, 'paddingTop', 'paddingBottom')
+    - recheio(cartao, 'paddingTop', 'paddingBottom')
+    - outros
+    - Math.max(FUS_RESERVA_REM * rem, 7.9 * 16);
+  // Nem um selo nem um poço: entre 9 e 26rem.
+  alto = Math.max(9 * rem, Math.min(alto, 26 * rem));
+
+  const largoMax = Math.min(
+    (cartao ? cartao.clientWidth - recheio(cartao, 'paddingLeft', 'paddingRight')
+            : window.innerWidth),
+    window.innerWidth - 1.5 * rem
+  );
+  /* A largura vai até onde o cartão deixa, com um teto de um quarto
+     acima da altura: um prato levemente deitado ainda se joga bem, um
+     corredor não. Amarrá-la à altura (o `alto * 0,95` de antes) era o
+     que impedia o prato de crescer numa tela larga. */
+  const largo = Math.max(8 * rem, Math.min(largoMax, alto * 1.25));
+
+  const antesW = canvas.clientWidth, antesH = canvas.clientHeight;
+  canvas.style.width  = Math.round(largo) + 'px';
+  canvas.style.height = Math.round(alto) + 'px';
+
+  const W = canvas.clientWidth || largo, H = canvas.clientHeight || alto;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  _fusR0 = Math.min(W, H) * FUS_BASE;
+
+  /* Com a partida a correr, o que está no prato acompanha a mudança de
+     tamanho: sem isto, mudar a janela no meio do jogo deixava as esferas
+     grandes num prato pequeno (ou soltas no ar num prato grande). */
+  if (antesW > 0 && antesH > 0 && (antesW !== W || antesH !== H) && _fusEsferas.length) {
+    const fx = W / antesW, fy = H / antesH;
+    for (const e of _fusEsferas) { e.x *= fx; e.y *= fy; e.r = _fusRaio(e.n); }
+  }
 }
 
 function _fusPlacar() {
@@ -156,6 +275,93 @@ function _fusLimparResultado() {
   if (p) p.textContent = '';
   const b = document.getElementById('fusaoAgainBtn');
   if (b) b.style.display = 'none';
+  // O ranking é coisa do fim da partida: fecha-se ao recomeçar.
+  const rk = document.getElementById('fusaoRankingBtn');
+  if (rk) rk.style.display = 'none';
+  const painel = document.getElementById('fusaoRankingPanel');
+  const fundo  = document.getElementById('fusaoRankingBackdrop');
+  if (painel) painel.style.display = 'none';
+  if (fundo)  fundo.style.display  = 'none';
+  _fusRankAberto = false;
+}
+
+/* ══ O RECORDE E O RANKING ══
+
+   Igual ao do Snake, e de propósito: um recorde por dificuldade no
+   `gs.fusaoBests` (que o save leva junto) e a melhor pontuação de cada
+   jogador numa lista no banco em tempo real. O painel é o mesmo desenho
+   — as classes .rank-* vivem no css/snake.css.
+
+   Sem carteira, sem avatar ou sem banco, nada disto acontece e o jogo
+   segue igual: o ranking é enfeite, não é a partida. */
+function _fusGuardarRecorde() {
+  if (typeof gs === 'undefined') return;
+  if (!gs.fusaoBests) gs.fusaoBests = {};
+  const chave = 't' + _fusTier;
+  if (_fusPontos <= (gs.fusaoBests[chave] || 0)) return;
+  gs.fusaoBests[chave] = _fusPontos;
+  if (typeof scheduleSave === 'function') scheduleSave();
+  _fusSalvarRanking(_fusPontos, chave);
+}
+
+async function _fusSalvarRanking(pontos, chave) {
+  if (typeof rtdb !== 'function' || !rtdb() || !walletAddress || !avatar) return;
+  try {
+    await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`)
+      .set({ nome: nomeCurto(avatar), score: pontos, wallet: walletAddress, ts: Date.now() });
+  } catch (e) {}
+}
+
+// Quem jogou sem banco tem recorde no save e não na lista: isto os reata.
+async function _fusSincronizarRecorde() {
+  if (typeof rtdb !== 'function' || !rtdb() || !walletAddress || !avatar) return;
+  const bests = (typeof gs !== 'undefined' && gs.fusaoBests) || {};
+  for (const [chave, pontos] of Object.entries(bests)) {
+    if (!(pontos > 0)) continue;
+    try {
+      const snap = await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`).once('value');
+      const atual = snap.val();
+      if (!atual || atual.score < pontos) _fusSalvarRanking(pontos, chave);
+    } catch (e) {}
+  }
+}
+
+async function fusaoCarregarRanking(chave) {
+  const lista = document.getElementById('fusaoRankingList');
+  if (!lista) return;
+  if (typeof rtdb !== 'function' || !rtdb()) {
+    lista.innerHTML = `<div class="rank-loading">${t('fus.rank.erro')}</div>`;
+    return;
+  }
+  lista.innerHTML = `<div class="rank-loading">${t('ui.loading')}</div>`;
+  try {
+    const snap = await rtdb().ref(`fusaoRanking/${chave}`).orderByChild('score').limitToLast(10).once('value');
+    const linhas = Object.values(snap.val() || {}).sort((a, b) => b.score - a.score);
+    const medalhas = ['🥇', '🥈', '🥉'];
+    lista.innerHTML = linhas.length === 0
+      ? `<div class="rank-loading">${t('fus.rank.vazio')}</div>`
+      : linhas.map((d, i) => `
+          <div class="rank-row${(d.wallet || '') === walletAddress ? ' rank-meu' : ''}">
+            <span class="rank-pos">${medalhas[i] || `#${i + 1}`}</span>
+            <span class="rank-nome">${esc(d.nome || '???')}</span>
+            <span class="rank-pts">${d.score} 🔮</span>
+          </div>`).join('');
+  } catch (e) {
+    lista.innerHTML = `<div class="rank-loading">${t('fus.rank.erro')}</div>`;
+  }
+}
+
+function fusaoToggleRanking() {
+  _fusRankAberto = !_fusRankAberto;
+  const painel = document.getElementById('fusaoRankingPanel');
+  const fundo  = document.getElementById('fusaoRankingBackdrop');
+  if (painel) painel.style.display = _fusRankAberto ? 'flex' : 'none';
+  if (fundo)  fundo.style.display  = _fusRankAberto ? 'block' : 'none';
+  if (!_fusRankAberto) return;
+  const dt = (typeof DIFF_TIERS !== 'undefined' && DIFF_TIERS[_fusTier]) || null;
+  const titulo = document.getElementById('fusaoRankingTitle');
+  if (titulo) titulo.textContent = t('fus.rank.titulo', { diff: dt ? t(dt.i18nKey) : '' });
+  fusaoCarregarRanking('t' + _fusTier);
 }
 
 /* ── O PAINEL DE BAIXO ──
@@ -207,7 +413,7 @@ function _fusSoltar(x) {
 
   const W = canvas.clientWidth || 224;
   const n = _fusFila[0];
-  const r = _fusRaio(n, W);
+  const r = _fusRaio(n);
   _fusEsferas.push({
     id: _fusIdSeq++,
     x: Math.max(r + 2, Math.min(W - r - 2, x)),
@@ -225,7 +431,7 @@ function _fusPonteiro(clientX) {
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
   const W = canvas.clientWidth || 224;
-  const r = _fusRaio(_fusFila[0] || 0, W);
+  const r = _fusRaio(_fusFila[0] || 0);
   return Math.max(r + 2, Math.min(W - r - 2, clientX - rect.left));
 }
 
@@ -375,7 +581,7 @@ function _fusFaiscar(x, y, cor, quantas) {
 }
 
 // ── Fundir ─────────────────────────────────────────────────────────
-function _fusFundir(W) {
+function _fusFundir(W, H) {
   for (let i = 0; i < _fusEsferas.length; i++) {
     for (let j = i + 1; j < _fusEsferas.length; j++) {
       const a = _fusEsferas[i], b = _fusEsferas[j];
@@ -388,10 +594,14 @@ function _fusFundir(W) {
         id: _fusIdSeq++,
         x: (a.x + b.x) / 2, y: (a.y + b.y) / 2,
         vx: (a.vx + b.vx) / 2, vy: (a.vy + b.vy) / 2 - 1.2,
-        n, r: _fusRaio(n, W), nascida: agora, fundidaEm: agora,
+        n, r: _fusRaio(n), nascida: agora, fundidaEm: agora,
       };
       _fusEsferas.splice(j, 1);
       _fusEsferas.splice(i, 1);
+      /* Presa ANTES de entrar na lista: ela nasce no meio das duas, já
+         com o raio maior, e junto à parede isso a punha até 29px para
+         fora — visível por um quadro, como um salto para fora do prato. */
+      _fusPrender(nova, W, H);
       _fusEsferas.push(nova);
       _fusFaiscar(nova.x, nova.y, FUS_NIVEIS[n].cor, 10);
 
@@ -453,6 +663,10 @@ function _fusFim() {
     vitals.humor = Math.min(100, vitals.humor + Math.round(10 * frac));
     scheduleSave();
   }
+  // O recorde da dificuldade, e a porta do ranking.
+  _fusGuardarRecorde();
+  const rank = document.getElementById('fusaoRankingBtn');
+  if (rank) rank.style.display = 'inline-block';
   if (again) again.style.display = 'inline-block';
 }
 
@@ -517,7 +731,7 @@ function _fusDesenhar() {
 
   if (_fusRodando && !_fusAcabou) {
     _fusFisica(W, H);
-    _fusFundir(W);
+    _fusFundir(W, H);
 
     /* ── TRANSBORDOU? ──
 
@@ -576,7 +790,7 @@ function _fusDesenhar() {
   // ── A mira e a esfera na mão ──
   if (_fusRodando && !_fusAcabou && !_fusArmado) {
     const n = _fusFila[0] || 0;
-    const r = _fusRaio(n, W);
+    const r = _fusRaio(n);
     const g = ctx.createLinearGradient(0, FUS_TOPO, 0, H);
     g.addColorStop(0, 'rgba(255,255,255,0.14)');
     g.addColorStop(1, 'rgba(255,255,255,0)');

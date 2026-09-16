@@ -32,6 +32,9 @@ window.registerStrings(
     'mg.fus.bomba.comprar':  '💣 COMPRAR · {preco} 🪙',
     'mg.fus.bomba.ganhou':   'Uma bomba! 💣',
     'mg.fus.bomba.sem':      'Moedas de menos... 🪙',
+    'fus.rank.titulo':       '🏆 RANKING · {diff}',
+    'fus.rank.vazio':        'Ninguém no ranking desta dificuldade ainda.',
+    'fus.rank.erro':         'Não foi possível carregar o ranking.',
 
     // Memória
     'mg.mem.sub_pairs':      '{n} pares',
@@ -121,6 +124,9 @@ window.registerStrings(
     'mg.fus.bomba.comprar':  '💣 BUY · {preco} 🪙',
     'mg.fus.bomba.ganhou':   'A bomb! 💣',
     'mg.fus.bomba.sem':      'Not enough coins... 🪙',
+    'fus.rank.titulo':       '🏆 RANKING · {diff}',
+    'fus.rank.vazio':        'No one is ranked on this difficulty yet.',
+    'fus.rank.erro':         'Could not load the ranking.',
 
     // Memory
     'mg.mem.sub_pairs':      '{n} pairs',

@@ -1,3 +1,6 @@
+/* As classes .rank-* são apelidos das .snake-rank-*: o painel de
+   ranking é o mesmo para a Fusão de Esferas e para o Snake, e dois
+   CSS iguais acabariam por divergir. */
 /* ═══════════════════════════════════════════════════════════════════
    SNAKE ELEMENTAL
    ═══════════════════════════════════════════════════════════════════ */
@@ -170,7 +173,8 @@
 
    Agora é uma caixa centrada com fundo escuro atrás, um cabeçalho com a
    dificuldade e um ✕, e a lista rola por dentro. Tocar fora também fecha. */
-.snake-ranking-backdrop {
+.snake-ranking-backdrop,
+.rank-backdrop {
   position: fixed;
   inset: 0;
   z-index: 509;
@@ -178,7 +182,8 @@
   cursor: pointer;
 }
 
-.snake-ranking-panel {
+.snake-ranking-panel,
+.rank-panel {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -196,7 +201,8 @@
   box-shadow: 0 1rem 2.5rem rgba(0,0,0,.7);
 }
 
-.snake-rank-cab {
+.snake-rank-cab,
+.rank-cab {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -205,14 +211,16 @@
   border-bottom: 1px solid rgba(167,139,250,.15);
 }
 
-.snake-rank-title {
+.snake-rank-title,
+.rank-title {
   font-family: 'Cinzel', serif;
   font-size: 0.625rem;
   color: var(--gold, #fbbf24);
   letter-spacing: 0.125rem;
 }
 
-.snake-rank-fechar {
+.snake-rank-fechar,
+.rank-fechar {
   flex: 0 0 auto;
   width: 2rem;
   height: 2rem;
@@ -225,9 +233,11 @@
   font-size: 0.75rem;
   cursor: pointer;
 }
-.snake-rank-fechar:hover { border-color: var(--gold, #fbbf24); color: var(--gold, #fbbf24); }
+.snake-rank-fechar:hover,
+.rank-fechar:hover { border-color: var(--gold, #fbbf24); color: var(--gold, #fbbf24); }
 
-.snake-rank-lista {
+.snake-rank-lista,
+.rank-lista {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -235,7 +245,8 @@
   overflow-y: auto;
 }
 
-.snake-rank-row {
+.snake-rank-row,
+.rank-row {
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -244,12 +255,14 @@
   background: rgba(255,255,255,.02);
 }
 
-.snake-rank-meu {
+.snake-rank-meu,
+.rank-meu {
   background: rgba(167,139,250,.12);
   border: 1px solid rgba(167,139,250,.25);
 }
 
-.snake-rank-pos {
+.snake-rank-pos,
+.rank-pos {
   font-family: 'Cinzel', serif;
   font-size: 0.625rem;
   color: var(--gold, #fbbf24);
@@ -257,7 +270,8 @@
   text-align: center;
 }
 
-.snake-rank-nome {
+.snake-rank-nome,
+.rank-nome {
   font-family: 'Cinzel', serif;
   font-size: 0.5625rem;
   color: var(--text, #e2e8f0);
@@ -267,14 +281,16 @@
   text-overflow: ellipsis;
 }
 
-.snake-rank-pts {
+.snake-rank-pts,
+.rank-pts {
   font-family: 'Cinzel', serif;
   font-size: 0.5625rem;
   color: #86efac;
   white-space: nowrap;
 }
 
-.snake-rank-loading {
+.snake-rank-loading,
+.rank-loading {
   font-family: 'Cinzel', serif;
   font-size: 0.5625rem;
   color: var(--muted, #64748b);
