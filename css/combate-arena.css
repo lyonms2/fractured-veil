@@ -1573,6 +1573,66 @@ b.laco { color: #f5a3c7; }
 }
 .cb-palco .cb-topo > * { pointer-events: auto; }
 
+/* ══ A MARÉ DA BATALHA ══
+
+   A vida somada dos três de cada lado, numa barra no alto do palco. É do
+   jogo e não da interface: filete dourado, vidro escuro por baixo, o
+   verde da colônia de um lado e o vermelho da Fratura do outro, e um
+   losango dourado a marcar onde a maré está.
+
+   Fica abaixo da faixa do topo, centrada, e não apanha cliques — é para
+   se ler de relance no meio de um turno. */
+.cb-mare {
+  position: absolute; z-index: 6; top: 2.1rem; left: 50%;
+  transform: translateX(-50%);
+  width: min(17rem, 64%);
+  pointer-events: none;
+}
+.cb-mare-trilho {
+  position: relative; display: flex; overflow: hidden;
+  height: 0.375rem; border-radius: 999px;
+  border: 1px solid rgba(212,175,55,.38);
+  background: linear-gradient(180deg, rgba(120,30,30,.75), rgba(90,20,20,.9));
+  box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,.65),
+              inset 0 0 0.5rem rgba(0,0,0,.75);
+}
+.cb-mare-eu {
+  display: block; height: 100%; width: 50%;
+  background: linear-gradient(180deg, #9fe0a0, #5f9e63);
+  box-shadow: 0 0 0.5rem rgba(122,184,122,.5);
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.cb-mare-ini {
+  display: block; height: 100%; flex: 1;
+  background: linear-gradient(180deg, #e08a7d, #a33f36);
+  box-shadow: 0 0 0.5rem rgba(200,80,70,.45);
+}
+/* O losango na fronteira: é ele que se vê mexer. */
+.cb-mare-marca {
+  position: absolute; top: 50%; left: 50%;
+  width: 0.4375rem; height: 0.4375rem;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: linear-gradient(135deg, #f7e7b0, var(--gold));
+  border: 1px solid rgba(4,3,10,.55);
+  box-shadow: 0 0 0.5rem rgba(212,175,55,.8);
+  transition: left .5s cubic-bezier(.4,0,.2,1);
+}
+.cb-mare-rot {
+  display: flex; justify-content: space-between;
+  margin-top: 0.1875rem; padding: 0 0.125rem;
+  font-family: 'Cinzel', serif; font-size: 0.375rem;
+  letter-spacing: 0.0625rem;
+  text-shadow: 0 0 0.375rem rgba(0,0,0,.9);
+}
+.cb-mare-rot span:first-child { color: #9fe0a0; }
+.cb-mare-rot span:last-child  { color: #e08a7d; }
+/* Um filete que acende do lado de quem está por cima. */
+.cb-mare.ganhando .cb-mare-trilho { border-color: rgba(122,184,122,.55); }
+.cb-mare.perdendo .cb-mare-trilho { border-color: rgba(200,80,70,.55); }
+@media (prefers-reduced-motion: reduce) {
+  .cb-mare-eu, .cb-mare-marca { transition: none; }
+}
+
 /* O registo passa a uma faixa fina e translúcida, colada ao rodapé das
    ações: era uma caixa que roubava um terço da altura ao campo, e o
    campo é o que esta mudança existe para dar. Continua a rolar, e
@@ -2286,6 +2346,10 @@ b.laco { color: #f5a3c7; }
   /* O topo: a rodada e de quem é a vez são a primeira pergunta de cada
      turno, e o ✕ é a única saída da batalha. */
   .cb-palco .cb-topo                 { font-size: 0.6875rem; letter-spacing: 0.06rem; }
+  .cb-mare          { top: 2.25rem; width: min(22rem, 52%); }
+  .cb-mare-trilho   { height: 0.5rem; }
+  .cb-mare-marca    { width: 0.5625rem; height: 0.5625rem; }
+  .cb-mare-rot      { font-size: 0.5rem; }
   .cb-palco .cb-topo button          { font-size: 0.75rem; min-width: 2.5rem; min-height: 2.25rem; }
   .cb-palco .cb-topo button.desistir { font-size: 0.6875rem; }
   /* Sem moldura (o banco de ensaio) o botão de desistir fica sem texto,

@@ -217,11 +217,29 @@ function _afShell() {
       <span id="cbTurno"></span>
       <span class="cb-topo-nome">${t('af.titulo')}</span>
       <span class="cb-topo-dir">
+        <!-- UM BOTÃO SÓ. Havia dois lado a lado — DESISTIR e um ✕ — e os
+             dois chamavam a mesma função, portanto faziam exatamente a
+             mesma coisa. No banco de ensaio, onde não há o que desistir,
+             ele fica sendo o ✕: lá o botão de desistir não tem rótulo, e
+             sem isto a tela de teste ficava sem saída. -->
         <button id="cbDesistir" class="desistir" onclick="_afDesistir()"
-                title="${esc(_afTemMoldura() ? t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR }) : '')}"
-                >${_afTemMoldura() ? t('pve.acao.desistir') : ''}</button>
-        <button onclick="_afDesistir()">✕</button>
+                title="${esc(_afTemMoldura() ? t('pve.acao.desistir_sub', { n: PVE_ENERGIA_DESISTIR }) : t('af.fim.sair'))}"
+                >${_afTemMoldura() ? t('pve.acao.desistir') : '✕'}</button>
       </span>
+    </div>
+
+    <!-- A MARÉ: quem está ganhando, pela vida somada dos três de cada
+         lado. Ver _afMare(), mais abaixo. -->
+    <div class="cb-mare" id="cbMare" aria-hidden="true">
+      <div class="cb-mare-trilho">
+        <i class="cb-mare-eu" id="cbMareEu"></i>
+        <i class="cb-mare-ini"></i>
+        <b class="cb-mare-marca" id="cbMareMarca"></b>
+      </div>
+      <div class="cb-mare-rot">
+        <span id="cbMareVidaEu"></span>
+        <span id="cbMareVidaIni"></span>
+      </div>
     </div>
 
     <div class="cb-campo" id="cbCampo"></div>
@@ -737,6 +755,7 @@ function _afFotografia() {
 
 function _afDesenhar() {
   if (!_afE) return;
+  _afMare();
   const chave = _afChaveEstrutura();
   if (chave !== _afChave) {
     const antes = _afFotografia();
@@ -854,8 +873,51 @@ function _afBarraDe(id, pv, pm) {
   }
 }
 
+/* ── A MARÉ DA BATALHA ──
+
+   Uma barra no alto do palco que diz, de relance, quem está ganhando: a
+   vida somada dos três de cada lado. Ela desliza para o lado de quem
+   está por cima, e o losango dourado marca a fronteira.
+
+   É a única leitura do estado GERAL da luta que existe — os cartões
+   dizem a vida de cada um, e somá-los de cabeça no meio de um turno é
+   trabalho que a tela pode fazer.
+
+   Sobre o EXAMINAR: a barra usa as mesmas vidas que as barrinhas dos
+   cartões já mostram a todos, portanto não revela nada de novo. Só os
+   NÚMEROS respeitam o segredo — o total do inimigo fica em '?' enquanto
+   houver um inimigo por examinar. */
+function _afMare() {
+  const trilho = document.getElementById('cbMareEu');
+  if (!trilho || !_afE) return;
+  const soma = lado => lado.reduce((n, c) => n + Math.max(0, _afPvVisivel(c)), 0);
+  const eu = soma(_afE.A), ini = soma(_afE.B);
+  const total = eu + ini;
+  const parte = total > 0 ? (eu / total) * 100 : 50;
+
+  trilho.style.width = parte.toFixed(1) + '%';
+  const marca = document.getElementById('cbMareMarca');
+  if (marca) marca.style.left = parte.toFixed(1) + '%';
+
+  const caixa = document.getElementById('cbMare');
+  if (caixa) {
+    caixa.classList.toggle('ganhando', parte > 55);
+    caixa.classList.toggle('perdendo', parte < 45);
+  }
+
+  const rotEu = document.getElementById('cbMareVidaEu');
+  if (rotEu) rotEu.textContent = eu;
+  const rotIni = document.getElementById('cbMareVidaIni');
+  if (rotIni) {
+    // O total do inimigo só se mostra quando não há segredo nenhum.
+    const tudoSabido = _afE.B.every(c => _afConhece(c).nivel >= 1);
+    rotIni.textContent = tudoSabido ? ini : '?';
+  }
+}
+
 function _afBarras() {
   if (!_afE) return;
+  _afMare();
   for (const c of _afE.A.concat(_afE.B)) {
     const linha = document.getElementById('cbCart' + c.id);
     if (linha) {
