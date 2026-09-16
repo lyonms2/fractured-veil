@@ -21,8 +21,7 @@ window.registerStrings(
 
     // Fusão de esferas (js/fusao.js)
     'mg.fus.info':           '{diff} · Junte duas iguais!',
-    'mg.fus.acabaram':       'Acabaram as esferas!',
-    'mg.fus.placar':         '🔮 {p} pontos · {n} fusões · {r} por soltar',
+    'mg.fus.placar':         '🔮 {p} pontos · {n} fusões',
     'mg.fus.vazio':          '💤 NENHUMA FUSÃO',
     'mg.fus.fim':            '🔮 {p} pontos · maior: {tipo}',
     'mg.fus.bub.novo':       'Uma esfera de {tipo}! ✨',
@@ -119,8 +118,7 @@ window.registerStrings(
 
     // Orb merge (js/fusao.js)
     'mg.fus.info':           '{diff} · Merge two of a kind!',
-    'mg.fus.acabaram':       'Out of orbs!',
-    'mg.fus.placar':         '🔮 {p} points · {n} merges · {r} left',
+    'mg.fus.placar':         '🔮 {p} points · {n} merges',
     'mg.fus.vazio':          '💤 NO MERGES',
     'mg.fus.fim':            '🔮 {p} points · best: {tipo}',
     'mg.fus.bub.novo':       'An orb of {tipo}! ✨',

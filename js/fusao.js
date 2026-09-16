@@ -126,28 +126,24 @@ const FUS_TIPOS_INICIAIS = [5, 5, 6, 6];
    Agora sai do menor lado, e o número é escolhido para a MAIOR caber:
    nível 7 = 1,3^7 = 6,27 raios, ou seja 12,5 diâmetros da menor. Com
    0,07 do menor lado, a maior ocupa 88% dele. */
-// 1/23 do menor lado: trinta por cento maior do que o 1/30 de antes.
-const FUS_BASE   = 1 / 23;   // raio da menor esfera
+/* O tamanho foi subindo a pedido do dono do jogo: 1/30 do menor lado,
+   depois 1/23 (mais 30%), agora mais 50% — 1,5/23. A menor fica com
+   13% do menor lado de diâmetro e a décima segunda com 61%: as últimas
+   são enormes de propósito, e é isso que faz o prato encher. */
+const FUS_BASE   = 1.5 / 23;   // raio da menor esfera
 const FUS_CRESCE = 1.15;     // quanto cada degrau cresce
 // Quantos pontos valem uma partida cheia, por dificuldade.
-/* A meta de pontos de uma partida cheia. Subiu junto com o limite de
-   esferas: com sessenta por partida, uma partida boa no Facil passa dos
-   1400, e uma meta baixa fazia o desleixado receber o mesmo que o
-   caprichoso — medido: 1012 e 1426 pontos, ambos no teto do premio. */
-const FUS_ALVO           = [1400, 1900, 2500, 3200];
+/* A meta de pontos de uma partida cheia. Com esferas grandes e sem
+   limite de lancamentos, uma partida bem jogada no Facil passa dos 5000
+   e uma desleixada fica pelos 2400 — medido. A meta fica no meio, para
+   o premio distinguir as duas em vez de dar o teto as duas. */
+const FUS_ALVO           = [3800, 4600, 5600, 6800];
 
-/* ── QUANTAS ESFERAS A PARTIDA TEM ──
-
-   Sem isto a partida podia não acabar NUNCA: quem joga bem funde tanto
-   quanto solta, o monte não sobe, e o prêmio — que só sai no fim —
-   nunca chegava. O transbordo continua valendo, e é o fim de quem joga
-   mal; isto é o fim de quem joga bem.
-
-   O número é o orçamento da partida, e é ele que dá a estratégia: com
-   sessenta esferas, cada uma solta no lugar errado é uma a menos para
-   chegar ao Avatar. */
-const FUS_SOLTAS         = [60, 70, 80, 90];
-const FUS_FIM_ESPERA     = 1700;   // ms depois da última, para ela assentar
+/* Houve aqui um ORÇAMENTO DE ESFERAS por partida — sessenta no Fácil —
+   para garantir que a partida acabasse. Saiu a pedido do dono do jogo:
+   solta-se à vontade. O que fecha a partida é o transbordo, e agora as
+   esferas são grandes o bastante para que ele chegue; quem quiser parar
+   antes tem o ENCERRAR E RECEBER. */
 
 // ── Estado ─────────────────────────────────────────────────────────
 let _fusEsferas   = [];   // [{id,x,y,vx,vy,n,r,nascida,fundidaEm}]
@@ -165,8 +161,6 @@ let _fusBombas    = 0;
 let _fusBombaProx = 0;    // pontos para ganhar a seguinte
 let _fusArmado    = false;
 let _fusFaiscas   = [];   // { x, y, vx, vy, cor, nasceu }
-let _fusRestam    = 0;    // esferas que ainda há para soltar
-let _fusFimEm     = null; // quando a última assentou e a partida fecha
 let _fusRankAberto = false;
 let _fusIdSeq     = 1;
 
@@ -197,8 +191,6 @@ function startFusao() {
   _fusArmado  = false;
   _fusBombas  = 1;                       // uma de graça, para ensinar o gesto
   _fusBombaProx = FUS_BOMBA_CADA[_fusTier];
-  _fusRestam  = FUS_SOLTAS[_fusTier];
-  _fusFimEm   = null;
   _fusFila    = Array.from({ length: FUS_FILA + 1 }, _fusSorteia);
 
   const info = document.getElementById('fusaoInfo');
@@ -343,7 +335,7 @@ function _fusMedirPrato() {
 
 function _fusPlacar() {
   const el = document.getElementById('fusaoScore');
-  if (el) el.textContent = t('mg.fus.placar', { p: _fusPontos, n: _fusFusoes, r: Math.max(0, _fusRestam) });
+  if (el) el.textContent = t('mg.fus.placar', { p: _fusPontos, n: _fusFusoes });
 }
 
 function _fusLimparResultado() {
@@ -501,9 +493,7 @@ function _fusSoltar(x) {
   if (!canvas || !_fusRodando || _fusAcabou) return;
   const agora = performance.now();
   if (agora - _fusUltimaSolta < FUS_ESPERA_SOLTA) return;
-  if (_fusRestam <= 0) return;        // acabaram as esferas da partida
   _fusUltimaSolta = agora;
-  _fusRestam--;
 
   const W = canvas.clientWidth || 224;
   const n = _fusFila[0];
@@ -744,7 +734,6 @@ function _fusFim() {
   const reward = document.getElementById('fusaoReward');
   const again  = document.getElementById('fusaoAgainBtn');
 
-  _fusRestam = 0;
   if (_fusFusoes === 0) {
     if (result) { result.textContent = t('mg.fus.vazio'); result.className = 'mini-result-box lose'; }
   } else {
@@ -831,13 +820,6 @@ function _fusDesenhar() {
   if (_fusRodando && !_fusAcabou) {
     _fusFisica(W, H);
     _fusFundir(W, H);
-
-    /* Acabaram as esferas? Espera a última assentar e fecha — as fusões
-       que ela provocar ainda contam, que é o justo. */
-    if (_fusRestam <= 0) {
-      if (_fusFimEm == null) _fusFimEm = agora + FUS_FIM_ESPERA;
-      else if (agora >= _fusFimEm) { _fusFim(); }
-    }
 
     /* ── TRANSBORDOU? ──
 
