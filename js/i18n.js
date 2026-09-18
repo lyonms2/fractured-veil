@@ -244,6 +244,8 @@
       'gs.snake.desc':           'Colete a comida sem bater no próprio corpo',
       'gs.fusao.name':           'FUSÃO DE ESFERAS',
       'gs.fusao.desc':           'Junte esferas iguais na tigela do avatar',
+      'gs.tetra.name':           'TETRA ELEMENTAL',
+      'gs.tetra.desc':           'Encaixe as peças e complete as linhas',
       // Lore
       'gs.lore1.name':           'HISTÓRIAS DO VÉU',
       'gs.lore1.desc':           'A saga pós-guerra — Fraturas, Avatares e O Vácuo',
@@ -270,6 +272,7 @@
       'mini.simon.observe':      'Observe a sequência...',
       'mini.snake.title':        '🐍 SNAKE ELEMENTAL',
       'mini.fusao.title':        '🔮 FUSÃO DE ESFERAS',
+      'mini.tetra.title':        '🧱 TETRA ELEMENTAL',
       // Hatch confirm
       'hatch.title':             '🥚 CHOCAR OVO',
       'hatch.confirm':           '✓ CONFIRMAR',
@@ -567,6 +570,8 @@
       'gs.snake.desc':           'Collect the food without running into yourself',
       'gs.fusao.name':           'ORB MERGE',
       'gs.fusao.desc':           'Merge matching orbs in your avatar\'s bowl',
+      'gs.tetra.name':           'ELEMENTAL TETRA',
+      'gs.tetra.desc':           'Fit the pieces and clear the lines',
       // Lore
       'gs.lore1.name':           'TALES OF THE VEIL',
       'gs.lore1.desc':           'The post-war saga — Fractures, Avatars and The Void',
@@ -593,6 +598,7 @@
       'mini.simon.observe':      'Watch the sequence...',
       'mini.snake.title':        '🐍 ELEMENTAL SNAKE',
       'mini.fusao.title':        '🔮 ORB MERGE',
+      'mini.tetra.title':        '🧱 ELEMENTAL TETRA',
       // Hatch confirm
       'hatch.title':             '🥚 HATCH EGG',
       'hatch.confirm':           '✓ CONFIRM',

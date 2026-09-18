@@ -50,6 +50,9 @@ window.fusaoClick     = typeof fusaoClick     !== "undefined" ? fusaoClick     :
 window.fusaoBomba     = typeof fusaoBomba     !== "undefined" ? fusaoBomba     : ()=>{};
 window.fusaoToggleRanking = typeof fusaoToggleRanking !== "undefined" ? fusaoToggleRanking : ()=>{};
 window.fusaoParar     = typeof fusaoParar     !== "undefined" ? fusaoParar     : ()=>{};
+window.startTetra     = typeof startTetra     !== "undefined" ? startTetra     : ()=>{};
+window.tetraBotao     = typeof tetraBotao     !== "undefined" ? tetraBotao     : ()=>{};
+window.tetraToggleRanking = typeof tetraToggleRanking !== "undefined" ? tetraToggleRanking : ()=>{};
 
 // ── GAME SELECTOR TABS ──
 // O seletor tinha três abas — PvE, PvP e Lore — e esta função trocava

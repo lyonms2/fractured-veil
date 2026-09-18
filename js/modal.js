@@ -40,7 +40,7 @@ const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
   'arenaModal',
-  'fusaoModal',
+  'fusaoModal','tetraModal',
   'marketplaceModal','combateModal','avataresModal','batalhaModal',
   'linhagemModal'
 ];
@@ -127,7 +127,7 @@ const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketplaceModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','snakeModal','fusaoModal','combateModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','snakeModal','fusaoModal','tetraModal','combateModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -253,6 +253,9 @@ function renderGameSelector() {
   rotulo('rewardMemoria', 0.5, 1.5, (typeof MEM_MOEDA_MIN === 'number') ? MEM_MOEDA_MIN : 0);
   rotulo('rewardSimon',   0,   1.3, 0);
   rotulo('rewardSnake',   0,   (typeof SNAKE_XP_MULT !== 'undefined') ? SNAKE_XP_MULT[d.tier] : 2, 0);
+  // A Fusão e o Tetra pagam até 1,5 vez a base, na fração da meta.
+  rotulo('rewardFusao',   0,   1.5, 0);
+  rotulo('rewardTetra',   0,   1.5, 0);
 }
 
 function openGameSelector() {
@@ -295,6 +298,7 @@ function openMinigame(type) {
   if(type === 'simon')   { comAvatar('simonModal',   'simonAvatar', startSimon); return; }
   if(type === 'snake')   { comAvatar('snakeModal',   'snakeAvatar', startSnake); return; }
   if(type === 'fusao')   { comAvatar('fusaoModal', 'fusaoAvatar', startFusao);  return; }
+  if(type === 'tetra')   { comAvatar('tetraModal', 'tetraAvatar', startTetra);  return; }
 }
 
 function openMiniModal(id) {
@@ -302,14 +306,14 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
-const _PVE_MODALS = ['memoriaModal','simonModal','snakeModal','fusaoModal'];
+const _PVE_MODALS = ['memoriaModal','simonModal','snakeModal','fusaoModal','tetraModal'];
 function closeMiniModal(id) {
   // Tira o painel da lista de quem recebe reações. Sem isto, um jogo
   // fechado continuava a ser notificado pelo jogo seguinte.
   if (typeof miniAvatarDesmontar === 'function') {
     miniAvatarDesmontar({ memoriaModal:'memAvatar', simonModal:'simonAvatar',
                           snakeModal:'snakeAvatar',
-                          fusaoModal:'fusaoAvatar' }[id] || '');
+                          fusaoModal:'fusaoAvatar', tetraModal:'tetraAvatar' }[id] || '');
   }
   ModalManager.close(id);
   if(_PVE_MODALS.includes(id) && typeof openGameSelector === 'function') {

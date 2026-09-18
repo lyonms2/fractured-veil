@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// I18N — Minigames (Memória, Simon, Fusão, Dormir, Curar)
+// I18N — Minigames (Memória, Simon, Fusão, Tetra, Dormir, Curar)
 // Carregado após i18n.js · usa registerStrings()
 // ═══════════════════════════════════════════════════════════════════
 window.registerStrings(
@@ -37,6 +37,22 @@ window.registerStrings(
     'fus.rank.titulo':       '🏆 RANKING · {diff}',
     'fus.rank.vazio':        'Ninguém no ranking desta dificuldade ainda.',
     'fus.rank.erro':         'Não foi possível carregar o ranking.',
+
+    // Tetra elemental (js/tetra.js)
+    'mg.tet.info':           '{diff} · Complete as linhas!',
+    'mg.tet.placar':         '🧱 {p} pontos · {l} linhas · nível {n}',
+    'mg.tet.vazio':          '💤 NENHUMA LINHA',
+    'mg.tet.fim':            '🧱 {p} pontos · {l} linhas',
+    'mg.tet.bub.nivel':      'Nível {n}! Mais rápido! ⚡',
+    'mg.tet.bub.quatro':     'Quatro de uma vez! 🌟',
+    'mg.tet.guardada':       'GUARDADA',
+    'mg.tet.proximas':       'PRÓXIMAS',
+    'mg.tet.nivel':          'NÍVEL',
+    'mg.tet.linhas':         'LINHAS',
+    'mg.tet.dica':           '← → mover · ↑ girar · ↓ descer · espaço derrubar · C guardar',
+    'tet.rank.titulo':       '🏆 RANKING · {diff}',
+    'tet.rank.vazio':        'Ninguém no ranking desta dificuldade ainda.',
+    'tet.rank.erro':         'Não foi possível carregar o ranking.',
 
     // Memória
     'mg.mem.sub_pairs':      '{n} pares',
@@ -119,6 +135,22 @@ window.registerStrings(
     'fus.rank.titulo':       '🏆 RANKING · {diff}',
     'fus.rank.vazio':        'No one is ranked on this difficulty yet.',
     'fus.rank.erro':         'Could not load the ranking.',
+
+    // Elemental tetra (js/tetra.js)
+    'mg.tet.info':           '{diff} · Clear the lines!',
+    'mg.tet.placar':         '🧱 {p} points · {l} lines · level {n}',
+    'mg.tet.vazio':          '💤 NO LINES',
+    'mg.tet.fim':            '🧱 {p} points · {l} lines',
+    'mg.tet.bub.nivel':      'Level {n}! Faster! ⚡',
+    'mg.tet.bub.quatro':     'Four at once! 🌟',
+    'mg.tet.guardada':       'HOLD',
+    'mg.tet.proximas':       'NEXT',
+    'mg.tet.nivel':          'LEVEL',
+    'mg.tet.linhas':         'LINES',
+    'mg.tet.dica':           '← → move · ↑ rotate · ↓ soft drop · space hard drop · C hold',
+    'tet.rank.titulo':       '🏆 RANKING · {diff}',
+    'tet.rank.vazio':        'No one is ranked on this difficulty yet.',
+    'tet.rank.erro':         'Could not load the ranking.',
 
     // Memory
     'mg.mem.sub_pairs':      '{n} pairs',

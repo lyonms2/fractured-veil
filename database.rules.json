@@ -84,6 +84,28 @@
           "$outro": { ".validate": false }
         }
       }
+    },
+
+    // O RANKING DO TETRA ELEMENTAL (js/tetra.js), no mesmo molde. A
+    // pontuação cresce com o nível e uma partida longa passa das dezenas
+    // de milhares; cinco milhões fica longe de qualquer partida real.
+    "tetraRanking": {
+      "$tier": {
+        ".read": "auth != null",
+        ".indexOn": ["score"],
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['score'])",
+          "score": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000000 && newData.val() % 1 === 0"
+          },
+          "nome":   { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "wallet": { ".validate": "newData.isString() && newData.val() === $uid" },
+          "ts":     { ".validate": "newData.isNumber()" },
+          "av":     { ".validate": "newData.hasChildren(['seed', 'dna']) && newData.child('seed').isNumber()" },
+          "$outro": { ".validate": false }
+        }
+      }
     }
 
   }
