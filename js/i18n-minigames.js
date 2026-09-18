@@ -11,6 +11,7 @@ window.registerStrings(
     'mg.bub.almost':         'Quase... 😔',
     'mg.bub.not_tired':      'Não estou cansado!',
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
+    'mg.reward_humor_cheio': '😊 no máximo  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
 
     // Fusão de esferas (js/fusao.js)
@@ -102,6 +103,7 @@ window.registerStrings(
     'mg.bub.almost':         'So close... 😔',
     'mg.bub.not_tired':      "I'm not tired!",
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
+    'mg.reward_humor_cheio': '😊 maxed out  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
 
     // Orb merge (js/fusao.js)

@@ -102,9 +102,14 @@ const FUS_ESTOURO_IDADE = 800;   // idade mínima da esfera para ela contar
 const FUS_ESPERA_SOLTA = 260;    // ms entre uma solta e a seguinte
 const FUS_FILA         = 3;      // quantas próximas se mostram
 
-// A bomba: quantos pontos custa ganhar uma, quantas cabem na mão, e
-// quanto custa comprar a mais.
-const FUS_BOMBA_CADA   = [140, 200, 280, 380];
+/* A bomba: quantos pontos custa ganhar uma, quantas cabem na mão, e
+   quanto custa comprar a mais.
+
+   Era uma a cada 140 a 380 pontos — números de quando uma partida fazia
+   poucas centenas. Com os doze degraus uma partida faz milhares, e o
+   estoque enchia logo no começo: parecia que havia sempre três. Agora
+   é uma a cada mil pontos no Fácil, subindo com a dificuldade. */
+const FUS_BOMBA_CADA   = [1000, 1250, 1500, 1800];
 const FUS_BOMBA_MAX    = 3;
 const FUS_BOMBA_PRECO  = 15;
 
@@ -621,6 +626,10 @@ function _fusExplodir(alvo) {
    chão; a maior quase não quica, desce com mais força e assenta onde
    cai. E nas batidas entre elas a massa conta — ver _fusFisica: a
    pequena é empurrada, a grande mal se mexe. */
+/* Abaixo desta velocidade uma batida não quica — é repouso. É o que
+   deixa uma pilha assentar em vez de tremer. */
+const FUS_REPOUSO = 0.9;
+
 function _fusQuique(e) {
   return Math.max(0.06, 0.40 - 0.031 * e.n);      // 0,40 na menor, 0,06 na maior
 }
@@ -633,10 +642,13 @@ function _fusDeslize(e) {
 
 function _fusPrender(e, W, H) {
   const q = _fusQuique(e);
-  if (e.x - e.r < 0)     { e.x = e.r;     e.vx = Math.abs(e.vx) * q; }
-  if (e.x + e.r > W)     { e.x = W - e.r; e.vx = -Math.abs(e.vx) * q; }
-  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -Math.abs(e.vy) * q; e.vx *= _fusDeslize(e); }
-  if (e.y - e.r < 0)     { e.y = e.r;     e.vy = Math.abs(e.vy) * q; }
+  /* Uma batida lenta demais não quica: sem isto, a esfera pousada no
+     chão tremia para sempre em quiques de décimo de pixel. */
+  const quica = v => (Math.abs(v) < FUS_REPOUSO ? 0 : Math.abs(v) * q);
+  if (e.x - e.r < 0)     { e.x = e.r;     e.vx = quica(e.vx); }
+  if (e.x + e.r > W)     { e.x = W - e.r; e.vx = -quica(e.vx); }
+  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -quica(e.vy); e.vx *= _fusDeslize(e); }
+  if (e.y - e.r < 0)     { e.y = e.r;     e.vy = quica(e.vy); }
   e.vx = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vx));
   e.vy = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vy));
 }
@@ -651,6 +663,20 @@ function _fusFisica(W, H) {
       _fusPrender(e, W, H);
     }
 
+    /* ── QUEM ESTÁ APOIADO NÃO AFUNDA ──
+
+       Era o defeito de uma em cima da outra. A esfera de baixo, pousada
+       no chão, era tratada como solta no ar: a que caía em cima dividia
+       o impacto com ela, a de baixo afundava no chão e quicava, e a de
+       cima ficava sem retorno nenhum — medido, voltava com 0,03 de
+       velocidade quando a conta dava 2.
+
+       Agora uma esfera no chão está APOIADA, e a que repousa sobre uma
+       apoiada também fica — a marca sobe pela pilha a cada passo. Um
+       impacto vindo de cima não empurra a apoiada para baixo: quem segura
+       é o chão, e a de cima quica com o seu quique inteiro. */
+    for (const e of _fusEsferas) e.apoiada = (e.y + e.r >= H - 0.5);
+
     // Empurrões: separa quem se sobrepõe, com o peso da área de cada um.
     for (let i = 0; i < _fusEsferas.length; i++) {
       for (let j = i + 1; j < _fusEsferas.length; j++) {
@@ -663,22 +689,41 @@ function _fusFisica(W, H) {
 
         const nx = dx / dist, ny = dy / dist;
         const sobra = (min - dist) * 0.5;
-        const pa = b.r * b.r / (a.r * a.r + b.r * b.r);
-        const pb = 1 - pa;
+        let pa = b.r * b.r / (a.r * a.r + b.r * b.r);
+        let pb = 1 - pa;
+        // ny < 0: b está em cima de a.  ny > 0: a está em cima de b.
+        const aSegura = ny < -0.3 && a.apoiada;
+        const bSegura = ny >  0.3 && b.apoiada;
+        if (aSegura) { pa = 0; pb = 1; }          // a de baixo não afunda
+        else if (bSegura) { pa = 1; pb = 0; }
         a.x -= nx * sobra * 2 * pa; a.y -= ny * sobra * 2 * pa;
         b.x += nx * sobra * 2 * pb; b.y += ny * sobra * 2 * pb;
 
         /* A batida troca velocidade na proporção da MASSA (a área): era
            meio a meio, e uma esfera pequena empurrava uma enorme como se
-           fossem iguais. O quique é o da mais pesada das duas. */
+           fossem iguais.
+
+           O quique é a MÉDIA das duas. Era o da mais pesada, e isso
+           matava o quique justamente em cima de uma pilha: uma pequena
+           caindo numa grande usava o 0,06 da grande e parava morta,
+           como se a física não funcionasse uma em cima da outra. E uma
+           batida lenta não quica, para a pilha assentar sem tremer. */
         const vrel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
         if (vrel < 0) {
           const ma = a.r * a.r, mb = b.r * b.r;
-          const q = Math.min(_fusQuique(a), _fusQuique(b));
-          const j = -(1 + q) * vrel / (1 / ma + 1 / mb);
-          a.vx -= nx * j / ma; a.vy -= ny * j / ma;
-          b.vx += nx * j / mb; b.vy += ny * j / mb;
+          const q = Math.abs(vrel) < FUS_REPOUSO ? 0 : (_fusQuique(a) + _fusQuique(b)) / 2;
+          // A apoiada tem massa infinita para o que vem de cima.
+          const invA = aSegura ? 0 : 1 / ma;
+          const invB = bSegura ? 0 : 1 / mb;
+          if (invA + invB > 0) {
+            const j = -(1 + q) * vrel / (invA + invB);
+            a.vx -= nx * j * invA; a.vy -= ny * j * invA;
+            b.vx += nx * j * invB; b.vy += ny * j * invB;
+          }
         }
+        // O apoio sobe pela pilha.
+        if (aSegura) b.apoiada = true;
+        if (bSegura) a.apoiada = true;
         _fusPrender(a, W, H);
         _fusPrender(b, W, H);
       }
@@ -751,6 +796,8 @@ function _fusGanhar(pontos) {
 
 // ── Fim ────────────────────────────────────────────────────────────
 function _fusFim() {
+  // O humor de antes da partida fechar, para mostrar o ganho inteiro.
+  const humorInicial = vitals.humor;
   _fusRodando = false;
   _fusAcabou  = true;
   _fusArmado  = false;
@@ -775,8 +822,24 @@ function _fusFim() {
       });
       result.className = 'mini-result-box ' + (frac >= 0.6 ? 'win' : '');
     }
-    if (reward) reward.textContent = t('mg.reward_xp', { xp: r.xpGain, coins: r.coinGain });
-    vitals.humor = Math.min(100, vitals.humor + Math.round(10 * frac));
+    /* ── O HUMOR ──
+
+       Vinha em proporção da META da dificuldade, e por isso a mesma
+       partida dava menos humor no Médio do que no Fácil — e no Mestre,
+       quase nada. E não aparecia em lugar nenhum: o prêmio mostrava só
+       XP e moedas, portanto quem jogava não via o humor subir.
+
+       Agora é pela brincadeira e não pela meta: +4 por ter jogado e mais
+       um ponto a cada 500, até +8. O mesmo em qualquer dificuldade — a
+       dificuldade já paga mais em XP e moedas. E vai escrito no prêmio,
+       já com o +3 que toda partida dá (applyGameCost). */
+    const humorBonus = 4 + Math.min(8, Math.floor(_fusPontos / 500));
+    vitals.humor = Math.min(100, vitals.humor + humorBonus);
+    const humorGanho = Math.max(0, Math.round(vitals.humor - humorInicial));
+    // Com o humor já em 100 não há o que subir, e "+0" parecia defeito.
+    if (reward) reward.textContent = (humorGanho === 0 && vitals.humor >= 100)
+      ? t('mg.reward_humor_cheio', { xp: r.xpGain, coins: r.coinGain })
+      : t('mg.reward_humor', { humor: humorGanho, xp: r.xpGain, coins: r.coinGain });
     scheduleSave();
   }
   const parar = document.getElementById('fusaoPararBtn');
