@@ -673,7 +673,8 @@ function _fusPrender(e, W, H) {
   const quica = v => (Math.abs(v) < FUS_REPOUSO ? 0 : Math.abs(v) * q);
   if (e.x - e.r < 0)     { e.x = e.r;     e.vx = quica(e.vx); }
   if (e.x + e.r > W)     { e.x = W - e.r; e.vx = -quica(e.vx); }
-  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -quica(e.vy); e.vx *= _fusDeslize(e); }
+  // O atrito vale por quadro; aqui roda a cada passo, daí a raiz.
+  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -quica(e.vy); e.vx *= Math.pow(_fusDeslize(e), 1 / FUS_PASSOS); }
   if (e.y - e.r < 0)     { e.y = e.r;     e.vy = quica(e.vy); }
   e.vx = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vx));
   e.vy = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vy));
@@ -713,17 +714,38 @@ function _fusFisica(W, H) {
         if (dist === 0) { dx = 0.01; dy = 0.01; dist = 0.014; }
         if (dist >= min) continue;
 
+        /* Duas iguais que se tocam vão fundir (_fusFundir, logo depois
+           desta física). Não se batem: a batida as separava dentro do
+           mesmo quadro, e a de cima quicava na de baixo em vez de fundir. */
+        if (a.n === b.n && a.n < FUS_NIVEIS.length - 1) continue;
+
         const nx = dx / dist, ny = dy / dist;
         const sobra = (min - dist) * 0.5;
-        let pa = b.r * b.r / (a.r * a.r + b.r * b.r);
-        let pb = 1 - pa;
+        const ma = a.r * a.r, mb = b.r * b.r;
         // ny < 0: b está em cima de a.  ny > 0: a está em cima de b.
         const aSegura = ny < -0.3 && a.apoiada;
-        const bSegura = ny >  0.3 && b.apoiada;
-        if (aSegura) { pa = 0; pb = 1; }          // a de baixo não afunda
-        else if (bSegura) { pa = 1; pb = 0; }
-        a.x -= nx * sobra * 2 * pa; a.y -= ny * sobra * 2 * pa;
-        b.x += nx * sobra * 2 * pb; b.y += ny * sobra * 2 * pb;
+        const bSegura = !aSegura && ny > 0.3 && b.apoiada;
+
+        /* A APOIADA SÓ ANDA DE LADO.
+
+           A primeira versão a tratava como uma parede: não se mexia de
+           jeito nenhum com o que vinha de cima. Parou de afundar, mas as
+           esferas do fundo ficaram presas no lugar, sem ser empurradas.
+
+           O certo é o chão segurar só o que é para baixo. A apoiada
+           continua livre na horizontal, e ao longo da batida ela pesa
+           como uma esfera que só pode andar de lado: a massa dividida
+           por nx². Batida bem de cima (nx perto de 0): não se mexe, e a
+           de cima quica. Batida de quina: é empurrada para o lado. */
+        const invA = aSegura ? nx * nx / ma : 1 / ma;
+        const invB = bSegura ? nx * nx / mb : 1 / mb;
+        const soma = invA + invB;
+        const pa = soma > 0 ? invA / soma : 0.5;
+        const pb = 1 - pa;
+        if (aSegura) a.x -= nx * sobra * 2 * pa;
+        else { a.x -= nx * sobra * 2 * pa; a.y -= ny * sobra * 2 * pa; }
+        if (bSegura) b.x += nx * sobra * 2 * pb;
+        else { b.x += nx * sobra * 2 * pb; b.y += ny * sobra * 2 * pb; }
 
         /* A batida troca velocidade na proporção da MASSA (a área): era
            meio a meio, e uma esfera pequena empurrava uma enorme como se
@@ -735,17 +757,12 @@ function _fusFisica(W, H) {
            como se a física não funcionasse uma em cima da outra. E uma
            batida lenta não quica, para a pilha assentar sem tremer. */
         const vrel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-        if (vrel < 0) {
-          const ma = a.r * a.r, mb = b.r * b.r;
+        if (vrel < 0 && soma > 0) {
           const q = Math.abs(vrel) < FUS_REPOUSO ? 0 : (_fusQuique(a) + _fusQuique(b)) / 2;
-          // A apoiada tem massa infinita para o que vem de cima.
-          const invA = aSegura ? 0 : 1 / ma;
-          const invB = bSegura ? 0 : 1 / mb;
-          if (invA + invB > 0) {
-            const j = -(1 + q) * vrel / (invA + invB);
-            a.vx -= nx * j * invA; a.vy -= ny * j * invA;
-            b.vx += nx * j * invB; b.vy += ny * j * invB;
-          }
+          const j = -(1 + q) * vrel / soma;
+          // A apoiada recebe só a parte horizontal do empurrão.
+          a.vx -= nx * j / ma; if (!aSegura) a.vy -= ny * j / ma;
+          b.vx += nx * j / mb; if (!bSegura) b.vy += ny * j / mb;
         }
         // O apoio sobe pela pilha.
         if (aSegura) b.apoiada = true;
