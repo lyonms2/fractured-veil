@@ -50,19 +50,27 @@
    Avatar é o que sai de tudo isso — o fim da escada é a criatura que o
    jogador cuida. Esses quatro têm nome próprio (`proprio: true`),
    porque não são tipos de dano. */
+/* ── AS CORES: DO FOSCO AO RADIANTE ──
+
+   Eram todas pastel e claras, e vizinhas se confundiam — o azul do gelo
+   com o do ar, o lilás do veneno com o da treva. Agora cada degrau tem
+   um tom bem diferente dos dois ao lado, e há uma RAMPA: as primeiras
+   são escuras e foscas, quase sem brilho, e as últimas são vivas e têm
+   halo. Subir a escada vê-se de longe. O resto da rampa (o brilho, o
+   reflexo, o halo) está no _fusEsfera. */
 const FUS_NIVEIS = [
-  { cor: '#f87171', brilho: '#fecaca', chave: 'fogo'    },
-  { cor: '#86efac', brilho: '#dcfce7', chave: 'terra'   },
-  { cor: '#fbbf24', brilho: '#fef3c7', chave: 'raio'    },
-  { cor: '#67e8f9', brilho: '#cffafe', chave: 'ar'      },
-  { cor: '#60a5fa', brilho: '#dbeafe', chave: 'gelo'    },
-  { cor: '#a78bfa', brilho: '#ede9fe', chave: 'veneno'  },
-  { cor: '#fde68a', brilho: '#ffffff', chave: 'luz'     },
-  { cor: '#7c3aed', brilho: '#c4b5fd', chave: 'treva'   },
-  { cor: '#38bdf8', brilho: '#e0f2fe', chave: 'fratura', proprio: true },
-  { cor: '#e879f9', brilho: '#fae8ff', chave: 'veu',     proprio: true },
-  { cor: '#4338ca', brilho: '#a5b4fc', chave: 'vacuo',   proprio: true },
-  { cor: '#f0d080', brilho: '#fffbeb', chave: 'avatar',  proprio: true },
+  { cor: '#9b3b34', brilho: '#d9887f', chave: 'fogo'    },   // tijolo
+  { cor: '#4f7a3d', brilho: '#9cc486', chave: 'terra'   },   // musgo
+  { cor: '#a8842a', brilho: '#e5cc78', chave: 'raio'    },   // ocre
+  { cor: '#3f8a8f', brilho: '#93d3d6', chave: 'ar'      },   // turquesa
+  { cor: '#3f6fc4', brilho: '#a9c6f5', chave: 'gelo'    },   // azul
+  { cor: '#8a4fd1', brilho: '#ccb0f7', chave: 'veneno'  },   // violeta
+  { cor: '#f5c542', brilho: '#fff6cf', chave: 'luz'     },   // ouro vivo
+  { cor: '#c026d3', brilho: '#f5b3fb', chave: 'treva'   },   // magenta
+  { cor: '#06b6d4', brilho: '#cffafe', chave: 'fratura', proprio: true },   // ciano elétrico
+  { cor: '#fb7185', brilho: '#ffe1e6', chave: 'veu',     proprio: true },   // rosa
+  { cor: '#6366f1', brilho: '#e0e7ff', chave: 'vacuo',   proprio: true },   // índigo aceso
+  { cor: '#fde047', brilho: '#ffffff', chave: 'avatar',  proprio: true },   // dourado radiante
 ];
 
 /* O nome de um degrau: os oito primeiros são tipos de dano e já têm
@@ -606,11 +614,29 @@ function _fusExplodir(alvo) {
    de empurrar: uma esfera espremida entre duas grandes ganha posição
    fora das paredes na separação, e sem esta segunda passagem era ela
    que subia pelo topo e sumia da tela. */
+/* ── O PESO DE CADA DEGRAU ──
+
+   Todas quicavam igual, e isso as fazia parecer ocas. Agora o degrau
+   decide o peso: a menor quica bastante, cai mais leve e desliza no
+   chão; a maior quase não quica, desce com mais força e assenta onde
+   cai. E nas batidas entre elas a massa conta — ver _fusFisica: a
+   pequena é empurrada, a grande mal se mexe. */
+function _fusQuique(e) {
+  return Math.max(0.06, 0.40 - 0.031 * e.n);      // 0,40 na menor, 0,06 na maior
+}
+function _fusGravidade(e) {
+  return FUS_GRAVIDADE * (0.85 + 0.035 * e.n);    // a maior pesa 1,6x a menor
+}
+function _fusDeslize(e) {
+  return Math.max(0.76, 0.94 - 0.016 * e.n);      // o atrito com o chão
+}
+
 function _fusPrender(e, W, H) {
-  if (e.x - e.r < 0)     { e.x = e.r;     e.vx = Math.abs(e.vx) * FUS_QUIQUE; }
-  if (e.x + e.r > W)     { e.x = W - e.r; e.vx = -Math.abs(e.vx) * FUS_QUIQUE; }
-  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -Math.abs(e.vy) * FUS_QUIQUE; e.vx *= 0.88; }
-  if (e.y - e.r < 0)     { e.y = e.r;     e.vy = Math.abs(e.vy) * FUS_QUIQUE; }
+  const q = _fusQuique(e);
+  if (e.x - e.r < 0)     { e.x = e.r;     e.vx = Math.abs(e.vx) * q; }
+  if (e.x + e.r > W)     { e.x = W - e.r; e.vx = -Math.abs(e.vx) * q; }
+  if (e.y + e.r > H)     { e.y = H - e.r; e.vy = -Math.abs(e.vy) * q; e.vx *= _fusDeslize(e); }
+  if (e.y - e.r < 0)     { e.y = e.r;     e.vy = Math.abs(e.vy) * q; }
   e.vx = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vx));
   e.vy = Math.max(-FUS_VEL_MAX, Math.min(FUS_VEL_MAX, e.vy));
 }
@@ -618,7 +644,7 @@ function _fusPrender(e, W, H) {
 function _fusFisica(W, H) {
   for (let passo = 0; passo < FUS_PASSOS; passo++) {
     for (const e of _fusEsferas) {
-      e.vy += FUS_GRAVIDADE / FUS_PASSOS;
+      e.vy += _fusGravidade(e) / FUS_PASSOS;
       e.vx *= FUS_ATRITO;
       e.x  += e.vx / FUS_PASSOS;
       e.y  += e.vy / FUS_PASSOS;
@@ -642,11 +668,16 @@ function _fusFisica(W, H) {
         a.x -= nx * sobra * 2 * pa; a.y -= ny * sobra * 2 * pa;
         b.x += nx * sobra * 2 * pb; b.y += ny * sobra * 2 * pb;
 
+        /* A batida troca velocidade na proporção da MASSA (a área): era
+           meio a meio, e uma esfera pequena empurrava uma enorme como se
+           fossem iguais. O quique é o da mais pesada das duas. */
         const vrel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
         if (vrel < 0) {
-          const imp = -vrel * (1 + FUS_QUIQUE) * 0.5;
-          a.vx -= nx * imp; a.vy -= ny * imp;
-          b.vx += nx * imp; b.vy += ny * imp;
+          const ma = a.r * a.r, mb = b.r * b.r;
+          const q = Math.min(_fusQuique(a), _fusQuique(b));
+          const j = -(1 + q) * vrel / (1 / ma + 1 / mb);
+          a.vx -= nx * j / ma; a.vy -= ny * j / ma;
+          b.vx += nx * j / mb; b.vy += ny * j / mb;
         }
         _fusPrender(a, W, H);
         _fusPrender(b, W, H);
@@ -768,11 +799,15 @@ function _fusEsfera(ctx, e, agora) {
 
   ctx.save();
 
+  // De 0 (a primeira, fosca) a 1 (a última, radiante).
+  const vivo = e.n / (FUS_NIVEIS.length - 1);
+
   /* Havia aqui uma sombra elíptica debaixo de cada esfera. Ela só faz
      sentido quando a esfera está pousada em alguma coisa — no ar, a
      mancha cai junto com ela e parece sujeira colada no vidro. */
+  // O brilho em volta cresce com o degrau: quase nenhum nas primeiras.
   ctx.shadowColor = nv.cor;
-  ctx.shadowBlur  = r * 0.8;
+  ctx.shadowBlur  = r * (0.1 + 0.95 * vivo);
   const grd = ctx.createRadialGradient(e.x - r * 0.34, e.y - r * 0.38, r * 0.08, e.x, e.y, r);
   grd.addColorStop(0, nv.brilho);
   grd.addColorStop(0.55, nv.cor);
@@ -784,17 +819,30 @@ function _fusEsfera(ctx, e, agora) {
   ctx.shadowBlur = 0;
 
   // Um fio de luz na borda de baixo: é o que dá volume à esfera.
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.strokeStyle = `rgba(255,255,255,${(0.1 + 0.22 * vivo).toFixed(2)})`;
   ctx.lineWidth = Math.max(1, r * 0.09);
   ctx.beginPath();
   ctx.arc(e.x, e.y, r * 0.93, Math.PI * 0.15, Math.PI * 0.85);
   ctx.stroke();
 
-  // E o reflexo em cima.
-  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  // E o reflexo em cima — fraco nas foscas, forte nas vivas.
+  ctx.fillStyle = `rgba(255,255,255,${(0.12 + 0.3 * vivo).toFixed(2)})`;
   ctx.beginPath();
   ctx.ellipse(e.x - r * 0.3, e.y - r * 0.36, r * 0.24, r * 0.17, -0.5, 0, Math.PI * 2);
   ctx.fill();
+
+  /* As quatro últimas (Fratura, Véu, Vácuo, Avatar) ganham um halo que
+     respira: são as raras da escada, e têm de se ver de longe. */
+  if (e.n >= 8) {
+    const p = 0.5 + 0.5 * Math.sin(agora / 420 + e.n);
+    ctx.strokeStyle = nv.cor;
+    ctx.globalAlpha = 0.18 + 0.22 * p;
+    ctx.lineWidth = Math.max(1.5, r * 0.07);
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, r * (1.06 + 0.04 * p), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 
   // Com a bomba armada, todas piscam de leve: são todas alvo.
   if (_fusArmado) {

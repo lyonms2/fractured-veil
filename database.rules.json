@@ -53,6 +53,31 @@
           "$outro": { ".validate": false }
         }
       }
+    },
+
+    // O RANKING DA FUSÃO DE ESFERAS (js/fusao.js), no mesmo molde do
+    // Snake. Faltava inteiro: sem regra, o banco nega tudo por omissão,
+    // e o ranking da Fusão respondia sempre "não foi possível carregar".
+    //
+    // A pontuação é bem maior que a do Snake — uma partida boa passa dos
+    // 5000 —, então o teto é outro. Um milhão fica muito acima de
+    // qualquer partida real e continua a barrar o valor absurdo.
+    "fusaoRanking": {
+      "$tier": {
+        ".read": "auth != null",
+        ".indexOn": ["score"],
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['score'])",
+          "score": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000 && newData.val() % 1 === 0"
+          },
+          "nome":   { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "wallet": { ".validate": "newData.isString() && newData.val() === $uid" },
+          "ts":     { ".validate": "newData.isNumber()" },
+          "$outro": { ".validate": false }
+        }
+      }
     }
 
   }
