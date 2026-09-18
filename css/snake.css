@@ -270,6 +270,24 @@
   text-align: center;
 }
 
+/* O retrato do avatar, entre a posição e o nome (rankRetratoDe, em
+   js/mini-avatar.js). Um halo leve atrás, para o bicho não se perder no
+   fundo escuro; tracejado quando a linha é antiga e não tem retrato. */
+.rank-av {
+  flex: 0 0 auto;
+  width: 2rem; height: 2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167,139,250,.22) 0%, rgba(167,139,250,0) 70%);
+  overflow: hidden;
+}
+.rank-av svg { width: 100%; height: 100%; display: block; }
+.rank-av.vazio {
+  width: 1.5rem; height: 1.5rem; margin: 0 0.25rem;
+  background: rgba(255,255,255,.04);
+  border: 1px dashed rgba(255,255,255,.14);
+}
+
 .snake-rank-nome,
 .rank-nome {
   font-family: 'Cinzel', serif;

@@ -393,7 +393,11 @@ async function _snakeSaveRanking(score, tierKey) {
   if(!rtdb() || !walletAddress || !avatar) return;
   try {
     const nome = nomeCurto(avatar);
-    await rtdb().ref(`snakeRanking/${tierKey}/${walletAddress}`).set({ nome, score, wallet: walletAddress, ts: Date.now() });
+    const linha = { nome, score, wallet: walletAddress, ts: Date.now() };
+    // O retrato do avatar, para a lista o desenhar (ver rankMeuRetrato).
+    const av = (typeof rankMeuRetrato === 'function') ? rankMeuRetrato() : null;
+    if (av) linha.av = av;
+    await rtdb().ref(`snakeRanking/${tierKey}/${walletAddress}`).set(linha);
   } catch(e) {}
 }
 
@@ -405,7 +409,8 @@ async function _snakeSyncBest() {
     try {
       const snap = await rtdb().ref(`snakeRanking/${key}/${walletAddress}`).once('value');
       const cur  = snap.val();
-      if(!cur || cur.score < score) _snakeSaveRanking(score, key);
+      // Sem retrato também reescreve: os recordes de antes ganham o bicho.
+      if(!cur || cur.score < score || !cur.av) _snakeSaveRanking(score, key);
     } catch(e) {}
   }
 }
@@ -428,6 +433,7 @@ async function snakeLoadRanking(tierKey) {
       : lista.map((d, i) => `
           <div class="snake-rank-row${(d.wallet||'') === walletAddress ? ' snake-rank-meu' : ''}">
             <span class="snake-rank-pos">${medalhas[i] || `#${i+1}`}</span>
+            ${typeof rankRetratoDe === 'function' ? rankRetratoDe(d) : ''}
             <span class="snake-rank-nome">${esc(d.nome || '???')}</span>
             <span class="snake-rank-pts">${d.score} 🐍</span>
           </div>`).join('');

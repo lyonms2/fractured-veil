@@ -61,6 +61,42 @@ function miniAvatarDesmontar(id) {
   _miniAvPaineis.delete(id);
 }
 
+/* ── O RETRATO DO RANKING ──
+
+   O ranking mostrava só o nome. Agora mostra o bicho: cada linha guarda
+   o mínimo para redesenhá-lo — a semente, a raridade, a fase e o DNA,
+   que juntos dão uns 150 bytes — e quem lê a lista desenha com o mesmo
+   gerarSVG do resto do jogo. Um desenho pronto (SVG ou PNG) custaria
+   dezenas de vezes mais no banco, para cada jogador de cada lista.
+
+   Serve ao Snake e à Fusão; por isso mora aqui, que carrega antes dos
+   dois. */
+function rankMeuRetrato() {
+  if (typeof avatar === 'undefined' || !avatar) return null;
+  const dna = avatar.dna || (avatar.nascimento && avatar.nascimento.dna) || null;
+  if (!dna) return null;
+  return {
+    seed:     avatar.seed || 0,
+    raridade: avatar.raridade || 'Comum',
+    fase:     (typeof getFase === 'function') ? getFase() : 0,
+    dna:      JSON.parse(JSON.stringify(dna)),
+  };
+}
+
+function rankRetratoDe(linha) {
+  const av = linha && linha.av;
+  if (!av || !av.dna || typeof gerarSVG !== 'function') {
+    return '<span class="rank-av vazio"></span>';
+  }
+  try {
+    return '<span class="rank-av">' +
+      gerarSVG(av, av.raridade || 'Comum', av.seed || 0, 64, 64, av.fase || 0) +
+      '</span>';
+  } catch (e) {
+    return '<span class="rank-av vazio"></span>';
+  }
+}
+
 // ── Reagir ───────────────────────────────────────────────────────
 // `tipo` é 'bom', 'mau' ou 'festa'.
 function miniAvatarReagir(tipo) {

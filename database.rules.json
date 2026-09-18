@@ -48,6 +48,9 @@
           "nome":   { ".validate": "newData.isString() && newData.val().length <= 40" },
           "wallet": { ".validate": "newData.isString() && newData.val() === $uid" },
           "ts":     { ".validate": "newData.isNumber()" },
+          // O retrato do avatar, para a lista desenhá-lo: semente,
+          // raridade, fase e DNA — uns 150 bytes.
+          "av":     { ".validate": "newData.hasChildren(['seed', 'dna']) && newData.child('seed').isNumber()" },
 
           // Qualquer campo fora dos quatro acima é recusado.
           "$outro": { ".validate": false }
@@ -75,6 +78,9 @@
           "nome":   { ".validate": "newData.isString() && newData.val().length <= 40" },
           "wallet": { ".validate": "newData.isString() && newData.val() === $uid" },
           "ts":     { ".validate": "newData.isNumber()" },
+          // O retrato do avatar, para a lista desenhá-lo: semente,
+          // raridade, fase e DNA — uns 150 bytes.
+          "av":     { ".validate": "newData.hasChildren(['seed', 'dna']) && newData.child('seed').isNumber()" },
           "$outro": { ".validate": false }
         }
       }

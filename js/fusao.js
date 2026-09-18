@@ -393,8 +393,11 @@ function _fusGuardarRecorde() {
 async function _fusSalvarRanking(pontos, chave) {
   if (typeof rtdb !== 'function' || !rtdb() || !walletAddress || !avatar) return;
   try {
-    await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`)
-      .set({ nome: nomeCurto(avatar), score: pontos, wallet: walletAddress, ts: Date.now() });
+    const linha = { nome: nomeCurto(avatar), score: pontos, wallet: walletAddress, ts: Date.now() };
+    // O retrato, para a lista desenhar o avatar ao lado do nome.
+    const av = (typeof rankMeuRetrato === 'function') ? rankMeuRetrato() : null;
+    if (av) linha.av = av;
+    await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`).set(linha);
   } catch (e) {}
 }
 
@@ -407,7 +410,8 @@ async function _fusSincronizarRecorde() {
     try {
       const snap = await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`).once('value');
       const atual = snap.val();
-      if (!atual || atual.score < pontos) _fusSalvarRanking(pontos, chave);
+      // Sem retrato também reescreve: os recordes de antes ganham o bicho.
+      if (!atual || atual.score < pontos || !atual.av) _fusSalvarRanking(pontos, chave);
     } catch (e) {}
   }
 }
@@ -429,6 +433,7 @@ async function fusaoCarregarRanking(chave) {
       : linhas.map((d, i) => `
           <div class="rank-row${(d.wallet || '') === walletAddress ? ' rank-meu' : ''}">
             <span class="rank-pos">${medalhas[i] || `#${i + 1}`}</span>
+            ${typeof rankRetratoDe === 'function' ? rankRetratoDe(d) : ''}
             <span class="rank-nome">${esc(d.nome || '???')}</span>
             <span class="rank-pts">${d.score} 🔮</span>
           </div>`).join('');
@@ -574,12 +579,33 @@ function fusaoBomba() {
   _fusPainel();
 }
 
+/* ── O AVATAR BRINCA JUNTO ──
+
+   O bicho ficava parado na faixa de cima enquanto o jogador jogava. Agora
+   reage ao que acontece: um salto de alegria quando uma fusão chega aos
+   degraus maiores, festa quando aparece um degrau novo, susto quando o
+   prato entra em perigo, e no fim, festa ou tristeza conforme a partida.
+   As reações são as mesmas dos outros minijogos (miniAvatarReagir, em
+   js/mini-avatar.js).
+
+   Com um intervalo mínimo entre elas: numa cascata de fusões ele reagia
+   a cada uma, e um bicho que pula sem parar deixa de dizer alguma coisa. */
+let _fusReagiuEm = 0;
+function _fusReage(tipo, forcar) {
+  if (typeof miniAvatarReagir !== 'function') return;
+  const agora = performance.now();
+  if (!forcar && agora - _fusReagiuEm < 700) return;
+  _fusReagiuEm = agora;
+  miniAvatarReagir(tipo);
+}
+
 function _fusExplodir(alvo) {
   _fusBombas--;
   _fusArmado = false;
   _fusEsferas = _fusEsferas.filter(e => e !== alvo);
   _fusFaiscar(alvo.x, alvo.y, FUS_NIVEIS[alvo.n].cor, 16);
   if (typeof playSound === 'function') playSound('mine_explode');
+  _fusReage('bom', true);
   _fusPainel();
 }
 
@@ -772,6 +798,10 @@ function _fusFundir(W, H) {
       if (n > _fusMaior) {
         _fusMaior = n;
         showBubble(t('mg.fus.bub.novo', { tipo: _fusNome(n) }));
+        // Um degrau que ninguém tinha visto nesta partida: festa.
+        if (n >= 3) _fusReage('festa', true);
+      } else if (n >= 3) {
+        _fusReage('bom');
       }
       if (typeof playSound === 'function') playSound('feed');
       _fusPlacar();
@@ -805,6 +835,7 @@ function _fusFim() {
 
   const frac = Math.min(1, _fusPontos / FUS_ALVO[_fusTier]);
   if (typeof playSound === 'function') playSound(frac >= 0.6 ? 'win' : 'lose');
+  _fusReage(frac >= 0.6 ? 'festa' : 'mau', true);
 
   applyGameCost();
 
@@ -945,7 +976,10 @@ function _fusDesenhar() {
     const estourando = _fusEsferas.some(e =>
       e.y - e.r < _fusTopo && agora - e.nascida > FUS_ESTOURO_IDADE);
     if (estourando) {
-      if (_fusEstouroDesde == null) _fusEstouroDesde = agora;
+      if (_fusEstouroDesde == null) {
+        _fusEstouroDesde = agora;
+        _fusReage('mau', true);            // o prato entrou em perigo
+      }
       else if (agora - _fusEstouroDesde > FUS_ESTOURO_MS) _fusFim();
     } else {
       _fusEstouroDesde = null;
