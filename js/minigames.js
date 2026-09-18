@@ -94,13 +94,14 @@ function memVictory() {
   const _folgaMem = Math.floor(memCards.length / 4);
   const coinMult  = Math.max(MEM_MOEDA_MIN, 1 - Math.max(0, memErrors - _folgaMem) * 0.1);
   const humorGain = memErrors === 0 ? 20 : memErrors <= 2 ? 15 : memErrors <= 5 ? 10 : 5;
+  const humorAntes = vitals.humor;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
   const label = memErrors === 0 ? t('mg.mem.perfect') : memErrors <= 3 ? t('mg.mem.complete') : t('mg.mem.done');
   document.getElementById('memResult').textContent = label;
   document.getElementById('memResult').className   = 'mini-result-box win';
-  document.getElementById('memReward').textContent = t('mg.reward_humor', {humor: humorGain, xp: r.xpGain, coins: r.coinGain});
+  document.getElementById('memReward').textContent = mgComHumor(humorAntes, t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain}));
   document.getElementById('memAgainBtn').style.display = 'inline-block';
   showBubble(memErrors === 0 ? t('mg.mem.bub.perfect') : t('mg.mem.bub.complete'));
 }
@@ -216,12 +217,13 @@ function simonVictory() {
   // js/modal.js.
   const coinMult  = 1;
   const xpMult    = frac + 0.3;
+  const humorAntes = vitals.humor;
   vitals.humor = Math.min(100, vitals.humor + 20);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
   document.getElementById('simonResult').textContent = t('mg.simon.master');
   document.getElementById('simonResult').className   = 'mini-result-box win';
-  document.getElementById('simonReward').textContent = t('mg.reward_humor', {humor: 20, xp: r.xpGain, coins: r.coinGain});
+  document.getElementById('simonReward').textContent = mgComHumor(humorAntes, t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain}));
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   document.getElementById('simonSeqDisplay').textContent = '';
   showBubble(t('mg.simon.bub.master'));
@@ -237,6 +239,7 @@ function simonGameOver() {
   const maxHits   = maxRounds * (maxRounds + 1) / 2;
   const frac      = maxHits > 0 ? simonCorrectHits / maxHits : 0;
 
+  const humorAntes = vitals.humor;
   applyGameCost();
   const rewardText = [];
   if(frac >= 0.05) {
@@ -251,7 +254,7 @@ function simonGameOver() {
   const pct = Math.round(frac * 100);
   document.getElementById('simonResult').textContent = t('mg.simon.failed', {hits: simonCorrectHits});
   document.getElementById('simonResult').className   = 'mini-result-box lose';
-  document.getElementById('simonReward').textContent = rewardText.join('  ');
+  document.getElementById('simonReward').textContent = mgComHumor(humorAntes, rewardText.join('  '));
   document.getElementById('simonSeqDisplay').textContent = '';
   document.getElementById('simonAgainBtn').style.display = 'inline-block';
   showBubble(t('mg.bub.almost'));

@@ -365,6 +365,7 @@ function _mzEnd(won, reason) {
   const coinPerPiece = coinValues[_mzTier];
   const coinReward   = _mzCoinsCollected * coinPerPiece;
 
+  const humorAntes = vitals.humor;
   applyGameCost();
 
   if(!won) {
@@ -374,9 +375,9 @@ function _mzEnd(won, reason) {
     if(coinReward > 0) {
       earnCoins(coinReward);
       const _s = _mzCoinsCollected !== 1 ? 's' : '';
-      if(reward) reward.textContent = t('maze.reward.coins', {n: _mzCoinsCollected, s: _s, coins: coinReward});
+      if(reward) reward.textContent = mgComHumor(humorAntes, t('maze.reward.coins', {n: _mzCoinsCollected, s: _s, coins: coinReward}));
     } else {
-      if(reward) reward.textContent = '';
+      if(reward) reward.textContent = mgComHumor(humorAntes, '');
     }
     scheduleSave();
   } else {
@@ -388,9 +389,13 @@ function _mzEnd(won, reason) {
     earnCoins(totalCoins);
     const exitLbl = _mzGold ? t('maze.result.exit_gold') : t('maze.result.exit');
     if(result) { result.textContent = exitLbl; result.className = 'mini-result-box win'; }
-    const bonusLbl = _mzGold ? t('maze.bonus.exit_gold') : t('maze.bonus.exit');
-    if(reward) reward.textContent = t('maze.reward.win', {xp: r.xpGain, got: _mzCoinsCollected, total: _mzCoinTotal, coins: totalCoins, bonus: bonusLbl});
     vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
+    const bonusLbl = _mzGold ? t('maze.bonus.exit_gold') : t('maze.bonus.exit');
+    // Sem moeda nenhuma, o "+0 🪙 — bônus saída!" não dizia nada.
+    const premio = totalCoins > 0
+      ? t('maze.reward.win', {xp: r.xpGain, got: _mzCoinsCollected, total: _mzCoinTotal, coins: totalCoins, bonus: bonusLbl})
+      : t('maze.reward.win_sem', {xp: r.xpGain, total: _mzCoinTotal});
+    if(reward) reward.textContent = mgComHumor(humorAntes, premio);
     scheduleSave();
   }
 

@@ -262,13 +262,14 @@ function _snakeEnd() {
     const maxScore = d.tier === 0 ? 10 : d.tier === 1 ? 16 : d.tier === 2 ? 22 : 30;
     const frac = Math.min(1, _snakeScore / maxScore);
 
+    const humorAntes = vitals.humor;
     applyGameCost();
 
     if(_snakeScore === 0) {
       playSound && playSound('lose');
       document.getElementById('snakeResult').textContent = t('snake.result.gameover');
       document.getElementById('snakeResult').className   = 'mini-result-box lose';
-      document.getElementById('snakeReward').textContent = '';
+      document.getElementById('snakeReward').textContent = mgComHumor(humorAntes, '');
     } else {
       const cleared = frac >= 1.0;
       playSound && playSound(cleared || frac >= 0.8 ? 'win' : 'lose');
@@ -284,9 +285,9 @@ function _snakeEnd() {
                            t('snake.result.ok',    {n: _snakeScore});
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
-      document.getElementById('snakeReward').textContent =
-        t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain});
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));
+      document.getElementById('snakeReward').textContent =
+        mgComHumor(humorAntes, t('mg.reward_xp', {xp: r.xpGain, coins: r.coinGain}));
       scheduleSave();
 
       if(!gs.snakeBests) gs.snakeBests = {};

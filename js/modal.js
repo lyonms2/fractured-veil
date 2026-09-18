@@ -420,3 +420,19 @@ function applyGameCost() {
   vitals.humor      = Math.min(100, vitals.humor   + 3);
   updateAllUI();
 }
+
+/* ── O HUMOR NO PRÊMIO ──
+
+   Cada minijogo dava humor, mas quase nenhum dizia: o Snake, o Labirinto,
+   o Campo Minado e o Simon perdido mostravam só XP e moedas. E a Memória
+   e o Simon ganho mostravam um número fixo, que não somava o +3 de
+   applyGameCost e mentia quando o humor já estava no teto.
+
+   Agora todos medem o humor antes e depois da partida e mostram a
+   diferença real, ou "no máximo" quando não havia para onde subir. */
+function mgComHumor(humorAntes, resto) {
+  const ganho = Math.round(vitals.humor - humorAntes);
+  const humor = ganho > 0 ? t('mg.humor_ganho', { humor: ganho })
+              : vitals.humor >= 100 ? t('mg.humor_cheio') : '';
+  return [humor, resto].filter(Boolean).join('  ');
+}

@@ -13,6 +13,8 @@ window.registerStrings(
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_humor_cheio': '😊 no máximo  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
+    'mg.humor_ganho':        '+{humor} 😊',
+    'mg.humor_cheio':        '😊 no máximo',
 
     // Fusão de esferas (js/fusao.js)
     'mg.fus.info':           '{diff} · Junte duas iguais!',
@@ -105,6 +107,8 @@ window.registerStrings(
     'mg.reward_humor':       '+{humor} 😊  +{xp} XP  +{coins} 🪙',
     'mg.reward_humor_cheio': '😊 maxed out  +{xp} XP  +{coins} 🪙',
     'mg.reward_xp':          '+{xp} XP  +{coins} 🪙',
+    'mg.humor_ganho':        '+{humor} 😊',
+    'mg.humor_cheio':        '😊 maxed out',
 
     // Orb merge (js/fusao.js)
     'mg.fus.info':           '{diff} · Merge two of a kind!',

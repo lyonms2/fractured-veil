@@ -28,6 +28,7 @@ window.registerStrings(
     'maze.result.exit_gold':'⚡ SAÍDA DOURADA!',
     'maze.reward.coins':    '🪙 {n} moeda{s} coletada{s} (+{coins} 🪙)',
     'maze.reward.win':      '+{xp} XP · 🪙 {got}/{total} moedas (+{coins} 🪙 — {bonus})',
+    'maze.reward.win_sem':  '+{xp} XP · 🪙 0/{total} moedas',
     'maze.bonus.exit':      'bônus saída!',
     'maze.bonus.exit_gold': 'bônus saída dourada!',
   },
@@ -56,6 +57,7 @@ window.registerStrings(
     'maze.result.exit_gold':'⚡ GOLDEN EXIT!',
     'maze.reward.coins':    '🪙 {n} coin{s} collected (+{coins} 🪙)',
     'maze.reward.win':      '+{xp} XP · 🪙 {got}/{total} coins (+{coins} 🪙 — {bonus})',
+    'maze.reward.win_sem':  '+{xp} XP · 🪙 0/{total} coins',
     'maze.bonus.exit':      'exit bonus!',
     'maze.bonus.exit_gold': 'golden exit bonus!',
   }

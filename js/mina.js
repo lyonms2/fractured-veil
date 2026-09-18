@@ -203,6 +203,7 @@ function minaVictory() {
   const coinMult    = _minaMults[d.tier];
   const xpMult      = d.tier === 0 ? 1.2 : d.tier === 1 ? 1.5 : d.tier === 2 ? 1.8 : 2.0;
   const humorGain   = d.tier === 0 ? 15  : d.tier === 1 ? 20  : d.tier === 2 ? 25  : 30;
+  const humorAntes = vitals.humor;
   vitals.humor = Math.min(100, vitals.humor + humorGain);
   applyGameCost();
   const r = miniReward(xpMult, coinMult, 3, true);
@@ -213,7 +214,7 @@ function minaVictory() {
   const label = d.tier >= 3 ? t('mina.result.win_mst') : d.tier >= 2 ? t('mina.result.win_hard') : t('mina.result.win');
   document.getElementById('minaResult').textContent = label;
   document.getElementById('minaResult').className   = 'mini-result-box win';
-  document.getElementById('minaReward').textContent = t('mina.reward.win', {humor: humorGain, xp: r.xpGain, coins: r.coinGain + _bombBonus});
+  document.getElementById('minaReward').textContent = mgComHumor(humorAntes, t('mina.reward.win', {xp: r.xpGain, coins: r.coinGain + _bombBonus}));
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
   showBubble(d.tier >= 2 ? t('mina.bub.win_hard') : t('mina.bub.win'));
   addLog(t('mina.log.win', {xp: r.xpGain, coins: r.coinGain}), 'good');
@@ -222,6 +223,7 @@ function minaVictory() {
 function minaGameOver() {
   const totalSafe = minaRows * minaCols - minaMines;
   const frac      = totalSafe > 0 ? minaRevealed / totalSafe : 0;
+  const humorAntes = vitals.humor;
   vitals.humor = Math.min(100, vitals.humor + 5);
   applyGameCost();
 
@@ -240,7 +242,7 @@ function minaGameOver() {
   const pct = Math.round(frac * 100);
   document.getElementById('minaResult').textContent = t('mina.result.boom', {pct});
   document.getElementById('minaResult').className   = 'mini-result-box lose';
-  document.getElementById('minaReward').textContent = rewardText.join('  ');
+  document.getElementById('minaReward').textContent = mgComHumor(humorAntes, rewardText.join('  '));
   document.getElementById('minaAgainBtn').style.display = 'inline-block';
   showBubble(t('mina.bub.boom'));
   addLog(t('mina.log.boom', {pct}), 'bad');
