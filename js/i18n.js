@@ -210,7 +210,6 @@
 
       // Modal reward labels
       'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
-      'modal.reward_maze':       '+{xpMin}~{xpMax} XP · até {cMax} 🪙 (colete no labirinto!)',
 
       'ui.login_required_desc':  'Entre na sua conta para invocar seu avatar e guardar o progresso.',
 
@@ -239,14 +238,10 @@
       // PVE
       'gs.memoria.name':         'MEMÓRIA ELEMENTAL',
       'gs.memoria.desc':         'Encontre todos os pares de símbolos',
-      'gs.mina.name':            'CAMPO MINADO',
-      'gs.mina.desc':            'Revele o campo sem explodir as minas',
       'gs.simon.name':           'SIMON SAYS',
       'gs.simon.desc':           'Repita a sequência de símbolos',
       'gs.snake.name':           'SNAKE ELEMENTAL',
       'gs.snake.desc':           'Colete a comida sem bater no próprio corpo',
-      'gs.maze.name':            'LABIRINTO ELEMENTAL',
-      'gs.maze.desc':            'Navegue na névoa e ache a saída',
       'gs.fusao.name':           'FUSÃO DE ESFERAS',
       'gs.fusao.desc':           'Junte esferas iguais na tigela do avatar',
       // Lore
@@ -263,12 +258,6 @@
       'gs.arena.name':           'ARENA DIMENSIONAL',
       'gs.arena.desc':           'Jo-Ken-Pô ao vivo contra outros jogadores',
       'gs.arena.reward':         'Apostas · Ranking · Pool semanal',
-      'gs.rouba.name':           'ROUBA MONTE',
-      'gs.rouba.desc':           'Duelo de cartas ao vivo contra outros jogadores',
-      'gs.rouba.reward':         'Apostas · Pool P2E',
-      'gs.naval.name':           'BATALHA NAVAL',
-      'gs.naval.desc':           'Afunda os navios do oponente',
-      'gs.naval.reward':         'Apostas · Ranking · Pool P2E',
 
       // Minigames — títulos e botões comuns
       'mini.play_again':         'JOGAR DE NOVO',
@@ -279,11 +268,8 @@
       'mini.memoria.sub':        'Encontre todos os pares!',
       'mini.simon.title':        '🎵 SIMON SAYS',
       'mini.simon.observe':      'Observe a sequência...',
-      'mini.mina.title':         '💣 CAMPO MINADO',
       'mini.snake.title':        '🐍 SNAKE ELEMENTAL',
-      'mini.maze.title':         '🌀 LABIRINTO ELEMENTAL',
       'mini.fusao.title':        '🔮 FUSÃO DE ESFERAS',
-      'mini.maze.info':          'Navegue na névoa e ache a saída!',
       // Hatch confirm
       'hatch.title':             '🥚 CHOCAR OVO',
       'hatch.confirm':           '✓ CONFIRMAR',
@@ -364,7 +350,7 @@
       'rename.vai_chamar':       'Vai chamar-se',
       'rename.aviso':            'Só se batiza uma vez. Depois disto o nome fica — na certidão dele, na árvore dos filhos, e para quem o comprar.',
 
-      // Arena + Rouba Monte → js/i18n-pvp.js
+      // Arena → js/i18n-pvp.js
     },
 
     // ── ENGLISH ───────────────────────────────────────────────────
@@ -551,7 +537,6 @@
 
       // Modal reward labels
       'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
-      'modal.reward_maze':       '+{xpMin}~{xpMax} XP · up to {cMax} 🪙 (collect in maze!)',
 
       'ui.login_required_desc':  'Sign in to summon your avatar and save your progress.',
 
@@ -576,14 +561,10 @@
       // PVE
       'gs.memoria.name':         'ELEMENTAL MEMORY',
       'gs.memoria.desc':         'Find all the matching pairs',
-      'gs.mina.name':            'MINESWEEPER',
-      'gs.mina.desc':            'Clear the field without hitting mines',
       'gs.simon.name':           'SIMON SAYS',
       'gs.simon.desc':           'Repeat the sequence of symbols',
       'gs.snake.name':           'ELEMENTAL SNAKE',
       'gs.snake.desc':           'Collect the food without running into yourself',
-      'gs.maze.name':            'ELEMENTAL MAZE',
-      'gs.maze.desc':            'Navigate the fog and find the exit',
       'gs.fusao.name':           'ORB MERGE',
       'gs.fusao.desc':           'Merge matching orbs in your avatar\'s bowl',
       // Lore
@@ -600,12 +581,6 @@
       'gs.arena.name':           'DIMENSIONAL ARENA',
       'gs.arena.desc':           'Rock-Paper-Scissors live against other players',
       'gs.arena.reward':         'Bets · Ranking · Weekly pool',
-      'gs.rouba.name':           'STEAL THE PILE',
-      'gs.rouba.desc':           'Live card duel against other players',
-      'gs.rouba.reward':         'Bets · P2E Pool',
-      'gs.naval.name':           'BATTLESHIP',
-      'gs.naval.desc':           "Sink the opponent's ships",
-      'gs.naval.reward':         'Bets · Ranking · P2E Pool',
 
       // Minigames — titles and common buttons
       'mini.play_again':         'PLAY AGAIN',
@@ -616,11 +591,8 @@
       'mini.memoria.sub':        'Find all the pairs!',
       'mini.simon.title':        '🎵 SIMON SAYS',
       'mini.simon.observe':      'Watch the sequence...',
-      'mini.mina.title':         '💣 MINESWEEPER',
       'mini.snake.title':        '🐍 ELEMENTAL SNAKE',
-      'mini.maze.title':         '🌀 ELEMENTAL MAZE',
       'mini.fusao.title':        '🔮 ORB MERGE',
-      'mini.maze.info':          'Navigate the fog and find the exit!',
       // Hatch confirm
       'hatch.title':             '🥚 HATCH EGG',
       'hatch.confirm':           '✓ CONFIRM',
@@ -699,7 +671,7 @@
       'rename.vai_chamar':       'Will be called',
       'rename.aviso':            'You only name it once. After this the name stays — on its certificate, on the family tree, and for whoever buys it.',
 
-      // Arena + Rouba Monte → js/i18n-pvp.js
+      // Arena → js/i18n-pvp.js
     },
   };
 

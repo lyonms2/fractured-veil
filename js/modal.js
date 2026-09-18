@@ -39,7 +39,7 @@ function unlockBodyScroll() {
 const MODAL_IDS = [
   'gameSelector','eggInvModal','itemInvModal','hatchConfirmModal',
   'memoriaModal','simonModal','coinShopModal',
-  'arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal',
+  'arenaModal',
   'fusaoModal',
   'marketplaceModal','combateModal','avataresModal','batalhaModal',
   'linhagemModal'
@@ -127,7 +127,7 @@ const ModalManager = {
   current: null,
 
   PANEL_MODALS: ['eggInvModal','itemInvModal','coinShopModal','marketplaceModal'],
-  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','roubaMontModal','minaModal','batalhaNavalModal','mazeModal','fusaoModal','combateModal'],
+  GAME_MODALS:  ['gameSelector','memoriaModal','simonModal','arenaModal','snakeModal','fusaoModal','combateModal'],
 
   open(id, onClose) {
     if(this.current && this.current !== id) this._close(this.current);
@@ -293,9 +293,7 @@ function openMinigame(type) {
   };
   if(type === 'memoria') { comAvatar('memoriaModal', 'memAvatar', startMemoria); return; }
   if(type === 'simon')   { comAvatar('simonModal',   'simonAvatar', startSimon); return; }
-  if(type === 'mina')    { ModalManager.open('minaModal');    startMina();    return; }
   if(type === 'snake')   { comAvatar('snakeModal',   'snakeAvatar', startSnake); return; }
-  if(type === 'labirinto')  { ModalManager.open('mazeModal'); startLabirinto();  return; }
   if(type === 'fusao')   { comAvatar('fusaoModal', 'fusaoAvatar', startFusao);  return; }
 }
 
@@ -304,7 +302,7 @@ function openMiniModal(id) {
   playAnim('anim-play');
 }
 
-const _PVE_MODALS = ['memoriaModal','simonModal','minaModal','snakeModal','mazeModal','fusaoModal'];
+const _PVE_MODALS = ['memoriaModal','simonModal','snakeModal','fusaoModal'];
 function closeMiniModal(id) {
   // Tira o painel da lista de quem recebe reações. Sem isto, um jogo
   // fechado continuava a ser notificado pelo jogo seguinte.
@@ -423,8 +421,8 @@ function applyGameCost() {
 
 /* ── O HUMOR NO PRÊMIO ──
 
-   Cada minijogo dava humor, mas quase nenhum dizia: o Snake, o Labirinto,
-   o Campo Minado e o Simon perdido mostravam só XP e moedas. E a Memória
+   Cada minijogo dava humor, mas quase nenhum dizia: o Snake e o Simon
+   perdido mostravam só XP e moedas. E a Memória
    e o Simon ganho mostravam um número fixo, que não somava o +3 de
    applyGameCost e mentia quando o humor já estava no teto.
 

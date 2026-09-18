@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// I18N — Minigames (Memória, Simon, Velha, Dormir, Curar)
+// I18N — Minigames (Memória, Simon, Fusão, Dormir, Curar)
 // Carregado após i18n.js · usa registerStrings()
 // ═══════════════════════════════════════════════════════════════════
 window.registerStrings(
@@ -84,18 +84,6 @@ window.registerStrings(
     'mg.antidote.msg.none':     'Recuperado!',
     'mg.antidote.log.used':     '🧪 Antídoto Dimensional usado! {msg} +20 saúde  (-{cost} 🪙)',
 
-    // Jogo da Velha
-    'mg.velha.info':             '{diff} · Sua vez! ✕',
-    'mg.velha.ai_turn':          'Vez do Avatar... 🤔',
-    'mg.velha.incredible':       '🌟 INCRÍVEL!',
-    'mg.velha.win':              '✕ VITÓRIA!',
-    'mg.velha.lose':             '○ DERROTA',
-    'mg.velha.draw':             '✕○ EMPATE',
-    'mg.velha.bub.master_win':   'Venceu o mestre! 🏆',
-    'mg.velha.bub.win':          'Venceu na velha! ✕',
-    'mg.velha.bub.lose':         'Quase! Próxima vez... 😔',
-    'mg.velha.bub.draw':         'Empate! Bem jogado 🤝',
-    'mg.velha.log':              'Jogo da Velha: {msg} +{xp}XP +{coins}🪙',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -178,17 +166,5 @@ window.registerStrings(
     'mg.antidote.msg.none':     'Recovered!',
     'mg.antidote.log.used':     '🧪 Dimensional Antidote used! {msg} +20 health  (-{cost} 🪙)',
 
-    // Tic-Tac-Toe
-    'mg.velha.info':             '{diff} · Your turn! ✕',
-    'mg.velha.ai_turn':          'Avatar thinking... 🤔',
-    'mg.velha.incredible':       '🌟 INCREDIBLE!',
-    'mg.velha.win':              '✕ VICTORY!',
-    'mg.velha.lose':             '○ DEFEAT',
-    'mg.velha.draw':             '✕○ DRAW',
-    'mg.velha.bub.master_win':   'Beat the master! 🏆',
-    'mg.velha.bub.win':          'Won at tic-tac-toe! ✕',
-    'mg.velha.bub.lose':         'Almost! Next time... 😔',
-    'mg.velha.bub.draw':         "It's a draw! Well played 🤝",
-    'mg.velha.log':              'Tic-Tac-Toe: {msg} +{xp}XP +{coins}🪙',
   }
 );

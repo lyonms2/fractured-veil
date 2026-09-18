@@ -591,13 +591,8 @@
    quando abertos, escapando do .screen e cobrindo o viewport.
 ══════════════════════════════════════ */
 #arenaModal.open,
-#roubaMontModal.open,
-#batalhaNavalModal.open,
-#jkpModal.open,
 #memoriaModal.open,
-#simonModal.open,
-#velhaModal.open,
-#minaModal.open {
+#simonModal.open {
   position: fixed !important;
   inset: 0 !important;
   z-index: 200 !important;
@@ -618,10 +613,6 @@
   #arenaModal.open .arena-header,
   #arenaModal.open .arena-tabs,
   #arenaModal.open .arena-tab-content { max-width: 43.75rem !important; }
-
-  /* RM e BN rendem um único <div> filho direto */
-  #roubaMontModal.open   > div { max-width: 47.5rem;  width: 100%; margin: 0 auto; box-sizing: border-box; }
-  #batalhaNavalModal.open > div { max-width: 63.75rem; width: 100%; margin: 0 auto; box-sizing: border-box; }
 
   /* ── PVP: escala de texto ── */
   .arena-title        { font-size: 1rem !important; }
@@ -689,18 +680,6 @@
   .simon-info        { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
   .simon-seq-display { font-size: 0.4375rem !important; margin-bottom: 0.375rem !important; }
 
-  /* ── Jogo da Velha ── */
-  .velha-grid { grid-template-columns: repeat(3, 6.875rem) !important; gap: 0.625rem !important; }
-  .velha-cell { width: 6.875rem !important; height: 6.875rem !important; font-size: 3rem !important; border-radius: 0.75rem !important; }
-
-  /* ── Campo Minado ──
-     Havia aqui um zoom:1.8, o último do jogo, resto de quando tudo corria
-     dentro do html{zoom:1.5}. Não faz falta: a célula já vem dimensionada
-     do js/mina.js em rem (cellSize/16), o que no desktop dá 42px sozinha.
-     O zoom só a inflava para 76, que era grande demais de qualquer forma.
-     O jogo saiu do menu e hoje só se alcança por chamada direta. */
-  #minaGrid      { margin: 0.5rem 0 !important; }
-  .mina-info-row { font-size: 0.625rem !important; margin-bottom: 0.375rem !important; }
 }
 
 /* ── Desktop baixo: memória e simon voltam ao tamanho antigo ──

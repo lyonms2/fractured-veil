@@ -627,21 +627,6 @@
 .modal-header { width:100%; padding:0.75rem 1rem 0.625rem; border-bottom:1px solid rgba(201,168,76,.15); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(4,3,10,.97); }
 .modal-header .mini-title { margin:0; }
 
-/* ── JOGO DA VELHA ── */
-#velhaModal { padding:0.75rem; }
-#velhaModal .modal-card { justify-content:flex-start; overflow-y:auto; max-height:100%; box-sizing:border-box; }
-#velhaModal .mini-title   { margin-bottom:0.125rem; }
-#velhaModal .mini-sub     { margin-bottom:0.375rem; }
-#velhaModal .mini-result-box { margin-top:0.375rem; }
-#velhaModal .mini-btns    { margin-top:0.5rem; }
-.velha-grid { display:grid; grid-template-columns:repeat(3,2.75rem); gap:0.3125rem; margin:0.375rem auto 0.5rem; width:fit-content; }
-.velha-cell { width:2.75rem; height:2.75rem; border-radius:0.5rem; border:1px solid rgba(255,255,255,.15); background:#0a0816; font-family:'Cinzel',serif; font-size:1.25rem; font-weight:900; cursor:pointer; transition:all .15s ease; display:flex; align-items:center; justify-content:center; color:var(--text); }
-.velha-cell:not(:disabled):hover { border-color:var(--gold); background:rgba(201,168,76,.08); transform:scale(1.06); }
-.velha-cell.velha-x { color:var(--raro);  border-color:rgba(90,180,232,.3); }
-.velha-cell.velha-o { color:#e8a03a;      border-color:rgba(232,160,58,.3); }
-.velha-cell.velha-win { border-color:var(--gold) !important; background:rgba(201,168,76,.15) !important; box-shadow:0 0 0.875rem rgba(201,168,76,.35); animation:velha-win-pulse .5s ease infinite alternate; }
-@keyframes velha-win-pulse { from{box-shadow:0 0 0.5rem rgba(201,168,76,.3)} to{box-shadow:0 0 1.25rem rgba(201,168,76,.6)} }
-.velha-cell:disabled { cursor:default; }
 
 /* ── CATALOG ITEMS ── */
 .mkt-sell-form { border:1px solid rgba(201,168,76,.2); border-radius:0.5rem; padding:0.75rem; background:rgba(201,168,76,.03); margin-top:0.25rem; }
@@ -678,10 +663,8 @@
 .mkt-catalog-buy.curto { border-color:rgba(201,168,76,.45); background:transparent; font-weight:600; }
 .mkt-catalog-buy.curto:hover { background:rgba(201,168,76,.12); }
 
-/* ── MODAIS PVP (Arena, Rouba Monte, Batalha Naval) ── */
-#arenaModal,
-#roubaMontModal,
-#batalhaNavalModal {
+/* ── MODAL PVP (Arena) ── */
+#arenaModal {
   position:fixed; inset:0; z-index:150;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
   background:rgba(4,3,10,.95);
@@ -689,15 +672,9 @@
   padding:0.75rem; overflow-y:auto;
   overflow-y:auto; overflow-x:hidden;
 }
-#arenaModal.open,
-#roubaMontModal.open,
-#batalhaNavalModal.open { opacity:1; pointer-events:all; }
+#arenaModal.open { opacity:1; pointer-events:all; }
 /* Conteúdo interno centrado e com largura limitada */
-#arenaModal > *,
-#roubaMontModal > *,
-#batalhaNavalModal > *,
-#jkpModal > *,
-#minaModal > * { width:100%; max-width:30rem; }
+#arenaModal > * { width:100%; max-width:30rem; }
 
 /* ══════════════════════════════════════
    SELETOR DE JOGOS — escala de desktop

@@ -318,9 +318,7 @@
   /* ════════════════════
      MODAIS PVP — fullscreen
   ════════════════════ */
-  #arenaModal,
-  #roubaMontModal,
-  #batalhaNavalModal {
+  #arenaModal {
     position: fixed !important;
     inset: 0 !important;
     width: 100% !important;
@@ -334,9 +332,7 @@
     z-index: 400 !important;
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0)) !important;
   }
-  #arenaModal::before,
-  #roubaMontModal::before,
-  #batalhaNavalModal::before { display: none !important; }
+  #arenaModal::before { display: none !important; }
 
   /* Arena — botões maiores para dedos */
   .arena-escolha-btn  { min-height: 3.25rem !important; font-size: 0.5625rem !important; padding: 0.625rem 0.375rem !important; }
@@ -368,36 +364,6 @@
   .arena-pool-titulo      { font-size: 0.625rem !important; }
   .arena-sem-saldo        { font-size: 0.5625rem !important; }
 
-  /* Rouba Monte — cartas maiores para toque */
-  #roubaMontModal [data-carta]             { width: 3.75rem !important; height: 5.25rem !important; }
-  #roubaMontModal div[style*="width:1.625rem"] { width: 2.375rem !important; height: 3.375rem !important; }
-  #roubaMontModal [style*="font-size:5"],
-  #roubaMontModal [style*="font-size:6"],
-  #roubaMontModal [style*="font-size:7"]   { font-size: 0.6875rem !important; }
-
-  /* Batalha Naval — grade fullscreen mobile */
-  /* Células de dados: →2.5rem (mais espaço com fullscreen) */
-  #batalhaNavalModal td[style*="width:1.125rem"],
-  #batalhaNavalModal td[style*="width:1.25rem"],
-  #batalhaNavalModal td[style*="width:1.375rem"]   { width: 2.5rem !important; height: 2.5rem !important; }
-  /* Células de defesa pequenas (14px) */
-  #batalhaNavalModal td[style*="width:0.875rem"][style*="height:0.875rem"],
-  #batalhaNavalModal td[style*="width:0.875rem"][style*="height:2.5rem"] { width: 2.5rem !important; height: 2.5rem !important; }
-  /* Cabeçalhos de coluna */
-  #batalhaNavalModal td[style*="height:0.875rem"],
-  #batalhaNavalModal td[style*="height:0.75rem"]  { height: 1.375rem !important; }
-  /* Rótulos de linha */
-  #batalhaNavalModal td[style*="width:0.8125rem"],
-  #batalhaNavalModal td[style*="width:0.875rem"]   { width: 1.375rem !important; }
-  /* Emojis de resultado */
-  #batalhaNavalModal td[style*="font-size:0.5625rem"],
-  #batalhaNavalModal td[style*="font-size:0.625rem"] { font-size: 1.375rem !important; }
-  #batalhaNavalModal td[style*="font-size:0.5rem"]  { font-size: 1.25rem !important; }
-  /* Labels e texto pequeno */
-  #batalhaNavalModal [style*="font-size:5"],
-  #batalhaNavalModal [style*="font-size:6"],
-  #batalhaNavalModal [style*="font-size:7"]    { font-size: 0.6875rem !important; }
-
   /* ════════════════════
      LOBBIES PVP — melhorias mobile
   ════════════════════ */
@@ -415,25 +381,6 @@
   .arena-lobby-card     { padding: 0.875rem 1rem !important; gap: 0.875rem !important; }
   .arena-lobby-svg      { width: 3rem !important; height: 3rem !important; }
   .arena-lobby-svg svg  { width: 3rem !important; height: 3rem !important; }
-
-  /* Bet info (RM e BN) — padding maior e valores em destaque */
-  #roubaMontModal   div[style*="grid-template-columns:1fr 1fr 1fr"],
-  #batalhaNavalModal div[style*="grid-template-columns:1fr 1fr 1fr"] {
-    padding: 1rem 0.75rem !important;
-    border-radius: 0.625rem !important;
-    gap: 0.625rem;
-  }
-  #roubaMontModal   div[style*="grid-template-columns:1fr 1fr 1fr"] [style*="font-size:0.6875rem"],
-  #batalhaNavalModal div[style*="grid-template-columns:1fr 1fr 1fr"] [style*="font-size:0.6875rem"] {
-    font-size: 1rem !important;
-  }
-
-  /* How-to-play — mais padding e visual mais respeitável */
-  #roubaMontModal   div[style*="padding:0.5rem 0.625rem"],
-  #batalhaNavalModal div[style*="padding:0.5rem 0.625rem"] {
-    padding: 0.875rem 1rem !important;
-    border-radius: 0.625rem !important;
-  }
 
   /* ════════════════════
      MINIGAMES — fullscreen mobile
@@ -465,14 +412,6 @@
   .simon-grid { grid-template-columns: repeat(4, 4.5rem) !important; gap: 0.625rem !important; }
   .simon-info { font-size: 0.625rem !important; }
   .simon-seq-display { font-size: 0.5625rem !important; }
-
-  /* Velha */
-  .velha-cell { width: 4.875rem !important; height: 4.875rem !important; font-size: 2.125rem !important; border-radius: 0.625rem !important; }
-  .velha-grid { grid-template-columns: repeat(3, 4.875rem) !important; gap: 0.5rem !important; }
-
-  /* Campo Minado — tinha um zoom:1.35 pelo mesmo motivo do desktop, e
-     sai pelo mesmo motivo: a célula já vem em rem do js/mina.js. */
-  .mina-info-row { font-size: 0.5625rem !important; }
 
   /* ════════════════════
      LOGIN
@@ -609,8 +548,6 @@
   .simon-grid { grid-template-columns: repeat(4, 3.625rem) !important; }
   .mem-card   { width: 3.125rem !important; height: 3.125rem !important; }
   .mem-grid   { grid-template-columns: repeat(4, 3.125rem) !important; }
-  .velha-cell { width: 4rem !important; height: 4rem !important; }
-  .velha-grid { grid-template-columns: repeat(3, 4rem) !important; }
   .jkp-hand   { width: 4.125rem !important; height: 4.125rem !important; font-size: 1.875rem !important; }
   .jkp-choice { width: 3.375rem !important; height: 3.375rem !important; font-size: 1.375rem !important; }
 }

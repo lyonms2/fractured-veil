@@ -21,13 +21,11 @@ window.equipItem = typeof equipItem !== "undefined" ? equipItem : ()=>{};
 window.feedCreature = typeof feedCreature !== "undefined" ? feedCreature : ()=>{};
 window.hatchEggFromInventory = typeof hatchEggFromInventory !== "undefined" ? hatchEggFromInventory : ()=>{};
 window.updatePhaseLabel = typeof updatePhaseLabel !== "undefined" ? updatePhaseLabel : ()=>{};
-window.startVelha    = typeof startVelha    !== "undefined" ? startVelha    : ()=>{};
 window.startRename   = typeof startRename   !== "undefined" ? startRename   : ()=>{};
 window.cancelRename  = typeof cancelRename  !== "undefined" ? cancelRename  : ()=>{};
 window.confirmRename = typeof confirmRename !== "undefined" ? confirmRename : ()=>{};
 window.setDifficulty   = typeof setDifficulty   !== "undefined" ? setDifficulty   : ()=>{};
 window.openGameSelector= typeof openGameSelector !== "undefined" ? openGameSelector : ()=>{};
-window.velhaClick      = typeof velhaClick      !== "undefined" ? velhaClick      : ()=>{};
 window.healCreature = typeof healCreature !== "undefined" ? healCreature : ()=>{};
 window.memFlip = typeof memFlip !== "undefined" ? memFlip : ()=>{};
 window.openCoinShop = typeof openCoinShop !== "undefined" ? openCoinShop : ()=>{};
@@ -45,9 +43,6 @@ window.unequipItem = typeof unequipItem !== "undefined" ? unequipItem : ()=>{};
 window.updateEquippedDisplay = typeof updateEquippedDisplay !== "undefined" ? updateEquippedDisplay : ()=>{};
 window.renderMarketItems = typeof renderMarketItems !== "undefined" ? renderMarketItems : ()=>{};
 window.gsSetTab = typeof gsSetTab !== "undefined" ? gsSetTab : ()=>{};
-window.minaClick = typeof minaClick !== "undefined" ? minaClick : ()=>{};
-window.minaFlag  = typeof minaFlag  !== "undefined" ? minaFlag  : ()=>{};
-window.startMina  = typeof startMina  !== "undefined" ? startMina  : ()=>{};
 window.startSnake  = typeof startSnake  !== "undefined" ? startSnake  : ()=>{};
 window.snakeDpad   = typeof snakeDpad   !== "undefined" ? snakeDpad   : ()=>{};
 window.startFusao     = typeof startFusao     !== "undefined" ? startFusao     : ()=>{};
@@ -55,18 +50,14 @@ window.fusaoClick     = typeof fusaoClick     !== "undefined" ? fusaoClick     :
 window.fusaoBomba     = typeof fusaoBomba     !== "undefined" ? fusaoBomba     : ()=>{};
 window.fusaoToggleRanking = typeof fusaoToggleRanking !== "undefined" ? fusaoToggleRanking : ()=>{};
 window.fusaoParar     = typeof fusaoParar     !== "undefined" ? fusaoParar     : ()=>{};
-window.startLabirinto = typeof startLabirinto !== "undefined" ? startLabirinto : ()=>{};
-window.mazeDpad       = typeof mazeDpad       !== "undefined" ? mazeDpad       : ()=>{};
-window.mazeDpadRelease= typeof mazeDpadRelease!== "undefined" ? mazeDpadRelease: ()=>{};
 
 // ── GAME SELECTOR TABS ──
 // O seletor tinha três abas — PvE, PvP e Lore — e esta função trocava
 // entre elas. Ficou uma lista só, portanto não há nada para trocar.
 //
-// Continua aqui, e a não fazer nada, porque quatro sítios ainda a
-// chamam ao sair de um jogo (arena, rouba-monte, batalha naval e o
-// gestor de modais). Apagá-la partia esses quatro; o seletor abre na
-// mesma, que é o que eles querem.
+// Continua aqui, e sem fazer nada, porque ainda há quem a chame ao
+// sair de um jogo (a arena e o gestor de modais). Apagá-la quebraria
+// esses lugares; o seletor abre do mesmo jeito, que é o que eles querem.
 function gsSetTab(_tab) {}
 
 // ── Injectar .modal-card em todos os .mini-modal ──
@@ -113,8 +104,7 @@ window.addEventListener('beforeunload', () => {
 // Onde não se pausa: coisas com relógio a correr, algumas com o
 // servidor do outro lado. Pausar uma batalha PvP é ou inútil ou
 // batota, conforme quem está perdendo.
-const PAUSA_PROIBIDA = ['combateModal', 'arenaModal', 'batalhaNavalModal',
-                        'roubaMontModal', 'minaModal', 'mazeModal',
+const PAUSA_PROIBIDA = ['combateModal', 'arenaModal',
                         'memoriaModal', 'simonModal'];
 
 /* As cerimónias — evoluir, chocar um ovo, subir de nível — vivem acima

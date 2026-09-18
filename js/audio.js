@@ -371,28 +371,6 @@ function playSound(id) {
       break;
     }
 
-    // ── MINIGAMES — JOGO DA VELHA ─────────────────────────────────
-    case 'velha_place': {
-      _osc(500, 'sine', t, 0.08, 0.14, ctx);
-      break;
-    }
-    case 'velha_win': {
-      _osc(523, 'sine',   t,      0.12, 0.18, ctx);
-      _osc(659, 'sine',   t+0.12, 0.12, 0.18, ctx);
-      _osc(784, 'sine',   t+0.24, 0.22, 0.20, ctx);
-      break;
-    }
-    case 'velha_lose': {
-      _sweep(300, 180, 'triangle', t,      0.20, 0.14, ctx);
-      _sweep(200, 120, 'triangle', t+0.22, 0.20, 0.10, ctx);
-      break;
-    }
-    case 'velha_draw': {
-      _osc(440, 'sine', t,      0.10, 0.14, ctx);
-      _osc(440, 'sine', t+0.14, 0.10, 0.10, ctx);
-      break;
-    }
-
     // ── RESULTADO GENÉRICO ────────────────────────────────────────
     case 'win': {
       _osc(523, 'sine',    t,      0.10, 0.18, ctx);

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// I18N — Arcade (snake.js + labirinto.js)
+// I18N — Arcade (snake.js)
 // Carregado após i18n.js · usa registerStrings()
 // ═══════════════════════════════════════════════════════════════════
 window.registerStrings(
@@ -19,18 +19,6 @@ window.registerStrings(
     'snake.rank.vazio':     'Ninguém no ranking desta dificuldade ainda.',
     'snake.rank.erro':      'Não foi possível carregar o ranking.',
 
-    // Labirinto
-    'maze.info':            '{diff} · 🪙 {got}/{total} moedas',
-    'maze.timer':           '⏱ {s}s',
-    'maze.result.caught':   '👁 TE PEGARAM!',
-    'maze.result.timeout':  '⏰ TEMPO ESGOTADO',
-    'maze.result.exit':     '🚪 SAÍDA ENCONTRADA!',
-    'maze.result.exit_gold':'⚡ SAÍDA DOURADA!',
-    'maze.reward.coins':    '🪙 {n} moeda{s} coletada{s} (+{coins} 🪙)',
-    'maze.reward.win':      '+{xp} XP · 🪙 {got}/{total} moedas (+{coins} 🪙 — {bonus})',
-    'maze.reward.win_sem':  '+{xp} XP · 🪙 0/{total} moedas',
-    'maze.bonus.exit':      'bônus saída!',
-    'maze.bonus.exit_gold': 'bônus saída dourada!',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -48,17 +36,5 @@ window.registerStrings(
     'snake.rank.vazio':     'No one is ranked on this difficulty yet.',
     'snake.rank.erro':      'Could not load the ranking.',
 
-    // Maze
-    'maze.info':            '{diff} · 🪙 {got}/{total} coins',
-    'maze.timer':           '⏱ {s}s',
-    'maze.result.caught':   '👁 CAUGHT!',
-    'maze.result.timeout':  '⏰ TIME\'S UP',
-    'maze.result.exit':     '🚪 EXIT FOUND!',
-    'maze.result.exit_gold':'⚡ GOLDEN EXIT!',
-    'maze.reward.coins':    '🪙 {n} coin{s} collected (+{coins} 🪙)',
-    'maze.reward.win':      '+{xp} XP · 🪙 {got}/{total} coins (+{coins} 🪙 — {bonus})',
-    'maze.reward.win_sem':  '+{xp} XP · 🪙 0/{total} coins',
-    'maze.bonus.exit':      'exit bonus!',
-    'maze.bonus.exit_gold': 'golden exit bonus!',
   }
 );
