@@ -242,6 +242,10 @@ function _afShell() {
       </div>
     </div>
 
+    <!-- A dica do que fazer agora ("toque num dos seus avatares"). Estava
+         escrito "Sua vez" e nada dizia que o gesto era tocar no avatar. -->
+    <div class="cb-dica" id="cbDica" aria-live="polite"></div>
+
     <div class="cb-campo" id="cbCampo"></div>
 
     <div class="cb-menu" id="cbMenu"><div class="cb-acoes" id="cbAcoes"></div></div>
@@ -774,6 +778,7 @@ function _afDesenhar() {
     + (vez ? ' · ' + t(vez.lado === 'A' ? 'af.vez' : 'af.vez_dele') : '');
   const bd = document.getElementById('cbDesistir');
   if (bd) bd.style.display = _afE.acabou ? 'none' : '';
+  _afDica(vez);
   _afAcoes();
   _afMenuMover();
 }
@@ -995,6 +1000,23 @@ function _afAndar() {
   _afOcupado = false;
   if (!_afPodeAgir(_afPorId(_afQuem))) { _afQuem = null; _afMenu = false; }
   _afDesenhar();
+}
+
+/* ── A DICA DO QUE FAZER ──
+   Só na vez do jogador e com a tela parada: durante a animação de um
+   turno ninguém pode agir, e a dica mentiria. Com um avatar escolhido e
+   o menu aberto, diz de quem é a escolha; no passo de apontar um alvo o
+   próprio menu já pergunta, e a dica some. */
+function _afDica(vez) {
+  const el = document.getElementById('cbDica');
+  if (!el) return;
+  let txt = '';
+  if (vez && vez.lado === 'A' && !_afOcupado && !_afE.acabou && !_afPasso) {
+    const eu = _afPorId(_afQuem);
+    txt = eu ? t('af.dica.acao', { nome: _afNome(eu) }) : t('af.dica.quem');
+  }
+  el.textContent = txt;
+  el.classList.toggle('viva', !!txt);
 }
 
 function _afPorId(id) {
@@ -1299,14 +1321,68 @@ function _afSelo(nome) {
    `.cb-orbe-sub`, que não existem em lado nenhum — os orbes saíam sem
    disco, sem tamanho e sem cor, e a culpa não aparecia em erro nenhum.
    Marcação que o CSS não conhece não se queixa: desaparece. */
-function _afOrbe(selo, rot, detalhe, gesto, custo, podeOuNao) {
+function _afOrbe(selo, rot, detalhe, gesto, custo, podeOuNao, efeito) {
   const off = podeOuNao === false;
+  const dica = rot + (detalhe ? ' · ' + detalhe : '') + (efeito ? ' · ' + efeito : '');
   return `<button class="cb-orbe" ${off ? 'disabled' : ''}
-      onclick="${off ? '' : gesto}" title="${esc(rot + (detalhe ? ' · ' + detalhe : ''))}">
+      onclick="${off ? '' : gesto}" title="${esc(dica)}">
     <span class="cb-orbe-disco">${_afSelo(selo)}${
       custo != null && custo !== '' ? `<span class="cb-orbe-custo">${esc(custo)}</span>` : ''}</span>
-    <span class="cb-orbe-nome">${esc(rot)}${detalhe ? `<i>${esc(detalhe)}</i>` : ''}</span>
+    <span class="cb-orbe-nome">${esc(rot)}${detalhe ? `<i>${esc(detalhe)}</i>` : ''}${
+      efeito ? `<small class="cb-orbe-efeito">${esc(efeito)}</small>` : ''}</span>
   </button>`;
+}
+
+/* ── O QUE CADA MAGIA FAZ, EM UMA LINHA ──
+
+   O menu dizia o nome e a categoria ("Agulha de Luz · Magia Muito
+   Forte") e o jogador tinha de adivinhar o resto: em quem cai, quanto
+   dói, o que deixa. Agora diz as três coisas, com os números de AGORA —
+   o dano sai dos dados atuais do avatar, portanto um avatar envenenado
+   vê o dano encolher.
+
+   O dano é uma faixa: o fixo da magia mais o Resultado Alto, que vai de
+   1 até a maior face dos dois dados rolados. É o dano antes da defesa e
+   das afinidades de quem apanha. */
+function _afEfeitoMagia(eu, lugar, m) {
+  if (!eu || !_afE) return '';
+  const dq = fuDonsDe(eu);
+  const extra = eu.ficha.danoExtra | 0;
+  const faixa = (base, a1, a2) => {
+    const max = Math.max(fuDado(eu, a1), fuDado(eu, a2));
+    return t('af.ef.dano', { a: base + 1, b: base + max });
+  };
+  const frente = fuFrente(eu.lado === 'A' ? _afE.B : _afE.A);
+  const naFrente = t('af.ef.frente', { nome: frente ? _afNome(frente) : '—' });
+  const p = [];
+
+  if (lugar === 'comum' || !m) {
+    p.push(naFrente);
+    p.push(faixa(5 + extra + (dq.danoMaisGolpe | 0), 'DES', 'VIG'));
+    return p.join(' · ');
+  }
+  if (m.todos) {
+    p.push(t('af.ef.todos'));
+    p.push(t('af.ef.dano_fixo', { n: m.danoFixo | 0 }));
+    return p.join(' · ');
+  }
+  if (m.cura) {
+    p.push(t((m.alvos || 1) > 1 ? 'af.ef.cura_varios' : 'af.ef.cura', { n: m.cura, a: m.alvos || 1 }));
+    if (m.limpa) p.push(t('af.ef.limpa'));
+    return p.join(' · ');
+  }
+  if (m.cena || m.proteger) return t('af.ef.' + m.id);
+
+  // As de ataque.
+  p.push(lugar === 'muito_forte' ? t('af.ef.qualquer')
+       : (m.alvos || 1) > 1 ? t('af.ef.varios', { n: m.alvos })
+       : naFrente);
+  p.push(faixa((m.fixo | 0) + extra + (dq.danoMaisMagia | 0), 'PER', 'VON'));
+  if (m.estado) p.push(t(m.estadoSempre ? 'af.ef.estado_sempre' : 'af.ef.estado_critico',
+                         { e: t('af.est.' + m.estado) }));
+  if (m.ignoraResistencias) p.push(t('af.ef.ignora'));
+  if (m.estilo && m.estilo.feitio) p.push(t('af.ef.estilo.' + m.estilo.feitio));
+  return p.join(' · ');
 }
 
 /* O nome de uma magia. As oito Barragens e os oito Concentrados trazem
@@ -1346,7 +1422,8 @@ function _afAcoes() {
        repete a si própria não informa: enche. */
     const nome = _afMagiaNome(m), rot = t('af.lugar.' + lugar);
     h += _afOrbe(lugar, nome, nome === rot ? '' : rot,
-      `_afEscolher('${lugar}')`, custo || null, custo <= eu.pm);
+      `_afEscolher('${lugar}')`, custo || null, custo <= eu.pm,
+      _afEfeitoMagia(eu, lugar, m));
   }
 
   // reordenar: só se houver com quem
@@ -1478,7 +1555,20 @@ function _afAlvosHTML(eu) {
             : _afPasso.examinar ? t('af.alvo.examinar')
             : _afPasso.aliado ? t('af.alvo.aliado') : t('af.alvo.inimigo');
 
-  let h = `<div class="cb-pm-cab">${esc(rot)}</div>`;
+  /* A regra do alcance, dita onde ela vale. Por que posso escolher o de
+     trás agora e antes não podia? Porque esta magia alcança qualquer um —
+     e isso estava só no código. */
+  let nota = '';
+  if (_afPasso.mover) {
+    nota = t('af.alvo.nota.mover');
+  } else if (_afPasso.examinar) {
+    nota = t('af.alvo.nota.examinar');
+  } else if (!_afPasso.aliado && _afPasso.magia) {
+    nota = (_afPasso.magia.alvos || 1) > 1
+      ? t('af.alvo.nota.varios', { n: _afPasso.magia.alvos, pm: _afPasso.magia.pm | 0 })
+      : t('af.alvo.nota.qualquer');
+  }
+  let h = `<div class="cb-pm-cab">${esc(rot)}${nota ? `<i>${esc(nota)}</i>` : ''}</div>`;
   // varrer a linha: a opção de os apanhar a todos de uma vez
   if (!_afPasso.mover && !_afPasso.examinar && !_afPasso.aliado && (_afPasso.magia.alvos || 1) > 1) {
     const custo = fuCusto(_afPasso.magia, lista.length);
@@ -1566,8 +1656,13 @@ function _afMostrar(eventos) {
 
   const batidas = [];
   let pendentes = [];
+  let golpeAnterior = null;
   for (const ev of eventos) {
-    const html = _afLanceDe(ev);
+    const golpe = ev.tipo === 'ataque' || ev.tipo === 'magia';
+    const seguido = golpe && !!golpeAnterior
+      && golpeAnterior.quem === ev.quem && golpeAnterior.nome === ev.nome;
+    if (golpe) golpeAnterior = ev;
+    const html = _afLanceDe(ev, seguido);
     pendentes.push(ev);
     if (html) { batidas.push({ evs: pendentes, html }); pendentes = []; }
   }
@@ -2160,7 +2255,23 @@ function _afComResto(p) {
   return p[0] + ' · ' + p[1] + '<span class="cb-lance-resto"> · ' + p.slice(2).join(' · ') + '</span>';
 }
 
-function _afLanceDe(ev) {
+/* O nome do que foi usado num golpe. O motor guarda só o id da magia
+   (`ev.nome`), e o nome de verdade depende de quem lançou — a Barragem de
+   um avatar de fogo é Ignis, a de um de gelo é Glacies. Sem id é o golpe
+   comum. */
+function _afNomeDoGolpe(ev) {
+  if (!ev.nome) return t('af.m.golpe');
+  const c = _afPorId(ev.quem);
+  const magias = (c && typeof fuMagiasDe === 'function') ? fuMagiasDe(c.ficha) : {};
+  for (const l of Object.keys(magias)) {
+    if (magias[l].id === ev.nome) return _afMagiaNome(magias[l]);
+  }
+  return t('af.m.' + ev.nome);
+}
+
+/* `seguido`: este golpe é mais um alvo da mesma jogada (a Barragem que
+   varre a linha). Ver _afMostrar. */
+function _afLanceDe(ev, seguido) {
   const nome = n => esc(_afNome(_afPorId(n)));
   const p = [];
 
@@ -2172,9 +2283,10 @@ function _afLanceDe(ev) {
   if (ev.tipo === 'gasto')  return null;   // vai colado ao golpe
   if (ev.tipo === 'fim')    return null;   // o fim tem tela própria
 
+  // Em si mesmo (a Concha) não repete o nome: "Caído lançou Concha · Caído".
   if (ev.tipo === 'cena')
     return t('af.lance.cena', { nome: nome(ev.quem), magia: t('af.m.' + ev.nome) })
-         + ' · <b>' + nome(ev.alvo) + '</b>';
+         + (ev.alvo && ev.alvo !== ev.quem ? ' → <b>' + nome(ev.alvo) + '</b>' : '');
 
   // A cura do ataque forte da Sustentação não tem nome de magia próprio.
   if (ev.tipo === 'cura' && ev.estilo)
@@ -2200,9 +2312,10 @@ function _afLanceDe(ev) {
     return t('af.lance.represalia', { nome: b(ev.quem), alvo: b(ev.alvo) }) + ' · ' + _afDanoTexto(ev);
 
   if (ev.tipo === 'actoFinal' || ev.tipo === 'devastacao') {
+    // Em quem caiu: sem o alvo, "−20 de vida" não dizia de quem.
     p.push(ev.tipo === 'actoFinal'
-      ? t('af.lance.suspiro', { nome: nome(ev.quem) })
-      : t('af.lance.devasta', { nome: nome(ev.alvo) }));
+      ? t('af.lance.suspiro', { nome: nome(ev.quem) }) + ' → <b>' + nome(ev.alvo) + '</b>'
+      : '<b>' + nome(ev.quem) + '</b> · ' + t('af.lance.devasta', { nome: '<b>' + nome(ev.alvo) + '</b>' }));
     p.push(_afDanoTexto(ev));
     return p.join(' · ');
   }
@@ -2219,14 +2332,32 @@ function _afLanceDe(ev) {
   }
 
   if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
-    p.push('<b>' + nome(ev.quem) + '</b>');
+    /* ── QUEM, COM O QUÊ, EM QUEM ──
+
+       A linha dizia o nome de quem bateu e os dados, e só depois do
+       acerto o alvo; a magia não aparecia nunca. Um erro saía como
+       "Vorn · 5 contra 8 · não acertou" — sem dizer o que ele lançou nem
+       em quem. Agora os três vêm na frente, antes dos dados.
+
+       E uma magia que acerta vários vira UMA jogada: a primeira linha diz
+       quem lançou o quê, e as seguintes começam com ↳ e só o alvo. Antes
+       eram três linhas iguais, e pareciam três ataques. */
+    if (seguido) {
+      p.push('↳ <b>' + nome(ev.alvo) + '</b>');
+    } else {
+      p.push(t('af.lance.usa', {
+        nome: '<b>' + nome(ev.quem) + '</b>',
+        magia: '<i class="cb-magia">' + esc(_afNomeDoGolpe(ev)) + '</i>',
+        alvo: '<b>' + nome(ev.alvo) + '</b>',
+      }));
+    }
     p.push(_afDadosHTML(ev));
     if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
-    p.push(t('af.lance.acerta', { r: ev.resultado, dl: ev.dl }));
+    // Contra QUAL defesa: a magia mira a Defesa Mágica, o golpe a Defesa.
+    p.push(t(ev.naMente ? 'af.lance.contra_mag' : 'af.lance.contra_def', { r: ev.resultado, dl: ev.dl }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
     if (!ev.acertou) { p.push(t('af.lance.falhou')); return _afComResto(p); }
-    p.push('<b>' + nome(ev.alvo) + '</b>');
     // O golpe comum é físico: diz isso na linha, para o jogador entender
     // por que ele entra por inteiro em quem resiste ou absorve o elemento.
     if (ev.tipo_dano === 'fisico') p.push('<i>' + t('af.lance.fisico') + '</i>');

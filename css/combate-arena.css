@@ -1549,9 +1549,41 @@ b.laco { color: #f5a3c7; }
   font-family: 'EB Garamond', serif; font-size: 0.34375rem;
   color: rgba(212,200,240,.7);
 }
+/* O que a magia faz ("em até 3 inimigos · 16–25 de dano · deixa lento").
+   Quebra a linha em vez de alargar o menu, que é o que tapa o palco. */
+.cb-orbe-efeito {
+  display: block; max-width: 10.5rem; white-space: normal;
+  font-family: 'EB Garamond', serif; font-size: 0.34375rem; line-height: 1.2;
+  letter-spacing: 0; color: rgba(240,208,128,.85);
+}
+
+/* A dica do que fazer, logo abaixo da maré. Aparece só na vez do
+   jogador (_afDica) e não apanha cliques. */
+.cb-dica {
+  position: absolute; z-index: 6; top: 3.35rem; left: 50%;
+  transform: translateX(-50%);
+  max-width: min(22rem, 92%); text-align: center;
+  font-family: 'EB Garamond', serif; font-size: 0.4375rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 0.375rem rgba(0,0,0,.95), 0 0 0.125rem rgba(0,0,0,.9);
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.cb-dica.viva { opacity: .92; animation: cb-dica-respira 2.4s ease-in-out infinite; }
+@keyframes cb-dica-respira { 50% { opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .cb-dica.viva { animation: none; } }
+
+/* O nome da magia na linha do lance, para se distinguir do de quem lançou. */
+.cb-magia { font-style: normal; color: var(--gold-light); }
 
 /* O cabeçalho dos passos ("quanto queres gastar?") também perde a
    caixa: é uma pergunta, e uma pergunta é uma linha de texto. */
+/* A regra do alcance, em baixo da pergunta (_afAlvosHTML). */
+.cb-menu .cb-pm-cab i {
+  display: block; max-width: 11rem; white-space: normal;
+  font-family: 'EB Garamond', serif; font-style: normal; font-size: 0.34375rem;
+  letter-spacing: 0; color: rgba(212,200,240,.8); margin-top: 0.0625rem;
+}
 .cb-menu .cb-pm-cab {
   background: none; border: none; padding: 0 0 0.125rem;
   font-family: 'Cinzel', serif; font-size: 0.375rem;
@@ -2194,6 +2226,12 @@ b.laco { color: #f5a3c7; }
   .cb-orbe-custo     { min-width: 0.8125rem; height: 0.8125rem; font-size: 0.375rem; }
   .cb-orbe-nome      { font-size: 0.5rem; }
   .cb-orbe-nome i    { font-size: 0.4375rem; }
+  /* O guia na tela (_afDica, _afEfeitoMagia, _afAlvosHTML): no tamanho
+     do detalhe do orbe, e a dica um pouco maior, porque é a primeira
+     coisa que se lê. */
+  .cb-orbe-efeito    { font-size: 0.4375rem; max-width: 13rem; }
+  .cb-menu .cb-pm-cab i { font-size: 0.4375rem; max-width: 13rem; }
+  .cb-dica           { font-size: 0.5rem; top: 3.4rem; }
   .cb-menu .cb-acoes { gap: 0.25rem; }
   .cb-menu           { width: 13rem; }
   .cb-menu .cb-pm-cab{ font-size: 0.53125rem; }
@@ -2332,6 +2370,9 @@ b.laco { color: #f5a3c7; }
   .cb-orbe-custo      { min-width: 1.125rem; height: 1.125rem; font-size: 0.625rem; }
   .cb-orbe-nome       { font-size: 0.75rem; }      /* 12px */
   .cb-orbe-nome i     { font-size: 0.625rem; }     /* 10px */
+  .cb-orbe-efeito     { font-size: 0.625rem; max-width: 13.5rem; }   /* 10px */
+  .cb-menu .cb-pm-cab i { font-size: 0.625rem; max-width: 13.5rem; }
+  .cb-dica            { font-size: 0.75rem; top: 3.9rem; }          /* 12px */
   .cb-menu .cb-acoes  { gap: 0.25rem; }
   .cb-menu .cb-pm-cab { font-size: 0.6875rem; }    /* 11px */
   .cb-laco            { font-size: 0.6875rem; padding: 0.25rem 0.5rem; }
