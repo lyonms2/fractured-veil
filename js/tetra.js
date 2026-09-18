@@ -735,9 +735,14 @@ function tetraBotao(acao, apertou) {
   if (acao === 'guarda')  _tetGuardar();
 }
 
+/* Escuta na CAPTURA: o espaço é também o atalho global da pausa
+   (js/main.js), e derrubar a peça pausava o jogo inteiro junto. Aqui o
+   Tetra ouve primeiro e segura a tecla. Com o jogo já pausado ele não
+   escuta nada, e o espaço volta a ser de quem retoma. */
 document.addEventListener('keydown', e => {
-  if (!_tetRodando || _tetAcabou || !_tetVisivel()) return;
+  if (!_tetRodando || _tetAcabou || !_tetVisivel() || _tetPausado()) return;
   const k = e.key;
+  if (k === ' ') e.stopPropagation();
   const usa = () => e.preventDefault();
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') { usa(); if (!e.repeat) _tetSegurar(-1); }
   else if (k === 'ArrowRight' || k === 'd' || k === 'D') { usa(); if (!e.repeat) _tetSegurar(1); }
@@ -746,7 +751,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'z' || k === 'Z' || k === 'q' || k === 'Q') { usa(); if (!e.repeat) _tetGira(-1); }
   else if (k === ' ') { usa(); if (!e.repeat) _tetQuedaLivre(); }
   else if (k === 'c' || k === 'C' || k === 'Shift') { usa(); if (!e.repeat) _tetGuardar(); }
-});
+}, true);
 document.addEventListener('keyup', e => {
   const k = e.key;
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') _tetSoltar(-1);
@@ -788,13 +793,30 @@ document.addEventListener('keyup', e => {
 })();
 
 // ── Laço ───────────────────────────────────────────────────────────
+function _tetPausado() {
+  return typeof jogoPausado !== 'undefined' && jogoPausado;
+}
+
+/* Com a janela fechada ou o jogo pausado, o tempo não conta. E os
+   relógios que medem esperas — a trava no chão, o clarão das linhas, a
+   seta segurada — andam junto: sem isso, ao voltar da pausa a peça
+   travava na hora, porque o meio segundo já tinha passado. */
+function _tetCongelar(agora) {
+  const parado = agora - _tetUltimo;
+  _tetUltimo = agora;
+  if (_tetNoChaoDesde != null) _tetNoChaoDesde += parado;
+  if (_tetLimpando) _tetLimpando.desde += parado;
+  if (_tetMover) { _tetMover.desde += parado; _tetMover.ultimo += parado; }
+}
+
 (function _tetLoop() {
   const agora = performance.now();
   if (_tetVisivel() && (_tetRodando || _tetAcabou)) {
-    _tetPasso(agora);
+    if (_tetPausado()) _tetCongelar(agora);
+    else _tetPasso(agora);
     _tetDesenhar();
   } else {
-    _tetUltimo = agora;   // com a janela fechada o tempo não conta
+    _tetCongelar(agora);
   }
   requestAnimationFrame(_tetLoop);
 })();

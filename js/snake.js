@@ -101,6 +101,9 @@ function _snakePlaceFood() {
 // ── Tick do jogo ───────────────────────────────────────────────────
 function _snakeTick() {
   if(!_snakeRunning) return;
+  // Com o jogo pausado a cobra espera: antes ela seguia andando atrás
+  // da tela de pausa e morria sem o jogador ver.
+  if(typeof jogoPausado !== 'undefined' && jogoPausado) return;
 
   if(_snakeFila.length) _snakeDir = _snakeFila.shift();
 
@@ -346,6 +349,7 @@ function snakeDpad(dx, dy) {
 // Teclado
 document.addEventListener('keydown', e => {
   if(!_snakeRunning) return;
+  if(typeof jogoPausado !== 'undefined' && jogoPausado) return;
   const MAP = {
     ArrowUp:   [0,-1], ArrowDown: [0,1],
     ArrowLeft:[-1, 0], ArrowRight:[1, 0],

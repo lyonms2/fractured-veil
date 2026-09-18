@@ -976,7 +976,12 @@ function _fusDesenhar() {
   const H = canvas.clientHeight || 314;
   const agora = performance.now();
 
-  if (_fusRodando && !_fusAcabou) {
+  /* Com o jogo pausado o prato congela. E a contagem do transbordo
+     recomeça: sem isso, ao retomar a partida acabava na hora, porque o
+     segundo de tolerância tinha passado durante a pausa. */
+  const pausado = typeof jogoPausado !== 'undefined' && jogoPausado;
+  if (pausado) _fusEstouroDesde = null;
+  if (_fusRodando && !_fusAcabou && !pausado) {
     _fusFisica(W, H);
     _fusFundir(W, H);
 
