@@ -109,8 +109,14 @@ const FU_MAGIAS = {
      atinge o lado inteiro. */
   forte: {
     1: { id: 'sopro', pm: 5, alvos: 1, fixo: 10, manual: 'p.310' },
-    2: { id: 'barragem', pm: 10, alvos: 3, porAlvo: true, fixo: 15,
-         porTipo: 'elemental', manual: 'p.188' },
+    /* Dano 10 por alvo (era 15) desde 19/09/2026. Por alvo ela causava
+       quase o mesmo que o golpe concentrado, e em três de uma vez: era
+       58% das ações de todo o Raro, e as lutas acabavam em três rodadas.
+       Com 10, e com a IA do Médio guardando (FU_IA_NIVEIS), a luta do
+       Raro vai a cinco ou seis rodadas e cada feitio volta a jogar do
+       seu jeito. */
+    2: { id: 'barragem', pm: 10, alvos: 3, porAlvo: true, fixo: 10,
+         porTipo: 'elemental', manual: 'p.188 (adaptada: dano 10)' },
     /* O degrau do Lendário não traz números novos: traz o estado a
        acontecer SEMPRE, em vez de só no crítico. É o degrau mais barato
        da tabela inteira e provavelmente o mais sentido em jogo. */

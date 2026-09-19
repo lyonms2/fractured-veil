@@ -119,10 +119,13 @@ titulo('Batalhas inteiras, nos quatro níveis');
           usos[nivel][tipoAcao] = (usos[nivel][tipoAcao] || 0) + 1;
 
           if (nivel === 0 && sem(antiga(e, vez.lado, vez.podem)) !== sem(d)) c.legadoDiferente++;
+          /* Desde 19/09/2026 o Médio guarda quando a guarda rende mais que
+             o resto (cortar dano, recuperar PM). O que se confere é que ela
+             é mesmo a melhor opção na hora em que é escolhida. */
           if (a.tipo === 'guardar' && nivel === 1) {
-            const outras = IA._iaOpcoes(e, M.fuPorId(e, d.quem), IA.FU_IA_NIVEIS[1])
-                             .filter(o => o.acao.tipo !== 'guardar');
-            if (outras.some(o => o.v > 0)) c.guardaCedo++;
+            const ops = IA._iaOpcoes(e, M.fuPorId(e, d.quem), IA.FU_IA_NIVEIS[1]);
+            const g = ops.find(o => o.acao.tipo === 'guardar');
+            if (ops.some(o => o.acao.tipo !== 'guardar' && o.v > g.v)) c.guardaCedo++;
           }
           if (a.tipo === 'mover' && nivel < 3) c.moverCedo++;
           // O Fácil é a IA de antes, que já lançava o Despertar em quem está
@@ -182,7 +185,13 @@ titulo('Batalhas inteiras, nos quatro níveis');
   verificar('o motor aceita todas as decisões', c.ilegal === 0, c.ilegal + ' recusadas');
   verificar('todas as batalhas terminam', c.semFim === 0, c.semFim + ' sem fim');
   verificar('o Fácil é a IA de antes', c.legadoDiferente === 0, c.legadoDiferente + ' diferentes');
-  verificar('no Médio, guarda só quando o resto piora', c.guardaCedo === 0, c.guardaCedo + ' vezes');
+  verificar('no Médio, guarda só quando é a melhor jogada', c.guardaCedo === 0, c.guardaCedo + ' vezes');
+  {
+    const u = usos[1], total = Object.values(u).reduce((s, x) => s + x, 0) || 1;
+    const pct = (u.guardar || 0) / total;
+    verificar('e no Médio a guarda aparece, sem virar o jogo todo (3% a 40%)',
+      pct >= 0.03 && pct <= 0.40, Math.round(pct * 100) + '%');
+  }
   verificar('magia de cena só a partir do Difícil', c.cenaCedo === 0, c.cenaCedo + ' vezes');
   verificar('troca de posto só no Mestre', c.moverCedo === 0, c.moverCedo + ' vezes');
   verificar('não mira quem absorve quando há outro alvo', c.absorvido === 0,

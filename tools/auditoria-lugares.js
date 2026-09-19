@@ -165,7 +165,8 @@ titulo('Os números, casa a casa');
 {
   const esperado = [
     ['forte', 1, { pm: 5,  alvos: 1, fixo: 10 }],
-    ['forte', 2, { pm: 10, alvos: 3, fixo: 15, porAlvo: true }],
+    // A Barragem do Raro com dano 10 por alvo desde 19/09/2026 (era 15).
+    ['forte', 2, { pm: 10, alvos: 3, fixo: 10, porAlvo: true }],
     ['forte', 3, { pm: 15, alvos: 3, fixo: 15, porAlvo: true, estadoSempre: true }],
     ['muito_forte', 1, { pm: 10, alvos: 1, fixo: 15, estadoSempre: true }],
     ['muito_forte', 2, { pm: 15, alvos: 1, fixo: 25, ignoraResistencias: true }],
@@ -533,9 +534,9 @@ titulo('O ataque forte muda com o feitio');
   // Sustentação fica com o do manual, porque a cura dela sai do dano.
   const danos = r => ['lamina', 'guarda', 'sustentacao'].map(f => forte(f, r).fixo).join('/');
   verificar('o Sopro: Lâmina 13, Guarda 8, Sustentação 10', danos('Comum') === '13/8/10', danos('Comum'));
-  verificar('a Barragem: Lâmina 20, Guarda 10, Sustentação 15', danos('Raro') === '20/10/15', danos('Raro'));
+  verificar('a Barragem: Lâmina 15, Guarda 5, Sustentação 10', danos('Raro') === '15/5/10', danos('Raro'));
   verificar('a Barragem Certa: Lâmina 20, Guarda 10, Sustentação 15', danos('Lendário') === '20/10/15', danos('Lendário'));
-  verificar('a tabela do manual não muda', G.FU_MAGIAS.forte[2].fixo === 15 && G.FU_MAGIAS.forte[1].fixo === 10);
+  verificar('a tabela não muda sem querer', G.FU_MAGIAS.forte[2].fixo === 10 && G.FU_MAGIAS.forte[1].fixo === 10);
   verificar('o ataque muito forte não ganha jeito de feitio',
     !G.fuMagiaDe(fichaDe('fogo', 'Raro', 'lamina'), 'muito_forte').estilo);
 

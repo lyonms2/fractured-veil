@@ -14,8 +14,9 @@
 //   Médio     compara todas as ações de todos que podem agir e fica com
 //             a que mais rende: olha vulnerável, resistente, imune e
 //             absorve, a guarda e a Misericórdia de cada alvo, e cura
-//             quem precisa; quando tudo piora a situação, guarda em
-//             vez de bater em quem absorve e curar o inimigo
+//             quem precisa. E guarda quando vale a pena — para cortar o
+//             dano ou recuperar PM (desde 19/09/2026: sem isso gastava o
+//             PM todo na primeira rodada e a luta virava troca de socos)
 //   Difícil   mais as magias de cena (Concha, Barreira, Misericórdia,
 //             Despertar), a guarda — que corta o dano e recupera PM pelo
 //             dado de VON —, e passa a economizar PM
@@ -44,7 +45,7 @@ const FU_IA_NIVEIS = [
   // 0 · Fácil
   { legado: true },
   // 1 · Médio
-  { abate: 1.0, poupaPM: 0,   cena: false, guarda: false, mover: false },
+  { abate: 1.0, poupaPM: 0,   cena: false, guarda: true,  mover: false },
   // 2 · Difícil
   { abate: 1.0, poupaPM: 0.3, cena: true,  guarda: true,  mover: false },
   // 3 · Mestre
@@ -471,10 +472,9 @@ function _iaOpcoes(estado, quem, p) {
   }
 
   // ── guardar ──
-  // No Difícil e no Mestre a guarda é uma jogada: vale o dano que ela
-  // evita. No Médio é só o "passo a vez" — entra valendo zero e só ganha
-  // quando todo o resto piora a situação, como o golpe que o alvo
-  // absorve e que cura o inimigo.
+  // Do Médio para cima a guarda é uma jogada: vale o dano que ela evita
+  // e o PM que devolve. No Fácil (a IA de sempre, _iaLegado) não passa
+  // por aqui.
   if (p.guarda) {
     const guardado = Object.assign({}, quem, { guardando: true });
     // Guardar para cortar dano pesa mais em quem já está ferido: com a
