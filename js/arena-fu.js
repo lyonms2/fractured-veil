@@ -142,6 +142,8 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afE = fuIniciar(equipaA, equipaB, semente);
   _afQuem = null; _afPasso = null; _afMenu = false; _afOcupado = false;
   _afSegredo = null; _afMorreAinda = null;
+  // O histórico é desta batalha: sem isto, a anterior aparecia junto.
+  _afHistorico = [];
   _afSair = aoSair || null;
   _afShell();
   _afDesenhar();
@@ -664,11 +666,19 @@ function _afCartao(c) {
   const lado = meu ? 'eu' : 'ini';
   const cls = ['cb-ficha', lado, _afQuem === c.id ? 'ativo' : '',
                _afVivoVisivel(c) ? '' : 'caido', (meu && podeAgir) ? 'entra' : ''].join(' ');
-  const gesto = (meu && podeAgir && !_afPasso)
-    ? `_afEscolherQuem('${c.id}')` : `_afFicha('${c.id}')`;
+  /* O card é o atalho de AGIR. Um avatar meu que não pode agir agora
+     abria a ficha, e isso atrapalhava: tocava-se no card para jogar e
+     aparecia uma janela por cima da batalha. Agora ele só avisa por que
+     não — a ficha continua no corpo dele, em campo. Os do inimigo seguem
+     abrindo a ficha, que é o único jeito de a ver deste lado. */
+  const gesto = !meu ? `_afFicha('${c.id}')`
+    : (podeAgir && !_afPasso) ? `_afEscolherQuem('${c.id}')`
+    : `_afCartaoSemVez('${c.id}')`;
+  const dica = !meu ? t('af.ficha.abrir', { nome: _afNome(c) })
+    : podeAgir ? t('af.menu.abrir') : _afPorQueNao(c);
   return `<div class="${cls}" id="cbCart${c.id}"
        role="button" tabindex="0" onclick="${gesto}"
-       title="${esc(meu && podeAgir ? t('af.menu.abrir') : t('af.ficha.abrir', { nome: _afNome(c) }))}">
+       title="${esc(dica)}">
     <!-- O número do posto fica AO LADO do retrato, à esquerda, e não em
          cima dele: no canto da figura ele cobria justamente a cara do
          bicho. O número e o retrato vão num contêiner próprio porque os
@@ -1009,7 +1019,7 @@ function _afAndar() {
    próprio menu já pergunta, e a dica some. */
 function _afDica(vez) {
   const el = document.getElementById('cbDica');
-  if (!el) return;
+  if (!el || el.classList.contains('aviso')) return;
   let txt = '';
   if (vez && vez.lado === 'A' && !_afOcupado && !_afE.acabou && !_afPasso) {
     const eu = _afPorId(_afQuem);
@@ -1017,6 +1027,30 @@ function _afDica(vez) {
   }
   el.textContent = txt;
   el.classList.toggle('viva', !!txt);
+}
+
+/* Por que um avatar meu não pode agir agora. */
+function _afPorQueNao(c) {
+  if (!c || !_afE || _afE.acabou) return '';
+  if (!c.vivo) return t('af.aviso.caido', { nome: _afNome(c) });
+  if (_afE.jaAgiu.indexOf(c.id) !== -1) return t('af.aviso.ja_agiu', { nome: _afNome(c) });
+  return t('af.aviso.espere');
+}
+
+/* O aviso vai no lugar da dica, embaixo da maré, e some sozinho. */
+let _afAvisoTimer = null;
+function _afCartaoSemVez(id) {
+  if (_afPasso) return;   // escolhendo um alvo: o toque não é para isto
+  const txt = _afPorQueNao(_afPorId(id));
+  const el = document.getElementById('cbDica');
+  if (!txt || !el) return;
+  el.textContent = txt;
+  el.classList.add('viva', 'aviso');
+  clearTimeout(_afAvisoTimer);
+  _afAvisoTimer = setTimeout(() => {
+    el.classList.remove('aviso');
+    if (_afE) _afDica(_afE.acabou ? null : fuVez(_afE));
+  }, 2200);
 }
 
 function _afPorId(id) {
@@ -2387,6 +2421,7 @@ function _afDanoTexto(ev) {
 
 let _afLanceTimer = null;
 let _afHistorico = [];
+let _afJogadaSeq = 0;
 
 /* Com `acrescenta`, a linha nova se junta às do mesmo turno em vez de
    apagar as anteriores: um turno é uma sequência de testes, e se lê de
@@ -2404,7 +2439,10 @@ let _afHistorico = [];
    linha mais velha, e a mais nova fica sempre à vista. */
 function _afLance(html, acrescenta) {
   if (!html) return;
-  _afHistorico.push({ ronda: _afE ? _afRondaVisivel() : 0, html });
+  // A jogada a que a linha pertence: `acrescenta` é mais uma batida do
+  // mesmo turno. O histórico inverte as jogadas, não as linhas de cada uma.
+  if (!acrescenta || !_afHistorico.length) _afJogadaSeq++;
+  _afHistorico.push({ ronda: _afE ? _afRondaVisivel() : 0, html, jogada: _afJogadaSeq });
   const el = document.getElementById('cbLog');
   if (!el) return;
   /* Por DOM, e não reescrevendo o innerHTML com as linhas antigas: uma
@@ -2450,11 +2488,11 @@ function _afLance(html, acrescenta) {
 
    O botão fica grudado no canto de cima enquanto a ficha rola, e o toque
    no fundo continua fechando, para quem já estava acostumado. */
-function _afAbrirPainel(html) {
+function _afAbrirPainel(html, classe) {
   const el = document.getElementById('cbAjuda');
   if (!el) return;
   const rot = esc(t('af.fechar'));
-  el.innerHTML = `<div class="cb-ajuda-cx" onclick="event.stopPropagation()">
+  el.innerHTML = `<div class="cb-ajuda-cx ${classe || ''}" onclick="event.stopPropagation()">
     <button type="button" class="cb-ajuda-fechar" onclick="_afFecharPainel()"
             title="${rot}" aria-label="${rot}">✕</button>
     ${html}
@@ -2470,9 +2508,21 @@ function _afFecharPainel() {
   el.innerHTML = '';
 }
 
+/* O mais recente EM CIMA: quem abre o histórico quer saber o que acabou
+   de acontecer, e com a ordem de antes tinha de rolar até o fim da
+   lista para achar. O número da rodada vai à esquerda de cada linha. */
+/* Invertem-se as JOGADAS e não as linhas: dentro de uma magia que acerta
+   três, a linha de quem lançou vem antes dos ↳ de cada alvo, como
+   aconteceu. Invertendo linha a linha, os ↳ subiam acima da jogada. */
 function _afAbrirHistorico() {
-  _afAbrirPainel(_afHistorico.slice(-40).map(x =>
-    `<p class="cb-hist"><i>${x.ronda}</i> ${x.html}</p>`).join(''));
+  const jogadas = [];
+  for (const x of _afHistorico.slice(-60)) {
+    const ultima = jogadas[jogadas.length - 1];
+    if (ultima && ultima[0].jogada === x.jogada) ultima.push(x);
+    else jogadas.push([x]);
+  }
+  _afAbrirPainel(jogadas.reverse().flat().map(x =>
+    `<p class="cb-hist"><i>${x.ronda}</i> ${x.html}</p>`).join(''), 'cb-ajuda-hist');
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -2036,9 +2036,14 @@ b.laco { color: #f5a3c7; }
 .cb-f-af.IM { background: rgba(150,150,160,.22); }
 .cb-f-af.AB { background: rgba(120,190,120,.22); }
 .cb-hist {
-  margin: 0 0 0.25rem; padding-bottom: 0.25rem; font-size: 0.34375rem;
+  margin: 0 0 0.25rem; padding-bottom: 0.25rem; font-size: 0.6875rem;
   color: var(--text); border-bottom: 1px solid rgba(255,255,255,.06);
 }
+/* O painel do histórico é mais largo que o da ficha: as linhas de um
+   golpe são longas, e na largura da ficha quebravam em três. */
+.cb-ajuda-cx.cb-ajuda-hist { width: min(34rem, 94%); max-width: none; margin: 0 auto; }
+/* O aviso de "já agiu" usa o lugar da dica, num tom mais quente. */
+.cb-dica.aviso { color: #f5c89a; animation: none; opacity: 1; }
 .cb-hist i {
   display: inline-block; min-width: 0.75rem; color: var(--gold);
   font-style: normal; opacity: .7;
@@ -2292,7 +2297,7 @@ b.laco { color: #f5a3c7; }
   .cb-ajuda-cx .fb-regra-top b    { font-size: 0.53125rem; }
   .cb-ajuda-cx .fb-regra-top span { font-size: 0.46875rem; }
   .cb-f-af           { font-size: 0.46875rem; }
-  .cb-hist           { font-size: 0.46875rem; }
+  .cb-hist           { font-size: 0.5625rem; }   /* 13,5px, a letra do lance */
 
   .cb-palco .cb-log-linha { font-size: 0.5625rem; }
   .cb-palco .cb-log  { width: min(30rem, 70%); max-height: 15rem; }

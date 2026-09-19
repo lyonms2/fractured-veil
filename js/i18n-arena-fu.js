@@ -49,6 +49,9 @@ window.registerStrings({
   // ── o guia na tela ──
   'af.dica.quem':     'Toque em um dos seus avatares com o anel aceso para agir',
   'af.dica.acao':     'O que {nome} vai fazer?',
+  'af.aviso.ja_agiu': '{nome} já agiu nesta rodada',
+  'af.aviso.caido':   '{nome} está fora de combate',
+  'af.aviso.espere':  'Espere o inimigo terminar a vez dele',
   'af.ef.frente':     'no da frente ({nome})',
   'af.ef.qualquer':   'em qualquer inimigo',
   'af.ef.varios':     'em até {n} inimigos',
@@ -477,6 +480,9 @@ window.registerStrings({
   // ── on-screen guide ──
   'af.dica.quem':     'Tap one of your avatars with a glowing ring to act',
   'af.dica.acao':     'What will {nome} do?',
+  'af.aviso.ja_agiu': '{nome} has already acted this round',
+  'af.aviso.caido':   '{nome} is out of the fight',
+  'af.aviso.espere':  'Wait for the enemy to finish their turn',
   'af.ef.frente':     'on the front one ({nome})',
   'af.ef.qualquer':   'on any enemy',
   'af.ef.varios':     'on up to {n} enemies',
