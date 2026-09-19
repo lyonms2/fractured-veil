@@ -224,11 +224,10 @@ function _tetQuedaLivre() {
 
 function _tetUmPasso() {
   if (!_tetPeca || !_tetAtivo() || _tetPausado()) return;
-  if (_tetDesce()) {
-    _tetPontos++;
-    _tetQueda = 0;   // o passo dado conta como a descida desta vez
-    _tetPlacar();
-  }
+  /* Sem ponto: dava +1 a cada toque, e tocar na seta sem parar virava um
+     jeito de subir no ranking sem encaixar nada. Os pontos vêm das
+     linhas (e da queda livre, uma vez por peça). */
+  if (_tetDesce()) _tetQueda = 0;   // o passo dado conta como a descida desta vez
 }
 
 function _tetGuardar() {
@@ -342,8 +341,7 @@ function _tetPasso(agora) {
   _tetQueda += dt;
   while (_tetQueda >= intervalo) {
     _tetQueda -= intervalo;
-    if (_tetDesce()) { if (_tetSuave) _tetPontos++; }
-    else { _tetQueda = 0; break; }
+    if (!_tetDesce()) { _tetQueda = 0; break; }
   }
 
   // No chão: espera um pouco antes de travar, para dar tempo de ajeitar.
