@@ -204,8 +204,18 @@ const FU_MAGIAS = {
     /* Despertar mexe na FICHA e não nos pontos: um d8 vira d10, e com
        ele sobem a defesa, a precisão e o dano. É a única magia do jogo
        que muda um atributo. */
+    /* O DESPERTAR NOVO (19/09/2026): +6 de dano em todos os ataques de um
+       aliado até o fim da luta, SEM GASTAR O TURNO, uma vez por luta.
+
+       Ele subia um dado, e no Lendário todo avatar já tem d12 no maior: não
+       fazia nada. Corrigido, continuava a não valer um turno — um turno da
+       Sustentação Lendária é a Salus Magna, e nenhum efeito de suporte que
+       custasse o turno inteiro a batia (medido: 41 a 50% de vitória contra
+       56% sem usar). Livre de turno, usá-lo passa a render 7 a 9 pontos de
+       vitória, e os três feitios ficam em 60/50/52% (aprovado pelo dono do
+       jogo). `livre`: não gasta o turno e só se lança uma vez por luta. */
     3: { id: 'despertar', pm: 20, alvos: 1, aliado: true,
-         cena: { subirDado: true }, manual: 'p.208' },
+         cena: { danoMais: 6 }, livre: true, manual: 'nosso (no lugar do p.208)' },
   },
 };
 

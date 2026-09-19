@@ -61,6 +61,7 @@ const IA_CURA      = 0.6;  // cada ponto de vida curado, antes do risco
 const IA_PM        = 0.5;  // cada PM recuperado, quando falta PM para alguma magia
 const IA_PM_SOBRA  = 0.1;  // cada PM recuperado, quando já dá para todas
 const IA_REPRESALIA = 0.8; // cada ponto de dano que a Represália do Guarda deve devolver
+const IA_LIVRE     = 1000; // uma magia que não gasta o turno vem antes de qualquer jogada
 
 // ═══════════════════════════════════════════════════════════════════
 // FÁCIL — A IA DE SEMPRE
@@ -80,7 +81,8 @@ function _iaLegado(estado, lado, podem) {
   const ferido = meus.filter(fuEmCrise).sort((a, b) => a.pv - b.pv)[0];
   if (ferido) {
     const sup = magias.suporte;
-    if (sup && paga(sup, 1)) {
+    // A livre (o Despertar) é uma vez por luta: depois de usada, não se pede.
+    if (sup && paga(sup, 1) && !(sup.livre && quem.usouLivre)) {
       const acao = sup.proprio
         ? (ferido === quem ? { tipo: 'magia', magia: sup } : null)
         : { tipo: 'magia', magia: sup, alvos: [ferido.id] };
@@ -155,6 +157,7 @@ function _iaGolpe(quem, alvo, o) {
   // A Execução do Lâmina e o Golpe Pesado de cada lado, como no fuAtacar.
   const exec = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
   const extra = (o.fixo | 0) + (quem.ficha.danoExtra | 0)
+              + ((quem.efeitos && quem.efeitos.danoMais) | 0)   // o Despertar
               + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0)) + exec;
 
   let acertos = 0, criticos = 0, dano = 0, abates = 0;
@@ -209,7 +212,7 @@ function _iaEfeito(q, alvo, at) {
   if (at.todos) {
     const m = at.magia;
     const af = fuAfinidadeDe(alvo, m.tipo || q.ficha.tipo);
-    let bruto = (m.danoFixo | 0)
+    let bruto = (m.danoFixo | 0) + ((q.efeitos && q.efeitos.danoMais) | 0)
               + ((q.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(q)] : 0);
     // A guarda não se soma à resistência.
     if (alvo.guardando && af !== 'AB' && af !== 'RS' && !alvo.morteSubita) bruto = Math.floor(bruto * fuGuardaDe(alvo, !!alvo.guardaFraca).fica);
@@ -460,7 +463,11 @@ function _iaOpcoes(estado, quem, p) {
   for (const l of Object.keys(mg)) {
     const m = mg[l];
     if (!(m.proprio || m.aliado || m.cura)) continue;
-    if ((m.cena || m.proteger) && !p.cena) continue;
+    /* A magia LIVRE (o Despertar) não gasta o turno: qualquer ganho é puro
+       ganho, e por isso entra em todo nível que pensa — o Médio também — e
+       vem antes de tudo (IA_LIVRE). Uma vez por luta. */
+    if (m.livre && quem.usouLivre) continue;
+    if ((m.cena || m.proteger) && !p.cena && !m.livre) continue;
     if (fuCusto(m, 1) > quem.pm) continue;
     const quais = m.proprio ? [quem] : aliados;
     const vals = quais.map(t => ({ t, v: _iaValorApoio(estado, m, t, quem) }))
@@ -469,6 +476,7 @@ function _iaOpcoes(estado, quem, p) {
     const op = m.proprio
       ? { v: vals[0].v - fuCusto(m, 1) * p.poupaPM, acao: { tipo: 'magia', magia: m } }
       : _iaComAlvos(m, vals, quem, p);
+    if (op && m.livre) op.v += IA_LIVRE;
     if (op) ops.push(op);
   }
 

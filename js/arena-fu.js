@@ -1387,7 +1387,7 @@ function _afOrbe(selo, rot, detalhe, gesto, custo, podeOuNao, efeito) {
 function _afEfeitoMagia(eu, lugar, m) {
   if (!eu || !_afE) return '';
   const dq = fuDonsDe(eu);
-  const extra = eu.ficha.danoExtra | 0;
+  const extra = (eu.ficha.danoExtra | 0) + ((eu.efeitos && eu.efeitos.danoMais) | 0);
   const faixa = (base, a1, a2) => {
     const max = Math.max(fuDado(eu, a1), fuDado(eu, a2));
     return t('af.ef.dano', { a: base + 1, b: base + max });
@@ -1464,7 +1464,8 @@ function _afAcoes() {
        repete a si própria não informa: enche. */
     const nome = _afMagiaNome(m), rot = t('af.lugar.' + lugar);
     h += _afOrbe(lugar, nome, nome === rot ? '' : rot,
-      `_afEscolher('${lugar}')`, custo || null, custo <= eu.pm,
+      `_afEscolher('${lugar}')`, custo || null,
+      custo <= eu.pm && !(m.livre && eu.usouLivre),   // a livre, uma vez por luta
       _afEfeitoMagia(eu, lugar, m));
   }
 
@@ -1665,7 +1666,10 @@ function _afAgir(acao) {
      Sem isto, uma recusa parecia um clique que não funcionou. */
   if (!eventos.length) { _afPasso = null; _afDesenhar(); return; }
 
-  _afPasso = null; _afMenu = false; _afQuem = null; _afLaco = null;
+  /* Depois de uma magia livre (o Despertar) o mesmo avatar ainda age:
+     o menu volta aberto para ele, em vez de fechar como num turno. */
+  const livre = !!(acao.magia && acao.magia.livre);
+  _afPasso = null; _afMenu = livre; _afQuem = livre ? eu.id : null; _afLaco = null;
   _afMostrar(eventos);
 }
 
@@ -2332,7 +2336,9 @@ function _afLanceDe(ev, seguido) {
   // Em si mesmo (a Concha) não repete o nome: "Caído lançou Concha · Caído".
   if (ev.tipo === 'cena')
     return t('af.lance.cena', { nome: nome(ev.quem), magia: t('af.m.' + ev.nome) })
-         + (ev.alvo && ev.alvo !== ev.quem ? ' → <b>' + nome(ev.alvo) + '</b>' : '');
+         + (ev.alvo && ev.alvo !== ev.quem ? ' → <b>' + nome(ev.alvo) + '</b>' : '')
+         + (ev.efeitos && ev.efeitos.danoMais
+            ? ' · <span class="sobe">' + t('af.lance.despertar', { n: ev.efeitos.danoMais }) + '</span>' : '');
 
   // A cura do ataque forte da Sustentação não tem nome de magia próprio.
   if (ev.tipo === 'cura' && ev.estilo)

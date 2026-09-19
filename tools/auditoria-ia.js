@@ -65,7 +65,8 @@ function antiga(e, lado, podem) {
   const ferido = meus.filter(M.fuEmCrise).sort((a, b) => a.pv - b.pv)[0];
   if (ferido) {
     const sup = magias.suporte;
-    if (sup && paga(sup, 1)) {
+    // O Despertar livre é uma vez por luta (19/09/2026): a cópia acompanha.
+    if (sup && paga(sup, 1) && !(sup.livre && quem.usouLivre)) {
       const acao = sup.proprio
         ? (ferido === quem ? { tipo: 'magia', magia: sup } : null)
         : { tipo: 'magia', magia: sup, alvos: [ferido.id] };
@@ -130,7 +131,8 @@ titulo('Batalhas inteiras, nos quatro níveis');
           if (a.tipo === 'mover' && nivel < 3) c.moverCedo++;
           // O Fácil é a IA de antes, que já lançava o Despertar em quem está
           // em crise; a regra nova vale para o Médio.
-          if (a.tipo === 'magia' && a.magia.cena && nivel === 1) c.cenaCedo++;
+          // O Despertar é livre de turno (19/09/2026) e vale para o Médio também.
+          if (a.tipo === 'magia' && a.magia.cena && !a.magia.livre && nivel === 1) c.cenaCedo++;
 
           const quem = M.fuPorId(e, d.quem);
           if (nivel >= 1 && a.tipo === 'magia' && !(a.magia.aliado || a.magia.cura || a.magia.proprio || a.magia.todos)) {

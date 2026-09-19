@@ -128,6 +128,8 @@ function fuLutador(slot, lado, posto) {
        guardar, a próxima guarda corta menos e devolve menos PM. */
     guardouUltimo: false,
     guardaFraca: false,
+    // A magia livre (o Despertar) já foi usada nesta luta?
+    usouLivre: false,
     /* Quem o Guarda protege até o próximo turno dele (a magia Proteger), e
        o suspiro, que se dá uma vez só. Os dois vivem aqui e não num saco à
        parte porque são estado de batalha e não ficha. */
@@ -534,7 +536,9 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      Pesado vale no golpe comum OU nas magias, conforme o DNA escolheu. */
   const execucao = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo))
     ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
+  // O +6 do Despertar (efeitos.danoMais) entra em todo ataque de quem o tem.
   const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0)
+              + ((quem.efeitos && quem.efeitos.danoMais) | 0)
               + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0)) + execucao;
   // A Lâmina Rara: em quem está guardando, a resistência também cai.
   const semRS = !!o.ignoraResistencias || (!!o.semRSnaGuarda && alvo.guardando);
@@ -657,8 +661,13 @@ function fuAgir(estado, acao) {
   const repetida = acao.tipo === 'guardar' && !!quem.guardouUltimo;
   // Lutar pelo Laço: só se foi pedido e se há com quem (fuLacoDisponivel).
   const laco = acao.laco ? fuLacoDisponivel(estado, quem) : null;
-  quem.guardando = false;
-  quem.protegendo = null;   // o Proteger também dura só até ele agir de novo
+  /* A magia LIVRE (o Despertar) não é o turno: não desfaz a guarda nem o
+     Proteger de quem a lança, e quem a lança ainda age a seguir. */
+  const livre = !!(acao.magia && acao.magia.livre);
+  if (!livre) {
+    quem.guardando = false;
+    quem.protegendo = null;   // o Proteger também dura só até ele agir de novo
+  }
 
   if (acao.tipo === 'guardar') {
     quem.guardando = true;
@@ -768,6 +777,7 @@ function fuAgir(estado, acao) {
 
     // ── aliada: Barreira, Curar, Despertar ──
     } else if (magia && (magia.aliado || magia.cura)) {
+      if (magia.livre && quem.usouLivre) return [];   // uma vez por luta
       let alvos = escolhidos.filter(c => c.vivo && aliada.indexOf(c) !== -1);
       if (!alvos.length) alvos = [quem];              // sem escolha, é em si
       alvos = alvos.slice(0, magia.alvos || 1);
@@ -795,7 +805,7 @@ function fuAgir(estado, acao) {
         // A Execução vale aqui também: é o Lâmina, e o alvo está em crise.
         const exec = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo))
           ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
-        const bruto = (magia.danoFixo | 0) + exec;
+        const bruto = (magia.danoFixo | 0) + exec + ((quem.efeitos && quem.efeitos.danoMais) | 0);
         const d = fuDanoComGuarda(alvo, bruto, magia.tipo || quem.ficha.tipo);
         _fuDescobrir(estado, quem, alvo, magia.tipo || quem.ficha.tipo, d.afinidade);
         eventos.push({ tipo: 'devastacao', quem: quem.id, alvo: alvo.id,
@@ -879,10 +889,15 @@ function fuAgir(estado, acao) {
     }
   }
 
-  estado.jaAgiu.push(quem.id);
-  quem.guardouUltimo = acao.tipo === 'guardar';
-  // A guarda que o ataque forte do Guarda dá é sempre a inteira.
-  if (acao.tipo !== 'guardar') quem.guardaFraca = false;
+  if (livre) {
+    // Não gasta o turno: marca que já usou, e quem lançou ainda age.
+    quem.usouLivre = true;
+  } else {
+    estado.jaAgiu.push(quem.id);
+    quem.guardouUltimo = acao.tipo === 'guardar';
+    // A guarda que o ataque forte do Guarda dá é sempre a inteira.
+    if (acao.tipo !== 'guardar') quem.guardaFraca = false;
+  }
   /* Os suspiros ANTES de se ver o fim: quem cai a levar os últimos dois
      inimigos consigo ganha a batalha, e ver o fim primeiro dava-a ao
      outro lado. */

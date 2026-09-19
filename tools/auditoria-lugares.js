@@ -268,21 +268,23 @@ titulo('Cada forma faz o que diz');
     verificar('e desfaz-se: o golpe seguinte leva-o', q.pv === 0 && d2.caiu === true);
   }
 
-  // ── o Despertar: sobe um dado, e sobe o melhor ──
+  // ── o Despertar: +6 de dano no aliado, sem gastar o turno, uma vez ──
   {
     const e = luta(30, 7), q = e.A[0], amigo = e.A[1];
-    amigo.ficha.DES = 10; amigo.ficha.PER = 6; amigo.ficha.VIG = 6; amigo.ficha.VON = 6;
     const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário', feitio: 'sustentacao' }), 'suporte');
-    M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
-    verificar('o Despertar sobe o atributo mais alto', amigo.efeitos.subirDado === 'DES');
-    verificar('e o dado sobe mesmo', M.fuDado(amigo, 'DES') === 12);
-    // mais o bônus do degrau (Lendário +2) e o da Guarda Cerrada, se tiver
-    verificar('e a Defesa sobe com ele', M.fuDefesa(amigo)
-      === 12 + (amigo.ficha.dons.defesaMais | 0) + (amigo.ficha.defesaDegrau | 0), M.fuDefesa(amigo) + '');
-
-    // e nunca passa do d12
-    amigo.ficha.DES = 12;
-    verificar('sem passar do d12', M.fuDado(amigo, 'DES') === 12);
+    q.pm = q.ficha.pmMax;
+    const ev = M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
+    verificar('o Despertar dá +6 de dano ao aliado', amigo.efeitos.danoMais === 6);
+    verificar('e não gasta o turno de quem lança', ev.length > 0 && e.jaAgiu.indexOf(q.id) === -1);
+    verificar('e fica marcado como usado', q.usouLivre === true);
+    const ev2 = M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
+    verificar('uma vez por luta: a segunda é recusada', ev2.length === 0);
+    // o +6 entra no golpe de verdade
+    const alvo = e.B[0]; alvo.ficha.afinidades = {}; alvo.guardando = false;
+    alvo.pv = 999; alvo.ficha.pvMax = 999;
+    const g = M.fuAtacar(e, amigo, alvo, { fixo: 5 });
+    verificar('e o golpe do aliado leva o +6', !g.acertou || g.bruto === g.hr + 5 + (amigo.ficha.danoExtra | 0) + 6
+      + ((amigo.ficha.dons && amigo.ficha.dons.danoMaisGolpe) | 0) + (g.execucao | 0), 'bruto ' + g.bruto);
 
     /* Despertado E envenenado fica onde começou, e não abaixo: o
        manual conta os dois a partir do dado base. */

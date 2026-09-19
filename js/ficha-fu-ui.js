@@ -555,6 +555,9 @@ function fuResumoAgora(c) {
     item({ id: 'despertar', nome: t('af.m.despertar'), texto: p.txt, html: p.html,
            tom: 'bom', fixo: false, marca: t('af.ab.' + ef.subirDado) + '▴', classe: 'bem' });
   }
+  if (ef.danoMais)
+    simples('despertar', t('af.m.despertar'), t('af.ag.despertar.ef', { n: ef.danoMais }),
+            'bom', '+' + ef.danoMais, 'bem');
   if (c.protegendo)
     simples('protegendo', t('af.ag.protegendo'), t('af.ag.protegendo.ef'), 'bom', '⛨', 'bem');
 
