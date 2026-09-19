@@ -1470,9 +1470,11 @@ function _afAcoes() {
      dado de VON (o fuAgir, em js/combate-fu.js). Estava no motor e na IA
      dos inimigos, e faltava aqui: o jogador não tinha como guardar. O
      pormenor diz quanto PM volta agora — nada, com o PM cheio. */
-  const pmVolta = Math.max(0, Math.min(eu.ficha.pmMax - eu.pm, fuDado(eu, 'VON')));
+  // Guardar de novo, logo depois de ter guardado, corta menos (fuGuardaDe).
+  const pmVolta = fuPmDaGuarda(eu);
+  const rep = eu.guardouUltimo ? '_rep' : '';
   h += _afOrbe('guardar', t('af.orbe.guardar'),
-    pmVolta ? t('af.orbe.guardar.pm', { n: pmVolta }) : t('af.orbe.guardar.cheio'),
+    pmVolta ? t('af.orbe.guardar' + rep + '.pm', { n: pmVolta }) : t('af.orbe.guardar' + rep + '.cheio'),
     `_afGuardar()`, null, true);
   // Examinar: gasta o turno e revela a ficha de um inimigo.
   h += _afOrbe('examinar', t('af.orbe.examinar'), '', `_afPedirExaminar()`, null, true);
@@ -2309,9 +2311,10 @@ function _afLanceDe(ev, seguido) {
   const nome = n => esc(_afNome(_afPorId(n)));
   const p = [];
 
-  if (ev.tipo === 'guardar') return ev.pmGanho
+  if (ev.tipo === 'guardar') return (ev.pmGanho
     ? t('af.lance.guardar_pm', { nome: nome(ev.quem), n: ev.pmGanho })
-    : t('af.lance.guardar', { nome: nome(ev.quem) });
+    : t('af.lance.guardar', { nome: nome(ev.quem) }))
+    + (ev.repetida ? ' · <i>' + t('af.lance.guarda_rep') + '</i>' : '');
   if (ev.tipo === 'mover')
     return t('af.lance.mover', { nome: nome(ev.quem), com: nome(ev.com) });
   if (ev.tipo === 'gasto')  return null;   // vai colado ao golpe

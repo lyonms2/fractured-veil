@@ -165,7 +165,7 @@ function _iaGolpe(quem, alvo, o) {
       acertos++;
       if (critico) criticos++;
       let bruto = Math.max(a, b) + extra;
-      if (guarda) bruto = Math.floor(bruto / 2);
+      if (guarda) bruto = Math.floor(bruto * fuGuardaDe(alvo, !!alvo.guardaFraca).fica);
       const perda = _iaPerda(alvo, bruto, af, semRS);
       dano += perda;
       if (_iaCai(alvo, perda)) abates++;
@@ -211,7 +211,7 @@ function _iaEfeito(q, alvo, at) {
     let bruto = (m.danoFixo | 0)
               + ((q.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(q)] : 0);
     // A guarda não se soma à resistência.
-    if (alvo.guardando && af !== 'AB' && af !== 'RS') bruto = Math.floor(bruto / 2);
+    if (alvo.guardando && af !== 'AB' && af !== 'RS') bruto = Math.floor(bruto * fuGuardaDe(alvo, !!alvo.guardaFraca).fica);
     const dano = _iaPerda(alvo, bruto, af, false);
     return { dano, pAbate: _iaCai(alvo, dano) ? 1 : 0, pEstado: 0 };
   }
@@ -303,7 +303,7 @@ function _iaComCena(alvo, cena, estado) {
    lutador tem, e quase nada quando já dá para todas — senão a IA ficaria
    guardando só para encher uma barra que não vai usar. */
 function _iaValorPmDaGuarda(quem) {
-  const volta = Math.max(0, Math.min(quem.ficha.pmMax - quem.pm, fuDado(quem, 'VON')));
+  const volta = fuPmDaGuarda(quem);   // já com a guarda repetida
   if (!volta) return 0;
   const mg = fuMagiasDe(quem.ficha);
   const falta = Object.keys(mg).some(l => fuCusto(mg[l], 1) > quem.pm);
@@ -476,7 +476,8 @@ function _iaOpcoes(estado, quem, p) {
   // e o PM que devolve. No Fácil (a IA de sempre, _iaLegado) não passa
   // por aqui.
   if (p.guarda) {
-    const guardado = Object.assign({}, quem, { guardando: true });
+    // Guardar de novo em seguida é a guarda repetida: corta menos.
+    const guardado = Object.assign({}, quem, { guardando: true, guardaFraca: !!quem.guardouUltimo });
     // Guardar para cortar dano pesa mais em quem já está ferido: com a
     // vida cheia, bater quase sempre rende mais do que se encolher. O peso
     // vai de 0,25 (vida cheia) a 1,25 (quase caindo).

@@ -124,6 +124,10 @@ function fuLutador(slot, lado, posto) {
        para o estado continuar a caber num JSON. */
     efeitos: {},
     guardando: false,
+    /* A guarda repetida (FU_GUARDA_REPETIDA): se a última ação dele foi
+       guardar, a próxima guarda corta menos e devolve menos PM. */
+    guardouUltimo: false,
+    guardaFraca: false,
     /* Quem o Guarda protege até o próximo turno dele (a magia Proteger), e
        o suspiro, que se dá uma vez só. Os dois vivem aqui e não num saco à
        parte porque são estado de batalha e não ficha. */
@@ -349,6 +353,27 @@ function fuAplicarDano(c, bruto, tipo, opcoes) {
    linha: quem guarda apanha metade de tudo, mesmo do que absorveria.
    A absorção continua a ganhar, porque o manual diz que ela ganha a
    tudo — guardar não impede um bicho de fogo de se alimentar de fogo. */
+/* ── A GUARDA REPETIDA (19/09/2026) ──
+
+   Guardar corta metade do dano de todos os inimigos e devolve o dado de
+   VON em PM. Guardar DE NOVO, logo em seguida, corta só um terço e devolve
+   meio dado. A primeira guarda continua como era; a segunda seguida não.
+
+   Porque: as lutas que empacavam eram guarda contra guarda — no Difícil,
+   um décimo das lutas do nível 15 passava de 32 rodadas. Com isto a ponta
+   caiu para 23, e as lutas normais não mudaram (tools/balanco.js e as
+   simulações de duração, aprovadas pelo dono do jogo). */
+const FU_GUARDA          = { fica: 1 / 2, pm: 1 };
+const FU_GUARDA_REPETIDA = { fica: 2 / 3, pm: 1 / 2 };
+function fuGuardaDe(c, repetida) {
+  return repetida ? FU_GUARDA_REPETIDA : FU_GUARDA;
+}
+// O PM que guardar agora devolve a este lutador, já com o teto.
+function fuPmDaGuarda(c) {
+  const g = fuGuardaDe(c, !!c.guardouUltimo);
+  return Math.max(0, Math.min(c.ficha.pmMax - c.pm, Math.floor(fuDado(c, 'VON') * g.pm)));
+}
+
 function fuDanoComGuarda(c, bruto, tipo, opcoes) {
   /* A guarda NÃO se soma à resistência. No manual, guardar dá resistência
      a todos os tipos, e resistente duas vezes continua sendo só resistente:
@@ -357,7 +382,8 @@ function fuDanoComGuarda(c, bruto, tipo, opcoes) {
      volta a valer. */
   const af = fuAfinidadeDe(c, tipo);
   const rsCorta = af === 'RS' && !(opcoes && opcoes.ignoraResistencias);
-  const b = c.guardando && af !== 'AB' && !rsCorta ? Math.floor(bruto / 2) : bruto;
+  const b = c.guardando && af !== 'AB' && !rsCorta
+    ? Math.floor(bruto * fuGuardaDe(c, !!c.guardaFraca).fica) : bruto;
   return fuAplicarDano(c, b, tipo, opcoes);
 }
 
@@ -626,6 +652,8 @@ function fuAgir(estado, acao) {
   if (estado.jaAgiu.indexOf(quem.id) !== -1) return [];
 
   const eventos = [];
+  // Guardar logo depois de ter guardado: a guarda repetida.
+  const repetida = acao.tipo === 'guardar' && !!quem.guardouUltimo;
   // Lutar pelo Laço: só se foi pedido e se há com quem (fuLacoDisponivel).
   const laco = acao.laco ? fuLacoDisponivel(estado, quem) : null;
   quem.guardando = false;
@@ -644,9 +672,10 @@ function fuAgir(estado, acao) {
        Veia Ávida), e toda batalha longa terminava em golpes comuns. A
        guarda, que só cortava metade do dano, passa a ser também a hora
        de recuperar o fôlego. */
-    const pmGanho = Math.max(0, Math.min(quem.ficha.pmMax - quem.pm, fuDado(quem, 'VON')));
+    const pmGanho = fuPmDaGuarda(quem);
+    quem.guardaFraca = repetida;
     quem.pm += pmGanho;
-    eventos.push({ tipo: 'guardar', quem: quem.id, pmGanho, pmDepois: quem.pm });
+    eventos.push({ tipo: 'guardar', quem: quem.id, pmGanho, pmDepois: quem.pm, repetida });
 
   } else if (acao.tipo === 'mover') {
     /* ── REORDENAR CUSTA O TURNO ──
@@ -850,6 +879,9 @@ function fuAgir(estado, acao) {
   }
 
   estado.jaAgiu.push(quem.id);
+  quem.guardouUltimo = acao.tipo === 'guardar';
+  // A guarda que o ataque forte do Guarda dá é sempre a inteira.
+  if (acao.tipo !== 'guardar') quem.guardaFraca = false;
   /* Os suspiros ANTES de se ver o fim: quem cai a levar os últimos dois
      inimigos consigo ganha a batalha, e ver o fim primeiro dava-a ao
      outro lado. */
@@ -1155,6 +1187,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
+    FU_GUARDA, FU_GUARDA_REPETIDA, fuGuardaDe, fuPmDaGuarda,
     FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece, fuLacoDisponivel,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,

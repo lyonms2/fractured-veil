@@ -173,6 +173,28 @@ titulo('As quatro afinidades, e a guarda');
 }
 
 /* ═══ 4b · A GUARDA RECUPERA PM ═══════════════════════════════════ */
+titulo('A guarda repetida corta menos e devolve menos PM');
+{
+  const e = M.fuIniciar(equipa(1, 14, 5), equipa(2, 14, 5), 5);
+  const c = e.A[0];
+  c.pm = 0;
+  let ev = M.fuAgir(e, { quem: c.id, tipo: 'guardar' })[0];
+  verificar('a primeira guarda devolve o dado de VON inteiro', ev.pmGanho === M.fuDado(c, 'VON') && !ev.repetida);
+  verificar('e corta metade', !c.guardaFraca);
+  e.jaAgiu = [];
+  c.pm = 0;
+  ev = M.fuAgir(e, { quem: c.id, tipo: 'guardar' })[0];
+  verificar('a segunda seguida devolve meio dado', ev.pmGanho === Math.floor(M.fuDado(c, 'VON') / 2) && ev.repetida);
+  const bruto = 30;
+  const d = M.fuDanoComGuarda(c, bruto, 'fisico');
+  verificar('e corta só um terço', d.perda === Math.floor(bruto * 2 / 3), 'perdeu ' + d.perda);
+  e.jaAgiu = [];
+  M.fuAgir(e, { quem: c.id, tipo: 'atacar' });
+  e.jaAgiu = [];
+  ev = M.fuAgir(e, { quem: c.id, tipo: 'guardar' })[0];
+  verificar('depois de fazer outra coisa, a guarda volta a ser a inteira', !ev.repetida && !c.guardaFraca);
+}
+
 titulo('A guarda recupera PM pelo dado de VON');
 {
   const quemGuarda = (semente, prepara) => {
