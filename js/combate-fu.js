@@ -976,13 +976,24 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
    faz melhor. Subir o mais fraco parece generoso e é desperdício — d6
    para d8 vale menos do que d10 para d12 em tudo o que esse atributo
    toca. */
+/* ── O DADO QUE O DESPERTAR SOBE ──
+   O maior dado do aliado QUE AINDA PODE SUBIR. Era o maior de todos, e
+   no Lendário todo avatar já tem um d12, que é o teto: o Despertar subia
+   um d12 para d12 e não fazia nada — medido em 19/09/2026, 100% dos
+   avatares do nível 40. Se todos já são d12, fica o primeiro (e o
+   Despertar não muda nada, o que é a verdade). */
+function fuDadoQueSobe(c) {
+  const ordem = ['DES', 'PER', 'VIG', 'VON'];
+  const podem = ordem.filter(a => fuSubirDado(c.ficha[a]) !== c.ficha[a]);
+  return (podem.length ? podem : ordem)
+    .reduce((m, a) => (c.ficha[a] > c.ficha[m] ? a : m));
+}
+
 function fuPorDePe(alvo, magia, eventos, quemLanca, estado) {
   const antes = JSON.stringify(alvo.efeitos);
   for (const k of Object.keys(magia.cena)) {
     if (k === 'subirDado') {
-      const melhor = ['DES', 'PER', 'VIG', 'VON']
-        .reduce((m, a) => (alvo.ficha[a] > alvo.ficha[m] ? a : m), 'DES');
-      alvo.efeitos.subirDado = melhor;
+      alvo.efeitos.subirDado = fuDadoQueSobe(alvo);
     } else if (k === 'resisteInimigos') {
       /* A Concha: resiste aos elementos dos inimigos de pé NA HORA em que é
          lançada. Uma lista de verdades por tipo, para caber num JSON. */
@@ -1215,7 +1226,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
     FU_GUARDA, FU_GUARDA_REPETIDA, fuGuardaDe, fuPmDaGuarda,
-    FU_MORTE_SUBITA, fuMorteSubita,
+    FU_MORTE_SUBITA, fuMorteSubita, fuDadoQueSobe,
     FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece, fuLacoDisponivel,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,

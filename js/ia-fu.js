@@ -285,8 +285,7 @@ function _iaComCena(alvo, cena, estado) {
   const c = Object.assign({}, alvo, { efeitos: Object.assign({}, alvo.efeitos) });
   for (const k of Object.keys(cena)) {
     if (k === 'subirDado') {
-      c.efeitos.subirDado = ['DES', 'PER', 'VIG', 'VON']
-        .reduce((m, a) => (alvo.ficha[a] > alvo.ficha[m] ? a : m), 'DES');
+      c.efeitos.subirDado = fuDadoQueSobe(alvo);   // o mesmo do motor
     } else if (k === 'resisteInimigos') {
       // A Concha, como no fuPorDePe: os elementos dos inimigos de pé.
       const tipos = {};

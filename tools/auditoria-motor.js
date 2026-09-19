@@ -195,6 +195,14 @@ titulo('A guarda repetida corta menos e devolve menos PM');
   verificar('depois de fazer outra coisa, a guarda volta a ser a inteira', !ev.repetida && !c.guardaFraca);
 }
 
+titulo('O Despertar sobe um dado que ainda pode subir');
+{
+  const c = { ficha: { DES: 12, PER: 8, VIG: 12, VON: 10 } };
+  verificar('pula os d12 e fica com o maior que cresce', M.fuDadoQueSobe(c) === 'VON', M.fuDadoQueSobe(c));
+  const todos = { ficha: { DES: 12, PER: 12, VIG: 12, VON: 12 } };
+  verificar('com tudo em d12, não quebra', ['DES', 'PER', 'VIG', 'VON'].indexOf(M.fuDadoQueSobe(todos)) !== -1);
+}
+
 titulo('A morte súbita, da rodada 12 em diante');
 {
   const e = M.fuIniciar(equipa(1, 14), equipa(2, 14), 7);
