@@ -170,8 +170,8 @@ const vida = c => c.pv / c.ficha.pvMax;
 function opcoes(E, ator) {
   const out = [{ chave: 'golpe', nome: 'Golpe Comum', acao: { tipo: 'atacar' }, custo: 0 }];
   const magias = G.fuMagiasDe(ator.ficha);
-  const aliados = E.A.filter(c => c.vivo);
-  const inimigos = E.B.filter(c => c.vivo);
+  const aliados = E[ator.lado].filter(c => c.vivo);
+  const inimigos = E[ator.lado === 'A' ? 'B' : 'A'].filter(c => c.vivo);
   for (const lugar of Object.keys(magias)) {
     if (lugar === 'comum') continue;
     const m = magias[lugar];
@@ -229,12 +229,16 @@ function jogarAte(E, rondaFim) {
 
 /* Uma rolagem: o ator faz a ação, e a batalha segue até o fim da rodada
    seguinte. Devolve o valor e o que o próprio turno fez. */
-function rolar(E0, acao, semente) {
+function rolar(E0, acao, semente, quemId) {
   const E = clonar(E0);
   E.rng = { semente, passo: 0 };
-  const pvA = somaPv(E.A), pvB = somaPv(E.B), cA = caidos(E.A), cB = caidos(E.B);
-  const pmA = somaPm(E.A), pmB = somaPm(E.B);
-  const evs = M.fuAgir(E, Object.assign({ quem: 'ator' }, acao));
+  quemId = quemId || 'ator';
+  // "Nós" é o lado de quem age; o valor é sempre do ponto de vista dele.
+  const ladoNos = M.fuPorId(E, quemId).lado;
+  const nos = () => E[ladoNos], eles = () => E[ladoNos === 'A' ? 'B' : 'A'];
+  const pvA = somaPv(nos()), pvB = somaPv(eles()), cA = caidos(nos()), cB = caidos(eles());
+  const pmA = somaPm(nos()), pmB = somaPm(eles());
+  const evs = M.fuAgir(E, Object.assign({ quem: quemId }, acao));
   if (!evs.length) return null;
   const im = { dano: 0, cura: 0, estados: 0, tent: 0, acertos: 0 };
   for (const ev of evs) {
@@ -242,14 +246,14 @@ function rolar(E0, acao, semente) {
     if ((ev.tipo === 'ataque' || ev.tipo === 'magia')) {
       im.tent++; if (ev.acertou) im.acertos++;
     }
-    if (alvo && alvo.lado === 'B' && ev.perda) im.dano += ev.perda;
-    if (alvo && alvo.lado === 'A' && ev.curou) im.cura += ev.curou;
+    if (alvo && alvo.lado !== ladoNos && ev.perda) im.dano += ev.perda;
+    if (alvo && alvo.lado === ladoNos && ev.curou) im.cura += ev.curou;
     if (ev.estadoDado || ev.envenenou) im.estados++;
   }
   jogarAte(E, E.ronda + 1);
-  const valor = (pvB - somaPv(E.B)) - (pvA - somaPv(E.A))
-              + ABATE * ((caidos(E.B) - cB) - (caidos(E.A) - cA))
-              + PESO_PM * ((somaPm(E.A) - pmA) - (somaPm(E.B) - pmB));
+  const valor = (pvB - somaPv(eles())) - (pvA - somaPv(nos()))
+              + ABATE * ((caidos(eles()) - cB) - (caidos(nos()) - cA))
+              + PESO_PM * ((somaPm(nos()) - pmA) - (somaPm(eles()) - pmB));
   return { valor, im };
 }
 
@@ -437,6 +441,90 @@ for (const raridade of RARIDADES) {
     }
   }
 }
+
+// ═══ A IA NA HORA H ════════════════════════════════════════════════
+/* A comparação entre "melhor em" e "uso da IA", lá em cima, mistura duas
+   coisas: as situações montadas começam quase todas com PM cheio, e as
+   batalhas de verdade passam boa parte do tempo sem PM. Aqui a pergunta é
+   direta: em decisões REAIS da IA do Médio, no meio de batalhas inteiras,
+   ela escolheu a melhor jogada? Para cada decisão, simulam-se todas as
+   opções do avatar naquele momento — e a jogada exata que a IA fez —, e
+   mede-se a perda: quanto valor a melhor opção rendia a mais. */
+sai('');
+sai('═'.repeat(78));
+sai('A IA NA HORA H  ·  decisões reais do Médio, contra a melhor opção simulada');
+sai('═'.repeat(78));
+sai(pad('Feitio × raridade', 26) + padE('decisões', 9) + padE('acertou', 9) + padE('perda média', 13));
+const PONTOS = RAPIDO ? 12 : 30;
+const chaveDa = a => a.tipo === 'atacar' ? 'golpe' : a.tipo === 'magia' ? a.magia.lugar : a.tipo;
+const errosGerais = [];
+let totN = 0, totAcertos = 0, totPerda = 0;
+for (const raridade of RARIDADES) {
+  const nivel = PERFIS[raridade][1];
+  for (const feitio of FEITIOS) {
+    let n = 0, acertos = 0, perda = 0, b = 0;
+    const confusoes = {};
+    while (n < PONTOS && b < 400) {
+      b++;
+      const E = M.fuIniciar([1, 2, 3].map(i => avatar(b * 6007 + i + nivel, nivel, 'a' + i)),
+                            [1, 2, 3].map(i => avatar(b * 9001 + i + nivel, nivel, 'b' + i)), 300 + b);
+      let g = 0, pulo = b % 3;
+      while (!E.acabou && g++ < 3000 && n < PONTOS) {
+        const v = M.fuVez(E);
+        if (!v) { M.fuNovaRonda(E); continue; }
+        const d = IA.fuIaDecidir(E, v.lado, v.podem, 1);
+        const q = M.fuPorId(E, d.quem);
+        // Um ponto de decisão a cada três deste feitio, para espalhar pela luta.
+        if (q.ficha.feitio === feitio && d.acao.tipo !== 'mover' && d.acao.tipo !== 'examinar'
+            && (pulo++ % 3 === 0)) {
+          const ops = opcoes(E, q).filter(o => !o.semPM);
+          const media = acao => {
+            let s = 0, k = 0;
+            for (let r = 0; r < ROLAGENS; r++) {
+              const res = rolar(E, acao, 5003 + r * 11, q.id);
+              if (res) { s += res.valor; k++; }
+            }
+            return k ? s / k : null;
+          };
+          const vIA = media(d.acao);
+          if (vIA != null) {
+            let melhor = { chave: chaveDa(d.acao), v: vIA };
+            for (const op of ops) {
+              const vo = media(op.acao);
+              if (vo != null && vo > melhor.v) melhor = { chave: op.chave, nome: op.nome, v: vo };
+            }
+            const p = melhor.v - vIA;
+            n++; perda += p;
+            if (p <= 2) acertos++;
+            else {
+              const k = chaveDa(d.acao) + ' → ' + melhor.chave;
+              const c = confusoes[k] = confusoes[k] || { n: 0, perda: 0 };
+              c.n++; c.perda += p;
+            }
+          }
+        }
+        let evs = M.fuAgir(E, Object.assign({ quem: d.quem }, d.acao));
+        if (!evs.length) evs = M.fuAgir(E, { quem: d.quem, tipo: 'guardar' });
+        if (E.jaAgiu.indexOf(d.quem) === -1) E.jaAgiu.push(d.quem);
+      }
+    }
+    totN += n; totAcertos += acertos; totPerda += perda;
+    sai(pad(`${NOME_FEITIO[feitio]} ${raridade}`, 26) + padE(n, 9) + padE(pct(acertos / Math.max(1, n)), 9)
+      + padE(n1(perda / Math.max(1, n)), 13));
+    const top = Object.entries(confusoes).sort((x, y) => y[1].perda - x[1].perda).slice(0, 2);
+    for (const [k, c] of top) {
+      const [fez, devia] = k.split(' → ');
+      const nomeDe = ch => ({ golpe: 'Golpe Comum', guardar: 'Guardar', forte: 'a Forte',
+        muito_forte: 'a Muito Forte', defesa: 'a de Defesa', suporte: 'a de Suporte' })[ch] || ch;
+      const txt = `usou ${nomeDe(fez)} quando ${nomeDe(devia)} rendia mais: ${c.n}× (perda ${n1(c.perda / c.n)})`;
+      sai('    ' + txt);
+      errosGerais.push(`${NOME_FEITIO[feitio]} ${raridade}: ${txt}`);
+    }
+  }
+}
+sai(pad('TOTAL', 26) + padE(totN, 9) + padE(pct(totAcertos / Math.max(1, totN)), 9)
+  + padE(n1(totPerda / Math.max(1, totN)), 13));
+sai('Acertou = a jogada da IA ficou a até 2 de valor da melhor opção simulada.');
 
 // ═══ CAMADA 2 · OS ESTADOS ═════════════════════════════════════════
 sai('');
