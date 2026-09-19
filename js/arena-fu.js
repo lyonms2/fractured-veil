@@ -783,9 +783,14 @@ function _afDesenhar() {
   }
   _afBarras();
   const vez = _afE.acabou ? null : fuVez(_afE);
+  const ms = typeof fuMorteSubita === 'function' && fuMorteSubita(_afE);
   document.getElementById('cbTurno').textContent =
     t('af.ronda', { n: _afRondaVisivel() })
+    + (ms ? ' · ' + t('af.morte_subita') : '')
     + (vez ? ' · ' + t(vez.lado === 'A' ? 'af.vez' : 'af.vez_dele') : '');
+  // A barra do topo muda de cor na morte súbita: ver css/combate-arena.css.
+  const palco = document.getElementById('cbPalco');
+  if (palco) palco.classList.toggle('morte-subita', ms);
   const bd = document.getElementById('cbDesistir');
   if (bd) bd.style.display = _afE.acabou ? 'none' : '';
   _afDica(vez);
@@ -989,7 +994,8 @@ function _afAndar() {
        o motor já fechou a batalha em empate (FU_RONDAS_MAX). */
     const max = (typeof FU_RONDAS_MAX === 'number') ? FU_RONDAS_MAX : 50;
     const chave = ev.limite ? 'af.lance.limite'
-                : ev.n === max ? 'af.lance.ultima' : 'af.lance.ronda';
+                : ev.n === max ? 'af.lance.ultima'
+                : ev.morteSubita ? 'af.lance.morte_subita' : 'af.lance.ronda';
     _afLance('<i>' + t(chave, { n: ev.n, max }) + '</i>');
     _afDesenhar();
     setTimeout(_afAndar, AF_PAUSA / 2);
@@ -1401,7 +1407,9 @@ function _afEfeitoMagia(eu, lugar, m) {
     return p.join(' · ');
   }
   if (m.cura) {
-    p.push(t((m.alvos || 1) > 1 ? 'af.ef.cura_varios' : 'af.ef.cura', { n: m.cura, a: m.alvos || 1 }));
+    // Na morte súbita a cura vale a metade, e o menu mostra o número de agora.
+    const cura = Math.floor(m.cura * (eu.morteSubita ? 0.5 : 1));
+    p.push(t((m.alvos || 1) > 1 ? 'af.ef.cura_varios' : 'af.ef.cura', { n: cura, a: m.alvos || 1 }));
     if (m.limpa) p.push(t('af.ef.limpa'));
     return p.join(' · ');
   }
@@ -1472,7 +1480,8 @@ function _afAcoes() {
      pormenor diz quanto PM volta agora — nada, com o PM cheio. */
   // Guardar de novo, logo depois de ter guardado, corta menos (fuGuardaDe).
   const pmVolta = fuPmDaGuarda(eu);
-  const rep = eu.guardouUltimo ? '_rep' : '';
+  // Na morte súbita a guarda só devolve PM: não protege (FU_MORTE_SUBITA).
+  const rep = eu.morteSubita ? '_ms' : eu.guardouUltimo ? '_rep' : '';
   h += _afOrbe('guardar', t('af.orbe.guardar'),
     pmVolta ? t('af.orbe.guardar' + rep + '.pm', { n: pmVolta }) : t('af.orbe.guardar' + rep + '.cheio'),
     `_afGuardar()`, null, true);

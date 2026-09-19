@@ -1604,6 +1604,14 @@ b.laco { color: #f5a3c7; }
   pointer-events: none;
 }
 .cb-palco .cb-topo > * { pointer-events: auto; }
+/* A MORTE SÚBITA (FU_MORTE_SUBITA, rodada 12): a faixa do topo ganha um
+   brilho vermelho e a rodada fica em vermelho — é o aviso permanente de
+   que a guarda não protege mais e as curas valem a metade. */
+.cb-palco.morte-subita .cb-topo {
+  background: linear-gradient(180deg, rgba(90,10,14,.92), transparent);
+  box-shadow: inset 0 -1px 0 rgba(248,113,113,.35);
+}
+.cb-palco.morte-subita #cbTurno { color: #fca5a5; text-shadow: 0 0 0.5rem rgba(248,113,113,.55); }
 
 /* ══ A MARÉ DA BATALHA ══
 

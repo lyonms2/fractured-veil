@@ -195,6 +195,27 @@ titulo('A guarda repetida corta menos e devolve menos PM');
   verificar('depois de fazer outra coisa, a guarda volta a ser a inteira', !ev.repetida && !c.guardaFraca);
 }
 
+titulo('A morte súbita, da rodada 12 em diante');
+{
+  const e = M.fuIniciar(equipa(1, 14), equipa(2, 14), 7);
+  let ev = null;
+  while (e.ronda < M.FU_MORTE_SUBITA - 1) M.fuNovaRonda(e);
+  verificar('antes da rodada 12 não há morte súbita', !M.fuMorteSubita(e));
+  ev = M.fuNovaRonda(e);
+  verificar('na rodada 12 ela começa, e o evento avisa', M.fuMorteSubita(e) && ev.morteSubita === true);
+  verificar('todos os lutadores ficam marcados', e.A.concat(e.B).every(c => c.morteSubita));
+  const c = e.A[0]; c.guardando = true; c.pv = c.ficha.pvMax;
+  const d = M.fuDanoComGuarda(c, 20, 'fisico');
+  verificar('a guarda não corta nada', d.perda === 20, 'perdeu ' + d.perda);
+  const alvo = e.A[1]; alvo.pv = 1;
+  const evs = [];
+  M.fuCurar(e.A[2], alvo, { id: 'curar', cura: 30 }, evs, e);
+  verificar('a cura vale a metade', evs[0].curou === 15 || evs[0].curou === Math.floor(30 * 1.5 * 0.5),
+            'curou ' + evs[0].curou);
+  ev = M.fuNovaRonda(e);
+  verificar('e o aviso sai uma vez só', !ev.morteSubita);
+}
+
 titulo('A guarda recupera PM pelo dado de VON');
 {
   const quemGuarda = (semente, prepara) => {

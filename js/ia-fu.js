@@ -150,7 +150,8 @@ function _iaGolpe(quem, alvo, o) {
   const semRS = !!o.ignoraResistencias || (!!o.semRSnaGuarda && alvo.guardando);
   const af = fuAfinidadeDe(alvo, tipo);
   // A Lâmina fura a guarda, e a guarda não se soma à resistência (fuDanoComGuarda).
-  const guarda = alvo.guardando && af !== 'AB' && !o.furaGuarda && !(af === 'RS' && !semRS);
+  const guarda = alvo.guardando && af !== 'AB' && !o.furaGuarda && !(af === 'RS' && !semRS)
+              && !alvo.morteSubita;   // na morte súbita a guarda não corta
   // A Execução do Lâmina e o Golpe Pesado de cada lado, como no fuAtacar.
   const exec = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
   const extra = (o.fixo | 0) + (quem.ficha.danoExtra | 0)
@@ -211,7 +212,7 @@ function _iaEfeito(q, alvo, at) {
     let bruto = (m.danoFixo | 0)
               + ((q.ficha.feitio === 'lamina' && fuEmCrise(alvo)) ? FU_EXECUCAO[fuGrauDe(q)] : 0);
     // A guarda não se soma à resistência.
-    if (alvo.guardando && af !== 'AB' && af !== 'RS') bruto = Math.floor(bruto * fuGuardaDe(alvo, !!alvo.guardaFraca).fica);
+    if (alvo.guardando && af !== 'AB' && af !== 'RS' && !alvo.morteSubita) bruto = Math.floor(bruto * fuGuardaDe(alvo, !!alvo.guardaFraca).fica);
     const dano = _iaPerda(alvo, bruto, af, false);
     return { dano, pAbate: _iaCai(alvo, dano) ? 1 : 0, pEstado: 0 };
   }
@@ -394,7 +395,8 @@ function _iaValorApoio(estado, m, alvo, quem) {
     // Cuidar da frente, como no fuCurar.
     const mult = (quem && quem.ficha.feitio === 'sustentacao'
                   && fuFrente(estado[alvo.lado]) === alvo) ? FU_CUIDAR_FRENTE : 1;
-    const volta = Math.min(Math.floor((m.cura | 0) * mult), alvo.ficha.pvMax - alvo.pv);
+    const volta = Math.min(Math.floor((m.cura | 0) * mult * (fuMorteSubita(estado) ? 0.5 : 1)),
+                           alvo.ficha.pvMax - alvo.pv);
     if (volta > 0) {
       const curado = Object.assign({}, alvo, { pv: alvo.pv + volta });
       v += volta * IA_CURA + (_iaRisco(estado, alvo) - _iaRisco(estado, alvo, curado));

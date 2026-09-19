@@ -382,7 +382,8 @@ function fuDanoComGuarda(c, bruto, tipo, opcoes) {
      volta a valer. */
   const af = fuAfinidadeDe(c, tipo);
   const rsCorta = af === 'RS' && !(opcoes && opcoes.ignoraResistencias);
-  const b = c.guardando && af !== 'AB' && !rsCorta
+  // Na morte súbita a guarda não corta nada (FU_MORTE_SUBITA).
+  const b = c.guardando && af !== 'AB' && !rsCorta && !c.morteSubita
     ? Math.floor(bruto * fuGuardaDe(c, !!c.guardaFraca).fica) : bruto;
   return fuAplicarDano(c, b, tipo, opcoes);
 }
@@ -926,7 +927,7 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
   // ── Sustentação: fere e cuida ──
   if (es.curaPorDano) {
     const causado = golpes.reduce((s, ev) => s + (ev.perda | 0), 0);
-    let resta = Math.floor(causado * es.curaPorDano);
+    let resta = Math.floor(causado * es.curaPorDano * (fuMorteSubita(estado) ? 0.5 : 1));
     const frente = fuFrente(aliados);
     for (const alvo of porFerida(aliados.filter(c => c.pv < c.ficha.pvMax))) {
       if (resta <= 0) break;
@@ -1004,7 +1005,9 @@ function fuCurar(quem, alvo, magia, eventos, estado) {
   // Cuidar da frente: a cura da Sustentação vale 50% a mais em quem está na frente.
   const naFrente = !!estado && quem.ficha.feitio === 'sustentacao'
     && fuFrente(alvo.lado === 'A' ? estado.A : estado.B) === alvo;
-  const cura = Math.floor((magia.cura | 0) * (naFrente ? FU_CUIDAR_FRENTE : 1));
+  // Na morte súbita toda cura vale a metade (FU_MORTE_SUBITA).
+  const cura = Math.floor((magia.cura | 0) * (naFrente ? FU_CUIDAR_FRENTE : 1)
+                          * (fuMorteSubita(estado) ? 0.5 : 1));
   const antes = alvo.pv;
   alvo.pv = Math.min(alvo.ficha.pvMax, alvo.pv + cura);
   eventos.push({ tipo: 'cura', quem: quem.id, alvo: alvo.id, nome: magia.id,
@@ -1080,16 +1083,40 @@ function fuVez(estado) {
    A rodada 50 ainda se joga inteira. A 51 não começa. */
 const FU_RONDAS_MAX = 50;
 
+/* ── A MORTE SÚBITA (19/09/2026) ──
+
+   Da rodada 12 em diante, a guarda deixa de cortar dano e toda cura vale
+   a metade — a das magias e a que a Sustentação tira do ataque.
+
+   Porque: as lutas que empacavam eram de equipes só de Guarda e
+   Sustentação, uma guardando e a outra curando, sem dano para derrubar
+   ninguém. No Difícil, 22 de cada 150 lutas do nível 15 passavam de 20
+   rodadas. Com isto ficaram 7, e as lutas normais não mudaram: a mediana
+   é a mesma em todos os níveis, porque quase nenhuma luta normal chega à
+   rodada 12 (medido nas cópias do jogo, aprovado pelo dono do jogo).
+
+   A marca fica no estado e em cada lutador (`morteSubita`), para quem
+   calcula o dano sem ter a batalha à mão — o fuDanoComGuarda e a IA. */
+const FU_MORTE_SUBITA = 12;
+function fuMorteSubita(estado) { return !!(estado && estado.morteSubita); }
+
 function fuNovaRonda(estado) {
   estado.jaAgiu = [];
   estado.ronda++;
+  let comecou = false;
+  if (estado.ronda >= FU_MORTE_SUBITA && !estado.morteSubita) {
+    estado.morteSubita = true;
+    estado.A.concat(estado.B).forEach(c => { c.morteSubita = true; });
+    comecou = true;
+  }
   if (estado.ronda > FU_RONDAS_MAX && !estado.acabou) {
     estado.acabou = true;
     estado.vencedor = null;
     estado.porLimite = true;
     return { tipo: 'ronda', n: estado.ronda, limite: true };
   }
-  return { tipo: 'ronda', n: estado.ronda };
+  return comecou ? { tipo: 'ronda', n: estado.ronda, morteSubita: true }
+                 : { tipo: 'ronda', n: estado.ronda };
 }
 
 function fuVerFim(estado, eventos) {
@@ -1188,6 +1215,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
     FU_GUARDA, FU_GUARDA_REPETIDA, fuGuardaDe, fuPmDaGuarda,
+    FU_MORTE_SUBITA, fuMorteSubita,
     FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece, fuLacoDisponivel,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
