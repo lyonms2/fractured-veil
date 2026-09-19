@@ -46,6 +46,9 @@ function btRenderDificuldade() {
     <div class="bt-dif-info">
       ${equipa.length ? `<div>${t('pve.dif.nivel', { ini, eq })}</div>` : ''}
       <div>${t('pve.dif.premio', { v: moedas('vitoria'), e: moedas('empate'), d: moedas('derrota') })}</div>
+      <div>${(typeof pveChanceFratura === 'function' && pveChanceFratura() > 0)
+        ? t('pve.dif.fratura', { p: Math.round(pveChanceFratura() * 100) })
+        : t('pve.dif.sem_fratura')}</div>
     </div>`;
 }
 window.btRenderDificuldade = btRenderDificuldade;

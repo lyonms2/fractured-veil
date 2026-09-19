@@ -225,6 +225,8 @@ window.registerStrings({
   'pve.premio.cadaUm':     'cada',
   'pve.dif.nivel':         'Inimigos somam nível {ini} · sua equipe soma {eq}',
   'pve.dif.premio':        'Vitória +{v} 🪙 · empate +{e} · derrota +{d}',
+  'pve.dif.fratura':       '🩹 Quem cair tem {p}% de chance de sair com uma fratura',
+  'pve.dif.sem_fratura':   '🩹 No Fácil ninguém sai com fratura',
   // -- O QUE ESTÁ ACONTECENDO AO AVATAR --
   // Cada linha diz o NOME do que age e o NUMERO que ele vale.
   // "Assombrado" sozinho não é informação: informação é "-1 em F, H, R e A".
@@ -491,6 +493,8 @@ window.registerStrings({
   'pve.premio.cadaUm':     'each',
   'pve.dif.nivel':         'Enemies total level {ini} · your team totals {eq}',
   'pve.dif.premio':        'Win +{v} 🪙 · draw +{e} · loss +{d}',
+  'pve.dif.fratura':       '🩹 Anyone who falls has a {p}% chance of a fracture',
+  'pve.dif.sem_fratura':   '🩹 No fractures on Easy',
   'pve.est.titulo':        'WHAT IS HAPPENING',
   'pve.est.cond':          'worth something different depending on the roll — see WHAT IS HAPPENING',
   'pve.est.preso':         'cannot act for {n} turn(s)',

@@ -35,6 +35,14 @@ const PVE_ENERGIA_DESISTIR = 4;   // desistir a meio sai mais barato
 // 40% e era chato de mais. Uma vez apanhada, come saúde todo o ciclo até
 // matar, se não for tratada com o antídoto.
 const PVE_FRATURA_CHANCE = 0.10;
+/* E NÃO NO FÁCIL (19/09/2026). O Fácil é onde se aprende a lutar; perder
+   um avatar para uma doença que come a saúde, por ter caído enquanto
+   aprendia, era castigar justamente quem está começando. Do Médio para
+   cima o risco continua, e o painel da batalha avisa antes de entrar. */
+function pveChanceFratura() {
+  const d = (typeof miniDifficulty === 'function') ? miniDifficulty() : { tier: 1 };
+  return d.tier === 0 ? 0 : PVE_FRATURA_CHANCE;
+}
 
 /* ── O PRÊMIO ──
    `moedas` conta em MINIJOGOS PERFEITOS da dificuldade escolhida (o
@@ -437,7 +445,7 @@ function _pveFecharContas(e) {
     const n = parseInt(String(c.id).replace('eu', ''), 10);
     if (c.vivo || !(n >= 0) || idx[n] == null) return;
     // A Tala de Osso é de quem caiu, não de quem está em campo.
-    const chance = PVE_FRATURA_CHANCE * ((typeof getItemEffectDoSlot === 'function')
+    const chance = pveChanceFratura() * ((typeof getItemEffectDoSlot === 'function')
       ? getItemEffectDoSlot(idx[n], 'fraturaMult') : 1);
     if (Math.random() >= chance) return;
     if (_pveAdoecer(idx[n], 'fratura')) fraturados.push(c.nome);
