@@ -77,6 +77,8 @@ let _tetFaiscas  = [];
 let _tetPerigo   = false;
 let _tetRankAberto = false;
 let _tetReagiuEm = 0;
+let _tetPausa    = false;  // a pausa do próprio Tetra (o botão ⏸ da lateral)
+let _tetBotaoPausa = null; // onde o botão foi desenhado: { x, y, w, h }
 
 // ── Iniciar ────────────────────────────────────────────────────────
 function startTetra() {
@@ -105,6 +107,7 @@ function startTetra() {
   _tetSuave = false;
   _tetFaiscas = [];
   _tetPerigo = false;
+  _tetPausa  = false;
   _tetAcabou = false;
   _tetRodando = true;
   _tetUltimo = performance.now();
@@ -217,6 +220,15 @@ function _tetQuedaLivre() {
   _tetPeca.y = alvo;
   if (typeof playSound === 'function') playSound('mine_click');
   _tetTravar();
+}
+
+function _tetUmPasso() {
+  if (!_tetPeca || !_tetAtivo() || _tetPausado()) return;
+  if (_tetDesce()) {
+    _tetPontos++;
+    _tetQueda = 0;   // o passo dado conta como a descida desta vez
+    _tetPlacar();
+  }
 }
 
 function _tetGuardar() {
@@ -351,6 +363,7 @@ function _tetFim() {
   const humorAntes = vitals.humor;
   _tetRodando = false;
   _tetAcabou  = true;
+  _tetPausa   = false;
   _tetMover = null;
   _tetSuave = false;
 
@@ -691,6 +704,38 @@ function _tetDesenhar() {
   ctx.fillStyle = '#f3e9c6';
   ctx.font = `700 ${Math.round(s * 0.8)}px Cinzel, serif`;
   ctx.fillText(String(_tetLinhas), cx, s * 16.1);
+
+  // ── O botão da pausa, no pé da lateral ──
+  if (_tetRodando && !_tetAcabou) {
+    const b = { x: lx, y: s * 17.3, w: lw, h: s * 2.2 };
+    _tetBotaoPausa = b;
+    ctx.fillStyle = _tetPausa ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.07)';
+    ctx.strokeStyle = 'rgba(212,175,55,0.45)';
+    ctx.beginPath();
+    ctx.roundRect(b.x, b.y, b.w, b.h, s * 0.3);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f3e9c6';
+    ctx.font = `700 ${Math.round(s * 0.62)}px Cinzel, serif`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText((_tetPausa ? '▶ ' : '❚❚ ') + t(_tetPausa ? 'mg.tet.continuar' : 'mg.tet.pausa'),
+                 cx, b.y + b.h / 2);
+    ctx.textBaseline = 'alphabetic';
+  } else {
+    _tetBotaoPausa = null;
+  }
+
+  // ── O véu da pausa, só sobre o poço ──
+  if (_tetPausa) {
+    ctx.fillStyle = 'rgba(6,4,14,0.78)';
+    ctx.fillRect(0, 0, BW, H);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f0d080';
+    ctx.font = `700 ${Math.round(s * 1.1)}px Cinzel, serif`;
+    ctx.fillText(t('mg.tet.pausado'), BW / 2, H / 2 - s * 0.4);
+    ctx.fillStyle = 'rgba(232,226,245,0.8)';
+    ctx.font = `${Math.round(s * 0.55)}px 'EB Garamond', serif`;
+    ctx.fillText(t('mg.tet.retomar'), BW / 2, H / 2 + s * 0.7);
+  }
 }
 
 function _tetFaiscarLinhas(linhas) {
@@ -726,9 +771,14 @@ function _tetSoltar(dir) {
 /* Os botões da tela (no celular). Segurar ◀ ▶ repete, como a seta do
    teclado; segurar ▼ desce rápido. */
 function tetraBotao(acao, apertou) {
+  if (apertou && _tetPausado()) return;
   if (acao === 'esq')  return apertou ? _tetSegurar(-1) : _tetSoltar(-1);
   if (acao === 'dir')  return apertou ? _tetSegurar(1)  : _tetSoltar(1);
-  if (acao === 'desce') { _tetSuave = !!apertou; return; }
+  /* A seta para baixo do celular desce UMA linha por toque. Segurá-la
+     descia direto até o chão, e no dedo isso era quase a queda livre —
+     que já tem botão próprio (⤓). No teclado a seta continua a descer
+     rápido enquanto segurada, que é o que se espera de uma tecla. */
+  if (acao === 'desce') { if (apertou) _tetUmPasso(); return; }
   if (!apertou) return;
   if (acao === 'gira')    _tetGira(1);
   if (acao === 'cai')     _tetQuedaLivre();
@@ -740,8 +790,15 @@ function tetraBotao(acao, apertou) {
    Tetra ouve primeiro e segura a tecla. Com o jogo já pausado ele não
    escuta nada, e o espaço volta a ser de quem retoma. */
 document.addEventListener('keydown', e => {
-  if (!_tetRodando || _tetAcabou || !_tetVisivel() || _tetPausado()) return;
+  if (!_tetRodando || _tetAcabou || !_tetVisivel()) return;
   const k = e.key;
+  if ((k === 'p' || k === 'P' || k === 'Escape') && !e.repeat
+      && !(typeof jogoPausado !== 'undefined' && jogoPausado)) {
+    e.preventDefault(); e.stopPropagation();
+    tetraPausar();
+    return;
+  }
+  if (_tetPausado()) return;
   if (k === ' ') e.stopPropagation();
   const usa = () => e.preventDefault();
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') { usa(); if (!e.repeat) _tetSegurar(-1); }
@@ -767,7 +824,14 @@ document.addEventListener('keyup', e => {
     if (!canvas) return;
     let ini = null;
     canvas.addEventListener('pointerdown', e => {
-      if (!_tetAtivo()) return;
+      if (!_tetRodando || _tetAcabou) return;
+      const r = canvas.getBoundingClientRect();
+      const px = e.clientX - r.left, py = e.clientY - r.top;
+      const b = _tetBotaoPausa;
+      const noBotao = b && px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
+      // Pausado pelo Tetra, qualquer toque no poço retoma.
+      if (noBotao || _tetPausa) { ini = null; tetraPausar(); return; }
+      if (!_tetAtivo() || _tetPausado()) return;
       ini = { x: e.clientX, y: e.clientY, t: performance.now(), feitoX: 0, moveu: false };
       canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
     });
@@ -793,8 +857,22 @@ document.addEventListener('keyup', e => {
 })();
 
 // ── Laço ───────────────────────────────────────────────────────────
+/* Pausado por um dos dois: o botão ⏸ do Tetra, ou a pausa do jogo
+   inteiro (js/main.js). */
 function _tetPausado() {
-  return typeof jogoPausado !== 'undefined' && jogoPausado;
+  return _tetPausa || (typeof jogoPausado !== 'undefined' && jogoPausado);
+}
+
+/* ── A PAUSA DO TETRA ──
+   Uma partida boa dura minutos, e parar no meio era fechar a janela e
+   perder tudo. O botão fica desenhado na lateral do poço, embaixo das
+   linhas — no PC e no celular é o mesmo lugar —, e o P ou o Esc fazem o
+   mesmo no teclado. Um toque no poço pausado também retoma. */
+function tetraPausar() {
+  if (!_tetRodando || _tetAcabou) return;
+  _tetPausa = !_tetPausa;
+  _tetMover = null;
+  _tetSuave = false;
 }
 
 /* Com a janela fechada ou o jogo pausado, o tempo não conta. E os

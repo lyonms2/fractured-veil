@@ -52,6 +52,7 @@ window.fusaoToggleRanking = typeof fusaoToggleRanking !== "undefined" ? fusaoTog
 window.fusaoParar     = typeof fusaoParar     !== "undefined" ? fusaoParar     : ()=>{};
 window.startTetra     = typeof startTetra     !== "undefined" ? startTetra     : ()=>{};
 window.tetraBotao     = typeof tetraBotao     !== "undefined" ? tetraBotao     : ()=>{};
+window.tetraPausar    = typeof tetraPausar    !== "undefined" ? tetraPausar    : ()=>{};
 window.tetraToggleRanking = typeof tetraToggleRanking !== "undefined" ? tetraToggleRanking : ()=>{};
 
 // ── GAME SELECTOR TABS ──
