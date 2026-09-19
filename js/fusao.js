@@ -854,7 +854,7 @@ function _fusFim() {
   if (typeof playSound === 'function') playSound(frac >= 0.6 ? 'win' : 'lose');
   _fusReage(frac >= 0.6 ? 'festa' : 'mau', true);
 
-  applyGameCost();
+  applyGameCost(MG_LONGO.energia);
 
   const result = document.getElementById('fusaoResult');
   const reward = document.getElementById('fusaoReward');
@@ -863,7 +863,8 @@ function _fusFim() {
   if (_fusFusoes === 0) {
     if (result) { result.textContent = t('mg.fus.vazio'); result.className = 'mini-result-box lose'; }
   } else {
-    const r = miniReward(frac * 1.5, frac * 1.5, Math.min(4, 1 + Math.floor(_fusMaior / 2)));
+    const L = MG_LONGO.premio;
+    const r = miniReward(frac * 1.5 * L, frac * L, Math.min(4, 1 + Math.floor(_fusMaior / 2)), false, L);
     if (result) {
       result.textContent = t('mg.fus.fim', {
         p: _fusPontos, tipo: _fusNome(_fusMaior),
@@ -878,10 +879,10 @@ function _fusFim() {
        XP e moedas, portanto quem jogava não via o humor subir.
 
        Agora é pela brincadeira e não pela meta: +4 por ter jogado e mais
-       um ponto a cada 500, até +8. O mesmo em qualquer dificuldade — a
-       dificuldade já paga mais em XP e moedas. E vai escrito no prêmio,
-       já com o +3 que toda partida dá (applyGameCost). */
-    const humorBonus = 4 + Math.min(8, Math.floor(_fusPontos / 500));
+       um ponto a cada 170, até +23 — com o +3 de applyGameCost, até +30
+       numa partida cheia (MG_LONGO). O mesmo em qualquer dificuldade — a
+       dificuldade já paga mais em XP e moedas. E vai escrito no prêmio. */
+    const humorBonus = 4 + Math.min(23, Math.floor(_fusPontos / 170));
     vitals.humor = Math.min(100, vitals.humor + humorBonus);
     const humorGanho = Math.max(0, Math.round(vitals.humor - humorInicial));
     // Com o humor já em 100 não há o que subir, e "+0" parecia defeito.

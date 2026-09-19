@@ -371,7 +371,7 @@ function _tetFim() {
   if (typeof playSound === 'function') playSound(frac >= 0.6 ? 'win' : 'lose');
   _tetReage(frac >= 0.6 ? 'festa' : 'mau', true);
 
-  applyGameCost();
+  applyGameCost(MG_LONGO.energia);
 
   const result = document.getElementById('tetraResult');
   const reward = document.getElementById('tetraReward');
@@ -379,9 +379,12 @@ function _tetFim() {
     if (result) { result.textContent = t('mg.tet.vazio'); result.className = 'mini-result-box lose'; }
     if (reward) reward.textContent = mgComHumor(humorAntes, '');
   } else {
-    const r = miniReward(frac * 1.5, frac * 1.5, Math.min(4, 1 + Math.floor(_tetLinhas / 10)));
+    // Um jogo longo (MG_LONGO, em js/modal.js): paga três vezes a base.
+    const L = MG_LONGO.premio;
+    const r = miniReward(frac * 1.5 * L, frac * L, Math.min(4, 1 + Math.floor(_tetLinhas / 10)), false, L);
     // O humor é pela brincadeira, não pela meta: igual em toda dificuldade.
-    vitals.humor = Math.min(100, vitals.humor + 4 + Math.min(8, Math.floor(_tetLinhas / 4)));
+    // +1 por linha até +23; com o +3 da partida, até +30.
+    vitals.humor = Math.min(100, vitals.humor + 4 + Math.min(23, _tetLinhas));
     if (result) {
       result.textContent = t('mg.tet.fim', { p: _tetPontos, l: _tetLinhas });
       result.className = 'mini-result-box ' + (frac >= 0.6 ? 'win' : '');
@@ -803,7 +806,9 @@ document.addEventListener('keydown', e => {
   const usa = () => e.preventDefault();
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') { usa(); if (!e.repeat) _tetSegurar(-1); }
   else if (k === 'ArrowRight' || k === 'd' || k === 'D') { usa(); if (!e.repeat) _tetSegurar(1); }
-  else if (k === 'ArrowDown' || k === 's' || k === 'S') { usa(); _tetSuave = true; }
+  // Uma linha por toque, como o ▼ do celular (_tetUmPasso). Segurar a
+  // tecla não repete: descer direto é o espaço.
+  else if (k === 'ArrowDown' || k === 's' || k === 'S') { usa(); if (!e.repeat) _tetUmPasso(); }
   else if (k === 'ArrowUp' || k === 'w' || k === 'W' || k === 'x' || k === 'X') { usa(); if (!e.repeat) _tetGira(1); }
   else if (k === 'z' || k === 'Z' || k === 'q' || k === 'Q') { usa(); if (!e.repeat) _tetGira(-1); }
   else if (k === ' ') { usa(); if (!e.repeat) _tetQuedaLivre(); }
@@ -813,7 +818,6 @@ document.addEventListener('keyup', e => {
   const k = e.key;
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') _tetSoltar(-1);
   else if (k === 'ArrowRight' || k === 'd' || k === 'D') _tetSoltar(1);
-  else if (k === 'ArrowDown' || k === 's' || k === 'S') _tetSuave = false;
 });
 
 /* Gestos no poço: arrastar para o lado move uma coluna por bloco

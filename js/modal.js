@@ -242,20 +242,21 @@ function renderGameSelector() {
      As moedas vão sempre até o perfeito; o piso é o que muda. A Memória
      termina sempre o tabuleiro e nunca paga menos que MEM_MOEDA_MIN; o
      Simon e o Snake podem acabar sem nada. */
-  const rotulo = (id, xpMin, xpMax, cMin) => {
+  const rotulo = (id, xpMin, xpMax, cMin, cTeto = 1) => {
     const el = document.getElementById(id);
     if(!el) return;
     el.textContent = t('modal.reward_range', {
       xpMin: r(d.xp * xpMin * rb.xp),      xpMax: r(d.xp * xpMax * rb.xp),
-      cMin:  r(d.coins * cMin * rb.moedas), cMax:  r(d.coins * rb.moedas),
+      cMin:  r(d.coins * cMin * rb.moedas), cMax:  r(d.coins * cTeto * rb.moedas),
     });
   };
   rotulo('rewardMemoria', 0.5, 1.5, (typeof MEM_MOEDA_MIN === 'number') ? MEM_MOEDA_MIN : 0);
   rotulo('rewardSimon',   0,   1.3, 0);
   rotulo('rewardSnake',   0,   (typeof SNAKE_XP_MULT !== 'undefined') ? SNAKE_XP_MULT[d.tier] : 2, 0);
-  // A Fusão e o Tetra pagam até 1,5 vez a base, na fração da meta.
-  rotulo('rewardFusao',   0,   1.5, 0);
-  rotulo('rewardTetra',   0,   1.5, 0);
+  // A Fusão e o Tetra são os jogos longos (MG_LONGO): até 4,5 vezes o XP
+  // e 3 vezes as moedas da base, na fração da meta.
+  rotulo('rewardFusao',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio);
+  rotulo('rewardTetra',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio);
 }
 
 function openGameSelector() {
@@ -397,13 +398,17 @@ function setDifficulty(tier) {
   if (typeof btRenderDificuldade === 'function') btRenderDificuldade();
 }
 
-function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
+/* `teto`: até quantas partidas perfeitas as moedas podem valer. É 1 para
+   todo jogo curto — a trava que protege a economia —, e 3 para os jogos
+   longos (a Fusão e o Tetra, MG_LONGO), que duram de cinco a dez vezes
+   mais e custam o dobro de energia. */
+function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false, teto = 1) {
   const d  = miniDifficulty();
   const rb = rarityBonus();
   const vb = getVinculoBonus();
   const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
   // A fração do jogo perfeito, nunca acima dele — ver DIFF_TIERS.
-  const coinFrac = Math.max(0, Math.min(1, coinMult));
+  const coinFrac = Math.max(0, Math.min(teto, coinMult));
   const coinGain = Math.round(d.coins * coinFrac * rb.moedas);
   xp      += xpGain;
   earnCoins(coinGain);
@@ -415,8 +420,17 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false) {
   return { xpGain, coinGain };
 }
 
-function applyGameCost() {
-  vitals.energia    = Math.max(0,   vitals.energia - 5);
+/* ── OS JOGOS LONGOS ──
+   A Fusão e o Tetra duram de cinco a dez minutos, e pagavam o mesmo que
+   um minuto de Memória. Agora pagam TRÊS vezes o XP e as moedas de uma
+   partida perfeita com a meta cheia, e até +30 de humor — mas custam 10
+   de energia, o dobro. Por energia rendem 1,5 vez mais: premia o esforço
+   sem tornar os jogos curtos inúteis, e sem que quem tem tempo multiplique
+   o dinheiro do jogo por três. Aprovado pelo dono do jogo em 19/09/2026. */
+const MG_LONGO = { premio: 3, energia: 10 };
+
+function applyGameCost(energia = 5) {
+  vitals.energia    = Math.max(0,   vitals.energia - energia);
   vitals.fome       = Math.max(0,   vitals.fome    - 3);
   poopPressure      = Math.min(100, poopPressure   + 3);
   vitals.humor      = Math.min(100, vitals.humor   + 3);
