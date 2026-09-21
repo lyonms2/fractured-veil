@@ -378,8 +378,14 @@ function _afLutador(c) {
      Quem caiu não carrega marca nenhuma: "Atordoado", "Concha" e a crise
      em cima de um corpo deitado não dizem nada, e ficavam penduradas no
      ar sobre o companheiro de trás. */
+  /* E as que já têm DESENHO próprio saem do céu (21/09/2026): a guarda, a
+     Barreira, a Concha, o Despertar, o Proteger e os seis estados viraram
+     efeitos em volta do corpo (_afAuraDoModelo), e a etiqueta repetia o
+     desenho. A frase inteira continua na ficha, ao tocar no corpo. */
+  const temDesenho = x => /^est:/.test(x.id)
+    || ['guarda', 'barreira', 'concha', 'despertar', 'protegendo'].indexOf(x.id) !== -1;
   const marcas = (_afVivoVisivel(c) && typeof fuResumoAgora === 'function')
-    ? fuResumoAgora(c).filter(x => x.marca).map(x =>
+    ? fuResumoAgora(c).filter(x => x.marca && !temDesenho(x)).map(x =>
         `<span class="cb-marca ${x.classe}" title="${esc(x.nome + ' — ' + x.texto)}">${
           esc(x.marca)}</span>`)
     : [];
