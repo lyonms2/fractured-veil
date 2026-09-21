@@ -140,7 +140,11 @@ function _afTravarZoom(liga) {
 function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afTravarZoom(true);
   _afE = fuIniciar(equipaA, equipaB, semente);
-  _afQuem = null; _afPasso = null; _afMenu = false; _afOcupado = false;
+  /* OCUPADO até a primeira vez (o _afAndar agendado aqui embaixo). Com
+     `false`, um jogador rápido agia antes dele, e o inimigo começava a
+     jogar no meio da jogada do jogador — visto pelo subagente de
+     verificação em 21/09/2026. */
+  _afQuem = null; _afPasso = null; _afMenu = false; _afOcupado = true;
   _afSegredo = null; _afMorreAinda = null;
   // O histórico é desta batalha: sem isto, a anterior aparecia junto.
   _afHistorico = [];
@@ -249,6 +253,11 @@ function _afShell() {
     <div class="cb-dica" id="cbDica" aria-live="polite"></div>
 
     <div class="cb-campo" id="cbCampo"></div>
+
+    <!-- Os efeitos que VIAJAM de um lutador a outro (os projéteis, a
+         varredura da Devastação, o fio da Salus) — ver _afDisparar. Não
+         cabem na caixa de efeitos de um só corpo. -->
+    <div class="cb-fx" id="cbFx" aria-hidden="true"></div>
 
     <div class="cb-menu" id="cbMenu"><div class="cb-acoes" id="cbAcoes"></div></div>
 
@@ -997,6 +1006,10 @@ function _afAndar() {
                 : ev.n === max ? 'af.lance.ultima'
                 : ev.morteSubita ? 'af.lance.morte_subita' : 'af.lance.ronda';
     _afLance('<i>' + t(chave, { n: ev.n, max }) + '</i>');
+    /* Ocupado até a vez da rodada nova ser decidida, como na abertura
+       (afAbrir). Sem isto havia meio segundo em que o jogador agia, e o
+       inimigo, a quem a vez tocava, jogava por cima da jogada dele. */
+    _afOcupado = true;
     _afDesenhar();
     setTimeout(_afAndar, AF_PAUSA / 2);
     return;
@@ -1706,6 +1719,14 @@ function _afMostrar(eventos) {
   const batidas = [];
   let pendentes = [];
   let golpeAnterior = null;
+  /* Quem conjura: o círculo rúnico acende uma vez por jogada, no
+     primeiro golpe de magia (ou na Devastação). Marca só para a tela. */
+  const primeiro = eventos.find(ev => ev.tipo === 'magia' || ev.tipo === 'devastacao');
+  if (primeiro) primeiro._conjura = true;
+  // A Devastação precisa saber, de uma vez, por onde a onda vai passar.
+  if (primeiro && primeiro.tipo === 'devastacao')
+    primeiro._alvosDev = eventos.filter(ev => ev.tipo === 'devastacao').map(ev => ev.alvo);
+  let nProj = 0;
   for (const ev of eventos) {
     const golpe = ev.tipo === 'ataque' || ev.tipo === 'magia';
     const seguido = golpe && !!golpeAnterior
@@ -1774,6 +1795,10 @@ function _afMostrar(eventos) {
     const b = batidas[i++];
     if (b.html) _afLance(b.html, i > 1);
     const rola = temDados && b.html && b.html.indexOf('cb-dado') !== -1;
+    // O que viaja sai agora e chega quando o golpe cair.
+    _afPrepararFx(b.evs, rola ? AF_ROLA_MS + AF_ROLA_DEFASAGEM : 0, nProj,
+                  passo * batidas.length, passo);
+    if (b.evs.some(ev => ev.tipo === 'magia')) nProj++;
     const encenar = () => {
       /* O campo se refaz ANTES da encenação quando alguém cai nesta
          batida: refazê-lo depois apagaria o número e o clarão do golpe,
@@ -1832,6 +1857,7 @@ const AF_TIPO_EFEITO = {
   raio:   { gesto: 'espirais', cor: '#ffe14c' },
   ar:     { gesto: 'espirais', cor: '#cfe9f0' },
   treva:  { gesto: 'sombras',  cor: '#c4b5fd' },
+  cura:   { gesto: 'chamas',   cor: '#86efac' },   // sobe, como vida que volta
 };
 
 function _afEfeitoDe(tipo) { return AF_TIPO_EFEITO[tipo] || AF_TIPO_EFEITO.fisico; }
@@ -1888,11 +1914,21 @@ function _afNumeroPM(el, n, ganho) {
   setTimeout(() => d.remove(), 1000);
 }
 
-function _afImpacto(el, tipo) {
+function _afImpacto(el, tipo, forca) {
   el = _afCaixa(el);
   if (!el) return;
   const cfg = _afEfeitoDe(tipo);
-  const modo = AF_GESTO[cfg.gesto] || AF_GESTO.neutro;
+  const base = AF_GESTO[cfg.gesto] || AF_GESTO.neutro;
+  /* A FORÇA (_afForcaDe): a magia do Lendário explode maior que a do
+     Comum — mais partículas, maiores e que vão mais longe. O golpe comum
+     fica em 1. */
+  const f = forca || 1;
+  const modo = Object.assign({}, base, {
+    n: Math.round(base.n * f),
+    tam: [base.tam[0] * f, base.tam[1] * f],
+    dx: base.dx * f,
+    dy: [base.dy[0] * f, base.dy[1] * f],
+  });
   const cor = cfg.cor;
 
   /* O clarão dá ao corpo inteiro a cor de quem bateu. É o que se vê
@@ -1975,6 +2011,241 @@ function _afEstremecer() {
   setTimeout(() => p.classList.remove('treme', 'clarao'), 620);
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   OS EFEITOS DAS MAGIAS (21/09/2026)
+
+   Até aqui todo ataque era o mesmo gesto — quem bate avança, o alvo
+   pisca na cor do elemento — e o que mudava de um soco para uma magia
+   Lendária era só a cor. Agora cada magia tem a sua cara:
+
+     conjurar     um círculo rúnico acende aos pés de quem lança, na cor
+                  do elemento, enquanto os dados rolam (não no golpe comum)
+     orbe         o Sopro: uma esfera que viaja em arco até o alvo
+     leque        a Forte que acerta vários: um projétil por alvo, cada um
+                  com o seu arco, no ritmo das linhas ↳ do registro
+     lança        a Muito Forte: um risco fino e rápido, com rastro
+     varredura    a Devastação: o palco escurece e uma onda cruza o lado
+                  inimigo inteiro
+
+   E o jeito do feitio no impacto: o Scutum ergue um escudo dourado, a
+   Acies corta na diagonal, a Salus estende um fio de vida até o aliado
+   que cura.
+
+   ── O TEMPO ──
+   Nada disto atrasa o turno. O projétil sai quando os dados começam a
+   rolar e CHEGA no instante em que o golpe cai (AF_ROLA_MS +
+   AF_ROLA_DEFASAGEM) — que é quando o número e o clarão já apareciam.
+   Errou: passa direto pelo alvo e some.
+
+   Quem pediu menos movimento ao sistema não vê nada disto; o golpe
+   continua a ler-se pelos dados, pelo número e pela barra. */
+const AF_FORCA = { Comum: 1, Raro: 1.3, 'Lendário': 1.6 };
+
+// A força de um evento: a da raridade de quem lança, só nas magias.
+function _afForcaDe(ev) {
+  if (ev.tipo !== 'magia' && ev.tipo !== 'devastacao') return 1;
+  const q = _afPorId(ev.quem);
+  return (q && AF_FORCA[q.ficha.raridade]) || 1;
+}
+
+// A forma do que viaja, pela magia.
+function _afFormaDe(ev) {
+  if (ev.tipo === 'devastacao') return 'varredura';
+  if (ev.tipo !== 'magia') return null;             // o golpe comum: o avanço de sempre
+  if (ev.nome === 'concentrado' || ev.nome === 'sopro_maldito') return 'lanca';
+  if (ev.nome === 'barragem' || ev.nome === 'barragem_certa') return 'leque';
+  return 'orbe';
+}
+
+/* Um ponto de um lutador, em pixels da camada dos efeitos: o meio do
+   corpo por omissão, ou `alt` da altura dele (0 é a cabeça, 1 os pés). */
+function _afPonto(id, alt) {
+  const fx = document.getElementById('cbFx');
+  const caixa = _afCaixa(_afEl(id));
+  if (!fx || !caixa || !caixa.getBoundingClientRect) return null;
+  const r = caixa.getBoundingClientRect(), p = fx.getBoundingClientRect();
+  if (!r.width) return null;
+  return { x: r.left + r.width / 2 - p.left, y: r.top + r.height * (alt == null ? .5 : alt) - p.top, h: r.height };
+}
+
+// O círculo rúnico aos pés de quem lança. Pendura-se no posto, que é o chão.
+function _afConjurar(ev) {
+  const el = _afEl(ev.quem);
+  if (!el) return;
+  const q = _afPorId(ev.quem);
+  const cor = _afEfeitoDe(ev.tipo_dano || (q && q.ficha.tipo)).cor;
+  const r = document.createElement('div');
+  r.className = 'cb-runa';
+  r.style.setProperty('--cor', cor);
+  r.style.setProperty('--forca', _afForcaDe(ev));
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 1100);
+}
+
+/* O que viaja de quem lança até o alvo, a chegar em `chegada` ms. `k` é
+   a ordem do projétil na jogada, para os do leque saírem em arcos
+   diferentes em vez de uns por cima dos outros. */
+function _afDisparar(ev, chegada, k) {
+  const forma = _afFormaDe(ev);
+  const fx = document.getElementById('cbFx');
+  if (!forma || forma === 'varredura' || !fx || !chegada) return;
+  const a = _afPonto(ev.quem, .45), b0 = _afPonto(ev.alvo, .5);
+  if (!a || !b0 || typeof fx.animate !== 'function') return;
+  const q = _afPorId(ev.quem);
+  const cor = _afEfeitoDe(ev.tipo_dano || (q && q.ficha.tipo)).cor;
+  const f = _afForcaDe(ev);
+  // Errou: passa direto, um quarto do caminho além do alvo, e some.
+  const b = ev.acertou ? b0
+    : { x: b0.x + (b0.x - a.x) * .28, y: b0.y - b0.h * .25 };
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const ang = Math.atan2(dy, dx);
+  const lanca = forma === 'lanca';
+  const dur = Math.max(160, Math.min(lanca ? 230 : 380, chegada - 40));
+  const atraso = Math.max(0, chegada - dur);
+
+  const p = document.createElement('div');
+  p.className = 'cb-proj cb-proj-' + forma;
+  p.style.setProperty('--cor', cor);
+  p.style.setProperty('--forca', f);
+  fx.appendChild(p);
+
+  /* ── O ARCO ──
+     O orbe sobe e desce; os do leque abrem para lados alternados, cada um
+     um pouco diferente. A lança vai reta.
+
+     O desvio é em PIXELS e tem teto, e o ponto de controle fica preso
+     dentro do palco. Era proporcional ao comprimento do voo, e num voo
+     longo o terceiro projétil do leque subia centenas de pixels acima
+     do palco e sumia (medido pelo subagente de verificação: y = −504).
+
+     E é uma CURVA: amostra-se a Bézier quadrática em dez quadros. Com três
+     quadros (saída, meio, chegada) o "arco" era um V com bico no meio. */
+  const W = fx.clientWidth || 800, H = fx.clientHeight || 600;
+  const sinal = (k % 2) ? 1 : -1;
+  const lado = forma === 'leque' ? sinal * Math.min(H * (0.10 + 0.04 * (k % 3)), 90) : 0;
+  const sobe = forma === 'orbe' ? Math.min(H * 0.16, 110) : forma === 'leque' ? Math.min(H * 0.06, 40) : 0;
+  let cx = a.x + dx / 2 - Math.sin(ang) * lado;
+  let cy = a.y + dy / 2 + Math.cos(ang) * lado - sobe;
+  cx = Math.max(W * 0.04, Math.min(W * 0.96, cx));
+  cy = Math.max(H * 0.14, Math.min(H * 0.85, cy));
+  const rot = lanca ? ` rotate(${ang}rad)` : '';
+  const quadros = [{ transform: `translate(${a.x}px,${a.y}px)${rot} scale(.4)`, opacity: 0, offset: 0 }];
+  const N = lanca ? 3 : 10;
+  for (let i = 1; i <= N; i++) {
+    const tt = i / N, u = 1 - tt;
+    const x = lanca ? a.x + dx * tt : u * u * a.x + 2 * u * tt * cx + tt * tt * b.x;
+    const y = lanca ? a.y + dy * tt : u * u * a.y + 2 * u * tt * cy + tt * tt * b.y;
+    const fim = i === N;
+    quadros.push({
+      transform: `translate(${x}px,${y}px)${rot} scale(${fim ? (ev.acertou ? 1.15 : .7) : 1})`,
+      opacity: fim ? (ev.acertou ? 1 : 0) : 1,
+      offset: i === 1 ? Math.max(tt, .08) : tt,
+    });
+  }
+  const anim = p.animate(quadros, { duration: dur, delay: atraso, easing: lanca ? 'cubic-bezier(.6,0,1,1)' : 'ease-in-out', fill: 'both' });
+  const fim = () => p.remove();
+  anim.onfinish = fim;
+  setTimeout(fim, atraso + dur + 200);   // a rede, se a aba parar de pintar
+}
+
+/* A Devastação: o palco escurece e uma onda cruza o lado inimigo inteiro.
+   `dura` é o tempo da jogada e `passo` o de uma batida: os golpes caem um
+   por batida, e a faixa PASSA POR CIMA de cada alvo no instante em que ele
+   é atingido — o i-ésimo alvo em i × passo. Andava num ritmo fixo, e
+   chegava ao primeiro depois do golpe e ao último depois de ter saído do
+   palco (medido pelo subagente de verificação). */
+function _afVarrer(ev, dura, passo) {
+  dura = Math.max(800, dura || 0);
+  const fx = document.getElementById('cbFx');
+  const palco = document.getElementById('cbPalco');
+  const q = _afPorId(ev.quem);
+  if (!fx || !q) return;
+  const cor = _afEfeitoDe(ev.tipo_dano || q.ficha.tipo).cor;
+  if (palco) {
+    palco.style.setProperty('--devasta', dura + 'ms');
+    palco.classList.remove('devasta'); void palco.offsetWidth; palco.classList.add('devasta');
+    setTimeout(() => palco.classList.remove('devasta'), dura + 100);
+  }
+  const v = document.createElement('div');
+  v.className = 'cb-varre';
+  v.style.setProperty('--cor', cor);
+  fx.appendChild(v);
+  setTimeout(() => v.remove(), dura + 200);
+  if (typeof v.animate !== 'function') return;
+
+  // As paradas: o x de cada alvo, no tempo do golpe dele.
+  const w = v.offsetWidth || 96;
+  const vira = q.lado === 'A' ? '' : ' scaleX(-1)';
+  const xs = (ev._alvosDev || []).map(id => _afPonto(id)).filter(Boolean).map(p => p.x);
+  if (!xs.length) return;
+  const ida = Math.max(1, dura);
+  const passoN = Math.max(1, passo || dura / xs.length);
+  const quadros = [];
+  const recua = (q.lado === 'A' ? -1 : 1) * w * 1.5;
+  /* Nasce já em cima do primeiro alvo, que é atingido no instante zero:
+     entrar de trás dele fazia o primeiro número aparecer 60 ms antes da
+     faixa. Os outros, no instante do golpe de cada um. */
+  quadros.push({ transform: `translateX(${xs[0] - w / 2}px)${vira}`, opacity: .95, offset: 0 });
+  xs.forEach((x, i) => {
+    if (!i) return;
+    const off = Math.min(.96, (i * passoN) / ida);
+    if (off <= quadros[quadros.length - 1].offset) return;
+    quadros.push({ transform: `translateX(${x - w / 2}px)${vira}`, opacity: .95, offset: off });
+  });
+  const ult = xs[xs.length - 1];
+  quadros.push({ transform: `translateX(${ult - w / 2 - recua}px)${vira}`, opacity: 0, offset: 1 });
+  v.animate(quadros, { duration: ida, easing: 'linear', fill: 'both' });
+}
+
+// A Acies: um corte na diagonal, por cima do corpo.
+function _afCorte(el, cor) {
+  el = _afCaixa(el);
+  if (!el) return;
+  const c = document.createElement('div');
+  c.className = 'cb-corte';
+  c.style.setProperty('--cor', cor);
+  el.appendChild(c);
+  setTimeout(() => c.remove(), 600);
+}
+
+// O Scutum: um escudo dourado que se ergue diante de quem fica em guarda.
+function _afEscudoSurge(el) {
+  el = _afCaixa(el);
+  if (!el) return;
+  const e = document.createElement('div');
+  e.className = 'cb-escudo-surge';
+  el.appendChild(e);
+  setTimeout(() => e.remove(), 900);
+}
+
+// A Salus: um fio de vida de quem lançou até o aliado que ela cura.
+function _afFio(deId, paraId, cor) {
+  if (deId === paraId) return;   // curar a si mesma não tem de onde a onde
+  const fx = document.getElementById('cbFx');
+  const a = _afPonto(deId, .45), b = _afPonto(paraId, .45);
+  if (!fx || !a || !b) return;
+  const f = document.createElement('div');
+  f.className = 'cb-fio';
+  f.style.setProperty('--cor', cor);
+  f.style.left = a.x + 'px'; f.style.top = a.y + 'px';
+  f.style.width = Math.hypot(b.x - a.x, b.y - a.y) + 'px';
+  f.style.transform = `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)`;
+  fx.appendChild(f);
+  setTimeout(() => f.remove(), 800);
+}
+
+/* O começo de uma batida: o círculo de quem conjura e o que viaja.
+   `chegada` é quando o golpe cai (0 sem dados: a Devastação, que não
+   rola, varre na hora). */
+function _afPrepararFx(evs, chegada, k, duraJogada, passoJogada) {
+  if (_afMovimentoReduzido()) return;
+  for (const ev of evs) {
+    if (ev._conjura) _afConjurar(ev);
+    if (ev._conjura && ev.tipo === 'devastacao') _afVarrer(ev, duraJogada, passoJogada);
+    if (ev.tipo === 'magia') _afDisparar(ev, chegada, k);
+  }
+}
+
 /* ── O QUE CADA EVENTO FAZ VER ──
 
    Um por um, pela ordem em que o motor os devolveu. O desenho segue o
@@ -2016,11 +2287,20 @@ function _afEncenarCorpo(ev) {
 
     if (ev.tipo === 'cura') {
       if (ev.curou) _afNumero(noAlvo, ev.curou, false, 'cura');
+      // A Salus: o fio de vida de quem lançou até quem ela cura.
+      if (ev.estilo && ev.curou && !_afMovimentoReduzido()) {
+        _afFio(ev.quem, ev.alvo, _afEfeitoDe('cura').cor);
+        _afImpacto(noAlvo, 'cura', .6);
+      }
       return;
     }
 
     // O jeito do feitio no ataque forte (ver fuEstiloDoForte).
-    if (ev.tipo === 'estiloGuarda') { _afGesto(noAlvo, 'defende', 500); return; }
+    if (ev.tipo === 'estiloGuarda') {
+      _afGesto(noAlvo, 'defende', 500);
+      if (!_afMovimentoReduzido()) _afEscudoSurge(noAlvo);   // o Scutum
+      return;
+    }
     if (ev.tipo === 'estiloLimpa')  { _afImpacto(noAlvo, 'luz'); return; }
 
     // O Guarda que protege, a Muralha e o PM roubado pela Sustentação.
@@ -2066,7 +2346,13 @@ function _afEncenarCorpo(ev) {
         _afNumero(noAlvo, ev.perda, !!ev.critico);
         _afPoeira(noAlvo);
       }
-      _afImpacto(noAlvo, tipo);
+      _afImpacto(noAlvo, tipo, _afForcaDe(ev));
+      // A Acies: o Lâmina corta na diagonal quando a Forte acerta.
+      const q = _afPorId(ev.quem);
+      // Só quando feriu: num alvo que absorve, cortar não diz a verdade.
+      if (ev.tipo === 'magia' && ev.perda > 0 && q && q.ficha.feitio === 'lamina'
+          && _afFormaDe(ev) !== 'lanca' && !_afMovimentoReduzido())
+        _afCorte(noAlvo, _afEfeitoDe(tipo).cor);
       if (ev.pmAlvo) _afNumero(noAlvo, ev.pmAlvo, false, 'roubo');
       if (ev.critico) { _afOnda(noAlvo); _afEstremecer(); }
     }
