@@ -1870,6 +1870,9 @@ b.laco { color: #f5a3c7; }
 .cb-lance-resto, .cb-dado-mod { transition: opacity .28s ease-out; }
 .cb-lance.rolando .cb-lance-resto,
 .cb-lance.rolando .cb-dado-mod { opacity: 0; }
+/* O resultado e o dano esperam o golpe CAIR, e não só os dados pousarem:
+   entre um e outro agora há a conjuração e o voo (ver _afMostrar). */
+.cb-lance.espera .cb-lance-resto { opacity: 0; }
 
 /* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
 .cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
@@ -2981,4 +2984,195 @@ b.laco { color: #f5a3c7; }
   .cb-est-atordoado b:nth-child(3) { transform: translateX(1rem); }
   .cb-est-envenenado b { opacity: .8; top: 45%; }
   .cb-est-lento b:nth-child(2) { display: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   A COREOGRAFIA (22/09/2026) — ver _afMostrar, em js/arena-fu.js
+   Os dados no palco, a energia que se junta, o corpo que conjura e toma
+   impulso, a luz do apoio, e os desenhos da crise e da Misericórdia.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── OS DADOS NO PALCO ──
+   `.cb-d3` anda no chão (x) e leva a sombra; `.cb-d3-dado` é o que sobe,
+   quica e gira em 3D. As posições vêm do _afDadosPalco. */
+.cb-dados3d { position: absolute; inset: 0; pointer-events: none; z-index: 2; transition: opacity .38s ease; }
+.cb-dados3d.some { opacity: 0; }
+.cb-d3 {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  perspective: calc(var(--tam) * 7);
+}
+.cb-d3-sombra {
+  position: absolute; left: calc(var(--tam) * -.42); top: calc(var(--tam) * .34);
+  width: calc(var(--tam) * .84); height: calc(var(--tam) * .22);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0,0,0,.75), transparent);
+}
+.cb-d3-dado {
+  position: absolute; left: calc(var(--tam) * -.5); top: calc(var(--tam) * -.5);
+  width: var(--tam); height: var(--tam);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 0.25rem rgba(150,120,255,.45));
+  transition: filter .35s, opacity .35s;
+}
+.cb-d3-dado svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.cb-d3-corpo > * { stroke: #e8c46e; stroke-width: 3.2; stroke-linejoin: round; }
+.cb-d3-facetas > * { fill: none; stroke: rgba(232,196,110,.38); stroke-width: 2; stroke-linejoin: round; }
+.cb-d3-facetas > polygon, .cb-d3-facetas > rect { fill: rgba(255,255,255,.05); }
+.cb-d3-n {
+  fill: #f6e7c1; font: 800 36px/1 system-ui, sans-serif;
+  text-anchor: middle; dominant-baseline: central;
+  paint-order: stroke; stroke: rgba(10,6,24,.8); stroke-width: 4;
+}
+/* O pouso: um brilho curto, do dado batendo na pedra. */
+.cb-d3.pousou .cb-d3-dado { animation: cb-d3-pousa .3s ease-out; }
+@keyframes cb-d3-pousa {
+  0%   { filter: drop-shadow(0 0 0.6rem rgba(255,255,255,.8)); }
+  100% { filter: drop-shadow(0 0 0.25rem rgba(150,120,255,.45)); }
+}
+/* O resultado: o maior acende em ouro, o outro apaga. */
+.cb-dados3d.revelado .cb-d3:not([data-alto]) .cb-d3-dado { opacity: .5; filter: saturate(.4); }
+.cb-dados3d.revelado .cb-d3[data-alto] .cb-d3-dado {
+  filter: drop-shadow(0 0 0.55rem rgba(240,208,128,.95));
+  animation: cb-d3-acende .6s ease-out;
+}
+.cb-dados3d.revelado .cb-d3[data-alto] .cb-d3-corpo > * { stroke: #ffe39a; }
+.cb-dados3d.revelado .cb-d3[data-critico] .cb-d3-dado {
+  filter: drop-shadow(0 0 0.7rem rgba(255,154,76,1));
+  animation: cb-d3-critico .8s ease-out;
+}
+.cb-dados3d.revelado .cb-d3[data-critico] .cb-d3-corpo > * { stroke: #ffb070; }
+.cb-dados3d.revelado .cb-d3[data-pifao] .cb-d3-dado {
+  filter: drop-shadow(0 0 0.55rem rgba(224,85,85,1));
+  animation: cb-d3-pifao .6s ease-out;
+}
+.cb-dados3d.revelado .cb-d3[data-pifao] .cb-d3-corpo > * { stroke: #ff8a80; }
+@keyframes cb-d3-acende { 0% { transform: scale(1); } 35% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes cb-d3-critico {
+  0% { transform: scale(1); } 20% { transform: scale(1.35) rotate(-8deg); }
+  40% { transform: scale(1.15) rotate(6deg); } 60% { transform: scale(1.22) rotate(-3deg); } 100% { transform: scale(1); }
+}
+@keyframes cb-d3-pifao {
+  0%,100% { transform: translateX(0); } 20% { transform: translateX(-0.2rem); }
+  40% { transform: translateX(0.2rem); } 60% { transform: translateX(-0.12rem); }
+}
+
+/* ── A ENERGIA QUE SE JUNTA ── (a fase de conjurar) */
+.cb-carga { position: absolute; width: 0; height: 0; pointer-events: none; }
+.cb-carga > i {
+  position: absolute; left: 0; top: 0;
+  width: calc(1rem * var(--forca, 1)); height: calc(1rem * var(--forca, 1));
+  margin: calc(-0.5rem * var(--forca, 1)) 0 0 calc(-0.5rem * var(--forca, 1));
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fff 0 20%, var(--cor) 50%, transparent 72%);
+  box-shadow: 0 0 calc(0.8rem * var(--forca, 1)) var(--cor), 0 0 calc(1.6rem * var(--forca, 1)) var(--cor);
+  animation: cb-carga-cresce var(--dura, .78s) cubic-bezier(.5,0,.8,.6) forwards;
+}
+@keyframes cb-carga-cresce {
+  0%   { transform: scale(0);   opacity: 0; }
+  20%  { opacity: .9; }
+  80%  { transform: scale(.85); }
+  90%  { transform: scale(.7); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.cb-carga > b {
+  position: absolute; left: -0.1rem; top: -0.1rem;
+  width: 0.2rem; height: 0.2rem; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0.35rem var(--cor), 0 0 0.15rem var(--cor);
+  opacity: 0;
+  animation: cb-carga-faisca calc(var(--dura, .78s) * .5) ease-in forwards;
+}
+@keyframes cb-carga-faisca {
+  0%   { transform: translate(var(--x), var(--y)) scale(.6); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translate(0, 0) scale(1.2); opacity: 0; }
+}
+
+/* ── O CORPO ──
+   conjura: ergue-se e cresce um pouco, juntando força.
+   prepara: o golpe comum recua o peso antes de avançar. */
+.cb-posto.conjura .cb-corpo { animation: cb-conjura .78s ease-in-out; }
+@keyframes cb-conjura {
+  0%   { transform: translate(-50%,-100%); }
+  35%  { transform: translate(-50%,-100%) translateY(-0.35rem) scale(1.04); }
+  85%  { transform: translate(-50%,-100%) translateY(-0.4rem) scale(1.05); }
+  100% { transform: translate(-50%,-100%); }
+}
+.cb-posto.prepara .cb-corpo     { animation: cb-prepara .26s ease-out forwards; }
+.cb-posto.ini.prepara .cb-corpo { animation-name: cb-prepara-ini; }
+@keyframes cb-prepara     { to { transform: translate(-50%,-100%) translateX(-0.55rem) rotate(-5deg) scaleY(.97); } }
+@keyframes cb-prepara-ini { to { transform: translate(-50%,-100%) translateX(0.55rem)  rotate(5deg)  scaleY(.97); } }
+
+/* ── A LUZ DO APOIO ── (a Barreira, a Concha, a cura num aliado) */
+.cb-proj-luz {
+  width: 0.9rem; height: 0.9rem; margin: -0.45rem 0 0 -0.45rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 18%, var(--cor) 42%, transparent 70%);
+  box-shadow: 0 0 0.7rem var(--cor), 0 0 1.4rem var(--cor);
+  mix-blend-mode: screen;
+}
+
+/* ── A CRISE ── (era o "!" dourado no céu)
+   O contorno do corpo pulsa em vermelho no ritmo de um coração: tum-tum,
+   e uma pausa. Segue a silhueta do bicho, sem cobrir nada — uma luz no
+   peito, tentada antes, sumia no corpo. Vai no .cb-corpo e não no svg,
+   que já tem o filtro do contraluz; quando ele é o alvo da escolha, o
+   brilho dourado de alvo manda. Durante um gesto (avançar, recuar,
+   conjurar) o corpo é do gesto, e o coração espera. */
+.cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.prepara) .cb-corpo { animation: cb-crise-bate 1.4s ease-out infinite; }
+@keyframes cb-crise-bate {
+  0%       { filter: drop-shadow(0 0 0 rgba(255,40,40,0)); }
+  7%       { filter: drop-shadow(0 0 0.16rem rgba(255,45,45,1)); }
+  17%      { filter: drop-shadow(0 0 0.08rem rgba(255,40,40,.45)); }
+  26%      { filter: drop-shadow(0 0 0.14rem rgba(255,45,45,.9)); }
+  45%,100% { filter: drop-shadow(0 0 0 rgba(255,40,40,0)); }
+}
+
+
+/* ── A MISERICÓRDIA ── (era a etiqueta "Misericórdia")
+   Uma auréola dourada sobre a cabeça, que paira. Quando salva, se parte
+   (.cb-surge-halo) e desce uma luz (.cb-surge-graca). */
+.cb-aura-halo {
+  left: 50%; top: -8%; width: 40%; height: 8%;
+  border-radius: 50%;
+  border: 0.14rem solid rgba(255,228,150,.95);
+  box-shadow: 0 0 0.5rem rgba(255,210,120,.85), inset 0 0 0.3rem rgba(255,230,170,.7);
+  transform: translateX(-50%);
+}
+.cb-auras.misericordia .cb-aura-halo { opacity: 1; animation: cb-halo-paira 3s ease-in-out infinite; }
+@keyframes cb-halo-paira {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%     { transform: translateX(-50%) translateY(-0.2rem); }
+}
+/* Com as estrelas do Atordoado, a auréola sobe um pouco. */
+.cb-auras.misericordia.est-atordoado .cb-aura-halo { top: -14%; }
+.cb-surge-halo {
+  left: 50%; top: -8%; width: 40%; height: 8%;
+  border-radius: 50%;
+  border: 0.16rem dashed rgba(255,236,170,1);
+  box-shadow: 0 0 1rem rgba(255,220,140,.95);
+  transform: translateX(-50%);
+  animation: cb-halo-quebra .9s ease-out forwards;
+}
+@keyframes cb-halo-quebra {
+  0%   { opacity: 1; transform: translateX(-50%) scale(1); }
+  30%  { opacity: 1; transform: translateX(-50%) scale(1.3); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(1.5rem) scale(1.7) rotate(8deg); }
+}
+.cb-surge-graca {
+  left: 15%; right: 15%; top: -10%; bottom: 0;
+  background: linear-gradient(180deg, rgba(255,236,170,.75), rgba(255,220,140,.25) 55%, transparent);
+  mix-blend-mode: screen;
+  animation: cb-graca-desce .9s ease-out forwards;
+}
+@keyframes cb-graca-desce {
+  0%   { opacity: 0; clip-path: inset(0 0 100% 0); }
+  35%  { opacity: 1; clip-path: inset(0 0 0 0); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-dados3d, .cb-carga, .cb-proj-luz { display: none; }
+  .cb-posto.conjura .cb-corpo, .cb-posto.prepara .cb-corpo { animation: none; }
+  .cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.prepara) .cb-corpo { animation: none; filter: drop-shadow(0 0 0.14rem rgba(255,50,50,.8)); }
 }

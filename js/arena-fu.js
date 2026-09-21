@@ -382,8 +382,11 @@ function _afLutador(c) {
      Barreira, a Concha, o Despertar, o Proteger e os seis estados viraram
      efeitos em volta do corpo (_afAuraDoModelo), e a etiqueta repetia o
      desenho. A frase inteira continua na ficha, ao tocar no corpo. */
+  /* A crise (o "!") e a Misericórdia também (22/09/2026): o coração que
+     bate em vermelho e a auréola dourada. */
   const temDesenho = x => /^est:/.test(x.id)
-    || ['guarda', 'barreira', 'concha', 'despertar', 'protegendo'].indexOf(x.id) !== -1;
+    || ['guarda', 'barreira', 'concha', 'despertar', 'protegendo',
+        'crise', 'misericordia'].indexOf(x.id) !== -1;
   const marcas = (_afVivoVisivel(c) && typeof fuResumoAgora === 'function')
     ? fuResumoAgora(c).filter(x => x.marca && !temDesenho(x)).map(x =>
         `<span class="cb-marca ${x.classe}" title="${esc(x.nome + ' — ' + x.texto)}">${
@@ -1860,20 +1863,24 @@ function _afMostrar(eventos) {
 
   _afDesenhar();
 
-  /* ── O COMPASSO COM DADOS ──
+  /* ── A COREOGRAFIA DE UMA BATIDA (22/09/2026) ──
 
-     Uma batida com dados precisa de tempo para os dados rolarem, pousarem
-     e o Resultado Alto acender — e só DEPOIS acontece o golpe: o avanço
-     de quem bate, o número, a barra, a queda. Antes o golpe e os dados
-     saíam juntos e o dano aparecia enquanto os dados ainda nem existiam.
+     Antes, tudo saía junto: os dados giravam no registro enquanto o
+     círculo rúnico acendia e o projétil já voava. Agora é uma sequência,
+     e cada fase espera a outra:
 
-     Sem dados na sequência (uma cura, a Devastação) o compasso é o de
-     antes. */
-  const temDados = !_afMovimentoReduzido()
-    && batidas.some(b => b.html && b.html.indexOf('cb-dado') !== -1);
-  const passo = temDados
-    ? Math.max(AF_ROLA_TOTAL + 70, Math.min(820, 2400 / Math.max(1, batidas.length)))
-    : Math.max(240, Math.min(520, 1900 / Math.max(1, batidas.length)));
+       1. OS DADOS    dois dados de verdade são jogados no chão do palco,
+                      quicam e pousam; o Resultado Alto acende
+       2. CONJURA     quem lança se ergue, o círculo acende aos pés e a
+                      energia se junta na frente dele (só na magia que abre
+                      a jogada; o golpe comum toma impulso para trás)
+       3. SOLTA       o avanço, e o que viaja sai
+       4. RECEBE      o impacto, o número, a barra, e a frase do registro
+                      mostra o resultado — só agora, e não antes
+
+     Sem dados (a cura, a Devastação, a guarda) pula-se a fase 1. Os
+     tempos estão em AF_T. Com menos movimento, fica só o essencial. */
+  const reduz = _afMovimentoReduzido();
   let i = 0;
   const tocar = () => {
     if (i >= batidas.length) {
@@ -1881,31 +1888,302 @@ function _afMostrar(eventos) {
       _afSegredo = null;
       _afMorreAinda = null;
       if (sobrou) _afDesenhar(); else _afBarras();   // acerta o que a cadência deixou
-      setTimeout(() => { _afOcupado = false; _afAndar(); }, Math.round(passo * 0.7));
+      setTimeout(() => { _afOcupado = false; _afAndar(); }, AF_T.fecho);
       return;
     }
     const b = batidas[i++];
-    if (b.html) _afLance(b.html, i > 1);
-    const rola = temDados && b.html && b.html.indexOf('cb-dado') !== -1;
-    // O que viaja sai agora e chega quando o golpe cair.
-    _afPrepararFx(b.evs, rola ? AF_ROLA_MS + AF_ROLA_DEFASAGEM : 0, nProj,
-                  passo * batidas.length, passo);
-    if (b.evs.some(ev => ev.tipo === 'magia')) nProj++;
-    const encenar = () => {
+    const linha = b.html ? _afLance(b.html, i > 1) : null;
+    const ev = _afPrincipal(b.evs);
+    const q = ev && _afPorId(ev.quem);
+    // Buscado na hora: o campo pode ter se refeito entre uma fase e outra.
+    const deQuem = () => ev && _afEl(ev.quem);
+
+    const rola = !reduz && !!linha && !!linha.querySelector('.cb-dado[data-v]');
+    const conj = !reduz && !!ev && !!ev._conjura;
+    const golpe = !reduz && !!ev && ev.tipo === 'ataque';
+    const magia = !reduz && !!ev && ev.tipo === 'magia';
+    const envia = !reduz && !!ev && !!ev.alvo && ev.alvo !== ev.quem
+      && (ev.tipo === 'cena' || ev.tipo === 'proteger' || (ev.tipo === 'cura' && !ev.estilo));
+    const devasta = !!ev && ev.tipo === 'devastacao';
+
+    const tD = rola ? AF_T.dados : 0;
+    const tR = tD + (conj ? AF_T.conjura : golpe ? AF_T.prepara : magia ? AF_T.solta : 0);
+    const voo = magia ? (_afFormaDe(ev) === 'lanca' ? AF_T.vooLanca : AF_T.voo)
+              : golpe ? AF_T.vooGolpe : envia ? AF_T.envia : 0;
+    const tI = tR + voo;
+    const dura = tI + (devasta ? AF_T.devasta : AF_T.resto);
+
+    // O resultado da frase espera o impacto.
+    const resto = linha && linha.querySelector('.cb-lance-resto');
+    if (resto && !reduz) linha.classList.add('espera');
+
+    // 1. os dados
+    if (rola) _afDadosPalco(ev || b.evs[0], linha, Math.max(tR, tD + 250));
+
+    // 2. conjura (e o PM sai nessa hora)
+    setTimeout(() => {
+      b.evs.filter(e => e.tipo === 'gasto').forEach(_afEncenarUm);
+      if (conj) {
+        _afConjurar(ev);
+        _afCarregar(ev, AF_T.conjura);
+        _afGesto(deQuem(), 'conjura', AF_T.conjura);
+      } else if (golpe) {
+        _afGesto(deQuem(), 'prepara', AF_T.prepara - 20);
+      }
+    }, tD);
+
+    // 3. solta
+    setTimeout(() => {
+      if (magia || golpe) { _afGesto(deQuem(), 'avanca', 400); ev._lancou = true; }
+      if (magia) _afDisparar(ev, voo, nProj++);
+      if (envia) {
+        const cor = _afEfeitoDe(ev.tipo === 'cura' ? 'cura' : (ev.tipo_dano || (q && q.ficha.tipo))).cor;
+        _afEnviar(ev.quem, ev.alvo, cor, voo);
+      }
+      if (devasta && ev._conjura && !reduz) {
+        const n = (ev._alvosDev || []).length || 1;
+        _afVarrer(ev, n * AF_T.devasta, AF_T.devasta);
+      }
+    }, tR);
+
+    // 4. recebe
+    setTimeout(() => {
+      if (linha) linha.classList.remove('espera');
       /* O campo se refaz ANTES da encenação quando alguém cai nesta
          batida: refazê-lo depois apagaria o número e o clarão do golpe,
          que moram dentro do posto que está sendo substituído. */
-      const caem = b.evs.filter(ev => ev.caiu && _afMorreAinda && _afMorreAinda.has(ev.alvo));
+      const caem = b.evs.filter(e => e.caiu && _afMorreAinda && _afMorreAinda.has(e.alvo));
       if (caem.length) {
-        caem.forEach(ev => _afMorreAinda.delete(ev.alvo));
+        caem.forEach(e => _afMorreAinda.delete(e.alvo));
         _afDesenhar();
       }
-      for (const ev of b.evs) _afEncenarUm(ev);
-    };
-    if (rola) setTimeout(encenar, AF_ROLA_MS + AF_ROLA_DEFASAGEM); else encenar();
-    setTimeout(tocar, passo);
+      for (const e of b.evs) if (e.tipo !== 'gasto') _afEncenarUm(e);
+    }, tI);
+
+    setTimeout(tocar, dura);
   };
   tocar();
+}
+
+/* Os tempos da coreografia, em ms (ver _afMostrar). */
+const AF_T = {
+  // rolam, pousam, acendem, e um instante para ler (getter: AF_ROLA_* vêm mais abaixo no arquivo)
+  get dados() { return AF_ROLA_MS + AF_ROLA_DEFASAGEM + AF_ROLA_ACENDE + 200; },
+  conjura:  780,   // o círculo, a energia que se junta
+  prepara:  260,   // o golpe comum toma impulso
+  solta:    170,   // o próximo projétil da mesma magia (a Barragem)
+  voo:      460,   // o orbe e o leque
+  vooLanca: 280,   // a lança, que é reta e rápida
+  vooGolpe: 110,   // o avanço do golpe comum até o contato
+  envia:    480,   // a luz do apoio até o aliado
+  resto:    720,   // depois do impacto, para ver o número
+  devasta:  560,   // entre um alvo e outro da Devastação
+  fecho:    450,   // o fim da jogada, antes da vez seguinte
+};
+
+/* O evento que dá o tom da batida — o golpe, a magia, a cura. Os outros
+   (o PM gasto, o que o golpe provocou) vão com ele. */
+const AF_PRINCIPAL = ['ataque', 'magia', 'devastacao', 'cena', 'cura', 'proteger',
+                      'examinar', 'actoFinal', 'represalia'];
+function _afPrincipal(evs) {
+  return evs.find(ev => AF_PRINCIPAL.indexOf(ev.tipo) !== -1) || null;
+}
+
+/* ── A ENERGIA QUE SE JUNTA ──
+   Na fase de conjurar: um núcleo da cor da magia cresce no ponto de onde
+   o projétil vai sair, e faíscas vêm de fora para dentro dele. */
+function _afCarregar(ev, dura) {
+  const fx = document.getElementById('cbFx');
+  const a = _afPonto(ev.quem, .45);
+  if (!fx || !a) return;
+  const q = _afPorId(ev.quem);
+  const cor = _afEfeitoDe(ev.tipo === 'cura' ? 'cura' : (ev.tipo_dano || (q && q.ficha.tipo))).cor;
+  const c = document.createElement('div');
+  c.className = 'cb-carga';
+  c.style.setProperty('--cor', cor);
+  c.style.setProperty('--forca', _afForcaDe(ev));
+  c.style.setProperty('--dura', dura + 'ms');
+  c.style.left = a.x + 'px'; c.style.top = a.y + 'px';
+  let faiscas = '';
+  for (let k = 0; k < 10; k++) {
+    const ang = (k / 10) * Math.PI * 2 + Math.random() * .4;
+    const r = 2.2 + Math.random() * 1.4;
+    faiscas += `<b style="--x:${(Math.cos(ang) * r).toFixed(2)}rem;--y:${(Math.sin(ang) * r).toFixed(2)}rem;`
+             + `animation-delay:${Math.round(Math.random() * dura * .45)}ms"></b>`;
+  }
+  c.innerHTML = '<i></i>' + faiscas;
+  fx.appendChild(c);
+  setTimeout(() => c.remove(), dura + 60);
+}
+
+/* ── A LUZ DO APOIO ──
+   A Barreira, a Concha, a cura e o Proteger num aliado: uma luz mansa sai
+   de quem lança e desce sobre ele, num arco baixo. Sem ela o efeito
+   nascia no aliado sem dizer de onde veio. */
+function _afEnviar(deId, paraId, cor, dura) {
+  const fx = document.getElementById('cbFx');
+  const a = _afPonto(deId, .45), b = _afPonto(paraId, .4);
+  if (!fx || !a || !b || typeof fx.animate !== 'function') return;
+  const p = document.createElement('div');
+  p.className = 'cb-proj cb-proj-luz';
+  p.style.setProperty('--cor', cor);
+  fx.appendChild(p);
+  const cx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - Math.min((fx.clientHeight || 600) * .12, 80);
+  const quadros = [];
+  const N = 10;
+  for (let i = 0; i <= N; i++) {
+    const tt = i / N, u = 1 - tt;
+    const x = u * u * a.x + 2 * u * tt * cx + tt * tt * b.x;
+    const y = u * u * a.y + 2 * u * tt * cy + tt * tt * b.y;
+    quadros.push({ transform: `translate(${x}px,${y}px) scale(${i === 0 ? .4 : i === N ? 1.3 : 1})`,
+                   opacity: i === 0 ? 0 : i === N ? .2 : 1, offset: tt });
+  }
+  const anim = p.animate(quadros, { duration: dura, easing: 'ease-in-out', fill: 'both' });
+  const fim = () => p.remove();
+  anim.onfinish = fim;
+  setTimeout(fim, dura + 200);
+}
+
+/* ══ OS DADOS NO PALCO ══
+
+   Dois dados de verdade — com as faces do tamanho do dado (d6 quadrado,
+   d8, d10, d12) — são jogados do lado de quem age para o chão entre os
+   dois, quicam três vezes, giram e pousam. A face troca enquanto rolam e
+   para no valor que saiu. Depois de pousarem, o Resultado Alto acende em
+   ouro; o crítico estoura em laranja, o pifão em vermelho, e o dado
+   menor apaga.
+
+   Os valores e as cores vêm da linha do registro (_afDadosHTML), que é a
+   única fonte: os dois pares nunca discordam. Saem de cena em `somem`
+   ms, quando a magia é solta. */
+let _afDadoSeq = 0;
+function _afDadoSVG(L, v) {
+  const id = 'afdg' + (++_afDadoSeq);
+  let corpo, facetas = '', ty = 52;
+  const pol = pts => pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+  const roda = (n, r, giro) => Array.from({ length: n }, (_, k) => {
+    const a = giro + k * 2 * Math.PI / n;
+    return [50 + r * Math.cos(a), 50 + r * Math.sin(a)];
+  });
+  if (L <= 6) {
+    corpo = '<rect x="6" y="6" width="88" height="88" rx="18"/>';
+    facetas = '<rect x="15" y="15" width="70" height="70" rx="12"/>';
+  } else if (L <= 8) {
+    corpo = '<polygon points="50,3 95,50 50,97 5,50"/>';
+    facetas = '<polyline points="14,62 50,3 86,62 14,62 50,97 86,62"/>';
+    ty = 46;
+  } else if (L <= 10) {
+    corpo = '<polygon points="50,3 96,44 50,97 4,44"/>';
+    facetas = '<polyline points="4,44 26,57 50,3 74,57 96,44"/><polyline points="26,57 50,70 74,57"/><line x1="50" y1="70" x2="50" y2="97"/>';
+    ty = 45;
+  } else if (L <= 12) {
+    const fora = roda(10, 47, -Math.PI / 2), dentro = roda(5, 27, -Math.PI / 2);
+    corpo = `<polygon points="${pol(fora)}"/>`;
+    facetas = `<polygon points="${pol(dentro)}"/>`
+      + dentro.map((p, k) => `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${fora[k * 2][0].toFixed(1)}" y2="${fora[k * 2][1].toFixed(1)}"/>`).join('');
+  } else {
+    const fora = roda(6, 47, -Math.PI / 2), dentro = roda(3, 30, -Math.PI / 2);
+    corpo = `<polygon points="${pol(fora)}"/>`;
+    facetas = `<polygon points="${pol(dentro)}"/>`
+      + dentro.map((p, k) => `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${fora[k * 2][0].toFixed(1)}" y2="${fora[k * 2][1].toFixed(1)}"/>`).join('');
+  }
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs>`
+    + `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">`
+    + `<stop offset="0" stop-color="#5b4596"/><stop offset=".55" stop-color="#2c2150"/><stop offset="1" stop-color="#181230"/>`
+    + `</linearGradient></defs>`
+    + `<g class="cb-d3-corpo" fill="url(#${id})">${corpo}</g>`
+    + `<g class="cb-d3-facetas">${facetas}</g>`
+    + `<text x="50" y="${ty}" class="cb-d3-n">${v}</text></svg>`;
+}
+
+function _afDadosPalco(ev, linha, somem) {
+  const fx = document.getElementById('cbFx');
+  if (!fx || typeof fx.animate !== 'function') return;
+  const dadosLog = [...linha.querySelectorAll('.cb-dado[data-v]')];
+  if (!dadosLog.length) return;
+  const W = fx.clientWidth || 800, H = fx.clientHeight || 600;
+
+  // Onde pousam: no chão, entre quem age e o alvo.
+  const pes = [ev.quem && _afPonto(ev.quem, 1), ev.alvo && _afPonto(ev.alvo, 1)].filter(Boolean);
+  const meioX = pes.length ? pes.reduce((s, p) => s + p.x, 0) / pes.length : W / 2;
+  const chao = pes.length ? Math.max.apply(null, pes.map(p => p.y)) : H * .6;
+  const x0 = Math.max(W * .32, Math.min(W * .68, meioX));
+  const y0 = Math.max(H * .32, Math.min(H * .64, chao - H * .03));
+  const q = ev.quem && _afPorId(ev.quem);
+  const dir = (q && q.lado === 'B') ? -1 : 1;     // jogados do lado de quem age
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const tam = rem * 3;
+
+  const caixa = document.createElement('div');
+  caixa.className = 'cb-dados3d';
+  caixa.style.setProperty('--tam', tam + 'px');
+  fx.appendChild(caixa);
+
+  const sorteio = L => 1 + Math.floor(Math.random() * L);
+  dadosLog.forEach((d, i) => {
+    const L = Math.max(2, parseInt(d.dataset.l, 10) || 6);
+    const v = d.dataset.v;
+    const T = AF_ROLA_MS + i * AF_ROLA_DEFASAGEM;
+    const xf = x0 + (i ? 1 : -1) * tam * .72 + (Math.random() - .5) * tam * .25;
+    const yf = y0 + (i ? .12 : -.08) * tam;
+    const xi = xf - dir * (W * .2 + Math.random() * W * .05);
+    const alto = H * (.26 + Math.random() * .05);
+
+    const pos = document.createElement('div');
+    pos.className = 'cb-d3';
+    ['alto', 'critico', 'pifao'].forEach(k => { if (d.classList.contains(k)) pos.dataset[k] = '1'; });
+    pos.innerHTML = '<i class="cb-d3-sombra"></i><div class="cb-d3-dado">' + _afDadoSVG(L, sorteio(L)) + '</div>';
+    caixa.appendChild(pos);
+    const dado = pos.querySelector('.cb-d3-dado');
+    const sombra = pos.querySelector('.cb-d3-sombra');
+    const num = pos.querySelector('.cb-d3-n');
+
+    // o chão: anda de lado, cada vez menos (o atrito)
+    const fr = [0, .62, .86, .96, 1];
+    const offs = [0, .38, .64, .84, 1];
+    pos.animate(offs.map((o, k) => ({
+      transform: `translate(${xi + (xf - xi) * fr[k]}px, ${yf}px)`, offset: o,
+      easing: 'cubic-bezier(.3,.6,.5,1)' })), { duration: T, fill: 'forwards' });
+
+    // o ar: cai, quica duas vezes mais baixo, e assenta; gira e amassa no chão
+    const giroZ = dir * (540 + Math.random() * 360), giroX = 720 + Math.random() * 360;
+    const tilt = (Math.random() - .5) * 14;
+    const Q = (o, h, rz, rx, sx, sy, ez) => ({
+      transform: `translateY(${-h}px) rotateX(${rx}deg) rotateZ(${rz}deg) scale(${sx},${sy})`,
+      offset: o, easing: ez });
+    dado.animate([
+      Q(0,   alto,        0,            0,           .75, .75, 'cubic-bezier(.55,0,1,.45)'),
+      Q(.38, 0,           giroZ * .55,  giroX * .6,  1.14, .84, 'cubic-bezier(0,.55,.45,1)'),
+      Q(.51, H * .075,    giroZ * .75,  giroX * .82, 1, 1,     'cubic-bezier(.55,0,1,.45)'),
+      Q(.64, 0,           giroZ * .88,  giroX * .95, 1.08, .9, 'cubic-bezier(0,.55,.45,1)'),
+      Q(.74, H * .022,    giroZ * .96,  giroX,       1, 1,     'cubic-bezier(.55,0,1,.45)'),
+      Q(.84, 0,           giroZ + tilt * 2, giroX,   1.04, .96, 'ease-out'),
+      Q(1,   0,           Math.round(giroZ / 360) * 360 + tilt, giroX - giroX % 360 + 360, 1, 1, 'ease-out'),
+    ], { duration: T, fill: 'forwards' });
+    // a sombra: pequena e clara no alto, cheia no chão
+    const S = (o, h) => ({ transform: `scale(${1 - .55 * h})`, opacity: .55 - .4 * h, offset: o });
+    sombra.animate([S(0, 1), S(.38, 0), S(.51, .3), S(.64, 0), S(.74, .1), S(.84, 0), S(1, 0)],
+                   { duration: T, fill: 'forwards' });
+
+    // a face troca enquanto rola, cada vez mais devagar, e para no valor
+    const t0 = performance.now();
+    const troca = () => {
+      if (!pos.isConnected) return;
+      const p = (performance.now() - t0) / T;
+      if (p >= .8) { num.textContent = v; return; }
+      let n; do { n = sorteio(L); } while (String(n) === num.textContent && L > 1);
+      num.textContent = n;
+      setTimeout(troca, 55 + 190 * p * p);
+    };
+    setTimeout(troca, 40);
+    setTimeout(() => { num.textContent = v; pos.classList.add('pousou'); }, T);
+  });
+
+  // o Resultado Alto acende quando os dois estão no chão
+  const todos = AF_ROLA_MS + (dadosLog.length - 1) * AF_ROLA_DEFASAGEM;
+  setTimeout(() => caixa.classList.add('revelado'), todos + AF_ROLA_ACENDE);
+  setTimeout(() => caixa.classList.add('some'), somem);
+  setTimeout(() => caixa.remove(), somem + 420);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2192,8 +2470,9 @@ function _afDisparar(ev, chegada, k) {
   const dx = b.x - a.x, dy = b.y - a.y;
   const ang = Math.atan2(dy, dx);
   const lanca = forma === 'lanca';
-  const dur = Math.max(160, Math.min(lanca ? 230 : 380, chegada - 40));
-  const atraso = Math.max(0, chegada - dur);
+  // Sai na hora e chega no impacto: o voo é a fase inteira (_afMostrar).
+  const dur = Math.max(120, chegada);
+  const atraso = 0;
 
   const p = document.createElement('div');
   p.className = 'cb-proj cb-proj-' + forma;
@@ -2326,18 +2605,6 @@ function _afFio(deId, paraId, cor) {
   setTimeout(() => f.remove(), 800);
 }
 
-/* O começo de uma batida: o círculo de quem conjura e o que viaja.
-   `chegada` é quando o golpe cai (0 sem dados: a Devastação, que não
-   rola, varre na hora). */
-function _afPrepararFx(evs, chegada, k, duraJogada, passoJogada) {
-  if (_afMovimentoReduzido()) return;
-  for (const ev of evs) {
-    if (ev._conjura) _afConjurar(ev);
-    if (ev._conjura && ev.tipo === 'devastacao') _afVarrer(ev, duraJogada, passoJogada);
-    if (ev.tipo === 'magia') _afDisparar(ev, chegada, k);
-  }
-}
-
 /* ══════════════════════════════════════════════════════════════════
    OS EFEITOS QUE FICAM (Fase 2, 21/09/2026)
 
@@ -2369,6 +2636,10 @@ function _afAuraDoModelo(c) {
   if (c.guardando) m.cls.push('escudo', c.morteSubita ? 'apagado' : c.guardaFraca ? 'rachado' : '');
   if (ef.defesaMinima) m.cls.push('domo');
   if (ef.danoMais) m.cls.push('chama');
+  // A Misericórdia: uma auréola dourada sobre a cabeça, até salvá-lo.
+  if (ef.misericordia) m.cls.push('misericordia');
+  // A crise: um coração vermelho que bate por dentro do corpo.
+  if (typeof fuEmCrise === 'function' && fuEmCrise(c)) m.cls.push('crise');
   const tipos = Object.keys(ef.resisteTipos || {}).filter(k => ef.resisteTipos[k]);
   if (tipos.length) {
     m.cls.push('concha');
@@ -2397,6 +2668,7 @@ function _afAuraAplicar(id) {
     box = document.createElement('div');
     box.innerHTML = '<i class="cb-aura-domo"></i><i class="cb-aura-concha"></i>'
                   + '<i class="cb-aura-chama"></i><i class="cb-aura-escudo"></i>'
+                  + '<i class="cb-aura-halo"></i>'
                   // os estados (Fase 3)
                   + '<i class="cb-est-atordoado"><b></b><b></b><b></b></i>'
                   + '<i class="cb-est-enfurecido"></i>'
@@ -2423,6 +2695,7 @@ function _afAuraAplicar(id) {
   if (posto) {
     posto.classList.toggle('est-fraco', m.cls.indexOf('est-fraco') !== -1);
     posto.classList.toggle('est-abalado', m.cls.indexOf('est-abalado') !== -1);
+    posto.classList.toggle('crise', m.cls.indexOf('crise') !== -1);
   }
 }
 
@@ -2611,7 +2884,7 @@ function _afEncenarCorpo(ev) {
     }
 
     if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
-      _afGesto(deQuem, 'avanca', 400);
+      if (!ev._lancou) _afGesto(deQuem, 'avanca', 400);
       if (!ev.acertou) { _afGesto(noAlvo, 'esquiva', 420); return; }
     }
 
@@ -2641,6 +2914,8 @@ function _afEncenarCorpo(ev) {
         if (!ev.caiu) _afGesto(noAlvo, 'bate', 520);
         _afNumero(noAlvo, ev.perda, !!ev.critico);
         _afPoeira(noAlvo);
+        // A Misericórdia segurou: a auréola se parte e desce uma luz.
+        if (ev.salvou) { _afSurge(noAlvo, 'halo'); _afSurge(noAlvo, 'graca'); }
       }
       _afImpacto(noAlvo, tipo, _afForcaDe(ev));
       // A Acies: o Lâmina corta na diagonal quando a Forte acerta.
@@ -2769,9 +3044,12 @@ function _afJogarPor(quem, acao) {
    sempre.
 
    Quem pediu ao sistema menos movimento vê os dados já pousados. */
-const AF_ROLA_MS = 460;          // quanto o primeiro dado gira
-const AF_ROLA_DEFASAGEM = 110;   // o segundo pousa depois
-const AF_ROLA_ACENDE = 160;      // o Resultado Alto acende, e a frase aparece
+/* Os mesmos tempos valem para os dados do palco (_afDadosPalco): os dois
+   pares pousam juntos. Eram 460 ms, curtos demais para um dado de verdade
+   quicar; o dono do jogo preferiu a animação inteira à pressa (22/09). */
+const AF_ROLA_MS = 1000;         // quanto o primeiro dado rola
+const AF_ROLA_DEFASAGEM = 180;   // o segundo pousa depois
+const AF_ROLA_ACENDE = 170;      // o Resultado Alto acende, e a frase aparece
 const AF_ROLA_TOTAL = AF_ROLA_MS + AF_ROLA_DEFASAGEM + AF_ROLA_ACENDE;
 
 function _afMovimentoReduzido() {
@@ -3070,6 +3348,7 @@ function _afLance(html, acrescenta) {
 
      Quem quiser rever toca nele e abre o histórico inteiro. */
   _afLanceTimer = setTimeout(() => el.classList.remove('viva'), AF_PAUSA * 6);
+  return linha;
 }
 
 /* ══ O PAINEL POR CIMA DA BATALHA ══
