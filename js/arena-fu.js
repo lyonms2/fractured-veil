@@ -1928,13 +1928,17 @@ function _afMostrar(eventos) {
         _afCarregar(ev, AF_T.conjura);
         _afGesto(deQuem(), 'conjura', AF_T.conjura);
       } else if (golpe) {
-        _afGesto(deQuem(), 'prepara', AF_T.prepara - 20);
+        /* Um gesto só, do impulso ao contato: o recuo e o avanço eram dois,
+           e entre um e outro o corpo voltava ao lugar por um quadro — um
+           pequeno salto (visto pelo subagente de verificação). */
+        _afGesto(deQuem(), 'golpeia', AF_T.prepara + 400);
       }
     }, tD);
 
     // 3. solta
     setTimeout(() => {
-      if (magia || golpe) { _afGesto(deQuem(), 'avanca', 400); ev._lancou = true; }
+      if (magia) _afGesto(deQuem(), 'avanca', 400);
+      if (magia || golpe) ev._lancou = true;   // o golpe já avança no 'golpeia'
       if (magia) _afDisparar(ev, voo, nProj++);
       if (envia) {
         const cor = _afEfeitoDe(ev.tipo === 'cura' ? 'cura' : (ev.tipo_dano || (q && q.ficha.tipo))).cor;
@@ -2112,7 +2116,11 @@ function _afDadosPalco(ev, linha, somem) {
   const q = ev.quem && _afPorId(ev.quem);
   const dir = (q && q.lado === 'B') ? -1 : 1;     // jogados do lado de quem age
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const tam = rem * 3;
+  /* Do tamanho dos corpos: 3 rem no PC, onde o corpo da frente tem 244 px;
+     no celular o corpo tem ~60 px, e um dado de 48 px ficava quase do
+     tamanho do bicho. */
+  const corpo = pes.length ? Math.max.apply(null, pes.map(p => p.h)) : rem * 6;
+  const tam = Math.max(rem * 1.6, Math.min(rem * 3, corpo * .38));
 
   const caixa = document.createElement('div');
   caixa.className = 'cb-dados3d';
@@ -2127,7 +2135,9 @@ function _afDadosPalco(ev, linha, somem) {
     const xf = x0 + (i ? 1 : -1) * tam * .72 + (Math.random() - .5) * tam * .25;
     const yf = y0 + (i ? .12 : -.08) * tam;
     const xi = xf - dir * (W * .2 + Math.random() * W * .05);
-    const alto = H * (.26 + Math.random() * .05);
+    /* Não tão alto: a camada do registro fica por cima da dos efeitos, e
+       lá em cima o dado passava por trás do texto da jogada. */
+    const alto = H * (.15 + Math.random() * .04);
 
     const pos = document.createElement('div');
     pos.className = 'cb-d3';

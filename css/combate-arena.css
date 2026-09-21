@@ -3090,7 +3090,8 @@ b.laco { color: #f5a3c7; }
 
 /* ── O CORPO ──
    conjura: ergue-se e cresce um pouco, juntando força.
-   prepara: o golpe comum recua o peso antes de avançar. */
+   golpeia: o golpe comum recua o peso e avança, num gesto só — o
+   contato cai aos 56%, que é quando o impacto entra (AF_T). */
 .cb-posto.conjura .cb-corpo { animation: cb-conjura .78s ease-in-out; }
 @keyframes cb-conjura {
   0%   { transform: translate(-50%,-100%); }
@@ -3098,10 +3099,20 @@ b.laco { color: #f5a3c7; }
   85%  { transform: translate(-50%,-100%) translateY(-0.4rem) scale(1.05); }
   100% { transform: translate(-50%,-100%); }
 }
-.cb-posto.prepara .cb-corpo     { animation: cb-prepara .26s ease-out forwards; }
-.cb-posto.ini.prepara .cb-corpo { animation-name: cb-prepara-ini; }
-@keyframes cb-prepara     { to { transform: translate(-50%,-100%) translateX(-0.55rem) rotate(-5deg) scaleY(.97); } }
-@keyframes cb-prepara-ini { to { transform: translate(-50%,-100%) translateX(0.55rem)  rotate(5deg)  scaleY(.97); } }
+.cb-posto.golpeia .cb-corpo     { animation: cb-golpeia .66s ease-in-out; }
+.cb-posto.ini.golpeia .cb-corpo { animation-name: cb-golpeia-ini; }
+@keyframes cb-golpeia {
+  0%   { transform: translate(-50%,-100%); }
+  39%  { transform: translate(-50%,-100%) translateX(-0.55rem) rotate(-5deg) scaleY(.97); }
+  56%  { transform: translate(-50%,-100%) translateX(1.15rem) scaleX(1.06) scaleY(.95); animation-timing-function: ease-out; }
+  100% { transform: translate(-50%,-100%); }
+}
+@keyframes cb-golpeia-ini {
+  0%   { transform: translate(-50%,-100%); }
+  39%  { transform: translate(-50%,-100%) translateX(0.55rem) rotate(5deg) scaleY(.97); }
+  56%  { transform: translate(-50%,-100%) translateX(-1.15rem) scaleX(1.06) scaleY(.95); animation-timing-function: ease-out; }
+  100% { transform: translate(-50%,-100%); }
+}
 
 /* ── A LUZ DO APOIO ── (a Barreira, a Concha, a cura num aliado) */
 .cb-proj-luz {
@@ -3119,7 +3130,7 @@ b.laco { color: #f5a3c7; }
    que já tem o filtro do contraluz; quando ele é o alvo da escolha, o
    brilho dourado de alvo manda. Durante um gesto (avançar, recuar,
    conjurar) o corpo é do gesto, e o coração espera. */
-.cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.prepara) .cb-corpo { animation: cb-crise-bate 1.4s ease-out infinite; }
+.cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.golpeia) .cb-corpo { animation: cb-crise-bate 1.4s ease-out infinite; }
 @keyframes cb-crise-bate {
   0%       { filter: drop-shadow(0 0 0 rgba(255,40,40,0)); }
   7%       { filter: drop-shadow(0 0 0.16rem rgba(255,45,45,1)); }
@@ -3145,7 +3156,9 @@ b.laco { color: #f5a3c7; }
   50%     { transform: translateX(-50%) translateY(-0.2rem); }
 }
 /* Com as estrelas do Atordoado, a auréola sobe um pouco. */
-.cb-auras.misericordia.est-atordoado .cb-aura-halo { top: -14%; }
+/* A −24% as estrelas não cruzam mais a auréola (a −14%, cruzavam em 9 de
+   36 quadros da órbita — medido pelo subagente de verificação). */
+.cb-auras.misericordia.est-atordoado .cb-aura-halo { top: -24%; }
 .cb-surge-halo {
   left: 50%; top: -8%; width: 40%; height: 8%;
   border-radius: 50%;
@@ -3173,6 +3186,6 @@ b.laco { color: #f5a3c7; }
 
 @media (prefers-reduced-motion: reduce) {
   .cb-dados3d, .cb-carga, .cb-proj-luz { display: none; }
-  .cb-posto.conjura .cb-corpo, .cb-posto.prepara .cb-corpo { animation: none; }
-  .cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.prepara) .cb-corpo { animation: none; filter: drop-shadow(0 0 0.14rem rgba(255,50,50,.8)); }
+  .cb-posto.conjura .cb-corpo, .cb-posto.golpeia .cb-corpo { animation: none; }
+  .cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.golpeia) .cb-corpo { animation: none; filter: drop-shadow(0 0 0.14rem rgba(255,50,50,.8)); }
 }
