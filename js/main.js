@@ -108,7 +108,7 @@ window.addEventListener('beforeunload', () => {
 // Onde não se pausa: coisas com relógio a correr, algumas com o
 // servidor do outro lado. Pausar uma batalha PvP é ou inútil ou
 // batota, conforme quem está perdendo.
-const PAUSA_PROIBIDA = ['combateModal', 'arenaModal',
+const PAUSA_PROIBIDA = ['combateModal',
                         'memoriaModal', 'simonModal'];
 
 /* As cerimónias — evoluir, chocar um ovo, subir de nível — vivem acima

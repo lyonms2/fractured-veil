@@ -77,6 +77,8 @@ function _btSincronizarModos() {
 
 function escolherPvE() {
   if (typeof abrirCombatePvE !== 'function') return;
+  // Na fila do PvP, o par pode chegar no meio da luta contra o Véu.
+  if (typeof _pvpFila !== 'undefined' && _pvpFila) { showToast(t('pvp.pve_na_fila'), 'err'); return; }
   fecharBatalha();
   abrirCombatePvE();
 }
@@ -87,6 +89,15 @@ function escolherPvE() {
    que lá se faz — vender, queimar, abrir slots — continua a ser preciso,
    e o sítio natural para chegar lá é a lista das criaturas, não o topo
    da tela ao lado das moedas. */
+/* O PvP (js/pvp.js). O lobby mostra por que a equipe não pode ir, com
+   o botão apagado — mas abre sempre: os amigos e os convites estão lá. */
+function escolherPvP() {
+  if (typeof abrirLobbyPvP !== 'function') return;
+  fecharBatalha();
+  abrirLobbyPvP();
+}
+window.escolherPvP = escolherPvP;
+
 function abrirColeccao() {
   if (typeof abrirMeusAvatares === 'function') abrirMeusAvatares();
 }

@@ -230,7 +230,7 @@
      GAME SELECTOR
   ════════════════════ */
   /* Tela cheia (sem gap no topo mostrando a página por trás) — mesmo
-     padrão de #marketplaceModal/#arenaModal etc. */
+     padrão de #marketplaceModal etc. */
   #gameSelector {
     position: fixed !important;
     inset: 0 !important;
@@ -253,7 +253,7 @@
      MODAIS GENÉRICOS — tela cheia (sem gap no topo mostrando a página
      por trás; antes era um "sheet" bottom-anchored com max-height:90vh,
      que deixava o topo da tela sem fundo). Mesmo padrão de
-     #marketplaceModal/#arenaModal etc. Conteúdo pequeno
+     #marketplaceModal etc. Conteúdo pequeno
      (ex: hatchConfirmModal) continua centralizado e do tamanho do
      conteúdo — só o fundo/backdrop passa a cobrir a tela inteira.
   ════════════════════ */
@@ -316,73 +316,6 @@
   }
 
   /* ════════════════════
-     MODAIS PVP — fullscreen
-  ════════════════════ */
-  #arenaModal {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    z-index: 400 !important;
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0)) !important;
-  }
-  #arenaModal::before { display: none !important; }
-
-  /* Arena — botões maiores para dedos */
-  .arena-escolha-btn  { min-height: 3.25rem !important; font-size: 0.5625rem !important; padding: 0.625rem 0.375rem !important; }
-  .arena-btn-entrar,
-  .arena-btn-sair     { min-height: 2.75rem !important; font-size: 0.5rem !important; padding: 0.625rem 0.875rem !important; }
-  .arena-btn-desafiar { min-height: 2.5rem !important; font-size: 0.4375rem !important; padding: 0.5rem 0.625rem !important; white-space: nowrap; }
-
-  /* Arena — textos escalados para fullscreen mobile */
-  .arena-title            { font-size: 0.875rem !important; }
-  .arena-sub              { font-size: 0.5625rem !important; }
-  .arena-tab              { font-size: 0.6875rem !important; padding: 0.5rem 0 !important; }
-  .arena-aposta-info      { font-size: 0.625rem !important; }
-  .arena-lobby-nome       { font-size: 0.75rem !important; }
-  .arena-lobby-meta       { font-size: 0.5625rem !important; }
-  .arena-lobby-titulo     { font-size: 0.5625rem !important; }
-  .arena-lobby-vazio      { font-size: 0.625rem !important; }
-  .arena-lobby-aguarda    { font-size: 0.5625rem !important; }
-  .arena-vs-nome          { font-size: 0.625rem !important; max-width: none !important; }
-  .arena-vs-escolha       { font-size: 2rem !important; }
-  .arena-vs-stars         { font-size: 0.875rem !important; }
-  .arena-turno-label      { font-size: 0.5625rem !important; }
-  .arena-escolha-btn span { font-size: 0.5625rem !important; }
-  .arena-partida-status   { font-size: 0.625rem !important; }
-  .arena-rodada-badge     { font-size: 0.6875rem !important; }
-  .arena-premio-badge     { font-size: 0.625rem !important; }
-  .arena-resultado-titulo { font-size: 1.375rem !important; }
-  .arena-rank-row         { font-size: 0.625rem !important; }
-  .arena-aguardando       { font-size: 0.625rem !important; }
-  .arena-pool-titulo      { font-size: 0.625rem !important; }
-  .arena-sem-saldo        { font-size: 0.5625rem !important; }
-
-  /* ════════════════════
-     LOBBIES PVP — melhorias mobile
-  ════════════════════ */
-  /* Arena — corrige o inline font-size:0.375rem na linha "15% → pool" */
-  #arenaModal [style*="font-size:5"],
-  #arenaModal [style*="font-size:6"] { font-size: 0.625rem !important; }
-
-  /* Tabs — área de toque confortável */
-  .arena-tab { min-height: 2.5rem !important; }
-
-  /* Tab content — mais espaço entre seções no fullscreen */
-  .arena-tab-content { gap: 0.75rem !important; padding: 0.25rem 0 0.5rem !important; }
-
-  /* Player cards — mais espaçosos e com avatar maior */
-  .arena-lobby-card     { padding: 0.875rem 1rem !important; gap: 0.875rem !important; }
-  .arena-lobby-svg      { width: 3rem !important; height: 3rem !important; }
-  .arena-lobby-svg svg  { width: 3rem !important; height: 3rem !important; }
-
-  /* ════════════════════
      MINIGAMES — fullscreen mobile
      Elementos maiores aproveitando a tela toda.
   ════════════════════ */
@@ -429,7 +362,6 @@
     max-width: none;
     text-align: center;
   }
-
 
   /* ════════════════════════════════════════════════════
      HERO CARD — device + creatureCard num único card

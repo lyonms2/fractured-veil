@@ -137,6 +137,7 @@ async function disconnectWallet() {
   // onAuthStateChanged dispara com user=null enquanto walletAddress ainda estaria definido,
   // causando uma segunda invocação concorrente de disconnectWallet().
   walletAddress = null;
+  if (typeof pvpEncerrar === 'function') pvpEncerrar();
   try { await fbAuth().signOut(); } catch(e) {}
 
   // Reset estado do jogo
@@ -325,6 +326,8 @@ async function _onLoginSuccess(user) {
 
     // ── Presence: lastSeen e deadSlot server-side ──
     setupPresence(walletAddress);
+    // O PvP: a presença para os amigos, os convites e a sala (js/pvp.js).
+    if (typeof pvpIniciar === 'function') pvpIniciar(walletAddress);
     const _presData = await getPresenceData(walletAddress);
     if(_presData?.lastSeen > (window.loadedLastSeen || 0)) window.loadedLastSeen = _presData.lastSeen;
     if(_presData?.deadSlot != null) {
@@ -527,33 +530,9 @@ async function _onLoginSuccess(user) {
 
   if(typeof hideSplash === 'function') hideSplash();
 
-  // ── Os listeners de PvP estão desligados ──
-  //
-  // Os três jogos PvP — Jo-Ken-Pô, Rouba Monte e Batalha Naval — não têm
-  // porta desde que a aba PvP saiu do menu de Jogos, e vão sair de vez
-  // quando o PvP novo entrar. Mas isto continuava a correr em TODO
-  // login:
-  //
-  //   iniciarListenerDesafiosRecebidos  .on('child_added')  permanente
-  //   rmIniciarListenerNotificacoes     .on('child_added')  permanente
-  //   bnIniciarListenerNotificacoes     .on('child_added')  permanente
-  //   verificarPartidaPendente          .once('value') x2
-  //   _limparSalasAntigas               limpeza de salas da arena
-  //
-  // Três ligações abertas o tempo todo, mais leituras avulsas, tudo
-  // cobrado, para jogos que ninguém consegue alcançar.
-  //
-  // O código dos três continua carregado e intacto; só deixou de
-  // arrancar sozinho. Para religar, basta descomentar — mas o PvP novo
-  // vai querer o seu próprio emparelhamento, e a ideia era extrair este
-  // (lobby, desafio, sala e temporizador estão copiados três vezes)
-  // antes de os apagar.
-  //
-  // if(typeof iniciarListenerDesafiosRecebidos === 'function') iniciarListenerDesafiosRecebidos();
-  // if(typeof verificarPartidaPendente         === 'function') verificarPartidaPendente();
-  // if(typeof rmIniciarListenerNotificacoes    === 'function') rmIniciarListenerNotificacoes();
-  // if(typeof bnIniciarListenerNotificacoes    === 'function') bnIniciarListenerNotificacoes();
-  // setTimeout(() => { if(typeof _limparSalasAntigas === 'function') _limparSalasAntigas(); }, 3000);
+  // O PvP antigo (Jo-Ken-Pô, Rouba Monte, Batalha Naval) saiu de vez em
+  // 22/09/2026. O novo liga-se no login, ao lado da presença: ver
+  // pvpIniciar, em js/pvp.js.
 }
 
 // ─── Listener de estado de autenticação (auto-login) ─────────────

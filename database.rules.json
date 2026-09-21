@@ -106,6 +106,61 @@
           "$outro": { ".validate": false }
         }
       }
+    },
+
+    // ── O PVP (api/pvp.js) ──
+    //
+    // Quem decide é o servidor, que escreve pelo Admin SDK e não passa por
+    // estas regras. O cliente só pode:
+    //   · marcar a própria presença (pvp/online), que os amigos leem
+    //   · ler a própria entrada na fila e APAGÁ-LA (o onDisconnect e o
+    //     "cancelar" tiram-no de lá; entrar, só pelo servidor, que mede o
+    //     poder da equipe no banco e não no pedido)
+    //   · ler o ponteiro da própria sala
+    //   · ler e apagar um convite de que é parte (recusar, cancelar)
+    //   · ler a sala em que joga, e marcar lá a própria presença
+    "pvp": {
+      "online": {
+        ".read": "auth != null",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['ts', 'estado'])",
+          "ts":     { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+          "estado": { ".validate": "newData.isString() && newData.val().matches(/^(livre|fila|sala)$/)" },
+          "$outro": { ".validate": false }
+        }
+      },
+      "fila": {
+        "$uid": {
+          ".read":  "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && !newData.exists()"
+        }
+      },
+      "jogador": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid"
+        }
+      },
+      "convites": {
+        "$para": {
+          ".read": "auth != null && auth.uid === $para",
+          "$de": {
+            ".read":  "auth != null && auth.uid === $de",
+            ".write": "auth != null && (auth.uid === $para || auth.uid === $de) && !newData.exists()"
+          }
+        }
+      },
+      "salas": {
+        "$sala": {
+          ".read": "auth != null && data.child('jogadores').child(auth.uid).exists()",
+          "presenca": {
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid && root.child('pvp').child('salas').child($sala).child('jogadores').child($uid).exists()",
+              ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+            }
+          }
+        }
+      }
     }
 
   }

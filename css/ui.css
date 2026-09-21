@@ -590,7 +590,6 @@
    Todos os modais de jogo (PVP + PVE) passam a position:fixed
    quando abertos, escapando do .screen e cobrindo o viewport.
 ══════════════════════════════════════ */
-#arenaModal.open,
 #memoriaModal.open,
 #simonModal.open {
   position: fixed !important;
@@ -606,24 +605,6 @@
         no div filho direto, sem tocar no padding do modal.
 ══════════════════════════════════════ */
 @media(min-width:769px) {
-
-  /* ── PVP: coluna de conteúdo centrada ── */
-  /* Arena: header + tabs + tab-content já têm width:100% e o modal
-     tem align-items:center — basta limitar a largura max */
-  #arenaModal.open .arena-header,
-  #arenaModal.open .arena-tabs,
-  #arenaModal.open .arena-tab-content { max-width: 43.75rem !important; }
-
-  /* ── PVP: escala de texto ── */
-  .arena-title        { font-size: 1rem !important; }
-  .arena-sub          { font-size: 0.5625rem  !important; }
-  .arena-tab          { font-size: 0.625rem !important; padding: 0.5rem 0 !important; }
-  .arena-tab-content  { gap: 0.875rem !important; }
-  .arena-btn-entrar,
-  .arena-btn-sair     { font-size: 0.5625rem !important; padding: 0.625rem 1.25rem !important; }
-  .arena-lobby-card   { padding: 0.75rem 1rem !important; gap: 0.75rem !important; }
-  .arena-rank-row     { font-size: 0.5625rem !important; padding: 0.5rem 0.75rem !important; }
-  .arena-aguardando   { font-size: 0.5625rem !important; }
 
   /* ── PVE: textos e botões ──
      Este bloco AUMENTAVA os passatempos no desktop: cartão de 690px,

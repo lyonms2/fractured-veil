@@ -353,7 +353,7 @@
       'rename.vai_chamar':       'Vai se chamar',
       'rename.aviso':            'Só se batiza uma vez. Depois disto o nome fica — na certidão dele, na árvore dos filhos, e para quem o comprar.',
 
-      // Arena → js/i18n-pvp.js
+      // PvP → js/i18n-pvp-fu.js
     },
 
     // ── ENGLISH ───────────────────────────────────────────────────
@@ -677,7 +677,7 @@
       'rename.vai_chamar':       'Will be called',
       'rename.aviso':            'You only name it once. After this the name stays — on its certificate, on the family tree, and for whoever buys it.',
 
-      // Arena → js/i18n-pvp.js
+      // PvP → js/i18n-pvp-fu.js
     },
   };
 

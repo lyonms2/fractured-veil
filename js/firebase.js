@@ -61,10 +61,9 @@ function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
    uma moeda forjada virava dinheiro de verdade. O câmbio saiu, e as
    moedas deixaram de tocar em cristais.
 
-   Os CRISTAIS podem travar-se porque só vêm de respostas do servidor. As
-   duas exceções — arena.js e batalha-naval.js, que os somam no cliente —
-   são o PvP, que está desligado. Se voltar, tem de passar pelo servidor
-   primeiro. */
+   Os CRISTAIS podem travar-se porque só vêm de respostas do servidor. O
+   PvP antigo (que os somava no cliente) saiu em 22/09/2026; o novo não
+   paga nada ainda, e quando pagar será pelo servidor. */
 const _GS_DO_SERVIDOR = ['cristais', 'extraSlots'];
 
 function _gsSemDinheiro() {
