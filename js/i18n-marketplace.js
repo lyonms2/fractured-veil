@@ -131,7 +131,7 @@ window.registerStrings({
   'equipa.ordem.terceiro':    'entra em 3º',
   'equipa.ordem.subir':       'Adiantar na fila',
   'equipa.ordem.descer':      'Atrasar na fila',
-  'equipa.ordem.nota':        'O 1º abre a batalha. Os outros entram por ordem, conforme os da frente caem.',
+  'equipa.ordem.nota':        'O 1º abre a batalha. Os outros entram em ordem, conforme os da frente caem.',
   'equipa.toast.comeca':      '{nome} passa a abrir a batalha.',
   'equipa.toast.posicao':     '{nome} agora entra em {n}º.',
   'equipa.btn_off':           '⚔ Colocar',
@@ -227,7 +227,7 @@ window.registerStrings({
 
   // ── Transações / status ───────────────────────────────────────────
   'mkt.tx.open_mm':           '⏳ Abra o MetaMask para confirmar...',
-  'mkt.tx.sent':              '⏳ Transação enviada. A aguardar confirmação...',
+  'mkt.tx.sent':              '⏳ Transação enviada. Aguardando confirmação...',
   'mkt.tx.crediting':         '⏳ Creditando seus 💎...',
   'mkt.tx.credited':          '✅ +{gems} 💎 creditados! Saldo: {balance} 💎',
   'mkt.tx.not_credited':      '⚠️ Transação confirmada mas não creditada: {err}',

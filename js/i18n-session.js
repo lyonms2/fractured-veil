@@ -14,11 +14,11 @@ window.registerStrings(
     // summon.js
     'summon.log.no_login':   'Faça login primeiro!',
     'summon.log.chegou':     '✦ {nome} atravessou a Fratura e ficou no slot {n}. Ainda não tem nome.',
-    'summon.log.batizar':    '✒️ Os três chegaram sem nome. Entre em cada um e batize-o — é uma vez só, e fica.',
+    'summon.log.batizar':    '✒️ Os três chegaram sem nome. Entre em cada um e dê um nome — depois não dá para trocar.',
     'summon.bub.no_login':   'Faça login primeiro! 🔑',
     'summon.log.invoked':    '{nome} foi invocado!',
     'summon.bub.new_slot':   'Novo avatar no Slot {n}! 🐣',
-    'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Ative-o no Marketplace.',
+    'summon.log.born_slot':  '{nome} nasceu no Slot {n}! Ative esse avatar no Marketplace.',
     'summon.bub.hello':      'Olá! 🐣',
     'summon.log.born':       '{nome} nasceu! Cuide bem dele.',
 
@@ -40,7 +40,7 @@ window.registerStrings(
     // summon.js
     'summon.log.no_login':   'Log in first!',
     'summon.log.chegou':     '✦ {nome} crossed the Fracture and settled in slot {n}. It has no name yet.',
-    'summon.log.batizar':    '✒️ All three arrived unnamed. Step into each one and name it — once only, and it stays.',
+    'summon.log.batizar':    '✒️ All three arrived without a name. Open each one and name it — names can’t be changed later.',
     'summon.bub.no_login':   'You need to log in! 🔑',
     'summon.log.invoked':    '{nome} was summoned!',
     'summon.bub.new_slot':   'New avatar in Slot {n}! 🐣',

@@ -16,8 +16,8 @@
       // -- POR QUE ESTES DOIS PAINEIS SO ABREM A CUIDAR DE UM --
       // Diz o motivo E o caminho: uma recusa sem saida e so uma porta
       // fechada.
-      'painel.so_cuidando.colonia':    'Estes itens são de um avatar de cada vez — os amuletos equipam nele, os consumíveis dão-se a ele. Na colônia não dá para saber em qual. Toque em CUIDAR de um avatar e abra outra vez.',
-      'painel.so_cuidando.sem_avatar': 'Estes itens usam-se num avatar. Entre em algum na colônia e abra outra vez.',
+      'painel.so_cuidando.colonia':    'Esses itens são de um avatar de cada vez — os amuletos equipam nele, os consumíveis são dados a ele. Na colônia não dá para saber em qual. Toque em CUIDAR de um avatar e abra outra vez.',
+      'painel.so_cuidando.sem_avatar': 'Esses itens são usados em um avatar. Entre em algum na colônia e abra outra vez.',
       // -- IDENTIDADE PERMANENTE --
       // O nome de quem joga, pedido uma vez, e o baptismo do avatar,
       // que tambem e uma vez so.
@@ -325,8 +325,8 @@
 
       // Dead screen
       'dead.title':              'ENTIDADE PERDIDA',
-      'dead.causa':              'levou-o a {causa}',
-      'dead.causa_desconhecida': 'apagou-se',
+      'dead.causa':              'levado por {causa}',
+      'dead.causa_desconhecida': 'se apagou',
       'dead.sub_filhos':         'Deixou {n} filho{s}. O sangue dele segue neles.',
       'dead.sub_sem_filhos':     'Não deixou filhos. A linhagem dele acaba aqui.',
       'dead.btn':                '✦ VOLTAR À COLÔNIA',
@@ -350,7 +350,7 @@
       'rename.nasceu_como':      'Nasceu como',
       'rename.sem_nome_fratura': 'Atravessou sem nome. Por enquanto é',
       'rename.sem_nome_ovo':     'Nasceu sem nome. Por enquanto é',
-      'rename.vai_chamar':       'Vai chamar-se',
+      'rename.vai_chamar':       'Vai se chamar',
       'rename.aviso':            'Só se batiza uma vez. Depois disto o nome fica — na certidão dele, na árvore dos filhos, e para quem o comprar.',
 
       // Arena → js/i18n-pvp.js

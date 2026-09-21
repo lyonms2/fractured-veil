@@ -47,7 +47,7 @@ window.registerStrings(
 
     'prologo.p1': '2047. Três anos se passaram desde as bombas.',
 
-    'prologo.p2': 'Ninguém conta mais os mortos.\n\nAgora, conta-se o que sobrou:\n\nDoze cidades com energia, quatro estradas que ainda levam a algum lugar e quantos dias faltam até a próxima chuva que preste.',
+    'prologo.p2': 'Ninguém conta mais os mortos.\n\nAgora, o que se conta é o que sobrou:\n\nDoze cidades com energia, quatro estradas que ainda levam a algum lugar e quantos dias faltam até a próxima chuva que preste.',
 
     'prologo.p3': 'As ogivas não pararam no chão.\n\nAlgumas caíram bem em cima das linhas de falha — aquelas que os geólogos mediam havia décadas e nunca souberam explicar.\n\nOnde isso aconteceu, o que se abriu não foi uma cratera.\n\nForam rasgos verticais, da altura de um homem ou de um prédio.\n\nNão projetam sombra.\n\nNão deixam a poeira entrar.\n\nQuem chega a vinte passos sente os dentes doerem, a bússola girar devagar, o relógio atrasar — e nunca mais acertar.',
 

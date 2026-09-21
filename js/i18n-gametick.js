@@ -24,7 +24,7 @@ window.registerStrings(
     // Doença
     'gt.sick.log':         'Ficou doente! Use medicar!',
     'gt.disease.log':      '⚠️ {emoji} {nome} desenvolvida! Use o Antídoto Dimensional ({preco} 🪙).',
-    'gt.disease.bub':      '{emoji} Sinto-me mal...',
+    'gt.disease.bub':      '{emoji} Estou me sentindo mal...',
 
     // Ovo pronto
 
