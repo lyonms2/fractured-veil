@@ -2691,35 +2691,43 @@ b.laco { color: #f5a3c7; }
   transition: opacity .4s ease;
 }
 
-/* O escudo da guarda: uma placa de luz diante do corpo. */
+/* ── O ESCUDO DA GUARDA: UMA BARREIRA EM ARCO, DO LADO DO INIMIGO ──
+
+   Era uma placa de luz por cima do corpo, e cobria o bicho. Agora é um
+   arco de energia colado ao lado que encara o inimigo — à direita para
+   os meus, à esquerda para os deles —, e o corpo fica livre. Lê-se como
+   o gesto: segurar a frente contra quem ataca. */
 .cb-aura-escudo {
-  left: 50%; bottom: 6%; width: 72%; height: 62%;
-  transform: translateX(-50%);
-  clip-path: polygon(50% 0, 100% 12%, 94% 58%, 50% 100%, 6% 58%, 0 12%);
-  background:
-    linear-gradient(160deg, rgba(255,255,255,.28), transparent 42%),
-    radial-gradient(circle at 50% 40%, rgba(150,210,255,.30), rgba(90,160,235,.14) 65%, rgba(90,160,235,.05));
+  top: 6%; bottom: 2%; width: 46%;
+  right: -22%;
+  border-radius: 50%;
+  border-right: 0.18rem solid rgba(190,232,255,.95);
+  background: radial-gradient(ellipse at 100% 50%, rgba(140,205,255,.42), rgba(140,205,255,.10) 45%, transparent 62%);
+  box-shadow: 0.35rem 0 0.7rem -0.2rem rgba(140,205,255,.8);
+  -webkit-mask: linear-gradient(90deg, transparent 38%, #000 72%);
+          mask: linear-gradient(90deg, transparent 38%, #000 72%);
 }
-/* Um pouco mais presente que o primeiro rascunho: sozinho era discreto
-   demais para se ler de relance. */
-.cb-auras.escudo .cb-aura-escudo {
-  opacity: 1; animation: cb-escudo-respira 2.6s ease-in-out infinite;
-  box-shadow: inset 0 0 0.6rem rgba(150,210,255,.45);
-  outline: 1px solid rgba(170,215,255,.35); outline-offset: -1px;
+/* os inimigos encaram a esquerda: o mesmo arco, espelhado */
+.cb-posto.ini .cb-aura-escudo { right: auto; left: -22%; transform: scaleX(-1); }
+.cb-auras.escudo .cb-aura-escudo { opacity: 1; animation: cb-escudo-cintila 2.4s ease-in-out infinite; }
+@keyframes cb-escudo-cintila {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.35); }
 }
-@keyframes cb-escudo-respira { 50% { filter: brightness(1.25); } }
-/* A guarda repetida: rachada, e mais fraca. */
+/* A guarda repetida: o arco mais fraco, com rachaduras na borda. */
 .cb-auras.escudo.rachado .cb-aura-escudo {
   opacity: .7;
+  border-right-style: dashed;
   background:
-    linear-gradient(118deg, transparent 47%, rgba(255,255,255,.55) 48%, transparent 50%),
-    linear-gradient(64deg, transparent 58%, rgba(255,255,255,.45) 59%, transparent 61%),
-    radial-gradient(circle at 50% 40%, rgba(150,210,255,.20), rgba(90,160,235,.08) 65%, transparent);
+    linear-gradient(160deg, transparent 46%, rgba(230,245,255,.75) 47%, transparent 49%),
+    linear-gradient(30deg, transparent 55%, rgba(230,245,255,.6) 56%, transparent 58%),
+    radial-gradient(ellipse at 100% 50%, rgba(140,205,255,.26), transparent 60%);
 }
-/* Na morte súbita a guarda não protege: sobra só o contorno, apagado. */
+/* Na morte súbita a guarda não protege: só o contorno, cinza. */
 .cb-auras.escudo.apagado .cb-aura-escudo {
-  opacity: .35; animation: none; filter: grayscale(1);
-  background: radial-gradient(circle at 50% 40%, rgba(200,200,210,.14), transparent 70%);
+  opacity: .35; animation: none;
+  border-right-color: rgba(200,200,210,.7); border-right-style: dotted;
+  background: none; box-shadow: none;
 }
 
 /* A Barreira: uma cúpula de favos em volta do corpo. */
@@ -2782,8 +2790,8 @@ b.laco { color: #f5a3c7; }
   mix-blend-mode: screen; transform-origin: 50% 100%;
 }
 .cb-auras.chama .cb-aura-chama { opacity: .8; animation: cb-chama-dança 1.1s ease-in-out infinite alternate; }
-/* Com o escudo na frente, a chama em `screen` tingia o corpo de laranja. */
-.cb-auras.chama.escudo .cb-aura-chama { opacity: .45; }
+/* (O escudo já não fica por cima do corpo, e a chama não precisa mais
+   de baixar com ele.) */
 @keyframes cb-chama-dança {
   0%   { transform: scaleY(.9) scaleX(1.02); filter: brightness(1); }
   100% { transform: scaleY(1.08) scaleX(.97); filter: brightness(1.3); }
