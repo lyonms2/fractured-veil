@@ -148,8 +148,10 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afSegredo = null; _afMorreAinda = null;
   // O histórico é desta batalha: sem isto, a anterior aparecia junto.
   _afHistorico = [];
+  _afAuraMapa = {};
   _afSair = aoSair || null;
   _afShell();
+  _afObservarTamanho();
   _afDesenhar();
   _afLance('<b>' + t('af.lance.comeca', {
     nome: esc(_afNome(_afPorId(_afE.iniciativa.quem))) }) + '</b> · '
@@ -165,7 +167,29 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
   setTimeout(_afAndar, AF_PAUSA);
 }
 
+/* ── A JANELA MUDOU DE TAMANHO ──
+   A caixa dos efeitos tem o tamanho do corpo em PIXELS (_afAssentar), e
+   o fio do Proteger também. Girar o celular ou redimensionar a janela
+   mudava o corpo e deixava os dois para trás (medido: uma caixa de 61 px
+   sobre um corpo de 121). Um observador no palco mede tudo de novo. */
+let _afObservador = null, _afObsTimer = null;
+function _afObservarTamanho() {
+  const palco = document.getElementById('cbPalco');
+  if (!palco || typeof ResizeObserver !== 'function') return;
+  if (_afObservador) _afObservador.disconnect();
+  _afObservador = new ResizeObserver(() => {
+    clearTimeout(_afObsTimer);
+    _afObsTimer = setTimeout(() => {
+      if (!_afE) return;
+      _afAssentar();
+      _afAurasRedesenhar();
+    }, 120);
+  });
+  _afObservador.observe(palco);
+}
+
 function afFechar() {
+  if (_afObservador) { _afObservador.disconnect(); _afObservador = null; }
   _afTravarZoom(false);
   const m = document.getElementById('combateModal');
   if (m) m.innerHTML = '';
@@ -459,6 +483,24 @@ function _afAssentar() {
          vezes a escala do desenho na tela. Passa a ir também para o
          `--cabeca` do posto, e o CSS pendura o nome e as marcas nela. */
       posto.style.setProperty('--cabeca', Math.round(caixa.height * Math.abs(mm.d)) + 'px');
+
+      /* ── E A CAIXA DOS EFEITOS, DO TAMANHO DO CORPO DE AGORA ──
+
+         Ela tinha o tamanho da caixa do DESENHO, e o desenho de um jovem
+         enche só a metade de baixo dela (medido: a tinta de um avatar de
+         fase 1 começa a 43–50% da altura). O clarão, as partículas, o
+         número, o escudo do Scutum e a mira dos projéteis apontavam para
+         o meio da caixa — no ar, acima da cabeça dele.
+
+         Agora ela é a tinta, mais uma folga pequena, com os pés no mesmo
+         sítio: um jovem ganha efeitos do tamanho dele, um ancião alado os
+         seus, e quem vai para trás (menor) ou para a frente leva a caixa
+         junto — o campo refaz-se a cada troca e isto mede de novo. */
+      const efe = posto.querySelector('.cb-efeitos');
+      if (efe) {
+        efe.style.width  = Math.round(caixa.width  * Math.abs(mm.a) * 1.06) + 'px';
+        efe.style.height = Math.round(caixa.height * Math.abs(mm.d) * 1.03) + 'px';
+      }
     }
 
     if (caido) {
@@ -789,7 +831,10 @@ function _afDesenhar() {
     _afAssentar();
     _afDeslizar(antes);
     _afTombar(antes);
+    // Os efeitos que ficam: pela memória no meio de uma jogada, pelo modelo fora dela.
+    if (_afSegredo) _afAurasRedesenhar();
   }
+  if (!_afSegredo) _afAurasDoModelo(null);
   _afBarras();
   const vez = _afE.acabou ? null : fuVez(_afE);
   const ms = typeof fuMorteSubita === 'function' && fuMorteSubita(_afE);
@@ -1476,10 +1521,13 @@ function _afAcoes() {
        orbe saiu a dizer "Golpe ComumGolpe Comum". Uma etiqueta que se
        repete a si própria não informa: enche. */
     const nome = _afMagiaNome(m), rot = t('af.lugar.' + lugar);
+    /* A de apoio que não mudaria nada em ninguém fica BLOQUEADA, e diz
+       porquê no lugar do efeito (fuPorQueInutil, em js/combate-fu.js). */
+    const inutil = _afInutilParaTodos(eu, m);
     h += _afOrbe(lugar, nome, nome === rot ? '' : rot,
       `_afEscolher('${lugar}')`, custo || null,
-      custo <= eu.pm && !(m.livre && eu.usouLivre),   // a livre, uma vez por luta
-      _afEfeitoMagia(eu, lugar, m));
+      custo <= eu.pm && !inutil,
+      inutil ? t('af.bloq.' + inutil) : _afEfeitoMagia(eu, lugar, m));
   }
 
   // reordenar: só se houver com quem
@@ -1527,6 +1575,24 @@ function _afAcoes() {
 // Perguntar "em quem?" para depois ignorar a resposta seria mentir ao
 // jogador.
 // ═══════════════════════════════════════════════════════════════════
+/* A magia de apoio não serve para NINGUÉM que ela alcança? Devolve o
+   motivo (o do primeiro aliado), ou null se serve para pelo menos um. As
+   de ataque sempre servem. */
+function _afInutilParaTodos(eu, m) {
+  if (!m || typeof fuPorQueInutil !== 'function') return null;
+  if (!(m.aliado || m.cura || m.proprio)) return null;
+  const quais = m.proprio ? [eu] : (eu.lado === 'A' ? _afE.A : _afE.B).filter(c => c.vivo);
+  let motivo = null;
+  for (const c of quais) {
+    const r = fuPorQueInutil(_afE, eu, m, c);
+    if (!r) return null;
+    if (!motivo || r === 'usada') motivo = r;
+  }
+  // Na que é lançada em si mesma (a Concha), "em todos" não faz sentido.
+  if (m.proprio && (motivo || 'ativa') === 'ativa') return 'ativa_si';
+  return motivo || 'ativa';
+}
+
 function _afEscolher(lugar) {
   if (_afOcupado) return;
   const eu = _afPorId(_afQuem);
@@ -1539,6 +1605,7 @@ function _afEscolher(lugar) {
   if (!magia) return;
   const custo = fuCusto(magia, magia.porAlvo ? (magia.alvos || 1) : 1);
   if (custo > eu.pm) return;
+  if (_afInutilParaTodos(eu, magia)) return;   // bloqueada: não mudaria nada
 
   // as que se lançam em si mesmo, e a que cai em todos: nada a escolher
   if (magia.proprio || magia.todos) { _afAgir({ tipo: 'magia', magia }); return; }
@@ -1603,7 +1670,9 @@ function _afEhAlvo(c) {
   if (_afPasso.examinar) return c.lado !== eu.lado;
   // O Proteger escolhe outro aliado: o Guarda não se protege a si mesmo.
   if (_afPasso.aliado) return c.lado === eu.lado
-    && !(_afPasso.magia && _afPasso.magia.proteger && c === eu);
+    && !(_afPasso.magia && _afPasso.magia.proteger && c === eu)
+    // só quem a magia muda: a Barreira não se oferece a quem já a tem
+    && !(typeof fuPorQueInutil === 'function' && fuPorQueInutil(_afE, eu, _afPasso.magia, c));
   return c.lado !== eu.lado;
 }
 
@@ -1628,8 +1697,10 @@ function _afAlvosHTML(eu) {
       : t('af.alvo.nota.qualquer');
   }
   let h = `<div class="cb-pm-cab">${esc(rot)}${nota ? `<i>${esc(nota)}</i>` : ''}</div>`;
-  // varrer a linha: a opção de os apanhar a todos de uma vez
-  if (!_afPasso.mover && !_afPasso.examinar && !_afPasso.aliado && (_afPasso.magia.alvos || 1) > 1) {
+  /* varrer a linha: a opção de os apanhar a todos de uma vez. E também nas
+     de apoio que chegam a vários (a Barreira, o Curar): sem ela o jogador
+     só conseguia lançar num aliado de cada vez. */
+  if (!_afPasso.mover && !_afPasso.examinar && (_afPasso.magia.alvos || 1) > 1 && lista.length > 1) {
     const custo = fuCusto(_afPasso.magia, lista.length);
     h += _afOrbe('todos', t('af.orbe.todos'), lista.length + '',
       `_afAlvo('*')`, custo || null, custo <= eu.pm);
@@ -1721,7 +1792,8 @@ function _afMostrar(eventos) {
   let golpeAnterior = null;
   /* Quem conjura: o círculo rúnico acende uma vez por jogada, no
      primeiro golpe de magia (ou na Devastação). Marca só para a tela. */
-  const primeiro = eventos.find(ev => ev.tipo === 'magia' || ev.tipo === 'devastacao');
+  const primeiro = eventos.find(ev => ev.tipo === 'magia' || ev.tipo === 'devastacao'
+    || ev.tipo === 'cena' || ev.tipo === 'proteger' || (ev.tipo === 'cura' && !ev.estilo));
   if (primeiro) primeiro._conjura = true;
   // A Devastação precisa saber, de uma vez, por onde a onda vai passar.
   if (primeiro && primeiro.tipo === 'devastacao')
@@ -2246,6 +2318,117 @@ function _afPrepararFx(evs, chegada, k, duraJogada, passoJogada) {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   OS EFEITOS QUE FICAM (Fase 2, 21/09/2026)
+
+   O apoio e a defesa quase não se viam: uma etiqueta de texto por cima
+   do bicho e mais nada. Agora cada um tem um desenho que dura enquanto
+   o efeito durar:
+
+     escudo      a guarda: uma placa translúcida diante do corpo —
+                 RACHADA na guarda repetida, APAGADA na morte súbita
+     domo        a Barreira: uma cúpula de favos em volta do corpo
+     concha      a Concha: um anel com as cores dos elementos resistidos
+     chama       o Despertar: uma chama rubro-dourada aos pés
+     elo         o Proteger: um fio dourado do Guarda até o protegido
+
+   ── A MEMÓRIA (_afAuraMapa) ──
+   O campo refaz-se por innerHTML a cada queda e a cada troca de lugar, e
+   os elementos novos nascem sem nada. O mapa guarda o que cada um MOSTRA
+   agora, e é dele que se redesenha. Durante uma jogada o modelo já está
+   no fim, e por isso o mapa só se atualiza para quem a batida toca
+   (_afEncenarUm): a cúpula da Barreira sobe quando a magia cai, e não no
+   começo da jogada. No fim da jogada acerta-se tudo pelo modelo. */
+let _afAuraMapa = {};
+
+function _afAuraDoModelo(c) {
+  const ef = c.efeitos || {};
+  const vivo = _afVivoVisivel(c) && c.vivo;
+  const m = { cls: [], concha: '', protege: vivo ? (c.protegendo || null) : null };
+  if (!vivo) return m;
+  if (c.guardando) m.cls.push('escudo', c.morteSubita ? 'apagado' : c.guardaFraca ? 'rachado' : '');
+  if (ef.defesaMinima) m.cls.push('domo');
+  if (ef.danoMais) m.cls.push('chama');
+  const tipos = Object.keys(ef.resisteTipos || {}).filter(k => ef.resisteTipos[k]);
+  if (tipos.length) {
+    m.cls.push('concha');
+    const cores = tipos.map(tp => _afEfeitoDe(tp).cor);
+    const passo = 360 / cores.length;
+    m.concha = 'conic-gradient(' + cores.map((cor, i) =>
+      `${cor} ${Math.round(i * passo)}deg ${Math.round((i + 1) * passo)}deg`).join(',') + ')';
+  }
+  m.cls = m.cls.filter(Boolean);
+  return m;
+}
+
+// Desenha, num posto, o que o mapa diz.
+function _afAuraAplicar(id) {
+  const efe = _afCaixa(_afEl(id));
+  if (!efe || efe === _afEl(id)) return;
+  let box = efe.querySelector(':scope > .cb-auras');
+  if (!box) {
+    box = document.createElement('div');
+    box.innerHTML = '<i class="cb-aura-domo"></i><i class="cb-aura-concha"></i>'
+                  + '<i class="cb-aura-chama"></i><i class="cb-aura-escudo"></i>';
+    efe.insertBefore(box, efe.firstChild);
+  }
+  const m = _afAuraMapa[id] || { cls: [] };
+  box.className = 'cb-auras ' + m.cls.join(' ');
+  box.style.setProperty('--concha', m.concha || 'none');
+}
+
+// Os fios do Proteger, na camada dos efeitos: um por Guarda que protege.
+function _afElos() {
+  const fx = document.getElementById('cbFx');
+  if (!fx) return;
+  fx.querySelectorAll('.cb-elo').forEach(e => e.remove());
+  for (const id of Object.keys(_afAuraMapa)) {
+    const alvo = _afAuraMapa[id].protege;
+    if (!alvo) continue;
+    const a = _afPonto(id, .55), b = _afPonto(alvo, .55);
+    if (!a || !b) continue;
+    const e = document.createElement('div');
+    e.className = 'cb-elo';
+    e.style.left = a.x + 'px'; e.style.top = a.y + 'px';
+    e.style.width = Math.hypot(b.x - a.x, b.y - a.y) + 'px';
+    e.style.transform = `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)`;
+    fx.appendChild(e);
+  }
+}
+
+/* Acerta o mapa pelo modelo — de todos (ids null) ou só de alguns — e
+   redesenha. `semEscudo`: tira o escudo dos que se acertam (ver
+   _afEncenarUm). */
+function _afAurasDoModelo(ids, semEscudo) {
+  if (!_afE) return;
+  const todos = _afE.A.concat(_afE.B);
+  for (const c of todos) {
+    if (ids && ids.indexOf(c.id) === -1) continue;
+    const m = _afAuraDoModelo(c);
+    if (semEscudo) m.cls = m.cls.filter(k => k !== 'escudo' && k !== 'rachado' && k !== 'apagado');
+    _afAuraMapa[c.id] = m;
+    _afAuraAplicar(c.id);
+  }
+  _afElos();
+}
+
+// Depois de o campo se refazer: tudo de volta, como o mapa estava.
+function _afAurasRedesenhar() {
+  if (!_afE) return;
+  _afE.A.concat(_afE.B).forEach(c => _afAuraAplicar(c.id));
+  _afElos();
+}
+
+// O instante em que um efeito que fica nasce: um clarão da forma dele.
+function _afSurge(el, forma) {
+  el = _afCaixa(el);
+  if (!el || _afMovimentoReduzido()) return;
+  const d = document.createElement('div');
+  d.className = 'cb-surge cb-surge-' + forma;
+  el.appendChild(d);
+  setTimeout(() => d.remove(), 900);
+}
+
 /* ── O QUE CADA EVENTO FAZ VER ──
 
    Um por um, pela ordem em que o motor os devolveu. O desenho segue o
@@ -2256,6 +2439,14 @@ function _afEncenarUm(ev) {
      resolva, e as barras têm de ser tocadas em TODOS eles. Com as duas
      coisas na mesma função, o primeiro `return` levava a barra consigo. */
   _afEncenarCorpo(ev);
+  /* Os efeitos que ficam, de quem esta batida toca (ver _afAuraMapa).
+     O ALVO fica como o modelo diz. Quem AGE perde o escudo (agir tira a
+     guarda) — menos no próprio guardar. Sem isto o Guarda que lança o
+     Scutum mostrava o escudo já no primeiro golpe, porque o modelo está
+     no fim da jogada e lá ele já está em guarda; o escudo dele aparece
+     na batida do estiloGuarda em que ele é o alvo. */
+  if (ev.alvo) _afAurasDoModelo([ev.alvo]);
+  if (ev.quem && ev.quem !== ev.alvo) _afAurasDoModelo([ev.quem], ev.tipo !== 'guardar');
 
   /* A barra do alvo desce NESTA batida e não no fim do turno. O valor não
      se vai buscar ao modelo — o modelo já está no fim de tudo — vem do
@@ -2287,10 +2478,11 @@ function _afEncenarCorpo(ev) {
 
     if (ev.tipo === 'cura') {
       if (ev.curou) _afNumero(noAlvo, ev.curou, false, 'cura');
-      // A Salus: o fio de vida de quem lançou até quem ela cura.
-      if (ev.estilo && ev.curou && !_afMovimentoReduzido()) {
-        _afFio(ev.quem, ev.alvo, _afEfeitoDe('cura').cor);
-        _afImpacto(noAlvo, 'cura', .6);
+      if (ev.curou && !_afMovimentoReduzido()) {
+        // A Salus: o fio de vida de quem lançou até quem ela cura.
+        if (ev.estilo) _afFio(ev.quem, ev.alvo, _afEfeitoDe('cura').cor);
+        // Toda cura: faíscas verdes que sobem, como vida que volta.
+        _afImpacto(noAlvo, 'cura', ev.estilo ? .6 : .9);
       }
       return;
     }
@@ -2305,14 +2497,23 @@ function _afEncenarCorpo(ev) {
 
     // O Guarda que protege, a Muralha e o PM roubado pela Sustentação.
     if (ev.tipo === 'proteger' || ev.tipo === 'protegeu' || ev.tipo === 'muralha') {
-      _afGesto(deQuem, 'defende', 500); return;
+      _afGesto(deQuem, 'defende', 500);
+      if (ev.tipo === 'proteger') _afSurge(noAlvo, 'elo');
+      return;
     }
     if (ev.tipo === 'roubouPM') {
       _afNumeroPM(noAlvo, ev.n); _afNumeroPM(deQuem, ev.n, true); return;
     }
     if (ev.tipo === 'examinar') { _afImpacto(noAlvo, 'luz'); return; }
 
-    if (ev.tipo === 'cena') { _afImpacto(noAlvo, 'luz'); return; }
+    // As magias que ficam: cada uma nasce com o clarão da sua forma.
+    if (ev.tipo === 'cena') {
+      // Pela magia lançada, e não pelos efeitos do alvo, que se acumulam.
+      const forma = { barreira: 'domo', concha: 'concha', despertar: 'chama' }[ev.nome];
+      if (forma) _afSurge(noAlvo, forma);
+      else       _afImpacto(noAlvo, 'luz');
+      return;
+    }
 
     if (ev.tipo === 'ataque' || ev.tipo === 'magia') {
       _afGesto(deQuem, 'avanca', 400);

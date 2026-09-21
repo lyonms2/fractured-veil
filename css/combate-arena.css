@@ -2676,3 +2676,149 @@ b.laco { color: #f5a3c7; }
   .cb-proj, .cb-runa, .cb-varre, .cb-corte, .cb-escudo-surge, .cb-fio { display: none; }
   .cb-palco.devasta .cb-cena { animation: none; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   OS EFEITOS QUE FICAM (Fase 2) — ver _afAuraDoModelo, em js/arena-fu.js
+
+   Vivem dentro da caixa dos efeitos, que tem o tamanho do corpo de agora
+   (_afAssentar): um jovem tem um escudo do tamanho dele, e quem vai para
+   trás leva tudo menor. Cada um acende pela classe no .cb-auras.
+   ══════════════════════════════════════════════════════════════════ */
+.cb-auras { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.cb-auras > i {
+  position: absolute; display: block; opacity: 0;
+  transition: opacity .4s ease;
+}
+
+/* O escudo da guarda: uma placa de luz diante do corpo. */
+.cb-aura-escudo {
+  left: 50%; bottom: 6%; width: 72%; height: 62%;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 100% 12%, 94% 58%, 50% 100%, 6% 58%, 0 12%);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.28), transparent 42%),
+    radial-gradient(circle at 50% 40%, rgba(150,210,255,.30), rgba(90,160,235,.14) 65%, rgba(90,160,235,.05));
+}
+/* Um pouco mais presente que o primeiro rascunho: sozinho era discreto
+   demais para se ler de relance. */
+.cb-auras.escudo .cb-aura-escudo {
+  opacity: 1; animation: cb-escudo-respira 2.6s ease-in-out infinite;
+  box-shadow: inset 0 0 0.6rem rgba(150,210,255,.45);
+  outline: 1px solid rgba(170,215,255,.35); outline-offset: -1px;
+}
+@keyframes cb-escudo-respira { 50% { filter: brightness(1.25); } }
+/* A guarda repetida: rachada, e mais fraca. */
+.cb-auras.escudo.rachado .cb-aura-escudo {
+  opacity: .7;
+  background:
+    linear-gradient(118deg, transparent 47%, rgba(255,255,255,.55) 48%, transparent 50%),
+    linear-gradient(64deg, transparent 58%, rgba(255,255,255,.45) 59%, transparent 61%),
+    radial-gradient(circle at 50% 40%, rgba(150,210,255,.20), rgba(90,160,235,.08) 65%, transparent);
+}
+/* Na morte súbita a guarda não protege: sobra só o contorno, apagado. */
+.cb-auras.escudo.apagado .cb-aura-escudo {
+  opacity: .35; animation: none; filter: grayscale(1);
+  background: radial-gradient(circle at 50% 40%, rgba(200,200,210,.14), transparent 70%);
+}
+
+/* A Barreira: uma cúpula de favos em volta do corpo. */
+.cb-aura-domo {
+  inset: -4% -8% 0 -8%;
+  border-radius: 50% 50% 42% 42% / 62% 62% 38% 38%;
+  border: 1px solid rgba(160,205,255,.55);
+  background:
+    repeating-linear-gradient(60deg, rgba(160,205,255,.13) 0 1px, transparent 1px 0.6rem),
+    repeating-linear-gradient(-60deg, rgba(160,205,255,.13) 0 1px, transparent 1px 0.6rem),
+    radial-gradient(ellipse at 50% 60%, transparent 55%, rgba(160,205,255,.18));
+  box-shadow: 0 0 0.6rem rgba(160,205,255,.25), inset 0 0 0.8rem rgba(160,205,255,.18);
+}
+.cb-auras.domo .cb-aura-domo { opacity: .85; }
+
+/* A Concha: um anel achatado com as cores dos elementos que resiste. */
+.cb-aura-concha {
+  /* Na cintura, e fina: aos pés confundia-se com o anel aceso de quem
+     pode agir, que é também uma elipse no chão. */
+  left: -10%; right: -10%; bottom: 36%; height: 22%;
+  border-radius: 50%;
+  background: var(--concha);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 82% 92%, transparent 96%);
+          mask: radial-gradient(closest-side, transparent 78%, #000 82% 92%, transparent 96%);
+  filter: drop-shadow(0 0 0.25rem rgba(255,255,255,.4));
+}
+.cb-auras.concha .cb-aura-concha { opacity: .8; animation: cb-concha-pulsa 2.8s ease-in-out infinite; }
+@keyframes cb-concha-pulsa { 50% { opacity: .5; } }
+
+/* O Despertar: uma chama rubro-dourada que sobe dos pés. */
+.cb-aura-chama {
+  /* Dos pés para cima, sem passar deles: com bottom negativo vazava para
+     o chão como uma mancha. */
+  left: 5%; right: 5%; bottom: 2%; height: 42%;
+  border-radius: 50% 50% 20% 20% / 70% 70% 30% 30%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255,200,90,.55), rgba(230,70,50,.30) 45%, transparent 72%);
+  mix-blend-mode: screen; transform-origin: 50% 100%;
+}
+.cb-auras.chama .cb-aura-chama { opacity: .8; animation: cb-chama-dança 1.1s ease-in-out infinite alternate; }
+/* Com o escudo na frente, a chama em `screen` tingia o corpo de laranja. */
+.cb-auras.chama.escudo .cb-aura-chama { opacity: .45; }
+@keyframes cb-chama-dança {
+  0%   { transform: scaleY(.9) scaleX(1.02); filter: brightness(1); }
+  100% { transform: scaleY(1.08) scaleX(.97); filter: brightness(1.3); }
+}
+
+/* O Proteger: um fio dourado, na camada dos efeitos. */
+.cb-elo {
+  position: absolute; height: 0.1rem; transform-origin: 0 50%;
+  pointer-events: none; border-radius: 999px;
+  background: repeating-linear-gradient(90deg, rgba(240,208,128,.9) 0 0.5rem, rgba(240,208,128,.25) 0.5rem 0.75rem);
+  box-shadow: 0 0 0.4rem rgba(240,208,128,.6);
+  animation: cb-elo-pulsa 1.6s ease-in-out infinite;
+}
+@keyframes cb-elo-pulsa { 50% { opacity: .55; } }
+
+/* O instante em que um efeito que fica nasce. */
+.cb-surge { position: absolute; pointer-events: none; z-index: 3; }
+.cb-surge-domo {
+  inset: -4% -8% 0 -8%; border-radius: 50% 50% 42% 42% / 62% 62% 38% 38%;
+  border: 2px solid rgba(190,225,255,.95);
+  box-shadow: 0 0 1rem rgba(160,205,255,.8), inset 0 0 1rem rgba(160,205,255,.6);
+  animation: cb-surge-sobe .8s ease-out forwards;
+}
+.cb-surge-concha {
+  left: -10%; right: -10%; bottom: 36%; height: 22%; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.9); box-shadow: 0 0 0.8rem rgba(255,255,255,.7);
+  animation: cb-surge-abre .7s ease-out forwards;
+}
+.cb-surge-chama {
+  left: 0; right: 0; bottom: -4%; height: 70%;
+  border-radius: 50% 50% 20% 20% / 70% 70% 30% 30%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255,220,120,.9), rgba(240,80,50,.55) 40%, transparent 70%);
+  mix-blend-mode: screen; transform-origin: 50% 100%;
+  animation: cb-surge-chama .8s ease-out forwards;
+}
+.cb-surge-elo {
+  left: 10%; right: 10%; top: 20%; bottom: 10%; border-radius: 50%;
+  border: 2px solid rgba(240,208,128,.9); box-shadow: 0 0 0.8rem rgba(240,208,128,.7);
+  animation: cb-surge-abre .7s ease-out forwards;
+}
+@keyframes cb-surge-sobe {
+  0%   { opacity: 0; transform: scale(.6) translateY(20%); }
+  40%  { opacity: 1; transform: scale(1.04) translateY(0); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+@keyframes cb-surge-abre {
+  0%   { opacity: 1; transform: scale(.4); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+@keyframes cb-surge-chama {
+  0%   { opacity: 0; transform: scaleY(.3); }
+  35%  { opacity: 1; transform: scaleY(1.15); }
+  100% { opacity: 0; transform: scaleY(1.3); }
+}
+
+/* Menos movimento: os efeitos que ficam continuam (dizem o que está de
+   pé), mas parados; os clarões de nascer somem. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-auras > i, .cb-elo { animation: none !important; }
+  .cb-surge { display: none; }
+}

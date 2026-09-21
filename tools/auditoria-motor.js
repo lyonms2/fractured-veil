@@ -203,6 +203,25 @@ titulo('O Despertar sobe um dado que ainda pode subir');
   verificar('com tudo em d12, não quebra', ['DES', 'PER', 'VIG', 'VON'].indexOf(M.fuDadoQueSobe(todos)) !== -1);
 }
 
+titulo('A magia de apoio que não muda nada fica bloqueada');
+{
+  const e = M.fuIniciar(equipa(1, 14), equipa(2, 14), 9);
+  const q = e.A[0], amigo = e.A[1];
+  const cura = { id: 'curar', cura: 30, aliado: true, limpa: 1 };
+  amigo.pv = amigo.ficha.pvMax; amigo.estados = {};
+  verificar('curar quem está cheio e sem estado: não serve', M.fuPorQueInutil(e, q, cura, amigo) === 'cheio');
+  amigo.pv = 1;
+  verificar('curar quem está ferido: serve', M.fuPorQueInutil(e, q, cura, amigo) === null);
+  const barreira = { id: 'barreira', aliado: true, cena: { defesaMinima: 12, defMagMinima: 12 } };
+  verificar('a Barreira em quem não a tem: serve', M.fuPorQueInutil(e, q, barreira, amigo) === null);
+  amigo.efeitos.defesaMinima = 12; amigo.efeitos.defMagMinima = 12;
+  verificar('a Barreira em quem já a tem: não serve', M.fuPorQueInutil(e, q, barreira, amigo) === 'ativa');
+  const desp = { id: 'despertar', aliado: true, livre: true, cena: { danoMais: 6 } };
+  q.usouLivre = true;
+  verificar('o Despertar já usado: bloqueado', M.fuPorQueInutil(e, q, desp, amigo) === 'usada');
+  verificar('o Proteger em si mesmo: não', M.fuPorQueInutil(e, q, { proteger: true, aliado: true }, q) === 'si');
+}
+
 titulo('A morte súbita, da rodada 12 em diante');
 {
   const e = M.fuIniciar(equipa(1, 14), equipa(2, 14), 7);

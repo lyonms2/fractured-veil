@@ -991,6 +991,51 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
    faz melhor. Subir o mais fraco parece generoso e é desperdício — d6
    para d8 vale menos do que d10 para d12 em tudo o que esse atributo
    toca. */
+/* ── A MAGIA DE APOIO AINDA SERVE? ──
+
+   Devolve null se lançar esta magia neste aliado MUDA alguma coisa, ou o
+   motivo de não mudar nada:
+
+     'usada'   a magia livre (o Despertar) já foi usada nesta luta
+     'ativa'   o efeito já está de pé nele (a mesma Barreira, a mesma
+               Concha, o mesmo +6) — a mesma magia de novo não soma nada
+     'cheio'   a cura num aliado com a vida cheia e sem estado a tirar
+     'si'      o Proteger no próprio Guarda
+
+   A arena usa isto para BLOQUEAR a magia enquanto ela não faz sentido
+   (21/09/2026, pedido do dono do jogo): antes deixava lançar, gastava o
+   PM e o turno e não acontecia nada. O motor continua a aceitar — quem
+   decide o que se oferece ao jogador é a tela, e a IA já não escolhe o
+   que vale zero. */
+function fuPorQueInutil(estado, quem, magia, alvo) {
+  if (!magia || !alvo || !alvo.vivo) return 'ativa';
+  if (magia.livre && quem && quem.usouLivre) return 'usada';
+  if (magia.proteger) return alvo === quem ? 'si' : null;
+  const ef = alvo.efeitos || {};
+  let temAlgo = false, serve = false;
+  if (magia.cura) { temAlgo = true; if (alvo.pv < alvo.ficha.pvMax) serve = true; }
+  if (magia.limpa) {
+    temAlgo = true;
+    if (Object.keys(alvo.estados || {}).some(k => alvo.estados[k])) serve = true;
+  }
+  if (magia.cena) {
+    temAlgo = true;
+    for (const k of Object.keys(magia.cena)) {
+      if (k === 'resisteInimigos') {
+        const deles = estado ? (alvo.lado === 'A' ? estado.B : estado.A).filter(c => c.vivo) : [];
+        if (deles.some(c => !(ef.resisteTipos && ef.resisteTipos[c.ficha.tipo]))) serve = true;
+      } else if (k === 'subirDado') {
+        const a = fuDadoQueSobe(alvo);
+        if (ef.subirDado !== a && fuSubirDado(alvo.ficha[a]) !== alvo.ficha[a]) serve = true;
+      } else if (ef[k] !== magia.cena[k]) {
+        serve = true;
+      }
+    }
+  }
+  if (!temAlgo || serve) return null;
+  return magia.cura ? 'cheio' : 'ativa';
+}
+
 /* ── O DADO QUE O DESPERTAR SOBE ──
    O maior dado do aliado QUE AINDA PODE SUBIR. Era o maior de todos, e
    no Lendário todo avatar já tem um d12, que é o teto: o Despertar subia
@@ -1241,7 +1286,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_ESTADOS, FU_ESTADOS_LISTA, FU_RONDAS_MAX,
     FU_REPRESALIA, FU_EXECUCAO, FU_RESILIENCIA, FU_CUIDAR_FRENTE, fuGrauDe,
     FU_GUARDA, FU_GUARDA_REPETIDA, fuGuardaDe, fuPmDaGuarda,
-    FU_MORTE_SUBITA, fuMorteSubita, fuDadoQueSobe,
+    FU_MORTE_SUBITA, fuMorteSubita, fuDadoQueSobe, fuPorQueInutil,
     FU_EXAME_FAIXAS, fuNivelDoExame, fuConhece, fuLacoDisponivel,
     fuRolar, fuRolagem, fuLutador, fuDado, fuDefesa, fuDefesaMag, fuEmCrise,
     fuAplicarDano, fuDanoComGuarda, fuDarEstado, fuTirarEstado,
