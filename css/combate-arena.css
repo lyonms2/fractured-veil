@@ -1873,6 +1873,10 @@ b.laco { color: #f5a3c7; }
 /* O resultado e o dano esperam o golpe CAIR, e não só os dados pousarem:
    entre um e outro agora há a conjuração e o voo (ver _afMostrar). */
 .cb-lance.espera .cb-lance-resto { opacity: 0; }
+/* Os dados rolam no palco: aqui as caixas esperam vazias e surgem com o
+   valor quando os de lá pousam (ver _afLance). */
+.cb-lance .cb-dado { transition: opacity .25s ease-out, background-color .3s, border-color .3s, color .3s; }
+.cb-lance.aguarda .cb-dado, .cb-lance.aguarda .cb-dado-mod { opacity: 0; }
 
 /* Fechado, nada lá dentro apanha o toque: o toque é todo do modal. */
 .cb-palco .cb-log:not(.aberto) * { pointer-events: none; }
@@ -2310,7 +2314,10 @@ b.laco { color: #f5a3c7; }
   .cb-f-af           { font-size: 0.46875rem; }
   .cb-hist           { font-size: 0.5625rem; }   /* 13,5px, a letra do lance */
 
-  .cb-palco .cb-log-linha { font-size: 0.5625rem; }
+  /* A linha do lance é .cb-lance desde que cada batida ganhou a sua; a
+     regra ficou na classe antiga, e no PC o lance herdava 1rem (26px).
+     Aos 0,625rem (16,5px) uma jogada cabe em uma ou duas linhas. */
+  .cb-palco .cb-log-linha, .cb-palco .cb-log .cb-lance { font-size: 0.625rem; }
   .cb-palco .cb-log  { width: min(30rem, 70%); max-height: 15rem; }
 
   /* ── E OS BICHOS CRESCEM COM O PALCO ──

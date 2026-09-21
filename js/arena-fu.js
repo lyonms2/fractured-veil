@@ -1892,13 +1892,14 @@ function _afMostrar(eventos) {
       return;
     }
     const b = batidas[i++];
-    const linha = b.html ? _afLance(b.html, i > 1) : null;
+    const noPalco = !reduz && !!b.html && b.html.indexOf('data-v=') !== -1;
+    const linha = b.html ? _afLance(b.html, i > 1, noPalco) : null;
     const ev = _afPrincipal(b.evs);
     const q = ev && _afPorId(ev.quem);
     // Buscado na hora: o campo pode ter se refeito entre uma fase e outra.
     const deQuem = () => ev && _afEl(ev.quem);
 
-    const rola = !reduz && !!linha && !!linha.querySelector('.cb-dado[data-v]');
+    const rola = noPalco && !!linha;
     const conj = !reduz && !!ev && !!ev._conjura;
     const golpe = !reduz && !!ev && ev.tipo === 'ataque';
     const magia = !reduz && !!ev && ev.tipo === 'magia';
@@ -2191,7 +2192,12 @@ function _afDadosPalco(ev, linha, somem) {
 
   // o Resultado Alto acende quando os dois estão no chão
   const todos = AF_ROLA_MS + (dadosLog.length - 1) * AF_ROLA_DEFASAGEM;
-  setTimeout(() => caixa.classList.add('revelado'), todos + AF_ROLA_ACENDE);
+  setTimeout(() => {
+    caixa.classList.add('revelado');
+    // e a linha do registro mostra os valores que acabaram de sair
+    linha.classList.remove('aguarda');
+    dadosLog.forEach(d => d.classList.add('revelado'));
+  }, todos + AF_ROLA_ACENDE);
   setTimeout(() => caixa.classList.add('some'), somem);
   setTimeout(() => caixa.remove(), somem + 420);
 }
@@ -3325,7 +3331,11 @@ let _afJogadaSeq = 0;
    Com uma <div> por batida, o CSS empilha as linhas a partir do fundo
    (`justify-content: flex-end`), e o que não cabe sai por CIMA: some a
    linha mais velha, e a mais nova fica sempre à vista. */
-function _afLance(html, acrescenta) {
+/* `noPalco`: os dados desta linha rolam no PALCO (_afDadosPalco). Aqui as
+   caixas ficam vazias e só aparecem, já com o valor, quando os do palco
+   pousam: rolar nos dois lugares ao mesmo tempo era contar a mesma coisa
+   duas vezes. */
+function _afLance(html, acrescenta, noPalco) {
   if (!html) return;
   // A jogada a que a linha pertence: `acrescenta` é mais uma batida do
   // mesmo turno. O histórico inverte as jogadas, não as linhas de cada uma.
@@ -3348,7 +3358,7 @@ function _afLance(html, acrescenta) {
   } else {
     el.replaceChildren(linha);
   }
-  _afRolarDados(linha);
+  if (noPalco) linha.classList.add('aguarda'); else _afRolarDados(linha);
   el.classList.add('viva');
   clearTimeout(_afLanceTimer);
   /* Apaga-se sozinho, mas só depois de haver tempo para o ler — e o
