@@ -130,6 +130,10 @@ function _pveGerarInimigo(nivelTotal) {
       id: 'ini' + i,
       nome: t('frat.suf.' + sufId),
       sufId, nivel, seed,
+      /* A raridade do nível, como os nossos a trazem no slot: é o que o
+         gerarSVG recebe, e sem ela a Fratura e a arena desenhavam o mesmo
+         inimigo com raridades diferentes. */
+      raridade: (typeof fuRaridadeDoNivel === 'function') ? fuRaridadeDoNivel(nivel) : undefined,
       nascimento: cert,
     });
   }

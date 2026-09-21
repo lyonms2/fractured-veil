@@ -141,6 +141,7 @@ window.registerStrings({
   // Examinar: o botão, o registro e a ficha do inimigo por descobrir.
   'af.orbe.examinar':      'Examinar',
   'af.alvo.examinar':      'Quem examinar?',
+  'af.alvo.toque':         'toque no avatar em campo',
   'af.lance.examina':      'examina {alvo} · {r}',
   'af.lance.exame.nada':   'não descobriu nada novo',
   'af.lance.exame.1':      'descobriu vida, PM, feitio e atributos',
@@ -577,6 +578,7 @@ window.registerStrings({
   'af.lance.frente':       'tending the front',
   'af.orbe.examinar':      'Examine',
   'af.alvo.examinar':      'Examine whom?',
+  'af.alvo.toque':         'tap the avatar on the field',
   'af.lance.examina':      'examines {alvo} · {r}',
   'af.lance.exame.nada':   'learned nothing new',
   'af.lance.exame.1':      'learned HP, MP, bent and attributes',

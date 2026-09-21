@@ -31,6 +31,12 @@ let _afLaco = null;     // o id de quem pediu Lutar pelo Laço para a próxima a
 let _afMenu  = false;
 let _afOcupado = false; // a travar enquanto o lance corre
 let _afSair  = null;    // o que fazer ao sair
+/* O motor fecha a batalha ANTES de a última jogada ser encenada (o
+   _afMostrar recebe os eventos já com o fim decidido), e o painel do fim
+   abria por cima do golpe que ainda ia cair. O fim só se mostra quando o
+   _afFim corre, depois da encenação. */
+let _afFimMostrado = false;
+function _afAcabouVisivel() { return !!(_afE && _afE.acabou && _afFimMostrado); }
 
 /* ── O TEMPO DE UM LANCE ──
    Não é enfeite: é o tempo que um humano leva a ler "13 contra 8,
@@ -140,6 +146,11 @@ function _afTravarZoom(liga) {
 function afAbrir(equipaA, equipaB, semente, aoSair) {
   _afTravarZoom(true);
   _afE = fuIniciar(equipaA, equipaB, semente);
+  // O slot de cada um, para o desenho (_afSVG). O id é o do fuLutador.
+  _afSlots = {};
+  [['A', equipaA], ['B', equipaB]].forEach(([lado, eq]) =>
+    (eq || []).forEach((s, i) => { if (s) _afSlots[s.id || (lado + i)] = s; }));
+  _afFimMostrado = false;
   /* OCUPADO até a primeira vez (o _afAndar agendado aqui embaixo). Com
      `false`, um jogador rápido agia antes dele, e o inimigo começava a
      jogar no meio da jogada do jogador — visto pelo subagente de
@@ -336,9 +347,24 @@ function _afFase(c) {
   return (typeof fuFaseDoNivel === 'function') ? fuFaseDoNivel(nv) : 0;
 }
 
+/* ── O DESENHO SAI DO SLOT, COMO EM TODO O JOGO ──
+   Desenhava-se pela FICHA de combate, e a ficha não leva o DNA: sem ele o
+   gerarSVG tirava a cor e o corpo só da semente, e o bicho da arena era
+   outro. Os três da Fratura (desenhados pelo slot) não eram os que se
+   enfrentavam, e os nossos também não eram os da tela principal. O
+   afAbrir guarda o slot de cada lutador, e o desenho usa-o com os mesmos
+   argumentos que o resto do jogo (slot, raridade, seed). */
+let _afSlots = {};
+function _afSVG(c, w, h) {
+  if (typeof gerarSVG !== 'function') return '';
+  const s = _afSlots[c.id];
+  return s ? gerarSVG(s, s.raridade || c.ficha.raridade, s.seed || c.ficha.seed, w, h, _afFase(c))
+           : gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, w, h, _afFase(c));
+}
+
 function _afCorpo(c) {
   if (typeof gerarSVG !== 'function') return '';
-  const svg = gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 200, 200, _afFase(c));
+  const svg = _afSVG(c, 200, 200);
   return svg.replace('<svg', '<svg preserveAspectRatio="xMidYMax meet"');
 }
 
@@ -753,7 +779,7 @@ function _afCartao(c) {
     <div class="cb-ficha-rosto">
       <span class="cb-ficha-nivel">${c.posto + 1}</span>
       <div class="cb-ficha-cara">
-        ${typeof gerarSVG === 'function' ? gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, 100, 100, _afFase(c)) : ''}
+        ${_afSVG(c, 100, 100)}
       </div>
     </div>
     <div class="cb-ficha-barras">
@@ -861,7 +887,7 @@ function _afDesenhar() {
   const palco = document.getElementById('cbPalco');
   if (palco) palco.classList.toggle('morte-subita', ms);
   const bd = document.getElementById('cbDesistir');
-  if (bd) bd.style.display = _afE.acabou ? 'none' : '';
+  if (bd) bd.style.display = _afAcabouVisivel() ? 'none' : '';
   _afDica(vez);
   _afAcoes();
   _afMenuMover();
@@ -1164,7 +1190,7 @@ function _afEscolherQuem(id) {
 function _afMenuMover() {
   const menu = document.getElementById('cbMenu');
   if (!menu) return;
-  const acabou = _afE && _afE.acabou;
+  const acabou = _afAcabouVisivel();
   menu.classList.toggle('aberto', (!!_afMenu && !!_afQuem) || !!_afPasso || !!acabou);
   menu.classList.toggle('fim', !!acabou);
   /* O palco fica sabendo que o menu está aberto. No celular o menu é uma
@@ -1515,7 +1541,7 @@ function _afAcoes() {
   const alvo = document.getElementById('cbAcoes');
   if (!alvo || !_afE) return;
 
-  if (_afE.acabou) { alvo.innerHTML = _afFimHTML(); return; }
+  if (_afAcabouVisivel()) { alvo.innerHTML = _afFimHTML(); return; }
 
   const eu = _afPorId(_afQuem);
   if (!eu) { alvo.innerHTML = ''; return; }
@@ -1711,7 +1737,14 @@ function _afAlvosHTML(eu) {
       ? t('af.alvo.nota.varios', { n: _afPasso.magia.alvos, pm: _afPasso.magia.pm | 0 })
       : t('af.alvo.nota.qualquer');
   }
-  let h = `<div class="cb-pm-cab">${esc(rot)}${nota ? `<i>${esc(nota)}</i>` : ''}</div>`;
+  /* ── O ALVO ESCOLHE-SE NO CAMPO ──
+     O menu listava os alvos um por um, e o campo também os aceitava: dois
+     jeitos de fazer a mesma coisa, e a lista cobria o palco onde eles
+     estão. Fica só o campo — os que podem ser apontados acendem — e o
+     menu diz isso, com o "todos" (quando a magia chega a vários) e o
+     voltar. */
+  let h = `<div class="cb-pm-cab">${esc(rot)}<i>${esc(t('af.alvo.toque'))}${
+    nota ? ' · ' + esc(nota) : ''}</i></div>`;
   /* varrer a linha: a opção de os apanhar a todos de uma vez. E também nas
      de apoio que chegam a vários (a Barreira, o Curar): sem ela o jogador
      só conseguia lançar num aliado de cada vez. */
@@ -1719,14 +1752,6 @@ function _afAlvosHTML(eu) {
     const custo = fuCusto(_afPasso.magia, lista.length);
     h += _afOrbe('todos', t('af.orbe.todos'), lista.length + '',
       `_afAlvo('*')`, custo || null, custo <= eu.pm);
-  }
-  for (const c of lista) {
-    const custo = (_afPasso.mover || _afPasso.examinar) ? 0 : fuCusto(_afPasso.magia, 1);
-    h += _afOrbe(_afPasso.mover ? 'mover' : _afPasso.examinar ? 'examinar'
-                 : (_afPasso.aliado ? 'suporte' : 'forte'),
-      // a vida do inimigo só com o número se o jogador já a descobriu
-      _afNome(c), _afNumeros(c, c.pv, c.ficha.pvMax),
-      `_afAlvo('${c.id}')`, custo || null, custo <= eu.pm);
   }
   h += _afOrbe('voltar', t('af.orbe.voltar'), '', `_afVoltar()`, null, true);
   return h;
@@ -3501,6 +3526,7 @@ function _afFimHTML() {
 
 function _afFim() {
   _afQuem = null; _afMenu = false; _afPasso = null;
+  _afFimMostrado = true;
   // As contas fecham-se ANTES de o painel se desenhar: é ele que mostra o
   // prémio, e um painel desenhado primeiro mostrava a batalha sem ganho
   // nenhum e nunca mais se refazia.
