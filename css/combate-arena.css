@@ -2822,3 +2822,132 @@ b.laco { color: #f5a3c7; }
   .cb-auras > i, .cb-elo { animation: none !important; }
   .cb-surge { display: none; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   OS ESTADOS QUE SE VEEM (Fase 3) — ver _afAuraDoModelo, em js/arena-fu.js
+
+   Eram só uma etiqueta de texto por cima do bicho. Agora cada estado tem
+   um desenho pequeno e contínuo, na cor da tabela de estados, dentro da
+   caixa dos efeitos (do tamanho do corpo de agora). Acendem pela classe
+   est-<estado> no .cb-auras; o fraco e o abalado, que mexem no corpo,
+   também pela classe no posto.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ATORDOADO: três estrelas girando numa roda achatada SOBRE a cabeça.
+   A roda é em % da caixa (que é o corpo de agora) e as estrelas crescem
+   com a profundidade (--escala): com um raio fixo em rem elas desciam
+   por cima do rosto num bicho pequeno. */
+.cb-est-atordoado {
+  left: 50%; top: -12%; width: 78%; height: 14%;
+  transform: translateX(-50%);
+}
+.cb-est-atordoado b {
+  position: absolute; left: 50%; top: 0;
+  width: calc(0.62rem * var(--escala, 1)); height: calc(0.62rem * var(--escala, 1));
+  margin: calc(-0.31rem * var(--escala, 1)) 0 0 calc(-0.31rem * var(--escala, 1));
+  background: #fde68a;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 0.2rem #fde68a);
+  animation: cb-estrela-roda 1.5s linear infinite;
+}
+.cb-est-atordoado b:nth-child(2) { animation-delay: -.5s; }
+.cb-est-atordoado b:nth-child(3) { animation-delay: -1s; }
+@keyframes cb-estrela-roda {
+  0%   { left: 50%;  top: 0;    transform: scale(.7);  opacity: .7; }
+  25%  { left: 100%; top: 50%;  transform: scale(.95); opacity: 1; }
+  50%  { left: 50%;  top: 100%; transform: scale(1.2); opacity: 1; }
+  75%  { left: 0;    top: 50%;  transform: scale(.95); opacity: 1; }
+  100% { left: 50%;  top: 0;    transform: scale(.7);  opacity: .7; }
+}
+.cb-auras.est-atordoado .cb-est-atordoado { opacity: 1; }
+
+/* ENFURECIDO: pulsos vermelhos em volta do corpo. */
+.cb-est-enfurecido {
+  inset: 4% -2% 0 -2%; border-radius: 45%;
+  /* Laranja-brasa e contido: em vermelho vivo confundia-se com a vida em
+     crise e com o perigo, e em `screen` tingia o corpo inteiro. */
+  background: radial-gradient(ellipse at 50% 60%, transparent 52%, rgba(249,115,22,.30) 72%, transparent 82%);
+}
+.cb-auras.est-enfurecido .cb-est-enfurecido { opacity: 1; animation: cb-furia-pulsa .9s ease-in-out infinite; }
+@keyframes cb-furia-pulsa {
+  0%, 100% { transform: scale(.96); filter: brightness(.9); }
+  50%      { transform: scale(1.05); filter: brightness(1.5); }
+}
+
+/* ENVENENADO: gotas verdes escorrendo. */
+/* Caem dentro do corpo, em % dele: com 3,5 rem fixos passavam dos pés
+   num bicho pequeno e ficavam como pontos soltos no chão. */
+.cb-est-envenenado { inset: 18% 15% 6% 15%; }
+.cb-est-envenenado b {
+  position: absolute; top: 0;
+  width: calc(0.3rem * var(--escala, 1)); height: calc(0.44rem * var(--escala, 1));
+  border-radius: 50% 50% 60% 60% / 40% 40% 70% 70%;
+  background: #84cc16; box-shadow: 0 0 0.3rem #84cc16;
+  animation: cb-gota-cai 1.5s ease-in infinite;
+}
+.cb-est-envenenado b:nth-child(1) { left: 22%; }
+.cb-est-envenenado b:nth-child(2) { left: 55%; animation-delay: -.5s; }
+.cb-est-envenenado b:nth-child(3) { left: 78%; animation-delay: -1s; }
+@keyframes cb-gota-cai {
+  0%   { opacity: 0; top: 0; }
+  20%  { opacity: .95; }
+  100% { opacity: 0; top: 100%; }
+}
+.cb-auras.est-envenenado .cb-est-envenenado { opacity: 1; }
+
+/* LENTO: anéis azuis que se abrem devagar aos pés. */
+.cb-est-lento { left: -6%; right: -6%; bottom: -3%; height: 20%; }
+.cb-est-lento b {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid rgba(147,222,255,.95);
+  box-shadow: 0 0 0.5rem rgba(125,211,252,.8), inset 0 0 0.3rem rgba(125,211,252,.5);
+  animation: cb-lento-anel 2.6s ease-out infinite;
+}
+.cb-est-lento b:nth-child(2) { animation-delay: -1.3s; }
+@keyframes cb-lento-anel {
+  0%   { opacity: .9; transform: scale(.45); }
+  100% { opacity: 0;  transform: scale(1.1); }
+}
+.cb-auras.est-lento .cb-est-lento { opacity: 1; }
+
+/* ABALADO: uma névoa escura em volta, e o corpo treme de leve. */
+.cb-est-abalado {
+  inset: 0 -6%; border-radius: 45%;
+  /* Mais escura e com a borda violeta: sobre o fundo violeta da cena a
+     primeira versão quase não se via. */
+  background: radial-gradient(ellipse at 50% 55%, transparent 36%, rgba(12,6,26,.62) 68%, rgba(120,70,200,.35) 82%, transparent 92%);
+}
+/* O corpo não treme: a animação no SVG ganhava do flutuar e do clarão
+   do golpe, e o bicho abalado parava de respirar e de piscar ao apanhar.
+   Quem treme é a névoa. */
+.cb-auras.est-abalado .cb-est-abalado { opacity: 1; animation: cb-abalo-nevoa 1.8s ease-in-out infinite; }
+@keyframes cb-abalo-nevoa {
+  0%, 100% { opacity: 1;   transform: translateX(0) scale(1); }
+  30%      { opacity: .7;  transform: translateX(0.08rem) scale(1.03); }
+  60%      { opacity: .85; transform: translateX(-0.08rem) scale(.99); }
+}
+
+/* FRACO: o corpo perde a cor e o brilho. */
+.cb-posto.est-fraco:not(.caido) .cb-corpo svg {
+  /* O filtro do corpo de pé (contorno, sombra e o desbotar da
+     profundidade), com a saturação e o brilho cortados. Substituir só
+     por um cinza apagava o contorno, e atrás o fraco ficava mais claro
+     que os vizinhos sãos. */
+  filter:
+    drop-shadow(0 -0.0625rem 0.125rem rgba(185,140,255,.30))
+    drop-shadow(0 0.1875rem 0.25rem rgba(0,0,0,.7))
+    saturate(calc((0.45 + 0.37 * var(--z)) * 0.3))
+    brightness(calc((0.62 + 0.38 * var(--z)) * 0.85));
+  transition: filter .4s;
+}
+
+/* Menos movimento: os estados continuam visíveis, parados. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-est-atordoado b, .cb-est-envenenado b, .cb-est-lento b,
+  .cb-est-abalado, .cb-est-enfurecido { animation: none !important; }
+  .cb-est-atordoado b:nth-child(1) { transform: translateX(-1rem); }
+  .cb-est-atordoado b:nth-child(3) { transform: translateX(1rem); }
+  .cb-est-envenenado b { opacity: .8; top: 45%; }
+  .cb-est-lento b:nth-child(2) { display: none; }
+}

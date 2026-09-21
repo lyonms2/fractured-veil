@@ -1794,6 +1794,14 @@ function _afMostrar(eventos) {
      primeiro golpe de magia (ou na Devastação). Marca só para a tela. */
   const primeiro = eventos.find(ev => ev.tipo === 'magia' || ev.tipo === 'devastacao'
     || ev.tipo === 'cena' || ev.tipo === 'proteger' || (ev.tipo === 'cura' && !ev.estilo));
+  /* O autor da jogada, e a primeira batida dele: é nela que ele perde a
+     guarda e o Proteger de antes (ver _afAurasDaBatida). */
+  const autor = (eventos[0] || {}).quem;
+  const primeiraDoAutor = eventos.find(ev => ev.quem === autor && ev.tipo !== 'gasto');
+  // O guardar acende o escudo; o Despertar é livre e não tira a guarda.
+  if (primeiraDoAutor && primeiraDoAutor.tipo !== 'guardar'
+      && !(primeiraDoAutor.tipo === 'cena' && primeiraDoAutor.nome === 'despertar'))
+    primeiraDoAutor._primeiraDoAutor = true;
   if (primeiro) primeiro._conjura = true;
   // A Devastação precisa saber, de uma vez, por onde a onda vai passar.
   if (primeiro && primeiro.tipo === 'devastacao')
@@ -2357,6 +2365,13 @@ function _afAuraDoModelo(c) {
     m.concha = 'conic-gradient(' + cores.map((cor, i) =>
       `${cor} ${Math.round(i * passo)}deg ${Math.round((i + 1) * passo)}deg`).join(',') + ')';
   }
+  /* ── OS ESTADOS (Fase 3) ──
+     Cada estado tem o seu desenho, que dura enquanto ele durar: estrelas
+     que giram (atordoado), pulsos vermelhos (enfurecido), gotas verdes
+     (envenenado), anéis azuis lentos aos pés (lento), uma névoa escura
+     que treme (abalado) e o corpo acinzentado (fraco). Juntam-se: um
+     avatar lento e envenenado mostra os dois. */
+  for (const e of FU_ESTADOS_LISTA) if (c.estados && c.estados[e]) m.cls.push('est-' + e);
   m.cls = m.cls.filter(Boolean);
   return m;
 }
@@ -2369,12 +2384,25 @@ function _afAuraAplicar(id) {
   if (!box) {
     box = document.createElement('div');
     box.innerHTML = '<i class="cb-aura-domo"></i><i class="cb-aura-concha"></i>'
-                  + '<i class="cb-aura-chama"></i><i class="cb-aura-escudo"></i>';
+                  + '<i class="cb-aura-chama"></i><i class="cb-aura-escudo"></i>'
+                  // os estados (Fase 3)
+                  + '<i class="cb-est-atordoado"><b></b><b></b><b></b></i>'
+                  + '<i class="cb-est-enfurecido"></i>'
+                  + '<i class="cb-est-envenenado"><b></b><b></b><b></b></i>'
+                  + '<i class="cb-est-lento"><b></b><b></b></i>'
+                  + '<i class="cb-est-abalado"></i>';
     efe.insertBefore(box, efe.firstChild);
   }
   const m = _afAuraMapa[id] || { cls: [] };
   box.className = 'cb-auras ' + m.cls.join(' ');
   box.style.setProperty('--concha', m.concha || 'none');
+  /* O fraco e o abalado mexem no CORPO (cinza, tremor), e o corpo não
+     está na caixa dos efeitos: a marca vai também no posto. */
+  const posto = _afEl(id);
+  if (posto) {
+    posto.classList.toggle('est-fraco', m.cls.indexOf('est-fraco') !== -1);
+    posto.classList.toggle('est-abalado', m.cls.indexOf('est-abalado') !== -1);
+  }
 }
 
 // Os fios do Proteger, na camada dos efeitos: um por Guarda que protege.
@@ -2412,6 +2440,59 @@ function _afAurasDoModelo(ids, semEscudo) {
   _afElos();
 }
 
+/* ── O QUE UMA BATIDA MUDA NOS EFEITOS QUE FICAM ──
+
+   O modelo está no fim da jogada, e seguir o modelo em cada batida
+   fazia o escudo piscar: o Guarda que lança o Scutum já está em guarda
+   no fim, e aparecia com escudo no primeiro golpe; depois perdia-o a
+   cada batida em que era "quem" (as outras do Scutum, a Represália) e
+   ganhava-o de novo quando levava um golpe. Medido pelo subagente de
+   verificação: seis vezes numa jogada.
+
+   Por isso o ESCUDO e o ELO andam pelos eventos, e o resto pelo modelo:
+     · guardar          acende o escudo de quem guarda
+     · estiloGuarda     acende o escudo do alvo (o Scutum)
+     · a 1ª batida do autor da jogada apaga o escudo e o elo dele —
+       agir é o que tira a guarda e o Proteger
+     · proteger         liga o elo de quem protege
+   O alvo de cada batida recebe do modelo os outros efeitos (a Barreira,
+   a chama, os estados), que só aparecem na hora do golpe que os deu. */
+const _AF_ESCUDO = ['escudo', 'rachado', 'apagado'];
+function _afAurasDaBatida(ev) {
+  if (!_afE) return;
+  const antes = id => _afAuraMapa[id] || { cls: [], concha: '', protege: null };
+  const doModelo = id => { const c = _afPorId(id); return c ? _afAuraDoModelo(c) : null; };
+  const soEscudo = m => m.cls.filter(k => _AF_ESCUDO.indexOf(k) !== -1);
+  const semEscudo = m => m.cls.filter(k => _AF_ESCUDO.indexOf(k) === -1);
+  const mexidos = [];
+
+  // o alvo: os efeitos do modelo; o escudo só no Scutum
+  if (ev.alvo) {
+    const m = doModelo(ev.alvo);
+    if (m) {
+      const a = antes(ev.alvo);
+      // A primeira batida do autor em si mesmo (a Concha, uma cura em si)
+      // também é agir: tira a guarda e o Proteger de antes.
+      const agiuEmSi = ev._primeiraDoAutor && ev.quem === ev.alvo;
+      m.cls = semEscudo(m).concat(ev.tipo === 'estiloGuarda' ? soEscudo(m)
+                                  : agiuEmSi ? [] : soEscudo(a));
+      m.protege = agiuEmSi ? null : a.protege;
+      _afAuraMapa[ev.alvo] = m; mexidos.push(ev.alvo);
+    }
+  }
+  // quem age: só o que a própria batida muda
+  if (ev.quem && ev.quem !== ev.alvo) {
+    const a = antes(ev.quem);
+    let m = null;
+    if (ev.tipo === 'guardar') m = doModelo(ev.quem);
+    else if (ev._primeiraDoAutor) m = Object.assign({}, a, { cls: semEscudo(a), protege: null });
+    if (ev.tipo === 'proteger') m = Object.assign({}, m || a, { protege: ev.alvo });
+    if (m) { _afAuraMapa[ev.quem] = m; mexidos.push(ev.quem); }
+  }
+  mexidos.forEach(_afAuraAplicar);
+  _afElos();
+}
+
 // Depois de o campo se refazer: tudo de volta, como o mapa estava.
 function _afAurasRedesenhar() {
   if (!_afE) return;
@@ -2439,14 +2520,7 @@ function _afEncenarUm(ev) {
      resolva, e as barras têm de ser tocadas em TODOS eles. Com as duas
      coisas na mesma função, o primeiro `return` levava a barra consigo. */
   _afEncenarCorpo(ev);
-  /* Os efeitos que ficam, de quem esta batida toca (ver _afAuraMapa).
-     O ALVO fica como o modelo diz. Quem AGE perde o escudo (agir tira a
-     guarda) — menos no próprio guardar. Sem isto o Guarda que lança o
-     Scutum mostrava o escudo já no primeiro golpe, porque o modelo está
-     no fim da jogada e lá ele já está em guarda; o escudo dele aparece
-     na batida do estiloGuarda em que ele é o alvo. */
-  if (ev.alvo) _afAurasDoModelo([ev.alvo]);
-  if (ev.quem && ev.quem !== ev.alvo) _afAurasDoModelo([ev.quem], ev.tipo !== 'guardar');
+  _afAurasDaBatida(ev);
 
   /* A barra do alvo desce NESTA batida e não no fim do turno. O valor não
      se vai buscar ao modelo — o modelo já está no fim de tudo — vem do
