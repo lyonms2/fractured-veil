@@ -2735,8 +2735,31 @@ b.laco { color: #f5a3c7; }
 }
 .cb-auras.domo .cb-aura-domo { opacity: .85; }
 
-/* A Concha: um anel achatado com as cores dos elementos que resiste. */
+/* A Concha: um anel que ORBITA a cintura, com as cores dos elementos que
+   resiste. Em duas metades: a de trás passa por trás do corpo
+   (.cb-aura-concha-tras, na .cb-efeitos-tras) e a da frente passa por
+   cima dele (esta). Inteiro na frente, parecia um círculo pintado sobre o
+   bicho. */
+.cb-efeitos-tras {
+  position: absolute; left: 50%; top: 0;
+  width: calc(5.6rem * var(--escala)); height: calc(7.28rem * var(--escala));
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+.cb-aura-concha-tras {
+  position: absolute; display: block; opacity: 0;
+  left: -10%; right: -10%; bottom: 36%; height: 22%;
+  border-radius: 50%;
+  background: var(--concha);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 82% 92%, transparent 96%);
+          mask: radial-gradient(closest-side, transparent 78%, #000 82% 92%, transparent 96%);
+  clip-path: inset(0 0 50% 0);          /* só a metade de cima: a de trás */
+  filter: brightness(.7);               /* a de trás, na sombra do corpo */
+  transition: opacity .4s ease;
+}
+.cb-efeitos-tras.concha .cb-aura-concha-tras { opacity: .75; animation: cb-concha-pulsa 2.8s ease-in-out infinite; }
 .cb-aura-concha {
+  clip-path: inset(50% 0 0 0);          /* só a metade de baixo: a da frente */
   /* Na cintura, e fina: aos pés confundia-se com o anel aceso de quem
      pode agir, que é também uma elipse no chão. */
   left: -10%; right: -10%; bottom: 36%; height: 22%;

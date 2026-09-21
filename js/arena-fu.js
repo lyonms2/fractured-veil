@@ -422,6 +422,10 @@ function _afLutador(c) {
        style="--x:${x}%;--y:${pos.y}%;--z:${pos.z};--compasso:${c.posto * 0.42}s;z-index:${Math.round(pos.z * 10) + 1}">
     <div class="cb-sombra"></div>
     <div class="cb-anel"></div>
+    <!-- A metade de TRÁS dos efeitos que envolvem o corpo (o anel da
+         Concha): vem antes do corpo no DOM e por isso é pintada atrás
+         dele. A metade da frente fica na .cb-efeitos. -->
+    <div class="cb-efeitos-tras"></div>
     <div class="cb-corpo">${_afCorpo(c)}</div>
     <div class="cb-efeitos"></div>
     <div class="cb-etiqueta">${esc(_afNome(c))}</div>
@@ -503,9 +507,11 @@ function _afAssentar() {
          seus, e quem vai para trás (menor) ou para a frente leva a caixa
          junto — o campo refaz-se a cada troca e isto mede de novo. */
       const efe = posto.querySelector('.cb-efeitos');
-      if (efe) {
-        efe.style.width  = Math.round(caixa.width  * Math.abs(mm.a) * 1.06) + 'px';
-        efe.style.height = Math.round(caixa.height * Math.abs(mm.d) * 1.03) + 'px';
+      const tras = posto.querySelector('.cb-efeitos-tras');
+      for (const caixaFx of [efe, tras]) {
+        if (!caixaFx) continue;
+        caixaFx.style.width  = Math.round(caixa.width  * Math.abs(mm.a) * 1.06) + 'px';
+        caixaFx.style.height = Math.round(caixa.height * Math.abs(mm.d) * 1.03) + 'px';
       }
     }
 
@@ -2402,6 +2408,15 @@ function _afAuraAplicar(id) {
   const m = _afAuraMapa[id] || { cls: [] };
   box.className = 'cb-auras ' + m.cls.join(' ');
   box.style.setProperty('--concha', m.concha || 'none');
+  /* A metade de trás do anel da Concha, na camada atrás do corpo: assim
+     ele passa POR TRÁS do bicho e volta pela frente, em vez de ser um
+     círculo inteiro pintado por cima dele. */
+  const tras = _afEl(id) && _afEl(id).querySelector('.cb-efeitos-tras');
+  if (tras) {
+    if (!tras.firstChild) tras.innerHTML = '<i class="cb-aura-concha-tras"></i>';
+    tras.classList.toggle('concha', m.cls.indexOf('concha') !== -1);
+    tras.style.setProperty('--concha', m.concha || 'none');
+  }
   /* O fraco e o abalado mexem no CORPO (cinza, tremor), e o corpo não
      está na caixa dos efeitos: a marca vai também no posto. */
   const posto = _afEl(id);
