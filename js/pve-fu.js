@@ -379,7 +379,9 @@ function _pveComecar(equipa, inimigo, semente) {
    portanto ninguém sai por engano. Acabada a batalha, fecha e pronto. */
 function _pveDesistir() {
   if (!_afE || _afE.acabou) return;
-  if (!confirm(t('pve.desistir.confirmar', { n: PVE_ENERGIA_DESISTIR }))) return;
+  // Dois toques no próprio botão, e não uma caixa do navegador.
+  if (typeof _afPedeConfirmar === 'function'
+      && !_afPedeConfirmar('cbDesistir', t('pve.desistir.confirmar_curto', { n: PVE_ENERGIA_DESISTIR }))) return;
   _afE.acabou = true;
   _afE.vencedor = 'B';
   _afE._desistiu = true;

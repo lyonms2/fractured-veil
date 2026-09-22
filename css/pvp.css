@@ -525,12 +525,6 @@
 .pvp-relogio.urgente .pvp-relogio-txt,
 .pvp-relogio.fora .pvp-relogio-txt { color: #ff9b93; animation: pvp-pisca .8s ease-in-out infinite; }
 
-/* Desistir armado: o segundo toque é para valer. */
-.cb-palco .cb-topo button.desistir.armado {
-  color: #fff; background: rgba(224,85,85,.35); border-color: #e05555;
-  animation: pvp-pisca .7s ease-in-out infinite;
-}
-
 /* ── O FIM ── */
 .pvp-fim {
   position: relative; text-align: center;

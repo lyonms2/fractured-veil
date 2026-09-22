@@ -3217,3 +3217,16 @@ b.laco { color: #f5a3c7; }
   .cb-palco .cb-topo { gap: 0.4375rem; padding-right: 0.375rem; }
   .cb-palco .cb-topo button.desistir { padding: 0.375rem 0.5rem; min-height: 2rem; }
 }
+
+/* ── DESISTIR ARMADO ──
+   O primeiro toque arma o botão (ver _afPedeConfirmar, em
+   js/arena-fu.js): ele fica vermelho e pulsando, e diz o que vai custar.
+   O segundo toque é para valer; sem resposta, volta sozinho ao que era. */
+.cb-palco .cb-topo button.desistir.armado {
+  color: #fff; background: rgba(224,85,85,.35); border-color: #e05555;
+  animation: cb-desistir-armado .7s ease-in-out infinite;
+}
+@keyframes cb-desistir-armado { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  .cb-palco .cb-topo button.desistir.armado { animation: none; }
+}

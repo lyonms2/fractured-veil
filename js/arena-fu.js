@@ -181,6 +181,8 @@ function afAbrir(equipaA, equipaB, semente, aoSair, opcoes) {
   _afHistorico = [];
   _afAuraMapa = {};
   _afSair = aoSair || null;
+  // Uma batalha nova nunca começa com o Desistir armado da anterior.
+  if (typeof _afDesarmar === 'function') _afDesarmar();
   _afShell();
   _afObservarTamanho();
   _afDesenhar();
@@ -230,6 +232,7 @@ function _afObservarTamanho() {
 }
 
 function afFechar() {
+  if (typeof _afDesarmar === 'function') _afDesarmar();
   if (_afObservador) { _afObservador.disconnect(); _afObservador = null; }
   window.removeEventListener('resize', _afRemedir);
   const rede = _afRede;
@@ -3556,6 +3559,41 @@ function _afTemMoldura() { return typeof _pveFecharContas === 'function'; }
 /* O ✕ a meio da batalha É o desistir, com a pergunta antes. Acabada a
    batalha, fecha e pronto — aí já não há nada a cobrar. Sem moldura
    (banco de ensaio) fecha sempre, que é o que lá faz sentido. */
+/* ── DESISTIR PEDE DOIS TOQUES, NO PRÓPRIO BOTÃO ──
+
+   Era um `confirm()` do navegador: uma caixa cinza, com a letra do
+   sistema, por cima de uma batalha desenhada à mão — e no celular ela
+   toma a tela inteira e tira o jogador do jogo para fazer uma pergunta
+   de três palavras.
+
+   Agora a pergunta acontece onde o dedo já está: o primeiro toque arma o
+   botão, que passa a dizer o que vai custar ("Confirmar? −4 ⚡"), e o
+   segundo faz. Sem resposta em alguns segundos, ele volta ao que era —
+   quem tocou sem querer não precisa fazer nada. */
+let _afArmadoId = null, _afArmadoTimer = null;
+function _afDesarmar() {
+  const bt = _afArmadoId && document.getElementById(_afArmadoId);
+  if (bt && bt.dataset.rot) { bt.textContent = bt.dataset.rot; bt.classList.remove('armado'); }
+  clearTimeout(_afArmadoTimer);
+  _afArmadoId = null;
+}
+/* Devolve true quando já estava armado — ou seja, quando este é o
+   segundo toque e a coisa pode acontecer. */
+function _afPedeConfirmar(id, rotulo) {
+  if (_afArmadoId === id) { _afDesarmar(); return true; }
+  _afDesarmar();
+  const bt = document.getElementById(id);
+  _afArmadoId = id;
+  if (bt) {
+    if (!bt.dataset.rot) bt.dataset.rot = bt.textContent;
+    bt.textContent = rotulo;
+    bt.classList.add('armado');
+  }
+  _afArmadoTimer = setTimeout(_afDesarmar, 3500);
+  return false;
+}
+window._afPedeConfirmar = _afPedeConfirmar;
+
 function _afDesistir() {
   if (_afRede) { _afRede.desistir(); return; }
   if (_afTemMoldura() && _afE && !_afE.acabou) { _pveDesistir(); return; }

@@ -283,23 +283,13 @@ function _pvpLFaixaNomes() {
 }
 
 // ── DESISTIR ─────────────────────────────────────────────────────
-/* Dois toques: o primeiro arma ("Confirmar?"), o segundo desiste. Uma
-   caixa do navegador no meio da luta tirava o jogador do jogo. */
+/* Dois toques, pelo mesmo gesto do PvE (_afPedeConfirmar, na arena): o
+   primeiro arma o botão, o segundo desiste. */
 function _pvpLDesistir() {
   const L = _pvpL;
   if (!L || L.fim || (_afE && _afE.acabou)) return;
-  const bt = document.getElementById('cbDesistir');
-  if (!L.armado) {
-    L.armado = true;
-    if (bt) { bt.dataset.rot = bt.textContent; bt.textContent = t('pvp.luta.desistir_confirma'); bt.classList.add('armado'); }
-    clearTimeout(L.armadoTimer);
-    L.armadoTimer = setTimeout(() => {
-      L.armado = false;
-      if (bt && bt.dataset.rot) { bt.textContent = bt.dataset.rot; bt.classList.remove('armado'); }
-    }, 3000);
-    return;
-  }
-  L.armado = false;
+  if (typeof _afPedeConfirmar === 'function'
+      && !_afPedeConfirmar('cbDesistir', t('pvp.luta.desistir_confirma'))) return;
   _pvpChamar('sairSala', { sala: L.id }).catch(e => showToast(_pvpErroTexto(e), 'err'));
 }
 
