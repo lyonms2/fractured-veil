@@ -756,9 +756,10 @@ async function garantirCarteira() {
 // ── Desvincular a MetaMask ────────────────────────────────────────
 // Só o servidor mexe na `carteira` (firestore.rules), então soltar
 // também passa por ele (desvincular-carteira, em api/resgatar.js).
-async function desvincularCarteira() {
+async function desvincularCarteira(botao) {
   if(!playerData?.carteira) return;
-  if(!confirm(t('mkt.metamask.desvincular_confirmar'))) return;
+  // Dois toques no próprio botão, no estilo do jogo (uiConfirmar, js/ui.js).
+  if (typeof uiConfirmar === 'function' && !uiConfirmar(botao, t('mkt.metamask.desvincular_curto'))) return;
   try {
     const usuario = firebase.auth().currentUser;
     if(!usuario) { showToast(t('mkt.metamask.desvincular_err'), 'err'); return; }

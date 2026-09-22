@@ -129,7 +129,7 @@ function _renderAmigoCard(uid, info) {
       <div class="amigos-card-nome">${esc(info.nome || t('id.sem_nome'))}</div>
       <div class="amigos-card-btns">
         <button class="amigos-btn-visitar" onclick="amigoAbrirVisita('${uid}')">${t('amigos.btn.visit')}</button>
-        <button class="amigos-btn-remover" onclick="amigoRemover('${uid}')">✕</button>
+        <button class="amigos-btn-remover" onclick="amigoRemover('${uid}', this)">✕</button>
       </div>
     </div>`;
 }
@@ -318,8 +318,9 @@ async function amigosResponder(uid, aceitar) {
 window.amigosResponder = amigosResponder;
 
 // ── Remover amigo ────────────────────────────────────────────
-async function amigoRemover(alvoUid) {
-  if(!confirm(t('amigos.confirm_remove'))) return;
+async function amigoRemover(alvoUid, botao) {
+  // Dois toques no próprio ✕, e não uma caixa do navegador (uiConfirmar).
+  if (typeof uiConfirmar === 'function' && !uiConfirmar(botao, t('amigos.confirm_remove_curto'))) return;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const resp    = await fetch('/api/amigos', {

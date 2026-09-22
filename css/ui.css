@@ -1004,8 +1004,15 @@
   font-size: 0.5625rem;
   color: var(--text);
   flex: 1;
+  min-width: 0;                /* deixa encolher quando o ✕ vira "Remover?" */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.amigos-card-btns { display: flex; gap: 0.25rem; }
+.amigos-card-btns { display: flex; gap: 0.25rem; flex-shrink: 0; }
+/* Armado, o ✕ passa a dizer "Remover?": o nome do amigo encolhe primeiro,
+   e o botão fica numa linha só. */
+.amigos-btn-remover.ui-armado { white-space: nowrap; font-size: 0.5rem; }
 
 /* Botões */
 .amigos-btn-add,
@@ -1380,4 +1387,19 @@
 
   .prologo-marcas { gap:calc(0.35rem / 1.1); padding:calc(0.525rem / 1.1) 0 calc(0.2625rem / 1.1); }
   .prologo-marca  { width:calc(0.29167rem / 1.1); height:calc(0.29167rem / 1.1); }
+}
+
+
+/* ── O BOTÃO ARMADO (uiConfirmar, js/ui.js) ──
+   O primeiro toque arma: o botão diz o que vai acontecer, fica vermelho
+   e pulsa. O segundo é para valer; sem resposta, volta sozinho. */
+.ui-armado {
+  color: #fff !important;
+  background: rgba(224,85,85,.35) !important;
+  border-color: #e05555 !important;
+  animation: ui-armado-pulsa .7s ease-in-out infinite;
+}
+@keyframes ui-armado-pulsa { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-armado { animation: none; }
 }

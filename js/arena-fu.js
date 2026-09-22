@@ -3569,28 +3569,13 @@ function _afTemMoldura() { return typeof _pveFecharContas === 'function'; }
    Agora a pergunta acontece onde o dedo já está: o primeiro toque arma o
    botão, que passa a dizer o que vai custar ("Confirmar? −4 ⚡"), e o
    segundo faz. Sem resposta em alguns segundos, ele volta ao que era —
-   quem tocou sem querer não precisa fazer nada. */
-let _afArmadoId = null, _afArmadoTimer = null;
-function _afDesarmar() {
-  const bt = _afArmadoId && document.getElementById(_afArmadoId);
-  if (bt && bt.dataset.rot) { bt.textContent = bt.dataset.rot; bt.classList.remove('armado'); }
-  clearTimeout(_afArmadoTimer);
-  _afArmadoId = null;
-}
-/* Devolve true quando já estava armado — ou seja, quando este é o
-   segundo toque e a coisa pode acontecer. */
+   quem tocou sem querer não precisa fazer nada.
+
+   Quem faz o gesto é o uiConfirmar (js/ui.js), que é de toda a casa: o
+   mesmo no botão de remover um amigo e no de desvincular a carteira. */
+function _afDesarmar() { if (typeof uiDesarmar === 'function') uiDesarmar(); }
 function _afPedeConfirmar(id, rotulo) {
-  if (_afArmadoId === id) { _afDesarmar(); return true; }
-  _afDesarmar();
-  const bt = document.getElementById(id);
-  _afArmadoId = id;
-  if (bt) {
-    if (!bt.dataset.rot) bt.dataset.rot = bt.textContent;
-    bt.textContent = rotulo;
-    bt.classList.add('armado');
-  }
-  _afArmadoTimer = setTimeout(_afDesarmar, 3500);
-  return false;
+  return (typeof uiConfirmar === 'function') ? uiConfirmar(id, rotulo) : true;
 }
 window._afPedeConfirmar = _afPedeConfirmar;
 

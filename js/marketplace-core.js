@@ -136,7 +136,7 @@ function renderMetaMaskCta() {
           <div class="metamask-linked-txt">${t('mkt.metamask.linked')}</div>
           <div class="metamask-linked-addr">${carteira.slice(0,6)}...${carteira.slice(-4)}</div>
         </div>
-        <button class="btn-desvincular" onclick="desvincularCarteira()">${t('mkt.metamask.desvincular')}</button>
+        <button class="btn-desvincular" onclick="desvincularCarteira(this)">${t('mkt.metamask.desvincular')}</button>
       </div>`;
     // Vínculo feito antes da assinatura: o servidor não credita nem paga
     // mais nada nele. Pede para vincular de novo, assinando.

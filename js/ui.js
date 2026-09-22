@@ -908,3 +908,54 @@ function rebuildScreensParaSlot() {
   if(typeof fzReafirmar === 'function') fzReafirmar();
   if(sleeping && typeof startSleep === 'function') startSleep();
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   PERGUNTAR NO PRÓPRIO BOTÃO
+
+   O jogo usava o `confirm()` do navegador para as coisas que não se
+   desfazem — desistir de uma batalha, remover um amigo, desvincular a
+   carteira. É uma caixa cinza, com a letra do sistema, por cima de uma
+   tela desenhada à mão; no celular ela toma tudo e leva o jogador para
+   fora do jogo por três palavras.
+
+   A pergunta passa a acontecer onde o dedo já está: o primeiro toque
+   ARMA o botão — ele muda de texto para dizer o que vai acontecer, fica
+   vermelho e pulsa — e o segundo faz. Sem segundo toque, ele volta
+   sozinho ao que era, e quem tocou sem querer não precisa fazer nada.
+
+   Devolve `true` quando este é o SEGUNDO toque, ou seja, quando quem
+   chamou pode seguir em frente:
+
+       if (!uiConfirmar(botao, 'Remover?')) return;
+       // …e aqui já é para valer
+
+   Só um botão fica armado de cada vez no jogo inteiro.
+   ═══════════════════════════════════════════════════════════════════ */
+let _uiArmado = null, _uiArmadoTimer = null;
+
+function uiDesarmar() {
+  clearTimeout(_uiArmadoTimer);
+  const el = _uiArmado;
+  _uiArmado = null;
+  if (el && el.isConnected && el.dataset.uiRot != null) {
+    el.textContent = el.dataset.uiRot;
+    delete el.dataset.uiRot;
+    el.classList.remove('ui-armado');
+  }
+}
+
+function uiConfirmar(alvo, rotulo, ms) {
+  const el = (typeof alvo === 'string') ? document.getElementById(alvo) : alvo;
+  if (!el) return true;              // sem botão para armar, segue em frente
+  if (_uiArmado === el) { uiDesarmar(); return true; }
+  uiDesarmar();
+  _uiArmado = el;
+  el.dataset.uiRot = el.textContent;
+  el.textContent = rotulo;
+  el.classList.add('ui-armado');
+  _uiArmadoTimer = setTimeout(uiDesarmar, ms || 3500);
+  return false;
+}
+window.uiConfirmar = uiConfirmar;
+window.uiDesarmar  = uiDesarmar;
