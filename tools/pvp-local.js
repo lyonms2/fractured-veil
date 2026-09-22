@@ -66,7 +66,11 @@ async function semear() {
       return {
         id, nome: `${nomes[k++ % nomes.length]},${c.nome.split(' ')[0]}`, nomeTravado: true,
         raridade: global.fuRaridadeDoNivel(nivel),
-        seed: cert.seed, nascimento: cert.nascimento, listed: false, hatched: true, dead: false,
+        /* SEM `nascimento` no slot, como o jogo grava de verdade: a
+           certidão vive no mapa `certidoes` e o cliente reata-a em
+           memória (applyGameState). Com ela aqui dentro, o teste não
+           reproduzia o que o servidor lê. */
+        seed: cert.seed, listed: false, hatched: true, dead: false,
         sick: false, sleeping: false, nivel, xp: 0, vinculo: 40, totalSecs: 3600,
         bornAt: Date.now() - 7 * 86400000, faseVista: 3, nivelVisto: nivel,
         activeDiseases: [], vitals: { fome: 100, humor: 100, energia: 100, saude: 100, higiene: 100 }, items: [],

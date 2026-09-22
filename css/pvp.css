@@ -633,3 +633,22 @@
 .pvp-fim.pendente .pvp-fim-titulo { color: var(--text); font-size: 1.125rem; letter-spacing: 0.1875rem; text-shadow: none; }
 .pvp-busca-tit.pendente { color: #ff9b93; animation: pvp-pisca 1.4s ease-in-out infinite; }
 .pvp-busca-tit.pendente::after { content: none; }
+
+
+/* O cartão do pedido de amizade (js/amigos.js) usa a caixa do desafio; o
+   que muda é a marca, que aqui é um gesto e não uma fenda. */
+.pvp-convite.amigo { border-color: rgba(122,184,122,.5); }
+.pvp-convite-marca.amigo {
+  display: flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem; font-size: 1.125rem;
+  border-radius: 50%; background: rgba(122,184,122,.12);
+  box-shadow: 0 0 0.75rem rgba(122,184,122,.25);
+}
+.pvp-convite.amigo .pvp-btn:not(.sec) { color: #9fdc9f; border-color: rgba(122,184,122,.5); background: rgba(122,184,122,.1); }
+.pvp-convite.amigo .pvp-btn:not(.sec):hover { background: rgba(122,184,122,.18); border-color: #7ab87a; box-shadow: 0 0 0.875rem rgba(122,184,122,.25); }
+
+/* De quando são os medidores do amigo (tela de visita). */
+.visita-visto {
+  text-align: center; font-size: 0.5625rem; color: var(--muted);
+  margin: -0.125rem 0 0.375rem;
+}

@@ -16,6 +16,11 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const { FieldValue: FV }               = require('firebase-admin/firestore');
+/* A ficha e a genética, para dizer a raridade pelo NÍVEL: a do slot é
+   escrita pelo cliente e envelhece — um avatar que subiu para Lendário
+   continuava "Comum" na tela de quem o visita. */
+require('./_genetica.js');
 
 /* ── QUANTO A VISITA PAGA EM MOEDAS ──
 
@@ -269,24 +274,44 @@ module.exports = async function handler(req, res) {
            visitante que escolhe a quem leva a comida. O `slot` de cada
            um vai junto porque é por ele que a visita diz de quem fala —
            ver o handleVisitar. */
+        /* ── A CERTIDÃO VEM DO MAPA DO SERVIDOR ──
+
+           Lia-se `s.nascimento`, e no banco isso está VAZIO: o cliente
+           deixou de gravar a certidão dentro do slot no dia em que ela
+           passou para o mapa `certidoes` (que ele não escreve); quem a
+           reata ao slot é o applyGameState, em memória. Resultado: o
+           amigo via um bicho desenhado só pela semente — outro corpo e
+           outras cores — e o dono via o verdadeiro.
+
+           O mapa vem primeiro; o slot fica como recuo para um avatar
+           antigo, de antes das certidões. */
+        const certs = targetData.certidoes || {};
+        const mortos = targetData.mortos || {};
         const vivos = (targetData.avatarSlots || [])
           .map((s, i) => ({ s, i }))
-          .filter(x => x.s && x.s.hatched && !x.s.dead)
-          .map(({ s, i }) => ({
-            slot:     i,
-            nome:     s.nome?.split(',')[0] || '',
-            alcunhaIdx: s.alcunhaIdx ?? null,
-            raridade: s.raridade || 'Comum',
-            nivel:    s.nivel    || 1,
-            seed:     s.seed     || 0,
-            sexo:     s.nascimento?.sexo ?? null,
-            corPrincipal:  s.nascimento?.corPrincipal  ?? null,
-            corSecundaria: s.nascimento?.corSecundaria ?? null,
-            // o que a ficha de combate precisa (ver _certidaoParaFicha)
-            nascimento:    _certidaoParaFicha(s.nascimento),
-            escolhaAnciao: s.escolhaAnciao ?? null,
-            vitals:   s.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
-          }));
+          .filter(x => x.s && x.s.hatched && !x.s.dead && !mortos[x.s.id])
+          .map(({ s, i }) => {
+            const cert = (s.id && certs[s.id]) || s.nascimento || null;
+            const nivel = s.nivel || 1;
+            return {
+              slot:     i,
+              nome:     s.nome?.split(',')[0] || '',
+              alcunhaIdx: s.alcunhaIdx ?? null,
+              // Pelo NÍVEL, como a ficha faz; a do slot pode estar velha.
+              raridade: (typeof fuRaridadeDoNivel === 'function')
+                ? fuRaridadeDoNivel(nivel) : (s.raridade || 'Comum'),
+              nivel,
+              // O seed da certidão manda, como no applyGameState.
+              seed:     (cert && cert.seed) || s.seed || 0,
+              sexo:     cert?.sexo ?? null,
+              corPrincipal:  cert?.corPrincipal  ?? null,
+              corSecundaria: cert?.corSecundaria ?? null,
+              // o que a ficha de combate precisa (ver _certidaoParaFicha)
+              nascimento:    _certidaoParaFicha(cert),
+              escolhaAnciao: s.escolhaAnciao ?? null,
+              vitals:   s.vitals   || { fome:100, humor:100, energia:100, saude:100, higiene:100 },
+            };
+          });
 
         if (!vivos.length) return res.status(200).json({ ok: true, semAvatar: true });
 
@@ -296,6 +321,9 @@ module.exports = async function handler(req, res) {
           ok:      true,
           colonia: vivos,
           nomeJogador: targetData.nomeJogador || null,
+          // Desde quando é esta fotografia: os medidores são do último
+          // save do dono, e sem isto pareciam de agora.
+          visto:   targetData.lastSeen || null,
           cooldowns: {
             alimentar: myCooldowns.alimentar || 0,
             brincar:   myCooldowns.brincar   || 0,
@@ -540,7 +568,13 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
         return { ...s, vitals: { ...(s.vitals || {}), [vitalField]: novoVital } };
       });
 
-      // Recompensar visitante
+      /* ── O GANHO VAI POR DIFERENÇA ──
+         Escrevia-se `moedas + 5` com o valor GRAVADO, e o do navegador
+         quase sempre está à frente (as moedas creditam-se no cliente e o
+         save vem depois): a visita devolvia um total menor e o jogador
+         via o saldo ANDAR PARA TRÁS — "não ganhei nada". Agora soma-se
+         no banco (increment) e o navegador soma a mesma diferença no
+         que tem. */
       const novasMoedas = moedas + MOEDAS_VISITA;
 
       // ── E O OUTRO LADO ──
@@ -567,7 +601,7 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
       }]).slice(-MAX_INBOX_VISITAS);
 
       tx.update(db.collection('players').doc(uid), {
-        'gs.moedas':                        novasMoedas,
+        'gs.moedas':                        FV.increment(MOEDAS_VISITA),
         [`visitasLog.${alvoUid}.${tipo}`]:  Date.now(),
       });
       tx.update(db.collection('players').doc(alvoUid), {
@@ -575,7 +609,8 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
         inboxVisitas:  inboxNovo,
       });
 
-      return { novasMoedas, xpGanho: XP_VISITA, novoVital };
+      return { novasMoedas, ganhoMoedas: MOEDAS_VISITA, xpGanho: XP_VISITA,
+               vinculoDado: VINCULO_VISITADO, novoVital };
     });
 
     return res.status(200).json({ ok: true, ...resultado });

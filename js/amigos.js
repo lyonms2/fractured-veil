@@ -42,10 +42,12 @@ function fecharAmigos() {
 window.fecharAmigos = fecharAmigos;
 
 // ── Carregar dados da API ────────────────────────────────────
+/* Busca sempre, desenhe ou não: a tela de visita conta as interações do
+   dia a partir destes dados, e com a tela de Amigos fechada ela parava
+   em "0/10" mesmo depois de eu ter visitado. */
 async function _carregarAmigos() {
   const el = document.getElementById('amigosConteudo');
-  if(!el) return;
-  el.innerHTML = `<div class="amigos-loading">${t('amigos.loading')}</div>`;
+  if(el) el.innerHTML = `<div class="amigos-loading">${t('amigos.loading')}</div>`;
 
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
@@ -55,7 +57,7 @@ async function _carregarAmigos() {
     _amigosData = { amigos: json.amigos, pedidos: json.pedidos, visitasLog: json.visitasLog,
                     meuCodigo: json.meuCodigo || null };
     _updateAmigosBadge(json.pedidos.length);
-    _renderAmigos();
+    if(el) _renderAmigos();
   } catch(err) {
     if(el) el.innerHTML = `<div class="amigos-empty">${t('amigos.error', {msg: esc(err.message)})}</div>`;
   }
@@ -258,6 +260,64 @@ async function amigoRecusar(alvoUid) {
 }
 window.amigoRecusar = amigoRecusar;
 
+/* ═══ O PEDIDO DE AMIZADE AVISA ═══
+   Ficava só dentro da tela de Amigos, com um número na bolha: quem não
+   abrisse a tela não sabia de nada. Agora chega como o desafio do PvP —
+   um cartão no canto, em qualquer tela, com Aceitar e Recusar — e usa a
+   mesma caixa e o mesmo desenho (.pvp-convite, css/pvp.css), porque é o
+   mesmo gesto: alguém chamou, e há duas respostas.
+
+   Quem os traz é o ouvinte do próprio documento, que já existia para a
+   sessão (js/auth.js): nenhuma leitura nova. */
+const _amigosAvisados = {};
+function amigosAvisarPedidos(pedidos) {
+  const lista = Array.isArray(pedidos) ? pedidos : [];
+  const vivos = new Set(lista.map(p => p && p.de).filter(Boolean));
+  let box = document.getElementById('pvpConvites');
+  // O que já não está pendente (aceito, recusado, retirado) sai da tela.
+  if (box) box.querySelectorAll('.pvp-convite.amigo').forEach(el => {
+    if (!vivos.has(el.dataset.de)) el.remove();
+  });
+  for (const p of lista) {
+    if (!p || !p.de || _amigosAvisados[p.de]) continue;
+    _amigosAvisados[p.de] = true;
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'pvpConvites'; box.className = 'pvp-convites';
+      document.body.appendChild(box);
+    }
+    if (box.querySelector(`.pvp-convite.amigo[data-de="${CSS.escape(p.de)}"]`)) continue;
+    const el = document.createElement('div');
+    el.className = 'pvp-convite amigo';
+    el.dataset.de = p.de;
+    el.innerHTML = `
+      <div class="pvp-convite-marca amigo">🤝</div>
+      <div class="pvp-convite-txt">
+        <b>${esc(t('amigos.pedido.titulo', { nome: p.nome || t('id.sem_nome') }))}</b>
+        <span>${esc(t('amigos.pedido.sub'))}</span>
+      </div>
+      <div class="pvp-convite-acoes">
+        <button class="pvp-btn mini" onclick="amigosResponder('${esc(p.de)}', true)">${esc(t('amigos.pedido.aceitar'))}</button>
+        <button class="pvp-btn mini sec" onclick="amigosResponder('${esc(p.de)}', false)">${esc(t('amigos.pedido.recusar'))}</button>
+      </div>`;
+    box.appendChild(el);
+  }
+}
+window.amigosAvisarPedidos = amigosAvisarPedidos;
+
+async function amigosResponder(uid, aceitar) {
+  const el = document.querySelector(`.pvp-convite.amigo[data-de="${CSS.escape(uid)}"]`);
+  if (el) el.classList.add('aceitando');
+  try {
+    if (aceitar) await amigoAceitar(uid); else await amigoRecusar(uid);
+    if (typeof showToast === 'function')
+      showToast(t(aceitar ? 'amigos.pedido.aceito' : 'amigos.pedido.recusado'), aceitar ? 'ok' : 'info');
+  } finally {
+    if (el) { el.classList.add('saindo'); setTimeout(() => el.remove(), 350); }
+  }
+}
+window.amigosResponder = amigosResponder;
+
 // ── Remover amigo ────────────────────────────────────────────
 async function amigoRemover(alvoUid) {
   if(!confirm(t('amigos.confirm_remove'))) return;
@@ -294,6 +354,8 @@ function _contarVisitasGlobais() {
 
 // ── Abrir overlay de visita ──────────────────────────────────
 async function amigoAbrirVisita(alvoUid) {
+  // Sem a lista carregada, o contador de interações mentiria.
+  if (!_amigosData) { try { await _carregarAmigos(); } catch (e) {} }
   const overlay = document.getElementById('visitaOverlay');
   const body    = document.getElementById('visitaBody');
   if(!overlay || !body) return;
@@ -324,6 +386,8 @@ async function amigoAbrirVisita(alvoUid) {
       uid: alvoUid, colonia: json.colonia || [],
       nomeJogador: json.nomeJogador || null,
       escolhido: 0, cooldowns: json.cooldowns,
+      // De quando são os medidores (o último save do dono).
+      visto: json.visto || null,
     };
     _renderVisitaOverlay();
   } catch(err) {
@@ -371,6 +435,28 @@ function visitaZoom() {
   openAvatarZoomData(perfil.raridade, perfil.seed, perfil.nivel, _visitaNome(perfil), perfil);
 }
 window.visitaZoom = visitaZoom;
+
+/* A fase por extenso (BEBÊ, JOVEM, ADULTO, ANCIÃO), como o resto do
+   jogo mostra — a linha dizia só o nível e a raridade. */
+function _visitaFase(p) {
+  const fases = (typeof FASES !== 'undefined') ? FASES : [];
+  const f = fases[_faseNum(p.nivel || 1)];
+  return f ? ' · ' + esc(f) : '';
+}
+
+/* De quando é esta fotografia. Os medidores são do último save do dono:
+   sem dizer isso, pareciam de agora — e um amigo que não entra há dois
+   dias aparecia com a fome de dois dias atrás como se fosse a de hoje. */
+function _visitaVistoHTML() {
+  const quando = _visitaAtual && _visitaAtual.visto;
+  if (!quando) return '';
+  const min = Math.max(0, Math.round((Date.now() - quando) / 60000));
+  const txt = min < 2 ? t('amigos.visto.agora')
+            : min < 60 ? t('amigos.visto.min', { n: min })
+            : min < 60 * 48 ? t('amigos.visto.h', { n: Math.round(min / 60) })
+            : t('amigos.visto.d', { n: Math.round(min / 1440) });
+  return `<div class="visita-visto">${esc(txt)}</div>`;
+}
 
 function _renderVisitaOverlay() {
   const body = document.getElementById('visitaBody');
@@ -433,7 +519,9 @@ function _renderVisitaOverlay() {
       </div>
     </div>
     <div class="visita-nome">${esc(_visitaNome(perfil))}</div>
-    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade)})}</div>
+    <div class="visita-meta">${t('amigos.meta', {nivel: perfil.nivel, raridade: esc(perfil.raridade)})}${
+      _visitaFase(perfil)}</div>
+    ${_visitaVistoHTML()}
 
     <div class="visita-vitals">
       ${acoes.map(a => {
@@ -487,9 +575,11 @@ async function executarVisita(tipo) {
     const json = await resp.json();
     if(!json.ok) throw new Error(json.erro || 'erro');
 
-    // Atualizar estado local do visitante
-    gs.moedas = json.novasMoedas;
-    xp = (xp || 0) + json.xpGanho;
+    /* Soma-se a DIFERENÇA ao que este navegador tem, e não o total que
+       o servidor calculou do save: o save fica para trás, e pôr o total
+       dele aqui fazia o saldo andar para trás. */
+    gs.moedas = (gs.moedas || 0) + (json.ganhoMoedas ?? CUSTO_VISITA);
+    xp = (xp || 0) + (json.xpGanho ?? XP_VISITA);
     updateResourceUI();
     scheduleSave();
 
@@ -508,7 +598,7 @@ async function executarVisita(tipo) {
     }
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
-    if(typeof showFloat === 'function') showFloat(`+${CUSTO_VISITA} 🪙 +${XP_VISITA} XP`, '#7ab87a');
+    if(typeof showFloat === 'function') showFloat(`+${json.ganhoMoedas ?? CUSTO_VISITA} 🪙 +${json.xpGanho ?? XP_VISITA} XP`, '#7ab87a');
     // O recado diz a QUEM se levou, e agora isso é uma escolha: lê-se
     // do escolhido, e não de um `perfil` que deixou de existir.
     if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaNome(_alvo)), coins: CUSTO_VISITA, xp: XP_VISITA}), 'good');

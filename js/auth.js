@@ -304,6 +304,11 @@ async function _onLoginSuccess(user) {
     // e um deles pode ter o sessionId antigo, causando falso logout.
     const _sessionSetAt = Date.now();
     _sessionUnsub = fbDb().collection('players').doc(walletAddress).onSnapshot(snap => {
+      /* Os pedidos de amizade vêm de carona neste ouvinte, que já existia
+         para a sessão: chegam como cartão no canto (js/amigos.js), em
+         qualquer tela, como o desafio do PvP. */
+      if(snap.exists && typeof amigosAvisarPedidos === 'function')
+        amigosAvisarPedidos(snap.data().pedidosAmizade || []);
       if(Date.now() - _sessionSetAt < 3000) return; // ignora bursts iniciais
       if(!snap.exists || !_sessionId) return;
       const remote = snap.data().sessionId;

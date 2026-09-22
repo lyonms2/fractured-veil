@@ -3196,3 +3196,24 @@ b.laco { color: #f5a3c7; }
   .cb-posto.conjura .cb-corpo, .cb-posto.golpeia .cb-corpo { animation: none; }
   .cb-posto.crise:not(.alvo):not(.caido):not(.tombando):not(.avanca):not(.bate):not(.esquiva):not(.defende):not(.conjura):not(.golpeia) .cb-corpo { animation: none; filter: drop-shadow(0 0 0.14rem rgba(255,50,50,.8)); }
 }
+
+
+/* ── O TOPO NÃO SE AMONTOA ──
+   Rodada, nomes e o botão viviam num flex sem folga, e no PvP — onde o
+   meio passou a dizer "Fulano × Beltrano" — o Desistir ficava colado no
+   texto. Agora o meio é o único que encolhe (e corta com reticências), e
+   o botão tem o seu espaço e o tamanho de um dedo. */
+.cb-palco .cb-topo { display: flex; align-items: center; gap: 0.625rem; }
+.cb-palco .cb-topo #cbTurno { flex: 0 0 auto; white-space: nowrap; }
+.cb-palco .cb-topo .cb-topo-nome {
+  flex: 1 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cb-palco .cb-topo .cb-topo-dir { flex: 0 0 auto; }
+.cb-palco .cb-topo button.desistir {
+  padding: 0.3125rem 0.625rem; min-height: 1.75rem; white-space: nowrap;
+}
+@media (max-width: 680px), (orientation: portrait) {
+  .cb-palco .cb-topo { gap: 0.4375rem; padding-right: 0.375rem; }
+  .cb-palco .cb-topo button.desistir { padding: 0.375rem 0.5rem; min-height: 2rem; }
+}
