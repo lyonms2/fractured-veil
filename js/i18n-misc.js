@@ -26,7 +26,7 @@ window.registerStrings(
     'fazenda.coco':          '{n} cocô por limpar',
 
     // amigos.js
-    'amigos.log.visited':    '{icon} Você visitou {nome}! +{coins} 🪙 +{xp} XP',
+    'amigos.log.visited':    '{icon} Você visitou {nome}! +{coins} 🪙',
     'amigos.log.recebida':  '{icon} {nome} passou por aqui e {accao}. +{vinculo} de vínculo.',
     'amigos.recebida.alimentar': 'deu de comer ao seu avatar',
     'amigos.recebida.brincar':   'brincou com o seu avatar',
@@ -76,7 +76,7 @@ window.registerStrings(
     'amigos.action.feed':    'Alimentar',
     'amigos.action.play':    'Brincar',
     'amigos.action.clean':   'Limpar',
-    'amigos.visit.cost':     '+{coins} 🪙 · +{xp} XP',
+    'amigos.visit.cost':     '+{coins} 🪙',
     'amigos.interactions':        '{done}/{max} interações (8h)',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ window.registerStrings(
     'fazenda.coco':          '{n} poop to clean up',
 
     // amigos.js
-    'amigos.log.visited':    '{icon} Visited {nome}! +{coins} 🪙 +{xp} XP',
+    'amigos.log.visited':    '{icon} Visited {nome}! +{coins} 🪙',
     'amigos.log.recebida':  '{icon} {nome} came by and {accao}. +{vinculo} bond.',
     'amigos.recebida.alimentar': 'fed your avatar',
     'amigos.recebida.brincar':   'played with your avatar',
@@ -145,7 +145,7 @@ window.registerStrings(
     'amigos.action.feed':    'Feed',
     'amigos.action.play':    'Play',
     'amigos.action.clean':   'Clean',
-    'amigos.visit.cost':     '+{coins} 🪙 · +{xp} XP',
+    'amigos.visit.cost':     '+{coins} 🪙',
     'amigos.interactions':        '{done}/{max} interactions (8h)',
   }
 );

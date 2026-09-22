@@ -35,12 +35,13 @@ require('./_genetica.js');
 
    O js/amigos.js mostra este número (CUSTO_VISITA) e tem de mudar junto. */
 const MOEDAS_VISITA = 5;
-/* E o XP, na mesma linha das moedas. Eram 15: com 30 visitas por dia,
-   450 XP de graça para o avatar aberto — mais do que 25 minijogos
-   perfeitos no Fácil (DIFF_TIERS, em js/modal.js). Agora são 5, 150 por
-   dia: um empurrão, e não um atalho para subir de nível.
-   O js/amigos.js mostra este número (XP_VISITA) e tem de mudar junto. */
-const XP_VISITA     = 5;
+/* O XP DA VISITA SAIU (22/09/2026, decidido pelo dono do jogo).
+
+   Eram 15, depois 5, e sempre com o mesmo defeito de fundo: caía no
+   avatar que estivesse ABERTO, que não é o que recebeu carinho nenhum —
+   quem foi alimentado foi o bicho do amigo. A visita paga em moedas, que
+   são do jogador, e o que fica para o outro lado é o vínculo. Subir de
+   nível é coisa de quem luta e de quem cuida. */
 const VITAL_BOOST   = 20;
 // O que fica para QUEM É VISITADO. Vínculo e não moedas de propósito:
 // duas contas a visitarem-se uma à outra já se pagam como visitantes, e
@@ -609,7 +610,7 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
         inboxVisitas:  inboxNovo,
       });
 
-      return { novasMoedas, ganhoMoedas: MOEDAS_VISITA, xpGanho: XP_VISITA,
+      return { novasMoedas, ganhoMoedas: MOEDAS_VISITA,
                vinculoDado: VINCULO_VISITADO, novoVital };
     });
 

@@ -6,7 +6,6 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const COOLDOWN_VISITA_MS = 8 * 60 * 60 * 1000; // 8h
-const XP_VISITA          = 5;    // o XP_VISITA do api/amigos.js
 const CUSTO_VISITA       = 5;   // o MOEDAS_VISITA do api/amigos.js
 const MAX_VISITAS_GLOBAL = 10;
 
@@ -476,7 +475,7 @@ function _renderVisitaOverlay() {
     const vitalMax   = Math.round(vitals[vitalKey] ?? 100) >= 100;
 
     let disabled = false;
-    let subLabel = t('amigos.visit.cost', {coins: CUSTO_VISITA, xp: XP_VISITA});
+    let subLabel = t('amigos.visit.cost', {coins: CUSTO_VISITA});
 
     if(emCooldown)          { disabled = true; subLabel = `(${_formatMs(restMs)})`; }
     else if(vitalMax)       { disabled = true; subLabel = t('amigos.vital_max'); }
@@ -579,7 +578,6 @@ async function executarVisita(tipo) {
        o servidor calculou do save: o save fica para trás, e pôr o total
        dele aqui fazia o saldo andar para trás. */
     gs.moedas = (gs.moedas || 0) + (json.ganhoMoedas ?? CUSTO_VISITA);
-    xp = (xp || 0) + (json.xpGanho ?? XP_VISITA);
     updateResourceUI();
     scheduleSave();
 
@@ -598,10 +596,10 @@ async function executarVisita(tipo) {
     }
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
-    if(typeof showFloat === 'function') showFloat(`+${json.ganhoMoedas ?? CUSTO_VISITA} 🪙 +${json.xpGanho ?? XP_VISITA} XP`, '#7ab87a');
+    if(typeof showFloat === 'function') showFloat(`+${json.ganhoMoedas ?? CUSTO_VISITA} 🪙`, '#7ab87a');
     // O recado diz a QUEM se levou, e agora isso é uma escolha: lê-se
     // do escolhido, e não de um `perfil` que deixou de existir.
-    if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaNome(_alvo)), coins: CUSTO_VISITA, xp: XP_VISITA}), 'good');
+    if(typeof addLog   === 'function') addLog(t('amigos.log.visited', {icon: icones[tipo], nome: esc(_visitaNome(_alvo)), coins: CUSTO_VISITA}), 'good');
 
     _renderVisitaOverlay();
     // Reprojectar animação no novo DOM (re-render destrói o elemento anterior)
