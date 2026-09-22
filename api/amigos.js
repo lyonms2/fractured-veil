@@ -318,9 +318,44 @@ module.exports = async function handler(req, res) {
 
         const myCooldowns = (myData.visitasLog || {})[perfil] || {};
 
+        /* ── QUANTAS INTERAÇÕES ELE AINDA TEM, E DE QUANTAS ──
+
+           A tela dizia sempre "/10", e contava do log que o cliente
+           tinha carregado quando abriu a lista. Os dois números
+           mentiam.
+
+           O teto: cada amigo dá TRÊS interações por 8h — uma por ação,
+           e o descanso é por amigo, não por avatar. Quem tem um amigo
+           só nunca passa de três, e via "3/10" com todos os botões
+           parados, como se lhe faltassem sete. O teto verdadeiro é
+           3 × amigos, e o 10 só entra quando ele tem quatro ou mais.
+
+           A conta: aqui, no mesmo lugar onde o limite é aplicado, para
+           não haver dois números diferentes. E vai junto quanto falta
+           para a primeira voltar, que é a pergunta seguinte de quem
+           chegou ao fim. */
+        const agoraLim = Date.now();
+        const meuLog   = myData.visitasLog || {};
+        let interacoes = 0, proximaEm = 0;
+        for (const amigoUid of Object.keys(meuLog)) {
+          const log = meuLog[amigoUid] || {};
+          for (const tp of Object.keys(log)) {
+            const falta = COOLDOWN_MS - (agoraLim - (log[tp] || 0));
+            if (falta > 0) {
+              interacoes++;
+              if (!proximaEm || falta < proximaEm) proximaEm = falta;
+            }
+          }
+        }
+        const teto = Math.min(MAX_VISITAS,
+                              Object.keys(myData.amigos || {}).length * Object.keys(TIPO_VITAL).length);
+
         return res.status(200).json({
           ok:      true,
           colonia: vivos,
+          interacoes,
+          teto,
+          proximaEm,
           nomeJogador: targetData.nomeJogador || null,
           // Desde quando é esta fotografia: os medidores são do último
           // save do dono, e sem isto pareciam de agora.

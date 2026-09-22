@@ -78,6 +78,7 @@ window.registerStrings(
     'amigos.action.clean':   'Limpar',
     'amigos.visit.cost':     '+{coins} 🪙',
     'amigos.interactions':        '{done}/{max} interações (8h)',
+    'amigos.interactions.volta':  '· a próxima volta em {tempo}',
   },
   // ── ENGLISH ────────────────────────────────────────────────────
   {
@@ -147,5 +148,6 @@ window.registerStrings(
     'amigos.action.clean':   'Clean',
     'amigos.visit.cost':     '+{coins} 🪙',
     'amigos.interactions':        '{done}/{max} interactions (8h)',
+    'amigos.interactions.volta':  '· next one in {tempo}',
   }
 );

@@ -8,6 +8,10 @@
 const COOLDOWN_VISITA_MS = 8 * 60 * 60 * 1000; // 8h
 const CUSTO_VISITA       = 5;   // o MOEDAS_VISITA do api/amigos.js
 const MAX_VISITAS_GLOBAL = 10;
+/* Alimentar, brincar e limpar: o descanso de 8h é por amigo e por ação,
+   então cada amigo dá três interações por janela (o TIPO_VITAL do
+   api/amigos.js). É isto que faz o teto de quem tem poucos amigos. */
+const ACOES_POR_AMIGO    = 3;
 
 let _amigosData    = null; // { amigos, pedidos, visitasLog }
 let _visitaAtual   = null; // perfil do amigo sendo visitado
@@ -338,6 +342,28 @@ async function amigoRemover(alvoUid, botao) {
 }
 window.amigoRemover = amigoRemover;
 
+/* ── O CONTADOR DA TELA DE VISITA ──
+
+   Quem manda é o servidor: ele conta no mesmo sítio onde aplica o
+   limite (ver api/amigos.js, perfil), e assim os dois números nunca
+   discordam — nem quando o jogador visitou no telemóvel e voltou ao
+   computador sem recarregar a lista.
+
+   A conta local fica como rede: um cache antigo da /api continua a
+   mostrar alguma coisa em vez de "0/0". */
+function _visitaFeitas() {
+  if (_visitaAtual && typeof _visitaAtual.interacoes === 'number') return _visitaAtual.interacoes;
+  return _contarVisitasGlobais();
+}
+
+/* O teto REAL: cada amigo dá três interações por 8h (uma por ação), e
+   o descanso é por amigo. Com dois amigos o máximo é seis, e não dez. */
+function _visitaTeto() {
+  if (_visitaAtual && typeof _visitaAtual.teto === 'number') return _visitaAtual.teto;
+  const nAmigos = Object.keys(_amigosData?.amigos || {}).length;
+  return Math.min(MAX_VISITAS_GLOBAL, nAmigos * ACOES_POR_AMIGO);
+}
+
 // ── Contar interações globais nas últimas 8h ─────────────────
 function _contarVisitasGlobais() {
   if(!_amigosData?.visitasLog) return 0;
@@ -388,6 +414,14 @@ async function amigoAbrirVisita(alvoUid) {
       escolhido: 0, cooldowns: json.cooldowns,
       // De quando são os medidores (o último save do dono).
       visto: json.visto || null,
+      /* Quantas interações já gastou e de quantas — contadas pelo
+         servidor, onde o limite é aplicado. O `voltaTs` é o instante em
+         que a primeira volta a estar livre, guardado como hora e não
+         como "falta tanto": o painel redesenha-se várias vezes e o
+         tempo tem de continuar a andar. */
+      interacoes: (typeof json.interacoes === 'number') ? json.interacoes : null,
+      teto:       (typeof json.teto === 'number')       ? json.teto       : null,
+      voltaTs:    json.proximaEm ? Date.now() + json.proximaEm : 0,
     };
     _renderVisitaOverlay();
   } catch(err) {
@@ -466,8 +500,9 @@ function _renderVisitaOverlay() {
   if(!perfil) { body.innerHTML = `<div class="amigos-empty">${t('amigos.no_avatar')}</div>`; return; }
   const vitals = perfil.vitals || {};
   const agora        = Date.now();
-  const visitasFeitas = _contarVisitasGlobais();
-  const limiteAtingido = visitasFeitas >= MAX_VISITAS_GLOBAL;
+  const visitasFeitas  = _visitaFeitas();
+  const tetoVisitas    = _visitaTeto();
+  const limiteAtingido = visitasFeitas >= tetoVisitas;
 
   function btnInfo(tipo, vitalKey) {
     const last   = cooldowns[tipo] || 0;
@@ -539,7 +574,12 @@ function _renderVisitaOverlay() {
     </div>
 
     <div class="visita-limite-info" style="text-align:center;font-size:0.6875rem;color:${limiteAtingido?'#e06c75':'#aaa'};margin-bottom:0.375rem;">
-      ${t('amigos.interactions', {done: visitasFeitas, max: MAX_VISITAS_GLOBAL})}
+      ${t('amigos.interactions', {done: visitasFeitas, max: tetoVisitas})}${
+        /* Chegado ao fim, o número sozinho é um beco: diz-se quando a
+           primeira volta. */
+        limiteAtingido && _visitaAtual.voltaTs
+          ? ' ' + t('amigos.interactions.volta', {tempo: _formatMs(_visitaAtual.voltaTs - agora)})
+          : ''}
     </div>
 
     <div class="visita-acoes">
@@ -595,6 +635,9 @@ async function executarVisita(tipo) {
       if(!_amigosData.visitasLog[_visitaAtual.uid]) _amigosData.visitasLog[_visitaAtual.uid] = {};
       _amigosData.visitasLog[_visitaAtual.uid][tipo] = Date.now();
     }
+    // …e o contador do servidor anda com ela, sem pedir o perfil outra vez.
+    if(typeof _visitaAtual.interacoes === 'number') _visitaAtual.interacoes++;
+    if(!_visitaAtual.voltaTs) _visitaAtual.voltaTs = Date.now() + COOLDOWN_VISITA_MS;
 
     const icones = { alimentar:'🍖', brincar:'🎮', limpar:'🧼' };
     if(typeof showFloat === 'function') showFloat(`+${json.ganhoMoedas ?? CUSTO_VISITA} 🪙`, '#7ab87a');
