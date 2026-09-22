@@ -7,7 +7,8 @@
 //    acao='sairFila'  → sai da fila
 //    acao='convidar'  → desafia um amigo (amistoso, fora do ranking) { alvo, ids }
 //    acao='aceitar'   → aceita o desafio de um amigo            { de, ids }
-//    acao='sairSala'  → deixa a sala antes da luta               { sala }
+//    acao='sairSala'  → deixa a sala (depois do versus é desistir) { sala }
+//    acao='encerrar'  → refaz a luta e grava o vencedor, ou o W.O. { sala }
 //
 // ── QUEM DECIDE O QUÊ ──
 //
@@ -67,6 +68,9 @@ function initAdmin() {
 
 // Os estados de uma sala em que o jogador ainda está.
 const SALA_VIVA = ['preparando', 'luta'];
+
+/* O motor e a IA não estão no _genetica.js inteiros: a IA não entra, mas
+   o motor sim (fuIniciar, fuAgir…), e é ele que refaz a luta. */
 
 class Recusa extends Error {
   constructor(status, codigo, extra) { super(codigo); this.status = status; this.codigo = codigo; this.extra = extra || {}; }
@@ -158,7 +162,9 @@ async function criarSala(rtdb, tipo, a, b) {
     criada: agora,
     inicio: agora + R.PVP_VERSUS_MS,
     seed: crypto.randomInt(1, 2147483646),
-    estado: 'preparando',
+    /* Já em luta: o versus é só a tela até `inicio`, e a primeira jogada
+       conta o relógio a partir dele (pvpContexto). */
+    estado: 'luta',
     lados: { A: aEhA ? a.uid : b.uid, B: aEhA ? b.uid : a.uid },
     jogadores,
   });
@@ -325,28 +331,87 @@ async function acaoAceitar(ctx) {
   return { sala };
 }
 
-// ── SAIR DA SALA ─────────────────────────────────────────────────
-/* Antes da luta (etapa 1) sair encerra a sala para os dois, sem
-   vencedor. Dentro da luta, sair será abandono — isso é da etapa 2. */
-async function acaoSairSala(ctx) {
-  const { rtdb, uid, body } = ctx;
-  const id = String(body.sala || '');
-  if (!id || id.length > 64) throw new Recusa(400, 'parametros');
+// ── O FIM DA SALA ────────────────────────────────────────────────
+/* Grava o fim uma vez só (os dois navegadores chamam, às vezes no mesmo
+   instante) e solta os dois ponteiros. O resultado é o mesmo para os
+   dois pedidos, porque vem da mesma luta refeita. */
+async function fecharSala(rtdb, id, sala, dados) {
   const ref = rtdb.ref(`pvp/salas/${id}`);
-  const sala = (await ref.once('value')).val();
-  if (!sala || !sala.jogadores || !sala.jogadores[uid]) throw new Recusa(404, 'sem_sala');
-  if (sala.estado === 'preparando') {
-    await ref.update({ estado: 'encerrada', motivo: 'saiu', saiu: uid, fim: Date.now() });
-  }
-  for (const q of Object.keys(sala.jogadores)) {
+  /* O `null` da primeira volta é "ainda não li", e não "não há sala":
+     devolvê-lo faz o Firebase ir buscar o valor e rodar de novo. Desistir
+     aí (undefined) abortava sem nunca consultar o servidor — a sala não
+     fechava nunca (visto nos testes). */
+  const r = await ref.child('estado').transaction(e =>
+    (e === null ? null : SALA_VIVA.indexOf(e) !== -1 ? 'fim' : undefined));
+  if (r.committed) await ref.update(Object.assign({ fim: Date.now() }, dados));
+  for (const q of Object.keys(sala.jogadores || {})) {
     await rtdb.ref(`pvp/jogador/${q}/sala`).transaction(v => (v === id ? null : v));
   }
-  return {};
+  const final = (await ref.once('value')).val() || {};
+  return { vencedor: final.vencedor || null, motivo: final.motivo || null, estado: final.estado };
+}
+
+async function lerSalaMinha(rtdb, uid, body) {
+  const id = String(body.sala || '');
+  if (!id || id.length > 64) throw new Recusa(400, 'parametros');
+  const sala = (await rtdb.ref(`pvp/salas/${id}`).once('value')).val();
+  if (!sala || !sala.jogadores || !sala.jogadores[uid]) throw new Recusa(404, 'sem_sala');
+  return { id, sala };
+}
+
+/* ── SAIR ──
+   Durante o versus, sair desfaz a sala para os dois, sem vencedor.
+   Depois dele, a luta começou: sair é desistir, e o outro vence. */
+async function acaoSairSala(ctx) {
+  const { rtdb, uid, body } = ctx;
+  const { id, sala } = await lerSalaMinha(rtdb, uid, body);
+  if (SALA_VIVA.indexOf(sala.estado) === -1) {
+    // Já acabou: só solta o ponteiro que tiver ficado.
+    await rtdb.ref(`pvp/jogador/${uid}/sala`).transaction(v => (v === id ? null : v));
+    return {};
+  }
+  if (Date.now() < (sala.inicio || 0)) {
+    return fecharSala(rtdb, id, sala, { estado: 'encerrada', motivo: 'saiu', saiu: uid, vencedor: null });
+  }
+  const outro = R.pvpOutroLado(R.pvpLadoDe(sala, uid));
+  return fecharSala(rtdb, id, sala, { vencedor: sala.lados[outro], motivo: 'desistiu', saiu: uid });
+}
+
+/* ── ENCERRAR: A CONFERÊNCIA ──
+   O navegador diz que a luta acabou; o servidor não acredita, refaz.
+   A luta inteira sai da semente e da lista de jogadas (pvpRepetir, a
+   mesma conta dos navegadores), e o vencedor é o que a refeita disser.
+
+   Se a luta ainda não acabou, a única coisa que se pode reclamar é o
+   W.O.: o outro está desconectado há mais de 2 minutos (a presença dele
+   na sala diz desde quando). Nada disso? A luta segue. */
+async function acaoEncerrar(ctx) {
+  const { rtdb, uid, body } = ctx;
+  const { id, sala } = await lerSalaMinha(rtdb, uid, body);
+  if (SALA_VIVA.indexOf(sala.estado) === -1) {
+    await rtdb.ref(`pvp/jogador/${uid}/sala`).transaction(v => (v === id ? null : v));
+    return { vencedor: sala.vencedor || null, motivo: sala.motivo || null, estado: sala.estado };
+  }
+  const r = R.pvpRepetir(sala);
+  if (r.fim) {
+    const vencedor = r.fim.vencedor ? sala.lados[r.fim.vencedor] : null;
+    return fecharSala(rtdb, id, sala, { vencedor, motivo: r.fim.motivo, jogadas: r.lidas });
+  }
+  const meuLado = R.pvpLadoDe(sala, uid);
+  const outroUid = sala.lados[R.pvpOutroLado(meuLado)];
+  const p = (sala.presenca || {})[outroUid] || {};
+  const agora = Date.now();
+  // Nunca apareceu na luta: conta desde o começo dela.
+  const foraDesde = p.fora ? p.fora : (!p.on ? (sala.inicio || agora) : null);
+  if (foraDesde && agora - foraDesde > R.PVP_FORA_MS) {
+    return fecharSala(rtdb, id, sala, { vencedor: uid, motivo: 'desconectou', jogadas: r.lidas });
+  }
+  throw new Recusa(409, 'em_curso');
 }
 
 const ACOES = {
   entrar: acaoEntrar, procurar: acaoProcurar, sairFila: acaoSairFila,
-  convidar: acaoConvidar, aceitar: acaoAceitar, sairSala: acaoSairSala,
+  convidar: acaoConvidar, aceitar: acaoAceitar, sairSala: acaoSairSala, encerrar: acaoEncerrar,
 };
 
 module.exports = async function handler(req, res) {

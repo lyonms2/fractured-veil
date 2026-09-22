@@ -97,6 +97,107 @@ function regrasPuras() {
   conferir('o poder é a soma dos níveis', R.pvpPoder([{ nivel: 30 }, { nivel: 28 }, { nivel: 1 }]) === 59);
 }
 
+/* ═══ 1b. A LUTA PELA REDE ═══
+   Lutas inteiras jogadas pela IA dos dois lados, passando pelo formato
+   da rede (pvpParaRede → pvpPreparar → fuAgir), jogada a jogada, como o
+   navegador faz. No fim, a mesma luta refeita da lista (pvpRepetir, como
+   o servidor faz) tem de sair IGUAL: mesmo vencedor, mesmas vidas, mesmo
+   relógio do acaso. Se não sair, os dois navegadores e o servidor
+   discordariam sobre quem ganhou. */
+function lutaPelaRede() {
+  const GEN = require('../api/_genetica.js');
+  Object.assign(global, require('../js/ia-fu.js'));   // a IA joga pelos dois lados
+  titulo('A luta pela rede: jogada a jogada = refeita da lista');
+  const uidA = 'uA', uidB = 'uB';
+  let divergencias = 0, lutas = 0, jogadas = 0, fraudesIgnoradas = 0, porFim = {};
+  for (let k = 0; k < 40; k++) {
+    const nivel = [8, 20, 35, 55][k % 4];
+    const equipe = (dono) => [0, 1, 2].map(i => {
+      const c = GEN.certidaoDeInvocacao({ uid: dono, nome: 'T' });
+      return { id: `${dono}${i}`, nome: `B${i},T`, nivel, seed: c.seed, raridade: null, nascimento: c.nascimento };
+    });
+    const sala = { seed: 1000 + k * 7919, inicio: 1e12, lados: { A: uidA, B: uidB },
+                   jogadores: { [uidA]: { equipe: equipe('a') }, [uidB]: { equipe: equipe('b') } }, acoes: {} };
+    const eq = R.pvpEquipesDaSala(sala);
+    const estado = fuIniciar(eq.A, eq.B, sala.seed);
+    const ctx = R.pvpContexto(sala);
+    let ts = sala.inicio, n = 0, fim = null;
+    while (n < 400) {
+      R.pvpAvancar(estado);
+      if (estado.acabou) break;
+      const vez = fuVez(estado);
+      ts += 5000;
+      let a;
+      // De vez em quando: um estouro de tempo, e uma jogada fora da vez (que tem de ser ignorada).
+      if (n % 17 === 5) {
+        a = { tipo: 'tempo', por: uidA, ts: R.pvpPrazo(ctx) + 1 };
+        ts = a.ts;
+      } else {
+        if (n % 23 === 11) {
+          const intruso = { tipo: 'guardar', quem: estado[R.pvpOutroLado(vez.lado)][0].id,
+                            por: vez.lado === 'A' ? uidB : uidA, ts };
+          sala.acoes[R.pvpChave(n++)] = intruso;
+          const p0 = R.pvpPreparar(estado, intruso, ctx);
+          if (p0.tipo === 'ignorar') fraudesIgnoradas++;
+          R.pvpRegistrar(ctx, p0, false, intruso);
+          ts += 1000;
+        }
+        const d = fuIaDecidir(estado, vez.lado, vez.podem, 'medio');
+        const eng = Object.assign({ quem: d.quem }, d.acao);
+        a = Object.assign(R.pvpParaRede(estado, eng), { por: vez.lado === 'A' ? uidA : uidB, ts });
+      }
+      sala.acoes[R.pvpChave(n++)] = a;
+      const prep = R.pvpPreparar(estado, a, ctx);
+      let ok = prep.eng ? fuAgir(estado, prep.eng).length > 0 : false;
+      // A IA pode escolher uma jogada que o motor recusa: no jogo o menu nunca a oferece; aqui cai para a guarda.
+      if (prep.tipo === 'jogada' && !ok) {
+        const g = { tipo: 'guardar', quem: vez.podem[0], por: a.por, ts: ts + 1 };
+        sala.acoes[R.pvpChave(n++)] = g;
+        const p2 = R.pvpPreparar(estado, g, ctx);
+        ok = fuAgir(estado, p2.eng).length > 0;
+        fim = R.pvpRegistrar(ctx, p2, ok, g);
+      } else {
+        fim = R.pvpRegistrar(ctx, prep, prep.tipo === 'desistir' || ok, a);
+      }
+      jogadas++;
+      if (fim) break;
+    }
+    if (!fim) { R.pvpAvancar(estado); if (estado.acabou) fim = { vencedor: estado.vencedor, motivo: estado.porLimite ? 'limite' : 'luta' }; }
+    const r = R.pvpRepetir(sala);
+    const vidas = e => e.A.concat(e.B).map(c => c.pv + '/' + c.pm).join(',');
+    const igual = JSON.stringify(r.fim) === JSON.stringify(fim) && vidas(r.estado) === vidas(estado)
+               && r.estado.rng.passo === estado.rng.passo && r.estado.ronda === estado.ronda;
+    if (!igual) divergencias++;
+    if (fim) porFim[fim.motivo] = (porFim[fim.motivo] || 0) + 1;
+    lutas++;
+  }
+  conferir(`${lutas} lutas (${jogadas} jogadas): refeitas iguais às jogadas`, divergencias === 0, { divergencias });
+  conferir('as jogadas fora da vez foram ignoradas', fraudesIgnoradas > 0, fraudesIgnoradas);
+  conferir('todas as lutas terminaram', Object.values(porFim).reduce((s, x) => s + x, 0) === lutas, porFim);
+
+  titulo('A rede não confia na magia');
+  {
+    const c = GEN.certidaoDeInvocacao({ uid: 'x', nome: 'T' });
+    const sala = { seed: 5, inicio: 0, lados: { A: 'p', B: 'q' },
+      jogadores: { p: { equipe: [0, 1, 2].map(i => ({ id: 'p' + i, nome: 'X,T', nivel: 30, seed: c.seed + i, nascimento: c.nascimento })) },
+                   q: { equipe: [0, 1, 2].map(i => ({ id: 'q' + i, nome: 'Y,T', nivel: 30, seed: c.seed + 9 + i, nascimento: c.nascimento })) } } };
+    const eq = R.pvpEquipesDaSala(sala);
+    const estado = fuIniciar(eq.A, eq.B, sala.seed);
+    const m = R.pvpParaMotor(estado, { tipo: 'magia', quem: 'A0', lugar: 'forte', magia: { id: 'x', fixo: 999, pm: 0 } });
+    conferir('a magia vem da ficha, não do pedido', m && m.magia && m.magia.fixo !== 999 && m.magia.id !== 'x', m && m.magia);
+    conferir('lugar inexistente não vira magia', R.pvpParaMotor(estado, { tipo: 'magia', quem: 'A0', lugar: 'hack' }) === null);
+    conferir('tipo desconhecido não vira jogada', R.pvpParaMotor(estado, { tipo: 'explodir', quem: 'A0' }) === null);
+    const ctx = R.pvpContexto(sala);
+    const cedo = R.pvpPreparar(estado, { tipo: 'tempo', por: 'q', ts: R.pvpPrazo(ctx) - 1 }, ctx);
+    conferir('"tempo" antes do prazo é ignorado', cedo.tipo === 'ignorar');
+    const desc = R.pvpPreparar(estado, { tipo: 'guardar', quem: 'A0', por: 'estranho', ts: 1 }, ctx);
+    conferir('quem não está na sala não joga', desc.tipo === 'ignorar');
+    const des = R.pvpPreparar(estado, { tipo: 'desistir', por: 'q', ts: 1 }, ctx);
+    const f = R.pvpRegistrar(ctx, des, true, { ts: 1 });
+    conferir('quem desiste perde', f && f.vencedor === 'A' && f.motivo === 'desistiu', f);
+  }
+}
+
 // ═══ 2. O SERVIDOR, NOS EMULADORES ═══
 async function servidor() {
   const PROJ = 'demo-teste';
@@ -180,7 +281,7 @@ async function servidor() {
   conferir('B entra (88) e forma par com A', r.ok && !!r.sala, r);
   const sala1 = r.sala;
   const s1 = (await rtdb.ref(`pvp/salas/${sala1}`).once('value')).val() || {};
-  conferir('a sala tem os dois, a semente e o estado', s1.estado === 'preparando' && s1.seed > 0
+  conferir('a sala tem os dois, a semente e o estado', s1.estado === 'luta' && s1.seed > 0
     && s1.jogadores && s1.jogadores.A && s1.jogadores.B && s1.tipo === 'fila', s1.estado);
   conferir('lados A e B sorteados entre os dois', [s1.lados && s1.lados.A, s1.lados && s1.lados.B].sort().join() === 'A,B');
   conferir('a equipe vai com o DNA da certidão', s1.jogadores && s1.jogadores.A.equipe.length === 3
@@ -329,9 +430,26 @@ async function servidor() {
   conferir('ler a sala de fora: negado', await rest('GET', `pvp/salas/${salaAD}`, 'C') === 401);
   conferir('ler a sala sem login: negado', await rest('GET', `pvp/salas/${salaAD}`, null) === 401);
   conferir('escrever na sala: negado', await rest('PUT', `pvp/salas/${salaAD}/estado`, 'A', 'luta') === 401);
-  conferir('marcar a própria presença na sala', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { '.sv': 'timestamp' }) === 200);
-  conferir('marcar a presença do outro: negado', await rest('PUT', `pvp/salas/${salaAD}/presenca/D`, 'A', { '.sv': 'timestamp' }) === 401);
-  conferir('presença numa sala alheia: negado', await rest('PUT', `pvp/salas/${salaAD}/presenca/C`, 'C', { '.sv': 'timestamp' }) === 401);
+  const TS = { '.sv': 'timestamp' };
+  conferir('marcar a própria presença na sala', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { on: TS }) === 200);
+  conferir('marcar-se fora (o onDisconnect)', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { fora: TS }) === 200);
+  conferir('presença sem forma: negado', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', TS) === 401);
+  conferir('marcar a presença do outro: negado', await rest('PUT', `pvp/salas/${salaAD}/presenca/D`, 'A', { on: TS }) === 401);
+  conferir('presença numa sala alheia: negado', await rest('PUT', `pvp/salas/${salaAD}/presenca/C`, 'C', { on: TS }) === 401);
+
+  // As jogadas.
+  const J = (x) => Object.assign({ tipo: 'guardar', quem: 'A0', ts: TS }, x);
+  conferir('escrever a própria jogada', await rest('PUT', `pvp/salas/${salaAD}/acoes/0000`, 'A', J({ por: 'A' })) === 200);
+  conferir('reescrever uma jogada: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/0000`, 'A', J({ por: 'A', tipo: 'atacar' })) === 401);
+  conferir('apagar uma jogada: negado', await rest('DELETE', `pvp/salas/${salaAD}/acoes/0000`, 'A') === 401);
+  conferir('jogada em nome do outro: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'A', J({ por: 'D' })) === 401);
+  conferir('jogada com hora inventada: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'A', J({ por: 'A', ts: 1 })) === 401);
+  conferir('jogada de tipo inventado: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'A', J({ por: 'A', tipo: 'vencer' })) === 401);
+  conferir('jogada com campo a mais (a magia inteira): negado',
+    await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'A', J({ por: 'A', tipo: 'magia', lugar: 'forte', magia: { fixo: 999 } })) === 401);
+  conferir('jogada numa casa fora do formato: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/1`, 'A', J({ por: 'A' })) === 401);
+  conferir('jogada de quem não está na sala: negado', await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'C', J({ por: 'C' })) === 401);
+  conferir('o outro também escreve a sua', await rest('PUT', `pvp/salas/${salaAD}/acoes/0001`, 'D', J({ por: 'D', quem: 'B0' })) === 200);
   conferir('ler o próprio ponteiro', await rest('GET', 'pvp/jogador/A', 'A') === 200);
   conferir('ler o ponteiro de outro: negado', await rest('GET', 'pvp/jogador/A', 'D') === 401);
   conferir('escrever o próprio ponteiro: negado', await rest('PUT', 'pvp/jogador/A/sala', 'A', 'forjada') === 401);
@@ -358,12 +476,82 @@ async function servidor() {
   conferir('forjar um convite: negado', await rest('PUT', 'pvp/convites/B/C', 'C', { nome: 'x', poder: 1, ts: 1, expira: 9e15 }) === 401);
   conferir('o convidado recusa (apaga)', await rest('DELETE', 'pvp/convites/B/A', 'B') === 200);
 
+  titulo('A luta: sair, desistir, W.O. e a conferência');
+  await limpar();
+  // Sair durante o versus: a sala se desfaz, sem vencedor.
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  let sv = r.sala;
+  r = await pedir('A', 'sairSala', { sala: sv });
+  let sx = (await rtdb.ref(`pvp/salas/${sv}`).once('value')).val() || {};
+  conferir('sair no versus: encerrada, sem vencedor', sx.estado === 'encerrada' && !sx.vencedor, sx.estado);
+  // Depois do versus, sair é desistir.
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  sv = r.sala;
+  await rtdb.ref(`pvp/salas/${sv}/inicio`).set(Date.now() - 1000);
+  r = await pedir('A', 'encerrar', { sala: sv });
+  conferir('encerrar no meio da luta: ainda em curso', r.status === 409 && r.erro === 'em_curso', r);
+  r = await pedir('D', 'sairSala', { sala: sv });
+  sx = (await rtdb.ref(`pvp/salas/${sv}`).once('value')).val() || {};
+  conferir('sair na luta: o outro vence por desistência', sx.estado === 'fim' && sx.vencedor === 'A' && sx.motivo === 'desistiu', sx);
+  const pa3 = (await rtdb.ref('pvp/jogador/A/sala').once('value')).val();
+  conferir('e os ponteiros saem', !pa3);
+  r = await pedir('A', 'encerrar', { sala: sv });
+  conferir('encerrar de novo devolve o mesmo fim', r.ok && r.vencedor === 'A' && r.motivo === 'desistiu', r);
+
+  // W.O.: o outro caiu há mais de 2 minutos.
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  sv = r.sala;
+  await rtdb.ref(`pvp/salas/${sv}/inicio`).set(Date.now() - 1000);
+  await rtdb.ref(`pvp/salas/${sv}/presenca/D`).set({ fora: Date.now() - 60000 });
+  r = await pedir('A', 'encerrar', { sala: sv });
+  conferir('caiu há 1 minuto: ainda não é W.O.', r.status === 409, r);
+  await rtdb.ref(`pvp/salas/${sv}/presenca/D`).set({ fora: Date.now() - 130000 });
+  r = await pedir('A', 'encerrar', { sala: sv });
+  conferir('caiu há mais de 2 minutos: W.O.', r.ok && r.vencedor === 'A' && r.motivo === 'desconectou', r);
+
+  // Uma luta inteira pela lista de jogadas, e a conferência do servidor.
+  Object.assign(global, require('../js/ia-fu.js'));
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  sv = r.sala;
+  const inicio = Date.now() - 1000;
+  await rtdb.ref(`pvp/salas/${sv}/inicio`).set(inicio);
+  let salaV = (await rtdb.ref(`pvp/salas/${sv}`).once('value')).val();
+  const eqV = R.pvpEquipesDaSala(salaV);
+  const est = fuIniciar(eqV.A, eqV.B, salaV.seed);
+  const ctxV = R.pvpContexto(salaV);
+  let nJ = 0, fimLocal = null;
+  while (nJ < 300) {
+    R.pvpAvancar(est);
+    if (est.acabou) break;
+    const vez = fuVez(est);
+    const d = fuIaDecidir(est, vez.lado, vez.podem, 'medio');
+    const eng = Object.assign({ quem: d.quem }, d.acao);
+    let a = Object.assign(R.pvpParaRede(est, eng), { por: salaV.lados[vez.lado], ts: inicio + (nJ + 1) * 1000 });
+    let prep = R.pvpPreparar(est, a, ctxV);
+    let okJ = prep.eng ? fuAgir(est, prep.eng).length > 0 : false;
+    if (!okJ) { a = { tipo: 'guardar', quem: vez.podem[0], por: a.por, ts: a.ts }; prep = R.pvpPreparar(est, a, ctxV); okJ = fuAgir(est, prep.eng).length > 0; }
+    await rtdb.ref(`pvp/salas/${sv}/acoes/${R.pvpChave(nJ++)}`).set(a);
+    fimLocal = R.pvpRegistrar(ctxV, prep, okJ, a);
+    if (fimLocal) break;
+  }
+  if (!fimLocal) { R.pvpAvancar(est); fimLocal = { vencedor: est.vencedor, motivo: est.porLimite ? 'limite' : 'luta' }; }
+  r = await pedir('D', 'encerrar', { sala: sv });
+  const esperado = fimLocal.vencedor ? salaV.lados[fimLocal.vencedor] : null;
+  conferir(`a conferência (${nJ} jogadas) dá o mesmo vencedor da luta`, r.ok && r.vencedor === esperado && r.motivo === fimLocal.motivo,
+           { servidor: r, esperado, motivo: fimLocal.motivo });
+
   await limpar();
   console.log('\n(servidor testado contra os emuladores)');
 }
 
 (async () => {
   regrasPuras();
+  try { lutaPelaRede(); }
+  catch (e) { mau++; falhas.push('  ✗ o teste da luta pela rede quebrou: ' + (e && e.stack || e)); }
   if (process.env.FIREBASE_DATABASE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST) {
     try { await servidor(); }
     catch (e) { mau++; falhas.push('  ✗ o teste do servidor quebrou: ' + (e && e.stack || e)); }

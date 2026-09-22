@@ -157,6 +157,7 @@ function pvpIniciar(uid) {
 }
 
 function pvpEncerrar() {
+  if (typeof pvpLutaAtiva === 'function' && pvpLutaAtiva() && typeof afFechar === 'function') afFechar();
   _pvpPararBusca();
   _pvpFecharSala(true);
   _pvpPararAmigos();
@@ -243,6 +244,11 @@ function _pvpRenderLobby() {
    faixa de poder que a fila aceita agora. Refaz-se a cada segundo sem
    tocar no resto do lobby. */
 function _pvpBuscaHTML(bloq) {
+  // Uma partida que ficou em curso vem antes de tudo: o relógio dela corre.
+  if (_pvpPendente) {
+    return `<div class="pvp-busca-tit pendente">${esc(t('pvp.luta.em_curso'))}</div>
+      <button class="pvp-btn pri" onclick="pvpVoltarPartida()">${esc(t('pvp.luta.voltar_partida'))}</button>`;
+  }
   if (_pvpFila) {
     const espera = Math.max(0, pvpAgora() - _pvpFila.desde);
     const [lo, hi] = pvpFaixa(_pvpFila.poder, espera);
@@ -274,12 +280,24 @@ async function pvpProcurar() {
     const r = await _pvpComEquipe('entrar');
     if (!r.sala) _pvpComecarBusca(r.desde, r.poder);
   } catch (e) {
-    if (e.codigo !== 'em_sala') showToast(_pvpErroTexto(e), 'err');
+    if (e.codigo === 'em_sala') _pvpReabrir(e.dados && e.dados.sala);
+    else showToast(_pvpErroTexto(e), 'err');
   } finally {
     _pvpOcupado = false; _pvpAtualizarBusca();
   }
 }
 window.pvpProcurar = pvpProcurar;
+
+/* O servidor diz que ainda há uma sala minha em curso (uma luta que o
+   jogador fechou sem o fim conferido, por exemplo): volta-se a ela, em
+   vez de ficar num botão que não faz nada. */
+function _pvpReabrir(id) {
+  if (!id) return;
+  _pvpPendente = null;
+  showToast(t('pvp.erro.em_sala_volta'), 'info');
+  _pvpSalaId = null; _pvpSala = null;
+  _pvpPonteiro(id);
+}
 
 function _pvpComecarBusca(desde, poder) {
   _pvpFila = { desde: desde || pvpAgora(), poder: poder | 0 };
@@ -569,6 +587,9 @@ window.pvpRecusarConvite = pvpRecusarConvite;
 // A SALA — o versus
 // ═══════════════════════════════════════════════════════════════════
 function _pvpPonteiro(id) {
+  /* O servidor solta o ponteiro quando grava o fim — e a luta ainda está
+     na tela, com o resultado. Quem a fecha é o jogador (pvpLutaSair). */
+  if (typeof pvpLutaAtiva === 'function' && pvpLutaAtiva()) return;
   if (!id) { if (_pvpSalaId) _pvpFecharSala(); return; }
   if (id === _pvpSalaId) return;
   _pvpFecharSala(true);
@@ -594,13 +615,16 @@ function _pvpPonteiro(id) {
     }
     const primeira = !_pvpSala;
     _pvpSala = sala;
+    // Já passou do versus (um F5 no meio da luta): direto para a arena.
+    if (sala.estado === 'luta' && pvpAgora() >= (sala.inicio || 0)) { _pvpEntrarNaLuta(); return; }
     if (primeira) _pvpAbrirVersus(); else _pvpAtualizarVersus();
   }, () => { _pvpFecharSala(); });
 
   // A minha presença na sala: o outro vê quando eu caio.
   _pvpSalaPresRef = db.ref(`pvp/salas/${id}/presenca/${_pvpUid}`);
-  const marcar = () => _pvpSalaPresRef && _pvpSalaPresRef.set(firebase.database.ServerValue.TIMESTAMP).catch(() => {});
-  _pvpSalaPresRef.onDisconnect().remove();
+  // { on } enquanto está; { fora: hora } se cair — é de lá que sai o W.O.
+  const marcar = () => _pvpSalaPresRef && _pvpSalaPresRef.set({ on: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+  _pvpSalaPresRef.onDisconnect().set({ fora: firebase.database.ServerValue.TIMESTAMP });
   marcar();
   _pvpSalaPresTimer = setInterval(marcar, PVP_SINAL_MS);
 }
@@ -609,7 +633,7 @@ function _pvpFecharSala(silencioso) {
   if (_pvpSalaRef) { _pvpSalaRef.off(); _pvpSalaRef = null; }
   if (_pvpSalaPresTimer) { clearInterval(_pvpSalaPresTimer); _pvpSalaPresTimer = null; }
   if (_pvpSalaPresRef) {
-    try { _pvpSalaPresRef.onDisconnect().cancel(); _pvpSalaPresRef.remove(); } catch (e) {}
+    try { _pvpSalaPresRef.onDisconnect().cancel(); } catch (e) {}
     _pvpSalaPresRef = null;
   }
   clearInterval(_pvpVsTimer); _pvpVsTimer = null;
@@ -621,7 +645,11 @@ function _pvpFecharSala(silencioso) {
   if (vs) {
     vs.classList.remove('ativo');
     delete vs.dataset.sala;
-    setTimeout(() => { if (!vs.classList.contains('ativo')) vs.innerHTML = ''; }, 450);
+    /* Só apaga se nenhum versus novo tiver entrado nesse meio: com a aba
+       em segundo plano o `ativo` do novo não chega (requestAnimationFrame
+       não roda), e este timer apagava o versus da sala seguinte — a luta
+       só abria 30 s depois (visto pelo subagente de verificação). */
+    setTimeout(() => { if (!vs.classList.contains('ativo') && !vs.dataset.sala) vs.innerHTML = ''; }, 450);
   }
   if (_pvpVsTravou) {
     _pvpVsTravou = false;
@@ -701,13 +729,15 @@ function _pvpAtualizarVersus() {
   if (!vs || !_pvpSala) return;
   const L = _pvpLados();
   const pres = _pvpSala.presenca || {};
-  const eleFora = !pres[L.ele];
+  const eleFora = !pres[L.ele] || !!pres[L.ele].fora;
   const ladoEle = vs.querySelector('.pvp-vs-lado.ele');
   if (ladoEle) ladoEle.classList.toggle('fora', eleFora);
 
+  const falta = (_pvpSala.inicio || 0) - pvpAgora();
+  // A luta não depende da tela do versus: acabou a contagem, entra-se.
+  if (falta <= -700 && _pvpSala.estado === 'luta') { _pvpEntrarNaLuta(); return; }
   const conta = document.getElementById('pvpVsConta');
   if (!conta) return;
-  const falta = (_pvpSala.inicio || 0) - pvpAgora();
   if (falta > 0) {
     const n = Math.ceil(falta / 1000);
     if (conta.dataset.n !== String(n)) {
@@ -716,20 +746,68 @@ function _pvpAtualizarVersus() {
     }
     return;
   }
-  /* ── A LUTA É A ETAPA 2 ──
-     O par está formado, a semente sorteada, as equipes lidas do banco.
-     A arena por turnos, com os dois do outro lado da rede, entra na
-     próxima etapa; até lá o versus termina aqui. */
+  // A contagem acabou: a luta.
   if (conta.dataset.n !== 'fim') {
     conta.dataset.n = 'fim';
-    // No fim, um botão só: o "Sair" do rodapé faria a mesma coisa.
+    conta.innerHTML = `<div class="pvp-vs-pronto">${esc(t('pvp.sala.lutem'))}</div>`;
     const rod = vs.querySelector('.pvp-vs-rodape');
     if (rod) rod.style.visibility = 'hidden';
-    conta.innerHTML = `<div class="pvp-vs-pronto">${esc(t('pvp.sala.pronto'))}</div>
-      <small>${esc(t('pvp.sala.etapa2'))}</small>
-      <button class="pvp-btn pri mini" onclick="pvpSairSala()">${esc(t('pvp.sala.voltar'))}</button>`;
+    if (_pvpSala.estado === 'luta') setTimeout(_pvpEntrarNaLuta, 650);
   }
 }
+
+/* ── DO VERSUS PARA A ARENA ──
+   O ouvinte da sala inteira sai (durante a luta cada jogada chegaria com
+   a sala toda de novo); a luta (js/pvp-luta.js) ouve só o que precisa. O
+   versus desaparece por cima da arena já montada. */
+function _pvpEntrarNaLuta() {
+  if (!_pvpSala || !_pvpSalaId || typeof pvpLutaAbrir !== 'function') return;
+  if (typeof pvpLutaAtiva === 'function' && pvpLutaAtiva()) return;
+  const id = _pvpSalaId, sala = _pvpSala;
+  if (_pvpSalaRef) { _pvpSalaRef.off(); _pvpSalaRef = null; }
+  if (_pvpSalaPresTimer) { clearInterval(_pvpSalaPresTimer); _pvpSalaPresTimer = null; }
+  if (_pvpSalaPresRef) { try { _pvpSalaPresRef.onDisconnect().cancel(); } catch (e) {} _pvpSalaPresRef = null; }
+  clearInterval(_pvpVsTimer); _pvpVsTimer = null;
+  pvpLutaAbrir(id, sala, _pvpUid);
+  const vs = document.getElementById('pvpVersus');
+  if (vs) {
+    vs.classList.add('saindo');
+    setTimeout(() => {
+      vs.classList.remove('ativo', 'saindo');
+      delete vs.dataset.sala;
+      setTimeout(() => { if (!vs.classList.contains('ativo') && !vs.dataset.sala) vs.innerHTML = ''; }, 450);
+    }, 60);
+  }
+  if (_pvpVsTravou) {
+    _pvpVsTravou = false;
+    if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  }
+}
+
+/* A luta fechou (js/pvp-luta.js): de volta ao lobby, ou direto para uma
+   busca nova. */
+function _pvpDepoisDaLuta(depois) {
+  _pvpSalaId = null; _pvpSala = null;
+  if (typeof depois === 'string' && depois.indexOf('interrompida:') === 0) {
+    _pvpPendente = depois.slice('interrompida:'.length);
+    showToast(t('pvp.luta.interrompida'), 'err');
+  } else {
+    _pvpPendente = null;
+    _pvpMudarEstado('livre');
+  }
+  abrirLobbyPvP();
+  if (depois === 'procurar') setTimeout(pvpProcurar, 300);
+}
+
+// A partida que ficou em curso quando a arena fechou (ver acima).
+let _pvpPendente = null;
+function pvpVoltarPartida() {
+  const id = _pvpPendente;
+  _pvpPendente = null;
+  if (id) _pvpReabrir(id);
+}
+window.pvpVoltarPartida = pvpVoltarPartida;
+window._pvpDepoisDaLuta = _pvpDepoisDaLuta;
 
 async function pvpSairSala() {
   const id = _pvpSalaId;

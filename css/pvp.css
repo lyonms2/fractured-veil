@@ -483,3 +483,153 @@
     background: linear-gradient(180deg, transparent, rgba(4,3,10,.97) 18%, rgba(4,3,10,.97) 82%, transparent);
   }
 }
+
+/* ═══ A LUTA (etapa 2, js/pvp-luta.js) ═══ */
+
+/* O versus some por cima da arena já montada. */
+.pvp-vs.saindo { transition: opacity .45s ease; opacity: 0; }
+
+/* ── O RELÓGIO ──
+   Logo abaixo da maré. Dourado na minha vez, violeta na do outro;
+   vermelho e pulsando nos últimos 10 s, e quando o outro cai. */
+.pvp-relogio {
+  /* Abaixo da maré E da dica ("toque num dos seus avatares"): no mesmo
+     andar da dica, os dois textos se sobrepunham. */
+  position: absolute; z-index: 6; left: 50%; top: 4.7rem;
+  width: min(20rem, 60%);
+  transform: translate(-50%, -0.375rem);
+  display: flex; flex-direction: column; align-items: center; gap: 0.1875rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.pvp-relogio.ativo { opacity: 1; transform: translate(-50%, 0); }
+.pvp-relogio-barra {
+  width: 100%; height: 0.25rem; border-radius: 999px; overflow: hidden;
+  background: rgba(255,255,255,.07);
+}
+.pvp-relogio-barra i {
+  display: block; height: 100%; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+  box-shadow: 0 0 0.5rem rgba(167,139,250,.6);
+  transition: transform .25s linear, background .3s;
+}
+.pvp-relogio-txt {
+  font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.0625rem;
+  color: #c4b5fd; text-shadow: 0 0.0625rem 0.25rem rgba(0,0,0,.9);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pvp-relogio.minha .pvp-relogio-barra i { background: linear-gradient(90deg, var(--gold), #ffe9a8); box-shadow: 0 0 0.625rem rgba(201,168,76,.7); }
+.pvp-relogio.minha .pvp-relogio-txt { color: var(--gold-light); }
+.pvp-relogio.urgente .pvp-relogio-barra i,
+.pvp-relogio.fora .pvp-relogio-barra i { background: linear-gradient(90deg, #e05555, #ff9b93); box-shadow: 0 0 0.75rem rgba(224,85,85,.8); }
+.pvp-relogio.urgente .pvp-relogio-txt,
+.pvp-relogio.fora .pvp-relogio-txt { color: #ff9b93; animation: pvp-pisca .8s ease-in-out infinite; }
+
+/* Desistir armado: o segundo toque é para valer. */
+.cb-palco .cb-topo button.desistir.armado {
+  color: #fff; background: rgba(224,85,85,.35); border-color: #e05555;
+  animation: pvp-pisca .7s ease-in-out infinite;
+}
+
+/* ── O FIM ── */
+.pvp-fim {
+  position: relative; text-align: center;
+  padding: 0.75rem 0.5rem 0.25rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.375rem;
+}
+.pvp-fim::before {
+  /* Um halo que abre atrás do título, da cor do resultado. */
+  content: ''; position: absolute; left: 50%; top: 1.6rem; width: 14rem; height: 5rem;
+  transform: translate(-50%, -50%) scale(.4); opacity: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--pvp-fim-cor, rgba(201,168,76,.45)), transparent 70%);
+  animation: pvp-fim-halo 1.1s .1s cubic-bezier(.2,.9,.3,1) forwards;
+  pointer-events: none;
+}
+.pvp-fim.vitoria { --pvp-fim-cor: rgba(240,208,128,.55); }
+.pvp-fim.derrota { --pvp-fim-cor: rgba(224,85,85,.45); }
+.pvp-fim.empate  { --pvp-fim-cor: rgba(196,181,253,.4); }
+.pvp-fim-marca { display: flex; gap: 0.4375rem; animation: pvp-sobe .5s ease-out both; }
+.pvp-fim-marca .bt-fenda { height: 1.75rem; }
+.pvp-fim-titulo {
+  position: relative;
+  font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.625rem; letter-spacing: 0.3rem;
+  animation: pvp-fim-bate .7s .15s cubic-bezier(.2,.9,.3,1.4) both;
+}
+.pvp-fim.vitoria .pvp-fim-titulo { color: #ffe9a8; text-shadow: 0 0 1rem rgba(240,208,128,.9), 0 0 2.5rem rgba(201,168,76,.5); }
+.pvp-fim.derrota .pvp-fim-titulo { color: #ffb4ae; text-shadow: 0 0 1rem rgba(224,85,85,.7); }
+.pvp-fim.empate  .pvp-fim-titulo { color: #ddd6fe; text-shadow: 0 0 1rem rgba(196,181,253,.6); }
+.pvp-fim-sub { font-size: 0.625rem; color: var(--text); animation: pvp-sobe .5s .45s ease-out both; }
+.pvp-fim-selo {
+  font-family: 'Cinzel', serif; font-size: 0.4375rem; letter-spacing: 0.0625rem; color: var(--muted);
+  animation: pvp-sobe .5s .6s ease-out both;
+}
+.pvp-fim-selo.ok { color: #9fdc9f; }
+.pvp-fim-acoes { display: flex; flex-direction: column; gap: 0.5rem; animation: pvp-sobe .5s .75s ease-out both; }
+@keyframes pvp-fim-bate {
+  0%   { opacity: 0; transform: scale(2.2); filter: blur(0.375rem); letter-spacing: 0.9rem; }
+  60%  { opacity: 1; transform: scale(.94); filter: none; }
+  100% { transform: scale(1); letter-spacing: 0.3rem; }
+}
+@keyframes pvp-fim-halo {
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (max-width: 680px), (orientation: portrait) {
+  /* No celular a dica ocupa duas linhas: o relógio fica abaixo delas. */
+  .pvp-relogio { width: min(18rem, 78%); top: 6.75rem; }
+  .pvp-relogio-txt { font-size: 0.625rem; }
+  .pvp-fim-titulo { font-size: 1.75rem; }
+  .pvp-fim-sub { font-size: 0.75rem; }
+  .pvp-fim-selo { font-size: 0.5625rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pvp-fim::before, .pvp-fim-titulo, .pvp-fim-sub, .pvp-fim-selo, .pvp-fim-acoes, .pvp-fim-marca { animation: none; opacity: 1; }
+  .pvp-relogio.urgente .pvp-relogio-txt, .pvp-relogio.fora .pvp-relogio-txt { animation: none; }
+}
+
+
+/* ── "SUA VEZ" (js/pvp-luta.js, _pvpLAvisoVez) ── */
+.pvp-aviso-vez {
+  position: absolute; z-index: 8; left: 50%; top: 40%;
+  display: flex; align-items: center; gap: 0.625rem;
+  padding: 0.5rem 1.5rem;
+  transform: translate(-50%, -50%);
+  font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.25rem; letter-spacing: 0.375rem;
+  color: #ffe9a8; text-shadow: 0 0 1rem rgba(240,208,128,.9);
+  background: linear-gradient(90deg, transparent, rgba(6,4,14,.85) 20%, rgba(6,4,14,.85) 80%, transparent);
+  pointer-events: none;
+  animation: pvp-aviso-vez 1.5s cubic-bezier(.2,.9,.3,1) forwards;
+}
+.pvp-aviso-vez .bt-fenda { height: 1.75rem; }
+@keyframes pvp-aviso-vez {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(1.4); letter-spacing: 1rem; }
+  18%  { opacity: 1; transform: translate(-50%, -50%) scale(1);   letter-spacing: 0.375rem; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(.96); }
+}
+
+/* ── O TOPO: "Leo Um × Ana Dois" ── */
+.pvp-topo-eu  { color: var(--gold-light); }
+.pvp-topo-ele { color: #ffb4ae; }
+.pvp-topo-x   { margin: 0 0.4375rem; color: var(--muted); }
+
+/* O relógio mais legível no PC. */
+.pvp-relogio-txt { font-size: 0.5625rem; }
+.pvp-relogio-barra { height: 0.3125rem; }
+
+/* O fim: o botão principal em destaque, o outro discreto. */
+.pvp-fim-acoes .pvp-btn.pri { max-width: none; }
+.pvp-fim-selo.falhou { color: #ff9b93; }
+
+@media (max-width: 680px), (orientation: portrait) {
+  .pvp-aviso-vez { font-size: 1.125rem; letter-spacing: 0.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pvp-aviso-vez { display: none; }
+}
+
+.pvp-fim.pendente { --pvp-fim-cor: rgba(107,95,138,.45); }
+.pvp-fim.pendente .pvp-fim-titulo { color: var(--text); font-size: 1.125rem; letter-spacing: 0.1875rem; text-shadow: none; }
+.pvp-busca-tit.pendente { color: #ff9b93; animation: pvp-pisca 1.4s ease-in-out infinite; }
+.pvp-busca-tit.pendente::after { content: none; }

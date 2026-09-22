@@ -143,9 +143,29 @@ function _afTravarZoom(liga) {
   _afZoomNormal();
 }
 
-function afAbrir(equipaA, equipaB, semente, aoSair) {
+/* ── DE QUE LADO EU ESTOU, E QUEM JOGA O OUTRO ──
+
+   No PvE eu sou sempre o lado A e o outro é a IA. No PvP (js/pvp-luta.js)
+   o motor tem de ser O MESMO nos dois navegadores — a mesma semente, as
+   mesmas equipes nos mesmos lados —, e por isso quem caiu no lado B da
+   sala vê a luta do lado B: `_afMeu` diz qual é o meu, e o resto da
+   arena pergunta a ele em vez de supor o A.
+
+   `_afRede`, quando existe, é quem joga o outro lado e quem leva as
+   minhas jogadas: em vez de aplicar a jogada, a arena manda-a para a
+   rede, e a jogada volta pela rede para ser aplicada nos dois navegadores
+   na mesma ordem (afAplicar). Sem rede, tudo como sempre foi. */
+let _afMeu = 'A', _afDele = 'B', _afRede = null;
+
+function afAbrir(equipaA, equipaB, semente, aoSair, opcoes) {
+  const op = opcoes || {};
+  _afMeu = op.meu === 'B' ? 'B' : 'A';
+  _afDele = _afMeu === 'A' ? 'B' : 'A';
+  _afRede = op.rede || null;
   _afTravarZoom(true);
   _afE = fuIniciar(equipaA, equipaB, semente);
+  // Uma luta retomada (um F5 no PvP): as jogadas que já houve, sem animação.
+  if (typeof op.antes === 'function') op.antes(_afE);
   // O slot de cada um, para o desenho (_afSVG). O id é o do fuLutador.
   _afSlots = {};
   [['A', equipaA], ['B', equipaB]].forEach(([lado, eq]) =>
@@ -184,23 +204,37 @@ function afAbrir(equipaA, equipaB, semente, aoSair) {
    mudava o corpo e deixava os dois para trás (medido: uma caixa de 61 px
    sobre um corpo de 121). Um observador no palco mede tudo de novo. */
 let _afObservador = null, _afObsTimer = null;
+function _afRemedir() {
+  clearTimeout(_afObsTimer);
+  _afObsTimer = setTimeout(() => {
+    if (!_afE) return;
+    _afAssentar();
+    _afAurasRedesenhar();
+    /* E o menu, que o painel do fim põe em pixels no meio do palco:
+       girar o celular com ele aberto deixava-o fora da tela, com os
+       botões inalcançáveis (visto pelo subagente de verificação). */
+    _afMenuMover();
+  }, 120);
+}
 function _afObservarTamanho() {
   const palco = document.getElementById('cbPalco');
+  /* O `resize` da janela também: o ResizeObserver só entrega os avisos
+     quando a página desenha, e uma aba que não está à vista não desenha
+     — o painel do fim ficava onde estava. */
+  window.removeEventListener('resize', _afRemedir);
+  window.addEventListener('resize', _afRemedir);
   if (!palco || typeof ResizeObserver !== 'function') return;
   if (_afObservador) _afObservador.disconnect();
-  _afObservador = new ResizeObserver(() => {
-    clearTimeout(_afObsTimer);
-    _afObsTimer = setTimeout(() => {
-      if (!_afE) return;
-      _afAssentar();
-      _afAurasRedesenhar();
-    }, 120);
-  });
+  _afObservador = new ResizeObserver(_afRemedir);
   _afObservador.observe(palco);
 }
 
 function afFechar() {
   if (_afObservador) { _afObservador.disconnect(); _afObservador = null; }
+  window.removeEventListener('resize', _afRemedir);
+  const rede = _afRede;
+  _afRede = null; _afMeu = 'A'; _afDele = 'B';
+  if (rede && typeof rede.fechou === 'function') rede.fechou();
   _afTravarZoom(false);
   const m = document.getElementById('combateModal');
   if (m) m.innerHTML = '';
@@ -369,7 +403,7 @@ function _afCorpo(c) {
 }
 
 function _afLutador(c) {
-  const meu = c.lado === 'A';
+  const meu = c.lado === _afMeu;
   const lado = meu ? 'eu' : 'ini';
   const podeAgir = _afPodeAgir(c);
   const escolhido = _afQuem === c.id;
@@ -673,8 +707,9 @@ function _afOlhosEmX(el) {
    js/combate-fu.js). A barra continua a descer à vista de todos; o número
    exato só aparece a partir do primeiro degrau do exame. */
 function _afConhece(c) {
-  if (!c || c.lado === 'A' || !_afE || typeof fuConhece !== 'function') return { nivel: 3, af: {} };
-  return fuConhece(_afE, 'A', c.id);
+  // No fim, tudo se revela: a luta acabou, e o "?" já não esconde nada.
+  if (!c || c.lado === _afMeu || !_afE || _afE.acabou || typeof fuConhece !== 'function') return { nivel: 3, af: {} };
+  return fuConhece(_afE, _afMeu, c.id);
 }
 function _afNumeros(c, atual, max) {
   return (!c || _afConhece(c).nivel >= 1) ? atual + '/' + max : '?';
@@ -753,7 +788,7 @@ function _afSetaVs(c, meu) {
    Com os PM à vista, a decisão de aguentar mais uma rodada em vez de
    gastar tudo passa a ter dados dos dois lados. */
 function _afCartao(c) {
-  const meu = c.lado === 'A';
+  const meu = c.lado === _afMeu;
   const podeAgir = _afPodeAgir(c);
   const lado = meu ? 'eu' : 'ini';
   const cls = ['cb-ficha', lado, _afQuem === c.id ? 'ativo' : '',
@@ -867,8 +902,8 @@ function _afDesenhar() {
     const antes = _afFotografia();
     _afChave = chave;
     document.getElementById('cbCampo').innerHTML = _afCampo();
-    document.getElementById('cbHudEu').innerHTML  = _afHud('A');
-    document.getElementById('cbHudIni').innerHTML = _afHud('B');
+    document.getElementById('cbHudEu').innerHTML  = _afHud(_afMeu);
+    document.getElementById('cbHudIni').innerHTML = _afHud(_afDele);
     _afAssentar();
     _afDeslizar(antes);
     _afTombar(antes);
@@ -882,7 +917,9 @@ function _afDesenhar() {
   document.getElementById('cbTurno').textContent =
     t('af.ronda', { n: _afRondaVisivel() })
     + (ms ? ' · ' + t('af.morte_subita') : '')
-    + (vez ? ' · ' + t(vez.lado === 'A' ? 'af.vez' : 'af.vez_dele') : '');
+    + (vez ? ' · ' + (vez.lado === _afMeu ? t('af.vez')
+                    : (_afRede && _afRede.nomeDele) ? t('af.vez_de', { nome: _afRede.nomeDele })
+                    : t('af.vez_dele')) : '');
   // A barra do topo muda de cor na morte súbita: ver css/combate-arena.css.
   const palco = document.getElementById('cbPalco');
   if (palco) palco.classList.toggle('morte-subita', ms);
@@ -1006,7 +1043,7 @@ function _afMare() {
   const trilho = document.getElementById('cbMareEu');
   if (!trilho || !_afE) return;
   const soma = lado => lado.reduce((n, c) => n + Math.max(0, _afPvVisivel(c)), 0);
-  const eu = soma(_afE.A), ini = soma(_afE.B);
+  const eu = soma(_afE[_afMeu]), ini = soma(_afE[_afDele]);
   const total = eu + ini;
   const parte = total > 0 ? (eu / total) * 100 : 50;
 
@@ -1025,7 +1062,7 @@ function _afMare() {
   const rotIni = document.getElementById('cbMareVidaIni');
   if (rotIni) {
     // O total do inimigo só se mostra quando não há segredo nenhum.
-    const tudoSabido = _afE.B.every(c => _afConhece(c).nivel >= 1);
+    const tudoSabido = _afE[_afDele].every(c => _afConhece(c).nivel >= 1);
     rotIni.textContent = tudoSabido ? ini : '?';
   }
 }
@@ -1101,10 +1138,12 @@ function _afAndar() {
     return;
   }
 
-  if (vez.lado === 'B') {
+  if (vez.lado === _afDele) {
     _afOcupado = true;
     _afQuem = null; _afMenu = false; _afPasso = null;
     _afDesenhar();
+    // No PvP quem joga o outro lado é o outro jogador, pela rede.
+    if (_afRede) { _afRede.vezDele(vez); return; }
     setTimeout(_afInimigoAge, AF_PAUSA);
     return;
   }
@@ -1112,6 +1151,9 @@ function _afAndar() {
   /* A vez é minha. Não se escolhe por mim qual dos três joga: os três
      podem, e escolher qual é metade da decisão do turno. O que se faz é
      dizer quais podem — o resto é do jogador. */
+  /* No PvP a minha vez só se abre se não houver jogada minha já na rede
+     à espera de ser aplicada (a rede decide e, se houver, aplica-a). */
+  if (_afRede && _afRede.vezMinha(vez) === false) return;
   _afOcupado = false;
   if (!_afPodeAgir(_afPorId(_afQuem))) { _afQuem = null; _afMenu = false; }
   _afDesenhar();
@@ -1126,7 +1168,7 @@ function _afDica(vez) {
   const el = document.getElementById('cbDica');
   if (!el || el.classList.contains('aviso')) return;
   let txt = '';
-  if (vez && vez.lado === 'A' && !_afOcupado && !_afE.acabou && !_afPasso) {
+  if (vez && vez.lado === _afMeu && !_afOcupado && !_afE.acabou && !_afPasso) {
     const eu = _afPorId(_afQuem);
     txt = eu ? t('af.dica.acao', { nome: _afNome(eu) }) : t('af.dica.quem');
   }
@@ -1167,7 +1209,7 @@ function _afPodeAgir(c) {
   if (!c || !_afE || _afE.acabou || !c.vivo) return false;
   if (_afE.jaAgiu.indexOf(c.id) !== -1) return false;
   const vez = fuVez(_afE);
-  return !!vez && vez.lado === c.lado && vez.podem.indexOf(c.id) !== -1;
+  return !!vez && c.lado === _afMeu && vez.lado === c.lado && vez.podem.indexOf(c.id) !== -1;
 }
 
 function _afEscolherQuem(id) {
@@ -1233,25 +1275,19 @@ function _afMenuMover() {
        arena antiga lhe escrevia. Ela já saiu, portanto o !important do
        CSS também pode sair — fica para o dia em que se varrer o CSS, que
        é um trabalho à parte e com os seus próprios riscos. */
-    const palcoFim = document.getElementById('cbPalco');
+    /* ── AGORA PELO CSS, E SEM MEDIR ──
+       Media-se o palco e o painel e escrevia-se a conta em píxeis — e o
+       painel ficava onde estava quando a tela mudava de tamanho: girar o
+       celular com ele aberto deixava-o fora da tela, com os botões
+       inalcançáveis (visto pelo subagente de verificação). O que tinha
+       dado errado com as percentagens era a TRANSIÇÃO do transform a
+       resolver-se contra a caixa velha; sem transição, o translate(-50%)
+       resolve-se sempre contra a caixa de agora, a qualquer tamanho. */
     const por = (k, v) => menu.style.setProperty(k, v, 'important');
-    /* Com a transição desligada durante a conta, pela mesma razão do outro
-       ramo: o `transform: none` que se acaba de escrever demora 0,22s a
-       chegar, e medir antes disso dá a caixa onde ela ESTAVA. Mediu, e o
-       painel do fim ficou 198px à esquerda e 94 acima do palco. */
-    const transFim = menu.style.transition;
-    menu.style.transition = 'none';
-    por('transform', 'none');
-    por('left', '0px');
-    por('top', '0px');
-    if (palcoFim) {
-      const pf = palcoFim.getBoundingClientRect();
-      const mf = menu.getBoundingClientRect();
-      por('left', Math.round((pf.width  - mf.width)  / 2) + 'px');
-      por('top',  Math.round((pf.height - mf.height) / 2) + 'px');
-    }
-    void menu.offsetWidth;
-    menu.style.transition = transFim;
+    por('transition', 'none');
+    por('left', '50%');
+    por('top', '50%');
+    por('transform', 'translate(-50%, -50%)');
     return;
   }
   // fora do fim, tudo volta a ser do CSS
@@ -1781,6 +1817,7 @@ function _afAlvo(id) {
 function _afAgir(acao) {
   const eu = _afPorId(_afQuem);
   if (!eu) return;
+  if (_afRede) { _afAgirNaRede(eu, acao); return; }
   // Com o Lutar pelo Laço ligado para este avatar, a ação vai pedindo-o.
   const eventos = fuAgir(_afE, Object.assign({ quem: eu.id }, acao,
     _afLaco === eu.id ? { laco: true } : {}));
@@ -1796,6 +1833,37 @@ function _afAgir(acao) {
   _afPasso = null; _afMenu = livre; _afQuem = livre ? eu.id : null; _afLaco = null;
   _afMostrar(eventos);
 }
+
+/* ── A JOGADA NO PVP ──
+   Ensaia-se numa cópia do estado: uma jogada que o motor recusaria (uma
+   troca com um caído, uma magia que não se paga) não sai daqui — no PvE
+   ela voltava sem gastar nada, e aqui tem de ser igual. A que passa vai
+   para a rede e a arena fica à espera dela voltar (afAplicar). */
+function _afAgirNaRede(eu, acao) {
+  const ensaio = JSON.parse(JSON.stringify(_afE));
+  const eventos = fuAgir(ensaio, Object.assign({ quem: eu.id }, acao));
+  if (!eventos.length) { _afPasso = null; _afDesenhar(); return; }
+  _afPasso = null; _afMenu = false; _afQuem = null;
+  _afOcupado = true;
+  _afDesenhar();
+  _afRede.enviar(Object.assign({ quem: eu.id }, acao));
+}
+
+/* Uma jogada que veio da rede — de qualquer dos dois — aplicada e
+   encenada. Devolve se o motor a aceitou. Depois de uma magia livre
+   minha (o Despertar) o mesmo avatar ainda age: o menu volta aberto. */
+function afAplicar(acao, minha) {
+  if (!_afE || _afE.acabou) return false;
+  const eventos = fuAgir(_afE, acao);
+  if (!eventos.length) return false;
+  const livre = !!(acao.magia && acao.magia.livre);
+  _afPasso = null;
+  _afMenu = !!(minha && livre);
+  _afQuem = (minha && livre) ? acao.quem : null;
+  _afMostrar(eventos);
+  return true;
+}
+window.afAplicar = afAplicar;
 
 /* ══ UM TURNO É UMA SEQUÊNCIA, E CONTA-SE ASSIM ══
 
@@ -2140,7 +2208,7 @@ function _afDadosPalco(ev, linha, somem) {
   const x0 = Math.max(W * .32, Math.min(W * .68, meioX));
   const y0 = Math.max(H * .32, Math.min(H * .64, chao - H * .03));
   const q = ev.quem && _afPorId(ev.quem);
-  const dir = (q && q.lado === 'B') ? -1 : 1;     // jogados do lado de quem age
+  const dir = (q && q.lado === _afDele) ? -1 : 1;  // jogados do lado de quem age
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   /* Do tamanho dos corpos: 3 rem no PC, onde o corpo da frente tem 244 px;
      no celular o corpo tem ~60 px, e um dado de 48 px ficava quase do
@@ -2587,13 +2655,13 @@ function _afVarrer(ev, dura, passo) {
 
   // As paradas: o x de cada alvo, no tempo do golpe dele.
   const w = v.offsetWidth || 96;
-  const vira = q.lado === 'A' ? '' : ' scaleX(-1)';
+  const vira = q.lado === _afMeu ? '' : ' scaleX(-1)';
   const xs = (ev._alvosDev || []).map(id => _afPonto(id)).filter(Boolean).map(p => p.x);
   if (!xs.length) return;
   const ida = Math.max(1, dura);
   const passoN = Math.max(1, passo || dura / xs.length);
   const quadros = [];
-  const recua = (q.lado === 'A' ? -1 : 1) * w * 1.5;
+  const recua = (q.lado === _afMeu ? -1 : 1) * w * 1.5;
   /* Nasce já em cima do primeiro alvo, que é atingido no instante zero:
      entrar de trás dele fazia o primeiro número aparecer 60 ms antes da
      faixa. Os outros, no instante do golpe de cada um. */
@@ -3473,7 +3541,7 @@ function _afFicha(id) {
   const c = _afPorId(id);
   if (!c || typeof renderFichaFU !== 'function') return;
   // A ficha do inimigo, só até onde o jogador já descobriu (Examinar).
-  _afAbrirPainel(renderFichaFU(null, c, c.lado === 'A' ? null : _afConhece(c)));
+  _afAbrirPainel(renderFichaFU(null, c, c.lado === _afMeu ? null : _afConhece(c)));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3489,11 +3557,13 @@ function _afTemMoldura() { return typeof _pveFecharContas === 'function'; }
    batalha, fecha e pronto — aí já não há nada a cobrar. Sem moldura
    (banco de ensaio) fecha sempre, que é o que lá faz sentido. */
 function _afDesistir() {
+  if (_afRede) { _afRede.desistir(); return; }
   if (_afTemMoldura() && _afE && !_afE.acabou) { _pveDesistir(); return; }
   afFechar();
 }
 
 function _afFimHTML() {
+  if (_afRede) return _afRede.fimHTML(_afE);
   const v = _afE.vencedor;
   const txt = _afE._desistiu ? t('pve.desistiu.titulo')
             : v === 'A' ? t('af.fim.ganhou')
@@ -3529,8 +3599,9 @@ function _afFim() {
   _afFimMostrado = true;
   // As contas fecham-se ANTES de o painel se desenhar: é ele que mostra o
   // prémio, e um painel desenhado primeiro mostrava a batalha sem ganho
-  // nenhum e nunca mais se refazia.
-  if (_afTemMoldura()) _pveFecharContas(_afE);
+  // nenhum e nunca mais se refazia. No PvP quem as fecha é o servidor.
+  if (_afRede) _afRede.fim(_afE);
+  else if (_afTemMoldura()) _pveFecharContas(_afE);
   _afChave = null;      // o fim muda a estrutura toda
   _afDesenhar();
 
@@ -3547,5 +3618,5 @@ function _afFim() {
 
 // Para o banco de ensaio e, um dia, para o servidor conferir uma luta.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { afAbrir, afFechar };
+  module.exports = { afAbrir, afFechar, afAplicar };
 }

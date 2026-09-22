@@ -153,10 +153,33 @@
       "salas": {
         "$sala": {
           ".read": "auth != null && data.child('jogadores').child(auth.uid).exists()",
+          // A presença na luta: { on } enquanto está, { fora } desde que caiu
+          // (o onDisconnect escreve a hora). É dela que sai o W.O.
           "presenca": {
             "$uid": {
               ".write": "auth != null && auth.uid === $uid && root.child('pvp').child('salas').child($sala).child('jogadores').child($uid).exists()",
-              ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+              ".validate": "(newData.hasChildren(['on']) || newData.hasChildren(['fora']))",
+              "on":     { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+              "fora":   { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+              "$outro": { ".validate": false }
+            }
+          },
+          // As jogadas: cada jogador escreve as suas, numa casa vazia, com a
+          // hora do servidor e o próprio uid. Quem confere se valem é o
+          // motor (pvpPreparar), nos dois navegadores e no servidor.
+          "acoes": {
+            "$n": {
+              ".write": "auth != null && !data.exists() && root.child('pvp').child('salas').child($sala).child('jogadores').child(auth.uid).exists() && root.child('pvp').child('salas').child($sala).child('estado').val() === 'luta'",
+              ".validate": "$n.matches(/^[0-9]{4}$/) && newData.hasChildren(['tipo', 'por', 'ts']) && newData.child('por').val() === auth.uid && newData.child('ts').val() === now",
+              "tipo":   { ".validate": "newData.isString() && newData.val().matches(/^(atacar|magia|guardar|mover|examinar|tempo|desistir)$/)" },
+              "por":    { ".validate": "newData.isString()" },
+              "ts":     { ".validate": "newData.isNumber()" },
+              "quem":   { ".validate": "newData.isString() && newData.val().length <= 4" },
+              "lugar":  { ".validate": "newData.isString() && newData.val().length <= 24" },
+              "com":    { ".validate": "newData.isString() && newData.val().length <= 4" },
+              "alvo":   { ".validate": "newData.isString() && newData.val().length <= 4" },
+              "alvos":  { "$i": { ".validate": "newData.isString() && newData.val().length <= 4" } },
+              "$outro": { ".validate": false }
             }
           }
         }
