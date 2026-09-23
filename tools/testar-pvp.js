@@ -155,6 +155,90 @@ function rankPuro() {
   conferir('e quem estava atrás também sobe metade', fraco.pontos === 910, fraco);
 }
 
+/* ── O REENCONTRO (js/lacos.js, etapa 2) ──
+   Dois avatares com laço em lados opostos: fichas abertas sem examinar
+   e +1 a +3 na precisão contra aquele inimigo, e só contra ele. */
+function reencontroPuro() {
+  const GEN = require('../api/_genetica.js');
+  titulo('O reencontro: laço em lados opostos');
+
+  const equipe = (dono, extra) => [0, 1, 2].map(i => {
+    const c = GEN.certidaoDeInvocacao({ uid: dono, nome: 'T' });
+    return Object.assign({ id: `${dono}${i}`, nome: `B${i},T`, nivel: 30, seed: c.seed,
+                           raridade: null, nascimento: c.nascimento }, (extra || {})[i] || {});
+  });
+  // A0 e B1 já lutaram juntos: laço ★★ (nível 2) dos dois lados.
+  const sala = { seed: 4242, inicio: 1e12, lados: { A: 'uA', B: 'uB' },
+                 jogadores: { uA: { equipe: equipe('a', { 0: { lacoRival: { B1: 2 } } }) },
+                              uB: { equipe: equipe('b', { 1: { lacoRival: { A0: 2 } } }) } }, acoes: {} };
+  const eq = R.pvpEquipesDaSala(sala);
+  const estado = fuIniciar(eq.A, eq.B, sala.seed);
+
+  conferir('o laço com o rival chega ao lutador',
+           fuPorId(estado, 'A0').lacoRival && fuPorId(estado, 'A0').lacoRival.B1 === 2,
+           fuPorId(estado, 'A0').lacoRival);
+  conferir('a ficha do rival já nasce aberta, dos dois lados',
+           fuConhece(estado, 'A', 'B1').nivel === 3 && fuConhece(estado, 'B', 'A0').nivel === 3,
+           { A: fuConhece(estado, 'A', 'B1'), B: fuConhece(estado, 'B', 'A0') });
+  conferir('e as fichas de quem não tem laço continuam escondidas',
+           fuConhece(estado, 'A', 'B0').nivel === 0 && fuConhece(estado, 'A', 'B2').nivel === 0);
+
+  /* O bónus na precisão. Para medir só isso, rola-se o mesmo ataque com
+     o mesmo gerador no mesmo passo: a diferença entre os modificadores
+     é o reencontro. */
+  const medir = (deId, paraId) => {
+    const e2 = fuIniciar(eq.A, eq.B, sala.seed);
+    const quem = fuPorId(e2, deId), alvo = fuPorId(e2, paraId);
+    e2.rng.passo = 0;
+    return fuAtacar(e2, quem, alvo, { fixo: 5 }).modificador;
+  };
+  const semLaco = medir('A1', 'B1');       // outro atacante, mesmo alvo
+  const comLaco = medir('A0', 'B1');       // o que tem laço com ele
+  const noutro  = medir('A0', 'B0');       // o mesmo atacante, outro alvo
+  conferir('bate melhor em quem conhece', comLaco === semLaco + 2, { comLaco, semLaco });
+  conferir('e não nos outros', noutro === semLaco, { noutro, semLaco });
+
+  const e3 = fuIniciar(eq.A, eq.B, sala.seed);
+  const ev = fuAtacar(e3, fuPorId(e3, 'A0'), fuPorId(e3, 'B1'), { fixo: 5 });
+  conferir('o lance diz de onde veio o bónus', ev.reencontro === 2, ev.reencontro);
+
+  // Sem laço nenhum, nada disto aparece — o PvE continua como era.
+  const salaLimpa = { seed: 4242, inicio: 1e12, lados: { A: 'uA', B: 'uB' },
+                      jogadores: { uA: { equipe: equipe('a') }, uB: { equipe: equipe('b') } }, acoes: {} };
+  const eqL = R.pvpEquipesDaSala(salaLimpa);
+  const eL = fuIniciar(eqL.A, eqL.B, salaLimpa.seed);
+  const evL = fuAtacar(eL, fuPorId(eL, 'A0'), fuPorId(eL, 'B1'), { fixo: 5 });
+  conferir('sem laço não há bónus nem ficha aberta',
+           !evL.reencontro && fuConhece(eL, 'A', 'B1').nivel === 0);
+
+  /* A luta refeita tem de dar no mesmo: o reencontro entra na conta dos
+     dados, e se o servidor não o visse, a conferência divergiria. */
+  Object.assign(global, require('../js/ia-fu.js'));
+  const ctx = R.pvpContexto(sala);
+  const est = fuIniciar(eq.A, eq.B, sala.seed);
+  let ts = sala.inicio, n = 0, fim = null;
+  while (n < 400) {
+    R.pvpAvancar(est);
+    if (est.acabou) break;
+    const vez = fuVez(est);
+    ts += 5000;
+    const d = fuIaDecidir(est, vez.lado, vez.podem, 'medio');
+    const a = Object.assign(R.pvpParaRede(est, Object.assign({ quem: d.quem }, d.acao)),
+                            { por: vez.lado === 'A' ? 'uA' : 'uB', ts });
+    const prep = R.pvpPreparar(est, a, ctx);
+    const ok = prep.eng ? fuAgir(est, prep.eng).length > 0 : false;
+    sala.acoes[R.pvpChave(n++)] = a;
+    fim = R.pvpRegistrar(ctx, prep, ok, a);
+    if (fim) break;
+  }
+  if (!fim) { R.pvpAvancar(est); fim = { vencedor: est.vencedor, motivo: est.porLimite ? 'limite' : 'luta' }; }
+  const refeita = R.pvpRepetir(sala);
+  conferir('a luta com reencontro refaz-se igual',
+           refeita.fim && refeita.fim.vencedor === fim.vencedor
+           && refeita.estado.rng.passo === est.rng.passo,
+           { jogada: fim, refeita: refeita.fim, passos: [est.rng.passo, refeita.estado.rng.passo] });
+}
+
 function lutaPelaRede() {
   const GEN = require('../api/_genetica.js');
   Object.assign(global, require('../js/ia-fu.js'));   // a IA joga pelos dois lados
@@ -730,6 +814,41 @@ async function servidor() {
            (docVs.avatarSlots || []).every(s => s.vitals.energia === 100),
            (docVs.avatarSlots || []).map(s => s.vitals.energia));
 
+  titulo('O reencontro chega à sala');
+  /* O laço vive no mapa `lacos` do documento (só o servidor escreve), e
+     quem cruza os dois lados é o criarSala: o que fica na sala já vem em
+     ids do motor ('A0', 'B2'), que é o que a luta usa. */
+  await limpar();
+  await fs.collection('players').doc('A').update({
+    lacos: { [ids.A[0]]: { [ids.D[2]]: { p: 35, nome: 'Bicho2,D', dia: '2026-09-23', hoje: 0 } } },
+  });
+  await fs.collection('players').doc('D').update({
+    lacos: { [ids.D[2]]: { [ids.A[0]]: { p: 35, nome: 'Bicho0,A', dia: '2026-09-23', hoje: 0 } } },
+  });
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  const salaL = (await rtdb.ref(`pvp/salas/${r.sala}`).once('value')).val() || {};
+  const ladoDeA = R.pvpLadoDe(salaL, 'A'), ladoDeD = R.pvpLadoDe(salaL, 'D');
+  const eqA = ((salaL.jogadores || {}).A || {}).equipe || [];
+  const eqD = ((salaL.jogadores || {}).D || {}).equipe || [];
+  conferir('o avatar com laço sabe quem é o rival, em id de motor',
+           eqA[0] && eqA[0].lacoRival && eqA[0].lacoRival[ladoDeD + '2'] === 2, eqA[0] && eqA[0].lacoRival);
+  conferir('e o outro lado sabe o mesmo',
+           eqD[2] && eqD[2].lacoRival && eqD[2].lacoRival[ladoDeA + '0'] === 2, eqD[2] && eqD[2].lacoRival);
+  conferir('quem não tem laço não leva nada',
+           !eqA[1].lacoRival && !eqA[2].lacoRival && !eqD[0].lacoRival && !eqD[1].lacoRival);
+  conferir('★★ são 35 pontos: o nível é 2, e não os pontos',
+           eqA[0].lacoRival[ladoDeD + '2'] === 2);
+  // A luta começa com as duas fichas abertas (o motor faz isso no fuIniciar).
+  const eqMotor = R.pvpEquipesDaSala(salaL);
+  const estL = fuIniciar(eqMotor.A, eqMotor.B, salaL.seed);
+  conferir('e a luta já começa com as fichas abertas entre os dois',
+           fuConhece(estL, ladoDeA, ladoDeD + '2').nivel === 3
+           && fuConhece(estL, ladoDeD, ladoDeA + '0').nivel === 3);
+  await pedir('A', 'sairSala', { sala: r.sala });
+  await fs.collection('players').doc('A').update({ lacos: {} });
+  await fs.collection('players').doc('D').update({ lacos: {} });
+
   titulo('As salas velhas saem do caminho');
   await limpar();
   const INT = handler._interno;
@@ -753,6 +872,8 @@ async function servidor() {
 (async () => {
   regrasPuras();
   rankPuro();
+  try { reencontroPuro(); }
+  catch (e) { mau++; falhas.push('  ✗ o teste do reencontro quebrou: ' + (e && e.stack || e)); }
   try { lutaPelaRede(); }
   catch (e) { mau++; falhas.push('  ✗ o teste da luta pela rede quebrou: ' + (e && e.stack || e)); }
   if (process.env.FIREBASE_DATABASE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST) {

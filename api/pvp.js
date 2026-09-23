@@ -177,14 +177,58 @@ async function exigirLivre(rtdb, uid, quem) {
 /* Cria a sala e só depois aponta os dois para ela, cada um numa
    transação que falha se ele já tiver outra: uma pessoa nunca fica com
    duas salas, nem se a fila e um convite a pegarem no mesmo instante. */
-async function criarSala(rtdb, tipo, a, b) {
+/* ── O REENCONTRO (js/lacos.js, etapa 2) ──
+
+   Dois avatares que ganharam laço a lutar do mesmo lado e que agora se
+   encontram em lados opostos — vendidos, trocados, ou simplesmente duas
+   colónias que se cruzaram. O que o laço dá lá dentro está no motor
+   (js/combate-fu.js): ficha aberta sem examinar e +1 a +3 na precisão
+   contra aquele inimigo, e mais ninguém.
+
+   O cruzamento é aqui porque é aqui que os dois lados se conhecem pela
+   primeira vez, e vai gravado com os ids do MOTOR ('A0', 'B2'), que são
+   os que o estado da luta usa. O que fica na sala é só o que sobra do
+   cruzamento: quase sempre nada, às vezes uma linha. */
+function _cruzarLacos(eu, ele, ladoDele) {
+  const L = require('../js/lacos.js');
+  return (eu.retratos || []).map(r => {
+    const meus = (eu.lacos || {})[r.id] || {};
+    const rival = {};
+    (ele.retratos || []).forEach((rr, j) => {
+      const n = L.lacoNivel(((meus[rr.id] || {}).p) | 0);
+      if (n > 0) rival[ladoDele + j] = n;
+    });
+    return Object.keys(rival).length ? Object.assign({}, r, { lacoRival: rival }) : r;
+  });
+}
+
+/* Os laços dos dois, lidos aqui e não carregados desde a fila.
+
+   A fila guarda a equipa no Realtime Database (`pvp/filaEquipe`) para o
+   pareamento ser barato, e pôr os laços lá seria engordar uma coisa
+   que se escreve a cada entrada para usar uma vez por partida. Aqui são
+   duas leituras, uma vez, no instante em que a sala nasce. */
+async function _lacosDe(db, uid) {
+  if (!db) return {};
+  try {
+    const snap = await db.collection('players').doc(uid).get();
+    return snap.exists ? (snap.data().lacos || {}) : {};
+  } catch (e) { return {}; }
+}
+
+async function criarSala(rtdb, db, tipo, a, b) {
   const ref = rtdb.ref('pvp/salas').push();
   const id = ref.key;
   const agora = Date.now();
   const aEhA = crypto.randomInt(0, 2) === 0;
+  const ladoA = aEhA ? a : b, ladoB = aEhA ? b : a;
+  const [lacosA, lacosB] = await Promise.all([_lacosDe(db, ladoA.uid), _lacosDe(db, ladoB.uid)]);
+  ladoA.lacos = lacosA; ladoB.lacos = lacosB;
+  const equipeA = _cruzarLacos(ladoA, ladoB, 'B');
+  const equipeB = _cruzarLacos(ladoB, ladoA, 'A');
   const jogadores = {};
-  jogadores[a.uid] = { nome: a.nome, poder: a.poder, equipe: a.retratos };
-  jogadores[b.uid] = { nome: b.nome, poder: b.poder, equipe: b.retratos };
+  jogadores[ladoA.uid] = { nome: ladoA.nome, poder: ladoA.poder, equipe: equipeA };
+  jogadores[ladoB.uid] = { nome: ladoB.nome, poder: ladoB.poder, equipe: equipeB };
   await ref.set({
     id, tipo,
     criada: agora,
@@ -250,7 +294,7 @@ async function _soltar(rtdb, uid, por) {
   } catch (e) {}
 }
 
-async function tentarPar(rtdb, uid) {
+async function tentarPar(rtdb, db, uid) {
   const filaSnap = await rtdb.ref('pvp/fila').once('value');
   const fila = filaSnap.val() || {};
   const eu = fila[uid];
@@ -277,7 +321,7 @@ async function tentarPar(rtdb, uid) {
     rtdb.ref(`pvp/filaEquipe/${par}`).once('value'),
   ]);
   const A = equipeEu.val(), B = equipeEle.val();
-  const sala = (A && B) ? await criarSala(rtdb, 'fila',
+  const sala = (A && B) ? await criarSala(rtdb, db, 'fila',
     Object.assign({ uid }, A), Object.assign({ uid: par }, B)) : null;
   if (!sala) {
     // Não deu (um dos dois arranjou sala por outro caminho): as travas saem.
@@ -332,15 +376,15 @@ async function acaoEntrar(ctx) {
     [`pvp/fila/${uid}`]: { poder: eq.poder, desde: agora, sinal: agora, nome: eq.nome },
     [`pvp/filaEquipe/${uid}`]: { nome: eq.nome, poder: eq.poder, retratos: eq.retratos },
   });
-  const r = await tentarPar(rtdb, uid);
+  const r = await tentarPar(rtdb, db, uid);
   // De boleia, e sem ninguém à espera dela (ver varrerSalas).
   if (Math.random() < 0.1) varrerSalas(rtdb).catch(() => {});
   return { poder: eq.poder, desde: agora, sala: r.sala };
 }
 
 async function acaoProcurar(ctx) {
-  const { rtdb, uid } = ctx;
-  const r = await tentarPar(rtdb, uid);
+  const { db, rtdb, uid } = ctx;
+  const r = await tentarPar(rtdb, db, uid);
   if (r.sala) return { sala: r.sala };
   if (!r.eu) {
     // Saiu da fila: ou foi pareado por outro (tem sala), ou caiu dela.
@@ -391,7 +435,7 @@ async function acaoAceitar(ctx) {
   await exigirLivre(rtdb, uid, 'eu');
   await exigirLivre(rtdb, de, 'ele');
 
-  const sala = await criarSala(rtdb, 'amistosa',
+  const sala = await criarSala(rtdb, db, 'amistosa',
     Object.assign({ uid: de }, ele), Object.assign({ uid }, eu));
   if (!sala) throw new Recusa(409, 'ele_em_sala');
   return { sala };

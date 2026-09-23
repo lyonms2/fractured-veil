@@ -141,6 +141,11 @@ function fuLutador(slot, lado, posto) {
        Laço gasta-se uma vez por batalha. */
     lacoCom: (slot.lacoCom && typeof slot.lacoCom === 'object') ? Object.assign({}, slot.lacoCom) : null,
     lacoUsado: false,
+    /* O REENCONTRO (js/lacos.js, etapa 2). Com quem ele tem laço do
+       OUTRO lado do campo, e de que nível: { 'B1': 2 }. Quem monta isto
+       é quem sabe os dois lados — no PvP, o criarSala (api/pvp.js). No
+       PvE não existe: os inimigos de lá não são avatares de ninguém. */
+    lacoRival: (slot.lacoRival && typeof slot.lacoRival === 'object') ? Object.assign({}, slot.lacoRival) : null,
   };
 }
 
@@ -508,11 +513,26 @@ function fuAtacar(estado, quem, alvo, opcoes) {
   const mag = !!o.magico;
   const dq = fuDonsDe(quem);
 
+  /* ── O REENCONTRO ──
+
+     Dois avatares que lutaram lado a lado e agora estão em lados
+     opostos. Quem conhece o outro bate melhor NELE, e só nele: +1 a +3,
+     conforme o laço. Não se pede, não se gasta e não se escolhe — é o
+     que um sabe do outro, e sabe-se o tempo todo.
+
+     É por isso que mora aqui dentro e não no fuAgir, onde está o Lutar
+     pelo Laço: aquele é uma vez por batalha e vale para a ação inteira;
+     este é por alvo. Os dois podem somar-se na mesma jogada, e é de
+     propósito: um é a força de quem luta contigo, o outro é a leitura
+     de quem já lutou. */
+  const reencontro = (quem.lacoRival && alvo && quem.lado !== alvo.lado
+                      ? Math.max(0, Math.min(3, quem.lacoRival[alvo.id] | 0)) : 0);
+
   /* A Mira Treinada soma-se à precisão, e só do lado em que se treinou:
      +3 a bater OU +3 a lançar, nunca os dois. Quem escolheu qual foi o
      DNA, no js/vantagens-fu.js. */
   const r = fuRolagem(estado.rng, fuDado(quem, a1), fuDado(quem, a2),
-                      (quem.ficha.bonusPrecisao | 0) + (o.bonus | 0)
+                      (quem.ficha.bonusPrecisao | 0) + (o.bonus | 0) + reencontro
                       + ((mag ? dq.magiaMais : dq.precisaoMais) | 0));
   /* O Golpe Certeiro mira a Defesa Mágica com o murro. Só com o murro —
      uma magia já mira lá, e somar as duas coisas não queria dizer nada. */
@@ -528,6 +548,8 @@ function fuAtacar(estado, quem, alvo, opcoes) {
     dl, acertou, critico: r.critico, pifao: r.pifao,
     atribs: [a1, a2], naMente,
   };
+  // Para a arena poder dizer de onde veio o que somou.
+  if (reencontro) ev.reencontro = reencontro;
   if (!acertou) return ev;
 
   /* O Golpe Pesado engorda o MURRO e não as magias: o manual manda
@@ -1253,6 +1275,23 @@ function fuIniciar(equipaA, equipaB, semente) {
     // O que cada lado já sabe de cada inimigo (a ação Examinar e os golpes).
     conhece: { A: {}, B: {} },
   };
+
+  /* ── QUEM SE REENCONTRA JÁ SE CONHECE ──
+
+     A ficha de um inimigo começa escondida e abre-se examinando. Mas
+     quem lutou meses ao lado daquele bicho não precisa de o estudar: já
+     lhe sabe a vida, as magias e as fraquezas. O laço abre a ficha
+     inteira (nível 3) desde o primeiro turno, para os dois lados — o
+     reconhecimento é mútuo. */
+  for (const lado of ['A', 'B']) {
+    for (const c of estado[lado]) {
+      if (!c.lacoRival) continue;
+      for (const idRival of Object.keys(c.lacoRival)) {
+        if (!(c.lacoRival[idRival] > 0)) continue;
+        fuConhece(estado, lado, idRival).nivel = 3;
+      }
+    }
+  }
 
   const lider = estado.A.reduce((m, c) =>
     (fuDado(c, 'DES') + fuDado(c, 'PER') > fuDado(m, 'DES') + fuDado(m, 'PER') ? c : m), estado.A[0]);

@@ -197,7 +197,36 @@ function afAbrir(equipaA, equipaB, semente, aoSair, opcoes) {
                      quem: _afE.iniciativa.quem })
     + '<span class="cb-lance-resto"> · '
     + t('af.lance.acerta', { r: _afE.iniciativa.resultado, dl: _afE.iniciativa.dl }) + '</span>');
+  _afAnunciarReencontros();
   setTimeout(_afAndar, AF_PAUSA);
+}
+
+/* ── "VOCÊS DOIS JÁ SE CONHECEM" ──
+
+   Quando dois avatares com laço se encontram em lados opostos, a ficha
+   do inimigo abre sozinha e o golpe passa a somar (js/lacos.js, etapa
+   2; o motor faz isso no fuIniciar e no fuAtacar). Sem uma linha a
+   dizer porquê, o jogador via a ficha do adversário aberta sem ter
+   examinado nada e não entendia — parecia defeito.
+
+   Uma linha por par, e só do lado de quem está a jogar: o outro lado
+   recebe a sua no navegador dele. */
+function _afAnunciarReencontros() {
+  if (!_afE) return;
+  const ditos = {};
+  for (const c of (_afE[_afMeu] || [])) {
+    if (!c.lacoRival) continue;
+    for (const idRival of Object.keys(c.lacoRival)) {
+      const n = c.lacoRival[idRival] | 0;
+      const chave = [c.id, idRival].sort().join('|');
+      if (!n || ditos[chave]) continue;
+      ditos[chave] = true;
+      const rival = _afPorId(idRival);
+      if (!rival) continue;
+      _afLance('<b class="laco">' + esc(t('af.reencontro.aviso', {
+        a: _afNome(c), b: _afNome(rival), n })) + '</b>');
+    }
+  }
 }
 
 /* ── A JANELA MUDOU DE TAMANHO ──
@@ -3348,6 +3377,7 @@ function _afLanceDe(ev, seguido) {
     p.push('<b>' + nome(ev.quem) + '</b>');
     p.push(_afDadosHTML(ev));
     if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
+    if (ev.reencontro) p.push('<b class="laco">💔 ' + t('af.lance.reencontro', { nome: nome(ev.alvo), n: ev.reencontro }) + '</b>');
     p.push(t('af.lance.examina', { alvo: '<b>' + nome(ev.alvo) + '</b>', r: ev.resultado }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
     if (ev.pifao)   p.push('<b class="pifao">' + t('af.lance.pifao') + '</b>');
@@ -3377,6 +3407,11 @@ function _afLanceDe(ev, seguido) {
     }
     p.push(_afDadosHTML(ev));
     if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
+    /* O reencontro: o bónus que ele tem contra ESTE inimigo por já ter
+       lutado ao lado dele (js/lacos.js, etapa 2). Coração partido e não
+       coração inteiro — o outro ícone é do Lutar pelo Laço, que é com um
+       aliado, e as duas coisas podem aparecer na mesma linha. */
+    if (ev.reencontro) p.push('<b class="laco">💔 ' + t('af.lance.reencontro', { nome: nome(ev.alvo), n: ev.reencontro }) + '</b>');
     // Contra QUAL defesa: a magia mira a Defesa Mágica, o golpe a Defesa.
     p.push(t(ev.naMente ? 'af.lance.contra_mag' : 'af.lance.contra_def', { r: ev.resultado, dl: ev.dl }));
     if (ev.critico) p.push('<b class="critico">' + t('af.lance.critico') + '</b>');
