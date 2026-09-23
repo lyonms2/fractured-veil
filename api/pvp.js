@@ -287,6 +287,42 @@ async function tentarPar(rtdb, uid) {
   return { sala, eu };
 }
 
+/* ── AS SALAS VELHAS ──
+
+   Uma sala guarda a semente, as duas equipas inteiras e a lista de
+   todas as jogadas. Terminada, ainda serve por uns minutos — o outro
+   jogador pode chegar atrasado ao fim, e é de lá que ele lê o resultado
+   e o que a luta deixou. Passado isso, é lixo que fica a pagar-se para
+   sempre.
+
+   Não há aqui nenhuma tarefa agendada (isto são funções que só correm
+   quando alguém as chama), por isso a limpeza viaja de boleia com quem
+   entra na fila: de vez em quando, olha-se para as mais antigas e
+   apagam-se as que já acabaram há mais de uma hora. Poucas de cada vez,
+   e nunca as que ainda estão vivas.
+
+   Falhar não faz mal nenhum: quem está a entrar na fila não fica à
+   espera disto, e a próxima entrada volta a tentar. */
+const SALA_VELHA_MS = 60 * 60 * 1000;   // uma hora depois do fim
+const SALA_VARRER   = 20;               // no máximo estas por vez
+
+async function varrerSalas(rtdb) {
+  const snap = await rtdb.ref('pvp/salas').orderByChild('criada')
+    .limitToFirst(SALA_VARRER).once('value');
+  const corte = Date.now() - SALA_VELHA_MS;
+  const fora = [];
+  snap.forEach(s => {
+    const v = s.val() || {};
+    // Viva não se toca. Sem `fim` gravado, vale a hora em que foi criada
+    // — uma sala que ficou a meio também não pode ficar para sempre.
+    if (SALA_VIVA.indexOf(v.estado) !== -1) return;
+    if ((v.fim || v.criada || 0) > corte) return;
+    fora.push(s.key);
+  });
+  for (const k of fora) await rtdb.ref(`pvp/salas/${k}`).remove();
+  return fora.length;
+}
+
 async function acaoEntrar(ctx) {
   const { db, rtdb, uid, body } = ctx;
   await exigirLivre(rtdb, uid, 'eu');
@@ -297,6 +333,8 @@ async function acaoEntrar(ctx) {
     [`pvp/filaEquipe/${uid}`]: { nome: eq.nome, poder: eq.poder, retratos: eq.retratos },
   });
   const r = await tentarPar(rtdb, uid);
+  // De boleia, e sem ninguém à espera dela (ver varrerSalas).
+  if (Math.random() < 0.1) varrerSalas(rtdb).catch(() => {});
   return { poder: eq.poder, desde: agora, sala: r.sala };
 }
 
@@ -626,4 +664,5 @@ module.exports = async function handler(req, res) {
 };
 
 // Para os testes (tools/testar-pvp.js).
-module.exports._interno = { lerEquipa, tentarPar, criarSala, salaViva, _idxDaEquipa };
+module.exports._interno = { lerEquipa, tentarPar, criarSala, salaViva, _idxDaEquipa,
+                            varrerSalas, SALA_VELHA_MS };

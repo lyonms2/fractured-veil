@@ -730,6 +730,22 @@ async function servidor() {
            (docVs.avatarSlots || []).every(s => s.vitals.energia === 100),
            (docVs.avatarSlots || []).map(s => s.vitals.energia));
 
+  titulo('As salas velhas saem do caminho');
+  await limpar();
+  const INT = handler._interno;
+  const agoraV = Date.now();
+  await rtdb.ref('pvp/salas').set({
+    velha:   { id: 'velha',   estado: 'fim',       criada: agoraV - 5 * 3600000, fim: agoraV - 4 * 3600000 },
+    recente: { id: 'recente', estado: 'fim',       criada: agoraV - 600000,      fim: agoraV - 300000 },
+    viva:    { id: 'viva',    estado: 'luta',      criada: agoraV - 9 * 3600000 },
+    meia:    { id: 'meia',    estado: 'encerrada', criada: agoraV - 8 * 3600000 },
+  });
+  const quantas = await INT.varrerSalas(rtdb);
+  const restam = Object.keys((await rtdb.ref('pvp/salas').once('value')).val() || {}).sort();
+  conferir('a varredura apagou as duas velhas', quantas === 2, quantas);
+  conferir('a que acabou agora e a que está em curso ficam',
+           restam.join(',') === 'recente,viva', restam);
+
   await limpar();
   console.log('\n(servidor testado contra os emuladores)');
 }

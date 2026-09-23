@@ -161,6 +161,9 @@
         }
       },
       "salas": {
+        // Pela hora de criação: é por aí que a varredura das salas
+        // velhas olha para as mais antigas (varrerSalas, api/pvp.js).
+        ".indexOn": "criada",
         "$sala": {
           ".read": "auth != null && data.child('jogadores').child(auth.uid).exists()",
           // A presença na luta: { on } enquanto está, { fora } desde que caiu
