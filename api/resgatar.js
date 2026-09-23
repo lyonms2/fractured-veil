@@ -74,8 +74,18 @@ async function _uidDaCarteira(db, carteira) {
   return (snap.exists && snap.data()?.uid) ? snap.data().uid : null;
 }
 
-const MAX_GEMS_POR_RESGATE = 50;
-const MAX_GEMS_POR_DIA     = 50;  // 5 MATIC/dia por jogador
+/* ── QUANTO SE PODE SACAR ──
+
+   Eram 50 ð por dia: cinco MATIC, meio dólar. Com os prémios da
+   temporada a chegarem aos seiscentos cristais, o campeão levaria doze
+   dias a receber o que ganhou — e uma premiação que não se consegue
+   cobrar não é uma premiação.
+
+   O tecto continua a existir, e por um motivo que não mudou: ele limita
+   o estrago de uma falha (uma chave perdida, um erro de conta) ao que
+   cabe num dia. Sobe, não desaparece. */
+const MAX_GEMS_POR_RESGATE = 1000;
+const MAX_GEMS_POR_DIA     = 1000;  // 100 MATIC/dia por jogador
 
 // ── O contrato já consumiu este nonce? ──────────────────────────
 //

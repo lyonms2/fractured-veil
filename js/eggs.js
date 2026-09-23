@@ -1,6 +1,10 @@
-// Chocar não custa nada. Custava 50 💎 por um Raro e 100 por um
-// Lendário, e já não há nem uns nem outros — todo o ovo é só um ovo.
-const HATCH_FEE = 0;
+/* Chocar custa 30 💎. Custou 50 por um Raro e 100 por um Lendário, e
+   depois nada — e "nada" fazia da única fábrica de avatares do jogo uma
+   coisa de graça, o que empurra para baixo o preço de todos eles.
+
+   Tem de bater com o HATCH_FEE do api/pool.js, que é quem cobra: este
+   número existe só para o ecrã poder avisar antes. */
+const HATCH_FEE = 30;
 // Quantos ovos saem de cada postura. Tem de bater com o numEggs do
 // api/pool.js — é o servidor que bota, este número existe só para o
 // cliente saber se há espaço antes de cobrar.

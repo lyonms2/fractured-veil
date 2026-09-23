@@ -15,7 +15,10 @@ const { getAuth }                      = require('firebase-admin/auth');
 const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
-const LIST_COST        = 2;    // 💎 taxa de listagem de avatar
+/* A taxa de listagem, que vai inteira para a pool. Eram 2 ð — dois
+   cêntimos —, barato de mais para travar quem enche o mercado de
+   anúncios sem intenção de vender. Ver a escala no js/cristais.js. */
+const LIST_COST        = 25;   // 💎 taxa de listagem de avatar
 const PRICE_MIN        = 1;
 const PRICE_MAX        = 10000;
 const BASE_SLOTS       = 3;
@@ -320,9 +323,17 @@ async function handleDeslistarAvatar(req, res, db, uid) {
 
 // ── Desbloquear slot extra (atómico, server-side) ────────────────
 async function handleDesbloquearSlot(_req, res, db, uid) {
-  const UNLOCK_COST = 15;
   const BASE_SLOTS  = 5;   // grátis
   const MAX_SLOTS   = 10;  // os 5 acima do base compram-se com cristais
+  /* ── O PREÇO SOBE A CADA SLOT ──
+
+     Era 15 ð fixo para os cinco — quinze cêntimos, e o mesmo preço
+     para o sexto bicho e para o décimo. Quem quer uma colónia grande
+     quer cada vez mais, e o preço tem de acompanhar: a escada trava a
+     acumulação sem fechar a porta a ninguém.
+
+     O índice é quantos extras já tem (0 a 4). */
+  const UNLOCK_ESCADA = [150, 200, 250, 320, 400];
 
   const playerRef = db.collection('players').doc(uid);
 
@@ -336,6 +347,7 @@ async function handleDesbloquearSlot(_req, res, db, uid) {
       const unlocked   = Math.min(MAX_SLOTS, BASE_SLOTS + extraSlots);
 
       if (unlocked >= MAX_SLOTS) throw new Error('MAX_SLOTS');
+      const UNLOCK_COST = UNLOCK_ESCADA[Math.min(extraSlots, UNLOCK_ESCADA.length - 1)];
       const debitoSlot = CRIS.camposDebito(data, UNLOCK_COST);
       if (!debitoSlot) throw new Error('INSUFFICIENT');
 

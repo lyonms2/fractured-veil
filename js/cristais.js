@@ -52,8 +52,16 @@ const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
                     ("Valor insuficiente (minimo 0.1 MATIC)")
      máximo 1000 💎 o MAX_GEMS_CREDITO do api/processar-compra.js, que
                     recusa creditar mais do que isso numa transação */
-const COMPRA_MIN_GEMS = 1;
-const COMPRA_MAX_GEMS = 1000;
+/* ── A ESCALA (23/09/2026) ──
+
+   1 ð = 0,1 MATIC ≈ um cêntimo de dólar. A taxa (10 ð por MATIC) NÃO
+   se mexe: ela é o lastro, e mudá-la faria a pool dever de um dia para
+   o outro dez vezes o MATIC que tem. O que se ajusta são os PREÇOS.
+
+   O mínimo era 1 ð: dava para comprar um cêntimo de cristal, e a
+   transação custava mais do que o que se comprava. */
+const COMPRA_MIN_GEMS = 50;
+const COMPRA_MAX_GEMS = 5000;
 
 // ═══════════════════════════════════════════
 // TRANSPARÊNCIA

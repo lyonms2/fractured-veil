@@ -5,7 +5,14 @@
 const PAYMENT_ADDRESS  = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030';
 const POLYGONSCAN_API  = 'https://api.polygonscan.com/api';
 const LIST_COST        = 2;
-const UNLOCK_SLOT_COST = 15;
+/* O preço do PRÓXIMO slot. É uma escada (api/comprar-avatar.js): o
+   sexto bicho custa 150 e o décimo 400, porque quem quer uma colónia
+   grande quer cada vez mais. Aqui fica a tabela só para a tela poder
+   dizer o preço certo antes de pedir; quem cobra é o servidor. */
+const UNLOCK_SLOT_ESCADA = [150, 200, 250, 320, 400];
+function unlockSlotCusto(extras) {
+  return UNLOCK_SLOT_ESCADA[Math.min(Math.max(0, extras | 0), UNLOCK_SLOT_ESCADA.length - 1)];
+}
 
 let playerData     = null;
 let listings       = [];

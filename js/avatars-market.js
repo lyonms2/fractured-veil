@@ -671,7 +671,9 @@ function renderSlots() {
       <div class="slot-empty-wrap">
         <div class="slot-locked-icon">🔒</div>
         <div class="slot-empty-title">${t('mkt.slot.locked')}</div>
-        <div class="slot-locked-cost">${t('mkt.slot.locked_cost', {cost: UNLOCK_SLOT_COST})}</div>
+        <!-- Cada cadeado diz o preço DELE, e não o do próximo: a escada
+             sobe a cada slot (unlockSlotCusto, js/marketplace-core.js). -->
+        <div class="slot-locked-cost">${t('mkt.slot.locked_cost', {cost: unlockSlotCusto(i - 5)})}</div>
       </div>
     </div>`;
   }
@@ -684,7 +686,7 @@ function renderSlots() {
   // Unlock button
   if(unlocked < MAX_SLOTS) {
     unlockRow.innerHTML = `<button class="btn-unlock-slot" onclick="unlockSlot()">
-      ${t('mkt.slot.btn_unlock', {n: unlocked+1, cost: UNLOCK_SLOT_COST})}
+      ${t('mkt.slot.btn_unlock', {n: unlocked+1, cost: unlockSlotCusto(unlocked - 5)})}
     </button>`;
   } else {
     unlockRow.innerHTML = `<div style="font-size:0.5625rem;color:var(--muted);text-align:center;padding:0.625rem;">${t('mkt.slot.max_unlocked', {max: MAX_SLOTS})}</div>`;

@@ -264,7 +264,16 @@ module.exports = async function handler(req, res) {
 
    É uma entrada de cristais que a pool perde. Fica dito, e a decisão do
    que a substitui é da conversa da economia. */
-const HATCH_FEE = 0;
+/* ── O QUE CUSTA CHOCAR ──
+
+   Era zero, e com isso a única coisa que produz avatares novos no jogo
+   não custava nada — o que empurra o preço de todos os avatares para
+   baixo, e o mercado é por onde entra dinheiro aqui.
+
+   30 é a escala nova dos cristais (23/09/2026): com 1 ð a valer um
+   cêntimo, os preços antigos eram trocos que não pagavam a transação
+   que os movia. Ver a nota da escala no js/cristais.js. */
+const HATCH_FEE = 30;
 
 /* CHOCAR — a partir daqui é o servidor que emite avatares.
    ═══════════════════════════════════════════════════════════════════

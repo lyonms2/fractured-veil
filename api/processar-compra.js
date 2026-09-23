@@ -41,7 +41,7 @@ const RATE             = 10;
    Saiu. Cada 💎 creditado aqui é exatamente o que o contrato cunhou
    contra MATIC no cofre: 10 💎 = 1 MATIC. O balde `cristaisBonus` continua
    existindo para quem já tinha saldo nele (ver api/_cristais.js). */
-const MAX_GEMS_CREDITO = 1000;
+const MAX_GEMS_CREDITO = 5000;
 const ERRO_SEM_ASSINATURA = 'Vincule a MetaMask de novo, assinando a mensagem, para receber os cristais.';
 
 const CONTRACT_ABI = [
