@@ -12,6 +12,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
+const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const LIST_COST        = 2;    // 💎 taxa de listagem de avatar
@@ -530,6 +531,17 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const chaveLacos = listing.id ? `lacos.${listing.id}` : null;
       const lacosVendidos = listing.id
         ? (((sellerData.lacos || {})[listing.id]) || listing.lacos || null) : null;
+      /* O NÍVEL RECONHECIDO viaja igual (js/niveis.js). Sem isto, o
+         avatar chegava ao comprador sem registo nenhum e o primeiro
+         encontro com o servidor aceitaria o número que o cliente dele
+         dissesse — comprar um bicho barato seria a maneira de entrar no
+         PvP com o nível que se quisesse. Sem registo no vendedor (um
+         avatar de antes disto), vale o nível do anúncio, que é o que o
+         comprador viu e pagou. */
+      const chaveNivel = listing.id ? `niveis.${listing.id}` : null;
+      const nivelVendido = listing.id
+        ? (((sellerData.niveis || {})[listing.id])
+           || { n: NIV.nivelLimpo(listing.nivel), em: Date.now(), cred: NIV.NIVEL_BALDE }) : null;
 
       tx.update(buyerRef, Object.assign({
         avatarSlots: novosSlotsComprador,
@@ -537,7 +549,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {},
          chaveDonos ? { [chaveDonos]: cadeiaNova } : {},
          chaveLacos && lacosVendidos && Object.keys(lacosVendidos).length
-           ? { [chaveLacos]: lacosVendidos } : {}, debitoCompra));
+           ? { [chaveLacos]: lacosVendidos } : {},
+         chaveNivel && nivelVendido ? { [chaveNivel]: nivelVendido } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      +(sellerCris + sellerReal).toFixed(2),
@@ -547,7 +560,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         'gs.cristaisBonus': +(CRIS.deBonus(sellerData) + sellerBonus).toFixed(2),
       } : {}, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
          chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {},
-         chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {}));
+         chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {},
+         chaveNivel ? { [chaveNivel]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.

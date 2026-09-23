@@ -835,6 +835,11 @@ function checkXP() {
        o nível dá vida e magia: a frase de espera não tem caso. */
     addLog(t('gt.levelup.log', { nivel }), 'leg');
     playLevelUp(nivel);
+    // O servidor tem de saber: é o nível dele que entra no PvP (js/niveis.js).
+    if (typeof nivelAvisar === 'function' && typeof avatarSlots !== 'undefined'
+        && avatarSlots[activeSlotIdx] && avatarSlots[activeSlotIdx].id) {
+      nivelAvisar(avatarSlots[activeSlotIdx].id, nivel);
+    }
 
     /* A raridade sobe com os pontos, e por isso pergunta-se aqui.
 

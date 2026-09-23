@@ -124,14 +124,17 @@ function pvpMotivoMembro(slot, certidao, morto) {
 
 /* O retrato de um avatar como ele entra na sala: o que a ficha lê
    (js/ficha-fu.js) e o que o desenho lê (gerarSVG). O DNA vem da
-   CERTIDÃO, nunca do slot. O nível ainda vem do slot — ver a nota no
-   api/pvp.js sobre isso. */
-function pvpRetrato(slot, certidao) {
+   CERTIDÃO e o NÍVEL vem do registo do servidor (js/niveis.js) — os
+   dois números que decidem a luta, e nenhum deles sai do slot, que o
+   cliente grava por inteiro. O `nivel` chega aqui já decidido pelo
+   api/pvp.js; sem ele, vale o do slot (é o caso do desenho local, que
+   não decide nada). */
+function pvpRetrato(slot, certidao, nivel) {
   const r = {
     id: slot.id,
     // O nome, sem a alcunha ("Brasa,Leo" → "Brasa"), como o nomeCurto.
     nome: String(slot.nome || '').split(',')[0].trim().slice(0, 40),
-    nivel: Math.max(1, slot.nivel | 0 || 1),
+    nivel: Math.max(1, (nivel != null ? nivel : slot.nivel) | 0 || 1),
     seed: slot.seed | 0,
     raridade: slot.raridade || null,
     nascimento: certidao,

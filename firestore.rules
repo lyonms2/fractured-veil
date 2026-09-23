@@ -140,6 +140,22 @@ service cloud.firestore {
                  api/pool.js, com teto por dia e por par, os parentes no
                  chocar-ovo e a venda no api/comprar-avatar.js. */
               'lacos', 'ultimoLaco',
+              /* O NÍVEL QUE O SERVIDOR RECONHECE (js/niveis.js).
+
+                 O nível vive no avatarSlots, que o cliente grava por
+                 inteiro: uma linha no console punha um bicho novo no
+                 nível 60. No PvE isso é enganar-se a si mesmo; no PvP,
+                 onde o nível decide a luta, é o fim do jogo competitivo.
+
+                 Aqui fica um segundo número, que só o servidor escreve e
+                 que só sobe degrau a degrau, no ritmo de quem joga (a
+                 acao 'nivel' do api/pool.js). É dele que o PvP monta as
+                 equipas; o do slot continua a ser o que o jogador vê.
+
+                 Como o `mortos`, isto estreita a porta e não a fecha:
+                 quem avisa que subiu continua a ser o jogo, que corre no
+                 navegador. O que deixa de funcionar é o salto. */
+              'niveis',
               /* O CÓDIGO DE AMIGO — as seis letras que se passam a
                  alguém para ele nos adicionar.
 

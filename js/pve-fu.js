@@ -196,10 +196,13 @@ function _pvePremiarAvatar(idx, xpGanho, vinculoGanho) {
   s.vinculo = (s.vinculo || 0) + vinculoGanho;
   if (typeof xpParaNivel === 'function') {
     let guarda = 0;                       // rede contra XP absurdo
+    const nivel0 = s.nivel || 1;
     while (s.xp >= xpParaNivel(s.nivel || 1) && guarda++ < 100) {
       s.xp -= xpParaNivel(s.nivel || 1);
       s.nivel = (s.nivel || 1) + 1;
     }
+    // Subiu: o servidor tem de saber (js/niveis.js).
+    if (s.nivel > nivel0 && s.id && typeof nivelAvisar === 'function') nivelAvisar(s.id, s.nivel);
   }
 }
 

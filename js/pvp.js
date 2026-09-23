@@ -154,6 +154,13 @@ function pvpIniciar(uid) {
     _pvpRenderAmigos();
   });
   ouvir(db.ref('pvp/jogador/' + uid + '/sala'), 'value', s => _pvpPonteiro(s.val()));
+
+  /* O NÍVEL COM QUE SE ENTRA NA FILA É O QUE O SERVIDOR RECONHECE
+     (js/niveis.js), e um aviso de subida que se perdeu por falta de rede
+     deixaria o avatar a lutar abaixo do que é. Aqui, ao ligar o PvP,
+     manda-se a colônia inteira de uma vez: o servidor sobe o que o
+     ritmo permitir e ignora o resto. */
+  if (typeof nivelAvisarTodos === 'function') nivelAvisarTodos();
 }
 
 function pvpEncerrar() {

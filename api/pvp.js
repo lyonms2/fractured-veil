@@ -48,6 +48,7 @@ const { getDatabase }  = require('firebase-admin/database');
 
 // O ehBebe, a ficha e o motor, como os outros endpoints os carregam.
 require('./_genetica.js');
+const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
 const R = require('../js/pvp-regras.js');
 
 const DB_URL = process.env.FIREBASE_DATABASE_URL || 'https://fractured-veil-default-rtdb.firebaseio.com';
@@ -106,14 +107,40 @@ async function lerEquipa(db, uid, idsDoPedido) {
   const idx = _idxDaEquipa(d.gs || {}, slots);
   if (idx.length < R.PVP_EQUIPA) throw new Recusa(400, 'equipe_incompleta');
 
+  /* ── O NÍVEL COM QUE SE ENTRA NA SALA ──
+
+     Não é o do `avatarSlots`, que o cliente grava: é o do mapa `niveis`,
+     que só o servidor escreve (js/niveis.js). Editar o save para entrar
+     no PvP com um bicho de nível 60 deixa de servir para nada — o que
+     conta aqui é o que ficou registado, degrau a degrau.
+
+     Quem ainda não tem registo é anotado AGORA, com o nível que o slot
+     diz: são os avatares anteriores a isto, e é o primeiro (e único)
+     encontro em que o servidor acredita no cliente. Os que nascem a
+     partir daqui já vêm registados no nível 1 (api/pool.js). */
+  const niveis = d.niveis || {};
+  const anotar = {};
+  const agora  = Date.now();
+
   const retratos = [], motivos = [];
   for (const i of idx) {
     const s = slots[i];
     const motivo = R.pvpMotivoMembro(s, certidoes[s && s.id], mortos[s && s.id]);
     if (motivo) { motivos.push({ id: s && s.id, nome: s && s.nome, motivo }); continue; }
-    retratos.push(R.pvpRetrato(s, certidoes[s.id]));
+    let nivel = NIV.nivelDe(niveis, s.id, s);
+    if (!(niveis[s.id] && niveis[s.id].n > 0)) {
+      const r = NIV.nivelAceitar(null, s.nivel, agora);
+      anotar[`niveis.${s.id}`] = r.reg;
+      nivel = r.reg.n;
+    }
+    retratos.push(R.pvpRetrato(s, certidoes[s.id], nivel));
   }
   if (motivos.length) throw new Recusa(400, 'equipe_invalida', { motivos });
+  /* Fora da leitura e sem esperar: se falhar, o pior que acontece é o
+     avatar ser anotado na próxima vez. Não é dono de nada aqui. */
+  if (Object.keys(anotar).length) {
+    db.collection('players').doc(uid).update(anotar).catch(() => {});
+  }
 
   if (Array.isArray(idsDoPedido)) {
     const noBanco = retratos.map(r => r.id).join(',');

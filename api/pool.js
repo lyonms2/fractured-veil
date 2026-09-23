@@ -12,6 +12,7 @@ const { ethers }                       = require('ethers');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
+const NIV  = require('../js/niveis.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 /* O POOL_ALVO, o POOL_LIMITE_DIA, o saqueDeHoje e o marcarSaque saíram
@@ -196,6 +197,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
   if (acao === 'laco')        return handleLaco(req, res, db, uid);
+  if (acao === 'nivel')       return handleNivel(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -396,6 +398,14 @@ async function handleInvocar(req, res, db, uid) {
         [`certidoes.${id}`]: nascimento,
         [`avataresEmitidos.s${String(seed)}`]: 'Comum',
         invocacoesUsadas: usadas + 1,
+        /* O NÍVEL COMEÇA AQUI, E NO UM.
+
+           O `niveis` é o que o PvP lê (js/niveis.js). Um avatar que
+           nasce já registado nunca tem um "primeiro encontro" em que o
+           servidor aceita o número que o cliente disser — e é esse
+           primeiro encontro que só existe para os avatares que já
+           andavam por aí antes disto. */
+        [`niveis.${id}`]: { n: 1, em: Date.now(), cred: NIV.NIVEL_BALDE },
       });
 
       return { id, seed, nascimento, invocacoesUsadas: usadas + 1 };
@@ -610,6 +620,67 @@ async function handleLaco(req, res, db, uid) {
    ═══════════════════════════════════════════════════════════════════ */
 const OVOS_MAX = 10;
 
+/* ═══════════════════════════════════════════════════════════════════
+   NÍVEL — o jogo avisa que subiu, o servidor decide se acredita
+
+   As regras estão no js/niveis.js, que o navegador também carrega: um
+   balde de degraus que enche com o tempo (doze por hora até o 11, seis
+   daí em diante, doze no máximo). O cliente manda o nível que tem; o
+   servidor sobe o que o balde permitir e guarda a hora.
+
+   Pedir de mais NÃO é erro. O jogo segue igual — o número do slot é o
+   que o jogador vê e é com ele que joga o PvE. O registo só decide uma
+   coisa: com que nível se entra no PvP (api/pvp.js).
+
+   O que isto fecha e o que não fecha está escrito no js/niveis.js.
+   ═══════════════════════════════════════════════════════════════════ */
+const NIVEL_ID_VALIDO = /^[A-Za-z0-9_-]{1,64}$/;
+
+async function handleNivel(req, res, db, uid) {
+  const pedidos = req.body && req.body.avatares;
+  if (!Array.isArray(pedidos) || !pedidos.length || pedidos.length > 10) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const pData = snap.data();
+      const slots     = pData.avatarSlots || [];
+      const certidoes = pData.certidoes   || {};
+      const mortos    = pData.mortos      || {};
+      const niveis    = pData.niveis      || {};
+      const agora     = Date.now();
+
+      const alteracoes = {};
+      const out = {};
+      for (const p of pedidos) {
+        const id = p && String(p.id || '');
+        if (!id || !NIVEL_ID_VALIDO.test(id)) continue;
+        // É dele, existe de verdade e está vivo — as mesmas perguntas do laço.
+        if (!slots.some(s => s && s.id === id)) continue;
+        if (!certidoes[id] || mortos[id]) continue;
+
+        const r = NIV.nivelAceitar(niveis[id], p.nivel, agora);
+        out[id] = r.reg.n;
+        // Só se mexeu alguma coisa: um pedido que não sobe nada não escreve.
+        if (r.subiu > 0 || r.primeiro) alteracoes[`niveis.${id}`] = r.reg;
+      }
+      if (Object.keys(alteracoes).length) tx.update(playerRef, alteracoes);
+      return { niveis: out };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    console.error('[pool/nivel]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
+}
+
+
 async function handleCruzar(req, res, db, uid) {
   const GEN = require('./_genetica.js');
   const { maeIdx, paiIdx } = req.body;
@@ -729,6 +800,8 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
         [`certidoes.${id}`]: nascimento,
         [`avataresEmitidos.s${String(seed)}`]: 'Comum',
         [`ovos.${String(ovoId)}`]: FieldValue.delete(),
+        // O nível do recém-nascido, registado pelo servidor (ver o invocar).
+        [`niveis.${id}`]: { n: 1, em: Date.now(), cred: NIV.NIVEL_BALDE },
       };
 
       /* PAIS E FILHOS JÁ NASCEM COM LAÇO ★ (js/lacos.js). O do filho com
