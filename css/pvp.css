@@ -559,6 +559,17 @@
   animation: pvp-sobe .5s .6s ease-out both;
 }
 .pvp-fim-selo.ok { color: #9fdc9f; }
+/* ── O RECIBO DA LUTA (js/pvp-luta.js, _pvpLPremioHTML) ──
+   O que ela custou e o que deixou, numa linha só, por baixo do selo da
+   conferência: energia, humor, moedas — e a fratura, se houve. */
+.pvp-fim-premio {
+  display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
+  margin-top: 0.25rem;
+  animation: pvp-sobe .5s .68s ease-out both;
+}
+.pvp-premio-itens { font-size: 0.6875rem; color: var(--text); letter-spacing: 0.0625rem; }
+.pvp-premio-mal   { font-size: 0.5rem; color: #ffb4ae; }
+.pvp-premio-nota  { font-size: 0.5rem; color: var(--muted); font-style: italic; }
 .pvp-fim-acoes { display: flex; flex-direction: column; gap: 0.5rem; animation: pvp-sobe .5s .75s ease-out both; }
 @keyframes pvp-fim-bate {
   0%   { opacity: 0; transform: scale(2.2); filter: blur(0.375rem); letter-spacing: 0.9rem; }
@@ -576,9 +587,12 @@
   .pvp-fim-titulo { font-size: 1.75rem; }
   .pvp-fim-sub { font-size: 0.75rem; }
   .pvp-fim-selo { font-size: 0.5625rem; }
+  .pvp-premio-itens { font-size: 0.8125rem; }
+  .pvp-premio-mal, .pvp-premio-nota { font-size: 0.625rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pvp-fim::before, .pvp-fim-titulo, .pvp-fim-sub, .pvp-fim-selo, .pvp-fim-acoes, .pvp-fim-marca { animation: none; opacity: 1; }
+  .pvp-fim::before, .pvp-fim-titulo, .pvp-fim-sub, .pvp-fim-selo, .pvp-fim-acoes, .pvp-fim-marca,
+  .pvp-fim-premio { animation: none; opacity: 1; }
   .pvp-relogio.urgente .pvp-relogio-txt, .pvp-relogio.fora .pvp-relogio-txt { animation: none; }
 }
 

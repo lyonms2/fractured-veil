@@ -303,6 +303,7 @@ function _pvpLFim() {
   L.pedindoFim = true;
   const tentar = (n) => _pvpChamar('encerrar', { sala: L.id }).then(r => {
     L.servidor = { vencedor: r.vencedor || null, motivo: r.motivo || null };
+    _pvpLPremio(r.premios);
     if (_pvpL === L && typeof _afDesenhar === 'function') _afDesenhar();
   }).catch(e => {
     // Ainda em curso do lado do servidor (uma jogada a caminho): tenta de novo.
@@ -326,6 +327,7 @@ function _pvpLFimDoServidor() {
     const sala = s.val() || {};
     if (_pvpL !== L) return;
     L.servidor = { vencedor: sala.vencedor || null, motivo: sala.motivo || null };
+    _pvpLPremio(sala.premios);
     if (_afE && !_afE.acabou) {
       /* Guarda-se à parte: as jogadas que ainda chegam aplicam-se primeiro
          (_pvpLPonto), e só então este fim vale. */
@@ -333,6 +335,77 @@ function _pvpLFimDoServidor() {
       if (L.pronto && !L.recebidas[L.aplicadas]) _pvpLPonto(L.vez);
     } else if (typeof _afDesenhar === 'function') _afDesenhar();
   }).catch(() => {});
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   O QUE A LUTA DEIXOU
+
+   Quem decide é o servidor (api/pvp.js): energia gasta, humor, moedas e
+   a fratura de quem caiu chegam prontos no `premios` da sala. Aqui
+   aplica-se o mesmo na memória deste navegador — senão o próximo save
+   passava por cima do que o servidor escreveu — e mostra-se o recibo no
+   painel do fim.
+
+   Uma vez só: o fim pode chegar por dois caminhos (a conferência que
+   este lado pediu e o fim que o servidor gravou), e os dois passam por
+   aqui. */
+function _pvpLPremio(premios) {
+  const L = _pvpL;
+  if (!L || !premios || L.premio) return;
+  const p = premios[L.uid];
+  if (!p) return;
+  L.premio = p;
+
+  const ids = p.avatares || [];
+  if (typeof avatarSlots !== 'undefined') {
+    avatarSlots.forEach((s, i) => {
+      if (!s || !s.id || ids.indexOf(s.id) === -1) return;
+      const aberto = (typeof activeSlotIdx !== 'undefined' && i === activeSlotIdx);
+      const v = s.vitals || (s.vitals = {});
+      v.energia = Math.max(0, Math.round((v.energia == null ? 100 : v.energia) - (p.energia || 0)));
+      if (p.humor) v.humor = Math.min(100, Math.round((v.humor == null ? 100 : v.humor) + p.humor));
+      const temFratura = (p.fraturas || []).indexOf(s.id) !== -1;
+      if (temFratura) {
+        s.activeDiseases = Array.isArray(s.activeDiseases) ? s.activeDiseases : [];
+        if (s.activeDiseases.indexOf('fratura') === -1) s.activeDiseases.push('fratura');
+      }
+      /* O avatar ABERTO na tela de cuidar não vive no slot: vive nas
+         variáveis soltas, e é delas que o save sai. */
+      if (aberto) {
+        if (typeof vitals !== 'undefined' && vitals) {
+          vitals.energia = v.energia;
+          if (p.humor) vitals.humor = v.humor;
+        }
+        if (temFratura && typeof activeDiseases !== 'undefined'
+            && Array.isArray(activeDiseases) && activeDiseases.indexOf('fratura') === -1) {
+          activeDiseases.push('fratura');
+        }
+      }
+    });
+  }
+  // As moedas vão de `increment` no servidor: aqui soma-se o mesmo.
+  if (p.moedas && typeof gs !== 'undefined') gs.moedas = (gs.moedas || 0) + p.moedas;
+  if (typeof updateResourceUI === 'function') updateResourceUI();
+  if (typeof updateAllUI === 'function') updateAllUI();
+  if (typeof scheduleSave === 'function') scheduleSave();
+}
+
+// O recibo, no painel do fim.
+function _pvpLPremioHTML() {
+  const L = _pvpL;
+  const p = L && L.premio;
+  if (!p) return '';
+  const linhas = [];
+  if (p.energia) linhas.push('−' + p.energia + ' ⚡');
+  if (p.humor)   linhas.push('+' + p.humor + ' ☺');
+  if (p.moedas)  linhas.push('+' + p.moedas + ' 🪙');
+  const fr = (p.fraturas || []).length;
+  return `<div class="pvp-fim-premio">
+      <span class="pvp-premio-itens">${esc(linhas.join('  ·  '))}</span>
+      ${fr ? `<span class="pvp-premio-mal">${esc(t('pvp.premio.fratura', { n: fr }))}</span>` : ''}
+      ${!p.moedas && p.resultado !== 'desistiu' && L.sala.tipo === 'amistosa'
+        ? `<span class="pvp-premio-nota">${esc(t('pvp.premio.amigo'))}</span>` : ''}
+    </div>`;
 }
 
 function _pvpLFimHTML(estado) {
@@ -364,6 +437,7 @@ function _pvpLFimHTML(estado) {
       <div class="pvp-fim-sub">${esc(sub)}</div>
       <div class="pvp-fim-selo ${L.servidor ? 'ok' : L.semConferencia ? 'falhou' : ''}">${esc(t(L.servidor ? 'pvp.fim.conferido' : L.semConferencia ? 'pvp.fim.sem_conferencia' : 'pvp.fim.conferindo'))}${
         amistosa ? ' · ' + esc(t('pvp.sala.amistosa')) : ''}</div>
+      ${_pvpLPremioHTML()}
     </div>
     <div class="pvp-fim-acoes">
       <button class="pvp-btn pri" onclick="pvpLutaSair(true)">${esc(t('pvp.fim.de_novo'))}</button>

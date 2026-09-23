@@ -119,7 +119,112 @@ function pvpMotivoMembro(slot, certidao, morto) {
   if (!certidao) return 'sem_certidao';
   if (!(typeof slot.nome === 'string' && slot.nome.split(',')[0].trim())) return 'sem_nome';
   if (typeof ehBebe === 'function' && ehBebe(slot)) return 'bebe';
+  /* ── DOENTE E CANSADO TAMBÉM NÃO ENTRAM ──
+
+     As mesmas duas perguntas do PvE (_pveImpedimentoDe, em js/pve-fu.js)
+     e com os mesmos números: qualquer doença impede, e a energia tem de
+     estar em PVP_ENERGIA_MINIMA ou acima — 20, que é onde a exaustão
+     começa a acumular.
+
+     Estavam só no navegador, e o servidor deixava passar o que o botão
+     escondia. Aqui elas valem para os dois lados: o jogo pergunta antes
+     de mostrar a fila, e o servidor pergunta de novo antes de montar a
+     sala. O que isto NÃO fecha é o save editado — os medidores vivem no
+     `avatarSlots`, que o cliente grava; o nível, que é o que decide a
+     luta, já não (js/niveis.js). */
+  if (Array.isArray(slot.activeDiseases) && slot.activeDiseases.length) return 'doenca';
+  const energia = Math.floor(Number((slot.vitals || {}).energia ?? 100));
+  if (energia < PVP_ENERGIA_MINIMA) return 'energia';
   return null;
+}
+
+/* ── O QUE A LUTA CUSTA ──
+   Os mesmos números do PvE (js/pve-fu.js): não entra quem tem menos de
+   20 de energia, cada avatar gasta 10 na luta e 4 se o dono desistir. A
+   diferença é quem cobra — aqui é o servidor, no fim (api/pvp.js). */
+const PVP_ENERGIA_MINIMA   = 20;
+const PVP_ENERGIA_CUSTO    = 10;
+const PVP_ENERGIA_DESISTIR = 4;
+
+/* ═══════════════════════════════════════════════════════════════════
+   O QUE A LUTA DEIXA — decidido pelo dono do jogo em 22/09/2026
+
+   "cobra 10 de energia, paga +humor se ganhar, se perder menos, paga
+   moedas, pode dar doença de fratura, dá pontos de laço e o mais
+   importante pontos em rank."
+
+   ── AS CONTAS ──
+
+   ENERGIA: 10 a cada um dos três, como no PvE, porque lutaram o mesmo.
+   Quem desiste paga 4 — também como no PvE.
+
+   MOEDAS: a vitória paga 180. A conta vem do PvE: uma vitória no Médio
+   dá 144 (24 moedas do DIFF_TIERS × 6), e isto é um quarto acima,
+   porque do outro lado está gente e não a máquina. A derrota paga 45,
+   um quarto da vitória: a energia gastou-se igual, e sair de mãos
+   vazias de uma luta difícil empurra toda a gente de volta para o PvE.
+
+   E NÃO PAGA NO DESAFIO DE AMIGO. Dois amigos a perder de propósito um
+   para o outro fariam 360 moedas por par de lutas, sem adversário
+   nenhum para os travar. Pelo mesmo motivo por que o desafio de amigo
+   não conta rank (decidido em 22/09), também não paga moedas — o que
+   se leva de lá é o humor, o laço e o treino.
+
+   HUMOR: lutar faz bem ao bicho, e ganhar faz mais: +15 na vitória, +8
+   no empate, +5 na derrota, a cada um dos três.
+
+   FRATURA: quem CAIU em campo, uma vez em cada dez — o mesmo risco do
+   PvE fora do Fácil. Sorteada com o gerador da própria luta (a semente
+   da sala), e não com o Math.random do servidor: assim o resultado é
+   refazível por quem auditar a partida.
+
+   XP NÃO. Não estava no pedido, e é de propósito: o nível é o que
+   decide a luta e o que o servidor mal consegue conferir (js/niveis.js).
+   Pôr a progressão a correr dentro do PvP era fazer do PvP o caminho
+   mais barato para subir.
+   ═══════════════════════════════════════════════════════════════════ */
+const PVP_PREMIO = {
+  vitoria: { moedas: 180, humor: 15 },
+  empate:  { moedas:  90, humor:  8 },
+  derrota: { moedas:  45, humor:  5 },
+};
+const PVP_FRATURA_CHANCE = 0.10;
+
+/* O resultado de um lado, em palavra: é isto que escolhe o prémio.
+   `motivo` é o que o servidor gravou ('luta', 'limite', 'desistiu',
+   'desconectou'), e `saiu` é quem desistiu, quando foi isso. */
+function pvpResultadoDe(uid, fim) {
+  if (!fim) return null;
+  if (fim.motivo === 'desistiu' && fim.saiu === uid) return 'desistiu';
+  if (!fim.vencedor) return 'empate';
+  return fim.vencedor === uid ? 'vitoria' : 'derrota';
+}
+
+/* O prémio de um lado. `tipo` é o da sala ('fila' ou 'convite') — o
+   desafio de amigo não paga moedas. */
+function pvpPremioDe(resultado, tipo) {
+  if (!resultado) return null;
+  if (resultado === 'desistiu') {
+    return { resultado, energia: PVP_ENERGIA_DESISTIR, humor: 0, moedas: 0 };
+  }
+  const p = PVP_PREMIO[resultado] || PVP_PREMIO.derrota;
+  return {
+    resultado,
+    energia: PVP_ENERGIA_CUSTO,
+    humor:   p.humor,
+    moedas:  tipo === 'amistosa' ? 0 : p.moedas,
+  };
+}
+
+/* Quem caiu, de um lado, no estado final: devolve os LUGARES (0,1,2),
+   que é como a equipa da sala está guardada. */
+function pvpCaidos(estado, lado) {
+  const out = [];
+  for (let i = 0; i < PVP_EQUIPA; i++) {
+    const c = (typeof fuPorId === 'function') ? fuPorId(estado, lado + i) : null;
+    if (c && !c.vivo) out.push(i);
+  }
+  return out;
 }
 
 /* O retrato de um avatar como ele entra na sala: o que a ficha lê
@@ -325,5 +430,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PVP_EQUIPA, PVP_JANELA_INICIAL, PVP_JANELA_PASSO, PVP_JANELA_CADA_MS, PVP_JANELA_MAX,
     PVP_CONVITE_MS, PVP_SINAL_MS, PVP_ONLINE_MS, PVP_VERSUS_MS, PVP_FILA_SINAL_MS, PVP_RESERVA_MS,
     pvpReservada, pvpJanela, pvpFaixa, pvpCompativeis, pvpEscolherPar, pvpMotivoMembro, pvpRetrato, pvpPoder,
+    PVP_ENERGIA_MINIMA, PVP_ENERGIA_CUSTO, PVP_ENERGIA_DESISTIR,
+    PVP_PREMIO, PVP_FRATURA_CHANCE, pvpResultadoDe, pvpPremioDe, pvpCaidos,
   };
 }

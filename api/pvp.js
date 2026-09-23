@@ -42,7 +42,7 @@
 // ═══════════════════════════════════════════════════════════════════
 const crypto = require('crypto');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth }      = require('firebase-admin/auth');
 const { getDatabase }  = require('firebase-admin/database');
 
@@ -362,7 +362,112 @@ async function acaoAceitar(ctx) {
 /* Grava o fim uma vez só (os dois navegadores chamam, às vezes no mesmo
    instante) e solta os dois ponteiros. O resultado é o mesmo para os
    dois pedidos, porque vem da mesma luta refeita. */
-async function fecharSala(rtdb, id, sala, dados) {
+/* ════════════════════════════════════════════════════════════════════
+   O QUE A LUTA DEIXA — aplicado aqui, e não no navegador
+
+   As contas estão no js/pvp-regras.js (pvpPremioDe): energia, humor,
+   moedas, fratura. Quem as aplica é o servidor, de uma vez e para os
+   DOIS lados — só um dos dois navegadores pede o fim, e mesmo esse pode
+   fechar a aba no segundo seguinte.
+
+   Cada lado recebe o seu no `pvp/salas/{id}/premios/{uid}`, que o
+   cliente lê para pôr a mesma coisa na tela e na memória
+   (js/pvp-luta.js).
+
+   ── A CORRIDA COM O SAVE ──
+
+   Os medidores vivem no `avatarSlots`, que o cliente grava por inteiro:
+   o save que o navegador mandar a seguir pode passar por cima do que
+   fica escrito aqui. É a mesma corrida da visita a um amigo
+   (api/amigos.js) e resolve-se do mesmo jeito: o cliente aplica o
+   prémio na sua memória assim que o lê, e o save seguinte leva já o
+   valor certo. As moedas não correm risco nenhum — vão de `increment`.
+   ════════════════════════════════════════════════════════════════════ */
+async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
+  const L = require('../js/lacos.js');
+  const agora = Date.now();
+  const dia = L.lacoDia(agora);
+  const premios = {};
+
+  for (const lado of ['A', 'B']) {
+    const uid = (sala.lados || {})[lado];
+    if (!uid) continue;
+    const res = R.pvpResultadoDe(uid, fim);
+    const p = R.pvpPremioDe(res, sala.tipo);
+    if (!p) continue;
+
+    /* A FRATURA É DE QUEM CAIU, e sai do gerador da própria luta: o
+       mesmo `rng` que decidiu os dados, já no passo em que a luta
+       acabou. Quem desiste protege quem ainda está de pé, não quem já
+       caiu — a regra do PvE, palavra por palavra. */
+    const equipe = ((sala.jogadores || {})[uid] || {}).equipe || [];
+    const caidos = estado ? R.pvpCaidos(estado, lado) : [];
+    const fraturados = [];
+    for (const i of caidos) {
+      const av = equipe[i];
+      if (!av || !av.id) continue;
+      if (fuRolar(estado.rng, 100) <= Math.round(R.PVP_FRATURA_CHANCE * 100)) fraturados.push(av.id);
+    }
+    p.fraturas = fraturados;
+    p.avatares = equipe.map(a => a && a.id).filter(Boolean);
+    premios[uid] = p;
+  }
+
+  // Um documento de cada vez: são dois jogadores e não há nada a trocar
+  // entre eles, portanto não precisam da mesma transação.
+  for (const uid of Object.keys(premios)) {
+    try { await aplicarNoJogador(db, uid, premios[uid], dia, L); }
+    catch (e) { console.error('[pvp premio]', uid, e && e.message); }
+  }
+  await rtdb.ref(`pvp/salas/${id}/premios`).set(premios);
+  return premios;
+}
+
+async function aplicarNoJogador(db, uid, p, dia, L) {
+  const ref = db.collection('players').doc(uid);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return;
+    const d = snap.data();
+    const slots = (d.avatarSlots || []).map(s => {
+      if (!s || !s.id || p.avatares.indexOf(s.id) === -1) return s;
+      const v = Object.assign({}, s.vitals || {});
+      v.energia = Math.max(0, Math.round((v.energia == null ? 100 : v.energia) - p.energia));
+      if (p.humor) v.humor = Math.min(100, Math.round((v.humor == null ? 100 : v.humor) + p.humor));
+      const doencas = Array.isArray(s.activeDiseases) ? s.activeDiseases.slice() : [];
+      if (p.fraturas.indexOf(s.id) !== -1 && doencas.indexOf('fratura') === -1) doencas.push('fratura');
+      return Object.assign({}, s, { vitals: v, activeDiseases: doencas });
+    });
+
+    const alteracoes = { avatarSlots: slots };
+    if (p.moedas) alteracoes['gs.moedas'] = FieldValue.increment(p.moedas);
+
+    /* O LAÇO de quem lutou junto, pelas regras do js/lacos.js — as
+       mesmas do PvE (a acao 'laco' do api/pool.js), com o mesmo teto
+       por dia. Aqui não se pergunta se a luta aconteceu: ela aconteceu
+       diante do servidor. Quem desiste não leva laço nenhum. */
+    if (p.resultado !== 'desistiu') {
+      const certidoes = d.certidoes || {}, mortos = d.mortos || {}, lacos = d.lacos || {};
+      const avs = p.avatares.map(id => {
+        const s = (d.avatarSlots || []).find(x => x && x.id === id);
+        if (!s || !certidoes[id] || mortos[id]) return null;
+        return { id: id, nome: s.nome || null, nascimento: certidoes[id], lacos: lacos[id] || {} };
+      }).filter(Boolean);
+      for (let i = 0; i < avs.length; i++) {
+        for (let j = 0; j < avs.length; j++) {
+          if (i === j) continue;
+          const a = avs[i], b = avs[j];
+          const r = L.lacoSomarBatalha(a.lacos[b.id], p.resultado,
+            { dia: dia, nome: b.nome, parentes: !!L.lacoParentesco(a, b) });
+          alteracoes[`lacos.${a.id}.${b.id}`] = r.entrada;
+        }
+      }
+    }
+    tx.update(ref, alteracoes);
+  });
+}
+
+async function fecharSala(rtdb, id, sala, dados, estado, db) {
   const ref = rtdb.ref(`pvp/salas/${id}`);
   /* O `null` da primeira volta é "ainda não li", e não "não há sala":
      devolvê-lo faz o Firebase ir buscar o valor e rodar de novo. Desistir
@@ -370,12 +475,22 @@ async function fecharSala(rtdb, id, sala, dados) {
      fechava nunca (visto nos testes). */
   const r = await ref.child('estado').transaction(e =>
     (e === null ? null : SALA_VIVA.indexOf(e) !== -1 ? 'fim' : undefined));
-  if (r.committed) await ref.update(Object.assign({ fim: Date.now() }, dados));
+  if (r.committed) {
+    await ref.update(Object.assign({ fim: Date.now() }, dados));
+    /* Só uma vez, e só se a luta chegou a acontecer: o `encerrada` é o
+       versus desfeito antes do primeiro dado, e desse ninguém sai com
+       energia gasta nem com moedas. */
+    if (db && dados.estado !== 'encerrada') {
+      try { await aplicarPremios(db, rtdb, id, sala, Object.assign({}, dados), estado); }
+      catch (e) { console.error('[pvp premios]', e && e.message); }
+    }
+  }
   for (const q of Object.keys(sala.jogadores || {})) {
     await rtdb.ref(`pvp/jogador/${q}/sala`).transaction(v => (v === id ? null : v));
   }
   const final = (await ref.once('value')).val() || {};
-  return { vencedor: final.vencedor || null, motivo: final.motivo || null, estado: final.estado };
+  return { vencedor: final.vencedor || null, motivo: final.motivo || null, estado: final.estado,
+           premios: final.premios || null };
 }
 
 async function lerSalaMinha(rtdb, uid, body) {
@@ -390,7 +505,7 @@ async function lerSalaMinha(rtdb, uid, body) {
    Durante o versus, sair desfaz a sala para os dois, sem vencedor.
    Depois dele, a luta começou: sair é desistir, e o outro vence. */
 async function acaoSairSala(ctx) {
-  const { rtdb, uid, body } = ctx;
+  const { db, rtdb, uid, body } = ctx;
   const { id, sala } = await lerSalaMinha(rtdb, uid, body);
   if (SALA_VIVA.indexOf(sala.estado) === -1) {
     // Já acabou: só solta o ponteiro que tiver ficado.
@@ -401,7 +516,12 @@ async function acaoSairSala(ctx) {
     return fecharSala(rtdb, id, sala, { estado: 'encerrada', motivo: 'saiu', saiu: uid, vencedor: null });
   }
   const outro = R.pvpOutroLado(R.pvpLadoDe(sala, uid));
-  return fecharSala(rtdb, id, sala, { vencedor: sala.lados[outro], motivo: 'desistiu', saiu: uid });
+  /* Refaz-se a luta antes de fechar, e não por causa do vencedor — esse
+     é quem ficou. É para saber quem já tinha CAÍDO quando ele desistiu:
+     a fratura é de quem caiu. */
+  const ate = R.pvpRepetir(sala);
+  return fecharSala(rtdb, id, sala, { vencedor: sala.lados[outro], motivo: 'desistiu', saiu: uid },
+                    ate.estado, db);
 }
 
 /* ── ENCERRAR: A CONFERÊNCIA ──
@@ -413,16 +533,17 @@ async function acaoSairSala(ctx) {
    W.O.: o outro está desconectado há mais de 2 minutos (a presença dele
    na sala diz desde quando). Nada disso? A luta segue. */
 async function acaoEncerrar(ctx) {
-  const { rtdb, uid, body } = ctx;
+  const { db, rtdb, uid, body } = ctx;
   const { id, sala } = await lerSalaMinha(rtdb, uid, body);
   if (SALA_VIVA.indexOf(sala.estado) === -1) {
     await rtdb.ref(`pvp/jogador/${uid}/sala`).transaction(v => (v === id ? null : v));
-    return { vencedor: sala.vencedor || null, motivo: sala.motivo || null, estado: sala.estado };
+    return { vencedor: sala.vencedor || null, motivo: sala.motivo || null, estado: sala.estado,
+             premios: sala.premios || null };
   }
   const r = R.pvpRepetir(sala);
   if (r.fim) {
     const vencedor = r.fim.vencedor ? sala.lados[r.fim.vencedor] : null;
-    return fecharSala(rtdb, id, sala, { vencedor, motivo: r.fim.motivo, jogadas: r.lidas });
+    return fecharSala(rtdb, id, sala, { vencedor, motivo: r.fim.motivo, jogadas: r.lidas }, r.estado, db);
   }
   const meuLado = R.pvpLadoDe(sala, uid);
   const outroUid = sala.lados[R.pvpOutroLado(meuLado)];
@@ -431,7 +552,7 @@ async function acaoEncerrar(ctx) {
   // Nunca apareceu na luta: conta desde o começo dela.
   const foraDesde = p.fora ? p.fora : (!p.on ? (sala.inicio || agora) : null);
   if (foraDesde && agora - foraDesde > R.PVP_FORA_MS) {
-    return fecharSala(rtdb, id, sala, { vencedor: uid, motivo: 'desconectou', jogadas: r.lidas });
+    return fecharSala(rtdb, id, sala, { vencedor: uid, motivo: 'desconectou', jogadas: r.lidas }, r.estado, db);
   }
   throw new Recusa(409, 'em_curso');
 }

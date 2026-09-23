@@ -247,7 +247,10 @@ async function servidor() {
     certs[uid] = certs[uid] || {};
     certs[uid][id] = c.nascimento;
     return Object.assign({ id, nome: `Bicho${i},${uid}`, nivel, seed: c.seed, raridade: 'Comum',
-                           hatched: true, nascimento: c.nascimento }, extra || {});
+                           hatched: true, nascimento: c.nascimento,
+                           // Os medidores, que são o que o prémio da luta mexe.
+                           vitals: { fome: 100, humor: 50, energia: 100, saude: 100, higiene: 100 },
+                           activeDiseases: [] }, extra || {});
   }
   async function jogador(uid, niveis, opts) {
     opts = opts || {};
@@ -512,8 +515,24 @@ async function servidor() {
   r = await pedir('A', 'encerrar', { sala: sv });
   conferir('caiu há mais de 2 minutos: W.O.', r.ok && r.vencedor === 'A' && r.motivo === 'desconectou', r);
 
+  /* Os medidores de volta ao princípio. As lutas de cima já cobraram
+     energia e pagaram humor (é o que se quer medir a seguir), e sem isto
+     as contas seriam feitas sobre o que sobrou delas. */
+  const repor = async (uid) => {
+    const d = (await fs.collection('players').doc(uid).get()).data() || {};
+    await fs.collection('players').doc(uid).update({
+      'gs.moedas': 0,
+      lacos: {},
+      avatarSlots: (d.avatarSlots || []).map(s => Object.assign({}, s, {
+        vitals: { fome: 100, humor: 50, energia: 100, saude: 100, higiene: 100 },
+        activeDiseases: [],
+      })),
+    });
+  };
+
   // Uma luta inteira pela lista de jogadas, e a conferência do servidor.
   Object.assign(global, require('../js/ia-fu.js'));
+  await repor('A'); await repor('D');
   await pedir('A', 'entrar', { ids: ids.A });
   r = await pedir('D', 'entrar', { ids: ids.D });
   sv = r.sala;
@@ -543,6 +562,90 @@ async function servidor() {
   const esperado = fimLocal.vencedor ? salaV.lados[fimLocal.vencedor] : null;
   conferir(`a conferência (${nJ} jogadas) dá o mesmo vencedor da luta`, r.ok && r.vencedor === esperado && r.motivo === fimLocal.motivo,
            { servidor: r, esperado, motivo: fimLocal.motivo });
+
+  titulo('O que a luta deixa');
+  /* A luta acima acabou e foi conferida: aqui olha-se para o que ela
+     escreveu nos dois jogadores (api/pvp.js, aplicarPremios). */
+  const perdedor = esperado === 'A' ? 'D' : 'A';
+  const docV = (await fs.collection('players').doc(esperado || 'A').get()).data() || {};
+  const docP = (await fs.collection('players').doc(perdedor).get()).data() || {};
+  const premios = (await rtdb.ref(`pvp/salas/${sv}/premios`).once('value')).val() || {};
+
+  if (esperado) {
+    conferir('o vencedor levou 180 moedas', (docV.gs || {}).moedas === 180, (docV.gs || {}).moedas);
+    conferir('o perdedor levou 45', (docP.gs || {}).moedas === 45, (docP.gs || {}).moedas);
+    conferir('a energia dos três do vencedor caiu 10',
+             (docV.avatarSlots || []).every(s => s.vitals.energia === 90),
+             (docV.avatarSlots || []).map(s => s.vitals.energia));
+    conferir('o humor do vencedor subiu 15 e o do perdedor 5',
+             (docV.avatarSlots || []).every(s => s.vitals.humor === 65)
+             && (docP.avatarSlots || []).every(s => s.vitals.humor === 55),
+             { v: (docV.avatarSlots || []).map(s => s.vitals.humor), p: (docP.avatarSlots || []).map(s => s.vitals.humor) });
+    conferir('os dois receberam o seu prémio na sala',
+             premios[esperado] && premios[perdedor]
+             && premios[esperado].resultado === 'vitoria' && premios[perdedor].resultado === 'derrota',
+             premios);
+    conferir('a fratura só cai em quem caiu',
+             ['A', 'D'].every(u => (premios[u].fraturas || []).every(id => {
+               const lado = R.pvpLadoDe(salaV, u);
+               const eq = ((salaV.jogadores || {})[u] || {}).equipe || [];
+               const i = eq.findIndex(a => a.id === id);
+               const c = fuPorId(est, lado + i);
+               return c && !c.vivo;
+             })), { A: premios.A.fraturas, D: premios.D.fraturas });
+    conferir('e quem a apanhou ficou com ela no documento',
+             ['A', 'D'].every(u => {
+               const doc = u === esperado ? docV : docP;
+               return (premios[u].fraturas || []).every(id =>
+                 ((doc.avatarSlots || []).find(s => s.id === id) || {}).activeDiseases.indexOf('fratura') !== -1);
+             }));
+    conferir('os três do vencedor ganharam laço entre si',
+             Object.keys(docV.lacos || {}).length === 3
+             && Object.values(docV.lacos).every(m => Object.keys(m).length === 2),
+             docV.lacos);
+  }
+
+  // Desistir: 4 de energia, e mais nada.
+  await limpar();
+  await repor('A'); await repor('D');
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  const sd = r.sala;
+  await rtdb.ref(`pvp/salas/${sd}/inicio`).set(Date.now() - 1000);
+  await pedir('A', 'sairSala', { sala: sd });
+  const docD = (await fs.collection('players').doc('A').get()).data() || {};
+  conferir('quem desiste paga 4 de energia',
+           (docD.avatarSlots || []).every(s => s.vitals.energia === 96),
+           (docD.avatarSlots || []).map(s => s.vitals.energia));
+  conferir('e não leva moedas nenhumas', (docD.gs || {}).moedas === 0, (docD.gs || {}).moedas);
+
+  // O desafio de amigo não paga moedas.
+  await limpar();
+  await repor('A'); await repor('B');
+  await rtdb.ref('pvp/online/B').set({ ts: Date.now(), estado: 'livre' });
+  await pedir('A', 'convidar', { alvo: 'B', ids: ids.A });
+  r = await pedir('B', 'aceitar', { de: 'A', ids: ids.B });
+  const sc = r.sala;
+  await rtdb.ref(`pvp/salas/${sc}/inicio`).set(Date.now() - 1000);
+  await rtdb.ref(`pvp/salas/${sc}/presenca/B`).set({ fora: Date.now() - 130000 });
+  const rwo = await pedir('A', 'encerrar', { sala: sc });
+  conferir('o desafio de amigo fecha por W.O.', rwo.ok && rwo.vencedor === 'A', { sala: sc, rwo });
+  const docAm = (await fs.collection('players').doc('A').get()).data() || {};
+  conferir('vencer um amigo não dá moedas', (docAm.gs || {}).moedas === 0, (docAm.gs || {}).moedas);
+  conferir('mas o humor e a energia contam na mesma',
+           (docAm.avatarSlots || []).every(s => s.vitals.humor === 65 && s.vitals.energia === 90),
+           (docAm.avatarSlots || []).map(s => s.vitals.humor + '/' + s.vitals.energia));
+
+  // Sair no versus (antes do primeiro dado) não custa nem paga nada.
+  await limpar();
+  await repor('A'); await repor('D');
+  await pedir('A', 'entrar', { ids: ids.A });
+  r = await pedir('D', 'entrar', { ids: ids.D });
+  await pedir('A', 'sairSala', { sala: r.sala });
+  const docVs = (await fs.collection('players').doc('D').get()).data() || {};
+  conferir('desfazer o versus não gasta energia',
+           (docVs.avatarSlots || []).every(s => s.vitals.energia === 100),
+           (docVs.avatarSlots || []).map(s => s.vitals.energia));
 
   await limpar();
   console.log('\n(servidor testado contra os emuladores)');
