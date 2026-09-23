@@ -57,6 +57,11 @@ window.registerStrings(
     'tet.rank.titulo':       '🏆 RANKING · {diff}',
     'tet.rank.vazio':        'Ninguém no ranking desta dificuldade ainda.',
     'tet.rank.erro':         'Não foi possível carregar o ranking.',
+    // O porquê, quando dá para saber (rankMotivo, js/mini-avatar.js).
+    'rank.motivo.permissao': 'o banco recusou o acesso',
+    'rank.motivo.rede':      'sem ligação ao banco',
+    'rank.motivo.indice':    'falta o índice no banco',
+    'rank.motivo.outro':     'veja o console para o motivo',
 
     // Memória
     'mg.mem.sub_pairs':      '{n} pares',
@@ -159,6 +164,10 @@ window.registerStrings(
     'tet.rank.titulo':       '🏆 RANKING · {diff}',
     'tet.rank.vazio':        'No one is ranked on this difficulty yet.',
     'tet.rank.erro':         'Could not load the ranking.',
+    'rank.motivo.permissao': 'the database refused access',
+    'rank.motivo.rede':      'no connection to the database',
+    'rank.motivo.indice':    'the database index is missing',
+    'rank.motivo.outro':     'check the console for the reason',
 
     // Memory
     'mg.mem.sub_pairs':      '{n} pairs',

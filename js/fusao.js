@@ -398,7 +398,7 @@ async function _fusSalvarRanking(pontos, chave) {
     const av = (typeof rankMeuRetrato === 'function') ? rankMeuRetrato() : null;
     if (av) linha.av = av;
     await rtdb().ref(`fusaoRanking/${chave}/${walletAddress}`).set(linha);
-  } catch (e) {}
+  } catch (e) { rankFalhou('fusao/gravar', e); }
 }
 
 // Quem jogou sem banco tem recorde no save e não na lista: isto os reata.
@@ -412,7 +412,7 @@ async function _fusSincronizarRecorde() {
       const atual = snap.val();
       // Sem retrato também reescreve: os recordes de antes ganham o bicho.
       if (!atual || atual.score < pontos || !atual.av) _fusSalvarRanking(pontos, chave);
-    } catch (e) {}
+    } catch (e) { rankFalhou('fusao/sincronizar', e); }
   }
 }
 
@@ -438,7 +438,8 @@ async function fusaoCarregarRanking(chave) {
             <span class="rank-pts">${d.score} 🔮</span>
           </div>`).join('');
   } catch (e) {
-    lista.innerHTML = `<div class="rank-loading">${t('fus.rank.erro')}</div>`;
+    lista.innerHTML = `<div class="rank-loading">${t('fus.rank.erro')}
+      <small class="rank-motivo">${esc(rankFalhou('fusao/ler', e))}</small></div>`;
   }
 }
 

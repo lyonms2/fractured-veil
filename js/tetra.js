@@ -440,7 +440,7 @@ async function _tetSalvarRanking(pontos, chave) {
     const av = (typeof rankMeuRetrato === 'function') ? rankMeuRetrato() : null;
     if (av) linha.av = av;
     await rtdb().ref(`tetraRanking/${chave}/${walletAddress}`).set(linha);
-  } catch (e) {}
+  } catch (e) { rankFalhou('tetra/gravar', e); }
 }
 
 async function _tetSincronizarRecorde() {
@@ -452,7 +452,7 @@ async function _tetSincronizarRecorde() {
       const snap = await rtdb().ref(`tetraRanking/${chave}/${walletAddress}`).once('value');
       const atual = snap.val();
       if (!atual || atual.score < pontos || !atual.av) _tetSalvarRanking(pontos, chave);
-    } catch (e) {}
+    } catch (e) { rankFalhou('tetra/sincronizar', e); }
   }
 }
 
@@ -478,7 +478,8 @@ async function tetraCarregarRanking(chave) {
             <span class="rank-pts">${d.score} 🧱</span>
           </div>`).join('');
   } catch (e) {
-    lista.innerHTML = `<div class="rank-loading">${t('tet.rank.erro')}</div>`;
+    lista.innerHTML = `<div class="rank-loading">${t('tet.rank.erro')}
+      <small class="rank-motivo">${esc(rankFalhou('tetra/ler', e))}</small></div>`;
   }
 }
 

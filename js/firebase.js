@@ -18,6 +18,25 @@ let nomeJogador = null;
 // ═══════════════════════════════════════════════════════════════════
 function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
 
+/* O REALTIME DATABASE, para quem o usa: os rankings do Snake, da Fusão
+   e do Tetra (snakeRanking, fusaoRanking, tetraRanking).
+
+   ── POR QUE ESTA LINHA VOLTOU ──
+
+   Ela morava no js/arena.js, que era o PvP antigo, e foi apagada com ele
+   em 21/09/2026 (a etapa 1 do PvP novo). Ninguém reparou que os três
+   minijogos a chamavam: eles perguntam `typeof rtdb !== 'function'` antes
+   de falar com o banco e, sem ela, desistiam em silêncio.
+
+   O resultado foram dois meses de sintoma sem causa aparente: os
+   recordes deixaram de ser GRAVADOS (a lista parecia ter zerado) e o
+   painel do ranking passou a dizer sempre "Não foi possível carregar o
+   ranking.". As regras do banco estavam certas o tempo todo.
+
+   Fica aqui, ao lado do fbDb, que é o sítio de quem abre ligações — e
+   não dentro de um jogo, que é de onde saiu. */
+function rtdb() { return typeof _rtdb !== "undefined" ? _rtdb : null; }
+
 /* ═══════════════════════════════════════════════════════════════════
    O QUE O CLIENTE NÃO GRAVA
 

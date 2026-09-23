@@ -83,6 +83,36 @@ function rankMeuRetrato() {
   };
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   POR QUE É QUE O RANKING NÃO VEIO
+
+   Os três jogos liam e gravavam o ranking dentro de um `catch` vazio. O
+   jogador via "Não foi possível carregar o ranking." e mais nada, e do
+   lado de cá não havia por onde começar: uma recusa das regras do
+   banco, uma queda de rede e um erro de programação davam exatamente a
+   mesma tela. Pior era a GRAVAÇÃO, que falhava em silêncio absoluto —
+   o recorde sumia e ninguém sabia porquê.
+
+   Agora o motivo vai para o console inteiro, e um resumo de três
+   palavras aparece na tela. Não conserta nada sozinho; diz onde doer.
+   ════════════════════════════════════════════════════════════════════ */
+function rankMotivo(e) {
+  const txt = String((e && (e.code || e.message)) || '').toLowerCase();
+  const diz = k => (typeof t === 'function') ? t(k) : k;
+  if (txt.indexOf('permission') !== -1 || txt.indexOf('denied') !== -1) return diz('rank.motivo.permissao');
+  if (txt.indexOf('network') !== -1 || txt.indexOf('offline') !== -1
+      || txt.indexOf('unavailable') !== -1 || txt.indexOf('disconnect') !== -1) return diz('rank.motivo.rede');
+  if (txt.indexOf('index') !== -1) return diz('rank.motivo.indice');
+  return diz('rank.motivo.outro');
+}
+
+/* Regista e devolve o motivo. `onde` diz qual jogo e se era leitura ou
+   escrita — sem isso, a linha do console não serve para nada. */
+function rankFalhou(onde, e) {
+  try { console.warn('[ranking] ' + onde + ':', (e && e.code) || '', (e && e.message) || e); } catch (_) {}
+  return rankMotivo(e);
+}
+
 function rankRetratoDe(linha) {
   const av = linha && linha.av;
   if (!av || !av.dna || typeof gerarSVG !== 'function') {

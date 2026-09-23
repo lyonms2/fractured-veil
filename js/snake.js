@@ -403,7 +403,7 @@ async function _snakeSaveRanking(score, tierKey) {
     const av = (typeof rankMeuRetrato === 'function') ? rankMeuRetrato() : null;
     if (av) linha.av = av;
     await rtdb().ref(`snakeRanking/${tierKey}/${walletAddress}`).set(linha);
-  } catch(e) {}
+  } catch(e) { rankFalhou('snake/gravar', e); }
 }
 
 async function _snakeSyncBest() {
@@ -416,7 +416,7 @@ async function _snakeSyncBest() {
       const cur  = snap.val();
       // Sem retrato também reescreve: os recordes de antes ganham o bicho.
       if(!cur || cur.score < score || !cur.av) _snakeSaveRanking(score, key);
-    } catch(e) {}
+    } catch(e) { rankFalhou('snake/sincronizar', e); }
   }
 }
 
@@ -443,7 +443,8 @@ async function snakeLoadRanking(tierKey) {
             <span class="snake-rank-pts">${d.score} 🐍</span>
           </div>`).join('');
   } catch(e) {
-    wrap.innerHTML = `<div class="snake-rank-loading">${t('snake.rank.erro')}</div>`;
+    wrap.innerHTML = `<div class="snake-rank-loading">${t('snake.rank.erro')}
+      <small class="rank-motivo">${esc(rankFalhou('snake/ler', e))}</small></div>`;
   }
 }
 

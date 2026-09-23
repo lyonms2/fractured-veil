@@ -316,6 +316,19 @@
   padding: 0.5rem;
 }
 
+/* O motivo de o ranking não ter vindo (rankMotivo, js/mini-avatar.js):
+   uma linha abaixo do aviso, menor e mais apagada — é para quem quer
+   saber, não para quem só queria jogar. */
+.rank-motivo {
+  display: block;
+  margin-top: 0.1875rem;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 0.5rem;
+  color: var(--muted, #64748b);
+  opacity: .75;
+}
+
 /* ── OS DOIS BOTÕES DO FIM ──
 
    JOGAR DE NOVO e 🏆 RANKING com a mesma largura e numa linha só. No
