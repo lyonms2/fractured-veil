@@ -248,6 +248,10 @@ function _pvpRenderLobby() {
         <i>${esc(t('pvp.lobby.amigos_nota'))}</i></div>
       <div id="pvpAmigosLista" class="pvp-amigos-lista">${_pvpAmigosHTML()}</div>
     </section>`;
+  /* A ORDEM DESTA PÁGINA é a ordem do que se faz nela: a equipa que vai
+     lutar, a busca, a minha linha na temporada (uma faixa, não uma
+     tabela) e os amigos para desafiar. A tabela inteira mora no Salão
+     (js/pvp-tabela.js) desde que ela passou a ter página própria. */
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -261,7 +265,7 @@ function _pvpRenderLobby() {
    Quem ainda não lutou nenhuma partida da fila não tem linha na tabela
    — e é isso que a seção diz, em vez de mostrar um zero que não é
    verdade. ═══════════════════════════════════════════════════════ */
-let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0;
+let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0, _pvpRankPos = 0;
 
 /* A DIVISÃO desta equipa, pelo nível médio dos três (js/pvp-rank.js).
    Cada divisão tem a sua tabela: com o par a sair do poder da equipa,
@@ -280,11 +284,16 @@ function _pvpCarregarRank() {
   _pvpRankLido = Date.now();
   db.ref(`pvp/rank/${temp}/${div}/${_pvpUid}`).once('value')
     .then(s => { _pvpRankMeu = s.val(); _pvpRenderRank(); }).catch(() => {});
-  db.ref(`pvp/rank/${temp}/${div}`).orderByChild('p').limitToLast(5).once('value')
+  /* A tabela inteira só para saber em que lugar estou: são dezenas de
+     linhas, não milhares, e o Realtime Database não sabe contar sem
+     trazer. Se um dia crescer, isto passa a ser uma conta do servidor. */
+  db.ref(`pvp/rank/${temp}/${div}`).orderByChild('p').once('value')
     .then(s => {
       const out = [];
       s.forEach(c => { out.push(Object.assign({ uid: c.key }, c.val() || {})); });
-      _pvpRankTop = out.reverse();
+      out.reverse();
+      _pvpRankTop = out.slice(0, 5);
+      _pvpRankPos = out.findIndex(r => r.uid === _pvpUid) + 1;
       _pvpRenderRank();
     }).catch(() => { _pvpRankTop = _pvpRankTop || []; _pvpRenderRank(); });
 }
@@ -294,25 +303,26 @@ function _pvpRenderRank() {
   if (el && _pvpLobbyAberto()) el.innerHTML = _pvpRankHTML();
 }
 
+/* A minha linha na temporada, em UMA faixa.
+
+   Eram cinco nomes e um botão, e isso punha o "Desafiar um amigo" no
+   fim da página — com a tabela a crescer, cada vez mais longe. Quem
+   quer ver a tabela abre o Salão; quem está aqui quer lutar. */
 function _pvpRankHTML() {
-  const temp = pvpTemporada(pvpAgora());
-  const meu = _pvpRankMeu;
-  const top = _pvpRankTop;
-  const linha = (r, i) => `<li class="${r.uid === _pvpUid ? 'eu' : ''}">
-      <span class="pvp-rank-pos">${i + 1}</span>
-      <span class="pvp-rank-nome">${esc(r.nome || t('id.sem_nome'))}</span>
-      <span class="pvp-rank-pts">${r.p | 0}</span>
-    </li>`;
   const div = pvpMinhaDivisao();
-  return `<div class="pvp-sec-rot">${esc(t('pvp.rank.titulo'))}
-      <i>${esc(t('pvp.rank.temporada', { temp }))} · ${esc(t('pvp.div.' + div))}</i></div>
-    <div class="pvp-rank-eu">${
-      meu ? t('pvp.rank.meus', { p: meu.p | 0, v: meu.v | 0, d: meu.d | 0 })
-          : esc(t('pvp.rank.sem_partidas'))}</div>
-    ${top === null ? `<div class="pvp-vazio">${esc(t('ui.loading'))}</div>`
-      : !top.length ? `<div class="pvp-vazio">${esc(t('pvp.rank.vazio'))}</div>`
-      : `<ol class="pvp-rank-lista">${top.map(linha).join('')}</ol>`}
-    <button class="pvp-rank-abrir" onclick="abrirTabelaPvP()">${esc(t('pvp.tab.abrir'))}</button>`;
+  const meu = _pvpRankMeu;
+  const pos = (_pvpRankPos > 0) ? _pvpRankPos : null;
+  const linha1 = meu
+    ? (pos ? t('pvp.rank.faixa_pos', { pos, p: meu.p | 0 }) : t('pvp.rank.faixa', { p: meu.p | 0 }))
+    : t('pvp.rank.sem_partidas');
+  return `<div class="pvp-faixa-rank">
+      <span class="pvp-faixa-eu">
+        ${meu ? `<b>${esc(linha1)}</b>` : `<small>${esc(linha1)}</small>`}
+        <small>${esc(t('pvp.div.' + div))} · ${meu ? t('pvp.rank.vd', { v: meu.v | 0, d: meu.d | 0 })
+                                                     : t('pvp.rank.temporada', { temp: pvpTemporada(pvpAgora()) })}</small>
+      </span>
+      <button class="pvp-rank-abrir" onclick="abrirTabelaPvP()">${esc(t('pvp.tab.abrir'))}</button>
+    </div>`;
 }
 
 /* O miolo da busca: o botão, ou — procurando — o radar, o tempo e a
