@@ -1,0 +1,325 @@
+/* ═══════════════════════════════════════════════════════════════════
+   O SALÃO — a página das tabelas do PvP (js/pvp-tabela.js)
+
+   O jogo inteiro é dourado sobre roxo escuro, com Cinzel nos títulos e
+   EB Garamond no texto corrido. Esta página não inventa uma linguagem
+   nova: usa a mesma, e gasta o destaque onde ele conta — o pódio e a
+   linha de quem está a olhar.
+
+   As três regras que mantêm isto legível:
+   · o OURO é do primeiro lugar e da minha linha, mais nada;
+   · o resto da lista é cinzento com números claros, para o olho correr;
+   · nada pisca; o que se move, move-se uma vez, à entrada.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.pvp-tabela {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0 0.75rem;
+}
+
+/* ── AS ABAS DAS DIVISÕES ── */
+.pvp-tab-abas {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.1875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: rgba(255,255,255,.02);
+}
+.pvp-tab-aba {
+  flex: 1;
+  position: relative;
+  padding: 0.4375rem 0.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.5625rem;
+  letter-spacing: 0.0625rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.pvp-tab-aba:hover { color: var(--text); }
+.pvp-tab-aba.on {
+  background: rgba(201,168,76,.14);
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,.32);
+  color: var(--gold-light);
+}
+/* A divisão do jogador leva uma marca discreta: ele precisa de saber
+   onde é que ele conta, mesmo enquanto espreita as outras. */
+.pvp-tab-aba i {
+  display: block;
+  margin-top: 0.0625rem;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 0.5rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--gold);
+  opacity: .8;
+}
+
+/* ── O PÓDIO ──
+   Três colunas, a do meio maior e mais acima. Em vez de um degrau
+   desenhado, o pedestal é a luz por baixo do bicho — é o que a arena
+   já faz, e mantém a página com a cara do jogo. */
+.pvp-tab-podio {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  align-items: end;
+  gap: 0.375rem;
+  padding: 0.5rem 0 0.25rem;
+}
+.pvp-tab-lugar {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  animation: pvp-tab-sobe .45s ease-out both;
+  animation-delay: calc(var(--i, 0) * .09s);
+}
+.pvp-tab-lugar.vazio { min-height: 3rem; }
+.pvp-tab-arte {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+/* A luz do pedestal. */
+.pvp-tab-arte::after {
+  content: '';
+  position: absolute;
+  bottom: -0.125rem;
+  width: 62%;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(201,168,76,.4), transparent 70%);
+}
+.pvp-tab-lugar.l1 .pvp-tab-arte::after {
+  width: 78%;
+  height: 0.75rem;
+  background: radial-gradient(ellipse at center, rgba(240,208,128,.65), transparent 70%);
+}
+.pvp-tab-lugar svg { display: block; }
+.pvp-tab-coroa {
+  position: absolute;
+  top: -0.875rem;
+  font-size: 1.125rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 0.75rem rgba(240,208,128,.8);
+  animation: pvp-tab-coroa 3.5s ease-in-out infinite;
+}
+.pvp-tab-lugar figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.0625rem;
+  text-align: center;
+  min-width: 0;
+  width: 100%;
+}
+.pvp-tab-medalha { font-size: 0.6875rem; line-height: 1; }
+.pvp-tab-lugar figcaption b {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5625rem;
+  color: var(--text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pvp-tab-pts {
+  font-family: 'Cinzel', serif;
+  font-size: 0.875rem;
+  color: var(--gold);
+}
+.pvp-tab-lugar.l1 .pvp-tab-pts {
+  font-size: 1.125rem;
+  color: #ffe9a8;
+  text-shadow: 0 0 0.875rem rgba(201,168,76,.55);
+}
+.pvp-tab-lugar figcaption small { font-size: 0.5rem; color: var(--muted); }
+.pvp-tab-lugar.eu figcaption b { color: var(--gold-light); }
+
+/* ── A MINHA LINHA ──
+   Fica entre o pódio e a lista, e não some: numa tabela, a primeira
+   coisa que se procura é onde é que a gente está. */
+.pvp-tab-eu {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  background: linear-gradient(90deg, rgba(201,168,76,.16), rgba(201,168,76,.05));
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,.32);
+}
+.pvp-tab-eu.fora {
+  display: block;
+  text-align: center;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 0.5625rem;
+  color: var(--muted);
+  background: rgba(255,255,255,.02);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.pvp-tab-eu-pos {
+  font-family: 'Cinzel', serif;
+  font-size: 0.875rem;
+  color: var(--gold-light);
+  text-align: center;
+}
+.pvp-tab-eu-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5625rem;
+  letter-spacing: 0.0625rem;
+  color: var(--text);
+  text-transform: uppercase;
+}
+.pvp-tab-eu-pts { font-family: 'Cinzel', serif; font-size: 0.875rem; color: var(--gold); }
+.pvp-tab-eu-vd  { font-size: 0.5rem; color: var(--muted); }
+.pvp-tab-eu-falta {
+  grid-column: 1 / -1;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 0.5625rem;
+  color: var(--muted);
+}
+
+/* ── A LISTA ── */
+.pvp-tab-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.pvp-tab-lista li {
+  display: grid;
+  grid-template-columns: 1.5rem 2.25rem 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  animation: pvp-tab-sobe .3s ease-out both;
+  animation-delay: calc(var(--i, 0) * .025s);
+}
+.pvp-tab-lista li:nth-child(odd) { background: rgba(255,255,255,.02); }
+.pvp-tab-lista li.eu {
+  background: rgba(201,168,76,.12);
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,.3);
+}
+.pvp-tab-pos {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5625rem;
+  color: var(--muted);
+  text-align: center;
+}
+.pvp-tab-cara {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+}
+.pvp-tab-cara svg { display: block; }
+.pvp-tab-sem-cara {
+  display: block;
+  width: 1.5rem; height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+}
+.pvp-tab-nome {
+  font-size: 0.5625rem;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pvp-tab-vd { font-size: 0.5rem; color: var(--muted); }
+.pvp-tab-pontos { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); }
+
+/* ── OS ESTADOS VAZIOS ── */
+.pvp-tab-vazio {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.5625rem;
+  color: var(--muted);
+}
+.pvp-tab-primeiro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+.pvp-tab-primeiro .pvp-tab-coroa {
+  position: static;
+  font-size: 1.75rem;
+  animation: none;
+  opacity: .5;
+}
+.pvp-tab-primeiro b {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 0.0625rem;
+}
+.pvp-tab-rodape {
+  text-align: center;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 0.5rem;
+  color: var(--muted);
+  opacity: .75;
+}
+/* O lugar do prémio da temporada, por encher (ver js/pvp-tabela.js). */
+.pvp-tab-premio {
+  padding: 0.5rem;
+  text-align: center;
+  border-radius: 0.625rem;
+  background: rgba(201,168,76,.08);
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,.25);
+  font-size: 0.5625rem;
+  color: var(--gold-light);
+}
+
+@keyframes pvp-tab-sobe {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pvp-tab-coroa {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-0.1875rem); }
+}
+
+/* ── NO CELULAR ──
+   A tela é estreita e a lista é longa: as letras crescem (a escala é de
+   16px lá e 24px no computador) e o pódio aperta-se sem encolher o
+   primeiro lugar. */
+@media (max-width: 680px), (orientation: portrait) {
+  .pvp-tab-aba { font-size: 0.6875rem; }
+  .pvp-tab-aba i { font-size: 0.5625rem; }
+  .pvp-tab-lugar figcaption b { font-size: 0.625rem; }
+  .pvp-tab-pts { font-size: 1rem; }
+  .pvp-tab-lugar.l1 .pvp-tab-pts { font-size: 1.25rem; }
+  .pvp-tab-lugar figcaption small,
+  .pvp-tab-vd { font-size: 0.5625rem; }
+  .pvp-tab-eu-nome, .pvp-tab-nome { font-size: 0.6875rem; }
+  .pvp-tab-eu-falta, .pvp-tab-rodape { font-size: 0.625rem; }
+  .pvp-tab-pontos { font-size: 0.875rem; }
+  .pvp-tab-lista li { grid-template-columns: 1.25rem 2rem 1fr auto auto; gap: 0.375rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvp-tab-lugar, .pvp-tab-lista li { animation: none; opacity: 1; }
+  .pvp-tab-coroa { animation: none; }
+}

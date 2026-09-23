@@ -41,7 +41,7 @@ const MODAL_IDS = [
   'memoriaModal','simonModal','coinShopModal',
   'fusaoModal','tetraModal',
   'marketplaceModal','combateModal','avataresModal','batalhaModal',
-  'linhagemModal','pvpModal'
+  'linhagemModal','pvpModal','pvpTabelaModal'
 ];
 
 /* OS MODAIS NÃO PODEM VIVER DENTRO DE UM ECRÃ.

@@ -311,7 +311,8 @@ function _pvpRankHTML() {
           : esc(t('pvp.rank.sem_partidas'))}</div>
     ${top === null ? `<div class="pvp-vazio">${esc(t('ui.loading'))}</div>`
       : !top.length ? `<div class="pvp-vazio">${esc(t('pvp.rank.vazio'))}</div>`
-      : `<ol class="pvp-rank-lista">${top.map(linha).join('')}</ol>`}`;
+      : `<ol class="pvp-rank-lista">${top.map(linha).join('')}</ol>`}
+    <button class="pvp-rank-abrir" onclick="abrirTabelaPvP()">${esc(t('pvp.tab.abrir'))}</button>`;
 }
 
 /* O miolo da busca: o botão, ou — procurando — o radar, o tempo e a

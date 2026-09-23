@@ -180,6 +180,24 @@
 .pvp-rank-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pvp-rank-pts { font-family: 'Cinzel', serif; color: var(--gold); flex-shrink: 0; }
 
+/* Do espreitar para a coisa inteira (js/pvp-tabela.js). */
+.pvp-rank-abrir {
+  display: block;
+  width: 100%;
+  margin-top: 0.375rem;
+  padding: 0.3125rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.0625rem;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.pvp-rank-abrir:hover { background: rgba(201,168,76,.1); color: var(--gold-light); }
+
 .pvp-amigos-lista { display: flex; flex-direction: column; gap: 0.3125rem; }
 .pvp-vazio { font-size: 0.5625rem; color: var(--muted); text-align: center; padding: 0.5rem; }
 .pvp-am {
