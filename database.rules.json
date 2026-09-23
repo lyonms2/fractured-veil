@@ -142,8 +142,10 @@
       // SDK, que não passa por estas regras.
       "rank": {
         "$temporada": {
-          ".read": "auth != null",
-          ".indexOn": "p"
+          "$divisao": {
+            ".read": "auth != null",
+            ".indexOn": "p"
+          }
         }
       },
       "jogador": {

@@ -138,8 +138,52 @@ function rankPuro() {
 
   // A soma, o piso e a contagem.
   let r = RK.pvpRankSomar(null, 1000, 'vitoria', ag);
-  conferir('quem nunca jogou começa no início e soma',
-           r.pontos === RK.PVP_RANK_INICIO + 12 && r.v === 1 && r.d === 0, r);
+  conferir('a primeira luta é de colocação e vale o dobro',
+           r.pontos === RK.PVP_RANK_INICIO + 24 && r.v === 1 && r.d === 0, r);
+  const jaJogou = { pontos: 1000, temporada: RK.pvpTemporada(ag), v: 6, d: 4, e: 0, melhor: 1000 };
+  conferir('passadas as dez, volta ao normal',
+           RK.pvpRankSomar(jaJogou, 1000, 'vitoria', ag).delta === 12,
+           RK.pvpRankSomar(jaJogou, 1000, 'vitoria', ag).delta);
+  conferir('a vitória cortada pelo teto conta na mesma como vitória',
+           (() => { const x = RK.pvpRankSomar(jaJogou, 1000, 'vitoria', ag,
+                                              { dia: '2026-09-23', s: RK.PVP_RANK_PAR_SALDO }, '2026-09-23');
+                    return x.delta === 0 && x.pontos === 1000 && x.v === 7; })());
+  conferir('e uma derrota nunca é cortada — o teto não é escudo',
+           RK.pvpRankSomar(jaJogou, 1000, 'derrota', ag,
+                           { dia: '2026-09-23', s: RK.PVP_RANK_PAR_SALDO }, '2026-09-23').delta < 0);
+
+  // ── As divisões ──
+  conferir('a divisão sai do nível médio dos três',
+           RK.pvpDivisao(27, 3) === 'jovem' && RK.pvpDivisao(45, 3) === 'adulto'
+           && RK.pvpDivisao(90, 3) === 'anciao',
+           [RK.pvpDivisao(27, 3), RK.pvpDivisao(45, 3), RK.pvpDivisao(90, 3)]);
+  conferir('a fronteira é a fase: média 10,9 ainda é jovem, 11 já é adulto',
+           RK.pvpDivisao(32, 3) === 'jovem' && RK.pvpDivisao(33, 3) === 'adulto');
+
+  // ── O teto por par: no SALDO, não na contagem ──
+  const diaT = '2026-09-23';
+  const seguidas = (res, n) => {
+    let reg = { pontos: 1000, temporada: RK.pvpTemporada(ag), v: 12, d: 12, e: 0, melhor: 1000 };
+    let par = null, cortadas = 0;
+    for (let i = 0; i < n; i++) {
+      const antes = reg.pontos;
+      const quero = (typeof res === 'function') ? res(i) : res;
+      const bruto = RK.pvpRankDelta(reg.pontos, 1000, quero, RK.PVP_RANK_K);
+      reg = RK.pvpRankSomar(reg, 1000, quero, ag, par, diaT);
+      const real = reg.pontos - antes;
+      if (bruto > 0 && real < bruto) cortadas++;
+      par = RK.pvpParSomar(par, diaT, real);
+    }
+    return { pontos: reg.pontos, cortadas, saldo: RK.pvpParSaldo(par, diaT) };
+  };
+  const entregues = seguidas('vitoria', 20);
+  conferir('vinte vitórias entregues pelo mesmo par valem só o teto do dia',
+           entregues.pontos === 1000 + RK.PVP_RANK_PAR_SALDO, entregues);
+  const aserio = seguidas(i => (i % 2 ? 'vitoria' : 'derrota'), 20);
+  conferir('e quem joga a sério com o mesmo amigo nunca é cortado',
+           aserio.cortadas === 0, aserio);
+  conferir('o saldo é do dia: amanhã está limpo',
+           RK.pvpParSaldo({ dia: diaT, s: 40 }, '2026-09-24') === 0);
   // Perder para alguém ABAIXO é o que custa caro — é aí que o piso segura.
   r = RK.pvpRankSomar({ pontos: RK.PVP_RANK_PISO + 2, temporada: '2026-09' }, 700, 'derrota', ag);
   conferir('nunca se cai abaixo do piso', r.pontos === RK.PVP_RANK_PISO, r);
@@ -570,12 +614,12 @@ async function servidor() {
   conferir('escrever na sala: negado', await rest('PUT', `pvp/salas/${salaAD}/estado`, 'A', 'luta') === 401);
   // A tabela da temporada: toda a gente lê, ninguém escreve.
   const tempR = RK.pvpTemporada(Date.now());
-  conferir('ler a tabela da temporada', await rest('GET', `pvp/rank/${tempR}`, 'C') === 200);
+  conferir('ler a tabela de uma divisão', await rest('GET', `pvp/rank/${tempR}/anciao`, 'C') === 200);
   conferir('escrever na tabela: negado',
-           await rest('PUT', `pvp/rank/${tempR}/C`, 'C', { p: 9999, nome: 'C', v: 99, d: 0, e: 0, em: Date.now() }) === 401);
+           await rest('PUT', `pvp/rank/${tempR}/anciao/C`, 'C', { p: 9999, nome: 'C', v: 99, d: 0, e: 0, em: Date.now() }) === 401);
   conferir('escrever na linha de outro: negado',
-           await rest('PUT', `pvp/rank/${tempR}/A/p`, 'C', 1) === 401);
-  conferir('a tabela sem login: negado', await rest('GET', `pvp/rank/${tempR}`, null) === 401);
+           await rest('PUT', `pvp/rank/${tempR}/anciao/A/p`, 'C', 1) === 401);
+  conferir('a tabela sem login: negado', await rest('GET', `pvp/rank/${tempR}/anciao`, null) === 401);
   const TS = { '.sv': 'timestamp' };
   conferir('marcar a própria presença na sala', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { on: TS }) === 200);
   conferir('marcar-se fora (o onDisconnect)', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { fora: TS }) === 200);
@@ -667,6 +711,7 @@ async function servidor() {
       'gs.moedas': 0,
       lacos: {},
       rank: {},
+      rankPares: {},
       avatarSlots: (d.avatarSlots || []).map(s => Object.assign({}, s, {
         vitals: { fome: 100, humor: 50, energia: 100, saude: 100, higiene: 100 },
         activeDiseases: [],
@@ -750,21 +795,25 @@ async function servidor() {
   }
 
   if (esperado) {
-    const rkV = docV.rank || {}, rkP = docP.rank || {};
     const temp = RK.pvpTemporada(Date.now());
-    conferir('a luta da fila deu pontos aos dois',
-             rkV.temporada === temp && rkP.temporada === temp
+    // As equipas do teste são de nível 30: divisão dos anciãos.
+    const rkV = (docV.rank || {}).anciao || {}, rkP = (docP.rank || {}).anciao || {};
+    conferir('a luta da fila deu pontos aos dois, na divisão certa',
+             rkV.temporada === temp && rkP.temporada === temp && rkV.divisao === 'anciao'
              && rkV.pontos > RK.PVP_RANK_INICIO && rkP.pontos < RK.PVP_RANK_INICIO,
              { v: rkV, p: rkP });
     conferir('o que um ganhou é o que o outro perdeu (entre iguais)',
              rkV.delta === -rkP.delta, { v: rkV.delta, p: rkP.delta });
     conferir('e a vitória e a derrota ficaram contadas',
              rkV.v === 1 && rkV.d === 0 && rkP.v === 0 && rkP.d === 1, { v: rkV, p: rkP });
-    const tabela = (await rtdb.ref(`pvp/rank/${temp}`).once('value')).val() || {};
-    conferir('a tabela do Realtime Database tem os dois',
+    const tabela = (await rtdb.ref(`pvp/rank/${temp}/anciao`).once('value')).val() || {};
+    conferir('a tabela do Realtime Database tem os dois, com a cara e o poder',
              tabela[esperado] && tabela[perdedor]
-             && tabela[esperado].p === rkV.pontos && tabela[perdedor].p === rkP.pontos,
+             && tabela[esperado].p === rkV.pontos && tabela[perdedor].p === rkP.pontos
+             && tabela[esperado].av && tabela[esperado].av.seed > 0 && tabela[esperado].poder > 0,
              tabela);
+    conferir('e o par ficou registado, para o teto de três por dia',
+             ((docV.rankPares || {})[perdedor] || {}).n >= 1, docV.rankPares);
   }
 
   // Desistir: 4 de energia, e mais nada.
@@ -776,8 +825,9 @@ async function servidor() {
   await rtdb.ref(`pvp/salas/${sd}/inicio`).set(Date.now() - 1000);
   await pedir('A', 'sairSala', { sala: sd });
   const docD = (await fs.collection('players').doc('A').get()).data() || {};
+  const rkD = (docD.rank || {}).anciao || {};
   conferir('quem desiste perde pontos como quem perde',
-           (docD.rank || {}).delta < 0 && (docD.rank || {}).d >= 1, docD.rank);
+           rkD.delta < 0 && rkD.d >= 1, rkD);
   conferir('quem desiste paga 4 de energia',
            (docD.avatarSlots || []).every(s => s.vitals.energia === 96),
            (docD.avatarSlots || []).map(s => s.vitals.energia));
@@ -798,7 +848,8 @@ async function servidor() {
   conferir('vencer um amigo não dá moedas', (docAm.gs || {}).moedas === 0, (docAm.gs || {}).moedas);
   /* O `repor` de cima esvaziou o rank: se a amistosa pontuasse, havia
      aqui uma temporada e uns pontos. */
-  conferir('nem mexe no rank', !(docAm.rank && docAm.rank.temporada), docAm.rank);
+  conferir('nem mexe no rank',
+           !(docAm.rank && Object.keys(docAm.rank).length), docAm.rank);
   conferir('mas o humor e a energia contam na mesma',
            (docAm.avatarSlots || []).every(s => s.vitals.humor === 65 && s.vitals.energia === 90),
            (docAm.avatarSlots || []).map(s => s.vitals.humor + '/' + s.vitals.energia));

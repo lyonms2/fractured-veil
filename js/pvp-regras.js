@@ -48,6 +48,12 @@ const PVP_FILA_SINAL_MS = 20000;
    entrada volta a estar livre. */
 const PVP_RESERVA_MS = 10000;
 
+/* Quantos pontos vale quem entra na fila sem rank nenhum. É o
+   PVP_RANK_INICIO do js/pvp-rank.js, repetido aqui porque estas regras
+   correm também sozinhas (o teste puro não carrega o rank) e porque um
+   número no pareamento não pode depender de um ficheiro estar lá. */
+const PVP_RANK_PADRAO = 1000;
+
 function pvpReservada(entrada, agora, por) {
   const r = entrada && entrada.res;
   return !!(r && r.por !== por && agora - (r.em || 0) < PVP_RESERVA_MS);
@@ -84,9 +90,23 @@ function pvpCompativeis(a, b, agora) {
    o que espera há mais tempo. `fila` é { uid: { poder, desde, sinal } }.
    Quem está sem sinal há mais de PVP_FILA_SINAL_MS não conta — fechou a
    aba sem sair da fila. */
+/* ── DENTRO DA JANELA DE PODER, O MAIS PRÓXIMO EM PONTOS ──
+
+   A janela continua a ser de poder de equipa: o nível dos bichos decide
+   muito a luta, e não faz sentido pôr uma equipa de nível 12 contra uma
+   de 40 só porque os dois donos têm 1000 pontos. Mas DENTRO dela, quem
+   se escolhe é o mais próximo no RANK, e não o mais próximo em poder.
+
+   Medido no tools/simular-rank.js: a tabela passa a pôr a ordem certa
+   em 0,85 (era 0,82), e com as lutas de colocação em 0,90. Alargar a
+   janela de poder em vez disto piora tudo — medido também: a 40%, a
+   tabela deixa de medir habilidade (0,70) e passa a medir nível (0,46).
+
+   Empatados em pontos, ganha quem espera há mais tempo. */
 function pvpEscolherPar(uid, fila, agora) {
   const eu = fila && fila[uid];
   if (!eu) return null;
+  const meus = (eu.pontos | 0) || PVP_RANK_PADRAO;
   let melhor = null, melhorDif = Infinity, melhorDesde = Infinity;
   for (const outro of Object.keys(fila)) {
     if (outro === uid) continue;
@@ -94,7 +114,7 @@ function pvpEscolherPar(uid, fila, agora) {
     if (!o || !(o.poder > 0) || agora - (o.sinal || o.desde || 0) > PVP_FILA_SINAL_MS) continue;
     if (pvpReservada(o, agora, uid)) continue;
     if (!pvpCompativeis(eu, o, agora)) continue;
-    const dif = Math.abs((eu.poder | 0) - (o.poder | 0));
+    const dif = Math.abs(meus - ((o.pontos | 0) || PVP_RANK_PADRAO));
     const desde = o.desde || agora;
     if (dif < melhorDif || (dif === melhorDif && desde < melhorDesde)) {
       melhor = outro; melhorDif = dif; melhorDesde = desde;
@@ -430,7 +450,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PVP_EQUIPA, PVP_JANELA_INICIAL, PVP_JANELA_PASSO, PVP_JANELA_CADA_MS, PVP_JANELA_MAX,
     PVP_CONVITE_MS, PVP_SINAL_MS, PVP_ONLINE_MS, PVP_VERSUS_MS, PVP_FILA_SINAL_MS, PVP_RESERVA_MS,
     pvpReservada, pvpJanela, pvpFaixa, pvpCompativeis, pvpEscolherPar, pvpMotivoMembro, pvpRetrato, pvpPoder,
-    PVP_ENERGIA_MINIMA, PVP_ENERGIA_CUSTO, PVP_ENERGIA_DESISTIR,
+    PVP_ENERGIA_MINIMA, PVP_ENERGIA_CUSTO, PVP_ENERGIA_DESISTIR, PVP_RANK_PADRAO,
     PVP_PREMIO, PVP_FRATURA_CHANCE, pvpResultadoDe, pvpPremioDe, pvpCaidos,
   };
 }

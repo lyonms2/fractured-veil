@@ -169,6 +169,12 @@ service cloud.firestore {
                  partir da semente e da lista de jogadas antes de dizer
                  quem ganhou. */
               'rank',
+              /* QUANTAS VEZES CADA PAR JÁ SE ENFRENTOU HOJE. É o que
+                 limita a três por dia os pontos entre as mesmas duas
+                 pessoas (js/pvp-rank.js) — sem isto, dois combinados
+                 subiam a tabela um ao outro. Quem conta é o fim da
+                 luta, no servidor. */
+              'rankPares',
               /* O CÓDIGO DE AMIGO — as seis letras que se passam a
                  alguém para ele nos adicionar.
 

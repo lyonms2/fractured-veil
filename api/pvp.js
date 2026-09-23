@@ -147,11 +147,19 @@ async function lerEquipa(db, uid, idsDoPedido) {
     const noBanco = retratos.map(r => r.id).join(',');
     if (idsDoPedido.join(',') !== noBanco) throw new Recusa(409, 'equipe_desatualizada');
   }
+  const poder = R.pvpPoder(retratos);
+  const divisao = RK.pvpDivisao(poder, retratos.length);
   return {
     nome: String(d.nomeJogador || 'Viajante').slice(0, 40),
     amigos: d.amigos || {},
     retratos,
-    poder: R.pvpPoder(retratos),
+    poder,
+    /* A divisão e os pontos DELA. A fila usa os pontos para escolher o
+       par (pvpEscolherPar) e a sala guarda a divisão de cada lado: os
+       dois podem estar em divisões diferentes quando o par se forma em
+       cima da fronteira, e cada um pontua na sua. */
+    divisao,
+    pontos: RK.pvpRankAtual((d.rank || {})[divisao], Date.now()).pontos,
   };
 }
 
@@ -227,8 +235,10 @@ async function criarSala(rtdb, db, tipo, a, b) {
   const equipeA = _cruzarLacos(ladoA, ladoB, 'B');
   const equipeB = _cruzarLacos(ladoB, ladoA, 'A');
   const jogadores = {};
-  jogadores[ladoA.uid] = { nome: ladoA.nome, poder: ladoA.poder, equipe: equipeA };
-  jogadores[ladoB.uid] = { nome: ladoB.nome, poder: ladoB.poder, equipe: equipeB };
+  jogadores[ladoA.uid] = { nome: ladoA.nome, poder: ladoA.poder, equipe: equipeA,
+                           divisao: ladoA.divisao || RK.pvpDivisao(ladoA.poder, (equipeA || []).length) };
+  jogadores[ladoB.uid] = { nome: ladoB.nome, poder: ladoB.poder, equipe: equipeB,
+                           divisao: ladoB.divisao || RK.pvpDivisao(ladoB.poder, (equipeB || []).length) };
   await ref.set({
     id, tipo,
     criada: agora,
@@ -373,8 +383,11 @@ async function acaoEntrar(ctx) {
   const eq = await lerEquipa(db, uid, body.ids);
   const agora = Date.now();
   await rtdb.ref().update({
-    [`pvp/fila/${uid}`]: { poder: eq.poder, desde: agora, sinal: agora, nome: eq.nome },
-    [`pvp/filaEquipe/${uid}`]: { nome: eq.nome, poder: eq.poder, retratos: eq.retratos },
+    [`pvp/fila/${uid}`]: { poder: eq.poder, desde: agora, sinal: agora, nome: eq.nome,
+                           // para o par sair pelo rank, e não pelo nível dos bichos
+                           pontos: eq.pontos, divisao: eq.divisao },
+    [`pvp/filaEquipe/${uid}`]: { nome: eq.nome, poder: eq.poder, retratos: eq.retratos,
+                                 divisao: eq.divisao, pontos: eq.pontos },
   });
   const r = await tentarPar(rtdb, db, uid);
   // De boleia, e sem ninguém à espera dela (ver varrerSalas).
@@ -508,19 +521,40 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
      js/pvp-rank.js. */
   if (sala.tipo === 'fila') {
     const uids = Object.keys(premios);
-    const docs = {};
+    const docs = {}, pares = {};
     await Promise.all(uids.map(async u => {
       const snap = await db.collection('players').doc(u).get();
-      docs[u] = snap.exists ? (snap.data().rank || null) : null;
+      const d = snap.exists ? snap.data() : {};
+      docs[u] = d.rank || {};
+      pares[u] = (d.rankPares || {});
     }));
+    const dia = L.lacoDia(agora);   // AAAA-MM-DD em UTC, o mesmo do laço
     const antes = {};
-    uids.forEach(u => { antes[u] = RK.pvpRankAtual(docs[u], agora).pontos; });
+    uids.forEach(u => {
+      const div = ((sala.jogadores || {})[u] || {}).divisao || 'adulto';
+      premios[u].divisao = div;
+      antes[u] = RK.pvpRankAtual(docs[u][div], agora).pontos;
+    });
     uids.forEach(u => {
       const outro = uids.find(x => x !== u);
-      // Quem desiste conta como derrota: sair a meio não é a forma
-      // barata de não perder pontos.
+      const div = premios[u].divisao;
+      /* Quem desiste conta como derrota: sair a meio não é a forma
+         barata de não perder pontos. */
       const res = premios[u].resultado === 'desistiu' ? 'derrota' : premios[u].resultado;
-      premios[u].rank = RK.pvpRankSomar(docs[u], antes[outro] || RK.PVP_RANK_INICIO, res, agora);
+      /* O TETO POR PAR (js/pvp-rank.js): contra a mesma pessoa, no
+         mesmo dia, ganha-se no máximo um saldo. Passado ele, a vitória
+         vale zero pontos — e vale tudo o resto à mesma (moedas, laço,
+         humor). É o que fecha a porta a dois combinados que entrem
+         juntos na fila de propósito, sem castigar quem só joga muito
+         com o mesmo adversário. */
+      const par = pares[u][outro];
+      const bruto = RK.pvpRankDelta(antes[u], antes[outro] || RK.PVP_RANK_INICIO, res);
+      premios[u].rank = RK.pvpRankSomar(docs[u][div], antes[outro] || RK.PVP_RANK_INICIO,
+                                        res, agora, par, dia);
+      premios[u].rank.divisao = div;
+      premios[u].parCortado = bruto > 0 && premios[u].rank.delta < bruto;
+      premios[u].parNovo = RK.pvpParSomar(par, dia, premios[u].rank.delta);
+      premios[u].parCom = outro;
     });
   }
 
@@ -538,10 +572,20 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
   for (const uid of Object.keys(premios)) {
     const rk = premios[uid].rank;
     if (!rk) continue;
-    const nome = ((sala.jogadores || {})[uid] || {}).nome || '';
-    await rtdb.ref(`pvp/rank/${rk.temporada}/${uid}`)
-      .set({ p: rk.pontos, nome, v: rk.v, d: rk.d, e: rk.e, em: rk.em })
-      .catch(() => {});
+    const j = (sala.jogadores || {})[uid] || {};
+    const nome = j.nome || '';
+    /* O retrato do primeiro da equipa vai com a linha: a tabela mostra a
+       cara de quem está lá, e sem isto a página teria de ir buscar o
+       documento de cada um dos dez. */
+    const cara = ((j.equipe || [])[0]) || null;
+    const linha = { p: rk.pontos, nome, v: rk.v, d: rk.d, e: rk.e, em: rk.em,
+                    poder: j.poder | 0 };
+    if (cara && cara.seed) {
+      linha.av = { seed: cara.seed | 0, raridade: cara.raridade || 'Comum',
+                   nivel: cara.nivel | 0, nascimento: cara.nascimento || null };
+    }
+    await rtdb.ref(`pvp/rank/${rk.temporada}/${premios[uid].divisao}/${uid}`)
+      .set(linha).catch(() => {});
   }
   return premios;
 }
@@ -564,7 +608,10 @@ async function aplicarNoJogador(db, uid, p, dia, L) {
 
     const alteracoes = { avatarSlots: slots };
     if (p.moedas) alteracoes['gs.moedas'] = FieldValue.increment(p.moedas);
-    if (p.rank) alteracoes.rank = p.rank;
+    // O rank é POR DIVISÃO: quem sobe de fase leva a sua história da
+    // divisão antiga e começa a nova onde toda a gente começa.
+    if (p.rank) alteracoes['rank.' + p.divisao] = p.rank;
+    if (p.parCom && p.parNovo) alteracoes['rankPares.' + p.parCom] = p.parNovo;
 
     /* O LAÇO de quem lutou junto, pelas regras do js/lacos.js — as
        mesmas do PvE (a acao 'laco' do api/pool.js), com o mesmo teto

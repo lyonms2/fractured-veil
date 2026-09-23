@@ -263,14 +263,24 @@ function _pvpRenderLobby() {
    verdade. ═══════════════════════════════════════════════════════ */
 let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0;
 
+/* A DIVISÃO desta equipa, pelo nível médio dos três (js/pvp-rank.js).
+   Cada divisão tem a sua tabela: com o par a sair do poder da equipa,
+   uma lista única misturava gente que nunca se encontra. */
+function pvpMinhaDivisao() {
+  const eq = _pvpEquipe();
+  const poder = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(eq) : 0;
+  return pvpDivisao(poder, eq.length || 3);
+}
+
 function _pvpCarregarRank() {
   const db = _pvpDb();
   if (!db || !_pvpUid) return;
   const temp = pvpTemporada(pvpAgora());
+  const div = pvpMinhaDivisao();
   _pvpRankLido = Date.now();
-  db.ref(`pvp/rank/${temp}/${_pvpUid}`).once('value')
+  db.ref(`pvp/rank/${temp}/${div}/${_pvpUid}`).once('value')
     .then(s => { _pvpRankMeu = s.val(); _pvpRenderRank(); }).catch(() => {});
-  db.ref(`pvp/rank/${temp}`).orderByChild('p').limitToLast(10).once('value')
+  db.ref(`pvp/rank/${temp}/${div}`).orderByChild('p').limitToLast(5).once('value')
     .then(s => {
       const out = [];
       s.forEach(c => { out.push(Object.assign({ uid: c.key }, c.val() || {})); });
@@ -293,8 +303,9 @@ function _pvpRankHTML() {
       <span class="pvp-rank-nome">${esc(r.nome || t('id.sem_nome'))}</span>
       <span class="pvp-rank-pts">${r.p | 0}</span>
     </li>`;
+  const div = pvpMinhaDivisao();
   return `<div class="pvp-sec-rot">${esc(t('pvp.rank.titulo'))}
-      <i>${esc(t('pvp.rank.temporada', { temp }))}</i></div>
+      <i>${esc(t('pvp.rank.temporada', { temp }))} · ${esc(t('pvp.div.' + div))}</i></div>
     <div class="pvp-rank-eu">${
       meu ? t('pvp.rank.meus', { p: meu.p | 0, v: meu.v | 0, d: meu.d | 0 })
           : esc(t('pvp.rank.sem_partidas'))}</div>
