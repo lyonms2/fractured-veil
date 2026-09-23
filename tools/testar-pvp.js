@@ -19,6 +19,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 const R = require('../js/pvp-regras.js');
+const RK = require('../js/pvp-rank.js');
 
 let ok = 0, mau = 0;
 const falhas = [];
@@ -104,6 +105,56 @@ function regrasPuras() {
    o servidor faz) tem de sair IGUAL: mesmo vencedor, mesmas vidas, mesmo
    relógio do acaso. Se não sair, os dois navegadores e o servidor
    discordariam sobre quem ganhou. */
+function rankPuro() {
+  titulo('O rank da temporada');
+  const ag = Date.parse('2026-09-23T10:00:00Z');
+
+  conferir('a temporada é o mês, em UTC', RK.pvpTemporada(ag) === '2026-09', RK.pvpTemporada(ag));
+  conferir('a virada do ano não dá mês 13',
+           RK.pvpTemporada(Date.parse('2026-12-31T23:59:59Z')) === '2026-12'
+           && RK.pvpTemporada(Date.parse('2027-01-01T00:00:01Z')) === '2027-01');
+
+  // Entre iguais, ganhar e perder valem o mesmo em módulo.
+  const vIgual = RK.pvpRankDelta(1000, 1000, 'vitoria');
+  const dIgual = RK.pvpRankDelta(1000, 1000, 'derrota');
+  conferir('entre iguais a vitória vale metade do K', vIgual === 12, vIgual);
+  conferir('e a derrota tira o mesmo', dIgual === -12, dIgual);
+  conferir('o empate entre iguais não mexe', RK.pvpRankDelta(1000, 1000, 'empate') === 0);
+
+  // O que faz o rank ser justo: a distância entre os dois decide.
+  conferir('ganhar de quem está muito acima vale mais',
+           RK.pvpRankDelta(1000, 1400, 'vitoria') > vIgual, RK.pvpRankDelta(1000, 1400, 'vitoria'));
+  conferir('ganhar de quem está muito abaixo vale menos',
+           RK.pvpRankDelta(1400, 1000, 'vitoria') < vIgual, RK.pvpRankDelta(1400, 1000, 'vitoria'));
+  conferir('perder para quem está muito acima custa pouco',
+           RK.pvpRankDelta(1000, 1400, 'derrota') > dIgual, RK.pvpRankDelta(1000, 1400, 'derrota'));
+  conferir('perder para quem está abaixo custa caro',
+           RK.pvpRankDelta(1400, 1000, 'derrota') < dIgual, RK.pvpRankDelta(1400, 1000, 'derrota'));
+  conferir('uma vitória nunca vale zero', RK.pvpRankDelta(2400, 800, 'vitoria') >= 1);
+  conferir('uma derrota nunca sai de graça', RK.pvpRankDelta(800, 2400, 'derrota') <= -1);
+  conferir('nenhuma luta vale mais do que o K',
+           [[1000, 2400], [2400, 1000], [1000, 1000]].every(([a, b]) =>
+             ['vitoria', 'derrota', 'empate'].every(r => Math.abs(RK.pvpRankDelta(a, b, r)) <= RK.PVP_RANK_K)));
+
+  // A soma, o piso e a contagem.
+  let r = RK.pvpRankSomar(null, 1000, 'vitoria', ag);
+  conferir('quem nunca jogou começa no início e soma',
+           r.pontos === RK.PVP_RANK_INICIO + 12 && r.v === 1 && r.d === 0, r);
+  // Perder para alguém ABAIXO é o que custa caro — é aí que o piso segura.
+  r = RK.pvpRankSomar({ pontos: RK.PVP_RANK_PISO + 2, temporada: '2026-09' }, 700, 'derrota', ag);
+  conferir('nunca se cai abaixo do piso', r.pontos === RK.PVP_RANK_PISO, r);
+  r = RK.pvpRankSomar({ pontos: 1200, temporada: '2026-09', v: 3, d: 1 }, 1200, 'derrota', ag);
+  conferir('a derrota conta na tabela', r.d === 2 && r.v === 3, r);
+
+  // A virada de temporada.
+  const dep = Date.parse('2026-10-02T10:00:00Z');
+  const novo = RK.pvpRankAtual({ pontos: 1400, temporada: '2026-09', v: 20, d: 2, melhor: 1420 }, dep);
+  conferir('na temporada nova fica-se a meio caminho do princípio',
+           novo.pontos === 1200 && novo.temporada === '2026-10' && novo.v === 0, novo);
+  const fraco = RK.pvpRankAtual({ pontos: 820, temporada: '2026-09' }, dep);
+  conferir('e quem estava atrás também sobe metade', fraco.pontos === 910, fraco);
+}
+
 function lutaPelaRede() {
   const GEN = require('../api/_genetica.js');
   Object.assign(global, require('../js/ia-fu.js'));   // a IA joga pelos dois lados
@@ -433,6 +484,14 @@ async function servidor() {
   conferir('ler a sala de fora: negado', await rest('GET', `pvp/salas/${salaAD}`, 'C') === 401);
   conferir('ler a sala sem login: negado', await rest('GET', `pvp/salas/${salaAD}`, null) === 401);
   conferir('escrever na sala: negado', await rest('PUT', `pvp/salas/${salaAD}/estado`, 'A', 'luta') === 401);
+  // A tabela da temporada: toda a gente lê, ninguém escreve.
+  const tempR = RK.pvpTemporada(Date.now());
+  conferir('ler a tabela da temporada', await rest('GET', `pvp/rank/${tempR}`, 'C') === 200);
+  conferir('escrever na tabela: negado',
+           await rest('PUT', `pvp/rank/${tempR}/C`, 'C', { p: 9999, nome: 'C', v: 99, d: 0, e: 0, em: Date.now() }) === 401);
+  conferir('escrever na linha de outro: negado',
+           await rest('PUT', `pvp/rank/${tempR}/A/p`, 'C', 1) === 401);
+  conferir('a tabela sem login: negado', await rest('GET', `pvp/rank/${tempR}`, null) === 401);
   const TS = { '.sv': 'timestamp' };
   conferir('marcar a própria presença na sala', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { on: TS }) === 200);
   conferir('marcar-se fora (o onDisconnect)', await rest('PUT', `pvp/salas/${salaAD}/presenca/A`, 'A', { fora: TS }) === 200);
@@ -523,6 +582,7 @@ async function servidor() {
     await fs.collection('players').doc(uid).update({
       'gs.moedas': 0,
       lacos: {},
+      rank: {},
       avatarSlots: (d.avatarSlots || []).map(s => Object.assign({}, s, {
         vitals: { fome: 100, humor: 50, energia: 100, saude: 100, higiene: 100 },
         activeDiseases: [],
@@ -605,6 +665,24 @@ async function servidor() {
              docV.lacos);
   }
 
+  if (esperado) {
+    const rkV = docV.rank || {}, rkP = docP.rank || {};
+    const temp = RK.pvpTemporada(Date.now());
+    conferir('a luta da fila deu pontos aos dois',
+             rkV.temporada === temp && rkP.temporada === temp
+             && rkV.pontos > RK.PVP_RANK_INICIO && rkP.pontos < RK.PVP_RANK_INICIO,
+             { v: rkV, p: rkP });
+    conferir('o que um ganhou é o que o outro perdeu (entre iguais)',
+             rkV.delta === -rkP.delta, { v: rkV.delta, p: rkP.delta });
+    conferir('e a vitória e a derrota ficaram contadas',
+             rkV.v === 1 && rkV.d === 0 && rkP.v === 0 && rkP.d === 1, { v: rkV, p: rkP });
+    const tabela = (await rtdb.ref(`pvp/rank/${temp}`).once('value')).val() || {};
+    conferir('a tabela do Realtime Database tem os dois',
+             tabela[esperado] && tabela[perdedor]
+             && tabela[esperado].p === rkV.pontos && tabela[perdedor].p === rkP.pontos,
+             tabela);
+  }
+
   // Desistir: 4 de energia, e mais nada.
   await limpar();
   await repor('A'); await repor('D');
@@ -614,6 +692,8 @@ async function servidor() {
   await rtdb.ref(`pvp/salas/${sd}/inicio`).set(Date.now() - 1000);
   await pedir('A', 'sairSala', { sala: sd });
   const docD = (await fs.collection('players').doc('A').get()).data() || {};
+  conferir('quem desiste perde pontos como quem perde',
+           (docD.rank || {}).delta < 0 && (docD.rank || {}).d >= 1, docD.rank);
   conferir('quem desiste paga 4 de energia',
            (docD.avatarSlots || []).every(s => s.vitals.energia === 96),
            (docD.avatarSlots || []).map(s => s.vitals.energia));
@@ -632,6 +712,9 @@ async function servidor() {
   conferir('o desafio de amigo fecha por W.O.', rwo.ok && rwo.vencedor === 'A', { sala: sc, rwo });
   const docAm = (await fs.collection('players').doc('A').get()).data() || {};
   conferir('vencer um amigo não dá moedas', (docAm.gs || {}).moedas === 0, (docAm.gs || {}).moedas);
+  /* O `repor` de cima esvaziou o rank: se a amistosa pontuasse, havia
+     aqui uma temporada e uns pontos. */
+  conferir('nem mexe no rank', !(docAm.rank && docAm.rank.temporada), docAm.rank);
   conferir('mas o humor e a energia contam na mesma',
            (docAm.avatarSlots || []).every(s => s.vitals.humor === 65 && s.vitals.energia === 90),
            (docAm.avatarSlots || []).map(s => s.vitals.humor + '/' + s.vitals.energia));
@@ -653,6 +736,7 @@ async function servidor() {
 
 (async () => {
   regrasPuras();
+  rankPuro();
   try { lutaPelaRede(); }
   catch (e) { mau++; falhas.push('  ✗ o teste da luta pela rede quebrou: ' + (e && e.stack || e)); }
   if (process.env.FIREBASE_DATABASE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST) {

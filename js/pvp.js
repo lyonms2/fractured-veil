@@ -197,6 +197,7 @@ function abrirLobbyPvP() {
   ModalManager.open('pvpModal');
   _pvpRenderLobby();
   _pvpCarregarAmigos();
+  _pvpCarregarRank();
 }
 function fecharLobbyPvP() {
   ModalManager.close('pvpModal');
@@ -240,11 +241,66 @@ function _pvpRenderLobby() {
 
     <section class="pvp-busca" id="pvpBusca">${_pvpBuscaHTML(bloq)}</section>
 
+    <section class="pvp-rank" id="pvpRank">${_pvpRankHTML()}</section>
+
     <section class="pvp-amigos">
       <div class="pvp-sec-rot">${esc(t('pvp.lobby.amigos'))}
         <i>${esc(t('pvp.lobby.amigos_nota'))}</i></div>
       <div id="pvpAmigosLista" class="pvp-amigos-lista">${_pvpAmigosHTML()}</div>
     </section>`;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   A TEMPORADA
+
+   Os pontos deste jogador e os dez primeiros, lidos da tabela que o
+   servidor escreve no fim de cada luta da fila
+   (`pvp/rank/{temporada}`, ver js/pvp-rank.js). Só se lê: quem escreve
+   é o servidor, e as regras do banco não deixam mais ninguém.
+
+   Quem ainda não lutou nenhuma partida da fila não tem linha na tabela
+   — e é isso que a seção diz, em vez de mostrar um zero que não é
+   verdade. ═══════════════════════════════════════════════════════ */
+let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0;
+
+function _pvpCarregarRank() {
+  const db = _pvpDb();
+  if (!db || !_pvpUid) return;
+  const temp = pvpTemporada(pvpAgora());
+  _pvpRankLido = Date.now();
+  db.ref(`pvp/rank/${temp}/${_pvpUid}`).once('value')
+    .then(s => { _pvpRankMeu = s.val(); _pvpRenderRank(); }).catch(() => {});
+  db.ref(`pvp/rank/${temp}`).orderByChild('p').limitToLast(10).once('value')
+    .then(s => {
+      const out = [];
+      s.forEach(c => { out.push(Object.assign({ uid: c.key }, c.val() || {})); });
+      _pvpRankTop = out.reverse();
+      _pvpRenderRank();
+    }).catch(() => { _pvpRankTop = _pvpRankTop || []; _pvpRenderRank(); });
+}
+
+function _pvpRenderRank() {
+  const el = document.getElementById('pvpRank');
+  if (el && _pvpLobbyAberto()) el.innerHTML = _pvpRankHTML();
+}
+
+function _pvpRankHTML() {
+  const temp = pvpTemporada(pvpAgora());
+  const meu = _pvpRankMeu;
+  const top = _pvpRankTop;
+  const linha = (r, i) => `<li class="${r.uid === _pvpUid ? 'eu' : ''}">
+      <span class="pvp-rank-pos">${i + 1}</span>
+      <span class="pvp-rank-nome">${esc(r.nome || t('id.sem_nome'))}</span>
+      <span class="pvp-rank-pts">${r.p | 0}</span>
+    </li>`;
+  return `<div class="pvp-sec-rot">${esc(t('pvp.rank.titulo'))}
+      <i>${esc(t('pvp.rank.temporada', { temp }))}</i></div>
+    <div class="pvp-rank-eu">${
+      meu ? t('pvp.rank.meus', { p: meu.p | 0, v: meu.v | 0, d: meu.d | 0 })
+          : esc(t('pvp.rank.sem_partidas'))}</div>
+    ${top === null ? `<div class="pvp-vazio">${esc(t('ui.loading'))}</div>`
+      : !top.length ? `<div class="pvp-vazio">${esc(t('pvp.rank.vazio'))}</div>`
+      : `<ol class="pvp-rank-lista">${top.map(linha).join('')}</ol>`}`;
 }
 
 /* O miolo da busca: o botão, ou — procurando — o radar, o tempo e a
@@ -803,6 +859,8 @@ function _pvpDepoisDaLuta(depois) {
     _pvpMudarEstado('livre');
   }
   abrirLobbyPvP();
+  // A luta que acabou de terminar mexeu na tabela: relê-se.
+  _pvpCarregarRank();
   if (depois === 'procurar') setTimeout(pvpProcurar, 300);
 }
 

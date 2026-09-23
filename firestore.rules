@@ -156,6 +156,19 @@ service cloud.firestore {
                  quem avisa que subiu continua a ser o jogo, que corre no
                  navegador. O que deixa de funcionar é o salto. */
               'niveis',
+              /* OS PONTOS DA TEMPORADA (js/pvp-rank.js).
+
+                 É a classificação do PvP, e é a única coisa que se leva
+                 de uma luta que não se pode ganhar de outra maneira.
+                 Se o cliente a pudesse escrever, escrevia o primeiro
+                 lugar — e uma tabela que se escreve sozinha não é uma
+                 tabela.
+
+                 Quem a escreve é o fim da luta (api/pvp.js), que já é
+                 conferido pelo servidor: ele refaz a partida inteira a
+                 partir da semente e da lista de jogadas antes de dizer
+                 quem ganhou. */
+              'rank',
               /* O CÓDIGO DE AMIGO — as seis letras que se passam a
                  alguém para ele nos adicionar.
 

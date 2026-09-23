@@ -136,6 +136,16 @@
           ".write": "auth != null && auth.uid === $uid && !newData.exists()"
         }
       },
+      // A TABELA DA TEMPORADA (js/pvp-rank.js). Toda a gente lê — é uma
+      // classificação, existe para ser vista — e ninguém escreve: quem
+      // a escreve é o servidor, no fim de cada luta da fila, pelo Admin
+      // SDK, que não passa por estas regras.
+      "rank": {
+        "$temporada": {
+          ".read": "auth != null",
+          ".indexOn": "p"
+        }
+      },
       "jogador": {
         "$uid": {
           ".read": "auth != null && auth.uid === $uid"

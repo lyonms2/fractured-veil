@@ -400,7 +400,12 @@ function _pvpLPremioHTML() {
   if (p.humor)   linhas.push('+' + p.humor + ' ☺');
   if (p.moedas)  linhas.push('+' + p.moedas + ' 🪙');
   const fr = (p.fraturas || []).length;
+  /* Os pontos da temporada vêm à parte e em destaque: são a única
+     coisa que só esta luta podia dar (js/pvp-rank.js). */
+  const rk = p.rank;
   return `<div class="pvp-fim-premio">
+      ${rk ? `<span class="pvp-premio-rank ${rk.delta >= 0 ? 'sobe' : 'desce'}">${
+        esc(t('pvp.rank.delta', { d: (rk.delta > 0 ? '+' : '') + rk.delta, p: rk.pontos }))}</span>` : ''}
       <span class="pvp-premio-itens">${esc(linhas.join('  ·  '))}</span>
       ${fr ? `<span class="pvp-premio-mal">${esc(t('pvp.premio.fratura', { n: fr }))}</span>` : ''}
       ${!p.moedas && p.resultado !== 'desistiu' && L.sala.tipo === 'amistosa'

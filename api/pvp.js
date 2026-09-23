@@ -50,6 +50,7 @@ const { getDatabase }  = require('firebase-admin/database');
 require('./_genetica.js');
 const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
 const R = require('../js/pvp-regras.js');
+const RK = require('../js/pvp-rank.js');   // os pontos da temporada
 
 const DB_URL = process.env.FIREBASE_DATABASE_URL || 'https://fractured-veil-default-rtdb.firebaseio.com';
 
@@ -413,6 +414,34 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
     premios[uid] = p;
   }
 
+  /* ── OS PONTOS DA TEMPORADA ──
+
+     Só na FILA. O desafio de amigo não mexe no rank (decidido em
+     22/09, junto com o lobby): é o que impede dois amigos de
+     combinarem uma escada até ao topo.
+
+     Os dois deltas saem dos pontos de ANTES dos dois lados — ler
+     primeiro, somar depois —, senão o segundo a ser calculado estaria
+     a medir-se contra um adversário que já mudou. As regras estão no
+     js/pvp-rank.js. */
+  if (sala.tipo === 'fila') {
+    const uids = Object.keys(premios);
+    const docs = {};
+    await Promise.all(uids.map(async u => {
+      const snap = await db.collection('players').doc(u).get();
+      docs[u] = snap.exists ? (snap.data().rank || null) : null;
+    }));
+    const antes = {};
+    uids.forEach(u => { antes[u] = RK.pvpRankAtual(docs[u], agora).pontos; });
+    uids.forEach(u => {
+      const outro = uids.find(x => x !== u);
+      // Quem desiste conta como derrota: sair a meio não é a forma
+      // barata de não perder pontos.
+      const res = premios[u].resultado === 'desistiu' ? 'derrota' : premios[u].resultado;
+      premios[u].rank = RK.pvpRankSomar(docs[u], antes[outro] || RK.PVP_RANK_INICIO, res, agora);
+    });
+  }
+
   // Um documento de cada vez: são dois jogadores e não há nada a trocar
   // entre eles, portanto não precisam da mesma transação.
   for (const uid of Object.keys(premios)) {
@@ -420,6 +449,18 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
     catch (e) { console.error('[pvp premio]', uid, e && e.message); }
   }
   await rtdb.ref(`pvp/salas/${id}/premios`).set(premios);
+
+  /* A TABELA QUE TODA A GENTE VÊ. A cópia no Realtime Database é o que
+     o lobby lê, ordenada pelos pontos; a verdade continua a ser o campo
+     `rank` do documento do jogador, que só o servidor escreve. */
+  for (const uid of Object.keys(premios)) {
+    const rk = premios[uid].rank;
+    if (!rk) continue;
+    const nome = ((sala.jogadores || {})[uid] || {}).nome || '';
+    await rtdb.ref(`pvp/rank/${rk.temporada}/${uid}`)
+      .set({ p: rk.pontos, nome, v: rk.v, d: rk.d, e: rk.e, em: rk.em })
+      .catch(() => {});
+  }
   return premios;
 }
 
@@ -441,6 +482,7 @@ async function aplicarNoJogador(db, uid, p, dia, L) {
 
     const alteracoes = { avatarSlots: slots };
     if (p.moedas) alteracoes['gs.moedas'] = FieldValue.increment(p.moedas);
+    if (p.rank) alteracoes.rank = p.rank;
 
     /* O LAÇO de quem lutou junto, pelas regras do js/lacos.js — as
        mesmas do PvE (a acao 'laco' do api/pool.js), com o mesmo teto

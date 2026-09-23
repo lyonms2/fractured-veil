@@ -74,6 +74,17 @@ const html1 = vm.runInContext('html1', ctx);
 ok(/−10/.test(html1) && /\+15/.test(html1) && /\+180/.test(html1), 'o recibo diz o que gastou e o que levou', html1);
 ok(/pvp\.premio\.fratura/.test(html1), 'e avisa da fratura', html1);
 
+// os pontos da temporada aparecem em destaque
+vm.runInContext(`
+  _pvpL = { uid: 'eu', id: 's1b', sala: { tipo: 'fila' }, meu: 'A', dele: 'B' };
+  _pvpL.premio = { resultado: 'derrota', energia: 10, humor: 5, moedas: 45, fraturas: [], avatares: ['av0'],
+                   rank: { pontos: 988, delta: -12, temporada: '2026-09' } };
+  var html3 = _pvpLPremioHTML();
+`, ctx);
+const html3 = vm.runInContext('html3', ctx);
+ok(/pvp\.rank\.delta/.test(html3) && /"-12"/.test(html3) && /988/.test(html3), 'o recibo mostra os pontos perdidos e o total', html3);
+ok(/pvp-premio-rank desce/.test(html3), 'e marca que desceu', html3);
+
 // duas chegadas do mesmo fim não pagam duas vezes
 vm.runInContext(`_pvpLPremio({ eu: { resultado: 'vitoria', energia: 10, humor: 15, moedas: 180, fraturas: [], avatares: ['av0','av1','av2'] } });`, ctx);
 ok(ctx.gs.moedas === 999 + 180, 'o mesmo prémio não é aplicado duas vezes', ctx.gs.moedas);
