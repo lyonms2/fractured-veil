@@ -36,7 +36,7 @@
 }
 /* No computador o cartão é largo: a lista ficava numa coluna estreita ao
    meio, com o título encostado à esquerda — dois eixos na mesma tela. */
-#pvpTabelaModal .modal-card { max-width: 34rem; }
+#pvpTabelaModal .modal-card { max-width: 28rem; }
 
 .pvp-tabela {
   display: flex;
@@ -118,32 +118,52 @@
 }
 .pvp-tab-aba i.vazio { visibility: hidden; }
 
-/* ── O PÓDIO ──
-   Três colunas, a do meio maior, mais alta e com plinto. O primeiro
-   lugar tem de ser um momento: é a razão de a página existir. */
+/* ── O PÓDIO, EM DUAS FILEIRAS ──
+
+   Três colunas, a do meio maior e mais alta. E DUAS FILEIRAS: os
+   retratos em cima, as legendas em baixo, cada uma a partilhar a sua
+   linha do grid.
+
+   Foi a terceira tentativa. Enquanto cada lugar era uma caixa própria
+   (uma `figure` em coluna), a altura do retrato do campeão arrastava
+   tudo o que vinha depois: a medalha, o nome e os pontos dele ficavam
+   47px acima dos dos outros dois, e o pé do bloco ficava aos degraus.
+   Elevar só o retrato por `transform` não resolveu — o transform pinta
+   noutro sítio mas não muda a caixa, e ainda abriu um vão de 40px
+   debaixo da moldura do campeão, que lia como buraco.
+
+   Com `display: contents`, cada lugar deixa de ser uma caixa e os seus
+   filhos passam a ser itens do grid do pódio: o retrato na fileira de
+   cima, a legenda na de baixo. As legendas alinham porque estão todas
+   na mesma fileira, e é o grid que trata disso — não uma conta. */
 .pvp-tab-podio {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
-  align-items: end;
-  gap: clamp(0.25rem, 2vw, 0.625rem);
+  grid-template-rows: auto auto;
+  column-gap: clamp(0.25rem, 2vw, 0.625rem);
+  row-gap: 0.25rem;
   padding: 1rem 0 0.25rem;
 }
 .pvp-tab-lugar {
-  position: relative;
+  display: contents;
   margin: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
+}
+.pvp-tab-lugar.l2 > * { grid-column: 1; }
+.pvp-tab-lugar.l1 > * { grid-column: 2; }
+.pvp-tab-lugar.l3 > * { grid-column: 3; }
+/* Os retratos partilham a fileira de cima, alinhados pela BASE: é o que
+   faz o campeão, que é maior, parecer mais alto. */
+.pvp-tab-podio .pvp-tab-arte { grid-row: 1; align-self: end; }
+.pvp-tab-lugar figcaption { grid-row: 2; align-self: start; }
+/* A animação de entrada mora nos filhos, porque o lugar já não é caixa. */
+.pvp-tab-lugar > * {
   animation: pvp-tab-sobe .45s ease-out both;
   animation-delay: calc(var(--i, 0) * .09s);
 }
-.pvp-tab-lugar.vazio { min-height: 3rem; }
-/* O primeiro sobe — o RETRATO dele, e não a figura inteira: elevando
-   tudo, a medalha, o nome e os pontos do campeão ficavam 24px acima dos
-   dos outros dois e o pé do bloco ficava irregular. */
-.pvp-tab-lugar.l1 .pvp-tab-arte { transform: translateY(-0.75rem); }
+.pvp-tab-lugar.vazio { display: block; min-height: 3rem; }
+/* E o campeão ainda sobe um pouco mais do que a diferença de tamanho já
+   lhe dá — com margem, que o grid entende, e não com transform. */
+.pvp-tab-lugar.l1 .pvp-tab-arte { margin-bottom: 0.625rem; }
 .pvp-tab-arte {
   position: relative;
   display: grid;
@@ -175,9 +195,12 @@
   height: 0.75rem;
   background: radial-gradient(ellipse at center, rgba(240,208,128,.7), transparent 70%);
 }
+/* A coroa pende do alto do retrato do campeão (está dentro dele). */
 .pvp-tab-coroa {
   position: absolute;
   top: -0.9375rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 2;
   font-size: 1.25rem;
   color: var(--gold-light);
@@ -285,7 +308,7 @@
   color: var(--rank-fraco);
 }
 .pvp-tab-entrar {
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   padding: 0.4375rem 1.25rem;
   border: 1px solid rgba(201,168,76,.45);
   border-radius: 0.5rem;
@@ -427,16 +450,11 @@
   from { opacity: 0; transform: translateY(0.5rem); }
   to   { opacity: 1; transform: none; }
 }
-/* O primeiro lugar entra e fica elevado: a animação tem de acabar onde
-   o transform dele está, senão ele cai de volta para a linha dos outros. */
-.pvp-tab-lugar.l1 { animation-name: pvp-tab-sobe-l1; }
-@keyframes pvp-tab-sobe-l1 {
-  from { opacity: 0; transform: translateY(-0.375rem); }
-  to   { opacity: 1; transform: translateY(-0.875rem); }
-}
+/* A coroa respira — e como ela está centrada por transform, o
+   movimento tem de levar a centragem consigo. */
 @keyframes pvp-tab-coroa {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-0.1875rem); }
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, -0.1875rem); }
 }
 
 /* ── NO CELULAR ──
@@ -475,13 +493,17 @@
 /* Telas muito estreitas (360px e abaixo): o pódio deixa de ter medida
    fixa e a lista aperta as colunas dos lados. */
 @media (max-width: 22.5rem) {
-  .pvp-tab-podio { gap: 0.1875rem; }
+  /* As colunas de estatística tinham 42px de largura morta, e quem
+     pagava era o nome do jogador: 72px para a identidade contra 68px
+     para o cartel de vitórias. */
+  .pvp-tab-vd, .pvp-tab-eu-vd { width: 3.25rem; }
+  .pvp-tab-pontos, .pvp-tab-eu-pts { width: 2.25rem; }
+  .pvp-tab-podio { column-gap: 0.1875rem; }
   .pvp-tab-lista li { grid-template-columns: 1.25rem 1.75rem minmax(0, 1fr) auto auto; gap: 0.3125rem; padding: 0.25rem 0.3125rem; }
   .pvp-tab-eu { grid-template-columns: 1.75rem minmax(0, 1fr) auto auto; gap: 0.375rem; padding: 0.5rem 0.4375rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pvp-tab-lugar, .pvp-tab-lista li { animation: none; opacity: 1; }
-  .pvp-tab-lugar.l1 { transform: translateY(-0.875rem); }
-  .pvp-tab-coroa { animation: none; }
+  .pvp-tab-lugar > *, .pvp-tab-lista li { animation: none; opacity: 1; }
+  .pvp-tab-coroa { animation: none; transform: translateX(-50%); }
 }

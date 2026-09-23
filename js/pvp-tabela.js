@@ -123,6 +123,8 @@ function _pvpTabFalta() {
   const horas = Math.floor((ms % 86400000) / 3600000);
   const minutos = Math.floor((ms % 3600000) / 60000);
   if (dias > 0) return t('pvp.tab.falta_d', { d: dias, h: horas });
+  // "faltam 2h 0min" é um zero que ninguém precisa de ler.
+  if (horas > 0 && minutos === 0) return t('pvp.tab.falta_h', { h: horas });
   /* Abaixo de um dia conta-se ao minuto: "faltam 1h" para noventa
      minutos escondia meia hora, e na última hora dizia "faltam 0h"
      durante uma hora inteira — logo quando a tabela mais se olha. */
@@ -222,8 +224,7 @@ function _pvpTabHTML() {
         if (!r) return '<div class="pvp-tab-lugar vazio"></div>';
         const pos = lugares[i];
         return `<figure class="pvp-tab-lugar l${pos}${r.uid === meuUid ? ' eu' : ''}" style="--i:${i}">
-          ${pos === 1 ? '<span class="pvp-tab-coroa">♛</span>' : ''}
-          <div class="pvp-tab-arte">${_pvpTabAvatarSVG(r)}</div>
+          <div class="pvp-tab-arte">${pos === 1 ? '<span class="pvp-tab-coroa">♛</span>' : ''}${_pvpTabAvatarSVG(r)}</div>
           <figcaption>
             <span class="pvp-tab-medalha">${esc(_pvpTabOrdinal(pos))}</span>
             <b>${esc(r.nome || t('id.sem_nome'))}</b>
