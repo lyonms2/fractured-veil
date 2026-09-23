@@ -57,12 +57,38 @@ function abrirTabelaPvP(divisao) {
 }
 window.abrirTabelaPvP = abrirTabelaPvP;
 
-// A temporada e o que falta dela, no alto da página.
+/* A temporada e o que falta dela, no alto da página. O nome é o do
+   MÊS: "2026-09" é uma chave de banco de dados, e esta página existe
+   para vender a temporada a quem olha. */
 function _pvpTabCabecalho() {
   const temp = document.getElementById('pvpTabTemp');
   const falta = document.getElementById('pvpTabFalta');
-  if (temp)  temp.textContent  = pvpTemporada(typeof pvpAgora === 'function' ? pvpAgora() : Date.now());
+  if (temp)  temp.textContent  = _pvpTabNomeDaTemporada();
   if (falta) falta.textContent = _pvpTabFalta();
+}
+
+function _pvpTabNomeDaTemporada() {
+  const d = new Date(typeof pvpAgora === 'function' ? pvpAgora() : Date.now());
+  const meses = String(t('pvp.tab.meses') || '').split(',');
+  const mes = meses[d.getUTCMonth()] || '';
+  return mes ? t('pvp.tab.temp_nome', { mes }) : pvpTemporada(d.getTime());
+}
+
+/* O lugar em letra: 3º em português, 3rd em inglês. Estava cravado no
+   HTML com um "º" — metade dos números da página ficava em português
+   com o jogo em inglês. */
+function _pvpTabOrdinal(n) {
+  if (window._currentLang !== 'en') return n + 'º';
+  const d = n % 10, c = n % 100;
+  if (d === 1 && c !== 11) return n + 'st';
+  if (d === 2 && c !== 12) return n + 'nd';
+  if (d === 3 && c !== 13) return n + 'rd';
+  return n + 'th';
+}
+
+// O saldo de vitórias, que também muda de língua (V–D / W–L).
+function _pvpTabVD(r) {
+  return t('pvp.tab.vd', { v: r.v | 0, d: r.d | 0 });
 }
 
 function fecharTabelaPvP() {
@@ -92,7 +118,11 @@ function _pvpTabFalta() {
   if (ms <= 0) return t('pvp.tab.acabou');
   const dias = Math.floor(ms / 86400000);
   const horas = Math.floor((ms % 86400000) / 3600000);
-  return dias > 0 ? t('pvp.tab.falta_d', { d: dias, h: horas }) : t('pvp.tab.falta_h', { h: horas });
+  if (dias > 0) return t('pvp.tab.falta_d', { d: dias, h: horas });
+  if (horas > 0) return t('pvp.tab.falta_h', { h: horas });
+  // Na última hora conta-se ao minuto, senão dizia "faltam 0h" durante
+  // uma hora inteira — logo na hora em que a tabela mais se olha.
+  return t('pvp.tab.falta_m', { m: Math.max(1, Math.floor(ms / 60000)) });
 }
 
 // ── Os dados ────────────────────────────────────────────────────
@@ -122,13 +152,17 @@ function _pvpTabDesenhar() {
   corpo.innerHTML = _pvpTabHTML();
 }
 
-function _pvpTabAvatarSVG(linha, tam) {
+/* O desenho sai com um tamanho de referência e o CSS estica-o até à
+   caixa (.pvp-tab-cara svg, .pvp-tab-arte svg). Com o tamanho cravado
+   em píxeis, o bicho era cortado no telemóvel e boiava no computador,
+   onde a raiz mede 24px em vez de 16. */
+function _pvpTabAvatarSVG(linha) {
   const av = linha && linha.av;
   if (!av || typeof gerarSVG !== 'function') return '<span class="pvp-tab-sem-cara"></span>';
   try {
     const fase = (typeof faseFromNivel === 'function') ? faseFromNivel(av.nivel || 1) : 3;
     return gerarSVG(av.nascimento ? Object.assign({}, av, av.nascimento) : av,
-                    av.raridade || 'Comum', av.seed || 0, tam, tam, fase);
+                    av.raridade || 'Comum', av.seed || 0, 96, 96, fase);
   } catch (e) { return '<span class="pvp-tab-sem-cara"></span>'; }
 }
 
@@ -143,7 +177,7 @@ function _pvpTabHTML() {
         const minha = (typeof pvpMinhaDivisao === 'function') && pvpMinhaDivisao() === d.id;
         return `<button role="tab" class="pvp-tab-aba${d.id === div ? ' on' : ''}${minha ? ' minha' : ''}"
           aria-selected="${d.id === div}" onclick="pvpTabelaTrocar('${d.id}')">
-          ${esc(t('pvp.div.' + d.id))}${minha ? `<i>${esc(t('pvp.tab.a_sua'))}</i>` : ''}
+          ${esc(t('pvp.div.' + d.id))}<i class="${minha ? '' : 'vazio'}"${minha ? '' : ' aria-hidden="true"'}>${esc(t('pvp.tab.a_sua'))}</i>
         </button>`;
       }).join('')}
     </div>`;
@@ -171,12 +205,12 @@ function _pvpTabHTML() {
         const pos = lugares[i];
         return `<figure class="pvp-tab-lugar l${pos}${r.uid === meuUid ? ' eu' : ''}" style="--i:${i}">
           ${pos === 1 ? '<span class="pvp-tab-coroa">♛</span>' : ''}
-          <div class="pvp-tab-arte">${_pvpTabAvatarSVG(r, pos === 1 ? 108 : 84)}</div>
+          <div class="pvp-tab-arte">${_pvpTabAvatarSVG(r)}</div>
           <figcaption>
-            <span class="pvp-tab-medalha">${['🥇', '🥈', '🥉'][pos - 1]}</span>
+            <span class="pvp-tab-medalha">${esc(_pvpTabOrdinal(pos))}</span>
             <b>${esc(r.nome || t('id.sem_nome'))}</b>
             <span class="pvp-tab-pts">${r.p | 0}</span>
-            <small>${(r.v | 0)}V – ${(r.d | 0)}D</small>
+            <small>${esc(_pvpTabVD(r))}</small>
           </figcaption>
         </figure>`;
       }).join('')}
@@ -186,32 +220,55 @@ function _pvpTabHTML() {
   const meuIdx = lista.findIndex(r => r.uid === meuUid);
   const eu = meuIdx >= 0 ? lista[meuIdx] : null;
   const acima = meuIdx > 0 ? lista[meuIdx - 1] : null;
+  /* A nota por baixo dos meus pontos: quanto falta para passar quem
+     está à frente. No primeiro lugar não há ninguém à frente, e aí ela
+     diz a vantagem sobre o segundo — senão a faixa do líder era a única
+     sem nada que dizer. */
+  const nota = !eu ? ''
+    : acima ? t('pvp.tab.faltam', { n: Math.max(1, (acima.p | 0) - (eu.p | 0)),
+                                    pos: _pvpTabOrdinal(meuIdx) })
+    : lista[1] ? t('pvp.tab.na_frente', { n: Math.max(0, (eu.p | 0) - (lista[1].p | 0)) })
+    : '';
   const meuHTML = eu
     ? `<div class="pvp-tab-eu">
-        <span class="pvp-tab-eu-pos">${meuIdx + 1}º</span>
+        <span class="pvp-tab-eu-pos">${esc(_pvpTabOrdinal(meuIdx + 1))}</span>
         <span class="pvp-tab-eu-nome">${esc(t('pvp.tab.voce'))}</span>
+        <span class="pvp-tab-eu-vd">${esc(_pvpTabVD(eu))}</span>
         <span class="pvp-tab-eu-pts">${eu.p | 0}</span>
-        <span class="pvp-tab-eu-vd">${(eu.v | 0)}V – ${(eu.d | 0)}D</span>
-        ${acima ? `<span class="pvp-tab-eu-falta">${esc(t('pvp.tab.faltam',
-            { n: Math.max(1, (acima.p | 0) - (eu.p | 0)), pos: meuIdx }))}</span>` : ''}
+        ${nota ? `<span class="pvp-tab-eu-falta">${esc(nota)}</span>` : ''}
       </div>`
-    : `<div class="pvp-tab-eu fora">${esc(t('pvp.tab.sem_lugar', { div: t('pvp.div.' + div) }))}</div>`;
+    : `<div class="pvp-tab-eu fora">
+        <span>${esc(t('pvp.tab.sem_lugar', { div: t('pvp.div.' + div) }))}</span>
+        ${typeof pvpProcurar === 'function'
+          ? `<button class="pvp-tab-entrar" onclick="_pvpTabProcurar()">${esc(t('pvp.tab.entrar'))}</button>` : ''}
+      </div>`;
 
   // ── a lista, do quarto em diante ──
   const resto = lista.slice(3);
   const listaHTML = resto.length ? `<ol class="pvp-tab-lista" start="4">
       ${resto.map((r, i) => `<li class="${r.uid === meuUid ? 'eu' : ''}" style="--i:${Math.min(i, 12)}">
         <span class="pvp-tab-pos">${i + 4}</span>
-        <span class="pvp-tab-cara">${_pvpTabAvatarSVG(r, 40)}</span>
+        <span class="pvp-tab-cara">${_pvpTabAvatarSVG(r)}</span>
         <span class="pvp-tab-nome">${esc(r.nome || t('id.sem_nome'))}</span>
-        <span class="pvp-tab-vd">${(r.v | 0)}V – ${(r.d | 0)}D</span>
+        <span class="pvp-tab-vd">${esc(_pvpTabVD(r))}</span>
         <span class="pvp-tab-pontos">${r.p | 0}</span>
       </li>`).join('')}
     </ol>` : '';
 
+  const rodape = lista.length === 1 ? t('pvp.tab.rodape_um') : t('pvp.tab.rodape', { n: lista.length });
   return abas + podioHTML + meuHTML + listaHTML +
-    `<div class="pvp-tab-rodape">${esc(t('pvp.tab.rodape', { n: lista.length }))}</div>`;
+    `<div class="pvp-tab-rodape">${esc(rodape)}</div>`;
 }
+
+/* Da tabela para a fila, sem passar pelo lobby: quem está a olhar a
+   tabela sem ter pontuado é exatamente quem esta página tem de pôr a
+   jogar. Fecha-se a página para a busca aparecer onde ela mora. */
+function _pvpTabProcurar() {
+  fecharTabelaPvP();
+  if (typeof abrirLobbyPvP === 'function') abrirLobbyPvP();
+  setTimeout(() => { if (typeof pvpProcurar === 'function') pvpProcurar(); }, 350);
+}
+window._pvpTabProcurar = _pvpTabProcurar;
 
 /* O lugar do prémio da temporada. Fica vazio até haver prémio de
    verdade, vindo do servidor: uma página de rankings que promete
