@@ -113,16 +113,21 @@ function _pvpTabFimDaTemporada() {
   return Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth() + 1, 1);
 }
 
+/* Quanto falta para a temporada virar. Não há caso de "já virou": o fim
+   é calculado a partir de AGORA, portanto está sempre no futuro — a
+   virada não é um instante que se vê passar, é uma conta que passa a
+   dar outro mês. */
 function _pvpTabFalta() {
-  const ms = _pvpTabFimDaTemporada() - (typeof pvpAgora === 'function' ? pvpAgora() : Date.now());
-  if (ms <= 0) return t('pvp.tab.acabou');
+  const ms = Math.max(0, _pvpTabFimDaTemporada() - (typeof pvpAgora === 'function' ? pvpAgora() : Date.now()));
   const dias = Math.floor(ms / 86400000);
   const horas = Math.floor((ms % 86400000) / 3600000);
+  const minutos = Math.floor((ms % 3600000) / 60000);
   if (dias > 0) return t('pvp.tab.falta_d', { d: dias, h: horas });
-  if (horas > 0) return t('pvp.tab.falta_h', { h: horas });
-  // Na última hora conta-se ao minuto, senão dizia "faltam 0h" durante
-  // uma hora inteira — logo na hora em que a tabela mais se olha.
-  return t('pvp.tab.falta_m', { m: Math.max(1, Math.floor(ms / 60000)) });
+  /* Abaixo de um dia conta-se ao minuto: "faltam 1h" para noventa
+     minutos escondia meia hora, e na última hora dizia "faltam 0h"
+     durante uma hora inteira — logo quando a tabela mais se olha. */
+  if (horas > 0) return t('pvp.tab.falta_hm', { h: horas, m: minutos });
+  return t('pvp.tab.falta_m', { m: Math.max(1, minutos) });
 }
 
 // ── Os dados ────────────────────────────────────────────────────
@@ -158,12 +163,21 @@ function _pvpTabDesenhar() {
    onde a raiz mede 24px em vez de 16. */
 function _pvpTabAvatarSVG(linha) {
   const av = linha && linha.av;
-  if (!av || typeof gerarSVG !== 'function') return '<span class="pvp-tab-sem-cara"></span>';
+  if (!av || typeof gerarSVG !== 'function') return _pvpTabInicial(linha);
   try {
     const fase = (typeof faseFromNivel === 'function') ? faseFromNivel(av.nivel || 1) : 3;
     return gerarSVG(av.nascimento ? Object.assign({}, av, av.nascimento) : av,
                     av.raridade || 'Comum', av.seed || 0, 96, 96, fase);
-  } catch (e) { return '<span class="pvp-tab-sem-cara"></span>'; }
+  } catch (e) { return _pvpTabInicial(linha); }
+}
+
+/* Sem retrato, a inicial do nome em ouro. Um disco liso no meio do
+   pódio lê-se como imagem que não carregou — e ali ele ocupa a vitrine
+   inteira. */
+function _pvpTabInicial(linha) {
+  const nome = String((linha && linha.nome) || '').trim();
+  const letra = nome ? nome[0].toUpperCase() : '—';
+  return `<span class="pvp-tab-sem-cara">${esc(letra)}</span>`;
 }
 
 function _pvpTabHTML() {
@@ -188,10 +202,14 @@ function _pvpTabHTML() {
   }
   if (!lista) return abas + `<div class="pvp-tab-vazio">${esc(t('ui.loading'))}</div>`;
   if (!lista.length) {
+    /* A divisão vazia é onde a página mais promete ("o primeiro nome
+       aqui pode ser o seu") e onde não havia nada para clicar. */
     return abas + `<div class="pvp-tab-vazio pvp-tab-primeiro">
         <span class="pvp-tab-coroa">♛</span>
         <b>${esc(t('pvp.tab.vazio_tit'))}</b>
         <span>${esc(t('pvp.tab.vazio_sub'))}</span>
+        ${typeof pvpProcurar === 'function'
+          ? `<button class="pvp-tab-entrar" onclick="_pvpTabProcurar()">${esc(t('pvp.tab.entrar'))}</button>` : ''}
       </div>`;
   }
 
@@ -250,6 +268,8 @@ function _pvpTabHTML() {
         <span class="pvp-tab-pos">${i + 4}</span>
         <span class="pvp-tab-cara">${_pvpTabAvatarSVG(r)}</span>
         <span class="pvp-tab-nome">${esc(r.nome || t('id.sem_nome'))}</span>
+        <span class="pvp-tab-poder" title="${esc(t('pvp.tab.poder_dica'))}">${
+          r.poder ? esc(t('pvp.tab.poder', { p: r.poder | 0 })) : ''}</span>
         <span class="pvp-tab-vd">${esc(_pvpTabVD(r))}</span>
         <span class="pvp-tab-pontos">${r.p | 0}</span>
       </li>`).join('')}

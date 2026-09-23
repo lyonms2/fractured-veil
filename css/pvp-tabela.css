@@ -29,6 +29,10 @@
   width: 100%;
   padding: 0.625rem 1rem 1rem;
   box-sizing: border-box;
+  /* A barra do jogo é um traço violeta saturado (css/base.css): numa
+     página dourada sobre roxo quase preto, chamava mais atenção do que
+     o pódio. Aqui ela recolhe. */
+  scrollbar-color: rgba(201,168,76,.28) transparent;
 }
 /* No computador o cartão é largo: a lista ficava numa coluna estreita ao
    meio, com o título encostado à esquerda — dois eixos na mesma tela. */
@@ -39,7 +43,7 @@
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
-  max-width: 30rem;
+  max-width: 25rem;
   margin-inline: auto;
   padding-bottom: 0.5rem;
   /* Os secundários desta página (posições, saldo V–D, notas) num tom
@@ -51,6 +55,13 @@
 /* ── AS ABAS DAS DIVISÕES ──
    Coladas ao topo enquanto a lista corre: trocar de divisão é a segunda
    coisa que se faz nesta página, e não se pode ter de subir para isso. */
+/* O FUNDO É SÓLIDO, e o desvanecer vem por baixo.
+
+   Com um gradiente a fazer de fundo sobrava uma fresta transparente no
+   rodapé da barra — 11,6px no telemóvel, 17,7px no computador — e a
+   lista passava visível por trás dela enquanto rolava. Lia-se "1289" e
+   "19V – 4D" a atravessar a barra das divisões. O véu passou para um
+   ::after, que é o que ele sempre devia ter sido. */
 .pvp-tab-abas {
   position: sticky;
   top: -0.625rem;   /* o padding do corpo */
@@ -59,7 +70,15 @@
   gap: 0.25rem;
   margin: -0.625rem -0.25rem 0;
   padding: 0.625rem 0.1875rem 0.3125rem;
-  background: linear-gradient(var(--surface) 78%, transparent);
+  background-color: var(--surface);
+}
+.pvp-tab-abas::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  height: 0.75rem;
+  pointer-events: none;
+  background: linear-gradient(var(--surface), transparent);
 }
 .pvp-tab-aba {
   flex: 1;
@@ -121,8 +140,10 @@
   animation-delay: calc(var(--i, 0) * .09s);
 }
 .pvp-tab-lugar.vazio { min-height: 3rem; }
-/* O primeiro sobe acima da base dos outros dois. */
-.pvp-tab-lugar.l1 { transform: translateY(-0.875rem); }
+/* O primeiro sobe — o RETRATO dele, e não a figura inteira: elevando
+   tudo, a medalha, o nome e os pontos do campeão ficavam 24px acima dos
+   dos outros dois e o pé do bloco ficava irregular. */
+.pvp-tab-lugar.l1 .pvp-tab-arte { transform: translateY(-0.75rem); }
 .pvp-tab-arte {
   position: relative;
   display: grid;
@@ -217,7 +238,7 @@
   grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
+  padding: 0.5rem;
   border-radius: 0.625rem;
   background: linear-gradient(90deg, rgba(201,168,76,.22), rgba(201,168,76,.1)), var(--surface);
   box-shadow: inset 0 0 0 1px rgba(201,168,76,.32), 0 0.25rem 0.75rem rgba(4,3,10,.5);
@@ -250,8 +271,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pvp-tab-eu-pts { font-family: 'Cinzel', serif; font-size: 0.875rem; color: var(--gold); text-align: right; min-width: 3.5ch; }
-.pvp-tab-eu-vd  { font-size: 0.5rem; color: var(--rank-fraco); min-width: 7ch; text-align: right; }
+/* Largura em rem e não em `ch`: a minha linha e as da lista usam
+   tamanhos de letra diferentes, e com `ch` os pontos ficavam 3,3px
+   desalinhados de uma linha para a outra — justamente a comparação
+   vertical que o jogador faz o tempo todo. */
+.pvp-tab-eu-pts { font-family: 'Cinzel', serif; font-size: 0.875rem; color: var(--gold); text-align: right; width: 2.75rem; }
+.pvp-tab-eu-vd  { font-size: 0.5rem; color: var(--rank-fraco); width: 4.25rem; text-align: right; }
 .pvp-tab-eu-falta {
   grid-column: 1 / -1;
   font-family: 'EB Garamond', serif;
@@ -260,7 +285,8 @@
   color: var(--rank-fraco);
 }
 .pvp-tab-entrar {
-  padding: 0.3125rem 0.875rem;
+  min-height: 2.25rem;
+  padding: 0.4375rem 1.25rem;
   border: 1px solid rgba(201,168,76,.45);
   border-radius: 0.5rem;
   background: rgba(201,168,76,.12);
@@ -303,24 +329,40 @@
   color: var(--rank-fraco);
   text-align: right;
 }
+/* A caixa acompanha a coluna do grid em vez de ter medida própria: com
+   2.25rem cravados, nas telas estreitas ela era maior do que a trilha e
+   invadia o nome. */
 .pvp-tab-cara {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 100%;
+  aspect-ratio: 1;
 }
 /* O desenho preenche a caixa em vez de ter tamanho cravado em pixéis:
    assim não é cortado no telemóvel nem boia no computador, onde a raiz
    é maior. */
 .pvp-tab-cara svg { width: 100%; height: 100%; display: block; }
+/* Quem não tem retrato leva a inicial do nome, em ouro. Um disco liso
+   parece imagem que não carregou — e no pódio, onde ele ocupa a
+   vitrine inteira, isso lia-se como defeito. */
 .pvp-tab-sem-cara {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, rgba(201,168,76,.18), rgba(255,255,255,.04) 70%);
   box-shadow: inset 0 0 0 1px rgba(201,168,76,.18);
+  font-family: 'Cinzel', serif;
+  color: rgba(240,208,128,.75);
+  text-shadow: 0 0 0.75rem rgba(201,168,76,.4);
+  line-height: 1;
 }
+/* O tamanho da letra em cada sítio: uma percentagem herdaria do body e
+   dava sete píxeis no meio de um pódio de 120. */
+.pvp-tab-arte .pvp-tab-sem-cara { font-size: 2.25rem; }
+.pvp-tab-lugar.l1 .pvp-tab-sem-cara { font-size: 3rem; }
+.pvp-tab-cara .pvp-tab-sem-cara { font-size: 0.875rem; }
 .pvp-tab-nome {
   font-size: 0.5625rem;
   color: var(--text);
@@ -331,8 +373,12 @@
 }
 /* Largura fixa em `ch` nas duas colunas da direita: com `auto`, passar
    de 1016 para 974 pontos fazia a coluna inteira saltar. */
-.pvp-tab-vd { font-size: 0.5rem; color: var(--rank-fraco); min-width: 7ch; text-align: right; }
-.pvp-tab-pontos { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); min-width: 4ch; text-align: right; }
+.pvp-tab-vd { font-size: 0.5rem; color: var(--rank-fraco); width: 4.25rem; text-align: right; }
+.pvp-tab-pontos { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); width: 2.75rem; text-align: right; }
+/* O poder da equipa, só onde há largura para ele: no telemóvel a linha
+   já tem o que precisa, e no computador era ele ou 450px de vazio entre
+   o nome e o placar. */
+.pvp-tab-poder { display: none; font-size: 0.5rem; color: var(--rank-fraco); width: 3.5rem; text-align: right; }
 
 /* ── OS ESTADOS VAZIOS ── */
 .pvp-tab-vazio {
@@ -401,7 +447,10 @@
   .pvp-tab-aba { font-size: 0.6875rem; }
   .pvp-tab-aba i { font-size: 0.5625rem; }
   .pvp-tab-lugar figcaption b { font-size: 0.625rem; }
-  .pvp-tab-medalha { font-size: 0.5625rem; }
+  /* O lugar no pódio é um rótulo, não uma nota de rodapé: não pode ser
+     o texto menor do ecrã. */
+  .pvp-tab-medalha { font-size: 0.6875rem; }
+  .pvp-tab-entrar { font-size: 0.6875rem; }
   .pvp-tab-pts { font-size: 1rem; }
   .pvp-tab-lugar.l1 .pvp-tab-pts { font-size: 1.5rem; }
   .pvp-tab-lugar figcaption small,
@@ -413,6 +462,14 @@
   .pvp-tab-pontos { font-size: 0.875rem; }
   .pvp-tab-lista li { grid-template-columns: 1.5rem 2rem minmax(0, 1fr) auto auto; gap: 0.375rem; }
   .pvp-tab-eu { top: 2.75rem; }
+}
+
+/* ── NO COMPUTADOR ──
+   Sobra largura: em vez de a deixar vazia entre o nome e o placar, ela
+   passa a dizer com que poder de equipa cada um chegou ali. */
+@media (min-width: 681px) and (orientation: landscape) {
+  .pvp-tab-poder { display: block; }
+  .pvp-tab-lista li { grid-template-columns: 1.75rem 2.25rem minmax(0, 1fr) auto auto auto; }
 }
 
 /* Telas muito estreitas (360px e abaixo): o pódio deixa de ter medida
