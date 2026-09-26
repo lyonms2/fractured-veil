@@ -161,7 +161,19 @@ function pvpIniciar(uid) {
      manda-se a colônia inteira de uma vez: o servidor sobe o que o
      ritmo permitir e ignora o resto. */
   if (typeof nivelAvisarTodos === 'function') nivelAvisarTodos();
+
+  /* E quando a resposta chegar, a tela acerta-se: o poder e a divisão
+     que ela mostra passam a ser os do registo (ver _pvpPoder). */
+  if (!_pvpOuveNiveis) {
+    _pvpOuveNiveis = true;
+    window.addEventListener('niveis-reconhecidos', () => {
+      if (!_pvpLobbyAberto()) return;
+      _pvpRenderLobby();
+      _pvpCarregarRank();
+    });
+  }
 }
+let _pvpOuveNiveis = false;
 
 function pvpEncerrar() {
   if (typeof pvpLutaAtiva === 'function' && pvpLutaAtiva() && typeof afFechar === 'function') afFechar();
@@ -223,7 +235,7 @@ function _pvpRenderLobby() {
   const box = document.getElementById('pvpLobby');
   if (!box) return;
   const eq = _pvpEquipe();
-  const poder = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(eq) : 0;
+  const poder = _pvpPoder(eq);
   const bloq = _pvpBloqueio();
   const nome = s => esc((typeof nomeCurto === 'function') ? nomeCurto(s) : (s && s.nome) || '');
 
@@ -233,7 +245,8 @@ function _pvpRenderLobby() {
       <div class="pvp-equipe-linha">
         ${eq.map((s, i) => `<figure class="pvp-av" style="--i:${i}">
           <div class="pvp-av-arte">${_pvpRetratoSVG(s, 84)}</div>
-          <figcaption><b>${nome(s)}</b><span>${esc(t('pvp.nivel', { n: s.nivel || 1 }))}</span></figcaption>
+          <figcaption><b>${nome(s)}</b><span>${esc(t('pvp.nivel', {
+            n: (typeof nivelReconhecidoDe === 'function') ? nivelReconhecidoDe(s) : (s.nivel || 1) }))}</span></figcaption>
         </figure>`).join('')}
       </div>
       <div class="pvp-poder">${t('pvp.lobby.poder', { p: poder })}</div>
@@ -272,8 +285,30 @@ let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0, _pvpRankPos = 0;
    uma lista única misturava gente que nunca se encontra. */
 function pvpMinhaDivisao() {
   const eq = _pvpEquipe();
-  const poder = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(eq) : 0;
-  return pvpDivisao(poder, eq.length || 3);
+  return pvpDivisao(_pvpPoder(eq), eq.length || 3);
+}
+
+/* ── O PODER QUE VALE É O QUE O SERVIDOR RECONHECE ──
+
+   O fuPoderDaEquipa soma o nível do SLOT, que é o do save. O servidor
+   monta a fila e escreve a tabela com o nível do registo dele
+   (js/niveis.js), que sobe degrau a degrau e pode estar alguns níveis
+   atrás depois de uma subida rápida.
+
+   Enquanto os dois eram o mesmo número ninguém reparava. Quando não
+   são, e a média cai do outro lado da fronteira de uma divisão, o lobby
+   ia ler a tabela da divisão errada: quem tinha lutado via "ainda sem
+   partidas nesta temporada".
+
+   O número do servidor chega na resposta do aviso de nível — que este
+   lobby manda ao abrir — e o nivelReconhecidoDe() devolve-o. Sem
+   resposta ainda, vale o do save, como antes. */
+function _pvpPoder(eq) {
+  const lista = Array.isArray(eq) ? eq : _pvpEquipe();
+  if (typeof nivelReconhecidoDe !== 'function') {
+    return (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(lista) : 0;
+  }
+  return lista.reduce((t, s) => t + (s && !s.dead ? nivelReconhecidoDe(s) : 0), 0);
 }
 
 function _pvpCarregarRank() {

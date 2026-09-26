@@ -133,17 +133,65 @@ async function _nivelEnviar() {
   if (!u) return;
   try {
     const idToken = await u.getIdToken();
-    await fetch('/api/pool', {
+    const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ acao: 'nivel', idToken, avatares }),
     });
+    /* A RESPOSTA VALE GUARDAR, e era deitada fora.
+
+       Ela traz o número que o servidor RECONHECE para cada avatar — o
+       que pode estar abaixo do save, porque o registo sobe degrau a
+       degrau. Sem o guardar, o cliente só conhecia o nível do save, e o
+       lobby do PvP mostrava um poder e uma divisão que não eram os que
+       o servidor ia usar: quem estivesse perto da fronteira via a
+       tabela da divisão errada e não se encontrava nela. */
+    const json = await resp.json().catch(() => null);
+    if (json && json.ok) _nivelGuardar(json.niveis);
   } catch (e) { /* fica para a próxima */ }
 }
 
+/* ── O QUE O SERVIDOR RECONHECE, do lado de cá ──
+
+   Um espelho do mapa `niveis`, preenchido pelas respostas de quem avisa
+   (acima). É memória desta sessão e mais nada: não se grava, não se
+   confia nele para decidir nada — quem decide é sempre o servidor —, e
+   serve só para a tela mostrar o mesmo número que a luta vai usar.
+
+   Sem resposta ainda (a primeira abertura, ou a rede em baixo), vale o
+   nível do save, que é o que se fazia antes. */
+const _nivelServidor = {};
+
+function _nivelGuardar(niveis) {
+  if (!niveis || typeof niveis !== 'object') return;
+  let mudou = false;
+  for (const id of Object.keys(niveis)) {
+    const cru = niveis[id];
+    const n = (cru && typeof cru === 'object') ? cru.n : cru;
+    if (n > 0 && _nivelServidor[id] !== nivelLimpo(n)) {
+      _nivelServidor[id] = nivelLimpo(n);
+      mudou = true;
+    }
+  }
+  /* Quem mostra estes números que se redesenhe: o lobby do PvP já está
+     na tela quando a resposta chega, e ficaria com o número do save até
+     o próximo desenho. Um evento, e não uma chamada direta, porque este
+     arquivo não tem de saber quem o escuta. */
+  if (mudou && typeof window !== 'undefined' && window.dispatchEvent) {
+    window.dispatchEvent(new CustomEvent('niveis-reconhecidos'));
+  }
+}
+
+function nivelReconhecidoDe(slot) {
+  if (!slot) return 1;
+  const n = slot.id ? _nivelServidor[slot.id] : 0;
+  return (n > 0) ? n : nivelLimpo(slot.nivel);
+}
+
 if (typeof window !== 'undefined') {
-  window.nivelAvisar      = nivelAvisar;
-  window.nivelAvisarTodos = nivelAvisarTodos;
+  window.nivelAvisar         = nivelAvisar;
+  window.nivelAvisarTodos    = nivelAvisarTodos;
+  window.nivelReconhecidoDe  = nivelReconhecidoDe;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

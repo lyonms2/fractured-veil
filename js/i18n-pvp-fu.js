@@ -8,7 +8,7 @@ window.registerStrings({
   'pvp.lobby.sua_equipe':  'Sua equipe',
   'pvp.lobby.poder':       'Poder <b>{p}</b>',
   'pvp.lobby.amigos':      'Desafiar um amigo',
-  'pvp.lobby.amigos_nota': 'amistoso · não conta no ranking',
+  'pvp.lobby.amigos_nota': 'amistoso · sem rank, sem moedas e sem fratura',
   'pvp.nivel':             'Nv {n}',
   'pvp.pve_na_fila':       'Você está na fila do PvP. Cancele a busca antes de batalhar contra o Véu.',
 
@@ -151,7 +151,7 @@ window.registerStrings({
   'pvp.lobby.sua_equipe':  'Your team',
   'pvp.lobby.poder':       'Power <b>{p}</b>',
   'pvp.lobby.amigos':      'Challenge a friend',
-  'pvp.lobby.amigos_nota': 'friendly · not ranked',
+  'pvp.lobby.amigos_nota': 'friendly · no rank, no coins, no fractures',
   'pvp.nivel':             'Lv {n}',
   'pvp.pve_na_fila':       'You’re in the PvP queue. Cancel the search before battling the Veil.',
 
