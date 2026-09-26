@@ -359,6 +359,13 @@ async function buyAvatar(listingId, price) {
 // ═══════════════════════════════════════════
 // LISTAR AVATAR À VENDA
 // ═══════════════════════════════════════════
+// A raridade que vale: a conta sobre o nível, e não o campo do slot.
+function _mktRaridade(s) {
+  if (!s) return 'Comum';
+  return (typeof fuRaridadeDoNivel === 'function')
+    ? fuRaridadeDoNivel(s.nivel || 1) : (s.raridade || 'Comum');
+}
+
 function openListModal(slotIdx) {
   // A mesma pergunta da lista, outra vez: entre desenhar o botão e tocar
   // nele o avatar pode ter adoecido.
@@ -371,7 +378,11 @@ function openListModal(slotIdx) {
       ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${esc(nomeCurto(s))}</div>
-        <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
+        <!-- A raridade da prévia é a MESMA CONTA que o servidor fará ao
+             publicar o anúncio: sai do nível (fuRaridadeDoNivel). A do
+             slot envelhece, e mostrar aqui uma e anunciar outra seria
+             mentir ao vendedor na tela onde ele decide o preço. -->
+        <div style="font-size:0.5625rem;color:var(--${_mktRaridade(s)==='Lendário'?'legendary':'rare'});">${_mktRaridade(s)} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
   /* O preço da listagem sai do LIST_COST e não do texto traduzido: era
@@ -381,7 +392,9 @@ function openListModal(slotIdx) {
   const btn = document.getElementById('listTaxaBtn');
   if (sub) sub.textContent = t('mkt.modal.list_av.sub',     { cost: LIST_COST });
   if (btn) btn.textContent = t('mkt.modal.list_av.confirm', { cost: LIST_COST });
-  document.getElementById('listPriceInput').value = '';
+  const campoPreco = document.getElementById('listPriceInput');
+  if (typeof equiparSetas === 'function') equiparSetas(campoPreco);
+  campoPreco.value = '';
   document.getElementById('listOverlay').classList.add('open');
 }
 

@@ -4,9 +4,14 @@
 //             showToast() (marketplace.html inline)
 // ═══════════════════════════════════════════════════════════════════
 
-// O alvo da pool: não é um tecto nem uma promessa, é a referência
-// contra a qual a barra do saldo se mede.
-const POOL_ALVO        = 1000;
+/* O alvo da pool: não é um teto nem uma promessa, é a referência contra
+   a qual a barra do saldo se mede.
+
+   Eram 1000 💎, da escala antiga — e com a de hoje isso é o saque
+   diário de UMA pessoa (1000 💎 = 100 MATIC): a barra bateria 100% na
+   primeira semana e deixaria de dizer alguma coisa. São 50 mil desde
+   26/09/2026, escolhidos pelo dono do jogo. */
+const POOL_ALVO        = 50000;
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
 const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev
@@ -156,7 +161,8 @@ function renderPoolStatsCard() {
   <div class="pool-stats-card">
     <div class="pool-sc-title">${t('mkt.pool.state_title')}</div>
     <div class="pool-sc-balance">${fmtC(saldo)} 💎</div>
-    <div class="pool-sc-balance-sub">${pct}% do alvo (${POOL_ALVO} 💎)</div>
+    <div class="pool-sc-balance-sub">${pct}% do alvo (${POOL_ALVO.toLocaleString(
+      (typeof window !== 'undefined' && window._currentLang === 'en') ? 'en-US' : 'pt-BR')} 💎)</div>
     <div class="pool-sc-bar-wrap">
       <div class="pool-sc-bar" style="width:${pct}%;background:${barColor};"></div>
     </div>

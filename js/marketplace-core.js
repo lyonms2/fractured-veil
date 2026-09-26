@@ -22,6 +22,74 @@ function unlockSlotCusto(extras) {
   return UNLOCK_SLOT_ESCADA[Math.min(Math.max(0, extras | 0), UNLOCK_SLOT_ESCADA.length - 1)];
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   AS SETAS DE UM CAMPO NUMÉRICO
+
+   As do navegador são cinzentas e do tamanho de uma unha, e destoam de
+   tudo o resto (reparo do dono do jogo, 26/09/2026). O desenho das
+   nossas já existia no css/marketplace.css desde a mescla do
+   marketplace — .num-spin-wrap e companhia —, mas ninguém as montava.
+
+   Esta função monta: envolve o campo, põe o ▲ e o ▼ à direita e liga-os
+   ao valor. É idempotente, porque as telas que a chamam redesenham-se.
+
+   As setas não entram na ordem do teclado (tabIndex -1): quem usa o
+   teclado escreve o número ou usa as setas do próprio campo, e não quer
+   dois paus no caminho até ao botão de confirmar.
+   ══════════════════════════════════════════════════════════════════ */
+function equiparSetas(input) {
+  if (!input || input.dataset.comSetas || !input.parentNode) return;
+  input.dataset.comSetas = '1';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'num-spin-wrap';
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+
+  const caixa = document.createElement('div');
+  caixa.className = 'num-spin-btns';
+  wrap.appendChild(caixa);
+
+  for (const dir of [1, -1]) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'num-spin-btn';
+    b.tabIndex = -1;
+    b.textContent = dir > 0 ? '▲' : '▼';
+    b.addEventListener('click', () => _andarNumero(input, dir));
+    caixa.appendChild(b);
+  }
+}
+
+/* Um passo para cima ou para baixo, dentro do que o campo aceita.
+
+   Com o campo VAZIO, a primeira seta para cima põe o mínimo e não o
+   passo: quem compra cristais tem de pedir 50 para começar, e ver um 1
+   aparecer ali só para ser recusado não ajuda ninguém.
+
+   Dispara o `input` porque as telas escutam-no — é assim que o total em
+   MATIC se atualiza enquanto se carrega na seta. */
+function _andarNumero(input, dir) {
+  if (!input || input.disabled) return;
+  const passo = Number(input.step) > 0 ? Number(input.step) : 1;
+  const min   = input.min !== '' ? Number(input.min) : -Infinity;
+  const max   = input.max !== '' ? Number(input.max) : Infinity;
+  const atual = Number(input.value);
+
+  let v;
+  if (input.value === '' || !Number.isFinite(atual)) {
+    v = dir > 0 ? (Number.isFinite(min) ? min : passo) : min;
+  } else {
+    v = atual + dir * passo;
+  }
+  if (Number.isFinite(min)) v = Math.max(min, v);
+  if (Number.isFinite(max)) v = Math.min(max, v);
+  if (!Number.isFinite(v)) return;
+
+  input.value = String(Math.round(v * 100) / 100);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 let playerData     = null;
 let listings       = [];
 let listingUnsub   = null;

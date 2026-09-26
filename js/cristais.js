@@ -137,6 +137,7 @@ function renderCrystals() {
       <button class="btn-verify" id="btnComprarCristais" onclick="comprarCristais()">${t('mkt.crystals.buy_btn')}</button>
     </div>
     <div class="compra-total" id="compraTotal"></div>`;
+  if (typeof equiparSetas === 'function') equiparSetas(document.getElementById('compraGems'));
   _atualizarTotalCompra();
 }
 
@@ -193,13 +194,15 @@ async function renderLimiteResgate() {
   const el = document.getElementById('resgateLimite');
   if (!el) return;
 
+  const input = document.getElementById('resgateGems');
+  if (typeof equiparSetas === 'function') equiparSetas(input);
+
   /* O texto por cima do campo leva o teto, e o teto tem uma fonte só.
      Estava escrito à mão nas duas línguas ("Limite: 5 MATIC/dia") e
-     ficou a mentir quando o teto subiu. */
+     ficou mentindo quando o teto subiu. */
   const sub = document.getElementById('resgateSub');
   if (sub) sub.textContent = t('mkt.crystals.redeem_sub', {
     max: RESGATE_MAX_DIA, matic: Math.round(RESGATE_MAX_DIA / 10) });
-  const input = document.getElementById('resgateGems');
 
   let usadoHoje = 0;
   try {
