@@ -32,7 +32,10 @@ window.registerStrings(
     'amigos.recebida.brincar':   'brincou com o seu avatar',
     'amigos.recebida.limpar':    'deu banho no seu avatar',
     'amigos.toast.visita_1': '1 amigo cuidou do seu avatar enquanto você esteve fora.',
-    'amigos.toast.visita_n': '{n} amigos cuidaram do seu avatar enquanto você esteve fora.',
+    // O {n} é quanta GENTE passou; o {v}, quantos cuidados. Sem os dois,
+    // um amigo que fez as três coisas virava "3 amigos".
+    'amigos.toast.visita_1n': '1 amigo cuidou do seu avatar {v} vezes enquanto você esteve fora.',
+    'amigos.toast.visita_n': '{n} amigos cuidaram do seu avatar ({v} vezes) enquanto você esteve fora.',
     'amigos.title':          '👥 AMIGOS',
     'amigos.visit.title':    '🏠 VISITAR AMIGO',
     /* ── O CÓDIGO ──
@@ -105,7 +108,8 @@ window.registerStrings(
     'amigos.recebida.brincar':   'played with your avatar',
     'amigos.recebida.limpar':    'bathed your avatar',
     'amigos.toast.visita_1': '1 friend looked after your avatar while you were away.',
-    'amigos.toast.visita_n': '{n} friends looked after your avatar while you were away.',
+    'amigos.toast.visita_1n': '1 friend looked after your avatar {v} times while you were away.',
+    'amigos.toast.visita_n': '{n} friends looked after your avatar ({v} times) while you were away.',
     'amigos.title':          '👥 FRIENDS',
     'amigos.visit.title':    '🏠 VISIT FRIEND',
     'amigos.meu_codigo':     'YOUR CODE',

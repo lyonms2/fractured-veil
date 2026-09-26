@@ -407,9 +407,26 @@ async function _onLoginSuccess(user) {
           accao: t('amigos.recebida.' + v.tipo), vinculo: v.vinculo || 0,
         }), 'good');
       }
+      /* ── QUANTOS AMIGOS, E QUANTOS CUIDADOS ──
+
+         O aviso dizia "{n} amigos cuidaram do seu avatar" com o n a ser
+         o tamanho do inbox — e o inbox tem uma entrada por CUIDADO, não
+         por pessoa. Um amigo que alimentou, brincou e deu banho virava
+         "3 amigos"; passando ele duas vezes, "6 amigos". O jogador via
+         uma multidão onde tinha estado uma pessoa.
+
+         São duas contas diferentes e agora são contadas em separado:
+         quem passou (o `de` de cada recado, sem repetir) e quantas vezes
+         cuidou. O `|| total` é para um recado antigo que não traga o
+         `de`: mais vale um número aproximado do que zero amigos. */
       const total = visitas.length;
-      if(typeof showToast === 'function')
-        showToast(t(total === 1 ? 'amigos.toast.visita_1' : 'amigos.toast.visita_n', { n: total }), 'ok');
+      const gente = new Set(visitas.map(v => v && v.de).filter(Boolean)).size || total;
+      if(typeof showToast === 'function') {
+        const chave = gente > 1 ? 'amigos.toast.visita_n'
+                    : total > 1 ? 'amigos.toast.visita_1n'
+                                : 'amigos.toast.visita_1';
+        showToast(t(chave, { n: gente, v: total }), 'ok');
+      }
       if(typeof scheduleSave === 'function') scheduleSave();
     }
 
