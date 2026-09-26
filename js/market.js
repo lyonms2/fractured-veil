@@ -22,12 +22,23 @@ function renderMarketItems() {
       ? `<span style="text-decoration:line-through;opacity:.5;font-size:0.4375rem;">${item.preco}</span> ${preco}`
       : String(preco);
 
+    /* ── O BOTÃO SE DIZ, COMO OS DA FILA DE AÇÕES ──
+
+       Faltar moeda deixava o botão cinzento e mudo: `disabled` engole o
+       clique, e o preço lá em cima não diz quanto FALTA — é conta que o
+       jogador tinha de fazer de cabeça. Agora diz, e continua clicável
+       para poder explicar-se (o buyItem mostra a bolha).
+
+       O que continua `disabled` é o que não é falta de dinheiro: um
+       antídoto num bicho saudável já se explica no próprio rótulo. */
+    const faltam = (p) => t('mkt.btn.faltam', { n: p - gs.moedas });
+
     let footerBtn;
     if(item.consumivel) {
       const hasDiseases = (typeof activeDiseases !== 'undefined' && activeDiseases.length > 0) || sick;
-      const disabled    = !canAfford || !hasDiseases;
-      const label       = !canAfford ? t('mkt.btn.no_coins') : !hasDiseases ? t('mkt.btn.no_diseases') : t('mkt.btn.use_now');
-      footerBtn = `<button class="mkt-catalog-buy" onclick="buyItem('${item.id}')" ${disabled?'disabled':''}>${label}</button>
+      const label       = !canAfford ? faltam(preco) : !hasDiseases ? t('mkt.btn.no_diseases') : t('mkt.btn.use_now');
+      const cls         = !canAfford ? ' sem-moedas' : '';
+      footerBtn = `<button class="mkt-catalog-buy${cls}" onclick="buyItem('${item.id}')" ${(!canAfford || hasDiseases) ? '' : 'disabled'}>${label}</button>
                    <div class="mkt-duration-note" style="color:#a855f7;">${t('mkt.label.consumable')}</div>`;
     } else {
       /* Dois botões, cada um com o seu preço: 30 dias e 7 dias. Quem já
@@ -45,7 +56,9 @@ function renderMarketItems() {
       } else {
         const botao = (dias, cls) => {
           const p = precoItem(item, dias);
-          return `<button class="mkt-catalog-buy ${cls}" onclick="buyItem('${item.id}', ${dias})" ${gs.moedas < p ? 'disabled' : ''}>${t('mkt.btn.buy_dias', { n: dias, preco: p })}</button>`;
+          const falta = gs.moedas < p;
+          return `<button class="mkt-catalog-buy ${cls}${falta ? ' sem-moedas' : ''}" onclick="buyItem('${item.id}', ${dias})">${
+            falta ? faltam(p) : t('mkt.btn.buy_dias', { n: dias, preco: p })}</button>`;
         };
         footerBtn = botao(30, '') + botao(ITEM_DIAS_CURTO, 'curto');
       }

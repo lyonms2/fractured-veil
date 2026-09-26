@@ -708,6 +708,13 @@
 .mkt-catalog-buy { flex:1; padding:0.4375rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.4375rem; letter-spacing:0.0625rem; font-weight:700; border:1px solid var(--gold); border-radius:0.375rem; background:rgba(201,168,76,.1); color:var(--gold); transition:all .2s; }
 .mkt-catalog-buy:hover { background:rgba(201,168,76,.25); }
 .mkt-catalog-buy:disabled { opacity:.35; cursor:not-allowed; }
+/* Falta dinheiro: o botão não fica morto, fica vermelho — e continua
+   clicável, porque tem uma coisa a dizer. O mesmo que a fila de ações
+   faz com o `em-falta`. */
+.mkt-catalog-buy.sem-moedas {
+  border-color:rgba(224,85,85,.5); background:rgba(224,85,85,.08); color:#e05555;
+}
+.mkt-catalog-buy.sem-moedas:hover { background:rgba(224,85,85,.16); }
 /* A versão de 7 dias: o mesmo botão, sem o dourado cheio, para a de 30
    continuar a ser a principal. */
 .mkt-catalog-buy.curto { border-color:rgba(201,168,76,.45); background:transparent; font-weight:600; }

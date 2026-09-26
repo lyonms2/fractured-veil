@@ -68,11 +68,20 @@ function estadoDasAccoes() {
   const aDormir = (typeof sleeping !== 'undefined') && sleeping;
   const v = vitals, m = gs.moedas;
 
+  /* O CUSTO LEVA SEMPRE O SINAL DE MENOS.
+
+     Estava de três jeitos: o BANHO mostrava "−15 ⚡" quando dava e
+     "15 ⚡" quando faltava energia, e o NUTRIR e o MEDICAR nunca punham
+     sinal nenhum. São todos a mesma coisa — o que esta ação tira de
+     você — e escrevem-se do mesmo jeito. O vermelho do `em-falta` é que
+     diz que não dá; o número diz sempre quanto custa. */
+  const custo = (n, moeda) => `−${n} ${moeda}`;
+
   return {
     feed:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
          : v.fome >= 100 ? { pode:false, sub:t('act.sub.cheio') }
-         : m < CUSTO_NUTRIR ? { pode:false, sub:`${CUSTO_NUTRIR} 🪙`, semMoedas:true }
-         : { pode:true, sub:`${CUSTO_NUTRIR} 🪙` },
+         : m < CUSTO_NUTRIR ? { pode:false, sub:custo(CUSTO_NUTRIR, '🪙'), semMoedas:true }
+         : { pode:true, sub:custo(CUSTO_NUTRIR, '🪙') },
 
     play:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
          : v.fome < 10 ? { pode:false, sub:t('act.sub.com_fome') }
@@ -86,13 +95,13 @@ function estadoDasAccoes() {
 
     heal:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
          : (v.saude >= 100 && !sick) ? { pode:false, sub:t('act.sub.saudavel') }
-         : m < CUSTO_MEDICAR ? { pode:false, sub:`${CUSTO_MEDICAR} 🪙`, semMoedas:true }
-         : { pode:true, sub:`${CUSTO_MEDICAR} 🪙` },
+         : m < CUSTO_MEDICAR ? { pode:false, sub:custo(CUSTO_MEDICAR, '🪙'), semMoedas:true }
+         : { pode:true, sub:custo(CUSTO_MEDICAR, '🪙') },
 
     bath:  aDormir ? { pode:false, sub:t('act.sub.dormindo') }
-         : v.energia < BANHO_ENERGIA ? { pode:false, sub:`${BANHO_ENERGIA} ⚡`, semForca:true }
+         : v.energia < BANHO_ENERGIA ? { pode:false, sub:custo(BANHO_ENERGIA, '⚡'), semForca:true }
          : v.higiene >= 100 ? { pode:false, sub:t('act.sub.limpo') }
-         : { pode:true, sub:`−${BANHO_ENERGIA} ⚡` },
+         : { pode:true, sub:custo(BANHO_ENERGIA, '⚡') },
   };
 }
 

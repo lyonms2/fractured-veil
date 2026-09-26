@@ -6,6 +6,8 @@ window.registerStrings(
   // ── PORTUGUÊS ──────────────────────────────────────────────────
   {
     'mkt.btn.no_coins':     '⚠ SEM MOEDAS',
+    // Quanto FALTA, que é a conta que o jogador fazia de cabeça.
+    'mkt.btn.faltam':       '⚠ FALTAM {n} 🪙',
     'mkt.btn.no_diseases':  '✦ SEM DOENÇAS',
     'mkt.btn.use_now':      '✦ USAR AGORA',
     'mkt.btn.buy':          '✦ ADQUIRIR',
@@ -26,6 +28,8 @@ window.registerStrings(
   // ── ENGLISH ────────────────────────────────────────────────────
   {
     'mkt.btn.no_coins':     '⚠ NO COINS',
+    // How much is MISSING — the sum the player had to do in their head.
+    'mkt.btn.faltam':       '⚠ {n} 🪙 SHORT',
     'mkt.btn.no_diseases':  '✦ NO DISEASES',
     'mkt.btn.use_now':      '✦ USE NOW',
     'mkt.btn.buy':          '✦ ACQUIRE',

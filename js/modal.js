@@ -201,6 +201,47 @@ const ModalManager = {
   }
 };
 
+/* ══════════════════════════════════════════════════════════════════
+   CLICAR NO ESCURO FECHA
+
+   Só o ✕ fechava, e o escuro em volta não fazia nada — que é o
+   contrário do que a mão espera de uma janela que se abriu por cima.
+
+   Só os PAINÉIS (mochila, loja, chocadeira, mercado): são de olhar, e
+   fechá-los sem querer não custa nada. As caixas em que se ESCREVE — o
+   batizado, o nome de quem joga — ficam de fora de propósito: perder o
+   que se digitou por um clique ao lado é outra história.
+
+   Fecha pela porta de cada um, e não pelo ModalManager direto, porque
+   algumas dessas portas fazem mais do que fechar (o ✕ da loja volta
+   para a mochila — ver js/coinshop.js).
+
+   O mousedown tem de ser no MESMO escuro: quem começa a arrastar dentro
+   do cartão e solta fora — a selecionar texto — gera um clique cujo
+   alvo é o pai comum, e a janela fechava-se na cara de quem só queria
+   copiar uma linha.
+   ══════════════════════════════════════════════════════════════════ */
+const _PORTA_DE_SAIDA = {
+  itemInvModal:     'closeItemInventory',
+  coinShopModal:    'closeCoinShop',
+  eggInvModal:      'closeEggInventory',
+  marketplaceModal: 'closeMarketplaceModal',
+};
+
+let _escuroApertado = null;
+document.addEventListener('mousedown', (e) => { _escuroApertado = e.target; }, true);
+document.addEventListener('click', (e) => {
+  const alvo = e.target;
+  if (alvo !== _escuroApertado) return;
+  _escuroApertado = null;
+  if (!alvo || !alvo.classList || !alvo.classList.contains('mini-modal')) return;
+  if (!alvo.classList.contains('open')) return;
+  if (!ModalManager.PANEL_MODALS.includes(alvo.id)) return;
+  const porta = _PORTA_DE_SAIDA[alvo.id];
+  if (porta && typeof window[porta] === 'function') window[porta]();
+  else ModalManager.close(alvo.id);
+});
+
 /* As pastilhas das dificuldades. Servem o seletor de jogos e a batalha,
    que usam a MESMA dificuldade: escolher o Mestre num lugar escolhe no
    outro. */
