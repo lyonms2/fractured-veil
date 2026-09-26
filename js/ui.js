@@ -182,6 +182,14 @@ function updateResourceUI() {
   document.getElementById('resOvos').textContent = eggsInInventory.length;
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
+  /* O saldo de moedas, nos dois lugares onde ele importa desde que a
+     pastilha 🪙 saiu da fila de cima: no botão que leva da mochila
+     para a loja, e no cabeçalho da própria loja. Escrever nos dois é de
+     graça e evita a pergunta "e onde vejo quanto tenho?". */
+  for (const id of ['invSaldoMoedas', 'mktSaldoMoedas']) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = gs.moedas;
+  }
   atualizarMochila();
   // Era a pastilha do 🧬 e contava slots ocupados de disponíveis. O 🧬
   // saiu da fila de cima — a colônia mostra os avatares todos — e o

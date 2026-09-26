@@ -8,16 +8,42 @@ function canAct() {
   return true;
 }
 
+/* ── DE ONDE A MOEDA VOA ──
+
+   Voava sempre da pastilha 🪙 da fila de cima. Ela saiu em
+   26/09/2026, e um elemento escondido não tem lugar na tela: a
+   animação continuava sendo criada e ninguém a via.
+
+   Agora procura o saldo que estiver à vista — o do cabeçalho da loja,
+   o do botão da mochila — e, se nenhum estiver, voa da fila de ações
+   do avatar, que é de onde o gasto costuma vir (NUTRIR, MEDICAR). */
+function _ancoraDaMoeda() {
+  for (const id of ['mktSaldoMoedas', 'invSaldoMoedas', 'resMonedas']) {
+    const el = document.getElementById(id);
+    // getClientRects vazio = escondido. Não adianta voar de lá.
+    if (el && el.getClientRects().length) {
+      return { el: el.closest('.res') || el.parentElement, pisca: true };
+    }
+  }
+  /* A fila de ações serve de púlpito, mas não pisca: o .res-flash
+     cresce o elemento em 15%, e uma fila inteira de seis botões dando
+     um pulo por causa de cinco moedas é barulho, não é aviso. */
+  const fila = document.getElementById('actionBtns');
+  return fila ? { el: fila, pisca: false } : null;
+}
+
 // ── COIN SPEND / EARN ANIMATION ──
 function showCoinAnim(amount, isSpend = true) {
-  const el = document.getElementById('resMonedas');
-  if(!el) return;
-  el.parentElement.classList.remove('res-flash');
-  void el.parentElement.offsetWidth;
-  el.parentElement.classList.add('res-flash');
-  setTimeout(() => el.parentElement.classList.remove('res-flash'), 500);
+  const alvo = _ancoraDaMoeda();
+  if(!alvo) return;
+  const container = alvo.el;
+  if (alvo.pisca) {
+    container.classList.remove('res-flash');
+    void container.offsetWidth;
+    container.classList.add('res-flash');
+    setTimeout(() => container.classList.remove('res-flash'), 500);
+  }
 
-  const container = el.closest('.res') || el.parentElement;
   container.style.position = 'relative';
   const fly = document.createElement('div');
   fly.className   = isSpend ? 'coin-spend' : 'coin-earn';
