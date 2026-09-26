@@ -175,6 +175,14 @@ service cloud.firestore {
                  subiam a tabela um ao outro. Quem conta é o fim da
                  luta, no servidor. */
               'rankPares',
+              /* O SELO DA TEMPORADA e o que ele pagou (js/temporada.js).
+                 É o direito ao prêmio: escrevê-lo seria entrar no bolo
+                 sem pagar. Quem o grava é a acao 'selo' do api/pvp.js,
+                 na mesma transação que debita os cristais. */
+              'selos',
+              /* E O QUE SE GANHOU em cada temporada fechada. É dinheiro
+                 recebido: o cliente vê, e não escreve. */
+              'premios',
               /* O CÓDIGO DE AMIGO — as seis letras que se passam a
                  alguém para ele nos adicionar.
 
@@ -295,6 +303,22 @@ service cloud.firestore {
        O cliente nunca precisou disso — lista e tira da lista sempre pela
        API (js/avatars-market.js). O Admin SDK não passa pelas regras,
        então os endpoints continuam gravando. */
+    /* ── AS TEMPORADAS ──
+
+       O bolo do mês, quem comprou selo e, depois do fecho, a lista de
+       quem recebeu o quê. Toda a gente lê — é o prêmio anunciado, e um
+       prêmio que não se pode conferir não vale nada — e ninguém
+       escreve: quem escreve é o servidor (api/pvp.js), que cobra o selo
+       e fecha o mês. */
+    match /temporadas/{temporada} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
+    match /temporadas/{temporada}/selos/{uid} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
+
     match /avatarMarket/{listingId} {
       allow read: if request.auth != null;
       allow create, update, delete: if false;

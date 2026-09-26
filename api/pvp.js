@@ -51,6 +51,8 @@ require('./_genetica.js');
 const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
 const R = require('../js/pvp-regras.js');
 const RK = require('../js/pvp-rank.js');   // os pontos da temporada
+const TP = require('../js/temporada.js');  // o selo e o prémio da temporada
+const CRIS = require('./_cristais.js');    // os dois baldes de cristais
 
 const DB_URL = process.env.FIREBASE_DATABASE_URL || 'https://fractured-veil-default-rtdb.firebaseio.com';
 
@@ -728,9 +730,194 @@ async function acaoEncerrar(ctx) {
   throw new Recusa(409, 'em_curso');
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   O SELO DA TEMPORADA
+
+   As regras estão no js/temporada.js. Aqui é o dinheiro a mudar de
+   mãos, e por isso tudo passa por transações e nada acredita no
+   cliente: o preço é daqui, a temporada é daqui, e comprar duas vezes
+   não cobra duas vezes.
+
+   O selo vive em dois lugares de propósito: no documento do jogador
+   (para ele ver que tem) e numa subcoleção da temporada (para o fecho
+   saber quem entra na conta sem varrer a base inteira).
+   ══════════════════════════════════════════════════════════════════ */
+async function acaoSelo(ctx) {
+  const { db, uid } = ctx;
+  const agora = Date.now();
+  const temp = RK.pvpTemporada(agora);
+  const jogRef  = db.collection('players').doc(uid);
+  const tempRef = db.collection('temporadas').doc(temp);
+  const seloRef = tempRef.collection('selos').doc(uid);
+
+  const r = await db.runTransaction(async (tx) => {
+    const [jog, tmp, selo] = await Promise.all([tx.get(jogRef), tx.get(tempRef), tx.get(seloRef)]);
+    if (!jog.exists) throw new Recusa(404, 'sem_jogador');
+    // Já tem: sair sem cobrar. Um duplo-clique não compra dois selos.
+    if (selo.exists) return { ja: true, bolo: (tmp.data() || {}).bolo | 0 };
+
+    const d = jog.data();
+    const debito = CRIS.camposDebito(d, TP.SELO_CUSTO);
+    if (!debito) throw new Recusa(400, 'sem_cristais');
+
+    const bolo = ((tmp.exists ? tmp.data().bolo : 0) | 0) + TP.SELO_CUSTO;
+    tx.set(tempRef, { bolo, temporada: temp, atualizada: agora }, { merge: true });
+    tx.set(seloRef, { em: agora });
+    tx.update(jogRef, Object.assign({ [`selos.${temp}`]: { em: agora, pago: TP.SELO_CUSTO } }, debito));
+    return { ja: false, bolo };
+  });
+  return { temporada: temp, bolo: r.bolo, ja: r.ja, custo: TP.SELO_CUSTO };
+}
+
+/* ── O ESTADO DA TEMPORADA, PARA A TELA ──
+   E, de boleia, o fecho da anterior: não há tarefas agendadas aqui (o
+   vercel.json saiu com o payout semanal), então quem fecha o mês é a
+   primeira pessoa que abre o Salão depois da virada. */
+async function acaoTemporada(ctx) {
+  const { db, rtdb, uid } = ctx;
+  const agora = Date.now();
+  const temp = RK.pvpTemporada(agora);
+
+  try { await fecharPendentes(db, rtdb, temp); }
+  catch (e) { console.error('[temporada fecho]', e && e.message); }
+
+  const [tmp, selo, jog] = await Promise.all([
+    db.collection('temporadas').doc(temp).get(),
+    db.collection('temporadas').doc(temp).collection('selos').doc(uid).get(),
+    db.collection('players').doc(uid).get(),
+  ]);
+  const d = jog.exists ? jog.data() : {};
+  const t = tmp.exists ? tmp.data() : {};
+  return {
+    temporada: temp,
+    bolo: (t.bolo | 0) + (t.acumulado | 0),
+    tenhoSelo: selo.exists,
+    custo: TP.SELO_CUSTO,
+    premiados: TP.SELO_PREMIADOS,
+    minimo: TP.SELO_MIN_LUTAS,
+    // O que este jogador ganhou nas temporadas que já fecharam.
+    premios: d.premios || {},
+  };
+}
+
+/* ── FECHAR O QUE FICOU PARA TRÁS ──
+
+   Olha para a temporada ANTERIOR. Se ela ainda não foi fechada, calcula
+   os prémios e grava o resultado; depois paga um a um. As duas metades
+   são idempotentes de propósito:
+
+   · o cálculo só acontece se `fechada` for falso, dentro de uma
+     transação — dois jogadores a abrir o Salão no mesmo segundo não
+     fecham o mês duas vezes;
+   · o pagamento de cada um só acontece se ele ainda não tiver o prémio
+     dessa temporada no documento dele. Se o processo morrer a meio, a
+     próxima abertura do Salão continua de onde parou.
+
+   É por isso que se grava a lista ANTES de pagar: uma lista sem
+   pagamento resolve-se sozinha, um pagamento sem lista pagaria duas
+   vezes. */
+async function fecharPendentes(db, rtdb, tempAtual) {
+  const anterior = RK.pvpTemporada(_mesAnterior(tempAtual));
+  const ref = db.collection('temporadas').doc(anterior);
+  const snap = await ref.get();
+  if (!snap.exists) return null;           // ninguém comprou selo nesse mês
+  const dados = snap.data() || {};
+
+  let pagamentos = dados.pagamentos;
+  if (!dados.fechada) {
+    pagamentos = await _calcularPremios(db, rtdb, anterior, dados);
+    const total = pagamentos.reduce((s, p) => s + p.valor, 0);
+    const ok = await db.runTransaction(async (tx) => {
+      const agora = await tx.get(ref);
+      if ((agora.data() || {}).fechada) return false;   // outro chegou primeiro
+      tx.update(ref, { fechada: true, fechadaEm: Date.now(), pagamentos, pago: total,
+                       acumulado: Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0)) - total) });
+      return true;
+    });
+    if (!ok) pagamentos = ((await ref.get()).data() || {}).pagamentos || [];
+    else {
+      /* O que sobrou vai para a temporada corrente. Escrito depois do
+         fecho e de uma vez: se falhar, perde-se a sobra, e sobra é
+         arredondamento — nunca o prémio de ninguém. */
+      const sobra = Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0)) - total);
+      if (sobra > 0) {
+        await db.collection('temporadas').doc(tempAtual)
+          .set({ acumulado: FieldValue.increment(sobra) }, { merge: true }).catch(() => {});
+      }
+    }
+  }
+  await _pagarPendentes(db, anterior, pagamentos || []);
+  return pagamentos;
+}
+
+// "2026-01" → o instante de dezembro de 2025.
+function _mesAnterior(temp) {
+  const [ano, mes] = String(temp).split('-').map(Number);
+  return Date.UTC(ano, (mes | 0) - 2, 15);
+}
+
+/* Quem tem selo, onde jogou e como ficou. O rank está no Realtime
+   Database (por divisão) e os selos no Firestore: é aqui que os dois se
+   encontram.
+
+   Um jogador que mudou de divisão no meio do mês concorre naquela onde
+   jogou MAIS partidas — uma só, senão receberia duas vezes pelo mesmo
+   selo. */
+async function _calcularPremios(db, rtdb, temp, dados) {
+  const selos = await db.collection('temporadas').doc(temp).collection('selos').get();
+  const comSelo = new Set();
+  selos.forEach(s => comSelo.add(s.id));
+  if (!comSelo.size) return [];
+
+  const porDivisao = {};
+  const melhor = {};   // uid -> { divisao, lutas }
+  for (const div of Object.keys(TP.SELO_PESOS)) {
+    const tabela = (await rtdb.ref(`pvp/rank/${temp}/${div}`).once('value')).val() || {};
+    for (const uid of Object.keys(tabela)) {
+      if (!comSelo.has(uid)) continue;
+      const r = tabela[uid] || {};
+      const lutas = (r.v | 0) + (r.d | 0) + (r.e | 0);
+      if (!melhor[uid] || lutas > melhor[uid].lutas) {
+        melhor[uid] = { divisao: div, lutas, linha: { uid, p: r.p | 0, v: r.v | 0, d: r.d | 0, em: r.em | 0, lutas } };
+      }
+    }
+  }
+  for (const uid of Object.keys(melhor)) {
+    const m = melhor[uid];
+    (porDivisao[m.divisao] = porDivisao[m.divisao] || []).push(m.linha);
+  }
+  const bolo = (dados.bolo | 0) + (dados.acumulado | 0);
+  return TP.temporadaPremiar(bolo, porDivisao).pagamentos;
+}
+
+/* Paga quem ainda não recebeu. Cada crédito é uma transação própria e
+   olha para o próprio documento do jogador: se `premios[temp]` já lá
+   está, não paga de novo. */
+async function _pagarPendentes(db, temp, pagamentos) {
+  for (const p of pagamentos) {
+    try {
+      await db.runTransaction(async (tx) => {
+        const ref = db.collection('players').doc(p.uid);
+        const snap = await tx.get(ref);
+        if (!snap.exists) return;
+        const d = snap.data();
+        if ((d.premios || {})[temp]) return;              // já recebeu
+        const cris = (d.cristais || 0) + p.valor;
+        tx.update(ref, {
+          // Com LASTRO: é prémio, tem de poder sair em MATIC.
+          cristais: cris,
+          'gs.cristais': cris,
+          [`premios.${temp}`]: { valor: p.valor, pos: p.pos, divisao: p.divisao, em: Date.now() },
+        });
+      });
+    } catch (e) { console.error('[temporada pagar]', p.uid, e && e.message); }
+  }
+}
+
 const ACOES = {
   entrar: acaoEntrar, procurar: acaoProcurar, sairFila: acaoSairFila,
   convidar: acaoConvidar, aceitar: acaoAceitar, sairSala: acaoSairSala, encerrar: acaoEncerrar,
+  selo: acaoSelo, temporada: acaoTemporada,
 };
 
 module.exports = async function handler(req, res) {

@@ -38,6 +38,9 @@ let _pvpTabDiv   = null;   // a divisão que está aberta
 let _pvpTabDados = {};     // { divisão: [linhas] }, o que já veio
 let _pvpTabErro  = {};     // { divisão: motivo }
 let _pvpTabRelogio = null;
+let _pvpTabTemp  = null;   // { bolo, tenhoSelo, custo, premios }
+let _pvpTabSelos = null;   // quem comprou selo, para a marca na lista
+let _pvpTabOcupado = false;
 
 const PVP_TAB_QUANTOS = 50;
 
@@ -48,6 +51,7 @@ function abrirTabelaPvP(divisao) {
   _pvpTabCabecalho();
   _pvpTabDesenhar();
   _pvpTabCarregar(_pvpTabDiv);
+  _pvpTabCarregarTemporada();
   // O tempo que falta anda sozinho enquanto a página estiver aberta.
   clearInterval(_pvpTabRelogio);
   _pvpTabRelogio = setInterval(() => {
@@ -152,6 +156,61 @@ function _pvpTabCarregar(div) {
     });
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   O SELO E O BOLO
+
+   O servidor diz quanto há no bolo, se eu tenho selo e o que ganhei nas
+   temporadas que já fecharam (acao 'temporada' do api/pvp.js). É também
+   essa chamada que FECHA o mês anterior, se ninguém o tiver fechado
+   ainda — não há tarefa agendada nenhuma aqui, quem fecha é a primeira
+   pessoa que abre esta página depois da virada.
+
+   A lista de quem comprou selo vem do Firestore (é pública de
+   propósito: um prémio que não se pode conferir não vale nada) e serve
+   para a marca ao lado do nome na tabela.
+   ══════════════════════════════════════════════════════════════════ */
+function _pvpTabCarregarTemporada() {
+  if (typeof _pvpChamar !== 'function') return;
+  _pvpChamar('temporada', {})
+    .then(r => { _pvpTabTemp = r; _pvpTabDesenhar(); })
+    .catch(() => {});
+  // Quem tem selo, para a marca. Falhar aqui não tira nada da página.
+  const db = (typeof window !== 'undefined' && window.db) ? window.db : null;
+  const temp = pvpTemporada(typeof pvpAgora === 'function' ? pvpAgora() : Date.now());
+  if (db) {
+    db.collection('temporadas').doc(temp).collection('selos').get()
+      .then(s => { const m = {}; s.forEach(x => { m[x.id] = true; }); _pvpTabSelos = m; _pvpTabDesenhar(); })
+      .catch(() => {});
+  }
+}
+
+async function pvpComprarSelo() {
+  if (_pvpTabOcupado || !_pvpTabTemp || _pvpTabTemp.tenhoSelo) return;
+  _pvpTabOcupado = true; _pvpTabDesenhar();
+  try {
+    const r = await _pvpChamar('selo', {});
+    _pvpTabTemp = Object.assign({}, _pvpTabTemp, { bolo: r.bolo, tenhoSelo: true });
+    /* O cristal saiu da conta no servidor; aqui tira-se do que está na
+       tela, para o saldo não ficar a mentir até ao próximo carregamento.
+       Gasta-se bónus antes do lastro, como o servidor faz. */
+    if (!r.ja && typeof gs !== 'undefined') {
+      const doBonus = Math.min(gs.cristaisBonus || 0, r.custo);
+      gs.cristaisBonus = +((gs.cristaisBonus || 0) - doBonus).toFixed(2);
+      gs.cristais = +((gs.cristais || 0) - (r.custo - doBonus)).toFixed(2);
+      if (typeof updateResourceUI === 'function') updateResourceUI();
+    }
+    if (typeof showToast === 'function') showToast(t('pvp.selo.comprado'), 'good');
+    _pvpTabSelos = null;
+    _pvpTabCarregarTemporada();
+  } catch (e) {
+    const cod = (e && e.codigo) || '';
+    if (typeof showToast === 'function') {
+      showToast(cod === 'sem_cristais' ? t('pvp.selo.sem_cristais') : t('pvp.erro.interno'), 'err');
+    }
+  } finally { _pvpTabOcupado = false; _pvpTabDesenhar(); }
+}
+window.pvpComprarSelo = pvpComprarSelo;
+
 // ── O desenho ───────────────────────────────────────────────────
 function _pvpTabDesenhar() {
   const corpo = document.getElementById('pvpTabelaCorpo');
@@ -227,7 +286,8 @@ function _pvpTabHTML() {
           <div class="pvp-tab-arte">${pos === 1 ? '<span class="pvp-tab-coroa">♛</span>' : ''}${_pvpTabAvatarSVG(r)}</div>
           <figcaption>
             <span class="pvp-tab-medalha">${esc(_pvpTabOrdinal(pos))}</span>
-            <b>${esc(r.nome || t('id.sem_nome'))}</b>
+            <b>${esc(r.nome || t('id.sem_nome'))}${
+              (_pvpTabSelos && _pvpTabSelos[r.uid]) ? ` <i class="pvp-tab-marca">✦</i>` : ''}</b>
             <span class="pvp-tab-pts">${r.p | 0}</span>
             <small>${esc(_pvpTabVD(r))}</small>
           </figcaption>
@@ -268,7 +328,8 @@ function _pvpTabHTML() {
       ${resto.map((r, i) => `<li class="${r.uid === meuUid ? 'eu' : ''}" style="--i:${Math.min(i, 12)}">
         <span class="pvp-tab-pos">${i + 4}</span>
         <span class="pvp-tab-cara">${_pvpTabAvatarSVG(r)}</span>
-        <span class="pvp-tab-nome">${esc(r.nome || t('id.sem_nome'))}</span>
+        <span class="pvp-tab-nome">${esc(r.nome || t('id.sem_nome'))}${
+          (_pvpTabSelos && _pvpTabSelos[r.uid]) ? ` <i class="pvp-tab-marca" title="${esc(t('pvp.selo.marca'))}">✦</i>` : ''}</span>
         <span class="pvp-tab-poder" title="${esc(t('pvp.tab.poder_dica'))}">${
           r.poder ? esc(t('pvp.tab.poder', { p: r.poder | 0 })) : ''}</span>
         <span class="pvp-tab-vd">${esc(_pvpTabVD(r))}</span>
@@ -277,7 +338,7 @@ function _pvpTabHTML() {
     </ol>` : '';
 
   const rodape = lista.length === 1 ? t('pvp.tab.rodape_um') : t('pvp.tab.rodape', { n: lista.length });
-  return abas + podioHTML + meuHTML + listaHTML +
+  return abas + _pvpTabPremioHTML() + podioHTML + meuHTML + listaHTML +
     `<div class="pvp-tab-rodape">${esc(rodape)}</div>`;
 }
 
@@ -291,10 +352,31 @@ function _pvpTabProcurar() {
 }
 window._pvpTabProcurar = _pvpTabProcurar;
 
-/* O lugar do prémio da temporada. Fica vazio até haver prémio de
-   verdade, vindo do servidor: uma página de rankings que promete
-   cristais que ninguém paga vale menos do que não prometer nada. */
-function _pvpTabPremioHTML(premio) {
-  if (!premio) return '';
-  return `<div class="pvp-tab-premio">${esc(premio)}</div>`;
+/* A FAIXA DO PRÉMIO. Era o lugar reservado desde o primeiro dia desta
+   página, com a nota de que ficaria vazio até haver prémio de verdade.
+   Há. */
+function _pvpTabPremioHTML() {
+  const s = _pvpTabTemp;
+  if (!s) return '';
+  const ganhou = _pvpTabUltimoPremio(s.premios);
+  return `<div class="pvp-tab-premio">
+      <div class="pvp-tab-bolo">
+        <b>${(s.bolo | 0)} 💎</b>
+        <small>${esc(t('pvp.selo.bolo'))}</small>
+      </div>
+      ${s.tenhoSelo
+        ? `<div class="pvp-tab-selo-tem">✦ ${esc(t('pvp.selo.tenho', { n: Math.round((s.premiados || 0.35) * 100) }))}</div>`
+        : `<button class="pvp-tab-entrar" ${_pvpTabOcupado ? 'disabled' : ''} onclick="pvpComprarSelo()">
+             ${esc(t('pvp.selo.comprar', { c: s.custo | 0 }))}</button>
+           <small class="pvp-tab-selo-nota">${esc(t('pvp.selo.nota', {
+             n: Math.round((s.premiados || 0.35) * 100), min: s.minimo | 0 }))}</small>`}
+      ${ganhou ? `<div class="pvp-tab-ganhou">${esc(t('pvp.selo.ganhou', {
+        v: ganhou.valor, pos: _pvpTabOrdinal(ganhou.pos), div: t('pvp.div.' + ganhou.divisao) }))}</div>` : ''}
+    </div>`;
+}
+
+// O prémio mais recente que este jogador recebeu, se houver.
+function _pvpTabUltimoPremio(premios) {
+  const ks = Object.keys(premios || {}).sort();
+  return ks.length ? premios[ks[ks.length - 1]] : null;
 }
