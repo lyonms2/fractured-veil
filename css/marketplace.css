@@ -340,7 +340,10 @@
 .referral-player-info{flex:1;min-width:0;}
 .referral-player-name{font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .referral-player-uid{font-family:monospace;font-size:0.46875rem;color:var(--muted);margin-top:0.0625rem;}
-.referral-player-active{font-size:0.5rem;color:var(--green2);white-space:nowrap;}
+.referral-player-active{font-size:0.5rem;color:var(--green2);white-space:nowrap;cursor:help;}
+/* O aviso de que a rede de convites desconta do saque. Vermelho fraco:
+   e um aviso, nao um erro - a pessoa nao fez nada de errado. */
+.resgate-rede{font-size:0.5rem;color:#e0a555;text-align:center;margin-top:0.25rem;line-height:1.4;}
 .referral-player-inactive{font-size:0.5rem;color:var(--muted);white-space:nowrap;}
 .referral-footer-note{font-size:0.5rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);padding-top:0.75rem;margin-top:1rem;}
 .referral-footer-note b{color:var(--text2);}

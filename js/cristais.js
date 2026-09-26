@@ -141,6 +141,69 @@ function renderCrystals() {
   _atualizarTotalCompra();
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   QUANTO A REDE DE CONVITES TIRA DESTE SAQUE
+
+   Quem foi convidado paga a rede de quem o convidou: 5% ao primeiro, 2%
+   ao segundo e 1% ao terceiro, e isso sai do valor sacado — não é criado
+   do nada (api/resgatar.js). Sacar 100 💎 com a cadeia cheia manda 92
+   💎 para o contrato, e 101 💎 saem do saldo com a taxa do dev.
+
+   A página de Convites explicava isto do lado de quem GANHA. Do lado de
+   quem paga, esta tela só falava do 1% do dev — e o jogador descobria o
+   resto olhando o MATIC que chegou. Agora está dito antes do clique.
+
+   A conta é a mesma do servidor, incluindo o `floor` por nível: um saque
+   pequeno pode dar zero a um dos níveis, e prometer um décimo que não vai
+   ser cobrado era voltar ao mesmo problema pelo outro lado. */
+let _refDoSaque = 0;
+
+function _pctDaRede(chain) {
+  if (!chain) return 0;
+  let pct = 0;
+  for (const nivel of ['l1', 'l2', 'l3']) if (chain[nivel]) pct += REFERRAL_PCT[nivel];
+  return pct;
+}
+
+// O que a rede leva de um saque de `gems`, contado como o servidor conta.
+function _gemsDaRede(gems, chain) {
+  if (!gems || !_refDoSaque) return 0;
+  let total = 0;
+  for (const nivel of ['l1', 'l2', 'l3']) {
+    if (!_refChainCache || !_refChainCache[nivel]) continue;
+    const parte = Math.floor(gems * (REFERRAL_PCT[nivel] / 100));
+    if (parte >= 1) total += parte;
+  }
+  return total;
+}
+
+let _refChainCache = null;
+
+function _mostrarDescontoDaRede() {
+  const el = document.getElementById('resgateRede');
+  if (!el) return;
+  if (!_refDoSaque) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.textContent = t('mkt.crystals.rede_nota', { pct: _refDoSaque });
+}
+
+/* O que se recebe de verdade, enquanto se escreve. A tela da compra já
+   fazia isto ("50 💎 = 5 MATIC"); a do resgate, que tem duas deduções
+   pelo caminho, não dizia nada. */
+function _atualizarTotalResgate() {
+  const alvo = document.getElementById('resgateTotal');
+  const input = document.getElementById('resgateGems');
+  if (!alvo || !input) return;
+  const gems = Number(input.value);
+  if (!Number.isFinite(gems) || gems <= 0) { alvo.textContent = ''; return; }
+  const daRede = _gemsDaRede(gems, _refChainCache);
+  const taxa   = Math.round(gems * 0.01 * 100) / 100;
+  const custo  = Math.round((gems + taxa) * 100) / 100;
+  alvo.textContent = daRede > 0
+    ? t('mkt.crystals.resgate_conta_rede', { matic: _maticDeGems(gems - daRede), rede: daRede, custo })
+    : t('mkt.crystals.resgate_conta',      { matic: _maticDeGems(gems),          custo });
+}
+
 // A quantidade digitada, ou null se não for um inteiro dentro dos limites.
 function _gemsDaCompra() {
   const v = Number(document.getElementById('compraGems')?.value);
@@ -210,7 +273,13 @@ async function renderLimiteResgate() {
     const log  = snap.data()?.resgateLog;
     const hoje = new Date().toISOString().slice(0, 10);
     if (log && log.data === hoje) usadoHoje = log.total || 0;
+    /* A CADEIA DE QUEM ME CONVIDOU, que sai do MEU saque. Lida aqui
+       porque este é o mesmo documento que já se foi buscar. */
+    _refChainCache = snap.data()?.referralChain || null;
+    _refDoSaque = _pctDaRede(_refChainCache);
   } catch (e) { /* fica em zero: mostra o tecto cheio */ }
+  _mostrarDescontoDaRede();
+  _atualizarTotalResgate();
 
   const resta = Math.max(0, RESGATE_MAX_DIA - usadoHoje);
   el.textContent = t('mkt.crystals.limit_left', { resta, max: RESGATE_MAX_DIA });
@@ -547,6 +616,12 @@ async function resgatar() {
 // ═══════════════════════════════════════════════════════════════════
 const REFERRAL_PCT = { l1: 5, l2: 2, l3: 1 };
 
+/* Quantos dias sem aparecer até um convidado deixar de contar como
+   ativo. Uma semana: quem joga isto abre o jogo quase todo dia — os
+   bichos têm fome —, portanto sete dias de silêncio já dizem alguma
+   coisa, e não castigam quem passou um fim de semana fora. */
+const REF_ATIVO_DIAS = 7;
+
 async function renderReferral() {
   const sec = document.getElementById('sec-referral');
   if(!sec || !walletAddress) return;
@@ -654,26 +729,50 @@ function _referralLevelHtml(snap, lvl, pct, label) {
     const d       = doc.data();
     const slotIdx = d.gs?.activeSlotIdx ?? d.activeSlotIdx ?? 0;
     const slot    = (d.avatarSlots || [])[slotIdx];
-    const nome    = slot ? nomeCurto(slot) : t('ref.no_avatar');
-    const rarity  = slot?.raridade || '';
+
+    /* ── QUEM ESTÁ NESTE CARTÃO É UMA PESSOA ──
+
+       Mostrava o nome do AVATAR ativo dela, que muda quando ela troca de
+       bicho — e a lista é de gente convidada, não de bichos. Desde
+       26/09/2026 quem joga tem nome, e ele não se repete no jogo
+       (js/nomes.js): é ele que identifica. O avatar desce para a linha
+       de baixo, e o uid só aparece para quem ainda não tem nome. */
+    const nomeDaPessoa = d.nomeJogador || '';
+    const nomeDoBicho  = slot ? nomeCurto(slot) : t('ref.no_avatar');
+    const shortUid     = doc.id.slice(0, 5) + '...' + doc.id.slice(-4);
+
+    /* A raridade sai do NÍVEL, como em todo o resto do jogo
+       (fuRaridadeDoNivel). A do slot é escrita pelo cliente e envelhece:
+       um convidado que chegou a Lendário continuava "Comum" aqui. */
+    const rarity  = slot
+      ? ((typeof fuRaridadeDoNivel === 'function')
+          ? fuRaridadeDoNivel(slot.nivel || 1) : (slot.raridade || 'Comum'))
+      : '';
     const rColor  = rarity === 'Lendário' ? 'var(--gold)'
                   : rarity === 'Raro'     ? 'var(--gem2)'
                   : 'var(--muted)';
-    const cristais = d.gs?.cristais ?? d.cristais ?? 0;
-    const active   = cristais > 0;
-    const shortUid = doc.id.slice(0, 5) + '...' + doc.id.slice(-4);
+
+    /* ── ATIVO É QUEM JOGOU, NÃO QUEM TEM SALDO ──
+
+       A conta era `cristais > 0`, que não é atividade nenhuma: quem joga
+       todo dia e nunca comprou cristais aparecia inativo, e quem comprou
+       uma vez e sumiu há meses aparecia ativo. O `lastSeen` é gravado a
+       cada save, e é a medida honesta. */
+    const visto  = d.lastSeen || 0;
+    const active = visto > 0 && (Date.now() - visto) < REF_ATIVO_DIAS * 86400000;
+    const dica   = esc(t('ref.ativo_dica', { n: REF_ATIVO_DIAS }));
 
     return `
       <div class="referral-player-card">
         <div class="referral-player-info">
-          <div class="referral-player-name">${esc(nome)}</div>
-          <div class="referral-player-uid">${shortUid}</div>
+          <div class="referral-player-name">${esc(nomeDaPessoa || t('ref.sem_nome'))}</div>
+          <div class="referral-player-uid">${nomeDaPessoa ? esc(nomeDoBicho) : shortUid}</div>
         </div>
         <div style="font-size:0.53125rem;color:${rColor};text-align:right;white-space:nowrap;">
           ${esc(rarity || 'Comum')}<br>
           ${active
-            ? `<span class="referral-player-active">${t('ref.active')}</span>`
-            : `<span class="referral-player-inactive">${t('ref.inactive')}</span>`}
+            ? `<span class="referral-player-active" title="${dica}">${t('ref.active')}</span>`
+            : `<span class="referral-player-inactive" title="${dica}">${t('ref.inactive')}</span>`}
         </div>
       </div>`;
   }).join('');

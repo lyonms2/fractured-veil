@@ -27,6 +27,8 @@ window.registerStrings({
   'ref.players_one':    '{n} jogador',
   'ref.players_many':   '{n} jogadores',
   'ref.no_avatar':      'Sem avatar',
+  'ref.sem_nome':       'Viajante sem nome',
+  'ref.ativo_dica':     'Ativo = apareceu no jogo nos últimos {n} dias',
   'ref.active':         '● Ativo',
   'ref.inactive':       '○ Inativo',
   'ref.how_title':      'Como funciona:',
@@ -205,6 +207,10 @@ window.registerStrings({
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
   'mkt.crystals.limit_left':  'Você pode resgatar {resta} de {max} 💎 hoje',
+  // O que a rede de quem me convidou leva do MEU saque (api/resgatar.js).
+  'mkt.crystals.rede_nota':   '⚠ Quem convidou você recebe {pct}% de cada saque seu — já descontado abaixo.',
+  'mkt.crystals.resgate_conta':      'Você recebe {matic} MATIC · saem {custo} 💎 do saldo',
+  'mkt.crystals.resgate_conta_rede': 'Você recebe {matic} MATIC · {rede} 💎 para quem convidou você · saem {custo} 💎 do saldo',
 
   // ── MetaMask CTA ──────────────────────────────────────────────────
   'mkt.metamask.title':       '🦊 MetaMask necessária',
@@ -354,6 +360,8 @@ window.registerStrings({
   'ref.players_one':    '{n} player',
   'ref.players_many':   '{n} players',
   'ref.no_avatar':      'No avatar',
+  'ref.sem_nome':       'Nameless traveler',
+  'ref.ativo_dica':     'Active = seen in game within the last {n} days',
   'ref.active':         '● Active',
   'ref.inactive':       '○ Inactive',
   'ref.how_title':      'How it works:',
@@ -523,6 +531,9 @@ window.registerStrings({
 
   // Package names
   'mkt.crystals.limit_left':  'You can redeem {resta} of {max} 💎 today',
+  'mkt.crystals.rede_nota':   '⚠ Whoever invited you earns {pct}% of every withdrawal — already deducted below.',
+  'mkt.crystals.resgate_conta':      'You receive {matic} MATIC · {custo} 💎 leave your balance',
+  'mkt.crystals.resgate_conta_rede': 'You receive {matic} MATIC · {rede} 💎 to whoever invited you · {custo} 💎 leave your balance',
 
   // MetaMask
   'mkt.metamask.title':       '🦊 MetaMask required',
