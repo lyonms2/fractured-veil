@@ -12,6 +12,9 @@ const MAX_VISITAS_GLOBAL = 10;
    então cada amigo dá três interações por janela (o TIPO_VITAL do
    api/amigos.js). É isto que faz o teto de quem tem poucos amigos. */
 const ACOES_POR_AMIGO    = 3;
+/* O teto de amigos, só para a tela o dizer. Quem o cobra é o servidor
+   (MAX_AMIGOS, em api/amigos.js) — se mudar lá, muda aqui. */
+const MAX_AMIGOS_TELA    = 50;
 
 let _amigosData    = null; // { amigos, pedidos, visitasLog }
 let _visitaAtual   = null; // perfil do amigo sendo visitado
@@ -118,7 +121,7 @@ function _renderAmigos() {
     </div>` : ''}
 
     <!-- Lista de amigos -->
-    <div class="amigos-section-title">${t('amigos.friends_count', {n: numAmigos})}</div>
+    <div class="amigos-section-title">${t('amigos.friends_count', {n: numAmigos, max: MAX_AMIGOS_TELA})}</div>
     ${numAmigos === 0
       ? `<div class="amigos-empty">${t('amigos.empty')}</div>`
       : `<div class="amigos-lista">
@@ -214,8 +217,11 @@ window.amigoAdicionarPorCodigo = amigoAdicionarPorCodigo;
    resultados para listar — o pedido faz-se pelo código, no
    amigoAdicionarPorCodigo, aqui em cima.
 
-   A razão está escrita no api/amigos.js: o nome do jogador não é único
-   e é escrito pelo cliente. */
+   A razão está escrita no api/amigos.js. Dizia aqui "o nome não é
+   único e é escrito pelo cliente", e desde 26/09/2026 nenhuma das duas
+   coisas é verdade. A razão que fica é a que sempre foi a melhor: um
+   código não se procura, passa-se — e por isso não abre a lista de
+   jogadores a quem quiser folheá-la. */
 
 // ── Aceitar pedido ───────────────────────────────────────────
 async function amigoAceitar(alvoUid) {
@@ -227,7 +233,13 @@ async function amigoAceitar(alvoUid) {
       body:    JSON.stringify({ acao: 'aceitar', idToken, alvoUid }),
     });
     const json = await resp.json();
-    if(!json.ok) throw new Error(json.erro || 'erro');
+    /* A recusa também fala a língua de quem lê, como no pedir: o `erro`
+       do servidor é para o log, e o `motivo` é que tem texto aqui. */
+    if(!json.ok) {
+      const chave = json.motivo ? ('amigos.err.' + json.motivo) : '';
+      const texto = chave ? t(chave) : '';
+      throw new Error((texto && texto !== chave) ? texto : (json.erro || 'erro'));
+    }
     // Atualizar estado local
     if(_amigosData) {
       _amigosData.amigos[alvoUid] = { nome: json.nomeAlvo || '???', ts: Date.now() };
@@ -275,6 +287,20 @@ window.amigoRecusar = amigoRecusar;
 const _amigosAvisados = {};
 function amigosAvisarPedidos(pedidos) {
   const lista = Array.isArray(pedidos) ? pedidos : [];
+
+  /* ── A BOLINHA TAMBÉM VEM DAQUI ──
+
+     Ela só acendia dentro do _carregarAmigos(), que só corre quando se
+     ABRE a tela de amigos — um aviso que só aparece a quem já foi ver
+     não avisa ninguém. Os cartões do canto, logo aqui em baixo, já
+     chegavam sozinhos; a bolinha ficava apagada ao lado deles, o que é
+     pior do que não existir.
+
+     Vem de carona no mesmo ouvinte, portanto sem uma leitura a mais — e
+     ao vivo: um pedido que chegue com o jogo aberto acende-a na hora,
+     e responder a um apaga-a. */
+  _updateAmigosBadge(lista.length);
+  if (_amigosData) _amigosData.pedidos = lista;
   const vivos = new Set(lista.map(p => p && p.de).filter(Boolean));
   let box = document.getElementById('pvpConvites');
   // O que já não está pendente (aceito, recusado, retirado) sai da tela.

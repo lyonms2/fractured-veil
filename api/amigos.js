@@ -84,13 +84,19 @@ async function verificarToken(auth, idToken) {
    O CÓDIGO DE AMIGO
 
    Procurava-se um amigo pelo NOME do jogador. Três coisas erradas
-   nisso, e as três medidas no código: o nome não é único (dois "Leo"
-   ficam indistinguíveis), é escrito pelo cliente (dá para pôr o nome de
-   outra pessoa e aparecer na busca no lugar dela), e a procura é por
-   prefixo e sem acentos ("ardo" não encontra "Leonardo").
+   nisso: o nome não era único (dois "Leo" ficavam indistinguíveis), era
+   escrito pelo cliente (dava para pôr o nome de outra pessoa e aparecer
+   na busca no lugar dela), e a procura é por prefixo e sem acentos
+   ("ardo" não encontra "Leonardo").
 
-   Um código resolve os três de uma vez: é único por construção, é o
-   servidor que o emite, e não se procura — passa-se.
+   As duas primeiras deixaram de ser verdade em 26/09/2026: o nome
+   passou a ser único no jogo inteiro e quem o grava é o servidor (ver
+   js/nomes.js). O código fica — e agora pela razão que sempre foi a
+   melhor das três: NÃO SE PROCURA, passa-se. Uma busca por nome, por
+   mais certa que estivesse, é uma lista de todos os jogadores aberta a
+   quem quiser folheá-la; um código só encontra quem o deu.
+
+   Um código é também único por construção e emitido pelo servidor.
 
    ── O ALFABETO ──
 
@@ -470,7 +476,14 @@ async function handleAceitar(req, res, db, uid, alvoUid) {
     if (!pedido) return res.status(400).json({ erro: 'Pedido não encontrado.' });
 
     if (Object.keys(myData.amigos || {}).length >= MAX_AMIGOS) {
-      return res.status(400).json({ erro: 'Lista de amigos cheia.' });
+      return res.status(400).json({ erro: 'Lista de amigos cheia.', motivo: 'cheia_minha' });
+    }
+    /* E a DELE também. O aceitar escreve nos dois documentos, e só
+       conferia o de quem aceita: quem pedisse com a lista cheia passava
+       o teto assim que o outro carregasse em aceitar. O pedido pode ter
+       ficado meses à espera, e nesse tempo a lista dele encheu. */
+    if (Object.keys(targetData.amigos || {}).length >= MAX_AMIGOS) {
+      return res.status(400).json({ erro: 'A lista de amigos dele está cheia.', motivo: 'cheia_dele' });
     }
 
     // Os nomes das duas PESSOAS. Eram os dos avatares abertos: uma
