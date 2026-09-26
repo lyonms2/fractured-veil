@@ -79,8 +79,24 @@ async function semear() {
     });
     const amigos = {};
     for (const a of c.amigos) amigos[a] = { nome: contas.find(x => x.uid === a).nome, ts: Date.now() };
+    /* O QUE SÓ O SERVIDOR ESCREVE, e que o jogo de verdade já teria
+       escrito a estas alturas:
+
+         niveis            o nível reconhecido (js/niveis.js). Sem ele,
+                           qualquer teste que compare o save com o
+                           registo cai no save e não compara nada.
+         avataresEmitidos  a prova de que o avatar nasceu por aqui, que é
+                           o que o mercado exige para deixar listar.
+                           Guarda a ORIGEM, e origem é sempre 'Comum'. */
+    const niveis = {}, avataresEmitidos = {};
+    for (const s of slots) {
+      niveis[s.id] = { n: s.nivel, em: Date.now(), cred: 12 };
+      avataresEmitidos['s' + String(s.seed)] = 'Comum';
+    }
+
     await db.collection('players').doc(c.uid).set({
       nomeJogador: c.nome, avatarSlots: slots, certidoes, amigos, activeSlotIdx: 0,
+      niveis, avataresEmitidos,
       gs: { moedas: 100, equipa: [0, 1, 2], prologoVisto: true }, lastSeen: Date.now(),
     });
 

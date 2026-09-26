@@ -13,6 +13,10 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
 const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
+/* A ficha e a genética, pelo fuRaridadeDoNivel: a raridade sai do
+   NÍVEL, e a do slot é escrita pelo cliente (o mesmo que o api/amigos.js
+   já fazia na tela de visitar). */
+require('./_genetica.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 /* A taxa de listagem, que vai inteira para a pool. Eram 2 ð — dois
@@ -21,8 +25,19 @@ const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const LIST_COST        = 25;   // 💎 taxa de listagem de avatar
 const PRICE_MIN        = 1;
 const PRICE_MAX        = 10000;
-const BASE_SLOTS       = 3;
-const MAX_SLOTS        = 5;
+/* ── O TAMANHO DA COLÔNIA ──
+
+   Cinco de graça, até dez comprando (js/state.js e js/avatars-market.js,
+   que é o que o jogador vê).
+
+   Estiveram 3 e 5 aqui em cima enquanto o desbloqueio, 300 linhas
+   abaixo, redefinia 5 e 10 para si — e quem usa estes dois é a COMPRA.
+   Com 3, o getUnlockedSlots dizia que uma colônia de três bichos estava
+   cheia, e comprar um avatar respondia "Sem slots disponíveis" a quem
+   tinha cinco lugares vazios. Era a porta principal de entrada de
+   dinheiro no jogo, fechada por dois números velhos. */
+const BASE_SLOTS       = 5;
+const MAX_SLOTS        = 10;
 
 function initAdmin() {
   if (!getApps().length) {
@@ -156,6 +171,12 @@ async function handleListarAvatar(req, res, db, uid) {
       const origemDoAvatar = certidaoDoAvatar.origem || s.raridade;
       if (emitidoComo !== origemDoAvatar) throw new Error('ORIGEM_NAO_CONFERE');
 
+      /* O número que a vitrine vai mostrar, e a raridade que sai dele.
+         Ver as duas notas lá embaixo, onde entram no anúncio. */
+      const nivelReconhecido = NIV.nivelDe(pData.niveis || {}, s.id, s);
+      const raridadeReal = (typeof fuRaridadeDoNivel === 'function')
+        ? fuRaridadeDoNivel(nivelReconhecido) : (s.raridade || 'Comum');
+
       const newCristais = debito.cristais + debito.cristaisBonus;
       slots[slotIdxInt] = { ...s, listed: true };
 
@@ -207,7 +228,18 @@ async function handleListarAvatar(req, res, db, uid) {
            manda é o mapa do vendedor naquela hora (ver mais abaixo). */
         lacos:       (s.id && (pData.lacos || {})[s.id]) || {},
         nome:       s.nome,
-        raridade:   s.raridade,
+        /* ── E A RARIDADE SAI DESSE NÍVEL ──
+
+           A do slot envelhece e mente pelas duas razoões: o cliente
+           escreve-a, e ela deixou de ser um campo para passar a ser uma
+           conta (fuRaridadeDoNivel, em js/ficha-fu.js). O api/amigos.js
+           já tinha sido corrigido neste mesmo ponto; o mercado ficou
+           para trás.
+
+           Não é só a tarja do cartão: o grau da raridade é o que faz
+           aparecer asas e aura no desenho, e o filtro da loja separa por
+           ela. */
+        raridade:   raridadeReal,
         /* ── OS DOIS ÍNDICES VÃO COM A LISTAGEM ──
 
            A `descricao` ia como TEXTO, e a alcunha ia colada dentro do
@@ -229,7 +261,21 @@ async function handleListarAvatar(req, res, db, uid) {
            slot, e trocar o número era escolher os atributos do bicho
            que se está a vender. */
         seed:       certidaoDoAvatar.seed || s.seed || 0,
-        nivel:      s.nivel      || 1,
+        /* ── O NÍVEL DA VITRINE É O QUE O SERVIDOR RECONHECE ──
+
+           Vinha do `s.nivel`, que mora no avatarSlots — o array que o
+           VENDEDOR escreve por inteiro. Anunciar um bicho como nível 40
+           era uma linha no console, e o comprador pagava por ela: o
+           número está no cartão, ordena a lista ("Nível ↓") e é metade
+           do que decide um preço.
+
+           E o jogo já sabia o número certo — tanto que a COMPRA, lá
+           embaixo, entrega ao comprador o nível do mapa `niveis`. A
+           vitrine mostrava um e a entrega fazia outro.
+
+           Sem registo (um avatar de antes do js/niveis.js), vale o do
+           slot: é tudo o que existe sobre ele. */
+        nivel:      nivelReconhecido,
         xp:         s.xp         || 0,
         vinculo:    s.vinculo    || 0,
         diasVida,
@@ -323,8 +369,8 @@ async function handleDeslistarAvatar(req, res, db, uid) {
 
 // ── Desbloquear slot extra (atómico, server-side) ────────────────
 async function handleDesbloquearSlot(_req, res, db, uid) {
-  const BASE_SLOTS  = 5;   // grátis
-  const MAX_SLOTS   = 10;  // os 5 acima do base compram-se com cristais
+  // Os dois vinham daqui, em cópia local, e por isso ninguém reparou que
+  // os do topo do arquivo tinham ficado para trás. São os mesmos.
   /* ── O PREÇO SOBE A CADA SLOT ──
 
      Era 15 ð fixo para os cinco — quinze cêntimos, e o mesmo preço
@@ -555,9 +601,28 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         ? (((sellerData.niveis || {})[listing.id])
            || { n: NIV.nivelLimpo(listing.nivel), em: Date.now(), cred: NIV.NIVEL_BALDE }) : null;
 
+      /* ── O REGISTO QUE O COMPRADOR RECEBE É A ORIGEM ──
+
+         Gravava aqui a RARIDADE do anúncio, e isso trancava o avatar
+         comprado dentro da conta de quem o comprou: para listar, o
+         handleListar exige que o `avataresEmitidos` bata com a ORIGEM da
+         certidão, que é sempre 'Comum' (todo avatar nasce Comum desde
+         que a raridade se conquista por nível). Um avatar comprado
+         acima de Comum ficava com 'Raro' no registo, a origem dizia
+         'Comum', e a revenda morria em ORIGEM_NAO_CONFERE.
+
+         Isto já estava errado antes de a raridade do anúncio passar a
+         sair do nível — só que agora seria a regra e não a exceção,
+         porque todo avatar do nível 12 para cima anuncia-se Raro.
+
+         O que se grava é o que o registo sempre quis dizer: de onde ele
+         veio, e não o que ele chegou a ser. */
+      const origemVendida = (certVendida && certVendida.origem)
+        || (listing.nascimento && listing.nascimento.origem) || 'Comum';
+
       tx.update(buyerRef, Object.assign({
         avatarSlots: novosSlotsComprador,
-        [`avataresEmitidos.s${String(listing.seed || 0)}`]: listing.raridade,
+        [`avataresEmitidos.s${String(listing.seed || 0)}`]: origemVendida,
       }, chaveCert && certVendida ? { [chaveCert]: certVendida } : {},
          chaveDonos ? { [chaveDonos]: cadeiaNova } : {},
          chaveLacos && lacosVendidos && Object.keys(lacosVendidos).length
