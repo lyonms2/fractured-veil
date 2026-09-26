@@ -69,6 +69,21 @@ function _pvpTabCabecalho() {
   const falta = document.getElementById('pvpTabFalta');
   if (temp)  temp.textContent  = _pvpTabNomeDaTemporada();
   if (falta) falta.textContent = _pvpTabFalta();
+  _pvpTabBoloTopo();
+}
+
+/* O bolo vive no cabeçalho, ao lado do relógio da temporada.
+
+   Estava numa faixa por cima do pódio, e o dono do jogo reparou no que
+   isso fazia: a primeira coisa que se via numa página de ranking
+   deixava de ser o ranking. No topo ele está sempre à vista, custa
+   duas palavras de altura e não empurra ninguém. */
+function _pvpTabBoloTopo() {
+  const el = document.getElementById('pvpTabBolo');
+  if (!el) return;
+  const s = _pvpTabTemp;
+  el.textContent = s ? ' · ' + (s.bolo | 0) + ' 💎' : '';
+  el.title = s ? t('pvp.selo.bolo') : '';
 }
 
 function _pvpTabNomeDaTemporada() {
@@ -97,6 +112,8 @@ function _pvpTabVD(r) {
 
 function fecharTabelaPvP() {
   clearInterval(_pvpTabRelogio); _pvpTabRelogio = null;
+  const barra = document.getElementById('pvpTabBarra');
+  if (barra) { barra.hidden = true; barra.innerHTML = ''; }
   if (typeof ModalManager !== 'undefined') ModalManager.close('pvpTabelaModal');
 }
 window.fecharTabelaPvP = fecharTabelaPvP;
@@ -216,6 +233,8 @@ function _pvpTabDesenhar() {
   const corpo = document.getElementById('pvpTabelaCorpo');
   if (!corpo) return;
   corpo.innerHTML = _pvpTabHTML();
+  _pvpTabBoloTopo();
+  _pvpTabBarra();
 }
 
 /* O desenho sai com um tamanho de referência e o CSS estica-o até à
@@ -338,7 +357,7 @@ function _pvpTabHTML() {
     </ol>` : '';
 
   const rodape = lista.length === 1 ? t('pvp.tab.rodape_um') : t('pvp.tab.rodape', { n: lista.length });
-  return abas + _pvpTabPremioHTML() + podioHTML + meuHTML + listaHTML +
+  return abas + podioHTML + meuHTML + listaHTML +
     `<div class="pvp-tab-rodape">${esc(rodape)}</div>`;
 }
 
@@ -352,27 +371,29 @@ function _pvpTabProcurar() {
 }
 window._pvpTabProcurar = _pvpTabProcurar;
 
-/* A FAIXA DO PRÉMIO. Era o lugar reservado desde o primeiro dia desta
-   página, com a nota de que ficaria vazio até haver prémio de verdade.
-   Há. */
-function _pvpTabPremioHTML() {
+/* A BARRA DA DISPUTA, no rodapé do cartão.
+
+   Quem ainda não entrou vê o convite; quem já entrou vê uma linha
+   discreta a confirmar, e a barra pára de gritar. Quem ganhou alguma
+   coisa na temporada passada vê isso primeiro — é notícia, e só
+   aparece uma vez por mês. */
+function _pvpTabBarra() {
+  const el = document.getElementById('pvpTabBarra');
+  if (!el) return;
   const s = _pvpTabTemp;
-  if (!s) return '';
+  if (!s) { el.hidden = true; el.innerHTML = ''; return; }
   const ganhou = _pvpTabUltimoPremio(s.premios);
-  return `<div class="pvp-tab-premio">
-      <div class="pvp-tab-bolo">
-        <b>${(s.bolo | 0)} 💎</b>
-        <small>${esc(t('pvp.selo.bolo'))}</small>
-      </div>
-      ${s.tenhoSelo
-        ? `<div class="pvp-tab-selo-tem">✦ ${esc(t('pvp.selo.tenho', { n: Math.round((s.premiados || 0.35) * 100) }))}</div>`
-        : `<button class="pvp-tab-entrar" ${_pvpTabOcupado ? 'disabled' : ''} onclick="pvpComprarSelo()">
-             ${esc(t('pvp.selo.comprar', { c: s.custo | 0 }))}</button>
-           <small class="pvp-tab-selo-nota">${esc(t('pvp.selo.nota', {
-             n: Math.round((s.premiados || 0.35) * 100), min: s.minimo | 0 }))}</small>`}
-      ${ganhou ? `<div class="pvp-tab-ganhou">${esc(t('pvp.selo.ganhou', {
-        v: ganhou.valor, pos: _pvpTabOrdinal(ganhou.pos), div: t('pvp.div.' + ganhou.divisao) }))}</div>` : ''}
-    </div>`;
+  el.hidden = false;
+  el.className = 'pvp-tab-barra' + (s.tenhoSelo ? ' na-disputa' : '');
+  el.innerHTML = `
+    ${ganhou ? `<div class="pvp-tab-ganhou">${esc(t('pvp.selo.ganhou', {
+      v: ganhou.valor, pos: _pvpTabOrdinal(ganhou.pos), div: t('pvp.div.' + ganhou.divisao) }))}</div>` : ''}
+    ${s.tenhoSelo
+      ? `<div class="pvp-tab-selo-tem">✦ ${esc(t('pvp.selo.tenho'))}</div>`
+      : `<button class="pvp-tab-entrar" ${_pvpTabOcupado ? 'disabled' : ''} onclick="pvpComprarSelo()">
+           ${esc(t('pvp.selo.comprar', { c: s.custo | 0 }))}</button>
+         <small class="pvp-tab-selo-nota">${esc(t('pvp.selo.nota', {
+           n: Math.round((s.premiados || 0.35) * 100), min: s.minimo | 0 }))}</small>`}`;
 }
 
 // O prémio mais recente que este jogador recebeu, se houver.
