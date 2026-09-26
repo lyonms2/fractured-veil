@@ -191,7 +191,23 @@ service cloud.firestore {
                  transação que falha se ele já existir. Se o cliente
                  pudesse gravá-lo, gravaria o do vizinho — e os pedidos
                  de amizade do vizinho passariam a chegar para ele. */
-              'codigoAmigo'];
+              'codigoAmigo',
+              /* O NOME DE QUEM JOGA (js/nomes.js).
+
+                 Decidido em 26/09/2026: dois jogadores nao podem ter o
+                 mesmo nome. Um nome que se repete nao identifica
+                 ninguem — e este aparece na certidao dos avatares que a
+                 pessoa criou, nos anuncios do mercado e na tabela do
+                 PvP.
+
+                 Quem reserva e grava e a acao 'jogador' do
+                 api/nomes.js, numa transacao sobre a colecao `nomes`
+                 que falha se o nome ja for de outro. Se o cliente o
+                 pudesse escrever, escrevia o nome de outra pessoa —
+                 que e exatamente o que a unicidade existe para impedir.
+
+                 O js/firebase.js deixou de o enviar no save. */
+              'nomeJogador'];
     }
 
     /* O inboxEggs é a PORTA DA VENDA de ovos: o handleListarOvo do
@@ -351,6 +367,22 @@ service cloud.firestore {
        pudesse gravar nela prenderia a carteira de outra pessoa na
        própria conta. */
     match /carteiras/{endereco} {
+      allow read, write: if false;
+    }
+
+    /* ── OS NOMES TOMADOS ──
+
+       Um documento por nome em uso, com a chave normalizada (minusculas
+       e sem acentos, com o prefixo `j:` ou `a:` — ver js/nomes.js). E o
+       que impede dois jogadores de se chamarem igual, e dois avatares
+       tambem: a reserva roda numa transacao que falha se o documento ja
+       existir, como o `codigosAmigo`.
+
+       FECHADA DOS DOIS LADOS. Escrever seria reservar o nome dos outros
+       — bastava um laco no console para tomar tudo o que e curto e
+       bonito. E ler de nada serve a quem joga: quem quer saber se um
+       nome esta livre tenta pega-lo, e o servidor responde. */
+    match /nomes/{chave} {
       allow read, write: if false;
     }
 

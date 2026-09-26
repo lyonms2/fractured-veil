@@ -202,6 +202,24 @@ async function ler(doc) {
   ok('EXPLOIT criar um código à mão',   await mercado('codigosAmigo','T',{uid:'T'}), 403);
   ok('EXPLOIT ler a lista de códigos',  await lerColeccao('codigosAmigo','T'), 403);
 
+  /* ── o nome de quem joga: um nome, um dono ──
+
+     Desde 26/09/2026 dois jogadores não podem ter o mesmo nome, e quem
+     reserva é o servidor (api/nomes.js). Se o cliente pudesse escrever
+     o campo, escrevia o nome de outra pessoa — que é exatamente o que
+     a unicidade existe para impedir — e escrevia-o sem passar pelo
+     índice, ficando com um nome que ninguém reservou.
+
+     E o índice é fechado dos dois lados: quem pudesse gravar nele
+     reservava num laço de console tudo o que é curto e bonito. */
+  await escrever(null,'NM',{'nomeJogador':'Kael','gs.moedas':10}, true);
+  ok('EXPLOIT trocar o próprio nome',   await escrever('NM','NM',{'nomeJogador':'Outro'}), 403);
+  ok('EXPLOIT apagar o próprio nome',   await escrever('NM','NM',{'nomeJogador':null}), 403);
+  ok('conta nova já com nome',          await escrever('NN','NN',{'nomeJogador':'Kael'}), 403);
+  ok('salvar mandando o MESMO nome',    await escrever('NM','NM',{'nomeJogador':'Kael','gs.moedas':20}), 200);
+  ok('EXPLOIT reservar um nome à mão',  await mercado('nomes','NM',{uid:'NM'}), 403);
+  ok('EXPLOIT ler os nomes tomados',    await lerColeccao('nomes','NM'), 403);
+
   // ── indicações: o que o servidor escreve, o cliente não toca ──
   await escrever(null,'L',{'referralEarned':7,'referralCount':2,'gs.moedas':10}, true);
   ok('EXPLOIT inflar ganhos de convite', await escrever('L','L',{'referralEarned':9999}), 403);

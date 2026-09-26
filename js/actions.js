@@ -163,8 +163,13 @@ function _batQuem() {
   return _batAlvo || (typeof avatar !== 'undefined' ? avatar : null);
 }
 
+// A limpeza é a do js/nomes.js, que é a mesma que o servidor usa para
+// decidir. Estava escrita aqui à mão, e uma cópia que diverge da do
+// servidor faz a caixa aceitar o que o servidor recusa.
 function _batNomeLimpo(raw) {
-  return String(raw || '').replace(/[^\p{L}\p{N}\s\-]/gu, '').trim().slice(0, 16);
+  return (typeof nomeLimpo === 'function')
+    ? nomeLimpo(raw, (typeof NOME_AVATAR_LIM === 'number') ? NOME_AVATAR_LIM : 16)
+    : String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 16);
 }
 
 /* A prévia é o nome INTEIRO — o próprio e a alcunha que ele mantém.
@@ -284,7 +289,23 @@ function cancelRename() {
   ov.classList.remove('open');
 }
 
-function confirmRename() {
+/* ── O NOME DE UM AVATAR TAMBÉM NÃO SE REPETE (26/09/2026) ──
+
+   Decidido pelo dono do jogo, e no jogo INTEIRO: se alguém já batizou
+   um bicho de "Kael", não há segundo Kael. Dois anunciados com o mesmo
+   nome no mercado são dois anúncios que ninguém distingue, e a
+   certidão — que é o que dá valor a um avatar — deixaria de
+   identificar o que descreve.
+
+   Quem reserva é o servidor, na ação 'avatar' do api/nomes.js. Por isso
+   esta função passou a esperar: a cerimónia só fecha depois de o nome
+   ser mesmo deste avatar. Enquanto espera, o botão trava — dois
+   cliques mandavam dois pedidos, e o segundo recusava por causa do
+   primeiro, que era o do próprio. */
+let _batOcupado = false;
+
+async function confirmRename() {
+  if (_batOcupado) return;
   const avatar = _batQuem();
   if (!avatar) { cancelRename(); return; }
   const input = document.getElementById('renameInput');
@@ -294,7 +315,7 @@ function confirmRename() {
      diz o que falta e fica onde está. Fechar era o que ela fazia, e
      quem escrevesse só símbolos via a cerimónia desaparecer sem nada
      ter acontecido — e sem saber se o gasto tinha sido gasto. */
-  if(!clean) {
+  if(!clean || (typeof nomeProblema === 'function' && nomeProblema(clean, 'avatar'))) {
     playSound('error');
     const erro = document.getElementById('batErro');
     if (erro) erro.textContent = t('bubble.invalid_name');
@@ -312,11 +333,37 @@ function confirmRename() {
     return;
   }
 
+  /* E a terceira, que é a única que vê os outros jogadores: a reserva.
+     Só depois dela o nome se escreve no slot — gravar antes e perder a
+     corrida era ficar com um nome que o jogo mostra e o servidor diz
+     ser de outro bicho. */
+  const erroEl = document.getElementById('batErro');
+  const btnOk  = document.getElementById('batSalvar');
+  const rotulo = btnOk ? btnOk.textContent : '';
+  _batOcupado = true;
+  if (btnOk) { btnOk.disabled = true; btnOk.textContent = t('nomes.conferindo'); }
+  if (erroEl) erroEl.textContent = '';
+
+  const r = await reservarNome({ acao: 'avatar', avatarId: avatar.id, nome: clean });
+
+  _batOcupado = false;
+  if (btnOk) { btnOk.disabled = false; btnOk.textContent = rotulo; }
+
+  if (!r || r.erro) {
+    playSound('error');
+    if (erroEl) erroEl.textContent = _nomeErroTexto(r && r.erro);
+    if (input) { input.focus(); input.select(); }
+    return;
+  }
+
   /* O nome, e mais nada. Colava-se aqui a alcunha a seguir a uma
      vírgula, porque era lá que ela vivia. Passou a viver num índice
      (`alcunhaIdx`), e escrevê-la outra vez dentro do nome era gravar
-     português no campo de um jogador inglês. */
-  avatar.nome = clean;
+     português no campo de um jogador inglês.
+
+     O que se grava é o que o servidor devolveu, que é o que ficou
+     reservado. */
+  avatar.nome = r.nome || clean;
   // E fica. Daqui em diante este avatar chama-se isto, para quem o comprar
   // e para qualquer árvore em que venha a aparecer.
   if(typeof travarNome === 'function') travarNome(avatar);
@@ -328,7 +375,7 @@ function confirmRename() {
 
   if(walletAddress) scheduleSave();
   playSound('rename');
-  addLog(t('log.renamed', { name: clean }), 'good');
-  showBubble(t('rename.feito', { name: clean }));
+  addLog(t('log.renamed', { name: avatar.nome }), 'good');
+  showBubble(t('rename.feito', { name: avatar.nome }));
   updateAllUI();
 }

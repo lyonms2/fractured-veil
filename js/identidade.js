@@ -142,9 +142,17 @@ function garantirIdentidades(slots) {
 // a ninguém — numa árvore genealógica lê-se "criado por Leo", não por
 // "criado por hK3n…".
 //
-// Pede-se uma vez, na primeira entrada. Fica mudável depois: mudar o nome
-// de quem joga não reescreve o que já ficou carimbado nos avatares, que é
-// o que a permanência exige. O nome no avatar é o do MOMENTO da criação.
+// Pede-se uma vez, na primeira entrada.
+//
+// E NÃO SE REPETE (26/09/2026). Dois "Leo" no jogo são duas certidões
+// que dizem a mesma coisa sobre pessoas diferentes, e no PvP são duas
+// linhas da tabela que parecem a mesma pessoa. Quem reserva é o
+// servidor — a ação 'jogador' do api/nomes.js, numa transação —, e
+// desde então o campo é dele: o js/firebase.js deixou de o enviar no
+// save, e o firestore.rules recusa quem o tentar escrever daqui.
+//
+// O nome carimbado num avatar continua a ser o do MOMENTO da criação:
+// a unicidade é de quem joga hoje, e a autoria é do dia em que se criou.
 // ═══════════════════════════════════════════════════════════════════
 const NOME_JOGADOR_MAX = 18;
 
@@ -156,24 +164,106 @@ function jogadorTemNome() {
   return !!nomeDoJogador();
 }
 
-/* A mesma limpeza do renomear de avatares: letras, números, espaços e
-   hífen. Sem isto entra HTML, e este nome vai parar a fichas e a listas. */
+/* A limpeza mora no js/nomes.js, junto com a chave do índice — letras,
+   números, espaços e hífen, e nada de HTML, que este nome vai parar em
+   fichas e em listas.
+
+   Estava escrita aqui, e outra vez no _batNomeLimpo do js/actions.js.
+   Duas cópias da mesma regra seriam duas regras no dia em que uma
+   mudasse — e agora há uma TERCEIRA no servidor, que é quem decide.
+   As três passaram a ser a mesma função. */
 function limparNomeDeJogador(bruto) {
-  return String(bruto || '')
-    .replace(/[^\p{L}\p{N}\s\-]/gu, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, NOME_JOGADOR_MAX);
+  return (typeof nomeLimpo === 'function')
+    ? nomeLimpo(bruto, NOME_JOGADOR_MAX)
+    : String(bruto || '').replace(/\s+/g, ' ').trim().slice(0, NOME_JOGADOR_MAX);
 }
 
+/* Guarda o nome na memória desta sessão, e mais nada.
+
+   Chamava o scheduleSave() aqui. Já não: quem grava o `nomeJogador` no
+   documento é o servidor, dentro da mesma transação que reserva o nome
+   (api/nomes.js). Salvar daqui seria mandar o campo por um caminho que
+   as regras agora recusam — e elas recusam o save INTEIRO, não só o
+   campo. */
 function definirNomeDoJogador(bruto) {
   const limpo = limparNomeDeJogador(bruto);
   if (!limpo) return null;
   nomeJogador = limpo;
-  if (typeof scheduleSave === 'function' && typeof walletAddress !== 'undefined' && walletAddress) {
-    scheduleSave();
-  }
+  if (typeof mostrarNomeDoJogador === 'function') mostrarNomeDoJogador();
   return limpo;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PEDIR UM NOME AO SERVIDOR
+
+   As duas caixas que dão nome a alguma coisa — a de quem joga e o
+   batizado de um avatar — passam por aqui antes de gravar o que quer
+   que seja. É o servidor que diz se o nome já é de alguém, porque só
+   ele vê as duas pessoas que escreveram "Kael" no mesmo segundo.
+
+   Devolve sempre um objeto. O campo `erro` é o que interessa a quem
+   chama, e vem em maiúsculas de palavra única para virar texto na
+   língua de quem está lendo (ver _nomeErroTexto).
+   ══════════════════════════════════════════════════════════════════ */
+async function reservarNome(pedido) {
+  const temSessao = (typeof firebase !== 'undefined' && firebase.auth
+                     && firebase.auth().currentUser);
+  if (!temSessao) return { erro: 'SEM_SESSAO' };
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/nomes', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(Object.assign({ idToken }, pedido)),
+    });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok) return { erro: json.erro || 'REDE' };
+    return json;
+  } catch (e) {
+    /* Sem rede, sem servidor, sem resposta: o nome fica por dar, e a
+       caixa diz isso. Gravar assim mesmo era ficar com um nome que o
+       jogo acha que é seu e o servidor não — e o dia em que alguém
+       reservasse o mesmo nome de verdade, quem perdia era este. */
+    return { erro: 'REDE' };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BEM-VINDO, FULANO
+
+   Pedido pelo dono do jogo em 26/09/2026: a tela inicial não dizia em
+   lugar nenhum com que conta se está jogando. O e-mail já tinha saído
+   do cabeçalho — quem está ao lado da tela não tem nada que o ler — e
+   ficou um buraco: dava para entrar na conta errada e só descobrir ao
+   ver a colônia vazia.
+
+   O nome serve melhor do que o e-mail servia: é escolhido, é curto e,
+   desde hoje, é único — dois jogadores não o partilham, e por isso ele
+   identifica de verdade.
+
+   Fica escondido enquanto não houver nome, que é o estado da primeira
+   entrada, antes da caixa que o pede.
+   ══════════════════════════════════════════════════════════════════ */
+function mostrarNomeDoJogador() {
+  const el = document.getElementById('saudacao');
+  if (!el) return;
+  const nome = nomeDoJogador();
+  el.hidden = !nome;
+  el.textContent = nome ? t('ui.bemvindo', { nome }) : '';
+  el.title = nome || '';
+}
+
+// O erro do servidor, na língua de quem está lendo.
+function _nomeErroTexto(erro) {
+  const chaves = {
+    TOMADO:      'nomes.err.tomado',
+    FORMA:       'nomes.err.forma',
+    JA_BATIZADO: 'nomes.err.ja_batizado',
+    SEM_AVATAR:  'nomes.err.sem_avatar',
+    SEM_SESSAO:  'nomes.err.rede',
+    REDE:        'nomes.err.rede',
+  };
+  return t(chaves[erro] || 'nomes.err.rede');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -311,20 +401,51 @@ function pedirNomeDoJogador(aoFechar) {
   setTimeout(() => { if (input) { input.focus(); input.select(); } }, 60);
 }
 
-function confirmarNomeDoJogador() {
+/* A caixa fecha DEPOIS de o servidor dizer que o nome é seu.
+
+   Antes ela fechava no ato e o nome ficava gravado no save. Com a
+   unicidade isso deixou de bastar: quem decide é o api/nomes.js, e a
+   resposta demora uma ida e volta. Nessa espera o botão trava — dois
+   cliques mandavam dois pedidos, e o segundo respondia TOMADO por causa
+   do primeiro, que era o do próprio. */
+let _nomeJogadorOcupado = false;
+
+async function confirmarNomeDoJogador() {
+  if (_nomeJogadorOcupado) return;
   const input = document.getElementById('nomeJogadorInput');
   const erro  = document.getElementById('nomeJogadorErro');
-  const limpo = definirNomeDoJogador(input ? input.value : '');
+  const btn   = document.getElementById('nomeJogadorBtn');
+  const bruto = input ? input.value : '';
 
   // Diz o que falta em vez de não fazer nada. Um botão que não responde
-  // lê-se como avaria; a única razão de recusa aqui é o nome ficar vazio
-  // depois da limpeza, e isso explica-se numa linha.
-  if (!limpo) {
+  // lê-se como avaria; esta recusa é de FORMA e não precisa do servidor.
+  if (typeof nomeProblema === 'function' && nomeProblema(bruto, 'jogador')) {
     if (erro) erro.textContent = t('nomej.invalido');
     if (typeof playSound === 'function') playSound('error');
     if (input) input.focus();
     return;
   }
+
+  _nomeJogadorOcupado = true;
+  const rotulo = btn ? btn.textContent : '';
+  if (btn)  { btn.disabled = true; btn.textContent = t('nomes.conferindo'); }
+  if (erro) erro.textContent = '';
+
+  const r = await reservarNome({ acao: 'jogador', nome: bruto });
+
+  _nomeJogadorOcupado = false;
+  if (btn) { btn.disabled = false; btn.textContent = rotulo; }
+
+  if (!r || r.erro) {
+    if (erro) erro.textContent = _nomeErroTexto(r && r.erro);
+    if (typeof playSound === 'function') playSound('error');
+    if (input) { input.focus(); input.select(); }
+    return;
+  }
+
+  // O nome que vale é o que o servidor devolveu, já limpo. Gravar o que
+  // foi digitado era guardar uma segunda versão do mesmo nome.
+  const limpo = definirNomeDoJogador(r.nome);
 
   const ov = document.getElementById('nomeJogadorOverlay');
   if (ov) ov.classList.remove('open');

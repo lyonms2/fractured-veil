@@ -117,6 +117,15 @@ header {
   white-space:nowrap;
 }
 .btn-sair { border-color:#e74c3c; color:#e74c3c; font-size:0.375rem; padding:0.25rem 0.5rem; }
+/* ── BEM-VINDO, FULANO ──
+   Fica à esquerda dos botões do jogador, no lugar do e-mail que saiu.
+   Discreto de propósito: é para confirmar de relance com que conta se
+   está jogando, e não para ser lido todo dia. */
+.saudacao {
+  font-family:'Cinzel',serif; font-size:0.4375rem; color:var(--muted);
+  letter-spacing:0.0625rem; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; max-width:11rem;
+}
 .resources { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
 .res-clickable { cursor:pointer; transition:all .2s ease; }
 .res-clickable:hover { color:var(--gold); border-color:var(--gold); background:rgba(201,168,76,.08); transform:translateY(-0.125rem); box-shadow:0 0.25rem 0.875rem rgba(201,168,76,.18); }

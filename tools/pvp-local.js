@@ -37,6 +37,7 @@ if (!getApps().length) initializeApp({ projectId: PROJ, databaseURL: process.env
 const { getFirestore } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const GEN = require('../api/_genetica.js');
+const NOM = require('../js/nomes.js');   // a chave dos nomes tomados
 
 const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -82,6 +83,18 @@ async function semear() {
       nomeJogador: c.nome, avatarSlots: slots, certidoes, amigos, activeSlotIdx: 0,
       gs: { moedas: 100, equipa: [0, 1, 2], prologoVisto: true }, lastSeen: Date.now(),
     });
+
+    /* OS NOMES TOMADOS. Um nome batizado tem um documento no índice
+       (js/nomes.js) — sem isto, o estado semeado ficava diferente do
+       que o jogo produz, e testar o batismo aqui dava sempre livre. */
+    for (const s of slots) {
+      const chave = NOM.nomeChave(s.nome.split(',')[0], 'avatar');
+      if (chave) await db.collection('nomes').doc(chave)
+        .set({ tipo: 'avatar', nome: s.nome.split(',')[0], uid: c.uid, avatarId: s.id, em: Date.now() });
+    }
+    const chaveJ = NOM.nomeChave(c.nome, 'jogador');
+    if (chaveJ) await db.collection('nomes').doc(chaveJ)
+      .set({ tipo: 'jogador', nome: c.nome, uid: c.uid, em: Date.now() });
   }
   console.log('[pvp-local] contas semeadas: jog1, jog2, jog3 (senha teste123)');
 }

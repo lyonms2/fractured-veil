@@ -255,9 +255,20 @@ function getGameState() {
     activeSlotIdx: activeSlotIdx,
     gs:            _gsSemDinheiro(),
     lastSeen:      Date.now(),
-    // Quem joga. No topo e nao dentro do gs: o gs e o saldo e o
-    // progresso, e este e a pessoa. Ver js/identidade.js.
-    nomeJogador:   nomeJogador || null,
+    /* AQUI IA O nomeJogador, e nao vai mais (26/09/2026).
+
+       Um nome de jogador nao se repete no jogo inteiro, e quem garante
+       isso e o servidor: a acao 'jogador' do api/nomes.js reserva o
+       nome numa transacao e grava-o no documento. Por isso o campo
+       entrou na lista de campos protegidos do firestore.rules.
+
+       Se continuasse a ser enviado daqui, o primeiro save com um valor
+       diferente do gravado fazia a regra recusar o documento INTEIRO —
+       e o jogo parava de salvar sem dizer porque. O set(...,
+       {merge:true}) mantem o campo que ja la esta.
+
+       Continua a ser LIDO no applyGameState: quem escreve e o servidor,
+       quem mostra e o navegador. Ver js/identidade.js. */
   };
 }
 
@@ -270,7 +281,9 @@ function applyGameState(data) {
   window._invocacoesUsadas = data.invocacoesUsadas || 0;
 
   // Quem joga. Nulo na primeira entrada — e ai que lhe e pedido.
+  // So se LE daqui: quem o grava e o servidor (api/nomes.js).
   nomeJogador = data.nomeJogador || null;
+  if (typeof mostrarNomeDoJogador === 'function') mostrarNomeDoJogador();
 
   // gs (moedas, cristais, extraSlots)
   if(data.gs) Object.assign(gs, data.gs);
