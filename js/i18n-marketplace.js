@@ -198,7 +198,10 @@ window.registerStrings({
   'mkt.crystals.buy_total_vazio':'Digite quantos cristais quer comprar. 10 💎 = 1 MATIC.',
   'mkt.crystals.buy_invalid': 'Digite um número inteiro de {min} a {max} 💎.',
   'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
-  'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: 5 MATIC/dia. Taxa de 1% cobrada à parte: resgatar 50 💎 usa 50,50 💎 do saldo.',
+  // O {max} e o {matic} vêm do RESGATE_MAX_DIA (js/cristais.js), que
+  // espelha o servidor. Estavam escritos à mão, e por isso mentiram.
+  'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: {max} 💎 por dia ({matic} MATIC). Taxa de 1% cobrada à parte: resgatar 100 💎 usa 101 💎 do saldo.',
+  'mkt.transp.redeem_limit_val': '{max} 💎 / dia ({matic} MATIC)',
   'mkt.crystals.redeem_btn':  'Resgatar',
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
@@ -325,7 +328,7 @@ window.registerStrings({
   'mkt.transp.on_withdraw':    'Resgate de 💎 → MATIC',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
-  'mkt.transp.weekly_note':    'Sacar 50 💎 dá <strong style="color:var(--text);">0,50 💎</strong> ao desenvolvedor. A pool não é tocada.',
+  'mkt.transp.weekly_note':    'Sacar 100 💎 dá <strong style="color:var(--text);">1 💎</strong> ao desenvolvedor. A pool não é tocada.',
   'mkt.transp.eggs_body':      'Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lugar nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.',
   'mkt.transp.burn_label':     'QUEIMAR (não toca na pool)',
   'mkt.transp.egg_burn':       'Queimar um ovo',
@@ -515,7 +518,8 @@ window.registerStrings({
   'mkt.crystals.buy_total_vazio':'Enter how many crystals you want to buy. 10 💎 = 1 MATIC.',
   'mkt.crystals.buy_invalid': 'Enter a whole number from {min} to {max} 💎.',
   'mkt.crystals.redeem_title':'💸 Redeem Crystals → MATIC',
-  'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: 5 MATIC/day. A 1% fee is charged on top: redeeming 50 💎 uses 50.50 💎 of your balance.',
+  'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: {max} 💎 per day ({matic} MATIC). A 1% fee is charged on top: redeeming 100 💎 uses 101 💎 of your balance.',
+  'mkt.transp.redeem_limit_val': '{max} 💎 / day ({matic} MATIC)',
   'mkt.crystals.redeem_btn':  'Redeem',
   'mkt.crystals.redeem_ph':   'Amount of 💎 (min. 10)',
 
@@ -641,7 +645,7 @@ window.registerStrings({
   'mkt.transp.on_withdraw':    'Withdrawing 💎 → MATIC',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — never touched',
-  'mkt.transp.weekly_note':    'Redeeming 50 💎 gives <strong style="color:var(--text);">0.50 💎</strong> to the developer. The pool is untouched.',
+  'mkt.transp.weekly_note':    'Redeeming 100 💎 gives <strong style="color:var(--text);">1 💎</strong> to the developer. The pool is untouched.',
   'mkt.transp.eggs_body':      'An egg has two exits: <strong>hatch it</strong>, and the avatar is born from it, or <strong>burn it</strong>, which gives internal coins. Neither touches the pool — an egg is worth no crystals anywhere. What sells for crystals is the avatar, on the market, and there the sale fee goes to the pool.',
   'mkt.transp.burn_label':     'BURN (pool untouched)',
   'mkt.transp.egg_burn':       'Burn an egg',

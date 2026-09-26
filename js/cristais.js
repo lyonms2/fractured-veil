@@ -50,7 +50,7 @@ const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
    Os limites vêm de fora deste arquivo:
      mínimo 1 💎    o contrato recusa menos de 0,1 MATIC
                     ("Valor insuficiente (minimo 0.1 MATIC)")
-     máximo 1000 💎 o MAX_GEMS_CREDITO do api/processar-compra.js, que
+     máximo 5000 💎 o MAX_GEMS_CREDITO do api/processar-compra.js, que
                     recusa creditar mais do que isso numa transação */
 /* ── A ESCALA (23/09/2026) ──
 
@@ -72,6 +72,11 @@ async function renderTransparencia() {
     linkEl.href = `https://polygonscan.com/address/${CONTRACT_ADDRESS}`;
     linkEl.textContent = `${CONTRACT_ADDRESS.slice(0,6)}...${CONTRACT_ADDRESS.slice(-4)} ${t('mkt.transp.polygonscan')}`;
   }
+
+  // O mesmo teto, na página que existe para os números serem conferíveis.
+  const limEl = document.getElementById('transpRedeemLimit');
+  if (limEl) limEl.textContent = t('mkt.transp.redeem_limit_val', {
+    max: RESGATE_MAX_DIA, matic: Math.round(RESGATE_MAX_DIA / 10) });
 
   const statusEl = document.getElementById('transpTimelockStatus');
   if(statusEl) {
@@ -172,11 +177,28 @@ function _atualizarTotalCompra() {
    pode lê-lo, e é o que se faz aqui: uma leitura ao abrir a secção.
    Falhando, mostra-se o tecto sem o gasto — melhor um número parcial do
    que nenhum. */
-const RESGATE_MAX_DIA = 50;
+/* O TETO DIÁRIO. Quem manda é o MAX_GEMS_POR_DIA do api/resgatar.js;
+   aqui fica para a tela dizer quanto resta e não deixar pedir o que vai
+   ser recusado.
+
+   Esteve em 50 enquanto o servidor já permitia 1000 — o reajuste da
+   escala dos cristais (23/09/2026) subiu o teto no servidor e esqueceu
+   esta linha. E o estrago não era só de texto: a barra dizia "0 de 50"
+   depois de 50 💎, o campo travava e o botão desligava. O jogador ficava
+   impedido de sacar 950 💎 a que tinha direito — e um prêmio de
+   temporada passa dos 50 com facilidade. Se mudar lá, muda aqui. */
+const RESGATE_MAX_DIA = 1000;
 
 async function renderLimiteResgate() {
   const el = document.getElementById('resgateLimite');
   if (!el) return;
+
+  /* O texto por cima do campo leva o teto, e o teto tem uma fonte só.
+     Estava escrito à mão nas duas línguas ("Limite: 5 MATIC/dia") e
+     ficou a mentir quando o teto subiu. */
+  const sub = document.getElementById('resgateSub');
+  if (sub) sub.textContent = t('mkt.crystals.redeem_sub', {
+    max: RESGATE_MAX_DIA, matic: Math.round(RESGATE_MAX_DIA / 10) });
   const input = document.getElementById('resgateGems');
 
   let usadoHoje = 0;
