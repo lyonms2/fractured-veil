@@ -231,8 +231,10 @@ function updateHeaderButtons() {
     ? jogadorTemCriatura() : (hatched && !dead));
   const temOvos   = !naInvocacao && eggsInInventory.length > 0;
   document.getElementById('resCristaisBtn').style.display = naInvocacao ? 'none' : '';
-  document.getElementById('resMoedasBtn').style.display   = temAvatar ? '' : 'none';
-  document.getElementById('resItemsBtn').style.display    = temAvatar ? '' : 'none';
+  /* O 🪙 e o 🎒 não vivem mais nesta fila (26/09/2026): se mudaram
+     para a fila de ações do avatar, que é onde um item se usa. Os
+     elementos continuam no HTML porque o js/ui.js escreve os números
+     neles, e o `hidden` os mantém fora da vista. */
   document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';
   // A batalha aparece assim que existir um avatar. O numero na
   // pastilha e o tamanho da equipa montada, nao o total de bichos: a

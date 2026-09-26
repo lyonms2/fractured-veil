@@ -1,5 +1,11 @@
 /* ── BUTTONS ── */
-.btns { display:grid; grid-template-columns:repeat(5,1fr); gap:0.4375rem; width:100%; box-sizing:border-box; }
+/* São seis desde 26/09/2026: a mochila veio da fila de cima, porque um
+   item age sobre o avatar aberto e não sobre a colônia inteira.
+
+   Quem manda no celular não é esta linha: é o #actionBtns do
+   css/mobile-index.css, que abaixo de 768px monta duas filas de três
+   com !important. Mexer em uma só das duas deixa o jogo torto. */
+.btns { display:grid; grid-template-columns:repeat(6,1fr); gap:0.4375rem; width:100%; box-sizing:border-box; }
 .btn-action {
   background:#0f0d1c; border:1px solid var(--border); border-radius:0.5rem;
   padding:0.5625rem 0.25rem; cursor:pointer;
@@ -33,12 +39,12 @@
 #btnAmigos { overflow:visible; }
 #btnAmigos::before { display:none; }
 
-/* ── Desktop: 5 botões numa linha, mais compactos ──
-   Eram 6 colunas do tempo em que o Amigos morava nesta fila. Ele subiu
-   para o cabeçalho, e a sexta coluna ficou vazia à direita, empurrando
-   os cinco para a esquerda. */
+/* ── Desktop: os seis numa linha, mais compactos ──
+   Foram 6 colunas do tempo em que o Amigos morava nesta fila, depois 5
+   quando ele subiu para o cabeçalho, e são 6 outra vez desde que a
+   mochila desceu para cá (26/09/2026). Aqui há largura para os seis. */
 @media(min-width:681px) {
-  .btns { grid-template-columns:repeat(5,1fr); gap:0.25rem; }
+  .btns { grid-template-columns:repeat(6,1fr); gap:0.25rem; }
   .btn-action { padding:0.4375rem 0.125rem; min-height:2.875rem; font-size:0.3125rem; border-radius:0.4375rem; }
   .btn-action .icon { font-size:0.9375rem; }
 }
@@ -1402,4 +1408,27 @@
 @keyframes ui-armado-pulsa { 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) {
   .ui-armado { animation: none; }
+}
+
+
+/* ── DA MOCHILA PARA A LOJA (index.html, #itemInvModal) ──
+   A loja era o 🪙 da fila de cima e se mudou para cá, que é onde dá
+   vontade de ir: olhando para uma mochila vazia. */
+.inv-ir-loja {
+  width: 100%;
+  margin-top: 0.625rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 0.5rem;
+  background: rgba(201,168,76,.08);
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.0625rem;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.inv-ir-loja:hover { background: rgba(201,168,76,.16); color: var(--gold-light); }
+@media (max-width: 680px), (orientation: portrait) {
+  .inv-ir-loja { font-size: 0.625rem; padding: 0.625rem; }
 }

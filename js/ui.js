@@ -109,6 +109,28 @@ function atualizarBotoesDeAccao() {
     btn.classList.toggle('em-falta',     !!(e && (e.semMoedas || e.semForca)));
     if(sub) sub.textContent = e ? e.sub : '';
   }
+  atualizarMochila();
+}
+
+/* A MOCHILA, que veio da fila de cima (26/09/2026). Não tem custo nem
+   recusa — abre sempre —, mas a linha de baixo diz o que tem dentro, e
+   conta o MESMO que a mochila mostra quando abre (os consumíveis vivem
+   na outra porta, ver o filtro em js/items.js:46). Uma mochila vazia é
+   informação: economiza o clique de quem ainda não tem nada.
+
+   É função separada porque quem dá e quem tira itens chama o
+   updateResourceUI(), e não o updateAllUI() — o número precisa mudar
+   pelos dois caminhos. */
+function atualizarMochila() {
+  const bItens = document.getElementById('btnItens');
+  const sItens = document.getElementById('subItens');
+  if (!sItens) return;
+  const n = (typeof itemInventory !== 'undefined' && Array.isArray(itemInventory))
+    ? itemInventory.filter(i => !(ITEM_CATALOG[i.catalogId] || {}).consumivel).length : 0;
+  sItens.textContent = n
+    ? n + ' ' + t(n !== 1 ? 'item.inv.word_multi' : 'item.inv.word_one')
+    : t('inv.sub_vazio');
+  if (bItens) bItens.classList.toggle('em-falta', !n);
 }
 
 function updateAllUI() {
@@ -138,32 +160,19 @@ function updateAllUI() {
   updateLifeEstimate();
   atualizarBotoesDeAccao();
 
-  // Botões de inventário
-  const _eggBtn  = document.getElementById('resOvosBtn');
-  const _coinBtn = document.getElementById('resMoedasBtn');
-  // A mesma pergunta do updateHeaderButtons, e pela mesma razao: estes
-  // botoes sao do JOGADOR. Uma copia escondia-os e esta desligava-os —
-  // corrigir so a outra deixava-os visiveis e mortos.
+  /* O 🥚, que é o último botão de inventário nesta fila.
+
+     Eram três. O 🪙 e o 🎒 desceram para a fila de ações do avatar
+     em 26/09/2026, e com eles foram embora as linhas que os
+     desligavam na colônia: a loja e o inventário agem sobre o avatar
+     ABERTO, e aqui em cima ficavam acesos e recusavam. Agora moram
+     onde só há um avatar, e a pergunta não se faz mais.
+
+     A recusa de verdade nunca esteve aqui: está no openCoinShop e no
+     openItemInventory, que chamam painelDeUmAvatarDisponivel(). */
+  const _eggBtn = document.getElementById('resOvosBtn');
   const _tem = (typeof jogadorTemCriatura === 'function') ? jogadorTemCriatura() : (hatched && !dead);
   if(_eggBtn)  { (eggsInInventory.length > 0 || _tem) ? _eggBtn.classList.remove('disabled')  : _eggBtn.classList.add('disabled');  }
-  if(_coinBtn) { _tem ? _coinBtn.classList.remove('disabled') : _coinBtn.classList.add('disabled'); }
-
-  /* ── E OS DOIS QUE SÃO DE UM AVATAR SÓ ──
-
-     A loja e o inventário de itens agem sobre o avatar aberto: os
-     amuletos equipam-se num, os consumíveis dão-se a um. Na colônia não
-     há esse um — há dez — e o painel acabava por escolher sozinho o que
-     estivesse espelhado nos globais.
-
-     `bloqueado` e não `disabled`: o segundo tem pointer-events:none e
-     engole o clique, e estes têm de poder explicar-se. A recusa a sério
-     está no openCoinShop e no openItemInventory. */
-  const _itemBtn = document.getElementById('resItemsBtn');
-  const _soDeUm  = (typeof painelDeUmAvatarDisponivel === 'function')
-    ? !painelDeUmAvatarDisponivel() : true;
-  [_coinBtn, _itemBtn].forEach(b => {
-    if(b) b.classList.toggle('bloqueado', !_soDeUm);
-  });
 }
 
 function updateResourceUI() {
@@ -173,6 +182,7 @@ function updateResourceUI() {
   document.getElementById('resOvos').textContent = eggsInInventory.length;
   const resItems = document.getElementById('resItems');
   if(resItems) resItems.textContent = itemInventory.length;
+  atualizarMochila();
   // Era a pastilha do 🧬 e contava slots ocupados de disponíveis. O 🧬
   // saiu da fila de cima — a colônia mostra os avatares todos — e o
   // lugar dele é agora o ⚔. Portanto o número muda de pergunta: deixa
