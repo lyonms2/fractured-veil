@@ -17,11 +17,30 @@ function canAct() {
    Agora procura o saldo que estiver à vista — o do cabeçalho da loja,
    o do botão da mochila — e, se nenhum estiver, voa da fila de ações
    do avatar, que é de onde o gasto costuma vir (NUTRIR, MEDICAR). */
+/* À VISTA DE VERDADE, e não só "tem caixa".
+
+   Perguntava-se pelo getClientRects, e ele mentiu: um .mini-modal
+   fechado não é display:none — é opacity:0 com pointer-events:none (ver
+   css/modals.css). Continua ocupando lugar, continua tendo caixa, e o
+   saldo da loja fechada ganhava sempre a disputa. A moeda voava para
+   dentro dela e ninguém a via — fora da loja, a animação simplesmente
+   deixou de existir, e o recurso da fila de ações virou código morto.
+
+   O checkVisibility olha a opacidade herdada, que é exatamente o que
+   estava faltando. Onde ele não existir, pergunta-se ao modal. */
+function _aVista(el) {
+  if (!el || !el.getClientRects().length) return false;
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({ opacityProperty: true, visibilityProperty: true });
+  }
+  const modal = el.closest('.mini-modal');
+  return !modal || modal.classList.contains('open');
+}
+
 function _ancoraDaMoeda() {
   for (const id of ['mktSaldoMoedas', 'invSaldoMoedas', 'resMonedas']) {
     const el = document.getElementById(id);
-    // getClientRects vazio = escondido. Não adianta voar de lá.
-    if (el && el.getClientRects().length) {
+    if (_aVista(el)) {
       return { el: el.closest('.res') || el.parentElement, pisca: true };
     }
   }

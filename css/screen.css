@@ -98,6 +98,18 @@
   border-color:var(--raro); color:var(--raro);
   box-shadow:0 0 0.75rem rgba(90,180,232,.35);
 }
+/* E a MOCHILA também fica de pé (26/09/2026).
+
+   Ela veio da fila de cima, onde funcionava com o bicho dormindo, e ao
+   descer para cá caiu nesta regra junto com o NUTRIR e o MEDICAR. Mas
+   abrir a mochila não é mexer com o bicho: é olhar o que se tem e, no
+   máximo, equipar um amuleto — nada que acorde ninguém. E quem está
+   esperando o sono passar é justamente quem tem tempo de arrumar a
+   mochila.
+
+   Continua meio apagada, para dizer que a fila está dormindo: o que
+   muda é que o clique passa. */
+.sleeping-mode #btnItens   { opacity:.65; pointer-events:all; cursor:pointer; }
 
 @keyframes sleep-sway { 0%,100%{transform:translateY(0) rotate(-3deg) scaleY(.93)} 50%{transform:translateY(0.3125rem) rotate(3deg) scaleY(.88)} }
 .creature-wrap.anim-sad  svg { animation:sad-shake .5s ease-in-out; }
