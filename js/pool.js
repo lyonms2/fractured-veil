@@ -7,7 +7,6 @@
 // O alvo da pool: não é um tecto nem uma promessa, é a referência
 // contra a qual a barra do saldo se mede.
 const POOL_ALVO        = 1000;
-const POOL_LIMITE_DIA  = 100;  // 💎 máximo de saque por dia
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
 const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev
@@ -26,31 +25,23 @@ let poolLogsLast = null;
    para a pool — ver a nota no api/pool.js. O POOL_ALVO fica, que é o
    que a barra do saldo mede. */
 
-/* Quanto ainda pode SAIR da pool hoje.
+/* ── O "DISPONÍVEL HOJE" SAIU DAQUI (26/09/2026) ──
 
-   Dizia só POOL_LIMITE_DIA menos o que já saiu, e o segundo dos dois
-   sítios tinha o 100 escrito à mão em vez da constante. O resultado era
-   uma pool com 0 cristais a anunciar "Disponível hoje: 100,00 💎" — o
-   tecto do dia apresentado como se fosse dinheiro que lá estivesse.
+   Havia um tecto diário de saída da POOL, de 100 💎, e com ele duas
+   funções: o _podeSairHoje, que o cartão mostrava, e o poolDisponivel,
+   que já não era chamado de lado nenhum.
 
-   O tecto é um limite, não um saldo. O que pode sair é o MENOR dos
-   dois: o que a pool tem e o que o tecto ainda deixa. */
-function _podeSairHoje(saldo, saqueHoje) {
-  const restaDoTecto = Math.max(0, POOL_LIMITE_DIA - (saqueHoje || 0));
-  return Math.max(0, Math.min(saldo || 0, restaDoTecto));
-}
+   Esse tecto não existe mais. Saiu do servidor com a queima de ovos e
+   com o câmbio de moedas por cristais (ver a nota no api/pool.js), e
+   ninguém voltou aqui: o `saqueHoje` do documento só é ZERADO, nunca
+   somado, e o resgate não olha para ele — o único limite que existe hoje
+   é por jogador, 1000 💎 por dia (MAX_GEMS_POR_DIA, em
+   api/resgatar.js).
 
-function poolDisponivel() {
-  if(!poolData) return false;
-  // Lia o saqueHoje cru, sem a janela das 24h que o servidor aplicava
-  // (marcarSaque, no api/_pool-economia.js, que saiu com o câmbio): um
-  // contador de ontem dizia "pool indisponível" para uma pool que o
-  // servidor deixaria sacar. É a mesma pergunta, tem de ter a mesma
-  // resposta.
-  const expirou = (Date.now() - (poolData.ultimoReset || 0)) > 86400000;
-  const hoje    = expirou ? 0 : (poolData.saqueHoje || 0);
-  return poolData.cristais > 0 && hoje < POOL_LIMITE_DIA;
-}
+   Com o contador parado em zero, a linha mostrava sempre o menor entre
+   o saldo e 100: uma pool com 5000 💎 anunciava "Disponível hoje:
+   100,00 💎". Numa página chamada Transparência, um número inventado
+   é pior do que número nenhum — foi o que o dono do jogo mandou tirar. */
 
 // ═══════════════════════════════════════════
 // CARREGAR POOL DO FIRESTORE
@@ -158,8 +149,6 @@ function renderPoolStatsCard() {
   const saldo      = poolData.cristais    || 0;
   const totalIn    = poolData.totalEntrou || 0;
   const totalOut   = poolData.totalSaiu   || 0;
-  const saqueHoje  = poolData.saqueHoje   || 0;
-  const restante   = _podeSairHoje(saldo, saqueHoje);
   const pct        = Math.min(100, Math.round(saldo / POOL_ALVO * 100));
   const barColor   = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red2)';
 
@@ -177,9 +166,6 @@ function renderPoolStatsCard() {
       </div>
       <div class="pool-sc-stat">
         <span>${t('mkt.pool.total_out')}</span><b>${fmtC(totalOut)} 💎</b>
-      </div>
-      <div class="pool-sc-stat">
-        <span>${t('mkt.pool.available')}</span><b>${fmtC(restante)} 💎</b>
       </div>
     </div>
     <!-- Aqui estavam dois cartões grandes com o preço de recompra de

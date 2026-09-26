@@ -175,7 +175,6 @@ window.registerStrings({
   'mkt.pool.economy':         '◆ COMO FUNCIONA A ECONOMIA',
 
   // Pool widget stats
-  'mkt.pool.available':       'Disponível hoje',
   'mkt.pool.state_title':     'Estado atual da pool',
   'mkt.cob.title':       '🛡️ COBERTURA DO COFRE',
   'mkt.cob.sub':         'do MATIC necessário para pagar todos os cristais que existem',
@@ -495,7 +494,6 @@ window.registerStrings({
   'mkt.pool.economy':         '◆ HOW THE ECONOMY WORKS',
 
   // Pool widget stats
-  'mkt.pool.available':       'Available today',
   'mkt.pool.state_title':     'Current pool state',
   'mkt.cob.title':       '🛡️ VAULT COVERAGE',
   'mkt.cob.sub':         'of the MATIC needed to pay out every crystal in existence',
