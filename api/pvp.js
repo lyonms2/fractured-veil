@@ -497,9 +497,15 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
     /* A FRATURA É DE QUEM CAIU, e sai do gerador da própria luta: o
        mesmo `rng` que decidiu os dados, já no passo em que a luta
        acabou. Quem desiste protege quem ainda está de pé, não quem já
-       caiu — a regra do PvE, palavra por palavra. */
+       caiu — a regra do PvE, palavra por palavra.
+
+       MAS NÃO NO DESAFIO DE AMIGO (decidido pelo dono em 26/09/2026).
+       A amistosa não dá moedas nem pontos: é treino. Treino que parte um
+       osso — e a fratura come a saúde até matar, se não for tratada —
+       faz com que ninguém queira treinar com um amigo, que é o contrário
+       do que essa porta existe para fazer. */
     const equipe = ((sala.jogadores || {})[uid] || {}).equipe || [];
-    const caidos = estado ? R.pvpCaidos(estado, lado) : [];
+    const caidos = (estado && sala.tipo === 'fila') ? R.pvpCaidos(estado, lado) : [];
     const fraturados = [];
     for (const i of caidos) {
       const av = equipe[i];

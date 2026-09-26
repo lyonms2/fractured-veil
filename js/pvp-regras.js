@@ -198,6 +198,11 @@ const PVP_ENERGIA_DESISTIR = 4;
    da sala), e não com o Math.random do servidor: assim o resultado é
    refazível por quem auditar a partida.
 
+   E SÓ NA FILA. O desafio de amigo é treino — não dá moedas nem pontos
+   — e treino não parte ossos: a fratura come a saúde até matar se não
+   for tratada, e ninguém arrisca um avatar para fazer um favor a um
+   amigo (decidido em 26/09/2026).
+
    XP NÃO. Não estava no pedido, e é de propósito: o nível é o que
    decide a luta e o que o servidor mal consegue conferir (js/niveis.js).
    Pôr a progressão a correr dentro do PvP era fazer do PvP o caminho

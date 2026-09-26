@@ -227,18 +227,22 @@ function reencontroPuro() {
   conferir('e as fichas de quem não tem laço continuam escondidas',
            fuConhece(estado, 'A', 'B0').nivel === 0 && fuConhece(estado, 'A', 'B2').nivel === 0);
 
-  /* O bónus na precisão. Para medir só isso, rola-se o mesmo ataque com
-     o mesmo gerador no mesmo passo: a diferença entre os modificadores
-     é o reencontro. */
-  const medir = (deId, paraId) => {
-    const e2 = fuIniciar(eq.A, eq.B, sala.seed);
-    const quem = fuPorId(e2, deId), alvo = fuPorId(e2, paraId);
+  /* O bónus na precisão. Mede-se variando UMA coisa só — o laço — com
+     o mesmo atacante, o mesmo alvo e o gerador no mesmo passo.
+
+     A primeira versão disto comparava atacantes DIFERENTES (o A0 com
+     laço contra o A1 sem), e passou até ao dia em que o DNA sorteado
+     deu bonús de precisão diferentes aos dois: o teste acusou +5 onde
+     o laço vale +2, e o defeito era dele, não do motor. */
+  const medir = (comLaco, paraId) => {
+    const meus = eq.A.map(c => (comLaco ? c : Object.assign({}, c, { lacoRival: null })));
+    const e2 = fuIniciar(meus, eq.B, sala.seed);
     e2.rng.passo = 0;
-    return fuAtacar(e2, quem, alvo, { fixo: 5 }).modificador;
+    return fuAtacar(e2, fuPorId(e2, 'A0'), fuPorId(e2, paraId), { fixo: 5 }).modificador;
   };
-  const semLaco = medir('A1', 'B1');       // outro atacante, mesmo alvo
-  const comLaco = medir('A0', 'B1');       // o que tem laço com ele
-  const noutro  = medir('A0', 'B0');       // o mesmo atacante, outro alvo
+  const semLaco = medir(false, 'B1');      // o mesmo avatar, sem o laço
+  const comLaco = medir(true,  'B1');      // e com ele
+  const noutro  = medir(true,  'B0');      // com laço, mas contra outro
   conferir('bate melhor em quem conhece', comLaco === semLaco + 2, { comLaco, semLaco });
   conferir('e não nos outros', noutro === semLaco, { noutro, semLaco });
 
@@ -853,6 +857,16 @@ async function servidor() {
   conferir('mas o humor e a energia contam na mesma',
            (docAm.avatarSlots || []).every(s => s.vitals.humor === 65 && s.vitals.energia === 90),
            (docAm.avatarSlots || []).map(s => s.vitals.humor + '/' + s.vitals.energia));
+  /* E NINGUÉM SE PARTE A TREINAR. A fratura come a saúde até matar: num
+     desafio que não paga nada, arriscar um avatar afastaria as pessoas
+     de jogar entre amigos. Conferido pelos dois lados — o prémio que o
+     servidor gravou na sala, e o documento de quem lutou. */
+  const premiosAm = (await rtdb.ref(`pvp/salas/${sc}/premios`).once('value')).val() || {};
+  conferir('o treino entre amigos não parte ossos',
+           Object.keys(premiosAm).every(u => !(premiosAm[u].fraturas || []).length), premiosAm);
+  conferir('e ninguém ficou doente por causa dele',
+           (docAm.avatarSlots || []).every(s => !(s.activeDiseases || []).length),
+           (docAm.avatarSlots || []).map(s => s.activeDiseases));
 
   // Sair no versus (antes do primeiro dado) não custa nem paga nada.
   await limpar();
