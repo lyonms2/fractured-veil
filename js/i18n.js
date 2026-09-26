@@ -292,6 +292,8 @@
       'diff.hard':               'DIFÍCIL',
       'diff.master':             'MESTRE',
       'diff.locked_tip':         'Desbloqueie no nível',
+      // Na batalha o degrau é a SOMA dos níveis da equipe (o Poder).
+      'diff.locked_tip_eq':      'Desbloqueia com poder de equipe',
 
       // Action buttons
       'btn.feed':                'NUTRIR',
@@ -629,6 +631,7 @@
       'diff.hard':               'HARD',
       'diff.master':             'MASTER',
       'diff.locked_tip':         'Unlock at level',
+      'diff.locked_tip_eq':      'Unlocks at team power',
 
       // Action buttons
       'btn.feed':                'FEED',

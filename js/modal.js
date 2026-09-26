@@ -245,17 +245,24 @@ document.addEventListener('click', (e) => {
 /* As pastilhas das dificuldades. Servem o seletor de jogos e a batalha,
    que usam a MESMA dificuldade: escolher o Mestre num lugar escolhe no
    outro. */
-function diffPillsHTML() {
-  const d   = miniDifficulty();
-  const max = maxUnlockedTier();
+function diffPillsHTML(ondeE) {
+  const d   = miniDifficulty(ondeE);
+  const max = maxUnlockedTier(ondeE);
   return DIFF_TIERS.map((dt, i) => {
     const unlocked  = i <= max;
     const active    = dt.tier === d.tier;
     const label     = t(dt.i18nKey);
-    const tipLocked = t('diff.locked_tip') + ' ' + dt.minNivel;
+    /* O que falta para destravar, na medida de quem vai jogar: o nível
+       do bicho num minijogo, a soma da equipe numa batalha. Dizer
+       "nível 27" a quem está na tela da batalha mandava-o procurar um
+       número que não é o que a tela mostra. */
+    const quantos   = (ondeE === 'batalha')
+      ? ((typeof COMBATE_EQUIPA_MAX === 'number') ? COMBATE_EQUIPA_MAX : 3) : 1;
+    const tipLocked = t(ondeE === 'batalha' ? 'diff.locked_tip_eq' : 'diff.locked_tip')
+                    + ' ' + (dt.minNivel * quantos);
     return `<button class="diff-pill ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
       data-tier="${i}"
-      onclick="${unlocked ? 'setDifficulty('+i+')' : ''}"
+      onclick="${unlocked ? `setDifficulty(${i}${ondeE ? ",'" + ondeE + "'" : ''})` : ''}"
       title="${!unlocked ? tipLocked : label}">
       ${!unlocked
         ? '<span class="dp-lock">🔒</span>'
@@ -415,22 +422,58 @@ const DIFF_TIERS = [
   { tier:3, i18nKey:'diff.master', icon:'⚡', label:'MESTRE',  xp:90,  coins:60, inimigo:1.4, minNivel:27 },
 ];
 
-function maxUnlockedTier() {
+/* ══════════════════════════════════════════════════════════════════
+   QUEM DESTRAVA A DIFICULDADE DEPENDE DE QUEM VAI JOGAR
+
+   Num MINIJOGO quem joga é o avatar aberto na tela de cuidar, e é o
+   nível dele que manda — era assim e continua.
+
+   Numa BATALHA quem joga é a EQUIPE, e o avatar aberto pode nem estar
+   nela. A conta era a mesma para as duas, e dava nisto: com três bichos
+   de nível 30 na equipe e um filhote aberto, a batalha só oferecia o
+   Fácil; com um nível 40 aberto e a equipe no 5, oferecia o Mestre.
+
+   Na batalha o critério passa a ser a SOMA dos níveis da equipe
+   (decidido pelo dono do jogo em 26/09/2026) — o mesmo número que a
+   tela já mostra como Poder, e o mesmo que escolhe o nível do inimigo.
+   Os degraus são os individuais vezes três, porque a equipe são três:
+   3, 15, 33 e 81.
+   ══════════════════════════════════════════════════════════════════ */
+function maxUnlockedTier(ondeE) {
+  if (ondeE === 'batalha') return maxUnlockedTierBatalha();
   for(let i = DIFF_TIERS.length - 1; i >= 0; i--) {
     if(nivel >= DIFF_TIERS[i].minNivel) return i;
   }
   return 0;
 }
 
-function miniDifficulty() {
-  const tier = (selectedDifficulty !== null && selectedDifficulty <= maxUnlockedTier())
+/* A equipe INTEIRA, e não só quem já foi escolhido: com a equipe
+   incompleta a soma é menor e as pastilhas fechavam-se à medida que se
+   montava. O que a soma mede é com quem se vai lutar, e lutar exige a
+   equipe cheia (ver o _btSincronizarModos, em js/batalha.js). */
+function maxUnlockedTierBatalha() {
+  const eq = (typeof equipaDoJogador === 'function') ? equipaDoJogador() : [];
+  const soma = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(eq) : 0;
+  const quantos = (typeof COMBATE_EQUIPA_MAX === 'number') ? COMBATE_EQUIPA_MAX : 3;
+  for(let i = DIFF_TIERS.length - 1; i >= 0; i--) {
+    if(soma >= DIFF_TIERS[i].minNivel * quantos) return i;
+  }
+  return 0;
+}
+
+function miniDifficulty(ondeE) {
+  const teto = maxUnlockedTier(ondeE);
+  const tier = (selectedDifficulty !== null && selectedDifficulty <= teto)
     ? selectedDifficulty
-    : maxUnlockedTier();
+    : teto;
   return DIFF_TIERS[tier];
 }
 
-function setDifficulty(tier) {
-  if(tier > maxUnlockedTier()) return;
+/* O `ondeE` chega de quem carregou na pastilha: as da batalha mandam
+   'batalha', as do seletor de jogos não mandam nada. Sem isto, escolher
+   o Mestre na batalha era recusado pelo teto dos minijogos. */
+function setDifficulty(tier, ondeE) {
+  if(tier > maxUnlockedTier(ondeE)) return;
   selectedDifficulty = tier;
   // Redesenha no lugar, sem abrir nada: as pastilhas também vivem no
   // modal da batalha, e reabrir o seletor de jogos fechava a batalha.

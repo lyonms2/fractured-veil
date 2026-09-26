@@ -36,13 +36,16 @@ function abrirBatalha() {
 function btRenderDificuldade() {
   const box = document.getElementById('btDificuldade');
   if (!box || typeof DIFF_TIERS === 'undefined' || typeof PVE_PREMIO === 'undefined') return;
-  const d  = miniDifficulty();
-  const rb = (typeof rarityBonus === 'function') ? rarityBonus() : { moedas: 1 };
+  const d  = miniDifficulty('batalha');
+  // O mesmo bônus que o prêmio vai usar: a média da equipe. A tela
+  // dizia o do avatar aberto, e o jogo pagava o mesmo — as duas contas
+  // mudam juntas, porque são a mesma função.
+  const rb = { moedas: (typeof bonusMoedasDaEquipa === 'function') ? bonusMoedasDaEquipa() : 1 };
   const equipa = (typeof equipaDoJogador === 'function') ? equipaDoJogador() : [];
   const eq  = (typeof fuPoderDaEquipa === 'function') ? fuPoderDaEquipa(equipa) : 0;
   const ini = (typeof pveNivelInimigo === 'function') ? pveNivelInimigo(eq) : eq;
   const moedas = k => Math.round(d.coins * PVE_PREMIO[k].moedas * rb.moedas);
-  box.innerHTML = `<div class="diff-pills-row">${diffPillsHTML()}</div>
+  box.innerHTML = `<div class="diff-pills-row">${diffPillsHTML('batalha')}</div>
     <div class="bt-dif-info">
       ${equipa.length ? `<div>${t('pve.dif.nivel', { ini, eq })}</div>` : ''}
       <div>${t('pve.dif.premio', { v: moedas('vitoria'), e: moedas('empate'), d: moedas('derrota') })}</div>

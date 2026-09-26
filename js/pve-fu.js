@@ -40,7 +40,7 @@ const PVE_FRATURA_CHANCE = 0.10;
    aprendia, era castigar justamente quem está começando. Do Médio para
    cima o risco continua, e o painel da batalha avisa antes de entrar. */
 function pveChanceFratura() {
-  const d = (typeof miniDifficulty === 'function') ? miniDifficulty() : { tier: 1 };
+  const d = (typeof miniDifficulty === 'function') ? miniDifficulty('batalha') : { tier: 1 };
   return d.tier === 0 ? 0 : PVE_FRATURA_CHANCE;
 }
 
@@ -90,7 +90,7 @@ const PVE_PREMIO = {
    E a mesma dificuldade decide o quanto os inimigos pensam
    (FU_IA_NIVEIS, em js/ia-fu.js). */
 function pveNivelInimigo(nivelEquipe) {
-  const d = (typeof miniDifficulty === 'function') ? miniDifficulty() : { inimigo: 1 };
+  const d = (typeof miniDifficulty === 'function') ? miniDifficulty('batalha') : { inimigo: 1 };
   return Math.max(3, Math.round((nivelEquipe | 0) * (d.inimigo || 1)));
 }
 
@@ -467,11 +467,15 @@ function _pveFecharContas(e) {
   const p = PVE_PREMIO[e.vencedor === 'A' ? 'vitoria'
                      : e.vencedor === 'B' ? 'derrota' : 'empate'];
 
-  const d  = (typeof miniDifficulty === 'function') ? miniDifficulty() : { xp: 10, coins: 10 };
+  const d  = (typeof miniDifficulty === 'function') ? miniDifficulty('batalha') : { xp: 10, coins: 10 };
   const rb = (typeof rarityBonus === 'function') ? rarityBonus() : { xp: 1, moedas: 1 };
   const vb = (typeof getVinculoBonus === 'function') ? getVinculoBonus() : { xpMult: 1 };
+  /* As moedas são da EQUIPE, e por isso o bônus também — a média dos
+     três que lutaram (bonusMoedasDaEquipa, em js/state.js). O bônus de
+     XP fica onde estava: o XP é dado a cada avatar, um a um. */
+  const bm = (typeof bonusMoedasDaEquipa === 'function') ? bonusMoedasDaEquipa() : rb.moedas;
   const xpGain   = Math.round(d.xp    * p.xp     * rb.xp     * vb.xpMult);
-  const coinGain = Math.round(d.coins * p.moedas * rb.moedas);
+  const coinGain = Math.round(d.coins * p.moedas * bm);
 
   // Quem desiste não leva prémio nenhum: guardou energia, e é esse o
   // ganho. Pagar na mesma faria da desistência a jogada óptima sempre.

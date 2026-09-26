@@ -3116,7 +3116,7 @@ function _afInimigoAge() {
    com `_afIaNivelFixo`; sem nenhum dos dois, pensa como no Médio. */
 function _afIaNivel() {
   if (typeof _afIaNivelFixo === 'number') return _afIaNivelFixo;
-  return (typeof miniDifficulty === 'function') ? miniDifficulty().tier : 1;
+  return (typeof miniDifficulty === 'function') ? miniDifficulty('batalha').tier : 1;
 }
 
 /* ── NADA DE EVENTOS INVENTADOS ──

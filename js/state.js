@@ -438,6 +438,30 @@ function rarityBonus(quem) {
     default:         return { xp:1.0, moedas:1.0, decay:1.0, eggs:1, cooldown:1.0,  burnBonus:0,    shopDiscount:0    };
   }
 }
+/* ══════════════════════════════════════════════════════════════════
+   O BÔNUS DE MOEDAS DE UMA EQUIPE
+
+   O bônus de raridade é de UM avatar, e na batalha lutam três. A conta
+   usava o rarityBonus() sem argumento — ou seja, o avatar ABERTO na
+   tela de cuidar, que pode nem estar na equipe: bastava deixar o
+   Lendário aberto e lutar com outros para ganhar os 50% dele.
+
+   Passa a ser a MÉDIA dos três que lutaram (decidido pelo dono do jogo
+   em 26/09/2026). Um Lendário com dois Comuns dá 1,17 — mais 17% —, e
+   os 50% cheios só saem de três Lendários. Quem leva um bicho raro para
+   a luta ganha por ele; quem o deixa em casa, não.
+
+   Devolve 1 para uma equipe vazia, que é o mesmo que não ter bônus.
+   ══════════════════════════════════════════════════════════════════ */
+function bonusMoedasDaEquipa(equipa) {
+  const eq = Array.isArray(equipa) ? equipa.filter(Boolean)
+           : ((typeof equipaDoJogador === 'function') ? equipaDoJogador().filter(Boolean) : []);
+  if (!eq.length) return 1;
+  let soma = 0;
+  for (const s of eq) soma += rarityBonus(s).moedas;
+  return soma / eq.length;
+}
+
 const FALAS = {
   get happy()       { return t('falas.happy');       },
   get hungry()      { return t('falas.hungry');      },
