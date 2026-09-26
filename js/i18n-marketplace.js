@@ -274,11 +274,13 @@ window.registerStrings({
   // ── Modais ────────────────────────────────────────────────────────
 
   'mkt.modal.list_av.title':   '📋 Listar Avatar',
-  'mkt.modal.list_av.sub':     'Defina o preço em 💎 Cristais. A listagem custa 2 💎 e o avatar fica congelado.',
+  // O {cost} vem do LIST_COST (js/marketplace-core.js). Estava escrito
+  // à mão, e por isso ficou a mentir quando o preço subiu.
+  'mkt.modal.list_av.sub':     'Defina o preço em 💎 Cristais. A listagem custa {cost} 💎 e o avatar fica congelado.',
   'mkt.modal.list_av.warn':    '⚠️ O avatar ficará congelado: sem decaimento de vitals, sem XP, sem jogar com ele.',
   'mkt.modal.list_av.price':   'Preço em 💎 Cristais',
   'mkt.modal.list_av.cancel':  'Cancelar',
-  'mkt.modal.list_av.confirm': 'Listar por 2 💎',
+  'mkt.modal.list_av.confirm': 'Listar por {cost} 💎',
 
   'mkt.modal.burn.title':      '🔥 Queimar Avatar',
   'mkt.modal.burn.cancel':     'Cancelar',
@@ -590,11 +592,11 @@ window.registerStrings({
   // Modals
 
   'mkt.modal.list_av.title':   '📋 List Avatar',
-  'mkt.modal.list_av.sub':     'Set the price in 💎 Crystals. Listing costs 2 💎 and the avatar gets frozen.',
+  'mkt.modal.list_av.sub':     'Set the price in 💎 Crystals. Listing costs {cost} 💎 and the avatar gets frozen.',
   'mkt.modal.list_av.warn':    '⚠️ The avatar will be frozen: no vital decay, no XP, cannot play with it.',
   'mkt.modal.list_av.price':   'Price in 💎 Crystals',
   'mkt.modal.list_av.cancel':  'Cancel',
-  'mkt.modal.list_av.confirm': 'List for 2 💎',
+  'mkt.modal.list_av.confirm': 'List for {cost} 💎',
 
   'mkt.modal.burn.title':      '🔥 Burn Avatar',
   'mkt.modal.burn.cancel':     'Cancel',

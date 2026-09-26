@@ -374,6 +374,13 @@ function openListModal(slotIdx) {
         <div style="font-size:0.5625rem;color:var(--${s.raridade==='Lendário'?'legendary':'rare'});">${s.raridade} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;
+  /* O preço da listagem sai do LIST_COST e não do texto traduzido: era
+     escrito à mão em português e em inglês, e os dois ficaram dizendo 2
+     quando o servidor passou a cobrar 25. */
+  const sub = document.getElementById('listTaxaSub');
+  const btn = document.getElementById('listTaxaBtn');
+  if (sub) sub.textContent = t('mkt.modal.list_av.sub',     { cost: LIST_COST });
+  if (btn) btn.textContent = t('mkt.modal.list_av.confirm', { cost: LIST_COST });
   document.getElementById('listPriceInput').value = '';
   document.getElementById('listOverlay').classList.add('open');
 }

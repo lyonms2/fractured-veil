@@ -4,7 +4,15 @@
 
 const PAYMENT_ADDRESS  = '0x1FCb61dB743A0276b92382B9e7B92a62cA8cf030';
 const POLYGONSCAN_API  = 'https://api.polygonscan.com/api';
-const LIST_COST        = 2;
+/* A TAXA DE LISTAGEM. Quem cobra é o servidor (api/comprar-avatar.js);
+   aqui fica só para a tela dizer o preço e conferir o saldo antes de
+   pedir.
+
+   Esteve em 2 enquanto o servidor cobrava 25 — o reajuste da escala dos
+   cristais (23/09/2026) passou pelo servidor e esqueceu esta linha. A
+   tela dizia "custa 2 💎" em três lugares, deixava clicar com 3 de
+   saldo, e o pedido voltava recusado. Se mudar lá, muda aqui. */
+const LIST_COST        = 25;
 /* O preço do PRÓXIMO slot. É uma escada (api/comprar-avatar.js): o
    sexto bicho custa 150 e o décimo 400, porque quem quer uma colónia
    grande quer cada vez mais. Aqui fica a tabela só para a tela poder
