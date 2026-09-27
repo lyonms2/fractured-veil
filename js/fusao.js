@@ -388,6 +388,9 @@ function _fusGuardarRecorde() {
   gs.fusaoBests[chave] = _fusPontos;
   if (typeof scheduleSave === 'function') scheduleSave();
   _fusSalvarRanking(_fusPontos, chave);
+  // A festa do recorde, a mesma dos outros jogos (js/mini-avatar.js).
+  if (typeof mgRecordeAnim === 'function')
+    setTimeout(() => mgRecordeAnim('fusaoModal', _fusPontos, '🔮'), 300);
 }
 
 async function _fusSalvarRanking(pontos, chave) {

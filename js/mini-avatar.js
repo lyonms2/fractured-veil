@@ -247,3 +247,72 @@ function avatarPartesReagem(raiz, gestos) {
 function _miniAvatarPartesReagem(raiz, tipo) {
   avatarPartesReagem(raiz, _MINI_AV_GESTOS[tipo]);
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   ✦ NOVO RECORDE ✦
+
+   A festa existia só no Snake, e era boa demais para ficar lá sozinha:
+   um anél que abre, oito faíscas que voam, o título que salta e a
+   pontuação por baixo. A Fusão e o Tetra guardavam recorde em silêncio —
+   o jogador batia o próprio número e não ficava sabendo.
+
+   Pedido do dono do jogo: que ela apareça sempre que um recorde cai.
+
+   Aqui ela é de todos. Cada jogo passa o seu modal, a pontuação e o
+   próprio símbolo — a cobra, a esfera, o bloco —, e o resto é igual:
+   quem ganha um recorde ganha a mesma festa, seja onde for.
+
+   O modal tem de ser `position: relative` para a capa se encaixar nele;
+   os cinco já são, por causa dos painéis de ranking.
+   ══════════════════════════════════════════════════════════════════ */
+const _MG_REC_POS = [
+  { sx: '-5rem',      sy: '-4.375rem'  }, { sx: '5rem',      sy: '-4.0625rem' },
+  { sx: '-5.625rem',  sy: '1.25rem'    }, { sx: '5.625rem',  sy: '0.9375rem'  },
+  { sx: '-2.1875rem', sy: '-5.625rem'  }, { sx: '2.1875rem', sy: '-5.3125rem' },
+  { sx: '3.75rem',    sy: '4.375rem'   }, { sx: '-3.75rem',  sy: '4.0625rem'  },
+];
+
+function mgRecordeAnim(modalId, pontos, simbolo) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.querySelector('.mg-record-ov')?.remove();
+
+  const ov = document.createElement('div');
+  ov.className = 'mg-record-ov';
+
+  // O símbolo do jogo entra no meio das faíscas: a festa é a mesma, mas
+  // cada jogo assina a dele.
+  const fagulhas = ['✦', '✧', '★', '✨', simbolo || '✦', '⭐', '✦', '✧'];
+  _MG_REC_POS.forEach((pos, i) => {
+    const s = document.createElement('div');
+    s.className = 'mg-record-star';
+    s.textContent = fagulhas[i];
+    s.style.cssText = `--sx:${pos.sx};--sy:${pos.sy};animation-delay:${i * 0.045}s`;
+    ov.appendChild(s);
+  });
+
+  const ring = document.createElement('div');
+  ring.className = 'mg-record-ring';
+  ov.appendChild(ring);
+
+  const title = document.createElement('div');
+  title.className = 'mg-record-title';
+  title.textContent = t('mg.record.titulo');
+  ov.appendChild(title);
+
+  const sc = document.createElement('div');
+  sc.className = 'mg-record-score';
+  sc.textContent = `${pontos} ${simbolo || ''}`.trim();
+  ov.appendChild(sc);
+
+  modal.appendChild(ov);
+  if (typeof playSound === 'function') playSound('levelup');
+
+  setTimeout(() => {
+    ov.style.transition = 'opacity .5s ease';
+    ov.style.opacity = '0';
+    setTimeout(() => ov.remove(), 500);
+  }, 2400);
+}
+
+if (typeof window !== 'undefined') window.mgRecordeAnim = mgRecordeAnim;

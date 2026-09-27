@@ -299,7 +299,7 @@ function _snakeEnd() {
         gs.snakeBests[_tierKey] = _snakeScore;
         scheduleSave();
         _snakeSaveRanking(_snakeScore, _tierKey);
-        setTimeout(() => _snakeRecordAnim(_snakeScore), 300);
+        setTimeout(() => mgRecordeAnim('snakeModal', _snakeScore, '🐍'), 300);
       }
 
       document.getElementById('snakeRankingBtn').style.display = 'inline-block';
@@ -448,52 +448,10 @@ async function snakeLoadRanking(tierKey) {
   }
 }
 
-function _snakeRecordAnim(score) {
-  const modal = document.getElementById('snakeModal');
-  if(!modal) return;
-  modal.querySelector('.snake-record-ov')?.remove();
-
-  const ov = document.createElement('div');
-  ov.className = 'snake-record-ov';
-
-  const emojis   = ['✦','✧','★','✨','🐍','⭐','✦','✧'];
-  const positions = [
-    {sx:'-5rem',sy:'-4.375rem'},{sx:'5rem',sy:'-4.0625rem'},
-    {sx:'-5.625rem',sy:'1.25rem'}, {sx:'5.625rem', sy:'0.9375rem'},
-    {sx:'-2.1875rem',sy:'-5.625rem'},{sx:'2.1875rem', sy:'-5.3125rem'},
-    {sx:'3.75rem', sy:'4.375rem'}, {sx:'-3.75rem',sy:'4.0625rem'},
-  ];
-  positions.forEach((pos, i) => {
-    const s = document.createElement('div');
-    s.className = 'snake-record-star';
-    s.textContent = emojis[i];
-    s.style.cssText = `--sx:${pos.sx};--sy:${pos.sy};animation-delay:${i * 0.045}s`;
-    ov.appendChild(s);
-  });
-
-  const ring = document.createElement('div');
-  ring.className = 'snake-record-ring';
-  ov.appendChild(ring);
-
-  const title = document.createElement('div');
-  title.className = 'snake-record-title';
-  title.textContent = t('snake.record.title');
-  ov.appendChild(title);
-
-  const sc = document.createElement('div');
-  sc.className = 'snake-record-score';
-  sc.textContent = `${score} 🐍`;
-  ov.appendChild(sc);
-
-  modal.appendChild(ov);
-  playSound && playSound('levelup');
-
-  setTimeout(() => {
-    ov.style.transition = 'opacity .5s ease';
-    ov.style.opacity = '0';
-    setTimeout(() => ov.remove(), 500);
-  }, 2400);
-}
+/* A FESTA DO RECORDE MUDOU-SE. Era daqui, e era só daqui: a Fusão e o
+   Tetra guardavam recorde em silêncio. Agora é de todos os minijogos e
+   vive no mgRecordeAnim (js/mini-avatar.js), com o CSS no
+   css/minigames.css. Cada jogo passa o seu símbolo; o resto é igual. */
 
 function snakeToggleRanking() {
   _snakeRankOpen = !_snakeRankOpen;

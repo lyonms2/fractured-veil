@@ -431,6 +431,9 @@ function _tetGuardarRecorde() {
   gs.tetraBests[chave] = _tetPontos;
   if (typeof scheduleSave === 'function') scheduleSave();
   _tetSalvarRanking(_tetPontos, chave);
+  // A festa do recorde, a mesma dos outros jogos (js/mini-avatar.js).
+  if (typeof mgRecordeAnim === 'function')
+    setTimeout(() => mgRecordeAnim('tetraModal', _tetPontos, '🧱'), 300);
 }
 
 async function _tetSalvarRanking(pontos, chave) {

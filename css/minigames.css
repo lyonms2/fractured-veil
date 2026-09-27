@@ -260,3 +260,92 @@
 
 /* ── COIN SPEND ANIMATION ── */
 
+/* ════════════════════════════════════════════════════════════════
+   ✦ NOVO RECORDE ✦  — a festa de todos os minijogos
+
+   Estava no css/snake.css com o nome do Snake, e só o Snake a usava.
+   Passou para cá com nome de família: quem bate um recorde na Fusão ou
+   no Tetra vê a mesma coisa (ver mgRecordeAnim, em js/mini-avatar.js).
+
+   Quem não quer movimento não o tem: com prefers-reduced-motion a festa
+   aparece e some sem voar nada, mas o recado continua — tirar o aviso
+   junto com o movimento seria esconder do jogador que ele bateu o
+   próprio número.
+   ════════════════════════════════════════════════════════════════ */
+.mg-record-ov {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: mg-rec-bg .25s ease forwards;
+}
+@keyframes mg-rec-bg {
+  from { background: transparent; }
+  to   { background: rgba(4,3,10,.8); }
+}
+
+.mg-record-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 2px solid rgba(251,191,36,.7);
+  animation: mg-rec-ring .6s ease .05s both;
+}
+@keyframes mg-rec-ring {
+  0%   { width:1.25rem;  height:1.25rem;  margin:-0.625rem 0 0 -0.625rem; opacity:.9; }
+  100% { width:17.5rem;  height:17.5rem;  margin:-8.75rem 0 0 -8.75rem;   opacity:0;  }
+}
+
+.mg-record-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.875rem, 4vw, 1.375rem);
+  font-weight: bold;
+  letter-spacing: 0.25rem;
+  color: #fbbf24;
+  text-shadow: 0 0 1.25rem #fbbf24, 0 0 3rem rgba(251,191,36,.5);
+  animation: mg-rec-title .45s cubic-bezier(.175,.885,.32,1.275) .1s both;
+}
+@keyframes mg-rec-title {
+  from { opacity:0; transform:scale(.25); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+.mg-record-score {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.75rem, 3.5vw, 1.125rem);
+  color: #86efac;
+  letter-spacing: 0.1875rem;
+  margin-top: 0.5rem;
+  animation: mg-rec-score .35s ease .42s both;
+}
+@keyframes mg-rec-score {
+  from { opacity:0; transform:translateY(0.625rem); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.mg-record-star {
+  position: absolute;
+  top: 50%; left: 50%;
+  font-size: 0.9375rem;
+  animation: mg-rec-star .75s ease both;
+}
+@keyframes mg-rec-star {
+  0%   { opacity:0; transform:translate(-50%,-50%) translate(0,0) scale(.4); }
+  25%  { opacity:1; }
+  100% { opacity:0; transform:translate(-50%,-50%) translate(var(--sx),var(--sy)) scale(1.4) rotate(200deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-record-ov,
+  .mg-record-ring,
+  .mg-record-title,
+  .mg-record-score,
+  .mg-record-star { animation: none; }
+  .mg-record-ov    { background: rgba(4,3,10,.8); }
+  .mg-record-ring  { display: none; }
+  .mg-record-star  { opacity: .9; transform: translate(-50%,-50%) translate(var(--sx),var(--sy)); }
+}

@@ -90,78 +90,10 @@
   background: rgba(231,76,60,.25);
 }
 
-/* ── Record animation ── */
-.snake-record-ov {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  animation: snake-rec-bg .25s ease forwards;
-}
-
-@keyframes snake-rec-bg {
-  from { background: transparent; }
-  to   { background: rgba(4,3,10,.8); }
-}
-
-.snake-record-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  border-radius: 50%;
-  border: 2px solid rgba(251,191,36,.7);
-  animation: snake-rec-ring .6s ease .05s both;
-}
-
-@keyframes snake-rec-ring {
-  0%   { width:1.25rem;  height:1.25rem;  margin:-0.625rem 0 0 -0.625rem; opacity:.9; }
-  100% { width:17.5rem; height:17.5rem; margin:-8.75rem 0 0 -8.75rem; opacity:0; }
-}
-
-.snake-record-title {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(0.875rem, 4vw, 1.375rem);
-  font-weight: bold;
-  letter-spacing: 0.25rem;
-  color: #fbbf24;
-  text-shadow: 0 0 1.25rem #fbbf24, 0 0 3rem rgba(251,191,36,.5);
-  animation: snake-rec-title .45s cubic-bezier(.175,.885,.32,1.275) .1s both;
-}
-
-@keyframes snake-rec-title {
-  from { opacity:0; transform:scale(.25); }
-  to   { opacity:1; transform:scale(1); }
-}
-
-.snake-record-score {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(0.75rem, 3.5vw, 1.125rem);
-  color: #86efac;
-  letter-spacing: 0.1875rem;
-  margin-top: 0.5rem;
-  animation: snake-rec-score .35s ease .42s both;
-}
-
-@keyframes snake-rec-score {
-  from { opacity:0; transform:translateY(0.625rem); }
-  to   { opacity:1; transform:translateY(0); }
-}
-
-.snake-record-star {
-  position: absolute;
-  top: 50%; left: 50%;
-  font-size: 0.9375rem;
-  animation: snake-rec-star .75s ease both;
-}
-
-@keyframes snake-rec-star {
-  0%   { opacity:0; transform:translate(-50%,-50%) translate(0,0) scale(.4); }
-  25%  { opacity:1; }
-  100% { opacity:0; transform:translate(-50%,-50%) translate(var(--sx),var(--sy)) scale(1.4) rotate(200deg); }
-}
+/* A FESTA DO RECORDE mudou-se para o css/minigames.css com as classes
+   .mg-record-*: ela deixou de ser só do Snake e passou a aparecer
+   também na Fusão e no Tetra (ver mgRecordeAnim, em js/mini-avatar.js).
+   Ficavam aqui umas cem linhas que ninguém mais chamava. */
 
 /* ── O RANKING ──
 
