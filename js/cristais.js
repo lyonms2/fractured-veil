@@ -469,6 +469,41 @@ async function tentarComprasPendentes() {
 window.reprocessarCompra      = reprocessarCompra;
 window.tentarComprasPendentes = tentarComprasPendentes;
 
+/* O QUE FALTA NA CARTEIRA PARA ESTA TRANSAÇÃO SAIR
+
+   Quem paga o gás é o jogador, sempre — mesmo no resgate, em que o POL
+   vem do cofre. Uma carteira vazia não avisa: a MetaMask manda estimar
+   o gás, a estimativa falha, e o ethers 6 embrulha isso num
+   CALL_EXCEPTION com reason=null que não diz "insufficient funds" em
+   lado nenhum. O erro chegava à tela como um "Erro ao enviar" genérico,
+   depois de a carteira já ter aberto.
+
+   Perguntar o saldo antes custa uma chamada e diz a verdade na hora.
+   `valorWei` é o que a transação leva consigo (zero no resgate); o gás
+   vem do preço do momento, com folga, e cai para 0,05 POL se a rede não
+   responder — é melhor errar para o lado de deixar tentar.
+
+   Devolve null quando dá, ou quanto seria preciso ter, em POL. */
+async function _faltaParaPagar(provider, conta, valorWei) {
+  let custoGas;
+  try {
+    const fee = await provider.getFeeData();
+    const preco = fee.maxFeePerGas ?? fee.gasPrice;
+    custoGas = preco ? preco * 60000n : ethers.parseEther('0.05');
+  } catch (e) {
+    custoGas = ethers.parseEther('0.05');
+  }
+  let saldo;
+  try { saldo = await provider.getBalance(conta); }
+  catch (e) { return null; }          // sem resposta, deixa tentar
+  const precisa = valorWei + custoGas;
+  if (saldo >= precisa) return null;
+  return {
+    tem:     (+ethers.formatEther(saldo)).toFixed(3),
+    precisa: (+ethers.formatEther(precisa)).toFixed(3),
+  };
+}
+
 async function comprarCristais() {
   const status = document.getElementById('buyStatus');
   const gems   = _gemsDaCompra();
@@ -519,6 +554,13 @@ async function comprarCristais() {
     // 1 💎 = 0,1 POL = 10^17 wei. Em unidades inteiras, sem ponto
     // flutuante no meio do caminho.
     const maticWei = ethers.parseUnits(String(gems), 17);
+
+    const falta = await _faltaParaPagar(provider, pagador, maticWei);
+    if (falta) {
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${falta.precisa} POL</b>`})}<br><small>${t('mkt.tx.tem_agora', {tem: falta.tem})} · ${t('mkt.tx.exchange_hint')}</small></span>`;
+      showToast(t('mkt.tx.insufficient_toast', {matic: falta.precisa}), 'err');
+      return;
+    }
 
     const tx = await signer.sendTransaction({
       to:    CONTRACT_ADDRESS,
@@ -627,6 +669,17 @@ async function resgatar() {
     const abi = ['function withdraw(uint256 gems, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external'];
     const contrato  = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
+    /* O POL do saque sai do cofre, mas a transação é enviada pelo
+       jogador — e uma carteira sem nada não a envia. A autorização já
+       foi assinada pelo servidor a esta altura; parar aqui não a gasta,
+       porque o nonce só se queima on-chain. */
+    const semGas = await _faltaParaPagar(provider, await signer.getAddress(), 0n);
+    if (semGas) {
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.sem_gas', {matic: semGas.precisa})}<br><small>${t('mkt.tx.tem_agora', {tem: semGas.tem})}</small></span>`;
+      btn.disabled = false;
+      return;
+    }
+
     const tx = await contrato.withdraw(
       BigInt(apiData.gems),
       BigInt(apiData.nonce),
@@ -660,7 +713,7 @@ async function resgatar() {
         if(typeof updateResourceUI === 'function') updateResourceUI();
       }
       updateCristaisDisplay();
-      // O tecto do dia acabou de encolher — o número em cima do campo tem
+      // O teto do dia acabou de encolher — o número em cima do campo tem
       // de acompanhar, senão fica a prometer o que já não há até alguém
       // reabrir a secção.
       renderLimiteResgate();

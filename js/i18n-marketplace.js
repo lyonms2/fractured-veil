@@ -251,6 +251,12 @@ window.registerStrings({
   'mkt.tx.insufficient_taxa': 'Saldo insuficiente. Esse resgate usa {total} 💎 (com a taxa de {taxa} 💎) e você tem {balance} 💎.',
   'mkt.tx.insufficient_matic':'❌ Saldo insuficiente. Você precisa de pelo menos {matic} POL na sua carteira Polygon.',
   'mkt.tx.exchange_hint':     'Você pode comprar POL em uma exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.',
+  /* O saldo passou a ser conferido ANTES de abrir a MetaMask (ver
+     _faltaParaPagar em js/cristais.js). Estas duas dizem o que falta
+     enquanto ainda dá para resolver, em vez de um "erro ao enviar"
+     depois de a carteira ter aberto e recusado. */
+  'mkt.tx.tem_agora':         'Você tem {tem} POL',
+  'mkt.tx.sem_gas':           '❌ Sem POL para a taxa de rede. O saque sai do cofre, mas quem envia a transação é você: precisa de uns {matic} POL na carteira para pagar o gás.',
   'mkt.tx.insufficient_toast':'Saldo insuficiente — você precisa de {matic} POL',
   'mkt.tx.requesting':        '⏳ A pedir autorização ao servidor...',
   'mkt.tx.open_mm_redeem':    '⏳ Abra o MetaMask para confirmar o resgate...',
@@ -590,6 +596,8 @@ window.registerStrings({
   'mkt.tx.insufficient_taxa': 'Insufficient balance. This redemption uses {total} 💎 (including the {taxa} 💎 fee) and you have {balance} 💎.',
   'mkt.tx.insufficient_matic':'❌ Insufficient balance. You need at least {matic} POL in your Polygon wallet.',
   'mkt.tx.exchange_hint':     'You can buy POL on an exchange (e.g. Binance, Crypto.com) and transfer to the Polygon network.',
+  'mkt.tx.tem_agora':         'You have {tem} POL',
+  'mkt.tx.sem_gas':           '❌ No POL for the network fee. The vault pays the withdrawal, but you send the transaction: you need about {matic} POL in your wallet to cover gas.',
   'mkt.tx.insufficient_toast':'Insufficient balance — you need {matic} POL',
   'mkt.tx.requesting':        '⏳ Requesting server authorization...',
   'mkt.tx.open_mm_redeem':    '⏳ Open MetaMask to confirm the redeem...',
