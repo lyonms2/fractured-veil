@@ -7,7 +7,7 @@
    perde um cristal no arredondamento, e as fatias vão para quem devem.
 
    A segunda é a que interessa mais: AINDA EXISTE UMA CÓPIA SOLTA do
-   número em algum lugar? O 1% do resgate chegou a viver em três sítios
+   número em algum lugar? O 1% do resgate chegou a viver em três lugares
    (o servidor e duas contas do js/cristais.js) e a taxa de venda em
    cinco. Números que precisam concordar e nada que os obrigue a isso
    acabam por discordar — e quando discordam, a tela promete uma coisa e

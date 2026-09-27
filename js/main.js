@@ -137,7 +137,7 @@ function _cerimoniaAberta() {
    o tools/testar-energia.js confere as contas. Este lugar só sabe
    quanto tempo passou e onde guardar o resultado.
 
-   É chamado de dois sítios — a volta da aba escondida e a despausa —
+   É chamado de dois lugares — a volta da aba escondida e a despausa —
    porque para o avatar as duas paragens são a mesma. Ter duas contas
    para o mesmo descanso era garantir que um dia divergissem.
 

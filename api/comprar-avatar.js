@@ -585,8 +585,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const taxaReal     = +(taxa - taxaDoBonus).toFixed(2);
 
       /* E a taxa com lastro reparte-se entre a pool e o dev, na mesma
-         proporção das duas fatias (10 e 5). O que foi pago em bónus já
-         foi queimado e não se divide: bónus não tem POL no cofre, e
+         proporção das duas fatias (10 e 5). O que foi pago em bônus já
+         foi queimado e não se divide: bônus não tem POL no cofre, e
          creditar isso ao dev seria criar lastro do nada.
 
          A pool fica com a sobra do arredondamento: se um cristal não
