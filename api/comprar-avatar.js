@@ -525,7 +525,18 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
         seed:       listing.seed     || 0,
         nivel:      listing.nivel    || 1,
         xp:         listing.xp       || 0,
-        vinculo:    listing.vinculo  || 0,
+        /* O VÍNCULO NÃO VIAJA (regra do dono do jogo, 27/09/2026).
+
+           O que o avatar aprendeu — nível, XP, os dados, a linhagem, os
+           laços com outros avatares — é dele e segue com ele. O vínculo
+           não: ele é a relação com UM dono, e quem comprou ainda não fez
+           nada por este bicho. Começa do zero, e o comprador constrói o
+           dele do mesmo jeito que o vendedor construiu o seu.
+
+           É também o que impede o vínculo de virar mercadoria: um Alma
+           Gêmea comprado dava +15% de XP e ovo mais durável a quem nunca
+           cuidou de nada. */
+        vinculo:    0,
         diasVida:   listing.diasVida || 0,
         totalOvos:  listing.totalOvos  || 0,
         totalRaros: listing.totalRaros || 0,

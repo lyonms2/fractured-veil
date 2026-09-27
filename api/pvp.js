@@ -787,16 +787,33 @@ async function acaoTemporada(ctx) {
   try { await fecharPendentes(db, rtdb, temp); }
   catch (e) { console.error('[temporada fecho]', e && e.message); }
 
-  const [tmp, selo, jog] = await Promise.all([
+  const [tmp, selo, jog, pool] = await Promise.all([
     db.collection('temporadas').doc(temp).get(),
     db.collection('temporadas').doc(temp).collection('selos').doc(uid).get(),
     db.collection('players').doc(uid).get(),
+    db.collection('config').doc('pool').get(),
   ]);
   const d = jog.exists ? jog.data() : {};
   const t = tmp.exists ? tmp.data() : {};
+
+  /* O QUE A POOL DEVE PÔR, se a temporada fechasse agora.
+
+     Previsão e não promessa: o aporte é calculado no fecho, com o saldo
+     que a pool tiver nesse momento, e o bolo dos selos ainda vai crescer
+     até lá. Vai para a tela na mesma, porque anunciar só a soma dos
+     selos mostrava um prémio menor do que o que se paga — e um número
+     que só melhora no fim é um número que ninguém acredita. */
+  const dosSelos = (t.bolo | 0) + (t.acumulado | 0);
+  const aporte = (t.aportePool != null)
+    ? (t.aportePool | 0)
+    : TP.temporadaAporteDaPool((pool.exists ? pool.data().cristais : 0) | 0, dosSelos);
+
   return {
     temporada: temp,
-    bolo: (t.bolo | 0) + (t.acumulado | 0),
+    bolo: dosSelos + aporte,
+    dosSelos,
+    aportePool: aporte,
+    aporteFechado: t.aportePool != null,
     tenhoSelo: selo.exists,
     custo: TP.SELO_CUSTO,
     premiados: TP.SELO_PREMIADOS,
@@ -831,13 +848,55 @@ async function fecharPendentes(db, rtdb, tempAtual) {
 
   let pagamentos = dados.pagamentos;
   if (!dados.fechada) {
+    /* A PARTE DA POOL, antes de qualquer conta.
+
+       A Pool P2E entra no bolo desta temporada (TP.temporadaAporteDaPool).
+       O débito e o registo acontecem na MESMA transação e antes de
+       calcular os prémios, por uma razão: a partir do momento em que o
+       campo `aportePool` existe no documento da temporada, o dinheiro já
+       saiu da pool e pertence àquele bolo. Se o fecho morrer a seguir, a
+       próxima abertura do Salão encontra o campo lá, não tira nada de
+       novo, e fecha com o mesmo bolo.
+
+       Calcular primeiro e debitar depois deixaria a porta aberta para
+       prometer um prémio que a pool já não tem. */
+    if (dados.aportePool == null) {
+      const poolRef = db.collection('config').doc('pool');
+      const aporte = await db.runTransaction(async (tx) => {
+        const [poolSnap, tempSnap] = await Promise.all([tx.get(poolRef), tx.get(ref)]);
+        const d = tempSnap.data() || {};
+        if (d.fechada || d.aportePool != null) return d.aportePool || 0;
+
+        const saldo = (poolSnap.exists ? poolSnap.data().cristais : 0) | 0;
+        const dos_selos = (d.bolo | 0) + (d.acumulado | 0);
+        const valor = TP.temporadaAporteDaPool(saldo, dos_selos);
+
+        // Zero também se grava: é o que impede uma segunda tentativa de
+        // tirar da pool num mês em que ela estava vazia e encheu depois.
+        tx.update(ref, { aportePool: valor });
+        if (valor > 0) {
+          tx.update(poolRef, {
+            cristais:  FieldValue.increment(-valor),
+            totalSaiu: FieldValue.increment(valor),
+          });
+          tx.set(poolRef.collection('logs').doc(), {
+            tipo: 'saida', motivo: 'prémio da temporada ' + anterior,
+            origem: 'temporada', total: valor, pool: -valor,
+            ts: FieldValue.serverTimestamp(),
+          });
+        }
+        return valor;
+      }).catch(() => 0);
+      dados.aportePool = aporte;
+    }
+
     pagamentos = await _calcularPremios(db, rtdb, anterior, dados);
     const total = pagamentos.reduce((s, p) => s + p.valor, 0);
     const ok = await db.runTransaction(async (tx) => {
       const agora = await tx.get(ref);
       if ((agora.data() || {}).fechada) return false;   // outro chegou primeiro
       tx.update(ref, { fechada: true, fechadaEm: Date.now(), pagamentos, pago: total,
-                       acumulado: Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0)) - total) });
+                       acumulado: Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0) + (dados.aportePool | 0)) - total) });
       return true;
     });
     if (!ok) pagamentos = ((await ref.get()).data() || {}).pagamentos || [];
@@ -845,7 +904,7 @@ async function fecharPendentes(db, rtdb, tempAtual) {
       /* O que sobrou vai para a temporada corrente. Escrito depois do
          fecho e de uma vez: se falhar, perde-se a sobra, e sobra é
          arredondamento — nunca o prémio de ninguém. */
-      const sobra = Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0)) - total);
+      const sobra = Math.max(0, ((dados.bolo | 0) + (dados.acumulado | 0) + (dados.aportePool | 0)) - total);
       if (sobra > 0) {
         await db.collection('temporadas').doc(tempAtual)
           .set({ acumulado: FieldValue.increment(sobra) }, { merge: true }).catch(() => {});
@@ -892,7 +951,7 @@ async function _calcularPremios(db, rtdb, temp, dados) {
     const m = melhor[uid];
     (porDivisao[m.divisao] = porDivisao[m.divisao] || []).push(m.linha);
   }
-  const bolo = (dados.bolo | 0) + (dados.acumulado | 0);
+  const bolo = (dados.bolo | 0) + (dados.acumulado | 0) + (dados.aportePool | 0);
   return TP.temporadaPremiar(bolo, porDivisao).pagamentos;
 }
 

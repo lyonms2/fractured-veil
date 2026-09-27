@@ -250,7 +250,6 @@ function buildListingCard(l) {
       ${(o => o ? `<div class="av-origem">${o.icone} ${o.texto}</div>` : '')(origemDoAnuncio(l))}
       <div class="av-stats">
         <div class="av-stat"><b>${l.nivel||1}</b>${t('mkt.stat.nivel')}</div>
-        <div class="av-stat"><b>${Math.floor(l.vinculo||0)}</b>${t('mkt.stat.vinculo')}</div>
         <div class="av-stat"><b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b>${t('mkt.stat.fase')}</div>
         <div class="av-stat"><b>${esc(sobre.feitio)}</b>${t('mkt.stat.feitio')}</div>
       </div>
@@ -288,13 +287,17 @@ async function openDetail(listingId) {
     </div>
     <div class="detail-stats-grid">
       <div class="detail-stat">${t('mkt.stat.nivel')} <b>${l.nivel||1}</b></div>
-      <div class="detail-stat">${t('mkt.stat.vinculo')} <b>${Math.floor(l.vinculo||0)}</b></div>
       <div class="detail-stat">${t('mkt.stat.fase')} <b style="color:${getFaseCor(l.nivel||1)}">${getFaseNome(l.nivel||1)}</b></div>
       <div class="detail-stat">${t('mkt.stat.feitio')} <b>${esc(sobre.feitio)}</b></div>
       <div class="detail-stat">${t('mkt.stat.tipo')} <b class="detail-tipo">${esc(sobre.tipo)}</b></div>
       <div class="detail-stat">${t('mkt.stat.sexo')} <b>${sobre.sexo}</b></div>
     </div>
     ${bonusText ? `<div class="detail-bonus">✨ ${bonusText}</div>` : ''}
+    <!-- O que muda de dono e o que fica para trás. A vitrine anunciava o
+         VÍNCULO como se fosse um atributo do bicho, e ele não viaja: quem
+         compra começa do zero com ele. Anunciar um número que o comprador
+         nunca recebe é propaganda enganosa, ainda que sem intenção. -->
+    <div class="detail-heranca">${t('mkt.detail.heranca')}</div>
     <div class="detail-price-row">
       <div class="detail-price">💎 ${fmtC(l.price)}</div>
       ${isMine

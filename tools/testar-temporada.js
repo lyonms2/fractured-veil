@@ -236,8 +236,44 @@ function FieldValueDelete() {
   return FieldValue.delete();
 }
 
+/* ══ O QUE A POOL PÕE NO BOLO ══
+   Duas travas: uma fração do saldo, e nunca mais do que os selos juntos.
+   A segunda é a que impede uma temporada pequena de esvaziar uma pool
+   grande — e é a que um refactor distraído apagaria primeiro. */
+function aporteDaPool() {
+  titulo('O que a Pool põe no bolo');
+  const A = TP.temporadaAporteDaPool;
+
+  conferir('pool grande: entra no máximo o tamanho dos selos',
+    A(10000, 500) === 500, { obtido: A(10000, 500) });
+  conferir('pool modesta: entra a fração dela',
+    A(1000, 500) === 100, { obtido: A(1000, 500) });
+  conferir('pool pequena: entra pouco, e nunca o que não tem',
+    A(100, 500) === 10, { obtido: A(100, 500) });
+  conferir('pool vazia: nada',            A(0, 500) === 0);
+  conferir('sem selos: a pool não paga sozinha', A(5000, 0) === 0);
+  conferir('temporada enorme: continua limitada à fração',
+    A(5000, 10000) === 500, { obtido: A(5000, 10000) });
+
+  conferir('nunca dobra mais do que os selos juntos',
+    [[1e9, 100], [1e9, 1], [1e9, 7777]].every(([p, b]) => A(p, b) <= b));
+  conferir('nunca tira mais do que a pool tem',
+    [[10, 1e6], [0, 1e6], [333, 1e6]].every(([p, b]) => A(p, b) <= p));
+  conferir('devolve inteiros',
+    Number.isInteger(A(777, 999)) && Number.isInteger(A(1234, 55)));
+  conferir('lixo não quebra',
+    A(null, 500) === 0 && A(NaN, 500) === 0 && A(500, undefined) === 0 && A(-9, 500) === 0);
+
+  /* A fração é de quem desenha o jogo, mas tem de continuar a ser uma
+     FRAÇÃO: um dia alguém escreve 1.5 aqui sem pensar, e a pool passa a
+     dever mais do que tem a cada temporada. */
+  conferir('a fração está entre 0 e 1',
+    TP.SELO_POOL_FRACAO > 0 && TP.SELO_POOL_FRACAO <= 1, { fracao: TP.SELO_POOL_FRACAO });
+}
+
 (async () => {
   regras();
+  aporteDaPool();
   if (process.env.FIREBASE_DATABASE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST) {
     try { await servidor(); }
     catch (e) { mau++; falhas.push('  ✗ o teste do servidor quebrou: ' + (e && e.stack || e)); }

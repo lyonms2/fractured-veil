@@ -163,6 +163,10 @@ window.registerStrings({
   'mkt.detail.insufficient':  'Cristais insuficientes',
   'mkt.detail.close':         'Fechar',
   'mkt.detail.unlist':        'Retirar listagem',
+  /* O que muda de dono junto com o avatar. Está aqui porque a vitrine
+     mostrava o VÍNCULO ao lado do nível, e o vínculo não viaja — quem
+     compra começa do zero com o bicho. */
+  'mkt.detail.heranca':       '🧬 Vai junto: nível, XP, os dados, a linhagem e os laços dele. ❤️ O vínculo não — começa do zero com você.',
 
   // ── Pool & Transparência ──────────────────────────────────────────
   'mkt.pool.title':           '🔍 Pool & Transparência',
@@ -514,6 +518,7 @@ window.registerStrings({
   'mkt.detail.insufficient':  'Insufficient crystals',
   'mkt.detail.close':         'Close',
   'mkt.detail.unlist':        'Remove listing',
+  'mkt.detail.heranca':       '🧬 Travels with it: level, XP, its dice, its bloodline and its ties. ❤️ Bond does not — it starts from zero with you.',
 
   // Pool section
   'mkt.pool.title':           '🔍 Pool & Transparency',

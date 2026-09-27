@@ -83,7 +83,14 @@ function _pvpTabBoloTopo() {
   if (!el) return;
   const s = _pvpTabTemp;
   el.textContent = s ? ' · ' + (s.bolo | 0) + ' 💎' : '';
-  el.title = s ? t('pvp.selo.bolo') : '';
+  /* De onde vem o bolo. A parte da Pool só se fixa no fecho, e até lá é
+     uma previsão que acompanha o saldo dela — dizer isso aqui evita que
+     o número pareça mexer sozinho. */
+  el.title = !s ? ''
+    : (s.aportePool | 0) > 0
+      ? t(s.aporteFechado ? 'pvp.selo.bolo_pool' : 'pvp.selo.bolo_pool_prev',
+          { selos: s.dosSelos | 0, pool: s.aportePool | 0 })
+      : t('pvp.selo.bolo');
 }
 
 function _pvpTabNomeDaTemporada() {

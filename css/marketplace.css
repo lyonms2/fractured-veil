@@ -81,6 +81,13 @@
   --green:#22c55e;--green2:#4ade80;
   --red:#ef4444;--red2:#f87171;
   --muted:#6b7280;--text:#e2d9f3;--text2:#a89bc0;
+  /* Estas variáveis só existem DENTRO destes dois modais. O
+     #avatarDetailOverlay — a tela onde se compra um avatar — mora
+     fora deles, no corpo da página, e por isso o --text2 não lhe
+     chega: as regras que o pediam saíam na cor cheia herdada, e o
+     texto que devia ser discreto competia com o resto. Duas regras
+     já traziam var(--text2,var(--muted)) por causa disso; agora
+     trazem todas. Onde a variável existe, nada muda. */
   --gem:#a78bfa;--gem2:#c4b5fd;
   --common:#7ab87a;--rare:#5ab4e8;--legendary:#e8a030;
   --radius:0.75rem;
@@ -109,9 +116,9 @@
 .mkt-logo-text{font-family:'Cinzel',serif;font-size:0.875rem;font-weight:700;color:var(--gold);letter-spacing:0.0625rem;}
 .mkt-logo-sub{font-size:0.5625rem;color:var(--muted);letter-spacing:0.125rem;text-transform:uppercase;}
 .mkt-header-right{display:flex;align-items:center;gap:0.5rem;}
-.mkt-back{display:flex;align-items:center;gap:0.3125rem;padding:0.375rem 0.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;color:var(--text2);font-size:0.6875rem;font-family:'Cinzel',serif;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:0.03125rem;}
+.mkt-back{display:flex;align-items:center;gap:0.3125rem;padding:0.375rem 0.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;color:var(--text2,var(--muted));font-size:0.6875rem;font-family:'Cinzel',serif;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:0.03125rem;}
 .mkt-back:hover{border-color:var(--purple);color:var(--text);}
-.mkt-wallet-badge{display:flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;font-size:0.625rem;color:var(--text2);}
+.mkt-wallet-badge{display:flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;font-size:0.625rem;color:var(--text2,var(--muted));}
 .mkt-wallet-dot{width:0.375rem;height:0.375rem;border-radius:50%;background:var(--green);}
 .mkt-wallet-dot.off{background:var(--red);}
 .mkt-bal{display:flex;align-items:center;gap:0.3125rem;padding:0.375rem 0.75rem;background:linear-gradient(135deg,#1a1040,#0d0820);border:1px solid var(--purple);border-radius:0.5rem;font-size:0.6875rem;}
@@ -130,7 +137,7 @@
 .mkt-main{display:block;flex:1;max-width:none;padding:1rem;}
 
 .mkt-nav-section{font-size:0.5rem;color:var(--muted);letter-spacing:0.125rem;text-transform:uppercase;padding:0.5rem 0.5rem 0.25rem;margin-top:0.25rem;}
-.mkt-nav-btn{display:flex;align-items:center;gap:0.5rem;padding:0.5625rem 0.625rem;border-radius:0.5rem;background:none;border:none;color:var(--text2);font-family:'Cinzel',serif;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;text-align:left;transition:all .2s;letter-spacing:0.01875rem;}
+.mkt-nav-btn{display:flex;align-items:center;gap:0.5rem;padding:0.5625rem 0.625rem;border-radius:0.5rem;background:none;border:none;color:var(--text2,var(--muted));font-family:'Cinzel',serif;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;text-align:left;transition:all .2s;letter-spacing:0.01875rem;}
 .mkt-nav-btn:hover{background:var(--surface2);color:var(--text);}
 .mkt-nav-btn.active{background:linear-gradient(135deg,#1a1040,#0d0820);color:var(--gem2);border:1px solid var(--purple);}
 .mkt-nav-btn .nav-icon{font-size:0.9375rem;width:1.25rem;text-align:center;}
@@ -149,7 +156,7 @@
 .mkt-section{display:none;}
 .mkt-section.active{display:block;}
 .section-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem;}
-.section-sub{font-size:0.6875rem;color:var(--text2);margin-bottom:1rem;}
+.section-sub{font-size:0.6875rem;color:var(--text2,var(--muted));margin-bottom:1rem;}
 
 /* ═══════════════════════════════════════════
    AVATAR CARD
@@ -205,7 +212,7 @@
 .slot-svg-wrap svg{width:6rem;height:6rem;display:block;}
 .slot-body{padding:0.625rem 0.875rem 0.875rem;display:flex;flex-direction:column;align-items:center;gap:0.375rem;flex:1;}
 .slot-av-name{font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:700;color:var(--text);text-align:center;line-height:1.3;}
-.slot-av-sub{font-size:0.5625rem;color:var(--text2);text-align:center;font-style:italic;min-height:0.75rem;}
+.slot-av-sub{font-size:0.5625rem;color:var(--text2,var(--muted));text-align:center;font-style:italic;min-height:0.75rem;}
 .slot-av-pill{font-size:0.5rem;font-weight:600;padding:0.125rem 0.625rem;border-radius:1.25rem;letter-spacing:0.03125rem;text-transform:uppercase;}
 .slot-av-pill.Comum{background:rgba(122,184,122,.15);color:var(--common);border:1px solid rgba(122,184,122,.25);}
 .slot-av-pill.Raro{background:rgba(90,180,232,.12);color:var(--rare);border:1px solid rgba(90,180,232,.25);}
@@ -275,7 +282,7 @@
    que vestiam marcação apagada com a queima de ovos para a pool. Ver a
    nota no js/pool.js. */
 .pool-log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.625rem;}
-.pool-log-title{font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:var(--text2);letter-spacing:0.03125rem;}
+.pool-log-title{font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;color:var(--text2,var(--muted));letter-spacing:0.03125rem;}
 .pool-log-legend{display:flex;gap:0.625rem;}
 .pool-leg{font-size:0.5rem;font-weight:700;letter-spacing:0.03125rem;}
 .pool-leg.entrada{color:var(--green);}
@@ -299,13 +306,13 @@
 /* A compra por quantidade: o campo e o botão usam os mesmos estilos do
    resgate (.tx-input-row), e o total em MATIC fica logo abaixo. */
 #crystalPackages{max-width:31.25rem;margin-bottom:1.5rem;}
-.compra-total{font-size:0.625rem;color:var(--text2);text-align:center;margin-top:0.25rem;letter-spacing:0.02rem;}
+.compra-total{font-size:0.625rem;color:var(--text2,var(--muted));text-align:center;margin-top:0.25rem;letter-spacing:0.02rem;}
 @media (min-width: 769px) { .compra-total{ font-size:0.46875rem; } }
 
 /* ── MetaMask CTA na seção de cristais ── */
 .metamask-cta{padding:0.875rem 1rem;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);border-radius:0.625rem;margin-bottom:1.25rem;}
 .metamask-cta-title{font-family:'Cinzel',serif;font-size:0.6875rem;color:var(--gold);margin-bottom:0.375rem;}
-.metamask-cta-sub{font-size:0.625rem;color:var(--text2);line-height:1.6;margin-bottom:0.75rem;}
+.metamask-cta-sub{font-size:0.625rem;color:var(--text2,var(--muted));line-height:1.6;margin-bottom:0.75rem;}
 .btn-metamask{padding:0.5rem 1rem;background:linear-gradient(135deg,#f6851b,#e2761b);border:none;border-radius:0.5rem;color:#fff;font-family:'Cinzel',serif;font-size:0.625rem;font-weight:700;cursor:pointer;letter-spacing:0.03125rem;transition:all .2s;}
 .btn-metamask:hover{opacity:.9;}
 .metamask-linked{display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.875rem;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:0.5rem;margin-bottom:1.25rem;}
@@ -321,7 +328,7 @@
 .referral-title{font-family:'Cinzel',serif;font-size:0.75rem;color:var(--gold);margin-bottom:0.1875rem;}
 .referral-sub{font-size:0.5625rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;}
 .referral-link-row{display:flex;gap:0.5rem;align-items:center;margin-bottom:0.75rem;}
-.referral-link-input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:0.375rem;padding:0.4375rem 0.625rem;color:var(--text2);font-family:monospace;font-size:0.5625rem;outline:none;min-width:0;}
+.referral-link-input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:0.375rem;padding:0.4375rem 0.625rem;color:var(--text2,var(--muted));font-family:monospace;font-size:0.5625rem;outline:none;min-width:0;}
 .btn-referral-copy{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;border:none;border-radius:0.375rem;padding:0.4375rem 0.875rem;font-family:'Cinzel',serif;font-size:0.5625rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .2s;}
 .btn-referral-copy:hover{opacity:.85;}
 .referral-stats{display:flex;gap:0.625rem;flex-wrap:wrap;margin-bottom:0.25rem;}
@@ -330,7 +337,7 @@
 .referral-stat-lbl{font-size:0.5rem;color:var(--muted);margin-top:0.125rem;}
 /* Níveis e cards de jogadores */
 .referral-level-section{margin:1.25rem 0 0.25rem;}
-.referral-level-hdr{display:flex;align-items:center;gap:0.5rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.625rem;font-family:'Cinzel',serif;font-size:0.625rem;color:var(--text2);}
+.referral-level-hdr{display:flex;align-items:center;gap:0.5rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.625rem;font-family:'Cinzel',serif;font-size:0.625rem;color:var(--text2,var(--muted));}
 .referral-level-badge{background:var(--purple);color:#fff;font-family:'Cinzel',serif;font-size:0.5625rem;font-weight:700;padding:0.125rem 0.5rem;border-radius:0.625rem;flex-shrink:0;}
 .referral-level-pct{color:var(--gold);margin-left:auto;font-size:0.625rem;font-weight:700;}
 .referral-level-count{color:var(--muted);font-size:0.5625rem;}
@@ -346,7 +353,7 @@
 .resgate-rede{font-size:0.5rem;color:#e0a555;text-align:center;margin-top:0.25rem;line-height:1.4;}
 .referral-player-inactive{font-size:0.5rem;color:var(--muted);white-space:nowrap;}
 .referral-footer-note{font-size:0.5rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);padding-top:0.75rem;margin-top:1rem;}
-.referral-footer-note b{color:var(--text2);}
+.referral-footer-note b{color:var(--text2,var(--muted));}
 
 /* TX */
 .tx-verify-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;max-width:31.25rem;}
@@ -364,7 +371,7 @@
 /* TRANSPARÊNCIA */
 .transp-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:0.75rem;padding:1.125rem;margin-bottom:0.875rem;}
 .transp-block-title{font-family:'Cinzel',serif;font-size:0.6875rem;letter-spacing:0.125rem;color:var(--gold);margin-bottom:0.625rem;}
-.transp-block-body{font-size:0.75rem;color:var(--text2);line-height:1.7;}
+.transp-block-body{font-size:0.75rem;color:var(--text2,var(--muted));line-height:1.7;}
 .transp-block-body strong{color:var(--text);}
 .transp-link{display:inline-block;margin-top:0.5rem;color:var(--gem);font-size:0.6875rem;text-decoration:none;border-bottom:1px solid rgba(167,139,250,.3);padding-bottom:0.0625rem;}
 .transp-link:hover{color:var(--gem2);}
@@ -422,7 +429,7 @@
    ficou sem uso. A margem de baixo da pastilha subiu de 0.375 para
    0.625rem para o cartão não se fechar sobre as estatísticas. */
 .egg-mkt-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.1875rem;width:100%;margin-bottom:0.5rem;}
-.egg-mkt-stat{font-size:0.5rem;color:var(--text2);display:flex;justify-content:space-between;}
+.egg-mkt-stat{font-size:0.5rem;color:var(--text2,var(--muted));display:flex;justify-content:space-between;}
 .egg-mkt-stat b{color:var(--text);}
 .egg-mkt-price{font-family:'Cinzel',serif;font-size:0.875rem;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:0.25rem;margin-bottom:0.5rem;}
 .egg-mkt-seller{font-size:0.4375rem;color:var(--muted);text-align:center;margin-bottom:0.5rem;font-family:monospace;}
@@ -440,7 +447,7 @@
 .overlay.open{display:flex;}
 .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:1rem;padding:1.75rem;width:100%;max-width:23.75rem;}
 .modal-title{font-family:'Cinzel',serif;font-size:0.9375rem;color:var(--gold);margin-bottom:0.375rem;}
-.modal-sub{font-size:0.625rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;}
+.modal-sub{font-size:0.625rem;color:var(--text2,var(--muted));margin-bottom:1.25rem;line-height:1.5;}
 .modal-field{margin-bottom:0.875rem;}
 .modal-label{font-size:0.5625rem;color:var(--muted);letter-spacing:0.0625rem;text-transform:uppercase;margin-bottom:0.3125rem;}
 .modal-input{width:100%;padding:0.5625rem 0.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;color:var(--text);font-family:'EB Garamond',serif;font-size:0.75rem;outline:none;}
@@ -477,7 +484,7 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 .num-spin-btn+.num-spin-btn{border-top:1px solid var(--border);}
 .modal-row{display:flex;gap:0.5rem;margin-top:0.25rem;}
 .btn-modal-confirm{flex:1;padding:0.625rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:0.5rem;color:#fff;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:0.03125rem;}
-.btn-modal-cancel{padding:0.625rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;color:var(--text2);font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:600;cursor:pointer;}
+.btn-modal-cancel{padding:0.625rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;color:var(--text2,var(--muted));font-family:'Cinzel',serif;font-size:0.6875rem;font-weight:600;cursor:pointer;}
 .modal-warn{font-size:0.5625rem;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:0.375rem;padding:0.5rem 0.625rem;margin-bottom:0.875rem;line-height:1.5;}
 #avatarDetailOverlay .modal-box{max-width:27.5rem;}
 .detail-header{display:flex;gap:1rem;align-items:center;margin-bottom:1rem;}
@@ -489,11 +496,15 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 .detail-rarity.Raro{color:var(--rare);}
 .detail-rarity.Lendário{color:var(--legendary);}
 .detail-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.25rem;margin-bottom:0.75rem;}
-.detail-stat{font-size:0.5625rem;color:var(--text2);display:flex;justify-content:space-between;background:var(--surface2);padding:0.25rem 0.5rem;border-radius:0.25rem;}
+.detail-stat{font-size:0.5625rem;color:var(--text2,var(--muted));display:flex;justify-content:space-between;background:var(--surface2);padding:0.25rem 0.5rem;border-radius:0.25rem;}
 .detail-stat b{color:var(--text);}
 /* O tipo de dano vem em minúsculas do i18n ("fogo"). */
 .detail-tipo{text-transform:capitalize;}
 .detail-bonus{font-size:0.5625rem;color:var(--gem2);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:0.375rem;padding:0.4375rem 0.625rem;margin-bottom:0.75rem;}
+/* O que o avatar leva consigo na venda, e o que fica. Discreto de
+   propósito: é aviso, não anúncio — por isso sem o fundo colorido do
+   .detail-bonus, que é onde se vende o bicho. */
+.detail-heranca{font-size:0.5rem;line-height:1.5;color:var(--text2,var(--muted));border-top:1px solid var(--border);padding-top:0.5rem;margin-bottom:0.75rem;}
 .detail-price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
 .detail-price{font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;color:var(--gem2);display:flex;align-items:center;gap:0.375rem;}
 .btn-buy-avatar{padding:0.625rem 1.25rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:0.5rem;color:#fff;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:0.03125rem;transition:all .2s;}
@@ -692,7 +703,7 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
    ler antes de escrever o número — era esse o problema: o limite só
    aparecia na mensagem de erro, depois de o pedido falhar. */
 .resgate-limite{
-  font-size:0.5625rem; color:var(--text2); text-align:center;
+  font-size:0.5625rem; color:var(--text2,var(--muted)); text-align:center;
   margin-bottom:0.5rem; letter-spacing:0.02rem;
 }
 .resgate-limite.esgotado{ color:var(--red2); font-weight:600; }
