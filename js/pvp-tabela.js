@@ -163,7 +163,18 @@ function _pvpTabCarregar(div) {
       const out = [];
       s.forEach(c => { out.push(Object.assign({ uid: c.key }, c.val() || {})); });
       out.reverse();
-      _pvpTabDados[div] = out;
+      /* ── A MESMA ORDEM QUE PAGA ──
+
+         O banco só sabe ordenar por um campo, e ordena por pontos. O
+         servidor desempata por vitórias, depois por menos derrotas,
+         depois por quem chegou lá primeiro (temporadaOrdenar, em
+         js/temporada.js) — e é essa a ordem que decide quem entra nos
+         35% que recebem.
+
+         Enquanto ninguém empata, as duas coincidem. Quando empatam, a
+         tela mostrava uma ordem e o prêmio seguia outra: na fronteira
+         do corte, isso é dinheiro. */
+      _pvpTabDados[div] = (typeof temporadaOrdenar === 'function') ? temporadaOrdenar(out) : out;
       delete _pvpTabErro[div];
       if (_pvpTabDiv === div) _pvpTabDesenhar();
     })
@@ -260,6 +271,40 @@ function _pvpTabInicial(linha) {
   return `<span class="pvp-tab-sem-cara">${esc(letra)}</span>`;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   QUEM ESTÁ DENTRO DO CORTE
+
+   A página mostrava o bolo e escondia quem o recebe: para saber se
+   estava dentro, o jogador tinha de fazer 35% de N de cabeça — e ainda
+   descobrir que só contam os que compraram selo e jogaram dez partidas.
+
+   A conta é a MESMA do servidor (api/pvp.js, _calcularPremios): dos que
+   têm selo, ficam os de dez lutas para cima; ordena-se como o prêmio
+   ordena; e recebem os primeiros temporadaQuantosPremiados(). Uma
+   divisão com menos de SELO_MIN_GENTE elegiveis não paga a ninguem.
+
+   Há UMA coisa que só o servidor sabe: quem jogou em duas divisões
+   concorre naquela onde jogou mais partidas. Daqui não se vê a outra
+   tabela, portanto isto é a conta desta divisão — e só mexe em quem
+   está mesmo em cima da linha.
+
+   Devolve null quando ainda não dá para saber (a lista de selos não
+   chegou): melhor não marcar nada do que marcar errado.
+   ══════════════════════════════════════════════════════════════════ */
+function _pvpTabCorte(lista) {
+  if (!_pvpTabSelos || typeof temporadaQuantosPremiados !== 'function') return null;
+  const minLutas = (typeof SELO_MIN_LUTAS === 'number') ? SELO_MIN_LUTAS : 10;
+  const minGente = (typeof SELO_MIN_GENTE === 'number') ? SELO_MIN_GENTE : 4;
+  const elegiveis = (lista || []).filter(r =>
+    _pvpTabSelos[r.uid] && ((r.v | 0) + (r.d | 0) + (r.e | 0)) >= minLutas);
+  if (elegiveis.length < minGente) {
+    return { dentro: new Set(), quantos: 0, elegiveis: elegiveis.length, falta: minGente - elegiveis.length };
+  }
+  const quantos = temporadaQuantosPremiados(elegiveis.length);
+  return { dentro: new Set(elegiveis.slice(0, quantos).map(r => r.uid)),
+           quantos, elegiveis: elegiveis.length, falta: 0 };
+}
+
 function _pvpTabHTML() {
   const div = _pvpTabDiv;
   const lista = _pvpTabDados[div];
@@ -293,6 +338,9 @@ function _pvpTabHTML() {
       </div>`;
   }
 
+  const corte = _pvpTabCorte(lista);
+  const naFaixa = r => !!(corte && corte.dentro.has(r.uid));
+
   // ── o pódio ──
   const podio = lista.slice(0, 3);
   const ordemPodio = [podio[1], podio[0], podio[2]];   // 2º, 1º, 3º
@@ -301,7 +349,8 @@ function _pvpTabHTML() {
       ${ordemPodio.map((r, i) => {
         if (!r) return '<div class="pvp-tab-lugar vazio"></div>';
         const pos = lugares[i];
-        return `<figure class="pvp-tab-lugar l${pos}${r.uid === meuUid ? ' eu' : ''}" style="--i:${i}">
+        return `<figure class="pvp-tab-lugar l${pos}${r.uid === meuUid ? ' eu' : ''}${
+          naFaixa(r) ? ' premiado' : ''}" style="--i:${i}">
           <div class="pvp-tab-arte">${pos === 1 ? '<span class="pvp-tab-coroa">♛</span>' : ''}${_pvpTabAvatarSVG(r)}</div>
           <figcaption>
             <span class="pvp-tab-medalha">${esc(_pvpTabOrdinal(pos))}</span>
@@ -327,12 +376,16 @@ function _pvpTabHTML() {
                                     pos: _pvpTabOrdinal(meuIdx) })
     : lista[1] ? t('pvp.tab.na_frente', { n: Math.max(0, (eu.p | 0) - (lista[1].p | 0)) })
     : '';
+  /* E a MINHA linha diz se eu estou dentro — é a pergunta que traz o
+     jogador a esta página. A marca é a mesma da lista, mais uma palavra
+     ao lado dos pontos. */
   const meuHTML = eu
-    ? `<div class="pvp-tab-eu">
+    ? `<div class="pvp-tab-eu${naFaixa(eu) ? ' premiado' : ''}">
         <span class="pvp-tab-eu-pos">${esc(_pvpTabOrdinal(meuIdx + 1))}</span>
         <span class="pvp-tab-eu-nome">${esc(t('pvp.tab.voce'))}</span>
         <span class="pvp-tab-eu-vd">${esc(_pvpTabVD(eu))}</span>
         <span class="pvp-tab-eu-pts">${eu.p | 0}</span>
+        ${naFaixa(eu) ? `<span class="pvp-tab-eu-premiado">${esc(t('pvp.tab.eu_premiado'))}</span>` : ''}
         ${nota ? `<span class="pvp-tab-eu-falta">${esc(nota)}</span>` : ''}
       </div>`
     : `<div class="pvp-tab-eu fora">
@@ -344,7 +397,8 @@ function _pvpTabHTML() {
   // ── a lista, do quarto em diante ──
   const resto = lista.slice(3);
   const listaHTML = resto.length ? `<ol class="pvp-tab-lista" start="4">
-      ${resto.map((r, i) => `<li class="${r.uid === meuUid ? 'eu' : ''}" style="--i:${Math.min(i, 12)}">
+      ${resto.map((r, i) => `<li class="${r.uid === meuUid ? 'eu' : ''}${
+        naFaixa(r) ? ' premiado' : ''}" style="--i:${Math.min(i, 12)}">
         <span class="pvp-tab-pos">${i + 4}</span>
         <span class="pvp-tab-cara">${_pvpTabAvatarSVG(r)}</span>
         <span class="pvp-tab-nome">${esc(r.nome || t('id.sem_nome'))}${
@@ -357,7 +411,19 @@ function _pvpTabHTML() {
     </ol>` : '';
 
   const rodape = lista.length === 1 ? t('pvp.tab.rodape_um') : t('pvp.tab.rodape', { n: lista.length });
-  return abas + podioHTML + meuHTML + listaHTML +
+  /* A regra do prêmio dita em uma linha, por baixo da tabela: quantos
+     recebem, e o que é preciso para entrar na conta. Quando ainda falta
+     gente para a divisão pagar, diz-se isso — é a informação mais útil
+     que essa tabela pode dar naquele momento. */
+  const notaCorte = !corte ? ''
+    : corte.quantos > 0
+      ? `<div class="pvp-tab-corte-nota">${esc(t('pvp.tab.corte', {
+          n: corte.quantos, de: corte.elegiveis,
+          min: (typeof SELO_MIN_LUTAS === 'number') ? SELO_MIN_LUTAS : 10 }))}</div>`
+      : `<div class="pvp-tab-corte-nota">${esc(t('pvp.tab.corte_poucos', {
+          falta: corte.falta,
+          min: (typeof SELO_MIN_GENTE === 'number') ? SELO_MIN_GENTE : 4 }))}</div>`;
+  return abas + podioHTML + meuHTML + listaHTML + notaCorte +
     `<div class="pvp-tab-rodape">${esc(rodape)}</div>`;
 }
 

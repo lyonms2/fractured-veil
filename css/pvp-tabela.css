@@ -501,6 +501,43 @@
   opacity: .85;
 }
 
+/* ── QUEM ESTÁ DENTRO DO CORTE ──
+
+   A página mostrava o bolo e escondia quem o recebe. Quem está na faixa
+   premiada leva uma barra dourada à esquerda — marca de margem, não de
+   fundo: a lista já tem o destaque do "eu" e dois fundos competindo
+   deixavam de destacar coisa nenhuma.
+
+   A linha do rodapé explica a regra em vez de a deixar adivinhar. */
+.pvp-tab-lista li.premiado {
+  box-shadow: inset 0.1875rem 0 0 var(--gold);
+}
+.pvp-tab-lista li.premiado .pvp-tab-pontos { color: var(--gold); }
+.pvp-tab-lugar.premiado .pvp-tab-medalha {
+  color: var(--gold);
+  text-shadow: 0 0 0.5rem rgba(201,168,76,.45);
+}
+/* A minha linha, quando estou dentro: a mesma barra dourada da lista,
+   e uma palavra ao lado dos pontos para nao depender so da cor. */
+.pvp-tab-eu.premiado { box-shadow: inset 0.1875rem 0 0 var(--gold); }
+.pvp-tab-eu-premiado {
+  grid-column: 1 / -1;
+  font-family: 'EB Garamond', serif;
+  font-size: 0.5rem;
+  color: var(--gold);
+  letter-spacing: 0.03125rem;
+}
+.pvp-tab-corte-nota {
+  text-align: center;
+  font-family: 'EB Garamond', serif;
+  font-size: 0.5625rem;
+  color: var(--gold);
+  opacity: .85;
+  margin: 0.625rem 0 0.25rem;
+  padding: 0 0.5rem;
+  line-height: 1.45;
+}
+
 @keyframes pvp-tab-sobe {
   from { opacity: 0; transform: translateY(0.5rem); }
   to   { opacity: 1; transform: none; }
@@ -531,6 +568,7 @@
   .pvp-tab-eu-nome, .pvp-tab-nome { font-size: 0.6875rem; }
   .pvp-tab-eu.fora { font-size: 0.75rem; }
   .pvp-tab-eu-falta, .pvp-tab-rodape { font-size: 0.6875rem; }
+  .pvp-tab-corte-nota { font-size: 0.6875rem; }
   .pvp-tab-selo-nota, .pvp-tab-selo-tem, .pvp-tab-ganhou { font-size: 0.6875rem; }
   .pvp-tab-pos { font-size: 0.6875rem; }
   .pvp-tab-pontos { font-size: 0.875rem; }
