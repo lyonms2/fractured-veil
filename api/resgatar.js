@@ -61,7 +61,11 @@ const RATE                 = 10;
    arredondado a inteiro seria SEMPRE zero (Math.floor(50 * 0.01) = 0).
    Os cristais já vivem com duas casas — o fmtC formata assim e os preços
    do mercado usam-nas — portanto 50 💎 dão 0,50 💎 ao dev. */
-const DEV_FEE_RATE = 0.01;
+/* A taxa vive no js/taxas.js, com as outras e com o motivo de cada
+   uma. Estava aqui e em duas cópias no js/cristais.js — três
+   números que têm de concordar e nada que os obrigue. */
+const TX = require('../js/taxas.js');
+const DEV_FEE_RATE = TX.TAXA_RESGATE;
 const DEV_WALLET   = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
 
 // De que conta (uid) é uma carteira. Só pela coleção `carteiras`, o
@@ -481,7 +485,7 @@ module.exports = async function handler(req, res) {
          também. Todo saque morria antes de chegar à MetaMask.
          Agora a assinatura leva o valor inteiro que o jogador pediu (menos
          os convites, que já são inteiros), e o 1% sai do saldo junto. */
-      const devFee      = +(gemsNum * DEV_FEE_RATE).toFixed(2);
+      const devFee      = TX.taxaDoResgate(gemsNum);
       const aDebitar    = +(gemsNum + devFee).toFixed(2);
 
       if (cristais < aDebitar) {

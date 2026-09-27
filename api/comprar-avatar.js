@@ -18,7 +18,20 @@ const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
    já fazia na tela de visitar). */
 require('./_genetica.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
-const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
+/* As taxas vivem no js/taxas.js. A venda deixa 15%: dez para a pool,
+   como sempre deixou, e cinco para o desenvolvedor — que até aqui só
+   ganhava quando alguém RESGATAVA, o evento mais raro do jogo. A pool
+   não perde nada com isto; quem paga a diferença é o vendedor. */
+const TX = require('../js/taxas.js');
+const TAXA_MARKETPLACE = TX.TAXA_VENDA;       // 15%, o que o vendedor deixa
+const DEV_WALLET = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C';
+
+// De que conta é a carteira do dev. Só pela coleção `carteiras`, o
+// vínculo assinado — a mesma prova que o api/resgatar.js exige.
+async function _uidDaCarteira(db, carteira) {
+  const snap = await db.collection('carteiras').doc(String(carteira).toLowerCase()).get();
+  return (snap.exists && snap.data()?.uid) ? snap.data().uid : null;
+}
 /* A taxa de listagem, que vai inteira para a pool. Eram 2 ð — dois
    centavos —, barato de mais para travar quem enche o mercado de
    anúncios sem intenção de vender. Ver a escala no js/cristais.js. */
@@ -435,6 +448,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
   let listing = null;
   let novoSaldoComprador  = 0;
   let novosSlotsComprador = null;
+  let devFeeVenda         = 0;   // sai da transação para o crédito lá fora
 
   try {
     await db.runTransaction(async (tx) => {
@@ -569,6 +583,16 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const pagoReal     = +(price - pagoBonus).toFixed(2);
       const taxaDoBonus  = Math.min(taxa, pagoBonus);
       const taxaReal     = +(taxa - taxaDoBonus).toFixed(2);
+
+      /* E a taxa com lastro reparte-se entre a pool e o dev, na mesma
+         proporção das duas fatias (10 e 5). O que foi pago em bónus já
+         foi queimado e não se divide: bónus não tem POL no cofre, e
+         creditar isso ao dev seria criar lastro do nada.
+
+         A pool fica com a sobra do arredondamento: se um cristal não
+         dá para dividir, ele vai para os jogadores. */
+      const taxaDev      = +Math.floor(taxaReal * (TX.TAXA_VENDA_DEV / TX.TAXA_VENDA) * 100) / 100;
+      const taxaPool     = +(taxaReal - taxaDev).toFixed(2);
       const sellerReal   = +(pagoReal - taxaReal).toFixed(2);
       const sellerBonus  = +(pagoBonus - taxaDoBonus).toFixed(2);
 
@@ -653,10 +677,10 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.
-      if (taxaReal > 0) {
+      if (taxaPool > 0) {
         tx.update(poolRef, {
-          cristais:    FieldValue.increment(taxaReal),
-          totalEntrou: FieldValue.increment(taxaReal),
+          cristais:    FieldValue.increment(taxaPool),
+          totalEntrou: FieldValue.increment(taxaPool),
         });
         const logRef = poolRef.collection('logs').doc();
         tx.set(logRef, {
@@ -664,11 +688,41 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
           motivo: `venda avatar ${listing.nome}`,
           origem: listing.sellerId,
           total:  taxaReal,
-          pool:   taxaReal,
+          pool:   taxaPool,
+          dev:    taxaDev,
           ts:     FieldValue.serverTimestamp(),
         });
       }
+      devFeeVenda = taxaDev;
     });
+
+    /* A PARTE DO DEV, depois da venda estar fechada.
+
+       Fora da transação de propósito, e pelo mesmo motivo do
+       api/resgatar.js: a conta do dev é achada pela coleção `carteiras`,
+       uma leitura que não cabe dentro de uma transação que já lê cinco
+       documentos. Se este crédito falhar, o log da pool guarda o valor
+       no campo `dev` e a venda não se desfaz — perder a taxa é melhor do
+       que desfazer uma compra que o jogador já viu acontecer.
+
+       Espera-se pela escrita antes de responder: no Vercel a função pode
+       congelar assim que responde, e uma escrita solta perde-se. */
+    if (devFeeVenda > 0) {
+      try {
+        const devUid = await _uidDaCarteira(db, DEV_WALLET);
+        if (!devUid) {
+          console.error('[dev-fee venda] nenhuma conta vinculada à carteira do dev; taxa não creditada:', devFeeVenda);
+        } else {
+          await db.collection('players').doc(devUid).set({
+            gs:          { cristais: FieldValue.increment(devFeeVenda) },
+            cristais:    FieldValue.increment(devFeeVenda),
+            devFeeTotal: FieldValue.increment(devFeeVenda),
+          }, { merge: true });
+        }
+      } catch (err) {
+        console.error('[dev-fee venda]', err.message);
+      }
+    }
 
     return res.status(200).json({
       ok:        true,

@@ -208,7 +208,7 @@ window.registerStrings({
   'mkt.crystals.redeem_title':'💸 Resgatar Cristais → POL',
   // O {max} e o {matic} vêm do RESGATE_MAX_DIA (js/cristais.js), que
   // espelha o servidor. Estavam escritos à mão, e por isso mentiram.
-  'mkt.crystals.redeem_sub':  'Converta seus 💎 em POL. Limite: {max} 💎 por dia ({matic} POL). Taxa de 1% cobrada à parte: resgatar 100 💎 usa 101 💎 do saldo.',
+  'mkt.crystals.redeem_sub':  'Converta seus 💎 em POL. Limite: {max} 💎 por dia ({matic} POL). Taxa de 3% cobrada à parte: resgatar 100 💎 usa 103 💎 do saldo.',
   'mkt.transp.redeem_limit_val': '{max} 💎 / dia ({matic} POL)',
   'mkt.crystals.redeem_btn':  'Resgatar',
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
@@ -327,7 +327,7 @@ window.registerStrings({
   'mkt.limit.with_limit':      '{used} POL sacados hoje · {remaining} POL restantes (limite: {teto} POL/dia)',
 
   // Pool limit tiers
-  'mkt.pool.fees':             '100% das taxas do jogo alimentam esta pool.',
+  'mkt.pool.fees':             'As taxas do mercado alimentam esta pool, e ela devolve tudo aos jogadores.',
 
   // Transparency block titles
   'mkt.transp.vault_title':    '🏦 O Cofre (Smart Contract)',
@@ -354,13 +354,17 @@ window.registerStrings({
   'mkt.transp.redeem_rate':    'Cotação de resgate',
   'mkt.transp.redeem_limit':   'Limite de resgate',
   'mkt.transp.your_limit':     'Seu limite hoje:',
-  'mkt.transp.feed_body':      '<strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.',
+  /* Dizia "100% das taxas". Deixou de ser verdade quando a venda passou
+     a repartir 10 para a pool e 5 para o desenvolvedor: numa página de
+     transparência, um número que já foi verdade é pior do que nenhum. */
+  'mkt.transp.feed_body':      'A listagem vai <strong>inteira</strong> para a pool, e a venda deixa nela os mesmos <strong>10%</strong> de sempre. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.',
   'mkt.transp.feed_mkt':       'MERCADO',
   'mkt.transp.list_avatar':    'Listar avatar',
   'mkt.transp.sell_avatar':    'Venda de avatar',
-  'mkt.transp.weekly_body':    'O desenvolvedor recebe <strong style="color:var(--text);">1% de cada resgate</strong>, e mais nada. É cobrado do saldo de quem resgata, junto com o valor sacado — nunca da pool.',
+  'mkt.transp.weekly_body':    'O desenvolvedor recebe <strong style="color:var(--text);">3% de cada resgate</strong> e <strong style="color:var(--text);">5% de cada venda no mercado</strong>. O resgate é cobrado do saldo de quem saca; a venda, do vendedor. Nunca da pool: ela continua a receber os mesmos 10% da venda de sempre.',
   'mkt.transp.from_where':     'DE ONDE SAI',
   'mkt.transp.on_withdraw':    'Resgate de 💎 → POL',
+  'mkt.transp.on_sale':        'Venda de avatar no mercado',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
   'mkt.transp.weekly_note':    'Sacar 100 💎 dá <strong style="color:var(--text);">1 💎</strong> ao desenvolvedor. A pool não é tocada.',
@@ -555,7 +559,7 @@ window.registerStrings({
   'mkt.crystals.buy_total_vazio':'How many crystals? From {min} to {max} 💎 — each 💎 costs 0.1 POL.',
   'mkt.crystals.buy_invalid': 'Enter a whole number from {min} to {max} 💎.',
   'mkt.crystals.redeem_title':'💸 Redeem Crystals → POL',
-  'mkt.crystals.redeem_sub':  'Convert your 💎 to POL. Limit: {max} 💎 per day ({matic} POL). A 1% fee is charged on top: redeeming 100 💎 uses 101 💎 of your balance.',
+  'mkt.crystals.redeem_sub':  'Convert your 💎 to POL. Limit: {max} 💎 per day ({matic} POL). A 3% fee is charged on top: redeeming 100 💎 uses 103 💎 of your balance.',
   'mkt.transp.redeem_limit_val': '{max} 💎 / day ({matic} POL)',
   'mkt.crystals.redeem_btn':  'Redeem',
   'mkt.crystals.redeem_ph':   'Amount of 💎 (min. 10)',
@@ -662,7 +666,7 @@ window.registerStrings({
   'mkt.limit.with_limit':      '{used} POL redeemed today · {remaining} POL remaining (limit: {teto} POL/day)',
 
   // Pool limit tiers
-  'mkt.pool.fees':             '100% of game fees feed this pool.',
+  'mkt.pool.fees':             'Market fees feed this pool, and all of it goes back to players.',
 
   // Transparency block titles
   'mkt.transp.vault_title':    '🏦 The Vault (Smart Contract)',
@@ -688,13 +692,14 @@ window.registerStrings({
   'mkt.transp.redeem_rate':    'Redeem price',
   'mkt.transp.redeem_limit':   'Redeem limit',
   'mkt.transp.your_limit':     'Your limit today:',
-  'mkt.transp.feed_body':      '<strong>100% of fees</strong> from all game activities go directly to the pool. No cut is taken at entry.',
+  'mkt.transp.feed_body':      'The listing fee goes to the pool <strong>in full</strong>, and a sale leaves it the same <strong>10%</strong> it always did. The developer is paid separately, by the seller, and never from the pool — the numbers are below.',
   'mkt.transp.feed_mkt':       'MARKET',
   'mkt.transp.list_avatar':    'List avatar',
   'mkt.transp.sell_avatar':    'Avatar sale',
-  'mkt.transp.weekly_body':    'The developer takes <strong style="color:var(--text);">1% of every redemption</strong>, and nothing else. It is charged to the redeemer\'s balance along with the amount withdrawn — never from the pool.',
+  'mkt.transp.weekly_body':    'The developer takes <strong style="color:var(--text);">3% of every redemption</strong> and <strong style="color:var(--text);">5% of every market sale</strong>. The redemption fee comes from the redeemer\'s balance; the sale fee, from the seller. Never from the pool: it still receives the same 10% of every sale it always did.',
   'mkt.transp.from_where':     'WHERE IT COMES FROM',
   'mkt.transp.on_withdraw':    'Withdrawing 💎 → POL',
+  'mkt.transp.on_sale':        'Avatar sale on the market',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — never touched',
   'mkt.transp.weekly_note':    'Redeeming 100 💎 gives <strong style="color:var(--text);">1 💎</strong> to the developer. The pool is untouched.',

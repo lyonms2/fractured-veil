@@ -340,7 +340,7 @@ async function buyAvatar(listingId, price) {
     _mktSyncGs({ cristais: data.novoSaldo });
     updateCristaisDisplay();
 
-    const taxa = Math.round(price * TAXA_MARKETPLACE);
+    const taxa = taxasDaVenda(price).total;
     closeDetail();
     showToast(t('mkt.avatar.bought', {name: data.nome, tax: taxa}), 'ok');
     // Fica na loja, de propósito. Antes trocava para a seção "slots",

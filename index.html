@@ -1351,6 +1351,10 @@
      sem tela e sem relógio: quem sabe quanto tempo passou são o
      js/main.js e o js/auth.js, que o chamam. -->
 <script src="js/energia.js?v=2026-09-27a"></script>
+<!-- As taxas do jogo, num lugar só: o resgate e a venda. O mesmo
+     arquivo que o api/resgatar.js e o api/comprar-avatar.js leem, para
+     a tela nunca prometer uma taxa diferente da que o servidor cobra. -->
+<script src="js/taxas.js?v=2026-09-27a"></script>
 <script src="js/ficha-fu.js?v=2026-09-26z"></script>
 <script src="js/vantagens-fu.js?v=2026-09-26z"></script>
 <script src="js/combate-fu.js?v=2026-09-26z"></script>
@@ -1679,12 +1683,14 @@
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
-          <span data-i18n="mkt.transp.feed_body"><strong>100% das taxas</strong> de todas as atividades do jogo vão diretamente para a pool. Nenhum corte acontece na entrada.</span>
+          <span data-i18n="mkt.transp.feed_body">A listagem vai <strong>inteira</strong> para a pool, e a venda deixa nela os mesmos <strong>10%</strong> de sempre. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.</span>
           <div class="transp-cap" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
           <!-- Espelha o LIST_COST do api/comprar-avatar.js. Numa página
                de transparência, um número velho é pior do que nenhum. -->
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.list_avatar">Listar avatar</span><span class="transp-taxa-val">25 💎 → pool</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.sell_avatar">Venda de avatar</span><span class="transp-taxa-val">10% → pool</span></div>
+          <!-- A venda deixa 15% ao todo: estes 10% na pool e 5% para o
+               desenvolvedor, que aparecem na secção dele mais abaixo. -->
           <!-- Havia aqui um bloco "JOGOS PvP" com o Jo-Ken-Pô, o Rouba
                Monte e a Batalha Naval a darem 8-10% do prémio à pool.
                Nenhum dos três existe: não há botão nenhum que os abra, e
@@ -1734,9 +1740,10 @@
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.weekly_title">🛠️ A Parte do Desenvolvedor</div>
         <div class="transp-block-body">
-          <span data-i18n="mkt.transp.weekly_body">O desenvolvedor recebe <strong style="color:var(--text);">1% de cada resgate</strong>, e mais nada.</span>
+          <span data-i18n="mkt.transp.weekly_body">O desenvolvedor recebe <strong style="color:var(--text);">3% de cada resgate</strong> e <strong style="color:var(--text);">5% de cada venda no mercado</strong>.</span>
           <div class="transp-cap" data-i18n="mkt.transp.from_where">DE ONDE SAI</div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.on_withdraw">Resgate de 💎 → POL</span><span class="transp-taxa-val">1%</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.on_withdraw">Resgate de 💎 → POL</span><span class="transp-taxa-val">3%</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.on_sale">Venda de avatar no mercado</span><span class="transp-taxa-val">5%</span></div>
           <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:0.25rem;padding-top:0.75rem;">
             <span style="color:var(--text);font-weight:600;" data-i18n="mkt.transp.pool_untouched">Pool</span>
             <span class="transp-taxa-val" style="color:var(--green)" data-i18n="mkt.transp.never_touched">0% — nunca é tocada</span>

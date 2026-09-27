@@ -12,10 +12,16 @@
    primeira semana e deixaria de dizer alguma coisa. São 50 mil desde
    26/09/2026, escolhidos pelo dono do jogo. */
 const POOL_ALVO        = 50000;
-const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
-const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
 const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev
-// Taxas do marketplace vão 100% para a Pool P2E (lucro dev vem dos 20% POL do Treasury)
+
+/* Viviam aqui um TAXA_MARKETPLACE e um TAXA_OVO, ambos a 10% e nenhum
+   deles lido por linha nenhuma deste arquivo — a quarta e a quinta
+   cópia de números que hoje moram no js/taxas.js. Ao lado deles, um
+   comentário a dizer que "o lucro do dev vem dos 20% POL do Treasury",
+   um Treasury que não existe em lado nenhum do código.
+
+   Quem quiser as taxas lê o js/taxas.js: a venda deixa 15%, dez para
+   esta pool e cinco para o desenvolvedor. */
 
 let poolData = null; // carregado do Firestore
 

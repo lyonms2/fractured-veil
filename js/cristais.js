@@ -236,7 +236,7 @@ function _atualizarTotalResgate() {
   const gems = Number(input.value);
   if (!Number.isFinite(gems) || gems <= 0) { alvo.textContent = ''; return; }
   const daRede = _gemsDaRede(gems, _refChainCache);
-  const taxa   = Math.round(gems * 0.01 * 100) / 100;
+  const taxa   = taxaDoResgate(gems);
   const custo  = Math.round((gems + taxa) * 100) / 100;
   alvo.textContent = daRede > 0
     ? t('mkt.crystals.resgate_conta_rede', { matic: _maticDeGems(gems - daRede), rede: daRede, custo })
@@ -635,9 +635,13 @@ async function resgatar() {
   // saem para POL. Com o mktCristais() aqui, quem tivesse bônus
   // escrevia um número que passava nesta verificação e só rebentava
   // do outro lado, no servidor.
-  // A taxa de 1% do dev é cobrada por cima do valor sacado (ver
-  // api/resgatar.js): 50 💎 pedem 50,50 💎 de saldo.
-  const taxaDev = +(gems * 0.01).toFixed(2);
+  /* A taxa do dev é cobrada por cima do valor sacado (js/taxas.js, e o
+     api/resgatar.js usa o MESMO arquivo): sacar 100 💎 pede 103 de saldo.
+
+     O número esteve escrito à mão aqui e mais duas vezes — nesta tela e
+     no servidor. Três cópias que tinham de concordar, e nada que as
+     obrigasse: o dia em que a taxa mudasse, duas delas mentiriam. */
+  const taxaDev = taxaDoResgate(gems);
   if(gems + taxaDev > mktCristaisResgataveis()) {
     status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_taxa', {balance: fmtC(mktCristaisResgataveis()), total: fmtC(gems + taxaDev), taxa: fmtC(taxaDev)})}</span>`;
     return;
