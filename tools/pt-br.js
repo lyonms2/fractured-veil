@@ -12,8 +12,8 @@
    ── POR QUE NÃO É UM PROCURAR-E-SUBSTITUIR ──
 
    Porque metade destas palavras também é CÓDIGO. `equipe` é o campo
-   `gs.equipe` que vive no Firestore, é a função `equipaIdx()`, é a
-   chave `equipe.title` das traduções e é a classe `.equipe-slot` do
+   `gs.equipa` que vive no Firestore, é a função `equipaIdx()`, é a
+   chave `equipa.title` das traduções e é a classe `.equipa-slot` do
    CSS. Trocar isso não deixa o português melhor: deixa o jogo quebrado
    e os saves ilegíveis.
 
@@ -26,11 +26,30 @@
 const fs   = require('fs');
 const path = require('path');
 
+/* O `equipa` tem uma regra a mais, e ela nasceu de um erro desta
+   ferramenta. A primeira versão trocava `\bequipa\b` em qualquer lugar
+   do comentário — e comentários FALAM de código. Ficou `gs.equipe` onde
+   o campo é `gs.equipa`, `js/equipe.js` onde o arquivo é `js/equipa.js`,
+   `equipe.title` onde a chave é `equipa.title`. Onze lugares, um deles o
+   comentário desta própria ferramenta explicando por que não se devia
+   fazer isso.
+
+   Um comentário que aponta para um nome que não existe é pior do que um
+   comentário em português de Portugal: o segundo só soa estranho, o
+   primeiro manda quem for procurar atrás de coisa nenhuma.
+
+   Então não se troca quando a palavra está colada ao que a torna nome:
+   ponto, barra, crase ou letra antes; parêntese, hífen, letra, ou ponto
+   seguido de minúscula, depois. Um `equipa.` com ponto final de frase
+   continua sendo palavra, e troca. */
+const EQUIPA  = /(?<![.\w`\/])equipa(?![\w(\-]|\.[a-z])/g;
+const EQUIPAS = /(?<![.\w`\/])equipas(?![\w(\-]|\.[a-z])/g;
+
 /* A palavra de Portugal e como se diz aqui. Só vocabulário: a ordem das
    palavras e a ênclise ficam para mão humana, porque trocá-las sem ler
    a frase estraga mais do que conserta. */
 const TROCAS = [
-  [/\bequipas\b/g, 'equipes'], [/\bequipa\b/g, 'equipe'],
+  [EQUIPAS, 'equipes'], [EQUIPA, 'equipe'],
   [/\bcolónia\b/g, 'colônia'], [/\bcolónias\b/g, 'colônias'],
   [/\bsítios\b/g, 'lugares'],  [/\bsítio\b/g, 'lugar'],
   [/\btectos\b/g, 'tetos'],    [/\btecto\b/g, 'teto'],

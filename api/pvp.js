@@ -81,7 +81,7 @@ class Recusa extends Error {
 }
 
 // ── A EQUIPE, COMO ESTÁ NO BANCO ─────────────────────────────────
-/* A mesma escolha do js/equipe.js (equipaIdx): o que o jogador escolheu,
+/* A mesma escolha do js/equipa.js (equipaIdx): o que o jogador escolheu,
    saneado; se nunca escolheu, os primeiros disponíveis. */
 function _idxDaEquipa(gs, slots) {
   const elegivel = s => !!(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed);

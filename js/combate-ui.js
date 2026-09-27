@@ -180,7 +180,7 @@ function renderBotaoBatalhar(cheia, impedidos) {
 
 /* ── REDESENHAR O QUE SE MEXEU ──
 
-   As duas funções abaixo mudavam gs.equipe e depois pediam um
+   As duas funções abaixo mudavam gs.equipa e depois pediam um
    renderSlots() — que é o desenho da GRELHA do 🧬 Meus Avatares. A
    barra da equipe vinha de borla no fim dele, e enquanto a barra vivia
    dentro desse mesmo painel isso bastava.
@@ -189,7 +189,7 @@ function renderBotaoBatalhar(cheia, impedidos) {
    `if (!playerData) return` logo no princípio. O playerData só é
    carregado ao abrir o 🧬 ou o marketplace — portanto quem fosse
    direto à batalha carregava nas setas, a ordem MUDAVA de verdade em
-   gs.equipe, e a tela não mexia um pixel. Fechar e reabrir mostrava a
+   gs.equipa, e a tela não mexia um pixel. Fechar e reabrir mostrava a
    ordem nova, o que é a pior forma de descobrir que afinal funcionava.
 
    Cada uma passa a redesenhar aquilo que mexeu, e a grelha fica a
@@ -203,7 +203,7 @@ function _equipaRedesenhar() {
 }
 
 // Botão ⚔ de cada card. Só re-renderiza a barra e a grelha — a escolha
-// vai para gs.equipe, que o save normal do jogo já leva.
+// vai para gs.equipa, que o save normal do jogo já leva.
 function toggleEquipa(i) {
   if (typeof alternarNaEquipa !== 'function') return;
   const r = alternarNaEquipa(i);

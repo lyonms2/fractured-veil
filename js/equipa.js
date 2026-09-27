@@ -7,7 +7,7 @@
 // com as regras de combate — é gestão de slots, e continua igual seja
 // qual for o motor por baixo.
 //
-// A escolha vive em gs.equipe e vai no save normal do jogo.
+// A escolha vive em gs.equipa e vai no save normal do jogo.
 // ═══════════════════════════════════════════════════════════════════
 
 const COMBATE_EQUIPA_MAX = 3;
@@ -21,12 +21,12 @@ function _elegivelParaEquipa(s) {
 // Índices escolhidos, já saneados.
 //
 // Três estados diferentes, e a diferença importa:
-//   · gs.equipe não é array  → o jogador nunca escolheu. Preenche com os
+//   · gs.equipa não é array  → o jogador nunca escolheu. Preenche com os
 //     primeiros disponíveis, para a equipe não nascer vazia.
-//   · gs.equipe é [] vazio   → esvaziou de propósito. Fica vazio. Sem
+//   · gs.equipa é [] vazio   → esvaziou de propósito. Fica vazio. Sem
 //     isto, tirar o último da equipe parecia não fazer nada, porque o
 //     preenchimento automático repunha-o no mesmo instante.
-//   · gs.equipe tem entradas mas nenhuma sobrevive (morreram, foram
+//   · gs.equipa tem entradas mas nenhuma sobrevive (morreram, foram
 //     queimados, foram à venda) → repõe, senão o jogador ficava com uma
 //     equipe vazia sem ter feito nada.
 function equipaIdx() {
