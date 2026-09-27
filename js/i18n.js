@@ -106,6 +106,11 @@
       'log.offline_away':        'Ausente por {h}h {m}min — {status}',
       'log.offline_paused':      'o avatar ficou em pausa, nada mudou. ⏸',
       'log.offline_slept':       'dormiu e recuperou energia. 💤',
+      /* Quem ficou ACORDADO também descansa com o mundo parado, um
+         por ciclo (js/energia.js). Sem esta frase, o registro dizia
+         "nada mudou" enquanto a barra de energia tinha subido — e um
+         registro que desmente a tela é pior do que nenhum. */
+      'log.offline_descansou':   'descansou e recuperou energia. ⚡',
       'log.woke_offline':        'Acordou com energia plena enquanto estava ausente! ☀️',
 
       // Bolhas de fala (showBubble)
@@ -453,6 +458,7 @@
       'log.offline_away':        'Away for {h}h {m}min — {status}',
       'log.offline_paused':      'your avatar was paused, nothing changed. ⏸',
       'log.offline_slept':       'it slept and recovered energy. 💤',
+      'log.offline_descansou':   'it rested and recovered energy. ⚡',
       'log.woke_offline':        'Woke up fully rested while you were away! ☀️',
 
       // Bubbles

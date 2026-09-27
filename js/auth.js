@@ -350,30 +350,30 @@ async function _onLoginSuccess(user) {
       clearPresenceDead(walletAddress);
     }
 
-    // ── Offline: avatar fica em pausa — nada decai nem o tempo de vida
-    // avança enquanto o jogador está ausente (idade = tempo de jogo real,
-    // usado no card de venda no marketplace). Exceção: dormindo, a energia
-    // continua subindo (mais devagar que ao vivo), o resto continua parado. ──
+    /* ── O TEMPO FORA DO JOGO ──
+
+       Nada decai e a idade não avança enquanto o jogador está ausente
+       (a idade é tempo de JOGO, e é ela que decide a evolução e o card
+       de venda). A energia é a exceção, e desde 27/09/2026 ela sobe
+       para todos e não só para quem tinha ido dormir: dois por ciclo
+       dormindo, um acordado.
+
+       Este é o caso que mais importa dos três, porque é o único que
+       mede DIAS. Quem fechasse a aba acordado voltava na semana
+       seguinte com a mesma energia com que saiu, e sem nada na tela que
+       explicasse porquê.
+
+       O Amuleto do Sono entra pelo getItemEffect lá dentro, e só vale
+       para quem está em campo e dormindo — ele promete o dobro DORMINDO,
+       e dormir com a aba fechada é a forma mais comum de dormir. */
     if(hatched && !dead) {
       const offlineSecs = Math.floor((Date.now() - (window.loadedLastSeen || Date.now())) / 1000);
       if(offlineSecs > 0) {
-        let status = t('log.offline_paused');
-        if(sleeping && vitals.energia < 100) {
-          // O Amuleto do Sono Profundo conta aqui também. Prometia
-          // "energia recupera 2× mais rápido dormindo" e só valia ao
-          // vivo — mas dormir com o separador fechado É a forma de
-          // dormir, portanto o amuleto não fazia nada onde mais fazia
-          // falta. Os itens são do avatar em campo, e este ramo só corre
-          // para esse, que é o que estava dormindo.
-          const offlineCycles = Math.floor(offlineSecs / 60);
-          const porCiclo = OFFLINE_SLEEP_ENERGY_PER_CYCLE * getItemEffect('sleepEnergyMult');
-          vitals.energia = Math.min(100, vitals.energia + offlineCycles * porCiclo);
-          status = t('log.offline_slept');
-          if(vitals.energia >= 100) {
-            sleeping = false;
-            addLog(t('log.woke_offline'), 'good');
-          }
-        }
+        const ganhou = (typeof descansarMundoParado === 'function')
+          ? descansarMundoParado(offlineSecs * 1000) : { total: 0, dormiu: false };
+        const status = t(ganhou.dormiu ? 'log.offline_slept'
+                       : ganhou.total > 0 ? 'log.offline_descansou'
+                       : 'log.offline_paused');
         saveRuntimeToSlot(activeSlotIdx);
         const hrs  = Math.floor(offlineSecs / 3600);
         const mins = Math.floor((offlineSecs % 3600) / 60);

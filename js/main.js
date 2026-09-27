@@ -131,6 +131,67 @@ function _cerimoniaAberta() {
   });
 }
 
+/* O DESCANSO DE TODA A COLÔNIA, POR UM TEMPO DE MUNDO PARADO
+
+   As regras estão em js/energia.js e não aqui: lá elas rodam no Node e
+   o tools/testar-energia.js confere as contas. Este lugar só sabe
+   quanto tempo passou e onde guardar o resultado.
+
+   É chamado de dois sítios — a volta da aba escondida e a despausa —
+   porque para o avatar as duas paragens são a mesma. Ter duas contas
+   para o mesmo descanso era garantir que um dia divergissem.
+
+   Devolve quanto se ganhou e se ALGUÉM estava dormindo, que é o que
+   decide a frase do registro. */
+function descansarMundoParado(ms) {
+  const fora = { total: 0, dormiu: false };
+  if (typeof descansoParado !== 'function') return fora;   // energia.js não carregou
+  const ciclos = ciclosDe(ms);
+  if (ciclos <= 0) return fora;
+
+  /* O multiplicador do sono de um avatar: o Amuleto do Sono vezes o que
+     o DNA dele dá. É a mesma conta do tick ao vivo (js/gametick.js, o
+     `4 * getItemEffect(...) * _eb.sleepEnergy`) — escrita aqui para que
+     dormir com a aba fechada responda aos mesmos dois fatores que
+     dormir olhando. Estavam a divergir: parado, o DNA não contava. */
+  const multSonoDe = (quem) => {
+    const item = (quem === undefined && typeof getItemEffect === 'function')
+      ? getItemEffect('sleepEnergyMult') : 1;      // o item é de quem está em campo
+    const dna = (typeof passivoDe === 'function') ? (passivoDe(quem).sleepEnergy || 1) : 1;
+    return item * dna;
+  };
+
+  // O que está aberto na tela de cuidar.
+  if (typeof hatched !== 'undefined' && hatched && !dead && typeof vitals !== 'undefined') {
+    const r = descansoParado(vitals.energia, sleeping, ciclos, multSonoDe());
+    if (sleeping) fora.dormiu = true;
+    vitals.energia = r.energia;
+    sleeping = r.dormindo;
+    fora.total += r.ganho;
+    if (r.acordou) addLog(t('log.woke_offline'), 'good');
+  }
+
+  /* E os outros. Isto já existia, e só mexia em quem tivesse ido
+     dormir: quem ficasse acordado na colônia não recuperava nada por
+     mais dias que passassem. Agora recuperam todos, cada um no seu
+     ritmo. */
+  if (typeof avatarSlots !== 'undefined') {
+    avatarSlots.forEach((s, i) => {
+      if (!s || i === activeSlotIdx) return;
+      if (!s.hatched || s.dead || !s.vitals) return;
+      const r = descansoParado(s.vitals.energia ?? 100, s.sleeping, ciclos, multSonoDe(s));
+      if (s.sleeping) fora.dormiu = true;
+      s.vitals.energia = r.energia;
+      s.sleeping = r.dormindo;
+      fora.total += r.ganho;
+    });
+  }
+  return fora;
+}
+
+/* Quando o mundo parou pelo botão. Zero quando está andando. */
+let _pausaDesde = 0;
+
 function alternarPausa() {
   if (!jogoPausado) {
     const aberto = (typeof ModalManager !== 'undefined') ? ModalManager.current : null;
@@ -140,6 +201,27 @@ function alternarPausa() {
     }
   }
   jogoPausado = !jogoPausado;
+
+  /* Pausar também é descansar (regra do dono, 27/09/2026). Antes não
+     era: o comentário do js/main.js dizia que "quem pausou e escondeu a
+     aba não pode sair a ganhar por ter feito as duas coisas", e o
+     resultado era que a única forma de voltar com energia era ter
+     lembrado de mandar dormir. Agora o mundo parado rende, e rende o
+     mesmo esteja parado pelo botão ou pela aba fechada — sem somar as
+     duas, porque o ramo da aba escondida não corre com o jogo em
+     pausa. */
+  if (jogoPausado) {
+    _pausaDesde = Date.now();
+  } else if (_pausaDesde > 0) {
+    const ganhou = descansarMundoParado(Date.now() - _pausaDesde);
+    _pausaDesde = 0;
+    if (ganhou.total > 0) {
+      if (typeof saveRuntimeToSlot === 'function') saveRuntimeToSlot(activeSlotIdx);
+      if (typeof scheduleSave === 'function') scheduleSave();
+      if (typeof updateAllUI === 'function') updateAllUI();
+    }
+  }
+
   _desenharPausa();
 }
 
@@ -226,31 +308,10 @@ document.addEventListener('visibilitychange', async () => {
   if(_hiddenAt > 0 && !jogoPausado && typeof hatched !== 'undefined' && hatched && !dead) {
     const offlineSecs = Math.floor((Date.now() - _hiddenAt) / 1000);
     if(offlineSecs > 0) {
-      const offlineCycles = Math.floor(offlineSecs / 60);
-      let status = t('log.offline_paused');
-      if(sleeping && vitals.energia < 100) {
-        vitals.energia = Math.min(100, vitals.energia + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
-        status = t('log.offline_slept');
-        if(vitals.energia >= 100) {
-          sleeping = false;
-          addLog(t('log.woke_offline'), 'good');
-        }
-      }
-
-      // Os outros avatares também dormiram. Isto tratava só do que está
-      // aberto na tela de cuidar, porque era o único que vivia; agora
-      // vivem todos, e quem adormeceu tinha de acordar descansado na
-      // mesma medida. Nada mais decai enquanto a aba está escondida —
-      // essa parte não mudou, só passou a valer para a coleção inteira.
-      if(typeof avatarSlots !== 'undefined' && offlineCycles > 0) {
-        avatarSlots.forEach((s, i) => {
-          if(!s || i === activeSlotIdx) return;
-          if(!s.hatched || s.dead || !s.vitals || !s.sleeping) return;
-          s.vitals.energia = Math.min(100,
-            (s.vitals.energia ?? 100) + offlineCycles * OFFLINE_SLEEP_ENERGY_PER_CYCLE);
-          if(s.vitals.energia >= 100) s.sleeping = false;
-        });
-      }
+      const ganhou = descansarMundoParado(Date.now() - _hiddenAt);
+      const status = t(ganhou.dormiu ? 'log.offline_slept'
+                     : ganhou.total > 0 ? 'log.offline_descansou'
+                     : 'log.offline_paused');
       saveRuntimeToSlot(activeSlotIdx);
       scheduleSave();
       updateAllUI();
