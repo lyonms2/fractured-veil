@@ -372,8 +372,28 @@ function _fzOvosNoInventario() {
   return (typeof eggsInInventory !== 'undefined' && eggsInInventory) ? eggsInInventory.length : 0;
 }
 
+/* O TETO DOS OVOS, e vive numa linha só — o servidor tem o dele
+   (OVOS_MAX, em api/pool.js) e os dois têm de dizer o mesmo número. */
+const FZ_OVOS_MAX = 10;
+
+/* Quantos ovos já estão na chocadeira, por baixo do título.
+
+   O limite só aparecia depois de escolher dois avatares e levar com um
+   "a chocadeira está cheia" — e quem tem nove ovos merece saber disso
+   antes de escolher. Com a chocadeira vazia não se diz nada: um contador
+   a zero é ruído. */
+function _fzContaOvos() {
+  const el = document.querySelector('#cruzarOverlay .modal-sub');
+  if (!el) return;
+  const n = _fzOvosNoInventario();
+  el.textContent = n > 0
+    ? t('repr.sub') + ' ' + t('repr.ovos_conta', { n, max: FZ_OVOS_MAX })
+    : t('repr.sub');
+}
+
 function abrirCruzar() {
   _fzEscolhidos = [];
+  _fzContaOvos();
   _fzRenderCruzar();
   const ov = document.getElementById('cruzarOverlay');
   if (ov) ov.style.display = 'flex';
@@ -452,7 +472,7 @@ function _fzAvisoCruzar(par) {
     return;
   }
   const r = podeCruzar(par[0], par[1], {
-    ovosNoInventario: _fzOvosNoInventario(), maxOvos: 10 });
+    ovosNoInventario: _fzOvosNoInventario(), maxOvos: FZ_OVOS_MAX });
   aviso.textContent = r.ok ? '' : t(r.motivo);
   btn.disabled = !r.ok;
 }
@@ -489,7 +509,7 @@ async function confirmarCruzar() {
   if (!par) return;
 
   const r0 = podeCruzar(par[0], par[1], {
-    ovosNoInventario: _fzOvosNoInventario(), maxOvos: 10 });
+    ovosNoInventario: _fzOvosNoInventario(), maxOvos: FZ_OVOS_MAX });
   if (!r0.ok) { _fzAvisoCruzar(par); return; }
 
   const btn = document.getElementById('cruzarBtn');
@@ -501,8 +521,14 @@ async function confirmarCruzar() {
     const resp = await fetch('/api/pool', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
+      /* Os ids vão junto com os índices, e é por eles que o servidor
+         procura: um índice aponta para uma POSIÇÃO, e a posição pode
+         ter outro bicho se o array daqui estiver meio passo atrás do
+         documento. O que sai de uma cruza é um filho, e a mãe e o pai
+         ficam escritos na certidão dele para sempre. */
       body:    JSON.stringify({ acao: 'cruzar', idToken,
-                                maeIdx: _fzEscolhidos[0], paiIdx: _fzEscolhidos[1] }),
+                                maeIdx: _fzEscolhidos[0], paiIdx: _fzEscolhidos[1],
+                                maeId: par[0] && par[0].id, paiId: par[1] && par[1].id }),
     });
     const json = await resp.json();
     if (!resp.ok || !json.ok) {

@@ -52,6 +52,23 @@ window.registerStrings({
   'lin.saiu':             'não é mais seu',
   'lin.sexo':             'Sexo',
   'repr.escolher':        'Escolha dois',
+  /* ── POR QUE NÃO DÁ ──
+
+     As oito recusas do podeCruzar (js/reproducao.js) não tinham texto
+     nenhum: a tela chamava t('repr.erro.mesmo_sexo') e mostrava
+     "repr.erro.mesmo_sexo" ao jogador, em qualquer idioma. O servidor
+     manda o motivo pela mesma chave, portanto as recusas DELE apareciam
+     igualmente em código.
+
+     Cada uma diz o que aconteceu e, quando há o que fazer, o que fazer. */
+  'repr.erro.faltam':     'Escolha dois avatares.',
+  'repr.erro.mesmo':      'São o mesmo avatar — escolha outro.',
+  'repr.erro.morto':      'Um deles não está mais vivo.',
+  'repr.erro.avenda':     'Um deles está à venda. Tire do mercado para poder cruzar.',
+  'repr.erro.sem_dna':    'Um deles não tem certidão — só cruza quem nasceu por aqui.',
+  'repr.erro.mesmo_sexo': 'Precisa de um macho e uma fêmea.',
+  'repr.erro.novo':       'Os dois precisam ser adultos (fase Adulta, nível 11).',
+  'repr.erro.cheio':      'A chocadeira está cheia. Choque ou descarte um ovo antes de cruzar.',
   'repr.feito':           '🥚 Ovo posto! Choca em {h} h.',
   // Cruzar pede a fase ADULTA (nível 11), e não a última — a última é a
   // do Ancião (27). Ver podeCruzar, em js/reproducao.js.
@@ -64,6 +81,7 @@ window.registerStrings({
   'lin.btn':              'Ver a linhagem',
   'repr.titulo':          '❦ CRUZAR',
   'repr.sub':             'Dois adultos, um macho e uma fêmea. O filho herda um alelo de cada.',
+  'repr.ovos_conta':      '— {n} de {max} ovos na chocadeira.',
   'repr.botao':           '❦ Cruzar',
 }, {
   'arv.avos':             'Grandparents',
@@ -99,11 +117,20 @@ window.registerStrings({
   'lin.saiu':             'no longer yours',
   'lin.sexo':             'Sex',
   'repr.escolher':        'Pick two',
+  'repr.erro.faltam':     'Pick two avatars.',
+  'repr.erro.mesmo':      'That is the same avatar — pick another.',
+  'repr.erro.morto':      'One of them is no longer alive.',
+  'repr.erro.avenda':     'One of them is listed for sale. Unlist it to breed.',
+  'repr.erro.sem_dna':    'One of them has no certificate — only avatars born here can breed.',
+  'repr.erro.mesmo_sexo': 'You need one male and one female.',
+  'repr.erro.novo':       'Both need to be adults (Adult phase, level 11).',
+  'repr.erro.cheio':      'The hatchery is full. Hatch or discard an egg before breeding.',
   'repr.feito':           '🥚 Egg laid! Hatches in {h} h.',
   'repr.sem_adultos':     'None of your avatars is an adult yet. Breeding needs the Adult phase, at level 11.',
   'lin.titulo':           '🌳 LINEAGE',
   'lin.btn':              'See the lineage',
   'repr.titulo':          '❦ BREED',
   'repr.sub':             'Two adults, one male and one female. The child inherits one allele from each.',
+  'repr.ovos_conta':      '— {n} of {max} eggs in the hatchery.',
   'repr.botao':           '❦ Breed',
 });

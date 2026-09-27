@@ -693,7 +693,7 @@ async function handleNivel(req, res, db, uid) {
 
 async function handleCruzar(req, res, db, uid) {
   const GEN = require('./_genetica.js');
-  const { maeIdx, paiIdx } = req.body;
+  const { maeIdx, paiIdx, maeId, paiId } = req.body;
   const iA = Number(maeIdx), iB = Number(paiIdx);
   if (!Number.isInteger(iA) || !Number.isInteger(iB) || iA < 0 || iB < 0 || iA === iB) {
     return res.status(400).json({ erro: 'Parâmetros inválidos.' });
@@ -723,7 +723,29 @@ async function handleCruzar(req, res, db, uid) {
         return Object.assign({}, s, { nascimento: cert });
       };
 
-      const a = doSlot(iA), b = doSlot(iB);
+      /* ── QUEM CRUZA É O AVATAR, NÃO A POSIÇÃO ──
+
+         Vinham só os ÍNDICES dos slots, e um índice é uma coisa frágil:
+         basta o array do cliente estar meio passo atrás do documento —
+         uma compra que ainda não subiu, um avatar que mudou de lugar —
+         para a posição 2 apontar aqui para outro bicho. E o que sai
+         disto é um FILHO: a mãe e o pai ficam escritos na certidão dele
+         para sempre, e a árvore é metade do que um avatar vale.
+
+         Agora o cliente manda também os ids. Havendo id, é ele que
+         manda: procura-se o slot com aquele id e o índice passa a ser
+         só a pista de onde começar. Sem id (um cliente velho em cache),
+         vale o índice, como antes. */
+      const acha = (i, id) => {
+        if (!id) return i;
+        if (slots[i] && slots[i].id === id) return i;
+        const j = slots.findIndex(s => s && s.id === id);
+        return j >= 0 ? j : -1;
+      };
+      const jA = acha(iA, maeId), jB = acha(iB, paiId);
+      if (jA < 0 || jB < 0 || jA === jB) throw new Error('SEM_CERTIDAO');
+
+      const a = doSlot(jA), b = doSlot(jB);
       if (!a || !b) throw new Error('SEM_CERTIDAO');
 
       /* O limite conta os ovos que o jogador TEM, e não os do slot
