@@ -6,7 +6,7 @@
 
    NÃO simula combate: combate é humano contra humano e não se simula.
    Simula o SISTEMA DE PONTOS. Cada jogador tem uma habilidade real
-   escondida e uma equipa de certo nível; o resultado de cada luta sai
+   escondida e uma equipe de certo nível; o resultado de cada luta sai
    das duas coisas; os pontos saem do js/pvp-rank.js, tal como está no
    jogo. No fim pergunta-se: a tabela ficou na ordem da habilidade?
 
@@ -14,7 +14,7 @@
 
    ORDEM CERTA é o Spearman entre a tabela e a habilidade real: 1 é
    perfeito, 0 é sorteio. MEDE NÍVEL é o mesmo cálculo contra o nível
-   das equipas — quanto MAIOR, mais a tabela é um ranking de quem tem os
+   das equipes — quanto MAIOR, mais a tabela é um ranking de quem tem os
    bichos mais fortes, que é justamente o que não se quer.
 
    ── O QUE JÁ SE APRENDEU AQUI ──
@@ -24,7 +24,7 @@
      primeira ideia, e esta ferramenta derrubou-a;
    · parear por PONTOS dentro da janela estreita, lutas de colocação e
      divisões, juntos, levam a ordem de 0,82 para 0,88;
-   · quando quem joga melhor também tem a melhor equipa — o caso
+   · quando quem joga melhor também tem a melhor equipe — o caso
      provável — nenhuma tabela ÚNICA funciona: 0,42 antes, 0,55 depois.
      Dentro de cada divisão as mesmas lutas dão 0,71 a 0,83, e é por
      isso que a página mostra divisões e não uma lista só;

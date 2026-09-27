@@ -123,7 +123,7 @@ function misturarCores(a, b) {
      à mesma distância, e cada sentido escolhia o seu.
 
      Ordenar o par antes de contar resolve as duas de uma vez: as duas
-     chamadas passam a percorrer exactamente o mesmo caminho. */
+     chamadas passam a percorrer exatamente o mesmo caminho. */
   if (i > j) { const troca = i; i = j; j = troca; }
 
   /* A VOLTA É DE DOZE E NÃO DE CATORZE.
@@ -176,8 +176,8 @@ function _hsl(h, s, l) {
    e 55 de luz nunca houve problema.
 
    O branco vive nos 88: os degraus dariam 78, 88, 97 e 105 — e os dois
-   últimos colavam-se ambos ao tecto. Metade da rampa desaparecia e o
-   corpo ficava chapado, que é exactamente o que os quatro degraus existem
+   últimos colavam-se ambos ao teto. Metade da rampa desaparecia e o
+   corpo ficava chapado, que é exatamente o que os quatro degraus existem
    para evitar.
 
    Agora a rampa desloca-se inteira até caber. Perde-se o valor absoluto e
@@ -221,7 +221,7 @@ function paletaDeCores(principal, secundaria) {
        Eram o mesmo, e o brilho fazia os dois trabalhos: acender a aura, e
        contornar o corpo, os chifres e as asas. Para acender está certo;
        para contornar, não — ele é o matiz levado ao claro, e nos matizes
-       que já nascem claros bate no tecto dos 88 de luz. Um traço de dois
+       que já nascem claros bate no teto dos 88 de luz. Um traço de dois
        ou três píxeis a 88 de luz não tem cor nenhuma aos olhos de ninguém:
        é branco. O amarelo era o pior, mas todos o tinham.
 
@@ -388,9 +388,9 @@ function gradienteDoOvo(slot) {
    ele é, que é a única coisa que sobrou de identidade e a única que se
    confirma a olhar para o bicho.
 
-   Está aqui, e não nos oito sítios que o mostram, porque o rótulo do
+   Está aqui, e não nos oito lugares que o mostram, porque o rótulo do
    marketplace e o rótulo da consola têm de dizer a MESMA palavra sobre
-   o mesmo avatar. Escrito em oito sítios, sete deles ficariam para trás
+   o mesmo avatar. Escrito em oito lugares, sete deles ficariam para trás
    à primeira mudança — é a forma de defeito mais antiga deste jogo. */
 function frasedaCor(slot, seed) {
   const c = coresDe(slot, seed);

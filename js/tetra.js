@@ -384,7 +384,8 @@ function _tetFim() {
     // +1 por linha até +23; com o +3 da partida, até +30.
     vitals.humor = Math.min(100, vitals.humor + 4 + Math.min(23, _tetLinhas));
     if (result) {
-      result.textContent = t('mg.tet.fim', { p: _tetPontos, l: _tetLinhas });
+      result.textContent = t(_tetLinhas === 1 ? 'mg.tet.fim_1' : 'mg.tet.fim',
+                             { p: _tetPontos, l: _tetLinhas });
       result.className = 'mini-result-box ' + (frac >= 0.6 ? 'win' : '');
     }
     if (reward) reward.textContent = mgComHumor(humorAntes, t('mg.reward_xp', { xp: r.xpGain, coins: r.coinGain }));
@@ -400,7 +401,8 @@ function _tetFim() {
 
 function _tetPlacar() {
   const el = document.getElementById('tetraScore');
-  if (el) el.textContent = t('mg.tet.placar', { p: _tetPontos, l: _tetLinhas, n: _tetNivel });
+  if (el) el.textContent = t(_tetLinhas === 1 ? 'mg.tet.placar_1' : 'mg.tet.placar',
+                             { p: _tetPontos, l: _tetLinhas, n: _tetNivel });
 }
 
 function _tetLimparResultado() {

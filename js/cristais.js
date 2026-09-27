@@ -267,7 +267,7 @@ function _atualizarTotalCompra() {
 // COMPRA DE CRISTAIS
 /* QUANTO AINDA DÁ PARA RESGATAR HOJE
    ═══════════════════════════════════════════════════════════════════
-   O tecto diário é de 50 💎 e vive no api/resgatar.js. A tela não o
+   O teto diário é de 50 💎 e vive no api/resgatar.js. A tela não o
    dizia em lado nenhum: escrevia-se um número, clicava-se, e só então
    vinha "Limite diário atingido. Podes resgatar mais X hoje". O número
    que interessava só aparecia depois de falhar.
@@ -278,7 +278,7 @@ function _atualizarTotalCompra() {
    O resgateLog está no documento do jogador. O cliente não o escreve
    (as regras não deixam, é o que impede zerar o próprio limite) mas
    pode lê-lo, e é o que se faz aqui: uma leitura ao abrir a secção.
-   Falhando, mostra-se o tecto sem o gasto — melhor um número parcial do
+   Falhando, mostra-se o teto sem o gasto — melhor um número parcial do
    que nenhum. */
 /* O TETO DIÁRIO. Quem manda é o MAX_GEMS_POR_DIA do api/resgatar.js;
    aqui fica para a tela dizer quanto resta e não deixar pedir o que vai
@@ -631,8 +631,8 @@ async function resgatar() {
     return;
   }
   // O resgate mede-se pelo balde COM lastro, e não pelo saldo que a
-  // loja mostra: os cristais de bónus gastam-se dentro do jogo e não
-  // saem para POL. Com o mktCristais() aqui, quem tivesse bónus
+  // loja mostra: os cristais de bônus gastam-se dentro do jogo e não
+  // saem para POL. Com o mktCristais() aqui, quem tivesse bônus
   // escrevia um número que passava nesta verificação e só rebentava
   // do outro lado, no servidor.
   // A taxa de 1% do dev é cobrada por cima do valor sacado (ver
@@ -750,7 +750,7 @@ async function resgatar() {
 // ═══════════════════════════════════════════════════════════════════
 // PROGRAMA DE CONVITES
 //
-// As percentagens vivem AQUI, num sítio só. Estavam escritas à mão no
+// As percentagens vivem AQUI, num lugar só. Estavam escritas à mão no
 // rodapé e outra vez em cada cabeçalho de nível — e o servidor tem as
 // suas em api/resgatar.js (REFERRAL_RATES, em fração). Não dá para
 // partilhar a constante através da rede, mas do lado do cliente passa a

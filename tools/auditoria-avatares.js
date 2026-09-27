@@ -18,7 +18,7 @@
    Nada se recalcula e se guarda: recalcula-se sempre. Guardar o arranjo
    no slot seria criar uma segunda verdade sobre o mesmo avatar — e no
    dia em que as duas discordassem, a que o jogador vê e a que o servidor
-   confere seriam diferentes, que é exactamente o buraco por onde um
+   confere seriam diferentes, que é exatamente o buraco por onde um
    avatar se vende por um preço que não vale.
 
    Este arquivo guarda essa promessa. O que ele confere:
@@ -192,7 +192,7 @@ titulo('Nenhum campo do slot muda a ficha a favor de quem o escreve');
   }
 
   /* O nível é o único campo do slot que a ficha lê a sério, e por isso é
-     o único que tem tecto: sem ele, um nível vindo do cliente dava vida
+     o único que tem teto: sem ele, um nível vindo do cliente dava vida
      na ordem dos mil milhões. */
   for (const absurdo of [1e9, 1e6, 999, -5, 0, NaN, null, 'muitos']) {
     const f = F.fuFicha(Object.assign({}, base, { nivel: absurdo }));
@@ -263,7 +263,7 @@ titulo('Os três primeiros saem um de cada feitio');
 {
   /* É a ÚNICA vez em todo o jogo que o feitio não é sorteado, e vale a
      pena dizer porquê: o feitio decide o repertório, e três sorteados ao
-     acaso podiam dar três Lâminas — uma primeira equipa sem cura nem
+     acaso podiam dar três Lâminas — uma primeira equipe sem cura nem
      defesa, a perder sem que o jogador perceba porquê.
 
      Do primeiro ovo em diante volta a sair do DNA e a herdar-se. */

@@ -14,7 +14,7 @@
    nada, e explicar era metade do pedido. Assim o botão continua a
    responder e diz porquê.
 
-   Está escrita uma vez e usada nos dois sítios, que é o que impede a
+   Está escrita uma vez e usada nos dois lugares, que é o que impede a
    terceira porta de se esquecer da regra. */
 function painelDeUmAvatarDisponivel() {
   if (window._fzModoColonia) return 'colonia';

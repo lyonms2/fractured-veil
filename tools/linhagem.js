@@ -6,12 +6,12 @@
 //
 //   1. o sexo sai da regra e não de uma excepção — nunca nasce um YY
 //   2. cada alelo do filho veio mesmo de um dos pais, e de nenhum outro
-//      sítio
+//      lugar
 //   3. dois pais fortes tendem a dar filhos fortes — mas nem sempre
 //   4. o que está escondido viaja: um alelo que nenhum dos pais mostra
 //      pode ser o que o filho mostra
 //   5. e a cor não converge: ao fim de gerações continua a haver
-//      colónia de todas as cores, que é o que a mistura estragaria
+//      colônia de todas as cores, que é o que a mistura estragaria
 //
 // Correr:  node tools/linhagem.js
 // ═══════════════════════════════════════════════════════════════════
@@ -36,7 +36,7 @@ const M = new Function('t',
   rd('raridade.js') + rd('reproducao.js') + rd('identidade.js') +
   /* E as linhas da fase DEPOIS do ficha-fu.js, e não antes: o
      faseFromNivel do js/state.js chama o fuFaseDoNivel, e vir primeiro
-     dava "não consigo aceder a FU_FASES antes de inicializar". */
+     dava "não consigo acessar a FU_FASES antes de inicializar". */
   LINHAS_DA_FASE + NL +
   `return { arvoreDe, vigorDe, vigorDoDna, NASC_VIGOR, NASC_VIGOR_FORTE, NASC_VIGOR_FRACO,
             nascer, gerarDna, registarNascimento, sexoDe, sexoDoDna, indoleDominante,
@@ -284,7 +284,7 @@ titulo('A COR NÃO CONVERGE');
 
 {
   /* Foi por isto que a cor NÃO se mistura: com mistura, cada geração
-     puxava para o meio da roda e ao fim de algumas a colónia inteira
+     puxava para o meio da roda e ao fim de algumas a colônia inteira
      saía da mesma cor. Aqui simula-se uma população fechada durante
      dez gerações e conta-se quantas cores diferentes sobram. */
   const nCores = M.CORES_RODA.length;
@@ -355,7 +355,7 @@ titulo('O RETRATO DOS PAIS');
 /* Um pai vendido sai dos slots e o filho fica sem com que o desenhar —
    a não ser que o ovo tenha guardado o retrato dele. Guarda; e estas
    perguntas existem para o dia em que alguém mexer no cruzar e o deixar
-   cair sem dar por isso, que é exactamente como o gene do vigor quase se
+   cair sem dar por isso, que é exatamente como o gene do vigor quase se
    perdeu. */
 {
   const { mae, pai } = casal(31000);
@@ -449,7 +449,7 @@ titulo('A ÁRVORE');
 
   /* E o mais importante: um pai VENDIDO não apaga a história. O nome
      dele ficou gravado na certidão do filho no dia em que o ovo foi
-     posto, e continua lá depois de ele sair da colónia. */
+     posto, e continua lá depois de ele sair da colônia. */
   const semPais = colonia.filter(a => a !== g1.mae && a !== g1.pai);
   const aK2 = M.arvoreDe(kael, semPais);
   ok(aK2.mae && aK2.mae.nome === 'Lyra' && !aK2.mae.presente,
@@ -533,7 +533,7 @@ titulo('O VIGOR');
      Object.keys(conta).length + ' de ' + (n * (n - 1)));
   /* Um quarto sai com os dois alelos iguais, e esses cancelam-se. Não é
      desperdício: um avatar sem jeito nem defeito também tem de existir,
-     senão toda a colónia tem uma marca. */
+     senão toda a colônia tem uma marca. */
   ok(Math.abs(pctSem - 25) < 3, 'e um quarto nasce sem marca nenhuma',
      pctSem.toFixed(1) + '% (esperado 25%, que é a hipótese dos dois alelos calharem iguais)');
 }
@@ -620,7 +620,7 @@ titulo('O CORPO HERDA-SE, TRAÇO A TRAÇO');
 }
 
 /* A garantia que segura tudo o resto: quem nasceu antes disto existir não
-   tem genes do corpo, e tem de continuar a desenhar-se exactamente como
+   tem genes do corpo, e tem de continuar a desenhar-se exatamente como
    sempre se desenhou. */
 {
   let mudou = 0;

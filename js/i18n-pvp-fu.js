@@ -97,7 +97,11 @@ window.registerStrings({
   'pvp.tab.abrir':                'Ver o salão →',
   'pvp.tab.a_sua':                'a sua',
   'pvp.tab.voce':                 'Você',
+  /* Com um ponto de diferenca a frase precisa do singular nos dois
+     lugares: "faltam 1 pontos" errava o verbo e o substantivo de uma
+     vez, e e a distancia mais comum perto do corte. */
   'pvp.tab.faltam':               'faltam {n} pontos para passar o {pos}',
+  'pvp.tab.faltam_1':             'falta 1 ponto para passar o {pos}',
   'pvp.tab.sem_lugar':            'Você ainda não pontuou entre os {div} nesta temporada.',
   'pvp.tab.vazio_tit':            'A tabela está limpa',
   'pvp.tab.vazio_sub':            'Ninguém pontuou nesta divisão. O primeiro nome aqui pode ser o seu.',
@@ -245,6 +249,7 @@ window.registerStrings({
   'pvp.tab.a_sua':                'yours',
   'pvp.tab.voce':                 'You',
   'pvp.tab.faltam':               '{n} points to pass {pos}',
+  'pvp.tab.faltam_1':             '1 point to pass {pos}',
   'pvp.tab.sem_lugar':            'You have not scored among the {div} this season yet.',
   'pvp.tab.vazio_tit':            'The table is empty',
   'pvp.tab.vazio_sub':            'Nobody has scored in this division. The first name here could be yours.',

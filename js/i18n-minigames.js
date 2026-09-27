@@ -19,6 +19,10 @@ window.registerStrings(
     // Fusão de esferas (js/fusao.js)
     'mg.fus.info':           '{diff} · Junte duas iguais!',
     'mg.fus.placar':         '🔮 {p} pontos · {n} fusões',
+    /* A PRIMEIRA fusao de toda partida mostrava "1 fusoes". O mesmo
+       vale para a primeira linha do Tetra: sao os dois numeros que
+       todo jogador ve valendo 1, em toda partida. */
+    'mg.fus.placar_1':       '🔮 {p} pontos · 1 fusão',
     'mg.fus.vazio':          '💤 NENHUMA FUSÃO',
     'mg.fus.fim':            '🔮 {p} pontos · maior: {tipo}',
     'mg.fus.bub.novo':       'Uma esfera de {tipo}! ✨',
@@ -41,8 +45,10 @@ window.registerStrings(
     // Tetra elemental (js/tetra.js)
     'mg.tet.info':           '{diff} · Complete as linhas!',
     'mg.tet.placar':         '🧱 {p} pontos · {l} linhas · nível {n}',
+    'mg.tet.placar_1':       '🧱 {p} pontos · 1 linha · nível {n}',
     'mg.tet.vazio':          '💤 NENHUMA LINHA',
     'mg.tet.fim':            '🧱 {p} pontos · {l} linhas',
+    'mg.tet.fim_1':          '🧱 {p} pontos · 1 linha',
     'mg.tet.bub.nivel':      'Nível {n}! Mais rápido! ⚡',
     'mg.tet.bub.quatro':     'Quatro de uma vez! 🌟',
     'mg.tet.guardada':       'GUARDADA',
@@ -126,6 +132,7 @@ window.registerStrings(
     // Orb merge (js/fusao.js)
     'mg.fus.info':           '{diff} · Merge two of a kind!',
     'mg.fus.placar':         '🔮 {p} points · {n} merges',
+    'mg.fus.placar_1':       '🔮 {p} points · 1 merge',
     'mg.fus.vazio':          '💤 NO MERGES',
     'mg.fus.fim':            '🔮 {p} points · best: {tipo}',
     'mg.fus.bub.novo':       'An orb of {tipo}! ✨',
@@ -148,8 +155,10 @@ window.registerStrings(
     // Elemental tetra (js/tetra.js)
     'mg.tet.info':           '{diff} · Clear the lines!',
     'mg.tet.placar':         '🧱 {p} points · {l} lines · level {n}',
+    'mg.tet.placar_1':       '🧱 {p} points · 1 line · level {n}',
     'mg.tet.vazio':          '💤 NO LINES',
     'mg.tet.fim':            '🧱 {p} points · {l} lines',
+    'mg.tet.fim_1':          '🧱 {p} points · 1 line',
     'mg.tet.bub.nivel':      'Level {n}! Faster! ⚡',
     'mg.tet.bub.quatro':     'Four at once! 🌟',
     'mg.tet.guardada':       'HOLD',

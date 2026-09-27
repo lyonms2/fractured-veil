@@ -78,8 +78,8 @@ async function ler(doc) {
   // A carteira decide de quem é uma compra; só o servidor a grava.
   ok('EXPLOIT forjar a carteira',      await escrever('D','D',{'carteira':'0xoutra'}), 403);
   ok('EXPLOIT forjar extraSlots',      await escrever('D','D',{'gs.extraSlots':10}), 403);
-  // O balde do bónus é do servidor tal como o dos cristais com lastro.
-  // Se o cliente lhe pudesse escrever, o bónus deixava de ser bónus e
+  // O balde do bônus é do servidor tal como o dos cristais com lastro.
+  // Se o cliente lhe pudesse escrever, o bônus deixava de ser bônus e
   // passava a um campo onde cada um escreve o que quer gastar — e como
   // ele se gasta ANTES dos cristais reais, era a via mais curta para
   // comprar avatares e ovos de graça.

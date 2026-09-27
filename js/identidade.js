@@ -29,8 +29,8 @@
 // ── CAMPOS PLANOS, DE PROPÓSITO ──
 //
 // `criador: { uid, nome }` lia-se melhor. Mas o avatar é reconstruído
-// campo a campo em três sítios — js/firebase.js ao gravar, e duas vezes
-// no api/comprar-avatar.js, ao listar e ao entregar — e um objecto
+// campo a campo em três lugares — js/firebase.js ao gravar, e duas vezes
+// no api/comprar-avatar.js, ao listar e ao entregar — e um objeto
 // encaixado sobrevive a esses três até ao dia em que alguém escrever o
 // quarto e se esquecer dele. Sete campos planos não se perdem por
 // omissão: perdem-se por engano visível.
@@ -98,7 +98,7 @@ function identidadeNova(opts) {
 /* Os avatares que nasceram antes disto existir.
 
    Não se inventa um criador: ninguém sabe quem os fez, e escrever o dono
-   actual seria transformar uma venda em autoria. Ficam com criador nulo,
+   atual seria transformar uma venda em autoria. Ficam com criador nulo,
    e a interface diz "desconhecido" — que é a verdade.
 
    O id, esse, tem de existir: sem ele não há âncora para linhagem
@@ -293,7 +293,7 @@ function podeRenomear(slot) {
    ele ainda não o deu.
 
    Isto existe porque a mesma conta estava escrita em vinte e cinco
-   sítios, e cada um com o seu remendo: uns diziam 'Avatar', outros
+   lugares, e cada um com o seu remendo: uns diziam 'Avatar', outros
    '???', outros '?', e a maioria não tinha remendo nenhum e rebentava
    num nome vazio. Uma conta escrita vinte e cinco vezes acaba sempre
    por discordar de si própria — já rendeu meia dúzia de defeitos a este
@@ -465,7 +465,7 @@ async function confirmarNomeDoJogador() {
 //
 // Não calcula nada. Lê o que está gravado e diz "—" onde não há nada —
 // e essa é a regra que interessa: um avatar do jogo antigo não tem
-// criador, e escrever ali o dono actual seria transformar uma compra em
+// criador, e escrever ali o dono atual seria transformar uma compra em
 // autoria. A interface diz desconhecido, que é a verdade.
 // ═══════════════════════════════════════════════════════════════════
 function _certData(ms) {
@@ -512,12 +512,12 @@ function renderCertidaoHTML(slot) {
 
   /* Os donos anteriores, do mais antigo para o mais recente. O dono
      ACTUAL não entra: é quem tem o avatar em mãos agora, e escrevê-lo
-     aqui era ter a mesma pessoa em dois sítios à espera de divergirem. */
+     aqui era ter a mesma pessoa em dois lugares à espera de divergirem. */
   const donos = Array.isArray(slot.donos) ? slot.donos : [];
 
   /* O slot fica guardado para o histórico o poder ler. A certidão
      desenha-se como texto, e um botão dentro de uma string não tem por
-     onde levar o objecto — ver js/historico.js. */
+     onde levar o objeto — ver js/historico.js. */
   if (typeof historicoGuardarSlot === 'function') historicoGuardarSlot(slot);
 
   const listaDonos = donos.length
@@ -562,14 +562,14 @@ function renderCertidaoHTML(slot) {
 //
 // Cada avatar guarda o ID da mãe e do pai. Um id não é um ponteiro: o
 // progenitor pode ter sido vendido, queimado ou nunca ter estado nesta
-// colónia. Por isso a árvore tem dois níveis de certeza, e diz qual é
+// colônia. Por isso a árvore tem dois níveis de certeza, e diz qual é
 // qual em vez de fingir que sabe tudo:
 //
 //   · o NOME dos pais está sempre lá — foi gravado na certidão no
 //     momento em que o ovo foi posto, e fica mesmo depois de eles
 //     desaparecerem. É história, e a história não se apaga com eles.
 //
-//   · o AVATAR dos pais só aparece se ainda estiver na colónia. Aí
+//   · o AVATAR dos pais só aparece se ainda estiver na colônia. Aí
 //     dá para subir mais um degrau e ver os avós.
 //
 // Os filhos não se guardam em lado nenhum, e é de propósito: uma lista
@@ -598,7 +598,7 @@ function _arvPorId(id, slots) {
      · ESTÁ CÁ      o avatar inteiro, com o nível de hoje
      · SAIU         o retrato que ficou guardado quando o ovo foi posto
                     (js/reproducao.js) — dá para desenhar, e é história
-                    fixa: não muda se ele subir de nível noutra colónia
+                    fixa: não muda se ele subir de nível noutra colônia
      · SÓ O NOME    os filhos nascidos antes de haver retrato
 
    O nome vem sempre, porque é o que nunca falha. */
@@ -630,7 +630,7 @@ function arvoreDe(slot, slots) {
   }
 
   /* Os filhos: quem tem este avatar como mãe ou pai. Só se acham os que
-     estão na colónia — um filho vendido continua a saber quem é o pai,
+     estão na colônia — um filho vendido continua a saber quem é o pai,
      mas o pai não tem por onde saber dele. */
   const filhos = lista.filter(s => {
     if (!s || s === slot || !slot.id) return false;
@@ -659,7 +659,7 @@ function arvoreDe(slot, slots) {
    Três estados por lugar, e a diferença entre eles é a razão de a
    árvore existir:
 
-     PRESENTE   está na colónia · desenha-se
+     PRESENTE   está na colônia · desenha-se
      HISTÓRIA   só o nome ficou na certidão · silhueta apagada
      VAZIO      nunca houve · um lugar tracejado
 
@@ -775,7 +775,7 @@ function _linCartao(p, cls, slots) {
   </div>`;
 }
 
-// Onde este avatar mora na colónia. -1 se não morar lá.
+// Onde este avatar mora na colônia. -1 se não morar lá.
 function _linIdx(slot, slots) {
   if (!slot || !Array.isArray(slots)) return -1;
   return slots.indexOf(slot);
@@ -880,7 +880,7 @@ function abrirCartaoLinhagem(idx) {
 
   document.getElementById('linCartaoNome').textContent = nomeCurto(s);
   /* O † também aqui, e não só no cartão pequeno. Era a mesma omissão
-     em dois sítios: um avatar morto abria uma folha igual à de um vivo. */
+     em dois lugares: um avatar morto abria uma folha igual à de um vivo. */
   const info = document.getElementById('linCartaoInfo');
   info.textContent = t('main.zoom.info', { rar: s.raridade || 'Comum',
                           fase: LIN_FASES[fase] || LIN_FASES[0],

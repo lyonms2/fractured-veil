@@ -397,7 +397,7 @@ module.exports = async function handler(req, res) {
      Traduz-se aqui, ANTES do guarda do alvoUid, e não lá dentro do
      handlePedir: o guarda exige um alvo, e um pedido que traz só o
      código ainda não tem nenhum. Traduzido primeiro, o resto do
-     ficheiro continua a ver o que sempre viu — um uid. */
+     arquivo continua a ver o que sempre viu — um uid. */
   if (!alvoUid && acao === 'pedir' && req.body.codigo !== undefined) {
     const limpo = _limparCodigo(req.body.codigo);
     if (!limpo) return res.status(400).json({ erro: 'Código inválido.', motivo: 'invalido' });
@@ -592,7 +592,7 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
          Sem escolha, vale o primeiro vivo: um cliente antigo continua a
          funcionar, e leva a comida a alguém em vez de falhar.
 
-         O COOLDOWN NÃO MUDA: continua por amigo e por acção, e não por
+         O COOLDOWN NÃO MUDA: continua por amigo e por ação, e não por
          avatar. Poder ajudar cada bicho de um amigo com dez seria
          multiplicar por dez o que a visita rende, e isso é conversa da
          economia — aqui só se mudou QUEM recebe, não quanto se dá. */

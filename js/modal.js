@@ -60,7 +60,7 @@ const MODAL_IDS = [
    combateModal, que se abre da página da batalha — e qualquer modal
    novo cairia na mesma armadilha.
 
-   Por isso a correcção é aqui e não no HTML: ao carregar, tudo o que
+   Por isso a correção é aqui e não no HTML: ao carregar, tudo o que
    for position:fixed e estiver enfiado numa tela muda-se para o body.
    Um elemento fixo não depende do pai para saber onde se desenha —
    depende dele só para saber se pode ser visto, que era o problema.

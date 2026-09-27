@@ -9,7 +9,7 @@
      node tools/testar-niveis.js
 
    O que se confere: o primeiro encontro anota o que o slot diz; um save
-   editado para o nível 60 não muda o poder da equipa; a rota sobe só o
+   editado para o nível 60 não muda o poder da equipe; a rota sobe só o
    que o balde permite; um avatar de outra pessoa é ignorado; quem nasce
    já vem registado no nível 1. As regras em si estão no js/niveis.js.
 

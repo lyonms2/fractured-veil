@@ -148,7 +148,7 @@ titulo('MAS NÃO GARANTE');
    diferentes — senão o seed não serve para nada e dois irmãos são
    gémeos idênticos.
 
-   No motor novo a diferença entra por dois sítios: o desempate da ORDEM
+   No motor novo a diferença entra por dois lugares: o desempate da ORDEM
    dos atributos, e a COSTURA, que se sorteia pelo seed. O arranjo, esse,
    sai só do DNA — e é suposto: é a parte que se herda. */
 const molde = nascido(12345).nascimento;
@@ -220,7 +220,7 @@ for (let i = 0; i < 5000; i++) {
 ok(fora === 0, 'e ao nascer ninguém tem mais faces do que isso',
    nArr.toLocaleString('pt-BR') + ' avatares, todos com ' + somasDosArranjos[0]);
 
-/* E o que as subidas acrescentam é exactamente o que prometem: uma face
+/* E o que as subidas acrescentam é exatamente o que prometem: uma face
    por cada duas de tamanho de dado, e nunca mais do que isso. */
 let somaErrada = 0;
 for (let i = 0; i < 2000; i++) {

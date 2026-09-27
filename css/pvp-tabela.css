@@ -58,7 +58,7 @@
 /* O FUNDO É SÓLIDO, e o desvanecer vem por baixo.
 
    Com um gradiente a fazer de fundo sobrava uma fresta transparente no
-   rodapé da barra — 11,6px no telemóvel, 17,7px no computador — e a
+   rodapé da barra — 11,6px no celular, 17,7px no computador — e a
    lista passava visível por trás dela enquanto rolava. Lia-se "1289" e
    "19V – 4D" a atravessar a barra das divisões. O véu passou para um
    ::after, que é o que ele sempre devia ter sido. */
@@ -129,7 +129,7 @@
    tudo o que vinha depois: a medalha, o nome e os pontos dele ficavam
    47px acima dos dos outros dois, e o pé do bloco ficava aos degraus.
    Elevar só o retrato por `transform` não resolveu — o transform pinta
-   noutro sítio mas não muda a caixa, e ainda abriu um vão de 40px
+   noutro lugar mas não muda a caixa, e ainda abriu um vão de 40px
    debaixo da moldura do campeão, que lia como buraco.
 
    Com `display: contents`, cada lugar deixa de ser uma caixa e os seus
@@ -362,7 +362,7 @@
   aspect-ratio: 1;
 }
 /* O desenho preenche a caixa em vez de ter tamanho cravado em pixéis:
-   assim não é cortado no telemóvel nem boia no computador, onde a raiz
+   assim não é cortado no celular nem boia no computador, onde a raiz
    é maior. */
 .pvp-tab-cara svg { width: 100%; height: 100%; display: block; }
 /* Quem não tem retrato leva a inicial do nome, em ouro. Um disco liso
@@ -381,7 +381,7 @@
   text-shadow: 0 0 0.75rem rgba(201,168,76,.4);
   line-height: 1;
 }
-/* O tamanho da letra em cada sítio: uma percentagem herdaria do body e
+/* O tamanho da letra em cada lugar: uma porcentagem herdaria do body e
    dava sete píxeis no meio de um pódio de 120. */
 .pvp-tab-arte .pvp-tab-sem-cara { font-size: 2.25rem; }
 .pvp-tab-lugar.l1 .pvp-tab-sem-cara { font-size: 3rem; }
@@ -398,7 +398,7 @@
    de 1016 para 974 pontos fazia a coluna inteira saltar. */
 .pvp-tab-vd { font-size: 0.5rem; color: var(--rank-fraco); width: 4.25rem; text-align: right; }
 .pvp-tab-pontos { font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); width: 2.75rem; text-align: right; }
-/* O poder da equipa, só onde há largura para ele: no telemóvel a linha
+/* O poder da equipe, só onde há largura para ele: no celular a linha
    já tem o que precisa, e no computador era ele ou 450px de vazio entre
    o nome e o placar. */
 .pvp-tab-poder { display: none; font-size: 0.5rem; color: var(--rank-fraco); width: 3.5rem; text-align: right; }
@@ -578,7 +578,7 @@
 
 /* ── NO COMPUTADOR ──
    Sobra largura: em vez de a deixar vazia entre o nome e o placar, ela
-   passa a dizer com que poder de equipa cada um chegou ali. */
+   passa a dizer com que poder de equipe cada um chegou ali. */
 @media (min-width: 681px) and (orientation: landscape) {
   .pvp-tab-poder { display: block; }
   .pvp-tab-lista li { grid-template-columns: 1.75rem 2.25rem minmax(0, 1fr) auto auto auto; }

@@ -56,7 +56,7 @@
 
    Não é a escada — é o travão. A fase 3 pede vinte horas de jogo, e sem
    elas o avatar não passa de Raro por muitos pontos que tenha. */
-/* Era ['Comum','Raro','Raro','Lendário']: o tecto que o tempo de jogo
+/* Era ['Comum','Raro','Raro','Lendário']: o teto que o tempo de jogo
    impunha, quando a fase vinha do nível e da idade e a raridade dos
    pontos — duas escadas diferentes que este travão punha de acordo.
 
@@ -99,7 +99,7 @@ function grauDaRaridade(raridade) {
    vivas `nivel` e `totalSecs`. Esta faz o mesmo para um slot na mão, e
    aceita que o tempo de jogo não exista: uma listagem do marketplace
    traz o nível e mais nada, e recusar-me a responder aí só me obrigava
-   a inventar uma segunda regra noutro sítio. */
+   a inventar uma segunda regra noutro lugar. */
 /* O TEMPO DE JOGO SAIU DAQUI TAMBÉM.
 
    Pedia o menor entre a fase do nível e a da idade. A segunda metade
@@ -118,10 +118,10 @@ function faseDoSlot(slot) {
 
 /* A raridade sai dos pontos, e mais nada.
 
-   Havia um segundo termo — o tecto que a fase impunha — e ele existia
+   Havia um segundo termo — o teto que a fase impunha — e ele existia
    porque as duas escadas eram diferentes: um avatar podia ter pontos de
    Lendário e ainda ser JOVEM. Agora a fase sai dos MESMOS pontos, e o
-   tecto diz sempre o mesmo que a conta que ele travava. Um travo que
+   teto diz sempre o mesmo que a conta que ele travava. Um travo que
    nunca trava não é um travo: é uma linha à espera de discordar. */
 function raridadeDoSlot(slot) {
   if (!slot) return 'Comum';
@@ -142,7 +142,7 @@ function sincronizarRaridade(slot) {
   if (!slot || typeof slot !== 'object') return null;
   const nova = raridadeDoSlot(slot);
   /* Descer, nunca. A fase pode descer no papel — o faseFromAge de um
-     avatar que perdeu tempo de jogo, um nível reposto por uma correcção
+     avatar que perdeu tempo de jogo, um nível reposto por uma correção
      — e tirar a Lendário a quem já a tinha seria roubá-la. O que se
      conquista fica. */
   if (grauDaRaridade(nova) <= grauDaRaridade(slot.raridade)) return null;

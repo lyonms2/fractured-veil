@@ -20,7 +20,7 @@ require('./_genetica.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 /* A taxa de listagem, que vai inteira para a pool. Eram 2 ð — dois
-   cêntimos —, barato de mais para travar quem enche o mercado de
+   centavos —, barato de mais para travar quem enche o mercado de
    anúncios sem intenção de vender. Ver a escala no js/cristais.js. */
 const LIST_COST        = 25;   // 💎 taxa de listagem de avatar
 const PRICE_MIN        = 1;
@@ -106,7 +106,7 @@ async function handleListarAvatar(req, res, db, uid) {
       if (!playerSnap.exists) throw new Error('Jogador não encontrado');
 
       const pData    = playerSnap.data();
-      // O saldo é a soma dos dois baldes, e o débito come o bónus primeiro.
+      // O saldo é a soma dos dois baldes, e o débito come o bônus primeiro.
       const debito = CRIS.camposDebito(pData, LIST_COST);
       if (!debito) throw new Error('INSUFFICIENT');
 
@@ -152,7 +152,7 @@ async function handleListarAvatar(req, res, db, uid) {
       const emitidos  = pData.avataresEmitidos || {};
       const emitidoComo = emitidos['s' + String(s.seed)];
       if (!emitidoComo) throw new Error('AVATAR_SEM_REGISTO');
-      /* Confere com a ORIGEM, e nao com a raridade actual.
+      /* Confere com a ORIGEM, e nao com a raridade atual.
 
          Desde que todo o avatar nasce Comum, a raridade que ele traz
          hoje nao diz nada sobre o ovo que o gerou — e era isso que
@@ -161,7 +161,7 @@ async function handleListarAvatar(req, res, db, uid) {
          poderia ser vendido.
 
          A origem esta na certidao, escreve-se uma vez e nao muda —
-         que e exactamente a propriedade que esta verificacao precisa.
+         que e exatamente a propriedade que esta verificacao precisa.
          Quem nasceu antes de haver certidao cai na raridade, que
          nesses era mesmo a do ovo. */
       const certidoes = pData.certidoes || {};
@@ -373,8 +373,8 @@ async function handleDesbloquearSlot(_req, res, db, uid) {
   // os do topo do arquivo tinham ficado para trás. São os mesmos.
   /* ── O PREÇO SOBE A CADA SLOT ──
 
-     Era 15 ð fixo para os cinco — quinze cêntimos, e o mesmo preço
-     para o sexto bicho e para o décimo. Quem quer uma colónia grande
+     Era 15 ð fixo para os cinco — quinze centavos, e o mesmo preço
+     para o sexto bicho e para o décimo. Quem quer uma colônia grande
      quer cada vez mais, e o preço tem de acompanhar: a escada trava a
      acumulação sem fechar a porta a ninguém.
 

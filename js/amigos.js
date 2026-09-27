@@ -160,7 +160,7 @@ async function amigoCopiarCodigo() {
     if (typeof showToast === 'function') showToast(t('amigos.copiado'), 'ok');
   } catch (e) {
     /* Sem permissão para a área de transferência — acontece em contextos
-       não seguros e em alguns navegadores de telemóvel. Seleciona-se o
+       não seguros e em alguns navegadores de celular. Seleciona-se o
        código para o jogador o copiar à mão, que é melhor do que um botão
        que não faz nada. */
     const el = document.getElementById('amigosMeuCodigo');
@@ -370,9 +370,9 @@ window.amigoRemover = amigoRemover;
 
 /* ── O CONTADOR DA TELA DE VISITA ──
 
-   Quem manda é o servidor: ele conta no mesmo sítio onde aplica o
+   Quem manda é o servidor: ele conta no mesmo lugar onde aplica o
    limite (ver api/amigos.js, perfil), e assim os dois números nunca
-   discordam — nem quando o jogador visitou no telemóvel e voltou ao
+   discordam — nem quando o jogador visitou no celular e voltou ao
    computador sem recarregar a lista.
 
    A conta local fica como rede: um cache antigo da /api continua a
@@ -552,7 +552,7 @@ function _renderVisitaOverlay() {
     { tipo: 'limpar',    icon: '🧼', label: t('amigos.action.clean'), vital: 'higiene', cor: '#5ab4e8' },
   ];
 
-  /* A fila da colónia. Cada um com a sua cara e o seu nome; o
+  /* A fila da colônia. Cada um com a sua cara e o seu nome; o
      escolhido fica aceso. Com um avatar só a fila não aparece — não há
      escolha nenhuma para oferecer. */
   const fila = colonia.length > 1 ? `

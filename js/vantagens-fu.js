@@ -21,7 +21,7 @@
 // desvantagem sem preço para pagar seria só um castigo.
 //
 // A costura funciona como preço porque é EXPLORÁVEL: o inimigo tem de a
-// descobrir e tem de ter com que a atacar. É por isso que a acção de
+// descobrir e tem de ter com que a atacar. É por isso que a ação de
 // ESTUDAR existe no manual, e é por isso que a cor não a denuncia.
 //
 // ── O LENDÁRIO ESCOLHE ──
@@ -87,7 +87,7 @@ const FU_VANTAGENS = {
 
   /* Spellcaster, a metade que nos serve: dez pontos de magia. As magias
      já as tem todas por raridade, portanto o que sobra da habilidade é
-     exactamente isto. */
+     exatamente isto. */
   fonte_funda:    { familia: 'sustentacao', manual: 'Spellcaster', pmMais: 10 },
 
   /* Reaction, o terceiro exemplo do manual: recupera magia ao ser
@@ -222,7 +222,7 @@ function _fvResolver(id, base, rnd) {
 
    A segunda sorteia-se SEMPRE, mesmo para quem nunca vai poder tê-la.
    Se só saísse para os Lendários, a fila de sorteios mudava de
-   comprimento e tudo o que viesse a seguir caía noutro sítio.
+   comprimento e tudo o que viesse a seguir caía noutro lugar.
    ═══════════════════════════════════════════════════════════════════ */
 function fuVantagensDoDna(dna, seed, base, raridade, escolha) {
   const rnd = _fvRng((seed || 0) ^ 0x9C);
@@ -252,10 +252,10 @@ function fuVantagensDoDna(dna, seed, base, raridade, escolha) {
    O motor não percorre a lista das vantagens. Lê este saco, onde os
    números já estão somados e as verdades já estão juntas.
 
-   É deliberado. Um motor que percorre a lista em seis sítios diferentes
+   É deliberado. Um motor que percorre a lista em seis lugares diferentes
    acaba com seis leituras ligeiramente diferentes da mesma coisa — e a
    sétima, escrita daqui a um mês, esquece-se de um caso. Assim há uma
-   conta só, num sítio só, e a auditoria confere que o saco diz o mesmo
+   conta só, num lugar só, e a auditoria confere que o saco diz o mesmo
    que a lista.
    ═══════════════════════════════════════════════════════════════════ */
 const FU_DONS_SOMA = ['defesaMais', 'defMagMais', 'pvMais', 'pmMais',
@@ -286,7 +286,7 @@ function fuDons(vantagens) {
    motor antigo que ainda as guardava.
 
    A condição era "doze pontos de ficha ou mais". Passa a ser o nível 27,
-   que é exactamente o mesmo avatar — conferido nos sessenta níveis — e
+   que é exatamente o mesmo avatar — conferido nos sessenta níveis — e
    que é o degrau do Lendário. Ser Ancião e ser Lendário sempre foram a
    mesma coisa; agora dizem-no com o mesmo número.
 

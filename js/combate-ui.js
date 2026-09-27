@@ -3,10 +3,10 @@
 //
 // Duas coisas, ambas em "Meus Avatares":
 //   · a ficha de combate de cada avatar (fichaDeCombate em combate-ficha.js)
-//   · a escolha dos 3 que entram na equipa de batalha
+//   · a escolha dos 3 que entram na equipe de batalha
 //
 // Aqui não se calcula nada. Os números todos vêm de combate-ficha.js —
-// se um dia a fórmula mudar, muda num sítio só.
+// se um dia a fórmula mudar, muda num lugar só.
 // ═══════════════════════════════════════════════════════════════════
 
 
@@ -59,7 +59,7 @@ function renderEquipaBar() {
   // ── A ORDEM À VISTA ──
   // O primeiro da fila abre a luta; os outros entram por ordem, à medida
   // que os da frente caem. Isso decidia-se pela ordem de clique e não se
-  // via em lado nenhum — o jogador montava a equipa sem saber quem ia
+  // via em lado nenhum — o jogador montava a equipe sem saber quem ia
   // apanhar o primeiro golpe.
   let cartoes = '';
   for (let n = 0; n < COMBATE_EQUIPA_MAX; n++) {
@@ -142,9 +142,9 @@ function renderEquipaBar() {
 // ═══════════════════════════════════════════════════════════════════
 // O BOTÃO DE BATALHAR
 //
-// Fica onde a equipa é escolhida, que é onde o jogador está quando
+// Fica onde a equipe é escolhida, que é onde o jogador está quando
 // acaba de a montar. Diz sempre porque não dá, em vez de só ficar
-// apagado: falta gente na equipa, ou há alguém cansado de mais.
+// apagado: falta gente na equipe, ou há alguém cansado de mais.
 // ═══════════════════════════════════════════════════════════════════
 /* O AVISO, e já não o botão.
 
@@ -155,13 +155,13 @@ function renderEquipaBar() {
    distância de dois centímetros, é escolha inventada.
 
    O que fica é a parte que os cartões não sabem dizer: PORQUE é que não
-   dá. Falta gente na equipa, ou há gente cansada de mais e com nome.
-   Com a equipa pronta isto some, e quem manda são os cartões. */
+   dá. Falta gente na equipe, ou há gente cansada de mais e com nome.
+   Com a equipe pronta isto some, e quem manda são os cartões. */
 function renderBotaoBatalhar(cheia, impedidos) {
   if (!cheia) return `<div class="equipa-batalhar-off">${t('equipa.batalhar.incompleta')}</div>`;
 
   /* O aviso diz três coisas, e a terceira é a que faltava: QUEM está de
-     fora, PORQUÊ, e que a equipa não fica presa por causa disso — basta
+     fora, PORQUÊ, e que a equipe não fica presa por causa disso — basta
      trocar por outro avatar. Sem a última linha, o jogador que só tem
      três criaturas conclui que não pode lutar e fecha a página. */
   if (impedidos && impedidos.length) {
@@ -180,30 +180,30 @@ function renderBotaoBatalhar(cheia, impedidos) {
 
 /* ── REDESENHAR O QUE SE MEXEU ──
 
-   As duas funções abaixo mudavam gs.equipa e depois pediam um
+   As duas funções abaixo mudavam gs.equipe e depois pediam um
    renderSlots() — que é o desenho da GRELHA do 🧬 Meus Avatares. A
-   barra da equipa vinha de borla no fim dele, e enquanto a barra vivia
+   barra da equipe vinha de borla no fim dele, e enquanto a barra vivia
    dentro desse mesmo painel isso bastava.
 
    A barra mudou-se para a página ⚔ BATALHA, e o renderSlots() tem um
    `if (!playerData) return` logo no princípio. O playerData só é
    carregado ao abrir o 🧬 ou o marketplace — portanto quem fosse
    direto à batalha carregava nas setas, a ordem MUDAVA de verdade em
-   gs.equipa, e a tela não mexia um pixel. Fechar e reabrir mostrava a
+   gs.equipe, e a tela não mexia um pixel. Fechar e reabrir mostrava a
    ordem nova, o que é a pior forma de descobrir que afinal funcionava.
 
    Cada uma passa a redesenhar aquilo que mexeu, e a grelha fica a
    ser o extra e não o caminho. */
 function _equipaRedesenhar() {
   if (typeof renderEquipaBar === 'function') renderEquipaBar();
-  // Entrar ou sair da equipa muda se o PvE está disponível; o cartão
+  // Entrar ou sair da equipe muda se o PvE está disponível; o cartão
   // do modo tem de saber disso sem se fechar a página.
   if (typeof _btSincronizarModos === 'function') _btSincronizarModos();
   if (typeof renderSlots === 'function') renderSlots();
 }
 
 // Botão ⚔ de cada card. Só re-renderiza a barra e a grelha — a escolha
-// vai para gs.equipa, que o save normal do jogo já leva.
+// vai para gs.equipe, que o save normal do jogo já leva.
 function toggleEquipa(i) {
   if (typeof alternarNaEquipa !== 'function') return;
   const r = alternarNaEquipa(i);

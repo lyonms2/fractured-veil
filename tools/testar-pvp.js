@@ -227,7 +227,7 @@ function reencontroPuro() {
   conferir('e as fichas de quem não tem laço continuam escondidas',
            fuConhece(estado, 'A', 'B0').nivel === 0 && fuConhece(estado, 'A', 'B2').nivel === 0);
 
-  /* O bónus na precisão. Mede-se variando UMA coisa só — o laço — com
+  /* O bônus na precisão. Mede-se variando UMA coisa só — o laço — com
      o mesmo atacante, o mesmo alvo e o gerador no mesmo passo.
 
      A primeira versão disto comparava atacantes DIFERENTES (o A0 com
@@ -800,7 +800,7 @@ async function servidor() {
 
   if (esperado) {
     const temp = RK.pvpTemporada(Date.now());
-    // As equipas do teste são de nível 30: divisão dos anciãos.
+    // As equipes do teste são de nível 30: divisão dos anciãos.
     const rkV = (docV.rank || {}).anciao || {}, rkP = (docP.rank || {}).anciao || {};
     conferir('a luta da fila deu pontos aos dois, na divisão certa',
              rkV.temporada === temp && rkP.temporada === temp && rkV.divisao === 'anciao'

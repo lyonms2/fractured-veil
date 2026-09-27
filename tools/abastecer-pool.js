@@ -19,12 +19,12 @@
    ── A REGRA QUE ESTE SCRIPT NÃO PODE QUEBRAR ──
 
    Cristais valem MATIC de verdade: 10 💎 por 1 MATIC, nas duas
-   direcções (RATE em api/resgatar.js). A página da Transparência mostra
+   direções (RATE em api/resgatar.js). A página da Transparência mostra
    a COBERTURA — a razão entre o MATIC que está no cofre e o MATIC
    necessário para pagar todos os cristais que existem.
 
    Escrever cristais na pool sem pôr o MATIC correspondente no contrato
-   faz a cobertura cair abaixo dos 100%, e isso é exactamente o que a
+   faz a cobertura cair abaixo dos 100%, e isso é exatamente o que a
    página promete que não acontece. Seria emitir dinheiro sem lastro.
 
    Por isso este script pede o MATIC, não os cristais: diz-se quanto se

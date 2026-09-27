@@ -81,7 +81,7 @@ class Recusa extends Error {
 }
 
 // ── A EQUIPE, COMO ESTÁ NO BANCO ─────────────────────────────────
-/* A mesma escolha do js/equipa.js (equipaIdx): o que o jogador escolheu,
+/* A mesma escolha do js/equipe.js (equipaIdx): o que o jogador escolheu,
    saneado; se nunca escolheu, os primeiros disponíveis. */
 function _idxDaEquipa(gs, slots) {
   const elegivel = s => !!(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed);
@@ -191,7 +191,7 @@ async function exigirLivre(rtdb, uid, quem) {
 
    Dois avatares que ganharam laço a lutar do mesmo lado e que agora se
    encontram em lados opostos — vendidos, trocados, ou simplesmente duas
-   colónias que se cruzaram. O que o laço dá lá dentro está no motor
+   colônias que se cruzaram. O que o laço dá lá dentro está no motor
    (js/combate-fu.js): ficha aberta sem examinar e +1 a +3 na precisão
    contra aquele inimigo, e mais ninguém.
 
@@ -214,7 +214,7 @@ function _cruzarLacos(eu, ele, ladoDele) {
 
 /* Os laços dos dois, lidos aqui e não carregados desde a fila.
 
-   A fila guarda a equipa no Realtime Database (`pvp/filaEquipe`) para o
+   A fila guarda a equipe no Realtime Database (`pvp/filaEquipe`) para o
    pareamento ser barato, e pôr os laços lá seria engordar uma coisa
    que se escreve a cada entrada para usar uma vez por partida. Aqui são
    duas leituras, uma vez, no instante em que a sala nasce. */
@@ -345,7 +345,7 @@ async function tentarPar(rtdb, db, uid) {
 
 /* ── AS SALAS VELHAS ──
 
-   Uma sala guarda a semente, as duas equipas inteiras e a lista de
+   Uma sala guarda a semente, as duas equipes inteiras e a lista de
    todas as jogadas. Terminada, ainda serve por uns minutos — o outro
    jogador pode chegar atrasado ao fim, e é de lá que ele lê o resultado
    e o que a luta deixou. Passado isso, é lixo que fica a pagar-se para
@@ -582,7 +582,7 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
     if (!rk) continue;
     const j = (sala.jogadores || {})[uid] || {};
     const nome = j.nome || '';
-    /* O retrato do primeiro da equipa vai com a linha: a tabela mostra a
+    /* O retrato do primeiro da equipe vai com a linha: a tabela mostra a
        cara de quem está lá, e sem isto a página teria de ir buscar o
        documento de cada um dos dez. */
     const cara = ((j.equipe || [])[0]) || null;

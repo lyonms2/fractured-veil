@@ -2,14 +2,14 @@
 // REPRODUÇÃO — dois avatares, um ovo, um filho
 //
 // O DNA já era diplóide desde o dia em que nasceu (js/nascimento.js), e
-// era-o exactamente por causa disto: guardar DOIS alelos por
+// era-o exatamente por causa disto: guardar DOIS alelos por
 // característica não servia para nada enquanto não houvesse com quem
 // cruzar. Agora serve.
 //
 // ── A REGRA, QUE É UMA SÓ ──
 //
 // De cada par de alelos dos pais sai UM, à sorte, e os dois formam o par
-// do filho. É Mendel, e é tudo: não há médias, não há bónus, não há
+// do filho. É Mendel, e é tudo: não há médias, não há bônus, não há
 // nada que eu tenha inventado por cima.
 //
 // Daqui saem sozinhas três coisas que fazem uma linhagem valer a pena:
@@ -36,7 +36,7 @@
    calha: quem cuidou dos pais espera menos.
 
    Isto não é regra nova — é uma regra antiga a mudar de casa. O
-   servidor media exactamente isto quando o avatar punha ovos sozinho
+   servidor media exatamente isto quando o avatar punha ovos sozinho
    (o _validadeDoOvo, em api/pool.js): o nível, o vínculo e os cinco
    medidores decidiam o quanto o ovo valia. A postura sozinha acabou, e
    o sinal veio com ela para aqui, que é onde os ovos nascem agora.
@@ -104,7 +104,7 @@ function tempoDeChoco(a, b) {
    Guarda-se agora, no mesmo momento e pela mesma razão: seis números
    que chegam para o retrato. É uma FOTOGRAFIA e não um ponteiro — foi
    tirada no dia em que o ovo foi posto e não muda mais, mesmo que o pai
-   suba de nível noutra colónia. É o que uma certidão faz.
+   suba de nível noutra colônia. É o que uma certidão faz.
 
    Não substitui o avatar vivo: quando ele ainda cá está, é ele que se
    desenha, com o nível de hoje. O retrato é para quando já não está.
@@ -262,7 +262,7 @@ function cruzarDna(dnaA, dnaB, seed, corpoA, corpoB) {
 
      Uma cor de cada lado, inteira, como as características. Foi
      escolha: misturar as duas puxava sempre para o meio da roda, e ao
-     fim de muitas gerações a colónia inteira saía da mesma cor bâmbia.
+     fim de muitas gerações a colônia inteira saía da mesma cor bâmbia.
      Assim as pontas nunca se perdem, e uma cor que ninguém vê há três
      gerações pode reaparecer num neto — que é o que faz valer a pena
      olhar para a árvore. */
@@ -346,7 +346,7 @@ function cruzar(mae, pai, opts) {
       maeNome: femea.nome ? String(femea.nome).split(',')[0].trim() : null,
       paiNome: macho.nome ? String(macho.nome).split(',')[0].trim() : null,
       // E o retrato de cada um, para o filho os poder mostrar mesmo
-      // depois de eles saírem da colónia.
+      // depois de eles saírem da colônia.
       maeRetrato: _reprRetrato(femea),
       paiRetrato: _reprRetrato(macho),
       postoEm: agora,
@@ -377,7 +377,7 @@ function faltaParaChocar(ovo, agora) {
    `semNinhoDesde` é posto pelo relógio do jogo no instante em que o ovo
    fica pronto e não há slot para ele (js/gametick.js), e é LIMPO assim
    que houver um. Não se acumula: um ovo que esteve preso três dias e
-   volta a ter sítio recomeça do zero se voltar a ficar sem.
+   volta a ter lugar recomeça do zero se voltar a ficar sem.
 
    Podia ser derivado — sete dias a contar do chocaEm e pronto, sem
    campo nenhum — e essa seria a versão mais arrumada. Não é a que foi

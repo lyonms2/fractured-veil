@@ -134,7 +134,7 @@ function temporadaPremiar(bolo, porDivisao) {
     for (let i = 1; i <= quantos; i++) H += 1 / Math.sqrt(i);
     for (let i = 1; i <= quantos; i++) {
       const merito = H ? parte * (1 / Math.sqrt(i)) / H : 0;
-      // Para baixo: o que a divisão inteira deixa de cêntimos acumula.
+      // Para baixo: o que a divisão inteira deixa de centavos acumula.
       const valor = Math.floor(SELO_CUSTO * fator + merito);
       if (valor <= 0) continue;
       pagamentos.push({ uid: lista[i - 1].uid, divisao: d, pos: i, valor });

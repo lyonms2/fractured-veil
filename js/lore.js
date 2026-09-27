@@ -39,7 +39,7 @@ function _loreCancelTypewriter() {
 // vive noutro modal: sem ele o listener do skip procurava sempre o
 // #loreBody, e no prólogo não havia forma de saltar a animação.
 // O semClique existe para o prólogo. Lá a aceleração passou a viver no
-// próprio botão, e um clique em qualquer sítio da tela deixou de saltar
+// próprio botão, e um clique em qualquer lugar da tela deixou de saltar
 // a escrita — clicar no fundo para nada é fácil, e saltar sem querer o
 // texto de abertura é mau.
 function _loreTypewriter(container, rawText, onDone, alvoClique, semClique) {

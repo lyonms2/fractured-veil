@@ -11,7 +11,7 @@
 //
 //  Fica lá e não numa coleção à parte de propósito: a cadeia segue o
 //  avatar para o comprador, portanto o histórico segue-o também. Um
-//  registo guardado noutro sítio seria uma segunda memória a divergir
+//  registo guardado noutro lugar seria uma segunda memória a divergir
 //  desta — e o comprador receberia um bicho sem passado outra vez.
 //
 //  E é escrito só pelo servidor, dentro da transação que move os
@@ -30,7 +30,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 /* O slot de que a certidão está a falar. A certidão desenha-se como
-   texto e o botão dela não tem por onde levar o objecto; fica aqui,
+   texto e o botão dela não tem por onde levar o objeto; fica aqui,
    escrito por quem a desenha. */
 let _histSlot = null;
 

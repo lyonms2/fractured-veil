@@ -47,7 +47,7 @@ function _authMsg(msg, type = 'error') {
 // ═══════════════════════════════════════════════════════════════════
 // MOSTRAR E ESCONDER O LOGIN
 //
-// Cinco sítios diferentes mexiam no display à mão, e nenhum travava a
+// Cinco lugares diferentes mexiam no display à mão, e nenhum travava a
 // rolagem da página. O #loginScreen é fixed e cobre tudo, mas o jogo
 // continua montado por baixo — 758px de altura numa janela de 660 — e
 // o body continua rolável. O resultado era uma barra de rolagem na tela
@@ -209,7 +209,7 @@ function updateHeaderButtons() {
      duas criaturas na lista à frente dos olhos.
 
      Nenhum daqueles botões é do avatar aberto: as moedas são do jogador,
-     o inventário é do jogador, e a equipa de batalha monta-se com os
+     o inventário é do jogador, e a equipe de batalha monta-se com os
      avatares todos. A pergunta certa é se ele TEM alguma criatura.
 
      ── MAS NA TELA DE INVOCAR NÃO APARECE NADA ──
@@ -237,8 +237,8 @@ function updateHeaderButtons() {
      neles, e o `hidden` os mantém fora da vista. */
   document.getElementById('resOvosBtn').style.display     = (temAvatar || temOvos) ? '' : 'none';
   // A batalha aparece assim que existir um avatar. O numero na
-  // pastilha e o tamanho da equipa montada, nao o total de bichos: a
-  // colonia ja diz quantos ha, e o que interessa aqui e se a equipa
+  // pastilha e o tamanho da equipe montada, nao o total de bichos: a
+  // colonia ja diz quantos ha, e o que interessa aqui e se a equipe
   // esta pronta para lutar.
   document.getElementById('resBatalhaBtn').style.display = temAvatar ? '' : 'none';
 }
@@ -255,7 +255,7 @@ async function _onLoginSuccess(user) {
   /* O email já não aparece em lado nenhum do cabeçalho.
 
      Este valor continua a ser escrito porque o elemento existe (mesmo
-     escondido) e porque outros sítios podem vir a querer saber quem
+     escondido) e porque outros lugares podem vir a querer saber quem
      está ligado — mas o que se mostra ao lado do ✕ SAIR passa a ser
      nada. Um email num cabeçalho é informação de quem está ao lado do
      tela, não de quem joga. */
@@ -501,7 +501,7 @@ async function _onLoginSuccess(user) {
          se desenhava nada, e o que aparecia ao entrar era o invólucro
          da consola vazio.
 
-         Não se repete aqui a decisão: pergunta-se ao único sítio que a
+         Não se repete aqui a decisão: pergunta-se ao único lugar que a
          sabe tomar, que é o mesmo que decide em cada troca de slot. */
       rebuildScreensParaSlot();
     }

@@ -110,7 +110,7 @@ window.registerStrings({
   'mkt.slot.btn_unlock':      '🔓 Desbloquear Slot {n} — {cost} 💎',
   'mkt.slot.max_unlocked':    'Slots máximos desbloqueados ({max})',
 
-  // ── Combate: ficha e equipa ───────────────────────────────────────
+  // ── Combate: ficha e equipe ───────────────────────────────────────
   'ficha.title':              '⚔ FICHA DE COMBATE',
   'ficha.hp':                 'HP',
   'ficha.energia':            'ENERGIA',

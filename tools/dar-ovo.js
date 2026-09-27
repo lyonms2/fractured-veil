@@ -27,7 +27,7 @@
 
    A ÚNICA coisa que salta é a idade: os dois pais entram na conta com
    nível 30, numa cópia em memória que não vai para lado nenhum. É
-   exactamente o que a ferramenta existe para poupar — as horas de jogo
+   exatamente o que a ferramenta existe para poupar — as horas de jogo
    até à fase adulta — e nada mais.
 
    O que ela NÃO salta, de propósito: os pais têm de existir, ter

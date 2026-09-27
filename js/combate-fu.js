@@ -13,7 +13,7 @@
 //     o correr sem navegador.
 //
 //  2. REPETE-SE. O acaso vive DENTRO do estado: um contador ao lado do
-//     seed. A mesma batalha com as mesmas escolhas dá exactamente os
+//     seed. A mesma batalha com as mesmas escolhas dá exatamente os
 //     mesmos dados, hoje e no servidor. É isso que torna as auditorias
 //     possíveis — e é isso que, no dia do PvP, deixa o servidor
 //     conferir uma luta que o cliente diz ter ganho.
@@ -51,7 +51,7 @@ const FU_ESTADOS_LISTA = Object.keys(FU_ESTADOS);
    se pode auditar nem verificar. */
 function _fuAcaso(rng) {
   let x = ((rng.semente | 0) ^ 0x9E3779B9) >>> 0;
-  // avança até ao passo actual — o estado guarda a POSIÇÃO, não o gerador
+  // avança até ao passo atual — o estado guarda a POSIÇÃO, não o gerador
   for (let i = 0; i <= rng.passo; i++) {
     x ^= x << 13; x >>>= 0;
     x ^= x >> 17;
@@ -71,7 +71,7 @@ function fuRolar(rng, faces) {
    A ROLAGEM
 
    Dois dados, sempre. O manual (p. 38): "as rolagens exigem sempre
-   exactamente dois dados."
+   exatamente dois dados."
 
      resultado   os dois somados, mais o modificador
      HR          o maior dos dois — é ele que entra no dano
@@ -176,7 +176,7 @@ function fuLacoDisponivel(estado, quem) {
    ela que passam a Defesa, a Defesa Mágica e todas as rolagens.
 
    Foi por causa disto que a ficha chama `defesaBase` ao que devolve: o
-   que o manual quer é o dado actual, e o actual só se sabe aqui. */
+   que o manual quer é o dado atual, e o atual só se sabe aqui. */
 function fuDado(c, atrib) {
   let d = c.ficha[atrib];
   /* O Despertar sobe um tamanho e dura a cena. Entra ANTES dos estados
@@ -189,11 +189,11 @@ function fuDado(c, atrib) {
   return d;
 }
 
-/* A Barreira e a Aura não dão bónus: põem um PISO. Quem tem d6 de
+/* A Barreira e a Aura não dão bônus: põem um PISO. Quem tem d6 de
    Destreza ganha muito, quem já tem d12 não perde nada — o manual
    escreve-as assim de propósito, e é isso que as torna magias de quem
    precisa em vez de magias de quem já está bem. */
-/* E a Guarda Cerrada soma-se DEPOIS do piso, porque é um bónus e não um
+/* E a Guarda Cerrada soma-se DEPOIS do piso, porque é um bônus e não um
    piso: o manual diz que os efeitos dela acumulam com tudo o resto.
    Quem tem a Barreira (piso 12) e a Guarda Cerrada (+2) fica em 14. */
 /* E o bônus do degrau (`defesaDegrau`, da ficha): +2 nas duas Defesas no
@@ -212,7 +212,7 @@ function fuDefesaMag(c) {
 
    Uma porta só, e nunca `c.ficha.dons` escrito à mão pelo caminho. A
    ficha de um lutador feito à mão numa auditoria pode não os ter, e um
-   `undefined.muralha` rebenta a meio de uma batalha — que é o pior sítio
+   `undefined.muralha` rebenta a meio de uma batalha — que é o pior lugar
    para descobrir uma coisa destas. */
 const FU_SEM_DONS = { defesaMais: 0, defMagMais: 0, pvMais: 0, pmMais: 0,
                       precisaoMais: 0, magiaMais: 0, danoMaisGolpe: 0,
@@ -427,7 +427,7 @@ function fuTirarEstado(c, estado) {
    a magia passava por cima — e estava errada por duas razões.
 
    A primeira é que não era a regra que me deram: "o da frente protege os
-   outros", sem qualificativo nenhum. A segunda é que, das cinco acções
+   outros", sem qualificativo nenhum. A segunda é que, das cinco ações
    que um avatar tem, só UMA é corpo-a-corpo — o golpe comum. A formação
    decidia um quinto do jogo, e reordenar custava um turno inteiro por
    quase nada.
@@ -457,7 +457,7 @@ function fuAlvosPossiveis(equipa, mira) {
 }
 
 /* Os três de um lado por ordem de posto — vivos e caídos, porque a arena
-   desenha os dois. O motor não guarda a equipa ordenada: guarda-a pela
+   desenha os dois. O motor não guarda a equipe ordenada: guarda-a pela
    ordem em que entrou, e o posto é um campo que se troca. Ordenar aqui,
    uma vez, poupa toda a gente de ordenar por sua conta — e de o fazer de
    seis maneiras ligeiramente diferentes. */
@@ -631,8 +631,8 @@ function fuAtacar(estado, quem, alvo, opcoes) {
 }
 
 /* O acto final de quem caiu, com o evento do golpe já na mão. Vive numa
-   função porque há DOIS sítios onde alguém pode cair — o golpe e a
-   Devastação — e dois sítios a fazer a mesma coisa à mão acabam por
+   função porque há DOIS lugares onde alguém pode cair — o golpe e a
+   Devastação — e dois lugares a fazer a mesma coisa à mão acabam por
    fazê-la de duas maneiras.
 
    ── A CADEIA ──
@@ -661,7 +661,7 @@ function fuColherQuedas(estado, eventos) {
 /* ═══════════════════════════════════════════════════════════════════
    O TURNO
 
-   Uma acção por turno. As que existem são as do manual que fazem
+   Uma ação por turno. As que existem são as do manual que fazem
    sentido aqui:
 
      atacar      o golpe comum
@@ -670,7 +670,7 @@ function fuColherQuedas(estado, eventos) {
      mover       trocar de posto — E GASTA O TURNO
 
    O mover gastar o turno é o que faz a formação pesar: tirar o ferido
-   da frente custa-lhe a acção. Sem isso, reposicionar era de graça e o
+   da frente custa-lhe a ação. Sem isso, reposicionar era de graça e o
    posicionamento não era uma decisão.
    ═══════════════════════════════════════════════════════════════════ */
 function fuAgir(estado, acao) {
@@ -1006,7 +1006,7 @@ function fuEstiloDoForte(estado, quem, magia, golpes, eventos) {
 
    O manual (p. 115): a mesma magia lançada outra vez no mesmo alvo NÃO
    se soma — a última substitui a anterior. Como cada efeito aqui é uma
-   chave própria no saco, escrever por cima é exactamente isso.
+   chave própria no saco, escrever por cima é exatamente isso.
 
    O Despertar é o único que precisa de saber QUAL atributo sobe, e a
    escolha é de quem lança: sobe o mais alto do alvo, que é o que ele

@@ -42,7 +42,7 @@ const path = require('path');
 const RAIZ = path.resolve(__dirname, '..');
 const NL = String.fromCharCode(10);
 
-/* As regras da fase leem-se do js/state.js, linha a linha, num sítio só
+/* As regras da fase leem-se do js/state.js, linha a linha, num lugar só
    (tools/fase.js). O arquivo inteiro não corre fora do browser — mexe na
    tela e em vinte globais — mas as regras da fase são quatro linhas, e
    uma segunda cópia delas aqui divergiria da do jogo em silêncio. */
@@ -105,7 +105,7 @@ titulo('A ESCADA');
 
      A fase vive no js/state.js e a raridade no js/ficha-fu.js, e as duas
      têm de dizer a mesma coisa nos mesmos níveis. Já disseram coisas
-     diferentes neste jogo: um avatar de nível 12 era ADULTO num sítio e
+     diferentes neste jogo: um avatar de nível 12 era ADULTO num lugar e
      ANCIÃO noutro, com outras magias e outro par de virtude e defeito. */
   let discorda = 0;
   const RAR_DA_FASE = ['Comum', 'Comum', 'Raro', 'Lendário'];

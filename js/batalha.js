@@ -2,23 +2,23 @@
 //  batalha.js — A PORTA DO COMBATE
 //
 //  Depende de: ModalManager (modal.js), renderEquipaBar (combate-ui.js),
-//              abrirCombatePvE (pve-fu.js), equipaIdx (equipa.js)
+//              abrirCombatePvE (pve-fu.js), equipaIdx (equipe.js)
 //
 //  ── PORQUE É QUE ISTO EXISTE ──
 //
 //  Lutar estava enterrado dois níveis abaixo: abria-se o 🧬 MEUS
 //  AVATARES, rolava-se por cima da lista de bichos à venda, e lá em
-//  baixo estava a barra da equipa com o botão de batalhar. Um ícone com
+//  baixo estava a barra da equipe com o botão de batalhar. Um ícone com
 //  três trabalhos — quem tenho, quem luta, e lutar.
 //
 //  Agora a colônia mostra quem se tem, na tela principal, e este modal
-//  fica com os outros dois: montar a equipa, escolher a ordem, e entrar
+//  fica com os outros dois: montar a equipe, escolher a ordem, e entrar
 //  no combate. É o mesmo #equipaBar de sempre; só mudou de casa.
 // ═══════════════════════════════════════════════════════════════════
 
 function abrirBatalha() {
   ModalManager.open('batalhaModal');
-  // A barra desenha-se sempre ao abrir: a equipa muda por fora daqui
+  // A barra desenha-se sempre ao abrir: a equipe muda por fora daqui
   // (um avatar pode ter morrido, ou sido vendido) e uma barra guardada
   // do último acesso mostrava gente que já lá não está.
   if (typeof renderEquipaBar === 'function') renderEquipaBar();
@@ -58,9 +58,9 @@ window.btRenderDificuldade = btRenderDificuldade;
 
 function fecharBatalha() { ModalManager.close('batalhaModal'); }
 
-/* O modo PvE só acende com a equipa completa.
+/* O modo PvE só acende com a equipe completa.
 
-   O botão de batalhar dentro da barra da equipa já diz porque é que não
+   O botão de batalhar dentro da barra da equipe já diz porque é que não
    dá — falta gente, ou há gente cansada de mais. Este cartão não repete
    a explicação: apaga-se, e quem quiser saber porquê lê a barra que
    está mesmo por cima. Dois avisos para a mesma coisa é ruído. */
@@ -90,7 +90,7 @@ function escolherPvE() {
 
    O 🧬 saiu da fila de cima para dar lugar ao ⚔, mas não desapareceu: o
    que lá se faz — vender, queimar, abrir slots — continua a ser preciso,
-   e o sítio natural para chegar lá é a lista das criaturas, não o topo
+   e o lugar natural para chegar lá é a lista das criaturas, não o topo
    da tela ao lado das moedas. */
 /* O PvP (js/pvp.js). O lobby mostra por que a equipe não pode ir, com
    o botão apagado — mas abre sempre: os amigos e os convites estão lá. */

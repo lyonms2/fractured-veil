@@ -174,7 +174,7 @@
   </div>
   <div class="modal-scroll-body">
     <div data-i18n="mkt.slots.sub" class="section-sub">Todos os seus avatares vivem ao mesmo tempo. Aqui você ordena a equipe de combate, vende e queima. Para cuidar de um, use o Cuidar na colônia.</div>
-    <!-- A barra da equipa mudou-se para o ⚔ BATALHA. Escolher quem luta
+    <!-- A barra da equipe mudou-se para o ⚔ BATALHA. Escolher quem luta
          e em que ordem pertence ao pé de lutar; aqui é onde se vende, se
          queima e se abrem slots. -->
     <div id="slotsGrid" class="slots-grid"></div>
@@ -182,8 +182,8 @@
   </div>
 </div>
 
-<!-- ⚔ BATALHA — onde se monta a equipa e se escolhe o combate.
-     Estava tudo dentro do 🧬: a barra da equipa, a ordem da fila e o
+<!-- ⚔ BATALHA — onde se monta a equipe e se escolhe o combate.
+     Estava tudo dentro do 🧬: a barra da equipe, a ordem da fila e o
      botão de lutar, debaixo de uma lista de avatares à venda. Três
      trabalhos atrás de um ícone. -->
 <div class="mini-modal" id="batalhaModal">
@@ -455,7 +455,7 @@
     <div class="logo">Fractured Veil</div>
     <div class="header-center">
       <!-- ── A FILA DE CIMA: UMA REGRA SÓ ──
-           Toca no recurso, vais ao sítio onde ele se usa. Sem exceções.
+           Toca no recurso, vais ao lugar onde ele se usa. Sem exceções.
 
            Havia aqui um 🛒 "Mercado" que abria um painel chamado "🔮 ITENS",
            era o único sem número, e chocava com o 🛒 "Comprar Avatares" do
@@ -476,7 +476,7 @@
            Decisão do dono do jogo: a fila de cima estava mostrando
            coisas que não são dali. E havia uma razão mais funda, que
            só apareceu na hora de mexer: a loja e o inventário agem
-           sobre o avatar ABERTO — um amuleto se equipa em um bicho, um
+           sobre o avatar ABERTO — um amuleto se equipe em um bicho, um
            consumível se dá a um bicho — e na colônia, onde há dez, os
            dois botões ficavam acesos e recusavam (ver o `bloqueado` em
            js/ui.js).
@@ -505,7 +505,7 @@
              ainda não foi pedido. -->
         <span id="saudacao" class="saudacao" hidden></span>
         <!-- A pausa fica aqui e não na fila do meio: aquela tem uma regra
-             só — toca no recurso, vais ao sítio onde ele se usa — e a
+             só — toca no recurso, vais ao lugar onde ele se usa — e a
              pausa não é um recurso.
 
              Aqui vive o que é do JOGADOR e não de uma criatura: os
@@ -573,7 +573,7 @@
 
         <!-- A COLÔNIA — a tela de entrada da consola.
              Todos os avatares vivos com os cinco vitais à vista, e uma
-             fila de acções que trata de quem precisa. O "Cuidar" abre o
+             fila de ações que trata de quem precisa. O "Cuidar" abre o
              aliveScreen, que é a tela de sempre, para aquele bicho. -->
         <div id="fazendaScreen" style="display:none;">
           <div class="fz-topo">
@@ -586,7 +586,7 @@
               <button class="fz-gerir" onclick="abrirColeccao()"
                       data-i18n-title="fazenda.gerir" title="Gerir avatares">🧬</button>
               <!-- Cruzar dois adultos. Fica ao lado do gerir porque é a
-                   mesma conversa: o que se faz com a colónia inteira. -->
+                   mesma conversa: o que se faz com a colônia inteira. -->
               <button class="fz-gerir" onclick="abrirCruzar()"
                       data-i18n-title="repr.titulo" title="Cruzar">❦</button>
             </span>
@@ -679,7 +679,7 @@
             <button class="gs-x-btn" onclick="closeGameSelector()">✕</button>
             <div data-i18n="gs.title" class="gs-title">◆ ESCOLHA UM JOGO</div>
             <!-- Era a aba PvE de três (PvE / PvP / Lore). O combate mudou-se
-     para o botão BATALHAR da equipa, o PvP e a lore saíram daqui,
+     para o botão BATALHAR da equipe, o PvP e a lore saíram daqui,
      e o que resta é uma lista de passatempos com as pastilhas de
      dificuldade por cima. -->
             <div id="gsGridJogos" class="gs-grid">
@@ -1025,7 +1025,7 @@
           <div class="dead-sub" id="deadSub"></div>
           <div class="dead-stats" id="deadStats"></div>
           <!-- Dizia "INVOCAR NOVO AVATAR" e invocava. Já não há invocar:
-               daqui vai-se à colónia, que é onde estão os outros e de
+               daqui vai-se à colônia, que é onde estão os outros e de
                onde se chega ao mercado. -->
           <button data-i18n="dead.btn" class="dead-btn" onclick="voltarAColonia()">✦ VOLTAR À COLÔNIA</button>
         </div>
@@ -1074,13 +1074,13 @@
              BANHO. Essa fila é do avatar ABERTO: cada botão faz uma
              coisa àquele bicho.
 
-             Os amigos deixaram de ser do avatar. Visita-se a colónia de
+             Os amigos deixaram de ser do avatar. Visita-se a colônia de
              quem se visita, escolhe-se lá a quem se leva a comida, e a
              amizade é entre as duas PESSOAS. Um botão desses no meio das
-             acções de cuidar dizia o contrário.
+             ações de cuidar dizia o contrário.
 
              Foi para o cabeçalho, que é onde vive o que é do jogador. E
-             de caminho passou a estar à mão na colónia e em toda a
+             de caminho passou a estar à mão na colônia e em toda a
              parte: um pedido de amizade chega a qualquer momento, e
              antes só se via entrando num avatar. -->
       </div>
@@ -1105,7 +1105,7 @@
 
            Com ele saíram o aviso de login (que vivia lá dentro e agora
            está na tela de entrada), a conta de invocações restantes e o
-           botão de voltar à colónia — que era a saída de uma tela onde
+           botão de voltar à colônia — que era a saída de uma tela onde
            já não se entra. Um slot vazio abre a COLÓNIA. -->
 
       <div class="panel-card" id="creatureCard" style="display:none">
@@ -1142,7 +1142,7 @@
              ser filhos dele.
 
              No desktop não se via: são todos blocos empilhados, e
-             empilhados ficam na mesma. No telemóvel via-se tudo: o
+             empilhados ficam na mesma. No celular via-se tudo: o
              layout de lá dá uma ORDEM a cada um desses blocos, contando
              que sejam filhos do #creatureCard — e não eram. A ordem não
              pegava em nenhum, e a regra que esconde o último <div> do
@@ -1150,7 +1150,7 @@
              cartão inteiro.
 
              Era por isto que o nome, os crachás, o XP e o vínculo não
-             apareciam no telemóvel. -->
+             apareciam no celular. -->
         </div>
 
         <div id="idBadgesRow" style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.625rem;flex-wrap:wrap;">
@@ -1185,7 +1185,7 @@
           <div class="xp-track"><div class="xp-fill" id="vinculoFill" style="width:0%;background:linear-gradient(90deg,#7b68ee,#c870e8);"></div></div>
         </div>
 
-        <!-- Tem id porque o telemóvel o esconde. A regra de lá apanhava-o
+        <!-- Tem id porque o celular o esconde. A regra de lá apanhava-o
              por "o último <div> do cartão", que é uma descrição do lugar
              e não da coisa — e bastou fechar a div acima para o lugar
              passar a ser outro. -->
@@ -1231,7 +1231,7 @@
 
       <!-- O DIÁRIO DIMENSIONAL saiu da tela principal.
            A lista fica no DOM, escondida: o addLog() escreve nela a
-           partir de dezenas de sítios e arrancá-la daqui rebentava
+           partir de dezenas de lugares e arrancá-la daqui rebentava
            todos eles de uma vez. -->
       <ul class="log-list" id="logList" style="display:none;"></ul>
 
@@ -1909,7 +1909,7 @@
      Vive por cima do #linhagemModal (z-index 150) e não é gerido pelo
      ModalManager de propósito: o ModalManager fecha o modal anterior ao
      abrir um novo, e fechar a árvore por trás do cartão tirava ao
-     jogador o sítio para onde ele quer voltar. -->
+     jogador o lugar para onde ele quer voltar. -->
 <div id="linCartaoOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:960;align-items:center;justify-content:center;" onclick="fecharCartaoLinhagem()">
   <div class="avatar-zoom-modal" onclick="event.stopPropagation()">
     <button class="avatar-zoom-close" onclick="fecharCartaoLinhagem()">✕</button>

@@ -1,17 +1,17 @@
 // ═══════════════════════════════════════════════════════════════════
 // A FICHA, DESENHADA — no padrão do manual
 //
-// UMA função, e dois sítios que a chamam: o painel "o que este avatar
-// sabe fazer" na colónia, e o orbe da ficha dentro da batalha.
+// UMA função, e dois lugares que a chamam: o painel "o que este avatar
+// sabe fazer" na colônia, e o orbe da ficha dentro da batalha.
 //
-// Eram duas. O js/combate-ui.js desenhava a da colónia e o
+// Eram duas. O js/combate-ui.js desenhava a da colônia e o
 // js/arena-fu.js desenhava a da arena, e as duas liam a mesma ficha para
 // mostrar coisas ligeiramente diferentes. Duas versões da mesma tela
 // divergem sempre — basta uma passar a mostrar as afinidades e a outra
 // não, e o jogador vê dois avatares onde só há um.
 //
-// A diferença entre os dois sítios não é o que se mostra: é se há uma
-// BATALHA a acontecer. Na colónia mostram-se os dados de nascença; na
+// A diferença entre os dois lugares não é o que se mostra: é se há uma
+// BATALHA a acontecer. Na colônia mostram-se os dados de nascença; na
 // arena mostram-se esses e, ao lado, os de agora — que os estados
 // encolhem e o Despertar aumenta. É um argumento opcional e não uma
 // segunda função.
@@ -33,7 +33,7 @@
 //     ─────────────
 //     ATAQUES BÁSICOS · MAGIAS · OUTRAS AÇÕES · REGRAS ESPECIAIS
 //
-// e cada acção é uma linha de campos separados por ✦, com o efeito
+// e cada ação é uma linha de campos separados por ✦, com o efeito
 // escrito por baixo em prosa.
 //
 // O ganho não é estético: quem sabe ler o manual sabe ler a ficha, e
@@ -68,7 +68,7 @@ function _ffuSexo(slot) {
    As duas que o DNA acaba de escrever levam os números dentro do texto:
    a Guarda Cerrada diz QUAL dos dois lados leva o dois, e a Pele Calada
    diz QUE dois estados cala. Sem isso, dois avatares com a mesma
-   vantagem liam exactamente igual e a escolha do DNA não se via. */
+   vantagem liam exatamente igual e a escolha do DNA não se via. */
 function fuVantagemNome(v) {
   return v ? t('afv.' + v.id + '.nome') : '';
 }
@@ -89,7 +89,7 @@ function fuVantagemDesc(v) {
 }
 
 /* A cor de cada atributo. A mesma em toda a ficha: na linha dos
-   atributos e dentro dos 【 】 de cada acção. As duas leituras — o que
+   atributos e dentro dos 【 】 de cada ação. As duas leituras — o que
    ele tem, e o que cada golpe usa — ligam-se pela cor, sem o olho ter de
    voltar atrás. */
 const FFU_COR = {
@@ -103,7 +103,7 @@ const FFU_COR = {
 // O CABEÇALHO E AS DUAS LINHAS DE NÚMEROS
 // ═══════════════════════════════════════════════════════════════════
 
-/* O nome pode não vir. Na colónia o modal do zoom já o escreve por cima
+/* O nome pode não vir. Na colônia o modal do zoom já o escreve por cima
    do bloco, e o slot que chega aqui nem sempre o traz; na arena vem no
    lutador. Sem nome, a faixa fica só com o que ele É — que é o que o
    manual põe do lado direito, e o que nunca falta. */
@@ -127,7 +127,7 @@ function _fbFaixa(slot, lutador, f) {
 
 /* A descrição é a frase do feitio, e já estava escrita — era o `title`
    de uma linha dourada que ninguém passava o rato por cima para ler. No
-   lugar do manual ela é a primeira coisa que se lê, que é o sítio certo
+   lugar do manual ela é a primeira coisa que se lê, que é o lugar certo
    para a única frase da ficha que diz o que este bicho É. */
 function _fbDescricao(slot, f) {
   const i = (f && f.feitio) || (_ffuCertidao(slot) || {}).indole;
@@ -265,7 +265,7 @@ function _fbAtribs(m) {
   return (m.lugar === 'comum') ? ['DES', 'VIG'] : ['PER', 'VON'];
 }
 
-/* O modificador de precisão que ele leva para esta acção. Sai da ficha
+/* O modificador de precisão que ele leva para esta ação. Sai da ficha
    (a raridade) mais o dom certo — a Mira Treinada soma a UM dos lados, e
    somá-la aos dois aqui era prometer o que o motor não dá. */
 function _fbMod(f, m) {
@@ -274,7 +274,7 @@ function _fbMod(f, m) {
        + (((m.lugar === 'comum') ? d.precisaoMais : d.magiaMais) | 0);
 }
 
-/* O dano fixo desta acção, com tudo o que se lhe soma. A conta é a do
+/* O dano fixo desta ação, com tudo o que se lhe soma. A conta é a do
    js/combate-fu.js, linha por linha: o da magia, o extra da raridade, e
    o Golpe Pesado — que engorda o murro e só o murro. */
 function _fbDanoFixo(f, m) {
@@ -398,7 +398,7 @@ function _fbAccao(f, m) {
   </div>`;
 }
 
-/* As duas acções que não são magia nenhuma e que o menu da arena oferece
+/* As duas ações que não são magia nenhuma e que o menu da arena oferece
    em todos os turnos. Não estavam na ficha, e não estar não as tornava
    menos regras: um jogador que nunca carregou no escudo não sabia que
    guardar corta o dano a metade. */

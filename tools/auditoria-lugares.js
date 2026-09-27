@@ -13,7 +13,7 @@
         veneno que faltava no manual, e é a que mais depressa se esquece
         outra vez.
      3. Os números são os do manual, casa a casa.
-     4. Cada forma de acção faz o que diz — e sobretudo o que NÃO faz:
+     4. Cada forma de ação faz o que diz — e sobretudo o que NÃO faz:
         o concentrado ignora RESISTÊNCIAS e não a imunidade nem a
         absorção.
      5. O que não pode acontecer: pagar sem poder, curar acima do
@@ -238,7 +238,7 @@ titulo('Cada forma faz o que diz');
     verificar('e não passa do máximo', amigo.pv === amigo.ficha.pvMax);
   }
 
-  // ── a Barreira: piso e não bónus ──
+  // ── a Barreira: piso e não bônus ──
   {
     const e = luta(10, 5), q = e.A[0], amigo = e.A[1];
     amigo.ficha.DES = 6; amigo.ficha.PER = 6;
@@ -442,7 +442,7 @@ titulo('O ritmo, contra o terço que o manual pede');
 {
   /* O manual (p. 296): "um ataque bem-sucedido deve tirar cerca de um
      terço dos PV de um personagem médio". É por aqui que se vê se as
-     magias estão no sítio — e é a medição que ficou marcada quando o
+     magias estão no lugar — e é a medição que ficou marcada quando o
      motor entrou só com o golpe comum. */
   const linhas = [];
   for (const [lugar, raridade, nivel] of

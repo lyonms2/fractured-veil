@@ -247,10 +247,10 @@ function _iaAlcanca(equipa, alvo, at) {
    Para cada inimigo vivo, o pior que ele pode fazer a este lutador na
    próxima vez — só com o que alcança e com o PM que tem. Somado.
 
-   `naEquipa` é o objeto que está dentro de `equipa` (é por ele que se
+   `naEquipa` é o objeto que está dentro de `equipe` (é por ele que se
    pergunta quem está na frente); `sob` é a versão dele que se quer
    medir — uma cópia com a Barreira de pé, com a guarda, com mais vida.
-   Separados porque a cópia não está na equipa. */
+   Separados porque a cópia não está na equipe. */
 function _iaRisco(estado, naEquipa, sob, equipa) {
   sob = sob || naEquipa;
   equipa = equipa || estado[naEquipa.lado];

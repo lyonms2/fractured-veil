@@ -70,19 +70,19 @@ const PVP_RANK_K_COLOCACAO = 48;   // e quanto valem
    medido um contra o outro.
 
    Medido (tools/simular-rank.js), no caso provável de quem joga melhor
-   TAMBÉM ter a melhor equipa: a tabela única põe a ordem certa em 0,51;
+   TAMBÉM ter a melhor equipe: a tabela única põe a ordem certa em 0,51;
    as mesmas lutas, separadas por divisão, dão 0,70 a 0,81.
 
    As faixas são as FASES do jogo (js/ficha-fu.js: jovem no 5, adulto no
    11, ancião no 27), medidas pelo nível MÉDIO dos três. É o vocabulário
-   que o jogador já conhece — ele vê a fase de cada bicho na colónia. */
+   que o jogador já conhece — ele vê a fase de cada bicho na colônia. */
 const PVP_DIVISOES = [
   { id: 'jovem',  ate: 11 },
   { id: 'adulto', ate: 27 },
   { id: 'anciao', ate: Infinity },
 ];
 
-/* A divisão de uma equipa, pelo nível médio. O `poder` é a soma dos
+/* A divisão de uma equipe, pelo nível médio. O `poder` é a soma dos
    níveis dos três (pvpPoder, js/pvp-regras.js). */
 function pvpDivisao(poder, quantos) {
   const media = (poder | 0) / Math.max(1, quantos || 3);

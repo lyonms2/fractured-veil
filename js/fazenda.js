@@ -9,22 +9,22 @@
 //
 //  O jogo mostrava UMA criatura na consola e escondia as outras nove
 //  atrás de um modal que nem sequer exibia os vitais delas. Ao mesmo
-//  tempo, o combate pedia uma equipa de três. Quem jogava tinha de
+//  tempo, o combate pedia uma equipe de três. Quem jogava tinha de
 //  adivinhar como estavam dois terços do seu plantel.
 //
 //  Agora a consola abre na colônia: todos à vista, com os cinco vitais
 //  de cada um. O "Cuidar" abre a tela de sempre — o bicho grande, as
 //  animações, o carinho — para aquele avatar. A intimidade não se
-//  perdeu, mudou de sítio: passou a ser um lugar onde se entra em vez
+//  perdeu, mudou de lugar: passou a ser um lugar onde se entra em vez
 //  de ser o único lugar que existe.
 //
 //  ── AS ACÇÕES DE GRUPO ──
 //
-//  Uma por vital, e cada uma cobra pelo que faz: o preço é o da acção
+//  Uma por vital, e cada uma cobra pelo que faz: o preço é o da ação
 //  individual multiplicado por quantos precisam dela. Nunca se paga por
 //  quem já está bem — o botão conta os candidatos antes e diz quantos
 //  são. Com dez criaturas, dar de comer uma a uma eram dez viagens ao
-//  mesmo sítio; isto é a mesma coisa numa só, sem desconto nenhum.
+//  mesmo lugar; isto é a mesma coisa numa só, sem desconto nenhum.
 // ═══════════════════════════════════════════════════════════════════
 
 /* AS ACÇÕES EM GRUPO SAÍRAM.
@@ -84,7 +84,7 @@ const FAZENDA_ALERTA = 20;
    contador de doença arranca. O número resolve isso sem tirar o
    relance: lê-se a cor primeiro e o algarismo só quando interessa.
 
-   O data-vital serve à actualização ao vivo: com ele, o gameTick
+   O data-vital serve à atualização ao vivo: com ele, o gameTick
    mexe só na largura e no texto, sem redesenhar a lista — redesenhar
    a cada segundo perdia o scroll e apagava o que estivesse sob o
    dedo. */
@@ -128,7 +128,7 @@ function _fazendaCartao({ s, idx }) {
 
   /* ── CADA UM NO SEU COMPASSO ──
 
-     A criatura da colónia passou a respirar como a da tela de cuidar
+     A criatura da colônia passou a respirar como a da tela de cuidar
      (ver css/fazenda.css). Com o mesmo atraso, as três subiam e desciam
      ao mesmo tempo, e três bichos em sincronia perfeita não parecem
      vivos: parecem um relógio.
@@ -162,7 +162,7 @@ function renderFazenda() {
 
   /* ── E QUEM DORME FECHA OS OLHOS ──
 
-     A criatura da colónia balança e encolhe quando dorme, mas ficava a
+     A criatura da colônia balança e encolhe quando dorme, mas ficava a
      olhar em frente — e um bicho a dormir de olhos abertos é a única
      coisa que um bicho a dormir não faz.
 
@@ -192,7 +192,7 @@ function renderFazenda() {
 
 }
 
-/* SAIR DA COLÔNIA, num sítio só.
+/* SAIR DA COLÔNIA, num lugar só.
 
    O abrirFazenda esconde seis coisas para a lista ficar sozinha na
    consola: os quatra telas irmãos, a fila de botões de cuidar, a
@@ -345,8 +345,8 @@ async function cuidarDe(idx) {
 
        Ninguém dava por isso enquanto o jogo levava o jogador direto
        para os cuidados depois de invocar — chegava lá com tudo já
-       desenhado. Com a colónia a ser a primeira tela, o primeiro
-       CUIDAR do jogo cai exactamente aqui, porque o slot 0 já é o
+       desenhado. Com a colônia a ser a primeira tela, o primeiro
+       CUIDAR do jogo cai exatamente aqui, porque o slot 0 já é o
        activo. */
     rebuildScreensParaSlot();
   }
@@ -367,7 +367,7 @@ function voltarAFazenda() { abrirFazenda(); }
 let _fzEscolhidos = [];
 
 /* Quantos ovos há na CASA. Contava os do slot activo, que era onde
-   eles viviam; hoje a chocadeira é da colónia e a conta é uma só. */
+   eles viviam; hoje a chocadeira é da colônia e a conta é uma só. */
 function _fzOvosNoInventario() {
   return (typeof eggsInInventory !== 'undefined' && eggsInInventory) ? eggsInInventory.length : 0;
 }
@@ -411,7 +411,7 @@ function _fzRenderCruzar() {
 
   if (typeof saveRuntimeToSlot === 'function') saveRuntimeToSlot(activeSlotIdx);
 
-  /* Só entram na lista os que PODEM cruzar. Mostrar os bebés apagados
+  /* Só entram na lista os que PODEM cruzar. Mostrar os bebês apagados
      dizia "este também podia" a quem olhasse depressa — e não podia,
      falta-lhe crescer. A linha de baixo explica a ausência deles. */
   const candidatos = fazendaVivos().filter(({ s }) =>
@@ -434,7 +434,7 @@ function _fzRenderCruzar() {
     /* ── OS PAIS RESPIRAM, COMO NA COLÓNIA ──
 
        Esta lista era a única do jogo onde o bicho ficava parado. O
-       mesmo avatar flutua na tela de cuidar e no cartão da colónia, e
+       mesmo avatar flutua na tela de cuidar e no cartão da colônia, e
        aqui — a três centímetros do cartão de onde se veio — estava uma
        figura recortada.
 
@@ -560,7 +560,7 @@ async function confirmarCruzar() {
 
      Ia para o inventário do avatar ACTIVO, e quem trocasse de avatar
      deixava de o ver. Um ovo não é de um avatar: é da casa, como a
-     própria cruza, que se faz na colónia com dois quaisquer.
+     própria cruza, que se faz na colônia com dois quaisquer.
 
      A chocadeira é uma só (eggsInInventory), e o que o ovo É vive no
      mapa `ovos` do servidor — de onde o carregamento seguinte o traz. */

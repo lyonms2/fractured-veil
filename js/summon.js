@@ -142,7 +142,7 @@ async function voltarAColonia() {
    Ou seja: destranca o que o avatar precisa para SER jogado, e nada do
    que se ganha jogando.
 
-   E A FASE BEBÊ NÃO SE PERDE — muda de sítio. Quem nasce de um ovo
+   E A FASE BEBÊ NÃO SE PERDE — muda de lugar. Quem nasce de um ovo
    continua a nascer no 1 (js/eggs.js), portanto o bebé deixa de ser a
    tela de abertura e passa a ser o que se encontra quando o primeiro
    ovo choca. Isso assenta melhor no prólogo do que assentava: os três
@@ -280,7 +280,7 @@ async function _emitirAvatar(slotIdx) {
 
    Cada chegada abria e fechava o seu overlay. Entre a primeira e a
    segunda, e outra vez entre a segunda e a terceira, o jogo aparecia
-   por baixo durante um instante — a colónia meio montada, o cartão
+   por baixo durante um instante — a colônia meio montada, o cartão
    vazio. Três cerimónias com duas piscadelas no meio.
 
    O palco abre uma vez, fica preto do princípio ao fim, e os três
@@ -475,7 +475,7 @@ async function invocarOsTres() {
     for (let i = 0; i < livres; i++) {
       if (!avatarSlots[i]) { idx = i; break; }
     }
-    if (idx === -1) break;                     // colónia cheia: pára aqui
+    if (idx === -1) break;                     // colônia cheia: pára aqui
 
     const av = await _emitirAvatar(idx);
     if (!av) break;                            // o servidor recusou: pára aqui
@@ -488,7 +488,7 @@ async function invocarOsTres() {
 
      Esta parte vinha DEPOIS do _fecharPalco, e o fechar leva 600ms a
      desvanecer. Nesses 600ms o jogo já se via — e o que se via era a
-     consola vazia, porque a colónia só era desenhada a seguir. Era a
+     consola vazia, porque a colônia só era desenhada a seguir. Era a
      mesma moldura vazia de sempre, agora à saída em vez de à entrada.
 
      Monta-se primeiro, com o preto ainda por cima a tapar tudo, e só
@@ -500,9 +500,9 @@ async function invocarOsTres() {
        fazia sentido; com três, entrar num deles é escolher por quem
        ainda não escolheu, e esconder os outros dois no mesmo gesto.
 
-       A colónia é a casa: os três lado a lado, com os medidores de cada
+       A colônia é a casa: os três lado a lado, com os medidores de cada
        um, e é lá que se decide em quem entrar. */
-    /* E o recado, uma vez. Eles chegam sem nome e a colónia mostra-os
+    /* E o recado, uma vez. Eles chegam sem nome e a colônia mostra-os
        como "Sem nome" — o que se vê, mas não o que há para fazer. Esta
        linha diz onde se baptiza, e diz que é uma vez só. */
     addLog(t('summon.log.batizar'), 'leg');
@@ -574,7 +574,7 @@ function setupAvatar() {
 
    Quem sai do ovo sai sem nome, como quem atravessa a Fratura. A
    diferença é o momento: os três da abertura chegam três de uma vez e
-   vão para a colónia, e prender o jogador a três cerimónias seguidas na
+   vão para a colônia, e prender o jogador a três cerimónias seguidas na
    primeira meia hora era começar o jogo com trabalho. Um ovo abre-se um
    de cada vez, e o jogador esperou um dia por ele — é o instante em que
    dar-lhe um nome quer mesmo dizer alguma coisa.
@@ -700,7 +700,7 @@ function hatch() {
   updateEquippedDisplay();
 
   // O botão de botar ovo vivia aqui. Foi-se com a postura sozinha:
-  // ovo é filho, e põe-se cruzando dois, na colónia.
+  // ovo é filho, e põe-se cruzando dois, na colônia.
 
   renderEggInventory();
   saveToFirebase();

@@ -97,7 +97,7 @@ function nivelDe(niveis, id, slot) {
 
 /* ── AVISAR O SERVIDOR (só no navegador) ──
 
-   Subir de nível acontece em dois sítios (o checkXP do js/gametick.js,
+   Subir de nível acontece em dois lugares (o checkXP do js/gametick.js,
    para quem está aberto na tela de cuidar, e o _pvePremiarAvatar do
    js/pve-fu.js, para os outros), e às vezes vários avatares sobem na
    mesma batalha. Junta-se tudo e manda-se um pedido só.

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   COMBATE — ficha do avatar e barra da equipa
+   COMBATE — ficha do avatar e barra da equipe
 
    Deliberadamente NÃO escopado sob #marketplaceModal: a ficha aparece
    também no zoom do avatar do jogo principal, que vive fora do modal.
@@ -13,7 +13,7 @@
 /* O limite é 100% do overlay e não 92vh de propósito: o html tem
    zoom, portanto uma medida em vh era depois magnificada e deixava de
    corresponder à janela. O overlay está no mesmo espaço de coordenadas
-   do modal, logo a percentagem bate certo com qualquer zoom. */
+   do modal, logo a porcentagem bate certo com qualquer zoom. */
 #avatarZoomOverlay { padding: 0.875rem; box-sizing: border-box; }
 .avatar-zoom-modal { max-height: 100%; overflow-y: auto; }
 
@@ -53,7 +53,7 @@
    O BLOCO DE FICHA, NO PADRÃO DO MANUAL
 
    O manual escreve cada criatura sempre com as mesmas linhas pela mesma
-   ordem, e cada acção como uma fila de campos separados por ✦ com o
+   ordem, e cada ação como uma fila de campos separados por ✦ com o
    efeito em prosa por baixo. Quem sabe ler o manual sabe ler isto.
 
    ── A PALETA É A DO JOGO E NÃO A DO MANUAL ──
@@ -91,7 +91,7 @@
 }
 /* ── O TAMANHO DA LETRA, NAS DUAS ESCALAS ──
 
-   A raiz é 16px no telemóvel e 26,4px no computador (css/base.css), e
+   A raiz é 16px no celular e 26,4px no computador (css/base.css), e
    estes números são para os 16: nada aqui desce de 0,625rem, que são dez
    píxeis. O bloco tem prosa a sério — a descrição, o efeito de cada
    magia, a descrição de cada vantagem — e prosa a oito píxeis não se lê,
@@ -291,7 +291,7 @@
    Ficou para trás quando o painel do combate foi refeito: a descrição
    de cada magia estava escrita a 7px, sem cor que dissesse de que
    família era, e sem a conta que a magia rola. Era a mesma magia com
-   duas caras conforme o sítio onde se olhava para ela. */
+   duas caras conforme o lugar onde se olhava para ela. */
 .hab {
   padding: 0.5rem 0.5625rem;
   border-radius: 0.375rem;
@@ -429,7 +429,7 @@
 /* ── A ORDEM DA FILA ──
    O 1.º abre a batalha e os outros entram à medida que os da frente
    caem. A ordem era a de clique e não se via em lado nenhum: montava-se
-   a equipa sem saber quem pegava o primeiro golpe. */
+   a equipe sem saber quem pegava o primeiro golpe. */
 .equipa-slot { position: relative; }
 .equipa-pos {
   position: absolute; top: 0.1875rem; left: 0.25rem;
@@ -550,7 +550,7 @@
    botão fica numa coluna de ~90px. A explicação partia-se em duas linhas
    a 7px, enquanto os botões ao lado (Ativar, Queimar) têm 8px e nowrap —
    era o único a destoar. Fica a posição, que é o que importa de relance;
-   a explicação continua no computador e na barra da equipa. */
+   a explicação continua no computador e na barra da equipe. */
 @media (max-width: 720px) {
   .btn-slot-equipa { font-size: 0.5rem; padding: 0.3125rem 0.5rem; white-space: nowrap; width: auto; }
   .btn-slot-equipa .eq-txt { display: none; }
@@ -772,7 +772,7 @@
      · e a segunda vantagem que o Lendário ainda não escolheu, que se
        mostra apagada porque ainda não é dele.
 
-   As `.fb-*` são partilhadas de propósito: a ficha da colónia e a da
+   As `.fb-*` são partilhadas de propósito: a ficha da colônia e a da
    arena têm de se parecer uma com a outra porque são a mesma. O que a
    arena muda é só o TAMANHO da letra, e num bloco só — a raiz lá é
    26,4px e aqui 16.
@@ -789,7 +789,7 @@
 .lu-g-item.lu-g-dado { color: var(--gold-light); font-weight: 700; }
 
 /* ── A linha do arranjo ──
-   Quebra em vez de transbordar: no telemóvel são quatro pares e o painel
+   Quebra em vez de transbordar: no celular são quatro pares e o painel
    é estreito, e uma linha que sai da caixa é pior do que uma que dobra.
    O ponto entre eles fica apagado — separa sem competir com os nomes. */
 .ficha-arranjo { display: flex; flex-wrap: wrap; gap: 0 .25rem; align-items: baseline; }

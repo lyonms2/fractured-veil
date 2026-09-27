@@ -4,7 +4,7 @@
 // Até aqui um avatar não nascia: aparecia. Era montado pronto — com a
 // raridade do ovo, com as quatro características já no valor final do
 // nível 1, e com as três magias que o seed lhe sorteava. Não havia
-// instante de nascimento nem registo dele; havia um objecto.
+// instante de nascimento nem registo dele; havia um objeto.
 //
 // Passa a haver um acto, com uma ordem:
 //
@@ -49,9 +49,9 @@
 // para a Força costuma ficar forte; não é garantido que fique, e dois
 // irmãos com o mesmo DNA acabam diferentes.
 //
-// Foi de propósito que se apagou o `potencial`. Ele era um tecto — um
+// Foi de propósito que se apagou o `potencial`. Ele era um teto — um
 // resultado escrito na certidão antes de o avatar ter vivido — e um
-// tecto não é uma tendência. Ninguém o lia, e agora ninguém o escreve.
+// teto não é uma tendência. Ninguém o lia, e agora ninguém o escreve.
 //
 // ── O SEXO ──
 //
@@ -124,7 +124,7 @@ const NASC_INDOLES = ['guarda', 'sustentacao', 'lamina'];
    forma de corpo não há "maior": o tipo 7 não domina o tipo 3. E para as
    contagens — braços, chifres, olhos — também se herda um ou o outro em
    vez de a média dos dois, pela mesma razão que a cor não se mistura: a
-   média puxa a colónia inteira para o meio e ao fim de gerações ninguém
+   média puxa a colônia inteira para o meio e ao fim de gerações ninguém
    tem nada de extremo.
 
    Os PORMENORES (o tremor de cada braço, de cada espinho, de cada olho)
@@ -139,7 +139,7 @@ const NASC_CORPO_TRACOS = [
 /* O corpo que este DNA mostra — o alelo dominante de cada traço.
 
    Devolve null quando não há genes do corpo, e é esse null que mantém
-   todos os avatares nascidos antes disto exactamente com a cara que
+   todos os avatares nascidos antes disto exatamente com a cara que
    sempre tiveram: quem não tem genes cai na seed, como sempre caiu.
 
    Um gene incompleto também devolve null, e não meio corpo: metade dos
@@ -223,9 +223,9 @@ const NASC_VIGOR_FRACO = 1.10;
    um avatar sem jeito nenhum para a Força ainda pode acabar forte, só
    é pouco provável.
 
-   O tecto não é decoração. Sem ele, um DNA extremo dava pesos de 16
+   O teto não é decoração. Sem ele, um DNA extremo dava pesos de 16
    contra 1 e o avatar despejava tudo numa característica só — aí o
-   DNA deixava de inclinar e passava a mandar, que é exactamente o que
+   DNA deixava de inclinar e passava a mandar, que é exatamente o que
    não se quer.
 
    Sobre a distância entre os pesos: medi-a. Com um degrau mais suave
@@ -351,7 +351,7 @@ function indoleDoDna(dna) {
    ESCREVER O FEITIO NUM DNA JÁ FEITO
 
    Serve UMA coisa: os três primeiros avatares do jogo saem um de cada
-   feitio, para a primeira equipa estar completa e ensinar os três
+   feitio, para a primeira equipe estar completa e ensinar os três
    papéis da formação. Dos ovos em diante, o feitio é sorteado e herdado
    como tudo o resto.
 
@@ -460,7 +460,7 @@ function recessivosDoDna(dna) {
    Cada característica em dois dígitos: dominante e recessivo, mais o
    par sexual ao fim.
       F31·H42·R20·A33·XY
-   Não é o DNA — é como se lê. O que conta é o objecto. */
+   Não é o DNA — é como se lê. O que conta é o objeto. */
 function dnaLegivel(dna) {
   if (!dna || !dna.genes) return '—';
   const partes = NASC_CARACS.map(k => {
@@ -477,7 +477,7 @@ function dnaLegivel(dna) {
 //
 // Corre a ordem inteira e devolve a certidão. Não toca em nada: quem
 // chama é que a põe no avatar. Assim pode ser testada sozinha, e o
-// caminho de escrita fica num sítio só.
+// caminho de escrita fica num lugar só.
 // ═══════════════════════════════════════════════════════════════════
 function nascer(opts) {
   const o = opts || {};
@@ -516,7 +516,7 @@ function nascer(opts) {
        Hoje são outros quatro — os DADOS do js/ficha-fu.js — e a razão
        não mudou com eles.
 
-       O DNA já tinha mudado de casa por esta razão exacta. O seed
+       O DNA já tinha mudado de casa por esta razão exata. O seed
        ficou para trás, e era metade do problema.
 
        Fica aqui porque é isso que uma certidão é: o que se decidiu no
@@ -588,7 +588,7 @@ function registarNascimento(slot, opts) {
    OS PRIMORDIAIS
 
    Um avatar que não tem mãe nem pai não nasceu aqui: veio de dentro de
-   uma ruptura. É o que a colónia inteira é hoje, e é a raiz de toda a
+   uma ruptura. É o que a colônia inteira é hoje, e é a raiz de toda a
    árvore que houver — porque só a partir de dois destes é que começa a
    haver terceiros.
 

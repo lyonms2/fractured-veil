@@ -3,7 +3,7 @@
 
    Vive dentro do .screen, que tem 17.5rem de altura: 280px no celular
    e 420px no computador. Dez cartões não cabem lá, e não deviam caber —
-   a lista rola, e o que tem de caber sem rolar é a fila de acções, que é
+   a lista rola, e o que tem de caber sem rolar é a fila de ações, que é
    por onde se resolve tudo de uma vez.
 
    As medidas estão em rem porque a raiz muda de 16px para 24px acima dos
@@ -44,7 +44,7 @@
    pequena tendo a tela inteira livre por baixo — no celular eram 533
    pixeis por usar debaixo de uma lista que não cabia.
 
-   Agora cresce com o conteúdo até ao tecto, e só depois é que a lista
+   Agora cresce com o conteúdo até ao teto, e só depois é que a lista
    rola. Duas criaturas dão uma consola baixa; dez enchem a tela.
 
    O #fazendaScreen tem de voltar ao FLUXO para isto funcionar: era
@@ -53,7 +53,7 @@
    segurava. Os outras telas continuam absolutos, que é o que os deixa
    sobrepor-se sem se empurrarem.
 
-   O tecto em rem e não em px: a raiz muda de 16 para 24 acima dos
+   O teto em rem e não em px: a raiz muda de 16 para 24 acima dos
    681px, portanto a margem que se deixa por baixo cresce com o resto
    da interface em vez de encolher em proporção. */
 .screen.fz-modo {
@@ -61,7 +61,7 @@
   min-height: 9rem;
   max-height: calc(100vh - 9rem);
   /* Flex, e não bloco: é a cadeia que deixa a lista ENCOLHER quando o
-     tecto aperta. Sem ela, a consola parava nos 572px com a lista a
+     teto aperta. Sem ela, a consola parava nos 572px com a lista a
      medir 881 lá dentro e o overflow:hidden a cortar os últimos
      cartões — inalcançáveis, sem rolar nem nada. */
   display: flex; flex-direction: column;
@@ -371,7 +371,7 @@
    A raiz já é 1,5× aqui (base.css); isto é por cima disso.
    ═══════════════════════════════════════════════════════════════════ */
 @media (min-width: 681px) {
-  /* No computador o tecto é o mesmo cálculo — o que muda é a raiz, e
+  /* No computador o teto é o mesmo cálculo — o que muda é a raiz, e
      com ela a folga de 12rem por baixo. Nada de altura fixa aqui:
      era ela que deixava a consola pequena com a tela toda livre. */
   .screen.fz-modo { min-height: 12rem; }
@@ -413,7 +413,7 @@ body.fz-colonia .right-panel { display: none; }
    celular — um terço da consola em branco.
 
    Uma regra de CSS não se desfaz com um style.display de ninguém, e
-   diz a mesma coisa uma vez em vez de em quatro sítios. O JS continua
+   diz a mesma coisa uma vez em vez de em quatro lugares. O JS continua
    a esconder por inline: é cinto e suspensórios, e não custa nada.
    ═══════════════════════════════════════════════════════════════════ */
 body.fz-colonia #actionBtns,

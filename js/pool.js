@@ -32,11 +32,11 @@ let poolLogsLast = null;
 
 /* ── O "DISPONÍVEL HOJE" SAIU DAQUI (26/09/2026) ──
 
-   Havia um tecto diário de saída da POOL, de 100 💎, e com ele duas
+   Havia um teto diário de saída da POOL, de 100 💎, e com ele duas
    funções: o _podeSairHoje, que o cartão mostrava, e o poolDisponivel,
    que já não era chamado de lado nenhum.
 
-   Esse tecto não existe mais. Saiu do servidor com a queima de ovos e
+   Esse teto não existe mais. Saiu do servidor com a queima de ovos e
    com o câmbio de moedas por cristais (ver a nota no api/pool.js), e
    ninguém voltou aqui: o `saqueHoje` do documento só é ZERADO, nunca
    somado, e o resgate não olha para ele — o único limite que existe hoje
@@ -76,7 +76,7 @@ async function loadPool(comCobertura) {
    deixou de o ter há muito: procurava um #poolWidget que não existe em
    parte nenhuma do index.html, portanto saía pela segunda linha em
    todas as chamadas. O que ele fazia mesmo era chamar o
-   renderPoolStatsCard — e isso os dois sítios que o chamavam passam a
+   renderPoolStatsCard — e isso os dois lugares que o chamavam passam a
    fazer directamente.
 
    Com ele foram-se as últimas duas leituras do preço de recompra de um
@@ -101,7 +101,7 @@ async function renderPoolSection() {
 //
 // O POL vem da blockchain; os cristais, da soma de todos os jogadores
 // mais os que a pool guarda. Como as duas taxas batem certo (10 💎 por
-// POL nas duas direcções), 100% é o ponto de equilíbrio.
+// POL nas duas direções), 100% é o ponto de equilíbrio.
 // ═══════════════════════════════════════════
 function renderCoberturaCard() {
   const el = document.getElementById('poolCoberturaCard');
@@ -193,11 +193,11 @@ function renderPoolStatsCard() {
 //
 // Vivia aqui um _calcPctDisplay que calculava, a partir do saldo, a
 // fatia semanal da pool: 5% no mínimo, subindo até 15% com a pool no
-// alvo. Alimentava três sítios — o cartão da pool ("X% estimado esta
+// alvo. Alimentava três lugares — o cartão da pool ("X% estimado esta
 // semana por jogo"), a linha da manutenção e a linha do "Pool retém".
 //
 // Essa distribuição já não existe: o dev passou a receber 1% de cada
-// resgate e a pool deixou de ser tocada. Os três sítios continuavam a
+// resgate e a pool deixou de ser tocada. Os três lugares continuavam a
 // mostrar percentagens da pool, ao lado de um texto que jurava o
 // contrário. Saiu o cálculo e saíram os dois set().
 //

@@ -54,10 +54,10 @@ const RATE                 = 10;
    É por isso que esta explicação está aqui e não lá.
 
    O 1% do saque não toca na pool. Sai do que o jogador está levantando,
-   como já acontece com os bónus de convite, e só existe quando alguém
+   como já acontece com os bônus de convite, e só existe quando alguém
    converte cristais em MATIC de verdade.
 
-   Precisa de casas decimais: com o tecto diário em 50 💎, um 1%
+   Precisa de casas decimais: com o teto diário em 50 💎, um 1%
    arredondado a inteiro seria SEMPRE zero (Math.floor(50 * 0.01) = 0).
    Os cristais já vivem com duas casas — o fmtC formata assim e os preços
    do mercado usam-nas — portanto 50 💎 dão 0,50 💎 ao dev. */
@@ -81,7 +81,7 @@ async function _uidDaCarteira(db, carteira) {
    dias a receber o que ganhou — e uma premiação que não se consegue
    cobrar não é uma premiação.
 
-   O tecto continua a existir, e por um motivo que não mudou: ele limita
+   O teto continua a existir, e por um motivo que não mudou: ele limita
    o estrago de uma falha (uma chave perdida, um erro de conta) ao que
    cabe num dia. Sobe, não desaparece. */
 const MAX_GEMS_POR_RESGATE = 1000;
@@ -395,7 +395,7 @@ module.exports = async function handler(req, res) {
 
     // Mapa de bônus calculado dentro da transação e usado depois
     let referralBonuses = null;
-    // Escapa da transação da mesma forma que os bónus: a transação decide
+    // Escapa da transação da mesma forma que os bônus: a transação decide
     // o valor, o crédito acontece depois dela.
     let devFeePago      = 0;
 
@@ -469,7 +469,7 @@ module.exports = async function handler(req, res) {
 
       const data     = userSnap.data();
       // Só o balde com lastro. O gs.cristaisBonus nunca entra aqui: é
-      // essa a diferença entre os dois, e é o que impede que um bónus
+      // essa a diferença entre os dois, e é o que impede que um bônus
       // de compra se transforme em MATIC que ninguém depositou.
       const cristais = data?.gs?.cristais ?? data?.cristais ?? 0;
       const bonus    = data?.gs?.cristaisBonus ?? data?.cristaisBonus ?? 0;
@@ -485,7 +485,7 @@ module.exports = async function handler(req, res) {
       const aDebitar    = +(gemsNum + devFee).toFixed(2);
 
       if (cristais < aDebitar) {
-        // Com bónus na conta, o saldo que a loja mostra é maior do que
+        // Com bônus na conta, o saldo que a loja mostra é maior do que
         // este — e sem o dizer a mensagem parecia um erro do jogo.
         throw new Error(bonus > 0
           ? `Saldo resgatável insuficiente: você tem ${cristais} 💎 com lastro e precisa de ${gemsNum} 💎. Seus ${bonus} 💎 de bônus valem dentro do jogo, mas não podem ser resgatados.`

@@ -17,7 +17,7 @@
 //
 //  ── O QUE NÃO SE TOCA ──
 //
-//  O DNA. O js/nascimento.js e o js/reproducao.js ficam exactamente como
+//  O DNA. O js/nascimento.js e o js/reproducao.js ficam exatamente como
 //  estão, e é de propósito: a genética e a herança são anteriores ao
 //  motor de combate e têm de lhe sobreviver. Este arquivo LÊ o DNA que
 //  já existe e não pede que ele mude.
@@ -208,7 +208,7 @@ function fuOrdemDosAtributos(dna, seed) {
 
    Consequência que vale a pena: a cor não denuncia a fraqueza. Dois
    irmãos vermelhos podem ter costuras diferentes, e descobrir a do
-   inimigo é para isso que a acção de ESTUDAR existe no manual.
+   inimigo é para isso que a ação de ESTUDAR existe no manual.
    ═══════════════════════════════════════════════════════════════════ */
 function fuTipoDaCor(corIdx) {
   const i = corIdx | 0;
@@ -318,7 +318,7 @@ function fuAfinidades(tipo, costura, raridade) {
 
    Os dois degraus são estes e não mudam: 11 e 27. Escritos aqui, a
    ficha passa a responder sempre o mesmo, venha de onde vier. */
-const FU_NIVEL_MAX      = 60;   // o tecto do manual (p. 302)
+const FU_NIVEL_MAX      = 60;   // o teto do manual (p. 302)
 const FU_NIVEL_JOVEM    = 5;
 const FU_NIVEL_RARO     = 11;
 const FU_NIVEL_LENDARIO = 27;
@@ -342,7 +342,7 @@ const FU_NIVEL_LENDARIO = 27;
    E uma delas apodreceu sem ninguém dar por isso: a arena antiga tinha um
    atalho `nv < 5 ? 0 : nv < 10 ? 1 : nv < 17 ? 2 : 3`, com 10 e 17 onde
    deviam estar 11 e 27. Um avatar de nível 20 era desenhado com corpo de
-   ancião em combate e corpo de adulto na colónia, e nada gritava.
+   ancião em combate e corpo de adulto na colônia, e nada gritava.
 
    Aqui chega a toda a gente: a ficha é o único arquivo que o jogo, o
    banco, as ferramentas e o servidor carregam todos. O js/state.js passa
@@ -379,7 +379,7 @@ function fuFaseDoNivel(nivel) {
    que ainda não seja d12, pela ordem que o DNA já decidiu.
 
    Subir o mais fraco parece generoso e é desperdício — é a mesma razão
-   da Guarda Cerrada. E saltar os que já estão no tecto é o que impede
+   da Guarda Cerrada. E saltar os que já estão no teto é o que impede
    uma subida de se perder: um arranjo `extremo` começa com um d12, e sem
    este cuidado a primeira subida dele não fazia nada.
    ══════════════════════════════════════════════════════════════════ */
@@ -389,9 +389,9 @@ function fuSubidasDe(nivel) {
   return FU_SUBIDAS_NIVEL.filter(d => (nivel | 0) >= d).length;
 }
 
-/* Aplica as subidas ao saco dos dados, no sítio. Devolve QUANTAS foram
+/* Aplica as subidas ao saco dos dados, no lugar. Devolve QUANTAS foram
    mesmo usadas — pode haver menos do que as pedidas se tudo chegar ao
-   tecto, e quem mostra a ficha tem o direito de saber isso. */
+   teto, e quem mostra a ficha tem o direito de saber isso. */
 function fuAplicarSubidas(base, ordem, quantas) {
   const tecto = FU_DADOS[FU_DADOS.length - 1];
   let usadas = 0;
@@ -426,8 +426,8 @@ function fuFicha(slot) {
   /* ── O TECTO DO NÍVEL ──
      O manual trava os NPCs em 60. O chão dele é 5 e o nosso é 1, porque
      um avatar chocado nasce no 1 e cresce até poder lutar — é o único
-     sítio onde nos afastamos do manual, e de propósito.
-     Sem tecto, um nível vindo do slot do cliente dava PV na ordem dos
+     lugar onde nos afastamos do manual, e de propósito.
+     Sem teto, um nível vindo do slot do cliente dava PV na ordem dos
      mil milhões: medido em 2 000 000 040. */
   const nivel = Math.min(FU_NIVEL_MAX, Math.max(1, slot.nivel | 0 || 1));
 
@@ -437,7 +437,7 @@ function fuFicha(slot) {
      corrompidos devolvia uma ficha perfeitamente plausível —
      equilibrado 8/8/8/8, fogo, 50 PV — e ninguém dava por nada. A
      revisão testou quatro formas de corromper o DNA e as quatro deram
-     exactamente o mesmo avatar.
+     exatamente o mesmo avatar.
 
      É uma assimetria que não se aguenta: este arquivo já grita alto
      quando o PROGRAMADOR se esquece de uma cor, e ficava calado quando
@@ -529,7 +529,7 @@ function fuFicha(slot) {
     subidas,
     subidasUsadas: subiram,
 
-    // os quatro dados, no tamanho BASE — o actual sai daqui menos os
+    // os quatro dados, no tamanho BASE — o atual sai daqui menos os
     // estados, e quem os aplica é o motor, não a ficha
     DES: base.DES, PER: base.PER, VIG: base.VIG, VON: base.VON,
 
@@ -538,7 +538,7 @@ function fuFicha(slot) {
     pmMax,
     crise:   Math.floor(pvMax / 2),
     /* BASE, e o nome di-lo. O manual manda a Defesa ser o tamanho do
-       dado ACTUAL, e o actual é o base menos os estados que o avatar
+       dado ACTUAL, e o atual é o base menos os estados que o avatar
        tem em cima. Quem aplica os estados é o motor, que tem o estado
        da luta; a ficha não o tem e não deve fingir que tem.
        Chamar-lhes `defesa` era convidar alguém a usá-los como se já
@@ -568,7 +568,7 @@ function fuFicha(slot) {
        mesmo para um Comum — a tela da escolha é que decide se a mostra. */
     segundaPossivel: vant.segundaPossivel,
 
-    /* O bónus de precisão do manual: nível a dividir por dez. Ao nível
+    /* O bônus de precisão do manual: nível a dividir por dez. Ao nível
        5 é zero, e é suposto ser — um avatar novo não acerta melhor por
        ser novo. */
     bonusPrecisao: Math.floor(nivel / 10),
@@ -600,7 +600,7 @@ function fuFicha(slot) {
    dados não saem de lado nenhum que cresça.
 
    Vive aqui e não em quem a mostra porque tem DOIS leitores que têm de
-   concordar: a barra da equipa, que diz ao jogador quanto ele vale, e o
+   concordar: a barra da equipe, que diz ao jogador quanto ele vale, e o
    emparelhamento do PvE, que escolhe o inimigo. Se um somasse níveis e o
    outro somasse outra coisa, o número na tela deixava de explicar contra
    quem se vai lutar — e era a tela a mentir, não o emparelhamento.

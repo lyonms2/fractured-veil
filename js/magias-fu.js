@@ -37,7 +37,7 @@ const FU_LUGARES = ['comum', 'forte', 'muito_forte', 'defesa', 'suporte'];
    O ESTADO de cada tipo sai do que o manual dá como oportunidade de
    cada magia, e onde ele não se aplica ao nosso combate escolhi o mais
    próximo: o Ventus derruba quem voa e aqui ninguém voa, portanto fica
-   lento; o Terra tira uma acção e aqui um turno é uma acção, portanto
+   lento; o Terra tira uma ação e aqui um turno é uma ação, portanto
    também. */
 /* ── MENOS ESTADOS REPETIDOS (14/09/2026) ──
    Eram só quatro estados para oito elementos: terra, ar e gelo davam todos
@@ -104,7 +104,7 @@ const FU_MAGIAS = {
   },
 
   /* ── ATAQUE FORTE — a barragem ──
-     Espalha-se pela equipa inimiga. O manual escreve estas magias para
+     Espalha-se pela equipe inimiga. O manual escreve estas magias para
      grupos de três a cinco e a nossa formação é de três: uma barragem
      atinge o lado inteiro. */
   forte: {
@@ -153,7 +153,7 @@ const FU_MAGIAS = {
        — as magias — e o golpe comum físico vira a resposta do inimigo. */
     1: { id: 'concha', pm: 10, proprio: true, cena: { resisteInimigos: true },
          manual: 'p.311 (adaptada: os elementos dos inimigos, não o físico)' },
-    /* Piso fixo e não bónus: quem tem dado pequeno de Destreza ganha
+    /* Piso fixo e não bônus: quem tem dado pequeno de Destreza ganha
        muito, quem já tem d12 não perde nada — o manual escreve-a assim
        de propósito, e é o que a torna uma magia de quem precisa. */
     /* A Barreira põe o piso na Defesa E na Defesa Mágica. Só na Defesa, só
@@ -180,9 +180,9 @@ const FU_MAGIAS = {
        Aqui não faz. O lugar do Suporte é o que distingue a Sustentação
        dos outros dois feitios (FU_LUGARES_DO_FEITIO), e o que ele dava
        a um avatar de Sustentação Comum era a capacidade de se curar a
-       si próprio — exactamente a mesma coisa que qualquer um dos outros
+       si próprio — exatamente a mesma coisa que qualquer um dos outros
        consegue fazendo nada e esperando. Punha-se um avatar atrás para
-       ele cuidar da equipa, e ele só sabia cuidar de si.
+       ele cuidar da equipe, e ele só sabia cuidar de si.
 
        Passa a escolher um companheiro. A ESCOLHA INCLUI ELE PRÓPRIO,
        portanto não se perde nada do que o manual dava: ganha-se o que
@@ -367,7 +367,7 @@ function fuLugaresDe(ficha) {
    cor dele, o nome da variante e o estado que ela impõe.
 
    É esta função e mais nenhuma que decide o que um avatar tem em cada
-   lugar. O motor recebe o objecto pronto e não sabe de tabelas.
+   lugar. O motor recebe o objeto pronto e não sabe de tabelas.
    ═══════════════════════════════════════════════════════════════════ */
 function fuMagiaDe(ficha, lugar) {
   // O feitio manda: um lugar que não é dele não existe para ele.

@@ -14,7 +14,7 @@ const POLYGONSCAN_API  = 'https://api.polygonscan.com/api';
    saldo, e o pedido voltava recusado. Se mudar lá, muda aqui. */
 const LIST_COST        = 25;
 /* O preço do PRÓXIMO slot. É uma escada (api/comprar-avatar.js): o
-   sexto bicho custa 150 e o décimo 400, porque quem quer uma colónia
+   sexto bicho custa 150 e o décimo 400, porque quem quer uma colônia
    grande quer cada vez mais. Aqui fica a tabela só para a tela poder
    dizer o preço certo antes de pedir; quem cobra é o servidor. */
 const UNLOCK_SLOT_ESCADA = [150, 200, 250, 320, 400];
@@ -185,7 +185,7 @@ async function savePlayerData() {
    gs.cristais.
 
    Por isso a loja soma os dois: era enganador mostrar 100 💎 a quem tem
-   90 de bónus e recusar-lhe uma compra de 95. */
+   90 de bônus e recusar-lhe uma compra de 95. */
 function mktCristais() {
   const reais = playerData?.gs?.cristais      ?? playerData?.cristais      ?? 0;
   const bonus = playerData?.gs?.cristaisBonus ?? playerData?.cristaisBonus ?? 0;

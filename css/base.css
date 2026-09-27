@@ -76,7 +76,7 @@ body.modal-scroll-lock {
    isso já se tinha visto peça a peça: a tela de entrada, o prólogo.
 
    Sobe aqui, e não janela a janela: TUDO neste jogo está medido em rem,
-   portanto esta linha é o único sítio onde a escala existe. Mexer em
+   portanto esta linha é o único lugar onde a escala existe. Mexer em
    cada modal seria escrever quarenta vezes o que se escreve uma, e à
    quadragésima já haveria duas em desacordo. */
 html { font-size: 16px; }
@@ -207,7 +207,7 @@ body.jogo-pronto .device { opacity: 1; }
    vinha 1,5x, e na altura em que havia aba de cadastro — três campos, o
    aviso e o botão — chegava aos 708px de altura, num portátil de
    1366x768 onde a janela útil ronda os 660. Encolhia-se tudo de volta
-   ao tamanho do telemóvel.
+   ao tamanho do celular.
 
    O cadastro saiu, e ficou um cartão com seis linhas: o nome, o
    subtítulo, um botão, a linha que o explica, o erro e o rodapé. O
@@ -229,7 +229,7 @@ body.jogo-pronto .device { opacity: 1; }
    O `/1.1` de cada valor é isso, e não uma conta perdida: mantém os
    NÚMEROS QUE FORAM DECIDIDOS à vista, e desconta a subida que a raiz
    lhes deu por baixo. Quem quiser mudar o tamanho destas telas mexe no
-   número da esquerda; quem mudar a raiz outra vez muda o 1.1, num sítio
+   número da esquerda; quem mudar a raiz outra vez muda o 1.1, num lugar
    só por bloco.
 
    Sem isto a entrada vinha 220% e o prólogo 154%, e o prólogo a 154%

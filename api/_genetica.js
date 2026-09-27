@@ -107,7 +107,7 @@ function certidaoDeInvocacao(criador, feitio) {
   /* O FEITIO PEDIDO, quando há um.
 
      Só as três invocações grátis o pedem, e pedem um de cada: a primeira
-     equipa do jogo tem de ter um defensor, um atacante e um curandeiro,
+     equipe do jogo tem de ter um defensor, um atacante e um curandeiro,
      senão a formação não tem o que ensinar e a primeira hora pode sair
      sem cura nenhuma.
 

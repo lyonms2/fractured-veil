@@ -285,7 +285,8 @@ function _snakeEnd() {
       document.getElementById('snakeResult').textContent =
         cleared          ? t('snake.result.clear', {n: _snakeScore}) :
         frac >= 0.8      ? t('snake.result.good',  {n: _snakeScore}) :
-                           t('snake.result.ok',    {n: _snakeScore});
+                           t(_snakeScore === 1 ? 'snake.result.ok_1' : 'snake.result.ok',
+                             {n: _snakeScore});
       document.getElementById('snakeResult').className =
         'mini-result-box ' + (cleared || frac >= 0.8 ? 'win' : '');
       vitals.humor = Math.min(100, vitals.humor + Math.round(12 * frac));

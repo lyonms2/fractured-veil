@@ -33,7 +33,7 @@ function fbDb() { return typeof _fbDb !== "undefined" ? _fbDb : null; }
    painel do ranking passou a dizer sempre "Não foi possível carregar o
    ranking.". As regras do banco estavam certas o tempo todo.
 
-   Fica aqui, ao lado do fbDb, que é o sítio de quem abre ligações — e
+   Fica aqui, ao lado do fbDb, que é o lugar de quem abre ligações — e
    não dentro de um jogo, que é de onde saiu. */
 function rtdb() { return typeof _rtdb !== "undefined" ? _rtdb : null; }
 
@@ -70,7 +70,7 @@ function rtdb() { return typeof _rtdb !== "undefined" ? _rtdb : null; }
 ═══════════════════════════════════════════════════════════════════ */
 /* As MOEDAS ficam de fora desta lista, e não por esquecimento.
 
-   O earnCoins() credita moedas no cliente em doze sítios — minijogos,
+   O earnCoins() credita moedas no cliente em doze lugares — minijogos,
    combate PvE, chocar ovos. A economia inteira das recompensas é
    client-side. Travá-las aqui parava o jogo, e movê-las para o servidor é
    outro trabalho, muito maior do que este.
@@ -120,7 +120,7 @@ function getGameState() {
       /* ── A IDENTIDADE PERMANENTE ──
          Sete campos planos, e planos de proposito: o avatar e
          reconstruido campo a campo aqui e mais duas vezes no
-         api/comprar-avatar.js, e um objecto encaixado sobrevive a
+         api/comprar-avatar.js, e um objeto encaixado sobrevive a
          esses tres ate ao dia em que houver um quarto sitio.
 
          O `id` nao leva valor por omissao. Um avatar sem id e um
@@ -131,7 +131,7 @@ function getGameState() {
       /* ── O QUE SE DECIDE UMA VEZ JÁ NÃO SAI DAQUI ──
 
          Iam daqui o criador, os pais e a data de nascimento. São
-         exactamente o que uma certidão diz, e a certidão vive no mapa
+         exatamente o que uma certidão diz, e a certidão vive no mapa
          `certidoes`, que o cliente não escreve — mandá-los no slot era
          deixar o vendedor escrever "criado por Fulano" e "filho de
          Beltrano" na ficha que o comprador lê.
@@ -221,7 +221,7 @@ function getGameState() {
       /* Os ovos saíram daqui de vez. Iam inteiros — o DNA do filho, os
          pais, os retratos — num array que o cliente escreve, e depois
          só a colocação. Hoje não vai nem isso: a chocadeira é da
-         colónia e vive no mapa `ovos` do servidor, com o relógio de
+         colônia e vive no mapa `ovos` do servidor, com o relógio de
          apodrecer ao lado, no `ovosSemNinho`. Ver applyGameState. */
       items:          (s.items || []).map(i => ({...i})),
       // Marketplace stats
@@ -244,7 +244,7 @@ function getGameState() {
 
   return {
     avatarSlots:   slotsSafe,
-    /* Desde quando cada ovo está pronto e sem sítio para ir. É o único
+    /* Desde quando cada ovo está pronto e sem lugar para ir. É o único
        pedaço do ovo que é do cliente: quem o escreve é o relógio do
        jogo (_tickChocadeira, em js/gametick.js), e ele só serve para o
        ovo apodrecer — não decide o que o ovo É, que é o que o servidor
@@ -303,7 +303,7 @@ function applyGameState(data) {
      Ela vive num mapa `certidoes` que o cliente não escreve
      (firestore.rules), e é lá que estão os genes — o corpo, a índole, a
      cor, a tendência, o vigor. Aqui reata-se cada uma ao seu slot, em
-     memória, para os quarenta sítios que leem slot.nascimento
+     memória, para os quarenta lugares que leem slot.nascimento
      continuarem a ler o mesmo.
 
      Sobrepõe-se SEMPRE, e apaga quando não há: um `nascimento` deixado
@@ -359,7 +359,7 @@ function applyGameState(data) {
      servidor já os guardava assim desde que o mapa `ovos` existe — era
      só o cliente que os espalhava.
 
-     Aqui montam-se numa lista só, a da colónia. O `semNinhoDesde` — o
+     Aqui montam-se numa lista só, a da colônia. O `semNinhoDesde` — o
      relógio de apodrecer — é a única parte que o servidor não guarda,
      porque quem o escreve é o relógio do jogo (js/gametick.js); vem do
      mapa `ovosSemNinho`, ao lado. */
@@ -397,7 +397,7 @@ function applyGameState(data) {
       restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
       restored.lacos = (s.id && _lacos[s.id] && typeof _lacos[s.id] === 'object') ? _lacos[s.id] : {};
       if (s.id && _mortos[s.id]) restored.dead = true;
-      delete restored.eggs;   // a chocadeira é da colónia — ver a nota acima
+      delete restored.eggs;   // a chocadeira é da colônia — ver a nota acima
       /* Aqui havia duas linhas de manutenção do ELEMENTO: uma convertia
          os elementos que o jogo já não tinha, outra reanexava ao avatar
          a entrada da tabela de características.
@@ -450,7 +450,7 @@ function applyGameState(data) {
      dava um novo de cada vez ate a migracao correr.
 
      Criador fica nulo. Ninguem sabe quem os fez, e escrever o dono
-     actual seria transformar uma venda em autoria — a interface diz
+     atual seria transformar uma venda em autoria — a interface diz
      desconhecido, que e a verdade. O nome fica travado: um avatar
      que ja viveu semanas com o nome que tem nao devia poder mudar
      por causa de uma regra nova. */
@@ -533,7 +533,7 @@ async function saveToFirebase() {
        saíram com a própria caixa (ver applyGameState). */
     // Os itens que ficaram sem slot largam-se depois de o estado ir
     // gravado — eles já lá estão dentro. Os OVOS deixaram de poder
-    // ficar sem slot: a chocadeira é da colónia.
+    // ficar sem slot: a chocadeira é da colônia.
     if(window._orphanItems) window._orphanItems = null;
     // Os recados de visita seguem o mesmo caminho dos ovos: lidos ao
     // entrar, limpos no primeiro save. Se falhar, ficam lá e aparecem da

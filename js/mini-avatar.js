@@ -155,7 +155,7 @@ function miniAvatarReagir(tipo) {
       const span = document.createElement('span');
       span.textContent = pool[Math.floor(Math.random() * pool.length)];
       // Um desvio horizontal por emoji, para dois seguidos não subirem
-      // exatamente pelo mesmo sítio.
+      // exatamente pelo mesmo lugar.
       span.style.setProperty('--dx', (Math.random() * 16 - 8).toFixed(1) + 'px');
       bolha.appendChild(span);
       setTimeout(() => span.remove(), 900);

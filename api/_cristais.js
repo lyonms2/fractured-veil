@@ -17,7 +17,7 @@
 //  limite de quantas voltas. O cofre pagava a diferença, e a cobertura
 //  que a página da Transparência promete caía abaixo dos 100%.
 //
-//  Por isso o bónus vive num campo próprio: gasta-se em tudo dentro do
+//  Por isso o bônus vive num campo próprio: gasta-se em tudo dentro do
 //  jogo — mercado, chocagem, slots — e não sai para MATIC.
 //
 //  ── A ORDEM DE GASTO ──
@@ -29,8 +29,8 @@
 //  ── ONDE ESTÃO GUARDADOS ──
 //
 //  Como o saldo antigo: em gs.cristais e no cristais do topo, os dois em
-//  espelho, porque partes diferentes do cliente lêem sítios diferentes.
-//  O balde do bónus segue a mesma forma. Nenhum dos dois é escrito pelo
+//  espelho, porque partes diferentes do cliente lêem lugares diferentes.
+//  O balde do bônus segue a mesma forma. Nenhum dos dois é escrito pelo
 //  cliente — as regras do Firestore recusam-nos.
 // ═══════════════════════════════════════════════════════════════════
 
@@ -39,7 +39,7 @@ function reais(pData) {
   return pData?.gs?.cristais ?? pData?.cristais ?? 0;
 }
 
-// Os cristais de bónus, que só valem dentro do jogo.
+// Os cristais de bônus, que só valem dentro do jogo.
 function deBonus(pData) {
   return pData?.gs?.cristaisBonus ?? pData?.cristaisBonus ?? 0;
 }
@@ -51,7 +51,7 @@ function total(pData) {
 
 /* Os campos a escrever para gastar `custo`, ou null se não chegar.
    Devolve os quatro caminhos de uma vez — os dois baldes, cada um nos
-   seus dois espelhos — para nenhum sítio se esquecer de metade. */
+   seus dois espelhos — para nenhum lugar se esquecer de metade. */
 function camposDebito(pData, custo) {
   const b = deBonus(pData);
   const r = reais(pData);
@@ -69,8 +69,8 @@ function camposDebito(pData, custo) {
   };
 }
 
-/* Os campos a escrever para CREDITAR bónus. Separado do débito porque
-   quem credita bónus é só um sítio — a compra de cristais. */
+/* Os campos a escrever para CREDITAR bônus. Separado do débito porque
+   quem credita bônus é só um lugar — a compra de cristais. */
 function camposCreditoBonus(pData, valor) {
   const novoB = +(deBonus(pData) + valor).toFixed(2);
   return { cristaisBonus: novoB, 'gs.cristaisBonus': novoB };

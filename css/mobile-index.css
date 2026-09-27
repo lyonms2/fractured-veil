@@ -461,7 +461,7 @@
   body.fv-has-creature #idDesc         { display: none !important; }
   body.fv-has-creature #statusCard     { display: none !important; }
   body.fv-has-creature #rarityBonusTxt { display: none !important; }
-  /* O contentor do bónus de raridade. Apanhava-se por "o último <div>
+  /* O contentor do bônus de raridade. Apanhava-se por "o último <div>
      do cartão" — uma descrição do LUGAR e não da coisa, e o lugar mudou
      assim que se fechou uma div que estava aberta no index.html. Agora
      tem nome. */

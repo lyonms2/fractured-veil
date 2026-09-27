@@ -5,7 +5,7 @@
    O que ela guarda, por ordem de gravidade:
 
      1. A REPETIBILIDADE. A mesma batalha com as mesmas escolhas dá
-        exactamente os mesmos dados. É o mais importante: sem isto, uma
+        exatamente os mesmos dados. É o mais importante: sem isto, uma
         luta não se pode conferir, e no dia do PvP não há como o
         servidor verificar uma vitória que o cliente afirma.
      2. As regras da rolagem: crítico é IGUAL e não alto, o pifão falha

@@ -22,7 +22,7 @@
 
    De `pvp/rank/{temporada}/{divisão}` do Realtime Database, que só o
    servidor escreve (database.rules.json) no fim de cada luta da fila. A
-   página só lê. Cada linha traz o retrato do primeiro avatar da equipa
+   página só lê. Cada linha traz o retrato do primeiro avatar da equipe
    — é por isso que não é preciso ir buscar o documento de cinquenta
    jogadores para desenhar a lista.
 
@@ -220,7 +220,7 @@ async function pvpComprarSelo() {
     _pvpTabTemp = Object.assign({}, _pvpTabTemp, { bolo: r.bolo, tenhoSelo: true });
     /* O cristal saiu da conta no servidor; aqui tira-se do que está na
        tela, para o saldo não ficar a mentir até ao próximo carregamento.
-       Gasta-se bónus antes do lastro, como o servidor faz. */
+       Gasta-se bônus antes do lastro, como o servidor faz. */
     if (!r.ja && typeof gs !== 'undefined') {
       const doBonus = Math.min(gs.cristaisBonus || 0, r.custo);
       gs.cristaisBonus = +((gs.cristaisBonus || 0) - doBonus).toFixed(2);
@@ -250,7 +250,7 @@ function _pvpTabDesenhar() {
 
 /* O desenho sai com um tamanho de referência e o CSS estica-o até à
    caixa (.pvp-tab-cara svg, .pvp-tab-arte svg). Com o tamanho cravado
-   em píxeis, o bicho era cortado no telemóvel e boiava no computador,
+   em píxeis, o bicho era cortado no celular e boiava no computador,
    onde a raiz mede 24px em vez de 16. */
 function _pvpTabAvatarSVG(linha) {
   const av = linha && linha.av;
@@ -372,8 +372,11 @@ function _pvpTabHTML() {
      diz a vantagem sobre o segundo — senão a faixa do líder era a única
      sem nada que dizer. */
   const nota = !eu ? ''
-    : acima ? t('pvp.tab.faltam', { n: Math.max(1, (acima.p | 0) - (eu.p | 0)),
-                                    pos: _pvpTabOrdinal(meuIdx) })
+    : acima ? (() => {
+        const faltam = Math.max(1, (acima.p | 0) - (eu.p | 0));
+        return t(faltam === 1 ? 'pvp.tab.faltam_1' : 'pvp.tab.faltam',
+                 { n: faltam, pos: _pvpTabOrdinal(meuIdx) });
+      })()
     : lista[1] ? t('pvp.tab.na_frente', { n: Math.max(0, (eu.p | 0) - (lista[1].p | 0)) })
     : '';
   /* E a MINHA linha diz se eu estou dentro — é a pergunta que traz o

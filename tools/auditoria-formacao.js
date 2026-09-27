@@ -94,7 +94,7 @@ titulo('A frente é quem está de pé mais à frente');
   p2.vivo = false;
   verificar('sem ninguém de pé não há frente', M.fuFrente(e.A) === null);
 
-  /* E a frente segue o POSTO e não a ordem em que a equipa foi montada:
+  /* E a frente segue o POSTO e não a ordem em que a equipe foi montada:
      depois de uma troca, quem está à frente é outro. */
   const e2 = luta(20, 3);
   const a = e2.A[0], b = e2.A[2];

@@ -51,7 +51,7 @@ const PVP_RESERVA_MS = 10000;
 /* Quantos pontos vale quem entra na fila sem rank nenhum. É o
    PVP_RANK_INICIO do js/pvp-rank.js, repetido aqui porque estas regras
    correm também sozinhas (o teste puro não carrega o rank) e porque um
-   número no pareamento não pode depender de um ficheiro estar lá. */
+   número no pareamento não pode depender de um arquivo estar lá. */
 const PVP_RANK_PADRAO = 1000;
 
 function pvpReservada(entrada, agora, por) {
@@ -92,8 +92,8 @@ function pvpCompativeis(a, b, agora) {
    aba sem sair da fila. */
 /* ── DENTRO DA JANELA DE PODER, O MAIS PRÓXIMO EM PONTOS ──
 
-   A janela continua a ser de poder de equipa: o nível dos bichos decide
-   muito a luta, e não faz sentido pôr uma equipa de nível 12 contra uma
+   A janela continua a ser de poder de equipe: o nível dos bichos decide
+   muito a luta, e não faz sentido pôr uma equipe de nível 12 contra uma
    de 40 só porque os dois donos têm 1000 pontos. Mas DENTRO dela, quem
    se escolhe é o mais próximo no RANK, e não o mais próximo em poder.
 
@@ -242,7 +242,7 @@ function pvpPremioDe(resultado, tipo) {
 }
 
 /* Quem caiu, de um lado, no estado final: devolve os LUGARES (0,1,2),
-   que é como a equipa da sala está guardada. */
+   que é como a equipe da sala está guardada. */
 function pvpCaidos(estado, lado) {
   const out = [];
   for (let i = 0; i < PVP_EQUIPA; i++) {

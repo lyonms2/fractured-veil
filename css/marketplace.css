@@ -1,7 +1,7 @@
 /* AS FONTES DESTE FICHEIRO
    Seguem a convenção do resto do jogo: Cinzel nos botões e rótulos, EB
    Garamond no corpo e nos campos de escrita. Havia aqui uma Rajdhani —
-   sem-serifa quadrada, de ar tecnológico — em dezoito sítios, e o
+   sem-serifa quadrada, de ar tecnológico — em dezoito lugares, e o
    marketplace parecia outro produto ao lado das capitais romanas do
    resto. Nunca se tinha visto: a fonte era declarada e nunca carregada.
 
@@ -265,7 +265,7 @@
 .pool-sc-bar-wrap{height:0.375rem;background:var(--border);border-radius:0.1875rem;margin-bottom:1rem;overflow:hidden;}
 .pool-sc-bar{height:100%;border-radius:0.1875rem;transition:width .8s ease;}
 /* Dois desde 26/09/2026: o "Disponível hoje" saiu, porque anunciava um
-   tecto diário da pool que já não existe (ver js/pool.js). */
+   teto diário da pool que já não existe (ver js/pool.js). */
 .pool-sc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.625rem;margin-bottom:1rem;}
 .pool-sc-stat{background:var(--surface);border-radius:0.625rem;padding:0.625rem 0.5rem;display:flex;flex-direction:column;align-items:center;gap:0.1875rem;border:1px solid var(--border);}
 .pool-sc-stat span{font-size:0.4375rem;color:var(--muted);letter-spacing:0.05rem;text-transform:uppercase;}
@@ -384,7 +384,7 @@
    ser MAIORES do que o corpo de texto que anotam. Medido: corpo a
    10,5px, rótulos e notas a 12px.
    Passam a classes para encolherem com os outros e a hierarquia voltar
-   ao sítio — corpo > rótulo > sufixo. */
+   ao lugar — corpo > rótulo > sufixo. */
 .transp-cap{
   margin:0.75rem 0 0.375rem; font-size:0.5625rem;
   color:var(--muted); letter-spacing:0.0625rem;
@@ -688,7 +688,7 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 }
 
 
-/* Quanto resta do tecto diário de resgate. Fica por cima do campo, para se
+/* Quanto resta do teto diário de resgate. Fica por cima do campo, para se
    ler antes de escrever o número — era esse o problema: o limite só
    aparecia na mensagem de erro, depois de o pedido falhar. */
 .resgate-limite{

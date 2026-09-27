@@ -43,7 +43,7 @@ window.registerStrings({
   'pve.sem_equipa':    'Escolha 3 avatares para a equipe antes de batalhar.',
   // -- QUEM NAO PODE ENTRAR EM CAMPO --
   // O selo vai no cartao do avatar; o motivo vai na lista por baixo; e a
-  // ultima linha diz que a equipa nao fica presa, que e o que evita que
+  // ultima linha diz que a equipe nao fica presa, que e o que evita que
   // o jogador feche a pagina a pensar que nao pode lutar.
   'pve.sem_nome':      'Esse avatar ainda não tem nome. Dê um nome a ele antes de batalhar — depois não dá para trocar.',
   'pve.sem_nomes':     'Alguns avatares da equipe ainda não têm nome. Dê um nome a eles antes de batalhar — depois não dá para trocar.',

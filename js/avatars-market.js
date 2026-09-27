@@ -127,7 +127,7 @@ function applyFilters() {
 
 /* A cor de uma listagem, para a PROCURA.
 
-   Cinco sítios deste arquivo rotulavam o avatar com o nome da cor, e
+   Cinco lugares deste arquivo rotulavam o avatar com o nome da cor, e
    isso saiu: o bicho está desenhado ao lado em todos eles, e escrever
    "Roxo com Verde" por baixo de um bicho roxo não acrescenta nada.
 
@@ -477,7 +477,7 @@ async function unlistAvatar(listingId) {
 // ═══════════════════════════════════════════
 // Botão ⚔ de um card. Um avatar à venda está congelado e não pode
 // lutar — nesse caso o botão aparece desativado, em vez de desaparecer,
-// para o jogador perceber porque é que aquele não entra na equipa.
+// para o jogador perceber porque é que aquele não entra na equipe.
 function _slotBtnEquipa(i, s) {
   if(typeof estaNaEquipa !== 'function') return '';
   if(s.listed) {
@@ -485,7 +485,7 @@ function _slotBtnEquipa(i, s) {
   }
   const dentro = estaNaEquipa(i);
   const bloqueado = !dentro && equipaCompleta();
-  // Quem está na equipa mostra a POSIÇÃO, não só que lá está: o 1.º abre
+  // Quem está na equipe mostra a POSIÇÃO, não só que lá está: o 1.º abre
   // a luta e os outros entram por ordem quando os da frente caem. Dizia
   // apenas "Na equipe", e daí não se percebia que a ordem decidia algo.
   const pos = (typeof posicaoNaEquipa === 'function') ? posicaoNaEquipa(i) : 0;
@@ -566,7 +566,7 @@ function renderSlots() {
 
        Fazia sentido quando o activo era o que jogava e os outros
        estavam em pausa. Hoje vivem todos ao mesmo tempo, e desde que as
-       visitas passaram a ser à colónia inteira o activo deixou de ter
+       visitas passaram a ser à colônia inteira o activo deixou de ter
        consequência nenhuma para fora da consola: é só onde o jogador
        está neste momento, e isso não é uma propriedade do bicho.
 
@@ -700,7 +700,7 @@ function renderSlots() {
 
   grid.innerHTML = html;
 
-  // Resumo da equipa de combate por cima da grelha
+  // Resumo da equipe de combate por cima da grelha
   if(typeof renderEquipaBar === 'function') renderEquipaBar();
 
   // Unlock button
@@ -720,7 +720,7 @@ function renderSlots() {
    — ver a nota onde o botão estava, no renderSlots.
 
    Trocar de avatar continua a fazer-se, e sempre se fez melhor no
-   mesmo sítio: o CUIDAR da colónia (cuidarDe, em js/fazenda.js). Um
+   mesmo lugar: o CUIDAR da colônia (cuidarDe, em js/fazenda.js). Um
    caminho, e não dois a fazer o mesmo com nomes diferentes.
 
    Com ele foi a rede do `_slotAntesDeInvocar`, que existia para o
@@ -774,7 +774,7 @@ async function _mktClearSlot(idx) {
        que já não existe até ao próximo refresh.
 
        Quem decide o que mostrar é o rebuildScreensParaSlot — com o slot
-       vazio, ele abre a colónia. */
+       vazio, ele abre a colônia. */
     if(idx === activeSlotIdx) {
       if(typeof loadRuntimeFromSlot === 'function') loadRuntimeFromSlot(activeSlotIdx);
       if(typeof rebuildScreensParaSlot === 'function') rebuildScreensParaSlot();

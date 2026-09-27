@@ -893,7 +893,7 @@ function renderEggInventory() {
 
     /* Um ovo que ainda não é seu não se queima por engano: o botão de
        jogar fora só aparece quando ele está preso ou perdido. Nos
-       outros dois estados a única acção possível é esperar ou chocar. */
+       outros dois estados a única ação possível é esperar ou chocar. */
     const acoes = est === 'pronto'
       ? `<button class="egg-btn hatch" onclick="hatchEggFromInventory('${esc(String(ovo.id))}')">🐣 ${t('egg.btn.hatch')}</button>`
       : est === 'chocando'

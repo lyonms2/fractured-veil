@@ -22,7 +22,7 @@ const DISEASES = {
   // combate. Por isso não tem 'vital' nem 'limiar': o ciclo do jogo nunca
   // a liga sozinho, quem a liga é a batalha (ver js/pve-fu.js).
   // Depois disso comporta-se como as outras: come saúde todo o ciclo e
-  // mata se não for tratada. Cura-se no mesmo sítio, com o antídoto.
+  // mata se não for tratada. Cura-se no mesmo lugar, com o antídoto.
   fratura:     { id:'fratura',     get nome(){ return t('disease.fracture');     }, emoji:'🦴', cor:'#c9a84c', vital:null,      limiar:null },
 };
 const DISEASE_STRESS_THRESHOLD = 20; // 20 ciclos = ~20 min de descuido
@@ -47,7 +47,7 @@ let itemInventory   = [];
 const MAX_EQUIPPED  = 3;
 /* ── +1 ESPAÇO DE ITEM NO NÍVEL 40 ──
    Um dos marcos do fim da escada, entre o Lendário (27) e o teto (60):
-   quem chega ao 40 equipa quatro itens em vez de três. O título do 50 é
+   quem chega ao 40 equipe quatro itens em vez de três. O título do 50 é
    o outro (tituloDe, em js/identidade.js). */
 const NIVEL_ITEM_EXTRA = 40;
 function maxEquipadosDe(nv) {
@@ -174,7 +174,7 @@ const ITEM_CATALOG = {
 };
 // O preço que o jogador paga, já com o desconto da raridade do avatar.
 //
-// Existe porque estava calculado em três sítios e um deles esqueceu-se
+// Existe porque estava calculado em três lugares e um deles esqueceu-se
 // do desconto: o cartão do Antídoto mostrava 240 a um Lendário e o
 // useAntidote() cobrava os 300 do catálogo. Pior, o botão ficava ativo
 // com 250 moedas, a loja fechava e o jogador levava com um erro.
@@ -208,7 +208,7 @@ function getItemEffect(key) {
 
 // O mesmo, mas de um avatar QUALQUER — não só do que está em campo.
 //
-// Existe por causa da batalha: ela cobra energia aos três da equipa, e
+// Existe por causa da batalha: ela cobra energia aos três da equipe, e
 // os itens são de cada um. O getItemEffect() só sabe ler o inventário do
 // slot ativo (que vive na global itemInventory); os outros guardam o
 // seu em avatarSlots[i].items. Sem isto, um item de combate comprado
@@ -302,7 +302,7 @@ const FASES = t('fases');
    O motor novo não tem pontos — os quatro dados saem do arranjo que o
    DNA escolhe e não se compram. Sem o primeiro degrau, a conta é directa.
 
-   E não mudou um único avatar: os números 5, 11 e 27 são exactamente os
+   E não mudou um único avatar: os números 5, 11 e 27 são exatamente os
    mesmos cortes que a escada dos pontos dava, conferidos nos sessenta
    níveis. São também os degraus da raridade do motor novo
    (FU_NIVEL_RARO, FU_NIVEL_LENDARIO) — a fase é a escada da raridade
@@ -495,7 +495,7 @@ let activeSlotIdx = 0;
 // var + guard (não const): js/avatars-market.js declara os mesmos nomes para
 // funcionar standalone em marketplace.html — evita SyntaxError de redeclaração
 // quando ambos os arquivos carregam juntos em index.html.
-// 5 slots grátis (a equipa de combate são 3, sobra margem para rodar)
+// 5 slots grátis (a equipe de combate são 3, sobra margem para rodar)
 // e mais 5 compráveis com cristais, até 10.
 if(typeof BASE_SLOTS === 'undefined') var BASE_SLOTS = 5;
 if(typeof MAX_SLOTS  === 'undefined') var MAX_SLOTS  = 10;
@@ -503,7 +503,7 @@ const SLOT_COST   = 15;
 
 // ── INVOCAÇÃO ──
 // As primeiras invocações são grátis — enchem os slots livres e formam a
-// equipa de combate logo no início. A partir daí custa moedas.
+// equipe de combate logo no início. A partir daí custa moedas.
 //
 // O contador é do total de invocações, NÃO dos avatares vivos. Isso é o
 // que impede o jogador de invocar, queimar o que não gostou e invocar
@@ -542,7 +542,7 @@ function saveRuntimeToSlot(idx) {
   if(!avatarSlots[idx]) {
     /* Os ITENS ficam órfãos e são recuperados no carregamento seguinte;
        os OVOS já não, porque deixaram de ser de um slot — a chocadeira
-       é da colónia (ver applyGameState, em js/firebase.js). */
+       é da colônia (ver applyGameState, em js/firebase.js). */
     if(itemInventory.length > 0) window._orphanItems = itemInventory.map(i => ({...i}));
     return;
   }
@@ -577,7 +577,7 @@ function loadRuntimeFromSlot(idx) {
     faseVista = -1; nivelVisto = -1;
     petCooldown = 0;
     Object.assign(vitals, {fome:100, humor:100, energia:100, saude:100, higiene:100});
-    // O eggsInInventory NÃO se toca: é a chocadeira da colónia, e não
+    // O eggsInInventory NÃO se toca: é a chocadeira da colônia, e não
     // deste slot. Esvaziá-la aqui fazia os ovos sumirem ao entrar num
     // slot vazio.
     itemInventory   = s?.items ? s.items.map(i => ({...i})) : [];
@@ -628,10 +628,10 @@ async function switchSlot(newIdx) {
      o único a trocar de slot por ali. Quando o "Voltar à colônia" passou
      a trocar também, ficou uma cópia desactualizada: o global dizia 1, o
      playerData dizia 2, e o slot vazio continuava a parecer o ativo — sem
-     o botão para lá voltar a entrar, que é exactamente o que se queria
+     o botão para lá voltar a entrar, que é exatamente o que se queria
      devolver.
 
-     Fica aqui, onde a troca acontece de facto, para não haver uma
+     Fica aqui, onde a troca acontece de fato, para não haver uma
      terceira via que se esqueça outra vez. */
   if(typeof playerData !== 'undefined' && playerData) {
     playerData.activeSlotIdx = newIdx;

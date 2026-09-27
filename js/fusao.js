@@ -269,7 +269,7 @@ function _fusRaio(n) {
    para as linhas do fim — que não existem quando a partida começa,
    porque nascem quando ela acaba. Nada disso depende do prato, e por
    isso a conta dá o mesmo número quantas vezes se refaça. */
-/* A reserva em rem serve o desktop, onde a raiz é 26,4px. No telemóvel
+/* A reserva em rem serve o desktop, onde a raiz é 26,4px. No celular
    ela vale 99px, e isso ficava 25px curto quando o resultado quebra em
    duas linhas — a borda de baixo dos dois botões saía raspada pela
    borda do cartão. Por isso o piso em pixels, medido a 360x640. */
@@ -348,7 +348,8 @@ function _fusMedirPrato() {
 
 function _fusPlacar() {
   const el = document.getElementById('fusaoScore');
-  if (el) el.textContent = t('mg.fus.placar', { p: _fusPontos, n: _fusFusoes });
+  if (el) el.textContent = t(_fusFusoes === 1 ? 'mg.fus.placar_1' : 'mg.fus.placar',
+                             { p: _fusPontos, n: _fusFusoes });
 }
 
 function _fusLimparResultado() {

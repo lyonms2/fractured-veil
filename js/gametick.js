@@ -170,7 +170,7 @@ function cleanCreature() {
   // Havia aqui um decaimento de vínculo — somava 3 acima e tirava 0,02
   // logo a seguir. Era lógica de tick que foi parar dentro da ação, e o
   // humorBad era avaliado DEPOIS do +15 que o próprio banho dá, portanto
-  // quase nunca disparava. O vínculo decai no tick, que é o sítio dele.
+  // quase nunca disparava. O vínculo decai no tick, que é o lugar dele.
   updateDirtyVisuals();
   checkXP();
   updateAllUI();          // as outras ações já o faziam; esta esperava pelo tick
@@ -262,7 +262,7 @@ function spawnBathParticles() {
    membros, que voltavam todos a sincronizar — e seis gestos em curso eram
    destruídos. Quem estivesse comendo ou a tomar banho quando o tick
    calhasse via a animação morrer a meio.
-   Agora só regenera quando há de facto o que mudar. */
+   Agora só regenera quando há de fato o que mudar. */
 function updateAvatarSize() {
   const wrap = document.getElementById('creatureSVG');
   if(!wrap || !hatched || dead) return;
@@ -292,7 +292,7 @@ function updateAvatarSize() {
    safa por ninguém olhar para ele não é uma regra, é um descuido.
 
    O carimbo LIMPA-SE quando volta a haver ninho. É de propósito: o
-   contador existe para o ovo que está preso, e um ovo com sítio para
+   contador existe para o ovo que está preso, e um ovo com lugar para
    onde ir não está preso. Quem abrir espaço a tempo desfaz o problema
    por inteiro, e não só o adia.
 
@@ -350,7 +350,7 @@ function updateDirtyVisuals() {
 //
 // Era o BÔNUS ELEMENTAL: cinco tabelas escritas à mão, uma por elemento,
 // a dizer que o de Terra tinha menos fome e o de Vento menos sono. Foi o
-// último sítio onde o elemento decidia alguma coisa a sério no jogo.
+// último lugar onde o elemento decidia alguma coisa a sério no jogo.
 //
 // Passou para o DNA (genes.vigor, em js/nascimento.js): cada avatar tem
 // um medidor em que se aguenta e outro em que não, e os dois viajam para
@@ -399,7 +399,7 @@ function passivoDe(quem) {
    morre sem o dono ver" — enfraqueceu, porque agora vêem-se todos de
    relance na tela principal; mas dez avatares a poder morrer de uma vez
    é uma perda grande e irreversível, e eles valem dinheiro no mercado.
-   Fica no conservador, num sítio só, e é uma linha para mudar.
+   Fica no conservador, num lugar só, e é uma linha para mudar.
    ═══════════════════════════════════════════════════════════════════ */
 
 // A saúde de quem não está aberto na tela de cuidar não desce abaixo
@@ -730,7 +730,7 @@ function killCreature() {
    formato de tempo e a sua própria lista de emojis — já tinha
    divergido, e ninguém dava por isso porque só se vê num arranque.
 
-   Uma função, dois sítios a chamá-la.
+   Uma função, dois lugares a chamá-la.
    ═══════════════════════════════════════════════════════════════════ */
 function preencherTelaDaMorte() {
   if (!avatar) return;
@@ -925,7 +925,7 @@ function _luGanho(nv) {
     .map(a => t('gt.subiu_dado', { a: t('af.at.' + a), de: antes[a], para: agora[a] }));
 
   const subiu = LU_LINHAS.filter(([k]) => agora[k] > antes[k]);
-  /* Se nada subir — o que só pode acontecer no tecto dos 60 — fica a
+  /* Se nada subir — o que só pode acontecer no teto dos 60 — fica a
      frase antiga, que é vaga mas não é falsa. */
   if (!subiu.length && !dado.length) { el.textContent = t('gt.levelup.mais_forte'); return; }
 

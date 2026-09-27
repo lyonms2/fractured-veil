@@ -12,7 +12,7 @@
 
    ── DE ONDE VEM A LUZ ──
 
-   De um sítio só: a Fratura, ao fundo. É ela que acende o horizonte,
+   De um lugar só: a Fratura, ao fundo. É ela que acende o horizonte,
    que faz a poça de luz no chão, que dá o contorno aos corpos e que
    decide a cor das sombras. Uma cena com uma fonte de luz assumida
    parece desenhada; com três, parece montada.
@@ -211,10 +211,10 @@
    Era um degradê VERTICAL sobre a caixa inteira, o que quer dizer que o
    brilho de um pico dependia da altura dele dentro do div e não da
    distância à luz. Os picos altos acendiam, os baixos não acendiam
-   nada, e um pico na berma do quadro recebia exactamente o mesmo que o
+   nada, e um pico na berma do quadro recebia exatamente o mesmo que o
    pico plantado à frente da fenda.
 
-   Agora é radial e está ancorado ao sítio onde a Fratura está — 50%, em
+   Agora é radial e está ancorado ao lugar onde a Fratura está — 50%, em
    cima. Os montes ao pé dela ardem, os das pontas ficam quase pretos, e
    a máscara limita tudo ao bordo de cima, que é onde um contraluz bate.
    É a mesma luz a decidir as duas coisas. */
@@ -324,7 +324,7 @@
    Todas as camadas da cena estavam ATRÁS dos bichos: céu, auroras,
    fenda, montes, bruma, chão, poeira. Uma cena pintada deste género
    monta-se como um palco de teatro — há qualquer coisa escura e
-   desfocada À FRENTE, e a acção passa-se lá dentro. Sem isso quem faz o
+   desfocada À FRENTE, e a ação passa-se lá dentro. Sem isso quem faz o
    enquadramento é a vinheta, e uma vinheta é um filtro, não uma
    composição.
 
@@ -377,7 +377,7 @@
 /* ── O AR QUE OS SEIS PARTILHAM ──
 
    Uma folha de luz por cima de TODOS os corpos, do mesmo violeta da
-   Fratura e vinda de onde ela está. É a peça que os põe no mesmo sítio:
+   Fratura e vinda de onde ela está. É a peça que os põe no mesmo lugar:
    sem ela cada bicho tem a sua própria luz e a cena são seis recortes;
    com ela há um ar entre a fenda e eles, e todos o respiram.
 
@@ -411,9 +411,9 @@
    depois da fila, senão o avatar do fundo à esquerda nascia por baixo
    dos retratos.
 
-   ALTURA LIMITADA, e é a correcção que mais custou a encontrar: as
+   ALTURA LIMITADA, e é a correção que mais custou a encontrar: as
    etiquetas e as marcas ficam a uma distância FIXA da cabeça, em rem,
-   mas os três postos espalham-se por uma percentagem do campo. Num ecrã
+   mas os três postos espalham-se por uma porcentagem do campo. Num ecrã
    alto o campo esticava, os três afastavam-se, e o nome do que está à
    frente ia parar em cima da cara do que está atrás. Duas geometrias
    diferentes a decidir a mesma distância.
@@ -434,7 +434,7 @@
    moldura: tem uma sombra, um corpo e o que lhe está a acontecer.
 
    O --z é a profundidade (0 longe, 1 perto) e manda em tudo o resto.
-   O --x e o --y são a posição, em percentagem do campo. */
+   O --x e o --y são a posição, em porcentagem do campo. */
 .cb-posto {
   position: absolute;
   left: var(--x); top: var(--y);
@@ -453,7 +453,7 @@
   --cabeca: calc(6.76rem * var(--escala));
 }
 
-/* ── A sombra de contacto ──
+/* ── A sombra de contato ──
    É o que prega o bicho ao chão. Elíptica (a luz vem de cima e de trás),
    mais pequena e mais difusa em quem está longe, e ENCOLHE quando o
    corpo sobe no flutuar — é esse par que faz o flutuar parecer peso a
@@ -522,7 +522,7 @@
    partículas nasciam todas no mesmo pixel, aos pés. O efeito que o
    código descreve como "o que se vê primeiro" não se via de todo.
 
-   Aqui está a caixa que faltava: do tamanho do corpo, no sítio do
+   Aqui está a caixa que faltava: do tamanho do corpo, no lugar do
    corpo, e SEM as animações dele — se herdasse o recuo, as partículas
    recuavam com o bicho em vez de saltarem dele. */
 /* O clarão do impacto é um degradê radial que chega a opaco aos 82%,
@@ -618,7 +618,7 @@
    contra um fundo neutro e a auréola destaca-o. Na arena é o que mais
    faz parecerem autocolantes colados numa pintura — e contradiz a única
    regra que a cena tem, que é haver uma luz só: com ela, cada criatura
-   emite luz própria, de uma cor diferente, em seis sítios ao mesmo
+   emite luz própria, de uma cor diferente, em seis lugares ao mesmo
    tempo.
 
    Sai só AQUI. O contorno violeta que o css já põe por drop-shadow faz
@@ -629,7 +629,7 @@
 
 /* ── E A SATURAÇÃO TEM TECTO ──
    Ia a 1,0 no posto da frente, e os avatares são coloridos por DNA: os
-   dois bichos para onde o olho vai primeiro eram os dois objectos mais
+   dois bichos para onde o olho vai primeiro eram os dois objetos mais
    saturados de um quadro violeta e ouro. A 0,82 continuam a ser a cor
    deles e deixam de gritar. */
 
@@ -677,7 +677,7 @@
    Medido: fundo do corpo a +219 do ponto, com o rodapé a começar aos +57.
 
    O `-100%` é o mesmo de quem está de pé, e o `transform-origin: 50% 100%`
-   que a regra base já tem põe o pivô exactamente nos pés. O corpo roda em
+   que a regra base já tem põe o pivô exatamente nos pés. O corpo roda em
    vez de escorregar — como uma árvore a cair, que é o que a queda é. */
 .cb-posto.caido .cb-corpo {
   transform: translate(-50%, -100%) translateX(var(--lado, 0.9rem)) rotate(var(--tomba, -58deg));
@@ -915,7 +915,7 @@
    trocam de lado porque o nome da classe não os deixa. */
 .cb-posto .cb-marca.mal   { color: #ff9b93; border-color: rgba(224,85,85,.45); }
 .cb-posto .cb-marca.bem   { color: #9fdc9f; border-color: rgba(122,184,122,.45); }
-/* A crise não é nem uma coisa nem outra: é o sítio onde ele está, e é o
+/* A crise não é nem uma coisa nem outra: é o lugar onde ele está, e é o
    gatilho de meia dúzia de efeitos dos dois lados. Leva o ouro da cena. */
 .cb-posto .cb-marca.crise {
   color: #ffd08a; border-color: rgba(232,196,110,.6); font-weight: 700;
@@ -1046,7 +1046,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 /* O `top` vem de fora (--alto), sorteado por número: dois danos no
-   mesmo turno nasciam exactamente no mesmo pixel e só se separavam meio
+   mesmo turno nasciam exatamente no mesmo pixel e só se separavam meio
    segundo depois, quando já ninguém estava a olhar. */
 .cb-dano {
   position: absolute; left: 50%; top: var(--alto, -2.2rem);
@@ -1204,9 +1204,9 @@
    Enquanto um dos meus está escolhido, diz o que o dano DELE faz àquele
    inimigo. As cores são as mesmas das pastilhas da ficha — vermelho é
    vulnerável, azul resiste, cinzento imune, verde absorve — e querem
-   dizer exactamente o mesmo: falam sempre de quem as tem vestidas. Numa
+   dizer exatamente o mesmo: falam sempre de quem as tem vestidas. Numa
    ficha minha o vermelho é mau; num cartão inimigo é bom, e é a mesma
-   frase nos dois sítios.
+   frase nos dois lugares.
 
    O `nada` fica sem fundo e sem borda: é a ausência de afinidade, e
    vesti-la de pastilha dava-lhe um peso que ela não tem. */
@@ -1338,7 +1338,7 @@
    para o meio, onde só há céu e a fenda, e tapa o companheiro do meio.
 
    Quem decide é o js/arena-fu.js, pelo POSTO e não por medição: a
-   coluna tem de estar sempre no mesmo sítio para o mesmo avatar.
+   coluna tem de estar sempre no mesmo lugar para o mesmo avatar.
 
    ── E ISTO VALE EM TODAS AS LARGURAS ──
 
@@ -1346,7 +1346,7 @@
    base mandava a coluna para DENTRO em toda a gente. Entre os 417 e os
    680px — que é onde não há nem o painel encostado ao rodapé nem o
    palco largo — os três postos abriam para o mesmo lado e o do fundo
-   não tinha nada de especial. Agora os três sítios são os três em
+   não tinha nada de especial. Agora os três lugares são os três em
    qualquer largura; o que o @media muda é só a distância, porque lá os
    avatares são maiores. */
 .cb-menu {
@@ -1386,7 +1386,7 @@
 
    O painel é escuro e translúcido, com o mesmo desfoque dos cartões de
    baixo: continua a ver-se que há cena por trás, e a letra passa a ter
-   um fundo constante. É a mesma linguagem dos cartões, e os dois sítios
+   um fundo constante. É a mesma linguagem dos cartões, e os dois lugares
    onde se toca durante um turno passam a parecer-se um com o outro. */
 .cb-menu .cb-acoes {
   display: flex; flex-direction: column-reverse; align-items: flex-start;
@@ -1679,7 +1679,7 @@ b.laco { color: #f5a3c7; }
    continua a ser onde a conta aparece por extenso. */
 /* ── O REGISTO VAI PARA O CÉU ──
 
-   Estava colado ao rodapé, e isso punha-o exactamente sobre a linha dos
+   Estava colado ao rodapé, e isso punha-o exatamente sobre a linha dos
    pés dos dois que jogam — uma caixa invisível de 612px com
    pointer-events, a apanhar os cliques que eram para os bichos.
 
@@ -1896,7 +1896,7 @@ b.laco { color: #f5a3c7; }
    do atacante aparecia; o nome de quem apanhou, o "CRÍTICO", o "PIFÃO" e
    o número do dano estavam lá, no HTML, invisíveis. Ficavam os pontos de
    separação entre eles, e lia-se "Brama, a Nobre ·· 7 contra 8 ·" — que
-   é exactamente a queixa de que os turnos estavam confusos.
+   é exatamente a queixa de que os turnos estavam confusos.
 
    Nada nesta arena põe `aberto` no lance (o histórico abre noutro
    painel, o `#cbAjuda`), portanto as três regras estavam sempre ligadas
@@ -1999,7 +1999,7 @@ b.laco { color: #f5a3c7; }
 
    O `max-height` era 80vh e passa a 100%: o pai é o palco inteiro e a
    janela não é. Numa janela baixa, 80vh dava um painel mais alto do que
-   o sítio onde ele vive, e o fim da ficha ficava por baixo do rodapé,
+   o lugar onde ele vive, e o fim da ficha ficava por baixo do rodapé,
    sem barra que lá chegasse.
 
    O movimento de entrada é daqui e já não do fundo: é este que se vê
@@ -2016,7 +2016,7 @@ b.laco { color: #f5a3c7; }
 .cb-ajuda.aberta .cb-ajuda-cx { transform: none; }
 
 /* A terceira moldura. A `.ficha` traz a sua do css/combate.css, onde ela
-   é a única caixa do zoom da colónia — aqui dentro seria a segunda a
+   é a única caixa do zoom da colônia — aqui dentro seria a segunda a
    dizer a mesma coisa. */
 .cb-ajuda-cx .ficha {
   margin: 0; padding: 0; border: none; border-radius: 0; background: none;
@@ -2038,7 +2038,7 @@ b.laco { color: #f5a3c7; }
    mudá-la de casa agora só mudava o lado de que a dívida se vê. */
 /* Cinco píxeis. A regra é de quando as pastilhas só existiam dentro do
    painel da arena, onde a raiz é 26,4px e isto dava 8,25 — já pouco. O
-   bloco da ficha desenha-as também na colónia e no telemóvel, onde a raiz
+   bloco da ficha desenha-as também na colônia e no celular, onde a raiz
    é 16, e "gelo VU" saía a cinco píxeis: a única linha da ficha que diz
    contra quem este bicho é bom, ilegível.
    Dez píxeis aqui, doze no aperto da arena — o mesmo chão do resto. */
@@ -2085,11 +2085,11 @@ b.laco { color: #f5a3c7; }
    TELAS ESTREITAS
 
    O campo encolhe, a fila passa a uma linha por cima das ações e os
-   painéis de baixo empilham-se. Nada sai — muda de sítio.
+   painéis de baixo empilham-se. Nada sai — muda de lugar.
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 26rem) {
   /* A faixa deixa de ser uma linha e passa a duas: os dois painéis lado
-     a lado em cima, as ações por baixo. Nada sai — muda de sítio. */
+     a lado em cima, as ações por baixo. Nada sai — muda de lugar. */
   /* 10,5rem eram as que a faixa DIZIA ter; o conteúdo dela pedia 13,4.
      A diferença saía por cima e caía sobre a fila e sobre os pés dos
      dois que jogam. Agora a faixa mede o que precisa, e o que precisa
@@ -2106,7 +2106,7 @@ b.laco { color: #f5a3c7; }
   .cb-bruma           { top: 27%; height: 24%; }
   .cb-chao            { top: 40%; }
 
-  /* No telemóvel a coluna encosta ao rodapé e alinha à esquerda: o
+  /* No celular a coluna encosta ao rodapé e alinha à esquerda: o
      avatar em campo está mesmo por cima dela, e uma coluna a subir do
      peito dele sairia pelo topo do ecrã. Continuam a ser orbes. */
   .cb-menu {
@@ -2140,20 +2140,20 @@ b.laco { color: #f5a3c7; }
   .cb-ficha-cara svg { width: 0.9375rem; height: 0.9375rem; }
   .cb-barra { height: 0.5rem; }
   .cb-hud { gap: 0.125rem; }
-  /* No telemóvel a raiz é 16px, e todos os aumentos de letra viviam num
+  /* No celular a raiz é 16px, e todos os aumentos de letra viviam num
      @media de 900px — a barra ficava com números de 4,5px e as marcas
      com 4px. Aqui é onde a letra mais precisa de subir, não onde menos. */
   /* ── NADA ABAIXO DOS DEZ PÍXEIS ──
 
-     A raiz no telemóvel é 16px e estes valores davam 7, 8, 6 e 7 píxeis.
+     A raiz no celular é 16px e estes valores davam 7, 8, 6 e 7 píxeis.
      Os mesmos elementos no computador dão 12,4 · 14,9 · 11,6 · 13,2 — a
-     correcção de escala foi feita só do lado largo, e este ficou com os
+     correção de escala foi feita só do lado largo, e este ficou com os
      números de quando a raiz era outra.
 
      Sete píxeis de branco sobre verde, monoespaçado, é o "80/80" da barra
      de vida: o número que se olha mais vezes na batalha inteira.
 
-     Há onde: o rodapé no telemóvel tem 50px vazios acima do meu primeiro
+     Há onde: o rodapé no celular tem 50px vazios acima do meu primeiro
      cartão e 78 acima do dele. */
   .cb-barra span      { font-size: 0.6875rem; }
   .cb-ficha-nome      { font-size: 0.6875rem; }
@@ -2185,7 +2185,7 @@ b.laco { color: #f5a3c7; }
   .cb-ficha-barras { min-width: 4.75rem; }
   .cb-hud.ini .cb-ficha-barras { min-width: 4.25rem; }
   .cb-ficha-nome { max-width: 5rem; }
-  /* No telemóvel o céu é menor e as cabeças estão mais acima: o
+  /* No celular o céu é menor e as cabeças estão mais acima: o
      registo encolhe para não lhes cair em cima. Continua a rolar, e o
      detalhe do turno abre na mesma. */
   /* O `translate(-50%)` da regra base TEM de sair com o `left`.
@@ -2205,14 +2205,14 @@ b.laco { color: #f5a3c7; }
 /* ═══════════════════════════════════════════════════════════════════
    A LETRA TEM DE CRESCER COM O PALCO, NÃO COM A RAIZ
 
-   Medido: no telemóvel o nome de um avatar ocupa 2,54% da largura do
+   Medido: no celular o nome de um avatar ocupa 2,54% da largura do
    palco; no computador ocupa 0,88%. A mesma letra, três vezes mais
    pequena em relação ao que a rodeia.
 
    A causa é aritmética e não é um descuido de nenhuma regra em
    particular: a raiz vai de 16px para 26,4px (×1,65) enquanto o palco
    vai de 355px para 1214px (×3,4). Tudo o que está em `rem` fica para
-   trás exactamente nessa razão — 3,4 ÷ 1,65 ≈ 2,1.
+   trás exatamente nessa razão — 3,4 ÷ 1,65 ≈ 2,1.
 
    Portanto a versão certa é a do TELEMÓVEL, e é ela que se copia. Aqui
    repõe-se a proporção, e nenhuma letra da arena desce dos 12px — a
@@ -2281,18 +2281,18 @@ b.laco { color: #f5a3c7; }
   .cb-ajuda-cx       { max-width: 18rem; margin: 0 auto; }
   /* ── O BLOCO DA FICHA, NO ECRÃ LARGO ──
 
-     A raiz aqui é 26,4px e a do telemóvel 16, e os tamanhos do bloco
+     A raiz aqui é 26,4px e a do celular 16, e os tamanhos do bloco
      estão escritos para os 16: sem este aperto o nome do avatar saía a
      21px dentro de um painel de 18rem.
 
      ── E O CHÃO SÃO DOZE PÍXEIS, COMO O RESTO DA ARENA ──
 
      À primeira converti-os por 16/26,4, para dar os MESMOS píxeis que o
-     telemóvel. Parecia a coisa certa — o mesmo desenho nas duas escalas —
+     celular. Parecia a coisa certa — o mesmo desenho nas duas escalas —
      e dava letra a 9,1px num painel que já promete, três blocos acima,
      que "nenhuma letra da arena desce dos 12px".
 
-     Píxeis iguais nas duas escalas é a conta errada: o telemóvel está a
+     Píxeis iguais nas duas escalas é a conta errada: o celular está a
      um palmo dos olhos e o monitor a um braço, e é por isso que a raiz
      lá é 16 e aqui 26,4. Doze é o chão, e o que estiver acima dele
      mantém as proporções entre si. */
@@ -2323,9 +2323,9 @@ b.laco { color: #f5a3c7; }
   /* ── E OS BICHOS CRESCEM COM O PALCO ──
      A mesma conta da letra, e o mesmo defeito: medido, o corpo da
      frente ocupava 11% da largura do palco no computador contra 38% no
-     telemóvel. Um avatar a um terço do tamanho relativo não é a mesma
+     celular. Um avatar a um terço do tamanho relativo não é a mesma
      cena maior, é outra cena — e é por isso que a versão larga se lia
-     como um diagrama e a estreita como um sítio.
+     como um diagrama e a estreita como um lugar.
      Com o campo mais alto há onde os pôr: 32% do palco eram céu vazio
      antes de o chão começar. */
   .cb-corpo svg {

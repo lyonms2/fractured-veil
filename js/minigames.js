@@ -305,13 +305,13 @@ function aplicarVisualDoSono(dormindo) {
 
        Isto era `document.querySelector('#sleepEyesGroup')`, e funcionou
        enquanto só havia um bicho desenhado na página. Desde que a
-       colónia fecha os olhos aos que dormem, há um grupo desses por
+       colônia fecha os olhos aos que dormem, há um grupo desses por
        cada cartão — e um id repetido não é um id: o querySelector
-       devolve o PRIMEIRO do documento, e a colónia vem antes da tela de
+       devolve o PRIMEIRO do documento, e a colônia vem antes da tela de
        cuidar.
 
        Resultado: acordar o bicho tirava as pálpebras a um cartão da
-       colónia e deixava as deste. Ele acordava de olhos fechados.
+       colônia e deixava as deste. Ele acordava de olhos fechados.
 
        Passa a procurar dentro do desenho de quem se está a acordar. */
     const svgAtivo = document.querySelector('#creatureSVG svg');
@@ -371,9 +371,9 @@ function healCreature() {
   const temDoencas = activeDiseases.length > 0;
   const saudeCheia = vitals.saude >= 100;
   if(!sick && saudeCheia && !temDoencas){ showBubble(t('mg.heal.bub.healthy')); return; }
-  // Com a saúde no tecto não há nada a repor, e o Medicar nunca curou
+  // Com a saúde no teto não há nada a repor, e o Medicar nunca curou
   // doenças — cobrava os 40 na mesma e escrevia "+40 saúde" no registo.
-  // Agora recusa e manda ao sítio certo.
+  // Agora recusa e manda ao lugar certo.
   if(saudeCheia && !sick && temDoencas) {
     showBubble(t('mg.heal.bub.only_antidote'));
     addLog(t('mg.heal.log.diseases', {
@@ -520,7 +520,7 @@ function spawnHealParticles() {
    as duas verdadeiras no mesmo dia e deixaram de ser à primeira vez que
    uma mudou. O bicho acordado tinha dois olhos e a dormir tinha três,
    e nada no código dizia porquê — porque a resposta não estava num
-   sítio, estava na diferença entre dois.
+   lugar, estava na diferença entre dois.
 
    Agora não há segunda conta. As pálpebras LEEM os olhos que estão
    desenhados: cada um é um <g class="av-olho-un">, e o getBBox() diz
@@ -535,7 +535,7 @@ function spawnHealParticles() {
    três pontinhos por baixo.
 
    Servia só a tela de cuidar — ia buscar o `#creatureSVG` e o `avatar`
-   por nome global. Os bichos da colónia dormiam de olhos abertos, o que
+   por nome global. Os bichos da colônia dormiam de olhos abertos, o que
    é a única coisa que um bicho a dormir não faz.
 
    Passa a aceitar QUAL desenho e QUAL avatar. Sem argumentos continua a
@@ -544,7 +544,7 @@ function spawnHealParticles() {
 
    O `comFade` existe porque os dois casos são diferentes: na tela de
    cuidar o bicho adormece à vista e a pálpebra deve descer devagar; na
-   colónia o cartão é redesenhado inteiro e a pálpebra tem de já lá
+   colônia o cartão é redesenhado inteiro e a pálpebra tem de já lá
    estar quando ele aparece. */
 function renderSleepEyes(svgAlvo, slotAlvo, comFade) {
   const alvo = slotAlvo || ((typeof avatar !== 'undefined') ? avatar : null);
@@ -553,7 +553,7 @@ function renderSleepEyes(svgAlvo, slotAlvo, comFade) {
   if(!avatarSvg) return;
 
   // Classe e não id: há um destes por cada bicho desenhado na página —
-  // o da tela de cuidar e um por cartão da colónia. Ver a nota no
+  // o da tela de cuidar e um por cartão da colônia. Ver a nota no
   // aplicarVisualDoSono.
   const old = avatarSvg.querySelector('.sleep-eyes');
   if(old) old.remove();

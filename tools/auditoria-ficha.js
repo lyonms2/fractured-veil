@@ -4,7 +4,7 @@
 
    Escrita ANTES do motor, e de propósito. É ela que nos diz se a ficha
    está certa enquanto a escrevemos, em vez de descobrirmos no fim que
-   um avatar em cada trinta nasce com a Vontade no sítio do Vigor.
+   um avatar em cada trinta nasce com a Vontade no lugar do Vigor.
 
    O que ela guarda, por ordem de gravidade:
 
@@ -66,7 +66,7 @@ titulo('As seis contas do manual');
       /* A Carne Teimosa e a Fonte Funda entram na conta, e têm de entrar
          aqui também: a fórmula do manual mais o que a vantagem acrescenta.
          Somar `dons` à espera nao é fazer a conta bater à força — é dizer
-         onde é que os dez pontos podem entrar, que é num sítio só. */
+         onde é que os dez pontos podem entrar, que é num lugar só. */
       verificar(`PV = nível×2 + VIG×5 + dom (nv ${nivel}, seed ${a.seed})`,
         // +80 no Lendário desde a calibragem de 14/09/2026
         f.pvMax === nivel * 2 + f.VIG * 5 + f.dons.pvMais + (f.raridade === 'Lendário' ? 80 : 0),
@@ -106,10 +106,10 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
      mudar porque o avatar cresceu. Foi este o defeito que as magias e as
      vantagens já tiveram no motor antigo.
 
-     Os DADOS mudam, e só em três sítios: nos níveis 20, 40 e 60, que é a
+     Os DADOS mudam, e só em três lugares: nos níveis 20, 40 e 60, que é a
      regra do manual (p. 302). Esta verificação dizia que os dados eram
      imutáveis, e passou a falhar em 40 avatares no dia em que a regra
-     entrou — que é exactamente o que ela devia fazer.
+     entrou — que é exatamente o que ela devia fazer.
 
      Continua a ser apertada: os dados não só mudam nos três degraus como
      NÃO mudam em mais lado nenhum, e nunca descem. */
@@ -177,7 +177,7 @@ titulo('O mesmo DNA dá sempre a mesma ficha');
       F.fuFicha(semCert).subidas === 0);
   }
 
-  /* Um tecto que se atinge: as três subidas do nível num
+  /* Um teto que se atinge: as três subidas do nível num
      arranjo extremo. As que não couberem perdem-se, e a ficha diz quantas
      couberam — senão um jogador com tudo em d12 não percebia porque é que
      o nível 60 não lhe deu nada. */
@@ -369,7 +369,7 @@ titulo('O mapa gene → atributo');
 /* ═══ 8 · A RARIDADE SAI DO NÍVEL ════════════════════════════════
    Não estava coberta de ponta a ponta: a auditoria passava a raridade
    à mão para o fuAfinidades e nunca conferia que um slot de nível 11
-   se torna Raro de facto. */
+   se torna Raro de fato. */
 titulo('A raridade');
 {
   const degraus = [[1,'Comum'],[5,'Comum'],[10,'Comum'],[11,'Raro'],[26,'Raro'],

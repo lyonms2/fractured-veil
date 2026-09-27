@@ -7,13 +7,13 @@
 // com as regras de combate — é gestão de slots, e continua igual seja
 // qual for o motor por baixo.
 //
-// A escolha vive em gs.equipa e vai no save normal do jogo.
+// A escolha vive em gs.equipe e vai no save normal do jogo.
 // ═══════════════════════════════════════════════════════════════════
 
 const COMBATE_EQUIPA_MAX = 3;
 
 // Um avatar à venda está congelado e pode mudar de dono a qualquer
-// momento; morto ou por chocar não luta. Nenhum desses entra na equipa.
+// momento; morto ou por chocar não luta. Nenhum desses entra na equipe.
 function _elegivelParaEquipa(s) {
   return !!(s && s.hatched && !s.dead && !s.pendingEgg && !s.listed);
 }
@@ -21,14 +21,14 @@ function _elegivelParaEquipa(s) {
 // Índices escolhidos, já saneados.
 //
 // Três estados diferentes, e a diferença importa:
-//   · gs.equipa não é array  → o jogador nunca escolheu. Preenche com os
-//     primeiros disponíveis, para a equipa não nascer vazia.
-//   · gs.equipa é [] vazio   → esvaziou de propósito. Fica vazio. Sem
-//     isto, tirar o último da equipa parecia não fazer nada, porque o
+//   · gs.equipe não é array  → o jogador nunca escolheu. Preenche com os
+//     primeiros disponíveis, para a equipe não nascer vazia.
+//   · gs.equipe é [] vazio   → esvaziou de propósito. Fica vazio. Sem
+//     isto, tirar o último da equipe parecia não fazer nada, porque o
 //     preenchimento automático repunha-o no mesmo instante.
-//   · gs.equipa tem entradas mas nenhuma sobrevive (morreram, foram
+//   · gs.equipe tem entradas mas nenhuma sobrevive (morreram, foram
 //     queimados, foram à venda) → repõe, senão o jogador ficava com uma
-//     equipa vazia sem ter feito nada.
+//     equipe vazia sem ter feito nada.
 function equipaIdx() {
   if (typeof avatarSlots === 'undefined') return [];
   const escolheu = (typeof gs !== 'undefined' && Array.isArray(gs.equipa));
@@ -103,10 +103,10 @@ function porPrimeiroNaEquipa(i) {
   return true;
 }
 
-// Em que posição está — 1, 2 ou 3. Zero se não estiver na equipa.
+// Em que posição está — 1, 2 ou 3. Zero se não estiver na equipe.
 function posicaoNaEquipa(i) { return equipaIdx().indexOf(i) + 1; }
 
-// Os avatares da equipa, na ordem em que o jogador os escolheu.
+// Os avatares da equipe, na ordem em que o jogador os escolheu.
 function equipaDoJogador() {
   if (typeof avatarSlots === 'undefined') return [];
   return equipaIdx().map(i => avatarSlots[i]);

@@ -563,7 +563,7 @@
 
 /* ── OS ITENS EQUIPADOS ORBITAM A CRIATURA ──
    Eram uma coluna de orbes presa à direita (right:-14px), a pulsar no
-   sítio. Liam-se como um canto da interface e não como coisas do bicho.
+   lugar. Liam-se como um canto da interface e não como coisas do bicho.
    Agora dão a volta a ele, devagar.
 
    São dois elementos por item de propósito: o <span> roda em volta e o
@@ -894,7 +894,7 @@
    que se quer ver quando se abre uma genealogia de propósito.
 
    Três estados por lugar, e a diferença entre eles é a razão de a
-   árvore existir: PRESENTE está na colónia e desenha-se; HISTÓRIA só
+   árvore existir: PRESENTE está na colônia e desenha-se; HISTÓRIA só
    deixou o nome na certidão e vem em silhueta; VAZIO nunca houve.
    ══════════════════════════════════════════════════════════════════ */
 #linhagemModal .modal-scroll-body {
@@ -935,7 +935,7 @@
 .lin-cartao.pequeno { width:4.25rem; }
 .lin-cartao.grande  { width:6.5rem; padding:0.5rem 0.3125rem 0.5625rem; }
 
-/* Quem está na colónia tem moldura de ouro: é a diferença que a árvore
+/* Quem está na colônia tem moldura de ouro: é a diferença que a árvore
    existe para mostrar. */
 .lin-cartao.presente { border-color:rgba(201,168,76,.3); background:rgba(201,168,76,.05); }
 /* Um cartão que abre tem de parecer que abre. Só os presentes abrem —
@@ -949,7 +949,7 @@
   outline:none;
 }
 .lin-cartao.historia { opacity:.55; }
-/* Saiu da colónia mas deixou retrato: desenha-se, mais apagado e sem a
+/* Saiu da colônia mas deixou retrato: desenha-se, mais apagado e sem a
    moldura de ouro — a moldura é o que diz "este ainda é seu". */
 .lin-cartao.saiu { opacity:.72; border-color:rgba(255,255,255,.12); }
 /* E o morto continua no slot, portanto tem moldura. O que ele não pode

@@ -17,7 +17,7 @@
 // lutar?" tem a mesma resposta em qualquer motor.
 //
 // Renomeá-los obrigava a mexer em dois arquivos que não têm nada a ver
-// com esta mudança, e a mexer neles para dizer exactamente o mesmo.
+// com esta mudança, e a mexer neles para dizer exatamente o mesmo.
 // ═══════════════════════════════════════════════════════════════════
 
 // ── O QUE A BATALHA CUSTA ──
@@ -69,10 +69,10 @@ const PVE_PREMIO = {
 // Neste motor não há pontos. Os quatro dados saem do arranjo que o DNA
 // escolhe e não se compram; o que cresce com o nível são a vida, a
 // magia, a precisão e — pela raridade, que sai do nível — o dano extra
-// e as afinidades. O nível É a medida, e usá-lo directamente é exacto
+// e as afinidades. O nível É a medida, e usá-lo directamente é exato
 // em vez de aproximado.
 //
-// O total da equipa divide-se por três, com o resto a cair no primeiro:
+// O total da equipe divide-se por três, com o resto a cair no primeiro:
 // três inimigos de nível 12 contra três de 12 é um par justo, e é o que
 // se vê.
 // ═══════════════════════════════════════════════════════════════════
@@ -96,7 +96,7 @@ function pveNivelInimigo(nivelEquipe) {
 
 function _pveGerarInimigo(nivelTotal) {
   /* Baralhados e consumidos sem repetição: dois nomes iguais na mesma
-     equipa davam linhas absurdas no registo. Os sufixos saem da tradução
+     equipe davam linhas absurdas no registo. Os sufixos saem da tradução
      (FRAT_SUFIXOS, js/fratura.js) e o slot guarda a CHAVE — é por ela
      que a tela da Fratura sabe o que dizer sobre cada um. */
   const sufs = ((typeof FRAT_SUFIXOS !== 'undefined')
@@ -145,7 +145,7 @@ function _pveGerarInimigo(nivelTotal) {
 //
 // O avatar activo tem-na nas variáveis vivas (vitals); os outros
 // têm-na no seu slot. É a mesma energia — só muda onde está escrita — e
-// por isso passa tudo por estas duas funções, para não haver dois sítios
+// por isso passa tudo por estas duas funções, para não haver dois lugares
 // a discordar sobre quanto um avatar aguenta.
 // ═══════════════════════════════════════════════════════════════════
 function _pveEnergiaDe(idx) {
@@ -235,8 +235,8 @@ function _pveDoencasDe(idx) {
 
 /* ═══ PORQUE É QUE ESTE AVATAR NÃO PODE LUTAR ═══
 
-   Uma função só, e é ela que manda. O motivo é pedido em quatro sítios —
-   o cartão do modo na página da batalha, os cartões da equipa, o aviso
+   Uma função só, e é ela que manda. O motivo é pedido em quatro lugares —
+   o cartão do modo na página da batalha, os cartões da equipe, o aviso
    por baixo deles, e a porta do próprio combate — e quatro cópias da
    mesma regra divergem sempre: basta uma ficar para trás e o jogador vê
    um botão aceso que não faz nada, ou um bloqueio sem razão.
@@ -306,7 +306,7 @@ function abrirCombatePvE() {
      nada e nenhuma pista.
 
      Isto é a última palavra e não a primeira: a página da batalha já
-     apaga o cartão e os cartões da equipa já marcam quem está de fora.
+     apaga o cartão e os cartões da equipe já marcam quem está de fora.
      Mas quem manda é esta linha, porque é aqui que a batalha começa. */
   const impedidos = _pveImpedidos();
   if (impedidos.length) {
@@ -348,7 +348,7 @@ function abrirCombatePvE() {
 function _pveComecar(equipa, inimigo, semente) {
   /* Os meus levam um id estável, porque a arena identifica cada lutador
      por ele e o slot não tem nenhum. `eu0..eu2` casa com a ordem da
-     equipa, que é a mesma que o equipaIdx() devolve — e é por essa
+     equipe, que é a mesma que o equipaIdx() devolve — e é por essa
      ordem que as contas se fecham no fim. */
   /* E o LAÇO de cada um com os outros dois (js/lacos.js), já com os ids
      da batalha: é o que o Lutar pelo Laço soma à precisão. */
@@ -370,7 +370,7 @@ function _pveComecar(equipa, inimigo, semente) {
 
    Fechava a batalha a meio sem cobrar nada: nem a energia, nem a fratura
    de quem tinha caído, nem prémio nenhum. Ao lado dele estava o
-   DESISTIR, que cobra 4 de energia para fazer exactamente a mesma coisa
+   DESISTIR, que cobra 4 de energia para fazer exatamente a mesma coisa
    — portanto quem desse pelo ✕ nunca mais carregava no outro, e a
    batalha perdida passava a custar zero.
 
@@ -402,7 +402,7 @@ function fecharCombatePvE() {
 
   /* ── A COLÓNIA TEM DE SABER O QUE ACONTECEU ──
 
-     Isto fechava o modal e mais nada, e o jogador caía numa colónia
+     Isto fechava o modal e mais nada, e o jogador caía numa colônia
      desactualizada: os três tinham gasto 10 de energia cada, ganho XP,
      subido de nível e talvez apanhado uma fratura — e os cartões
      continuavam a mostrar as barras de antes da batalha.
@@ -431,7 +431,7 @@ function _pveFecharContas(e) {
   const idx = (typeof equipaIdx === 'function') ? equipaIdx() : [];
 
   // ── A energia dos três ──
-  // Por avatar, e não pela equipa: o Fôlego de Combate é de quem o traz
+  // Por avatar, e não pela equipe: o Fôlego de Combate é de quem o traz
   // vestido, e o getItemEffect() só sabe ler o inventário de quem está
   // em campo. Nunca menos de 1: uma batalha de graça seria energia
   // infinita.

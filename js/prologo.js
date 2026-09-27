@@ -108,7 +108,7 @@ function abrirPrologo(releitura) {
 // ocupa 253px de 490 disponíveis.
 //
 // A aceleração mudou-se do fundo da tela para o botão. Antes um clique
-// em qualquer sítio saltava a escrita, e clicar no fundo para nada é
+// em qualquer lugar saltava a escrita, e clicar no fundo para nada é
 // fácil demais — saltava-se o texto de abertura sem querer. Agora é um
 // controle só, com dois estados: enquanto escreve, completa; quando
 // termina, avança.
@@ -201,7 +201,7 @@ function prologoEstenderMao() {
   if (modal) modal.classList.add('prologo-saindo');
 
   // Não se espera por ela: são ~10s de cerimónia, e o prólogo tem de
-  // sair de cena nos primeiros 1,3s. Ela termina sozinha na colónia.
+  // sair de cena nos primeiros 1,3s. Ela termina sozinha na colônia.
   if (typeof invocarOsTres === 'function') invocarOsTres();
 
   setTimeout(() => { if (modal) modal.classList.add('prologo-saindo-fundo'); }, 750);
@@ -234,8 +234,8 @@ function fecharPrologo() {
 // ═══════════════════════════════════════════════════════════════════
 /* ── ESTÁ PARA VIR? ──
 
-   Quem pergunta é a tela: com um slot vazio ela abre a colónia, e num
-   jogador NOVO a colónia está vazia — portanto o que aparecia logo a
+   Quem pergunta é a tela: com um slot vazio ela abre a colônia, e num
+   jogador NOVO a colônia está vazia — portanto o que aparecia logo a
    seguir ao login era "Nenhuma criatura por aqui", meio segundo antes
    de o prólogo subir por cima. A primeira coisa que o jogo mostrava era
    uma casa vazia com um recado a mandar ao mercado.

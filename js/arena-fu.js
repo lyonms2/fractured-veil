@@ -16,7 +16,7 @@
 // classes .cb-* descrevem um palco e não um motor: céu, fenda,
 // monólitos, postos, orbes, barras, lance. Nada disso muda com as
 // regras, e duplicá-lo era garantir que os dois palcos divergiam à
-// primeira correcção.
+// primeira correção.
 //
 // ── O QUE ESTE ARQUIVO NÃO FAZ ──
 //
@@ -389,7 +389,7 @@ function _afShell() {
    diagonal que recua é literalmente quem está atrás de quem.
 
    O desenho deixa de ilustrar a regra e passa a mostrá-la. Quem se
-   reordena vê-se mudar de sítio, e quem olha para o campo sabe em quem
+   reordena vê-se mudar de lugar, e quem olha para o campo sabe em quem
    vai cair o próximo golpe de alvo único. */
 const AF_POSTOS = [
   { x: 36, y: 84, z: 1.00 },
@@ -457,11 +457,11 @@ function _afLutador(c) {
      agarrados: os seis estados levavam `veneno`, que o CSS pinta de
      VERDE; e o Despertar — que é um dado a SUBIR — levava `buff`, que o
      CSS pinta de VERMELHO. Um "Atordoado" verde ao lado de um "PER+"
-     vermelho diz ao jogador exactamente o contrário do que aconteceu.
+     vermelho diz ao jogador exatamente o contrário do que aconteceu.
 
      Ficam duas, e dizem o que são: `mal` para o que o prejudica, `bem`
      para o que o ajuda. A crise leva a sua, porque não é nem uma coisa
-     nem outra — é o sítio onde ele está. */
+     nem outra — é o lugar onde ele está. */
   /* As marcas vêm do mesmo resumo que a ficha desenha (fuResumoAgora, em
      js/ficha-fu-ui.js): um rótulo curto no céu e a frase inteira no
      `title`. Só os itens que passam têm marca — as vantagens e a costura
@@ -554,14 +554,14 @@ function _afAssentar() {
        dentro, portanto `m.f + y*m.d` deixa de ser o fundo da tinta — é
        outro ponto qualquer.
 
-       Medido: o meu caído ficava com o fundo exactamente na linha do
+       Medido: o meu caído ficava com o fundo exatamente na linha do
        chão, e o do inimigo 156px mais abaixo, com 92px do corpo
        escondidos por baixo do painel dos cartões. Os dois lados têm
        ângulos simétricos (−58° e +58°) e a diferença vinha daqui.
 
        Tira-se a classe para medir e volta a pôr-se. O que a conta corrige
        é o viewBox do desenho, que não muda por ele estar deitado — e a
-       correcção passa a ser a mesma quer ele caia agora quer a tela se
+       correção passa a ser a mesma quer ele caia agora quer a tela se
        refaça com ele já no chão. */
     const caido = posto.classList.contains('caido');
     const transicao = corpo.style.transition;
@@ -598,7 +598,7 @@ function _afAssentar() {
          o meio da caixa — no ar, acima da cabeça dele.
 
          Agora ela é a tinta, mais uma folga pequena, com os pés no mesmo
-         sítio: um jovem ganha efeitos do tamanho dele, um ancião alado os
+         lugar: um jovem ganha efeitos do tamanho dele, um ancião alado os
          seus, e quem vai para trás (menor) ou para a frente leva a caixa
          junto — o campo refaz-se a cada troca e isto mede de novo. */
       const efe = posto.querySelector('.cb-efeitos');
@@ -627,7 +627,7 @@ function _afAssentar() {
 
    Primeiro-Último-Inverter-Soltar: mediu-se onde estavam (a fotografia),
    deixou-se o navegador pô-los onde vão ficar, e agora empurram-se de
-   volta ao sítio antigo com a transição desligada — para, no instante
+   volta ao lugar antigo com a transição desligada — para, no instante
    seguinte, se soltar o empurrão e eles viajarem sozinhos.
 
    O TAMANHO viaja com a posição. Os postos de trás são menores (o
@@ -688,7 +688,7 @@ function _afTombar(antes) {
 /* ══ OS OLHOS DE QUEM CAIU ══
 
    Dois traços cruzados por cima de cada olho. Não se desenham no
-   js/data.js — o gerador do avatar serve a colónia, o mercado, a
+   js/data.js — o gerador do avatar serve a colônia, o mercado, a
    linhagem e a árvore, e nenhum desses tem o conceito de "caído"; um
    olho cruzado escondido em todos eles seria marcação a viajar por seis
    telas à espera de uma classe que só existe aqui.
@@ -902,7 +902,7 @@ let _afChave = null;
    É disto que vivem as duas animações desta tela, e por uma razão que
    não é óbvia: o campo refaz-se por innerHTML sempre que a ESTRUTURA
    muda — quem está vivo, em que posto — e uma troca de postos e uma
-   morte são exactamente isso. Os elementos são outros, novos, já na
+   morte são exatamente isso. Os elementos são outros, novos, já na
    posição final e já com a classe `caido`.
 
    Um elemento novo não tem de onde transitar. Era por isso que a queda
@@ -1258,8 +1258,8 @@ function _afEscolherQuem(id) {
 //
 // Fica ao lado do avatar que está a decidir, não numa barra em baixo.
 // O _afMenuMover lê a posição do posto em vez de a escrever à mão: o
-// posto muda de sítio com a largura do ecrã, e um menu com coordenadas
-// próprias discordaria dele ao primeiro telemóvel.
+// posto muda de lugar com a largura do ecrã, e um menu com coordenadas
+// próprias discordaria dele ao primeiro celular.
 // ═══════════════════════════════════════════════════════════════════
 function _afMenuMover() {
   const menu = document.getElementById('cbMenu');
@@ -1292,7 +1292,7 @@ function _afMenuMover() {
      1082×749, quando o painel já só tinha 528×124) e não se recalculou:
      sem animação a correr, o valor assente estava errado.
 
-     Aqui não há percentagem nenhuma. Mede-se o palco, mede-se o painel, e
+     Aqui não há porcentagem nenhuma. Mede-se o palco, mede-se o painel, e
      escreve-se a conta em píxeis — que não depende de quando o navegador
      decidiu resolvê-la. */
   if (acabou) {
@@ -1300,7 +1300,7 @@ function _afMenuMover() {
        css/combate-arena.css escreve `left:50% !important`, e um
        !important de folha de estilo ganha a um estilo em linha que o não
        seja. Foi assim que a segunda tentativa deixou o painel em 496/368
-       — exactamente os 50%, sem o recuo de meia caixa.
+       — exatamente os 50%, sem o recuo de meia caixa.
 
        O CSS não se corrige porque ainda é o da arena ANTIGA, que depende
        daquele !important para vencer as coordenadas que o
@@ -1329,8 +1329,8 @@ function _afMenuMover() {
 
      Não é sempre o posto de quem está a jogar, e não é medido: é dito.
 
-       posto 0 (frente)   do seu, para fora        ← o sítio de sempre
-       posto 1 (meio)     do posto 0, para fora    ← o MESMO sítio
+       posto 0 (frente)   do seu, para fora        ← o lugar de sempre
+       posto 1 (meio)     do posto 0, para fora    ← o MESMO lugar
        posto 2 (fundo)    do seu, para DENTRO      ← por cima do do meio
 
      ── PORQUE É QUE DEIXOU DE SER MEDIDO ──
@@ -1338,12 +1338,12 @@ function _afMenuMover() {
      Havia aqui uma heurística: abria-se para fora, media-se, e se não
      coubesse virava-se para dentro e media-se outra vez, ficando o lado
      que menos transbordasse. Funcionava — mas a coluna aparecia num de
-     dois sítios conforme a largura da janela, o número de orbes daquele
+     dois lugares conforme a largura da janela, o número de orbes daquele
      avatar e o comprimento dos nomes das magias dele.
 
      Um menu que muda de lado sozinho obriga a PROCURÁ-LO a cada turno.
-     E os três avatares são três sítios diferentes num palco onde só há
-     dois cantos livres: o do meio não precisa de sítio próprio, porque
+     E os três avatares são três lugares diferentes num palco onde só há
+     dois cantos livres: o do meio não precisa de lugar próprio, porque
      nunca está aberto ao mesmo tempo que o da frente.
 
      O do fundo é o único que tem de ir para dentro: está a 10% da
@@ -1375,7 +1375,7 @@ function _afMenuMover() {
 
      Meia largura de corpo é o que é preciso, e essa largura muda: o
      `--escala` do css/combate-arena.css encolhe os postos de trás, e
-     encolhe-os de forma diferente no telemóvel e no computador. Por isso
+     encolhe-os de forma diferente no celular e no computador. Por isso
      mede-se em vez de se escrever um número — um número certo hoje seria
      o número errado à primeira mudança de escala.
 
@@ -1409,7 +1409,7 @@ function _afMenuMover() {
      Mede-se e empurra-se para baixo o que for preciso. Medir em vez de
      escrever um limite à mão porque o número de orbes muda com o passo
      (escolher alvo mostra outros tantos) e a altura de cada um muda com
-     a escala do `rem`, que é diferente no telemóvel e no PC.
+     a escala do `rem`, que é diferente no celular e no PC.
 
      Corre a cada desenho, portanto corrige-se sozinho se a primeira
      medida apanhar a animação a meio. */
@@ -1417,16 +1417,16 @@ function _afMenuMover() {
 
      Primeiro encolher, depois empurrar, e nesta ordem: empurrar um menu
      que não cabe só troca o lado por onde ele transborda. No primeiro
-     ensaio, com sete orbes, a correcção tirou-o de cima da borda de cima
+     ensaio, com sete orbes, a correção tirou-o de cima da borda de cima
      e pô-lo em cima dos cartões de baixo.
 
      ── E MEDE-SE COM A ANIMAÇÃO DESLIGADA ──
 
      O menu tem uma transição de 0,22s no `transform`. Medi-lo enquanto
      ela corre dá onde ele ESTAVA e não onde vai ficar — a segunda
-     medição do ensaio deu 27px acima do palco e a correcção acreditou
+     medição do ensaio deu 27px acima do palco e a correção acreditou
      nela. Desligar a transição durante a conta é a única forma de medir
-     um sítio onde ele já está.
+     um lugar onde ele já está.
 
      Não se vê: liga-se outra vez antes de o navegador pintar. */
   const rodape = palco.querySelector('.cb-rodape');
@@ -1440,7 +1440,7 @@ function _afMenuMover() {
   if (menu.getBoundingClientRect().height > (tecto - deOnde) - 16)
     menu.classList.add('apertado');
 
-  /* O tecto não é o palco: é o fundo da faixa de topo, onde estão a
+  /* O teto não é o palco: é o fundo da faixa de topo, onde estão a
      rodada e o botão de desistir. Era o palco, e o primeiro orbe
      escrevia por cima de "Rodada 1 · Sua vez" — 104×19px sobrepostos,
      a ler-se "RODAD⊙VEZ". */
@@ -1489,7 +1489,7 @@ function _afMenuMover() {
 
 /* Os selos. Os mesmos do js/combate-pve.js — desenhos, não emoji, porque
    um emoji é a fonte do sistema a decidir o estilo do jogo. O `mover` é
-   novo: duas setas a trocar de lugar, que é exactamente o que a acção
+   novo: duas setas a trocar de lugar, que é exatamente o que a ação
    faz. */
 const AF_SELOS = {
   comum: '<path d="M6.5 4.2C9 8 10.2 12 10 19.4"/>'
@@ -1679,7 +1679,7 @@ function _afAcoes() {
 // ESCOLHER
 //
 // A regra que decide se há passo de alvo é uma só, e é a da formação:
-// uma acção de ALVO ÚNICO contra o inimigo não tem nada a perguntar,
+// uma ação de ALVO ÚNICO contra o inimigo não tem nada a perguntar,
 // porque o da frente cobre e o motor manda-a lá de qualquer forma.
 // Perguntar "em quem?" para depois ignorar a resposta seria mentir ao
 // jogador.
@@ -1708,7 +1708,7 @@ function _afEscolher(lugar) {
   if (!_afPodeAgir(eu)) return;
 
   /* Um lugar que o feitio dele não tem devolve nulo. O menu nunca o
-     oferece, mas a guarda fica: quem chama isto de outro sítio um dia
+     oferece, mas a guarda fica: quem chama isto de outro lugar um dia
      não tem de saber das regras do feitio. */
   const magia = fuMagiaDe(eu.ficha, lugar);
   if (!magia) return;
@@ -1854,8 +1854,8 @@ function _afAgir(acao) {
   const eventos = fuAgir(_afE, Object.assign({ quem: eu.id }, acao,
     _afLaco === eu.id ? { laco: true } : {}));
 
-  /* Uma acção que o motor recusou não gasta nada e não fecha o menu: o
-     jogador continua exactamente onde estava, a escolher outra coisa.
+  /* Uma ação que o motor recusou não gasta nada e não fecha o menu: o
+     jogador continua exatamente onde estava, a escolher outra coisa.
      Sem isto, uma recusa parecia um clique que não funcionou. */
   if (!eventos.length) { _afPasso = null; _afDesenhar(); return; }
 
@@ -2384,7 +2384,7 @@ function _afGesto(el, classe, dura) {
 }
 
 /* Onde os efeitos se penduram. O posto é um PONTO — `width:0;height:0` —
-   e um efeito posicionado em percentagem dentro de zero fica todo no
+   e um efeito posicionado em porcentagem dentro de zero fica todo no
    mesmo pixel. A caixa dos efeitos tem o tamanho do corpo e não leva as
    animações dele. */
 function _afCaixa(el) {
@@ -2412,7 +2412,7 @@ function _afNumero(el, n, critico, tipo) {
 }
 
 // O PM sai igual ao dano, mas em azul e do outro lado — se saísse do
-// mesmo sítio, o custo da magia e o golpe recebido escreviam-se um por
+// mesmo lugar, o custo da magia e o golpe recebido escreviam-se um por
 // cima do outro no mesmo turno.
 // `ganho` para o PM que volta (a guarda); sem ele, é o que se gasta.
 function _afNumeroPM(el, n, ganho) {
@@ -2480,7 +2480,7 @@ function _afImpacto(el, tipo, forca) {
 
    O posto é um ponto, e esse ponto são os pés — é de lá que a poeira já
    nascia, e é por isso que ela sempre acertou. A onda passa a pendurar-se
-   no mesmo sítio, e o comentário do CSS ("no chão e não no ar") deixa de
+   no mesmo lugar, e o comentário do CSS ("no chão e não no ar") deixa de
    ser uma promessa por cumprir. */
 function _afOnda(el) {
   if (!el) return;
@@ -3128,11 +3128,11 @@ function _afIaNivel() {
    guarda" outra vez. Apanhado no banco de ensaio: cinco seguidas, uma
    por segundo, sem fim.
 
-   Duas lições, e a segunda é a que importa. A primeira é que uma acção
+   Duas lições, e a segunda é a que importa. A primeira é que uma ação
    que não gasta o turno não pode fechar um ciclo que espera que ele se
    gaste. A segunda é que a arena NÃO PODE inventar eventos: ela desenha
    o que o motor devolveu, e se o motor não devolveu nada, o que há a
-   fazer é pedir-lhe uma acção de verdade — guardar é uma, e nunca é
+   fazer é pedir-lhe uma ação de verdade — guardar é uma, e nunca é
    recusada. */
 function _afJogarPor(quem, acao) {
   const tentar = (a) => fuAgir(_afE, Object.assign({ quem: quem.id }, a));
@@ -3263,7 +3263,7 @@ function _afRolarDados(linha) {
 
    Cada dado passa a ter a sua caixa, e a do maior acende: a linha diz,
    sem uma palavra, qual dos dois vai doer. Quando são iguais acendem as
-   duas — e duas caixas acesas com seis ou mais é exactamente a condição
+   duas — e duas caixas acesas com seis ou mais é exatamente a condição
    de crítico do manual, que a linha já anunciava ao lado.
 
    Os atributos vêm com eles: `DES 4 · VIG 7` diz QUE dados se rolaram, e
@@ -3407,7 +3407,7 @@ function _afLanceDe(ev, seguido) {
     }
     p.push(_afDadosHTML(ev));
     if (ev.laco) p.push('<b class="laco">💞 ' + t('af.lance.laco', { nome: nome(ev.laco.com), n: ev.laco.bonus }) + '</b>');
-    /* O reencontro: o bónus que ele tem contra ESTE inimigo por já ter
+    /* O reencontro: o bônus que ele tem contra ESTE inimigo por já ter
        lutado ao lado dele (js/lacos.js, etapa 2). Coração partido e não
        coração inteiro — o outro ícone é do Lutar pelo Laço, que é com um
        aliado, e as duas coisas podem aparecer na mesma linha. */
@@ -3558,13 +3558,13 @@ function _afAbrirHistorico() {
 // ═══════════════════════════════════════════════════════════════════
 // A FICHA
 // ═══════════════════════════════════════════════════════════════════
-/* A ficha é a MESMA que a colónia mostra — js/ficha-fu-ui.js. Havia aqui
+/* A ficha é a MESMA que a colônia mostra — js/ficha-fu-ui.js. Havia aqui
    uma segunda versão, escrita à mão, e as duas liam a mesma ficha para
    mostrar coisas ligeiramente diferentes: esta não dizia o feitio nem o
    arranjo, aquela não dizia os dados de agora. Duas telas do mesmo
    assunto acabam a mostrar dois avatares.
 
-   O que este sítio acrescenta é o LUTADOR: aqui há batalha a correr, e
+   O que este lugar acrescenta é o LUTADOR: aqui há batalha a correr, e
    os dados encolhidos pelos estados aparecem ao lado dos de nascença.
 
    ── E O NOME SAIU DAQUI ──

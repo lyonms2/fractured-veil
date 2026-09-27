@@ -204,7 +204,7 @@ function updateResourceUI() {
   // saiu da fila de cima — a colônia mostra os avatares todos — e o
   // lugar dele é agora o ⚔. Portanto o número muda de pergunta: deixa
   // de ser "quantos bichos tenho" e passa a ser "quantos estão na
-  // equipa", que é o que decide se dá para lutar.
+  // equipe", que é o que decide se dá para lutar.
   const resAv = document.getElementById('resEquipa');
   if(resAv) {
     const naEquipa = (typeof equipaIdx === 'function') ? equipaIdx().length : 0;
@@ -322,7 +322,7 @@ function _duracaoDaAnim(w) {
    A boca tem TRÊS pixels de altura em bebê. É a razão de os gestos se
    pensarem em unidades do viewBox e não em pixels: uma rotação é um
    ângulo e já sai proporcional sozinha, e a boca calcula a abertura como
-   fração da altura do viewBox. Assim o gesto ocupa a mesma percentagem
+   fração da altura do viewBox. Assim o gesto ocupa a mesma porcentagem
    do bicho em todas as fases — que é o que faz um bebê parecer um bebê
    e não um adulto encolhido.
 
@@ -423,7 +423,7 @@ const _AV_ACAO_GESTOS = {
 };
 
 /* Qual gesto acompanha qual classe. Fica aqui e não espalhado pelos
-   sítios que chamam o playAnim: uma ação nova ganha o gesto pondo uma
+   lugares que chamam o playAnim: uma ação nova ganha o gesto pondo uma
    linha nesta tabela. As que não estão (poop, layegg, sad, dead) não
    têm gesto de propósito. */
 const _GESTO_POR_ANIM = {
@@ -582,7 +582,7 @@ async function tryAutoReconnect() { /* desativado */ }
    O NÚMERO É O `totalSecs`, e é o certo por uma razão que não é
    preferência: é o mesmo relógio que decide a FASE do avatar
    Era o mesmo relógio que decidia a FASE, e por isso este número e o
-   que o bicho é por dentro saíam do mesmo sítio. A fase passou a sair
+   que o bicho é por dentro saíam do mesmo lugar. A fase passou a sair
    dos pontos (faseDePontos, em js/state.js) e o tempo deixou de a
    travar — mas continua a ser esta a medida da vida dele, e a única
    que conta o tempo em que ele esteve mesmo a viver.
@@ -738,7 +738,7 @@ function updatePhaseLabel() {
 // ═══════════════════════════════════════════
 /* AS DOENÇAS, À VISTA.
 
-   Isto era chamado de um sítio só que interessasse: o gameTick — e
+   Isto era chamado de um lugar só que interessasse: o gameTick — e
    DEPOIS do `tickCount % 60`, portanto uma vez por minuto. Trocar de
    avatar não o chamava, e o `tickCount` nunca reinicia: entrava-se
    num avatar doente e as etiquetas eram as do avatar ANTERIOR até
@@ -851,7 +851,7 @@ function rebuildScreensParaSlot() {
 
        Sem ela, um slot vazio não tem nada para mostrar e não tem
        decisão nenhuma para oferecer. O que ele tem é uma saída, e a
-       saída é a casa: a colónia, com os outros lá, e o mercado a um
+       saída é a casa: a colônia, com os outros lá, e o mercado a um
        toque. Deixar o jogador numa tela vazia com um slot vazio era o
        beco sem saída que a tela de invocar existia para evitar.
 
@@ -867,16 +867,16 @@ function rebuildScreensParaSlot() {
        história é a primeira coisa que o jogador vê. Ver prologoPendente,
        em js/prologo.js. */
     if(typeof prologoPendente === 'function' && prologoPendente()) return;
-    /* Fora isso abre-se SEMPRE, mesmo com a colónia inteiramente vazia.
+    /* Fora isso abre-se SEMPRE, mesmo com a colônia inteiramente vazia.
 
        A primeira versão disto só a abria se houvesse alguém vivo, e o
        outro caso ficava com todas as telas escondidas — uma tela em
        branco, que é pior do que qualquer coisa que lá estivesse. A
-       colónia sabe dizer que está vazia, e o recado dela manda ao
+       colônia sabe dizer que está vazia, e o recado dela manda ao
        mercado, que é para onde há mesmo que ir.
 
        Durante o prólogo isto não chega a ver-se: o invocarOsTres entrega
-       os três e abre a colónia no fim. */
+       os três e abre a colônia no fim. */
     if(typeof abrirFazenda === 'function') abrirFazenda();
     return;
   }

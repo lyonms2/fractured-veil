@@ -83,8 +83,8 @@ async function _calcularCobertura(db, poolRef, poolData) {
   // Cristais em maos de jogadores + os que a pool guarda
   let emJogadores = 0;
   // Só o balde COM lastro. O gs.cristaisBonus fica de fora de
-  // propósito: bónus não se resgata, portanto não é dívida em MATIC, e
-  // somá-lo aqui derrubava a percentagem por uma obrigação inventada.
+  // propósito: bônus não se resgata, portanto não é dívida em MATIC, e
+  // somá-lo aqui derrubava a porcentagem por uma obrigação inventada.
   const snap = await db.collection('players').select('gs', 'cristais').get();
   snap.forEach(doc => {
     const d = doc.data() || {};
@@ -272,7 +272,7 @@ module.exports = async function handler(req, res) {
    baixo, e o mercado é por onde entra dinheiro aqui.
 
    30 é a escala nova dos cristais (23/09/2026): com 1 ð a valer um
-   cêntimo, os preços antigos eram trocos que não pagavam a transação
+   centavo, os preços antigos eram trocos que não pagavam a transação
    que os movia. Ver a nota da escala no js/cristais.js. */
 const HATCH_FEE = 30;
 
@@ -326,12 +326,12 @@ const HATCH_FEE = 30;
    camposDoServidor() já faz com o ovosEmitidos e o avataresEmitidos.
 
    O cliente lê o mapa e reata cada certidão ao seu slot em memória (ver
-   applyGameState, em js/firebase.js), portanto os quarenta sítios que
+   applyGameState, em js/firebase.js), portanto os quarenta lugares que
    leem slot.nascimento continuam a ler o mesmo.
 
    ── O QUE ISTO NÃO FECHA ──
 
-   O custo em moedas. As moedas são creditadas no cliente em doze sítios
+   O custo em moedas. As moedas são creditadas no cliente em doze lugares
    e ficaram deliberadamente forjáveis (ver firestore.rules); policiá-las
    aqui não fecha nada e parava o jogo. O que se fecha é o que vale: os
    genes.
@@ -384,12 +384,12 @@ async function handleInvocar(req, res, db, uid) {
          As três invocações grátis saem Guarda, Lâmina e Sustentação, por
          esta ordem. O feitio decide o que um avatar sabe fazer
          (FU_LUGARES_DO_FEITIO, em js/magias-fu.js), e três sorteados ao
-         acaso podiam dar três Lâminas — uma primeira equipa sem cura nem
+         acaso podiam dar três Lâminas — uma primeira equipe sem cura nem
          defesa, a perder sem que o jogador perceba porquê.
 
          É a ÚNICA vez que o feitio não é sorteado. Do primeiro ovo em
          diante volta a sair do DNA e a herdar-se dos pais, e aí uma
-         equipa desequilibrada passa a ser uma escolha de quem cruzou.
+         equipe desequilibrada passa a ser uma escolha de quem cruzou.
 
          Pelo `usadas` e não por um contador à parte: ele já vive no
          documento que o cliente não escreve, e já é ele que diz quantas
@@ -752,7 +752,7 @@ async function handleCruzar(req, res, db, uid) {
          activo como o cliente conta. É o mesmo número visto de mais
          longe: o cliente pergunta "cabe aqui?", o servidor pergunta
          "quantos é que este jogador já tem?" — e é essa a pergunta que
-         impede alguém de encher a colónia com ovos a saltar de slot. */
+         impede alguém de encher a colônia com ovos a saltar de slot. */
       const r = GEN.ovoDeCruza(a, b, {
         ovosNoInventario: Object.keys(ovos).length, maxOvos: OVOS_MAX,
       });
@@ -933,7 +933,7 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
    O QUE O _validadeDoOvo MEDIA NÃO SE PERDEU. Cuidar bem do bicho e ter
    vínculo alto continuam a valer: passaram para o cruzamento
    (js/reproducao.js), onde decidem quanto tempo o ovo leva a chocar e
-   quanto tempo dura. É o mesmo sinal, noutro sítio.
+   quanto tempo dura. É o mesmo sinal, noutro lugar.
 
    Com isto o servidor deixa de emitir ovos. O ovosEmitidos, que era a
    prova de que um ovo tinha saído daqui, deixa de receber entradas

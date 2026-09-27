@@ -391,7 +391,7 @@
 .avatar-zoom-btn:hover { background:rgba(60,40,120,.7); transform:scale(1.1); }
 /* O segundo botão do canto. Encostado ao primeiro e não por baixo dele:
    são as duas portas para a mesma coisa — olhar o bicho de perto — e
-   separá-los mandava procurar a segunda noutro sítio. */
+   separá-los mandava procurar a segunda noutro lugar. */
 .avatar-arv-btn { right:2.625rem; }
 #btnLayEggCorner { position:absolute; bottom:0.5rem; left:0.5rem; z-index:15; background:rgba(13,11,26,.75); border:1px solid rgba(201,168,76,.4); border-radius:0.625rem; padding:0.5rem 0.75rem; font-size:1.25rem; cursor:pointer; line-height:1; transition:background .15s,transform .15s; -webkit-tap-highlight-color:transparent; animation:egg-ready-pulse 1.4s ease-in-out infinite; }
 #btnLayEggCorner:hover { background:rgba(201,168,76,.15); transform:scale(1.1); }
@@ -407,7 +407,7 @@
 /* O zoom mostra o MESMO bicho que a consola, portanto tem de o mostrar
    no mesmo estado. Tinha aqui uma cópia do tremor antigo, e ficou para
    trás quando a doença foi reescrita — o bicho doente vibrava no zoom e
-   arrastava-se na consola. Uma regra, os dois sítios. */
+   arrastava-se na consola. Uma regra, os dois lugares. */
 #avatarZoomSVG.diseased svg {
   animation: sick-arrepio 7.3s ease-in-out infinite;
   filter: drop-shadow(0 0 0.5rem rgba(122,184,48,.28)) saturate(.42) brightness(.84);
@@ -848,7 +848,7 @@
 .lore-tw-reveal {
   /* O estado final também vive aqui, e não só no keyframe: se a
      animação não correr, o rodapé ficava preso no fotograma inicial —
-     invisível e 4px fora do sítio. Assim ela é só decoração. */
+     invisível e 4px fora do lugar. Assim ela é só decoração. */
   opacity:1; transform:none;
   animation:lore-fade-in .5s ease forwards;
   pointer-events:auto;
@@ -1057,7 +1057,7 @@
 /* ── A FILA DA COLÓNIA DO AMIGO ──
 
    A visita mostrava um avatar só — o que o dono tivesse aberto — e era
-   esse que se ajudava. Mostra a colónia, e quem visita escolhe a quem
+   esse que se ajudava. Mostra a colônia, e quem visita escolhe a quem
    leva. O escolhido acende; os outros ficam à espera.
 
    Só aparece com mais do que um: com um, não há escolha nenhuma para

@@ -261,7 +261,7 @@ function _pvpRenderLobby() {
         <i>${esc(t('pvp.lobby.amigos_nota'))}</i></div>
       <div id="pvpAmigosLista" class="pvp-amigos-lista">${_pvpAmigosHTML()}</div>
     </section>`;
-  /* A ORDEM DESTA PÁGINA é a ordem do que se faz nela: a equipa que vai
+  /* A ORDEM DESTA PÁGINA é a ordem do que se faz nela: a equipe que vai
      lutar, a busca, a minha linha na temporada (uma faixa, não uma
      tabela) e os amigos para desafiar. A tabela inteira mora no Salão
      (js/pvp-tabela.js) desde que ela passou a ter página própria. */
@@ -280,8 +280,8 @@ function _pvpRenderLobby() {
    verdade. ═══════════════════════════════════════════════════════ */
 let _pvpRankMeu = null, _pvpRankTop = null, _pvpRankLido = 0, _pvpRankPos = 0;
 
-/* A DIVISÃO desta equipa, pelo nível médio dos três (js/pvp-rank.js).
-   Cada divisão tem a sua tabela: com o par a sair do poder da equipa,
+/* A DIVISÃO desta equipe, pelo nível médio dos três (js/pvp-rank.js).
+   Cada divisão tem a sua tabela: com o par a sair do poder da equipe,
    uma lista única misturava gente que nunca se encontra. */
 function pvpMinhaDivisao() {
   const eq = _pvpEquipe();
