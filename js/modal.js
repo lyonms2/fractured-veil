@@ -275,6 +275,14 @@ function diffPillsHTML(ondeE) {
 function renderGameSelector() {
   const rb = rarityBonus();
   const d  = miniDifficulty();
+  /* O VÍNCULO TAMBÉM CONTA, e ficava de fora.
+
+     O miniReward multiplica o XP por rb.xp E por vb.xpMult — o bônus de
+     quem cuidou do bicho, +10% a partir de 51 de vínculo e +15% a partir
+     de 301. O rótulo aqui só multiplicava pelo primeiro, portanto
+     prometia menos do que o jogo paga. Errar para menos é melhor do que
+     errar para mais, mas esta tela existe para dizer quanto se ganha. */
+  const vb = (typeof getVinculoBonus === 'function') ? getVinculoBonus() : { xpMult: 1 };
   const r  = n => Math.round(n);
 
   const pillsEl = document.getElementById('diffPills');
@@ -289,21 +297,28 @@ function renderGameSelector() {
      As moedas vão sempre até o perfeito; o piso é o que muda. A Memória
      termina sempre o tabuleiro e nunca paga menos que MEM_MOEDA_MIN; o
      Simon e o Snake podem acabar sem nada. */
-  const rotulo = (id, xpMin, xpMax, cMin, cTeto = 1) => {
+  /* E O CUSTO, que a tela não dizia em lado nenhum.
+
+     Os três curtos gastam 5 de energia e os dois longos gastam 10 — o
+     dobro —, e isso só se descobria jogando. Numa tela que existe para
+     ESCOLHER entre cinco jogos, metade da conta estava escondida. Vai
+     ao lado do prêmio, com o mesmo sinal de menos da fila de ações. */
+  const rotulo = (id, xpMin, xpMax, cMin, cTeto = 1, energia = 5) => {
     const el = document.getElementById(id);
     if(!el) return;
     el.textContent = t('modal.reward_range', {
-      xpMin: r(d.xp * xpMin * rb.xp),      xpMax: r(d.xp * xpMax * rb.xp),
+      xpMin: r(d.xp * xpMin * rb.xp * vb.xpMult), xpMax: r(d.xp * xpMax * rb.xp * vb.xpMult),
       cMin:  r(d.coins * cMin * rb.moedas), cMax:  r(d.coins * cTeto * rb.moedas),
+      e: energia,
     });
   };
   rotulo('rewardMemoria', 0.5, 1.5, (typeof MEM_MOEDA_MIN === 'number') ? MEM_MOEDA_MIN : 0);
   rotulo('rewardSimon',   0,   1.3, 0);
   rotulo('rewardSnake',   0,   (typeof SNAKE_XP_MULT !== 'undefined') ? SNAKE_XP_MULT[d.tier] : 2, 0);
   // A Fusão e o Tetra são os jogos longos (MG_LONGO): até 4,5 vezes o XP
-  // e 3 vezes as moedas da base, na fração da meta.
-  rotulo('rewardFusao',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio);
-  rotulo('rewardTetra',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio);
+  // e 3 vezes as moedas da base, na fração da meta — e o dobro da energia.
+  rotulo('rewardFusao',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio, MG_LONGO.energia);
+  rotulo('rewardTetra',   0,   1.5 * MG_LONGO.premio, 0, MG_LONGO.premio, MG_LONGO.energia);
 }
 
 function openGameSelector() {

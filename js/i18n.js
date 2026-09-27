@@ -217,7 +217,7 @@
       'ui.sleep_btn_mobile':     'Dormir',
 
       // Modal reward labels
-      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
+      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙 · −{e} ⚡',
 
       'ui.login_required_desc':  'Entre na sua conta para invocar seu avatar e guardar o progresso.',
 
@@ -560,7 +560,7 @@
       'ui.sleep_btn_mobile':     'Sleep',
 
       // Modal reward labels
-      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙',
+      'modal.reward_range':      '+{xpMin}~{xpMax} XP · +{cMin}~{cMax} 🪙 · −{e} ⚡',
 
       'ui.login_required_desc':  'Sign in to summon your avatar and save your progress.',
 
