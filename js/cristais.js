@@ -7,7 +7,18 @@
 //             ethers (CDN carregado antes deste arquivo)
 // ═══════════════════════════════════════════════════════════════════
 
-const CONTRACT_ADDRESS = '0xCcA07f21a40129955db81Dc0073693a26e777d8E';
+/* O cofre. Trocado em 27/09/2026: o anterior
+   (0xCcA07f21a40129955db81Dc0073693a26e777d8E) tinha o teto diário
+   cravado em 5 POL por carteira, sem função para mudar, enquanto o jogo
+   já permitia 1000 💎 por dia — vinte vezes mais. A tela prometia o
+   número do jogo e a transação morria no número do contrato.
+
+   O novo tem o teto ajustável pelo dono (nasce em 100 POL) e uma saída
+   anunciada com 48 h de espera. Quem tiver uma autorização assinada
+   pelo cofre antigo continua a poder gastá-la lá: ele ficou de pé, com
+   saldo. Mesma interface, por isso a troca custa esta linha — e a
+   variável CONTRACT_ADDRESS na Vercel, que as funções de api/ leem. */
+const CONTRACT_ADDRESS = '0xc1946B537aC2e184ee6fAE51E7B1Ff8ca56CddEd';
 
 // ═══════════════════════════════════════════════════════════════════
 // O ETHERS CHEGA SÓ QUANDO É PRECISO
@@ -129,9 +140,10 @@ async function renderTransparencia() {
     } else {
       const restante  = parseFloat(ethers.formatEther(restanteWei));
       /* O teto do dia é o que já saiu mais o que ainda cabe — lido do
-         próprio contrato. Estava cravado em 5 MATIC, que por acaso é o
-         que o cofre de hoje dá: no dia em que ele for trocado, uma barra
-         com o número à mão passaria a mentir. */
+         próprio contrato. Esteve cravado em 5 MATIC, que era o que o
+         cofre antigo dava; o de hoje dá 100 e o dono pode mudar sem
+         trocar de contrato. Uma barra com o número à mão mentiria no
+         dia seguinte à mudança. */
       const tetoDia   = Math.max(sacado + restante, 0.0001);
       const pct       = Math.min((sacado / tetoDia) * 100, 100);
       barEl.style.width = pct + '%';
@@ -298,7 +310,7 @@ async function renderLimiteResgate() {
        porque este é o mesmo documento que já se foi buscar. */
     _refChainCache = snap.data()?.referralChain || null;
     _refDoSaque = _pctDaRede(_refChainCache);
-  } catch (e) { /* fica em zero: mostra o tecto cheio */ }
+  } catch (e) { /* fica em zero: mostra o teto cheio */ }
   _mostrarDescontoDaRede();
   _atualizarTotalResgate();
 
@@ -311,11 +323,13 @@ async function renderLimiteResgate() {
      Polygon e tem o teto diário dele por carteira. Quem paga é o cofre,
      portanto quem manda é o menor dos dois.
 
-     Em 26/09/2026 isto estava a prometer vinte vezes o que o cofre
-     libera: o jogo dizia 1000 💎 e o contrato dava 5 MATIC — 50 💎.
-     Mas o número do cofre NÃO se escreve aqui à mão: lê-se dele. O
-     contrato vai ser reescrito, e uma tela que pergunta continua certa
-     no dia da troca; uma tela com o número cravado, não.
+     Em 26/09/2026 isto prometia vinte vezes o que o cofre liberava: o
+     jogo dizia 1000 💎 e o contrato dava 5 MATIC — 50 💎. O cofre foi
+     trocado no dia seguinte e os dois tetos passaram a coincidir em
+     1000 💎, mas o número do cofre continua a NÃO se escrever aqui à
+     mão: lê-se dele. É por isso que esta tela sobreviveu à troca sem
+     uma linha mudada, e sobrevive à próxima — o dono pode mexer no teto
+     do contrato quando quiser, sem publicar nada.
 
      Sem carteira vinculada, sem MetaMask ou sem resposta, vale o teto do
      jogo — é o que se sabe, e é o que se diz. */
