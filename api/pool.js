@@ -195,6 +195,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'morreu')      return handleMorreu(req, res, db, uid);
   if (acao === 'cruzar')      return handleCruzar(req, res, db, uid);
   if (acao === 'chocar-ovo')  return handleChocarOvo(req, res, db, poolRef, uid);
+  if (acao === 'queimar-ovo') return handleQueimarOvo(req, res, db, uid);
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
   if (acao === 'laco')        return handleLaco(req, res, db, uid);
   if (acao === 'nivel')       return handleNivel(req, res, db, uid);
@@ -756,6 +757,46 @@ async function handleCruzar(req, res, db, uid) {
   }
 }
 
+
+/* ══════════════════════════════════════════════════════════════════
+   QUEIMAR UM OVO É IRREVERSÍVEL — E AGORA É MESMO
+
+   A queima acontecia toda no navegador: tirava o ovo da lista do save,
+   dava as moedas, e pronto. Só que o ovo DE VERDADE é o registo no mapa
+   `ovos`, que só o servidor escreve e que só o chocar apagava.
+
+   O ovo queimado ficava lá. Duas consequências: o documento juntava
+   lixo, e a prova continuava válida — quem repusesse o ovo na lista do
+   save (que o cliente escreve) conseguia chocá-lo depois de o ter
+   queimado, porque o servidor só pergunta pelo mapa. A tela dizia "esta
+   ação é irreversível" e não era.
+
+   Isto apaga o registo, e é a única coisa que faz. As moedas continuam
+   a ser creditadas no cliente, como as outras todas (ver a nota das
+   moedas no firestore.rules) — mexer nisso é outro trabalho.
+
+   Um ovo que não esteja no mapa responde OK: pode ser de antes de o
+   mapa existir, e recusar deixaria o jogador com um ovo que não dá para
+   chocar nem para queimar. */
+async function handleQueimarOvo(req, res, db, uid) {
+  const { ovoId } = req.body;
+  if (!ovoId) return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  try {
+    const ref = db.collection('players').doc(uid);
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const ovos = snap.data().ovos || {};
+      if (!ovos[String(ovoId)]) return;      // já não existe: nada a apagar
+      tx.update(ref, { [`ovos.${String(ovoId)}`]: FieldValue.delete() });
+    });
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    console.error('[pool/queimar-ovo]', err.message);
+    return res.status(500).json({ erro: 'Erro ao queimar o ovo.' });
+  }
+}
 
 async function handleChocarOvo(req, res, db, poolRef, uid) {
   const GEN = require('./_genetica.js');

@@ -17,6 +17,9 @@ window.registerStrings(
     'egg.toast.apodreceu_raro': 'Você perdeu {n} ovo(s) raro(s) por validade! Choque antes de vencer.',
     'egg.log.rotten_discarded':  'Ovo apodrecido descartado.',
     'egg.log.burned_common':     '🔥 Ovo Comum queimado! +{moedas} 🪙',
+    // A prévia da queima estava escrita em português dentro do js/eggs.js.
+    'egg.burn.previa':           '{ovo}<br>Você recebe {moedas}<br><span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>',
+    'egg.log.burn_falhou':       'Não deu para queimar o ovo agora. Tente de novo.',
     'egg.log.rotten_hatch':      'Este ovo apodreceu — não pode mais ser chocado.',
     'egg.log.no_slots':          'Sem slots livres. Libere um slot no Marketplace.',
     'egg.log.no_gems':           'Cristais insuficientes para chocar (você precisa de {fee} 💎).',
@@ -61,6 +64,8 @@ window.registerStrings(
     'egg.toast.apodreceu_raro': 'You lost {n} rare egg(s) to expiry! Hatch them before they turn.',
     'egg.log.rotten_discarded':  'Rotten egg discarded.',
     'egg.log.burned_common':     '🔥 Common egg burned! +{moedas} 🪙',
+    'egg.burn.previa':           '{ovo}<br>You get {moedas}<br><span style="color:#f87171;font-size:0.5rem;">This cannot be undone.</span>',
+    'egg.log.burn_falhou':       'Could not burn the egg right now. Try again.',
     'egg.log.rotten_hatch':      'This egg has rotted — it can no longer be hatched.',
     'egg.log.no_slots':          'No free slots. Free a slot in the Marketplace.',
     'egg.log.no_gems':           'Insufficient crystals to hatch (need {fee} 💎).',

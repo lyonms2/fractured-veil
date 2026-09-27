@@ -121,8 +121,20 @@ function findTargetSlot() {
    Com ele foram-se o cooldown de postura, o botão do canto e o aviso de
    "pronto para botar". A cerimónia do ovo ficou: quem a usa agora é o
    cruzamento. */
+/* ── O ID DE UM OVO É TEXTO DE UM LADO E NÚMERO DO OUTRO ──
+
+   O ovo nasce com `id: Date.now()` — um número —, mas chega ao jogo
+   pelas CHAVES do mapa `ovos` do servidor, e chave de objeto é sempre
+   texto. A tela escrevia onclick="burnEgg(1790...)" sem aspas, portanto
+   passava um número, e a busca comparava com === : "1790..." nunca é
+   1790..., e o botão não fazia absolutamente nada. Nem chocar, nem
+   descartar — os dois usavam o mesmo padrão.
+
+   Agora o id viaja entre aspas e a comparação é por texto dos dois
+   lados. Assim funciona com o que vem do servidor e com o que ainda
+   estiver em memória como número. */
 function burnEgg(id) {
-  const idx = eggsInInventory.findIndex(e => e.id === id);
+  const idx = eggsInInventory.findIndex(e => String(e.id) === String(id));
   if(idx === -1) return;
   const ovo = eggsInInventory[idx];
 
@@ -157,9 +169,12 @@ function burnEgg(id) {
   const overlay = document.getElementById('eggBurnOverlay');
   const preview = document.getElementById('eggBurnPreview');
   if(overlay && preview) {
-    preview.innerHTML = `Ovo <b style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</b><br>
-      Receberás <b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}<br>
-      <span style="color:#f87171;font-size:0.5rem;">Esta ação é irreversível.</span>`;
+    /* Estas três linhas estavam escritas em português dentro do código:
+       um jogador inglês via "Receberás" no meio da tela dele. */
+    preview.innerHTML = t('egg.burn.previa', {
+      ovo: `<b style="color:${_corDoOvo(ovo)}">${esc(_rotuloDoOvo(ovo))}</b>`,
+      moedas: `<b style="color:var(--gold)">${moedas} 🪙</b>${bonusPct}`,
+    });
     document.getElementById('eggBurnConfirmBtn').onclick = () => {
       overlay.style.display = 'none';
       _doBurnComum(id, moedas);
@@ -170,10 +185,45 @@ function burnEgg(id) {
   }
 }
 
-function _doBurnComum(id, moedas) {
-  const idx = eggsInInventory.findIndex(e => e.id === id);
+/* ── O SERVIDOR PRIMEIRO, E SÓ DEPOIS A TELA ──
+
+   A queima acontecia toda aqui: tirava o ovo da lista e dava as moedas.
+   Só que o ovo de verdade é o registo no mapa `ovos`, que só o servidor
+   escreve — e que só o chocar apagava. O ovo queimado ficava lá, e com
+   ele a prova de que podia ser chocado: a tela prometia uma ação
+   irreversível que não era.
+
+   Agora pede-se primeiro. Se o servidor não confirmar, nada acontece —
+   nem o ovo some, nem as moedas entram: melhor ficar com o ovo do que
+   ficar sem ele e sem nada.
+
+   Um ovo sem registo (de antes do mapa) também dá OK do outro lado,
+   portanto não fica ninguém preso com um ovo que não dá para queimar. */
+async function _doBurnComum(id, moedas) {
+  const idx = eggsInInventory.findIndex(e => String(e.id) === String(id));
   if(idx === -1) return;
-  eggsInInventory.splice(idx, 1);
+
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const resp = await fetch('/api/pool', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ acao: 'queimar-ovo', idToken, ovoId: id }),
+    });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok || !json.ok) {
+      addLog(`⚠️ ${json.erro || t('egg.log.burn_falhou')}`, 'bad');
+      return;
+    }
+  } catch (e) {
+    addLog(`⚠️ ${t('egg.log.burn_falhou')}`, 'bad');
+    return;
+  }
+
+  // A lista pode ter mudado enquanto se esperava pela resposta.
+  const i2 = eggsInInventory.findIndex(e => String(e.id) === String(id));
+  if(i2 === -1) return;
+  eggsInInventory.splice(i2, 1);
   earnCoins(moedas);
   addLog(t('egg.log.burned_common', {moedas}), 'good');
   showFloat(`+${moedas}🪙`, '#c9a84c');
@@ -201,7 +251,7 @@ function _tempoCurto(ms) {
 
 
 function hatchEggFromInventory(id) {
-  const ovo = eggsInInventory.find(e => e.id === id);
+  const ovo = eggsInInventory.find(e => String(e.id) === String(id));
   if(!ovo) return;
   if(typeof ovoPodre === 'function' && ovoPodre(ovo)) {
     addLog(t('egg.log.rotten_hatch'), 'bad');
@@ -271,7 +321,7 @@ function hatchEggFromInventory(id) {
 
 async function confirmHatch() {
   if(pendingHatchId === null) return;
-  const idx = eggsInInventory.findIndex(e => e.id === pendingHatchId);
+  const idx = eggsInInventory.findIndex(e => String(e.id) === String(pendingHatchId));
   if(idx === -1) { pendingHatchId = null; return; }
 
   const targetSlot = findTargetSlot();
@@ -822,10 +872,22 @@ function renderEggInventory() {
       linhaEstado = `<div class="egg-choco">⏳ ${t('egg.choca_em', { t: _tempoCurto(faltaParaChocar(ovo, _agora)) })}</div>`;
     else if (est === 'pronto')
       linhaEstado = `<div class="egg-pronto">🐣 ${t('egg.inv.pronto')}</div>`;
-    else if (est === 'sem-ninho')
-      linhaEstado = `<div class="egg-sem-ninho">${t('egg.inv.sem_ninho')}</div>
-        <div class="egg-time ${aflito ? 'egg-time-urgent' : ''}">${
-          t('egg.inv.apodrece_em', { t: _tempoCurto(faltaParaApodrecer(ovo, _agora)) })}</div>`;
+    else if (est === 'sem-ninho') {
+      /* O prazo de apodrecer só começa a contar quando o relógio do jogo
+         carimba o `semNinhoDesde` (js/gametick.js), e esse relógio pára
+         com o jogo em pausa ou com a aba em segundo plano. Nessa janela
+         o faltaParaApodrecer devolve Infinity — e a tela dizia "apodrece
+         em Infinityd".
+
+         Sem prazo carimbado, diz-se o que se sabe: que ele está sem
+         ninho. O tempo aparece no instante em que passa a existir. */
+      const falta = faltaParaApodrecer(ovo, _agora);
+      linhaEstado = `<div class="egg-sem-ninho">${t('egg.inv.sem_ninho')}</div>`
+        + (Number.isFinite(falta)
+            ? `<div class="egg-time ${aflito ? 'egg-time-urgent' : ''}">${
+                t('egg.inv.apodrece_em', { t: _tempoCurto(falta) })}</div>`
+            : '');
+    }
     else
       linhaEstado = `<div class="egg-time egg-time-urgent">${t('egg.inv.rotten')}</div>`;
 
@@ -833,10 +895,10 @@ function renderEggInventory() {
        jogar fora só aparece quando ele está preso ou perdido. Nos
        outros dois estados a única acção possível é esperar ou chocar. */
     const acoes = est === 'pronto'
-      ? `<button class="egg-btn hatch" onclick="hatchEggFromInventory(${ovo.id})">🐣 ${t('egg.btn.hatch')}</button>`
+      ? `<button class="egg-btn hatch" onclick="hatchEggFromInventory('${esc(String(ovo.id))}')">🐣 ${t('egg.btn.hatch')}</button>`
       : est === 'chocando'
       ? ''
-      : `<button class="egg-btn burn" onclick="burnEgg(${ovo.id})">${t('egg.btn.discard')}</button>`;
+      : `<button class="egg-btn burn" onclick="burnEgg('${esc(String(ovo.id))}')">${t('egg.btn.discard')}</button>`;
 
     return `<div class="${cls}">
       <div class="egg-mini-svg">${eggMiniSVG(ovo, 44)}</div>
