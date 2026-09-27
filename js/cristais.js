@@ -78,6 +78,23 @@ async function renderTransparencia() {
   if (limEl) limEl.textContent = t('mkt.transp.redeem_limit_val', {
     max: RESGATE_MAX_DIA, matic: Math.round(RESGATE_MAX_DIA / 10) });
 
+  /* O SELO, com os números vindos do js/temporada.js — os mesmos que o
+     servidor usa para cobrar e para pagar. Escritos aqui, e não no
+     HTML, para não repetirem o destino do "2 💎" da listagem. */
+  const seloCusto = document.getElementById('transpSeloCusto');
+  const seloQuem  = document.getElementById('transpSeloPremiados');
+  const seloBody  = document.getElementById('transpSeloBody');
+  if (seloCusto && typeof SELO_CUSTO === 'number')
+    seloCusto.textContent = SELO_CUSTO + ' 💎';
+  if (seloQuem && typeof SELO_PREMIADOS === 'number')
+    seloQuem.textContent = t('mkt.transp.selo_premiados_val', { pct: Math.round(SELO_PREMIADOS * 100) });
+  if (seloBody)
+    seloBody.innerHTML = t('mkt.transp.selo_body', {
+      custo: (typeof SELO_CUSTO === 'number') ? SELO_CUSTO : 100,
+      pct: (typeof SELO_PREMIADOS === 'number') ? Math.round(SELO_PREMIADOS * 100) : 35,
+      min: (typeof SELO_MIN_LUTAS === 'number') ? SELO_MIN_LUTAS : 10,
+    });
+
   const statusEl = document.getElementById('transpTimelockStatus');
   if(statusEl) {
     statusEl.className = 'transp-timelock-status transp-timelock-ok';
@@ -111,8 +128,12 @@ async function renderTransparencia() {
       txtEl.textContent = t('mkt.limit.no_limit', {used: sacado.toFixed(2)});
     } else {
       const restante  = parseFloat(ethers.formatEther(restanteWei));
-      const DAILY_MAX = 5;
-      const pct       = Math.min((sacado / DAILY_MAX) * 100, 100);
+      /* O teto do dia é o que já saiu mais o que ainda cabe — lido do
+         próprio contrato. Estava cravado em 5 MATIC, que por acaso é o
+         que o cofre de hoje dá: no dia em que ele for trocado, uma barra
+         com o número à mão passaria a mentir. */
+      const tetoDia   = Math.max(sacado + restante, 0.0001);
+      const pct       = Math.min((sacado / tetoDia) * 100, 100);
       barEl.style.width = pct + '%';
       txtEl.textContent = t('mkt.limit.with_limit', {used: sacado.toFixed(2), remaining: restante.toFixed(2)});
     }
@@ -281,9 +302,37 @@ async function renderLimiteResgate() {
   _mostrarDescontoDaRede();
   _atualizarTotalResgate();
 
-  const resta = Math.max(0, RESGATE_MAX_DIA - usadoHoje);
-  el.textContent = t('mkt.crystals.limit_left', { resta, max: RESGATE_MAX_DIA });
+  const doJogo = Math.max(0, RESGATE_MAX_DIA - usadoHoje);
+
+  /* ── O TETO DE VERDADE É O MENOR DOS DOIS ──
+
+     Há dois freios no caminho do MATIC, e só um deles vivia nesta tela:
+     o do JOGO (api/resgatar.js) e o do COFRE, que é o contrato na
+     Polygon e tem o teto diário dele por carteira. Quem paga é o cofre,
+     portanto quem manda é o menor dos dois.
+
+     Em 26/09/2026 isto estava a prometer vinte vezes o que o cofre
+     libera: o jogo dizia 1000 💎 e o contrato dava 5 MATIC — 50 💎.
+     Mas o número do cofre NÃO se escreve aqui à mão: lê-se dele. O
+     contrato vai ser reescrito, e uma tela que pergunta continua certa
+     no dia da troca; uma tela com o número cravado, não.
+
+     Sem carteira vinculada, sem MetaMask ou sem resposta, vale o teto do
+     jogo — é o que se sabe, e é o que se diz. */
+  const doCofre = await _tetoDoCofre();
+  const resta = (doCofre != null) ? Math.min(doJogo, doCofre) : doJogo;
+  const mandaOCofre = (doCofre != null) && doCofre < doJogo;
+
+  el.textContent = t('mkt.crystals.limit_left', { resta, max: mandaOCofre ? doCofre : RESGATE_MAX_DIA });
   el.classList.toggle('esgotado', resta === 0);
+
+  // Dizer de onde vem o freio, quando não é o do jogo: senão o jogador
+  // vê um teto menor do que o anúncio lá de cima e não entende porquê.
+  const nota = document.getElementById('resgateCofre');
+  if (nota) {
+    nota.hidden = !mandaOCofre;
+    nota.textContent = mandaOCofre ? t('mkt.crystals.teto_cofre', { n: doCofre }) : '';
+  }
 
   // O campo deixa de aceitar o que vai ser recusado.
   if (input) {
@@ -293,6 +342,26 @@ async function renderLimiteResgate() {
   }
   const btn = document.getElementById('btnResgatar');
   if (btn) btn.disabled = resta === 0;
+}
+
+/* Quantos 💎 o cofre ainda deixa esta carteira sacar hoje.
+
+   Devolve null quando não dá para saber (sem carteira vinculada, sem
+   MetaMask, sem rede) ou quando o contrato não põe limite nenhum a ela
+   — nos dois casos quem manda passa a ser o teto do jogo. */
+async function _tetoDoCofre() {
+  const carteira = playerData?.carteira;
+  if (!carteira || typeof window === 'undefined' || !window.ethereum) return null;
+  try {
+    await carregarEthers();
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const contrato = new ethers.Contract(CONTRACT_ADDRESS,
+      ['function limiteHoje(address) view returns (uint256, uint256)'], provider);
+    const [, restanteWei] = await contrato.limiteHoje(carteira);
+    const MAX_UINT = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+    if (restanteWei === MAX_UINT) return null;   // esta carteira não tem teto no cofre
+    return Math.floor(parseFloat(ethers.formatEther(restanteWei)) * MATIC_TO_GEMS);
+  } catch (e) { return null; }
 }
 
 // ═══════════════════════════════════════════

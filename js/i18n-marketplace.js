@@ -209,6 +209,8 @@ window.registerStrings({
   'mkt.crystals.limit_left':  'Você pode resgatar {resta} de {max} 💎 hoje',
   // O que a rede de quem me convidou leva do MEU saque (api/resgatar.js).
   'mkt.crystals.rede_nota':   '⚠ Quem convidou você recebe {pct}% de cada saque seu — já descontado abaixo.',
+  // Quando o freio do dia é o contrato, e não o jogo.
+  'mkt.crystals.teto_cofre':  '⚠ O cofre na Polygon ainda libera {n} 💎 hoje para a sua carteira — é esse o teto, e não o do jogo.',
   'mkt.crystals.resgate_conta':      'Você recebe {matic} MATIC · saem {custo} 💎 do saldo',
   'mkt.crystals.resgate_conta_rede': 'Você recebe {matic} MATIC · {rede} 💎 para quem convidou você · saem {custo} 💎 do saldo',
 
@@ -314,6 +316,16 @@ window.registerStrings({
   'mkt.transp.crystal_title':  '💸 Comprar e Resgatar Cristais',
   'mkt.transp.feed_title':     '⬆️ Como a Pool é Alimentada',
   'mkt.transp.weekly_title':   '🛠️ A Parte do Desenvolvedor',
+  // ── O SELO DA TEMPORADA ── os números vêm do js/temporada.js.
+  'mkt.transp.selo_title':       '🏆 O Selo da Temporada',
+  'mkt.transp.selo_body':        'Quem quer disputar o prêmio do mês compra um selo por <strong>{custo} 💎</strong>. Tudo o que entra forma o <strong>bolo</strong>, e tudo o que forma o bolo volta em prêmio — o jogo não tira nada no caminho. Recebem os melhores <strong>{pct}%</strong> de cada divisão, e só entra na conta quem tiver jogado pelo menos {min} partidas da fila.',
+  'mkt.transp.selo_cap':         'O BOLO DO MÊS',
+  'mkt.transp.selo_custo':       'Entrar na disputa',
+  'mkt.transp.selo_premiados':   'Quantos recebem',
+  'mkt.transp.selo_premiados_val': 'os melhores {pct}%',
+  'mkt.transp.selo_corte':       'Corte do jogo',
+  'mkt.transp.selo_sem_corte':   '0% — tudo volta em prêmio',
+  'mkt.transp.selo_nota':        'O bolo é só dos selos vendidos: a pool não entra nele e não recebe dele. Uma divisão com gente a menos não paga, e o que ela juntou volta a quem tinha comprado.',
   'mkt.transp.eggs_title':     '🥚 Ovos — Para Onde Podem Ir',
 
   // Transparency block — body content & labels
@@ -532,6 +544,7 @@ window.registerStrings({
   // Package names
   'mkt.crystals.limit_left':  'You can redeem {resta} of {max} 💎 today',
   'mkt.crystals.rede_nota':   '⚠ Whoever invited you earns {pct}% of every withdrawal — already deducted below.',
+  'mkt.crystals.teto_cofre':  '⚠ The vault on Polygon still allows {n} 💎 today for your wallet — that is the cap, not the game’s.',
   'mkt.crystals.resgate_conta':      'You receive {matic} MATIC · {custo} 💎 leave your balance',
   'mkt.crystals.resgate_conta_rede': 'You receive {matic} MATIC · {rede} 💎 to whoever invited you · {custo} 💎 leave your balance',
 
@@ -635,6 +648,15 @@ window.registerStrings({
   'mkt.transp.crystal_title':  '💸 Buy and Redeem Crystals',
   'mkt.transp.feed_title':     '⬆️ How the Pool is Fed',
   'mkt.transp.weekly_title':   '🛠️ The Developer',
+  'mkt.transp.selo_title':       '🏆 The Season Seal',
+  'mkt.transp.selo_body':        'To play for the monthly prize you buy a seal for <strong>{custo} 💎</strong>. Everything that comes in forms the <strong>pot</strong>, and everything in the pot goes back out as prizes — the game takes no cut. The top <strong>{pct}%</strong> of each division are paid, and only players with at least {min} ranked matches count.',
+  'mkt.transp.selo_cap':         'THIS MONTH’S POT',
+  'mkt.transp.selo_custo':       'Enter the race',
+  'mkt.transp.selo_premiados':   'Who gets paid',
+  'mkt.transp.selo_premiados_val': 'the top {pct}%',
+  'mkt.transp.selo_corte':       'Game’s cut',
+  'mkt.transp.selo_sem_corte':   '0% — all of it becomes prizes',
+  'mkt.transp.selo_nota':        'The pot is made of sold seals only: the pool neither feeds it nor takes from it. A division with too few players pays nothing, and what it gathered goes back to whoever bought in.',
   'mkt.transp.eggs_title':     '🥚 Eggs — Where They Can Go',
 
   // Transparency block — body content & labels
