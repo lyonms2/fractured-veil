@@ -44,13 +44,13 @@ function rtdb() { return typeof _rtdb !== "undefined" ? _rtdb : null; }
    diferentes: o estado do bicho (fome, humor, sujeira — inofensivo) e o
    dinheiro. E o cliente gravava tudo.
 
-   Isso era um caminho direto para MATIC real. O api/resgatar.js, que
+   Isso era um caminho direto para POL real. O api/resgatar.js, que
    assina o saque, lê DESTE documento tudo o que decide o saque:
 
      linha 248  gs.cristais     o saldo que o autoriza
      linha 255  ultimoResgate   a espera de 30 segundos
      linha 263  resgateLog      o limite de 50 gemas por dia
-     linha 271  carteira        para onde o MATIC vai
+     linha 271  carteira        para onde o POL vai
 
    Quem escrevesse gs.cristais e apagasse o resgateLog no próprio
    documento passava as quatro travas de uma vez, porque as quatro viviam

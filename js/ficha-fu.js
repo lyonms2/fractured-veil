@@ -12,7 +12,7 @@
 //  lê o relógio, o acaso ou uma variável global do jogo.
 //
 //  Isso não é preciosismo: a ficha decide quanto dano um avatar dá e
-//  aguenta, e ele vende-se por cristais que saem em MATIC. Uma ficha que
+//  aguenta, e ele vende-se por cristais que saem em POL. Uma ficha que
 //  mude sozinha é dinheiro a mudar sozinho.
 //
 //  ── O QUE NÃO SE TOCA ──

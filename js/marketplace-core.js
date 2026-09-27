@@ -68,7 +68,7 @@ function equiparSetas(input) {
    aparecer ali só para ser recusado não ajuda ninguém.
 
    Dispara o `input` porque as telas escutam-no — é assim que o total em
-   MATIC se atualiza enquanto se carrega na seta. */
+   POL se atualiza enquanto se carrega na seta. */
 function _andarNumero(input, dir) {
   if (!input || input.disabled) return;
   const passo = Number(input.step) > 0 ? Number(input.step) : 1;
@@ -181,7 +181,7 @@ async function savePlayerData() {
    O bônus de compra saiu (api/processar-compra.js), mas quem já tinha
    saldo em gs.cristaisBonus continua podendo gastá-lo aqui dentro —
    comprar, listar, desbloquear slots. A única coisa que ele não faz é
-   sair para MATIC, e essa conta é do api/resgatar.js, que olha só para o
+   sair para POL, e essa conta é do api/resgatar.js, que olha só para o
    gs.cristais.
 
    Por isso a loja soma os dois: era enganador mostrar 100 💎 a quem tem

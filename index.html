@@ -1651,7 +1651,7 @@
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.vault_title">🏦 O Cofre (Smart Contract)</div>
         <div class="transp-block-body">
-          <span data-i18n="mkt.transp.vault_body">Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.</span><br><br>
+          <span data-i18n="mkt.transp.vault_body">Todas as compras de 💎 com POL vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.</span><br><br>
           <a class="transp-link" id="transpContractLink" href="#" target="_blank" data-i18n="mkt.transp.vault_link">Ver contrato no Polygonscan ↗</a>
           <div class="transp-timelock-status" id="transpTimelockStatus" data-i18n="mkt.loading">Carregando...</div>
         </div>
@@ -1661,9 +1661,9 @@
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.crystal_title">💸 Comprar e Resgatar Cristais</div>
         <div class="transp-block-body">
-          <span data-i18n="mkt.transp.crystal_body">O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.</span>
-          <div class="transp-taxa-row" style="margin-top:0.625rem;"><span data-i18n="mkt.transp.buy_rate">Cotação de compra</span><span class="transp-taxa-val">1 MATIC = 10 💎</span></div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_rate">Cotação de resgate</span><span class="transp-taxa-val">10 💎 = 1 MATIC</span></div>
+          <span data-i18n="mkt.transp.crystal_body">O POL vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.</span>
+          <div class="transp-taxa-row" style="margin-top:0.625rem;"><span data-i18n="mkt.transp.buy_rate">Cotação de compra</span><span class="transp-taxa-val">1 POL = 10 💎</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_rate">Cotação de resgate</span><span class="transp-taxa-val">10 💎 = 1 POL</span></div>
           <div class="transp-taxa-row"><span data-i18n="mkt.transp.redeem_limit">Limite de resgate</span><span class="transp-taxa-val" id="transpRedeemLimit"></span></div>
           <br><span data-i18n="mkt.transp.your_limit">Seu limite hoje:</span>
           <div class="transp-limit-bar-wrap"><div class="transp-limit-bar" id="transpLimitBar"></div></div>
@@ -1732,7 +1732,7 @@
         <div class="transp-block-body">
           <span data-i18n="mkt.transp.weekly_body">O desenvolvedor recebe <strong style="color:var(--text);">1% de cada resgate</strong>, e mais nada.</span>
           <div class="transp-cap" data-i18n="mkt.transp.from_where">DE ONDE SAI</div>
-          <div class="transp-taxa-row"><span data-i18n="mkt.transp.on_withdraw">Resgate de 💎 → MATIC</span><span class="transp-taxa-val">1%</span></div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.on_withdraw">Resgate de 💎 → POL</span><span class="transp-taxa-val">1%</span></div>
           <div class="transp-taxa-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:0.25rem;padding-top:0.75rem;">
             <span style="color:var(--text);font-weight:600;" data-i18n="mkt.transp.pool_untouched">Pool</span>
             <span class="transp-taxa-val" style="color:var(--green)" data-i18n="mkt.transp.never_touched">0% — nunca é tocada</span>
@@ -1766,7 +1766,7 @@
     <!-- ── COMPRAR CRISTAIS ── -->
     <div class="mkt-section" id="sec-buycrystals">
       <div class="section-title" data-i18n="mkt.crystals.title">💎 Comprar Cristais</div>
-      <div class="section-sub" data-i18n="mkt.crystals.sub">1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
+      <div class="section-sub" data-i18n="mkt.crystals.sub">1 POL = 10 💎. Requer MetaMask para enviar a transação on-chain.</div>
 
       <!-- CTA MetaMask — aparece se não tiver carteira vinculada -->
       <div id="metamaskCtaWrap"></div>
@@ -1775,7 +1775,7 @@
       <div id="buyStatus" style="margin-top:0.75rem;text-align:center;min-height:1.5rem;"></div>
 
       <div class="tx-verify-box" style="margin-top:1.5rem;">
-        <h3 data-i18n="mkt.crystals.redeem_title">💸 Resgatar Cristais → MATIC</h3>
+        <h3 data-i18n="mkt.crystals.redeem_title">💸 Resgatar Cristais → POL</h3>
         <!-- Sem data-i18n: o texto leva o teto diário, e o teto vem do
              RESGATE_MAX_DIA. Quem o escreve é o renderLimiteResgate
              (js/cristais.js) — assim o número tem uma fonte só. -->
@@ -1792,7 +1792,7 @@
             data-i18n-ph="mkt.crystals.redeem_ph" oninput="_atualizarTotalResgate()"/>
           <button class="btn-verify" id="btnResgatar" onclick="resgatar()" data-i18n="mkt.crystals.redeem_btn">Resgatar</button>
         </div>
-        <!-- A conta do saque, enquanto se escreve: o que chega em MATIC,
+        <!-- A conta do saque, enquanto se escreve: o que chega em POL,
              o que a rede de convites leva e o que sai do saldo. A tela da
              compra já fazia isto; esta, que tem duas deduções pelo
              caminho, não dizia nada (ver js/cristais.js). -->

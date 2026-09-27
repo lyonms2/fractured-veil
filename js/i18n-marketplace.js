@@ -179,12 +179,12 @@ window.registerStrings({
   // Pool widget stats
   'mkt.pool.state_title':     'Estado atual da pool',
   'mkt.cob.title':       '🛡️ COBERTURA DO COFRE',
-  'mkt.cob.sub':         'do MATIC necessário para pagar todos os cristais que existem',
+  'mkt.cob.sub':         'do POL necessário para pagar todos os cristais que existem',
   'mkt.cob.circulacao':  'Cristais em circulação',
-  'mkt.cob.necessario':  'MATIC necessário',
-  'mkt.cob.cofre':       'MATIC no cofre (blockchain)',
+  'mkt.cob.necessario':  'POL necessário',
+  'mkt.cob.cofre':       'POL no cofre (blockchain)',
   'mkt.cob.alerta':      '⚠️ Abaixo de 100% — o cofre não cobre todos os cristais em circulação.',
-  'mkt.cob.nota':        'Somados {n} jogadores mais a pool. Compra e resgate usam a mesma taxa (10 💎 por MATIC), então 100% é o equilíbrio.',
+  'mkt.cob.nota':        'Somados {n} jogadores mais a pool. Compra e resgate usam a mesma taxa (10 💎 por POL), então 100% é o equilíbrio.',
   'mkt.cob.sem_cofre':   'não foi possível ler o saldo do contrato agora',
   'mkt.cob.indisponivel':'Cálculo indisponível no momento.',
   'mkt.pool.total_in':        'Total entrou',
@@ -192,17 +192,20 @@ window.registerStrings({
 
   // ── Comprar Cristais ──────────────────────────────────────────────
   'mkt.crystals.title':       '💎 Comprar Cristais',
-  'mkt.crystals.sub':         '1 MATIC = 10 💎. Requer MetaMask para enviar a transação on-chain.',
+  'mkt.crystals.sub':         '1 POL = 10 💎. Requer MetaMask para enviar a transação on-chain.',
   'mkt.crystals.buy_btn':     'Comprar',
   'mkt.crystals.buy_ph':      'Quantos 💎? ({min} a {max})',
-  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} MATIC',
-  'mkt.crystals.buy_total_vazio':'Digite quantos cristais quer comprar. 10 💎 = 1 MATIC.',
+  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} POL',
+  /* Dizia só "10 💎 = 1 POL", que é a cotação — e o campo recusava 10,
+     porque o mínimo era 50. Quem lia via um número que o jogo não
+     aceitava. Agora diz o mínimo, e a cotação por unidade. */
+  'mkt.crystals.buy_total_vazio':'Quantos cristais? De {min} a {max} 💎 — cada 💎 custa 0,1 POL.',
   'mkt.crystals.buy_invalid': 'Digite um número inteiro de {min} a {max} 💎.',
-  'mkt.crystals.redeem_title':'💸 Resgatar Cristais → MATIC',
+  'mkt.crystals.redeem_title':'💸 Resgatar Cristais → POL',
   // O {max} e o {matic} vêm do RESGATE_MAX_DIA (js/cristais.js), que
   // espelha o servidor. Estavam escritos à mão, e por isso mentiram.
-  'mkt.crystals.redeem_sub':  'Converta seus 💎 em MATIC. Limite: {max} 💎 por dia ({matic} MATIC). Taxa de 1% cobrada à parte: resgatar 100 💎 usa 101 💎 do saldo.',
-  'mkt.transp.redeem_limit_val': '{max} 💎 / dia ({matic} MATIC)',
+  'mkt.crystals.redeem_sub':  'Converta seus 💎 em POL. Limite: {max} 💎 por dia ({matic} POL). Taxa de 1% cobrada à parte: resgatar 100 💎 usa 101 💎 do saldo.',
+  'mkt.transp.redeem_limit_val': '{max} 💎 / dia ({matic} POL)',
   'mkt.crystals.redeem_btn':  'Resgatar',
   'mkt.crystals.redeem_ph':   'Quantidade de 💎 (mín. 10)',
 
@@ -211,12 +214,12 @@ window.registerStrings({
   'mkt.crystals.rede_nota':   '⚠ Quem convidou você recebe {pct}% de cada saque seu — já descontado abaixo.',
   // Quando o freio do dia é o contrato, e não o jogo.
   'mkt.crystals.teto_cofre':  '⚠ O cofre na Polygon ainda libera {n} 💎 hoje para a sua carteira — é esse o teto, e não o do jogo.',
-  'mkt.crystals.resgate_conta':      'Você recebe {matic} MATIC · saem {custo} 💎 do saldo',
-  'mkt.crystals.resgate_conta_rede': 'Você recebe {matic} MATIC · {rede} 💎 para quem convidou você · saem {custo} 💎 do saldo',
+  'mkt.crystals.resgate_conta':      'Você recebe {matic} POL · saem {custo} 💎 do saldo',
+  'mkt.crystals.resgate_conta_rede': 'Você recebe {matic} POL · {rede} 💎 para quem convidou você · saem {custo} 💎 do saldo',
 
   // ── MetaMask CTA ──────────────────────────────────────────────────
   'mkt.metamask.title':       '🦊 MetaMask necessária',
-  'mkt.metamask.sub':         'Para comprar ou resgatar Cristais com MATIC, vincule sua carteira MetaMask. Seu progresso no jogo já está seguro — a carteira é só para pagamentos.',
+  'mkt.metamask.sub':         'Para comprar ou resgatar Cristais com POL, vincule sua carteira MetaMask. Seu progresso no jogo já está seguro — a carteira é só para pagamentos.',
   'mkt.metamask.btn':         'Vincular MetaMask',
   'mkt.metamask.linked':      '🦊 MetaMask vinculada',
   'mkt.metamask.not_found':   'MetaMask não encontrada.',
@@ -246,19 +249,19 @@ window.registerStrings({
   'mkt.tx.min_gems':          'Mínimo 10 💎, em múltiplos de 10.',
   'mkt.tx.insufficient':      'Saldo insuficiente. Você tem {balance} 💎.',
   'mkt.tx.insufficient_taxa': 'Saldo insuficiente. Esse resgate usa {total} 💎 (com a taxa de {taxa} 💎) e você tem {balance} 💎.',
-  'mkt.tx.insufficient_matic':'❌ Saldo insuficiente. Você precisa de pelo menos {matic} MATIC na sua carteira Polygon.',
-  'mkt.tx.exchange_hint':     'Você pode comprar MATIC em uma exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.',
-  'mkt.tx.insufficient_toast':'Saldo insuficiente — você precisa de {matic} MATIC',
+  'mkt.tx.insufficient_matic':'❌ Saldo insuficiente. Você precisa de pelo menos {matic} POL na sua carteira Polygon.',
+  'mkt.tx.exchange_hint':     'Você pode comprar POL em uma exchange (ex: Binance, Crypto.com) e transferir para a rede Polygon.',
+  'mkt.tx.insufficient_toast':'Saldo insuficiente — você precisa de {matic} POL',
   'mkt.tx.requesting':        '⏳ A pedir autorização ao servidor...',
   'mkt.tx.open_mm_redeem':    '⏳ Abra o MetaMask para confirmar o resgate...',
-  'mkt.tx.redeemed':          '✅ Resgatado! Você recebeu {matic} MATIC na sua carteira.',
-  'mkt.tx.matic_sent':        '💸 {matic} MATIC enviados!',
+  'mkt.tx.redeemed':          '✅ Resgatado! Você recebeu {matic} POL na sua carteira.',
+  'mkt.tx.matic_sent':        '💸 {matic} POL enviados!',
   'mkt.tx.cancelled':         'Transação cancelada.',
   'mkt.tx.redeem_cancelled':  'Resgate cancelado. Seus 💎 foram restaurados pelo servidor.',
   'mkt.tx.redeem_err':        'Erro no resgate. Tente novamente.',
   'mkt.tx.failed':            '❌ Transação falhou. Tente novamente.',
   'mkt.tx.chain_fail':        '❌ Transação falhou on-chain. Contacta o suporte com o hash da tx.',
-  'mkt.tx.general_err':       'Erro ao enviar. Verifique o saldo de MATIC e tente novamente.',
+  'mkt.tx.general_err':       'Erro ao enviar. Verifique o saldo de POL e tente novamente.',
   'mkt.tx.sem_ethers':      'Não foi possível carregar a carteira. Verifique sua conexão e tente de novo.',
   'mkt.tx.link_mm':           'Vincule a MetaMask primeiro.',
 
@@ -305,8 +308,13 @@ window.registerStrings({
   // ── Ovos — strings dinâmicas (eggs-market.js) ────────────────────
 
   // Limit bar info
-  'mkt.limit.no_limit':        '{used} MATIC sacados hoje · Sem limite diário',
-  'mkt.limit.with_limit':      '{used} MATIC sacados hoje · {remaining} MATIC restantes (limite: 5 MATIC/dia)',
+  'mkt.limit.no_limit':        '{used} POL sacados hoje · Sem limite diário',
+  /* O {teto} vem do próprio contrato (limiteHoje), somando o que saiu
+     com o que ainda cabe. Esteve escrito "5 POL/dia" aqui dentro, e
+     continuou a dizê-lo depois de o cofre passar a dar 100: um número
+     cravado numa tradução mente mais tempo do que um cravado no código,
+     porque ninguém o procura lá. */
+  'mkt.limit.with_limit':      '{used} POL sacados hoje · {remaining} POL restantes (limite: {teto} POL/dia)',
 
   // Pool limit tiers
   'mkt.pool.fees':             '100% das taxas do jogo alimentam esta pool.',
@@ -329,9 +337,9 @@ window.registerStrings({
   'mkt.transp.eggs_title':     '🥚 Ovos — Para Onde Podem Ir',
 
   // Transparency block — body content & labels
-  'mkt.transp.vault_body':     'Todas as compras de 💎 com MATIC vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.',
+  'mkt.transp.vault_body':     'Todas as compras de 💎 com POL vão para um <strong>contrato inteligente</strong> na blockchain Polygon — código público que ninguém pode alterar. Os resgates são pagos diretamente por este cofre.',
   'mkt.transp.vault_link':     'Ver contrato no Polygonscan ↗',
-  'mkt.transp.crystal_body':   'O MATIC vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.',
+  'mkt.transp.crystal_body':   'O POL vai 100% para o cofre. Os 💎 são creditados após verificação on-chain e podem ser resgatados de volta a qualquer momento.',
   'mkt.transp.buy_rate':       'Cotação de compra',
   'mkt.transp.redeem_rate':    'Cotação de resgate',
   'mkt.transp.redeem_limit':   'Limite de resgate',
@@ -342,7 +350,7 @@ window.registerStrings({
   'mkt.transp.sell_avatar':    'Venda de avatar',
   'mkt.transp.weekly_body':    'O desenvolvedor recebe <strong style="color:var(--text);">1% de cada resgate</strong>, e mais nada. É cobrado do saldo de quem resgata, junto com o valor sacado — nunca da pool.',
   'mkt.transp.from_where':     'DE ONDE SAI',
-  'mkt.transp.on_withdraw':    'Resgate de 💎 → MATIC',
+  'mkt.transp.on_withdraw':    'Resgate de 💎 → POL',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
   'mkt.transp.weekly_note':    'Sacar 100 💎 dá <strong style="color:var(--text);">1 💎</strong> ao desenvolvedor. A pool não é tocada.',
@@ -516,12 +524,12 @@ window.registerStrings({
   // Pool widget stats
   'mkt.pool.state_title':     'Current pool state',
   'mkt.cob.title':       '🛡️ VAULT COVERAGE',
-  'mkt.cob.sub':         'of the MATIC needed to pay out every crystal in existence',
+  'mkt.cob.sub':         'of the POL needed to pay out every crystal in existence',
   'mkt.cob.circulacao':  'Crystals in circulation',
-  'mkt.cob.necessario':  'MATIC needed',
-  'mkt.cob.cofre':       'MATIC in vault (blockchain)',
+  'mkt.cob.necessario':  'POL needed',
+  'mkt.cob.cofre':       'POL in vault (blockchain)',
   'mkt.cob.alerta':      '⚠️ Below 100% — the vault does not cover every crystal in circulation.',
-  'mkt.cob.nota':        'Summed across {n} players plus the pool. Buying and redeeming use the same rate (10 💎 per MATIC), so 100% is break-even.',
+  'mkt.cob.nota':        'Summed across {n} players plus the pool. Buying and redeeming use the same rate (10 💎 per POL), so 100% is break-even.',
   'mkt.cob.sem_cofre':   'could not read the contract balance right now',
   'mkt.cob.indisponivel':'Calculation unavailable right now.',
   'mkt.pool.total_in':        'Total in',
@@ -529,15 +537,15 @@ window.registerStrings({
 
   // Crystals
   'mkt.crystals.title':       '💎 Buy Crystals',
-  'mkt.crystals.sub':         '1 MATIC = 10 💎. Requires MetaMask to send the on-chain transaction.',
+  'mkt.crystals.sub':         '1 POL = 10 💎. Requires MetaMask to send the on-chain transaction.',
   'mkt.crystals.buy_btn':     'Buy',
   'mkt.crystals.buy_ph':      'How many 💎? ({min} to {max})',
-  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} MATIC',
-  'mkt.crystals.buy_total_vazio':'Enter how many crystals you want to buy. 10 💎 = 1 MATIC.',
+  'mkt.crystals.buy_total':   '{gems} 💎 = {matic} POL',
+  'mkt.crystals.buy_total_vazio':'How many crystals? From {min} to {max} 💎 — each 💎 costs 0.1 POL.',
   'mkt.crystals.buy_invalid': 'Enter a whole number from {min} to {max} 💎.',
-  'mkt.crystals.redeem_title':'💸 Redeem Crystals → MATIC',
-  'mkt.crystals.redeem_sub':  'Convert your 💎 to MATIC. Limit: {max} 💎 per day ({matic} MATIC). A 1% fee is charged on top: redeeming 100 💎 uses 101 💎 of your balance.',
-  'mkt.transp.redeem_limit_val': '{max} 💎 / day ({matic} MATIC)',
+  'mkt.crystals.redeem_title':'💸 Redeem Crystals → POL',
+  'mkt.crystals.redeem_sub':  'Convert your 💎 to POL. Limit: {max} 💎 per day ({matic} POL). A 1% fee is charged on top: redeeming 100 💎 uses 101 💎 of your balance.',
+  'mkt.transp.redeem_limit_val': '{max} 💎 / day ({matic} POL)',
   'mkt.crystals.redeem_btn':  'Redeem',
   'mkt.crystals.redeem_ph':   'Amount of 💎 (min. 10)',
 
@@ -545,12 +553,12 @@ window.registerStrings({
   'mkt.crystals.limit_left':  'You can redeem {resta} of {max} 💎 today',
   'mkt.crystals.rede_nota':   '⚠ Whoever invited you earns {pct}% of every withdrawal — already deducted below.',
   'mkt.crystals.teto_cofre':  '⚠ The vault on Polygon still allows {n} 💎 today for your wallet — that is the cap, not the game’s.',
-  'mkt.crystals.resgate_conta':      'You receive {matic} MATIC · {custo} 💎 leave your balance',
-  'mkt.crystals.resgate_conta_rede': 'You receive {matic} MATIC · {rede} 💎 to whoever invited you · {custo} 💎 leave your balance',
+  'mkt.crystals.resgate_conta':      'You receive {matic} POL · {custo} 💎 leave your balance',
+  'mkt.crystals.resgate_conta_rede': 'You receive {matic} POL · {rede} 💎 to whoever invited you · {custo} 💎 leave your balance',
 
   // MetaMask
   'mkt.metamask.title':       '🦊 MetaMask required',
-  'mkt.metamask.sub':         'To buy or redeem Crystals with MATIC, link your MetaMask wallet. Your game progress is already safe — the wallet is only for payments.',
+  'mkt.metamask.sub':         'To buy or redeem Crystals with POL, link your MetaMask wallet. Your game progress is already safe — the wallet is only for payments.',
   'mkt.metamask.btn':         'Link MetaMask',
   'mkt.metamask.linked':      '🦊 MetaMask linked',
   'mkt.metamask.not_found':   'MetaMask not found.',
@@ -580,19 +588,19 @@ window.registerStrings({
   'mkt.tx.min_gems':          'Minimum 10 💎, in multiples of 10.',
   'mkt.tx.insufficient':      'Insufficient balance. You have {balance} 💎.',
   'mkt.tx.insufficient_taxa': 'Insufficient balance. This redemption uses {total} 💎 (including the {taxa} 💎 fee) and you have {balance} 💎.',
-  'mkt.tx.insufficient_matic':'❌ Insufficient balance. You need at least {matic} MATIC in your Polygon wallet.',
-  'mkt.tx.exchange_hint':     'You can buy MATIC on an exchange (e.g. Binance, Crypto.com) and transfer to the Polygon network.',
-  'mkt.tx.insufficient_toast':'Insufficient balance — you need {matic} MATIC',
+  'mkt.tx.insufficient_matic':'❌ Insufficient balance. You need at least {matic} POL in your Polygon wallet.',
+  'mkt.tx.exchange_hint':     'You can buy POL on an exchange (e.g. Binance, Crypto.com) and transfer to the Polygon network.',
+  'mkt.tx.insufficient_toast':'Insufficient balance — you need {matic} POL',
   'mkt.tx.requesting':        '⏳ Requesting server authorization...',
   'mkt.tx.open_mm_redeem':    '⏳ Open MetaMask to confirm the redeem...',
-  'mkt.tx.redeemed':          '✅ Redeemed! You received {matic} MATIC in your wallet.',
-  'mkt.tx.matic_sent':        '💸 {matic} MATIC sent!',
+  'mkt.tx.redeemed':          '✅ Redeemed! You received {matic} POL in your wallet.',
+  'mkt.tx.matic_sent':        '💸 {matic} POL sent!',
   'mkt.tx.cancelled':         'Transaction canceled.',
   'mkt.tx.redeem_cancelled':  'Redeem canceled. Your 💎 were restored by the server.',
   'mkt.tx.redeem_err':        'Redeem error. Please try again.',
   'mkt.tx.failed':            '❌ Transaction failed. Please try again.',
   'mkt.tx.chain_fail':        '❌ Transaction failed on-chain. Contact support with the tx hash.',
-  'mkt.tx.general_err':       'Send error. Check your MATIC balance and try again.',
+  'mkt.tx.general_err':       'Send error. Check your POL balance and try again.',
   'mkt.tx.sem_ethers':      'Could not load the wallet library. Check your connection and try again.',
   'mkt.tx.link_mm':           'Link MetaMask first.',
 
@@ -637,8 +645,8 @@ window.registerStrings({
   // Eggs — dynamic strings (eggs-market.js)
 
   // Limit bar
-  'mkt.limit.no_limit':        '{used} MATIC redeemed today · No daily limit',
-  'mkt.limit.with_limit':      '{used} MATIC redeemed today · {remaining} MATIC remaining (limit: 5 MATIC/day)',
+  'mkt.limit.no_limit':        '{used} POL redeemed today · No daily limit',
+  'mkt.limit.with_limit':      '{used} POL redeemed today · {remaining} POL remaining (limit: {teto} POL/day)',
 
   // Pool limit tiers
   'mkt.pool.fees':             '100% of game fees feed this pool.',
@@ -660,9 +668,9 @@ window.registerStrings({
   'mkt.transp.eggs_title':     '🥚 Eggs — Where They Can Go',
 
   // Transparency block — body content & labels
-  'mkt.transp.vault_body':     'All 💎 purchases with MATIC go into a <strong>smart contract</strong> on the Polygon blockchain — public code that no one can alter. Redemptions are paid directly from this vault.',
+  'mkt.transp.vault_body':     'All 💎 purchases with POL go into a <strong>smart contract</strong> on the Polygon blockchain — public code that no one can alter. Redemptions are paid directly from this vault.',
   'mkt.transp.vault_link':     'View contract on Polygonscan ↗',
-  'mkt.transp.crystal_body':   'MATIC goes 100% to the vault. 💎 are credited after on-chain verification and can be redeemed back at any time.',
+  'mkt.transp.crystal_body':   'POL goes 100% to the vault. 💎 are credited after on-chain verification and can be redeemed back at any time.',
   'mkt.transp.buy_rate':       'Buy price',
   'mkt.transp.redeem_rate':    'Redeem price',
   'mkt.transp.redeem_limit':   'Redeem limit',
@@ -673,7 +681,7 @@ window.registerStrings({
   'mkt.transp.sell_avatar':    'Avatar sale',
   'mkt.transp.weekly_body':    'The developer takes <strong style="color:var(--text);">1% of every redemption</strong>, and nothing else. It is charged to the redeemer\'s balance along with the amount withdrawn — never from the pool.',
   'mkt.transp.from_where':     'WHERE IT COMES FROM',
-  'mkt.transp.on_withdraw':    'Withdrawing 💎 → MATIC',
+  'mkt.transp.on_withdraw':    'Withdrawing 💎 → POL',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — never touched',
   'mkt.transp.weekly_note':    'Redeeming 100 💎 gives <strong style="color:var(--text);">1 💎</strong> to the developer. The pool is untouched.',

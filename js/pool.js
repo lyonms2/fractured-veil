@@ -8,14 +8,14 @@
    a qual a barra do saldo se mede.
 
    Eram 1000 💎, da escala antiga — e com a de hoje isso é o saque
-   diário de UMA pessoa (1000 💎 = 100 MATIC): a barra bateria 100% na
+   diário de UMA pessoa (1000 💎 = 100 POL): a barra bateria 100% na
    primeira semana e deixaria de dizer alguma coisa. São 50 mil desde
    26/09/2026, escolhidos pelo dono do jogo. */
 const POOL_ALVO        = 50000;
 const TAXA_MARKETPLACE = 0.10; // 10% de taxa sobre vendas de avatar
 const TAXA_OVO         = 0.10; // 10% de taxa sobre compra de ovo raro na loja
 const DEV_WALLET       = '0x8615C48d38505f02eb212Aa2ED2BA8Df86E4A49C'; // carteira dev
-// Taxas do marketplace vão 100% para a Pool P2E (lucro dev vem dos 20% MATIC do Treasury)
+// Taxas do marketplace vão 100% para a Pool P2E (lucro dev vem dos 20% POL do Treasury)
 
 let poolData = null; // carregado do Firestore
 
@@ -99,9 +99,9 @@ async function renderPoolSection() {
 // A página mostrava os cristais da pool e o link do contrato, e nunca a
 // razão entre os dois — que é o que faz dela transparência a sério.
 //
-// O MATIC vem da blockchain; os cristais, da soma de todos os jogadores
+// O POL vem da blockchain; os cristais, da soma de todos os jogadores
 // mais os que a pool guarda. Como as duas taxas batem certo (10 💎 por
-// MATIC nas duas direcções), 100% é o ponto de equilíbrio.
+// POL nas duas direcções), 100% é o ponto de equilíbrio.
 // ═══════════════════════════════════════════
 function renderCoberturaCard() {
   const el = document.getElementById('poolCoberturaCard');
@@ -136,10 +136,10 @@ function renderCoberturaCard() {
         <span>${t('mkt.cob.circulacao')}</span><b>${fmtC(c.circulacao)} 💎</b>
       </div>
       <div class="pool-cob-linha">
-        <span>${t('mkt.cob.necessario')}</span><b>${fmtC(c.necessario)} MATIC</b>
+        <span>${t('mkt.cob.necessario')}</span><b>${fmtC(c.necessario)} POL</b>
       </div>
       <div class="pool-cob-linha">
-        <span>${t('mkt.cob.cofre')}</span><b>${semCofre ? '—' : fmtC(c.cofre) + ' MATIC'}</b>
+        <span>${t('mkt.cob.cofre')}</span><b>${semCofre ? '—' : fmtC(c.cofre) + ' POL'}</b>
       </div>
     </div>
     ${!semCofre && pct < 100

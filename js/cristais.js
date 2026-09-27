@@ -49,29 +49,33 @@ function carregarEthers() {
   });
   return _ethersPromise;
 }
-const MATIC_TO_GEMS    = 10; // 1 MATIC = 10 💎
+const MATIC_TO_GEMS    = 10; // 1 POL = 10 💎
 
 /* A COMPRA É POR QUANTIDADE
    ═══════════════════════════════════════════════════════════════════
    Eram três pacotes fixos (15, 50 e 100 💎), com 10% de bônus em cada.
    O bônus saiu (ver api/processar-compra.js), e sem ele os pacotes eram
    só três tamanhos da mesma compra. Agora o jogador digita quantos
-   cristais quer: 10 💎 = 1 MATIC, sem arredondamento.
+   cristais quer: 10 💎 = 1 POL, sem arredondamento.
 
-   Os limites vêm de fora deste arquivo:
-     mínimo 1 💎    o contrato recusa menos de 0,1 MATIC
-                    ("Valor insuficiente (minimo 0.1 MATIC)")
-     máximo 5000 💎 o MAX_GEMS_CREDITO do api/processar-compra.js, que
-                    recusa creditar mais do que isso numa transação */
-/* ── A ESCALA (23/09/2026) ──
+   Os limites de fora deste arquivo, que estes têm de respeitar:
+     o contrato recusa qualquer valor que não seja múltiplo de 0,1 POL,
+     ou seja, compra em cristais inteiros (erro ValorNaoMultiplo);
+     máximo 5000 💎 é o MAX_GEMS_CREDITO do api/processar-compra.js,
+     que recusa creditar mais do que isso numa transação. */
+/* ── A ESCALA (23/09/2026, mínimo revisto em 27/09) ──
 
-   1 ð = 0,1 MATIC ≈ um cêntimo de dólar. A taxa (10 ð por MATIC) NÃO
+   1 💎 = 0,1 POL ≈ um centavo de dólar. A cotação (10 💎 por POL) NÃO
    se mexe: ela é o lastro, e mudá-la faria a pool dever de um dia para
-   o outro dez vezes o MATIC que tem. O que se ajusta são os PREÇOS.
+   o outro dez vezes o POL que tem. O que se ajusta são os PREÇOS.
 
-   O mínimo era 1 ð: dava para comprar um cêntimo de cristal, e a
-   transação custava mais do que o que se comprava. */
-const COMPRA_MIN_GEMS = 50;
+   O mínimo já foi 1 💎, e a transação custava mais do que o que se
+   comprava. Subiu para 50, e aí passou a contradizer o texto ao lado do
+   campo, que anunciava a cotação com "10 💎 = 1 POL" — um número que o
+   campo recusava. Ficou em 10: é 1 POL redondo, dá para experimentar o
+   caminho do dinheiro sem gastar cinco, e o gás na Polygon é barato o
+   bastante para a compra continuar a valer a pena. */
+const COMPRA_MIN_GEMS = 10;
 const COMPRA_MAX_GEMS = 5000;
 
 // ═══════════════════════════════════════════
@@ -140,14 +144,16 @@ async function renderTransparencia() {
     } else {
       const restante  = parseFloat(ethers.formatEther(restanteWei));
       /* O teto do dia é o que já saiu mais o que ainda cabe — lido do
-         próprio contrato. Esteve cravado em 5 MATIC, que era o que o
+         próprio contrato. Esteve cravado em 5 POL, que era o que o
          cofre antigo dava; o de hoje dá 100 e o dono pode mudar sem
          trocar de contrato. Uma barra com o número à mão mentiria no
          dia seguinte à mudança. */
       const tetoDia   = Math.max(sacado + restante, 0.0001);
       const pct       = Math.min((sacado / tetoDia) * 100, 100);
       barEl.style.width = pct + '%';
-      txtEl.textContent = t('mkt.limit.with_limit', {used: sacado.toFixed(2), remaining: restante.toFixed(2)});
+      txtEl.textContent = t('mkt.limit.with_limit', {used: sacado.toFixed(2),
+                                            remaining: restante.toFixed(2),
+                                            teto: tetoDia.toFixed(0)});
     }
   } catch(e) {
     barEl.style.width = '0%';
@@ -184,7 +190,7 @@ function renderCrystals() {
 
    A página de Convites explicava isto do lado de quem GANHA. Do lado de
    quem paga, esta tela só falava do 1% do dev — e o jogador descobria o
-   resto olhando o MATIC que chegou. Agora está dito antes do clique.
+   resto olhando o POL que chegou. Agora está dito antes do clique.
 
    A conta é a mesma do servidor, incluindo o `floor` por nível: um saque
    pequeno pode dar zero a um dos níveis, e prometer um décimo que não vai
@@ -221,7 +227,7 @@ function _mostrarDescontoDaRede() {
 }
 
 /* O que se recebe de verdade, enquanto se escreve. A tela da compra já
-   fazia isto ("50 💎 = 5 MATIC"); a do resgate, que tem duas deduções
+   fazia isto ("50 💎 = 5 POL"); a do resgate, que tem duas deduções
    pelo caminho, não dizia nada. */
 function _atualizarTotalResgate() {
   const alvo = document.getElementById('resgateTotal');
@@ -243,7 +249,7 @@ function _gemsDaCompra() {
   return (Number.isInteger(v) && v >= COMPRA_MIN_GEMS && v <= COMPRA_MAX_GEMS) ? v : null;
 }
 
-// 10 💎 = 1 MATIC. Um inteiro dividido por 10 tem no máximo uma casa.
+// 10 💎 = 1 POL. Um inteiro dividido por 10 tem no máximo uma casa.
 function _maticDeGems(gems) {
   return String(+(gems / MATIC_TO_GEMS).toFixed(1));
 }
@@ -254,7 +260,7 @@ function _atualizarTotalCompra() {
   const gems = _gemsDaCompra();
   el.textContent = gems
     ? t('mkt.crystals.buy_total', {gems, matic: _maticDeGems(gems)})
-    : t('mkt.crystals.buy_total_vazio');
+    : t('mkt.crystals.buy_total_vazio', {min: COMPRA_MIN_GEMS, max: COMPRA_MAX_GEMS});
 }
 
 // ═══════════════════════════════════════════
@@ -267,7 +273,7 @@ function _atualizarTotalCompra() {
    que interessava só aparecia depois de falhar.
 
    Existe uma barra de limite, mas na página da Transparência — noutra
-   secção, e em MATIC em vez de 💎. Aqui, onde se resgata, não havia nada.
+   secção, e em POL em vez de 💎. Aqui, onde se resgata, não havia nada.
 
    O resgateLog está no documento do jogador. O cliente não o escreve
    (as regras não deixam, é o que impede zerar o próprio limite) mas
@@ -294,7 +300,7 @@ async function renderLimiteResgate() {
   if (typeof equiparSetas === 'function') equiparSetas(input);
 
   /* O texto por cima do campo leva o teto, e o teto tem uma fonte só.
-     Estava escrito à mão nas duas línguas ("Limite: 5 MATIC/dia") e
+     Estava escrito à mão nas duas línguas ("Limite: 5 POL/dia") e
      ficou mentindo quando o teto subiu. */
   const sub = document.getElementById('resgateSub');
   if (sub) sub.textContent = t('mkt.crystals.redeem_sub', {
@@ -318,13 +324,13 @@ async function renderLimiteResgate() {
 
   /* ── O TETO DE VERDADE É O MENOR DOS DOIS ──
 
-     Há dois freios no caminho do MATIC, e só um deles vivia nesta tela:
+     Há dois freios no caminho do POL, e só um deles vivia nesta tela:
      o do JOGO (api/resgatar.js) e o do COFRE, que é o contrato na
      Polygon e tem o teto diário dele por carteira. Quem paga é o cofre,
      portanto quem manda é o menor dos dois.
 
      Em 26/09/2026 isto prometia vinte vezes o que o cofre liberava: o
-     jogo dizia 1000 💎 e o contrato dava 5 MATIC — 50 💎. O cofre foi
+     jogo dizia 1000 💎 e o contrato dava 5 POL — 50 💎. O cofre foi
      trocado no dia seguinte e os dois tetos passaram a coincidir em
      1000 💎, mas o número do cofre continua a NÃO se escrever aqui à
      mão: lê-se dele. É por isso que esta tela sobreviveu à troca sem
@@ -510,7 +516,7 @@ async function comprarCristais() {
       return;
     }
 
-    // 1 💎 = 0,1 MATIC = 10^17 wei. Em unidades inteiras, sem ponto
+    // 1 💎 = 0,1 POL = 10^17 wei. Em unidades inteiras, sem ponto
     // flutuante no meio do caminho.
     const maticWei = ethers.parseUnits(String(gems), 17);
 
@@ -552,7 +558,7 @@ async function comprarCristais() {
     } else if(e.code === 'ACTION_REJECTED' || e?.info?.error?.code === 4001) {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.cancelled')}</span>`;
     } else if(e.code === 'INSUFFICIENT_FUNDS' || e?.message?.includes('insufficient funds')) {
-      status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${matic} MATIC</b>`})}<br><small>${t('mkt.tx.exchange_hint')}</small></span>`;
+      status.innerHTML = `<span class="tx-err">${t('mkt.tx.insufficient_matic', {matic: `<b>${matic} POL</b>`})}<br><small>${t('mkt.tx.exchange_hint')}</small></span>`;
       showToast(t('mkt.tx.insufficient_toast', {matic}), 'err');
     } else {
       status.innerHTML = `<span class="tx-err">${t('mkt.tx.general_err')}</span>`;
@@ -563,7 +569,7 @@ async function comprarCristais() {
 }
 
 // ═══════════════════════════════════════════
-// RESGATE DE CRISTAIS — 💎 → MATIC
+// RESGATE DE CRISTAIS — 💎 → POL
 // ═══════════════════════════════════════════
 async function resgatar() {
   const gemsInput = document.getElementById('resgateGems');
@@ -584,7 +590,7 @@ async function resgatar() {
   }
   // O resgate mede-se pelo balde COM lastro, e não pelo saldo que a
   // loja mostra: os cristais de bónus gastam-se dentro do jogo e não
-  // saem para MATIC. Com o mktCristais() aqui, quem tivesse bónus
+  // saem para POL. Com o mktCristais() aqui, quem tivesse bónus
   // escrevia um número que passava nesta verificação e só rebentava
   // do outro lado, no servidor.
   // A taxa de 1% do dev é cobrada por cima do valor sacado (ver

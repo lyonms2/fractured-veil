@@ -164,7 +164,7 @@ function burnEgg(id) {
   const bonusPct = bonus > 0 ? ` (+${Math.round(bonus*100)}% bônus)` : '';
 
   // O Comum continua a queimar-se por moedas internas, que não saem da
-  // pool nem valem MATIC — é só uma forma de não ficar com ele parado.
+  // pool nem valem POL — é só uma forma de não ficar com ele parado.
   const moedas = Math.round(20 * (1 + bonus));
   const overlay = document.getElementById('eggBurnOverlay');
   const preview = document.getElementById('eggBurnPreview');
