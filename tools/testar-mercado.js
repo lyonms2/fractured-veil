@@ -20,13 +20,19 @@
      · a raridade vinha do mesmo lugar, quando hoje ela é uma conta
        feita sobre o nível (fuRaridadeDoNivel);
      · o avatar comprado ficava preso na conta de quem o comprou: o
-       registo de emissão guardava a raridade em vez da origem, e a
+       registro de emissão guardava a raridade em vez da origem, e a
        revenda morria em ORIGEM_NAO_CONFERE.
 
-   ESTE TESTE SUJA O ESTADO, e de propósito: ele vende um avatar do
-   jog1 ao jog2, que é a única maneira de conferir a revenda. Rode-o por
-   último, ou levante o harness de novo antes do testar-niveis.js — que
-   conta com os três avatares do jog1 no lugar.
+   ESTE TESTE PRECISA DO HARNESS ACABADO DE LEVANTAR, e não de ser o
+   último — o cabeçalho dizia o contrário e custou uma investigação. O
+   testar-niveis.js apaga o `niveis` do jog1 para conferir o primeiro
+   encontro, e sem esse campo o servidor aqui recusa listar com
+   AVATAR_SEM_REGISTO. Rodar a bateria em fila faz isto FALHAR sem que
+   haja nada partido.
+
+   E ele próprio suja o estado, também de propósito: vende um avatar do
+   jog1 ao jog2, que é a única maneira de conferir a revenda. Ou seja,
+   os dois querem o harness limpo e nenhum dos dois o deixa assim.
 
    O firebase-admin não mora no repositório: NODE_PATH para uma pasta
    com ele instalado.
@@ -76,7 +82,7 @@ const pede = async (tok, body) => {
   while (comVaga.length < 5) comVaga.push(null);
   await d2.update({ cristais: 500, 'gs.cristais': 500, avatarSlots: comVaga });
 
-  /* O SAVE MENTE: nível 60 no slot, 30 no registo do servidor. É a
+  /* O SAVE MENTE: nível 60 no slot, 30 no registro do servidor. É a
      linha no console que qualquer um escreve, e o que o teste quer
      saber é se a vitrine a repete. */
   const p = (await d1.get()).data();

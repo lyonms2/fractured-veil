@@ -11,7 +11,21 @@
    O que se confere: o primeiro encontro anota o que o slot diz; um save
    editado para o nível 60 não muda o poder da equipe; a rota sobe só o
    que o balde permite; um avatar de outra pessoa é ignorado; quem nasce
-   já vem registado no nível 1. As regras em si estão no js/niveis.js.
+   já vem registrado no nível 1. As regras em si estão no js/niveis.js.
+
+   ESTE TESTE E O testar-mercado.js NÃO PODEM CORRER EM FILA. Cada um
+   precisa dos três avatares do jog1 como o harness os semeia, e cada um
+   estraga isso para o outro:
+
+     · este apaga o `niveis` do jog1, de propósito, porque o primeiro
+       encontro só acontece uma vez por avatar. Sem esse campo o mercado
+       recusa listar, com AVATAR_SEM_REGISTO;
+     · o mercado vende um avatar do jog1 ao jog2, porque é a única forma
+       de conferir a revenda. Depois disso o jog1 tem dois, e as contas
+       de poder daqui dão undefined.
+
+   Levante o harness de novo entre um e outro. Uma falha nestes dois
+   quase sempre é a ordem, e não o jogo.
 
    O firebase-admin não mora no repositório: NODE_PATH para uma pasta
    com ele instalado.
