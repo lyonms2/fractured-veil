@@ -51,7 +51,7 @@ require('./_genetica.js');
 const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
 const R = require('../js/pvp-regras.js');
 const RK = require('../js/pvp-rank.js');   // os pontos da temporada
-const TP = require('../js/temporada.js');  // o selo e o prémio da temporada
+const TP = require('../js/temporada.js');  // o selo e o prêmio da temporada
 const CRIS = require('./_cristais.js');    // os dois baldes de cristais
 
 const DB_URL = process.env.FIREBASE_DATABASE_URL || 'https://fractured-veil-default-rtdb.firebaseio.com';
@@ -880,7 +880,9 @@ async function fecharPendentes(db, rtdb, tempAtual) {
             totalSaiu: FieldValue.increment(valor),
           });
           tx.set(poolRef.collection('logs').doc(), {
-            tipo: 'saida', motivo: 'prémio da temporada ' + anterior,
+            // "prêmio", e não "prémio": esta linha aparece no histórico da
+            // pool, que o jogador lê.
+            tipo: 'saida', motivo: 'prêmio da temporada ' + anterior,
             origem: 'temporada', total: valor, pool: -valor,
             ts: FieldValue.serverTimestamp(),
           });

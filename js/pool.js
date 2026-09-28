@@ -212,7 +212,7 @@ function renderPoolStatsCard() {
 // e ela saiu inteira, com a chamada que a invocava.
 
 // ═══════════════════════════════════════════
-// HISTÓRICO DE TRANSACÇÕES DA POOL
+// HISTÓRICO DE TRANSAÇÕES DA POOL
 // ═══════════════════════════════════════════
 async function loadPoolLogs(reset) {
   const list = document.getElementById('poolLogList');
@@ -242,7 +242,15 @@ async function loadPoolLogs(reset) {
     list.innerHTML = poolLogs.map(log => {
       const isEntrada = log.tipo === 'entrada';
       const ts  = log.ts ? new Date(log.ts) : new Date();
-      const locale = localStorage.getItem('lang') === 'en' ? 'en-US' : 'pt-PT';
+      /* A chave do idioma é `fv_lang` (js/i18n.js), e não `lang`: esta
+         linha procurava uma chave que não existe, portanto CAÍA SEMPRE
+         no ramo de baixo — quem jogasse em inglês via as datas em
+         formato português e nunca saberia porquê.
+
+         E o ramo de baixo era 'pt-PT', que é Portugal. O jogo é do
+         Brasil: a data é a mesma, a hora não. */
+      const locale = (window._currentLang || localStorage.getItem('fv_lang')) === 'en'
+                   ? 'en-US' : 'pt-BR';
       const timeStr = ts.toLocaleDateString(locale) + ' ' + ts.toLocaleTimeString(locale, {hour:'2-digit',minute:'2-digit'});
       const wallet = log.origem && log.origem.length > 10
         ? log.origem.slice(0,6)+'…'+log.origem.slice(-4)
@@ -255,7 +263,10 @@ async function loadPoolLogs(reset) {
           <div class="pool-log-motivo">${esc(log.motivo) || '—'}</div>
           <div class="pool-log-wallet">${wallet}</div>
         </div>
-        <div class="pool-log-amount">${sinal}${fmtC(log.pool)} 💎</div>
+        <!-- O valor SEM sinal: as saídas já vêm negativas do servidor
+             (pool: -valor, em api/pvp.js) e o sinal daqui somava-se ao
+             delas — um prêmio de temporada aparecia como "--18,00 💎". -->
+        <div class="pool-log-amount">${sinal}${fmtC(Math.abs(log.pool))} 💎</div>
         <div class="pool-log-time">${timeStr}</div>
       </div>`;
     }).join('');
