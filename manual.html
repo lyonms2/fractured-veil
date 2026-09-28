@@ -623,7 +623,7 @@
       <div class="section-hero">
         <div class="section-tag">CAPÍTULO 1</div>
         <div class="section-title">O Avatar</div>
-        <p class="section-intro">Cada avatar sai de um ovo com três coisas decididas para sempre: a cor, que manda no elemento dele; a costura, que é a fraqueza dele; e o DNA, que decide do que ele é feito. Nada disso muda depois — o resto da vida dele é o que você fizer.</p>
+        <p class="section-intro">Cada avatar sai de um ovo com quatro coisas decididas para sempre: a cor, que manda no elemento dele; a costura, que é a fraqueza dele; a escola de magia, que decide o que ele vai saber fazer em combate; e o DNA, que decide do que ele é feito. Nada disso muda depois — o resto da vida dele é o que você fizer.</p>
       </div>
 
       <h2>A cor manda no elemento</h2>
@@ -652,6 +652,9 @@
         </div>
       </div>
 
+      <h2>A escola de magia</h2>
+      <p>Cada lugar de magia tem <strong>duas</strong> versões, e o avatar nasce com uma delas. É o que faz dois bichos do mesmo feitio e do mesmo nível lutarem diferente: um espalha dano pela equipe inimiga, o outro concentra num alvo e passa por quem se defende. A ficha dele diz quais são, e o capítulo <em>Batalhar</em> tem a lista inteira.</p>
+
       <h2>O DNA</h2>
       <p>Por baixo da aparência, cada avatar carrega genes que decidem os quatro atributos de combate e os passivos de criação — quanto ele come, quanto entristece, quanto recupera dormindo. Filhos herdam dos dois pais, e é por isso que cruzar dois avatares bem escolhidos compensa. Veja <em>Ovos e Família</em>.</p>
 
@@ -674,7 +677,7 @@
       <div class="section-hero">
         <div class="section-tag">CHAPTER 1</div>
         <div class="section-title">The Avatar</div>
-        <p class="section-intro">Every avatar comes out of its egg with three things settled for good: its color, which decides its element; its seam, which is its weakness; and its DNA, which decides what it is made of. None of that changes later — the rest of its life is whatever you make of it.</p>
+        <p class="section-intro">Every avatar comes out of its egg with four things settled for good: its color, which decides its element; its seam, which is its weakness; its school of magic, which decides what it will know how to do in battle; and its DNA, which decides what it is made of. None of that changes later — the rest of its life is whatever you make of it.</p>
       </div>
 
       <h2>Color decides the element</h2>
@@ -702,6 +705,9 @@
           Every avatar is vulnerable to one of the eight elements — its seam. It never lands on an element the avatar resists, so it is always a real hole. It is the counterweight to affinities: the rarer the creature, the more it shrugs off, but the seam stays there for anyone who knows to look.
         </div>
       </div>
+
+      <h2>School of magic</h2>
+      <p>Every spell lane has <strong>two</strong> versions, and an avatar is born with one of them. That is what makes two creatures of the same build and level fight differently: one spreads damage across the enemy team, the other concentrates on a single target and walks past anyone defending. Its sheet says which ones it has, and the <em>Battle</em> chapter lists them all.</p>
 
       <h2>DNA</h2>
       <p>Under the surface, every avatar carries genes that decide its four combat attributes and its care traits — how fast it gets hungry, how easily it gets sad, how much it recovers while asleep. Offspring inherit from both parents, which is why breeding two well-chosen avatars pays off. See <em>Eggs &amp; Family</em>.</p>
@@ -1220,17 +1226,50 @@
           <tr><th>Feitiço</th><th>PM</th><th>Alvos</th><th>Dano</th><th>Detalhe</th></tr>
           <tr><td>Golpe</td><td>0</td><td>1</td><td>5</td><td>sempre disponível, corpo a corpo</td></tr>
           <tr><td>Sopro</td><td>5</td><td>1</td><td>10</td><td>—</td></tr>
-          <tr><td>Barragem</td><td>10</td><td>3</td><td>10 cada</td><td>pega a equipe inimiga inteira</td></tr>
-          <tr><td>Barragem Certa</td><td>15</td><td>3</td><td>15 cada</td><td>impõe o estado sempre</td></tr>
+          <tr><td>Barragem</td><td>10 <em>por alvo</em></td><td>até 3</td><td>10 cada</td><td>30 PM para pegar a equipe inteira</td></tr>
+          <tr><td>Barragem Certa</td><td>15 <em>por alvo</em></td><td>até 3</td><td>15 cada</td><td>impõe o estado sempre · 45 PM pelos três</td></tr>
           <tr><td>Sopro Maldito</td><td>10</td><td>1</td><td>15</td><td>impõe o estado sempre</td></tr>
           <tr><td>Concentrado</td><td>15</td><td>1</td><td>25</td><td><strong>ignora resistências</strong></td></tr>
           <tr><td>Devastação</td><td>30</td><td>todos</td><td>30</td><td>uma por turno na cena inteira</td></tr>
           <tr><td>Concha</td><td>10</td><td>próprio</td><td>—</td><td>resiste a todos os inimigos</td></tr>
-          <tr><td>Barreira</td><td>5</td><td>3 aliados</td><td>—</td><td>—</td></tr>
+          <tr><td>Barreira</td><td>5 <em>por alvo</em></td><td>até 3 aliados</td><td>—</td><td>garante Defesa e Defesa Mágica 12</td></tr>
           <tr><td>Proteger</td><td>10</td><td>1 aliado</td><td>—</td><td>assume o golpe por ele</td></tr>
           <tr><td>Lamber</td><td>5</td><td>1 aliado</td><td>—</td><td>cura 15 e limpa um estado</td></tr>
+          <tr><td>Curar</td><td>10 <em>por alvo</em></td><td>até 3 aliados</td><td>—</td><td>cura 30 e limpa um estado em cada</td></tr>
+          <tr><td>Despertar</td><td>20</td><td>1 aliado</td><td>—</td><td>+6 de dano nos ataques dele · <strong>não gasta o turno</strong> · uma vez por luta</td></tr>
         </table>
       </div>
+      <h2>A escola com que ele nasceu</h2>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">Dois avatares iguais que lutam diferente</div>
+        <div class="card-body">
+          Cada lugar tem <strong>duas</strong> magias por degrau, e o avatar nasce com uma delas — sorteada no nascimento, como a cor e a costura. Não se compra, não se troca e não depende do nível.
+          <br><br>
+          Por isso dois Guardas Lendários do mesmo nível podem jogar de formas diferentes: um tem <em>Proteger</em> e assume os golpes de um aliado; o outro tem <em>Baluarte</em> e vira uma parede sozinho.
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>No lugar de</th><th>a outra escola tem</th><th>que troca</th></tr>
+          <tr><td>Sopro</td><td><strong>Estilhaço</strong> · 4 PM por alvo, até 2, 6 cada</td><td>concentração por alcance</td></tr>
+          <tr><td>Barragem</td><td><strong>Lança Perfurante</strong> · 14 PM, 1 alvo, 22</td><td>alcance por não perder nada contra quem guarda</td></tr>
+          <tr><td>Barragem Certa</td><td><strong>Lança Certeira</strong> · 20 PM, 1 alvo, 34</td><td>alcance por furar a guarda</td></tr>
+          <tr><td>Sopro Maldito</td><td><strong>Corte Duplo</strong> · 8 PM por alvo, até 2, 11 cada</td><td>o estado garantido por um alvo a mais</td></tr>
+          <tr><td>Concentrado</td><td><strong>Estocada</strong> · 12 PM, 1 alvo, 23</td><td>ignorar resistência por furar guarda e impor o estado</td></tr>
+          <tr><td>Devastação</td><td><strong>Execução</strong> · 22 PM, 1 alvo, 42</td><td>a cena inteira por um golpe que passa por qualquer afinidade</td></tr>
+          <tr><td>Concha</td><td><strong>Postura de Ferro</strong> · 8 PM, próprio</td><td>resistir aos elementos por garantir as duas Defesas em 14</td></tr>
+          <tr><td>Barreira</td><td><strong>Escudo Focado</strong> · 6 PM, 1 aliado</td><td>cobrir três por cobrir um muito melhor (16)</td></tr>
+          <tr><td>Proteger</td><td><strong>Baluarte</strong> · 12 PM, próprio</td><td>defender o outro por aguentar sozinho</td></tr>
+          <tr><td>Lamber</td><td><strong>Bálsamo</strong> · 4 PM por alvo, até 3, cura 8</td><td>limpar estado por curar o grupo</td></tr>
+          <tr><td>Curar</td><td><strong>Transfusão</strong> · 12 PM, 1 aliado, cura 55</td><td>espalhar por salvar um, e tirar dois estados</td></tr>
+          <tr><td>Despertar</td><td><strong>Canto de Guerra</strong> · 8 PM por alvo, até 3, +2 de dano</td><td>+6 num por +2 em três · também não gasta o turno</td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Nenhuma é melhor.</strong> Cada par troca uma coisa por outra, e quem decide qual era a certa é o <em>inimigo</em>: contra três inteiros, a que espalha rende mais; contra um que se defende bem, a que perfura. É por isso que a escola é um jeito de jogar, e não sorte no nascimento.
+      </div>
+
       <div class="callout">
         <strong>Concentrado contra Lendário.</strong> Ignorar resistências é a resposta do jogo para quem absorve o próprio elemento: 15 de PM e 25 de dano que passam por cima de qualquer afinidade.
       </div>
@@ -1316,17 +1355,50 @@
           <tr><th>Spell</th><th>MP</th><th>Targets</th><th>Damage</th><th>Detail</th></tr>
           <tr><td>Strike</td><td>0</td><td>1</td><td>5</td><td>always available, melee</td></tr>
           <tr><td>Breath</td><td>5</td><td>1</td><td>10</td><td>—</td></tr>
-          <tr><td>Barrage</td><td>10</td><td>3</td><td>10 each</td><td>hits the whole enemy team</td></tr>
-          <tr><td>Sure Barrage</td><td>15</td><td>3</td><td>15 each</td><td>always inflicts the status</td></tr>
+          <tr><td>Barrage</td><td>10 <em>per target</em></td><td>up to 3</td><td>10 each</td><td>30 MP to hit the whole team</td></tr>
+          <tr><td>Sure Barrage</td><td>15 <em>per target</em></td><td>up to 3</td><td>15 each</td><td>always inflicts the status · 45 MP for all three</td></tr>
           <tr><td>Cursed Breath</td><td>10</td><td>1</td><td>15</td><td>always inflicts the status</td></tr>
           <tr><td>Focused Strike</td><td>15</td><td>1</td><td>25</td><td><strong>ignores resistances</strong></td></tr>
           <tr><td>Devastation</td><td>30</td><td>all</td><td>30</td><td>once per turn, whole scene</td></tr>
           <tr><td>Shell</td><td>10</td><td>self</td><td>—</td><td>resists every enemy</td></tr>
-          <tr><td>Barrier</td><td>5</td><td>3 allies</td><td>—</td><td>—</td></tr>
+          <tr><td>Barrier</td><td>5 <em>per target</em></td><td>up to 3 allies</td><td>—</td><td>guarantees Defense and Magic Defense 12</td></tr>
           <tr><td>Protect</td><td>10</td><td>1 ally</td><td>—</td><td>takes the hit for them</td></tr>
           <tr><td>Lick</td><td>5</td><td>1 ally</td><td>—</td><td>heals 15 and clears one status</td></tr>
+          <tr><td>Heal</td><td>10 <em>per target</em></td><td>up to 3 allies</td><td>—</td><td>heals 30 and clears one status on each</td></tr>
+          <tr><td>Awaken</td><td>20</td><td>1 ally</td><td>—</td><td>+6 damage on their attacks · <strong>does not use your turn</strong> · once per battle</td></tr>
         </table>
       </div>
+      <h2>The school it was born with</h2>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">Two identical avatars that fight differently</div>
+        <div class="card-body">
+          Every lane holds <strong>two</strong> spells per tier, and an avatar is born with one of them — rolled at birth, like its color and its seam. It cannot be bought, traded, or leveled into.
+          <br><br>
+          So two Legendary Guards of the same level can play very differently: one has <em>Protect</em> and takes hits for an ally; the other has <em>Bulwark</em> and becomes a wall on its own.
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Instead of</th><th>the other school has</th><th>trading</th></tr>
+          <tr><td>Breath</td><td><strong>Shardburst</strong> · 4 MP per target, up to 2, 6 each</td><td>focus for reach</td></tr>
+          <tr><td>Barrage</td><td><strong>Piercing Lance</strong> · 14 MP, 1 target, 22</td><td>reach for losing nothing to a guarding foe</td></tr>
+          <tr><td>Sure Barrage</td><td><strong>Sure Lance</strong> · 20 MP, 1 target, 34</td><td>reach for piercing the guard</td></tr>
+          <tr><td>Cursed Breath</td><td><strong>Twin Cut</strong> · 8 MP per target, up to 2, 11 each</td><td>the guaranteed status for one more target</td></tr>
+          <tr><td>Focused Strike</td><td><strong>Thrust</strong> · 12 MP, 1 target, 23</td><td>ignoring resistance for piercing guard and forcing the status</td></tr>
+          <tr><td>Devastation</td><td><strong>Execution</strong> · 22 MP, 1 target, 42</td><td>the whole scene for a blow that walks past any affinity</td></tr>
+          <tr><td>Shell</td><td><strong>Iron Stance</strong> · 8 MP, self</td><td>elemental resistance for both Defenses at 14</td></tr>
+          <tr><td>Barrier</td><td><strong>Focused Shield</strong> · 6 MP, 1 ally</td><td>covering three for covering one far better (16)</td></tr>
+          <tr><td>Protect</td><td><strong>Bulwark</strong> · 12 MP, self</td><td>defending another for standing alone</td></tr>
+          <tr><td>Lick</td><td><strong>Balm</strong> · 4 MP per target, up to 3, heals 8</td><td>clearing a status for healing the group</td></tr>
+          <tr><td>Heal</td><td><strong>Transfusion</strong> · 12 MP, 1 ally, heals 55</td><td>spreading for saving one, and clearing two statuses</td></tr>
+          <tr><td>Awaken</td><td><strong>War Chant</strong> · 8 MP per target, up to 3, +2 damage</td><td>+6 on one for +2 on three · also free of your turn</td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Neither is better.</strong> Each pair trades one thing for another, and what decides which was right is the <em>enemy</em>: against three intact foes the spreading one pays more; against one that defends well, the piercing one. That is what makes the school a way of playing rather than luck at birth.
+      </div>
+
       <div class="callout">
         <strong>Focused Strike versus a Legendary.</strong> Ignoring resistances is the game's answer to anything that absorbs its own element: 15 MP and 25 damage that walk straight past any affinity.
       </div>

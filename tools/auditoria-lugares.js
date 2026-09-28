@@ -39,6 +39,11 @@ function verificar(nome, cond, detalhe) {
 }
 function titulo(t) { console.log('\n── ' + t + ' ' + '─'.repeat(Math.max(0, 58 - t.length))); }
 
+/* A PRIMEIRA ESCOLA, onde o teste fala de uma magia pelo nome.
+   Metade dos avatares nasce com a segunda (FU_SEGUNDA_ESCOLA, em
+   js/magias-fu.js) e teria outra magia naquele lugar — sem fixar
+   isto, metade destes testes media a magia errada e falhava por
+   estar certa. Quem quiser testar a segunda pede escola: 1. */
 function avatar(seed, nivel, nome) {
   const cert = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
   cert.seed = seed; cert.nascimento.seed = seed;
@@ -58,7 +63,7 @@ const luta = (nv, sem) => M.fuIniciar(equipa(1, nv, sem), equipa(2, nv, sem), se
    nulo" — que é o motor a dizer, correctamente, que aquele avatar não
    sabe aquilo. */
 const fichaDe = (tipo, raridade, feitio) =>
-  ({ tipo, raridade, feitio: feitio || 'guarda', DES: 8, PER: 8, VIG: 8, VON: 8 });
+  ({ tipo, raridade, feitio: feitio || 'guarda', escola: 0, DES: 8, PER: 8, VIG: 8, VON: 8 });
 
 // De que feitio é preciso ser para ter cada lugar.
 const FEITIO_DE = { comum: 'guarda', forte: 'guarda', defesa: 'guarda',
@@ -206,7 +211,7 @@ titulo('Cada forma faz o que diz');
   // ── a própria: Concha ──
   {
     const e = luta(10, 3), q = e.A[0];
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { feitio: 'guarda' }), 'defesa');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, feitio: 'guarda' }), 'defesa');
     const antesPM = q.pm;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m });
     // A Concha resiste aos elementos dos inimigos de pé, e não ao físico.
@@ -227,7 +232,7 @@ titulo('Cada forma faz o que diz');
   // ── a aliada: Curar ──
   {
     const e = luta(10, 4), q = e.A[0], amigo = e.A[1];
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro', feitio: 'sustentacao' }), 'suporte');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Raro', feitio: 'sustentacao' }), 'suporte');
     amigo.pv = 5;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('Curar aponta para dentro',
@@ -242,7 +247,7 @@ titulo('Cada forma faz o que diz');
   {
     const e = luta(10, 5), q = e.A[0], amigo = e.A[1];
     amigo.ficha.DES = 6; amigo.ficha.PER = 6;
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro', feitio: 'guarda' }), 'defesa');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Raro', feitio: 'guarda' }), 'defesa');
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('a Barreira põe a Defesa em 12', M.fuDefesa(amigo) === 12);
     // e a Defesa Mágica também: é ela que as magias miram
@@ -271,7 +276,7 @@ titulo('Cada forma faz o que diz');
   // ── o Despertar: +6 de dano no aliado, sem gastar o turno, uma vez ──
   {
     const e = luta(30, 7), q = e.A[0], amigo = e.A[1];
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário', feitio: 'sustentacao' }), 'suporte');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Lendário', feitio: 'sustentacao' }), 'suporte');
     q.pm = q.ficha.pmMax;
     const ev = M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
     verificar('o Despertar dá +6 de dano ao aliado', amigo.efeitos.danoMais === 6);
@@ -297,7 +302,7 @@ titulo('Cada forma faz o que diz');
   // ── a Devastação: sem rolagem, em todos ──
   {
     const e = luta(30, 8), q = e.A[0];
-    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário' }), 'muito_forte');
+    const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Lendário' }), 'muito_forte');
     const passoAntes = e.rng.passo;
     e.B.forEach(c => { c.pv = 200; c.ficha.pvMax = 200; c.ficha.afinidades = {}; });
     const ev = M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m });
@@ -308,7 +313,7 @@ titulo('Cada forma faz o que diz');
       e.B.map(c => c.pv).join(','));
 
     const e2 = luta(30, 9), q2 = e2.A[0];
-    const m2 = G.fuMagiaDe(Object.assign({}, q2.ficha, { raridade: 'Lendário' }), 'muito_forte');
+    const m2 = G.fuMagiaDe(Object.assign({}, q2.ficha, { escola: 0, raridade: 'Lendário' }), 'muito_forte');
     /* A crise abaixo da vida que eles têm: senão, um Lâmina lançando a
        Devastação somava a Execução (quem está em crise leva mais), e a
        absorção devolvia mais do que os 30 da magia. Aqui mede-se só a
@@ -344,9 +349,9 @@ titulo('Cada forma faz o que diz');
   // ── o estado: na oportunidade ou sempre ──
   {
     const e = luta(15, 10), q = e.A[0], alvo = e.B[0];
-    const nv3 = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Lendário' }), 'forte');
+    const nv3 = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Lendário' }), 'forte');
     verificar('o degrau 3 da barragem impõe o estado sempre', nv3.estadoSempre === true);
-    const nv2 = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro' }), 'forte');
+    const nv2 = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Raro' }), 'forte');
     verificar('e o degrau 2 não', !nv2.estadoSempre);
 
     // com estadoSempre, todo o acerto dá o estado
@@ -354,7 +359,7 @@ titulo('Cada forma faz o que diz');
     for (let s = 1; s <= 300; s++) {
       const b = luta(15, s * 7);
       const at = b.A[0], al = b.B[0];
-      const m = G.fuMagiaDe(Object.assign({}, at.ficha, { raridade: 'Lendário' }), 'forte');
+      const m = G.fuMagiaDe(Object.assign({}, at.ficha, { escola: 0, raridade: 'Lendário' }), 'forte');
       /* A Pele Calada recusa dois estados, e recusa em silêncio — de
          propósito, para quem contava com o estado perder o turno na
          mesma. Portanto a promessa do degrau 3 é "todo o acerto dá o
@@ -376,7 +381,7 @@ titulo('Cada forma faz o que diz');
 titulo('O que não pode acontecer');
 {
   const e = luta(10, 11), q = e.A[0];
-  const m = G.fuMagiaDe(Object.assign({}, q.ficha, { raridade: 'Raro' }), 'forte');
+  const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Raro' }), 'forte');
   q.pm = 5;
   const ev = M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: e.B.map(c => c.id) });
   verificar('sem PM para os três alvos, a magia não sai', ev.length === 0);
@@ -384,7 +389,7 @@ titulo('O que não pode acontecer');
   verificar('e os PM ficam onde estavam', q.pm === 5);
 
   const e2 = luta(10, 12), q2 = e2.A[0];
-  const concha = G.fuMagiaDe(Object.assign({}, q2.ficha, { feitio: 'guarda' }), 'defesa');
+  const concha = G.fuMagiaDe(Object.assign({}, q2.ficha, { escola: 0, feitio: 'guarda' }), 'defesa');
   M.fuAgir(e2, { quem: q2.id, tipo: 'magia', magia: concha });
   const depois1 = JSON.stringify(q2.efeitos);
   M.fuNovaRonda(e2);
@@ -403,7 +408,7 @@ titulo('O que não pode acontecer');
   const e4 = luta(10, 14), q4 = e4.A[0];
   q4.pv = 10;
   M.fuAgir(e4, { quem: q4.id, tipo: 'magia',
-                 magia: G.fuMagiaDe(Object.assign({}, q4.ficha, { raridade: 'Raro', feitio: 'sustentacao' }), 'suporte') });
+                 magia: G.fuMagiaDe(Object.assign({}, q4.ficha, { escola: 0, raridade: 'Raro', feitio: 'sustentacao' }), 'suporte') });
   verificar('curar sem alvo escolhido cura quem lançou', q4.pv > 10, 'ficou com ' + q4.pv);
 
   /* E a prova de fogo: sessenta batalhas a usar os cinco lugares à vez,
@@ -461,7 +466,7 @@ titulo('O ritmo, contra o terço que o manual pede');
          está a medir quem tem o quê — isso é a secção 2 — está-se a medir
          quanto dói cada magia a quem a tem. */
       const m = G.fuMagiaDe(
-        Object.assign({}, q.ficha, { raridade, feitio: FEITIO_DE[lugar] }), lugar);
+        Object.assign({}, q.ficha, { escola: 0, raridade, feitio: FEITIO_DE[lugar] }), lugar);
       q.pm = 999; tentativas++;
       if (lugar === 'comum') {
         const ev = M.fuAtacar(e, q, alvo, { fixo: 5 });
@@ -566,10 +571,10 @@ titulo('O ataque forte muda com o feitio');
     for (let s = 1; s <= 80; s++) {
       const e = luta(15, 500 + s);
       const quem = e.A[0];
-      quem.ficha = Object.assign({}, quem.ficha, { feitio, raridade });
+      quem.ficha = Object.assign({}, quem.ficha, { escola: 0, feitio, raridade });
       quem.pm = 99;
       for (const c of e.B) {
-        c.ficha = Object.assign({}, c.ficha, { afinidades: {}, pvMax: 900, crise: 450 });
+        c.ficha = Object.assign({}, c.ficha, { escola: 0, afinidades: {}, pvMax: 900, crise: 450 });
         c.pv = 900;
       }
       const ctx = (prepara && prepara(e, quem)) || {};
@@ -655,9 +660,9 @@ titulo('O ataque forte muda com o feitio');
   {
     const e = luta(15, 77);
     const quem = e.A[0];
-    quem.ficha = Object.assign({}, quem.ficha, { feitio: 'sustentacao', raridade: 'Raro' });
+    quem.ficha = Object.assign({}, quem.ficha, { escola: 0, feitio: 'sustentacao', raridade: 'Raro' });
     quem.pm = 99; e.A[1].pv = 1;
-    for (const c of e.B) c.ficha = Object.assign({}, c.ficha, { afinidades: { [quem.ficha.tipo]: 'IM' } });
+    for (const c of e.B) c.ficha = Object.assign({}, c.ficha, { escola: 0, afinidades: { [quem.ficha.tipo]: 'IM' } });
     const evs = M.fuAgir(e, { quem: quem.id, tipo: 'magia',
                               magia: G.fuMagiaDe(quem.ficha, 'forte'), alvos: e.B.map(c => c.id) });
     verificar('sem ferir, a Sustentação não cura ninguém',
@@ -680,7 +685,8 @@ titulo('Os pacotes dos feitios');
 {
   // Um lutador da luta, com a ficha trocada pelo que o teste pede.
   const com = (c, extra) => {
-    c.ficha = Object.assign({}, c.ficha, extra);
+    // A primeira escola por omissão; `extra` pode pedir a segunda.
+    c.ficha = Object.assign({}, c.ficha, { escola: 0 }, extra);
     if (extra.pvMax) c.pv = extra.pvMax;
     return c;
   };
@@ -865,6 +871,110 @@ titulo('Os pacotes dos feitios');
     const estados = Object.values(G.FU_ELEMENTAL).map(x => x.estado);
     verificar('os oito elementos usam os seis estados do motor',
       new Set(estados).size === 6, estados.join(','));
+  }
+}
+
+/* ═══ 9 · A SEGUNDA ESCOLA ═════════════════════════════════════ */
+titulo('A segunda escola');
+{
+  const E = G.FU_SEGUNDA_ESCOLA;
+  const lugares = ['forte', 'muito_forte', 'defesa', 'suporte'];
+
+  verificar('o golpe comum não tem segunda escola', E.comum === null);
+
+  for (const lugar of lugares) {
+    verificar(lugar + ': tem os três degraus',
+      E[lugar] && [1, 2, 3].every(d => E[lugar][d] && E[lugar][d].id),
+      JSON.stringify(Object.keys(E[lugar] || {})));
+  }
+
+  /* Os ids têm de ser NOVOS: um id repetido faria a segunda escola
+     aparecer com o nome da primeira na tela, e ninguém daria por isso
+     até alguém estranhar um "Proteger" que não protege. */
+  const idsPrimeira = new Set();
+  for (const l of Object.keys(G.FU_MAGIAS))
+    for (const d of [1, 2, 3]) if (G.FU_MAGIAS[l][d]) idsPrimeira.add(G.FU_MAGIAS[l][d].id);
+  const idsSegunda = [];
+  for (const l of lugares) for (const d of [1, 2, 3]) idsSegunda.push(E[l][d].id);
+
+  verificar('nenhum id da segunda repete um da primeira',
+    idsSegunda.every(i => !idsPrimeira.has(i)),
+    idsSegunda.filter(i => idsPrimeira.has(i)).join(','));
+  verificar('e não repetem entre si',
+    new Set(idsSegunda).size === idsSegunda.length);
+
+  {
+    const f0 = Object.assign({}, fichaDe('fogo', 'Lendário', 'guarda'), { escola: 0 });
+    const f1 = Object.assign({}, fichaDe('fogo', 'Lendário', 'guarda'), { escola: 1 });
+    verificar('escola 0 traz a magia da primeira',
+      G.fuMagiaDe(f0, 'defesa').id === 'proteger', G.fuMagiaDe(f0, 'defesa').id);
+    verificar('escola 1 traz a da segunda',
+      G.fuMagiaDe(f1, 'defesa').id === 'baluarte', G.fuMagiaDe(f1, 'defesa').id);
+    const semEscola = fichaDe('fogo', 'Lendário', 'guarda');
+    delete semEscola.escola;
+    verificar('ficha sem escola cai na primeira — as antigas não mudam',
+      G.fuMagiaDe(semEscola, 'defesa').id === 'proteger');
+  }
+
+  /* NENHUMA DOMINA A OUTRA, que é a regra de desenho: se uma variante
+     fosse melhor em tudo, a escola deixaria de ser um jeito de jogar e
+     passaria a ser sorte no nascimento.
+
+     Compara-se o dano TOTAL pelo PM TOTAL (as `porAlvo` cobram por
+     alvo): a que espalha rende mais contra três, a que perfura rende
+     mais contra um, e nenhuma ganha nas duas contas. */
+  /* NENHUMA DOMINA A OUTRA — e esta é a única regra que importa.
+
+     A direção da troca NÃO é sempre a mesma, e o teste que assumia isso
+     falhou com razão: no primeiro degrau é a segunda escola que espalha
+     (Estilhaço em dois, contra o Sopro num só) e nos outros é ela que
+     perfura. O que não pode acontecer, em degrau nenhum, é uma ser
+     melhor em TUDO: mais dano, mais alvos e mais barata. Aí a escola
+     deixaria de ser um jeito de jogar e passaria a ser sorte no
+     nascimento. */
+  const totalDano = m => (m.fixo || m.danoFixo || 0) * (m.todos ? 3 : (m.alvos || 1));
+  const totalPm   = m => (m.pm || 0) * (m.porAlvo ? (m.alvos || 1) : 1);
+  const nAlvos    = m => m.todos ? 3 : (m.alvos || 1);
+
+  const domina = (x, y) =>
+    totalDano(x) >= totalDano(y) && totalPm(x) <= totalPm(y) &&
+    nAlvos(x) >= nAlvos(y) &&
+    (totalDano(x) > totalDano(y) || totalPm(x) < totalPm(y) || nAlvos(x) > nAlvos(y));
+
+  for (const lugar of ['forte', 'muito_forte']) {
+    for (const d of [1, 2, 3]) {
+      const a = G.FU_MAGIAS[lugar][d], b = E[lugar][d];
+      const conta = m => m.id + ' (' + totalDano(m) + ' dano, ' + totalPm(m) + ' PM, ' + nAlvos(m) + ' alvo(s))';
+      verificar(lugar + ' ' + d + ': a segunda não domina a primeira',
+        !domina(b, a), conta(b) + ' domina ' + conta(a));
+      verificar(lugar + ' ' + d + ': nem a primeira domina a segunda',
+        !domina(a, b), conta(a) + ' domina ' + conta(b));
+      verificar(lugar + ' ' + d + ': e as duas são mesmo diferentes',
+        nAlvos(a) !== nAlvos(b) || totalDano(a) !== totalDano(b),
+        conta(a) + ' vs ' + conta(b));
+    }
+  }
+
+  /* A que concentra tem de trazer penetração ou estado, senão é só um
+     número menor. (No degrau 1 a que concentra é a PRIMEIRA, e o Sopro
+     não traz nada — é a magia mais simples do jogo, e é esse o papel
+     dela; por isso o teste começa no 2.) */
+  for (const lugar of ['forte', 'muito_forte']) {
+    for (const d of [2, 3]) {
+      const b = E[lugar][d];
+      verificar(b.id + ' troca alcance por penetração',
+        !!(b.furaGuarda || b.semRSnaGuarda || b.ignoraResistencias || b.estadoSempre),
+        JSON.stringify(b));
+    }
+  }
+
+  // Um custo que ninguém paga faz da magia um enfeite.
+  for (const lugar of lugares) {
+    for (const d of [1, 2, 3]) {
+      const m = E[lugar][d];
+      verificar(m.id + ' cabe num Lendário comum (100 PM)',
+        totalPm(m) <= 100, totalPm(m) + ' PM');
+    }
   }
 }
 

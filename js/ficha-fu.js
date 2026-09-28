@@ -225,6 +225,18 @@ function fuTipoDoDna(dna) {
    O físico fica de fora da lista toda — é o golpe comum que toda a
    gente dá, e um avatar a levar o dobro dele não seria um avatar
    interessante, seria um avatar mau. */
+/* COM QUE ESCOLA ELE NASCEU.
+
+   Zero ou um, e para sempre. Sai do seed como a costura sai, com uma
+   semente própria: dois avatares com a mesma costura não podem ter, por
+   isso, a mesma escola — sem a semente própria, as duas decisões andariam
+   coladas e metade das combinações nunca apareceria.
+
+   O 1 é a segunda escola (FU_SEGUNDA_ESCOLA, em js/magias-fu.js). */
+function fuEscolaDoSeed(seed) {
+  return _fuRng((seed | 0) ^ 0x35C)(0, 1);
+}
+
 function fuCosturaDoDna(dna, seed) {
   const meu = fuTipoDoDna(dna);
   const pool = FU_TIPOS.filter(t => t !== meu);
@@ -555,6 +567,11 @@ function fuFicha(slot) {
     // o que ele dá e o que lhe dói
     tipo,
     costura,
+    /* A escola das magias, sorteada no nascimento e fixa para sempre.
+       Dois avatares do mesmo feitio e do mesmo nível podem lutar de
+       formas diferentes por causa dela (ver FU_SEGUNDA_ESCOLA, em
+       js/magias-fu.js). */
+    escola: fuEscolaDoSeed(seed),
     /* O feitio, que diz o que ele sabe fazer. Ver o FU_LUGARES_DO_FEITIO
        no js/magias-fu.js. */
     feitio,
@@ -629,7 +646,7 @@ if (typeof CORES_RODA !== 'undefined' && FU_TIPO_DA_COR.length !== CORES_RODA.le
    acabariam por discordar, e a conta decide dinheiro. */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    FU_ATRIBS, FU_ARRANJOS, FU_TIPOS, FU_DANOS, FU_DADOS,
+    FU_ATRIBS, FU_ARRANJOS, FU_TIPOS, FU_DANOS, FU_DADOS, fuEscolaDoSeed,
     FU_TIPO_DA_COR, FU_GENE_DO_ATRIB,
     fuSubirDado, fuDescerDado, fuSomaDoGene, fuArranjoDoDna,
     fuOrdemDosAtributos, fuTipoDaCor, fuTipoDoDna, fuCosturaDoDna,

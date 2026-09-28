@@ -300,6 +300,118 @@ function fuDegrau(raridade) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   A SEGUNDA ESCOLA
+
+   Cada lugar tem DUAS magias por degrau, e o avatar nasce com uma
+   delas. É o que faz dois Guardas do mesmo nível jogarem diferente sem
+   que nenhum seja mais forte: um protege o grupo, o outro aguenta
+   sozinho; um espalha dano, o outro fura quem se esconde.
+
+   ── A REGRA DE DESENHO ──
+
+   Nenhuma variante é "a mesma magia com números maiores". Cada uma
+   TROCA uma coisa por outra, e a troca é sempre a mesma:
+
+     a primeira escola  espalha  — mais alvos, dano repartido
+     a segunda escola   perfura  — um alvo, e passa por guarda ou
+                                   resistência
+
+   Contra três inimigos inteiros a primeira rende mais; contra um que se
+   defende bem, a segunda. É o INIMIGO que decide qual era a melhor, e
+   não a ficha — que é o que torna as duas jogáveis.
+
+   ── O CUSTO POR ALVO ──
+
+   As magias `porAlvo` cobram o PM VEZES o número de alvos (fuCusto):
+   uma Barragem nos três custa 30 PM, e não 10. É por isso que as
+   variantes de alvo único podem cobrar mais do que a lista sugere e
+   ainda sair mais baratas na prática.
+
+   ── QUEM ESCOLHE ──
+
+   O seed do avatar, no nascimento, e para sempre (fuEscolaDoSeed, em
+   js/ficha-fu.js). Não se compra, não se troca e não depende do nível:
+   é com o que ele nasceu, como a cor e a costura.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_SEGUNDA_ESCOLA = {
+  // O golpe comum não varia: é o que todos têm e o que sobra quando o PM
+  // acaba. Dar-lhe duas versões seria mexer no chão do combate.
+  comum: null,
+
+  forte: {
+    // 8 PM pelos dois alvos, contra 5 por um: espalha barato e fraco.
+    1: { id: 'estilhaco', pm: 4, alvos: 2, porAlvo: true, fixo: 6 },
+    // A Barragem cheia custa 30 PM. Esta leva metade disso a um alvo só,
+    // e não perde nada contra quem está guardando.
+    2: { id: 'perfurante', pm: 14, alvos: 1, fixo: 22, semRSnaGuarda: true },
+    // 20 contra os 45 da Barragem Certa nos três, e fura a guarda.
+    3: { id: 'lanca_certeira', pm: 20, alvos: 1, fixo: 34,
+         estadoSempre: true, furaGuarda: true },
+  },
+
+  muito_forte: {
+    1: { id: 'corte_duplo', pm: 8, alvos: 2, porAlvo: true, fixo: 11 },
+    /* Troca o "ignora resistências" do Concentrado por furar a guarda e
+       impor o estado: pior contra quem resiste, melhor contra quem se
+       protege. */
+    /* 12 PM e não 15: com o mesmo preço do Concentrado ela ficava só
+       pior — menos dano, e o "ignora resistências" dele vale mais vezes
+       do que o "fura a guarda" dela. Mais barata, passa a ser a escolha
+       de quem tem pouco PM e muitos turnos pela frente. */
+    2: { id: 'estocada', pm: 12, alvos: 1, fixo: 23,
+         furaGuarda: true, estadoSempre: true },
+    /* A Devastação bate em todos por 30 PM. Esta bate num por 22 e passa
+       por qualquer afinidade — é a resposta a um Lendário que absorve o
+       próprio elemento. */
+    3: { id: 'execucao', pm: 22, alvos: 1, fixo: 42, ignoraResistencias: true },
+  },
+
+  defesa: {
+    /* A Concha resiste aos elementos; esta garante as Defesas. Contra
+       magia a Concha é melhor, contra o golpe comum esta é. */
+    1: { id: 'postura_ferro', pm: 8, proprio: true,
+         cena: { defesaMinima: 14, defMagMinima: 14 } },
+    // A Barreira nos três custa 15 PM e garante 12. Esta custa 6, cobre
+    // um, e garante 16.
+    2: { id: 'escudo_focado', pm: 6, alvos: 1, aliado: true,
+         cena: { defesaMinima: 16, defMagMinima: 16 } },
+    /* O Proteger assume os golpes de um aliado. Este não protege
+       ninguém: faz de quem o lança uma parede que aguenta os dois lados. */
+    3: { id: 'baluarte', pm: 12, proprio: true,
+         cena: { resisteInimigos: true, defesaMinima: 14 } },
+  },
+
+  suporte: {
+    /* Espalha 8 por três (12 PM) contra 15 num só (5 PM). Não limpa
+       estado: a limpeza é o que a primeira escola tem de seu. */
+    1: { id: 'balsamo', pm: 4, alvos: 3, porAlvo: true, aliado: true, cura: 8 },
+    /* O Curar espalha 30 por três (30 PM). Esta põe quase o dobro num
+       só, por 12, e tira dois estados em vez de um. */
+    2: { id: 'transfusao', pm: 12, alvos: 1, aliado: true, cura: 55, limpa: 2 },
+    /* O Despertar dá +6 a um. Este dá +2 a três — o MESMO total, e
+       também sem gastar o turno.
+
+       Começou em +3 (nove de dano por turno contra os seis do
+       Despertar). Com +2 o total empata, e a diferença passa a ser onde
+       deve estar: o Despertar concentra num lutador e sobrevive melhor
+       a um aliado que cai; este espalha e rende mais enquanto os três
+       estão de pé.
+
+       O tools/balanco.js aponta esta magia como "a melhor em 71% das
+       situações", e isso NÃO é sinal de estar forte demais: o Despertar,
+       que é a outra escola do mesmo lugar e existe desde sempre, mede
+       76%. É o que acontece a toda a magia LIVRE — não gasta o turno,
+       portanto usar e ainda agir é quase sempre melhor do que só agir.
+       O próprio relatório avisa disso: "o que dura a luta inteira sai
+       subestimado". Medida de outra forma, com +3 ela dava nove de dano
+       por turno contra os seis do Despertar, e ESSA era a diferença que
+       não podia ficar. */
+    3: { id: 'canto_guerra', pm: 8, alvos: 3, porAlvo: true, aliado: true,
+         cena: { danoMais: 2 }, livre: true },
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════════
    DE QUEM É CADA LUGAR
 
    Trs lugares por avatar, e não cinco. Cada feitio tem o golpe comum, a
@@ -372,7 +484,15 @@ function fuLugaresDe(ficha) {
 function fuMagiaDe(ficha, lugar) {
   // O feitio manda: um lugar que não é dele não existe para ele.
   if (fuLugaresDe(ficha).indexOf(lugar) === -1) return null;
-  const casa = FU_MAGIAS[lugar] && FU_MAGIAS[lugar][fuDegrau(ficha.raridade)];
+  const degrau = fuDegrau(ficha.raridade);
+
+  /* A escola com que ele nasceu, quando esse lugar tem uma segunda.
+     Sem escola marcada é a primeira — e é o que mantém as fichas
+     antigas exatamente como eram. */
+  const segunda = (ficha.escola === 1)
+    && FU_SEGUNDA_ESCOLA[lugar] && FU_SEGUNDA_ESCOLA[lugar][degrau];
+
+  const casa = segunda || (FU_MAGIAS[lugar] && FU_MAGIAS[lugar][degrau]);
   if (!casa) return null;
 
   const m = Object.assign({}, casa, { lugar, tipo: ficha.tipo });
@@ -442,7 +562,7 @@ function fuCusto(magia, nAlvos) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_ESTILO_FORTE, FU_NOME_FORTE,
+    FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_SEGUNDA_ESCOLA, FU_ESTILO_FORTE, FU_NOME_FORTE,
     FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
     fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto,
   };

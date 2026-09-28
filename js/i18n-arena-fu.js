@@ -230,6 +230,23 @@ window.registerStrings({
   'af.m.curar':          'Curar',
   'af.m.despertar':      'Despertar',
 
+  /* A SEGUNDA ESCOLA (FU_SEGUNDA_ESCOLA, em js/magias-fu.js). Doze
+     magias que um avatar pode ter no lugar das de cima, conforme a
+     escola com que nasceu. Os nomes puxam para o lado do ferro e do
+     corte, que é o que elas fazem: as primeiras espalham, estas furam. */
+  'af.m.estilhaco':      'Estilhaço',
+  'af.m.perfurante':     'Lança Perfurante',
+  'af.m.lanca_certeira': 'Lança Certeira',
+  'af.m.corte_duplo':    'Corte Duplo',
+  'af.m.estocada':       'Estocada',
+  'af.m.execucao':       'Execução',
+  'af.m.postura_ferro':  'Postura de Ferro',
+  'af.m.escudo_focado':  'Escudo Focado',
+  'af.m.baluarte':       'Baluarte',
+  'af.m.balsamo':        'Bálsamo',
+  'af.m.transfusao':     'Transfusão',
+  'af.m.canto_guerra':   'Canto de Guerra',
+
   /* ══ O BLOCO, NO PADRÃO DO MANUAL ══
 
      O manual escreve cada criatura sempre com as mesmas linhas pela
@@ -658,6 +675,18 @@ window.registerStrings({
   'af.m.lamber':         'Lick Wounds',
   'af.m.curar':          'Heal',
   'af.m.despertar':      'Awaken',
+  'af.m.estilhaco':      'Shardburst',
+  'af.m.perfurante':     'Piercing Lance',
+  'af.m.lanca_certeira': 'Sure Lance',
+  'af.m.corte_duplo':    'Twin Cut',
+  'af.m.estocada':       'Thrust',
+  'af.m.execucao':       'Execution',
+  'af.m.postura_ferro':  'Iron Stance',
+  'af.m.escudo_focado':  'Focused Shield',
+  'af.m.baluarte':       'Bulwark',
+  'af.m.balsamo':        'Balm',
+  'af.m.transfusao':     'Transfusion',
+  'af.m.canto_guerra':   'War Chant',
 
   'af.b.nv':            'Lv {n}',
   'af.b.tracos':        'Typical traits',

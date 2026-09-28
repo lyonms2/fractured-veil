@@ -34,6 +34,11 @@ function verificar(nome, cond, detalhe) {
 }
 function titulo(t) { console.log('\n── ' + t + ' ' + '─'.repeat(Math.max(0, 58 - t.length))); }
 
+/* A PRIMEIRA ESCOLA, onde o teste fala de uma magia pelo nome.
+   Metade dos avatares nasce com a segunda (FU_SEGUNDA_ESCOLA, em
+   js/magias-fu.js) e teria outra magia naquele lugar — sem fixar
+   isto, metade destes testes media a magia errada e falhava por
+   estar certa. Quem quiser testar a segunda pede escola: 1. */
 function avatar(seed, nivel) {
   const cert = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
   cert.seed = seed; cert.nascimento.seed = seed;
@@ -120,7 +125,7 @@ titulo('O da frente cobre de tudo o que aponte a um alvo');
     const quem = e.A[0];
     quem.pm = 99999;
     const frente = M.fuFrente(e.B), tras = M.fuFormacao(e, 'B')[2];
-    const magia = qual ? G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: qual[1] }), qual[0]) : null;
+    const magia = qual ? G.fuMagiaDe(Object.assign({}, quem.ficha, { escola: 0, raridade: qual[1] }), qual[0]) : null;
     verificar(nome + ' aponta a um alvo só', !magia || (magia.alvos || 1) === 1,
       magia ? (magia.alvos + '') : '—');
 
@@ -144,7 +149,7 @@ titulo('E não cobre do que varre a linha');
     const e = luta(30, 5);
     e.B.forEach(boneco);
     const quem = e.A[0]; quem.pm = 99999;
-    const magia = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Raro' }), 'forte');
+    const magia = G.fuMagiaDe(Object.assign({}, quem.ficha, { escola: 0, raridade: 'Raro' }), 'forte');
     verificar('a Barragem aponta a três', magia.alvos === 3);
     const ev = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia,
                              alvos: e.B.map(c => c.id) });
@@ -160,7 +165,7 @@ titulo('E não cobre do que varre a linha');
     e.B.forEach(boneco);
     const quem = e.A[0]; quem.pm = 99999;
     const tras = M.fuFormacao(e, 'B')[2];
-    const magia = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Raro' }), 'forte');
+    const magia = G.fuMagiaDe(Object.assign({}, quem.ficha, { escola: 0, raridade: 'Raro' }), 'forte');
     const ev = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia, alvos: [tras.id] });
     const alvos = ev.filter(x => x.tipo === 'magia').map(x => x.alvo);
     verificar('e pode ir SÓ ao suporte, se for isso que se pedir',
@@ -176,7 +181,7 @@ titulo('E não cobre do que varre a linha');
        sorteado pode ser Guarda. Pedir-lhe o muito_forte devolvia nulo — e
        bem, porque ele não sabe aquilo. */
     const magia = G.fuMagiaDe(
-      Object.assign({}, quem.ficha, { raridade: 'Lendário', feitio: 'lamina' }),
+      Object.assign({}, quem.ficha, { escola: 0, raridade: 'Lendário', feitio: 'lamina' }),
       'muito_forte');
     const ev = M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia });
     verificar('a Devastação não pergunta pela formação',
@@ -191,7 +196,7 @@ titulo('E não cobre do que varre a linha');
     tras.pv = 1;
     // Curar é o lugar da Sustentação; o feitio vai forçado pela mesma razão.
     const cura = G.fuMagiaDe(
-      Object.assign({}, quem.ficha, { raridade: 'Raro', feitio: 'sustentacao' }),
+      Object.assign({}, quem.ficha, { escola: 0, raridade: 'Raro', feitio: 'sustentacao' }),
       'suporte');
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: cura, alvos: [tras.id] });
     verificar('curar o suporte não esbarra na própria frente', tras.pv > 1,
@@ -363,7 +368,7 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
        versão desta linha pedia `quem.ficha` e media três golpes de alvo
        único numa corrida inteira — uma amostra que não provava nada e que
        só se deu por ela porque a auditoria exige um mínimo. */
-    const m = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Comum' }), 'forte');
+    const m = G.fuMagiaDe(Object.assign({}, quem.ficha, { escola: 0, raridade: 'Comum' }), 'forte');
     return (G.fuCusto(m, 1) <= quem.pm)
       ? { quem: quem.id, tipo: 'magia', magia: m, alvos: inimiga.map(c => c.id) }
       : { quem: quem.id, tipo: 'atacar' };
@@ -372,7 +377,7 @@ titulo('A formação decide — duas medidas, e a primeira é a que conta');
   const misto = medir((quem, inimiga) => {
     /* Um jogador razoável: varre a linha quando pode pagá-la, bate quando
        não pode. É a decisão que a formação existe para provocar. */
-    const m = G.fuMagiaDe(Object.assign({}, quem.ficha, { raridade: 'Raro' }), 'forte');
+    const m = G.fuMagiaDe(Object.assign({}, quem.ficha, { escola: 0, raridade: 'Raro' }), 'forte');
     return (G.fuCusto(m, 3) <= quem.pm)
       ? { quem: quem.id, tipo: 'magia', magia: m, alvos: inimiga.map(c => c.id) }
       : { quem: quem.id, tipo: 'atacar' };
