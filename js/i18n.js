@@ -65,9 +65,16 @@
       'pausa.btn_pausar':   'Pausar o jogo',
       'pausa.btn_retomar':  'Continuar o jogo',
       'pausa.titulo':       'JOGO EM PAUSA',
-      'pausa.item_vitais':  'Fome, humor, energia e higiene ficaram onde estavam. Nada desce.',
+      // A energia saiu desta lista: ela é a única que MEXE com o jogo
+      // parado, e listá-la aqui contradizia a linha da energia, logo
+      // abaixo.
+      'pausa.item_vitais':  'Fome, humor e higiene ficaram onde estavam. Nada desce.',
       'pausa.item_idade':   'O tempo de vida também parou. A idade conta tempo de jogo, não tempo de relógio — e é ela que manda na evolução.',
-      'pausa.item_doenca':  'Ninguém adoece, ninguém suja a casa, nenhum ovo se estraga. Quem dorme também não recupera energia: a pausa não dá nada, só deixa de tirar.',
+      /* Dizia que "a pausa não dá nada, só deixa de tirar". Deixou de ser
+         verdade em 27/09/2026: com o mundo parado a energia sobe — 2 por
+         ciclo dormindo, 1 acordado (js/energia.js). */
+      'pausa.item_doenca':  'Ninguém adoece, ninguém suja a casa, nenhum ovo se estraga.',
+      'pausa.item_energia': 'A energia é a exceção, e sobe: <strong>+2 por minuto</strong> se ele estiver dormindo, <strong>+1</strong> se estiver acordado. Vale também com a aba fechada — para o avatar, as duas pausas são a mesma.',
       'pausa.nota':         'O jogo já pausa sozinho quando você fecha a aba ou troca de janela. Este botão serve para deixar o jogo aberto à vista sem que nada corra.',
       'pausa.retomar':      '▶ CONTINUAR',
       'pausa.atalho':       'Barra de espaço pausa e continua.',
@@ -435,9 +442,10 @@
       'pausa.btn_pausar':   'Pause the game',
       'pausa.btn_retomar':  'Resume the game',
       'pausa.titulo':       'GAME PAUSED',
-      'pausa.item_vitais':  'Hunger, mood, energy and hygiene stay exactly where they were. Nothing drops.',
+      'pausa.item_vitais':  'Hunger, mood and hygiene stay exactly where they were. Nothing drops.',
       'pausa.item_idade':   'Lifetime is stopped too. Age counts play time, not clock time — and age is what drives evolution.',
-      'pausa.item_doenca':  'Nobody gets sick, nobody messes the place, no egg spoils. Sleepers do not recover energy either: pausing gives you nothing, it only stops taking.',
+      'pausa.item_doenca':  'Nobody gets sick, nobody messes the place, no egg spoils.',
+      'pausa.item_energia': 'Energy is the exception, and it rises: <strong>+2 per minute</strong> while asleep, <strong>+1</strong> while awake. It also applies with the tab closed — to your avatar, both pauses are the same thing.',
       'pausa.nota':         'The game already pauses itself when you close the tab or switch windows. This button is for leaving the game open in front of you with nothing running.',
       'pausa.retomar':      '▶ RESUME',
       'pausa.atalho':       'Spacebar pauses and resumes.',

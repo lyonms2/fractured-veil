@@ -343,7 +343,11 @@ window.registerStrings({
   'mkt.transp.selo_premiados_val': 'os melhores {pct}%',
   'mkt.transp.selo_corte':       'Corte do jogo',
   'mkt.transp.selo_sem_corte':   '0% — tudo volta em prêmio',
-  'mkt.transp.selo_nota':        'O bolo é só dos selos vendidos: a pool não entra nele e não recebe dele. Uma divisão com gente a menos não paga, e o que ela juntou volta a quem tinha comprado.',
+  /* Dizia "a pool não entra nele e não recebe dele". Deixou de ser
+     verdade em 27/09/2026, quando a pool passou a pôr 10% do saldo no
+     prêmio. Numa página de transparência é o pior tipo de frase errada:
+     nega uma coisa que acontece. */
+  'mkt.transp.selo_nota':        'O bolo é dos selos vendidos mais o reforço da Pool, e nada dele volta para a pool. Uma divisão com gente a menos não paga, e o que ela juntou fica para a temporada seguinte.',
   'mkt.transp.eggs_title':     '🥚 Ovos — Para Onde Podem Ir',
 
   // Transparency block — body content & labels
@@ -357,8 +361,10 @@ window.registerStrings({
   /* Dizia "100% das taxas". Deixou de ser verdade quando a venda passou
      a repartir 10 para a pool e 5 para o desenvolvedor: numa página de
      transparência, um número que já foi verdade é pior do que nenhum. */
-  'mkt.transp.feed_body':      'A listagem vai <strong>inteira</strong> para a pool, e a venda deixa nela os mesmos <strong>10%</strong> de sempre. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.',
+  'mkt.transp.feed_body':      'Chocar um ovo e listar um avatar vão <strong>inteiros</strong> para a pool, e a venda deixa nela <strong>10%</strong> do preço. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.',
+  'mkt.transp.feed_criacao':   'CRIAÇÃO',
   'mkt.transp.feed_mkt':       'MERCADO',
+  'mkt.transp.chocar_ovo':     'Chocar um ovo',
   'mkt.transp.list_avatar':    'Listar avatar',
   'mkt.transp.sell_avatar':    'Venda de avatar',
   'mkt.transp.weekly_body':    'O desenvolvedor recebe <strong style="color:var(--text);">3% de cada resgate</strong> e <strong style="color:var(--text);">5% de cada venda no mercado</strong>. O resgate é cobrado do saldo de quem saca; a venda, do vendedor. Nunca da pool: ela continua a receber os mesmos 10% da venda de sempre.',
@@ -367,7 +373,7 @@ window.registerStrings({
   'mkt.transp.on_sale':        'Venda de avatar no mercado',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — nunca é tocada',
-  'mkt.transp.weekly_note':    'Sacar 100 💎 dá <strong style="color:var(--text);">1 💎</strong> ao desenvolvedor. A pool não é tocada.',
+  'mkt.transp.weekly_note':    'Sacar 100 💎 dá <strong style="color:var(--text);">3 💎</strong> ao desenvolvedor, e vender um avatar de 500 💎 dá <strong style="color:var(--text);">25 💎</strong>. A pool não é tocada.',
   'mkt.transp.eggs_body':      'Um ovo tem duas saídas: <strong>chocar</strong>, e dele nasce o avatar, ou <strong>queimar</strong>, que dá moedas internas. Nenhuma das duas toca na pool — o ovo não vale cristais em lugar nenhum. O que se vende por cristais é o avatar, no mercado, e aí a taxa de venda vai para a pool.',
   'mkt.transp.burn_label':     'QUEIMAR (não toca na pool)',
   'mkt.transp.egg_burn':       'Queimar um ovo',
@@ -681,7 +687,7 @@ window.registerStrings({
   'mkt.transp.selo_premiados_val': 'the top {pct}%',
   'mkt.transp.selo_corte':       'Game’s cut',
   'mkt.transp.selo_sem_corte':   '0% — all of it becomes prizes',
-  'mkt.transp.selo_nota':        'The pot is made of sold seals only: the pool neither feeds it nor takes from it. A division with too few players pays nothing, and what it gathered goes back to whoever bought in.',
+  'mkt.transp.selo_nota':        'The pot is the sold passes plus the Pool boost, and none of it goes back to the pool. A division with too few players pays nothing, and what it gathered carries to the next season.',
   'mkt.transp.eggs_title':     '🥚 Eggs — Where They Can Go',
 
   // Transparency block — body content & labels
@@ -692,8 +698,10 @@ window.registerStrings({
   'mkt.transp.redeem_rate':    'Redeem price',
   'mkt.transp.redeem_limit':   'Redeem limit',
   'mkt.transp.your_limit':     'Your limit today:',
-  'mkt.transp.feed_body':      'The listing fee goes to the pool <strong>in full</strong>, and a sale leaves it the same <strong>10%</strong> it always did. The developer is paid separately, by the seller, and never from the pool — the numbers are below.',
+  'mkt.transp.feed_body':      'Hatching an egg and listing an avatar go to the pool <strong>in full</strong>, and a sale leaves it <strong>10%</strong> of the price. The developer is paid separately, by the seller, and never from the pool — the numbers are below.',
+  'mkt.transp.feed_criacao':   'CREATION',
   'mkt.transp.feed_mkt':       'MARKET',
+  'mkt.transp.chocar_ovo':     'Hatching an egg',
   'mkt.transp.list_avatar':    'List avatar',
   'mkt.transp.sell_avatar':    'Avatar sale',
   'mkt.transp.weekly_body':    'The developer takes <strong style="color:var(--text);">3% of every redemption</strong> and <strong style="color:var(--text);">5% of every market sale</strong>. The redemption fee comes from the redeemer\'s balance; the sale fee, from the seller. Never from the pool: it still receives the same 10% of every sale it always did.',
@@ -702,7 +710,7 @@ window.registerStrings({
   'mkt.transp.on_sale':        'Avatar sale on the market',
   'mkt.transp.pool_untouched': 'Pool',
   'mkt.transp.never_touched':  '0% — never touched',
-  'mkt.transp.weekly_note':    'Redeeming 100 💎 gives <strong style="color:var(--text);">1 💎</strong> to the developer. The pool is untouched.',
+  'mkt.transp.weekly_note':    'Redeeming 100 💎 gives <strong style="color:var(--text);">3 💎</strong> to the developer, and selling a 500 💎 avatar gives <strong style="color:var(--text);">25 💎</strong>. The pool is untouched.',
   'mkt.transp.eggs_body':      'An egg has two exits: <strong>hatch it</strong>, and the avatar is born from it, or <strong>burn it</strong>, which gives internal coins. Neither touches the pool — an egg is worth no crystals anywhere. What sells for crystals is the avatar, on the market, and there the sale fee goes to the pool.',
   'mkt.transp.burn_label':     'BURN (pool untouched)',
   'mkt.transp.egg_burn':       'Burn an egg',

@@ -1704,7 +1704,15 @@
       <div class="transp-block">
         <div class="transp-block-title" data-i18n="mkt.transp.feed_title">⬆️ Como a Pool é Alimentada</div>
         <div class="transp-block-body">
-          <span data-i18n="mkt.transp.feed_body">A listagem vai <strong>inteira</strong> para a pool, e a venda deixa nela os mesmos <strong>10%</strong> de sempre. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.</span>
+          <span data-i18n="mkt.transp.feed_body">Chocar um ovo e listar um avatar vão <strong>inteiros</strong> para a pool, e a venda deixa nela <strong>10%</strong> do preço. O desenvolvedor recebe à parte, do vendedor, e nunca da pool — as contas estão abaixo.</span>
+          <!-- O choco tem rótulo próprio, e não o do mercado: é a maior
+               entrada da pool num jogo que ainda não tem mercado (30 💎 por
+               avatar que nasce, o HATCH_FEE do api/pool.js), e faltava
+               aqui por completo — a página explicava uma pool que enchia
+               sozinha. Pô-lo debaixo de "MERCADO" seria consertar uma
+               omissão com uma imprecisão. -->
+          <div class="transp-cap" data-i18n="mkt.transp.feed_criacao">CRIAÇÃO</div>
+          <div class="transp-taxa-row"><span data-i18n="mkt.transp.chocar_ovo">Chocar um ovo</span><span class="transp-taxa-val">30 💎 → pool</span></div>
           <div class="transp-cap" data-i18n="mkt.transp.feed_mkt">MARKETPLACE</div>
           <!-- Espelha o LIST_COST do api/comprar-avatar.js. Numa página
                de transparência, um número velho é pior do que nenhum. -->
@@ -2162,6 +2170,9 @@
       <li data-i18n="pausa.item_vitais"></li>
       <li data-i18n="pausa.item_idade"></li>
       <li data-i18n="pausa.item_doenca"></li>
+      <!-- A energia é a única coisa que a pausa DÁ: 2 por minuto a dormir,
+           1 acordado (js/energia.js). -->
+      <li data-i18n="pausa.item_energia"></li>
     </ul>
     <div class="pausa-nota" data-i18n="pausa.nota"></div>
     <button class="pausa-btn" onclick="alternarPausa()" data-i18n="pausa.retomar">▶ CONTINUAR</button>

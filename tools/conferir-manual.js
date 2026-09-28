@@ -193,6 +193,39 @@ diz('o choco demora 24 a 48 h', '24 a 48 horas', '24 to 48 hours');
 diz('o ovo espera 7 dias por lugar', '<strong>7 dias</strong>', '<strong>7 days</strong>');
 
 console.log('── os minijogos ──');
+
+/* TODOS os que existem têm de estar lá. O manual descrevia três de
+   cinco — faltavam a Memória e o Simon — e um jogo que não está no
+   manual é um jogo que metade das pessoas nunca abre.
+
+   A lista sai do próprio i18n: quem acrescentar um jogo ganha um teste
+   a falhar em vez de uma omissão silenciosa. */
+{
+  const i18n = ler('js/i18n.js');
+  const re = new RegExp("'mini\\.([a-z]+)\\.title':", 'g');
+  // Sem repetidos: o i18n tem os dois idiomas, e sem isto cada jogo
+  // era conferido duas vezes e aparecia duas vezes na lista de falhas.
+  const jogos = [...new Set([...i18n.matchAll(re)].map(m => m[1]))];
+  /* O `diz` procura no MANUAL, e não serve para comparar um número:
+     a primeira versão disto passava sempre porque o manual contém
+     "sim" dentro de "assim". Aqui a conta é feita à mão. */
+  if (jogos.length >= 5) ok++;
+  else falhas.push('o i18n devia ter cinco minijogos, achei ' + jogos.length + ': ' + jogos.join(','));
+  const nomeNoManual = {
+    memoria: ['Memória Elemental', 'Elemental Memory'],
+    simon:   ['Simon Says'],
+    snake:   ['Snake Elemental', 'Elemental Snake'],
+    fusao:   ['Fusão de Esferas', 'Orb Fusion'],
+    tetra:   ['Tetra Elemental', 'Elemental Tetra'],
+  };
+  for (const j of jogos) {
+    const nomes = nomeNoManual[j] || [];
+    diz('o manual descreve o minijogo ' + j, ...nomes);
+  }
+  diz('e diz que são cinco', 'Cinco jogos');
+  diz('e em inglês também', 'Five games');
+}
+
 diz('o Fácil paga',   '<td>14</td>');
 diz('o Médio paga',   '<td>28</td>');
 diz('o Difícil paga', '<td>55</td>');
