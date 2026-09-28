@@ -11,7 +11,7 @@
 //
 //  Fica lá e não numa coleção à parte de propósito: a cadeia segue o
 //  avatar para o comprador, portanto o histórico segue-o também. Um
-//  registo guardado noutro lugar seria uma segunda memória a divergir
+//  registro guardado noutro lugar seria uma segunda memória a divergir
 //  desta — e o comprador receberia um bicho sem passado outra vez.
 //
 //  E é escrito só pelo servidor, dentro da transação que move os
@@ -37,7 +37,7 @@ let _histSlot = null;
 function historicoGuardarSlot(slot) { _histSlot = slot || null; }
 
 // As passagens que têm preço. As antigas — de antes de o servidor o
-// registar — ficam na lista mas fora do gráfico: inventar-lhes um valor
+// registrar — ficam na lista mas fora do gráfico: inventar-lhes um valor
 // era mentir, e apagá-las era esconder que existiram.
 function _histVendas(slot) {
   const donos = (slot && Array.isArray(slot.donos)) ? slot.donos : [];
@@ -137,7 +137,9 @@ function abrirHistorico() {
       const semPreco = vendas.length - comPreco.length;
       corpo.innerHTML = destaque
         + `<ol class="hist-lista">${lista}</ol>`
-        + (semPreco ? `<div class="hist-nota">${t('hist.sem_preco', { n: semPreco })}</div>` : '');
+        /* A chave do singular leva _1, como no js/ui-evento.js: dizia
+           "3 passagem" e "3 transfer" para qualquer número. */
+        + (semPreco ? `<div class="hist-nota">${t(semPreco === 1 ? 'hist.sem_preco_1' : 'hist.sem_preco', { n: semPreco })}</div>` : '');
     }
   }
 
@@ -166,7 +168,8 @@ window.registerStrings(
     'hist.ordem':       '{n}ª',
     'hist.uma_venda':   'vendido uma vez',
     'hist.nunca':       'Ainda não mudou de mãos. O primeiro dono continua a ser o único.',
-    'hist.sem_preco':   '{n} passagem antes de o preço passar a ficar registado.',
+    'hist.sem_preco_1': '{n} passagem antes de o preço passar a ficar registrado.',
+    'hist.sem_preco':   '{n} passagens antes de o preço passar a ficar registrado.',
     'hist.grafico_alt': 'Preço de cada venda, em cristais, pela ordem em que aconteceram.',
   },
   {
@@ -176,7 +179,8 @@ window.registerStrings(
     'hist.ordem':       '#{n}',
     'hist.uma_venda':   'sold once',
     'hist.nunca':       'It has never changed hands. The first owner is still the only one.',
-    'hist.sem_preco':   '{n} transfer from before prices were recorded.',
+    'hist.sem_preco_1': '{n} transfer from before prices were recorded.',
+    'hist.sem_preco':   '{n} transfers from before prices were recorded.',
     'hist.grafico_alt': 'Price of each sale, in crystals, in the order they happened.',
   }
 );

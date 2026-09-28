@@ -67,7 +67,19 @@ const marcadoresDe = (s) => (s.match(MARCADOR) || []).sort().join(',');
 
 let problemas = 0;
 let chavesConferidas = 0;
-const arquivos = fs.readdirSync(PASTA).filter(a => /^i18n.*\.js$/.test(a)).sort();
+/* Todo arquivo que CHAMA o registerStrings, e não todo arquivo que se
+   chama i18n-alguma-coisa. A regra do nome parecia bastar e não bastava:
+   cinco dicionários viviam em js/eggs.js, escolha.js, evolucao.js,
+   fratura.js e historico.js, e esta ferramenta passou meses a dizer
+   "nenhum problema" sem nunca os ter aberto. Um deles tinha mesmo um
+   defeito — "3 passagem", sem plural, nas duas línguas.
+
+   É o defeito de sempre deste projeto: uma regra que depende de uma
+   convenção, e nada que obrigue a convenção. */
+const arquivos = fs.readdirSync(PASTA)
+  .filter(a => a.endsWith('.js'))
+  .filter(a => /registerStrings\s*\(/.test(fs.readFileSync(path.join(PASTA, a), 'utf8')))
+  .sort();
 
 for (const arquivo of arquivos) {
   const vistos = lerDicionarios(fs.readFileSync(path.join(PASTA, arquivo), 'utf8'));
