@@ -585,7 +585,7 @@ async function handleVisitar(req, res, db, uid, alvoUid, tipo, alvoSlot) {
 
       /* ── A QUEM SE LEVA ──
 
-         Era sempre o avatar "activo" do amigo. Agora é o que o
+         Era sempre o avatar "ativo" do amigo. Agora é o que o
          visitante escolheu, e o servidor só confirma que ele existe e
          está vivo — quem escolhe é quem visita.
 

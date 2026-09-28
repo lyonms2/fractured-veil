@@ -298,7 +298,7 @@ function podeEscolherAnciao(slot) {
   const s = slot || (typeof avatar !== 'undefined' ? avatar : null);
   if (!s || s.dead) return false;
   if (s.escolhaAnciao) return false;      // escolhe-se uma vez
-  /* O avatar activo tem o nível numa variável viva; os outros têm-no no
+  /* O avatar ativo tem o nível numa variável viva; os outros têm-no no
      slot. É a mesma distância de sempre entre quem está em campo e quem
      está guardado. */
   const nv = (typeof nivel !== 'undefined' && typeof avatar !== 'undefined' && s === avatar)

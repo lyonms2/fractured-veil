@@ -158,7 +158,7 @@ function getGameState() {
          essa linha custava era o preço que o próximo pagava.
 
          Mudou para o mapa `donos`, escrito só pelo api/comprar-avatar.js
-         dentro da transação que move os cristais — o preço registado é,
+         dentro da transação que move os cristais — o preço registrado é,
          por construção, o que foi mesmo pago. */
       /* A CERTIDAO DE NASCIMENTO.
 
@@ -210,7 +210,7 @@ function getGameState() {
 
          Guardava id, raridade, elemento e validade — e mais nada.
          Um ovo de cruzamento traz o DNA do filho já feito e o
-         registo dos pais; sem isto, a primeira gravação apagava a
+         registro dos pais; sem isto, a primeira gravação apagava a
          herança e o filho nascia de estranhos.
 
          A raridade fica de fora: o ovo já não tem nenhuma. */
@@ -353,7 +353,7 @@ function applyGameState(data) {
 
      Os ovos viviam dentro de um slot — `slot.eggs` — e a chocadeira
      mostrava os do avatar ABERTO. Um ovo posto pela cruza ia para o
-     slot activo, e quem trocasse de avatar deixava de o ver.
+     slot ativo, e quem trocasse de avatar deixava de o ver.
 
      Não faz sentido nenhum: um ovo não é de um avatar, é da casa. E o
      servidor já os guardava assim desde que o mapa `ovos` existe — era
@@ -425,7 +425,7 @@ function applyGameState(data) {
 
      Era a caixa de entrada da venda de ovos: um ovo comprado a outro
      jogador chegava lá, escrito pelo servidor, e este bloco passava-o
-     para o inventário do slot activo.
+     para o inventário do slot ativo.
 
      A venda de ovos acabou há muito, e com ela quem escrevia no inbox —
      não sobrou um único endpoint que lá ponha seja o que for. Ficou
@@ -508,7 +508,7 @@ function applyGameState(data) {
   // Dead state vem do Firebase — fallback via RTDB presence (ver setupPresence/getPresenceData)
 
   /* Aqui recolhiam-se os ovos que tinham ficado sem slot — o
-     saveRuntimeToSlot guardava-os quando o slot activo era nulo. Deixou
+     saveRuntimeToSlot guardava-os quando o slot ativo era nulo. Deixou
      de haver ovos sem slot: eles não estão em slot nenhum, estão na
      casa. Os ITENS continuam a precisar disso, e continuam a tê-lo. */
 
@@ -565,7 +565,7 @@ function _presRef(uid) {
   return (db && uid) ? db.ref('presence/' + uid) : null;
 }
 
-// Chamar após login: regista onDisconnect no RTDB — Firebase escreve server-side ao desligar
+// Chamar após login: registra onDisconnect no RTDB — Firebase escreve server-side ao desligar
 function setupPresence(uid) {
   const db = typeof _rtdb !== 'undefined' ? _rtdb : null;
   if(!db || !uid) return;

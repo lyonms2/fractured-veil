@@ -4,7 +4,7 @@
 // A pergunta é a mesma que a genética faz sempre: isto é herança ou é
 // um sorteio com nomes bonitos por cima?
 //
-//   1. o sexo sai da regra e não de uma excepção — nunca nasce um YY
+//   1. o sexo sai da regra e não de uma exceção — nunca nasce um YY
 //   2. cada alelo do filho veio mesmo de um dos pais, e de nenhum outro
 //      lugar
 //   3. dois pais fortes tendem a dar filhos fortes — mas nem sempre

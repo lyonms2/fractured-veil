@@ -6,13 +6,13 @@
 //
 // Viviam no js/i18n-magias.js, que era o arquivo de textos do motor
 // 3D&T — e foram-se com ele quando o motor saiu. A árvore genealógica, a
-// certidão de nascimento, o registo da linhagem, os ovos e o cruzamento
+// certidão de nascimento, o registro da linhagem, os ovos e o cruzamento
 // ficaram sem uma palavra, e o jogo passou a mostrar `cert.titulo` e
 // `lin.primordial` a quem abrisse a árvore.
 //
 // Não tinham nada a ver com magia: estavam ali por vizinhança, e só se
 // deu por isso ao correr a conta das chaves pedidas contra as
-// registadas. É essa conta que devia ter corrido antes de apagar.
+// registradas. É essa conta que devia ter corrido antes de apagar.
 //
 // Voltam palavra por palavra — são as mesmas de sempre — e agora num
 // arquivo cujo nome diz de que falam.
@@ -37,7 +37,7 @@ window.registerStrings({
   'egg.choca_em':         'Choca em {t}',
   'egg.filho_de':         'filho de {mae} e {pai}',
   'lin.abrir':            'Ver a certidão',
-  'lin.abrir_registo':    'Ver o que ficou registado',
+  'lin.abrir_registo':    'Ver o que ficou registrado',
   'lin.cor':              'Cor',
   'lin.femea':            'Fêmea',
   'lin.historia':         'ausente',

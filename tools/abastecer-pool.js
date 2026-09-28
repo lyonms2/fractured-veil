@@ -37,7 +37,7 @@
    20 MATIC no contrato = 200 💎 na pool.
 
    Corre em seco por omissão. Com --escrever, faz a mesma transação que
-   as taxas fazem (incrementa cristais e totalEntrou) e deixa um registo
+   as taxas fazem (incrementa cristais e totalEntrou) e deixa um registro
    no histórico público da pool, que é onde tem de aparecer: quem lê a
    Transparência vê a entrada com o motivo, como vê todas as outras.
 
@@ -140,7 +140,7 @@ async function saldoDoCofre() {
 
   if (!ESCREVER) { console.log('Nada foi gravado. Repete com --escrever.'); return; }
 
-  // A mesma transação das taxas, e um registo no histórico público —
+  // A mesma transação das taxas, e um registro no histórico público —
   // uma entrada na pool que não aparecesse no histórico seria um buraco
   // na própria página que promete mostrar tudo o que entra e sai.
   const batch  = db.batch();

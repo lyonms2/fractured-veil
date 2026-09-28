@@ -115,12 +115,12 @@ async function lerEquipa(db, uid, idsDoPedido) {
      Não é o do `avatarSlots`, que o cliente grava: é o do mapa `niveis`,
      que só o servidor escreve (js/niveis.js). Editar o save para entrar
      no PvP com um bicho de nível 60 deixa de servir para nada — o que
-     conta aqui é o que ficou registado, degrau a degrau.
+     conta aqui é o que ficou registrado, degrau a degrau.
 
-     Quem ainda não tem registo é anotado AGORA, com o nível que o slot
+     Quem ainda não tem registro é anotado AGORA, com o nível que o slot
      diz: são os avatares anteriores a isto, e é o primeiro (e único)
      encontro em que o servidor acredita no cliente. Os que nascem a
-     partir daqui já vêm registados no nível 1 (api/pool.js). */
+     partir daqui já vêm registrados no nível 1 (api/pool.js). */
   const niveis = d.niveis || {};
   const anotar = {};
   const agora  = Date.now();
@@ -851,7 +851,7 @@ async function fecharPendentes(db, rtdb, tempAtual) {
     /* A PARTE DA POOL, antes de qualquer conta.
 
        A Pool P2E entra no bolo desta temporada (TP.temporadaAporteDaPool).
-       O débito e o registo acontecem na MESMA transação e antes de
+       O débito e o registro acontecem na MESMA transação e antes de
        calcular os prémios, por uma razão: a partir do momento em que o
        campo `aportePool` existe no documento da temporada, o dinheiro já
        saiu da pool e pertence àquele bolo. Se o fecho morrer a seguir, a

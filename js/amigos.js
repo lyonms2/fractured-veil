@@ -634,7 +634,7 @@ async function executarVisita(tipo) {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       // O `alvoSlot` é o que faz da visita uma escolha: sem ele o
-      // servidor leva ao primeiro vivo, como levava ao "activo".
+      // servidor leva ao primeiro vivo, como levava ao "ativo".
       body:    JSON.stringify({ acao: 'visitar', idToken, alvoUid: _visitaAtual.uid,
                                 tipo, alvoSlot: (_visitaAlvo() || {}).slot }),
     });

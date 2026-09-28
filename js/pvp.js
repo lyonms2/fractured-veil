@@ -163,7 +163,7 @@ function pvpIniciar(uid) {
   if (typeof nivelAvisarTodos === 'function') nivelAvisarTodos();
 
   /* E quando a resposta chegar, a tela acerta-se: o poder e a divisão
-     que ela mostra passam a ser os do registo (ver _pvpPoder). */
+     que ela mostra passam a ser os do registro (ver _pvpPoder). */
   if (!_pvpOuveNiveis) {
     _pvpOuveNiveis = true;
     window.addEventListener('niveis-reconhecidos', () => {
@@ -291,7 +291,7 @@ function pvpMinhaDivisao() {
 /* ── O PODER QUE VALE É O QUE O SERVIDOR RECONHECE ──
 
    O fuPoderDaEquipa soma o nível do SLOT, que é o do save. O servidor
-   monta a fila e escreve a tabela com o nível do registo dele
+   monta a fila e escreve a tabela com o nível do registro dele
    (js/niveis.js), que sobe degrau a degrau e pode estar alguns níveis
    atrás depois de uma subida rápida.
 

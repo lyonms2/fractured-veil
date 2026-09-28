@@ -241,7 +241,7 @@ function abrirEvolucao() {
 
        Ela sobe com os pontos, tal como a fase — desde que as duas passaram
        a sair da mesma escada, subir de fase É subir de raridade. Mas quem
-       a anunciava era uma linha de registo disparada no tick, e essa
+       a anunciava era uma linha de registro disparada no tick, e essa
        linha chegava no instante em que a fase foi GANHA: minutos ou horas
        antes de o jogador clicar. Dizia ainda "o corpo dele mudou", o que
        era falso por construção — o corpo espera de propósito.

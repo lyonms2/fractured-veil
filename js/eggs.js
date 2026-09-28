@@ -188,7 +188,7 @@ function burnEgg(id) {
 /* ── O SERVIDOR PRIMEIRO, E SÓ DEPOIS A TELA ──
 
    A queima acontecia toda aqui: tirava o ovo da lista e dava as moedas.
-   Só que o ovo de verdade é o registo no mapa `ovos`, que só o servidor
+   Só que o ovo de verdade é o registro no mapa `ovos`, que só o servidor
    escreve — e que só o chocar apagava. O ovo queimado ficava lá, e com
    ele a prova de que podia ser chocado: a tela prometia uma ação
    irreversível que não era.
@@ -197,7 +197,7 @@ function burnEgg(id) {
    nem o ovo some, nem as moedas entram: melhor ficar com o ovo do que
    ficar sem ele e sem nada.
 
-   Um ovo sem registo (de antes do mapa) também dá OK do outro lado,
+   Um ovo sem registro (de antes do mapa) também dá OK do outro lado,
    portanto não fica ninguém preso com um ovo que não dá para queimar. */
 async function _doBurnComum(id, moedas) {
   const idx = eggsInInventory.findIndex(e => String(e.id) === String(id));
@@ -427,7 +427,7 @@ async function confirmHatch() {
 
   // Gerar dados do novo avatar
   // O nome e o seed são os que foram ao servidor — recalcular aqui daria
-  // outro seed e o registo de emissão não bateria certo na listagem.
+  // outro seed e o registro de emissão não bateria certo na listagem.
   const nome     = _nomeProv;
   const _descPool  = descricoesDoTom(_tomOvo);
   const descricaoIdx = Math.floor(Math.random() * _descPool.length);
@@ -976,7 +976,7 @@ const _OVO_COR_OMISSA = '#7a4fbb';
 /* ═══════════════════════════════════════════════════════════════════
    A CERIMÓNIA DA CRUZA
 
-   Mostrava UM avatar a fazer força — o activo — porque nasceu quando pôr
+   Mostrava UM avatar a fazer força — o ativo — porque nasceu quando pôr
    um ovo era coisa de um bicho sozinho. A postura sozinha saiu do jogo e
    a cerimónia ficou: o jogador escolhia dois pais e via um terceiro a
    esforçar-se.

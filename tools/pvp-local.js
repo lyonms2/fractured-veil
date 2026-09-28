@@ -84,7 +84,7 @@ async function semear() {
 
          niveis            o nível reconhecido (js/niveis.js). Sem ele,
                            qualquer teste que compare o save com o
-                           registo cai no save e não compara nada.
+                           registro cai no save e não compara nada.
          avataresEmitidos  a prova de que o avatar nasceu por aqui, que é
                            o que o mercado exige para deixar listar.
                            Guarda a ORIGEM, e origem é sempre 'Comum'. */

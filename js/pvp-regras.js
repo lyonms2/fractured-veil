@@ -254,7 +254,7 @@ function pvpCaidos(estado, lado) {
 
 /* O retrato de um avatar como ele entra na sala: o que a ficha lê
    (js/ficha-fu.js) e o que o desenho lê (gerarSVG). O DNA vem da
-   CERTIDÃO e o NÍVEL vem do registo do servidor (js/niveis.js) — os
+   CERTIDÃO e o NÍVEL vem do registro do servidor (js/niveis.js) — os
    dois números que decidem a luta, e nenhum deles sai do slot, que o
    cliente grava por inteiro. O `nivel` chega aqui já decidido pelo
    api/pvp.js; sem ele, vale o do slot (é o caso do desenho local, que

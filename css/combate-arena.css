@@ -2,7 +2,7 @@
    A ARENA
 
    A batalha era duas grelhas de cartões, uma em cima e outra em baixo,
-   com o registo entre elas. Lia-se — mas nada ali era um LUGAR: os
+   com o registro entre elas. Lia-se — mas nada ali era um LUGAR: os
    avatares estavam dentro de caixas, e duas caixas não se enfrentam.
 
    Agora há um palco. Os seis estão sobre um chão, com profundidade, sob
@@ -1333,7 +1333,7 @@
    FORA — à esquerda de quem está do lado esquerdo — para não tapar o
    caminho do golpe nem o lance.
 
-   O `dentro` é a excepção, e é sempre a mesma: o posto do fundo está a
+   O `dentro` é a exceção, e é sempre a mesma: o posto do fundo está a
    10% da largura, e uma coluna à esquerda dele sai fora do palco. Vira
    para o meio, onde só há céu e a fenda, e tapa o companheiro do meio.
 
@@ -1673,7 +1673,7 @@ b.laco { color: #f5a3c7; }
   .cb-mare-eu, .cb-mare-marca { transition: none; }
 }
 
-/* O registo passa a uma faixa fina e translúcida, colada ao rodapé das
+/* O registro passa a uma faixa fina e translúcida, colada ao rodapé das
    ações: era uma caixa que roubava um terço da altura ao campo, e o
    campo é o que esta mudança existe para dar. Continua a rolar, e
    continua a ser onde a conta aparece por extenso. */
@@ -2186,7 +2186,7 @@ b.laco { color: #f5a3c7; }
   .cb-hud.ini .cb-ficha-barras { min-width: 4.25rem; }
   .cb-ficha-nome { max-width: 5rem; }
   /* No celular o céu é menor e as cabeças estão mais acima: o
-     registo encolhe para não lhes cair em cima. Continua a rolar, e o
+     registro encolhe para não lhes cair em cima. Continua a rolar, e o
      detalhe do turno abre na mesma. */
   /* O `translate(-50%)` da regra base TEM de sair com o `left`.
      Ficava, e recuava meia caixa a partir de uma berma que já era a

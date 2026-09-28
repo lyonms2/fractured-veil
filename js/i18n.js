@@ -19,7 +19,7 @@
       'painel.so_cuidando.colonia':    'Esses itens são de um avatar de cada vez — os amuletos equipam nele, os consumíveis são dados a ele. Na colônia não dá para saber em qual. Toque em CUIDAR de um avatar e abra outra vez.',
       'painel.so_cuidando.sem_avatar': 'Esses itens são usados em um avatar. Entre em algum na colônia e abra outra vez.',
       // -- IDENTIDADE PERMANENTE --
-      // O nome de quem joga, pedido uma vez, e o baptismo do avatar,
+      // O nome de quem joga, pedido uma vez, e o batismo do avatar,
       // que tambem e uma vez so.
       // -- AS DOZE CORES DA RODA --
       // Nomes de tinta, nao de ecra: e a roda do pintor.
@@ -54,7 +54,7 @@
       'nomes.err.sem_avatar':  'Não encontramos esse avatar na sua colônia.',
       'nomes.err.rede':    'Não deu para confirmar o nome agora. Tente de novo.',
       'nomej.log':        'Você atravessa o véu como {nome}.',
-      // O baptismo do avatar
+      // O batismo do avatar
       'rename.selado':    'O nome dele já está selado. Só se batiza uma vez.',
       'rename.feito':     'Ele se chama {name} — agora e sempre.',
       'ident.criador':    'Criado por',
@@ -96,7 +96,7 @@
 
       // Auth — login
       'auth.error.login':          'Erro ao entrar. Tente novamente.',
-      // Auth — registo
+      // Auth — registro
       // Auth — reset
       // Auth — botões
 

@@ -155,10 +155,10 @@ async function handleListarAvatar(req, res, db, uid) {
 
          O avataresEmitidos é escrito pelo handleChocarOvo do
          api/pool.js quando o ovo choca, e o cliente não lhe toca
-         (firestore.rules). Sem registo, não se lista — é o que impede
+         (firestore.rules). Sem registro, não se lista — é o que impede
          alguém de inventar um avatar num slot e vendê-lo.
 
-         E a origem tem de bater com o registo. Hoje é 'Comum' dos dois
+         E a origem tem de bater com o registro. Hoje é 'Comum' dos dois
          lados, porque os ovos deixaram de ter raridade; a comparação
          parece vazia mas não é — é ela que apanha uma certidão forjada,
          que é a outra maneira de mentir sobre a proveniência. */
@@ -170,7 +170,7 @@ async function handleListarAvatar(req, res, db, uid) {
          Desde que todo o avatar nasce Comum, a raridade que ele traz
          hoje nao diz nada sobre o ovo que o gerou — e era isso que
          esta linha comparava. Um avatar chocado de um ovo Lendario
-         nascia Comum, o registo dizia Lendario, e ele nunca mais
+         nascia Comum, o registro dizia Lendario, e ele nunca mais
          poderia ser vendido.
 
          A origem esta na certidao, escreve-se uma vez e nao muda —
@@ -286,7 +286,7 @@ async function handleListarAvatar(req, res, db, uid) {
            embaixo, entrega ao comprador o nível do mapa `niveis`. A
            vitrine mostrava um e a entrega fazia outro.
 
-           Sem registo (um avatar de antes do js/niveis.js), vale o do
+           Sem registro (um avatar de antes do js/niveis.js), vale o do
            slot: é tudo o que existe sobre ele. */
         nivel:      nivelReconhecido,
         xp:         s.xp         || 0,
@@ -322,7 +322,7 @@ async function handleListarAvatar(req, res, db, uid) {
       INSUFFICIENT:      [400, 'Cristais insuficientes para a taxa de listagem.'],
       SLOT_INVALID:      [400, 'Slot inválido ou avatar morto.'],
       AVATAR_DOENTE:     [400, 'Um avatar doente não pode ser vendido. Trate a doença antes de vender.'],
-      AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registo de emissão e não pode ser listado. Choque um ovo novo.'],
+      AVATAR_SEM_REGISTO:   [400, 'Este avatar nasceu antes do registro de emissão e não pode ser listado. Choque um ovo novo.'],
       AVATAR_SEM_CERTIDAO:  [400, 'Este avatar não tem certidão emitida pelo servidor e não pode ser listado.'],
       ORIGEM_NAO_CONFERE: [403, 'A origem não confere com a emitida.'],
     };
@@ -475,7 +475,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       if (freeIdx === -1) throw new Error('NO_SLOT');
 
       /* O vendedor lê-se aqui, e não mais abaixo como era, porque o nome
-         dele entra no registo de proprietários que vai dentro do slot. */
+         dele entra no registro de proprietários que vai dentro do slot. */
       const sellerRef  = db.collection('players').doc(listing.sellerId);
       const sellerSnap = await tx.get(sellerRef);
       const sellerData = sellerSnap.data() || {};
@@ -492,7 +492,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
 
          A cadeia diz por quanto o avatar foi vendido de cada vez e em
          que nível ia na altura. É escrita só aqui, dentro da transação
-         que move os cristais — o preço registado é, por construção, o
+         que move os cristais — o preço registrado é, por construção, o
          que foi mesmo pago, e não o que o vendedor gostaria que
          constasse. Vivia no avatarSlots do vendedor, e inventar três
          vendas anteriores a 5000 cristais cada era uma linha no
@@ -596,7 +596,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const sellerReal   = +(pagoReal - taxaReal).toFixed(2);
       const sellerBonus  = +(pagoBonus - taxaDoBonus).toFixed(2);
 
-      // O registo de emissão segue o avatar. Sem isto, quem comprasse um
+      // O registro de emissão segue o avatar. Sem isto, quem comprasse um
       // Lendário não o conseguia revender — o avataresEmitidos dele não
       // teria a entrada, e a listagem daria AVATAR_SEM_REGISTO.
       /* A CERTIDÃO MUDA DE DONO COM O AVATAR.
@@ -614,7 +614,7 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       /* A cadeia de donos viaja com o avatar, e pelo mesmo caminho da
          certidão: entra no mapa do comprador e sai do do vendedor, na
          mesma transação que move os cristais. É por ser escrita aqui
-         dentro que o preço registado é, por construção, o que foi mesmo
+         dentro que o preço registrado é, por construção, o que foi mesmo
          pago — e não o que o vendedor gostaria que constasse. */
       const chaveDonos = listing.id ? `donos.${listing.id}` : null;
       /* OS LAÇOS também vão com ele (js/lacos.js). Do mapa do vendedor
@@ -625,10 +625,10 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const lacosVendidos = listing.id
         ? (((sellerData.lacos || {})[listing.id]) || listing.lacos || null) : null;
       /* O NÍVEL RECONHECIDO viaja igual (js/niveis.js). Sem isto, o
-         avatar chegava ao comprador sem registo nenhum e o primeiro
+         avatar chegava ao comprador sem registro nenhum e o primeiro
          encontro com o servidor aceitaria o número que o cliente dele
          dissesse — comprar um bicho barato seria a maneira de entrar no
-         PvP com o nível que se quisesse. Sem registo no vendedor (um
+         PvP com o nível que se quisesse. Sem registro no vendedor (um
          avatar de antes disto), vale o nível do anúncio, que é o que o
          comprador viu e pagou. */
       const chaveNivel = listing.id ? `niveis.${listing.id}` : null;
@@ -643,14 +643,14 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          handleListar exige que o `avataresEmitidos` bata com a ORIGEM da
          certidão, que é sempre 'Comum' (todo avatar nasce Comum desde
          que a raridade se conquista por nível). Um avatar comprado
-         acima de Comum ficava com 'Raro' no registo, a origem dizia
+         acima de Comum ficava com 'Raro' no registro, a origem dizia
          'Comum', e a revenda morria em ORIGEM_NAO_CONFERE.
 
          Isto já estava errado antes de a raridade do anúncio passar a
          sair do nível — só que agora seria a regra e não a exceção,
          porque todo avatar do nível 12 para cima anuncia-se Raro.
 
-         O que se grava é o que o registo sempre quis dizer: de onde ele
+         O que se grava é o que o registro sempre quis dizer: de onde ele
          veio, e não o que ele chegou a ser. */
       const origemVendida = (certVendida && certVendida.origem)
         || (listing.nascimento && listing.nascimento.origem) || 'Comum';

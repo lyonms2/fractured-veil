@@ -4,14 +4,14 @@
 // Até aqui um avatar não nascia: aparecia. Era montado pronto — com a
 // raridade do ovo, com as quatro características já no valor final do
 // nível 1, e com as três magias que o seed lhe sorteava. Não havia
-// instante de nascimento nem registo dele; havia um objeto.
+// instante de nascimento nem registro dele; havia um objeto.
 //
 // Passa a haver um acto, com uma ordem:
 //
 //     nascimento → nome → DNA → potencial → atributos iniciais
 //                → Comum → nível 1 → só o ataque básico
 //
-// E esse acto deixa um REGISTO PERMANENTE. O registo escreve-se uma vez
+// E esse acto deixa um REGISTO PERMANENTE. O registro escreve-se uma vez
 // e nunca mais: é a certidão. O que o avatar vier a ser muda; o que ele
 // era ao nascer, não.
 //
@@ -21,7 +21,7 @@
 // tira e passa a ser o que se chega a ser. Mas a proveniência não se
 // perde: o ovo que o gerou fica gravado em `origem`, e é dela que
 // continua a depender o que ele vale — os genes que recebe, e a postura
-// de ovos, que o api/pool.js já tirava do registo do servidor e não da
+// de ovos, que o api/pool.js já tirava do registro do servidor e não da
 // raridade do avatar.
 //
 // E nasce sem magia nenhuma. Um bebé tem o golpe comum e mais nada; as
@@ -566,8 +566,8 @@ function nascer(opts) {
 
 /* Põe a certidão no avatar, uma vez.
 
-   Devolve false se já lá estava. Um registo de nascimento que se
-   reescreve não é um registo — e a única forma de garantir isso é a
+   Devolve false se já lá estava. Um registro de nascimento que se
+   reescreve não é um registro — e a única forma de garantir isso é a
    escrita passar sempre por aqui.
 
    O congelamento não sobrevive a uma ida ao servidor (o JSON descongela),

@@ -96,7 +96,7 @@ function pveNivelInimigo(nivelEquipe) {
 
 function _pveGerarInimigo(nivelTotal) {
   /* Baralhados e consumidos sem repetição: dois nomes iguais na mesma
-     equipe davam linhas absurdas no registo. Os sufixos saem da tradução
+     equipe davam linhas absurdas no registro. Os sufixos saem da tradução
      (FRAT_SUFIXOS, js/fratura.js) e o slot guarda a CHAVE — é por ela
      que a tela da Fratura sabe o que dizer sobre cada um. */
   const sufs = ((typeof FRAT_SUFIXOS !== 'undefined')
@@ -143,7 +143,7 @@ function _pveGerarInimigo(nivelTotal) {
 // ═══════════════════════════════════════════════════════════════════
 // A ENERGIA DE CADA AVATAR
 //
-// O avatar activo tem-na nas variáveis vivas (vitals); os outros
+// O avatar ativo tem-na nas variáveis vivas (vitals); os outros
 // têm-na no seu slot. É a mesma energia — só muda onde está escrita — e
 // por isso passa tudo por estas duas funções, para não haver dois lugares
 // a discordar sobre quanto um avatar aguenta.
@@ -175,7 +175,7 @@ function _pveGastarEnergia(idx, quanto) {
 // do avatar, e por isso são pagas uma vez só.
 // ═══════════════════════════════════════════════════════════════════
 function _pvePremiarAvatar(idx, xpGanho, vinculoGanho) {
-  // O activo passa pelos caminhos normais do jogo — o checkXP trata da
+  // O ativo passa pelos caminhos normais do jogo — o checkXP trata da
   // fase, do som e do rótulo, e o checkVinculoTier faz o bicho falar.
   if (typeof activeSlotIdx !== 'undefined' && idx === activeSlotIdx) {
     if (typeof xp !== 'undefined') xp += xpGanho;

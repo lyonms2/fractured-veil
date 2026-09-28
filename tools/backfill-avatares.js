@@ -3,13 +3,13 @@
    BACKFILL DO avataresEmitidos
 
    O api/comprar-avatar.js passou a exigir que a raridade de um avatar
-   esteja registada em avataresEmitidos — um campo que só o servidor
+   esteja registrada em avataresEmitidos — um campo que só o servidor
    escreve — em vez de a ler do avatarSlots, que o cliente escreve por
    inteiro. Sem isso, escrever raridade:'Lendário' num slot e listá-lo
    era o caminho mais curto para cristais.
 
-   Avatares que nasceram ANTES disso não têm registo, e por isso não se
-   podem listar. Este script cria o registo em falta.
+   Avatares que nasceram ANTES disso não têm registro, e por isso não se
+   podem listar. Este script cria o registro em falta.
 
    E aqui está a parte incómoda, que não dá para contornar: para os
    avatares antigos não existe verdade nenhuma do lado do servidor. A
@@ -69,7 +69,7 @@ function iniciar() {
 
     slots.forEach((s) => {
       if (!s || !s.seed || !s.raridade) return;
-      // Comuns não se vendem, portanto não precisam de registo.
+      // Comuns não se vendem, portanto não precisam de registro.
       if (s.raridade !== 'Raro' && s.raridade !== 'Lendário') return;
       const chave = 's' + String(s.seed);
       if (emitidos[chave]) { jaTinham++; return; }

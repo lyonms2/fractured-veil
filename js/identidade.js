@@ -41,7 +41,7 @@
 // na lista de campos do servidor: "o avatarSlots, que o cliente escreve".
 // Portanto estes campos são ESTRUTURA, não prova. Quando a reprodução
 // chegar, a linhagem precisa do mesmo tratamento que os ovos e os
-// avatares emitidos já têm: um registo do lado do servidor. A forma aqui
+// avatares emitidos já têm: um registro do lado do servidor. A forma aqui
 // foi escolhida para essa mudança não obrigar a mexer no formato — só a
 // passar a confiar noutra fonte.
 // ═══════════════════════════════════════════════════════════════════
@@ -117,7 +117,7 @@ function garantirIdentidade(slot) {
   slot.mae         = null;
   slot.pai         = null;
   /* Lista vazia, e não inventada. Este avatar pode muito bem já ter
-     mudado de mãos antes de haver registo — mas escrever ali um nome
+     mudado de mãos antes de haver registro — mas escrever ali um nome
      que eu não sei é pior do que dizer que não se sabe. */
   slot.donos       = [];
   slot.nascidoEm   = slot.bornAt || Date.now();
@@ -718,7 +718,7 @@ function _linCartao(p, cls, slots) {
      Vendido ou dado, o avatar deixou de estar nos slots — mas o ovo de
      que este filho nasceu guardou com que o desenhar. Desenha-se, mais
      apagado, e diz que já não está. O cartão dele abre: mostra o que
-     ficou registado, e diz que é só isso. */
+     ficou registrado, e diz que é só isso. */
   if (!p.slot && p.retrato) {
     const r = p.retrato;
     const svg = (typeof gerarSVG === 'function')

@@ -291,7 +291,7 @@ const HATCH_FEE = 30;
    Agora vê. E não precisa de acreditar em nada do que o cliente diz,
    porque já sabe a raridade do OVO — ou porque foi ele que o pôs no
    inboxEggs, ou porque o emitiu no ovosEmitidos ao ser posto. O avatar
-   herda a raridade do ovo que consumiu, e fica registado em
+   herda a raridade do ovo que consumiu, e fica registrado em
    avataresEmitidos, que o cliente não escreve (firestore.rules).
 
    O seed e o nome continuam a vir do cliente. O seed decide a aparência
@@ -400,7 +400,7 @@ async function handleInvocar(req, res, db, uid) {
         { uid, nome: pData.nomeJogador || null },
         ORDEM_DOS_FEITIOS[usadas] || null);
 
-      /* A certidão vai para o mapa do servidor, e o registo de emissão
+      /* A certidão vai para o mapa do servidor, e o registro de emissão
          com ela — é o avataresEmitidos que o api/comprar-avatar.js exige
          para deixar listar. Sem esta linha, um avatar invocado nunca
          poderia ser vendido. */
@@ -411,7 +411,7 @@ async function handleInvocar(req, res, db, uid) {
         /* O NÍVEL COMEÇA AQUI, E NO UM.
 
            O `niveis` é o que o PvP lê (js/niveis.js). Um avatar que
-           nasce já registado nunca tem um "primeiro encontro" em que o
+           nasce já registrado nunca tem um "primeiro encontro" em que o
            servidor aceita o número que o cliente disser — e é esse
            primeiro encontro que só existe para os avatares que já
            andavam por aí antes disto. */
@@ -437,7 +437,7 @@ async function handleInvocar(req, res, db, uid) {
 
 
 /* ═══════════════════════════════════════════════════════════════════
-   MORREU — a morte fica registada fora do alcance do cliente
+   MORREU — a morte fica registrada fora do alcance do cliente
 
    O `dead` vive dentro do avatarSlots, que o cliente escreve por
    inteiro: pôr `false` num avatar morto devolvia-lhe a vida, e com ela
@@ -639,7 +639,7 @@ const OVOS_MAX = 10;
    servidor sobe o que o balde permitir e guarda a hora.
 
    Pedir de mais NÃO é erro. O jogo segue igual — o número do slot é o
-   que o jogador vê e é com ele que joga o PvE. O registo só decide uma
+   que o jogador vê e é com ele que joga o PvE. O registro só decide uma
    coisa: com que nível se entra no PvP (api/pvp.js).
 
    O que isto fecha e o que não fecha está escrito no js/niveis.js.
@@ -749,7 +749,7 @@ async function handleCruzar(req, res, db, uid) {
       if (!a || !b) throw new Error('SEM_CERTIDAO');
 
       /* O limite conta os ovos que o jogador TEM, e não os do slot
-         activo como o cliente conta. É o mesmo número visto de mais
+         ativo como o cliente conta. É o mesmo número visto de mais
          longe: o cliente pergunta "cabe aqui?", o servidor pergunta
          "quantos é que este jogador já tem?" — e é essa a pergunta que
          impede alguém de encher a colônia com ovos a saltar de slot. */
@@ -784,7 +784,7 @@ async function handleCruzar(req, res, db, uid) {
    QUEIMAR UM OVO É IRREVERSÍVEL — E AGORA É MESMO
 
    A queima acontecia toda no navegador: tirava o ovo da lista do save,
-   dava as moedas, e pronto. Só que o ovo DE VERDADE é o registo no mapa
+   dava as moedas, e pronto. Só que o ovo DE VERDADE é o registro no mapa
    `ovos`, que só o servidor escreve e que só o chocar apagava.
 
    O ovo queimado ficava lá. Duas consequências: o documento juntava
@@ -793,7 +793,7 @@ async function handleCruzar(req, res, db, uid) {
    queimado, porque o servidor só pergunta pelo mapa. A tela dizia "esta
    ação é irreversível" e não era.
 
-   Isto apaga o registo, e é a única coisa que faz. As moedas continuam
+   Isto apaga o registro, e é a única coisa que faz. As moedas continuam
    a ser creditadas no cliente, como as outras todas (ver a nota das
    moedas no firestore.rules) — mexer nisso é outro trabalho.
 
@@ -837,13 +837,13 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
       /* ── A PROVA DE QUE O OVO EXISTE É ELE ESTAR NO MAPA ──
 
          Eram duas provas, uma por origem: estar no `inboxEggs` (que o
-         servidor enchia quando havia venda de ovos) ou ter registo no
+         servidor enchia quando havia venda de ovos) ou ter registro no
          `ovosEmitidos` (que o servidor escrevia quando um avatar punha
          ovos sozinho). As duas coisas acabaram — a venda de ovos e a
          postura sozinha — e com elas acabou quem escrevia essas provas.
 
          O resultado foi um bloqueio: o único ovo que o jogo produz hoje
-         é o de uma cruza, ele nasce no `slot.eggs` e não tem registo em
+         é o de uma cruza, ele nasce no `slot.eggs` e não tem registro em
          lado nenhum, portanto NENHUM ovo cruzado conseguia chocar.
 
          Agora a prova é uma só, e é a mesma para todos: o ovo está no
@@ -872,7 +872,7 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
         [`certidoes.${id}`]: nascimento,
         [`avataresEmitidos.s${String(seed)}`]: 'Comum',
         [`ovos.${String(ovoId)}`]: FieldValue.delete(),
-        // O nível do recém-nascido, registado pelo servidor (ver o invocar).
+        // O nível do recém-nascido, registrado pelo servidor (ver o invocar).
         [`niveis.${id}`]: { n: 1, em: Date.now(), cred: NIV.NIVEL_BALDE },
       };
 
@@ -938,6 +938,6 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
    Com isto o servidor deixa de emitir ovos. O ovosEmitidos, que era a
    prova de que um ovo tinha saído daqui, deixa de receber entradas
    novas — e o handleChocarOvo aceita um ovo que esteja no slot com
-   registo OU no inbox. Fica dito: hoje o ovo é posto pelo cliente, e a
+   registro OU no inbox. Fica dito: hoje o ovo é posto pelo cliente, e a
    prova de que ele é legítimo é mais fraca do que era. Quem decide se
    isso volta ao servidor é a conversa da economia, com o resto. */

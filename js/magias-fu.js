@@ -32,7 +32,7 @@ const FU_LUGARES = ['comum', 'forte', 'muito_forte', 'defesa', 'suporte'];
    tradução, que é meio caminho andado num jogo bilingue.
 
    Falta a do veneno, que o manual não tem: fica VENENUM, no mesmo
-   registo e pela mesma regra de formação.
+   registro e pela mesma regra de formação.
 
    O ESTADO de cada tipo sai do que o manual dá como oportunidade de
    cada magia, e onde ele não se aplica ao nosso combate escolhi o mais
@@ -63,12 +63,12 @@ const FU_ELEMENTAL = {
    HR+25, e ignora resistências.
 
    As outras cinco são nossas. E os nomes do manual estão em três
-   registos diferentes (um latim, um inglês composto, um substantivo
+   registros diferentes (um latim, um inglês composto, um substantivo
    comum), o que num lugar ao lado da linha latina das barragens dava
    confusão: o jogador não saberia, ao ler, qual dos dois lugares estava
    a olhar.
 
-   Ficam todos num registo só, em português e inglês — o que também os
+   Ficam todos num registro só, em português e inglês — o que também os
    separa à vista da linha latina. O de fogo deixa de se chamar Flare e
    passa a Lança de Brasa; é o preço de os oito falarem a mesma língua.
 

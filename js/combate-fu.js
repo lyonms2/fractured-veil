@@ -638,7 +638,7 @@ function fuAtacar(estado, quem, alvo, opcoes) {
    ── A CADEIA ──
 
    Um suspiro pode derrubar quem também o tem, e esse suspira também. O
-   manual diz "ao ser reduzido a 0 PV" e não abre excepção para a causa,
+   manual diz "ao ser reduzido a 0 PV" e não abre exceção para a causa,
    portanto a cadeia é a regra a ser coerente consigo mesma.
 
    Por VOLTAS e não numa passagem só, e é aí que está o cuidado. Uma
@@ -1133,7 +1133,7 @@ function fuPorId(estado, id) {
    Devolve o LADO de quem joga e a lista de quem ainda tem turno. Quem
    escolhe qual deles age é quem controla esse lado — o jogador, do lado
    dele; a política, do outro. O manual chama-lhe ordem de turnos
-   dinâmica e diz que é o coração táctico do sistema. */
+   dinâmica e diz que é o coração tático do sistema. */
 function fuVez(estado) {
   const porJogar = lado => estado[lado].filter(c => c.vivo && estado.jaAgiu.indexOf(c.id) === -1);
   const a = porJogar('A'), b = porJogar('B');

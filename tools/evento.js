@@ -93,7 +93,7 @@ const fmt = (ms) => new Date(ms).toLocaleString('pt-BR');
 
 /* O dia como quem marca o evento o vê, e não em UTC: um evento
    marcado para as dez da noite de 27 ganhava um id a dizer 28, e a
-   primeira pessoa a procurá-lo no registo procurava no dia errado. */
+   primeira pessoa a procurá-lo no registro procurava no dia errado. */
 function diaLocal(ms) {
   const d = new Date(ms);
   const p = (n) => String(n).padStart(2, '0');
@@ -146,7 +146,7 @@ async function main() {
       return;
     }
     /* Encerrar é pôr o FIM no instante de agora, e não apagar o
-       documento: o registo de que houve um evento, e de quando, é a
+       documento: o registro de que houve um evento, e de quando, é a
        única forma de explicar depois porque é que uma semana rendeu
        mais do que as outras. */
     await ref.update({ acaba: agora, encerradoEm: agora });

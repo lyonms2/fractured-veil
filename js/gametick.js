@@ -750,7 +750,7 @@ function preencherTelaDaMorte() {
 
   /* ── O QUE O MATOU ──
 
-     A saúde só cai por doença activa (ver o ciclo, aqui em cima),
+     A saúde só cai por doença ativa (ver o ciclo, aqui em cima),
      portanto a causa está no activeDiseases e o jogo sempre a soube —
      só nunca a disse. Uma tela de morte que não diz de que se morreu
      deixa o jogador sem a única coisa que ele podia aprender ali. */

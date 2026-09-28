@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    BATALHA PvE
 
-   Três zonas empilhadas: inimigo em cima, registo ao meio, você e as
+   Três zonas empilhadas: inimigo em cima, registro ao meio, você e as
    ações em baixo. Uma só disposição — em tela larga cresce, no celular
    encolhe, mas a ordem nunca muda.
 
@@ -29,7 +29,7 @@
    basta tirá-la aqui. Ver o _afTravarZoom, em js/arena-fu.js. */
 #combateModal { touch-action: pan-x pan-y; }
 
-/* A arena rola como último recurso. Não devia ser preciso — o registo
+/* A arena rola como último recurso. Não devia ser preciso — o registro
    encolhe primeiro — mas em telas muito baixas vale mais rolar do que
    ter o overflow:hidden do modal a cortar os botões pelo meio. */
 /* ── Cabeçalho ── */
@@ -59,7 +59,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    O QUE SAIU DAQUI
 
-   A DISPOSIÇÃO. Havia aqui uma coluna — inimigos em cima, registo ao
+   A DISPOSIÇÃO. Havia aqui uma coluna — inimigos em cima, registro ao
    meio, os meus em baixo — e cada lutador era um CARTÃO: moldura,
    fundo, nome, características, e a vida em bolinhas.
 
@@ -71,7 +71,7 @@
    os gestos de bater e de esquivar — que eram do cartão e agora são do
    corpo, com o chão e a sombra a acompanhar.
 
-   O que FICA aqui é tudo o que não é a disposição: o registo, os dados
+   O que FICA aqui é tudo o que não é a disposição: o registro, os dados
    do 3D&T, a barra de ações, o painel da ficha, as marcas de estado e
    as partículas do impacto. */
 
@@ -243,16 +243,16 @@
 
 /* ── E QUEM ESQUIVA SAI DA FRENTE ──
 
-   A esquiva era só uma palavra no registo: o cartão ficava quieto e o
+   A esquiva era só uma palavra no registro: o cartão ficava quieto e o
    golpe simplesmente não acontecia. Ficava a parecer que o ataque se
    tinha esquecido de sair. */
 
 /* ── O QUE AINDA NÃO ACONTECEU ──
 
-   A linha do registo escreve-se inteira de uma vez, mas as partes que
+   A linha do registro escreve-se inteira de uma vez, mas as partes que
    pertencem a batidas seguintes nascem com esta classe e esperam a sua
    vez. É `opacity` e não `display`, de propósito: assim a altura da
-   linha fica reservada desde o princípio e o registo não salta debaixo
+   linha fica reservada desde o princípio e o registro não salta debaixo
    dos olhos de quem está lendo. */
 .cb-log-linha .cb-conta,
 .cb-log-linha .cb-testes,
@@ -410,7 +410,7 @@
 /* ── Celular: o alvo do dedo manda ──
    O resto do jogo desenha em 5–7px na escala base, e os botões
    herdavam essa escala — davam 32px de altura, que é pouco para um dedo
-   numa decisão que se toma dezenas de vezes por batalha. O registo tem
+   numa decisão que se toma dezenas de vezes por batalha. O registro tem
    folga de sobra para ceder estes pixels. */
 @media (max-width: 560px) {
   .cb-btn { min-height: 2.75rem; justify-content: center; }
@@ -909,7 +909,7 @@
    A GRELHA DE ECRÃ LARGO SAIU DAQUI
 
    Havia aqui uma grelha que punha as ações numa coluna à direita e
-   empilhava inimigos, registo e equipe à esquerda. Fazia sentido
+   empilhava inimigos, registro e equipe à esquerda. Fazia sentido
    enquanto a arena era uma coluna de cartões em fluxo.
 
    O palco não está em fluxo: cada peça sabe onde fica (css/combate-arena.css),
@@ -919,14 +919,14 @@
 /* ═══════════════════════════════════════════════════════════════════
    A CONTA ABERTA, E O TURNO QUE AMPLIA
 
-   O registo mostra "FA 11★ − FD 4 = 7". A conta aberta — de onde vieram
+   O registro mostra "FA 11★ − FD 4 = 7". A conta aberta — de onde vieram
    os 11 e os 4 — vive por baixo, escondida, e aparece quando se toca no
    cabeçalho do turno.
 
    Escondida por omissão e não noutro lugar: quem só quer saber o
    resultado lê a linha de sempre, e quem quer perceber o turno abre-o.
    Mostrar as duas coisas ao mesmo tempo em todos os turnos era encher o
-   registo de contas que ninguém pediu.
+   registro de contas que ninguém pediu.
    ═══════════════════════════════════════════════════════════════════ */
 
 /* O cabeçalho passou de div a button. Volta a parecer o que era. */

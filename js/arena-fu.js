@@ -4,7 +4,7 @@
 // ── DE ONDE VEIO ──
 //
 // Do js/combate-pve.js, que foram 3138 linhas agarradas ao motor 3D&T:
-// F/H/R/A, armadura, esquiva, o prognóstico, o banco com um activo.
+// F/H/R/A, armadura, esquiva, o prognóstico, o banco com um ativo.
 //
 // Os dois conviveram durante um dia — este a correr o motor novo no
 // banco de ensaio, aquele a correr o jogo — porque reescrevê-lo de uma
@@ -505,7 +505,7 @@ function _afLutador(c) {
      do cartão deixa o campo livre para mostrar o que a escolha faz — que
      é o que as setas nos cartões inimigos passaram a fazer.
 
-     A única excepção é o passo de escolher alvo: aí o campo é a lista de
+     A única exceção é o passo de escolher alvo: aí o campo é a lista de
      alvos, e tocar num deles é apontá-lo. */
   const gesto = _afPasso ? `_afAlvo('${c.id}')` : `_afFicha('${c.id}')`;
 
@@ -1625,7 +1625,7 @@ function _afAcoes() {
   for (const lugar of Object.keys(magias)) {
     const m = magias[lugar];
     const custo = fuCusto(m, m.porAlvo ? (m.alvos || 1) : 1);
-    /* O nome em cima, o lugar em baixo — excepto quando são o mesmo. O
+    /* O nome em cima, o lugar em baixo — exceto quando são o mesmo. O
        golpe comum chama-se Golpe Comum e ocupa o lugar Golpe Comum, e o
        orbe saiu a dizer "Golpe ComumGolpe Comum". Uma etiqueta que se
        repete a si própria não informa: enche. */

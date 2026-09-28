@@ -567,9 +567,9 @@ function renderSlots() {
        aberto na consola, e escondia-lhe os botões de VENDER e de
        QUEIMAR.
 
-       Fazia sentido quando o activo era o que jogava e os outros
+       Fazia sentido quando o ativo era o que jogava e os outros
        estavam em pausa. Hoje vivem todos ao mesmo tempo, e desde que as
-       visitas passaram a ser à colônia inteira o activo deixou de ter
+       visitas passaram a ser à colônia inteira o ativo deixou de ter
        consequência nenhuma para fora da consola: é só onde o jogador
        está neste momento, e isso não é uma propriedade do bicho.
 
@@ -718,7 +718,7 @@ function renderSlots() {
 
 /* ── O activateSlot SAIU COM O BOTÃO QUE O CHAMAVA ──
 
-   Ele era o "✦ Usar este slot" dos slots vazios: trocava o slot activo
+   Ele era o "✦ Usar este slot" dos slots vazios: trocava o slot ativo
    e o painel de invocar aparecia por baixo. Não há painel nem invocação
    — ver a nota onde o botão estava, no renderSlots.
 
@@ -772,7 +772,7 @@ async function _mktClearSlot(idx) {
     /* ── E SE ERA O QUE ESTAVA ABERTO ──
 
        Queimar ou vender o avatar aberto era proibido, e por isso isto
-       nunca fez falta. Agora pode-se, e o slot activo passa a apontar
+       nunca fez falta. Agora pode-se, e o slot ativo passa a apontar
        para nada: sem esta reposição a consola ficava a mostrar um bicho
        que já não existe até ao próximo refresh.
 

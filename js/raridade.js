@@ -95,7 +95,7 @@ function grauDaRaridade(raridade) {
 
 /* A fase de um slot qualquer, incluindo os que não estão em campo.
 
-   O getFase() do js/state.js só sabe do avatar activo — lê as variáveis
+   O getFase() do js/state.js só sabe do avatar ativo — lê as variáveis
    vivas `nivel` e `totalSecs`. Esta faz o mesmo para um slot na mão, e
    aceita que o tempo de jogo não exista: uma listagem do marketplace
    traz o nível e mais nada, e recusar-me a responder aí só me obrigava

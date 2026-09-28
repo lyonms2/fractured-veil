@@ -284,7 +284,7 @@ function toggleSleep() {
    sem estar — com o botão a oferecer "Acordar" a quem estava acordado.
    Ao contrário também: quem estava mesmo a dormir aparecia desperto.
 
-   Isto veste a tela e nada mais: sem som, sem balão, sem registo e sem
+   Isto veste a tela e nada mais: sem som, sem balão, sem registro e sem
    gravar. É o que permite chamá-lo numa troca de slot, que não é um
    acontecimento na vida do bicho — é só a tela a mudar de assunto. */
 function aplicarVisualDoSono(dormindo) {
@@ -372,7 +372,7 @@ function healCreature() {
   const saudeCheia = vitals.saude >= 100;
   if(!sick && saudeCheia && !temDoencas){ showBubble(t('mg.heal.bub.healthy')); return; }
   // Com a saúde no teto não há nada a repor, e o Medicar nunca curou
-  // doenças — cobrava os 40 na mesma e escrevia "+40 saúde" no registo.
+  // doenças — cobrava os 40 na mesma e escrevia "+40 saúde" no registro.
   // Agora recusa e manda ao lugar certo.
   if(saudeCheia && !sick && temDoencas) {
     showBubble(t('mg.heal.bub.only_antidote'));

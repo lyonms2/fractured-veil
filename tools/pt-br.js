@@ -45,6 +45,19 @@ const path = require('path');
 const EQUIPA  = /(?<![.\w`\/])equipa(?![\w(\-]|\.[a-z])/g;
 const EQUIPAS = /(?<![.\w`\/])equipas(?![\w(\-]|\.[a-z])/g;
 
+/* A família do REGISTO tem a mesma armadilha do `equipa`: `registado` é
+   um campo de verdade (api/pool.js devolve `{ registado: true }`), e um
+   comentário que o cite não pode ser corrigido para um nome que não
+   existe. A guarda de baixo trava só o que se PARECE com um campo de
+   objeto — dois pontos seguidos de um valor — e por isso uma frase como
+   "guardada com o registro: é ela" continua a ser corrigida, apesar dos
+   dois pontos. Esta frase foi ela própria um dos casos: a ferramenta
+   corrigiu este comentário ao passar por aqui.
+
+   O resto é uma letra: todo o "regist-" de Portugal vira "registr-".
+   Um $1 em vez de oito linhas. */
+const REGIST = /(?<![.\w`\/])regist(os|o|ados|adas|ado|ada|ar|ou|am|a)\b(?!\s*:\s*(?:true|false|\d|['"]))/g;
+
 /* A palavra de Portugal e como se diz aqui. Só vocabulário: a ordem das
    palavras e a ênclise ficam para mão humana, porque trocá-las sem ler
    a frase estraga mais do que conserta. */
@@ -70,6 +83,12 @@ const TROCAS = [
   [/\bcêntimos\b/g, 'centavos'], [/\bcêntimo\b/g, 'centavo'],
   [/\baceder\b/g, 'acessar'],  [/\butilizador\b/g, 'usuário'],
   [/\bselecção\b/g, 'seleção'], [/\bcontacto\b/g, 'contato'],
+  [REGIST, 'registr$1'],
+  [/\bexcepções\b/g, 'exceções'], [/\bexcepção\b/g, 'exceção'],
+  [/\bexcepto\b/g, 'exceto'],   [/\bóptimo\b/g, 'ótimo'], [/\bóptima\b/g, 'ótima'],
+  [/\bbaptismo\b/g, 'batismo'], [/\btáctico\b/g, 'tático'], [/\btáctica\b/g, 'tática'],
+  [/\bactivo\b/g, 'ativo'],     [/\bactiva\b/g, 'ativa'],
+  [/\bdesactivado\b/g, 'desativado'], [/\bdesactivada\b/g, 'desativada'],
 ];
 
 function trocar(txt) {

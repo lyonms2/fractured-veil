@@ -3,7 +3,7 @@
 //
 //  Ações disponíveis (campo "action" no body):
 //    (sem action)        → saque de cristais: { idToken, carteira, gems }
-//    "salvar-referral"   → registar convite:  { idToken, action, refUid }
+//    "salvar-referral"   → registrar convite:  { idToken, action, refUid }
 //    "vincular-carteira" → vincular MetaMask: { idToken, action, endereco, assinatura }
 //    "desvincular-carteira" → soltar a MetaMask: { idToken, action }
 //    "status-carteira"   → o vínculo foi assinado?: { idToken, action }
@@ -295,7 +295,7 @@ module.exports = async function handler(req, res) {
 
   // ── Roteamento por action ──
   // Marca um saque como concluído depois de a transacção on-chain
-  // passar. Sem isto o registo ficava 'autorizado' para sempre e o
+  // passar. Sem isto o registro ficava 'autorizado' para sempre e o
   // jogador seria sempre atendido com a autorização velha.
   if (action === 'confirmar-resgate') {
     const { nonce } = req.body;
@@ -408,7 +408,7 @@ module.exports = async function handler(req, res) {
     // Os cristais são debitados aqui, ao assinar — e a chamada on-chain
     // acontece depois, no browser do jogador. Se ela falhar (cofre sem
     // MATIC, MetaMask recusada, aba fechada), os cristais já saíram e
-    // nada os devolvia: o registo ficava em 'autorizado' para sempre e o
+    // nada os devolvia: o registro ficava em 'autorizado' para sempre e o
     // jogador perdia o saldo sem receber nada.
     //
     // Devolver a mesma autorização resolve isso sem abrir a porta a um
@@ -580,7 +580,7 @@ module.exports = async function handler(req, res) {
 
       // Histórico do resgate
       const logRef = userRef.collection('resgates').doc();
-      // A assinatura fica guardada com o registo: é ela que permite
+      // A assinatura fica guardada com o registro: é ela que permite
       // retomar o saque se a chamada on-chain não chegar a acontecer.
       tx.set(logRef, {
         gemsTotal:    gemsNum,

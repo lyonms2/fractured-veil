@@ -303,7 +303,7 @@ function cruzarDna(dnaA, dnaB, seed, corpoA, corpoB) {
 /* ═══════════════════════════════════════════════════════════════════
    O OVO
 
-   Leva o DNA do filho lá dentro, já feito, e o registo de quem são os
+   Leva o DNA do filho lá dentro, já feito, e o registro de quem são os
    pais. Não leva o avatar: quem nasce é o chocar, e o nascimento
    continua a ser um acto só, no js/nascimento.js.
    ═══════════════════════════════════════════════════════════════════ */

@@ -155,8 +155,8 @@ function pvpRankDelta(meus, dele, resultado, k) {
   return d;
 }
 
-/* O registo de um jogador no princípio de uma luta, já com a virada de
-   temporada feita (se houver). Aceita não haver registo nenhum. */
+/* O registro de um jogador no princípio de uma luta, já com a virada de
+   temporada feita (se houver). Aceita não haver registro nenhum. */
 function pvpRankAtual(reg, agora) {
   const temporada = pvpTemporada(agora);
   const r = reg || {};
@@ -164,7 +164,7 @@ function pvpRankAtual(reg, agora) {
     return { pontos: Math.max(PVP_RANK_PISO, r.pontos | 0 || PVP_RANK_INICIO), temporada,
              v: r.v | 0, d: r.d | 0, e: r.e | 0, melhor: r.melhor | 0 || PVP_RANK_INICIO };
   }
-  /* Temporada nova: meio caminho de volta ao princípio. Sem registo
+  /* Temporada nova: meio caminho de volta ao princípio. Sem registro
      nenhum, começa-se no princípio. */
   const antes = r.pontos | 0;
   const pontos = antes ? Math.max(PVP_RANK_PISO, PVP_RANK_INICIO + Math.round((antes - PVP_RANK_INICIO) / 2))
@@ -172,10 +172,10 @@ function pvpRankAtual(reg, agora) {
   return { pontos, temporada, v: 0, d: 0, e: 0, melhor: pontos };
 }
 
-/* O registo depois da luta. Devolve também o `delta`, que é o que o
+/* O registro depois da luta. Devolve também o `delta`, que é o que o
    jogador vê no fim da partida.
 
-   `par` é o registo do dia contra este adversário ({dia, s}) e serve
+   `par` é o registro do dia contra este adversário ({dia, s}) e serve
    para o teto de saldo: passa-se quando a luta é da fila. A luta conta
    sempre como vitória ou derrota — ela aconteceu —, mesmo quando o
    ganho fica cortado. */

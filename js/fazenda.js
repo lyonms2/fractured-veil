@@ -347,7 +347,7 @@ async function cuidarDe(idx) {
        para os cuidados depois de invocar — chegava lá com tudo já
        desenhado. Com a colônia a ser a primeira tela, o primeiro
        CUIDAR do jogo cai exatamente aqui, porque o slot 0 já é o
-       activo. */
+       ativo. */
     rebuildScreensParaSlot();
   }
   if (typeof updateAllUI === 'function') updateAllUI();
@@ -366,7 +366,7 @@ function voltarAFazenda() { abrirFazenda(); }
 // ═══════════════════════════════════════════════════════════════════
 let _fzEscolhidos = [];
 
-/* Quantos ovos há na CASA. Contava os do slot activo, que era onde
+/* Quantos ovos há na CASA. Contava os do slot ativo, que era onde
    eles viviam; hoje a chocadeira é da colônia e a conta é uma só. */
 function _fzOvosNoInventario() {
   return (typeof eggsInInventory !== 'undefined' && eggsInInventory) ? eggsInInventory.length : 0;

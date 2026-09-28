@@ -103,7 +103,7 @@ function nivelDe(niveis, id, slot) {
    mesma batalha. Junta-se tudo e manda-se um pedido só.
 
    Não se espera pela resposta nem se tenta de novo: um erro de rede
-   deixa o registo para trás, e quem o apanha é a reconciliação de
+   deixa o registro para trás, e quem o apanha é a reconciliação de
    quando se abre o PvP (nivelAvisarTodos) — que é onde o número
    importa. */
 let _nivelFila = {}, _nivelTimer = null;
@@ -141,7 +141,7 @@ async function _nivelEnviar() {
     /* A RESPOSTA VALE GUARDAR, e era deitada fora.
 
        Ela traz o número que o servidor RECONHECE para cada avatar — o
-       que pode estar abaixo do save, porque o registo sobe degrau a
+       que pode estar abaixo do save, porque o registro sobe degrau a
        degrau. Sem o guardar, o cliente só conhecia o nível do save, e o
        lobby do PvP mostrava um poder e uma divisão que não eram os que
        o servidor ia usar: quem estivesse perto da fronteira via a

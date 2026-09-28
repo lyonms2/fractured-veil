@@ -27,7 +27,7 @@
 
    Destreza, Percepção, Vigor e Vontade. Cada um é um tamanho de dado.
    A ordem desta lista é a ordem em que aparecem em todo o lado — ficha,
-   painel, registo — e é a do manual. */
+   painel, registro — e é a do manual. */
 const FU_ATRIBS = ['DES', 'PER', 'VIG', 'VON'];
 
 /* ── O NÓ: OS GENES CHAMAM-SE OUTRA COISA ──

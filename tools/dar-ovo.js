@@ -10,7 +10,7 @@
    ── O QUE ESTA FERRAMENTA FAZIA, E POR QUE DEIXOU DE FUNCIONAR ──
 
    Entregava um ovo com uma RARIDADE, escrito no `inboxEggs`, com
-   registo no `ovosEmitidos`. As três coisas morreram por baixo dela:
+   registro no `ovosEmitidos`. As três coisas morreram por baixo dela:
    os ovos deixaram de ter raridade, o inbox deixou de ser por onde um
    ovo entra, e o handleChocarOvo passou a aceitar uma prova só — o ovo
    estar no mapa `ovos`.

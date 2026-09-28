@@ -340,7 +340,7 @@ const faseFromNivel = n => fuFaseDoNivel(n);
    cuidar dele, portanto o nível JÁ É tempo de jogo — contá-lo outra vez
    era travar duas vezes a mesma porta.
 
-   Os FASE_MIN_SECS ficam por serem lidos pelo tools/, e como registo de
+   Os FASE_MIN_SECS ficam por serem lidos pelo tools/, e como registro de
    quanto tempo cada fase custava quando o tempo era um requisito. */
 const FASE_MIN_SECS = [0, 2*3600, 8*3600, 20*3600];
 const faseFromAge   = secs => { const s = secs||0; return s < FASE_MIN_SECS[1] ? 0 : s < FASE_MIN_SECS[2] ? 1 : s < FASE_MIN_SECS[3] ? 2 : 3; };

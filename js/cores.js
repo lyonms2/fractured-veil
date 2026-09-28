@@ -407,7 +407,7 @@ function frasedaCor(slot, seed) {
    era o que dava a paleta ao desenho.
 
    Leva os dois números da cor. É o mesmo par que a certidão guarda, e
-   por isso o registo publicado é lido pelo coresDoAvatar sem tradução
+   por isso o registro publicado é lido pelo coresDoAvatar sem tradução
    nenhuma — chega passá-lo ao gerarSVG. */
 function paresDeCor(slot, seed) {
   const c = coresDe(slot, seed);
