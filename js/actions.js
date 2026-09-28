@@ -99,6 +99,11 @@ function spendCoins(amount) {
 }
 
 function earnCoins(amount) {
+  /* O evento, se houver um a correr (js/eventos.js). Este é o único
+     caminho por onde moeda entra no jogo — minijogo, batalha, arena,
+     visita —, por isso basta multiplicar aqui para o bônus valer em
+     todos e não só nos que alguém se lembrasse de marcar. */
+  if (typeof eventoMult === 'function') amount = Math.round(amount * eventoMult('moedas'));
   gs.moedas += amount;
   playSound('coin');
   showCoinAnim(amount, false);

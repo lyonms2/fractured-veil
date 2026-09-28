@@ -60,6 +60,8 @@
 <link rel="stylesheet" href="css/combate-arena.css?v=2026-09-26z">
   <link rel="stylesheet" href="css/snake.css?v=2026-09-26z">
 <link rel="stylesheet" href="css/fazenda.css?v=2026-09-26z">
+  <!-- A faixa do evento, no alto da tela. -->
+  <link rel="stylesheet" href="css/evento.css?v=2026-09-27a">
   <link rel="stylesheet" href="css/evolucao.css?v=2026-09-26z">
   <link rel="stylesheet" href="css/escolha.css?v=2026-09-26z">
   <link rel="stylesheet" href="css/fratura.css?v=2026-09-26z">
@@ -533,6 +535,21 @@
              no cabeçalho é o que serve para navegar. -->
         <div class="status-dot" id="statusDot"></div>
       </div>
+
+      <!-- ◆ A FAIXA DO EVENTO
+
+           Só existe quando há um a correr (config/evento, lido pelo
+           js/auth.js, escrito pelo tools/evento.js).
+
+           Fica FORA do .device-top e no fluxo normal, por duas razões
+           que se descobriram tentando o contrário: dentro da tela ela
+           tapava o título "A COLÔNIA", e dentro do .device-top
+           desaparecia no celular, que esconde esse cabeçalho inteiro
+           quando se entra numa criatura (body.fv-has-creature, em
+           css/mobile-index.css) — ou seja, justamente enquanto se joga.
+
+           Quem a escreve é o renderEventoFaixa, em js/ui-evento.js. -->
+      <div class="evento-faixa" id="eventoFaixa" style="display:none;"></div>
 
       <!-- SCREEN -->
       <div class="screen" id="mainScreen">
@@ -1355,6 +1372,10 @@
      arquivo que o api/resgatar.js e o api/comprar-avatar.js leem, para
      a tela nunca prometer uma taxa diferente da que o servidor cobra. -->
 <script src="js/taxas.js?v=2026-09-27a"></script>
+<!-- Os eventos: uma janela de tempo com bônus próprio. Só as regras;
+     quem lê o documento é o js/auth.js, depois do login. -->
+<script src="js/eventos.js?v=2026-09-27a"></script>
+<script src="js/ui-evento.js?v=2026-09-27a"></script>
 <script src="js/ficha-fu.js?v=2026-09-26z"></script>
 <script src="js/vantagens-fu.js?v=2026-09-26z"></script>
 <script src="js/combate-fu.js?v=2026-09-26z"></script>

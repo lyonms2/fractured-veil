@@ -474,7 +474,9 @@ function _pveFecharContas(e) {
      três que lutaram (bonusMoedasDaEquipa, em js/state.js). O bônus de
      XP fica onde estava: o XP é dado a cada avatar, um a um. */
   const bm = (typeof bonusMoedasDaEquipa === 'function') ? bonusMoedasDaEquipa() : rb.moedas;
-  const xpGain   = Math.round(d.xp    * p.xp     * rb.xp     * vb.xpMult);
+  // As moedas levam o bônus do evento dentro do earnCoins; o XP é aqui.
+  const evt      = (typeof eventoMult === 'function') ? eventoMult('xp') : 1;
+  const xpGain   = Math.round(d.xp    * p.xp     * rb.xp     * vb.xpMult * evt);
   const coinGain = Math.round(d.coins * p.moedas * bm);
 
   // Quem desiste não leva prémio nenhum: guardou energia, e é esse o

@@ -267,6 +267,29 @@ async function _onLoginSuccess(user) {
 
   const loaded = await loadFromFirebase();
 
+  /* ══ O EVENTO QUE ESTIVER A CORRER ══
+
+     Um documento só, `config/evento`, que o cliente lê e não escreve
+     (firestore.rules). Quem o cria é o dono, pelo tools/evento.js.
+
+     A leitura é tolerante de propósito: se falhar, o jogo entra na mesma
+     e tudo multiplica por 1. Um evento que não carrega é um evento que
+     não acontece — e não um jogo que não abre.
+
+     Relê-se de dez em dez minutos porque um evento COMEÇA e ACABA com o
+     jogo aberto: sem isto, quem entrasse às onze da noite continuaria a
+     receber o dobro até fechar a aba. */
+  async function _carregarEvento() {
+    try {
+      if (!fbDb()) return;
+      const snap = await fbDb().collection('config').doc('evento').get();
+      if (typeof eventoGuardar === 'function') eventoGuardar(snap.exists ? snap.data() : null);
+      if (typeof renderEventoFaixa === 'function') renderEventoFaixa();
+    } catch (e) { /* sem evento, o jogo é o de sempre */ }
+  }
+  await _carregarEvento();
+  setInterval(_carregarEvento, 10 * 60 * 1000);
+
   // ── Registar referral no primeiro acesso (jogador novo) ──
   // Se o jogador acessou o jogo via link de convite (?ref=UID),
   // o ref foi salvo no localStorage antes do login.

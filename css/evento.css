@@ -1,0 +1,51 @@
+/* ═══════════════════════════════════════════════════════════════════
+   A FAIXA DO EVENTO
+
+   Uma linha no alto da tela, só quando há um a correr. As medidas são
+   as do .btn-voltar-colonia, que vive ao lado: mesma altura de letra,
+   mesma borda, mesma distância da margem — uma faixa com estilo próprio
+   pareceria um anúncio colado por cima do jogo.
+
+   ── ONDE ELA FICA ──
+
+   Entre o cabeçalho do aparelho e a tela, no fluxo. Esteve absoluta
+   dentro da tela e tapava o título "A COLÔNIA"; esteve dentro do
+   .device-top e desaparecia no celular, que esconde esse cabeçalho
+   quando se entra numa criatura. Aqui não colide com nada e sobrevive
+   aos dois tamanhos.
+   ═══════════════════════════════════════════════════════════════════ */
+.evento-faixa {
+  /* No fluxo, e não absoluta: absoluta tapava o título da colônia. Ela
+     empurra a tela para baixo quando entra, e isso é aceitável —
+     acontece uma vez, quando o evento começa, e ver a faixa aparecer é
+     metade do anúncio. */
+  display: flex; align-items: center; justify-content: center; gap: 0.375rem;
+  margin: 0 auto 0.375rem;
+  max-width: 100%;
+  padding: 0.25rem 0.625rem;
+  background: rgba(124,58,237,.14);
+  border: 1px solid rgba(167,139,250,.45);
+  border-radius: 0.3125rem;
+  font-family: 'Cinzel', serif; font-size: 0.4375rem;
+  letter-spacing: 0.05rem;
+  color: var(--text);
+  white-space: nowrap; overflow: hidden;
+  pointer-events: none;        /* é aviso, não botão: não rouba o clique */
+}
+
+.evento-brasao  { color: #c4b5fd; font-size: 0.5625rem; line-height: 1; }
+.evento-nome    { color: #c4b5fd; font-weight: 700; }
+.evento-bonus   { color: var(--gold); }
+.evento-relogio { color: var(--muted); }
+
+/* A nota é o que mais depressa se corta: numa tela estreita, o nome e o
+   bônus dizem o essencial e ela some. */
+.evento-nota {
+  color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+@media (max-width: 30rem) {
+  .evento-faixa { gap: 0.25rem; }
+  .evento-nota  { display: none; }
+}

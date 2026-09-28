@@ -423,7 +423,8 @@ const XP_CUIDADO_PRECISA = 70;
 function xpDeCuidado(acao) {
   const base = XP_CUIDADO[acao] || 0;
   const bebe = typeof getFase === 'function' && getFase() === 0;
-  return Math.round(base * (bebe ? XP_CUIDADO_BEBE : 1) * rarityBonus().xp);
+  const evt  = (typeof eventoMult === 'function') ? eventoMult('xp') : 1;
+  return Math.round(base * (bebe ? XP_CUIDADO_BEBE : 1) * rarityBonus().xp * evt);
 }
 /* O `xp` fica em 1 para as três raridades. Era 1,3 no Raro e 1,6 no
    Lendário, e acelerava justamente o trecho mais caro da escada (27 → 60)

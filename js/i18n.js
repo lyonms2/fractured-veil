@@ -111,6 +111,20 @@
          "nada mudou" enquanto a barra de energia tinha subido — e um
          registro que desmente a tela é pior do que nenhum. */
       'log.offline_descansou':   'descansou e recuperou energia. ⚡',
+
+      /* A FAIXA DO EVENTO (js/ui-evento.js). O relógio fala em dias,
+         horas ou minutos conforme o que falta — três frases e não uma
+         com plural remendado, porque "1 dias" é exatamente o tipo de
+         detalhe que faz uma festa parecer amadora. */
+      'evento.faltam_d':         'faltam {n} dias',
+      'evento.faltam_d_1':       'falta 1 dia',
+      'evento.faltam_h':         'faltam {n} h',
+      'evento.faltam_h_1':       'falta 1 h',
+      'evento.faltam_min':       'faltam {n} min',
+      'evento.faltam_min_1':     'falta 1 min',
+      'evento.acaba_ja':         'acaba já',
+      'evento.bonus.xp':         'XP',
+      'evento.bonus.moedas':     'moedas',
       'log.woke_offline':        'Acordou com energia plena enquanto estava ausente! ☀️',
 
       // Bolhas de fala (showBubble)
@@ -459,6 +473,15 @@
       'log.offline_paused':      'your avatar was paused, nothing changed. ⏸',
       'log.offline_slept':       'it slept and recovered energy. 💤',
       'log.offline_descansou':   'it rested and recovered energy. ⚡',
+      'evento.faltam_d':         '{n} days left',
+      'evento.faltam_d_1':       '1 day left',
+      'evento.faltam_h':         '{n} h left',
+      'evento.faltam_h_1':       '1 h left',
+      'evento.faltam_min':       '{n} min left',
+      'evento.faltam_min_1':     '1 min left',
+      'evento.acaba_ja':         'ending now',
+      'evento.bonus.xp':         'XP',
+      'evento.bonus.moedas':     'coins',
       'log.woke_offline':        'Woke up fully rested while you were away! ☀️',
 
       // Bubbles

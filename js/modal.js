@@ -504,7 +504,9 @@ function miniReward(xpMult, coinMult, vinculoGain = 3, vitoria = false, teto = 1
   const d  = miniDifficulty();
   const rb = rarityBonus();
   const vb = getVinculoBonus();
-  const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult);
+  // As moedas levam o bônus do evento dentro do earnCoins; o XP é aqui.
+  const evt      = (typeof eventoMult === 'function') ? eventoMult('xp') : 1;
+  const xpGain   = Math.round(d.xp    * xpMult  * rb.xp * vb.xpMult * evt);
   // A fração do jogo perfeito, nunca acima dele — ver DIFF_TIERS.
   const coinFrac = Math.max(0, Math.min(teto, coinMult));
   const coinGain = Math.round(d.coins * coinFrac * rb.moedas);
