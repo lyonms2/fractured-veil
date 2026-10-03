@@ -130,6 +130,19 @@ async function entrarComGoogle() {
 
 // ─── Logout ───────────────────────────────────────────────────────
 async function disconnectWallet() {
+  /* O TEMPO PENDENTE VAI PRIMEIRO.
+
+     A auditoria mediu esta perda: o walletAddress é limpo mais abaixo e
+     o saveToFirebase começa com `if (!walletAddress) return` — portanto
+     tudo o que estivesse à espera morria aqui. Com a sessão única, isto
+     acontece em cada vez que alguém abre o jogo noutra aba.
+
+     O vidaEnviar fala com a /api e não depende do walletAddress, mas
+     depende do usuário do Firebase Auth — por isso tem de correr
+     ANTES do signOut, e não só antes da limpeza. Um erro de rede aqui
+     devolve a fila (js/vida-ativa.js) e não trava a saída. */
+  if (typeof vidaEnviar === 'function') { try { await vidaEnviar(); } catch (e) {} }
+
   window._fvConnected = false;
   if(_sessionUnsub) { _sessionUnsub(); _sessionUnsub = null; }
   _sessionId = null;

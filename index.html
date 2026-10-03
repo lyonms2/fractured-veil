@@ -1364,6 +1364,11 @@
 <!-- Os laços entre avatares: só as regras, o mesmo arquivo que o servidor usa. -->
 <script src="js/lacos.js?v=2026-09-26z"></script>
 <script src="js/niveis.js?v=2026-09-26z"></script>
+<!-- A vida ativa que o servidor reconhece. Vive ao lado do js/niveis.js
+     porque é o mesmo desenho: um mapa de topo que só o servidor
+     escreve, e um aviso do navegador que ele confere contra o próprio
+     relógio. Tem de vir ANTES do js/gametick.js, que a alimenta. -->
+<script src="js/vida-ativa.js?v=2026-10-03a"></script>
 <!-- A energia com o mundo parado (aba escondida ou pausa). Só contas,
      sem tela e sem relógio: quem sabe quanto tempo passou são o
      js/main.js e o js/auth.js, que o chamam. -->

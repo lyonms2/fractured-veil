@@ -13,6 +13,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 const NIV  = require('../js/niveis.js');
+const VIDA = require('../js/vida-ativa.js');  // a vida ativa reconhecida
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 /* O POOL_ALVO, o POOL_LIMITE_DIA, o saqueDeHoje e o marcarSaque saíram
@@ -199,6 +200,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'invocar')     return handleInvocar(req, res, db, uid);
   if (acao === 'laco')        return handleLaco(req, res, db, uid);
   if (acao === 'nivel')       return handleNivel(req, res, db, uid);
+  if (acao === 'vida')        return handleVida(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -416,6 +418,10 @@ async function handleInvocar(req, res, db, uid) {
            primeiro encontro que só existe para os avatares que já
            andavam por aí antes disto. */
         [`niveis.${id}`]: { n: 1, em: Date.now(), cred: NIV.NIVEL_BALDE },
+        /* E A VIDA ATIVA, no zero, pela mesma razão exata: um avatar que
+           nasce já registrado nunca tem um primeiro encontro em que o
+           servidor acredite no que o cliente diz (js/vida-ativa.js). */
+        [`vidaAtiva.${id}`]: { s: 0, em: Date.now() },
       });
 
       return { id, seed, nascimento, invocacoesUsadas: usadas + 1 };
@@ -691,6 +697,74 @@ async function handleNivel(req, res, db, uid) {
 }
 
 
+/* ══════════════════════════════════════════════════════════════════
+   A VIDA ATIVA — quanto tempo o avatar viveu de verdade
+
+   O mesmo desenho do handleNivel, e pela mesma razão: o número vivia
+   dentro do avatarSlots, que o cliente grava por inteiro, e um PATCH
+   punha-o em 317 anos (medido). Passa a viver no mapa `vidaAtiva`, que
+   só o servidor escreve.
+
+   O cliente manda o DELTA — quantos segundos acumulou desde o último
+   aviso — e não o total. São duas coisas de uma vez:
+
+     · o servidor pode CONFERIR um delta contra o próprio relógio
+       (ninguém vive 300 s em 60 s), e não pode conferir um total;
+     · duas abas SOMAM em vez de uma apagar a outra. Era a perda que a
+       auditoria mediu: a aba que gravava por último levava o
+       avatarSlots inteiro consigo e desfazia o trabalho da outra.
+
+   Tudo numa transação, como o resto deste arquivo: ler, decidir e
+   escrever sem que ninguém se meta no meio.
+   ══════════════════════════════════════════════════════════════════ */
+async function handleVida(req, res, db, uid) {
+  const pedidos = req.body && req.body.avatares;
+  if (!Array.isArray(pedidos) || !pedidos.length
+      || pedidos.length > VIDA.VIDA_AVATARES_MAX) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const pData = snap.data();
+      const slots     = pData.avatarSlots || [];
+      const certidoes = pData.certidoes   || {};
+      const mortos    = pData.mortos      || {};
+      const vidaAtiva = pData.vidaAtiva   || {};
+      /* O RELÓGIO É O DESTE LADO. Uma data vinda do corpo do pedido
+         seria o balde a ser calibrado por quem ele trava. */
+      const agora     = Date.now();
+
+      const alteracoes = {};
+      const out = {};
+      for (const p of pedidos) {
+        const id = p && String(p.id || '');
+        if (!id || !NIVEL_ID_VALIDO.test(id)) continue;
+        // É dele, existe de verdade e está vivo — as mesmas perguntas do nível.
+        const slot = slots.find(s => s && s.id === id);
+        if (!slot) continue;
+        if (!certidoes[id] || mortos[id]) continue;
+
+        const r = VIDA.vidaAceitar(vidaAtiva[id], p.segundos, agora, slot, certidoes[id]);
+        out[id] = r.reg.s;
+        // Só escreve quem se mexeu: um aviso que não soma nada não grava.
+        if (r.somou > 0 || r.primeiro) alteracoes[`vidaAtiva.${id}`] = r.reg;
+      }
+      if (Object.keys(alteracoes).length) tx.update(playerRef, alteracoes);
+      return { vida: out };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    console.error('[pool/vida]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
+}
+
 async function handleCruzar(req, res, db, uid) {
   const GEN = require('./_genetica.js');
   const { maeIdx, paiIdx, maeId, paiId } = req.body;
@@ -874,6 +948,8 @@ async function handleChocarOvo(req, res, db, poolRef, uid) {
         [`ovos.${String(ovoId)}`]: FieldValue.delete(),
         // O nível do recém-nascido, registrado pelo servidor (ver o invocar).
         [`niveis.${id}`]: { n: 1, em: Date.now(), cred: NIV.NIVEL_BALDE },
+        // E a vida ativa dele, no zero, pela mesma razão.
+        [`vidaAtiva.${id}`]: { s: 0, em: Date.now() },
       };
 
       /* PAIS E FILHOS JÁ NASCEM COM LAÇO ★ (js/lacos.js). O do filho com

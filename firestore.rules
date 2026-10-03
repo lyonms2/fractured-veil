@@ -156,6 +156,28 @@ service cloud.firestore {
                  quem avisa que subiu continua a ser o jogo, que corre no
                  navegador. O que deixa de funcionar é o salto. */
               'niveis',
+              /* A VIDA ATIVA QUE O SERVIDOR RECONHECE (js/vida-ativa.js).
+
+                 O mesmo problema do `niveis`, e a mesma resposta. O
+                 tempo que um avatar viveu — com a aba aberta e o jogo
+                 fora de pausa — vivia dentro do avatarSlots. Foi
+                 medido: um PATCH punha-o em 999 999 999 segundos, que
+                 são 317 anos, e o jogo aceitava.
+
+                 Aqui fica um segundo número ({s, em} por avatar), que
+                 só o servidor escreve. O cliente manda o DELTA do que
+                 acumulou (a acao 'vida' do api/pool.js) e o servidor
+                 aceita no máximo o que o relógio dele diz que passou:
+                 ninguém vive 300 segundos em 60 segundos.
+
+                 O do slot fica a existir e deixa de ser autoridade —
+                 como o do nível. E deixa de ser o que a ficha mostra.
+
+                 Isto estreita a porta e não a fecha, como o `mortos` e
+                 o `niveis`: quem avisa continua a ser o jogo. O que
+                 deixa de funcionar é o salto, e a perda de uma aba para
+                 a outra. */
+              'vidaAtiva',
               /* OS PONTOS DA TEMPORADA (js/pvp-rank.js).
 
                  É a classificação do PvP, e é a única coisa que se leva

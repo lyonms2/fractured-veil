@@ -579,18 +579,21 @@ async function tryAutoReconnect() { /* desativado */ }
    O que fica é o TEMPO DE VIDA, que é o oposto em tudo: olha para trás,
    não adivinha nada, e não tem conta nenhuma própria.
 
-   O NÚMERO É O `totalSecs`, e é o certo por uma razão que não é
-   preferência: é o mesmo relógio que decide a FASE do avatar
-   Era o mesmo relógio que decidia a FASE, e por isso este número e o
-   que o bicho é por dentro saíam do mesmo lugar. A fase passou a sair
-   dos pontos (faseDePontos, em js/state.js) e o tempo deixou de a
-   travar — mas continua a ser esta a medida da vida dele, e a única
-   que conta o tempo em que ele esteve mesmo a viver.
+   O NÚMERO É A VIDA ATIVA RECONHECIDA (o mapa `vidaAtiva`, em
+   js/vida-ativa.js), e não o `totalSecs` do slot.
 
-   Não é a idade de calendário. Um avatar que ficou dois meses num save
-   fechado não viveu dois meses — o totalSecs conta o tempo em que ele
-   esteve mesmo a viver, e é esse que lhe dá as fases. A data de
-   nascimento, para quem a quiser, está na certidão.
+   Era o totalSecs, e era também o mesmo relógio que decidia a FASE —
+   por isso este número e o que o bicho é por dentro saíam do mesmo
+   lugar. Duas coisas mudaram desde então: a fase passou a sair do NÍVEL
+   (fuFaseDoNivel, em js/ficha-fu.js) e o tempo deixou de a travar; e o
+   tempo saiu do slot, porque o slot é gravado pelo cliente e este
+   mostrador chegou a marcar 317 anos num PATCH.
+
+   O que não mudou é o que ele mede: o tempo em que o avatar esteve
+   mesmo a viver, e não a idade de calendário. Um avatar que ficou dois
+   meses num save fechado não viveu dois meses. A data de nascimento,
+   para quem a quiser, está na certidão — e os dias de calendário, na
+   vitrine do mercado (`diasVida`).
 
    E um avatar morto passa a mostrar a vida que TEVE, em vez do traço
    que a versão antiga lhe punha. */
@@ -599,7 +602,22 @@ function updateLifeEstimate() {
   if(!el) return;
   if(!hatched) { el.textContent = '—'; el.style.color = 'var(--muted)'; return; }
 
-  el.textContent = _fmtTime(totalSecs || 0);
+  /* O NÚMERO VEM DO SERVIDOR, não do slot.
+
+     Era `totalSecs`, que vive no avatarSlots — e o avatarSlots é
+     gravado pelo cliente por inteiro: a auditoria pôs este mostrador em
+     317 anos com um PATCH. Agora quem manda é o mapa `vidaAtiva`
+     (js/vida-ativa.js), e o que se soma é só o que está na fila para
+     ser enviado — senão o relógio ficava parado um minuto de cada vez e
+     parecia avariado.
+
+     Sem registro ainda (um avatar que nunca avisou) cai no do slot, que
+     é o que o vidaDe faz: é melhor um número aproximado do que um zero
+     que parece perda de dados. O primeiro aviso resolve. */
+  const _id  = avatar && avatar.id;
+  const _rec = (_id && typeof vidaConhecida === 'function') ? vidaConhecida(_id) : null;
+  const _fil = (_id && typeof vidaPendente === 'function') ? vidaPendente(_id) : 0;
+  el.textContent = _fmtTime((_rec === null ? (totalSecs || 0) : _rec) + _fil);
   // O morto pára o relógio, e a cor diz que parou.
   el.style.color = dead ? 'var(--muted)' : '#c9a84c';
 }

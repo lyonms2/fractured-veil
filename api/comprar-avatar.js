@@ -13,6 +13,7 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 
 const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
+const VIDA = require('../js/vida-ativa.js'); // a vida ativa reconhecida
 /* A ficha e a genética, pelo fuRaridadeDoNivel: a raridade sai do
    NÍVEL, e a do slot é escrita pelo cliente (o mesmo que o api/amigos.js
    já fazia na tela de visitar). */
@@ -194,6 +195,11 @@ async function handleListarAvatar(req, res, db, uid) {
       slots[slotIdxInt] = { ...s, listed: true };
 
       const diasVida  = s.bornAt ? Math.floor((Date.now() - s.bornAt) / 86400000) : 0;
+      /* A VIDA ATIVA, do mapa do servidor (js/vida-ativa.js). O
+         `diasVida` acima é tempo de CALENDÁRIO e corre com o jogo
+         fechado; este é o tempo em que o bicho esteve mesmo vivo. Os
+         dois vão para o anúncio, porque dizem coisas diferentes. */
+      const vidaReconhecida = VIDA.vidaDe(pData.vidaAtiva || {}, s.id, s);
       const listingRef = db.collection('avatarMarket').doc();
 
       tx.update(playerRef, Object.assign({ avatarSlots: slots }, debito));
@@ -292,6 +298,14 @@ async function handleListarAvatar(req, res, db, uid) {
         xp:         s.xp         || 0,
         vinculo:    s.vinculo    || 0,
         diasVida,
+        /* A VIDA ATIVA VIAJA, e não viajava.
+
+           A auditoria mediu: um avatar com 777.777 segundos chegava ao
+           comprador com o campo ausente, que vira zero ao carregar. Não
+           era decisão — era omissão, porque ninguém o copiou. O vínculo
+           zera de propósito (é a relação com UM dono, e está escrito ao
+           lado); a vida ativa é do AVATAR, como o nível e o XP. */
+        totalSecs:  vidaReconhecida,
         totalOvos:  s.totalOvos  || 0,
         totalRaros: s.totalRaros || 0,
         bornAt:     s.bornAt     || Date.now(),
@@ -551,6 +565,12 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
            Gêmea comprado dava +15% de XP e ovo mais durável a quem nunca
            cuidou de nada. */
         vinculo:    0,
+        /* E o ESPELHO da vida ativa no slot. O número que manda é o do
+           mapa `vidaAtiva`, escrito acima; este fica para a ficha ter o
+           que mostrar antes do primeiro aviso e para o vidaDe responder
+           a quem pergunte. Ficar a zero aqui fazia o avatar comprado
+           parecer recém-nascido durante um minuto. */
+        totalSecs:  VIDA.vidaLimpa(listing.totalSecs),
         diasVida:   listing.diasVida || 0,
         totalOvos:  listing.totalOvos  || 0,
         totalRaros: listing.totalRaros || 0,
@@ -635,6 +655,18 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const nivelVendido = listing.id
         ? (((sellerData.niveis || {})[listing.id])
            || { n: NIV.nivelLimpo(listing.nivel), em: Date.now(), cred: NIV.NIVEL_BALDE }) : null;
+      /* E A VIDA ATIVA, pelo mesmo caminho e pela mesma razão.
+
+         Sem isto o avatar chegava sem registro, e o primeiro encontro
+         aceitaria o que o cliente do comprador dissesse — com o teto da
+         idade de calendário, mas ainda assim escolhido por ele. Do mapa
+         do vendedor AGORA, porque o bicho continuou a viver depois de
+         anunciado; sem registro lá, vale o número do anúncio, que é o
+         que o comprador viu. */
+      const chaveVida = listing.id ? `vidaAtiva.${listing.id}` : null;
+      const vidaVendida = listing.id
+        ? (((sellerData.vidaAtiva || {})[listing.id])
+           || { s: VIDA.vidaLimpa(listing.totalSecs), em: Date.now() }) : null;
 
       /* ── O REGISTO QUE O COMPRADOR RECEBE É A ORIGEM ──
 
@@ -662,7 +694,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          chaveDonos ? { [chaveDonos]: cadeiaNova } : {},
          chaveLacos && lacosVendidos && Object.keys(lacosVendidos).length
            ? { [chaveLacos]: lacosVendidos } : {},
-         chaveNivel && nivelVendido ? { [chaveNivel]: nivelVendido } : {}, debitoCompra));
+         chaveNivel && nivelVendido ? { [chaveNivel]: nivelVendido } : {},
+         chaveVida  && vidaVendida  ? { [chaveVida]:  vidaVendida  } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      +(sellerCris + sellerReal).toFixed(2),
@@ -673,7 +706,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       } : {}, chaveCert ? { [chaveCert]: FieldValue.delete() } : {},
          chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {},
          chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {},
-         chaveNivel ? { [chaveNivel]: FieldValue.delete() } : {}));
+         chaveNivel ? { [chaveNivel]: FieldValue.delete() } : {},
+         chaveVida  ? { [chaveVida]:  FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.

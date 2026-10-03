@@ -292,6 +292,11 @@ document.addEventListener('visibilitychange', async () => {
       _saveTimeout = null;
       saveToFirebase();
     }
+    /* E o TEMPO pendente, pela mesma razão e no mesmo momento. A fila do
+       js/vida-ativa.js espera um minuto antes de enviar, e um minuto é
+       doze vezes a janela que o parágrafo acima descreve: quem fecha a
+       aba perderia até sessenta segundos de vida de cada avatar. */
+    if (typeof vidaEnviar === 'function') vidaEnviar();
     return;
   }
 

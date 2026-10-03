@@ -421,6 +421,8 @@ function viverTodos() {
     // É isto que derruba a parede das sessenta horas: a idade passa a
     // correr para a coleção toda, não só para um.
     s.totalSecs = (s.totalSecs || 0) + SEGUNDOS_POR_CICLO;
+    // E o mesmo minuto vai ao servidor, que é quem o reconhece.
+    if (s.id && typeof vidaSomar === 'function') vidaSomar(s.id, SEGUNDOS_POR_CICLO);
 
     // Cada um decai com a SUA raridade, o SEU vigor e os SEUS itens.
     //
@@ -538,7 +540,18 @@ function gameTick() {
   if (jogoPausado || document.hidden) return;
 
   tickCount++;
-  if(hatched && !dead) totalSecs++;
+  /* O `totalSecs` continua a andar em memória, porque é dele que a
+     sessão faz a sua conta. Mas já não é AUTORIDADE: o número que vale
+     vive no mapa `vidaAtiva`, que só o servidor escreve, e o que vai
+     para lá é o segundo que acabou de passar (js/vida-ativa.js).
+
+     É este o contador que a auditoria mediu: o cliente punha-o em 317
+     anos num PATCH. Ele fica, para a aba saber onde estava; o que mudou
+     é quem acredita nele. */
+  if(hatched && !dead) {
+    totalSecs++;
+    if(avatar && avatar.id && typeof vidaSomar === 'function') vidaSomar(avatar.id, 1);
+  }
 
   if(hatched && !dead && !bornAt) {
     bornAt = Date.now();
@@ -789,8 +802,18 @@ function preencherTelaDaMorte() {
      Dizia "Viveu 4 dias" contando do bornAt. O resto do jogo passou a
      medir a vida pelo totalSecs — que é o mesmo relógio que decide a
      fase — e este avatar tinha 9 horas de vida a marcar quatro dias.
-     Dois relógios para a mesma coisa, e este era o que mentia mais. */
-  const vida = (typeof _fmtTime === 'function') ? _fmtTime(totalSecs || 0) : (totalSecs || 0) + 's';
+     Dois relógios para a mesma coisa, e este era o que mentia mais.
+
+     E AGORA VEM DO RECONHECIDO, como a ficha (updateLifeEstimate, em
+     js/ui.js). Ficou a ler o `totalSecs` da memória quando a ficha
+     passou a ler o mapa `vidaAtiva`: eram outra vez dois números para a
+     mesma coisa, e este voltava a ser o que mentia — era o único lugar
+     onde um `totalSecs` escrito à mão ainda aparecia na tela. */
+  const _vid = (avatar && avatar.id && typeof vidaConhecida === 'function')
+    ? vidaConhecida(avatar.id) : null;
+  const _seg = (_vid === null ? (totalSecs || 0) : _vid)
+    + ((avatar && avatar.id && typeof vidaPendente === 'function') ? vidaPendente(avatar.id) : 0);
+  const vida = (typeof _fmtTime === 'function') ? _fmtTime(_seg) : _seg + 's';
   if (el('deadStats')) el('deadStats').innerHTML =
     t('gt.dead.stats1', {nivel, fase: FASES[getFase()], vida}) + '<br>' +
     t('gt.dead.stats2', {vinculo: Math.floor(vinculo)});
@@ -843,12 +866,17 @@ function checkXP() {
 
     /* A raridade sobe com os pontos, e por isso pergunta-se aqui.
 
-       Passa-se {nivel, totalSecs} à mão em vez do avatar: o slot do bicho
-       em campo tem o nível velho — só o recebe na gravação — e o
-       raridadeDoSlot leria um nível atrasado e concluiria que não houve
-       subida. */
+       Passa-se {nivel} à mão em vez do avatar: o slot do bicho em campo
+       tem o nível velho — só o recebe na gravação — e o raridadeDoSlot
+       leria um nível atrasado e concluiria que não houve subida.
+
+       O `totalSecs` ia aqui dentro e o raridadeDoSlot NUNCA O LIA: a
+       raridade sai só do nível (js/raridade.js). Era vestígio de quando
+       o tempo de jogo também travava a raridade, e ficava a sugerir que
+       o tempo decide algo aqui — que é justamente a confusão que esta
+       etapa existe para não criar. */
     if(avatar && typeof raridadeDoSlot === 'function') {
-      const _nova = raridadeDoSlot({ nivel, totalSecs });
+      const _nova = raridadeDoSlot({ nivel });
       if(grauDaRaridade(_nova) > grauDaRaridade(avatar.raridade)) {
         avatar.raridade = _nova;
         addLog(t('gt.raridade.subiu', { raridade: _nova }), 'leg');

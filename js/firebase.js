@@ -344,6 +344,13 @@ function applyGameState(data) {
      conversa. */
   const _mortos = (data.mortos && typeof data.mortos === 'object') ? data.mortos : {};
 
+  /* A VIDA ATIVA RECONHECIDA, pelo mesmo caminho dos mortos: mapa do
+     servidor, lido no carregamento. O save não a manda de volta — o
+     slot é gravado campo a campo, e `vidaAtiva` não está na lista, nem
+     poderia estar (ver firestore.rules). É daqui que a ficha tira o
+     tempo de vida (updateLifeEstimate, em js/ui.js). */
+  if (typeof vidaCarregar === 'function') vidaCarregar(data.vidaAtiva);
+
   /* Os laços entre avatares (js/lacos.js), pelo mesmo caminho: mapa do
      servidor, reatado ao slot por id. O save não os manda de volta — o
      slot é gravado campo a campo, e `lacos` não está na lista. */
