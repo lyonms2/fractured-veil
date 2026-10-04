@@ -63,6 +63,35 @@ const IA_PM_SOBRA  = 0.1;  // cada PM recuperado, quando já dá para todas
 const IA_REPRESALIA = 0.8; // cada ponto de dano que a Represália do Guarda deve devolver
 const IA_LIVRE     = 1000; // uma magia que não gasta o turno vem antes de qualquer jogada
 
+/* ── QUANTO DO DANO DESVIADO CAI DE FATO NO GUARDA ──
+
+   O Proteger não faz o golpe desaparecer: manda-o para o Guarda
+   (js/combate-fu.js:875). O valor dele tem de descontar isso, e este é
+   o quanto se desconta.
+
+   É UM NÚMERO HEURÍSTICO, e não uma verdade: o custo exato não se
+   consegue medir com o `_iaRisco`, que pergunta "qual o pior que cada
+   inimigo pode fazer a ESTE lutador" e por isso não vê o golpe que vem
+   desviado de outro. Medido: `_iaRisco` do Guarda a proteger é
+   exatamente igual ao dele sem proteger, nas duas pontas.
+
+   0,5 é o compromisso de partida. A varredura da etapa 3D.1 (600
+   batalhas por ponto, G+G+G, nível 30) deu comportamento plausível de
+   0,4 a 0,75, e o que o número muda é o quanto o Guarda protege, não o
+   resultado da luta:
+
+     k      escola 0   ganho     usa o Proteger   rondas   mortes
+     0        47,0%    +52,0pp       15,5%          17,1     2,28
+     0,4      59,3%    +40,0pp        6,4%          14,5     1,87
+     0,5      63,0%    +35,3pp        4,1%          13,9     1,69   ← aqui
+     0,75     61,7%    +37,0pp        0,5%          13,1     1,74
+     1        61,7%    +36,3pp        0,0%          13,0     1,70
+
+   As duas pontas dizem que o modelo está certo: com 1 o Proteger nunca
+   vale e o resultado é o de não o ter (61,7%, +34,0pp medido sem ele);
+   com 0 volta o defeito que esta constante existe para corrigir. */
+const IA_PROTEGER_DESVIO = 0.5;
+
 // ═══════════════════════════════════════════════════════════════════
 // FÁCIL — A IA DE SEMPRE
 //
@@ -386,10 +415,35 @@ function _iaValorEstilo(estado, quem, at, alvosIds) {
 // O que uma magia de apoio (cura, cena) rende num aliado.
 function _iaValorApoio(estado, m, alvo, quem) {
   let v = 0;
-  // O Proteger vale o perigo que sai do aliado, menos metade do que cai no Guarda.
+  /* ── O PROTEGER ──
+
+     Vale o perigo que ele REALMENTE tira do aliado, menos o desvio, menos
+     metade do que já cai no Guarda.
+
+     Valia `_iaRisco(alvo)` inteiro, e esse é o perigo todo que o aliado
+     corre — não o que o Proteger lhe tira. O Proteger só desvia o que
+     aponta a um alvo: a Devastação e o que varre todos passam por ele
+     (js/combate-fu.js:872). Medido na etapa 3D.1, contra uma Lâmina da
+     escola 0: risco de 127,0 e o Proteger a remover 37,0 — o valor saía
+     3,4 vezes maior do que devia.
+
+     O perigo que ele tira mede-se com o que já existe: põe-se o
+     `protegendo` no Guarda, dentro de uma cópia da equipe, e pergunta-se
+     ao mesmo `_iaRisco` quanto é que o perigo do aliado desce. É o
+     `_iaAlcanca` que sabe responder, porque é a regra que o motor aplica.
+
+     E o que desce do aliado não desaparece: sobe no Guarda. O `_iaRisco`
+     não consegue ver isso (ver IA_PROTEGER_DESVIO), por isso desconta-se
+     essa parte do próprio perigo removido. */
   if (m.proteger) {
     if (!quem || alvo === quem) return 0;
-    return Math.max(0, _iaRisco(estado, alvo) - _iaRisco(estado, quem) * 0.5) * IA_GUARDA;
+    const equipa = estado[quem.lado];
+    const comProt = Object.assign({}, quem, { protegendo: alvo.id });
+    const equipaProt = equipa.map(c => (c === quem ? comProt : c));
+    const removido = Math.max(0, _iaRisco(estado, alvo, alvo, equipa)
+                               - _iaRisco(estado, alvo, alvo, equipaProt));
+    return Math.max(0, removido - removido * IA_PROTEGER_DESVIO
+                       - _iaRisco(estado, quem) * 0.5) * IA_GUARDA;
   }
   // A limpeza vale um estado a menos no aliado (fuLimpar).
   if (m.limpa && Object.keys(alvo.estados || {}).length) v += IA_ESTADO;
