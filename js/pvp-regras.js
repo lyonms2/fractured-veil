@@ -259,17 +259,30 @@ function pvpCaidos(estado, lado) {
    cliente grava por inteiro. O `nivel` chega aqui já decidido pelo
    api/pvp.js; sem ele, vale o do slot (é o caso do desenho local, que
    não decide nada). */
-function pvpRetrato(slot, certidao, nivel) {
+function pvpRetrato(slot, certidao, nivel, escolhaAnciao) {
   const r = {
     id: slot.id,
     // O nome, sem a alcunha ("Brasa,Leo" → "Brasa"), como o nomeCurto.
     nome: String(slot.nome || '').split(',')[0].trim().slice(0, 40),
     nivel: Math.max(1, (nivel != null ? nivel : slot.nivel) | 0 || 1),
-    seed: slot.seed | 0,
+    /* O SEED DA CERTIDÃO, como o nível vem do registro do servidor. O
+       slot fica como recurso, para o desenho local, que não decide
+       nada. Era `slot.seed | 0`, e com ele o retrato levava para a sala
+       o seed que o cliente tivesse escrito — e o fuFicha monta a ficha
+       de combate a partir do retrato. */
+    seed: ((certidao && certidao.seed) || slot.seed || 0) | 0,
     raridade: slot.raridade || null,
     nascimento: certidao,
   };
-  if (slot.escolhaAnciao) r.escolhaAnciao = slot.escolhaAnciao;
+  /* A ESCOLHA DO ANCIÃO vem de QUEM CHAMA, que a tira do mapa
+     `escolhas` (js/escolhas.js) — não do slot. Era `slot.escolhaAnciao`,
+     e com ele o retrato levava para a sala a escolha que o cliente
+     tivesse escrito: dava para fechar a costura contra quem a fosse
+     explorar e abri-la contra os outros.
+
+     Sem argumento não vai nada, e a ficha do outro lado monta-se sem
+     escolha — que é o conservador: a costura FICA. */
+  if (typeof escolhaAnciao === 'string' && escolhaAnciao) r.escolhaAnciao = escolhaAnciao;
   return r;
 }
 

@@ -433,7 +433,27 @@ function fuFicha(slot) {
 
   const nascimento = slot.nascimento || null;
   const dna   = nascimento && nascimento.dna ? nascimento.dna : null;
-  const seed  = (slot.seed || (nascimento && nascimento.seed) || 0) | 0;
+  /* ── O SEED VEM DA CERTIDÃO, E SÓ DEPOIS DO SLOT ──
+
+     Era o contrário, e o contrário punha esta ficha inteira na mão de
+     quem escreve o avatarSlots. O seed decide, nas linhas abaixo, a
+     ORDEM dos atributos (e com ela o PV e o PM), a COSTURA — que é a
+     fraqueza elemental —, a ESCOLA, e portanto o repertório de magias,
+     e as VANTAGENS.
+
+     Foi medido: trocando só o `slot.seed`, 500 de 500 avatares
+     mudavam de ficha. Em 3.000 seeds vizinhos de um só avatar saíam as
+     7 costuras possíveis, as 2 escolas e 12 vantagens diferentes — ou
+     seja, o jogador escolhia a sua própria fraqueza.
+
+     O DNA já tinha este problema e foi resolvido assim: a certidão
+     sobrepõe-se ao slot no carregamento (js/firebase.js). E o mercado
+     já lia o seed na ordem certa (api/comprar-avatar.js). Faltava aqui.
+
+     O slot fica como RECURSO, e não por preguiça: um avatar emitido
+     antes de haver certidão não tem outra. Para todos os outros, os
+     dois números são o mesmo — 500 de 500 conferidos. */
+  const seed  = ((nascimento && nascimento.seed) || slot.seed || 0) | 0;
 
   /* ── O TECTO DO NÍVEL ──
      O manual trava os NPCs em 60. O chão dele é 5 e o nosso é 1, porque

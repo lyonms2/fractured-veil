@@ -14,6 +14,7 @@ const { getAuth }                      = require('firebase-admin/auth');
 
 const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
 const VIDA = require('../js/vida-ativa.js'); // a vida ativa reconhecida
+const ESC  = require('../js/escolhas.js');   // a escolha do Ancião
 /* A ficha e a genética, pelo fuRaridadeDoNivel: a raridade sai do
    NÍVEL, e a do slot é escrita pelo cliente (o mesmo que o api/amigos.js
    já fazia na tela de visitar). */
@@ -667,6 +668,18 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const vidaVendida = listing.id
         ? (((sellerData.vidaAtiva || {})[listing.id])
            || { s: VIDA.vidaLimpa(listing.totalSecs), em: Date.now() }) : null;
+      /* E A ESCOLHA DO ANCIÃO (js/escolhas.js). É uma decisão do
+         AVATAR, não do dono: ele fechou a costura, e continua sem
+         fraqueza na mão de quem o comprar.
+
+         Antes não viajava, e o comprador recebia um Lendário com a
+         fraqueza de volta e o convite outra vez — o que não era decisão
+         nenhuma, era o campo nunca ter sido copiado. Sem registro no
+         vendedor (um avatar que escolheu antes disto existir) não vai
+         nada, e o comprador escolhe: é a mesma porta dos legados, e
+         está dita no relatório. */
+      const chaveEsc = listing.id ? `escolhas.${listing.id}` : null;
+      const escVendida = listing.id ? ((sellerData.escolhas || {})[listing.id] || null) : null;
 
       /* ── O REGISTO QUE O COMPRADOR RECEBE É A ORIGEM ──
 
@@ -695,7 +708,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          chaveLacos && lacosVendidos && Object.keys(lacosVendidos).length
            ? { [chaveLacos]: lacosVendidos } : {},
          chaveNivel && nivelVendido ? { [chaveNivel]: nivelVendido } : {},
-         chaveVida  && vidaVendida  ? { [chaveVida]:  vidaVendida  } : {}, debitoCompra));
+         chaveVida  && vidaVendida  ? { [chaveVida]:  vidaVendida  } : {},
+         chaveEsc   && escVendida   ? { [chaveEsc]:   escVendida   } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      +(sellerCris + sellerReal).toFixed(2),
@@ -707,7 +721,8 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          chaveDonos ? { [chaveDonos]: FieldValue.delete() } : {},
          chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {},
          chaveNivel ? { [chaveNivel]: FieldValue.delete() } : {},
-         chaveVida  ? { [chaveVida]:  FieldValue.delete() } : {}));
+         chaveVida  ? { [chaveVida]:  FieldValue.delete() } : {},
+         chaveEsc   ? { [chaveEsc]:   FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.

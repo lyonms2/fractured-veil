@@ -417,14 +417,106 @@ titulo('Dados partidos');
     const f = F.fuFicha(Object.assign(avatar(7919, 5), { nivel: nv }));
     verificar('nível ' + nv + ' fica ' + esperado, f.nivel === esperado, 'deu ' + f.nivel);
   }
-  // seed 0 e seeds simétricos
-  verificar('o seed 0 não rebenta', !!F.fuFicha(Object.assign(avatar(7919, 5), { seed: 0 })));
+  /* ── SEED 0 E SEEDS SIMÉTRICOS ──
+
+     O que isto mede é o RNG: que ele não é simétrico, e que o 0 não o
+     parte. Continua a medir exatamente isso.
+
+     O QUE MUDOU FOI O CAMINHO. Estas três linhas punham o seed no SLOT
+     (`Object.assign(avatar(…), { seed })`), porque era de lá que o
+     fuFicha o lia. Desde a blindagem do seed, a autoridade é a certidão
+     e o slot é recurso — então escrever no slot deixou de mudar a ficha
+     e o teste dos simétricos passou a comparar um avatar consigo mesmo.
+     Ele falhou com razão.
+
+     Agora o seed vai à CERTIDÃO, que é a fonte, e o DNA fica CONSTANTE
+     entre os dois — assim a diferença que se mede é mesmo a do seed, e
+     não a de dois DNA diferentes. É mais específico do que era. */
+  const _comSeed = (s) => {
+    const base = avatar(7919, 5);
+    return F.fuFicha(Object.assign({}, base, { seed: s,
+      nascimento: Object.assign({}, base.nascimento, { seed: s }) }));
+  };
+  verificar('o seed 0 não rebenta', !!_comSeed(0));
   {
-    const pos = F.fuFicha(Object.assign(avatar(7919, 5), { seed: 12345 }));
-    const neg = F.fuFicha(Object.assign(avatar(7919, 5), { seed: -12345 }));
+    const pos = _comSeed(12345), neg = _comSeed(-12345);
     verificar('o seed +n e o −n dão avatares diferentes',
       pos.costura !== neg.costura || JSON.stringify(pos.ordem) !== JSON.stringify(neg.ordem));
   }
+}
+
+/* ═══ A AUTORIDADE DO SEED ═══════════════════════════════════════
+
+   O seed decide, dentro do fuFicha, a ORDEM dos atributos — e com ela
+   o PV e o PM —, a COSTURA, que é a fraqueza elemental, a ESCOLA, e
+   portanto o repertório de magias, e as VANTAGENS.
+
+   E ele vive em dois lugares: na certidão, que só o servidor escreve, e
+   no `avatarSlots`, que o cliente grava por inteiro. Durante muito tempo
+   o fuFicha lia o do SLOT primeiro, e foi medido: trocando só o
+   `slot.seed`, 500 de 500 avatares mudavam de ficha. Em 3.000 seeds
+   vizinhos de um só avatar saíam as 7 costuras possíveis, as 2 escolas e
+   12 vantagens — o jogador escolhia a própria fraqueza.
+
+   Esta secção é o que impede isso de voltar. Ela não mede o RNG (isso
+   está acima): mede QUEM MANDA.
+   ════════════════════════════════════════════════════════════════ */
+titulo('A autoridade do seed: manda a certidão, não o slot');
+{
+  const AMOSTRA = 200;
+  /* O que o combate lê da ficha. Se um `slot.seed` adulterado mexer em
+     qualquer um destes campos, mexeu na luta. */
+  const mecanica = (f) => JSON.stringify({
+    escola: f.escola, costura: f.costura, ordem: f.ordem,
+    DES: f.DES, PER: f.PER, VIG: f.VIG, VON: f.VON,
+    pvMax: f.pvMax, pmMax: f.pmMax, crise: f.crise,
+    defesaBase: f.defesaBase, defMagBase: f.defMagBase,
+    iniciativa: f.iniciativa, afinidades: f.afinidades,
+    vantagens: (f.vantagens || []).map(v => v.id || v.nome || String(v)).sort(),
+    dons: f.dons,
+  });
+
+  let mudaram = 0, iguais = 0;
+  for (let i = 0; i < AMOSTRA; i++) {
+    const base = avatar(10007 + i * 7919, 1 + (i % 60));
+    const real = F.fuFicha(base);
+
+    /* Um seed adulterado ESCOLHIDO: o primeiro vizinho que, se fosse
+       legítimo, daria outra ficha. Sem esta busca o teste passaria por
+       sorte nos seeds que não mudam nada. */
+    let alvo = base.seed;
+    for (let t = 1; t < 400; t++) {
+      const tent = (base.seed + t) >>> 0;
+      const comoSeFosse = F.fuFicha(Object.assign({}, base, { seed: tent,
+        nascimento: Object.assign({}, base.nascimento, { seed: tent }) }));
+      if (mecanica(comoSeFosse) !== mecanica(real)) { alvo = tent; break; }
+    }
+    // e agora adultera-se SÓ o slot, deixando a certidão em paz
+    const comSlotSujo = F.fuFicha(Object.assign({}, base, { seed: alvo }));
+    if (mecanica(comSlotSujo) === mecanica(real)) iguais++; else mudaram++;
+  }
+  verificar('o slot.seed adulterado não muda a ficha mecânica',
+    mudaram === 0, mudaram + ' de ' + AMOSTRA + ' mudaram');
+  verificar('e os ' + AMOSTRA + ' saíram todos iguais ao legítimo', iguais === AMOSTRA);
+
+  /* O SLOT CONTINUA A SER RECURSO, e é de propósito: um avatar emitido
+     antes de haver certidão não tem outra fonte. */
+  const semCert = { id: 'x', seed: 424242, nivel: 10 };
+  const comCertVazia = { id: 'x', seed: 424242, nivel: 10, nascimento: { dna: null } };
+  verificar('sem certidão, o slot.seed serve de recurso',
+    F.fuFicha(semCert).seed === 424242, 'deu ' + F.fuFicha(semCert).seed);
+  verificar('e com uma certidão sem seed, também',
+    F.fuFicha(comCertVazia).seed === 424242, 'deu ' + F.fuFicha(comCertVazia).seed);
+
+  /* E O RETRATO DO PvP leva o da certidão. É por ele que a ficha do
+     adversário se monta do outro lado e no servidor (pvpParaMotor). */
+  const R = require('../js/pvp-regras.js');
+  const base2 = avatar(7919, 30);
+  const r = R.pvpRetrato(Object.assign({}, base2, { seed: 999999 }), base2.nascimento, 30);
+  verificar('o retrato do PvP leva o seed da certidão, não o do slot',
+    r.seed === base2.nascimento.seed, 'levou ' + r.seed);
+  verificar('e a ficha montada do retrato é a legítima',
+    mecanica(F.fuFicha(r)) === mecanica(F.fuFicha(base2)));
 }
 
 /* ═══ O VEREDICTO ════════════════════════════════════════════════ */

@@ -210,20 +210,43 @@ function fecharEscolha() {
   setTimeout(() => { if (retrato && !ov.classList.contains('ativo')) retrato.innerHTML = ''; }, 500);
 }
 
-function confirmarEscolha(qual) {
+async function confirmarEscolha(qual) {
   if (typeof FICHA_ESCOLHAS === 'undefined' || FICHA_ESCOLHAS.indexOf(qual) < 0) return;
 
   /* A segunda guarda, em quem FAZ. A de cima só decide se o convite
      aparece; esta é a que impede — um clique repetido, uma tela aberta
      desde antes de o avatar morrer, ou um caminho novo que ninguém
-     previu. */
+     previu.
+
+     E agora há uma TERCEIRA, que é a que vale: o servidor. Estas duas
+     ficam porque pouparem uma ida à rede é bom e porque dizem ao
+     jogador o que está a acontecer; mas quem recusa de verdade é o
+     api/pool.js, e é ele que grava. */
   if (typeof podeEscolherAnciao !== 'function' || !podeEscolherAnciao()) {
     fecharEscolha();
     if (typeof playSound === 'function') playSound('error');
     return;
   }
 
-  avatar.escolhaAnciao = qual;
+  /* ── QUEM GRAVA É O SERVIDOR ──
+
+     Era `avatar.escolhaAnciao = qual`, e isso punha a decisão no slot,
+     que o cliente grava por inteiro — dava para trocar de escolha entre
+     lutas. Agora pede-se, e só se escreve o espelho depois de a
+     resposta chegar (js/escolhas.js).
+
+     Se a rede falhar, nada muda: nem no servidor nem na tela. É melhor
+     o jogador ver que não pegou e clicar outra vez do que ficar com uma
+     escolha que o servidor não conhece. */
+  const reg = (typeof escolhaAnciaoPedir === 'function')
+    ? await escolhaAnciaoPedir(avatar && avatar.id, qual) : null;
+  if (!reg) {
+    if (typeof playSound === 'function') playSound('error');
+    if (typeof showToast === 'function') showToast(t('esc.falhou'), 'err');
+    return;
+  }
+
+  avatar.escolhaAnciao = reg.anciao;   // o espelho, com o que o servidor aceitou
   fecharEscolha();
 
   if (typeof playSound === 'function') playSound('evolve');
@@ -254,6 +277,10 @@ window.registerStrings(
     'esc.log.semDefeito': '{nome} deixou para trás o defeito com que nasceu.',
     'esc.bub.vantagem':   'Sinto uma força nova acordar.',
     'esc.bub.semDefeito': 'O que me pesava já não está aqui.',
+    /* Quando o servidor não aceita. Quem escolhe duas vezes já não
+       chega aqui — o convite não aparece —, então na prática isto é a
+       rede a falhar no instante do clique. */
+    'esc.falhou':         'A escolha não foi registrada. Tente outra vez.',
   },
   {
     'esc.chamada':     '✦ THE TIME HAS COME TO DECIDE',
@@ -273,5 +300,6 @@ window.registerStrings(
     'esc.log.semDefeito': '{nome} left behind the flaw it was born with.',
     'esc.bub.vantagem':   'I feel a new strength waking.',
     'esc.bub.semDefeito': 'What weighed on me is no longer here.',
+    'esc.falhou':         'The choice was not recorded. Try again.',
   }
 );

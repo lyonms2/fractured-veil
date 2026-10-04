@@ -351,6 +351,12 @@ function applyGameState(data) {
      tempo de vida (updateLifeEstimate, em js/ui.js). */
   if (typeof vidaCarregar === 'function') vidaCarregar(data.vidaAtiva);
 
+  /* A ESCOLHA DO ANCIÃO, pelo mesmo caminho: mapa do servidor, lido no
+     carregamento. Tem de vir ANTES de os slots serem montados, porque é
+     daí que cada um recebe o seu espelho (ver mais abaixo). */
+  if (typeof escolhasCarregar === 'function') escolhasCarregar(data.escolhas);
+  const _escolhas = (data.escolhas && typeof data.escolhas === 'object') ? data.escolhas : {};
+
   /* Os laços entre avatares (js/lacos.js), pelo mesmo caminho: mapa do
      servidor, reatado ao slot por id. O save não os manda de volta — o
      slot é gravado campo a campo, e `lacos` não está na lista. */
@@ -401,6 +407,20 @@ function applyGameState(data) {
       } else {
         delete restored.nascimento;
       }
+      /* ── A ESCOLHA DO ANCIÃO VEM DO SERVIDOR ──
+
+         Sobrepõe-se SEMPRE, como a certidão: o que o cliente tiver
+         deixado no slot deixa de valer. Sem registro, o campo SAI do
+         slot — e isso é deliberado. Um valor legado sem registro não
+         pode continuar a decidir a mecânica, senão a blindagem era só
+         para as escolhas novas; e promovê-lo a autoridade seria
+         transformar um campo que o cliente escreve em verdade. A
+         decisão sobre os legados é do dono do jogo (ver o relatório da
+         Etapa 3A.3) e, até ela existir, o servidor é a única voz. */
+      const _esc = s.id ? _escolhas[s.id] : null;
+      if (_esc && typeof _esc.anciao === 'string') restored.escolhaAnciao = _esc.anciao;
+      else delete restored.escolhaAnciao;
+
       restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
       restored.lacos = (s.id && _lacos[s.id] && typeof _lacos[s.id] === 'object') ? _lacos[s.id] : {};
       if (s.id && _mortos[s.id]) restored.dead = true;

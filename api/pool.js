@@ -14,6 +14,7 @@ const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 const NIV  = require('../js/niveis.js');
 const VIDA = require('../js/vida-ativa.js');  // a vida ativa reconhecida
+const ESC  = require('../js/escolhas.js');    // a escolha do Ancião
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 
 /* O POOL_ALVO, o POOL_LIMITE_DIA, o saqueDeHoje e o marcarSaque saíram
@@ -201,6 +202,7 @@ module.exports = async function handler(req, res) {
   if (acao === 'laco')        return handleLaco(req, res, db, uid);
   if (acao === 'nivel')       return handleNivel(req, res, db, uid);
   if (acao === 'vida')        return handleVida(req, res, db, uid);
+  if (acao === 'escolha-anciao') return handleEscolhaAnciao(req, res, db, uid);
 
   return res.status(400).json({ erro: 'acao inválida' });
 };
@@ -761,6 +763,98 @@ async function handleVida(req, res, db, uid) {
   } catch (err) {
     if (err.message === 'SEM_JOGADOR') return res.status(404).json({ erro: 'Jogador não encontrado.' });
     console.error('[pool/vida]', err.message);
+    return res.status(500).json({ erro: 'Erro interno.' });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   A ESCOLHA DO ANCIÃO — uma vez, e é do avatar
+
+   Ao chegar a Lendário o avatar fecha a costura (deixa de ter fraqueza
+   elemental) ou ganha uma segunda vantagem. É a única decisão que o
+   jogador toma sobre a ficha de combate.
+
+   Vivia no slot, e foi medido: escrever `'semDefeito'` lá tirava a
+   fraqueza em 500 de 500 Lendários, e dava para trocar de escolha entre
+   lutas — `'semDefeito'` contra quem exploraria a costura, `'vantagem'`
+   contra os outros. A trava do "uma vez só" lia o próprio campo que o
+   cliente escrevia.
+
+   Passa a viver no mapa `escolhas`, que só o servidor escreve. As seis
+   perguntas do pedido respondem-se aqui, e a terceira é a que importa:
+
+     1. o avatar existe no documento?
+     2. é dele? (está nos slots e tem certidão)
+     3. já há escolha registrada?        → recusa, e devolve a que há
+     4. o valor é 'vantagem' ou 'semDefeito'?
+     5. o nível RECONHECIDO chega ao 27? (o mapa `niveis`, não o slot)
+     6. está vivo?
+
+   A quinta é o detalhe que fecha a porta ao atalho: o nível vem do
+   `niveis`, que também só o servidor escreve. Sem isso, bastava dizer
+   "sou nível 60" para escolher no primeiro dia.
+
+   Numa transação, como o resto deste arquivo.
+   ══════════════════════════════════════════════════════════════════ */
+async function handleEscolhaAnciao(req, res, db, uid) {
+  const id   = req.body && String(req.body.id || '');
+  const qual = req.body && req.body.qual;
+  if (!id || !NIVEL_ID_VALIDO.test(id)) {
+    return res.status(400).json({ erro: 'Parâmetros inválidos.' });
+  }
+  if (!ESC.escolhaAnciaoValida(qual)) {
+    return res.status(400).json({ erro: 'Escolha inválida.', motivo: 'VALOR_INVALIDO' });
+  }
+
+  const playerRef = db.collection('players').doc(uid);
+  try {
+    const saida = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(playerRef);
+      if (!snap.exists) throw new Error('SEM_JOGADOR');
+      const pData = snap.data();
+      const slots     = pData.avatarSlots || [];
+      const certidoes = pData.certidoes   || {};
+      const mortos    = pData.mortos      || {};
+      const niveis    = pData.niveis      || {};
+      const escolhas  = pData.escolhas    || {};
+      const agora     = Date.now();
+
+      // é dele, existe de verdade e está vivo — as mesmas perguntas do nível
+      const slot = slots.find(s => s && s.id === id);
+      if (!slot) throw new Error('AVATAR_NAO_ENCONTRADO');
+      if (!certidoes[id]) throw new Error('SEM_CERTIDAO');
+      if (mortos[id] || slot.dead) throw new Error('AVATAR_MORTO');
+
+      /* O NÍVEL É O RECONHECIDO. O do slot é o que o cliente escreve, e
+         com ele qualquer avatar seria Lendário à vontade. */
+      const nivel = NIV.nivelDe(niveis, id, slot);
+
+      const r = ESC.escolhaAnciaoAceitar(escolhas[id], qual, nivel, agora);
+      /* O motivo viaja na mensagem, que é como este arquivo sempre
+         distinguiu recusas (ver o handleInvocar). O `atual` vai na
+         resposta para a tela poder mostrar o que já está registrado,
+         em vez de só dizer não. */
+      if (!r.ok) throw new Error('ESCOLHA_' + r.motivo
+        + '|' + JSON.stringify({ atual: (r.reg && r.reg.anciao) || null, nivel }));
+
+      tx.update(playerRef, { [`escolhas.${id}`]: r.reg });
+      return { reg: r.reg, nivel };
+    });
+
+    return res.status(200).json({ ok: true, ...saida });
+  } catch (err) {
+    const m = String(err.message || '');
+    if (m === 'SEM_JOGADOR')          return res.status(404).json({ erro: 'Jogador não encontrado.' });
+    if (m === 'AVATAR_NAO_ENCONTRADO') return res.status(404).json({ erro: 'Avatar não encontrado.', motivo: 'AVATAR_NAO_ENCONTRADO' });
+    if (m === 'SEM_CERTIDAO')         return res.status(400).json({ erro: 'Avatar sem certidão.', motivo: 'SEM_CERTIDAO' });
+    if (m === 'AVATAR_MORTO')         return res.status(400).json({ erro: 'Avatar morto.', motivo: 'AVATAR_MORTO' });
+    if (m.indexOf('ESCOLHA_') === 0) {
+      const [cabeca, cauda] = m.slice('ESCOLHA_'.length).split('|');
+      let extra = {};
+      try { extra = JSON.parse(cauda || '{}'); } catch (e) {}
+      return res.status(400).json(Object.assign({ erro: 'Escolha recusada.', motivo: cabeca }, extra));
+    }
+    console.error('[pool/escolha-anciao]', err.message);
     return res.status(500).json({ erro: 'Erro interno.' });
   }
 }

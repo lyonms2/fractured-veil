@@ -178,6 +178,30 @@ service cloud.firestore {
                  deixa de funcionar é o salto, e a perda de uma aba para
                  a outra. */
               'vidaAtiva',
+              /* A ESCOLHA DO ANCIÃO (js/escolhas.js).
+
+                 Ao chegar a Lendário, o avatar fecha a costura — deixa
+                 de ter fraqueza elemental — ou ganha uma segunda
+                 vantagem. É a única decisão que o jogador toma sobre a
+                 ficha de combate.
+
+                 Vivia no avatarSlots. Foi medido: escrever
+                 'semDefeito' no slot tirava a fraqueza em 500 de 500
+                 Lendários, e dava para trocar de escolha entre lutas —
+                 'semDefeito' contra quem exploraria a costura,
+                 'vantagem' contra os outros. A trava do "uma vez só"
+                 lia o próprio campo que o cliente escrevia.
+
+                 Aqui fica { anciao, em } por avatar, e o servidor
+                 recusa a segunda escrita (a acao 'escolha-anciao' do
+                 api/pool.js). Ao contrário do nível e da vida ativa não
+                 há balde nem primeiro encontro: não é um número que
+                 cresce, é uma decisão que se toma uma vez.
+
+                 Não vai na certidão porque a certidão se escreve UMA
+                 vez, no nascimento, e esta decisão acontece no nível
+                 27 — a razão está escrita no js/escolhas.js. */
+              'escolhas',
               /* OS PONTOS DA TEMPORADA (js/pvp-rank.js).
 
                  É a classificação do PvP, e é a única coisa que se leva

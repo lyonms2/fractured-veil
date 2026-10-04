@@ -49,6 +49,7 @@ const { getDatabase }  = require('firebase-admin/database');
 // O ehBebe, a ficha e o motor, como os outros endpoints os carregam.
 require('./_genetica.js');
 const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
+const ESC = require('../js/escolhas.js'); // a escolha do Ancião reconhecida
 const R = require('../js/pvp-regras.js');
 const RK = require('../js/pvp-rank.js');   // os pontos da temporada
 const TP = require('../js/temporada.js');  // o selo e o prêmio da temporada
@@ -122,6 +123,9 @@ async function lerEquipa(db, uid, idsDoPedido) {
      encontro em que o servidor acredita no cliente. Os que nascem a
      partir daqui já vêm registrados no nível 1 (api/pool.js). */
   const niveis = d.niveis || {};
+  /* E a escolha do Ancião, que decide se o avatar tem fraqueza
+     elemental (js/escolhas.js). Vinha do slot, dentro do retrato. */
+  const escolhas = d.escolhas || {};
   const anotar = {};
   const agora  = Date.now();
 
@@ -136,7 +140,8 @@ async function lerEquipa(db, uid, idsDoPedido) {
       anotar[`niveis.${s.id}`] = r.reg;
       nivel = r.reg.n;
     }
-    retratos.push(R.pvpRetrato(s, certidoes[s.id], nivel));
+    retratos.push(R.pvpRetrato(s, certidoes[s.id], nivel,
+      ESC.escolhaAnciaoDe(escolhas, s.id)));
   }
   if (motivos.length) throw new Recusa(400, 'equipe_invalida', { motivos });
   /* Fora da leitura e sem esperar: se falhar, o pior que acontece é o
