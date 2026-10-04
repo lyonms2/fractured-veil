@@ -896,7 +896,13 @@ function fuAgir(estado, acao) {
           tipo: magia.tipo || quem.ficha.tipo,
           estado: magia.estado, estadoSempre: magia.estadoSempre,
           ignoraResistencias: magia.ignoraResistencias,
-          furaGuarda: es.furaGuarda, semRSnaGuarda: es.semRSnaGuarda,
+          /* Do estilo do feitio OU da própria magia. Lia só o estilo, e o
+             estilo só existe no lugar `forte` (fuMagiaDe) — as magias da
+             segunda escola que trazem estes campos de nascença ficavam
+             sem eles. Medido: a Estocada, que diz `furaGuarda: true`,
+             furava a guarda 0 vezes em 400. */
+          furaGuarda:    es.furaGuarda    || magia.furaGuarda,
+          semRSnaGuarda: es.semRSnaGuarda || magia.semRSnaGuarda,
           atrib1: 'PER', atrib2: 'VON',
           bonus: laco ? laco.bonus : 0,
         } : { fixo: 5, bonus: laco ? laco.bonus : 0 });

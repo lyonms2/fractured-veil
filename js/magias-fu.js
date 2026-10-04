@@ -250,23 +250,66 @@ const FU_MAGIAS = {
    Aprovadas pelo dono do jogo em 14/09/2026. Uma variação por feitio; se
    fizerem falta mais, entram como escolha do jogador no nível 11.
    ══════════════════════════════════════════════════════════════════ */
+/* ── AS TRÊS ESCOLAS ──
+
+   O avatar nasce com uma delas (fuEscolaDoSeed, em js/ficha-fu.js), e
+   ela diz COMO ele exerce o feitio. O feitio continua a decidir o que
+   ele é: quais lugares tem (FU_LUGARES_DO_FEITIO), a passiva
+   (js/combate-fu.js) e o nome latino (FU_NOME_FORTE).
+
+   São três desde a etapa 3F. Eram duas, e a terceira não existia em
+   lugar nenhum do código — nem no gerador, nem num enum, nem nas
+   tabelas. Esta lista é o enum que faltava: quem precisa de percorrer
+   as escolas percorre-a, em vez de escrever 0 e 1 à mão. */
+const FU_ESCOLAS = [0, 1, 2];
+
+/* ── O JEITO DE CADA FEITIO NO ATAQUE FORTE ──
+
+   Um por feitio, com os três degraus. Ficam em constantes próprias
+   porque a tabela abaixo as usa três vezes cada — uma por escola. */
+const FU_ESTILO_GUARDA = {
+  1: { fixoMais: -2, guardaAoAtacar: 'proprio' },   // era −3 (calibragem de 14/09/2026)
+  2: { fixoMais: -5, guardaAoAtacar: 'proprio_e_ferido' },
+  3: { fixoMais: -5, guardaAoAtacar: 'equipa' },
+};
+const FU_ESTILO_LAMINA = {
+  1: { fixoMais: 3, furaGuarda: true },
+  2: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true },
+  3: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true, ignoraResistencias: true },
+};
+const FU_ESTILO_SUSTENTACAO = {
+  1: { curaPorDano: 0.5 },
+  // E rouba PM de cada alvo ferido (aprovado em 14/09/2026).
+  2: { curaPorDano: 0.5, curaDividida: true, roubaPM: 3 },
+  3: { curaPorDano: 0.5, curaDividida: true, limpaEstado: true, roubaPM: 5 },
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   FEITIO × ESCOLA × DEGRAU — as 27 células do estilo
+
+   Era `FU_ESTILO_FORTE[feitio][degrau]`, e o estilo aplicava-se seja
+   qual fosse a escola. Com isso a escola agia DUAS VEZES no lugar
+   `forte`: trocava a magia (FU_SEGUNDA_ESCOLA) e recebia o estilo do
+   feitio por cima. Medido na etapa 3B: a Lança Certeira da segunda
+   escola traz `furaGuarda` de nascença — capacidade de Lâmina — e um
+   Guarda com ela ficava com dano concentrado alto E a equipe em guarda,
+   +49 pontos percentuais de vitória no nível 60.
+
+   Agora a escola entra AQUI, e só aqui, no lugar `forte`: a magia base
+   é a mesma para as três (ver FU_MATRIZ), e o que muda é o jeito. Uma
+   escola já não pode dar a um feitio o que não é dele.
+
+   AS TRÊS CÉLULAS DE CADA FEITIO SÃO HOJE A MESMA, DE PROPÓSITO: esta
+   etapa constrói a estrutura e não mexe no balanço. As nove identidades
+   (G0 Muro, G1 Espinho, G2 Âncora, S0 Foco, S1 Coro, S2 Vigília, L0
+   Foice, L1 Estocada, L2 Carrasco) entram na etapa seguinte, e é então
+   que estas células passam a divergir. Até lá, um avatar da escola 2
+   luta como um da 0 — estruturalmente válido, sem identidade própria.
+   ══════════════════════════════════════════════════════════════════ */
 const FU_ESTILO_FORTE = {
-  guarda: {
-    1: { fixoMais: -2, guardaAoAtacar: 'proprio' },   // era −3 (calibragem de 14/09/2026)
-    2: { fixoMais: -5, guardaAoAtacar: 'proprio_e_ferido' },
-    3: { fixoMais: -5, guardaAoAtacar: 'equipa' },
-  },
-  lamina: {
-    1: { fixoMais: 3, furaGuarda: true },
-    2: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true },
-    3: { fixoMais: 5, furaGuarda: true, semRSnaGuarda: true, ignoraResistencias: true },
-  },
-  sustentacao: {
-    1: { curaPorDano: 0.5 },
-    // E rouba PM de cada alvo ferido (aprovado em 14/09/2026).
-    2: { curaPorDano: 0.5, curaDividida: true, roubaPM: 3 },
-    3: { curaPorDano: 0.5, curaDividida: true, limpaEstado: true, roubaPM: 5 },
-  },
+  guarda:      { 0: FU_ESTILO_GUARDA,      1: FU_ESTILO_GUARDA,      2: FU_ESTILO_GUARDA },
+  lamina:      { 0: FU_ESTILO_LAMINA,      1: FU_ESTILO_LAMINA,      2: FU_ESTILO_LAMINA },
+  sustentacao: { 0: FU_ESTILO_SUSTENTACAO, 1: FU_ESTILO_SUSTENTACAO, 2: FU_ESTILO_SUSTENTACAO },
 };
 
 /* ── O NOME DO ATAQUE FORTE, POR FEITIO ──
@@ -346,7 +389,8 @@ const FU_SEGUNDA_ESCOLA = {
     2: { id: 'perfurante', pm: 14, alvos: 1, fixo: 22, semRSnaGuarda: true },
     // 20 contra os 45 da Barragem Certa nos três, e fura a guarda.
     3: { id: 'lanca_certeira', pm: 20, alvos: 1, fixo: 34,
-         estadoSempre: true, furaGuarda: true },
+         estadoSempre: true, estadoDoTipo: true, furaGuarda: true,
+         manual: 'nosso (segunda escola)' },
   },
 
   muito_forte: {
@@ -359,7 +403,8 @@ const FU_SEGUNDA_ESCOLA = {
        do que o "fura a guarda" dela. Mais barata, passa a ser a escolha
        de quem tem pouco PM e muitos turnos pela frente. */
     2: { id: 'estocada', pm: 12, alvos: 1, fixo: 23,
-         furaGuarda: true, estadoSempre: true },
+         furaGuarda: true, estadoSempre: true, estadoDoTipo: true,
+         manual: 'nosso (segunda escola)' },
     /* A Devastação bate em todos por 30 PM. Esta bate num por 22 e passa
        por qualquer afinidade — é a resposta a um Lendário que absorve o
        próprio elemento. */
@@ -410,6 +455,70 @@ const FU_SEGUNDA_ESCOLA = {
          cena: { danoMais: 2 }, livre: true },
   },
 };
+
+/* ══════════════════════════════════════════════════════════════════
+   LUGAR × ESCOLA — de que tabela sai a magia
+
+   Uma linha por lugar, uma coluna por escola, e o degrau vem depois
+   (fuDegrau). É esta tabela, e nenhum `if`, que diz de onde sai a magia
+   de um avatar — antes era `ficha.escola === 1`, a única comparação
+   binária que o motor tinha.
+
+   'primeira'  FU_MAGIAS
+   'segunda'   FU_SEGUNDA_ESCOLA
+
+   ── PORQUE O `forte` É 'primeira' NAS TRÊS ──
+
+   Decisão de arquitetura da etapa 3E (Alternativa 1, aprovada pelo dono
+   do jogo). No lugar `forte` a MAGIA BASE é a mesma para as três
+   escolas, e o que a escola muda é o ESTILO (FU_ESTILO_FORTE). Duas
+   razões, as duas medidas:
+
+     · a escola agia duas vezes no mesmo lugar — trocava a magia E
+       recebia o estilo do feitio por cima;
+     · e a troca de magia invertia a identidade entre degraus: a
+       primeira escola era alvo único no Comum e área no Raro, a segunda
+       o contrário. Em 8 das 9 linhas da tabela, medido na etapa 3E.
+
+   Com a magia base fixa, a identidade da escola não pode mais inverter
+   quando o avatar sobe de degrau: o que sobe é o estilo, que é dela.
+
+   ── AS MAGIAS QUE FICARAM SEM LUGAR ──
+
+   Nenhuma célula aponta para `FU_SEGUNDA_ESCOLA.forte`, portanto o
+   Estilhaço, a Lança Perfurante e a Lança Certeira saem da matriz. NÃO
+   foram apagadas, e as traduções delas também não: ficam como LEGADAS,
+   disponíveis para o loadout, para a Maestria ou para uma das nove
+   identidades (decisão do dono do jogo na etapa 3E). O
+   tools/auditoria-escolas.js confere que continuam definidas.
+
+   ── A ESCOLA 2 ──
+
+   Aponta para 'primeira' em todos os lugares: ela existe
+   estruturalmente e ainda não tem identidade. É uma RESERVA declarada,
+   não um descuido — as nove identidades entram na etapa seguinte, e é
+   lá que esta coluna passa a ter tabelas próprias.
+   ══════════════════════════════════════════════════════════════════ */
+const FU_MATRIZ = {
+  //              escola 0      escola 1      escola 2 (reservada)
+  comum:       { 0: 'primeira', 1: 'primeira', 2: 'primeira' },
+  forte:       { 0: 'primeira', 1: 'primeira', 2: 'primeira' },
+  muito_forte: { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
+  defesa:      { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
+  suporte:     { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
+};
+
+/* As tabelas por nome, para a matriz as poder nomear. */
+const FU_TABELAS = { primeira: FU_MAGIAS, segunda: FU_SEGUNDA_ESCOLA };
+
+/* A escola de uma ficha, sempre uma das três.
+   Uma ficha sem escola — um avatar de antes de isto existir, ou uma
+   ficha feita à mão numa auditoria — vale a 0, que é o que mantém as
+   antigas exatamente como eram. */
+function fuEscolaDe(ficha) {
+  const e = (ficha && ficha.escola) | 0;
+  return FU_ESCOLAS.indexOf(e) === -1 ? 0 : e;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    DE QUEM É CADA LUGAR
@@ -486,13 +595,21 @@ function fuMagiaDe(ficha, lugar) {
   if (fuLugaresDe(ficha).indexOf(lugar) === -1) return null;
   const degrau = fuDegrau(ficha.raridade);
 
-  /* A escola com que ele nasceu, quando esse lugar tem uma segunda.
-     Sem escola marcada é a primeira — e é o que mantém as fichas
-     antigas exatamente como eram. */
-  const segunda = (ficha.escola === 1)
-    && FU_SEGUNDA_ESCOLA[lugar] && FU_SEGUNDA_ESCOLA[lugar][degrau];
+  /* A MAGIA DESTE LUGAR, PARA ESTA ESCOLA, NESTE DEGRAU.
 
-  const casa = segunda || (FU_MAGIAS[lugar] && FU_MAGIAS[lugar][degrau]);
+     Sai da FU_MATRIZ, que diz de que tabela vem cada célula. Era um
+     `ficha.escola === 1`, e com ele só havia duas escolas possíveis em
+     todo o motor.
+
+     O recuo para a 'primeira' cobre o que a matriz não souber responder
+     — uma escola fora da lista, um lugar sem a tabela nomeada — e é o
+     que mantém de pé uma ficha montada à mão numa auditoria. */
+  const escola = fuEscolaDe(ficha);
+  const naMatriz = (FU_MATRIZ[lugar] || {})[escola] || 'primeira';
+  const tabela = FU_TABELAS[naMatriz] || FU_MAGIAS;
+
+  const casa = (tabela[lugar] && tabela[lugar][degrau])
+            || (FU_MAGIAS[lugar] && FU_MAGIAS[lugar][degrau]);
   if (!casa) return null;
 
   const m = Object.assign({}, casa, { lugar, tipo: ficha.tipo });
@@ -511,13 +628,37 @@ function fuMagiaDe(ficha, lugar) {
     m.estado = (FU_ELEMENTAL[ficha.tipo] || FU_ELEMENTAL.fogo).estado;
   }
 
-  // O jeito do feitio no ataque forte (ver FU_ESTILO_FORTE). Sem feitio
-  // legível vale o do Guarda, como no fuLugaresDe.
+  /* SÓ O ESTADO, SEM O NOME. As magias da segunda escola têm nome
+     próprio (af.m.<id> no i18n) e não trocam de nome com o elemento,
+     mas o estado que deixam é o do elemento do avatar, como nas outras.
+
+     Sem isto elas diziam `estadoSempre: true` e não deixavam estado
+     nenhum: o motor lê `o.estado && (o.estadoSempre || crítico)`
+     (js/combate-fu.js), e sem `o.estado` a promessa não acontece. A
+     Estocada e a Lança Certeira passaram a existir assim. */
+  if (casa.estadoDoTipo) {
+    m.estado = (FU_ELEMENTAL[ficha.tipo] || FU_ELEMENTAL.fogo).estado;
+  }
+
+  /* O jeito deste feitio, NESTA ESCOLA, no ataque forte (ver
+     FU_ESTILO_FORTE). Sem feitio legível vale o do Guarda, como no
+     fuLugaresDe; sem escola legível vale a 0, como no fuEscolaDe.
+
+     É aqui que a escola entra no lugar `forte`, e só aqui: a magia base
+     já veio igual para as três (FU_MATRIZ). */
   if (lugar === 'forte') {
     const doFeitio = FU_ESTILO_FORTE[ficha.feitio] || FU_ESTILO_FORTE.guarda;
-    const est = doFeitio[fuDegrau(ficha.raridade)];
+    const daEscola = doFeitio[escola] || doFeitio[0];
+    const est = daEscola && daEscola[fuDegrau(ficha.raridade)];
     if (est) {
-      m.estilo = Object.assign({ feitio: FU_ESTILO_FORTE[ficha.feitio] ? ficha.feitio : 'guarda' }, est);
+      /* O `estilo` diz de quem é, e agora também de que escola: a arena
+         e a ficha escrevem o nome do jeito a partir daqui
+         (af.ef.estilo.<feitio>, em js/i18n-arena-fu.js), e a etapa das
+         nove identidades vai precisar de distinguir as três. */
+      m.estilo = Object.assign({
+        feitio: FU_ESTILO_FORTE[ficha.feitio] ? ficha.feitio : 'guarda',
+        escola: escola,
+      }, est);
       if (est.ignoraResistencias) m.ignoraResistencias = true;
       // O dano do feitio entra no próprio `fixo`: a ficha, o menu, a IA e o
       // motor leem o número já com a diferença.
@@ -564,6 +705,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_SEGUNDA_ESCOLA, FU_ESTILO_FORTE, FU_NOME_FORTE,
     FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
-    fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto,
+    FU_ESCOLAS, FU_MATRIZ, FU_TABELAS,
+    FU_ESTILO_GUARDA, FU_ESTILO_LAMINA, FU_ESTILO_SUSTENTACAO,
+    fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto, fuEscolaDe,
   };
 }

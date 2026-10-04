@@ -232,9 +232,33 @@ function fuTipoDoDna(dna) {
    isso, a mesma escola — sem a semente própria, as duas decisões andariam
    coladas e metade das combinações nunca apareceria.
 
-   O 1 é a segunda escola (FU_SEGUNDA_ESCOLA, em js/magias-fu.js). */
+   SÃO TRÊS desde a etapa 3F, e eram duas. O domínio é o único que
+   muda aqui: o mecanismo é o mesmo RNG determinístico, com a mesma
+   semente própria, e o mesmo seed dá sempre a mesma escola.
+
+   O número de escolas vive no FU_ESCOLAS (js/magias-fu.js), que é o
+   enum que faltava — e não num 2 escrito nesta linha.
+
+   E lê-se dentro de um try: o index.html carrega este arquivo ANTES do
+   js/magias-fu.js, e um `const` que ainda não foi avaliado não é
+   `undefined` — é uma variável na zona morta, e tocar-lhe rebenta com
+   ReferenceError em vez de devolver nada. O 3 de recuo cobre esse
+   instante: a ficha tem de se montar sempre, e um avatar sem escola é
+   um avatar sem ficha.
+
+   ── OS AVATARES QUE JÁ EXISTEM TROCAM DE ESCOLA ──
+
+   Com o domínio a passar de 0..1 para 0..2, o mesmo seed pode cair
+   noutra escola. É aceito e está decidido (etapa 3F): os avatares de
+   agora são todos de teste. Não há migração porque não há o que
+   migrar — a escola nunca foi gravada em lugar nenhum, é derivada do
+   seed a cada leitura da ficha. */
 function fuEscolaDoSeed(seed) {
-  return _fuRng((seed | 0) ^ 0x35C)(0, 1);
+  let n = 3;
+  try {
+    if (typeof FU_ESCOLAS !== 'undefined' && FU_ESCOLAS.length) n = FU_ESCOLAS.length;
+  } catch (e) { /* zona morta: o js/magias-fu.js ainda não correu */ }
+  return _fuRng((seed | 0) ^ 0x35C)(0, n - 1);
 }
 
 function fuCosturaDoDna(dna, seed) {
