@@ -1,6 +1,9 @@
 # Configuração local do Claude Code — máquina de quem edita, não do projeto.
 .claude/
 
+# As dependências do npm (package.json as declara; o repositório não as guarda)
+node_modules/
+
 # Restos de ferramentas
 __pycache__/
 *.pyc

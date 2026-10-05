@@ -66,7 +66,7 @@ async function semear() {
       certidoes[id] = cert.nascimento;
       return {
         id, nome: `${nomes[k++ % nomes.length]},${c.nome.split(' ')[0]}`, nomeTravado: true,
-        raridade: global.fuRaridadeDoNivel(nivel),
+        raridade: 'Comum',          // nasce Comum; a raridade é conquista (3I.12)
         /* SEM `nascimento` no slot, como o jogo grava de verdade: a
            certidão vive no mapa `certidoes` e o cliente reata-a em
            memória (applyGameState). Com ela aqui dentro, o teste não

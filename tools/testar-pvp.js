@@ -287,6 +287,225 @@ function reencontroPuro() {
            { jogada: fim, refeita: refeita.fim, passos: [est.rng.passo, refeita.estado.rng.passo] });
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   O GESTO PELA REDE — o quarto lugar e o grau que manda
+
+   O `gesto` é o primeiro lugar que NÃO existe nos três degraus (ver o
+   FU_MAGIAS.gesto, em js/magias-fu.js): só o Lendário o tem. Isso faz
+   dele o caso que separa o que o cliente PEDE do que a ficha TEM — e é
+   essa separação que o PvP inteiro usa para não acreditar no cliente.
+
+   ── O CAMINHO QUE SE CONFERE AQUI ──
+
+     o cliente       escreve { tipo:'magia', quem, lugar, alvos }
+                     e MAIS NADA: o database.rules.json declara oito
+                     campos e fecha o resto com $outro: validate false.
+                     Não existe campo `magia`.
+     o pvpParaMotor  refaz a magia com fuMagiaDe(quem.ficha, a.lugar)
+     o fuMagiaDe     recusa o lugar que o feitio não tem (indexOf numa
+                     LISTA, por isso `__proto__` também não passa) e a
+                     casa que o degrau não tem
+     o pvpRepetir    usa exatamente estas contas, no servidor
+
+   Um Comum ou um Raro que peça `gesto` não recebe magia, não gasta PM,
+   não fere, não deixa estado, e a jogada não conta nem para o relógio.
+   ═══════════════════════════════════════════════════════════════════ */
+function gestoPelaRede() {
+  const GEN = require('../api/_genetica.js');
+  const G = require('../js/magias-fu.js');
+  const fs = require('fs');
+  const path = require('path');
+  titulo('O Gesto pela rede: o cliente nomeia, a ficha resolve');
+
+  // ── as equipes, num nível escolhido ──
+  const equipe = (dono, nivel) => [0, 1, 2].map(i => {
+    const c = GEN.certidaoDeInvocacao({ uid: dono, nome: 'T' });
+    /* Declara a raridade: o jogo já não a tira do nível (3I.12), e
+       estes testes medem o motor em cada degrau. */
+    const rar = nivel >= 27 ? 'Lendário' : nivel >= 11 ? 'Raro' : 'Comum';
+    return { id: `${dono}${i}`, nome: `B${i},T`, nivel, seed: c.seed,
+             raridade: rar, raridadeReconhecida: rar,
+             nascimento: c.nascimento };
+  });
+  const salaDe = (nivel) => ({
+    seed: 42, inicio: 1000, estado: 'luta', lados: { A: 'uA', B: 'uB' },
+    jogadores: { uA: { equipe: equipe('a', nivel) }, uB: { equipe: equipe('b', nivel) } },
+    acoes: {},
+  });
+  const abrir = (nivel) => {
+    const sala = salaDe(nivel);
+    const eq = R.pvpEquipesDaSala(sala);
+    const E = fuIniciar(eq.A, eq.B, sala.seed);
+    E.comeca = 'A'; E.jaAgiu = [];
+    return { sala, E, ctx: R.pvpContexto(sala) };
+  };
+
+  /* ── 1 · O PAYLOAD: QUE CAMPOS O BANCO ACEITA ── */
+  const cru = fs.readFileSync(path.join(__dirname, '..', 'database.rules.json'), 'utf8')
+    .split(/\r?\n/).filter(l => !/^\s*\/\//.test(l)).join('\n');
+  const acoes = JSON.parse(cru).rules.pvp.salas.$sala.acoes.$n;
+  const campos = Object.keys(acoes).filter(k => k[0] !== '.');
+  conferir('o banco recusa campo fora da lista', acoes.$outro
+    && acoes.$outro['.validate'] === false);
+  conferir('e não existe campo `magia` na lista', campos.indexOf('magia') === -1, campos);
+  conferir('o `lugar` é só uma string curta', campos.indexOf('lugar') !== -1
+    && /isString\(\)/.test(acoes.lugar['.validate'])
+    && /length <= 24/.test(acoes.lugar['.validate']), acoes.lugar);
+  conferir('o `por` tem de ser o próprio uid',
+    /newData\.child\('por'\)\.val\(\) === auth\.uid/.test(acoes['.validate']));
+  conferir('e o `ts` a hora do servidor',
+    /newData\.child\('ts'\)\.val\(\) === now/.test(acoes['.validate']));
+
+  /* ── 2 · O LUGAR ARBITRÁRIO ── */
+  {
+    const { E } = abrir(40);                      // Lendário
+    const q = E.A[0];
+    const mg = G.fuMagiasDe(q.ficha);
+    for (const lugar of ['gesto', 'comum', 'forte', 'defesa', 'suporte',
+                         'muito_forte', 'inexistente', '', 'gesto ', 'GESTO']) {
+      /* PRÓPRIA, e não herdada: `mg['__proto__']` devolveria o
+         Object.prototype, que é verdadeiro. */
+      const temNaFicha = Object.prototype.hasOwnProperty.call(mg, lugar);
+      const virou = !!(R.pvpParaMotor(E, { tipo: 'magia', quem: q.id, lugar,
+                                           alvos: [E.B[0].id] }) || {}).magia;
+      conferir('o lugar "' + (lugar || '(vazio)') + '" vira magia só se a ficha o tem',
+        virou === temNaFicha, { lugar, virou, temNaFicha, tem: Object.keys(mg) });
+    }
+    /* O portão é um indexOf numa LISTA (fuMagiaDe, em js/magias-fu.js), e
+       por isso o lugar envenenado não passa. Se fosse uma consulta de
+       propriedade num objeto, seriam cinco buracos. */
+    for (const veneno of ['__proto__', 'constructor', 'prototype',
+                          'toString', 'hasOwnProperty']) {
+      conferir('o lugar "' + veneno + '" não vira magia',
+        G.fuMagiaDe(q.ficha, veneno) === null
+        && R.pvpParaMotor(E, { tipo: 'magia', quem: q.id, lugar: veneno }) === null);
+    }
+    conferir('e o FU_LUGARES_DO_FEITIO é uma lista nos três feitios',
+      ['guarda', 'lamina', 'sustentacao'].every(f => Array.isArray(G.FU_LUGARES_DO_FEITIO[f])));
+  }
+
+  /* ── 3 · O GESTO NO COMUM E NO RARO: RECUSADO ── */
+  for (const [nivel, rot] of [[8, 'Comum'], [20, 'Raro']]) {
+    const { E, ctx } = abrir(nivel);
+    const q = E.A[0];
+    conferir('a ficha é ' + rot, q.ficha.raridade === rot, q.ficha.raridade);
+    conferir('e não materializa o gesto (' + rot + ')', !G.fuMagiasDe(q.ficha).gesto,
+      Object.keys(G.fuMagiasDe(q.ficha)));
+    const pedido = { tipo: 'magia', quem: q.id, lugar: 'gesto',
+                     alvos: [E.B[0].id], por: 'uA', ts: 2000 };
+    conferir('o pvpParaMotor devolve nulo (' + rot + ')',
+      R.pvpParaMotor(E, pedido) === null);
+    const prep = R.pvpPreparar(E, pedido, ctx);
+    conferir('o pvpPreparar devolve "ignorar" (' + rot + ')',
+      prep.tipo === 'ignorar', prep);
+    const pmAntes = q.pm, pvAntes = E.B[0].pv;
+    const estadosAntes = JSON.stringify(E.B[0].estados);
+    const aplicada = prep.eng ? fuAgir(E, prep.eng).length > 0 : false;
+    conferir('nada se aplica (' + rot + ')', aplicada === false);
+    conferir('nada se cobra nem se sofre (' + rot + ')',
+      q.pm === pmAntes && E.B[0].pv === pvAntes
+      && JSON.stringify(E.B[0].estados) === estadosAntes,
+      { pm: [pmAntes, q.pm], pv: [pvAntes, E.B[0].pv] });
+    conferir('e o relógio nem conta a jogada (' + rot + ')',
+      R.pvpRegistrar(ctx, prep, aplicada, pedido) === null && ctx.ultimoTs === 1000,
+      ctx.ultimoTs);
+  }
+
+  /* ── 4 · O GESTO NO LENDÁRIO: ACEITO, COM A CASA DA TABELA ── */
+  {
+    const { E, ctx } = abrir(40);
+    const q = E.A[0];
+    const casa = G.FU_MAGIAS.gesto[3];
+    const pedido = { tipo: 'magia', quem: q.id, lugar: 'gesto',
+                     alvos: [E.B[0].id], por: 'uA', ts: 2000 };
+    const m = R.pvpParaMotor(E, pedido);
+    conferir('o motor reconstrói a magia (Lendário)', !!(m && m.magia), m);
+    conferir('e é a casa da tabela, não a que o cliente quisesse',
+      !!m && m.magia.pm === casa.pm && m.magia.fixo === casa.fixo
+      && (m.magia.alvos || 1) === casa.alvos,
+      m && { pm: m.magia.pm, fixo: m.magia.fixo, alvos: m.magia.alvos });
+    const pmAntes = q.pm;
+    const prep = R.pvpPreparar(E, pedido, ctx);
+    conferir('a jogada aplica-se', prep.eng ? fuAgir(E, prep.eng).length > 0 : false);
+    conferir('e cobra os ' + casa.pm + ' PM da casa', q.pm === pmAntes - casa.pm,
+      { antes: pmAntes, depois: q.pm });
+  }
+
+  /* ── 5 · UM OBJETO `magia` COLADO AO PAYLOAD É IGNORADO ── */
+  {
+    const { E } = abrir(40);
+    const q = E.A[0];
+    const forjada = { id: 'gesto', pm: 0, alvos: 3, fixo: 999, lugar: 'gesto',
+                      tipo: q.ficha.tipo, estadoSempre: true };
+    const m = R.pvpParaMotor(E, { tipo: 'magia', quem: q.id, lugar: 'gesto',
+                                  magia: forjada, alvos: E.B.map(c => c.id) });
+    conferir('o campo `magia` do payload é ignorado', !!m && m.magia !== forjada);
+    conferir('o dano fica o da tabela, não o 999 pedido',
+      !!m && m.magia.fixo === G.FU_MAGIAS.gesto[3].fixo, m && m.magia.fixo);
+    conferir('e o alvo continua a ser um só', !!m && (m.magia.alvos || 1) === 1,
+      m && m.magia.alvos);
+  }
+
+  /* ── 6 · NÃO HÁ CAMINHO QUE NÃO PASSE PELO fuMagiaDe ── */
+  {
+    const fonte = fs.readFileSync(path.join(__dirname, '..', 'js', 'pvp-regras.js'), 'utf8');
+    const noMotor = fonte.match(/function pvpParaMotor[\s\S]*?\n}/)[0];
+    // uma chamada (as duas ocorrências do nome são o `typeof` e a chamada)
+    conferir('o pvpParaMotor só constrói magia pelo fuMagiaDe',
+      (noMotor.match(/fuMagiaDe\(/g) || []).length === 1
+      && !/a\.magia|acao\.magia/.test(noMotor));
+    conferir('o pvpPreparar só chega ao motor pelo pvpParaMotor',
+      /const eng = pvpParaMotor\(estado, a\);/.test(fonte));
+    const repetir = fonte.match(/function pvpRepetir[\s\S]*?\n}/)[0];
+    conferir('o pvpRepetir usa o pvpPreparar e mais nada',
+      /pvpPreparar\(estado, a, ctx\)/.test(repetir) && !/fuMagiaDe/.test(repetir));
+    const srv = fs.readFileSync(path.join(__dirname, '..', 'api', 'pvp.js'), 'utf8');
+    conferir('o api/pvp.js não constrói magia por conta própria',
+      !/fuMagiaDe|fuMagiasDe|\.magia\s*=/.test(srv));
+  }
+
+  /* ── 7 · AO VIVO E NO REPLAY, A MESMA LUTA ──
+     Catorze jogadas, com pedidos de `gesto` válidos (Lendário) e de um
+     lugar que não existe, e os dois caminhos têm de dar no mesmo. */
+  {
+    const sala = salaDe(40);
+    const ordem = ['a0', 'a1', 'a2', 'b0', 'b1', 'b2'];
+    let ts = 2000;
+    for (let i = 0; i < 14; i++) {
+      const quem = ordem[i % 6];
+      const lado = quem[0] === 'a' ? 'A' : 'B';
+      const lugar = (i % 3 === 0) ? 'gesto' : (i % 3 === 1) ? 'forte' : 'nao_existe';
+      sala.acoes[R.pvpChave(i)] = { tipo: 'magia', quem, lugar,
+        alvos: [quem[0] === 'a' ? 'b0' : 'a0'], por: sala.lados[lado], ts: (ts += 1000) };
+    }
+    const srv = R.pvpRepetir(sala);
+    // e o caminho do navegador (o afAplicar é o fuAgir mais a animação)
+    const eq = R.pvpEquipesDaSala(sala);
+    const vivo = fuIniciar(eq.A, eq.B, sala.seed);
+    const ctx = R.pvpContexto(sala);
+    let lidas = 0;
+    for (const a of R.pvpListaAcoes(sala.acoes)) {
+      R.pvpAvancar(vivo);
+      if (vivo.acabou) break;
+      const prep = R.pvpPreparar(vivo, a, ctx);
+      const okA = prep.eng ? fuAgir(vivo, prep.eng).length > 0 : false;
+      const f = R.pvpRegistrar(ctx, prep, prep.tipo === 'desistir' || okA, a);
+      lidas++;
+      if (f) break;
+    }
+    if (!vivo.acabou) R.pvpAvancar(vivo);
+    const retrato = E => E.A.concat(E.B).map(c => c.id + ':' + c.pv + '/' + c.pm
+      + ':' + (c.vivo ? 1 : 0) + ':' + Object.keys(c.estados || {}).sort().join('+')).join(' ');
+    conferir('o mesmo número de jogadas lidas', srv.lidas === lidas, [srv.lidas, lidas]);
+    conferir('a mesma ronda', srv.estado.ronda === vivo.ronda,
+      [srv.estado.ronda, vivo.ronda]);
+    conferir('o mesmo estado final, avatar por avatar',
+      retrato(srv.estado) === retrato(vivo), [retrato(srv.estado), retrato(vivo)]);
+    conferir('e o mesmo passo do gerador', srv.estado.rng.passo === vivo.rng.passo,
+      [srv.estado.rng.passo, vivo.rng.passo]);
+  }
+}
+
 function lutaPelaRede() {
   const GEN = require('../api/_genetica.js');
   Object.assign(global, require('../js/ia-fu.js'));   // a IA joga pelos dois lados
@@ -941,6 +1160,8 @@ async function servidor() {
   catch (e) { mau++; falhas.push('  ✗ o teste do reencontro quebrou: ' + (e && e.stack || e)); }
   try { lutaPelaRede(); }
   catch (e) { mau++; falhas.push('  ✗ o teste da luta pela rede quebrou: ' + (e && e.stack || e)); }
+  try { gestoPelaRede(); }
+  catch (e) { mau++; falhas.push('  ✗ o teste do Gesto pela rede quebrou: ' + (e && e.stack || e)); }
   if (process.env.FIREBASE_DATABASE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST) {
     try { await servidor(); }
     catch (e) { mau++; falhas.push('  ✗ o teste do servidor quebrou: ' + (e && e.stack || e)); }

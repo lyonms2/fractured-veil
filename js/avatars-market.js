@@ -362,11 +362,14 @@ async function buyAvatar(listingId, price) {
 // ═══════════════════════════════════════════
 // LISTAR AVATAR À VENDA
 // ═══════════════════════════════════════════
-// A raridade que vale: a conta sobre o nível, e não o campo do slot.
+/* A raridade que vale é a RECONHECIDA, pela mesma função que a ficha
+   de combate usa (fuRaridadeDa, em js/ficha-fu.js). Já foi a conta
+   sobre o nível, e a 3I.12 tirou-a: um avatar sem certificação anuncia
+   Comum, que é o que o servidor vai gravar no anúncio. */
 function _mktRaridade(s) {
   if (!s) return 'Comum';
-  return (typeof fuRaridadeDoNivel === 'function')
-    ? fuRaridadeDoNivel(s.nivel || 1) : (s.raridade || 'Comum');
+  return (typeof fuRaridadeDa === 'function')
+    ? fuRaridadeDa(s) : (s.raridadeReconhecida || 'Comum');
 }
 
 function openListModal(slotIdx) {
@@ -381,10 +384,10 @@ function openListModal(slotIdx) {
       ${gerarSVG(s,s.raridade,s.seed||0,50,50,_faseNum(s.nivel))}
       <div>
         <div style="font-family:'Cinzel',serif;font-size:0.6875rem;">${esc(nomeCurto(s))}</div>
-        <!-- A raridade da prévia é a MESMA CONTA que o servidor fará ao
-             publicar o anúncio: sai do nível (fuRaridadeDoNivel). A do
-             slot envelhece, e mostrar aqui uma e anunciar outra seria
-             mentir ao vendedor na tela onde ele decide o preço. -->
+        <!-- A raridade da prévia é a MESMA FONTE que o servidor usará ao
+             publicar o anúncio: o mapa raridades (rarDe). Mostrar aqui
+             uma e anunciar outra seria mentir ao vendedor na tela onde
+             ele decide o preço. -->
         <div style="font-size:0.5625rem;color:var(--${_mktRaridade(s)==='Lendário'?'legendary':'rare'});">${_mktRaridade(s)} · ${t('mkt.stat.nivel_abbr', {n: s.nivel||1})}</div>
       </div>
     </div>`;

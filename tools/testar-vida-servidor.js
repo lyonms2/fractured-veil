@@ -210,7 +210,7 @@ async function noAr() {
   }
 
   /* A raridade não tem mapa próprio: é uma CONTA sobre o nível
-     reconhecido (fuRaridadeDoNivel). O que se confere é que a entrada
+     reconhecido (rarDe). O que se confere é que a entrada
      dessa conta não se move. */
   {
     const antes = (await nivelDe()).n;

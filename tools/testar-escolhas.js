@@ -58,8 +58,14 @@ const magias = f => Object.entries(M.fuMagiasDe(f)).map(([l, m]) => l + ':' + m.
 const novo = (nivel) => {
   const c = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
   const nv = nivel || 30;
+  /* O `raridade` é o ESPELHO que o desenho lê; quem a ficha lê é o
+     `raridadeReconhecida`, escrito pelo carregamento a partir do mapa
+     `raridades`. Até a etapa 3I.12 bastava o espelho, porque a ficha
+     recuava para o nível; agora não recua, e a fixtura tem de declarar
+     os dois. Os degraus 11 e 27 são o cenário, não a regra do jogo. */
+  const rar = nv >= 27 ? 'Lendário' : (nv >= 11 ? 'Raro' : 'Comum');
   return { id: c.id, seed: c.seed, nivel: nv, nome: 'T',
-           raridade: nv >= 27 ? 'Lendário' : (nv >= 11 ? 'Raro' : 'Comum'),
+           raridade: rar, raridadeReconhecida: rar,
            nascimento: c.nascimento };
 };
 
@@ -238,12 +244,13 @@ titulo('O PvP: o retrato leva o que o servidor reconhece');
     const s = novo(30);
     // o cliente escreveu no slot; o mapa não tem nada
     const r1 = PVP.pvpRetrato(Object.assign({}, s, { escolhaAnciao: 'semDefeito' }),
-                              s.nascimento, 30, E.escolhaAnciaoDe({}, s.id));
+                              s.nascimento, 30, E.escolhaAnciaoDe({}, s.id), 'Lendário');
     if (r1.escolhaAnciao !== undefined) doSlot++;
     if (F.fuFicha(r1).costura === null) fichaSuja++;
     // e o contrário: o mapa tem, o slot não
     const r2 = PVP.pvpRetrato(s, s.nascimento, 30,
-                              E.escolhaAnciaoDe({ [s.id]: { anciao: 'semDefeito', em: 1 } }, s.id));
+                              E.escolhaAnciaoDe({ [s.id]: { anciao: 'semDefeito', em: 1 } }, s.id),
+                              'Lendário');
     if (r2.escolhaAnciao === 'semDefeito' && F.fuFicha(r2).costura === null) doMapa++;
   }
   igual('o retrato NÃO leva a escolha do slot', doSlot, 0);

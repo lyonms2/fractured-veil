@@ -248,15 +248,18 @@ function abrirEvolucao() {
 
        Aqui chega no momento certo, ao lado do nível, e só quando mudou
        mesmo. */
+    /* ── E A LINHA DA RARIDADE SAIU ──
+
+       Dizia "subiste a Raro" quando o nível cruzava o 11, e isso deixou
+       de ser verdade na etapa 3I.12: subir de nível não muda raridade
+       nenhuma. Raridade é conquista certificada, e quem a anunciar será
+       o exame, no dia em que existir — não este painel, que fala de
+       nível.
+
+       O elemento #evoRaridade fica no HTML, vazio e escondido, à espera
+       de quem tenha uma notícia verdadeira para lhe dar. */
     const rarLinha = ov.querySelector('#evoRaridade');
-    if (rarLinha && typeof fuRaridadeDoNivel === 'function') {
-      const deNv = nivelVisto > 0 ? nivelVisto : Math.max(1, nivel - 1);
-      const rarAntes = fuRaridadeDoNivel(deNv);
-      const rarAgora = fuRaridadeDoNivel(nivel);
-      const subiu = rarAntes !== rarAgora;
-      rarLinha.textContent = subiu ? t('evo.raridade', { raridade: rarAgora }) : '';
-      rarLinha.style.display = subiu ? '' : 'none';
-    }
+    if (rarLinha) { rarLinha.textContent = ''; rarLinha.style.display = 'none'; }
     painel.classList.add('mostra');
   }, 3000);
 

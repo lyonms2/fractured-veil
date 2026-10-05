@@ -50,6 +50,7 @@ const { getDatabase }  = require('firebase-admin/database');
 require('./_genetica.js');
 const NIV = require('../js/niveis.js');   // o nível que o servidor reconhece
 const ESC = require('../js/escolhas.js'); // a escolha do Ancião reconhecida
+const RAR = require('../js/raridades.js'); // a raridade reconhecida
 const R = require('../js/pvp-regras.js');
 const RK = require('../js/pvp-rank.js');   // os pontos da temporada
 const TP = require('../js/temporada.js');  // o selo e o prêmio da temporada
@@ -126,6 +127,11 @@ async function lerEquipa(db, uid, idsDoPedido) {
   /* E a escolha do Ancião, que decide se o avatar tem fraqueza
      elemental (js/escolhas.js). Vinha do slot, dentro do retrato. */
   const escolhas = d.escolhas || {};
+  /* E a RARIDADE, do mapa que só o servidor escreve (js/raridades.js).
+     Pela mesma razão: o campo do slot é escrito pelo cliente. Sem
+     registro é Comum, porque a raridade é conquista — e quem a concede
+     é o exame, que ainda não existe (3I.12). */
+  const raridades = d.raridades || {};
   const anotar = {};
   const agora  = Date.now();
 
@@ -141,7 +147,7 @@ async function lerEquipa(db, uid, idsDoPedido) {
       nivel = r.reg.n;
     }
     retratos.push(R.pvpRetrato(s, certidoes[s.id], nivel,
-      ESC.escolhaAnciaoDe(escolhas, s.id)));
+      ESC.escolhaAnciaoDe(escolhas, s.id), RAR.rarDe(raridades, s.id)));
   }
   if (motivos.length) throw new Recusa(400, 'equipe_invalida', { motivos });
   /* Fora da leitura e sem esperar: se falhar, o pior que acontece é o
@@ -353,7 +359,7 @@ async function tentarPar(rtdb, db, uid) {
    Uma sala guarda a semente, as duas equipes inteiras e a lista de
    todas as jogadas. Terminada, ainda serve por uns minutos — o outro
    jogador pode chegar atrasado ao fim, e é de lá que ele lê o resultado
-   e o que a luta deixou. Passado isso, é lixo que fica a pagar-se para
+   e o que a luta deixou. Passado isso, é lixo que se continua pagando para
    sempre.
 
    Não há aqui nenhuma tarefa agendada (isto são funções que só correm
@@ -362,7 +368,7 @@ async function tentarPar(rtdb, db, uid) {
    apagam-se as que já acabaram há mais de uma hora. Poucas de cada vez,
    e nunca as que ainda estão vivas.
 
-   Falhar não faz mal nenhum: quem está a entrar na fila não fica à
+   Falhar não faz mal nenhum: quem está entrando na fila não fica à
    espera disto, e a próxima entrada volta a tentar. */
 const SALA_VELHA_MS = 60 * 60 * 1000;   // uma hora depois do fim
 const SALA_VARRER   = 20;               // no máximo estas por vez
@@ -486,7 +492,7 @@ async function acaoAceitar(ctx) {
    prémio na sua memória assim que o lê, e o save seguinte leva já o
    valor certo. As moedas não correm risco nenhum — vão de `increment`.
    ════════════════════════════════════════════════════════════════════ */
-async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
+async function aplicarPremios(db, rtdb, id, sala, fim, estado, suporte) {
   const L = require('../js/lacos.js');
   const agora = Date.now();
   const dia = L.lacoDia(agora);
@@ -519,6 +525,23 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
     }
     p.fraturas = fraturados;
     p.avatares = equipe.map(a => a && a.id).filter(Boolean);
+
+    /* ── O SUPORTE, DO ID DO MOTOR PARA O ID DO AVATAR ──
+
+       A refeita conta o suporte por lutador (A0..B2, os ids que o
+       `pvpEquipesDaSala` dá ao motor). Aqui traduz-se para o id do
+       avatar, que é o que a memória guarda — e a tradução é a posição
+       na equipe, a mesma que o `p.avatares` acima usa.
+
+       Nada disto vem do cliente: o `suporte` saiu do `pvpRepetir`, que
+       correu neste servidor, sobre a semente e as jogadas da sala. */
+    p.suporte = {};
+    for (let i = 0; i < equipe.length; i++) {
+      const av = equipe[i];
+      if (!av || !av.id) continue;
+      const s = suporte && suporte[lado + i];
+      if (s) p.suporte[av.id] = s;
+    }
     premios[uid] = p;
   }
 
@@ -568,13 +591,60 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
       premios[u].parCortado = bruto > 0 && premios[u].rank.delta < bruto;
       premios[u].parNovo = RK.pvpParSomar(par, dia, premios[u].rank.delta);
       premios[u].parCom = outro;
+
+      /* ── A FORÇA DO ADVERSÁRIO, GUARDADA PARA OS FEITOS ──
+
+         `antes[outro]` são os pontos de rank do adversário ANTES desta
+         partida, e já estavam calculados aqui — é o mesmo número que o
+         `pvpRankDelta` usa, duas linhas acima, para decidir quanto esta
+         vitória vale. Não há conta nova nem consulta nova.
+
+         ANTES, e não depois: o `antes` enche-se no primeiro laço, a
+         partir do `docs[]` que foi lido do Firestore no começo deste
+         bloco; o rank novo só se escreve em `aplicarNoJogador`, depois.
+         Nenhuma linha reescreve o `antes`.
+
+         E é do SERVIDOR: sai do campo `rank` do documento do
+         adversário, que está em camposDoServidor() (firestore.rules) e
+         que o cliente não grava.
+
+         A DIVISÃO vai junto porque o rank é por divisão: 1200 pontos no
+         jovem não querem dizer o mesmo que 1200 no ancião. Quem comparar
+         isso é o exame, que ainda não existe — aqui guarda-se o que ele
+         vai precisar para poder comparar.
+
+         Só a FILA passa por aqui: este bloco inteiro é `if (sala.tipo
+         === 'fila')`, e numa amistosa não há rank nenhum a ler. É a
+         separação que a etapa 3I.2 pediu, e sai de graça. */
+      premios[u].adversario = {
+        /* QUEM foi vencido, e é o JOGADOR: o rank pertence a ele, e o
+           teto anti-conluio que já existe também (rankPares.<uid>). Um
+           cúmplice rodando os dez avatares dele produziria dez
+           "adversários distintos" se a unidade fosse o avatar, e um só
+           se for o uid — medido na etapa 3I.7. */
+        uid:     outro,
+        pontos:  antes[outro] || RK.PVP_RANK_INICIO,
+        divisao: (premios[outro] && premios[outro].divisao) || div,
+        em:      agora,
+        ciclo:   RK.pvpTemporada(agora),
+      };
     });
   }
 
   // Um documento de cada vez: são dois jogadores e não há nada a trocar
   // entre eles, portanto não precisam da mesma transação.
+  /* O CICLO é a temporada do PvP (AAAA-MM, em UTC) — o mesmo mês que o
+     rank usa, para a memória e a tabela falarem do mesmo período. E o
+     TIPO da sala vai junto porque a fila e a amistosa contam-se à parte
+     (ver a nota do js/feitos.js): só a fila tem teto contra combinação.
+
+     O nome é o que o `criarSala` usa — 'fila' e 'amistosa'. A primeira
+     versão comparou com 'convite', que é o nome da AÇÃO que cria a
+     sala, e com isso toda a amistosa era gravada como fila. */
+  const ciclo = RK.pvpTemporada(agora);
+  const tipoSala = sala.tipo === 'amistosa' ? 'amistosa' : 'fila';
   for (const uid of Object.keys(premios)) {
-    try { await aplicarNoJogador(db, uid, premios[uid], dia, L); }
+    try { await aplicarNoJogador(db, uid, premios[uid], dia, L, ciclo, tipoSala); }
     catch (e) { console.error('[pvp premio]', uid, e && e.message); }
   }
   await rtdb.ref(`pvp/salas/${id}/premios`).set(premios);
@@ -603,7 +673,7 @@ async function aplicarPremios(db, rtdb, id, sala, fim, estado) {
   return premios;
 }
 
-async function aplicarNoJogador(db, uid, p, dia, L) {
+async function aplicarNoJogador(db, uid, p, dia, L, ciclo, tipoSala) {
   const ref = db.collection('players').doc(uid);
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -647,11 +717,52 @@ async function aplicarNoJogador(db, uid, p, dia, L) {
         }
       }
     }
+
+    /* ── OS FEITOS DE QUEM ESTEVE EM CAMPO (js/feitos.js) ──
+
+       Pela mesma razão do laço, e com a mesma força: aqui não se
+       pergunta se a luta aconteceu — ela aconteceu diante do servidor,
+       que a refez inteira a partir da semente e da lista de jogadas
+       (pvpRepetir) antes de chegar a esta linha. O vencedor é o da
+       refeita, e os três avatares de cada lado são os que o próprio
+       servidor pôs em campo (lerEquipa).
+
+       É a ÚNICA escrita de feitos que existe no jogo. O cliente não tem
+       endpoint para declarar um; o `feitos` é campo de topo que ele não
+       grava (firestore.rules); e o que ele escreve no `avatarSlots` não
+       é lido por ninguém aqui.
+
+       A desistência ENTRA, e entra como desistência: é uma participação
+       verificada, e contá-la como derrota seria interpretar um fato
+       dentro da memória. Quem interpreta é o exame, que ainda não
+       existe — este arquivo só se lembra.
+
+       Registram-se os três do lado DESTE jogador, mesmo os que caíram: o
+       feito é ter disputado a partida, e quem caiu disputou. */
+    {
+      const FE = require('../js/feitos.js');
+      const feitos = d.feitos || {};
+      for (const idAv of (p.avatares || [])) {
+        if (!idAv) continue;
+        alteracoes[`feitos.${idAv}`] =
+          FE.feitoPvp(feitos[idAv], p.resultado, tipoSala, ciclo, Date.now(),
+                      /* A força do adversário ANTES da partida, que o
+                         aplicarPremios guardou no próprio prêmio. Só
+                         existe na fila — na amistosa não há rank a ler
+                         — e o js/feitos.js só a usa na VITÓRIA. */
+                      p.adversario,
+                      /* O suporte deste avatar NESTA partida, contado
+                         pela refeita do servidor. Soma-se ganhe ou
+                         perca: o que ele fez pelos aliados aconteceu. */
+                      (p.suporte || {})[idAv]);
+      }
+    }
+
     tx.update(ref, alteracoes);
   });
 }
 
-async function fecharSala(rtdb, id, sala, dados, estado, db) {
+async function fecharSala(rtdb, id, sala, dados, estado, db, suporte) {
   const ref = rtdb.ref(`pvp/salas/${id}`);
   /* O `null` da primeira volta é "ainda não li", e não "não há sala":
      devolvê-lo faz o Firebase ir buscar o valor e rodar de novo. Desistir
@@ -665,7 +776,7 @@ async function fecharSala(rtdb, id, sala, dados, estado, db) {
        versus desfeito antes do primeiro dado, e desse ninguém sai com
        energia gasta nem com moedas. */
     if (db && dados.estado !== 'encerrada') {
-      try { await aplicarPremios(db, rtdb, id, sala, Object.assign({}, dados), estado); }
+      try { await aplicarPremios(db, rtdb, id, sala, Object.assign({}, dados), estado, suporte); }
       catch (e) { console.error('[pvp premios]', e && e.message); }
     }
   }
@@ -705,7 +816,7 @@ async function acaoSairSala(ctx) {
      a fratura é de quem caiu. */
   const ate = R.pvpRepetir(sala);
   return fecharSala(rtdb, id, sala, { vencedor: sala.lados[outro], motivo: 'desistiu', saiu: uid },
-                    ate.estado, db);
+                    ate.estado, db, ate.suporte);
 }
 
 /* ── ENCERRAR: A CONFERÊNCIA ──
@@ -727,7 +838,8 @@ async function acaoEncerrar(ctx) {
   const r = R.pvpRepetir(sala);
   if (r.fim) {
     const vencedor = r.fim.vencedor ? sala.lados[r.fim.vencedor] : null;
-    return fecharSala(rtdb, id, sala, { vencedor, motivo: r.fim.motivo, jogadas: r.lidas }, r.estado, db);
+    return fecharSala(rtdb, id, sala, { vencedor, motivo: r.fim.motivo, jogadas: r.lidas },
+                      r.estado, db, r.suporte);
   }
   const meuLado = R.pvpLadoDe(sala, uid);
   const outroUid = sala.lados[R.pvpOutroLado(meuLado)];
@@ -736,7 +848,8 @@ async function acaoEncerrar(ctx) {
   // Nunca apareceu na luta: conta desde o começo dela.
   const foraDesde = p.fora ? p.fora : (!p.on ? (sala.inicio || agora) : null);
   if (foraDesde && agora - foraDesde > R.PVP_FORA_MS) {
-    return fecharSala(rtdb, id, sala, { vencedor: uid, motivo: 'desconectou', jogadas: r.lidas }, r.estado, db);
+    return fecharSala(rtdb, id, sala, { vencedor: uid, motivo: 'desconectou', jogadas: r.lidas },
+                      r.estado, db, r.suporte);
   }
   throw new Recusa(409, 'em_curso');
 }

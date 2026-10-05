@@ -558,10 +558,33 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      Pesado vale no golpe comum OU nas magias, conforme o DNA escolheu. */
   const execucao = (quem.ficha.feitio === 'lamina' && fuEmCrise(alvo))
     ? FU_EXECUCAO[fuGrauDe(quem)] : 0;
+
+  /* ── A SENTENÇA: O QUE SE SABE DO ALVO ──
+
+     As magias da terceira escola da Lâmina (`porConhecimento`, em
+     js/magias-fu.js) rendem conforme o que o LADO de quem bate já sabe
+     daquele alvo: nada contra um desconhecido, o máximo contra quem se
+     estudou. O nível vem do `estado.conhece`, que é o mesmo que o
+     Examinar enche, que os golpes certeiros revelam e que o laço abre
+     de uma vez — nada de novo se guarda para isto.
+
+     É POR LADO E POR ALVO, e não do lutador: um aliado examina e todos
+     condenam, mas conhecer o da frente não ajuda contra o de trás.
+
+     E não é a Execução, que olha a vida do alvo (acima). Esta olha o
+     que o atacante aprendeu. As duas condições são independentes: dá-se
+     o caso de um alvo em crise e desconhecido, e o de um alvo
+     estudado e de vida cheia. */
+  const conhecimento = (o.porConhecimento && estado)
+    ? Math.max(0, Math.min(3, fuConhece(estado, quem.lado, alvo.id).nivel | 0))
+    : 0;
+  const sentenca = (o.porConhecimento | 0) * conhecimento;
+
   // O +6 do Despertar (efeitos.danoMais) entra em todo ataque de quem o tem.
   const bruto = r.hr + (o.fixo | 0) + (quem.ficha.danoExtra | 0)
               + ((quem.efeitos && quem.efeitos.danoMais) | 0)
-              + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0)) + execucao;
+              + (mag ? (dq.danoMaisMagia | 0) : (dq.danoMaisGolpe | 0))
+              + execucao + sentenca;
   // A Lâmina Rara: em quem está guardando, a resistência também cai.
   const semRS = !!o.ignoraResistencias || (!!o.semRSnaGuarda && alvo.guardando);
   /* ── O GOLPE COMUM É FÍSICO ──
@@ -605,8 +628,18 @@ function fuAtacar(estado, quem, alvo, opcoes) {
      OPORTUNIDADE, e a oportunidade destas magias é sempre a mesma: o
      estado acontece. Fora do crítico só acontece se a magia o der de
      origem — é a diferença entre o nível 2 e o nível 3 de um lugar. */
-  const est = o.estado && (o.estadoSempre || r.critico) ? o.estado : null;
+  /* E A SENTENÇA COM CONHECIMENTO PLENO garante o estado, como o
+     crítico garante. É o que o Veredito ganha no nível 3
+     (`estadoComConhecimento`, em js/magias-fu.js): quem conhece o alvo
+     por inteiro sabe onde bater para a marca ficar.
+
+     Não é o mesmo que o `estadoSempre` das outras: aquele vale sempre,
+     este só quando se estudou o alvo — e por isso é a única parte da
+     Sentença que não é dano. */
+  const plena = !!o.estadoComConhecimento && conhecimento >= 3;
+  const est = o.estado && (o.estadoSempre || plena || r.critico) ? o.estado : null;
   if (est && fuDarEstado(alvo, est)) ev.estadoDado = est;
+  if (o.porConhecimento) ev.conhecimento = conhecimento;
 
   // O Toque Pútrido: no crítico, o golpe que fere envenena.
   if (dq.putrido && r.critico && dano.perda > 0 && fuDarEstado(alvo, 'envenenado'))
@@ -686,6 +719,18 @@ function fuAgir(estado, acao) {
   /* A magia LIVRE (o Despertar) não é o turno: não desfaz a guarda nem o
      Proteger de quem a lança, e quem a lança ainda age a seguir. */
   const livre = !!(acao.magia && acao.magia.livre);
+  /* E É UMA POR COMBATE, SEJA ELA O QUE FOR.
+
+     Esta recusa existia, mas dentro do ramo das magias de aliado e de
+     cura — e durante todo o tempo em que as únicas magias livres eram o
+     Despertar e o Canto de Guerra isso bastou. Uma magia livre de
+     FERIR, como a Sentença da Lâmina (escola 2), cai no ramo do ataque
+     e passava ao lado da verificação: dava para a lançar outra vez, e
+     outra, enquanto houvesse PM.
+
+     Sobe para aqui, antes de se saber que ramo a ação vai tomar, que é
+     onde a regra "uma vez por combate" devia estar desde o princípio. */
+  if (livre && quem.usouLivre) return [];
   if (!livre) {
     quem.guardando = false;
     quem.protegendo = null;   // o Proteger também dura só até ele agir de novo
@@ -903,6 +948,10 @@ function fuAgir(estado, acao) {
              furava a guarda 0 vezes em 400. */
           furaGuarda:    es.furaGuarda    || magia.furaGuarda,
           semRSnaGuarda: es.semRSnaGuarda || magia.semRSnaGuarda,
+          // A Sentença da Lâmina: o dano por nível de conhecimento, e o
+          // estado garantido com conhecimento pleno (ver o fuAtacar).
+          porConhecimento: magia.porConhecimento,
+          estadoComConhecimento: magia.estadoComConhecimento,
           atrib1: 'PER', atrib2: 'VON',
           bonus: laco ? laco.bonus : 0,
         } : { fixo: 5, bonus: laco ? laco.bonus : 0 });

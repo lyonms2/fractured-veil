@@ -170,7 +170,7 @@ service cloud.firestore {
                  aceita no máximo o que o relógio dele diz que passou:
                  ninguém vive 300 segundos em 60 segundos.
 
-                 O do slot fica a existir e deixa de ser autoridade —
+                 O do slot continua existindo e deixa de ser autoridade —
                  como o do nível. E deixa de ser o que a ficha mostra.
 
                  Isto estreita a porta e não a fecha, como o `mortos` e
@@ -178,6 +178,86 @@ service cloud.firestore {
                  deixa de funcionar é o salto, e a perda de uma aba para
                  a outra. */
               'vidaAtiva',
+              /* A RARIDADE CONQUISTADA (js/raridades.js).
+
+                 Comum, Raro, Lendário — e a trajetória que levou lá:
+
+                   raridades[idDoAvatar] = {
+                     atual: 'Raro',
+                     historico: [{ para, em, por }]
+                   }
+
+                 Vivia só no `avatarSlots`, que o cliente grava por
+                 inteiro. Hoje isso não dá poder nenhum: a ficha de
+                 combate IGNORA o campo e calcula a raridade pelo nível
+                 (medido na etapa 3H — forjar 'Lendário' num avatar de
+                 nível 1 não mexeu um ponto de vida, de dano, de defesa
+                 nem uma magia). O que o campo forjado mexia era o
+                 DESENHO: 33 chamadas ao gerarSVG liam-no, e o bicho
+                 saía com asas e aura que a ficha dele não tinha.
+
+                 Mas a raridade vai deixar de ser calculada e passar a
+                 ser conquistada, num exame que é etapa própria. No dia
+                 em que isso acontecer, o campo que o cliente escreve
+                 passaria a valer +80 PV, +2 de Defesa, +7 de dano, as
+                 magias do Lendário e o corpo com asas — e a blindagem
+                 tem de existir ANTES da conquista, não depois.
+
+                 Por isso o mapa entra agora, vazio. Enquanto o exame
+                 não existir, ninguém escreve aqui e a resposta vem do
+                 legado (fuRaridadeDoNivel, em js/ficha-fu.js), que está
+                 marcado como temporário nos dois lugares. */
+              'raridades',
+              /* OS FEITOS DO AVATAR (js/feitos.js).
+
+                 O que ele fez, e o servidor viu:
+
+                   feitos[idDoAvatar] = {
+                     criadoEm, em,
+                     pvp: {
+                       fila: { n,v,d,e,x,
+                               melhorAdversario: {uid,pontos,divisao,…},
+                               vencidos: [{uid,pontos,divisao,ciclo,em}],
+                               suporte:  {cura,curaPv,limpeza,…} },
+                       amistosa: {…}
+                     },
+                     ciclos: { 'AAAA-MM': { n, v,
+                                 suporte: {cura,curaPv,limpeza,…} } },
+                     marcos: [{ tipo, em, pvp }]
+                   }
+
+                 O `suporte` DENTRO do ciclo é a mesma evidência do
+                 total do ramo, fatiada por mês — e não uma segunda
+                 contagem: a etapa 3I.9 sanea a partida uma vez e manda
+                 o resultado aos dois destinos. Serve a pergunta
+                 temporal, "em quantos ciclos houve suporte", que o
+                 total sozinho não responde. Só a fila o escreve, e o
+                 mês vem do `pvpTemporada` do servidor — o mesmo da
+                 temporada do rank.
+
+                 Os `vencidos` são os adversários DISTINTOS derrotados,
+                 pelo uid do jogador e não do avatar: é a mesma unidade
+                 do teto anti-conluio (`rankPares`), e a etapa 3I.7
+                 mediu que pelo avatar um cúmplice só valeria por dez.
+
+                 A raridade vai deixar de ser dada e passar a ser
+                 conquistada, e uma conquista precisa de memória. A
+                 auditoria da etapa 3I encontrou o jogo sem nenhuma: não
+                 havia, em lugar nenhum, uma contagem de batalhas por
+                 avatar. O que havia eram XP e vínculo dentro do
+                 `avatarSlots`, que o cliente grava por inteiro.
+
+                 Entra aqui, e não lá, pela razão de sempre — e desta
+                 vez com um agravante: estes números vão decidir quem
+                 chega a Raro e a Lendário. Um contador que o jogador
+                 escreve seria o exame inteiro numa linha de console.
+
+                 Quem os grava é o `aplicarNoJogador` do api/pvp.js,
+                 depois de o servidor REFAZER a partida a partir da
+                 semente e da lista de jogadas (pvpRepetir). Só o PvP:
+                 o resultado do PvE chega num POST do cliente e não é
+                 reconstruído por ninguém. */
+              'feitos',
               /* A ESCOLHA DO ANCIÃO (js/escolhas.js).
 
                  Ao chegar a Lendário, o avatar fecha a costura — deixa

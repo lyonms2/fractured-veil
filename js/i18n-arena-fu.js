@@ -18,12 +18,17 @@ window.registerStrings({
   'af.ja_agiu':       'já agiu nesta rodada',
   'af.ficha.abrir':   'Ver a ficha de {nome}',
 
-  // ── os cinco lugares ──
+  /* ── os seis lugares ──
+     O `gesto` é o quarto de cada avatar e só existe no Lendário (ver o
+     FU_MAGIAS.gesto, em js/magias-fu.js). O menu e a ficha desenham o
+     que o avatar TEM, portanto num Comum e num Raro esta linha nunca
+     chega à tela. */
   'af.lugar.comum':       'Golpe Comum',
   'af.lugar.forte':       'Magia Forte',
   'af.lugar.muito_forte': 'Magia Muito Forte',
   'af.lugar.defesa':      'Defesa',
   'af.lugar.suporte':     'Suporte',
+  'af.lugar.gesto':       'Gesto',
   'af.orbe.mover':    'Trocar de lugar',
   'af.orbe.guardar':  'Guardar',
   'af.orbe.guardar.pm':    '½ dano · +{n} PM',
@@ -219,6 +224,11 @@ window.registerStrings({
      js/magias-fu.js, ao lado dos números deles — são oito de cada e
      estarem aqui também era a mesma lista escrita duas vezes. */
   'af.m.golpe':          'Golpe Comum',
+  /* O Gesto não troca de nome com o elemento: ele só leva o ESTADO do
+     elemento (`estadoDoTipo`, em js/magias-fu.js), como as magias da
+     segunda escola. Portanto o nome vem desta chave e não do
+     FU_ELEMENTAL — e sem ela o orbe saía a dizer `af.m.gesto`. */
+  'af.m.gesto':          'Gesto',
   'af.m.sopro':          'Sopro',
   'af.m.sopro_maldito':  'Sopro Maldito',
   'af.m.devastacao':     'Devastação',
@@ -246,6 +256,14 @@ window.registerStrings({
   'af.m.balsamo':        'Bálsamo',
   'af.m.transfusao':     'Transfusão',
   'af.m.canto_guerra':   'Canto de Guerra',
+
+  /* A TERCEIRA ESCOLA (FU_TERCEIRA_ESCOLA, em js/magias-fu.js). A
+     Sentença da Lâmina: três golpes que não gastam o turno, um por
+     combate. Os nomes são da linha do julgamento, que é o que a escola
+     faz — vê a brecha, dita a sentença, fecha com o veredito. */
+  'af.m.brecha':         'Brecha',
+  'af.m.sentenca':       'Sentença',
+  'af.m.veredito':       'Veredito',
 
   /* ══ O BLOCO, NO PADRÃO DO MANUAL ══
 
@@ -493,6 +511,7 @@ window.registerStrings({
   'af.lugar.muito_forte': 'Very Strong Spell',
   'af.lugar.defesa':      'Defense',
   'af.lugar.suporte':     'Support',
+  'af.lugar.gesto':       'Gesture',
   'af.orbe.mover':    'Swap places',
   'af.orbe.guardar':  'Guard',
   'af.orbe.guardar.pm':    '½ damage · +{n} MP',
@@ -665,6 +684,7 @@ window.registerStrings({
   'af.tipo.treva':   'dark',
 
   'af.m.golpe':          'Basic Strike',
+  'af.m.gesto':          'Gesture',
   'af.m.sopro':          'Breath',
   'af.m.sopro_maldito':  'Cursed Breath',
   'af.m.devastacao':     'Devastation',
@@ -687,6 +707,11 @@ window.registerStrings({
   'af.m.balsamo':        'Balm',
   'af.m.transfusao':     'Transfusion',
   'af.m.canto_guerra':   'War Chant',
+
+  // A terceira escola — a Sentença da Lâmina.
+  'af.m.brecha':         'Breach',
+  'af.m.sentenca':       'Sentence',
+  'af.m.veredito':       'Verdict',
 
   'af.b.nv':            'Lv {n}',
   'af.b.tracos':        'Typical traits',

@@ -36,12 +36,26 @@ function titulo(t) { console.log('\n── ' + t + ' ' + '─'.repeat(Math.max(0
 
 /* Um avatar de mentira com a forma do verdadeiro. O seed manda em tudo
    o que é sorteado, portanto um seed fixo dá um avatar fixo. */
+/* ── A FIXTURA DECLARA A RARIDADE ──
+
+   O jogo deixou de a derivar do nível (etapa 3I.12), logo um teste que
+   precisa de um avatar Lendário tem de o DIZER. O `raridadeReconhecida`
+   é o campo que o carregamento escreve a partir do mapa `raridades`, e
+   é o que a ficha lê (fuRaridadeDa, em js/ficha-fu.js).
+
+   Os degraus 11 e 27 ficam aqui porque eram os do sistema antigo e
+   estes testes foram escritos contra eles: assim cada um continua a
+   medir o que media — as magias, as afinidades, a escola — sem medir
+   também a regra que saiu. Não é a regra do jogo; é o cenário deste
+   arquivo. */
 function avatar(seed, nivel, origem) {
   const cert = GEN.certidaoDeInvocacao({ uid: 'auditoria', nome: 'Teste' });
   cert.seed = seed;
   cert.nascimento.seed = seed;
   cert.nascimento.dna = GEN.nascimento.gerarDna(origem || 'Comum', seed);
-  return { id: cert.id, seed, nivel: nivel || 5, nascimento: cert.nascimento };
+  return { id: cert.id, seed, nivel: nivel || 5, nascimento: cert.nascimento,
+           raridadeReconhecida: (nivel || 5) >= 27 ? 'Lendário'
+                              : (nivel || 5) >= 11 ? 'Raro' : 'Comum' };
 }
 
 /* Um DNA forjado, com os quatro genes postos à mão. É a única forma de
@@ -512,7 +526,10 @@ titulo('A autoridade do seed: manda a certidão, não o slot');
      adversário se monta do outro lado e no servidor (pvpParaMotor). */
   const R = require('../js/pvp-regras.js');
   const base2 = avatar(7919, 30);
-  const r = R.pvpRetrato(Object.assign({}, base2, { seed: 999999 }), base2.nascimento, 30);
+  /* A raridade vai como 5.o argumento, do mapa do servidor: o retrato
+     deixou de a adivinhar pelo nivel (3I.12). */
+  const r = R.pvpRetrato(Object.assign({}, base2, { seed: 999999 }),
+                         base2.nascimento, 30, undefined, 'Lendário');
   verificar('o retrato do PvP leva o seed da certidão, não o do slot',
     r.seed === base2.nascimento.seed, 'levou ' + r.seed);
   verificar('e a ficha montada do retrato é a legítima',

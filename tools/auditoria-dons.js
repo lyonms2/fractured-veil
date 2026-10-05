@@ -44,7 +44,12 @@ function avatar(seed, nivel, escolha) {
   const cert = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
   cert.seed = seed; cert.nascimento.seed = seed;
   cert.nascimento.dna = GEN.nascimento.gerarDna('Comum', seed);
-  const a = { id: 'a' + seed, nome: 'T', seed, nivel: nivel || 5, nascimento: cert.nascimento };
+  /* A raridade e DECLARADA: o jogo nao a tira do nivel (3I.12), e a
+     segunda vantagem e uma casa do Lendario (fuVantagensDoDna). Os
+     degraus 11 e 27 sao o cenario deste arquivo, nao a regra do jogo. */
+  const a = { id: 'a' + seed, nome: 'T', seed, nivel: nivel || 5, nascimento: cert.nascimento,
+              raridadeReconhecida: (nivel || 5) >= 27 ? 'Lendário'
+                                 : (nivel || 5) >= 11 ? 'Raro' : 'Comum' };
   if (escolha) a.escolhaAnciao = escolha;
   return a;
 }
@@ -184,8 +189,11 @@ titulo('Uma vantagem e uma costura — a regra do dono do jogo');
     verificar('quem escolheu a segunda fica com duas e COM a costura',
       mais.vantagens.length === 2 && !!mais.costura,
       mais.vantagens.length + ' / ' + mais.costura);
+    /* Com GUARDA: duas vantagens, e falha em vez de rebentar se vier
+       uma só — um teste que rebenta nao relata falha nenhuma. */
     verificar('e as duas são diferentes',
-      mais.vantagens[0].id !== mais.vantagens[1].id,
+      mais.vantagens.length === 2
+      && mais.vantagens[0].id !== mais.vantagens[1].id,
       mais.vantagens.map(v => v.id).join(' = '));
 
     /* A segunda que se mostra na tela da escolha é a MESMA que se ganha.

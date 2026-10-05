@@ -40,11 +40,25 @@ function verificar(nome, cond, detalhe) {
 }
 function titulo(t) { console.log('\n── ' + t + ' ' + '─'.repeat(Math.max(0, 58 - t.length))); }
 
+/* ── A FIXTURA DECLARA A RARIDADE ──
+
+   O jogo deixou de a derivar do nível (etapa 3I.12), logo um teste que
+   precisa de um avatar Lendário tem de o DIZER. O `raridadeReconhecida`
+   é o campo que o carregamento escreve a partir do mapa `raridades`, e
+   é o que a ficha lê (fuRaridadeDa, em js/ficha-fu.js).
+
+   Os degraus 11 e 27 ficam aqui porque eram os do sistema antigo e
+   estes testes foram escritos contra eles: assim cada um continua a
+   medir o que media — as magias, as afinidades, a escola — sem medir
+   também a regra que saiu. Não é a regra do jogo; é o cenário deste
+   arquivo. */
 function avatar(seed, nivel, nome) {
   const cert = GEN.certidaoDeInvocacao({ uid: 'aud', nome: 'T' });
   cert.seed = seed; cert.nascimento.seed = seed;
   cert.nascimento.dna = GEN.nascimento.gerarDna('Comum', seed);
-  return { id: nome, nome, seed, nivel: nivel || 5, nascimento: cert.nascimento };
+  return { id: nome, nome, seed, nivel: nivel || 5, nascimento: cert.nascimento,
+           raridadeReconhecida: (nivel || 5) >= 27 ? 'Lendário'
+                              : (nivel || 5) >= 11 ? 'Raro' : 'Comum' };
 }
 const equipa = (p, nv, sem) =>
   [1, 2, 3].map(i => avatar((sem || 1) * 1000003 + p * 7919 + i * 104729, nv, p + '' + i));
@@ -76,6 +90,11 @@ function antiga(e, lado, podem) {
   for (const l of ['muito_forte', 'forte']) {
     const m = magias[l];
     if (!m) continue;
+    /* E a magia de FERIR livre também é uma por combate (a Sentença da
+       Lâmina, escola 2, desde a etapa 3F.6): a cópia acompanha, como
+       acompanhou o Despertar acima. Sem isto o Fácil propunha-a sem fim
+       e o motor recusava-a. */
+    if (m.livre && quem.usouLivre) continue;
     const n = m.porAlvo ? Math.min(m.alvos || 1, deles.length) : 1;
     if (!paga(m, n)) continue;
     return { quem: quem.id, acao: { tipo: 'magia', magia: m, alvos: deles.slice(0, n).map(c => c.id) } };

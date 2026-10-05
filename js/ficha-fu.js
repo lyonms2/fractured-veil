@@ -441,9 +441,57 @@ function fuAplicarSubidas(base, ordem, quantas) {
   return usadas;
 }
 
-function fuRaridadeDoNivel(nivel) {
-  const n = Math.max(1, nivel | 0);
-  return n >= FU_NIVEL_LENDARIO ? 'Lendário' : n >= FU_NIVEL_RARO ? 'Raro' : 'Comum';
+/* ── NÍVEL NÃO É RARIDADE ──
+
+   Houve aqui um `fuRaridadeDoNivel(nivel)` que devolvia 'Raro' do nível
+   11 e 'Lendário' do 27. Saiu na etapa 3I.12, e com ele a última regra
+   do jogo que misturava as duas escadas.
+
+   O que ficou:
+
+     NÍVEL      é progressão. Sobe jogando, e manda nos números da
+                ficha pela via normal (os dados, os PV por degrau).
+     RARIDADE   é um estado CONQUISTADO, guardado no mapa `raridades`
+                que só o servidor escreve (js/raridades.js).
+
+   Não há recuo pelo nível, e não deve voltar a haver: sem registro no
+   mapa, a resposta é Comum — ver o `fuRaridadeDa`, abaixo. O
+   tools/testar-raridade.js falha se alguém reintroduzir a conta.
+
+   Os FU_NIVEL_RARO e FU_NIVEL_LENDARIO continuam a existir, e não são
+   isto: são os degraus das FASES (FU_FASES), que decidem corpo,
+   reprodução e a escolha do Ancião. O nome é herança de quando as duas
+   escadas eram uma. */
+
+/* As três, na ordem em que se sobem. A mesma lista do RARIDADES
+   (js/raridades.js), repetida aqui porque este é o motor e aquele corre
+   no servidor — o tools/testar-raridade.js confere que batem. */
+const FU_RARIDADES = ['Comum', 'Raro', 'Lendário'];
+
+/* ── A FONTE ÚNICA DA RARIDADE, PARA A FICHA ──
+
+   A ficha lia `fuRaridadeDoNivel(nivel)` direto, e com isso o nível
+   DECIDIA a raridade. Agora pergunta aqui, e aqui a ordem é:
+
+     1. `slot.raridadeReconhecida` — o que o servidor reconhece
+     2. Comum, e mais nada
+
+   Não há passo pelo nível. Até a 3I.12 havia, e era ele que fazia um
+   avatar de nível 27 desenhar-se e lutar como Lendário sem ter
+   conquistado nada.
+
+   O campo do passo 1 NÃO É GRAVADO PELO CLIENTE: não está na lista de
+   campos que o save manda (js/firebase.js) e por isso não sobrevive a
+   uma ida ao Firestore. Quem o escreve é o carregamento, a partir do
+   mapa `raridades` — o mesmo caminho do `escolhaAnciao` e do `dead`.
+
+   O `slot.raridade` continua a existir e NÃO é lido aqui. Ele é o
+   espelho que o desenho usa, e o carregamento reescreve-o a partir
+   desta mesma função: uma fonte, dois leitores. */
+function fuRaridadeDa(slot) {
+  const g = slot && slot.raridadeReconhecida;
+  if (typeof g === 'string' && FU_RARIDADES.indexOf(g) !== -1) return g;
+  return FU_RARIDADES[0];            // Comum: nasce assim e fica até o exame
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -502,7 +550,11 @@ function fuFicha(slot) {
   const semDna = !dna || !dna.genes
               || !FU_ATRIBS.every(a => Array.isArray(dna.genes[FU_GENE_DO_ATRIB[a]]));
 
-  const raridade = fuRaridadeDoNivel(nivel);
+  /* A raridade vem da FONTE ÚNICA (fuRaridadeDa, acima): o que o
+     servidor reconhece, e só na falta disso a conta legada pelo nível.
+     Era `fuRaridadeDoNivel(nivel)` direto, e era aí que o nível
+     decidia a raridade. */
+  const raridade = fuRaridadeDa(slot);
 
   // ── os quatro dados ──
   const arranjo = fuArranjoDoDna(dna);
@@ -694,7 +746,8 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_TIPO_DA_COR, FU_GENE_DO_ATRIB,
     fuSubirDado, fuDescerDado, fuSomaDoGene, fuArranjoDoDna,
     fuOrdemDosAtributos, fuTipoDaCor, fuTipoDoDna, fuCosturaDoDna,
-    fuVizinhoDoTipo, fuAfinidades, fuRaridadeDoNivel, fuFicha,
+    fuVizinhoDoTipo, fuAfinidades, fuRaridadeDa,
+    FU_RARIDADES, fuFicha,
     FU_SUBIDAS_NIVEL,
     fuSubidasDe, fuAplicarSubidas,
     fuPoderDoAvatar, fuPoderDaEquipa,

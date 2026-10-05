@@ -115,8 +115,11 @@ titulo('Um avatar gravado antes desta mudança');
         igual(limpo, velho),
         'com raridade "' + mentira + '" a ficha mudou');
     }
-    verificar('e a raridade sai do nível (' + nivel + ')',
-      limpo.raridade === F.fuRaridadeDoNivel(nivel));
+    /* E a raridade NÃO sai do nível: sem registro no mapa `raridades`,
+       a ficha diz Comum em qualquer nível. Esta conferição era o
+       contrário até a etapa 3I.12. */
+    verificar('e a raridade NÃO sai do nível (' + nivel + ' → Comum)',
+      limpo.raridade === 'Comum');
 
     // sem escolhaAnciao: fica com a costura e sem a segunda
     const semEscolha = slotGravado(seed, 40);
@@ -153,10 +156,20 @@ titulo('Um avatar sem DNA sai marcado, e sem números impossíveis');
        (fuLugaresDe, em js/magias-fu.js) — é o que menos promete e o que
        mais o aguenta de pé. Dar-lhe os cinco seria premiar a ficha
        partida. */
-    verificar(nome + ': e com os três lugares do Guarda',
-      Object.keys(G.fuMagiasDe(f)).join(',')
-        === G.FU_LUGARES_DO_FEITIO.guarda.join(','),
+    /* Os que ela TEM, e não os que o Guarda PODE ter: o `gesto` só abre
+       no Lendário (3F.17) e esta ficha pode ser de qualquer grau. A
+       igualdade deu lugar ao subconjunto, mais as duas coisas que ela
+       afirmava de graça — o golpe comum e a magia forte, que estão em
+       todos os graus. */
+    verificar(nome + ': e só com lugares do Guarda',
+      Object.keys(G.fuMagiasDe(f)).every(l =>
+        G.FU_LUGARES_DO_FEITIO.guarda.indexOf(l) !== -1),
       Object.keys(G.fuMagiasDe(f)).join(','));
+    verificar(nome + ': com o golpe comum e a magia forte',
+      !!G.fuMagiasDe(f).comum && !!G.fuMagiasDe(f).forte);
+    verificar(nome + ': e o gesto só se for Lendária',
+      !!G.fuMagiasDe(f).gesto === (f.raridade === 'Lendário'),
+      f.raridade + ' · ' + Object.keys(G.fuMagiasDe(f)).join(','));
   }
 
   // e um avatar inteiro NÃO sai marcado — senão a marca não distinguia nada
@@ -246,16 +259,39 @@ titulo('Subir de nível não troca o avatar por outro');
   verificar('a precisão sobe no nível 10', c11.bonusPrecisao > c10.bonusPrecisao,
     c10.bonusPrecisao + ' → ' + c11.bonusPrecisao);
 
+  /* ── E A RARIDADE *NÃO* SOBE NO NÍVEL 11 ──
+
+     Esta conferição era o contrário: media que o nível 11 dava Raro e
+     que o dano extra e as magias subiam com ele. A etapa 3I.12 tirou a
+     regra, e a conferição inverteu-se — é o degrau antigo, e tem de
+     continuar apagado.
+
+     O que a raridade VALE continua medido, logo abaixo: só já não é o
+     nível que a concede. */
   const r10 = F.fuFicha(slotGravado(seed, 10));
   const r11 = F.fuFicha(slotGravado(seed, 11));
-  verificar('a raridade sobe no nível 11',
-    r10.raridade === 'Comum' && r11.raridade === 'Raro',
+  const r40 = F.fuFicha(slotGravado(seed, 40));
+  verificar('a raridade NÃO sobe no nível 11',
+    r10.raridade === 'Comum' && r11.raridade === 'Comum',
     r10.raridade + ' → ' + r11.raridade);
-  verificar('e o dano extra com ela', r11.danoExtra > r10.danoExtra,
-    r10.danoExtra + ' → ' + r11.danoExtra);
-  verificar('e as magias sobem de degrau',
-    G.fuMagiaDe(r11, 'forte').id !== G.fuMagiaDe(r10, 'forte').id,
+  verificar('nem no 27, nem no 40',
+    r40.raridade === 'Comum', r40.raridade);
+  verificar('e o dano extra não salta com o degrau antigo',
+    r11.danoExtra === r10.danoExtra, r10.danoExtra + ' → ' + r11.danoExtra);
+  verificar('e a magia forte continua a mesma casa',
+    G.fuMagiaDe(r11, 'forte').id === G.fuMagiaDe(r10, 'forte').id,
     G.fuMagiaDe(r10, 'forte').id + ' → ' + G.fuMagiaDe(r11, 'forte').id);
+
+  /* ── MAS O QUE A RARIDADE VALE NÃO MUDOU ──
+     Declarando-a, os degraus do motor continuam todos lá. */
+  const comRar = (rar) => F.fuFicha(Object.assign(slotGravado(seed, 40),
+    { raridadeReconhecida: rar }));
+  const cC = comRar('Comum'), cR = comRar('Raro'), cL = comRar('Lendário');
+  verificar('declarada, a raridade ainda dá dano extra',
+    cR.danoExtra > cC.danoExtra && cL.danoExtra > cR.danoExtra,
+    cC.danoExtra + ' → ' + cR.danoExtra + ' → ' + cL.danoExtra);
+  verificar('e o Lendário ainda dá mais vida',
+    cL.pvMax > cC.pvMax, cC.pvMax + ' → ' + cL.pvMax);
 }
 
 /* ═══ 6 · OS TRÊS PRIMEIROS ═══════════════════════════════ */
@@ -276,8 +312,19 @@ titulo('Os três primeiros saem um de cada feitio');
       feitios.push(f.feitio);
       verificar('a invocação ' + (i + 1) + ' é ' + ORDEM[i] + ' (volta ' + volta + ')',
         f.feitio === ORDEM[i], 'saiu ' + f.feitio);
-      verificar('e traz os três lugares dele (' + ORDEM[i] + ')',
-        Object.keys(G.fuMagiasDe(f)).join(',') === G.FU_LUGARES_DO_FEITIO[ORDEM[i]].join(','),
+      /* O avatar nasce no nível 5, portanto Comum: materializa três dos
+         quatro lugares do feitio, porque o `gesto` abre no Lendário.
+         Vale o subconjunto, vale o lugar que o distingue estar lá, e
+         vale o `gesto` NÃO estar. */
+      verificar('e só traz lugares dele (' + ORDEM[i] + ')',
+        Object.keys(G.fuMagiasDe(f)).every(l =>
+          G.FU_LUGARES_DO_FEITIO[ORDEM[i]].indexOf(l) !== -1),
+        Object.keys(G.fuMagiasDe(f)).join(','));
+      verificar('e o lugar que o distingue (' + ORDEM[i] + ')',
+        !!G.fuMagiasDe(f)[G.FU_LUGAR_DO_FEITIO[ORDEM[i]]],
+        Object.keys(G.fuMagiasDe(f)).join(','));
+      verificar('e três lugares, sem o gesto (' + ORDEM[i] + ')',
+        Object.keys(G.fuMagiasDe(f)).length === 3 && !G.fuMagiasDe(f).gesto,
         Object.keys(G.fuMagiasDe(f)).join(','));
       /* E o RECESSIVO fica intacto: sobrescrever os dois dava três
          linhagens puras à nascença, e a reprodução começava o jogo mais

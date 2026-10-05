@@ -130,10 +130,11 @@ function _pveGerarInimigo(nivelTotal) {
       id: 'ini' + i,
       nome: t('frat.suf.' + sufId),
       sufId, nivel, seed,
-      /* A raridade do nível, como os nossos a trazem no slot: é o que o
-         gerarSVG recebe, e sem ela a Fratura e a arena desenhavam o mesmo
-         inimigo com raridades diferentes. */
-      raridade: (typeof fuRaridadeDoNivel === 'function') ? fuRaridadeDoNivel(nivel) : undefined,
+      /* COMUM, e é o que o gerarSVG recebe. Saía do nível até a 3I.12,
+         e isso dava ao inimigo gerado uma raridade que ele não tem:
+         raridade é certificação, e um inimigo da Fratura não faz exame.
+         O que varia o aspecto dele é a semente e a fase, não isto. */
+      raridade: 'Comum',
       nascimento: cert,
     });
   }

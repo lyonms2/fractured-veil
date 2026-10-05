@@ -887,12 +887,13 @@ function _referralLevelHtml(snap, lvl, pct, label) {
     const nomeDoBicho  = slot ? nomeCurto(slot) : t('ref.no_avatar');
     const shortUid     = doc.id.slice(0, 5) + '...' + doc.id.slice(-4);
 
-    /* A raridade sai do NÍVEL, como em todo o resto do jogo
-       (fuRaridadeDoNivel). A do slot é escrita pelo cliente e envelhece:
-       um convidado que chegou a Lendário continuava "Comum" aqui. */
+    /* A raridade sai do mapa `raridades` do CONVIDADO, que vem no mesmo
+       documento. Saía do nível até a 3I.12, e por isso um convidado de
+       nível 27 aparecia Lendário sem ter conquistado nada. O campo do
+       slot não serve: é escrito pelo cliente e envelhece. */
     const rarity  = slot
-      ? ((typeof fuRaridadeDoNivel === 'function')
-          ? fuRaridadeDoNivel(slot.nivel || 1) : (slot.raridade || 'Comum'))
+      ? ((typeof rarDe === 'function')
+          ? rarDe(d.raridades || {}, slot.id) : 'Comum')
       : '';
     const rColor  = rarity === 'Lendário' ? 'var(--gold)'
                   : rarity === 'Raro'     ? 'var(--gem2)'

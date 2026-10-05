@@ -103,16 +103,13 @@ titulo('A ESCADA');
 
   /* ── A ESCADA NÃO PODE TER DOIS DONOS ──
 
-     A fase vive no js/state.js e a raridade no js/ficha-fu.js, e as duas
-     têm de dizer a mesma coisa nos mesmos níveis. Já disseram coisas
-     diferentes neste jogo: um avatar de nível 12 era ADULTO num lugar e
-     ANCIÃO noutro, com outras magias e outro par de virtude e defeito. */
-  let discorda = 0;
-  const RAR_DA_FASE = ['Comum', 'Comum', 'Raro', 'Lendário'];
-  for (let nv = 1; nv <= 60; nv++)
-    if (M.fuRaridadeDoNivel(nv) !== RAR_DA_FASE[FASE.faseFromNivel(nv)]) discorda++;
-  ok(discorda === 0, 'a fase e a raridade dizem o mesmo, nível a nível',
-     discorda + ' discordâncias em 60');
+     Havia aqui uma conferição de que a FASE e a RARIDADE diziam o mesmo
+     nível a nível. Saiu na etapa 3I.12, com a raridade por nível: as
+     duas já não têm de concordar porque já não falam da mesma coisa. A
+     fase é o corpo; a raridade é conquista certificada.
+
+     O que ficou é a conferição que continua a importar: que a fase do
+     navegador e a do servidor são a mesma escada. */
 
   // e o servidor tem a mesma escada que o navegador
   let servidor = 0;
@@ -156,8 +153,14 @@ titulo('O BEBÊ');
   ok(Object.keys(magiasDoBebe).length === 3,
      'e três lugares de magia, todos no primeiro degrau',
      Object.values(magiasDoBebe).map(m => m.id).join(' '));
-  ok(Object.keys(magiasDoBebe).join(',') === M.FU_LUGARES_DO_FEITIO[bebe.feitio].join(','),
-     'e são os do feitio dele (' + bebe.feitio + ')',
+  /* Os que ele TEM, e não os que o feitio PODE ter: o bebê é Comum e o
+     `gesto` abre no Lendário (3F.17). */
+  ok(Object.keys(magiasDoBebe).every(l =>
+       M.FU_LUGARES_DO_FEITIO[bebe.feitio].indexOf(l) !== -1),
+     'e são todos do feitio dele (' + bebe.feitio + ')',
+     Object.keys(magiasDoBebe).join(','));
+  ok(!magiasDoBebe.gesto,
+     'e o bebê Comum não nasce com o Gesto',
      Object.keys(magiasDoBebe).join(','));
 }
 

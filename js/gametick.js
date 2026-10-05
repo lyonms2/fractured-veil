@@ -864,24 +864,26 @@ function checkXP() {
       nivelAvisar(avatarSlots[activeSlotIdx].id, nivel);
     }
 
-    /* A raridade sobe com os pontos, e por isso pergunta-se aqui.
+    /* ── A RARIDADE DEIXOU DE SUBIR AQUI (etapa 3H) ──
 
-       Passa-se {nivel} à mão em vez do avatar: o slot do bicho em campo
-       tem o nível velho — só o recebe na gravação — e o raridadeDoSlot
-       leria um nível atrasado e concluiria que não houve subida.
+       Havia aqui um ESCRITOR da raridade: subir de nível escrevia
+       `avatar.raridade` e anunciava a conquista. Era o nível a promover,
+       e é exatamente o que a 3H veio separar — a raridade passa a ser um
+       estado conquistado, guardado no mapa `raridades` que só o servidor
+       escreve (js/raridades.js), com histórico e sem volta.
 
-       O `totalSecs` ia aqui dentro e o raridadeDoSlot NUNCA O LIA: a
-       raridade sai só do nível (js/raridade.js). Era vestígio de quando
-       o tempo de jogo também travava a raridade, e ficava a sugerir que
-       o tempo decide algo aqui — que é justamente a confusão que esta
-       etapa existe para não criar. */
-    if(avatar && typeof raridadeDoSlot === 'function') {
-      const _nova = raridadeDoSlot({ nivel });
-      if(grauDaRaridade(_nova) > grauDaRaridade(avatar.raridade)) {
-        avatar.raridade = _nova;
-        addLog(t('gt.raridade.subiu', { raridade: _nova }), 'leg');
-      }
-    }
+       O que promove será o EXAME, que é etapa própria e ainda não
+       existe. Enquanto não existir, quem responde é o recuo legado do
+       `fuRaridadeDa` (js/ficha-fu.js) — a mesma conta pelo nível que
+       estava aqui, agora num lugar só, marcada como temporária, e a
+       responder em vez de escrever.
+
+       Nada muda para o jogador: a raridade que ele vê continua a ser a
+       que o nível dele dá, porque o recuo legado dá exatamente isso. O
+       que deixa de haver é um segundo escritor do campo.
+
+       A frase 'gt.raridade.subiu' fica no i18n: ela volta a ser usada no
+       dia em que o exame anunciar a conquista de verdade. */
 
     // Os marcos do fim da escada: o espaço de item do 40 e o título do 50.
     if(typeof NIVEL_ITEM_EXTRA !== 'undefined' && nivel === NIVEL_ITEM_EXTRA)

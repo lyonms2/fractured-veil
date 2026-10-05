@@ -17,10 +17,13 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue }     = require('firebase-admin/firestore');
 const { getAuth }                      = require('firebase-admin/auth');
 const { FieldValue: FV }               = require('firebase-admin/firestore');
-/* A ficha e a genética, para dizer a raridade pelo NÍVEL: a do slot é
-   escrita pelo cliente e envelhece — um avatar que subiu para Lendário
-   continuava "Comum" na tela de quem o visita. */
+/* A ficha e a genética, para desenhar o avatar do amigo. */
 require('./_genetica.js');
+
+/* A RARIDADE, da fonte única (js/raridades.js). A do slot é escrita
+   pelo cliente e envelhece; e a conta pelo nível, que respondia aqui
+   até a etapa 3I.12, dava Lendário a quem só tinha nível. */
+const RAR = require('../js/raridades.js');
 
 /* ── QUANTO A VISITA PAGA EM MOEDAS ──
 
@@ -304,9 +307,10 @@ module.exports = async function handler(req, res) {
               slot:     i,
               nome:     s.nome?.split(',')[0] || '',
               alcunhaIdx: s.alcunhaIdx ?? null,
-              // Pelo NÍVEL, como a ficha faz; a do slot pode estar velha.
-              raridade: (typeof fuRaridadeDoNivel === 'function')
-                ? fuRaridadeDoNivel(nivel) : (s.raridade || 'Comum'),
+              /* Do mapa `raridades` DELE, que está neste mesmo documento.
+                 Saía do nível até a 3I.12; a do slot não serve, porque o
+                 cliente a escreve e ela envelhece. */
+              raridade: RAR.rarDe(targetData.raridades || {}, s.id),
               nivel,
               // O seed da certidão manda, como no applyGameState.
               seed:     (cert && cert.seed) || s.seed || 0,

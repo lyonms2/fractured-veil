@@ -43,7 +43,7 @@ const M = new Function('t',
             tendenciaDoDna, dnaLegivel, NASC_CARACS, CORES_RODA,
             podeCruzar, cruzar, cruzarDna, ovoPronto, faltaParaChocar,
             tempoDeChoco, _reprCuidado, REPR_CHOCO_MIN_MS, REPR_CHOCO_MAX_MS,
-            fuFicha, fuRaridadeDoNivel, faseDoSlot,
+            fuFicha, faseDoSlot,
             ehPrimordial, coresDe, _reprRetrato,
             corpoDoSeed, corpoDoDna, corpoDeSlot, corpoParesDeSlot, NASC_CORPO_TRACOS, gerarSVG };`
 )(x => x);

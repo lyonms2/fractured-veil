@@ -15,9 +15,12 @@ const { getAuth }                      = require('firebase-admin/auth');
 const NIV  = require('../js/niveis.js');   // o nível que o servidor reconhece
 const VIDA = require('../js/vida-ativa.js'); // a vida ativa reconhecida
 const ESC  = require('../js/escolhas.js');   // a escolha do Ancião
-/* A ficha e a genética, pelo fuRaridadeDoNivel: a raridade sai do
-   NÍVEL, e a do slot é escrita pelo cliente (o mesmo que o api/amigos.js
-   já fazia na tela de visitar). */
+const RAR  = require('../js/raridades.js');  // a raridade conquistada
+const FE   = require('../js/feitos.js');     // o histórico do avatar
+/* A ficha e a genética: é a fonte da raridade (js/raridades.js) e da
+   raridade, para quem ainda não tem registro no mapa `raridades`. Nunca
+   se lê a do slot, que é escrita pelo cliente (o mesmo que o
+   api/amigos.js já fazia na tela de visitar). */
 require('./_genetica.js');
 const CRIS = require('./_cristais.js');   // os dois baldes de cristais
 /* As taxas vivem no js/taxas.js. A venda deixa 15%: dez para a pool,
@@ -189,8 +192,17 @@ async function handleListarAvatar(req, res, db, uid) {
       /* O número que a vitrine vai mostrar, e a raridade que sai dele.
          Ver as duas notas lá embaixo, onde entram no anúncio. */
       const nivelReconhecido = NIV.nivelDe(pData.niveis || {}, s.id, s);
-      const raridadeReal = (typeof fuRaridadeDoNivel === 'function')
-        ? fuRaridadeDoNivel(nivelReconhecido) : (s.raridade || 'Comum');
+      /* ── A RARIDADE DO ANÚNCIO VEM DA FONTE ÚNICA ──
+
+         Só o mapa `raridades` responde. Houve duas versões antes desta:
+         primeiro `fuRaridadeDoNivel(nivelReconhecido)` direto, depois o
+         `rarDe` com esse mesmo cálculo como recuo. A 3I.12 tirou o
+         recuo — o anúncio de um avatar sem certificação diz Comum, e é
+         verdade.
+
+         Nunca lê `s.raridade`, que vem do avatarSlots — essa é a parte
+         que já estava certa e fica. */
+      const raridadeReal = RAR.rarDe(pData.raridades || {}, s.id);
 
       const newCristais = debito.cristais + debito.cristaisBonus;
       slots[slotIdxInt] = { ...s, listed: true };
@@ -279,7 +291,7 @@ async function handleListarAvatar(req, res, db, uid) {
         /* O SEED sai da certidão pela razão mais cara de todas: dele
            saem o corpo desenhado e a ficha de combate inteira. Vinha do
            slot, e trocar o número era escolher os atributos do bicho
-           que se está a vender. */
+           que se está vendendo. */
         seed:       certidaoDoAvatar.seed || s.seed || 0,
         /* ── O NÍVEL DA VITRINE É O QUE O SERVIDOR RECONHECE ──
 
@@ -681,6 +693,40 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
       const chaveEsc = listing.id ? `escolhas.${listing.id}` : null;
       const escVendida = listing.id ? ((sellerData.escolhas || {})[listing.id] || null) : null;
 
+      /* ── E A RARIDADE CONQUISTADA (js/raridades.js) ──
+
+         Com o histórico inteiro. É do AVATAR e não do dono: quem passou
+         num exame passou, e a trajetória é dele.
+
+         A COMPRA NÃO RECALCULA e NÃO GERA RARIDADE NOVA — copia o
+         registro tal como está. É a diferença entre vender um currículo
+         e vender um número: recalcular aqui era o avatar perder o que
+         conquistou e receber o que o nível dele por acaso vale.
+
+         Sem registro no vendedor (todo avatar, enquanto o exame não
+         existir) não vai nada, e do outro lado o `fuRaridadeDa` recua
+         para o legado — a mesma resposta que o comprador via no
+         anúncio. É a mesma porta dos legados da escolha do Ancião. */
+      const chaveRar = listing.id ? `raridades.${listing.id}` : null;
+      const rarVendida = listing.id ? ((sellerData.raridades || {})[listing.id] || null) : null;
+
+      /* ── E OS FEITOS (js/feitos.js) ──
+
+         O histórico é do AVATAR e não do dono: o que ele fez, fez. O
+         comprador não começa do zero, não refaz nada e não recalcula
+         nada — o registro viaja inteiro, como a certidão, o laço, o
+         nível e a raridade.
+
+         E leva um MARCO da venda: o retrato das contagens no instante
+         em que mudou de mão. É a única coisa que as contagens sozinhas
+         não respondem — "o que é que ele já tinha feito quando foi
+         vendido?" — e é uma linha por venda, não um registro por
+         partida. */
+      const chaveFeitos = listing.id ? `feitos.${listing.id}` : null;
+      const feitosVendidos = listing.id
+        ? FE.feitoMarco((sellerData.feitos || {})[listing.id], 'venda', Date.now())
+        : null;
+
       /* ── O REGISTO QUE O COMPRADOR RECEBE É A ORIGEM ──
 
          Gravava aqui a RARIDADE do anúncio, e isso trancava o avatar
@@ -709,7 +755,9 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
            ? { [chaveLacos]: lacosVendidos } : {},
          chaveNivel && nivelVendido ? { [chaveNivel]: nivelVendido } : {},
          chaveVida  && vidaVendida  ? { [chaveVida]:  vidaVendida  } : {},
-         chaveEsc   && escVendida   ? { [chaveEsc]:   escVendida   } : {}, debitoCompra));
+         chaveEsc   && escVendida   ? { [chaveEsc]:   escVendida   } : {},
+         chaveRar   && rarVendida   ? { [chaveRar]:   rarVendida   } : {},
+         chaveFeitos && feitosVendidos ? { [chaveFeitos]: feitosVendidos } : {}, debitoCompra));
       tx.update(sellerRef, Object.assign({
         avatarSlots:   sellerSlots,
         cristais:      +(sellerCris + sellerReal).toFixed(2),
@@ -722,7 +770,9 @@ async function handleComprarAvatar(req, res, db, buyerUid) {
          chaveLacos ? { [chaveLacos]: FieldValue.delete() } : {},
          chaveNivel ? { [chaveNivel]: FieldValue.delete() } : {},
          chaveVida  ? { [chaveVida]:  FieldValue.delete() } : {},
-         chaveEsc   ? { [chaveEsc]:   FieldValue.delete() } : {}));
+         chaveEsc   ? { [chaveEsc]:   FieldValue.delete() } : {},
+         chaveRar   ? { [chaveRar]:   FieldValue.delete() } : {},
+         chaveFeitos ? { [chaveFeitos]: FieldValue.delete() } : {}));
       tx.delete(listRef);
 
       // Só a parte da taxa com lastro entra na pool: a de bônus é queimada.

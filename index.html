@@ -1355,7 +1355,8 @@
 <script src="js/nascimento.js?v=2026-09-26z"></script>
 <!-- A raridade conquistada. Antes do data.js, que desenha o corpo a
      partir dela. A conta dela vive hoje no ficha-fu.js
-     (fuRaridadeDoNivel); este arquivo e a porta por onde o jogo a pede. -->
+     o grau, a fase de um slot e a trava de venda. A raridade em si vem
+     do js/raridades.js, e nao daqui (3I.12). -->
 <script src="js/raridade.js?v=2026-09-26z"></script>
 <!-- O cruzamento. Depois do nascimento e do raridade, que ele lê. -->
 <script src="js/reproducao.js?v=2026-09-26z"></script>
@@ -1374,6 +1375,15 @@
      combate, e por isso vive num mapa que só o servidor escreve.
      Antes do js/escolha.js (a tela) e do js/firebase.js (o carregamento). -->
 <script src="js/escolhas.js?v=2026-10-03b"></script>
+<!-- A raridade conquistada: Comum, Raro, Lendário, e a trajetória que
+     levou lá. Vive num mapa que só o servidor escreve, pela mesma razão
+     da escolha do Ancião. Antes do js/firebase.js (o carregamento), que
+     é quem a resolve em cada slot. -->
+<script src="js/raridades.js?v=2026-10-04a"></script>
+<!-- Os feitos: o que o avatar fez e o servidor viu. Só leitura aqui —
+     quem os escreve é o api/pvp.js, depois de refazer a partida.
+     Antes do js/firebase.js (o carregamento). -->
+<script src="js/feitos.js?v=2026-10-04a"></script>
 <!-- A energia com o mundo parado (aba escondida ou pausa). Só contas,
      sem tela e sem relógio: quem sabe quanto tempo passou são o
      js/main.js e o js/auth.js, que o chamam. -->

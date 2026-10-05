@@ -123,6 +123,11 @@ function _iaLegado(estado, lado, podem) {
   for (const l of ['muito_forte', 'forte']) {
     const m = magias[l];
     if (!m) continue;
+    /* E a livre já usada também não se pede aqui. O passo 1, acima, já o
+       fazia para o suporte; este não, porque até à Sentença da Lâmina
+       (escola 2) nenhuma magia de FERIR era `livre`. Sem isto o Fácil
+       propunha-a, o motor recusava-a, e a vez não andava. */
+    if (m.livre && quem.usouLivre) continue;
     const n = m.porAlvo ? Math.min(m.alvos || 1, deles.length) : 1;
     if (!paga(m, n)) continue;
     return { quem: quem.id,
@@ -219,6 +224,14 @@ function _iaAtaquesDe(q) {
   for (const l of Object.keys(mg)) {
     const m = mg[l];
     if (l === 'comum' || m.proprio || m.aliado || m.cura) continue;
+    /* A LIVRE JÁ USADA NÃO SE PEDE OUTRA VEZ. O ramo do apoio já o
+       fazia (ver o laço de curar); este não, porque até à Sentença da
+       Lâmina (escola 2) não havia magia de FERIR que fosse `livre`.
+
+       Sem isto a IA ficava presa: propunha a Sentença, o fuAgir
+       recusava-a (js/combate-fu.js:802, uma vez por combate), e ela
+       voltava a propô-la — era a ação de maior valor na lista. */
+    if (m.livre && q.usouLivre) continue;
     if (m.todos) { lista.push({ magia: m, todos: true, custo: m.pm | 0 }); continue; }
     lista.push({
       magia: m,
@@ -228,16 +241,53 @@ function _iaAtaquesDe(q) {
            estado: m.estado, estadoSempre: m.estadoSempre,
            ignoraResistencias: m.ignoraResistencias,
            furaGuarda: (m.estilo || {}).furaGuarda,
-           semRSnaGuarda: (m.estilo || {}).semRSnaGuarda },
+           semRSnaGuarda: (m.estilo || {}).semRSnaGuarda,
+           /* A Sentença da Lâmina rende conforme o que o lado sabe do
+              alvo, e o alvo só se conhece no _iaEfeito — por isso o
+              campo viaja daqui e o bônus soma-se lá. */
+           porConhecimento: m.porConhecimento,
+           estadoComConhecimento: m.estadoComConhecimento },
       custo: m.pm | 0,
     });
   }
   return lista;
 }
 
-// O que uma forma de ferir faz num alvo: dano esperado, chance de
-// derrubar e chance de deixar um estado novo.
-function _iaEfeito(q, alvo, at) {
+/* O que uma forma de ferir faz num alvo: dano esperado, chance de
+   derrubar e chance de deixar um estado novo.
+
+   ── O `estado` ENTROU AQUI, E É SÓ PARA O CONHECIMENTO ──
+
+   A Sentença da Lâmina (escola 2) rende conforme o que o LADO de quem
+   bate já sabe daquele alvo — e isso só se pode saber onde o alvo é
+   conhecido, que é aqui. Sem este parâmetro a IA media a Sentença com
+   o bônus a zero: o Veredito valia-lhe 38,1 contra um alvo estudado e
+   contra um desconhecido, medido na etapa 3F.9.
+
+   O bônus soma-se ao `fixo` numa CÓPIA do `o`, e não no `_iaGolpe`:
+   assim aquele continua a receber três argumentos e nada mais no
+   arquivo muda de forma. */
+function _iaEfeito(q, alvo, at, estado) {
+  /* O conhecimento que este lado tem DESTE alvo. Nunca da ficha, nunca
+     do lutador, nunca do outro lado — a mesma leitura que o motor faz
+     em fuAtacar (js/combate-fu.js). */
+  if (at.o && at.o.porConhecimento && estado) {
+    /* LÊ SEM CRIAR. O `fuConhece` do motor cria a entrada quando ela
+       não existe — e decidir não pode mexer no estado, que é um
+       invariante do tools/auditoria-ia.js ("decidir não mexe no
+       estado"). Apanhado por ele na primeira tentativa. */
+    const doLado = estado.conhece && estado.conhece[q.lado];
+    const sabe = doLado && doLado[alvo.id];
+    const nv = Math.max(0, Math.min(3, (sabe && sabe.nivel) | 0));
+    at = Object.assign({}, at, {
+      o: Object.assign({}, at.o, {
+        fixo: (at.o.fixo | 0) + (at.o.porConhecimento | 0) * nv,
+        // e o estado garantido no conhecimento pleno, como no motor
+        estadoSempre: at.o.estadoSempre
+          || (!!at.o.estadoComConhecimento && nv >= 3),
+      }),
+    });
+  }
   if (at.todos) {
     const m = at.magia;
     const af = fuAfinidadeDe(alvo, m.tipo || q.ficha.tipo);
@@ -288,7 +338,7 @@ function _iaRisco(estado, naEquipa, sob, equipa) {
     let pior = 0;
     for (const at of _iaAtaquesDe(e)) {
       if (at.custo > e.pm || !_iaAlcanca(equipa, naEquipa, at)) continue;
-      const ef = _iaEfeito(e, sob, at);
+      const ef = _iaEfeito(e, sob, at, estado);
       pior = Math.max(pior, ef.dano + ef.pAbate * IA_ABATE);
     }
     total += pior;
@@ -305,7 +355,8 @@ function _iaForca(estado, sob) {
   for (const at of _iaAtaquesDe(sob)) {
     if (at.custo > sob.pm) continue;
     for (const t of alvos) {
-      if (_iaAlcanca(equipa, t, at)) melhor = Math.max(melhor, _iaEfeito(sob, t, at).dano);
+      if (_iaAlcanca(equipa, t, at))
+        melhor = Math.max(melhor, _iaEfeito(sob, t, at, estado).dano);
     }
   }
   return melhor;
@@ -395,7 +446,7 @@ function _iaValorEstilo(estado, quem, at, alvosIds) {
   if (es.curaPorDano) {
     const dano = (alvosIds || []).reduce((s, id) => {
       const t = fuPorId(estado, id);
-      return s + (t ? Math.max(0, _iaEfeito(quem, t, at).dano) : 0);
+      return s + (t ? Math.max(0, _iaEfeito(quem, t, at, estado).dano) : 0);
     }, 0);
     const faltas = aliados.map(c => c.ficha.pvMax - c.pv);
     const cabe = es.curaDividida ? faltas.reduce((s, x) => s + x, 0) : Math.max(0, ...faltas);
@@ -495,7 +546,7 @@ function _iaOpcoes(estado, quem, p) {
   for (const at of _iaAtaquesDe(quem)) {
     if (at.custo > quem.pm) continue;
     const vals = inimigos.filter(t => _iaAlcanca(equipaIni, t, at)).map(t => {
-      const ef = _iaEfeito(quem, t, at);
+      const ef = _iaEfeito(quem, t, at, estado);
       return { t, v: ef.dano + ef.pAbate * IA_ABATE * p.abate + ef.pEstado * IA_ESTADO };
     }).sort((a, b) => b.v - a.v);
     if (!vals.length) continue;
@@ -521,7 +572,24 @@ function _iaOpcoes(estado, quem, p) {
        ganho, e por isso entra em todo nível que pensa — o Médio também — e
        vem antes de tudo (IA_LIVRE). Uma vez por luta. */
     if (m.livre && quem.usouLivre) continue;
-    if ((m.cena || m.proteger) && !p.cena && !m.livre) continue;
+    /* ── O PROTEGER SAI DESTE FILTRO ──
+
+       As magias de CENA continuam a ser coisa do Difícil para cima: é o
+       que distingue os níveis, e está escrito no cabeçalho deste
+       arquivo. O Proteger vinha aqui de carona por estar na mesma
+       condição, e com isso o Guarda do Médio nunca o usava — medido:
+       0,00 por luta em doze composições.
+
+       Ele não é uma magia de cena. Não põe efeito de pé, não dura a
+       luta: redireciona para si os ataques de alvo único contra um
+       aliado, até o próximo turno dele (js/combate-fu.js). E é, no
+       Lendário, a ÚNICA coisa que um avatar consegue pagar abaixo de 15
+       PM — a faixa que a etapa 3F.12 mediu como morta.
+
+       Nada mais muda: o custo, o efeito, a duração, o alvo e a conta de
+       valor são os que já eram. Fora do Médio nada se altera, porque lá
+       o `p.cena` já é verdadeiro e este filtro não cortava nada. */
+    if (m.cena && !p.cena && !m.livre) continue;
     if (fuCusto(m, 1) > quem.pm) continue;
     const quais = m.proprio ? [quem] : aliados;
     const vals = quais.map(t => ({ t, v: _iaValorApoio(estado, m, t, quem) }))

@@ -259,7 +259,7 @@ function pvpCaidos(estado, lado) {
    cliente grava por inteiro. O `nivel` chega aqui já decidido pelo
    api/pvp.js; sem ele, vale o do slot (é o caso do desenho local, que
    não decide nada). */
-function pvpRetrato(slot, certidao, nivel, escolhaAnciao) {
+function pvpRetrato(slot, certidao, nivel, escolhaAnciao, raridade) {
   const r = {
     id: slot.id,
     // O nome, sem a alcunha ("Brasa,Leo" → "Brasa"), como o nomeCurto.
@@ -274,6 +274,22 @@ function pvpRetrato(slot, certidao, nivel, escolhaAnciao) {
     raridade: slot.raridade || null,
     nascimento: certidao,
   };
+  /* ── A RARIDADE RECONHECIDA VEM DE QUEM CHAMA ──
+
+     Pela mesma razão do nível e da escolha do Ancião: sai do mapa que
+     só o servidor escreve (`raridades`, js/raridades.js), e nunca do
+     slot. O campo `raridade` acima é o ESPELHO que o desenho lê, e o
+     cliente grava-o — serve para pintar, não para lutar.
+
+     Quem luta é o `raridadeReconhecida`, que é o que o `fuRaridadeDa`
+     lê para montar a ficha. Enquanto a raridade saía do NÍVEL isto não
+     fazia falta: o retrato levava o nível certo e a conta acertava do
+     outro lado. A etapa 3I.12 tirou essa conta, e sem esta linha um
+     avatar certificado Lendário entrava na sala a lutar como Comum.
+
+     Sem argumento não vai nada, e a ficha monta-se Comum — que é o
+     conservador. */
+  if (typeof raridade === 'string' && raridade) r.raridadeReconhecida = raridade;
   /* A ESCOLHA DO ANCIÃO vem de QUEM CHAMA, que a tira do mapa
      `escolhas` (js/escolhas.js) — não do slot. Era `slot.escolhaAnciao`,
      e com ele o retrato levava para a sala a escolha que o cliente
@@ -437,19 +453,86 @@ function pvpRegistrar(ctx, prep, aplicada, a) {
 /* A luta inteira, refeita da sala. É o que o servidor confere, e o que
    o navegador usa para voltar ao ponto certo depois de um F5. `ate`
    limita quantas jogadas se aplicam. */
+/* ── O SUPORTE QUE A REFEITA VÊ ──
+
+   O `fuAgir` devolve os eventos do lance e esta função deitava-os fora
+   — só lhe interessava se o lance tinha valido (`.length > 0`). Mas é
+   nesses eventos que está tudo o que um avatar fez pelos outros, e esta
+   é a única execução do combate que o SERVIDOR controla.
+
+   Então contam-se aqui, de passagem. Não há segunda simulação, não há
+   lógica de combate duplicada e nada muda no que a função já fazia: o
+   `fuAgir` é chamado uma vez, como sempre, e o que se acrescenta é ler
+   o que ele já devolvia.
+
+   ── O QUE CONTA, E PORQUÊ ──
+
+     cura          `curou` é o PV que ENTROU mesmo, já com o teto da
+                   vida cheia — é efeito, e não intenção
+     limpeza       o `estiloLimpa` só é emitido quando o estado saiu
+     beneficio     o `cena` traz `mudou`, que diz se o efeito alterou
+                   alguma coisa
+     guardaAliado  o estilo do Guarda pôs outro avatar em guarda
+     protegerTentou / protegeuFez
+                   as duas pontas do Proteger: a declaração e o
+                   redirecionamento que aconteceu de verdade
+
+   SÓ PARA OUTRO. Um `quem === alvo` é cuidar de si — curar-se, limpar-se,
+   entrar em guarda — e isso não é suporte. Medido em 1440 lutas: 41%
+   das curas e 35% das guardas são ao próprio.
+
+   O que NÃO se conta, por não ser comprovável sem mexer no motor:
+   o dano que a guarda cortou (o `fuDanoComGuarda` calcula o corte e não
+   o reporta) e o dano que o Proteger desviou (deduzível do evento
+   seguinte, mas o motor junta o alvo original e o protetor quando são o
+   mesmo, e aí a conta mentiria). Ficam escritos como limitação. */
+const PVP_SUPORTE_CAMPOS = ['cura', 'curaPv', 'limpeza', 'beneficio',
+                            'guardaAliado', 'protegerTentou', 'protegeuFez'];
+
+function pvpSuporteVazio() {
+  const o = {};
+  for (const k of PVP_SUPORTE_CAMPOS) o[k] = 0;
+  return o;
+}
+
+/* Soma os eventos de UM lance ao acumulador, por id de lutador (A0..B2
+   — os ids do motor, que quem chamar converte nos do avatar). */
+function pvpSuporteSomar(acc, eventos) {
+  if (!acc || !Array.isArray(eventos)) return acc;
+  const de = (id) => (acc[id] || (acc[id] = pvpSuporteVazio()));
+  for (const e of eventos) {
+    if (!e || !e.quem || !e.alvo || e.quem === e.alvo) continue;
+    switch (e.tipo) {
+      case 'cura':
+        if ((e.curou | 0) > 0) { de(e.quem).cura++; de(e.quem).curaPv += (e.curou | 0); }
+        break;
+      case 'estiloLimpa':   de(e.quem).limpeza++; break;
+      case 'cena':          if (e.mudou !== false) de(e.quem).beneficio++; break;
+      case 'estiloGuarda':  de(e.quem).guardaAliado++; break;
+      case 'proteger':      de(e.quem).protegerTentou++; break;
+      case 'protegeu':      de(e.quem).protegeuFez++; break;
+      default: break;
+    }
+  }
+  return acc;
+}
+
 function pvpRepetir(sala, ate) {
   const eq = pvpEquipesDaSala(sala);
   const estado = fuIniciar(eq.A, eq.B, sala.seed);
   const ctx = pvpContexto(sala);
   const acoes = pvpListaAcoes(sala.acoes);
   const n = (ate == null) ? acoes.length : Math.min(ate, acoes.length);
+  const suporte = {};
   let fim = null, lidas = 0;
   for (; lidas < n; lidas++) {
     pvpAvancar(estado);
     if (estado.acabou) break;
     const a = acoes[lidas];
     const prep = pvpPreparar(estado, a, ctx);
-    const ok = prep.eng ? fuAgir(estado, prep.eng).length > 0 : false;
+    const evs = prep.eng ? fuAgir(estado, prep.eng) : [];
+    const ok = evs.length > 0;
+    if (ok) pvpSuporteSomar(suporte, evs);
     fim = pvpRegistrar(ctx, prep, prep.tipo === 'desistir' || ok, a);
     if (fim) { lidas++; break; }
   }
@@ -457,7 +540,7 @@ function pvpRepetir(sala, ate) {
     pvpAvancar(estado);
     if (estado.acabou) fim = { vencedor: estado.vencedor, motivo: estado.porLimite ? 'limite' : 'luta' };
   }
-  return { estado, ctx, fim, lidas, total: acoes.length };
+  return { estado, ctx, fim, lidas, total: acoes.length, suporte };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -465,6 +548,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PVP_JOGADA_MS, PVP_FOLGA_MS, PVP_ESTOUROS_MAX, PVP_FORA_MS, PVP_TIPOS,
     pvpChave, pvpListaAcoes, pvpEquipesDaSala, pvpLadoDe, pvpOutroLado, pvpLugarDaMagia,
     pvpParaRede, pvpParaMotor, pvpContexto, pvpPrazo, pvpAvancar, pvpPreparar, pvpRegistrar, pvpRepetir,
+    PVP_SUPORTE_CAMPOS, pvpSuporteVazio, pvpSuporteSomar,
     PVP_EQUIPA, PVP_JANELA_INICIAL, PVP_JANELA_PASSO, PVP_JANELA_CADA_MS, PVP_JANELA_MAX,
     PVP_CONVITE_MS, PVP_SINAL_MS, PVP_ONLINE_MS, PVP_VERSUS_MS, PVP_FILA_SINAL_MS, PVP_RESERVA_MS,
     pvpReservada, pvpJanela, pvpFaixa, pvpCompativeis, pvpEscolherPar, pvpMotivoMembro, pvpRetrato, pvpPoder,

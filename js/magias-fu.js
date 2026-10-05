@@ -23,7 +23,29 @@
 //    Lendário  27 +     nv 3
 // ═══════════════════════════════════════════════════════════════════
 
-const FU_LUGARES = ['comum', 'forte', 'muito_forte', 'defesa', 'suporte'];
+/* ── O GESTO É O SEXTO DA LISTA, E O QUARTO DE CADA AVATAR ──
+
+   Eram cinco, e dois deles (`defesa` e `suporte`) pertencem a um feitio
+   só. O `gesto` é o primeiro lugar UNIVERSAL que se acrescenta desde
+   que o feitio passou a decidir o repertório: os três feitios o têm.
+
+   E é também o primeiro lugar que NÃO ABRE NOS TRÊS DEGRAUS. Um Comum
+   e um Raro não o materializam; um Lendário sim. Quem decide isso não é
+   uma regra nova — é a tabela: o FU_MAGIAS.gesto só tem o degrau 3, e o
+   `fuMagiaDe` já devolvia nulo para uma casa que não existe.
+
+   Por causa disso a lista abaixo e o FU_LUGARES_DO_FEITIO passam a
+   querer dizer "os lugares que PODEM existir", e não "os que existem
+   nesta ficha". Quem quer os desta ficha pergunta ao `fuMagiasDe`, que
+   é o que a arena, a ficha, a IA e o PvP já faziam. A relação entre os
+   dois é de subconjunto, e é o portão do `fuMagiaDe` que a garante:
+
+     Object.keys(fuMagiasDe(f))  ⊆  fuLugaresDe(f)
+
+   Decidido na etapa 3F.16 (a opção C de três), depois de medir que
+   alterar a assinatura do `fuLugaresDe` mexeria em onze chamadas para
+   deixar duas funções a dizer a mesma coisa. */
+const FU_LUGARES = ['comum', 'forte', 'muito_forte', 'defesa', 'suporte', 'gesto'];
 
 /* ── O NOME E O ESTADO DE CADA TIPO ──
 
@@ -216,6 +238,66 @@ const FU_MAGIAS = {
        jogo). `livre`: não gasta o turno e só se lança uma vez por luta. */
     3: { id: 'despertar', pm: 20, alvos: 1, aliado: true,
          cena: { danoMais: 6 }, livre: true, manual: 'nosso (no lugar do p.208)' },
+  },
+
+  /* ── O GESTO — UMA CASA, E SÓ NO LENDÁRIO ──
+
+     O lugar universal de baixo custo. Um alvo, a regra da frente, 5 PM,
+     dano fixo 3, e o estado do elemento garantido no acerto.
+
+     ── POR QUE SÓ O LENDÁRIO ──
+
+     Porque é lá que existe o problema que ela resolve. A etapa 3F.11
+     mediu a FAIXA MORTA DE PM — a banda em que nenhuma magia é pagável
+     e o turno vira murro ou guarda:
+
+       Comum      1–4 PM     3% a 14% das decisões
+       Raro       1–9 PM     6% a 43%
+       Lendário   1–14 PM    23% a 41%
+
+     E a 3F.14 mediu onde a magia é de fato lançada. No Lendário cai em
+     7,8 a 8,1 PM, DENTRO da faixa; no Raro cai em 11,8 a 12,9, FORA
+     dela — ali ela não preenche vazio nenhum, substitui a barragem.
+
+     Foi medido em 93.000 batalhas, nos dois degraus:
+
+       Lendário   o vazio cai de 29–40% para 21–26%, e a vitória
+                  anda de −2 a +3 pontos (dentro do ruído)
+       Raro       o vazio quase não muda, e o Guarda PERDE 4,2 a 4,8
+                  pontos de vitória na espelhada — com o espelho a
+                  confirmar: dar-lhe a magia ao outro lado rende-lhe
+                  3,9 a 5,3 pontos de volta
+
+     E não é preço: a 3F.16 varreu onze pares de (custo, dano) no Raro —
+     3, 4, 5, 6, 7 e 10 PM, com dano 0, 2 e 4 — e os trinta pontos
+     deram negativo, de −3,9 a −6,8. A razão é que o Guarda Raro vive
+     com 32 PM no turno e a barragem dele custa 10: ele nunca tem faixa
+     morta para preencher, e qualquer turno gasto aqui é um turno tirado
+     de algo melhor.
+
+     ── O QUE ELA NÃO É ──
+
+     Não é um murro melhor. O murro bate com `fixo: 5` e é FÍSICO; ela
+     bate com 3 e é MÁGICA, portanto mira a Defesa Mágica, rola PER e
+     VON, e carrega o elemento do avatar. Contra quem absorve o elemento
+     ela CURA o alvo (o fuAplicarDano devolve `curou`), e a IA nunca a
+     escolhe nesse caso — 0% em 32.000 batalhas, sem nenhuma regra a
+     dizer-lho: o `_iaPerda` devolve dano negativo e o murro ganha.
+
+     E apaga-se sozinha: o estado não se renova (o `fuDarEstado` devolve
+     falso se já o tem), logo o segundo lance no mesmo alvo perde os 6
+     pontos que a IA dá a um estado novo. Medido: a chance de ela ser
+     escolhida cai de 67% para 34% quando o estado já está posto.
+
+     Nenhum campo novo. Cinco propriedades que o `fuMagiaDe` e o
+     `fuAtacar` já leem. Zero linhas no motor e zero na IA. */
+  gesto: {
+    /* Sem o degrau 1 e sem o degrau 2, de propósito. O `fuMagiaDe`
+       devolve nulo para a casa que não existe, e o `fuMagiasDe` salta —
+       um Comum e um Raro ficam com os três lugares que sempre tiveram. */
+    3: { id: 'gesto', pm: 5, alvos: 1, fixo: 3,
+         estadoDoTipo: true, estadoSempre: true,
+         manual: 'nosso (3F.14 a 3F.17)' },
   },
 };
 
@@ -457,6 +539,89 @@ const FU_SEGUNDA_ESCOLA = {
 };
 
 /* ══════════════════════════════════════════════════════════════════
+   A TERCEIRA ESCOLA
+
+   Só tem o `muito_forte`, que é o lugar da Lâmina, e só por agora: as
+   outras identidades da escola 2 (o Guarda e a Sustentação) entram nas
+   suas próprias etapas, e é aqui que vão morar.
+
+   ── L2 SENTENÇA: A ESCOLA QUE CONDENA QUEM CONHECE ──
+
+   A Lâmina já atravessa a defesa — é o FU_ESTILO_LAMINA que o faz, em
+   todos os degraus. Uma escola que também atravessasse a defesa não
+   seria uma especialização: foi o que aconteceu com a L1 provisória da
+   etapa 3F.3, e a IA deu o diagnóstico ao nunca a escolher.
+
+   ── A PRIMEIRA TENTATIVA, E PORQUE SAIU ──
+
+   A etapa 3F.6 construiu esta escola sobre o `livre`: um ataque que não
+   gasta o turno, uma vez por combate. Mecanicamente funcionou, mas o
+   conceito não: uma ação que não gasta o turno não tem razão para ser
+   guardada — usá-la cedo é sempre ao menos tão bom, porque não impede
+   nada e o dano adiado vale menos. Medido: com a IA a valorizá-la, 100%
+   dos usos caíam na ronda 1; sem isso, 0,00 a 0,36 usos por luta e a
+   vitória a cair 7 pontos. As duas pontas diziam o mesmo.
+
+   `livre` é frequência, não identidade. A etapa 3F.7 trocou o eixo.
+
+   ── O EIXO DE AGORA ──
+
+   O dano cresce com o que o LADO de quem bate já sabe do alvo — o
+   `estado.conhece`, de 0 a 3. Nada se guarda de novo para isto: o nível
+   é o mesmo que o Examinar enche, que um golpe certeiro revela e que o
+   laço abre de uma vez contra quem se reencontra.
+
+   `porConhecimento: N` é o dano a mais POR NÍVEL. A escala é linear de
+   propósito: o jogador tem de conseguir decidir "vale a pena gastar um
+   turno a examinar?" sem fazer contas, e uma curva convexa punia demais
+   quem não chegasse ao topo.
+
+   O nível 0 continua a ser jogável — desconhecimento não bloqueia, só
+   não premia. Um gatilho duro daria uma magia morta na primeira ronda.
+
+     grau                  nível 0   1    2    3     a normal do lugar
+     Comum      brecha        11    13   15   17     sopro_maldito  15
+     Raro       sentenca      18    22   26   30     concentrado    25
+     Lendário   veredito      30    36   42   48     execucao       42
+
+   Lê-se assim: no nível 0 a Sentença rende menos que a magia normal do
+   mesmo lugar; no nível 2 empata; no nível 3 ganha. É aí que está a
+   decisão, e é por isso que os números são estes.
+
+   E O VEREDITO GANHA MAIS UMA COISA no conhecimento pleno: o estado do
+   elemento fica garantido (`estadoComConhecimento`), como no crítico.
+   Quem conhece o alvo por inteiro sabe onde bater para a marca ficar. É
+   a única parte da escola que não é dano, e é só do Lendário — é assim
+   que o degrau máximo domina a identidade em vez de só a escalar.
+
+   ── O QUE ELA NÃO É ──
+
+   Não é a Execução, que é do FEITIO e olha a vida do alvo: as duas
+   condições são independentes, e um alvo pode estar em crise e
+   desconhecido, ou estudado e de vida cheia. Não é a Estocada, que mexe
+   no acerto. Não é a Foice, que mexe nos alvos. E não traz `furaGuarda`,
+   `semRSnaGuarda` nem `ignoraResistencias` — esses são do feitio, e
+   repeti-los foi o erro da L1 provisória.
+
+   OS NÚMEROS SÃO PROVISÓRIOS. O que esta etapa valida é o eixo; o
+   balanço vem depois, e depois de a IA aprender a examinar — hoje ela
+   não sabe, e por isso qualquer medição de força sai baixa. */
+const FU_TERCEIRA_ESCOLA = {
+  muito_forte: {
+    /* A BRECHA: a abertura que se vê quando já se olhou. */
+    1: { id: 'brecha', pm: 10, alvos: 1, fixo: 11, porConhecimento: 2,
+         estadoDoTipo: true, manual: 'nosso (terceira escola)' },
+    /* A SENTENÇA, que dá o nome à escola. */
+    2: { id: 'sentenca', pm: 15, alvos: 1, fixo: 18, porConhecimento: 4,
+         estadoDoTipo: true, manual: 'nosso (terceira escola)' },
+    /* O VEREDITO: com o alvo estudado por inteiro, a marca fica. */
+    3: { id: 'veredito', pm: 22, alvos: 1, fixo: 30, porConhecimento: 6,
+         estadoComConhecimento: true, estadoDoTipo: true,
+         manual: 'nosso (terceira escola)' },
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════════
    LUGAR × ESCOLA — de que tabela sai a magia
 
    Uma linha por lugar, uma coluna por escola, e o degrau vem depois
@@ -499,17 +664,123 @@ const FU_SEGUNDA_ESCOLA = {
    não um descuido — as nove identidades entram na etapa seguinte, e é
    lá que esta coluna passa a ter tabelas próprias.
    ══════════════════════════════════════════════════════════════════ */
+/* ── E O DEGRAU, QUANDO ELE PRECISA DE ENTRAR ──
+
+   Uma célula é o nome de uma tabela, e vale para os três degraus. Mas
+   pode ser um mapa `{1, 2, 3}` quando a identidade da escola exige
+   magias de tabelas diferentes conforme o degrau — é o caso da
+   Sustentação, abaixo.
+
+   Isto é indexação, e não mecânica: o fuMagiaDe resolve a célula antes
+   de ir à tabela, e nada no motor sabe que a matriz tem esta forma. */
 const FU_MATRIZ = {
   //              escola 0      escola 1      escola 2 (reservada)
   comum:       { 0: 'primeira', 1: 'primeira', 2: 'primeira' },
   forte:       { 0: 'primeira', 1: 'primeira', 2: 'primeira' },
-  muito_forte: { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
+  /* ── O MUITO FORTE: L1 ESTOCADA ──
+
+     "Um alvo, e nada entre a lâmina e ele." As três magias são as que já
+     existiam, e duas delas são as que a etapa 3F tirou do lugar `forte`
+     e guardou como legadas — foi para isto que ficaram.
+
+     ELAS VIVEM NOUTRO LUGAR E NOUTRO DEGRAU, e por isso a célula aqui
+     diz DE ONDE vem a magia, em vez de só nomear a tabela. Não se copia
+     nenhuma definição: aponta-se para a que existe, e ela continua a ser
+     a mesma em memória. A Perfurante e a Lança Certeira estão no `forte`
+     da segunda escola; a Estocada está no `muito_forte`, no degrau do
+     Raro, e passa a servir o Comum.
+
+     ── O QUE ESTA ATRIBUIÇÃO TEM DE ERRADO ──
+
+     Fica escrito porque está medido, e porque a etapa 3F.3 pediu estas
+     três magias nesta ordem:
+
+       Comum      Estocada        fura a guarda, estado garantido, dano 23
+       Raro       Perfurante      ignora RS na guarda,              dano 22
+       Lendário   Lança Certeira  fura a guarda, estado garantido,  dano 34
+
+     Do Comum para o Raro o avatar PERDE o furar da guarda e o estado
+     garantido, ganha o ignorar da resistência, e bate um ponto MENOS.
+     No Lendário recupera o que tinha no Comum. É uma inversão de
+     identidade entre degraus — o mesmo defeito que a etapa 3E mediu em
+     8 das 9 linhas e que a 3F veio corrigir — e uma regressão de poder
+     no meio da escada.
+
+     A ordem por dano crescente seria Perfurante (22) → Estocada (23) →
+     Lança Certeira (34), e nessa a escada sobe; mas as três magias
+     continuariam a trocar de capacidade entre degraus, porque a
+     Perfurante é a única com `semRSnaGuarda` e as outras duas as únicas
+     com `furaGuarda`. Resolver isto a sério pede uma decisão de desenho
+     sobre as magias, não uma reordenação — e a 3F.3 proibiu tocá-las.
+     O tools/auditoria-escolas.js mede o estado como ele está. */
+  muito_forte: {
+    0: 'primeira',
+    1: {                                                    // L1 Estocada
+      1: { tabela: 'segunda', lugar: 'muito_forte', degrau: 2 },  // estocada
+      2: { tabela: 'segunda', lugar: 'forte',       degrau: 2 },  // perfurante
+      3: { tabela: 'segunda', lugar: 'forte',       degrau: 3 },  // lanca_certeira
+    },
+    2: 'terceira',                                          // L2 Sentença
+  },
   defesa:      { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
-  suporte:     { 0: 'primeira', 1: 'segunda',  2: 'primeira' },
+
+  /* ── O SUPORTE: S0 FOCO E S1 CORO ──
+
+     As seis magias deste lugar separam-se em dois eixos limpos, e a
+     identidade da escola é um deles:
+
+       um alvo    lamber (cura 15, limpa 1)
+                  transfusao (cura 55, limpa 2)
+                  despertar (reforça, e não gasta o turno)
+
+       três alvos balsamo (cura 8 em cada)
+                  curar (cura 30 em cada, limpa 1 em cada)
+                  canto_guerra (reforça os três, e não gasta o turno)
+
+     Estavam trocadas no Raro: a escola 0 tinha o `curar`, que espalha
+     por três, e a escola 1 o `transfusao`, que concentra num. Era a
+     inversão que a etapa 3E mediu no lugar `suporte` — a escola 0 dava
+     um alvo no Comum, três no Raro e um no Lendário.
+
+     Agora cada escola fica no seu eixo nos três degraus:
+
+       S0 Foco   um alvo, sempre — muito num só
+       S1 Coro   três alvos, sempre — pouco em todos
+
+     Nenhuma magia foi criada, alterada ou movida de tabela: só a célula
+     do Raro troca de nome.
+
+     A ESCOLA 2 SEGUE A 0, e não a tabela 'primeira'. Enquanto ela não
+     tem identidade, a promessa da etapa 3F é que lute como a escola 0 —
+     e a 0 deixou de ser 'primeira' nos três degraus. Deixá-la em
+     'primeira' dava-lhe o eixo misto que esta correção acabou de tirar
+     à 0: um alvo no Comum, três no Raro, um no Lendário. O teste da
+     auditoria apanhou isso. */
+  suporte: {
+    0: { 1: 'primeira', 2: 'segunda',  3: 'primeira' },   // S0 Foco
+    1: { 1: 'segunda',  2: 'primeira', 3: 'segunda'  },   // S1 Coro
+    2: { 1: 'primeira', 2: 'segunda',  3: 'primeira' },   // reservada: segue a S0
+  },
+
+  /* ── O GESTO: IGUAL NAS TRÊS ESCOLAS ──
+
+     A escola diz COMO o avatar exerce o feitio, e o `gesto` é o lugar
+     em que ela não diz nada: as três apontam para a mesma tabela e para
+     a mesma casa. É de propósito — um lugar universal que mudasse de
+     escola deixaria de ser universal, e a 3F.17 pediu uma magia só.
+
+     E o DEGRAU não se escreve aqui. As células desta matriz dizem de
+     que TABELA vem a magia, não em que degrau ela existe; quem decide
+     isso é a tabela, e o FU_MAGIAS.gesto só tem o degrau 3. Escrever
+     `{ 1: null, 2: null, 3: 'primeira' }` daria o mesmo resultado por
+     um caminho mais comprido, e punha em dois lugares uma decisão que
+     tem de viver em um. */
+  gesto: { 0: 'primeira', 1: 'primeira', 2: 'primeira' },
 };
 
 /* As tabelas por nome, para a matriz as poder nomear. */
-const FU_TABELAS = { primeira: FU_MAGIAS, segunda: FU_SEGUNDA_ESCOLA };
+const FU_TABELAS = { primeira: FU_MAGIAS, segunda: FU_SEGUNDA_ESCOLA,
+                     terceira: FU_TERCEIRA_ESCOLA };
 
 /* A escola de uma ficha, sempre uma das três.
    Uma ficha sem escola — um avatar de antes de isto existir, ou uma
@@ -561,10 +832,31 @@ function fuEscolaDe(ficha) {
    cara do jogo passa a ser coisa que se encontra num tipo de avatar, e
    não um carimbo que se recebe ao nível 27.
    ══════════════════════════════════════════════════════════════════ */
+/* ── OS LUGARES QUE O FEITIO PODE TER ──
+
+   PODE, e não TEM. A diferença nasceu com o `gesto`: ele está nos três
+   feitios desta lista e não existe num Comum nem num Raro, porque o
+   FU_MAGIAS.gesto só tem a casa do Lendário.
+
+   Portanto esta lista é CAPACIDADE ESTRUTURAL, e quem pergunta "o que
+   é que este avatar sabe fazer AGORA" chama o `fuMagiasDe`. A relação é
+   de subconjunto, nunca de igualdade:
+
+     Object.keys(fuMagiasDe(f))  ⊆  fuLugaresDe(f)
+
+   e quem a garante é o portão do `fuMagiaDe`, logo abaixo: um lugar que
+   não esteja nesta lista não existe para a ficha, aconteça o que
+   acontecer. É por ele ser um `indexOf` numa LISTA, e não uma consulta
+   de propriedade num objeto, que `__proto__` e `constructor` não passam
+   — o PvP deixa o cliente nomear o lugar que quiser (até 24 letras, ver
+   o database.rules.json), e é aqui que o nome inventado morre.
+
+   Esta nota fica porque 193 conferições da suíte comparavam os dois
+   conjuntos por igualdade, e a etapa 3F.16 teve de as reescrever. */
 const FU_LUGARES_DO_FEITIO = {
-  guarda:      ['comum', 'forte', 'defesa'],
-  lamina:      ['comum', 'forte', 'muito_forte'],
-  sustentacao: ['comum', 'forte', 'suporte'],
+  guarda:      ['comum', 'forte', 'defesa',      'gesto'],
+  lamina:      ['comum', 'forte', 'muito_forte', 'gesto'],
+  sustentacao: ['comum', 'forte', 'suporte',     'gesto'],
 };
 
 /* O lugar que é DELE, e só dele — o que o distingue dos outros dois.
@@ -605,10 +897,27 @@ function fuMagiaDe(ficha, lugar) {
      — uma escola fora da lista, um lugar sem a tabela nomeada — e é o
      que mantém de pé uma ficha montada à mão numa auditoria. */
   const escola = fuEscolaDe(ficha);
-  const naMatriz = (FU_MATRIZ[lugar] || {})[escola] || 'primeira';
-  const tabela = FU_TABELAS[naMatriz] || FU_MAGIAS;
+  const celula = (FU_MATRIZ[lugar] || {})[escola];
+  /* A célula tem três formas, e todas acabam numa casa de tabela:
 
-  const casa = (tabela[lugar] && tabela[lugar][degrau])
+       'primeira'                     a tabela, nos três degraus
+       { 1:…, 2:…, 3:… }              uma por degrau
+       { tabela, lugar, degrau }      e DE ONDE vem a magia, quando ela
+                                      vive noutro lugar ou noutro degrau
+
+     A terceira forma é o que deixa a L1 Estocada usar as magias que a
+     etapa 3F tirou do lugar `forte`, sem copiar nenhuma definição. */
+  const porGrau = (celula && typeof celula === 'object' && !celula.tabela)
+    ? celula[degrau] : celula;
+  const de = (porGrau && typeof porGrau === 'object')
+    ? porGrau
+    : { tabela: porGrau || 'primeira', lugar: lugar, degrau: degrau };
+
+  const tabela = FU_TABELAS[de.tabela] || FU_MAGIAS;
+  const deLugar = de.lugar || lugar;
+  const deGrau = de.degrau || degrau;
+
+  const casa = (tabela[deLugar] && tabela[deLugar][deGrau])
             || (FU_MAGIAS[lugar] && FU_MAGIAS[lugar][degrau]);
   if (!casa) return null;
 
@@ -705,7 +1014,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FU_LUGARES, FU_ELEMENTAL, FU_CONCENTRADO, FU_MAGIAS, FU_SEGUNDA_ESCOLA, FU_ESTILO_FORTE, FU_NOME_FORTE,
     FU_LUGARES_DO_FEITIO, FU_LUGAR_DO_FEITIO,
-    FU_ESCOLAS, FU_MATRIZ, FU_TABELAS,
+    FU_ESCOLAS, FU_MATRIZ, FU_TABELAS, FU_TERCEIRA_ESCOLA,
     FU_ESTILO_GUARDA, FU_ESTILO_LAMINA, FU_ESTILO_SUSTENTACAO,
     fuDegrau, fuLugaresDe, fuMagiaDe, fuMagiasDe, fuCusto, fuEscolaDe,
   };

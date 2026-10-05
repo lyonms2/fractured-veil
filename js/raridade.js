@@ -44,50 +44,33 @@
 // ser vendido.
 // ════════════════════════════════════════════════════════════════════
 
-/* Os degraus, em pontos. O primeiro elemento de cada par é o mínimo. */
-/* A ESCADA DA RARIDADE SAIU DAQUI.
+/* ── O QUE JÁ NÃO VIVE AQUI ──
 
-   Era uma lista de degraus em PONTOS de ficha — a medida do 3D&T. A
-   raridade passa a sair do nível, e a conta vive no fuRaridadeDoNivel
-   (js/ficha-fu.js), que é quem a dá à ficha. Uma só, onde havia duas
-   que por acaso concordavam. */
+   Este arquivo foi, durante muito tempo, o lugar onde a raridade se
+   decidia. Três gerações de regra passaram por ele e saíram:
 
-/* O TECTO QUE O TEMPO DE JOGO IMPÕE.
+     1. uma escada em PONTOS de ficha, a medida do 3D&T;
+     2. um teto que o TEMPO DE JOGO impunha por cima dela;
+     3. a raridade pela FASE, e a raridade pelo NÍVEL.
 
-   Não é a escada — é o travão. A fase 3 pede vinte horas de jogo, e sem
-   elas o avatar não passa de Raro por muitos pontos que tenha. */
-/* Era ['Comum','Raro','Raro','Lendário']: o teto que o tempo de jogo
-   impunha, quando a fase vinha do nível e da idade e a raridade dos
-   pontos — duas escadas diferentes que este travão punha de acordo.
+   A última saiu na etapa 3I.12, junto com o `fuRaridadeDoNivel` do
+   js/ficha-fu.js. O que as três tinham em comum é o que o jogo deixou
+   de aceitar: que a raridade se CALCULASSE a partir de outra coisa.
 
-   Agora a fase SAI dos pontos (faseDePontos, em js/state.js) e as duas
-   dizem a mesma coisa por construção. Este quadro deixa de travar nada
-   e passa a ser o que a fase vale, que é a mesma tabela vista do outro
-   lado: BEBÊ e JOVEM são Comuns, ADULTO é Raro, ANCIÃO é Lendário. */
-const RARIDADE_POR_FASE = ['Comum', 'Comum', 'Raro', 'Lendário'];
+     NÍVEL      é progressão
+     FASE       é corpo
+     RARIDADE   é conquista, certificada, guardada no mapa `raridades`
+                que só o servidor escreve (js/raridades.js)
 
-// Quantos degraus acima do Comum. É este número que o desenho lê para
-// saber que partes do corpo já se vêem.
+   O que ficou aqui não fala de raridade conquistada: o grau (para
+   ordenar e comparar), a fase de um slot, e se o avatar pode ir ao
+   mercado. */
+
+/* O grau de cada uma, para comparar e ordenar. Não decide nada: só diz
+   qual é mais alta que qual. A mesma ordem do RARIDADES
+   (js/raridades.js) e do FU_RARIDADES (js/ficha-fu.js) — o
+   tools/testar-raridade.js confere que as três batem. */
 const RARIDADE_GRAU = { 'Comum': 0, 'Raro': 1, 'Lendário': 2 };
-
-function raridadeDaFase(fase) {
-  const f = Math.max(0, Math.min(RARIDADE_POR_FASE.length - 1, fase | 0));
-  return RARIDADE_POR_FASE[f];
-}
-
-/* A raridade que este nível vale, sem olhar a mais nada.
-
-   Passou a ser uma porta para o fuRaridadeDoNivel (js/ficha-fu.js), que
-   é quem a decide para a ficha. A conta era feita aqui em pontos e lá em
-   níveis, e as duas davam o mesmo em todos os sessenta níveis — mas eram
-   duas contas, e duas contas do mesmo número acabam por discordar.
-
-   A que ficou é a da ficha, porque é a que decide dinheiro: a raridade
-   põe preço no avatar. */
-function raridadeDoNivel(nivel) {
-  return (typeof fuRaridadeDoNivel === 'function')
-    ? fuRaridadeDoNivel(nivel || 1) : 'Comum';
-}
 
 function grauDaRaridade(raridade) {
   return RARIDADE_GRAU[raridade] != null ? RARIDADE_GRAU[raridade] : 0;
@@ -116,47 +99,17 @@ function faseDoSlot(slot) {
   return faseFromNivel(slot.nivel || 1);
 }
 
-/* A raridade sai dos pontos, e mais nada.
+/* ── O QUE SAIU DAQUI NA 3I.12 ──
 
-   Havia um segundo termo — o teto que a fase impunha — e ele existia
-   porque as duas escadas eram diferentes: um avatar podia ter pontos de
-   Lendário e ainda ser JOVEM. Agora a fase sai dos MESMOS pontos, e o
-   teto diz sempre o mesmo que a conta que ele travava. Um travo que
-   nunca trava não é um travo: é uma linha à espera de discordar. */
-function raridadeDoSlot(slot) {
-  if (!slot) return 'Comum';
-  return raridadeDoNivel(slot.nivel || 1);
-}
+     raridadeDoSlot          a raridade de um slot, pelo nível dele
+     sincronizarRaridade     o único escritor do campo `slot.raridade`
+     sincronizarRaridades    o mesmo, para todos os slots
 
-/* ── O ÚNICO ESCRITOR ──
-
-   A raridade continua a viver num campo do slot, porque o servidor e as
-   listagens do marketplace a leem de lá e não podem recalculá-la. Mas
-   um valor guardado que também se sabe calcular são duas cópias à
-   espera de divergirem — já aconteceu neste jogo mais de uma vez.
-
-   Por isso só esta função escreve o campo. Devolve a raridade nova
-   quando houve subida, e null quando não houve, para quem chama poder
-   festejar sem ter de comparar por fora. */
-function sincronizarRaridade(slot) {
-  if (!slot || typeof slot !== 'object') return null;
-  const nova = raridadeDoSlot(slot);
-  /* Descer, nunca. A fase pode descer no papel — o faseFromAge de um
-     avatar que perdeu tempo de jogo, um nível reposto por uma correção
-     — e tirar a Lendário a quem já a tinha seria roubá-la. O que se
-     conquista fica. */
-  if (grauDaRaridade(nova) <= grauDaRaridade(slot.raridade)) return null;
-  slot.raridade = nova;
-  return nova;
-}
-
-// Todos os slots de uma vez, para a migração de quem já estava jogando.
-function sincronizarRaridades(slots) {
-  if (!Array.isArray(slots)) return 0;
-  let n = 0;
-  for (const s of slots) if (s && sincronizarRaridade(s)) n++;
-  return n;
-}
+   Os três existiam para manter `slot.raridade` em dia com o nível. O
+   campo continua a existir — 33 chamadas ao gerarSVG o leem — mas quem
+   o escreve agora é o `rarResolver` (js/raridades.js), no
+   carregamento, a partir do mapa que só o servidor escreve. Nenhum
+   deles tinha chamador vivo quando saíram. */
 
 /* Pode ser vendido?
 
@@ -187,13 +140,6 @@ function motivoSemVenda(slot) {
   return null;
 }
 
-function podeSerVendido(slot) {
-  return motivoSemVenda(slot) === null;
-}
-
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { RARIDADE_POR_FASE, RARIDADE_GRAU,
-                     raridadeDaFase, raridadeDoNivel, grauDaRaridade,
-                     faseDoSlot, raridadeDoSlot, sincronizarRaridade, sincronizarRaridades,
-                     podeSerVendido, motivoSemVenda };
+  module.exports = { RARIDADE_GRAU, grauDaRaridade, faseDoSlot, motivoSemVenda };
 }

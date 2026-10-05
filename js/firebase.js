@@ -357,6 +357,23 @@ function applyGameState(data) {
   if (typeof escolhasCarregar === 'function') escolhasCarregar(data.escolhas);
   const _escolhas = (data.escolhas && typeof data.escolhas === 'object') ? data.escolhas : {};
 
+  /* A RARIDADE CONQUISTADA, pelo mesmo caminho: mapa do servidor, lido
+     no carregamento, antes de os slots serem montados. É daqui que cada
+     um recebe o seu (ver mais abaixo).
+
+     Hoje o mapa vem vazio: ninguém o escreve enquanto o exame que
+     promove Comum → Raro → Lendário não existir. O recuo legado está no
+     `fuRaridadeDa` (js/ficha-fu.js), marcado como temporário. */
+  if (typeof rarCarregar === 'function') rarCarregar(data.raridades);
+  const _raridades = (data.raridades && typeof data.raridades === 'object') ? data.raridades : {};
+
+  /* OS FEITOS, pelo mesmo caminho: mapa do servidor, lido no
+     carregamento. O save não os manda de volta — o slot é gravado campo
+     a campo, e `feitos` não está na lista, nem poderia estar (ver o
+     firestore.rules). Só leitura: quem os escreve é o api/pvp.js, no
+     fim de uma partida que ele próprio refez. */
+  if (typeof feitosCarregar === 'function') feitosCarregar(data.feitos);
+
   /* Os laços entre avatares (js/lacos.js), pelo mesmo caminho: mapa do
      servidor, reatado ao slot por id. O save não os manda de volta — o
      slot é gravado campo a campo, e `lacos` não está na lista. */
@@ -420,6 +437,34 @@ function applyGameState(data) {
       const _esc = s.id ? _escolhas[s.id] : null;
       if (_esc && typeof _esc.anciao === 'string') restored.escolhaAnciao = _esc.anciao;
       else delete restored.escolhaAnciao;
+
+      /* ── A RARIDADE VEM DO SERVIDOR, E O SLOT PASSA A ESPELHÁ-LA ──
+
+         Dois campos, e a diferença entre eles é tudo:
+
+           raridadeReconhecida   o que o servidor reconhece. NÃO é
+                                 gravado pelo save (não está na lista de
+                                 campos, acima) e por isso não sobrevive
+                                 a uma ida ao Firestore: é escrito aqui,
+                                 a cada carregamento, e só aqui. É este
+                                 que a ficha de combate lê.
+
+           raridade              o espelho. O cliente grava-o e o
+                                 desenho lê-o em 33 lugares — e era essa
+                                 a segunda fonte de verdade que a etapa
+                                 3H mediu: um avatar de nível 1 com
+                                 'Lendário' escrito à mão desenhava-se
+                                 com asas que a ficha dele não tinha.
+
+         Reescrever o espelho aqui resolve os 33 de uma vez, sem lhes
+         tocar: eles continuam a ler `s.raridade`, e `s.raridade` passa
+         a ser a resposta do `fuRaridadeDa` — a mesma que a ficha usa.
+
+         Sem registro no mapa, a resposta é COMUM. Havia aqui um recuo
+         pelo nível, e saiu na 3I.12: o nível é progressão e a raridade
+         é conquista. Aqui não há decisão nenhuma: há uma pergunta a uma
+         função só. */
+      if (typeof rarResolver === 'function') rarResolver(_raridades, restored);
 
       restored.donos = (s.id && Array.isArray(_donos[s.id])) ? _donos[s.id] : [];
       restored.lacos = (s.id && _lacos[s.id] && typeof _lacos[s.id] === 'object') ? _lacos[s.id] : {};
@@ -486,19 +531,20 @@ function applyGameState(data) {
     if(_carimbados) console.log('[identidade] ' + _carimbados + ' avatar(es) sem id — carimbados agora.');
   }
 
-  /* A RARIDADE QUE JÁ FOI GANHA.
+  /* ── A SINCRONIZAÇÃO DA RARIDADE SAIU DAQUI (etapa 3H) ──
 
-     A raridade deixou de sair do ovo e passa a sair da fase (ver
-     js/raridade.js). Quem já estava jogando tem nível e horas de sobra
-     e nunca subiu — porque a regra não existia quando ele subiu de
-     fase. Corre-se aqui, na LEITURA, uma vez por sessão.
+     Corria aqui o `sincronizarRaridades`, que percorria os slots e
+     escrevia `slot.raridade` a partir do nível de cada um. Era o
+     segundo escritor do campo, e o terceiro era o js/gametick.js.
 
-     Nunca desce: o sincronizarRaridade só sobe. Um Lendário comprado
-     no tempo dos ovos raros continua Lendário. */
-  if(typeof sincronizarRaridades === 'function') {
-    const _subiram = sincronizarRaridades(avatarSlots);
-    if(_subiram) console.log('[raridade] ' + _subiram + ' avatar(es) subiram para a raridade que a fase deles já dava.');
-  }
+     Agora há um só: o bloco que monta cada slot, acima, pergunta ao
+     `fuRaridadeDa` (js/ficha-fu.js) e escreve o espelho. A fonte é uma,
+     a pergunta é uma, e a resposta é a mesma para a ficha de combate e
+     para o desenho.
+
+     Nada muda para quem já jogava: sem registro no mapa `raridades`, o
+     `fuRaridadeDa` recua para a conta legada pelo nível — exatamente o
+     que este bloco fazia. */
 
   // Limpa itens e ovos expirados em todos os slots ao carregar
   const _now = Date.now();

@@ -18,7 +18,7 @@
      · a vitrine mostrava o nível do SAVE do vendedor, que ele escreve
        por inteiro, e não o que o servidor reconhece;
      · a raridade vinha do mesmo lugar, quando hoje ela é uma conta
-       feita sobre o nível (fuRaridadeDoNivel);
+       feita sobre o mapa `raridades` (rarDe), e nunca sobre o nível;
      · o avatar comprado ficava preso na conta de quem o comprou: o
        registro de emissão guardava a raridade em vez da origem, e a
        revenda morria em ORIGEM_NAO_CONFERE.
@@ -98,7 +98,19 @@ const pede = async (tok, body) => {
     .find(x => x.sellerId === 'jog1' && x.status === 'listed');
   ok(!!anuncio, 'e o anúncio existe');
   ok(anuncio && anuncio.nivel === 30, 'a vitrine diz 30, e não os 60 do save', anuncio && anuncio.nivel);
-  ok(anuncio && anuncio.raridade === 'Lendário', 'a raridade sai desse nível (30 = Lendário)', anuncio && anuncio.raridade);
+  /* ── A RARIDADE DO ANÚNCIO NÃO SAI DO NÍVEL ──
+
+     Esta conferição era o contrário: media que o anúncio de um avatar
+     de nível 30 dizia Lendário. A etapa 3I.12 tirou a raridade por
+     nível, e o anúncio passou a ler só o mapa de raridades — que neste
+     cenário está vazio, logo a resposta certa é Comum.
+
+     O que continua medido é que o anúncio NÃO acredita no save: o
+     nível sai do registro do servidor (30, e não os 60 que o cliente
+     escreveu), e a raridade sai do mapa do servidor. */
+  ok(anuncio && anuncio.raridade === 'Comum',
+     'a raridade NÃO sai do nível: sem certificação, é Comum',
+     anuncio && anuncio.raridade);
   const reg = (await d1.get()).data().niveis[idAv];
   ok(reg && reg.n === 30, 'e o registo do servidor não se mexeu', reg && reg.n);
 

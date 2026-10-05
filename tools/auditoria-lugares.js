@@ -66,20 +66,44 @@ const fichaDe = (tipo, raridade, feitio) =>
   ({ tipo, raridade, feitio: feitio || 'guarda', escola: 0, DES: 8, PER: 8, VIG: 8, VON: 8 });
 
 // De que feitio é preciso ser para ter cada lugar.
+/* De que feitio é preciso ser para ter cada lugar. O `gesto` é de
+   todos, e por isso qualquer um serve — fica o Guarda, que é o recuo
+   do `fuLugaresDe`. Sem esta entrada o `fichaCom('gesto')` passava por
+   acidente, pelo mesmo recuo. */
 const FEITIO_DE = { comum: 'guarda', forte: 'guarda', defesa: 'guarda',
-                    muito_forte: 'lamina', suporte: 'sustentacao' };
+                    muito_forte: 'lamina', suporte: 'sustentacao',
+                    gesto: 'guarda' };
 const fichaCom = (lugar, tipo, raridade) =>
   fichaDe(tipo || 'fogo', raridade || 'Comum', FEITIO_DE[lugar]);
 
 /* ═══ 1 · AS DEZOITO CASAS ═══════════════════════════════════════ */
 titulo('As dezoito casas');
 {
-  verificar('são cinco lugares', G.FU_LUGARES.length === 5, G.FU_LUGARES.join(','));
+  /* SEIS LUGARES, E O CONJUNTO EXATO. A contagem sozinha diz pouco —
+     seis lugares errados contam seis — e por isso confere-se a lista
+     inteira. Quem acrescentar um sétimo lugar passa por aqui, e é de
+     propósito: um lugar novo pede FU_MATRIZ, FU_LUGARES_DO_FEITIO,
+     i18n (af.lugar.* e af.m.*) e selo (AF_SELOS), e esta linha é o
+     primeiro lugar onde a falta aparece. */
+  verificar('são seis lugares', G.FU_LUGARES.length === 6, G.FU_LUGARES.join(','));
+  verificar('e são estes seis',
+    G.FU_LUGARES.join(',') === 'comum,forte,muito_forte,defesa,suporte,gesto',
+    G.FU_LUGARES.join(','));
+
+  /* ── UM LUGAR PODE NÃO TER OS TRÊS DEGRAUS ──
+
+     O `gesto` só existe no Lendário (FU_MAGIAS.gesto, em
+     js/magias-fu.js). Exigir a casa nos três degraus era a suposição
+     de que todo lugar abre no degrau 1, e ela deixou de valer na etapa
+     3F.17. O que se exige agora é que o lugar tenha ALGUM degrau, que
+     cada casa que exista esteja completa, e — logo abaixo — que o
+     `gesto` tenha exatamente o degrau 3 e mais nenhum. */
   for (const lugar of G.FU_LUGARES) {
-    for (const grau of [1, 2, 3]) {
-      const casa = G.FU_MAGIAS[lugar] && G.FU_MAGIAS[lugar][grau];
-      verificar('existe ' + lugar + ' nv' + grau, !!casa);
-      if (!casa) continue;
+    const degraus = [1, 2, 3].filter(d => !!(G.FU_MAGIAS[lugar] && G.FU_MAGIAS[lugar][d]));
+    verificar('o lugar ' + lugar + ' tem pelo menos um degrau', degraus.length > 0,
+      'degraus: ' + degraus.join(','));
+    for (const grau of degraus) {
+      const casa = G.FU_MAGIAS[lugar][grau];
       verificar(lugar + ' nv' + grau + ' tem id', typeof casa.id === 'string' && !!casa.id);
       verificar(lugar + ' nv' + grau + ' diz de onde vem', typeof casa.manual === 'string');
       verificar(lugar + ' nv' + grau + ' faz alguma coisa',
@@ -134,11 +158,33 @@ titulo('Os oito tipos têm magia');
      aos papéis da formação. */
   for (const feitio of ['guarda', 'lamina', 'sustentacao']) {
     const meus = G.fuMagiasDe(fichaDe('fogo', 'Comum', feitio));
-    const esperados = G.FU_LUGARES_DO_FEITIO[feitio];
-    verificar('o ' + feitio + ' tem três lugares', Object.keys(meus).length === 3,
+    const podem = G.FU_LUGARES_DO_FEITIO[feitio];
+    /* ── PODE TER × TEM NESTE GRAU ──
+
+       O FU_LUGARES_DO_FEITIO diz os lugares que o feitio PODE ter; o
+       fuMagiasDe diz os que ele TEM neste grau. Desde o `gesto` (3F.17)
+       os dois conjuntos não são iguais: um Comum materializa três dos
+       quatro. A relação é de subconjunto, e nunca o contrário. */
+    verificar('o ' + feitio + ' Comum tem três lugares', Object.keys(meus).length === 3,
       Object.keys(meus).join(','));
-    verificar('e são os dele', esperados.every(l => !!meus[l]),
-      Object.keys(meus).join(',') + ' contra ' + esperados.join(','));
+    verificar('e todos os que tem são dele',
+      Object.keys(meus).every(l => podem.indexOf(l) !== -1),
+      Object.keys(meus).join(',') + ' contra ' + podem.join(','));
+    verificar('o Comum do ' + feitio + ' NÃO tem o gesto', !meus.gesto,
+      Object.keys(meus).join(','));
+    // o Raro também não, e o Lendário materializa os quatro
+    const raro = G.fuMagiasDe(fichaDe('fogo', 'Raro', feitio));
+    verificar('o Raro do ' + feitio + ' NÃO tem o gesto', !raro.gesto,
+      Object.keys(raro).join(','));
+    verificar('o Raro do ' + feitio + ' tem três lugares',
+      Object.keys(raro).length === 3, Object.keys(raro).join(','));
+    const lend = G.fuMagiasDe(fichaDe('fogo', 'Lendário', feitio));
+    verificar('o Lendário do ' + feitio + ' TEM o gesto', !!lend.gesto,
+      Object.keys(lend).join(','));
+    verificar('e materializa os quatro que pode',
+      Object.keys(lend).length === podem.length
+      && Object.keys(lend).every(l => podem.indexOf(l) !== -1),
+      Object.keys(lend).join(',') + ' contra ' + podem.join(','));
     verificar('o golpe comum está em todos (' + feitio + ')', !!meus.comum);
     verificar('e a magia forte também (' + feitio + ')', !!meus.forte);
     verificar('o ' + feitio + ' tem o lugar que o distingue',
@@ -188,11 +234,40 @@ titulo('Os números, casa a casa');
     ['suporte', 1, { pm: 5,  alvos: 1, aliado: true, cura: 15, limpa: 1 }],
     ['suporte', 2, { pm: 10, alvos: 3, porAlvo: true, aliado: true, cura: 30, limpa: 1 }],
     ['suporte', 3, { pm: 20, alvos: 1, aliado: true }],
+    /* ── O GESTO, E SÓ NO DEGRAU 3 ──
+
+       Os números da D2, validados em 93.000 batalhas (3F.14 a 3F.16) e
+       escritos aqui para que ninguém os mude sem passar por um teste.
+       Trocá-los é uma decisão de balanço, não um ajuste. */
+    ['gesto', 3, { pm: 5, alvos: 1, fixo: 3,
+                   estadoDoTipo: true, estadoSempre: true }],
   ];
-  for (const [lugar, grau, campos] of esperado)
+  /* A CASA PRIMEIRO, OS CAMPOS DEPOIS. Era `FU_MAGIAS[lugar][grau][k]`
+     direto, e uma casa que desaparecesse da tabela fazia a ferramenta
+     REBENTAR em vez de falhar — e uma ferramenta que rebenta não conta
+     falha nenhuma: quem corre a suíte lê "sem saída" e segue. Apanhado
+     na etapa 3F.17, a mutar o `gesto` para zero degraus. */
+  for (const [lugar, grau, campos] of esperado) {
+    const casa = G.FU_MAGIAS[lugar] && G.FU_MAGIAS[lugar][grau];
+    verificar('a casa ' + lugar + ' nv' + grau + ' existe', !!casa);
+    if (!casa) continue;
     for (const [k, v] of Object.entries(campos))
-      verificar(lugar + ' nv' + grau + ' · ' + k + ' = ' + v,
-        G.FU_MAGIAS[lugar][grau][k] === v, 'está ' + G.FU_MAGIAS[lugar][grau][k]);
+      verificar(lugar + ' nv' + grau + ' · ' + k + ' = ' + v, casa[k] === v,
+        'está ' + casa[k]);
+  }
+
+  /* E o GESTO existe em UM degrau, que é o 3. A tabela é a única coisa
+     que decide isso (não há regra de "lugar por grau" em lado nenhum),
+     e por isso é nela que se confere. */
+  verificar('o gesto tem exatamente um degrau',
+    Object.keys(G.FU_MAGIAS.gesto).length === 1, Object.keys(G.FU_MAGIAS.gesto).join(','));
+  verificar('e é o do Lendário',
+    !G.FU_MAGIAS.gesto[1] && !G.FU_MAGIAS.gesto[2] && !!G.FU_MAGIAS.gesto[3],
+    Object.keys(G.FU_MAGIAS.gesto).join(','));
+  verificar('o gesto não cobra por alvo', !(G.FU_MAGIAS.gesto[3] || {}).porAlvo);
+  verificar('e custa 5 PM num alvo', G.fuCusto(G.FU_MAGIAS.gesto[3], 1) === 5);
+  verificar('e 5 PM mesmo se lhe pedirem três',
+    G.fuCusto(G.FU_MAGIAS.gesto[3], 3) === 5);
 
   verificar('o golpe comum não custa PM', G.FU_MAGIAS.comum[1].pm === 0);
   verificar('e é corpo-a-corpo', G.FU_MAGIAS.comum[1].corpoACorpo === true);
@@ -235,8 +310,13 @@ titulo('Cada forma faz o que diz');
     const m = G.fuMagiaDe(Object.assign({}, q.ficha, { escola: 0, raridade: 'Raro', feitio: 'sustentacao' }), 'suporte');
     amigo.pv = 5;
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
-    verificar('Curar aponta para dentro',
-      amigo.pv === Math.min(amigo.ficha.pvMax, 35), 'ficou com ' + amigo.pv);
+    /* O que se mede é a DIREÇÃO — a magia de suporte chega a um
+       companheiro, e não só a quem a lança (ver a nota no FU_MAGIAS).
+       A conta sai da própria magia: a desta célula era o Curar e passou
+       a ser a Transfusão na etapa 3F.2, e a regra não mudou. */
+    verificar('a magia de suporte aponta para dentro',
+      amigo.pv === Math.min(amigo.ficha.pvMax, 5 + (m.cura | 0)),
+      'ficou com ' + amigo.pv + ', cura ' + (m.cura | 0));
     amigo.pv = amigo.ficha.pvMax - 2;
     M.fuNovaRonda(e);
     M.fuAgir(e, { quem: q.id, tipo: 'magia', magia: m, alvos: [amigo.id] });
@@ -415,17 +495,45 @@ titulo('O que não pode acontecer');
      a conferir que nada sai dos limites e que todas acabam. */
   for (let s = 1; s <= 60; s++) {
     const b = luta(20, s * 13);
-    let guarda = 0;
+    let guarda = 0, nulos = 0;
+    /* A TRAVA FICA EM 400, E ISSO TEM HISTÓRIA.
+
+       A etapa 3F.16 mediu o `gesto` no Raro e esta prova estourou numa
+       das 60 sementes: a rotação gastava um turno em quatro numa magia
+       de 2 de dano, as rondas subiam de 8,0 para 8,6, e aquela semente
+       cruzava as 400 ações na ronda 29. A correção de então foi subir a
+       trava para 700.
+
+       Na 3F.17 o `gesto` passou a existir só no Lendário, e esta prova
+       roda no nível 20 — que é Raro. O motivo do 700 desapareceu junto:
+       medido, com a trava em 400 as 60 batalhas acabam, e a pior usa
+       164 ações. Subir a trava sem causa seria afrouxar o teste, e por
+       isso ela voltou.
+
+       O que esta conferição afirma é "a batalha progride e acaba". Se
+       voltar a estourar, é para investigar — e não para subir o número. */
     while (!b.acabou && guarda++ < 400) {
       const vez = M.fuVez(b);
       if (!vez) { M.fuNovaRonda(b); continue; }
       const quem = M.fuPorId(b, vez.podem[0]);
-      /* Os lugares DELE, e não os cinco: pedir-lhe um que o feitio não tem
-         devolvia nulo, e a prova de fogo passava a bater sem magia nenhuma
-         sem se dar por isso. */
-      const meus = G.fuLugaresDe(quem.ficha);
+      /* OS LUGARES MATERIALIZADOS, E NÃO OS POSSÍVEIS.
+
+         Era `fuLugaresDe`, que desde o `gesto` (3F.17) diz os lugares
+         que o feitio PODE ter. Esta prova roda no nível 20 — Raro — e a
+         rotação passou a pedir o `gesto` um turno em quatro; o
+         `fuMagiaDe` devolvia nulo, e o `fuAgir` tratava uma magia nula
+         como MURRO, em silêncio. A prova ficava a bater de graça num
+         turno em quatro e ninguém dava por isso.
+
+         Com o `fuMagiasDe` a rotação volta a pedir só o que o avatar
+         sabe fazer, e um lugar que não materialize nunca mais chega
+         aqui como nulo. */
+      const meus = Object.keys(G.fuMagiasDe(quem.ficha));
       const lugar = meus[guarda % meus.length];
       const mg = G.fuMagiaDe(quem.ficha, lugar);
+      // Conta-se, e confere-se UMA vez no fim da batalha: dentro do laço
+      // seriam quatro mil conferições iguais a encher o relatório.
+      if (!mg && lugar !== 'comum') nulos++;
       const paraDentro = lugar === 'defesa' || lugar === 'suporte';
       M.fuAgir(b, {
         quem: quem.id,
@@ -439,6 +547,8 @@ titulo('O que não pode acontecer');
     verificar('batalha ' + s + ': PM dentro dos limites',
       b.A.concat(b.B).every(c => c.pm >= 0 && c.pm <= c.ficha.pmMax));
     verificar('batalha ' + s + ' acaba', b.acabou, 'parou na ronda ' + b.ronda);
+    verificar('batalha ' + s + ': nenhum lugar pedido saiu sem magia', nulos === 0,
+      nulos + ' pedidos nulos');
   }
 }
 
@@ -769,15 +879,31 @@ titulo('Os pacotes dos feitios');
     const outro = e.A.find(c => c !== frente && c !== quem);
     quem.pm = 99;
     const curar = G.fuMagiaDe(quem.ficha, 'suporte');
+    /* A CURA SAI DA MAGIA; O 1,5 VAI ESCRITO AQUI.
+
+       Estava 45 e 30 — os valores do Curar, que era a magia desta célula
+       antes da etapa 3F.2 pôr a escola 0 no eixo concentrado
+       (Transfusão). Lendo a cura da própria magia, o teste sobrevive à
+       próxima mudança de identidade.
+
+       Mas o MULTIPLICADOR não se lê do motor. Tentei `M.FU_CUIDAR_FRENTE`
+       e o teste ficou cego: mudei a constante para 1,0 e ele continuou a
+       passar, porque media o código contra ele próprio. O 1,5 é a regra
+       que este teste existe para garantir, e por isso vive aqui — se
+       alguém mexer no FU_CUIDAR_FRENTE, isto tem de falhar e obrigar a
+       uma decisão. */
+    const base = curar.cura | 0;
+    verificar('a magia de suporte da Sustentação cura', base > 0, String(base));
     frente.pv = 1;
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [frente.id] });
     verificar('a cura da Sustentação vale 50% a mais em quem está na frente',
-      frente.pv === Math.min(frente.ficha.pvMax, 1 + 45), frente.pv + '');
+      frente.pv === Math.min(frente.ficha.pvMax, 1 + Math.floor(base * 1.5)),
+      frente.pv + '');
     M.fuNovaRonda(e);
     outro.pv = 1; quem.pm = 99;
     M.fuAgir(e, { quem: quem.id, tipo: 'magia', magia: curar, alvos: [outro.id] });
     verificar('e o normal em quem está atrás',
-      outro.pv === Math.min(outro.ficha.pvMax, 1 + 30), outro.pv + '');
+      outro.pv === Math.min(outro.ficha.pvMax, 1 + base), outro.pv + '');
   }
 
   // ── Proteger ──

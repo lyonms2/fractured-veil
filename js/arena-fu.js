@@ -1501,6 +1501,15 @@ const AF_SELOS = {
         + '<path d="M12 7.5c-1.6.9-3 1.1-3 1.1V12c0 2.2 1.6 3.6 3 4.6 1.4-1 3-2.4 3-4.6V8.6s-1.4-.2-3-1.1Z"/>',
   suporte: '<path d="M12 3.5c3.2 3.8 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 1.8-5.2 5-9Z"/>'
          + '<path d="M12 16.5V9.5M9.5 12 12 9.5l2.5 2.5"/>',
+  /* O GESTO: um traço curto de mão, com a marca que ele deixa no fim.
+     É o lugar universal do Lendário (FU_MAGIAS.gesto, em
+     js/magias-fu.js) e precisa de selo próprio: o `_afSelo` devolve
+     string vazia para um nome que não esteja aqui, e o orbe sairia com
+     o disco vazio sem erro nenhum — a falha que o comentário do
+     `_afOrbe` avisa, e que a etapa 3F.16 encontrou à procura. */
+  gesto: '<path d="M6.5 17.5c1.8-4.2 4-7 6.5-8.5"/>'
+       + '<path d="M13 9h4M17 9v4"/>'
+       + '<circle cx="6.5" cy="17.5" r="1.6"/>',
   // dois braços erguidos, em guarda
   guardar: '<path d="M5 12.5 12 7l7 5.5"/><path d="M5 17.5 12 12l7 5.5"/>',
   // uma lupa: examinar o inimigo
