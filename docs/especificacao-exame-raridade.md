@@ -3,6 +3,11 @@
 > **Etapa 3I.11.** Especificação e auditoria. Não implementa o exame, não
 > promove ninguém, não altera código de produção.
 >
+> **A etapa 3I.13 implementou o que está aqui**, sem mudar número nenhum:
+> `rarExaminar` e `rarCertificar` em [js/raridades.js](../js/raridades.js),
+> e o caminho server-side em [api/_certificar.js](../api/_certificar.js).
+> As seções que diziam "não existe rotina" estão anotadas abaixo.
+>
 > O objetivo é que a etapa seguinte possa implementar sem tomar nenhuma
 > decisão conceitual nova. Onde isso não foi possível, há uma **pendência**
 > ou um **bloqueador** nomeado, e não um palpite.
@@ -502,11 +507,15 @@ elegíveis. Nenhuma condição lê a posição de ninguém.
 | vitória segundos antes/depois da virada | cai no mês UTC do **fechamento** (seção 5). Sem tolerância |
 | rotina rodar duas vezes | **idempotente**: a segunda chamada recebe `JA_TEM` e não escreve |
 
-### Nenhuma rotina existe
+### A rotina existe; o gatilho não  ·  atualizado na 3I.13
 
-Não há código que escreva em `raridades`. O exame não tem gatilho, não tem
-agendamento e não tem endpoint. **Isso é pendência de implementação**, não um
-esquecimento desta etapa.
+`api/_certificar.js` escreve em `raridades`, dentro de uma transação, depois
+de ler os feitos do documento. O que continua a não existir é **quem o
+chama**: não há cron, nem agendamento, nem endpoint, nem botão.
+
+É deliberado. O exame não se pede — a raridade não é um requerimento que se
+protocola, é um fato que o servidor constata. O gatilho (o ciclo mensal) é
+etapa própria, e já só precisa de chamar `certificarJogador`.
 
 ---
 
@@ -720,12 +729,17 @@ refresh, repetição de chamada →  idem
 compra/venda                 →  o registro viaja; não é recriado
 ```
 
-### O que ainda não está garantido
+### O que ficou garantido na 3I.13
 
-Não existe rotina de certificação, logo **não existe teste de idempotência da
-rotina**. A garantia hoje é a de `rarPromover`, que é a peça certa — mas uma
-rotina que faça duas escritas (Raro e Lendário, seção 13) precisa de ser
-idempotente como um todo, e não só por chamada.
+A certificação é idempotente **como um todo**, e está medido: dez exames
+seguidos sobre a mesma evidência escrevem uma vez e deixam um evento no
+histórico. O `rarCertificar` devolve `JA_TEM` a partir do segundo, e o
+`certificarAvatar` só grava quando `ok` é verdade.
+
+A questão da seção 13 — registrar Raro e Lendário, ou só Lendário — foi
+decidida: **só o que aconteceu**. Um Comum que já merece Lendário sobe num
+salto e o histórico guarda um evento, `Comum → Lendário`. Não se inventa um
+degrau por Raro que ninguém atravessou.
 
 ---
 
@@ -874,12 +888,11 @@ Depois de o exame entrar, o anúncio e o preço continuariam a sair do nível. S
 `tools/testar-raridade.js` falha se alguém a chamar de um lugar novo — a lista
 está presa por teste, o que ajuda, mas não as converte.
 
-### Bloqueador 3 — não existe rotina de certificação
+### ~~Bloqueador 3 — não existe rotina de certificação~~  ·  resolvido na 3I.13
 
-Nada escreve em `raridades`. O exame não tem gatilho, nem agendamento, nem
-endpoint, nem lugar decidido (servidor de PvP? tarefa periódica? no
-carregamento?). É pendência, não bloqueador da *especificação* — mas é
-bloqueador da implementação.
+`api/_certificar.js` é o lugar, e é módulo interno sem rota. O que falta é o
+gatilho, e isso é escolha de calendário e não de arquitetura: `certificarJogador`
+recebe o `db` e o uid e faz o resto.
 
 ### Não-bloqueador, registrado como resolvido
 
@@ -922,12 +935,12 @@ Em ordem de importância:
 1. **O legado por nível: desligar, quando e como.** Bloqueador 1. Decisão de
    migração com consequência visível: rebaixar todo avatar de nível 27+, ou
    conviver com duas fontes.
-2. **`Comum → Lendário`: uma certificação ou duas?** `rarPromover` permite as
-   duas. Uma chamada perde o passo `Raro` do histórico; duas registram ambos com
-   o mesmo instante. **Recomendação, não decisão:** registrar os dois, porque o
-   avatar de fato satisfez Rare e o histórico existe para ser lido — perder um
-   fato verdadeiro é pior que dois instantes iguais.
-3. **Onde a certificação roda.** Não existe rotina.
+2. ~~**`Comum → Lendário`: uma certificação ou duas?**~~ **Decidido na 3I.13:
+   uma.** O histórico guarda o que aconteceu, e o avatar não passou por Raro —
+   passou de Comum a Lendário. Dois eventos com o mesmo instante descreveriam
+   uma escada que ninguém subiu.
+3. ~~**Onde a certificação roda.**~~ **Feito na 3I.13:** `api/_certificar.js`.
+   Falta o gatilho mensal, que é etapa própria.
 4. **O mercado e o preço**, que leem o legado por fora. Bloqueador 2.
 5. **O teste de invariante da expulsão** (★ na §22). É a única propriedade
    crítica verdadeira-mas-não-presa.

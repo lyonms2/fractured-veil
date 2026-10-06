@@ -62,6 +62,34 @@ ou qualquer outro atributo. Não há promoção automática em lugar nenhum.
 
 ---
 
+## A certificação, desde a 3I.13
+
+```js
+rarExaminar(feitos)                     // js/raridades.js — PURA
+rarCertificar(reg, feitos, agora, por)  // examina e promove, sem escrever
+certificarAvatar(db, uid, idAvatar)     // api/_certificar.js — lê e grava
+```
+
+O que o exame pede:
+
+```text
+Raro       venceu ao menos uma partida de FILA em 3 meses diferentes
+Lendário   o mesmo em 5 meses, E derrotou 3 PESSOAS diferentes que
+           valiam 1150 pontos ou mais no instante da derrota
+```
+
+Os adversários contam-se por **uid do jogador**, nunca por avatar: dez
+avatares do mesmo dono são um adversário. O `pontos` é o retrato do rank
+antes daquela partida, e nada o recalcula.
+
+O **caminho do suporte continua desativado**: a etapa 3I.10 mediu que a cura
+acumulada tem correlação 0,994 com o número de partidas (é volume, não
+mérito) e que só a Sustentação produz cura. Volta quando o motor tiver uma
+métrica de intensidade.
+
+Não há quota, nem top X%, nem disputa: se ninguém for elegível, ninguém é
+promovido; se todos forem, todos são.
+
 ## A promoção é explícita
 
 ```js
@@ -82,15 +110,17 @@ Lendário → Comum     recusa · NAO_DESCE
 Raro     → Comum     recusa · NAO_DESCE
 ```
 
-**Nada em produção o chama.** O mecanismo está pronto e desligado, à espera de
-quem tenha autoridade para promover.
+Quem o chama é o `rarCertificar`, e só ele — com o `por` fixo em
+`'exame-raridade'`, nunca o uid de quem pediu. **O que ainda não existe é o
+gatilho**: nenhum cron, endpoint ou botão chama a certificação. O mecanismo
+está pronto e à espera do ciclo mensal.
 
 ---
 
-## O exame vem depois
+## O exame, e o que dele falta
 
-A raridade será concedida por **certificação por mérito**, desenhada e
-calibrada mas **não implementada**:
+A certificação por mérito está **implementada** (3I.13) e **sem gatilho**.
+Os documentos que a desenharam:
 
 - [especificacao-exame-raridade.md](especificacao-exame-raridade.md) — as
   fórmulas (3I.11)
@@ -98,9 +128,10 @@ calibrada mas **não implementada**:
   (3I.10)
 - [exame-de-raridade.md](exame-de-raridade.md) — a estrutura (3I.8)
 
-Enquanto o exame não existir, **todo avatar é Comum**, inclusive em combate.
-Isso é a consequência deliberada desta etapa, e não um efeito colateral: ver o
-relatório da 3I.12 para o que cada raridade vale no motor.
+Enquanto o gatilho não existir, **todo avatar é Comum**, inclusive em combate
+— ninguém chama a certificação, logo ninguém é promovido. É consequência
+deliberada, e não efeito colateral: ver o relatório da 3I.12 para o que cada
+raridade vale no motor.
 
 ---
 

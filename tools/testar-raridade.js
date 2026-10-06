@@ -668,5 +668,512 @@ titulo('Nível é progressão; raridade é conquista');
   }
 }
 
+/* ═══ 14 · O EXAME ═══════════════════════════════════════════════ */
+titulo('O exame: que certificação a evidência merece');
+{
+  const FE = require('../js/feitos.js');
+  const fs = require('fs');
+  const ler = (rel) => fs.readFileSync(__dirname + '/../' + rel, 'utf8');
+  const mes = (i) => '2026-' + String(i).padStart(2, '0');
+
+  /* ── A FÁBRICA DE EVIDÊNCIA ──
+     Monta pelo `feitoPvp` de verdade, partida a partida: nada é escrito
+     à mão no documento, e por isso o que se testa é o que o servidor
+     gravaria. */
+  const evid = (partidas) => {
+    let r = FE.feitoVazio(1);
+    let t = 1000;
+    for (const p of partidas) {
+      for (let i = 0; i < (p.n || 1); i++) {
+        t += 100;
+        r = FE.feitoPvp(r, p.res || 'vitoria', p.tipo || 'fila', p.ciclo, t,
+          p.adv ? Object.assign({ divisao: 'adulto', em: t, ciclo: p.ciclo }, p.adv) : null);
+      }
+    }
+    return FE.feitoDe({ a: r }, 'a');
+  };
+  /* N ciclos com vitória, e M adversários distintos a `pontos`. */
+  const caso = (ciclos, fortes, pontos) => {
+    const p = [];
+    for (let i = 0; i < ciclos; i++) p.push({ ciclo: mes(i + 1) });
+    for (let i = 0; i < fortes; i++)
+      p.push({ ciclo: mes(1), adv: { uid: 'forte' + i, pontos: pontos || 1200 } });
+    return evid(p);
+  };
+  const ex = (f) => RAR.rarExaminar(f);
+  const rar = (f) => ex(f).raridade;
+
+  /* ── 1 a 7 · RARO ── */
+  conferir('1 · sem ciclos → Comum', rar(evid([])) === 'Comum', rar(evid([])));
+  conferir('2 · 1 ciclo com vitória → Comum', rar(caso(1, 0)) === 'Comum', rar(caso(1, 0)));
+  conferir('3 · 2 ciclos → Comum', rar(caso(2, 0)) === 'Comum', rar(caso(2, 0)));
+  conferir('4 · 3 ciclos → Raro', rar(caso(3, 0)) === 'Raro', rar(caso(3, 0)));
+  conferir('5 · 4 ciclos → Raro', rar(caso(4, 0)) === 'Raro', rar(caso(4, 0)));
+  conferir('6 · 5 ciclos → ao menos Raro',
+    RAR.rarGrau(rar(caso(5, 0))) >= 1, rar(caso(5, 0)));
+  {
+    /* 7 · muitas vitórias no MESMO ciclo continuam a ser um ciclo */
+    const umMes = evid([{ ciclo: mes(1), n: 50 }]);
+    const tres  = evid([{ ciclo: mes(1), n: 50 }, { ciclo: mes(2) }, { ciclo: mes(3) }]);
+    conferir('7 · 50 vitórias num mês contam 1 ciclo',
+      ex(umMes).ciclosComVitoria === 1 && rar(umMes) === 'Comum',
+      ex(umMes).ciclosComVitoria);
+    conferir('7b · e com mais dois meses chega a Raro',
+      ex(tres).ciclosComVitoria === 3 && rar(tres) === 'Raro', ex(tres).ciclosComVitoria);
+  }
+
+  /* ── 8 a 14 · LENDÁRIO ── */
+  conferir('8 · 5 ciclos + 0 fortes → não Lendário', rar(caso(5, 0)) !== 'Lendário');
+  conferir('9 · 5 ciclos + 2 fortes → não Lendário', rar(caso(5, 2)) !== 'Lendário');
+  conferir('10 · 5 ciclos + 3 fortes → Lendário', rar(caso(5, 3)) === 'Lendário', rar(caso(5, 3)));
+  conferir('11 · 6 ciclos + 3 fortes → Lendário', rar(caso(6, 3)) === 'Lendário');
+  conferir('11b · 12 ciclos + 3 fortes → Lendário', rar(caso(12, 3)) === 'Lendário');
+  conferir('12 · 10 ciclos + 2 fortes → não Lendário (e é Raro)',
+    rar(caso(10, 2)) === 'Raro', rar(caso(10, 2)));
+  conferir('13 · 3 adversários a 1149 → não Lendário',
+    rar(caso(5, 3, 1149)) !== 'Lendário' && ex(caso(5, 3, 1149)).adversariosFortes === 0,
+    ex(caso(5, 3, 1149)).adversariosFortes);
+  conferir('14 · 3 adversários a EXATAMENTE 1150 → Lendário',
+    rar(caso(5, 3, 1150)) === 'Lendário', rar(caso(5, 3, 1150)));
+  conferir('14b · o limiar é o do arquivo, e é 1150',
+    RAR.RAR_FORTE_PONTOS === 1150 && RAR.RAR_CICLOS_RARO === 3
+    && RAR.RAR_CICLOS_LENDARIO === 5 && RAR.RAR_FORTES_MIN === 3,
+    [RAR.RAR_CICLOS_RARO, RAR.RAR_CICLOS_LENDARIO, RAR.RAR_FORTES_MIN, RAR.RAR_FORTE_PONTOS]);
+
+  /* ── 15 a 18 · OS UIDs ── */
+  {
+    const tresVezes = evid([
+      { ciclo: mes(1) }, { ciclo: mes(2) }, { ciclo: mes(3) },
+      { ciclo: mes(4) }, { ciclo: mes(5) },
+      { ciclo: mes(1), adv: { uid: 'mesmo', pontos: 1200 } },
+      { ciclo: mes(2), adv: { uid: 'mesmo', pontos: 1200 } },
+      { ciclo: mes(3), adv: { uid: 'mesmo', pontos: 1200 } }]);
+    conferir('15 · o mesmo uid três vezes conta 1',
+      ex(tresVezes).adversariosFortes === 1 && rar(tresVezes) === 'Raro',
+      ex(tresVezes).adversariosFortes);
+
+    const ranksVarios = evid([
+      { ciclo: mes(1) }, { ciclo: mes(2) }, { ciclo: mes(3) },
+      { ciclo: mes(4) }, { ciclo: mes(5) },
+      { ciclo: mes(1), adv: { uid: 'm', pontos: 1160 } },
+      { ciclo: mes(2), adv: { uid: 'm', pontos: 1400 } },
+      { ciclo: mes(3), adv: { uid: 'm', pontos: 1250 } }]);
+    conferir('16 · o mesmo uid com ranks diferentes conta 1',
+      ex(ranksVarios).adversariosFortes === 1, ex(ranksVarios).adversariosFortes);
+
+    const subiuDepois = evid([
+      { ciclo: mes(1) }, { ciclo: mes(2) }, { ciclo: mes(3) },
+      { ciclo: mes(4) }, { ciclo: mes(5) },
+      { ciclo: mes(1), adv: { uid: 'm', pontos: 1160 } },
+      { ciclo: mes(6), adv: { uid: 'm', pontos: 1900 } }]);
+    conferir('17 · o mesmo uid com rank maior depois continua 1',
+      ex(subiuDepois).adversariosFortes === 1, ex(subiuDepois).adversariosFortes);
+
+    conferir('18 · três uids distintos contam 3',
+      ex(caso(5, 3)).adversariosFortes === 3, ex(caso(5, 3)).adversariosFortes);
+
+    /* ── A DEDUPLICAÇÃO DO EXAME, SOBRE A LISTA CRUA ──
+
+       As conferições acima passam pelo `feitoPvp`, e ele JÁ deduplica no
+       armazenamento: um uid ocupa uma posição só. Logo elas nunca veem
+       uma duplicata, e não provam que o exame deduplica — provam que o
+       escritor deduplica.
+
+       São duas defesas, e cada uma precisa do seu teste: um documento
+       corrompido, ou uma versão futura do escritor, podem trazer o
+       mesmo uid duas vezes, e o exame tem de aguentar sozinho.
+       Apanhado a mutar o exame, no scratchpad. */
+    const cru = (lista) => ({
+      ciclos: { '2026-01': { v: 1 }, '2026-02': { v: 1 }, '2026-03': { v: 1 },
+                '2026-04': { v: 1 }, '2026-05': { v: 1 } },
+      pvp: { fila: { vencidos: lista } },
+    });
+    conferir('o exame deduplica a lista CRUA: o mesmo uid três vezes conta 1',
+      ex(cru([{ uid: 'm', pontos: 1200 }, { uid: 'm', pontos: 1300 },
+              { uid: 'm', pontos: 1400 }])).adversariosFortes === 1,
+      ex(cru([{ uid: 'm', pontos: 1200 }, { uid: 'm', pontos: 1300 },
+              { uid: 'm', pontos: 1400 }])).adversariosFortes);
+    conferir('e um uid repetido no meio de outros não infla a conta',
+      ex(cru([{ uid: 'a', pontos: 1200 }, { uid: 'a', pontos: 1300 },
+              { uid: 'b', pontos: 1200 }])).adversariosFortes === 2,
+      ex(cru([{ uid: 'a', pontos: 1200 }, { uid: 'a', pontos: 1300 },
+              { uid: 'b', pontos: 1200 }])).adversariosFortes);
+    conferir('e dez repetições do mesmo uid não dão Lendário',
+      ex(cru(Array.from({ length: 10 }, () => ({ uid: 'so-um', pontos: 1900 }))))
+        .raridade === 'Raro',
+      ex(cru(Array.from({ length: 10 }, () => ({ uid: 'so-um', pontos: 1900 })))).raridade);
+
+    /* E dez avatares do MESMO jogador continuam a ser um: a unidade é
+       o uid, medida na 3I.7. */
+    const dezAvatares = evid([
+      { ciclo: mes(1) }, { ciclo: mes(2) }, { ciclo: mes(3) },
+      { ciclo: mes(4) }, { ciclo: mes(5) }].concat(
+      Array.from({ length: 10 }, (_, i) =>
+        ({ ciclo: mes((i % 5) + 1), adv: { uid: 'cumplice', pontos: 1200 + i } }))));
+    conferir('18b · dez avatares de um cúmplice contam 1',
+      ex(dezAvatares).adversariosFortes === 1 && rar(dezAvatares) !== 'Lendário',
+      ex(dezAvatares).adversariosFortes);
+  }
+
+  /* ── 19 e 20 · A ORIGEM ── */
+  {
+    const soAmistosas = evid(Array.from({ length: 8 }, (_, i) =>
+      ({ ciclo: mes(i + 1), tipo: 'amistosa', adv: { uid: 'a' + i, pontos: 1500 } })));
+    conferir('19 · amistosas não abrem ciclo',
+      ex(soAmistosas).ciclosComVitoria === 0 && rar(soAmistosas) === 'Comum',
+      ex(soAmistosas).ciclosComVitoria);
+    conferir('20 · os vencidos da amistosa não valem para a Via A',
+      ex(soAmistosas).adversariosFortes === 0, ex(soAmistosas).adversariosFortes);
+    /* Misturado: cinco ciclos de fila e os fortes só na amistosa. */
+    const misto = evid([
+      { ciclo: mes(1) }, { ciclo: mes(2) }, { ciclo: mes(3) },
+      { ciclo: mes(4) }, { ciclo: mes(5) }].concat(
+      [0, 1, 2].map(i => ({ ciclo: mes(1), tipo: 'amistosa',
+                            adv: { uid: 'f' + i, pontos: 1500 } }))));
+    conferir('20b · fortes só na amistosa não dão Lendário',
+      rar(misto) === 'Raro' && ex(misto).adversariosFortes === 0, rar(misto));
+  }
+
+  /* ── 21 a 26 · NEUTRALIDADE ──
+     O exame recebe SÓ os feitos. Nível, fase, Feitio, Escola, XP e vida
+     ativa nem sequer lhe chegam — mas prova-se de duas maneiras: pelo
+     comportamento (juntar os campos não muda nada) e pela fonte (as
+     palavras não aparecem na função). */
+  {
+    const base = caso(5, 3);
+    const sujo = JSON.parse(JSON.stringify(base));
+    Object.assign(sujo, { nivel: 60, fase: 3, feitio: 'lamina', escola: 2,
+                          xp: 999999, totalSecs: 1e9, vidaAtiva: { s: 1e9 },
+                          raridade: 'Comum', rank: { pontos: 2000 } });
+    conferir('21 a 26 · juntar nível, fase, feitio, escola, XP e vida não muda nada',
+      JSON.stringify(ex(sujo)) === JSON.stringify(ex(base)), [ex(sujo), ex(base)]);
+
+    const fonte = ler('js/raridades.js');
+    const corpo = fonte.slice(fonte.indexOf('function _rarCiclosComVitoria'),
+                              fonte.indexOf('function rarCertificar'))
+                       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    for (const proibido of ['nivel', 'nível', 'fase', 'feitio', 'escola', 'idade',
+                            'totalSecs', 'vidaAtiva', 'xp', 'vinculo', 'winRate',
+                            'melhorAdversario', 'amistosa', 'cura', 'curaPv',
+                            'limpeza', 'protegeu', 'suporte']) {
+      /* COM FRONTEIRA DE PALAVRA, e isto não é zelo: "idade" vive
+         dentro de "raridade", e sem a fronteira a conferição falhava
+         por causa do próprio nome do arquivo. */
+      conferir('a função do exame não menciona `' + proibido + '`',
+        !new RegExp('\b' + proibido + '\b', 'i').test(corpo), proibido);
+    }
+  }
+
+  /* ── 27 a 32 · DADOS INVÁLIDOS: FALHAR FECHADO ── */
+  {
+    const maus = [
+      ['feitos ausente', undefined], ['feitos null', null], ['feitos texto', 'xxx'],
+      ['feitos número', 42], ['feitos array', []],
+      ['27 · ciclos ausente', { pvp: { fila: { vencidos: [] } } }],
+      ['ciclos null', { ciclos: null }], ['ciclos texto', { ciclos: 'muitos' }],
+      ['ciclos array', { ciclos: [1, 2, 3, 4, 5] }],
+      ['28 · vencidos ausente', { ciclos: {} }],
+      ['vencidos null', { ciclos: {}, pvp: { fila: { vencidos: null } } }],
+      ['vencidos objeto', { ciclos: {}, pvp: { fila: { vencidos: { a: 1 } } } }],
+      ['pvp ausente', { ciclos: {} }], ['pvp null', { ciclos: {}, pvp: null }],
+      ['29 · v inválido (NaN)', { ciclos: { '2026-01': { v: NaN }, '2026-02': { v: NaN },
+                                            '2026-03': { v: NaN } } }],
+      ['v inválido (texto)', { ciclos: { '2026-01': { v: 'x' }, '2026-02': { v: 'x' },
+                                          '2026-03': { v: 'x' } } }],
+      ['v negativo', { ciclos: { '2026-01': { v: -9 }, '2026-02': { v: -9 },
+                                 '2026-03': { v: -9 } } }],
+      ['v Infinity', { ciclos: { '2026-01': { v: Infinity }, '2026-02': { v: Infinity },
+                                 '2026-03': { v: Infinity } } }],
+      ['v objeto', { ciclos: { '2026-01': { v: {} }, '2026-02': { v: {} },
+                               '2026-03': { v: {} } } }],
+      ['ciclo com valor null', { ciclos: { '2026-01': null, '2026-02': null,
+                                           '2026-03': null } }],
+    ];
+    for (const [nome, f] of maus) {
+      let r, erro = null;
+      try { r = ex(f); } catch (e) { erro = e.message; }
+      conferir(nome + ' → Comum, sem rebentar',
+        !erro && r && r.raridade === 'Comum' && r.elegivel === false, erro || r);
+    }
+    /* 30 e 31 · pontos e uid inválidos não contam como adversário */
+    const cincoCiclos = { ciclos: { '2026-01': { v: 1 }, '2026-02': { v: 1 },
+                                    '2026-03': { v: 1 }, '2026-04': { v: 1 },
+                                    '2026-05': { v: 1 } } };
+    const comVencidos = (lista) =>
+      Object.assign({}, cincoCiclos, { pvp: { fila: { vencidos: lista } } });
+    const maus2 = [
+      ['30 · pontos ausente', [{ uid: 'a' }, { uid: 'b' }, { uid: 'c' }]],
+      ['pontos NaN', [{ uid: 'a', pontos: NaN }, { uid: 'b', pontos: NaN },
+                      { uid: 'c', pontos: NaN }]],
+      ['pontos Infinity', [{ uid: 'a', pontos: Infinity }, { uid: 'b', pontos: Infinity },
+                           { uid: 'c', pontos: Infinity }]],
+      ['pontos negativo', [{ uid: 'a', pontos: -9999 }, { uid: 'b', pontos: -9999 },
+                           { uid: 'c', pontos: -9999 }]],
+      ['pontos objeto', [{ uid: 'a', pontos: {} }, { uid: 'b', pontos: {} },
+                         { uid: 'c', pontos: {} }]],
+      ['31 · uid ausente', [{ pontos: 9999 }, { pontos: 9999 }, { pontos: 9999 }]],
+      ['uid vazio', [{ uid: '', pontos: 9999 }, { uid: '', pontos: 9999 },
+                     { uid: '', pontos: 9999 }]],
+      ['uid número', [{ uid: 1, pontos: 9999 }, { uid: 2, pontos: 9999 },
+                      { uid: 3, pontos: 9999 }]],
+      ['uid objeto', [{ uid: {}, pontos: 9999 }, { uid: {}, pontos: 9999 },
+                      { uid: {}, pontos: 9999 }]],
+      ['32 · entradas null', [null, null, null]],
+      ['entradas texto', ['a', 'b', 'c']],
+      ['entradas número', [1, 2, 3]],
+    ];
+    for (const [nome, lista] of maus2) {
+      let r, erro = null;
+      try { r = ex(comVencidos(lista)); } catch (e) { erro = e.message; }
+      conferir(nome + ' → não conta como adversário',
+        !erro && r && r.adversariosFortes === 0 && r.raridade === 'Raro',
+        erro || (r && { fortes: r.adversariosFortes, rar: r.raridade }));
+    }
+    /* O Infinity merece nota: é > 1150, e mesmo assim não entra. Um
+       número que não é finito não é um rank. */
+    conferir('32b · Infinity é maior que 1150 e mesmo assim não conta',
+      ex(comVencidos([{ uid: 'a', pontos: Infinity }, { uid: 'b', pontos: Infinity },
+                      { uid: 'c', pontos: Infinity }])).adversariosFortes === 0);
+  }
+
+  /* ── A PUREZA, QUE É O QUE TORNA TUDO ISTO TESTÁVEL ── */
+  {
+    const f = caso(5, 3);
+    const antes = JSON.stringify(f);
+    const a = ex(f), b = ex(f);
+    conferir('o exame não toca na evidência', JSON.stringify(f) === antes);
+    conferir('e dá o mesmo resultado sempre', JSON.stringify(a) === JSON.stringify(b));
+    const fonte = ler('js/raridades.js');
+    const corpo = fonte.slice(fonte.indexOf('function rarExaminar'),
+                              fonte.indexOf('function rarCertificar'));
+    conferir('e não escreve, não lê banco, não vê o relógio',
+      !/Date\.now|new Date|firestore|collection|\.set\(|\.update\(/.test(corpo), null);
+  }
+}
+
+/* ═══ 15 · A CERTIFICAÇÃO ════════════════════════════════════════ */
+titulo('A certificação: examinar e promover são coisas diferentes');
+{
+  const FE = require('../js/feitos.js');
+  const fs = require('fs');
+  const ler = (rel) => fs.readFileSync(__dirname + '/../' + rel, 'utf8');
+  const mes = (i) => '2026-' + String(i).padStart(2, '0');
+  const caso = (ciclos, fortes) => {
+    let r = FE.feitoVazio(1);
+    let t = 1000;
+    for (let i = 0; i < ciclos; i++) r = FE.feitoPvp(r, 'vitoria', 'fila', mes(i + 1), t += 100, null);
+    for (let i = 0; i < fortes; i++)
+      r = FE.feitoPvp(r, 'vitoria', 'fila', mes(1), t += 100,
+        { uid: 'f' + i, pontos: 1200, divisao: 'adulto', em: t, ciclo: mes(1) });
+    return FE.feitoDe({ a: r }, 'a');
+  };
+
+  /* ── Comum → Raro ── */
+  {
+    const c = RAR.rarCertificar(null, caso(3, 0), 5000);
+    conferir('Comum com 3 ciclos → promove a Raro',
+      c.ok && c.de === 'Comum' && c.para === 'Raro' && c.reg.atual === 'Raro', c);
+    conferir('e o histórico registra um evento, com quem concedeu',
+      c.reg.historico.length === 1 && c.reg.historico[0].para === 'Raro'
+      && c.reg.historico[0].por === 'exame-raridade' && c.reg.historico[0].em === 5000,
+      c.reg.historico);
+  }
+
+  /* ── Comum → Lendário, num salto ── */
+  {
+    const c = RAR.rarCertificar(null, caso(5, 3), 6000);
+    conferir('Comum com 5 ciclos e 3 fortes → promove direto a Lendário',
+      c.ok && c.de === 'Comum' && c.para === 'Lendário', c);
+    conferir('e NÃO inventa um degrau por Raro que não aconteceu',
+      c.reg.historico.length === 1 && c.reg.historico[0].para === 'Lendário',
+      c.reg.historico);
+  }
+
+  /* ── Raro → Lendário ── */
+  {
+    const jaRaro = { atual: 'Raro', historico: [{ para: 'Raro', em: 1, por: 'exame-raridade' }] };
+    const c = RAR.rarCertificar(jaRaro, caso(5, 3), 7000);
+    conferir('Raro com evidência de Lendário → promove',
+      c.ok && c.de === 'Raro' && c.para === 'Lendário', c);
+    conferir('e o histórico fica com os dois eventos, na ordem',
+      c.reg.historico.length === 2
+      && c.reg.historico[0].para === 'Raro' && c.reg.historico[1].para === 'Lendário',
+      c.reg.historico);
+  }
+
+  /* ── JÁ CERTIFICADO: nada acontece, e é esse o ponto ── */
+  {
+    const jaLend = { atual: 'Lendário', historico: [{ para: 'Lendário', em: 1, por: 'exame-raridade' }] };
+    const c = RAR.rarCertificar(jaLend, caso(9, 5), 8000);
+    conferir('Lendário examinado outra vez → não promove',
+      !c.ok && c.motivo === 'JA_TEM' && c.reg === null, c);
+    const jaRaro = { atual: 'Raro', historico: [{ para: 'Raro', em: 1, por: 'exame-raridade' }] };
+    const c2 = RAR.rarCertificar(jaRaro, caso(4, 0), 8000);
+    conferir('Raro com evidência de Raro → não promove outra vez',
+      !c2.ok && c2.motivo === 'JA_TEM', c2);
+    /* Dez exames seguidos não duplicam nada. */
+    let reg = null, escritas = 0;
+    for (let i = 0; i < 10; i++) {
+      const r = RAR.rarCertificar(reg, caso(5, 3), 9000 + i);
+      if (r.ok) { reg = r.reg; escritas++; }
+    }
+    conferir('dez exames seguidos escrevem UMA vez',
+      escritas === 1 && reg.historico.length === 1, { escritas, hist: reg.historico });
+  }
+
+  /* ── NÃO ELEGÍVEL ── */
+  {
+    const c = RAR.rarCertificar(null, caso(2, 0), 5000);
+    conferir('Comum com 2 ciclos → continua Comum, sem escrever',
+      !c.ok && c.motivo === 'SEM_EVIDENCIA' && c.reg === null, c);
+  }
+
+  /* ── NUNCA DESCE ──
+     Um Lendário cuja evidência hoje só daria Raro não é rebaixado. A
+     certificação é histórica: o que se conquistou fica. */
+  {
+    const jaLend = { atual: 'Lendário', historico: [{ para: 'Lendário', em: 1, por: 'exame-raridade' }] };
+    const c = RAR.rarCertificar(jaLend, caso(3, 0), 9000);
+    conferir('Lendário com evidência de Raro NÃO é rebaixado',
+      !c.ok && c.motivo === 'NAO_DESCE' && c.reg === null, c);
+  }
+
+  /* ── A SEPARAÇÃO DE RESPONSABILIDADES, NA FONTE ── */
+  {
+    const fonte = ler('js/raridades.js');
+    /* SÓ O CORPO, sem os comentários: o recorte até ao
+       `function rarCertificar` apanhava o comentário DELE, que fala do
+       `rarPromover` — e a conferição falhava por causa de uma nota. */
+    const corpoExame = fonte.slice(fonte.indexOf('function rarExaminar'),
+                                   fonte.indexOf('function rarCertificar'))
+                            .replace(/\/\*[\s\S]*?\*\//g, '')
+                            .replace(/\/\/[^\n]*/g, '');
+    conferir('o rarExaminar não promove ninguém',
+      !/rarPromover/.test(corpoExame), null);
+    conferir('e o rarCertificar promove pelo rarPromover, sem recriar a regra',
+      /rarPromover\(reg, exame\.raridade/.test(fonte), null);
+    const cert = fonte.slice(fonte.indexOf('function rarCertificar'),
+                             fonte.indexOf('function rarDeRegistro'));
+    conferir('o rarCertificar também não escreve nada',
+      !/\.set\(|\.update\(|collection\(/.test(cert), null);
+  }
+}
+
+/* ═══ 16 · A AUTORIDADE DO EXAME ═════════════════════════════════ */
+titulo('O cliente não se certifica a si próprio');
+{
+  const fs = require('fs');
+  const ler = (rel) => fs.readFileSync(__dirname + '/../' + rel, 'utf8');
+  const semComentarios = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const FE = require('../js/feitos.js');
+
+  /* ── A EVIDÊNCIA VEM DO DOCUMENTO, NÃO DO PEDIDO ── */
+  {
+    const c = semComentarios(ler('api/_certificar.js'));
+    /* ── RECORTADO À FUNÇÃO QUE ESCREVE ──
+
+       A asserção olhava o arquivo inteiro, e o arquivo tem DUAS funções
+       que leem os feitos: a que certifica e a que só examina. Mutar a
+       primeira passava despercebido porque a segunda ainda casava com a
+       expressão. Apanhado a mutar, no scratchpad.
+
+       O que importa é a função que ESCREVE: é ela que tem de tirar a
+       evidência do documento e de mais lado nenhum. */
+    const certificar = c.slice(c.indexOf('async function certificarAvatar'),
+                               c.indexOf('async function certificarJogador'));
+    conferir('a função que certifica lê os feitos do documento, e só dele',
+      /const feitos = FE\.feitoDe\(d\.feitos \|\| \{\}, idAvatar\);/.test(certificar),
+      certificar.match(/const feitos = [^;]*/));
+    conferir('e a raridade atual do mapa do servidor',
+      /RAR\.rarRegistro\(d\.raridades \|\| \{\}, idAvatar\)/.test(certificar), null);
+    conferir('e a assinatura dela não aceita evidência de fora',
+      /async function certificarAvatar\(db, uid, idAvatar, agora\)/.test(certificar),
+      certificar.slice(0, 80));
+    for (const campo of ['req', 'body', 'request', 'query', 'params']) {
+      conferir('o certificador nunca lê `' + campo + '`',
+        !new RegExp('\\b' + campo + '\\b').test(c), campo);
+    }
+    conferir('e escreve numa transação, para ler e gravar no mesmo instante',
+      /runTransaction/.test(c), null);
+    conferir('e confere que o avatar é DESTE jogador',
+      /slots\.some\(s => s && s\.id === idAvatar\)/.test(c), null);
+  }
+
+  /* ── NÃO HÁ ROTA: O EXAME NÃO SE PEDE ── */
+  {
+    const arquivos = fs.readdirSync(__dirname + '/../api');
+    conferir('o certificador é módulo interno (começa por _)',
+      arquivos.indexOf('_certificar.js') !== -1
+      && arquivos.indexOf('certificar.js') === -1, arquivos.filter(a => /certific/.test(a)));
+    /* E nenhum endpoint o chama ainda. */
+    const chamam = arquivos.filter(a => a.endsWith('.js') && a !== '_certificar.js'
+      && /_certificar/.test(semComentarios(ler('api/' + a))));
+    conferir('e nenhum endpoint o chama ainda', chamam.length === 0, chamam);
+  }
+
+  /* ── OS PAYLOADS DE ADULTERAÇÃO ──
+     O exame é uma função pura sobre a evidência. A defesa não está nele
+     — está em `feitos` e `raridades` serem campos de topo que o
+     firestore.rules recusa ao cliente. Aqui prova-se as duas coisas: a
+     regra recusa, e o exame não tem por onde receber um atalho. */
+  {
+    const regras = ler('firestore.rules');
+    conferir('`feitos` é campo do servidor nas regras', /'feitos'/.test(regras));
+    conferir('`raridades` é campo do servidor nas regras', /'raridades'/.test(regras));
+    conferir('e os dois estão no camposDoServidor()',
+      /camposDoServidor\(\)/.test(regras), null);
+
+    /* Um avatar que pede a raridade: o campo nem é lido. */
+    const pedindo = { ciclos: { '2026-01': { v: 1 } },
+                      raridade: 'Lendário', raridadePretendida: 'Lendário',
+                      exame: { raridade: 'Lendário' }, elegivel: true,
+                      resultado: 'Lendário' };
+    conferir('um payload que pede Lendário continua Comum',
+      RAR.rarExaminar(pedindo).raridade === 'Comum', RAR.rarExaminar(pedindo).raridade);
+
+    /* E um que já traz o veredito pronto. */
+    const comVeredito = Object.assign({}, pedindo,
+      { ciclosComVitoria: 99, adversariosFortes: 99 });
+    conferir('e um que traz o veredito pronto também',
+      RAR.rarExaminar(comVeredito).raridade === 'Comum'
+      && RAR.rarExaminar(comVeredito).ciclosComVitoria === 1,
+      RAR.rarExaminar(comVeredito));
+
+    /* Chamar a promoção direto com dados do cliente: a regra do
+       rarPromover continua a valer, e só sobe. */
+    const forjado = RAR.rarPromover({ atual: 'Lendário', historico: [] }, 'Lendário', 'cliente', 1);
+    conferir('promover à força o que já se tem é recusado',
+      !forjado.ok && forjado.motivo === 'JA_TEM', forjado);
+    const inventado = RAR.rarPromover(null, 'Divino', 'cliente', 1);
+    conferir('e uma raridade inventada é recusada',
+      !inventado.ok && inventado.motivo === 'VALOR_INVALIDO', inventado);
+  }
+
+  /* ── A VENDA LEVA A CERTIFICAÇÃO E A EVIDÊNCIA ── */
+  {
+    const ca = ler('api/comprar-avatar.js');
+    conferir('a venda leva `raridades` ao comprador',
+      /chaveRar\s*&&\s*rarVendida\s*\?\s*\{\s*\[chaveRar\]:\s*rarVendida/.test(ca), null);
+    conferir('e leva `feitos` também',
+      /chaveFeitos && feitosVendidos \? \{ \[chaveFeitos\]: feitosVendidos \}/.test(ca), null);
+    /* E o comportamento: o comprador recebe a certificação e continua a
+       acumular — um exame depois dela usa os feitos preservados. */
+    let r = FE.feitoVazio(1);
+    for (let i = 0; i < 4; i++)
+      r = FE.feitoPvp(r, 'vitoria', 'fila', '2026-0' + (i + 1), 100 + i,
+        { uid: 'f' + i, pontos: 1200, divisao: 'adulto', em: 1, ciclo: '2026-01' });
+    const vendido = FE.feitoMarco(r, 'venda', 9000);
+    const antes = RAR.rarExaminar(FE.feitoDe({ a: r }, 'a'));
+    const depois = RAR.rarExaminar(FE.feitoDe({ a: vendido }, 'a'));
+    conferir('o exame dá o mesmo antes e depois da venda',
+      JSON.stringify(antes) === JSON.stringify(depois), [antes, depois]);
+    /* E o comprador acrescenta o quinto ciclo e chega a Lendário. */
+    const maisUm = FE.feitoPvp(vendido, 'vitoria', 'fila', '2026-05', 9999, null);
+    conferir('e o comprador continua a construir sobre o que recebeu',
+      RAR.rarExaminar(FE.feitoDe({ a: maisUm }, 'a')).raridade === 'Lendário',
+      RAR.rarExaminar(FE.feitoDe({ a: maisUm }, 'a')));
+  }
+}
+
 console.log('\n' + (falhas.length ? falhas.join('\n') + '\n' : '') + ok + ' passaram · ' + mau + ' falharam');
 process.exit(mau ? 1 : 0);

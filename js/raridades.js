@@ -9,14 +9,13 @@
    É a arquitetura: onde a raridade vive, quem a escreve, como se guarda
    a trajetória, e qual é a única pergunta que o resto do jogo faz.
 
-   NÃO é a conquista. O exame que promove Comum → Raro → Lendário é uma
-   etapa própria e ainda não existe. Enquanto ele não existir, a
-   resposta é COMUM, e era do legado por nível até a 3I.12 — o que
-   está marcado como tal nos dois lugares e sai quando o exame entrar.
+   E é também a CONQUISTA, desde a etapa 3I.13: o `rarExaminar`, no fim
+   deste arquivo, lê os feitos do avatar e diz que certificação eles
+   merecem. O cano deixou de estar seco.
 
-   Dito de outra maneira: o cano está montado e seco. Quando o exame
-   chegar, ele escreve aqui e mais nada muda — nem o histórico, nem a
-   persistência, nem a autoridade, nem o mercado, nem o desenho.
+   Sem registro no mapa a resposta continua a ser COMUM — era do legado
+   por nível até a 3I.12, e o que mudou na 3I.13 não foi isso: foi
+   passar a existir uma maneira de SAIR de Comum que não é o nível.
 
    ── ONDE ELA VIVE ──
 
@@ -201,6 +200,176 @@ function rarResolver(mapa, slot) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   O EXAME — A CONQUISTA
+
+   Três etapas o desenharam, e nenhum número aqui foi escolhido nesta:
+
+     3I.8   a estrutura      docs/exame-de-raridade.md
+     3I.10  os números       docs/calibracao-exame-raridade.md
+     3I.11  as fórmulas      docs/especificacao-exame-raridade.md
+
+   ── O QUE ELE PERGUNTA ──
+
+     Raro       venceu ao menos uma partida de FILA em 3 meses diferentes
+     Lendário   o mesmo em 5 meses, E derrotou 3 PESSOAS diferentes que
+                valiam 1150 pontos ou mais no instante da derrota
+
+   ── O QUE ELE NÃO OLHA ──
+
+   Nível, fase, idade, tempo de vida, XP, vínculo, rank atual do avatar,
+   rank atual do adversário, taxa de vitória, volume de partidas, PvE,
+   amistosas, Feitio, Escola, magia. Nenhum deles aparece em condição
+   alguma, e o tools/testar-raridade.js falha se algum aparecer.
+
+   ── PORQUE O CAMINHO DO SUPORTE NÃO ESTÁ AQUI ──
+
+   A etapa 3I.10 mediu 11 400 avatares-partida no motor e encontrou duas
+   coisas que o fecham: a cura acumulada tem correlação 0,994 com o
+   NÚMERO DE PARTIDAS (é volume, não mérito), e Guarda e Lâmina produzem
+   zero cura — o caminho seria exclusivo da Sustentação. Qualquer limiar
+   é um portão de feitio ou um concurso de volume. Fica desativado até o
+   motor ganhar uma métrica de suporte que seja de intensidade e não de
+   quantidade. */
+
+/* Os quatro números. Vêm da calibração, e mudá-los é uma etapa com
+   medição — não uma linha. */
+const RAR_CICLOS_RARO     = 3;      // ciclos com vitória, para Raro
+const RAR_CICLOS_LENDARIO = 5;      // ciclos com vitória, para Lendário
+const RAR_FORTES_MIN      = 3;      // adversários distintos qualificados
+const RAR_FORTE_PONTOS    = 1150;   // o rank que torna um adversário forte
+
+/* ── A CONTAGEM DOS CICLOS ──
+
+   Um mês conta UMA vez, por mais partidas que tenha tido, e só conta
+   com vitória. A chave é a do `pvpTemporada` (js/pvp-rank.js), em UTC,
+   e o `feitos` só a escreve para a FILA — a amistosa não abre ciclo.
+
+   Lê o que o `feitoDe` devolve, que já saneou tudo: chave fora do
+   formato não chega aqui. */
+function _rarCiclosComVitoria(feitos) {
+  const c = (feitos && feitos.ciclos && typeof feitos.ciclos === 'object') ? feitos.ciclos : {};
+  let n = 0;
+  for (const k of Object.keys(c)) {
+    const v = c[k] && c[k].v;
+    if (Number.isFinite(+v) && +v > 0) n++;
+  }
+  return n;
+}
+
+/* ── A CONTAGEM DOS ADVERSÁRIOS FORTES ──
+
+   PESSOAS distintas, e não avatares: a unidade é o `uid` do jogador.
+   Medido na 3I.7 — um cúmplice rodando os dez slots dele valeria por
+   dez se fosse por avatar, e vale por um sendo por uid.
+
+   Lê SÓ `pvp.fila.vencidos`. Não lê `melhorAdversario`, e isso é
+   normativo: a 3I.8 provou que `melhorAdversario.pontos` é igual ao
+   maior dos `vencidos`, logo contá-lo também seria o mesmo fato duas
+   vezes. E não lê `pvp.amistosa`, que nem rank tem.
+
+   O `pontos` é o retrato do rank ANTES daquela partida. Nada o
+   recalcula, e o rank que o adversário tenha hoje não entra. */
+function _rarAdversariosFortes(feitos) {
+  const ramo = feitos && feitos.pvp && feitos.pvp.fila;
+  const lista = (ramo && Array.isArray(ramo.vencidos)) ? ramo.vencidos : [];
+  const vistos = {};
+  let n = 0;
+  for (const v of lista) {
+    if (!v || typeof v !== 'object') continue;
+    const uid = typeof v.uid === 'string' ? v.uid : '';
+    const pontos = +v.pontos;
+    if (!uid || !Number.isFinite(pontos) || pontos < RAR_FORTE_PONTOS) continue;
+    if (Object.prototype.hasOwnProperty.call(vistos, uid)) continue;
+    vistos[uid] = true;
+    n++;
+  }
+  return n;
+}
+
+/* ── O EXAME ──
+
+   PURA: recebe a evidência e devolve o veredito. Não lê o Firestore,
+   não escreve nada, não promove ninguém, não sabe que horas são, não
+   sabe de que jogador se trata. É de propósito — assim o teste a
+   exercita sem servidor, e o servidor a usa sem surpresa.
+
+   `feitos` é o que o `feitoDe` (js/feitos.js) devolve para este avatar.
+
+   Devolve a raridade que a evidência MERECE, que não é a que o avatar
+   TEM: comparar as duas é trabalho do `rarCertificar`, abaixo.
+
+   Repare que Lendário NÃO cai para Raro quando lhe faltam adversários:
+   cinco ciclos são mais que três, logo quem falha no Lendário por falta
+   de adversários fortes merece Raro na mesma. A escada é cumulativa. */
+function rarExaminar(feitos) {
+  const ciclos = _rarCiclosComVitoria(feitos);
+  const fortes = _rarAdversariosFortes(feitos);
+  let raridade = RARIDADES[0];
+  if (ciclos >= RAR_CICLOS_LENDARIO && fortes >= RAR_FORTES_MIN) raridade = RARIDADES[2];
+  else if (ciclos >= RAR_CICLOS_RARO) raridade = RARIDADES[1];
+  return {
+    raridade,
+    elegivel: rarGrau(raridade) > 0,
+    ciclosComVitoria: ciclos,
+    adversariosFortes: fortes,
+    /* O que falta, para quem quiser mostrar na tela. Zero quando já
+       chega. Não é critério: é diagnóstico. */
+    faltaParaRaro:     Math.max(0, RAR_CICLOS_RARO - ciclos),
+    faltaParaLendario: {
+      ciclos: Math.max(0, RAR_CICLOS_LENDARIO - ciclos),
+      fortes: Math.max(0, RAR_FORTES_MIN - fortes),
+    },
+  };
+}
+
+/* ── A CERTIFICAÇÃO ──
+
+   Junta as duas responsabilidades que ficam separadas de propósito: o
+   exame diz o que a evidência MERECE, o `rarPromover` diz se isso pode
+   ser gravado. Esta função é só a costura, e continua PURA — devolve o
+   registro novo e quem chama é que o grava.
+
+   `reg` é o `raridades[idAvatar]` atual (ou nada); `feitos` é o
+   `feitoDe` do mesmo avatar.
+
+   Devolve `{ ok, motivo, de, para, reg, exame }`. Quando `ok` é falso
+   não há nada a gravar, e o motivo diz porquê:
+
+     SEM_EVIDENCIA   a evidência não chega nem para Raro
+     JA_TEM          já tem essa raridade (não se grava outra vez)
+     NAO_DESCE       já tem mais do que a evidência merece
+
+   Os dois últimos vêm do `rarPromover` tal e qual, e é esse o ponto: a
+   regra de quem pode subir mora num lugar só.
+
+   ── O SALTO DIRETO ──
+
+   Um Comum que já merece Lendário é promovido a Lendário numa só
+   chamada, e o histórico registra um evento: `Comum → Lendário`. Não se
+   inventa um degrau por Raro que não aconteceu. */
+function rarCertificar(reg, feitos, agora, por) {
+  const exame = rarExaminar(feitos);
+  if (!exame.elegivel) {
+    return { ok: false, motivo: 'SEM_EVIDENCIA', de: rarDeRegistro(reg),
+             para: exame.raridade, reg: null, exame };
+  }
+  const r = rarPromover(reg, exame.raridade, por || RAR_EXAME_POR, agora);
+  return { ok: r.ok, motivo: r.motivo || null, de: rarDeRegistro(reg),
+           para: exame.raridade, reg: r.reg || null, exame };
+}
+
+/* A raridade de um registro solto (sem mapa). O `rarGuardada` pede o
+   mapa e o id; aqui já se tem o registro na mão. */
+function rarDeRegistro(reg) {
+  return (reg && rarValida(reg.atual)) ? reg.atual : RARIDADES[0];
+}
+
+/* Quem concedeu. Vai para o histórico, e responde à única pergunta que
+   as contagens sozinhas não respondem: por que é que este avatar tem
+   esta raridade. Nunca é o uid de quem pediu — o exame não se pede. */
+const RAR_EXAME_POR = 'exame-raridade';
+
+/* ═══════════════════════════════════════════════════════════════════
    O LADO DO NAVEGADOR
 
    O mapa que o servidor mandou, guardado depois do carregamento e lido
@@ -219,7 +388,9 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     RARIDADES, rarGrau, rarValida,
     rarRegistro, rarGuardada, rarHistorico,
-    rarPromover, rarDe, rarEhLegado, rarResolver,
+    rarPromover, rarDe, rarDeRegistro, rarEhLegado, rarResolver,
     rarCarregar, rarMapa,
+    RAR_CICLOS_RARO, RAR_CICLOS_LENDARIO, RAR_FORTES_MIN, RAR_FORTE_PONTOS,
+    RAR_EXAME_POR, rarExaminar, rarCertificar,
   };
 }
