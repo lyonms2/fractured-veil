@@ -111,16 +111,18 @@ Raro     → Comum     recusa · NAO_DESCE
 ```
 
 Quem o chama é o `rarCertificar`, e só ele — com o `por` fixo em
-`'exame-raridade'`, nunca o uid de quem pediu. **O que ainda não existe é o
-gatilho**: nenhum cron, endpoint ou botão chama a certificação. O mecanismo
-está pronto e à espera do ciclo mensal.
+`'exame-raridade'`, nunca o uid de quem pediu.
+
+**O gatilho é mensal e do servidor** (3I.14): `api/certificar-ciclo.js`, às
+01:00 UTC do dia 1, agendado em `vercel.json` e autenticado pelo `CRON_SECRET`.
+Nenhuma tela o dispara, e o exame não se pede.
 
 ---
 
 ## O exame, e o que dele falta
 
-A certificação por mérito está **implementada** (3I.13) e **sem gatilho**.
-Os documentos que a desenharam:
+A certificação por mérito está **implementada** (3I.13) e **agendada**
+(3I.14). Os documentos que a desenharam:
 
 - [especificacao-exame-raridade.md](especificacao-exame-raridade.md) — as
   fórmulas (3I.11)
@@ -128,10 +130,11 @@ Os documentos que a desenharam:
   (3I.10)
 - [exame-de-raridade.md](exame-de-raridade.md) — a estrutura (3I.8)
 
-Enquanto o gatilho não existir, **todo avatar é Comum**, inclusive em combate
-— ninguém chama a certificação, logo ninguém é promovido. É consequência
-deliberada, e não efeito colateral: ver o relatório da 3I.12 para o que cada
-raridade vale no motor.
+Até a primeira execução do gatilho, **todo avatar é Comum**, inclusive em
+combate. E enquanto o `CRON_SECRET` não estiver no ambiente, o gatilho recusa
+tudo e nada é promovido — nada quebra, a evidência continua a acumular-se, e a
+primeira execução apanha o que ficou para trás. Ver o relatório da 3I.12 para
+o que cada raridade vale no motor.
 
 ---
 

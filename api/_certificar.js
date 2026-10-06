@@ -39,6 +39,7 @@
 
 const RAR = require('../js/raridades.js');
 const FE  = require('../js/feitos.js');
+const RK  = require('../js/pvp-rank.js');   // o ciclo: pvpTemporada, em UTC
 
 /* ── UM AVATAR ──
 
@@ -90,31 +91,125 @@ async function certificarAvatar(db, uid, idAvatar, agora) {
   });
 }
 
-/* ── TODA A COLÔNIA DE UM JOGADOR ──
+/* ── TODA A COLÔNIA DE UM JOGADOR, NUMA TRANSAÇÃO SÓ ──
 
-   Um avatar de cada vez, cada um na sua transação. Separados de
-   propósito: dez avatares numa transação só é uma transação que falha
-   dez vezes mais, e a promoção de um não depende da do outro.
+   Uma leitura do documento, o exame de cada avatar, e uma escrita com
+   as promoções que houver. A primeira versão abria uma transação POR
+   AVATAR — dez avatares eram onze leituras do mesmo documento, e o
+   gatilho mensal (api/certificar-ciclo.js) multiplica isso por todos os
+   jogadores.
 
-   Um erro num avatar não derruba os outros — devolve-se o que
-   aconteceu com cada um, e quem chamar decide o que registrar. */
+   A atomicidade também melhora: ou a colônia inteira é certificada, ou
+   nenhuma parte dela é. Não há estado intermédio em que metade subiu.
+
+   Continua idempotente pela mesma razão de sempre — quem decide se a
+   promoção pode ser gravada é o `rarPromover`, e ele recusa `JA_TEM` e
+   `NAO_DESCE`. Correr isto outra vez não escreve nada.
+
+   E continua seguro na concorrência: duas execuções ao mesmo tempo
+   entram em conflito na transação, uma delas volta a correr com os
+   dados frescos, e a segunda volta encontra a raridade já gravada. */
 async function certificarJogador(db, uid, agora) {
-  const snap = await db.collection('players').doc(String(uid || '')).get();
-  if (!snap.exists) return { uid, erro: 'SEM_JOGADOR', resultados: [] };
-  const slots = Array.isArray(snap.data().avatarSlots) ? snap.data().avatarSlots : [];
-  const ids = [];
-  for (const s of slots) if (s && s.id && ids.indexOf(s.id) === -1) ids.push(s.id);
+  const ref = db.collection('players').doc(String(uid || ''));
+  const quando = agora || Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return { uid, erro: 'SEM_JOGADOR', resultados: [], promovidos: 0 };
+    const d = snap.data();
+    const slots = Array.isArray(d.avatarSlots) ? d.avatarSlots : [];
 
-  const resultados = [];
-  for (const id of ids) {
+    /* ── OS AVATARES DESTE JOGADOR, AGORA ──
+
+       A autoridade da posse é o `avatarSlots` do documento, e não há
+       segunda: a venda move o slot para o comprador e leva com ele as
+       chaves de `raridades` e `feitos` (api/comprar-avatar.js). Um
+       avatar vendido já não está aqui, e o exame dele corre no
+       documento de quem o comprou.
+
+       Sem id não há avatar — e o mesmo id não se examina duas vezes. */
+    const ids = [];
+    for (const s of slots) if (s && s.id && ids.indexOf(s.id) === -1) ids.push(s.id);
+
+    const feitos = d.feitos || {};
+    const raridades = d.raridades || {};
+    const resultados = [];
+    const alteracoes = {};
+    for (const id of ids) {
+      const r = RAR.rarCertificar(RAR.rarRegistro(raridades, id),
+                                  FE.feitoDe(feitos, id), quando, RAR.RAR_EXAME_POR);
+      resultados.push({ id, ok: r.ok, motivo: r.motivo, de: r.de, para: r.para,
+                        exame: r.exame });
+      if (r.ok) alteracoes['raridades.' + id] = r.reg;
+    }
+    if (Object.keys(alteracoes).length) tx.update(ref, alteracoes);
+    return { uid, erro: null, resultados,
+             promovidos: resultados.filter(r => r.ok).length };
+  });
+}
+
+/* ── O CICLO INTEIRO ──
+
+   Varre os jogadores e certifica cada colônia. É o que o gatilho mensal
+   chama (api/certificar-ciclo.js), e é também o que se pode chamar à
+   mão numa correção.
+
+   ── A VARREDURA ──
+
+   `.select(...)` traz SÓ os três campos de que o exame precisa, e isso
+   não é economia de centavos: um documento de jogador tem o save
+   inteiro, e puxar dez mil deles por causa de três campos é a diferença
+   entre um job que corre e um que estoura. O mesmo que o api/pool.js
+   faz para somar cristais.
+
+   A varredura serve só para DESCOBRIR quem existe. A evidência que
+   conta é relida dentro da transação do `certificarJogador`, com os
+   dados do instante da escrita — entre a varredura e a certificação
+   pode fechar uma partida.
+
+   ── O QUE ACONTECE QUANDO UM JOGADOR FALHA ──
+
+   Registra-se e continua. Um documento corrompido não pode impedir a
+   certificação de todos os outros, e a operação é repetível: correr
+   outra vez certifica quem ficou por certificar e não mexe em quem já
+   foi. É a mesma decisão do `_pagarPendentes` (api/pvp.js), e pela
+   mesma razão.
+
+   O relatório traz `erros` com a contagem, para que a falha apareça em
+   vez de se esconder atrás de um "correu bem". */
+async function certificarCiclo(db, agora) {
+  const quando = agora || Date.now();
+  const ciclo = RK.pvpTemporada(quando);
+  const conta = { ciclo, jogadores: 0, avatares: 0, promovidos: 0,
+                  comumParaRaro: 0, comumParaLendario: 0, raroParaLendario: 0,
+                  semPromocao: 0, erros: 0 };
+
+  const snap = await db.collection('players').select('avatarSlots').get();
+  const uids = [];
+  snap.forEach(doc => {
+    const slots = (doc.data() || {}).avatarSlots;
+    if (Array.isArray(slots) && slots.some(s => s && s.id)) uids.push(doc.id);
+  });
+
+  for (const uid of uids) {
+    conta.jogadores++;
+    let r;
     try {
-      resultados.push(Object.assign({ id }, await certificarAvatar(db, uid, id, agora)));
+      r = await certificarJogador(db, uid, quando);
     } catch (e) {
-      resultados.push({ id, ok: false, motivo: 'ERRO', erro: (e && e.message) || String(e) });
+      conta.erros++;
+      console.error('[certificar ' + ciclo + ']', uid, (e && e.message) || String(e));
+      continue;
+    }
+    for (const a of (r.resultados || [])) {
+      conta.avatares++;
+      if (!a.ok) { conta.semPromocao++; continue; }
+      conta.promovidos++;
+      if (a.de === 'Comum' && a.para === 'Raro') conta.comumParaRaro++;
+      else if (a.de === 'Comum' && a.para === 'Lendário') conta.comumParaLendario++;
+      else if (a.de === 'Raro' && a.para === 'Lendário') conta.raroParaLendario++;
     }
   }
-  return { uid, erro: null, resultados,
-           promovidos: resultados.filter(r => r.ok).length };
+  return conta;
 }
 
 /* ── O QUE O AVATAR MERECE, SEM ESCREVER NADA ──
@@ -132,4 +227,4 @@ async function examinarAvatar(db, uid, idAvatar) {
   return { ok: true, atual: RAR.rarDe(d.raridades || {}, idAvatar), exame };
 }
 
-module.exports = { certificarAvatar, certificarJogador, examinarAvatar };
+module.exports = { certificarAvatar, certificarJogador, certificarCiclo, examinarAvatar };

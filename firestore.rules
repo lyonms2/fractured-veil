@@ -461,6 +461,25 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    /* ── O REGISTRO DA CERTIFICAÇÃO MENSAL (3I.14) ──
+
+       Um documento por ciclo, com { comecou, terminou, conta }. É o
+       marcador que impede o gatilho de varrer a base duas vezes, e as
+       contagens do que aconteceu — quantos foram promovidos e de onde
+       para onde.
+
+       NÃO guarda quem: nem uid, nem id de avatar. Quem precisar de
+       saber quem foi promovido lê o historico da raridade, que é onde
+       isso vive (raridades[idAvatar].historico).
+
+       Lê-se porque a tela pode querer dizer quando foi a última
+       certificação. Escreve-se nunca: quem escreve é o Admin SDK, que
+       passa ao lado destas regras, do api/certificar-ciclo.js. */
+    match /certificacoes/{ciclo} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
+
     match /avatarMarket/{listingId} {
       allow read: if request.auth != null;
       allow create, update, delete: if false;

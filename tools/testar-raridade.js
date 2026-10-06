@@ -1105,10 +1105,22 @@ titulo('O cliente não se certifica a si próprio');
     conferir('o certificador é módulo interno (começa por _)',
       arquivos.indexOf('_certificar.js') !== -1
       && arquivos.indexOf('certificar.js') === -1, arquivos.filter(a => /certific/.test(a)));
-    /* E nenhum endpoint o chama ainda. */
+    /* ── QUEM O CHAMA, E SÓ ELE ──
+
+       A 3I.13 afirmava aqui que NENHUM endpoint o chamava. A 3I.14 pôs
+       um: o gatilho mensal. A conferição não se apagou — apertou-se, e
+       passou a dizer mais do que dizia: existe exatamente um chamador,
+       e é o do agendador.
+
+       Se amanhã um segundo aparecer, isto falha. É esse o ponto: a
+       certificação tem uma porta só. */
     const chamam = arquivos.filter(a => a.endsWith('.js') && a !== '_certificar.js'
       && /_certificar/.test(semComentarios(ler('api/' + a))));
-    conferir('e nenhum endpoint o chama ainda', chamam.length === 0, chamam);
+    conferir('o certificador tem exatamente um chamador',
+      chamam.length === 1 && chamam[0] === 'certificar-ciclo.js', chamam);
+    conferir('e esse chamador é do agendador, não do jogador',
+      /CRON_SECRET/.test(semComentarios(ler('api/certificar-ciclo.js')))
+      && !/verifyIdToken/.test(semComentarios(ler('api/certificar-ciclo.js'))), null);
   }
 
   /* ── OS PAYLOADS DE ADULTERAÇÃO ──

@@ -6,7 +6,7 @@
 > **A etapa 3I.13 implementou o que está aqui**, sem mudar número nenhum:
 > `rarExaminar` e `rarCertificar` em [js/raridades.js](../js/raridades.js),
 > e o caminho server-side em [api/_certificar.js](../api/_certificar.js).
-> As seções que diziam "não existe rotina" estão anotadas abaixo.
+> **A 3I.14 pôs o gatilho** — ver a seção 12.
 >
 > O objetivo é que a etapa seguinte possa implementar sem tomar nenhuma
 > decisão conceitual nova. Onde isso não foi possível, há uma **pendência**
@@ -507,15 +507,61 @@ elegíveis. Nenhuma condição lê a posição de ninguém.
 | vitória segundos antes/depois da virada | cai no mês UTC do **fechamento** (seção 5). Sem tolerância |
 | rotina rodar duas vezes | **idempotente**: a segunda chamada recebe `JA_TEM` e não escreve |
 
-### A rotina existe; o gatilho não  ·  atualizado na 3I.13
+### A OPERAÇÃO  ·  3I.14
 
-`api/_certificar.js` escreve em `raridades`, dentro de uma transação, depois
-de ler os feitos do documento. O que continua a não existir é **quem o
-chama**: não há cron, nem agendamento, nem endpoint, nem botão.
+| pergunta | resposta |
+|---|---|
+| **quem dispara** | o agendador da plataforma (cron da Vercel), e mais ninguém |
+| **quando** | `0 1 1 * *` — 01:00 UTC do dia 1 de cada mês |
+| **por que uma hora depois** | é a janela do `SALA_VELHA_MS` (api/pvp.js): uma sala abandonada é varrida até uma hora depois do fim, e só então o ciclo anterior para de receber escritas |
+| **onde** | `api/certificar-ciclo.js` → `certificarCiclo` → `certificarJogador` |
+| **como acha os jogadores** | varre `players` com `.select('avatarSlots')` e fica com quem tem ao menos um avatar com id |
+| **qual ciclo** | `RK.pvpTemporada(Date.now())`, no relógio do servidor, em UTC |
 
-É deliberado. O exame não se pede — a raridade não é um requerimento que se
-protocola, é um fato que o servidor constata. O gatilho (o ciclo mensal) é
-etapa própria, e já só precisa de chamar `certificarJogador`.
+**O gatilho não é por abertura de tela.** O projeto tem trabalho mensal
+preguiçoso — o `fecharPendentes` paga os prêmios quando alguém abre o Salão —
+e esse padrão não serve aqui: um avatar que conquistou o Lendário em outubro
+tem de o ser em novembro, não no dia em que o dono calhar de voltar.
+
+#### Como evita repetir
+
+Duas camadas, e a segunda é a que garante a correção:
+
+1. **O marcador** `certificacoes/{ciclo}` com `{ comecou, terminou, conta }`,
+   tomado numa transação. Já terminado → `JA_FEITO`; começado há pouco →
+   `A_CORRER`. É economia, não correção: impede varrer a base duas vezes.
+2. **O `rarPromover`**, que recusa `JA_TEM` e `NAO_DESCE`. É esta que garante
+   que nada duplica. Mil execuções deixam um evento no histórico.
+
+#### Como lida com retry
+
+Se o job morre a meio, o marcador fica com `comecou` e sem `terminou`. Passados
+**30 minutos** (`RETOMAR_APOS_MS`), a execução seguinte **reassume** — sem isso,
+uma falha trancava o ciclo para sempre. Reassumir é seguro porque a certificação
+é idempotente: quem já subiu recebe `JA_TEM`.
+
+Um jogador que falha é registrado e os outros continuam, como o `_pagarPendentes`
+já fazia. O relatório traz `erros` com a contagem, para a falha aparecer em vez
+de se esconder atrás de um "correu bem".
+
+#### Concorrência
+
+Duas execuções ao mesmo tempo entram em conflito na transação do
+`certificarJogador`; uma volta a correr com os dados frescos e encontra a
+raridade já gravada. Medido: cem execuções entrelaçadas sobre o mesmo avatar
+deixam um evento.
+
+#### A virada UTC
+
+Não muda nada. O ciclo é o do `pvpTemporada`, e 23h do dia 31 em Brasília são
+02h do dia 1 em UTC — logo o mês seguinte. O gatilho corre às 01:00 UTC do
+dia 1, portanto depois da virada e depois da varredura das salas.
+
+#### O que é preciso configurar
+
+A variável de ambiente **`CRON_SECRET`**. Sem ela o endpoint recusa tudo com
+401 — falha fechada. Um gatilho que não corre adia certificações; um gatilho
+aberto deixa qualquer um disparar a varredura da base inteira.
 
 ---
 
@@ -939,8 +985,9 @@ Em ordem de importância:
    uma.** O histórico guarda o que aconteceu, e o avatar não passou por Raro —
    passou de Comum a Lendário. Dois eventos com o mesmo instante descreveriam
    uma escada que ninguém subiu.
-3. ~~**Onde a certificação roda.**~~ **Feito na 3I.13:** `api/_certificar.js`.
-   Falta o gatilho mensal, que é etapa própria.
+3. ~~**Onde a certificação roda.**~~ **Feito:** `api/_certificar.js` (3I.13) e
+   `api/certificar-ciclo.js` (3I.14). Falta só configurar o `CRON_SECRET` no
+   ambiente — sem ele o endpoint recusa tudo.
 4. **O mercado e o preço**, que leem o legado por fora. Bloqueador 2.
 5. **O teste de invariante da expulsão** (★ na §22). É a única propriedade
    crítica verdadeira-mas-não-presa.

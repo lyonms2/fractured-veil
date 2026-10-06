@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/certificar-ciclo",
+      "schedule": "0 1 1 * *"
+    }
+  ]
+}
