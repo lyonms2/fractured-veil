@@ -627,6 +627,52 @@
    ═══════════════════════════════════════════════════════════════════ */
 .cb-corpo .av-aura { display: none; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   AS PARTÍCULAS SAEM DA CAIXA DO DESENHO
+
+   Pela mesma razão da auréola, e por uma a mais.
+
+   A razão nova é que o `_afAssentar` (js/arena-fu.js) mede o SVG com
+   `getBBox()` para assentar os pés e para calcular o `--cabeca` onde o
+   nome se pendura. As partículas são 5, 9 ou 14 conforme a raridade e
+   espalham-se de 20 a 180 na caixa de 200 — portanto entram na medida e
+   são, muitas vezes, o que está mais longe do centro. Com a auréola já
+   escondida, passam a ser elas a decidir onde o bicho assenta.
+
+   Medido entre um Comum e um Lendário com a mesma seed e a mesma fase,
+   em 60 casos: o fundo da tinta diferia em 7 e o `--cabeca` em 45, até
+   41,5 unidades. A raridade mexia no lugar do avatar.
+
+   ── E SÓ O `display: none` RESOLVE ──
+
+   Medido no browser, com a mesma geometria do avatar:
+
+     visível             getBBox y −41, altura 352
+     display: none       y 55, altura 203
+     opacity: 0          y −41, altura 352   ← continua a contar
+     visibility: hidden  y −41, altura 352   ← continua a contar
+
+   Por isso é `display: none` e não um dos outros dois.
+
+   ── E VOLTAM A APARECER AO LADO ──
+
+   O `_afCorpo` acrescenta um segundo `<svg class="cb-part">` com o
+   mesmo `viewBox`, a mesma largura, a mesma altura e o mesmo
+   `preserveAspectRatio` — portanto as coordenadas das partículas
+   continuam a querer dizer exatamente o mesmo e não há conversão a
+   fazer. Medido: a primeira partícula cai no mesmo pixel e com o mesmo
+   tamanho de antes.
+
+   O `:not(.cb-part)` é o que separa os dois: as de dentro do corpo
+   somem, as do segundo svg ficam.
+   ═══════════════════════════════════════════════════════════════════ */
+.cb-corpo svg:not(.cb-part) .av-particula { display: none; }
+
+/* Os dois na mesma célula da grelha, senão o `place-items: center` do
+   `.cb-corpo` põe-nos um debaixo do outro. */
+.cb-corpo > svg { grid-area: 1 / 1; }
+.cb-corpo > svg.cb-part { pointer-events: none; }
+
 /* ── E A SATURAÇÃO TEM TECTO ──
    Ia a 1,0 no posto da frente, e os avatares são coloridos por DNA: os
    dois bichos para onde o olho vai primeiro eram os dois objetos mais
@@ -2776,6 +2822,83 @@ b.laco { color: #f5a3c7; }
   transition: opacity .4s ease;
 }
 .cb-efeitos-tras.concha .cb-aura-concha-tras { opacity: .75; animation: cb-concha-pulsa 2.8s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   A PRESENÇA DA RARIDADE
+
+   Comum      nada
+   Raro       um halo atrás do corpo
+   Lendário   o mesmo mais forte, e um segundo, mais largo e lento
+
+   É de propósito que o Lendário é a MESMA coisa duas vezes e não uma
+   coisa diferente: lê-se como "o mesmo, mas mais", que é o que ele é.
+   Duas linguagens obrigariam o jogador a aprender duas, e nenhuma delas
+   lhe diria qual vem primeiro. É a mesma decisão que a `av-aura` do
+   js/data.js já tinha tomado, e vale aqui pela mesma razão.
+
+   ── A COR É A DA FRATURA, E NÃO A DO BICHO ──
+
+   `var(--fenda)`, declarada uma vez no `.cb-palco` lá em cima, que é de
+   onde o céu, a poça de luz e o contorno dos corpos já a leem. Não há
+   um segundo valor escrito aqui.
+
+   A cor do avatar vem do DNA, e por isso não serve: ela diz QUEM ele é,
+   e isto tem de dizer O QUE ele é. E não ordena — entre um bicho verde
+   e um roxo não há primeiro nem segundo, portanto três degraus de
+   raridade em três cores de DNA não se leriam como degraus. A
+   intensidade ordena; o matiz não.
+
+   Também é a razão de a arena esconder a `av-aura` do desenho: seis
+   criaturas a emitir luz própria, cada uma da sua cor, contradizem a
+   regra de haver uma luz só na cena. Esta obedece-lhe — é a luz da
+   Fratura, mais perto de quem a merece.
+
+   ── A FORÇA SAI DO `opacity`, E SÓ DELE ──
+
+   Os dois degraus são o mesmo gradiente com opacidades diferentes. Com
+   isso, mudar `--fenda` muda os dois ao mesmo tempo e nenhum fica a
+   discordar — que é a razão de a cor viver num lugar só.
+
+   ── O QUE ISTO NÃO TOCA ──
+
+   Não entra no SVG, logo não entra no `getBBox` — os pés continuam
+   assentados pelo `_afAssentar` e o nome continua pendurado no
+   `--cabeca` medido só do desenho. Não usa o `.cb-anel`, que é a vez, o
+   poder agir e o alvo. E as medidas são todas em PERCENTAGEM da
+   `.cb-efeitos-tras`, que já escala com o `--escala`: a presença
+   encolhe com a profundidade do posto sem uma conta nova.
+   ═══════════════════════════════════════════════════════════════════ */
+.cb-rar, .cb-rar-2 {
+  position: absolute; display: block; opacity: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: opacity .4s ease;
+}
+/* O halo cinge o corpo: começa a um quinto da altura e morre antes dos
+   pés, para não se confundir com o anel aceso de quem pode agir — que é
+   uma elipse no chão, e a confusão entre os dois era o motivo de a 3J.5
+   ter recusado pôr a raridade lá. */
+.cb-rar {
+  left: -8%; right: -8%; top: 16%; bottom: 10%;
+  background: radial-gradient(52% 50% at 50% 54%, var(--fenda), transparent 72%);
+}
+/* O segundo só existe no Lendário: mais largo, mais apagado, e a
+   respirar em CONTRATEMPO com o de dentro. Dois pulsos iguais somam-se e
+   dão um pisca-pisca; desencontrados dão qualquer coisa que parece viva. */
+.cb-rar-2 {
+  left: -22%; right: -22%; top: 2%; bottom: -2%;
+  background: radial-gradient(50% 50% at 50% 54%, var(--fenda), transparent 64%);
+}
+
+.cb-efeitos-tras.rar-raro     .cb-rar   { opacity: .16; }
+.cb-efeitos-tras.rar-lendario .cb-rar   { opacity: .30; animation: cb-rar-respira 4.2s ease-in-out infinite; }
+.cb-efeitos-tras.rar-lendario .cb-rar-2 { opacity: .14; animation: cb-rar-respira 6.8s ease-in-out infinite reverse; }
+
+@keyframes cb-rar-respira {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.06); }
+}
+
 .cb-aura-concha {
   clip-path: inset(50% 0 0 0);          /* só a metade de baixo: a da frente */
   /* Na cintura, e fina: aos pés confundia-se com o anel aceso de quem
@@ -2860,7 +2983,12 @@ b.laco { color: #f5a3c7; }
 /* Menos movimento: os efeitos que ficam continuam (dizem o que está de
    pé), mas parados; os clarões de nascer somem. */
 @media (prefers-reduced-motion: reduce) {
-  .cb-auras > i, .cb-elo { animation: none !important; }
+  /* A `.cb-efeitos-tras > i` entra na lista com a presença da raridade
+     (3J.7) — e tapa de passagem uma falha que já cá estava: o
+     `.cb-aura-concha-tras` tem um `cb-concha-pulsa` infinito e nenhuma
+     destas regras o alcançava, porque todas pediam `.cb-auras > i` e ele
+     mora na outra camada. */
+  .cb-auras > i, .cb-efeitos-tras > i, .cb-elo { animation: none !important; }
   .cb-surge { display: none; }
 }
 

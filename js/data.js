@@ -400,6 +400,104 @@ function corpoDeQuem(avatar, daFila) {
 // Contador global para dar um ID irrepetível a cada SVG gerado
 let _svgUid = 0;
 
+/* ═══════════════════════════════════════════════════════════════════
+   A GEOMETRIA DE CADA FASE
+
+   Uma linha por fase, e é o único lugar onde se mexe para o avatar
+   crescer. Antes isto eram seis ternários espalhados pelo gerarSVG, cada
+   um com a sua pergunta `temCorpoInferior ? a : b` — o que dava duas
+   geometrias para quatro fases, e nenhuma maneira de distinguir o Adulto
+   do Ancião sem escrever um sétimo ternário.
+
+   ── PORQUE AQUI, E NÃO NUM `transform` ──
+
+   A auditoria 3J.3 mediu o que acontece a quem tenta crescer o avatar
+   com `<g transform="scale(...)">`, e são duas coisas, cada uma
+   suficiente para não o fazer:
+
+     1. Todos os grupos `av-*` já têm `transform` de CSS (o respirar, o
+        piscar, o abanar, o bater, o balançar). O `transform` de folha de
+        estilo SOBREPÕE-SE ao atributo do SVG — o `scale` seria
+        silenciosamente substituído pela animação, e apareceria só sob
+        `prefers-reduced-motion`. Um defeito que depende da preferência
+        do sistema de quem joga é um defeito que não se encontra.
+
+     2. Três sítios MEDEM o desenho já pronto com `getBBox()` e colam
+        peças novas nas coordenadas medidas: a pálpebra do sono
+        (js/minigames.js), o X de quem caiu (js/arena-fu.js) e a abertura
+        da boca ao comer (js/ui.js). O `getBBox` devolve a caixa no
+        espaço próprio do elemento e ignora transformações dos
+        ascendentes — e a pálpebra é acrescentada à RAIZ do svg. Um
+        `<g transform>` pelo meio descolava a pálpebra do olho.
+
+   Por isso o crescimento é ARITMÉTICA: os números saem já crescidos e o
+   desenho sai nas coordenadas finais. O `getBBox` continua honesto e a
+   camada de animação não nota nada.
+
+   ── O QUE CADA CAMPO É ──
+
+     corpo      fator do tamanho do corpo de cima, em volta de (100,100)
+     membro     fator da extensão lateral dos braços
+     chifre     fator do tamanho sorteado do chifre
+     cauda      fator da extensão da cauda
+     wdy        asas: deslocamento de y=100 para o corpo de baixo
+     brAnchorY  braços: y onde se prendem
+     brAnchorR  braços: meia-largura de onde se prendem
+     caudaY0    cauda: y de origem
+     auCY       aura: y do centro
+     auRY       aura: raio vertical
+
+   O `vbH` NÃO está aqui de propósito: a etapa 3J.4 proíbe mexer-lhe, e
+   duas razões fixas em CSS dependem de ele ser 200×260
+   (css/combate-arena.css). Fica onde estava, com a pergunta que sempre
+   teve.
+
+   ── O QUE MUDA, E O QUE NÃO ──
+
+   Bebê, Jovem e Adulto trazem EXATAMENTE os números de hoje: os fatores
+   são 1 e as posições são as que os ternários davam. O
+   tools/testar-fase-geo.js compara 360 desenhos byte a byte contra o que
+   o gerador produzia antes desta mudança.
+
+   O Ancião é o único que cresce, e é o único que PODE: a etapa fixou
+   Bebê, Jovem e Adulto na aparência atual. Medido no ANTES: a fase 2 e a
+   fase 3 davam a mesma string em 69 de 120 pares (seed, raridade), e os
+   51 restantes diferiam só pelas asas — ou seja, Adulto e Ancião tinham
+   geometria idêntica e a única diferença existente entre os dois eram as
+   asas, que esta mudança não toca.
+
+   A cauda do Ancião fica em 1 e não cresce, e não é esquecimento: o
+   desenho já SAI do próprio viewBox em baixo (o getBBox dá y até 285
+   numa caixa de 260), e só a arena tem `overflow: visible`. Esticar a
+   cauda aumentava um corte que já existe nas outras seis telas. O campo
+   existe para o dia em que o corte for tratado — é ele que substitui o
+   antigo `cE`, que estava declarado e nunca foi lido.
+   ═══════════════════════════════════════════════════════════════════ */
+const FASE_GEO = [
+  // bebê                                                   ┌─ o corpo de baixo não existe
+  { corpo: 1,    membro: 1,    chifre: 1,    cauda: 1, wdy:  0, brAnchorY:  95, brAnchorR: 35,
+    caudaY0: 140, auCY: 105, auRY: 116 },
+  // jovem
+  { corpo: 1,    membro: 1,    chifre: 1,    cauda: 1, wdy:  0, brAnchorY:  95, brAnchorR: 35,
+    caudaY0: 140, auCY: 105, auRY: 116 },
+  // adulto                                                 └─ e aqui passa a existir
+  { corpo: 1,    membro: 1,    chifre: 1,    cauda: 1, wdy: 63, brAnchorY: 163, brAnchorR: 30,
+    caudaY0: 213, auCY: 135, auRY: 150 },
+  // ancião — cresce 10% no corpo, nos braços e nos chifres
+  { corpo: 1.10, membro: 1.10, chifre: 1.10, cauda: 1, wdy: 63, brAnchorY: 163, brAnchorR: 30,
+    caudaY0: 213, auCY: 135, auRY: 150 },
+];
+
+/* A fase vem de fora e pode vir torta: o js/cards.js chama o gerarSVG
+   com cinco argumentos e a fase chega `undefined`, e um nível acima da
+   escada daria um índice que não existe. Prende-se à lista em vez de
+   rebentar — era o que o `fase >= 2` fazia sozinho, e uma lista não
+   perdoa índices como um comparador perdoa. */
+function faseGeoDe(fase) {
+  const i = Math.max(0, Math.min(FASE_GEO.length - 1, (+fase || 0) | 0));
+  return FASE_GEO[i];
+}
+
 function gerarSVG(avatar, raridade, seed, w, h, fase) {
   fase = (typeof fase === 'number') ? fase : 0;
   // O gerador, a paleta, as cores e o corpo — tudo do _preludio, para o
@@ -436,15 +534,46 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
      anterior —, saltar três desalinhava tudo o que vinha a seguir. O
      bicho não ganhava asas ao evoluir: passava a ser OUTRO BICHO.
 
-     Por isso a fila passa a ser sempre a mesma, e sempre completa. O
-     seed decide de uma vez a forma ADULTA — a que este avatar terá se
-     lá chegar — e a raridade só decide QUANTO DELA já se vê. O que
-     identifica o bicho (o corpo, o tipo de olho, a boca, os chifres, a
-     cauda) está lá desde bebé e nunca muda. O que é acréscimo (braços
-     a mais, um terceiro olho, tentáculos, espinhos, asas) vai
-     aparecendo. É crescer, e não trocar. */
-  const grau = (typeof grauDaRaridade === 'function') ? grauDaRaridade(raridade)
-             : (raridade === 'Lendário' ? 2 : raridade === 'Raro' ? 1 : 0);
+     Por isso a fila passa a ser sempre a mesma, e sempre completa: é
+     dela que sai a ANATOMIA inteira, de uma vez. Isto continua a valer,
+     e é o que torna barato tudo o que vem a seguir.
+
+     ── A RARIDADE DEIXOU DE REVELAR O CORPO (3J.6) ──
+
+     Aqui dizia-se que "o seed decide a forma adulta e a raridade decide
+     quanto dela já se vê". Essa regra está REVOGADA.
+
+     Era uma regra de duas caras. A primeira: um Comum nunca tinha
+     espinhos nem tentáculos, por muito que o seed lhe tivesse dado uns
+     — não era crescer, era ter a anatomia censurada por um certificado.
+     A segunda: a raridade conquista-se no exame mensal (api/_certificar.js),
+     portanto o corpo mudava no dia em que o servidor assinasse um papel.
+     Um avatar ganhava braços por ter vencido partidas.
+
+     Agora os três conceitos estão separados, e cada um responde por uma
+     coisa só:
+
+       DNA + seed  →  ANATOMIA      quantas partes, de que tipo
+       fase/idade  →  CRESCIMENTO   que tamanho e em que posição
+       raridade    →  PRESENÇA      aura, glow, partículas
+
+     O que identifica o bicho (o corpo, os olhos, a boca, os chifres, a
+     cauda, os braços, os espinhos, os tentáculos) está lá desde bebê e
+     nunca muda. O que cresce com a fase é o TAMANHO e a POSIÇÃO, não a
+     contagem — ver a FASE_GEO. E a raridade não tira nem põe partes:
+     acende o que está em volta delas.
+
+     ── E O `grau` SAIU DAQUI ──
+
+     Havia um `const grau = grauDaRaridade(raridade)` nesta linha, e os
+     três tetos eram os seus únicos leitores. Sem eles ficava declarado
+     e nunca lido — era o que o `cE` já tinha sido, e um número morto
+     chamado "grau da raridade" no meio do gerador é um convite a
+     alguém voltar a pendurar anatomia nele.
+
+     O `grauDaRaridade` continua a existir e continua certo: vive no
+     js/raridade.js e serve quem precisa de ORDENAR as três raridades.
+     O que já não tem é um leitor no desenho. */
 
   /* Os doze traços e os pormenores saem do CORPO, e o corpo vem de um
      sítio só — do DNA quando o avatar o tem, e da seed quando não tem.
@@ -463,21 +592,30 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   const numEspAd    = _corpo.numEsp;
   const bocaTipo    = _corpo.bocaTipo;
 
-  // O que já cresceu. Um avatar que nasceu sem asas na forma adulta
-  // nunca as terá, por muito que suba — a raridade revela, não inventa.
-  /* OS OLHOS NÃO SÃO UMA REVELAÇÃO — são com o que ele nasce.
+  /* ── A ANATOMIA É A QUE SAIU DO DNA E DO SEED, E MAIS NADA ──
 
-     Estavam travados em dois até o avatar chegar a Raro, e o terceiro
-     aparecia ao evoluir. Isso fazia do olho uma recompensa, e um olho
-     não é uma recompensa: é a cara do bicho. Um bebê de três olhos nasce
-     de três olhos e morre de três olhos.
+     Quatro linhas que hoje não fazem nada, e é esse o ponto: estavam
+     aqui para a raridade cortar.
 
-     O que continua a crescer com a fase é o resto — braços, espinhos,
-     tentáculos —, que são partes que se ACRESCENTAM a um corpo. */
+       numOlhos    nunca foi cortado — um olho não é recompensa, é a cara
+                   do bicho. Esta linha já estava assim, e serviu de
+                   modelo às outras três.
+       numBracos   era `min(sorteado, [4, 6, 8][grau])`
+       numEsp      era `min(sorteado, [0, 2, 4][grau])`
+       temTent     era `grau >= 1 && sorteado`
+
+     O `numEsp` é o que mostra melhor o problema: o teto do Comum era
+     ZERO, portanto um Comum não tinha espinhos nunca, tivesse o seed
+     sorteado quatro. E o `temTent` fazia o mesmo aos tentáculos.
+
+     Ficam as quatro, e ficam escritas assim em vez de se usarem os
+     nomes `...Ad` diretamente mais abaixo: são o contrato. Quem vier
+     procurar onde é que a raridade mexe na anatomia encontra aqui a
+     resposta, que é em lugar nenhum. */
   const numOlhos  = numOlhosAd;
-  const numBracos = Math.min(numBracosAd, [4, 6, 8][grau]);
-  const numEsp    = Math.min(numEspAd,    [0, 2, 4][grau]);
-  const temTent   = grau >= 1 && temTentAd;
+  const numBracos = numBracosAd;
+  const numEsp    = numEspAd;
+  const temTent   = temTentAd;
 
   /* ── E OS PORMENORES DE CADA PARTE, TAMBÉM AO MÁXIMO ──
 
@@ -511,12 +649,43 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   const tipoAsaFase  = _fr(1, 3);
   const temAsasFase  = fase >= 3 && _fr(0, 9) < 7; // 70% de chance, determinado pelo seed
 
+  /* O vbH continua com a sua pergunta e fora da FASE_GEO: a etapa 3J.4
+     proíbe mexer-lhe, e duas razões fixas no css/combate-arena.css
+     dependem de ele ser 200×260. */
   const vbH       = temCorpoInferior ? 260 : 200;
-  const wdy       = temCorpoInferior ? 63 : 0;   // wings: offset from y=100 to body
-  const brAnchorY = temCorpoInferior ? 163 : 95; // arms: attachment Y
-  const brAnchorR = temCorpoInferior ? 30 : 35;  // arms: half-width of attachment
-  const caudaY0   = temCorpoInferior ? 213 : 140; // tail: origin Y
-  const cE        = temCorpoInferior ? 0.5 : 1;   // tail: extent scale (shorter on tall body)
+
+  /* ── E O RESTO SAI DA TABELA DA FASE ── */
+  const G         = faseGeoDe(fase);
+  const wdy       = G.wdy;        // asas: deslocamento de y=100 para o corpo de baixo
+  const brAnchorY = G.brAnchorY;  // braços: y onde se prendem
+  const brAnchorR = G.brAnchorR;  // braços: meia-largura de onde se prendem
+  const caudaY0   = G.caudaY0;    // cauda: y de origem
+
+  /* ── OS QUATRO FATORES, COM SAÍDA ANTECIPADA EM 1 ──
+
+     Devolver `v` e não `v * 1` quando o fator é 1 não é economia: é o
+     que torna o "o Bebê, o Jovem e o Adulto não mudam" uma garantia
+     testável byte a byte em vez de uma esperança sobre ponto flutuante.
+     A conta de centrar, `100 + (v - 100) * f`, dá o mesmo número com
+     f = 1 — mas dá-o por sorte, e `0.1 * 3` já mostrou a todos o que a
+     sorte vale aqui.
+
+     O corpo escala em volta de (100,100), que é o centro que o desenho
+     sempre teve: por isso há duas funções e não uma. O `cP` move um
+     PONTO para longe ou para perto do centro; o `cR` estica uma MEDIDA
+     (um raio, um lado) que já é relativa ao centro. Trocá-las punha o
+     corpo fora do sítio. */
+  const cP = (v) => G.corpo  === 1 ? v : Math.round((100 + (v - 100) * G.corpo) * 100) / 100;
+  const cR = (v) => G.corpo  === 1 ? v : Math.round(v * G.corpo  * 100) / 100;
+  const mE = (v) => G.membro === 1 ? v : Math.round(v * G.membro * 100) / 100;
+  const tE = (v) => G.cauda  === 1 ? v : Math.round(v * G.cauda  * 100) / 100;
+  /* O chifre é o único que multiplica um número SORTEADO, e por isso é o
+     único onde a ordem importa: o `random` corre primeiro, no lugar onde
+     sempre correu, e o fator aplica-se ao resultado. Escrever
+     `random(20, 35 * f)` teria sido mais curto e teria mudado a cara de
+     todos os avatares que já existem — a fila é uma fila, e um número
+     tirado de outra gama é outro número. */
+  const cH = (v) => G.chifre === 1 ? v : Math.round(v * G.chifre * 100) / 100;
   let s = `<svg viewBox="0 0 200 ${vbH}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
   <defs>
     <filter id="glow${sid}"><feGaussianBlur stdDeviation="${raridade==='Lendário'?'6':'4'}" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -555,9 +724,9 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
      pulsos iguais somam-se e dão um pisca-pisca; desencontrados dão
      qualquer coisa que parece viva.
      ════════════════════════════════════════════════════════════════ */
-  const auCY = temCorpoInferior ? 135 : 105;
+  const auCY = G.auCY;
   const auRX = 104;
-  const auRY = temCorpoInferior ? 150 : 116;
+  const auRY = G.auRY;
 
   /* A banda acesa do gradiente está aos 84% do raio. Com estes tamanhos
      isso dá 87 de meia-largura, e o bicho mais largo que há chega a 80 —
@@ -596,10 +765,10 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   s += `<g class="av-cauda">`;
   if(temCauda) {
     const cy2 = caudaY0;
-    if(tipoCauda===1) s+=`<path d="M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55}" stroke="${cor2}" stroke-width="10" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55};M 100 ${cy2} Q 85 ${cy2+20} 72 ${cy2+40} Q 68 ${cy2+50} 78 ${cy2+55};M 100 ${cy2} Q 80 ${cy2+20} 70 ${cy2+40} Q 65 ${cy2+50} 75 ${cy2+55}" dur="2s" repeatCount="indefinite"/></path>`;
-    else if(tipoCauda===2) s+=`<path d="M 100 ${cy2} L 85 ${cy2+30} L 95 ${cy2+35} L 80 ${cy2+60}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"/><polygon points="75,${cy2+60} 80,${cy2+70} 85,${cy2+60}" fill="${corBrilho}" filter="url(#glow${sid})"><animate attributeName="opacity" values=".8;1;.8" dur="1.5s" repeatCount="indefinite"/></polygon>`;
-    else if(tipoCauda===3) s+=`<path d="M 100 ${cy2} Q 90 ${cy2+15} 85 ${cy2+30} Q 82 ${cy2+40} 88 ${cy2+48}" stroke="${cor1}" stroke-width="14" fill="none" opacity=".9" stroke-linecap="round"/><path d="M 100 ${cy2} Q 90 ${cy2+15} 85 ${cy2+30} Q 82 ${cy2+40} 88 ${cy2+48}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="stroke-width" values="8;10;8" dur="1.5s" repeatCount="indefinite"/></path>`;
-    else s+=`<path d="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45};M 100 ${cy2} Q 72 ${cy2+22} 62 ${cy2+47};M 100 ${cy2} Q 75 ${cy2+20} 65 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path><path d="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45};M 100 ${cy2} Q 128 ${cy2+22} 138 ${cy2+47};M 100 ${cy2} Q 125 ${cy2+20} 135 ${cy2+45}" dur="2s" repeatCount="indefinite"/></path>`;
+    if(tipoCauda===1) s+=`<path d="M 100 ${cy2} Q 80 ${cy2+tE(20)} 70 ${cy2+tE(40)} Q 65 ${cy2+tE(50)} 75 ${cy2+tE(55)}" stroke="${cor2}" stroke-width="10" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 80 ${cy2+tE(20)} 70 ${cy2+tE(40)} Q 65 ${cy2+tE(50)} 75 ${cy2+tE(55)};M 100 ${cy2} Q 85 ${cy2+tE(20)} 72 ${cy2+tE(40)} Q 68 ${cy2+tE(50)} 78 ${cy2+tE(55)};M 100 ${cy2} Q 80 ${cy2+tE(20)} 70 ${cy2+tE(40)} Q 65 ${cy2+tE(50)} 75 ${cy2+tE(55)}" dur="2s" repeatCount="indefinite"/></path>`;
+    else if(tipoCauda===2) s+=`<path d="M 100 ${cy2} L 85 ${cy2+tE(30)} L 95 ${cy2+tE(35)} L 80 ${cy2+tE(60)}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"/><polygon points="75,${cy2+tE(60)} 80,${cy2+tE(70)} 85,${cy2+tE(60)}" fill="${corBrilho}" filter="url(#glow${sid})"><animate attributeName="opacity" values=".8;1;.8" dur="1.5s" repeatCount="indefinite"/></polygon>`;
+    else if(tipoCauda===3) s+=`<path d="M 100 ${cy2} Q 90 ${cy2+tE(15)} 85 ${cy2+tE(30)} Q 82 ${cy2+tE(40)} 88 ${cy2+tE(48)}" stroke="${cor1}" stroke-width="14" fill="none" opacity=".9" stroke-linecap="round"/><path d="M 100 ${cy2} Q 90 ${cy2+tE(15)} 85 ${cy2+tE(30)} Q 82 ${cy2+tE(40)} 88 ${cy2+tE(48)}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="stroke-width" values="8;10;8" dur="1.5s" repeatCount="indefinite"/></path>`;
+    else s+=`<path d="M 100 ${cy2} Q 75 ${cy2+tE(20)} 65 ${cy2+tE(45)}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 75 ${cy2+tE(20)} 65 ${cy2+tE(45)};M 100 ${cy2} Q 72 ${cy2+tE(22)} 62 ${cy2+tE(47)};M 100 ${cy2} Q 75 ${cy2+tE(20)} 65 ${cy2+tE(45)}" dur="2s" repeatCount="indefinite"/></path><path d="M 100 ${cy2} Q 125 ${cy2+tE(20)} 135 ${cy2+tE(45)}" stroke="${cor2}" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"><animate attributeName="d" values="M 100 ${cy2} Q 125 ${cy2+tE(20)} 135 ${cy2+tE(45)};M 100 ${cy2} Q 128 ${cy2+tE(22)} 138 ${cy2+tE(47)};M 100 ${cy2} Q 125 ${cy2+tE(20)} 135 ${cy2+tE(45)}" dur="2s" repeatCount="indefinite"/></path>`;
   }
 
   /* As asas do avatar são as da FASE (temAsasFase, mais acima), e não as
@@ -626,9 +795,63 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   for(let i=0;i<numBracos;i++){
     s+=`<g class="av-membro" style="--i:${i}">`;
     const lado=i%2===0?-1:1, off=Math.floor(i/2)*15;
-    const sx=100+(lado*brAnchorR), sy=brAnchorY+off, mx=100+(lado*50), my=brAnchorY+off+bracoDet[i][0], ex=100+(lado*65), ey=brAnchorY+off+bracoDet[i][1];
-    s+=`<path d="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" stroke="${cor2}" stroke-width="${raridade==='Lendário'?8:6}" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="d" values="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey};M ${sx} ${sy} Q ${mx} ${my+3} ${ex} ${ey+2};M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" dur="3s" repeatCount="indefinite"/></path>`;
-    if(raridade!=='Comum') s+=`<line x1="${ex}" y1="${ey}" x2="${ex+lado*8}" y2="${ey+6}" stroke="${corBrilho}" stroke-width="3" opacity=".8" stroke-linecap="round"><animate attributeName="opacity" values=".8;.5;.8" dur="2s" repeatCount="indefinite"/></line>`;
+    const sx=100+(lado*brAnchorR), sy=brAnchorY+off, mx=100+(lado*mE(50)), my=brAnchorY+off+bracoDet[i][0], ex=100+(lado*mE(65)), ey=brAnchorY+off+bracoDet[i][1];
+    /* ── O BRAÇO TEM A ESPESSURA QUE TEM (3J.9) ──
+
+       Era `raridade==='Lendário' ? 8 : 6`. Um Lendário tinha o braço um
+       terço mais grosso que um Comum com a mesma seed, e ganhava-o no
+       dia em que o exame mensal assinasse o papel — anatomia a mudar por
+       certificado, que é o que esta série de etapas veio desfazer.
+
+       Seis e não sete nem oito: era o que o Comum e o Raro já tinham,
+       portanto a mudança atinge só o Lendário, e só nele. O comprimento
+       continua a crescer com a FASE pelo `mE()`, que é legítimo e não se
+       toca — idade é crescimento, raridade não é.
+
+       A GARRA, na linha a seguir, fica como estava: a espessura dela
+       (3) nunca foi raridade, e a existência dela ainda é. Sai em etapa
+       própria. */
+    s+=`<path d="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" stroke="${cor2}" stroke-width="6" fill="none" opacity=".7" stroke-linecap="round"><animate attributeName="d" values="M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey};M ${sx} ${sy} Q ${mx} ${my+3} ${ex} ${ey+2};M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}" dur="3s" repeatCount="indefinite"/></path>`;
+    /* ── A GARRA SAIU, E NÃO FOI SUBSTITUÍDA (3J.10) ──
+
+       Havia aqui uma `<line>` da ponta do braço para fora, acesa só em
+       quem não era Comum:
+
+         if (raridade !== 'Comum') s += <line x1=ex y1=ey x2=ex+lado*8 …
+
+       Era a última peça do corpo que a raridade decidia. Saiu, e saiu
+       SEM substituto — o que exige explicação, porque apagar é mais
+       fácil do que arranjar e nem sempre é o certo.
+
+       ── PROCUROU-SE UMA FONTE, E NÃO HÁ ──
+
+       A garra não tinha gene, nem nome, nem sorteio próprio, nem classe
+       de CSS: era uma linha anónima cuja única razão de existir era a
+       raridade. Para a manter sem a raridade teria de vir de outro
+       lado, e os candidatos que existiam não servem:
+
+         temAsas      é o único traço sorteado e nunca desenhado, mas é
+                      um gene de ASAS. Usá-lo para garras tornava a
+                      garra hereditária como asa e inventava uma
+                      semântica que ninguém decidiu.
+         bracoDet     são as curvaturas do braço. Um limiar sobre elas
+                      ("garra se bracoDet[i][0] > 10") é pseudo-genética
+                      — parece uma regra e não é nenhuma.
+         seed % 2     o mesmo defeito, mais à vista.
+
+       Nenhum deles é uma decisão de design; os três eram maneiras de
+       esconder uma regra nova dentro de um número que já existia.
+
+       ── O QUE ISTO DEIXA EM ABERTO ──
+
+       Se o jogo quiser garras, elas precisam de um traço próprio — e
+       aí a decisão é de design e não de refatoração: quantos braços a
+       têm, se é hereditária, como entra no cruzamento, e sobretudo
+       onde entra na fila de sorteios, que é o que não se pode mudar
+       depois sem trocar a cara de todos os avatares que já existem.
+
+       Enquanto essa decisão não existir, não há garra. É preferível a
+       um gene improvisado que depois ninguém consegue tirar. */
     s+=`</g>`;
   }
 
@@ -636,14 +859,14 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   // Corpo
   s += `<g class="av-corpo">`;
   switch(tipoCorpo){
-    case 1: s+=`<circle cx="100" cy="100" r="45" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="r" values="45;46;45" dur="3s" repeatCount="indefinite"/></circle>`; break;
-    case 2: s+=`<ellipse cx="100" cy="100" rx="35" ry="50" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="ry" values="50;52;50" dur="3s" repeatCount="indefinite"/></ellipse>`; break;
-    case 3: s+=`<ellipse cx="100" cy="100" rx="50" ry="38" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="rx" values="50;52;50" dur="3s" repeatCount="indefinite"/></ellipse>`; break;
-    case 4: s+=`<path d="M 100 55 Q 145 65 148 100 Q 145 135 100 148 Q 55 135 52 100 Q 55 65 100 55 Z" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"/>`; break;
-    case 5: s+=`<polygon points="100,58 145,132 55,132" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"/>`; break;
-    case 6: s+=`<polygon points="100,60 130,80 130,120 100,140 70,120 70,80" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="0 100 100;5 100 100;0 100 100;-5 100 100;0 100 100" dur="6s" repeatCount="indefinite"/></polygon>`; break;
-    case 7: s+=`<path d="M 100 60 L 110 90 L 140 95 L 115 115 L 120 145 L 100 130 L 80 145 L 85 115 L 60 95 L 90 90 Z" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="0 100 100;10 100 100;0 100 100" dur="4s" repeatCount="indefinite"/></path>`; break;
-    case 8: s+=`<polygon points="100,55 125,75 135,100 125,125 100,145 75,125 65,100 75,75" fill="url(#grad${sid})" opacity=".95" stroke="${corContorno}" stroke-width="3" filter="url(#glow${sid})"><animate attributeName="opacity" values=".95;1;.95" dur="2s" repeatCount="indefinite"/></polygon>`; break;
+    case 1: s+=`<circle cx="100" cy="100" r="${cR(45)}" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="r" values="${cR(45)};${cR(46)};${cR(45)}" dur="3s" repeatCount="indefinite"/></circle>`; break;
+    case 2: s+=`<ellipse cx="100" cy="100" rx="${cR(35)}" ry="${cR(50)}" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="ry" values="${cR(50)};${cR(52)};${cR(50)}" dur="3s" repeatCount="indefinite"/></ellipse>`; break;
+    case 3: s+=`<ellipse cx="100" cy="100" rx="${cR(50)}" ry="${cR(38)}" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animate attributeName="rx" values="${cR(50)};${cR(52)};${cR(50)}" dur="3s" repeatCount="indefinite"/></ellipse>`; break;
+    case 4: s+=`<path d="M 100 ${cP(55)} Q ${cP(145)} ${cP(65)} ${cP(148)} 100 Q ${cP(145)} ${cP(135)} 100 ${cP(148)} Q ${cP(55)} ${cP(135)} ${cP(52)} 100 Q ${cP(55)} ${cP(65)} 100 ${cP(55)} Z" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"/>`; break;
+    case 5: s+=`<polygon points="100,${cP(58)} ${cP(145)},${cP(132)} ${cP(55)},${cP(132)}" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"/>`; break;
+    case 6: s+=`<polygon points="100,${cP(60)} ${cP(130)},${cP(80)} ${cP(130)},${cP(120)} 100,${cP(140)} ${cP(70)},${cP(120)} ${cP(70)},${cP(80)}" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="0 100 100;5 100 100;0 100 100;-5 100 100;0 100 100" dur="6s" repeatCount="indefinite"/></polygon>`; break;
+    case 7: s+=`<path d="M 100 ${cP(60)} L ${cP(110)} ${cP(90)} L ${cP(140)} ${cP(95)} L ${cP(115)} ${cP(115)} L ${cP(120)} ${cP(145)} L 100 ${cP(130)} L ${cP(80)} ${cP(145)} L ${cP(85)} ${cP(115)} L ${cP(60)} ${cP(95)} L ${cP(90)} ${cP(90)} Z" fill="url(#grad${sid})" opacity=".95" stroke="${corSec}" stroke-width="2"><animateTransform attributeName="transform" type="rotate" values="0 100 100;10 100 100;0 100 100" dur="4s" repeatCount="indefinite"/></path>`; break;
+    case 8: s+=`<polygon points="100,${cP(55)} ${cP(125)},${cP(75)} ${cP(135)},100 ${cP(125)},${cP(125)} 100,${cP(145)} ${cP(75)},${cP(125)} ${cP(65)},100 ${cP(75)},${cP(75)}" fill="url(#grad${sid})" opacity=".95" stroke="${corContorno}" stroke-width="3" filter="url(#glow${sid})"><animate attributeName="opacity" values=".95;1;.95" dur="2s" repeatCount="indefinite"/></polygon>`; break;
   }
 
   s += `</g>`;
@@ -658,7 +881,7 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   // Chifres
   s += `<g class="av-chifre">`;
   for(let i=0;i<numChifres;i++){
-    const x=75+(i*(50/Math.max(numChifres-1,1))), alt=random(20,35), larg=random(8,12);
+    const x=75+(i*(50/Math.max(numChifres-1,1))), alt=cH(random(20,35)), larg=cH(random(8,12));
     s+=`<polygon points="${x},70 ${x+larg/2},${70-alt} ${x+larg},70" fill="url(#lg${sid})" opacity=".9" filter="url(#glow${sid})" stroke="${corContorno}" stroke-width="2"><animate attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/></polygon>`;
   }
 
@@ -669,7 +892,29 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   for(let i=0;i<numOlhos;i++){
     s+=`<g class="av-olho-un" style="--i:${i}">`;
     const x = numOlhos===1 ? 100 : 70+(i*espac);
-    const tb = raridade==='Lendário' ? 14 : raridade==='Raro' ? 12 : 10;
+    /* ── O OLHO TEM O TAMANHO QUE TEM, E A RARIDADE NÃO OPINA (3J.8) ──
+
+       Era `raridade==='Lendário' ? 14 : raridade==='Raro' ? 12 : 10`, e
+       com o `olhoDet` por cima dava três faixas que não se tocavam:
+
+         Comum      9, 10, 11
+         Raro      11, 12, 13
+         Lendário  13, 14, 15
+
+       Um Lendário tinha o olho uma vez e meia o de um Comum com a mesma
+       seed. Isso é anatomia, e anatomia não se conquista num exame
+       mensal: o avatar acordava com olhos maiores no dia em que o
+       servidor assinasse o papel.
+
+       Doze e não dez nem catorze: é a mediana das três, é o valor que o
+       Raro já tinha, e é por isso que o Raro não muda nada com esta
+       etapa — um terço dos desenhos do golden continua a bater.
+
+       O `olhoDet[i]` fica onde sempre esteve, e continua a vir da fila
+       principal (`random(-1, 1)`, em corpoDaFila). É ele que faz os três
+       olhos de um mesmo bicho não serem clones, e isso é identidade: sai
+       da seed, como deve. */
+    const tb = 12;
     const t = tb + olhoDet[i];
     switch(tipoOlho){
       case 1: s+=`<circle cx="${x}" cy="95" r="${t}" fill="#0a0a0a"/><circle cx="${x}" cy="95" r="${t*.75}" fill="${corOlho}" filter="url(#glow${sid})"><animate attributeName="r" values="${t*.75};${t*.8};${t*.75}" dur="3s" repeatCount="indefinite"/></circle><circle cx="${x}" cy="95" r="${t*.4}" fill="#000"/><circle cx="${x+3}" cy="92" r="${t*.25}" fill="#fff" opacity=".9"/>`;break;
@@ -702,7 +947,40 @@ function gerarSVG(avatar, raridade, seed, w, h, fase) {
   s += `</g>`;
   // Manchas
   s += `<g class="av-mancha">`;
-  const nd = raridade==='Lendário' ? random(4,6) : random(3,5);
+  /* ── AS MANCHAS SÃO PELE, NÃO SÃO BRILHO (3J.11) ──
+
+     Era `raridade==='Lendário' ? random(4,6) : random(3,5)`, e por isso
+     um Lendário tinha em média uma mancha a mais que um Comum com a
+     mesma seed. Passou a `random(3,5)` para todos.
+
+     ── PORQUE SÃO IDENTIDADE E NÃO EFEITO ──
+
+     A auditoria da 3J.11 classificou os cinco efeitos que restavam, e
+     as manchas foram as únicas a cair do lado do corpo. A prova não é
+     de opinião:
+
+       ONDE CAEM   `dx` entre 75 e 125, `dy` entre 80 e 120 — uma caixa
+                   de 50×40 centrada em (100,100), que é o corpo. As
+                   partículas caem entre 20 e 180: a moldura toda.
+       O QUE SÃO   círculos de raio 2 a 4, na cor do bicho, a 25% de
+                   opacidade. São marcas na pele.
+       O CSS       nenhuma regra as toca. A `av-particula` e a `av-aura`
+                   são abafadas quando o avatar adoece ou cai
+                   (css/screen.css, css/ui.css) porque são efeitos; a
+                   `av-mancha` não é abafada por nada, porque é corpo.
+       A CAIXA     medido no browser: tirar as manchas não muda o
+                   `getBBox()` em nenhum de 24 casos. Elas estão
+                   inteiramente dentro da silhueta.
+
+     ── A FILA NÃO SE MEXEU ──
+
+     `random(4,6)` e `random(3,5)` tiram o MESMO número da fila; o que
+     mudava era a gama em que ele caía, e com ela a contagem de manchas
+     — e a contagem decide quantos sorteios o laço consome. Como as
+     manchas e as partículas são as últimas coisas que o gerador
+     desenha, isso não desloca mais nada. É por isso que esta mudança
+     cabe aqui e não precisou de etapa própria. */
+  const nd = random(3,5);
   for(let i=0;i<nd;i++){
     const dx=random(75,125), dy=random(80,120), dr=random(2,4);
     s+=`<circle cx="${dx}" cy="${dy}" r="${dr}" fill="${corBrilho}" opacity=".25"><animate attributeName="opacity" values=".25;.15;.25" dur="3s" repeatCount="indefinite"/></circle>`;

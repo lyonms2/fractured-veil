@@ -428,10 +428,72 @@ function _afSVG(c, w, h) {
            : gerarSVG(c.ficha, c.ficha.raridade, c.ficha.seed, w, h, _afFase(c));
 }
 
+/* ── AS PARTÍCULAS SAEM DO DESENHO, SÓ AQUI (3J.12A) ──
+
+   O `_afAssentar` (mais abaixo) mede o SVG inteiro com `getBBox()` para
+   assentar os pés no chão e para calcular o `--cabeca` onde o nome se
+   pendura. As partículas da raridade vivem dentro desse SVG e são 5, 9
+   ou 14 conforme Comum, Raro ou Lendário — logo entram na medida, e a
+   raridade acabava por decidir ONDE o bicho fica.
+
+   Não é teoria. Medido na 3J.11, entre um Comum e um Lendário com a
+   mesma seed e a mesma fase, em 60 casos:
+
+     fundo da tinta    difere em  7/60, até 39,5 unidades
+     --cabeca          difere em 45/60, até 41,5 unidades
+
+   ── PORQUE SÓ AQUI, E NÃO NO GERADOR ──
+
+   O `gerarSVG` tem 35 chamadas em 16 arquivos, com quatro formas de
+   inserção diferentes, e só uma delas mede o SVG inteiro: esta. Nas
+   outras trinta e quatro telas as partículas não fazem mal a ninguém —
+   ninguém lhes pede a caixa. Tirá-las do gerador obrigava a dar camada
+   externa a todas, e a converter coordenadas em cada uma.
+
+   É a mesma decisão que a `av-aura` já tinha: o gerador desenha-a, e a
+   arena esconde-a (css/combate-arena.css) porque ali ela estorva. Aqui
+   esconde-se e volta a desenhar-se ao lado.
+
+   ── PORQUE UM SEGUNDO <svg>, E DENTRO DO .cb-corpo ──
+
+   Medido, com a arena real, a posição da primeira partícula relativa ao
+   posto:
+
+     hoje, dentro do SVG          −42,6 · −126   tamanho 3,4 × 3,2
+     2.º <svg> no .cb-corpo       −42,6 · −126   tamanho 3,4 × 3,2
+     na .cb-efeitos-tras           −3,3 · −90,9  tamanho 4,6 × 4,5
+
+   O segundo SVG acerta ao pixel e a camada de efeitos falha por 39 px
+   na horizontal e 35 na vertical, com a partícula 35% maior. A razão é
+   geométrica: a `.cb-efeitos-tras` mede 5,6 × 7,28 rem e o corpo mede
+   5,2 × 6,76, e ela está presa a um `translate(-50%,-100%)` fixo
+   enquanto o corpo é assentado dinamicamente pelo `_afAssentar`.
+
+   Dentro do `.cb-corpo` nada disto existe: o `.cb-corpo svg` do CSS dá
+   aos dois a mesma largura, a mesma altura e o mesmo
+   `preserveAspectRatio`, portanto as coordenadas 20–180 das partículas
+   continuam a querer dizer o mesmo. Não há conversão nenhuma a fazer, e
+   é por não haver que isto é seguro.
+
+   O `_afAssentar` e o `_afOlhosEmX` pedem `querySelector('svg')`, que
+   devolve o PRIMEIRO — o corpo. O segundo vem depois no DOM, como as
+   partículas vinham depois de tudo dentro do SVG: a ordem de pintura
+   não muda, continuam à frente do bicho. */
 function _afCorpo(c) {
   if (typeof gerarSVG !== 'function') return '';
-  const svg = _afSVG(c, 200, 200);
-  return svg.replace('<svg', '<svg preserveAspectRatio="xMidYMax meet"');
+  const svg = _afSVG(c, 200, 200).replace('<svg', '<svg preserveAspectRatio="xMidYMax meet"');
+
+  /* O grupo das partículas é o último do desenho, logo vai do seu
+     `<g class="av-particula">` até ao `</g>` que fecha o grupo raiz. */
+  const i = svg.indexOf('<g class="av-particula">');
+  const j = svg.lastIndexOf('</g></svg>');
+  if (i === -1 || j <= i) return svg;
+
+  const vb = (svg.match(/viewBox="([^"]*)"/) || [])[1] || '0 0 200 200';
+  return svg
+    + `<svg class="cb-part" viewBox="${vb}" width="200" height="200"`
+    + ` preserveAspectRatio="xMidYMax meet" aria-hidden="true">`
+    + svg.slice(i, j) + `</svg>`;
 }
 
 function _afLutador(c) {
@@ -2783,6 +2845,48 @@ function _afAuraDoModelo(c) {
   const vivo = _afVivoVisivel(c) && c.vivo;
   const m = { cls: [], concha: '', protege: vivo ? (c.protegendo || null) : null };
   if (!vivo) return m;
+
+  /* ── A PRESENÇA DA RARIDADE (3J.7) ──
+
+     É a única classe PERMANENTE desta lista. Todas as outras dizem o que
+     está a acontecer agora — a guarda, a Concha, um estado, a crise. Esta
+     diz o que o avatar é, e não muda do princípio ao fim da batalha.
+
+     ── PORQUE ESTÁ AQUI E NÃO NO DESENHO ──
+
+     A raridade deixou de decidir anatomia na 3J.6: um Comum, um Raro e um
+     Lendário com a mesma seed têm os mesmos braços, os mesmos espinhos e
+     os mesmos tentáculos. Ficou a pergunta de como se vê a raridade em
+     combate, e a 3J.5 mediu porque é que a resposta não pode ser dentro
+     do SVG:
+
+       aura visível        getBBox dá y −41, altura 352
+       display:none        y 55, altura 203
+       opacity:0           y −41, altura 352   ← continua a contar
+       visibility:hidden   y −41, altura 352   ← continua a contar
+
+     O `_afAssentar` usa esse getBBox para assentar os pés no chão e para
+     calcular o `--cabeca` onde o nome se pendura. Uma aura dentro do SVG
+     entrava na medida — e nem esconder resolve, porque só o
+     `display:none` sai dela, e aí não se vê nada. Por isso a presença
+     vive no DOM da arena, fora do desenho.
+
+     ── E PORQUE VEM DEPOIS DO `!vivo` ──
+
+     Quem caiu perde a aura, como perde tudo o resto. A raridade é
+     permanente mas a PRESENÇA não é: um corpo no chão não impõe nada. É
+     a regra que a 3J.5 fixou — o estado abafa a presença, nunca o
+     contrário — e sai de graça por estar deste lado da guarda.
+
+     A fonte é o `c.ficha.raridade`, que vem do `fuRaridadeDa` (ver
+     js/ficha-fu.js): lê o `raridadeReconhecida` do slot, que o cliente
+     não grava, e devolve Comum quando não há registro. Nunca o nível,
+     nunca a fase. */
+  if (c.ficha) {
+    if (c.ficha.raridade === 'Raro') m.cls.push('rar-raro');
+    else if (c.ficha.raridade === 'Lendário') m.cls.push('rar-lendario');
+  }
+
   if (c.guardando) m.cls.push('escudo', c.morteSubita ? 'apagado' : c.guardaFraca ? 'rachado' : '');
   if (ef.defesaMinima) m.cls.push('domo');
   if (ef.danoMais) m.cls.push('chama');
@@ -2835,9 +2939,34 @@ function _afAuraAplicar(id) {
      círculo inteiro pintado por cima dele. */
   const tras = _afEl(id) && _afEl(id).querySelector('.cb-efeitos-tras');
   if (tras) {
-    if (!tras.firstChild) tras.innerHTML = '<i class="cb-aura-concha-tras"></i>';
+    if (!tras.querySelector(':scope > .cb-aura-concha-tras')) {
+      tras.insertAdjacentHTML('beforeend', '<i class="cb-aura-concha-tras"></i>');
+    }
     tras.classList.toggle('concha', m.cls.indexOf('concha') !== -1);
     tras.style.setProperty('--concha', m.concha || 'none');
+
+    /* ── A PRESENÇA DA RARIDADE, ATRÁS DO CORPO ──
+
+       Nesta camada e não na `.cb-auras` por uma razão de leitura: a
+       `.cb-auras` vive na `.cb-efeitos`, que vem DEPOIS do corpo no DOM
+       e por isso pinta por cima dele. Lá, a presença seria um véu sobre
+       o bicho; aqui passa por trás, que é onde uma presença fica.
+
+       E o Comum não leva elemento NENHUM. Os dez efeitos da `.cb-auras`
+       criam-se todos de uma vez e acendem-se por classe, e para eles
+       está certo — qualquer um pode acontecer a qualquer avatar a
+       qualquer momento. A raridade não: está decidida antes da batalha
+       começar e não muda até o servidor refazer o exame, no mês
+       seguinte. Logo um Comum não precisa de dois elementos à espera de
+       uma coisa que não vai acontecer, e cria-se só quando a raridade
+       pede — uma vez, e fica. */
+    const rar = m.cls.indexOf('rar-lendario') !== -1 ? 'rar-lendario'
+              : m.cls.indexOf('rar-raro') !== -1 ? 'rar-raro' : '';
+    if (rar && !tras.querySelector(':scope > .cb-rar')) {
+      tras.insertAdjacentHTML('afterbegin', '<i class="cb-rar"></i><i class="cb-rar-2"></i>');
+    }
+    tras.classList.toggle('rar-raro', rar === 'rar-raro');
+    tras.classList.toggle('rar-lendario', rar === 'rar-lendario');
   }
   /* O fraco e o abalado mexem no CORPO (cinza, tremor), e o corpo não
      está na caixa dos efeitos: a marca vai também no posto. */
