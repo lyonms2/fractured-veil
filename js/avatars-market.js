@@ -80,17 +80,24 @@ function _slotDoencas(i, s) {
 
 // HELPERS DE FASE
 // ═══════════════════════════════════════════
-// A fase vem do faseFromNivel() do state.js, que é o dono da regra. Isto
-// era uma segunda cópia dos mesmos limiares — ainda não tinham divergido,
-// mas foi exatamente assim que o passivo antigo e as tabelas dos ovos
-// apodreceram: duas cópias, uma delas sem quem a corrigisse.
+// A escada vive no js/ficha-fu.js (FU_FASES, fuFaseDoNivel) e isto é só a
+// porta por onde o mercado lhe chama. Era uma segunda cópia dos mesmos
+// limiares — ainda não tinham divergido, mas foi exatamente assim que o
+// passivo antigo e as tabelas dos ovos apodreceram: duas cópias, uma
+// delas sem quem a corrigisse.
 //
-// A conta local fica só para o marketplace.html avulso, que corre sem o
-// state.js carregado.
+// ── A CÓPIA SAIU NA 3J.17A ──
+//
+// Ela existia para o marketplace.html avulso, que corria sem o state.js
+// carregado. Essa página foi apagada (commit 1c351dc, "a página morta do
+// marketplace apagada"), e o único carregador deste arquivo passou a ser
+// o index.html, onde o ficha-fu.js entra antes — e onde o fuFaseDoNivel,
+// sendo declaração de função, está disponível de qualquer maneira.
+//
+// Com a razão extinta, ficava um fallback que ninguém corria e que
+// ninguém corrigiria no dia em que os marcos mudassem.
 function _faseNum(nivel) {
-  if(typeof faseFromNivel === 'function') return faseFromNivel(nivel);
-  const n = nivel || 1;
-  return n < 5 ? 0 : n < 11 ? 1 : n < 27 ? 2 : 3;   // as fases de hoje: 5, 11, 27
+  return fuFaseDoNivel(nivel);
 }
 
 function getFaseNome(nivel) {
