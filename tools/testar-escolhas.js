@@ -93,7 +93,7 @@ titulo('Os valores válidos');
   igual('e batem com o FICHA_ESCOLHAS da ficha',
         JSON.stringify([...E.ESCOLHA_ANCIAO_VALIDAS].sort()),
         JSON.stringify([...V.FICHA_ESCOLHAS].sort()));
-  igual('o degrau é o 27 (FU_NIVEL_LENDARIO)', E.ESCOLHA_ANCIAO_NIVEL, 27);
+  igual('o degrau é o 27 (FU_NIVEL_ANCIAO)', E.ESCOLHA_ANCIAO_NIVEL, 27);
 
   for (const v of ['lixo', '', null, undefined, 0, 1, true, 'SEMDEFEITO',
                    'semdefeito', 'Vantagem', {}, [], ['vantagem']]) {

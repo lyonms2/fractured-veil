@@ -303,7 +303,7 @@ function podeEscolherAnciao(slot) {
      está guardado. */
   const nv = (typeof nivel !== 'undefined' && typeof avatar !== 'undefined' && s === avatar)
     ? nivel : (s.nivel || 1);
-  return nv >= FU_NIVEL_LENDARIO;
+  return nv >= FU_NIVEL_ANCIAO;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

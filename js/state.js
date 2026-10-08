@@ -304,9 +304,25 @@ const FASES = t('fases');
 
    E não mudou um único avatar: os números 5, 11 e 27 são exatamente os
    mesmos cortes que a escada dos pontos dava, conferidos nos sessenta
-   níveis. São também os degraus da raridade do motor novo
-   (FU_NIVEL_RARO, FU_NIVEL_LENDARIO) — a fase é a escada da raridade
-   com um degrau a mais no fundo, e sempre foi, através dos pontos. */
+   níveis.
+
+   ── ESTES DEGRAUS SÃO MATURAÇÃO, E NÃO RARIDADE ──
+
+   Dizia-se aqui que "a fase é a escada da raridade com um degrau a mais
+   no fundo, e sempre foi". Era verdade até à etapa 3I.12, quando a
+   raridade ainda se calculava a partir do nível. Deixou de ser.
+
+   O que estes três números decidem é o CORPO e o que ele pode fazer: o
+   desenho, a reprodução, a dificuldade que se enfrenta e a escolha do
+   Ancião. São idade, e chamam-se FU_NIVEL_JOVEM, FU_NIVEL_ADULTO e
+   FU_NIVEL_ANCIAO (js/ficha-fu.js) — nomes que passaram a dizer isso na
+   3J.14, porque antes diziam "Raro" e "Lendário" e isso convidava ao
+   erro que a 3I.12 acabou de desfazer.
+
+   A raridade já não sai daqui nem de lado nenhum do cliente: vive no
+   `raridades[idAvatar]` do servidor, conquista-se no exame mensal
+   (api/_certificar.js) e nenhum nível a dá. Um avatar de nível 60 sem
+   certificação é Comum, e um de nível 1 certificado é Lendário. */
 /* ── OS NÚMEROS SAÍRAM DAQUI ──
 
    A escada vive no js/ficha-fu.js (FU_FASES, fuFaseDoNivel) e esta linha
@@ -376,8 +392,8 @@ const getFaseSize   = () => FASE_SIZES[getFaseVisual()];
 const evolucaoPendente = () => faseVista >= 0 && getFase() > faseVista;
 /* ── QUANTO XP CADA NÍVEL PEDE ──
 
-   Pelas FASES, que são os marcos do jogo (FU_NIVEL_JOVEM, FU_NIVEL_RARO e
-   FU_NIVEL_LENDARIO, em js/ficha-fu.js):
+   Pelas FASES, que são os marcos do jogo (FU_NIVEL_JOVEM, FU_NIVEL_ADULTO e
+   FU_NIVEL_ANCIAO, em js/ficha-fu.js):
 
      BEBÊ     nv  1– 4   250 por nível         1.000 para chegar ao 5
      JOVEM    nv  5–10   700 por nível         5.200 para chegar ao 11

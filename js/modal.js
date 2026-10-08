@@ -418,10 +418,12 @@ function closeMiniModal(id) {
    Fora dos jogos, a visita a um amigo paga 5 (MOEDAS_VISITA, em
    api/amigos.js), até 30 por dia.
 
-   `minNivel` segue as FASES (FU_NIVEL_JOVEM, FU_NIVEL_RARO e
-   FU_NIVEL_LENDARIO, em js/ficha-fu.js): o Médio abre no 5, com o
-   Jovem; o Difícil no 11, com o Adulto e o Raro; o Mestre no 27, com o
-   Ancião e o Lendário. Eram 6, 13 e 21, números que não coincidiam com
+   `minNivel` segue as FASES (FU_NIVEL_JOVEM, FU_NIVEL_ADULTO e
+   FU_NIVEL_ANCIAO, em js/ficha-fu.js): o Médio abre no 5, com o Jovem;
+   o Difícil no 11, com o Adulto; o Mestre no 27, com o Ancião. Dizia-se
+   aqui "com o Adulto e o Raro" e "com o Ancião e o Lendário": a
+   raridade deixou de vir do nível na 3I.12, e estes degraus são só de
+   idade. Eram 6, 13 e 21, números que não coincidiam com
    nada — a dificuldade abria um ou dois níveis depois da fase, e o Mestre
    seis níveis antes do Lendário.
 

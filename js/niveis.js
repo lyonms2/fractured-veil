@@ -44,7 +44,7 @@ const NIVEL_MAXIMO      = 60;   // o fim da escada (FU_NIVEL_MAX)
 const NIVEL_RITMO_CEDO  = 12;   // degraus por hora até o nível 11
 const NIVEL_RITMO_TARDE = 6;    // …e daí para cima
 const NIVEL_BALDE       = 12;   // o que o crédito acumula, no máximo
-const NIVEL_CEDO_ATE    = 11;   // onde o ritmo muda (FU_NIVEL_RARO)
+const NIVEL_CEDO_ATE    = 11;   // onde o ritmo muda (FU_NIVEL_ADULTO)
 
 function nivelRitmo(n) {
   return n < NIVEL_CEDO_ATE ? NIVEL_RITMO_CEDO : NIVEL_RITMO_TARDE;

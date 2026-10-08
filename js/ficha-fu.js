@@ -356,8 +356,8 @@ function fuAfinidades(tipo, costura, raridade) {
    ficha passa a responder sempre o mesmo, venha de onde vier. */
 const FU_NIVEL_MAX      = 60;   // o teto do manual (p. 302)
 const FU_NIVEL_JOVEM    = 5;
-const FU_NIVEL_RARO     = 11;
-const FU_NIVEL_LENDARIO = 27;
+const FU_NIVEL_ADULTO   = 11;
+const FU_NIVEL_ANCIAO   = 27;
 
 /* ══════════════════════════════════════════════════════════════════
    A ESCADA DA VIDA
@@ -384,7 +384,7 @@ const FU_NIVEL_LENDARIO = 27;
    banco, as ferramentas e o servidor carregam todos. O js/state.js passa
    a chamar isto, e a escada existe uma vez só.
    ══════════════════════════════════════════════════════════════════ */
-const FU_FASES = [FU_NIVEL_JOVEM, FU_NIVEL_RARO, FU_NIVEL_LENDARIO];
+const FU_FASES = [FU_NIVEL_JOVEM, FU_NIVEL_ADULTO, FU_NIVEL_ANCIAO];
 
 function fuFaseDoNivel(nivel) {
   return FU_FASES.filter(d => (nivel || 1) >= d).length;
@@ -458,10 +458,14 @@ function fuAplicarSubidas(base, ordem, quantas) {
    mapa, a resposta é Comum — ver o `fuRaridadeDa`, abaixo. O
    tools/testar-raridade.js falha se alguém reintroduzir a conta.
 
-   Os FU_NIVEL_RARO e FU_NIVEL_LENDARIO continuam a existir, e não são
+   Os FU_NIVEL_ADULTO e FU_NIVEL_ANCIAO continuam a existir, e não são
    isto: são os degraus das FASES (FU_FASES), que decidem corpo,
-   reprodução e a escolha do Ancião. O nome é herança de quando as duas
-   escadas eram uma. */
+   reprodução e a escolha do Ancião.
+
+   Chamavam-se FU_NIVEL_RARO e FU_NIVEL_LENDARIO, herança de quando as
+   duas escadas eram uma. Passaram a dizer o que são na etapa 3J.14 —
+   um degrau de fase com nome de raridade é um convite a voltar a
+   confundi-las, e esta série de etapas foi toda a separá-las. */
 
 /* As três, na ordem em que se sobem. A mesma lista do RARIDADES
    (js/raridades.js), repetida aqui porque este é o motor e aquele corre
@@ -751,7 +755,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FU_SUBIDAS_NIVEL,
     fuSubidasDe, fuAplicarSubidas,
     fuPoderDoAvatar, fuPoderDaEquipa,
-    FU_NIVEL_MAX, FU_NIVEL_JOVEM, FU_NIVEL_RARO, FU_NIVEL_LENDARIO,
+    FU_NIVEL_MAX, FU_NIVEL_JOVEM, FU_NIVEL_ADULTO, FU_NIVEL_ANCIAO,
     FU_FASES, fuFaseDoNivel,
   };
 }

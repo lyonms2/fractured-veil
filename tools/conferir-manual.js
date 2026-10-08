@@ -80,8 +80,8 @@ diz('visitar rende, não custa', 'Rende a você', 'Pays you');
 
 console.log('── a escada ──');
 dizNumero('o teto de nível', num('js/niveis.js', 'NIVEL_MAXIMO'), v => `<td>27 a ${v}</td>`, v => `Nível ${v}`);
-dizNumero('o degrau do Raro', num('js/ficha-fu.js', 'FU_NIVEL_RARO'), v => `<td>${v} a 26</td>`);
-dizNumero('o degrau do Lendário', num('js/ficha-fu.js', 'FU_NIVEL_LENDARIO'), v => `<td>${v} a 60</td>`);
+dizNumero('o degrau do Adulto', num('js/ficha-fu.js', 'FU_NIVEL_ADULTO'), v => `<td>${v} a 26</td>`);
+dizNumero('o degrau do Ancião', num('js/ficha-fu.js', 'FU_NIVEL_ANCIAO'), v => `<td>${v} a 60</td>`);
 dizNumero('o 4º espaço de item', num('js/state.js', 'NIVEL_ITEM_EXTRA'), v => `Nível ${v}`);
 dizNumero('o título', num('js/identidade.js', 'NIVEL_TITULO'), v => `Nível ${v}`);
 diz('o XP do bebê', '250');

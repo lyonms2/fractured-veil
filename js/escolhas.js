@@ -60,9 +60,9 @@
    require a atravessar a fronteira. O tools/ confere que batem. */
 const ESCOLHA_ANCIAO_VALIDAS = ['vantagem', 'semDefeito'];
 
-/* O nível a partir do qual ela vale. É o degrau do Lendário
-   (FU_NIVEL_LENDARIO, em js/ficha-fu.js), e não se muda aqui: muda-se
-   lá, e esta linha segue. */
+/* O nível a partir do qual ela vale. É o degrau do ANCIÃO — a fase, e
+   não a raridade (FU_NIVEL_ANCIAO, em js/ficha-fu.js). Não se muda
+   aqui: muda-se lá, e esta linha segue. */
 const ESCOLHA_ANCIAO_NIVEL = 27;
 
 function escolhaAnciaoValida(v) {
