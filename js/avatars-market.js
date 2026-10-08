@@ -104,15 +104,23 @@ function getFaseNome(nivel) {
   return t('fases')[_faseNum(nivel)];
 }
 
-// A cor de cada fase, nos cortes das fases de hoje (5, 11, 27). Estava
-// nos do motor antigo (5, 10, 17): um Jovem de nível 10 saía com a cor de
-// Adulto, e um Adulto de 17 já com a de Ancião.
+// A cor de cada fase. Uma por fase, na ordem em que se sobem.
+//
+// ── OS CORTES SAÍRAM DAQUI NA 3J.17B ──
+//
+// Isto tinha os seus próprios `if(n < 5)`, `if(n < 11)`, `if(n < 27)` —
+// a escada escrita uma segunda vez, em cores. E já tinha apodrecido uma
+// vez: estava nos cortes do motor antigo (5, 10, 17), e por isso um
+// Jovem de nível 10 saía com a cor de Adulto e um Adulto de 17 já com a
+// de Ancião.
+//
+// Agora pergunta ao fuFaseDoNivel, como o _faseNum aqui ao lado. Os dois
+// andam sempre juntos no ecrã — o getFaseNome escreve a fase e isto
+// pinta-a —, e era precisamente aí que a divergência se via: o nome
+// dizia uma coisa e a cor dizia outra.
+const _FASE_COR = ['#a78bfa', '#60d4f0', '#4ade80', '#f0b840'];
 function getFaseCor(nivel) {
-  const n = nivel || 1;
-  if(n < 5)  return '#a78bfa';
-  if(n < 11) return '#60d4f0';
-  if(n < 27) return '#4ade80';
-  return '#f0b840';
+  return _FASE_COR[fuFaseDoNivel(nivel)];
 }
 
 // ═══════════════════════════════════════════
